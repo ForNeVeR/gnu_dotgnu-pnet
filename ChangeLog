@@ -1,4 +1,13 @@
 
+2001-03-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/Makefile.am, cscc/cc_errors.c, cscc/cc_errors.h,
+	cscc/cc_intl.h, cscc/cc_main.c, cscc/cc_main.h, cscc/cc_options.c,
+	cscc/cc_options.h, cscc/cc_preproc.c, cscc/cc_preproc.h, cscc/cscc.c:
+	move error handling, option processing, preprocessing, and the
+	plugin entry point code into a separate "compiler common" library;
+	modify "cscc" to use the new library.
+
 2002-03-07 Gopal.V <gopalv82@yahoo.com>
 
 	* ildiff/ildiff.c fixed ILtype bug by replacing ILTypeIdentical

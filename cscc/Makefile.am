@@ -2,9 +2,15 @@ noinst_PROGRAMS = cscc-cs cscc csdoc
 man_MANS        = cscc.1 csdoc.1
 EXTRA_DIST      = $(man_MANS)
 
-cscc_SOURCES = cscc.c \
-			   cs_options.c
-cscc_LDADD   = ../image/libILImage.a ../support/libILSupport.a
+noinst_LIBRARIES = libILCCommon.a
+
+libILCCommon_a_SOURCES = cc_errors.c \
+						 cc_main.c \
+						 cc_options.c \
+						 cc_preproc.c
+
+cscc_SOURCES = cscc.c
+cscc_LDADD   = libILCCommon.a ../image/libILImage.a ../support/libILSupport.a
 
 TREECC_INPUTS = cs_cast.tc \
 				cs_const.tc \

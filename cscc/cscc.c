@@ -31,7 +31,11 @@ Environment variables:
 
 */
 
-#include "cs_internal.h"
+#include <stdio.h>
+#include "il_system.h"
+#include "il_utils.h"
+#include "cc_options.h"
+#include "cc_intl.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -167,7 +171,7 @@ int main(int argc, char *argv[])
 	file_proc_types = (int *)ILCalloc(num_input_files, sizeof(int));
 	if(!plugin_list || !file_proc_types)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	for(filenum = 0; filenum < num_input_files; ++filenum)
 	{
@@ -277,8 +281,8 @@ int main(int argc, char *argv[])
 		{
 			/* This language is not understood or there is no plug-in for it */
 			file_proc_types[filenum] = FILEPROC_TYPE_UNKNOWN;
-			fprintf(stderr, "%s: language %s not recognized or "
-							"plug-in not found\n", progname, language);
+			fprintf(stderr, _("%s: language %s not recognized or "
+							  "plug-in not found\n"), progname, language);
 			if(!status)
 			{
 				status = 1;
@@ -295,7 +299,7 @@ int main(int argc, char *argv[])
 			case FILEPROC_TYPE_BINARY:
 			{
 				/* Add the binary to the list of files to be linked */
-				CSAddLinkFile(filename, 0);
+				CCAddLinkFile(filename, 0);
 			}
 			break;
 
@@ -351,9 +355,9 @@ int main(int argc, char *argv[])
 	}
 
 	/* Link the final executable */
-	if(!CSStringListContains(extension_flags, num_extension_flags,
+	if(!CCStringListContains(extension_flags, num_extension_flags,
 							 "syntax-check") &&
-	   !CSStringListContains(extension_flags, num_extension_flags,
+	   !CCStringListContains(extension_flags, num_extension_flags,
 							 "semantic-check"))
 	{
 		if(status == 0 && executable_flag)
@@ -361,7 +365,7 @@ int main(int argc, char *argv[])
 			status = LinkExecutable();
 		}
 	}
-	else if(CSStringListContains(extension_flags, num_extension_flags,
+	else if(CCStringListContains(extension_flags, num_extension_flags,
 							     "syntax-check"))
 	{
 		fputs("****************** Warning ************************\n", stderr);
@@ -410,7 +414,7 @@ static char *ChangeExtension(char *filename, char *ext)
 	newpath = (char *)ILMalloc(len + strlen(ext) + 2);
 	if(!newpath)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	ILMemCpy(newpath, filename, len);
 	newpath[len] = '.';
@@ -426,7 +430,7 @@ static void ParseCommandLine(int argc, char *argv[])
 	char *env;
 
 	/* Call the centralised option parser */
-	CSParseCommandLine(argc, argv, CMDLINE_PARSE_CSCC, "cscc");
+	CCParseCommandLine(argc, argv, CMDLINE_PARSE_CSCC, "cscc");
 
 	/* Add the system include directories */
 	if(!nostdinc_flag)
@@ -434,11 +438,11 @@ static void ParseCommandLine(int argc, char *argv[])
 		env = getenv("CSCC_INCLUDE_PATH");
 		if(env && *env != '\0')
 		{
-			CSAddPathStrings(&sys_include_dirs, &num_sys_include_dirs, env);
+			CCAddPathStrings(&sys_include_dirs, &num_sys_include_dirs, env);
 		}
 		else
 		{
-			CSAddPathStrings(&sys_include_dirs, &num_sys_include_dirs,
+			CCAddPathStrings(&sys_include_dirs, &num_sys_include_dirs,
 							 INCLUDE_PATH);
 		}
 	}
@@ -447,12 +451,12 @@ static void ParseCommandLine(int argc, char *argv[])
 		env = getenv("CSCC_INCLUDE_CPP_PATH");
 		if(env && *env != '\0')
 		{
-			CSAddPathStrings(&sys_cpp_include_dirs, &num_sys_cpp_include_dirs,
+			CCAddPathStrings(&sys_cpp_include_dirs, &num_sys_cpp_include_dirs,
 							 env);
 		}
 		else
 		{
-			CSAddPathStrings(&sys_cpp_include_dirs, &num_sys_cpp_include_dirs,
+			CCAddPathStrings(&sys_cpp_include_dirs, &num_sys_cpp_include_dirs,
 							 INCLUDE_CPP_PATH);
 		}
 	}
@@ -463,11 +467,11 @@ static void ParseCommandLine(int argc, char *argv[])
 		env = getenv("CSCC_LIB_PATH");
 		if(env && *env != '\0')
 		{
-			CSAddPathStrings(&sys_link_dirs, &num_sys_link_dirs, env);
+			CCAddPathStrings(&sys_link_dirs, &num_sys_link_dirs, env);
 		}
 		else
 		{
-			CSAddPathStrings(&sys_link_dirs, &num_sys_link_dirs, LIB_PATH);
+			CCAddPathStrings(&sys_link_dirs, &num_sys_link_dirs, LIB_PATH);
 		}
 	}
 
@@ -500,7 +504,7 @@ static void ParseCommandLine(int argc, char *argv[])
 		else if(assemble_flag)
 		{
 			/* Use the source file name with a ".il" or ".jl" extension */
-			if(!CSStringListContains(machine_flags, num_machine_flags, "jvm"))
+			if(!CCStringListContains(machine_flags, num_machine_flags, "jvm"))
 			{
 				output_filename = ChangeExtension(input_files[0], "il");
 			}
@@ -605,7 +609,7 @@ static char *SearchPath(char *path, char *name)
 		temppath = (char *)ILMalloc(len + namelen + 2);
 		if(!temppath)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 		strncpy(temppath, path, len);
 		temppath[len] = '/';
@@ -638,7 +642,7 @@ static char *FindKeyPluginEither(char *key, int lowerCase, int singleFile)
 		int sawUpper;
 		if(!newkey)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 		strcpy(newkey, key);
 		key = newkey;
@@ -664,12 +668,12 @@ static char *FindKeyPluginEither(char *key, int lowerCase, int singleFile)
 	name = (char *)ILMalloc(strlen(key) + 13);
 	if(!name)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	strcpy(name, "plugin-");
 	strcat(name, key);
 	strcat(name, "-path");
-	path = CSStringListGetValue(extension_flags, num_extension_flags, name);
+	path = CCStringListGetValue(extension_flags, num_extension_flags, name);
 	ILFree(name);
 	if(path)
 	{
@@ -680,7 +684,7 @@ static char *FindKeyPluginEither(char *key, int lowerCase, int singleFile)
 	name = (char *)ILMalloc(strlen(key) + 9);
 	if(!name)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	strcpy(name, "cscc-");
 	strcat(name, key);
@@ -714,7 +718,7 @@ static char *FindKeyPluginEither(char *key, int lowerCase, int singleFile)
 		path = (char *)ILMalloc(len + strlen(name) + 1);
 		if(!path)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 		strncpy(path, progname, len);
 		strcpy(path + len, name);
@@ -818,7 +822,7 @@ static void FindILAsmProgram(void)
 	char *path;
 
 	/* Check for a "-filasm-path" option on the command-line */
-	path = CSStringListGetValue(extension_flags, num_extension_flags,
+	path = CCStringListGetValue(extension_flags, num_extension_flags,
 								"ilasm-path");
 	if(path)
 	{
@@ -851,7 +855,7 @@ static void FindILAsmProgram(void)
 	}
 
 	/* Could not find "ilasm", so bail out of the compiler */
-	fprintf(stderr, "%s: could not locate the `ilasm' program\n", progname);
+	fprintf(stderr, _("%s: could not locate the `ilasm' program\n"), progname);
 	exit(1);
 }
 
@@ -863,7 +867,7 @@ static void FindILALinkProgram(void)
 	char *path;
 
 	/* Check for a "-filalink-path" option on the command-line */
-	path = CSStringListGetValue(extension_flags, num_extension_flags,
+	path = CCStringListGetValue(extension_flags, num_extension_flags,
 								"ilalink-path");
 	if(path)
 	{
@@ -896,7 +900,8 @@ static void FindILALinkProgram(void)
 	}
 
 	/* Could not find "ilalink", so bail out of the compiler */
-	fprintf(stderr, "%s: could not locate the `ilalink' program\n", progname);
+	fprintf(stderr, _("%s: could not locate the `ilalink' program\n"),
+			progname);
 	exit(1);
 }
 
@@ -977,7 +982,7 @@ static void AddArgument(char ***list, int *num, char *str)
 												   (*num + 16));
 		if(!newlist)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 		*list = newlist;
 	}
@@ -1188,7 +1193,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 			AddArgument(&cmdline, &cmdline_size, output_filename);
 			asm_output = output_filename;
 		}
-		else if(CSStringListContains(machine_flags, num_machine_flags, "jvm"))
+		else if(CCStringListContains(machine_flags, num_machine_flags, "jvm"))
 		{
 			/* Create a JL assembly output name based on the input */
 			asm_output = ChangeExtension((char *)filename, "jl");
@@ -1201,7 +1206,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 			AddArgument(&cmdline, &cmdline_size, asm_output);
 		}
 	}
-	else if(CSStringListContains(machine_flags, num_machine_flags, "jvm"))
+	else if(CCStringListContains(machine_flags, num_machine_flags, "jvm"))
 	{
 		asm_output = ChangeExtension((char *)filename, "jltmp");
 		AddArgument(&cmdline, &cmdline_size, asm_output);
@@ -1253,7 +1258,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	{
 		return 0;
 	}
-	if(CSStringListContains(extension_flags, num_extension_flags,
+	if(CCStringListContains(extension_flags, num_extension_flags,
 							"syntax-check"))
 	{
 		ILDeleteFile(asm_output);
@@ -1267,7 +1272,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	if(executable_flag)
 	{
 		obj_output = ChangeExtension((char *)filename, "objtmp");
-		CSAddLinkFile(obj_output, 1);
+		CCAddLinkFile(obj_output, 1);
 	}
 	else if(compile_flag)
 	{

@@ -3183,6 +3183,12 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 							 Load_File, 0));
 #endif
 
+	/* Load class names from the TypeRef and TypeDef tables */
+	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_TYPE_REF,
+							 Load_TypeRefName, 0));
+	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_TYPE_DEF,
+							 Load_TypeDefName, 0));
+
 	/* Load the assemblies that this image depends upon */
 	if((loadFlags & IL_LOADFLAG_NO_RESOLVE) == 0)
 	{
@@ -3192,12 +3198,6 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 			return error;
 		}
 	}
-
-	/* Load class names from the TypeRef and TypeDef tables */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_TYPE_REF,
-							 Load_TypeRefName, 0));
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_TYPE_DEF,
-							 Load_TypeDefName, 0));
 
 	/* Perform phase 1 type resolution on the TypeRef table */
 	error = ResolveTypeRefs(image, loadFlags);

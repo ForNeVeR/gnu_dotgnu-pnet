@@ -8,6 +8,8 @@
 	* engine/int_proto.h, engine/int_table.c, engine/lib_encoding.c:
 	add the internalcall "DefaultEncoding.InternalCodePage".
 
+	* samples/mscorlib.dll: new version with code page changes.
+
 2002-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_socket.c,

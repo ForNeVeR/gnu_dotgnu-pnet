@@ -90,12 +90,15 @@ JavaGenDiscard(ILNode_MethodDeclaration)
 
 JavaGenDiscard(ILNode_PropertyDeclaration)
 {
-	/* TODO */
+	/* We let ILNode_GenDiscard do the hard work because the property
+	   definition shell for IL and JL are identical.  It will call
+	   back into JavaGenDiscard when outputting the accessor bodies */
+	ILNode_GenDiscard(node, info);
 }
 
 JavaGenDiscard(ILNode_AccessorDeclaration)
 {
-	/* TODO */
+	/* Nothing to do here: this is just a place-holder */
 }
 
 JavaGenDiscard(ILNode_EnumMemberDeclaration)

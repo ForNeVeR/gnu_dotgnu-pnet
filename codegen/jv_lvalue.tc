@@ -173,9 +173,12 @@ JavaGenValue(ILNode_MemberField)
  */
 JavaGenValue(ILNode_StaticProperty)
 {
-	/* TODO */
+	ILMethod *getter = ILProperty_Getter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	return ILTypeToMachineType(signature->un.method.retType);
+	ILMachineType type = ILTypeToMachineType(signature->un.method.retType);
+	JavaGenCallMethod(info, getter, info->stackHeight);
+	JavaGenAdjust(info, JavaGenTypeSize(type) - 1);
+	return type;
 }
 
 /*
@@ -183,9 +186,15 @@ JavaGenValue(ILNode_StaticProperty)
  */
 JavaGenValue(ILNode_MemberProperty)
 {
-	/* TODO */
+	ILMethod *getter = ILProperty_Getter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	return ILTypeToMachineType(signature->un.method.retType);
+	ILMachineType type = ILTypeToMachineType(signature->un.method.retType);
+	long saveStack = info->stackHeight;
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+			    ILMachineType_ObjectRef);
+	JavaGenCallMethod(info, getter, saveStack);
+	JavaGenAdjust(info, JavaGenTypeSize(type) - 1);
+	return type;
 }
 
 /*
@@ -268,8 +277,9 @@ JavaPrepare(ILNode_StaticProperty)
  */
 JavaPrepare(ILNode_MemberProperty)
 {
-	/* TODO */
 	ILType *signature = ILProperty_Signature(node->property);
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+			    ILMachineType_ObjectRef);
 	return ILTypeToMachineType(signature->un.method.retType);
 }
 
@@ -369,7 +379,7 @@ JavaGetAndPrepare(ILNode_MemberField)
 	/* Duplicate it and get the current value */
 	JavaGenDup(info, type);
 	JavaGenFieldRef(info, JAVA_OP_GETFIELD, node->field);
-	JavaGenAdjust(info, size);
+	JavaGenAdjust(info, size - 1);
 
 	/* If the value should be left on the stack, then duplicate it */
 	if(leave)
@@ -394,9 +404,16 @@ JavaGetAndPrepare(ILNode_MemberField)
  */
 JavaGetAndPrepare(ILNode_StaticProperty)
 {
-	/* Nothing needs to be done here */
-	ILType *signature = ILProperty_Signature(node->property);
-	return ILTypeToMachineType(signature->un.method.retType);
+	ILMethod *getter = ILProperty_Getter(node->property);
+	ILMachineType type = ILTypeToMachineType
+		(ILProperty_Signature(node->property)->un.method.retType);
+	JavaGenCallMethod(info, getter, info->stackHeight);
+	JavaGenAdjust(info, JavaGenTypeSize(type));
+	if(leave)
+	{
+		JavaGenDup(info, type);
+	}
+	return type;
 }
 
 /*
@@ -404,9 +421,40 @@ JavaGetAndPrepare(ILNode_StaticProperty)
  */
 JavaGetAndPrepare(ILNode_MemberProperty)
 {
-	/* TODO */
+	ILMethod *getter = ILProperty_Getter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	return ILTypeToMachineType(signature->un.method.retType);
+	ILType *propType = signature->un.method.retType;
+	ILMachineType type = ILTypeToMachineType(propType);
+	int size = JavaGenTypeSize(type);
+	long saveStack;
+
+	/* Generate the object reference */
+	saveStack = info->stackHeight;
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+			    ILMachineType_ObjectRef);
+
+	/* Duplicate the object reference and get the current value */
+	JavaGenSimple(info, JAVA_OP_DUP);
+	JavaGenAdjust(info, 1);
+	JavaGenCallMethod(info, getter, saveStack);
+	JavaGenAdjust(info, size - 1);
+
+	/* Duplicate the current value if necessary */
+	if(leave)
+	{
+		if(size == 1)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP_X1);
+		}
+		else if(size == 2)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP2_X1);
+		}
+		JavaGenAdjust(info, size);
+	}
+
+	/* Return the property's machine type to the caller */
+	return type;
 }
 
 /*
@@ -516,7 +564,17 @@ JavaStore(ILNode_MemberField)
  */
 JavaStore(ILNode_StaticProperty)
 {
-	/* TODO */
+	ILMethod *setter = ILProperty_Setter(node->property);
+	ILType *signature = ILProperty_Signature(node->property);
+	ILType *propType = signature->un.method.retType;
+	ILMachineType type = ILTypeToMachineType(propType);
+	int size = JavaGenTypeSize(type);
+	if(leave)
+	{
+		JavaGenDup(info, type);
+	}
+	JavaGenCallMethod(info, setter, info->stackHeight - 1 - size);
+	JavaGenAdjust(info, -(size + 1));
 }
 
 /*
@@ -524,5 +582,27 @@ JavaStore(ILNode_StaticProperty)
  */
 JavaStore(ILNode_MemberProperty)
 {
-	/* TODO */
+	ILMethod *setter = ILProperty_Setter(node->property);
+	ILType *signature = ILProperty_Signature(node->property);
+	ILType *propType = signature->un.method.retType;
+	ILMachineType type = ILTypeToMachineType(propType);
+	int size = JavaGenTypeSize(type);
+
+	/* Duplicate the top of stack if necessary */
+	if(leave)
+	{
+		if(size == 1)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP_X1);
+		}
+		else if(size == 2)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP2_X1);
+		}
+		JavaGenAdjust(info, size);
+	}
+
+	/* Store the value into the property */
+	JavaGenCallMethod(info, setter, info->stackHeight - 1 - size);
+	JavaGenAdjust(info, -(size + 1));
 }

@@ -689,6 +689,22 @@ internal class Api
 		public byte[] buffer;
 	}
 
+	[StructLayout(LayoutKind.Sequential)]
+	public struct BITMAPV4INFO
+	{
+		public uint biSize; 
+		public int biWidth; 
+		public int biHeight; 
+		public ushort biPlanes; 
+		public ushort biBitCount; 
+		public uint biCompression; 
+		public uint biSizeImage; 
+		public int biXPelsPerMeter; 
+		public int biYPelsPerMeter; 
+		public uint biClrUsed; 
+		public uint biClrImportant; 
+	}
+
 	public delegate void TimerProc(IntPtr hwnd, uint uMsg, uint idEvent, uint dwTime);
 
 	[DllImport("user32")] //ANSI
@@ -781,6 +797,9 @@ internal class Api
 	[DllImport("gdi32")]
 	public static extern IntPtr CreateBrushIndirect(ref LOGBRUSH lplb);
 
+	[DllImport("gdi32")]
+	public static extern IntPtr CreatePatternBrush(IntPtr hbmp);
+
 	[DllImport("user32")] //ANSI
 	public static extern bool PostMessageA(IntPtr hwnd, WindowsMessages Msg, int wParam, int lParam);
 
@@ -871,9 +890,6 @@ internal class Api
 	public static extern bool IsWindowVisible( IntPtr hWnd);
 
 	[DllImport("gdi32")]
-	public static extern IntPtr CreatePatternBrush( IntPtr hbmp );
-
-	[DllImport("gdi32")]
 	public static extern IntPtr CreateBitmap( int nWidth, int nHeight, uint cPlanes, uint cBitsPerPel, byte[] lpvBits);
 
 	[DllImport("user32")]
@@ -951,31 +967,20 @@ internal class Api
 	[DllImport("user32")]
 	public static extern IntPtr WindowFromPoint( POINT Point);
 
-	//[DllImport("gdi32")]
-	//public static extern IntPtr CreateDIBSection(IntPtr hdc, [In,MarshalAs(UnmanagedType.LPStruct)] BITMAPINFO pbmi, DibColorTableType iUsage, out IntPtr ppvBits, IntPtr hSection, uint dwOffset);
+	[DllImport("gdi32")]
+	public static extern IntPtr CreateCompatibleBitmap( IntPtr hdc, int nWidth, int nHeight);
+
+	[DllImport("gdi32")]
+	public static extern int SetDIBits( IntPtr hdc, IntPtr hbmp, uint uStartScan, uint cScanLines, ref byte lpvBits, byte[] lpbmi, DibColorTableType fuColorUse);
+
+	[DllImport("gdi32")]
+	public static extern int SetDIBitsToDevice( IntPtr hdc, int XDest, int YDest, uint dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines, ref byte lpvBits, byte[] lpbmi, DibColorTableType fuColorUse);
 
 	[DllImport("gdi32")]
 	public static extern int BitBlt (IntPtr hdcDest, int x, int y, int nWidth, int nHeight, IntPtr hSrcDC, int xSrc, int ySrc, RopType dwRop);
 
 	[DllImport("gdi32")]
 	public static extern IntPtr CreateCompatibleDC( IntPtr hdc);
-
-	[DllImport("gdi32")]
-	public static extern int SetDIBitsToDevice(
-		IntPtr hdc,                 // handle to DC
-		int XDest,               // x-coord of destination upper-left corner
-		int YDest,               // y-coord of destination upper-left corner 
-		uint dwWidth,           // source rectangle width
-		uint dwHeight,          // source rectangle height
-		int XSrc,                // x-coord of source lower-left corner
-		int YSrc,                // y-coord of source lower-left corner
-		uint uStartScan,         // first scan line in array
-		uint cScanLines,         // number of scan lines
-		ref byte lpvBits,     // array of DIB bits
-		byte[] lpbmi, // bitmap information
-		//BITMAPINFO lpbmi, // bitmap information
-	uint fuColorUse          // RGB or palette indexes
-		);
 
 	[DllImport("kernel32")]
 	public static extern IntPtr GlobalLock( IntPtr hMem);

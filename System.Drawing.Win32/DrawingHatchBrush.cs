@@ -91,10 +91,8 @@ internal class DrawingHatchBrush : DrawingBrush, IToolkitBrush
 		}
 
 		// Create the bitmap, cache it for later, and then return it.
-		byte[] flipped = new byte[bits.Length];
-		Array.Copy(bits, flipped, bits.Length);
-		Array.Reverse(flipped);
-		bitmap = Win32.Api.CreateBitmap(16, 16, 1, 1, flipped);
+		Array.Reverse(bits);
+		bitmap = Win32.Api.CreateBitmap(16, 16, 1, 1, bits);
 		hatchBitmaps[(int)style] = bitmap;
 		return bitmap;
 				

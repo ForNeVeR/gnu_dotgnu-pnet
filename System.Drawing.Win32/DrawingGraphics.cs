@@ -332,7 +332,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 		}
 
 		// Draw the image
-		Win32.Api.SetDIBitsToDevice( hdc, x, y, (uint)di.imageFrame.Width,(uint)di.imageFrame.Height, 0, 0, 0, (uint)di.imageFrame.Height,ref di.imageFrame.Data[0], di.bitMapInfo, 0 /*RGB*/);
+		Win32.Api.SetDIBitsToDevice( hdc, x, y, (uint)di.imageFrame.Width,(uint)di.imageFrame.Height, 0, 0, 0, (uint)di.imageFrame.Height,ref di.imageFrame.Data[0], di.bitmapInfo, Win32.Api.DibColorTableType.DIB_RGB_COLORS);
 
 		// Restore the clipping
 		if (di.hMaskRegion != IntPtr.Zero)
@@ -345,7 +345,23 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				   				   byte[] bits, int bitsWidth, int bitsHeight,
 				   				   System.Drawing.Color color)
 	{
-		// TODO
+		IntPtr hMaskRegion = DrawingImage.MaskToRegion(bitsWidth, bitsHeight, (bitsWidth + 7) / 8, bits);
+		byte[] bitmapInfo = DrawingImage.GetBitmapInfo(DotGNU.Images.PixelFormat.Format1bppIndexed, bitsWidth, bitsHeight, null);
+		// Save the current clipping so we can restore later.
+		Win32.Api.SaveDC(hdc);
+		// Move mask to position
+		Win32.Api.OffsetRgn(hMaskRegion, x, y);
+		// Set the mask
+		Win32.Api.ExtSelectClipRgn(hdc, hMaskRegion, Win32.Api.RegionCombineMode.RGN_DIFF);
+		// Move mask back to origin
+		Win32.Api.OffsetRgn(hMaskRegion, -x, -y);
+
+		// Draw the image
+		Win32.Api.SetDIBitsToDevice( hdc, x, y, (uint)bitsWidth,(uint)bitsHeight, 0, 0, 0, (uint)bitsHeight,ref bits[0], bitmapInfo, Win32.Api.DibColorTableType.DIB_RGB_COLORS);
+
+		// Restore the clipping
+		Win32.Api.RestoreDC(hdc, -1);
+		Win32.Api.DeleteObject(hMaskRegion);
 	}
 
 }; // class DrawingGraphics

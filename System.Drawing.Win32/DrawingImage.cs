@@ -26,7 +26,7 @@ namespace System.Drawing.Toolkit
 	public class DrawingImage : ToolkitImageBase
 	{
 		internal Frame imageFrame;
-		internal /*Win32.Api.BITMAPINFO*/ byte[] bitMapInfo;
+		internal /*Win32.Api.BITMAPINFO*/ byte[] bitmapInfo;
 		internal IntPtr hMaskRegion = IntPtr.Zero;
 
 		public DrawingImage(Image image, int frame) : base(image, frame)
@@ -37,52 +37,58 @@ namespace System.Drawing.Toolkit
 		public override void ImageChanged()
 		{
 			Win32.Api.DeleteObject(hMaskRegion);
+			hMaskRegion = IntPtr.Zero;
+			if (image == null)
+				return;
 			imageFrame = image.GetFrame(frame);
 
+			bitmapInfo = GetBitmapInfo(imageFrame.PixelFormat, imageFrame.Width, imageFrame.Height, imageFrame.Palette);
+			hMaskRegion = MaskToRegion(imageFrame.Width, imageFrame.Height, imageFrame.MaskStride, imageFrame.Mask);
+		}
+
+		// Create a the BITMAPINFO header for a bitmap.
+		public static byte[] GetBitmapInfo(PixelFormat format, int width, int height, int[] palette)
+		{
 			// Set the size of the structure
 			int size = 40;
-			if (imageFrame.PixelFormat == PixelFormat.Format16bppRgb565)
+			if (format == PixelFormat.Format16bppRgb565)
 				size += 3 * 4;
-			else if (imageFrame.PixelFormat == PixelFormat.Format8bppIndexed)
+			else if (format == PixelFormat.Format8bppIndexed)
 				size += 256 * 4;
-			else if (imageFrame.PixelFormat == PixelFormat.Format4bppIndexed)
+			else if (format == PixelFormat.Format4bppIndexed)
 				size += 40 + 16 * 4;
-			else if (imageFrame.PixelFormat == PixelFormat.Format1bppIndexed)
+			else if (format == PixelFormat.Format1bppIndexed)
 				size += 40 + 2 * 4;
-			bitMapInfo = new byte[size];
-			WriteInt32(bitMapInfo, 0, 40); //biSize
-			WriteInt32(bitMapInfo, 4, imageFrame.Width); //biWidth
-			WriteInt32(bitMapInfo, 8, -imageFrame.Height); //biHeight
-			WriteInt32(bitMapInfo, 12, 1); //biPlanes
-			WriteInt32(bitMapInfo, 14, FormatToBitCount(imageFrame.PixelFormat)); //biBitCount
-			if (imageFrame.PixelFormat == PixelFormat.Format16bppRgb565)
+			byte[] bitmapInfo = new byte[size];
+			WriteInt32(bitmapInfo, 0, 40); //biSize
+			WriteInt32(bitmapInfo, 4, width); //biWidth
+			WriteInt32(bitmapInfo, 8, -height); //biHeight
+			WriteInt32(bitmapInfo, 12, 1); //biPlanes
+			WriteInt32(bitmapInfo, 14, FormatToBitCount(format)); //biBitCount
+			if (format == PixelFormat.Format16bppRgb565)
 			{
-				WriteInt32(bitMapInfo, 16, (int)Win32.Api.BitMapInfoCompressionType.BI_BITFIELDS);
+				WriteInt32(bitmapInfo, 16, (int)Win32.Api.BitMapInfoCompressionType.BI_BITFIELDS);
 				// Setup the masks for 565
-				WriteInt32(bitMapInfo, 40, 0xF800); // R Mask
-				WriteInt32(bitMapInfo, 44, 0x07E0); // G Mask
-				WriteInt32(bitMapInfo, 48, 0x001F); // B Mask
+				WriteInt32(bitmapInfo, 40, 0xF800); // R Mask
+				WriteInt32(bitmapInfo, 44, 0x07E0); // G Mask
+				WriteInt32(bitmapInfo, 48, 0x001F); // B Mask
 			}
 			else
-				WriteInt32(bitMapInfo, 16, (int)Win32.Api.BitMapInfoCompressionType.BI_RGB); // biCompression
+				WriteInt32(bitmapInfo, 16, (int)Win32.Api.BitMapInfoCompressionType.BI_RGB); // biCompression
 
-			WriteInt32(bitMapInfo, 20, 0); // biSizeImage
-			WriteInt32(bitMapInfo, 24, 0); // biXPelsPerMeter
-			WriteInt32(bitMapInfo, 28, 0); // biYPelsPerMeter
-			WriteInt32(bitMapInfo, 32, 0); // biClrUsed
-			WriteInt32(bitMapInfo, 36, 0); // biClrImportant
+			WriteInt32(bitmapInfo, 20, 0); // biSizeImage
+			WriteInt32(bitmapInfo, 24, 0); // biXPelsPerMeter
+			WriteInt32(bitmapInfo, 28, 0); // biYPelsPerMeter
+			WriteInt32(bitmapInfo, 32, 0); // biClrUsed
+			WriteInt32(bitmapInfo, 36, 0); // biClrImportant
 			//Setup palette
-			if (imageFrame.Palette != null)
+			if (palette != null)
 			{
 				// Write in RGBQUADS
-				for (int i = 0; i < imageFrame.Palette.Length; i++)
-					WriteBGR(bitMapInfo, 40 + i * 4, imageFrame.Palette[i]);
+				for (int i = 0; i < palette.Length; i++)
+					WriteBGR(bitmapInfo, 40 + i * 4, palette[i]);
 			}
-
-			if (imageFrame.Mask == null)
-				hMaskRegion = IntPtr.Zero;
-			else
-				hMaskRegion = MaskToRegion(imageFrame);
+			return bitmapInfo;
 		}
 
 
@@ -90,19 +96,17 @@ namespace System.Drawing.Toolkit
 		// Optimize this by adding the maximum number of rectangles at once and
 		// by combining strips on the x axis into one rectangle.
 
-		private IntPtr MaskToRegion (Frame frame)
+		public static IntPtr MaskToRegion (int width, int height, int stride, byte[] mask)
 		{
-			int stride = frame.MaskStride;
-			int height = frame.Height;
-			int width = frame.Width;
-			byte[] mask = frame.Mask;
-
+			if (mask == null)
+				return IntPtr.Zero;
+			
 			// This is the maximum rectangles we should add at once because
 			// Win98 only allows 4000. So we break this into steps
-			int initialCount = 3900;
 			// No point in being more than the number of pixels
-			if (imageFrame.Width * imageFrame.Height < initialCount)
-				initialCount = imageFrame.Width * imageFrame.Height;
+			int initialCount = width * height;
+			if (initialCount > 3900)
+				initialCount = 3900;
 			
 			uint count = 0;
 			// Set the initial quantity of the rectangles.
@@ -117,6 +121,8 @@ namespace System.Drawing.Toolkit
 
 			bool writeRect = false;
 			bool writeAlways = false;
+
+			IntPtr hMaskRegion = IntPtr.Zero;
 
 			// Scan top to bottom
 			for (int y = 0; y < height; y++)
@@ -201,7 +207,7 @@ namespace System.Drawing.Toolkit
 		}
 
 		// Write a RECT structure at ptr in the array of bytes
-		private void WriteRect( byte[] RGNData, ref uint ptr, Rectangle r)
+		private static void WriteRect( byte[] RGNData, ref uint ptr, Rectangle r)
 		{
 			RGNData[ptr] = (byte)r.X;
 			RGNData[ptr+1] = (byte)(r.X >> 8);
@@ -289,7 +295,7 @@ namespace System.Drawing.Toolkit
 
 		protected override void Dispose(bool disposing)
 		{
-			// Doesnt matter if its already been disposed.
+			// Doesnt hurt calling this, even if its already been disposed.
 			Win32.Api.DeleteObject(hMaskRegion);
 			hMaskRegion = IntPtr.Zero;
 		}

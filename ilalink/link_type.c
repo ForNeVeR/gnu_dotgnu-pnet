@@ -315,6 +315,15 @@ ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type)
 			}
 			/* Not reached */
 
+			case IL_TYPE_COMPLEX_VAR:
+			case IL_TYPE_COMPLEX_MVAR:
+			{
+				newType->un.num__ = ILType_VarNum(type);
+				return newType;
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_WITH:
 			case IL_TYPE_COMPLEX_PROPERTY:
 			case IL_TYPE_COMPLEX_METHOD:
 			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:

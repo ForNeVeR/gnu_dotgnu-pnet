@@ -2308,6 +2308,53 @@ ILObject *_IL_Type_GetTypeFromHandle(ILExecThread *thread, void *handle)
 	}
 }
 
+/*
+ * protected override bool IsGenericTypeImpl();
+ */
+ILBool _IL_ClrType_IsGenericTypeImpl(ILExecThread *thread, ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * protected override int ArityImpl();
+ */
+ILInt32 _IL_ClrType_ArityImpl(ILExecThread *thread, ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public override Type[] GetInstantiation();
+ */
+System_Array *_IL_ClrType_GetInstantiation(ILExecThread *thread,
+										   ILObject * _this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public override Type Instantiate(Type[] inst);
+ */
+ILObject *_IL_ClrType_Instantiate(ILExecThread *thread, ILObject *_this,
+								  System_Array *inst)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public override Type GetGenericType();
+ */
+ILObject *_IL_ClrType_GetGenericType(ILExecThread *thread, ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

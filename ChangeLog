@@ -18,6 +18,9 @@
 	aliases for "ldelem" and "stelem", because there is some code
 	already in existence that uses the "*.any" forms of the name.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_type.c:
+	stub out internalcalls that are related to generic types.
+
 2003-02-17 Aditya P. Bansod <abansod@fullenergy.com>
 
 	* configure.in, engine/int_proto.h, engine/int_table.c

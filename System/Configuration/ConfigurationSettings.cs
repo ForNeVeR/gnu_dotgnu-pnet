@@ -182,7 +182,7 @@ public sealed class ConfigurationSettings
 					}
 
 					// Build the full pathname and check for its existence.
-					String pathname = Path.Combine(dir, "machine.schema");
+					String pathname = Path.Combine(dir, "machine.default");
 					if(!File.Exists(pathname))
 					{
 						return null;

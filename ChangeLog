@@ -32,6 +32,9 @@
 	System/Diagnostics/Trace.cs: put some configuration infrastructure
 	in place for the "Debug" and "Trace" classes.
 
+	* System/Configuration/ConfigurationSettings.cs: change an
+	instance of "machine.schema" to "machine.default".
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

@@ -34,6 +34,10 @@
 	samples/mscorlib.dll: update all assemblies from the pnetlib
 	source, primarily for the text resource fixes.
 
+	* engine/lib_encoding.c, include/il_utils.h, support/Makefile.am,
+	support/ansi.c, support/locale.c: move the ANSI handling routines
+	out of "engine" and into "support".
+
 2002-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am: add mising .h files to the install.

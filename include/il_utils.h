@@ -209,6 +209,48 @@ int ILUTF16WriteChar(unsigned short *buf, unsigned long ch);
 int ILUTF16WriteCharAsBytes(void *buf, unsigned long ch);
 
 /*
+ * Get the number of bytes that are needed to encode an array
+ * of 16-bit Unicode characters in the "ANSI" encoding.
+ */
+unsigned long ILAnsiGetByteCount(const unsigned short *chars,
+								 unsigned long count);
+
+/*
+ * Get the "ANSI" bytes that represent an array of 16-bit
+ * Unicode characters.  Returns the length or -1 if the
+ * "bytes" array is insufficient in size.
+ */
+long ILAnsiGetBytes(const unsigned short *chars, unsigned long charCount,
+					unsigned char *bytes, unsigned long byteCount);
+
+/*
+ * Get the number of characters that will result from decoding
+ * a byte array in the "ANSI" encoding.
+ */
+unsigned long ILAnsiGetCharCount(const unsigned char *bytes,
+								 unsigned long count);
+
+/*
+ * Get the characters that result from decoding a byte array
+ * in the "ANSI" encoding.  Returns the length or -1 if the
+ * "chars" array is insufficient in size.
+ */
+long ILAnsiGetChars(const unsigned char *bytes, unsigned long byteCount,
+					unsigned short *chars, unsigned long charCount);
+
+/*
+ * Get the maximum number of bytes that will be required
+ * to encode a specified number of characters.
+ */
+unsigned long ILAnsiGetMaxByteCount(unsigned long charCount);
+
+/*
+ * Get the maximum number of characters that will be required
+ * to encode a specified number of bytes.
+ */
+unsigned long ILAnsiGetMaxCharCount(unsigned long byteCount);
+
+/*
  * Unicode character categories.
  */
 typedef enum

@@ -20,6 +20,12 @@
 
 #include "il_system.h"
 #include "il_utils.h"
+#if HAVE_WCHAR_H
+#include <wchar.h>
+#endif
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #if HAVE_LOCALE_H
 #include <locale.h>
 #endif
@@ -29,6 +35,19 @@
 
 #ifdef	__cplusplus
 extern	"C" {
+#endif
+
+/*
+ * See if we have sufficient functions to do locale-based conversion.
+ * The "IL_CONFIG_LATIN1" macro is defined to set the encoding to Latin1
+ * if we have no idea how to convert to and from the system encoding,
+ * or if the profile says to always use Latin1.
+ */
+#if !(defined(HAVE_WCTOMB) || defined(HAVE_WCRTOMB)) || \
+    !(defined(HAVE_MBTOWC) || defined(HAVE_MBRTOWC))
+#ifndef IL_CONFIG_LATIN1
+#define	IL_CONFIG_LATIN1	1
+#endif
 #endif
 
 /*
@@ -60,7 +79,7 @@ void ILInitLocale(void)
 #endif
 }
 
-#if defined(HAVE_NL_LANGINFO) && defined(CODESET)
+#if defined(HAVE_NL_LANGINFO) && defined(CODESET) && !defined(IL_CONFIG_LATIN1)
 
 /*
  * Compare two codeset names.
@@ -102,7 +121,7 @@ static int CompareCodesets(const char *name1, const char *name2)
 
 unsigned ILGetCodePage(void)
 {
-#if defined(HAVE_NL_LANGINFO) && defined(CODESET)
+#if defined(HAVE_NL_LANGINFO) && defined(CODESET) && !defined(IL_CONFIG_LATIN1)
 	char *set;
 	int index;
 
@@ -200,10 +219,16 @@ unsigned ILGetCodePage(void)
 			}
 		}
 	}
-#endif
-
+	return 0;
+#else
+#ifdef IL_CONFIG_LATIN1
+	/* Force the code page to always be Latin1 */
+	return CP_8859_1;
+#else
 	/* We have no idea how to obtain the code page information */
 	return 0;
+#endif
+#endif
 }
 
 #ifdef	__cplusplus

@@ -81,7 +81,8 @@ void ILApplyUnaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
  */
 const ILOperator *ILFindBinaryOperator(const ILOperator *table,
 								 	   ILType *argType1, ILType *argType2,
-									   ILType **resultType);
+									   ILType **resultType,
+									   int zero1, int zero2);
 
 /*
  * Apply a standard binary operator to a node.

@@ -73,6 +73,30 @@ static void EvalOperator(ILGenInfo *info, ILNode *node,
 }
 
 /*
+ * Determine if a semantic value is zero.  Used to support
+ * implicit coercions from zero to enumerated types.
+ */
+static int IsEnumZero(CSSemValue *value)
+{
+	ILEvalValue *evalValue = CSSemGetConstant(*value);
+	if(evalValue)
+	{
+		switch(evalValue->valueType)
+		{
+			case ILMachineType_Int8:
+			case ILMachineType_UInt8:
+			case ILMachineType_Int16:
+			case ILMachineType_UInt16:
+			case ILMachineType_Int32:
+				return (evalValue->un.i4Value == 0);
+
+			default: break;
+		}
+	}
+	return 0;
+}
+
+/*
  * Common semantic analysis function for binary arithmetic operators.
  */
 static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
@@ -98,7 +122,8 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 
 	/* Look for a builtin operator */
 	oper = ILFindBinaryOperator(table, CSSemGetType(value1),
-								CSSemGetType(value2), &resultType);
+								CSSemGetType(value2), &resultType,
+								IsEnumZero(&value1), IsEnumZero(&value2));
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
@@ -256,7 +281,8 @@ ILNode_SemAnalysis(ILNode_Add)
 	/* Look for a builtin operator */
 	oper = ILFindBinaryOperator
 				(ILOp_Add, CSSemGetType(value1),
-				 CSSemGetType(value2), &resultType);
+				 CSSemGetType(value2), &resultType,
+				 IsEnumZero(&value1), IsEnumZero(&value2));
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
@@ -358,7 +384,8 @@ ILNode_SemAnalysis(ILNode_Sub)
 	/* Look for a builtin operator */
 	oper = ILFindBinaryOperator
 				(ILOp_Sub, CSSemGetType(value1),
-				 CSSemGetType(value2), &resultType);
+				 CSSemGetType(value2), &resultType,
+				 IsEnumZero(&value1), IsEnumZero(&value2));
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
@@ -707,7 +734,8 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 
 	/* Look for a builtin operator */
 	oper = ILFindBinaryOperator(table, CSSemGetType(value1),
-								CSSemGetType(value2), &resultType);
+								CSSemGetType(value2), &resultType,
+								IsEnumZero(&value1), IsEnumZero(&value2));
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
@@ -1388,7 +1416,8 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 
 	/* Look for a builtin operator */
 	oper = ILFindBinaryOperator(table, CSSemGetType(value1),
-								CSSemGetType(value2), &resultType);
+								CSSemGetType(value2), &resultType,
+								IsEnumZero(&value1), IsEnumZero(&value2));
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);

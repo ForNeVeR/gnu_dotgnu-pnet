@@ -1,4 +1,9 @@
 
+2002-09-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_coerce.h, codegen/cg_optable.c, cscc/csharp/cs_oper.tc:
+	implicitly coerce zero to enumerated types in binary operators.
+
 2002-09-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c (ILGenGetParamInfo): resolve the method before

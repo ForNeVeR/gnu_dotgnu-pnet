@@ -1385,9 +1385,20 @@ void ILApplyUnaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
 					oper->intype1->valueType);
 }
 
+/*
+ * Determine if an operator table supports zero coercions to enum.
+ */
+#define	IsEnumOpTable(table)	\
+			((table) == ILOp_Eq || (table) == ILOp_Ne || \
+			 (table) == ILOp_Lt || (table) == ILOp_Le || \
+			 (table) == ILOp_Gt || (table) == ILOp_Ge || \
+			 (table) == ILOp_And || (table) == ILOp_Or || \
+			 (table) == ILOp_Xor)
+
 const ILOperator *ILFindBinaryOperator(const ILOperator *table,
 								 	   ILType *argType1, ILType *argType2,
-									   ILType **resultType)
+									   ILType **resultType,
+									   int zero1, int zero2)
 {
 	/* Convert the types into their builtin forms */
 	const ILBuiltinType *type1 = GetBuiltinType(argType1, argType2);
@@ -1676,6 +1687,23 @@ const ILOperator *ILFindBinaryOperator(const ILOperator *table,
 			{
 				return 0;
 			}
+		}
+	}
+
+	/* If we have a relational or bitwise operator with an enumerated
+	   argument and a zero argument, then promote the zero */
+	if(type1->isEnum && !(type2->isEnum) && zero2)
+	{
+		if(IsEnumOpTable(table))
+		{
+			type2 = type1;
+		}
+	}
+	else if(!(type1->isEnum) && type2->isEnum && zero1)
+	{
+		if(IsEnumOpTable(table))
+		{
+			type1 = type2;
 		}
 	}
 

@@ -60,7 +60,7 @@ void ILInitLocale(void)
 #endif
 }
 
-#if HAVE_NL_LANGINFO
+#if defined(HAVE_NL_LANGINFO) && defined(CODESET)
 
 /*
  * Compare two codeset names.
@@ -102,7 +102,7 @@ static int CompareCodesets(const char *name1, const char *name2)
 
 unsigned ILGetCodePage(void)
 {
-#if HAVE_NL_LANGINFO
+#if defined(HAVE_NL_LANGINFO) && defined(CODESET)
 	char *set;
 	int index;
 

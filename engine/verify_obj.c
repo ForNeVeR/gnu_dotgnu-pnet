@@ -92,9 +92,18 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 		}
 		return 0;
 	}
+	else if((typeClass = ILClassFromType(ILClassToImage(classInfo),
+										 0, type, 0)) != 0)
+	{
+		if(ILClassInheritsFrom(typeClass, classInfo) ||
+		   ILClassImplements(typeClass, classInfo))
+		{
+			return 1;
+		}
+		return 0;
+	}
 	else
 	{
-		/* TODO: handle array and other types */
 		return 0;
 	}
 }

@@ -46,7 +46,6 @@ cp -p "$MCS_SOURCES/class/corlib/System/TODOAttribute.cs" mcs-sources/class/corl
 cp -pr "$MCS_SOURCES/tools/SqlSharp" mcs-sources/tools
 
 for dir in Custommarshalers \
-		  System.EnterpriseServices \
 		  System.Configuration.Install \
 		  System.Management \
 		  System.Messaging \

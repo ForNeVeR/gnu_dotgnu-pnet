@@ -1,6 +1,5 @@
 
 SUBDIRS = Custommarshalers \
-		  System.EnterpriseServices \
 		  System.Management \
 		  System.Messaging \
 		  System.ServiceProcess \

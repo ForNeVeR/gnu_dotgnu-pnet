@@ -1,4 +1,18 @@
 
+2003-09-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, copy-mcs.sh, class/Makefile.am,
+	class/ByteFX.Data/ByteFX.Data.build,
+	class/Mono.Data.DB2Client/Mono.Data.DB2Client.build,
+	class/Mono.Data.MySql/Mono.Data.MySql.build,
+	class/Mono.Data.PostgreSqlClient/Mono.Data.PostgreSqlClient.build,
+	class/Npgsql/Npgsql.build, class/System.Data/System.Data.build,
+	class/System.Data.OracleClient/System.Data.OracleClient.build,
+	class/System.EnterpriseServices/Makefile.am,
+	class/System.EnterpriseServices/System.EnterpriseServices.build:
+	remove "System.EnterpriseServices" from "ml-pnet" because pnetlib
+	now has its own version.
+
 2003-09-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.5.12" release.

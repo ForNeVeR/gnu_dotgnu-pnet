@@ -18,7 +18,7 @@
 				<file name="System.dll"/>
 				<file name="System.Xml.dll"/>
 				<file name="../Mono.Data.Tds/Mono.Data.Tds.dll"/>
-				<file name="../System.EnterpriseServices/System.EnterpriseServices.dll"/>
+				<file name="System.EnterpriseServices.dll"/>
 			</references>
 
 		</compile>

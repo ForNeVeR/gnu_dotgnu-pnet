@@ -1,4 +1,9 @@
-2004-05-03  Thong Nguye <tum@veridicus.com>
+2004-05-04  Thong Nguyen <tum@veridicus.com>
+
+	* support/wait_mutex.c: Changed ILWaitMonitorFastClaim to
+	check and respond to thread abort requests.
+	
+2004-05-03  Thong Nguyen <tum@veridicus.com>
 
 	* support/thr_defs.h: Added defs for EnterWait and LeaveWait.
 	

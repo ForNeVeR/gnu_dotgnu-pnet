@@ -130,13 +130,35 @@ static int MutexCloseNamed(ILWaitMutexNamed *mutex)
 
 int ILWaitMonitorFastClaim(ILWaitHandle *handle)
 {
+	ILThread *thread = ILThreadSelf();
 	ILWaitMutex *mutex = (ILWaitMutex *)handle;
-	_ILWakeup *wakeup = &(ILThreadSelf()->wakeup);
 
-	mutex->owner = wakeup;
+	mutex->owner = &thread->wakeup;
 	mutex->count = 1;
 
-	return 0;
+	if ((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	{
+		/* Do a slower safer double check */
+		
+		_ILMutexLock(&(thread->lock));
+
+		if ((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+		{
+			_ILMutexUnlock(&(thread->lock));
+			
+			return IL_WAIT_ABORTED;
+		}
+		else
+		{
+			_ILMutexUnlock(&(thread->lock));
+
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*

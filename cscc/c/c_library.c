@@ -100,6 +100,7 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	ILClass *objectClass;
 	ILClass *attributeClass;
 	ILClass *exceptionClass;
+	ILClass *valueTypeClass;
 	ILClass *classInfo;
 
 	/* Create the "OpenSystem.C" simulated assembly */
@@ -110,6 +111,7 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	objectClass = ILTypeToClass(info, ILFindSystemType(info, "Object"));
 	attributeClass = ILTypeToClass(info, ILFindSystemType(info, "Atribute"));
 	exceptionClass = ILTypeToClass(info, ILFindSystemType(info, "Exception"));
+	valueTypeClass = ILTypeToClass(info, ILFindSystemType(info, "ValueType"));
 
 	/* Create "OpenSystem.C.Crt0" */
 	classInfo = CreateClass(info, scope, "Crt0", objectClass);
@@ -159,6 +161,14 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	/* Create "OpenSystem.C.LongJmpException" */
 	classInfo = CreateClass(info, scope, "LongJmpException", exceptionClass);
 	AddConstructor(classInfo, ILType_Int32, ILType_Int32);
+
+	/* Create "OpenSystem.C.NativeFloat" */
+	classInfo = CreateClass(info, scope, "NativeFloat", valueTypeClass);
+	ILClassSetAttrs(classInfo,
+					IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
+						IL_META_TYPEDEF_VALUE_TYPE,
+					IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
+						IL_META_TYPEDEF_VALUE_TYPE);
 }
 
 #ifdef	__cplusplus

@@ -14,6 +14,10 @@
 	* codegen/cg_arith.tc, cscc/c/c_function.c, cscc/c/c_grammar.y,
 	cscc/c/c_oper.tc: implement assignment expressions in the C compiler.
 
+	* codegen/cg_assign.tc, codegen/cg_nodes.tc, codegen/jv_assign.tc,
+	cscc/c/c_library.c, cscc/c/c_oper.tc, cscc/c/c_stubs.tc,
+	cscc/csharp/cs_oper.tc: implement increment and decrement operators.
+
 2002-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.c: implement "ProcessWithAssembler" in the compiler

@@ -512,6 +512,18 @@ JavaGenValue(ILNode_UserPostDec)
 }
 
 /*
+ * Stub out pointer-based increment and decrement, which should
+ * never be used in Java code generation modes.
+ */
+JavaGenValue(ILNode_PreIncPtr),
+JavaGenValue(ILNode_PostIncPtr),
+JavaGenValue(ILNode_PreDecPtr),
+JavaGenValue(ILNode_PostDecPtr)
+{
+	return ILMachineType_UnmanagedPtr;
+}
+
+/*
  * Apply the increment operator to various types.
  */
 JavaInc_ApplyOp(ILMachineType_Int8)

@@ -598,6 +598,103 @@ invalid:
 	return CSemValueError;
 }
 
+/*
+ * Perform semantic analysis for increment or decrement expressions.
+ */
+static CSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
+						     ILNode **parent, const char *name)
+{
+	CSemValue value;
+	ILMachineType type;
+	ILType *elemType;
+	ILUInt32 elemSize;
+	ILClass *elemClass;
+	ILNode *newNode;
+
+	/* Perform semantic analysis on the l-value argument */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), 0);
+	if(!CSemIsLValue(value))
+	{
+		if(!CSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("invalid lvalue in %s"), name);
+		}
+		return CSemValueError;
+	}
+
+	/* Check that the type is incrementable or decrementale */
+	type = ILTypeToMachineType(CSemGetType(value));
+	switch(type)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		case ILMachineType_Float32:
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:		break;
+
+		case ILMachineType_UnmanagedPtr:
+		{
+			elemType = CTypeGetPtrRef(CSemGetType(value));
+			elemSize = CTypeSizeAndAlign(elemType, 0);
+			if(elemSize != 1)
+			{
+				elemType = ILTypeStripPrefixes(elemType);
+				if(elemType == ILType_Float)
+				{
+					elemType = ILFindNonSystemType
+						(info, "NativeFloat", "OpenSystem.C");
+				}
+				elemClass = ILTypeToClass(info, elemType);
+				if(yyisa(node, ILNode_PreInc))
+				{
+					newNode = ILNode_PreIncPtr_create
+						(node->expr, elemSize, elemClass);
+				}
+				else if(yyisa(node, ILNode_PreDec))
+				{
+					newNode = ILNode_PreDecPtr_create
+						(node->expr, elemSize, elemClass);
+				}
+				else if(yyisa(node, ILNode_PostInc))
+				{
+					newNode = ILNode_PostIncPtr_create
+						(node->expr, elemSize, elemClass);
+				}
+				else
+				{
+					newNode = ILNode_PostDecPtr_create
+						(node->expr, elemSize, elemClass);
+				}
+				CGenCloneLine(newNode, (ILNode *)node);
+				*parent = newNode;
+			}
+		}
+		break;
+
+		default:
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("wrong type argument to %s"), name);
+			return CSemValueError;
+		}
+		/* Not reached */
+	}
+
+	/* Convert the l-value into and r-value and return */
+	CSemSetRValue(value, CSemGetType(value));
+	return value;
+}
+
 %}
 
 /*
@@ -1098,8 +1195,8 @@ ILNode_CSemAnalysis(ILNode_AssignUShr)
  */
 ILNode_CSemAnalysis(ILNode_PreInc)
 {
-	/* TODO */
-	return CSemValueError;
+	return IncOrDecSem(info, (ILNode_UnaryExpression *)node,
+					   parent, "increment");
 }
 
 /*
@@ -1107,8 +1204,8 @@ ILNode_CSemAnalysis(ILNode_PreInc)
  */
 ILNode_CSemAnalysis(ILNode_PreDec)
 {
-	/* TODO */
-	return CSemValueError;
+	return IncOrDecSem(info, (ILNode_UnaryExpression *)node,
+					   parent, "decrement");
 }
 
 /*
@@ -1116,8 +1213,8 @@ ILNode_CSemAnalysis(ILNode_PreDec)
  */
 ILNode_CSemAnalysis(ILNode_PostInc)
 {
-	/* TODO */
-	return CSemValueError;
+	return IncOrDecSem(info, (ILNode_UnaryExpression *)node,
+					   parent, "increment");
 }
 
 /*
@@ -1125,8 +1222,8 @@ ILNode_CSemAnalysis(ILNode_PostInc)
  */
 ILNode_CSemAnalysis(ILNode_PostDec)
 {
-	/* TODO */
-	return CSemValueError;
+	return IncOrDecSem(info, (ILNode_UnaryExpression *)node,
+					   parent, "decrement");
 }
 
 /*

@@ -107,7 +107,11 @@ ILNode_CSemAnalysis(ILNode_LocalConstDeclaration),
 ILNode_CSemAnalysis(ILNode_RefArgumentVar),
 ILNode_CSemAnalysis(ILNode_QualIdent),
 ILNode_CSemAnalysis(ILNode_CDeclarator),
-ILNode_CSemAnalysis(ILNode_ArrayAccess)
+ILNode_CSemAnalysis(ILNode_ArrayAccess),
+ILNode_CSemAnalysis(ILNode_PreIncPtr),
+ILNode_CSemAnalysis(ILNode_PreDecPtr),
+ILNode_CSemAnalysis(ILNode_PostIncPtr),
+ILNode_CSemAnalysis(ILNode_PostDecPtr)
 {
 	/* Nothing to do here */
 	return CSemValueError;

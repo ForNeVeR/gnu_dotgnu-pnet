@@ -1952,6 +1952,17 @@ ILNode_SemAnalysis(ILNode_UserPostDec)
 }
 
 /*
+ * Perform semantic analysis for pointer-based increments and decrements.
+ */
+ILNode_SemAnalysis(ILNode_PreIncPtr),
+ILNode_SemAnalysis(ILNode_PreDecPtr),
+ILNode_SemAnalysis(ILNode_PostIncPtr),
+ILNode_SemAnalysis(ILNode_PostDecPtr)
+{
+	return CSSemValueDefault;
+}
+
+/*
  * Perform semantic analysis for the "as" operator.
  */
 ILNode_SemAnalysis(ILNode_As)

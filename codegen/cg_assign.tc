@@ -59,7 +59,11 @@ ILNode_GetType(ILNode_AssignExpression)
 ILNode_GetType(ILNode_PreInc),
 ILNode_GetType(ILNode_PreDec),
 ILNode_GetType(ILNode_PostInc),
-ILNode_GetType(ILNode_PostDec)
+ILNode_GetType(ILNode_PostDec),
+ILNode_GetType(ILNode_PreIncPtr),
+ILNode_GetType(ILNode_PreDecPtr),
+ILNode_GetType(ILNode_PostIncPtr),
+ILNode_GetType(ILNode_PostDecPtr)
 {
 	return ILNode_GetType(node->expr, info);
 }
@@ -394,6 +398,64 @@ ILNode_GenDiscard(ILNode_UserPostDec)
 }
 
 /*
+ * Generate discard code for a pointer-based pre or post increment.
+ */
+ILNode_GenDiscard(ILNode_PreIncPtr),
+ILNode_GenDiscard(ILNode_PostIncPtr)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	ILNode_GetAndPrepare(node->expr, info, 0, &data1, &data2);
+
+	/* Increment the value on the top of the stack */
+	if(node->size != IL_MAX_UINT32)
+	{
+		ILGenUIntNative(info, node->size);
+	}
+	else
+	{
+		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+						node->classInfo);
+		ILGenSimple(info, IL_OP_CONV_U);
+	}
+	ILGenSimple(info, IL_OP_ADD);
+	ILGenExtend(info, 1);
+
+	/* Store the value into the destination */
+	ILNode_Store(node->expr, info, 0, data1, data2);
+}
+
+/*
+ * Generate discard code for a pointer-based pre or post decrement.
+ */
+ILNode_GenDiscard(ILNode_PreDecPtr),
+ILNode_GenDiscard(ILNode_PostDecPtr)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	ILNode_GetAndPrepare(node->expr, info, 0, &data1, &data2);
+
+	/* Increment the value on the top of the stack */
+	if(node->size != IL_MAX_UINT32)
+	{
+		ILGenUIntNative(info, node->size);
+	}
+	else
+	{
+		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+						node->classInfo);
+		ILGenSimple(info, IL_OP_CONV_U);
+	}
+	ILGenSimple(info, IL_OP_SUB);
+	ILGenExtend(info, 1);
+
+	/* Store the value into the destination */
+	ILNode_Store(node->expr, info, 0, data1, data2);
+}
+
+/*
  * Generate value code for a pre increment.
  */
 ILNode_GenValue(ILNode_PreInc)
@@ -564,6 +626,130 @@ ILNode_GenValue(ILNode_UserPostDec)
 }
 
 /*
+ * Generate value code for a pointer-based pre increment.
+ */
+ILNode_GenValue(ILNode_PreIncPtr)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	ILNode_GetAndPrepare(node->expr, info, 0, &data1, &data2);
+
+	/* Increment the value on the top of the stack */
+	if(node->size != IL_MAX_UINT32)
+	{
+		ILGenUIntNative(info, node->size);
+	}
+	else
+	{
+		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+						node->classInfo);
+		ILGenSimple(info, IL_OP_CONV_U);
+	}
+	ILGenSimple(info, IL_OP_ADD);
+	ILGenExtend(info, 1);
+
+	/* Store the value into the destination */
+	ILNode_Store(node->expr, info, 1, data1, data2);
+
+	/* Return the final type to the caller */
+	return ILMachineType_UnmanagedPtr;
+}
+
+/*
+ * Generate value code for a pointer-based post increment.
+ */
+ILNode_GenValue(ILNode_PostIncPtr)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	ILNode_GetAndPrepare(node->expr, info, 1, &data1, &data2);
+
+	/* Increment the value on the top of the stack */
+	if(node->size != IL_MAX_UINT32)
+	{
+		ILGenUIntNative(info, node->size);
+	}
+	else
+	{
+		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+						node->classInfo);
+		ILGenSimple(info, IL_OP_CONV_U);
+	}
+	ILGenSimple(info, IL_OP_ADD);
+	ILGenExtend(info, 1);
+
+	/* Store the value into the destination */
+	ILNode_Store(node->expr, info, 0, data1, data2);
+
+	/* Return the final type to the caller */
+	return ILMachineType_UnmanagedPtr;
+}
+
+/*
+ * Generate value code for a pointer-based pre decrement.
+ */
+ILNode_GenValue(ILNode_PreDecPtr)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	ILNode_GetAndPrepare(node->expr, info, 0, &data1, &data2);
+
+	/* Increment the value on the top of the stack */
+	if(node->size != IL_MAX_UINT32)
+	{
+		ILGenUIntNative(info, node->size);
+	}
+	else
+	{
+		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+						node->classInfo);
+		ILGenSimple(info, IL_OP_CONV_U);
+	}
+	ILGenSimple(info, IL_OP_SUB);
+	ILGenExtend(info, 1);
+
+	/* Store the value into the destination */
+	ILNode_Store(node->expr, info, 1, data1, data2);
+
+	/* Return the final type to the caller */
+	return ILMachineType_UnmanagedPtr;
+}
+
+/*
+ * Generate value code for a pointer-based post decrement.
+ */
+ILNode_GenValue(ILNode_PostDecPtr)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	ILNode_GetAndPrepare(node->expr, info, 1, &data1, &data2);
+
+	/* Increment the value on the top of the stack */
+	if(node->size != IL_MAX_UINT32)
+	{
+		ILGenUIntNative(info, node->size);
+	}
+	else
+	{
+		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+						node->classInfo);
+		ILGenSimple(info, IL_OP_CONV_U);
+	}
+	ILGenSimple(info, IL_OP_SUB);
+	ILGenExtend(info, 1);
+
+	/* Store the value into the destination */
+	ILNode_Store(node->expr, info, 0, data1, data2);
+
+	/* Return the final type to the caller */
+	return ILMachineType_UnmanagedPtr;
+}
+
+/*
  * Apply the increment operator to various types.
  */
 ILIncrement_ApplyOp(ILMachineType_Int8)
@@ -638,7 +824,8 @@ ILIncrement_ApplyOp(ILMachineType_NativeInt)
 	ILGenExtend(info, 1);
 }
 ILIncrement_ApplyOp(ILMachineType_UInt32),
-ILIncrement_ApplyOp(ILMachineType_NativeUInt)
+ILIncrement_ApplyOp(ILMachineType_NativeUInt),
+ILIncrement_ApplyOp(ILMachineType_UnmanagedPtr)
 {
 	ILGenSimple(info, IL_OP_LDC_I4_1);
 	if(info->overflowInsns)
@@ -703,7 +890,6 @@ ILIncrement_ApplyOp(ILMachineType_Void),
 ILIncrement_ApplyOp(ILMachineType_Boolean),
 ILIncrement_ApplyOp(ILMachineType_String),
 ILIncrement_ApplyOp(ILMachineType_ObjectRef),
-ILIncrement_ApplyOp(ILMachineType_UnmanagedPtr),
 ILIncrement_ApplyOp(ILMachineType_ManagedPtr),
 ILIncrement_ApplyOp(ILMachineType_TransientPtr),
 ILIncrement_ApplyOp(ILMachineType_ManagedValue)
@@ -786,7 +972,8 @@ ILDecrement_ApplyOp(ILMachineType_NativeInt)
 	ILGenExtend(info, 1);
 }
 ILDecrement_ApplyOp(ILMachineType_UInt32),
-ILDecrement_ApplyOp(ILMachineType_NativeUInt)
+ILDecrement_ApplyOp(ILMachineType_NativeUInt),
+ILDecrement_ApplyOp(ILMachineType_UnmanagedPtr)
 {
 	ILGenSimple(info, IL_OP_LDC_I4_1);
 	if(info->overflowInsns)
@@ -851,7 +1038,6 @@ ILDecrement_ApplyOp(ILMachineType_Void),
 ILDecrement_ApplyOp(ILMachineType_Boolean),
 ILDecrement_ApplyOp(ILMachineType_String),
 ILDecrement_ApplyOp(ILMachineType_ObjectRef),
-ILDecrement_ApplyOp(ILMachineType_UnmanagedPtr),
 ILDecrement_ApplyOp(ILMachineType_ManagedPtr),
 ILDecrement_ApplyOp(ILMachineType_TransientPtr),
 ILDecrement_ApplyOp(ILMachineType_ManagedValue)

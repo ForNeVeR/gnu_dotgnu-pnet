@@ -342,6 +342,15 @@ struct _tagILSwitchValue
 %node ILNode_UserPreDec ILNode_UserIncOrDec
 %node ILNode_UserPostInc ILNode_UserIncOrDec
 %node ILNode_UserPostDec ILNode_UserIncOrDec
+%node ILNode_IncOrDecPtr ILNode_UnaryExpression %abstract =
+{
+	ILUInt32	size;
+	ILClass    *classInfo;
+}
+%node ILNode_PreIncPtr ILNode_IncOrDecPtr
+%node ILNode_PreDecPtr ILNode_IncOrDecPtr
+%node ILNode_PostIncPtr ILNode_IncOrDecPtr
+%node ILNode_PostDecPtr ILNode_IncOrDecPtr
 
 %output "cg_relop.c"
 

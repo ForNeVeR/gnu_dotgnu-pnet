@@ -1458,6 +1458,7 @@ static void DumpCode(ILMethod *method, unsigned char *start, int len)
 {
 	char cmdline[BUFSIZ];
 	FILE *file = fopen("/tmp/unroll.s", "w");
+	unsigned char *ip = start;
 	if(!file)
 	{
 		return;
@@ -1470,8 +1471,8 @@ static void DumpCode(ILMethod *method, unsigned char *start, int len)
 	fflush(stdout);
 	while(len > 0)
 	{
-		fprintf(file, ".byte %d\n", (int)(*start));
-		++start;
+		fprintf(file, ".byte %d\n", (int)(*ip));
+		++ip;
 		--len;
 	}
 	fclose(file);

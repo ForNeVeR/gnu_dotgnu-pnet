@@ -1,4 +1,10 @@
 
+2003-10-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/unroll.c: fix the VMA when dumping unrolled code
+	with "objdump" (thanks to Miroslaw Dobrzanski-Neumann
+	<mne@mosaic-ag.com>).
+
 2003-10-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_internal.h,

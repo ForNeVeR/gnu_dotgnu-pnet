@@ -159,6 +159,11 @@ ILObject *_ILClrToObject(ILExecThread *thread, void *item, const char *name);
 void *_ILClrFromObject(ILExecThread *thread, ILObject *object);
 
 /*
+ * Throw a "NotSupportedException" from within the reflection code.
+ */
+void _ILClrNotSupported(ILExecThread *thread);
+
+/*
  * Look for a type, starting at a particular image.  If "assemblyImage"
  * is NULL, then use the name to determine the image to start at.
  */

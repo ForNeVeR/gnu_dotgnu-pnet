@@ -25,6 +25,8 @@
 extern	"C" {
 #endif
 
+#ifdef IL_CONFIG_REFLECTION
+
 /*
  * Determine if we have an attribute type match.
  */
@@ -434,6 +436,8 @@ ILBool _IL_ClrHelpers_CanAccess(ILExecThread *thread,
 		return 0;
 	}
 }
+
+#endif /* IL_CONFIG_REFLECTION */
 
 /*
  * Convert an image into an assembly object.
@@ -997,6 +1001,8 @@ void _IL_Assembly_GetEntryPoint(ILExecThread *thread,
 		*((void **)result) = 0;
 	}
 }
+
+#ifdef IL_CONFIG_REFLECTION
 
 /*
  * private static ParameterAttributes GetParamAttrs(IntPtr itemPrivate);
@@ -1653,6 +1659,8 @@ ILString *_IL_Module_GetFullName(ILExecThread *_thread, ILObject *_this)
 	/* TODO */
 	return 0;
 }
+
+#endif /* IL_CONFIG_REFLECTION */
 
 /*
  * private static int ResourceRead(IntPtr handle, long position,

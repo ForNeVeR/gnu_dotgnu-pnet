@@ -222,12 +222,14 @@ ILClass *_ILGetClrClass(ILExecThread *thread, ILObject *type)
 	}
 }
 
-#ifdef IL_CONFIG_REFLECTION
-
 /*
  * Hash table entry information for a reflection mapping.
  */
+#ifdef IL_CONFIG_REDUCE_DATA
+#define	IL_REFLECTION_HASH_SIZE		8
+#else
 #define	IL_REFLECTION_HASH_SIZE		512
+#endif
 typedef struct _tagILClrHash ILClrHash;
 struct _tagILClrHash
 {
@@ -591,6 +593,13 @@ ILObject *_ILGetTypeFromImage(ILExecThread *thread,
 	return _ILGetClrType(thread, classInfo);
 }
 
+void _ILClrNotSupported(ILExecThread *thread)
+{
+	/* Avoid re-entering the C# class library to create the exception */
+	ILExecThreadSetException
+		(thread, _ILSystemException(thread, "System.NotSupportedException"));
+}
+
 /*
  * private int GetClrArrayRank();
  */
@@ -612,8 +621,9 @@ ILInt32 _IL_ClrType_GetClrArrayRank(ILExecThread *thread, ILObject *_this)
  * protected override TypeAttributes GetAttributeFlagsImpl();
  */
 ILInt32 _IL_ClrType_GetAttributeFlagsImpl(ILExecThread *thread,
-											 ILObject *_this)
+										  ILObject *_this)
 {
+#ifdef IL_CONFIG_REFLECTION
 	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	if(classInfo)
 	{
@@ -623,6 +633,10 @@ ILInt32 _IL_ClrType_GetAttributeFlagsImpl(ILExecThread *thread,
 	{
 		return 0;
 	}
+#else
+	_ILClrNotSupported(thread);
+	return 0;
+#endif
 }
 
 /*
@@ -661,6 +675,8 @@ ILObject *_IL_ClrType_GetElementType(ILExecThread *thread, ILObject *_this)
 	return 0;
 }
 
+#ifdef IL_CONFIG_REFLECTION
+
 /*
  * Determine if we have an interface name match for "GetInterface".
  */
@@ -695,6 +711,8 @@ static ILClass *GetInterface(ILExecThread *thread, ILClass *classInfo,
 	return 0;
 }
 
+#endif /* IL_CONFIG_REFLECTION */
+
 /*
  * public override Type GetInterface(String name, bool ignoreCase);
  */
@@ -702,6 +720,7 @@ ILObject *_IL_ClrType_GetInterface(ILExecThread *thread,
 								   ILObject *_this, ILString *name,
 								   ILBool ignoreCase)
 {
+#ifdef IL_CONFIG_REFLECTION
 	ILClass *classInfo;
 
 	/* Bail out if "name" is NULL or the class is invalid in some way */
@@ -726,7 +745,13 @@ ILObject *_IL_ClrType_GetInterface(ILExecThread *thread,
 	{
 		return 0;
 	}
+#else
+	_ILClrNotSupported(thread);
+	return 0;
+#endif
 }
+
+#ifdef IL_CONFIG_REFLECTION
 
 /*
  * Get the maximum number of interfaces (including duplicates)
@@ -774,12 +799,15 @@ static ILInt32 FillWithInterfaces(ILExecThread *thread, ILClass *classInfo,
 	return posn;
 }
 
+#endif /* IL_CONFIG_REFLECTION */
+
 /*
  * public override Type[] GetInterfaces();
  */
 System_Array *_IL_ClrType_GetInterfaces(ILExecThread *thread,
 										ILObject *_this)
 {
+#ifdef IL_CONFIG_REFLECTION
 	ILClass *classInfo;
 	System_Array *array;
 	ILInt32 count;
@@ -812,6 +840,10 @@ System_Array *_IL_ClrType_GetInterfaces(ILExecThread *thread,
 	/* Shorten the array to its final length and return */
 	array->length = count;
 	return array;
+#else
+	_ILClrNotSupported(thread);
+	return 0;
+#endif
 }
 
 /*
@@ -835,6 +867,7 @@ System_Array *_IL_ClrType_GetInterfaces(ILExecThread *thread,
  */
 ILInt32 _IL_ClrType_GetClrTypeCategory(ILExecThread *thread, ILObject *_this)
 {
+#ifdef IL_CONFIG_REFLECTION
 	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILType *synType;
 	if(classInfo)
@@ -891,6 +924,10 @@ ILInt32 _IL_ClrType_GetClrTypeCategory(ILExecThread *thread, ILObject *_this)
 		}
 	}
 	return ClrTypeCategory_Class;
+#else
+	_ILClrNotSupported(thread);
+	return ClrTypeCategory_Class;
+#endif 
 }
 
 /*
@@ -987,6 +1024,7 @@ ILObject *_IL_ClrType_GetClrAssembly(ILExecThread *thread, ILObject *_this)
  */
 ILObject *_IL_ClrType_GetClrModule(ILExecThread *thread, ILObject *_this)
 {
+#ifdef IL_CONFIG_REFLECTION
 	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILImage *image = (classInfo ? ILClassToImage(classInfo) : 0);
 	void *item;
@@ -999,6 +1037,10 @@ ILObject *_IL_ClrType_GetClrModule(ILExecThread *thread, ILObject *_this)
 		}
 	}
 	return 0;
+#else
+	_ILClrNotSupported(thread);
+	return 0;
+#endif
 }
 
 /*
@@ -1304,6 +1346,7 @@ void _IL_ClrType_GetClrGUID(ILExecThread *thread,
 ILObject *_IL_ClrType_GetClrNestedDeclaringType
 					(ILExecThread *thread, ILObject *_this)
 {
+#ifdef IL_CONFIG_REFLECTION
 	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILClass *nestedParent = (classInfo ? ILClass_NestedParent(classInfo) : 0);
 	if(nestedParent)
@@ -1314,6 +1357,10 @@ ILObject *_IL_ClrType_GetClrNestedDeclaringType
 	{
 		return 0;
 	}
+#else
+	_ILClrNotSupported(thread);
+	return 0;
+#endif
 }
 
 /*
@@ -1321,7 +1368,12 @@ ILObject *_IL_ClrType_GetClrNestedDeclaringType
  */
 ILString *_IL_ClrType_GetClrName(ILExecThread *thread, ILObject *_this)
 {
+#ifdef IL_CONFIG_REFLECTION
 	return GetTypeName(thread, _this, 0);
+#else
+	_ILClrNotSupported(thread);
+	return 0;
+#endif
 }
 
 /*
@@ -1329,6 +1381,7 @@ ILString *_IL_ClrType_GetClrName(ILExecThread *thread, ILObject *_this)
  */
 ILString *_IL_ClrType_GetClrNamespace(ILExecThread *thread, ILObject *_this)
 {
+#ifdef IL_CONFIG_REFLECTION
 	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILClass *nestedParent;
 	ILType *synType;
@@ -1387,7 +1440,13 @@ ILString *_IL_ClrType_GetClrNamespace(ILExecThread *thread, ILObject *_this)
 	{
 		return 0;
 	}
+#else
+	_ILClrNotSupported(thread);
+	return 0;
+#endif
 }
+
+#ifdef IL_CONFIG_REFLECTION
 
 /*
  * Values for "System.Reflection.MemberTypes".
@@ -1782,6 +1841,8 @@ static int ParameterTypeMatch(ILExecThread *thread, ILImage *image,
 	return 1;
 }
 
+#endif /* IL_CONFIG_REFLECTION */
+
 /*
  * private MemberInfo GetMemberImpl(String name, MemberTypes memberTypes,
  *								    BindingFlags bindingAttrs,
@@ -1800,6 +1861,7 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 								    System_Array *types,
 								    System_Array *modifiers)
 {
+#ifdef IL_CONFIG_REFLECTION
 	ILClass *classInfo;
 	char *nameUtf8;
 	ILMember *member;
@@ -1983,6 +2045,10 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 	{
 		return 0;
 	}
+#else
+	_ILClrNotSupported(thread);
+	return 0;
+#endif
 }
 
 /*
@@ -1997,6 +2063,7 @@ ILObject *_IL_ClrType_GetMembersImpl(ILExecThread *thread,
 									 ILObject *arrayType,
 									 ILString *name)
 {
+#ifdef IL_CONFIG_REFLECTION
 	ILClass *classInfo;
 	char *nameUtf8;
 	ILMember *member;
@@ -2211,9 +2278,11 @@ ILObject *_IL_ClrType_GetMembersImpl(ILExecThread *thread,
 	/* Truncate the array to its actual length and return it */
 	array->length = numFound;
 	return (ILObject *)array;
+#else
+	_ILClrNotSupported(thread);
+	return 0;
+#endif
 }
-
-#endif /* IL_CONFIG_REFLECTION */
 
 /*
  * public static Type GetType(String name, bool throwOnError, bool ignoreCase);
@@ -2224,10 +2293,7 @@ ILObject *_IL_Type_GetType(ILExecThread *thread, ILString *name,
 #ifdef IL_CONFIG_REFLECTION
 	return _ILGetTypeFromImage(thread, 0, name, throwOnError, ignoreCase);
 #else
-	if(throwOnError)
-	{
-		ThrowTypeLoad(thread, name);
-	}
+	_ILClrNotSupported(thread);
 	return 0;
 #endif
 }

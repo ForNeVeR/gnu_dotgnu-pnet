@@ -43,7 +43,6 @@ extern	"C" {
 	#define _IL_SocketMethods_suppressed
 #endif
 #if !defined(IL_CONFIG_REFLECTION)
-	#define _IL_Assembly_suppressed
 	#define _IL_AssemblyBuilder_suppressed
 	#define _IL_ClrConstructor_suppressed
 	#define _IL_ClrField_suppressed
@@ -51,9 +50,6 @@ extern	"C" {
 	#define _IL_ClrMethod_suppressed
 	#define _IL_ClrParameter_suppressed
 	#define _IL_ClrProperty_suppressed
-	#define _IL_ClrResourceStream_suppressed
-	#define _IL_ClrType_suppressed
-	#define _IL_CodeTable_suppressed
 	#define _IL_FieldInfo_suppressed
 	#define _IL_MethodBase_suppressed
 	#define _IL_Module_suppressed

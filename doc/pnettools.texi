@@ -30,6 +30,7 @@ Copyright @copyright{} 2001 Southern Storm Software, Pty Ltd
 * Documentation::           XML documentation tools
 * Assembler::               Intermediate language assembler
 * Disassembler::            Intermediate language disassembler
+* Linker::                  Intermediate language assembly linker
 * Size::                    Intermediate language size utility
 * Native::                  Intermediate language native utility
 * Find::                    Intermediate language name find utility
@@ -65,6 +66,8 @@ The Intermediate Language (IL) assembler.  @xref{Assembler},
 for more information.
 @item ildasm
 The IL disassembler.  @xref{Disassembler}, for more information.
+@item ilalink
+The IL assembly linker.  @xref{Linker}, for more information.
 @item ilsize
 The IL size utility.  @xref{Size}, for more information.
 @item ilnative
@@ -1894,7 +1897,7 @@ development tools.  It is rarely useful to regular users or programmers.
 
 @c -----------------------------------------------------------------------
 
-@node ildasm invocation, Size, Disassembler, Disassembler
+@node ildasm invocation, Linker, Disassembler, Disassembler
 @section Invoking ildasm
 @cindex ildasm invocation
 
@@ -1977,7 +1980,210 @@ complete list of errors that may occur when loading an IL image file.
 
 @c -----------------------------------------------------------------------
 
-@node Size, ilsize invocation, ildasm invocation, Top
+@node Linker, ilalink invocation, ildasm invocation, Top
+@chapter Intermediate language assembly linker
+@cindex Linker
+@cindex ilalink
+
+Ilalink links a number of IL object files (@code{.obj}) together,
+resolves external references to IL libraries, and creates a final
+IL executable (@code{.exe}) or IL dynamic link library (@code{.dll}).
+
+@menu
+* ilalink invocation::      Invoking ilalink
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node ilalink invocation, Size, Linker, Linker
+@section Invoking ilalink
+@cindex ilalink invocation
+
+The general form of the ilalink syntax is as follows:
+
+@example
+ilalink [OPTIONS] INPUT ...
+@end example
+
+@table @code
+@cindex -o option (ilalink)
+@cindex --output option (ilalink)
+@item -o FILE
+@itemx --output FILE
+Specify the name of the file to write the linker output to.  The
+default is @code{a.out.exe}, @code{a.out.dll}, or @code{a.out.obj},
+depending on the value of the @code{--format} option.
+
+@cindex -j option (ilalink)
+@cindex --format obj option (ilalink)
+@item -j
+@itemx --format obj
+Write a @code{.obj} file as output, instead of an executable or dynamic
+link library.  This is normally not very useful.
+
+@cindex -e option (ilalink)
+@cindex --format exe option (ilalink)
+@item -e
+@itemx --format exe
+Write an executable file as output, instead of a @code{.obj} file or dynamic
+link library.  This is the default value.
+
+@cindex -d option (ilalink)
+@cindex --format dll option (ilalink)
+@item -d
+@itemx --format dll
+Write a dynamic link library file as output, instead of a @code{.obj} file or
+executable.
+
+@cindex -l option (ilalink)
+@cindex --library option (ilalink)
+@item -l NAME
+@itemx --library NAME
+Link against the library called @code{NAME}.  The linker will search all of
+the library directories for a file called @code{NAME.dll}.  If
+@code{--no-stdlib} is not specified, then the standard library
+@code{mscorlib} will be automatically added to the list of libraries.
+The name of the standard library can be changed using the
+@code{-fstdlib-name} option.
+
+@cindex -L option (ilalink)
+@cindex --library-dir option (ilalink)
+@item -L PATH
+@itemx --library-dir PATH
+Specify a directory to be searched for libraries.  The option @code{-L .}
+must be explicitly supplied to search the current directory.  If
+@code{--no-stdlib} is not specified, then a standard set of builtin paths
+will be added to the end of the list specified by the @code{-L} options.
+The set of builtin paths can be overridden by setting the
+@code{CSCC_LIB_PATH} environment variable to an appropriate value.
+
+@cindex -n option (ilalink)
+@cindex --no-stdlib option (ilalink)
+@item -n
+@itemx --no-stdlib
+Do not include the standard library or any of the builtin library directories.
+
+@cindex -S option (ilalink)
+@cindex -fstdlib-name option (ilalink)
+@item -S NAME
+@itemx -fstdlib-name=NAME
+Set the name of the standard library to @code{NAME}.
+The default is @code{mscorlib}.
+
+@cindex --shared option (ilalink)
+@item --shared
+Link the output as a shared image.  This is the default.
+
+@cindex --static option (ilalink)
+@item --static
+Link the output statically.  This option is not yet implemented.  It is
+provided for compatibility with other tools.
+
+@cindex -a option (ilalink)
+@cindex -fassembly-name option (ilalink)
+@item -a NAME
+@itemx -fassembly-name=NAME
+Set the name of the final assembly to @code{NAME}.  The default is
+the name of the output file without its directory path or extension.
+
+@cindex -A option (ilalink)
+@cindex -fassembly-version option (ilalink)
+@item -A NN:NN:NN:NN
+@itemx -fassembly-version NN:NN:NN:NN
+Set the final assembly version to @code{NN:NN:NN:NN}.  The default is
+@code{0:0:0:0}, unless a non-zero version is supplied by one of the
+input files.
+
+@cindex -M option (ilalink)
+@cindex -fmodule-name option (ilalink)
+@item -M NAME
+@itemx -fmodule-name=NAME
+Set the name of the final module to @code{NAME}.  The default is the name of
+the output file without its directory path.
+
+@cindex -E option (ilalink)
+@cindex --entry-point option (ilalink)
+@item -E NAME
+@itemx --entry-point NAME
+Specify the name of the program's entry point.  This should only be used
+if the output is an executable (@code{.exe}).  If this option is not present,
+the linker will attempt to deduce which method is the entry point by
+inspecting the names and signatures of methods within the input files.
+The name is either a class name, or a class name plus method name.
+The sequence @code{::} is used to separate the class and method names.
+Examples are @code{MyClass}, @code{MyNamespace.MyClass}, and
+@code{MyNamespace.MyClass::Main}.
+
+@cindex -r option (ilalink)
+@cindex -fresources option (ilalink)
+@item -r FILE
+@itemx -fresources=FILE
+Specify the name of a resource file to be linked with the output assembly.
+
+@cindex -R option (ilalink)
+@cindex --resources-only option (ilalink)
+@item -R
+@itemx --resources-only
+Create an output assembly that only contains resources.  This is useful
+for building satellite resource assemblies for foreign languages.
+
+@cindex -p option (ilalink)
+@cindex -fprivate-resources option (ilalink)
+@item -p
+@itemx -fprivate-resources
+Mark the resources as private to the output assembly.
+
+@cindex -H option (ilalink)
+@cindex -fhash-algorithm option (ilalink)
+@item -H ALG
+@itemx -fhash-algorithm=ALG
+Set the assembly hash algorithm to @code{ALG}, which must be either
+@code{SHA1} or @code{MD5}.  The default is @code{SHA1}.
+
+@cindex -3 option (ilalink)
+@cindex -m32bit-only option (ilalink)
+@item -3
+@itemx -m32bit-only
+Mark the final output assembly so that it can only be used on 32-bit
+systems.  Use of this option is severely discouraged.
+
+@cindex -c option (ilalink)
+@cindex -mcui-subsystem option (ilalink)
+@item -c
+@itemx -mcui-subsystem
+Link the final output assembly for the command-line subsystem
+on Windows.  This is the default.
+
+@cindex -G option (ilalink)
+@cindex -mgui-subsystem option (ilalink)
+Link the final output assembly for the GUI subsystem on Windows.
+
+@cindex --help option (ilalink)
+@item --help
+Print a usage message for the ilalink program.
+
+@cindex -v option (ilalink)
+@cindex --version option (ilalink)
+@item -v
+@itemx --version
+Print the version of the ilalink program.
+
+@item --
+Marks the end of the command-line options, and the beginning of
+the input filenames.  You may need to use this if your filename
+begins with @code{-}.  e.g. @code{ilalink -- -input.obj}.  This is
+not needed if the input is stdin: @code{ilalink -} is perfectly valid.
+@end table
+
+The @code{-f} and @code{-m} options can be specified on the cscc
+command-line, and will be passed to the linker automatically by the compiler.
+
+The exit status is 1 if an error occurred while processing the input.
+Otherwise the exit status is 0.
+
+@c -----------------------------------------------------------------------
+
+@node Size, ilsize invocation, ilalink invocation, Top
 @chapter Intermediate language size utility
 @cindex Size
 @cindex ilsize

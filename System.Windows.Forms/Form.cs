@@ -658,6 +658,8 @@ public class Form : ContainerControl
 						 cp.Height - ToolkitDrawSize.Height, this);
 				}
 				window.SetTitle(cp.Caption);
+				// Win32 requires this because if the window is maximized, the windows size needs to be set.
+				toolkitWindow = window;
 
 				// Adjust the window hints to match our requirements.
 				SetWindowFlags(window);

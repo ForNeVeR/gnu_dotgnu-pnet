@@ -79,6 +79,11 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitTopLevelWindow
 		//Console.WriteLine("DrawingWindow.Restore, "+sink);
 	}
 
+	public void WindowStateChanged(int state)
+	{
+		sink.ToolkitStateChanged(state);
+	}
+
 	// Set the owner for modal and modeless dialog support.
 	void IToolkitTopLevelWindow.SetDialogOwner(IToolkitTopLevelWindow owner)
 	{
@@ -325,7 +330,7 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitTopLevelWindow
 		//Console.WriteLine( "DrawingTopLevelWindow.CreateWindow, "+sink+", [" + dimensions.Size + "]" );
 	}
 
-	private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
+	void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
 	{
 		StaticSendBeginInvoke(hwnd,i_gch);
 	}

@@ -120,25 +120,25 @@ public class ContextMenu : Menu
 
 		// Figure out where we need to put the popup and its size.
 		Point pt = control.PointToScreen(new Point(0,0));
-                Rectangle rcWork = Screen.PrimaryScreen.WorkingArea;
+		Rectangle rcWork = Screen.PrimaryScreen.WorkingArea;
 		using (Graphics g = popupControl.CreateGraphics())
 		{
 			Size size = MeasureItemBounds(g);
 			size.Height -= 1;
 			//align it to control
-			if (pt.X < Screen.PrimaryScreen.WorkingArea.Left)
+			if (pt.X < rcWork.Left)
 			{
 				pt.X += size.Width;
 			}
-			if (pt.X > Screen.PrimaryScreen.WorkingArea.Right - size.Width)
+			if (pt.X > rcWork.Right - size.Width)
 			{
 				pt.X -= size.Width;
 			}
-			if (pt.Y < Screen.PrimaryScreen.WorkingArea.Top)
+			if (pt.Y < rcWork.Top)
 			{
 				pt.Y += size.Height;
 			}
-			if (pt.Y > Screen.PrimaryScreen.WorkingArea.Bottom - size.Height)
+			if (pt.Y > rcWork.Bottom - size.Height)
 			{
 				pt.Y -= size.Height;
 			}
@@ -194,8 +194,8 @@ public class ContextMenu : Menu
 			// If there were no sub items, then we need to "PerformClick".
 			if (menuItem.MenuItems.Count == 0)
 			{
-				menuItem.PerformClick();
 				PopDown();
+				menuItem.PerformClick();
 			}
 			else
 			{

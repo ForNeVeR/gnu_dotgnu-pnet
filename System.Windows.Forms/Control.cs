@@ -2598,8 +2598,8 @@ public class Control : IWin32Window, IDisposable
 				top = rect.Top;
 				bottom = rect.Bottom;
 
-				// Lay out the docked controls, from first to last.
-				for(posn = 0; posn < numChildren; posn++)
+				// Lay out the docked controls, from last to first.
+				for(posn = numChildren - 1; posn >= 0; posn--)
 				{
 					child = children[posn];
 					switch(child.Dock)
@@ -5176,7 +5176,8 @@ public class Control : IWin32Window, IDisposable
 					// Create the toolkit window for the first time.
 					// This will also map the toolkit window to the screen.
 					CreateControl();
-					PerformLayout();
+					// Force PerformLayout to be called on all the children in the heirarchy.
+					ForceLayout();
 				}
 
 				// Invoke the event handler.
@@ -5192,6 +5193,16 @@ public class Control : IWin32Window, IDisposable
 				for(posn = 0; posn < numChildren; ++posn)
 				{
 					children[posn].OnParentVisibleChanged(e);
+				}
+			}
+
+	// Make sure that the control lays itself out and all its children.
+	private void ForceLayout()
+			{
+				PerformLayout();
+				for(int posn = 0; posn < numChildren; posn++)
+				{
+					children[posn].ForceLayout();
 				}
 			}
 

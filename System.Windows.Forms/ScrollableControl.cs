@@ -186,6 +186,10 @@ public class ScrollableControl : Control
 			{
 				get
 				{
+					if (dockPadding == null)
+					{
+						dockPadding = new DockPaddingEdges(this);
+					}
 					return dockPadding;
 				}
 				set

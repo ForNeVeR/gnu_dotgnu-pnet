@@ -685,7 +685,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 			//TODO Pointers are not available yet
 			//Win32.Api.WINDOWPOS *pos = (Win32.Api.WINDOWPOS*)lParam;
 			Win32.Api.WINDOWPOS pos = (Win32.Api.WINDOWPOS)Marshal.PtrToStructure(new IntPtr(lParam), typeof(Win32.Api.WINDOWPOS));
-			if (suspendExternalMoveResizeNotify == true)
+			if (suspendExternalMoveResizeNotify)
 				return;
 			// If moving
 			if (((Win32.Api.SetWindowsPosFlags)pos.flags & Win32.Api.SetWindowsPosFlags.SWP_NOMOVE) == 0)
@@ -921,7 +921,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 		return false;
 	}
 
-	private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
+	void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
 	{
 		StaticSendBeginInvoke(hwnd,i_gch);
 	}

@@ -117,7 +117,7 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 		}
 	}
 
-	private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
+	void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
 	{
 		StaticSendBeginInvoke(hwnd,i_gch);
 	}

@@ -408,7 +408,7 @@ WindowText				= 26,*/
 	{
 		Win32.Api.RECT r;
 		Win32.Api.SystemParametersInfoA(Win32.Api.SystemParametersAction.SPI_GETWORKAREA, 0, out r, 0);
-		return new Rectangle(r.left,r.right,r.right-r.left,r.bottom-r.top);
+		return new Rectangle(r.left,r.top,r.right-r.left,r.bottom-r.top);
 	}
 
 	// Get the adjustment values for a top-level window, to convert
@@ -594,15 +594,15 @@ WindowText				= 26,*/
 			switch((Win32.Api.SystemCommand)wParam) 
 			{
 				case(Win32.Api.SystemCommand.SC_RESTORE):
-					//TODO
+					((DrawingTopLevelWindow)DrawingWindow(hwnd)).WindowStateChanged(0); // FormWindowState.Normal.
 					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
 					break;
 				case(Win32.Api.SystemCommand.SC_MAXIMIZE):
-					//TODO
+					((DrawingTopLevelWindow)DrawingWindow(hwnd)).WindowStateChanged(2); // FormWindowState.Maximized.
 					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
 					break;
 				case(Win32.Api.SystemCommand.SC_MINIMIZE):
-					//TODO
+					((DrawingTopLevelWindow)DrawingWindow(hwnd)).WindowStateChanged(1); // FormWindowState.Minimized.
 					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
 					break;
 				case(Win32.Api.SystemCommand.SC_CLOSE):

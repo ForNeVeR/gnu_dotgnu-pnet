@@ -1,4 +1,22 @@
 
+2004-06-16  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Windows.Forms/Control.cs: fix the docking order. Create the 
+	child control when made visible. (fixes bugs #9084, #9196)
+
+	* System.Windows.Forms/ContextMenu.cs: pop the menu down before 
+	performing the action.
+
+	* System.Windows.Forms/Form.cs: fix a maximize bug on window create that
+	applies to the win32 toolkit.
+
+	* System.Drawing.Win32/DrawingControlWindows.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs : GetWorkingArea typo. Implement
+	Restore Maximize and Minimize state change. csc compile fixes.
+	(Gopal)
+
 2004-06-16  Gopal V  <gopalv82@yahoo.com>
 
 	* System/Diagnostics/TraceListener.cs: Set NeedIndent properly instead

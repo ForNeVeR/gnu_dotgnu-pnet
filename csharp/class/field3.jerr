@@ -1,0 +1,4 @@
+./field3.cs:24: declaration conflicts with an existing member
+./field3.cs:27: declaration conflicts with an existing member
+./field3.cs:32: declaration conflicts with an existing member
+./field3.cs:37: declaration hides an inherited member, and `new' was not present

@@ -1,4 +1,10 @@
 
+2004-03-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* libc/unistd/unistd-glue.cs: add the "LibCFDOperations" interface,
+	which provides access to OS file descriptors and non-blocking mode;
+	wrap stdin, stdout, and stderr in a class that implements this.
+
 2004-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/inttypes.h, include/limits.h, include/stdint.h,

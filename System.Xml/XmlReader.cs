@@ -222,27 +222,100 @@ num == 0x0E46 || num == 0x0EC6 || num == 0x3005 ||
 				}
 		}
 	
-	[TODO]
-	public virtual String ReadElementString(String name) { return null; }
+	public virtual String ReadElementString(String name) 
+		{
+			XmlNodeType node = MoveToContent(); 
+			if (node == XmlNodeType.None)
+			{
+				// Not an Element
+				throw new XmlException();
+			}
+			// Test name
+			if (name == this.Name)	
+			{
+				// Read contents of the element
+				return this.ReadString();
+			}
+			else
+			{
+				// No node with Xml Name name
+				throw new XmlException();
+			}
+		}
 	
-	[TODO]
-	public virtual String ReadElementString() { return null; }
+	public virtual String ReadElementString()
+		{
+			XmlNodeType node = MoveToContent(); 
+			if (node == XmlNodeType.Element)
+			{
+				// Read contents of this element
+				return this.ReadString();	
+			}
+			else
+			{
+				throw new XmlException();
+			}
+		}
 	
-	[TODO]
-	public virtual void ReadEndElement() {}
+	public virtual void ReadEndElement()
+	{
+		XmlNodeType node = MoveToContent(); 
+		if (node != XmlNodeType.EndElement)	
+		{
+			throw new XmlException();
+		}	
+		else
+		{
+			// It's an EndElement node
+			Read();
+		}
+	}
 	
 	public abstract String ReadInnerXml();
 	
 	public abstract String ReadOuterXml();
 	
-	[TODO]
-	public virtual void ReadStartElement(String localname, String ns) {}
+	public virtual void ReadStartElement(String localname, String ns) 
+		{
+			if(IsStartElement(localname, ns))
+			{
+				// Move to the next node
+				Read();
+			}
+			else
+			{
+				// IsStartElement couldn't find start element
+				throw new XmlException();
+			}
+		}
 	
-	[TODO]
-	public virtual void ReadStartElement(String name) {}
-	
-	[TODO]
-	public virtual void ReadStartElement() {}
+	public virtual void ReadStartElement(String name) 
+		{
+			if(IsStartElement(name))
+			{
+				// Move to the next node
+				Read();
+			}
+			else
+			{
+				// IsStartElement couldn't find start element
+				throw new XmlException();
+			}
+		}
+
+	public virtual void ReadStartElement() 
+		{
+			if(IsStartElement())
+			{
+				// Move to the next node
+				Read();
+			}
+			else
+			{
+				// IsStartElement couldn't start element
+				throw new XmlException();
+			}
+		}
 	
 	public abstract String ReadString();
 	
@@ -267,13 +340,18 @@ num == 0x0E46 || num == 0x0EC6 || num == 0x3005 ||
 	
 	public abstract bool EOF { get; }
 	
-	[TODO]
 	public virtual bool HasAttributes 
 			{ 
 				get
 				{
-					// TODO
-					return false;
+					if (this.AttributeCount > 1)
+					{
+						return true;
+					}
+					else
+					{
+						return false;
+					} 
 				}
 			}
 	
@@ -314,4 +392,7 @@ num == 0x0E46 || num == 0x0EC6 || num == 0x3005 ||
 }; //class XmlReader
 
 }; //namespace System.Xml
+
+
+
 

@@ -24,698 +24,923 @@ namespace System.Runtime.Serialization.Formatters.Binary
 
 #if CONFIG_SERIALIZATION
 
+using System;
 using System.IO;
 using System.Reflection;
 using System.Collections;
 
-internal abstract class BinaryValueReader
+/*
+** unsupported features:
+**	- BinaryElementType.MethodCall: not needed by me :-)
+**	- BinaryElementType.MethodResponse: not needed by me :-)
+**  - user defined serialization headers
+**	- classes implementing the ISerializable interface
+**
+** unsupported array types:
+**  - BinaryArrayType.Jagged
+**  - BinaryArrayType.Multidimensional
+**  - BinaryArrayType.SingleWithLowerBounds
+**  - BinaryArrayType.JaggedWithLowerBounds
+**  - BinaryArrayType.MultidimensionalWithLowerBounds
+*/
+
+/*
+ * this class contains all context info for a single deserialization.
+ */
+internal class DeserializationContext 
 {
-	// Builtin writers.
-	private static BinaryValueReader booleanReader = new BooleanReader();
-	private static BinaryValueReader byteReader = new ByteReader();
-	private static BinaryValueReader sbyteReader = new SByteReader();
-	private static BinaryValueReader charReader = new CharReader();
-	private static BinaryValueReader int16Reader = new Int16Reader();
-	private static BinaryValueReader uint16Reader = new UInt16Reader();
-	private static BinaryValueReader int32Reader = new Int32Reader();
-	private static BinaryValueReader uint32Reader = new UInt32Reader();
-	private static BinaryValueReader int64Reader = new Int64Reader();
-	private static BinaryValueReader uint64Reader = new UInt64Reader();
-	private static BinaryValueReader singleReader = new SingleReader();
-	private static BinaryValueReader doubleReader = new DoubleReader();
-	private static BinaryValueReader decimalReader = new DecimalReader();
-	private static BinaryValueReader dateTimeReader = new DateTimeReader();
-	private static BinaryValueReader timeSpanReader = new TimeSpanReader();
-	private static BinaryValueReader stringReader = new StringReader();
-	private static BinaryValueReader objectReader = new ObjectReader();
-	private static BinaryValueReader infoReader = new SurrogateReader(null);
-#if false
-	// TODO
-	private static BinaryValueReader arrayOfObjectReader
-			= new ArrayReader(BinaryPrimitiveTypeCode.ArrayOfObject);
-	private static BinaryValueReader arrayOfStringReader
-			= new ArrayReader(BinaryPrimitiveTypeCode.ArrayOfString);
-#endif
+	// the manager used for unresolved references
+	private ObjectManager mObjManager;
+	// the reader supplying the data
+	private BinaryReader mReader;
+	// meta-info for already deserialized types is stored here
+	private Hashtable mTypeStore;
+	// meta-info for already loaded assemblies is stored here
+	private Hashtable mAssemblyStore;
+	// the calling BinaryFormatter (not used for now)
+	private BinaryFormatter mFormatter;
+	// info if there are user defined headers (not used for now as headers are not supported for now)
+	private bool mIsHeaderPresent;
+	// major and minor version used for serialization
+	private uint mMajorVersion, mMinorVersion;
 
-	// Context information for reading binary values.
-	public class BinaryValueContext
+	public DeserializationContext(BinaryFormatter formatter,
+		BinaryReader reader)
 	{
-		public BinaryFormatter formatter;
-		public BinaryReader reader;
-		public ObjectManager mgr;
+		mFormatter = formatter;
+		mReader = reader;
+		mTypeStore = new Hashtable();
+		mAssemblyStore = new Hashtable();
+		mObjManager = new ObjectManager(formatter.SurrogateSelector, formatter.Context);
+	}
 
-		// Constructor.
-		public BinaryValueContext(BinaryFormatter formatter,
-								  BinaryReader reader)
-				{
-					this.formatter = formatter;
-					this.reader = reader;
-					this.mgr = new ObjectManager(formatter.SurrogateSelector,
-												 formatter.Context);
-				}
+	public void SetAssembly(uint id, Assembly val) 
+	{
+		mAssemblyStore[id] = val;
+	}
 
-	}; // class BinaryValueContext
+	public Assembly GetAssembly(uint id) 
+	{
+		if(!mAssemblyStore.ContainsKey(id)) 
+		{
+			throw new SerializationException("unknown assembly id:"+id);
+		} 
+		else 
+		{
+			return (Assembly) mAssemblyStore[id];
+		}
+	}
 
-	// Constructor.
-	protected BinaryValueReader() {}
+	public void SetTypeInfo(uint id, TypeInfo val) 
+	{
+		mTypeStore[id] = val;
+	}
 
-	// Read the inline form of values for a type.
-	public abstract Object ReadInline(BinaryValueContext context,
-									  Type type, Type fieldType);
+	public TypeInfo GetTypeInfo(uint id) 
+	{
+		if(!mTypeStore.ContainsKey(id)) 
+		{
+			throw new SerializationException("unknown typeinfo id:"+id);
+		} 
+		else 
+		{
+			return (TypeInfo) mTypeStore[id];
+		}
+	}
 
-	// Read the object form of values for a type.
-	public abstract Object ReadObject(BinaryValueContext context, Type type);
+	public ObjectManager manager 
+	{
+		get { return mObjManager; }
+	}
 
-	// Normalize field names for cross-CLR differences.
-	public virtual String NormalizeFieldName(String name)
+	public BinaryReader reader
+	{
+		get { return mReader; }
+	}
+
+	public bool isHeaderPresent
+	{
+		get { return mIsHeaderPresent; }
+		set { mIsHeaderPresent = value; }
+	}
+
+	public uint MajorVersion
+	{
+		get { return mMajorVersion; }
+		set { mMajorVersion = value; }
+	}
+
+	public uint MinorVersion
+	{
+		get { return mMinorVersion; }
+		set { mMinorVersion = value; }
+	}
+}
+
+/*
+ * stores information about the type of a field.
+ */
+internal class TypeSpecification 
+{
+	private BinaryTypeTag mTag;
+	private BinaryPrimitiveTypeCode mPrimitiveType;
+	private String mClassName;
+	private uint mAssembly;
+
+	public TypeSpecification(BinaryPrimitiveTypeCode primitive) 
+	{
+		mPrimitiveType = primitive;
+		mTag = BinaryTypeTag.PrimitiveType;
+	}
+	public TypeSpecification(String name, uint ass) 
+	{
+		mClassName = name;
+		mAssembly = ass;
+		mTag = BinaryTypeTag.GenericType;
+	}
+	public TypeSpecification(String name) 
+	{
+		mClassName = name;
+		mTag = BinaryTypeTag.RuntimeType;
+	}
+
+	public BinaryPrimitiveTypeCode GetPrimitiveType() 
+	{
+		if(mTag != BinaryTypeTag.PrimitiveType) 
+		{
+			throw new SerializationException("illegal usage if type-spec");
+		}
+		else 
+		{
+			return mPrimitiveType;
+		}
+	}
+
+	public Type GetObjectType(DeserializationContext context) 
+	{
+		if(mTag == BinaryTypeTag.PrimitiveType) 
+		{
+			return BinaryValueReader.GetPrimitiveType(mPrimitiveType);
+		}
+		else if(mTag == BinaryTypeTag.RuntimeType) 
+		{
+			return Type.GetType(mClassName, true);
+		} 
+		else 
+		{
+			Assembly assembly = context.GetAssembly(mAssembly);
+			return assembly.GetType(mClassName, true);
+		}
+	}
+}
+
+/*
+ * stores info about an already deserialized Type
+ */
+internal class TypeInfo 
+{
+	private String[] mFieldNames;
+	private BinaryTypeTag[] mTypeTag;
+	private TypeSpecification[] mTypeSpec;
+	private Type mObjectType;
+	private MemberInfo[] mMembers;
+
+	public TypeInfo(String name, String[] fieldNames, BinaryTypeTag[] tt, TypeSpecification[] ts, Assembly assembly) 
+	{
+		mFieldNames = fieldNames;
+		mTypeTag = tt;
+		mTypeSpec = ts;
+
+		// lookup our type in the right assembly
+		if(assembly == null) 
+		{
+			mObjectType = Type.GetType(name, true);
+		} 
+		else 
+		{
+			mObjectType = assembly.GetType(name, true);
+		}
+
+		// ms and mono have their values for boxed primitive types called 'm_value', we need a fix for that
+		if(mObjectType.IsPrimitive && (mFieldNames[0] == "m_value")) {
+			mFieldNames[0] = "value_";
+		}
+
+		// lookup all members once
+		mMembers = new MemberInfo[NumMembers];
+		for(int i = 0; i < NumMembers; i++) 
+		{
+			Type memberType;
+			String memberName;
+			int classSeparator = mFieldNames[i].IndexOf('+');
+			if(classSeparator != -1) 
 			{
-				return name;
+				/*
+				** TODO: check if there are constraints in which assembly the Type may be looked up!
+				** for now just look it up generally
+				*/
+				String baseName = mFieldNames[i].Substring(0, classSeparator);
+				memberName = mFieldNames[i].Substring(classSeparator+1, mFieldNames[i].Length-classSeparator-1);
+				memberType = mObjectType.BaseType;
+
+				// MS does NOT store the FullQualifiedTypename if there is no collision
+				// but only the Typename :-(
+				while(!memberType.FullName.EndsWith(baseName)) 
+				{
+					// check if we reached System.Object
+					if(memberType == memberType.BaseType) 
+					{
+						throw new SerializationException("Can't find member "+mFieldNames[i]);
+					}
+					memberType = memberType.BaseType;
+				}
+			} 
+			else 
+			{
+				memberType = mObjectType;
+				memberName = mFieldNames[i];
 			}
 
-	// Determine if a type is visible outside its defining assembly.
-	private static bool IsVisibleOutside(Type type)
+			// get member from object
+			MemberInfo[] members = memberType.GetMember(memberName, MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			if((members == null) || (members.Length < 1)) 
 			{
-				switch(type.Attributes & TypeAttributes.VisibilityMask)
-				{
-					case TypeAttributes.Public:
-						return true;
-
-					case TypeAttributes.NestedPublic:
-					case TypeAttributes.NestedFamily:
-					case TypeAttributes.NestedFamORAssem:
-						return IsVisibleOutside(type.DeclaringType);
-
-					default:	return false;
-				}
+				throw new SerializationException("Can't find member "+mFieldNames[i]);
+			} 
+			else 
+			{
+				mMembers[i] = members[0];
 			}
+		}
+	}
 
-	// Map a runtime type name to the actual type.  Returns null if
-	// the type name does not correspond to a public serializable type.
-	public static Type GetRuntimeType(String name)
+	public BinaryTypeTag GetTypeTag(uint index) 
+	{
+		return mTypeTag[index];
+	}
+
+	public TypeSpecification GetTypeSpecification(uint index) 
+	{
+		return mTypeSpec[index];
+	}
+
+	public MemberInfo GetMember(uint index) 
+	{
+		return mMembers[index];
+	}
+
+	public Type ObjectType 
+	{
+		get {return mObjectType; }
+	}
+
+	public int NumMembers 
+	{
+		get { return mTypeTag.Length; }
+	}
+}
+
+/*
+ * internal class that is passed arround to indicate that not a
+ * 'real' object was read, but only a reference to one.
+ */
+internal class DelayedReferenceHolder 
+{
+	private uint mReferenceId;
+
+	public DelayedReferenceHolder(uint refId) 
+	{
+		mReferenceId = refId;
+	}
+
+	public uint ReferenceId 
+	{
+		get { return mReferenceId; }
+	}
+}
+
+/*
+** internal class that is passed arround to indicate that not a
+** 'real' object was read, but a value indicating that an array
+** should be filled with NULL values.
+*/
+internal class ArrayNullValueHolder 
+{
+	private uint mNumNullValues;
+
+	public ArrayNullValueHolder(uint num) 
+	{
+		mNumNullValues = num;
+	}
+
+	public uint NumNullValues 
+	{
+		get { return mNumNullValues; }
+	}
+}
+
+/*
+ * mother of all reading classes
+ */
+abstract class BinaryValueReader 
+{
+	private static BinaryValueReader sHeaderReader = new HeaderReader();
+	private static BinaryValueReader sEndReader = new EndReader();
+	private static BinaryValueReader sStringReader = new StringReader();
+	private static BinaryValueReader sNullReader = new NullReader();
+	private static BinaryValueReader sPrimitiveArrayReader = new PrimitiveArrayReader();
+	private static BinaryValueReader sStringArrayReader = new StringArrayReader();
+	private static BinaryValueReader sObjectArrayReader = new ObjectArrayReader();
+	private static BinaryValueReader sAssemblyReader = new AssemblyReader();
+	private static BinaryValueReader sExternalObjectReader = new ExternalObjectReader();
+	private static BinaryValueReader sRuntimeObjectReader = new RuntimeObjectReader();
+	private static BinaryValueReader sRefObjectReader = new RefObjectReader();
+	private static BinaryValueReader sObjectReferenceReader = new ObjectReferenceReader();
+	private static BinaryValueReader sGenericArrayReader = new GenericArrayReader();
+	private static BinaryValueReader sArrayFiller8bReader = new ArrayFiller8bReader();
+	private static BinaryValueReader sArrayFiller32bReader = new ArrayFiller32bReader();
+	private static BinaryValueReader sBoxedPrimitiveTypeValue = new BoxedPrimitiveTypeValue();
+
+	public static BinaryValueReader GetReader(BinaryElementType type) 
+	{
+		switch(type) 
+		{
+			case BinaryElementType.Header:
+				return sHeaderReader;
+			case BinaryElementType.RefTypeObject:
+				return sRefObjectReader;
+			case BinaryElementType.RuntimeObject:
+				return sRuntimeObjectReader;
+			case BinaryElementType.ExternalObject:
+				return sExternalObjectReader;
+			case BinaryElementType.String:
+				return sStringReader;
+			case BinaryElementType.GenericArray:
+				return sGenericArrayReader;
+			case BinaryElementType.BoxedPrimitiveTypeValue:
+				return sBoxedPrimitiveTypeValue;
+			case BinaryElementType.ObjectReference:
+				return sObjectReferenceReader;
+			case BinaryElementType.NullValue:
+				return sNullReader;
+			case BinaryElementType.End:
+				return sEndReader;
+			case BinaryElementType.Assembly:
+				return sAssemblyReader;
+			case BinaryElementType.ArrayFiller8b:
+				return sArrayFiller8bReader;
+			case BinaryElementType.ArrayFiller32b:
+				return sArrayFiller32bReader;
+			case BinaryElementType.ArrayOfPrimitiveType:
+				return sPrimitiveArrayReader;
+			case BinaryElementType.ArrayOfObject:
+				return sObjectArrayReader;
+			case BinaryElementType.ArrayOfString:
+				return sStringArrayReader;
+			case BinaryElementType.MethodCall:
+				throw new SerializationException("NYI element type:"+type);
+			case BinaryElementType.MethodResponse:
+				throw new SerializationException("NYI element type:"+type);
+
+			default:
+				throw new SerializationException("NYI element type:"+type);
+		}
+	}
+
+	public static object ReadPrimitiveType(DeserializationContext context, BinaryPrimitiveTypeCode typeCode) 
+	{
+		switch(typeCode) 
+		{
+			case BinaryPrimitiveTypeCode.Boolean:
+				return context.reader.ReadBoolean();
+			case BinaryPrimitiveTypeCode.Byte:
+				return context.reader.ReadByte();
+			case BinaryPrimitiveTypeCode.Char:
+				return context.reader.ReadChar();
+			case BinaryPrimitiveTypeCode.Decimal:
+				return Decimal.Parse(context.reader.ReadString());
+			case BinaryPrimitiveTypeCode.Double:
+				return context.reader.ReadDouble();
+			case BinaryPrimitiveTypeCode.Int16:
+				return context.reader.ReadInt16();
+			case BinaryPrimitiveTypeCode.Int32:
+				return context.reader.ReadInt32();
+			case BinaryPrimitiveTypeCode.Int64:
+				return context.reader.ReadInt64();
+			case BinaryPrimitiveTypeCode.SByte:
+				return context.reader.ReadSByte();
+			case BinaryPrimitiveTypeCode.Single:
+				return context.reader.ReadSingle();
+			case BinaryPrimitiveTypeCode.TimeSpan:
+				return new TimeSpan(context.reader.ReadInt64());
+			case BinaryPrimitiveTypeCode.DateTime:
+				return new DateTime(context.reader.ReadInt64());
+			case BinaryPrimitiveTypeCode.UInt16:
+				return context.reader.ReadUInt16();
+			case BinaryPrimitiveTypeCode.UInt32:
+				return context.reader.ReadUInt32();
+			case BinaryPrimitiveTypeCode.UInt64:
+				return context.reader.ReadUInt64();
+			case BinaryPrimitiveTypeCode.String:
+				return context.reader.ReadString();
+
+			default:
+				throw new SerializationException("unknown primitive type code:"+typeCode);
+		}
+	}
+		
+	public static Type GetPrimitiveType(BinaryPrimitiveTypeCode typeCode) 
+	{
+		switch(typeCode) 
+		{
+			case BinaryPrimitiveTypeCode.Boolean:
+				return typeof(bool);
+			case BinaryPrimitiveTypeCode.Byte:
+				return typeof(byte);
+			case BinaryPrimitiveTypeCode.Char:
+				return typeof(char);
+			case BinaryPrimitiveTypeCode.Decimal:
+				return typeof(decimal);
+			case BinaryPrimitiveTypeCode.Double:
+				return typeof(double);
+			case BinaryPrimitiveTypeCode.Int16:
+				return typeof(Int16);
+			case BinaryPrimitiveTypeCode.Int32:
+				return typeof(Int32);
+			case BinaryPrimitiveTypeCode.Int64:
+				return typeof(Int64);
+			case BinaryPrimitiveTypeCode.SByte:
+				return typeof(sbyte);
+			case BinaryPrimitiveTypeCode.Single:
+				return typeof(Single);
+			case BinaryPrimitiveTypeCode.TimeSpan:
+				return typeof(TimeSpan);
+			case BinaryPrimitiveTypeCode.DateTime:
+				return typeof(DateTime);
+			case BinaryPrimitiveTypeCode.UInt16:
+				return typeof(UInt16);
+			case BinaryPrimitiveTypeCode.UInt32:
+				return typeof(UInt32);
+			case BinaryPrimitiveTypeCode.UInt64:
+				return typeof(UInt64);
+			case BinaryPrimitiveTypeCode.String:
+				return typeof(String);
+
+			default:
+				throw new SerializationException("unknown primitive type code:"+typeCode);
+		}
+	}
+
+	public static object Deserialize(DeserializationContext context) 
+	{
+		bool keepGoing = true;
+		object tree = null;
+
+		// TODO: find better solution for finding the root of the object tree
+		do 
+		{
+			Object other;
+			keepGoing = ReadValue(context, out other);
+			if(tree == null && other != null) 
 			{
-				// Validate the type name to make sure that it doesn't
-				// contain any characters that would be illegal in the
-				// name of a runtime type.
-				if(name == null || name == String.Empty)
-				{
-					return null;
-				}
-				foreach(char ch in name)
-				{
-					if(ch >= 'A' && ch <= 'Z')
-					{
-						continue;
-					}
-					if(ch >= 'a' && ch <= 'z')
-					{
-						continue;
-					}
-					if(ch >= '0' && ch <= '9')
-					{
-						continue;
-					}
-					if(ch == '_' || ch == '.' || ch == '+')
-					{
-						continue;
-					}
-					return null;
-				}
+				tree = other;
+			}
+		} while(keepGoing);
 
-				// Look up the type within the runtime library.
-				Type type = Assembly.GetExecutingAssembly().GetType(name);
-				if(type == null)
-				{
-					return null;
-				}
+		return tree;
+	}
 
-				// Make sure that the type is public and serializable.
-				if(!IsVisibleOutside(type))
-				{
-					return null;
-				}
-				if(type.IsSerializable)
-				{
-					return type;
-				}
-				if(typeof(ISerializable).IsAssignableFrom(type))
-				{
-					return type;
-				}
+	public static bool ReadValue(DeserializationContext context, out object outVal) 
+	{
+		BinaryElementType element = (BinaryElementType) context.reader.ReadByte();
+		BinaryValueReader reader = GetReader(element);
+		return reader.Read(context, out outVal);
+	}
+
+	public static TypeSpecification ReadTypeSpec(DeserializationContext context, BinaryTypeTag typeTag) 
+	{
+		switch(typeTag) 
+		{
+			case BinaryTypeTag.PrimitiveType:
+			case BinaryTypeTag.ArrayOfPrimitiveType:
+				return new TypeSpecification((BinaryPrimitiveTypeCode) context.reader.ReadByte());
+
+			case BinaryTypeTag.RuntimeType:
+				return new TypeSpecification(context.reader.ReadString());
+
+			case BinaryTypeTag.GenericType:
+				String typeName = context.reader.ReadString();
+				uint assId = context.reader.ReadUInt32();
+				return new TypeSpecification(typeName, assId);
+
+			default:
 				return null;
-			}
+		}
+	}
 
-	// Get the value reader for a particular type.
-	public static BinaryValueReader GetReader
-				(BinaryValueContext context, Type type)
+	public abstract bool Read(DeserializationContext context, out object outVal);
+}
+
+class NullReader : BinaryValueReader
+{
+	public override bool Read(DeserializationContext context, out object outVal)
+	{
+		outVal = null;
+		return true;
+	}
+}
+
+class EndReader : BinaryValueReader
+{
+	public override bool Read(DeserializationContext context, out object outVal)
+	{
+		context.manager.DoFixups();
+		outVal = null;
+		return false;
+	}
+}
+
+class HeaderReader : BinaryValueReader
+{
+	public override bool Read(DeserializationContext context, out object outVal)
+	{
+		uint id = context.reader.ReadUInt32();
+		
+		// check if there is a serialization header
+		int hasHeader = context.reader.ReadInt32();
+		if(hasHeader == 2) 
+		{
+			context.isHeaderPresent = true;
+		} 
+		else if(hasHeader == -1) 
+		{
+			context.isHeaderPresent = false;
+		}
+		else
+		{
+			throw new SerializationException("unknown header specification:"+hasHeader);
+		}
+
+		// read major/minor version
+		context.MajorVersion = context.reader.ReadUInt32();
+		context.MinorVersion = context.reader.ReadUInt32();
+
+		outVal = null;
+		return true;
+	}
+}
+
+class StringReader : BinaryValueReader
+{
+	public override bool Read(DeserializationContext context, out object outVal)
+	{
+		uint id = context.reader.ReadUInt32();
+		String str = context.reader.ReadString();
+
+		context.manager.RegisterObject(str, id);
+		outVal = str;
+		return true;
+	}
+}
+
+abstract class ArrayReader : BinaryValueReader
+{
+	public bool Read(DeserializationContext context, uint id, uint count, Object type, out Object outVal)
+	{
+		bool ret = true;
+
+		Type convertedType;
+		Array array;
+
+		if(type is BinaryPrimitiveTypeCode) 
+		{
+			// this is a primitive array
+			convertedType = GetPrimitiveType((BinaryPrimitiveTypeCode) type);
+			array = Array.CreateInstance(convertedType, (int) count);
+			for(uint i = 0; i < count; i++) 
 			{
-				BinaryPrimitiveTypeCode code;
-
-				// Handle the primitive types first.
-				code = BinaryValueWriter.GetPrimitiveTypeCode(type);
-				switch(code)
+				object val;
+				val = ReadPrimitiveType(context, (BinaryPrimitiveTypeCode) type);
+				array.SetValue(val, i);
+			}
+		}
+		else if(type is Type)
+		{
+			// this is an object array
+			convertedType = (Type) type;
+			array = Array.CreateInstance(convertedType, (int) count);
+			for(int i = 0; i < count; i++) 
+			{
+				object val;
+				ret &= ReadValue(context, out val);
+					
+				if(val is DelayedReferenceHolder) 
 				{
-					case BinaryPrimitiveTypeCode.Boolean:
-						return booleanReader;
-					case BinaryPrimitiveTypeCode.Byte:
-						return byteReader;
-					case BinaryPrimitiveTypeCode.Char:
-						return charReader;
-					case BinaryPrimitiveTypeCode.Decimal:
-						return decimalReader;
-					case BinaryPrimitiveTypeCode.Double:
-						return doubleReader;
-					case BinaryPrimitiveTypeCode.Int16:
-						return int16Reader;
-					case BinaryPrimitiveTypeCode.Int32:
-						return int32Reader;
-					case BinaryPrimitiveTypeCode.Int64:
-						return int64Reader;
-					case BinaryPrimitiveTypeCode.SByte:
-						return sbyteReader;
-					case BinaryPrimitiveTypeCode.Single:
-						return singleReader;
-					case BinaryPrimitiveTypeCode.TimeSpan:
-						return timeSpanReader;
-					case BinaryPrimitiveTypeCode.DateTime:
-						return dateTimeReader;
-					case BinaryPrimitiveTypeCode.UInt16:
-						return uint16Reader;
-					case BinaryPrimitiveTypeCode.UInt32:
-						return uint32Reader;
-					case BinaryPrimitiveTypeCode.UInt64:
-						return uint64Reader;
-					case BinaryPrimitiveTypeCode.String:
-						return stringReader;
-				}
-
-				// Handle special types that we recognize.
-				if(type == typeof(Object))
+					// record this index for fixup
+					DelayedReferenceHolder holder = (DelayedReferenceHolder) val;
+					context.manager.RecordArrayElementFixup(id, i, holder.ReferenceId);
+				} 
+				else if(val is ArrayNullValueHolder) 
 				{
-					return objectReader;
-				}
-#if false
-// TODO
-				if(type == typeof(Object[]))
-				{
-					return arrayOfObjectReader;
-				}
-				if(type == typeof(String[]))
-				{
-					return arrayOfStringReader;
-				}
-				if(type.IsArray && type.GetArrayRank() == 1)
-				{
-					code = GetPrimitiveTypeCode(type.GetElementType());
-					if(code != (BinaryPrimitiveTypeCode)0)
+					ArrayNullValueHolder holder = (ArrayNullValueHolder) val;
+					for(int j = 0; j < holder.NumNullValues; j++) 
 					{
-						return new ArrayReader
-							(BinaryTypeTag.ArrayOfPrimitiveType, code);
+						array.SetValue(null, i);
+						i++;
 					}
 				}
-#endif
-
-				// Check for surrogates.
-				ISurrogateSelector selector;
-				ISerializationSurrogate surrogate;
-				selector = context.formatter.SurrogateSelector;
-				if(selector != null)
+				else 
 				{
-					surrogate = selector.GetSurrogate
-						(type, context.formatter.Context, out selector);
-					if(surrogate != null)
-					{
-						return new SurrogateReader(surrogate);
-					}
+					// set this value
+					array.SetValue(val, i);
 				}
+			}
+		} 
+		else 
+		{
+			throw new SerializationException("illegal call with:"+type);
+		}
+			
+		context.manager.RegisterObject(array, id);
+		outVal = array;
 
-				// Check for types that implement ISerializable.
-				if(typeof(ISerializable).IsAssignableFrom(type))
-				{
-					return infoReader;
-				}
+		return ret;
+	}
+}
 
-				// Bail out if the type is not marked with the
-				// "serializable" flag.
-				if(!type.IsSerializable)
-				{
-					throw new SerializationException
-						(String.Format
-							(_("Serialize_CannotSerialize"), type));
-				}
+class StringArrayReader : ArrayReader 
+{
+	public override bool Read(DeserializationContext context, out object outVal) 
+	{
+		uint id = context.reader.ReadUInt32();
+		uint count = context.reader.ReadUInt32();
 
-				// Everything else is handled as an object.
-				return objectReader;
+		return Read(context, id, count, typeof(String), out outVal);
+	}
+}
+
+class ObjectArrayReader : ArrayReader 
+{
+	public override bool Read(DeserializationContext context, out object outVal) 
+	{
+		uint id = context.reader.ReadUInt32();
+		uint count = context.reader.ReadUInt32();
+
+		return Read(context, id, count, typeof(Object), out outVal);
+	}
+}
+
+class PrimitiveArrayReader : ArrayReader 
+{
+	public override bool Read(DeserializationContext context, out object outVal) 
+	{
+		uint id = context.reader.ReadUInt32();
+		uint count = context.reader.ReadUInt32();
+
+		BinaryPrimitiveTypeCode typeCode = (BinaryPrimitiveTypeCode) context.reader.ReadByte();
+		return Read(context, id, count, typeCode, out outVal);
+	}
+}
+
+class GenericArrayReader : ArrayReader
+{
+	public override bool Read(DeserializationContext context, out object outVal)
+	{
+		uint id = context.reader.ReadUInt32();
+		uint arrayType = context.reader.ReadByte();
+		uint dimensions = context.reader.ReadUInt32();
+
+		uint[] dimSizes = new uint[dimensions];
+		for(int i = 0; i < dimensions; i++) 
+		{
+			dimSizes[i] = context.reader.ReadUInt32();
+		}
+
+		// TODO: up to now we only support single dimension arrays
+		if(dimensions > 1 || ((BinaryArrayType) arrayType != BinaryArrayType.Single)) 
+		{
+			throw new SerializationException("array dimmensions > 1 || jagged arrays NYI!");
+		}
+			
+		BinaryTypeTag typeTag = (BinaryTypeTag) context.reader.ReadByte();
+		TypeSpecification typeSpec = ReadTypeSpec(context, typeTag);
+
+		if(typeTag == BinaryTypeTag.PrimitiveType) 
+		{
+			return Read(context, id, dimSizes[0], typeSpec.GetPrimitiveType(), out outVal);
+		} 
+		else 
+		{
+			return Read(context, id, dimSizes[0], typeSpec.GetObjectType(context), out outVal);
+		}
+	}
+}
+
+class AssemblyReader : BinaryValueReader
+{
+	public override bool Read(DeserializationContext context, out object outVal)
+	{
+		uint id = context.reader.ReadUInt32();
+		String name = context.reader.ReadString();
+
+		// load specified assembly
+		Assembly assembly = Assembly.Load(name);
+		context.SetAssembly(id, assembly);
+
+		/*
+		** registering an assembly leads to instanciating at fixup which will not work
+		** context.mObjManager.RegisterObject(assembly, id);
+		**
+		** returning the assembly would break the (much to simple!) alg. in Deserialize()
+		** which chooses the first object
+		** outVal = assembly;
+		*/
+		outVal = null;
+		return true;
+	}
+}
+
+abstract class ObjectReader : BinaryValueReader
+{
+	public bool Read(DeserializationContext context, out object outVal, uint id, TypeInfo typeInfo) 
+	{
+		bool ret = true;
+
+		// create instance
+		Object obj = FormatterServices.GetUninitializedObject(typeInfo.ObjectType);
+
+		// read and set values
+		for(uint i = 0; i < typeInfo.NumMembers; i++) 
+		{
+			// first get inlined data
+			Object memberValue;
+			if(typeInfo.GetTypeTag(i) == BinaryTypeTag.PrimitiveType) 
+			{
+				memberValue = ReadPrimitiveType(context, typeInfo.GetTypeSpecification(i).GetPrimitiveType());
+			} 
+			else 
+			{
+				ret &= ReadValue(context, out memberValue);
 			}
 
-	// Read object values.
-	private class ObjectReader : BinaryValueReader
+			// set value
+			MemberInfo field = typeInfo.GetMember(i);
+			if(memberValue is DelayedReferenceHolder) 
+			{
+				// this is a reference
+				DelayedReferenceHolder holder = (DelayedReferenceHolder) memberValue;
+				context.manager.RecordFixup(id, field, holder.ReferenceId);
+			} 
+			else 
+			{
+				// this is a real value
+				if(field is FieldInfo) 
+				{
+					FieldInfo fi = (FieldInfo) field;
+					fi.SetValue(obj, memberValue);
+				}
+					// TODO: i'm not sure if I have to cover that case, too!
+					// I just noticed that Mono does this
+					//				else if(field is PropertyInfo)
+					//				{
+					//					PropertyInfo pi = (PropertyInfo) field;
+					//					pi.SetValue();
+				else 
+				{
+					throw new SerializationException("unknown memeber type:"+field.GetType());
+				}
+			}
+		}
+
+		context.manager.RegisterObject(obj, id);
+		outVal = obj;
+		return ret;
+	}
+}
+
+abstract class FullObjectReader : ObjectReader
+{
+	public bool Read(DeserializationContext context, out object outVal, bool external)
 	{
-		// Constructor.
-		public ObjectReader() : base() {}
+		uint id = context.reader.ReadUInt32();
+		String name = context.reader.ReadString();
 
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return null;
-				#if false
-					BinaryPrimitiveTypeCode code;
-					BinaryValueReader vw;
-					bool firstTime;
-					long objectID;
-					long typeID;
+		uint fieldCount = context.reader.ReadUInt32();
 
-					if(value == null)
-					{
-						// Write a null value.
-						context.writer.Write
-							((byte)(BinaryElementType.NullValue));
-						return;
-					}
-					else if(type.IsValueType)
-					{
-						if(fieldType.IsValueType)
-						{
-							// Expand the value instance inline.
-							vw = GetReader(context, type);
-							typeID = context.gen.GetIDForType(type);
-							objectID = context.gen.GetId(value, out firstTime);
-							if(typeID == -1)
-							{
-								context.gen.RegisterType(type, objectID);
-							}
-							vw.WriteObjectHeader(context, value, type,
-												 objectID, typeID);
-							vw.WriteObject(context, value, type);
-							return;
-						}
-						else if((code = GetPrimitiveTypeCode(type)) != 0)
-						{
-							// This is a boxed primitive value.
-							context.writer.Write
-								((byte)(BinaryElementType.
-											BoxedPrimitiveTypeValue));
-							vw = GetReader(context, type);
-							vw.WriteTypeSpec(context, type);
-							vw.WriteInline(context, value, type, type);
-							return;
-						}
-					}
+		// collect the names of the fields
+		String[] fieldNames = new String[fieldCount];
+		for(int i = 0; i < fieldCount; i++) 
+		{
+			fieldNames[i] = context.reader.ReadString();
+		}
 
-					// Queue the object to be expanded later.
-					objectID = context.gen.GetId(value, out firstTime);
-					context.writer.Write
-						((byte)(BinaryElementType.ObjectReference));
-					context.writer.Write((int)objectID);
-					if(firstTime)
-					{
-						context.queue.Enqueue(value);
-					}
-				#endif
-				}
+		// collect the type-tags of the fields
+		BinaryTypeTag[] typeTags = new BinaryTypeTag[fieldCount];
+		for(int i = 0; i < fieldCount; i++) 
+		{
+			typeTags[i] = (BinaryTypeTag) context.reader.ReadByte();
+		}
 
-		// Read the object form of values for a type.
-		public override Object ReadObject(BinaryValueContext context,
-									      Type type)
-				{
-					return null;
-				#if false
-					MemberInfo[] members =
-						FormatterServices.GetSerializableMembers
-							(type, context.formatter.Context);
-					Object[] values =
-						FormatterServices.GetObjectData(value, members);
-					int index;
-					Type fieldType;
-					Type valueType;
-					for(index = 0; index < members.Length; ++index)
-					{
-						if(members[index] is FieldInfo)
-						{
-							fieldType = ((FieldInfo)(members[index]))
-											.FieldType;
-						}
-						else
-						{
-							fieldType = ((PropertyInfo)(members[index]))
-											.PropertyType;
-						}
-						if(values[index] != null)
-						{
-							valueType = values[index].GetType();
-						}
-						else
-						{
-							valueType = fieldType;
-						}
-						GetReader(context, fieldType).WriteInline
-							(context, values[index], valueType, fieldType);
-					}
-				#endif
-				}
+		// collect the type-specifications of the fields if necessary
+		TypeSpecification[] typeSpecs = new TypeSpecification[fieldCount];
+		for(int i = 0; i < fieldCount; i++) 
+		{
+			typeSpecs[i] = ReadTypeSpec(context, typeTags[i]);
+		}
 
-	}; // class ObjectReader
+		// read assembly-id if this is no runtime object
+		Assembly assembly = null;
+		if(external) 
+		{
+			assembly = context.GetAssembly(context.reader.ReadUInt32());
+		}
 
-	// Read value type values.
-	private class ValueTypeReader : ObjectReader
+		// store type-information for later usage
+		TypeInfo typeInfo = new TypeInfo(name, fieldNames, typeTags, typeSpecs, assembly);
+		context.SetTypeInfo(id, typeInfo);
+
+		// let our parent read the inlined values
+		return Read(context, out outVal, id, typeInfo);
+	}
+}
+
+class ExternalObjectReader : FullObjectReader
+{
+	public override bool Read(DeserializationContext context, out object outVal)
 	{
-		// Constructor.
-		public ValueTypeReader() : base() {}
+		return Read(context, out outVal, true);
+	}
+}
 
-	}; // class ValueTypeReader
-
-	// Read object values using serialization surrogates.
-	private class SurrogateReader : ObjectReader
+class RuntimeObjectReader : FullObjectReader
+{
+	public override bool Read(DeserializationContext context, out object outVal)
 	{
-		// Internal state.
-		private ISerializationSurrogate surrogate;
+		return Read(context, out outVal, false);
+	}
+}
 
-		// Constructor.
-		public SurrogateReader(ISerializationSurrogate surrogate)
-				{
-					this.surrogate = surrogate;
-				}
-
-		// Read the object form of values for a type.
-		public override Object ReadObject(BinaryValueContext context,
-										  Type type)
-				{
-					return null;
-				#if false
-					SerializationInfo info = GetObjectData
-						(context, value, type);
-					SerializationInfoEnumerator e = info.GetEnumerator();
-					Type objectType;
-					Type valueType;
-					Object fieldValue;
-					while(e.MoveNext())
-					{
-						objectType = e.ObjectType;
-						fieldValue = e.Value;
-						if(value == null)
-						{
-							valueType = objectType;
-						}
-						else
-						{
-							valueType = fieldValue.GetType();
-						}
-						GetReader(context, objectType).WriteInline
-							(context, fieldValue, valueType, objectType);
-					}
-				#endif
-				}
-
-	}; // class SurrogateReader
-
-	// Write primitive values.
-	private abstract class PrimitiveReader : BinaryValueReader
+class RefObjectReader : ObjectReader
+{
+	public override bool Read(DeserializationContext context, out object outVal)
 	{
-		// Internal state.
-		private BinaryPrimitiveTypeCode code;
+		uint id = context.reader.ReadUInt32();
+		uint refId = context.reader.ReadUInt32();
 
-		// Constructor.
-		public PrimitiveReader(BinaryPrimitiveTypeCode code)
-				{
-					this.code = code;
-				}
+		// get type-information from context
+		TypeInfo typeInfo = context.GetTypeInfo(refId);
 
-		// Read the object form of values for a type.
-		public override Object ReadObject(BinaryValueContext context,
-										  Type type)
-				{
-					// The object field is just the primitive value itself.
-					return ReadInline(context, type, type);
-				}
+		return Read(context, out outVal, id, typeInfo);
+	}
+}
 
-		// Normalize field names for cross-CLR differences.
-		public override String NormalizeFieldName(String name)
-				{
-					return "value_";
-				}
-
-	}; // class PrimitiveReader
-
-	// Read boolean values.
-	private class BooleanReader : PrimitiveReader
+class ObjectReferenceReader : BinaryValueReader
+{
+	public override bool Read(DeserializationContext context, out object outVal)
 	{
-		// Construtor.
-		public BooleanReader() : base(BinaryPrimitiveTypeCode.Boolean) {}
+		uint refId = context.reader.ReadUInt32();
 
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadBoolean();
-				}
+		// this 'special' object indicates that we haven't read a real object, but will read it later on
+		outVal = new DelayedReferenceHolder(refId);
+		return true;
+	}
+}
 
-	}; // class BooleanReader
-
-	// Read byte values.
-	private class ByteReader : PrimitiveReader
+class ArrayFiller8bReader : BinaryValueReader 
+{
+	public override bool Read(DeserializationContext context, out object outVal)
 	{
-		// Construtor.
-		public ByteReader() : base(BinaryPrimitiveTypeCode.Byte) {}
+		uint numNulls = context.reader.ReadByte();
 
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadByte();
-				}
+		// this 'special' object indicates that we haven't read a real object,
+		// but should insert a number of NULL values.
+		outVal = new ArrayNullValueHolder(numNulls);
+		return true;
+	}
+}
 
-	}; // class ByteReader
-
-	// Read sbyte values.
-	private class SByteReader : PrimitiveReader
+class ArrayFiller32bReader : BinaryValueReader 
+{
+	public override bool Read(DeserializationContext context, out object outVal)
 	{
-		// Construtor.
-		public SByteReader() : base(BinaryPrimitiveTypeCode.SByte) {}
+		uint numNulls = context.reader.ReadUInt32();
 
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadSByte();
-				}
+		// this 'special' object indicates that we haven't read a real object,
+		// but should insert a number of NULL values.
+		outVal = new ArrayNullValueHolder(numNulls);
+		return true;
+	}
+}
 
-	}; // class SByteReader
-
-	// Read char values.
-	private class CharReader : PrimitiveReader
+class BoxedPrimitiveTypeValue : BinaryValueReader 
+{
+	public override bool Read(DeserializationContext context, out object outVal)
 	{
-		// Constructor.
-		public CharReader() : base(BinaryPrimitiveTypeCode.Char) {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return (char)(context.reader.ReadUInt16());
-				}
-
-	}; // class CharReader
-
-	// Read short values.
-	private class Int16Reader : PrimitiveReader
-	{
-		// Constructor.
-		public Int16Reader() : base(BinaryPrimitiveTypeCode.Int16) {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return (char)(context.reader.ReadInt16());
-				}
-
-	}; // class Int16Reader
-
-	// Read ushort values.
-	private class UInt16Reader : PrimitiveReader
-	{
-		// Constructor.
-		public UInt16Reader() : base(BinaryPrimitiveTypeCode.UInt16) {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadUInt16();
-				}
-
-	}; // class UInt16Reader
-
-	// Read int values.
-	private class Int32Reader : PrimitiveReader
-	{
-		// Constructor.
-		public Int32Reader() : base(BinaryPrimitiveTypeCode.Int32) {}
-
-		// Write the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadInt32();
-				}
-
-	}; // class Int32Reader
-
-	// Read uint values.
-	private class UInt32Reader : PrimitiveReader
-	{
-		// Constructor.
-		public UInt32Reader() : base(BinaryPrimitiveTypeCode.UInt32) {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadUInt32();
-				}
-
-	}; // class UInt32Reader
-
-	// Read long values.
-	private class Int64Reader : PrimitiveReader
-	{
-		// Constructor.
-		public Int64Reader() : base(BinaryPrimitiveTypeCode.Int64) {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadInt64();
-				}
-
-	}; // class Int64Reader
-
-	// Read ulong values.
-	private class UInt64Reader : PrimitiveReader
-	{
-		// Constructor.
-		public UInt64Reader() : base(BinaryPrimitiveTypeCode.UInt64) {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadUInt64();
-				}
-
-	}; // class UInt64Reader
-
-	// Read float values.
-	private class SingleReader : PrimitiveReader
-	{
-		// Constructor.
-		public SingleReader() : base(BinaryPrimitiveTypeCode.Single) {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadSingle();
-				}
-
-	}; // class SingleReader
-
-	// Read double values.
-	private class DoubleReader : PrimitiveReader
-	{
-		// Constructor.
-		public DoubleReader() : base(BinaryPrimitiveTypeCode.Double) {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadDouble();
-				}
-
-	}; // class DoubleReader
-
-	// Read Decimal values.
-	private class DecimalReader : ValueTypeReader
-	{
-		// Constructor.
-		public DecimalReader() {}
-
-		// Normalize field names for cross-CLR differences.
-		public override String NormalizeFieldName(String name)
-				{
-					switch(name)
-					{
-						// Microsoft CLR.
-						case "hi":		return "high";
-						case "mid":		return "middle";
-						case "lo":		return "low";
-
-						// Mono CLR.
-						case "ss32":	return "flags";
-						case "hi32":	return "high";
-						case "mid32":	return "middle";
-						case "lo32":	return "low";
-					}
-					return name;
-				}
-
-	}; // class DecimalReader
-
-	// Read DateTime values.
-	private class DateTimeReader : PrimitiveReader
-	{
-		// Constructor.
-		public DateTimeReader() : base(BinaryPrimitiveTypeCode.DateTime) {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return new DateTime(context.reader.ReadInt64());
-				}
-
-	}; // class DateTimeReader
-
-	// Read TimeSpan values.
-	private class TimeSpanReader : PrimitiveReader
-	{
-		// Constructor.
-		public TimeSpanReader() : base(BinaryPrimitiveTypeCode.TimeSpan) {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return new TimeSpan(context.reader.ReadInt64());
-				}
-
-	}; // class TimeSpanReader
-
-	// Read String values.
-	private class StringReader : BinaryValueReader
-	{
-		// Constructor.
-		public StringReader() : base() {}
-
-		// Read the inline form of values for a type.
-		public override Object ReadInline(BinaryValueContext context,
-										  Type type, Type fieldType)
-				{
-					return context.reader.ReadString();
-				}
-
-		// Write the object form of values for a type.
-		public override Object ReadObject(BinaryValueContext context,
-										  Type type)
-				{
-					return context.reader.ReadString();
-				}
-
-	}; // class StringReader
-
-}; // class BinaryValueReader
+		TypeSpecification typeSpec = ReadTypeSpec(context, BinaryTypeTag.PrimitiveType);
+		outVal = ReadPrimitiveType(context, typeSpec.GetPrimitiveType());
+		return true;
+	}
+}
 
 #endif // CONFIG_SERIALIZATION
 

@@ -438,7 +438,7 @@ public class ObjectManager
 						("objectID", _("Serialize_BadObjectID"));
 				}
 				ObjectInfo oinfo = (ObjectInfo)(objects[objectID]);
-				if(oinfo != null && oinfo.obj != obj)
+				if(oinfo != null && oinfo.obj != null && oinfo.obj != obj)
 				{
 					throw new SerializationException
 						(_("Serialize_AlreadyRegistered"));
@@ -476,7 +476,6 @@ public class ObjectManager
 					oinfo.member = member;
 					oinfo.arrayIndex = arrayIndex;
 					objects[objectID] = oinfo;
-
 					// Register the object to be called later by
 					// "RaiseDeserializationEvent".
 					if(obj is IDeserializationCallback)

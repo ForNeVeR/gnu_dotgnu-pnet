@@ -76,8 +76,9 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 				using(BinaryReader reader =
 						new BinaryReader(serializationStream))
 				{
+					DeserializationContext context = new DeserializationContext(this, reader);
+					return BinaryValueReader.Deserialize(context);
 				}
-				return null;
 			}
 
 	// Write a serialization header to a stream.

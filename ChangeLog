@@ -1,4 +1,14 @@
 
+2004-05-02  Andre Seidelt <pnet-devel01@foobarquarium.de>
+
+	* runtime/System/Runtime/Serialization/ObjectManager.cs: Work around
+	hashtable problems by comparing for equality if the hashtable maps.
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryFormatter.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueReader.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	Implement Binary de-serialization. (comitted by Gopal)
+
 2004-04-29  Gopal V <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/MessageBox.cs: Fix NullReference exception

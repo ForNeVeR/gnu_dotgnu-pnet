@@ -381,6 +381,10 @@ internal abstract class BinaryValueWriter
 							((byte)(BinaryElementType.NullValue));
 						return;
 					}
+					else if(type == typeof(String)) {
+						stringWriter.WriteInline(context, value, type, fieldType);
+						return;
+					}
 					else if(type.IsValueType)
 					{
 						if(fieldType.IsValueType)
@@ -1092,38 +1096,22 @@ internal abstract class BinaryValueWriter
 											   long objectID, long prevObject)
 				{
 					context.writer.Write((byte)(BinaryElementType.String));
-					context.writer.Write(objectID);
+					context.writer.Write((int) objectID);
 				}
 
 		// Write the object form of values for a type.
 		public override void WriteObject(BinaryValueContext context,
 										 Object value, Type type)
 				{
-					bool firstTime;
-
 					if(value == null)
 					{
 						// Write a null value.
 						context.writer.Write
 							((byte)(BinaryElementType.NullValue));
-						return;
 					} 
 					else 
 					{
-						long objectID = context.gen.GetId(value, out firstTime);
-						if(firstTime) 
-						{
-							context.writer.Write
-								((byte)(BinaryElementType.String));
-							context.writer.Write((int)objectID);
-							context.writer.Write((String)value);
-						} 
-						else 
-						{
-							context.writer.Write
-								((byte)(BinaryElementType.ObjectReference));
-							context.writer.Write((int)objectID);
-						}
+						context.writer.Write((String)value);
 					}
 				}
 
@@ -1363,16 +1351,25 @@ internal abstract class BinaryValueWriter
 					int length = ar.GetLength(0);
 					for(int i = 0; i < length; i++) 
 					{
-						BinaryValueWriter writer = GetWriter(context, ar[i].GetType());
-						if(writer != null)
+						if(ar[i] == null)
 						{
-							writer.WriteInline(context, ar[i], ar[i].GetType(), type);
+							// Write a null value.
+							context.writer.Write
+								((byte)(BinaryElementType.NullValue));
 						}
 						else
 						{
-							throw new SerializationException
-								(String.Format
-									(_("Serialize_CannotSerialize"), type));
+							BinaryValueWriter writer = GetWriter(context, type.GetElementType());
+							if(writer != null)
+							{
+								writer.WriteInline(context, ar[i], ar[i].GetType(), type);
+							}
+							else
+							{
+								throw new SerializationException
+									(String.Format
+										(_("Serialize_CannotSerialize"), type));
+							}
 						}
 					}
 				}

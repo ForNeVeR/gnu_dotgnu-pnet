@@ -23,6 +23,10 @@
 	System/ComponentModel/TypeConverter.cs,
 	runtime/System/IServiceProvider.cs: new ComponentModel classes.
 
+	* runtime/System/Private/DateTimeFormatter.cs,
+	tests/System/TestWebHeaderCollection.cs: semantic errors shown
+	up by csc.
+
 2002-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlConvert.cs, tests/System.Xml/TestNameTable.cs,

@@ -22,6 +22,7 @@
  */
 
 using CSUnit;
+using System;
 using System.Net;
 
 public class TestWebHeaderCollection : TestCase
@@ -102,9 +103,10 @@ public class TestWebHeaderCollection : TestCase
 	public void TestWebHeaderCollectionGetValues()
 	{
 		WebHeaderCollection whc = new WebHeaderCollection();
+		string[] strArray1;
 		try
 		{
-			string[] strArray1 = whc.GetValues(null);
+			strArray1 = whc.GetValues(null);
 			Fail("GetValues: failed to throw exception for null argument");
 		}
 		catch(ArgumentNullException)
@@ -116,7 +118,7 @@ public class TestWebHeaderCollection : TestCase
 		string[] strArray = whc.GetValues("phony");
 		if (strArray[0] != "junk")
 			Fail("GetValues: returned incorrect data for 'phony:junk'");
-		string[] strArray1 = whc.GetValues("more");
+		strArray1 = whc.GetValues("more");
 		if (strArray1[0] != "stuff")
 			Fail("GetValues: returned incorrect data for 'more:stuff'");
 		string[] strArray2 = whc.GetValues("notThere");

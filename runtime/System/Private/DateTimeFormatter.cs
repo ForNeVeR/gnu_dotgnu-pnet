@@ -103,7 +103,7 @@ internal class DateTimeFormatter
 			{
 				case 1:
 				{
-					int century;
+					int century = 0;
 					for(int i = 0; 0 < d.Year - i; i=i+1000)
 					{
 						century=i;
@@ -114,7 +114,7 @@ internal class DateTimeFormatter
 				}
 				case 2:
 				{
-					int century;
+					int century = 0;
 					for(int i = 0; 0 < d.Year - i; i=i+1000)
 					{
 						century=i;

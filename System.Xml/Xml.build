@@ -12,6 +12,8 @@
 
 			<sources>
 				<includes name="**/*.cs"/>
+				<excludes if="${ECMA_COMPAT}" name="Schema/*.cs"/>
+				<excludes if="${ECMA_COMPAT}" name="Serialization/*.cs"/>
 			</sources>
 
 			<references>

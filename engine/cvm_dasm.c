@@ -561,11 +561,11 @@ static void *CVMReadPointer(unsigned char *pc)
 	/* We need to be careful about alignment on other platforms */
 	if(sizeof(void *) == 4)
 	{
-		return (void *)(IL_READ_UINT32(pc));
+		return (void *)(ILNativeUInt)(IL_READ_UINT32(pc));
 	}
 	else
 	{
-		return (void *)(IL_READ_UINT64(pc));
+		return (void *)(ILNativeUInt)(IL_READ_UINT64(pc));
 	}
 #endif
 }

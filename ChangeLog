@@ -12,6 +12,10 @@
 	* engine/lib_misc.c: remove the "IsLittleEndian" function, because
 	it isn't actually used anywhere.
 
+	* engine/cvm_dasm.c (CVMReadPointer): Solaris 8 was complaining
+	about casting integers to pointers of different sizes; inserted
+	an extra cast to "ILNativeUInt" to remove the problem.
+
 2001-01-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_string.c, engine/lib_type.c, ilasm/ilasm_grammar.y,

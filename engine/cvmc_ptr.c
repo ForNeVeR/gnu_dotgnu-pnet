@@ -24,7 +24,7 @@
  * Load elements from an array.
  */
 static void LoadArrayElem(ILCoder *coder, int opcode1, int opcode2,
-						  ILEngineType engineType, int shift, int stackSize)
+						  ILEngineType indexType, int shift, int stackSize)
 {
 #ifdef IL_NATIVE_INT64
 	if(indexType == ILEngineType_I4)
@@ -207,7 +207,7 @@ static void CVMCoder_ArrayAccess(ILCoder *coder, int opcode,
 					CVM_OUT_NONE(COP_LMUL);
 					CVM_ADJUST(-CVM_WORDS_PER_LONG);
 				}
-				CVM_OUT_NONE(CVM_PADD_I8);
+				CVM_OUT_NONE(COP_PADD_I8);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		#endif

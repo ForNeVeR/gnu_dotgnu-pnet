@@ -12,6 +12,9 @@
 	* engine/internal.c: don't include the "Marshal" class if PInvoke
 	has been disabled.
 
+	* engine/cvmc_ptr.c, engine/cvmc_setup.c: mis-spelled identifiers
+	in 64-bit version of the CVM coder.
+
 2002-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,

@@ -906,7 +906,7 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 			#else
 				CVM_OUT_DWIDE(COP_MLOAD, ctx->returnOffset, CVM_WORDS_PER_LONG);
 				CVM_ADJUST(CVM_WORDS_PER_LONG);
-				CVM_OUT_NONE(CVM_L2I);
+				CVM_OUT_NONE(COP_L2I);
 				CVM_OUT_RETURN(1);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			#endif

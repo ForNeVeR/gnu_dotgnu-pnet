@@ -32,7 +32,14 @@
 			</maintainers>
 		</class>
 	</namespace>
-
+	
+	<namespace name="System.Net.Sockets">
+		<class name="*">
+			<maintainers>
+				<maintainer name="Peter Minten" status="working"/>
+			</maintainers>
+		</class>
+	</namespace>
 
 </library>
 </libraries>

@@ -466,6 +466,35 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
+ * Create an enumerated type member definition.
+ */
+static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
+						     ILNode_EnumMemberDeclaration *enumMember)
+{
+	ILField *fieldInfo;
+	char *name;
+	ILType *tempType;
+
+	/* Get the field's type, which is the same as its enclosing class */
+	tempType = ILType_FromValueType(classInfo);
+
+	/* Get the name of the field */
+	name = ILQualIdentName(enumMember->name, 0);
+
+	/* Create the field information block */
+	fieldInfo = ILFieldCreate(classInfo, 0, name,
+							  IL_META_FIELDDEF_PUBLIC |
+							  IL_META_FIELDDEF_STATIC |
+							  IL_META_FIELDDEF_LITERAL);
+	if(!fieldInfo)
+	{
+		CSOutOfMemory();
+	}
+	enumMember->fieldInfo = fieldInfo;
+	ILMemberSetSignature((ILMember *)fieldInfo, tempType);
+}
+
+/*
  * Create a property definition.
  */
 static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
@@ -628,6 +657,11 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 		else if(yykind(member) == yykindof(ILNode_MethodDeclaration))
 		{
 			CreateMethod(info, classInfo, (ILNode_MethodDeclaration *)member);
+		}
+		else if(yykind(member) == yykindof(ILNode_EnumMemberDeclaration))
+		{
+			CreateEnumMember(info, classInfo,
+							 (ILNode_EnumMemberDeclaration *)member);
 		}
 		else if(yykind(member) == yykindof(ILNode_PropertyDeclaration))
 		{

@@ -176,6 +176,35 @@ ILNode_GenDiscard(ILNode_ScopeChange)
 	}
 }
 
+%{
+
+/*
+ * Dump information about a field to the output stream.
+ */
+static void DumpField(ILGenInfo *info, ILField *field)
+{
+	/* Dump the field signature and name */
+	fputs(".field ", info->asmOutput);
+	ILDumpFlags(info->asmOutput, ILField_Attrs(field),
+			    ILFieldDefinitionFlags, 0);
+	ILDumpType(info->asmOutput, info->image, ILField_Type(field),
+			   IL_DUMP_QUOTE_NAMES);
+	fputc(' ', info->asmOutput);
+	ILDumpIdentifier(info->asmOutput, ILField_Name(field), 0,
+					 IL_DUMP_QUOTE_NAMES);
+
+	/* Dump the field initializer */
+	ILDumpConstant(info->asmOutput, (ILProgramItem *)field);
+
+	/* Terminate the field definition */
+	putc('\n', info->asmOutput);
+
+	/* Output the attributes that are attached to the field */
+	OutputAttributes(info, info->asmOutput, (ILProgramItem *)field);
+}
+
+%}
+
 /*
  * Generate discard code for a field declaration .
  */
@@ -194,25 +223,7 @@ ILNode_GenDiscard(ILNode_FieldDeclaration)
 			field = decl->fieldInfo;
 			if(field)
 			{
-				/* Dump the field signature and name */
-				fputs(".field ", info->asmOutput);
-				ILDumpFlags(info->asmOutput, ILField_Attrs(field),
-						    ILFieldDefinitionFlags, 0);
-				ILDumpType(info->asmOutput, info->image, ILField_Type(field),
-						   IL_DUMP_QUOTE_NAMES);
-				fputc(' ', info->asmOutput);
-				ILDumpIdentifier(info->asmOutput, ILField_Name(field), 0,
-								 IL_DUMP_QUOTE_NAMES);
-
-				/* Dump the field initializer */
-				ILDumpConstant(info->asmOutput, (ILProgramItem *)field);
-
-				/* Terminate the field definition */
-				putc('\n', info->asmOutput);
-
-				/* Output the attributes that are attached to the field */
-				OutputAttributes(info, info->asmOutput,
-								 (ILProgramItem *)field);
+				DumpField(info, field);
 			}
 		}
 	}
@@ -669,14 +680,15 @@ ILNode_GenDiscard(ILNode_AccessorDeclaration)
 	/* Nothing to do here: this is just a place-holder */
 }
 
-ILNode_GenDiscard(ILNode_EnumDeclaration)
-{
-	/* TODO */
-}
-
 ILNode_GenDiscard(ILNode_EnumMemberDeclaration)
 {
-	/* TODO */
+	ILField *field;
+
+	field = node->fieldInfo;
+	if(info->asmOutput && field)
+	{
+		DumpField(info, field);
+	}
 }
 
 ILNode_GenDiscard(ILNode_DelegateDeclaration)

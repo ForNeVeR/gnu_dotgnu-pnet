@@ -33,6 +33,10 @@ trailing commas in enum declarations.
 add "fieldInfo" to "ILNode_EnumMemberDeclaration"; add "nextEnum"
 to "ILNode_ClassDefn".
 
+* cscc/cs_decls.tc, cscc/cs_gather.c, codegen/cg_decls.tc,
+codegen/jv_decls.tc: semantic analysis and code generation for
+enumerated member declarations.
+
 2001-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_gen.h, codegen/cg_gen.c: new functions "ILGenItemHasAttribute",

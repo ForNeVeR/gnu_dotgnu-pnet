@@ -74,6 +74,138 @@ ILNode_SemAnalysis(ILNode_ScopeChange)
 	return value;
 }
 
+%{
+
+/*
+ * Attach a constant value to a field.
+ */
+static void AddConstantValue(ILGenInfo *info, ILField *field,
+							 ILEvalValue *evalValue)
+{
+	unsigned char constBuf[8];
+	int constBufLen;
+	int constElemType;
+	ILConstant *constant;
+
+	switch(evalValue->valueType)
+	{
+		case ILMachineType_Boolean:
+		{
+			constBuf[0] = (unsigned char)(evalValue->un.i4Value);
+			constBufLen = 1;
+			constElemType = IL_META_ELEMTYPE_VOID;
+		}
+		break;
+
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		{
+			constBuf[0] = (unsigned char)(evalValue->un.i4Value);
+			constBufLen = 1;
+			constElemType = IL_META_ELEMTYPE_I1;
+		}
+		break;
+
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		{
+			constBuf[0] = (unsigned char)(evalValue->un.i4Value);
+			constBuf[1] =
+				(unsigned char)(evalValue->un.i4Value >> 8);
+			constBufLen = 2;
+			constElemType = IL_META_ELEMTYPE_I2;
+		}
+		break;
+
+		case ILMachineType_Char:
+		{
+			constBuf[0] = (unsigned char)(evalValue->un.i4Value);
+			constBuf[1] =
+				(unsigned char)(evalValue->un.i4Value >> 8);
+			constBufLen = 2;
+			constElemType = IL_META_ELEMTYPE_CHAR;
+		}
+		break;
+
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		{
+			constBuf[0] = (unsigned char)(evalValue->un.i4Value);
+			constBuf[1] =
+				(unsigned char)(evalValue->un.i4Value >> 8);
+			constBuf[2] =
+				(unsigned char)(evalValue->un.i4Value >> 16);
+			constBuf[3] =
+				(unsigned char)(evalValue->un.i4Value >> 24);
+			constBufLen = 4;
+			constElemType = IL_META_ELEMTYPE_I4;
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			constBuf[0] = (unsigned char)(evalValue->un.i8Value);
+			constBuf[1] =
+				(unsigned char)(evalValue->un.i8Value >> 8);
+			constBuf[2] =
+				(unsigned char)(evalValue->un.i8Value >> 16);
+			constBuf[3] =
+				(unsigned char)(evalValue->un.i8Value >> 24);
+			constBuf[4] =
+				(unsigned char)(evalValue->un.i8Value >> 32);
+			constBuf[5] =
+				(unsigned char)(evalValue->un.i8Value >> 40);
+			constBuf[6] =
+				(unsigned char)(evalValue->un.i8Value >> 48);
+			constBuf[7] =
+				(unsigned char)(evalValue->un.i8Value >> 56);
+			constBufLen = 8;
+			constElemType = IL_META_ELEMTYPE_I8;
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			IL_WRITE_FLOAT(constBuf, evalValue->un.r4Value);
+			constBufLen = 4;
+			constElemType = IL_META_ELEMTYPE_R4;
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			IL_WRITE_DOUBLE(constBuf, evalValue->un.r8Value);
+			constBufLen = 8;
+			constElemType = IL_META_ELEMTYPE_R8;
+		}
+		break;
+
+		default:
+		{
+			constBuf[0] = 0;
+			constBufLen = 1;
+			constElemType = IL_META_ELEMTYPE_I1;
+		}
+		break;
+	}
+	constant = ILConstantCreate(info->image, 0, (ILProgramItem *)field,
+								constElemType);
+	if(!constant)
+	{
+		CSOutOfMemory();
+	}
+	if(!ILConstantSetValue(constant, constBuf, constBufLen))
+	{
+		CSOutOfMemory();
+	}
+}
+
+%}
+
 /*
  * Perform semantic analysis for field declaration.
  */
@@ -83,10 +215,6 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 	ILNode_FieldDeclarator *decl;
 	CSSemValue value;
 	ILEvalValue evalValue;
-	unsigned char constBuf[8];
-	int constBufLen;
-	int constElemType;
-	ILConstant *constant;
 
 	/* Enter an unsafe context for the field if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
@@ -167,122 +295,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 			else
 			{
 				/* Other constants can be evaluated at compile time */
-				switch(evalValue.valueType)
-				{
-					case ILMachineType_Boolean:
-					{
-						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
-						constBufLen = 1;
-						constElemType = IL_META_ELEMTYPE_VOID;
-					}
-					break;
-
-					case ILMachineType_Int8:
-					case ILMachineType_UInt8:
-					{
-						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
-						constBufLen = 1;
-						constElemType = IL_META_ELEMTYPE_I1;
-					}
-					break;
-
-					case ILMachineType_Int16:
-					case ILMachineType_UInt16:
-					{
-						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
-						constBuf[1] =
-							(unsigned char)(evalValue.un.i4Value >> 8);
-						constBufLen = 2;
-						constElemType = IL_META_ELEMTYPE_I2;
-					}
-					break;
-
-					case ILMachineType_Char:
-					{
-						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
-						constBuf[1] =
-							(unsigned char)(evalValue.un.i4Value >> 8);
-						constBufLen = 2;
-						constElemType = IL_META_ELEMTYPE_CHAR;
-					}
-					break;
-
-					case ILMachineType_Int32:
-					case ILMachineType_UInt32:
-					case ILMachineType_NativeInt:
-					case ILMachineType_NativeUInt:
-					{
-						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
-						constBuf[1] =
-							(unsigned char)(evalValue.un.i4Value >> 8);
-						constBuf[2] =
-							(unsigned char)(evalValue.un.i4Value >> 16);
-						constBuf[3] =
-							(unsigned char)(evalValue.un.i4Value >> 24);
-						constBufLen = 4;
-						constElemType = IL_META_ELEMTYPE_I4;
-					}
-					break;
-
-					case ILMachineType_Int64:
-					case ILMachineType_UInt64:
-					{
-						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
-						constBuf[1] =
-							(unsigned char)(evalValue.un.i8Value >> 8);
-						constBuf[2] =
-							(unsigned char)(evalValue.un.i8Value >> 16);
-						constBuf[3] =
-							(unsigned char)(evalValue.un.i8Value >> 24);
-						constBuf[4] =
-							(unsigned char)(evalValue.un.i8Value >> 32);
-						constBuf[5] =
-							(unsigned char)(evalValue.un.i8Value >> 40);
-						constBuf[6] =
-							(unsigned char)(evalValue.un.i8Value >> 48);
-						constBuf[7] =
-							(unsigned char)(evalValue.un.i8Value >> 56);
-						constBufLen = 8;
-						constElemType = IL_META_ELEMTYPE_I8;
-					}
-					break;
-
-					case ILMachineType_Float32:
-					{
-						IL_WRITE_FLOAT(constBuf, evalValue.un.r4Value);
-						constBufLen = 4;
-						constElemType = IL_META_ELEMTYPE_R4;
-					}
-					break;
-
-					case ILMachineType_Float64:
-					case ILMachineType_NativeFloat:
-					{
-						IL_WRITE_DOUBLE(constBuf, evalValue.un.r8Value);
-						constBufLen = 8;
-						constElemType = IL_META_ELEMTYPE_R8;
-					}
-					break;
-
-					default:
-					{
-						constBuf[0] = 0;
-						constBufLen = 1;
-						constElemType = IL_META_ELEMTYPE_I1;
-					}
-					break;
-				}
-				constant = ILConstantCreate(info->image, 0,
-											(ILProgramItem *)(decl->fieldInfo),
-											constElemType);
-				if(!constant)
-				{
-					CSOutOfMemory();
-				}
-				if(!ILConstantSetValue(constant, constBuf, constBufLen))
-				{
-					CSOutOfMemory();
-				}
+				AddConstantValue(info, decl->fieldInfo, &evalValue);
 				continue;
 			}
 		}
@@ -540,15 +553,110 @@ ILNode_SemAnalysis(ILNode_AccessorDeclaration)
 	return ILNode_SemAnalysis(node->body, info, &(node->body));
 }
 
-ILNode_SemAnalysis(ILNode_EnumDeclaration)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
 ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 {
-	/* TODO */
+	CSSemValue value;
+	ILEvalValue evalValue;
+	ILType *type;
+	ILMachineType machineType;
+	ILNode_ClassDefn *defn = ((ILNode_ClassDefn *)(info->currentClass));
+
+	/* Determine the type of the enumeration */
+	type = ILClassToType(defn->classInfo);
+	machineType = ILTypeToMachineType(type);
+
+	/* Perform semantic analysis on the enum member value */
+	if(node->value)
+	{
+		/* An enumerated value has been supplied */
+		value = ILNode_SemAnalysis(node->value, info, &(node->value));
+		if(!CSIsSemValue(value.kind))
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "invalid enumerated value");
+			return CSSemValueDefault;
+		}
+		else
+		{
+			/* Compute the constant value */
+			if(!ILNode_EvalConst(node->value, info, &evalValue) ||
+			   !ILGenCastConst(info, &evalValue, evalValue.valueType,
+	                   		   machineType))
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "enumerated value is not constant");
+				return CSSemValueDefault;
+			}
+
+			/* Set the constant value on the field definition */
+			AddConstantValue(info, node->fieldInfo, &evalValue);
+
+			/* Update the next enumerated value in sequence */
+			switch(machineType)
+			{
+				case ILMachineType_Int8:
+				case ILMachineType_UInt8:
+				case ILMachineType_Int16:
+				case ILMachineType_UInt16:
+				case ILMachineType_Int32:
+				{
+					defn->nextEnum = (ILUInt64)(ILInt64)(evalValue.un.i4Value);
+				}
+				break;
+
+				case ILMachineType_UInt32:
+				{
+					defn->nextEnum = (ILUInt64)(ILUInt32)(evalValue.un.i4Value);
+				}
+				break;
+
+				case ILMachineType_Int64:
+				{
+					defn->nextEnum = (ILUInt64)(evalValue.un.i8Value);
+				}
+				break;
+
+				case ILMachineType_UInt64:
+				{
+					defn->nextEnum = (ILUInt64)(evalValue.un.i8Value);
+				}
+				break;
+
+				default: break;
+			}
+			++(defn->nextEnum);
+		}
+	}
+	else
+	{
+		/* Use the next enumerated value in sequence */
+		evalValue.valueType = machineType;
+		switch(machineType)
+		{
+			case ILMachineType_Int8:
+			case ILMachineType_UInt8:
+			case ILMachineType_Int16:
+			case ILMachineType_UInt16:
+			case ILMachineType_Int32:
+			case ILMachineType_UInt32:
+			{
+				evalValue.un.i4Value = (ILInt32)(defn->nextEnum);
+			}
+			break;
+
+			case ILMachineType_Int64:
+			case ILMachineType_UInt64:
+			{
+				evalValue.un.i8Value = (ILInt64)(defn->nextEnum);
+			}
+			break;
+
+			default: break;
+		}
+		AddConstantValue(info, node->fieldInfo, &evalValue);
+		++(defn->nextEnum);
+	}
+
 	return CSSemValueDefault;
 }
 

@@ -98,14 +98,11 @@ JavaGenDiscard(ILNode_AccessorDeclaration)
 	/* TODO */
 }
 
-JavaGenDiscard(ILNode_EnumDeclaration)
-{
-	/* TODO */
-}
-
 JavaGenDiscard(ILNode_EnumMemberDeclaration)
 {
-	/* TODO */
+	/* We let ILNode_GenDiscard do the hard work because the enum
+	   definition syntax for IL and JL are identical */
+	ILNode_GenDiscard(node, info);
 }
 
 JavaGenDiscard(ILNode_DelegateDeclaration)

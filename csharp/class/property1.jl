@@ -24,8 +24,8 @@
 } // method set_x
 .property instance int32 'x'()
 {
-	.get instance int32 'get_x'()
-	.set instance void 'set_x'(int32)
+	.get instance int32 'Test'::'get_x'()
+	.set instance void 'Test'::'set_x'(int32)
 } // property x
 .method private hidebysig instance int32 'm1'() cil managed java 
 {

@@ -20,7 +20,7 @@
 } // method get_Current
 .property instance class ['.library']'System'.'Object' 'Current'()
 {
-	.get instance class ['.library']'System'.'Object' 'get_Current'()
+	.get instance class ['.library']'System'.'Object' 'IEnumerator'::'get_Current'()
 } // property Current
 } // class IEnumerator
 .class public sequential value sealed serializable ansi 'DictionaryEntry' extends ['.library']'System'.'ValueType'
@@ -58,8 +58,8 @@
 } // method set_Key
 .property instance class ['.library']'System'.'Object' 'Key'()
 {
-	.get instance class ['.library']'System'.'Object' 'get_Key'()
-	.set instance void 'set_Key'(class ['.library']'System'.'Object')
+	.get instance class ['.library']'System'.'Object' 'DictionaryEntry'::'get_Key'()
+	.set instance void 'DictionaryEntry'::'set_Key'(class ['.library']'System'.'Object')
 } // property Key
 .method public hidebysig specialname instance class ['.library']'System'.'Object' 'get_Value'() cil managed java 
 {
@@ -80,8 +80,8 @@
 } // method set_Value
 .property instance class ['.library']'System'.'Object' 'Value'()
 {
-	.get instance class ['.library']'System'.'Object' 'get_Value'()
-	.set instance void 'set_Value'(class ['.library']'System'.'Object')
+	.get instance class ['.library']'System'.'Object' 'DictionaryEntry'::'get_Value'()
+	.set instance void 'DictionaryEntry'::'set_Value'(class ['.library']'System'.'Object')
 } // property Value
 } // class DictionaryEntry
 .class public auto interface abstract ansi 'IDictionaryEnumerator' implements 'IEnumerator'
@@ -91,21 +91,21 @@
 } // method get_Entry
 .property instance valuetype 'DictionaryEntry' 'Entry'()
 {
-	.get instance valuetype 'DictionaryEntry' 'get_Entry'()
+	.get instance valuetype 'DictionaryEntry' 'IDictionaryEnumerator'::'get_Entry'()
 } // property Entry
 .method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Key'() cil managed java 
 {
 } // method get_Key
 .property instance class ['.library']'System'.'Object' 'Key'()
 {
-	.get instance class ['.library']'System'.'Object' 'get_Key'()
+	.get instance class ['.library']'System'.'Object' 'IDictionaryEnumerator'::'get_Key'()
 } // property Key
 .method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Value'() cil managed java 
 {
 } // method get_Value
 .property instance class ['.library']'System'.'Object' 'Value'()
 {
-	.get instance class ['.library']'System'.'Object' 'get_Value'()
+	.get instance class ['.library']'System'.'Object' 'IDictionaryEnumerator'::'get_Value'()
 } // property Value
 } // class IDictionaryEnumerator
 .class public auto interface abstract ansi 'IEnumerable'
@@ -121,21 +121,21 @@
 } // method get_Count
 .property instance int32 'Count'()
 {
-	.get instance int32 'get_Count'()
+	.get instance int32 'ICollection'::'get_Count'()
 } // property Count
 .method public virtual hidebysig newslot abstract specialname instance bool 'get_IsSynchronized'() cil managed java 
 {
 } // method get_IsSynchronized
 .property instance bool 'IsSynchronized'()
 {
-	.get instance bool 'get_IsSynchronized'()
+	.get instance bool 'ICollection'::'get_IsSynchronized'()
 } // property IsSynchronized
 .method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_SyncRoot'() cil managed java 
 {
 } // method get_SyncRoot
 .property instance class ['.library']'System'.'Object' 'SyncRoot'()
 {
-	.get instance class ['.library']'System'.'Object' 'get_SyncRoot'()
+	.get instance class ['.library']'System'.'Object' 'ICollection'::'get_SyncRoot'()
 } // property SyncRoot
 } // class ICollection
 .class public auto interface abstract ansi 'IDictionary' implements 'ICollection', 'IEnumerable'
@@ -160,14 +160,14 @@
 } // method get_IsFixedSize
 .property instance bool 'IsFixedSize'()
 {
-	.get instance bool 'get_IsFixedSize'()
+	.get instance bool 'IDictionary'::'get_IsFixedSize'()
 } // property IsFixedSize
 .method public virtual hidebysig newslot abstract specialname instance bool 'get_IsReadOnly'() cil managed java 
 {
 } // method get_IsReadOnly
 .property instance bool 'IsReadOnly'()
 {
-	.get instance bool 'get_IsReadOnly'()
+	.get instance bool 'IDictionary'::'get_IsReadOnly'()
 } // property IsReadOnly
 .method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Item'(class ['.library']'System'.'Object' 'key') cil managed java 
 {
@@ -177,22 +177,22 @@
 } // method set_Item
 .property instance class ['.library']'System'.'Object' 'Item'(class ['.library']'System'.'Object')
 {
-	.get instance class ['.library']'System'.'Object' 'get_Item'(class ['.library']'System'.'Object')
-	.set instance void 'set_Item'(class ['.library']'System'.'Object', class ['.library']'System'.'Object')
+	.get instance class ['.library']'System'.'Object' 'IDictionary'::'get_Item'(class ['.library']'System'.'Object')
+	.set instance void 'IDictionary'::'set_Item'(class ['.library']'System'.'Object', class ['.library']'System'.'Object')
 } // property Item
 .method public virtual hidebysig newslot abstract specialname instance class 'ICollection' 'get_Keys'() cil managed java 
 {
 } // method get_Keys
 .property instance class 'ICollection' 'Keys'()
 {
-	.get instance class 'ICollection' 'get_Keys'()
+	.get instance class 'ICollection' 'IDictionary'::'get_Keys'()
 } // property Keys
 .method public virtual hidebysig newslot abstract specialname instance class 'ICollection' 'get_Values'() cil managed java 
 {
 } // method get_Values
 .property instance class 'ICollection' 'Values'()
 {
-	.get instance class 'ICollection' 'get_Values'()
+	.get instance class 'ICollection' 'IDictionary'::'get_Values'()
 } // property Values
 } // class IDictionary
 .class private auto ansi 'Test' extends ['.library']'System'.'Object'

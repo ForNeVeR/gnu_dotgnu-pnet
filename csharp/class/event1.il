@@ -42,8 +42,8 @@
 .field private class 'D1' 'c1'
 .event 'D1' 'c1'
 {
-	.addon instance void 'add_c1'(class 'D1')
-	.removeon instance void 'remove_c1'(class 'D1')
+	.addon instance void 'Test'::'add_c1'(class 'D1')
+	.removeon instance void 'Test'::'remove_c1'(class 'D1')
 } // event c1
 .method public static hidebysig specialname void 'add_c2'(class 'D1' 'value') cil managed 
 {
@@ -68,8 +68,8 @@
 .field private static class 'D1' 'c2'
 .event 'D1' 'c2'
 {
-	.addon void 'add_c2'(class 'D1')
-	.removeon void 'remove_c2'(class 'D1')
+	.addon void 'Test'::'add_c2'(class 'D1')
+	.removeon void 'Test'::'remove_c2'(class 'D1')
 } // event c2
 .method public virtual hidebysig newslot specialname instance void 'add_c3'(class 'D1' 'value') cil managed 
 {
@@ -98,8 +98,8 @@
 .field private class 'D1' 'c3'
 .event 'D1' 'c3'
 {
-	.addon instance void 'add_c3'(class 'D1')
-	.removeon instance void 'remove_c3'(class 'D1')
+	.addon instance void 'Test'::'add_c3'(class 'D1')
+	.removeon instance void 'Test'::'remove_c3'(class 'D1')
 } // event c3
 .method public hidebysig specialname instance void 'add_p1'(class 'D1' 'value') cil managed 
 {
@@ -127,8 +127,8 @@
 } // method remove_p1
 .event 'D1' 'p1'
 {
-	.addon instance void 'add_p1'(class 'D1')
-	.removeon instance void 'remove_p1'(class 'D1')
+	.addon instance void 'Test'::'add_p1'(class 'D1')
+	.removeon instance void 'Test'::'remove_p1'(class 'D1')
 } // event p1
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {
@@ -167,8 +167,8 @@
 .field private class 'D1' 'c3'
 .event 'D1' 'c3'
 {
-	.addon instance void 'add_c3'(class 'D1')
-	.removeon instance void 'remove_c3'(class 'D1')
+	.addon instance void 'Test2'::'add_c3'(class 'D1')
+	.removeon instance void 'Test2'::'remove_c3'(class 'D1')
 } // event c3
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {
@@ -192,8 +192,8 @@
 } // method remove_c3
 .event 'D1' 'c3'
 {
-	.addon instance void 'add_c3'(class 'D1')
-	.removeon instance void 'remove_c3'(class 'D1')
+	.addon instance void 'Test3'::'add_c3'(class 'D1')
+	.removeon instance void 'Test3'::'remove_c3'(class 'D1')
 } // event c3
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {

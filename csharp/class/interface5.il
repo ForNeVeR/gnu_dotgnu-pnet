@@ -20,7 +20,7 @@
 } // method get_Current
 .property instance class ['.library']'System'.'Object' 'Current'()
 {
-	.get instance class ['.library']'System'.'Object' 'get_Current'()
+	.get instance class ['.library']'System'.'Object' 'IEnumerator'::'get_Current'()
 } // property Current
 } // class IEnumerator
 .class public auto interface abstract ansi 'IEnumerator2'
@@ -50,7 +50,7 @@
 } // method get_Current
 .property instance class ['.library']'System'.'Object' 'Current'()
 {
-	.get instance class ['.library']'System'.'Object' 'get_Current'()
+	.get instance class ['.library']'System'.'Object' 'Test'::'get_Current'()
 } // property Current
 .method public virtual hidebysig newslot instance void 'Hello'() cil managed 
 {

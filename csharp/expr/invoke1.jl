@@ -45,7 +45,7 @@
 } // method get_XProp
 .property instance int32 'XProp'()
 {
-	.get instance int32 'get_XProp'()
+	.get instance int32 'X'::'get_XProp'()
 } // property XProp
 .method public virtual hidebysig newslot specialname instance int32 'get_XProp2'() cil managed java 
 {
@@ -57,7 +57,7 @@
 } // method get_XProp2
 .property instance int32 'XProp2'()
 {
-	.get instance int32 'get_XProp2'()
+	.get instance int32 'X'::'get_XProp2'()
 } // property XProp2
 } // class X
 .class private auto ansi 'Test' extends ['.library']'System'.'Object'

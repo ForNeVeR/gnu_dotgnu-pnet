@@ -20,7 +20,7 @@
 } // method get_Current
 .property instance class ['.library']'System'.'Object' 'Current'()
 {
-	.get instance class ['.library']'System'.'Object' 'get_Current'()
+	.get instance class ['.library']'System'.'Object' 'IEnumerator'::'get_Current'()
 } // property Current
 } // class IEnumerator
 .class private auto ansi 'Test' extends ['.library']'System'.'Object'
@@ -46,7 +46,7 @@
 } // method get_Current
 .property instance class ['.library']'System'.'Object' 'Current'()
 {
-	.get instance class ['.library']'System'.'Object' 'get_Current'()
+	.get instance class ['.library']'System'.'Object' 'Test'/'Test2'::'get_Current'()
 } // property Current
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {

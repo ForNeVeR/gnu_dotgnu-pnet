@@ -1,4 +1,19 @@
 
+2002-07-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/event1.il, csharp/class/interface1.il,
+	csharp/class/interface1.jl, csharp/class/interface3.il,
+	csharp/class/interface3.jl, csharp/class/interface4.il,
+	csharp/class/interface4.jl, csharp/class/interface5.il,
+	csharp/class/interface5.jl, csharp/class/property1.il,
+	csharp/class/property1.jl, csharp/class/property2.il,
+	csharp/class/property2.jl, csharp/class/property4.il,
+	csharp/class/property4.jl, csharp/expr/indexer1.il,
+	csharp/expr/indexer1.jl, csharp/expr/invoke1.il,
+	csharp/expr/invoke1.jl, csharp/stmt/foreach4.il,
+	csharp/stmt/foreach4.jl: modified output files to track changes
+	to events and properties, whose accessors are now fully qualified.
+
 2002-07-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/enum4.cs,

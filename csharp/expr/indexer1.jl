@@ -24,8 +24,8 @@
 } // method set_Item
 .property instance class ['.library']'System'.'Object' 'Item'(class ['.library']'System'.'Object')
 {
-	.get instance class ['.library']'System'.'Object' 'get_Item'(class ['.library']'System'.'Object')
-	.set instance void 'set_Item'(class ['.library']'System'.'Object', class ['.library']'System'.'Object')
+	.get instance class ['.library']'System'.'Object' 'Dictionary'::'get_Item'(class ['.library']'System'.'Object')
+	.set instance void 'Dictionary'::'set_Item'(class ['.library']'System'.'Object', class ['.library']'System'.'Object')
 } // property Item
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {
@@ -62,8 +62,8 @@
 } // method set_Item
 .property instance int32 'Item'(int32)
 {
-	.get instance int32 'get_Item'(int32)
-	.set instance void 'set_Item'(int32, int32)
+	.get instance int32 'Counters'::'get_Item'(int32)
+	.set instance void 'Counters'::'set_Item'(int32, int32)
 } // property Item
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {

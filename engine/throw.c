@@ -157,6 +157,7 @@ void ILExecThreadThrowArgRange(ILExecThread *thread, const char *paramName,
 								 "(ToSystem.String;)V",
 								 paramString);
 	}
+	_ILSetExceptionStackTrace(thread, object);
 	if(!ILExecThreadHasException(thread))
 	{
 		ILExecThreadSetException(thread, object);
@@ -185,6 +186,7 @@ void ILExecThreadThrowArgNull(ILExecThread *thread, const char *paramName)
 	/* Create the new exception object and throw it */
 	object = ILExecThreadNew(thread, "System.ArgumentNullException",
 							 "(ToSystem.String;)V", paramString);
+	_ILSetExceptionStackTrace(thread, object);
 	if(!ILExecThreadHasException(thread))
 	{
 		ILExecThreadSetException(thread, object);
@@ -192,6 +194,9 @@ void ILExecThreadThrowArgNull(ILExecThread *thread, const char *paramName)
 }
 void ILExecThreadThrowOutOfMemory(ILExecThread *thread)
 {
+	/* Note: Eventhough the exception maybe of OutOfMemory, this may
+	 * be an accidental error */
+	_ILSetExceptionStackTrace(thread, thread->process->outOfMemoryObject);
 	if(!ILExecThreadHasException(thread))
 	{
 		ILExecThreadSetException(thread, thread->process->outOfMemoryObject);

@@ -1,4 +1,9 @@
 
+2003-07-23  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/throw.c: Set stack traces appropriately for the various
+	exception functions.
+
 2003-07-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_config.h, engine/dumpconfig.c: remove potentional

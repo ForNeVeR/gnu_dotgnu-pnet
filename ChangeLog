@@ -1,4 +1,9 @@
 
+2003-02-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* libffi/ChangeLog, libffi/src/s390/ffi.c: more libffi updates
+	from the gcc CVS tree.
+
 2003-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/*: update the libffi library from the gcc CVS tree.

@@ -1,4 +1,9 @@
 
+2005-02-19  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm_ptr.c: fix isinst instruction to behave like a cast.
+	(fix bug #11998)
+
 2005-02-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_stringbuilder.c: fix gcc 2 vs gcc 3 issues.

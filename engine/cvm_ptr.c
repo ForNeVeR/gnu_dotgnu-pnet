@@ -2380,7 +2380,8 @@ VMCASE(COP_ISINST):
 	   instance of a particular class */
 	classInfo = CVM_ARG_PTR(ILClass *);
 	if(stacktop[-1].ptrValue != 0 &&
-	   !ILClassInheritsFrom(GetObjectClass(stacktop[-1].ptrValue), classInfo))
+	   !CanCastClass(ILProgramItem_Image(method),
+	   			    GetObjectClass(stacktop[-1].ptrValue), classInfo))
 	{
 		stacktop[-1].ptrValue = 0;
 	}

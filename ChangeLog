@@ -12,6 +12,9 @@
 	* cscc/csharp/cs_grammar.y: add generic type formals to
 	operator definitions.
 
+	* engine/lib_enum.c (GetRawEnumValue): recognise the underlying
+	type when unpacking enum values.
+
 2003-02-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/engine.h, engine/pinvoke.c: use the

@@ -31,9 +31,10 @@ extern	"C" {
 static ILInt64 GetRawEnumValue(ILExecThread *thread, ILObject *value)
 {
 	ILType *valueType = ILClassToType(GetObjectClass(value));
-	if(ILType_IsPrimitive(valueType))
+	ILType *underlying = ILTypeGetEnumType(valueType);
+	if(ILType_IsPrimitive(underlying))
 	{
-		switch(ILType_ToElement(ILTypeGetEnumType(valueType)))
+		switch(ILType_ToElement(underlying))
 		{
 			case IL_META_ELEMTYPE_I1:
 			{

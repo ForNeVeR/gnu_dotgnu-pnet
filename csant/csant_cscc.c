@@ -444,7 +444,7 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	}
 
 	/* Done */
-	return 0;
+	return 1;
 }
 
 /*

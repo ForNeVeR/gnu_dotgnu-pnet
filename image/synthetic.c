@@ -25,82 +25,205 @@ extern	"C" {
 #endif
 
 /*
- * Import a synthetic class from another image.
+ * Compute a hash value for a type.
  */
-static ILClass *ImportSynthetic(ILImage *image, ILClass *info)
+static unsigned long HashType(unsigned long start, ILType *type)
 {
-	ILClass *newInfo;
-	ILProgramItem *scope;
+	ILUInt32 param;
+	ILUInt32 numParams;
 
-	/* Nothing to do if the class is already in the same image */
-	if(info->programItem.image == image)
+	if(ILType_IsPrimitive(type))
+	{
+		return (start << 5) + start + ILType_ToElement(type);
+	}
+	else if(ILType_IsValueType(type) || ILType_IsClass(type))
+	{
+		ILClass *classInfo = ILType_ToClass(type);
+		if(classInfo->namespace)
+		{
+			return ILHashString(ILHashString(ILHashString
+										(start, classInfo->namespace, -1),
+										".", 1),
+								classInfo->name, -1);
+		}
+		else
+		{
+			return ILHashString(start, classInfo->name, -1);
+		}
+	}
+	else if(type != 0 && ILType_IsComplex(type))
+	{
+		start = (start << 5) + start + (unsigned long)(type->kind);
+		switch(type->kind & 0xFF)
+		{
+			case IL_TYPE_COMPLEX_BYREF:
+			case IL_TYPE_COMPLEX_PTR:
+			case IL_TYPE_COMPLEX_PINNED:
+			{
+				return HashType(start, type->un.refType);
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_ARRAY:
+			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
+			{
+				return HashType(start, type->un.array.elemType);
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_CMOD_REQD:
+			case IL_TYPE_COMPLEX_CMOD_OPT:
+			{
+				return HashType(start, type->un.modifier.type);
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_METHOD:
+			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
+			{
+				start = HashType(start, type->un.method.retType);
+				numParams = type->num;
+				for(param = 1; param <= numParams; ++param)
+				{
+					start = HashType(start, ILTypeGetParam(type, param));
+				}
+			}
+			break;
+		}
+		return start;
+	}
+	else
+	{
+		return start;
+	}
+}
+
+/*
+ * Compute the hash value for a synthentic hash element.
+ */
+static unsigned long SynHash_Compute(ILClass *info)
+{
+	return HashType(0, info->synthetic);
+}
+
+/*
+ * Compute the hash value for a synthentic type key.
+ */
+static unsigned long SynHash_KeyCompute(ILType *type)
+{
+	return HashType(0, type);
+}
+
+/*
+ * Determine if we have a match in the synthetic types hash table.
+ */
+static int SynHash_Match(ILClass *info, ILType *type)
+{
+	return ILTypeIdentical(info->synthetic, type);
+}
+
+/*
+ * Initialize the synthetic types hash table.
+ */
+int _ILContextSyntheticInit(ILContext *context)
+{
+	context->syntheticHash =
+				ILHashCreate(0,
+					 (ILHashComputeFunc)SynHash_Compute,
+					 (ILHashKeyComputeFunc)SynHash_KeyCompute,
+					 (ILHashMatchFunc)SynHash_Match,
+					 (ILHashFreeFunc)0);
+	return (context->syntheticHash != 0);
+}
+
+/*
+ * Create a synthetic class if not already present.
+ */
+static ILClass *CreateSynthetic(ILImage *image, const char *name,
+								ILClass *parent, int isSealed)
+{
+	ILProgramItem *scope = ILClassGlobalScope(image);
+	ILClass *info;
+
+	/* See if we already have the class in the image */
+	info = ILClassLookup(scope, name, "$Synthetic");
+	if(info)
 	{
 		return info;
 	}
 
-	/* Create a new reference */
-	scope = ILClassGlobalScope(image);
-	if(!scope)
-	{
-		return 0;
-	}
-	newInfo = ILClassCreateRef(scope, 0, info->name, info->namespace);
-	if(!newInfo)
+	/* Create a new class information block */
+	info = ILClassCreate(scope, 0, name, "$Synthetic", parent);
+	if(!info)
 	{
 		return 0;
 	}
 
-	/* Link the reference to the imported class */
-	if(!_ILProgramItemLink(&(newInfo->programItem), &(info->programItem)))
-	{
-		return 0;
-	}
+	/* Set the correct attributes on the class */
+	ILClassSetAttrs(info, ~0, IL_META_TYPEDEF_PUBLIC |
+							  IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
+							  (isSealed ? IL_META_TYPEDEF_SEALED
+							  			: IL_META_TYPEDEF_ABSTRACT) |
+							  IL_META_TYPEDEF_SPECIAL_NAME |
+							  IL_META_TYPEDEF_RT_SPECIAL_NAME |
+							  IL_META_TYPEDEF_BEFORE_FIELD_INIT);
 
-	/* Ready to go */
-	return newInfo;
+	/* The class is ready to go */
+	return info;
 }
 
 /*
- * Resolve a reference to a system type.
+ * Add methods to a synthetic class that corresponds
+ * to a single-dimensional array.
+ *
+ * Note: strictly speaking, single-dimensional arrays
+ * don't have constructors, as the "newarr" instruction
+ * is used for that purpose.  However, it makes it easier
+ * on the runtime engine if we treat all array types
+ * uniformly.
+ *
+ * To remain ECMA-compliant, we mark the constructor as
+ * "private", which prevents applications from calling
+ * it directly.  But the runtime engine can still call it.
  */
-ILClass *_ILCreateSystemType(ILImage *image, const char *name)
+static int AddSArrayMethods(ILClass *info, ILType *type)
 {
-	ILClass *info;
-	ILProgramItem *scope;
+	ILContext *context = ILClassToContext(info);
+	ILMethod *method;
+	ILType *signature;
 
-	/* Look in the current image */
-	scope = ILClassGlobalScope(image);
-	if(scope)
-	{
-		info = ILClassLookup(scope, name, "System");
-		if(info)
-		{
-			return info;
-		}
-	}
-
-	/* Look in all images */
-	info = ILClassLookupGlobal(image->context, name, "System");
-	if(info)
-	{
-		return ImportSynthetic(image, info);
-	}
-
-	/* Create a TypeRef within the current image */
-	if(scope)
-	{
-		return ILClassCreateRef(scope, 0, name, "System");
-	}
-	else
+	/* Build the constructor, which specifies a single dimension */
+	method = ILMethodCreate(info, 0, ".ctor",
+							IL_META_METHODDEF_PRIVATE |
+							IL_META_METHODDEF_HIDE_BY_SIG |
+							IL_META_METHODDEF_SPECIAL_NAME |
+							IL_META_METHODDEF_RT_SPECIAL_NAME);
+	if(!method)
 	{
 		return 0;
 	}
+	signature = ILTypeCreateMethod(context, ILType_Void);
+	if(!signature)
+	{
+		return 0;
+	}
+	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	if(!ILTypeAddParam(context, signature, ILType_Int32))
+	{
+		return 0;
+	}
+	ILMemberSetSignature((ILMember *)method, signature);
+	ILMethodSetImplAttrs(method, ~0, IL_META_METHODIMPL_RUNTIME);
+
+	/* Done */
+	return 1;
 }
 
 /*
- * Add methods to a synthetic class that corresponds to an array.
+ * Add methods to a synthetic class that corresponds
+ * to a multi-dimensional array.
  */
-static int AddArrayMethods(ILClass *info, ILType *type)
+static int AddMArrayMethods(ILClass *info, ILType *type)
 {
 	ILContext *context = ILClassToContext(info);
 	ILType *temp;
@@ -153,6 +276,7 @@ static int AddArrayMethods(ILClass *info, ILType *type)
 		}
 	}
 	ILMemberSetSignature((ILMember *)method, signature);
+	ILMethodSetImplAttrs(method, ~0, IL_META_METHODIMPL_RUNTIME);
 
 	/* Build the second constructor, which specifies lower bounds and lengths */
 	method = ILMethodCreate(info, 0, ".ctor",
@@ -182,6 +306,7 @@ static int AddArrayMethods(ILClass *info, ILType *type)
 		}
 	}
 	ILMemberSetSignature((ILMember *)method, signature);
+	ILMethodSetImplAttrs(method, ~0, IL_META_METHODIMPL_RUNTIME);
 
 	/* Build the "Get" method */
 	method = ILMethodCreate(info, 0, "Get",
@@ -205,6 +330,7 @@ static int AddArrayMethods(ILClass *info, ILType *type)
 		}
 	}
 	ILMemberSetSignature((ILMember *)method, signature);
+	ILMethodSetImplAttrs(method, ~0, IL_META_METHODIMPL_RUNTIME);
 
 	/* Build the "Set" method */
 	method = ILMethodCreate(info, 0, "Set",
@@ -232,6 +358,7 @@ static int AddArrayMethods(ILClass *info, ILType *type)
 		return 0;
 	}
 	ILMemberSetSignature((ILMember *)method, signature);
+	ILMethodSetImplAttrs(method, ~0, IL_META_METHODIMPL_RUNTIME);
 
 	/* Build the "Address" method */
 	method = ILMethodCreate(info, 0, "Address",
@@ -260,146 +387,97 @@ static int AddArrayMethods(ILClass *info, ILType *type)
 		}
 	}
 	ILMemberSetSignature((ILMember *)method, signature);
+	ILMethodSetImplAttrs(method, ~0, IL_META_METHODIMPL_RUNTIME);
 
 	/* Done */
 	return 1;
 }
 
-ILClass *_ILTypeToSyntheticClass(ILImage *image, ILType *type)
+ILClass *_ILTypeToSyntheticArray(ILImage *image, ILType *type, int singleDim)
 {
-	ILClass *info;
-	char *name;
-	const char *persistName;
-	ILProgramItem *scope;
+	ILContext *context = ILImageToContext(image);
+	ILImage *synthetic;
+	ILClass *parent, *info;
+	char name[32];
 
-	/* Remove unnecessary type prefixes */
-	type = ILTypeStripPrefixes(type);
-
-	/* Handle the simple cases first */
-	if(!type)
-	{
-		return 0;
-	}
-	else if(ILType_IsClass(type))
-	{
-		return ILType_ToClass(type);
-	}
-	else if(ILType_IsValueType(type))
-	{
-		return ILType_ToValueType(type);
-	}
-	else if(ILType_IsPrimitive(type))
-	{
-		switch(ILType_ToElement(type))
-		{
-			case IL_META_ELEMTYPE_VOID:
-					return _ILCreateSystemType(image, "Void");
-
-			case IL_META_ELEMTYPE_BOOLEAN:
-					return _ILCreateSystemType(image, "Boolean");
-
-			case IL_META_ELEMTYPE_CHAR:
-					return _ILCreateSystemType(image, "Char");
-
-			case IL_META_ELEMTYPE_I1:
-					return _ILCreateSystemType(image, "SByte");
-
-			case IL_META_ELEMTYPE_U1:
-					return _ILCreateSystemType(image, "Byte");
-
-			case IL_META_ELEMTYPE_I2:
-					return _ILCreateSystemType(image, "Int16");
-
-			case IL_META_ELEMTYPE_U2:
-					return _ILCreateSystemType(image, "UInt16");
-
-			case IL_META_ELEMTYPE_I4:
-			case IL_META_ELEMTYPE_I:
-					return _ILCreateSystemType(image, "Int32");
-
-			case IL_META_ELEMTYPE_U4:
-			case IL_META_ELEMTYPE_U:
-					return _ILCreateSystemType(image, "UInt32");
-
-			case IL_META_ELEMTYPE_I8:
-					return _ILCreateSystemType(image, "Int64");
-
-			case IL_META_ELEMTYPE_U8:
-					return _ILCreateSystemType(image, "UInt64");
-
-			case IL_META_ELEMTYPE_R4:
-					return _ILCreateSystemType(image, "Single");
-
-			case IL_META_ELEMTYPE_R8:
-			case IL_META_ELEMTYPE_R:
-					return _ILCreateSystemType(image, "Double");
-
-			break;
-		}
-		return 0;
-	}
-
-	/* Create a synthesized class name for the type */
-	name = ILTypeToName(type);
-	if(!name)
-	{
-		return 0;
-	}
-
-	/* Do we already have a synthesized class for the type? */
-	info = ILClassLookupGlobal(image->context, name, "$Synthetic");
+	/* See if we already have a synthetic class for this type */
+	info = ILHashFindType(context->syntheticHash, type, ILClass);
 	if(info)
 	{
-		return ImportSynthetic(image, info);
+		return info;
 	}
 
-	/* Create a new class to hold the synthetic infomation */
-	persistName = _ILContextPersistMalloc(image, name);
-	if(!persistName)
-	{
-		return 0;
-	}
-	scope = ILClassGlobalScope(image);
-	if(!scope)
-	{
-		return 0;
-	}
-	info = ILClassCreateRef(scope, 0, persistName, "$Synthetic");
-	if(!info)
+	/* Bail out if not enough memory to create the synthetic image */
+	synthetic = ILContextGetSynthetic(context);
+	if(!synthetic)
 	{
 		return 0;
 	}
 
-	/* Register the type with the synthetic class */
+	/* Create a unique name for the synthetic class */
+	sprintf(name, "$%lu",
+			(unsigned long)(synthetic->memStack.currSize -
+							synthetic->memStack.size +
+							synthetic->memStack.posn));
+
+	/* What kind of array are we creating? */
+	if(singleDim)
+	{
+		/* Create a single-dimensional array type,
+		   which inherits from "$Synthetic.SArray" */
+		parent = ILClassResolveSystem(image, 0, "Array", "System");
+		if(!parent)
+		{
+			return 0;
+		}
+		parent = CreateSynthetic(synthetic, "SArray", parent, 0);
+		if(!parent)
+		{
+			return 0;
+		}
+		info = CreateSynthetic(synthetic, name, parent, 1);
+		if(!info)
+		{
+			return 0;
+		}
+		if(!AddSArrayMethods(info, type))
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		/* Create a multi-dimensional array type,
+		   which inherits from "$Synthetic.MArray" */
+		parent = ILClassResolveSystem(image, 0, "Array", "System");
+		if(!parent)
+		{
+			return 0;
+		}
+		parent = CreateSynthetic(synthetic, "MArray", parent, 0);
+		if(!parent)
+		{
+			return 0;
+		}
+		info = CreateSynthetic(synthetic, name, parent, 1);
+		if(!info)
+		{
+			return 0;
+		}
+		if(!AddMArrayMethods(info, type))
+		{
+			return 0;
+		}
+	}
+
+	/* Set the "synthetic" member for the class */
 	info->synthetic = type;
 
-	/* Add the methods that are relevant to this kind of synthetic class */
-	switch(type->kind)
+	/* Add the synthetic class to the synthetic types hash table */
+	if(!ILHashAdd(context->syntheticHash, info))
 	{
-		case IL_TYPE_COMPLEX_PTR:
-		{
-		}
-		break;
-
-		case IL_TYPE_COMPLEX_ARRAY:
-		case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
-		{
-			if(!AddArrayMethods(info, type))
-			{
-				return 0;
-			}
-		}
-		break;
-
-		case IL_TYPE_COMPLEX_METHOD:
-		{
-		}
-		break;
-
-		default: break;
+		return 0;
 	}
-
-	/* Done */
 	return info;
 }
 

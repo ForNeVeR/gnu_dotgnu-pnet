@@ -1100,6 +1100,12 @@ int ILClassIsValueType(ILClass *info)
 
 ILType *ILClassToType(ILClass *info)
 {
+	/* If the class has a synthetic type, then return that */
+	if(info->synthetic)
+	{
+		return info->synthetic;
+	}
+
 	/* Check for system classes with primitive equivalents */
 	if(info->namespace && !strcmp(info->namespace, "System") &&
 	   ILClassGetNestedParent(info) == 0)
@@ -1324,6 +1330,22 @@ ILClass *ILClassFromType(ILImage *image, void *data, ILType *type,
 	else if(ILType_IsClass(type))
 	{
 		return ILType_ToClass(type);
+	}
+	else if(type != 0 && ILType_IsComplex(type))
+	{
+		/* Recognise complex types */
+		if(type->kind == IL_TYPE_COMPLEX_ARRAY &&
+		   type->un.array.lowBound == 0)
+		{
+			/* Single-dimensional array with no lower bound */
+			return _ILTypeToSyntheticArray(image, type, 1);
+		}
+		else if(type->kind == IL_TYPE_COMPLEX_ARRAY ||
+		        type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		{
+			/* Multi-dimensional array or an array with specified bounds */
+			return _ILTypeToSyntheticArray(image, type, 0);
+		}
 	}
 	return 0;
 }

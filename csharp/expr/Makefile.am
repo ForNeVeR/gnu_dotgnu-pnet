@@ -35,6 +35,8 @@ TESTS = arglist1.cs \
 		new2.cs \
 		newarray1.cs \
 		newarray2.cs \
+		newarray3.cs \
+		newarray4.cs \
 		ref1.cs \
 		ref2.cs \
 		relop1.cs \

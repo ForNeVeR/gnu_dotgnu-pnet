@@ -1,4 +1,89 @@
 
+0.4.4 (2 September 2002)
+
+	Runtime engine:
+
+	* Verifier fix: "rethrow" can be used even if the stack isn't empty.
+	* Verifier fix: correct the stack height adjustment for "sizeof".
+	* Implement the "Module.GetModuleType" internalcall.
+	* Correctly detect PInvoke'd delegate types.
+	* Reset "finalLen" before the final phase of "String.Replace".
+	* AssignCompatible: resolve classes before checking for compatibility.
+	* Allow managed pointers to be turned into any kind of unmanaged
+	  pointer in unsafe code.
+	* Implement the CVM "ldrva" instruction, to support C string globals.
+	* Shift the C# command-line creation logic into "libILEngine.a".
+	* Return the correct array for "TaskMethods.GetCommandLineArgs".
+	* Implement "Marshal.AllocHGlobal" using "calloc" instead of "malloc".
+	* Remove redundant "nop" statements from the x86 code unroller.
+	* Fix the padding of "CVMWord" so that it is 4 on all i386 platforms.
+	* _ILCallPackVaParams: copy the "va_list" using memcpy, because a
+	  direct structure copy won't work on platforms that define "va_list"
+	  as an array type.
+	* Reversed array bounds check in "lib_array.c".
+
+	Compiler:
+
+	* Attribute target specifications.
+	* Fully qualify method references for properties and events.
+	* Don't copy the class attributes to the default constructor.
+	* Parsing, semantic analysis, and code generation for the C language.
+	* Support for the "cpp" pre-processor in the compiler common code.
+	* Fix stack height adjument for "return" code generator.
+	* Set the correct line numbers when replacing l-value nodes during
+	  semantic analysis.
+	* Bug in the "+=" string concatenation operator.
+	* Implement array initializers in "new" expressions.
+	* Process ".il" files with the assembler from the compiler front-end.
+	* Bug fixes and adjustments to the code generator to support C code.
+	* Push into a loop context during semantic analysis of "foreach".
+	* Add the "__module" and "__long_double" keywords to the C# compiler,
+	  to support integration with C code.
+	* "-nostdlib" now turns off the standard library assemblies, but not
+	  the standard library search path.
+	* Properly cast the element type to the variable type in "foreach".
+
+	Documentation and Samples:
+
+	* Document the C application binary interface and create a C user's guide.
+
+	Assembler:
+
+	* Allow global fields and methods to be mixed with ordinary types.
+	* Change the "<Module>" type to "public" if it contains public globals.
+	* Move dangling globals to the "<ModuleExtern>" type.
+
+	Linker:
+
+	* Link ".sdata" and ".tls" sections.
+	* Sort the field, method, and parameter tables at the end of the
+	  link or assembly process, instead of between each top-level class.
+	* Link support for C object modules.
+	* Explode ".a" files to their contents at link time.
+	* Fix linking and loading behaviour of vararg methods across assembly
+	  boundaries.
+	* Automatically link against recursively-referenced assemblies.
+	* Add link objects to the linker context in a single pass before
+	  processing their contents.
+	* Renaming private types to prevent clashes between definitions in
+	  multiple C object files.
+
+	Loader and Metadata:
+
+	* Store the correct signature in a "MemberRef" when it is loaded.
+	* Add extra padding at the beginning of a PE/COFF image to support
+	  programs with 4 or more sections.
+
+	Platform Support:
+
+	* Bug fixes to hash table iterators.
+	* Hack "libgc/mark.c" to work around cygwin 1.3 problems.
+
+	Other:
+
+	* Create the "OpenSystem.C" library, which provides C compiler intrinsics.
+	* Correct a bug in the opcode definition of "stind.i".
+
 0.4.2 (25 July 2002)
 
 	Runtime engine:

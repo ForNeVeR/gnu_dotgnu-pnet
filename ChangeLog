@@ -11,6 +11,9 @@ interface to match the changes to pnetlib.
 engine/lib_reflect.c, engine/lib_type.c: implement the internalcall methods
 for "System.Reflection.ClrHelpers".
 
+* engine/lib_misc.c, engine/internal.c, engine/Makefile.am: implement
+the internalcall methods for "System.Guid".
+
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * samples/mscorlib.dll: new version with many changes to exceptions, I/O,

@@ -31,6 +31,7 @@ extern ILMethodTableEntry const _ILSystemObjectMethods;
 extern ILMethodTableEntry const _ILSystemStringMethods;
 extern ILMethodTableEntry const _ILSystemArrayMethods;
 extern ILMethodTableEntry const _ILSystemDecimalMethods;
+extern ILMethodTableEntry const _ILSystemGuidMethods;
 extern ILMethodTableEntry const _ILSystemMathMethods;
 extern ILMethodTableEntry const _ILSystemTypeMethods;
 extern ILMethodTableEntry const _ILSystemSingleMethods;
@@ -66,6 +67,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"Debugger",	"System.Diagnostics", &_ILDiagnosticsDebuggerMethods},
 	{"Decimal",		"System",		&_ILSystemDecimalMethods},
 	{"Double",		"System",		&_ILSystemDoubleMethods},
+	{"Guid",		"System",		&_ILSystemGuidMethods},
 	{"Interlocked",	"System.Threading", &_ILSystemThreadingInterlockedMethods},
 	{"Math",		"System",		&_ILSystemMathMethods},
 	{"Monitor",		"System.Threading", &_ILSystemThreadingMonitorMethods},

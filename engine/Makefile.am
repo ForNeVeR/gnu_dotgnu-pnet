@@ -16,6 +16,7 @@ COMMON_ENGINE_SOURCES = call.c \
 						lib_diag.c \
 						lib_helpers.c \
 						lib_math.c \
+						lib_misc.c \
 						lib_object.c \
 						lib_platform.c \
 						lib_reflect.c \

@@ -944,7 +944,7 @@ using System.Runtime.Serialization;
 				{
 					int newLength = owner.subItems.Length * 2;
 					int minLength = owner.subItemsCount + size;
-					for (; minLength < newLength ; newLength *= 2)
+					for (; newLength < minLength ; newLength *= 2)
 					{
 					}
 					ListViewSubItem[] newSubItems = new ListViewSubItem[newLength];

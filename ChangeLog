@@ -1,10 +1,15 @@
 
+2004-11-13  Marc Haisenko  <haisenko@webport.de>
+
+	* System.Windows.Forms/ListViewItem.cs: Fix minor bug in SizeSubItemArray
+	(patch from email, Gopal)
+
 2004-11-04  Simon Guindon  <simon@nureality.ca>
 
 	* System.Windows.Forms/StatusBar.cs: Fixed default StatusBar
 	BackColor (applied by ptha).
 
-2004-11-01  <langstefan@gmx.at>
+2004-11-01  Stefan Lang <langstefan@gmx.at>
 
 	* System.Windows.Forms/ListBox.cs: Raise SelectedValueChanged before
 	SelectedIndexChanged (patch #3482, applied by ptha).

@@ -250,6 +250,15 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 			return 1;
 		}
 		/* Not reached */
+
+		case IL_INLINEMETHOD_TYPE_FROM_HANDLE:
+		{
+			/* Convert a RuntimeTypeHandle into a Type object */
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_TYPE_FROM_HANDLE);
+			return 1;
+		}
+		/* Not reached */
 	}
 
 	/* If we get here, then we don't know how to inline the method */

@@ -570,6 +570,32 @@ static int GetInlineMethodType(ILMethod *method)
 		}
 		return -1;
 	}
+	else if(!strcmp(name, "Type"))
+	{
+		/* Make sure that this is really "System.Type" */
+		name = ILClass_Namespace(owner);
+		if(!name || strcmp(name, "System") != 0)
+		{
+			return -1;
+		}
+		image = ILClassToImage(owner);
+		systemImage = ILContextGetSystem(ILImageToContext(image));
+		if(systemImage && systemImage != image)
+		{
+			return -1;
+		}
+
+		/* Check for known inlineable methods */
+		name = ILMethod_Name(method);
+		signature = ILMethod_Signature(method);
+		if(!strcmp(name, "GetTypeFromHandle") &&
+		   _ILLookupTypeMatch(signature,
+		   					  "(vSystem.RuntimeTypeHandle;)oSystem.Type;"))
+		{
+			return IL_INLINEMETHOD_TYPE_FROM_HANDLE;
+		}
+		return -1;
+	}
 	else
 	{
 		/* This class does not have inlineable methods */

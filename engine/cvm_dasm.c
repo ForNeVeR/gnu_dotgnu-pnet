@@ -532,11 +532,11 @@ static CVMOpcode const prefixOpcodes[80] = {
 	{"string_eq",		CVM_OPER_NONE},
 	{"string_ne",		CVM_OPER_NONE},
 	{"string_get_char",	CVM_OPER_NONE},
+	{"type_from_handle", CVM_OPER_NONE},
 
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_46",	CVM_OPER_NONE},
 	{"preserved_47",	CVM_OPER_NONE},
 	{"preserved_48",	CVM_OPER_NONE},
 	{"preserved_49",	CVM_OPER_NONE},

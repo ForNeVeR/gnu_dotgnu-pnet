@@ -457,6 +457,7 @@ extern	"C" {
 #define	COP_PREFIX_STRING_EQ		0x43
 #define	COP_PREFIX_STRING_NE		0x44
 #define	COP_PREFIX_STRING_GET_CHAR	0x45
+#define	COP_PREFIX_TYPE_FROM_HANDLE	0x46
 
 /*
  * Definition of a CVM stack word which can hold

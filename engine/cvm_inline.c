@@ -281,4 +281,39 @@ case COP_PREFIX_STRING_GET_CHAR:
 }
 break;
 
+/**
+ * <opcode name="type_from_handle" group="Inline methods">
+ *   <operation>Get a type object from its runtime handle</operation>
+ *
+ *   <format>prefix<fsep/>type_from_handle</format>
+ *
+ *   <form name="type_from_handle" code="COP_PREFIX_TYPE_FROM_HANDLE"/>
+ *
+ *   <before>..., handle</before>
+ *   <after>..., object</after>
+ *
+ *   <description>The <i>handle</i> is popped from the stack as the
+ *   type <code>ptr</code>.  It is interpreted as an instance of
+ *   the value type <code>System.RuntimeTypeHandle</code>.  The
+ *   <i>handle</i> is converted into an <i>object</i> instance
+ *   of the reference type <code>System.Type</code>.  The <i>object</i>
+ *   is pushed onto the stack.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>Type.GetTypeFromHandle(RuntimeTypeHandle)</code> method.</notes>
+ * </opcode>
+ */
+case COP_PREFIX_TYPE_FROM_HANDLE:
+{
+	/* Get a character from a string */
+	tempptr = stacktop[-1].ptrValue;
+	if(tempptr != 0)
+	{
+		stacktop[-1].ptrValue =
+			(void *)(_ILGetClrType(thread, (ILClass *)tempptr));
+	}
+	MODIFY_PC_AND_STACK(2, 0);
+}
+break;
+
 #endif /* IL_CVM_PREFIX */

@@ -93,6 +93,7 @@ struct _tagILCoder
 #define	IL_INLINEMETHOD_STRING_EQUALS		6
 #define	IL_INLINEMETHOD_STRING_NOT_EQUALS	7
 #define	IL_INLINEMETHOD_STRING_GET_CHAR		8
+#define	IL_INLINEMETHOD_TYPE_FROM_HANDLE	9
 
 /*
  * Return values for "ILCoderFinish".

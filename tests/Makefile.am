@@ -11,7 +11,7 @@ test_verify_SOURCES = test_verify.c \
 					  ilunit.c
 test_verify_LDADD   = ../engine/libILEngine.a ../dumpasm/libILDumpAsm.a \
 			  		  ../image/libILImage.a ../support/libILSupport.a \
-			  		  $(FFILIBS) $(GCLIBS)
+			  		  $(FFILIBS) $(GCLIBS) $(SOCKETLIBS)
 
 test_thread_SOURCES = test_thread.c \
 					  ilunit.c

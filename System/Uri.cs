@@ -533,7 +533,7 @@ public class Uri : MarshalByRefObject
 		return retval;
 	}
 	
-	public static char BinHexToChar(char hex1, char hex2)
+	private static char BinHexToChar(char hex1, char hex2)
 	{
 		hex1=Char.ToUpper(hex1);
 		hex2=Char.ToUpper(hex2);
@@ -650,7 +650,7 @@ public class Uri : MarshalByRefObject
 	{
 	}
 
-	protected void ParseString(String uriString,bool reportErrors)
+	private void ParseString(String uriString,bool reportErrors)
 	{
 		if(hasFastRegex)
 		{

@@ -35,6 +35,9 @@
 	missing functionality and signature-compatibility for the
 	"System.Diagnostics" namespace.
 
+	* System/Uri.cs, System.UriFormatException.cs: signature-compatibility
+	fixes in "Uri" and "UriFormatException".
+
 2003-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/ArrayConverter.cs,

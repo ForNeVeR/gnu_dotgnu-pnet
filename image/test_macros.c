@@ -176,6 +176,8 @@ void TestMethodMacros(ILMethod *method)
 	IGNORE(ILMethod_IsSynchronized(method));
 	IGNORE(ILMethod_IsOLE(method));
 	IGNORE(ILMethod_IsInternalCall(method));
+	IGNORE(ILMethod_IsJavaFPStrict(method));
+	IGNORE(ILMethod_IsJava(method));
 }
 
 void TestParameterMacros(ILParameter *param)

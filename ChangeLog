@@ -7,6 +7,9 @@
 recognised any empty method as native, and then add code to recognise
 the "native" and "runtime" implementation types.
 
+* include/il_program.h, image/test_macros.c: add the "ILMethod_IsJavaFPStruct"
+and "ILMethod_IsJava" helper macros.
+
 2001-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: implement a Java class file to IL converter.

@@ -1091,6 +1091,10 @@ void *ILMethodGetUserData(ILMethod *method);
 	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_OLE) != 0)
 #define	ILMethod_IsInternalCall(method)	\
 	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_INTERNAL_CALL) != 0)
+#define	ILMethod_IsJavaFPStrict(method)	\
+	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_JAVA_FP_STRICT) != 0)
+#define	ILMethod_IsJava(method)	\
+	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_JAVA) != 0)
 
 /*
  * Create a new parameter and attach it to a method.

@@ -1788,6 +1788,7 @@ MethodAttributeList
 					$$.name2 = 0;
 				}
 			}
+	;
 
 MethodAttributeName
 	: K_STATIC				{ SET_METHOD(STATIC); }

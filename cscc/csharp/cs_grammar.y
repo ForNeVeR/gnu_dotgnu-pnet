@@ -960,6 +960,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		TypeSuffix TypeSuffixList TypeSuffixes
 %type <node>		OptAttributes AttributeSections AttributeSection
 %type <node>		AttributeList Attribute AttributeArguments
+%type <node>		NonOptAttributes
 %type <node>		PositionalArgumentList PositionalArgument NamedArgumentList
 %type <node>		NamedArgument AttributeArgumentExpression
 %type <node>		RankSpecifiers RankSpecifierList 
@@ -995,12 +996,26 @@ CompilationUnit
 				}
 				ResetState();
 			}
-	| OuterDeclarationsRecoverable AttributeSections	{
+	| OuterDeclarationsRecoverable NonOptAttributes	{
 				/* A file that contains declarations and assembly attributes */
+				if($2)
+				{
+					InitGlobalNamespace();
+					CCPluginAddStandaloneAttrs
+						(ILNode_StandaloneAttr_create
+							(CurrNamespaceNode, $2));
+				}
 				ResetState();
 			}
-	| AttributeSections	{
+	| NonOptAttributes	{
 				/* A file that contains only assembly attributes */
+				if($1)
+				{
+					InitGlobalNamespace();
+					CCPluginAddStandaloneAttrs
+						(ILNode_StandaloneAttr_create
+							(CurrNamespaceNode, $1));
+				}
 				ResetState();
 			}
 	;
@@ -1150,6 +1165,13 @@ NamespaceDeclaration
 				int posn, len;
 				ILScope *oldLocalScope;
 				posn = 0;
+				if($1)
+				{
+					InitGlobalNamespace();
+					CCPluginAddStandaloneAttrs
+						(ILNode_StandaloneAttr_create
+							(CurrNamespaceNode, $1));
+				}
 				while(posn < $3.len)
 				{
 					/* Extract the next identifier */
@@ -2518,6 +2540,10 @@ YieldStatement
 OptAttributes
 	: /* empty */ 		{ $$ = 0; }
 	| AttributeSections	{ CSValidateDocs($1); MakeUnary(AttributeTree, $1); }
+	;
+
+NonOptAttributes
+	: AttributeSections	{ CSValidateDocs($1); MakeUnary(AttributeTree, $1); }
 	;
 
 AttributeSections

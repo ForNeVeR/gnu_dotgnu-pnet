@@ -666,6 +666,7 @@ void ILGenModulesAndAssemblies(ILGenInfo *info)
 			 "\t\t(01 00 08 00 00 00 01 00 54 02 10 53 6B 69 70 56\n"
 			 "\t\t 65 72 69 66 69 63 61 74 69 6F 6E 01)\n", info->asmOutput);
 		}
+		ILGenOutputAttributes(info, info->asmOutput, ILToProgramItem(assem));
 		fputs("}\n", info->asmOutput);
 	}
 
@@ -685,6 +686,7 @@ void ILGenModulesAndAssemblies(ILGenInfo *info)
 					"[.library]System.Security.UnverifiableCodeAttribute"
 					"::.ctor() = (01 00 00 00)\n", info->asmOutput);
 		}
+		ILGenOutputAttributes(info, info->asmOutput, ILToProgramItem(module));
 	}
 }
 

@@ -124,6 +124,12 @@ extern ILNode *CCParseTree;
 extern ILNode *CCParseTreeEnd;
 
 /*
+ * Standalone attribute blocks that aren't attached to a class.
+ */
+extern ILNode *CCStandaloneAttrs;
+extern ILNode *CCStandaloneAttrsEnd;
+
+/*
  * Global definition scope.
  */
 extern ILScope *CCGlobalScope;
@@ -156,6 +162,11 @@ void CCPluginParseError(char *msg, char *text);
  * Add a node to the top-level parse tree.
  */
 void CCPluginAddTopLevel(ILNode *node);
+
+/*
+ * Add a node to the standalone attribute list.
+ */
+void CCPluginAddStandaloneAttrs(ILNode *node);
 
 /*
  * Load a library into the compiler.

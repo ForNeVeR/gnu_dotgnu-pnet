@@ -97,6 +97,10 @@ void CCPluginSemAnalysis(void)
 
 	/* Perform semantic analysis */
 	ILNode_SemAnalysis(CCParseTree, &CCCodeGen, &CCParseTree);
+	if(CCStandaloneAttrs)
+	{
+		ILNode_SemAnalysis(CCStandaloneAttrs, &CCCodeGen, &CCStandaloneAttrs);
+	}
 }
 
 void CCPluginPostCodeGen(void)

@@ -27,7 +27,7 @@
 /*
  * Output the attributes that are attached to a program item.
  */
-static void OutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
+void ILGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 {
 	ILAttribute *attr;
 	ILMethod *ctor;
@@ -228,7 +228,8 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 		}
 
 		/* Output the attributes that are attached to the class */
-		OutputAttributes(info, info->asmOutput, (ILProgramItem *)classInfo);
+		ILGenOutputAttributes
+			(info, info->asmOutput, (ILProgramItem *)classInfo);
 
 		/* Output the class layout information */
 		if(layout)
@@ -443,7 +444,7 @@ static void DumpField(ILGenInfo *info, ILField *field, ILNode *node)
 	}
 
 	/* Output the attributes that are attached to the field */
-	OutputAttributes(info, info->asmOutput, (ILProgramItem *)field);
+	ILGenOutputAttributes(info, info->asmOutput, (ILProgramItem *)field);
 }
 
 %}
@@ -574,8 +575,8 @@ ILNode_GenDiscard(ILNode_EventDeclarator)
 			fprintf(info->asmOutput, ".line %ld \"%s\"\n",
 					yygetlinenum(node), yygetfilename(node));
 		}
-		OutputAttributes(info, outstream,
-						 (ILProgramItem *)(node->eventInfo));
+		ILGenOutputAttributes(info, outstream,
+						 	  (ILProgramItem *)(node->eventInfo));
 		if(node->addAccessor)
 		{
 			methodInfo = ((ILNode_MethodDeclaration *)(node->addAccessor))
@@ -812,7 +813,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	fputs("\n{\n", outstream);
 
 	/* Output the attributes that are attached to the field */
-	OutputAttributes(info, outstream, (ILProgramItem *)method);
+	ILGenOutputAttributes(info, outstream, (ILProgramItem *)method);
 
 	/* Output the attributes that are attached to the parameters */
 	param = 0;
@@ -822,7 +823,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 		{
 			fprintf(outstream, ".param[%lu]\n",
 					(unsigned long)(ILParameter_Num(param)));
-			OutputAttributes(info, outstream, (ILProgramItem *)param);
+			ILGenOutputAttributes(info, outstream, (ILProgramItem *)param);
 		}
 	}
 
@@ -1010,8 +1011,8 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 			fprintf(info->asmOutput, ".line %ld \"%s\"\n",
 					yygetlinenum(node->name), yygetfilename(node->name));
 		}
-		OutputAttributes(info, outstream,
-						 (ILProgramItem *)(node->propertyInfo));
+		ILGenOutputAttributes(info, outstream,
+						      (ILProgramItem *)(node->propertyInfo));
 		if(node->getAccessor)
 		{
 			methodInfo = ((ILNode_MethodDeclaration *)(node->getAccessor))

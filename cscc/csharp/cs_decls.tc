@@ -1379,6 +1379,33 @@ ILNode_SemAnalysis(ILNode_DocComment)
 	return CSSemValueDefault;
 }
 
+ILNode_SemAnalysis(ILNode_StandaloneAttr)
+{
+	ILProgramItem *item;
+	ILNode *savedClass;
+	ILNode *savedNamespace;
+	ILNode *savedMethod;
+
+	/* Save the current context and enter the attribute's namespace */
+	savedClass = info->currentClass;
+	savedNamespace = info->currentNamespace;
+	savedMethod = info->currentMethod;
+	info->currentClass = 0;
+	info->currentNamespace = node->namespaceNode;
+	info->currentMethod = 0;
+
+	/* Perform semantic analysis on the attribute, relative to an assembly */
+	item = (ILProgramItem *)ILAssembly_FromToken
+				(CCCodeGen.image, IL_META_TOKEN_ASSEMBLY | 1);
+	CSProcessAttrs(info, item, node->attributes, CS_ATTR_ASSEMBLY);
+
+	/* Restore the previous context */
+	info->currentClass = savedClass;
+	info->currentNamespace = savedNamespace;
+	info->currentMethod = savedMethod;
+	return CSSemValueDefault;
+}
+
 ILNode_Declaration_GatherStaticCtor(ILNode_EventDeclaration),
 ILNode_Declaration_GatherStaticCtor(ILNode_EventDeclarator),
 ILNode_Declaration_GatherStaticCtor(ILNode_MethodDeclaration),

@@ -56,6 +56,8 @@ extern	"C" {
 ILGenInfo CCCodeGen;
 ILNode *CCParseTree;
 ILNode *CCParseTreeEnd;
+ILNode *CCStandaloneAttrs;
+ILNode *CCStandaloneAttrsEnd;
 ILScope *CCGlobalScope;
 
 /*
@@ -1315,6 +1317,29 @@ void CCPluginAddTopLevel(ILNode *node)
 	if(((ILNode_List *)CCParseTreeEnd)->rest)
 	{
 		CCParseTreeEnd = (ILNode *)(((ILNode_List *)CCParseTreeEnd)->rest);
+	}
+}
+
+void CCPluginAddStandaloneAttrs(ILNode *node)
+{
+	if(!node)
+	{
+		return;
+	}
+	if(!CCStandaloneAttrs)
+	{
+		CCStandaloneAttrs = ILNode_List_create();
+		CCStandaloneAttrsEnd = 0;
+	}
+	if(!CCStandaloneAttrsEnd)
+	{
+		CCStandaloneAttrsEnd = CCStandaloneAttrs;
+	}
+	ILNode_List_Add(CCStandaloneAttrsEnd, node);
+	if(((ILNode_List *)CCStandaloneAttrsEnd)->rest)
+	{
+		CCStandaloneAttrsEnd =
+			(ILNode *)(((ILNode_List *)CCStandaloneAttrsEnd)->rest);
 	}
 }
 

@@ -316,6 +316,11 @@ ILImage *ILGenCreateBasicImage(ILContext *context, const char *assemName);
  */
 void ILGenDumpILLocals(ILGenInfo *info, ILType *localVarSig);
 
+/*
+ * Output the attributes on a program item.
+ */
+void ILGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item);
+
 #ifdef	__cplusplus
 };
 #endif

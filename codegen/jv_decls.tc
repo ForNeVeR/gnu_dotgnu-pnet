@@ -208,16 +208,6 @@ JavaGenDiscard(ILNode_ConversionOperatorDeclarator)
 	/* TODO */
 }
 
-JavaGenDiscard(ILNode_TypeSuffix)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_LocalVariableType)
-{
-	/* TODO */
-}
-
 JavaGenDiscard(ILNode_Attribute)
 {
 	/* TODO */

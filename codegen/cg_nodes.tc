@@ -750,17 +750,6 @@ struct _tagILEvalValue
 	ILNode	   *paramName;
 }
 
-%node ILNode_TypeSuffix ILNode_Declaration =
-{
-	ILUInt32	count; /* 0 - '*', 1+ = dimension separators */
-}
-
-%node ILNode_LocalVariableType ILNode_Declaration =
-{
-	ILNode	   *type;
-	ILNode	   *suffixes;
-}
-
 /*
  * Attributes and sub types
  */

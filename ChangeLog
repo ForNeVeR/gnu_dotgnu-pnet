@@ -4,6 +4,9 @@
 * codegen/cg_gen.c (ILFindSystemType): import system library classes
 into the main image.
 
+* codegen/cg_nodes.tc, codegen/cg_decls.tc, codegen/jv_decls.tc:
+remove ILNode_TypeSuffix and ILNode_LocalVariableType.
+
 2001-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h: add the IL_INLINE helper macro.

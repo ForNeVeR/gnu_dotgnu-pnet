@@ -466,16 +466,6 @@ ILNode_GenDiscard(ILNode_ConversionOperatorDeclarator)
 	/* TODO */
 }
 
-ILNode_GenDiscard(ILNode_TypeSuffix)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_LocalVariableType)
-{
-	/* TODO */
-}
-
 ILNode_GenDiscard(ILNode_Attribute)
 {
 	/* TODO */

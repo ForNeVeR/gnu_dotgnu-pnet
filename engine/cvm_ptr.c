@@ -863,8 +863,22 @@ break;
 case COP_GET_STATIC:
 {
 	/* Get the static data area for a particular class */
-	/* TODO */
-	MODIFY_PC_AND_STACK(5, 1);
+	classInfo = (ILClass *)(ReadPointer(pc + 1));
+	if(((ILClassPrivate *)(classInfo->userData))->staticData)
+	{
+		stacktop[0].ptrValue =
+			((ILClassPrivate *)(classInfo->userData))->staticData;
+		MODIFY_PC_AND_STACK(1 + sizeof(void), 1);
+		break;
+	}
+	COPY_STATE_TO_THREAD();
+	((ILClassPrivate *)(classInfo->userData))->staticData =
+		_ILEngineAlloc(thread, 0,
+		   ((ILClassPrivate *)(classInfo->userData))->staticSize);
+	RESTORE_STATE_FROM_THREAD();
+	stacktop[0].ptrValue =
+		((ILClassPrivate *)(classInfo->userData))->staticData;
+	MODIFY_PC_AND_STACK(1 + sizeof(void), 1);
 }
 break;
 
@@ -873,7 +887,14 @@ case COP_NEW:
 	/* Create a new object of the current method's class */
 	if(((ILUInt32)(stackmax - stacktop)) >= 1)
 	{
-		/* TODO */
+		/* Allocate the object and push it onto the stack */
+		classInfo = method->member.owner;
+		COPY_STATE_TO_THREAD();
+		tempptr = _ILEngineAlloc(thread, classInfo,
+								 ((ILClassPrivate *)(classInfo->userData))
+								 		->size);
+		RESTORE_STATE_FROM_THREAD();
+		stacktop[0].ptrValue = tempptr;
 		MODIFY_PC_AND_STACK(1, 1);
 	}
 	else
@@ -886,8 +907,13 @@ break;
 case COP_NEW_VALUE:
 {
 	/* Create a new value type and insert it below the constructors */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, 2);
+	tempNum = (ILUInt32)(pc[1]);
+	tempSize = (ILUInt32)(pc[2]);
+	IL_MEMMOVE(stacktop - tempNum + tempSize + 1, stacktop - tempNum,
+			   tempNum * sizeof(CVMWord));
+	IL_MEMZERO(stacktop - tempNum, tempSize * sizeof(CVMWord));
+	(stacktop - tempNum + tempSize)->ptrValue = (void *)(stacktop - tempNum);
+	MODIFY_PC_AND_STACK(3, tempSize + 1);
 }
 break;
 
@@ -1023,8 +1049,13 @@ break;
 case COP_NEW_VALUE:
 {
 	/* Wide version of "new_value" */
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 2);
+	tempNum = IL_READ_UINT32(pc + 2);
+	tempSize = IL_READ_UINT32(pc + 6);
+	IL_MEMMOVE(stacktop - tempNum + tempSize + 1, stacktop - tempNum,
+			   tempNum * sizeof(CVMWord));
+	IL_MEMZERO(stacktop - tempNum, tempSize * sizeof(CVMWord));
+	(stacktop - tempNum + tempSize)->ptrValue = (void *)(stacktop - tempNum);
+	MODIFY_PC_AND_STACK(10, tempSize + 1);
 }
 break;
 

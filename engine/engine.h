@@ -152,6 +152,7 @@ struct _tagILClassPrivate
 	ILUInt32		vtableSize : 16;	/* Size of the vtable */
 	ILMethod      **vtable;				/* Methods within the vtable */
 	ILObject       *runtimeType;		/* Associated runtime type object */
+	ILObject       *staticData;			/* Static data area object */
 
 };
 

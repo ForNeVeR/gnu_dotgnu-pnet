@@ -1045,6 +1045,71 @@ void *ILTypeGetDelegateMethod(ILType *type)
 	return 0;
 }
 
+int ILTypeDelegateSignatureMatch(ILType *type, void *_method)
+{
+	ILMethod *method = (ILMethod *)_method;
+	ILMethod *invoke;
+	ILType *methodSignature;
+	ILType *invokeSignature;
+	unsigned long numParams;
+	unsigned long param;
+
+	/* Constructors can never be used in delegate invocation */
+	if(ILMethod_IsConstructor(method) || ILMethod_IsStaticConstructor(method))
+	{
+		return 0;
+	}
+
+	/* Find the delegate invocation method.  This also checks
+	   that the class is truly a delegate */
+	invoke = ILTypeGetDelegateMethod(type);
+	if(!invoke)
+	{
+		return 0;
+	}
+
+	/* Check that the delegate signatures match */
+	methodSignature = ILMethod_Signature(method);
+	invokeSignature = ILMethod_Signature(invoke);
+	numParams = ILTypeNumParams(methodSignature);
+	if(numParams != ILTypeNumParams(invokeSignature))
+	{
+		return 0;
+	}
+	if(!ILTypeIdentical(ILTypeGetReturn(methodSignature),
+						ILTypeGetReturn(invokeSignature)))
+	{
+		return 0;
+	}
+	for(param = 1; param <= numParams; ++param)
+	{
+		if(!ILTypeIdentical(ILTypeGetParam(methodSignature, param),
+							ILTypeGetParam(invokeSignature, param)))
+		{
+			return 0;
+		}
+	}
+
+	/* Check that both signatures have identical vararg flags */
+	if((ILType_CallConv(methodSignature) & IL_META_CALLCONV_MASK)
+			== IL_META_CALLCONV_VARARG)
+	{
+		if((ILType_CallConv(invokeSignature) & IL_META_CALLCONV_MASK)
+				!= IL_META_CALLCONV_VARARG)
+		{
+			return 0;
+		}
+	}
+	else if((ILType_CallConv(invokeSignature) & IL_META_CALLCONV_MASK)
+					== IL_META_CALLCONV_VARARG)
+	{
+		return 0;
+	}
+
+	/* We have a match */
+	return 1;
+}
+
 #ifdef	__cplusplus
 };
 #endif

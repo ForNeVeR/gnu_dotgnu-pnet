@@ -489,6 +489,84 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	return value;
 }
 
+%{
+
+/*
+ * Peform semantic analysis for the delegate creation variant
+ * of an object creation expression.
+ */
+CSSemValue DelegateCreationSem(ILGenInfo *info, ILNode *node,
+							   ILType *delegateType, ILNode *expr,
+							   ILNode **parent)
+{
+	CSSemValue result;
+	CSSemValue method;
+	unsigned long itemNum;
+	ILProgramItem *itemInfo;
+	ILMethod *firstMatch;
+	ILNode *newExpr;
+
+	/* The result is an r-value of type "delegateType" */
+	result.kind = CS_SEMKIND_RVALUE;
+	result.type = delegateType;
+
+	/* Perform semantic analysis on the expression to get the
+	   method group corresponding to the delegate instance */
+	newExpr = expr;
+	method = ILNode_SemAnalysis(expr, info, &newExpr);
+	if(method.kind != CS_SEMKIND_METHOD_GROUP)
+	{
+		CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+		  			  "delegate expression does not refer to a method");
+		return result;
+	}
+
+	/* Find a match with the delegate's "Invoke" method */
+	itemNum = 0;
+	firstMatch = 0;
+	while((itemInfo = CSGetGroupMember((void *)(method.type), itemNum)) != 0)
+	{
+		if(ILTypeDelegateSignatureMatch(delegateType, itemInfo))
+		{
+			if(firstMatch)
+			{
+				/* We have two (or possibly more) matches for the delegate */
+				CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+	  			  "delegate expression supplies multiple candidates for `%s'",
+				  CSTypeToName(delegateType));
+				return result;
+			}
+			firstMatch = (ILMethod *)itemInfo;
+		}
+		++itemNum;
+	}
+	if(!firstMatch)
+	{
+		/* We weren't able to find a match for the delegate */
+		CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+  			  "delegate expression is not compatible with `%s'",
+			  CSTypeToName(delegateType));
+		return result;
+	}
+
+	/* Build the DelegateCreationExpression node */
+	if(ILMethod_IsStatic(firstMatch))
+	{
+		*parent = ILNode_DelegateCreationExpression_create
+			(ILType_ToClass(delegateType), 0, firstMatch);
+	}
+	else
+	{
+		*parent = ILNode_DelegateCreationExpression_create
+			(ILType_ToClass(delegateType), newExpr, firstMatch);
+	}
+
+	/* Return the result to the caller */
+	return result;
+}
+
+%}
+
 /*
  * Perform semantic analysis for an object creation expression.
  */
@@ -533,11 +611,9 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 			return value;
 		}
 
-		/* TODO: evaluate the expression and then replace this node
-		   with the applicable delegate creation or clone node */
-		CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
-		  			  "delegate creation is not implemented");
-		return value;
+		/* Perform semantic analysis on the delegate creation */
+		return DelegateCreationSem(info, (ILNode *)node, objectType,
+								   node->argList, parent);
 	}
 	else if(ILType_IsClass(objectType))
 	{

@@ -522,6 +522,12 @@ int ILTypeIsDelegate(ILType *type);
  */
 void *ILTypeGetDelegateMethod(ILType *type);
 
+/*
+ * Determine if we have a signature match between a delegate
+ * type and a particular method.
+ */
+int ILTypeDelegateSignatureMatch(ILType *type, void *method);
+
 #ifdef	__cplusplus
 };
 #endif

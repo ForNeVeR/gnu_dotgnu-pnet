@@ -25,52 +25,6 @@
 extern	"C" {
 #endif
 
-int _ILDelegateSignatureMatch(ILClass *delegateClass, ILMethod *method)
-{
-	ILMethod *invoke;
-	ILType *methodSignature;
-	ILType *invokeSignature;
-	unsigned long numParams;
-	unsigned long param;
-
-	/* Constructors can never be used in delegate invocation */
-	if(ILMethod_IsConstructor(method) || ILMethod_IsStaticConstructor(method))
-	{
-		return 0;
-	}
-
-	/* Find the delegate invocation method.  This also checks
-	   that the class is truly a delegate */
-	invoke = ILTypeGetDelegateMethod(ILType_FromClass(delegateClass));
-	if(!invoke)
-	{
-		return 0;
-	}
-
-	/* Check that the delegate signatures match */
-	methodSignature = ILMethod_Signature(method);
-	invokeSignature = ILMethod_Signature(invoke);
-	numParams = ILTypeNumParams(methodSignature);
-	if(numParams != ILTypeNumParams(invokeSignature))
-	{
-		return 0;
-	}
-	if(!ILTypeIdentical(ILTypeGetReturn(methodSignature),
-						ILTypeGetReturn(invokeSignature)))
-	{
-		return 0;
-	}
-	for(param = 1; param <= numParams; ++param)
-	{
-		if(!ILTypeIdentical(ILTypeGetParam(methodSignature, param),
-							ILTypeGetParam(invokeSignature, param)))
-		{
-			return 0;
-		}
-	}
-	return 1;
-}
-
 void *_ILDelegateGetClosure(ILObject *delegate)
 {
 #if defined(HAVE_LIBFFI)
@@ -132,7 +86,7 @@ ILObject *_IL_Delegate_CreateBlankDelegate(ILExecThread *_thread,
 	}
 
 	/* Check that the delegate signatures match */
-	if(!_ILDelegateSignatureMatch(classInfo, methodInfo))
+	if(!ILTypeDelegateSignatureMatch(ILType_FromClass(classInfo), methodInfo))
 	{
 		return 0;
 	}

@@ -1,4 +1,11 @@
 
+2002-07-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_invoke.tc, engine/engine.h, engine/lib_delegate.c,
+	engine/verify_call.c, image/meta_types.c, include/il_types.h:
+	implement semantic analysis for delegate creation expressions
+	in the C# compiler.
+
 2002-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/configure, libffi/configure.in: add host detection

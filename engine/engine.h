@@ -520,12 +520,6 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method);
 ILUInt32 _ILSizeOfTypeLocked(ILType *type);
 
 /*
- * Match the signature of a method against a delegate's "Invoke" method.
- * Returns non-zero if the method matches.
- */
-int _ILDelegateSignatureMatch(ILClass *delegateClass, ILMethod *method);
-
-/*
  * Get the native closure associated with a delegate.  Returns NULL
  * if the closure could not be created for some reason.
  */

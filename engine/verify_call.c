@@ -674,7 +674,7 @@ static ILInt32 MatchDelegateSignature(ILCoder *coder, ILEngineStackItem *stack,
 	}
 
 	/* Check that the delegate signatures match */
-	if(!_ILDelegateSignatureMatch(classInfo, method))
+	if(!ILTypeDelegateSignatureMatch(ILType_FromClass(classInfo), method))
 	{
 		return -1;
 	}

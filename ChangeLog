@@ -1,4 +1,10 @@
 
+2003-06-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_attrs.c, cscc/csharp/cs_cast.tc: include the
+	scope information for nested types in "CSTypeToName"; use the
+	correct type syntax in attribute arguments that use "typeof".
+
 2003-06-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_call.c (InsertCtorArgs): convert ILEngineType_MV

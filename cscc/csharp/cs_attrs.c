@@ -246,6 +246,41 @@ static int IsAttributeTargetDistinct(ILGenInfo *info, ILProgramItem *item,
 	return 1;
 }
 
+/*
+ * Convert a type into a name, formatted for use in attribute values.
+ */
+static const char *CSTypeToAttrName(ILGenInfo *info, ILType *type)
+{
+	ILClass *classInfo = ILTypeToClass(info, type);
+	const char *name = ILClass_Name(classInfo);
+	const char *namespace = ILClass_Namespace(classInfo);
+	const char *finalName;
+	if(namespace)
+	{
+		finalName = ILInternAppendedString
+					(ILInternAppendedString
+						(ILInternString((char *)namespace, -1),
+						 ILInternString((char *)".", 1)),
+					 ILInternString((char *)name, -1)).string;
+	}
+	else
+	{
+		finalName = name;
+	}
+	if(ILClass_NestedParent(classInfo) != 0)
+	{
+		/* Prepend the name of the enclosing nesting class */
+		const char *parentName = CSTypeToAttrName
+			(info, ILType_FromClass(ILClass_NestedParent(classInfo)));
+		finalName = ILInternAppendedString
+					(ILInternAppendedString
+						(ILInternString((char *)parentName, -1),
+						 ILInternString((char *)"+", 1)),
+					 ILInternString((char *)finalName, -1)).string;
+	}
+	return finalName;
+}
+
 /* 
  * write an entry into the serialized stream using the provide paramType and
  * argValue and serialType. 
@@ -304,8 +339,8 @@ static void WriteSerializedEntry(ILGenInfo *info,
 
 		case IL_META_SERIALTYPE_TYPE:
 		{
-			const char *name = CSTypeToName
-				((ILType *)(argValue->un.strValue.str));
+			const char *name = CSTypeToAttrName
+				(info, (ILType *)(argValue->un.strValue.str));
 			ILSerializeWriterSetString(writer, name, strlen(name));
 		}
 		break;
@@ -365,7 +400,7 @@ static void WriteSerializedEntry(ILGenInfo *info,
 			}
 			else if(ILTypeIsEnum(argType))
 			{
-				const char *name = CSTypeToName	((ILType *)(argType));
+				const char *name = CSTypeToAttrName(info, (ILType *)(argType));
 				ILSerializeWriterSetBoxedPrefix(writer,
 										IL_META_SERIALTYPE_ENUM);
 				ILSerializeWriterSetString(writer, name, strlen(name));

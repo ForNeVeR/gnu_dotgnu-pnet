@@ -11,6 +11,9 @@
 	System/Configuration/SingleTagSectionHandler.cs: missing classes
 	in the "System.Configuration" namespace.
 
+	* System/Configuration/EventLogInstaller.cs: remove a class that
+	isn't supposed to be in the "System" assembly.
+
 2003-05-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Uri.cs: Re-write Canonicalize() and finish normalization

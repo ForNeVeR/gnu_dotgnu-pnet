@@ -1,8 +1,9 @@
 /*
- * AddressFamily.cs - Implementation of the "System.Net.Sockets.AddressFamily" class.
+ * AddressFamily.cs - Implementation of the
+ *			"System.Net.Sockets.AddressFamily" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -23,36 +24,38 @@ namespace System.Net.Sockets
 
 public enum AddressFamily
 {
-	AppleTalk = 16,
-	Atm = 22,
-	Banyan = 21,
-	Ccitt = 10,
-	Chaos = 5,
-	Cluster = 24,
-	DataKit = 9,
-	DataLink = 13,
-	DecNet = 12,
-	Ecma = 8,
-	FireFox = 19,
-	HyperChannel = 15,
-	Ieee12844 = 25,
-	ImpLink = 3,
-	InterNetwork = 2,
-	InterNetworkV6 = 23,
-	Ipx = 6,
-	Irda = 26,
-	Iso = 7,
-	Lat = 14,
-	NS = 6,
-	NetBios = 17,
-	NetworkDesigners = 28,
-	Osi = 7,
-	Pup = 4,
-	Sna = 11,
-	Unix = 1,
-	Unknown = -1,
-	Unspecified = 0,
-	VoiceView = 18
+	Unknown				= -1,
+	Unspecified			= 0,
+	Unix				= 1,
+	InterNetwork		= 2,
+	ImpLink				= 3,
+	Pup					= 4,
+	Chaos				= 5,
+	Ipx					= 6,
+	NS					= Ipx,
+	Iso					= 7,
+	Osi					= Iso,
+	Ecma				= 8,
+	DataKit				= 9,
+	Ccitt				= 10,
+	Sna					= 11,
+	DecNet				= 12,
+	DataLink			= 13,
+	Lat					= 14,
+	HyperChannel		= 15,
+	AppleTalk			= 16,
+	NetBios				= 17,
+	VoiceView			= 18,
+	FireFox				= 19,
+	Banyan				= 21,
+	Atm					= 22,
+	InterNetworkV6		= 23,
+	Cluster				= 24,
+	Ieee12844			= 25,
+	Irda				= 26,
+	NetworkDesigners	= 28,
+	Max					= 29
+
 }; // enum AddressFamily
 
 }; // namespace System.Net.Sockets

@@ -1,6 +1,6 @@
 /*
- * LingerOption.cs - Implementation of the
- *			"System.Net.Sockets.LingerOption" class.
+ * ProtocolFamily.cs - Implementation of the
+ *			"System.Net.Sockets.ProtocolFamily" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,43 +22,44 @@
 namespace System.Net.Sockets
 {
 
-public class LingerOption
+#if !ECMA_COMPAT
+
+public enum ProtocolFamily
 {
-	// Internal state.
-	private bool enabled;
-	private int seconds;
+	Unknown				= -1,
+	Unspecified			= 0,
+	Unix				= 1,
+	InterNetwork		= 2,
+	ImpLink				= 3,
+	Pup					= 4,
+	Chaos				= 5,
+	Ipx					= 6,
+	NS					= Ipx,
+	Iso					= 7,
+	Osi					= Iso,
+	Ecma				= 8,
+	DataKit				= 9,
+	Ccitt				= 10,
+	Sna					= 11,
+	DecNet				= 12,
+	DataLink			= 13,
+	Lat					= 14,
+	HyperChannel		= 15,
+	AppleTalk			= 16,
+	NetBios				= 17,
+	VoiceView			= 18,
+	FireFox				= 19,
+	Banyan				= 21,
+	Atm					= 22,
+	InterNetworkV6		= 23,
+	Cluster				= 24,
+	Ieee12844			= 25,
+	Irda				= 26,
+	NetworkDesigners	= 28,
+	Max					= 29
 
-	// Constructor.
-	public LingerOption(bool enabled, int seconds)
-			{
-				this.enabled = enabled;
-				this.seconds = seconds;
-			}
+}; // enum ProtocolFamily
 
-	// Get or set the linger properties.
-	public bool Enabled
-			{
-				get
-				{
-					return enabled;
-				}
-				set
-				{
-					enabled = value;
-				}
-			}
-	public int LingerTime
-			{
-				get
-				{
-					return seconds;
-				}
-				set
-				{
-					seconds = value;
-				}
-			}
-
-}; // class LingerOption
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Net.Sockets

@@ -1,8 +1,9 @@
 /*
- * SocketOptionLevel.cs - Implementation of the "System.Net.Sockets.SocketOptionName" class.
+ * SocketOptionName.cs - Implementation of the
+ *			"System.Net.Sockets.SocketOptionName" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -23,46 +24,54 @@ namespace System.Net.Sockets
 
 public enum SocketOptionName
 {
-	AcceptConnection = 2,
-	AddMembership = 12,
-	AddSourceMembership = 15,
-	BlockSource = 17,
-	Broadcast = 32,
-	BsdUrgent = 2,
-	ChecksumCoverage = 20,
-	Debug = 1,
-	DontFragment = 14,
-	DontLinger = -129,
-	DontRoute = 16,
-	DropMembership = 13,
-	DropSourceMembership = 16,
-	Error = 4103,
-	ExclusiveAddressUse = -5,
-	Expedited = 2,
-	HeaderIncluded = 2,
-	IPOptions = 1,
-	IpTimeToLive = 4,
-	KeepAlive = 8,
-	Linger = 128,
-	MaxConnections = 2147483647,
-	MulticastInterface = 9,
-	MulticastLoopback = 11,
-	MulticastTimeToLive = 10,
-	NoChecksum = 1,
-	NoDelay = 1,
-	OutOfBandInline = 256,
-	PacketInformation = 19,
-	ReceiveBuffer = 4098,
-	ReceiveLowWater = 4100,
-	ReceiveTimeout = 4102,
-	ReuseAddress = 4,
-	SendBuffer = 4097,
-	SendLowWater = 4099,
-	SendTimeout = 4101,
-	Type = 4104,
-	TypeOfService = 3,
-	UnblockSource = 18,
-	UseLoopback = 64
+	// Options for SocketOptionLevel.IP.
+	IPOptions				= 0x00000001,
+	HeaderIncluded			= 0x00000002,
+	TypeOfService			= 0x00000003,
+	IpTimeToLive			= 0x00000004,
+	MulticastInterface		= 0x00000009,
+	MulticastTimeToLive		= 0x0000000A,
+	MulticastLoopback		= 0x0000000B,
+	AddMembership			= 0x0000000C,
+	DropMembership			= 0x0000000D,
+	DontFragment			= 0x0000000E,
+	AddSourceMembership		= 0x0000000F,
+	DropSourceMembership	= 0x00000010,
+	BlockSource				= 0x00000011,
+	UnblockSource			= 0x00000012,
+	PacketInformation		= 0x00000013,
+
+	// Options for SocketOptionLevel.Tcp.
+	NoDelay					= 0x00000001,
+	BsdUrgent				= 0x00000002,
+	Expedited				= 0x00000002,
+
+	// Options for SocketOptionLevel.Udp.
+	NoChecksum				= 0x00000001,
+	ChecksumCoveragei		= 0x00000014,
+
+	// Options for SocketOptionLevel.Socket.
+	Debug					= 0x00000001,
+	AcceptConnection		= 0x00000002,
+	ReuseAddress			= 0x00000004,
+	KeepAlive				= 0x00000008,
+	DontRoute				= 0x00000010,
+	Broadcast				= 0x00000020,
+	UseLoopback				= 0x00000040,
+	Linger					= 0x00000080,
+	OutOfBandInline			= 0x00000100,
+	SendBuffer				= 0x00001001,
+	ReceiveBuffer			= 0x00001002,
+	SendLowWater			= 0x00001003,
+	ReceiveLowWater			= 0x00001004,
+	SendTimeout				= 0x00001005,
+	ReceiveTimeout			= 0x00001006,
+	Error					= 0x00001007,
+	Type					= 0x00001008,
+	MaxConnections			= 0x7FFFFFFF,
+	DontLinger				= unchecked((int)0xFFFFFF7F),
+	ExclusiveAddressUse		= unchecked((int)0xFFFFFFFB)
+
 }; // enum SocketOptionName
 
 }; // namespace System.Net.Sockets

@@ -59,6 +59,19 @@
 
 	* runtime/System/AppDomain.cs: remove an unnecessary TODO.
 
+	* System/Net/Sockets/AddressFamily.cs,
+	System/Net/Sockets/LingerOption.cs,
+	System/Net/Sockets/MulticastOption.cs,
+	System/Net/Sockets/ProtocolFamily.cs,
+	System/Net/Sockets/ProtocolType.cs,
+	System/Net/Sockets/SelectMode.cs,
+	System/Net/Sockets/SocketFlags.cs,
+	System/Net/Sockets/SocketOptionLevel.cs,
+	System/Net/Sockets/SocketOptionName.cs,
+	System/Net/Sockets/SocketShutdown.cs,
+	System/Net/Sockets/SocketType.cs: clean up some of the minor
+	classes in "System.Net.Sockets".
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

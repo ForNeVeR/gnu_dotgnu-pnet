@@ -1,8 +1,9 @@
 /*
- * ProtocolType.cs - Implementation of the "System.Net.Sockets.ProtocolType" class.
+ * ProtocolType.cs - Implementation of the
+ *			"System.Net.Sockets.ProtocolType" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -20,12 +21,13 @@
 
 namespace System.Net.Sockets
 {
+
 public enum SelectMode
 {
-	SelectError = 2,
-	SelectRead = 0,
-	SelectWrite = 1	
+	SelectRead  = 0,
+	SelectWrite = 1,
+	SelectError = 2
+
 }; // enum SelectMode
 
 }; // namespace System.Net.Sockets
-

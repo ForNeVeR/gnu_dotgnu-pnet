@@ -1,8 +1,9 @@
 /*
- * SocketType.cs - Implementation of the "System.Net.Sockets.SocketType" class.
+ * SocketType.cs - Implementation of the
+ *			"System.Net.Sockets.SocketType" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -23,13 +24,13 @@ namespace System.Net.Sockets
 
 public enum SocketType
 {
-	Dgram = 2,
-	Raw = 3,
-	Rdm = 4,
-	Seqpacket = 5,
-	Stream = 1,
-	Unknown = -1
+	Unknown		= -1,
+	Stream		= 1,
+	Dgram		= 2,
+	Raw			= 3,
+	Rdm			= 4,
+	Seqpacket	= 5
+
 }; // enum SocketType
 
 }; // namespace System.Net.Sockets
-

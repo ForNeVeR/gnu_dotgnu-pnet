@@ -1,8 +1,9 @@
 /*
- * ProtocolType.cs - Implementation of the "System.Net.Sockets.ProtocolType" class.
+ * ProtocolType.cs - Implementation of the
+ *			"System.Net.Sockets.ProtocolType" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -23,22 +24,22 @@ namespace System.Net.Sockets
 
 public enum ProtocolType
 {
-	Ggp = 3,
-	IP = 0,
-	Icmp = 1,
-	Idp = 22,
-	Igmp = 2,
-	Ipx = 1000,
-	ND = 77,
-	Pup = 12,
-	Raw = 255,
-	Spx = 1256,
-	SpxII = 1257,
-	Tcp = 6,
-	Udp = 17,
-	Unknown = -1,
-	Unspecified = 0
+	Unknown			= -1,
+	Unspecified		= 0,
+	IP				= 0,
+	Icmp			= 1,
+	Igmp			= 2,
+	Ggp				= 3,
+	Tcp				= 6,
+	Pup				= 12,
+	Udp				= 17,
+	Idp				= 22,
+	ND				= 77,
+	Raw				= 255,
+	Ipx				= 1000,
+	Spx				= 1256,
+	SpxII			= 1257
+
 }; // enum ProtocolType
 
 }; // namespace System.Net.Sockets
-

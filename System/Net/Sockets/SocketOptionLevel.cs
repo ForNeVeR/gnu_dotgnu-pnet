@@ -1,8 +1,9 @@
 /*
- * SocketOptionLevel.cs - Implementation of the "System.Net.Sockets.SocketOptionLevel" class.
+ * SocketOptionLevel.cs - Implementation of the
+ *			"System.Net.Sockets.SocketOptionLevel" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -23,11 +24,11 @@ namespace System.Net.Sockets
 
 public enum SocketOptionLevel
 {
-	IP = 0,
-	Socket = 65535,
-	Tcp = 6,
-	Udp = 17
+	IP			= 0,
+	Tcp			= 6,
+	Udp			= 17,
+	Socket		= 65535
+
 }; // enum SocketOptionLevel
 
 }; // namespace System.Net.Sockets
-

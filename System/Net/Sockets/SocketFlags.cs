@@ -1,8 +1,9 @@
 /*
- * SocketFlags.cs - Implementation of the "System.Net.Sockets.SocketFlags" class.
+ * SocketFlags.cs - Implementation of the
+ *			"System.Net.Sockets.SocketFlags" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -21,17 +22,16 @@
 namespace System.Net.Sockets
 {
 
-using System;
-
 [Flags]
 public enum SocketFlags
 {
-	DontRoute = 0x4,
-	None = 0x0,
-	OutOfBand = 0x1,
-	Partial = 0x8000,
-	Peek = 0x2
+	None				= 0x0000,
+	OutOfBand			= 0x0001,
+	Peek				= 0x0002,
+	DontRoute			= 0x0004,
+	MaxIOVectorLength	= 0x0010,
+	Partial				= 0x8000
+
 }; // enum SocketFlags
 
 }; // namespace System.Net.Sockets
-

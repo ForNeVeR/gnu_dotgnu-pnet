@@ -38,6 +38,9 @@
 	add the new CVM instruction "type_from_handle" to inline calls
 	to "Type.GetTypeFromHandle".
 
+	* engine/cvm_inline.c: implement proper exception handling for
+	the "type_from_handle" instruction.
+
 2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with UTF-7 encoding and

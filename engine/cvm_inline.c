@@ -309,8 +309,10 @@ case COP_PREFIX_TYPE_FROM_HANDLE:
 	tempptr = stacktop[-1].ptrValue;
 	if(tempptr != 0)
 	{
+		COPY_STATE_TO_THREAD();
 		stacktop[-1].ptrValue =
 			(void *)(_ILGetClrType(thread, (ILClass *)tempptr));
+		RESTORE_STATE_FROM_THREAD();
 	}
 	MODIFY_PC_AND_STACK(2, 0);
 }

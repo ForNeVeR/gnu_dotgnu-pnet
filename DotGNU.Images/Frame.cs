@@ -313,16 +313,20 @@ public class Frame : MarshalByRefObject, IDisposable
 						return b | g << 8 | r << 16;
 					}
 					case (PixelFormat.Format32bppArgb):
+					{
 						ptr += 4 * x;
 						return data[ptr++] | data[ptr++] << 8 | data[ptr++] << 16;
+					}
 					case (PixelFormat.Format32bppRgb):
 					{
 						ptr += 4 * x;
 						return data[ptr] | data[ptr+1] << 8 | data[ptr+2] << 16;
 					}
 					case (PixelFormat.Format24bppRgb):
+					{
 						ptr += 3 * x;
 						return data[ptr++] | data[ptr++] << 8 | data[ptr++] << 16;
+					}
 					case (PixelFormat.Format16bppRgb565):
 					{
 						ptr += 2 * x;
@@ -350,21 +354,29 @@ public class Frame : MarshalByRefObject, IDisposable
 						return all | all << 8 | all << 16;
 					}
 					case (PixelFormat.Format8bppIndexed):
+					{
 						return palette[data[ptr]];
+					}
 					case (PixelFormat.Format4bppIndexed):
+					{
 						ptr += x/2;
 						if ((x & 0x01) == 0)
 							return palette[data[ptr]>>4];
 						else
 							return palette[data[ptr] & 0x0F];
+					}
 					case (PixelFormat.Format1bppIndexed):
+					{
 						ptr += x/8;
 						if ((data[ptr] &(1<<7 - (x & 0x07)))== 0)
 							return palette[0];
 						else
 							return palette[1];
+					}
 					default:
-						throw new NotSupportedException();
+					{
+						throw new NotSupportedException(pixelFormat.ToString());
+					}
 				}
 			}
 
@@ -850,7 +862,7 @@ public class Frame : MarshalByRefObject, IDisposable
 						{
 							case PixelFormat.Format32bppArgb:
 							{
-								alpha = data[offset + 4 * x] ; 
+								alpha = data[offset + 4 * x + 3] ; 
 							}
 							break;
 							case PixelFormat.Format32bppPArgb:

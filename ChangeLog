@@ -1,4 +1,10 @@
 
+2004-07-23  Gopal V  <gopalv82@yahoo.com>
+
+	* DotGNU.Image/Frame.cs: Fix transparency mask calculations for 
+	32bit ARGB images to match the lowest byte first format followed
+	in data.
+
 2004-07-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/_ConstructorInfo.cs,
@@ -194,33 +200,33 @@
 
 2004-07-19  Neil Cawse  <neilcawse@geotab.com>
 
-        * DotGNU.Images/BmpReformatter.cs,
-        DotGNU.Images/BmpResizer.cs,
-        DotGNU.Images/Frame.cs: fix conversion and sizing bugs. Add in support
-        for 32bpp ARBG. Drawing still needs to be implemented.
+	* DotGNU.Images/BmpReformatter.cs,
+	DotGNU.Images/BmpResizer.cs,
+	DotGNU.Images/Frame.cs: fix conversion and sizing bugs. Add in support
+    for 32bpp ARBG. Drawing still needs to be implemented.
         
-        * System.Xml/XmlDocument.cs,
-        System.Xml/Private/XmlDTDReader.cs,
-        System.Windows.Forms/Binding.cs,
-        System.Windows.Forms/Control.cs,
-        System.Windows.Forms/DomainUpDown.cs,
-        System.Windows.Forms/FontDialog.cs,
-        System.Windows.Forms/HelpProvider.cs,
-        System.Windows.Forms/NumericUpDown.cs,
-        System.Windows.Forms/Panel.cs,
-        System.Windows.Forms/TabControl.cs,
-        System.Windows.Forms/Themes/ThemeManager.cs,
-        runtime/System/Globalization/_I18NCompareInfo.cs,
-        runtime/System/Globalization/_I18NTextInfo.cs,
-        runtime/System/Runtime/Serialization/Formatters/Binary/
-        BinaryValueWriter.cs,
-        Xsharp/EmbeddedApplication.cs,
-        Xsharp/TopLevelWindow.cs,
-        Xsharp/Dcop/DcopCall.cs,
-        Xsharp/Dcop/DcopClient.cs,
-        Xsharp/Dcop/QDataStream.cs,
-        Xsharp/Ice/IceClient.cs: csc compile and warning fixes. TabControl now
-        always draws tabs before tab pages.
+	* System.Xml/XmlDocument.cs,
+	System.Xml/Private/XmlDTDReader.cs,
+	System.Windows.Forms/Binding.cs,
+	System.Windows.Forms/Control.cs,
+	System.Windows.Forms/DomainUpDown.cs,
+	System.Windows.Forms/FontDialog.cs,
+	System.Windows.Forms/HelpProvider.cs,
+	System.Windows.Forms/NumericUpDown.cs,
+	System.Windows.Forms/Panel.cs,
+	System.Windows.Forms/TabControl.cs,
+	System.Windows.Forms/Themes/ThemeManager.cs,
+	runtime/System/Globalization/_I18NCompareInfo.cs,
+	runtime/System/Globalization/_I18NTextInfo.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/
+	BinaryValueWriter.cs,
+	Xsharp/EmbeddedApplication.cs,
+	Xsharp/TopLevelWindow.cs,
+	Xsharp/Dcop/DcopCall.cs,
+	Xsharp/Dcop/DcopClient.cs,
+	Xsharp/Dcop/QDataStream.cs,
+	Xsharp/Ice/IceClient.cs: csc compile and warning fixes. TabControl now
+	always draws tabs before tab pages.
 
 2004-07-19  Gopal V  <gopalv82@yahoo.com>
 

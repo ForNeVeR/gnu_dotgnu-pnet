@@ -4,6 +4,9 @@
 	* System.Xml/Private/XmlDocumentNavigator.cs: Skip XmlDeclarations
 	and EntityReferences when doing a MoveNext()
 
+	* System.Xml/XmlElement.cs: Set the parent for all SetAttribute
+	operations.
+
 2004-10-18  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListBox.cs: implement ItemHeight property.

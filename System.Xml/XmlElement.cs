@@ -452,6 +452,8 @@ class XmlElement : XmlLinkedNode
 				{
 					attr = OwnerDocument.CreateAttribute(name);
 					attr.Value = value;
+					/* TODO : figure out if this is better done lower down */
+					attr.parent = this;
 					Attributes.Append(attr);
 				}
 			}
@@ -480,6 +482,8 @@ class XmlElement : XmlLinkedNode
 			{
 				if(newAttr.OwnerElement == null)
 				{
+					/* TODO : figure out if this is better done lower down */
+					newAttr.parent = this; 
 					return (XmlAttribute)(Attributes.SetNamedItem(newAttr));
 				}
 				else
@@ -498,6 +502,8 @@ class XmlElement : XmlLinkedNode
 				{
 					attr = OwnerDocument.CreateAttribute
 						(localName, namespaceURI);
+					/* TODO : figure out if this is better done lower down */
+					attr.parent = this;
 					Attributes.Append(attr);
 				}
 				return attr;

@@ -628,6 +628,7 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 				needSuffix = 0;
 				break;
 			}
+			++posn;
 		}
 		if(needSuffix)
 		{

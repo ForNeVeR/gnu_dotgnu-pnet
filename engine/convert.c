@@ -28,9 +28,11 @@ extern	"C" {
  * Locate or load an external module that is being referenced via "PInvoke".
  * Returns the system module pointer, or NULL if it could not be loaded.
  */
-static void *LocateExternalModule(ILExecProcess *process, const char *name)
+static void *LocateExternalModule(ILExecProcess *process, const char *name,
+								  ILPInvoke *pinvoke)
 {
 	ILLoadedModule *loaded;
+	char *pathname;
 
 	/* Search for an already-loaded module with the same name */
 	loaded = process->loadedModules;
@@ -43,7 +45,10 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name)
 		loaded = loaded->next;
 	}
 
-	/* Create a new module structure */
+	/* Create a new module structure.  We keep this structure even
+	   if we cannot load the actual module.  This ensures that
+	   future requests for the same module will be rejected without
+	   re-trying the open */
 	loaded = (ILLoadedModule *)ILMalloc(sizeof(ILLoadedModule) + strlen(name));
 	if(!loaded)
 	{
@@ -54,10 +59,16 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name)
 	strcpy(loaded->name, name);
 	process->loadedModules = loaded;
 
-	/* Attempt to open the module.  If we cannot, then leave the
-	   loaded module structure on the list so that any future requests
-	   for the module will be rejected without re-trying the open */
-	loaded->handle = ILDynLibraryOpen(loaded->name);
+	/* Resolve the module name to a library name */
+	pathname = ILPInvokeResolveModule(pinvoke);
+	if(!pathname)
+	{
+		return 0;
+	}
+
+	/* Attempt to open the module */
+	loaded->handle = ILDynLibraryOpen(pathname);
+	ILFree(pathname);
 	return loaded->handle;
 }
 
@@ -129,8 +140,13 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				{
 					return 0;
 				}
-				moduleHandle = LocateExternalModule(thread->process,
-													ILModule_Name(module));
+				name = ILModule_Name(module);
+				if(!name || *name == '\0')
+				{
+					return 0;
+				}
+				moduleHandle = LocateExternalModule
+									(thread->process, name, pinv);
 				if(!moduleHandle)
 				{
 					return 0;

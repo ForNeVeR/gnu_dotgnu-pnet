@@ -28,6 +28,9 @@ specific to cygwin.
 * support/dynlib.c: simplify the pathname handling - we will handle
 the ugliness of prefixes and suffixes elsewhere.
 
+* engine/convert.c, image/link.c: change the PInvoke module loading so
+that it uses the "ILPInvokeResolveModule" function.
+
 2001-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c,

@@ -132,8 +132,3 @@ JavaGenDiscard(ILNode_NamedArg)
 {
 	/* TODO */
 }
-
-JavaGenDiscard(ILNode_Argument)
-{
-	/* TODO */
-}

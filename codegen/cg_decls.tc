@@ -259,8 +259,8 @@ static void AllocJLVars(ILGenInfo *info, ILType *signature,
 	/* Allocate frame positions to the method arguments */
 	JavaGenStartFrame(info);
 	vars = signature;
-	if((vars->kind & (IL_META_CALLCONV_HASTHIS)) != 0 &&
-	   (vars->kind & (IL_META_CALLCONV_EXPLICITTHIS)) == 0)
+	if((vars->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
+	   (vars->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
 	{
 		/* Allocate a slot for the "this" argument */
 		JavaGenAddFrameSlot(info, ILMachineType_ObjectRef);
@@ -641,11 +641,6 @@ ILNode_GenDiscard(ILNode_AttrArgs)
 }
 
 ILNode_GenDiscard(ILNode_NamedArg)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_Argument)
 {
 	/* TODO */
 }

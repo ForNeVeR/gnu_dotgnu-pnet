@@ -582,12 +582,6 @@ ILNode_SemAnalysis(ILNode_NamedArg)
 	return CSSemValueDefault;
 }
 
-ILNode_SemAnalysis(ILNode_Argument)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
 ILNode_SemAnalysis(ILNode_DocComment)
 {
 	/* Nothing to do here */

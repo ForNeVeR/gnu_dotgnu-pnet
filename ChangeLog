@@ -4,6 +4,9 @@
 	* cscc/c/c_coerce.c (GetCoerceRules): don't strip off the
 	function pointer prefix when checking for pointer coercions.
 
+	* cscc/c/c_grammar.y (ProcessDeclaration): allow function
+	types to be defined with "typedef".
+
 2002-09-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_oper.tc: compare the element types in "==", not the

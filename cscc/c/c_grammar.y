@@ -526,8 +526,11 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 	if(decl.params != 0 ||
 	   (spec.baseType != ILType_Invalid && CTypeIsFunction(spec.baseType)))
 	{
-		ProcessFunctionDeclaration(spec, decl, init, list);
-		return;
+		if((spec.specifiers & C_SPEC_TYPEDEF) == 0)
+		{
+			ProcessFunctionDeclaration(spec, decl, init, list);
+			return;
+		}
 	}
 
 	/* Finalize the type that is associated with the declaration */

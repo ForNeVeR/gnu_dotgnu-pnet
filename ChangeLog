@@ -26,6 +26,11 @@
 	samples/httpsrv.cs, samples/mscorlib.dll, samples/pnetlib.here:
 	remove the C# samples and pre-compiled assemblies from pnet.
 
+	* engine/engine.h, engine/layout.c, image/program.h: add "native"
+	offset information to fields, to allow for the possibility of
+	native structures with different layout from their managed
+	counterparts.
+
 2002-12-08  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h,cscc/common/cc_main.c: add noStdlibFlag and 

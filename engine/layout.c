@@ -37,6 +37,8 @@ typedef struct
 {
 	ILUInt32	size;
 	ILUInt32	alignment;
+	ILUInt32	nativeSize;
+	ILUInt32	nativeAlignment;
 	ILUInt32	vtableSize;
 	ILMethod  **vtable;
 	ILUInt32	staticSize;
@@ -162,6 +164,8 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 
 			default: return 0;
 		}
+		layout->nativeSize = layout->size;
+		layout->nativeAlignment = layout->alignment;
 		layout->vtableSize = 0;
 		layout->vtable = 0;
 		layout->staticSize = 0;
@@ -184,6 +188,8 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 		layout->size = sizeof(void *);
 		layout->alignment = _IL_ALIGN_FOR_TYPE(void_p);
 	#endif
+		layout->nativeSize = layout->size;
+		layout->nativeAlignment = layout->alignment;
 		layout->vtableSize = 0;
 		layout->vtable = 0;
 		layout->staticSize = 0;
@@ -414,6 +420,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	ILFieldRVA *fieldRVA;
 	LayoutInfo typeLayout;
 	ILUInt32 maxAlignment;
+	ILUInt32 maxNativeAlignment;
 	ILUInt32 packingSize;
 	ILUInt32 explicitSize;
 	int allowFieldLayout;
@@ -442,6 +449,8 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		{
 			layout->size = classPrivate->size;
 			layout->alignment = classPrivate->alignment;
+			layout->nativeSize = classPrivate->nativeSize;
+			layout->nativeAlignment = classPrivate->nativeAlignment;
 			layout->vtableSize = classPrivate->vtableSize;
 			layout->vtable = classPrivate->vtable;
 			layout->staticSize = classPrivate->staticSize;
@@ -482,6 +491,8 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		parent = 0;
 		layout->size = 0;
 		layout->alignment = 1;
+		layout->nativeSize = 0;
+		layout->nativeAlignment = 1;
 		layout->vtableSize = 0;
 		layout->hasFinalizer = 0;
 	}
@@ -541,6 +552,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	   match the algorithm used by the platform C compiler */
 	field = 0;
 	maxAlignment = 1;
+	maxNativeAlignment = 1;
 	while((field = (ILField *)ILClassNextMemberByKind
 			(info, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
 	{
@@ -558,6 +570,10 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 			{
 				typeLayout.alignment = packingSize;
 			}
+			if(packingSize != 0 && packingSize < typeLayout.nativeAlignment)
+			{
+				typeLayout.nativeAlignment = packingSize;
+			}
 
 			/* Use an explicit field offset if necessary */
 			if(allowFieldLayout &&
@@ -565,11 +581,16 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 			{
 				/* Record the explicit field offset */
 				field->offset = fieldLayout->offset;
+				field->nativeOffset = fieldLayout->offset;
 
 				/* Extend the default class size to include the field */
 				if((field->offset + typeLayout.size) > layout->size)
 				{
 					layout->size = field->offset + typeLayout.size;
+				}
+				if((field->offset + typeLayout.nativeSize) > layout->nativeSize)
+				{
+					layout->nativeSize = field->offset + typeLayout.nativeSize;
 				}
 			}
 			else
@@ -580,16 +601,27 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 					layout->size += typeLayout.alignment -
 						(layout->size % typeLayout.alignment);
 				}
+				if((layout->nativeSize % typeLayout.nativeAlignment) != 0)
+				{
+					layout->nativeSize += typeLayout.nativeAlignment -
+						(layout->nativeSize % typeLayout.nativeAlignment);
+				}
 
 				/* Record the field's offset and advance past it */
 				field->offset = layout->size;
+				field->nativeOffset = layout->nativeSize;
 				layout->size += typeLayout.size;
+				layout->nativeSize += typeLayout.nativeSize;
 			}
 
 			/* Update the maximum alignment */
 			if(typeLayout.alignment > maxAlignment)
 			{
 				maxAlignment = typeLayout.alignment;
+			}
+			if(typeLayout.nativeAlignment > maxNativeAlignment)
+			{
+				maxNativeAlignment = typeLayout.nativeAlignment;
 			}
 		}
 	}
@@ -608,10 +640,25 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		layout->size += layout->alignment -
 				(layout->size % layout->alignment);
 	}
+	if(maxNativeAlignment > layout->nativeAlignment)
+	{
+		layout->nativeAlignment = maxNativeAlignment;
+	}
+	if(explicitSize > layout->nativeSize)
+	{
+		layout->nativeSize = explicitSize;
+	}
+	else if((layout->nativeSize % layout->nativeAlignment) != 0)
+	{
+		layout->nativeSize += layout->nativeAlignment -
+				(layout->nativeSize % layout->nativeAlignment);
+	}
 
 	/* Record the object size information for this class */
 	classPrivate->size = layout->size;
 	classPrivate->alignment = layout->alignment;
+	classPrivate->nativeSize = layout->nativeSize;
+	classPrivate->nativeAlignment = layout->nativeAlignment;
 	classPrivate->inLayout = 0;
 
 	/* Allocate the static fields.  We must do this after the
@@ -650,6 +697,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 
 				/* Record the field's offset and advance past it */
 				field->offset = layout->staticSize;
+				field->nativeOffset = layout->staticSize;
 				layout->staticSize += typeLayout.size;
 			}
 		}

@@ -331,6 +331,7 @@ struct _tagILField
 {
 	ILMember		member;				/* Common member fields */
 	ILUInt32		offset;				/* Data added by the runtime engine */
+	ILUInt32		nativeOffset;		/* Data added by the runtime engine */
 
 };
 

@@ -233,10 +233,12 @@ typedef struct _tagILClassPrivate ILClassPrivate;
 struct _tagILClassPrivate
 {
 	ILUInt32		size;				/* Full instance size */
+	ILUInt32		nativeSize;			/* Full native instance size */
 	ILUInt32		staticSize;			/* Size of static data */
 	ILUInt32		inLayout : 1;		/* Non-zero if in layout algorithm */
 	ILUInt32		hasFinalizer : 1;	/* Non-zero if non-trivial finalizer */
-	ILUInt32		alignment : 14;		/* Preferred instance alignment */
+	ILUInt32		alignment : 7;		/* Preferred instance alignment */
+	ILUInt32		nativeAlignment : 7;/* Preferred native alignment */
 	ILUInt32		vtableSize : 16;	/* Size of the vtable */
 	ILMethod      **vtable;				/* Methods within the vtable */
 	ILObject       *clrType;			/* Associated CLR type object */

@@ -1,4 +1,8 @@
 
+2004-12-16  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* System.Xml/XmlUrlResolver.cs: Fixed bug #11326.
+
 2004-12-11  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/PrintDialog.cs: Add stub.

@@ -83,7 +83,22 @@ public class XmlUrlResolver : XmlResolver
 					}
 					else if(baseUri == null)
 					{
-						return new Uri(relativeUri);
+						// bug #11326 - Expand the relative Uri to a absolute
+						// Uri before calling the ctor.  As we have no base
+						// Uri to work with, I belive it's safe to assume
+						// we're looking for a file on the local filesystem.
+						//  - "ptah"
+						if (File.Exists(relativeUri))
+						{
+							return new Uri(Path.Combine(
+								Directory.GetCurrentDirectory(),
+								relativeUri
+							));
+						}
+						else
+						{
+							return new Uri(relativeUri);
+						}
 					}
 					else if(relativeUri == null)
 					{

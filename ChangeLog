@@ -31,6 +31,9 @@
 	* System.Xml/XmlConvert.cs, resources/en_US/System.Xml/Xml.txt:
 	implement the missing "System.Xml.XmlConvert" class.
 
+	* System.Xml/XmlException.cs: implement the missing line number
+	and line position handling.
+
 2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.2.6" release.

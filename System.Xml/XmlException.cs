@@ -21,18 +21,25 @@
 namespace System.Xml
 {
 
-[TODO]
 public class XmlException : SystemException
 {
-	//TODO: The line number stuff
+	// Internal state.
+	private int lineNumber, linePosition;
 
 	// Constructors.
 	public XmlException()
 		: base(S._("Xml_Default")) {}
-	public XmlException(String msg)
-		: base(msg) {}
-	public XmlException(String msg, Exception inner)
-		: base(msg, inner) {}
+	public XmlException(String message)
+		: base(message) {}
+	public XmlException(String message, Exception innerException)
+		: base(message, innerException) {}
+	public XmlException(String message, Exception innerException,
+						int lineNumber, int linePosition)
+		: base(message, innerException)
+		{
+			this.lineNumber = lineNumber;
+			this.linePosition = linePosition;
+		}
 	
 	// Get the default message to use for this exception type.
 	public override String Message
@@ -51,6 +58,24 @@ public class XmlException : SystemException
 				}
 			}
 
-}; //class XmlException
+	// Get the line number.
+	public int LineNumber
+			{
+				get
+				{
+					return lineNumber;
+				}
+			}
 
-}; //namespace System.Xml
+	// Get the line position.
+	public int LinePosition
+			{
+				get
+				{
+					return linePosition;
+				}
+			}
+
+}; // class XmlException
+
+}; // namespace System.Xml

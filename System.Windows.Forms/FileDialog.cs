@@ -555,6 +555,16 @@ public abstract class FileDialog : CommonDialog
 	private const int ColumnSpacing			= 32;
 	private const int TextSelectOverlap		= 2;
 
+	// Special characters that may appear as directory separators.
+	private static readonly char[] directorySeparators =
+			{'/', '\\', ':',
+			 Path.DirectorySeparatorChar,
+			 Path.AltDirectorySeparatorChar,
+			 Path.VolumeSeparatorChar};
+
+	// Special characters that indicate wildcards.
+	private static readonly char[] wildcards = {'*', '?'};
+
 	// Information that is stored for a filesystem entry.
 	private sealed class FilesystemEntry : IComparable
 	{
@@ -1545,6 +1555,10 @@ public abstract class FileDialog : CommonDialog
 					newDirButton.FlatStyle = FlatStyle.Popup;
 					newDirButton.Image = newIcon;
 					newDirButton.Size = new Size(23, 23);
+				#if ECMA_COMPAT
+					// Cannot create directories in ECMA-compat mode!
+					newDirButton.Visible = false;
+				#endif
 					hbox.StretchControl = directory;
 					hbox.Controls.Add(directory);
 					hbox.Controls.Add(upButton);
@@ -1607,6 +1621,7 @@ public abstract class FileDialog : CommonDialog
 
 					// Hook up interesting events.
 					upButton.Click += new EventHandler(UpOneLevel);
+					newDirButton.Click += new EventHandler(NewFolder);
 					directory.SelectedIndexChanged +=
 						new EventHandler(DirectorySelectionChanged);
 					name.TextChanged += new EventHandler(NameTextChanged);
@@ -1727,6 +1742,36 @@ public abstract class FileDialog : CommonDialog
 		private void UpOneLevel(Object sender, EventArgs e)
 				{
 					UpOneLevel();
+				}
+
+		// Create a new folder.
+		public void NewFolder()
+				{
+					NewFolderForm form = new NewFolderForm(currentDirectory);
+					bool ok = false;
+					try
+					{
+						if(form.ShowDialog(this) == DialogResult.OK)
+						{
+							ok = true;
+						}
+					}
+					finally
+					{
+						form.DisposeDialog();
+					}
+					if(ok)
+					{
+						String dir = form.FolderName;
+						if(dir != null)
+						{
+							ChangeDirectory(dir);
+						}
+					}
+				}
+		private void NewFolder(Object sender, EventArgs e)
+				{
+					NewFolder();
 				}
 
 		// Go to the home directory.
@@ -1884,16 +1929,6 @@ public abstract class FileDialog : CommonDialog
 					// if the top-level form gets the focus.
 					name.Focus();
 				}
-
-		// Special characters that may appear as directory separators.
-		private static readonly char[] directorySeparators =
-				{'/', '\\', ':',
-				 Path.DirectorySeparatorChar,
-				 Path.AltDirectorySeparatorChar,
-				 Path.VolumeSeparatorChar};
-
-		// Special characters that indicate wildcards.
-		private static readonly char[] wildcards = {'*', '?'};
 
 		// Handle the "accept" button on this dialog.
 		public void AcceptDialog(Object sender, EventArgs e)
@@ -2156,6 +2191,197 @@ public abstract class FileDialog : CommonDialog
 				}
 
 	}; // class FileDialogForm
+
+	// Form class for the "New Folder" dialog box.
+	private sealed class NewFolderForm : Form
+	{
+		// Internal state.
+		private Control iconControl;
+		private Icon icon;
+		private Label textLabel;
+		private Button button1;
+		private Button button2;
+		private VBoxLayout vbox;
+		private VBoxLayout vbox2;
+		private HBoxLayout hbox;
+		private TextBox textBox;
+		private ButtonBoxLayout buttonBox;
+		private String currentDirectory;
+		private String folderName;
+
+		// Constructor.
+		public NewFolderForm(String currentDirectory)
+				{
+					// Record the current directory to create the folder in.
+					this.currentDirectory = currentDirectory;
+
+					// Set the dialog box's caption.
+					Text = S._("SWF_FileDialog_NewFolder");
+
+					// Make the borders suitable for a dialog box.
+					FormBorderStyle = FormBorderStyle.FixedDialog;
+					MinimizeBox = false;
+					ShowInTaskbar = false;
+
+					// Create the layout areas.
+					vbox = new VBoxLayout();
+					hbox = new HBoxLayout();
+					vbox2 = new VBoxLayout();
+					buttonBox = new ButtonBoxLayout();
+					vbox.Controls.Add(hbox);
+					vbox.Controls.Add(buttonBox);
+					vbox.StretchControl = hbox;
+					buttonBox.UniformSize = true;
+					vbox.Dock = DockStyle.Fill;
+					Controls.Add(vbox);
+
+					// Create a control to display the message box icon.
+					this.icon = new Icon(typeof(MessageBox), "question.ico");
+					iconControl = new Control();
+					iconControl.ClientSize = this.icon.Size;
+					iconControl.TabStop = false;
+					hbox.Controls.Add(iconControl);
+					hbox.Controls.Add(vbox2);
+
+					// Create the label containing the message text.
+					textLabel = new Label();
+					textLabel.TextAlign = ContentAlignment.MiddleLeft;
+					textLabel.TabStop = false;
+					textLabel.Text = S._("SWF_FileDialog_NewFolderName");
+					vbox2.Controls.Add(textLabel);
+
+					// Create the text box for the folder name entry.
+					textBox = new TextBox();
+					vbox2.Controls.Add(textBox);
+
+					// Create the buttons.
+					button1 = new Button();
+					button2 = new Button();
+					button1.Text = S._("SWF_MessageBox_OK", "OK");
+					button2.Text = S._("SWF_MessageBox_Cancel", "Cancel");
+					buttonBox.Controls.Add(button1);
+					buttonBox.Controls.Add(button2);
+					AcceptButton = button1;
+					CancelButton = button2;
+
+					// Hook up the events for the form.
+					button1.Click += new EventHandler(Button1Clicked);
+					button2.Click += new EventHandler(Button2Clicked);
+					Closing += new CancelEventHandler(CloseRequested);
+					iconControl.Paint += new PaintEventHandler(PaintIcon);
+
+					// Set the initial message box size to the vbox's
+					// recommended size.
+					Size size = vbox.RecommendedSize;
+					if(size.Width < 350)
+					{
+						size.Width = 350;
+					}
+					ClientSize = size;
+					MinimumSize = size;
+					MaximumSize = size;
+				}
+
+		// Detect when button 1 is clicked.
+		private void Button1Clicked(Object sender, EventArgs args)
+				{
+					// Get the text in the box and bail out if it is empty.
+					String name = textBox.Text.Trim();
+					if(name == String.Empty)
+					{
+						return;
+					}
+
+					// Verify that the folder does not contain directory
+					// separator characters.
+					if(name.IndexOfAny(directorySeparators) != -1)
+					{
+						MessageBox.Show
+							(S._("SWF_FileDialog_InvalidChar"),
+							 Text, MessageBoxButtons.OK, MessageBoxIcon.Hand);
+						return;
+					}
+
+					// Check for pre-existence of the directory.
+					name = Path.Combine(currentDirectory, name);
+					if(File.Exists(name) || Directory.Exists(name))
+					{
+						MessageBox.Show
+							(String.Format
+								(S._("SWF_FileDialog_Exists"), name),
+							 Text, MessageBoxButtons.OK, MessageBoxIcon.Hand);
+						return;
+					}
+
+				#if !ECMA_COMPAT
+					// Try to create the specified directory.
+					try
+					{
+						Directory.CreateDirectory(name);
+					}
+					catch(Exception)
+					{
+						MessageBox.Show
+							(String.Format
+								(S._("SWF_FileDialog_CannotMkdir"), name),
+							 Text, MessageBoxButtons.OK, MessageBoxIcon.Hand);
+						return;
+					}
+				#endif
+
+					// Quit the dialog with the "OK" signal.
+					folderName = name;
+					DialogResult = DialogResult.OK;
+				}
+
+		// Detect when button 2 is clicked.
+		private void Button2Clicked(Object sender, EventArgs args)
+				{
+					DialogResult = DialogResult.Cancel;
+				}
+
+		// Handle the "Closing" event on the form.
+		private void CloseRequested(Object sender, CancelEventArgs args)
+				{
+					DialogResult = DialogResult.Cancel;
+				}
+
+		// Paint the icon control.
+		private void PaintIcon(Object sender, PaintEventArgs args)
+				{
+					Graphics g = args.Graphics;
+					g.DrawIcon(icon, 0, 0);
+				}
+
+		// Dispose of this dialog.
+		public void DisposeDialog()
+				{
+					if(icon != null)
+					{
+						icon.Dispose();
+						icon = null;
+					}
+					Dispose(true);
+				}
+
+		// Handle a "focus enter" event.
+		protected override void OnEnter(EventArgs e)
+				{
+					// Set the focus to the name text box immediately
+					// if the top-level form gets the focus.
+					textBox.Focus();
+				}
+
+		// Get the name of the folder that was just created.
+		public String FolderName
+				{
+					get
+					{
+						return folderName;
+					}
+				}
+
+	}; // class NewFolderForm
 
 }; // class FileDialog
 

@@ -177,6 +177,7 @@ include/gnu/Makefile
 include/sys/Makefile
 libc/Makefile
 libc/ctype/Makefile
+libc/dirent/Makefile
 libc/malloc/Makefile
 libc/misc/Makefile
 libc/pthread/Makefile

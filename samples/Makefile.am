@@ -1,7 +1,10 @@
 
 AUTOMAKE_OPTIONS = no-dependencies
 
-noinst_PROGRAMS = hello.exe hello2.exe stack.exe pwd.exe
+noinst_PROGRAMS = dirent.exe hello.exe hello2.exe stack.exe pwd.exe
+
+dirent_exe_SOURCES = dirent.c
+dirent_exe_LDADD = -L../libc -lOpenSystem.C -llibc$(LIBRARY_SUFFIX)
 
 hello_exe_SOURCES = hello.c
 hello_exe_LDADD = -L../libc -lOpenSystem.C -llibc$(LIBRARY_SUFFIX)

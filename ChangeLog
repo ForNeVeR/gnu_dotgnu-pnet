@@ -1,3 +1,14 @@
+2003-08-22  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* libc/dirent/.cvsignore, libc/dirent/Makefile.am,
+	libc/dirent/closedir.c, libc/dirent/dirent-glue.cs,
+	libc/dirent/opendir.c, libc/dirent/readdir.c, libc/dirent/readdir_r.c,
+	libc/dirent/rewinddir.c, libc/dirent/seekdir.c, libc/dirent/telldir.c,
+	include/dirent.h, samples/dirent.c: add and implement dirent functions
+	and dirent example program.
+
+	* configure.in, libc/Makefile.am, samples/Makefile.am: updates for
+	building dirent implementation and example program.
 
 2003-08-14  Mario D.Santana  <mds@medleysoft.com>
 

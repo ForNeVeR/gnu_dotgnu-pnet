@@ -2,6 +2,7 @@
 AUTOMAKE_OPTIONS = no-dependencies
 
 SUBDIRS = ctype \
+		  dirent \
 		  malloc \
 		  misc \
 		  pthread \
@@ -16,6 +17,7 @@ libcdir = $(libdir)/cscc/lib
 libc_DATA = libc$(LIBRARY_SUFFIX).dll
 
 LIBC_COMPONENTS = ctype/libCType.a \
+				  dirent/libCDirent.a \
 				  malloc/libCMalloc.a \
 				  misc/libCMisc.a \
 				  pthread/libCPthread.a \

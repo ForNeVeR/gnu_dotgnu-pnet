@@ -30,6 +30,12 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 	// This must be the first field in the object.
 	private IntPtr privateData;
 
+	/// <summary>
+	/// Constant that specifies a timeout occured within the 
+	/// WaitAny or WaitAll methods.
+	/// </summary>
+	public const int WaitTimeout = 258;
+
 	// Constructors.
 	public WaitHandle()
 			{

@@ -1,3 +1,13 @@
+2002-12-07  Nguyen, Thong  <tum@veridicus.com>
+
+	* runtime/System/Threading/WaitHandle.cs: Added WaitTimeout const.
+
+	* runtime/System/Threading/WaitEvent.cs: Supplies internal calls for 
+	wait(able) events.
+	
+	* runtime/System/Threading/AutoResetEvent.cs,
+	runtime/System/Threading/ManualResetEvent.cs: Added the reset events.
+	(Patch ID: 780, Gopal)
 
 2002-12-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 

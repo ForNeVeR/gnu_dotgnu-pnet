@@ -21,9 +21,7 @@ namespace System.Drawing.Toolkit
 {
 
 using System;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Toolkit;
 
 internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 {
@@ -145,20 +143,21 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 
 			}
 
-	//Woops this is works only for a square - id better get some trig going
 	//Top left of return rectangle is the one intersect, bottom right is the other.
 	private Rectangle EllipseIntersect( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
 				double centerX = (rect[0].X+rect[2].X)/2;
 				double centerY = (rect[0].Y+rect[2].Y)/2;
-				double r = Math.Sqrt((Math.Pow(rect[0].X-rect[2].X,2))+Math.Pow(rect[0].Y-rect[2].Y,2))/2;
-				double a = startAngle*Math.PI/180;
-				double b = (startAngle+sweepAngle)*Math.PI/180;
-				int p1X, p1Y, p2X, p2Y;
-				p1X = (int)(Math.Cos(b)*r+centerX+.5);
-				p1Y = (int)(Math.Sin(b)*r+centerY+.5);
-				p2X = (int)(Math.Cos(a)*r+centerX+.5);
-				p2Y = (int)(Math.Sin(a)*r+centerY+.5);
+				double theta1 = (startAngle+sweepAngle)*Math.PI/180;
+				double theta2 = startAngle*Math.PI/180;
+				double a = (rect[2].X - rect[0].X)/2;
+				double b = (rect[2].Y - rect[0].Y)/2;
+				double r1 = a*b/Math.Sqrt(Math.Pow(b*Math.Cos(theta1), 2)+Math.Pow(a*Math.Sin(theta1), 2));
+				double r2 = a*b/Math.Sqrt(Math.Pow(b*Math.Cos(theta2), 2)+Math.Pow(a*Math.Sin(theta2), 2));
+				int p1X = (int)(r1 * Math.Cos(theta1) + 0.5 + centerX);
+				int p1Y = (int)(r1 * Math.Sin(theta1) + 0.5 + centerY);
+				int p2X = (int)(r2 * Math.Cos(theta2) + 0.5 + centerX);
+				int p2Y = (int)(r2 * Math.Sin(theta2) + 0.5 + centerY);
 				return new Rectangle(p1X, p1Y, p2X - p1X, p2Y - p1Y);
 			}
 

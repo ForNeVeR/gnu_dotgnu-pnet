@@ -20,9 +20,6 @@ namespace System.Drawing.Toolkit
 {
 
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Toolkit;
 using System.Runtime.InteropServices;
 using d = System.Diagnostics.Debug;
 
@@ -51,15 +48,21 @@ internal abstract class DrawingWindow : IToolkitWindow
 	//Does the window have a menu
 	protected bool menu = false;
 
-	protected DrawingWindow(IToolkit toolkit, DrawingWindow parent )
+	//The dimensions before the control has been created
+	protected Rectangle dimensions;
+	//Whether the control should be visible once its created
+	protected bool visible;
+
+	protected DrawingWindow( IToolkit toolkit )
 	{
 		this.toolkit = toolkit;
-		this.parent = parent;
 	}
 
 	// Set the window title (top-level windows only).
 	void IToolkitWindow.SetTitle(String title)
 	{
+		if (hwnd == IntPtr.Zero)
+			throw new ApplicationException("DrawingWindow.SetTitle ERROR:Cant set title. Hwnd not created yet.");
 		if(title == null)
 		{
 			title = String.Empty;
@@ -70,12 +73,20 @@ internal abstract class DrawingWindow : IToolkitWindow
 
 	void IToolkitWindow.Lower()
 	{
-		Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_BOTTOM, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
-		d.WriteLine("DrawingWindow.Lower, hwnd="+hwnd);
+		if (hwnd == IntPtr.Zero)
+			d.WriteLine("DrawingWindow.Lower ERROR: Cant lower window. Hwnd not created yet.");
+		else
+		{
+			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_BOTTOM, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
+			d.WriteLine("DrawingWindow.Lower, hwnd="+hwnd);
+		}
 	}
 
 	void IToolkitWindow.Raise()
 	{
+		if (hwnd == IntPtr.Zero)
+			throw new ApplicationException("DrawingWindow.Raise ERROR: Cant raise window. Hwnd not created yet.");
+		
 		Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_TOP, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
 		d.WriteLine("DrawingWindow.Raise, hwnd="+hwnd);
 	}
@@ -90,6 +101,8 @@ internal abstract class DrawingWindow : IToolkitWindow
 	// Move this window to above one of its siblings.
 	void IToolkitWindow.MoveToAbove(IToolkitWindow sibling)
 	{
+		if (hwnd == IntPtr.Zero)
+			throw new ApplicationException("DrawingWindow.MoveToAbove ERROR: Cant MoveToAbove. Hwnd not created yet.");
 		Win32.Api.SetWindowPos(hwnd, (sibling as DrawingWindow).hwnd, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
 		d.WriteLine("DrawingWindow.MoveToAbove, hwnd="+hwnd);
 	}
@@ -112,9 +125,14 @@ internal abstract class DrawingWindow : IToolkitWindow
 	{
 		get
 		{
-			Win32.Api.RECT rect;
-			Win32.Api.GetClientRect(hwnd, out rect);
-			return new System.Drawing.Rectangle(rect.top, rect.left, rect.right-rect.left, rect.bottom - rect.top);
+			if (hwnd==IntPtr.Zero)
+				return dimensions;
+			else
+			{
+				Win32.Api.RECT rect;
+				Win32.Api.GetClientRect(hwnd, out rect);
+				return new System.Drawing.Rectangle(rect.top, rect.left, rect.right-rect.left, rect.bottom - rect.top);
+			}
 		}
 	}
 
@@ -162,13 +180,18 @@ internal abstract class DrawingWindow : IToolkitWindow
 
 	void IToolkitWindow.MoveResize(int x, int y, int width, int height)
 	{
-		Rectangle rect = (this as IToolkitWindow).Dimensions;
-	
-		if (x != rect.Left || y != rect.Right || width != rect.Width
-			|| height != rect.Height)
+		if (hwnd == IntPtr.Zero)
+			dimensions = new Rectangle(x, y, width, height);
+		else
 		{
-			Rectangle outside = OutsideFromClientSize(new Rectangle( x, y, width, height));
-			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_TOP, outside.Left, outside.Top, outside.Width, outside.Height, Win32.Api.SetWindowsPosFlags.SWP_NOSENDCHANGING);
+			Rectangle rect = (this as IToolkitWindow).Dimensions;
+	
+			if (x != rect.Left || y != rect.Right || width != rect.Width
+				|| height != rect.Height)
+			{
+				Rectangle outside = OutsideFromClientSize(new Rectangle( x, y, width, height));
+				Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_TOP, outside.Left, outside.Top, outside.Width, outside.Height, Win32.Api.SetWindowsPosFlags.SWP_NOSENDCHANGING);
+			}
 		}
 		d.WriteLine("DrawingWindow.MoveResize, hwnd="+hwnd+",["+x+","+y+","+width+","+height+"]");
 	}
@@ -180,18 +203,20 @@ internal abstract class DrawingWindow : IToolkitWindow
 	}
 
 	//This is the windows visibility
-	bool IToolkitWindow.IsMapped
+	public virtual bool IsMapped
 	{
 		get
 		{
+			if (hwnd == IntPtr.Zero)
+				throw new ApplicationException("DrawingWindow.getIsMapped ERROR: Cant getIsMapped. Hwnd not created yet.");
+		
 			return Win32.Api.IsWindowVisible(hwnd);
 		}
 		set
 		{
-			if (value)
-				Win32.Api.ShowWindow(hwnd,Win32.Api.ShowWindowCommand.SW_SHOWNA);
-			else
-				Win32.Api.ShowWindow(hwnd,Win32.Api.ShowWindowCommand.SW_HIDE);
+			visible = value;
+			if (hwnd != IntPtr.Zero)
+				setVisible();
 			d.WriteLine("DrawingWindow.setIsMapped hwnd="+hwnd+",visible="+value);
 		}
 	}
@@ -199,6 +224,9 @@ internal abstract class DrawingWindow : IToolkitWindow
 	// Force an update of all invalidated regions.
 	void IToolkitWindow.Update()
 	{
+		if (hwnd == IntPtr.Zero)
+			throw new ApplicationException("DrawingWindow.Update ERROR: Cant update. Hwnd not created yet.");
+		
 		Win32.Api.UpdateWindow(hwnd);
 		d.WriteLine("DrawingWindow.Update, hwnd="+hwnd);
 	}
@@ -209,6 +237,9 @@ internal abstract class DrawingWindow : IToolkitWindow
 
 	void IToolkitWindow.Iconify()
 	{
+		if (hwnd == IntPtr.Zero)
+			throw new ApplicationException("DrawingWindow.Iconify ERROR: Cant Iconify. Hwnd not created yet.");
+		
 		Win32.Api.CloseWindow(hwnd);
 		d.WriteLine("DrawingWindow.Iconify, hwnd="+hwnd);
 	}
@@ -217,6 +248,9 @@ internal abstract class DrawingWindow : IToolkitWindow
 	// Get a toolkit graphics object for this window.
 	IToolkitGraphics IToolkitWindow.GetGraphics()
 	{
+		if (hwnd == IntPtr.Zero)
+			throw new ApplicationException("DrawingWindow.GetGraphics ERROR: Cant GetGraphics. Hwnd not created yet.");
+		
 		d.WriteLine("DrawingWindow.GetGraphics, hwnd="+hwnd);
 		return new DrawingGraphics (toolkit, Win32.Api.GetDC(hwnd));
 	}
@@ -239,6 +273,9 @@ internal abstract class DrawingWindow : IToolkitWindow
 	// Invalidate a rectangle within this window.
 	public void Invalidate(int x, int y, int width, int height)
 	{
+		if (hwnd == IntPtr.Zero)
+			throw new ApplicationException("DrawingWindow.Invalidate ERROR: Cant Invalidate. Hwnd not created yet.");
+		
 		Win32.Api.RECT r;
 		r.left = x;
 		r.top = y;
@@ -252,12 +289,16 @@ internal abstract class DrawingWindow : IToolkitWindow
 	// Invalidate this window.
 	public void Invalidate()
 	{
-		Win32.Api.InvalidateRect(hwnd, IntPtr.Zero, false);
+		if (hwnd != IntPtr.Zero)
+			Win32.Api.InvalidateRect(hwnd, IntPtr.Zero, false);
 	}
 
 	//Called when Windows wants to erase the form background. Use the provided hdc
 	protected void EraseBackground(IntPtr hdc) 
 	{
+		if (hwnd == IntPtr.Zero)
+			throw new ApplicationException("DrawingWindow.EraseBackground ERROR: Cant EraseBackground. Hwnd not created yet.");
+		
 		if (backgroundBrush!=IntPtr.Zero) 
 		{
 			Win32.Api.RECT clientRectangle;
@@ -603,6 +644,15 @@ internal abstract class DrawingWindow : IToolkitWindow
 		
 		return keys;
 
+	}
+
+	//This is called to set whether a window is visible or not. Can only happen once the window is created
+	protected void setVisible()
+	{
+		if (visible)
+			Win32.Api.ShowWindow(hwnd,Win32.Api.ShowWindowCommand.SW_SHOWNA);
+		else
+			Win32.Api.ShowWindow(hwnd,Win32.Api.ShowWindowCommand.SW_HIDE);
 	}
 
 }

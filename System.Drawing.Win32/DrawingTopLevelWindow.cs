@@ -21,9 +21,6 @@ namespace System.Drawing.Toolkit
 {
 
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Toolkit;
 using d=System.Diagnostics.Debug;
 
 internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
@@ -31,9 +28,10 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 
 	protected static uint createCount;
 	public DrawingTopLevelWindow(IToolkit toolkit, String name,
-						 		 int width, int height) : base ( toolkit, null )
+						 		 int width, int height) : base ( toolkit )
 			{
 				System.Diagnostics.Debug.WriteLine("DrawingTopLevelWindow");
+				dimensions = new Rectangle(0, 0, width, height);
 
 				//At the moment we create a unique class name for EVERY window. SWF does it for each unique window class
 				className = "DrawingTopLevelWindow" + createCount;
@@ -56,12 +54,15 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 			Win32.Api.WindowStyle.WS_SYSMENU | Win32.Api.WindowStyle.WS_MAXIMIZEBOX | Win32.Api.WindowStyle.WS_MINIMIZEBOX | Win32.Api.WindowStyle.WS_CAPTION | Win32.Api.WindowStyle.WS_CLIPCHILDREN;
 				menu = false;
 				extendedStyle = 0;
-				CreateWindow(new Size( width, height ));
+				CreateWindow();
 			}
 
 	// Change the set of supported window decorations and functions.
 	void IToolkitWindow.SetWindowFlags(ToolkitWindowFlags flags)
 			{
+				if (hwnd == IntPtr.Zero)
+					throw new ApplicationException("DrawingTopLevelWindow.SetWindowsFlags ERROR: Cant SetWindowsFlags. Hwnd not created yet.");
+		
 				style = Win32.Api.WindowStyle.WS_POPUP | Win32.Api.WindowStyle.WS_VISIBLE;
 		
 				//to remove the popup style
@@ -134,17 +135,18 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 	}
 
 	//Create the invisible control
-	protected void CreateWindow(Size size) 
+	protected void CreateWindow() 
 	{
-		Size outside = OutsideFromClientSize( size );
+		Size outside = OutsideFromClientSize( dimensions.Size );
 
 		hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, "", style, Win32.Api.CW_USEDEFAULT, 0, outside.Width, outside.Height, IntPtr.Zero, IntPtr.Zero, Win32.Api.GetModuleHandleA(null), IntPtr.Zero );
 		if (hwnd==IntPtr.Zero) 
 		{
 			throw new Exception( "Failed to create new Window" );
 		}
+		setVisible();
 		Win32.Api.InvalidateRect( hwnd, IntPtr.Zero,true );
-		d.WriteLine( "DrawingTopLevelWindow.CreateWindow, hwnd="+hwnd+", [" + size.ToString() + "]" );
+		d.WriteLine( "DrawingTopLevelWindow.CreateWindow, hwnd="+hwnd+", [" + dimensions.Size.ToString() + "]" );
 	}
 }; // class DrawingTopLevelWindow
 

@@ -22,9 +22,7 @@ namespace System.Drawing.Toolkit
 {
 
 using System;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Toolkit;
 using System.Drawing.Text;
 using System.Drawing.Imaging;
 using System.Collections;

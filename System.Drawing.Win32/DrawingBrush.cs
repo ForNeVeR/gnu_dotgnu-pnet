@@ -21,10 +21,7 @@ namespace System.Drawing.Toolkit
 {
 
 	using System;
-	using System.Drawing;
-	using System.Drawing.Drawing2D;
-	using System.Drawing.Toolkit;
-
+	
 	abstract class DrawingBrush : IToolkitBrush, IDisposable
 	{
 		// Internal state.

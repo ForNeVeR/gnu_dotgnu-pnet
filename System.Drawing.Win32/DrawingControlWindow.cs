@@ -21,9 +21,6 @@ namespace System.Drawing.Toolkit
 {
 
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Toolkit;
 using d = System.Diagnostics.Debug;
 
 internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
@@ -31,11 +28,11 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 	//for a unique class name
 	protected static uint createCount;
 
-	public DrawingControlWindow(IToolkit toolkit, string name, DrawingWindow parent, int x,
-		int y, int width, int height) : base (toolkit, parent)
+	public DrawingControlWindow(IToolkit toolkit, string name, DrawingWindow parent, int x, int y, int width, int height) : base (toolkit)
 	{
 		d.WriteLine("DrawingControlWindow");
-
+		this.parent = parent;
+		dimensions = new Rectangle( x, y, width, height );
 		//At the moment we create a unique class name for EVERY window. SWF does it for each window type
 		className = "DrawingControlWindow" + createCount;
 		//Register the windows class
@@ -52,40 +49,63 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 		//Set default windows settings
 		style = Win32.Api.WindowStyle.WS_CHILD;
 		extendedStyle = 0;
-		if (parent != null)
-		{
-			CreateWindow( new Rectangle( x, y, width, height ) );
-		}
+		CreateWindow();
 	}
 
-	// Reparent this window to underneath a new parent.
-	// If there is no parent then we destroy the window.
-	// If the parent changes, we destroy and recreate
+	// Reparent this window to underneath a new parent. If there is no parent then the parent is the desktop and the control is not visible.
 	void IToolkitWindow.Reparent(IToolkitWindow parent, int x, int y)
 	{
 		if (parent != this.parent)
 		{
-			if(this.parent != null || parent == null )
-			{
-				(this as IToolkitWindow).Destroy();
-			}
-			if (parent != null)
-			{
-				Rectangle dimension = (this as IToolkitWindow).Dimensions;
-				CreateWindow( new Rectangle( x, y, dimension.Width, dimension.Height )) ;
-			}
+			//window with no parent cant be visible
+			if (parent == null || (parent as DrawingWindow).hwnd == IntPtr.Zero)
+				IsMapped = false;
+			bool parented = this.parent != null && this.parent.hwnd != IntPtr.Zero;
+			this.parent = (DrawingWindow)parent;
+			
+			Win32.Api.SetParent( hwnd, parentHwnd);
+			
+			if (visible && !parented)
+				setVisible();
 		}
 		d.WriteLine("DrawingWindow.Reparent, hwnd="+hwnd);
 	}
-
 	
-	protected void CreateWindow(Rectangle bounds)
+	protected void CreateWindow()
 	{
-		hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, string.Empty, style, bounds.X, bounds.Y, bounds.Width, bounds.Height, parent.hwnd, IntPtr.Zero,Win32.Api.GetModuleHandleA(null),IntPtr.Zero );
-		d.WriteLine("DrawingControlWindow.CreateWindow hwnd="+hwnd + ",parent hwnd="+parent.hwnd+",["+bounds.ToString()+"]");
+		hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, string.Empty, style, dimensions.X, dimensions.Y, dimensions.Width - 1, dimensions.Height - 1, parentHwnd, IntPtr.Zero,Win32.Api.GetModuleHandleA(null),IntPtr.Zero );
+		//setVisible();
+		d.WriteLine("DrawingControlWindow.CreateWindow hwnd="+hwnd + ",parent hwnd="+parentHwnd+",["+dimensions.X+","+dimensions.Y+","+dimensions.Width+","+dimensions.Height+"]");
 		if (hwnd==IntPtr.Zero) 
 		{
 			throw new Exception("Failed to create new Window");
+		}
+	}
+
+	protected IntPtr parentHwnd 
+	{
+		get 
+		{
+			if (parent != null && parent.hwnd != IntPtr.Zero)
+				return parent.hwnd;
+			else
+				return Win32.Api.GetDesktopWindow();
+		}
+	}
+
+	public override bool IsMapped
+	{
+		get
+		{
+			return base.IsMapped;
+		}
+		set
+		{
+			//cant change the visiblity of a window that doesnt have a parent
+			if (parent != null && parent.hwnd != IntPtr.Zero)
+				base.IsMapped = value;
+			else
+				visible = value;
 		}
 	}
 

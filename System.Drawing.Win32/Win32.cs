@@ -820,6 +820,9 @@ internal class Api
 	[DllImport("user32")]
 	public static extern bool ClientToScreen( IntPtr hWnd, ref POINT lpPoint );
 
+	[DllImport("user32")]
+	public static extern IntPtr SetParent( IntPtr hWndChild, IntPtr hWndNewParent );
+
 }//Api
 
 }

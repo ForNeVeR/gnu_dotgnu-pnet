@@ -21,9 +21,7 @@ namespace System.Drawing.Toolkit
 {
 
 using System;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Toolkit;
 
 internal class DrawingHatchBrush : DrawingBrush, IToolkitBrush
 {

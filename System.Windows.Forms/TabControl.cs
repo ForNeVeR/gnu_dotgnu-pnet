@@ -277,7 +277,7 @@ namespace System.Windows.Forms
 			}
 			set
 			{
-				SelectedIndex = tabPageCollection.GetChildIndex(value);
+				SelectedIndex = tabPageCollection.IndexOf(value);
 			}
 		}
 
@@ -323,30 +323,22 @@ namespace System.Windows.Forms
 		
 		protected override Control.ControlCollection CreateControlsInstance()
 		{
-			return new TabPageCollection( this );
+			return new TabChildControls( this );
 		}
 
 		
 		// Collection of child control TabPages.
-		public class TabPageCollection : Control.ControlCollection
+		public class TabChildControls : Control.ControlCollection
 		{
 			// Owning tab control.
 			private TabControl tabOwner;
 
-			public TabPageCollection(TabControl owner) : base(owner)
+			public TabChildControls(TabControl owner) : base(owner)
 			{
 				this.tabOwner = owner;
 			}
 
-			public new TabPage this[int idx]
-			{
-				get
-				{
-					return (TabPage) base[idx];
-				}
-			}
-
-			public void Add(TabPage control)
+			public override void Add(Control control)
 			{
 				control.Visible = false;
 				base.Add(control);
@@ -355,6 +347,176 @@ namespace System.Windows.Forms
 				if (tabOwner.SelectedTab == control)
 				{
 					control.Visible = true;
+				}
+			}
+
+			[TODO]
+			public override void Remove(Control control)
+			{
+				// TODO
+				base.Remove(control);
+			}
+
+		};
+
+		// Collection of child control TabPages.
+		public class TabPageCollection : ICollection, IEnumerable, IList
+		{
+			// Owning tab control.
+			private TabControl tabOwner;
+
+			public TabPageCollection(TabControl owner)
+			{
+				this.tabOwner = owner;
+			}
+
+			[TODO]
+			public TabPage this[int idx]
+			{
+				get
+				{
+					return (TabPage)(tabOwner.Controls[idx]);
+				}
+				set
+				{
+					// TODO
+				}
+			}
+
+			public void Add(TabPage control)
+			{
+				if(control == null)
+				{
+					throw new ArgumentNullException("control");
+				}
+				tabOwner.Controls.Add(control);
+			}
+
+			public void Remove(TabPage control)
+			{
+				if(control == null)
+				{
+					throw new ArgumentNullException("control");
+				}
+				tabOwner.Controls.Remove(control);
+			}
+
+			public void AddRange(TabPage[] pages)
+			{
+				if(pages == null)
+				{
+					throw new ArgumentException("pages");
+				}
+				foreach(TabPage page in pages)
+				{
+					Add(page);
+				}
+			}
+
+			public bool Controls(TabPage control)
+			{
+				return tabOwner.Controls.Contains(control);
+			}
+
+			public int IndexOf(TabPage control)
+			{
+				return tabOwner.Controls.IndexOf(control);
+			}
+
+			// Implement the ICollection interface.
+			void ICollection.CopyTo(Array array, int index)
+			{
+				tabOwner.Controls.CopyTo(array, index);
+			}
+			public int Count
+			{
+				get
+				{
+					return tabOwner.Controls.Count;
+				}
+			}
+			bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return false;
+				}
+			}
+			Object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
+
+			// Implement the IEnumerable interface.
+			public IEnumerator GetEnumerator()
+			{
+				return tabOwner.Controls.GetEnumerator();
+			}
+
+			// Implement the IList interface.
+			int IList.Add(Object value)
+			{
+				if(!(value is TabPage))
+				{
+					throw new ArgumentException("value");
+				}
+				Add((TabPage)value);
+				return ((IList)(tabOwner.Controls)).IndexOf(value);
+			}
+			public void Clear()
+			{
+				tabOwner.RemoveAll();
+			}
+			bool IList.Contains(Object value)
+			{
+				return ((IList)(tabOwner.Controls)).Contains(value);
+			}
+			int IList.IndexOf(Object value)
+			{
+				return ((IList)(tabOwner.Controls)).IndexOf(value);
+			}
+			void IList.Insert(int index, Object value)
+			{
+				throw new NotSupportedException();
+			}
+			void IList.Remove(Object value)
+			{
+				if(!(value is TabPage))
+				{
+					throw new ArgumentException("value");
+				}
+				Remove((TabPage)value);
+			}
+			public void RemoveAt(int index)
+			{
+				Remove(this[index]);
+			}
+			bool IList.IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+			bool IList.IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
+			Object IList.this[int index]
+			{
+				get
+				{
+					return this[index];
+				}
+				set
+				{
+					this[index] = (TabPage)value;
 				}
 			}
 

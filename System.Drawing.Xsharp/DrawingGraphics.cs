@@ -234,13 +234,19 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	// Set the clipping region to empty.
 	public override void SetClipEmpty()
 			{
-				// TODO
+				using (Xsharp.Region region = new Xsharp.Region())
+				{
+					graphics.SetClipRegion( region, 0, 0);
+				}
 			}
 
 	// Set the clipping region to infinite (i.e. disable clipping).
 	public override void SetClipInfinite()
 			{
-				// TODO
+				using (Xsharp.Region region = new Xsharp.Region(short.MinValue, short.MinValue, ushort.MaxValue, ushort.MaxValue))
+				{
+					graphics.SetClipRegion( region, 0, 0);
+				}
 			}
 
 	// Set the clipping region to a single rectangle.
@@ -257,7 +263,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 			{
 				using (Xsharp.Region region = rectsToRegion(rects))
 				{
-					graphics.SetClipRegion( region, 0, 0);
+					graphics.SetClipRegion( region);
 				}
 			}
 
@@ -274,25 +280,39 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				return extents.Ascent + extents.Descent;
 			}
 
-	//Convert a System.Drawing.Region to Xsharp.Region
+	// Convert a System.Drawing.Region to Xsharp.Region
 	private static Xsharp.Region rectsToRegion( System.Drawing.Rectangle[] rectangles)
 		{
 			Xsharp.Region newRegion =  new Xsharp.Region();
 			for( int i = 0; i < rectangles.Length; i++)
 			{
 				System.Drawing.Rectangle rect = rectangles[i];
-				// Check if the rectangle is infinite and dont union
-				if (rect == new System.Drawing.Rectangle(-4194304, -4194304, 8388608, 8388608))
-				{
-					newRegion = new Xsharp.Region(short.MinValue, short.MinValue, ushort.MaxValue, ushort.MaxValue); 
-				}
-				else
-				{
-					newRegion.Union( rect.X, rect.Y, rect.Width, rect.Height);
-				}
+				int left = rect.Left;
+				int top = rect.Top;
+				int width = rect.Width;
+				int height = rect.Height;
+				// This implementations region size restriction.
+				if (left < short.MinValue)
+					left = short.MinValue;
+				else if (left > short.MaxValue)
+					left = short.MaxValue;
+				if (top < short.MinValue)
+					top = short.MinValue;
+				else if (top > short.MaxValue)
+					top = short.MaxValue;
+				if (width < ushort.MinValue)
+					width = ushort.MinValue;
+				else if (width > ushort.MaxValue)
+					width = ushort.MaxValue;
+				if (height < ushort.MinValue)
+					height = ushort.MinValue;
+				else if (height > ushort.MaxValue)
+					height = ushort.MaxValue;
+				newRegion.Union( left, top, width, height);
 			}
 			return newRegion;
 		}
+
 }; // class DrawingGraphics
 
 }; // namespace System.Drawing.Toolkit

@@ -387,8 +387,6 @@ internal sealed class NumberParser
 		low = 0;
 		high = 0;
 		if((style & NumberStyles.AllowHexSpecifier) != 0)
-/*		   s[posn] == '0' &&
-		   (s[posn + 1] == 'x' || s[posn + 1] == 'X')) || // Strings parsed using this style are not permitted to be prefixed with "0x". */
 		{
 			// Parse a hexadecimal value.
 			do
@@ -583,6 +581,12 @@ internal sealed class NumberParser
 				{
 					return unchecked((int)result);
 				}
+				else if(result <= 4294967295 && 
+						(style | NumberStyles.AllowHexSpecifier) != 0)
+				{
+					// AllowHexSpecifier does not allow for sign specifiers
+					return unchecked((int)((long)result));
+				}
 			}
 			else
 			{
@@ -652,6 +656,12 @@ internal sealed class NumberParser
 				if(result <= 9223372036854775807)
 				{
 					return unchecked((long)result);
+				}
+				else if(result <= 0xFFFFFFFFFFFFFFFF && 
+						(style | NumberStyles.AllowHexSpecifier) != 0)
+				{
+					// AllowHexSpecifier does not allow for sign specifiers
+					return unchecked(((long)result));
 				}
 			}
 			else

@@ -7,6 +7,9 @@
 	System.Drawing.Xsharp/DrawingWindow.cs: Remove private modifiers for
 	IToolkitWindow.SendBeginInvoke interface implementation.
 
+	* runtime/System/Private/NumberParser.cs: Fix bug #9053 for parsing
+	of int32 in hex format.
+
 2004-07-19  Chris Ferell  <chrissferrell@yahoo.com>
 
 	* System.Windows.Forms/FontDialog.cs, 

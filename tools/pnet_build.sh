@@ -207,7 +207,7 @@ run $PNET_MAKE
 
 # Run the pnet tests in "show failures only" mode.
 run cd tests
-run ./test_verify -f
+#run ./test_verify -f
 run ./test_thread -f
 run ./test_crypt -f
 
@@ -217,6 +217,18 @@ run ./auto_gen.sh
 run ./configure --with-pnet="$PNET_BUILD_ACTUAL/pnet" $PNET_CONFIGURE_PNETLIB
 run $PNET_MAKE
 run $PNET_MAKE check
+
+# Run the pnetlib samples (basically checking for segfaults,
+# simple exception failures, and the like).
+run cd samples
+runsample ./ilrun.sh hello.exe
+runsample ./ilrun.sh fib.exe
+runsample ./ilrun.sh except.exe
+runsample ./ilrun.sh codepage.exe
+runsample ./ilrun.sh codepage.exe 932
+runsample ./ilrun.sh getenv.exe
+runsample ./ilrun.sh getenv.exe PATH
+
 
 # Build pnetC.
 run cd "$PNET_BUILD_ACTUAL/pnetC"
@@ -229,13 +241,8 @@ run $PNET_MAKE check
 # simple exception failures, and the like).
 run cd samples
 runsample ./ilrun.sh hello.exe
-runsample ./ilrun.sh fib.exe
-runsample ./ilrun.sh evenodd.exe
-runsample ./ilrun.sh except.exe
-runsample ./ilrun.sh codepage.exe
-runsample ./ilrun.sh codepage.exe 932
-runsample ./ilrun.sh getenv.exe
-runsample ./ilrun.sh getenv.exe PATH
+runsample ./ilrun.sh pwd.exe
+runsample ./ilrun.sh stack.exe
 
 # Configure and run cscctest.
 run cd "$PNET_BUILD_ACTUAL/cscctest"

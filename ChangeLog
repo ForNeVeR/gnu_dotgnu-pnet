@@ -23,6 +23,10 @@
 	relationships properly when the stack is non-empty, including
 	array subclass relationships.
 
+	* tests/Makefile.am: turn off -O2 so that the huge test suite
+	source files compile quicker and don't overload the compiler's
+	optimisation engine.
+
 2002-05-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* auto_gen.sh, configure.in, codegen/Makefile.am, csant/Makefile.am,

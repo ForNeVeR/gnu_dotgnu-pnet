@@ -18,3 +18,5 @@ test_thread_LDADD   = ../image/libILImage.a ../support/libILSupport.a \
 			  		  ../libgc/.libs/libgc.a
 
 TESTS = test_verify test_thread
+
+CFLAGS =

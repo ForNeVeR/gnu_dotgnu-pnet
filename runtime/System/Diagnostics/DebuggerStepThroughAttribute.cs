@@ -1,5 +1,6 @@
 /*
- * MethodBase.cs - Implementation of the "System.Reflection.MethodBase" class.
+ * DebuggerStepThroughAttribute.cs - Implementation of the
+ *			"System.Diagnostics.DebuggerStepThroughAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,24 +19,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Reflection
+namespace System.Diagnostics
 {
 
-public abstract class MethodBase : MemberInfo
+[AttributeUsage(AttributeTargets.Property |
+				AttributeTargets.Method |
+				AttributeTargets.Constructor,
+				Inherited=false)]
+public sealed class DebuggerStepThroughAttribute : Attribute
 {
+	// Constructors.
+	public DebuggerStepThroughAttribute() : base() {}
 
-// TODO
+}; // class DebuggerStepThroughAttribute
 
-	public static MethodBase GetMethodFromHandle(RuntimeMethodHandle handle)
-			{
-				// TODO
-				return null;
-			}
-
-	public abstract RuntimeMethodHandle MethodHandle { get; }
-
-	public abstract ParameterInfo[] GetParameters();
-
-}; // class MethodBase
-
-}; // namespace System.Reflection
+}; // namespace System.Diagnostics

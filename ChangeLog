@@ -10,6 +10,25 @@ HTML, and continue the documentation of the library's "internalcall" methods.
 
 * doc/native.html: continue documentation of the native methods in pnetlib.
 
+* runtime/System/Exception.cs,
+runtime/System/Makefile.am,
+runtime/System/OutOfMemoryException.cs,
+runtime/System/RuntimeMethodHandle.cs,
+runtime/System/SystemException.cs,
+runtime/System/Diagnostics/ConditionalAttribute.cs,
+runtime/System/Diagnostics/DebuggableAttribute.cs,
+runtime/System/Diagnostics/Debugger.cs,
+runtime/System/Diagnostics/DebuggerHiddenAttribute.cs,
+runtime/System/Diagnostics/DebuggerStepThroughAttribute.cs,
+runtime/System/Diagnostics/PackedStackFrame.cs,
+runtime/System/Diagnostics/StackFrame.cs,
+runtime/System/Diagnostics/StackTrace.cs,
+runtime/System/Reflection/MethodBase.cs,
+runtime/System/Reflection/ParameterInfo.cs,
+runtime/System/Reflection/RuntimeConstructorInfo.cs,
+runtime/System/Threading/Thread.cs: implement classes related to
+"System.Diagnostics", and obtaining stack traces during exception handling.
+
 2001-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/Runtime/CompilerServices/*.cs,

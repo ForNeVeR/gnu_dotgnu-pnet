@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Reflection;
+using System.Diagnostics;
 
 public class Exception
 {
@@ -31,23 +32,38 @@ public class Exception
 	private Exception innerException;
 	private String helpLink;
 	private String source;
-	private String stackTrace;
+	private PackedStackFrame[] stackTrace;
 
 	// Constructors.
 	public Exception()
 		{
 			message = null;
 			innerException = null;
+			stackTrace = StackFrame.GetExceptionStackTrace();
 		}
 	public Exception(String msg)
 		{
 			message = msg;
 			innerException = null;
+			stackTrace = StackFrame.GetExceptionStackTrace();
 		}
 	public Exception(String msg, Exception inner)
 		{
 			message = msg;
 			innerException = inner;
+			stackTrace = StackFrame.GetExceptionStackTrace();
+		}
+
+	// Private constructor that is used for subclasses that
+	// don't want stack traces.  e.g. OutOfMemoryException.
+	internal Exception(String msg, Exception inner, bool wantTrace)
+		{
+			message = msg;
+			innerException = inner;
+			if(wantTrace)
+			{
+				stackTrace = StackFrame.GetExceptionStackTrace();
+			}
 		}
 
 	// Get the base exception upon which this exception is based.
@@ -74,6 +90,7 @@ public class Exception
 		{
 			String className = GetType().ToString();
 			String result;
+			String trace;
 			if(message != null && message.Length > 0)
 			{
 				result = className + ": " + message;
@@ -85,6 +102,11 @@ public class Exception
 			if(innerException != null)
 			{
 				result = result + " ---> " + innerException.ToString();
+			}
+			trace = StackTrace;
+			if(trace != null)
+			{
+				result = result + Environment.NewLine + trace;
 			}
 			return result;
 		}
@@ -135,16 +157,30 @@ public class Exception
 		{
 			get
 			{
-				return stackTrace;
+				return stackTrace.ToString();
 			}
 		}
-	public virtual MethodBase TargetSize
+	public virtual MethodBase TargetSite
 		{
 			get
 			{
-				// TODO
-				return null;
+				if(stackTrace.Length > 0)
+				{
+					return MethodBase.GetMethodFromHandle
+								(stackTrace[0].method);
+				}
+				else
+				{
+					return null;
+				}
 			}
+		}
+
+	// Get the packed stack trace information from this exception.
+	internal PackedStackFrame[] GetPackedStackTrace()
+		{
+			// TODO
+			return null;
 		}
 
 }; // class Exception

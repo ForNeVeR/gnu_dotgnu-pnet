@@ -22,10 +22,26 @@
 namespace System.Diagnostics
 {
 
-public class ConditionalAttribute
+[AttributeUsage(AttributeTargets.Method, AllowMultiple=true, Inherited=true)]
+public sealed class ConditionalAttribute : Attribute
 {
+	// Internal state.
+	String condition;
 
-// TODO
+	// Constructors.
+	public ConditionalAttribute(String conditionString)
+			{
+				condition = conditionString;
+			}
+
+	// Properties.
+	public String ConditionString
+			{
+				get
+				{
+					return condition;
+				}
+			}
 
 }; // class ConditionalAttribute
 

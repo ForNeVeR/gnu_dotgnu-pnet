@@ -22,6 +22,7 @@ namespace System.Threading
 {
 
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 public sealed class Thread
 {
@@ -308,6 +309,13 @@ public sealed class Thread
 	// Internal version of "ThreadState".
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private System.Threading.ThreadState InternalGetState();
+
+	// Get the packed stack trace information for this thread.
+	internal PackedStackFrame[] GetPackedStackTrace()
+			{
+				// TODO
+				return null;
+			}
 
 }; // class Thread
 

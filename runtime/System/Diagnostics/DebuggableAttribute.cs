@@ -22,14 +22,38 @@
 namespace System.Diagnostics
 {
 
-public class DebuggableAttribute
+[AttributeUsage(AttributeTargets.Assembly |
+				AttributeTargets.Module,
+				AllowMultiple=false, Inherited=true)]
+public sealed class DebuggableAttribute : Attribute
 {
+	// Internal state.
+	private bool jitTracking;
+	private bool disableOpt;
 
-	// Constructor.
+	// Constructors.
 	public DebuggableAttribute(bool enableJITTracking,
 							   bool disableJITOptimizer)
-	{
-	}
+			{
+				jitTracking = enableJITTracking;
+				disableOpt = disableJITOptimizer;
+			}
+
+	// Properties.
+	public bool IsJITTrackingEnabled
+			{
+				get
+				{
+					return jitTracking;
+				}
+			}
+	public bool IsJITOptimizerDisabled
+			{
+				get
+				{
+					return disableOpt;
+				}
+			}
 
 }; // class DebuggableAttribute
 

@@ -32,6 +32,11 @@ public class SystemException : Exception
 	public SystemException(String msg, Exception inner)
 		: base(msg, inner) {}
 
+	// Internal constructor that is called by classes that
+	// do not want a stack trace to be allocated.
+	internal SystemException(String msg, Exception inner, bool wantTrace)
+		: base(msg, inner, wantTrace) {}
+
 }; // class SystemException
 
 }; // namespace System

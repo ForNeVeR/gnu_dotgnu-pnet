@@ -25,7 +25,15 @@ namespace System.Reflection
 public class ParameterInfo
 {
 
-// TO DO
+// TODO
+
+	public virtual Type ParameterType
+			{
+				get
+				{
+					return typeof(int);
+				}
+			}
 
 }; // class ParameterInfo
 

@@ -29,6 +29,12 @@ public struct RuntimeMethodHandle
 	// Internal state.
 	private IntPtr value__;
 
+	// Internal constructor.
+	internal RuntimeMethodHandle(IntPtr value)
+			{
+				value__ = value;
+			}
+
 	// Get the function pointer associated with this method.
 	public IntPtr GetFunctionPointer()
 			{

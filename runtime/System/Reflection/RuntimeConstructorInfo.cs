@@ -72,6 +72,19 @@ internal sealed class RuntimeConstructorInfo : ConstructorInfo
 					return RuntimeHelpers.GetMemberName(privateData);
 				}
 			}
+	public override RuntimeMethodHandle MethodHandle
+			{
+				get
+				{
+					return new RuntimeMethodHandle(privateData);
+				}
+			}
+
+	public override ParameterInfo[] GetParameters()
+			{
+				// TODO
+				return null;
+			}
 
 }; // class RuntimeConstructorInfo
 

@@ -33,6 +33,13 @@ public class OutOfMemoryException : SystemException
 	public OutOfMemoryException(String msg, Exception inner)
 		: base(msg, inner) {}
 
+	// Internal constructor used by the runtime engine
+	// to make the primary "OutOfMemoryException" object,
+	// that has no stack trace associated with it.
+	internal OutOfMemoryException(int dummy)
+		: base(Environment.GetResourceString("Exception_NoMemory"),
+			   null, false) {}
+
 }; // class OutOfMemoryException
 
 }; // namespace System

@@ -133,6 +133,12 @@ CSSRC = Activator.cs \
 		Collections/IList.cs \
 		Diagnostics/ConditionalAttribute.cs \
 		Diagnostics/DebuggableAttribute.cs \
+		Diagnostics/Debugger.cs \
+		Diagnostics/DebuggerHiddenAttribute.cs \
+		Diagnostics/DebuggerStepThroughAttribute.cs \
+		Diagnostics/PackedStackFrame.cs \
+		Diagnostics/StackFrame.cs \
+		Diagnostics/StackTrace.cs \
 		Globalization/CultureInfo.cs \
 		Globalization/NumberFormatInfo.cs \
 		Globalization/NumberStyles.cs \

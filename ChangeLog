@@ -4,6 +4,9 @@
 	* runtime/System/Version.cs: Added constructor
 	System.Version.Version(String).
 
+	* runtime/System/TimeSpan.cs: Added method
+	System.TimeSpan.Parse(String).
+
 2002-03-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, resources/en_US/Makefile.am,

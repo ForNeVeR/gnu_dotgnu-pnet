@@ -325,11 +325,86 @@ public struct TimeSpan : IComparable
 			}
 
 	// Parse a string into a TimeSpan value.
-	[TODO]
-	public static TimeSpan Parse(String s)
+	public static TimeSpan Parse (String s)
 			{
-				// TODO
-				return Zero;
+				long numberofticks;
+				int days, hours, minutes, seconds, fractions;
+				double fractionsinseconds;
+				int fractionslength;
+				String fractionss;
+				String[] tempstringarray;
+				bool minus = false;
+	
+				//Precheck for null reference
+				if (s == 0) throw new ArgumentNullException("s", _("Arg_NotNull"));
+	
+				try
+				{
+	
+					//Cut of whitespace and check for minus specifier
+					s = s.Trim();
+					minus = s.StartsWith("-");
+	
+					//Get days if present
+					if ((s.IndexOf(".") < s.IndexOf(":")) && (s.IndexOf(".") != -1))
+					{
+						days = Int32.Parse(s.Substring(0, s.IndexOf(".")));
+						s = s.Substring(s.IndexOf(".") + 1);
+					}
+	
+					//Get fractions if present
+					if ((s.IndexOf(".") > s.IndexOf(":")) && (s.IndexOf(".") != -1))
+					{
+						fractionss = s.Substring(s.IndexOf(".") + 1);
+						fractionslength = fractionss.Length;
+						s = s.Substring(0, s.IndexOf("."));
+					}
+	
+					//Parse the hh:mm:ss string
+					tempstringarray = s.Split(":");
+					hours = Int32.Parse(tempstringarray[0]);
+					minutes = Int32.Parse(tempstringarray[1]);
+					seconds = Int32.Parse(tempstringarray[2]);
+	
+	
+				}
+	
+				catch (Exception e)
+				{
+					throw new FormatException("s", _(Exception_Format));
+				}
+
+				//Check for overflows
+				if ( ((hours > 23) || (hours < 0)) ||
+					((minutes > 59) || (minutes < 0)) ||
+					((seconds > 59) || (seconds < 0)) ||
+					((fractionslength > 7) || (fractionslength < 1)) )
+				{
+					throw new OverflowException("s", _(Arg_DateTimeRange));
+				}
+
+				//Calculate the fractions expressed in a second
+				fractions = Int32.Parse(fractionss);
+				fractionsinsecond = fractions / (Math.Pow(10,fractionslength));
+
+				//Calculate the numberofticks
+				numberofticks += (days * TicksPerDay);
+				numberofticks += (hours * TicksPerHour);
+				numberofticks += (minutes * TicksPerMinute);
+				numberofticks += (seconds * TicksPerSecond);
+				numberofticks += (fractions * TicksPerSecond);
+
+				//Apply the minus specifier
+				if (minus == true) numberofticks = 0 - numberofticks;
+
+				//Last check
+				if ((numberofticks < MinValue.Ticks) || (numberofticks > MaxValue.Ticks))
+				{
+					throw new OverflowException("s", _(Arg_DateTimeRange));
+				}
+
+				//Return
+				return new TimeSpan(numberofticks);
 			}
 
 	// Subtract TimeSpan values.

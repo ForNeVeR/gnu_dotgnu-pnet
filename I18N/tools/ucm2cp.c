@@ -292,13 +292,13 @@ static void loadCharMaps(FILE *file)
 				{
 					byteToChar[posn] = (unsigned)posn;
 				}
-				macStyleInited = 1;
 			}
 		}
 		else if(buffer[0] != '<' || buffer[1] != 'U')
 		{
 			continue;
 		}
+		macStyleInited = 1;
 
 		/* Parse the fields on the line */
 		if(!macStyle)

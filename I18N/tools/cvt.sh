@@ -67,6 +67,13 @@ ${UCM2CP} --region Rare --page 708 --wpage 1256 \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save Rare/ibm-1089.ucm >Rare/CP708.cs
 
+${UCM2CP} --region Rare --page 709 --wpage 1256 \
+	--name 'Arabic - ASMO 449+, BCON V4' \
+	--webname windows-709 --bodyname windows-709 \
+	--headername windows-709 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Rare/iso-9036.ucm >Rare/CP709.cs
+
 ${UCM2CP} --region West --page 737 --wpage 1253 \
 	--name 'OEM Greek' \
 	--webname windows-737 --bodyname iso-8859-7 \
@@ -626,7 +633,6 @@ exit 0
 #
 # Other Windows code pages that aren't done yet:
 #
-#  709   Arabic - ASMO 449+, BCON V4
 #  710   Arabic - Transparent Arabic
 #  720   Arabic - Transparent ASMO
 #  10001 MAC - Japanese

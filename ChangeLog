@@ -9,6 +9,9 @@
 	I18N/Rare/ibm-1154.ucm, I18N/Rare/ibm-20924.ucm, I18N/tools/cvt.sh:
 	new EBCDIC and IA5 code pages.
 
+	* I18N/Rare/CP709.cs, I18N/Rare/iso-9036.ucm,
+	I18N/tools/cvt.sh, I18N/tools/ucm2cp.c: add code page 709 (ASMO 449).
+
 2003-08-29  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Xsharp/DrawingGraphics.cs : maximum internal coord is

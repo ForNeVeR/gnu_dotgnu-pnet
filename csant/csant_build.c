@@ -85,7 +85,7 @@ static void StdProps(const char *buildFilename)
 		split = strchr(*temp, '=');
 		if(split)
 		{
-			copyName = (char *)ILMalloc((int)(split - *temp) + 7);
+			copyName = (char *)ILMalloc((int)(split - *temp) + 11);
 			if(!copyName)
 			{
 				CSAntOutOfMemory();

@@ -367,6 +367,8 @@ static struct
 	{"exported types",		IL_META_TOKEN_EXPORTED_TYPE},
 	{"manifest resources",	IL_META_TOKEN_MANIFEST_RESOURCE},
 	{"nested classes",		IL_META_TOKEN_NESTED_CLASS},
+	{"generic parameters",	IL_META_TOKEN_GENERIC_PAR},
+	{"method specs",		IL_META_TOKEN_METHOD_SPEC},
 	{0,						0}
 };
 

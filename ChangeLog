@@ -24,6 +24,9 @@
 	* ilalink/link_class.c, ilalink/link_method.c: handle generic
 	parameters while linking classes and methods.
 
+	* ilsize/ilsize.c: report the number of generic parameters
+	and method specifications in the detailed "ilsize" output.
+
 2003-02-17 Aditya P. Bansod <abansod@fullenergy.com>
 
 	* configure.in, engine/int_proto.h, engine/int_table.c

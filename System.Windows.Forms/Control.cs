@@ -1807,7 +1807,8 @@ public class Control : IWin32Window
 						}
 						else
 						{
-							// Don't anchor to either - default to top.
+							// Center within the top and bottom edges.
+							top = (rect.Height - child.height) / 2;
 							bottom = rect.Height - (top + child.height);
 						}
 						if((anchor & AnchorStyles.Left) != 0)
@@ -1825,7 +1826,8 @@ public class Control : IWin32Window
 						}
 						else
 						{
-							// Don't anchor to either - default to left.
+							// Center within the left and right edges.
+							left = (rect.Width - child.width) / 2;
 							right = rect.Width - (left + child.width);
 						}
 

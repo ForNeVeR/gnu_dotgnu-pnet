@@ -4,6 +4,9 @@
 	* System.Windows.Forms/Control.cs, samples/FormsHello.cs:
 	implement docking and anchoring in the "Control" class.
 
+	* System.Windows.Forms/Control.cs, samples/FormsHello.cs:
+	if not anchored on either side, center within the parent's edges.
+
 2003-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/FormsHello.cs: use the client rectangle to paint,

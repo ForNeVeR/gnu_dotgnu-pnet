@@ -48,7 +48,9 @@ public class FormsHello : Form
 		// Create a progress bar control
 		progress = new ProgressBar();
 		progress.Location = new Point(30, 200);
-		progress.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+		progress.Anchor = AnchorStyles.Top |
+						  AnchorStyles.Left |
+						  AnchorStyles.Right;
 		Controls.Add(progress);
 
 		// Create a label and dock it to the bottom.

@@ -4,6 +4,8 @@
 	* Xsharp/XsharpSupport.c: be a little more selective as to when
 	the direct 24-bit blit optimization should be used.
 
+	* configure.in, NEWS: update version and news for the 0.6.0 release.
+
 2003-10-14  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs

@@ -1,4 +1,56 @@
 
+0.6.0 (15 October 2003)
+
+	System.Windows.Forms:
+
+	* Redirection of events during grabs (Neil Cawse).
+	* Rewrite of client window handling for Win32 (Neil Cawse).
+	* ListBox speed and flicker issues (Brian Luft).
+	* TreeView, TrackBar (Neil Cawse).
+	* Fixes to TextBox, TabControl (Neil Cawse).
+	* New test cases in FormsTest (Neil Cawse).
+	* Modify TextBox.CanUndo to match spec (Adam Ballai).
+	* Stub ToolTip (Adam Ballai).
+	* Curve drawing (Thomas Fritzsche).
+	* Fix DrawArc angle bug (Thomas Fritzsche).
+	* ScrollBar layout fixes (Brian Luft).
+	* System.Drawing.Design namespace (Neil Cawse).
+	* System.Windows.Forms.Design namespace (Neil Cawse).
+	* Various small fixes and stubs in System.Drawing (Neil Cawse).
+	* WinCE compatibility alterations (Neil Cawse).
+	* Flicker fixes for buttons (Neil Cawse).
+	* Various small fixes to Windows.Forms classes (Neil Cawse).
+	* Hook bitmap loading into Xsharp and System.Drawing (Rhys Weatherley).
+	* Some MessageBox infrastructure (Rhys Weatherley).
+	* Add a way to select a non-standard toolkit (Rhys Weatherley).
+
+	Other:
+
+	* Continue serialization and remoting (Rhys Weatherley).
+	* Finish System.ComponentModel (Rhys Weatherley).
+	* Missing functionality in System.Diagnostics (Rhys Weatherley).
+	* System.Uri, System.Net fixes (Rhys Weatherley).
+	* Mark classes with "NonStandardExtra" that should be ignored by
+	  "csdocvalil" during validation (Rhys Weatherley).
+	* HebrewCalendar - ToDateTime should not be public (Rhys Weatherley).
+	* Report the autoconf target name via "Environment.OSVersion" (Rhys).
+	* Remove "-fminimize-parameters" as it isn't needed any more (Rhys).
+	* ISysWrapper assembly to prove debug symbol access (Rhys Weatherley).
+	* System.EnterpriseServices (Rhys Weatherley).
+	* Optimize "ClrType.TrimMembers" (Rhys Weatherley).
+	* Profile-related fixes throughout the tree (Rhys Weatherley).
+	* Fix seeking within a FileStream buffer (Rhys Weatherley).
+	* Finish off the implementation of "AsyncResult" (Rhys Weatherley).
+	* Sort the returns from "Enum.GetValues" and "Enum.GetNames" (Rhys).
+	* Missing functionality in System.Security.Policy (Rhys Weatherley).
+	* Add SharpZipLib to the tree (Rhys Weatherley).
+	* Fix country names in "kok" and "kok-IN" cultures (Rhys Weatherley).
+	* Fixes to compile with csc (Neil Cawse).
+	* Path.GetExtension should return "." in the extension (Rhys Weatherley).
+	* "ResX" classes in System.Resources (Rhys Weatherley).
+	* Add missing string resources and delete obsolete ones (Rhys Weatherley).
+	* HOWTO guide for translating resources (Rhys Weatherley).
+
 0.5.12 (6 September 2003)
 
 	System.Windows.Forms:

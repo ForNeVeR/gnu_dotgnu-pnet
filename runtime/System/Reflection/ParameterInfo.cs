@@ -113,16 +113,16 @@ public class ParameterInfo : ICustomAttributeProvider
 	// Internal interface for getting custom attributes from
 	// ClrParameter when the ICustomAttributeProvider interface
 	// is declared as private.
-	protected internal virtual Object[] ClrGetCustomAttributes(bool inherit)
+	internal virtual Object[] ClrGetCustomAttributes(bool inherit)
 			{
 				return null;
 			}
-	protected internal virtual Object[] ClrGetCustomAttributes
+	internal virtual Object[] ClrGetCustomAttributes
 					(Type type, bool inherit)
 			{
 				return null;
 			}
-	protected internal virtual bool ClrIsDefined(Type type, bool inherit)
+	internal virtual bool ClrIsDefined(Type type, bool inherit)
 			{
 				return false;
 			}

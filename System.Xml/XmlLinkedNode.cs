@@ -31,7 +31,7 @@ public
 abstract class XmlLinkedNode : XmlNode
 {
 	// Constructor.  Only accessible to internal subclasses.
-	protected internal XmlLinkedNode(XmlNode parent)
+	internal XmlLinkedNode(XmlNode parent)
 			: base(parent)
 			{
 				// Nothing to do here.

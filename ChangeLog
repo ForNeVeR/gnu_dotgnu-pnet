@@ -12,6 +12,10 @@
 	runtime/System/Threading/IOCompletionCallback.cs: fix minor
 	semantic compile errors discovered by csc.
 
+	* runtime/*, System.Xml/*: change instances of "protected internal"
+	into "internal", because "protected internal" doesn't actually
+	do what I thought it did.
+
 2003-04-05  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlDocument.cs,

@@ -95,16 +95,16 @@ internal class ClrParameter : ParameterInfo, IClrProgramItem
 
 	// Internal interface used when ICustomAttributeProvider
 	// is declared as private in ParameterInfo.
-	protected internal override Object[] ClrGetCustomAttributes(bool inherit)
+	internal override Object[] ClrGetCustomAttributes(bool inherit)
 			{
 				return ClrHelpers.GetCustomAttributes(this, inherit);
 			}
-	protected internal override Object[] ClrGetCustomAttributes
+	internal override Object[] ClrGetCustomAttributes
 					(Type type, bool inherit)
 			{
 				return ClrHelpers.GetCustomAttributes(this, type, inherit);
 			}
-	protected internal override bool ClrIsDefined(Type type, bool inherit)
+	internal override bool ClrIsDefined(Type type, bool inherit)
 			{
 				return ClrHelpers.IsDefined(this, type, inherit);
 			}

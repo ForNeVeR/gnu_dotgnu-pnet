@@ -42,7 +42,7 @@ public sealed class XmlSyntaxException : SystemException
 								 lineNumber, message)) {}
 
 	// Get the default HResult value for this type of exception.
-	protected internal override uint HResultDefault
+	internal override uint HResultDefault
 			{
 				get
 				{

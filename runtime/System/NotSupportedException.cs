@@ -34,7 +34,7 @@ public class NotSupportedException : SystemException
 		: base(msg, inner) {}
 
 	// Get the default message to use for this exception type.
-	protected internal override String MessageDefault
+	internal override String MessageDefault
 			{
 				get
 				{
@@ -43,7 +43,7 @@ public class NotSupportedException : SystemException
 			}
 
 	// Get the default HResult value for this type of exception.
-	protected internal override uint HResultDefault
+	internal override uint HResultDefault
 			{
 				get
 				{

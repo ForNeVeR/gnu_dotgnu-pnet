@@ -363,8 +363,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 	public abstract long Position { get; set; }
 
 	// Helper function for validating buffer arguments.
-	protected internal void ValidateBuffer
-				(byte[] buffer, int offset, int count)
+	internal void ValidateBuffer(byte[] buffer, int offset, int count)
 			{
 				if(buffer == null)
 				{

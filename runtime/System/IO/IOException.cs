@@ -87,7 +87,7 @@ public class IOException : SystemException
 			}
 
 	// Get the default message to use for I/O exceptions.
-	protected internal override String MessageDefault
+	internal override String MessageDefault
 			{
 				get
 				{
@@ -103,7 +103,7 @@ public class IOException : SystemException
 			}
 
 	// Get the default HResult value for this type of exception.
-	protected internal override uint HResultDefault
+	internal override uint HResultDefault
 			{
 				get
 				{

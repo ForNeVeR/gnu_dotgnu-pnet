@@ -38,7 +38,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	internal NodeList list;
 
 	// Constructor.  Only accessible to internal subclasses.
-	protected internal XmlNode(XmlNode parent)
+	internal XmlNode(XmlNode parent)
 			{
 				this.parent = parent;
 				this.list = null;		// Created on demand to save memory.

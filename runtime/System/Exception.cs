@@ -37,7 +37,7 @@ the "message" field in the base class if it is null.  This is a pain to
 implement, especially for "ToString()" which must include the stack trace
 in the result, amongst other things.
 
-Instead, we provide two "protected internal" properties that only classes
+Instead, we provide two "internal" properties that only classes
 in this library can access.  "MessageDefault" provides a default message
 if "message" is null.  "MessageExtra" provides extra information to be
 inserted into the "ToString()" result just after the message and before
@@ -46,8 +46,8 @@ the stack trace.
 A similar approach is used to get the HResult values.
 
 This design is cleaner to implement throughout the library.  Because the
-extra properties are "protected internal", they will not pollute the
-name space of applications that didn't expect them to be present.
+extra properties are "internal", they will not pollute the name space of
+applications that didn't expect them to be present.
 
 */
 
@@ -290,7 +290,7 @@ public class Exception
 		}
 
 	// Get the extra data to be inserted into the "ToString" representation.
-	protected internal virtual String MessageExtra
+	internal virtual String MessageExtra
 		{
 			get
 			{
@@ -299,7 +299,7 @@ public class Exception
 		}
 
 	// Get the default message to use if "message" was initialized to null.
-	protected internal virtual String MessageDefault
+	internal virtual String MessageDefault
 		{
 			get
 			{
@@ -308,7 +308,7 @@ public class Exception
 		}
 	
 	// Get the default HResult value for this type of exception.
-	protected internal virtual uint HResultDefault
+	internal virtual uint HResultDefault
 		{
 			get
 			{

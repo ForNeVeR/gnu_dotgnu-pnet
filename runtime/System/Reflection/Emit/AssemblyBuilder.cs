@@ -335,7 +335,18 @@ public sealed class AssemblyBuilder : Assembly
 					throw new InvalidOperationException(/* TODO */);
 				}
 				/* TODO: the rest of the exception throwing checks */
-		 		throw new NotImplementedException("Save");
+				String path = directory+assemblyFileName;
+				/* TODO: checks on the dir and filename */
+				IntPtr entry = IntPtr.Zero;
+				if (entryPoint != null)
+				{
+					entry = ((IClrProgramItem)entryPoint).ClrHandle;
+				}
+				if (!(ClrSave(base.privateData, writer, path, entry, fileKind)))
+				{
+					throw new IOException(/* TODO */);
+				}
+				saved = true;
 			}
 
 	// Set a custom attribute on this assembly.

@@ -39,8 +39,21 @@ public sealed class SignatureHelper : IDetachItem
 	internal IntPtr sig;
 	internal int numArgs;
 	private CallingConvention callConv;
+	private bool field;
+	private long bytesOffset;
 
 	// Constructor.
+	private SignatureHelper(Module mod, IntPtr context)
+			{
+				this.mod = mod;
+				this.context = context;
+				this.sig = IntPtr.Zero;
+				this.numArgs = 0;
+				this.callConv = (CallingConvention)0;
+				this.field = true;
+				this.bytesOffset = -1;
+				((ModuleBuilder)mod).assembly.AddDetach(this);
+			}
 	private SignatureHelper(Module mod, IntPtr context, IntPtr sig)
 			{
 				this.mod = mod;
@@ -48,8 +61,9 @@ public sealed class SignatureHelper : IDetachItem
 				this.sig = sig;
 				this.numArgs = 0;
 				this.callConv = (CallingConvention)0;
+				this.field = false;
+				this.bytesOffset = -1;
 				((ModuleBuilder)mod).assembly.AddDetach(this);
-
 			}
 	private SignatureHelper(Module mod, IntPtr context, IntPtr sig,
 							CallingConvention callConv)
@@ -59,6 +73,8 @@ public sealed class SignatureHelper : IDetachItem
 				this.sig = sig;
 				this.numArgs = 0;
 				this.callConv = callConv;
+				this.field = false;
+				this.bytesOffset = -1;
 				((ModuleBuilder)mod).assembly.AddDetach(this);
 			}
 
@@ -138,8 +154,7 @@ public sealed class SignatureHelper : IDetachItem
 				lock(typeof(AssemblyBuilder))
 				{
 					IntPtr context = ModuleToContext(mod);
-					return new SignatureHelper
-						(mod, context, ClrSigCreateField(context));
+					return new SignatureHelper(mod, context);
 				}
 			}
 
@@ -264,12 +279,25 @@ public sealed class SignatureHelper : IDetachItem
 			{
 				lock(typeof(AssemblyBuilder))
 				{
+					if (bytesOffset != -1)
+					{
+						throw new ArgumentException(/* TODO */);
+					}
 					if(clsArgument == null)
 					{
 						throw new ArgumentNullException("clsArgument");
 					}
 					IntPtr type = CSToILType(mod, context, clsArgument);
-					if(!ClrSigAddArgument(context, sig, type))
+					if (field && sig == IntPtr.Zero)
+					{
+						sig = type;
+					}
+					else if (field)
+					{
+						throw new InvalidOperationException
+							(_("Emit_InvalidSigArgument"));
+					}
+					else if(!ClrSigAddArgument(context, sig, type))
 					{
 						throw new InvalidOperationException
 							(_("Emit_InvalidSigArgument"));
@@ -283,6 +311,15 @@ public sealed class SignatureHelper : IDetachItem
 			{
 				lock(typeof(AssemblyBuilder))
 				{
+					if (bytesOffset != -1)
+					{
+						throw new ArgumentException(/* TODO */);
+					}
+					if (field)
+					{
+						throw new InvalidOperationException
+							(_("Emit_InvalidSigArgument"));
+					}
 					if(!ClrSigAddSentinel(context, sig))
 					{
 						throw new InvalidOperationException
@@ -297,7 +334,9 @@ public sealed class SignatureHelper : IDetachItem
 				lock(typeof(AssemblyBuilder))
 				{
 					SignatureHelper helper = (obj as SignatureHelper);
-					if(helper != null && helper.mod == mod)
+					if(helper != null &&
+					   helper.mod == mod &&
+					   helper.field == field)
 					{
 						return ClrSigIdentical(sig, helper.sig);
 					}
@@ -322,7 +361,13 @@ public sealed class SignatureHelper : IDetachItem
 			{
 				lock(typeof(AssemblyBuilder))
 				{
-					return ClrSigGetBytes(mod.privateData, sig);
+					if (bytesOffset == -1)
+					{
+						bytesOffset = ClrSigFinalize
+							(mod.privateData, sig, field);
+					}
+					return ClrSigGetBytes
+						(mod.privateData, bytesOffset);
 				}
 			}
 
@@ -392,10 +437,6 @@ public sealed class SignatureHelper : IDetachItem
 	extern private static IntPtr ClrSigCreateClass
 			(IntPtr module, int typeToken);
 
-	// Create a field signature type value.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static IntPtr ClrSigCreateField(IntPtr context);
-
 	// Create a local variable signature type value.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrSigCreateLocal(IntPtr context);
@@ -432,9 +473,14 @@ public sealed class SignatureHelper : IDetachItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static int ClrSigGetHashCode(IntPtr sig);
 
-	// Get the bytes of a signature.
+	// Write the signature to the blob and get its offset.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static byte[] ClrSigGetBytes(IntPtr module, IntPtr sig);
+	extern private static long ClrSigFinalize
+			(IntPtr module, IntPtr sig, bool field);
+
+	// Get the bytes of a signature from the blob.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static byte[] ClrSigGetBytes(IntPtr module, long offset);
 
 }; // class SignatureHelper
 

@@ -91,6 +91,98 @@ void ILMD5Data(ILMD5Context *md5, const void *buffer, unsigned long len);
  */
 void ILMD5Finalize(ILMD5Context *md5, unsigned char hash[IL_MD5_HASH_SIZE]);
 
+/*
+ * The size of SHA-256 hash values.
+ */
+#define	IL_SHA256_HASH_SIZE		32
+
+/*
+ * Context block for SHA-256.
+ */
+typedef struct _tagILSHA256Context
+{
+	unsigned char	input[64];
+	ILUInt32		inputLen;
+	ILUInt32		A, B, C, D, E, F, G, H;
+	ILUInt64		totalLen;
+
+} ILSHA256Context;
+
+/*
+ * Initialize a SHA-256 context block.
+ */
+void ILSHA256Init(ILSHA256Context *sha);
+
+/*
+ * Input more data into a SHA-256 context block.
+ */
+void ILSHA256Data(ILSHA256Context *sha, const void *buffer, unsigned long len);
+
+/*
+ * Finalize a SHA-256 context block and output the hash.
+ */
+void ILSHA256Finalize(ILSHA256Context *sha,
+					  unsigned char hash[IL_SHA256_HASH_SIZE]);
+
+/*
+ * The size of SHA-512 hash values.
+ */
+#define	IL_SHA512_HASH_SIZE		64
+
+/*
+ * Context block for SHA-512.
+ */
+typedef struct _tagILSHA512Context
+{
+	unsigned char	input[128];
+	ILUInt32		inputLen;
+	ILUInt64		A, B, C, D, E, F, G, H;
+	ILUInt64		totalLen;
+
+} ILSHA512Context;
+
+/*
+ * Initialize a SHA-512 context block.
+ */
+void ILSHA512Init(ILSHA512Context *sha);
+
+/*
+ * Input more data into a SHA-512 context block.
+ */
+void ILSHA512Data(ILSHA512Context *sha, const void *buffer, unsigned long len);
+
+/*
+ * Finalize a SHA-512 context block and output the hash.
+ */
+void ILSHA512Finalize(ILSHA512Context *sha,
+					  unsigned char hash[IL_SHA512_HASH_SIZE]);
+
+/*
+ * The size of SHA-384 hash values.
+ */
+#define	IL_SHA384_HASH_SIZE		48
+
+/*
+ * Context block for SHA-384, which is the same as SHA-512.
+ */
+typedef ILSHA512Context ILSHA384Context;
+
+/*
+ * Initialize a SHA-384 context block.
+ */
+void ILSHA384Init(ILSHA384Context *sha);
+
+/*
+ * Input more data into a SHA-384 context block.
+ */
+#define	ILSHA384Data(sha,buffer,len)	(ILSHA512Data((sha), (buffer), (len)))
+
+/*
+ * Finalize a SHA-384 context block and output the hash.
+ */
+void ILSHA384Finalize(ILSHA384Context *sha,
+					  unsigned char hash[IL_SHA384_HASH_SIZE]);
+
 #ifdef	__cplusplus
 };
 #endif

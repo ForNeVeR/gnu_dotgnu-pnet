@@ -76,6 +76,36 @@ typedef struct
 } SHA1HashContext;
 
 /*
+ * Hash context for the SHA-256 algorithm.
+ */
+typedef struct
+{
+	HashContext		hash;
+	ILSHA256Context	sha256;
+
+} SHA256HashContext;
+
+/*
+ * Hash context for the SHA-384 algorithm.
+ */
+typedef struct
+{
+	HashContext		hash;
+	ILSHA384Context	sha384;
+
+} SHA384HashContext;
+
+/*
+ * Hash context for the SHA-512 algorithm.
+ */
+typedef struct
+{
+	HashContext		hash;
+	ILSHA512Context	sha512;
+
+} SHA512HashContext;
+
+/*
  * public static bool AlgorithmSupported(int algorithm);
  */
 ILBool _IL_CryptoMethods_AlgorithmSupported(ILExecThread *_thread,
@@ -84,7 +114,10 @@ ILBool _IL_CryptoMethods_AlgorithmSupported(ILExecThread *_thread,
 	switch(algorithm)
 	{
 		case IL_ALG_MD5:
-		case IL_ALG_SHA1:		return 1;
+		case IL_ALG_SHA1:
+		case IL_ALG_SHA256:
+		case IL_ALG_SHA384:
+		case IL_ALG_SHA512: return 1;
 	}
 	return 0;
 }
@@ -127,6 +160,57 @@ ILNativeInt _IL_CryptoMethods_HashNew(ILExecThread *_thread, ILInt32 algorithm)
 			context->update = (HashUpdateFunc)ILSHAData;
 			context->final = (HashFinalFunc)ILSHAFinalize;
 			ILSHAInit(&(((SHA1HashContext *)context)->sha1));
+			return (ILNativeInt)context;
+		}
+		/* Not reached */
+
+		case IL_ALG_SHA256:
+		{
+			/* Create and initialize an SHA-256 context */
+			context = (HashContext *)ILMalloc(sizeof(SHA256HashContext));
+			if(!context)
+			{
+				ILExecThreadThrowOutOfMemory(_thread);
+				return 0;
+			}
+			context->reset = (HashResetFunc)ILSHA256Init;
+			context->update = (HashUpdateFunc)ILSHA256Data;
+			context->final = (HashFinalFunc)ILSHA256Finalize;
+			ILSHA256Init(&(((SHA256HashContext *)context)->sha256));
+			return (ILNativeInt)context;
+		}
+		/* Not reached */
+
+		case IL_ALG_SHA384:
+		{
+			/* Create and initialize an SHA-384 context */
+			context = (HashContext *)ILMalloc(sizeof(SHA384HashContext));
+			if(!context)
+			{
+				ILExecThreadThrowOutOfMemory(_thread);
+				return 0;
+			}
+			context->reset = (HashResetFunc)ILSHA384Init;
+			context->update = (HashUpdateFunc)ILSHA512Data;	/* Same as 512 */
+			context->final = (HashFinalFunc)ILSHA384Finalize;
+			ILSHA384Init(&(((SHA384HashContext *)context)->sha384));
+			return (ILNativeInt)context;
+		}
+		/* Not reached */
+
+		case IL_ALG_SHA512:
+		{
+			/* Create and initialize an SHA-512 context */
+			context = (HashContext *)ILMalloc(sizeof(SHA512HashContext));
+			if(!context)
+			{
+				ILExecThreadThrowOutOfMemory(_thread);
+				return 0;
+			}
+			context->reset = (HashResetFunc)ILSHA512Init;
+			context->update = (HashUpdateFunc)ILSHA512Data;
+			context->final = (HashFinalFunc)ILSHA512Finalize;
+			ILSHA512Init(&(((SHA512HashContext *)context)->sha512));
 			return (ILNativeInt)context;
 		}
 		/* Not reached */

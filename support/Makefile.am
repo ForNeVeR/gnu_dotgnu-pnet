@@ -31,6 +31,9 @@ libILSupport_a_SOURCES = allocate.c \
 						 read_float.c \
 						 rem_float.c \
 						 sha1.c \
+						 sha256.c \
+						 sha384.c \
+						 sha512.c \
 						 socket.c \
 						 spawn.c \
 						 strings.c \

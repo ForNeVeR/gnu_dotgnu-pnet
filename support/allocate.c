@@ -174,10 +174,27 @@ static int zero_fd = -1;
  */
 static void PageInit(void)
 {
+	void *addr;
 	zero_fd = open("/dev/zero", O_RDWR, 0);
 	if(zero_fd != -1)
 	{
+		/* Set the descriptor to "no-inherit" */
 		fcntl(zero_fd, F_SETFD, 1);
+
+		/* Try to allocate a page, which should tell us if "/dev/zero"
+		   is actually live and working on this platform */
+		addr = mmap((void *)0, ILPageAllocSize(),
+				    PROT_READ | PROT_WRITE | PROT_EXEC,
+				    MAP_SHARED | MAP_ANON, zero_fd, 0);
+		if(addr == (void *)(-1))
+		{
+			close(zero_fd);
+			zero_fd = -1;
+		}
+		else
+		{
+			munmap(addr, ILPageAllocSize());
+		}
 	}
 }
 

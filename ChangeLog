@@ -4,6 +4,9 @@
 	* include/il_config_win.h, include/il_values.h: remove the out
 	of date file "il_config_win.h".
 
+	* support/allocate.c (PageInit): probe "/dev/zero" to see if
+	it is really capable of allocating page-based memory.
+
 2002-06-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, codegen/jv_stmt.tc: make sure that the

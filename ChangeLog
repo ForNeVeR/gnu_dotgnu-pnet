@@ -1,4 +1,9 @@
 
+2003-06-24  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/java/.cvsignore, cscc/bf/.cvsignore : add generated
+	files to .cvsignore to avoid being generated as a patch.
+
 2003-06-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/dynlib.c: use the "LoadLibrary" function under both

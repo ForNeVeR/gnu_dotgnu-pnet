@@ -1,0 +1,10 @@
+Makefile
+Makefile.in
+.deps
+stamp-treecc
+java_grammar.c
+java_grammar.h
+java_nodes.c
+java_scanner.c
+java_semantics.c
+java_defs.h

@@ -1,0 +1,10 @@
+Makefile
+Makefile.in
+.deps
+stamp-treecc
+bf_grammar.c
+bf_grammar.h
+bf_nodes.c
+bf_scanner.c
+bf_codegen.c
+bf_defs.h

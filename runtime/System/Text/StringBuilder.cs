@@ -42,6 +42,11 @@ public sealed class StringBuilder
 	public StringBuilder() : this(MinCapacity) {}
 	public StringBuilder(int capacity)
 			{
+				if(capacity < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("capacity", _("ArgRange_StrCapacity"));
+				}
 				if(capacity < MinCapacity)
 				{
 					capacity = MinCapacity;
@@ -95,6 +100,11 @@ public sealed class StringBuilder
 			}
 	public StringBuilder(String value, int capacity)
 			{
+				if (capacity < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("capacity", _("ArgRange_StrCapacity"));
+				}
 				if(value != null)
 				{
 					if(capacity < value.Length)
@@ -120,32 +130,37 @@ public sealed class StringBuilder
 	public StringBuilder(String value, int startIndex,
 						 int length, int capacity)
 			{
+				if(capacity < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("capacity", _("ArgRange_StrCapacity"));
+				}
+				if(startIndex < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				// Shrink the substring to the legitimate part of the string.
 				if(value != null)
 				{
-					if(startIndex < 0)
-					{
-						length += startIndex;
-						startIndex = 0;
-					}
-					else if(startIndex > value.Length)
-					{
-						startIndex = 0;
-						length = 0;
-					}
-					if(length < 0)
-					{
-						length = 0;
-					}
 					if((value.Length - startIndex) < length)
 					{
-						length = value.Length - startIndex;
+						throw new ArgumentOutOfRangeException
+							("length", _("ArgRange_Array"));
 					}
 				}
 				else
 				{
-					startIndex = 0;
-					length = 0;
+					if (startIndex != 0 || length != 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("length", _("ArgRange_Array"));
+					}
 				}
 
 				// Validate the capacity.
@@ -163,6 +178,7 @@ public sealed class StringBuilder
 				if(length > 0)
 				{
 					String.Copy(buildString, 0, value, startIndex, length);
+					buildString.length = length;
 				}
 				maxCapacity = Int32.MaxValue;
 				needsCopy = false;
@@ -649,19 +665,18 @@ public sealed class StringBuilder
 						throw new ArgumentOutOfRangeException
 							("startIndex", _("ArgRange_Array"));
 					}
-					else if((value.Length - startIndex) > length)
+					else if((value.Length - startIndex) < length)
 					{
 						throw new ArgumentOutOfRangeException
 							("length", _("ArgRange_Array"));
 					}
+					length = InsertSpace(index, length);
+					String.CharFill(buildString, index, value, startIndex, length);
 				}
 				else if(startIndex != 0 || length != 0)
 				{
 					throw new ArgumentNullException("value");
 				}
-				length = InsertSpace(index, length);
-				String.CharFill(buildString, index, value, startIndex, length);
-				buildString.length += length;
 				return this;
 			}
 	public StringBuilder Insert(int index, String value, int count)
@@ -737,7 +752,7 @@ public sealed class StringBuilder
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
 				}
-				else if((buildString.length - startIndex) > count)
+				else if((buildString.length - startIndex) < count)
 				{
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_StringRange"));
@@ -769,7 +784,7 @@ public sealed class StringBuilder
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
 				}
-				else if((buildString.length - startIndex) > count)
+				else if((buildString.length - startIndex) < count)
 				{
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_StringRange"));
@@ -831,7 +846,7 @@ public sealed class StringBuilder
 			{
 				get
 				{
-					return buildString.length;
+					return buildString.capacity;
 				}
 				set
 				{

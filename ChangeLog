@@ -1,4 +1,10 @@
 
+2004-11-18  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Text/StringBuilder.cs: Throw correct exceptions and fix
+	various other errors like setting buildString.length in constructor and
+	some index checks. Fix Capacity property.
+
 2004-11-14  Stephen Compall  <s11@member.fsf.org>
 
 	* runtime/System/Private/NumberParser.cs

@@ -158,6 +158,81 @@ int ILMemberAccessible(ILMember *member, ILClass *scope)
 	return 0;
 }
 
+ILMember *ILMemberImport(ILImage *image, ILMember *member)
+{
+	ILClass *classInfo;
+	ILMember *newMember;
+	ILMethod *method;
+	ILField *field;
+
+	/* If the member is already in the image, then bail out */
+	if(ILProgramItem_Image(member) == image)
+	{
+		return member;
+	}
+
+	/* Do we have a link from the member back to the required image? */
+	newMember = (ILMember *)_ILProgramItemLinkedBackTo
+							((ILProgramItem *)member, image);
+	if(newMember)
+	{
+		return newMember;
+	}
+
+	/* Import the member's owner */
+	classInfo = ILClassImport(image, ILMember_Owner(member));
+	if(!classInfo)
+	{
+		return 0;
+	}
+
+	/* Create a matching declaration in the imported owner */
+	if(ILMember_IsMethod(member))
+	{
+		/* Create a matching method declaration */
+		method = ILMethodCreate(classInfo, (ILToken)IL_MAX_UINT32,
+							    ILMember_Name(member),
+								ILMember_Attrs(member));
+		if(!method)
+		{
+			return 0;
+		}
+		ILMethodSetCallConv(method, ILMethodGetCallConv((ILMethod *)member));
+		ILMemberSetSignature((ILMember *)method,
+							 ILMemberGetSignature(member));
+		newMember = (ILMember *)method;
+	}
+	else if(ILMember_IsField(member))
+	{
+		/* Create a matching field declaration */
+		field = ILFieldCreate(classInfo, (ILToken)IL_MAX_UINT32,
+							  ILMember_Name(member),
+							  ILMember_Attrs(member));
+		if(!field)
+		{
+			return 0;
+		}
+		ILMemberSetSignature((ILMember *)field,
+							 ILMemberGetSignature(member));
+		newMember = (ILMember *)field;
+	}
+	else
+	{
+		/* Shouldn't happen, but do something useful anyway */
+		return member;
+	}
+
+	/* Link the reference to the original member */
+	if(!_ILProgramItemLink(&(newMember->programItem),
+						   &(member->programItem)))
+	{
+		return 0;
+	}
+
+	/* Done */
+	return newMember;
+}
+
 /*
  * Common function for creating members and attaching them to a class.
  */

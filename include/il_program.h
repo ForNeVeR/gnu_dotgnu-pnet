@@ -811,6 +811,13 @@ void ILMemberSetAttrs(ILMember *member, ILUInt32 mask, ILUInt32 attrs);
 int ILMemberAccessible(ILMember *member, ILClass *scope);
 
 /*
+ * Import a member into a specific image as a reference.
+ * This should only be used when building an image.
+ * Returns NULL if out of memory.
+ */
+ILMember *ILMemberImport(ILImage *image, ILMember *member);
+
+/*
  * Helper macros for querying information about members.
  */
 #define	ILMember_FromToken(image,token)	\

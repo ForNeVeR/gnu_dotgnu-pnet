@@ -1,3 +1,10 @@
+2006-06-17  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Drawing.Xsharp/DrawingFont.cs, Xsharp/Font.cs: move
+	fallback font family code, for typical windows fonts, to Xsharp
+	and try the given font family before trying the fallbacks.
+
+	* Xsharp/Makefile.am, configure.in: fix to build with --enable-xft.
 
 2004-06-16  Gopal V  <gopalv82@yahoo.com>
 

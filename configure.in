@@ -19,6 +19,7 @@ AC_SUBST(ASSEMBLY_LINKER)
 AC_SUBST(PNET_PATH)
 AC_SUBST(X11_LIB)
 AC_SUBST(XFT_LIB)
+AC_SUBST(XFT_INC)
 AC_SUBST(CYG_RESGEN)
 AC_SUBST(CYG_ILGAC)
 AC_SUBST(CYG_CACHE)
@@ -71,17 +72,18 @@ dnl of "libXsharpSupport.so".
 if test "x$no_x" = "xyes" ; then
 	X11_LIB=
 	XFT_LIB=
+	XFT_INC=
 else
 	X11_LIB=-lX11
 	if test x$xft = xtrue ; then
 		XFT_LIB=-lXft
+		XFT_INC=`freetype-config --cflags`
 		AC_DEFINE(USE_XFT_EXTENSION)
 	else
 		XFT_LIB=
+		XFT_INC=
 	fi
 fi
-
-dnl Determine if we should add -lXft to the link line of "libXsharpSupport.so".
 
 dnl The --with-pnet option can be used to specify the location of
 dnl Portable.NET, so that we know where to get the C# compiler, etc.
@@ -179,7 +181,7 @@ dnl Find the Portable.NET "clrwrap" program.
 AC_PATH_PROG(CLRWRAP, clrwrap,, $PNET_PATH/clrwrap:${prefix}/bin:$PATH)
 if test "$CLRWRAP" = "" ; then
 	echo '**************************************************************'
-	echo "Portable.NET'clrwrap ilgac tool is required to build the system."
+	echo "Portable.NET's clrwrap tool is required to build the system."
 	echo "Use the --with-pnet option to specify Portable.NET's location."
 	echo '**************************************************************'
 	exit 1

@@ -58,7 +58,7 @@ internal sealed class DrawingFont : IToolkitFont
 						if(xfont == null)
 						{
 							xfont = Xsharp.Font.CreateFont
-								(MapFamilyName(properties.Name),
+								(properties.Name,
 								 (int)(properties.SizeInPoints *
 								 	   (10.0f * PointSizeConversion)),
 								 (Xsharp.FontStyle)(properties.Style));
@@ -85,38 +85,6 @@ internal sealed class DrawingFont : IToolkitFont
 	public void ToLogFont(Object lf, IToolkitGraphics graphics)
 			{
 				// Nothing to do here in this implementation.
-			}
-
-	// Map a Windows-style family name to an Xsharp-style family name.
-	private static String MapFamilyName(String name)
-			{
-				if(String.Compare(name, "Times", true) == 0 ||
-				   String.Compare(name, "Times New Roman", true) == 0)
-				{
-					return Xsharp.Font.Serif;
-				}
-				else if(String.Compare
-							(name, "Microsoft Sans Serif", true) == 0)
-				{
-					return Xsharp.Font.DefaultSansSerif;
-				}
-				else if(String.Compare(name, "Helvetica", true) == 0 ||
-				        String.Compare(name, "Helv", true) == 0 ||
-				        String.Compare(name, "Arial", true) == 0 ||
-						(name.Length >= 6 &&
-				        	String.Compare(name, 0, "Arial ", 0, 6, true) == 0))
-				{
-					return Xsharp.Font.SansSerif;
-				}
-				else if(String.Compare(name, "Courier", true) == 0 ||
-				        String.Compare(name, "Courier New", true) == 0)
-				{
-					return Xsharp.Font.Fixed;
-				}
-				else
-				{
-					return name;
-				}
 			}
 
 }; // class DrawingFont

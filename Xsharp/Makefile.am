@@ -9,7 +9,7 @@ libXsharpSupport_la_LDFLAGS = -version-info 0:0:0 -no-undefined \
 							  $(X_LIBS) $(X_PRE_LIBS) $(XFT_LIB) \
 							  $(X11_LIB) $(X_EXTRA_LIBS)
 
-AM_CFLAGS = $(X_CFLAGS)
+AM_CFLAGS = $(X_CFLAGS) $(XFT_INC)
 
 all-local: Xsharp.dll
 

@@ -952,23 +952,20 @@ public class Font
 				(IntPtr display, String family, int pointSize,
 				 int style, bool isFontStruct)
 			{
-				if(family == SansSerif)
+				String fallback = GetFallbackFamily(family);
+				if(fallback != null)
 				{
-					return CreateFontSetOrStruct
-						(display, SansSerifFamilies, pointSize,
-						 style, isFontStruct);
+					IntPtr fontSet = TryCreateFontSetOrStruct
+						(display, family, pointSize, style, isFontStruct);
+					if(fontSet != IntPtr.Zero) { return fontSet; }
+					family = fallback;
 				}
-				else if(family == Serif)
+
+				String[] families = GetFallbackFamilies(family);
+				if(families != null)
 				{
 					return CreateFontSetOrStruct
-						(display, SerifFamilies, pointSize,
-						 style, isFontStruct);
-				}
-				else if(family == Fixed)
-				{
-					return CreateFontSetOrStruct
-						(display, FixedFamilies, pointSize,
-						 style, isFontStruct);
+						(display, families, pointSize, style, isFontStruct);
 				}
 				else if(isFontStruct)
 				{
@@ -979,6 +976,79 @@ public class Font
 				{
 					return Xlib.XSharpCreateFontSet
 						(display, family, pointSize, style);
+				}
+			}
+
+	// Try to create a font set or struct.
+	private static IntPtr TryCreateFontSetOrStruct
+				(IntPtr display, String family, int pointSize,
+				 int style, bool isFontStruct)
+			{
+				if(isFontStruct)
+				{
+					return Xlib.XSharpCreateFontStruct
+						(display, family, pointSize, style | 0x40);
+				}
+				else
+				{
+					return Xlib.XSharpCreateFontSet
+						(display, family, pointSize, style | 0x40);
+				}
+			}
+
+	// Get a fallback family name for typical Windows families.
+	private static String GetFallbackFamily(String name)
+			{
+				if(String.Compare(name, "Times", true) == 0 ||
+				   String.Compare(name, "Times New Roman", true) == 0)
+				{
+					return Serif;
+				}
+				else if(String.Compare(name, "Microsoft Sans Serif", true) == 0)
+				{
+					return DefaultSansSerif;
+				}
+				else if(String.Compare(name, "Helvetica", true) == 0 ||
+				        String.Compare(name, "Helv", true) == 0 ||
+				        String.Compare(name, "Arial", true) == 0 ||
+						(name.Length >= 6 &&
+				        	String.Compare(name, 0, "Arial ", 0, 6, true) == 0))
+				{
+					return SansSerif;
+				}
+				else if(String.Compare(name, "Courier", true) == 0 ||
+				        String.Compare(name, "Courier New", true) == 0)
+				{
+					return Fixed;
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Get fallback families for typical X families.
+	private static String[] GetFallbackFamilies(String family)
+			{
+				if(family == null)
+				{
+					return null;
+				}
+				else if(family == SansSerif || family == DefaultSansSerif)
+				{
+					return SansSerifFamilies;
+				}
+				else if(family == Serif)
+				{
+					return SerifFamilies;
+				}
+				else if(family == Fixed)
+				{
+					return FixedFamilies;
+				}
+				else
+				{
+					return null;
 				}
 			}
 
@@ -1161,9 +1231,33 @@ public class Font
 					XRectangle max_logical;
 					IntPtr fontSet;
 
+					// Check for fallback families.
+					String[] families = GetFallbackFamilies
+						(GetFallbackFamily(family));
+
+					// Create the family list.
+					String familyList = family;
+					if(families != null)
+					{
+						// Create the family list builder.
+						StringBuilder familyBuilder = new StringBuilder();
+
+						// Add the preferred family to the list.
+						familyBuilder.Append(family);
+
+						// Add the fallbacks to the list.
+						foreach(String fam in families)
+						{
+							familyBuilder.Append(",").Append(fam);
+						}
+
+						// Reset the family to the family list.
+						familyList = familyBuilder.ToString();
+					}
+
 					// Create the raw X font set structure.
 					fontSet = Xlib.XSharpCreateFontXft
-						(display, family, pointSize, (int)style);
+						(display, familyList, pointSize, (int)style);
 
 					// Get the extent information for the font.
 					Xlib.XSharpFontExtentsXft

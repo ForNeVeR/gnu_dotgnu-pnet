@@ -86,6 +86,11 @@ ILProgramItem *_ILProgramItemResolve(ILProgramItem *item);
 ILProgramItem *_ILProgramItemResolveRef(ILProgramItem *item);
 
 /*
+ * Load the attributes for a program item on demand.
+ */
+void _ILProgramItemLoadAttributes(ILProgramItem *item);
+
+/*
  * Information about a custom attribute.
  */
 struct _tagILAttribute

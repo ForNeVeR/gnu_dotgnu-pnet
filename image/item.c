@@ -33,12 +33,26 @@ ILAttribute *ILProgramItemNextAttribute(ILProgramItem *item,
 	}
 	else if(!(item->linked))
 	{
-		return (ILAttribute *)(item->attrsOrLink);
+		attr = (ILAttribute *)(item->attrsOrLink);
 	}
 	else
 	{
-		return ((ILProgramItemLink *)(item->attrsOrLink))->customAttrs;
+		attr = ((ILProgramItemLink *)(item->attrsOrLink))->customAttrs;
 	}
+	if(!attr && item->image->type != IL_IMAGETYPE_BUILDING)
+	{
+		/* We need to perform on-demand loading of the attributes */
+		_ILProgramItemLoadAttributes(item);
+		if(!(item->linked))
+		{
+			attr = (ILAttribute *)(item->attrsOrLink);
+		}
+		else
+		{
+			attr = ((ILProgramItemLink *)(item->attrsOrLink))->customAttrs;
+		}
+	}
+	return attr;
 }
 
 void ILProgramItemAddAttribute(ILProgramItem *item, ILAttribute *attr)

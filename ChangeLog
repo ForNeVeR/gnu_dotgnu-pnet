@@ -4,6 +4,11 @@
 	* ildasm/ildasm_method.c: dump custom attribute and constant
 	values that are attached to method parameters.
 
+	* image/item.c, image/meta_build.c, image/program.h: convert
+	a number of token tables to on-demand loading - Module, ModuleRef,
+	Assembly, AssemblyRef, OSDef, ProcessorDef, OSRef, ProcessorRef,
+	File, and CustomAttr.
+
 2003-06-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y: Wrap all 'using' blocks in a new local

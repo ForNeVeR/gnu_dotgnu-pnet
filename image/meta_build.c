@@ -1950,6 +1950,123 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 }
 
 /*
+ * Search the raw values in an owned item table for a token match.
+ * Returns the first token that matches in the "ownedType" table
+ * in "firstMatch".  The number of tokens that match is returned
+ * from the function, or zero if there are no matches.
+ */
+typedef int (*SearchRawFunc)(ILUInt32 *values, ILToken searchFor);
+static ILUInt32 SearchForRawToken(ILImage *image, SearchRawFunc func,
+							      ILToken ownedType, ILToken *firstMatch,
+								  ILToken searchFor)
+{
+	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
+	ILToken minToken, maxToken, current;
+	ILUInt32 count;
+	int cmp;
+
+	/* Determine how to perform the search: binary or linear */
+	minToken = (ownedType | 1);
+	maxToken = (ownedType | image->tokenCount[ownedType >> 24]);
+	if((image->sorted & (1 << (int)(ownedType >> 24))) != 0)
+	{
+		/* Perform a binary search for the item */
+		while(minToken <= maxToken)
+		{
+			current = minToken + ((maxToken - minToken) / 2);
+			if(!_ILImageRawTokenData(image, current, values))
+			{
+				return 0;
+			}
+			cmp = (*func)(values, searchFor);
+			if(cmp == 0)
+			{
+				/* We have found a match: search backwards to find the
+				   start of the range */
+				minToken = (ownedType | 1);
+				maxToken = (ownedType | image->tokenCount[ownedType >> 24]);
+				while(current > minToken)
+				{
+					if(!_ILImageRawTokenData(image, current - 1, values))
+					{
+						return 0;
+					}
+					if((*func)(values, searchFor) != 0)
+					{
+						break;
+					}
+					--current;
+				}
+
+			   	/* This is the first match in the table.  Determine
+				   how large the range of items is */
+				*firstMatch = current;
+				count = 1;
+				++current;
+				while(current <= maxToken)
+				{
+					if(!_ILImageRawTokenData(image, current, values))
+					{
+						return 0;
+					}
+					if((*func)(values, searchFor) != 0)
+					{
+						break;
+					}
+					++current;
+					++count;
+				}
+				return count;
+			}
+			else if(cmp < 0)
+			{
+				maxToken = current - 1;
+			}
+			else
+			{
+				minToken = current + 1;
+			}
+		}
+	}
+	else
+	{
+		/* Perform a linear search for the item */
+		for(current = minToken; current <= maxToken; ++current)
+		{
+			if(!_ILImageRawTokenData(image, current, values))
+			{
+				return 0;
+			}
+			if((*func)(values, searchFor) == 0)
+			{
+				/* This is the first match in the table.  Determine
+				   how large the range of items is */
+				*firstMatch = current;
+				count = 1;
+				++current;
+				while(current <= maxToken)
+				{
+					if(!_ILImageRawTokenData(image, current, values))
+					{
+						return 0;
+					}
+					if((*func)(values, searchFor) != 0)
+					{
+						break;
+					}
+					++current;
+					++count;
+				}
+				return count;
+			}
+		}
+	}
+
+	/* If we get here, then we were unable to find a match */
+	return 0;
+}
+
+/*
  * Load a custom attribute token.
  */
 static int Load_CustomAttr(ILImage *image, ILUInt32 *values,
@@ -1994,6 +2111,115 @@ static int Load_CustomAttr(ILImage *image, ILUInt32 *values,
 
 	/* Done */
 	return 0;
+}
+
+/*
+ * Search for a custom attribute declaration in a raw token table.
+ */
+static int Search_CustomAttr(ILUInt32 *values, ILToken token1)
+{
+	ILToken token2 = (ILToken)(values[IL_OFFSET_CUSTOMATTR_OWNER]);
+	ILToken tokenNum1 = (token1 & ~IL_META_TOKEN_MASK);
+	ILToken tokenNum2 = (token2 & ~IL_META_TOKEN_MASK);
+	int type1, type2;
+
+	/* Compare the bottom parts of the token first, because
+	   the table must be sorted on its encoded value, not
+	   on the original value.  Encoded values put the token
+	   type in the low order bits */
+	if(tokenNum1 < tokenNum2)
+	{
+		return -1;
+	}
+	else if(tokenNum1 > tokenNum2)
+	{
+		return 1;
+	}
+
+	/* Convert the token types into encoded type values */
+	switch(token1 & IL_META_TOKEN_MASK)
+	{
+		case IL_META_TOKEN_METHOD_DEF:				type1 =  0; break;
+		case IL_META_TOKEN_FIELD_DEF:				type1 =  1; break;
+		case IL_META_TOKEN_TYPE_REF:				type1 =  2; break;
+		case IL_META_TOKEN_TYPE_DEF:				type1 =  3; break;
+		case IL_META_TOKEN_PARAM_DEF:				type1 =  4; break;
+		case IL_META_TOKEN_INTERFACE_IMPL:			type1 =  5; break;
+		case IL_META_TOKEN_MEMBER_REF:				type1 =  6; break;
+		case IL_META_TOKEN_MODULE:					type1 =  7; break;
+		case IL_META_TOKEN_DECL_SECURITY:			type1 =  8; break;
+		case IL_META_TOKEN_PROPERTY:				type1 =  9; break;
+		case IL_META_TOKEN_EVENT:					type1 = 10; break;
+		case IL_META_TOKEN_STAND_ALONE_SIG:			type1 = 11; break;
+		case IL_META_TOKEN_MODULE_REF:				type1 = 12; break;
+		case IL_META_TOKEN_TYPE_SPEC:				type1 = 13; break;
+		case IL_META_TOKEN_ASSEMBLY:				type1 = 14; break;
+		case IL_META_TOKEN_ASSEMBLY_REF:			type1 = 15; break;
+		case IL_META_TOKEN_FILE:					type1 = 16; break;
+		case IL_META_TOKEN_EXPORTED_TYPE:			type1 = 17; break;
+		case IL_META_TOKEN_MANIFEST_RESOURCE:		type1 = 18; break;
+		default:									type1 = 19; break;
+	}
+	switch(token2 & IL_META_TOKEN_MASK)
+	{
+		case IL_META_TOKEN_METHOD_DEF:				type2 =  0; break;
+		case IL_META_TOKEN_FIELD_DEF:				type2 =  1; break;
+		case IL_META_TOKEN_TYPE_REF:				type2 =  2; break;
+		case IL_META_TOKEN_TYPE_DEF:				type2 =  3; break;
+		case IL_META_TOKEN_PARAM_DEF:				type2 =  4; break;
+		case IL_META_TOKEN_INTERFACE_IMPL:			type2 =  5; break;
+		case IL_META_TOKEN_MEMBER_REF:				type2 =  6; break;
+		case IL_META_TOKEN_MODULE:					type2 =  7; break;
+		case IL_META_TOKEN_DECL_SECURITY:			type2 =  8; break;
+		case IL_META_TOKEN_PROPERTY:				type2 =  9; break;
+		case IL_META_TOKEN_EVENT:					type2 = 10; break;
+		case IL_META_TOKEN_STAND_ALONE_SIG:			type2 = 11; break;
+		case IL_META_TOKEN_MODULE_REF:				type2 = 12; break;
+		case IL_META_TOKEN_TYPE_SPEC:				type2 = 13; break;
+		case IL_META_TOKEN_ASSEMBLY:				type2 = 14; break;
+		case IL_META_TOKEN_ASSEMBLY_REF:			type2 = 15; break;
+		case IL_META_TOKEN_FILE:					type2 = 16; break;
+		case IL_META_TOKEN_EXPORTED_TYPE:			type2 = 17; break;
+		case IL_META_TOKEN_MANIFEST_RESOURCE:		type2 = 18; break;
+		default:									type2 = 19; break;
+	}
+
+	/* Compare the encoded token types */
+	if(type1 < type2)
+	{
+		return -1;
+	}
+	else if(type1 > type2)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void _ILProgramItemLoadAttributes(ILProgramItem *item)
+{
+	ILToken token;
+	ILUInt32 numTokens;
+	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
+
+	/* Find the custom attribute information for this token */
+	numTokens = SearchForRawToken(item->image, Search_CustomAttr,
+								  IL_META_TOKEN_CUSTOM_ATTRIBUTE,
+								  &token, (ILToken)(item->token));
+
+	/* Load the custom attribute tokens for this item */
+	while(numTokens > 0)
+	{
+		if(_ILImageRawTokenData(item->image, token, values))
+		{
+			Load_CustomAttr(item->image, values, 0, token, 0);
+		}
+		--numTokens;
+		++token;
+	}
 }
 
 /*
@@ -2404,6 +2630,7 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	int needPhase2;
 
 	/* Load information about modules, assemblies, and files */
+#if 0
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_MODULE,
 							 Load_Module, 0));
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_MODULE_REF,
@@ -2422,6 +2649,7 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 							 Load_ProcessorRef, 0));
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FILE,
 							 Load_File, 0));
+#endif
 
 	/* Load the assemblies that this image depends upon */
 	if((loadFlags & IL_LOADFLAG_NO_RESOLVE) == 0)
@@ -2483,9 +2711,11 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_METHOD_IMPL,
 							 Load_Override, 0));
 
+#if 0
 	/* Load the custom attributes for all of the above */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CUSTOM_ATTRIBUTE,
 							 Load_CustomAttr, 0));
+#endif
 
 	/* Load generic type parameters */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_GENERIC_PAR,
@@ -2527,9 +2757,11 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 								 Load_ManifestRes, 0));
 	}
 
+#if 0
 	/* Load security declarations */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_DECL_SECURITY,
 							 Load_DeclSecurity, 0));
+#endif
 
 	/* Load exported type declarations */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_EXPORTED_TYPE,
@@ -2544,7 +2776,7 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
  * for on-demand loading of token blocks.
  */
 static TokenLoadFunc const TokenLoadFunctions[] = {
-	0,							/* 00 */
+	Load_Module,				/* 00 */
 	0,
 	0,
 	0,
@@ -2558,7 +2790,7 @@ static TokenLoadFunc const TokenLoadFunctions[] = {
 	Load_Constant,
 	0,
 	Load_FieldMarshal,
-	0,
+	Load_DeclSecurity,
 	Load_ClassLayout,
 	Load_FieldLayout,			/* 10 */
 	Load_StandAloneSig,
@@ -2570,19 +2802,19 @@ static TokenLoadFunc const TokenLoadFunctions[] = {
 	0,
 	0, 							/* 18 */
 	0,
-	0,
+	Load_ModuleRef,
 	0,
 	0,
 	Load_FieldRVA,
 	0,
 	0,
-	0,							/* 20 */
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
+	Load_Assembly,				/* 20 */
+	Load_ProcessorDef,
+	Load_OSDef,
+	Load_AssemblyRef,
+	Load_ProcessorRef,
+	Load_OSRef,
+	Load_File,
 	0,
 	Load_ManifestRes,			/* 28 */
 	0,

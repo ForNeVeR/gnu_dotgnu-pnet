@@ -31,6 +31,10 @@ if we are building a final executable or library.
 * cscc/cscc.c: add "-L ." to the end of the linker command-line to make
 it use the same library resolution code as "cscc-cs".
 
+* samples/fib.cs, samples/Makefile.am, samples/.cvsignore: modify the
+Fibonacci example program so that it is compiled all the way to an
+executable file.
+
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c: load library images into the C# compiler to assist

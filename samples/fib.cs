@@ -21,4 +21,16 @@ public class Fib
 		}
 		return b;
 	}
+
+	// Program entry point.
+	public static void Main()
+	{
+		uint n;
+		for(n = 1; n <= 10; n = n + (uint)1)
+		{
+			Console.Write(fib(n));
+			Console.Write(" ");
+		}
+		Console.WriteLine();
+	}
 }

@@ -279,13 +279,8 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 				String baseDir;
 				if(InfoMethods.GetPlatformID() == PlatformID.Unix)
 				{
-					// Use the home directory under Unix systems.
-					baseDir = Environment.GetEnvironmentVariable("HOME");
-					if(baseDir == null || baseDir.Length == 0)
-					{
-						return null;
-					}
-					baseDir = Path.Combine(baseDir, ".cli");
+					// Use the user storage directory under Unix systems.
+					baseDir = InfoMethods.GetUserStorageDir();
 				}
 				else if((scope & IsolatedStorageScope.Roaming) != 0)
 				{

@@ -91,8 +91,11 @@ internal sealed class FileKeyProvider : IRegistryKeyProvider
 				{
 					return;
 				}
-				Errno error = DirMethods.CreateDirectory(name);
-				if(error != Errno.Success && error != Errno.EEXIST)
+				try
+				{
+					Directory.CreateDirectory(name);
+				}
+				catch(Exception)
 				{
 					throw new NotSupportedException();
 				}
@@ -113,20 +116,8 @@ internal sealed class FileKeyProvider : IRegistryKeyProvider
 				// Record the name information for later.
 				this.fullName = name;
 
-				// Find the root position of the registry.
-				String root = Environment.GetEnvironmentVariable
-					("CLI_STORAGE_ROOT");
-				if(root == null || root == String.Empty)
-				{
-					String home = Environment.GetEnvironmentVariable("HOME");
-					if(home == null || home == String.Empty ||
-					   !Directory.Exists(home))
-					{
-						throw new NotSupportedException();
-					}
-					root = home + Path.DirectorySeparatorChar + ".cli";
-					CreateDirectory(root);
-				}
+				// Find the root position of the user's storage area.
+				String root = InfoMethods.GetUserStorageDir();
 
 				// Build the full pathname for the hive directory.
 				directory = root + Path.DirectorySeparatorChar + "registry";

@@ -1,7 +1,7 @@
 /*
  * InfoMethods.cs - Implementation of the "Platform.InfoMethods" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,6 +61,14 @@ internal class InfoMethods
 	extern public static PlatformID GetPlatformID();
 
 #endif // !ECMA_COMPAT
+
+	// Get the global configuration directory.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetGlobalConfigDir();
+
+	// Get the user storage directory (e.g. "$HOME/.cli").
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetUserStorageDir();
 
 }; // class InfoMethods
 

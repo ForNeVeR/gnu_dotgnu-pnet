@@ -1,4 +1,15 @@
 
+2003-08-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Microsoft/Win32/FileKeyProvider.cs,
+	runtime/Platform/InfoMethods.cs,
+	runtime/System/IO/IsolatedStorage/IsolatedStorageFile.cs:
+	add internalcalls for getting the user storage and global
+	configuration directories.
+
+	* runtime/System/Security/MiniXml.cs: new constructors for
+	"MiniXml" to load from streams or text readers.
+
 2003-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Other/CP20838.cs, I18N/Other/ibm-838.ucm, I18N/Rare/CP20105.cs,

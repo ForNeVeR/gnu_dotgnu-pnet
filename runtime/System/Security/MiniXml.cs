@@ -24,6 +24,7 @@ namespace System.Security
 #if CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
 
 using System;
+using System.IO;
 
 // This class is used by "SecurityElement" to implement a very
 // simple XML parser, suitable for processing code access security tags.
@@ -51,11 +52,23 @@ internal sealed class MiniXml
 	private String value;
 	private String args;
 
-	// Constructor.
+	// Constructors.
 	public MiniXml(String input)
 			{
 				this.input = (input == null ? String.Empty : input);
 				this.posn = 0;
+			}
+	public MiniXml(TextReader input)
+			{
+				this.input = input.ReadToEnd();
+				this.posn = 0;
+			}
+	public MiniXml(Stream input)
+			{
+				StreamReader reader = new StreamReader(input);
+				this.input = reader.ReadToEnd();
+				this.posn = 0;
+				((IDisposable)reader).Dispose();
 			}
 
 	// Read the next token from the input.

@@ -19,6 +19,9 @@ which are now in "cs_types.tc".
 * cscc/cs_grammar.y: convert primitive type nodes from using qualified
 identifiers to using ILNode_PrimitiveType, ILNode_ObjectType, etc.
 
+* codegen/cg_gen.h, codegen/cg_gen.c: implement "ILClassToType" and
+"ILTypeToClass".
+
 2001-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h: add the IL_INLINE helper macro.

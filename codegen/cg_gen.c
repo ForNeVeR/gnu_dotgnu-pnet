@@ -198,6 +198,217 @@ ILType *ILFindSystemType(ILGenInfo *info, const char *name)
 	}
 }
 
+ILType *ILClassToType(ILClass *info)
+{
+	const char *name;
+	const char *namespace;
+
+	/* Check for system classes with primitive equivalents */
+	name = ILClass_Name(info);
+	namespace = ILClass_Name(info);
+	if(namespace && !strcmp(namespace, "System") &&
+	   ILClass_NestedParent(info) == 0)
+	{
+		if(!strcmp(name, "Boolean"))
+		{
+			return ILType_Boolean;
+		}
+		else if(!strcmp(name, "SByte"))
+		{
+			return ILType_Int8;
+		}
+		else if(!strcmp(name, "Byte"))
+		{
+			return ILType_UInt8;
+		}
+		else if(!strcmp(name, "Int16"))
+		{
+			return ILType_Int16;
+		}
+		else if(!strcmp(name, "UInt16"))
+		{
+			return ILType_UInt16;
+		}
+		else if(!strcmp(name, "Char"))
+		{
+			return ILType_Char;
+		}
+		else if(!strcmp(name, "Int32"))
+		{
+			return ILType_Int32;
+		}
+		else if(!strcmp(name, "UInt32"))
+		{
+			return ILType_UInt32;
+		}
+		else if(!strcmp(name, "Int64"))
+		{
+			return ILType_Int64;
+		}
+		else if(!strcmp(name, "UInt64"))
+		{
+			return ILType_UInt64;
+		}
+		else if(!strcmp(name, "Single"))
+		{
+			return ILType_Float32;
+		}
+		else if(!strcmp(name, "Double"))
+		{
+			return ILType_Float64;
+		}
+		else if(!strcmp(name, "IntPtr"))
+		{
+			return ILType_Int;
+		}
+		else if(!strcmp(name, "UIntPtr"))
+		{
+			return ILType_UInt;
+		}
+		else if(!strcmp(name, "Void"))
+		{
+			return ILType_Void;
+		}
+		else if(!strcmp(name, "TypedReference"))
+		{
+			return ILType_TypedRef;
+		}
+	}
+
+	/* Convert into either a value type or a class type */
+	if(ILClass_IsValueType(info) ||
+	   ILClass_IsUnmanagedValueType(info))
+	{
+		return ILType_FromValueType(info);
+	}
+	else
+	{
+		return ILType_FromClass(info);
+	}
+}
+
+ILClass *ILTypeToClass(ILGenInfo *info, ILType *type)
+{
+	ILType *newType;
+	if(ILType_IsPrimitive(type))
+	{
+		newType = 0;
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_VOID:
+			{
+				newType = ILFindSystemType(info, "Void");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_BOOLEAN:
+			{
+				newType = ILFindSystemType(info, "Boolean");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I1:
+			{
+				newType = ILFindSystemType(info, "SByte");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U1:
+			{
+				newType = ILFindSystemType(info, "Byte");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I2:
+			{
+				newType = ILFindSystemType(info, "Int16");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U2:
+			{
+				newType = ILFindSystemType(info, "UInt16");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_CHAR:
+			{
+				newType = ILFindSystemType(info, "Char");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I4:
+			{
+				newType = ILFindSystemType(info, "Int32");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U4:
+			{
+				newType = ILFindSystemType(info, "UInt32");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I8:
+			{
+				newType = ILFindSystemType(info, "Int64");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U8:
+			{
+				newType = ILFindSystemType(info, "UInt64");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R4:
+			{
+				newType = ILFindSystemType(info, "Single");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R8:
+			{
+				newType = ILFindSystemType(info, "Double");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I:
+			{
+				newType = ILFindSystemType(info, "IntPtr");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U:
+			{
+				newType = ILFindSystemType(info, "UIntPtr");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_TYPEDBYREF:
+			{
+				newType = ILFindSystemType(info, "TypedReference");
+			}
+			break;
+
+			default: break;
+		}
+		if(newType)
+		{
+			return ILType_ToClass(newType);
+		}
+	}
+	else if(ILType_IsValueType(type))
+	{
+		return ILType_ToValueType(type);
+	}
+	else if(ILType_IsClass(type))
+	{
+		return ILType_ToClass(type);
+	}
+	return 0;
+}
+
 ILType *ILValueTypeToType(ILGenInfo *info, ILMachineType valueType)
 {
 	switch(valueType)

@@ -161,6 +161,18 @@ void ILGenOutOfMemory(ILGenInfo *info);
 ILType *ILFindSystemType(ILGenInfo *info, const char *name);
 
 /*
+ * Convert a class reference into a C# type descriptor.
+ * This recognises built-in primitive and value types.
+ */
+ILType *ILClassToType(ILClass *info);
+
+/*
+ * Convert a type into its class form.  Returns NULL if
+ * there is no class form for the type.
+ */
+ILClass *ILTypeToClass(ILGenInfo *info, ILType *type);
+
+/*
  * Convert a runtime value type into a language type.
  */
 ILType *ILValueTypeToType(ILGenInfo *info, ILMachineType valueType);

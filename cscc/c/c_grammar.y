@@ -1433,6 +1433,7 @@ UnaryExpression
 	| '*' CastExpression		{ $$ = ILNode_CDeref_create($2); }
 	| K_SIZEOF UnaryExpression	{ $$ = ILNode_SizeOfExpr_create($2); }
 	| K_SIZEOF '(' TypeName ')'	{ $$ = ILNode_SizeOfType_create($3); }
+	| AND_OP IDENTIFIER			{ $$ = ILNode_CLabelRef_create($2); }
 	;
 
 CastExpression
@@ -2727,6 +2728,7 @@ IterationStatement
 
 JumpStatement
 	: K_GOTO IDENTIFIER ';'		{ $$ = ILNode_Goto_create($2); }
+	| K_GOTO '*' Expression ';'	{ $$ = ILNode_CGotoPtr_create($3); }
 	| K_CONTINUE ';'			{ $$ = ILNode_Continue_create(); }
 	| K_BREAK ';'				{ $$ = ILNode_Break_create(); }
 	| K_RETURN ';'				{ $$ = ILNode_Return_create(); }
@@ -2757,6 +2759,7 @@ File
 					CFunctionFlushInits(&CCCodeGen, initializers);
 					initializers = 0;
 				}
+				CGenGotoDestroy();
 
 				/* Roll the treecc node heap back to the last check point */
 				yynodepop();
@@ -2827,6 +2830,9 @@ FunctionDefinition
 				/* Pop the scope */
 				CCurrentScope = ILScopeGetParent(CCurrentScope);
 
+				/* Clear the goto label information */
+				CGenGotoDestroy();
+
 				/* Output the finished function */
 				CFunctionOutput(&CCCodeGen, $<methodInfo>4, body,
 								usedGlobalVar);
@@ -2885,6 +2891,9 @@ FunctionDefinition
 
 				/* Pop the scope */
 				CCurrentScope = ILScopeGetParent(CCurrentScope);
+
+				/* Clear the goto label information */
+				CGenGotoDestroy();
 
 				/* Output the finished function */
 				CFunctionOutput(&CCCodeGen, $<methodInfo>5, body,

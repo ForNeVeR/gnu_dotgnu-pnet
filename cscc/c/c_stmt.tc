@@ -355,6 +355,11 @@ ILNode_CSemAnalysis(ILNode_ReturnExpr)
  */
 void CGenGotoDestroy(void);
 
+/*
+ * Generate labels for the switch statement that handles "goto *".
+ */
+void CGenGotoPtrLabels(ILGenInfo *info, ILLabel *defaultLabel);
+
 %}
 
 %{
@@ -368,10 +373,12 @@ struct _tagCGenGoto
 	CGenGoto   *next;
 	char	   *name;
 	ILNode     *node;
+	ILInt32		labelNum;
 	int			defined : 1;
 	int			used : 1;
 };
 static CGenGoto *gotoList = 0;
+static ILInt32 gotoLabelNext = 1;
 
 void CGenGotoDestroy(void)
 {
@@ -396,6 +403,68 @@ void CGenGotoDestroy(void)
 		label = nextLabel;
 	}
 	gotoList = 0;
+	gotoLabelNext = 1;
+}
+
+void CGenGotoPtrLabels(ILGenInfo *info, ILLabel *defaultLabel)
+{
+	CGenGoto **labels;
+	CGenGoto *current;
+	ILInt32 posn, posn2, num;
+	ILGotoEntry *entry;
+
+	/* Collect up all labels */
+	labels = (CGenGoto **)ILMalloc(sizeof(CGenGoto) * gotoLabelNext);
+	if(!labels)
+	{
+		CCOutOfMemory();
+	}
+	current = gotoList;
+	num = 0;
+	while(current != 0)
+	{
+		labels[num++] = current;
+		current = current->next;
+	}
+
+	/* Sort the labels on label number */
+	for(posn = 0; posn < (num - 1); ++posn)
+	{
+		for(posn2 = posn + 1; posn2 < num; ++posn2)
+		{
+			if(labels[posn]->labelNum > labels[posn2]->labelNum)
+			{
+				current = labels[posn];
+				labels[posn] = labels[posn2];
+				labels[posn2] = current;
+			}
+		}
+	}
+
+	/* Output the labels in order */
+	for(posn = 0; posn < num; ++posn)
+	{
+		entry = info->gotoList;
+		while(entry != 0)
+		{
+			if(!strcmp(entry->name, labels[posn]->name))
+			{
+				break;
+			}
+			entry = entry->next;
+		}
+		if(entry)
+		{
+			ILGenSwitchRef(info, &(entry->label), (posn != (num - 1)));
+		}
+		else
+		{
+			ILGenSwitchRef(info, defaultLabel, (posn != (num - 1)));
+		}
+	}
+
+	/* Clean up and exit */
+	ILFree(labels);
 }
 
 %}
@@ -432,6 +501,7 @@ ILNode_CSemAnalysis(ILNode_Goto)
 		gotoList = label;
 		label->name = node->name;
 		label->node = (ILNode *)node;
+		label->labelNum = gotoLabelNext++;
 		label->defined = 0;
 		label->used = 1;
 	}
@@ -474,6 +544,7 @@ ILNode_CSemAnalysis(ILNode_GotoLabel)
 		gotoList = label;
 		label->name = node->name;
 		label->node = (ILNode *)node;
+		label->labelNum = gotoLabelNext++;
 		label->defined = 1;
 		label->used = 0;
 	}
@@ -488,6 +559,83 @@ ILNode_CSemAnalysis(ILNode_GotoLabel)
 					  _("duplicate label `%s'"), node->name);
 	}
 	return CSemValueDefault;
+}
+
+/*
+ * Perform code generation operations for the "&&" label reference operator.
+ */
+ILNode_GetType(ILNode_CLabelRef)
+{
+	return ILMachineType_NativeInt;
+}
+ILNode_GenValue(ILNode_CLabelRef)
+{
+	ILGenIntNative(info, node->labelNum);
+	return ILMachineType_NativeInt;
+}
+JavaGenValue(ILNode_CLabelRef)
+{
+	/* Will never be called: nothing to do here */
+	return ILMachineType_NativeInt;
+}
+
+/*
+ * Evaluate the constant value of the "&&" label reference operator.
+ */
+ILNode_EvalConst(ILNode_CLabelRef)
+{
+	if(node->labelNum != 0)
+	{
+		value->valueType = ILMachineType_NativeInt;
+		value->un.i4Value = node->labelNum;
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Perform semantic analysis for the "&&" label reference operator.
+ */
+ILNode_CSemAnalysis(ILNode_CLabelRef)
+{
+	CGenGoto *label;
+	CSemValue value;
+
+	/* Record this label in the function's "goto" label list */
+	label = gotoList;
+	while(label != 0 && label->name != node->name)
+	{
+		label = label->next;
+	}
+	if(!label)
+	{
+		label = (CGenGoto *)ILMalloc(sizeof(CGenGoto));
+		if(!label)
+		{
+			CCOutOfMemory();
+		}
+		label->next = gotoList;
+		gotoList = label;
+		label->name = node->name;
+		label->node = (ILNode *)node;
+		label->labelNum = gotoLabelNext++;
+		label->defined = 0;
+		label->used = 1;
+	}
+	else
+	{
+		label->used = 1;
+	}
+
+	/* Copy the label number for later use */
+	node->labelNum = label->labelNum;
+
+	/* Labels always have the type "void *" */
+	CSemSetRValue(value, CTypeCreateVoidPtr(info));
+	return value;
 }
 
 /*
@@ -1000,4 +1148,66 @@ ILNode_CollectCases(ILNode_DefaultLabel)
 	section = ILNode_SwitchSection_create(caseList, ILNode_Empty_create());
 	node->section = (ILNode_SwitchSection *)section;
 	ILNode_List_Add(list, section);
+}
+
+/*
+ * Perform semantic analysis for a "goto *" statement.
+ */
+ILNode_CSemAnalysis(ILNode_CGotoPtr)
+{
+	CSemValue value;
+
+	/* We must use "goto *" at the statement level */
+	if(!stmtLevel)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("`goto *' used within expression statement"));
+		return CSemValueDefault;
+	}
+
+	/* Perform semantic analysis on the expression */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsRValue(value))
+	{
+		if(!CSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "invalid goto expression value");
+		}
+		return CSemValueDefault;
+	}
+	if(!CTypeIsPointer(CSemGetType(value)))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "goto expression value must be of a pointer type");
+		return CSemValueDefault;
+	}
+
+	/* Done */
+	return CSemValueDefault;
+}
+
+/*
+ * Determine if a "goto *" statement ends in a return.
+ */
+ILNode_EndsInReturnImpl(ILNode_CGotoPtr)
+{
+	return IL_ENDS_IN_GOTO;
+}
+
+/*
+ * Generate discard code for a "goto *" statement.
+ */
+ILNode_GenDiscard(ILNode_CGotoPtr)
+{
+	/* Evaluate the expression and convert it into an integer label number */
+	ILGenCast(info, ILNode_GenValue(node->expr, info), ILMachineType_Int32);
+
+	/* Jump to the end of the method, where we will place a
+	   switch table to effect the actual indirection */
+	ILGenJump(info, IL_OP_BR, &(info->gotoPtrLabel));
+}
+JavaGenDiscard(ILNode_CGotoPtr)
+{
+	/* Nothing to do here */
 }

@@ -735,6 +735,7 @@ void ILGenEndMethod(ILGenInfo *info)
 	info->returnType = ILType_Void;
 	info->returnVar = -1;
 	info->returnLabel = ILLabel_Undefined;
+	info->gotoPtrLabel = ILLabel_Undefined;
 
 	/* Clear the temporary throw variable */
 	info->throwVariable = -1;

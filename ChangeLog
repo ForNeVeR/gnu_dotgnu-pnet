@@ -1,4 +1,11 @@
 
+2004-02-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,
+	cscc/c/c_defs.tc, cscc/c/c_function.c, cscc/c/c_grammar.y,
+	cscc/c/c_stmt.tc: implement support for computed goto's in
+	the C compiler.
+
 2004-02-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_obj.c: relax the M/T/I pointer restrictions in

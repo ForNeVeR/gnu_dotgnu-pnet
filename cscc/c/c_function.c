@@ -389,6 +389,8 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body,
 	ILType *signature = ILMethod_Signature(method);
 	ILMachineType returnMachineType;
 	int index, outputLabel;
+	int alreadyJumped;
+	ILLabel switchEndLabel;
 
 	/* Set up the code generation state for this function */
 	numSetJmpRefs = 0;
@@ -401,7 +403,6 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body,
 	{
 		ILNode_CSemAnalysis(body, info, &body, 1);
 	}
-	CGenGotoDestroy();
 	info->currentScope = CGlobalScope;
 
 	/* Bail out if we don't have an assembly stream or we had errors */
@@ -502,12 +503,46 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body,
 		ILNode_GenDiscard(body, info);
 	}
 
+	/* Output the "goto *" case table if necessary */
+	alreadyJumped = 0;
+	if(info->gotoPtrLabel != ILLabel_Undefined)
+	{
+		/* Generate a fake return statement to force the function to jump
+		   to the end of the method if control reaches here */
+		if(!ILNodeEndsInFlowChange(body, info))
+		{
+			ILNode *node = ILNode_Return_create();
+			ILNode_GenDiscard(node, info);
+			alreadyJumped = 1;
+		}
+
+		/* Output the label corresponding to the "switch" table.
+		   Every instance of "goto *" jumps to this position */
+		ILGenLabel(info, &(info->gotoPtrLabel));
+
+		/* Output the start of the switch table, with entry zero pointing
+		   at the default location (zero == NULL, which is an invalid label) */
+		switchEndLabel = ILLabel_Undefined;
+		ILGenSwitchStart(info);
+		ILGenSwitchRef(info, &switchEndLabel, 1);
+
+		/* Output the labels for the switch cases */
+		CGenGotoPtrLabels(info, &switchEndLabel);
+
+		/* Output the end of the switch table.  We then throw an
+		   "InvalidOperationException" if the label number is invalid */
+		ILGenSwitchEnd(info);
+		ILGenLabel(info, &switchEndLabel);
+		ILGenNewObj(info, "[.library]System.InvalidOperationException", "()");
+		ILGenSimple(info, IL_OP_THROW);
+	}
+
 	/* Create the "setjmp" footer if necessary */
 	if(numSetJmpRefs > 0)
 	{
 		/* Generate a fake return statement to force the function to jump
 		   to the end of the method if control reaches here */
-		if(!ILNodeEndsInFlowChange(body,info))
+		if(!ILNodeEndsInFlowChange(body, info) && !alreadyJumped)
 		{
 			ILNode *node = ILNode_Return_create();
 			ILNode_GenDiscard(node, info);

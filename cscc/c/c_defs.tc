@@ -427,6 +427,15 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 }
 %node ILNode_CToCSharpString ILNode_UnaryExpression
 %node ILNode_CArrayInit ILNode_UnaryExpression
+%node ILNode_CLabelRef ILNode_Expression =
+{
+	char *name;
+	%nocreate ILInt32 labelNum = {0};
+}
+%node ILNode_CGotoPtr ILNode_Statement =
+{
+	ILNode *expr;
+}
 
 %output "c_semantics.c"
 

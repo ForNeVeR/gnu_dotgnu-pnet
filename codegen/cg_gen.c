@@ -140,6 +140,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->itemHash = 0;
 	info->currentTypeFormals = 0;
 	info->currentMethodFormals = 0;
+	info->gotoPtrLabel = ILLabel_Undefined;
 	if(useBuiltinLibrary)
 	{
 		ILGenMakeLibrary(info);

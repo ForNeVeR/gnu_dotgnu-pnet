@@ -145,6 +145,7 @@ struct _tagILGenInfo
 	ILVarUsageTable *varUsage;			/* Variable usage table */
 	ILNode		   *currentTypeFormals;	/* Current generic type formals */
 	ILNode		   *currentMethodFormals; /* Current generic method formals */
+	ILLabel			gotoPtrLabel;		/* Label for "goto *" operations */
 
 };
 

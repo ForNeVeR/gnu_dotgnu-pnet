@@ -353,8 +353,16 @@ public class MenuItem : Menu
 	// Create a copy of the current menu item.
 	public virtual MenuItem CloneMenu()
 			{
-				// TODO
-				return this;
+				MenuItem clone = new MenuItem();
+				clone.text = this.text;
+				clone.flags = this.flags;
+				clone.mergeOrder = this.mergeOrder;
+				clone.mergeType = this.mergeType;
+				clone.shortcut = this.shortcut;
+
+				// TODO: Clone all other stuff to be cloned.
+
+				return clone;				
 			}
 	protected void CloneMenu(MenuItem itemSrc)
 			{

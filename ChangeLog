@@ -5,6 +5,9 @@
 	if value is null, the text will now be set to an empty string
 	(consistent with the TextBoxBase.Clear() method).
 
+	* System.Windows.Forms/MenuItem.cs: Basic implementation of
+	CloneMenu().
+
 2004-12-12  Erich Kitzmuller  <ammoq@ammoq.com>
 
 	* System.Windows.Forms/TextBox.cs: avoids an integer overflow in 

@@ -196,6 +196,14 @@ public class DrawingToolkit : IToolkit
 				return new DrawingFont(this, font, dpi);
 			}
 
+	// Create the default system font on this platform.
+	public System.Drawing.Font CreateDefaultFont()
+			{
+				// Default is "Microsoft Sans Serif, 9".
+				return new System.Drawing.Font
+					(new FontFamily(GenericFontFamilies.SansSerif), 9.0f);
+			}
+
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.
 	//TODO
 	public IntPtr GetHalftonePalette()

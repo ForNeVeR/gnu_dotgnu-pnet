@@ -87,6 +87,9 @@ public interface IToolkit
 	// Create a toolkit font from the properties in the specified object.
 	IToolkitFont CreateFont(Font font, float dpi);
 
+	// Create the default system font on this platform.
+	Font CreateDefaultFont();
+
 	// Create a toolkit image
 	IToolkitImage CreateImage(DotGNU.Images.Image image, int frame);
 

@@ -595,9 +595,8 @@ public class Control : IWin32Window
 					{
 						if(defaultFont == null)
 						{
-							defaultFont = new Font
-								(new FontFamily
-								(GenericFontFamilies.SansSerif), 9.0f);
+							defaultFont =
+								ToolkitManager.Toolkit.CreateDefaultFont();
 						}
 						return defaultFont;
 					}

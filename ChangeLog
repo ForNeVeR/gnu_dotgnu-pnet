@@ -26,6 +26,13 @@
 	nearest supported X size to prevent horrid looking stretched
 	bitmap fonts.
 
+	* System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Windows.Forms/Control.cs: shift the creation of the default
+	font into the toolkit so that it can be made system-specific.
+
 2003-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/XsharpSupport.c: implement a special case for Latin1

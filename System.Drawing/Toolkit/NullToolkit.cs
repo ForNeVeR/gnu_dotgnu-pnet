@@ -130,6 +130,13 @@ public class NullToolkit : IToolkit
 				return null;
 			}
 
+	// Create the default system font on this platform.
+	public virtual Font CreateDefaultFont()
+			{
+				return new Font(new FontFamily
+					(GenericFontFamilies.SansSerif), 9.0f);
+			}
+
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.
 	public virtual IntPtr GetHalftonePalette()
 			{

@@ -44,6 +44,7 @@ extern	"C" {
 void _ILHeapCreate(ILHeap *heap)
 {
 	ILMemZero(heap, sizeof(ILHeap));
+	heap->maxHeapSize = 8192 * 1024;
 	heap->pageAllocSize = ILPageAllocSize() * IL_HEAP_ARENA_NUM_PAGES;
 }
 

@@ -1454,6 +1454,62 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				// Nothing to do in the base class.
 			}
 
+	/// <summary>
+	/// <para>Convert a set of widget co-ordinates into screen
+	/// co-ordinates.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the point to convert.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the point to convert.</para>
+	/// </param>
+	///
+	/// <returns>
+	/// <para>The screen point.</para>
+	/// </returns>
+	public Point WidgetToScreen(int x, int y)
+			{
+				Widget current = this;
+				while(current.parent != null)
+				{
+					x += current.x;
+					y += current.y;
+					current = current.parent;
+				}
+				return new Point(x, y);
+			}
+
+	/// <summary>
+	/// <para>Convert a set of screen co-ordinates into widget
+	/// co-ordinates.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the point to convert.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the point to convert.</para>
+	/// </param>
+	///
+	/// <returns>
+	/// <para>The widget point.</para>
+	/// </returns>
+	public Point ScreenToWidget(int x, int y)
+			{
+				Widget current = this;
+				while(current.parent != null)
+				{
+					x -= current.x;
+					y -= current.y;
+					current = current.parent;
+				}
+				return new Point(x, y);
+			}
+
 } // class Widget
 
 } // namespace Xsharp

@@ -26,6 +26,12 @@
 	"PopupControl" class to Forms, to support popup menus and
 	combox box drop-down lists.
 
+	* System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	Xsharp/Widget.cs: add some support code for converting between
+	screen and client co-ordinates.
+
 2003-06-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/Panel.cs: Stub out the Panel control

@@ -144,6 +144,12 @@ public interface IToolkit
 	// Unregister a timer.
 	void UnregisterTimer(Object cookie);
 
+	// Convert a client point for a window into a screen point.
+	Point ClientToScreen(IToolkitWindow window, Point point);
+
+	// Convert a screen point for a window into a client point.
+	Point ScreenToClient(IToolkitWindow window, Point point);
+
 }; // interface IToolkit
 
 }; // namespace System.Drawing.Toolkit

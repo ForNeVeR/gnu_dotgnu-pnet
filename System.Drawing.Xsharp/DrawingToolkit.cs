@@ -521,6 +521,38 @@ public sealed class DrawingToolkit : IToolkit
 				((Xsharp.Timer)cookie).Dispose();
 			}
 
+	// Convert a client point for a window into a screen point.
+	public System.Drawing.Point ClientToScreen
+				(IToolkitWindow window, System.Drawing.Point point)
+			{
+				Widget widget = (window as Widget);
+				if(widget != null)
+				{
+					Xsharp.Point pt = widget.WidgetToScreen(point.X, point.Y);
+					return new System.Drawing.Point(pt.x, pt.y);
+				}
+				else
+				{
+					return point;
+				}
+			}
+
+	// Convert a screen point for a window into a client point.
+	public System.Drawing.Point ScreenToClient
+				(IToolkitWindow window, System.Drawing.Point point)
+			{
+				Widget widget = (window as Widget);
+				if(widget != null)
+				{
+					Xsharp.Point pt = widget.ScreenToWidget(point.X, point.Y);
+					return new System.Drawing.Point(pt.x, pt.y);
+				}
+				else
+				{
+					return point;
+				}
+			}
+
 }; // class DrawingToolkit
 
 }; // namespace System.Drawing.Toolkit

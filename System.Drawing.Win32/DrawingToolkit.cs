@@ -378,6 +378,20 @@ public class DrawingToolkit : IToolkit
 		// TODO
 	}
 
+	// Convert a client point for a window into a screen point.
+	public Point ClientToScreen(IToolkitWindow window, Point point)
+	{
+		// TODO
+		return point;
+	}
+
+	// Convert a screen point for a window into a client point.
+	public Point ScreenToClient(IToolkitWindow window, Point point)
+	{
+		// TODO
+		return point;
+	}
+
 }; // class DrawingToolkit
 
 }; // namespace System.Drawing.Toolkit

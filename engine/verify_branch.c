@@ -539,7 +539,7 @@ case IL_OP_SWITCH:
 		--stackSize;
 		numEntries = IL_READ_UINT32(pc + 1);
 		insnSize = 5 + numEntries * 4;
-		ILCoderSwitchStart(coder, numArgs);
+		ILCoderSwitchStart(coder, numEntries);
 		for(argNum = 0; argNum < numEntries; ++argNum)
 		{
 			dest = (ILUInt32)((pc + insnSize) - (unsigned char *)(code->code)) +

@@ -21,7 +21,7 @@
 #include "il_system.h"
 #include "il_utils.h"
 #include <stdio.h>
-#ifdef _WIN32
+#ifdef IL_WIN32_PLATFORM
 	#include <windows.h>
 	#include <process.h>
 #else
@@ -56,7 +56,7 @@
 extern	"C" {
 #endif
 
-#ifdef IL_WIN32_NATIVE
+#ifdef IL_WIN32_PLATFORM
 
 /*
  * Use Windows-specific functions to spawn child processes.

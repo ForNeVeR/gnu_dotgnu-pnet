@@ -107,6 +107,10 @@ static ILCmdLineOption const options[] = {
 	{"--compiler", 'C', 1,
 		"--compiler name        or -C name",
 		"Specify which compiler to use [`cscc' (default), `csc', or `msc']."},
+	{"-a", 'a', 1, 0, 0},
+	{"--assembly-cache", 'a', 1,
+		"--assembly-cache dir   or -a dir",
+		"Specify the location of the assembly cache directory."},
 	{"-v", 'v', 0, 0, 0},
 	{"--version", 'v', 0,
 		"--version              or -v",
@@ -143,6 +147,12 @@ int main(int argc, char *argv[])
 	{
 		switch(opt)
 		{
+			case 'a':
+			{
+				CSAntCacheDir = param;
+			}
+			break;
+
 			case 'b':
 			{
 				CSAntBaseSrcDir = param;

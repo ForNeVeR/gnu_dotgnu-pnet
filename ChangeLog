@@ -13,6 +13,8 @@
 
 	* ilgac/ilgac.1, ilgac/Makefile.am: add the manpage for "ilgac".
 
+	* csant/csant.c: add the "--assembly-cache" option to csant.
+
 2003-11-10  Stephen Compall  <s11@member.fsf.org>
 
 	* support/file.c (ILSysIOLock, ILSysIOUnlock): Exclusive file

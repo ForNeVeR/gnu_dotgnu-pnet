@@ -31,6 +31,11 @@
 	runtime/System/Private/CultureNameTable.cs: resolve some circularity
 	problems with the initialization of "CurrentCulture".
 
+	* runtime/System/Globalization/CultureInfo.cs,
+	runtime/System/Globalization/TextInfo.cs,
+	runtime/System/Globalization/_I18NTextInfo.cs: implement the
+	TextInfo culture support routines.
+
 2002-11-14  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Array.cs: Fix minor bug in ArrayEnumerator1

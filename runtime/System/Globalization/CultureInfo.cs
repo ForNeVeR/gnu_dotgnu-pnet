@@ -513,12 +513,12 @@ public class CultureInfo : ICloneable, IFormatProvider
 								textInfo = handler.CultureTextInfo;
 								if(textInfo == null)
 								{
-									textInfo = new TextInfo();
+									textInfo = new TextInfo(cultureID);
 								}
 							}
 							else
 							{
-								textInfo = new TextInfo();
+								textInfo = new TextInfo(cultureID);
 							}
 						}
 						return textInfo;

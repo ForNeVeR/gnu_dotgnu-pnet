@@ -186,6 +186,10 @@ internal sealed class ClrHelpers
 	extern public static bool HasSemantics
 			(IntPtr item, MethodSemanticsAttributes type, bool nonPublic);
 
+	// Determine if the caller has permission to access a specific member.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool CanAccess(IntPtr item);
+
 }; // class ClrHelpers
 
 }; // namespace System.Reflection

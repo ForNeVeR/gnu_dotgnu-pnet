@@ -33,6 +33,14 @@ reflection.
 * runtime/System/Attribute.cs: implement "Attribute.Equals" and
 "Attribute.GetHashCode" using reflection.
 
+* resources/en_US/runtime/Arg.txt,
+resources/en_US/runtime/NotSupp.txt,
+runtime/System/Delegate.cs,
+runtime/System/Makefile.am,
+runtime/System/MulticastDelegate.cs,
+runtime/System/Reflection/ClrHelpers.cs: implement unicast and multicast
+delegates.
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

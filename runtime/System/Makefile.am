@@ -317,7 +317,6 @@ CSSRC = Activator.cs \
 		../Platform/ISecurityManager.cs \
 		../Platform/NullSecurityManager.cs \
 		../Platform/PathInfo.cs \
-		../Platform/PtrSizes.cs \
 		../Platform/RuntimeSecurityManager.cs \
 		../Platform/Security.cs \
 		../Platform/Stdio.cs \

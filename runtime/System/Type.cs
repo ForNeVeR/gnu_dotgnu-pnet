@@ -1074,6 +1074,68 @@ public abstract class Type : MemberInfo
 				}
 			}
 
+	// Support for generic types follows.  Not strictly speaking
+	// ECMA-compatible, but will probably be ECMA eventually.
+
+	// Determine if this is a generic type.
+	protected virtual bool IsGenericTypeImpl()
+			{
+				throw new NotSupportedException(_("NotSupp_NotGenericType"));
+			}
+
+	// Get the arity of a generic type.
+	protected virtual int ArityImpl()
+			{
+				throw new NotSupportedException(_("NotSupp_NotGenericType"));
+			}
+
+	// Determine if this is a generic type that has been instantiated.
+	public bool IsInstantiatedTypeImpl()
+			{
+				return (GetInstantiation() != null);
+			}
+
+	// Get the type parameters that were used to instantiate this type.
+	public virtual Type[] GetInstantiation()
+			{
+				throw new NotSupportedException(_("NotSupp_NotGenericType"));
+			}
+
+	// Instantiate this generic type with a group of parameters.
+	public virtual Type Instantiate(Type[] inst)
+			{
+				throw new NotSupportedException(_("NotSupp_NotGenericType"));
+			}
+
+	// Get the generic type that underlies this instantiated type.
+	public virtual Type GetGenericType()
+			{
+				throw new NotSupportedException(_("NotSupp_NotGenericType"));
+			}
+
+	// Properties that wrap up the above.
+	public bool IsGenericType
+			{
+				get
+				{
+					return IsGenericTypeImpl();
+				}
+			}
+	public int Arity
+			{
+				get
+				{
+					return ArityImpl();
+				}
+			}
+	public bool IsInstantiatedType
+			{
+				get
+				{
+					return IsInstantiatedTypeImpl();
+				}
+			}
+
 }; // class Type
 
 }; // namespace System

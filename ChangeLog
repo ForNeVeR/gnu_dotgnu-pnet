@@ -4,6 +4,11 @@
 	* runtime/System/Reflection/Emit/OpCodes.cs: add the "ldelem.any",
 	"stelem.any" and "unbox.any" opcodes to the Reflection.Emit list.
 
+	* resources/en_US/runtime/NotSupp.txt, runtime/System/Type.cs,
+	runtime/System/Reflection/ClrType.cs: add extra methods and
+	properties to "System.Type" that are needed to reflect
+	generic types.
+
 2003-02-17  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	* runtime/System/IO/Directory.cs, runtime/Platform/DirMethods.cs:

@@ -821,6 +821,23 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				}
 			}
 
+	// Internal methods that support generic types.
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern protected override bool IsGenericTypeImpl();
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern protected override int ArityImpl();
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override Type[] GetInstantiation();
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override Type Instantiate(Type[] inst);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override Type GetGenericType();
+
 }; // class ClrType
 
 }; // namespace System.Reflection

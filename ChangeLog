@@ -1,3 +1,9 @@
+
+2003-07-07  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_gather.c: Fully generate class members before
+	generating nested classes.
+
 2003-07-07  Thong Nguyen <tum@veridicus.com>
 	
 	* support/wakeup.c: Prevent ILWakeupWait from waiting on the

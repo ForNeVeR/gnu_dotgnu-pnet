@@ -2082,12 +2082,22 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 		}
 		else if(yykind(member) == yykindof(ILNode_ClassDefn))
 		{
-			CreateMembers(info, globalScope, member);
+			/* Create nested classes only after completing members of
+			 * the existing class to resolve overrides correctly */
 		}
 		else
 		{
 			CCErrorOnLine(yygetfilename(member), yygetlinenum(member),
 				  "internal error - do not know how to declare this member");
+		}
+	}
+	
+	ILNode_ListIter_Init(&iterator, body);
+	while((member = ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		if(yykind(member) == yykindof(ILNode_ClassDefn))
+		{
+			CreateMembers(info, globalScope, member);
 		}
 	}
 

@@ -62,24 +62,7 @@ public class CompareInfo : IDeserializationCallback
 	// Get the comparison information for a specific culture.
 	public static CompareInfo GetCompareInfo(int culture)
 			{
-			#if CONFIG_REFLECTION
-				_I18NCultureHandler handler;
-				CompareInfo info;
-
-				// Find the culture-specific handler.
-				handler = _I18NCultureHandler.GetCultureHandler(culture, true);
-				if(handler != null)
-				{
-					info = handler.CultureCompareInfo;
-					if(info != null)
-					{
-						return info;
-					}
-				}
-			#endif
-
-				// Return the invariant culture information.
-				return InvariantCompareInfo;
+				return (new CultureInfo(culture)).CompareInfo;
 			}
 	public static CompareInfo GetCompareInfo(String culture)
 			{

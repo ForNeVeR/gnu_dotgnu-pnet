@@ -109,7 +109,7 @@ public class Manager
 
 	// Get a specific culture by identifier.  Returns NULL
 	// if the culture information is not available.
-	public _I18NCultureHandler GetCulture(int culture, bool useUserOverride)
+	public CultureInfo GetCulture(int culture, bool useUserOverride)
 			{
 				// Create the hex version of the culture identifier.
 				StringBuilder builder = new StringBuilder();
@@ -125,17 +125,17 @@ public class Manager
 					Object obj = Instantiate("CIDO" + name);
 					if(obj != null)
 					{
-						return (obj as _I18NCultureHandler);
+						return (obj as CultureInfo);
 					}
 				}
 
 				// Look for the generic non-override culture.
-				return (Instantiate("CID" + name) as _I18NCultureHandler);
+				return (Instantiate("CID" + name) as CultureInfo);
 			}
 
 	// Get a specific culture by name.  Returns NULL if the
 	// culture informaion is not available.
-	public _I18NCultureHandler GetCulture(String name, bool useUserOverride)
+	public CultureInfo GetCulture(String name, bool useUserOverride)
 			{
 				// Validate the parameter.
 				if(name == null)
@@ -152,13 +152,12 @@ public class Manager
 					Object obj = Instantiate("CNO" + name.ToString());
 					if(obj != null)
 					{
-						return (obj as _I18NCultureHandler);
+						return (obj as CultureInfo);
 					}
 				}
 
 				// Look for the generic non-override culture.
-				return (Instantiate("CN" + name.ToString())
-							as _I18NCultureHandler);
+				return (Instantiate("CN" + name.ToString()) as CultureInfo);
 			}
 
 	// Convert a culture identifier from hex.

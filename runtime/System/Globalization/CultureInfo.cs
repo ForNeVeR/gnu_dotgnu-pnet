@@ -51,7 +51,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 	private bool        userOverride;
 #if CONFIG_REFLECTION
 	private CultureName cultureName;
-	private _I18NCultureHandler handler;
+	private CultureInfo handler;
 
 	// Culture identifier for "es-ES" with traditional sort rules.
 	private const int TraditionalSpanish = 0x040A;
@@ -70,6 +70,14 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 	public CultureInfo(int culture, bool useUserOverride)
 			{
+				if((culture & 0x40000000) != 0)
+				{
+					// This flag is a special indication from the I18N
+					// library that this object is a culture handler
+					// and we should not recursively load another culture.
+					this.cultureID = (culture & ~0x40000000);
+					return;
+				}
 				if(culture < 0)
 				{
 					throw new ArgumentOutOfRangeException
@@ -81,8 +89,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					cultureID   = culture;
 					cultureName = CultureNameTable.GetNameInfoByID
 						(0x0C0A, true);
-					handler = _I18NCultureHandler.GetCultureHandler
-						(cultureID, useUserOverride);
+					handler = GetCultureHandler(cultureID, useUserOverride);
 				}
 				else if(culture == 0x007F)
 				{
@@ -98,8 +105,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					cultureID   = culture;
 					cultureName = CultureNameTable.GetNameInfoByID
 						(culture, true);
-					handler = _I18NCultureHandler.GetCultureHandler
-						(cultureID, useUserOverride);
+					handler = GetCultureHandler(cultureID, useUserOverride);
 				}
 			#else
 				cultureID = culture;
@@ -116,8 +122,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 				cultureName = CultureNameTable.GetNameInfoByName(name, true);
 				cultureID   = cultureName.cultureID;
 				userOverride = useUserOverride;
-				handler = _I18NCultureHandler.GetCultureHandler
-					(cultureID, useUserOverride);
+				handler = GetCultureHandler(cultureID, useUserOverride);
 			#else
 				cultureID = 0x007F;
 				userOverride = useUserOverride;
@@ -177,9 +182,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 							String name = InternalCultureName();
 							id = MapNameToID(name, false);
 						}
-						if(id <= 0 ||
-						   _I18NCultureHandler.GetCultureHandler
-						   		(id, true) == null)
+						if(id <= 0 || GetCultureHandler(id, true) == null)
 						{
 							// TODO: this is a temporary hack - it must
 							// be removed once there are real culture
@@ -301,7 +304,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 						#if CONFIG_REFLECTION
 							if(handler != null)
 							{
-								calendar = handler.CultureCalendar;
+								calendar = handler.Calendar;
 								if(calendar == null)
 								{
 									calendar = new GregorianCalendar();
@@ -330,7 +333,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 						#if CONFIG_REFLECTION
 							if(handler != null)
 							{
-								compareInfo = handler.CultureCompareInfo;
+								compareInfo = handler.CompareInfo;
 								if(compareInfo == null)
 								{
 									compareInfo =
@@ -364,7 +367,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					#if CONFIG_REFLECTION
 						else if(handler != null)
 						{
-							dateTimeFormat = handler.CultureDateTimeFormatInfo;
+							dateTimeFormat = handler.DateTimeFormat;
 							if(dateTimeFormat == null)
 							{
 								dateTimeFormat = new DateTimeFormatInfo();
@@ -497,7 +500,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					#if CONFIG_REFLECTION
 						else if(handler != null)
 						{
-							numberFormat = handler.CultureNumberFormatInfo;
+							numberFormat = handler.NumberFormat;
 							if(numberFormat == null)
 							{
 								numberFormat = new NumberFormatInfo();
@@ -545,7 +548,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 						#if CONFIG_REFLECTION
 							if(handler != null)
 							{
-								otherCalendars = handler.CultureOtherCalendars;
+								otherCalendars = handler.OptionalCalendars;
 							}
 							else
 						#endif
@@ -586,7 +589,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 						#if CONFIG_REFLECTION
 							if(handler != null)
 							{
-								textInfo = handler.CultureTextInfo;
+								textInfo = handler.TextInfo;
 								if(textInfo == null)
 								{
 									textInfo = new TextInfo(cultureID);
@@ -709,6 +712,21 @@ public class CultureInfo : ICloneable, IFormatProvider
 				{
 					return 0;
 				}
+			}
+
+	// Get the culture handler for a specific culture.
+	internal static CultureInfo GetCultureHandler
+				(int culture, bool useUserOverride)
+			{
+				Object obj = Encoding.InvokeI18N
+						("GetCulture", culture, useUserOverride);
+				if(obj == null)
+				{
+					// Try the neutral culture instead.
+					obj = Encoding.InvokeI18N
+						("GetCulture", culture & 0x03FF, useUserOverride);
+				}
+				return (CultureInfo)obj;
 			}
 
 #endif // CONFIG_REFLECTION

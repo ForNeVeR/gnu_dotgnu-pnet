@@ -1,7 +1,7 @@
 /*
  * csant_task.c - Dispatch functions for csant task elements.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -290,6 +290,14 @@ static int Task_CSAnt(CSAntTask *task)
 	{
 		argv[argc++] = "-m";
 	}
+	if(CSAntInstallMode)
+	{
+		argv[argc++] = "-i";
+	}
+	if(CSAntUninstallMode)
+	{
+		argv[argc++] = "-u";
+	}
 	argv[argc++] = "-C";
 	argv[argc++] = (char *)compiler;
 	if(target)
@@ -322,19 +330,21 @@ static int Task_CSAnt(CSAntTask *task)
 }
 
 CSAntTaskInfo const CSAntTasks[] = {
-	{"compile",			CSAntTask_Compile},
-	{"cscc",			CSAntTask_Cscc},
-	{"csc",				CSAntTask_Csc},
-	{"mcs",				CSAntTask_Mcs},
-	{"csdoc",			CSAntTask_Csdoc},
-	{"property",		Task_Property},
-	{"echo",			Task_Echo},
-	{"fail",			Task_Fail},
-	{"delete",			Task_Delete},
-	{"mkdir",			Task_Mkdir},
-	{"copy",			Task_Copy},
-	{"csant",			Task_CSAnt},
-	{"nant",			Task_CSAnt},
+	{"compile",			1, CSAntTask_Compile},
+	{"cscc",			1, CSAntTask_Cscc},
+	{"csc",				1, CSAntTask_Csc},
+	{"mcs",				1, CSAntTask_Mcs},
+	{"csdoc",			0, CSAntTask_Csdoc},
+	{"resgen",			0, CSAntTask_ResGen},
+	{"reslink",			1, CSAntTask_ResLink},
+	{"property",		1, Task_Property},
+	{"echo",			0, Task_Echo},
+	{"fail",			0, Task_Fail},
+	{"delete",			0, Task_Delete},
+	{"mkdir",			0, Task_Mkdir},
+	{"copy",			0, Task_Copy},
+	{"csant",			1, Task_CSAnt},
+	{"nant",			1, Task_CSAnt},
 };
 int const CSAntNumTasks = (sizeof(CSAntTasks) / sizeof(CSAntTaskInfo));
 

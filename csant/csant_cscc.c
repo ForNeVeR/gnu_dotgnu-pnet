@@ -1,7 +1,7 @@
 /*
  * csant_cscc.c - Task dispatch for launching C# compilers.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,103 +26,36 @@ extern	"C" {
 #endif
 
 /*
+ * Find the pathname for a particular program.
+ */
+static char *FindProgramPath(const char *name, const char *env)
+{
+	const char *value;
+
+	/* Check for the "name" property */
+	value = CSAntGetProperty(name, -1);
+	if(value)
+	{
+		return (char *)value;
+	}
+
+	/* Check for the "env" environment variable */
+	value = CSAntGetProperty(env, -1);
+	if(value)
+	{
+		return (char *)value;
+	}
+
+	/* Assume that it is "name" somewhere on the path */
+	return (char *)name;
+}
+
+/*
  * Find the pathname for "cscc".
  */
-static char *FindPNetPath(void)
+static char *FindCsccPath(void)
 {
-	const char *value;
-
-	/* Check for the "cscc" property */
-	value = CSAntGetProperty("cscc", -1);
-	if(value)
-	{
-		return (char *)value;
-	}
-
-	/* Check for the "CSCC" environment variable */
-	value = CSAntGetProperty("csant.env.CSCC", -1);
-	if(value)
-	{
-		return (char *)value;
-	}
-
-	/* Assume that it is "cscc" somewhere on the path */
-	return "cscc";
-}
-
-/*
- * Find the pathname for "csc".
- */
-static char *FindMSPath(void)
-{
-	const char *value;
-
-	/* Check for the "csc" property */
-	value = CSAntGetProperty("csc", -1);
-	if(value)
-	{
-		return (char *)value;
-	}
-
-	/* Check for the "CSC" environment variable */
-	value = CSAntGetProperty("csant.env.CSC", -1);
-	if(value)
-	{
-		return (char *)value;
-	}
-
-	/* Assume that it is "csc" somewhere on the path */
-	return "csc";
-}
-
-/*
- * Find the pathname for "mcs".
- */
-static char *FindMonoPath(void)
-{
-	const char *value;
-
-	/* Check for the "mcs" property */
-	value = CSAntGetProperty("mcs", -1);
-	if(value)
-	{
-		return (char *)value;
-	}
-
-	/* Check for the "MCS" environment variable */
-	value = CSAntGetProperty("csant.env.MCS", -1);
-	if(value)
-	{
-		return (char *)value;
-	}
-
-	/* Assume that it is "mcs" somewhere on the path */
-	return "mcs";
-}
-
-/*
- * Find the pathname for "csdoc".
- */
-static char *FindCsdocPath(void)
-{
-	const char *value;
-
-	/* Check for the "csdoc" property */
-	value = CSAntGetProperty("csdoc", -1);
-	if(value)
-	{
-		return (char *)value;
-	}
-
-	/* Check for the "CSDOC" environment variable */
-	value = CSAntGetProperty("csant.env.CSDOC", -1);
-	if(value)
-	{
-		return (char *)value;
-	}
-
-	/* Assume that it is "csdoc" somewhere on the path */
-	return "csdoc";
+	return FindProgramPath("cscc", "csant.env.CSCC");
 }
 
 /*
@@ -275,6 +208,7 @@ typedef struct
 {
 	char		   *output;
 	const char	   *target;
+	const char	   *version;
 	int				debug;
 	int				checked;
 	int				unsafe;
@@ -283,6 +217,8 @@ typedef struct
 	int				optimize;
 	int				warnAsError;
 	int				saneWarnings;
+	int				install;
+	int				installAsDefault;
 	CSAntFileSet   *sources;
 	CSAntFileSet   *references;
 	CSAntFileSet   *resources;
@@ -326,6 +262,7 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	/* Initialize the arguments */
 	args->output = (char *)CSAntTaskParam(task, "output");
 	args->target = CSAntTaskParam(task, "target");
+	args->version = CSAntTaskParam(task, "version");
 	args->debug = COMP_FLAG_NOT_SET;
 	args->checked = COMP_FLAG_NOT_SET;
 	args->unsafe = COMP_FLAG_NOT_SET;
@@ -334,6 +271,8 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	args->optimize = COMP_FLAG_NOT_SET;
 	args->warnAsError = COMP_FLAG_NOT_SET;
 	args->saneWarnings = COMP_FLAG_NOT_SET;
+	args->install = COMP_FLAG_NOT_SET;
+	args->installAsDefault = COMP_FLAG_TRUE;
 	args->sources = CSAntFileSetLoad(task, "sources", CSAntBaseSrcDir);
 	args->references = CSAntFileSetLoad(task, "references", CSAntBaseBuildDir);
 	args->resources = CSAntFileSetLoad(task, "resources", CSAntBaseBuildDir);
@@ -412,6 +351,16 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	if(value)
 	{
 		args->saneWarnings = !ILStrICmp(value, "true");
+	}
+	value = CSAntTaskParam(task, "install");
+	if(value)
+	{
+		args->install = !ILStrICmp(value, "true");
+	}
+	value = CSAntTaskParam(task, "installasdefault");
+	if(value)
+	{
+		args->installAsDefault = !ILStrICmp(value, "true");
 	}
 
 	/* Get the list of symbol definitions */
@@ -552,7 +501,7 @@ static char **BuildCsccCommandLine(CSAntCompileArgs *args)
 	int len;
 
 	/* Add the program name */
-	AddArg(&argv, &argc, FindPNetPath());
+	AddArg(&argv, &argc, FindCsccPath());
 
 	/* Add the explicitly-specified locations of "cscc-cs" and "cscc-c" */
 	temp = (char *)CSAntGetProperty("cscc.plugins.cs", -1);
@@ -636,6 +585,13 @@ static char **BuildCsccCommandLine(CSAntCompileArgs *args)
 	if(CSAntForceCorLib)
 	{
 		AddArg(&argv, &argc, "-fstdlib-name=corlib");
+	}
+
+	/* Add the assembly version information */
+	if(args->version)
+	{
+		AddValueArg(&argv, &argc, "-fassembly-version",
+					(char *)(args->version));
 	}
 
 	/* Add any extra arguments that were supplied */
@@ -727,7 +683,7 @@ static char **BuildCscCommandLine(CSAntCompileArgs *args)
 	char *temp2;
 
 	/* Add the program name and fixed options */
-	AddArg(&argv, &argc, FindMSPath());
+	AddArg(&argv, &argc, FindProgramPath("csc", "csant.env.CSC"));
 	AddArg(&argv, &argc, "/nologo");
 
 	/* Enable debugging if necessary */
@@ -895,7 +851,7 @@ static char **BuildMcsCommandLine(CSAntCompileArgs *args)
 	int len;
 
 	/* Add the program name */
-	AddArg(&argv, &argc, FindMonoPath());
+	AddArg(&argv, &argc, FindProgramPath("mcs", "csant.env.MCS"));
 
 	/* Set the target and output file */
 	AddArg(&argv, &argc, "--target");
@@ -991,31 +947,14 @@ static char **BuildMcsCommandLine(CSAntCompileArgs *args)
 }
 
 /*
- * Build a command-line and execute it.
+ * Print and execute a command line.
  */
-static int BuildAndExecute(CSAntCompileArgs *args,
-						   char **(*func)(CSAntCompileArgs *))
+static int PrintAndExecute(char **argv)
 {
-	char **argv;
-	int argc;
-	int result;
-
-	/* Check the timestamps on the input and output files */
-	if(!CSAntFileSetNewer(args->sources, args->output) &&
-	   !CSAntFileSetNewer(args->references, args->output) &&
-	   !CSAntFileSetNewer(args->resources, args->output) &&
-	   !CSAntFileSetNewer(args->modules, args->output))
-	{
-		return 1;
-	}
-
-	/* Build the command-line using the supplied function */
-	argv = (*func)(args);
-
 	/* Print the command to be executed */
 	if(!CSAntSilent)
 	{
-		argc = 0;
+		int argc = 0;
 		while(argv[argc] != 0)
 		{
 			fputs(argv[argc], stdout);
@@ -1031,12 +970,137 @@ static int BuildAndExecute(CSAntCompileArgs *args,
 	/* Execute the command */
 	if(!CSAntJustPrint)
 	{
-		result = (ILSpawnProcess(argv) == 0);
+		return (ILSpawnProcess(argv) == 0);
 	}
 	else
 	{
-		result = 1;
+		return 1;
 	}
+}
+
+/*
+ * Build a command-line to install an assembly.
+ */
+static char **BuildInstallLine(const char *output, const char *subdir,
+							   int installAsDefault)
+{
+	char **argv = 0;
+	int argc = 0;
+
+	/* Add the name of the "ilgac" program */
+	AddArg(&argv, &argc, FindProgramPath("ilgac", "csant.env.ILGAC"));
+
+	/* Add the command-line options */
+	AddArg(&argv, &argc, "--silent");
+	AddArg(&argv, &argc, "--install");
+	AddArg(&argv, &argc, "--force");
+	if(installAsDefault)
+	{
+		AddArg(&argv, &argc, "--default");
+	}
+	if(subdir)
+	{
+		AddArg(&argv, &argc, "--subdir");
+		AddArg(&argv, &argc, (char *)subdir);
+	}
+	if(CSAntCacheDir)
+	{
+		AddArg(&argv, &argc, "--cache");
+		AddArg(&argv, &argc, (char *)CSAntCacheDir);
+	}
+
+	/* Add the name of the assembly to install */
+	AddArg(&argv, &argc, (char *)output);
+
+	/* Terminate the command-line */
+	AddArg(&argv, &argc, 0);
+	return argv;
+}
+
+/*
+ * Build a command-line to uninstall an assembly.
+ */
+static char **BuildUninstallLine(const char *output, const char *version,
+								 const char *subdir)
+{
+	char **argv = 0;
+	int argc = 0;
+
+	/* Add the name of the "ilgac" program */
+	AddArg(&argv, &argc, FindProgramPath("ilgac", "csant.env.ILGAC"));
+
+	/* Add the command-line options */
+	AddArg(&argv, &argc, "--silent");
+	AddArg(&argv, &argc, "--uninstall");
+	if(subdir)
+	{
+		AddArg(&argv, &argc, "--subdir");
+		AddArg(&argv, &argc, (char *)subdir);
+	}
+	if(CSAntCacheDir)
+	{
+		AddArg(&argv, &argc, "--cache");
+		AddArg(&argv, &argc, (char *)CSAntCacheDir);
+	}
+
+	/* Add the name of the assembly to uninstall */
+	AddArg(&argv, &argc, (char *)output);
+
+	/* Add the version number for the assembly */
+	if(version)
+	{
+		AddArg(&argv, &argc, (char *)version);
+	}
+
+	/* Terminate the command-line */
+	AddArg(&argv, &argc, 0);
+	return argv;
+}
+
+/*
+ * Build a command-line and execute it.
+ */
+static int BuildAndExecute(CSAntCompileArgs *args,
+						   char **(*func)(CSAntCompileArgs *))
+{
+	char **argv;
+	int result;
+
+	/* Check the timestamps on the input and output files */
+	if(!CSAntFileSetNewer(args->sources, args->output) &&
+	   !CSAntFileSetNewer(args->references, args->output) &&
+	   !CSAntFileSetNewer(args->resources, args->output) &&
+	   !CSAntFileSetNewer(args->modules, args->output))
+	{
+		return 1;
+	}
+
+	/* Build the command-line using the supplied function */
+	if(CSAntInstallMode)
+	{
+		if(args->install != COMP_FLAG_TRUE)
+		{
+			/* Ignore targets that are not marked for installation */
+			return 1;
+		}
+		argv = BuildInstallLine(args->output, 0, (args->installAsDefault > 0));
+	}
+	else if(CSAntUninstallMode)
+	{
+		if(args->install != COMP_FLAG_TRUE)
+		{
+			/* Ignore targets that are not marked for installation */
+			return 1;
+		}
+		argv = BuildUninstallLine(args->output, args->version, 0);
+	}
+	else
+	{
+		argv = (*func)(args);
+	}
+
+	/* Print and execute the command */
+	result = PrintAndExecute(argv);
 
 	/* Clean up and exit */
 	ILFree(argv);
@@ -1227,7 +1291,7 @@ int CSAntTask_Csdoc(CSAntTask *task)
 	}
 
 	/* Add the program name */
-	AddArg(&argv, &argc, FindCsdocPath());
+	AddArg(&argv, &argc, FindProgramPath("csdoc", "csant.env.CSDOC"));
 
 	/* Set the output file */
 	AddArg(&argv, &argc, "-o");
@@ -1287,37 +1351,226 @@ int CSAntTask_Csdoc(CSAntTask *task)
 	/* Terminate the command-line */
 	AddArg(&argv, &argc, (char *)0);
 
-	/* Print the command to be executed */
-	if(!CSAntSilent)
-	{
-		argc = 0;
-		while(argv[argc] != 0)
-		{
-			fputs(argv[argc], stdout);
-			++argc;
-			if(argv[argc] != 0)
-			{
-				putc(' ', stdout);
-			}
-		}
-		putc('\n', stdout);
-	}
-
-	/* Execute the command */
-	if(!CSAntJustPrint)
-	{
-		result = (ILSpawnProcess(argv) == 0);
-	}
-	else
-	{
-		result = 1;
-	}
+	/* Print and execute the command */
+	result = PrintAndExecute(argv);
 
 	/* Clean up and exit */
 	ILFree(argv);
 	CSAntFileSetDestroy(sources);
 	CSAntFileSetDestroy(references);
 	return result;
+}
+
+/*
+ * Handle a "resgen" task, which invokes the resource converter.
+ */
+int CSAntTask_ResGen(CSAntTask *task)
+{
+	char *output;
+	char *input;
+	char *temp;
+	CSAntFileSet *inputs;
+	int isLatin1;
+	const char *compiler;
+	char **argv = 0;
+	int argc = 0;
+	unsigned long numFiles;
+	unsigned long file;
+	int result;
+
+	/* Get the output name */
+	output = (char *)CSAntTaskParam(task, "output");
+	if(!output)
+	{
+		fprintf(stderr, "%s: no output specified\n", task->name);
+		return 0;
+	}
+	output = CSAntDirCombine(CSAntBaseBuildDir, output);
+
+	/* Get the list of input files */
+	inputs = CSAntFileSetLoad(task, "resources", CSAntBaseSrcDir);
+	input = (char *)CSAntTaskParam(task, "input");
+	if(input)
+	{
+		input = CSAntDirCombine(CSAntBaseSrcDir, input);
+		inputs = CSAntFileSetAdd(inputs, input);
+	}
+	if(!CSAntFileSetSize(inputs))
+	{
+		CSAntFileSetDestroy(inputs);
+		fprintf(stderr, "%s: no inputs specified\n", task->name);
+		return 0;
+	}
+
+	/* Determine if we should use Latin1 conversion */
+	compiler = CSAntGetProperty("csant.compiler", -1);
+	if(compiler && !ILStrICmp(compiler, "cscc"))
+	{
+		/* We are probably using our resgen */
+		temp = (char *)CSAntTaskParam(task, "latin1");
+		if(temp && !ILStrICmp(temp, "true"))
+		{
+			isLatin1 = 1;
+		}
+		else
+		{
+			isLatin1 = 0;
+		}
+	}
+	else
+	{
+		/* Cannot rely upon other resgen's having Latin1 support */
+		isLatin1 = 0;
+	}
+
+	/* Build the command-line to be executed */
+	AddArg(&argv, &argc, FindProgramPath("resgen", "csant.env.RESGEN"));
+	AddArg(&argv, &argc, "/compile");
+	if(isLatin1)
+	{
+		AddArg(&argv, &argc, "--latin1");
+	}
+	numFiles = CSAntFileSetSize(inputs);
+	for(file = 0; file < numFiles; ++file)
+	{
+		temp = CSAntFileSetFile(inputs, file);
+		AddArg(&argv, &argc, temp);
+	}
+	AddArg(&argv, &argc, output);
+	AddArg(&argv, &argc, (char *)0);
+
+	/* Print and execute the command */
+	result = PrintAndExecute(argv);
+
+	/* Clean up and exit */
+	ILFree(argv);
+	CSAntFileSetDestroy(inputs);
+	return result;
+}
+
+/*
+ * Handle a "reslink" task, which links resources into a standalone assembly.
+ */
+int CSAntTask_ResLink(CSAntTask *task)
+{
+	char *output;
+	char *language;
+	char *version;
+	char *temp;
+	CSAntFileSet *resources;
+	const char *compiler;
+	char **argv = 0;
+	int argc = 0;
+	unsigned long numFiles;
+	unsigned long file;
+	int result;
+	int install;
+	int installAsDefault;
+
+	/* Get the option values */
+	output = (char *)CSAntTaskParam(task, "output");
+	if(!output)
+	{
+		fprintf(stderr, "%s: no output specified\n", task->name);
+		return 0;
+	}
+	output = CSAntDirCombine(CSAntBaseBuildDir, output);
+	language = (char *)CSAntTaskParam(task, "language");
+	if(!language)
+	{
+		language = "en";
+	}
+	version = (char *)CSAntTaskParam(task, "version");
+	resources = CSAntFileSetLoad(task, "resources", CSAntBaseBuildDir);
+	temp = (char *)CSAntTaskParam(task, "install");
+	install = (temp && !ILStrICmp(temp, "true"));
+	temp = (char *)CSAntTaskParam(task, "install");
+	if(temp)
+	{
+		installAsDefault = !ILStrICmp(temp, "true");
+	}
+	else
+	{
+		installAsDefault = 1;
+	}
+
+	/* Check that we have at least one input file */
+	if(!CSAntFileSetSize(resources))
+	{
+		CSAntFileSetDestroy(resources);
+		fprintf(stderr, "%s: no resource files specified\n", task->name);
+		return 0;
+	}
+
+	/* Build the required command-line */
+	if(CSAntInstallMode)
+	{
+		if(!install)
+		{
+			CSAntFileSetDestroy(resources);
+			return 1;
+		}
+		argv = BuildInstallLine(output, language, installAsDefault);
+	}
+	else if(CSAntUninstallMode)
+	{
+		if(!install)
+		{
+			CSAntFileSetDestroy(resources);
+			return 1;
+		}
+		argv = BuildUninstallLine(output, version, language);
+	}
+	else
+	{
+		/* Link the resources as specified */
+		compiler = CSAntGetProperty("csant.compiler", -1);
+		if(compiler && !ILStrICmp(compiler, "cscc"))
+		{
+			/* Use the cscc C# compiler to do the work */
+			AddArg(&argv, &argc, FindCsccPath());
+			AddArg(&argv, &argc, "-nostdlib");
+			if(version && version[0] != '\0')
+			{
+				AddValueArg(&argv, &argc, "-fassembly-version=", version);
+			}
+			AddArg(&argv, &argc, "-o");
+			AddArg(&argv, &argc, output);
+			numFiles = CSAntFileSetSize(resources);
+			for(file = 0; file < numFiles; ++file)
+			{
+				AddValueArg(&argv, &argc, "-fresources=",
+							CSAntFileSetFile(resources, file));
+			}
+		}
+		else
+		{
+			/* Use the Microsoft "al" linker to do the work */
+			AddArg(&argv, &argc, FindProgramPath("al", "csant.env.AL"));
+			AddArg(&argv, &argc, "/nologo");
+			AddArg(&argv, &argc, "/target:library");
+			if(version && version[0] != '\0')
+			{
+				AddValueArg(&argv, &argc, "/version:", version);
+			}
+			AddValueArg(&argv, &argc, "/out:", output);
+			AddValueArg(&argv, &argc, "/culture:", language);
+			numFiles = CSAntFileSetSize(resources);
+			for(file = 0; file < numFiles; ++file)
+			{
+				AddValueArg(&argv, &argc, "/embed:",
+							CSAntFileSetFile(resources, file));
+			}
+		}
+	}
+
+	/* Print and execute the command */
+	result = PrintAndExecute(argv);
+
+	/* Clean up and exit */
+	ILFree(argv);
+	CSAntFileSetDestroy(resources);
+	return 1;
 }
 
 #ifdef	__cplusplus

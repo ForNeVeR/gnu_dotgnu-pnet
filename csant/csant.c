@@ -1,7 +1,7 @@
 /*
  * csant.c - Build tool for C# program compilation.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,6 +94,14 @@ static ILCmdLineOption const options[] = {
 	{"--mono-corlib", 'm', 0,
 		"--mono-corlib          or -m",
 		"Use Mono's corlib instead of mscorlib during C# compiles."},
+	{"-i", 'i', 0, 0, 0},
+	{"--install", 'i', 0,
+		"--install              or -i",
+		"Install assemblies with `ilgac' instead of compiling."},
+	{"-u", 'u', 0, 0, 0},
+	{"--uninstall", 'u', 0,
+		"--uninstall            or -u",
+		"Uninstall assemblies with `ilgac' instead of compiling."},
 	{"--quiet", 's', 0, 0, 0},
 	{"-C", 'C', 1, 0, 0},
 	{"--compiler", 'C', 1,
@@ -207,6 +215,18 @@ int main(int argc, char *argv[])
 			case 'm':
 			{
 				CSAntForceCorLib = 1;
+			}
+			break;
+
+			case 'i':
+			{
+				CSAntInstallMode = 1;
+			}
+			break;
+
+			case 'u':
+			{
+				CSAntUninstallMode = 1;
 			}
 			break;
 
@@ -335,7 +355,7 @@ int main(int argc, char *argv[])
 static void usage(const char *progname)
 {
 	fprintf(stdout, "CSANT " VERSION " - C# compilation build tool\n");
-	fprintf(stdout, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stdout, "Copyright (c) 2001, 2002, 2003 Southern Storm Software, Pty Ltd.\n");
 	fprintf(stdout, "\n");
 	fprintf(stdout, "Usage: %s [options] [target ...]\n", progname);
 	fprintf(stdout, "\n");
@@ -346,7 +366,7 @@ static void version(void)
 {
 
 	printf("CSANT " VERSION " - C# compilation build tool\n");
-	printf("Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	printf("Copyright (c) 2001, 2002, 2003 Southern Storm Software, Pty Ltd.\n");
 	printf("\n");
 	printf("CSANT comes with ABSOLUTELY NO WARRANTY.  This is free software,\n");
 	printf("and you are welcome to redistribute it under the terms of the\n");

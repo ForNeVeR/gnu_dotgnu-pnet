@@ -1,7 +1,7 @@
 /*
  * csant_defs.h - Internal definitions for "csant".
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,11 +41,14 @@ extern int   CSAntSilent;
 extern int   CSAntRedirectCsc;
 extern int   CSAntDummyDoc;
 extern int   CSAntForceCorLib;
+extern int   CSAntInstallMode;
+extern int   CSAntUninstallMode;
 extern char *CSAntCompiler;
 extern char *CSAntBaseSrcDir;
 extern char *CSAntBaseBuildDir;
 extern char *CSAntProjectName;
 extern char *CSAntDefaultTarget;
+extern char *CSAntCacheDir;
 
 /*
  * Information that is stored about a particular task.
@@ -100,6 +103,7 @@ typedef int (*CSAntTaskFunc)(CSAntTask *task);
 typedef struct
 {
 	const char     *name;
+	int				installMode;
 	CSAntTaskFunc	func;
 
 } CSAntTaskInfo;
@@ -185,6 +189,16 @@ int CSAntTask_Compile(CSAntTask *task);
  * Handle a "csdoc" task, which invokes the documentation generator.
  */
 int CSAntTask_Csdoc(CSAntTask *task);
+
+/*
+ * Handle a "resgen" task, which invokes the resource converter.
+ */
+int CSAntTask_ResGen(CSAntTask *task);
+
+/*
+ * Handle a "reslink" task, which links resources into a standalone assembly.
+ */
+int CSAntTask_ResLink(CSAntTask *task);
 
 #ifdef	__cplusplus
 };

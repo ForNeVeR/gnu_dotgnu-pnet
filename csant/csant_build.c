@@ -1,7 +1,7 @@
 /*
  * csant_build.c - Build all targets.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,16 @@
 extern	"C" {
 #endif
 
-int   CSAntJustPrint   = 0;
-int   CSAntKeepGoing   = 0;
-int   CSAntSilent      = 0;
-int   CSAntRedirectCsc = 0;
-int   CSAntDummyDoc    = 0;
-int   CSAntForceCorLib = 0;
-char *CSAntCompiler    = 0;
+int   CSAntJustPrint     = 0;
+int   CSAntKeepGoing     = 0;
+int   CSAntSilent        = 0;
+int   CSAntRedirectCsc   = 0;
+int   CSAntDummyDoc      = 0;
+int   CSAntForceCorLib   = 0;
+int   CSAntInstallMode   = 0;
+int   CSAntUninstallMode = 0;
+char *CSAntCompiler      = 0;
+char *CSAntCacheDir      = 0;
 
 /*
  * List of non-global targets that are registered to be built.
@@ -134,7 +137,18 @@ static int ProcessTask(CSAntTask *task)
 	{
 		if(!strcmp(CSAntTasks[posn].name, task->name))
 		{
-			return (*(CSAntTasks[posn].func))(task);
+			/* Validate that the task can be executed in the
+			   install/uninstall modes of csant */
+			if((!CSAntInstallMode && !CSAntInstallMode) ||
+			   CSAntTasks[posn].installMode)
+			{
+				return (*(CSAntTasks[posn].func))(task);
+			}
+			else
+			{
+				/* Ignore non-installable tasks in install/uninstall mode */
+				return 1;
+			}
 		}
 	}
 

@@ -6,6 +6,11 @@
 	add the "ilgac" program; fix some error-handling bugs in the
 	file and directory support routines.
 
+	* csant/csant.c, csant/csant_build.c, csant/csant_cscc.c,
+	csant/csant_defs.h, csant/csant_task.c: add the <resgen> and
+	<reslink> tags to csant; add --install and --uninstall options
+	to csant.
+
 2003-11-10  Stephen Compall  <s11@member.fsf.org>
 
 	* support/file.c (ILSysIOLock, ILSysIOUnlock): Exclusive file

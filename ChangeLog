@@ -1,4 +1,10 @@
 
+2003-07-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Graphics.cs, Xsharp/InputOutputWidget.cs: add the
+	"ExposeRegion" property to the "Xsharp.Graphics" class so that
+	higher layers can query the expose region during an "OnPaint" event.
+
 2003-07-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Reflection/Emit/ILGenerator.cs: Fix minor array size

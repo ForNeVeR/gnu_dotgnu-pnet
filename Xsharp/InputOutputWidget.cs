@@ -489,8 +489,8 @@ public class InputOutputWidget : InputOnlyWidget
 				{
 					exposeRegion = null;
 					Graphics graphics = new Graphics(this);
+					graphics.exposeRegion = region;
 					graphics.SetClipRegion(region);
-					region.Dispose();
 					OnPaint(graphics);
 					graphics.Dispose();
 				}

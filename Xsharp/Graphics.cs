@@ -65,6 +65,7 @@ public sealed class Graphics : IDisposable
 	private Pixmap tile;
 	private Bitmap stipple;
 	private byte[] dashPattern;
+	internal Region exposeRegion;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.Graphics"/> object and
@@ -220,6 +221,11 @@ public sealed class Graphics : IDisposable
 				finally
 				{
 					dpy.Unlock();
+				}
+				if(exposeRegion != null)
+				{
+					exposeRegion.Dispose();
+					exposeRegion = null;
 				}
 			}
 
@@ -773,6 +779,29 @@ public sealed class Graphics : IDisposable
 				get
 				{
 					return stipple;
+				}
+			}
+
+	/// <summary>
+	/// <para>Get the expose region for this graphics context.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The <see cref="T:Xsharp.Region"/> value that was used
+	/// to define the exposed area during an <c>OnPaint</c> call.
+	/// Returns <see langword="null"/> if this object was not created
+	/// in response to an expose.</para>
+	/// </value>
+	///
+	/// <remarks>
+	/// <para>The expose region will be automatically set as the clipping
+	/// region when the graphics object is created.</para>
+	/// </remarks>
+	public Region ExposeRegion
+			{
+				get
+				{
+					return exposeRegion;
 				}
 			}
 

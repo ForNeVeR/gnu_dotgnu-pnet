@@ -1,8 +1,8 @@
 bin_PROGRAMS = ilrun ilverify
 lib_LIBRARIES = libILEngine.a
 
-noinst_PROGRAMS = ilrun_opt
-noinst_LIBRARIES = libILEngineOpt.a
+# noinst_PROGRAMS = ilrun_opt
+# noinst_LIBRARIES = libILEngineOpt.a
 
 COMMON_ENGINE_SOURCES = call.c \
 						convert.c \
@@ -31,18 +31,18 @@ COMMON_ENGINE_SOURCES = call.c \
 libILEngine_a_SOURCES = cvm.c \
 						$(COMMON_ENGINE_SOURCES)
 
-libILEngineOpt_a_SOURCES = cvm_opt.s \
-						   $(COMMON_ENGINE_SOURCES)
+# libILEngineOpt_a_SOURCES = cvm_opt.s \
+# 						   $(COMMON_ENGINE_SOURCES)
 
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
 			  ../libffi/libffi.a ../libgc/.libs/libgc.a
 
-ilrun_opt_SOURCES = ilrun.c
-ilrun_opt_LDADD = libILEngineOpt.a ../dumpasm/libILDumpAsm.a \
-			  ../image/libILImage.a ../support/libILSupport.a \
-			  ../libffi/libffi.a ../libgc/.libs/libgc.a
+# ilrun_opt_SOURCES = ilrun.c
+# ilrun_opt_LDADD = libILEngineOpt.a ../dumpasm/libILDumpAsm.a \
+# 			  ../image/libILImage.a ../support/libILSupport.a \
+# 			  ../libffi/libffi.a ../libgc/.libs/libgc.a
 
 ilverify_SOURCES = ilverify.c
 ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
@@ -55,12 +55,12 @@ else
 INCLUDES = -I../libffi/include
 endif
 
-cvm_opt.s: cvm.c asmfix cvm.o
-	$(COMPILE) -S -o cvm_opt.s.tmp $<
-	./asmfix <cvm_opt.s.tmp >cvm_opt.s
-	rm -f cvm_opt.s.tmp
+# cvm_opt.s: cvm.c asmfix cvm.o
+# 	$(COMPILE) -S -o cvm_opt.s.tmp $<
+# 	./asmfix <cvm_opt.s.tmp >cvm_opt.s
+# 	rm -f cvm_opt.s.tmp
 
-asmfix: asmfix.c
-	$(COMPILE) -o $@ $< ../support/libILSupport.a
+# asmfix: asmfix.c
+# 	$(COMPILE) -o $@ $< ../support/libILSupport.a
 
-CLEANFILES = cvm_opt.s cvm_opt.s.tmp asmfix
+# CLEANFILES = cvm_opt.s cvm_opt.s.tmp asmfix

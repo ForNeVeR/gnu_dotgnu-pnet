@@ -34,6 +34,9 @@ better than gcc can.
 * image/meta_build.c: use "ILTypeSpecGetClassRef" to resolve TypeSpec
 MemberRef's instead of the original "ILTypeSpecGetClass".
 
+* engine/Makefile.am: temporarily disable the optimized runtime engine
+because it is messing up some people's builds.
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_var.c, engine/verify_call.c: handle value type "this"

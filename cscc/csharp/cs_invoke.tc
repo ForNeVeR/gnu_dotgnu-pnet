@@ -109,6 +109,13 @@ ILNode_SemAnalysis(ILNode_VarArgList)
 	ILNode_MethodDeclaration *decl;
 	ILMethod *method;
 
+	/* We cannot use "__arglist" when compiling to Java bytecode */
+	if(info->outputIsJava)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "`__arglist' is disallowed when compiling to Java bytecode");
+	}
+
 	/* We can only use this inside "vararg" methods */
 	decl = ((ILNode_MethodDeclaration *)(info->currentMethod));
 	method = (decl ? decl->methodInfo : 0);
@@ -251,6 +258,66 @@ void CSItemCandidateError(ILNode *node, char *itemName, int isCtor,
 	}
 }
 
+/*
+ * Make a call site signature from a method signature and
+ * a list of "__arglist" parameter types.
+ */
+static ILType *MakeCallSiteSig(ILGenInfo *info, ILType *methodSig,
+							   ILType *argTypes)
+{
+	unsigned long numParams;
+	unsigned long numMethodParams;
+	unsigned long paramNum;
+	ILType *signature;
+
+	/* Use the method's signature if there are no extra arguments */
+	numParams = ILTypeNumParams(argTypes);
+	if(!numParams)
+	{
+		return methodSig;
+	}
+
+	/* Create a new signature for the call site */
+	signature = ILTypeCreateMethod
+		(info->context, ILTypeGetReturnWithPrefixes(methodSig));
+	if(!signature)
+	{
+		CCOutOfMemory();
+	}
+	ILTypeSetCallConv(signature, ILType_CallConv(methodSig));
+	signature->kind__ |= IL_TYPE_COMPLEX_METHOD_SENTINEL;
+
+	/* Copy the method's current parameters to the call site */
+	numMethodParams = ILTypeNumParams(methodSig);
+	for(paramNum = 1; paramNum <= numMethodParams; ++paramNum)
+	{
+		if(!ILTypeAddParam(info->context, signature,
+						   ILTypeGetParamWithPrefixes(methodSig, paramNum)))
+		{
+			CCOutOfMemory();
+		}
+	}
+
+	/* Add a sentinel to the call site */
+	if(!ILTypeAddSentinel(info->context, signature))
+	{
+		CCOutOfMemory();
+	}
+
+	/* Add the types of the variable arguments to the call site */
+	for(paramNum = 1; paramNum <= numParams; ++paramNum)
+	{
+		if(!ILTypeAddParam(info->context, signature,
+						   ILTypeGetParamWithPrefixes(argTypes, paramNum)))
+		{
+			CCOutOfMemory();
+		}
+	}
+
+	/* The call site is ready */
+	return signature;
+}
+
 %}
 
 /*
@@ -373,6 +440,16 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	methodInfo = (ILMethod *)ILMemberImport
 						(info->image, (ILMember *)methodInfo);
 	node->methodInfo = methodInfo;
+
+	/* Create a call site signature if we have vararg parameters */
+	if(numArgs > 0 && args[numArgs - 1].modifier == ILParamMod_arglist)
+	{
+		ILNode_Argument *arg = (ILNode_Argument *)(args[numArgs - 1].node);
+		ILNode_VarArgExpand *arglist =
+				((ILNode_VarArgExpand *)(arg->expression));
+		node->callSiteSig = MakeCallSiteSig
+			(info, ILMethod_Signature(methodInfo), arglist->varArgTypes);
+	}
 
 	/* Handle the "this" parameter if necessary */
 	if(!ILMethod_IsStatic(methodInfo))
@@ -538,6 +615,16 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 						(info->image, (ILMember *)methodInfo);
 	node->methodInfo = methodInfo;
 
+	/* Create a call site signature if we have vararg parameters */
+	if(numArgs > 0 && args[numArgs - 1].modifier == ILParamMod_arglist)
+	{
+		ILNode_Argument *arg = (ILNode_Argument *)(args[numArgs - 1].node);
+		ILNode_VarArgExpand *arglist =
+				((ILNode_VarArgExpand *)(arg->expression));
+		node->callSiteSig = MakeCallSiteSig
+			(info, ILMethod_Signature(methodInfo), arglist->varArgTypes);
+	}
+
 	/* Coerce the arguments and build the final argument list */
 	CSItemCoerceArgs(info, ILToProgramItem(methodInfo),
 					 args, numArgs, &(node->argList));
@@ -677,6 +764,67 @@ static ILParameterModifier GetParamModForArg(ILNode *arg)
 	}
 }
 
+/*
+ * Perform semantic analysis on a vararg parameter list.
+ * Returns zero if an error occurred.
+ */
+static int VarArgElemSem(ILNode *node, ILGenInfo *info, ILType *signature)
+{
+	if(yyisa(node, ILNode_ArgList))
+	{
+		return VarArgElemSem(((ILNode_ArgList *)node)->expr1,
+							 info, signature) &		/* Deliberately not '&&' */
+			   VarArgElemSem(((ILNode_ArgList *)node)->expr2,
+			   				 info, signature);
+	}
+	else
+	{
+		ILNode_Argument *arg = (ILNode_Argument *)node;
+		CSSemValue value;
+		if(arg->modifier == ILParamMod_empty)
+		{
+			if(!CSSemExpectValue(arg->expression, info, &(arg->expression),
+								 &value))
+			{
+				CCErrorOnLine(yygetfilename(arg), yygetlinenum(arg),
+							  "invalid argument used with `__arglist'");
+				return 0;
+			}
+			if(!ILTypeAddParam(info->context, signature, value.type))
+			{
+				CCOutOfMemory();
+			}
+			return 1;
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(arg), yygetlinenum(arg),
+						  "cannot use `%s' arguments with `__arglist'",
+						  ((arg->modifier == ILParamMod_ref) ? "ref" :
+						  ((arg->modifier == ILParamMod_out) ? "out"
+						  		: "__arglist")));
+			return 0;
+		}
+	}
+}
+
+/*
+ * Perform semantic analysis on a list of vararg parameters.
+ * Returns zero if an error occurred.
+ */
+static int VarArgSemAnalysis(ILNode_VarArgExpand *node, ILGenInfo *info)
+{
+	/* Create a fake method signature to hold the argument types */
+	node->varArgTypes = ILTypeCreateMethod(info->context, ILType_Void);
+	if(!(node->varArgTypes))
+	{
+		CCOutOfMemory();
+	}
+
+	/* Scan the argument list, performing semantic analysis on each element */
+	return VarArgElemSem(node->expr, info, node->varArgTypes);
+}
+
 int CSEvalArguments(ILGenInfo *info, ILNode *argList,
 					ILNode **argListParent, CSEvalArg **args)
 {
@@ -773,7 +921,12 @@ int CSEvalArguments(ILGenInfo *info, ILNode *argList,
 			}
 
 			/* Perform semantic analysis on the "__arglist" values */
-			/* TODO */
+			if(!VarArgSemAnalysis
+					(((ILNode_VarArgExpand *)
+						(((ILNode_Argument *)tempList)->expression)), info))
+			{
+				haveErrors = 1;
+			}
 		}
 	}
 
@@ -1020,13 +1173,18 @@ int CSItemIsCandidate(ILGenInfo *info, ILProgramItem *item,
 			}
 			++paramNum;
 		}
-		else
+		else if(paramMod != ILParamMod_arglist)
 		{
 			/* The type match must be exact for "ref" and "out" parameters */
 			if(!ILTypeIdentical(args[argNum].type, paramType))
 			{
 				return 0;
 			}
+			++paramNum;
+		}
+		else
+		{
+			/* Variable argument lists match as-is */
 			++paramNum;
 		}
 	}
@@ -1086,10 +1244,12 @@ static int BetterItem(ILGenInfo *info,
 									form2, paramNum2++, &paramMod2);
 		atype = args[argNum].type;
 
-		/* Skip the argument if "out" or "ref", because such arguments
-		   must always be identical, so neither can be better */
+		/* Skip the argument if "out", "ref", or "arglist", because such
+		   arguments must always be identical, so neither can be better */
 		if(paramMod1 == ILParamMod_out || paramMod1 == ILParamMod_ref ||
-		   paramMod2 == ILParamMod_out || paramMod2 == ILParamMod_ref)
+		   paramMod1 == ILParamMod_arglist ||
+		   paramMod2 == ILParamMod_out || paramMod2 == ILParamMod_ref ||
+		   paramMod2 == ILParamMod_arglist)
 		{
 			continue;
 		}
@@ -1218,7 +1378,8 @@ ILType *CSItemCoerceArgs(ILGenInfo *info, ILProgramItem *item,
 		{
 			break;
 		}
-		else if(paramMod != ILParamMod_ref && paramMod != ILParamMod_out)
+		else if(paramMod != ILParamMod_ref && paramMod != ILParamMod_out &&
+		        paramMod != ILParamMod_arglist)
 		{
 			ILCoerce(info, args[argNum].node,
 					 args[argNum].parent, args[argNum].type, paramType);

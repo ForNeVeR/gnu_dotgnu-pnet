@@ -376,7 +376,10 @@ struct _tagILSwitchValue
 %node ILNode_This ILNode_Expression
 %node ILNode_ArgList ILNode_BinaryExpression
 %node ILNode_VarArgList ILNode_Expression
-%node ILNode_VarArgExpand ILNode_UnaryExpression
+%node ILNode_VarArgExpand ILNode_UnaryExpression =
+{
+	%nocreate ILType *varArgTypes = {0};
+}
 %node ILNode_Argument ILNode_Expression =
 {
 	ILParameterModifier	modifier;
@@ -430,6 +433,7 @@ struct _tagILSwitchValue
 	ILNode	   *type;
 	ILNode	   *argList;
 	%nocreate ILMethod *methodInfo = {0};
+	%nocreate ILType   *callSiteSig = {0};
 }
 %node ILNode_DefaultConstructor ILNode_Expression =
 {
@@ -443,6 +447,7 @@ struct _tagILSwitchValue
 {
 	%nocreate ILNode   *thisExpr = {0};
 	%nocreate ILMethod *methodInfo = {0};
+	%nocreate ILType   *callSiteSig = {0};
 }
 %node ILNode_BaseInit ILNode_Expression
 %node ILNode_ThisInit ILNode_Expression

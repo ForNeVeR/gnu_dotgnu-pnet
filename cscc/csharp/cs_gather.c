@@ -766,6 +766,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	ILNode *param;
 	ILNode_FormalParameter *fparam;
 	ILUInt32 paramNum;
+	ILUInt32 argListParam;
 	ILParameter *parameter;
 	ILMember *member;
 	ILClass *interface;
@@ -835,12 +836,19 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	}
 
 	/* Create the parameters for the method */
+	argListParam = 0;
 	paramNum = 1;
 	ILNode_ListIter_Init(&iterator, method->params);
 	while((param = ILNode_ListIter_Next(&iterator)) != 0)
 	{
 		/* Get the type of the parameter */
 		fparam = (ILNode_FormalParameter *)param;
+		if(fparam->pmod == ILParamMod_arglist)
+		{
+			argListParam = paramNum;
+			++paramNum;
+			continue;
+		}
 		tempType = CSSemType(fparam->type, info, &(fparam->type));
 
 		/* Add a "byref" node to the type if "out" or "ref" */
@@ -887,6 +895,24 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 
 		/* Advance to the next parameter */
 		++paramNum;
+	}
+
+	/* Mark the method as "vararg" if "__arglist" was present */
+	if(argListParam != 0)
+	{
+		if(info->outputIsJava)
+		{
+			CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+				  "`__arglist' is disallowed when compiling to Java bytecode");
+		}
+		if((argListParam + 1) != paramNum)
+		{
+			CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+						  "`__arglist' must be the last formal parameter");
+		}
+		ILTypeSetCallConv(signature, ILType_CallConv(signature) |
+									 IL_META_CALLCONV_VARARG);
+		ILMethodSetCallConv(methodInfo, ILType_CallConv(signature));
 	}
 
 	/* Set the signature for the method */
@@ -1124,6 +1150,13 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	{
 		/* Get the type of the parameter */
 		fparam = (ILNode_FormalParameter *)param;
+		if(fparam->pmod == ILParamMod_arglist)
+		{
+			CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
+						  "`__arglist' cannot be used with indexers");
+			++paramNum;
+			continue;
+		}
 		tempType = CSSemType(fparam->type, info, &(fparam->type));
 
 		/* Add the parameter type to the property signature */

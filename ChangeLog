@@ -1,4 +1,12 @@
 
+2002-05-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_gen.c, codegen/cg_misc.tc, codegen/cg_nodes.tc,
+	codegen/cg_output.c, codegen/cg_output.h, cscc/csharp/cs_decls.tc,
+	cscc/csharp/cs_gather.c, cscc/csharp/cs_grammar.y,
+	cscc/csharp/cs_invoke.tc: complete the implementation of the
+	"__arglist" keyword in the compiler.
+
 2002-05-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_library.c, codegen/cg_misc.tc, codegen/cg_nodes.tc,

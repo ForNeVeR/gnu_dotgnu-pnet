@@ -583,7 +583,7 @@ ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
 	{
 		if(*type == ILType_Sentinel || num > ILTypeNumParams(signature))
 		{
-			*type = ILType_Invalid;
+			*type = ILType_Null;
 			return ILParamMod_arglist;
 		}
 	}

@@ -296,13 +296,34 @@ void ILGenCallByMethod(ILGenInfo *info, ILMethod *method)
 	}
 }
 
-void ILGenCtorByMethod(ILGenInfo *info, ILMethod *method)
+void ILGenCallByMethodSig(ILGenInfo *info, ILMethod *method,
+						  ILType *callSiteSig)
 {
 	if(info->asmOutput)
 	{
+		if(!callSiteSig)
+		{
+			callSiteSig = ILMethod_Signature(method);
+		}
+		fputs("\tcall\t", info->asmOutput);
+		ILDumpMethodType(info->asmOutput, info->image, callSiteSig,
+						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
+						 ILMethod_Name(method), 0);
+		putc('\n', info->asmOutput);
+	}
+}
+
+void ILGenCtorByMethod(ILGenInfo *info, ILMethod *method,
+					   ILType *callSiteSig)
+{
+	if(info->asmOutput)
+	{
+		if(!callSiteSig)
+		{
+			callSiteSig = ILMethod_Signature(method);
+		}
 		fputs("\tnewobj\t", info->asmOutput);
-		ILDumpMethodType(info->asmOutput, info->image,
-						 ILMethod_Signature(method),
+		ILDumpMethodType(info->asmOutput, info->image, callSiteSig,
 						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
 						 ILMethod_Name(method), 0);
 		putc('\n', info->asmOutput);
@@ -316,6 +337,23 @@ void ILGenCallVirtByMethod(ILGenInfo *info, ILMethod *method)
 		fputs("\tcallvirt\t", info->asmOutput);
 		ILDumpMethodType(info->asmOutput, info->image,
 	 					 ILMethod_Signature(method),
+						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
+						 ILMethod_Name(method), 0);
+		putc('\n', info->asmOutput);
+	}
+}
+
+void ILGenCallVirtByMethodSig(ILGenInfo *info, ILMethod *method,
+							  ILType *callSiteSig)
+{
+	if(info->asmOutput)
+	{
+		if(!callSiteSig)
+		{
+			callSiteSig = ILMethod_Signature(method);
+		}
+		fputs("\tcallvirt\t", info->asmOutput);
+		ILDumpMethodType(info->asmOutput, info->image, callSiteSig,
 						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
 						 ILMethod_Name(method), 0);
 		putc('\n', info->asmOutput);

@@ -115,14 +115,27 @@ void ILGenCallVirtual(ILGenInfo *info, const char *name);
 void ILGenCallByMethod(ILGenInfo *info, ILMethod *method);
 
 /*
+ * Output a call to a method with an optional call site signature.
+ */
+void ILGenCallByMethodSig(ILGenInfo *info, ILMethod *method,
+					      ILType *callSiteSig);
+
+/*
  * Output a call to a constructor given its description block.
  */
-void ILGenCtorByMethod(ILGenInfo *info, ILMethod *method);
+void ILGenCtorByMethod(ILGenInfo *info, ILMethod *method,
+					   ILType *callSiteSig);
 
 /*
  * Output a call to a virtual method given its description block.
  */
 void ILGenCallVirtByMethod(ILGenInfo *info, ILMethod *method);
+
+/*
+ * Output a call to a virtual method with an optional call site signature.
+ */
+void ILGenCallVirtByMethodSig(ILGenInfo *info, ILMethod *method,
+							  ILType *callSiteSig);
 
 /*
  * Output a call to a normal or virtual method given its description block.

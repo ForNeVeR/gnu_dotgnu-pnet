@@ -942,7 +942,7 @@ ILNode_GenValue(ILNode_ObjectCreationExpression)
 	}
 
 	/* Invoke the constructor */
-	ILGenCtorByMethod(info, node->methodInfo);
+	ILGenCtorByMethod(info, node->methodInfo, node->callSiteSig);
 
 	/* Re-adjust the stack to remove the arguments and push the result */
 	info->stackHeight = saveStack + 1;
@@ -1061,11 +1061,11 @@ ILNode_GenValue(ILNode_InvocationExpression)
 	{
 		if(ILMethod_IsVirtual(node->methodInfo))
 		{
-			ILGenCallVirtByMethod(info, node->methodInfo);
+			ILGenCallVirtByMethodSig(info, node->methodInfo, node->callSiteSig);
 		}
 		else
 		{
-			ILGenCallByMethod(info, node->methodInfo);
+			ILGenCallByMethodSig(info, node->methodInfo, node->callSiteSig);
 		}
 		resultType = ILTypeToMachineType
 			(ILTypeGetReturn(ILMethod_Signature(node->methodInfo)));

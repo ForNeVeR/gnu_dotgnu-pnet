@@ -716,6 +716,11 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	ILNode_ListIter_Init(&iter, node->params);
 	while((param = (ILNode_FormalParameter *)ILNode_ListIter_Next(&iter)) != 0)
 	{
+		if(param->pmod == ILParamMod_arglist)
+		{
+			++argNum;
+			continue;
+		}
 		name = ILQualIdentName(param->name, 0);
 		data = ILScopeLookup(scope, name, 0);
 		if(data)

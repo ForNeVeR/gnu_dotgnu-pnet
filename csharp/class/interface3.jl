@@ -25,20 +25,20 @@
 } // class IEnumerator
 .class private auto ansi 'Test' extends ['.library']'System'.'Object' implements 'IEnumerator'
 {
-.method public virtual hidebysig newslot instance bool 'MoveNext'() cil managed java 
+.method public final virtual hidebysig newslot instance bool 'MoveNext'() cil managed java 
 {
 	iconst_0
 	ireturn
 	.locals 1
 	.maxstack 1
 } // method MoveNext
-.method public virtual hidebysig newslot instance void 'Reset'() cil managed java 
+.method public final virtual hidebysig newslot instance void 'Reset'() cil managed java 
 {
 	return
 	.locals 1
 	.maxstack 0
 } // method Reset
-.method public virtual hidebysig newslot specialname instance class ['.library']'System'.'Object' 'get_Current'() cil managed java 
+.method public final virtual hidebysig newslot specialname instance class ['.library']'System'.'Object' 'get_Current'() cil managed java 
 {
 	aconst_null
 	areturn

@@ -18,6 +18,13 @@
 	csharp/stmt/foreach5.jl: remove the obsolete "value" flag from
 	struct types.
 
+	* csharp/class/interface3.il, csharp/class/interface3.jl,
+	csharp/class/interface4.il, csharp/class/interface4.jl,
+	csharp/class/interface5.cs, csharp/stmt/foreach4.il,
+	csharp/stmt/foreach4.jl, csharp/stmt/foreach5.il,
+	csharp/stmt/foreach5.jl: update output files for interface
+	"final" change to the compiler.
+
 2002-11-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/constructor2.err, csharp/class/constructor2.jerr:

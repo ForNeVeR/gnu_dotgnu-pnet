@@ -27,18 +27,18 @@
 {
 .class nested public auto ansi 'Test2' extends ['.library']'System'.'Object' implements 'IEnumerator'
 {
-.method public virtual hidebysig newslot instance bool 'MoveNext'() cil managed 
+.method public final virtual hidebysig newslot instance bool 'MoveNext'() cil managed 
 {
 	ldc.i4.0
 	ret
 	.maxstack 1
 } // method MoveNext
-.method public virtual hidebysig newslot instance void 'Reset'() cil managed 
+.method public final virtual hidebysig newslot instance void 'Reset'() cil managed 
 {
 	ret
 	.maxstack 0
 } // method Reset
-.method public virtual hidebysig newslot specialname instance class ['.library']'System'.'Object' 'get_Current'() cil managed 
+.method public final virtual hidebysig newslot specialname instance class ['.library']'System'.'Object' 'get_Current'() cil managed 
 {
 	ldnull
 	ret

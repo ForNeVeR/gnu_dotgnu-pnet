@@ -44,7 +44,7 @@
 	ret
 	.maxstack 1
 } // method IEnumerator.MoveNext
-.method public virtual hidebysig newslot instance bool 'MoveNext'() cil managed 
+.method public final virtual hidebysig newslot instance bool 'MoveNext'() cil managed 
 {
 	ldc.i4.0
 	ret
@@ -56,7 +56,7 @@
 	ret
 	.maxstack 0
 } // method IEnumerator.Reset
-.method public virtual hidebysig newslot instance void 'Reset'() cil managed 
+.method public final virtual hidebysig newslot instance void 'Reset'() cil managed 
 {
 	ret
 	.maxstack 0

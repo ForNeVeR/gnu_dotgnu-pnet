@@ -43,5 +43,5 @@ class Test : IEnumerator2
 				return null;
 			}
 		}
-	public void Hello() {}
+	public virtual void Hello() {}
 }

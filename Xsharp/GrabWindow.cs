@@ -328,8 +328,8 @@ internal class GrabWindow : OverrideWindow
 								// Reset "lastButton" if this is the last
 								// button to be released.
 								ModifierMask mask = ModifierMask.AllButtons;
-								mask &= ~(ModifierMask.Button1Mask <<
-									(((int)(xevent.xbutton.button__)) - 1));
+								mask &= (ModifierMask)~((int)ModifierMask.Button1Mask <<
+									((int)(xevent.xbutton.button__) - 1));
 								if((xevent.xbutton.state & mask) == 0)
 								{
 									lastButton = null;

@@ -18,15 +18,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <stdio.h>
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
 
-int ILAsmMain(int argc, char *argv[]);
+int ILAsmMain(int argc, char *argv[], FILE *newStdin);
 
 int main(int argc, char *argv[])
 {
-	return ILAsmMain(argc, argv);
+	return ILAsmMain(argc, argv, (FILE *)0);
 }
 
 #ifdef	__cplusplus

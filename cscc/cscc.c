@@ -923,32 +923,9 @@ static void DumpCmdLine(char **argv)
 }
 
 /*
- * Execute a child process and wait for it to exit.
- * Returns the status code.
- */
-static int ExecChild(char **argv, const char *filename)
-{
-	int status;
-
-	/* Dump the command-line if we are in verbose mode */
-	DumpCmdLine(argv);
-
-	/* Use the system-specifc process spawn routine */
-	status = ILSpawnProcess(argv);
-	if(status < 0)
-	{
-		return 1;
-	}
-	else
-	{
-		return status;
-	}
-}
-
-/*
  * Import the assembler code from "libILAsm".
  */
-int ILAsmMain(int argc, char *argv[]);
+int ILAsmMain(int argc, char *argv[], FILE *newStdin);
 
 /*
  * Process an input file using the assembler.
@@ -1003,8 +980,9 @@ static int ProcessWithAssembler(const char *filename, int jvmMode)
 	AddArgument(&cmdline, &cmdline_size, 0);
 
 	/* Execute the assembler */
+	DumpCmdLine(cmdline);
 	ILCmdLineSuppressSlash();
-	status = ILAsmMain(cmdline_size - 1, cmdline);
+	status = ILAsmMain(cmdline_size - 1, cmdline, 0);
 	ILFree(cmdline);
 	if(status != 0)
 	{
@@ -1026,6 +1004,11 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	char *asm_output;
 	char *obj_output;
 	int saveAsm;
+	int outputIndex = -1;
+	FILE *newStdin = 0;
+	int pipePid = 0;
+	int canPipe;
+	char **pluginCmdline = 0;
 
 	/* Build the command-line for the plug-in */
 	cmdline = 0;
@@ -1186,6 +1169,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	else
 	{
 		AddArgument(&cmdline, &cmdline_size, "-o");
+		outputIndex = cmdline_size;
 		if(assemble_flag)
 		{
 			if(output_filename)
@@ -1247,9 +1231,64 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	/* Terminate the command-line */
 	AddArgument(&cmdline, &cmdline_size, 0);
 
-	/* Execute the plugin */
-	status = ExecChild(cmdline, filename);
-	ILFree(cmdline);
+	/* Determine if we need to save the assembly stream */
+	saveAsm = CCStringListContains(extension_flags, num_extension_flags,
+							       "save-asm");
+
+	/* Determine if we might be able to pipe the output into the assembler */
+	canPipe = 1;
+	if(assemble_flag || preprocess_flag || saveAsm)
+	{
+		canPipe = 0;
+	}
+	if(CCStringListContains(extension_flags, num_extension_flags,
+							"syntax-check"))
+	{
+		canPipe = 0;
+	}
+
+	/* Execute the plugin, using a pipe if possible */
+	if(canPipe)
+	{
+		cmdline[outputIndex] = "-";
+		DumpCmdLine(cmdline);
+		status = ILSpawnProcessWithPipe(cmdline, (void **)&newStdin);
+		cmdline[outputIndex] = asm_output;
+		if(status < 0)
+		{
+			/* Failed to spawn the process */
+			status = 1;
+			ILFree(cmdline);
+		}
+		else if(!status)
+		{
+			/* This platform does not support pipes: fall back */
+			status = ILSpawnProcess(cmdline);
+			if(status < 0)
+			{
+				status = 1;
+			}
+			ILFree(cmdline);
+		}
+		else
+		{
+			/* We won't have an on-disk assembly output file */
+			asm_output = 0;
+			pipePid = status;
+			status = 0;
+			pluginCmdline = cmdline;
+		}
+	}
+	else
+	{
+		DumpCmdLine(cmdline);
+		status = ILSpawnProcess(cmdline);
+		if(status < 0)
+		{
+			status = 1;
+		}
+		ILFree(cmdline);
+	}
 	if(status != 0)
 	{
 		if(asm_output != 0)
@@ -1268,7 +1307,10 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	if(CCStringListContains(extension_flags, num_extension_flags,
 							"syntax-check"))
 	{
-		ILDeleteFile(asm_output);
+		if(asm_output != 0)
+		{
+			ILDeleteFile(asm_output);
+		}
 		return 0;
 	}
 
@@ -1306,25 +1348,44 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 		AddArgument(&cmdline, &cmdline_size, machine_flags[posn]);
 	}
 	AddArgument(&cmdline, &cmdline_size, "--");
-	AddArgument(&cmdline, &cmdline_size, asm_output);
+	if(newStdin)
+	{
+		/* Use the pipe output of the plugin as the assembler's input */
+		AddArgument(&cmdline, &cmdline_size, "-");
+	}
+	else
+	{
+		AddArgument(&cmdline, &cmdline_size, asm_output);
+	}
 	AddArgument(&cmdline, &cmdline_size, 0);
 
 	/* Execute the assembler */
-	saveAsm = CCStringListContains(extension_flags, num_extension_flags,
-							       "save-asm");
+	DumpCmdLine(cmdline);
 	ILCmdLineSuppressSlash();
-	status = ILAsmMain(cmdline_size - 1, cmdline);
+	status = ILAsmMain(cmdline_size - 1, cmdline, newStdin);
 	ILFree(cmdline);
+	if(newStdin)
+	{
+		/* Close the pipe to the language plugin */
+		int newStatus;
+		fclose(newStdin);
+		newStatus = ILSpawnProcessWaitForExit(pipePid, cmdline);
+		ILFree(pluginCmdline);
+		if(status == 0)
+		{
+			status = newStatus;
+		}
+	}
 	if(status != 0)
 	{
-		if(!saveAsm)
+		if(!saveAsm && asm_output)
 		{
 			ILDeleteFile(asm_output);
 		}
 		ILDeleteFile(obj_output);
 		return status;
 	}
-	if(!saveAsm)
+	if(!saveAsm && asm_output)
 	{
 		ILDeleteFile(asm_output);
 	}

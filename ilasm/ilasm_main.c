@@ -134,7 +134,7 @@ static void usage(const char *progname);
 static void version(void);
 static void reset(void);
 
-int ILAsmMain(int argc, char *argv[])
+int ILAsmMain(int argc, char *argv[], FILE *newStdin)
 {
 	char *progname = argv[0];
 	char *outputFile = 0;
@@ -473,7 +473,16 @@ int ILAsmMain(int argc, char *argv[])
 			if(!sawStdin)
 			{
 				ILAsmFilename = "stdin";
-				ilasm_restart(stdin);
+				if(newStdin)
+				{
+					/* Use the replacement stream if our input is
+					   actually coming from a pipe */
+					ilasm_restart(newStdin);
+				}
+				else
+				{
+					ilasm_restart(stdin);
+				}
 				ILAsmErrors |= ilasm_parse();
 				sawStdin = 1;
 			}

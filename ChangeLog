@@ -5,6 +5,15 @@
 	add some ".PHONY" directives to the makefiles to force "csant" to
 	be called to do dependency checks.
 
+	* tests/System/TestUri.cs, tests/System/Net/TestIPAddress.cs,
+	tests/System.Xml/TestXmlConvert.cs,
+	tests/System.Xml/TestXmlException.cs,
+	tests/runtime/System/TestSByte.cs, tests/runtime/System/TestString.cs,
+	tests/runtime/System/Collections/TestArrayList.cs,
+	tests/runtime/System/Text/TestStringBuilder.cs:
+	rename some of the test cases to make it clearer which class is
+	failing a particular test.
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Array.cs (CopyTo): Minor bug fixed

@@ -44,7 +44,7 @@ public class TestStringBuilder : TestCase
 	{
 		// Nothing to do here.
 	}
-	public void TestConstructor()
+	public void TestStringBuilderConstructor()
 	{
 		StringBuilder sb;
 
@@ -124,15 +124,15 @@ public class TestStringBuilder : TestCase
 	/*TODO*/
 	}
 
-	public void TestCapacity()
+	public void TestStringBuilderCapacity()
 	{
 	/*TODO*/
 	}
-	public void TestChars()
+	public void TestStringBuilderChars()
 	{
 	/*TODO*/
 	}
-	public void TestLength()
+	public void TestStringBuilderLength()
 	{
 	/*TODO*/
 	}

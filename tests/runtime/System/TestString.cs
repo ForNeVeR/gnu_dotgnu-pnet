@@ -45,7 +45,7 @@ public class TestString : TestCase
 			}
 
 	//Methods
-	public void TestClone()
+	public void TestStringClone()
 	{
 		String fubar = "Foo Bar";
 		AssertEquals("fubar.Clone() as String",fubar,(String)fubar.Clone());
@@ -1238,7 +1238,7 @@ public class TestString : TestCase
 		Assert("!(fu != String.Copy(fu))",!(fu != String.Copy(fu)));
 	}
 
-	public void TestChars()
+	public void TestStringChars()
 	{
 		char[] fu = new char[] { 'F', 'o', 'o', ' ', 'B', 'a', 'r' };
 		String foo = new String(fu);
@@ -1274,7 +1274,7 @@ public class TestString : TestCase
 			// and here
 		}
 	}
-	public void TestLength()
+	public void TestStringLength()
 	{
 		AssertEquals("\"Foo Bar\".Length","Foo Bar".Length,7);
 		AssertEquals("\"\".Length","".Length,0);

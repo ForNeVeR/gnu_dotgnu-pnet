@@ -44,7 +44,7 @@ public class TestArrayList : TestCase
 			}
 
 	// Test insertion into an array list.
-	public void TestInsert()
+	public void TestArrayListInsert()
 			{
 				int posn;
 				ArrayList list = new ArrayList();
@@ -59,7 +59,7 @@ public class TestArrayList : TestCase
 			}
 
 	// Test adding to an array list.
-	public void TestAdd()
+	public void TestArrayListAdd()
 			{
 				int posn;
 				ArrayList list = new ArrayList();
@@ -74,7 +74,7 @@ public class TestArrayList : TestCase
 			}
 
 	// Test clearing an array list.
-	public void TestClear()
+	public void TestArrayListClear()
 			{
 				ArrayList list = new ArrayList();
 				int posn;

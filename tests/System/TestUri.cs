@@ -53,7 +53,7 @@ public class TestUri : TestCase
 	}
 
 	private bool constructorTested = false;
-	public void TestConstructor()
+	public void TestUriConstructor()
 	{
 		try
 		{
@@ -78,7 +78,7 @@ public class TestUri : TestCase
 		}
 	}
 
-	public void TestCanonicalize()
+	public void TestUriCanonicalize()
 	{
 		AssertEquals("StripMetaDirectories should keep the ending slash when there is one",
 			     pathEnding.AbsolutePath,
@@ -255,67 +255,67 @@ public class TestUri : TestCase
 	/*TODO*/
 	}
 
-	public void TestAbsolutePath()
+	public void TestUriAbsolutePath()
 	{
 	/*TODO*/
 	}
-	public void TestAbsoluteUri()
+	public void TestUriAbsoluteUri()
 	{
 	/*TODO*/
 	}
-	public void TestAuthority()
+	public void TestUriAuthority()
 	{
 		AssertEquals("rmsUri: Authority built correctly", rmsUri.Authority, "rms@ftp.gnu.org:2538");
 	}
-	public void TestFragment()
+	public void TestUriFragment()
 	{
 	/*TODO*/
 	}
-	public void TestHost()
+	public void TestUriHost()
 	{
 		AssertEquals("rmsUri: Host parsed", rmsUri.Host, "ftp.gnu.org");
 	}
-	public void TestHostNameType()
+	public void TestUriHostNameType()
 	{
 		AssertEquals("rmsUri: Correct HostNameType detected", rmsUri.HostNameType, UriHostNameType.Dns);
 	}
-	public void TestIsDefaultPort()
+	public void TestUriIsDefaultPort()
 	{
 		Assert("rmsUri: 2538 is not default for ftp", rmsUri.IsDefaultPort);
 	}
-	public void TestIsFile()
+	public void TestUriIsFile()
 	{
 	/*TODO*/
 	}
-	public void TestIsLoopback()
+	public void TestUriIsLoopback()
 	{
 	/*TODO*/
 	}
-	public void TestLocalPath()
+	public void TestUriLocalPath()
 	{
 	/*TODO*/
 	}
-	public void TestPathAndQuery()
+	public void TestUriPathAndQuery()
 	{
 	/*TODO*/
 	}
-	public void TestPort()
+	public void TestUriPort()
 	{
 		AssertEquals("rmsUri: Port parsed", rmsUri.Port, 2538);
 	}
-	public void TestQuery()
+	public void TestUriQuery()
 	{
 		AssertEquals("rmsUri: Query parsed", rmsUri.Query, "?freesoftware=good");
 	}
-	public void TestScheme()
+	public void TestUriScheme()
 	{
 		AssertEquals("rmsUri: Scheme parsed", rmsUri.Scheme, "ftp");
 	}
-	public void TestUserEscaped()
+	public void TestUriUserEscaped()
 	{
 	/*TODO*/
 	}
-	public void TestUserInfo()
+	public void TestUriUserInfo()
 	{
 		AssertEquals("rmsUri: User info parsed", rmsUri.UserInfo, "rms");
 	}

@@ -48,28 +48,28 @@ public class TestXmlConvert : TestCase
 				// Nothing to do here.
 			}
 	
-	public void TestToSByte0()
+	public void TestXmlConvertToSByte0()
 	{
 		sbyte x = XmlConvert.ToSByte("0");
 
 		AssertEquals(x,(sbyte)0);
 	}
 
-	public void TestToSByte42()
+	public void TestXmlConvertToSByte42()
 	{
 		sbyte x = XmlConvert.ToSByte("42");
 
 		AssertEquals(x,(sbyte)42);
 	}
 
-	public void TestToSByteMinus42()
+	public void TestXmlConvertToSByteMinus42()
 	{
 		sbyte x = XmlConvert.ToSByte("-42");
 
 		AssertEquals(x,(sbyte)-42);
 	}
 
-	public void TestToSByteOverflow()
+	public void TestXmlConvertToSByteOverflow()
 	{
 		try {
 			sbyte x = XmlConvert.ToSByte("1024");
@@ -80,7 +80,7 @@ public class TestXmlConvert : TestCase
 		}
 	}
 
-	public void TestToSByteUnderflow()
+	public void TestXmlConvertToSByteUnderflow()
 	{
 		try {
 			sbyte x = XmlConvert.ToSByte("-1024");
@@ -91,7 +91,7 @@ public class TestXmlConvert : TestCase
 		}
 	}
 
-	public void TestToSByteJunk()
+	public void TestXmlConvertToSByteJunk()
 	{
 		try {
 			sbyte x = XmlConvert.ToSByte("Junk");
@@ -102,7 +102,7 @@ public class TestXmlConvert : TestCase
 		}
 	}
 
-	public void TestToSByteNull()
+	public void TestXmlConvertToSByteNull()
 	{
 		try {
 			String s = null;

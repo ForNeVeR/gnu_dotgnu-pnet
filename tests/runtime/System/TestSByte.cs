@@ -44,28 +44,28 @@ public class TestSByte : TestCase
 				// Nothing to do here.
 			}
 	
-	public void TestParseString0()
+	public void TestSByteParseString0()
 	{
 		sbyte x = SByte.Parse("0");
 
 		AssertEquals(x,(sbyte)0);
 	}
 
-	public void TestParseString42()
+	public void TestSByteParseString42()
 	{
 		sbyte x = SByte.Parse("42");
 
 		AssertEquals(x,(sbyte)42);
 	}
 
-	public void TestParseStringMinus42()
+	public void TestSByteParseStringMinus42()
 	{
 		sbyte x = SByte.Parse("-42");
 
 		AssertEquals(x,(sbyte)-42);
 	}
 
-	public void TestParseStringOverflow()
+	public void TestSByteParseStringOverflow()
 	{
 		try {
 			sbyte x = SByte.Parse("1024");
@@ -76,7 +76,7 @@ public class TestSByte : TestCase
 		}
 	}
 
-	public void TestParseStringUnderflow()
+	public void TestSByteParseStringUnderflow()
 	{
 		try {
 			sbyte x = SByte.Parse("-1024");
@@ -87,7 +87,7 @@ public class TestSByte : TestCase
 		}
 	}
 
-	public void TestParseStringJunk()
+	public void TestSByteParseStringJunk()
 	{
 		try {
 			sbyte x = SByte.Parse("Junk");
@@ -98,7 +98,7 @@ public class TestSByte : TestCase
 		}
 	}
 
-	public void TestParseStringNull()
+	public void TestSByteParseStringNull()
 	{
 		try {
 			String s = null;

@@ -57,14 +57,14 @@ public class TestXmlException : TestCase
 	}
 
 	//Methods
-	public void TestEmptyConstructor()
+	public void TestXmlExceptionEmptyConstructor()
 	{
 		XmlException x = new XmlException();
 
 		AssertEquals(x.Message,_("Xml_Default"));
 	}
 
-	public void TestStringConstructor()
+	public void TestXmlExceptionStringConstructor()
 	{
 		XmlException x = new XmlException("foo_for_the_masses");
 		AssertEquals(x.Message,"foo_for_the_masses");

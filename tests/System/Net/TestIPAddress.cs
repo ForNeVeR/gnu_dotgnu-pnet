@@ -45,7 +45,7 @@ public class TestIPAddress : TestCase
 		// Nothing to do here.
 	}
 
-	public void TestConstructor()
+	public void TestIPAddressConstructor()
 	{
 		IPAddress ip=null;
 		try
@@ -258,7 +258,7 @@ public class TestIPAddress : TestCase
 			s);
 	}
 
-	public void TestAddress()
+	public void TestIPAddressAddress()
 	{
 		IPAddress ip = IPAddress.Loopback;
 		AssertEquals("Loopback.Address == 0x0100007f",0x0100007f,ip.Address);
@@ -274,7 +274,7 @@ public class TestIPAddress : TestCase
 		ip.Address=0xFFFFFFFF;
 		AssertEquals("ip == IPAddress.None",IPAddress.None,ip);
 	}
-	public void TestAddressFamily()
+	public void TestIPAddressAddressFamily()
 	{
 		IPAddress ip=IPAddress.Loopback;
 		AssertEquals("IPAddress.Loopback.AddressFamily == AddressFamily.InterNetwork", AddressFamily.InterNetwork,ip.AddressFamily);

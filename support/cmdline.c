@@ -646,10 +646,15 @@ void ILCmdLineExpand(int *argc, char ***argv)
 						buffer[len - 1] = '\0';
 						temp = ILDupString(buffer + 1);
 					}
-					else
+					else if (len > 0)
 					{
 						/* Ordinary argument in response file */
 						temp = ILDupString(buffer);
+					}
+					else
+					{
+						/* Empty line in response file */
+						continue;
 					}
 					if(!temp)
 					{

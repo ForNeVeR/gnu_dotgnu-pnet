@@ -1,3 +1,7 @@
+2005-01-01  Stephen Compall  <s11@member.fsf.org>
+
+	* support/cmdline.c (ILCmdLineExpand): Skip empty lines in "@file"
+	resource files.
 
 2004-12-28  Gopal V  <gopalv82@yahoo.com>
 

@@ -62,6 +62,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	public override void DrawLine(int x1, int y1, int x2, int y2)
 			{
 				graphics.DrawLine(x1, y1, x2, y2);
+				graphics.DrawPoint(x2, y2);
 			}
 
 	// Convert an array of "System.Drawing.Point" objects into an array of
@@ -81,8 +82,8 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				int posn;
 				for(posn = 0; posn < points.Length; ++posn)
 				{
-					newPoints[posn].x = points[posn].X;
-					newPoints[posn].y = points[posn].Y;
+					newPoints[posn].x = RestrictXY(points[posn].X);
+					newPoints[posn].y = RestrictXY(points[posn].Y);
 				}
 				if(dupFirst)
 				{
@@ -107,7 +108,6 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	public override void FillPolygon
 				(System.Drawing.Point[] points, FillMode fillMode)
 			{
-				ExpandFilledObject( ref points);
 				if(fillMode == FillMode.Alternate)
 				{
 					graphics.FillRule = FillRule.EvenOddRule;
@@ -119,34 +119,15 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				graphics.FillPolygon(ConvertPoints(points, false));
 			}
 
-	// Expand the outside away from the first point of a filled object by 1
-	private void ExpandFilledObject( ref System.Drawing.Point[] points)
-			{
-				System.Drawing.Point first = points[0];
-				for(int posn = 0; posn < points.Length; posn++)
-				{
-					int x = points[posn].X;
-					int y = points[posn].Y;
-					//Move the points 1 away from the first point
-					if (x!=first.X)
-						x += x > first.X ? 1 : -1;
-					if (y!=first.Y)
-						y += y > first.Y ? 1 : -1;
-
-					points[posn] = new System.Drawing.Point(x, y);
-				}
-			}
-
-
 	// Draw an arc within a rectangle defined by four points.
 	public override void DrawArc
 				(System.Drawing.Point[] rect,
 				 float startAngle, float sweepAngle)
 			{
 				// Slight bug: this won't work for rotated arcs.
-				int width = rect[1].X - rect[0].X;
-				int height = rect[2].Y - rect[0].Y;
-				graphics.DrawArc(rect[0].X, rect[0].Y, width, height,
+				int width = RestrictWH(rect[1].X - rect[0].X);
+				int height = RestrictWH(rect[2].Y - rect[0].Y);
+				graphics.DrawArc(RestrictXY(rect[0].X), RestrictXY(rect[0].Y), width, height,
 								 startAngle, sweepAngle);
 			}
 
@@ -156,9 +137,9 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				 float startAngle, float sweepAngle)
 			{
 				// Slight bug: this won't work for rotated arcs.
-				int width = rect[1].X - rect[0].X;
-				int height = rect[2].Y - rect[0].Y;
-				graphics.DrawPie(rect[0].X, rect[0].Y, width, height,
+				int width = RestrictWH(rect[1].X - rect[0].X);
+				int height = RestrictWH(rect[2].Y - rect[0].Y);
+				graphics.DrawPie(RestrictXY(rect[0].X), RestrictXY(rect[0].Y), width, height,
 								 startAngle, sweepAngle);
 			}
 
@@ -168,10 +149,10 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				 float startAngle, float sweepAngle)
 			{
 				// Slight bug: this won't work for rotated arcs.
-				int width = rect[1].X - rect[0].X;
-				int height = rect[2].Y - rect[0].Y;
+				int width = RestrictWH(rect[1].X - rect[0].X);
+				int height = RestrictWH(rect[2].Y - rect[0].Y);
 				graphics.ArcMode = ArcMode.ArcPieSlice;
-				graphics.FillArc(rect[0].X, rect[0].Y, width, height,
+				graphics.FillArc(RestrictXY(rect[0].X), RestrictXY(rect[0].Y), width, height,
 								 startAngle, sweepAngle);
 			}
 
@@ -180,7 +161,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				(String s, int x, int y, StringFormat format)
 			{
 				FontExtents extents = graphics.GetFontExtents(font);
-				graphics.DrawString(x, y + extents.Ascent - 1, s, font);
+				graphics.DrawString(RestrictXY(x), RestrictXY(y) + extents.Ascent, s, font);
 			}
 
 	// Measure a string using the current font and a given layout rectangle.
@@ -197,7 +178,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 					(s, font, out width, out ascent, out descent);
 				if(!ascentOnly)
 				{
-					return new Size(width, ascent + descent - 1);
+					return new Size(width, ascent + descent);
 				}
 				else
 				{
@@ -287,31 +268,36 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 			for( int i = 0; i < rectangles.Length; i++)
 			{
 				System.Drawing.Rectangle rect = rectangles[i];
-				int left = rect.Left;
-				int top = rect.Top;
-				int width = rect.Width;
-				int height = rect.Height;
-				// This implementations region size restriction.
-				if (left < short.MinValue)
-					left = short.MinValue;
-				else if (left > short.MaxValue)
-					left = short.MaxValue;
-				if (top < short.MinValue)
-					top = short.MinValue;
-				else if (top > short.MaxValue)
-					top = short.MaxValue;
-				if (width < ushort.MinValue)
-					width = ushort.MinValue;
-				else if (width > ushort.MaxValue)
-					width = ushort.MaxValue;
-				if (height < ushort.MinValue)
-					height = ushort.MinValue;
-				else if (height > ushort.MaxValue)
-					height = ushort.MaxValue;
+				// This implementation has a region size restriction.
+				int left = RestrictXY(rect.Left);
+				int top = RestrictXY(rect.Top);
+				int width = RestrictWH(rect.Width);
+				int height = RestrictXY(rect.Height);
 				newRegion.Union( left, top, width, height);
 			}
 			return newRegion;
 		}
+
+
+	// Make sure a width or height fits within the x drawing size restriction
+	private static int RestrictWH(int value)
+	{
+		if (value < ushort.MinValue)
+			value = ushort.MinValue;
+		else if (value > ushort.MaxValue)
+			value = ushort.MaxValue;
+		return value;
+	}
+
+	// Make sure a x or y fits within the x drawing position restriction
+	private static int RestrictXY(int value)
+	{
+		if (value < short.MinValue)
+			value = short.MinValue;
+		else if (value > short.MaxValue)
+			value = short.MaxValue;
+		return value;
+	}
 
 }; // class DrawingGraphics
 

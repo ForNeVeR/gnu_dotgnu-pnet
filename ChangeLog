@@ -4,6 +4,10 @@
 	* support/spawn.c (ILSpawnProcess): pass the first few options
 	directly on the command-line instead of in the response file.
 
+	* csant/csant_cscc.c (BuildCscCommandLine): pass "/noconfig" in
+	addition to "/nostdlib" to csc, because "/nostdlib" only turns
+	off mscorlib.dll, and not all standard libraries.
+
 2002-04-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ChangeLog, doc/ChangeLog-2: move the contents of "ChangeLog" to

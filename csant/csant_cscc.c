@@ -607,12 +607,6 @@ static char **BuildCscCommandLine(CSAntCompileArgs *args)
 	AddArg(&argv, &argc, FindMSPath());
 	AddArg(&argv, &argc, "/nologo");
 
-	/* Set the target and output file */
-	AddValueArg(&argv, &argc, "/target:", (char *)(args->target));
-	temp = CSAntDirCombineWin32(args->output, 0, 0);
-	AddValueArg(&argv, &argc, "/out:", temp);
-	ILFree(temp);
-
 	/* Enable debugging if necessary */
 	if(args->debug == COMP_FLAG_TRUE)
 	{
@@ -639,6 +633,7 @@ static char **BuildCscCommandLine(CSAntCompileArgs *args)
 	if(args->noStdLib == COMP_FLAG_TRUE)
 	{
 		AddArg(&argv, &argc, "/nostdlib");
+		AddArg(&argv, &argc, "/noconfig");
 	}
 
 	/* Set the optimization level */
@@ -656,6 +651,12 @@ static char **BuildCscCommandLine(CSAntCompileArgs *args)
 	{
 		AddArg(&argv, &argc, "/warnaserror+");
 	}
+
+	/* Set the target and output file */
+	AddValueArg(&argv, &argc, "/target:", (char *)(args->target));
+	temp = CSAntDirCombineWin32(args->output, 0, 0);
+	AddValueArg(&argv, &argc, "/out:", temp);
+	ILFree(temp);
 
 	/* Define pre-processor symbols */
 	temp = 0;

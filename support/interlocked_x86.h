@@ -94,7 +94,8 @@ static IL_INLINE ILInt32 ILInterlockedExchange(ILInt32 *destination, ILInt32 val
 	(
 		"1:;"
 		"lock;"
-		"cmpxchgl %2, %0; jne 1b"
+		"cmpxchgl %2, %0;"
+		"jne 1b"
 		: "=m" (*destination), "=a" (retval)
 		: "r" (value), "m" (*destination), "a" (*destination)
 	);

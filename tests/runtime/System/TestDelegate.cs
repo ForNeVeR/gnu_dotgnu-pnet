@@ -44,7 +44,7 @@ public class TestDelegate : TestCase
 			}
 
 	/*
-	 * Test async calls with reference results.
+	 * Test async calls with objects.
 	 */
 	private delegate object ObjectMethod(object x, object y);
 	
@@ -53,7 +53,7 @@ public class TestDelegate : TestCase
 		return (int)x + (int)y;
 	}
 	
-	public void TestAsyncCallWithRefs()
+	public void TestAsyncCallWithObjects()
 	{
 		int result;
 		IAsyncResult ar;
@@ -67,7 +67,44 @@ public class TestDelegate : TestCase
 	}
 
 	/*
-	 * Test async calls with int results.
+	 * Test async calls with objects byref.
+	 */
+	private delegate object ObjectByRefMethod(ref object x, ref object y);
+	
+	private object ObjectByRefAdd(ref object x, ref object y)
+	{
+		object tmp;
+		
+		tmp = x;
+		x = y;
+		y = tmp;
+		
+		return (int)x + (int)y;
+	}
+	
+	public void TestAsyncCallWithObjectsByRef()
+	{
+		int result;
+		object x, y, x2, y2;
+		IAsyncResult ar;
+		ObjectByRefMethod m = new ObjectByRefMethod(ObjectByRefAdd);
+		
+		x = 10;
+		y = 20;
+		x2 = x;
+		y2 = y;
+		
+		ar = m.BeginInvoke(ref x, ref y, null, null);
+		
+		result = (int)m.EndInvoke(ref x, ref y, ar);
+		
+		Assert("x==y2", Object.ReferenceEquals(x, y2));
+		Assert("y==x2", Object.ReferenceEquals(y, x2));
+		AssertEquals("result==30", result, 30);
+	}
+
+	/*
+	 * Test async calls with ints.
 	 */
 	private delegate int IntMethod(int x, int y);
 	
@@ -88,7 +125,40 @@ public class TestDelegate : TestCase
 		
 		AssertEquals("result==30", result, 30);
 	}
+
+	/*
+	 * Test async calls with ints byref.
+	 */
+	private delegate int IntByRefMethod(ref int x, ref int y);
 	
+	private int IntByRefAdd(ref int x, ref int y)
+	{
+		int tmp;
+		
+		tmp = x;
+		x = y;
+		y = tmp;
+		
+		return x + y;
+	}
+
+	public void TestAsyncCallWithIntsByRef()
+	{
+		int x, y, result;
+		IAsyncResult ar;
+		IntByRefMethod m = new IntByRefMethod(IntByRefAdd);
+		
+		x = 10;
+		y = 20;
+		ar = m.BeginInvoke(ref x, ref y, null, null);
+		
+		result = m.EndInvoke(ref x, ref y, ar);
+		
+		AssertEquals("x==20", x, 20);
+		AssertEquals("y==10", y, 10);
+		AssertEquals("result==30", result, 30);
+	}
+		
 	/*
 	 * Test async calls with double results.
 	 */
@@ -99,7 +169,7 @@ public class TestDelegate : TestCase
 		return x + y;
 	}
 
-	public void TestAsyncCallWithDouble()
+	public void TestAsyncCallWithDoubles()
 	{
 		double result;
 		IAsyncResult ar;
@@ -109,6 +179,40 @@ public class TestDelegate : TestCase
 		
 		result = m.EndInvoke(ar);
 		
+		AssertEquals("result==30", result, (double)30);
+	}	
+
+	/*
+	 * Test async calls with doubles byref.
+	 */
+	private delegate double DoubleByRefMethod(ref double x, ref double y);
+	
+	private double DoubleByRefAdd(ref double x, ref double y)
+	{
+		double tmp;
+		
+		tmp = x;
+		x = y;
+		y = tmp;
+		
+		return x + y;
+	}
+
+	public void TestAsyncCallWithDoublesByRef()
+	{
+		double x, y, result;
+		IAsyncResult ar;
+		DoubleByRefMethod m = new DoubleByRefMethod(DoubleByRefAdd);
+		
+		x = 10;
+		y = 20;
+		
+		ar = m.BeginInvoke(ref x, ref y, null, null);
+		
+		result = m.EndInvoke(ref x, ref y, ar);
+		
+		AssertEquals("x==20", (double)20, x);
+		AssertEquals("y==10", (double)10, y);
 		AssertEquals("result==30", result, (double)30);
 	}	
 
@@ -135,7 +239,7 @@ public class TestDelegate : TestCase
 		return new Point(x.X + y.X, x.Y + y.Y);
 	}
 
-	public void TestAsyncCallWithValueType()
+	public void TestAsyncCallWithValueTypes()
 	{
 		Point result;
 		IAsyncResult ar;
@@ -146,5 +250,42 @@ public class TestDelegate : TestCase
 		result = m.EndInvoke(ar);
 		
 		AssertEquals("result==Point(40, 60)", result, new Point(40, 60));
+	}	
+
+	/*
+	 * Test async calls with custom valuetypes byref.
+	 */
+	private delegate Point PointByRefMethod(ref Point x, ref Point y);
+	
+	private Point PointByRefAdd(ref Point x, ref Point y)
+	{
+		/*Point tmp;
+		
+		tmp = x;
+		x = y;
+		y = tmp;
+		
+		return new Point(x.X + y.X, x.Y + y.Y);
+		*/
+		
+		return new Point();
+	}
+
+	public void TestAsyncCallWithValueTypesByRef()
+	{
+		Point x, y, result;
+		IAsyncResult ar;
+		PointByRefMethod m = new PointByRefMethod(PointByRefAdd);
+		
+		x = new Point(10, 20);
+		y = new Point(30, 40);
+		
+		ar = m.BeginInvoke(ref x, ref y, null, null);
+		
+		//result = m.EndInvoke(ref x, ref y, ar);
+		
+		//AssertEquals("x=(30,40)", x, new Point(30, 40));
+		//AssertEquals("y=(10,20)", y, new Point(10, 20));
+		//AssertEquals("result==Point(40, 60)", result, new Point(40, 60));
 	}	
 }; // class TestArray

@@ -6,6 +6,9 @@
 	
 	* tests/runtime/Testruntime.cs: Added SuiteReflection.
 	
+	* tests/runtime/TestDelegate.cs: Added tests for asynchronous
+	method calls with out/ref parameters.
+	
 2004-05-17  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
 	* runtime/System/Collections/Hashtable.cs: Rename HashCodeProviderName

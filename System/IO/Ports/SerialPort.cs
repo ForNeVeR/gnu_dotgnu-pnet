@@ -998,7 +998,7 @@ public class SerialPort
 		public PortStream(SerialPort port)
 				{
 					this.port = port;
-					this.byteBuffer = new byte [0];
+					this.byteBuffer = new byte [1];
 				}
 
 		// Close the stream.

@@ -30,6 +30,9 @@
 	can't be destroyed because it's shared with the finalizer thread,
 	the CVM stack is cleared instead.
 	Added null implementation for ILExecProcessUnload().
+	
+	* engine/monitor.c: Clear lockwords if reusing monitor entries
+	from dead objects.
 		
 2004-05-14  Thong Nguyen  <tum@veridicus.com>
 

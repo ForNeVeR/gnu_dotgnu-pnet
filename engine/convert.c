@@ -46,7 +46,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	/* Get the method code */
 	if(!ILMethodGetCode(method, &code))
 	{
-		return 0;
+		code.code = 0;
 	}
 
 	/* The conversion is different depending upon whether the

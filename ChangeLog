@@ -11,6 +11,9 @@
 	* System.Xml/Private/ElementList.cs : Fix enumerator over the 
 	ElementList to check for NodeMatches before providing a result.
 
+	* System.Xml/XmlDocument.cs: Attribute values are appended as 
+	XmlText nodes instead of as a set_Value.
+
 2004-04-28  Gopal V <gopalv82@yahoo.com>
 
 	* System.Xml/XmlDocument.cs: Add CreateNavigator protected method to

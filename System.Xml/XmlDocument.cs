@@ -743,7 +743,7 @@ class XmlDocument : XmlNode
 					{
 						// create the attribute
 						XmlAttribute att = CreateAttribute(r.Name);
-						att.Value = r.Value;
+						// the attribute value is read as a child text node
 
 						// read and append the children
 						ReadChildren(r, att);

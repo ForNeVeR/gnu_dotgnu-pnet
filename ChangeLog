@@ -6,6 +6,8 @@
 
 	* codegen/Makefile.am: Add cg_varusage.c to the build
 
+	* codegen/cg_arith.tc: add constant folding for string concat.
+
 2002-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/engine.h, engine/lib_crypt.c, engine/process.c: implement the

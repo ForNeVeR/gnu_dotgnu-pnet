@@ -846,6 +846,37 @@ ILNode_EvalConst(ILNode_Not)
 	return ILNot_EvalOp(info, commonType, value);
 }
 
+ILNode_EvalConst(ILNode_Concat)
+{
+	ILMachineType type1;
+	ILMachineType type2;
+	ILEvalValue value2;
+	ILIntString new_string;
+
+	type1 = ILNode_GetType(node->expr1, info);
+	type2 = ILNode_GetType(node->expr2, info);
+	if(type1 != ILMachineType_String || type2 != ILMachineType_String)
+	{
+		return 0;
+	}
+	if(!ILNode_EvalConst(node->expr1,info,value)) 
+	{
+		return 0;
+	}
+	if(!ILNode_EvalConst(node->expr2,info,&value2)) 
+	{
+		return 0;
+	}
+	new_string = ILInternAppendedString
+				(ILInternString(value->un.strValue.str, 
+					value->un.strValue.len),
+				 ILInternString(value2.un.strValue.str,
+				 	value2.un.strValue.len));
+	value->un.strValue.str=new_string.string; 
+	value->un.strValue.len=new_string.len;
+	return 1;
+}
+
 /*
  * Apply the addition operator to various types.
  */

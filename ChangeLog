@@ -21,6 +21,7 @@
 	redraw control instead of invalidating.
 
 	* System.Windows.Forms/ScrollBar.cs : handle boundary cases better.
+	Value/Position fixes.
 
 	* System.Windows.Forms/TextBox.cs, System.Windows.Forms/TextBoxBase.cs
 	: numerous small bug fixes. Big speed up when drawing text. Begin

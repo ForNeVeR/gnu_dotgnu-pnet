@@ -101,18 +101,20 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 	// Assert the permissions in this set.
 	public virtual void Assert()
 			{
+				// We must have the "Assertion" security flag for this to work.
+				SecurityPermission perm;
+				perm = new SecurityPermission(SecurityPermissionFlag.Assertion);
+				perm.Demand();
+
+				// Assert all of the CodeAccessPermission objects in the set.
 				int posn;
-				CodeAccessPermission perm;
+				CodeAccessPermission caperm;
 				for(posn = 0; posn < permissions.Count; ++posn)
 				{
-					perm = (permissions[posn] as CodeAccessPermission);
-					if(perm != null)
+					caperm = (permissions[posn] as CodeAccessPermission);
+					if(caperm != null)
 					{
-						if(!ClrSecurity.Assert(perm, 1))
-						{
-							throw new SecurityException
-								(_("Exception_SecurityNotGranted"));
-						}
+						caperm.Assert(2);
 					}
 				}
 			}
@@ -132,16 +134,7 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 				for(posn = 0; posn < permissions.Count; ++posn)
 				{
 					perm = ((IPermission)(permissions[posn]));
-					caperm = (perm as CodeAccessPermission);
-					if(caperm != null)
-					{
-						if(!ClrSecurity.Demand(caperm, 1))
-						{
-							throw new SecurityException
-								(_("Exception_SecurityNotGranted"));
-						}
-					}
-					else
+					if(perm != null)
 					{
 						perm.Demand();
 					}
@@ -158,7 +151,7 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 					perm = (permissions[posn] as CodeAccessPermission);
 					if(perm != null)
 					{
-						ClrSecurity.Deny(perm, 1);
+						perm.Deny(2);
 					}
 				}
 			}
@@ -271,17 +264,25 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 	// Permit only the permissions in this set.
 	public virtual void PermitOnly()
 			{
+				// Demand the permission first, because we cannot permit it
+				// for exclusive access if we are not allowed have it at all.
+				Demand();
+
+				// Create a permission set and copy all CA objects into it.
+				PermissionSet set = new PermissionSet(PermissionState.None);
 				int posn;
 				CodeAccessPermission perm;
-				ClrSecurity.SetPermitOnlyBlock(1);
 				for(posn = 0; posn < permissions.Count; ++posn)
 				{
 					perm = (permissions[posn] as CodeAccessPermission);
 					if(perm != null)
 					{
-						ClrSecurity.PermitOnly(perm, 1);
+						set.AddPermission(perm.Copy());
 					}
 				}
+
+				// Set the current "PermitOnly" context on the call stack.
+				CodeAccessPermission.PermitOnly(set, 2);
 			}
 
 	// Convert this object into a string.

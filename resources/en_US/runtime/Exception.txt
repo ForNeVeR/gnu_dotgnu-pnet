@@ -78,6 +78,7 @@ Exception_EndOfStream=Attempted to read past the end of the stream
 Exception_PathTooLong=The supplied path is too long
 Exception_Security=A security violation has occurred
 Exception_SecurityNotGranted=The calling code was not granted the requested permissions
+Exception_PermitOnly=There is already a PermitOnly clause in effect
 Exception_Remoting=A failure occurred during a remoting operation
 Exception_Verification=Could not verify the code
 Exception_Serialization=An error occurred during serialization operations

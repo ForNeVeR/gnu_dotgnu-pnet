@@ -36,6 +36,14 @@
 	runtime/System/Security/Permissions/PrincipalPermissionAttribute.cs:
 	add princpal permission classes.
 
+	* resources/en_US/runtime/Exception.txt,
+	runtime/System/Security/ClrPermissions.cs,
+	runtime/System/Security/ClrSecurity.cs,
+	runtime/System/Security/CodeAccessPermission.cs,
+	runtime/System/Security/PermissionSet.cs: redesign the internalcall
+	interface for code access security (CAS) so that most of the work
+	happens in the C# code, not the runtime engine.
+
 2003-03-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/UTF8Encoding.cs,

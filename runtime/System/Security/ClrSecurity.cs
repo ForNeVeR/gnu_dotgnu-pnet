@@ -29,32 +29,22 @@ using System.Security.Permissions;
 internal sealed class ClrSecurity
 {
 
-	// In all of the methods below, a "skipFrames" value of zero
-	// indicates the method that called these interfaces.
-
-	// Assert a code access permission for a particular stack frame.
-	// Returns false if the permission was not granted.
+	// Get the permission sets in the current call context, starting
+	// at a particular stack frame.  This will scan up the stack until
+	// it finds a permissions object.  If none are found, this will
+	// return "null".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Assert(CodeAccessPermission perm, int skipFrames);
+	extern public static ClrPermissions GetPermissionsFrom(int skipFrames);
 
-	// Demand a code access permission for a particular stack frame.
-	// Returns false if the permission was not granted.
+	// Get the permission set for a particular stack frame.
+	// Returns null if no permission set for that stack frame.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Demand(CodeAccessPermission perm, int skipFrames);
+	extern public static ClrPermissions GetPermissions(int skipFrames);
 
-	// Deny a code access permission for a particular stack frame.
+	// Set the permission sets for a particular stack frame.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Deny(CodeAccessPermission perm, int skipFrames);
-
-	// Set a "PermitOnly" block at a particular stack frame so that
-	// nothing in higher frames can be accessed.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void SetPermitOnlyBlock(int skipFrames);
-
-	// Permit a particular stack frame to access the specified permission.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void PermitOnly
-		(CodeAccessPermission perm, int skipFrames);
+	extern public static void SetPermissions
+			(ClrPermissions perm, int skipFrames);
 
 }; // class ClrSecurity
 

@@ -186,6 +186,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *disposableInterface;
 	ILClass *collectionInterface;
 	ILClass *enumeratorInterface;
+	ILClass *isVolatileClass;
 	int constructorOK;
 	ILMethod *method;
 	ILProperty *property;
@@ -382,6 +383,19 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	{
 		ILGenOutOfMemory(info);
 	}
+
+	/* Create the "System.Runtime.CompilerServices.IsVolatile" class */
+	ABORT_IF(isVolatileClass,
+			 ILClassCreate(scope, 0, "IsVolatile",
+			 			   "System.Runtime.CompilerServices",
+			 			   objectClass));
+	ILClassSetAttrs(isVolatileClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+					IL_META_TYPEDEF_SEALED |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT);
+	ABORT_IF(constructorOK, AddDefaultConstructor(isVolatileClass));
+
 }
 
 #ifdef	__cplusplus

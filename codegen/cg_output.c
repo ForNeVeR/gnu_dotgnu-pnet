@@ -377,6 +377,21 @@ void ILGenFieldRef(ILGenInfo *info, int opcode, ILField *field)
 {
 	if(info->asmOutput)
 	{
+		ILType *type = ILFieldGetTypeWithPrefixes(field);
+		ILType *stripped = ILTypeStripPrefixes(type);
+		if(type != stripped &&
+		   opcode != IL_OP_LDFLDA &&
+		   opcode != IL_OP_LDSFLDA)
+		{
+			/* This field may need a "volatile" instruction to access it */
+			ILType *modifier = ILFindNonSystemType
+				(info, "IsVolatile", "System.Runtime.CompilerServices");
+			if(ILType_IsClass(modifier) &&
+			   ILTypeHasModifier(type, ILType_ToClass(modifier)))
+			{
+				fputs("\tvolatile.\n", info->asmOutput);
+			}
+		}
 		putc('\t', info->asmOutput);
 		if(opcode < IL_OP_PREFIX)
 		{
@@ -388,7 +403,7 @@ void ILGenFieldRef(ILGenInfo *info, int opcode, ILField *field)
 				  info->asmOutput);
 		}
 		putc('\t', info->asmOutput);
-		ILDumpType(info->asmOutput, info->image, ILField_Type(field),
+		ILDumpType(info->asmOutput, info->image, stripped,
 				   IL_DUMP_QUOTE_NAMES);
 		putc(' ', info->asmOutput);
 		ILDumpClassName(info->asmOutput, info->image, ILField_Owner(field),

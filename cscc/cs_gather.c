@@ -322,9 +322,28 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 	ILField *fieldInfo;
 	char *name;
 	ILType *tempType;
+	ILType *modifier;
 
 	/* Get the field's type */
 	tempType = CSSemType(field->type, info, &(field->type));
+
+	/* Add the "volatile" modifier if necessary */
+	if((field->modifiers & CS_SPECIALATTR_VOLATILE) != 0)
+	{
+		modifier = ILFindNonSystemType(info, "IsVolatile",
+									   "System.Runtime.CompilerServices");
+		if(ILType_IsClass(modifier))
+		{
+			modifier = ILTypeCreateModifier(info->context, 0,
+											IL_TYPE_COMPLEX_CMOD_REQD,
+											ILType_ToClass(modifier));
+			if(!modifier)
+			{
+				CSOutOfMemory();
+			}
+			tempType = ILTypeAddModifiers(info->context, modifier, tempType);
+		}
+	}
 
 	/* Iterator over the field declarators and create each field in turn */
 	ILNode_ListIter_Init(&iterator, field->fieldDeclarators);

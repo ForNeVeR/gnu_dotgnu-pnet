@@ -27,6 +27,9 @@
 
 	* image/types.c, include/il_types.h (ILTypeHasModifier): new function.
 
+	* codegen/cg_library.c, codegen/cg_output.c, cscc/cs_gather.c:
+	add support for "volatile" fields.
+
 2001-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_gather.c (CreateMethod, CreateProperty, CreateMembers):

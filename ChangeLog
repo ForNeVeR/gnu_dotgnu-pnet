@@ -9,6 +9,11 @@
 
 	* support/w32_defs.h: minor macro bugs in previous check-in.
 
+	* support/pt_include.h, support/pt_mutex.c, support/pt_thread.c,
+	support/pt_wait.c, support/w32_include.h, support/w32_mutex.c,
+	support/w32_thread.c: remove files that are no longer necessary
+	after the rearrangement.
+
 2002-04-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/pt_include.h, support/pt_mutex.c, support/pt_thread.c,

@@ -1,4 +1,13 @@
 
+2002-03-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/enum2.err,
+	csharp/class/enum2.jerr, csharp/class/field3.err,
+	csharp/class/field3.jerr, csharp/class/method8.cs,
+	csharp/class/method8.err, csharp/class/method8.jerr,
+	csharp/class/property3.err, csharp/class/property3.jerr:
+	updated test files for method duplicate tests.
+
 2002-03-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/ainit1.il: new output file to reflect a

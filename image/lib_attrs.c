@@ -606,6 +606,11 @@ static int MarshalAsAttribute(ILProgramItem *item, ILSerializeReader *reader)
 		case IL_META_NATIVETYPE_ARRAY:
 		{
 			/* An array that has a size value in a separate parameter */
+			if(arraySubType == IL_META_NATIVETYPE_END)
+			{
+				/* Unspecified array element types should be "MAX" */
+				arraySubType = IL_META_NATIVETYPE_MAX;
+			}
 			buf[0] = IL_META_NATIVETYPE_ARRAY;
 			blobLen = 1 + ILMetaCompressData
 				(buf + 1, (unsigned long)arraySubType);

@@ -556,12 +556,7 @@ ILBool ToIPHostEntry (ILExecThread *_thread,
 	buffer=ArrayToBuffer(*h_addr_list);
 	while(length--)
 	{
-		/* crude hack to reuse GETBYTE , but gcc will optimise*/
-		buffer[length]=
-				GETBYTE(ILInt64,*(h_ent->h_addr_list[length]), 0, 0) |
-				GETBYTE(ILInt64,*(h_ent->h_addr_list[length]), 1, 8) |
-				GETBYTE(ILInt64,*(h_ent->h_addr_list[length]), 2, 16) |
-				GETBYTE(ILInt64,*(h_ent->h_addr_list[length]), 3, 24);
+		buffer[length]=(ILInt64)*((ILUInt32 *)(h_ent->h_addr_list[length]));
 	}
 	return 1;
 }

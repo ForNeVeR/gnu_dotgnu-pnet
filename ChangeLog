@@ -1,4 +1,9 @@
 
+2003-12-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_socket.c (IPToHostEntry): fix endian-ness issues
+	with the conversion from hostent form.
+
 2003-12-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resgen/resgen.c: add the "--extract" option to help with

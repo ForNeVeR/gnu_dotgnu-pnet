@@ -392,6 +392,62 @@ unsigned long ILImageAddUserString(ILImage *image, const char *str, int len)
 	return offset;
 }
 
+unsigned long ILImageAddEncodedUserString(ILImage *image,
+										  const void *str, int len)
+{
+	ILImageBuilder *builder = (ILImageBuilder *)image;
+	unsigned long offset;
+	char *finalStr;
+	ILStringHash *entry;
+	unsigned long hash;
+	unsigned char header[IL_META_COMPRESS_MAX_SIZE];
+	ILUInt32 headerLen;
+	ILUInt32 strLen;
+
+	/* Bail out if we are not in the process of building an image */
+	if(image->type != IL_IMAGETYPE_BUILDING)
+	{
+		return 0;
+	}
+
+	/* Encode the string header */
+	strLen = ((ILUInt32)len) * 2 + 1;
+	headerLen = (ILUInt32)ILMetaCompressData(header, strLen);
+
+	/* Search the hash table to see if we already have this string */
+	hash = ILHashString(0, (const char *)header, headerLen);
+	hash = ILHashString(hash, (const char *)str, (int)strLen);
+	hash &= (IL_STRING_HASH_SIZE - 1);
+	entry = LookupHash(builder, str, strLen, header, headerLen,
+					   IL_STRING_HASH_UNICODE, hash);
+	if(entry)
+	{
+		return entry->offset;
+	}
+
+	/* Add the string to the block list */
+	offset = AddString(&(image->userStringBlocks), str, strLen,
+					   header, headerLen, &finalStr);
+	if(!offset)
+	{
+		return 0;
+	}
+
+	/* Add the string to the hash table */
+	entry = ILMemPoolAlloc(&(builder->hashPool), ILStringHash);
+	if(!entry)
+	{
+		return 0;
+	}
+	entry->value = finalStr;
+	entry->len = (headerLen + strLen) | IL_STRING_HASH_UNICODE;
+	entry->offset = (ILUInt32)offset;
+	entry->next = builder->hashTable[hash];
+	builder->hashTable[hash] = entry;
+	image->userStringPoolSize = offset + headerLen + strLen;
+	return offset;
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -309,6 +309,15 @@ const char *ILImageGetUserString(ILImage *image, unsigned long offset,
 unsigned long ILImageAddUserString(ILImage *image, const char *str, int len);
 
 /*
+ * Add a string to the user string pool that is already encoded
+ * as little-endian character values.  The string is assumed to
+ * be "len" Unicode characters in length, and be followed by a
+ * '\0' byte. Returns the offset, or zero if we are out of memory.
+ */
+unsigned long ILImageAddEncodedUserString(ILImage *image,
+										  const void *str, int len);
+
+/*
  * Get the module name from an image.  Returns NULL if no such name.
  * If there are multiple module names, this returns the first.
  */

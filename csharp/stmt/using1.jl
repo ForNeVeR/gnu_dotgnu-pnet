@@ -51,11 +51,13 @@
 } // method .ctor
 .method private static hidebysig specialname rtspecialname void '.cctor'() cil managed java 
 {
-	aconst_null
+	new	'Foo'/'Child'
+	dup
+	invokespecial	instance void 'Foo'/'Child'::'.ctor'()
 	putstatic	class 'Foo'/'Child' 'Foo'::'child'
 	return
 	.locals 0
-	.maxstack 1
+	.maxstack 2
 } // method .cctor
 } // class Foo
 .class private auto ansi 'Bar' extends ['.library']'System'.'Object'
@@ -77,10 +79,9 @@
 	if_icmplt	?L2
 ?L4:
 	getstatic	class 'Foo'/'Child' 'Foo'::'child'
-	astore_1
+	invokespecial	instance int32 'Foo'/'Child'::'get_i32'()
+	istore_1
 	invokestatic	void 'Foo'::'Override1'()
-	bipush	12
-	putstatic	int32 'Foo'::'c'
 	return
 	.locals 2
 	.maxstack 2

@@ -11,6 +11,12 @@
 	* csharp/stmt/using1.cs, csharp/stmt/using1.il, csharp/stmt/using1.jl: 
 	fix the error and commit the correct output files.
 
+	* csharp/stmt/using1.il, csharp/stmt/using1.jl: Change files to reflect
+	changes made to cscc.
+	
+	* csharp/class/nested2.cs, csharp/class/nested2.il, 
+	csharp/class/nested2.jl: test cases for scoping in nested classes.
+
 2002-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/method1.il, csharp/class/method13.il,

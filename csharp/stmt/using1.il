@@ -47,7 +47,7 @@
 } // method .ctor
 .method private static hidebysig specialname rtspecialname void '.cctor'() cil managed 
 {
-	ldnull
+	newobj	instance void 'Foo'/'Child'::'.ctor'()
 	stsfld	class 'Foo'/'Child' 'Foo'::'child'
 	ret
 	.maxstack 1
@@ -57,7 +57,7 @@
 {
 .method public static hidebysig void 'NormalCase'() cil managed 
 {
-	.locals	(int32, class 'Foo'/'Child')
+	.locals	(int32, int32)
 	ldc.i4.0
 	stloc.0
 	br	?L1
@@ -73,10 +73,9 @@
 	blt	?L2
 ?L4:
 	ldsfld	class 'Foo'/'Child' 'Foo'::'child'
+	call	instance int32 'Foo'/'Child'::'get_i32'()
 	stloc.1
 	call	void 'Foo'::'Override1'()
-	ldc.i4.s	12
-	stsfld	int32 'Foo'::'c'
 	ret
 	.maxstack 2
 } // method NormalCase

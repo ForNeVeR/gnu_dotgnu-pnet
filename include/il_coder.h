@@ -187,7 +187,10 @@ struct _tagILCoderClass
 	void (*pop)(ILCoder *coder, ILEngineType valueType, ILType *type);
 
 	/*
-	 * Access an element within an array.
+	 * Access an element within an array.  If the element type
+	 * is "ILType_Void", then it indicates that the array pointer
+	 * was inferred to be "null" and no other element information
+	 * is known.
 	 */
 	void (*arrayAccess)(ILCoder *coder, int opcode,
 						ILEngineType indexType, ILType *elemType);
@@ -196,6 +199,11 @@ struct _tagILCoderClass
 	 * Access a value by dereferencing a pointer.
 	 */
 	void (*ptrAccess)(ILCoder *coder, int opcode);
+
+	/*
+	 * Access a managed value by dereferencing a pointer.
+	 */
+	void (*ptrAccessManaged)(ILCoder *coder, int opcode, ILClass *classInfo);
 
 	/*
 	 * Output a branch instruction.
@@ -210,9 +218,51 @@ struct _tagILCoderClass
 				      ILEngineType type1, ILEngineType type2);
 
 	/*
+	 * Output a comparison instruction.
+	 */
+	void (*compare)(ILCoder *coder, int opcode,
+				    ILEngineType type1, ILEngineType type2);
+
+	/*
+	 * Output a comparison instruction that involves pointers.
+	 */
+	void (*comparePtr)(ILCoder *coder, int opcode,
+				       ILEngineType type1, ILEngineType type2);
+
+	/*
 	 * Output a conversion instruction.
 	 */
 	void (*conv)(ILCoder *coder, int opcode, ILEngineType type);
+
+	/*
+	 * Convert an integer (I or I4) into a pointer.  "type1" is
+	 * the integer type to be converted.  "type2" is the type of
+	 * the value on the stack just above the integer for a store
+	 * opcode, or "ILEngineType_Invalid" for a load opcode.
+	 */
+	void (*toPointer)(ILCoder *coder, ILEngineType type1, ILEngineType type2);
+
+	/*
+	 * Process a pointer alignment prefix.  An "alignment" value
+	 * of zero indicates a "volatile" prefix.
+	 */
+	void (*ptrPrefix)(ILCoder *coder, int alignment);
+
+	/*
+	 * Get the length of an array.
+	 */
+	void (*arrayLength)(ILCoder *coder);
+
+	/*
+	 * Construct a new array, given a type and length value.
+	 */
+	void (*newArray)(ILCoder *coder, ILType *elemType,
+					 ILEngineType lengthType);
+
+	/*
+	 * Allocate local stack space.
+	 */
+	void (*localAlloc)(ILCoder *coder, ILEngineType sizeType);
 
 };
 
@@ -269,14 +319,34 @@ struct _tagILCoderClass
 												  (itype), (etype)))
 #define	ILCoderPtrAccess(coder,opcode)	\
 			((*((coder)->classInfo->ptrAccess))((coder), (opcode)))
+#define	ILCoderPtrAccessManaged(coder,opcode,classInfo)	\
+			((*((coder)->classInfo->ptrAccessManaged))((coder), (opcode), \
+													   (classInfo)))
 #define	ILCoderBranch(coder,opcode,dest,type1,type2)	\
 			((*((coder)->classInfo->branch))((coder), (opcode), (dest), \
 											 (type1), (type2)))
 #define	ILCoderBranchPtr(coder,opcode,dest,type1,type2)	\
 			((*((coder)->classInfo->branchPtr))((coder), (opcode), (dest), \
 											    (type1), (type2)))
+#define	ILCoderCompare(coder,opcode,type1,type2)	\
+			((*((coder)->classInfo->compare))((coder), (opcode), \
+											  (type1), (type2)))
+#define	ILCoderComparePtr(coder,opcode,type1,type2)	\
+			((*((coder)->classInfo->comparePtr))((coder), (opcode), \
+											     (type1), (type2)))
 #define	ILCoderConv(coder,opcode,type) \
 			((*((coder)->classInfo->conv))((coder), (opcode), (type)))
+#define	ILCoderToPointer(coder,type1,type2) \
+			((*((coder)->classInfo->toPointer))((coder), (type1), (type2)))
+#define	ILCoderPtrPrefix(coder,alignment) \
+			((*((coder)->classInfo->ptrPrefix))((coder), (alignment)))
+#define	ILCoderArrayLength(coder) \
+			((*((coder)->classInfo->arrayLength))((coder)))
+#define	ILCoderNewArray(coder,elemType,lengthType) \
+			((*((coder)->classInfo->newArray))((coder), (elemType), \
+											   (lengthType)))
+#define	ILCoderLocalAlloc(coder,sizeType) \
+			((*((coder)->classInfo->localAlloc))((coder), (sizeType)))
 
 #ifdef	__cplusplus
 };

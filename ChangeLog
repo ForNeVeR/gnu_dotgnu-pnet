@@ -3,13 +3,15 @@
 
 * engine/verify_stack.c, engine/verify_call.c, engine/verify_ptr.c,
 engine/verify_obj.c, engine/verify_except.c, engine/verify_ann.c:
-new files to round out the bytecode verfier's instruction coverage.
+new files to round out the bytecode verifier's instruction coverage.
 
 * engine/verify_branch.c: handle comparison opcodes.
 
 * engine/verify_arith.c: bytecode verification for "ckfinite".
 
 * engine/verify.c: include the new files that make up the verifier source.
+
+* include/il_coder.h: new coder API's that are used by the verifier.
 
 2001-10-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 

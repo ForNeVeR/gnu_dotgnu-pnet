@@ -37,6 +37,7 @@ public class TopLevelWindow : InputOutputWidget
 	private bool iconic;
 	private bool hasPrimaryFocus;
 	private bool reparented;
+	private bool firstMapDone;
 	private IntPtr keyBuffer;
 	private InputOnlyWidget focusWidget;
 	private InputOnlyWidget defaultFocus;
@@ -180,6 +181,81 @@ public class TopLevelWindow : InputOutputWidget
 				}
 			}
 
+	// Perform a MoveResize request.
+	internal override void PerformMoveResize
+				(IntPtr display, int newX, int newY,
+				 int newWidth, int newHeight)
+			{
+				Xlib.Window handle = GetWidgetHandle();
+				XWindowChanges changes = new XWindowChanges();
+				ConfigureWindowMask mask = (ConfigureWindowMask)0;
+
+				// If we haven't mapped the window to the screen yet,
+				// then set the size hints and bail out with a normal
+				// move/resize event.
+				if(!firstMapDone)
+				{
+					XSizeHints hints = new XSizeHints();
+					if(newX != 0 || newY != 0)
+					{
+						hints.flags = SizeHintsMask.USPosition |
+									  SizeHintsMask.USSize;
+						hints.x = newX;
+						hints.y = newY;
+					}
+					else
+					{
+						hints.flags = SizeHintsMask.USSize;
+					}
+					hints.width = newWidth;
+					hints.height = newHeight;
+					Xlib.XSetWMNormalHints(display, handle, ref hints);
+					base.PerformMoveResize
+						(display, newX, newY, newWidth, newHeight);
+					return;
+				}
+
+				// Collect up the changes that need to be performed.
+				if(newX != x || newY != y)
+				{
+					if(newWidth != width || newHeight != height)
+					{
+						changes.x = newX;
+						changes.y = newY;
+						changes.width = newWidth;
+						changes.height = newHeight;
+						mask = ConfigureWindowMask.CWX |
+							   ConfigureWindowMask.CWY |
+							   ConfigureWindowMask.CWWidth |
+							   ConfigureWindowMask.CWHeight;
+					}
+					else
+					{
+						changes.x = newX;
+						changes.y = newY;
+						mask = ConfigureWindowMask.CWX |
+							   ConfigureWindowMask.CWY;
+					}
+				}
+				else if(newWidth != width || newHeight != height)
+				{
+					changes.width = newWidth;
+					changes.height = newHeight;
+					mask = ConfigureWindowMask.CWWidth |
+						   ConfigureWindowMask.CWHeight;
+				}
+
+				// Send the reconfiguration request to the window manager.
+				if(mask != (ConfigureWindowMask)0)
+				{
+					Xlib.XReconfigureWMWindow
+							(display, handle,
+							 Screen.ScreenNumber,
+						     (uint)(ConfigureWindowMask.CWStackMode),
+							 ref changes);
+				}
+			}
+
 	/// <summary>
 	/// <para>Determine if this widget is currently iconified.</para>
 	/// </summary>
@@ -226,6 +302,7 @@ public class TopLevelWindow : InputOutputWidget
 						// that we want to be brought to the top.
 						Xlib.XMapRaised(display, GetWidgetHandle());
 						mapped = true;
+						firstMapDone = true;
 						OnMapStateChanged();
 					}
 				}
@@ -311,6 +388,7 @@ public class TopLevelWindow : InputOutputWidget
 						{
 							// We are mapped now as well.
 							mapped = true;
+							firstMapDone = true;
 							OnMapStateChanged();
 						}
 					}
@@ -659,7 +737,7 @@ public class TopLevelWindow : InputOutputWidget
 					XWindowChanges changes = new XWindowChanges();
 					changes.stack_mode = 0;		/* Above */
 					Xlib.XReconfigureWMWindow
-							(display, GetWidgetHandle(),
+							(display, handle,
 							 Screen.ScreenNumber,
 						     (uint)(ConfigureWindowMask.CWStackMode),
 							 ref changes);
@@ -683,7 +761,7 @@ public class TopLevelWindow : InputOutputWidget
 					XWindowChanges changes = new XWindowChanges();
 					changes.stack_mode = 1;		/* Below */
 					Xlib.XReconfigureWMWindow
-							(display, GetWidgetHandle(),
+							(display, handle,
 							 Screen.ScreenNumber,
 						     (uint)(ConfigureWindowMask.CWStackMode),
 							 ref changes);

@@ -124,6 +124,9 @@ public interface IToolkit
 	// Get the default IToolkitGraphics object to measure screen sizes.
 	IToolkitGraphics GetDefaultGraphics();
 
+	// Get the screen size, in pixels.
+	Size GetScreenSize();
+
 }; // interface IToolkit
 
 }; // namespace System.Drawing.Toolkit

@@ -351,6 +351,13 @@ public sealed class DrawingToolkit : IToolkit
 					(this, new Xsharp.Graphics(placeholder));
 			}
 
+	// Get the screen size, in pixels.
+	public Size GetScreenSize()
+			{
+				Screen screen = app.Display.DefaultScreenOfDisplay;
+				return new Size(screen.Width, screen.Height);
+			}
+
 }; // class DrawingToolkit
 
 }; // namespace System.Drawing.Toolkit

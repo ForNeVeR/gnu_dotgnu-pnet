@@ -414,17 +414,19 @@ public class Control : IWin32Window
 			{
 				get
 				{
-					CreateControl();
+					//CreateControl();
 					int leftAdjust = 0;
 					int topAdjust = 0;
 					int rightAdjust = 0;
 					int bottomAdjust = 0;
+				#if false	// TODO: fix this so that it doesn't need a window
 					if(toolkitWindow != null)
 					{
 						toolkitWindow.GetClientAreaAdjust
 							(ref leftAdjust, ref topAdjust,
 							 ref rightAdjust, ref bottomAdjust);
 					}
+				#endif
 					return new Size(width - leftAdjust - rightAdjust,
 									height - topAdjust - bottomAdjust);
 				}
@@ -2024,17 +2026,19 @@ public class Control : IWin32Window
 	// Inner core of setting the client size.
 	protected virtual void SetClientSizeCore(int x, int y)
 			{
-				CreateControl();
+				//CreateControl();
 				int leftAdjust = 0;
 				int topAdjust = 0;
 				int rightAdjust = 0;
 				int bottomAdjust = 0;
+			#if false	// TODO: fix this so that it doesn't need a window
 				if(toolkitWindow != null)
 				{
 					toolkitWindow.GetClientAreaAdjust
 						(ref leftAdjust, ref topAdjust,
 						 ref rightAdjust, ref bottomAdjust);
 				}
+			#endif
 				SetBoundsCore
 					(left, top,
 					 x + leftAdjust + rightAdjust,

@@ -438,6 +438,10 @@ internal sealed class Xlib
 	extern public static @X_int@ XSetTransientForHint
 			(IntPtr display, Window w, Window prop_window);
 
+	[DllImport("X11")]
+	extern public static void XSetWMNormalHints
+			(IntPtr display, Window w, ref XSizeHints hints);
+
 	// Declare color-related external functions.
 
 	[DllImport("X11")]

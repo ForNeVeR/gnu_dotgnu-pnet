@@ -12,6 +12,13 @@
 	* System.Windows.Forms/Form.cs: the "FormStartPosition" property
 	should be called "StartPosition".
 
+	* System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs,
+	Xsharp/TopLevelWindow.cs, Xsharp/Widget.cs, Xsharp/Xlib.cs.in,
+	Xsharp/Types/SizeHintsMask.cs, Xsharp/Types/XSizeHints.cs:
+	implement form centering, in response to "StartPosition".
+
 2003-06-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/Graphics.cs,

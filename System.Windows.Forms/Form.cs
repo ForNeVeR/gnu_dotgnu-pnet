@@ -500,11 +500,25 @@ public class Form : ContainerControl
 			{
 				// TODO: dialog forms
 				CreateParams cp = CreateParams;
+
+				// Create the window and set its initial caption.
 				IToolkitWindow window =
 					ToolkitManager.Toolkit.CreateTopLevelWindow
 						(cp.Width, cp.Height);
 				window.SetTitle(cp.Caption);
+
+				// Adjust the window decorations to match our requirements.
 				SetWindowFlags(window);
+
+				// Center the window on-screen if necessary.
+				if(formStartPosition == FormStartPosition.CenterScreen)
+				{
+					Size screenSize = ToolkitManager.Toolkit.GetScreenSize();
+					window.MoveResize
+							((screenSize.Width - cp.Width) / 2,
+							 (screenSize.Height - cp.Height) / 2,
+							 cp.Width, cp.Height);
+				}
 				return window;
 			}
 

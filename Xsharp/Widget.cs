@@ -706,22 +706,11 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				}
 			}
 
-	// Adjust the position and/or size of this widget.
-	private void AdjustPositionAndSize(IntPtr display, int newX, int newY,
-									   int newWidth, int newHeight)
+	// Perform a MoveResize request.
+	internal virtual void PerformMoveResize
+				(IntPtr display, int newX, int newY,
+				 int newWidth, int newHeight)
 			{
-				// Make sure that the values are in range.
-				if(newX < -32768 || newX > 32767 ||
-				   newY < -32768 || newY > 32767)
-				{
-					throw new XException(S._("X_InvalidPosition"));
-				}
-				else if(newWidth > 32767 || newHeight > 32767)
-				{
-					throw new XException(S._("X_InvalidSize"));
-				}
-
-				// Send requests to the X server to update its state.
 				if(newX != x || newY != y)
 				{
 					if(newWidth != width || newHeight != height)
@@ -741,6 +730,25 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					Xlib.XResizeWindow(display, GetWidgetHandle(),
 									   (uint)newWidth, (uint)newHeight);
 				}
+			}
+
+	// Adjust the position and/or size of this widget.
+	private void AdjustPositionAndSize(IntPtr display, int newX, int newY,
+									   int newWidth, int newHeight)
+			{
+				// Make sure that the values are in range.
+				if(newX < -32768 || newX > 32767 ||
+				   newY < -32768 || newY > 32767)
+				{
+					throw new XException(S._("X_InvalidPosition"));
+				}
+				else if(newWidth > 32767 || newHeight > 32767)
+				{
+					throw new XException(S._("X_InvalidSize"));
+				}
+
+				// Send requests to the X server to update its state.
+				PerformMoveResize(display, newX, newY, newWidth, newHeight);
 
 				// Record the new widget information locally.
 				x = newX;

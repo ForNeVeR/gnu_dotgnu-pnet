@@ -678,7 +678,8 @@ static char *DirectiveName(char *line)
 			(!strncmp((dirname), (name), (len)) && \
 			 ((dirname)[(len)] == ' ' || (dirname)[(len)] == '\t' || \
 			  (dirname)[(len)] == '\n' || (dirname)[(len)] == '\f' || \
-			  (dirname)[(len)] == '\v' || (dirname)[(len)] == CTRL_Z))
+			  (dirname)[(len)] == '\v' || (dirname)[(len)] == CTRL_Z || \
+			  (dirname)[(len)] == ';'))
 
 /*
  * Determine if the current line is active according to

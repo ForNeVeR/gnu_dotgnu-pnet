@@ -1,4 +1,9 @@
 
+2004-05-08  Russell Stuart  <russell-savannah@stuart.id.au>
+
+	* cscc/common/cc_preproc.c: ignore ';' after #endregion.
+	  https://savannah.gnu.org/bugs/index.php?func=detailitem&item_id=8208
+
 2004-05-04  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/verify_call.c: Ignore signature comparisons for

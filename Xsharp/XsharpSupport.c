@@ -493,6 +493,198 @@ void XSharpFreeResources(char *value)
 	}
 }
 
+/*
+ * Pixel formats, which must match "DotGNU.Images.PixelFormat".
+ */
+#define	PF_Undefined				0x00000000
+#define	PF_DontCare					0x00000000
+#define	PF_Max						0x0000000F
+#define	PF_Indexed					0x00010000
+#define	PF_Gdi						0x00020000
+#define	PF_Format16bppRgb555		0x00021005
+#define	PF_Format16bppRgb565		0x00021006
+#define	PF_Format24bppRgb			0x00021808
+#define	PF_Format32bppRgb			0x00022009
+#define	PF_Format1bppIndexed		0x00030101
+#define	PF_Format4bppIndexed		0x00030402
+#define PF_Format8bppIndexed		0x00030803
+#define PF_Alpha					0x00040000
+#define PF_Format16bppArgb1555		0x00061007
+#define PF_PAlpha					0x00080000
+#define PF_Format32bppPArgb			0x000E200B
+#define PF_Extended					0x00100000
+#define PF_Format16bppGrayScale		0x00101004
+#define PF_Format48bppRgb			0x0010300C
+#define PF_Format64bppPArgb			0x001C400E
+#define PF_Canonical				0x00200000
+#define PF_Format32bppArgb			0x0026200A
+#define PF_Format64bppArgb			0x0034400D
+
+/*
+ * Create an XImage structure from a device-independent bitmap.
+ *
+ * If the input image is indexed, then "palette" indicates the
+ * converted pixel values of the image's palette.
+ *
+ * If the input image is RGB, and the screen is indexed, then
+ * "palette" indicates a 216-color palette to convert the image to.
+ */
+XImage *XSharpCreateImageFromDIB(Screen *screen, int width, int height,
+								 int stride, int pixelFormat,
+								 unsigned char *data, int isMask,
+								 unsigned long *palette)
+{
+	Display *dpy = DisplayOfScreen(screen);
+	Visual *visual = DefaultVisualOfScreen(screen);
+	unsigned int depth;
+	int format;
+	int bitmap_pad;
+	XImage *image;
+	unsigned char *imageData;
+	unsigned char *temp1;
+	unsigned char *temp2;
+	int line, column;
+
+	/* Get the depth, format, and pad values */
+	if(isMask)
+	{
+		depth = 1;
+		format = XYBitmap;
+		bitmap_pad = 8;
+	}
+	else
+	{
+		depth = DefaultDepthOfScreen(screen);
+		format = ZPixmap;
+		if(depth <= 8)
+		{
+			bitmap_pad = 8;
+		}
+		else if(depth <= 16)
+		{
+			bitmap_pad = 16;
+		}
+		else
+		{
+			bitmap_pad = 32;
+		}
+	}
+
+	/* Create the main image structure */
+	image = XCreateImage(dpy, visual, depth, format, 0, 0,
+						 (unsigned int)width, (unsigned int)height,
+						 bitmap_pad, 0);
+	if(!image)
+	{
+		return 0;
+	}
+
+	/* Allocate space for the image.  Conventional wisdom says that
+	   we should use shared memory for this.  However, on today's
+	   hardware, most users will never notice the difference unless
+	   the system is displaying full-motion video.  Which we aren't */
+	imageData = (unsigned char *)malloc(image->bytes_per_line *
+										image->height);
+	if(!imageData)
+	{
+		XDestroyImage(image);
+		return 0;
+	}
+	image->data = (char *)imageData;
+
+	/* Convert the input image into raw X pixels within the XImage.
+	   There are probably a lot of things that can be done to speed
+	   this up, although for most small icon-sized images, it usually
+	   doesn't matter too much */
+	if(isMask)
+	{
+		for(line = 0; line < height; ++line)
+		{
+			temp1 = imageData + line * image->bytes_per_line;
+			temp2 = data + line * stride;
+			for(column = (int)(image->bytes_per_line); column > 0; --column)
+			{
+				*temp1++ = *temp2++;
+			}
+		}
+	}
+	else if((pixelFormat & PF_Indexed) != 0)
+	{
+		for(line = 0; line < height; ++line)
+		{
+			temp1 = data + line * stride;
+			if(pixelFormat == PF_Format1bppIndexed)
+			{
+				/* Source image has one bit per pixel */
+				for(column = 0; column < width; column += 2)
+				{
+					if((temp1[column / 8] & (0x80 >> (column % 8))) != 0)
+					{
+						XPutPixel(image, column, line, 1);
+					}
+					else
+					{
+						XPutPixel(image, column, line, 0);
+					}
+				}
+			}
+			else if(pixelFormat == PF_Format4bppIndexed)
+			{
+				/* Source image has four bits per pixel */
+				for(column = 0; column < width; column += 2)
+				{
+					XPutPixel(image, column, line,
+							  palette[(*temp1 >> 4) & 0x0F]);
+					if((column + 1) < width)
+					{
+						XPutPixel(image, column, line,
+								  palette[*temp1 & 0x0F]);
+					}
+					++temp1;
+				}
+			}
+			else
+			{
+				/* Source image has eight bits per pixel */
+				for(column = 0; column < width; ++column)
+				{
+					XPutPixel(image, column, line, palette[*temp1]);
+					++temp1;
+				}
+			}
+		}
+	}
+	else if(visual->class == TrueColor || visual->class == DirectColor)
+	{
+		/* Map an RGB image to an RGB-capable display */
+		/* TODO */
+	}
+	else
+	{
+		/* Map an RGB image to an indexed display (usually 8-bit) */
+		/* TODO */
+	}
+
+	/* Return the final image structure to the caller */
+	return image;
+}
+
+/*
+ * Destroy an image that was created by "XSharpCreateImageFromDIB".
+ */
+void XSharpDestroyImage(XImage *image)
+{
+	if(image)
+	{
+		if(image->data)
+		{
+			free((void *)(image->data));
+			image->data = 0;
+		}
+		XDestroyImage(image);
+	}
+}
+
 #else /* X_DISPLAY_MISSING || !HAVE_SELECT */
 
 int XNextEventWithTimeout(void *dpy, void *event, int timeout)
@@ -541,6 +733,20 @@ char *XSharpGetResources(void *dpy, unsigned long root)
 }
 
 void XSharpFreeResources(char *value)
+{
+	/* Nothing to do here */
+}
+
+void *XSharpCreateImageFromDIB(void *screen, int width, int height,
+							   int stride, int pixelFormat,
+							   unsigned char *data, int isMask,
+							   unsigned long *palette)
+{
+	/* Nothing to do here */
+	return 0;
+}
+
+void XSharpDestroyImage(void *image)
 {
 	/* Nothing to do here */
 }

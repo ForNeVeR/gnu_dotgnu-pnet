@@ -19,6 +19,9 @@
 	Xft support - we can't auto-detect because some versions of
 	libXft are broken.
 
+	* Xsharp/XsharpSupport.c: begin adding code for converting DIB images
+	into XImage structures.
+
 2003-07-07  Gopal.V  <gopalv82@symonds.net>
  	
 	* System/Text/RegularExpressions/category.cs,

@@ -1328,8 +1328,16 @@ int CSItemIsCandidate(ILGenInfo *info, ILProgramItem *item,
 				}
 				else if(!ILCanCoerce(info, args[argNum].type, paramType))
 				{
-					/* Could not match as an array or as an element */
-					return 0;
+					if(args[argNum].type==ILType_Null)
+					{
+						/* Matched as a null array */
+						++paramNum;
+					}
+					else
+					{
+						/* Could not match as an array or as an element */
+						return 0;
+					}
 				}
 				else
 				{
@@ -1583,6 +1591,13 @@ ILType *CSItemCoerceArgs(ILGenInfo *info, ILProgramItem *item,
 					(signature, ILTypeNumParams(signature));
 				ILCoerce(info, args[argNum].node,
 						 args[argNum].parent, args[argNum].type, paramType);
+				argArray = 0;
+			}
+			/* Note: ILCanCoerce can be used to handle stuff intelligently
+			   here but that's not what MS CSC does */
+			else if(args[argNum].type==ILType_Null) 
+			{
+				/* Matched as a null array */
 				argArray = 0;
 			}
 			else

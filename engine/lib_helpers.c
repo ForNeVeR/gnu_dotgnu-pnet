@@ -257,7 +257,30 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 
 void _IL_RuntimeHelpers_RunClassConstructor(ILExecThread *thread, void *type)
 {
-	/* TODO */
+	ILClass *classInfo = *((ILClass **)type);
+	ILMethod *method;
+	if(classInfo)
+	{
+		/* Locate the static constructor within the class */
+		IL_METADATA_RDLOCK(thread);
+		method = 0;
+		while((method = (ILMethod *)ILClassNextMemberByKind
+			(classInfo, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			if(ILMethod_IsStaticConstructor(method))
+			{
+				break;
+			}
+		}
+		IL_METADATA_UNLOCK(thread);
+
+		/* Call the static constructor if we found it.  The method
+		   itself contains instructions that prevent multiple calls */
+		if(method)
+		{
+			ILExecThreadCall(thread, method, (void *)0);
+		}
+	}
 }
 
 ILInt32 _IL_RuntimeHelpers_InternalOffsetToStringData(ILExecThread *thread)
@@ -268,8 +291,20 @@ ILInt32 _IL_RuntimeHelpers_InternalOffsetToStringData(ILExecThread *thread)
 ILObject *_IL_RuntimeHelpers_GetObjectValue(ILExecThread *_thread,
 										    ILObject *obj)
 {
-	/* TODO */
-	return 0;
+	ILType *type;
+	if(obj)
+	{
+		/* If the object is a reference type or an immutable primitive
+		   value type, then there is nothing to do.  Otherwise we need
+		   to make a copy of the value type instance just in case the
+		   original object is modified */
+		type = ILClassToType(GetObjectClass(obj));
+		if(ILType_IsValueType(type) && !ILTypeIsEnum(type))
+		{
+			return _IL_Object_MemberwiseClone(_thread, obj);
+		}
+	}
+	return obj;
 }
 
 #ifdef	__cplusplus

@@ -24,6 +24,9 @@
 	* engine/lib_stdio.c: implement the remaining "StdRead" methods
 	in the "Platform.Stdio" class.
 
+	* engine/lib_helpers.c: implement the remaining methods in the
+	"RuntimeHelpers" class.
+
 2002-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c, codegen/cg_resolve.h: add "ILResolveProperty"

@@ -825,6 +825,41 @@ namespace System.Windows.Forms
 			return new Rectangle(x, y, width, height);
 		}
 
+		// Returns the width the text box should be based on the width of the text.
+		private int GetTextBoxWidth(ref int x)
+		{
+			const int minTextBoxWidth = 40;
+			const int extraSpacing = 10;
+			using (Graphics g = textBox.CreateGraphics())
+			{
+				SizeF size = g.MeasureString(textBox.Text, Font);
+				int width = (int)size.Width + extraSpacing;
+				if (width < minTextBoxWidth)
+				{
+					width = minTextBoxWidth;
+				}
+				int maxWidth = ClientRectangle.Width - x;
+				if (vScrollBar != null)
+				{
+					maxWidth -= vScrollBar.Width;
+				}
+				if (width > maxWidth)
+				{
+					width = maxWidth;
+					// Try and move the control over to allow more space for the textbox.
+					if (hScrollBar != null)
+					{
+						int offsetBefore = xOffset;
+						hScrollBar.Value = hScrollBar.Maximum - hScrollBar.LargeChange + 1;
+						int move = xOffset - offsetBefore;
+						width += move;
+						x -= move;
+					}
+				}
+				return width;
+			}
+		}
+
 		public bool HideSelection
 		{
 			get
@@ -1402,6 +1437,7 @@ namespace System.Windows.Forms
 				}
 			}
 		}
+
 		public TreeNode SelectedNode
 		{
 			get
@@ -1427,41 +1463,16 @@ namespace System.Windows.Forms
 				}
 			}
 		}
-		
-		// Returns the width the text box should be based on the width of the text.
-		private int GetTextBoxWidth(ref int x)
+
+		protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 		{
-			const int minTextBoxWidth = 40;
-			const int extraSpacing = 10;
-			using (Graphics g = textBox.CreateGraphics())
+			base.SetBoundsCore (x, y, width, height, specified);
+			if ((specified & BoundsSpecified.Size) != 0)
 			{
-				SizeF size = g.MeasureString(textBox.Text, Font);
-				int width = (int)size.Width + extraSpacing;
-				if (width < minTextBoxWidth)
-				{
-					width = minTextBoxWidth;
-				}
-				int maxWidth = ClientRectangle.Width - x;
-				if (vScrollBar != null)
-				{
-					maxWidth -= vScrollBar.Width;
-				}
-				if (width > maxWidth)
-				{
-					width = maxWidth;
-					// Try and move the control over to allow more space for the textbox.
-					if (hScrollBar != null)
-					{
-						int offsetBefore = xOffset;
-						hScrollBar.Value = hScrollBar.Maximum - hScrollBar.LargeChange + 1;
-						int move = xOffset - offsetBefore;
-						width += move;
-						x -= move;
-					}
-				}
-				return width;
+				Invalidate();
 			}
 		}
+
 		
 		public bool ShowLines
 		{

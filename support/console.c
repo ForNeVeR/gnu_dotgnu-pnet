@@ -325,6 +325,114 @@ static SpecialKeyCap const SpecialKeys[] = {
 	{"kr",			Key_RightArrow,		0},
 	{"kR",			Key_PageUp,			0},
 	{"ku",			Key_UpArrow,		0},
+
+	/* Known VT* special key codes that are sometimes not listed in termcap but
+	   can be generated if the terminal is in an odd ANSI/VT compat mode */
+	{"\033[A",		Key_UpArrow,		0},
+	{"\033[B",		Key_DownArrow,		0},
+	{"\033[C",		Key_RightArrow,		0},
+	{"\033[D",		Key_LeftArrow,		0},
+	{"\033[H",		Key_Home,			0},
+	{"\033[F",		Key_End,			0},
+	{"\033[P",		Key_F1,				0},
+	{"\033[Q",		Key_F2,				0},
+	{"\033[R",		Key_F3,				0},
+	{"\033[S",		Key_F4,				0},
+	{"\033[Z",		Key_Tab,			Mod_Shift},
+	{"\033OA",		Key_UpArrow,		0},
+	{"\033OB",		Key_DownArrow,		0},
+	{"\033OC",		Key_RightArrow,		0},
+	{"\033OD",		Key_LeftArrow,		0},
+	{"\033OH",		Key_Home,			0},
+	{"\033OF",		Key_End,			0},
+	{"\033OP",		Key_F1,				0},
+	{"\033OQ",		Key_F2,				0},
+	{"\033OR",		Key_F3,				0},
+	{"\033OS",		Key_F4,				0},
+	{"\033OZ",		Key_Tab,			Mod_Shift},
+	{"\033A",		Key_UpArrow,		0},
+	{"\033B",		Key_DownArrow,		0},
+	{"\033C",		Key_RightArrow,		0},
+	{"\033D",		Key_LeftArrow,		0},
+	{"\033H",		Key_Home,			0},
+	{"\033F",		Key_End,			0},
+	{"\033P",		Key_F1,				0},
+	{"\033Q",		Key_F2,				0},
+	{"\033R",		Key_F3,				0},
+	{"\033S",		Key_F4,				0},
+	{"\033Z",		Key_Tab,			Mod_Shift},
+
+	/* Other common keycodes, typical to the "linux" and "xterm" entries */
+	{"\033[[A",		Key_F1,				0},
+	{"\033[[B",		Key_F2,				0},
+	{"\033[[C",		Key_F3,				0},
+	{"\033[[D",		Key_F4,				0},
+	{"\033[[E",		Key_F5,				0},
+	{"\033[15~",	Key_F5,				0},
+	{"\033[17~",	Key_F6,				0},
+	{"\033[18~",	Key_F7,				0},
+	{"\033[19~",	Key_F8,				0},
+	{"\033[20~",	Key_F9,				0},
+	{"\033[21~",	Key_F10,			0},
+	{"\033[23~",	Key_F11,			0},
+	{"\033[24~",	Key_F12,			0},
+	{"\033[25~",	Key_F13,			0},
+	{"\033[26~",	Key_F14,			0},
+	{"\033[28~",	Key_F15,			0},
+	{"\033[29~",	Key_F16,			0},
+	{"\033[31~",	Key_F17,			0},
+	{"\033[32~",	Key_F18,			0},
+	{"\033[33~",	Key_F19,			0},
+	{"\033[34~",	Key_F20,			0},
+	{"\033[[2A",	Key_F1,				0},
+	{"\033[[2B",	Key_F2,				0},
+	{"\033[[2C",	Key_F3,				0},
+	{"\033[[2D",	Key_F4,				0},
+	{"\033[[2E",	Key_F5,				0},
+	{"\033[2P",		Key_F1,				Mod_Shift},
+	{"\033[2Q",		Key_F2,				Mod_Shift},
+	{"\033[2R",		Key_F3,				Mod_Shift},
+	{"\033[2S",		Key_F4,				Mod_Shift},
+	{"\033[15;2~",	Key_F5,				Mod_Shift},
+	{"\033[17;2~",	Key_F6,				Mod_Shift},
+	{"\033[18;2~",	Key_F7,				Mod_Shift},
+	{"\033[19;2~",	Key_F8,				Mod_Shift},
+	{"\033[20;2~",	Key_F9,				Mod_Shift},
+	{"\033[21;2~",	Key_F10,			Mod_Shift},
+	{"\033[23;2~",	Key_F11,			Mod_Shift},
+	{"\033[24;2~",	Key_F12,			Mod_Shift},
+	{"\033[25;2~",	Key_F13,			0},
+	{"\033[26;2~",	Key_F14,			0},
+	{"\033[28;2~",	Key_F15,			0},
+	{"\033[29;2~",	Key_F16,			0},
+	{"\033[31;2~",	Key_F17,			0},
+	{"\033[32;2~",	Key_F18,			0},
+	{"\033[33;2~",	Key_F19,			0},
+	{"\033[34;2~",	Key_F20,			0},
+	{"\033O2P",		Key_F1,				Mod_Shift},
+	{"\033O2Q",		Key_F2,				Mod_Shift},
+	{"\033O2R",		Key_F3,				Mod_Shift},
+	{"\033O2S",		Key_F4,				Mod_Shift},
+	{"\033[1~",		Key_Home,			0},
+	{"\033[2~",		Key_Insert,			0},
+	{"\033[3~",		Key_Delete,			0},
+	{"\033[4~",		Key_End,			0},
+	{"\033[5~",		Key_PageUp,			0},
+	{"\033[6~",		Key_PageDown,		0},
+	{"\033[7~",		Key_Home,			0},
+	{"\033[8~",		Key_End,			0},
+	{"\033[2H",		Key_Home,			Mod_Shift},
+	{"\033[2F",		Key_End,			Mod_Shift},
+	{"\033O2H",		Key_Home,			Mod_Shift},
+	{"\033O2F",		Key_End,			Mod_Shift},
+	{"\033[1;2~",	Key_Home,			Mod_Shift},
+	{"\033[2;2~",	Key_Insert,			Mod_Shift},
+	{"\033[3;2~",	Key_Delete,			Mod_Shift},
+	{"\033[4;2~",	Key_End,			Mod_Shift},
+	{"\033[5;2~",	Key_PageUp,			Mod_Shift},
+	{"\033[6;2~",	Key_PageDown,		Mod_Shift},
+	{"\033[7;2~",	Key_Home,			Mod_Shift},
+	{"\033[8;2~",	Key_End,			Mod_Shift},
 };
 #define	NumSpecialKeys	(sizeof(SpecialKeys) / sizeof(SpecialKeyCap))
 static char *SpecialKeyStrings[NumSpecialKeys];
@@ -484,15 +592,24 @@ static int InitTermcapDriver(void)
 		/* Populate the list of special keys */
 		for(posn = 0; posn < NumSpecialKeys; ++posn)
 		{
-			area = termcapBuffer2;
-			str = tgetstr(SpecialKeys[posn].name, &area);
-			if(str && *str != '\0')
+			if(SpecialKeys[posn].name[0] == '\033')
 			{
-				SpecialKeyStrings[posn] = ILDupString(str);
+				/* This is an explicit key code for things that are
+				   usually keycodes but not the ones listed in termcap */
+				SpecialKeyStrings[posn] = ILDupString(SpecialKeys[posn].name);
 			}
 			else
 			{
-				SpecialKeyStrings[posn] = 0;
+				area = termcapBuffer2;
+				str = tgetstr(SpecialKeys[posn].name, &area);
+				if(str && *str != '\0')
+				{
+					SpecialKeyStrings[posn] = ILDupString(str);
+				}
+				else
+				{
+					SpecialKeyStrings[posn] = 0;
+				}
 			}
 		}
 

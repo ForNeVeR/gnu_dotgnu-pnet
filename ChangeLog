@@ -1,4 +1,10 @@
 
+2003-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/console.c: add extra keycodes to the function/arrow key
+	mapping table, to deal with codes that aren't typically present
+	in the termcap entry for a terminal.
+
 2003-11-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am: add "il_console.h" to "include/Makefile.am".

@@ -640,6 +640,7 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 	int lastWasNL;
 	int needComma;
 	const char *cref;
+	ILDocAttribute *attr;
 
 	/* Print the summary */
 	child = ILDocTextFirstChild(doc, "summary");
@@ -773,6 +774,33 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 			fputs("@noindent @b{Example}\n\n", stream);
 			PrintDocContentsIndent(stream, child->children);
 		}
+	}
+
+	/* Print the attributes for the item */
+	if(member)
+	{
+		attr = member->attributes;
+	}
+	else
+	{
+		attr = type->attributes;
+	}
+	if(attr)
+	{
+		fputs("@noindent @b{Attributes}\n\n", stream);
+		fputs("@quotation\n", stream);
+		while(attr != 0)
+		{
+			fputs("@t{", stream);
+			PrintString(stream, attr->name);
+			fputs("}", stream);
+			attr = attr->next;
+			if(attr)
+			{
+				fputs(", ", stream);
+			}
+		}
+		fputs("\n@end quotation\n\n", stream);
 	}
 
 	/* Print the "See Also" section */

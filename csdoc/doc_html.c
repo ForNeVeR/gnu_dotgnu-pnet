@@ -1364,6 +1364,7 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 	int example;
 	int needComma;
 	const char *cref;
+	ILDocAttribute *attr;
 
 	/* Print the summary */
 	child = ILDocTextFirstChild(doc, "summary");
@@ -1476,6 +1477,33 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 			fputs("<H4>Example</H4>\n\n", stream);
 			PrintDocContentsIndent(stream, type, child->children);
 		}
+	}
+
+	/* Print the attributes for the item */
+	if(member)
+	{
+		attr = member->attributes;
+	}
+	else
+	{
+		attr = type->attributes;
+	}
+	if(attr)
+	{
+		fputs("<H4>Attributes</H4>\n\n", stream);
+		fputs("<BLOCKQUOTE>\n", stream);
+		while(attr != 0)
+		{
+			fputs("<CODE>", stream);
+			PrintString(stream, attr->name);
+			fputs("</CODE>", stream);
+			attr = attr->next;
+			if(attr)
+			{
+				fputs(", ", stream);
+			}
+		}
+		fputs("\n</BLOCKQUOTE>\n\n", stream);
 	}
 
 	/* Print the "See Also" section */

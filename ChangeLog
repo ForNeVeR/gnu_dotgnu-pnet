@@ -11,6 +11,8 @@
 
 	* NEWS, configure.in: update version for the "0.3.2" release.
 
+	* configure.in: update the working version to "0.3.3".
+
 2001-03-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/cscc.c,

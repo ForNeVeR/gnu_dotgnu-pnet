@@ -8,6 +8,9 @@
 	* engine/ilrun.c: use an alternative existence check for the
 	IL binary to handle ".exe" extensions under Windows.
 
+	* csant/csant_cscc.c (BuildMcsCommandLine): pass missing options
+	like "-optimize" to "mcs" (Bug #5830).
+
 2003-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_object.c:

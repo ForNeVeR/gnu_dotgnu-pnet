@@ -900,6 +900,12 @@ static char **BuildMcsCommandLine(CSAntCompileArgs *args)
 	AddArg(&argv, &argc, "-o");
 	AddArg(&argv, &argc, (char *)(args->output));
 
+	/* Enable debugging if necessary */
+	if(args->debug == COMP_FLAG_TRUE)
+	{
+		AddArg(&argv, &argc, "-g");
+	}
+
 	/* Set the checked compilation state */
 	if(args->checked == COMP_FLAG_TRUE)
 	{
@@ -916,6 +922,22 @@ static char **BuildMcsCommandLine(CSAntCompileArgs *args)
 	if(args->noStdLib == COMP_FLAG_TRUE)
 	{
 		AddArg(&argv, &argc, "--nostdlib");
+	}
+
+	/* Set the optimization level */
+	if(args->optimize == COMP_FLAG_TRUE)
+	{
+		AddArg(&argv, &argc, "-optimize+");
+	}
+	else if(args->optimize == COMP_FLAG_FALSE)
+	{
+		AddArg(&argv, &argc, "-optimize-");
+	}
+
+	/* Convert warnings into errors if requested */
+	if(args->warnAsError == COMP_FLAG_TRUE)
+	{
+		AddArg(&argv, &argc, "-warnaserror+");
 	}
 
 	/* Add any extra arguments that were supplied */

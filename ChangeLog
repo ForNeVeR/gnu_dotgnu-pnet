@@ -9,6 +9,13 @@
 	work around single-threaded runtime engines that return
 	"null" from "Thread.CurrentThread".
 
+	* System.Drawing/Toolkit/IToolkitEventSink.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Windows.Forms/Application.cs, System.Windows.Forms/Control.cs,
+	System.Windows.Forms/Form.cs, Xsharp/TopLevelWindow.cs: correct
+	"Close" handling for top-level forms; implement "DestroyHandle"
+	and "Dispose".
+
 2003-06-22  Rich Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ImageList.cs: Implemented as much as I could.

@@ -431,6 +431,17 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				}
 			}
 
+	// Override the "Close" event from Xsharp.  We pass control to
+	// the event sink to deal with it, and avoid calling the base.
+	public override bool Close()
+			{
+				if(sink != null)
+				{
+					sink.ToolkitClose();
+				}
+				return false;
+			}
+
 }; // class DrawingTopLevelWindow
 
 }; // namespace System.Drawing.Toolkit

@@ -410,7 +410,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// because the <c>OnClose</c> method returned
 	/// <see langword="false"/>.</para>
 	/// </returns>
-	public bool Close()
+	public virtual bool Close()
 			{
 				// Bail out if the window has already been destroyed.
 				if(handle == Xlib.Drawable.Zero)

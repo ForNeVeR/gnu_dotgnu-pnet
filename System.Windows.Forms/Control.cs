@@ -1404,10 +1404,36 @@ public class Control : IWin32Window
 			}
 
 	// Destroy the handle associated with the control.
-	[TODO]
 	protected virtual void DestroyHandle()
 			{
-				// TODO
+				// Bail out if we don't have a handle.
+				if(toolkitWindow == null)
+				{
+					return;
+				}
+
+				// Remove the control from the screen if we are top-level.
+				if(Visible)
+				{
+					Visible = false;
+				}
+
+				// Destroy all of the child controls.
+				int child;
+				for(child = 0; child < numChildren; ++child)
+				{
+					children[child].DestroyHandle();
+				}
+
+				// Destroy the toolkit window.
+				if(toolkitWindow != null)
+				{
+					toolkitWindow.Destroy();
+					toolkitWindow = null;
+				}
+
+				// Notify event handlers that the handle is destroyed.
+				OnHandleDestroyed(EventArgs.Empty);
 			}
 
 #if !CONFIG_COMPACT_FORMS
@@ -1438,7 +1464,8 @@ public class Control : IWin32Window
 	protected virtual void Dispose(bool disposing)
 #endif
 			{
-				// TODO
+				DestroyHandle();
+				disposed = true;
 			}
 
 	// Find the form that this control is a member of.
@@ -4374,6 +4401,16 @@ public class Control : IWin32Window
 					Size = new Size(width, height);
 				}
 			}
+
+	// Event that is emitted when the close button on a window
+	// is selected by the user.
+	void IToolkitEventSink.ToolkitClose()
+			{
+				CloseRequest();
+			}
+
+	// Close request received - processed by the "Form" class.
+	internal virtual void CloseRequest() {}
 
 	// Create a brush that can be used to fill with the background color/image.
 	internal Brush CreateBackgroundBrush()

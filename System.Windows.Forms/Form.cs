@@ -657,10 +657,9 @@ public class Form : ContainerControl
 			}
 
 	// Close this form.
-	[TODO]
 	public void Close()
 			{
-				// TODO
+				CloseRequest();
 			}
 
 	// Get the auto scale base size for a particular font.
@@ -1191,6 +1190,18 @@ public class Form : ContainerControl
 	protected override void SetVisibleCore(bool value)
 			{
 				base.SetVisibleCore(value);
+			}
+
+	// Close request received from "Control.ToolkitClose".
+	internal override void CloseRequest()
+			{
+				CancelEventArgs args = new CancelEventArgs();
+				OnClosing(args);
+				if(!(args.Cancel))
+				{
+					OnClosed(EventArgs.Empty);
+					DestroyHandle();
+				}
 			}
 
 #if !CONFIG_COMPACT_FORMS

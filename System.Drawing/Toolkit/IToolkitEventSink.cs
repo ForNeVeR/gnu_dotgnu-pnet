@@ -84,6 +84,10 @@ public interface IToolkitEventSink
 	// external means (e.g. the user resizing the window).
 	void ToolkitExternalResize(int width, int height);
 
+	// Event that is emitted when the close button on a window
+	// is selected by the user.
+	void ToolkitClose();
+
 }; // interface IToolkitEventSink
 
 }; // namespace System.Drawing.Toolkit

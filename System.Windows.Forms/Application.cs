@@ -30,6 +30,9 @@ using System.Drawing.Toolkit;
 
 public sealed class Application
 {
+	// Internal state.
+	private static ApplicationContext context;
+
 	// Cannot instantiate this class.
 	private Application() {}
 

@@ -13,6 +13,8 @@ object construction code to conform better with JVM requirements.
 * codegen/cg_decls.tc, codegen/jv_decls.tc: add support for compiling
 classes, fields, and methods to JL assembly code.
 
+* codegen/jv_stmt.tc: return logic has been moved to "jv_output.c".
+
 2001-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions

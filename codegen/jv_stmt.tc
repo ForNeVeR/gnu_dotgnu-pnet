@@ -402,55 +402,7 @@ static void JavaGenReturn(ILGenInfo *info)
 	}
 
 	/* Output the correct form of "return" instruction */
-	switch(info->returnType)
-	{
-		case ILMachineType_Void:
-		{
-			JavaGenSimple(info, JAVA_OP_RETURN);
-		}
-		break;
-
-		case ILMachineType_Boolean:
-		case ILMachineType_Int8:
-		case ILMachineType_UInt8:
-		case ILMachineType_Int16:
-		case ILMachineType_UInt16:
-		case ILMachineType_Char:
-		case ILMachineType_Int32:
-		case ILMachineType_UInt32:
-		case ILMachineType_NativeInt:
-		case ILMachineType_NativeUInt:
-		{
-			JavaGenSimple(info, JAVA_OP_IRETURN);
-		}
-		break;
-
-		case ILMachineType_Int64:
-		case ILMachineType_UInt64:
-		{
-			JavaGenSimple(info, JAVA_OP_LRETURN);
-		}
-		break;
-
-		case ILMachineType_Float32:
-		{
-			JavaGenSimple(info, JAVA_OP_FRETURN);
-		}
-		break;
-
-		case ILMachineType_Float64:
-		case ILMachineType_NativeFloat:
-		{
-			JavaGenSimple(info, JAVA_OP_DRETURN);
-		}
-		break;
-
-		default:
-		{
-			JavaGenSimple(info, JAVA_OP_ARETURN);
-		}
-		break;
-	}
+	JavaGenReturnInsn(info, info->returnType);
 	JavaGenAdjust(info, -(JavaGenTypeSize(info->returnType)));
 }
 

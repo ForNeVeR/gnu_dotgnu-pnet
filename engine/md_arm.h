@@ -440,11 +440,11 @@ typedef arm_inst_ptr	md_inst_ptr;
  */
 #define	md_lea_membase(inst,reg,basereg,offset)	\
 			do { \
-				int __value = (int)(offset); \
+				int ___value = (int)(offset); \
 				arm_mov_reg_reg((inst), (reg), (basereg)); \
-				if(__value != 0) \
+				if(___value != 0) \
 				{ \
-					arm_alu_reg_imm((inst), ARM_ADD, (reg), (reg), __value); \
+					arm_alu_reg_imm((inst), ARM_ADD, (reg), (reg), ___value); \
 				} \
 			} while (0)
 

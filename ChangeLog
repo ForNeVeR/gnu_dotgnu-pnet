@@ -39,6 +39,8 @@ add a mini-disassembler for CVM to the engine to assist with debugging.
 * engine/lib_math.c, engine/Makefile.am, engine/internal.c: add "internalcall"
 methods for "System.Math", "System.Single", and "System.Double".
 
+* samples/mscorlib.dll: new version of "mscorlib.dll".
+
 2001-10-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/engine.h: remove the thread argument

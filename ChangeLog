@@ -15,6 +15,8 @@
 
 	* NEWS, configure.in: update version for the "0.6.6" release.
 
+	* configure.in: update working version to "0.6.7".
+
 2004-05-24  Gopal.V  <gopalv82@yahoo.com>
 
 	* copy-mcs.sh: Add the new directories to copy-mcs.sh.

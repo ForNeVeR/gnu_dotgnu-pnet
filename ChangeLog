@@ -11,6 +11,15 @@
 	modify the profiles to include config information about the
 	extended console.
 
+	* runtime/System/ApplicationId.cs,
+	runtime/System/IApplicationDescription.cs,
+	runtime/System/IHostContext.cs,
+	runtime/System/ProvideAssemblyEvidenceEventHandler.cs,
+	runtime/System/StringComparison.cs,
+	runtime/System/__ComObject.cs,
+	runtime/System/Security/Policy/ProvideAssemblyEvidenceEventArgs.cs:
+	add some new .NET Framework 1.2 classes in the "System" namespace.
+
 2003-11-02  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/BmpReader.cs, DotGNU.Images/BmpReformatter.cs,

@@ -269,30 +269,29 @@ static void Coder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 								ILEngineStackItem *args, ILUInt32 numArgs)
 {
 }
-static void Coder_CheckCallNull(ILCoder *coder, ILEngineStackItem *args,
-					   		    ILUInt32 numArgs, int extraVarArgParam)
+static void Coder_CheckCallNull(ILCoder *coder, ILCoderMethodInfo *info)
 {
 }
-static void Coder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
-					   		 ILUInt32 numArgs, ILEngineStackItem *returnItem,
+static void Coder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
+					   		 ILEngineStackItem *returnItem,
 							 ILMethod *methodInfo)
 {
 }
-static void Coder_CallIndirect(ILCoder *coder, ILEngineStackItem *args,
-					   		   ILUInt32 numArgs, ILEngineStackItem *returnItem)
+static void Coder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
+							   ILEngineStackItem *returnItem)
 {
 }
-static void Coder_CallCtor(ILCoder *coder, ILEngineStackItem *args,
-					   	   ILUInt32 numArgs, ILMethod *methodInfo)
+static void Coder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
+					   	   ILMethod *methodInfo)
 {
 }
-static void Coder_CallVirtual(ILCoder *coder, ILEngineStackItem *args,
-					    	  ILUInt32 numArgs, ILEngineStackItem *returnItem,
+static void Coder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
+					    	  ILEngineStackItem *returnItem,
 							  ILMethod *methodInfo)
 {
 }
-static void Coder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
-					      		ILUInt32 numArgs, ILEngineStackItem *returnItem,
+static void Coder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
+					      		ILEngineStackItem *returnItem,
 								ILMethod *methodInfo)
 {
 }

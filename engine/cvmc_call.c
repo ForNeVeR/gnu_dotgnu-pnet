@@ -104,23 +104,27 @@ static void CallStaticConstructor(ILCoder *coder, ILClass *classInfo,
 /*
  * Adjust the position of the stack for a call.
  */
-static void AdjustForCall(ILCoder *coder, ILEngineStackItem *args,
-						  ILUInt32 numArgs, ILEngineStackItem *returnItem,
-						  ILMethod *methodInfo)
+static void AdjustForCall(ILCoder *coder, ILCoderMethodInfo *info,
+						  ILEngineStackItem *returnItem)
 {
-	CVM_ADJUST(-(ILInt32)ComputeStackSize(coder, args, numArgs));
+	CVM_ADJUST(-(ILInt32)ComputeStackSize
+					(coder, info->args, info->numBaseArgs));
+	if(info->hasParamArray)
+	{
+		CVM_ADJUST(-1);
+	}
 	if(returnItem != 0 && returnItem->engineType != ILEngineType_Invalid)
 	{
 		CVM_ADJUST(ComputeStackSize(coder, returnItem, 1));
 	}
 }
 
-static void CVMCoder_CheckCallNull(ILCoder *coder, ILEngineStackItem *args,
-					   		       ILUInt32 numArgs, int extraVarArgParam)
+static void CVMCoder_CheckCallNull(ILCoder *coder, ILCoderMethodInfo *info)
 {
-	ILUInt32 size = ComputeStackSize(coder, args, numArgs);
-	if(extraVarArgParam)
+	ILUInt32 size = ComputeStackSize(coder, info->args, info->numBaseArgs);
+	if(info->hasParamArray)
 	{
+		/* Account for the vararg parameter array on the stack */
 		++size;
 	}
 	if(size == 1)
@@ -134,8 +138,7 @@ static void CVMCoder_CheckCallNull(ILCoder *coder, ILEngineStackItem *args,
 	}
 }
 
-static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
-					   		    ILUInt32 numArgs,
+static void CVMCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 								ILEngineStackItem *returnItem,
 								ILMethod *methodInfo)
 {
@@ -148,50 +151,55 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 	{
 		CVM_OUT_PTR(COP_CALL, methodInfo);
 	}
-	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
+	AdjustForCall(coder, info, returnItem);
 	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
-static void CVMCoder_CallIndirect(ILCoder *coder, ILEngineStackItem *args,
-					   		      ILUInt32 numArgs,
+static void CVMCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 								  ILEngineStackItem *returnItem)
 {
 	CVM_OUT_NONE(COP_CALLI);
 	CVM_ADJUST(-1);	/* The function pointer was popped */
-	AdjustForCall(coder, args, numArgs, returnItem, 0);
+	AdjustForCall(coder, info, returnItem);
 	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
-static void CVMCoder_CallCtor(ILCoder *coder, ILEngineStackItem *args,
-					   		  ILUInt32 numArgs, ILMethod *methodInfo)
+static void CVMCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
+					   		  ILMethod *methodInfo)
 {
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 1);
 	CVM_OUT_PTR(COP_CALL_CTOR, methodInfo);
-	CVM_ADJUST(-(ILInt32)ComputeStackSize(coder, args, numArgs));
+	AdjustForCall(coder, info, 0);
 	CVM_ADJUST(1);
 	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
-static void CVMCoder_CallVirtual(ILCoder *coder, ILEngineStackItem *args,
-					    	     ILUInt32 numArgs,
+static void CVMCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 								 ILEngineStackItem *returnItem,
 								 ILMethod *methodInfo)
 {
-	ILUInt32 argSize = ComputeStackSize(coder, args, numArgs);
+	ILUInt32 argSize = ComputeStackSize(coder, info->args, info->numBaseArgs);
+	if(info->hasParamArray)
+	{
+		++argSize;
+	}
 	CVM_OUT_DWIDE(COP_CALL_VIRTUAL, argSize, methodInfo->index);
-	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
+	AdjustForCall(coder, info, returnItem);
 	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
-static void CVMCoder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
-					      		   ILUInt32 numArgs,
+static void CVMCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 								   ILEngineStackItem *returnItem,
 								   ILMethod *methodInfo)
 {
 	void *ptr = ILMethod_Owner(methodInfo);
-	ILUInt32 argSize = ComputeStackSize(coder, args, numArgs);
+	ILUInt32 argSize = ComputeStackSize(coder, info->args, info->numBaseArgs);
+	if(info->hasParamArray)
+	{
+		++argSize;
+	}
 	CVM_OUT_DWIDE_PTR(COP_CALL_INTERFACE, argSize, methodInfo->index, ptr);
-	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
+	AdjustForCall(coder, info, returnItem);
 	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 

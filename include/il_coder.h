@@ -82,6 +82,18 @@ struct _tagILCoder
 };
 
 /*
+ * Argument information for a method call.
+ */
+typedef struct
+{
+	ILEngineStackItem *args;
+	ILUInt32 numBaseArgs;
+	ILUInt32 numVarArgs;
+	int hasParamArray;
+
+} ILCoderMethodInfo;
+
+/*
  * Inlineable method calls.
  */
 #define	IL_INLINEMETHOD_MONITOR_ENTER		0
@@ -529,41 +541,37 @@ struct _tagILCoderClass
 	/*
 	 * Check a method call's first parameter for null.
 	 */
-	void (*checkCallNull)(ILCoder *coder, ILEngineStackItem *args,
-					      ILUInt32 numArgs, int extraVarArgParam);
+	void (*checkCallNull)(ILCoder *coder, ILCoderMethodInfo *info);
 
 	/*
 	 * Call a method directly.
 	 */
-	void (*callMethod)(ILCoder *coder, ILEngineStackItem *args,
-					   ILUInt32 numArgs, ILEngineStackItem *returnItem,
-					   ILMethod *methodInfo);
+	void (*callMethod)(ILCoder *coder, ILCoderMethodInfo *info,
+					   ILEngineStackItem *returnItem, ILMethod *methodInfo);
 
 	/*
 	 * Call a method using an indirect pointer.
 	 */
-	void (*callIndirect)(ILCoder *coder, ILEngineStackItem *args,
-					     ILUInt32 numArgs, ILEngineStackItem *returnItem);
+	void (*callIndirect)(ILCoder *coder, ILCoderMethodInfo *info,
+					     ILEngineStackItem *returnItem);
 
 	/*
 	 * Call a constructor method directly.
 	 */
-	void (*callCtor)(ILCoder *coder, ILEngineStackItem *args,
-					 ILUInt32 numArgs, ILMethod *methodInfo);
+	void (*callCtor)(ILCoder *coder, ILCoderMethodInfo *info,
+					 ILMethod *methodInfo);
 
 	/*
 	 * Call a virtual method.
 	 */
-	void (*callVirtual)(ILCoder *coder, ILEngineStackItem *args,
-					    ILUInt32 numArgs, ILEngineStackItem *returnItem,
-						ILMethod *methodInfo);
+	void (*callVirtual)(ILCoder *coder, ILCoderMethodInfo *info,
+					    ILEngineStackItem *returnItem, ILMethod *methodInfo);
 
 	/*
 	 * Call an interface method.
 	 */
-	void (*callInterface)(ILCoder *coder, ILEngineStackItem *args,
-					      ILUInt32 numArgs, ILEngineStackItem *returnItem,
-						  ILMethod *methodInfo);
+	void (*callInterface)(ILCoder *coder, ILCoderMethodInfo *info,
+					      ILEngineStackItem *returnItem, ILMethod *methodInfo);
 
 	/*
 	 * Call an inlineable method.  Returns zero if the coder
@@ -878,27 +886,25 @@ struct _tagILCoderClass
 #define	ILCoderValueCtorArgs(coder,_classInfo,args,numArgs) \
 			((*((coder)->classInfo->valueCtorArgs))((coder), (_classInfo), \
 												    (args), (numArgs)))
-#define	ILCoderCheckCallNull(coder,args,numArgs,extraVarArgParam) \
-			((*((coder)->classInfo->checkCallNull))((coder), (args), \
-												    (numArgs), \
-													(extraVarArgParam)))
-#define	ILCoderCallMethod(coder,args,numArgs,returnItem,methodInfo) \
-			((*((coder)->classInfo->callMethod))((coder), (args), \
-												 (numArgs), (returnItem), \
+#define	ILCoderCheckCallNull(coder,info) \
+			((*((coder)->classInfo->checkCallNull))((coder), (info)))
+#define	ILCoderCallMethod(coder,info,returnItem,methodInfo) \
+			((*((coder)->classInfo->callMethod))((coder), (info), \
+												 (returnItem), \
 												 (methodInfo)))
-#define	ILCoderCallIndirect(coder,args,numArgs,returnItem) \
-			((*((coder)->classInfo->callIndirect))((coder), (args), \
-												   (numArgs), (returnItem)))
-#define	ILCoderCallCtor(coder,args,numArgs,methodInfo) \
-			((*((coder)->classInfo->callCtor))((coder), (args), \
-											   (numArgs), (methodInfo)))
-#define	ILCoderCallVirtual(coder,args,numArgs,returnItem,methodInfo) \
-			((*((coder)->classInfo->callVirtual))((coder), (args), \
-												  (numArgs), (returnItem), \
+#define	ILCoderCallIndirect(coder,info,returnItem) \
+			((*((coder)->classInfo->callIndirect))((coder), (info), \
+												   (returnItem)))
+#define	ILCoderCallCtor(coder,info,methodInfo) \
+			((*((coder)->classInfo->callCtor))((coder), (info), \
+											   (methodInfo)))
+#define	ILCoderCallVirtual(coder,info,returnItem,methodInfo) \
+			((*((coder)->classInfo->callVirtual))((coder), (info), \
+												  (returnItem), \
 												  (methodInfo)))
-#define	ILCoderCallInterface(coder,args,numArgs,returnItem,methodInfo) \
-			((*((coder)->classInfo->callInterface))((coder), (args), \
-												    (numArgs), (returnItem), \
+#define	ILCoderCallInterface(coder,info,returnItem,methodInfo) \
+			((*((coder)->classInfo->callInterface))((coder), (info), \
+												    (returnItem), \
 													(methodInfo)))
 #define	ILCoderCallInlineable(coder,inlineType,methodInfo) \
 			((*((coder)->classInfo->callInlineable))((coder), (inlineType), \

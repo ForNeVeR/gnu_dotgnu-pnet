@@ -173,7 +173,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 						      ILUInt32 stackSize, ILType *signature,
 						      ILMethod *method, int unsafeAllowed,
 							  int suppressThis, int indirectCall,
-							  ILUInt32 *numVarArgParams)
+							  ILCoderMethodInfo *callInfo)
 {
 	ILClass *owner = (method ? ILMethod_Owner(method) : 0);
 	ILUInt32 numParams;
@@ -192,7 +192,6 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 
 	/* Check the vararg vs non-vararg conventions, and get the
 	   number of non-vararg parameters */
-	*numVarArgParams = 0;
 #ifdef IL_CONFIG_VARARGS
 	if(indirectCall)
 	{
@@ -614,6 +613,12 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 		}
 	}
 
+	/* Initialize the call argument information */
+	callInfo->args = stack;
+	callInfo->numBaseArgs = numParams;
+	callInfo->numVarArgs = totalParams - numParams;
+	callInfo->hasParamArray = 0;
+
 #ifdef IL_CONFIG_VARARGS
 	/* Convert the vararg parameters into an "Object[]" array */
 	if(isVarArg)
@@ -621,7 +626,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 		ILCoderPackVarArgs(coder, signature,
 						   (hasThis ? numParams + 1 : numParams + 2),
 						   stack + numParams, totalParams - numParams);
-		*numVarArgParams = totalParams - numParams;
+		callInfo->hasParamArray = 1;
 	}
 #endif /* IL_CONFIG_VARARGS */
 
@@ -957,8 +962,8 @@ static int GetInlineMethodType(ILMethod *method)
 
 ILType *methodSignature;
 ILType *returnType;
+ILCoderMethodInfo callInfo;
 ILInt32 numParams;
-ILUInt32 numVarArgParams;
 int inlineType;
 
 #else /* IL_VERIFY_CODE */
@@ -1012,7 +1017,7 @@ case IL_OP_CALL:
 		{
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
-									   unsafeAllowed, 0, 0, &numVarArgParams);
+									   unsafeAllowed, 0, 0, &callInfo);
 			if(numParams >= 0)
 			{
 				returnType = ILTypeGetReturn(methodSignature);
@@ -1029,8 +1034,7 @@ case IL_OP_CALL:
 				if(inlineType == -1 ||
 				   !ILCoderCallInlineable(coder, inlineType, methodInfo))
 				{
-					ILCoderCallMethod(coder, stack + stackSize - numParams,
-									  (ILUInt32)numParams, &(stack[stackSize]),
+					ILCoderCallMethod(coder, &callInfo, &(stack[stackSize]),
 									  methodInfo);
 				}
 				stackSize -= (ILUInt32)numParams;
@@ -1108,7 +1112,7 @@ case IL_OP_CALLI:
 		numParams = MatchSignature(coder, stack, stackSize,
 								   methodSignature, 0,
 								   unsafeAllowed, 0, 1,
-								   &numVarArgParams);
+								   &callInfo);
 		if(numParams >= 0)
 		{
 			returnType = ILTypeGetReturn(methodSignature);
@@ -1121,8 +1125,7 @@ case IL_OP_CALLI:
 			{
 				stack[stackSize].engineType = ILEngineType_Invalid;
 			}
-			ILCoderCallIndirect(coder, stack + stackSize - numParams,
-							    (ILUInt32)numParams, &(stack[stackSize]));
+			ILCoderCallIndirect(coder, &callInfo, &(stack[stackSize]));
 			stackSize -= (ILUInt32)numParams;
 			if(returnType != ILType_Void)
 			{
@@ -1192,7 +1195,7 @@ case IL_OP_CALLVIRT:
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 0, 0,
-									   &numVarArgParams);
+									   &callInfo);
 			if(numParams >= 0)
 			{
 				returnType = ILTypeGetReturn(methodSignature);
@@ -1219,27 +1222,20 @@ case IL_OP_CALLVIRT:
 						   		== ILEngineType_O)
 						{
 							/* Check the first parameter against "null" */
-							ILCoderCheckCallNull
-								(coder, stack + stackSize - numParams,
-								 ((ILUInt32)numParams) - numVarArgParams,
-								 (ILType_Kind(methodSignature) &
-								 	IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0);
+							ILCoderCheckCallNull(coder, &callInfo);
 						}
-						ILCoderCallMethod(coder, stack + stackSize - numParams,
-										  (ILUInt32)numParams,
+						ILCoderCallMethod(coder, &callInfo,
 										  &(stack[stackSize]), methodInfo);
 					}
 				}
 				else if(ILClass_IsInterface(ILMethod_Owner(methodInfo)))
 				{
-					ILCoderCallInterface(coder, stack + stackSize - numParams,
-									     (ILUInt32)numParams,
+					ILCoderCallInterface(coder, &callInfo,
 										 &(stack[stackSize]), methodInfo);
 				}
 				else
 				{
-					ILCoderCallVirtual(coder, stack + stackSize - numParams,
-									   (ILUInt32)numParams,
+					ILCoderCallVirtual(coder, &callInfo,
 									   &(stack[stackSize]), methodInfo);
 				}
 				stackSize -= (ILUInt32)numParams;
@@ -1293,8 +1289,11 @@ case IL_OP_NEWOBJ:
 			}
 
 			/* Call the allocation constructor for the delegate */
-			ILCoderCallCtor(coder, stack + stackSize - numParams,
-						    (ILUInt32)numParams, methodInfo);
+			callInfo.args = stack + stackSize - numParams;
+			callInfo.numBaseArgs = (ILUInt32)numParams;
+			callInfo.numVarArgs = 0;
+			callInfo.hasParamArray = 0;
+			ILCoderCallCtor(coder, &callInfo, methodInfo);
 			stackSize -= (ILUInt32)numParams;
 			stack[stackSize].engineType = ILEngineType_O;
 			stack[stackSize].typeInfo = ILClassToType(classInfo);
@@ -1306,15 +1305,14 @@ case IL_OP_NEWOBJ:
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 1, 0,
-									   &numVarArgParams);
+									   &callInfo);
 			if(numParams < 0)
 			{
 				VERIFY_TYPE_ERROR();
 			}
 
 			/* Call the allocation constructor for the class */
-			ILCoderCallCtor(coder, stack + stackSize - numParams,
-						    (ILUInt32)numParams, methodInfo);
+			ILCoderCallCtor(coder, &callInfo, methodInfo);
 			stackSize -= (ILUInt32)numParams;
 			if(stackSize < code->maxStack)
 			{
@@ -1347,15 +1345,14 @@ case IL_OP_NEWOBJ:
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 0, 0,
-									   &numVarArgParams);
+									   &callInfo);
 			if(numParams < 0)
 			{
 				VERIFY_TYPE_ERROR();
 			}
 
 			/* Call the constructor and pop all of its arguments */
-			ILCoderCallMethod(coder, stack + stackSize - numParams,
-							  (ILUInt32)numParams, 0, methodInfo);
+			ILCoderCallMethod(coder, &callInfo, 0, methodInfo);
 			stackSize -= (ILUInt32)numParams;
 
 			/* Make sure that we had at least 1 real stack slot
@@ -1496,7 +1493,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_TAIL:
 			numParams = MatchSignature(coder, stack, stackSize,
 								   methodSignature, methodInfo,
 								   unsafeAllowed, 0, 0,
-								   &numVarArgParams);
+								   &callInfo);
 
 		case IL_OP_CALLI:
 		case IL_OP_CALLVIRT:

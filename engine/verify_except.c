@@ -166,6 +166,7 @@ static void _ThrowSystem(ILCoder *coder, ILMethod *method, int hasExceptions,
 {
 	ILClass *classInfo;
 	ILMethod *ctor;
+	ILCoderMethodInfo callInfo;
 
 	/* Find the no-argument constructor for the class */
 	classInfo = ILClassResolveSystem(ILProgramItem_Image(method), 0,
@@ -190,7 +191,11 @@ static void _ThrowSystem(ILCoder *coder, ILMethod *method, int hasExceptions,
 	}
 
 	/* Invoke the constructor */
-	ILCoderCallCtor(coder, 0, 0, ctor);
+	callInfo.args = 0;
+	callInfo.numBaseArgs = 0;
+	callInfo.numVarArgs = 0;
+	callInfo.hasParamArray = 0;
+	ILCoderCallCtor(coder, &callInfo, ctor);
 
 	/* Throw the object */
 	ILCoderThrow(coder, hasExceptions);

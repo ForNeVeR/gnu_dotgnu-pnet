@@ -25,6 +25,10 @@
 extern	"C" {
 #endif
 
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
+	#define	IL_WIN32_PLATFORM
+#endif
+
 /*
  * The default system assembly link path.
  */
@@ -60,7 +64,7 @@ static char *TestAssemblyPath(const char *pathname, int pathlen,
 							  const char *name, int namelen, int needSuffix)
 {
 	int nameStart;
-#ifndef _WIN32
+#ifndef IL_WIN32_PLATFORM
 	int sawUpper;
 #endif
 
@@ -105,7 +109,7 @@ static char *TestAssemblyPath(const char *pathname, int pathlen,
 		return path;
 	}
 
-#ifndef _WIN32
+#ifndef IL_WIN32_PLATFORM
 	/* Try converting the name to lower case and retrying.
 	   This is designed to get around Windows case issues on Unix */
 	sawUpper = 0;
@@ -253,7 +257,7 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 		}
 
 		/* Try looking in LD_LIBRARY_PATH or PATH for the assembly */
-	#ifndef _WIN32
+	#ifndef IL_WIN32_PLATFORM
 		env = getenv("LD_LIBRARY_PATH");
 	#else
 		env = getenv("PATH");
@@ -475,7 +479,7 @@ static int DllMapMatch(const char *name,
 #endif
 
 	/* Is the platform code a standard fallback? */
-#ifndef _WIN32
+#ifndef IL_WIN32_PLATFORM
 	if(platformLen == 17 &&
 	   !ILMemCmp(platform, "std-shared-object", 17))
 	{
@@ -602,7 +606,7 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 
 	/* Determine the platform-specific suffix to add, and then
 	   allocate a string that contains the base search name */
-#ifndef _WIN32
+#ifndef IL_WIN32_PLATFORM
 	{
 		int posn = 0;
 		int needSuffix = 1;
@@ -701,7 +705,6 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 		if(fullName)
 		{
 			ILMemCpy(fullName, name, namelen);
-			fullName[namelen++] = '/';
 			strcpy(fullName + namelen, baseName);
 			if(ILFileExists(fullName, (char **)0))
 			{

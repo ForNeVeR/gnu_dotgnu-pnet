@@ -13,6 +13,10 @@ variable and argument opcodes.
 * image/context.c (GetImageByName): use the token data blocks rather
 than the raw values, because the synthetic image doesn't have raw values.
 
+* image/link.c (ILPInvokeResolveModule): fix a bug that caused two '/'
+characters to be inserted into pathnames; improve the #ifdef's that detect
+if we are compiling on a Win32 platform.
+
 2001-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_image, image/pecoff_loader.c (ILImageLoadFromFile): new function.

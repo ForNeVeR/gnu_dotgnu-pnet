@@ -30,6 +30,7 @@ public sealed class Math
 	public const double PI = 3.14159265358979323846;
 
 	// Get the absolute value of a number.
+	[CLSCompliant(false)]
 	public static sbyte Abs(sbyte value)
 			{
 				if(value >= 0)
@@ -146,6 +147,7 @@ public sealed class Math
 			}
 
 	// Get the maximum of two values.
+	[CLSCompliant(false)]
 	public static sbyte Max(sbyte val1, sbyte val2)
 			{
 				return (sbyte)((val1 > val2) ? val1 : val2);
@@ -158,6 +160,7 @@ public sealed class Math
 			{
 				return (short)((val1 > val2) ? val1 : val2);
 			}
+	[CLSCompliant(false)]
 	public static ushort Max(ushort val1, ushort val2)
 			{
 				return (ushort)((val1 > val2) ? val1 : val2);
@@ -166,6 +169,7 @@ public sealed class Math
 			{
 				return ((val1 > val2) ? val1 : val2);
 			}
+	[CLSCompliant(false)]
 	public static uint Max(uint val1, uint val2)
 			{
 				return ((val1 > val2) ? val1 : val2);
@@ -174,6 +178,7 @@ public sealed class Math
 			{
 				return ((val1 > val2) ? val1 : val2);
 			}
+	[CLSCompliant(false)]
 	public static ulong Max(ulong val1, ulong val2)
 			{
 				return ((val1 > val2) ? val1 : val2);
@@ -192,6 +197,7 @@ public sealed class Math
 			}
 
 	// Get the minimum of two values.
+	[CLSCompliant(false)]
 	public static sbyte Min(sbyte val1, sbyte val2)
 			{
 				return (sbyte)((val1 < val2) ? val1 : val2);
@@ -204,6 +210,7 @@ public sealed class Math
 			{
 				return (short)((val1 < val2) ? val1 : val2);
 			}
+	[CLSCompliant(false)]
 	public static ushort Min(ushort val1, ushort val2)
 			{
 				return (ushort)((val1 < val2) ? val1 : val2);
@@ -212,6 +219,7 @@ public sealed class Math
 			{
 				return ((val1 < val2) ? val1 : val2);
 			}
+	[CLSCompliant(false)]
 	public static uint Min(uint val1, uint val2)
 			{
 				return ((val1 < val2) ? val1 : val2);
@@ -220,6 +228,7 @@ public sealed class Math
 			{
 				return ((val1 < val2) ? val1 : val2);
 			}
+	[CLSCompliant(false)]
 	public static ulong Min(ulong val1, ulong val2)
 			{
 				return ((val1 < val2) ? val1 : val2);
@@ -257,6 +266,7 @@ public sealed class Math
 			}
 
 	// Get the sign of a value.
+	[CLSCompliant(false)]
 	public static int Sign(sbyte value)
 			{
 				if(value > 0)

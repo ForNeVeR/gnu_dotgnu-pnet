@@ -237,6 +237,7 @@ public sealed class Console
 			{
 				Out.Write(value);
 			}
+	[CLSCompliant(false)]
 	public static void Write(uint value)
 			{
 				Out.Write(value);
@@ -245,6 +246,7 @@ public sealed class Console
 			{
 				Out.Write(value);
 			}
+	[CLSCompliant(false)]
 	public static void Write(ulong value)
 			{
 				Out.Write(value);
@@ -316,6 +318,7 @@ public sealed class Console
 			{
 				Out.WriteLine(value);
 			}
+	[CLSCompliant(false)]
 	public static void WriteLine(uint value)
 			{
 				Out.WriteLine(value);
@@ -324,6 +327,7 @@ public sealed class Console
 			{
 				Out.WriteLine(value);
 			}
+	[CLSCompliant(false)]
 	public static void WriteLine(ulong value)
 			{
 				Out.WriteLine(value);

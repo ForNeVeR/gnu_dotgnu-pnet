@@ -21,6 +21,9 @@
 namespace System.Globalization
 {
 
+using System;
+
+[Flags]
 public enum NumberStyles
 {
 	AllowLeadingWhite		= 0x0001,

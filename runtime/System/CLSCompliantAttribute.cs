@@ -22,7 +22,7 @@
 namespace System
 {
 
-[AttributeUsage(AttributeTargets.All)]
+[AttributeUsage(AttributeTargets.All, AllowMultiple=false, Inherited=true)]
 public sealed class CLSCompliantAttribute : Attribute
 {
 	private bool isCompliant;

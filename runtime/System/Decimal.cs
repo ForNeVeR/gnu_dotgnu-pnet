@@ -32,12 +32,12 @@ public struct Decimal : IComparable, IFormattable
 {
 	private int flags, high, middle, low;
 
-	public static readonly decimal Zero = 0.0m;
-	public static readonly decimal One = 1.0m;
-	public static readonly decimal MinusOne = -1.0m;
-	public static readonly decimal MaxValue = new Decimal(-1, -1, -1, true, 0);
-	public static readonly decimal MinValue = new Decimal(-1, -1, -1, false, 0);
-	private const int ScaleShift = 16;
+	public const decimal Zero = 0.0m;
+	public const decimal One = 1.0m;
+	public const decimal MinusOne = -1.0m;
+	public const decimal MaxValue = 79228162514264337593543950335.0m;
+	public const decimal MinValue = -79228162514264337593543950335.0m;
+	private const int DecimalScalePosition = 16;
 
 	// Public routines that are imported from the runtime engine.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -245,7 +245,7 @@ public struct Decimal : IComparable, IFormattable
 				}
 				if(bits.Length == 4 &&
 				   (bits[3] & 0x7F00FFFF) == 0 &&
-				   (bits[3] & 0x00FF0000) <= (28 << ScaleShift))
+				   (bits[3] & 0x00FF0000) <= (28 << DecimalScalePosition))
 				{
 					low = bits[0];
 					middle = bits[1];
@@ -268,7 +268,7 @@ public struct Decimal : IComparable, IFormattable
 					low = _low;
 					middle = _middle;
 					high = _high;
-					flags = (((int)_scale) << ScaleShift) |
+					flags = (((int)_scale) << DecimalScalePosition) |
 							(_isneg ? unchecked((int)0x80000000) : 0);
 				}
 				else

@@ -34,12 +34,10 @@ public struct UIntPtr
 	unsafe private void *value__;
 
 	// Constructors.
-	[CLSCompliant(false)]
 	unsafe public UIntPtr(uint value)
 			{
 				value__ = (void *)value;
 			}
-	[CLSCompliant(false)]
 	unsafe public UIntPtr(ulong value)
 			{
 				if(Size == 4 &&

@@ -233,6 +233,7 @@ public sealed class StringBuilder
 			{
 				return Append(value.ToString());
 			}
+	[CLSCompliant(false)]
 	public StringBuilder Append(sbyte value)
 			{
 				return Append(value.ToString());
@@ -245,6 +246,7 @@ public sealed class StringBuilder
 			{
 				return Append(value.ToString());
 			}
+	[CLSCompliant(false)]
 	public StringBuilder Append(ushort value)
 			{
 				return Append(value.ToString());
@@ -281,6 +283,7 @@ public sealed class StringBuilder
 			{
 				return Append(value.ToString());
 			}
+	[CLSCompliant(false)]
 	public StringBuilder Append(uint value)
 			{
 				return Append(value.ToString());
@@ -289,6 +292,7 @@ public sealed class StringBuilder
 			{
 				return Append(value.ToString());
 			}
+	[CLSCompliant(false)]
 	public StringBuilder Append(ulong value)
 			{
 				return Append(value.ToString());
@@ -522,6 +526,7 @@ public sealed class StringBuilder
 			{
 				return Insert(index, value.ToString());
 			}
+	[CLSCompliant(false)]
 	public StringBuilder Insert(int index, sbyte value)
 			{
 				return Insert(index, value.ToString());
@@ -534,6 +539,7 @@ public sealed class StringBuilder
 			{
 				return Insert(index, value.ToString());
 			}
+	[CLSCompliant(false)]
 	public StringBuilder Insert(int index, ushort value)
 			{
 				return Insert(index, value.ToString());
@@ -549,6 +555,7 @@ public sealed class StringBuilder
 			{
 				return Insert(index, value.ToString());
 			}
+	[CLSCompliant(false)]
 	public StringBuilder Insert(int index, uint value)
 			{
 				return Insert(index, value.ToString());
@@ -557,6 +564,7 @@ public sealed class StringBuilder
 			{
 				return Insert(index, value.ToString());
 			}
+	[CLSCompliant(false)]
 	public StringBuilder Insert(int index, ulong value)
 			{
 				return Insert(index, value.ToString());

@@ -22,7 +22,8 @@
 namespace System
 {
 
-public class AttributeUsageAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
+public sealed class AttributeUsageAttribute : Attribute
 {
 	// Internal state.
 	private int flags;

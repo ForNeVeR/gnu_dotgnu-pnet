@@ -22,7 +22,10 @@
 namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
+[CLSCompliant(false)]
+[AttributeUsage(AttributeTargets.Field |
+				AttributeTargets.Parameter,
+				AllowMultiple=false, Inherited=false)]
 public sealed class DecimalConstantAttribute : Attribute
 {
 

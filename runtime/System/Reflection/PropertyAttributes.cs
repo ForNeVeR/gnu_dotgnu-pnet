@@ -22,6 +22,9 @@
 namespace System.Reflection
 {
 
+using System;
+
+[Flags]
 public enum PropertyAttributes
 {
 	None					= 0x0000,

@@ -161,6 +161,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 			{
 				Write(value.ToString(null, FormatProvider));
 			}
+	[CLSCompliant(false)]
 	public virtual void Write(uint value)
 			{
 				Write(value.ToString(null, FormatProvider));
@@ -169,6 +170,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 			{
 				Write(value.ToString(null, FormatProvider));
 			}
+	[CLSCompliant(false)]
 	public virtual void Write(ulong value)
 			{
 				Write(value.ToString(null, FormatProvider));
@@ -256,6 +258,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 				Write(value);
 				WriteLine();
 			}
+	[CLSCompliant(false)]
 	public virtual void WriteLine(uint value)
 			{
 				Write(value);
@@ -266,6 +269,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 				Write(value);
 				WriteLine();
 			}
+	[CLSCompliant(false)]
 	public virtual void WriteLine(ulong value)
 			{
 				Write(value);

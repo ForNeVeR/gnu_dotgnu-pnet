@@ -22,7 +22,10 @@
 namespace System.Reflection
 {
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+[AttributeUsage(AttributeTargets.Class |
+				AttributeTargets.Struct |
+				AttributeTargets.Interface,
+				AllowMultiple=false, Inherited=true)]
 public sealed class DefaultMemberAttribute : Attribute
 {
 

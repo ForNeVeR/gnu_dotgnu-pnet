@@ -1,4 +1,22 @@
 
+2001-12-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/AttributeUsageAttribute.cs,
+runtime/System/CLSCompliantAttribute.cs,
+runtime/System/Console.cs,
+runtime/System/Decimal.cs,
+runtime/System/FlagsAttribute.cs,
+runtime/System/Math.cs,
+runtime/System/ObsoleteAttribute.cs,
+runtime/System/UIntPtr.cs,
+runtime/System/Globalization/NumberStyles.cs,
+runtime/System/IO/TextWriter.cs,
+runtime/System/Reflection/DefaultMemberAttribute.cs,
+runtime/System/Reflection/PropertyAttributes.cs,
+runtime/System/Runtime/CompilerServices/DecimalConstantAttribute.cs,
+runtime/System/Text/StringBuilder.cs: add extra attributes that are
+required by the ECMA standard.
+
 2001-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/AppDomain.cs,

@@ -135,22 +135,29 @@ void ILThreadResume(ILThread *thread);
 void ILThreadInterrupt(ILThread *thread);
 
 /*
- * Abort a thread.  Returns non-zero if the current thread is
- * being aborted and a previous request hasn't been processed.
+ * Request that a thread be aborted.  Returns zero if the thread
+ * is already aborting or already has an abort request queued.
  */
 int ILThreadAbort(ILThread *thread);
 
 /*
+ * Called by the current thread when it is ready to being the
+ * abort process.  The thread moves from an IL_TS_ABORT_REQUESTED
+ * state to an IL_TS_ABORTED state.
+ */
+int ILThreadSelfAborting();
+
+/*
  * Determine if the current thread is in the process of
  * aborting.  If this function returns non-zero, the current
- * thread should call "ILThreadAbort" on itself at some
+ * thread should call "ILThreadSelfAborting" on at some
  * future point to determine if we are processing an abort
  * request, or are in the middle of an abort.  i.e. the
  * correct way to check for aborts is as follows:
  *
  *		if(ILThreadIsAborting())
  *		{
- *			if(ILThreadAbort(ILThreadSelf()))
+ *			if(ILThreadSelfAborting)
  *			{
  *				// Abort request received: do initial processing.
  *				...
@@ -197,7 +204,8 @@ int ILThreadGetPriority(ILThread *thread);
 #define	IL_JOIN_INTERRUPTED	2	/* Join was interrupted */
 #define	IL_JOIN_ABORTED		3	/* Thread doing the join was aborted */
 #define	IL_JOIN_SELF		4	/* Tried to join with ourselves */
-#define	IL_JOIN_MEMORY		5	/* Out of memory */
+#define IL_JOIN_UNSTARTED   5   /* Tried to join a thread that hasn't started */
+#define	IL_JOIN_MEMORY		6	/* Out of memory */
 
 /*
  * Join with another thread to wait for exit.
@@ -251,6 +259,11 @@ void ILThreadGetCounts(unsigned long *numForeground,
  * or IL_WAIT_INTERRUPTED.
  */
 int ILThreadSleep(ILUInt32 ms);
+
+/*
+ * Yield CPUs time to threads of equal or higher priority.
+ */
+void ILThreadYield();
 
 /*
  *	Wait for a specified amount of time (in ms) for a all foreground threads
@@ -339,10 +352,10 @@ int ILWaitHandleClose(ILWaitHandle *handle);
 /*
  * Return values for "ILWaitOne", "ILWaitAny", and "ILWaitAll".
  */
-#define	IL_WAIT_TIMEOUT			-1
-#define	IL_WAIT_FAILED			-2
-#define	IL_WAIT_INTERRUPTED		-3
-#define	IL_WAIT_ABORTED			-4
+#define	IL_WAIT_TIMEOUT			(-1)
+#define	IL_WAIT_FAILED			(-2)
+#define	IL_WAIT_INTERRUPTED		(-3)
+#define	IL_WAIT_ABORTED			(-4)
 
 /*
  * Wait for one wait handle to become available.  Returns
@@ -378,8 +391,7 @@ ILWaitHandle *ILWaitMutexCreate(int initiallyOwned);
  * Create a named wait mutex, or return an existing named
  * mutex with the same name.
  */
-ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
-									 int *gotOwnership);
+ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned, int *gotOwnership);
 
 /*
  * Release a wait mutex that is currently held by the
@@ -409,29 +421,9 @@ int ILWaitMonitorPulse(ILWaitHandle *handle);
  */
 int ILWaitMonitorPulseAll(ILWaitHandle *handle);
 
-/*
- *	Checks if the monitor has no owner and no waiters.
- */
-int ILWaitMonitorCanClose(ILWaitHandle *handle);
-
-#define IL_WAIT_LEAVE_STILL_OWNS		(2)
-
-/*
- *	Similar to ILWaitMonitorLeave except that waiting moniters aren't signalled.
- */
-int ILWaitMonitorSpeculativeLeave(ILWaitHandle *handle);
-
-/*
- *	Signals waiting monitors when call after ILWaitMonitorSpeculativeLeave.
- */
-int ILWaitMonitorCompleteLeave(ILWaitHandle *handle);
-
-/*
- * Fast way to "enter" or "claim" a monitor if you know for sure that no other thread
- * can contest the claim.  For example, A newly created monitor that is only known by
- * one thread can be safely fast-claimed.
- */
-int ILWaitMonitorFastClaim(ILWaitHandle *handle);
+#define IL_WAITMUTEX_RELEASE_SUCCESS	(1)
+#define IL_WAITMUTEX_RELEASE_STILL_OWNS	(2)
+#define IL_WAITMUTEX_RELEASE_FAIL	(0)
 
 /*
  * Syntactic sugar.
@@ -442,7 +434,6 @@ int ILWaitMonitorFastClaim(ILWaitHandle *handle);
 			(ILWaitOne((monitor), (timeout)))
 #define	ILWaitMonitorLeave(monitor)		\
 			(ILWaitMutexRelease((monitor)))
-
 /*
  * Wait Event definitions
  *

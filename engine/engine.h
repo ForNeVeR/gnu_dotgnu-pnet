@@ -149,9 +149,9 @@ struct _tagILExecProcess
 	/* Hash table that contains all intern'ed strings within the system */
 	void		   *internHash;
 
-#ifdef USE_HASHING_MONITORS
+#ifdef IL_CONFIG_USE_THIN_LOCKS
 	/* Hash table that contains all monitors */
-	void			*monitorHash;
+	void			*monitorTable;
 	ILMutex		*monitorSystemLock;
 #endif
 
@@ -248,8 +248,8 @@ struct _tagILExecThread
 	/* Last exception that was thrown */
 	ILObject       *thrownException;
 
-	/* Indicates if an abort is in progress */
-	int				aborting;
+	/* Flag that indicates whether a thread is aborting */
+	volatile int	aborting;
 
 	/* System.Threading.Thread object */
 	ILObject *clrThread;
@@ -260,6 +260,8 @@ struct _tagILExecThread
 
 	/* Free monitors list */
 	ILExecMonitor *freeMonitor;
+
+	int freeMonitorCount;
 
 	/* Stack of call frames in use */
 	ILCallFrame	   *frameStack;
@@ -312,6 +314,7 @@ struct _tagILClassPrivate
 	ILObject       *clrType;			/* Associated CLR type object */
 	ILObject       *staticData;			/* Static data area object */
 	ILImplPrivate  *implements;			/* Interface implementation records */
+	ILNativeInt		gcTypeDescriptor;	/* Describes the layout of the type for the GC */
 #ifdef IL_USE_IMTS
 	ILUInt32		imtBase;			/* Base for IMT identifiers */
 	ILMethod	   *imt[IL_IMT_SIZE];	/* Interface method table */
@@ -323,10 +326,9 @@ typedef void * ILLockWord;
 
 struct _tagILExecMonitor
 {
-	ILWaitHandle *supportMonitor;
-	volatile ILInt32 waiters;
+	ILWaitHandle *waitMutex;
+	volatile ILInt32 waiters;	
 	ILExecMonitor *next;
-	ILExecThread *owner;
 };
 
 /*
@@ -337,10 +339,10 @@ typedef struct _tagObjectHeader ILObjectHeader;
 struct _tagObjectHeader
 {
 	ILClassPrivate *classPrivate;
-#ifdef USE_HASHING_MONITORS
+#ifdef IL_CONFIG_USE_THIN_LOCKS
 	/* NOTHING */
 #else
-	ILLockWord lockWord;
+	volatile ILLockWord lockWord;
 #endif
 };
 
@@ -685,6 +687,11 @@ void _ILThreadExecuteOn(ILThread *thread, ILExecThread *execThread);
 void _ILExecThreadThrowThreadAbortException(ILExecThread *thread, ILObject *stateInfo);
 
 /*
+ * Returns 1 if the current exception is a ThreadAbortException.
+ */
+int _ILExecThreadCurrentExceptionThreadIsAbortException(ILExecThread *thread);
+
+/*
  *	Aborts the current thread.
  */
 void _ILAbortThread(ILExecThread *thread);
@@ -695,14 +702,21 @@ void _ILAbortThread(ILExecThread *thread);
 void _ILHandleWaitResult(ILExecThread *thread, int result);
 
 /*
- *	Creates a monitor used by the execution engine.
+ * Creates a monitor used by the execution engine.
+ * The monitor is created on the GC heap and will be automatically
+ * collected.
  */
-ILExecMonitor *ILExecMonitorCreate(void);
+ILExecMonitor *_ILExecMonitorCreate(void);
 
 /*
- *	Destroys a monitor used by the execution engine.
+ * Intializes the monitor system for the given process.
  */
-void ILExecMonitorDestroy(ILExecMonitor *monitor);
+int _ILExecMonitorProcessCreate(ILExecProcess *process);
+
+/*
+ * Cleans up the monitor system for the given process.
+ */
+int _ILExecMonitorProcessDestroy(ILExecProcess *process);
 
 #ifdef	__cplusplus
 };

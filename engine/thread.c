@@ -103,6 +103,8 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 		return 0;
 	}
 
+	/* TODO: Notify the GC that we possibly have a new thread to be scanned */
+
 	/* Associate the new engine-level thread with the OS-level thread */
 	_ILThreadExecuteOn(thread, execThread);
 
@@ -175,9 +177,10 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 
 	/* Initialize the thread state */
 	thread->supportThread = 0;
+	thread->clrThread = 0;
 	thread->aborting = 0;
-	thread->clrThread = 0;	
-	thread->freeMonitor = 0;	
+	thread->freeMonitor = 0;
+	thread->freeMonitorCount = 0;
 	thread->pc = 0;
 	thread->isFinalizerThread = 0;
 	thread->frame = thread->stackBase;
@@ -205,8 +208,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 }
 
 void _ILExecThreadDestroy(ILExecThread *thread)
-{
-	ILExecMonitor *monitor, *next;
+{	
 	ILExecProcess *process = thread->process;
 
 	/* Lock down the process */
@@ -221,17 +223,6 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 	if (process->finalizerThread == thread)
 	{
 		process->finalizerThread = 0;
-	}
-
-	/* Delete the free monitors list */
-
-	monitor = thread->freeMonitor;
-
-	while (monitor)
-	{
-		next = monitor->next;
-		ILExecMonitorDestroy(monitor);
-		monitor = next;
 	}
 
 	/* Detach the thread from its process */

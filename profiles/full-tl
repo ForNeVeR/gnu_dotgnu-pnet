@@ -1,5 +1,5 @@
 #
-# full - Profile definition that includes everything.
+# full - Profile definition that includes everything but uses thin-locks
 #
 # Copyright (C) 2002  Southern Storm Software, Pty Ltd.
 #
@@ -23,8 +23,8 @@ IL_CONFIG_REDUCE_CODE=n
 # Attempt to reduce runtime data size (y/n).
 IL_CONFIG_REDUCE_DATA=n
 
-# Don't use thin-locks
-IL_CONFIG_USE_THIN_LOCKS=n
+# Use thin-locks to reduce memory usage
+IL_CONFIG_USE_THIN_LOCKS=y
 
 # Use a direct-threaded interpreter if possible (y/n).
 IL_CONFIG_DIRECT=y

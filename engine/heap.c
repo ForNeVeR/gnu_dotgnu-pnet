@@ -155,43 +155,45 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 	void *ptr;
 	ILObject *obj;
 
-	/* Make sure the class has been initialized before we start */
-	if(classInfo != 0 && !InitializeClass(thread, classInfo))
+	if (classInfo == 0)
 	{
-		return 0;
-	}
-
-	/* Allocate memory from the heap */
-	ptr = ILGCAlloc(size + IL_OBJECT_HEADER_SIZE);
-	if(!ptr)
-	{
-		/* Throw an "OutOfMemoryException" */
-		thread->thrownException = thread->process->outOfMemoryObject;
-		return 0;
-	}
-
-	obj = GetObjectFromGcBase(ptr);
-
-	/* Set the class into the block */
-	if(classInfo)
-	{
-		SetObjectClassPrivate(obj, (ILClassPrivate *)(classInfo->userData));
+		/* Allocating non-object memory so no need to make space for the header. */
+		return ILGCAlloc(size);
 	}
 	else
 	{
-		SetObjectClassPrivate(obj, 0);
-	}
+		/* Make sure the class has been initialized before we start */
+		if (!InitializeClass(thread, classInfo))
+		{
+			return 0;
+		}
 
-	/* Attach a finalizer to the object if the class has
-	   a non-trival finalizer method attached to it */
-	if(classInfo != 0 &&
-	   ((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
-	{
-		ILGCRegisterFinalizer(ptr, _ILFinalizeObject, thread->process->finalizationContext);
-	}
+		/* Allocate memory from the heap */
+		ptr = ILGCAlloc(size + IL_OBJECT_HEADER_SIZE);
+		
+		if(!ptr)
+		{
+			/* Throw an "OutOfMemoryException" */
+			thread->thrownException = thread->process->outOfMemoryObject;
+			return 0;
+		}
 
-	/* Return a pointer to the object */
-	return obj;
+		obj = GetObjectFromGcBase(ptr);
+
+		/* Set the class into the block */
+		SetObjectClassPrivate(obj, (ILClassPrivate *)(classInfo->userData));
+		
+
+		/* Attach a finalizer to the object if the class has
+		a non-trival finalizer method attached to it */
+		if(((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
+		{
+			ILGCRegisterFinalizer(ptr, _ILFinalizeObject, thread->process->finalizationContext);
+		}
+
+		/* Return a pointer to the object */
+		return obj;
+	}
 }
 
 ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
@@ -199,44 +201,58 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 {
 	void *ptr;
 	ILObject *obj;
+	ILClassPrivate *classPrivate;
 
-	/* Make sure the class has been initialized before we start */
-	if(classInfo != 0 && !InitializeClass(thread, classInfo))
+	if (classInfo == 0)
 	{
-		return 0;
-	}
-
-	/* Allocate memory from the heap */
-	ptr = ILGCAllocAtomic(size + IL_OBJECT_HEADER_SIZE);	
-	if(!ptr)
-	{
-		/* Throw an "OutOfMemoryException" */
-		thread->thrownException = thread->process->outOfMemoryObject;
-		return 0;
-	}
-	
-	obj = GetObjectFromGcBase(ptr);
-
-	/* Set the class into the block */
-	if(classInfo)
-	{
-		SetObjectClassPrivate(obj, (ILClassPrivate *)(classInfo->userData));
+		/* Allocating non-object memory so no need to make space for the header. */
+		return ILGCAllocAtomic(size);
 	}
 	else
 	{
-		SetObjectClassPrivate(obj, 0);
-	}
+		/* Make sure the class has been initialized before we start */
+		if(!InitializeClass(thread, classInfo))
+		{
+			return 0;
+		}
 
-	/* Attach a finalizer to the object if the class has
-	   a non-trival finalizer method attached to it */
-	if(classInfo != 0 &&
-	   ((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
-	{
-		ILGCRegisterFinalizer(ptr, _ILFinalizeObject, thread->process->finalizationContext);
-	}
+#ifdef IL_CONFIG_USE_THIN_LOCKS
+		/* Allocate memory from the heap */
+		ptr = ILGCAllocAtomic(size + IL_OBJECT_HEADER_SIZE);
+#else
+		classPrivate = (ILClassPrivate *)(classInfo->userData);
 
-	/* Return a pointer to the object */
-	return obj;
+		/* TODO: Move descriptor creation to layout.c */
+		if (classPrivate->gcTypeDescriptor == IL_MAX_NATIVE_UINT)
+		{
+			ILNativeUInt bitmap = IL_OBJECT_HEADER_PTR_MAP;
+
+			classPrivate->gcTypeDescriptor = ILGCCreateTypeDescriptor(&bitmap, IL_OBJECT_HEADER_SIZE / sizeof(ILNativeInt));		
+		}
+
+		ptr = ILGCAllocExplicitlyTyped(size + IL_OBJECT_HEADER_SIZE, classPrivate->gcTypeDescriptor);
+#endif
+		if(!ptr)
+		{
+			/* Throw an "OutOfMemoryException" */
+			thread->thrownException = thread->process->outOfMemoryObject;
+			return 0;
+		}
+		
+		obj = GetObjectFromGcBase(ptr);
+
+		SetObjectClassPrivate(obj, (ILClassPrivate *)(classInfo->userData));
+		
+		/* Attach a finalizer to the object if the class has
+		   a non-trival finalizer method attached to it */
+		if(((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
+		{
+			ILGCRegisterFinalizer(ptr, _ILFinalizeObject, thread->process->finalizationContext);
+		}
+
+		/* Return a pointer to the object */
+		return obj;
+	}
 }
 
 ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo)

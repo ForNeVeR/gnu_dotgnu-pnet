@@ -226,6 +226,14 @@ extern pthread_key_t _ILThreadObjectKey;
 				pthread_once(&__once, (func)); \
 			} while (0)
 
+
+#ifdef _POSIX_PRIORITY_SCHEDULING
+	#define _ILThreadYield() sched_yield()
+#else
+	#define _ILThreadYield()
+#endif
+	
+		
 #ifdef	__cplusplus
 };
 #endif

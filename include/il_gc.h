@@ -119,6 +119,27 @@ void ILGCUnregisterWeak(void *ptr);
  */
 void ILGCRegisterGeneralWeak(void *ptr, void *obj);
 
+/*
+ * Creates and returns a type descriptor for an object.
+ * The descriptor will be passed ILGCAllocExplicitlyTyped.
+ *
+ * The bitmap parameter describes the layout of the object.
+ * If the first bit of the first UInt of bitmap is 1 then 
+ * the first word of the object is considered a pointer (and so on).
+ * The len argument specifies how many bits in the map are
+ * to be used.  If len is less than the number of bits in the object
+ * then the rest of the words in the object is considered to
+ * hold pointers.
+ */
+ILNativeInt ILGCCreateTypeDescriptor(ILNativeUInt bitmap[], ILNativeUInt len);
+
+/*
+ * Allocate a block of memory from the garbage collector.
+ * The block may contain pointers to other blocks as described
+ * in the descriptor.  The block is guaranteed to be zero'ed.
+ */
+void *ILGCAllocExplicitlyTyped(unsigned long size, ILNativeInt descriptor);
+
 #ifdef	__cplusplus
 };
 #endif

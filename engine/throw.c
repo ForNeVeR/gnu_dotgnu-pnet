@@ -55,8 +55,8 @@ void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
 	ILString *resourceString = 0;
 	ILObject *object;
 
-	/* Bail out if there already is a pending exception */
-	if(ILExecThreadHasException(thread))
+	/* Bail out if there already is a pending exception or if the thread is aborting */
+	if(ILExecThreadHasException(thread) || thread->aborting)
 	{
 		return;
 	}
@@ -108,8 +108,8 @@ void ILExecThreadThrowArgRange(ILExecThread *thread, const char *paramName,
 	ILString *paramString;
 	ILObject *object;
 
-	/* Bail out if there already is a pending exception */
-	if(ILExecThreadHasException(thread))
+	/* Bail out if there already is a pending exception or if the thread is aborting */
+	if(ILExecThreadHasException(thread) || thread->aborting)
 	{
 		return;
 	}
@@ -169,8 +169,8 @@ void ILExecThreadThrowArgNull(ILExecThread *thread, const char *paramName)
 	ILString *paramString;
 	ILObject *object;
 
-	/* Bail out if there already is a pending exception */
-	if(ILExecThreadHasException(thread))
+	/* Bail out if there already is a pending exception or if the thread is aborting */
+	if(ILExecThreadHasException(thread) || thread->aborting)
 	{
 		return;
 	}
@@ -208,11 +208,6 @@ void _ILExecThreadThrowThreadAbortException(ILExecThread *thread, ILObject *stat
 	ILObject *object;
 
 	/* Bail out if there already is a pending exception */
-	if(ILExecThreadHasException(thread))
-	{
-		return;
-	}
-
 	object = ILExecThreadNew(thread, "System.Threading.ThreadAbortException",
 						"(ToSystem.Object;)V", stateInfo);
 	
@@ -250,15 +245,6 @@ void ILExecThreadPrintException(ILExecThread *thread)
 	if(!exception)
 	{
 		exception = thread->process->outOfMemoryObject;
-	}
-
-	/*
-	 *	Don't print out ThreadAbortExceptions.
-	 */
-
-	if (GetObjectClass(exception) == thread->process->threadAbortClass)
-	{
-		return;
 	}
 
 	/* Attempt to use "ToString" to format the exception, but not

@@ -186,6 +186,8 @@ extern DWORD _ILThreadObjectKey;
 				} \
 			} while (0)
 
+#define _ILThreadYield() Sleep(0)
+
 #ifdef	__cplusplus
 };
 #endif

@@ -204,6 +204,7 @@ typedef struct
 	ILWaitHandle			parent;
 	_ILWakeup *   volatile	owner;
 	unsigned long volatile	count;
+	unsigned int volatile	options;
 	_ILWakeupQueue			queue;
 
 } ILWaitMutex;
@@ -224,9 +225,9 @@ typedef struct
  */
 typedef struct
 {
-	ILWaitMutex				parent;
-	_ILWakeupQueue          signalQueue;
-	int						waiters;
+	ILWaitMutex			parent;
+	_ILWakeupQueue  	signalQueue;
+	int				waiters;
 } ILMonitor;
 
 /*
@@ -422,12 +423,24 @@ void _ILWakeupQueueWakeAll(_ILWakeupQueue *queue);
 /*
  * Make the thread enter a waiting state.
  */
-int EnterWait(ILThread *thread);
+int _ILEnterWait(ILThread *thread);
 
 /*
  * Make the thread leave a waiting state.
  */
-int LeaveWait(ILThread *thread, int result);
+int _ILLeaveWait(ILThread *thread, int result);
+
+/*
+ * Wait on a handle, ignoring interrupt & abort.
+ */
+int _ILWaitOneBackupInterruptsAndAborts(ILWaitHandle *handle, int timeout);
+
+/*
+ * Returns 1 if the given thread owns the mutexd.
+ */
+#define ILWaitMutexThreadOwns(t, handle) \
+	(((ILWaitMutex *)handle)->owner == &(t->wakeup))
+
 
 #ifdef	__cplusplus
 };

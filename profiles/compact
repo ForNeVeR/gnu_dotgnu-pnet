@@ -24,6 +24,9 @@ IL_CONFIG_REDUCE_CODE=y
 # Attempt to reduce runtime data size (y/n).
 IL_CONFIG_REDUCE_DATA=y
 
+# Use thin-locks to reduce memory usage
+IL_CONFIG_USE_THIN_LOCKS=y
+
 # Use a direct-threaded interpreter if possible (y/n).
 IL_CONFIG_DIRECT=n
 

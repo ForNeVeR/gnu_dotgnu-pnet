@@ -61,9 +61,6 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->firstThread = 0;
 	process->mainThread = 0;
 	process->finalizerThread = 0;
-#ifdef USE_HASHING_MONITORS
-	process->monitorHash = 0;
-#endif
 	process->stackSize = ((stackSize < IL_CONFIG_STACK_SIZE)
 							? IL_CONFIG_STACK_SIZE : stackSize);
 	process->frameStackSize = IL_CONFIG_FRAME_STACK_SIZE;
@@ -125,19 +122,15 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 		return 0;
 	}
 
-#ifdef USE_HASHING_MONITORS
-	/* Initialize the monitor system lock */
-	process->monitorSystemLock = ILMutexCreate();
-	if(!(process->monitorSystemLock))
+	/* Initialize the finalization context */
+	process->finalizationContext = (ILFinalizationContext *)ILGCAlloc(sizeof(ILFinalizationContext));
+	if (!process->finalizationContext)
 	{
 		ILExecProcessDestroy(process);
 		return 0;
 	}
-#endif
 
-	/* Initialize the finalization context */
-	process->finalizationContext = (ILFinalizationContext *)ILGCAlloc(sizeof(ILFinalizationContext));
-	if (!process->finalizationContext)
+	if (!_ILExecMonitorProcessCreate(process))
 	{
 		ILExecProcessDestroy(process);
 		return 0;
@@ -224,7 +217,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 				/*
 				 * Instead of aborting and then waiting on each thread, we abort all
 				 * threads and then wait for them all at the bottom.  This prevents us from
-				 *	deadlocking on a thread that's waiting on another (not yet aborted) thread.
+				 * deadlocking on a thread that's waiting on another (not yet aborted) thread.
 				 */
 
 				nextThread = thread->nextThread;
@@ -281,9 +274,8 @@ void ILExecProcessDestroy(ILExecProcess *process)
 			while (entry)
 			{
 				next = entry->next;
-
+				
 				result = ILThreadJoin(entry->thread, -1);
-
 				ILFree(entry);
 
 				if (result != 0)
@@ -441,10 +433,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		ILMemZero(process->randomPool, sizeof(process->randomPool));
 	}
 
-#ifdef USE_HASHING_MONITORS
-	/* Destroy the monitor system lock */
-	ILMutexDestroy(process->monitorSystemLock);
-#endif
+	_ILExecMonitorProcessDestroy(process);
 
 	if (process->lock)
 	{

@@ -83,9 +83,13 @@ extern	"C" {
 	(GetObjectHeader(obj)->classPrivate) = value;
 
 /*
-* Get the class that is associated with a non-null object.
-*/
+ * Get the class that is associated with a non-null object.
+ */
 #define	GetObjectClass(obj)	((GetObjectClassPrivate((obj)))->classInfo)
+
+/*
+ * See engine/lib_monitor.c for notes on the monitor algorithm.
+ */
 
 /* The GC guarantees that blocks are allocated on 4 byteboundaries
     These MARK macros can be used to attach & query flags on each
@@ -103,10 +107,12 @@ extern	"C" {
 #define GetObjectMonitor(thread, obj) \
 	((ILExecMonitor *)(IL_LW_UNMARK(GetObjectLockWord(thread, obj))))
 
-#ifdef USE_HASHING_MONITORS
+#ifdef IL_CONFIG_USE_THIN_LOCKS
 	
+	#define IL_OBJECT_HEADER_PTR_MAP		(0)
+
 	/*
-	 *	Gets a pointer to the WaitHandle object used by the object.
+	 * Gets a pointer to the WaitHandle object used by the object.
 	 */
 	ILLockWord CompareAndExchangeObjectLockWord
 		(ILExecThread *thread, ILObject *obj, ILLockWord value, ILLockWord comparand);
@@ -116,7 +122,16 @@ extern	"C" {
 	 */
 	ILLockWord GetObjectLockWord(ILExecThread *thread, ILObject *obj);
 
+	/*
+	 * Sets the LockWord for the object.
+	 */
+	void SetObjectLockWord(ILExecThread *thread, ILObject *obj, ILLockWord value);
+
 #else
+
+	/* The second word in the object is a pointer so the second bit in the map is 1 */
+	#define IL_OBJECT_HEADER_PTR_MAP (2)
+
 	/*
 	 *	Classic monitor tags are stored in the object header.
 	 */
@@ -131,8 +146,8 @@ extern	"C" {
 		(&(GetObjectLockWord(thread, obj)))
 
 	#define CompareAndExchangeObjectLockWord(thread, obj, value, comparand) \
-		(ILLockWord)((_IL_Interlocked_CompareExchange_RObjectObjectObject \
-			(thread, (ILObject **)GetObjectLockWordPtr(thread, obj), (ILObject *)value, (ILObject *)comparand)))
+		(ILLockWord)((ILInterlockedCompareAndExchangePointers \
+			((void **)GetObjectLockWordPtr(thread, obj), (void *)value, (void *)comparand)))
 
 #endif
 

@@ -28,6 +28,7 @@
 #ifdef HAVE_LIBGC
 
 #include "../libgc/include/gc.h"
+#include "../libgc/include/gc_typed.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -330,6 +331,16 @@ void *ILGCAllocPersistent(unsigned long size)
 {
 	/* The Hans-Boehm routines guarantee to zero the block */
 	return GC_MALLOC_UNCOLLECTABLE((size_t)size);
+}
+
+ILNativeInt ILGCCreateTypeDescriptor(ILNativeUInt bitmap[], ILNativeUInt len)
+{
+	return (ILNativeInt)GC_make_descriptor((GC_bitmap)bitmap, (size_t)len);
+}
+
+void *ILGCAllocExplicitlyTyped(unsigned long size, ILNativeInt descriptor)
+{
+	return GC_malloc_explicitly_typed(size, descriptor);
 }
 
 void ILGCFreePersistent(void *block)

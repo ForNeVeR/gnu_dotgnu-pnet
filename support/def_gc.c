@@ -166,6 +166,18 @@ void ILGCRegisterFinalizer(void *block, ILGCFinalizer func, void *data)
 	   and so we don't need to worry about registering them */
 }
 
+
+ILNativeInt ILGCCreateTypeDescriptor(ILNativeUInt[] bitmap, ILNativeUInt len)
+{
+	/* Type descriptors aren't supported */
+	return 0;
+}
+
+void *ILGCAllocExplicitlyTyped(unsigned long size, ILNativeInt descriptor)
+{
+	return ILGCAlloc(size);
+}
+
 void ILGCMarkNoPointers(void *start, unsigned long size)
 {
 	/* Nothing to do here */

@@ -147,7 +147,7 @@ int _ILDumpConfig(FILE *stream,int level)
 	PrintFormatted(stream, "Libffi", "No");
 #endif
 
-	if(ILHasThreads)
+	if(ILHasThreads())
 	{
 		PrintFormatted(stream, "Threading",  "Enabled");
 	}
@@ -158,7 +158,7 @@ int _ILDumpConfig(FILE *stream,int level)
 
 	if(level>1)
 	{
-	#ifdef USE_HASHING_MONITORS
+	#ifdef IL_CONFIG_USE_THIN_LOCKS
 		PrintFormatted(stream,"Monitor Implementation","Thin-locks");
 	#else
 		PrintFormatted(stream,"Monitor Implementation","Standard");

@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
+ * Contributions:  Thong Nguyen (tum@veridicus.com)
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -30,6 +32,8 @@ from C# code and can be held by a suspended thread.
 */
 
 #include "thr_defs.h"
+#include "wait_mutex.h"
+#include "interlocked.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -56,6 +60,7 @@ static int MutexClose(ILWaitMutex *mutex)
 {
 	/* Lock down the mutex and determine if it is currently owned */
 	_ILMutexLock(&(mutex->parent.lock));
+
 	if(mutex->owner != 0 || !_ILWakeupQueueIsEmpty(&(mutex->queue)))
 	{
 		_ILMutexUnlock(&(mutex->parent.lock));
@@ -66,6 +71,7 @@ static int MutexClose(ILWaitMutex *mutex)
 	_ILMutexUnlock(&(mutex->parent.lock));
 	_ILWakeupQueueDestroy(&(mutex->queue));
 	_ILMutexDestroy(&(mutex->parent.lock));
+	
 	return IL_WAITCLOSE_FREE;
 }
 
@@ -126,39 +132,6 @@ static int MutexCloseNamed(ILWaitMutexNamed *mutex)
 
 	/* The wait handle object is now completely free */
 	return IL_WAITCLOSE_FREE;
-}
-
-int ILWaitMonitorFastClaim(ILWaitHandle *handle)
-{
-	ILThread *thread = ILThreadSelf();
-	ILWaitMutex *mutex = (ILWaitMutex *)handle;
-
-	mutex->owner = &thread->wakeup;
-	mutex->count = 1;
-
-	if ((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
-	{
-		/* Do a slower safer double check */
-		
-		_ILMutexLock(&(thread->lock));
-
-		if ((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
-		{
-			_ILMutexUnlock(&(thread->lock));
-			
-			return IL_WAIT_ABORTED;
-		}
-		else
-		{
-			_ILMutexUnlock(&(thread->lock));
-
-			return 0;
-		}
-	}
-	else
-	{
-		return 0;
-	}
 }
 
 /*
@@ -276,7 +249,7 @@ static void MutexNameListInit(void)
 }
 
 ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
-									 int *gotOwnership)
+							 int *gotOwnership)
 {
 	ILWaitHandle *handle;
 	ILWaitMutexNamed *mutex;
@@ -382,7 +355,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 	return &(mutex->parent.parent);
 }
 
-int PrivateILWaitMutexRelease(ILWaitHandle *handle, int mode)
+int ILWaitMutexRelease(ILWaitHandle *handle)
 {
 	ILWaitMutex *mutex = (ILWaitMutex *)handle;
 	int result;
@@ -394,65 +367,34 @@ int PrivateILWaitMutexRelease(ILWaitHandle *handle, int mode)
 	if((mutex->parent.kind & IL_WAIT_MUTEX) == 0)
 	{
 		/* This isn't actually a mutex */
-		result = 0;
+		result = IL_WAITMUTEX_RELEASE_FAIL;
 	}
 	else if(mutex->owner != &((ILThreadSelf())->wakeup))
 	{
 		/* This thread doesn't currently own the mutex */
-		result = 0;
-	}
-	else if (mode == 2)
-	{
-		/* Complete a release (after a call with mode = 1) */
-		
-		if (mutex->count == 0)
-		{
-			mutex->owner = _ILWakeupQueueWake(&(mutex->queue));
-			if(mutex->owner != 0)
-			{
-				mutex->count = 1;
-			}
-		}
-
-		result = 1;
+		result = IL_WAITMUTEX_RELEASE_FAIL;
 	}
 	else if(--(mutex->count) == 0)
 	{
 		/* The count has returned to zero, so find something
 		   else to give the ownership of the mutex to */
 
-		if (mode == 0)
+		mutex->owner = _ILWakeupQueueWake(&(mutex->queue));
+		if(mutex->owner != 0)
 		{
-			mutex->owner = _ILWakeupQueueWake(&(mutex->queue));
-			if(mutex->owner != 0)
-			{
-				mutex->count = 1;
-			}
-			result = 1;
+			mutex->count = 1;
 		}
-		else if (mode == 1)
-		{
-			result = 1;
-		}
-		else
-		{
-			result = 0;
-		}
+		result = IL_WAITMUTEX_RELEASE_SUCCESS;
 	}
 	else
 	{
 		/* The current thread still owns the mutex */
-		result = IL_WAIT_LEAVE_STILL_OWNS;
+		result = IL_WAITMUTEX_RELEASE_STILL_OWNS;
 	}
 
 	/* Unlock the mutex and return */
 	_ILMutexUnlock(&(mutex->parent.lock));
 	return result;
-}
-
-int ILWaitMutexRelease(ILWaitHandle *handle)
-{
-	return PrivateILWaitMutexRelease(handle, 0);
 }
 
 /*
@@ -462,8 +404,11 @@ static int MonitorClose(ILMonitor *monitor)
 {
 	/* Lock down the monitor and determine if it is currently owned */
 	_ILMutexLock(&(monitor->parent.parent.lock));
-	if(monitor->parent.owner != 0 || monitor->waiters > 0
-	   || !_ILWakeupQueueIsEmpty(&(monitor->parent.queue)))
+	
+	/* We we allow monitors to be closed even if they have
+	   an owner.  It is valid for a program to lock an
+	   object and never release it before it gets GC-ed.  */
+	if(monitor->waiters > 0 || !_ILWakeupQueueIsEmpty(&(monitor->parent.queue)))
 	{
 		_ILMutexUnlock(&(monitor->parent.parent.lock));
 		return IL_WAITCLOSE_OWNED;
@@ -505,14 +450,31 @@ ILWaitHandle *ILWaitMonitorCreate(void)
 	return &(monitor->parent.parent);
 }
 
+/*
+ * The specification for what happens when a wait is aborted is ambiguous at best.
+ * MS.NET appears to allow interrupted and aborted threads to exit wait without
+ * reaquire the monitor lock.  To facilitate this, MS.NET ignores calls to
+ * Monitor.Exit by any thread that has or ever was aborted.
+ *
+ * See: http://dotgnu.org/pipermail/developers/2004-May/012214.html
+ *      http://dotgnu.org/pipermail/developers/2004-May/012226.html
+ *
+ * In PNET's implementation a waiting thread *must* reaquire the lock on the
+ * monitor it is waiting on before it can continue.  Like, MS.NET, the
+ * interrupted/aborted thread does not need to wait for a pulse.
+ * 
+ * Allowing a waiting thread to exit Monitor.Wait without reaquiring the lock
+ * could potentially lead to deadlocks and data corruption.
+ */
 int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 {
+	ILThread *thread = ILThreadSelf();
 	ILMonitor *monitor = (ILMonitor *)handle;
 	_ILWakeup *wakeup = &((ILThreadSelf())->wakeup);
 	int result, result2;
 	unsigned long saveCount;
 
-	result = EnterWait(ILThreadSelf());
+	result = _ILEnterWait(thread);
 	
 	if (result != 0)
 	{
@@ -583,15 +545,17 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 			result = IL_WAIT_INTERRUPTED;
 		}
 
-		/* Wait to re-acquire the monitor (add ourselves to the "ready queue") */
-		result2 = ILWaitOne(handle, IL_WAIT_INFINITE);
-		if(result > 0 && result2 < 0)
+		/* Wait to reaquire the monitor */
+		result2 = _ILWaitOneBackupInterruptsAndAborts(handle, -1);
+
+		if (result2 < 0)
 		{
 			result = result2;
 		}
 
 		/* Lock down the monitor and set the count back to the right value */
 		_ILMutexLock(&(monitor->parent.parent.lock));
+
 		if(monitor->parent.owner == 0)
 		{
 			monitor->parent.owner = wakeup;
@@ -608,10 +572,10 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 	/* Unlock the monitor and return */
 	_ILMutexUnlock(&(monitor->parent.parent.lock));
 
-	return LeaveWait(ILThreadSelf(), result);
+	return _ILLeaveWait(thread, result);
 }
 
-int ILWaitMonitorPulse(ILWaitHandle *handle)
+static IL_INLINE int PrivateWaitMonitorPulse(ILWaitHandle *handle, int all)
 {
 	ILMonitor *monitor = (ILMonitor *)handle;
 	_ILWakeup *wakeup = &((ILThreadSelf())->wakeup);
@@ -634,75 +598,32 @@ int ILWaitMonitorPulse(ILWaitHandle *handle)
 	else
 	{
 		/* Wake up something on the signal queue */
-		_ILWakeupQueueWake(&(monitor->signalQueue));
+		/* GCC should optimise out this if statement */
+		
+		if (all)
+		{			
+			_ILWakeupQueueWakeAll(&(monitor->signalQueue));
+		}
+		else
+		{
+			_ILWakeupQueueWake(&(monitor->signalQueue));
+		}
+
 		result = 1;
 	}
 	/* Unlock the monitor and return */
 	_ILMutexUnlock(&(monitor->parent.parent.lock));
 	return result;
+}
+
+int ILWaitMonitorPulse(ILWaitHandle *handle)
+{
+	return PrivateWaitMonitorPulse(handle, 0);
 }
 
 int ILWaitMonitorPulseAll(ILWaitHandle *handle)
 {
-	ILMonitor *monitor = (ILMonitor *)handle;
-	_ILWakeup *wakeup = &((ILThreadSelf())->wakeup);
-	int result;
-
-	/* Lock down the monitor */
-	_ILMutexLock(&(monitor->parent.parent.lock));
-
-	/* Determine what to do based on the monitor's state */
-	if(monitor->parent.parent.kind != IL_WAIT_MONITOR)
-	{
-		/* This isn't actually a monitor */
-		result = 0;
-	}
-	else if(monitor->parent.owner != wakeup)
-	{
-		/* This thread doesn't currently own the monitor */
-		result = 0;
-	}
-	else
-	{
-		/* Wake up everything on the signal queue */
-		_ILWakeupQueueWakeAll(&(monitor->signalQueue));
-		result = 1;
-	}
-
-	/* Unlock the monitor and return */
-	_ILMutexUnlock(&(monitor->parent.parent.lock));
-	return result;
-}
-
-int ILWaitMonitorCanClose(ILWaitHandle *handle)
-{
-	ILMonitor *monitor = (ILMonitor *)handle;
-
-	_ILMutexLock(&(monitor->parent.parent.lock));
-
-	if(monitor->parent.count == 0 && monitor->waiters == 0
-		&& _ILWakeupQueueIsEmpty(&(monitor->parent.queue)))
-	{
-		_ILMutexUnlock(&(monitor->parent.parent.lock));
-
-		return 1;
-	}
-	else
-	{
-		_ILMutexUnlock(&(monitor->parent.parent.lock));
-
-		return 0;	
-	}
-}
-
-int ILWaitMonitorSpeculativeLeave(ILWaitHandle *handle)
-{
-	return PrivateILWaitMutexRelease(handle, 1);
-}
-
-int ILWaitMonitorCompleteLeave(ILWaitHandle *handle)
-{
-	return PrivateILWaitMutexRelease(handle, 2);
+	return PrivateWaitMonitorPulse(handle, 1);
 }
 
 #ifdef	__cplusplus

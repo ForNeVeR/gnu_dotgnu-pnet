@@ -608,6 +608,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		classPrivate->classInfo = info;
 		info->userData = (void *)classPrivate;
 		classPrivate->inLayout = 1;
+		classPrivate->gcTypeDescriptor = IL_MAX_NATIVE_UINT;
 	}
 
 	/* Lay out the parent class first */

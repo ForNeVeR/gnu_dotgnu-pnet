@@ -1,4 +1,133 @@
+2004-05-10  Thong Nguyen  <tum@veridicus.com>
 
+	* profiles/full: Made full profile use standard lcosk.
+		
+	* profiles/full-tl: New full profile with thin-locks.
+	
+	* profiles/compact: Made compact profile use thin-locks.
+
+	* profiles/compact-fp: Made compact-fp profile use thin-locks.
+	
+	* profiles/kernel: Made kernel profile use thin-locks.
+
+	* profiles/kernel-fp: Made kernel-fp profile use thin-locks.
+	
+	* include/lib_gc.h: Added prototypes for ILGCCreateTypeDescriptor
+	and ILGCAllocExplicitlyTyped.
+	
+	* include/il_thread.h: Added prototype for ILThreadSelfAborting.
+	Added IL_JOIN_UNSTARTED const.  Added prototype of ILThreadYield.
+	Added consts for IL_WAITMUTEX_RELEASE results.  Removed protypes
+	for ILWaitMonitorSpeculativeLeave, ILWaitMonitorCompleteLeave,
+	ILWaitMonitorCanClose.
+
+	* engine/lib_monitor: Moved implementation of internal calls
+	for Monitor from lib_thread.c to lib_monitor.c.
+	Added long comment on how the monitor algorithms work.
+	Refactored a lot of code for simplification and naming consistancy.
+	Fixed monitor leak when monitors are entered but never exited
+	before an object is collected.
+	Simplified algorithm by allocating monitors on the GC-heap.
+	Removed all globals locks on the critical path and many
+	global locks on less critical paths.
+	Made lib_monitor.c aware of some support/ structures for
+	additional speed.
+	Modified standard algorithm to support fast releases.
+	Modified standard algorithm to support fast aquires for
+	recursive calls to enter.
+	Standard algorithm is now ~20 times faster in uncontested
+	and ~150 times faster in recursive lock cases.  Thin lock
+	algorithm is now faster than the old standard algorithm.
+	
+	* engine/Makefile.am: Added lib_monitor.c to source list.
+	Added libgc/include and support/ to the include files to the
+	include file search path.
+	
+	* engine/dumpconfig.c:  Added reference to IL_CONFIG_THIN_LOCKS.
+	Added parenthesis to call to ILHasThreads.
+	  
+	* engine/engine.h: Added freeMonitorCount to ILExecProcess.  Added
+	gcTypeDescriptor field to ILClassPrivate.  Added references to
+	IL_CONFIG_THIN_LOCKS.  Added definitions for ILExecMonitorProcess
+ 	Create and ILExecMonitorProcessDestroy.
+ 	
+ 	* Changed ILGCalloc(*) not allocate header space if the
+ 	block isn't going to be used for a managed type.  Made ILGCAllocAtomic
+ 	use typed-allocation so that the monitor in the object header of
+ 	primitive-type arrays will not be prematurely collected.
+ 	
+ 	* engine/ilrun.c: Changed ilrun to only print exceptions at the
+ 	end if the thread isn't aborting.
+ 	
+ 	* engine/layout.c: Added initialization of default value for
+ 	gcTypeDescriptor.
+ 	
+ 	* engine/lib_defs.h: Tidied up lockword macros & definitions.
+ 	
+ 	* engine/lib_thread.c:  Moved implementation of internal calls for
+ 	System.Threading.Monitor to lib_monitor.c.  Rewrote abort handling
+ 	code.  Modified the Interlocked functions to use the new interlocked
+ 	definitions from pnet/support.  Changed SpinWait to use ILThreadYield.
+ 	
+ 	* engine/monitor.c: Fixed monitor allocation/retrieval bug in
+ 	thin-lock implementation.  Added monitor-specific initialization
+ 	procedures for ILExecProcess.
+ 	
+	* engine/process.c: Removed monitor initialization routines and added
+	calls to ILExecMonitorProcessCreate and ILExecMonitorProcessDestroy.
+	
+	* engine/thread.c: Remove freeMonitor deletion code because monitors
+	are now freed by the garbage collector.
+	
+	* engine/throw.c: Prevent new exceptions from being thrown if the
+	thread is currently aborting.
+	
+	* support/def_gc.c: Added implementation of ILGCCreateTypeDescriptor
+	and ILGCAllocExplicitlyTyped.
+	
+	* support/hb_gc.c: Added implementation of ILGCCreateTypeDescriptor
+	and ILGCAllocExplicitlyTyped.
+	
+	* support/pt_defs.h: Added implementation of ILThreadYield.
+	
+	* support/interlocked.h: Support for interlocked functions.
+	
+	* support/interlocked_any.h: Platform neutral implementation of
+	interlocked functions.
+
+	* support/interlocked_x86.h: x86 implementation of interlocked
+	functions.
+
+	* support/thread.c: Tidied and refactored code.  Added
+	IL_TS_RUNNING state to threads that are running.  Made
+	ILThreadWaitForForegoundThreads ignore interrupts/aborts.
+	Added implementation of ILThreadSelfAborting.
+	
+	* support/w32_defs.h: Added implementation of ILThreadYield.
+	
+	* support/wait.c: Fixed bug where abort & interrupts could be
+	detected twice.  Made the wait functions work even when the
+	thread is aborting (made them respond differently to abort
+	requests than they do to aborts underway).
+	Added _ILWaitOneBackupInterruptsAndAborts implementation.
+	
+	* support/wait_event.c:
+	
+	* support/wait_mutex.c: Allow monitors to be destroyed even
+	if they are owned.  Remove FastClaim.  Removed
+	PrivateILWaitMutexRelease and moved simplified implementation
+	into ILWaitMutexRelease.  Refactored ILWaitMonitorPulse
+	and ILWaitMonitorPulseAll into one inline function
+	(PrivateILWaitMonitorPulse.  Made ILWaitMonitorWait not
+	return until it can reaquire the monitor even if it is
+	interrupted or aborted.
+	Removed implementation of ILWaitMonitorSpeculativeLeave,
+	ILWaitMonitorCompleteLeave, ILWaitMonitorCanClose.
+	
+	* support/wait_mutex.h: Inline definitions for
+	ILWaitMutexThreadOwns, ILWaitMutexFastEnter and
+	ILMutexFastRelease.
+	
 2004-05-09  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/lib_object.c : Resolve classes before laying them out
@@ -33,8 +162,6 @@
 	* support/wait_mutex.c: Changed ILWaitMonitorFastClaim to
 	check and respond to thread abort requests.
 	
-2004-05-03  Thong Nguyen <tum@veridicus.com>
-
 	* support/thr_defs.h: Added defs for EnterWait and LeaveWait.
 	
 	* support/wait.c: Made EnterWait and LeaveWait non-static,
@@ -42,8 +169,6 @@
 	
 	* support/wait_mutex.c: Made ILWaitMonitorWait change
 	the state of the thread to waiting so that it can be aborted.
-
-2004-05-03  Thong Nguyen <tum@veridicus.com>
 
 	* support/wait_mutex.c: Fixed bug in ILWaitMonitorWait
 	which caused it to sometimes miss Pulse signals.
@@ -58,8 +183,6 @@
 	* engine/lib_thread.c: Added optimisations for monitor.enter
 	and monitor.leave.
 	
-2004-05-03  Thong Nguyen <tum@veridicus.com>
-
 	* support/thr_defs.h: Added waiters field to ILMonitor.
 	
 	* support/wait_mutex.c: Made ILWaitMonitorWait notify

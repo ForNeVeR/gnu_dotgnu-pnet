@@ -1,5 +1,8 @@
 
-TESTS = as1.cs \
+TESTS = array1.cs \
+		array2.cs \
+		array3.cs \
+		as1.cs \
 		as2.cs \
 		binary1.cs \
 		binary2.cs \

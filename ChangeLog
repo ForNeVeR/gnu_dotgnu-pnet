@@ -1,4 +1,13 @@
 
+2001-01-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/expr/Makefile.am, csharp/expr/array1.cs,
+	csharp/expr/array1.il, csharp/expr/array1.jl,
+	csharp/expr/array2.cs, csharp/expr/array2.err,
+	csharp/expr/array2.jerr, csharp/expr/array3.cs,
+	csharp/expr/array3.il, csharp/expr/array3.jerr: implement test
+	cases for the array access operator.
+
 2001-01-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/stmt/Makefile.am, csharp/stmt/switch1.cs,

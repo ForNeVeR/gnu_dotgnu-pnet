@@ -115,7 +115,7 @@ namespace System.IO
 				case Errno.Success:
 					return true;
 				case Errno.ENOENT:
-					throw new DirectoryNotFoundException(_("IO_DirNotFound"));
+					return false;
 				case Errno.ENOTDIR:
 					return false;
 				case Errno.EACCES:

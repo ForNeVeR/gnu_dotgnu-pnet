@@ -1,4 +1,14 @@
 
+2003-02-14  Yannis BRES <Yannis.BRES@sophia.inria.fr>
+	
+	* runtime/System/IO/Directory.cs: Directory.Exists() should not
+	throw DirectoryNotFoundException.
+	(Patch #1100, Gopal)
+
+	* System/Diagnostics/Process.cs: Fix Process.StartInfo to return
+	ProcessStartInfo .
+	(Patch #1103, Gopal)
+
 2003-02-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/I18N.build, JScript/JScript.build, System/System.build,

@@ -458,7 +458,7 @@ namespace System.Diagnostics
 			}
 		}
 		[TODO]
-		public int StartInfo 
+		public ProcessStartInfo StartInfo 
 		{ 
 			get
 			{

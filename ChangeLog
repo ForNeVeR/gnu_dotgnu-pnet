@@ -4,6 +4,8 @@
 	* cscc/vb/vb_scanner.l: '$' is not valid in VB identifiers except
 	as the terminating type character.
 
+	* csdoc/doc_valil.c: handle long-form nested type names better.
+
 2003-09-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_type.c: don't include static fields in the list

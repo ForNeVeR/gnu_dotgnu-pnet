@@ -87,7 +87,9 @@ static char *GetFullClassName(ILClass *classInfo)
 {
 	const char *name = ILClass_Name(classInfo);
 	const char *namespace = ILClass_Namespace(classInfo);
+	char *parentName;
 	char *fullName;
+	ILClass *parent;
 	if(namespace)
 	{
 		fullName = (char *)ILMalloc(strlen(namespace) +
@@ -99,6 +101,19 @@ static char *GetFullClassName(ILClass *classInfo)
 		strcpy(fullName, namespace);
 		strcat(fullName, ".");
 		strcat(fullName, name);
+	}
+	else if((parent = ILClass_NestedParent(classInfo)) != 0)
+	{
+		parentName = GetFullClassName(parent);
+		fullName = (char *)ILMalloc(strlen(parentName) + strlen(name) + 2);
+		if(!fullName)
+		{
+			ILDocOutOfMemory(0);
+		}
+		strcpy(fullName, parentName);
+		strcat(fullName, ".");
+		strcat(fullName, name);
+		ILFree(parentName);
 	}
 	else
 	{
@@ -175,8 +190,6 @@ static char *TypeToName(ILType *type, int shortForm)
 {
 	char *name;
 	ILClass *classInfo;
-	const char *className;
-	const char *classNamespace;
 	const char *suffix;
 	char buffer[128];
 	int posn, kind;
@@ -213,23 +226,13 @@ static char *TypeToName(ILType *type, int shortForm)
 	else if(ILType_IsClass(type) || ILType_IsValueType(type))
 	{
 		classInfo = ILType_ToClass(type);
-		className = ILClass_Name(classInfo);
-		classNamespace = ILClass_Namespace(classInfo);
-		if(!classNamespace || shortForm)
+		if(shortForm)
 		{
-			name = ILDupString(className);
+			name = ILDupString(ILClass_Name(classInfo));
 		}
 		else
 		{
-			name = (char *)ILMalloc(strlen(className) +
-									strlen(classNamespace) + 2);
-			if(!name)
-			{
-				ILDocOutOfMemory(0);
-			}
-			strcpy(name, classNamespace);
-			strcat(name, ".");
-			strcat(name, className);
+			name = GetFullClassName(classInfo);
 		}
 	}
 	else if(type != 0 && ILType_IsComplex(type))

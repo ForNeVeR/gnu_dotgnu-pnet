@@ -10,6 +10,11 @@
 	to ILClassNextMember to make this commonly-used function
 	more efficient.
 
+	* ilalink/link_field.c, ilalink/link_method.c, ilasm/ilasm_build.c,
+	image/class.c, include/il_program.h: add the new helper function
+	ILClassNextMemberMatch and use it to speed up method/field
+	resolution in ilasm and ilalink.
+
 2003-02-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_decls.tc: Re-order the static constructors so

@@ -596,38 +596,33 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 		}
 		return 0;
 	}
-	while((newMethod = (ILMethod *)ILClassNextMemberByKind
-				(newClass, (ILMember *)newMethod, IL_META_MEMBERKIND_METHOD))
-						!= 0)
+	if((newMethod = (ILMethod *)ILClassNextMemberMatch
+			(newClass, (ILMember *)0,
+			 IL_META_MEMBERKIND_METHOD, name, signature)) != 0)
 	{
-		if(!strcmp(ILMethod_Name(newMethod), name) &&
-		   ILTypeIdentical(ILMethod_Signature(newMethod), signature))
+		/* Bail out if the method is already defined.  This shouldn't
+		   happen very often because duplicate classes are trapped long
+		   before control gets to here.  Global methods may result in
+		   this code being used, however */
+		if((ILMethod_Token(newMethod) & IL_META_TOKEN_MASK)
+				!= IL_META_TOKEN_MEMBER_REF)
 		{
-			/* Bail out if the method is already defined.  This shouldn't
-			   happen very often because duplicate classes are trapped long
-			   before control gets to here.  Global methods may result in
-			   this code being used, however */
-			if((ILMethod_Token(newMethod) & IL_META_TOKEN_MASK)
-					!= IL_META_TOKEN_MEMBER_REF)
+			if(newName)
 			{
-				if(newName)
-				{
-					ILFree(newName);
-				}
-				return 1;
+				ILFree(newName);
 			}
+			return 1;
+		}
 
-			/* Allocate a new token for the method */
-			if(!ILMethodNewToken(newMethod))
+		/* Allocate a new token for the method */
+		if(!ILMethodNewToken(newMethod))
+		{
+			_ILLinkerOutOfMemory(linker);
+			if(newName)
 			{
-				_ILLinkerOutOfMemory(linker);
-				if(newName)
-				{
-					ILFree(newName);
-				}
-				return 0;
+				ILFree(newName);
 			}
-			break;
+			return 0;
 		}
 	}
 	if(!newMethod)
@@ -938,19 +933,15 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	if(ILMember_IsMethod(member))
 	{
 		/* Searching for a method */
-		method = 0;
-		while((method = (ILMethod *)ILClassNextMemberByKind
-				(owner, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+		if((method = (ILMethod *)ILClassNextMemberMatch
+				(owner, (ILMember *)0,
+				 IL_META_MEMBERKIND_METHOD, name, signature)) != 0)
 		{
-			if(!strcmp(ILMethod_Name(method), name) &&
-			   ILTypeIdentical(ILMethod_Signature(method), signature))
+			if(newName)
 			{
-				if(newName)
-				{
-					ILFree(newName);
-				}
-				return (ILMember *)method;
+				ILFree(newName);
 			}
+			return (ILMember *)method;
 		}
 
 		/* Create a MemberRef for the method */
@@ -975,19 +966,15 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	else
 	{
 		/* Searching for a field */
-		field = 0;
-		while((field = (ILField *)ILClassNextMemberByKind
-				(owner, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+		if((field = (ILField *)ILClassNextMemberMatch
+				(owner, (ILMember *)0,
+				 IL_META_MEMBERKIND_FIELD, name, signature)) != 0)
 		{
-			if(!strcmp(ILField_Name(field), name) &&
-			   ILTypeIdentical(ILFieldGetTypeWithPrefixes(field), signature))
+			if(newName)
 			{
-				if(newName)
-				{
-					ILFree(newName);
-				}
-				return (ILMember *)field;
+				ILFree(newName);
 			}
+			return (ILMember *)field;
 		}
 
 		/* Create a MemberRef for the field */

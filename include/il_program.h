@@ -697,6 +697,15 @@ ILMember *ILClassNextMember(ILClass *info, ILMember *last);
 ILMember *ILClassNextMemberByKind(ILClass *info, ILMember *last, int kind);
 
 /*
+ * Iterate over the members of a class that match the given criteria.
+ * If "kind" is zero, then match all kinds.  If "name" is NULL, then
+ * match all names.  If "signature" is NULL, then match all signatures.
+ * The conditions are AND'ed together.
+ */
+ILMember *ILClassNextMemberMatch(ILClass *info, ILMember *last, int kind,
+								 const char *name, ILType *signature);
+
+/*
  * Mark a class definition as "complete".  This is typically
  * used by compilers and assemblers to prevent further members
  * from being added when the end of the class is reached.

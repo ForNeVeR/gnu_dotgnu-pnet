@@ -53,42 +53,37 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 		}
 		return 0;
 	}
-	while((newField = (ILField *)ILClassNextMemberByKind
-				(newClass, (ILMember *)newField, IL_META_MEMBERKIND_FIELD))
-						!= 0)
+	if((newField = (ILField *)ILClassNextMemberMatch
+			(newClass, (ILMember *)0,
+			 IL_META_MEMBERKIND_FIELD, name, type)) != 0)
 	{
-		if(!strcmp(ILField_Name(newField), name) &&
-		   ILTypeIdentical(ILField_Type(newField), type))
+		/* Bail out if the field is already defined.  This shouldn't
+		   happen very often because duplicate classes are trapped long
+		   before control gets to here.  Global fields may result in
+		   this code being used, however */
+		if((ILField_Token(newField) & IL_META_TOKEN_MASK)
+				!= IL_META_TOKEN_MEMBER_REF)
 		{
-			/* Bail out if the field is already defined.  This shouldn't
-			   happen very often because duplicate classes are trapped long
-			   before control gets to here.  Global fields may result in
-			   this code being used, however */
-			if((ILField_Token(newField) & IL_META_TOKEN_MASK)
-					!= IL_META_TOKEN_MEMBER_REF)
+			if(newName)
 			{
-				if(newName)
-				{
-					ILFree(newName);
-				}
-				return 1;
+				ILFree(newName);
 			}
+			return 1;
+		}
 
-			/* Set the type to the new value, just in case the previous
-			   reference did not involve modifiers */
-			ILMemberSetSignature((ILMember *)newField, type);
+		/* Set the type to the new value, just in case the previous
+		   reference did not involve modifiers */
+		ILMemberSetSignature((ILMember *)newField, type);
 
-			/* Allocate a new token for the field */
-			if(!ILFieldNewToken(newField))
+		/* Allocate a new token for the field */
+		if(!ILFieldNewToken(newField))
+		{
+			_ILLinkerOutOfMemory(linker);
+			if(newName)
 			{
-				_ILLinkerOutOfMemory(linker);
-				if(newName)
-				{
-					ILFree(newName);
-				}
-				return 0;
+				ILFree(newName);
 			}
-			break;
+			return 0;
 		}
 	}
 	if(!newField)

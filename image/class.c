@@ -1159,6 +1159,42 @@ ILMember *ILClassNextMemberByKind(ILClass *info, ILMember *last, int kind)
 	return 0;
 }
 
+ILMember *ILClassNextMemberMatch(ILClass *info, ILMember *last, int kind,
+								 const char *name, ILType *signature)
+{
+	if(last)
+	{
+		last = last->nextMember;
+	}
+	else if(info)
+	{
+		last = info->firstMember;
+	}
+	else
+	{
+		return 0;
+	}
+	while(last != 0)
+	{
+		if(kind && ((int)(last->kind)) != kind)
+		{
+			last = last->nextMember;
+			continue;
+		}
+		if(name && strcmp(last->name, name) != 0)
+		{
+			last = last->nextMember;
+			continue;
+		}
+		if(!signature || ILTypeIdentical(last->signature, signature))
+		{
+			return last;
+		}
+		last = last->nextMember;
+	}
+	return 0;
+}
+
 void ILClassMarkComplete(ILClass *info)
 {
 	info->attributes |= IL_META_TYPEDEF_COMPLETE;

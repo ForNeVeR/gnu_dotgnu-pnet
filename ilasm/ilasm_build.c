@@ -764,14 +764,9 @@ ILToken ILAsmResolveMember(ILProgramItem *scope, const char *name,
 	}
 
 	/* Look for a name and signature match on a member */
-	member = 0;
-	while((member = ILClassNextMemberByKind(classInfo, member, kind)) != 0)
+	if((member = ILClassNextMemberMatch(classInfo, 0, kind, name, sig)) != 0)
 	{
-		if(!strcmp(ILMember_Name(member), name) &&
-		   ILTypeIdentical(ILMember_Signature(member), sig))
-		{
-			return ILMember_Token(member);
-		}
+		return ILMember_Token(member);
 	}
 
 	/* If the class is "complete", then we have already seen its
@@ -817,37 +812,33 @@ ILMethod *ILAsmMethodCreate(ILClass *classInfo, const char *name,
 	ILMethod *method;
 
 	/* See if there is already a method with a matching signature */
-	method = 0;
-	while((method = (ILMethod *)ILClassNextMemberByKind
-			(classInfo, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+	if((method = (ILMethod *)ILClassNextMemberMatch
+			(classInfo, (ILMember *)0,
+			 IL_META_MEMBERKIND_METHOD, name, sig)) != 0)
 	{
-		if(!strcmp(ILMethod_Name(method), name) &&
-		   ILTypeIdentical(ILMethod_Signature(method), sig))
+		/* We already have a definition */
+		if((ILMethod_Token(method) & IL_META_TOKEN_MASK)
+				== IL_META_TOKEN_METHOD_DEF &&
+		   ILMethod_RVA(method) != 0)
 		{
-			/* We already have a definition */
-			if((ILMethod_Token(method) & IL_META_TOKEN_MASK)
-					== IL_META_TOKEN_METHOD_DEF &&
-			   ILMethod_RVA(method) != 0)
-			{
-				/* This is a duplicate */
-				ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
-								  "duplicate definition for `%s'", name);
-				ILAsmErrors = 1;
-			}
-			else
-			{
-				/* Convert the MemberRef into a MethodDef */
-				ILMethodSetCallConv(method, ILType_CallConv(sig));
-				ILMemberSetAttrs((ILMember *)method,
-								 ~((ILUInt32)0), attributes);
-				if((ILMethod_Token(method) & IL_META_TOKEN_MASK)
-						== IL_META_TOKEN_MEMBER_REF)
-				{
-					ILMethodNewToken(method);
-				}
-			}
-			return method;
+			/* This is a duplicate */
+			ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+							  "duplicate definition for `%s'", name);
+			ILAsmErrors = 1;
 		}
+		else
+		{
+			/* Convert the MemberRef into a MethodDef */
+			ILMethodSetCallConv(method, ILType_CallConv(sig));
+			ILMemberSetAttrs((ILMember *)method,
+							 ~((ILUInt32)0), attributes);
+			if((ILMethod_Token(method) & IL_META_TOKEN_MASK)
+					== IL_META_TOKEN_MEMBER_REF)
+			{
+				ILMethodNewToken(method);
+			}
+		}
+		return method;
 	}
 
 	/* Create a new method block */
@@ -867,36 +858,32 @@ ILField *ILAsmFieldCreate(ILClass *classInfo, const char *name,
 	ILField *field;
 
 	/* See if there is already a field with a matching signature */
-	field = 0;
-	while((field = (ILField *)ILClassNextMemberByKind
-			(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	if((field = (ILField *)ILClassNextMemberMatch
+			(classInfo, (ILMember *)0,
+			 IL_META_MEMBERKIND_FIELD, name, sig)) != 0)
 	{
-		if(!strcmp(ILField_Name(field), name) &&
-		   ILTypeIdentical(ILField_Type(field), sig))
+		/* We already have a definition */
+		if((ILField_Token(field) & IL_META_TOKEN_MASK)
+				== IL_META_TOKEN_FIELD_DEF)
 		{
-			/* We already have a definition */
-			if((ILField_Token(field) & IL_META_TOKEN_MASK)
-					== IL_META_TOKEN_FIELD_DEF)
-			{
-				/* This is a duplicate */
-				ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
-								  "duplicate definition for `%s'", name);
-				ILAsmErrors = 1;
-			}
-			else
-			{
-				/* Convert the MemberRef into a FieldDef */
-				ILMemberSetSignature((ILMember *)field, sig);
-				ILMemberSetAttrs((ILMember *)field,
-								 ~((ILUInt32)0), attributes);
-				if((ILField_Token(field) & IL_META_TOKEN_MASK)
-						== IL_META_TOKEN_MEMBER_REF)
-				{
-					ILFieldNewToken(field);
-				}
-			}
-			return field;
+			/* This is a duplicate */
+			ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+							  "duplicate definition for `%s'", name);
+			ILAsmErrors = 1;
 		}
+		else
+		{
+			/* Convert the MemberRef into a FieldDef */
+			ILMemberSetSignature((ILMember *)field, sig);
+			ILMemberSetAttrs((ILMember *)field,
+							 ~((ILUInt32)0), attributes);
+			if((ILField_Token(field) & IL_META_TOKEN_MASK)
+					== IL_META_TOKEN_MEMBER_REF)
+			{
+				ILFieldNewToken(field);
+			}
+		}
+		return field;
 	}
 
 	/* Create a new field block */

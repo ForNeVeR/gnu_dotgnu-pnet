@@ -97,7 +97,7 @@ extern	"C" {
 			} while (0)
 
 static int CallMethod(ILExecThread *thread, ILMethod *method,
-					  void *result, VA_LIST va)
+					  void *result, int isCtor, VA_LIST va)
 {
 	ILType *signature = ILMethod_Signature(method);
 	CVMWord *stacktop, *stacklimit;
@@ -117,7 +117,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	stacklimit = thread->stackLimit;
 
 	/* Push the arguments onto the evaluation stack */
-	if(ILType_HasThis(signature))
+	if(ILType_HasThis(signature) && !isCtor)
 	{
 		/* Push the "this" argument */
 		CHECK_SPACE(1);
@@ -262,7 +262,16 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	frame->except = IL_MAX_UINT32;
 
 	/* Call the method */
-	thread->pcstart = pcstart;
+	if(isCtor)
+	{
+		/* We are calling the allocation constructor, which starts
+		   several bytes before the actual method entry point */
+		thread->pcstart = pcstart - ILCoderCtorOffset(thread->process->coder);
+	}
+	else
+	{
+		thread->pcstart = pcstart;
+	}
 	thread->pc = 0;
 	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);
@@ -270,6 +279,12 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	{
 		/* Pop the exception from the stack */
 		thread->thrownException = thread->stackTop[-1].ptrValue;
+		--(thread->stackTop);
+	}
+	else if(isCtor)
+	{
+		/* Copy the returned object value */
+		*((void **)result) = thread->stackTop[-1].ptrValue;
 		--(thread->stackTop);
 	}
 	else
@@ -401,7 +416,7 @@ static int CallVirtualMethod(ILExecThread *thread, ILMethod *method,
 					  		 void *result, VA_LIST va)
 {
 	/* TODO */
-	return CallMethod(thread, method, result, va);
+	return CallMethod(thread, method, result, 0, va);
 }
 
 int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
@@ -409,7 +424,7 @@ int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
 {
 	int threwException;
 	VA_START(result);
-	threwException = CallMethod(thread, method, result, VA_GET_LIST);
+	threwException = CallMethod(thread, method, result, 0, VA_GET_LIST);
 	VA_END;
 	return threwException;
 }
@@ -425,7 +440,7 @@ int ILExecThreadCallVirtual(ILExecThread *thread, ILMethod *method,
 	}
 	else
 	{
-		threwException = CallMethod(thread, method, result, VA_GET_LIST);
+		threwException = CallMethod(thread, method, result, 0, VA_GET_LIST);
 	}
 	VA_END;
 	return threwException;
@@ -451,7 +466,7 @@ int ILExecThreadCallNamed(ILExecThread *thread, const char *typeName,
 		/* There is a pending exception waiting for the caller */
 		return 1;
 	}
-	threwException = CallMethod(thread, method, result, VA_GET_LIST);
+	threwException = CallMethod(thread, method, result, 0, VA_GET_LIST);
 	VA_END;
 	return threwException;
 }
@@ -482,7 +497,7 @@ int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 	}
 	else
 	{
-		threwException = CallMethod(thread, method, result, VA_GET_LIST);
+		threwException = CallMethod(thread, method, result, 0, VA_GET_LIST);
 	}
 	VA_END;
 	return threwException;
@@ -494,6 +509,7 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 	ILMethod *ctor;
 	ILClass *classInfo;
 	ILObject *result;
+	VA_START(signature);
 
 	/* TODO: array types */
 
@@ -502,6 +518,7 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 	if(!ctor)
 	{
 		/* TODO: Throw a "MissingMethodException" */
+		VA_END;
 		return 0;
 	}
 
@@ -510,16 +527,18 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 	if(!_ILLayoutClass(thread, classInfo))
 	{
 		/* TODO: Throw a "TypeLoadException" */
+		VA_END;
 		return 0;
 	}
 
-	/* Does the method have IL code associated with it? */
-	if(ILMethod_RVA(ctor))
-	{
-	}
-
-	/* Done */
+	/* Call the constructor */
 	result = 0;
+	if(CallMethod(thread, ctor, &result, 1, VA_GET_LIST))
+	{
+		/* The constructor threw an exception */
+		VA_END;
+		return 0;
+	}
 	return result;
 }
 

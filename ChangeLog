@@ -18,6 +18,8 @@ add the "StringConstant" coder API.
 off by one when matching byref, ptr, and array types; reversed test
 in "MatchClassNameInner"; bad length determination in "MatchClassNameInner".
 
+* engine/call.c: implement constructor method calls.
+
 2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods

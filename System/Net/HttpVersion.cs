@@ -28,7 +28,12 @@ public class HttpVersion
 	public static readonly Version Version10 = new Version(1,0);
 	public static readonly Version Version11 = new Version(1,1);
 
-	protected HttpVersion() {}
+#if !ECMA_COMPAT
+	public 
+#else
+	protected 
+#endif
+	HttpVersion() {}
 
 }; // class HttpVersion
 

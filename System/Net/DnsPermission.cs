@@ -27,7 +27,11 @@ using System;
 using System.Security;
 using System.Security.Permissions;
 
-public class DnsPermission : CodeAccessPermission
+public 
+#if !ECMA_COMPAT
+sealed
+#endif
+class DnsPermission : CodeAccessPermission
 #if !ECMA_COMPAT
 	, IUnrestrictedPermission
 #endif

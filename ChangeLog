@@ -3,6 +3,10 @@
 	
 	* System/Net/WebClient.cs: Implement this non-ecma class partially for
 	web access abstraction.
+	
+	* System/Net/DnsPermission.cs, System/Net/GlobalProxySelection.cs,
+	System/Net/HttpVersion.cs: Fix up a couple of minor visibility 
+	non-ECMA differences.
 
 2003-05-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 

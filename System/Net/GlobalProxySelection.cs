@@ -33,7 +33,12 @@ public class GlobalProxySelection
 
 	// Constructors
 
-	protected GlobalProxySelection()
+#if !ECMA_COMPAT
+	public
+#else
+	protected 
+#endif
+	GlobalProxySelection()
 	{
 
 	}

@@ -16,6 +16,7 @@ TESTS = ainit1.cs \
 		field3.cs \
 		field4.cs \
 		field5.cs \
+		indexer1.cs \
 		interface1.cs \
 		interface2.cs \
 		interface3.cs \

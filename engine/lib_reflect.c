@@ -3213,7 +3213,43 @@ ILObject *_IL_Module_GetType(ILExecThread *_thread, ILObject *_this,
  */
 System_Array *_IL_Module_GetTypes(ILExecThread *_thread, ILObject *_this)
 {
-	/* TODO */
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	ILModule *module = ((item != 0) ? ILProgramItemToModule(item) : 0);
+	System_Array *array=NULL; 
+	ILObject **buffer=NULL;   
+	ILUInt32 num=0; 
+	ILClass *classInfo=NULL;
+
+	if(module && _ILClrCheckItemAccess(_thread, item)) 
+	{
+		ILImage *image = ILProgramItem_Image(module);
+		num = ILImageNumTokens (image, IL_META_TOKEN_TYPE_DEF);
+		array = (System_Array *)ILExecThreadNew(_thread, "[oSystem.Object;",
+												"(Ti)V", (ILVaInt)num);
+		if(!array)
+		{
+			return 0;
+		}
+		buffer = (ILObject **)(ArrayToBuffer(array));
+  		while ((classInfo = (ILClass *) ILImageNextToken 
+							(image, IL_META_TOKEN_TYPE_DEF,classInfo)) != 0)
+		{
+			if (classInfo)
+			{
+				*buffer = _ILGetClrType(_thread,classInfo);
+				if(!(*buffer)) //error getting type
+				{
+					return 0;
+				}
+				++buffer;
+			}
+		}
+		return array;
+	}
+	else
+	{
+		/* TODO: metadata-based file modules */
+	}
 	return 0;
 }
 

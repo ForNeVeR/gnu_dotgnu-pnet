@@ -2483,3 +2483,21 @@ ILNode_EvalConst(ILNode_ToBool)
 		        ILGenConstToBoolean(info, value));
 	}
 }
+
+/*
+ * Determine if an overflow or pedantic context ends in a return statement.
+ */
+ILNode_EndsInReturnImpl(ILNode_Overflow),
+ILNode_EndsInReturnImpl(ILNode_NoOverflow),
+ILNode_EndsInReturnImpl(ILNode_Pedantic),
+ILNode_EndsInReturnImpl(ILNode_NoPedantic)
+{
+	if(node->expr)
+	{
+		return ILNode_EndsInReturnImpl(node->expr);
+	}
+	else
+	{
+		return 2;
+	}
+}

@@ -902,6 +902,7 @@ struct _tagILSwitchValue
 				 void *data1, void *data2)
 %operation %virtual void ILNode_GenRef
 				(ILNode_LValue *node, ILGenInfo *info);
+%operation %virtual int ILNode_EndsInReturnImpl(ILNode *node);
 
 /*
  * Statements only need "ILNode_GenDiscard".
@@ -1176,4 +1177,12 @@ ILNode_GenRef(ILNode_LValueNoRef),
 ILNode_GenRef(ILNode_LValueNoRefUnaryExpr)
 {
 	/* Nothing to do here */
+}
+
+/*
+ * Default implementation of "ILNode_EndsInReturnImpl".
+ */
+ILNode_EndsInReturnImpl(ILNode)
+{
+	return 0;
 }

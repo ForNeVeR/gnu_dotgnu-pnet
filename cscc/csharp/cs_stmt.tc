@@ -1253,6 +1253,14 @@ JavaGenDiscard(ILNode_Using)
 }
 
 /*
+ * Determine if a "using" statement ends in a return statement.
+ */
+ILNode_EndsInReturnImpl(ILNode_Using)
+{
+	return ILNode_EndsInReturnImpl(node->stmt);
+}
+
+/*
  * Perform semantic analysis for the "unsafe" statement.
  */
 ILNode_SemAnalysis(ILNode_Unsafe)
@@ -1280,6 +1288,14 @@ ILNode_GenDiscard(ILNode_Unsafe)
 JavaGenDiscard(ILNode_Unsafe)
 {
 	JavaGenDiscard(node->stmt, info);
+}
+
+/*
+ * Determine if an "unsafe" statement ends in a return statement.
+ */
+ILNode_EndsInReturnImpl(ILNode_Unsafe)
+{
+	return ILNode_EndsInReturnImpl(node->stmt);
 }
 
 /*
@@ -1314,6 +1330,14 @@ ILNode_GenDiscard(ILNode_Fixed)
 JavaGenDiscard(ILNode_Fixed)
 {
 	/* Nothing to do here: `fixed' is illegal for Java code */
+}
+
+/*
+ * Determine if a "fixed" statement ends in a return statement.
+ */
+ILNode_EndsInReturnImpl(ILNode_Fixed)
+{
+	return ILNode_EndsInReturnImpl(node->stmt);
 }
 
 /*

@@ -429,7 +429,12 @@ public class InputOutputWidget : InputOnlyWidget
 	/// <para>Update this widget by immediately redrawing invalidated
 	/// regions.</para>
 	/// </summary>
-	public void Update()
+	///
+	/// <param name="clear">
+	/// <para>Setting clear to true clears the region to the background.
+	/// </para>
+	/// </param>
+	public void Update(bool clear)
 			{
 				Region region = invalidateRegion;
 				invalidateRegion = null;
@@ -440,8 +445,8 @@ public class InputOutputWidget : InputOnlyWidget
 
 					// No point redrawing if we are unmapped or the
 					// region to be drawn is empty.
-					if(mapped && AncestorsMapped &&
-					   ClearRegion(region, Xlib.Bool.False))
+					if(mapped && AncestorsMapped && (!clear ||
+					   ClearRegion(region, Xlib.Bool.False)))
 					{
 						// Paint the region as if we got a regular expose.
 						Graphics graphics = new Graphics(this);
@@ -456,31 +461,15 @@ public class InputOutputWidget : InputOnlyWidget
 							graphics.Dispose();
 						}
 					}
-					else
-					{
-						// Dispose the region that we no longer require.
-						region.Dispose();
-					}
+					// Dispose the region that we no longer require.
+					region.Dispose();
 				}
 			}
 
 	// Flush pending invalidates to the X server.
 	internal void FlushInvalidates()
 			{
-				Region region = invalidateRegion;
-				invalidateRegion = null;
-				nextInvalidate = null;
-				if(region != null)
-				{
-					// No point redrawing if we are unmapped.
-					if(mapped && AncestorsMapped)
-					{
-						ClearRegion(region, Xlib.Bool.True);
-					}
-
-					// Dispose the region that we no longer require.
-					region.Dispose();
-				}
+				Update(false);
 			}
 
 	/// <summary>
@@ -595,6 +584,7 @@ public class InputOutputWidget : InputOnlyWidget
 					graphics.SetClipRegion(region);
 					OnPaint(graphics);
 					graphics.Dispose();
+					region.Dispose();
 				}
 			}
 

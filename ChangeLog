@@ -25,6 +25,9 @@
 	* runtime/System/Encoding.cs: the UTF8 object should be created
 	with preambles by default.
 
+	* runtime/System/IO/StreamWriter.cs: convert the stream contents
+	using the prevailing Encoding instance.
+
 2002-11-27  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* runtime/System/Private/NumberFormat/CurrencyFormatter.cs,

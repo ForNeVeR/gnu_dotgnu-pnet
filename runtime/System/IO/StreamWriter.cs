@@ -41,13 +41,11 @@ public class StreamWriter : TextWriter
 	// Internal state.
 	private Stream 		stream;
 	private Encoding	encoding;
+	private Encoder		encoder;
 	private int    		bufferSize;
 	private char[] 		inBuffer;
-	private int    		inBufferPosn;
 	private int    		inBufferLen;
 	private byte[] 		outBuffer;
-	private int    		outBufferPosn;
-	private int    		outBufferLen;
 	private bool   		autoFlush;
 
 	// Constructors that are based on a stream.
@@ -83,13 +81,12 @@ public class StreamWriter : TextWriter
 				// Initialize this object.
 				this.stream = stream;
 				this.encoding = encoding;
+				this.encoder = encoding.GetEncoder();
 				this.bufferSize = bufferSize;
 				this.inBuffer = new char [bufferSize];
-				this.inBufferPosn = 0;
 				this.inBufferLen = 0;
-				this.outBuffer = new byte [bufferSize];
-				this.outBufferPosn = 0;
-				this.outBufferLen = 0;
+				this.outBuffer = new byte
+					[encoding.GetMaxByteCount(bufferSize)];
 				this.autoFlush = false;
 
 				// Write the encoding's preamble.
@@ -136,13 +133,12 @@ public class StreamWriter : TextWriter
 				// Initialize this object.
 				this.stream = stream;
 				this.encoding = encoding;
+				this.encoder = encoding.GetEncoder();
 				this.bufferSize = bufferSize;
 				this.inBuffer = new char [bufferSize];
-				this.inBufferPosn = 0;
 				this.inBufferLen = 0;
-				this.outBuffer = new byte [bufferSize];
-				this.outBufferPosn = 0;
-				this.outBufferLen = 0;
+				this.outBuffer = new byte
+					[encoding.GetMaxByteCount(bufferSize)];
 				this.autoFlush = false;
 
 				// Write the encoding's preamble.
@@ -176,22 +172,31 @@ public class StreamWriter : TextWriter
 			{
 				if(stream != null)
 				{
-					if(outBufferPosn < outBufferLen)
-					{
-						stream.Write(outBuffer, outBufferPosn,
-									 outBufferLen - outBufferPosn);
-					}
+					Convert(true);
+					stream.Flush();
 					stream.Close();
 					stream = null;
 				}
 				inBuffer = null;
-				inBufferPosn = 0;
 				inBufferLen = 0;
 				outBuffer = null;
-				outBufferPosn = 0;
-				outBufferLen = 0;
 				bufferSize = 0;
 				base.Dispose(disposing);
+			}
+
+	// Convert the contents of the input buffer and write them.
+	private void Convert(bool flush)
+			{
+				if(inBufferLen > 0)
+				{
+					int len = encoder.GetBytes(inBuffer, 0, inBufferLen,
+											   outBuffer, 0, flush);
+					if(len > 0)
+					{
+						stream.Write(outBuffer, 0, len);
+					}
+					inBufferLen = 0;
+				}
 			}
 
 	// Flush the contents of the writer's buffer to the underlying stream.
@@ -201,32 +206,47 @@ public class StreamWriter : TextWriter
 				{
 					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
-				if(outBufferPosn < outBufferLen)
-				{
-					stream.Write(outBuffer, outBufferPosn,
-								 outBufferLen - outBufferPosn);
-					outBufferPosn = 0;
-					outBufferLen = 0;
-				}
+				Convert(true);
 				stream.Flush();
 			}
 
 	// Write a string to the stream writer.
 	public override void Write(String value)
 			{
-				char[] chars;
-
 				if(value == null)
 				{
 					throw new ArgumentNullException("value");
 				}
-				chars = value.ToCharArray();
-				Write(chars, 0, chars.Length);
+				int temp;
+				int index = 0;
+				int count = value.Length;
+				while(count > 0)
+				{
+					temp = bufferSize - inBufferLen;
+					if(temp > count)
+					{
+						temp = count;
+					}
+					value.CopyTo(index, inBuffer, inBufferLen, temp);
+					index += temp;
+					count -= temp;
+					inBufferLen += temp;
+					if(inBufferLen >= bufferSize)
+					{
+						Convert(false);
+					}
+				}
+				if(autoFlush)
+				{
+					Convert(false);
+					stream.Flush();
+				}
 			}
 
 	// Write a buffer of characters to this stream writer.
 	public override void Write(char[] buffer, int index, int count)
 			{
+				// Validate the parameters.
 				if(buffer == null)
 				{
 					throw new ArgumentNullException("buffer");
@@ -247,18 +267,28 @@ public class StreamWriter : TextWriter
 						(_("Arg_InvalidArrayRange"));
 				}
 
-				while (count > 0)
+				// Copy the characters to the input buffer.
+				int temp;
+				while(count > 0)
 				{
-					if (this.outBufferLen >= this.bufferSize - 1)
+					temp = bufferSize - inBufferLen;
+					if(temp > count)
 					{
-						stream.Write(outBuffer, outBufferPosn,
-									 outBufferLen - outBufferPosn);
-						outBufferPosn = 0;
-						outBufferLen = 0;
-						stream.Flush();
+						temp = count;
 					}
-					this.outBuffer[this.outBufferLen++] = (byte) buffer[index++];
-					--count;
+					Array.Copy(buffer, index, inBuffer, inBufferLen, temp);
+					index += temp;
+					count -= temp;
+					inBufferLen += temp;
+					if(inBufferLen >= bufferSize)
+					{
+						Convert(false);
+					}
+				}
+				if(autoFlush)
+				{
+					Convert(false);
+					stream.Flush();
 				}
 			}
 	public override void Write(char[] buffer)
@@ -273,7 +303,16 @@ public class StreamWriter : TextWriter
 	// Write a single character to this stream writer.
 	public override void Write(char value)
 			{
-				Write(new char[]{value}, 0, 1);
+				inBuffer[inBufferLen++] = value;
+				if(inBufferLen >= bufferSize)
+				{
+					Convert(false);
+				}
+				if(autoFlush)
+				{
+					Convert(false);
+					stream.Flush();
+				}
 			}
 
 	// Get or set the autoflush state of this stream writer.

@@ -1,3 +1,27 @@
+2003-11-28  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Drawing.Win32/DrawingGraphics.cs: Background mode not being
+	set so pens with transparency were not always being rendered properly.
+
+	* samples/FormsTest.cs, samples/samples.build
+	samples/FormsTest.small_folder.ico, samples/FormsTest.small_text.ico,
+	samples/FormsTest.test 15bpp.bmp, samples/FormsTest.test 16bpp.bmp,
+	samples/FormsTest.test 1bpp.bmp, samples/FormsTest.test 4bpp.bmp,
+	samples/FormsTest.test 8bpp.bmp, samples/FormsTest.test.bmp,
+	samples/FormsTest.test.ico: MessageBox tests, fix tab order,
+	embed images, change image names.
+
+	* System.Windows.Forms/ButtonBase.cs, System.Windows.Forms/ComboBox.cs,
+	System.Windows.Forms/ContainerControl.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs, 
+	System.Windows.Forms/Menu.cs, System.Windows.Forms/TabPage.cs,
+	System.Windows.Forms/TreeNode.cs, System.Windows.Forms/TreeView.cs:
+	implement Select, focus handling, some mnemonic support, fix
+	Control.CanSelect, Control.ContainsFocus, Control.TabIndex,
+	Control.Contains, Control.Focus, Control,IsInputKeys, implement
+	MouseButtons, GetNextControl, SelectNextControl, ScaleCore,
+	indexing controls without an index, Form key handling methods,
+	Form.Select, UpdateDefaultButton, Focus Handling for TabPage.
 
 2003-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -381,6 +381,50 @@ ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread *_thread,
 }
 
 /*
+ * private static IntPtr ClrAttributeCreate(IntPtr assembly, IntPtr ctor,
+ *											byte[] blob);
+ */
+ILNativeInt _IL_AssemblyBuilder_ClrAttributeCreate
+		(ILExecThread * _thread, ILNativeInt assembly,
+		 ILNativeInt ctor, System_Array * blob)
+{
+	if(assembly && blob)
+	{
+		ILAttribute *attr = ILAttributeCreate
+			(ILProgramItem_Image((ILAssembly *)assembly), 0);
+		if(!attr)
+		{
+			return 0;
+		}
+		ILAttributeSetType(attr, (ILProgramItem *)ctor);
+		if(!ILAttributeSetValue(attr, ArrayToBuffer(blob),
+								(unsigned long)(long)(blob->length)))
+		{
+			return 0;
+		}
+		return (ILNativeInt)attr;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private static void ClrAttributeAddToItem(IntPtr item, IntPtr attribute);
+ */
+void _IL_AssemblyBuilder_ClrAttributeAddToItem
+		(ILExecThread * _thread, ILNativeInt item, ILNativeInt attribute)
+{
+	if(item && attribute)
+	{
+		ILProgramItemAddAttribute
+			((ILProgramItem *)item, (ILAttribute *)attribute);
+		ILProgramItemConvertAttrs((ILProgramItem *)item);
+	}
+}
+
+/*
  * private static IntPtr ClrEventCreate(IntPtr classInfo, String name,
  *                                      IntPtr type, EventAttributes attrs);
  */

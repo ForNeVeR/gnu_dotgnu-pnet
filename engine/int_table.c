@@ -597,9 +597,9 @@ static void marshal_lpb(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_GC_suppressed
 
 IL_METHOD_BEGIN(GC_Methods)
+	IL_METHOD("SuppressFinalize", "(oSystem.Object;)V", _IL_GC_SuppressFinalize, marshal_vpp)
 	IL_METHOD("KeepAlive", "(oSystem.Object;)V", _IL_GC_KeepAlive, marshal_vpp)
 	IL_METHOD("ReRegisterForFinalize", "(oSystem.Object;)V", _IL_GC_ReRegisterForFinalize, marshal_vpp)
-	IL_METHOD("SuppressFinalize", "(oSystem.Object;)V", _IL_GC_SuppressFinalize, marshal_vpp)
 	IL_METHOD("WaitForPendingFinalizers", "()V", _IL_GC_WaitForPendingFinalizers, marshal_vp)
 	IL_METHOD("Collect", "()V", _IL_GC_Collect, marshal_vp)
 	IL_METHOD("GetTotalMemory", "(Z)l", _IL_GC_GetTotalMemory, marshal_lpb)
@@ -1975,6 +1975,24 @@ static void marshal_jppiiiiip(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_jpjjp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((void * *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpjj(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILNativeUInt, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_bpjjpji(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILNativeUInt, void *, ILNativeUInt, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((void * *)(avalue[3])), *((ILNativeUInt *)(avalue[4])), *((ILInt32 *)(avalue[5])));
@@ -1996,6 +2014,8 @@ static void marshal_ipjjppppppp(void (*fn)(), void *rvalue, void **avalue)
 IL_METHOD_BEGIN(AssemblyBuilder_Methods)
 	IL_METHOD("ClrGetItemToken", "(j)i", _IL_AssemblyBuilder_ClrGetItemToken, marshal_ipj)
 	IL_METHOD("ClrAssemblyCreate", "(oSystem.String;iiiivSystem.Reflection.Emit.AssemblyBuilderAccess;&j)j", _IL_AssemblyBuilder_ClrAssemblyCreate, marshal_jppiiiiip)
+	IL_METHOD("ClrAttributeCreate", "(jj[B)j", _IL_AssemblyBuilder_ClrAttributeCreate, marshal_jpjjp)
+	IL_METHOD("ClrAttributeAddToItem", "(jj)V", _IL_AssemblyBuilder_ClrAttributeAddToItem, marshal_vpjj)
 	IL_METHOD("ClrSave", "(jjoSystem.String;jvSystem.Reflection.Emit.PEFileKinds;)Z", _IL_AssemblyBuilder_ClrSave, marshal_bpjjpji)
 	IL_METHOD("ClrWriteMethod", "(jj[B[B[j[i[[B[j[i)i", _IL_AssemblyBuilder_ClrWriteMethod, marshal_ipjjppppppp)
 	IL_METHOD("ClrGetItemFromToken", "(ji)j", _IL_AssemblyBuilder_ClrGetItemFromToken, marshal_jpji)

@@ -105,9 +105,9 @@ extern void _IL_String_SetChar(ILExecThread * _thread, System_String * _this, IL
 extern ILBool _IL_Double_IsNaN(ILExecThread * _thread, ILDouble d);
 extern ILInt32 _IL_Double_TestInfinity(ILExecThread * _thread, ILDouble d);
 
+extern void _IL_GC_SuppressFinalize(ILExecThread * _thread, ILObject * obj);
 extern void _IL_GC_KeepAlive(ILExecThread * _thread, ILObject * obj);
 extern void _IL_GC_ReRegisterForFinalize(ILExecThread * _thread, ILObject * obj);
-extern void _IL_GC_SuppressFinalize(ILExecThread * _thread, ILObject * obj);
 extern void _IL_GC_WaitForPendingFinalizers(ILExecThread * _thread);
 extern void _IL_GC_Collect(ILExecThread * _thread);
 extern ILInt64 _IL_GC_GetTotalMemory(ILExecThread * _thread, ILBool forceFullCollection);
@@ -412,6 +412,8 @@ extern ILInt32 _IL_TypeBuilder_ClrTypeImportMember(ILExecThread * _thread, ILNat
 
 extern ILInt32 _IL_AssemblyBuilder_ClrGetItemToken(ILExecThread * _thread, ILNativeInt item);
 extern ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread * _thread, ILString * name, ILInt32 v1, ILInt32 v2, ILInt32 v3, ILInt32 v4, ILInt32 access, ILNativeInt * writer);
+extern ILNativeInt _IL_AssemblyBuilder_ClrAttributeCreate(ILExecThread * _thread, ILNativeInt assembly, ILNativeInt ctor, System_Array * blob);
+extern void _IL_AssemblyBuilder_ClrAttributeAddToItem(ILExecThread * _thread, ILNativeInt item, ILNativeInt attribute);
 extern ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread * _thread, ILNativeInt assembly, ILNativeInt writer, ILString * path, ILNativeInt entryMethod, ILInt32 fileKind);
 extern ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread * _thread, ILNativeInt assembly, ILNativeInt writer, System_Array * header, System_Array * code, System_Array * codeFixupPtrs, System_Array * codeFixupOffsets, System_Array * exceptionBlocks, System_Array * exceptionBlockFixupPtrs, System_Array * exceptionBlockFixupOffsets);
 extern ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread * _thread, ILNativeInt assembly, ILInt32 token);

@@ -1,4 +1,9 @@
 
+2004-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_emit.c:
+	implement the internalcalls for CustomAttributeBuilder.
+
 2004-09-17  Gopal V  <gopalv82@yahoo.com>
 
 	* support/socket.c: Fix minor bug in ILSysIOSocketSelect() for infinite

@@ -1001,15 +1001,8 @@ ILNode_GenValue(ILNode_ObjectCreationExpression)
 		info->maxStackHeight = info->stackHeight;
 	}
 
-	/* The final managed value or object reference is now on the stack */
-	if(ILClassIsValueType(ILMethod_Owner(node->methodInfo)))
-	{
-		return ILMachineType_ManagedValue;
-	}
-	else
-	{
-		return ILMachineType_ObjectRef;
-	}
+	/* The final object is now on the stack , this is *not* a managed value */
+	return ILTypeToMachineType(ILClassToType(ILMethod_Owner(node->methodInfo)));
 }
 
 /*

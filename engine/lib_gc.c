@@ -80,7 +80,8 @@ void _IL_GC_SuppressFinalize(ILExecThread *_thread, ILObject *obj)
 		/* We can only suppress finalization if the current method
 		   has the same class as the object itself */
 		ILMethod *method = ILExecThreadStackMethod(_thread, 1);
-		if(method && ILMethod_Owner(method) == GetObjectClass(obj))
+		if(method && ILClassInheritsFrom(GetObjectClass(obj),
+								ILMethod_Owner(method)))
 		{
 			ILGCRegisterFinalizer
 				((void *)(((unsigned char *)obj) - IL_BEST_ALIGNMENT),

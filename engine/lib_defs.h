@@ -49,11 +49,14 @@ typedef struct
 #define	StringToBuffer(str)		((ILUInt16 *)(((System_String *)(str)) + 1))
 
 /*
- * Internal structure of an array header.
+ * Internal structure of an array header, padded to the best alignment.
  */
-typedef struct
+typedef union
 {
-	ILInt32		length;
+	ILInt32			length;
+#if !defined(__i386) && !defined(__i386__)
+	unsigned char	pad[IL_BEST_ALIGNMENT];
+#endif
 
 } System_Array;
 

@@ -6,6 +6,9 @@
 	* libgc/*: update the libgc library using gc6.2alpha3 from the
 	libgc ftp site.
 
+	* engine/lib_defs.h: make sure that the System_Array header is padded
+	to the best possible alignment on 64-bit platforms.
+
 2003-02-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, Makefile.am: automatically add "-fno-inline-functions"

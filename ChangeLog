@@ -4,6 +4,9 @@
 	* runtime/System/Runtime/Serialization/SerializationInfo.cs:
 	add missing "CLSCompliant(false)" attributes.
 
+	* runtime/System/Exception.cs: implementation serialization
+	support code for "System.Exception".
+
 2003-04-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/RegexpMethods.cs, runtime/System/IO/Directory.cs,

@@ -52,6 +52,9 @@ applications that didn't expect them to be present.
 */
 
 public class Exception
+#if !ECMA_COMPAT
+	: ISerializable
+#endif
 {
 
 	// Private members.
@@ -63,6 +66,10 @@ public class Exception
 #if !ECMA_COMPAT
 	private int hresult;
 	private bool hresultSet;
+	private String stackTraceString;
+	private String remoteStackTraceString;
+	private int remoteStackIndex;
+	private String exceptionMethodString;
 #endif
 
 	// Constructors.
@@ -85,7 +92,24 @@ public class Exception
 #if !ECMA_COMPAT
 	protected Exception(SerializationInfo info, StreamingContext context)
 		{
-			// TODO
+			if(info == null)
+			{
+				throw new ArgumentNullException("info");
+			}
+			message = info.GetString("Message");
+			innerException = (Exception)(info.GetValue("InnerException",
+													   typeof(Exception)));
+			helpLink = info.GetString("HelpURL");
+			source = info.GetString("Source");
+			stackTraceString = info.GetString("StackTraceString");
+			remoteStackTraceString = info.GetString("RemoteStackTraceString");
+			remoteStackIndex = info.GetInt32("RemoteStackIndex");
+			exceptionMethodString = info.GetString("ExceptionMethod");
+			hresult = info.GetInt32("HResult");
+			if(hresult != 0)
+			{
+				hresultSet = true;
+			}
 		}
 #endif
 
@@ -246,6 +270,13 @@ public class Exception
 		{
 			get
 			{
+				if(source == null && stackTrace != null &&
+				   stackTrace.Length > 0)
+				{
+					MethodBase method = MethodBase.GetMethodFromHandle
+								(stackTrace[0].method);
+					source = method.DeclaringType.Module.Assembly.FullName;
+				}
 				return source;
 			}
 			set
@@ -261,6 +292,12 @@ public class Exception
 				{
 					return (new StackTrace(this, true)).ToString();
 				}
+			#if !ECMA_COMPAT
+				else if(stackTraceString != null)
+				{
+					return stackTraceString;
+				}
+			#endif
 				else
 				{
 					return String.Empty;
@@ -317,12 +354,29 @@ public class Exception
 		}
 
 #if !ECMA_COMPAT
-	[TODO]
-	public virtual void GetObjectData (SerializationInfo info, 
-										StreamingContext context)
-	{
-	}
-#endif
+
+	// Get the serialization data for this exception object.
+	public virtual void GetObjectData(SerializationInfo info, 
+									  StreamingContext context)
+		{
+			if(info == null)
+			{
+				throw new ArgumentNullException("info");
+			}
+			info.AddValue("ClassName", GetType().FullName, typeof(String));
+			info.AddValue("Message", message, typeof(String));
+			info.AddValue("InnerException", innerException, typeof(Exception));
+			info.AddValue("HelpURL", helpLink, typeof(String));
+			info.AddValue("Source", Source, typeof(String));
+			info.AddValue("StackTraceString", StackTrace, typeof(String));
+			info.AddValue("RemoteStackTraceString", remoteStackTraceString,
+						  typeof(String));
+			info.AddValue("RemoteStackIndex", remoteStackIndex);
+			info.AddValue("ExceptionMethod", exceptionMethodString);
+			info.AddValue("HResult", HResult);
+		}
+
+#endif // !ECMA_COMPAT
 
 }; // class Exception
 

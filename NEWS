@@ -1,4 +1,53 @@
 
+0.5.12 (6 September 2003)
+
+	System.Windows.Forms:
+
+	* TextBox (Mohan Embar, Neil Cawse).
+	* Fix delivery of key events from Xsharp (Rhys Weatherley).
+	* StatusBar, ComboBox (Simon Guindon).
+	* Text layout, font sizes (Neil Cawse).
+	* Handle client areas properly (Neil Cawse).
+	* Improvements to the region and clipping code (Neil Cawse).
+	* Label, TabControl, Menu (Neil Cawse).
+	* Toolkit support for mouse captures (Rhys Weatherley, Neil Cawse).
+	* Clipboard, ScrollBar, GroupBox (Cecilio Pardo).
+	* ButtonBase, ControlPaint, ThemePainter (Richard Baumann).
+	* RadioButton (Mario Luca Bernardi, Neil Cawse).
+	* Brush properties for pens (Rhys Weatherley).
+	* Infrastructure for images (Neil Cawse).
+	* Debug code for Xsharp event classes (Rhys Weatherley).
+
+	Other:
+
+	* Lots of simple TODO's throughout the code.
+	* Lots of signature-compatibility improvements.
+	* Examples and bug fixes for System.Reflection.Emit (Richard Baumann).
+	* Bug in "ClrType.TrimMembers" (Gopal V).
+	* Environment.GetFolderPath for Win32 (Yannis Bres).
+	* Continue serialization and remoting support.
+	* Fix culture lookup in Resource Manager.
+	* Remove stubbed tests, because they are confusing.
+	* Recursive directory creation.
+	* Conversion classes in System.ComponentModel.
+	* Stub out XML serialization classes (Richard Baumann).
+	* Update internalcalls for generic types.
+	* System.Configuration.Install and ilinstall.
+	* Bind "I18N-handlers.def" directly to "I18N.dll".
+	* Many new code pages, especially CJK, Mac, and EBCDIC.
+	* Rewrite "Path", "MemoryStream" in "System.IO".
+	* Remove obsolete Platform classes.
+	* Fully-qualified assembly names.
+	* HijriCalendar.
+	* Reading non-string resources.
+	* ResourceWriter.
+	* Serialization and de-serialization for many classes.
+	* Cleanups and missing classes in System.Net.
+	* Pass all string comparisons through the culture classes.
+	* Code page information for I18N TextInfo classes.
+	* Test cases and bug fixes for exception classes in "System".
+	* System.CodeDom.Compiler.
+
 0.5.10 (26 July 2003)
 
 	System.Windows.Forms:

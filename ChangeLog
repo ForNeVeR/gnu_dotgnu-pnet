@@ -1,4 +1,10 @@
 
+2002-10-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/pm_output.c, codegen/pm_output.h: check in the
+	support code for Parrot code generation (incomplete and
+	doesn't compile yet).
+
 2002-10-21  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, codegen/cg_nodes.tc, codegen/cg_stmt.tc, 

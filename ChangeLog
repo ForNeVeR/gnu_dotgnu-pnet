@@ -4,6 +4,11 @@
 	* configure.in: add "mingw" to the set of detected platforms
 	for Win32 threading support.
 
+	* engine/cvm_ptr.c, engine/engine.h, engine/heap.c, engine/layout.c:
+	use "_ILEngineAllocAtomic" to allocate objects that don't have any
+	GC'able fields, to prevent the GC from scanning the large static
+	data areas in C applications, which rarely include managed types.
+
 2003-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c, cscc/csharp/cs_internal.h,

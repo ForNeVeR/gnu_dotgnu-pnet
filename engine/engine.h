@@ -266,8 +266,10 @@ struct _tagILClassPrivate
 	ILUInt32		staticSize;			/* Size of static data */
 	ILUInt32		inLayout : 1;		/* Non-zero if in layout algorithm */
 	ILUInt32		hasFinalizer : 1;	/* Non-zero if non-trivial finalizer */
-	ILUInt32		alignment : 7;		/* Preferred instance alignment */
-	ILUInt32		nativeAlignment : 7;/* Preferred native alignment */
+	ILUInt32		managedInstance : 1;/* Non-zero if managed instance field */
+	ILUInt32		managedStatic : 1;	/* Non-zero if managed static field */
+	ILUInt32		alignment : 6;		/* Preferred instance alignment */
+	ILUInt32		nativeAlignment : 6;/* Preferred native alignment */
 	ILUInt32		vtableSize : 16;	/* Size of the vtable */
 	ILMethod      **vtable;				/* Methods within the vtable */
 	ILObject       *clrType;			/* Associated CLR type object */

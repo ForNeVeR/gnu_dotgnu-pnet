@@ -2548,9 +2548,20 @@ VMCASE(COP_GET_STATIC):
 		VMBREAKNOEND;
 	}
 	COPY_STATE_TO_THREAD();
-	((ILClassPrivate *)(classInfo->userData))->staticData =
-		_ILEngineAlloc(thread, 0,
-		   ((ILClassPrivate *)(classInfo->userData))->staticSize);
+	if(((ILClassPrivate *)(classInfo->userData))->managedStatic)
+	{
+		((ILClassPrivate *)(classInfo->userData))->staticData =
+			_ILEngineAlloc(thread, 0,
+			   ((ILClassPrivate *)(classInfo->userData))->staticSize);
+	}
+	else
+	{
+		/* There are no managed fields in the static area,
+		   so use atomic allocation */
+		((ILClassPrivate *)(classInfo->userData))->staticData =
+			_ILEngineAllocAtomic(thread, 0,
+			   ((ILClassPrivate *)(classInfo->userData))->staticSize);
+	}
 	RESTORE_STATE_FROM_THREAD();
 	stacktop[0].ptrValue =
 		((ILClassPrivate *)(classInfo->userData))->staticData;

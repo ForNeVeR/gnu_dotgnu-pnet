@@ -43,6 +43,8 @@ typedef struct
 	ILMethod  **vtable;
 	ILUInt32	staticSize;
 	int			hasFinalizer;
+	int			managedInstance;
+	int			managedStatic;
 
 } LayoutInfo;
 
@@ -60,6 +62,7 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 	if(ILType_IsPrimitive(type))
 	{
 		/* Lay out a primitive type */
+		layout->managedInstance = 0;
 		switch(ILType_ToElement(type))
 		{
 			case IL_META_ELEMTYPE_BOOLEAN:
@@ -159,6 +162,7 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 				layout->size = sizeof(ILTypedRef);
 				layout->alignment = _IL_ALIGN_FOR_TYPE(void_p);
 			#endif
+				layout->managedInstance = 1;
 			}
 			break;
 
@@ -170,6 +174,7 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 		layout->vtable = 0;
 		layout->staticSize = 0;
 		layout->hasFinalizer = 0;
+		layout->managedStatic = 0;
 		return 1;
 	}
 	else if(ILType_IsValueType(type))
@@ -203,6 +208,8 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 		layout->vtable = 0;
 		layout->staticSize = 0;
 		layout->hasFinalizer = 0;
+		layout->managedInstance = ILTypeIsReference(ILTypeStripPrefixes(type));
+		layout->managedStatic = 0;
 		return 1;
 	}
 }
@@ -464,6 +471,8 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 			layout->vtable = classPrivate->vtable;
 			layout->staticSize = classPrivate->staticSize;
 			layout->hasFinalizer = classPrivate->hasFinalizer;
+			layout->managedInstance = classPrivate->managedInstance;
+			layout->managedStatic = classPrivate->managedStatic;
 			return 1;
 		}
 	}
@@ -505,6 +514,8 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		layout->nativeAlignment = 1;
 		layout->vtableSize = 0;
 		layout->hasFinalizer = 0;
+		layout->managedInstance = 0;
+		layout->managedStatic = 0;
 	}
 
 	/* Zero the static size, which must be recomputed for each class */
@@ -633,6 +644,12 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 			{
 				maxNativeAlignment = typeLayout.nativeAlignment;
 			}
+
+			/* Set the "managedInstance" flag if the type is managed */
+			if(typeLayout.managedInstance)
+			{
+				layout->managedInstance = 1;
+			}
 		}
 	}
 
@@ -728,6 +745,12 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 				field->offset = layout->staticSize;
 				field->nativeOffset = layout->staticSize;
 				layout->staticSize += typeLayout.size;
+			}
+
+			/* Set the "managedStatic" flag if the type is managed */
+			if(typeLayout.managedInstance)
+			{
+				layout->managedStatic = 1;
 			}
 		}
 	}
@@ -845,6 +868,8 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	classPrivate->vtableSize = layout->vtableSize;
 	classPrivate->vtable = vtable;
 	classPrivate->hasFinalizer = layout->hasFinalizer;
+	classPrivate->managedInstance = layout->managedInstance;
+	classPrivate->managedStatic = layout->managedStatic;
 	layout->vtable = vtable;
 
 	/* Done */

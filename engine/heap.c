@@ -200,8 +200,19 @@ ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo)
 	{
 		return 0;
 	}
-	return _ILEngineAlloc(thread, classInfo,
-						  ((ILClassPrivate *)(classInfo->userData))->size);
+	if(((ILClassPrivate *)(classInfo->userData))->managedInstance)
+	{
+		return _ILEngineAlloc
+				(thread, classInfo,
+				 ((ILClassPrivate *)(classInfo->userData))->size);
+	}
+	else
+	{
+		/* There are no managed fields, so use atomic allocation */
+		return _ILEngineAllocAtomic
+				(thread, classInfo,
+				 ((ILClassPrivate *)(classInfo->userData))->size);
+	}
 }
 
 #ifdef	__cplusplus

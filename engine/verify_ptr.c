@@ -117,15 +117,17 @@ static ILClass *GetClassToken(ILMethod *method, unsigned char *pc)
 		token = IL_READ_UINT32(pc + 2);
 	}
 
-	/* The token must be a TypeRef or TypeDef */
+	/* The token must be a TypeRef, TypeDef, or TypeSpec */
 	if((token & IL_META_TOKEN_MASK) != IL_META_TOKEN_TYPE_REF &&
-	   (token & IL_META_TOKEN_MASK) != IL_META_TOKEN_TYPE_DEF)
+	   (token & IL_META_TOKEN_MASK) != IL_META_TOKEN_TYPE_DEF &&
+	   (token & IL_META_TOKEN_MASK) != IL_META_TOKEN_TYPE_SPEC)
 	{
 		return 0;
 	}
 
 	/* Get the token and resolve it */
-	classInfo = (ILClass *)ILImageTokenInfo(ILProgramItem_Image(method), token);
+	classInfo = ILProgramItemToClass
+		((ILProgramItem *)ILImageTokenInfo(ILProgramItem_Image(method), token));
 	if(classInfo)
 	{
 		classInfo = ILClassResolve(classInfo);
@@ -360,7 +362,7 @@ case IL_OP_STIND_REF:
 		if(STK_BINARY_2 == ILEngineType_O &&
 		   IsObjectRef(stack[stackSize - 2].typeInfo))
 		{
-	   		if(AssignCompatible(&(stack[stackSize - 1]),
+	   		if(AssignCompatible(method, &(stack[stackSize - 1]),
 							    stack[stackSize - 2].typeInfo))
 			{
 				ILCoderPtrAccess(coder, opcode);
@@ -551,15 +553,21 @@ case IL_OP_NEWARR:
 		/* TODO: We need to find some way to cache the array type
 		   so that we don't keep recreating new arrays every time
 		   the method is converted */
-		ILCoderNewArray(coder, classType, STK_UNARY);
-		stack[stackSize - 1].engineType = ILEngineType_O;
-		stack[stackSize - 1].typeInfo =
-			ILTypeCreateArray(ILImageToContext(ILProgramItem_Image(method)),
-							  1, classType);
-		if(stack[stackSize - 1].typeInfo == 0)
+		classType = ILTypeCreateArray
+				(ILImageToContext(ILProgramItem_Image(method)), 1, classType);
+		if(!classType)
 		{
 			VERIFY_MEMORY_ERROR();
 		}
+		classInfo = ILClassFromType(ILProgramItem_Image(method),
+									0, classType, 0);
+		if(!classInfo)
+		{
+			VERIFY_MEMORY_ERROR();
+		}
+		ILCoderNewArray(coder, classType, classInfo, STK_UNARY);
+		stack[stackSize - 1].engineType = ILEngineType_O;
+		stack[stackSize - 1].typeInfo = classType;
 	}
 	else
 	{
@@ -670,7 +678,7 @@ case IL_OP_STELEM_REF:
 	   STK_TERNARY_3 == ILEngineType_O)
 	{
 		if(elemType == ILType_Void ||
-		   AssignCompatible(&(stack[stackSize - 1]), elemType))
+		   AssignCompatible(method, &(stack[stackSize - 1]), elemType))
 		{
 			ILCoderArrayAccess(coder, opcode, STK_TERNARY_2, elemType);
 			stackSize -= 3;

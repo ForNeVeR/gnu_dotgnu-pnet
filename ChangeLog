@@ -21,6 +21,11 @@ of "_ILTypeToSyntheticClass".
 * engine/verify_call.c, engine/verify_var.c: recognise synthetic
 types when resolving "this" parameters.
 
+* engine/verify.c, engine/verify_call.c, engine/verify_obj.c,
+engine/verify_ptr.c, engine/verify_var.c: add a "method" parameter
+to "AssignCompatible" so that "ILClassFromType" can be used to
+check assignment-compatibility of object references.
+
 2001-10-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/engine.h: remove the thread argument

@@ -261,7 +261,7 @@ case IL_OP_CASTCLASS:
 		if(classInfo != 0)
 		{
 			ILCoderCastClass(coder, classInfo, 1);
-			stack[stackSize - 1].typeInfo = ILType_FromClass(classInfo);
+			stack[stackSize - 1].typeInfo = ILClassToType(classInfo);
 		}
 		else
 		{
@@ -284,7 +284,7 @@ case IL_OP_ISINST:
 		if(classInfo != 0)
 		{
 			ILCoderCastClass(coder, classInfo, 0);
-			stack[stackSize - 1].typeInfo = ILType_FromClass(classInfo);
+			stack[stackSize - 1].typeInfo = ILClassToType(classInfo);
 		}
 		else
 		{
@@ -574,7 +574,7 @@ case IL_OP_STFLD:
 			/* Accessing a field within an object reference */
 			if(IsSubClass(stack[stackSize - 2].typeInfo,
 						  ILField_Owner(fieldInfo)) &&
-			   AssignCompatible(&(stack[stackSize - 1]), classType))
+			   AssignCompatible(method, &(stack[stackSize - 1]), classType))
 			{
 				if(!ILField_IsStatic(fieldInfo))
 				{
@@ -704,7 +704,7 @@ case IL_OP_STSFLD:
 	if(fieldInfo)
 	{
 		classType = ILField_Type(fieldInfo);
-		if(AssignCompatible(&(stack[stackSize - 1]), classType))
+		if(AssignCompatible(method, &(stack[stackSize - 1]), classType))
 		{
 			ILCoderStoreStaticField(coder, fieldInfo, classType, STK_UNARY);
 			--stackSize;

@@ -264,9 +264,12 @@ static int IsObjectRef(ILType *type)
  * Determine if a stack item is assignment-compatible with
  * a particular memory slot (argument, local, field, etc).
  */
-static int AssignCompatible(ILEngineStackItem *item, ILType *type)
+static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
+							ILType *type)
 {
+	ILImage *image;
 	ILClass *classInfo;
+	ILClass *classInfo2;
 
 	if(item->engineType == ILEngineType_I4 ||
 	   item->engineType == ILEngineType_I)
@@ -307,28 +310,28 @@ static int AssignCompatible(ILEngineStackItem *item, ILType *type)
 			   compatible with any object reference type */
 			return IsObjectRef(type);
 		}
-		else if(ILType_IsClass(item->typeInfo) && ILType_IsClass(type))
+		if(!IsObjectRef(type) || !IsObjectRef(item->typeInfo))
+		{
+			/* Both types must be object references */
+			return 0;
+		}
+		image = ILProgramItem_Image(method);
+		classInfo = ILClassFromType(image, 0, type, 0);
+		classInfo2 = ILClassFromType(image, 0, item->typeInfo, 0);
+		if(classInfo && classInfo2)
 		{
 			/* Is the type a regular class or an interface? */
-			classInfo = ILType_ToClass(type);
 			if(!ILClass_IsInterface(classInfo))
 			{
 				/* Regular class: the value must inherit from the type */
-				return ILClassInheritsFrom(ILType_ToClass(item->typeInfo),
-										   classInfo);
+				return ILClassInheritsFrom(classInfo2, classInfo);
 			}
 			else
 			{
 				/* Interface which the value must implement or inherit from */
-				return ILClassImplements(ILType_ToClass(item->typeInfo),
-										 classInfo) ||
-				       ILClassInheritsFrom(ILType_ToClass(item->typeInfo),
-										   classInfo);
+				return ILClassImplements(classInfo2, classInfo) ||
+				       ILClassInheritsFrom(classInfo2, classInfo);
 			}
-		}
-		else if(ILTypeIdentical(item->typeInfo, type))
-		{
-			return 1;
 		}
 		else
 		{

@@ -1,4 +1,8 @@
+2004-07-17  Klaus Treichel  <ktreichel@web.de>
 
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	fix build problem with indexers. (Patch #3211 of fsc)
+ 
 2004-07-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, Basic/Strings.cs, resources/en_US/Basic/Basic.txt,

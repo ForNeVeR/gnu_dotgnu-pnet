@@ -1559,7 +1559,7 @@ internal abstract class BinaryValueWriter
 					int length = ar.GetLength(0);
 					for(int i = 0; i < length; i++) 
 					{
-						if(ar[i] == null)
+						if(ar.GetValue(i) == null)
 						{
 							// Write a null value.
 							context.writer.Write
@@ -1570,7 +1570,7 @@ internal abstract class BinaryValueWriter
 							BinaryValueWriter writer = GetWriter(context, type.GetElementType());
 							if(writer != null)
 							{
-								writer.WriteInline(context, ar[i], ar[i].GetType(), type);
+								writer.WriteInline(context, ar.GetValue(i), ar.GetValue(i).GetType(), type);
 							}
 							else
 							{

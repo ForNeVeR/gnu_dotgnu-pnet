@@ -26,6 +26,12 @@
 
 	* runtime/Platform/RegexpMethods.cs, runtime/System/Private/Regexp.cs:
 	Add basic regex support for pnetlib.
+
+	* runtime/Platform/FileInfo.cs : Change name to prevent future conflicts
+	to System.IO.FileInfo.
+
+	* runtime/Platform/InternalFileInfo.cs, runtime/Platform/DirMethods.cs : 
+	Move FileInfo to InternalFileInfo.
 	
 2002-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -60,7 +60,7 @@ internal class DirMethods
 	extern public static String GetCurrentDirectory();
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static Errno GetFilesInDirectory(string path, out FileInfo[]
+	extern public static Errno GetFilesInDirectory(string path, out InternalFileInfo[]
 	files);
 
 	

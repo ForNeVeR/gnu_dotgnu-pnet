@@ -1,4 +1,10 @@
 
+2002-11-17  Gopal.V <gopalv82@symonds.net>
+
+	* csharp/stmt/using1.cs, csharp/stmt/using1.il, csharp/stmt/using1.jl,
+	csharp/stmt/using2.cs, csharp/stmt/using2.err, csharp/stmt/using2.jerr:
+	test cases for using alias operations.
+
 2002-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/method1.il, csharp/class/method13.il,

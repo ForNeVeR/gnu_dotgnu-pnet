@@ -1,5 +1,6 @@
 
 2003-05-17  Gopal.V  <gopalv82@symonds.net>
+
 	* configure.in, cscc/Makefile.am, cscc/java_main.c, cscc/java/java_cast.tc
 	cscc/java/java_const.tc, cscc/java/java_decls.tc, cscc/java/java_defs.tc
 	cscc/java/java_gather.c, cscc/java/java_grammar.y, cscc/java/java_invoke.tc
@@ -18,6 +19,9 @@
 
 	* cscc/bf/bf_codegen.tc: allow the method name and classname to be
 	supplied as command line parameters.
+
+	* cscc/common/cc_options.c, cscc/common/cc_options.h: enable the 
+	java and bf compilers to use "-x" parameter.
 
 2003-05-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -391,6 +391,18 @@ static void xOption(char *arg)
 	{
 		prog_language = PROG_LANG_VB;
 	}
+	else if(!strcmp(arg, "java"))
+	{
+		prog_language = PROG_LANG_JAVA;
+	}
+	else if(!strcmp(arg, "bf"))
+	{
+		prog_language = PROG_LANG_BF;
+	}
+	else if(!strcmp(arg, "brainfuck"))
+	{
+		prog_language = PROG_LANG_BF;
+	}
 	else if(!strcmp(arg, "none"))
 	{
 		prog_language = PROG_LANG_DEFAULT;

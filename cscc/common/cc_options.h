@@ -34,7 +34,9 @@ extern	"C" {
 #define	PROG_LANG_JL			3
 #define	PROG_LANG_C				4
 #define	PROG_LANG_VB			5
-#define	PROG_LANG_OTHER			6
+#define	PROG_LANG_JAVA			6
+#define	PROG_LANG_BF			7
+#define	PROG_LANG_OTHER			8
 
 /*
  * Supported output/macro dump formats for "dump_output_format".

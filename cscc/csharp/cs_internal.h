@@ -258,6 +258,23 @@ void CSProcessAttrsForParam(ILGenInfo *info, ILMethod *method,
 void CSAddDefaultMemberAttr(ILGenInfo *info, ILClass *classInfo,
 							const char *name);
 
+/*
+ * Insert generic type actuals into an expression node at
+ * the right-most position.
+ */
+ILNode *CSInsertGenericReference(ILNode *mainNode, ILNode *actuals);
+
+/*
+ * Insert a type at the beginning of a type actuals list.
+ */
+ILNode *CSInsertTypeActuals(ILNode *type, ILNode *actuals);
+
+/*
+ * Insert a method invocation into an expression node at the
+ * right-most position, just after a generic type reference.
+ */
+ILNode *CSInsertMethodInvocation(ILNode *mainNode, ILNode *parameters);
+
 #ifdef	__cplusplus
 };
 #endif

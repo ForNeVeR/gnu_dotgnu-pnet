@@ -300,3 +300,76 @@ ILNode_SemAnalysis(ILNode_TypeSuffix)
 	return CSSemValueDefault;
 }
 
+
+/*
+ * Perform semantic analysis for generic type actual parameters.
+ */
+ILNode_SemAnalysis(ILNode_TypeActuals)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for a generic type or method reference.
+ */
+ILNode_SemAnalysis(ILNode_GenericReference)
+{
+	/* TODO */
+	return ILNode_SemAnalysis(node->type, info, &(node->type));
+}
+
+%end %{
+
+/*
+ * Find the position to insert a generic type reference,
+ * to re-arrange an expression that was parsed by the
+ * "GenericReference" production in the grammar.
+ */
+static ILNode **FindGenericInsertPosition(ILNode *node, ILNode **parent)
+{
+	if(yyisa(node, ILNode_BinaryExpression))
+	{
+		ILNode_BinaryExpression *binary = (ILNode_BinaryExpression *)node;
+		return FindGenericInsertPosition(binary->expr2, &(binary->expr2));
+	}
+	else if(yyisa(node, ILNode_UnaryExpression))
+	{
+		ILNode_UnaryExpression *unary = (ILNode_UnaryExpression *)node;
+		return FindGenericInsertPosition(unary->expr, &(unary->expr));
+	}
+	else
+	{
+		return parent;
+	}
+}
+
+ILNode *CSInsertGenericReference(ILNode *mainNode, ILNode *actuals)
+{
+	ILNode **parent = FindGenericInsertPosition(mainNode, &mainNode);
+	*parent = ILNode_GenericReference_create(*parent, actuals);
+	return mainNode;
+}
+
+ILNode *CSInsertTypeActuals(ILNode *type, ILNode *actuals)
+{
+	if(yyisa(actuals, ILNode_TypeActuals))
+	{
+		((ILNode_TypeActuals *)actuals)->left =
+			CSInsertTypeActuals(type, ((ILNode_TypeActuals *)actuals)->left);
+		return actuals;
+	}
+	else
+	{
+		return ILNode_TypeActuals_create(type, actuals);
+	}
+}
+
+ILNode *CSInsertMethodInvocation(ILNode *mainNode, ILNode *parameters)
+{
+	ILNode **parent = FindGenericInsertPosition(mainNode, &mainNode);
+	*parent = ILNode_InvocationExpression_create(*parent, parameters);
+	return mainNode;
+}
+
+%}

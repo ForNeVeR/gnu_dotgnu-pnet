@@ -908,6 +908,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		RankSpecifiers RankSpecifierList 
 %type <node>		OptArrayInitializer ArrayInitializer
 %type <node>		OptVariableInitializerList VariableInitializerList
+%type <node>		TypeActuals
 %type <indexer>		IndexerDeclarator
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
@@ -1055,7 +1056,9 @@ QualifiedIdentifier
 
 QualifiedIdentifierPart
 	: Identifier							{ $$ = $1; }
-	| Identifier '<' TypeActuals '>'		{ $$ = $1; /* TODO */ }
+	| Identifier '<' TypeActuals '>'		{
+				MakeBinary(GenericReference, $1, $3);
+			}
 	;
 
 /*
@@ -1239,8 +1242,7 @@ Type
 				MakeUnary(PtrType, $1);
 			}
 	| Type '<' TypeActuals '>'	{
-				/* TODO: generic type references */
-				$$ = $1;
+				MakeBinary(GenericReference, $1, $3);
 			}
 	;
 
@@ -1256,14 +1258,13 @@ NonExpressionType
 				MakeUnary(PtrType, $1);
 			}
 	| NonExpressionType '<' TypeActuals '>'	{
-				/* TODO: generic type references */
-				$$ = $1;
+				MakeBinary(GenericReference, $1, $3);
 			}
 	;
 
 TypeActuals
-	: Type						{ /* TODO */ }
-	| TypeActuals ',' Type		{ /* TODO */ }
+	: Type						{ $$ = $1; }
+	| TypeActuals ',' Type		{ MakeBinary(TypeActuals, $1, $3); }
 	;
 
 /*
@@ -1276,8 +1277,8 @@ LocalVariableType
 				MakeBinary(LocalVariableType, $1, $2);
 			}
 	| PrimaryExpression '<' TypeActuals '>' TypeSuffixes	{
-				/* TODO: generic type declarations */
-				MakeBinary(LocalVariableType, $1, $5);
+				ILNode *type = ILNode_GenericReference_create($1, $3);
+				MakeBinary(LocalVariableType, type, $5);
 			}
 	| BuiltinType TypeSuffixes			{
 				MakeBinary(LocalVariableType, $1, $2);
@@ -1645,6 +1646,13 @@ ShiftExpression
  * Relational expressions also recognise generic type references.
  * We have to put them here instead of in the more logical place
  * of "PrimaryExpression" to prevent reduce/reduce conflicts.
+ *
+ * This has some odd consequences.  An expression such as "A + B<C>"
+ * will be parsed as "(A + B)<C>" instead of "A + (B<C>)".  To get
+ * around this, we insert the generic type parameters into the
+ * right-most part of the sub-expression, which should put the
+ * parameters back where they belong.  A similar problem happens
+ * with method invocations that involve generic method parameters.
  */
 RelationalExpression
 	: ShiftExpression				{ $$ = $1; }
@@ -1670,35 +1678,36 @@ RelationalExpression
 				$$ = $1;
 			}
 	| GenericReference '(' OptArgumentList ')'		{
-				MakeBinary(InvocationExpression, $1, $3); 
+				$$ = CSInsertMethodInvocation($1, $3);
 			}
 	;
 
 GenericReference
 	: RelationalExpression '<' ShiftExpression '>'		{
-				/* TODO: generic type reference */
-				$$ = $1;
+				$$ = CSInsertGenericReference($1, $3);
 			}
 	| RelationalExpression '<' ShiftExpression TypeSuffixList '>'	{
-				/* TODO: generic type reference */
-				$$ = $1;
+				$$ = CSInsertGenericReference
+					($1, ILNode_LocalVariableType_create($3, $4));
 			}
 	| RelationalExpression '<' ShiftExpression ',' TypeActuals '>'	{
-				/* TODO: generic type reference */
-				$$ = $1;
+				$$ = CSInsertGenericReference
+					($1, ILNode_TypeActuals_create($3, $5));
 			}
 	| RelationalExpression '<' ShiftExpression TypeSuffixList ',' 
 			TypeActuals '>'		{
-				/* TODO: generic type reference */
-				$$ = $1;
+				$$ = CSInsertGenericReference
+					($1, CSInsertTypeActuals
+						(ILNode_LocalVariableType_create($3, $4), $6));
 			}
 	| RelationalExpression '<' BuiltinType TypeSuffixes '>'	{
-				/* TODO: generic type reference */
-				$$ = $1;
+				$$ = CSInsertGenericReference
+					($1, ILNode_LocalVariableType_create($3, $4));
 			}
 	| RelationalExpression '<' BuiltinType TypeSuffixes ',' TypeActuals '>'	{
-				/* TODO: generic type reference */
-				$$ = $1;
+				$$ = CSInsertGenericReference
+					($1, CSInsertTypeActuals
+						(ILNode_LocalVariableType_create($3, $4), $6));
 			}
 	;
 
@@ -2626,7 +2635,7 @@ ClassDeclaration
 			}
 	;
 
-/* TODO: general parameter formal parameter list */
+/* TODO: generic formal parameter list */
 TypeFormals
 	: /* empty */
 	| '<' TypeFormalList '>'

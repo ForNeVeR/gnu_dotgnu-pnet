@@ -87,6 +87,16 @@
 	ILNode *type;
 	ILNode *suffixes;
 }
+%node ILNode_TypeActuals ILNode_Dummy =
+{
+	ILNode *left;
+	ILNode *right;
+}
+%node ILNode_GenericReference ILNode_Dummy =
+{
+	ILNode *type;
+	ILNode *actuals;
+}
 
 /*
  * Misc nodes.

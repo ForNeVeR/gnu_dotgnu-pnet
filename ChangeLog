@@ -1,4 +1,11 @@
 
+2003-02-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_defs.tc, cscc/csharp/cs_grammar.y,
+	cscc/csharp/cs_internal.h, cscc/csharp/cs_types.tc: build generic
+	type references during the parse; rearrange expression trees
+	to insert generic type parameters into the correct location.
+
 2003-02-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_gather.c: Generate compiler controlled asynchronous 

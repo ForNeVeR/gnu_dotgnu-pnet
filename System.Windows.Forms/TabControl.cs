@@ -385,15 +385,18 @@ namespace System.Windows.Forms
 			{
 				Rectangle bounds = GetTabRect(selectedIndex);
 				g.SetClip(new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height), Drawing.Drawing2D.CombineMode.Intersect);
-						
-				DrawItemState state = Focused?DrawItemState.Focus:DrawItemState.None;
+				
+				DrawItemState state;
+				if (Focused)
+					state = DrawItemState.Focus;
+				else
+					state = DrawItemState.None;
 				OnDrawItem( new DrawItemEventArgs(g, Font, bounds, selectedIndex, state, ForeColor, BackColor));
 			}
 
 			// Draw the Tab move buttons if necessary
 			if (moveButtonsShowing)
 			{
-				
 
 				using (SolidBrush b = new SolidBrush( foreColor) )
 				{
@@ -416,6 +419,15 @@ namespace System.Windows.Forms
 					});
 					
 				}
+			}
+		}
+
+		public void DrawButton(int index)
+		{
+			using (Graphics g = CreateGraphics())
+			{
+				g.Clip = new Region( positionInfo.positions[selectedIndex].bounds );
+				Draw(g);
 			}
 		}
 
@@ -852,10 +864,37 @@ namespace System.Windows.Forms
 			}
 		}
 
+		protected override bool IsInputKey(Keys keyData)
+		{
+			if ((keyData & Keys.Alt) == 0)
+			{
+				Keys key = keyData & Keys.KeyCode;
+				if (key == Keys.Prior || key == Keys.Next || key == Keys.End || key == Keys.Home)
+					return true;
+			}
+			return base.IsInputKey(keyData); 
+		}
+
+		protected override void OnKeyDown(KeyEventArgs e)
+		{
+			// Ctrl Tab and Ctrl Shift Tab to cycle between tabs.
+			if (e.KeyCode == Keys.Tab && (e.KeyData & Keys.Control) != 0)
+			{
+				if (SelectedIndex != -1)
+				{
+					if ((e.KeyData & Keys.Shift) == 0)
+						SelectedIndex = (SelectedIndex + 1) % TabCount;
+					else
+						SelectedIndex = (SelectedIndex + TabCount - 1) % TabCount;
+					e.Handled = true;
+				}
+			}
+			base.OnKeyDown(e);
+		}
+
 		// Select the tab that is clicked
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
-			base.OnMouseDown (e);
 			if (moveButtonsShowing && moveButtonLeftBounds.Contains( e.X, e.Y ))
 			{
 				moveButtonLeftState = ButtonState.Pushed;
@@ -879,12 +918,32 @@ namespace System.Windows.Forms
 			else
 			{
 				moveButtonRightState = ButtonState.Normal;
-				Focus();
-				int selectedIndex =  GetMouseOverTab( e.X, e.Y );
-				if (selectedIndex > -1)
-					SelectedIndex = selectedIndex;
+				int newSelectedIndex =  GetMouseOverTab( e.X, e.Y );
+				if (newSelectedIndex > -1)
+				{
+					SelectedIndex = newSelectedIndex;
+					// Makes sure that when tabbing off the tab into the child controls that the tab order resets.
+					ActiveControl = this;
+				}
 			}
+			base.OnMouseDown (e);
+
 		}
+
+		protected override void OnLeave(EventArgs e)
+		{
+			// Redraw the selected button to clear the focus.
+			DrawButton(selectedIndex);
+			base.OnLeave (e);
+		}
+
+		protected override void OnEnter(EventArgs e)
+		{
+			// Redraw the selected button to set the focus.
+			DrawButton(selectedIndex);
+			base.OnEnter (e);
+		}
+
 
 		// Find which tab the mouse is over
 		private int GetMouseOverTab(int x, int y)

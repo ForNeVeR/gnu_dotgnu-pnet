@@ -304,6 +304,86 @@ static void CVMCoder_MarkBytecode(ILCoder *_coder, ILUInt32 offset)
 }
 
 /*
+ * Dump method profile information.
+ */
+int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
+{
+	ILCache *cache = ((ILCVMCoder *)(process->coder))->cache;
+	ILMethod **list;
+	ILMethod **temp;
+	ILMethod *method;
+	ILClass *owner;
+	const char *name;
+	int haveCounts;
+	int len;
+
+	/* Get the list of all translated methods from the cache */
+	list = (ILMethod **)ILCacheGetMethodList(cache);
+	if(!list)
+	{
+		return 0;
+	}
+
+	/* Sort the method list into decreasing order of count */
+	if(list[0] != 0 && list[1] != 0)
+	{
+		ILMethod **outer;
+		ILMethod **inner;
+		for(outer = list; outer[1] != 0; ++outer)
+		{
+			for(inner = outer + 1; inner[0] != 0; ++inner)
+			{
+				if(outer[0]->count < inner[0]->count)
+				{
+					method = outer[0];
+					outer[0] = inner[0];
+					inner[0] = method;
+				}
+			}
+		}
+	}
+
+	/* Print the method information */
+	haveCounts = 0;
+	temp = list;
+	while((method = *temp++) != 0)
+	{
+		if(!(method->count))
+		{
+			continue;
+		}
+		owner = ILMethod_Owner(method);
+		name = ILClass_Namespace(owner);
+		len = 0;
+		if(name)
+		{
+			fputs(name, stream);
+			putc('.', stream);
+			len += strlen(name) + 1;
+		}
+		name = ILClass_Name(owner);
+		fputs(name, stream);
+		fputs("::", stream);
+		len += strlen(name) + 2;
+		name = ILMethod_Name(method);
+		fputs(name, stream);
+		putc(' ', stream);
+		len += strlen(name) + 1;
+		while(len < 40)
+		{
+			putc(' ', stream);
+			++len;
+		}
+		printf("%lu\n", (unsigned long)(method->count));
+		haveCounts = 1;
+	}
+
+	/* Clean up and exit */
+	ILFree(list);
+	return haveCounts;
+}
+
+/*
  * Include the rest of the CVM conversion routines from other files.
  * We split the implementation to make it easier to maintain the code.
  */

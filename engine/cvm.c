@@ -48,6 +48,7 @@ extern	"C" {
  * Enable or disable profiling.
  */
 /*#define	IL_PROFILE_CVM_INSNS*/
+/*#define	IL_PROFILE_CVM_METHODS*/
 #ifdef IL_PROFILE_CVM_INSNS
 extern int _ILCVMInsnCount[];
 #endif

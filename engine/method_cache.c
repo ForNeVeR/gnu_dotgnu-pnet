@@ -772,6 +772,90 @@ void *_ILCacheGetMethod(ILCache *cache, void *pc, void **cookie)
 }
 
 /*
+ * Count the number of methods in a sub-tree.
+ */
+static unsigned long CountMethods(ILCacheMethod *node,
+								  ILCacheMethod *nil,
+								  void **prev)
+{
+	unsigned long num;
+
+	/* Bail out if we've reached a leaf */
+	if(node == nil)
+	{
+		return 0;
+	}
+
+	/* Count the number of methods in the left sub-tree */
+	num = CountMethods(GetLeft(node), nil, prev);
+
+	/* Process the current node */
+	if(node->method != 0 && node->method != *prev)
+	{
+		++num;
+		*prev = node->method;
+	}
+
+	/* Count the number of methods in the right sub-tree */
+	return num + CountMethods(GetRight(node), nil, prev);
+}
+
+/*
+ * Fill a list with methods.
+ */
+static unsigned long FillMethodList(void **list,
+									ILCacheMethod *node,
+								    ILCacheMethod *nil,
+								    void **prev)
+{
+	unsigned long num;
+
+	/* Bail out if we've reached a leaf */
+	if(node == nil)
+	{
+		return 0;
+	}
+
+	/* Process the methods in the left sub-tree */
+	num = FillMethodList(list, GetLeft(node), nil, prev);
+
+	/* Process the current node */
+	if(node->method != 0 && node->method != *prev)
+	{
+		list[num] = node->method;
+		++num;
+		*prev = node->method;
+	}
+
+	/* Process the methods in the right sub-tree */
+	return num + FillMethodList(list + num, GetRight(node), nil, prev);
+}
+
+void **_ILCacheGetMethodList(ILCache *cache)
+{
+	void *prev;
+	unsigned long num;
+	void **list;
+
+	/* Count the number of distinct methods in the tree */
+	prev = 0;
+	num = CountMethods(cache->head.right, &(cache->nil), &prev);
+
+	/* Allocate a list to hold all of the method descriptors */
+	list = (void **)ILMalloc((num + 1) * sizeof(void *));
+	if(!list)
+	{
+		return 0;
+	}
+
+	/* Fill the list with methods and then return it */
+	prev = 0;
+	FillMethodList(list, cache->head.right, &(cache->nil), &prev);
+	list[num] = 0;
+	return list;
+}
+
+/*
  * Temporary structure for iterating over a method's debug list.
  */
 typedef struct

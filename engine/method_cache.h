@@ -130,6 +130,13 @@ void _ILCacheSetCookie(ILCachePosn *posn, void *cookie);
 void *_ILCacheGetMethod(ILCache *cache, void *pc, void **cookie);
 
 /*
+ * Get a list of all methods that are presently in the cache.
+ * The list is terminated by a NULL, and must be free'd with
+ * "ILFree".  Returns NULL if out of memory.
+ */
+void **_ILCacheGetMethodList(ILCache *cache);
+
+/*
  * Get the native offset that is associated with a bytecode
  * offset within a method.  The value "start" indicates the
  * entry point for the method.  Returns IL_MAX_UINT32 if
@@ -244,6 +251,7 @@ ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start,
 #define	ILCacheGetMethod		_ILCacheGetMethod
 #define	ILCacheGetNative		_ILCacheGetNative
 #define	ILCacheGetBytecode		_ILCacheGetBytecode
+#define	ILCacheGetMethodList	_ILCacheGetMethodList
 
 #ifdef	__cplusplus
 };

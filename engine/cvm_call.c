@@ -141,6 +141,9 @@ case COP_CALL:
 	pc = (unsigned char *)(methodToCall->userData);
 	thread->exceptHeight = 0;
 	method = methodToCall;
+#ifdef IL_PROFILE_CVM_METHODS
+	++(method->count);
+#endif
 }
 break;
 
@@ -215,6 +218,9 @@ case COP_CALL_EXTERN:
 	pc = (unsigned char *)tempptr;
 	thread->exceptHeight = 0;
 	method = methodToCall;
+#ifdef IL_PROFILE_CVM_METHODS
+	++(method->count);
+#endif
 }
 break;
 
@@ -276,6 +282,9 @@ case COP_CALL_CTOR:
 	pc = ((unsigned char *)tempptr) - ILCoderCtorOffset(thread->process->coder);
 	thread->exceptHeight = 0;
 	method = methodToCall;
+#ifdef IL_PROFILE_CVM_METHODS
+	++(method->count);
+#endif
 }
 break;
 
@@ -408,6 +417,9 @@ case COP_CALL_VIRTUAL:
 		pc = (unsigned char *)tempptr;
 		thread->exceptHeight = 0;
 		method = methodToCall;
+	#ifdef IL_PROFILE_CVM_METHODS
+		++(method->count);
+	#endif
 	}
 	else
 	{
@@ -486,6 +498,9 @@ case COP_CALL_INTERFACE:
 		pc = (unsigned char *)tempptr;
 		thread->exceptHeight = 0;
 		method = methodToCall;
+	#ifdef IL_PROFILE_CVM_METHODS
+		++(method->count);
+	#endif
 	}
 	else
 	{
@@ -843,6 +858,9 @@ case COP_CALL_VIRTUAL:
 		pc = (unsigned char *)tempptr;
 		thread->exceptHeight = 0;
 		method = methodToCall;
+	#ifdef IL_PROFILE_CVM_METHODS
+		++(method->count);
+	#endif
 	}
 	else
 	{
@@ -890,6 +908,9 @@ case COP_CALL_INTERFACE:
 		pc = (unsigned char *)tempptr;
 		thread->exceptHeight = 0;
 		method = methodToCall;
+	#ifdef IL_PROFILE_CVM_METHODS
+		++(method->count);
+	#endif
 	}
 	else
 	{

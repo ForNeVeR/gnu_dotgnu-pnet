@@ -42,6 +42,11 @@ int _ILUnregisterFromKernel(void);
 int _ILDumpInsnProfile(FILE *stream);
 
 /*
+ * Imports from "cvmc.c".
+ */
+int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process);
+
+/*
  * Table of command-line options.
  */
 static ILCmdLineOption const options[] = {
@@ -71,9 +76,13 @@ static ILCmdLineOption const options[] = {
 
 	/* Special internal options that are used for debugging.
 	   Note: -I won't do anything unless IL_PROFILE_CVM_INSNS
-	   is defined in "cvm.c" */
+	   is defined in "cvm.c", and -M won't do anything unless
+	   IL_PROFILE_CVM_METHODS is defined in "cvm.c" */
 	{"-I", 'I', 0, 0, 0},
 	{"--insn-profile", 'I', 0, 0, 0},
+	{"-M", 'M', 0, 0, 0},
+	{"--method-profile", 'M', 0, 0, 0},
+
 	{0, 0, 0, 0, 0}
 };
 
@@ -99,6 +108,7 @@ int main(int argc, char *argv[])
 	int sawException;
 	int registerMode = 0;
 	int dumpInsnProfile = 0;
+	int dumpMethodProfile = 0;
 
 	/* Initialize the locale routines */
 	ILInitLocale();
@@ -144,6 +154,12 @@ int main(int argc, char *argv[])
 			case 'I':
 			{
 				dumpInsnProfile = 1;
+			}
+			break;
+
+			case 'M':
+			{
+				dumpMethodProfile = 1;
 			}
 			break;
 
@@ -304,6 +320,14 @@ int main(int argc, char *argv[])
 		if(!_ILDumpInsnProfile(stdout))
 		{
 			fprintf(stderr, "%s: instruction profiles are not available\n",
+					progname);
+		}
+	}
+	if(dumpMethodProfile)
+	{
+		if(!_ILDumpMethodProfile(stdout, process))
+		{
+			fprintf(stderr, "%s: method profiles are not available\n",
 					progname);
 		}
 	}

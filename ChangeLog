@@ -11,3 +11,8 @@
 	include/il_coder.h: introduce the "pread_this" and "iread_this"
 	instructions into CVM to optimise the common cases of accessing
 	fields relative to "this".
+
+	* engine/cvm.c, engine/cvm_call.c, engine/cvmc.c, engine/ilrun.c,
+	engine/method_cache.c, engine/method_cache.h, image/program.h:
+	implement method profiling in the engine to get a picture of
+	which methods in pnetlib are highly used.

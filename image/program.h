@@ -255,6 +255,7 @@ struct _tagILMethod
 	ILParameter    *parameters;			/* Parameter definitions */
 	void           *userData;			/* User data for the runtime engine */
 	ILUInt32		index;				/* Data added by the runtime engine */
+	ILUInt32		count;				/* Profile count for the engine */
 
 };
 

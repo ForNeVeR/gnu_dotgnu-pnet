@@ -1010,18 +1010,16 @@ static BigNumTestInfo bignum_mod_7 = {		/* top words not the same */
 	(BigNumFunc)ILBigNumMod,
 	"168719475972", 0, "68719475971", "31280524030"
 };
-static BigNumTestInfo bignum_mod_8 = {		/* off by 1 in quotient estimate */
+static BigNumTestInfo bignum_mod_8 = {
 	(BigNumFunc)ILBigNumMod,
 	"1237940039285380277784805376", 0, "9223372041082634240",
 			"8655918490919632896"
 };
-#if 0 	/* doesn't work yet */
-static BigNumTestInfo bignum_mod_9 = {		/* off by 2 in quotient estimate */
+static BigNumTestInfo bignum_mod_9 = {
 	(BigNumFunc)ILBigNumMod,
 	"21044980677363067087499558912", 0, "9223372041082634240",
 			"9088264053469478912"
 };
-#endif
 
 /*
  * Test big number operations.
@@ -1226,7 +1224,7 @@ void ILUnitRegisterTests(void)
 	RegisterCrypt(test_bignum_oper, bignum_mod_6);
 	RegisterCrypt(test_bignum_oper, bignum_mod_7);
 	RegisterCrypt(test_bignum_oper, bignum_mod_8);
-	/*RegisterCrypt(test_bignum_oper, bignum_mod_9); -- doesn't work yet */
+	RegisterCrypt(test_bignum_oper, bignum_mod_9);
 }
 
 #ifdef	__cplusplus

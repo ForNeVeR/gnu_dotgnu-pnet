@@ -562,21 +562,39 @@ ILBigNum *ILBigNumSub(ILBigNum *numx, ILBigNum *numy, ILBigNum *modulus)
 }
 
 /*
+ * Determine if a word range in one big number is greater than
+ * or equal to a word range in another big number.
+ */
+static int BigRangeGe(ILUInt32 *words1, ILUInt32 *words2, ILInt32 size)
+{
+	while(size > 0)
+	{
+		--size;
+		if(words1[size] > words2[size])
+		{
+			return 1;
+		}
+		else if(words1[size] < words2[size])
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/*
  * Internal division implementation.  Returns zero if out of
- * memory or "numy" is zero.  The algorithm used here comes
- * from Volume 2 of "The Art of Computer Programming", by
- * Donald E. Knuth, Second Edition, Addison-Wesley.
+ * memory or "numy" is zero.
  */
 static int DivRem(ILBigNum *numx, ILBigNum *numy,
 				  ILBigNum **quotient, ILBigNum **remainder)
 {
 	ILUInt32 *quotWords;
 	ILUInt32 *remWords;
-	ILInt32 size, j, jadjust;
+	ILInt32 size, j;
 	ILUInt64 temp;
 	ILUInt32 divtemp;
-	ILUInt32 topy, topy2;
-	ILUInt32 topx, topx2, topx3;
+	ILUInt32 topy, word1, word2;
 	ILBigNum *normx;
 	ILBigNum *normy;
 	int shift, carry;
@@ -770,125 +788,89 @@ static int DivRem(ILBigNum *numx, ILBigNum *numy,
 		temp >>= 32;
 	}
 
-	/* Perform the division */
+	/* Perform the division.  Based on the algorithm given in
+	   "Multiple-Precision Arithmetic in C", Burton S. Kaliski, Jr,
+	   Doctor Dobb's Journal, August 1992 */
 	topy = normy->words[normy->size - 1];
-	topy2 = normy->words[normy->size - 2];
-	for(j = 0; j <= (numx->size - numy->size); ++j)
+	for(j = (numx->size - numy->size); j >= 0; --j)
 	{
-		/* Get the top three words of "normx" */
-		jadjust = normx->size - 1 - j;
-		topx = normx->words[jadjust];
-		if(jadjust > 0)
+		/* Underestimate the quotient digit */
+		if(topy == IL_MAX_UINT32)
 		{
-			topx2 = normx->words[jadjust - 1];
-			if(jadjust > 1)
-			{
-				topx3 = normx->words[jadjust - 2];
-			}
-			else
-			{
-				topx3 = 0;
-			}
+			divtemp = normx->words[j + numy->size];
 		}
 		else
 		{
-			topx2 = 0;
-			topx3 = 0;
+			temp = (((ILUInt64)(normx->words[j + numy->size])) << 32) |
+			       ((ILUInt64)(normx->words[j + numy->size - 1]));
+			divtemp = (ILUInt32)(temp / (topy + 1));
 		}
 
-		/* Calculate the trial quotient word */
-		temp = (((ILUInt64)topx) << 32) | ((ILUInt64)topx2);
-		if(topx == topy)
-		{
-			divtemp = IL_MAX_UINT32;
-		}
-		else
-		{
-			divtemp = (ILUInt32)(temp / ((ILUInt64)topy));
-		}
-		while((((ILUInt64)topy2) * ((ILUInt64)divtemp)) >
-			  (((temp - ((ILUInt64)divtemp) * ((ILUInt64)topy)) << 32)
-			  		+ (ILUInt64)topx3))
-		{
-			--divtemp;
-		}
-
-		/* Multiply "normy" by "divtemp" and subtract from "normx" */
+		/* Subtract "normy * divtemp" from "normx" */
 		temp = 0;
 		carry = 0;
 		for(size = 0; size < normy->size; ++size)
 		{
 			/* Put the next word of "normy * divtemp" into "topx" */
 			temp += ((ILUInt64)(normy->words[size])) * (ILUInt64)divtemp;
-			topx = (ILUInt32)temp;
+			word1 = (ILUInt32)temp;
 			temp >>= 32;
 
 			/* Subtract "topx" from the corresponding word in "normx" */
-			jadjust = normx->size - 1 - (j + normy->size - size);
-			topx2 = normx->words[jadjust];
+			word2 = normx->words[j + size];
 			if(carry)
 			{
-				if((normx->words[jadjust] -= topx + 1) < topx2)
+				if((normx->words[j + size] -= word1 + 1) < word2)
 				{
 					carry = 0;
 				}
 			}
 			else
 			{
-				if((normx->words[jadjust] -= topx) > topx2)
+				if((normx->words[j + size] -= word1) > word2)
 				{
 					carry = 1;
 				}
 			}
 		}
-		jadjust = normx->size - 1 - j;
-		topx = (ILUInt32)temp;
-		topx2 = normx->words[jadjust];
-		if(carry)
-		{
-			if((normx->words[jadjust] -= topx + 1) < topx2)
-			{
-				carry = 0;
-			}
-		}
-		else
-		{
-			if((normx->words[jadjust] -= topx) > topx2)
-			{
-				carry = 1;
-			}
-		}
+		normx->words[j + size] -= ((ILUInt32)temp) + ((ILUInt32)carry);
 
-		/* If we had a carry, then decrease "divtemp" and add back */
-		if(carry)
+		/* Correct the estimate */
+		while(normx->words[j + size] != 0 ||
+		      BigRangeGe(normx->words + j, normy->words, normy->size))
 		{
-			--divtemp;
+			++divtemp;
 			carry = 0;
 			for(size = 0; size < normy->size; ++size)
 			{
-				topx = normy->words[size];
-				jadjust = normx->size - 1 - (j + normy->size - size);
+				word2 = normx->words[j + size];
 				if(carry)
 				{
-					if((normx->words[jadjust] -= topx + 1) < topx)
+					if((normx->words[j + size] -= normy->words[size] + 1)
+							< word2)
 					{
 						carry = 0;
 					}
 				}
 				else
 				{
-					if((normx->words[jadjust] -= topx) > topx)
+					if((normx->words[j + size] -= normy->words[size])
+							> word2)
 					{
 						carry = 1;
 					}
 				}
 			}
+			if(carry)
+			{
+				--(normx->words[j + size]);
+			}
 		}
 
-		/* Set the next quotient word */
+		/* Set the quotient digit */
 		if(quotWords)
 		{
-			quotWords[(*quotient)->size - 1 - j] = divtemp;
+			quotWords[j] = divtemp;
 		}
 	}
 
@@ -916,8 +898,8 @@ static int DivRem(ILBigNum *numx, ILBigNum *numy,
 	/* Free temporary values and clear sensitive values */
 	ILBigNumFree(normx);
 	ILBigNumFree(normy);
-	topx = topx2 = topx3 = 0;
-	topy = topy2 = 0;
+	word1 = word2 = 0;
+	topy = 0;
 	temp = 0;
 	divtemp = 0;
 

@@ -8,6 +8,9 @@
 	* support/bignum.c, tests/test_crypt.c: big number regression tests
 	and bug fixes.
 
+	* support/bignum.c, tests/test_crypt.c: rewrite the big number
+	division algorithm to use a simpler, and more reliable, algorithm.
+
 2002-07-14  Gopal.V  <gopalv82@symonds.net>
 
 	* csdoc/doc_html.c, csdoc/doc_texi.c : fix the table bug

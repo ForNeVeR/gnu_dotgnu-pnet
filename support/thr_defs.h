@@ -112,7 +112,7 @@ struct _tagILThread
 	_ILSemaphore					suspendAck;
 	ILThreadStartFunc 	volatile	startFunc;
 	void *            	volatile	startArg;
-	void *				volatile	objectArg;
+	void *				volatile	userObject;
 	_ILWakeup						wakeup;
 	_ILWakeupQueue					joinQueue;
 	ILThreadCleanupEntry			*firstCleanupEntry;

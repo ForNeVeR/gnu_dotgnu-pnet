@@ -129,7 +129,7 @@ void *ILThreadGetObject(ILThread *thread);
  * Set the object reference that is associated with a thread.
  * This is used by the engine to store a pointer to an ILExecThread.
  */
-void ILThreadSetObject(ILThread *thread, void *objectArg);
+void ILThreadSetObject(ILThread *thread, void *userObject);
 
 /*
  * Suspend a thread.  Does nothing if the thread is already

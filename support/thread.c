@@ -90,7 +90,7 @@ static void _ILThreadInit(void)
 	_ILSemaphoreCreate(&(mainThread.resumeAck));
 	_ILSemaphoreCreate(&(mainThread.suspendAck));
 	mainThread.startFunc        = 0;
-	mainThread.objectArg        = 0;
+	mainThread.userObject       = 0;
 	mainThread.startArg			= 0;
 	mainThread.destroyOnExit	= 0;
 	mainThread.monitor = ILWaitMonitorCreate();
@@ -255,6 +255,8 @@ void _ILThreadRun(ILThread *thread)
 		(*(thread->startFunc))(thread->startArg);
 	}
 
+	thread->startArg = 0;
+	
 	_ILMutexLock(&(thread->lock));
 	{
 		/* Mark the thread as stopped */
@@ -311,7 +313,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *startArg)
 	_ILSemaphoreCreate(&(thread->resumeAck));
 	_ILSemaphoreCreate(&(thread->suspendAck));
 	thread->startFunc = startFunc;
-	thread->objectArg = 0;
+	thread->userObject = 0;
 	thread->startArg = startArg;
 	_ILWakeupCreate(&(thread->wakeup));
 	_ILWakeupQueueCreate(&(thread->joinQueue));
@@ -376,12 +378,12 @@ ILThread *ILThreadSelf(void)
 
 void *ILThreadGetObject(ILThread *thread)
 {
-	return thread->objectArg;
+	return thread->userObject;
 }
 
-void ILThreadSetObject(ILThread *thread, void *objectArg)
+void ILThreadSetObject(ILThread *thread, void *userObject)
 {
-	thread->objectArg = objectArg;
+	thread->userObject = userObject;
 }
 
 int ILThreadSuspend(ILThread *thread)

@@ -1,4 +1,9 @@
 
+2004-05-09  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/lib_object.c : Resolve classes before laying them out
+	or converting them to ILObject . (fixes IsAssignableFrom problems).
+
 2004-05-08  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* codegen/cg_stmt.tc: make "goto case" emit a leave when

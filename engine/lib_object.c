@@ -122,6 +122,15 @@ ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 {
 	ILObject *obj;
 
+	classInfo = ILClassResolve(classInfo);
+
+	if(!classInfo)
+	{
+		thread->thrownException = _ILSystemException
+			(thread, "System.TypeInitializationException");
+		return 0;
+	}
+
 	/* Make sure that the class has been laid out */
 	IL_METADATA_WRLOCK(thread);
 	if(!_ILLayoutClass(classInfo))

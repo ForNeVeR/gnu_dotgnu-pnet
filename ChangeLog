@@ -5,6 +5,10 @@
 	search for owned items in a way that avoids loading an
 	item unless it is actually the one that was sought.
 
+	* codegen/cg_gen.h, codegen/cg_stmt.tc, codegen/jv_stmt.tc:
+	fixed a bug in "foreach" which caused it to use the wrong
+	kind of jump when a "break" appeared in the loop body.
+
 2003-10-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/ilrun.1, engine/ilverify.1:

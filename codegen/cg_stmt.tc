@@ -33,7 +33,8 @@
  * Push a new entry onto the loop stack.
  */
 static void PushLoop(ILGenInfo *info, ILLabel *continueLabel,
-					 ILLabel *breakLabel, char *name)
+					 ILLabel *breakLabel, char *name,
+					 int isForeachCollection)
 {
 	if(info->loopStackSize >= info->loopStackMax)
 	{
@@ -53,6 +54,8 @@ static void PushLoop(ILGenInfo *info, ILLabel *continueLabel,
 	info->loopStack[info->loopStackSize].continueLabel = continueLabel;
 	info->loopStack[info->loopStackSize].breakLabel = breakLabel;
 	info->loopStack[info->loopStackSize].finallyLabel = 0;
+	info->loopStack[info->loopStackSize].isForeachCollection =
+		isForeachCollection;
 	++(info->loopStackSize);
 }
 
@@ -79,6 +82,7 @@ static void PushFinally(ILGenInfo *info, ILLabel *finallyLabel)
 	info->loopStack[info->loopStackSize].continueLabel = 0;
 	info->loopStack[info->loopStackSize].breakLabel = 0;
 	info->loopStack[info->loopStackSize].finallyLabel = finallyLabel;
+	info->loopStack[info->loopStackSize].isForeachCollection = 0;
 	++(info->loopStackSize);
 }
 
@@ -566,7 +570,7 @@ ILNode_GenDiscard(ILNode_While)
 		if(value.un.i4Value)
 		{
 			/* Generate code for an infinite loop */
-			PushLoop(info, &label1, &label2, node->name);
+			PushLoop(info, &label1, &label2, node->name, 0);
 			ILGenLabel(info, &label1);
 			if(node->stmt)
 			{
@@ -586,7 +590,7 @@ ILNode_GenDiscard(ILNode_While)
 	else
 	{
 		/* Generate the full case of the "while" loop */
-		PushLoop(info, &label2, &label3, node->name);
+		PushLoop(info, &label2, &label3, node->name, 0);
 		ILGenJump(info, IL_OP_BR, &label2);
 		ILGenLabel(info, &label1);
 		ILNode_GenDiscard(node->stmt, info);
@@ -654,7 +658,7 @@ ILNode_GenDiscard(ILNode_Do)
 		if(value.un.i4Value)
 		{
 			/* Generate code for an infinite loop */
-			PushLoop(info, &label1, &label2, node->name);
+			PushLoop(info, &label1, &label2, node->name, 0);
 			ILGenLabel(info, &label1);
 			if(node->stmt)
 			{
@@ -667,7 +671,7 @@ ILNode_GenDiscard(ILNode_Do)
 		else
 		{
 			/* Generate code for a single execution of the loop body */
-			PushLoop(info, &label1, &label1, node->name);
+			PushLoop(info, &label1, &label1, node->name, 0);
 			ILNode_GenDiscard(node->stmt, info);
 			ILGenLabel(info, &label1);
 			PopLoop(info);
@@ -682,7 +686,7 @@ ILNode_GenDiscard(ILNode_Do)
 	else
 	{
 		/* Generate the full case of the "do" loop */
-		PushLoop(info, &label2, &label3, node->name);
+		PushLoop(info, &label2, &label3, node->name, 0);
 		ILGenLabel(info, &label1);
 		ILNode_GenDiscard(node->stmt, info);
 		ILGenLabel(info, &label2);
@@ -730,7 +734,7 @@ ILNode_GenDiscard(ILNode_For)
 		if(value.un.i4Value)
 		{
 			/* Generate code for an infinite loop */
-			PushLoop(info, &label2, &label3, node->name);
+			PushLoop(info, &label2, &label3, node->name, 0);
 			ILGenLabel(info, &label1);
 			if(node->stmt)
 			{
@@ -756,7 +760,7 @@ ILNode_GenDiscard(ILNode_For)
 	else
 	{
 		/* Generate the full case of the "for" loop */
-		PushLoop(info, &label2, &label4, node->name);
+		PushLoop(info, &label2, &label4, node->name, 0);
 		ILGenJump(info, IL_OP_BR, &label3);
 		ILGenLabel(info, &label1);
 		if(node->stmt)
@@ -809,7 +813,7 @@ ILNode_GenDiscard(ILNode_Foreach)
 	ILGenJump(info, IL_OP_BR, &label3);
 
 	/* Push the loop label information */
-	PushLoop(info, &label2, &label4, node->name);
+	PushLoop(info, &label2, &label4, node->name, 0);
 
 	/* Fetch the next array element and put it into the variable */
 	ILGenLabel(info, &label1);
@@ -904,7 +908,7 @@ ILNode_GenDiscard(ILNode_ForeachString)
 	ILGenJump(info, IL_OP_BR, &label3);
 
 	/* Push the loop label information */
-	PushLoop(info, &label2, &label4, node->name);
+	PushLoop(info, &label2, &label4, node->name, 0);
 
 	/* Fetch the next string element and put it into the variable */
 	ILGenLabel(info, &label1);
@@ -1004,7 +1008,7 @@ ILNode_GenDiscard(ILNode_ForeachCollection)
 	ILGenJump(info, IL_OP_BR, &label2);
 
 	/* Push the loop label information */
-	PushLoop(info, &label2, &label5, node->name);
+	PushLoop(info, &label2, &label5, node->name, 1);
 	ILGenLabel(info, &label1);
 
 	/* Fetch the next collection element and put it into the variable */
@@ -1120,6 +1124,11 @@ ILNode_GenDiscard(ILNode_Break)
 
 	/* Look for the next outer loop or switch to break to */
 	sawTryBlock = 0;
+	if(size > 0 && stack[size - 1].isForeachCollection)
+	{
+		/* This is a "foreach" block with a surrounding "try" */
+		sawTryBlock = 1;
+	}
 	while(size > 0 && stack[size - 1].breakLabel == 0)
 	{
 		if(stack[size - 1].continueLabel == 0)
@@ -1155,6 +1164,11 @@ ILNode_GenDiscard(ILNode_LabelledBreak)
 
 	/* Look for the next outer loop or switch to break to */
 	sawTryBlock = 0;
+	if(size > 0 && stack[size - 1].isForeachCollection)
+	{
+		/* This is a "foreach" block with a surrounding "try" */
+		sawTryBlock = 1;
+	}
 	while(size > 0 && stack[size - 1].name != node->name)
 	{
 		if(stack[size - 1].breakLabel == 0)
@@ -1833,7 +1847,7 @@ ILNode_GenDiscard(ILNode_Switch)
 	}
 
 	/* Push the switch context information for "break" statements */
-	PushLoop(info, (ILLabel *)0, &breakLabel, node->name);
+	PushLoop(info, (ILLabel *)0, &breakLabel, node->name, 0);
 
 	/* Get the value table */
 	values = node->switchValues;

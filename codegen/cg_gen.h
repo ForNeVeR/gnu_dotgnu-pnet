@@ -36,6 +36,7 @@ typedef struct
 	ILLabel		   *continueLabel;
 	ILLabel		   *breakLabel;
 	ILLabel		   *finallyLabel;
+	int				isForeachCollection;
 
 } ILLoopStack;
 

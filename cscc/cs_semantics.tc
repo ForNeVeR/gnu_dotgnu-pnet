@@ -65,6 +65,13 @@ ILType *CSSemType(ILNode *type, ILGenInfo *info, ILNode **parent);
 ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent);
 
 /*
+ * Perform semantic analysis on a base type.  Returns
+ * zero if not a legal base type.
+ */
+int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,
+				  ILNode **baseNode, ILClass **baseClass);
+
+/*
  * Perform semantic analysis on a node and expect a value.
  * Returns non-zero if a value, or zero on error.
  */
@@ -117,6 +124,28 @@ ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
 	{
 		/* NULL is used in some places in the grammar to indicate "void" */
 		return ILType_Void;
+	}
+}
+
+int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,
+				  ILNode **baseNode, ILClass **baseClass)
+{
+	CSSemValue value = ILNode_SemAnalysis(type, info, parent);
+	if(value.kind == CS_SEMKIND_TYPE)
+	{
+		*baseNode = 0;
+		*baseClass = ILTypeToClass(info, value.type);
+		return (*baseClass != 0);
+	}
+	else if(value.kind == CS_SEMKIND_TYPE_NODE)
+	{
+		*baseNode = (ILNode *)(value.type);
+		*baseClass = 0;
+		return 1;
+	}
+	else
+	{
+		return 0;
 	}
 }
 

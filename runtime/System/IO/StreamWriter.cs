@@ -273,10 +273,7 @@ public class StreamWriter : TextWriter
 	// Write a single character to this stream writer.
 	public override void Write(char value)
 			{
-				char[] bfr;
-
-				bfr[0] = value;
-				Write(bfr, 0, 1);
+				Write(new char[]{value}, 0, 1);
 			}
 
 	// Get or set the autoflush state of this stream writer.

@@ -4,6 +4,9 @@
 	* runtime/System/IO/Path.cs : Implement the Path operations	for 
 	Unix like filesystems and path specifications.
 
+	* tests/System/TestString.cs : Applied Rich Baumann's patches
+	for TestString
+
 2002-09-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/I18N.build, System/System.build, System.Xml/XmlNodeList.cs,

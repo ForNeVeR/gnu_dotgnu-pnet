@@ -99,12 +99,13 @@ public class XmlTextWriter : XmlWriter
 			}
 
 	// Push a new element scope.
-	private void PushScope(String prefix, String localName, bool scopeShown)
+	private void PushScope(String prefix, String localName, bool scopeShown, String xmlns)
 			{
 				scope = new ElementScope(scope);
 				scope.prefix = (prefix != null ? nameTable.Add(prefix) : null);
 				scope.localName =
 					(localName != null ? nameTable.Add(localName) : null);
+				scope.xmlns = (xmlns != null ? nameTable.Add(xmlns) : null);
 				scope.scopeShown = scopeShown;
 				if(formatting == System.Xml.Formatting.Indented)
 				{
@@ -143,20 +144,6 @@ public class XmlTextWriter : XmlWriter
 						--indent;
 					}
 				}
-			}
-
-	// Get the name of a pseudo-prefix for a namespace URI.
-	private String GetPseudoPrefix(String ns)
-			{
-				String prefix;
-				do
-				{
-					prefix = nameTable.Add("n" + pseudoNSNumber.ToString());
-					++pseudoNSNumber;
-				}
-				while(namespaceManager.HasNamespace(prefix));
-				namespaceManager.AddNamespace(prefix, ns);
-				return prefix;
 			}
 
 	// State flags for "Sync".
@@ -735,7 +722,7 @@ public class XmlTextWriter : XmlWriter
 						DoIndent();
 					}
 					writer.Write("</");
-					if(scope.scopeShown)
+					if(scope.scopeShown && scope.prefix != null)
 					{
 						writer.Write(scope.prefix);
 						writer.Write(':');
@@ -1055,17 +1042,12 @@ public class XmlTextWriter : XmlWriter
 					}
 					else
 					{
-						// Create a new pseudo-prefix for the URI.
-						prefix = GetPseudoPrefix(ns);
-						writer.Write("xmlns:");
-						writer.Write(prefix);
+						writer.Write("xmlns");
 						writer.Write('=');
 						writer.Write(quoteChar);
 						WriteQuotedString(ns);
 						writer.Write(quoteChar);
 						writer.Write(' ');
-						writer.Write(prefix);
-						writer.Write(':');
 					}
 				}
 				else if(((Object)prefix) != null && prefix != String.Empty)
@@ -1083,17 +1065,12 @@ public class XmlTextWriter : XmlWriter
 					prefix = LookupPrefix(ns);
 					if(((Object)prefix) == null || prefix.Length == 0)
 					{
-						// Create a new pseudo-prefix for the URI.
-						prefix = GetPseudoPrefix(ns);
-						writer.Write("xmlns:");
-						writer.Write(prefix);
+						writer.Write("xmlns");
 						writer.Write('=');
 						writer.Write(quoteChar);
 						WriteQuotedString(ns);
 						writer.Write(quoteChar);
 						writer.Write(' ');
-						writer.Write(prefix);
-						writer.Write(':');
 					}
 				}
 				writer.Write(localName);
@@ -1180,16 +1157,12 @@ public class XmlTextWriter : XmlWriter
 					else
 					{
 						// Create a new pseudo-prefix for the URI.
-						prefix = GetPseudoPrefix(ns);
-						writer.Write("xmlns:");
-						writer.Write(prefix);
+						writer.Write("xmlns");
 						writer.Write('=');
 						writer.Write(quoteChar);
 						WriteQuotedString(ns);
 						writer.Write(quoteChar);
 						writer.Write(' ');
-						writer.Write(prefix);
-						writer.Write(':');
 					}
 				}
 				else if(((Object)prefix) != null && prefix != String.Empty)
@@ -1208,9 +1181,7 @@ public class XmlTextWriter : XmlWriter
 					if(((Object)prefix) == null || prefix.Length == 0)
 					{
 						// Create a new pseudo-prefix for the URI.
-						prefix = GetPseudoPrefix(ns);
-						writer.Write("xmlns:");
-						writer.Write(prefix);
+						writer.Write("xmlns");
 						writer.Write('=');
 						writer.Write(quoteChar);
 						WriteQuotedString(ns);
@@ -1347,13 +1318,9 @@ public class XmlTextWriter : XmlWriter
 					else
 					{
 						// Create a new pseudo-prefix for the URI.
-						prefix = GetPseudoPrefix(ns);
-						writer.Write(prefix);
-						writer.Write(':');
 						writer.Write(localName);
 						writer.Write(' ');
-						writer.Write("xmlns:");
-						writer.Write(prefix);
+						writer.Write("xmlns");
 						writer.Write('=');
 						writer.Write(quoteChar);
 						WriteQuotedString(ns);
@@ -1376,21 +1343,36 @@ public class XmlTextWriter : XmlWriter
 				{
 					// We were only given a namespace, so find the prefix.
 					prefix = LookupPrefix(ns);
-					if(((Object)prefix) == null || prefix.Length == 0)
+					if((((Object)prefix) == null || prefix.Length == 0) && scope == null)
 					{
-						// Create a new pseudo-prefix for the URI.
-						prefix = GetPseudoPrefix(ns);
-						writer.Write(prefix);
-						writer.Write(':');
 						writer.Write(localName);
 						writer.Write(' ');
-						writer.Write("xmlns:");
-						writer.Write(prefix);
+						writer.Write("xmlns");
 						writer.Write('=');
 						writer.Write(quoteChar);
 						WriteQuotedString(ns);
 						writer.Write(quoteChar);
 						scopeShown = true;
+					}
+					else if(((Object)prefix) == null || prefix.Length == 0)
+					{
+						if(scope.scopeShown == false || scope.xmlns != ns )
+						{
+							writer.Write(localName);
+							writer.Write(' ');	
+							writer.Write("xmlns");
+							writer.Write('=');
+							writer.Write(quoteChar);
+							WriteQuotedString(ns);
+							writer.Write(quoteChar);
+							scopeShown = true;
+						}
+						else if(scope.xmlns == ns)
+						{
+							writer.Write(localName);
+							scopeShown = true;
+						}
+	
 					}
 					else if(prefix != currPrefix)
 					{
@@ -1413,10 +1395,11 @@ public class XmlTextWriter : XmlWriter
 				}
 
 				// Push a new scope record.
-				PushScope(prefix, localName, scopeShown);
+				PushScope(prefix, localName, scopeShown, ns);
 				if(scopeShown)
 				{
-					namespaceManager.AddNamespace(prefix, ns);
+					if(prefix != String.Empty && prefix != null)
+						namespaceManager.AddNamespace(prefix, ns);
 				}
 
 				// We are now in the element state.
@@ -1758,7 +1741,7 @@ public class XmlTextWriter : XmlWriter
 		public XmlSpace xmlSpace;		// XmlSpace for next higher scope.
 		public String xmlLang;			// XmlLang for next higher scope.
 		public ElementScope next;		// The next higher scope.
-
+		public String xmlns;			// Xmlnamespace in scope.
 		public ElementScope(ElementScope next)
 				{
 					this.next = next;

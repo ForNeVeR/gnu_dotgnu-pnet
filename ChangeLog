@@ -8,6 +8,9 @@
 	later in the future so we can catch errors that result from
 	choosing a default "int" type.
 
+	* cscc/c/c_types.c (AppendThree): add one to the size of the
+	string to be allocated, to account for the '\0'.
+
 2002-08-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_defs.tc, cscc/c/c_grammar.y, cscc/c/c_invoke.tc,

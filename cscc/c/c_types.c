@@ -1313,7 +1313,7 @@ static char *AppendThree(ILGenInfo *info, const char *prefix,
 	char *result;
 	if(prefixLen)
 	{
-		result = (char *)ILMalloc(strlen(str) + prefixLen + suffixLen);
+		result = (char *)ILMalloc(strlen(str) + prefixLen + suffixLen + 1);
 		if(!result)
 		{
 			ILGenOutOfMemory(info);
@@ -1328,7 +1328,8 @@ static char *AppendThree(ILGenInfo *info, const char *prefix,
 	}
 	else
 	{
-		result = (char *)ILRealloc(str, strlen(str) + prefixLen + suffixLen);
+		result = (char *)ILRealloc
+			(str, strlen(str) + prefixLen + suffixLen + 1);
 		if(!result)
 		{
 			ILGenOutOfMemory(info);

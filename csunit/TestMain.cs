@@ -1,7 +1,7 @@
 /*
  * TestMain.cs - Implementation of the "CSUnit.TestMain" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,6 +60,20 @@ public sealed class TestMain
 					{
 						listTests = true;
 					}
+					else if(arg == "-t" || arg == "--type-name")
+					{
+						if((argNum + 1) >= numArgs)
+						{
+							ShowUsage();
+							return 1;
+						}
+						++argNum;
+						typeName = args[argNum];
+					}
+					else if(arg.StartsWith("-t"))
+					{
+						typeName = arg.Substring(2);
+					}
 					else if(arg == "-v" || arg == "--version")
 					{
 						ShowVersion();
@@ -81,13 +95,29 @@ public sealed class TestMain
 				}
 				filename = args[argNum++];
 
-				// Get the name of the class within the test assembly.
-				if(argNum >= numArgs)
+				// If the type name is not specified, then derive it
+				// from the name of the test assembly.
+				if(typeName == null)
 				{
-					ShowUsage();
-					return 1;
+					int index;
+					if(filename.EndsWith(".dll"))
+					{
+						typeName = filename.Substring(0, filename.Length - 4);
+					}
+					else
+					{
+						typeName = filename;
+					}
+					index = typeName.LastIndexOf('/');
+					if(index == -1)
+					{
+						index = typeName.LastIndexOf('\\');
+					}
+					if(index != -1)
+					{
+						typeName = typeName.Substring(index);
+					}
 				}
-				typeName = args[argNum++];
 
 				// Load the test assembly.  This will throw an
 				// exception if something went wrong, which will
@@ -211,7 +241,7 @@ public sealed class TestMain
 					("CSUNIT " + TestVersion.Version +
 					 " - C# Unit Testing Framework");
 				Console.WriteLine
-					("Copyright (c) 2001 Southern Storm Software, Pty Ltd.");
+					("Copyright (c) 2001, 2002 Southern Storm Software, Pty Ltd.");
 				Console.WriteLine();
 				Console.WriteLine
 					("CSUNIT comes with ABSOLUTELY NO WARRANTY.  This is free software,");
@@ -227,34 +257,38 @@ public sealed class TestMain
 	// Show the usage message for this program.
 	private static void ShowUsage()
 			{
-				Console.Error.WriteLine
+				Console.WriteLine
 					("CSUNIT " + TestVersion.Version +
 					 " - C# Unit Testing Framework");
-				Console.Error.WriteLine
-					("Copyright (c) 2001 Southern Storm Software, Pty Ltd.");
-				Console.Error.WriteLine();
-				Console.Error.WriteLine
-					("Usage: csunit [options] assembly type [test ...]");
-				Console.Error.WriteLine();
-				Console.Error.WriteLine
-					("    --stop-at-fail  or -s");
-				Console.Error.WriteLine
+				Console.WriteLine
+					("Copyright (c) 2001, 2002 Southern Storm Software, Pty Ltd.");
+				Console.WriteLine();
+				Console.WriteLine
+					("Usage: csunit [options] assembly [test ...]");
+				Console.WriteLine();
+				Console.WriteLine
+					("    --stop-at-fail    or -s");
+				Console.WriteLine
 					("        Stop at the first failed test.");
-				Console.Error.WriteLine
-					("    --show-failed   or -f");
-				Console.Error.WriteLine
+				Console.WriteLine
+					("    --show-failed     or -f");
+				Console.WriteLine
 					("        Only show tests that have failed.");
-				Console.Error.WriteLine
-					("    --list          or -l");
-				Console.Error.WriteLine
+				Console.WriteLine
+					("    --list            or -l");
+				Console.WriteLine
 					("        List all test suites and tests that are registered.");
-				Console.Error.WriteLine
-					("    --version       or -v");
-				Console.Error.WriteLine
+				Console.WriteLine
+					("    --type-name name  or -t name");
+				Console.WriteLine
+					("        Specify the suite registration type.");
+				Console.WriteLine
+					("    --version         or -v");
+				Console.WriteLine
 					("        Print the version of the program.");
-				Console.Error.WriteLine
+				Console.WriteLine
 					("    --help");
-				Console.Error.WriteLine
+				Console.WriteLine
 					("        Print this help message.");
 			}
 

@@ -1,7 +1,7 @@
 /*
  * ildb_context.c - Main context that holds the debugger's state.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "ildb_cmd.h"
 #include "ildb_utils.h"
 #include "ildb_search.h"
+#include "ildb_source.h"
 #include "il_system.h"
 
 #ifdef	__cplusplus
@@ -53,6 +54,7 @@ ILDb *ILDbCreate(int argc, char **argv)
 	db->entryPoint = 0;
 	db->running = 0;
 	db->printFullNames = 0;
+	db->sourceFiles = 0;
 
 	/* Set the initial source directory search path */
 	db->dirSearch = 0;
@@ -74,6 +76,7 @@ ILDb *ILDbCreate(int argc, char **argv)
 
 void ILDbDestroy(ILDb *db)
 {
+	ILDbSourceDestroy(db->sourceFiles);
 	if(db->debugProgram)
 	{
 		ILFree(db->debugProgram);
@@ -108,6 +111,11 @@ ILDebugContext *ILDbGetDebugContext(ILDb *db, ILImage *image)
 
 		/* Destroy the current context */
 		ILDebugDestroy(db->dbgContext);
+		db->dbgContext = 0;
+	}
+	if(!ILDebugPresent(image))
+	{
+		return 0;
 	}
 	db->dbgContext = ILDebugCreate(image);
 	if(!(db->dbgContext))

@@ -1,7 +1,7 @@
 /*
  * ildb_run.c - Processing for run and breakpoint commands.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "ildb_utils.h"
 #include "ildb_cmd.h"
 #include "ildb_input.h"
+#include "ildb_source.h"
 #include "il_gc.h"
 
 #ifdef	__cplusplus
@@ -55,6 +56,10 @@ int ILDbCreateProcess(ILDb *db)
 					  "Use the \"file\" command.");
 		return 0;
 	}
+
+	/* Destroy the cached source files prior to loading the application */
+	ILDbSourceDestroy(db->sourceFiles);
+	db->sourceFiles = 0;
 
 	/* Create the execution process and install the debug hook */
 	db->process = ILExecProcessCreate(0);

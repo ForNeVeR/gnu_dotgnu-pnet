@@ -1,7 +1,7 @@
 /*
  * ildb_context.h - Main context that holds the debugger's state.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ typedef struct
 	int				running;			/* Non-zero if program is running */
 	jmp_buf			jumpBack;			/* Jump point to abort the program */
 	int				printFullNames;		/* Print full names when stopped */
+	struct _tagILDbSourceFile *sourceFiles; /* Cached source files */
 
 } ILDb;
 

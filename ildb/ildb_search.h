@@ -46,6 +46,12 @@ void ILDbSearchAdd(ILDb *db, const char *directory);
  */
 void ILDbSearchPrint(ILDb *db);
 
+/*
+ * Find a source file along the search path.  Returns NULL
+ * if not found, or an ILMalloc'ed absolute pathname.
+ */
+char *ILDbSearchFind(ILDb *db, const char *filename);
+
 #ifdef	__cplusplus
 };
 #endif

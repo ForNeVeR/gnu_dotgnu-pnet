@@ -13,6 +13,7 @@ ildb_SOURCES = ildb_cmd.c \
 			   ildb_search.c \
 			   ildb_set.c \
 			   ildb_show.c \
+			   ildb_source.c \
 			   ildb_system.c \
 			   ildb_utils.c
 ildb_LDADD   = ../engine/libILEngine.a ../image/libILImage.a \

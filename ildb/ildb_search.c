@@ -139,6 +139,12 @@ void ILDbSearchPrint(ILDb *db)
 	fflush(stdout);
 }
 
+char *ILDbSearchFind(ILDb *db, const char *filename)
+{
+	/* TODO */
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

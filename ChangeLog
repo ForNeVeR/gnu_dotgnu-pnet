@@ -13,6 +13,12 @@
 	* ildb/ildb_run.c: modify the output of the "run" command so
 	that xxgdb can properly detect program start and termination.
 
+	* ildb/Makefile.am, ildb/ildb_context.c, ildb/ildb_context.h,
+	ildb/ildb_run.c, ildb/ildb_search.c, ildb/ildb_search.h,
+	ildb/ildb_source.c, ildb/ildb_source.h: add debugger support
+	for creating pseudo source files for programs that weren't
+	compiled with -g.
+
 2002-06-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lookup.c (CSResolveMemberName): special hack

@@ -95,7 +95,7 @@ public sealed class TestMain
 				// Load the test assembly.  This will throw an
 				// exception if something went wrong, which will
 				// cause the program to exit with an explaination.
-				assembly = Assembly.LoadFrom(filename);
+				assembly = Assembly.Load("file://" + filename);
 
 				// Look for the test type within the assembly.
 				type = assembly.GetType(typeName, false);

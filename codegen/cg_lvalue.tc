@@ -314,7 +314,14 @@ ILNode_GenValue(ILNode_MemberProperty)
 	ILType *signature = ILProperty_Signature(node->property);
 	unsigned tempVar = ILGenPrepareForThisAccess
 		(info, node->expr, ILProperty_Owner(node->property), 0);
-	ILGenCallMethod(info, getter);
+	if(node->baseCall)
+	{
+		ILGenCallByMethod(info, getter);
+	}
+	else
+	{
+		ILGenCallMethod(info,getter);
+	}
 	ILGenFreeThisVar(info, tempVar);
 	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
@@ -711,7 +718,14 @@ ILNode_GetAndPrepare(ILNode_MemberProperty)
 		/* Duplicate it and get the current value */
 		ILGenSimple(info, IL_OP_DUP);
 		ILGenAdjust(info, 1);
-		ILGenCallMethod(info, getter);
+		if(node->baseCall)
+		{
+			ILGenCallByMethod(info, getter);
+		}
+		else
+		{
+			ILGenCallMethod(info, getter);
+		}
 
 		/* Store the current value into a temporary local */
 		node->tempVar = ILGenTempTypedVar(info, propType);
@@ -730,7 +744,14 @@ ILNode_GetAndPrepare(ILNode_MemberProperty)
 		ILGenAdjust(info, 1);
 
 		/* Load the current value from the property */
-		ILGenCallMethod(info, getter);
+		if(node->baseCall)
+		{
+			ILGenCallByMethod(info, getter);
+		}
+		else
+		{
+			ILGenCallMethod(info, getter);
+		}
 
 		/* We don't need to reload a previous value in "Store" */
 		node->tempVar = IL_MAX_UINT32;
@@ -1233,9 +1254,15 @@ ILNode_Store(ILNode_MemberProperty)
 		ILGenSimple(info, IL_OP_DUP);
 		ILGenStoreLocal(info, temp);
 		ILGenExtend(info, 1);
-
-		/* Store the value into the property */
-		ILGenCallMethod(info, setter);
+		if(node->baseCall)
+		{
+			ILGenCallByMethod(info,setter);
+		}
+		else
+		{
+			/* Store the value into the property */
+			ILGenCallMethod(info, setter);
+		}
 		ILGenAdjust(info, -2);
 
 		/* Do we need to restore a previous value to the stack top? */

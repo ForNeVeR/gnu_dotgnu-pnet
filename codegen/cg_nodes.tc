@@ -550,16 +550,19 @@ struct _tagILSwitchValue
 	ILNode  *expr;
 	ILField *field;
 	%nocreate ILUInt32 tempVar = {0};
+	%nocreate ILUInt32 baseCall = {0};
 }
 %node ILNode_StaticProperty ILNode_LValueNoRef =
 {
 	ILProperty *property;
+	%nocreate ILUInt32 baseCall = {0};
 }
 %node ILNode_MemberProperty ILNode_LValueNoRef =
 {
 	ILNode  *expr;
 	ILProperty *property;
 	%nocreate ILUInt32 tempVar = {0};
+	%nocreate ILUInt32 baseCall = {0};
 }
 %node ILNode_ArrayAccess ILNode_LValue =
 {

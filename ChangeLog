@@ -1,4 +1,10 @@
 
+2002-11-03  Gopal.V  <gopalv82@symonds.net>
+
+	* codegen/cg_nodes.tc, codegen/cg_lvalue.tc, cscc/csharp/cs_lvalue.tc:
+	Enable base access for properties by adding a baseCall variable to
+	ILNode_MemberProperty
+
 2002-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/Makefile.am: add missing "queue.c" to Makefile.am.

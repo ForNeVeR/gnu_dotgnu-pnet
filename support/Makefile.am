@@ -17,7 +17,8 @@ libILSupport_a_SOURCES = alloc.c \
 						 strings.c \
 						 unicode.c \
 						 utf8.c \
-						 value.c
+						 value.c \
+						 xml.c
 
 mkcategory_SOURCES = mkcategory.c
 

@@ -11,4 +11,5 @@ libILinclude_HEADERS = il_config.h \
 					   il_types.h \
 					   il_utils.h \
 					   il_values.h \
-					   il_writer.h
+					   il_writer.h \
+					   il_xml.h

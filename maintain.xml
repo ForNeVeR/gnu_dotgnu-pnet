@@ -44,6 +44,11 @@
 				<maintainer name="Abhaya Agarval" status="taking up"/>
 			</maintainers>
 		</class>
+		<class name="MemoryStream">
+			<maintainers>
+				<maintainer name="Stephen Compall" status="working"/>
+			</maintainers>
+		</class>
 	</namespace>
 	
 	<namespace name="System.Net.Sockets">

@@ -2,6 +2,11 @@
 
 	* runtime/System/IO/StringReader.cs: added implementation.
 
+	* runtime/System/IO/MemoryStream.cs: added beginnings of
+	implementation.
+
+	* maintain.xml: added myself as worker of MemoryStream.
+
 2002-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/SocketMethods.cs: remove "using" declarations

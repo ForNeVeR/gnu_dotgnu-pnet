@@ -1,4 +1,9 @@
 
+2001-03-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_optable.c: implement simple binary coercions
+	for operators that involve enumerated types.
+
 2001-03-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/cscc.c,

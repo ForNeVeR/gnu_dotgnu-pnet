@@ -1420,6 +1420,166 @@ const ILOperator *ILFindBinaryOperator(const ILOperator *table,
 			}
 		}
 	}
+	else if(type1->isEnum && !(type2->isEnum))
+	{
+		/* The first is enumerated, so promote the second */
+		if(type2 == &ILSystemBoolean || type2 == &ILSystemChar ||
+		   type2 == &ILSystemDecimal || type2 == &ILSystemDouble ||
+		   type2 == &ILSystemSingle)
+		{
+			return 0;
+		}
+		if(type1 == &ILEnumUInt64)
+		{
+			if(type2 == &ILSystemSByte || type2 == &ILSystemInt16 ||
+			   type2 == &ILSystemInt32 || type2 == &ILSystemInt64)
+			{
+				return 0;
+			}
+			type2 = &ILSystemUInt64;
+		}
+		else if(type1 == &ILEnumInt64)
+		{
+			if(type2 == &ILSystemUInt64)
+			{
+				return 0;
+			}
+			type2 = &ILSystemInt64;
+		}
+		else if(type1 == &ILEnumUInt32)
+		{
+			if(type2 == &ILSystemSByte || type2 == &ILSystemInt16 ||
+			   type2 == &ILSystemInt32 || type2 == &ILSystemInt64 ||
+			   type2 == &ILSystemUInt64)
+			{
+				return 0;
+			}
+			type2 = &ILSystemUInt32;
+		}
+		else if(type1 == &ILEnumInt32)
+		{
+			if(type2 == &ILSystemUInt32 || type2 == &ILSystemInt64 ||
+			   type2 == &ILSystemUInt64)
+			{
+				return 0;
+			}
+			type2 = &ILSystemInt32;
+		}
+		else if(type1 == &ILEnumUInt16)
+		{
+			if(type2 == &ILSystemSByte || type2 == &ILSystemInt16 ||
+			   type2 == &ILSystemInt32 || type2 == &ILSystemUInt32 ||
+			   type2 == &ILSystemInt64 || type2 == &ILSystemUInt64)
+			{
+				return 0;
+			}
+			type2 = &ILSystemUInt16;
+		}
+		else if(type1 == &ILEnumInt16)
+		{
+			if(type2 == &ILSystemUInt16 || type2 == &ILSystemInt32 ||
+			   type2 == &ILSystemUInt32 || type2 == &ILSystemInt64 ||
+			   type2 == &ILSystemUInt64)
+			{
+				return 0;
+			}
+			type2 = &ILSystemInt16;
+		}
+		else if(type1 == &ILEnumByte)
+		{
+			if(type2 != &ILSystemByte)
+			{
+				return 0;
+			}
+		}
+		else if(type1 == &ILEnumSByte)
+		{
+			if(type2 != &ILSystemSByte)
+			{
+				return 0;
+			}
+		}
+	}
+	else if(!(type1->isEnum) && type2->isEnum)
+	{
+		/* The second is enumerated, so promote the first */
+		if(type1 == &ILSystemBoolean || type2 == &ILSystemChar ||
+		   type1 == &ILSystemDecimal || type2 == &ILSystemDouble ||
+		   type1 == &ILSystemSingle)
+		{
+			return 0;
+		}
+		if(type2 == &ILEnumUInt64)
+		{
+			if(type1 == &ILSystemSByte || type2 == &ILSystemInt16 ||
+			   type1 == &ILSystemInt32 || type2 == &ILSystemInt64)
+			{
+				return 0;
+			}
+			type1 = &ILSystemUInt64;
+		}
+		else if(type2 == &ILEnumInt64)
+		{
+			if(type1 == &ILSystemUInt64)
+			{
+				return 0;
+			}
+			type1 = &ILSystemInt64;
+		}
+		else if(type2 == &ILEnumUInt32)
+		{
+			if(type1 == &ILSystemSByte || type2 == &ILSystemInt16 ||
+			   type1 == &ILSystemInt32 || type2 == &ILSystemInt64 ||
+			   type1 == &ILSystemUInt64)
+			{
+				return 0;
+			}
+			type1 = &ILSystemUInt32;
+		}
+		else if(type2 == &ILEnumInt32)
+		{
+			if(type1 == &ILSystemUInt32 || type2 == &ILSystemInt64 ||
+			   type1 == &ILSystemUInt64)
+			{
+				return 0;
+			}
+			type1 = &ILSystemInt32;
+		}
+		else if(type2 == &ILEnumUInt16)
+		{
+			if(type1 == &ILSystemSByte || type2 == &ILSystemInt16 ||
+			   type1 == &ILSystemInt32 || type2 == &ILSystemUInt32 ||
+			   type1 == &ILSystemInt64 || type2 == &ILSystemUInt64)
+			{
+				return 0;
+			}
+			type1 = &ILSystemUInt16;
+		}
+		else if(type2 == &ILEnumInt16)
+		{
+			if(type1 == &ILSystemUInt16 || type2 == &ILSystemInt32 ||
+			   type1 == &ILSystemUInt32 || type2 == &ILSystemInt64 ||
+			   type1 == &ILSystemUInt64)
+			{
+				return 0;
+			}
+			type1 = &ILSystemInt16;
+		}
+		else if(type2 == &ILEnumByte)
+		{
+			if(type1 != &ILSystemByte)
+			{
+				return 0;
+			}
+		}
+		else if(type2 == &ILEnumSByte)
+		{
+			if(type1 != &ILSystemSByte)
+			{
+				return 0;
+			}
+		}
+	}
 
 	/* Search for a matching operator */
 	while(table->outtype != 0)

@@ -1,3 +1,7 @@
+2003-01-14  Adam Ballai  <minddog@cannibutter.com>
+
+	* System.Xml/XmlTextWriter.cs: Fix ReadOuterXml missing certain
+	characters.
 
 2003-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 

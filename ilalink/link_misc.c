@@ -24,17 +24,137 @@
 extern	"C" {
 #endif
 
+/*
+ * Convert the semantic declarations that are attached
+ * to a property or event.
+ */
+static int ConvertSemantics(ILLinker *linker, ILProgramItem *oldItem,
+							ILProgramItem *newItem)
+{
+	ILUInt32 type = 1;
+	ILMethod *method;
+	while(type < 0x100)
+	{
+		method = ILMethodSemGetByType(oldItem, type);
+		if(method)
+		{
+			method = (ILMethod *)_ILLinkerConvertMemberRef
+						(linker, (ILMember *)method);
+			if(!method)
+			{
+				return 0;
+			}
+			if(!ILMethodSemCreate(newItem, 0, type, method))
+			{
+				_ILLinkerOutOfMemory(linker);
+				return 0;
+			}
+		}
+		type <<= 1;
+	}
+	return 1;
+}
+
 int _ILLinkerConvertProperty(ILLinker *linker, ILProperty *property,
 						     ILClass *newClass)
 {
-	/* TODO */
+	ILProperty *newProperty;
+	ILType *signature;
+
+	/* Convert the property's signature */
+	signature = _ILLinkerConvertType(linker, ILProperty_Signature(property));
+	if(!signature)
+	{
+		return 0;
+	}
+
+	/* Create the new property record */
+	newProperty = ILPropertyCreate(newClass, 0, ILProperty_Name(property),
+								   ILProperty_Attrs(property), signature);
+	if(!newProperty)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+
+	/* Assocate the property with its class */
+	if(!ILPropertyMapCreate(linker->image, 0, newClass, newProperty))
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+
+	/* Convert the method semantics on the property */
+	if(!ConvertSemantics(linker, (ILProgramItem *)property,
+						 (ILProgramItem *)newProperty))
+	{
+		return 0;
+	}
+
+	/* Convert the attributes that are attached to the property */
+	if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)property,
+						      (ILProgramItem *)newProperty))
+	{
+		return 0;
+	}
+
+	/* Done */
 	return 1;
 }
 
 int _ILLinkerConvertEvent(ILLinker *linker, ILEvent *event,
 						  ILClass *newClass)
 {
-	/* TODO */
+	ILType *type;
+	ILClass *classInfo;
+	ILEvent *newEvent;
+
+	/* Convert the event's class type */
+	type = ILEvent_Type(event);
+	if(type != ILType_Invalid)
+	{
+		classInfo = _ILLinkerConvertClassRef(linker, ILType_ToClass(type));
+		if(!classInfo)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		classInfo = 0;
+	}
+
+	/* Create the new event record */
+	newEvent = ILEventCreate(newClass, 0, ILEvent_Name(event),
+							 ILEvent_Attrs(event), classInfo);
+	if(!newEvent)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+
+	/* Assocate the event with its class */
+	if(!ILEventMapCreate(linker->image, 0, newClass, newEvent))
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+
+	/* Convert the method semantics on the event */
+	if(!ConvertSemantics(linker, (ILProgramItem *)event,
+						 (ILProgramItem *)newEvent))
+	{
+		return 0;
+	}
+
+	/* Convert the attributes that are attached to the event */
+	if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)event,
+						      (ILProgramItem *)newEvent))
+	{
+		return 0;
+	}
+
+	/* Done */
 	return 1;
 }
 

@@ -117,7 +117,7 @@ int ILDiff_compare_il_fields(ILDiffDict *d1,ILDiffDict *d2)
 			if(ILField_Attrs(f1)==ILField_Attrs(f2))
 				if(!strcmp(ILClass_Name(ILField_Owner(f1)),\
 									ILClass_Name(ILField_Owner(f2))))			
-					if(ILTypeIdentical(ILField_Type(f1),ILField_Type(f2)))
+					if(!strcmp(ILTypeToName(ILField_Type(f1)),ILTypeToName(ILField_Type(f2))))
 						return IL_DIFF_SAME;
 		return IL_DIFF_DIFFERENT;
 }

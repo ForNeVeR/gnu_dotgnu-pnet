@@ -1111,6 +1111,10 @@ public class Uri : MarshalByRefObject
 
 				interimpos2 = interimpos1 + 1;
 			}
+			else
+			{
+				this.userinfo = "";
+			}
 
 			// check remainder for an explicit port
 			interimpos1 = authority.IndexOf(':', interimpos2);

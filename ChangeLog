@@ -1,3 +1,9 @@
+
+2002-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Uri.cs, System/Net/Sockets/TcpClient.cs: fix minor semantic
+	compile errors.
+
 2002-09-15  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/Dns.cs : Implement all the synchronous

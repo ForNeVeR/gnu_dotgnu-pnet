@@ -1,6 +1,6 @@
 /*
- * ToolkitDecorations.cs - Implementation of the
- *			"System.Drawing.Toolkit.ToolkitDecorations" class.
+ * SizeGripStyle.cs - Implementation of the
+ *			"System.Windows.Forms.SizeGripStyle" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -19,20 +19,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Drawing.Toolkit
+namespace System.Windows.Forms
 {
 
-// Supported window decorations for IToolkitWindow.SetFunctions.
-public enum ToolkitDecorations
+public enum SizeGripStyle
 {
-	All				= 1 << 0,	// All except those listed below.
-	Border			= 1 << 1,
-	ResizeHandles	= 1 << 2,
-	Title			= 1 << 3,
-	Menu			= 1 << 4,
-	Minimize		= 1 << 5,
-	Maximize		= 1 << 6
+	Auto = 0,
+	Show = 1,
+	Hide = 2
 
-}; // enum Decorations
+}; // enum SizeGripStyle
 
-}; // namespace System.Drawing.Toolkit
+}; // namespace System.Windows.Forms

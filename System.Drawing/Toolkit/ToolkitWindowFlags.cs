@@ -1,6 +1,6 @@
 /*
- * ToolkitFunctions.cs - Implementation of the
- *			"System.Drawing.Toolkit.ToolkitFunctions" class.
+ * ToolkitWindowFlags.cs - Implementation of the
+ *			"System.Drawing.Toolkit.ToolkitWindowFlags" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,16 +22,29 @@
 namespace System.Drawing.Toolkit
 {
 
-// Supported window functions for "IToolkitManager.SetFunctions".
-public enum ToolkitFunctions
-{
-	All				= 1 << 0,	// All except those listed below.
-	Resize			= 1 << 1,
-	Move			= 1 << 2,
-	Minimize		= 1 << 3,
-	Maximize		= 1 << 4,
-	Close			= 1 << 5
+// Supported window manager properties.
 
-}; // enum ToolkitFunctions
+[Flags]
+public enum ToolkitWindowFlags
+{
+	Close			= (1 << 0),
+	Minimize		= (1 << 1),
+	Maximize		= (1 << 2),
+	Caption			= (1 << 3),
+	Border			= (1 << 4),
+	ResizeHandles	= (1 << 5),
+	Menu			= (1 << 6),
+	Help			= (1 << 7),
+	Resize			= (1 << 8),
+	Move			= (1 << 9),
+	TopMost			= (1 << 10),
+	Modal			= (1 << 11),
+	ShowInTaskBar	= (1 << 12),
+	ToolWindow		= (1 << 13),
+	Default			= (Close | Minimize | Maximize | Caption |
+					   Border | ResizeHandles | Menu | Resize |
+					   Move | ShowInTaskBar)
+
+}; // enum Decorations
 
 }; // namespace System.Drawing.Toolkit

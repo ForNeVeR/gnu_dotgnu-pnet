@@ -162,9 +162,8 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				Background = DrawingToolkit.DrawingToXColor(color);
 			}
 
-	// Change the set of supported decorations and functions.
-	void IToolkitWindow.SetFunctions(ToolkitDecorations decorations,
-							 		 ToolkitFunctions functions)
+	// Change the set of supported window decorations and functions.
+	void IToolkitWindow.SetWindowFlags(ToolkitWindowFlags flags)
 			{
 				// Not used for ordinary windows.
 			}

@@ -1,5 +1,6 @@
 /*
- * ToolkitEventHandlers.cs - Declarations for event handling delegates.
+ * FormStartPosition.cs - Implementation of the
+ *			"System.Windows.Forms.FormStartPosition" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -18,24 +19,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Drawing.Toolkit
+namespace System.Windows.Forms
 {
 
-// Simple event handler, with EventArgs parameter.
-public delegate void ToolkitSimpleHandler(EventArgs e);
+using System.Runtime.InteropServices;
 
-// Handle an expose event, using a particular graphics object to paint.
-public delegate void ToolkitExposeHandler(Graphics graphics);
+#if !ECMA_COMPAT
+[ComVisible(true)]
+#endif
+public enum FormStartPosition
+{
+	Manual					= 0,
+	CenterScreen			= 1,
+	WindowsDefaultLocation	= 2,
+	WindowsDefaultBounds	= 3,
+	CenterParent			= 4
 
-// Handle a key event.
-public delegate void ToolkitKeyHandler(ToolkitKeys key);
+}; // enum FormStartPosition
 
-// Handle a key character event.
-public delegate void ToolkitKeyCharHandler(char charCode);
-
-// Handle a mouse event.
-public delegate void ToolkitMouseHandler
-		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
-		 int clicks, int x, int y, int delta);
-
-}; // namespace System.Drawing.Toolkit
+}; // namespace System.Windows.Forms

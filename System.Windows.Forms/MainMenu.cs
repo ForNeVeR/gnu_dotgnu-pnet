@@ -1,6 +1,6 @@
 /*
- * IContainerControl.cs - Implementation of the
- *			"System.Windows.Forms.IContainerControl" class.
+ * MainMenu.cs - Implementation of the
+ *			"System.Windows.Forms.MainMenu" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,14 +22,11 @@
 namespace System.Windows.Forms
 {
 
-public interface IContainerControl
+[TODO]
+public class MainMenu
 {
-	// Get or set the active control within the container.
-	Control ActiveControl { get; set; }
+	// TODO
 
-	// Activate a specific control.
-	bool ActivateControl(Control active);
-
-}; // interface IContainerControl
+}; // class MainMenu
 
 }; // namespace System.Windows.Forms

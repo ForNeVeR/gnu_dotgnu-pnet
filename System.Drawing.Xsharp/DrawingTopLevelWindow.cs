@@ -166,11 +166,60 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				Background = DrawingToolkit.DrawingToXColor(color);
 			}
 
-	// Change the set of supported decorations and functions.
-	void IToolkitWindow.SetFunctions(ToolkitDecorations decorations,
-							 		 ToolkitFunctions functions)
+	// Change the set of supported window decorations and functions.
+	void IToolkitWindow.SetWindowFlags(ToolkitWindowFlags flags)
 			{
-				// TODO
+				// Set the default Motif decoration flags.
+				MotifDecorations decorations = MotifDecorations.All;
+				MotifFunctions functions = MotifFunctions.All;
+				MotifInputType inputType = MotifInputType.Normal;
+
+				// Alter decorations according to the window flags.
+				if((flags & ToolkitWindowFlags.Close) == 0)
+				{
+					functions |= MotifFunctions.Close;
+				}
+				if((flags & ToolkitWindowFlags.Minimize) == 0)
+				{
+					decorations |= MotifDecorations.Minimize;
+					functions |= MotifFunctions.Minimize;
+				}
+				if((flags & ToolkitWindowFlags.Caption) == 0)
+				{
+					decorations |= MotifDecorations.Title;
+				}
+				if((flags & ToolkitWindowFlags.Border) == 0)
+				{
+					decorations |= MotifDecorations.Border;
+				}
+				if((flags & ToolkitWindowFlags.ResizeHandles) == 0)
+				{
+					decorations |= MotifDecorations.ResizeHandles;
+				}
+				if((flags & ToolkitWindowFlags.Menu) == 0)
+				{
+					decorations |= MotifDecorations.Menu;
+				}
+				if((flags & ToolkitWindowFlags.Resize) == 0)
+				{
+					decorations |= MotifDecorations.Maximize |
+								   MotifDecorations.ResizeHandles;
+					functions |= MotifFunctions.Maximize |
+								 MotifFunctions.Resize;
+				}
+				if((flags & ToolkitWindowFlags.Move) == 0)
+				{
+					functions |= MotifFunctions.Move;
+				}
+				if((flags & ToolkitWindowFlags.Modal) == 0)
+				{
+					inputType = MotifInputType.ApplicationModal;
+				}
+
+				// Send the Motif flags to the window manager.
+				Decorations = decorations;
+				Functions = functions;
+				InputType = inputType;
 			}
 
 	// Get the adjustment values for the client area.

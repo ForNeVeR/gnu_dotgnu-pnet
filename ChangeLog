@@ -25,6 +25,23 @@
 	samples/FormsHello.cs: implement the "ButtonBase" and "Button"
 	classes, to provide simple control functionality.
 
+	* System.Drawing/Toolkit/IToolkitWindow.cs,
+	System.Drawing/Toolkit/ToolkitDecorations.cs,
+	System.Drawing/Toolkit/ToolkitEventHandlers.cs,
+	System.Drawing/Toolkit/ToolkitFunctions.cs,
+	System.Drawing/Toolkit/ToolkitWindowFlags.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs,
+	System.Windows.Forms/Application.cs,
+	System.Windows.Forms/ContainerControl.cs,
+	System.Windows.Forms/Form.cs,
+	System.Windows.Forms/FormStartPosition.cs,
+	System.Windows.Forms/IContainerControl.cs,
+	System.Windows.Forms/MainMenu.cs,
+	System.Windows.Forms/ScrollableControl.cs,
+	System.Windows.Forms/SizeGripStyle.cs: implement more of the
+	"Form" class.
+
 2003-06-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/Control.cs: Fix minor bug with Bounds 

@@ -380,6 +380,7 @@ public sealed class Application
 				if(mainForm != null)
 				{
 					mainForm.Show();
+					Form.activeForm = mainForm;
 				}
 				RunMessageLoop();
 			}

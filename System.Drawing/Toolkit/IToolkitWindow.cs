@@ -73,9 +73,8 @@ public interface IToolkitWindow
 	// Set the background of the window to a solid color.
 	void SetBackground(Color color);
 
-	// Change the set of supported decorations and functions.
-	void SetFunctions(ToolkitDecorations decorations,
-					  ToolkitFunctions functions);
+	// Change the set of supported window decorations and functions.
+	void SetWindowFlags(ToolkitWindowFlags flags);
 
 	// Get the adjustment values for the client area.
 	// On entry, all values are zero.

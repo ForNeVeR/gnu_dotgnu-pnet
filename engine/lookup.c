@@ -115,7 +115,7 @@ static ILClass *LookupClass(ILExecThread *thread, const char *className,
 
 	/* Look for the global type within the process's context */
 	classInfo = 0;
-	if(nameLen > 7 && !strncmp(name, "System.", 7))
+	if(classNameLen > 7 && !strncmp(className, "System.", 7))
 	{
 		/* Try looking in the system image first, to prevent the
 		   application from redirecting system types elsewhere */

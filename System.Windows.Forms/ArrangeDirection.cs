@@ -1,6 +1,6 @@
 /*
- * IDataObject.cs - Implementation of the
- *			"System.Windows.Forms.IDataObject" class.
+ * ArrangeDirection.cs - Implementation of the
+ *		"System.Windows.Forms.ArrangeDirection" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,28 +27,13 @@ using System.Runtime.InteropServices;
 #if !ECMA_COMPAT
 [ComVisible(true)]
 #endif
-public interface IDataObject
+public enum ArrangeDirection
 {
-	// Get the data associated with the specified format.
-	Object GetData(String format);
-	Object GetData(Type format);
-	Object GetData(String format, bool autoConvert);
+	Left	= 0,
+	Right	= 0,
+	Down	= 4,
+	Up		= 4
 
-	// Determine if there is data present with the specified format.
-	bool GetDataPresent(String format);
-	bool GetDataPresent(Type format);
-	bool GetDataPresent(String format, bool autoConvert);
-
-	// Get a list of all formats that are supported by this data object.
-	String[] GetFormats();
-	String[] GetFormats(bool autoConvert);
-
-	// Set data on this object.
-	void SetData(Object data);
-	void SetData(String format, Object data);
-	void SetData(Type format, Object data);
-	void SetData(String format, bool autoConvert, Object data);
-
-}; // interface IDataObject
+}; // enum ArrangeDirection
 
 }; // namespace System.Windows.Forms

@@ -1,6 +1,6 @@
 /*
- * IDataObject.cs - Implementation of the
- *			"System.Windows.Forms.IDataObject" class.
+ * ScrollEventType.cs - Implementation of the
+ *		"System.Windows.Forms.ScrollEventType" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,28 +27,18 @@ using System.Runtime.InteropServices;
 #if !ECMA_COMPAT
 [ComVisible(true)]
 #endif
-public interface IDataObject
+public enum ScrollEventType
 {
-	// Get the data associated with the specified format.
-	Object GetData(String format);
-	Object GetData(Type format);
-	Object GetData(String format, bool autoConvert);
+	SmallDecrement	= 0,
+	SmallIncrement	= 1,
+	LargeDecrement	= 2,
+	LargeIncrement	= 3,
+	ThumbPosition	= 4,
+	ThumbTrack		= 5,
+	First			= 6,
+	Last			= 7,
+	EndScroll		= 8
 
-	// Determine if there is data present with the specified format.
-	bool GetDataPresent(String format);
-	bool GetDataPresent(Type format);
-	bool GetDataPresent(String format, bool autoConvert);
-
-	// Get a list of all formats that are supported by this data object.
-	String[] GetFormats();
-	String[] GetFormats(bool autoConvert);
-
-	// Set data on this object.
-	void SetData(Object data);
-	void SetData(String format, Object data);
-	void SetData(Type format, Object data);
-	void SetData(String format, bool autoConvert, Object data);
-
-}; // interface IDataObject
+}; // enum ScrollEventType
 
 }; // namespace System.Windows.Forms

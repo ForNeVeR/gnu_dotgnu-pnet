@@ -1,6 +1,6 @@
 /*
- * IDataObject.cs - Implementation of the
- *			"System.Windows.Forms.IDataObject" class.
+ * Appearance.cs - Implementation of the
+ *		"System.Windows.Forms.Appearance" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,28 +27,11 @@ using System.Runtime.InteropServices;
 #if !ECMA_COMPAT
 [ComVisible(true)]
 #endif
-public interface IDataObject
+public enum Appearance
 {
-	// Get the data associated with the specified format.
-	Object GetData(String format);
-	Object GetData(Type format);
-	Object GetData(String format, bool autoConvert);
+	Normal = 0,
+	Button = 1
 
-	// Determine if there is data present with the specified format.
-	bool GetDataPresent(String format);
-	bool GetDataPresent(Type format);
-	bool GetDataPresent(String format, bool autoConvert);
-
-	// Get a list of all formats that are supported by this data object.
-	String[] GetFormats();
-	String[] GetFormats(bool autoConvert);
-
-	// Set data on this object.
-	void SetData(Object data);
-	void SetData(String format, Object data);
-	void SetData(Type format, Object data);
-	void SetData(String format, bool autoConvert, Object data);
-
-}; // interface IDataObject
+}; // enum Appearance
 
 }; // namespace System.Windows.Forms

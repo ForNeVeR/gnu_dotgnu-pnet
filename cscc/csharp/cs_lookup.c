@@ -1184,6 +1184,7 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	ILType *formalType;
 	CSSemValue value;
 	ILMethod *caller;
+	int switchToStatics;
 
 	/* If we are within type gathering, then search the nesting
 	   parents for a nested type that matches our requirements */
@@ -1228,6 +1229,7 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	/* Scan the start type and its nested parents */
 	/* Note: do not lookup class members while resolving the simple names
 	 * inside an attribute argument */
+	switchToStatics = 0;
 	while(startType != 0 /*&& !genInfo->inAttrArg*/)
 	{
 		/* Resolve cross-image references */
@@ -1251,13 +1253,21 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 				}
 			}
 		}
+		if(result != CS_SEMKIND_VOID && switchToStatics)
+		{
+			result = FilterStatic(&results, result);
+		}
 		if(result != CS_SEMKIND_VOID)
 		{
 			return LookupToSem(node, name, &results, result);
 		}
 
-		/* Move up to the nested parent */
+		/* Move up to the nested parent and then switch to only
+		   looking for static members.  This prevents us from picking
+		   up an instance field within a nested parent and then trying
+		   to access it via the child's "this" pointer */
 		startType = ILClass_NestedParent(startType);
+		switchToStatics = 1;
 	}
 
 	/* Clear the results buffer */

@@ -17,6 +17,10 @@
 	* Xsharp/Makefile.am: add the "-version-info" and "-no-undefined"
 	options to the Xsharp library build.
 
+	* runtime/System/Globalization/CharUnicodeInfo.cs,
+	runtime/System/Globalization/LineOrientation.cs: add some
+	.NET Framework 1.2 classes to "System.Globalization".
+
 2003-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, resources/en_US/Basic/Makefile.am,

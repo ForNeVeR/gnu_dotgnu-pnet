@@ -278,7 +278,7 @@ internal sealed class MiniXml
 				int temp = 0;
 				int start;
 				String name;
-				String value;
+				String avalue;
 				for(;;)
 				{
 					while(temp < args.Length && Char.IsWhiteSpace(args[temp]))
@@ -307,7 +307,7 @@ internal sealed class MiniXml
 						{
 							++temp;
 						}
-						value = args.Substring(start, temp - start);
+						avalue = args.Substring(start, temp - start);
 						if(temp < args.Length)
 						{
 							++temp;
@@ -321,7 +321,7 @@ internal sealed class MiniXml
 						{
 							++temp;
 						}
-						value = args.Substring(start, temp - start);
+						avalue = args.Substring(start, temp - start);
 						if(temp < args.Length)
 						{
 							++temp;
@@ -329,9 +329,9 @@ internal sealed class MiniXml
 					}
 					else
 					{
-						value = String.Empty;
+						avalue = String.Empty;
 					}
-					element.AddAttribute(name, value);
+					element.AddAttribute(name, avalue);
 				}
 
 				// Parse the children of this element.

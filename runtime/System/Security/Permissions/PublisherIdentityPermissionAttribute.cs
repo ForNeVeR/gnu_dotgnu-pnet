@@ -108,12 +108,15 @@ public sealed class PublisherIdentityPermissionAttribute
 				}
 				else if(certFile != null)
 				{
-					certificate = X509Certificate.CreateFromCertFile(certFile);
+					certificate =
+						System.Security.Cryptography.X509Certificates
+							.X509Certificate.CreateFromCertFile(certFile);
 				}
 				else
 				{
-					certificate = X509Certificate.CreateFromSignedFile
-						(signedFile);
+					certificate = 
+						System.Security.Cryptography.X509Certificates
+							.X509Certificate.CreateFromSignedFile(signedFile);
 				}
 				return new PublisherIdentityPermission(certificate);
 			}

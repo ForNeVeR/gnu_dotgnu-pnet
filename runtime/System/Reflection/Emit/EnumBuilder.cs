@@ -241,7 +241,7 @@ public sealed class EnumBuilder : Type
 	// Determine if this type has an element type.
 	protected override bool HasElementTypeImpl()
 			{
-				return builder.HasElementTypeImpl();
+				throw new NotSupportedException(_("NotSupp_Builder"));
 			}
 
 	// Determine if this type is an array.

@@ -125,7 +125,7 @@ public sealed class PrincipalPermission
 			}
 
 	// Convert an XML value into a permissions value.
-	public override void FromXml(SecurityElement esd)
+	public void FromXml(SecurityElement esd)
 			{
 				String value;
 				if(esd == null)
@@ -161,7 +161,7 @@ public sealed class PrincipalPermission
 			}
 
 	// Convert this permissions object into an XML value.
-	public override SecurityElement ToXml()
+	public SecurityElement ToXml()
 			{
 				SecurityElement element;
 				element = new SecurityElement("IPermission");

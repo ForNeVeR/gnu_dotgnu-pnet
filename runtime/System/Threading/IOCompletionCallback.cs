@@ -28,7 +28,7 @@ namespace System.Threading
 
 [CLSCompliant(false)]
 [Serializable]
-public delegate void IOCompletionCallback
+public unsafe delegate void IOCompletionCallback
 	(uint errorCode, uint numBytes, NativeOverlapped *pOVERLAP);
 
 #endif // !ECMA_COMPAT

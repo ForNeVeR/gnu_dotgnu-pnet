@@ -783,7 +783,7 @@ public class ILGenerator : IDetachItem
 
 				// Determine if we can squash the instruction a bit more.
 				int index = lbuilder.index;
-				if(opcode.value == 0xFE0C)			// "ldloc"
+				if(opcode.value == unchecked((short)0xFE0C)) // "ldloc"
 				{
 					if(index == 0)
 					{
@@ -806,14 +806,14 @@ public class ILGenerator : IDetachItem
 						opcode = OpCodes.Ldloc_S;
 					}
 				}
-				else if(opcode.value == 0xFE0D)		// "ldloca"
+				else if(opcode.value == unchecked((short)0xFE0D)) // "ldloca"
 				{
 					if(index < 0x0100)
 					{
 						opcode = OpCodes.Ldloca_S;
 					}
 				}
-				else if(opcode.value == 0xFE0E)		// "stloc"
+				else if(opcode.value == unchecked((short)0xFE0E)) // "stloc"
 				{
 					if(index == 0)
 					{

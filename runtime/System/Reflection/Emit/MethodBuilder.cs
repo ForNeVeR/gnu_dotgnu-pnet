@@ -508,7 +508,7 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem, IDetachItem
 			}
 
 	// Get the string form of the signature of this method.
-	public override String Signature 
+	public String Signature 
 			{
 				get
 				{

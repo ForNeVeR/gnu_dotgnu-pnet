@@ -75,6 +75,7 @@ public class SecurityManager
 				 out PermissionSet denied)
 			{
 				// TODO
+				denied = null;
 				return null;
 			}
 	[TODO]

@@ -86,6 +86,7 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 				RegistryKey savedStart = start;
 				RegistryKey prevStart;
 
+				last = String.Empty;
 				while((index = subkey.IndexOf('\\')) != -1 ||
 				      (index = subkey.IndexOf('/')) != -1)
 				{

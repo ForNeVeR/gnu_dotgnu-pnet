@@ -8,10 +8,13 @@ ilalink_LDADD   = libILLink.a ../dumpasm/libILDumpAsm.a \
 				  ../image/libILImage.a ../support/libILSupport.a
 
 libILLink_a_SOURCES = link_attrs.c \
+					  link_class.c \
 					  link_create.c \
+					  link_field.c \
 					  link_image.c \
 					  link_library.c \
 					  link_method.c \
+					  link_misc.c \
 					  link_type.c
 
 if USINGGCC

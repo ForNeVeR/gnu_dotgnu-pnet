@@ -15,6 +15,9 @@
 	* image/link.c (ILPInvokeResolveModule): allow relative paths
 	of the form "X/Y/Z" to be used for PInvoke module names (bug #5413).
 
+	* engine/verify_call.c (MatchSignature): recognize method pointers
+	as valid type-I values in signature verification (Gopal V).
+
 2003-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/console.c: add extra keycodes to the function/arrow key

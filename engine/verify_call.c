@@ -500,7 +500,8 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 				}
 				else if(paramType != 0 && ILType_IsComplex(paramType) &&
 				        (ILType_Kind(paramType) == IL_TYPE_COMPLEX_PTR ||
-						 ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF))
+						 ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF ||
+						 ILType_Kind(paramType) == IL_TYPE_COMPLEX_METHOD))
 				{
 					/* Can pass unmanaged pointers by pointer or reference
 					   only if unsafe IL code is permitted */

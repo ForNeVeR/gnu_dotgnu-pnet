@@ -6,6 +6,8 @@ SUFFIXES = .cs
 
 libCStdlib_a_SOURCES = \
 	abort.c \
+	atof.c \
+	atoi.c \
 	_exit.c \
 	getenv-glue.cs \
 	getenv.c \

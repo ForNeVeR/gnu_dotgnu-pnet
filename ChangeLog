@@ -1,4 +1,9 @@
 
+2004-02-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* libc/stdlib/Makefile.am, libc/stdlib/atof.c, libc/stdlib/atoi.c:
+	implement atoi, atof, strtol, etc, for numeric conversions.
+
 2004-02-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/signal.h, libc/signal/kill.c, libpthread/pthread_kill.c:

@@ -231,6 +231,59 @@ unsigned ILGetCodePage(void)
 #endif
 }
 
+unsigned ILGetCultureID(void)
+{
+	/* We prefer to return culture information by name */
+	return 0;
+}
+
+/*
+ * Locale-safe letter manipulation macros.
+ */
+#define	IsAlpha(ch)	(((ch) >= 'A' && (ch) <= 'Z') || \
+					 ((ch) >= 'a' && (ch) <= 'z'))
+#define	ToLower(ch)	(((ch) >= 'A' && (ch) <= 'Z') ? (ch) - 'A' + 'a' : (ch))
+#define	ToUpper(ch)	(((ch) >= 'a' && (ch) <= 'z') ? (ch) - 'a' + 'A' : (ch))
+
+char *ILGetCultureName(void)
+{
+	char *env;
+	char name[8];
+
+	/* Get the culture information from the LANG environment variable */
+	env = getenv("LANG");
+	if(!env || *env == '\0')
+	{
+		return 0;
+	}
+
+	/* Convert the LANG value into an ECMA culture identifier */
+	if(!IsAlpha(env[0]) || !IsAlpha(env[1]))
+	{
+		return 0;
+	}
+	name[0] = ToLower(env[0]);
+	name[1] = ToLower(env[1]);
+	if(env[2] == '\0')
+	{
+		name[2] = '\0';
+		return ILDupString(name);
+	}
+	if(env[2] != '-' && env[2] != '_')
+	{
+		return 0;
+	}
+	if(!IsAlpha(env[3]) || !IsAlpha(env[4]))
+	{
+		return 0;
+	}
+	name[3] = '-';
+	name[4] = ToUpper(env[3]);
+	name[5] = ToUpper(env[4]);
+	name[6] = '\0';
+	return ILDupString(name);
+}
+
 #ifdef	__cplusplus
 };
 #endif

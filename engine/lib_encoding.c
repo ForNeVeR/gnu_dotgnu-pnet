@@ -163,6 +163,32 @@ ILInt32 _IL_DefaultEncoding_InternalCodePage(ILExecThread *_thread)
 	return (ILInt32)ILGetCodePage();
 }
 
+/*
+ * private static int InternalCultureID();
+ */
+ILInt32 _IL_CultureInfo_InternalCultureID(ILExecThread *_thread)
+{
+	return (ILInt32)ILGetCultureID();
+}
+
+/*
+ * private static String InternalCultureName();
+ */
+ILString *_IL_CultureInfo_InternalCultureName(ILExecThread *_thread)
+{
+	char *name = ILGetCultureName();
+	if(!name)
+	{
+		return ILStringCreate(_thread, "iv");
+	}
+	else
+	{
+		ILString *str = ILStringCreate(_thread, name);
+		ILFree(name);
+		return str;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

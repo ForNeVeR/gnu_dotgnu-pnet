@@ -1,4 +1,10 @@
 
+2002-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_encoding.c,
+	include/il_utils.h, samples/mscorlib.dll, support/locale.c:
+	integrate the culture-determination code.
+
 2002-11-13  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: generate a warning when a no-body

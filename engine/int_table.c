@@ -1823,6 +1823,15 @@ IL_METHOD_END
 
 #endif
 
+#ifndef _IL_CultureInfo_suppressed
+
+IL_METHOD_BEGIN(CultureInfo_Methods)
+	IL_METHOD("InternalCultureID", "()i", _IL_CultureInfo_InternalCultureID, marshal_ip)
+	IL_METHOD("InternalCultureName", "()oSystem.String;", _IL_CultureInfo_InternalCultureName, marshal_pp)
+IL_METHOD_END
+
+#endif
+
 #if !defined(HAVE_LIBFFI)
 
 static void marshal_vpipp(void (*fn)(), void *rvalue, void **avalue)
@@ -2377,6 +2386,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_CryptoMethods_suppressed
 	{"CryptoMethods", "Platform", CryptoMethods_Methods},
+#endif
+#ifndef _IL_CultureInfo_suppressed
+	{"CultureInfo", "System.Globalization", CultureInfo_Methods},
 #endif
 #ifndef _IL_Debugger_suppressed
 	{"Debugger", "System.Diagnostics", Debugger_Methods},

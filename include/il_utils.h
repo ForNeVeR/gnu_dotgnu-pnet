@@ -467,6 +467,12 @@ void ILInitLocale(void);
 /* Get the code page in use by the underlying system (0 if unknown) */
 unsigned ILGetCodePage(void);
 
+/* Get the culture identifier of this system (0 if unknown) */
+unsigned ILGetCultureID(void);
+
+/* Get the culture name of this system (NULL if unknown) */
+char *ILGetCultureName(void);
+
 /* an implementation of a linked list queue */
 typedef struct _tagILQueueEntry
 {

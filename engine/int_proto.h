@@ -359,6 +359,9 @@ extern ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread * _thread, ILN
 
 extern ILString * _IL_NumberFormatter_FormatReal(ILExecThread * _thread, ILDouble d, ILString * format, ILInt32 buflen);
 
+extern ILInt32 _IL_CultureInfo_InternalCultureID(ILExecThread * _thread);
+extern ILString * _IL_CultureInfo_InternalCultureName(ILExecThread * _thread);
+
 extern ILBool _IL_Debugger_InternalIsAttached(ILExecThread * _thread);
 extern void _IL_Debugger_Break(ILExecThread * _thread);
 extern ILBool _IL_Debugger_IsLogging(ILExecThread * _thread);

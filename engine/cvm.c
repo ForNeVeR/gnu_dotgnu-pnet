@@ -459,7 +459,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 				/* The world's simplest instruction */
 				MODIFY_PC_AND_STACK(1, 0);
 			}
-			VMBREAK;
+			VMBREAK(COP_NOP);
 
 			/* Include the instruction categories for the main switch */
 			#define IL_CVM_MAIN
@@ -522,7 +522,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					break;
 				}
 			}
-			VMBREAK;
+			VMBREAK(COP_WIDE);
 
 			/**
 			 * <opcode name="prefix" group="Miscellaneous instructions">
@@ -567,7 +567,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 						/* Treat all other prefixed opcodes as NOP */
 						MODIFY_PC_AND_STACK(2, 0);
 					}
-					VMBREAK;
+					VMBREAK(COP_PREFIX);
 				}
 			}
 			VMOUTERBREAK;
@@ -577,7 +577,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 				/* Treat all other opcodes as NOP */
 				MODIFY_PC_AND_STACK(1, 0);
 			}
-			VMBREAK;
+			VMBREAK(_DEFAULT_MAIN);
 		}
 	}
 

@@ -65,7 +65,7 @@ VMCASE(COP_BR):
 	/* Unconditional branch */
 	pc += (ILInt32)(ILInt8)(pc[1]);
 }
-VMBREAK;
+VMBREAK(COP_BR);
 
 /**
  * <opcode name="beq" group="Branch instructions">
@@ -105,7 +105,7 @@ VMCASE(COP_BEQ):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BEQ);
 
 /**
  * <opcode name="bne" group="Branch instructions">
@@ -145,7 +145,7 @@ VMCASE(COP_BNE):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BNE);
 
 /**
  * <opcode name="blt" group="Branch instructions">
@@ -180,7 +180,7 @@ VMCASE(COP_BLT):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BLT);
 
 /**
  * <opcode name="blt_un" group="Branch instructions">
@@ -215,7 +215,7 @@ VMCASE(COP_BLT_UN):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BLT_UN);
 
 /**
  * <opcode name="ble" group="Branch instructions">
@@ -251,7 +251,7 @@ VMCASE(COP_BLE):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BLE);
 
 /**
  * <opcode name="ble_un" group="Branch instructions">
@@ -288,7 +288,7 @@ VMCASE(COP_BLE_UN):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BLE_UN);
 
 /**
  * <opcode name="bgt" group="Branch instructions">
@@ -323,7 +323,7 @@ VMCASE(COP_BGT):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BGT);
 
 /**
  * <opcode name="bgt_un" group="Branch instructions">
@@ -358,7 +358,7 @@ VMCASE(COP_BGT_UN):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BGT_UN);
 
 /**
  * <opcode name="bge" group="Branch instructions">
@@ -394,7 +394,7 @@ VMCASE(COP_BGE):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BGE);
 
 /**
  * <opcode name="bge_un" group="Branch instructions">
@@ -431,7 +431,7 @@ VMCASE(COP_BGE_UN):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BGE_UN);
 
 /**
  * <opcode name="brtrue" group="Branch instructions">
@@ -471,7 +471,7 @@ VMCASE(COP_BRTRUE):
 		MODIFY_PC_AND_STACK(6, -1);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BRTRUE);
 
 /**
  * <opcode name="brfalse" group="Branch instructions">
@@ -511,7 +511,7 @@ VMCASE(COP_BRFALSE):
 		MODIFY_PC_AND_STACK(6, -1);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BRFALSE);
 
 /**
  * <opcode name="brnull" group="Branch instructions">
@@ -551,7 +551,7 @@ VMCASE(COP_BRNULL):
 		MODIFY_PC_AND_STACK(6, -1);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BRNULL);
 
 /**
  * <opcode name="brnonnull" group="Branch instructions">
@@ -591,7 +591,7 @@ VMCASE(COP_BRNONNULL):
 		MODIFY_PC_AND_STACK(6, -1);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BRNONNULL);
 
 /**
  * <opcode name="br_peq" group="Branch instructions">
@@ -631,7 +631,7 @@ VMCASE(COP_BR_PEQ):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BR_PEQ);
 
 /**
  * <opcode name="br_pne" group="Branch instructions">
@@ -671,7 +671,7 @@ VMCASE(COP_BR_PNE):
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-VMBREAK;
+VMBREAK(COP_BR_PNE);
 
 /**
  * <opcode name="br_long" group="Branch instructions">
@@ -699,7 +699,7 @@ VMCASE(COP_BR_LONG):
 			/* Unconditional branch */
 			pc += IL_READ_INT32(pc + 2);
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BEQ:
 		{
@@ -714,7 +714,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BNE:
 		{
@@ -729,7 +729,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BLT:
 		{
@@ -744,7 +744,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BLT_UN:
 		{
@@ -760,7 +760,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BLE:
 		{
@@ -776,7 +776,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BLE_UN:
 		{
@@ -792,7 +792,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BGT:
 		{
@@ -807,7 +807,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BGT_UN:
 		{
@@ -823,7 +823,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BGE:
 		{
@@ -839,7 +839,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BGE_UN:
 		{
@@ -855,7 +855,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BRTRUE:
 		{
@@ -870,7 +870,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -1);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BRFALSE:
 		{
@@ -885,7 +885,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -1);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BRNULL:
 		{
@@ -900,7 +900,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -1);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BRNONNULL:
 		{
@@ -915,7 +915,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -1);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 
 		case COP_BR_PEQ:
 		{
@@ -930,7 +930,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 		
 		case COP_BR_PNE:
 		{
@@ -945,7 +945,7 @@ VMCASE(COP_BR_LONG):
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 
 		case COP_JSR:
 		{
@@ -954,10 +954,10 @@ VMCASE(COP_BR_LONG):
 			pc += IL_READ_INT32(pc + 2);
 			stacktop += 1;
 		}
-		VMBREAK;
+		VMBREAKNOEND;
 	}
 }
-VMBREAK;
+VMBREAK(COP_BR_LONG);
 
 /**
  * <opcode name="switch" group="Branch instructions">
@@ -998,6 +998,6 @@ VMCASE(COP_SWITCH):
 		--stacktop;
 	}
 }
-VMBREAK;
+VMBREAK(COP_SWITCH);
 
 #endif /* IL_CVM_MAIN */

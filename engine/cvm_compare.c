@@ -134,7 +134,7 @@ VMCASE(COP_PREFIX_ICMP):
 	}
 	MODIFY_PC_AND_STACK(2, -1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_ICMP);
 
 /**
  * <opcode name="icmp_un" group="Comparison operators">
@@ -177,7 +177,7 @@ VMCASE(COP_PREFIX_ICMP_UN):
 	}
 	MODIFY_PC_AND_STACK(2, -1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_ICMP_UN);
 
 /**
  * <opcode name="lcmp" group="Comparison operators">
@@ -211,7 +211,7 @@ VMCASE(COP_PREFIX_LCMP):
 		     &(stacktop[-CVM_WORDS_PER_LONG]));
 	MODIFY_PC_AND_STACK(2, -(CVM_WORDS_PER_LONG * 2) + 1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_LCMP);
 
 /**
  * <opcode name="lcmp_un" group="Comparison operators">
@@ -245,7 +245,7 @@ VMCASE(COP_PREFIX_LCMP_UN):
 		      &(stacktop[-CVM_WORDS_PER_LONG]));
 	MODIFY_PC_AND_STACK(2, -(CVM_WORDS_PER_LONG * 2) + 1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_LCMP_UN);
 
 /**
  * <opcode name="fcmpl" group="Comparison operators">
@@ -282,7 +282,7 @@ VMCASE(COP_PREFIX_FCMPL):
 	MODIFY_PC_AND_STACK
 		(2, -(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_FCMPL);
 
 /**
  * <opcode name="fcmpg" group="Comparison operators">
@@ -320,7 +320,7 @@ VMCASE(COP_PREFIX_FCMPG):
 	MODIFY_PC_AND_STACK
 		(2, -(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_FCMPG);
 
 /**
  * <opcode name="pcmp" group="Comparison operators">
@@ -363,7 +363,7 @@ VMCASE(COP_PREFIX_PCMP):
 	}
 	MODIFY_PC_AND_STACK(2, -1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_PCMP);
 
 /**
  * <opcode name="seteq" group="Comparison operators">
@@ -394,7 +394,7 @@ VMCASE(COP_PREFIX_SETEQ):
 	stacktop[-1].intValue = (stacktop[-1].intValue == 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_SETEQ);
 
 /**
  * <opcode name="setne" group="Comparison operators">
@@ -425,7 +425,7 @@ VMCASE(COP_PREFIX_SETNE):
 	stacktop[-1].intValue = (stacktop[-1].intValue != 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_SETNE);
 
 /**
  * <opcode name="setlt" group="Comparison operators">
@@ -456,7 +456,7 @@ VMCASE(COP_PREFIX_SETLT):
 	stacktop[-1].intValue = (stacktop[-1].intValue < 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_SETLT);
 
 /**
  * <opcode name="setle" group="Comparison operators">
@@ -487,7 +487,7 @@ VMCASE(COP_PREFIX_SETLE):
 	stacktop[-1].intValue = (stacktop[-1].intValue <= 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_SETLE);
 
 /**
  * <opcode name="setgt" group="Comparison operators">
@@ -518,7 +518,7 @@ VMCASE(COP_PREFIX_SETGT):
 	stacktop[-1].intValue = (stacktop[-1].intValue > 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_SETGT);
 
 /**
  * <opcode name="setge" group="Comparison operators">
@@ -549,6 +549,6 @@ VMCASE(COP_PREFIX_SETGE):
 	stacktop[-1].intValue = (stacktop[-1].intValue >= 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_SETGE);
 
 #endif /* IL_CVM_PREFIX */

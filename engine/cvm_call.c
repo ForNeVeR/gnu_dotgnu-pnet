@@ -423,7 +423,7 @@ VMCASE(COP_CALL):
 	++(method->count);
 #endif
 }
-VMBREAK;
+VMBREAK(COP_CALL);
 
 /**
  * <opcode name="call_ctor" group="Call management instructions">
@@ -509,7 +509,7 @@ VMCASE(COP_CALL_CTOR):
 	++(method->count);
 #endif
 }
-VMBREAK;
+VMBREAK(COP_CALL_CTOR);
 
 /**
  * <opcode name="call_native" group="Call management instructions">
@@ -552,7 +552,7 @@ VMCASE(COP_CALL_NATIVE):
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, -1);
 }
-VMBREAK;
+VMBREAK(COP_CALL_NATIVE);
 
 /**
  * <opcode name="call_native_void" group="Call management instructions">
@@ -577,7 +577,7 @@ VMCASE(COP_CALL_NATIVE_VOID):
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, 0);
 }
-VMBREAK;
+VMBREAK(COP_CALL_NATIVE_VOID);
 
 /**
  * <opcode name="call_virtual" group="Call management instructions">
@@ -649,7 +649,7 @@ VMCASE(COP_CALL_VIRTUAL):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CALL_VIRTUAL);
 
 /**
  * <opcode name="call_interface" group="Call management instructions">
@@ -730,7 +730,7 @@ VMCASE(COP_CALL_INTERFACE):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CALL_INTERFACE);
 
 /**
  * <opcode name="cctor_once" group="Call management instructions">
@@ -762,7 +762,7 @@ VMCASE(COP_CCTOR_ONCE):
 		/* We haven't executed this method yet, so mark and continue */
 		method->member.owner->attributes |= IL_META_TYPEDEF_CCTOR_ONCE;
 		MODIFY_PC_AND_STACK(1, 0);
-		VMBREAK;
+		VMBREAK(COP_CCTOR_ONCE);
 	}
 }
 /* Fall through to the next case */
@@ -818,7 +818,7 @@ popFrame:
 	DUMP_STACK();
 #endif
 }
-VMBREAK;
+VMBREAK(COP_RETURN);
 
 /**
  * <opcode name="return_1" group="Call management instructions">
@@ -954,7 +954,7 @@ VMCASE(COP_PUSH_THREAD):
 	nativeArgs[0] = (void *)&thread;
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_PUSH_THREAD);
 
 /**
  * <opcode name="pushdown" group="Call management instructions">
@@ -1000,7 +1000,7 @@ VMCASE(COP_PUSHDOWN):
 		STACK_OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PUSHDOWN);
 
 #define COP_WADDR_NATIVE(name,value)	\
 VMCASE(COP_WADDR_NATIVE_##name): \
@@ -1009,7 +1009,7 @@ VMCASE(COP_WADDR_NATIVE_##name): \
 	nativeArgs[(value) + 1] = (void *)(&(frame[pc[1]])); \
 	MODIFY_PC_AND_STACK(2, 0); \
 } \
-VMBREAK
+VMBREAK(COP_WADDR_NATIVE_##name)
 
 /**
  * <opcode name="waddr_native_&lt;n&gt;" group="Call management instructions">
@@ -1044,6 +1044,22 @@ COP_WADDR_NATIVE(4, 4);
 COP_WADDR_NATIVE(5, 5);
 COP_WADDR_NATIVE(6, 6);
 COP_WADDR_NATIVE(7, 7);
+
+VMCASE(COP_CALLI):
+{
+	/* Call a method by pointer */
+	/* TODO */
+	MODIFY_PC_AND_STACK(1, 0);
+}
+VMBREAK(COP_CALLI);
+
+VMCASE(COP_JMPI):
+{
+	/* Jump to a method by pointer */
+	/* TODO */
+	MODIFY_PC_AND_STACK(1, 0);
+}
+VMBREAK(COP_JMPI);
 
 #elif defined(IL_CVM_WIDE)
 
@@ -1090,7 +1106,7 @@ case COP_CALL_VIRTUAL:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_CALL_INTERFACE:
 {
@@ -1140,23 +1156,7 @@ case COP_CALL_INTERFACE:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
-
-VMCASE(COP_CALLI):
-{
-	/* Call a method by pointer */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, 0);
-}
-VMBREAK;
-
-VMCASE(COP_JMPI):
-{
-	/* Jump to a method by pointer */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, 0);
-}
-VMBREAK;
+VMBREAKNOEND;
 
 #define COP_WADDR_NATIVE_WIDE(name,value)	\
 case COP_WADDR_NATIVE_##name: \
@@ -1244,7 +1244,7 @@ VMCASE(COP_PREFIX_TAIL):
 		break;
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_TAIL);
 
 /**
  * <opcode name="ldftn" group="Call management instructions">
@@ -1270,7 +1270,7 @@ VMCASE(COP_PREFIX_LDFTN):
 	stacktop[0].ptrValue = ReadPointer(pc + 2);
 	MODIFY_PC_AND_STACK(2 + sizeof(void *), 1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_LDFTN);
 
 /**
  * <opcode name="ldvirtftn" group="Call management instructions">
@@ -1306,7 +1306,7 @@ VMCASE(COP_PREFIX_LDVIRTFTN):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_LDVIRTFTN);
 
 /**
  * <opcode name="ldinterfftn" group="Call management instructions">
@@ -1347,7 +1347,7 @@ VMCASE(COP_PREFIX_LDINTERFFTN):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_LDINTERFFTN);
 
 /**
  * <opcode name="pack_varargs" group="Call management instructions">
@@ -1391,6 +1391,6 @@ VMCASE(COP_PREFIX_PACK_VARARGS):
 	stacktop[0].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(10 + sizeof(void *), 1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_PACK_VARARGS);
 
 #endif /* IL_CVM_PREFIX */

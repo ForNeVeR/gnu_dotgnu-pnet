@@ -119,7 +119,7 @@ VMCASE(COP_JSR):
 	pc += (ILInt32)(ILInt8)(pc[1]);
 	stacktop += 1;
 }
-VMBREAK;
+VMBREAK(COP_JSR);
 
 /**
  * <opcode name="ret_jsr" group="Exception handling instructions">
@@ -145,7 +145,7 @@ VMCASE(COP_RET_JSR):
 	pc = (unsigned char *)(stacktop[-1].ptrValue);
 	stacktop -= 1;
 }
-VMBREAK;
+VMBREAK(COP_RET_JSR);
 
 #elif defined(IL_CVM_PREFIX)
 
@@ -173,7 +173,7 @@ VMCASE(COP_PREFIX_ENTER_TRY):
 	thread->exceptHeight = stacktop;
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_ENTER_TRY);
 
 /* Label that we jump to when the engine throws an internal exception */
 throwException:
@@ -231,7 +231,7 @@ searchForHandler:
 	}
 	pc += 12;
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_THROW);
 
 /**
  * <opcode name="throw_caller" group="Exception handling instructions">

@@ -126,7 +126,10 @@ echo '#define VMPREFIXSWITCH(val) goto *(&&COP_NOP_label + prefix_label_table[(v
 echo '#define VMCASE(val)         val##_label'
 echo '#define VMDEFAULT           _DEFAULT_MAIN_label'
 echo '#define VMPREFIXDEFAULT     _DEFAULT_PREFIX_label'
-echo '#define VMBREAK             \
+echo '#define VMBREAK(val)        \
+            CVM_DUMP(); \
+            goto *(&&COP_NOP_label + main_label_table[*pc])'
+echo '#define VMBREAKNOEND        \
             CVM_DUMP(); \
             goto *(&&COP_NOP_label + main_label_table[*pc])'
 echo '#define VMOUTERBREAK'
@@ -220,7 +223,10 @@ echo '#define VMPREFIXSWITCH(val) goto *prefix_label_table[(val)];'
 echo '#define VMCASE(val)         val##_label'
 echo '#define VMDEFAULT           _DEFAULT_MAIN_label'
 echo '#define VMPREFIXDEFAULT     _DEFAULT_PREFIX_label'
-echo '#define VMBREAK             \
+echo '#define VMBREAK(val)        \
+            CVM_DUMP(); \
+            goto *main_label_table[*pc]'
+echo '#define VMBREAKNOEND        \
             CVM_DUMP(); \
             goto *main_label_table[*pc]'
 echo '#define VMOUTERBREAK'
@@ -241,9 +247,11 @@ echo '#define VMCASE(val)         case (val)'
 echo '#define VMDEFAULT           default'
 echo '#define VMPREFIXDEFAULT     default'
 echo '#if defined(__GNUC__)'
-echo '#define VMBREAK             __asm__(""); break'
+echo '#define VMBREAK(val)        __asm__(""); break'
+echo '#define VMBREAKNOEND        __asm__(""); break'
 echo '#else'
-echo '#define VMBREAK             break'
+echo '#define VMBREAK(val)        break'
+echo '#define VMBREAKNOEND        break'
 echo '#endif'
 echo '#define VMOUTERBREAK        break'
 echo ''

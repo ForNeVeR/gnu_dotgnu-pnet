@@ -383,7 +383,7 @@ VMCASE(COP_IADD):
 	stacktop[-2].intValue += stacktop[-1].intValue;
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_IADD);
 
 /**
  * <opcode name="iadd_ovf" group="Arithmetic operators">
@@ -426,7 +426,7 @@ VMCASE(COP_IADD_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IADD_OVF);
 
 /**
  * <opcode name="iadd_ovf_un" group="Arithmetic operators">
@@ -469,7 +469,7 @@ VMCASE(COP_IADD_OVF_UN):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IADD_OVF_UN);
 
 /**
  * <opcode name="isub" group="Arithmetic operators">
@@ -503,7 +503,7 @@ VMCASE(COP_ISUB):
 	stacktop[-2].intValue -= stacktop[-1].intValue;
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_ISUB);
 
 /**
  * <opcode name="isub_ovf" group="Arithmetic operators">
@@ -546,7 +546,7 @@ VMCASE(COP_ISUB_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_ISUB_OVF);
 
 /**
  * <opcode name="isub_ovf_un" group="Arithmetic operators">
@@ -589,7 +589,7 @@ VMCASE(COP_ISUB_OVF_UN):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_ISUB_OVF_UN);
 
 /**
  * <opcode name="imul" group="Arithmetic operators">
@@ -623,7 +623,7 @@ VMCASE(COP_IMUL):
 	stacktop[-2].intValue *= stacktop[-1].intValue;
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_IMUL);
 
 /**
  * <opcode name="imul_ovf" group="Arithmetic operators">
@@ -666,7 +666,7 @@ VMCASE(COP_IMUL_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IMUL_OVF);
 
 /**
  * <opcode name="imul_ovf_un" group="Arithmetic operators">
@@ -709,7 +709,7 @@ VMCASE(COP_IMUL_OVF_UN):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IMUL_OVF_UN);
 
 /**
  * <opcode name="idiv" group="Arithmetic operators">
@@ -756,7 +756,7 @@ VMCASE(COP_IDIV):
 		ZERO_DIV_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IDIV);
 
 /**
  * <opcode name="idiv_un" group="Arithmetic operators">
@@ -793,7 +793,7 @@ VMCASE(COP_IDIV_UN):
 		ZERO_DIV_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IDIV_UN);
 
 /**
  * <opcode name="irem" group="Arithmetic operators">
@@ -840,7 +840,7 @@ VMCASE(COP_IREM):
 		ZERO_DIV_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IREM);
 
 /**
  * <opcode name="irem_un" group="Arithmetic operators">
@@ -877,7 +877,7 @@ VMCASE(COP_IREM_UN):
 		ZERO_DIV_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IREM_UN);
 
 /**
  * <opcode name="ineg" group="Arithmetic operators">
@@ -906,7 +906,7 @@ VMCASE(COP_INEG):
 	stacktop[-1].intValue = -(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_INEG);
 
 /**
  * <opcode name="ladd" group="Arithmetic operators">
@@ -949,7 +949,7 @@ VMCASE(COP_LADD):
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_LADD);
 
 /**
  * <opcode name="ladd_ovf" group="Arithmetic operators">
@@ -992,7 +992,7 @@ VMCASE(COP_LADD_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_LADD_OVF);
 
 /**
  * <opcode name="ladd_ovf_un" group="Arithmetic operators">
@@ -1035,7 +1035,7 @@ VMCASE(COP_LADD_OVF_UN):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_LADD_OVF_UN);
 
 /**
  * <opcode name="lsub" group="Arithmetic operators">
@@ -1071,7 +1071,7 @@ VMCASE(COP_LSUB):
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_LSUB);
 
 /**
  * <opcode name="lsub_ovf" group="Arithmetic operators">
@@ -1114,7 +1114,7 @@ VMCASE(COP_LSUB_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_LSUB_OVF);
 
 /**
  * <opcode name="lsub_ovf_un" group="Arithmetic operators">
@@ -1157,7 +1157,7 @@ VMCASE(COP_LSUB_OVF_UN):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_LSUB_OVF_UN);
 
 /**
  * <opcode name="lmul" group="Arithmetic operators">
@@ -1193,7 +1193,7 @@ VMCASE(COP_LMUL):
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_LMUL);
 
 /**
  * <opcode name="lmul_ovf" group="Arithmetic operators">
@@ -1236,7 +1236,7 @@ VMCASE(COP_LMUL_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_LMUL_OVF);
 
 /**
  * <opcode name="lmul_ovf_un" group="Arithmetic operators">
@@ -1279,7 +1279,7 @@ VMCASE(COP_LMUL_OVF_UN):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_LMUL_OVF_UN);
 
 /**
  * <opcode name="ldiv" group="Arithmetic operators">
@@ -1324,7 +1324,7 @@ VMCASE(COP_LDIV):
 		ARITHMETIC_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_LDIV);
 
 /**
  * <opcode name="ldiv_un" group="Arithmetic operators">
@@ -1361,7 +1361,7 @@ VMCASE(COP_LDIV_UN):
 		ZERO_DIV_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_LDIV_UN);
 
 /**
  * <opcode name="lrem" group="Arithmetic operators">
@@ -1406,7 +1406,7 @@ VMCASE(COP_LREM):
 		ARITHMETIC_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_LREM);
 
 /**
  * <opcode name="lrem_un" group="Arithmetic operators">
@@ -1443,7 +1443,7 @@ VMCASE(COP_LREM_UN):
 		ZERO_DIV_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_LREM_UN);
 
 /**
  * <opcode name="lneg" group="Arithmetic operators">
@@ -1473,7 +1473,7 @@ VMCASE(COP_LNEG):
 		-(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG]))));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_LNEG);
 
 #define	COP_FLOAT_OP(name,op)	\
 VMCASE(COP_##name): \
@@ -1483,7 +1483,7 @@ VMCASE(COP_##name): \
 		op ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))); \
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_NATIVE_FLOAT); \
 } \
-VMBREAK
+VMBREAK(COP_##name)
 
 /**
  * <opcode name="fadd" group="Arithmetic operators">
@@ -1602,7 +1602,7 @@ VMCASE(COP_FREM):
 		   ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))));
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_NATIVE_FLOAT);
 }
-VMBREAK;
+VMBREAK(COP_FREM);
 
 /**
  * <opcode name="fneg" group="Arithmetic operators">
@@ -1628,7 +1628,7 @@ VMCASE(COP_FNEG):
 	  	-ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_FNEG);
 
 /**
  * <opcode name="iand" group="Bitwise operators">
@@ -1656,7 +1656,7 @@ VMCASE(COP_IAND):
 	stacktop[-2].intValue &= stacktop[-1].intValue;
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_IAND);
 
 /**
  * <opcode name="ior" group="Bitwise operators">
@@ -1684,7 +1684,7 @@ VMCASE(COP_IOR):
 	stacktop[-2].intValue |= stacktop[-1].intValue;
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_IOR);
 
 /**
  * <opcode name="ixor" group="Bitwise operators">
@@ -1712,7 +1712,7 @@ VMCASE(COP_IXOR):
 	stacktop[-2].intValue ^= stacktop[-1].intValue;
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_IXOR);
 
 /**
  * <opcode name="inot" group="Bitwise operators">
@@ -1740,7 +1740,7 @@ VMCASE(COP_INOT):
 	stacktop[-1].intValue = ~(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_INOT);
 
 /**
  * <opcode name="ishl" group="Bitwise operators">
@@ -1770,7 +1770,7 @@ VMCASE(COP_ISHL):
 	stacktop[-2].intValue <<= (stacktop[-1].uintValue & 0x1F);
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_ISHL);
 
 /**
  * <opcode name="ishr" group="Bitwise operators">
@@ -1798,7 +1798,7 @@ VMCASE(COP_ISHR):
 	stacktop[-2].intValue >>= (stacktop[-1].uintValue & 0x1F);
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_ISHR);
 
 /**
  * <opcode name="ishr_un" group="Bitwise operators">
@@ -1825,7 +1825,7 @@ VMCASE(COP_ISHR_UN):
 	stacktop[-2].uintValue >>= (stacktop[-1].uintValue & 0x1F);
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_ISHR_UN);
 
 /**
  * <opcode name="land" group="Bitwise operators">
@@ -1855,7 +1855,7 @@ VMCASE(COP_LAND):
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_LAND);
 
 /**
  * <opcode name="lor" group="Bitwise operators">
@@ -1885,7 +1885,7 @@ VMCASE(COP_LOR):
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_LOR);
 
 /**
  * <opcode name="lxor" group="Bitwise operators">
@@ -1915,7 +1915,7 @@ VMCASE(COP_LXOR):
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_LXOR);
 
 /**
  * <opcode name="lnot" group="Bitwise operators">
@@ -1944,7 +1944,7 @@ VMCASE(COP_LNOT):
 		~(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG]))));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_LNOT);
 
 /**
  * <opcode name="lshl" group="Bitwise operators">
@@ -1976,7 +1976,7 @@ VMCASE(COP_LSHL):
 	    (stacktop[-1].uintValue & 0x3F));
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_LSHL);
 
 /**
  * <opcode name="lshr" group="Bitwise operators">
@@ -2006,7 +2006,7 @@ VMCASE(COP_LSHR):
 	    (stacktop[-1].uintValue & 0x3F));
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_LSHR);
 
 /**
  * <opcode name="lshr_un" group="Bitwise operators">
@@ -2035,7 +2035,7 @@ VMCASE(COP_LSHR_UN):
 	    (stacktop[-1].uintValue & 0x3F));
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_LSHR_UN);
 
 #elif defined(IL_CVM_PREFIX)
 
@@ -2073,6 +2073,6 @@ VMCASE(COP_PREFIX_CKFINITE):
 		ARITHMETIC_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_CKFINITE);
 
 #endif /* IL_CVM_PREFIX */

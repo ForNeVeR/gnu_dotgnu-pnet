@@ -63,14 +63,14 @@ VMCASE(COP_ILOAD_##n): \
 	stacktop[0].intValue = frame[(n)].intValue; \
 	MODIFY_PC_AND_STACK(1, 1); \
 } \
-VMBREAK; \
+VMBREAK(COP_ILOAD_##n); \
 VMCASE(COP_PLOAD_##n): \
 { \
 	CVM_VAR_LOADED(n); \
 	stacktop[0].ptrValue = frame[(n)].ptrValue; \
 	MODIFY_PC_AND_STACK(1, 1); \
 } \
-VMBREAK
+VMBREAK(COP_PLOAD_##n)
 
 /**
  * <opcode name="iload_&lt;n&gt;" group="Local variable handling">
@@ -155,7 +155,7 @@ VMCASE(COP_ILOAD):
 	stacktop[0].intValue = frame[pc[1]].intValue;
 	MODIFY_PC_AND_STACK(2, 1);
 }
-VMBREAK;
+VMBREAK(COP_ILOAD);
 
 /**
  * <opcode name="pload" group="Local variable handling">
@@ -187,7 +187,7 @@ VMCASE(COP_PLOAD):
 	stacktop[0].ptrValue = frame[pc[1]].ptrValue;
 	MODIFY_PC_AND_STACK(2, 1);
 }
-VMBREAK;
+VMBREAK(COP_PLOAD);
 
 #define	COP_STORE_N(n)	\
 VMCASE(COP_ISTORE_##n): \
@@ -196,14 +196,14 @@ VMCASE(COP_ISTORE_##n): \
 	frame[(n)].intValue = stacktop[-1].intValue; \
 	MODIFY_PC_AND_STACK(1, -1); \
 } \
-VMBREAK; \
+VMBREAK(COP_ISTORE_##n); \
 VMCASE(COP_PSTORE_##n): \
 { \
 	CVM_VAR_STORED(n); \
 	frame[(n)].ptrValue = stacktop[-1].ptrValue; \
 	MODIFY_PC_AND_STACK(1, -1); \
 } \
-VMBREAK
+VMBREAK(COP_PSTORE_##n)
 
 /**
  * <opcode name="istore_&lt;n&gt;" group="Local variable handling">
@@ -288,7 +288,7 @@ VMCASE(COP_ISTORE):
 	frame[pc[1]].intValue = stacktop[-1].intValue;
 	MODIFY_PC_AND_STACK(2, -1);
 }
-VMBREAK;
+VMBREAK(COP_ISTORE);
 
 /**
  * <opcode name="pstore" group="Local variable handling">
@@ -320,7 +320,7 @@ VMCASE(COP_PSTORE):
 	frame[pc[1]].ptrValue = stacktop[-1].ptrValue;
 	MODIFY_PC_AND_STACK(2, -1);
 }
-VMBREAK;
+VMBREAK(COP_PSTORE);
 
 /**
  * <opcode name="mload" group="Local variable handling">
@@ -348,7 +348,7 @@ VMCASE(COP_MLOAD):
 	stacktop += (unsigned)(pc[2]);
 	pc += 3;
 }
-VMBREAK;
+VMBREAK(COP_MLOAD);
 
 /**
  * <opcode name="mstore" group="Local variable handling">
@@ -376,7 +376,7 @@ VMCASE(COP_MSTORE):
 	IL_MEMCPY(&(frame[pc[1]]), stacktop, sizeof(CVMWord) * (unsigned)(pc[2]));
 	pc += 3;
 }
-VMBREAK;
+VMBREAK(COP_MSTORE);
 
 /**
  * <opcode name="waddr" group="Local variable handling">
@@ -402,7 +402,7 @@ VMCASE(COP_WADDR):
 	stacktop[0].ptrValue = (void *)(&(frame[pc[1]]));
 	MODIFY_PC_AND_STACK(2, 1);
 }
-VMBREAK;
+VMBREAK(COP_WADDR);
 
 /**
  * <opcode name="maddr" group="Local variable handling">
@@ -433,7 +433,7 @@ VMCASE(COP_MADDR):
 	stacktop[0].ptrValue = (void *)(stacktop - ((int)(pc[1])));
 	MODIFY_PC_AND_STACK(2, 1);
 }
-VMBREAK;
+VMBREAK(COP_MADDR);
 
 /**
  * <opcode name="bload" group="Local variable handling">
@@ -465,7 +465,7 @@ VMCASE(COP_BLOAD):
 	stacktop[0].intValue = *((ILUInt8 *)&(frame[pc[1]]));
 	MODIFY_PC_AND_STACK(2, 1);
 }
-VMBREAK;
+VMBREAK(COP_BLOAD);
 
 /**
  * <opcode name="bstore" group="Local variable handling">
@@ -498,7 +498,7 @@ VMCASE(COP_BSTORE):
 	*((ILUInt8 *)&(frame[pc[1]])) = (ILUInt8)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(2, -1);
 }
-VMBREAK;
+VMBREAK(COP_BSTORE);
 
 /**
  * <opcode name="bfixup" group="Local variable handling">
@@ -541,7 +541,7 @@ VMCASE(COP_BFIXUP):
 	*((ILInt8 *)(&(frame[pc[1]]))) = (ILInt8)(frame[pc[1]].intValue);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_BFIXUP);
 
 /**
  * <opcode name="sfixup" group="Local variable handling">
@@ -580,7 +580,7 @@ VMCASE(COP_SFIXUP):
 	*((ILInt16 *)(&(frame[pc[1]]))) = (ILInt16)(frame[pc[1]].intValue);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_SFIXUP);
 
 /**
  * <opcode name="ffixup" group="Local variable handling">
@@ -619,7 +619,7 @@ VMCASE(COP_FFIXUP):
 	*((ILFloat *)(&(frame[pc[1]]))) = (ILFloat)ReadFloat(&(frame[pc[1]]));
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_FFIXUP);
 
 /**
  * <opcode name="dfixup" group="Local variable handling">
@@ -658,7 +658,7 @@ VMCASE(COP_DFIXUP):
 	WriteDouble(&(frame[pc[1]]), (ILDouble)ReadFloat(&(frame[pc[1]])));
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_DFIXUP);
 
 /**
  * <opcode name="mk_local_1" group="Local variable handling">
@@ -687,7 +687,7 @@ VMCASE(COP_MK_LOCAL_1):
 #endif
 	MODIFY_PC_AND_STACK(1, 1);
 }
-VMBREAK;
+VMBREAK(COP_MK_LOCAL_1);
 
 /**
  * <opcode name="mk_local_2" group="Local variable handling">
@@ -717,7 +717,7 @@ VMCASE(COP_MK_LOCAL_2):
 #endif
 	MODIFY_PC_AND_STACK(1, 2);
 }
-VMBREAK;
+VMBREAK(COP_MK_LOCAL_2);
 
 /**
  * <opcode name="mk_local_3" group="Local variable handling">
@@ -748,7 +748,7 @@ VMCASE(COP_MK_LOCAL_3):
 #endif
 	MODIFY_PC_AND_STACK(1, 3);
 }
-VMBREAK;
+VMBREAK(COP_MK_LOCAL_3);
 
 /**
  * <opcode name="mk_local_n" group="Local variable handling">
@@ -775,7 +775,7 @@ VMCASE(COP_MK_LOCAL_N):
 	stacktop += ((unsigned)(pc[1]));
 	pc += 2;
 }
-VMBREAK;
+VMBREAK(COP_MK_LOCAL_N);
 
 #elif defined(IL_CVM_WIDE)
 
@@ -785,7 +785,7 @@ case COP_ILOAD:
 	stacktop[0].intValue = frame[IL_READ_UINT32(pc + 2)].intValue;
 	MODIFY_PC_AND_STACK(6, 1);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_PLOAD:
 {
@@ -793,7 +793,7 @@ case COP_PLOAD:
 	stacktop[0].ptrValue = frame[IL_READ_UINT32(pc + 2)].ptrValue;
 	MODIFY_PC_AND_STACK(6, 1);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_ISTORE:
 {
@@ -801,7 +801,7 @@ case COP_ISTORE:
 	frame[IL_READ_UINT32(pc + 2)].intValue = stacktop[-1].intValue;
 	MODIFY_PC_AND_STACK(6, -1);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_PSTORE:
 {
@@ -809,7 +809,7 @@ case COP_PSTORE:
 	frame[IL_READ_UINT32(pc + 2)].ptrValue = stacktop[-1].ptrValue;
 	MODIFY_PC_AND_STACK(6, -1);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_MLOAD:
 {
@@ -820,7 +820,7 @@ case COP_MLOAD:
 	stacktop += tempNum;
 	pc += 10;
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_MSTORE:
 {
@@ -831,7 +831,7 @@ case COP_MSTORE:
 			  sizeof(CVMWord) * tempNum);
 	pc += 10;
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_WADDR:
 {
@@ -839,7 +839,7 @@ case COP_WADDR:
 	stacktop[0].ptrValue = (void *)(&(frame[IL_READ_UINT32(pc + 2)]));
 	MODIFY_PC_AND_STACK(6, 1);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_MADDR:
 {
@@ -847,7 +847,7 @@ case COP_MADDR:
 	stacktop[0].ptrValue = (void *)(stacktop - IL_READ_UINT32(pc + 2));
 	MODIFY_PC_AND_STACK(6, 1);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_BFIXUP:
 {
@@ -856,7 +856,7 @@ case COP_BFIXUP:
 	*((ILInt8 *)(&(frame[tempNum]))) = (ILInt8)(frame[tempNum].intValue);
 	MODIFY_PC_AND_STACK(6, 0);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_SFIXUP:
 {
@@ -865,7 +865,7 @@ case COP_SFIXUP:
 	*((ILInt16 *)(&(frame[tempNum]))) = (ILInt16)(frame[tempNum].intValue);
 	MODIFY_PC_AND_STACK(6, 0);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_FFIXUP:
 {
@@ -874,7 +874,7 @@ case COP_FFIXUP:
 	*((ILFloat *)(&(frame[tempNum]))) = (ILFloat)ReadFloat(&(frame[tempNum]));
 	MODIFY_PC_AND_STACK(6, 0);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_DFIXUP:
 {
@@ -883,7 +883,7 @@ case COP_DFIXUP:
 	WriteDouble(&(frame[tempNum]), (ILDouble)ReadFloat(&(frame[tempNum])));
 	MODIFY_PC_AND_STACK(6, 0);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_MK_LOCAL_N:
 {
@@ -892,6 +892,6 @@ case COP_MK_LOCAL_N:
 	IL_MEMZERO(&(stacktop[0]), sizeof(CVMWord) * tempNum);
 	MODIFY_PC_AND_STACK(6, tempNum);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 #endif /* IL_CVM_WIDE */

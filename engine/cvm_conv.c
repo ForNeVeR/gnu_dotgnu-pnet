@@ -212,7 +212,7 @@ VMCASE(COP_I2B):
 	stacktop[-1].intValue = (ILInt32)(ILInt8)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_I2B);
 
 /**
  * <opcode name="i2ub" group="Conversion operators">
@@ -238,7 +238,7 @@ VMCASE(COP_I2UB):
 	stacktop[-1].intValue = (ILInt32)(ILUInt8)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_I2UB);
 
 /**
  * <opcode name="i2s" group="Conversion operators">
@@ -264,7 +264,7 @@ VMCASE(COP_I2S):
 	stacktop[-1].intValue = (ILInt32)(ILInt16)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_I2S);
 
 /**
  * <opcode name="i2us" group="Conversion operators">
@@ -290,7 +290,7 @@ VMCASE(COP_I2US):
 	stacktop[-1].intValue = (ILInt32)(ILUInt16)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_I2US);
 
 /**
  * <opcode name="i2l" group="Conversion operators">
@@ -315,7 +315,7 @@ VMCASE(COP_I2L):
 	WriteLong(&(stacktop[-1]), (ILInt64)(stacktop[-1].intValue));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_LONG - 1);
 }
-VMBREAK;
+VMBREAK(COP_I2L);
 
 /**
  * <opcode name="iu2l" group="Conversion operators">
@@ -340,7 +340,7 @@ VMCASE(COP_IU2L):
 	WriteLong(&(stacktop[-1]), (ILInt64)(stacktop[-1].uintValue));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_LONG - 1);
 }
-VMBREAK;
+VMBREAK(COP_IU2L);
 
 /**
  * <opcode name="i2f" group="Conversion operators">
@@ -365,7 +365,7 @@ VMCASE(COP_I2F):
 	WriteFloat(&(stacktop[-1]), (ILNativeFloat)(stacktop[-1].intValue));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
-VMBREAK;
+VMBREAK(COP_I2F);
 
 /**
  * <opcode name="iu2f" group="Conversion operators">
@@ -390,7 +390,7 @@ VMCASE(COP_IU2F):
 	WriteFloat(&(stacktop[-1]), (ILNativeFloat)(stacktop[-1].uintValue));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
-VMBREAK;
+VMBREAK(COP_IU2F);
 
 /**
  * <opcode name="l2i" group="Conversion operators">
@@ -416,7 +416,7 @@ VMCASE(COP_L2I):
 		(ILInt32)(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_LONG - 1));
 }
-VMBREAK;
+VMBREAK(COP_L2I);
 
 /**
  * <opcode name="l2f" group="Conversion operators">
@@ -449,7 +449,7 @@ VMCASE(COP_L2F):
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT -
 						   CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_L2F);
 
 /**
  * <opcode name="lu2f" group="Conversion operators">
@@ -482,7 +482,7 @@ VMCASE(COP_LU2F):
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT -
 						   CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_LU2F);
 
 /**
  * <opcode name="f2i" group="Conversion operators">
@@ -508,7 +508,7 @@ VMCASE(COP_F2I):
 		(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT - 1));
 }
-VMBREAK;
+VMBREAK(COP_F2I);
 
 /**
  * <opcode name="f2iu" group="Conversion operators">
@@ -534,7 +534,7 @@ VMCASE(COP_F2IU):
 		(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT - 1));
 }
-VMBREAK;
+VMBREAK(COP_F2IU);
 
 /**
  * <opcode name="f2l" group="Conversion operators">
@@ -561,7 +561,7 @@ VMCASE(COP_F2L):
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT -
 							 CVM_WORDS_PER_LONG));
 }
-VMBREAK;
+VMBREAK(COP_F2L);
 
 /**
  * <opcode name="f2lu" group="Conversion operators">
@@ -588,7 +588,7 @@ VMCASE(COP_F2LU):
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT -
 							 CVM_WORDS_PER_LONG));
 }
-VMBREAK;
+VMBREAK(COP_F2LU);
 
 /**
  * <opcode name="f2f" group="Conversion operators">
@@ -616,7 +616,7 @@ VMCASE(COP_F2F):
 		ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_F2F);
 
 /**
  * <opcode name="f2d" group="Conversion operators">
@@ -644,7 +644,7 @@ VMCASE(COP_F2D):
 		ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_F2D);
 
 /**
  * <opcode name="i2p_lower" group="Conversion operators">
@@ -676,7 +676,7 @@ VMCASE(COP_I2P_LOWER):
 	stacktop[position].ptrValue = (void *)(stacktop[position].uintValue);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_I2P_LOWER);
 
 /**
  * <opcode name="fix_i4_i" group="Conversion operators">
@@ -720,7 +720,7 @@ VMCASE(COP_FIX_I4_I):
 	MODIFY_PC_AND_STACK(1, 0);
 #endif
 }
-VMBREAK;
+VMBREAK(COP_FIX_I4_I);
 
 /**
  * <opcode name="fix_i4_u" group="Conversion operators">
@@ -764,7 +764,7 @@ VMCASE(COP_FIX_I4_U):
 	MODIFY_PC_AND_STACK(1, 0);
 #endif
 }
-VMBREAK;
+VMBREAK(COP_FIX_I4_U);
 
 #elif defined(IL_CVM_WIDE)
 
@@ -776,7 +776,7 @@ case COP_I2P_LOWER:
 	stacktop[position].ptrValue = (void *)(stacktop[position].uintValue);
 	MODIFY_PC_AND_STACK(6, 0);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 #elif defined(IL_CVM_PREFIX)
 
@@ -818,7 +818,7 @@ VMCASE(COP_PREFIX_I2B_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_I2B_OVF);
 
 /**
  * <opcode name="i2ub_ovf" group="Conversion operators">
@@ -858,7 +858,7 @@ VMCASE(COP_PREFIX_I2UB_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_I2UB_OVF);
 
 /**
  * <opcode name="iu2b_ovf" group="Conversion operators">
@@ -896,7 +896,7 @@ VMCASE(COP_PREFIX_IU2B_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_IU2B_OVF);
 
 /**
  * <opcode name="iu2ub_ovf" group="Conversion operators">
@@ -934,7 +934,7 @@ VMCASE(COP_PREFIX_IU2UB_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_IU2UB_OVF);
 
 /**
  * <opcode name="i2s_ovf" group="Conversion operators">
@@ -974,7 +974,7 @@ VMCASE(COP_PREFIX_I2S_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_I2S_OVF);
 
 /**
  * <opcode name="i2us_ovf" group="Conversion operators">
@@ -1014,7 +1014,7 @@ VMCASE(COP_PREFIX_I2US_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_I2US_OVF);
 
 /**
  * <opcode name="iu2s_ovf" group="Conversion operators">
@@ -1052,7 +1052,7 @@ VMCASE(COP_PREFIX_IU2S_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_IU2S_OVF);
 
 /**
  * <opcode name="iu2us_ovf" group="Conversion operators">
@@ -1090,7 +1090,7 @@ VMCASE(COP_PREFIX_IU2US_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_IU2US_OVF);
 
 /**
  * <opcode name="i2iu_ovf" group="Conversion operators">
@@ -1128,7 +1128,7 @@ VMCASE(COP_PREFIX_I2IU_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_I2IU_OVF);
 
 /**
  * <opcode name="iu2i_ovf" group="Conversion operators">
@@ -1166,7 +1166,7 @@ VMCASE(COP_PREFIX_IU2I_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_IU2I_OVF);
 
 /**
  * <opcode name="i2ul_ovf" group="Conversion operators">
@@ -1205,7 +1205,7 @@ VMCASE(COP_PREFIX_I2UL_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_I2UL_OVF);
 
 /**
  * <opcode name="l2i_ovf" group="Conversion operators">
@@ -1243,7 +1243,7 @@ VMCASE(COP_PREFIX_L2I_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_L2I_OVF);
 
 /**
  * <opcode name="l2ui_ovf" group="Conversion operators">
@@ -1281,7 +1281,7 @@ VMCASE(COP_PREFIX_L2UI_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_L2UI_OVF);
 
 /**
  * <opcode name="lu2i_ovf" group="Conversion operators">
@@ -1319,7 +1319,7 @@ VMCASE(COP_PREFIX_LU2I_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_LU2I_OVF);
 
 /**
  * <opcode name="lu2iu_ovf" group="Conversion operators">
@@ -1357,7 +1357,7 @@ VMCASE(COP_PREFIX_LU2IU_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_LU2IU_OVF);
 
 /**
  * <opcode name="l2ul_ovf" group="Conversion operators">
@@ -1395,7 +1395,7 @@ VMCASE(COP_PREFIX_L2UL_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_L2UL_OVF);
 
 /**
  * <opcode name="lu2l_ovf" group="Conversion operators">
@@ -1433,7 +1433,7 @@ VMCASE(COP_PREFIX_LU2L_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_LU2L_OVF);
 
 /**
  * <opcode name="f2i_ovf" group="Conversion operators">
@@ -1472,7 +1472,7 @@ VMCASE(COP_PREFIX_F2I_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_F2I_OVF);
 
 /**
  * <opcode name="f2iu_ovf" group="Conversion operators">
@@ -1511,7 +1511,7 @@ VMCASE(COP_PREFIX_F2IU_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_F2IU_OVF);
 
 /**
  * <opcode name="f2l_ovf" group="Conversion operators">
@@ -1550,7 +1550,7 @@ VMCASE(COP_PREFIX_F2L_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_F2L_OVF);
 
 /**
  * <opcode name="f2lu_ovf" group="Conversion operators">
@@ -1589,7 +1589,7 @@ VMCASE(COP_PREFIX_F2LU_OVF):
 		OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_F2LU_OVF);
 
 /**
  * <opcode name="i2b_aligned" group="Conversion operators">
@@ -1619,7 +1619,7 @@ VMCASE(COP_PREFIX_I2B_ALIGNED):
 	*((ILInt8 *)(stacktop - 1)) = (ILInt8)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_I2B_ALIGNED);
 
 /**
  * <opcode name="i2s_aligned" group="Conversion operators">
@@ -1649,7 +1649,7 @@ VMCASE(COP_PREFIX_I2S_ALIGNED):
 	*((ILInt16 *)(stacktop - 1)) = (ILInt16)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_I2S_ALIGNED);
 
 /**
  * <opcode name="f2f_aligned" group="Conversion operators">
@@ -1684,7 +1684,7 @@ VMCASE(COP_PREFIX_F2F_ALIGNED):
 			   ReadFloat(stacktop - CVM_WORDS_PER_NATIVE_FLOAT);
 	MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_FLOAT - CVM_WORDS_PER_NATIVE_FLOAT);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_F2F_ALIGNED);
 
 /**
  * <opcode name="f2d_aligned" group="Conversion operators">
@@ -1719,7 +1719,7 @@ VMCASE(COP_PREFIX_F2D_ALIGNED):
 			    ReadFloat(stacktop - CVM_WORDS_PER_NATIVE_FLOAT));
 	MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_DOUBLE - CVM_WORDS_PER_NATIVE_FLOAT);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_F2D_ALIGNED);
 
 /**
  * <opcode name="str2ansi" group="Conversion operators">
@@ -1755,7 +1755,7 @@ VMCASE(COP_PREFIX_STR2ANSI):
 	}
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_STR2ANSI);
 
 /**
  * <opcode name="str2utf8" group="Conversion operators">
@@ -1791,6 +1791,6 @@ VMCASE(COP_PREFIX_STR2UTF8):
 	}
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_STR2UTF8);
 
 #endif /* IL_CVM_PREFIX */

@@ -49,7 +49,7 @@ VMCASE(COP_DUP):
 	stacktop[0] = stacktop[-1];
 	MODIFY_PC_AND_STACK(1, 1);
 }
-VMBREAK;
+VMBREAK(COP_DUP);
 
 /**
  * <opcode name="dup2" group="Stack manipulation">
@@ -73,7 +73,7 @@ VMCASE(COP_DUP2):
 	stacktop[1] = stacktop[-1];
 	MODIFY_PC_AND_STACK(1, 2);
 }
-VMBREAK;
+VMBREAK(COP_DUP2);
 
 /**
  * <opcode name="dup_n" group="Stack manipulation">
@@ -102,7 +102,7 @@ VMCASE(COP_DUP_N):
 	stacktop += (unsigned)(pc[1]);
 	pc += 2;
 }
-VMBREAK;
+VMBREAK(COP_DUP_N);
 
 /**
  * <opcode name="dup_word_n" group="Stack manipulation">
@@ -127,7 +127,7 @@ VMCASE(COP_DUP_WORD_N):
 	stacktop[0] = stacktop[-(((int)(pc[1])) + 1)];
 	MODIFY_PC_AND_STACK(2, 1);
 }
-VMBREAK;
+VMBREAK(COP_DUP_WORD_N);
 
 /**
  * <opcode name="pop" group="Stack manipulation">
@@ -149,7 +149,7 @@ VMCASE(COP_POP):
 	/* Pop the top-most word from the stack */
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_POP);
 
 /**
  * <opcode name="pop2" group="Stack manipulation">
@@ -171,7 +171,7 @@ VMCASE(COP_POP2):
 	/* Pop the top two words from the stack */
 	MODIFY_PC_AND_STACK(1, -2);
 }
-VMBREAK;
+VMBREAK(COP_POP2);
 
 /**
  * <opcode name="pop_n" group="Stack manipulation">
@@ -195,7 +195,7 @@ VMCASE(COP_POP_N):
 	stacktop -= (unsigned)(pc[1]);
 	pc += 2;
 }
-VMBREAK;
+VMBREAK(COP_POP_N);
 
 /**
  * <opcode name="squash" group="Stack manipulation">
@@ -222,7 +222,7 @@ VMCASE(COP_SQUASH):
 	stacktop -= (int)(pc[2]);
 	pc += 3;
 }
-VMBREAK;
+VMBREAK(COP_SQUASH);
 
 /**
  * <opcode name="ckheight" group="Stack manipulation">
@@ -264,7 +264,7 @@ VMCASE(COP_CKHEIGHT):
 		STACK_OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CKHEIGHT);
 
 /**
  * <opcode name="ckheight_n" group="Stack manipulation">
@@ -301,7 +301,7 @@ VMCASE(COP_CKHEIGHT_N):
 		STACK_OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CKHEIGHT_N);
 
 /**
  * <opcode name="set_num_args" group="Call management instructions">
@@ -325,7 +325,7 @@ VMCASE(COP_SET_NUM_ARGS):
 	frame = stacktop - ((ILUInt32)(pc[1]));
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_SET_NUM_ARGS);
 
 #elif defined(IL_CVM_WIDE)
 
@@ -337,7 +337,7 @@ case COP_DUP_N:
 			  sizeof(CVMWord) * tempNum);
 	MODIFY_PC_AND_STACK(6, tempNum);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_DUP_WORD_N:
 {
@@ -345,7 +345,7 @@ case COP_DUP_WORD_N:
 	stacktop[0] = stacktop[-(((int)IL_READ_UINT32(pc + 2)) + 1)];
 	MODIFY_PC_AND_STACK(6, 1);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_POP_N:
 {
@@ -353,7 +353,7 @@ case COP_POP_N:
 	stacktop -= IL_READ_UINT32(pc + 2);
 	pc += 6;
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_SQUASH:
 {
@@ -364,7 +364,7 @@ case COP_SQUASH:
 	stacktop -= IL_READ_UINT32(pc + 6);
 	pc += 10;
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_SET_NUM_ARGS:
 {
@@ -372,6 +372,6 @@ case COP_SET_NUM_ARGS:
 	frame = stacktop - IL_READ_UINT32(pc + 2);
 	MODIFY_PC_AND_STACK(6, 0);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 #endif /* IL_CVM_WIDE */

@@ -88,7 +88,7 @@ VMCASE(COP_PREFIX_STRING_CONCAT_2):
 	RESTORE_STATE_FROM_THREAD();
 	MODIFY_PC_AND_STACK(2, -1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_STRING_CONCAT_2);
 
 /**
  * <opcode name="string_concat_3" group="Inline methods">
@@ -123,7 +123,7 @@ VMCASE(COP_PREFIX_STRING_CONCAT_3):
 	RESTORE_STATE_FROM_THREAD();
 	MODIFY_PC_AND_STACK(2, -2);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_STRING_CONCAT_3);
 
 /**
  * <opcode name="string_concat_4" group="Inline methods">
@@ -159,7 +159,7 @@ VMCASE(COP_PREFIX_STRING_CONCAT_4):
 	RESTORE_STATE_FROM_THREAD();
 	MODIFY_PC_AND_STACK(2, -3);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_STRING_CONCAT_4);
 
 /**
  * <opcode name="string_eq" group="Inline methods">
@@ -191,7 +191,7 @@ VMCASE(COP_PREFIX_STRING_EQ):
 					 (System_String *)(stacktop[-1].ptrValue));
 	MODIFY_PC_AND_STACK(2, -1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_STRING_EQ);
 
 /**
  * <opcode name="string_ne" group="Inline methods">
@@ -223,7 +223,7 @@ VMCASE(COP_PREFIX_STRING_NE):
 					  (System_String *)(stacktop[-1].ptrValue));
 	MODIFY_PC_AND_STACK(2, -1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_STRING_NE);
 
 /**
  * <opcode name="string_get_char" group="Inline methods">
@@ -279,7 +279,7 @@ VMCASE(COP_PREFIX_STRING_GET_CHAR):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_STRING_GET_CHAR);
 
 /**
  * <opcode name="type_from_handle" group="Inline methods">
@@ -316,6 +316,6 @@ VMCASE(COP_PREFIX_TYPE_FROM_HANDLE):
 	}
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_TYPE_FROM_HANDLE);
 
 #endif /* IL_CVM_PREFIX */

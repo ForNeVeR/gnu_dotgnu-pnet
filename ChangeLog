@@ -1,4 +1,13 @@
 
+2002-05-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm.c, engine/cvm_arith.c, engine/cvm_branch.c,
+	engine/cvm_call.c, engine/cvm_compare.c, engine/cvm_const.c,
+	engine/cvm_conv.c, engine/cvm_except.c, engine/cvm_inline.c,
+	engine/cvm_ptr.c, engine/cvm_stack.c, engine/cvm_var.c,
+	engine/mklabel.sh: mark the end of each instruction case, because
+	it may be useful in future engine optimisations.
+
 2002-05-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvmc_setup.c (CVMCoder_SetupExternCtor): wrong return

@@ -54,7 +54,7 @@ VMCASE(COP_LDNULL):
 	stacktop[0].ptrValue = 0;
 	MODIFY_PC_AND_STACK(1, 1);
 }
-VMBREAK;
+VMBREAK(COP_LDNULL);
 
 #define	COP_LDC_I4_VALUE(name,value)	\
 VMCASE(COP_LDC_I4_##name): \
@@ -62,7 +62,7 @@ VMCASE(COP_LDC_I4_##name): \
 	stacktop[0].intValue = (ILInt32)(value); \
 	MODIFY_PC_AND_STACK(1, 1); \
 } \
-VMBREAK \
+VMBREAK(COP_LDC_I4_##name) \
 
 /**
  * <opcode name="ldc_i4_&lt;n&gt;" group="Constant loading">
@@ -128,7 +128,7 @@ VMCASE(COP_LDC_I4_S):
 	stacktop[0].intValue = (ILInt32)(ILInt8)(pc[1]);
 	MODIFY_PC_AND_STACK(2, 1);
 }
-VMBREAK;
+VMBREAK(COP_LDC_I4_S);
 
 /**
  * <opcode name="ldc_i4" group="Constant loading">
@@ -154,7 +154,7 @@ VMCASE(COP_LDC_I4):
 	stacktop[0].intValue = IL_READ_INT32(pc + 1);
 	MODIFY_PC_AND_STACK(5, 1);
 }
-VMBREAK;
+VMBREAK(COP_LDC_I4);
 
 /**
  * <opcode name="ldc_i8" group="Constant loading">
@@ -180,7 +180,7 @@ VMCASE(COP_LDC_I8):
 	WriteLong(&(stacktop[0]), IL_READ_INT64(pc + 1));
 	MODIFY_PC_AND_STACK(9, CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_LDC_I8);
 
 /**
  * <opcode name="ldc_r4" group="Constant loading">
@@ -205,7 +205,7 @@ VMCASE(COP_LDC_R4):
 		(ILNativeFloat)IL_READ_FLOAT(pc + 1));
 	MODIFY_PC_AND_STACK(5, CVM_WORDS_PER_NATIVE_FLOAT);
 }
-VMBREAK;
+VMBREAK(COP_LDC_R4);
 
 /**
  * <opcode name="ldc_r8" group="Constant loading">
@@ -230,6 +230,6 @@ VMCASE(COP_LDC_R8):
 		(ILNativeFloat)IL_READ_DOUBLE(pc + 1));
 	MODIFY_PC_AND_STACK(9, CVM_WORDS_PER_NATIVE_FLOAT);
 }
-VMBREAK;
+VMBREAK(COP_LDC_R8);
 
 #endif /* IL_CVM_MAIN */

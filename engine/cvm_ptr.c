@@ -96,7 +96,7 @@ VMCASE(COP_BREAD):
 	stacktop[-1].intValue = (ILInt32)(*((ILInt8 *)(stacktop[-1].ptrValue)));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_BREAD);
 
 /**
  * <opcode name="ubread" group="Pointer handling">
@@ -121,7 +121,7 @@ VMCASE(COP_UBREAD):
 	stacktop[-1].uintValue = (ILUInt32)(*((ILUInt8 *)(stacktop[-1].ptrValue)));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_UBREAD);
 
 /**
  * <opcode name="sread" group="Pointer handling">
@@ -146,7 +146,7 @@ VMCASE(COP_SREAD):
 	stacktop[-1].intValue = (ILInt32)(*((ILInt16 *)(stacktop[-1].ptrValue)));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_SREAD);
 
 /**
  * <opcode name="usread" group="Pointer handling">
@@ -171,7 +171,7 @@ VMCASE(COP_USREAD):
 	stacktop[-1].uintValue = (ILUInt32)(*((ILUInt16 *)(stacktop[-1].ptrValue)));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_USREAD);
 
 /**
  * <opcode name="iread" group="Pointer handling">
@@ -198,7 +198,7 @@ VMCASE(COP_IREAD):
 	stacktop[-1].intValue = *((ILInt32 *)(stacktop[-1].ptrValue));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_IREAD);
 
 /**
  * <opcode name="fread" group="Pointer handling">
@@ -225,7 +225,7 @@ VMCASE(COP_FREAD):
 		(ILNativeFloat)(*((ILFloat *)(stacktop[-1].ptrValue))));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
-VMBREAK;
+VMBREAK(COP_FREAD);
 
 /**
  * <opcode name="dread" group="Pointer handling">
@@ -252,7 +252,7 @@ VMCASE(COP_DREAD):
 		(ILNativeFloat)(*((ILDouble *)(stacktop[-1].ptrValue))));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
-VMBREAK;
+VMBREAK(COP_DREAD);
 
 /**
  * <opcode name="pread" group="Pointer handling">
@@ -281,7 +281,7 @@ VMCASE(COP_PREAD):
 	stacktop[-1].ptrValue = *((void **)(stacktop[-1].ptrValue));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-VMBREAK;
+VMBREAK(COP_PREAD);
 
 /**
  * <opcode name="mread" group="Pointer handling">
@@ -312,7 +312,7 @@ VMCASE(COP_MREAD):
 						/ sizeof(CVMWord)) - 1);
 	pc += 2;
 }
-VMBREAK;
+VMBREAK(COP_MREAD);
 
 /**
  * <opcode name="bwrite" group="Pointer handling">
@@ -340,7 +340,7 @@ VMCASE(COP_BWRITE):
 	*((ILInt8 *)(stacktop[-2].ptrValue)) = (ILInt8)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-VMBREAK;
+VMBREAK(COP_BWRITE);
 
 /**
  * <opcode name="swrite" group="Pointer handling">
@@ -368,7 +368,7 @@ VMCASE(COP_SWRITE):
 	*((ILInt16 *)(stacktop[-2].ptrValue)) = (ILInt16)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-VMBREAK;
+VMBREAK(COP_SWRITE);
 
 /**
  * <opcode name="iwrite" group="Pointer handling">
@@ -395,7 +395,7 @@ VMCASE(COP_IWRITE):
 	*((ILInt32 *)(stacktop[-2].ptrValue)) = (ILInt32)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-VMBREAK;
+VMBREAK(COP_IWRITE);
 
 /**
  * <opcode name="fwrite" group="Pointer handling">
@@ -421,7 +421,7 @@ VMCASE(COP_FWRITE):
 		(ILFloat)ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 }
-VMBREAK;
+VMBREAK(COP_FWRITE);
 
 /**
  * <opcode name="dwrite" group="Pointer handling">
@@ -449,7 +449,7 @@ VMCASE(COP_DWRITE):
 					(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 }
-VMBREAK;
+VMBREAK(COP_DWRITE);
 
 /**
  * <opcode name="pwrite" group="Pointer handling">
@@ -478,7 +478,7 @@ VMCASE(COP_PWRITE):
 	*((void **)(stacktop[-2].ptrValue)) = stacktop[-1].ptrValue;
 	MODIFY_PC_AND_STACK(1, -2);
 }
-VMBREAK;
+VMBREAK(COP_PWRITE);
 
 /**
  * <opcode name="mwrite" group="Pointer handling">
@@ -506,7 +506,7 @@ VMCASE(COP_MWRITE):
 	IL_MEMCPY(stacktop[0].ptrValue, &(stacktop[1]), (unsigned)(pc[1]));
 	pc += 2;
 }
-VMBREAK;
+VMBREAK(COP_MWRITE);
 
 /**
  * <opcode name="bwrite_r" group="Pointer handling">
@@ -535,7 +535,7 @@ VMCASE(COP_BWRITE_R):
 	*((ILInt8 *)(stacktop[-1].ptrValue)) = (ILInt8)(stacktop[-2].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-VMBREAK;
+VMBREAK(COP_BWRITE_R);
 
 /**
  * <opcode name="swrite_r" group="Pointer handling">
@@ -564,7 +564,7 @@ VMCASE(COP_SWRITE_R):
 	*((ILInt16 *)(stacktop[-1].ptrValue)) = (ILInt16)(stacktop[-2].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-VMBREAK;
+VMBREAK(COP_SWRITE_R);
 
 /**
  * <opcode name="iwrite_r" group="Pointer handling">
@@ -592,7 +592,7 @@ VMCASE(COP_IWRITE_R):
 	*((ILInt32 *)(stacktop[-1].ptrValue)) = (ILInt32)(stacktop[-2].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-VMBREAK;
+VMBREAK(COP_IWRITE_R);
 
 /**
  * <opcode name="fwrite_r" group="Pointer handling">
@@ -620,7 +620,7 @@ VMCASE(COP_FWRITE_R):
 		ReadFloat(&(stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT + 1)]));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 }
-VMBREAK;
+VMBREAK(COP_FWRITE_R);
 
 /**
  * <opcode name="dwrite_r" group="Pointer handling">
@@ -649,7 +649,7 @@ VMCASE(COP_DWRITE_R):
 				(&(stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT + 1)]))));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 }
-VMBREAK;
+VMBREAK(COP_DWRITE_R);
 
 /**
  * <opcode name="pwrite_r" group="Pointer handling">
@@ -679,7 +679,7 @@ VMCASE(COP_PWRITE_R):
 	*((void **)(stacktop[-1].ptrValue)) = stacktop[-2].ptrValue;
 	MODIFY_PC_AND_STACK(1, -2);
 }
-VMBREAK;
+VMBREAK(COP_PWRITE_R);
 
 /**
  * <opcode name="mwrite_r" group="Pointer handling">
@@ -709,7 +709,7 @@ VMCASE(COP_MWRITE_R):
 	IL_MEMCPY(tempptr, &(stacktop[0]), (unsigned)(pc[1]));
 	pc += 2;
 }
-VMBREAK;
+VMBREAK(COP_MWRITE_R);
 
 /**
  * <opcode name="padd_offset" group="Pointer handling">
@@ -736,7 +736,7 @@ VMCASE(COP_PADD_OFFSET):
 				(unsigned)(pc[1]));
 	MODIFY_PC_AND_STACK(2, 0);
 }
-VMBREAK;
+VMBREAK(COP_PADD_OFFSET);
 
 /**
  * <opcode name="padd_offset_n" group="Pointer handling">
@@ -770,7 +770,7 @@ VMCASE(COP_PADD_OFFSET_N):
 				.ptrValue)) + (ILUInt32)(pc[2]));
 	MODIFY_PC_AND_STACK(3, 0);
 }
-VMBREAK;
+VMBREAK(COP_PADD_OFFSET_N);
 
 /**
  * <opcode name="padd_i4" group="Pointer handling">
@@ -800,7 +800,7 @@ VMCASE(COP_PADD_I4):
 		 ((ILInt32)(stacktop[-1].intValue)));
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_PADD_I4);
 
 /**
  * <opcode name="padd_i4_r" group="Pointer handling">
@@ -828,7 +828,7 @@ VMCASE(COP_PADD_I4_R):
 		 ((ILInt32)(stacktop[-2].intValue)));
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_PADD_I4_R);
 
 /**
  * <opcode name="padd_i8" group="Pointer handling">
@@ -868,7 +868,7 @@ VMCASE(COP_PADD_I8):
 #endif
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_PADD_I8);
 
 /**
  * <opcode name="padd_i8_r" group="Pointer handling">
@@ -907,7 +907,7 @@ VMCASE(COP_PADD_I8_R):
 #endif
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_PADD_I8_R);
 
 /**
  * <opcode name="psub" group="Pointer handling">
@@ -941,7 +941,7 @@ VMCASE(COP_PSUB):
 #endif
 	MODIFY_PC_AND_STACK(1, -2 + CVM_WORDS_PER_NATIVE_INT);
 }
-VMBREAK;
+VMBREAK(COP_PSUB);
 
 /**
  * <opcode name="psub_i4" group="Pointer handling">
@@ -968,7 +968,7 @@ VMCASE(COP_PSUB_I4):
 		 ((ILInt32)(stacktop[-1].intValue)));
 	MODIFY_PC_AND_STACK(1, -1);
 }
-VMBREAK;
+VMBREAK(COP_PSUB_I4);
 
 /**
  * <opcode name="psub_i8" group="Pointer handling">
@@ -1008,7 +1008,7 @@ VMCASE(COP_PSUB_I8):
 #endif
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-VMBREAK;
+VMBREAK(COP_PSUB_I8);
 
 /**
  * <opcode name="cknull" group="Object handling">
@@ -1038,7 +1038,7 @@ VMCASE(COP_CKNULL):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CKNULL);
 
 /**
  * <opcode name="cknull_n" group="Object handling">
@@ -1073,7 +1073,7 @@ VMCASE(COP_CKNULL_N):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CKNULL_N);
 
 VMCASE(COP_LDRVA):
 {
@@ -1082,7 +1082,7 @@ VMCASE(COP_LDRVA):
 	stacktop[0].ptrValue = 0;
 	MODIFY_PC_AND_STACK(5, 1);
 }
-VMBREAK;
+VMBREAK(COP_LDRVA);
 
 /* Read a simple value from an array element */
 #define	SIMPLE_READ_ELEM(name,type) \
@@ -1108,7 +1108,7 @@ VMCASE(COP_##name): \
 		NULL_POINTER_EXCEPTION(); \
 	} \
 } \
-VMBREAK
+VMBREAK(COP_##name)
 
 /**
  * <opcode name="bread_elem" group="Array handling">
@@ -1298,7 +1298,7 @@ VMCASE(COP_PREAD_ELEM):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREAD_ELEM);
 
 /* Write a simple value to an array element */
 #define	SIMPLE_WRITE_ELEM(name,type) \
@@ -1323,7 +1323,7 @@ VMCASE(COP_##name): \
 		NULL_POINTER_EXCEPTION(); \
 	} \
 } \
-VMBREAK
+VMBREAK(COP_##name)
 
 /**
  * <opcode name="bwrite_elem" group="Array handling">
@@ -1458,7 +1458,7 @@ VMCASE(COP_PWRITE_ELEM):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PWRITE_ELEM);
 
 /**
  * <opcode name="ckarray_load_i4" group="Array handling">
@@ -1518,7 +1518,7 @@ VMCASE(COP_CKARRAY_LOAD_I4):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CKARRAY_LOAD_I4);
 
 /**
  * <opcode name="ckarray_load_i8" group="Array handling">
@@ -1578,7 +1578,7 @@ VMCASE(COP_CKARRAY_LOAD_I8):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CKARRAY_LOAD_I8);
 
 /**
  * <opcode name="ckarray_store_i8" group="Array handling">
@@ -1636,7 +1636,7 @@ VMCASE(COP_CKARRAY_STORE_I8):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CKARRAY_STORE_I8);
 
 /**
  * <opcode name="array_len" group="Array handling">
@@ -1678,7 +1678,7 @@ VMCASE(COP_ARRAY_LEN):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_ARRAY_LEN);
 
 #define GET_FIELD(type)	\
 (*((type *)(((unsigned char *)(stacktop[-1].ptrValue)) + \
@@ -1724,7 +1724,7 @@ VMCASE(COP_BREAD_FIELD):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_BREAD_FIELD);
 
 /**
  * <opcode name="ubread_field" group="Object handling">
@@ -1763,7 +1763,7 @@ VMCASE(COP_UBREAD_FIELD):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_UBREAD_FIELD);
 
 /**
  * <opcode name="sread_field" group="Object handling">
@@ -1802,7 +1802,7 @@ VMCASE(COP_SREAD_FIELD):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_SREAD_FIELD);
 
 /**
  * <opcode name="usread_field" group="Object handling">
@@ -1841,7 +1841,7 @@ VMCASE(COP_USREAD_FIELD):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_USREAD_FIELD);
 
 /**
  * <opcode name="iread_field" group="Object handling">
@@ -1880,7 +1880,7 @@ VMCASE(COP_IREAD_FIELD):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IREAD_FIELD);
 
 /**
  * <opcode name="pread_field" group="Object handling">
@@ -1924,7 +1924,7 @@ VMCASE(COP_PREAD_FIELD):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREAD_FIELD);
 
 /**
  * <opcode name="bwrite_field" group="Object handling">
@@ -1967,7 +1967,7 @@ VMCASE(COP_BWRITE_FIELD):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_BWRITE_FIELD);
 
 /**
  * <opcode name="swrite_field" group="Object handling">
@@ -2010,7 +2010,7 @@ VMCASE(COP_SWRITE_FIELD):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_SWRITE_FIELD);
 
 /**
  * <opcode name="iwrite_field" group="Object handling">
@@ -2052,7 +2052,7 @@ VMCASE(COP_IWRITE_FIELD):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IWRITE_FIELD);
 
 /**
  * <opcode name="pwrite_field" group="Object handling">
@@ -2096,7 +2096,7 @@ VMCASE(COP_PWRITE_FIELD):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PWRITE_FIELD);
 
 #define GET_THIS_FIELD(type)	\
 (*((type *)(((unsigned char *)(frame[0].ptrValue)) + \
@@ -2140,7 +2140,7 @@ VMCASE(COP_PREAD_THIS):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREAD_THIS);
 
 /**
  * <opcode name="iread_this" group="Object handling">
@@ -2181,7 +2181,7 @@ VMCASE(COP_IREAD_THIS):
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_IREAD_THIS);
 
 /**
  * <opcode name="castclass" group="Object handling">
@@ -2226,7 +2226,7 @@ VMCASE(COP_CASTCLASS):
 		INVALID_CAST_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CASTCLASS);
 
 /**
  * <opcode name="isinst" group="Object handling">
@@ -2264,7 +2264,7 @@ VMCASE(COP_ISINST):
 	}
 	MODIFY_PC_AND_STACK(1 + sizeof(void *), 0);
 }
-VMBREAK;
+VMBREAK(COP_ISINST);
 
 /**
  * <opcode name="castinterface" group="Object handling">
@@ -2309,7 +2309,7 @@ VMCASE(COP_CASTINTERFACE):
 		INVALID_CAST_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_CASTINTERFACE);
 
 /**
  * <opcode name="isinterface" group="Object handling">
@@ -2348,7 +2348,7 @@ VMCASE(COP_ISINTERFACE):
 	}
 	MODIFY_PC_AND_STACK(1 + sizeof(void *), 0);
 }
-VMBREAK;
+VMBREAK(COP_ISINTERFACE);
 
 /**
  * <opcode name="get_static" group="Object handling">
@@ -2389,7 +2389,7 @@ VMCASE(COP_GET_STATIC):
 		stacktop[0].ptrValue =
 			((ILClassPrivate *)(classInfo->userData))->staticData;
 		MODIFY_PC_AND_STACK(1 + sizeof(void *), 1);
-		VMBREAK;
+		VMBREAKNOEND;
 	}
 	COPY_STATE_TO_THREAD();
 	((ILClassPrivate *)(classInfo->userData))->staticData =
@@ -2400,7 +2400,7 @@ VMCASE(COP_GET_STATIC):
 		((ILClassPrivate *)(classInfo->userData))->staticData;
 	MODIFY_PC_AND_STACK(1 + sizeof(void *), 1);
 }
-VMBREAK;
+VMBREAK(COP_GET_STATIC);
 
 /**
  * <opcode name="new" group="Object handling">
@@ -2447,7 +2447,7 @@ VMCASE(COP_NEW):
 		STACK_OVERFLOW_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_NEW);
 
 /**
  * <opcode name="new_value" group="Object handling">
@@ -2483,7 +2483,7 @@ VMCASE(COP_NEW_VALUE):
 	(stacktop - tempNum + tempSize)->ptrValue = (void *)(stacktop - tempNum);
 	MODIFY_PC_AND_STACK(3, tempSize + 1);
 }
-VMBREAK;
+VMBREAK(COP_NEW_VALUE);
 
 /**
  * <opcode name="ldstr" group="Constant loading">
@@ -2516,7 +2516,7 @@ VMCASE(COP_LDSTR):
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(5, 1);
 }
-VMBREAK;
+VMBREAK(COP_LDSTR);
 
 /**
  * <opcode name="ldtoken" group="Miscellaneous instructions">
@@ -2545,7 +2545,7 @@ VMCASE(COP_LDTOKEN):
 	stacktop[0].ptrValue = ReadPointer(pc + 1);
 	MODIFY_PC_AND_STACK(1 + sizeof(void *), 1);
 }
-VMBREAK;
+VMBREAK(COP_LDTOKEN);
 
 /**
  * <opcode name="box" group="Object handling">
@@ -2589,7 +2589,7 @@ VMCASE(COP_BOX):
 	stacktop[-((ILInt32)tempNum)].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(2 + sizeof(void *), -((ILInt32)(tempNum - 1)));
 }
-VMBREAK;
+VMBREAK(COP_BOX);
 
 /**
  * <opcode name="box_ptr" group="Object handling">
@@ -2628,7 +2628,7 @@ VMCASE(COP_BOX_PTR):
 	stacktop[-1].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(2 + sizeof(void *), 0);
 }
-VMBREAK;
+VMBREAK(COP_BOX_PTR);
 
 /**
  * <opcode name="memcpy" group="Miscellaneous instructions">
@@ -2662,7 +2662,7 @@ VMCASE(COP_MEMCPY):
 	IL_MEMCPY(stacktop[-2].ptrValue, stacktop[-1].ptrValue, (unsigned)(pc[1]));
 	MODIFY_PC_AND_STACK(2, -2);
 }
-VMBREAK;
+VMBREAK(COP_MEMCPY);
 
 /**
  * <opcode name="memmove" group="Miscellaneous instructions">
@@ -2691,7 +2691,7 @@ VMCASE(COP_MEMMOVE):
 			   stacktop[-1].uintValue);
 	MODIFY_PC_AND_STACK(1, -3);
 }
-VMBREAK;
+VMBREAK(COP_MEMMOVE);
 
 /**
  * <opcode name="memzero" group="Miscellaneous instructions">
@@ -2722,7 +2722,7 @@ VMCASE(COP_MEMZERO):
 	IL_MEMZERO(stacktop[-1].ptrValue, (unsigned)(pc[1]));
 	MODIFY_PC_AND_STACK(2, -1);
 }
-VMBREAK;
+VMBREAK(COP_MEMZERO);
 
 /**
  * <opcode name="memset" group="Miscellaneous instructions">
@@ -2748,7 +2748,7 @@ VMCASE(COP_MEMSET):
 			  stacktop[-1].uintValue);
 	MODIFY_PC_AND_STACK(1, -3);
 }
-VMBREAK;
+VMBREAK(COP_MEMSET);
 
 #elif defined(IL_CVM_WIDE)
 
@@ -2760,7 +2760,7 @@ case COP_MREAD:
 	stacktop += (((tempNum + sizeof(CVMWord) - 1) / sizeof(CVMWord)) - 1);
 	pc += 6;
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_MWRITE:
 {
@@ -2770,7 +2770,7 @@ case COP_MWRITE:
 	IL_MEMCPY(stacktop[0].ptrValue, &(stacktop[1]), tempNum);
 	pc += 6;
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_MWRITE_R:
 {
@@ -2781,7 +2781,7 @@ case COP_MWRITE_R:
 	IL_MEMCPY(tempptr, &(stacktop[0]), tempNum);
 	pc += 6;
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_CKNULL_N:
 {
@@ -2795,7 +2795,7 @@ case COP_CKNULL_N:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_PADD_OFFSET_N:
 {
@@ -2806,7 +2806,7 @@ case COP_PADD_OFFSET_N:
 				.ptrValue)) + IL_READ_UINT32(pc + 6));
 	MODIFY_PC_AND_STACK(10, 0);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_NEW_VALUE:
 {
@@ -2819,7 +2819,7 @@ case COP_NEW_VALUE:
 	(stacktop - tempNum + tempSize)->ptrValue = (void *)(stacktop - tempNum);
 	MODIFY_PC_AND_STACK(10, tempSize + 1);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_BOX:
 {
@@ -2834,7 +2834,7 @@ case COP_BOX:
 	stacktop[-((ILInt32)tempNum)].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(6 + sizeof(void *), -((ILInt32)(tempNum - 1)));
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_BOX_PTR:
 {
@@ -2848,7 +2848,7 @@ case COP_BOX_PTR:
 	stacktop[-1].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(6 + sizeof(void *), 0);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_MEMCPY:
 {
@@ -2857,7 +2857,7 @@ case COP_MEMCPY:
 			  IL_READ_UINT32(pc + 2));
 	MODIFY_PC_AND_STACK(6, -2);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 case COP_MEMZERO:
 {
@@ -2865,7 +2865,7 @@ case COP_MEMZERO:
 	IL_MEMZERO(stacktop[-1].ptrValue, IL_READ_UINT32(pc + 2));
 	MODIFY_PC_AND_STACK(6, -1);
 }
-VMBREAK;
+VMBREAKNOEND;
 
 #elif defined(IL_CVM_PREFIX)
 
@@ -2893,7 +2893,7 @@ VMCASE(COP_##name): \
 		NULL_POINTER_EXCEPTION(); \
 	} \
 } \
-VMBREAK
+VMBREAK(COP_##name)
 
 /**
  * <opcode name="lread_elem" group="Array handling">
@@ -3005,7 +3005,7 @@ VMCASE(COP_##name): \
 		NULL_POINTER_EXCEPTION(); \
 	} \
 } \
-VMBREAK
+VMBREAK(COP_##name)
 
 /**
  * <opcode name="lwrite_elem" group="Array handling">
@@ -3121,7 +3121,7 @@ VMCASE(COP_PREFIX_MKREFANY):
 	((ILTypedRef *)(stacktop - 1))->type = ReadPointer(pc + 2);
 	MODIFY_PC_AND_STACK(2 + sizeof(void *), CVM_WORDS_PER_TYPED_REF - 1);
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_MKREFANY);
 
 /**
  * <opcode name="refanyval" group="Object handling">
@@ -3166,7 +3166,7 @@ VMCASE(COP_PREFIX_REFANYVAL):
 		INVALID_CAST_EXCEPTION();
 	}
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_REFANYVAL);
 
 /**
  * <opcode name="refanytype" group="Object handling">
@@ -3191,6 +3191,6 @@ VMCASE(COP_PREFIX_REFANYTYPE):
 		((ILTypedRef *)(stacktop - CVM_WORDS_PER_TYPED_REF))->type;
 	MODIFY_PC_AND_STACK(2, -(CVM_WORDS_PER_TYPED_REF - 1));
 }
-VMBREAK;
+VMBREAK(COP_PREFIX_REFANYTYPE);
 
 #endif /* IL_CVM_PREFIX */

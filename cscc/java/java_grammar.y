@@ -571,7 +571,7 @@ PackageOrImportIdentifier
 	}
 
 ImportDeclarationZeroOrMore
-	: /* empty */
+	: /* empty */ {}
 	| ImportDeclarationZeroOrMore ImportDeclaration
 	;
 
@@ -711,6 +711,7 @@ QualifiedIdentifierList
 TypeList
 	: Type	{ $$ = $1; }
 	| TypeList ',' Type	{ MakeBinary(ArgList, $1, $3); }
+	;
 
 Type
 	: PrimitiveType	{

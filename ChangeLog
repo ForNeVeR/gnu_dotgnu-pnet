@@ -10,6 +10,8 @@
 	* resgen/resgen.c: perform the check for "/compile" and "-compile"
 	in a different manner, to deal with "@name" option file references.
 
+	* engine/lib_reflect.c: fix a segv in the previous checkin.
+
 2003-11-13  Miroslaw Dobrzanski-Neumann  <mne@mosaic-ag.com>
 
 	* configure.in: detect cc options such as "-fno-gcse" with a

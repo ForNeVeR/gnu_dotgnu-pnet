@@ -2258,7 +2258,8 @@ ILObject *_IL_ClrField_GetValueInternal(ILExecThread *thread, ILObject *_this,
 	{
 		/* Get the field's type and a pointer to it */
 		type = ILField_Type(field);
-		ptr = ((ILClassPrivate *)(GetObjectClass(obj)->userData))->staticData;
+		ptr = ((ILClassPrivate *)((ILField_Owner(field))->userData))
+					->staticData;
 		if(ptr)
 		{
 			ptr = (void *)(((unsigned char *)ptr) + field->offset);
@@ -2332,7 +2333,8 @@ void _IL_ClrField_SetValueInternal(ILExecThread *thread, ILObject *_this,
 	{
 		/* Get the field's type and a pointer to it */
 		type = ILField_Type(field);
-		ptr = ((ILClassPrivate *)(GetObjectClass(obj)->userData))->staticData;
+		ptr = ((ILClassPrivate *)((ILField_Owner(field))->userData))
+					->staticData;
 		if(ptr)
 		{
 			ptr = (void *)(((unsigned char *)ptr) + field->offset);

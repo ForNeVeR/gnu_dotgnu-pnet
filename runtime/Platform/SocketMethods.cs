@@ -28,16 +28,16 @@ public class SocketMethods
 {
 	// Create a socket and obtain a socket descriptor (return true on success).
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Create(AddressFamily af, SocketType st, ProtocolType pt, out IntPtr handle);
+	extern public static bool Create(int af, int st, int pt, out IntPtr handle);
 
 	// Bind a socket to an IP address
 	//TODO: add support for something other than IPv4
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Bind(IntPtr handle, AddressFamily af, long address, int port);
+	extern public static bool Bind(IntPtr handle, int af, long address, int port);
 
 	// Shutdown a socket
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Shutdown(IntPtr handle, SocketShutdown how);
+	extern public static bool Shutdown(IntPtr handle, int how);
 
 	// Start listening
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -45,31 +45,35 @@ public class SocketMethods
 
 	// Accept an incoming connection (returns socket descriptor for new connected socket)
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int Accept(IntPtr handle);
+	extern public static int Accept(IntPtr handle, ref long address, ref int port);
 
 	// Connect to specified address
 	// TODO: add support for something other than IPv4
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Connect(IntPtr handle, AddressFamily af, long address, int port);
+	extern public static bool Connect(IntPtr handle, int af, long address, int port);
 
 	// Receive bytes from connected socket
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static int Receive(IntPtr handle, byte[] buffer, int offset, int size, int flags);
 
-	// Receive bytes from specified EndPoint
+	// Receive bytes from specified EndPoint (noted in address and port)
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int ReceiveFrom(IntPtr handle, byte[] buffer, int offset, int size, int flags, ref EndPoint EP);
+	extern public static int ReceiveFrom(IntPtr handle, byte[] buffer, int offset, int size, int flags, ref long address, ref int port);
 
 	// Send bytes to connected socket
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static int Send(IntPtr handle, byte[] buffer, int offset, int size, int flags);
 
-	// Receive bytes from specified EndPoint
+	// Receive bytes from specified EndPoint (noted in address and port)
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int SendTo(IntPtr handle, byte[] buffer, int offset, int size, int flags, EndPoint EP);
+	extern public static int SendTo(IntPtr handle, byte[] buffer, int offset, int size, int flags, ref long address, ref int port);
 
 	// Close a socket (regardless of pending in/output)
 	extern public static bool Close(IntPtr handle);
+
+	//Determines the read, write and error status of a set of Sockets
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool Select(IntPtr[] readarray, IntPtr[] writearray, IntPtr[] errorarray, int timeout);
 
 	// Get the last-occurring system error code for the current thread.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -1,4 +1,56 @@
 
+2003-08-25  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Windows.Forms/MenuItem.cs, System.Windows.Forms/Menu.cs,
+	System.Windows.Forms/MainMenu.cs, System.Windows.Forms/ContextMenu.cs:
+	implement basic functionality for Menus.
+
+	* samples/FormsTest.cs: add menu and context menu tests.
+
+	* System.Windows.Forms/TextBox.cs: update textbox to use the new
+	client handling.
+
+	* PopupControl.cs: PopDown event and default size.
+
+	* System.Drawing/Font.cs: cache font pixel height to improve
+	GetHeight(Graphics).
+
+	* System.Windows.Forms/ImageList.cs: small csc compile bug.
+
+	* System.Windows.Forms/Form.cs: new client area and menu support.
+
+	* System.Windows.Forms/Control.cs: new client area support,
+	PointToScreen() and ScreenToPoint(), Context Menu fix.
+
+	* System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs: add event sink to constructors
+	of windows. Implement GetWindowAdjust using approximate values for
+	getting Form bounds. Fix Popup Window paint.
+
+	* System.Drawing.Win32/DrawingControlWindow.cs,
+	System.Drawing.Win32/DrawingRootTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Win32/Win32.cs :
+	IToolkitWindow.Capture functionality. Window dimensions to match Xsharp
+	System.Debug.WriteLine bug changed to Console.WriteLine. Subtle bug in 
+	Windows - changed to one WinProc for all window classes. Popup windows
+	implemented. Sink passed in constructor. ToolkitExternalMove and
+	ToolkitExternalResize fired when creating a window to be compatible
+	with System.Drawing.Xsharp.
+	
+	* System.Drawing/Toolkit/IToolkit.cs
+	System.Drawing/Toolkit/IToolkitWindow.cs
+	System.Drawing/Toolkit/NullToolkit.cs : pass sink in constructor.
+
+	* System.Drawing/Drawing2D/Matrix.cs : typo in identity Matrix.
+
+ 	* System.Drawing/Graphics.cs: New constructor and support for client
+	offset graphics.
+
 2003-08-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Security/PermissionSet.cs,

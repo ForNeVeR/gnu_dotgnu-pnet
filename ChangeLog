@@ -7,6 +7,11 @@
 	csharp/expr/const1.jl, csharp/expr/typeof1.jl: new JVM output
 	files that include conversions from JVM strings to C# strings.
 
+	* csharp/expr/Makefile.am, csharp/expr/new1.cs, csharp/expr/new1.il,
+	csharp/expr/new1.jl, csharp/expr/new2.cs, csharp/expr/new2.err,
+	csharp/expr/new2.jerr: add test cases for the "new" operator, when
+	used on classes and value types.
+
 2001-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/cast4.cs, csharp/expr/cast4.il, csharp/expr/cast4.jl,

@@ -88,6 +88,11 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				{
 					// We need to allocate a new array.
 					int newCapacity = (((count + n) + 31) & ~31);
+					int newCapacity2 = count * 2;
+					if(newCapacity2 > newCapacity)
+					{
+						newCapacity = newCapacity2;
+					}
 					Object[] newStore = new Object [newCapacity];
 					if(index != 0)
 					{

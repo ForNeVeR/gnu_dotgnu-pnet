@@ -1,4 +1,9 @@
 
+2003-02-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Collection/ArrayList.cs: double the size of
+	the array when reallocating, rather than just adding 32.
+
 2003-02-02  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/BufferedStream.cs: fix minor bug.

@@ -243,59 +243,75 @@ public class TextBox : TextBoxBase
 	private void SetScrollBarPositions()
 	{
 		if (vScrollBar == null && hScrollBar == null)
+		{
 			return;
+		}
+		bool vScrollBarVisible = false;
+		bool hScrollBarVisible = false;
 		
 		int width;
 		if (vScrollBar == null)
+		{
 			width = ClientRectangle.Width;
+		}
 		else
 		{
 			width = ClientRectangle.Width - vScrollBar.Width;
 			if (width < 5)
 			{
 				width = ClientRectangle.Width;
-				vScrollBar.Visible = false;
 			}
 			else
-				vScrollBar.Visible = true;
+			{
+				vScrollBarVisible = true;
+			}
 		}
 
 		int height;
 		if (hScrollBar == null)
+		{
 			height = ClientRectangle.Height;
+		}
 		else
 		{
 			height = ClientRectangle.Height - hScrollBar.Height;
 			if (height < 5)
 			{
 				height = ClientRectangle.Height;
-				hScrollBar.Visible = false;
 			}
 			else
-				hScrollBar.Visible = true;
+			{
+				hScrollBarVisible = true;
+			}
 		}
 
 
-		if (vScrollBar != null && vScrollBar.Visible)
+		if (vScrollBar != null)
 		{
+			vScrollBar.Visible = vScrollBarVisible;
 			vScrollBar.Bounds = new Rectangle(ClientRectangle.Width - vScrollBar.Width, 0, vScrollBar.Width, height);
 			
 			int remainder = TextDrawArea.Height % Font.Height;
 			int maximum = MaxTextDimensions.Height + remainder;
 			
 			if (maximum < TextDrawArea.Height)
+			{
 				maximum = TextDrawArea.Height;
+			}
 			vScrollBar.Enabled = (maximum != TextDrawArea.Height);
 			vScrollBar.Maximum = maximum;
 			vScrollBar.SmallChange = Font.Height;
 			vScrollBar.LargeChange = TextDrawArea.Height + 1;
 		}
-		if (hScrollBar != null && hScrollBar.Visible)
+		if (hScrollBar != null)
 		{
+			hScrollBar.Visible = hScrollBarVisible;
 			hScrollBar.Bounds = new Rectangle(0, ClientRectangle.Height - hScrollBar.Height, width, hScrollBar.Height);
 			int maximum = MaxTextDimensions.Width;
 			if (maximum < TextDrawArea.Width)
+			{
 				maximum = TextDrawArea.Width;
+			}
 			hScrollBar.Enabled = (maximum != TextDrawArea.Width);
 			hScrollBar.Maximum = maximum;
 			hScrollBar.SmallChange = 5;
@@ -1227,19 +1243,27 @@ public class TextBox : TextBoxBase
 		chosenHeight = height;
 		// If not Multiline then the control height is the font height
 		if (!Multiline)
+		{
 			height = ClientToBounds(Size.Empty).Height + Font.Height + 1;
+		}
 		base.SetBoundsCore (x, y, width, height, specified);
 		if (!IsHandleCreated)
+		{
 			return;
+		}
 		// If the height or width changes then relayout the text
 		if ((specified & BoundsSpecified.Height) != 0 | (specified & BoundsSpecified.Width) != 0)
 		{
 			// ControlGraphics must be recreated.
 			if (graphics != null)
+			{
 				graphics.Dispose();
+			}
 			graphics = null;
 			LayoutFromText(Text);
 			SetScrollBarPositions();
+			// Redraw
+			Invalidate();
 		}
 		ResetView();
 	}

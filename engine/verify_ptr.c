@@ -205,7 +205,7 @@ case IL_OP_LDIND_##name: \
 	else if(unsafeAllowed && \
 	        (STK_UNARY == ILEngineType_I4 || STK_UNARY == ILEngineType_I)) \
 	{ \
-		ILCoderToPointer(coder, STK_UNARY, ILEngineType_Invalid); \
+		ILCoderToPointer(coder, STK_UNARY, (ILEngineStackItem *)0); \
 		ILCoderPtrAccess(coder, opcode); \
 		STK_UNARY = (engineType); \
 	} \
@@ -237,7 +237,7 @@ case IL_OP_STIND_##name: \
 			 STK_BINARY_1 == ILEngineType_I) && \
 			STK_BINARY_2 == (engineType)) \
 	{ \
-		ILCoderToPointer(coder, STK_BINARY_1, STK_BINARY_2); \
+		ILCoderToPointer(coder, STK_BINARY_1, &(stack[stackSize - 1])); \
 		ILCoderPtrAccess(coder, opcode); \
 		stackSize -= 2; \
 	} \
@@ -340,7 +340,7 @@ case IL_OP_LDIND_REF:
 		   which makes it compatible with any object destination.
 		   There really is nothing else that we can do because there
 		   is no way to determine the actual type */
-		ILCoderToPointer(coder, STK_UNARY, ILEngineType_Invalid);
+		ILCoderToPointer(coder, STK_UNARY, (ILEngineStackItem *)0);
 		ILCoderPtrAccess(coder, opcode);
 		stack[stackSize - 1].engineType = ILEngineType_O;
 		stack[stackSize - 1].typeInfo = 0;
@@ -381,7 +381,7 @@ case IL_OP_STIND_REF:
 			 STK_BINARY_1 == ILEngineType_I) &&
 			STK_BINARY_2 == ILEngineType_O)
 	{
-		ILCoderToPointer(coder, STK_BINARY_1, STK_BINARY_2);
+		ILCoderToPointer(coder, STK_BINARY_1, &(stack[stackSize - 1]));
 		ILCoderPtrAccess(coder, opcode);
 		stackSize -= 2;
 	}
@@ -416,7 +416,7 @@ case IL_OP_LDOBJ:
 	{
 		if(classInfo)
 		{
-			ILCoderToPointer(coder, STK_UNARY, ILEngineType_Invalid);
+			ILCoderToPointer(coder, STK_UNARY, (ILEngineStackItem *)0);
 			ILCoderPtrAccessManaged(coder, opcode, classInfo);
 			stack[stackSize - 1].engineType = ILEngineType_MV;
 			stack[stackSize - 1].typeInfo = ILType_FromValueType(classInfo);
@@ -459,7 +459,7 @@ case IL_OP_STOBJ:
 		   ILTypeIdentical(stack[stackSize - 1].typeInfo,
 		   				   ILType_FromValueType(classInfo)))
 		{
-			ILCoderToPointer(coder, STK_BINARY_1, STK_BINARY_2);
+			ILCoderToPointer(coder, STK_BINARY_1, &(stack[stackSize - 1]));
 			ILCoderPtrAccessManaged(coder, opcode, classInfo);
 			stackSize -= 2;
 		}

@@ -215,7 +215,8 @@ struct _tagILCoderClass
 	/*
 	 * Access a managed value by dereferencing a pointer.
 	 */
-	void (*ptrAccessManaged)(ILCoder *coder, int opcode, ILClass *classInfo);
+	void (*ptrAccessManaged)(ILCoder *coder, int opcode,
+							 ILClass *classInfo);
 
 	/*
 	 * Output a branch instruction.
@@ -250,9 +251,10 @@ struct _tagILCoderClass
 	 * Convert an integer (I or I4) into a pointer.  "type1" is
 	 * the integer type to be converted.  "type2" is the type of
 	 * the value on the stack just above the integer for a store
-	 * opcode, or "ILEngineType_Invalid" for a load opcode.
+	 * opcode, or NULL for a load opcode.
 	 */
-	void (*toPointer)(ILCoder *coder, ILEngineType type1, ILEngineType type2);
+	void (*toPointer)(ILCoder *coder, ILEngineType type1,
+					  ILEngineStackItem *type2);
 
 	/*
 	 * Process a pointer alignment prefix.  An "alignment" value

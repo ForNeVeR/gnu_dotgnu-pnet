@@ -738,7 +738,7 @@ case IL_OP_MKREFANY:
 		else if(unsafeAllowed &&
 		        (STK_UNARY == ILEngineType_I || STK_UNARY == ILEngineType_I4))
 		{
-			ILCoderToPointer(coder, STK_UNARY, ILEngineType_Invalid);
+			ILCoderToPointer(coder, STK_UNARY, (ILEngineStackItem *)0);
 			ILCoderMakeTypedRef(coder, classInfo);
 			stack[stackSize - 1].engineType = ILEngineType_TypedRef;
 			stack[stackSize - 1].typeInfo = 0;

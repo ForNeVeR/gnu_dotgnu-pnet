@@ -271,7 +271,7 @@ static void Coder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 {
 }
 static void Coder_ToPointer(ILCoder *coder, ILEngineType type1,
-							ILEngineType type2)
+							ILEngineStackItem *type2)
 {
 }
 static void Coder_PtrPrefix(ILCoder *coder, int alignment)

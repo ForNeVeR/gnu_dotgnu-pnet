@@ -516,12 +516,6 @@ public sealed class Display : IDisposable
 						return AppEvent.Quit;
 					}
 	
-					// Process timers that need to be activated.
-					if(Timer.ActivateTimers(this))
-					{
-						return AppEvent.Timer;
-					}
-	
 					// Do we have pending expose events to process?
 					if(pendingExposes)
 					{
@@ -611,6 +605,13 @@ public sealed class Display : IDisposable
 							}
 						}
 					}
+
+					// Process timers that need to be activated.
+					if(Timer.ActivateTimers(this))
+					{
+						return AppEvent.Timer;
+					}
+	
 				}
 				finally
 				{

@@ -1,3 +1,6 @@
+2003-09-05  Neil Cawse  <neilcawse@geotab.com>
+
+	* Xsharp/Display.cs : improved handling of 0 length timer.
 
 2003-09-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 

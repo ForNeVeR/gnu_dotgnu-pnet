@@ -1952,11 +1952,19 @@ ILNativeInt _IL_ParameterBuilder_ClrParameterCreate(ILExecThread *_thread,
 	IL_METADATA_WRLOCK(_thread);
 
 	methodInfo = (ILMethod *)method;
-	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
+	if(name != NULL)
 	{
-		IL_METADATA_UNLOCK(_thread);
-		ILExecThreadThrowOutOfMemory(_thread);
-		return 0;
+		if (!(str = (const char *)ILStringToAnsi(_thread, name)))
+		{
+			IL_METADATA_UNLOCK(_thread);
+			ILExecThreadThrowOutOfMemory(_thread);
+			return 0;
+		}
+	}
+	else
+	{
+		// Parameter names can be NULL
+		str = NULL;
 	}
 	if (!(retval = ILParameterCreate(methodInfo, 0, str, (ILUInt32)attributes, (ILUInt32)position)))
 	{

@@ -1,4 +1,9 @@
 
+2004-08-08  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/lib_emit.c: Allow NULL parameters for ClrParameter names
+	for unnamed parameters (bug #9921).
+
 2004-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.8" release.

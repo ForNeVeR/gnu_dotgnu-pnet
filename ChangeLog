@@ -1,3 +1,7 @@
+2004-04-21 Russell Stuart  <russell-savannah@stuart.id.au>
+
+	* engine/lib_dir.c: System.IO.Directory.GetFiles was throwing
+	System.IO.IOException - interrupted system call.
 
 2004-04-19  Gopal V <gopalv82@yahoo.com>
 
@@ -16,7 +20,7 @@
 	* cscc/csharp/cs_lvalue.tc: Call ILNode_SemanalysisType for 
 	resolving node->left for QualIdent and MemberAccess (bug #6999)
 	
-2004-04-01  Russell Stuart  <russell@stuart.id.au>
+2004-04-01  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* csant/csant_task.c, include/il_sysio.h, support/dir.c:
 	Add support for <delete dir=...> to csant (patch #2827).
@@ -51,7 +55,7 @@
 	* cscc/cpp/Makefile.am: use $(EXEEXT) on the symlink for "cscc-cpp"
 	(patch #2810).
 
-2004-03-19  Russell Stuart  <russell@stuart.id.au>
+2004-03-19  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* csant/csant_build.c: fix a typo (patch #2824).
 
@@ -86,7 +90,7 @@
 	include/il_coder.h: add the "--trace" option to ilrun, which
 	provides runtime tracing of all method calls and returns.
 
-2004-03-16  Russell Stuart  <russell@stuart.id.au>
+2004-03-16  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* engine/lib_reflect.c: implement "GetManifestResourceNames()".
 
@@ -167,7 +171,7 @@
 	* cscc/c/c_grammar.y (ArrayInitializerSize): handle string
 	initializations of the form {"foo"}.
 
-2004-03-11  Russell Stuart  <russell@stuart.id.au>
+2004-03-11  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* pnet.spec.in: improve the RPM spec file.
 

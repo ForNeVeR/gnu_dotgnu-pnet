@@ -22,6 +22,8 @@
 
 using System;
 
+#if !ECMA_COMPAT
+
 namespace System.Reflection.Emit
 {
 	public class ParameterBuilder
@@ -112,3 +114,5 @@ namespace System.Reflection.Emit
 
 	}
 }//namespace
+
+#endif

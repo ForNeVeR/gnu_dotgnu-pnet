@@ -23,6 +23,8 @@
 using System;
 using System.Runtime.InteropServices;
 
+#if !ECMA_COMPAT
+
 namespace System.Reflection.Emit
 {
 	public sealed class UnmanagedMarshal
@@ -95,3 +97,5 @@ namespace System.Reflection.Emit
 
 	}
 }//namespace
+
+#endif

@@ -1,4 +1,8 @@
-	
+
+2002-05-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_array.c: add special cases for 2-dimensional arrays.
+
 2002-05-24  Andrew Mitchell  <ajmitch@dunedin.lug.net.nz>
 
 	* debian/*: add files related to Debian packaging.

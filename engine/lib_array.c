@@ -276,6 +276,39 @@ static void *GetElemAddress(ILExecThread *thread,
 }
 
 /*
+ * Get the address of a particular array element in a two-dimensional array.
+ * Returns NULL if an exception was thrown.
+ */
+static void *Get2ElemAddress(ILExecThread *thread,
+							 System_MArray *_this,
+							 ILInt32 index1, ILInt32 index2)
+{
+	ILInt32 offset;
+
+	/* Find the offset of the element */
+	index1 -= _this->bounds[0].lower;
+	if(((ILUInt32)index1) >= ((ILUInt32)(_this->bounds[0].size)))
+	{
+		ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
+								"Arg_InvalidArrayIndex");
+		return 0;
+	}
+	offset = index1 * _this->bounds[0].multiplier;
+	index2 -= _this->bounds[1].lower;
+	if(((ILUInt32)index2) >= ((ILUInt32)(_this->bounds[1].size)))
+	{
+		ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
+								"Arg_InvalidArrayIndex");
+		return 0;
+	}
+	offset += index2;
+
+	/* Compute the element address */
+	offset *= _this->elemSize;
+	return (void *)(((unsigned char *)_this->data) + offset);
+}
+
+/*
  * Set a multi-dimensional array element to a value that
  * appears after a list of indicies.  "valueType" indicates
  * the type of value.
@@ -476,6 +509,27 @@ static ILInt8 System_MArray_Get_sbyte(ILExecThread *thread,
 }
 
 /*
+ * Get a signed byte value from a two-dimensional array.
+ *
+ * public sbyte Get(int index1, int index2)
+ */
+static ILInt8 System_MArray_Get2_sbyte(ILExecThread *thread,
+							           System_MArray *_this,
+									   ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		return *((ILInt8 *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * Get an unsigned byte value from a multi-dimensional array.
  *
  * public byte Get(int index1, ..., int indexN)
@@ -487,6 +541,27 @@ static ILUInt8 System_MArray_Get_byte(ILExecThread *thread,
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+	if(address)
+	{
+		return *((ILUInt8 *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Get an unsigned byte value from a two-dimensional array.
+ *
+ * public sbyte Get(int index1, int index2)
+ */
+static ILUInt8 System_MArray_Get2_byte(ILExecThread *thread,
+							           System_MArray *_this,
+									   ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
 	if(address)
 	{
 		return *((ILUInt8 *)address);
@@ -520,6 +595,27 @@ static ILInt16 System_MArray_Get_short(ILExecThread *thread,
 }
 
 /*
+ * Get a signed short value from a two-dimensional array.
+ *
+ * public short Get(int index1, int index2)
+ */
+static ILInt16 System_MArray_Get2_short(ILExecThread *thread,
+							            System_MArray *_this,
+									    ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		return *((ILInt16 *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * Get an unsigned short value from a multi-dimensional array.
  *
  * public ushort Get(int index1, ..., int indexN)
@@ -531,6 +627,27 @@ static ILUInt16 System_MArray_Get_ushort(ILExecThread *thread,
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+	if(address)
+	{
+		return *((ILUInt16 *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Get an unsigned short value from a two-dimensional array.
+ *
+ * public ushort Get(int index1, int index2)
+ */
+static ILUInt16 System_MArray_Get2_ushort(ILExecThread *thread,
+							              System_MArray *_this,
+									      ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
 	if(address)
 	{
 		return *((ILUInt16 *)address);
@@ -564,6 +681,27 @@ static ILInt32 System_MArray_Get_int(ILExecThread *thread,
 }
 
 /*
+ * Get a signed int value from a two-dimensional array.
+ *
+ * public int Get(int index1, int index2)
+ */
+static ILInt32 System_MArray_Get2_int(ILExecThread *thread,
+							          System_MArray *_this,
+									  ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		return *((ILInt32 *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * Get an unsigned int value from a multi-dimensional array.
  *
  * public uint Get(int index1, ..., int indexN)
@@ -575,6 +713,27 @@ static ILUInt32 System_MArray_Get_uint(ILExecThread *thread,
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+	if(address)
+	{
+		return *((ILUInt32 *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Get an unsigned int value from a two-dimensional array.
+ *
+ * public uint Get(int index1, int index2)
+ */
+static ILUInt32 System_MArray_Get2_uint(ILExecThread *thread,
+							            System_MArray *_this,
+									    ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
 	if(address)
 	{
 		return *((ILUInt32 *)address);
@@ -608,6 +767,27 @@ static ILInt64 System_MArray_Get_long(ILExecThread *thread,
 }
 
 /*
+ * Get a signed long value from a two-dimensional array.
+ *
+ * public long Get(int index1, int index2)
+ */
+static ILInt64 System_MArray_Get2_long(ILExecThread *thread,
+							           System_MArray *_this,
+									   ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		return *((ILInt64 *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * Get an unsigned long value from a multi-dimensional array.
  *
  * public ulong Get(int index1, ..., int indexN)
@@ -619,6 +799,27 @@ static ILUInt64 System_MArray_Get_ulong(ILExecThread *thread,
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+	if(address)
+	{
+		return *((ILUInt64 *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Get an unsigned long value from a two-dimensional array.
+ *
+ * public ulong Get(int index1, int index2)
+ */
+static ILUInt64 System_MArray_Get2_ulong(ILExecThread *thread,
+							             System_MArray *_this,
+									     ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
 	if(address)
 	{
 		return *((ILUInt64 *)address);
@@ -652,6 +853,27 @@ static ILFloat System_MArray_Get_float(ILExecThread *thread,
 }
 
 /*
+ * Get a float value from a two-dimensional array.
+ *
+ * public float Get(int index1, int index2)
+ */
+static ILFloat System_MArray_Get2_float(ILExecThread *thread,
+							            System_MArray *_this,
+									    ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		return *((ILFloat *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * Get a double value from a multi-dimensional array.
  *
  * public double Get(int index1, ..., int indexN)
@@ -663,6 +885,27 @@ static ILDouble System_MArray_Get_double(ILExecThread *thread,
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+	if(address)
+	{
+		return *((ILDouble *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Get a double value from a two-dimensional array.
+ *
+ * public double Get(int index1, int index2)
+ */
+static ILDouble System_MArray_Get2_double(ILExecThread *thread,
+							              System_MArray *_this,
+									      ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
 	if(address)
 	{
 		return *((ILDouble *)address);
@@ -696,6 +939,28 @@ static ILNativeFloat System_MArray_Get_nativeFloat(ILExecThread *thread,
 }
 
 /*
+ * Get a native float value from a two-dimensional array.
+ *
+ * public native float Get(int index1, int index2)
+ */
+static ILNativeFloat System_MArray_Get2_nativeFloat(ILExecThread *thread,
+							                        System_MArray *_this,
+									                ILInt32 index1,
+													ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		return *((ILNativeFloat *)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * Get an object reference value from a multi-dimensional array.
  *
  * public Object Get(int index1, ..., int indexN)
@@ -707,6 +972,27 @@ static ILObject *System_MArray_Get_ref(ILExecThread *thread,
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+	if(address)
+	{
+		return *((ILObject **)address);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Get a native reference value from a two-dimensional array.
+ *
+ * public Object Get(int index1, int index2)
+ */
+static ILObject *System_MArray_Get2_ref(ILExecThread *thread,
+							            System_MArray *_this,
+									    ILInt32 index1, ILInt32 index2)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
 	if(address)
 	{
 		return *((ILObject **)address);
@@ -743,8 +1029,10 @@ static void System_MArray_Get_managedValue(ILExecThread *thread,
  */
 #ifdef IL_NATIVE_INT32
 #define	System_MArray_Get_nativeInt		System_MArray_Get_int
+#define	System_MArray_Get2_nativeInt	System_MArray_Get2_int
 #else
 #define	System_MArray_Get_nativeInt		System_MArray_Get_long
+#define	System_MArray_Get2_nativeInt	System_MArray_Get2_long
 #endif
 
 /*
@@ -754,8 +1042,10 @@ static void System_MArray_Get_managedValue(ILExecThread *thread,
  */
 #ifdef IL_NATIVE_INT32
 #define	System_MArray_Get_nativeUInt	System_MArray_Get_uint
+#define	System_MArray_Get2_nativeUInt	System_MArray_Get2_uint
 #else
 #define	System_MArray_Get_nativeUInt	System_MArray_Get_ulong
+#define	System_MArray_Get2_nativeUInt	System_MArray_Get2_ulong
 #endif
 
 /*
@@ -788,6 +1078,25 @@ static void System_MArray_Set_byte(ILExecThread *thread,
 }
 
 /*
+ * Set a byte value within a two-dimensional array.
+ *
+ * public void Set(int index1, int index2, sbyte value)
+ * public void Set(int index1, int index2, byte value)
+ */
+static void System_MArray_Set2_byte(ILExecThread *thread,
+							        System_MArray *_this,
+									ILInt32 index1, ILInt32 index2,
+									ILInt8 value)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		*((ILInt8 *)address) = value;
+	}
+}
+
+/*
  * Set a short value within a multi-dimensional array.
  *
  * public void Set(int index1, ..., int indexN, short value)
@@ -799,6 +1108,25 @@ static void System_MArray_Set_short(ILExecThread *thread,
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_I2, &args);
+}
+
+/*
+ * Set a short value within a two-dimensional array.
+ *
+ * public void Set(int index1, int index2, short value)
+ * public void Set(int index1, int index2, ushort value)
+ */
+static void System_MArray_Set2_short(ILExecThread *thread,
+							         System_MArray *_this,
+									 ILInt32 index1, ILInt32 index2,
+									 ILInt16 value)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		*((ILInt16 *)address) = value;
+	}
 }
 
 /*
@@ -816,6 +1144,25 @@ static void System_MArray_Set_int(ILExecThread *thread,
 }
 
 /*
+ * Set an int value within a two-dimensional array.
+ *
+ * public void Set(int index1, int index2, int value)
+ * public void Set(int index1, int index2, uint value)
+ */
+static void System_MArray_Set2_int(ILExecThread *thread,
+							       System_MArray *_this,
+								   ILInt32 index1, ILInt32 index2,
+								   ILInt32 value)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		*((ILInt32 *)address) = value;
+	}
+}
+
+/*
  * Set a long value within a multi-dimensional array.
  *
  * public void Set(int index1, ..., int indexN, long value)
@@ -827,6 +1174,25 @@ static void System_MArray_Set_long(ILExecThread *thread,
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_I8, &args);
+}
+
+/*
+ * Set a long value within a two-dimensional array.
+ *
+ * public void Set(int index1, int index2, long value)
+ * public void Set(int index1, int index2, ulong value)
+ */
+static void System_MArray_Set2_long(ILExecThread *thread,
+							        System_MArray *_this,
+								    ILInt32 index1, ILInt32 index2,
+								    ILInt64 value)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		*((ILInt64 *)address) = value;
+	}
 }
 
 /*
@@ -843,6 +1209,24 @@ static void System_MArray_Set_float(ILExecThread *thread,
 }
 
 /*
+ * Set a float value within a two-dimensional array.
+ *
+ * public void Set(int index1, int index2, float value)
+ */
+static void System_MArray_Set2_float(ILExecThread *thread,
+							         System_MArray *_this,
+								     ILInt32 index1, ILInt32 index2,
+								     ILFloat value)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		*((ILFloat *)address) = value;
+	}
+}
+
+/*
  * Set a double value within a multi-dimensional array.
  *
  * public void Set(int index1, ..., int indexN, double value)
@@ -853,6 +1237,24 @@ static void System_MArray_Set_double(ILExecThread *thread,
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_R8, &args);
+}
+
+/*
+ * Set a double value within a two-dimensional array.
+ *
+ * public void Set(int index1, int index2, double value)
+ */
+static void System_MArray_Set2_double(ILExecThread *thread,
+							          System_MArray *_this,
+								      ILInt32 index1, ILInt32 index2,
+								      ILDouble value)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		*((ILDouble *)address) = value;
+	}
 }
 
 /*
@@ -869,6 +1271,24 @@ static void System_MArray_Set_nativeFloat(ILExecThread *thread,
 }
 
 /*
+ * Set a native float value within a two-dimensional array.
+ *
+ * public void Set(int index1, int index2, native float value)
+ */
+static void System_MArray_Set2_nativeFloat(ILExecThread *thread,
+							               System_MArray *_this,
+								           ILInt32 index1, ILInt32 index2,
+								           ILNativeFloat value)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		*((ILNativeFloat *)address) = value;
+	}
+}
+
+/*
  * Set an object reference value within a multi-dimensional array.
  *
  * public void Set(int index1, ..., int indexN, Object value)
@@ -879,6 +1299,24 @@ static void System_MArray_Set_ref(ILExecThread *thread,
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_OBJECT, &args);
+}
+
+/*
+ * Set an object reference value within a two-dimensional array.
+ *
+ * public void Set(int index1, int index2, Object value)
+ */
+static void System_MArray_Set2_ref(ILExecThread *thread,
+							       System_MArray *_this,
+								   ILInt32 index1, ILInt32 index2,
+								   ILObject *value)
+{
+	void *address;
+	address = Get2ElemAddress(thread, _this, index1, index2);
+	if(address)
+	{
+		*((ILObject **)address) = value;
+	}
 }
 
 /*
@@ -902,8 +1340,10 @@ static void System_MArray_Set_managedValue(ILExecThread *thread,
  */
 #ifdef IL_NATIVE_INT32
 #define	System_MArray_Set_nativeInt		System_MArray_Set_int
+#define	System_MArray_Set2_nativeInt	System_MArray_Set2_int
 #else
 #define	System_MArray_Set_nativeInt		System_MArray_Set_long
+#define	System_MArray_Set2_nativeInt	System_MArray_Set2_long
 #endif
 
 /*
@@ -967,9 +1407,19 @@ static void System_MArray_Get_##name##_marshal	\
 	(void (*fn)(), void *rvalue, void **avalue)	\
 {	\
 	*((type *)rvalue) =		\
-		(*((type (*)(ILExecThread *, System_MArray *))fn))	\
+		System_MArray_Get_##name	\
 				(*((ILExecThread **)(avalue[0])),	\
 				 *((System_MArray **)(avalue[1])));	\
+} \
+static void System_MArray_Get2_##name##_marshal	\
+	(void (*fn)(), void *rvalue, void **avalue)	\
+{	\
+	*((type *)rvalue) =		\
+		System_MArray_Get2_##name	\
+				(*((ILExecThread **)(avalue[0])),	\
+				 *((System_MArray **)(avalue[1])),	\
+				 *((ILInt32 *)(avalue[2])),			\
+				 *((ILInt32 *)(avalue[3])));		\
 }
 MarshalGet(ILInt8, sbyte)
 MarshalGet(ILUInt8, byte)
@@ -997,10 +1447,37 @@ static void System_MArray_Get_managedValue_marshal
 /*
  * Marshal a multi-dimensional "Set" method for non-libffi systems.
  */
-static void System_MArray_Set_marshal
+#define	MarshalSet(type,name)	\
+static void System_MArray_Set_##name##_marshal	\
+	(void (*fn)(), void *rvalue, void **avalue)	\
+{	\
+	System_MArray_Set_##name	\
+		(*((ILExecThread **)(avalue[0])),	\
+		 *((System_MArray **)(avalue[1])));	\
+}	\
+static void System_MArray_Set2_##name##_marshal	\
+	(void (*fn)(), void *rvalue, void **avalue)	\
+{	\
+	System_MArray_Set2_##name	\
+			(*((ILExecThread **)(avalue[0])),	\
+			 *((System_MArray **)(avalue[1])),	\
+			 *((ILInt32 *)(avalue[2])),			\
+			 *((ILInt32 *)(avalue[3])),			\
+			 *((type *)(avalue[4])));			\
+}
+MarshalSet(ILInt8, byte)
+MarshalSet(ILInt16, short)
+MarshalSet(ILInt32, int)
+MarshalSet(ILInt64, long)
+MarshalSet(ILNativeInt, nativeInt)
+MarshalSet(ILFloat, float)
+MarshalSet(ILDouble, double)
+MarshalSet(ILNativeFloat, nativeFloat)
+MarshalSet(void *, ref)
+static void System_MArray_Set_managedValue_marshal
 	(void (*fn)(), void *rvalue, void **avalue)
 {
-	(*((void (*)(ILExecThread *, System_MArray *))fn))
+	System_MArray_Set_managedValue
 		(*((ILExecThread **)(avalue[0])),
 		 *((System_MArray **)(avalue[1])));
 }
@@ -1025,21 +1502,53 @@ static void System_MArray_Address_marshal
 #define	System_MArray_ctor_1_marshal				0
 #define	System_MArray_ctor_2_marshal				0
 #define	System_MArray_Get_sbyte_marshal				0
+#define	System_MArray_Get2_sbyte_marshal			0
 #define	System_MArray_Get_byte_marshal				0
+#define	System_MArray_Get2_byte_marshal				0
 #define	System_MArray_Get_short_marshal				0
+#define	System_MArray_Get2_short_marshal			0
 #define	System_MArray_Get_ushort_marshal			0
+#define	System_MArray_Get2_ushort_marshal			0
 #define	System_MArray_Get_int_marshal				0
+#define	System_MArray_Get2_int_marshal				0
 #define	System_MArray_Get_uint_marshal				0
+#define	System_MArray_Get2_uint_marshal				0
 #define	System_MArray_Get_long_marshal				0
+#define	System_MArray_Get2_long_marshal				0
 #define	System_MArray_Get_ulong_marshal				0
+#define	System_MArray_Get2_ulong_marshal			0
 #define	System_MArray_Get_nativeInt_marshal			0
+#define	System_MArray_Get2_nativeInt_marshal		0
 #define	System_MArray_Get_nativeUInt_marshal		0
+#define	System_MArray_Get2_nativeUInt_marshal		0
 #define	System_MArray_Get_float_marshal				0
+#define	System_MArray_Get2_float_marshal			0
 #define	System_MArray_Get_double_marshal			0
+#define	System_MArray_Get2_double_marshal			0
 #define	System_MArray_Get_nativeFloat_marshal		0
+#define	System_MArray_Get2_nativeFloat_marshal		0
 #define	System_MArray_Get_managedValue_marshal		0
 #define	System_MArray_Get_ref_marshal				0
-#define	System_MArray_Set_marshal					0
+#define	System_MArray_Get2_ref_marshal				0
+#define	System_MArray_Set_byte_marshal				0
+#define	System_MArray_Set2_byte_marshal				0
+#define	System_MArray_Set_short_marshal				0
+#define	System_MArray_Set2_short_marshal			0
+#define	System_MArray_Set_int_marshal				0
+#define	System_MArray_Set2_int_marshal				0
+#define	System_MArray_Set_long_marshal				0
+#define	System_MArray_Set2_long_marshal				0
+#define	System_MArray_Set_nativeInt_marshal			0
+#define	System_MArray_Set2_nativeInt_marshal		0
+#define	System_MArray_Set_float_marshal				0
+#define	System_MArray_Set2_float_marshal			0
+#define	System_MArray_Set_double_marshal			0
+#define	System_MArray_Set2_double_marshal			0
+#define	System_MArray_Set_nativeFloat_marshal		0
+#define	System_MArray_Set2_nativeFloat_marshal		0
+#define	System_MArray_Set_managedValue_marshal		0
+#define	System_MArray_Set_ref_marshal				0
+#define	System_MArray_Set2_ref_marshal				0
 #define	System_MArray_Address_marshal				0
 
 #endif	/* HAVE_LIBFFI */
@@ -1052,6 +1561,8 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 	ILClass *classInfo;
 	const char *name;
 	ILType *type;
+	int rank;
+
 	classInfo = ILMethod_Owner(method);
 	if(!classInfo)
 	{
@@ -1078,6 +1589,7 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 			return 0;
 		}
 	}
+	rank = ILTypeGetRank(type);
 	if(!strcmp(name, ".ctor"))
 	{
 		/* There are two constructors for multi-dimensional arrays.
@@ -1112,24 +1624,54 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				case IL_META_ELEMTYPE_BOOLEAN:
 				case IL_META_ELEMTYPE_I1:
 				{
-					info->func = (void *)System_MArray_Get_sbyte;
-					info->marshal = (void *)System_MArray_Get_sbyte_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_sbyte;
+						info->marshal =
+							(void *)System_MArray_Get2_sbyte_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_sbyte;
+						info->marshal =
+							(void *)System_MArray_Get_sbyte_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_U1:
 				{
-					info->func = (void *)System_MArray_Get_byte;
-					info->marshal = (void *)System_MArray_Get_byte_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_byte;
+						info->marshal =
+							(void *)System_MArray_Get2_byte_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_byte;
+						info->marshal =
+							(void *)System_MArray_Get_byte_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I2:
 				{
-					info->func = (void *)System_MArray_Get_short;
-					info->marshal = (void *)System_MArray_Get_short_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_short;
+						info->marshal =
+							(void *)System_MArray_Get2_short_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_short;
+						info->marshal =
+							(void *)System_MArray_Get_short_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
@@ -1137,82 +1679,180 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				case IL_META_ELEMTYPE_U2:
 				case IL_META_ELEMTYPE_CHAR:
 				{
-					info->func = (void *)System_MArray_Get_ushort;
-					info->marshal = (void *)System_MArray_Get_ushort_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_ushort;
+						info->marshal =
+							(void *)System_MArray_Get2_ushort_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_ushort;
+						info->marshal =
+							(void *)System_MArray_Get_ushort_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I4:
 				{
-					info->func = (void *)System_MArray_Get_int;
-					info->marshal = (void *)System_MArray_Get_int_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_int;
+						info->marshal =
+							(void *)System_MArray_Get2_int_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_int;
+						info->marshal =
+							(void *)System_MArray_Get_int_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_U4:
 				{
-					info->func = (void *)System_MArray_Get_uint;
-					info->marshal = (void *)System_MArray_Get_uint_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_uint;
+						info->marshal =
+							(void *)System_MArray_Get2_uint_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_uint;
+						info->marshal =
+							(void *)System_MArray_Get_uint_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I:
 				{
-					info->func = (void *)System_MArray_Get_nativeInt;
-					info->marshal = (void *)System_MArray_Get_nativeInt_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_nativeInt;
+						info->marshal =
+							(void *)System_MArray_Get2_nativeInt_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_nativeInt;
+						info->marshal =
+							(void *)System_MArray_Get_nativeInt_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_U:
 				{
-					info->func = (void *)System_MArray_Get_nativeUInt;
-					info->marshal =
-						(void *)System_MArray_Get_nativeUInt_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_nativeUInt;
+						info->marshal =
+							(void *)System_MArray_Get2_nativeUInt_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_nativeUInt;
+						info->marshal =
+							(void *)System_MArray_Get_nativeUInt_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I8:
 				{
-					info->func = (void *)System_MArray_Get_long;
-					info->marshal = (void *)System_MArray_Get_long_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_long;
+						info->marshal =
+							(void *)System_MArray_Get2_long_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_long;
+						info->marshal =
+							(void *)System_MArray_Get_long_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_U8:
 				{
-					info->func = (void *)System_MArray_Get_ulong;
-					info->marshal = (void *)System_MArray_Get_ulong_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_ulong;
+						info->marshal =
+							(void *)System_MArray_Get2_ulong_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_ulong;
+						info->marshal =
+							(void *)System_MArray_Get_ulong_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R4:
 				{
-					info->func = (void *)System_MArray_Get_float;
-					info->marshal = (void *)System_MArray_Get_float_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_float;
+						info->marshal =
+							(void *)System_MArray_Get2_float_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_float;
+						info->marshal =
+							(void *)System_MArray_Get_float_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R8:
 				{
-					info->func = (void *)System_MArray_Get_double;
-					info->marshal = (void *)System_MArray_Get_double_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_double;
+						info->marshal =
+							(void *)System_MArray_Get2_double_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_double;
+						info->marshal =
+							(void *)System_MArray_Get_double_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R:
 				{
-					info->func = (void *)System_MArray_Get_nativeFloat;
-					info->marshal =
-						(void *)System_MArray_Get_nativeFloat_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Get2_nativeFloat;
+						info->marshal =
+							(void *)System_MArray_Get2_nativeFloat_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Get_nativeFloat;
+						info->marshal =
+							(void *)System_MArray_Get_nativeFloat_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
@@ -1236,6 +1876,12 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 			info->marshal = (void *)System_MArray_Get_managedValue_marshal;
 			return 1;
 		}
+		else if(rank == 2)
+		{
+			info->func = (void *)System_MArray_Get2_ref;
+			info->marshal = (void *)System_MArray_Get2_ref_marshal;
+			return 1;
+		}
 		else
 		{
 			info->func = (void *)System_MArray_Get_ref;
@@ -1255,8 +1901,18 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				case IL_META_ELEMTYPE_I1:
 				case IL_META_ELEMTYPE_U1:
 				{
-					info->func = (void *)System_MArray_Set_byte;
-					info->marshal = (void *)System_MArray_Set_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Set2_byte;
+						info->marshal =
+							(void *)System_MArray_Set2_byte_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Set_byte;
+						info->marshal =
+							(void *)System_MArray_Set_byte_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
@@ -1265,8 +1921,18 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				case IL_META_ELEMTYPE_U2:
 				case IL_META_ELEMTYPE_CHAR:
 				{
-					info->func = (void *)System_MArray_Set_short;
-					info->marshal = (void *)System_MArray_Set_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Set2_short;
+						info->marshal =
+							(void *)System_MArray_Set2_short_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Set_short;
+						info->marshal =
+							(void *)System_MArray_Set_short_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
@@ -1274,8 +1940,18 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				case IL_META_ELEMTYPE_I4:
 				case IL_META_ELEMTYPE_U4:
 				{
-					info->func = (void *)System_MArray_Set_int;
-					info->marshal = (void *)System_MArray_Set_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Set2_int;
+						info->marshal =
+							(void *)System_MArray_Set2_int_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Set_int;
+						info->marshal =
+							(void *)System_MArray_Set_int_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
@@ -1283,8 +1959,18 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				case IL_META_ELEMTYPE_I:
 				case IL_META_ELEMTYPE_U:
 				{
-					info->func = (void *)System_MArray_Set_nativeInt;
-					info->marshal = (void *)System_MArray_Set_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Set2_nativeInt;
+						info->marshal =
+							(void *)System_MArray_Set2_nativeInt_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Set_nativeInt;
+						info->marshal =
+							(void *)System_MArray_Set_nativeInt_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
@@ -1292,32 +1978,72 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				case IL_META_ELEMTYPE_I8:
 				case IL_META_ELEMTYPE_U8:
 				{
-					info->func = (void *)System_MArray_Set_long;
-					info->marshal = (void *)System_MArray_Set_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Set2_long;
+						info->marshal =
+							(void *)System_MArray_Set2_long_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Set_long;
+						info->marshal =
+							(void *)System_MArray_Set_long_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R4:
 				{
-					info->func = (void *)System_MArray_Set_float;
-					info->marshal = (void *)System_MArray_Set_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Set2_float;
+						info->marshal =
+							(void *)System_MArray_Set2_float_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Set_float;
+						info->marshal =
+							(void *)System_MArray_Set_float_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R8:
 				{
-					info->func = (void *)System_MArray_Set_double;
-					info->marshal = (void *)System_MArray_Set_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Set2_double;
+						info->marshal =
+							(void *)System_MArray_Set2_double_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Set_double;
+						info->marshal =
+							(void *)System_MArray_Set_double_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R:
 				{
-					info->func = (void *)System_MArray_Set_nativeFloat;
-					info->marshal = (void *)System_MArray_Set_marshal;
+					if(rank == 2)
+					{
+						info->func = (void *)System_MArray_Set2_nativeFloat;
+						info->marshal =
+							(void *)System_MArray_Set2_nativeFloat_marshal;
+					}
+					else
+					{
+						info->func = (void *)System_MArray_Set_nativeFloat;
+						info->marshal =
+							(void *)System_MArray_Set_nativeFloat_marshal;
+					}
 					return 1;
 				}
 				/* Not reached */
@@ -1325,25 +2051,32 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				case IL_META_ELEMTYPE_TYPEDBYREF:
 				{
 					info->func = (void *)System_MArray_Set_managedValue;
-					info->marshal = (void *)System_MArray_Set_marshal;
+					info->marshal =
+						(void *)System_MArray_Set_managedValue_marshal;
 					return 1;
 				}
 				/* Not reached */
 			}
 			info->func = (void *)System_MArray_Set_int;
-			info->marshal = (void *)System_MArray_Set_marshal;
+			info->marshal = (void *)System_MArray_Set_int_marshal;
 			return 1;
 		}
 		else if(ILType_IsValueType(type))
 		{
 			info->func = (void *)System_MArray_Set_managedValue;
-			info->marshal = (void *)System_MArray_Set_marshal;
+			info->marshal = (void *)System_MArray_Set_managedValue_marshal;
+			return 1;
+		}
+		else if(rank == 2)
+		{
+			info->func = (void *)System_MArray_Set2_ref;
+			info->marshal = (void *)System_MArray_Set2_ref_marshal;
 			return 1;
 		}
 		else
 		{
 			info->func = (void *)System_MArray_Set_ref;
-			info->marshal = (void *)System_MArray_Set_marshal;
+			info->marshal = (void *)System_MArray_Set_ref_marshal;
 			return 1;
 		}
 	}

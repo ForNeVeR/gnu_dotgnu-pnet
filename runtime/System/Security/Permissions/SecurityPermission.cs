@@ -107,23 +107,101 @@ public sealed class SecurityPermission : CodeAccessPermission
 					return new SecurityPermission(state);
 				}
 			}
-	[TODO]
 	public override IPermission Intersect(IPermission target)
 			{
-				// TODO
-				return null;
+				SecurityPermissionFlag newFlags;
+				if(target == null)
+				{
+					return target;
+				}
+				else if(!(target is SecurityPermission))
+				{
+					throw new ArgumentException(_("Arg_PermissionMismatch"));
+				}
+				else if(((SecurityPermission)target).IsUnrestricted())
+				{
+					if(IsUnrestricted())
+					{
+						return Copy();
+					}
+					else
+					{
+						newFlags = flags;
+					}
+				}
+				else if(IsUnrestricted())
+				{
+					newFlags = ((SecurityPermission)target).flags;
+				}
+				else
+				{
+					newFlags = ((SecurityPermission)target).flags & flags;
+				}
+				if(newFlags == 0)
+				{
+					return null;
+				}
+				else
+				{
+					return new SecurityPermission(newFlags);
+				}
 			}
-	[TODO]
 	public override bool IsSubsetOf(IPermission target)
 			{
-				// TODO
-				return false;
+				if(target == null)
+				{
+					return (flags == SecurityPermissionFlag.NoFlags);
+				}
+				else if(!(target is SecurityPermission))
+				{
+					throw new ArgumentException(_("Arg_PermissionMismatch"));
+				}
+				else if(((SecurityPermission)target).IsUnrestricted())
+				{
+					return true;
+				}
+				else if(IsUnrestricted())
+				{
+					return false;
+				}
+				else
+				{
+					return ((flags & ~(((SecurityPermission)target).flags))
+								== 0);
+				}
 			}
-	[TODO]
 	public override IPermission Union(IPermission target)
 			{
-				// TODO
-				return null;
+				if(target == null)
+				{
+					return Copy();
+				}
+				else if(!(target is SecurityPermission))
+				{
+					throw new ArgumentException(_("Arg_PermissionMismatch"));
+				}
+				else if(IsUnrestricted() ||
+				        ((SecurityPermission)target).IsUnrestricted())
+				{
+					return new SecurityPermission
+						(PermissionState.Unrestricted);
+				}
+				else
+				{
+					return new SecurityPermission
+						(flags | ((SecurityPermission)target).flags);
+				}
+			}
+
+	// Determine if this object has unrestricted permissions.
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	bool IsUnrestricted()
+			{
+				return (state == PermissionState.Unrestricted);
 			}
 
 }; // class SecurityPermission

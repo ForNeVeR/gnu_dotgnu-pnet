@@ -2,7 +2,7 @@
  * PermissionSet.cs - Implementation of the
  *		"System.Security.PermissionSet" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@ using System;
 using System.Collections;
 using System.Security.Permissions;
 
-public class PermissionSet : ICollection, IEnumerable
+public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
+							 IStackWalk
 {
 
 	// Internal state.
@@ -107,7 +108,11 @@ public class PermissionSet : ICollection, IEnumerable
 					perm = (permissions[posn] as CodeAccessPermission);
 					if(perm != null)
 					{
-						perm.Assert();
+						if(!ClrSecurity.Assert(perm, 1))
+						{
+							throw new SecurityException
+								(_("Exception_SecurityNotGranted"));
+						}
 					}
 				}
 			}
@@ -159,18 +164,108 @@ public class PermissionSet : ICollection, IEnumerable
 			}
 
 	// Convert an XML security element into a permission set.
-	[TODO]
 	public virtual void FromXml(SecurityElement et)
 			{
-				// TODO
+				// Validate the parameter.
+				if(et == null)
+				{
+					throw new ArgumentNullException("et");
+				}
+				if(et.Tag != "PermissionSet")
+				{
+					throw new ArgumentException(_("Invalid_PermissionXml"));
+				}
+				if(et.Attribute("version") != "1")
+				{
+					throw new ArgumentException(_("Arg_PermissionVersion"));
+				}
+
+				// Initialize the permission set from the tag.
+				if(et.Attribute("Unrestricted") == "true")
+				{
+					state = PermissionState.Unrestricted;
+				}
+				else
+				{
+					state = PermissionState.None;
+				}
+				permissions.Clear();
+
+				// Process the children.
+				ArrayList children = et.Children;
+				String className;
+				Type type;
+				Object[] args;
+				IPermission perm;
+				args = new Object [1];
+				args[0] = PermissionState.None;
+				if(children != null)
+				{
+					foreach(SecurityElement child in children)
+					{
+						if(child.Tag != "IPermission" &&
+						   child.Tag != "Permission")
+						{
+							// Skip tags that we don't understand.
+							continue;
+						}
+						className = child.Attribute("class");
+						if(className == null)
+						{
+							throw new ArgumentException
+								(_("Invalid_PermissionXml"));
+						}
+						type = Type.GetType(className);
+						if(type == null && className.IndexOf('.') == -1)
+						{
+							// May not have been fully-qualified.
+							type = Type.GetType
+								("System.Security.Permissions." + className);
+						}
+						if(!typeof(IPermission).IsAssignableFrom(type))
+						{
+							throw new ArgumentException
+								(_("Invalid_PermissionXml"));
+						}
+						perm = (Activator.CreateInstance(type, args)
+									as IPermission);
+						if(perm != null)
+						{
+							perm.FromXml(child);
+							AddPermission(perm);
+						}
+					}
+				}
 			}
 
 	// Determine if this permission set is a subset of another.
-	[TODO]
 	public virtual bool IsSubsetOf(PermissionSet target)
 			{
-				// TODO
-				return false;
+				// Handle the simple cases first.
+				if(target == null)
+				{
+					return false;
+				}
+				else if(target.IsUnrestricted())
+				{
+					return true;
+				}
+				else if(IsUnrestricted())
+				{
+					return false;
+				}
+
+				// Scan the source permission set and check subset conditions.
+				IPermission other;
+				foreach(IPermission perm in permissions)
+				{
+					other = target.GetPermission(perm.GetType());
+					if(other == null || !perm.IsSubsetOf(other))
+					{
+						return false;
+					}
+				}
+				return true;
 			}
 
 	// Permit only the permissions in this set.
@@ -196,19 +291,72 @@ public class PermissionSet : ICollection, IEnumerable
 			}
 
 	// Convert this permission set into an XML security element.
-	[TODO]
 	public virtual SecurityElement ToXml()
 			{
-				// TODO
-				return null;
+				SecurityElement elem = new SecurityElement("PermissionSet");
+				elem.AddAttribute
+					("class", typeof(PermissionSet).AssemblyQualifiedName);
+				elem.AddAttribute("version", "1");
+				if(IsUnrestricted())
+				{
+					elem.AddAttribute("Unrestricted", "true");
+				}
+				foreach(IPermission perm in permissions)
+				{
+					elem.AddChild(perm.ToXml());
+				}
+				return elem;
 			}
 
 	// Form the union of this security set and another.
-	[TODO]
 	public virtual PermissionSet Union(PermissionSet other)
 			{
-				// TODO
-				return null;
+				PermissionSet pset;
+				if(other == null)
+				{
+					pset = new PermissionSet(state);
+				}
+				else if(IsUnrestricted() || other.IsUnrestricted())
+				{
+					pset = new PermissionSet(PermissionState.Unrestricted);
+				}
+				else
+				{
+					pset = new PermissionSet(PermissionState.None);
+				}
+				foreach(IPermission perm in permissions)
+				{
+					pset.AddPermission(perm);
+				}
+				if(other == null || other.IsEmpty())
+				{
+					return pset;
+				}
+				IEnumerator e = other.GetEnumerator();
+				IPermission permOther, permThis;
+				int index;
+				while(e.MoveNext())
+				{
+					permOther = (e.Current as IPermission);
+					if(permOther != null)
+					{
+						index = pset.FindPermission(permOther.GetType());
+						if(index != -1)
+						{
+							permThis = (IPermission)(permissions[index]);
+							permThis = permThis.Union(permOther);
+							if(permThis != null)
+							{
+								pset.SetPermission(permThis);
+							}
+						}
+						else
+						{
+							pset.AddPermission(permOther);
+						}
+					}
+				}
+				return pset;
 			}
 
 	// Implement the ICollection interface.
@@ -244,35 +392,24 @@ public class PermissionSet : ICollection, IEnumerable
 				return permissions.GetEnumerator();
 			}
 
-#if !ECMA_COMPAT
-
-	// Determine if this permission set is read-only.
-	public virtual bool IsReadOnly
+	// Determine if this permission set is unrestricted.
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	virtual bool IsUnrestricted()
 			{
-				get
-				{
-					return false;
-				}
-			}
-
-	// Determine if the set contains permissions that do not
-	// derive from CodeAccessPermission.
-	public bool ContainsNonCodeAccessPermisssions()
-			{
-				int posn;
-				Type type = typeof(CodeAccessPermission);
-				for(posn = 0; posn < permissions.Count; ++posn)
-				{
-					if(!type.IsAssignableFrom(permissions[posn].GetType()))
-					{
-						return true;
-					}
-				}
-				return false;
+				return (state == PermissionState.Unrestricted);
 			}
 
 	// Get a permission object of a specific type from this set.
-	public virtual IPermission GetPermission(Type permClass)
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	virtual IPermission GetPermission(Type permClass)
 			{
 				if(permClass != null)
 				{
@@ -285,44 +422,24 @@ public class PermissionSet : ICollection, IEnumerable
 				return null;
 			}
 
-	// Form the intersection of this permission set and another.
-	[TODO]
-	public virtual PermissionSet Intersect(PermissionSet other)
-			{
-				// TODO
-				return null;
-			}
-
 	// Determine if this permission set is empty.
-	public virtual bool IsEmpty()
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	virtual bool IsEmpty()
 			{
 				return (permissions.Count == 0);
 			}
 
-	// Determine if this permission set is unrestricted.
-	public virtual bool IsUnrestricted()
-			{
-				return (state == PermissionState.Unrestricted);
-			}
-
-	// Remove a particular permission from this set.
-	public virtual IPermission RemovePermission(Type permClass)
-			{
-				if(permClass == null)
-				{
-					int index = FindPermission(permClass);
-					if(index != -1)
-					{
-						IPermission perm = (IPermission)(permissions[index]);
-						permissions.RemoveAt(index);
-						return perm;
-					}
-				}
-				return null;
-			}
-
 	// Set a permission into this permission set.
-	public virtual IPermission SetPermission(IPermission perm)
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	virtual IPermission SetPermission(IPermission perm)
 			{
 				if(perm != null)
 				{
@@ -341,6 +458,91 @@ public class PermissionSet : ICollection, IEnumerable
 				{
 					return null;
 				}
+			}
+
+#if !ECMA_COMPAT
+
+	// Determine if this permission set is read-only.
+	public virtual bool IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Determine if the set contains permissions that do not
+	// derive from CodeAccessPermission.
+	public bool ContainsNonCodeAccessPermisssions()
+			{
+				int posn;
+				for(posn = 0; posn < permissions.Count; ++posn)
+				{
+					if(!(permissions[posn] is CodeAccessPermission))
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+
+	// Form the intersection of this permission set and another.
+	public virtual PermissionSet Intersect(PermissionSet other)
+			{
+				PermissionSet pset;
+				if(other == null)
+				{
+					pset = new PermissionSet(PermissionState.None);
+				}
+				else if(!IsUnrestricted() || !other.IsUnrestricted())
+				{
+					pset = new PermissionSet(PermissionState.None);
+				}
+				else
+				{
+					pset = new PermissionSet(PermissionState.Unrestricted);
+				}
+				if(other == null || other.IsEmpty() || IsEmpty())
+				{
+					return pset;
+				}
+				IEnumerator e = other.GetEnumerator();
+				IPermission permOther, permThis;
+				int index;
+				while(e.MoveNext())
+				{
+					permOther = (e.Current as IPermission);
+					if(permOther != null)
+					{
+						index = FindPermission(permOther.GetType());
+						if(index != -1)
+						{
+							permThis = (IPermission)(permissions[index]);
+							permThis = permThis.Intersect(permOther);
+							if(permThis != null)
+							{
+								pset.AddPermission(permThis);
+							}
+						}
+					}
+				}
+				return pset;
+			}
+
+	// Remove a particular permission from this set.
+	public virtual IPermission RemovePermission(Type permClass)
+			{
+				if(permClass == null)
+				{
+					int index = FindPermission(permClass);
+					if(index != -1)
+					{
+						IPermission perm = (IPermission)(permissions[index]);
+						permissions.RemoveAt(index);
+						return perm;
+					}
+				}
+				return null;
 			}
 
 #endif // !ECMA_COMPAT

@@ -81,3 +81,6 @@ Exception_SecurityNotGranted=The calling code was not granted the requested perm
 Exception_Remoting=A failure occurred during a remoting operation
 Exception_Verification=Could not verify the code
 Exception_Serialization=An error occurred during serialization operations
+Exception_XmlSyntax=Syntax error in XML data
+Exception_XmlSyntaxLine=line {0}: Syntax error in XML data
+Exception_XmlSyntaxLineMsg=line {0}: Syntax error in XML data: {1}

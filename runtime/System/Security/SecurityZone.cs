@@ -1,8 +1,8 @@
 /*
- * UnverifiableCodeAttribute.cs - Implementation of the
- *			"System.Security.UnverifiableCodeAttribute" class.
+ * SecurityZone.cs - Implementation of the
+ *		"System.Security.SecurityZone" class.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +22,20 @@
 namespace System.Security
 {
 
-[AttributeUsage(AttributeTargets.Module, AllowMultiple=true, Inherited=false)]
-public sealed class UnverifiableCodeAttribute : Attribute
-{
-	// Constructor.
-	public UnverifiableCodeAttribute()
-			{
-				// Nothing to do here.
-			}
+#if !ECMA_COMPAT
 
-}; // class UnverifiableCodeAttribute
+public enum SecurityZone
+{
+
+	NoZone     = -1,
+	MyComputer = 0,
+	Intranet   = 1,
+	Trusted    = 2,
+	Internet   = 3,
+	Untrusted  = 4
+
+}; // enum SecurityZone
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Security

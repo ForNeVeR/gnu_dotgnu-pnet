@@ -25,7 +25,7 @@ namespace System.Security
 using System;
 using System.Runtime.CompilerServices;
 
-public abstract class CodeAccessPermission : IPermission
+public abstract class CodeAccessPermission : IPermission, IStackWalk
 {
 
 	// Constructor.
@@ -71,11 +71,17 @@ public abstract class CodeAccessPermission : IPermission
 			}
 	public abstract IPermission Intersect(IPermission target);
 	public abstract bool IsSubsetOf(IPermission target);
-	[TODO]
-	public virtual IPermission Union(IPermission target)
+	public virtual IPermission Union(IPermission other)
 			{
-				// TODO
-				return null;
+				if(other == null)
+				{
+					return Copy();
+				}
+				else
+				{
+					throw new NotSupportedException
+						(_("NotSupp_IPermissionUnion"));
+				}
 			}
 
 #if !ECMA_COMPAT
@@ -96,14 +102,18 @@ public abstract class CodeAccessPermission : IPermission
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void RevertPermitOnly();
 
+#endif // !ECMA_COMPAT
+
 	// Set the caller's permissions to only this object.
+#if ECMA_COMPAT
+	void IStackWalk.PermitOnly()
+#else
 	public void PermitOnly()
+#endif
 			{
 				ClrSecurity.SetPermitOnlyBlock(1);
 				ClrSecurity.PermitOnly(this, 1);
 			}
-
-#endif // !ECMA_COMPAT
 
 }; // class CodeAccessPermission
 

@@ -1,8 +1,8 @@
 /*
- * UnverifiableCodeAttribute.cs - Implementation of the
- *			"System.Security.UnverifiableCodeAttribute" class.
+ * IEvidenceFactory.cs - Implementation of the
+ *		"System.Security.IEvidenceFactory" interface.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +22,20 @@
 namespace System.Security
 {
 
-[AttributeUsage(AttributeTargets.Module, AllowMultiple=true, Inherited=false)]
-public sealed class UnverifiableCodeAttribute : Attribute
-{
-	// Constructor.
-	public UnverifiableCodeAttribute()
-			{
-				// Nothing to do here.
-			}
+using System;
+using System.Security.Policy;
 
-}; // class UnverifiableCodeAttribute
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+interface IEvidenceFactory
+{
+
+	// Get evidence information from this object.
+	Evidence Evidence { get; }
+
+}; // interface IEvidenceFactory
 
 }; // namespace System.Security

@@ -109,6 +109,7 @@ Arg_MustBeCoreLib=The specified assembly must be the core library
 Arg_InvalidCulture=Invalid culture name or identifier
 Arg_InvalidRegion=Invalid region name or identifier
 Arg_DateTimeFormatChar=Invalid DateTime formatting character
+Arg_PermissionMismatch=Mismatched permission objects
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

@@ -33,3 +33,4 @@ NotSupp_MissingCodeTable=Internal code table `{0}' is missing
 NotSupp_Builder=The requested operation is not supported on dynamic assemblies
 NotSupp_TypeCreated=The requested operation is not supported after the type has been created
 NotSupp_TypeNotCreated=The requested operation is not supported until the type has been created
+NotSupp_IPermissionUnion=Cannot union the supplied IPermission objects

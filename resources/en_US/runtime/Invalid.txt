@@ -28,3 +28,5 @@ Invalid_ReadOnly=The requested operation is invalid on read-only objects
 Invalid_EmptyQueue=The requested operation is invalid on an empty queue
 Invalid_EmptyStack=The requested operation is invalid on an empty stack
 Invalid_EntryNotInAssembly=Entry point method is not in the specified assembly
+Invalid_PermissionXml=Invalid XML data for permission definition
+Invalid_PermissionSetName=Invalid name for a permission set

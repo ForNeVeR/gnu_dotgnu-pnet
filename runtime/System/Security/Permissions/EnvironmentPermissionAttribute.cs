@@ -1,8 +1,8 @@
 /*
- * CodeAccessSecurityAttribute.cs - Implementation of the
- *			"System.Security.Permissions.CodeAccessSecurityAttribute" class.
+ * EnvironmentPermissionAttribute.cs - Implementation of the
+ *			"System.Security.Permissions.EnvironmentPermissionAttribute" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,22 +31,64 @@ using System.Security;
 			 	AttributeTargets.Constructor |
 			 	AttributeTargets.Method,
 			 	AllowMultiple=true, Inherited=false)]
-public abstract class CodeAccessSecurityAttribute : SecurityAttribute
+public sealed class EnvironmentPermissionAttribute
+		: CodeAccessSecurityAttribute
 {
-	// Constructors.  The first is specified by ECMA, but isn't present
-	// in any other implementation.  It is probably a bug in the ECMA
-	// specification, but it is relatively harmless to include it.
-	protected CodeAccessSecurityAttribute()
-			: base()
-			{
-				// Nothing to do here.
-			}
-	public CodeAccessSecurityAttribute(SecurityAction action)
+	// Internal state.
+	private String read;
+	private String write;
+
+	// Constructors.
+	public EnvironmentPermissionAttribute(SecurityAction action)
 			: base(action)
 			{
 				// Nothing to do here.
 			}
 
-}; // class CodeAccessSecurityAttribute
+	// Get or set the read permission value.
+	public String Read
+			{
+				get
+				{
+					return read;
+				}
+				set
+				{
+					read = value;
+				}
+			}
+
+	// Get or set the write permission value.
+	public String Write
+			{
+				get
+				{
+					return write;
+				}
+				set
+				{
+					write = value;
+				}
+			}
+
+	// Set both the read and write permission values.
+	public String All
+			{
+				set
+				{
+					read = value;
+					write = value;
+				}
+			}
+
+	// Create a permission object that corresponds to this attribute.
+	[TODO]
+	public override IPermission CreatePermission()
+			{
+				// TODO
+				return null;
+			}
+
+}; // class EnvironmentPermissionAttribute
 
 }; // namespace System.Security.Permissions

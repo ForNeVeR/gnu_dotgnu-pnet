@@ -2,9 +2,9 @@
  * SuppressUnmanagedCodeSecurityAttribute.cs - Implementation of 
  *			"System.Security.SuppressUnmanagedCodeSecurityAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  * 
- * contributed by Gopal.V 
+ * contributions from Gopal.V 
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,17 +21,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.Security
 {
+
+using System;
+
 #if !ECMA_COMPAT
-	public sealed class SuppressUnmanagedCodeSecurityAttribute: Attribute
-	{
-		public SuppressUnmanagedCodeSecurityAttribute()
-		{
-			/* nothing to do here */
-		}
-	}
+
+[AttributeUsage(AttributeTargets.Method |
+				AttributeTargets.Class |
+				AttributeTargets.Interface,
+				AllowMultiple=true, Inherited=false)]
+public sealed class SuppressUnmanagedCodeSecurityAttribute: Attribute
+{
+
+	// Constructor.
+	public SuppressUnmanagedCodeSecurityAttribute()
+			{
+				// Nothing to do here.
+			}
+
+}; // class SuppressUnmanagedCodeSecurityAttribute
+
 #endif
-}//namespace
+
+}; // namespace System.Security

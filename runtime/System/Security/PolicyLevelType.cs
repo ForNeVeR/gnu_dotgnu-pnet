@@ -1,8 +1,8 @@
 /*
- * UnverifiableCodeAttribute.cs - Implementation of the
- *			"System.Security.UnverifiableCodeAttribute" class.
+ * PolicyLevelType.cs - Implementation of the
+ *		"System.Security.PolicyLevelType" class.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +22,18 @@
 namespace System.Security
 {
 
-[AttributeUsage(AttributeTargets.Module, AllowMultiple=true, Inherited=false)]
-public sealed class UnverifiableCodeAttribute : Attribute
-{
-	// Constructor.
-	public UnverifiableCodeAttribute()
-			{
-				// Nothing to do here.
-			}
+#if !ECMA_COMPAT
 
-}; // class UnverifiableCodeAttribute
+public enum PolicyLevelType
+{
+
+	User       = 0,
+	Machine    = 1,
+	Enterprise = 2,
+	AppDomain  = 3
+
+}; // enum PolicyLevelType
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Security

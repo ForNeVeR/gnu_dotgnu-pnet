@@ -1,8 +1,8 @@
 /*
- * UnverifiableCodeAttribute.cs - Implementation of the
- *			"System.Security.UnverifiableCodeAttribute" class.
+ * ISecurityEncodable.cs - Implementation of the
+ *		"System.Security.ISecurityEncodable" interface.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +22,19 @@
 namespace System.Security
 {
 
-[AttributeUsage(AttributeTargets.Module, AllowMultiple=true, Inherited=false)]
-public sealed class UnverifiableCodeAttribute : Attribute
-{
-	// Constructor.
-	public UnverifiableCodeAttribute()
-			{
-				// Nothing to do here.
-			}
+using System;
 
-}; // class UnverifiableCodeAttribute
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+interface ISecurityEncodable
+{
+
+	void FromXml(SecurityElement et);
+	SecurityElement ToXml();
+
+}; // interface ISecurityEncodable
 
 }; // namespace System.Security

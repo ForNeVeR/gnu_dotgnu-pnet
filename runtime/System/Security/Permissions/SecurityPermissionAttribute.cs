@@ -22,10 +22,8 @@
 namespace System.Security.Permissions
 {
 
-// Note: this class is sometimes left out of the build because it
+// Note: this class sometimes inherits from "Attribute" because otherwise it
 // confuses the Microsoft C# compiler when building with "/nostdlib".
-
-//#if __CSCC__
 
 [AttributeUsage(AttributeTargets.Assembly |
 			 	AttributeTargets.Class |
@@ -33,7 +31,11 @@ namespace System.Security.Permissions
 			 	AttributeTargets.Constructor |
 			 	AttributeTargets.Method,
 			 	AllowMultiple=true, Inherited=false)]
-public sealed class SecurityPermissionAttribute : Attribute //: CodeAccessSecurityAttribute
+#if __CSCC__
+public sealed class SecurityPermissionAttribute : CodeAccessSecurityAttribute
+#else
+public sealed class SecurityPermissionAttribute : Attribute
+#endif
 {
 	// Internal state.
 	private SecurityPermissionFlag flags;
@@ -45,7 +47,7 @@ public sealed class SecurityPermissionAttribute : Attribute //: CodeAccessSecuri
 				// Nothing to do here.
 			}
 
-#if false
+#if __CSCC__
 	// Create a permission object that corresponds to this attribute.
 	public override IPermission CreatePermission()
 			{
@@ -88,7 +90,7 @@ public sealed class SecurityPermissionAttribute : Attribute //: CodeAccessSecuri
 				}
 			}
 
-#if false && !ECMA_COMPAT
+#if __CSCC__ && !ECMA_COMPAT
 
 	// Non-ECMA properties.
 	public bool Assertion
@@ -325,7 +327,5 @@ public sealed class SecurityPermissionAttribute : Attribute //: CodeAccessSecuri
 #endif // !ECMA_COMPAT
 
 }; // class SecurityPermissionAttribute
-
-//#endif // __CSCC__
 
 }; // namespace System.Security.Permissions

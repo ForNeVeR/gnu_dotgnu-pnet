@@ -24,7 +24,7 @@ namespace System.Security
 
 using System;
 
-public interface IPermission
+public interface IPermission : ISecurityEncodable
 {
 
 	// Copy this permission object.

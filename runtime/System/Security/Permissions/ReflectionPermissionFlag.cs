@@ -1,8 +1,8 @@
 /*
- * UnverifiableCodeAttribute.cs - Implementation of the
- *			"System.Security.UnverifiableCodeAttribute" class.
+ * ReflectionPermissionFlag.cs - Implementation of the
+ *			"System.Security.Permissions.ReflectionPermissionFlag" class.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,18 +19,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Security
+namespace System.Security.Permissions
 {
 
-[AttributeUsage(AttributeTargets.Module, AllowMultiple=true, Inherited=false)]
-public sealed class UnverifiableCodeAttribute : Attribute
+[Flags]
+public enum ReflectionPermissionFlag
 {
-	// Constructor.
-	public UnverifiableCodeAttribute()
-			{
-				// Nothing to do here.
-			}
 
-}; // class UnverifiableCodeAttribute
+	NoFlags         = 0x0000,
+	TypeInformation = 0x0001,
+	MemberAccess    = 0x0002,
+#if !ECMA_COMPAT
+	ReflectionEmit  = 0x0004,
+	AllFlags        = 0x0007
+#endif
 
-}; // namespace System.Security
+}; // enum ReflectionPermissionFlag
+
+}; // namespace System.Security.Permissions

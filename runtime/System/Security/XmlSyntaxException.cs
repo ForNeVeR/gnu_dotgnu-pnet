@@ -1,8 +1,8 @@
 /*
- * UnverifiableCodeAttribute.cs - Implementation of the
- *			"System.Security.UnverifiableCodeAttribute" class.
+ * XmlSyntaxException.cs - Implementation of the
+ *		"System.Security.XmlSyntaxException" class.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +22,27 @@
 namespace System.Security
 {
 
-[AttributeUsage(AttributeTargets.Module, AllowMultiple=true, Inherited=false)]
-public sealed class UnverifiableCodeAttribute : Attribute
-{
-	// Constructor.
-	public UnverifiableCodeAttribute()
-			{
-				// Nothing to do here.
-			}
+#if !ECMA_COMPAT
 
-}; // class UnverifiableCodeAttribute
+using System;
+
+public sealed class XmlSyntaxException : SystemException
+{
+	// Constructors.
+	public XmlSyntaxException()
+			: base(_("Exception_XmlSyntax")) {}
+	public XmlSyntaxException(String msg)
+			: base(msg) {}
+	public XmlSyntaxException(String msg, Exception inner)
+			: base(msg, inner) {}
+	public XmlSyntaxException(int lineNumber)
+			: base(String.Format(_("Exception_XmlSyntaxLine"), lineNumber)) {}
+	public XmlSyntaxException(int lineNumber, String message)
+			: base(String.Format(_("Exception_XmlSyntaxLineMsg"),
+								 lineNumber, message)) {}
+
+}; // class XmlSyntaxException
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Security

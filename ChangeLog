@@ -12,6 +12,36 @@
 	runtime/System/Globalization/DateTimeFormatInfo.cs: handle
 	different formatting characters for date/time format lists.
 
+	* resources/en_US/runtime/Arg.txt,
+	resources/en_US/runtime/Exception.txt,
+	resources/en_US/runtime/Invalid.txt,
+	resources/en_US/runtime/NotSupp.txt,
+	runtime/System/Security/AllowPartiallyTrustedCallersAttribute.cs,
+	runtime/System/Security/CodeAccessPermission.cs,
+	runtime/System/Security/IEvidenceFactory.cs,
+	runtime/System/Security/IPermission.cs,
+	runtime/System/Security/ISecurityEncodable.cs,
+	runtime/System/Security/ISecurityPolicyEncodable.cs,
+	runtime/System/Security/IStackWalk.cs,
+	runtime/System/Security/NamedPermissionSet.cs,
+	runtime/System/Security/PermissionSet.cs,
+	runtime/System/Security/PolicyLevelType.cs,
+	runtime/System/Security/SecurityElement.cs,
+	runtime/System/Security/SecurityManager.cs,
+	runtime/System/Security/SecurityZone.cs,
+	runtime/System/Security/SuppressUnmanagedCodeSecurityAttribute.cs,
+	runtime/System/Security/UnverifiableCodeAttribute.cs,
+	runtime/System/Security/XmlSyntaxException.cs,
+	runtime/System/Security/Permissions/CodeAccessSecurityAttribute.cs,
+	runtime/System/Security/Permissions/EnvironmentPermissionAttribute.cs,
+	runtime/System/Security/Permissions/FileIOPermissionAttribute.cs,
+	runtime/System/Security/Permissions/ReflectionPermissionAttribute.cs,
+	runtime/System/Security/Permissions/ReflectionPermissionFlag.cs,
+	runtime/System/Security/Permissions/SecurityAttribute.cs,
+	runtime/System/Security/Permissions/SecurityPermission.cs,
+	runtime/System/Security/Permissions/SecurityPermissionAttribute.cs:
+	add missing classes and definitions under "System.Security".
+
 2003-03-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/AppDomain.cs,

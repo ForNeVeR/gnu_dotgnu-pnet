@@ -1,9 +1,9 @@
 /*
- * UnverifiableCodeAttribute.cs - Implementation of the
- *			"System.Security.UnverifiableCodeAttribute" class.
+ * AllowPartiallyTrustedCallersAttribute.cs - Implementation of 
+ *			"System.Security.AllowPartiallyTrustedCallersAttribute" class.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
- *
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -22,15 +22,23 @@
 namespace System.Security
 {
 
-[AttributeUsage(AttributeTargets.Module, AllowMultiple=true, Inherited=false)]
-public sealed class UnverifiableCodeAttribute : Attribute
+using System;
+
+#if !ECMA_COMPAT
+
+[AttributeUsage(AttributeTargets.Assembly,
+				AllowMultiple=false, Inherited=false)]
+public sealed class AllowPartiallyTrustedCallersAttribute: Attribute
 {
+
 	// Constructor.
-	public UnverifiableCodeAttribute()
+	public AllowPartiallyTrustedCallersAttribute()
 			{
 				// Nothing to do here.
 			}
 
-}; // class UnverifiableCodeAttribute
+}; // class AllowPartiallyTrustedCallersAttribute
+
+#endif
 
 }; // namespace System.Security

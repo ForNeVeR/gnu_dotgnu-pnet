@@ -1,8 +1,8 @@
 /*
- * UnverifiableCodeAttribute.cs - Implementation of the
- *			"System.Security.UnverifiableCodeAttribute" class.
+ * IStackWalk.cs - Implementation of the
+ *		"System.Security.IStackWalk" interface.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +22,29 @@
 namespace System.Security
 {
 
-[AttributeUsage(AttributeTargets.Module, AllowMultiple=true, Inherited=false)]
-public sealed class UnverifiableCodeAttribute : Attribute
-{
-	// Constructor.
-	public UnverifiableCodeAttribute()
-			{
-				// Nothing to do here.
-			}
+using System;
 
-}; // class UnverifiableCodeAttribute
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+interface IStackWalk
+{
+
+	// Assert permissions for the caller.
+	void Assert();
+
+	// Throw an exception if the caller does not have
+	// the specified permissions.
+	void Demand();
+
+	// Deny permissions to the caller.
+	void Deny();
+
+	// Set the caller's permissions to only this object.
+	void PermitOnly();
+
+}; // interface IStackWalk
 
 }; // namespace System.Security

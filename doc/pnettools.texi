@@ -705,6 +705,10 @@ Link against all of the libraries that are necessary to use Gtk#.
 @cindex -gnome option (cscc)
 @item -gnome
 Link against all of the libraries that are necessary to use Gnome#.
+
+@cindex -winforms option (cscc)
+@item -winforms
+Link against all of the libraries that are necessary to use WinForms.
 @end table
 
 @c -----------------------------------------------------------------------

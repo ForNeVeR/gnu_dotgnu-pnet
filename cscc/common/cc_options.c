@@ -331,6 +331,16 @@ static void gnomeOption(char *arg)
 }
 
 /*
+ * Process a -winforms option.
+ */
+static void winformsOption(char *arg)
+{
+	lOption("System");
+	lOption("System.Drawing");
+	lOption("System.Windows.Forms");
+}
+
+/*
  * Process a -f option.
  */
 static void fOption(char *arg)
@@ -497,6 +507,8 @@ static CmdLineOpt const options[] = {
 			N_("-gtk"), N_("Link against the Gtk# libraries")},
 	{"-gnome",		0,	0,						0,	gnomeOption,
 			N_("-gnome"), N_("Link against the Gnome# libraries")},
+	{"-winforms",		0,	0,						0,	winformsOption,
+			N_("-winforms"), N_("Link against the System.Windows.Forms libraries")},
 	{"-f",			2,	0,						0,	fOption, 0, 0},
 	{"-m",			2,	0,						0,	mOption, 0, 0},
 	{"-Wl,",		4,	0,						0,	0,	0, 0},

@@ -12,6 +12,8 @@
 
 			<sources>
 				<includes name="**/*.cs"/>
+				<excludes name="System/Diagnostics/SymbolStore/*" 
+								if="${ECMA_COMPAT}"/>
 			</sources>
 
 			<resources>

@@ -1,4 +1,26 @@
 
+2003-02-07  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/System/Diagnostics/SymbolStore/ISymbolBinder.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolDocument.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolDocumentWriter.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolMethod.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolNamespace.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolReader.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolScope.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolVariable.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolWriter.cs,
+	runtime/System/Diagnostics/SymbolStore/SymAddressKind.cs,
+	runtime/System/Diagnostics/SymbolStore/SymbolToken.cs,
+	runtime/System/Diagnostics/SymbolStore/SymDocumentType.cs,
+	runtime/System/Diagnostics/SymbolStore/SymLanguageType.cs,
+	runtime/System/Diagnostics/SymbolStore/SymLanguageVendor.cs:
+	Add a few non-ECMA interfaces and stub out the rest of the 
+	System.Diagnostics.SymbolStore namespace.
+
+	* runtime/runtime.build: exclude the SymbolStore classes on
+	ECMA_COMPAT.
+	
 2003-02-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update version and news for the 0.5.2 release.

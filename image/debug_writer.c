@@ -26,13 +26,79 @@ extern	"C" {
 
 #define	IL_DEBUG_HEADER_SIZE	24
 
+typedef struct
+{
+	unsigned long	offset;
+	char			name[1];
+
+} ILDebugHashItem;
+
+static unsigned long Debug_ComputeFunc(const void *elem)
+{
+	return ILHashString(0, ((ILDebugHashItem *)elem)->name, -1);
+}
+
+static unsigned long Debug_KeyComputeFunc(const void *key)
+{
+	return ILHashString(0, (const char *)key, -1);
+}
+
+static int Debug_MatchFunc(const void *elem, const void *key)
+{
+	return !strcmp(((ILDebugHashItem *)elem)->name, (const char *)key);
+}
+
 unsigned long ILWriterDebugString(ILWriter *writer, const char *str)
 {
-	unsigned long offset = writer->debugStrings.offset;
+	unsigned long offset;
+	ILDebugHashItem *item;
+
+	/* Search the hash table for an identical string */
+	if(writer->debugHash)
+	{
+		item = ILHashFindType(writer->debugHash, str, ILDebugHashItem);
+		if(item)
+		{
+			return item->offset;
+		}
+	}
+
+	/* Add the string to the end of the "debugStrings" buffer */
+	offset = writer->debugStrings.offset;
 	if(!_ILWBufferListAdd(&(writer->debugStrings), str, strlen(str) + 1))
 	{
 		writer->outOfMemory = 1;
+		return offset;
 	}
+
+	/* Add the string to the hash table */
+	if(!(writer->debugHash))
+	{
+		writer->debugHash = ILHashCreate(0, Debug_ComputeFunc,
+										 Debug_KeyComputeFunc,
+										 Debug_MatchFunc, ILFree);
+		if(!(writer->debugHash))
+		{
+			writer->outOfMemory = 1;
+			return offset;
+		}
+	}
+	if((item = (ILDebugHashItem *)ILMalloc(sizeof(ILDebugHashItem) +
+										   strlen(str))) == 0)
+	{
+		writer->outOfMemory = 1;
+		return offset;
+	}
+	item->offset = offset;
+	strcpy(item->name, str);
+	if(!ILHashAdd(writer->debugHash, item))
+	{
+		ILFree(item);
+		writer->outOfMemory = 1;
+		return offset;
+	}
+
+	/* Return the string offset to the caller */
 	return offset;
 }
 

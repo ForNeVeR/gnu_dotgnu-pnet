@@ -116,6 +116,7 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 	writer->debugTokens = 0;
 	writer->numDebugTokens = 0;
 	writer->maxDebugTokens = 0;
+	writer->debugHash = 0;
 
 	/* Initialize buffer lists */
 	_ILWBufferListInit(&(writer->streamBuffer));
@@ -436,6 +437,10 @@ int ILWriterDestroy(ILWriter *writer)
 	if(writer->debugTokens)
 	{
 		ILFree(writer->debugTokens);
+	}
+	if(writer->debugHash)
+	{
+		ILHashDestroy(writer->debugHash);
 	}
 
 	/* Determine the return value */

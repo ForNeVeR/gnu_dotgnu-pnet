@@ -18,6 +18,9 @@
 	cscc/common/cc_main.c: output line number debug information
 	for class, field, and property declarations.
 
+	* image/debug_writer.c, image/image.h, image/writer.c: hash the
+	entries in the debug string table so as to eliminate duplicates.
+
 2002-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, include/il_config.h.in: detect some new library

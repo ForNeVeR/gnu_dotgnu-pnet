@@ -333,6 +333,7 @@ struct _tagILWriter
 	ILDebugToken   *debugTokens;
 	unsigned long	numDebugTokens;
 	unsigned long	maxDebugTokens;
+	ILHashTable	   *debugHash;
 
 	/* Fixup information */
 	ILMemPool		fixups;

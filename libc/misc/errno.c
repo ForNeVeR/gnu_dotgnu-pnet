@@ -19,11 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-int errno;
+int __thread_specific__ errno;
 
 int *
 __errno_location (void)
 {
-  /* This needs to be made thread-safe sometime in the future */
   return &errno;
 }

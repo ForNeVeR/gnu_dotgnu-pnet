@@ -11,6 +11,10 @@
 	libc/time/sleep.c, libc/time/time-defs.h, libc/time/time-glue.cs,
 	libc/time/usleep.c: implement CPU clock and sleep functions.
 
+	* libc/misc/errno.c, libc/pwd/setpwent.c, libc/time/gmtime.c:
+	add the "__thread_specific__" modifier to variables like "errno"
+	that need to be thread-specific.
+
 2004-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.2" release.

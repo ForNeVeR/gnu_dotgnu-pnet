@@ -73,8 +73,43 @@ namespace System.Windows.Forms
 
 		public void Increment(int value)
 			{
+				Redraw(value);
 				Value=this.value+value;
-				Invalidate();
+			}
+
+		// Redraw the area of the progress bar that has changed. "value" is the new value.
+		// This needs to be changed if the drawing code is changed.
+		private void Redraw(int value)
+			{
+				// Starting position, width and height.
+				int width = ClientSize.Width - 4;
+				int height = ClientSize.Height - 4;
+				int y = 2;
+				int x = 2;
+				int steps = range/step;
+
+				int xSpacing=2;
+				int ySpacing=2;
+				width -= (steps-1) * xSpacing;
+				int blockWidth = width / steps;
+				int blockHeight = height - ySpacing - 1;
+				
+				// Get the x positions of the two values.
+				int x1 = x;
+				int v = (int)Math.Ceiling((double)value/step);
+				x += (blockWidth+xSpacing) * v;
+				v = (int)Math.Ceiling((double)this.value/step);
+				x1 += (blockWidth+xSpacing) * v;
+
+				// Invalidate the area.
+				if (x < x1)
+				{
+					Invalidate(new Rectangle(x, y, x1-x, blockHeight));
+				}
+				else if (x > x1)
+				{
+					Invalidate(new Rectangle(x1, y, x-x1, blockHeight));
+				}
 			}
 
 		public void PerformStep()
@@ -162,8 +197,8 @@ namespace System.Windows.Forms
 					{
 						throw new ArgumentOutOfRangeException("Value");
 					}
+					Redraw(value);
 					this.value=value;
-					Invalidate();
 				}
 
 	 		}

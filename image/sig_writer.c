@@ -366,14 +366,12 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				unsigned long rank;
 				unsigned long sizes;
 				int needSizes;
-				int needLowBounds;
 				ILType *elemType;
 
 				/* Determine the array rank, number of explicit sizes,
 				   and the type for the inner elements */
 				rank = 0;
 				needSizes = 0;
-				needLowBounds = 0;
 				elemType = type;
 				while(ILType_IsComplex(elemType) &&
 				      elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
@@ -383,10 +381,6 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 					   elemType->un.array.size != 0)
 					{
 						needSizes = 1;
-					}
-					if(elemType->un.array.lowBound != 0)
-					{
-						needLowBounds = 1;
 					}
 					elemType = elemType->un.array.elemType;
 				}
@@ -398,10 +392,6 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 					   elemType->un.array.size != 0)
 					{
 						needSizes = 1;
-					}
-					if(elemType->un.array.lowBound != 0)
-					{
-						needLowBounds = 1;
 					}
 					elemType = elemType->un.array.elemType;
 				}
@@ -442,24 +432,21 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 						elemType = elemType->un.array.elemType;
 					}
 				}
-				if(needLowBounds)
+				if(!WriteValue(buffer, rank))
 				{
-					if(!WriteValue(buffer, sizes))
+					return 0;
+				}
+				elemType = type;
+				while(ILType_IsComplex(elemType) &&
+				      (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
+					   elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+				{
+					if(!WriteIntValue(buffer,
+									  elemType->un.array.lowBound))
 					{
 						return 0;
 					}
-					elemType = type;
-					while(ILType_IsComplex(elemType) &&
-					      (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
-						   elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
-					{
-						if(!WriteIntValue(buffer,
-										  elemType->un.array.lowBound))
-						{
-							return 0;
-						}
-						elemType = elemType->un.array.elemType;
-					}
+					elemType = elemType->un.array.elemType;
 				}
 			}
 			break;

@@ -15,6 +15,9 @@
 	of "static", "virtual", "abstract", and "override" when processing
 	method-like constructs.
 
+	* cscc/cs_modifiers.c: only allow the "sealed" modifier in
+	combination with the "override" modifier.
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_library.c,

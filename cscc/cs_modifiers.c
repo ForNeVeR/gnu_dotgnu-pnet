@@ -407,6 +407,11 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `static' and `override'");
 		}
+		if((modifiers & CS_MODIFIER_SEALED) != 0)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `static' and `sealed'");
+		}
 	}
 	else if((modifiers & CS_MODIFIER_ABSTRACT) != 0)
 	{
@@ -425,6 +430,11 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `abstract' and `virtual'");
 		}
+		if((modifiers & CS_MODIFIER_SEALED) != 0)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `abstract' and `sealed'");
+		}
 	}
 	else if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 	{
@@ -434,6 +444,11 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `virtual' and `override'");
 		}
+		if((modifiers & CS_MODIFIER_SEALED) != 0)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `virtual' and `sealed'");
+		}
 	}
 	else if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 	{
@@ -442,6 +457,18 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 		{
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `override' and `new'");
+		}
+		if((modifiers & CS_MODIFIER_SEALED) != 0)
+		{
+			attrs |= IL_META_METHODDEF_FINAL;
+		}
+	}
+	else
+	{
+		if((modifiers & CS_MODIFIER_SEALED) != 0)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use `sealed' without `override'");
 		}
 	}
 
@@ -463,10 +490,6 @@ ILUInt32 CSModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers)
 	attrs |= ValidateCalling(node, modifiers);
 
 	/* Process the other method modifiers */
-	if((modifiers & CS_MODIFIER_SEALED) != 0)
-	{
-		attrs |= IL_META_METHODDEF_FINAL;
-	}
 	if((modifiers & CS_MODIFIER_NEW) != 0)
 	{
 		attrs |= CS_SPECIALATTR_NEW;
@@ -498,11 +521,7 @@ ILUInt32 CSModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers)
 	attrs |= ValidateCalling(node, modifiers);
 
 	/* Process the other property modifiers */
-	if((modifiers & CS_MODIFIER_SEALED) != 0)
-	{
-		attrs |= IL_META_METHODDEF_FINAL;
-	}
-	else if((modifiers & CS_MODIFIER_NEW) != 0)
+	if((modifiers & CS_MODIFIER_NEW) != 0)
 	{
 		attrs |= CS_SPECIALATTR_NEW;
 	}
@@ -532,10 +551,6 @@ ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
 	attrs |= ValidateCalling(node, modifiers);
 
 	/* Process the other property modifiers */
-	if((modifiers & CS_MODIFIER_SEALED) != 0)
-	{
-		attrs |= IL_META_METHODDEF_FINAL;
-	}
 	if((modifiers & CS_MODIFIER_NEW) != 0)
 	{
 		attrs |= CS_SPECIALATTR_NEW;

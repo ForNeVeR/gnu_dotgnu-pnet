@@ -1268,7 +1268,8 @@ int CSItemIsCandidate(ILGenInfo *info, ILProgramItem *item,
 		else if(paramMod == ILParamMod_empty)
 		{
 			/* Match anything that can coerce to the parameter type */
-			if(!ILCanCoerce(info, args[argNum].type, paramType))
+			if (!ILCanCoerceNode(info, args[argNum].node, 
+									args[argNum].type, paramType))
 			{
 				return 0;
 			}

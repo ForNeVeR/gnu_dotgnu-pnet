@@ -2559,6 +2559,15 @@ ILNode_EvalConst(ILNode_ToBool)
 }
 
 /*
+ * Evaluate the constant value of an Argument.
+ */
+ILNode_EvalConst(ILNode_Argument)
+{
+	/*  Evaluate the expression  */
+	return ILNode_EvalConst(node->expression, info, value);
+}
+
+/*
  * Determine if an overflow or pedantic context ends in a return statement.
  */
 ILNode_EndsInReturnImpl(ILNode_Overflow),

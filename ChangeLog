@@ -1,4 +1,10 @@
 
+2002-10-26  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* codegen/cg_misc.tc, cscc/csharp/cs_invoke.tc: Use argument expression
+	node to allow coercion of constants in functions.  (e.g. 0 will match
+	ulong when determining candidate functions.)
+
 2002-10-25  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* cscc/common/cc_main.c:  Change error parsing to accomodate bison 1.75.

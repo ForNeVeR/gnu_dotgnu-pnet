@@ -454,7 +454,10 @@ ILNode_GenDiscard(ILNode_If)
 		/* Generate the full case of the "if" */
 		ILNode_GenElse(node->expr, info, &label1);
 		ILNode_GenDiscard(node->thenClause, info);
-		ILGenJump(info, IL_OP_BR, &label2);
+		if(!ILNodeEndsInReturn(node->thenClause))
+		{
+			ILGenJump(info, IL_OP_BR, &label2);
+		}
 		ILGenLabel(info, &label1);
 		ILNode_GenDiscard(node->elseClause, info);
 		ILGenLabel(info, &label2);

@@ -90,7 +90,10 @@ JavaGenDiscard(ILNode_If)
 		/* Generate the full case of the "if" */
 		JavaGenElse(node->expr, info, &label1);
 		JavaGenDiscard(node->thenClause, info);
-		JavaGenJump(info, JAVA_OP_GOTO, &label2);
+		if(!ILNodeEndsInReturn(node->thenClause))
+		{
+			JavaGenJump(info, JAVA_OP_GOTO, &label2);
+		}
 		JavaGenLabel(info, &label1);
 		JavaGenDiscard(node->elseClause, info);
 		JavaGenLabel(info, &label2);

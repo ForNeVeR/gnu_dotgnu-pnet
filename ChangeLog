@@ -1,3 +1,7 @@
+2004-07-20  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/ErrorProvider.cs: fix build error. Move #endif after
+	} of class 
 
 2004-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 

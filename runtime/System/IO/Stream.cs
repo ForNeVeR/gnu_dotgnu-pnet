@@ -42,41 +42,241 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 			#endif
 			}
 
+	// Asynchronous read/write control class.
+	private sealed class AsyncControl : IAsyncResult
+	{
+		// Internal state.
+		private ManualResetEvent waitHandle;
+		private bool completedSynchronously;
+		private bool completed;
+		private bool reading;
+		private AsyncCallback callback;
+		private Object state;
+		private Stream stream;
+		private byte[] buffer;
+		private int offset;
+		private int count;
+		private int result;
+		private Exception exception;
+
+		// Constructor.
+		public AsyncControl(AsyncCallback callback, Object state,
+							Stream stream, byte[] buffer, int offset,
+							int count, bool reading)
+				{
+					this.waitHandle = new ManualResetEvent(false);
+					this.completedSynchronously = false;
+					this.completed = false;
+					this.reading = reading;
+					this.callback = callback;
+					this.state = state;
+					this.stream = stream;
+					this.buffer = buffer;
+					this.offset = offset;
+					this.count = count;
+					this.result = -1;
+					this.exception = null;
+				}
+
+		// Run the operation thread.
+		private void Run()
+				{
+					try
+					{
+						if(reading)
+						{
+							result = stream.Read(buffer, offset, count);
+						}
+						else
+						{
+							stream.Write(buffer, offset, count);
+						}
+					}
+					catch(Exception e)
+					{
+						// Save the exception to be thrown in EndRead/EndWrite.
+						exception = e;
+					}
+					completed = true;
+					if(callback != null)
+					{
+						callback(this);
+					}
+					waitHandle.Set();
+				}
+
+		// Start the async thread, or perform the operation synchronously.
+		public void Start()
+				{
+					if(Thread.CanStartThreads())
+					{
+						Thread thread = new Thread(new ThreadStart(Run));
+						thread.IsBackground = true;
+						thread.Start();
+					}
+					else
+					{
+						completedSynchronously = true;
+						Run();
+					}
+				}
+
+		// End an asynchronous read operation.
+		public int EndRead(Stream check)
+				{
+					if(stream != check || !reading)
+					{
+						throw new ArgumentException(_("Arg_InvalidAsync"));
+					}
+					WaitHandle handle = waitHandle;
+					if(handle != null)
+					{
+						if(!completed)
+						{
+							handle.WaitOne();
+						}
+						((IDisposable)handle).Dispose();
+					}
+					waitHandle = null;
+					if(exception != null)
+					{
+						throw exception;
+					}
+					else
+					{
+						return result;
+					}
+				}
+
+		// End an asynchronous write operation.
+		public void EndWrite(Stream check)
+				{
+					if(stream != check || reading)
+					{
+						throw new ArgumentException(_("Arg_InvalidAsync"));
+					}
+					WaitHandle handle = waitHandle;
+					if(handle != null)
+					{
+						if(!completed)
+						{
+							handle.WaitOne();
+						}
+						((IDisposable)handle).Dispose();
+					}
+					waitHandle = null;
+					if(exception != null)
+					{
+						throw exception;
+					}
+				}
+
+		// Implement the IAsyncResult interface.
+		public Object AsyncState
+				{
+					get
+					{
+						return state;
+					}
+				}
+		public WaitHandle AsyncWaitHandle
+				{
+					get
+					{
+						return waitHandle;
+					}
+				}
+		public bool CompletedSynchronously
+				{
+					get
+					{
+						return completedSynchronously;
+					}
+				}
+		public bool IsCompleted
+				{
+					get
+					{
+						return completed;
+					}
+				}
+
+	}; // class AsyncControl
+
 	// Begin an asynchronous read operation.
-	[TODO]
 	public virtual IAsyncResult BeginRead
 				(byte[] buffer, int offset, int count,
 				 AsyncCallback callback, Object state)
 			{
+				// Validate the parameters and the stream.
 				ValidateBuffer(buffer, offset, count);
-				// TODO
-				return null;
+				if(!CanRead)
+				{
+					throw new NotSupportedException(_("IO_NotSupp_Read"));
+				}
+
+				// Create the result object.
+				AsyncControl async = new AsyncControl
+					(callback, state, this, buffer, offset, count, true);
+
+				// Start the background read.
+				async.Start();
+				return async;
 			}
 
 	// Wait for an asynchronous read operation to end.
-	[TODO]
 	public virtual int EndRead(IAsyncResult asyncResult)
 			{
-				// TODO
-				return 0;
+				if(asyncResult == null)
+				{
+					throw new ArgumentNullException("asyncResult");
+				}
+				else if(!(asyncResult is AsyncControl))
+				{
+					throw new ArgumentException(_("Arg_InvalidAsync"));
+				}
+				else
+				{
+					return ((AsyncControl)asyncResult).EndRead(this);
+				}
 			}
 
 	// Begin an asychronous write operation.
-	[TODO]
 	public virtual IAsyncResult BeginWrite
 				(byte[] buffer, int offset, int count,
 				 AsyncCallback callback, Object state)
 			{
+				// Validate the parameters and the stream.
 				ValidateBuffer(buffer, offset, count);
-				// TODO
-				return null;
+				if(!CanWrite)
+				{
+					throw new NotSupportedException(_("IO_NotSupp_Write"));
+				}
+
+				// Create the result object.
+				AsyncControl async = new AsyncControl
+					(callback, state, this, buffer, offset, count, false);
+
+				// Start the background write.
+				async.Start();
+				return async;
 			}
 
 	// Wait for an asynchronous write operation to end.
-	[TODO]
 	public virtual void EndWrite(IAsyncResult asyncResult)
 			{
-				// TODO
+				if(asyncResult == null)
+				{
+					throw new ArgumentNullException("asyncResult");
+				}
+				else if(!(asyncResult is AsyncControl))
+				{
+					throw new ArgumentException(_("Arg_InvalidAsync"));
+				}
+				else
+				{
+					((AsyncControl)asyncResult).EndWrite(this);
+				}
 			}
 
 	// Close the stream.
@@ -88,11 +288,9 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 			}
 
 	// Create a wait handle for asynchronous operations.
-	[TODO]
 	protected virtual WaitHandle CreateWaitHandle()
 			{
-				// TODO
-				return null;
+				return new ManualResetEvent(false);
 			}
 
 #if !ECMA_COMPAT

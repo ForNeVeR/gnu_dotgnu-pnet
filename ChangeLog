@@ -20,6 +20,11 @@
 	tests/runtime/System/Threading/TestWaitHandle.cs: disable
 	wait handle tests in ECMA_COMPAT mode.
 
+	* resources/en_US/runtime/Arg.txt, runtime/System/IO/FileStream.cs,
+	runtime/System/IO/Stream.cs: implement asynchronous methods for
+	"Stream" and "FileStream"; protect "FileStream" operations with a
+	lock to prevent invalid states in threaded applications.
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

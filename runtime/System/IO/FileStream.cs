@@ -150,7 +150,7 @@ public class FileStream : Stream
 				// Initialize the object state.
 				this.access = access;
 				this.ownsHandle = true;
-				this.isAsync = (useAsync && FileMethods.HasAsync());
+				this.isAsync = useAsync;
 				this.bufferSize = bufferSize;
 				this.buffer = new byte [bufferSize];
 				this.bufferPosn = 0;
@@ -208,7 +208,7 @@ public class FileStream : Stream
 				this.handle = handle;
 				this.access = access;
 				this.ownsHandle = ownsHandle;
-				this.isAsync = (isAsync && FileMethods.HasAsync());
+				this.isAsync = isAsync;
 				this.bufferSize = bufferSize;
 				this.buffer = new byte [bufferSize];
 				this.bufferPosn = 0;
@@ -235,41 +235,26 @@ public class FileStream : Stream
 				// this destructor because ECMA requires it.
 			}
 
-	// Begin an asynchronous read operation.
-	[TODO]
+	// Asynchronous operations - let the base class do the work.
 	public override IAsyncResult BeginRead
 				(byte[] buffer, int offset, int count,
 				 AsyncCallback callback, Object state)
 			{
-				ValidateBuffer(buffer, offset, count);
-				// TODO
-				return null;
+				return base.BeginRead(buffer, offset, count, callback, state);
 			}
-
-	// Wait for an asynchronous read operation to end.
-	[TODO]
 	public override int EndRead(IAsyncResult asyncResult)
 			{
-				// TODO
-				return 0;
+				return base.EndRead(asyncResult);
 			}
-
-	// Begin an asychronous write operation.
-	[TODO]
 	public override IAsyncResult BeginWrite
 				(byte[] buffer, int offset, int count,
 				 AsyncCallback callback, Object state)
 			{
-				ValidateBuffer(buffer, offset, count);
-				// TODO
-				return null;
+				return base.BeginWrite(buffer, offset, count, callback, state);
 			}
-
-	// Wait for an asynchronous write operation to end.
-	[TODO]
 	public override void EndWrite(IAsyncResult asyncResult)
 			{
-				// TODO
+				base.EndWrite(asyncResult);
 			}
 
 	// Flush read data from the buffer.
@@ -367,14 +352,6 @@ public class FileStream : Stream
 			}
 #endif	// !ECMA_COMPAT
 
-	// Create a wait handle for asynchronous operations.
-	[TODO]
-	protected override WaitHandle CreateWaitHandle()
-			{
-				// TODO
-				return null;
-			}
-
 #if !ECMA_COMPAT
 	// Dispose of this stream.
 	protected override void Dispose(bool disposing)
@@ -400,25 +377,30 @@ public class FileStream : Stream
 	// Flush the pending contents in this stream.
 	public override void Flush()
 			{
-				if(handle != invalidHandle)
+				lock(this)
 				{
-					if(bufferOwnedByWrite)
+					if(handle != invalidHandle)
 					{
-						FlushWriteBuffer();
-						if(!FileMethods.FlushWrite(handle))
+						if(bufferOwnedByWrite)
 						{
-							throw new IOException
-								(FileMethods.GetErrno(), _("IO_FlushFailed"));
+							FlushWriteBuffer();
+							if(!FileMethods.FlushWrite(handle))
+							{
+								throw new IOException
+									(FileMethods.GetErrno(),
+									_("IO_FlushFailed"));
+							}
+						}
+						else
+						{
+							FlushReadBuffer();
 						}
 					}
 					else
 					{
-						FlushReadBuffer();
+						throw new ObjectDisposedException
+							(_("IO_StreamClosed"));
 					}
-				}
-				else
-				{
-					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
 			}
 
@@ -430,50 +412,57 @@ public class FileStream : Stream
 
 				// Validate the parameters and setup the object for reading.
 				ValidateBuffer(buffer, offset, count);
-				SetupRead();
 
-				// Read data into the caller's buffer.
-				while(count > 0)
+				// Lock down the file stream while we do this.
+				lock(this)
 				{
-					// How much data do we have available in the buffer?
-					tempLen = bufferLen - bufferPosn;
-					if(tempLen <= 0)
+					// Set up for the read operation.
+					SetupRead();
+
+					// Read data into the caller's buffer.
+					while(count > 0)
 					{
-						bufferPosn = 0;
-						bufferLen = FileMethods.Read
-							(handle, this.buffer, 0, bufferSize);
-						if(bufferLen < 0)
+						// How much data do we have available in the buffer?
+						tempLen = bufferLen - bufferPosn;
+						if(tempLen <= 0)
 						{
-							bufferLen = 0;
-							throw new IOException
-								(FileMethods.GetErrno(), _("IO_ReadFailed"));
+							bufferPosn = 0;
+							bufferLen = FileMethods.Read
+								(handle, this.buffer, 0, bufferSize);
+							if(bufferLen < 0)
+							{
+								bufferLen = 0;
+								throw new IOException
+									(FileMethods.GetErrno(),
+									 _("IO_ReadFailed"));
+							}
+							else if(bufferLen == 0)
+							{
+								break;
+							}
+							else
+							{
+								tempLen = bufferLen;
+							}
 						}
-						else if(bufferLen == 0)
+
+						// Don't read more than the caller wants.
+						if(tempLen > count)
 						{
-							break;
+							tempLen = count;
 						}
-						else
-						{
-							tempLen = bufferLen;
-						}
+
+						// Copy stream data to the caller's buffer.
+						Array.Copy(this.buffer, bufferPosn,
+								   buffer, offset, tempLen);
+
+						// Advance to the next buffer positions.
+						readLen += tempLen;
+						offset += tempLen;
+						count -= tempLen;
+						bufferPosn += tempLen;
+						position += tempLen;
 					}
-
-					// Don't read more than the caller wants.
-					if(tempLen > count)
-					{
-						tempLen = count;
-					}
-
-					// Copy stream data to the caller's buffer.
-					Array.Copy(this.buffer, bufferPosn,
-							   buffer, offset, tempLen);
-
-					// Advance to the next buffer positions.
-					readLen += tempLen;
-					offset += tempLen;
-					count -= tempLen;
-					bufferPosn += tempLen;
-					position += tempLen;
 				}
 
 				// Return the number of bytes that were read to the caller.
@@ -483,30 +472,35 @@ public class FileStream : Stream
 	// Read a single byte from this stream.
 	public override int ReadByte()
 			{
-				// Setup the object for reading.
-				SetupRead();
-
-				// Read more data into the internal buffer if necessary.
-				if(bufferPosn >= bufferLen)
+				// Lock down the file stream while we do this.
+				lock(this)
 				{
-					bufferPosn = 0;
-					bufferLen = FileMethods.Read(handle, buffer, 0, bufferSize);
-					if(bufferLen < 0)
-					{
-						bufferLen = 0;
-						throw new IOException
-							(FileMethods.GetErrno(), _("IO_ReadFailed"));
-					}
-					else if(bufferLen == 0)
-					{
-						// We've reached EOF.
-						return -1;
-					}
-				}
+					// Setup the object for reading.
+					SetupRead();
 
-				// Extract the next byte from the buffer.
-				++position;
-				return buffer[bufferPosn++];
+					// Read more data into the internal buffer if necessary.
+					if(bufferPosn >= bufferLen)
+					{
+						bufferPosn = 0;
+						bufferLen = FileMethods.Read
+							(handle, buffer, 0, bufferSize);
+						if(bufferLen < 0)
+						{
+							bufferLen = 0;
+							throw new IOException
+								(FileMethods.GetErrno(), _("IO_ReadFailed"));
+						}
+						else if(bufferLen == 0)
+						{
+							// We've reached EOF.
+							return -1;
+						}
+					}
+
+					// Extract the next byte from the buffer.
+					++position;
+					return buffer[bufferPosn++];
+				}
 			}
 
 	// Seek to a new position within this stream.
@@ -520,74 +514,82 @@ public class FileStream : Stream
 					throw new NotSupportedException(_("IO_NotSupp_Seek"));
 				}
 
-				// Bail out if the handle is invalid.
-				if(handle == invalidHandle)
+				// Lock down the file stream while we do this.
+				lock(this)
 				{
-					throw new ObjectDisposedException(_("IO_StreamClosed"));
-				}
+					// Bail out if the handle is invalid.
+					if(handle == invalidHandle)
+					{
+						throw new ObjectDisposedException
+							(_("IO_StreamClosed"));
+					}
 
-				// Don't do anything if the position won't be moving.
-				if(origin == SeekOrigin.Begin && offset == position)
-				{
-					return offset;
-				}
-				else if(origin == SeekOrigin.Current && offset == 0)
-				{
+					// Don't do anything if the position won't be moving.
+					if(origin == SeekOrigin.Begin && offset == position)
+					{
+						return offset;
+					}
+					else if(origin == SeekOrigin.Current && offset == 0)
+					{
+						return position;
+					}
+
+					// The behaviour depends upon the read/write mode.
+					if(bufferOwnedByWrite)
+					{
+						// Flush the write buffer and then seek.
+						FlushWriteBuffer();
+						newPosn = FileMethods.Seek(handle, offset, origin);
+						if(newPosn == -1)
+						{
+							throw new EndOfStreamException
+								(_("IO_EndOfStream"));
+						}
+						position = newPosn;
+					}
+					else
+					{
+						// Determine if the seek is to somewhere inside
+						// the current read buffer bounds.
+						if(origin == SeekOrigin.Begin)
+						{
+							newPosn = position - bufferPosn;
+							if(offset >= newPosn && offset <
+									(newPosn + bufferLen))
+							{
+								bufferPosn = (int)(offset - newPosn);
+								position = newPosn;
+								return position;
+							}
+						}
+						else if(origin == SeekOrigin.Current)
+						{
+							newPosn = position + offset;
+							if(newPosn >= (position - bufferPosn) &&
+							   newPosn < (position - bufferPosn + bufferLen))
+							{
+								bufferPosn =
+									(int)(newPosn - (position - bufferPosn));
+								position = newPosn;
+								return position;
+							}
+						}
+
+						// Abandon the read buffer.
+						bufferPosn = 0;
+						bufferLen = 0;
+
+						// Seek to the new position.
+						newPosn = FileMethods.Seek(handle, offset, origin);
+						if(newPosn == -1)
+						{
+							throw new EndOfStreamException
+								(_("IO_EndOfStream"));
+						}
+						position = newPosn;
+					}
 					return position;
 				}
-
-				// The behaviour depends upon the read/write mode.
-				if(bufferOwnedByWrite)
-				{
-					// Flush the write buffer and then seek.
-					FlushWriteBuffer();
-					newPosn = FileMethods.Seek(handle, offset, origin);
-					if(newPosn == -1)
-					{
-						throw new EndOfStreamException(_("IO_EndOfStream"));
-					}
-					position = newPosn;
-				}
-				else
-				{
-					// Determine if the seek is to somewhere inside
-					// the current read buffer bounds.
-					if(origin == SeekOrigin.Begin)
-					{
-						newPosn = position - bufferPosn;
-						if(offset >= newPosn && offset < (newPosn + bufferLen))
-						{
-							bufferPosn = (int)(offset - newPosn);
-							position = newPosn;
-							return position;
-						}
-					}
-					else if(origin == SeekOrigin.Current)
-					{
-						newPosn = position + offset;
-						if(newPosn >= (position - bufferPosn) &&
-						   newPosn < (position - bufferPosn + bufferLen))
-						{
-							bufferPosn =
-								(int)(newPosn - (position - bufferPosn));
-							position = newPosn;
-							return position;
-						}
-					}
-
-					// Abandon the read buffer.
-					bufferPosn = 0;
-					bufferLen = 0;
-
-					// Seek to the new position.
-					newPosn = FileMethods.Seek(handle, offset, origin);
-					if(newPosn == -1)
-					{
-						throw new EndOfStreamException(_("IO_EndOfStream"));
-					}
-					position = newPosn;
-				}
-				return position;
 			}
 
 	// Set the length of this stream.
@@ -603,13 +605,19 @@ public class FileStream : Stream
 				{
 					throw new NotSupportedException(_("IO_NotSupp_Seek"));
 				}
-				SetupWrite();
 
-				// Call the underlying platform's "SetLength" method.
-				if(!FileMethods.SetLength(handle, value))
+				// Lock down the file stream while we do this.
+				lock(this)
 				{
-					throw new IOException
-						(FileMethods.GetErrno(), _("IO_SetLengthFailed"));
+					// Setup this object for writing.
+					SetupWrite();
+
+					// Call the underlying platform's "SetLength" method.
+					if(!FileMethods.SetLength(handle, value))
+					{
+						throw new IOException
+							(FileMethods.GetErrno(), _("IO_SetLengthFailed"));
+					}
 				}
 			}
 
@@ -620,16 +628,89 @@ public class FileStream : Stream
 
 				// Validate the parameters and setup the object for writing.
 				ValidateBuffer(buffer, offset, count);
-				SetupWrite();
 
-				// Write data to the file stream.
-				while(count > 0)
+				// Lock down the file stream while we do this.
+				lock(this)
 				{
-					// Determine how many bytes we can write to the buffer.
-					tempLen = bufferSize - bufferPosn;
-					if(tempLen <= 0)
+					// Setup this object for writing.
+					SetupWrite();
+
+					// Write data to the file stream.
+					while(count > 0)
 					{
-						// Flush the current buffer contents.
+						// Determine how many bytes we can write to the buffer.
+						tempLen = bufferSize - bufferPosn;
+						if(tempLen <= 0)
+						{
+							// Flush the current buffer contents.
+							if(!FileMethods.Write
+									(handle, this.buffer, 0, bufferPosn))
+							{
+								throw new IOException
+									(FileMethods.GetErrno(),
+									 _("IO_WriteFailed"));
+							}
+							bufferPosn = 0;
+							tempLen = bufferSize;
+						}
+						if(tempLen > count)
+						{
+							tempLen = count;
+						}
+
+						// Can we short-cut the internal buffer?
+						if(bufferPosn == 0 && tempLen == bufferSize)
+						{
+							// Yes: write the data directly to the file.
+							if(!FileMethods.Write
+									(handle, buffer, offset, tempLen))
+							{
+								throw new IOException
+									(FileMethods.GetErrno(),
+									 _("IO_WriteFailed"));
+							}
+						}
+						else
+						{
+							// No: copy the data to the write buffer first.
+							Array.Copy(buffer, offset, this.buffer,
+									   bufferPosn, tempLen);
+							bufferPosn += tempLen;
+						}
+
+						// Advance the buffer and stream positions.
+						position += tempLen;
+						offset += tempLen;
+						count -= tempLen;
+					}
+
+					// If the buffer is full, then do a speculative flush now,
+					// rather than waiting for the next call to this method.
+					if(bufferPosn >= bufferSize)
+					{
+						if(!FileMethods.Write
+							(handle, this.buffer, 0, bufferPosn))
+						{
+							throw new IOException
+								(FileMethods.GetErrno(), _("IO_WriteFailed"));
+						}
+						bufferPosn = 0;
+					}
+				}
+			}
+
+	// Write a single byte to this stream.
+	public override void WriteByte(byte value)
+			{
+				// Lock down the file stream while we do this.
+				lock(this)
+				{
+					// Setup the object for writing.
+					SetupWrite();
+
+					// Flush the current buffer if it is full.
+					if(bufferPosn >= bufferSize)
+					{
 						if(!FileMethods.Write
 								(handle, this.buffer, 0, bufferPosn))
 						{
@@ -637,70 +718,12 @@ public class FileStream : Stream
 								(FileMethods.GetErrno(), _("IO_WriteFailed"));
 						}
 						bufferPosn = 0;
-						tempLen = bufferSize;
-					}
-					if(tempLen > count)
-					{
-						tempLen = count;
 					}
 
-					// Can we short-cut the internal buffer?
-					if(bufferPosn == 0 && tempLen == bufferSize)
-					{
-						// Yes: write the data directly to the platform file.
-						if(!FileMethods.Write(handle, buffer, offset, tempLen))
-						{
-							throw new IOException
-								(FileMethods.GetErrno(), _("IO_WriteFailed"));
-						}
-					}
-					else
-					{
-						// No: copy the data to the write buffer first.
-						Array.Copy(buffer, offset, this.buffer,
-								   bufferPosn, tempLen);
-						bufferPosn += tempLen;
-					}
-
-					// Advance the buffer and stream positions.
-					position += tempLen;
-					offset += tempLen;
-					count -= tempLen;
+					// Write the byte into the buffer and advance the posn.
+					buffer[bufferPosn++] = value;
+					++position;
 				}
-
-				// If the buffer is full, then do a speculative flush now,
-				// rather than waiting for the next call to this method.
-				if(bufferPosn >= bufferSize)
-				{
-					if(!FileMethods.Write(handle, this.buffer, 0, bufferPosn))
-					{
-						throw new IOException
-							(FileMethods.GetErrno(), _("IO_WriteFailed"));
-					}
-					bufferPosn = 0;
-				}
-			}
-
-	// Write a single byte to this stream.
-	public override void WriteByte(byte value)
-			{
-				// Setup the object for writing.
-				SetupWrite();
-
-				// Flush the current buffer if it is full.
-				if(bufferPosn >= bufferSize)
-				{
-					if(!FileMethods.Write(handle, this.buffer, 0, bufferPosn))
-					{
-						throw new IOException
-							(FileMethods.GetErrno(), _("IO_WriteFailed"));
-					}
-					bufferPosn = 0;
-				}
-
-				// Write the byte into the buffer and advance the file posn.
-				buffer[bufferPosn++] = value;
-				++position;
 			}
 
 	// Determine if it is possible to read from this stream.
@@ -740,44 +763,51 @@ public class FileStream : Stream
 					{
 						throw new NotSupportedException (_("IO_NotSupp_Seek"));
 					}
-					if(handle == invalidHandle)
-					{
-						// ECMA says this should be IOException even though
-						// everywhere else uses ObjectDisposedException.
-						throw new IOException
-							(FileMethods.GetErrno(), _("IO_StreamClosed"));
-					}
 
-					// Flush the write buffer, because it may
-					// affect the length of the stream.
-					if(bufferOwnedByWrite)
+					// Lock down the file stream while we do this.
+					lock(this)
 					{
-						FlushWriteBuffer();
-					}
+						if(handle == invalidHandle)
+						{
+							// ECMA says this should be IOException even though
+							// everywhere else uses ObjectDisposedException.
+							throw new IOException
+								(FileMethods.GetErrno(), _("IO_StreamClosed"));
+						}
 
-					// Seek to the end to get the stream length.
-					long posn = FileMethods.Seek(handle, 0, SeekOrigin.End);
+						// Flush the write buffer, because it may
+						// affect the length of the stream.
+						if(bufferOwnedByWrite)
+						{
+							FlushWriteBuffer();
+						}
 
-					// Seek back to where we used to be.
-					if(bufferOwnedByWrite)
-					{
-						FileMethods.Seek
-							(handle, position - bufferPosn, SeekOrigin.Begin);
-					}
-					else
-					{
-						FileMethods.Seek
-							(handle, position - bufferPosn + bufferLen,
-							 SeekOrigin.Begin);
-					}
+						// Seek to the end to get the stream length.
+						long posn = FileMethods.Seek
+							(handle, 0, SeekOrigin.End);
 
-					// Decode the result.
-					if(posn == -1)
-					{
-						throw new IOException
-							(FileMethods.GetErrno(), _("IO_SeekFailed"));
+						// Seek back to where we used to be.
+						if(bufferOwnedByWrite)
+						{
+							FileMethods.Seek
+								(handle, position - bufferPosn,
+								 SeekOrigin.Begin);
+						}
+						else
+						{
+							FileMethods.Seek
+								(handle, position - bufferPosn + bufferLen,
+								 SeekOrigin.Begin);
+						}
+	
+						// Decode the result.
+						if(posn == -1)
+						{
+							throw new IOException
+								(FileMethods.GetErrno(), _("IO_SeekFailed"));
+						}
+						return posn;
 					}
-					return posn;
 				}
 			}
 

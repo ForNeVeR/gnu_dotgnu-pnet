@@ -157,13 +157,13 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
 		{
 			return;
 		}
-		CVM_WORD(label->offset);
+		CVM_WORD(label->offset - coder->start);
 		label = GetLabel(coder, end);
 		if(!label)
 		{
 			return;
 		}
-		CVM_WORD(label->offset);
+		CVM_WORD(label->offset - coder->start);
 	}
 
 	/* Output a place-holder for the length value */

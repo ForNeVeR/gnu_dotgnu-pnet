@@ -65,9 +65,9 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 		{
 			break;
 		}
-		if(lowestTry == IL_MAX_UINT32)
+		if(lowestTry != IL_MAX_UINT32)
 		{
-			end = exception->tryOffset;
+			end = lowestTry;
 		}
 		else
 		{

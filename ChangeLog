@@ -11,6 +11,9 @@ to "thread->thrownException", because it is already there.
 
 * engine/ilrun.c: print a message if "Main" throws an uncaught exception.
 
+* engine/verify_except.c, engine/cvmc_except.c: fix the generation
+of the handler table for methods with try blocks.
+
 2001-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * samples/mscorlib.dll: new version with "UtcNow" fix.

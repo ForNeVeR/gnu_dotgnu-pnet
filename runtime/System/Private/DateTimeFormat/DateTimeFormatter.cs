@@ -63,17 +63,29 @@ internal sealed class DateTimeFormatter
 							break;
 						case "m": case "M":
 							format = info.MonthDayPattern; break;
+						#if !ECMA_COMPAT
 						case "r": case "R":
 							format = info.RFC1123Pattern; break;
 						case "s":
 							format = info.SortableDateTimePattern; break;
+						case "u":
+							format = info.UniversalSortableDateTimePattern;
+							break;
+						#else
+						case "r": case "R":
+							format = "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'";
+							break;
+						case "s":
+							format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
+							break;
+						case "u":
+							format = "yyyy'-'MM'-'dd HH':'mm':'ss'Z'";
+							break;
+						#endif
 						case "t":
 							format = info.ShortTimePattern; break;
 						case "T":
 							format = info.LongTimePattern; break;
-						case "u":
-							format = info.UniversalSortableDateTimePattern;
-							break;
 						case "U":
 							date = date.ToUniversalTime();
 							format = info.FullDateTimePattern;

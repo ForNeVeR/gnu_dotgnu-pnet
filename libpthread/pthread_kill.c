@@ -1,5 +1,5 @@
 /*
- * self.c - Get the current thread identifier.
+ * pthread_kill.c - Signal handling for pthreads.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -19,26 +19,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <signal.h>
+#include <pthread.h>
 #include <pthread-support.h>
 
-static __thread_specific__ __pthread_t self;
-
-__pthread_t
-__pthread_self (void)
+int
+pthread_kill (pthread_t thread, int sig)
 {
-  if (!self)
-    {
-      /* Register the thread object for a foreign thread that
-         was created by something other than "pthread_create".
-         e.g. the main thread */
-      self = __libc_thread_register_foreign
-                (System_Thread::get_CurrentThread ());
-    }
-  return self;
+  return __pthread_kill (thread, sig);
 }
 
-void
-__libc_thread_set_self (__pthread_t id)
+int
+raise (int sig)
 {
-  self = id;
+  return __pthread_kill (pthread_self (), sig);
 }
+
+int
+pthread_sigmask (int how, const sigset_t * __restrict set,
+                 sigset_t * __restrict oset)
+{
+  return __pthread_sigmask (how, set, oset);
+}
+
+weak_alias (raise, gsignal)

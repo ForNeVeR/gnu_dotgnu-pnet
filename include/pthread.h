@@ -2,7 +2,7 @@
  * pthread.h - Threading routines.
  *
  * This file is part of the Portable.NET C library.
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,12 +24,13 @@
 
 #include <features.h>
 #include <sys/types.h>
+#include <signal.h>
 #include <time.h>
 
 __BEGIN_DECLS
 
 /*
- * Mutex types.
+ * Useful constants.
  */
 enum
 {
@@ -49,6 +50,60 @@ enum
   , PTHREAD_MUTEX_FAST_NP = PTHREAD_MUTEX_ADAPTIVE_NP
 #endif
 };
+enum
+{
+  PTHREAD_CREATE_JOINABLE,
+  PTHREAD_CREATE_DETACHED
+#define PTHREAD_CREATE_JOINABLE	PTHREAD_CREATE_JOINABLE
+#define PTHREAD_CREATE_DETACHED	PTHREAD_CREATE_DETACHED
+};
+enum
+{
+  PTHREAD_INHERIT_SCHED,
+  PTHREAD_EXPLICIT_SCHED
+#define PTHREAD_INHERIT_SCHED	PTHREAD_INHERIT_SCHED
+#define PTHREAD_EXPLICIT_SCHED	PTHREAD_EXPLICIT_SCHED
+};
+enum
+{
+  PTHREAD_SCOPE_SYSTEM,
+  PTHREAD_SCOPE_PROCESS
+#define PTHREAD_SCOPE_SYSTEM	PTHREAD_SCOPE_SYSTEM
+#define PTHREAD_SCOPE_PROCESS	PTHREAD_SCOPE_PROCESS
+};
+enum
+{
+  PTHREAD_PROCESS_PRIVATE,
+  PTHREAD_PROCESS_SHARED
+#define PTHREAD_PROCESS_PRIVATE	PTHREAD_PROCESS_PRIVATE
+#define PTHREAD_PROCESS_SHARED	PTHREAD_PROCESS_SHARED
+};
+enum
+{
+  PTHREAD_RWLOCK_PREFER_READER_NP,
+  PTHREAD_RWLOCK_PREFER_WRITER_NP,
+  PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP,
+  PTHREAD_RWLOCK_DEFAULT_NP = PTHREAD_RWLOCK_PREFER_WRITER_NP
+};
+#define PTHREAD_ONCE_INIT 0
+enum
+{
+  PTHREAD_CANCEL_ENABLE,
+  PTHREAD_CANCEL_DISABLE
+#define PTHREAD_CANCEL_ENABLE       PTHREAD_CANCEL_ENABLE
+#define PTHREAD_CANCEL_DISABLE      PTHREAD_CANCEL_DISABLE
+};
+enum
+{
+  PTHREAD_CANCEL_DEFERRED,
+  PTHREAD_CANCEL_ASYNCHRONOUS
+#define PTHREAD_CANCEL_DEFERRED     PTHREAD_CANCEL_DEFERRED
+#define PTHREAD_CANCEL_ASYNCHRONOUS PTHREAD_CANCEL_ASYNCHRONOUS
+};
+#define PTHREAD_CANCELED ((void *)(-1))
+#define SCHED_OTHER   0
+#define SCHED_FIFO    1
+#define SCHED_RR      2
 
 /*
  * Thread identifier.
@@ -56,108 +111,218 @@ enum
 typedef long long pthread_t;
 
 /*
- * Fast spin lock.
+ * Scheduling parameters.
  */
-struct _pthread_fastlock
-{
-  int __spinlock;
-};
-#define	__LOCK_INITIALIZER	{0}
+struct sched_param
+  {
+    int __sched_priority;
+  };
 
 /*
- * Structure of a mutex.
+ * Thread attributes.
  */
 typedef struct
-{
-  int __m_handle;                 /* Underlying mutex object handle */
-  int __m_count;                  /* Depth of recursive locking */
-  pthread_t __m_owner;            /* Owner thread (if recursive or errcheck) */
-  int __m_kind;                   /* Mutex kind: fast, recursive or errcheck */
-  struct _pthread_fastlock __m_lock; /* Underlying fast lock */
+  {
+    int __detachstate;
+    int __schedpolicy;
+    struct sched_param __schedparam;
+    int __inheritsched;
+    int __scope;
+    size_t __guardsize;
+    int __stackaddr_set;
+    void *__stackaddr;
+    size_t __stacksize;
+  } pthread_attr_t;
 
-} pthread_mutex_t;
-#define PTHREAD_MUTEX_INITIALIZER \
-  {0, 0, 0, PTHREAD_MUTEX_TIMED_NP, __LOCK_INITIALIZER}
+/*
+ * Structure of a mutex, which is wrapped around a C# monitor.
+ */
+typedef struct
+  {
+    void *__m_monitor;
+  } pthread_mutex_t;
+#define PTHREAD_MUTEX_INITIALIZER	{0}
 #ifdef __USE_GNU
-# define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP \
-  {0, 0, 0, PTHREAD_MUTEX_RECURSIVE_NP, __LOCK_INITIALIZER}
+# define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP	\
+  PTHREAD_MUTEX_INITIALIZER
 # define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \
-  {0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP, __LOCK_INITIALIZER}
+  PTHREAD_MUTEX_INITIALIZER
 # define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \
-  {0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP, __LOCK_INITIALIZER}
+  PTHREAD_MUTEX_INITIALIZER
 #endif
 
 /*
  * Mutex attributes.
  */
 typedef struct
-{
-  int __mutexkind;
+  {
+    int __mutex_kind;
+    int __mutex_pshared;
+  } pthread_mutexattr_t;
 
-} pthread_mutexattr_t;
+/*
+ * Spin locks.
+ */
+typedef int pthread_spinlock_t;
 
-/* Thread functions */
+/*
+ * Once handling.
+ */
+typedef pthread_spinlock_t pthread_once_t;
 
+/*
+ * Condition variables.
+ */
+typedef struct
+  {
+    pthread_spinlock_t __lock;
+    pthread_mutex_t *__wait_mutex;
+  } pthread_cond_t;
+#define PTHREAD_COND_INITIALIZER {0, 0}
+
+/*
+ * Condition variable attributes.
+ */
+typedef struct
+  {
+    int __pshared;
+  } pthread_condattr_t;
+
+/*
+ * Thread functions.
+ */
+extern int pthread_create (pthread_t *__restrict __thread,
+			   __const pthread_attr_t *__restrict __attr,
+			   void *(*__start_routine) (void *),
+			   void *__restrict __arg);
 extern pthread_t pthread_self (void);
+extern int pthread_equal (pthread_t __thread1, pthread_t __thread2);
+extern void pthread_exit (void *__retval);
+extern int pthread_join (pthread_t __thread, void **__thread_return);
+extern int pthread_detach (pthread_t __thread);
+extern int pthread_yield (void);
+extern int pthread_cancel (pthread_t __thread);
+extern void pthread_testcancel (void);
+extern int pthread_setcancelstate (int __state, int *__oldstate);
+extern int pthread_setcanceltype (int __type, int *__oldtype);
+extern int pthread_setschedparam (pthread_t __target_thread, int __policy,
+				  __const struct sched_param *__param);
+extern int pthread_getschedparam (pthread_t __target_thread,
+				  int *__restrict __policy,
+				  struct sched_param *__restrict __param);
 
-/* Functions for mutex handling.  */
+/*
+ * Thread attribute functions.
+ */
+extern int pthread_attr_init (pthread_attr_t *__attr);
+extern int pthread_attr_destroy (pthread_attr_t *__attr);
+extern int pthread_attr_setdetachstate (pthread_attr_t *__attr,
+					int __detachstate);
+extern int pthread_attr_getdetachstate (__const pthread_attr_t *__attr,
+					int *__detachstate);
+extern int pthread_attr_setschedparam (pthread_attr_t *__restrict __attr,
+				       __const struct sched_param *__restrict
+				       __param);
+extern int pthread_attr_getschedparam (__const pthread_attr_t *__restrict
+				       __attr,
+				       struct sched_param *__restrict __param);
+extern int pthread_attr_setschedpolicy (pthread_attr_t *__attr, int __policy);
+extern int pthread_attr_getschedpolicy (__const pthread_attr_t *__restrict
+					__attr, int *__restrict __policy);
+extern int pthread_attr_setinheritsched (pthread_attr_t *__attr,
+					 int __inherit);
+extern int pthread_attr_getinheritsched (__const pthread_attr_t *__restrict
+					 __attr, int *__restrict __inherit);
+extern int pthread_attr_setscope (pthread_attr_t *__attr, int __scope);
+extern int pthread_attr_getscope (__const pthread_attr_t *__restrict __attr,
+				  int *__restrict __scope);
+extern int pthread_attr_setguardsize (pthread_attr_t *__attr,
+				      size_t __guardsize);
+extern int pthread_attr_getguardsize (__const pthread_attr_t *__restrict
+				      __attr, size_t *__restrict __guardsize);
+extern int pthread_attr_setstackaddr (pthread_attr_t *__attr,
+				      void *__stackaddr);
+extern int pthread_attr_getstackaddr (__const pthread_attr_t *__restrict
+				      __attr, void **__restrict __stackaddr);
+extern int pthread_attr_setstack (pthread_attr_t *__attr, void *__stackaddr,
+				  size_t __stacksize);
+extern int pthread_attr_getstack (__const pthread_attr_t *__restrict __attr,
+				  void **__restrict __stackaddr,
+				  size_t *__restrict __stacksize);
+extern int pthread_attr_setstacksize (pthread_attr_t *__attr,
+				      size_t __stacksize);
+extern int pthread_attr_getstacksize (__const pthread_attr_t *__restrict
+				      __attr, size_t *__restrict __stacksize);
+extern int pthread_getattr_np (pthread_t __th, pthread_attr_t *__attr);
 
-/* Initialize MUTEX using attributes in *MUTEX_ATTR, or use the
-   default values if later is NULL.  */
+/*
+ * Mutex functions.
+ */
 extern int pthread_mutex_init (pthread_mutex_t *__restrict __mutex,
 			       __const pthread_mutexattr_t *__restrict
-			       __mutex_attr) __THROW;
-
-/* Destroy MUTEX.  */
-extern int pthread_mutex_destroy (pthread_mutex_t *__mutex) __THROW;
-
-/* Try to lock MUTEX.  */
-extern int pthread_mutex_trylock (pthread_mutex_t *__mutex) __THROW;
-
-/* Wait until lock for MUTEX becomes available and lock it.  */
-extern int pthread_mutex_lock (pthread_mutex_t *__mutex) __THROW;
-
-#ifdef __USE_XOPEN2K
-/* Wait until lock becomes available, or specified time passes. */
+			       __mutex_attr);
+extern int pthread_mutex_destroy (pthread_mutex_t *__mutex);
+extern int pthread_mutex_trylock (pthread_mutex_t *__mutex);
+extern int pthread_mutex_lock (pthread_mutex_t *__mutex);
 extern int pthread_mutex_timedlock (pthread_mutex_t *__restrict __mutex,
 				    __const struct timespec *__restrict
-				    __abstime) __THROW;
-#endif
+				    __abstime);
+extern int pthread_mutex_unlock (pthread_mutex_t *__mutex);
 
-/* Unlock MUTEX.  */
-extern int pthread_mutex_unlock (pthread_mutex_t *__mutex) __THROW;
-
-
-/* Functions for handling mutex attributes.  */
-
-/* Initialize mutex attribute object ATTR with default attributes
-   (kind is PTHREAD_MUTEX_TIMED_NP).  */
-extern int pthread_mutexattr_init (pthread_mutexattr_t *__attr) __THROW;
-
-/* Destroy mutex attribute object ATTR.  */
-extern int pthread_mutexattr_destroy (pthread_mutexattr_t *__attr) __THROW;
-
-/* Get the process-shared flag of the mutex attribute ATTR.  */
+/*
+ * Mutex attribute functions.
+ */
+extern int pthread_mutexattr_init (pthread_mutexattr_t *__attr);
+extern int pthread_mutexattr_destroy (pthread_mutexattr_t *__attr);
 extern int pthread_mutexattr_getpshared (__const pthread_mutexattr_t *
 					 __restrict __attr,
-					 int *__restrict __pshared) __THROW;
-
-/* Set the process-shared flag of the mutex attribute ATTR.  */
+					 int *__restrict __pshared);
 extern int pthread_mutexattr_setpshared (pthread_mutexattr_t *__attr,
-					 int __pshared) __THROW;
-
-#ifdef __USE_UNIX98
-/* Set the mutex kind attribute in *ATTR to KIND (either PTHREAD_MUTEX_NORMAL,
-   PTHREAD_MUTEX_RECURSIVE, PTHREAD_MUTEX_ERRORCHECK, or
-   PTHREAD_MUTEX_DEFAULT).  */
-extern int pthread_mutexattr_settype (pthread_mutexattr_t *__attr, int __kind)
-     __THROW;
-
-/* Return in *KIND the mutex kind attribute in *ATTR.  */
+					 int __pshared);
+extern int pthread_mutexattr_settype (pthread_mutexattr_t *__attr, int __kind);
 extern int pthread_mutexattr_gettype (__const pthread_mutexattr_t *__restrict
-				      __attr, int *__restrict __kind) __THROW;
-#endif
+				      __attr, int *__restrict __kind);
 
+/*
+ * Condition variable functions.
+ */
+extern int pthread_cond_init (pthread_cond_t *__restrict __cond,
+			      __const pthread_condattr_t *__restrict __cond_attr);
+extern int pthread_cond_destroy (pthread_cond_t *__cond);
+extern int pthread_cond_signal (pthread_cond_t *__cond);
+extern int pthread_cond_broadcast (pthread_cond_t *__cond);
+extern int pthread_cond_wait (pthread_cond_t *__restrict __cond,
+			      pthread_mutex_t *__restrict __mutex);
+extern int pthread_cond_timedwait (pthread_cond_t *__restrict __cond,
+				   pthread_mutex_t *__restrict __mutex,
+				   __const struct timespec *__restrict
+				   __abstime);
+
+/*
+ * Condition variable attribute functions.
+ */
+extern int pthread_condattr_init (pthread_condattr_t *__attr);
+extern int pthread_condattr_destroy (pthread_condattr_t *__attr);
+extern int pthread_condattr_getpshared (__const pthread_condattr_t *
+					__restrict __attr,
+					int *__restrict __pshared);
+extern int pthread_condattr_setpshared (pthread_condattr_t *__attr,
+					int __pshared);
+
+/*
+ * Spin lock functions.
+ */
+extern int pthread_spin_init (pthread_spinlock_t *__lock, int __pshared);
+extern int pthread_spin_destroy (pthread_spinlock_t *__lock);
+extern int pthread_spin_lock (pthread_spinlock_t *__lock);
+extern int pthread_spin_trylock (pthread_spinlock_t *__lock);
+extern int pthread_spin_unlock (pthread_spinlock_t *__lock);
+
+/*
+ * Once functions.
+ */
+extern int pthread_once (pthread_once_t *__once_control,
+                         void (*__init_routine) (void));
 
 __END_DECLS
 

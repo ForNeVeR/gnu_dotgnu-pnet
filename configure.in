@@ -236,6 +236,7 @@ libc/string/Makefile
 libc/time/Makefile
 libc/unistd/Makefile
 libm/Makefile
+libpthread/Makefile
 samples/Makefile
 samples/ilrun.sh])
 

@@ -1,2 +1,2 @@
 
-SUBDIRS = include libc libm samples
+SUBDIRS = include libc libm libpthread samples

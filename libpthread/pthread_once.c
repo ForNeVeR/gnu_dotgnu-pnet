@@ -1,5 +1,5 @@
 /*
- * self.c - Get the current thread identifier.
+ * pthread_once.c - Once handling for pthreads.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -19,26 +19,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <pthread-support.h>
+#include <pthread.h>
 
-static __thread_specific__ __pthread_t self;
+/*
+ * Import a spinlock function from "pthread_glue.cs" which
+ * does not side-effect "errno" if it fails to acquire a lock.
+ */
+extern int __pt_spin_trylock (pthread_spinlock_t *lock);
 
-__pthread_t
-__pthread_self (void)
+int
+pthread_once (pthread_once_t *once_control, void (*init_routine) (void))
 {
-  if (!self)
-    {
-      /* Register the thread object for a foreign thread that
-         was created by something other than "pthread_create".
-         e.g. the main thread */
-      self = __libc_thread_register_foreign
-                (System_Thread::get_CurrentThread ());
-    }
-  return self;
-}
-
-void
-__libc_thread_set_self (__pthread_t id)
-{
-  self = id;
+  if (__pt_spin_trylock (once_control) == 0)
+    (*init_routine) ();
+  return 0;
 }

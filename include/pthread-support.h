@@ -29,6 +29,8 @@ __BEGIN_DECLS
 
 typedef long long __pthread_t;
 typedef void *__libc_monitor_t;
+typedef __csharp__(System.Threading.Thread) System_Thread;
+typedef __csharp__(System.Object) System_Object;
 
 /*
  * Low-level counterparts to pthread functions.
@@ -37,6 +39,13 @@ extern __pthread_t __pthread_self (void);
 extern int __pthread_kill (__pthread_t thread, int sig);
 extern int __pthread_sigmask (int how, const sigset_t * __restrict set,
                               sigset_t * __restrict oset);
+extern __pthread_t __libc_thread_register
+          (System_Thread thread, System_Object state);
+extern __pthread_t __libc_thread_register_foreign (System_Thread thread);
+extern void __libc_thread_unregister (__pthread_t id);
+extern void __libc_thread_set_self (__pthread_t id);
+extern System_Thread __libc_thread_object (__pthread_t id);
+extern System_Object __libc_thread_state (__pthread_t id);
 
 /*
  * Access to the C# monitor routines via "libc".  These versions

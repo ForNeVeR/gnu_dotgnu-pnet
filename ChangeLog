@@ -1,4 +1,16 @@
 
+2004-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, include/pthread-support.h,
+	include/pthread.h, libc/pthread/Makefile.am, libc/pthread/self.c,
+	libc/pthread/thread.cs, libpthread/.cvsignore, libpthread/Makefile.am,
+	libpthread/README, libpthread/pthread_cond.c,
+	libpthread/pthread_glue.cs, libpthread/pthread_kill.c,
+	libpthread/pthread_mutex.c, libpthread/pthread_once.c,
+	libpthread/pthread_thread.c: move the pthreads code into a
+	separate library and then implement the support routines for
+	threads, mutexes, condition variables, once's, and spinlocks.
+
 2004-02-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/time.h, include/sys/Makefile.am, include/sys/select.h,

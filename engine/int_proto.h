@@ -526,7 +526,7 @@ extern void _IL_Security_SetSecurityManager(ILExecThread * _thread, ILObject * _
 
 extern ILString * _IL_InfoMethods_GetRuntimeVersion(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetNetBIOSMachineName(ILExecThread * _thread);
-extern ILObject * _IL_InfoMethods_GetOSVersion(ILExecThread * _thread);
+extern ILInt32 _IL_InfoMethods_GetPlatformID(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetUserDomainName(ILExecThread * _thread);
 extern ILBool _IL_InfoMethods_IsUserInteractive(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetUserName(ILExecThread * _thread);

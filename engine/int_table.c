@@ -2461,7 +2461,7 @@ IL_METHOD_END
 IL_METHOD_BEGIN(InfoMethods_Methods)
 	IL_METHOD("GetRuntimeVersion", "()oSystem.String;", _IL_InfoMethods_GetRuntimeVersion, marshal_pp)
 	IL_METHOD("GetNetBIOSMachineName", "()oSystem.String;", _IL_InfoMethods_GetNetBIOSMachineName, marshal_pp)
-	IL_METHOD("GetOSVersion", "()oSystem.OperatingSystem;", _IL_InfoMethods_GetOSVersion, marshal_pp)
+	IL_METHOD("GetPlatformID", "()vSystem.PlatformID;", _IL_InfoMethods_GetPlatformID, marshal_ip)
 	IL_METHOD("GetUserDomainName", "()oSystem.String;", _IL_InfoMethods_GetUserDomainName, marshal_pp)
 	IL_METHOD("IsUserInteractive", "()Z", _IL_InfoMethods_IsUserInteractive, marshal_bp)
 	IL_METHOD("GetUserName", "()oSystem.String;", _IL_InfoMethods_GetUserName, marshal_pp)

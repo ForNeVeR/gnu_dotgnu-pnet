@@ -50,12 +50,15 @@ ILString *_IL_InfoMethods_GetNetBIOSMachineName(ILExecThread *thread)
 }
 
 /*
- * public static OperatingSystem GetOSVersion();
+ * public static PlatformID GetPlatformID();
  */
-ILObject *_IL_InfoMethods_GetOSVersion(ILExecThread *thread)
+ILInt32 _IL_InfoMethods_GetPlatformID(ILExecThread *thread)
 {
-	/* TODO: recognise Windows versions */
-	return 0;
+#ifdef IL_WIN32_PLATFORM
+	return 2;			/* PlatformID.Win32NT */
+#else
+	return 128;			/* PlatformID.Unix */
+#endif
 }
 
 /*

@@ -643,7 +643,7 @@ case IL_OP_CALLVIRT:
 									  (ILUInt32)numParams,
 									  &(stack[stackSize]), methodInfo);
 				}
-				else if(ILClass_IsInterface(classInfo))
+				else if(ILClass_IsInterface(ILMethod_Owner(methodInfo)))
 				{
 					ILCoderCallInterface(coder, stack + stackSize - numParams,
 									     (ILUInt32)numParams,
@@ -816,7 +816,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_LDVIRTFTN:
 						ILCoderLoadFuncAddr(coder, methodInfo);
 					}
 				}
-				else if(ILClass_IsInterface(classInfo))
+				else if(ILClass_IsInterface(ILMethod_Owner(methodInfo)))
 				{
 					ILCoderLoadInterfaceAddr(coder, methodInfo);
 				}

@@ -19,6 +19,9 @@ and pass it to the program's entry point.
 
 * engine/layout.c: record the interface properly in "ComputeInterfaceTable".
 
+* engine/verify_call.c: bug - "callvirt" was checking the wrong class to
+see if it is an interface.
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

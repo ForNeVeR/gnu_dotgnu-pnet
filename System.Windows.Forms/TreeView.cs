@@ -769,6 +769,8 @@ namespace System.Windows.Forms
 			{
 				if (first)
 				{
+					if (nodes.Count == 0)
+						return false;
 					currentNode = nodes[0];
 					first = false;
 					return true;

@@ -161,6 +161,28 @@ ILClass *_ILGetClrClass(ILExecThread *thread, ILObject *type)
 	}
 }
 
+/*
+ * private static Object InternalGetUnitializaedObject(Type type);
+ */
+ILObject *_IL_FormatterServices_InternalGetUninitializedObject
+				(ILExecThread *_thread, ILObject *type)
+{
+	ILClass *classInfo = _ILGetClrClass(_thread, type);
+	ILType *classType;
+	if(classInfo)
+	{
+		classType = ILClassToType(classInfo);
+		if(classType && (ILType_IsClass(classType) ||
+						 ILType_IsValueType(classType) ||
+						 ILType_IsPrimitive(classType)) &&
+		   !ILTypeIsStringClass(classType))
+		{
+			return _ILEngineAllocObject(_thread, classInfo);
+		}
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

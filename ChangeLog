@@ -1,4 +1,10 @@
 
+2003-04-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_object.c:
+	add back the non-ECMA internalcalls in the table; implement
+	internalcalls for "FormatterServices".
+
 2003-04-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_regexp.c:

@@ -57,6 +57,9 @@
 	the build/install system for the German and Catalan resources
 	to use csant and ilgac.
 
+	* Xsharp/XsharpSupport.c: re-enable the 24bpp-MSBFirst optimization
+	and fix the byte swapping.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

@@ -717,7 +717,7 @@ static void Write_Direct(Display *dpy, Colormap colormap, XImage *image,
 }
 
 /*
- * Write RGB data directly to an XImage, and perform a RGB-BGR byteswap.
+ * Write RGB data directly to an XImage, and perform an endian byteswap.
  */
 static void Write_DirectSwap(Display *dpy, Colormap colormap, XImage *image,
 						     int line, unsigned long *input, int num)
@@ -730,9 +730,9 @@ static void Write_DirectSwap(Display *dpy, Colormap colormap, XImage *image,
 		for(column = 0; column < num; ++column)
 		{
 			unsigned int value = (unsigned int)(*input++);
-			value = ((value & 0x00FF0000) >> 16) |
-					 (value & 0x0000FF00) |
-					((value & 0x000000FF) << 16);
+			value = ((value & 0x00FF0000) >> 8) |
+					((value & 0x0000FF00) << 8) |
+					((value & 0x000000FF) << 24);
 			*output++ = value;
 		}
 	}
@@ -743,9 +743,9 @@ static void Write_DirectSwap(Display *dpy, Colormap colormap, XImage *image,
 		for(column = 0; column < num; ++column)
 		{
 			unsigned int value = (unsigned int)(*input++);
-			value = ((value & 0x00FF0000) >> 16) |
-					 (value & 0x0000FF00) |
-					((value & 0x000000FF) << 16);
+			value = ((value & 0x00FF0000) >> 8) |
+					((value & 0x0000FF00) << 8) |
+					((value & 0x000000FF) << 24);
 			*output++ = (unsigned long)value;
 		}
 	}
@@ -824,7 +824,6 @@ static WriteFunc GetWriteFunc(XImage *image)
 			return Write_DirectSwap;
 		}
 	}
-#if 0
 	if(image->depth == 24 && image->red_mask == 0x00FF0000 &&
 	   image->green_mask == 0x0000FF00 && image->blue_mask == 0x000000FF &&
 	   image->byte_order == MSBFirst && image->bitmap_bit_order == MSBFirst)
@@ -838,7 +837,6 @@ static WriteFunc GetWriteFunc(XImage *image)
 			return Write_Direct;
 		}
 	}
-#endif
 	if(image->depth == 16 && image->red_mask == 0x0000F800 &&
 	   image->green_mask == 0x000007E0 && image->blue_mask == 0x0000001F &&
 	   image->byte_order == LSBFirst && image->bitmap_bit_order == LSBFirst)

@@ -94,6 +94,9 @@ internal enum EventId
 	AutoSizeChanged,
 	TextAlignChanged,
 
+	// "UserControl" events.
+	Load,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

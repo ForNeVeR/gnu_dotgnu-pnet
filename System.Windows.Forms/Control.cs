@@ -64,8 +64,7 @@ public class Control : IWin32Window
 	private bool performingLayout;
 	private int layoutSuspended;
 	private Object tag;
-	private ControlStyles styles;
-	private CreateParams createParams;
+	private CreateParams currentParams;
 	private ContextMenu contextMenu;
 	private static Font defaultFont;
 #if !CONFIG_COMPACT_FORMS
@@ -86,11 +85,14 @@ public class Control : IWin32Window
 				this.rightToLeft = (byte)(RightToLeft.Inherit);
 				this.tabIndex = -1;
 				this.tabStop = true;
-				this.styles = ControlStyles.UserPaint |
-							  ControlStyles.StandardClick |
-							  ControlStyles.Selectable |
-							  ControlStyles.StandardDoubleClick |
-							  ControlStyles.AllPaintingInWmPaint;
+				// Create the currentParams
+				currentParams = new CreateParams();
+				currentParams = CreateParams;
+				SetStyle( ControlStyles.UserPaint |
+						  ControlStyles.StandardClick |
+						  ControlStyles.Selectable |
+						  ControlStyles.StandardDoubleClick |
+						  ControlStyles.AllPaintingInWmPaint, true);
 				Size initialSize = DefaultSize;
 				width = initialSize.Width;
 				height = initialSize.Height;
@@ -363,7 +365,7 @@ public class Control : IWin32Window
 			{
 				get
 				{
-					return (Visible && Enabled);
+					return (Visible && Enabled && GetStyle(ControlStyles.Selectable));
 				}
 			}
 	[TODO]
@@ -488,10 +490,6 @@ public class Control : IWin32Window
 			{
 				get
 				{
-					if(createParams != null)
-					{
-						return createParams;
-					}
 					CreateParams cp = new CreateParams();
 					cp.Caption = text;
 					cp.X = left;
@@ -500,7 +498,7 @@ public class Control : IWin32Window
 					cp.Height = height;
 					cp.ClassStyle = Win32Constants.CS_DBLCLKS;
 					cp.Style = Win32Constants.WS_CLIPCHILDREN;
-					if((styles & ControlStyles.ContainerControl) != 0)
+					if (GetStyle(ControlStyles.ContainerControl))
 					{
 						cp.ExStyle = Win32Constants.WS_EX_CONTROLPARENT;
 					}
@@ -527,7 +525,6 @@ public class Control : IWin32Window
 									  Win32Constants.WS_EX_RTLREADING |
 									  Win32Constants.WS_EX_RIGHT;
 					}
-					createParams = cp;
 					return cp;
 				}
 			}
@@ -1554,7 +1551,7 @@ public class Control : IWin32Window
 	// Get a particular style flag.
 	protected bool GetStyle(ControlStyles flag)
 			{
-				return ((styles & flag) != 0);
+				return ((currentParams.Style & (int)flag) != 0);
 			}
 
 	// Determine if this is a top-level control.
@@ -2333,11 +2330,11 @@ public class Control : IWin32Window
 			{
 				if(value)
 				{
-					styles |= flag;
+					currentParams.Style |= (int)flag;
 				}
 				else
 				{
-					styles &= ~flag;
+					currentParams.Style &= ~(int)flag;
 				}
 			}
 
@@ -2416,10 +2413,13 @@ public class Control : IWin32Window
 			}
 
 	// Apply the changed styles to the control.
-	[TODO]
 	protected void UpdateStyles()
 			{
-				// TODO
+				if (IsHandleCreated)
+				{
+					currentParams = CreateParams;
+					Invalidate(true);
+				}
 			}
 
 	// Update the Z-order of a control.
@@ -3669,7 +3669,7 @@ public class Control : IWin32Window
 				}
 
 				// If the window is transparent, then invalidate.
-				if((styles & ControlStyles.SupportsTransparentBackColor) != 0)
+				if(GetStyle( ControlStyles.SupportsTransparentBackColor))
 				{
 					Invalidate();
 				}
@@ -4455,6 +4455,10 @@ public class Control : IWin32Window
 	// Toolkit event that is emitted for a key character event.
 	bool IToolkitEventSink.ToolkitKeyChar(char charCode)
 			{
+				// MS Doesnt pass Delete through keypress
+				if(charCode == (char)127)
+					return true;
+							
 				// Create a fake key character message and dispatch it.
 				Message m = Message.CreateKeyMessage
 					(Win32Constants.WM_CHAR, (Keys)(int)charCode);

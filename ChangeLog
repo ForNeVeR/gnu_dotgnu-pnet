@@ -1,5 +1,5 @@
 
-2003-06-21  Simon Guindon  <simon@nureality.ca>
+2003-06-21  Neil Cawse  <neilc@geotab.ca>
 
 	* Makefile.am, configure.in, System.Drawing.Win32/.cvsignore,
 	System.Drawing.Win32/DrawingBrush.cs,
@@ -20,7 +20,6 @@
 	assembly, which provides drawing functionality using the
 	raw Win32 API.
 
-Script done on Sat Jun 21 11:14:13 2003
 2003-06-21  Simon Guindon  <simon@nureality.ca>
 
 	* System.Windows.Forms/StatusBar.cs,
@@ -36,6 +35,10 @@ Script done on Sat Jun 21 11:14:13 2003
 
 	* System.Drawing.Xsharp/DrawingPen.cs, samples/FormsHello.cs:
 	dashed pens only work in X with a line width of 0, not 1.
+
+	* runtime/Platform/InfoMethods.cs, runtime/System/Environment.cs:
+	add the "InfoMethods.GetPlatformID" internalcall to better detect
+	Win32 vs Unix platform differences.
 
 2003-06-21  Gopal.V  <gopalv82@symonds.net>
 	

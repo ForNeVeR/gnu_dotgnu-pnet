@@ -56,9 +56,9 @@ internal class InfoMethods
 
 #if !ECMA_COMPAT
 
-	// Get the OS version that we are running on.  Returns NULL if unknown.
+	// Get the platform identifier for the OS that we are running on.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static OperatingSystem GetOSVersion();
+	extern public static PlatformID GetPlatformID();
 
 	// Get a special folder directory.  Returns NULL if unknown.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -209,12 +209,9 @@ public sealed class Environment
 			{
 				get
 				{
-					OperatingSystem os = InfoMethods.GetOSVersion();
-					if(os != null)
-					{
-						return os;
-					}
-					return new OperatingSystem(PlatformID.Unix, new Version());
+					return new OperatingSystem
+						(InfoMethods.GetPlatformID(),
+						 new Version(5, 1, 2600, 0));
 				}
 			}
 

@@ -33,6 +33,10 @@
 	runtime/System/Globalization/HijriCalendar.cs: implement the
 	missing HijriCalendar class.
 
+	* runtime/System/BitConverter.cs,
+	runtime/System/Resources/ResourceReader.cs: add support for
+	reading non-string resources.
+
 2003-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

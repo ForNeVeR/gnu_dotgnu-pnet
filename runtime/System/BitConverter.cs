@@ -21,12 +21,15 @@
 namespace System
 {
 
-#if !ECMA_COMPAT
-
 using System.Text;
 using System.Runtime.CompilerServices;
 
-public sealed class BitConverter
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+sealed class BitConverter
 {
 	// Cannot instantiate this class.
 	private BitConverter() {}
@@ -53,6 +56,16 @@ public sealed class BitConverter
 	// Convert a 32-bit integer into a float value.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static float Int32BitsToFloat(int value);
+
+	// Convert a float value into an array of bytes.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static byte[] GetLittleEndianBytes(float value);
+
+	// Convert a double value into an array of bytes.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static byte[] GetLittleEndianBytes(double value);
+
+#if !ECMA_COMPAT
 
 	// Convert a boolean value into an array of bytes.
 	public static byte[] GetBytes(bool value)
@@ -227,14 +240,6 @@ public sealed class BitConverter
 			{
 				return GetBytes(DoubleToInt64Bits(value));
 			}
-
-	// Convert a float value into an array of bytes.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static byte[] GetLittleEndianBytes(float value);
-
-	// Convert a double value into an array of bytes.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static byte[] GetLittleEndianBytes(double value);
 
 	// Convert a byte within an array into a boolean value.
 	public static bool ToBoolean(byte[] value, int startIndex)
@@ -530,8 +535,8 @@ public sealed class BitConverter
 					builder.Append((char)('A' + digit - 10));
 			}
 
-}; // class BitConverter
-
 #endif // !ECMA_COMPAT
+
+}; // class BitConverter
 
 }; // namespace System

@@ -21,9 +21,8 @@
 namespace System
 {
 
-using System.Runtime.Serialization;
-
-public sealed class Empty : ISerializable
+// This class is used internally as a tag for null references.
+internal sealed class Empty
 {
 
 	// The only empty object in the system.
@@ -33,13 +32,10 @@ public sealed class Empty : ISerializable
 	private Empty() {}
 
 	// Override inherited methods.
-	public override String ToString() { return String.Empty; }
-
-	// Serialization support.
-	public void GetObjectData(SerializationInfo info, StreamingContext context)
-		{
-			// TODO.
-		}
+	public override String ToString()
+			{
+				return String.Empty;
+			}
 
 }; // class Empty
 

@@ -935,6 +935,67 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 	return size;
 }
 
+/*
+ * Instruction profiling array.
+ */
+int _ILCVMInsnCount[512];
+
+/*
+ * Dump the instruction profile array.
+ */
+int _ILDumpInsnProfile(FILE *stream)
+{
+	int insn, insn2, temp;
+	int sawCounts = 0;
+	int indices[512];
+
+	/* Zero the count for "prefix", because it isn't important */
+	_ILCVMInsnCount[COP_PREFIX] = 0;
+
+	/* Sort the instruction count table into decreasing order */
+	for(insn = 0; insn < 512; ++insn)
+	{
+		indices[insn] = insn;
+	}
+	for(insn = 0; insn < 511; ++insn)
+	{
+		for(insn2 = insn + 1; insn2 < 512; ++insn2)
+		{
+			if(_ILCVMInsnCount[indices[insn]] <
+					_ILCVMInsnCount[indices[insn2]])
+			{
+				temp = indices[insn];
+				indices[insn] = indices[insn2];
+				indices[insn2] = temp;
+			}
+		}
+	}
+
+	/* Dump the contents of the sorted instruction table */
+	for(insn = 0; insn < 512; ++insn)
+	{
+		insn2 = indices[insn];
+		if(_ILCVMInsnCount[insn2])
+		{
+			if(insn2 < 256)
+			{
+				fprintf(stream, "%-20s  %d\n", opcodes[insn2].name,
+						_ILCVMInsnCount[insn2]);
+			}
+			else
+			{
+				fprintf(stream, "%-20s  %d\n",
+						prefixOpcodes[insn2 - 256].name,
+						_ILCVMInsnCount[insn2]);
+			}
+			sawCounts = 1;
+		}
+	}
+
+	/* Indicate to the caller whether we have count information or not */
+	return sawCounts;
+}
+
 #ifdef	__cplusplus
 };
 #endif

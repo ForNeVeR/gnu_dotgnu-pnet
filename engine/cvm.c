@@ -45,6 +45,14 @@ extern	"C" {
 #define	IL_DUMP_CVM_STREAM	stdout
 
 /*
+ * Enable or disable profiling.
+ */
+/*#define	IL_PROFILE_CVM_INSNS*/
+#ifdef IL_PROFILE_CVM_INSNS
+extern int _ILCVMInsnCount[];
+#endif
+
+/*
  * Determine what CPU we are compiling for, and any
  * additional optimizations we can use for that CPU.
  */
@@ -396,6 +404,9 @@ int _ILCVMInterpreter(ILExecThread *thread)
 	#ifdef IL_DUMP_CVM
 		_ILDumpCVMInsn(IL_DUMP_CVM_STREAM, method, pc);
 	#endif
+	#ifdef IL_PROFILE_CVM_INSNS
+		++(_ILCVMInsnCount[pc[0]]);
+	#endif
 		switch(pc[0])
 		{
 			/**
@@ -494,6 +505,9 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			case COP_PREFIX:
 			{
 				/* Execute a prefixed opcode */
+			#ifdef IL_PROFILE_CVM_INSNS
+				++(_ILCVMInsnCount[((int)(pc[1])) + 0x100]);
+			#endif
 				switch(pc[1])
 				{
 					/* Include instruction categories for the prefix switch */

@@ -37,6 +37,11 @@ int _ILRegisterWithKernel(const char *progname);
 int _ILUnregisterFromKernel(void);
 
 /*
+ * Imports from "cvm_dasm.c".
+ */
+int _ILDumpInsnProfile(FILE *stream);
+
+/*
  * Table of command-line options.
  */
 static ILCmdLineOption const options[] = {
@@ -56,12 +61,19 @@ static ILCmdLineOption const options[] = {
 		"--unregister",
 		"Unregister ilrun from the operating system."},
 #endif
+	{"-v", 'v', 0, 0, 0},
 	{"--version", 'v', 0,
 		"--version          or -v",
 		"Print the version of the program"},
 	{"--help", 'h', 0,
 		"--help",
 		"Print this help message."},
+
+	/* Special internal options that are used for debugging.
+	   Note: -I won't do anything unless IL_PROFILE_CVM_INSNS
+	   is defined in "cvm.c" */
+	{"-I", 'I', 0, 0, 0},
+	{"--insn-profile", 'I', 0, 0, 0},
 	{0, 0, 0, 0, 0}
 };
 
@@ -86,6 +98,7 @@ int main(int argc, char *argv[])
 	ILObject *exception;
 	int sawException;
 	int registerMode = 0;
+	int dumpInsnProfile = 0;
 
 	/* Initialize the locale routines */
 	ILInitLocale();
@@ -125,6 +138,12 @@ int main(int argc, char *argv[])
 			case 'r': case 'u':
 			{
 				registerMode = opt;
+			}
+			break;
+
+			case 'I':
+			{
+				dumpInsnProfile = 1;
 			}
 			break;
 
@@ -276,6 +295,16 @@ int main(int argc, char *argv[])
 		else
 		{
 			fputs("virtual memory exhausted\n", stderr);
+		}
+	}
+
+	/* Print profile information if requested */
+	if(dumpInsnProfile)
+	{
+		if(!_ILDumpInsnProfile(stdout))
+		{
+			fprintf(stderr, "%s: instruction profiles are not available\n",
+					progname);
 		}
 	}
 

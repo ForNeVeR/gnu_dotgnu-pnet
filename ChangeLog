@@ -41,6 +41,10 @@
 	* engine/cvm_inline.c: implement proper exception handling for
 	the "type_from_handle" instruction.
 
+	* engine/cvm.c, engine/cvm_dasm.c, engine/ilrun.c: implement
+	instruction profiling in the engine to assist with determining
+	where the CVM interpreter spends most of its time.
+
 2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with UTF-7 encoding and

@@ -59,6 +59,8 @@
 	use "Array.Clear" instead of "Array.Initialize" to clear sensitive
 	values in the cryptographic routines.
 
+	* tests/runtime/System/TestArray.cs: test cases for "Array.Clear".
+
 2003-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/System.build,

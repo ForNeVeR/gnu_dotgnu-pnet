@@ -160,6 +160,85 @@ public class TestArray : TestCase
 							 Array.BinarySearch(array, 4));
 			}
 
+	// Test clearing the elements of an array.
+	public void TestArrayClear()
+			{
+				// Test parameter checks.
+				try
+				{
+					Array.Clear(null, 0, 0);
+					Fail("Clear (1)");
+				}
+				catch(ArgumentNullException)
+				{
+					// Test succeeded.
+				}
+				Array.Clear(new int [3, 3], 0, 9);	// Indices are relative.
+				int[] array = new int [] {1, 2, 3, 5, 6};
+				try
+				{
+					Array.Clear(array, -1, 1);
+					Fail("Clear (2)");
+				}
+				catch(ArgumentOutOfRangeException)
+				{
+					// Test succeeded.
+				}
+				try
+				{
+					Array.Clear(array, 0, -1);
+					Fail("Clear (3)");
+				}
+				catch(ArgumentOutOfRangeException)
+				{
+					// Test succeeded.
+				}
+				try
+				{
+					Array.Clear(array, 6, 0);
+					Fail("Clear (4)");
+				}
+				catch(ArgumentException)
+				{
+					// Test succeeded.
+				}
+				try
+				{
+					Array.Clear(array, 5, 1);
+					Fail("Clear (5)");
+				}
+				catch(ArgumentException)
+				{
+					// Test succeeded.
+				}
+				try
+				{
+					Array.Clear(array, 4, 5);
+					Fail("Clear (6)");
+				}
+				catch(ArgumentException)
+				{
+					// Test succeeded.
+				}
+
+				// "array" should still have its original values.
+				AssertEquals("Clear (7a)", 1, array[0]);
+				AssertEquals("Clear (7b)", 2, array[1]);
+				AssertEquals("Clear (7c)", 3, array[2]);
+				AssertEquals("Clear (7d)", 5, array[3]);
+				AssertEquals("Clear (7e)", 6, array[4]);
+
+				// Clear a subset of the array.
+				Array.Clear(array, 2, 2);
+
+				// Check that the clear was successful.
+				AssertEquals("Clear (8a)", 1, array[0]);
+				AssertEquals("Clear (8b)", 2, array[1]);
+				AssertEquals("Clear (8c)", 0, array[2]);
+				AssertEquals("Clear (8d)", 0, array[3]);
+				AssertEquals("Clear (8e)", 6, array[4]);
+			}
+
 	// Test sorting an array.
 	public void TestArraySort()
 			{

@@ -22,7 +22,6 @@
 
 #include "engine.h"
 #include "lib_defs.h"
-#include "locks.h"
 #if HAVE_SYS_TYPES_H
 	#include <sys/types.h>
 #endif

@@ -226,6 +226,14 @@ public sealed class BitConverter
 				return GetBytes(DoubleToInt64Bits(value));
 			}
 
+	// Convert a float value into an array of bytes.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static byte[] GetLittleEndianBytes(float value);
+
+	// Convert a double value into an array of bytes.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static byte[] GetLittleEndianBytes(double value);
+
 	// Convert a byte within an array into a boolean value.
 	public static bool ToBoolean(byte[] value, int startIndex)
 			{

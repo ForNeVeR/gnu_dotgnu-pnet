@@ -27,14 +27,20 @@ namespace System.Reflection.Emit
 public struct Label
 {
 	// Internal state.
-	private int offset;
+	internal int index;
+
+	// Constructor.
+	internal Label(int index)
+			{
+				this.index = index;
+			}
 
 	// Determine if this label is identical to another.
 	public override bool Equals(Object obj)
 			{
 				if(obj is Label)
 				{
-					return (offset == ((Label)obj).offset);
+					return (index == ((Label)obj).index);
 				}
 				else
 				{
@@ -45,7 +51,7 @@ public struct Label
 	// Get a hash code for this token.
 	public override int GetHashCode()
 			{
-				return offset;
+				return index;
 			}
 
 }; // struct Label

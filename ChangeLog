@@ -7,6 +7,12 @@
 	JScript/Execute/EngineInstance.cs: begin implementing the JScript
 	"String" class.
 
+	* runtime/System/BitConverter.cs,
+	runtime/System/Reflection/Emit/ILGenerator.cs,
+	runtime/System/Reflection/Emit/Label.cs,
+	runtime/System/Reflection/Emit/LocalBuilder.cs: implement some of
+	the IL generation methods for Reflection.Emit.
+
 2003-03-11  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/String.cs: Fix minor bug in LastIndexOf(char).

@@ -3,7 +3,8 @@
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  * 
- * Contributed by Gopal.V <gopalv82@symonds.net> 
+ * Contributions from Gopal.V <gopalv82@symonds.net> 
+ *                    Rhys Weatherley <rweather@southern-storm.com.au>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,30 +27,46 @@ using System;
 
 namespace System.Reflection.Emit
 {
-	public sealed class LocalBuilder
-	{
-		[TODO]
-		public void SetLocalSymInfo(String lname, int startOffset, int endOffset)
-		{
-			throw new NotImplementedException("SetLocalSymInfo");
-		}
 
-		[TODO]
-		public void SetLocalSymInfo(String lname)
-		{
-			throw new NotImplementedException("SetLocalSymInfo");
-		}
+public sealed class LocalBuilder
+{
+	// Internal state.
+	private ModuleBuilder module;
+	private String name;
+	private Type type;
+	private int index;
 
-		[TODO]
-		public Type LocalType 
-		{ 
-			get
+	// Constructor.
+	internal LocalBuilder(ModuleBuilder module, Type type, int index)
 			{
-				throw new NotImplementedException("LocalType");
+				this.module = module;
+				this.type = type;
+				this.index = index;
 			}
-		}
 
-	}
-}//namespace
+	// Set the symbol information for a local variable.
+	[TODO]
+	public void SetLocalSymInfo(String lname, int startOffset, int endOffset)
+			{
+				name = lname;
+				// TODO: write debug information about the local variable
+			}
+	public void SetLocalSymInfo(String lname)
+			{
+				SetLocalSymInfo(lname, 0, 0);
+			}
+
+	// Get the type of the local variable.
+	public Type LocalType 
+			{ 
+				get
+				{
+					return type;
+				}
+			}
+
+}; // class LocalBuilder
+
+}; // namespace System.Reflection.Emit
 
 #endif

@@ -202,12 +202,31 @@ ILType *ILFindNonSystemType(ILGenInfo *info, const char *name,
 		}
 	}
 
+	/* Look in any image that is linked against the program */
+	classInfo = ILClassLookupGlobal(info->context, name, namespace);
+	if(classInfo)
+	{
+		classInfo = ILClassImport(info->image, classInfo);
+		if(!classInfo)
+		{
+			ILGenOutOfMemory(info);
+		}
+		return ILClassToTypeDirect(classInfo);
+	}
+
 	/* Look in the library image */
 	scope = ILClassGlobalScope(info->libImage);
 	if(scope)
 	{
 		classInfo = ILClassLookup(scope, name, namespace);
-		classInfo = ILClassImport(info->image, classInfo);
+		if(classInfo)
+		{
+			classInfo = ILClassImport(info->image, classInfo);
+			if(!classInfo)
+			{
+				ILGenOutOfMemory(info);
+			}
+		}
 		if(classInfo)
 		{
 			return ILClassToTypeDirect(classInfo);

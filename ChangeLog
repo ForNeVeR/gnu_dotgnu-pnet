@@ -1,4 +1,10 @@
 
+2004-05-14  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/MainMenu.cs: Fix a minor bug , on
+	menu selection timer , check whether the current mouse item
+	before selecting it.
+
 2004-05-13  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/TextBox.cs: Reapply last patch

@@ -272,7 +272,10 @@ using System.Drawing;
 		protected internal override void ItemSelectTimerTick(object sender, EventArgs e)
 		{
 			base.ItemSelectTimerTick (sender, e);
-			ItemSelected(currentMouseItem);
+			if(currentMouseItem != -1)
+			{
+				ItemSelected(currentMouseItem);
+			}
 		}
 
 		internal void OnMouseLeave()

@@ -76,6 +76,18 @@ public class TestXmlTextWriter : TestCase
 				xml = new XmlTextWriter(stringWriter);
 			}
 
+	// Test the XmlTextWriter.WriteProcessingInstruction
+	public void TestXmlTextWriterWriteProcessingInstruction()
+			{
+				Clear();
+				String name = "xsl-stylesheet";
+				String text = "href=\"test.xsl\"";
+				xml.WriteStartDocument();
+				xml.WriteProcessingInstruction(name, text);
+				Check("ProcessingInstruction (1)",
+						"<?xml version=\"1.0\" encoding=\"utf-16\"?>\n<?xsl-stylesheet href=\"test.xsl\"?>\n");
+			}
+	
 	// Test the property values on the writer.
 	public void TestXmlTextWriterProperties()
 			{

@@ -1,5 +1,12 @@
 
+2002-12-31  Adam Ballai  <minddog@cannibutter.com>
+
+	* System.Xml/XmlWriter.cs, System.Xml/XmlTextWriter.cs, 
+	tests/System.Xml/TestXmlTextWriter.cs: Add WriteProcessingInstruction 
+	and WriteAttribute. (Patch #893, Gopal)
+
 2002-12-31  Gopal.V  <gopalv82@symonds.net>
+
 	* System/ComponentModel/BaseNumberConverter.cs,
 	System/ComponentModel/CancelEventArgs.cs,
 	System/ComponentModel/CollectionChangeEventArgs.cs,

@@ -69,7 +69,24 @@ public abstract class XmlWriter
 				{
 					throw new ArgumentNullException("localName");
 				}
-				WriteStartAttribute(prefix, localName, ns);
+				if((Object)value != null && value != String.Empty)
+				{
+					bool flagNS = true;
+					try {
+						Uri uri = new Uri(value);
+					} 
+					catch (UriFormatException e) 
+					{
+						flagNS = false;
+					}
+						
+					WriteStartAttribute(prefix, localName, ns, value, flagNS);
+				} 
+				else 
+				{
+					WriteStartAttribute(prefix, localName, ns);
+				}
+
 				WriteString(value);
 				WriteEndAttribute();
 			}
@@ -348,6 +365,9 @@ public abstract class XmlWriter
 				WriteStartAttribute(null, localName, ns);
 			}
 
+	// the hack for namespaces
+	internal abstract void WriteStartAttribute(String prefix, String localName, String ns, String value, bool flagNS);
+	
 	// Write the start of an XML document.
 	public abstract void WriteStartDocument(bool standalone);
 

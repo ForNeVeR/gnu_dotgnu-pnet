@@ -776,16 +776,140 @@ public class XmlTextWriter : XmlWriter
 				writer.Write(name);
 			}
 
-	// Write a processing instruction.
+	// Write a processing instruction. <?name text?>
 	public override void WriteProcessingInstruction(String name, String text)
-			{
-				// TODO
+			{						
+
+				if((writeState == System.Xml.WriteState.Start) || (name == null)) 
+				{
+					throw new ArgumentException
+						(S._("Xml_ArgumentException"), "name");
+					
+				}
+				if(writeState == System.Xml.WriteState.Closed)	
+				{
+
+					throw new InvalidOperationException
+						(S._("Xml_InvalidOperation"));
+				}
+
+				Sync(WriteStateFlag.PrologFlag); 
+
+				if (text != null) 
+				{
+					writer.WriteLine("<?{0} {1}?>",name, text);
+				} 
+				else 
+				{
+					writer.WriteLine("<?{0}?>",name);
+				}
 			}
 
 	// Write a qualified name.
 	public override void WriteQualifiedName(String localName, String ns)
 			{
-				// TODO
+				if ((localName == null) || (localName == String.Empty))
+				{
+					throw new ArgumentException
+						(S._("Xml_ArgumentException"), "localName");
+				}
+				
+				if  ((Namespaces == false) && (ns != null) 
+						&& (ns != String.Empty))
+				{
+					throw new ArgumentException
+						(S._("Xml_ArgumentException"), "ns");
+				}
+				
+				if(!XmlReader.IsName(localName))
+				{
+					throw new XmlException
+						(S._("Xml_XmlException"));
+				}
+
+							
+				if (writeState == System.Xml.WriteState.Closed)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_InvalidOperation"));
+				}
+
+				if (writeState == System.Xml.WriteState.Closed)
+				{
+						throw new InvalidOperationException
+							(S._("Xml_InvalidOperation"));
+						break;
+				}
+
+				if ((writeState == System.Xml.WriteState.Element) || (writeState == System.Xml.WriteState.Attribute))
+				{
+
+						if ((ns == null) && (writeState == System.Xml.WriteState.Element))
+						{
+							throw new ArgumentException
+								(S._("Xml_ArgumentException"), "ns");
+						}
+						
+						if (Namespaces == false) 
+						{
+							if ((ns == null) && (writeState == System.Xml.WriteState.Attribute))
+							{
+								writer.Write(localName);
+							}
+						} 
+						else if (Namespaces == true) 
+						{
+							
+							try 
+							{
+								Uri uri = new System.Uri(ns);
+								String prefix = LookupPrefix(ns);
+
+								if((Object)prefix == null && prefix == String.Empty)
+								{
+									throw new ArgumentException
+										(S._("Xml_PrefixNotFound"), "ns");
+								}
+								else
+								{
+
+									if (writeState == System.Xml.WriteState.Attribute)
+									{
+										if (prefix != scope.prefix)
+										{
+											writer.Write("{0}:{1}", prefix, localName);
+										}
+										else
+										{
+											writer.Write("{0}", localName);
+										}
+									} 
+									else if (writeState == System.Xml.WriteState.Element)
+									{
+										if((Object)ns == null && ns == String.Empty)
+										{
+											throw new ArgumentException
+												(S._("Xml_NamespaceValueNull"));
+										}
+										else if (prefix != scope.prefix)
+										{
+											writer.Write("{0}:{1}", prefix, localName);
+										}
+										else if (prefix == scope.prefix)
+										{
+											writer.Write("{0}", localName);
+										}
+									}
+								}	
+							}	
+							catch (UriFormatException e)
+							{
+								throw new ArgumentException
+									(S._("Xml_InvalidUriFormat"), "ns");
+							}
+						}
+						
+				}					
 			}
 
 	// Write raw string data.
@@ -916,6 +1040,132 @@ public class XmlTextWriter : XmlWriter
 				}
 			}
 
+	// this is sorta a non-spec hack to get namespaces declared from within attributes
+	// to be added to the namespaceManager
+	internal override void WriteStartAttribute(String prefix, String localName,
+										     String ns , String value, bool flagNS)
+			{
+				// heres the hack
+				if((Object)value != null && value != String.Empty && flagNS == true)
+				{
+						// add the namespace and prefix to namespaceManager
+						namespaceManager.AddNamespace(localName, value);
+				}
+				
+				// Validate the parameters.
+				if(!namespaces && (prefix != null || ns != null))
+				{
+					throw new ArgumentException
+						(S._("Xml_NamespacesNotSupported"));
+				}
+
+				// Check the state and output delimiters.
+				if(writeState == System.Xml.WriteState.Attribute)
+				{
+					writer.Write(quoteChar);
+					writer.Write(' ');
+				}
+				else if(writeState == System.Xml.WriteState.Element)
+				{
+					writer.Write(' ');
+				}
+				else if(writeState == System.Xml.WriteState.Closed)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_InvalidWriteState"));
+				}
+
+				// Output the name of the attribute, with appropriate prefixes.
+				if(((Object)prefix) != null && prefix != String.Empty &&
+				   ((Object)ns) != null && ns != String.Empty)
+				{
+					// We need to associate a prefix with a namespace.
+					String currMapping = LookupPrefix(ns);
+					if(currMapping == prefix)
+					{
+						// The prefix is already mapped to this URI.
+						if(prefix != scope.prefix)
+						{
+							writer.Write(prefix);
+							writer.Write(':');
+						}
+					}
+					else
+					{
+						// Create a new pseudo-prefix for the URI.
+						prefix = GetPseudoPrefix(ns);
+						writer.Write("xmlns:");
+						writer.Write(prefix);
+						writer.Write('=');
+						writer.Write(quoteChar);
+						WriteQuotedString(ns);
+						writer.Write(quoteChar);
+						writer.Write(' ');
+						writer.Write(prefix);
+						writer.Write(':');
+					}
+				}
+				else if(((Object)prefix) != null && prefix != String.Empty)
+				{
+					// We were only given a prefix, so output it directly.
+					if(prefix != scope.prefix)
+					{
+						writer.Write(prefix);
+						writer.Write(':');
+					}
+				}
+				else if(((Object)ns) != null && ns != String.Empty)
+				{
+					// We were only given a namespace, so find the prefix.
+					prefix = LookupPrefix(ns);
+					if(((Object)prefix) == null || prefix.Length == 0)
+					{
+						// Create a new pseudo-prefix for the URI.
+						prefix = GetPseudoPrefix(ns);
+						writer.Write("xmlns:");
+						writer.Write(prefix);
+						writer.Write('=');
+						writer.Write(quoteChar);
+						WriteQuotedString(ns);
+						writer.Write(quoteChar);
+						writer.Write(' ');
+						writer.Write(prefix);
+						writer.Write(':');
+					}
+				}
+				writer.Write(localName);
+
+				// Output the start of the attribute value.
+				writer.Write('=');
+				writer.Write(quoteChar);
+
+				// We are now in the attribute state.
+				writeState = System.Xml.WriteState.Attribute;
+
+				// Recognise special attributes.
+				if(prefix == "xml")
+				{
+					if(localName == "lang")
+					{
+						special = Special.Lang;
+					}
+					else if(localName == "space")
+					{
+						special = Special.Space;
+					}
+					else
+					{
+						special = Special.None;
+					}
+				}
+				else
+				{
+					special = Special.None;
+				}
+
+			}
+
+	
 	// Write the start of an XML document.
 	public override void WriteStartDocument(bool standalone)
 			{

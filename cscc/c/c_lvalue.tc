@@ -201,7 +201,24 @@ ILNode_GenDiscard(ILNode_CGlobalVar)
  */
 ILNode_GenValue(ILNode_CGlobalVar)
 {
-	/* TODO */
+	if(info->asmOutput)
+	{
+		if(node->type == node->decayedType)
+		{
+			fputs("\tldsfld\t", info->asmOutput);
+		}
+		else
+		{
+			fputs("\tldsflda\t", info->asmOutput);
+		}
+		ILDumpType(info->asmOutput, info->image, node->type,
+				   IL_DUMP_QUOTE_NAMES);
+		putc(' ', info->asmOutput);
+		ILDumpIdentifier(info->asmOutput, node->name, 0,
+						 IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
+	}
+	ILGenAdjust(info, 1);
 	return ILTypeToMachineType(node->decayedType);
 }
 
@@ -210,7 +227,7 @@ ILNode_GenValue(ILNode_CGlobalVar)
  */
 ILNode_Prepare(ILNode_CGlobalVar)
 {
-	/* TODO */
+	/* Nothing to do here */
 	return ILTypeToMachineType(node->decayedType);
 }
 
@@ -219,7 +236,22 @@ ILNode_Prepare(ILNode_CGlobalVar)
  */
 ILNode_GetAndPrepare(ILNode_CGlobalVar)
 {
-	/* TODO */
+	if(info->asmOutput)
+	{
+		fputs("\tldsfld\t", info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, node->type,
+				   IL_DUMP_QUOTE_NAMES);
+		putc(' ', info->asmOutput);
+		ILDumpIdentifier(info->asmOutput, node->name, 0,
+						 IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
+	}
+	ILGenAdjust(info, 1);
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
 	return ILTypeToMachineType(node->decayedType);
 }
 
@@ -228,7 +260,19 @@ ILNode_GetAndPrepare(ILNode_CGlobalVar)
  */
 ILNode_Store(ILNode_CGlobalVar)
 {
-	/* TODO */
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	fputs("\tstsfld\t", info->asmOutput);
+	ILDumpType(info->asmOutput, info->image, node->type,
+			   IL_DUMP_QUOTE_NAMES);
+	putc(' ', info->asmOutput);
+	ILDumpIdentifier(info->asmOutput, node->name, 0,
+					 IL_DUMP_QUOTE_NAMES);
+	putc('\n', info->asmOutput);
+	ILGenAdjust(info, -1);
 }
 
 /*
@@ -236,7 +280,17 @@ ILNode_Store(ILNode_CGlobalVar)
  */
 ILNode_GenRef(ILNode_CGlobalVar)
 {
-	/* TODO */
+	if(info->asmOutput)
+	{
+		fputs("\tldsflda\t", info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, node->type,
+				   IL_DUMP_QUOTE_NAMES);
+		putc(' ', info->asmOutput);
+		ILDumpIdentifier(info->asmOutput, node->name, 0,
+						 IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
+	}
+	ILGenAdjust(info, 1);
 }
 
 /*
@@ -244,8 +298,11 @@ ILNode_GenRef(ILNode_CGlobalVar)
  */
 ILNode_CGenAddress(ILNode_CGlobalVar)
 {
-	/* TODO */
-	return CAddressDefault;
+	CAddress addr;
+	ILNode_GenRef((ILNode_LValue *)node, info);
+	addr.ptrOnStack = 1;
+	addr.offset = 0;
+	return addr;
 }
 
 /*

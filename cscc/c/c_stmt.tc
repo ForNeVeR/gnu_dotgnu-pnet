@@ -352,15 +352,6 @@ ILNode_CSemAnalysis(ILNode_Switch)
 }
 
 /*
- * Perform semantic analysis for local variable declarations.
- */
-ILNode_CSemAnalysis(ILNode_LocalVarDeclaration)
-{
-	/* TODO */
-	return CSemValueDefault;
-}
-
-/*
  * Perform semantic analysis for line number information blocks.
  */
 ILNode_CSemAnalysis(ILNode_LineInfo)

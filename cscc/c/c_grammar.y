@@ -797,7 +797,11 @@ PrimaryExpression
 						case C_SCDATA_GLOBAL_VAR:
 						case C_SCDATA_GLOBAL_VAR_FORWARD:
 						{
-							/* TODO */
+							/* Create a global variable reference */
+							type = CScopeGetType(data);
+							decayedType = CTypeDecay(&CCCodeGen, type);
+							$$ = ILNode_CGlobalVar_create
+								($1, type, decayedType);
 						}
 						break;
 

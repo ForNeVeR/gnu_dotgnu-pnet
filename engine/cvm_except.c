@@ -417,6 +417,29 @@ VMCASE(COP_PREFIX_SET_STACK_TRACE):
 }
 VMBREAK(COP_PREFIX_SET_STACK_TRACE);
 
+/**
+ * <opcode name="start_catch" group="Exception handling instructions">
+ *   <operation>Save state information for Thread.Abort</operation>
+ *
+ *   <format>prefix<fsep/>start_catch</format>
+ *   <dformat>{set_stack_trace}</dformat>
+ *
+ *   <form name="set_stack_trace" code="COP_PREFIX_START_CATCH"/>
+ *
+ *   <before>...</before>
+ *   <after>...</after>
+ *
+ *   <description>
+ *   If the thread is aborting and a <code>ThreadAbortException</code>
+ *   has been thrown then save the current point where the
+ *   <code>ThreadAbortException</code> was thrown.
+ *   If the thread is aborting and the current exception isn't a 
+ *   ThreadAbortException then reset the current exception to
+ *   ThreadAbortException.  This happens if a thread throws an
+ *   exception while it is being aborted (usually occurs in a finally clause).
+ *   </description>
+ * </opcode>
+ */
 VMCASE(COP_PREFIX_START_CATCH):
 {
 	if (thread->aborting)
@@ -424,7 +447,8 @@ VMCASE(COP_PREFIX_START_CATCH):
 		if (thread->currentException
 			&& _ILExecThreadIsThreadAbortException(thread, thread->currentException)
 			&& !thread->threadAbortException)
-		{			
+		{
+			/* Save info about the handler that noticed the abort */
 			thread->threadAbortException = thread->currentException;
 			thread->abortHandlerEndPC = CVMP_ARG_PTR(unsigned char *);
 			thread->abortHandlerFrame = thread->numFrames;
@@ -441,6 +465,25 @@ VMCASE(COP_PREFIX_START_CATCH):
 }
 VMBREAK(COP_PREFIX_START_CATCH);
 
+/**
+ * <opcode name="start_finally" group="Exception handling instructions">
+ *   <operation>Save state information for Thread.Abort</operation>
+ *
+ *   <format>prefix<fsep/>start_finally</format>
+ *   <dformat>{set_stack_trace}</dformat>
+ *
+ *   <form name="set_stack_trace" code="COP_PREFIX_START_FINALLY"/>
+ *
+ *   <before>...</before>
+ *   <after>...</after>
+ *
+ *   <description>
+ *   If the thread is aborting and a <code>ThreadAbortException</code>
+ *   has been thrown then save the current point where the
+ *   <code>ThreadAbortException</code> was thrown.
+ *   </description>
+ * </opcode>
+ */
 VMCASE(COP_PREFIX_START_FINALLY):
 {
 	if (thread->aborting)
@@ -448,7 +491,8 @@ VMCASE(COP_PREFIX_START_FINALLY):
 		if (thread->currentException
 			&& _ILExecThreadIsThreadAbortException(thread, thread->currentException)
 			&& !thread->threadAbortException)
-		{			
+		{
+			/* Save info about the handler that noticed the abort */
 			thread->threadAbortException = thread->currentException;
 			thread->abortHandlerEndPC = CVMP_ARG_PTR(unsigned char *);
 			thread->abortHandlerFrame = thread->numFrames;
@@ -459,31 +503,63 @@ VMCASE(COP_PREFIX_START_FINALLY):
 }
 VMBREAK(COP_PREFIX_START_FINALLY);
 
+/**
+ * <opcode name="propagate_abort" group="Exception handling instructions">
+ *   <operation>Propagate ThreadAbortExceptions</operation>
+ *
+ *   <format>prefix<fsep/>propagate_abort</format>
+  *
+ *   <form name="propagate_abort" code="COP_PREFIX_PROPAGATE_ABORT"/>
+ *
+ *   <before>...</before>
+ *   <after>...</after>
+ *
+ *   <description>
+ *   Check if the thread is aborting and propagate the ThreadAbortException
+ *   if the thread is at the end (or past) the catch or finally clause that
+ *   first detected the exception.
+ *   </description>
+ * </opcode>
+ */
 VMCASE(COP_PREFIX_PROPAGATE_ABORT):
 {	
 	if (thread->aborting)
 	{
-		if (thread->currentException
+		/* Check to see if we are at a point where the ThreadAbortException
+		   should be propagated */
+
+		if (
+			/* Verify that currentException isn't null (it shouldn't be) */
+			thread->currentException
+			/* Make sure exception is a ThreadAbortException */
 			&& _ILExecThreadIsThreadAbortException(thread, thread->currentException)
-			&& 			
+			&& 
+			/* Make sure we've reached or gone below (call stack wise) the catch/finally
+			   clause that first noticed the ThreadAbortException */
 			((pc >= thread->abortHandlerEndPC && thread->numFrames == thread->abortHandlerFrame)
 			|| 
 			(thread->numFrames < thread->abortHandlerFrame)))
 		{
-			stacktop[0].ptrValue = thread->threadAbortException;						
+			/* Push the ThreadAbortException onto the stack */
+			stacktop[0].ptrValue = thread->currentException;						
 			
+			/* Since we've reached the end of the abort handler, reset these for 
+			   the next time a catch/finally is entered */
 			thread->threadAbortException = 0;
 			thread->abortHandlerEndPC = 0;
-			thread->abortHandlerFrame = 0;			
+			thread->abortHandlerFrame = 0;
 
+			/* Move PC on and increment stack by 1 */
 			MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 1);
 
 			if(!ILCoderPCToHandler(thread->process->coder, pc, 0))
-			{				
+			{
+				/* No handler that can handle this exception, throw to caller */
 				goto throwCaller;
 			}
 			else
 			{
+				/* Throw to another handler in this method */
 				goto prefixThrowException;
 			}
 		}

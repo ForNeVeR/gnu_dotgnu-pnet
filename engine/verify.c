@@ -390,6 +390,22 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 			case (unsigned long)ILType_UInt:	return 1;
 			default: break;
 		}
+
+		if(!unsafeAllowed)
+		{
+			return 0;
+		}
+
+		/* Allow a native int to be assigned to a complex type */
+		if(type != 0 && ILType_IsComplex(type) && 
+						item->engineType == ILEngineType_I)
+		{
+			if(ILType_Kind(type) == IL_TYPE_COMPLEX_PTR ||
+			  ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF) 
+			{
+				return 1;
+			}
+		}
 		return 0;
 	}
 	else if(item->engineType == ILEngineType_I8)

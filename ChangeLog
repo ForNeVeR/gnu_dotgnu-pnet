@@ -3,6 +3,9 @@
 
 	* System.Xml/XmlReader.cs: fix semantic compile errors.
 
+	* System/ComponentModel/EventHandlerList.cs: new class in the
+	"System" assembly.
+
 2002-06-27  Charlie Carnow   <carnow@gmx.net>
 
 	* System.Xml/XmlReader.cs: Implemented IsStartElement(System.String,

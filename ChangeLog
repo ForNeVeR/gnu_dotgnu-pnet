@@ -1,3 +1,8 @@
+
+2003-08-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/Makefile.am: add "dirent.h" to the install list.
+
 2003-08-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* libc/dirent/.cvsignore, libc/dirent/Makefile.am,

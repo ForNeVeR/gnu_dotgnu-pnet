@@ -6,6 +6,7 @@ libinclude_HEADERS = \
 	alloca.h \
 	assert.h \
 	ctype.h \
+	dirent.h \
 	errno.h \
 	fcntl.h \
 	features.h \

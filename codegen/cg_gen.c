@@ -87,6 +87,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 	info->pedanticArith = 0;
 	info->clsCompliant = 0;
 	info->semAnalysis = 0;
+	info->typeGather = 0;
 	info->useJavaLib = 0;
 	info->outputIsJava = 0;
 	info->decimalRoundMode = IL_DECIMAL_ROUND_HALF_EVEN;

@@ -88,6 +88,7 @@ struct _tagILGenInfo
 	int				pedanticArith : 1;	/* Make arithmetic always accurate */
 	int				clsCompliant : 1;	/* Use strict CLS library only */
 	int				semAnalysis : 1;	/* Non-zero during semantic analysis */
+	int				typeGather : 1;		/* Non-zero during type gathering */
 	int				useJavaLib : 1;		/* Use Java and not C# library */
 	int				outputIsJava : 1;	/* Output Java bytecode */
 	int             decimalRoundMode;	/* Rounding mode for ILDecimal */

@@ -13,6 +13,10 @@
 	* runtime/System/IO/IOException.cs (GetErrnoMessage): don't bother
 	with string resources - go direct to the underlying platform.
 
+	* runtime/System/Reflection/Assembly.cs: pass the calling assembly
+	to "LoadFromName" and "LoadFromFile" to establish the correct search
+	and security contexts.
+
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Implemented quite complex Unescape(String).

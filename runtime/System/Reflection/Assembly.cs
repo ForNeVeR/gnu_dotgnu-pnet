@@ -249,11 +249,13 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 
 	// Internal version of "Load".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Assembly LoadFromName(String name, out int error);
+	extern private static Assembly LoadFromName(String name, out int error,
+												Assembly parent);
 
 	// Internal version of "LoadFrom".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Assembly LoadFromFile(String name, out int error);
+	extern private static Assembly LoadFromFile(String name, out int error,
+												Assembly parent);
 
 	// Throw an exception based on a load error.
 	private static void ThrowLoadError(String name, int error)
@@ -282,6 +284,8 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	// Load a particular assembly.
 	public static Assembly Load(String assemblyString)
 			{
+				Assembly assembly;
+				int error;
 				if(assemblyString == null)
 				{
 					throw new ArgumentNullException("assemblyString");
@@ -290,10 +294,15 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 				   String.Compare(assemblyString, 0, "file://", 0, 7, true)
 				   		== 0)
 				{
-					return LoadFrom(assemblyString.Substring(7));
+					assembly = LoadFromFile(assemblyString.Substring(7),
+											out error,
+										    GetCallingAssembly());
 				}
-				int error;
-				Assembly assembly = LoadFromName(assemblyString, out error);
+				else
+				{
+					assembly = LoadFromName(assemblyString, out error,
+											GetCallingAssembly());
+				}
 				if(error == LoadError_OK)
 				{
 					return assembly;
@@ -318,7 +327,8 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 					throw new ArgumentNullException("assemblyFile");
 				}
 				int error;
-				Assembly assembly = LoadFromFile(assemblyFile, out error);
+				Assembly assembly = LoadFromFile(assemblyFile, out error,
+											     GetCallingAssembly());
 				if(error == LoadError_OK)
 				{
 					return assembly;

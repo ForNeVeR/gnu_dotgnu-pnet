@@ -34,6 +34,22 @@ public abstract class KeyedHashAlgorithm : HashAlgorithm
 	// Constructor.
 	protected KeyedHashAlgorithm() {}
 
+	// Destructor.
+	~KeyedHashAlgorithm()
+			{
+				Dispose(false);
+			}
+
+	// Dispose this object.
+	protected override void Dispose(bool disposing)
+			{
+				if(KeyValue != null)
+				{
+					KeyValue.Initialize();
+				}
+				base.Dispose(disposing);
+			}
+
 	// Create an instance of the default keyed hash algorithm.
 	public new static KeyedHashAlgorithm Create()
 			{

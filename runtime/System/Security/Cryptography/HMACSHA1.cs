@@ -54,6 +54,22 @@ public class HMACSHA1 : KeyedHashAlgorithm
 				algName = CryptoConfig.SHA1Default;
 			}
 
+	// Destructor.
+	~HMACSHA1()
+			{
+				Dispose(false);
+			}
+
+	// Dispose this object.
+	protected override void Dispose(bool disposing)
+			{
+				if(alg != null)
+				{
+					((IDisposable)alg).Dispose();
+				}
+				base.Dispose(disposing);
+			}
+
 	// Initialize the key.  If it is 64 bytes or less, then use
 	// it as-is.  Otherwise hash it down.
 	private void SetKey(byte[] key)

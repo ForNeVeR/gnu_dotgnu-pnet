@@ -24,6 +24,11 @@
 	* tests/runtime/System/Security/Cryptography/CryptoTestCase.cs:
 	test "HashAlgorithm.ComputeHash" on streams.
 
+	* runtime/System/Security/Cryptography/HMACSHA1.cs,
+	runtime/System/Security/Cryptography/KeyedHashAlgorithm.cs,
+	runtime/System/Security/Cryptography/MACTripleDES.cs:
+	implement dispose logic for keyed hash algorithms.
+
 2002-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/runtime/System/Security/Cryptography/CryptoTestCase.cs,

@@ -61,7 +61,32 @@ public class MACTripleDES : KeyedHashAlgorithm
 					throw new ArgumentNullException("rgbKey");
 				}
 				KeyValue = rgbKey;
-				SetupAlgorithm(CryptoConfig.TripleDESDefault);
+				SetupAlgorithm(strTripleDES);
+			}
+
+	// Destructor.
+	~MACTripleDES()
+			{
+				Dispose(false);
+			}
+
+	// Dispose this object.
+	protected override void Dispose(bool disposing)
+			{
+				if(stream != null)
+				{
+					stream.Close();
+					stream = null;
+				}
+				if(block != null)
+				{
+					block.Initialize();
+				}
+				if(alg != null)
+				{
+					((IDisposable)alg).Dispose();
+				}
+				base.Dispose(disposing);
 			}
 
 	// Set up the TripleDES algorithm instance.

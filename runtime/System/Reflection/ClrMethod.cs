@@ -179,7 +179,7 @@ internal sealed class ClrMethod : MethodInfo, IClrProgramItem
 				int numParams = ClrHelpers.GetNumParameters(privateData);
 				int param;
 				ParameterInfo paramInfo;
-				builder.Append(ReturnType.FullName);
+				builder.Append(ReturnType.Name);
 				builder.Append(' ');
 				builder.Append(Name);
 				builder.Append('(');

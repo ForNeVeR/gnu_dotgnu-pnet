@@ -1379,8 +1379,10 @@ ILNode_GenRef(ILNode_StaticField)
  */
 ILNode_GenRef(ILNode_MemberField)
 {
+	unsigned tempVar = ILGenPrepareForThisAccess
+		(info, node->expr, ILField_Owner(node->field), 1);
 	ILGenFieldRef(info, IL_OP_LDFLDA, node->field);
-	ILGenAdjust(info, 1);
+	ILGenFreeThisVar(info, tempVar);
 }
 
 /*

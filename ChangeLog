@@ -11,6 +11,9 @@
 	* codegen/cg_decls.tc, cscc/csharp/cs_decls.tc: output the correct
 	class flags when modified by library attributes.
 
+	* codegen/cg_lvalue.tc (ILNode_MemberField): bug fix to GenRef,
+	which caused it to drop "this" when accessing value type fields.
+
 2002-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/Makefile.am, image/ser_writer.c, include/il_serialize.h:

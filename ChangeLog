@@ -1,4 +1,9 @@
 
+2003-06-22  Gopal.V  <gopalv82@symonds.net>
+
+	* codegen/cg_coerce.c: Fix indirect casting to use a 3 step conversion
+	instead of obtaining rules.
+
 2003-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/process.c (ILExecProcessDestroy): run a final garbage

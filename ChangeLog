@@ -5,3 +5,10 @@
 
 	* doc/HACKING, README: describe how to build and contribute
 	to the "pnetC" library.
+
+	* configure.in, include/Makefile.am, include/unistd.h,
+	include/sys/types.h, libc/Makefile.am, libc/unistd/.cvsignore,
+	libc/unistd/Makefile.am, libc/unistd/chown-stub.c,
+	libc/unistd/fake-ids.h, libc/unistd/guid-stub.c, libc/unistd/isatty.c
+	libc/unistd/pid-stub.c: stub out unistd functions that deal with
+	user, group, and process ID's, because they are insecure otherwise.

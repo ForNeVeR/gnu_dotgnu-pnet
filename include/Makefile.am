@@ -14,6 +14,7 @@ libinclude_HEADERS = alloca.h \
 					 stddef.h \
 					 stdint.h \
 					 stdio.h \
+					 unistd.h \
 					 varargs.h
 
 EXTRA_DIST = libc-symbols.h

@@ -75,8 +75,10 @@ typedef long                __t_scalar_t;
 typedef unsigned long       __t_uscalar_t;
 typedef int32_t             __ufs_daddr_t, ufs_daddr_t;
 typedef uint32_t            __uid_t, uid_t;
+typedef unsigned int        __useconds_t, useconds_t;
 #define __BIT_TYPES_DEFINED__   1
 
+#if 0 /* TODO */
 /* Definitions for file descriptor sets */
 typedef unsigned long       __fd_mask, fd_mask;
 #define NBBY                8
@@ -91,7 +93,7 @@ typedef unsigned long       __fd_mask, fd_mask;
 #endif
 typedef struct fd_set
 {
-    fd_mask fds_bits[howmany(__FD_SETSIZE, __NFDBITS)];
+    fd_mask fds_bits[howmany(FD_SETSIZE, NFDBITS)];
 
 } __fd_set, fd_set;
 #define __fds_bits          fds_bits
@@ -106,6 +108,7 @@ typedef struct fd_set
 #define FD_CLR(fd,set)      ((set)->fds_bits[__FDELT(fd)] &= ~__FDMASK(fd))
 #define FD_ISSET(fd,set)    ((set)->fds_bits[__FDELT(fd)] & __FDMASK(fd))
 #define FD_COPY(from,to)    (*(to) = *(from))
+#endif
 
 /* Define specific types */
 #ifndef ssize_t

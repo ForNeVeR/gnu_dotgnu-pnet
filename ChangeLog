@@ -50,6 +50,10 @@
 	runtime/System/Threading/WaitOrTimerCallback.cs: implement the
 	"ThreadPool" class.
 
+	* System/Threading/ThreadExceptionEventArgs.cs,
+	System/Threading/ThreadExceptionEventHandler.cs: add two
+	"System.Threading" classes that live in the "System" assembly.
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

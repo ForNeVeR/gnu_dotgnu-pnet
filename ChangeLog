@@ -1,3 +1,13 @@
+2003-10-08  Neil Cawse  <neilcawse@geotab.com>
+
+	* : many small fixes to compile with csc
+
+	* System.Windows.Forms/ScrollBar.cs,
+	System.Windows.Forms/ScrollEventArgs.cs : improve drawing, make events
+	consistent with ms.
+
+	* samples/FormsTest.cs, test.ico, test 1bpp.bmp, test 4bpp.bmp,
+	test 8bpp.bmp : draw icon in image test, images for testing.
 
 2003-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -27,6 +27,9 @@ in some of the prefixed opcodes.
 * engine/verify_arith.c: use "subUnsafeMatrix" instead of "addUnsafeMatrix"
 for verifying "sub" and "sub.ovf.un".
 
+* engine/verify_branch.c: "clt", "clt.un", and "cgt" are not valid on
+pointer arguments.
+
 2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/call.c, engine/engine.h, engine/cvm.c, engine/cvm_call.c,

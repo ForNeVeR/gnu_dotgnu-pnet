@@ -461,14 +461,7 @@ case IL_OP_BLT_UN_S:
 	/* Binary conditional short branch */
 	dest = GET_SHORT_DEST();
 binaryBranch:
-	if(unsafeAllowed)
-	{
-		commonType = unsafeCompareMatrix[STK_BINARY_1][STK_BINARY_2];
-	}
-	else
-	{
-		commonType = binaryCompareMatrix[STK_BINARY_1][STK_BINARY_2];
-	}
+	commonType = binaryCompareMatrix[STK_BINARY_1][STK_BINARY_2];
 	if(commonType != ILEngineType_Invalid)
 	{
 		ILCoderBranch(coder, opcode, dest, STK_BINARY_1, STK_BINARY_2);
@@ -594,9 +587,12 @@ case IL_OP_PREFIX + IL_PREFIX_OP_CLT:
 case IL_OP_PREFIX + IL_PREFIX_OP_CLT_UN:
 {
 	/* Binary conditional comparison */
-	if(unsafeAllowed)
+	if(opcode == IL_OP_PREFIX + IL_PREFIX_OP_CGT_UN &&
+	   STK_BINARY_1 == ILEngineType_O &&
+	   STK_BINARY_2 == ILEngineType_O)
 	{
-		commonType = unsafeCompareMatrix[STK_BINARY_1][STK_BINARY_2];
+		/* "cgt.un" is allowed on object references */
+		commonType = ILEngineType_O;
 	}
 	else
 	{

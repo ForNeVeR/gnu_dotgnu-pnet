@@ -553,6 +553,65 @@ System_Array *_IL_Assembly_GetManifestResourceNames(ILExecThread *thread,
 }
 
 /*
+ * Construct a "FileStream" object for a particular
+ * filename in the same directory as an assembly.
+ */
+static ILObject *CreateFileStream(ILExecThread *thread, const char *assemFile,
+								  const char *filename)
+{
+	int len;
+	char *newPath;
+	ILString *name;
+
+	/* Bail out if the parameters are incorrect in some way */
+	if(!assemFile || !filename)
+	{
+		return 0;
+	}
+
+	/* Strip path information from "filename" */
+	len = strlen(filename);
+	while(len > 0 && filename[len - 1] != '/' && filename[len - 1] != '\\' &&
+	      filename[len - 1] != ':')
+	{
+		--len;
+	}
+	filename += len;
+
+	/* Create a new pathname for the file in the assembly's directory */
+	len = strlen(assemFile);
+	while(len > 0 && assemFile[len - 1] != '/' && assemFile[len - 1] != '\\')
+	{
+		--len;
+	}
+	if(!len)
+	{
+		return 0;
+	}
+	newPath = (char *)ILMalloc(len + strlen(filename) + 2);
+	if(!newPath)
+	{
+		return 0;
+	}
+	ILMemCpy(newPath, assemFile, len);
+	newPath[len++] = '/';
+	strcpy(newPath + len, filename);
+
+	/* Convert the pathname into a string object */
+	name = ILStringCreate(thread, newPath);
+	ILFree(newPath);
+	if(!name)
+	{
+		return 0;
+	}
+
+	/* Create the FileStream object */
+	return ILExecThreadNew(thread, "System.IO.FileStream",
+		   "(ToSystem.String;vSystem.IO.FileMode;vSystem.IO.FileAccess;)V",
+		   name, (ILVaInt)3 /* Open */, (ILVaInt)1 /* Read */);
+}
+
+/*
  * Construct a "ClrResourceStream" object for a particular
  * manifest resource.  Returns NULL if "posn" is invalid
  * or the system is out of memory.
@@ -623,15 +682,15 @@ ILObject *_IL_Assembly_GetManifestResourceStream(ILExecThread *thread,
 	{
 		/* Look for the manifest resource within the image */
 		ILManifestRes *res = 0;
+		ILFileDecl *file;
 		ILUInt32 posn = 0;
 		while((res = (ILManifestRes *)ILImageNextToken
 				(image, IL_META_TOKEN_MANIFEST_RESOURCE, (void *)res)) != 0)
 		{
 			if(!strcmp(ILManifestRes_Name(res), str))
 			{
-				/* TODO: handle resources in external files and assemblies */
-				if(ILManifestRes_OwnerFile(res) ||
-				   ILManifestRes_OwnerAssembly(res))
+				/* TODO: handle resources in external assemblies */
+				if(ILManifestRes_OwnerAssembly(res))
 				{
 					continue;
 				}
@@ -642,6 +701,26 @@ ILObject *_IL_Assembly_GetManifestResourceStream(ILExecThread *thread,
 				   _ILClrCallerImage(thread) != image)
 				{
 					return 0;
+				}
+
+				/* Handle resources in external files */
+				if((file = ILManifestRes_OwnerFile(res)) != 0)
+				{
+					/* TODO: need to enforce some extra security to prevent
+					   wayward applications from reading arbitrary files in
+					   the same directory as an assembly */
+
+					/* The file must not have metadata and it must
+					   start at offset 0 to be a valid file resource */
+					if(ILFileDecl_HasMetaData(file) ||
+					   ILManifestRes_Offset(res) != 0)
+					{
+						return 0;
+					}
+
+					/* Create a "FileStream" for the file resource */
+					return CreateFileStream(thread, image->filename,
+											ILFileDecl_Name(file));
 				}
 
 				/* Find the manifest resource at "posn" within the image */

@@ -482,7 +482,7 @@ int ILImageLoad(FILE *file, const char *filename,
 	if(filename)
 	{
 		/* Save the filename for later use in dynamic linking */
-		(*image)->filename = ILDupString(filename);
+		(*image)->filename = ILExpandFilename(filename, (char *)0);
 		if(!((*image)->filename))
 		{
 			if(isMapped)

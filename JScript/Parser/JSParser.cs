@@ -22,6 +22,7 @@ namespace Microsoft.JScript
 {
 
 using System;
+using System.Globalization;
 
 public class JSParser
 {
@@ -175,16 +176,32 @@ public class JSParser
 	private Object NumericValue(String text)
 			{
 				// TODO: handle hex literals.
-				double value = Double.Parse(text);
-				if(value >= (double)(Int32.MinValue) &&
-				   value <= (double)(Int32.MaxValue) &&
-				   Math.Round(value) == value)
+				if(text.Length > 2 && text[1] == 'x' && text[0] == '0')
 				{
-					return (int)value;
+					long longValue = Int64.Parse(text.Substring(2), 
+												NumberStyles.HexNumber);
+				
+					if( longValue >= Int32.MinValue &&
+					    longValue <= Int32.MaxValue)
+					{
+						return (int)longValue;
+					}
+					
+					return longValue;
 				}
 				else
 				{
-					return value;
+					double value = Double.Parse(text);
+					if(value >= (double)(Int32.MinValue) &&
+					   value <= (double)(Int32.MaxValue) &&
+					   Math.Round(value) == value)
+					{
+						return (int)value;
+					}
+					else
+					{
+						return value;
+					}
 				}
 			}
 
@@ -924,7 +941,7 @@ public class JSParser
 			{
 				JNode expr, expr2;
 				expr = EqualityExpression(noIn);
-				while(token == JSToken.LogicalOr)
+				while(token == JSToken.BitwiseAnd)
 				{
 					NextToken();
 					expr2 = EqualityExpression(noIn);
@@ -940,7 +957,7 @@ public class JSParser
 			{
 				JNode expr, expr2;
 				expr = BitwiseAndExpression(noIn);
-				while(token == JSToken.LogicalOr)
+				while(token == JSToken.BitwiseXor)
 				{
 					NextToken();
 					expr2 = BitwiseAndExpression(noIn);
@@ -956,7 +973,7 @@ public class JSParser
 			{
 				JNode expr, expr2;
 				expr = BitwiseXorExpression(noIn);
-				while(token == JSToken.LogicalOr)
+				while(token == JSToken.BitwiseOr)
 				{
 					NextToken();
 					expr2 = BitwiseXorExpression(noIn);

@@ -1,4 +1,9 @@
 
+2004-08-16  Gopal V  <gopalv82@yahoo.com>
+
+	* JScript/Parser/JSParser.cs: Implement hex literal parsing and
+	fix bitwise operation parsing.
+
 2004-08-14  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* JScript/Builtins/ArrayObject.cs: Implement enumerators for ArrayObject

@@ -1723,7 +1723,7 @@ JavaGenValue(ILNode_RefValue)
 JavaGenValue(ILNode_ArrayLength)
 {
 	JavaGenValue(node->expr, info);
-	ILGenSimple(info, JAVA_OP_ARRAYLENGTH);
+	JavaGenSimple(info, JAVA_OP_ARRAYLENGTH);
 	return ILMachineType_NativeInt;
 }
 

@@ -1936,7 +1936,6 @@ char *ILStringToAnsi(ILExecThread *thread, ILString *str)
 	{
 		return 0;
 	}
-	return ILStringToUTF8(thread, str);
 }
 
 #ifdef	__cplusplus

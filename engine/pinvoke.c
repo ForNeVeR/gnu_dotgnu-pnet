@@ -454,6 +454,8 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 	void *ptr;
 	ILUInt32 size, sizeInWords;
 	ILNativeFloat tempFloat;
+	ILUInt32 marshalType;
+	char *strValue;
 
 	/* Get the top and extent of the stack */
 	stacktop = thread->stackTop;
@@ -470,8 +472,60 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 	numParams = ILTypeNumParams(signature);
 	for(param = 1; param <= numParams; ++param)
 	{
-		/* TODO: marshal native parameters */
+		/* Marshal parameters that need special handling */
+		marshalType = ILPInvokeGetMarshalType(0, method, param);
+		if(marshalType != IL_META_MARSHAL_DIRECT)
+		{
+			switch(marshalType)
+			{
+				case IL_META_MARSHAL_ANSI_STRING:
+				{
+					/* Marshal an ANSI string from the native world */
+					CHECK_SPACE(1);
+					strValue = *((char **)(*args));
+					if(strValue)
+					{
+						stacktop->ptrValue = ILStringCreate(thread, strValue);
+						if(!(stacktop->ptrValue))
+						{
+							return 1;
+						}
+					}
+					else
+					{
+						stacktop->ptrValue = 0;
+					}
+					++args;
+					++stacktop;
+				}
+				continue;
 
+				case IL_META_MARSHAL_UTF8_STRING:
+				{
+					/* Marshal a UTF-8 string from the native world */
+					CHECK_SPACE(1);
+					strValue = *((char **)(*args));
+					if(strValue)
+					{
+						stacktop->ptrValue =
+							ILStringCreateUTF8(thread, strValue);
+						if(!(stacktop->ptrValue))
+						{
+							return 1;
+						}
+					}
+					else
+					{
+						stacktop->ptrValue = 0;
+					}
+					++args;
+					++stacktop;
+				}
+				continue;
+			}
+		}
+
+		/* Marshal the parameter directly */
 		paramType = ILTypeGetEnumType(ILTypeGetParam(signature, param));
 		if(ILType_IsPrimitive(paramType))
 		{
@@ -557,7 +611,7 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 		{
 			/* Process an object reference */
 			CHECK_SPACE(1);
-			stacktop->ptrValue = *args;
+			stacktop->ptrValue = *((void **)(*args));
 			++args;
 			++stacktop;
 		}
@@ -577,7 +631,7 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 		{
 			/* Process a value that is being passed by reference */
 			CHECK_SPACE(1);
-			stacktop->ptrValue = *args;
+			stacktop->ptrValue = *((void **)(*args));
 			++args;
 			++stacktop;
 		}
@@ -606,8 +660,58 @@ static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
 	ILType *paramType;
 	ILUInt32 size, sizeInWords;
 	ILNativeFloat tempFloat;
+	ILUInt32 marshalType;
 
-	/* TODO: marshal native return values */
+	/* Marshal return types that need special handling */
+	marshalType = ILPInvokeGetMarshalType(0, method, 0);
+	if(marshalType != IL_META_MARSHAL_DIRECT)
+	{
+		switch(marshalType)
+		{
+			case IL_META_MARSHAL_ANSI_STRING:
+			{
+				/* Marshal an ANSI string back to the native world */
+				*((char **)result) = ILStringToAnsi
+					(thread, (ILString *)(thread->stackTop[-1].ptrValue));
+				--(thread->stackTop);
+			}
+			return;
+
+			case IL_META_MARSHAL_UTF8_STRING:
+			{
+				/* Marshal a UTF-8 string back to the native world */
+				*((char **)result) = ILStringToUTF8
+					(thread, (ILString *)(thread->stackTop[-1].ptrValue));
+				--(thread->stackTop);
+			}
+			return;
+
+			case IL_META_MARSHAL_FNPTR:
+			{
+				/* Convert a delegate into a function closure pointer */
+				*((void **)result) = _ILDelegateGetClosure
+					((ILObject *)(thread->stackTop[-1].ptrValue));
+				--(thread->stackTop);
+			}
+			return;
+
+			case IL_META_MARSHAL_ARRAY:
+			{
+				/* Convert an array into a pointer to its first member */
+				void *array = thread->stackTop[-1].ptrValue;
+				--(thread->stackTop);
+				if(array)
+				{
+					*((void **)result) = ArrayToBuffer(array);
+				}
+				else
+				{
+					*((void **)result) = 0;
+				}
+			}
+			return;
+		}
+	}
 
 	/* Copy the return value into place */
 	paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));

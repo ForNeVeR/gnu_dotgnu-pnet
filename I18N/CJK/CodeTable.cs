@@ -1,21 +1,25 @@
 /*
  * CodeTable.cs - Implementation of the "System.Text.CodeTable" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (c) 2002  Southern Storm Software, Pty Ltd
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
  */
 
 namespace I18N.CJK
@@ -68,7 +72,11 @@ internal unsafe sealed class CodeTable : IDisposable
 	// Get the starting address for a particular section within
 	// the code table.  This address is guaranteed to persist
 	// after "Dispose" is called.
+#if __PNET__
 	public byte *GetSection(int num)
+#else
+	public byte[] GetSection(int num)
+#endif
 			{
 				// If the table has been disposed, then bail out.
 				if(stream == null)
@@ -103,7 +111,16 @@ internal unsafe sealed class CodeTable : IDisposable
 					// Is this the section we are looking for?
 					if(sectNum == num)
 					{
+#if __PNET__
 						return GetAddress(stream, posn + 8);
+#else
+						byte[] buf = new byte [sectLen];
+						if(stream.Read(buf, 0, sectLen) != sectLen)
+						{
+							break;
+						}
+						return buf;
+#endif
 					}
 
 					// Advance to the next section.
@@ -114,10 +131,12 @@ internal unsafe sealed class CodeTable : IDisposable
 				return null;
 			}
 
+#if __PNET__
 	// Back door access into the engine to get the address of
 	// an offset within a manifest resource stream.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static byte *GetAddress(Stream stream, long position);
+#endif
 
 }; // class CodeTable
 

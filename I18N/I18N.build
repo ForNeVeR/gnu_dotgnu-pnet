@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="pnetlib System" default="all">
+<project name="pnetlib I18N" default="all">
 	<target name="all">
 
 		<!-- Build the primary I18N.dll library -->
@@ -8,6 +8,8 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true">
+
+			<define name="__PNET__" value="true"/>
 
 			<sources>
 				<includes name="Common/*.cs"/>
@@ -35,6 +37,8 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true">
+
+			<define name="__PNET__" value="true"/>
 
 			<sources>
 				<includes name="CJK/*.cs"/>
@@ -64,6 +68,8 @@
 				 nostdlib="true"
 				 optimize="true">
 
+			<define name="__PNET__" value="true"/>
+
 			<sources>
 				<includes name="MidEast/*.cs"/>
 			</sources>
@@ -87,6 +93,8 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true">
+
+			<define name="__PNET__" value="true"/>
 
 			<sources>
 				<includes name="Other/*.cs"/>
@@ -112,6 +120,8 @@
 				 nostdlib="true"
 				 optimize="true">
 
+			<define name="__PNET__" value="true"/>
+
 			<sources>
 				<includes name="Rare/*.cs"/>
 			</sources>
@@ -135,6 +145,8 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true">
+
+			<define name="__PNET__" value="true"/>
 
 			<sources>
 				<includes name="West/*.cs"/>

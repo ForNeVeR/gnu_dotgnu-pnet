@@ -1,4 +1,9 @@
 
+2002-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/*, resources/en_US/I18N/I18NRes.txt: modify files so that
+	the I18N code can be used by Mono, as per previous agreements.
+
 2002-08-06  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/String.cs : minor fix on String.Split(char[],int32)

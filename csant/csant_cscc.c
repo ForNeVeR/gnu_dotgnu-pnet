@@ -281,6 +281,7 @@ typedef struct
 	int				noStdLib;
 	int				optimize;
 	int				warnAsError;
+	int				saneWarnings;
 	CSAntFileSet   *sources;
 	CSAntFileSet   *references;
 	CSAntFileSet   *resources;
@@ -330,6 +331,7 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	args->noStdLib = COMP_FLAG_NOT_SET;
 	args->optimize = COMP_FLAG_NOT_SET;
 	args->warnAsError = COMP_FLAG_NOT_SET;
+	args->saneWarnings = COMP_FLAG_NOT_SET;
 	args->sources = CSAntFileSetLoad(task, "sources", CSAntBaseSrcDir);
 	args->references = CSAntFileSetLoad(task, "references", CSAntBaseBuildDir);
 	args->resources = CSAntFileSetLoad(task, "resources", CSAntBaseBuildDir);
@@ -403,6 +405,11 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	if(value)
 	{
 		args->warnAsError = !ILStrICmp(value, "true");
+	}
+	value = CSAntTaskParam(task, "sanewarnings");
+	if(value)
+	{
+		args->saneWarnings = !ILStrICmp(value, "true");
 	}
 
 	/* Get the list of symbol definitions */
@@ -550,6 +557,12 @@ static char **BuildCsccCommandLine(CSAntCompileArgs *args)
 		AddArg(&argv, &argc, "-Werror");
 	}
 
+	/* Turn on sane warning modes */
+	if(args->saneWarnings == COMP_FLAG_TRUE)
+	{
+		AddArg(&argv, &argc, "-Wno-empty-input");
+	}
+
 	/* Define pre-processor symbols */
 	for(posn = 0; posn < args->numDefines; ++posn)
 	{
@@ -691,6 +704,16 @@ static char **BuildCscCommandLine(CSAntCompileArgs *args)
 	temp = CSAntDirCombineWin32(args->output, 0, 0);
 	AddValueArg(&argv, &argc, "/out:", temp);
 	ILFree(temp);
+
+	/* Turn on sane warning modes */
+	if(args->saneWarnings == COMP_FLAG_TRUE)
+	{
+		AddArg(&argv, &argc, "/nowarn:626");
+		AddArg(&argv, &argc, "/nowarn:649");
+		AddArg(&argv, &argc, "/nowarn:168");
+		AddArg(&argv, &argc, "/nowarn:67");
+		AddArg(&argv, &argc, "/nowarn:169");
+	}
 
 	/* Define pre-processor symbols */
 	temp = 0;

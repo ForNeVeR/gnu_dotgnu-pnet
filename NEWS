@@ -1,4 +1,28 @@
 
+0.6.12 (16 January 2005)
+
+	Runtime engine:
+
+	* Beginning of PPC unroller implementation (Gopal V).
+
+	C# Compiler:
+
+	* Compatibility with /debug flags in csc (Gopal V).
+	* Handling of method/property/etc declarations that hide base
+	  class virtuals and access checks for same (Richard Baumann).
+
+	Documentation:
+
+	* Information on debugging the unroller with gdb (Gopal V).
+
+	Platform Support:
+
+	* Use a portable version of tparm to match Susv3 specs (Gopal V).
+	* Case sensitivity during comparisons (Klaus Treichel).
+	* EAX vs REG_EAX usage in interrupt_posix (Gopal V).
+	* Fix cache flush logic for PPC (Gopal V).
+	* Skip empty lines in "@file" response files (Stephen Compall).
+
 0.6.10 (30 October 2004)
 
 	Runtime engine:

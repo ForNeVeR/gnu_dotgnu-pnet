@@ -234,11 +234,11 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	extern public virtual Type[] GetTypes();
 
 	// Error codes for "LoadFromName" and "LoadFromFile".
-	private const int LoadError_OK			  = 0;
-	private const int LoadError_InvalidName   = 1;
-	private const int LoadError_FileNotFound  = 2;
-	private const int LoadError_BadImage      = 3;
-	private const int LoadError_Security      = 4;
+	internal const int LoadError_OK			   = 0;
+	internal const int LoadError_InvalidName   = 1;
+	internal const int LoadError_FileNotFound  = 2;
+	internal const int LoadError_BadImage      = 3;
+	internal const int LoadError_Security      = 4;
 
 	// Internal version of "Load".
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -250,8 +250,13 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	extern internal static Assembly LoadFromFile(String name, out int error,
 												 Assembly parent);
 
+	// Internal version of "AppDomain.Load" for a byte array.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static Assembly LoadFromBytes(byte[] bytes, out int error,
+												  Assembly parent);
+
 	// Throw an exception based on a load error.
-	private static void ThrowLoadError(String name, int error)
+	internal static void ThrowLoadError(String name, int error)
 			{
 				if(error == LoadError_InvalidName)
 				{
@@ -277,6 +282,10 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	// Load a particular assembly.
 	public static Assembly Load(String assemblyString)
 			{
+				return Load(assemblyString, GetCallingAssembly());
+			}
+	internal static Assembly Load(String assemblyString, Assembly caller)
+			{
 				Assembly assembly;
 				int error;
 				if(assemblyString == null)
@@ -288,13 +297,11 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 				   		== 0)
 				{
 					assembly = LoadFromFile(assemblyString.Substring(7),
-											out error,
-										    GetCallingAssembly());
+											out error, caller);
 				}
 				else
 				{
-					assembly = LoadFromName(assemblyString, out error,
-											GetCallingAssembly());
+					assembly = LoadFromName(assemblyString, out error, caller);
 				}
 				if(error == LoadError_OK)
 				{
@@ -315,13 +322,17 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 #endif
 	static Assembly LoadFrom(String assemblyFile)
 			{
+				return LoadFrom(assemblyFile, GetCallingAssembly());
+			}
+	internal static Assembly LoadFrom(String assemblyFile, Assembly caller)
+			{
 				if(assemblyFile == null)
 				{
 					throw new ArgumentNullException("assemblyFile");
 				}
 				int error;
 				Assembly assembly = LoadFromFile(assemblyFile, out error,
-											     GetCallingAssembly());
+											     caller);
 				if(error == LoadError_OK)
 				{
 					return assembly;

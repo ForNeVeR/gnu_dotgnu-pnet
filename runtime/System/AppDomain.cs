@@ -1,7 +1,7 @@
 /*
  * AppDomain.cs - Implementation of the "System.AppDomain" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,75 +22,109 @@ namespace System
 {
 
 using System.Security;
+using System.Collections;
 using System.Reflection;
 using System.Globalization;
 using System.Reflection.Emit;
+using System.Runtime.Remoting;
 using System.Security.Policy;
+using System.Security.Principal;
 
 public sealed class AppDomain : MarshalByRefObject, _AppDomain
 {
 	// Internal state.
 	private String friendlyName;
+#if !ECMA_COMPAT
+	private Evidence evidence;
+	private AppDomainSetup setup;
+	private Hashtable items;
+#endif
 	private static AppDomain currentDomain;
 
 	// Construct a new AppDomain instance.
-	[TODO]
 	private AppDomain(String name)
-	{
-		friendlyName = name;
-
-		// TODO: create the domain within the runtime engine.
-	}
+			{
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				friendlyName = name;
+#if !ECMA_COMPAT
+				setup = new AppDomainSetup();
+				items = new Hashtable();
+#endif
+			}
+#if !ECMA_COMPAT
+	private AppDomain(String name, Evidence evidence, AppDomainSetup setup)
+			{
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				friendlyName = name;
+				this.evidence = evidence;
+				this.setup = setup;
+				this.items = new Hashtable();
+			}
+#endif
 
 	// Create a new application domain with a specified name.
-	public static AppDomain CreateDomain(string friendlyName)
-	{
-		if(friendlyName == null)
-		{
-			throw new ArgumentNullException("friendlyName");
-		}
-		return new AppDomain(friendlyName);
-	}
-
+	public static AppDomain CreateDomain(String friendlyName)
+			{
+				return new AppDomain(friendlyName);
+			}
 #if !ECMA_COMPAT
-	// Load and execute a file containing an assembly.
-	[TODO]
-	public int ExecuteAssembly(String assemblyFile)
-	{
-		if(assemblyFile == null)
-		{
-			throw new ArgumentNullException("assemblyFile");
-		}
-		// TODO: load and execute the assembly.
-		return 0;
-	}
+	public static AppDomain CreateDomain(String friendlyName,
+										 Evidence securityInfo)
+			{
+				return new AppDomain(friendlyName, securityInfo,
+									 new AppDomainSetup());
+			}
+	public static AppDomain CreateDomain(String friendlyName,
+										 Evidence securityInfo,
+										 AppDomainSetup info)
+			{
+				return new AppDomain(friendlyName, securityInfo, info);
+			}
+	public static AppDomain CreateDomain(String friendlyName,
+										 Evidence securityInfo,
+										 String appBasePath,
+										 String appRelativeSearchPath,
+										 bool shadowCopyFiles)
+			{
+				AppDomainSetup setup = new AppDomainSetup();
+				setup.ApplicationBase = appBasePath;
+				setup.PrivateBinPath = appRelativeSearchPath;
+				setup.ShadowCopyFiles = shadowCopyFiles.ToString();
+				return new AppDomain(friendlyName, securityInfo, setup);
+			}
 #endif
 
 	// Return a string representing the current instance.
 	public override String ToString()
-	{
-		return friendlyName;
-	}
+			{
+				return friendlyName;
+			}
 
 	// Unload a specific application domain.
 	[TODO]
 	public static void Unload(AppDomain domain)
-	{
-		if(domain == null)
-		{
-			throw new ArgumentNullException("domain");
-		}
-		// TODO: unload the domain.
-	}
+			{
+				if(domain == null)
+				{
+					throw new ArgumentNullException("domain");
+				}
+				// TODO: unload the domain.
+			}
 
 	// Get the friendly name associated with this application domain.
 	public String FriendlyName
-	{
-		get
-		{
-			return friendlyName;
-		}
-	}
+			{
+				get
+				{
+					return friendlyName;
+				}
+			}
 
 	// Event that is emitted when an assembly is loaded into this domain.
 	public event AssemblyLoadEventHandler AssemblyLoad;
@@ -103,16 +137,22 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 
 #if !ECMA_COMPAT
 
+	// Base directory used to resolve assemblies.
+	public String BaseDirectory
+			{
+				get
+				{
+					return setup.ApplicationBase;
+				}
+			}
+
 	// Get the current domain.
-	[TODO]
 	public static AppDomain CurrentDomain
 			{
 				get
 				{
 					lock(typeof(AppDomain))
 					{
-						// TODO - this is a temporary hack until the
-						// runtime engine has real app domains.
 						if(currentDomain == null)
 						{
 							currentDomain = new AppDomain("current");
@@ -122,64 +162,89 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 				}
 			}
 
-	// Get the security evidence that was used to load the app domain.
-	[TODO]
+	// Base directory used to resolve dynamically-created assemblies.
+	public String DynamicDirectory
+			{
+				get
+				{
+					return setup.DynamicBase;
+				}
+			}
+
+	// Get the security evidence for this application domain.
 	public Evidence Evidence
 			{
 				get
 				{
-					// TODO
-					return null;
+					return evidence;
 				}
 			}
 
-	// Event that is emitted to resolve assemblies.
-	public event ResolveEventHandler AssemblyResolve;
-
-	// Event that is emitted on process exit.
-	public event EventHandler ProcessExit;
-
-	// Event that is emitted to resolve resources.
-	public event ResolveEventHandler ResourceResolve;
-
-	// Event that is emitted to resolve types.
-	public event ResolveEventHandler TypeResolve;
-
-	// Get the assemblies in use by this domain.
-	[TODO]
-	public Assembly[] GetAssemblies()
+	// Search path, relative to "BaseDirectory", for private assemblies.
+	public String RelativeSearchPath
 			{
-				// TODO
-				return new Assembly [0];
-			}
-
-	// Create a new application domain.
-	[TODO]
-	public static AppDomain CreateDomain(String friendlyName,
-										 Evidence evidence,
-										 AppDomainSetup setup)
-			{
-				if(friendlyName == null)
+				get
 				{
-					throw new ArgumentNullException("friendlyName");
+					return setup.PrivateBinPath;
 				}
-				// TODO
-				return new AppDomain(friendlyName);
+			}
+
+	// Determine if the assemblies in the application domain are shadow copies.
+	public bool ShadowCopyFiles
+			{
+				get
+				{
+					return (setup.ShadowCopyFiles == "true");
+				}
+			}
+
+	// Get the setup information for this application domain.
+	public AppDomainSetup SetupInformation
+			{
+				get
+				{
+					return setup;
+				}
+			}
+
+	// Append a directory to the private path.
+	public void AppendPrivatePath(String path)
+			{
+				String previous = setup.PrivateBinPath;
+				if(previous == null || previous == String.Empty)
+				{
+					setup.PrivateBinPath = path;
+				}
+				else
+				{
+					setup.PrivateBinPath =
+						previous + Environment.PathSeparatorChar + path;
+				}
+			}
+
+	// Clear the private path.
+	public void ClearPrivatePath()
+			{
+				setup.PrivateBinPath = String.Empty;
+			}
+
+	// Clear the shadow copy path.
+	public void ClearShadowCopyPath()
+			{
+				setup.ShadowCopyDirectories = String.Empty;
 			}
 
 	// Create an instance of an assembly and unwrap its handle.
-	[TODO]
 	public Object CreateInstanceAndUnwrap(String assemblyName, String typeName)
 			{
-				// TODO
-				return null;
+				return CreateInstance(assemblyName, typeName).Unwrap();
 			}
 	public Object CreateInstanceAndUnwrap(String assemblyName,
 						       			  String typeName,
 						       			  Object[] activationAttributes)
 			{
-				// TODO
-				return null;
+				return CreateInstance(assemblyName, typeName,
+									  activationAttributes).Unwrap();
 			}
 	public Object CreateInstanceAndUnwrap(String assemblyName,
 						       			  String typeName,
@@ -191,8 +256,65 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 						       			  Object[] activationAttributes,
 						       			  Evidence securityAttributes)
 			{
+				return CreateInstance(assemblyName, typeName, ignoreCase,
+									  bindingAttr, binder, args, culture,
+									  activationAttributes,
+									  securityAttributes).Unwrap();
+			}
+
+	// Create an instance of a type within this application domain.
+	public ObjectHandle CreateInstance(String assemblyName, String typeName)
+			{
+				return CreateInstance(assemblyName, typeName, false,
+									  BindingFlags.Default, null,
+									  null, null, null, null);
+			}
+	public ObjectHandle CreateInstance(String assemblyName, String typeName,
+								       Object[] activationAttributes)
+			{
+				return CreateInstance(assemblyName, typeName, false,
+									  BindingFlags.Default, null,
+									  null, null, activationAttributes, null);
+			}
+	[TODO]
+	public ObjectHandle CreateInstance(String assemblyName, String typeName,
+								       bool ignoreCase,
+									   BindingFlags bindingAttr,
+								       Binder binder, Object[] args,
+								       CultureInfo culture,
+								       Object[] activationAttributes,
+								       Evidence securityAttributes)
+			{
 				// TODO
 				return null;
+			}
+
+	// Create a remote instance of a type within this application domain.
+	public ObjectHandle CreateInstanceFrom(String assemblyName,
+										   String typeName)
+			{
+				return CreateInstance(assemblyName, typeName);
+			}
+	public ObjectHandle CreateInstanceFrom(String assemblyName,
+										   String typeName,
+								    	   Object[] activationAttributes)
+			{
+				return CreateInstance(assemblyName, typeName,
+									  activationAttributes);
+			}
+	public ObjectHandle CreateInstanceFrom(String assemblyName,
+										   String typeName,
+								    	   bool ignoreCase,
+										   BindingFlags bindingAttr,
+								    	   Binder binder, Object[] args,
+								    	   CultureInfo culture,
+								    	   Object[] activationAttributes,
+								    	   Evidence securityAttributes)
+			{
+				return CreateInstance(assemblyName, typeName, ignoreCase,
+									  bindingAttr, binder, args, culture,
+									  activationAttributes,
+									  securityAttributes);
 			}
 
 	// Define a dynamic assembly builder within this domain.
@@ -294,12 +416,173 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 				return new AssemblyBuilder(name, access, dir, isSynchronized);
 			}
 
-	// Set the cache path.
+	// Execute a delegate in a foreign application domain.
 	[TODO]
-	public void SetCachePath(String s)
+	public void DoCallBack(CrossAppDomainDelegate theDelegate)
 			{
 				// TODO
 			}
+
+	// Execute a particular assembly within this application domain.
+	public int ExecuteAssembly(String assemblyFile)
+			{
+				return ExecuteAssembly(assemblyFile, null, null);
+			}
+	public int ExecuteAssembly(String assemblyFile, Evidence assemblySecurity)
+			{
+				return ExecuteAssembly(assemblyFile, assemblySecurity, null);
+			}
+	[TODO]
+	public int ExecuteAssembly(String assemblyFile, Evidence assemblySecurity,
+							   String[] args)
+			{
+				if(assemblyFile == null)
+				{
+					throw new ArgumentNullException("assemblyFile");
+				}
+				// TODO
+				return 0;
+			}
+
+	// Get a list of all assemblies in this application domain.
+	[TODO]
+	public Assembly[] GetAssemblies()
+			{
+				// TODO
+				return new Assembly [0];
+			}
+
+	// Fetch the object associated with a particular data name.
+	public Object GetData(String name)
+			{
+				return items[name];
+			}
+
+	// Give the application domain an infinite lifetime service.
+	public override Object InitializeLifetimeService()
+			{
+				// Always returns null.
+				return null;
+			}
+
+	// Load an assembly into this application domain by name.
+	public Assembly Load(AssemblyName assemblyRef)
+			{
+				return Load(assemblyRef, null);
+			}
+	public Assembly Load(AssemblyName assemblyRef, Evidence assemblySecurity)
+			{
+				if(assemblyRef == null)
+				{
+					throw new ArgumentNullException("assemblyRef");
+				}
+				if(assemblyRef.CodeBase != null &&
+				   assemblyRef.CodeBase.Length > 0)
+				{
+					return Assembly.LoadFrom(assemblyRef.CodeBase);
+				}
+				else
+				{
+					return Assembly.Load(assemblyRef.Name);
+				}
+			}
+
+	// Load an assembly into this application domain by string name.
+	public Assembly Load(String assemblyString)
+			{
+				return Load(assemblyString, null);
+			}
+	public Assembly Load(String assemblyString, Evidence assemblySecurity)
+			{
+				return Assembly.Load(assemblyString);
+			}
+
+	// Load an assembly into this application domain by explicit definition.
+	public Assembly Load(byte[] rawAssembly)
+			{
+				return Load(rawAssembly, null, null,
+							Assembly.GetCallingAssembly());
+			}
+	public Assembly Load(byte[] rawAssembly, byte[] rawSymbolStore)
+			{
+				return Load(rawAssembly, rawSymbolStore, null,
+							Assembly.GetCallingAssembly());
+			}
+	public Assembly Load(byte[] rawAssembly, byte[] rawSymbolStore,
+				  		 Evidence assemblySecurity)
+			{
+				return Load(rawAssembly, rawSymbolStore, assemblySecurity,
+							Assembly.GetCallingAssembly());
+			}
+	private Assembly Load(byte[] rawAssembly, byte[] rawSymbolStore,
+				  		  Evidence assemblySecurity, Assembly caller)
+			{
+				if(rawAssembly == null)
+				{
+					throw new ArgumentNullException("rawAssembly");
+				}
+				int error;
+				Assembly assembly = Assembly.LoadFromBytes
+					(rawAssembly, out error, caller);
+				if(error == Assembly.LoadError_OK)
+				{
+					return assembly;
+				}
+				else
+				{
+					Assembly.ThrowLoadError("raw bytes", error);
+					return null;
+				}
+			}
+
+	// Set policy information for this application domain.
+	public void SetAppDomainPolicy(PolicyLevel domainPolicy)
+			{
+				// Nothing to do here: we don't use such policies.
+			}
+
+	// Set the cache location for shadow copied assemblies.
+	public void SetCachePath(String s)
+			{
+				setup.CachePath = s;
+			}
+
+
+	// Set a data item on this application domain.
+	public void SetData(String name, Object data)
+			{
+				items[name] = data;
+			}
+
+	// Set the policy for principals.
+	public void SetPrincipalPolicy(PrincipalPolicy policy)
+			{
+				// Nothing to do here: we don't use such policies.
+			}
+
+	// Set the location of the shadow copy directory.
+	public void SetShadowCopyPath(String s)
+			{
+				setup.ShadowCopyDirectories = s;
+			}
+
+	// Set the default principal object for a thread.
+	public void SetThreadPrincipal(IPrincipal principal)
+			{
+				// Nothing to do here: we don't use such principals.
+			}
+
+	// Event that is emitted to resolve assemblies.
+	public event ResolveEventHandler AssemblyResolve;
+
+	// Event that is emitted on process exit.
+	public event EventHandler ProcessExit;
+
+	// Event that is emitted to resolve resources.
+	public event ResolveEventHandler ResourceResolve;
+
+	// Event that is emitted to resolve types.
+	public event ResolveEventHandler TypeResolve;
 
 #endif // !ECMA_COMPAT
 

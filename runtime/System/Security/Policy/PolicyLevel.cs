@@ -1,8 +1,8 @@
 /*
- * GuidAttribute.cs - Implementation of the
- *			"System.Runtime.InteropServices.GuidAttribute" class.
+ * PolicyLevel.cs - Implementation of the
+ *		"System.Security.Policy.PolicyLevel" class.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,39 +19,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.InteropServices
+namespace System.Security.Policy
 {
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Assembly |
-				AttributeTargets.Class |
-				AttributeTargets.Struct |
-				AttributeTargets.Enum |
-				AttributeTargets.Interface |
-				AttributeTargets.Delegate)]
-public sealed class GuidAttribute : Attribute
+[TODO]
+public class PolicyLevel
 {
-	// Internal state.
-	private String guid;
 
-	// Constructor.
-	public GuidAttribute(String guid)
-			{
-				this.guid = guid;
-			}
+// TODO
 
-	// Get the attribute's value.
-	public String Value
-			{
-				get
-				{
-					return guid;
-				}
-			}
-
-}; // class GuidAttribute
+}; // class PolicyLevel
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.Runtime.InteropServices
+}; // namespace System.Security.Policy

@@ -1,8 +1,8 @@
 /*
- * GuidAttribute.cs - Implementation of the
- *			"System.Runtime.InteropServices.GuidAttribute" class.
+ * IIdentity.cs - Implementation of the
+ *		"System.Security.Principal.IIdentity" class.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,39 +19,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.InteropServices
+namespace System.Security.Principal
 {
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Assembly |
-				AttributeTargets.Class |
-				AttributeTargets.Struct |
-				AttributeTargets.Enum |
-				AttributeTargets.Interface |
-				AttributeTargets.Delegate)]
-public sealed class GuidAttribute : Attribute
+public interface IIdentity
 {
-	// Internal state.
-	private String guid;
 
-	// Constructor.
-	public GuidAttribute(String guid)
-			{
-				this.guid = guid;
-			}
+	// Get the type of authentication used.
+	String AuthenticationType { get; }
 
-	// Get the attribute's value.
-	public String Value
-			{
-				get
-				{
-					return guid;
-				}
-			}
+	// Determine if we have been authenticated.
+	bool IsAuthenticated { get; }
 
-}; // class GuidAttribute
+	// Get the name associated with this identity.
+	String Name { get; }
+
+}; // interface IIdentity
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.Runtime.InteropServices
+}; // namespace System.Security.Principal

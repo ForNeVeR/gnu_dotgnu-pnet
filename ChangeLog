@@ -1,4 +1,17 @@
 
+2003-03-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/AppDomain.cs,
+	runtime/System/CrossAppDomainDelegate.cs,
+	runtime/System/_AppDomain.cs,
+	runtime/System/Reflection/Assembly.cs,
+	runtime/System/Runtime/InteropServices/GuidAttribute.cs,
+	runtime/System/Security/Policy/PolicyLevel.cs,
+	runtime/System/Security/Principal/IIdentity.cs,
+	runtime/System/Security/Principal/IPrincipal.cs,
+	runtime/System/Security/Principal/PrincipalPolicy.cs:
+	implement the missing parts of the "AppDomain" class.
+
 2003-03-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/System.Xml/TestXmlTextWriter.cs: ECMA fix for test case.

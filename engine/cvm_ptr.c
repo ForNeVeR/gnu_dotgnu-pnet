@@ -3269,7 +3269,7 @@ VMBREAK(COP_PREFIX_GET2D);
  *   The <i>address</i> of <i>array[index1, index2]</i> is pushed into
  *   the stack as type <code>ptr</code> just below <i>value</i>.
  *   The operand <i>N</i> indicates the number of stack words that
- *   are occupied by <i>value<i>.</description>
+ *   are occupied by <i>value</i>.</description>
  *
  *   <notes>This instruction is normally followed by a <i>*write</i>
  *   instruction to write the contents of the array element.</notes>

@@ -306,6 +306,7 @@ namespace FormsTest
 			tabPage10 = new TabPage();
 			tabPage10.Text = "Image";
 			tabControl1.Controls.Add(tabPage10);
+			tabControl1.SelectedTab = tabPage10;
 			
 			Controls.Add(tabControl1);
 

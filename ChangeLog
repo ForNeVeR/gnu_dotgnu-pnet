@@ -1,4 +1,9 @@
 
+2004-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/writer.c: change the metadata version to "v2.0.40607"
+	to be consistent with .NET Framework SDK 2.0.
+
 2004-07-19  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_grammar.y: Implement a quick fix to display

@@ -16,6 +16,9 @@ classes.
 runtime/System/Makefile.am, runtime/System/IO/BinaryReader.cs: implement
 the "System.IO.BinaryReader" class.
 
+* runtime/System/Makefile.am, runtime/System/IO/BinaryWriter.cs:
+implement the "System.IO.BinaryWriter" class.
+
 2001-12-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/DateTime.cs,

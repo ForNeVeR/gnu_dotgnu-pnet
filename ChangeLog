@@ -1,4 +1,10 @@
 
+2003-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/class.c, image/context.c: fix a scope bug in class name
+	lookup - it was sometimes finding nested classes when looking
+	for global ones.
+
 2003-06-22  Yannis Bres  <Yannis.BRES@sophia.inria.fr>
 
 	* engine/cvmc.c, engine/ilrun.c, engine/method_cache.c,

@@ -776,6 +776,10 @@ static int UnicodeMatch(const ILClassName *classInfo,
 	{
 		return 0;
 	}
+	else if(key->scopeName && key->scopeName != classInfo->scopeName)
+	{
+		return 0;
+	}
 
 	/* Match the image */
 	if(key->image && key->image != classInfo->image)
@@ -786,9 +790,15 @@ static int UnicodeMatch(const ILClassName *classInfo,
 	/* Do we only want types at the global level? */
 	if(key->wantGlobal)
 	{
+		if(classInfo->scopeName)
+		{
+			/* Nested type */
+			return 0;
+		}
 		if((classInfo->scope->token & IL_META_TOKEN_MASK) !=
 					IL_META_TOKEN_MODULE)
 		{
+			/* Imported type */
 			return 0;
 		}
 	}

@@ -130,11 +130,17 @@ static int ClassHash_Match(const ILClassName *classInfo,
 	}
 
 	/* Do we only want types at the global level? */
-	if(key->wantGlobal && classInfo->scope)
+	if(key->wantGlobal)
 	{
+		if(classInfo->scopeName)
+		{
+			/* Nested type */
+			return 0;
+		}
 		if((classInfo->scope->token & IL_META_TOKEN_MASK) !=
 					IL_META_TOKEN_MODULE)
 		{
+			/* Imported type */
 			return 0;
 		}
 	}

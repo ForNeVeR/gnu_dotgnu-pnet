@@ -108,7 +108,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 
 		/* Output the class flags and name */
 		fputs(".class ", info->asmOutput);
-		ILDumpFlags(info->asmOutput, (unsigned long)(node->modifiers),
+		ILDumpFlags(info->asmOutput, (unsigned long)(ILClass_Attrs(classInfo)),
 					ILTypeDefinitionFlags, 0);
 		ILDumpIdentifier(info->asmOutput, ILClass_Name(classInfo), 0,
 						 IL_DUMP_QUOTE_NAMES);

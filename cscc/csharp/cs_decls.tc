@@ -171,6 +171,12 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		   explicit static constructor.  Add the "beforefieldinit"
 		   flag to the set of modifiers */
 		node->modifiers |= IL_META_TYPEDEF_BEFORE_FIELD_INIT;
+		if(node->classInfo)
+		{
+			ILClassSetAttrs(node->classInfo,
+							IL_META_TYPEDEF_BEFORE_FIELD_INIT,
+							IL_META_TYPEDEF_BEFORE_FIELD_INIT);
+		}
 	}
 
 	/* We have finished processing this node */

@@ -16,6 +16,7 @@ libILSupport_a_SOURCES = alloc.c \
 						 hashtab.c \
 						 hb_gc.c \
 						 intern.c \
+						 locale.c \
 						 md5.c \
 						 memory.c \
 						 mempool.c \

@@ -419,6 +419,12 @@ void *ILHashIterNext(ILHashIter *iter);
 #define	ILHashIterNextType(iter,type)	\
 				((type *)ILHashIterNext((iter), (type)))
 
+/* Initialize the locale routines for this application instance */
+void ILInitLocale(void);
+
+/* Get the code page in use by the underlying system (0 if unknown) */
+unsigned ILGetCodePage(void);
+
 #ifdef	__cplusplus
 };
 #endif

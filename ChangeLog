@@ -24,6 +24,10 @@
 	* samples/codepage.cs, samples/Makefile.am, samples/.cvsignore:
 	new sample for testing code page support in pnetlib.
 
+	* configure.in, include/il_config.h.in, include/il_utils.h,
+	support/Makefile.am, support/locale.c: implement the support
+	functions "ILInitLocale" and "ILGetCodePage".
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

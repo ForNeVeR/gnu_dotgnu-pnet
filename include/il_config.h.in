@@ -182,6 +182,9 @@
 /* Define if you have the munmap function.  */
 #undef HAVE_MUNMAP
 
+/* Define if you have the nl_langinfo function.  */
+#undef HAVE_NL_LANGINFO
+
 /* Define if you have the open function.  */
 #undef HAVE_OPEN
 
@@ -205,6 +208,9 @@
 
 /* Define if you have the rint function.  */
 #undef HAVE_RINT
+
+/* Define if you have the setlocale function.  */
+#undef HAVE_SETLOCALE
 
 /* Define if you have the sin function.  */
 #undef HAVE_SIN
@@ -256,6 +262,12 @@
 
 /* Define if you have the <ieeefp.h> header file.  */
 #undef HAVE_IEEEFP_H
+
+/* Define if you have the <langinfo.h> header file.  */
+#undef HAVE_LANGINFO_H
+
+/* Define if you have the <locale.h> header file.  */
+#undef HAVE_LOCALE_H
 
 /* Define if you have the <math.h> header file.  */
 #undef HAVE_MATH_H

@@ -1816,6 +1816,20 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 				if(!resolvedMember)
 				{
 					/* Failed to resolve the member */
+					if(ILType_IsComplex(type) &&
+					   ILType_Kind(type) == (IL_TYPE_COMPLEX_METHOD |
+					   						 IL_TYPE_COMPLEX_METHOD_SENTINEL))
+					{
+						/* Create a local reference to a vararg call site */
+						method = ILMethodCreate(classInfo, token, name, 0);
+						if(!method)
+						{
+							return IL_LOADERR_MEMORY;
+						}
+						ILMethodSetCallConv(method, ILType_CallConv(type));
+						ILMemberSetSignature((ILMember *)method, type);
+						return 0;
+					}
 					member = 0;
 					break;
 				}

@@ -843,12 +843,25 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 										&findMember);
 		if(findFlags != 0)
 		{
-			return findMember;
+			/* If the original was a method signature with a sentinel,
+			   then we need to create a new reference for the method */
+			if(ILMember_IsMethod(member) &&
+			   (ILType_Kind(ILMember_Signature(member)) &
+			   		IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
+			{
+				owner = ILMember_Owner(findMember);
+			}
+			else
+			{
+				return findMember;
+			}
 		}
-
-		/* Create a reference to the current image's "<Module>" type */
-		owner = ILClassLookup(ILClassGlobalScope(linker->image),
-							  "<Module>", 0);
+		else
+		{
+			/* Create a reference to the current image's "<Module>" type */
+			owner = ILClassLookup(ILClassGlobalScope(linker->image),
+								  "<Module>", 0);
+		}
 	}
 	else
 	{

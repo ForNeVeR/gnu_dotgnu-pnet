@@ -346,29 +346,98 @@ void ILAsmBuildPopClass(void)
 	ILAsmClass = classStack[--classStackSize];
 }
 
+/*
+ * Look for the underlying method for a sentinel module reference.
+ */
+static ILMember *FindSentinelUnderlying(ILClass *classInfo, ILType *signature)
+{
+	ILMethod *method = 0;
+	ILType *signature2;
+	ILType *paramType1;
+	ILType *paramType2;
+	unsigned long numParams;
+	unsigned long sentParams;
+	unsigned long paramNum;
+
+	/* Determine how many parameters exist before the sentinel */
+	numParams = ILTypeNumParams(signature);
+	sentParams = 0;
+	while(sentParams < numParams)
+	{
+		paramType1 = ILTypeGetParam(signature, sentParams + 1);
+		if(ILType_IsSentinel(paramType1))
+		{
+			break;
+		}
+		++sentParams;
+	}
+
+	/* Look for the underlying method definition */
+	while((method = (ILMethod *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)method,
+				 IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		if((ILMethod_Token(method) & IL_META_TOKEN_MASK)
+				!= IL_META_TOKEN_MEMBER_REF)
+		{
+			signature2 = ILMethod_Signature(method);
+			if(ILType_CallConv(signature) != ILType_CallConv(signature2))
+			{
+				continue;
+			}
+			numParams = ILTypeNumParams(signature2);
+			if(numParams != sentParams)
+			{
+				continue;
+			}
+			if(!ILTypeIdentical(ILTypeGetReturn(signature),
+							    ILTypeGetReturn(signature2)))
+			{
+				continue;
+			}
+			for(paramNum = 1; paramNum <= numParams; ++paramNum)
+			{
+				paramType1 = ILTypeGetParam(signature, paramNum);
+				paramType2 = ILTypeGetParam(signature2, paramNum);
+				if(!ILTypeIdentical(paramType1, paramType2))
+				{
+					break;
+				}
+			}
+			if(paramNum > numParams)
+			{
+				return (ILMember *)method;
+			}
+		}
+	}
+	return 0;
+}
+
 void ILAsmBuildEndModule(void)
 {
 	ILMember *member;
 	ILClass *moduleExtern = 0;
 	ILType *signature;
+	ILMember *nextMember;
+	ILMember *underlying;
 
 	/* Search for any methods or fields that are still MemberRef's,
 	   which means they were referenced, but not defined.  We need
 	   to turn them into references to the "<ModuleExtern>" type */
-	member = 0;
-	while((member = (ILMember *)ILClassNextMember
-				(ILAsmModuleClass, member)) != 0)
+	member = ILClassNextMember(ILAsmModuleClass, 0);
+	while(member != 0)
 	{
+		nextMember = ILClassNextMember(ILAsmModuleClass, member);
 		if((ILMember_Token(member) & IL_META_TOKEN_MASK)
 				== IL_META_TOKEN_MEMBER_REF)
 		{
-			/* If the member includes a sentinel, then it is OK */
 			signature = ILMember_Signature(member);
 			if(signature == 0 || !ILType_IsComplex(signature) ||
 			   ILType_Kind(signature) !=
 			   		(IL_TYPE_COMPLEX_METHOD |
 					 IL_TYPE_COMPLEX_METHOD_SENTINEL))
 			{
+			detach:
 				/* Detach the member from its current class */
 				ILClassDetachMember(member);
 
@@ -382,7 +451,21 @@ void ILAsmBuildEndModule(void)
 				/* Attach the member to the "<ModuleExtern>" type */
 				ILClassAttachMember(moduleExtern, member);
 			}
+			else
+			{
+				/* The member includes a sentinel.  It needs to be
+				   moved to "<ModuleExtern>" if the underlying real
+				   method does not exist in the object.  Otherwise
+				   leave the member reference dangling where it is */
+				underlying = FindSentinelUnderlying
+						(ILAsmModuleClass, signature);
+				if(!underlying)
+				{
+					goto detach;
+				}
+			}
 		}
+		member = nextMember;
 	}
 
 	/* Mark the global module class as complete */

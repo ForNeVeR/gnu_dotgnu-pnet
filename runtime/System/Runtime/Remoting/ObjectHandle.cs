@@ -25,6 +25,20 @@ namespace System.Runtime.Remoting
 [TODO]
 public class ObjectHandle
 {
+	// Internal state.
+	private Object obj;
+
+	// Constructor.
+	public ObjectHandle(Object obj)
+			{
+				this.obj = obj;
+			}
+
+	// Unwrap the object handle.
+	public Object Unwrap()
+			{
+				return obj;
+			}
 
 // TODO
 

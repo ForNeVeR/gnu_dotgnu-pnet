@@ -141,7 +141,6 @@ sealed class Activator
 	// Create an object instance from a type in another assembly,
 	// a list of arguments, binding information, and a list of
 	// activation attributes.
-	[TODO]
 	public static ObjectHandle CreateInstance
 				(String assemblyName, String typeName, bool ignoreCase,
 				 BindingFlags bindingAttr, Binder binder,
@@ -149,8 +148,11 @@ sealed class Activator
 				 Object[] activationAttributes,
 				 Evidence securityInfo)
 	{
-		// TODO
-		return null;
+		Assembly assembly = Assembly.Load(assemblyName);
+		Type type = assembly.GetType(typeName, true, ignoreCase);
+		return new ObjectHandle
+			(CreateInstance(type, bindingAttr, binder, args,
+							culture, activationAttributes));
 	}
 
 	// Create an object instance from a type in another assembly,
@@ -184,7 +186,6 @@ sealed class Activator
 	// Create an object instance from a type in another assembly,
 	// using "LoadFrom" instead of "Load" to load the assembly.
 	// All relevant information is supplied.
-	[TODO]
 	public static ObjectHandle CreateInstanceFrom
 				(String assemblyName, String typeName, bool ignoreCase,
 				 BindingFlags bindingAttr, Binder binder,
@@ -192,8 +193,11 @@ sealed class Activator
 				 Object[] activationAttributes,
 				 Evidence securityInfo)
 	{
-		// TODO
-		return null;
+		Assembly assembly = Assembly.LoadFrom(assemblyName);
+		Type type = assembly.GetType(typeName, true, ignoreCase);
+		return new ObjectHandle
+			(CreateInstance(type, bindingAttr, binder, args,
+							culture, activationAttributes));
 	}
 
 }; // class Activator

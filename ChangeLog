@@ -1,4 +1,10 @@
 
+2002-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Activator.cs, runtime/System/Reflection/Assembly.cs,
+	runtime/System/Runtime/Remoting/ObjectHandle.cs: implement the
+	missing functionality in "System.Activator".
+
 2002-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/runtime.build: turn on debug mode for "mscorlib.dll",

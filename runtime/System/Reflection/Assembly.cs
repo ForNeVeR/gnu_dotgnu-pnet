@@ -311,7 +311,7 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 #if !ECMA_COMPAT
 	public
 #else
-	private
+	internal
 #endif
 	static Assembly LoadFrom(String assemblyFile)
 			{

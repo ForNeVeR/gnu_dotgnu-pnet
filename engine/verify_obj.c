@@ -610,7 +610,7 @@ case IL_OP_STFLD:
 			/* Accessing a field within a pointer to a managed value */
 			if(IsSubClass(stack[stackSize - 2].typeInfo,
 						  ILField_Owner(fieldInfo)) &&
-			   ILTypeIdentical(stack[stackSize - 2].typeInfo, classType))
+			   AssignCompatible(method, &(stack[stackSize - 1]), classType))
 			{
 				if(!ILField_IsStatic(fieldInfo))
 				{

@@ -25,6 +25,9 @@ see if it is an interface.
 * engine/layout.c: lay out the static fields after the full object size
 has been computed, to get around circularity problems in value type classes.
 
+* engine/verify_obj.c: use "AssignCompatible" to test type-compatibility
+for stores into value type fields.
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

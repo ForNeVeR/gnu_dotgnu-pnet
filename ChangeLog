@@ -61,6 +61,9 @@
 	* System.Windows.Forms/Control.cs: Fix minor bug with Bounds 
 	property.
 
+	* System.Drawing/Toolkit/ToolkitGraphicsBase.cs: Implement a 
+	cubic bezier algorithm.
+
 2003-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/*, Makefile.am, configure.in,

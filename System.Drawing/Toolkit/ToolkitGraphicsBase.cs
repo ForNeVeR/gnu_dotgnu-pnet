@@ -267,13 +267,67 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 	// Fill a polygon using the current brush.
 	public abstract void FillPolygon(Point[] points, FillMode fillMode);
 
+	private static Point ComputePoint(float u,
+										int x1, int y1,
+										int x2, int y2,
+										int x3, int y3,
+										int x4, int y4)
+		{
+			float px=0;
+			float py=0;
+			float blend;
+			float u2=(1.0f-u);
+
+			// Point 0
+			blend = u2*u2*u2;
+			px += blend * x1;
+			py += blend * y1;
+
+			// Point 1
+			blend = 3 * u * u2 * u2;
+			px += blend * x2;
+			py += blend * y2;
+
+			// Point 2
+			blend = 3 * u * u * u2;
+			px += blend * x3;
+			py += blend * y3;
+
+			// Point 3
+			blend = u * u * u;
+			px += blend * x4;
+			py += blend * y4;
+
+			return new Point((int)Math.Round(px),(int)Math.Round(py));
+		}
+
+	private int ComputeSteps(int x1, int y1, int x2, int y2, int x3,
+								int y3, int x4, int y4)
+		{
+			double length=0L;
+			
+			length+=Math.Sqrt((x1-x2)*(x1-x2) + (y1-y2) * (y1-y2));
+			length+=Math.Sqrt((x2-x3)*(x2-x3) + (y2-y3) * (y2-y3));
+			length+=Math.Sqrt((x3-x4)*(x3-x3) + (y3-y3) * (y3-y3));
+
+			return (int)Math.Ceiling(length);	
+		}
+	
 	// Draw a bezier curve using the current pen.
-	[TODO]
 	public virtual void DrawBezier(int x1, int y1, int x2, int y2,
 								   int x3, int y3, int x4, int y4)
 			{
-				// TODO: implement a default bezier drawing algorithm
-				// for systems that don't have their own.
+				int steps=ComputeSteps(x1,y1,x2,y2,x3,y3,x4,y4);
+				Point [] points=new Point[steps];
+				for(int i=0;i<steps;i++)
+				{
+					float coeff=((float)i+1)/steps;
+					points[i]=ComputePoint(coeff , x1, y1, x2,y2,
+											x3,y3,x4,y4);
+				}
+				// TODO: Optimize this to plot points without 
+				// involving line-drawing operations
+				DrawLines(points);
 			}
 
 	// Draw an arc within a rectangle defined by four points.

@@ -715,7 +715,7 @@ class XmlDocument : XmlNode
 			}
 
 	// Read a node into this document.
-	public virtual XmlNode ReadNode(XmlTextReader reader)
+	public virtual XmlNode ReadNode(XmlReader reader)
 			{
 				XmlNode currentNode = null,
 					newNode = null,

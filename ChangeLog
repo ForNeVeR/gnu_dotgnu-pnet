@@ -5,6 +5,9 @@
 	System/Text/RegularExpressions/ChangeLog: Synchronize with the 
 	original copies.
 
+	* System.Xml/XmlDocument.cs: Replace ReadNode(XmlTextReader) with
+	ReadNode(XmlReader) to match spec.
+
 2003-07-07  Thong Nguyen <tum@veridicus.com>
 
 	tests/runtime/System/Threading/TestThread.cs: Put spin-locks

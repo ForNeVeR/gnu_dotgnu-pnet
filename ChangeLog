@@ -1,4 +1,10 @@
 
+2003-03-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/class.c (ILClassImport): check the back-link when
+	importing a previously imported class, because synthetic
+	type names may not have a valid token for _ILClassNameToClass.
+
 2003-03-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilasm/ilasm_build.c, ilasm/ilasm_build.h, ilasm/ilasm_grammar.y:

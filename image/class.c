@@ -384,6 +384,14 @@ ILClass *ILClassImport(ILImage *image, ILClass *info)
 		return info;
 	}
 
+	/* Do we have a link from the class back to the required image? */
+	newInfo = (ILClass *)_ILProgramItemLinkedBackTo
+							((ILProgramItem *)info, image);
+	if(newInfo)
+	{
+		return newInfo;
+	}
+
 	/* Determine the scope to use for the import */
 	if(ILClassIsNestingScope(info->className->scope))
 	{

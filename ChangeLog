@@ -29,6 +29,9 @@
 	* codegen/cg_coerce.h, codegen/cg_optable.c, cscc/csharp/cs_oper.tc:
 	implement builtin operators for enumerated types.
 
+	* ilasm/ilasm_build.c, ilasm/ilasm_build.h, ilasm/ilasm_grammar.y:
+	handle classes with no parent properly in the assembler.
+
 2001-03-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c: handle interface overrides for properties.

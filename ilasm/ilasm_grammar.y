@@ -1158,8 +1158,7 @@ ModuleHeading
 ClassHeading
 	: D_CLASS ClassAttributes Identifier ExtendsClause {
 				/* Create the new class */
-				ILAsmBuildNewClass($3.string, $4);
-				ILClassSetAttrs(ILAsmClass, ~0, (ILUInt32)($2));
+				ILAsmBuildNewClass($3.string, $4, (ILUInt32)($2));
 				ILAsmBuildPushScope(ILAsmClass);
 			}
 	  ImplementsClause
@@ -1206,8 +1205,8 @@ ClassAttributeName
 
 ExtendsClause
 	: /* empty */			{
-				/* Extend "System.Object" */
-				$$ = ILAsmSystemClass("Object");
+				/* Probably "System.Object" or an interface */
+				$$ = 0;
 			}
 	| K_EXTENDS ClassName	{
 				/* Extend a named class */

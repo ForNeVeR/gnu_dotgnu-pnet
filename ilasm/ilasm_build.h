@@ -131,7 +131,7 @@ void ILAsmSplitName(const char *str, int len, const char **name,
 /*
  * Create a new class and push it onto the class stack.
  */
-void ILAsmBuildNewClass(const char *name, ILClass *parent);
+void ILAsmBuildNewClass(const char *name, ILClass *parent, ILUInt32 attrs);
 
 /*
  * Pop the class stack.

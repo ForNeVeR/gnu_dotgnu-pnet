@@ -207,17 +207,11 @@ void ILAsmSplitName(const char *str, int len, const char **name,
 	}
 }
 
-void ILAsmBuildNewClass(const char *name, ILClass *parent)
+void ILAsmBuildNewClass(const char *name, ILClass *parent, ILUInt32 attrs)
 {
 	ILClass *info;
 	static long nextUnique = 1;
 	char uniqueName[64];
-
-	/* If we are compiling "System.Object", then ignore the parent */
-	if(!strcmp(name, "Object") && !strcmp(namespace.string, "System"))
-	{
-		parent = 0;
-	}
 
 	/* Do we already have a class with this name? */
 	if(classStackSize == 0)
@@ -266,6 +260,9 @@ void ILAsmBuildNewClass(const char *name, ILClass *parent)
 			ILAsmOutOfMemory();
 		}
 	}
+
+	/* Set the class attributes */
+	ILClassSetAttrs(info, ~((ILUInt32)0), attrs);
 
 	/* Add the previous class to the class stack */
 	if(classStackSize >= classStackMax)

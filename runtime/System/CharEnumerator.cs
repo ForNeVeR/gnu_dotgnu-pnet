@@ -23,18 +23,19 @@ namespace System
 
 using System.Collections;
 
-public class CharEnumerator : IEnumerator, ICloneable
+public sealed class CharEnumerator : IEnumerator, ICloneable
 {
 	// Internal state for the enumerator.
 	String str;
 	int    index;
-	char   current;
+	int    length;
 
 	// Construct a new enumerator.  Called from the "String" class.
 	internal CharEnumerator(String str)
 			{
 				this.str = str;
 				index = -1;
+				length = str.Length;
 			}
 
 	// Implement the ICloneable interface.
@@ -47,7 +48,7 @@ public class CharEnumerator : IEnumerator, ICloneable
 	public bool MoveNext()
 			{
 				++index;
-				return (index < str.Length);
+				return (index < length);
 			}
 	public void Reset()
 			{
@@ -57,13 +58,16 @@ public class CharEnumerator : IEnumerator, ICloneable
 			{
 				get
 				{
-					if(index < 0)
+					if(index >= 0 && index < length)
+					{
+						return (Object)(str[index]);
+					}
+					else
 					{
 						throw new InvalidOperationException
 							(Environment.GetResourceString
 								("Invalid_BadEnumeratorPosition"));
 					}
-					return (Object)current;
 				}
 			}
 
@@ -72,13 +76,16 @@ public class CharEnumerator : IEnumerator, ICloneable
 			{
 				get
 				{
-					if(index < 0)
+					if(index >= 0 && index < length)
+					{
+						return str[index];
+					}
+					else
 					{
 						throw new InvalidOperationException
 							(Environment.GetResourceString
 								("Invalid_BadEnumeratorPosition"));
 					}
-					return current;
 				}
 			}
 

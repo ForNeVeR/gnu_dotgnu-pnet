@@ -1,5 +1,6 @@
 /*
- * EventArgs.cs - Implementation of the "System.EventArgs" class.
+ * DivideByZeroException.cs - Implementation of the
+ *			"System.DivideByZeroException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,15 +22,17 @@
 namespace System
 {
 
-public class EventArgs
+public class DivideByZeroException : ArithmeticException
 {
 
-	// Public constants.
-	public static readonly EventArgs Empty = new EventArgs();
+	// Constructors.
+	public DivideByZeroException()
+		: base(Environment.GetResourceString("Exception_DivZero")) {}
+	public DivideByZeroException(String msg)
+		: base(msg) {}
+	public DivideByZeroException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-	// Constructor.
-	public EventArgs() {}
-
-}; // class EventArgs
+}; // class DivideByZeroException
 
 }; // namespace System

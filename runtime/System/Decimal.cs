@@ -34,10 +34,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 	public static readonly decimal MinusOne = -1.0m;
 	public static readonly decimal MaxValue = new Decimal(-1, -1, -1, true, 0);
 	public static readonly decimal MinValue = new Decimal(-1, -1, -1, false, 0);
-	public static readonly decimal Empty = Zero;
-	public const int ScaleMask = 0x00FF0000;
-	public const int ScaleShift = 16;
-	public const int SignMask = unchecked((int)(-0x80000000));
+	private const int ScaleShift = 16;
 
 	// Public routines that are imported from the runtime engine.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -49,7 +46,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Floor(decimal x);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static decimal Mod(decimal x, decimal y);
+	extern public static decimal Remainder(decimal x, decimal y);
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Multiply(decimal x, decimal y);
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -85,8 +82,17 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				else
 					return y;
 			}
+	[Obsolete("Use Decimal.Remainder instead")]
+	public static decimal Mod(decimal x, decimal y)
+			{
+				return Remainder(x, y);
+			}
 
 	// Declared operators.
+	public static decimal operator++(decimal x)
+				{ return x + 1.0m; }
+	public static decimal operator--(decimal x)
+				{ return x - 1.0m; }
 	public static decimal operator+(decimal x)
 				{ return x; }
 	public static decimal operator-(decimal x)
@@ -96,7 +102,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 	public static decimal operator/(decimal x, decimal y)
 				{ return Divide(x, y); }
 	public static decimal operator%(decimal x, decimal y)
-				{ return Mod(x, y); }
+				{ return Remainder(x, y); }
 	public static decimal operator+(decimal x, decimal y)
 				{ return Add(x, y); }
 	public static decimal operator-(decimal x, decimal y)
@@ -209,7 +215,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 	extern public Decimal(float value);
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public Decimal(double value);
-	public Decimal(Currency value)
+	internal Decimal(Currency value)
 			{
 				decimal temp = Currency.ToDecimal(value);
 				low = temp.low;
@@ -277,25 +283,42 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 					return false;
 				}
 			}
+
+	// String conversion.
 	public override String ToString()
 			{
+				return ToString(null, null);
+			}
+	public String ToString(String format)
+			{
+				return ToString(format, null);
+			}
+	public String ToString(String format, IFormatProvider provider)
+			{
 				return NumberFormatter.FormatDecimal
-							(this, null, NumberFormatInfo.InvariantInfo);
+							(this, format,
+							 NumberFormatInfo.GetInstance(provider));
 			}
 
 	// Parsing methods.
-	public static decimal FromString(String s)
-			{ return NumberParser.ParseDecimal
-						(s, NumberStyles.Integer |
-						    NumberStyles.AllowDecimalPoint,
-					     NumberFormatInfo.InvariantInfo); }
 	public static decimal Parse(String s, NumberStyles style,
-							    NumberFormatInfo nfi)
-			{ return NumberParser.ParseDecimal(s, style, nfi); }
+							    IFormatProvider provider)
+			{
+				return NumberParser.ParseDecimal
+						(s, style, NumberFormatInfo.GetInstance(provider));
+			}
 	public static decimal Parse(String s)
-			{ return Parse(s, NumberStyles.Currency, null); }
+			{
+				return Parse(s, NumberStyles.Currency, null);
+			}
 	public static decimal Parse(String s, NumberStyles style)
-			{ return Parse(s, style, null); }
+			{
+				return Parse(s, style, null);
+			}
+	public static decimal Parse(String s, IFormatProvider provider)
+			{
+				return Parse(s, NumberStyles.Currency, provider);
+			}
 
 	// Implementation of the IComparable interface.
 	public int CompareTo(Object value)
@@ -319,66 +342,80 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 			}
 
-	// Implementation of the IFormattable interface.
-	public String Format(String format, IServiceObjectProvider isop)
-			{
-				return NumberFormatter.FormatDecimal
-							(this, format,
-							 NumberFormatInfo.GetInstance(isop));
-			}
-
-	// Other formatting methods.
-	public static String ToString(Decimal value)
-			{
-				return NumberFormatter.FormatDecimal
-							(value, null, NumberFormatInfo.InvariantInfo);
-			}
-	public static String Format(Decimal value, String format,
-								NumberFormatInfo nfi)
-			{
-				return NumberFormatter.FormatDecimal
-							(value, format, NumberFormatInfo.GetInstance(nfi));
-			}
-	public static String Format(Decimal value, String format)
-			{
-				return NumberFormatter.FormatDecimal
-							(value, format, NumberFormatInfo.CurrentInfo);
-			}
-
 	// Implementation of the IConvertible interface.
-	public TypeCode GetTypeCode()  { return TypeCode.Decimal; }
-	public Object ToType(Type ct)  { return Convert.DefaultToType(this, ct); }
-	public Boolean ToBoolean()
+	public TypeCode GetTypeCode()
 			{
-				throw new InvalidCastException
-					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-						 "Decimal", "Boolean"));
+				return TypeCode.Decimal;
 			}
-	public Byte ToByte()           { return Convert.ToByte(this); }
-	public SByte ToSByte()         { return Convert.ToSByte(this); }
-	public Int16 ToInt16()         { return Convert.ToInt16(this); }
-	public UInt16 ToUInt16()	   { return Convert.ToUInt16(this); }
-	public Int32 ToInt32()         { return Convert.ToInt32(this); }
-	public UInt32 ToUInt32()       { return Convert.ToUInt32(this); }
-	public Int64 ToInt64()         { return Convert.ToInt64(this); }
-	public UInt64 ToUInt64()       { return Convert.ToUInt64(this); }
-	public Char ToChar()
+	bool IConvertible.ToBoolean(IFormatProvider provider)
 			{
-				throw new InvalidCastException
-					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-						 "Decimal", "Char"));
+				return Convert.ToBoolean(this);
 			}
-	public Single ToSingle()       { return Convert.ToSingle(this); }
-	public Double ToDouble()       { return Convert.ToDouble(this); }
-	public Decimal ToDecimal()     { return this; }
-	public DateTime ToDateTime()
+	byte IConvertible.ToByte(IFormatProvider provider)
+			{
+				return Convert.ToByte(this);
+			}
+	sbyte IConvertible.ToSByte(IFormatProvider provider)
+			{
+				return Convert.ToSByte(this);
+			}
+	short IConvertible.ToInt16(IFormatProvider provider)
+			{
+				return Convert.ToInt16(this);
+			}
+	ushort IConvertible.ToUInt16(IFormatProvider provider)
+			{
+				return Convert.ToUInt16(this);
+			}
+	char IConvertible.ToChar(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
-						 "Decimal", "DateTime"));
+		 			     "Decimal", "Char"));
+			}
+	int IConvertible.ToInt32(IFormatProvider provider)
+			{
+				return Convert.ToInt32(this);
+			}
+	uint IConvertible.ToUInt32(IFormatProvider provider)
+			{
+				return Convert.ToUInt32(this);
+			}
+	long IConvertible.ToInt64(IFormatProvider provider)
+			{
+				return Convert.ToInt64(this);
+			}
+	ulong IConvertible.ToUInt64(IFormatProvider provider)
+			{
+				return Convert.ToUInt64(this);
+			}
+	float IConvertible.ToSingle(IFormatProvider provider)
+			{
+				return Convert.ToSingle(this);
+			}
+	double IConvertible.ToDouble(IFormatProvider provider)
+			{
+				return Convert.ToDouble(this);
+			}
+	Decimal IConvertible.ToDecimal(IFormatProvider provider)
+			{
+				return this;
+			}
+	DateTime IConvertible.ToDateTime(IFormatProvider provider)
+			{
+				throw new InvalidCastException
+					(String.Format
+						(Environment.GetResourceString("InvalidCast_FromTo"),
+		 			     "Decimal", "DateTime"));
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
+			}
+	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+			{
+				return Convert.DefaultToType(this, conversionType, provider);
 			}
 
 	// Static conversion methods.

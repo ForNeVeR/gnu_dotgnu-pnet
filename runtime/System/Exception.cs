@@ -21,10 +21,9 @@
 namespace System
 {
 
-using System.Runtime.Serialization;
 using System.Reflection;
 
-public class Exception : ISerializable
+public class Exception
 {
 
 	// Private members.
@@ -50,12 +49,6 @@ public class Exception : ISerializable
 			message = msg;
 			innerException = inner;
 		}
-	public Exception(SerializationInfo info, StreamingContext context)
-		{
-			// TODO
-			message = null;
-			innerException = null;
-		}
 
 	// Get the base exception upon which this exception is based.
 	public virtual Exception GetBaseException()
@@ -67,13 +60,6 @@ public class Exception : ISerializable
 				result = inner;
 			}
 			return result;
-		}
-
-	// Serialize this object.
-	public virtual void GetObjectData(SerializationInfo info,
-									  StreamingContext context)
-		{
-			// TODO.
 		}
 
 	// Set the help link for this exception.

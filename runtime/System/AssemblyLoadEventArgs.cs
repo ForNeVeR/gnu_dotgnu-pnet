@@ -1,5 +1,6 @@
 /*
- * EventArgs.cs - Implementation of the "System.EventArgs" class.
+ * AssemblyLoadEventArgs.cs - Implementation of the
+ *			"System.AssemblyLoadEventArgs" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,15 +22,29 @@
 namespace System
 {
 
-public class EventArgs
+using System.Reflection;
+
+public class AssemblyLoadEventArgs : EventArgs
 {
 
-	// Public constants.
-	public static readonly EventArgs Empty = new EventArgs();
+	// Internal state.
+	private Assembly assembly;
 
 	// Constructor.
-	public EventArgs() {}
+	public AssemblyLoadEventArgs(Assembly loadedAssembly)
+			{
+				assembly = loadedAssembly;
+			}
 
-}; // class EventArgs
+	// Get the loaded assembly within this object.
+	public Assembly LoadedAssembly
+			{
+				get
+				{
+					return assembly;
+				}
+			}
+
+}; // class AssemblyLoadEventArgs
 
 }; // namespace System

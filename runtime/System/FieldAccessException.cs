@@ -1,5 +1,6 @@
 /*
- * EventArgs.cs - Implementation of the "System.EventArgs" class.
+ * FieldAccessException.cs - Implementation of the
+ *		"System.FieldAccessException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,15 +22,17 @@
 namespace System
 {
 
-public class EventArgs
+public class FieldAccessException : MemberAccessException
 {
 
-	// Public constants.
-	public static readonly EventArgs Empty = new EventArgs();
+	// Constructors.
+	public FieldAccessException()
+		: base(Environment.GetResourceString("Exception_FieldAccess")) {}
+	public FieldAccessException(String msg)
+		: base(msg) {}
+	public FieldAccessException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-	// Constructor.
-	public EventArgs() {}
-
-}; // class EventArgs
+}; // class FieldAccessException
 
 }; // namespace System

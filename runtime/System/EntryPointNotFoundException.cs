@@ -1,5 +1,6 @@
 /*
- * EventArgs.cs - Implementation of the "System.EventArgs" class.
+ * EntryPointNotFoundException.cs - Implementation of the
+ *			"System.EntryPointNotFoundException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,15 +22,17 @@
 namespace System
 {
 
-public class EventArgs
+public class EntryPointNotFoundException : TypeLoadException
 {
 
-	// Public constants.
-	public static readonly EventArgs Empty = new EventArgs();
+	// Constructors.
+	public EntryPointNotFoundException()
+		: base(Environment.GetResourceString("Exception_EntryPoint")) {}
+	public EntryPointNotFoundException(String msg)
+		: base(msg) {}
+	public EntryPointNotFoundException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-	// Constructor.
-	public EventArgs() {}
-
-}; // class EventArgs
+}; // class EntryPointNotFoundException
 
 }; // namespace System

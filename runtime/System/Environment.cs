@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Security;
+using System.Collections;
 using Platform;
 
 public sealed class Environment
@@ -105,7 +106,7 @@ public sealed class Environment
 			{
 				get
 				{
-					// We don't support trace traces.
+					// We don't support stack traces.
 					return String.Empty;
 				}
 			}
@@ -163,6 +164,245 @@ public sealed class Environment
 					return TimeMethods.GetUpTime();
 				}
 			}
+
+	// Get a particular environment variable.
+	public static String GetEnvironmentVariable(String variable)
+			{
+				if(variable == null)
+				{
+					throw new ArgumentNullException("variable");
+				}
+				return TaskMethods.GetEnvironmentVariable(variable);
+			}
+
+	// Get a dictionary that allows access to the set of
+	// environment variables for the current task.
+	public static IDictionary GetEnvironmentVariables()
+			{
+				return new EnvironmentDictionary();
+			}
+
+	// Private class that implements a dictionary for environment variables.
+	private sealed class EnvironmentDictionary : IDictionary
+	{
+		public EnvironmentDictionary()
+				{
+					// Nothing to do here.
+				}
+
+		// Add an object to this dictionary.
+		public void Add(Object key, Object value)
+				{
+					throw new NotSupportedException
+						(Environment.GetResourceString("NotSupp_ReadOnly"));
+				}
+
+		// Clear this dictionary.
+		public void Clear()
+				{
+					throw new NotSupportedException
+						(Environment.GetResourceString("NotSupp_ReadOnly"));
+				}
+
+		// Determine if this dictionary contains a specific key.
+		public bool Contains(Object key)
+				{
+					String keyName = key.ToString();
+					if(keyName != null)
+					{
+						return (TaskMethods.GetEnvironmentVariable(keyName)
+									!= null);
+					}
+					else
+					{
+						throw new ArgumentNullException("key");
+					}
+				}
+
+		// Enumerate all values in this dictionary.
+		IEnumerator IEnumerable.GetEnumerator()
+				{
+					return new EnvironmentEnumerator();
+				}
+		public IDictionaryEnumerator GetEnumerator()
+				{
+					return new EnvironmentEnumerator();
+				}
+
+		// Remove a value from this dictionary.
+		public void Remove(Object key)
+				{
+					throw new NotSupportedException
+						(Environment.GetResourceString("NotSupp_ReadOnly"));
+				}
+
+		// Determine if this dictionary has a fixed size.
+		public bool IsFixedSize
+				{
+					get
+					{
+						return true;
+					}
+				}
+
+		// Determine if this dictionary is read-only.
+		public bool IsReadOnly
+				{
+					get
+					{
+						return true;
+					}
+				}
+
+		// Get a particular object from this dictionary.
+		public Object this[Object key]
+				{
+					get
+					{
+						String keyName = key.ToString();
+						if(keyName != null)
+						{
+							return TaskMethods.GetEnvironmentVariable(keyName);
+						}
+						else
+						{
+							throw new ArgumentNullException("key");
+						}
+					}
+					set
+					{
+						throw new NotSupportedException
+							(Environment.GetResourceString("NotSupp_ReadOnly"));
+					}
+				}
+
+		// Get a list of all keys in this dictionary.
+		public ICollection Keys
+				{
+					get
+					{
+						int count = TaskMethods.GetEnvironmentCount();
+						String[] keys = new String [count];
+						int posn;
+						for(posn = 0; posn < count; ++posn)
+						{
+							keys[posn] = TaskMethods.GetEnvironmentKey(posn);
+						}
+						return keys;
+					}
+				}
+
+		// Get a list of all values in this dictionary.
+		public ICollection Values
+				{
+					get
+					{
+						int count = TaskMethods.GetEnvironmentCount();
+						String[] values = new String [count];
+						int posn;
+						for(posn = 0; posn < count; ++posn)
+						{
+							values[posn] =
+								TaskMethods.GetEnvironmentValue(posn);
+						}
+						return values;
+					}
+				}
+
+	};
+
+	// Private class for enumerating over the contents of the environment.
+	private sealed class EnvironmentEnumerator : IDictionaryEnumerator
+	{
+		private int posn;
+		private int count;
+
+		// Constructor.
+		public EnvironmentEnumerator()
+				{
+					posn = -1;
+					count = TaskMethods.GetEnvironmentCount();
+				}
+
+		// Move to the next item in sequence.
+		public bool MoveNext()
+				{
+					++posn;
+					return (posn < count);
+				}
+
+		// Reset the enumerator.
+		public void Reset()
+				{
+					posn = -1;
+				}
+
+		// Get the current enumerator value.
+		public Object Current
+				{
+					get
+					{
+						return Entry;
+					}
+				}
+
+		// Get the current dictionary entry value.
+		public DictionaryEntry Entry
+				{
+					get
+					{
+						if(posn >= 0 && posn < count)
+						{
+							return new DictionaryEntry
+								(TaskMethods.GetEnvironmentKey(posn),
+								 TaskMethods.GetEnvironmentValue(posn));
+						}
+						else
+						{
+							throw new InvalidOperationException
+								(Environment.GetResourceString
+									("Invalid_BadEnumeratorPosition"));
+						}
+					}
+				}
+
+		// Get the key associated with the current enumerator value.
+		public Object Key
+				{
+					get
+					{
+						if(posn >= 0 && posn < count)
+						{
+							return TaskMethods.GetEnvironmentKey(posn);
+						}
+						else
+						{
+							throw new InvalidOperationException
+								(Environment.GetResourceString
+									("Invalid_BadEnumeratorPosition"));
+						}
+					}
+				}
+
+		// Get the value associated with the current enumerator value.
+		public Object Value
+				{
+					get
+					{
+						if(posn >= 0 && posn < count)
+						{
+							return TaskMethods.GetEnvironmentValue(posn);
+						}
+						else
+						{
+							throw new InvalidOperationException
+								(Environment.GetResourceString
+									("Invalid_BadEnumeratorPosition"));
+						}
+					}
+				}
+
+	};
 
 }; // class Environment
 

@@ -27,13 +27,12 @@ public struct Char : IComparable, IConvertible
 {
 	private char value__;
 
-	public const char Empty    = '\u0000';
 	public const char MaxValue = '\uFFFF';
 	public const char MinValue = '\u0000';
 
 	// Override inherited methods.
 	public override int GetHashCode()
-			{ return unchecked(((int)value__) | (((int)value__) << 15)); }
+			{ return unchecked(((int)value__) | (((int)value__) << 16)); }
 	public override bool Equals(Object value)
 			{
 				if(value is Char)
@@ -53,13 +52,11 @@ public struct Char : IComparable, IConvertible
 			}
 	public static String ToString(char value)
 			{
-				char[] array = new char[1];
-				array[0] = value;
-				return new String(array, 0, 1);
+				return new String(value, 1);
 			}
 
 	// Parsing methods.
-	public static char FromString(String s)
+	public static char Parse(String s)
 			{
 				if(s != null)
 				{
@@ -99,110 +96,326 @@ public struct Char : IComparable, IConvertible
 			}
 
 	// Implementation of IConvertible interface.
-	public TypeCode GetTypeCode() { return TypeCode.Char; }
-	public Object ToType(Type ct) { return Convert.DefaultToType(this, ct); }
-	public Boolean ToBoolean()     { return Convert.ToBoolean(value__); }
-	public Byte ToByte()           { return Convert.ToByte(value__); }
-	public SByte ToSByte()         { return Convert.ToSByte(value__); }
-	public Int16 ToInt16()         { return Convert.ToInt16(value__); }
-	public UInt16 ToUInt16()	   { return Convert.ToUInt16(value__); }
-	public Int32 ToInt32()         { return Convert.ToInt32(value__); }
-	public UInt32 ToUInt32()       { return Convert.ToUInt32(value__); }
-	public Int64 ToInt64()         { return Convert.ToInt64(value__); }
-	public UInt64 ToUInt64()       { return Convert.ToUInt64(value__); }
-	public Char ToChar()           { return value__; }
-	public Single ToSingle()
+	public TypeCode GetTypeCode()
+			{
+				return TypeCode.Char;
+			}
+	bool IConvertible.ToBoolean(IFormatProvider provider)
+			{
+				throw new InvalidCastException
+					(String.Format
+						(Environment.GetResourceString("InvalidCast_FromTo"),
+	 			         "Char", "Boolean"));
+			}
+	byte IConvertible.ToByte(IFormatProvider provider)
+			{
+				return Convert.ToByte(value__);
+			}
+	sbyte IConvertible.ToSByte(IFormatProvider provider)
+			{
+				return Convert.ToSByte(value__);
+			}
+	short IConvertible.ToInt16(IFormatProvider provider)
+			{
+				return Convert.ToInt16(value__);
+			}
+	ushort IConvertible.ToUInt16(IFormatProvider provider)
+			{
+				return Convert.ToUInt16(value__);
+			}
+	char IConvertible.ToChar(IFormatProvider provider)
+			{
+				return value__;
+			}
+	int IConvertible.ToInt32(IFormatProvider provider)
+			{
+				return Convert.ToInt32(value__);
+			}
+	uint IConvertible.ToUInt32(IFormatProvider provider)
+			{
+				return Convert.ToUInt32(value__);
+			}
+	long IConvertible.ToInt64(IFormatProvider provider)
+			{
+				return Convert.ToInt64(value__);
+			}
+	ulong IConvertible.ToUInt64(IFormatProvider provider)
+			{
+				return Convert.ToUInt64(value__);
+			}
+	float IConvertible.ToSingle(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
 	 			         "Char", "Single"));
 			}
-	public Double ToDouble()
+	double IConvertible.ToDouble(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
 	 			         "Char", "Double"));
 			}
-	public Decimal ToDecimal()
+	Decimal IConvertible.ToDecimal(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
 	 			         "Char", "Decimal"));
 			}
-	public DateTime ToDateTime()
+	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
-	 			         "Char", "DateTime"));
+		 			     "Char", "DateTime"));
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(value__);
+			}
+	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+			{
+				return Convert.DefaultToType(this, conversionType, provider);
+			}
+
+	// Get the numeric value associated with a character.
+	public static double GetNumericValue(char c)
+			{
+				if(c >= '0' && c <= '9')
+				{
+					return (double)(int)c;
+				}
+				else
+				{
+					return Platform.SysCharInfo.GetNumericValue(c);
+				}
+			}
+	public static double GetNumericValue(String s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				return GetNumericValue(s[index]);
+			}
+
+	// Get the Unicode category for a character.
+	public static UnicodeCategory GetUnicodeCategory(char c)
+			{
+				return Platform.SysCharInfo.GetUnicodeCategory(c);
+			}
+	public static UnicodeCategory GetUnicodeCategory(String s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				return Platform.SysCharInfo.GetUnicodeCategory(s[index]);
 			}
 
 	// Category testing.
-	public static bool IsDigit(char value)
-			{ return CharacterInfo.IsDigit(value); }
-	public static bool IsISOControl(char value)
+	public static bool IsControl(char c)
 			{
-				uint val = unchecked((uint)value);
-				if(val < 32 || (val >= 127 && val < 160))
+				return (GetUnicodeCategory(c) == UnicodeCategory.Control);
+			}
+	public static bool IsControl(String s, int index)
+			{
+				return (GetUnicodeCategory(s, index) ==
+							UnicodeCategory.Control);
+			}
+	public static bool IsDigit(char c)
+			{
+				return (GetUnicodeCategory(c) ==
+							UnicodeCategory.DecimalDigitNumber);
+			}
+	public static bool IsDigit(String s, int index)
+			{
+				return (GetUnicodeCategory(s, index) ==
+							UnicodeCategory.DecimalDigitNumber);
+			}
+	public static bool IsLetter(char c)
+			{
+				UnicodeCategory category = GetUnicodeCategory(c);
+				return (category == UnicodeCategory.UppercaseLetter ||
+						category == UnicodeCategory.LowercaseLetter ||
+						category == UnicodeCategory.TitlecaseLetter ||
+						category == UnicodeCategory.ModifierLetter ||
+						category == UnicodeCategory.OtherLetter);
+			}
+	public static bool IsLetter(String s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				return IsLetter(s[index]);
+			}
+	public static bool IsLetterOrDigit(char c)
+			{
+				UnicodeCategory category = GetUnicodeCategory(c);
+				return (category == UnicodeCategory.UppercaseLetter ||
+						category == UnicodeCategory.LowercaseLetter ||
+						category == UnicodeCategory.TitlecaseLetter ||
+						category == UnicodeCategory.ModifierLetter ||
+						category == UnicodeCategory.OtherLetter ||
+						category == UnicodeCategory.DecimalDigitNumber);
+			}
+	public static bool IsLetterOrDigit(String s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				return IsLetterOrDigit(s[index]);
+			}
+	public static bool IsLower(char c)
+			{
+				return (GetUnicodeCategory(c) ==
+							UnicodeCategory.LowercaseLetter);
+			}
+	public static bool IsLower(String s, int index)
+			{
+				return (GetUnicodeCategory(s, index) ==
+							UnicodeCategory.LowercaseLetter);
+			}
+	public static bool IsNumber(char c)
+			{
+				UnicodeCategory category = GetUnicodeCategory(c);
+				return (category == UnicodeCategory.DecimalDigitNumber ||
+						category == UnicodeCategory.LetterNumber ||
+						category == UnicodeCategory.OtherNumber);
+			}
+	public static bool IsNumber(String s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				return IsNumber(s[index]);
+			}
+	public static bool IsPunctuation(char c)
+			{
+				UnicodeCategory category = GetUnicodeCategory(c);
+				return (category == UnicodeCategory.ConnectorPunctuation ||
+						category == UnicodeCategory.DashPunctuation ||
+						category == UnicodeCategory.OpenPunctuation ||
+						category == UnicodeCategory.ClosePunctuation ||
+						category == UnicodeCategory.InitialQuotePunctuation ||
+						category == UnicodeCategory.FinalQuotePunctuation ||
+						category == UnicodeCategory.OtherPunctuation);
+			}
+	public static bool IsPunctuation(String s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				return IsPunctuation(s[index]);
+			}
+	public static bool IsSeparator(char c)
+			{
+				UnicodeCategory category = GetUnicodeCategory(c);
+				return (category == UnicodeCategory.SpaceSeparator ||
+						category == UnicodeCategory.LineSeparator ||
+						category == UnicodeCategory.ParagraphSeparator);
+			}
+	public static bool IsSeparator(String s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				return IsSeparator(s[index]);
+			}
+	public static bool IsSurrogate(char c)
+			{
+				return (GetUnicodeCategory(c) ==
+							UnicodeCategory.Surrogate);
+			}
+	public static bool IsSurrogate(String s, int index)
+			{
+				return (GetUnicodeCategory(s, index) ==
+							UnicodeCategory.Surrogate);
+			}
+	public static bool IsSymbol(char c)
+			{
+				UnicodeCategory category = GetUnicodeCategory(c);
+				return (category == UnicodeCategory.MathSymbol ||
+						category == UnicodeCategory.CurrencySymbol ||
+						category == UnicodeCategory.ModifierSymbol ||
+						category == UnicodeCategory.OtherSymbol);
+			}
+	public static bool IsSymbol(String s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				return IsSymbol(s[index]);
+			}
+	public static bool IsUpper(char c)
+			{
+				return (GetUnicodeCategory(c) ==
+							UnicodeCategory.UppercaseLetter);
+			}
+	public static bool IsUpper(String s, int index)
+			{
+				return (GetUnicodeCategory(s, index) ==
+							UnicodeCategory.UppercaseLetter);
+			}
+	public static bool IsWhiteSpace(char c)
+			{
+				if(c == '\u0009' || c == '\u000a' || c == '\u000b' ||
+				   c == '\u000c' || c == '\u000d' || c == '\u0085' ||
+				   c == '\u2028' || c == '\u2029')
 				{
 					return true;
 				}
-				else
-				{
-					return false;
-				}
+				return (GetUnicodeCategory(c) ==
+							UnicodeCategory.SpaceSeparator);
 			}
-	public static bool IsLetter(char value)
-			{ return CharacterInfo.IsLetter(value); }
-	public static bool IsLetterOrDigit(char value)
-			{ /* TODO */ return false; }
-	public static bool IsLower(char value)
-			{ return CharacterInfo.IsLower(value); }
-	public static bool IsPrintable(char value)
-			{ /* TODO */ return false; }
-	public static bool IsPunctuation(char value)
-			{ return CharacterInfo.IsPunctuation(value); }
-	public static bool IsTitleCase(char value)
-			{ return CharacterInfo.IsTitleCase(value); }
-	public static bool IsUnicodeIdentifierPart(char value)
-			{ return false; }
-	public static bool IsUnicodeIdentifierStart(char value)
-			{ return false; }
-	public static bool IsUpper(char value)
-			{ return CharacterInfo.IsUpper(value); }
-	public static bool IsWhiteSpace(char value)
-			{ return CharacterInfo.IsWhiteSpace(value); }
+	public static bool IsWhiteSpace(String s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				return IsWhiteSpace(s[index]);
+			}
 
 	// Case conversion.
-	public static char ToLower(char value, CultureInfo culture)
+	public static char ToLower(char c, CultureInfo culture)
 			{
 				if(culture != null)
 				{
-					return culture.TextInfo.ToLower(value);
+					return culture.TextInfo.ToLower(c);
 				}
 				else
 				{
 					throw new ArgumentNullException("culture");
 				}
 			}
-	public static char ToLower(char value)
-			{ return ToLower(value, CultureInfo.CurrentCulture); }
-	public static char ToUpper(char value, CultureInfo culture)
+	public static char ToLower(char c)
+			{
+				return CultureInfo.CurrentCulture.TextInfo.ToLower(c);
+			}
+	public static char ToUpper(char c, CultureInfo culture)
 			{
 				if(culture != null)
 				{
-					return culture.TextInfo.ToUpper(value);
+					return culture.TextInfo.ToUpper(c);
 				}
 				else
 				{
 					throw new ArgumentNullException("culture");
 				}
 			}
-	public static char ToUpper(char value)
-			{ return ToUpper(value, CultureInfo.CurrentCulture); }
+	public static char ToUpper(char c)
+			{
+				return CultureInfo.CurrentCulture.TextInfo.ToUpper(c);
+			}
 
 }; // class Char
 

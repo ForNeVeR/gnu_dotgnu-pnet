@@ -23,8 +23,45 @@ namespace System
 
 using System.Reflection;
 
-public class Attribute
+public abstract class Attribute
 {
+
+	// Constructor.
+	protected Attribute()
+			{
+				// Nothing to do here.
+			}
+
+	// Determine if two attributes are equal.
+	public override bool Equals(Object value)
+			{
+				RuntimeType type1;
+				RuntimeType type2;
+
+				// The value must not be null.
+				if(value == null)
+				{
+					return false;
+				}
+
+				// The types must be equal.
+				type1 = (RuntimeType)(GetType());
+				type2 = (RuntimeType)(value.GetType());
+				if(type1 != type2)
+				{
+					return false;
+				}
+
+				// TODO: compare the field values for equality.
+				return false;
+			}
+
+	// Get the hash value for this instance.
+	public override int GetHashCode()
+			{
+				// TODO.
+				return 0;
+			}
 
 	// Get an attribute that is associated with a particular program item.
 	public static Attribute GetCustomAttribute(Module module, Type type)

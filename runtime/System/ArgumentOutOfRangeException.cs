@@ -22,9 +22,7 @@
 namespace System
 {
 
-using System.Runtime.Serialization;
-
-public class ArgumentOutOfRangeException : ArgumentException, ISerializable
+public class ArgumentOutOfRangeException : ArgumentException
 {
 	// Standard error message for null exceptions.
 	private static String preloadedMessage =
@@ -71,15 +69,6 @@ public class ArgumentOutOfRangeException : ArgumentException, ISerializable
 					}
 				}
 			}
-
-	// Serialize this object.
-	public override void GetObjectData(SerializationInfo info,
-									   StreamingContext context)
-		{
-			base.GetObjectData(info, context);
-
-			// TODO.
-		}
 
 }; // class ArgumentOutOfRangeException
 

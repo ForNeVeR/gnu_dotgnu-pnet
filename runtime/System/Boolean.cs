@@ -25,9 +25,6 @@ public struct Boolean : IComparable, IConvertible
 {
 	private bool value__;
 
-	public const int Empty = 0;
-	public const int True  = 1;
-	public const int False = 0;
 	public const String TrueString = "True";
 	public const String FalseString = "False";
 
@@ -49,11 +46,9 @@ public struct Boolean : IComparable, IConvertible
 	// String conversion.
 	public override String ToString()
 			{ return (value__ ? TrueString : FalseString); }
-	public static String ToString(bool value)
-			{ return (value ? TrueString : FalseString); }
 
-	// Parsing methods.
-	public static bool FromString(String value)
+	// String parsing.
+	public static bool Parse(String value)
 			{
 				if(value != null)
 				{
@@ -82,8 +77,6 @@ public struct Boolean : IComparable, IConvertible
 					throw new ArgumentNullException("value");
 				}
 			}
-	public static bool Parse(String s)
-			{ return FromString(s); }
 
 	// Implementation of the IComparable interface.
 	public int CompareTo(Object value)
@@ -116,28 +109,80 @@ public struct Boolean : IComparable, IConvertible
 				}
 			}
 
-	// Implementation of IConvertible interface.
-	public TypeCode GetTypeCode() { return TypeCode.Boolean; }
-	public Object ToType(Type ct) { return Convert.DefaultToType(this, ct); }
-	public Boolean ToBoolean()     { return value__; }
-	public Byte ToByte()           { return Convert.ToByte(value__); }
-	public SByte ToSByte()         { return Convert.ToSByte(value__); }
-	public Int16 ToInt16()         { return Convert.ToInt16(value__); }
-	public UInt16 ToUInt16()	   { return Convert.ToUInt16(value__); }
-	public Int32 ToInt32()         { return Convert.ToInt32(value__); }
-	public UInt32 ToUInt32()       { return Convert.ToUInt32(value__); }
-	public Int64 ToInt64()         { return Convert.ToInt64(value__); }
-	public UInt64 ToUInt64()       { return Convert.ToUInt64(value__); }
-	public Char ToChar()           { return Convert.ToChar(value__); }
-	public Single ToSingle()       { return Convert.ToSingle(value__); }
-	public Double ToDouble()       { return Convert.ToDouble(value__); }
-	public Decimal ToDecimal()     { return Convert.ToDecimal(value__); }
-	public DateTime ToDateTime()
+	// Implementation of the IConvertible interface.
+	public TypeCode GetTypeCode()
+			{
+				return TypeCode.Boolean;
+			}
+	bool IConvertible.ToBoolean(IFormatProvider provider)
+			{
+				return value__;
+			}
+	byte IConvertible.ToByte(IFormatProvider provider)
+			{
+				return Convert.ToByte(value__);
+			}
+	sbyte IConvertible.ToSByte(IFormatProvider provider)
+			{
+				return Convert.ToSByte(value__);
+			}
+	short IConvertible.ToInt16(IFormatProvider provider)
+			{
+				return Convert.ToInt16(value__);
+			}
+	ushort IConvertible.ToUInt16(IFormatProvider provider)
+			{
+				return Convert.ToUInt16(value__);
+			}
+	char IConvertible.ToChar(IFormatProvider provider)
+			{
+				throw new InvalidCastException
+					(String.Format
+						(Environment.GetResourceString("InvalidCast_FromTo"),
+		 			     "Boolean", "Char"));
+			}
+	int IConvertible.ToInt32(IFormatProvider provider)
+			{
+				return Convert.ToInt32(value__);
+			}
+	uint IConvertible.ToUInt32(IFormatProvider provider)
+			{
+				return Convert.ToUInt32(value__);
+			}
+	long IConvertible.ToInt64(IFormatProvider provider)
+			{
+				return Convert.ToInt64(value__);
+			}
+	ulong IConvertible.ToUInt64(IFormatProvider provider)
+			{
+				return Convert.ToUInt64(value__);
+			}
+	float IConvertible.ToSingle(IFormatProvider provider)
+			{
+				return Convert.ToSingle(value__);
+			}
+	double IConvertible.ToDouble(IFormatProvider provider)
+			{
+				return Convert.ToDouble(value__);
+			}
+	Decimal IConvertible.ToDecimal(IFormatProvider provider)
+			{
+				return Convert.ToDecimal(value__);
+			}
+	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
 		 			     "Boolean", "DateTime"));
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return (value__ ? TrueString : FalseString);
+			}
+	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+			{
+				return Convert.DefaultToType(this, conversionType, provider);
 			}
 
 }; // class Boolean

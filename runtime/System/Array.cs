@@ -424,9 +424,239 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	// Implement the IEnumerable interface.
 	public IEnumerator GetEnumerator()
 	{
-		// TODO.
-		return null;
+		int rank = Rank;
+		if(rank == 1)
+		{
+			return new ArrayEnumerator1(this);
+		}
+		else if(rank == 2)
+		{
+			return new ArrayEnumerator2(this);
+		}
+		else
+		{
+			return new ArrayEnumeratorN(this, rank);
+		}
 	}
+
+	// Private class for enumerating a single-dimensional array's contents.
+	private sealed class ArrayEnumerator1 : IEnumerator
+	{
+		private Array array;
+		private int   lower;
+		private int   upper;
+		private int   posn;
+
+		// Constructor.
+		public ArrayEnumerator1(Array array)
+				{
+					this.array = array;
+					this.lower = array.GetUpperBound(0);
+					this.upper = array.GetUpperBound(0);
+					this.posn  = this.lower - 1;
+				}
+
+		// Move to the next element in the array.
+		public bool MoveNext()
+				{
+					if(posn < upper)
+					{
+						++posn;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+		// Reset the enumerator.
+		public void Reset()
+				{
+					posn = lower - 1;
+				}
+
+		// Get the current object.
+		public Object Current
+				{
+					get
+					{
+						if(posn >= lower && posn <= upper)
+						{
+							return array.GetValue(posn);
+						}
+						else
+						{
+							throw new InvalidOperationException
+								(Environment.GetResourceString
+									("Invalid_BadEnumeratorPosition"));
+						}
+					}
+				}
+
+	};
+
+	// Private class for enumerating a double-dimensional array's contents.
+	private sealed class ArrayEnumerator2 : IEnumerator
+	{
+		private Array array;
+		private int   lower1;
+		private int   lower2;
+		private int   upper1;
+		private int   upper2;
+		private int   posn1;
+		private int   posn2;
+
+		// Constructor.
+		public ArrayEnumerator2(Array array)
+				{
+					this.array  = array;
+					this.lower1 = array.GetLowerBound(0);
+					this.lower2 = array.GetLowerBound(1);
+					this.upper1 = array.GetUpperBound(0);
+					this.upper2 = array.GetUpperBound(1);
+					this.posn1 = lower1 - 1;
+					this.posn2 = upper2;
+				}
+
+		// Move to the next element in the array.
+		public bool MoveNext()
+				{
+					if(posn2 >= upper2)
+					{
+						// Start a new row.
+						if(posn1 < upper1)
+						{
+							posn2 = lower2;
+							if(posn2 >= upper2)
+							{
+								// The inner dimension is zero, so the
+								// enumerator never returns anything.
+								return false;
+							}
+							++posn1;
+							return true;
+						}
+						else
+						{
+							return false;
+						}
+					}
+					else
+					{
+						// Advance within the current row.
+						++posn2;
+						return true;
+					}
+				}
+
+		// Reset the enumerator.
+		public void Reset()
+				{
+					posn1 = lower1 - 1;
+					posn2 = upper2;
+				}
+
+		// Get the current object.
+		public Object Current
+				{
+					get
+					{
+						if(posn1 >= lower1 && posn1 <= upper1 &&
+						   posn2 >= lower2 && posn2 <= upper2)
+						{
+							return array.GetValue(posn1, posn2);
+						}
+						else
+						{
+							throw new InvalidOperationException
+								(Environment.GetResourceString
+									("Invalid_BadEnumeratorPosition"));
+						}
+					}
+				}
+
+	};
+
+	// Private class for enumerating a multi-dimensional array's contents.
+	private sealed class ArrayEnumeratorN : IEnumerator
+	{
+		private Array array;
+		private int   rank;
+		private long  length;
+		private long  posn;
+		private int[] lower;
+		private int[] upper;
+		private int[] aposn;
+
+		// Constructor.
+		public ArrayEnumeratorN(Array array, int rank)
+				{
+					int dim;
+					this.array = array;
+					this.rank  = rank;
+					length = array.LongLength;
+					posn = -1;
+					this.lower = new int [rank];
+					this.upper = new int [rank];
+					this.aposn = new int [rank];
+					for(dim = 0; dim < rank; ++dim)
+					{
+						this.lower[dim] = array.GetLowerBound(dim);
+						this.upper[dim] = array.GetUpperBound(dim);
+					}
+				}
+
+		// Move to the next element in the array.
+		public bool MoveNext()
+				{
+					if(posn < length)
+					{
+						++posn;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+		// Reset the enumerator.
+		public void Reset()
+				{
+					posn = -1;
+				}
+
+		// Get the current object.
+		public Object Current
+				{
+					get
+					{
+						if(posn >= 0 && posn < length)
+						{
+							int dim;
+							long temp = posn;
+							long len;
+							for(dim = rank - 1; dim >= 0; --dim)
+							{
+								len = ((long)(upper[dim])) -
+								      ((long)(lower[dim]));
+								aposn[dim] = unchecked((int)(temp % len)) +
+											 lower[dim];
+								temp /= len;
+							}
+							return array.GetValue(aposn);
+						}
+						else
+						{
+							throw new InvalidOperationException
+								(Environment.GetResourceString
+									("Invalid_BadEnumeratorPosition"));
+						}
+					}
+				}
+
+	};
 
 	// Get the length of an array rank.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -1,5 +1,6 @@
 /*
- * EventArgs.cs - Implementation of the "System.EventArgs" class.
+ * DuplicateWaitObjectException.cs - Implementation of the
+ *		"System.DuplicateWaitObjectException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,15 +22,17 @@
 namespace System
 {
 
-public class EventArgs
+public class DuplicateWaitObjectException : ArgumentException
 {
+	// Constructors.
+	public DuplicateWaitObjectException()
+		: base(Environment.GetResourceString("Exception_DuplicateWait")) {}
+	public DuplicateWaitObjectException(String paramName)
+		: base(Environment.GetResourceString("Exception_DuplicateWait"),
+			   paramName) {}
+	public DuplicateWaitObjectException(String paramName, String msg)
+		: base(msg, paramName) {}
 
-	// Public constants.
-	public static readonly EventArgs Empty = new EventArgs();
-
-	// Constructor.
-	public EventArgs() {}
-
-}; // class EventArgs
+}; // class DuplicateWaitObjectException
 
 }; // namespace System

@@ -22,9 +22,7 @@
 namespace System
 {
 
-using System.Runtime.Serialization;
-
-public class ArgumentException : SystemException, ISerializable
+public class ArgumentException : SystemException
 {
 
 	// Internal state.
@@ -41,13 +39,6 @@ public class ArgumentException : SystemException, ISerializable
 		: base(msg, inner) { paramName = param; }
 	public ArgumentException(String msg, String param)
 		: base(msg) { paramName = param; }
-
-	// Implementation of the ISerializable interface.
-	public override void GetObjectData(SerializationInfo info,
-									   StreamingContext context)
-			{
-				// TODO
-			}
 
 	// Properties.
 	public virtual String ParamName

@@ -1,5 +1,5 @@
 /*
- * EventArgs.cs - Implementation of the "System.EventArgs" class.
+ * DefaultBinder.cs - Implementation of the "System.DefaultBinder" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,15 +21,13 @@
 namespace System
 {
 
-public class EventArgs
+using System.Reflection;
+
+internal class DefaultBinder : Binder
 {
 
-	// Public constants.
-	public static readonly EventArgs Empty = new EventArgs();
+// TODO
 
-	// Constructor.
-	public EventArgs() {}
-
-}; // class EventArgs
+}; // class DefaultBinder
 
 }; // namespace System

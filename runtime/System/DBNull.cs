@@ -23,7 +23,7 @@ namespace System
 
 using System.Runtime.Serialization;
 
-public sealed class DBNull : ISerializable, IConvertible
+public sealed class DBNull : IConvertible
 {
 
 	// The only DBNull object in the system.
@@ -35,84 +35,85 @@ public sealed class DBNull : ISerializable, IConvertible
 	// Override inherited methods.
 	public override String ToString() { return String.Empty; }
 
-	// Serialization support.
-	public void GetObjectData(SerializationInfo info, StreamingContext context)
-			{
-				// TODO.
-			}
-
 	// Implement the IConvertible interface.
 	public TypeCode GetTypeCode() { return TypeCode.DBNull; }
-	public Object ToType(Type ct) { return Convert.DefaultToType(this, ct); }
-	public Boolean ToBoolean()
+	Object IConvertible.ToType(Type ct, IFormatProvider provider)
+			{
+				return Convert.DefaultToType(this, ct, provider);
+			}
+	Boolean IConvertible.ToBoolean(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public Byte ToByte()
+	Byte IConvertible.ToByte(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public SByte ToSByte()
+	SByte IConvertible.ToSByte(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public Int16 ToInt16()
+	Int16 IConvertible.ToInt16(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public UInt16 ToUInt16()
+	UInt16 IConvertible.ToUInt16(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public Int32 ToInt32() 
+	Int32 IConvertible.ToInt32(IFormatProvider provider) 
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public UInt32 ToUInt32()
+	UInt32 IConvertible.ToUInt32(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public Int64 ToInt64()
+	Int64 IConvertible.ToInt64(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public UInt64 ToUInt64()
+	UInt64 IConvertible.ToUInt64(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public Char ToChar()
+	Char IConvertible.ToChar(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public Single ToSingle()
+	Single IConvertible.ToSingle(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public Double ToDouble()
+	Double IConvertible.ToDouble(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public Decimal ToDecimal()
+	Decimal IConvertible.ToDecimal(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
 			}
-	public DateTime ToDateTime()
+	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(Environment.GetResourceString("InvalidCast_DBNull"));
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return String.Empty;
 			}
 
 }; // class DBNull

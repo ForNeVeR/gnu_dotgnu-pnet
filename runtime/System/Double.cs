@@ -41,7 +41,6 @@ public struct Double : IComparable, IFormattable, IConvertible
 	public const double PositiveInfinity = (1.0 / 0.0);
 	public const double NegativeInfinity = (-1.0 / 0.0);
 	public const double NaN              = (0.0 / 0.0);
-	public const double Empty            = 0.0;
 
 	// Override inherited methods.
 	public override int GetHashCode()
@@ -66,10 +65,6 @@ public struct Double : IComparable, IFormattable, IConvertible
 					return false;
 				}
 			}
-	public override String ToString()
-			{
-				return Format(value__, null, NumberFormatInfo.InvariantInfo);
-			}
 
 	// Value testing methods.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -81,17 +76,27 @@ public struct Double : IComparable, IFormattable, IConvertible
 	public static bool IsNegativeInfinity(double d)
 				{ return (IsInfinity(d) && d < 0.0); }
 
-	// Parsing methods.
-	public static double FromString(String s)
-			{ return Parse(s, NumberStyles.Float,
-						   NumberFormatInfo.InvariantInfo); }
-	public static double Parse(String s, NumberStyles style,
-							   NumberFormatInfo nfi)
+	// String conversion.
+	public override String ToString()
 			{
-				if(nfi == null)
-				{
-					nfi = NumberFormatInfo.CurrentInfo;
-				}
+				return ToString(null, null);
+			}
+	public String ToString(String format)
+			{
+				return ToString(format, null);
+			}
+	public String ToString(String format, IFormatProvider provider)
+			{
+				return NumberFormatter.FormatDouble
+						(value__, format,
+						 NumberFormatInfo.GetInstance(provider));
+			}
+
+	// Parsing methods.
+	public static double Parse(String s, NumberStyles style,
+							   IFormatProvider provider)
+			{
+				NumberFormatInfo nfi = NumberFormatInfo.GetInstance(provider);
 				try
 				{
 					return NumberParser.ParseDouble(s, style, nfi);
@@ -115,10 +120,19 @@ public struct Double : IComparable, IFormattable, IConvertible
 				}
 			}
 	public static double Parse(String s)
-			{ return Parse(s, NumberStyles.Float |
-							  NumberStyles.AllowThousands, null); }
+			{
+				return Parse(s, NumberStyles.Float |
+							 NumberStyles.AllowThousands, null);
+		 	}
+	public static double Parse(String s, IFormatProvider provider)
+			{
+				return Parse(s, NumberStyles.Float |
+							 NumberStyles.AllowThousands, provider);
+		 	}
 	public static double Parse(String s, NumberStyles style)
-			{ return Parse(s, style, null); }
+			{
+				return Parse(s, style, null);
+			}
 
 	// Implementation of the IComparable interface.
 	public int CompareTo(Object value)
@@ -169,54 +183,80 @@ public struct Double : IComparable, IFormattable, IConvertible
 				}
 			}
 
-	// Implementation of the IFormattable interface.
-	public String Format(String format, IServiceObjectProvider isop)
+	// Implementation of the IConvertible interface.
+	public TypeCode GetTypeCode()
 			{
-				return NumberFormatter.FormatDouble
-						(value__, format,
-						 NumberFormatInfo.GetInstance(isop));
+				return TypeCode.Double;
 			}
-
-	// Other formatting methods.
-	public static String ToString(double value)
-			{ return Format(value, null, NumberFormatInfo.InvariantInfo); }
-	public static String Format(double value, String format)
-			{ return Format(value, format, null); }
-	public static String Format(double value, String format,
-								NumberFormatInfo nfi)
+	bool IConvertible.ToBoolean(IFormatProvider provider)
 			{
-				return NumberFormatter.FormatDouble
-						(value, format, NumberFormatInfo.GetInstance(nfi));
+				return Convert.ToBoolean(value__);
 			}
-
-	// Implementation of IConvertible interface.
-	public TypeCode GetTypeCode() { return TypeCode.Double; }
-	public Object ToType(Type ct) { return Convert.DefaultToType(this, ct); }
-	public Boolean ToBoolean()     { return Convert.ToBoolean(value__); }
-	public Byte ToByte()           { return Convert.ToByte(value__); }
-	public SByte ToSByte()         { return Convert.ToSByte(value__); }
-	public Int16 ToInt16()         { return Convert.ToInt16(value__); }
-	public UInt16 ToUInt16()	   { return Convert.ToUInt16(value__); }
-	public Int32 ToInt32()         { return Convert.ToInt32(value__); }
-	public UInt32 ToUInt32()       { return Convert.ToUInt32(value__); }
-	public Int64 ToInt64()         { return Convert.ToInt64(value__); }
-	public UInt64 ToUInt64()       { return Convert.ToUInt64(value__); }
-	public Char ToChar()
+	byte IConvertible.ToByte(IFormatProvider provider)
+			{
+				return Convert.ToByte(value__);
+			}
+	sbyte IConvertible.ToSByte(IFormatProvider provider)
+			{
+				return Convert.ToSByte(value__);
+			}
+	short IConvertible.ToInt16(IFormatProvider provider)
+			{
+				return Convert.ToInt16(value__);
+			}
+	ushort IConvertible.ToUInt16(IFormatProvider provider)
+			{
+				return Convert.ToUInt16(value__);
+			}
+	char IConvertible.ToChar(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
 		 			     "Double", "Char"));
 			}
-	public Single ToSingle()       { return Convert.ToSingle(value__); }
-	public Double ToDouble()       { return value__; }
-	public Decimal ToDecimal()     { return Convert.ToDecimal(value__); }
-	public DateTime ToDateTime()
+	int IConvertible.ToInt32(IFormatProvider provider)
+			{
+				return Convert.ToInt32(value__);
+			}
+	uint IConvertible.ToUInt32(IFormatProvider provider)
+			{
+				return Convert.ToUInt32(value__);
+			}
+	long IConvertible.ToInt64(IFormatProvider provider)
+			{
+				return Convert.ToInt64(value__);
+			}
+	ulong IConvertible.ToUInt64(IFormatProvider provider)
+			{
+				return Convert.ToUInt64(value__);
+			}
+	float IConvertible.ToSingle(IFormatProvider provider)
+			{
+				return Convert.ToSingle(value__);
+			}
+	double IConvertible.ToDouble(IFormatProvider provider)
+			{
+				return value__;
+			}
+	Decimal IConvertible.ToDecimal(IFormatProvider provider)
+			{
+				return Convert.ToDecimal(value__);
+			}
+	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
 		 			     "Double", "DateTime"));
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
+			}
+	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+			{
+				return Convert.DefaultToType(this, conversionType, provider);
 			}
 
 }; // class Double

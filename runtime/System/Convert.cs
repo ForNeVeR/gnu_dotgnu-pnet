@@ -43,14 +43,28 @@ public sealed class Convert
 	public static bool ToBoolean(uint value) { return (value != 0); }
 	public static bool ToBoolean(long value) { return (value != 0); }
 	public static bool ToBoolean(ulong value) { return (value != 0); }
-	public static bool ToBoolean(char value) { return value.ToBoolean(); }
+	public static bool ToBoolean(char value)
+			{
+				return ((IConvertible)value).ToBoolean(null);
+			}
 	public static bool ToBoolean(float value) { return (value != 0.0); }
 	public static bool ToBoolean(double value) { return (value != 0.0); }
 	public static bool ToBoolean(Object value)
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToBoolean();
+					return ((IConvertible)value).ToBoolean(null);
+				}
+				else
+				{
+					return false;
+				}
+			}
+	public static bool ToBoolean(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToBoolean(provider);
 				}
 				else
 				{
@@ -59,7 +73,11 @@ public sealed class Convert
 			}
 	public static bool ToBoolean(String value)
 			{
-				return Boolean.FromString(value);
+				return Boolean.Parse(value);
+			}
+	public static bool ToBoolean(String value, IFormatProvider provider)
+			{
+				return Boolean.Parse(value);
 			}
 
 	// Convert various types into Byte.
@@ -171,13 +189,24 @@ public sealed class Convert
 			}
 	public static byte ToByte(Decimal value)
 			{
-				return (Decimal.Round(value, 0)).ToByte();
+				return Decimal.ToByte(Decimal.Round(value, 0));
 			}
 	public static byte ToByte(Object value)
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToByte();
+					return ((IConvertible)value).ToByte(null);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static byte ToByte(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToByte(provider);
 				}
 				else
 				{
@@ -186,7 +215,11 @@ public sealed class Convert
 			}
 	public static byte ToByte(String value)
 			{
-				return Byte.FromString(value);
+				return Byte.Parse(value);
+			}
+	public static byte ToByte(String value, IFormatProvider provider)
+			{
+				return Byte.Parse(value, provider);
 			}
 	public static byte ToByte(String value, int fromBase)
 			{
@@ -312,13 +345,24 @@ public sealed class Convert
 			}
 	public static sbyte ToSByte(Decimal value)
 			{
-				return (Decimal.Round(value, 0)).ToSByte();
+				return Decimal.ToSByte(Decimal.Round(value, 0));
 			}
 	public static sbyte ToSByte(Object value)
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToSByte();
+					return ((IConvertible)value).ToSByte(null);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static sbyte ToSByte(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToSByte(provider);
 				}
 				else
 				{
@@ -327,7 +371,11 @@ public sealed class Convert
 			}
 	public static sbyte ToSByte(String value)
 			{
-				return SByte.FromString(value);
+				return SByte.Parse(value);
+			}
+	public static sbyte ToSByte(String value, IFormatProvider provider)
+			{
+				return SByte.Parse(value, provider);
 			}
 	public static sbyte ToSByte(String value, int fromBase)
 			{
@@ -437,13 +485,24 @@ public sealed class Convert
 			}
 	public static short ToInt16(Decimal value)
 			{
-				return (Decimal.Round(value, 0)).ToInt16();
+				return Decimal.ToInt16(Decimal.Round(value, 0));
 			}
 	public static short ToInt16(Object value)
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToInt16();
+					return ((IConvertible)value).ToInt16(null);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static short ToInt16(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToInt16(provider);
 				}
 				else
 				{
@@ -452,7 +511,11 @@ public sealed class Convert
 			}
 	public static short ToInt16(String value)
 			{
-				return Int16.FromString(value);
+				return Int16.Parse(value);
+			}
+	public static short ToInt16(String value, IFormatProvider provider)
+			{
+				return Int16.Parse(value, provider);
 			}
 	public static short ToInt16(String value, int fromBase)
 			{
@@ -565,13 +628,24 @@ public sealed class Convert
 			}
 	public static ushort ToUInt16(Decimal value)
 			{
-				return (Decimal.Round(value, 0)).ToUInt16();
+				return Decimal.ToUInt16(Decimal.Round(value, 0));
 			}
 	public static ushort ToUInt16(Object value)
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToUInt16();
+					return ((IConvertible)value).ToUInt16(null);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static ushort ToUInt16(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToUInt16(provider);
 				}
 				else
 				{
@@ -580,7 +654,11 @@ public sealed class Convert
 			}
 	public static ushort ToUInt16(String value)
 			{
-				return UInt16.FromString(value);
+				return UInt16.Parse(value);
+			}
+	public static ushort ToUInt16(String value, IFormatProvider provider)
+			{
+				return UInt16.Parse(value, provider);
 			}
 	public static ushort ToUInt16(String value, int fromBase)
 			{
@@ -678,13 +756,24 @@ public sealed class Convert
 			}
 	public static int ToInt32(Decimal value)
 			{
-				return (Decimal.Round(value, 0)).ToInt32();
+				return Decimal.ToInt32(Decimal.Round(value, 0));
 			}
 	public static int ToInt32(Object value)
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToInt32();
+					return ((IConvertible)value).ToInt32(null);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static int ToInt32(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToInt32(provider);
 				}
 				else
 				{
@@ -693,7 +782,11 @@ public sealed class Convert
 			}
 	public static int ToInt32(String value)
 			{
-				return Int32.FromString(value);
+				return Int32.Parse(value);
+			}
+	public static int ToInt32(String value, IFormatProvider provider)
+			{
+				return Int32.Parse(value, provider);
 			}
 	public static int ToInt32(String value, int fromBase)
 			{
@@ -806,13 +899,24 @@ public sealed class Convert
 			}
 	public static uint ToUInt32(Decimal value)
 			{
-				return (Decimal.Round(value, 0)).ToUInt32();
+				return Decimal.ToUInt32(Decimal.Round(value, 0));
 			}
 	public static uint ToUInt32(Object value)
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToUInt32();
+					return ((IConvertible)value).ToUInt32(null);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static uint ToUInt32(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToUInt32(provider);
 				}
 				else
 				{
@@ -821,7 +925,11 @@ public sealed class Convert
 			}
 	public static uint ToUInt32(String value)
 			{
-				return UInt32.FromString(value);
+				return UInt32.Parse(value);
+			}
+	public static uint ToUInt32(String value, IFormatProvider provider)
+			{
+				return UInt32.Parse(value, provider);
 			}
 	public static uint ToUInt32(String value, int fromBase)
 			{
@@ -902,13 +1010,24 @@ public sealed class Convert
 			}
 	public static long ToInt64(Decimal value)
 			{
-				return (Decimal.Round(value, 0)).ToInt64();
+				return Decimal.ToInt64(Decimal.Round(value, 0));
 			}
 	public static long ToInt64(Object value)
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToInt64();
+					return ((IConvertible)value).ToInt64(null);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static long ToInt64(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToInt64(provider);
 				}
 				else
 				{
@@ -917,7 +1036,11 @@ public sealed class Convert
 			}
 	public static long ToInt64(String value)
 			{
-				return Int64.FromString(value);
+				return Int64.Parse(value);
+			}
+	public static long ToInt64(String value, IFormatProvider provider)
+			{
+				return Int64.Parse(value, provider);
 			}
 	public static long ToInt64(String value, int fromBase)
 			{
@@ -1022,13 +1145,24 @@ public sealed class Convert
 			}
 	public static ulong ToUInt64(Decimal value)
 			{
-				return (Decimal.Round(value, 0)).ToUInt64();
+				return Decimal.ToUInt64(Decimal.Round(value, 0));
 			}
 	public static ulong ToUInt64(Object value)
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToUInt64();
+					return ((IConvertible)value).ToUInt64(null);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static ulong ToUInt64(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToUInt64(provider);
 				}
 				else
 				{
@@ -1037,7 +1171,11 @@ public sealed class Convert
 			}
 	public static ulong ToUInt64(String value)
 			{
-				return UInt64.FromString(value);
+				return UInt64.Parse(value);
+			}
+	public static ulong ToUInt64(String value, IFormatProvider provider)
+			{
+				return UInt64.Parse(value, provider);
 			}
 	public static ulong ToUInt64(String value, int fromBase)
 			{
@@ -1137,21 +1275,32 @@ public sealed class Convert
 	public static char ToChar(char value) { return value; }
 	public static char ToChar(float value)
 			{
-				return value.ToChar();
+				return ((IConvertible)value).ToChar(null);
 			}
 	public static char ToChar(double value)
 			{
-				return value.ToChar();
+				return ((IConvertible)value).ToChar(null);
 			}
 	public static char ToChar(Decimal value)
 			{
-				return value.ToChar();
+				return ((IConvertible)value).ToChar(null);
 			}
 	public static char ToChar(Object value)
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToChar();
+					return ((IConvertible)value).ToChar(null);
+				}
+				else
+				{
+					return '\u0000';
+				}
+			}
+	public static char ToChar(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToChar(provider);
 				}
 				else
 				{
@@ -1177,6 +1326,10 @@ public sealed class Convert
 				{
 					throw new ArgumentNullException("value");
 				}
+			}
+	public static char ToChar(String value, IFormatProvider provider)
+			{
+				return ToChar(value);
 			}
 
 	// Convert various types into Single.
@@ -1229,7 +1382,18 @@ public sealed class Convert
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToSingle();
+					return ((IConvertible)value).ToSingle(null);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static float ToSingle(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToSingle(provider);
 				}
 				else
 				{
@@ -1238,7 +1402,11 @@ public sealed class Convert
 			}
 	public static float ToSingle(String value)
 			{
-				return Single.FromString(value);
+				return Single.Parse(value);
+			}
+	public static float ToSingle(String value, IFormatProvider provider)
+			{
+				return Single.Parse(value, provider);
 			}
 
 	// Convert various types into Double.
@@ -1291,7 +1459,18 @@ public sealed class Convert
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToDouble();
+					return ((IConvertible)value).ToDouble(null);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static double ToDouble(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToDouble(provider);
 				}
 				else
 				{
@@ -1300,61 +1479,150 @@ public sealed class Convert
 			}
 	public static double ToDouble(String value)
 			{
-				return Double.FromString(value);
+				return Double.Parse(value);
+			}
+	public static double ToDouble(String value, IFormatProvider provider)
+			{
+				return Double.Parse(value, provider);
 			}
 
 	// Convert various types into String.
 	public static String ToString(bool value)
 			{
-				return Boolean.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(bool value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(byte value)
 			{
-				return Byte.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(byte value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
+			}
+	public static String ToString(byte value, int toBase)
+			{
+				return NumberFormatter.FormatInBase((long)value, toBase, 8);
 			}
 	public static String ToString(sbyte value)
 			{
-				return SByte.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(sbyte value, int toBase)
+			{
+				return NumberFormatter.FormatInBase((long)value, toBase, 8);
+			}
+	public static String ToString(sbyte value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(short value)
 			{
-				return Int16.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(short value, int toBase)
+			{
+				return NumberFormatter.FormatInBase((long)value, toBase, 16);
+			}
+	public static String ToString(short value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(ushort value)
 			{
-				return UInt16.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(ushort value, int toBase)
+			{
+				return NumberFormatter.FormatInBase((long)value, toBase, 16);
+			}
+	public static String ToString(ushort value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(int value)
 			{
-				return Int32.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(int value, int toBase)
+			{
+				return NumberFormatter.FormatInBase((long)value, toBase, 32);
+			}
+	public static String ToString(int value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(uint value)
 			{
-				return UInt32.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(uint value, int toBase)
+			{
+				return NumberFormatter.FormatInBase((long)value, toBase, 32);
+			}
+	public static String ToString(uint value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(long value)
 			{
-				return Int64.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(long value, int toBase)
+			{
+				return NumberFormatter.FormatInBase((long)value, toBase, 64);
+			}
+	public static String ToString(long value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(ulong value)
 			{
-				return UInt64.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(ulong value, int toBase)
+			{
+				return NumberFormatter.FormatInBaseUnsigned
+							(value, toBase, 64);
+			}
+	public static String ToString(ulong value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(char value)
 			{
-				return Char.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(char value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(float value)
 			{
-				return Single.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(float value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(double value)
 			{
-				return Double.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(double value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(Decimal value)
 			{
-				return Decimal.ToString(value);
+				return value.ToString();
+			}
+	public static String ToString(Decimal value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 	public static String ToString(Object value)
 			{
@@ -1367,13 +1635,29 @@ public sealed class Convert
 					return String.Empty;
 				}
 			}
+	public static String ToString(Object value, IFormatProvider provider)
+			{
+				IConvertible iconv = (value as IConvertible);
+				if(iconv != null)
+				{
+					return iconv.ToString(provider);
+				}
+				else if(value != null)
+				{
+					return value.ToString();
+				}
+				else
+				{
+					return String.Empty;
+				}
+			}
 	public static String ToString(DateTime value)
 			{
-				return DateTime.ToString(value);
-			}
-	public static String ToString(TimeSpan value)
-			{
 				return value.ToString();
+			}
+	public static String ToString(DateTime value, IFormatProvider provider)
+			{
+				return value.ToString(provider);
 			}
 
 	// Convert various types into DateTime.
@@ -1381,16 +1665,16 @@ public sealed class Convert
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToDateTime();
+					return ((IConvertible)value).ToDateTime(null);
 				}
 				else
 				{
-					return DateTime.Empty;
+					return DateTime.MinValue;
 				}
 			}
 	public static DateTime ToDateTime(String value)
 			{
-				return DateTime.FromString(value);
+				return DateTime.Parse(value);
 			}
 
 	// Convert various types into Decimal.
@@ -1428,7 +1712,7 @@ public sealed class Convert
 			}
 	public static Decimal ToDecimal(char value)
 			{
-				return value.ToDecimal();
+				return ((IConvertible)value).ToDecimal(null);
 			}
 	public static Decimal ToDecimal(float value)
 			{
@@ -1443,7 +1727,7 @@ public sealed class Convert
 			{
 				if(value != null)
 				{
-					return ((IConvertible)value).ToDecimal();
+					return ((IConvertible)value).ToDecimal(null);
 				}
 				else
 				{
@@ -1452,7 +1736,7 @@ public sealed class Convert
 			}
 	public static Decimal ToDecimal(String value)
 			{
-				return Decimal.FromString(value);
+				return Decimal.Parse(value);
 			}
 
 	// Change the type of an object.
@@ -1460,7 +1744,7 @@ public sealed class Convert
 			{
 				if(conversionType is IConvertible)
 				{
-					return ((IConvertible)value).ToType(conversionType);
+					return ((IConvertible)value).ToType(conversionType, null);
 				}
 				else if(value != null || conversionType != null)
 				{
@@ -1511,91 +1795,91 @@ public sealed class Convert
 
 						case TypeCode.Boolean:
 						{
-							return (Object)(iconv.ToBoolean());
+							return (Object)(iconv.ToBoolean(null));
 						}
 						/* Not reached */
 
 						case TypeCode.Char:
 						{
-							return (Object)(iconv.ToChar());
+							return (Object)(iconv.ToChar(null));
 						}
 						/* Not reached */
 
 						case TypeCode.SByte:
 						{
-							return (Object)(iconv.ToSByte());
+							return (Object)(iconv.ToSByte(null));
 						}
 						/* Not reached */
 
 						case TypeCode.Byte:
 						{
-							return (Object)(iconv.ToByte());
+							return (Object)(iconv.ToByte(null));
 						}
 						/* Not reached */
 
 						case TypeCode.Int16:
 						{
-							return (Object)(iconv.ToInt16());
+							return (Object)(iconv.ToInt16(null));
 						}
 						/* Not reached */
 
 						case TypeCode.UInt16:
 						{
-							return (Object)(iconv.ToUInt16());
+							return (Object)(iconv.ToUInt16(null));
 						}
 						/* Not reached */
 
 						case TypeCode.Int32:
 						{
-							return (Object)(iconv.ToInt32());
+							return (Object)(iconv.ToInt32(null));
 						}
 						/* Not reached */
 
 						case TypeCode.UInt32:
 						{
-							return (Object)(iconv.ToUInt32());
+							return (Object)(iconv.ToUInt32(null));
 						}
 						/* Not reached */
 
 						case TypeCode.Int64:
 						{
-							return (Object)(iconv.ToInt64());
+							return (Object)(iconv.ToInt64(null));
 						}
 						/* Not reached */
 
 						case TypeCode.UInt64:
 						{
-							return (Object)(iconv.ToUInt64());
+							return (Object)(iconv.ToUInt64(null));
 						}
 						/* Not reached */
 
 						case TypeCode.Single:
 						{
-							return (Object)(iconv.ToSingle());
+							return (Object)(iconv.ToSingle(null));
 						}
 						/* Not reached */
 
 						case TypeCode.Double:
 						{
-							return (Object)(iconv.ToDouble());
+							return (Object)(iconv.ToDouble(null));
 						}
 						/* Not reached */
 
 						case TypeCode.Decimal:
 						{
-							return (Object)(iconv.ToDecimal());
+							return (Object)(iconv.ToDecimal(null));
 						}
 						/* Not reached */
 
 						case TypeCode.DateTime:
 						{
-							return (Object)(iconv.ToDateTime());
+							return (Object)(iconv.ToDateTime(null));
 						}
 						/* Not reached */
 
 						case TypeCode.String:
 						{
-							return (Object)(iconv.ToString());
+							return (Object)(iconv.ToString(null));
 						}
 						/* Not reached */
 
@@ -1622,7 +1906,8 @@ public sealed class Convert
 
 	// Default implementation of the "ToType" methods in
 	// the primitive classes like Byte, Int32, Boolean, etc.
-	internal static Object DefaultToType(IConvertible obj, Type targetType)
+	internal static Object DefaultToType(IConvertible obj, Type targetType,
+										 IFormatProvider provider)
 			{
 				if(targetType != null)
 				{
@@ -1632,63 +1917,63 @@ public sealed class Convert
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.Boolean])
 					{
-						return (Object)(obj.ToBoolean());
+						return (Object)(obj.ToBoolean(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.Char])
 					{
-						return (Object)(obj.ToChar());
+						return (Object)(obj.ToChar(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.SByte])
 					{
-						return (Object)(obj.ToSByte());
+						return (Object)(obj.ToSByte(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.Byte])
 					{
-						return (Object)(obj.ToByte());
+						return (Object)(obj.ToByte(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.Int16])
 					{
-						return (Object)(obj.ToInt16());
+						return (Object)(obj.ToInt16(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.UInt16])
 					{
-						return (Object)(obj.ToUInt16());
+						return (Object)(obj.ToUInt16(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.Int32])
 					{
-						return (Object)(obj.ToInt32());
+						return (Object)(obj.ToInt32(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.UInt32])
 					{
-						return (Object)(obj.ToUInt32());
+						return (Object)(obj.ToUInt32(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.Int64])
 					{
-						return (Object)(obj.ToInt64());
+						return (Object)(obj.ToInt64(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.UInt64])
 					{
-						return (Object)(obj.ToUInt64());
+						return (Object)(obj.ToUInt64(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.Single])
 					{
-						return (Object)(obj.ToSingle());
+						return (Object)(obj.ToSingle(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.Double])
 					{
-						return (Object)(obj.ToDouble());
+						return (Object)(obj.ToDouble(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.Decimal])
 					{
-						return (Object)(obj.ToDecimal());
+						return (Object)(obj.ToDecimal(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.DateTime])
 					{
-						return (Object)(obj.ToDateTime());
+						return (Object)(obj.ToDateTime(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.String])
 					{
-						return (Object)(obj.ToString());
+						return (Object)(obj.ToString(provider));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.Object])
 					{

@@ -1,5 +1,6 @@
 /*
- * EventArgs.cs - Implementation of the "System.EventArgs" class.
+ * CannotUnloadAppDomainException.cs - Implementation of the
+ *			"System.CannotUnloadAppDomainException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,15 +22,17 @@
 namespace System
 {
 
-public class EventArgs
+public class CannotUnloadAppDomainException : SystemException
 {
 
-	// Public constants.
-	public static readonly EventArgs Empty = new EventArgs();
+	// Constructors.
+	public CannotUnloadAppDomainException()
+		: base(Environment.GetResourceString("Exception_CannotUnloadAD")) {}
+	public CannotUnloadAppDomainException(String msg)
+		: base(msg) {}
+	public CannotUnloadAppDomainException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-	// Constructor.
-	public EventArgs() {}
-
-}; // class EventArgs
+}; // class CannotUnloadAppDomainException
 
 }; // namespace System

@@ -256,11 +256,11 @@ public struct Currency : IComparable, IFormattable
 			}
 	public static float ToSingle(Currency value)
 			{
-				return ToDecimal(value).ToSingle();
+				return Decimal.ToSingle(ToDecimal(value));
 			}
 	public static double ToDouble(Currency value)
 			{
-				return ToDecimal(value).ToDouble();
+				return Decimal.ToDouble(ToDecimal(value));
 			}
 	public static int ToInt32(Currency value)
 			{
@@ -368,35 +368,23 @@ public struct Currency : IComparable, IFormattable
 
 	// String conversion.
 	public override String ToString()
-			{ return Format(this, null, NumberFormatInfo.InvariantInfo); }
+			{
+				return ToDecimal(this).ToString();
+			}
+	public String ToString(String format, IFormatProvider provider)
+			{
+				return ToDecimal(this).ToString(format, provider);
+			}
 	public static String ToString(Currency value)
-			{ return Format(value, null, NumberFormatInfo.InvariantInfo); }
-
-	// Formatting methods.
-	public static String Format(Currency value, String format,
-								NumberFormatInfo nfi)
 			{
-				return Decimal.Format(ToDecimal(value), format, nfi);
-			}
-	public String Format(String format, IServiceObjectProvider isop)
-			{
-				return ToDecimal(this).Format(format, isop);
-			}
-	public static String Format(Currency value, String format)
-			{
-				return Decimal.Format(ToDecimal(value), format, null);
+				return ToDecimal(value).ToString();
 			}
 
 	// Parsing methods.
-	public static Currency FromString(String s)
-			{
-				return Parse(s, NumberStyles.Currency,
-							 NumberFormatInfo.InvariantInfo);
-			}
 	public static Currency Parse(String s, NumberStyles style,
-							     NumberFormatInfo nfi)
+							     IFormatProvider provider)
 			{
-				return Decimal.ToCurrency(Decimal.Parse(s, style, nfi));
+				return Decimal.ToCurrency(Decimal.Parse(s, style, provider));
 			}
 	public static Currency Parse(String s)
 			{

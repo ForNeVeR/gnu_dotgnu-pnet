@@ -22,7 +22,7 @@
 namespace System
 {
 
-public class ApplicationException : SystemException
+public class ApplicationException : Exception
 {
 
 	// Constructors.

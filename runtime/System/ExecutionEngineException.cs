@@ -1,5 +1,6 @@
 /*
- * EventArgs.cs - Implementation of the "System.EventArgs" class.
+ * ExecutionEngineException.cs - Implementation of the
+ *		"System.ExecutionEngineException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,15 +22,17 @@
 namespace System
 {
 
-public class EventArgs
+public sealed class ExecutionEngineException : SystemException
 {
 
-	// Public constants.
-	public static readonly EventArgs Empty = new EventArgs();
+	// Constructors.
+	public ExecutionEngineException()
+		: base(Environment.GetResourceString("Exception_Engine")) {}
+	public ExecutionEngineException(String msg)
+		: base(msg) {}
+	public ExecutionEngineException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-	// Constructor.
-	public EventArgs() {}
-
-}; // class EventArgs
+}; // class ExecutionEngineException
 
 }; // namespace System

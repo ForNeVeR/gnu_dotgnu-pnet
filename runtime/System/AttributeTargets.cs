@@ -21,6 +21,7 @@
 namespace System
 {
 
+[Flags]
 public enum AttributeTargets
 {
 	Assembly		= 0x0001,

@@ -21,7 +21,7 @@
 namespace System
 {
 
-public class AppDomain : MarshalByRefObject
+public sealed class AppDomain : MarshalByRefObject
 {
 	// Internal state.
 	private String friendlyName;

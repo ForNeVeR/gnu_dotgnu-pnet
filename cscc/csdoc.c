@@ -711,8 +711,11 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 	Indent(stream, indent + 2);
 	fputs("<MemberSignature Language=\"C#\" Value=\"", stream);
 	ILDumpFlags(stream, decl->modifiers, CSharpMethodFlags, 0);
-	fputs(CSTypeToName(ILTypeGetReturn(signature)), stream);
-	putc(' ', stream);
+	if(!isConstructor)
+	{
+		fputs(CSTypeToName(ILTypeGetReturn(signature)), stream);
+		putc(' ', stream);
+	}
 	if(isConstructor)
 	{
 		methodName = ILClass_Name(ILMethod_Owner(method));

@@ -12,6 +12,9 @@
 	* csdoc/doc_stub.c: Improve csdoc2stub to generate better formatted
 	code from .csdoc files.
 
+	* cscc/csdoc.c: Fix csdoc to ignore return values while generating
+	documentation for constructors.
+
 2003-01-04  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	*  configure.in, engine/int_proto.h, engine/int_table.c,

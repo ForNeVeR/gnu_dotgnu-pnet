@@ -99,6 +99,12 @@ int CSSemExpectValue(ILNode *node, ILGenInfo *info,
 					 ILNode **parent, CSSemValue *value);
 
 /*
+ * Perform semantic analysis on a node and expect a type.
+ * Returns non-zero if a value, or zero on error.
+ */
+int CSSemExpectType (ILNode *type, ILGenInfo *info, ILNode **parent);
+
+/*
  * Perform semantic analysis on the node corresponding to a
  * program item.  This is used to finialize semantic analysis
  * on declarations that are forward-declared at the point of use.
@@ -177,6 +183,13 @@ ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
 	info->inSemType = save;
 
 	return CSSemValidate(type, value);
+}
+
+int CSSemExpectType (ILNode *type, ILGenInfo *info, ILNode **parent)
+{
+	CSSemValue value;
+	value = ILNode_SemAnalysisType(type, info, parent);
+	return CSSemIsType(value);
 }
 
 int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,

@@ -1,4 +1,10 @@
 
+2002-12-17 Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_semantics.tc, cscc/csharp/cs_attrs.c: Implement
+	double lookups for Attribute names to ensure that 'Attribute' suffixes
+	are added correctly.
+	
 2002-12-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/Makefile.am, cscc/cscc.c, cscc/common/cc_options.c,

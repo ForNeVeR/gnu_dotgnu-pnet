@@ -216,6 +216,12 @@ typedef enum
 ILUnicodeCategory ILGetUnicodeCategory(unsigned ch);
 
 /*
+ * Get the numeric value associated with a Unicode character.
+ * Returns -1 if no value.
+ */
+double ILGetUnicodeValue(unsigned ch);
+
+/*
  * Option descriptors for command-line parsing support.
  */
 typedef struct

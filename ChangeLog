@@ -15,6 +15,8 @@ numeric value of a Unicode character.
 implement misc "Platform" classes and change the "internalcall"
 table lookup into a binary search for greater speed.
 
+* include/il_utils.h: declare "ILGetUnicodeValue".
+
 2001-10-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in: update version to 0.2.1.

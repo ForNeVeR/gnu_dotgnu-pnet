@@ -10,6 +10,9 @@
 	* runtime/System/Enum.cs: Fix hexadecimal formatting of enums to
 	generate zero padded output.
 
+	* runtime/System/Enum.cs: Fix GetTypeCode() and allow the IsDefined
+	function to use Enum field names as well.
+
 2003-07-20  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: change how

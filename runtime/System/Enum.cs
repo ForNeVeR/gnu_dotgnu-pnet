@@ -341,6 +341,16 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				{
 					throw new ArgumentException(_("Arg_MustBeEnum"));
 				}
+				/* Note: Ecma doesn't specify this , but MS seems to have
+				 *       it */
+				#if !ECMA_COMPAT
+				if(value is String)
+				{
+					return (GetEnumValueFromName(enumType, 
+												(value as String),
+												false) != null);
+				}
+				#endif
 				Type type = value.GetType();
 				if(type == enumType)
 				{
@@ -624,34 +634,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 	public TypeCode GetTypeCode()
 			{
 				Type type = GetUnderlyingType(GetType());
-				if(type == typeof(System.SByte))
-				{
-					return TypeCode.SByte;
-				}
-				else if(type == typeof(System.Byte))
-				{
-					return TypeCode.Byte;
-				}
-				else if(type == typeof(System.Int16))
-				{
-					return TypeCode.Int16;
-				}
-				else if(type == typeof(System.UInt16))
-				{
-					return TypeCode.UInt16;
-				}
-				else if(type == typeof(System.Int32))
-				{
-					return TypeCode.Int32;
-				}
-				else if(type == typeof(System.Int64))
-				{
-					return TypeCode.Int64;
-				}
-				else
-				{
-					return TypeCode.UInt64;
-				}
+				return Type.GetTypeCode(type);
 			}
 	bool IConvertible.ToBoolean(IFormatProvider provider)
 			{

@@ -253,8 +253,10 @@ public class Form : ContainerControl
 				{
 					if(borderStyle != value)
 					{
+						Size oldSize = ClientSize;
 						borderStyle = value;
 						SetWindowFlag(0, true);
+						ClientSize = oldSize;
 					}
 				}
 			}
@@ -1553,21 +1555,33 @@ public class Form : ContainerControl
 			{
 				get
 				{
-					int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
-					ToolkitManager.Toolkit.GetWindowAdjust
-						(out leftAdjust, out topAdjust,
-						out rightAdjust, out bottomAdjust, GetFullFlags());
-					return new Size(leftAdjust + rightAdjust, topAdjust + bottomAdjust);
+					if(FormBorderStyle != FormBorderStyle.None)
+					{
+						int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
+						ToolkitManager.Toolkit.GetWindowAdjust
+							(out leftAdjust, out topAdjust,
+							out rightAdjust, out bottomAdjust, GetFullFlags());
+						return new Size(leftAdjust + rightAdjust, topAdjust + bottomAdjust);
+					}
+					else
+					{
+						return Size.Empty;
+					}
 				}
 			}
 	
 	// Convert a client size into a window bounds size.
 	internal override Size ClientToBounds(Size size)
 			{
-				int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
-				ToolkitManager.Toolkit.GetWindowAdjust
-					(out leftAdjust, out topAdjust,
-					out rightAdjust, out bottomAdjust, GetFullFlags());
+				int leftAdjust = 0, topAdjust = 0, rightAdjust = 0, bottomAdjust = 0;
+
+				if (FormBorderStyle != FormBorderStyle.None)
+				{
+					ToolkitManager.Toolkit.GetWindowAdjust
+						(out leftAdjust, out topAdjust,
+						out rightAdjust, out bottomAdjust, GetFullFlags());
+				}
+				
 				if (Menu != null)
 					topAdjust += SystemInformation.MenuHeight;
 				return new Size(size.Width + leftAdjust + rightAdjust,

@@ -2903,7 +2903,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Update the clipping region within the IToolkitGraphics object.
 	private void UpdateClip()
 			{
-				// TODO
+				RectangleF[] rectsF = clip.GetRegionScans(new Matrix());
+				Rectangle[] rects = new Rectangle[rectsF.Length];
+				for(int i=0;i < rectsF.Length; i++)
+					rects[i] = Rectangle.Truncate(rectsF[i]);
+				graphics.SetClipRects(rects);
 			}
 
 	// Determine if this graphics object is using 1-to-1 pixel mappings.

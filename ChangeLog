@@ -10,6 +10,8 @@ documentation elements.
 
 * cscc/cs_invoke.tc: semantic analysis for method invocation.
 
+* cscc/cs_defs.tc, cscc/Makefile.am: add "cs_invoke.tc" to the build.
+
 2001-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/csdoc.dtd: update the DTD for the XML documentation format.

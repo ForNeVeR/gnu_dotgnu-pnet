@@ -213,6 +213,7 @@ extern CSSemValue CSSemValueDefault;
 %include "cs_decls.tc"
 %include "cs_lvalue.tc"
 %include "cs_misc.tc"
+%include "cs_invoke.tc"
 %include "cs_oper.tc"
 %include "cs_stmt.tc"
 %include "cs_types.tc"

@@ -12,6 +12,7 @@ TREECC_INPUTS = cs_cast.tc \
 			    cs_defs.tc \
 				cs_lvalue.tc \
 				cs_misc.tc \
+				cs_invoke.tc \
 				cs_oper.tc \
 				cs_semantics.tc \
 				cs_stmt.tc \

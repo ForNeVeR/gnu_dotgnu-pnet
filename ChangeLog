@@ -1,6 +1,11 @@
 
 2003-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
+	* support/dynlib.c: try using NSAddImage to load dynamic
+	libraries on MacOS X if NSCreateObjectFileImageFromFile fails;
+	use a different symbol lookup mechanism if it is an image;
+	improved error reporting when something goes wrong.
+
 	* support/gen_errno.sh: suppress unnecessary error messages
 	from grep when searching for the correct errno.h.
 

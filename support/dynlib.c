@@ -155,11 +155,38 @@ void *ILDynLibraryOpen(const char *name)
 	NSObjectFileImage file;
 	NSObjectFileImageReturnCode result;
 	NSModule module;
+	void *image;
+	const char *msg;
 
 	/* Attempt to open the dylib file */
 	result = NSCreateObjectFileImageFromFile(name, &file);
-	if (result != NSObjectFileImageSuccess)
+	if(result == NSObjectFileImageInappropriateFile)
 	{
+		/* May be an image, and not a bundle */
+		image = (void *)NSAddImage(name, NSADDIMAGE_OPTION_RETURN_ON_ERROR);
+		if(image)
+		{
+			return image;
+		}
+	}
+	if(result != NSObjectFileImageSuccess)
+	{
+		switch(result)
+		{
+			case NSObjectFileImageFailure:
+				msg = " (NSObjectFileImageFailure)"; break;
+			case NSObjectFileImageInappropriateFile:
+				msg = " (NSObjectFileImageInappropriateFile)"; break;
+			case NSObjectFileImageArch:
+				msg = " (NSObjectFileImageArch)"; break;
+			case NSObjectFileImageFormat:
+				msg = " (NSObjectFileImageFormat)"; break;
+			case NSObjectFileImageAccess:
+				msg = " (NSObjectFileImageAccess)"; break;
+			default:
+				msg = ""; break;
+		}
+		fprintf(stderr, "%s: could not load dynamic library%s\n", name, msg);
 		return 0;
 	}
 
@@ -173,17 +200,46 @@ void *ILDynLibraryOpen(const char *name)
 
 void  ILDynLibraryClose(void *handle)
 {
+	if((((struct mach_header *)handle)->magic == MH_MAGIC) ||
+	   (((struct mach_header *)handle)->magic == MH_CIGAM))
+	{
+		/* Cannot remove dynamic images once they've been loaded */
+		return;
+	}
 	NSUnLinkModule((NSModule)handle, NSUNLINKMODULE_OPTION_NONE);
 }
 
 static void *GetSymbol(void *handle, const char *symbol)
 {
 	NSSymbol sym;
-	sym = NSLookupSymbolInModule((NSModule)handle, symbol);
+
+	/* We have to use a different lookup approach for images and modules */
+	if((((struct mach_header *)handle)->magic == MH_MAGIC) ||
+	   (((struct mach_header *)handle)->magic == MH_CIGAM))
+	{
+		if(NSIsSymbolNameDefinedInImage((struct mach_header *)handle, symbol))
+		{
+			sym = NSLookupSymbolInImage((struct mach_header *)handle, symbol,
+						NSLOOKUPSYMBOLINIMAGE_OPTION_BIND |
+						NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
+		}
+		else
+		{
+			sym = 0;
+		}
+	}
+	else
+	{
+		sym = NSLookupSymbolInModule((NSModule)handle, symbol);
+	}
+
+	/* Did we find the symbol? */
 	if(sym == 0)
 	{
 		return 0;
 	}
+
+	/* Convert the symbol into the address that we require */
 	return (void *)NSAddressOfSymbol(sym);
 }
 

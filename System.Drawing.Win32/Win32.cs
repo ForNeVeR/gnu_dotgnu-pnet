@@ -681,11 +681,17 @@ internal class Api
 	[DllImport("user32")]
 	public static extern short GetKeyState( VirtualKeyType nVirtKey );
 
-	[DllImport("gdi32.dll")]
+	[DllImport("gdi32")]
 	public static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
 		
-	[DllImport("gdi32.dll")]
+	[DllImport("gdi32")]
 	public static extern int SelectClipRgn(IntPtr hdc, IntPtr hrgn);
+
+	[DllImport("gdi32")]
+	public static extern int GetObject( IntPtr hgdiobj, int cbBuffer, out LOGFONT lpvObject );
+
+	[DllImport("gdi32")]
+	public static extern IntPtr CreateFontIndirectA(ref LOGFONT lf);
 
 
 }//Api

@@ -24,85 +24,73 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
+using System.Runtime.InteropServices;
 
 internal class DrawingFont : IToolkitFont
 {
 	// Internal state.
 	private System.Drawing.Font properties;
 	private IToolkit toolkit;
+	internal IntPtr hFont;
 	
 	public DrawingFont(IToolkit toolkit, System.Drawing.Font properties)
 			{
 				this.toolkit = toolkit;
 				this.properties = properties;
+				CreateFont();
 			}
 
 	// Select this font into a graphics object.
-	public void Select(IToolkitGraphics _graphics)
+	public void Select(IToolkitGraphics graphics)
 			{
-				DrawingGraphics graphics = (_graphics as DrawingGraphics);
-				if(graphics != null)
-				{
-					lock(this)
-					{
-						/*if(xfont == null)
-						{
-							xfont = new Xsharp.Font
-								(MapFamilyName(properties.Name),
-								 (int)(properties.SizeInPoints * 10.0f),
-								 (Xsharp.FontStyle)(properties.Style));
-						}
-						graphics.font = xfont;*/
-					}
-				}
+				(graphics as DrawingGraphics).selectedFont = this;
 			}
 
 	// Dispose of this font.
 	public void Dispose()
 			{
-				
+				Win32.Api.DeleteObject(hFont);
+				hFont = IntPtr.Zero;
 			}
 
 	// Get the raw HFONT for this toolkit font.  IntPtr.Zero if none.
 	public IntPtr GetHfont()
 			{
-				// Nothing to do here in this implementation.
-				return IntPtr.Zero;
+				return hFont;
 			}
 
 	// Get the LOGFONT information for this toolkit font.
 	public void ToLogFont(Object lf, IToolkitGraphics graphics)
 			{
-				// Nothing to do here in this implementation.
+				Win32.Api.LOGFONT logFont;
+				Win32.Api.GetObject( hFont, Marshal.SizeOf(typeof(Win32.Api.LOGFONT)), out logFont);
+				lf = logFont;
 			}
 
-	// Map a Windows-style family name to an Xsharp-style family name.
-	private static String MapFamilyName(String name)
-			{
-				if(String.Compare(name, "Times", true) == 0 ||
-				   String.Compare(name, "Times New Roman", true) == 0)
-				{
-					return null;//Xsharp.Font.Serif;
-				}
-				else if(String.Compare(name, "Helvetica", true) == 0 ||
-				        String.Compare(name, "Helv", true) == 0 ||
-				        String.Compare
-							(name, "Microsoft Sans Serif", true) == 0 ||
-				        String.Compare(name, "Arial", true) == 0 ||
-				        String.Compare(name, 0, "Arial ", 0, 6, true) == 0)
-				{
-					return null; //Xsharp.Font.SansSerif;
-				}
-				else if(String.Compare(name, "Courier", true) == 0 ||
-				        String.Compare(name, "Courier New", true) == 0)
-				{
-					return null; //Xsharp.Font.Fixed;
-				}
-				else
-				{
-					return null; //Xsharp.Font.Serif;
-				}
-			}
+	private void CreateFont()
+	{
+		Win32.Api.LOGFONT lf = new Win32.Api.LOGFONT();
+		lf.lfHeight=(int)-properties.SizeInPoints;
+		lf.lfFaceName=properties.FontFamily.Name;
+		switch (properties.Style)
+		{
+			case(FontStyle.Bold):
+				lf.lfWeight = 600;
+				break;
+			case(FontStyle.Italic):
+				lf.lfItalic = 1;
+				break;
+			case(FontStyle.Strikeout):
+				lf.lfStrikeout = 1;
+				break;
+			case(FontStyle.Underline):
+				lf.lfUnderline = 1;
+				break;
+		}
+			
+		lf.lfQuality = Win32.Api.FontQuality.CLEARTYPE_QUALITY;
+		hFont = Win32.Api.CreateFontIndirectA(ref lf);
+	}
 
 }; // class DrawingFont
 

@@ -32,20 +32,19 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	internal IntPtr hdc;
 	internal DrawingPen selectedPen;
 	internal DrawingBrush selectedBrush;
+	internal DrawingFont selectedFont;
 
 	public DrawingGraphics(IToolkit toolkit, IntPtr hdc)
 			: base(toolkit)
 			{
 				this.hdc = hdc;
-				//this.font = null;
 			}
 
 
 	// Dispose of this object.
 	public override void Dispose()
 			{
-				Win32.Api.DeleteObject(hdc);
-				hdc = IntPtr.Zero;
+				DeleteDC();
 			}
 
 	// Clear the entire drawing surface.
@@ -57,10 +56,13 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw a line between two points using the current pen.
 	public override void DrawLine( int x1, int y1, int x2, int y2 )
 			{
+				IntPtr prevhPen = Win32.Api.SelectObject( hdc, selectedPen.hPen );
 				Win32.Api.MoveToEx( hdc, x1, y1,IntPtr.Zero );
 				Win32.Api.LineTo( hdc, x2, y2 );
 				//set last point
 				Win32.Api.SetPixel( hdc, x2, y2, ColorToWin32( selectedPen.properties.Color ) );
+				Win32.Api.SelectObject( hdc, prevhPen );
+				
 			}
 
 	// Draw a set of connected line seguments using the current pen.
@@ -87,74 +89,77 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw a polygon using the current pen.
 	public override void DrawPolygon( System.Drawing.Point[] points )
 			{
-				IntPtr prevBrush = Win32.Api.SelectObject(hdc, Win32.Api.GetStockObject(Win32.Api.StockObjectType.HOLLOW_BRUSH));
-				Win32.Api.POINT[] wPoints = ConvertPoints(points);
-				Win32.Api.Polygon(hdc, wPoints, wPoints.Length);
-				Win32.Api.SelectObject(hdc, prevBrush);
+				Polygon( points, Win32.Api.GetStockObject(Win32.Api.StockObjectType.HOLLOW_BRUSH), selectedPen.hPen);
 			}
 
 	// Fill a polygon using the current brush.
-	public override void FillPolygon
-				( System.Drawing.Point[] points, FillMode fillMode )
+	public override void FillPolygon( System.Drawing.Point[] points, FillMode fillMode )
 			{
-				
 				Win32.Api.SetPolyFillMode(hdc, (int)fillMode);
+				Polygon( points, selectedBrush.hBrush, Win32.Api.GetStockObject(Win32.Api.StockObjectType.NULL_PEN) );
+			}
+
+	private void Polygon( System.Drawing.Point[] points, IntPtr hBrush, IntPtr hPen )
+			{
+				IntPtr prevhPen = Win32.Api.SelectObject( hdc, hPen );
+				IntPtr prevhBrush = Win32.Api.SelectObject( hdc, hBrush );
 				Win32.Api.POINT[] wPoints = ConvertPoints(points);
 				Win32.Api.Polygon(hdc, wPoints, wPoints.Length);
-
+				Win32.Api.SelectObject( hdc, prevhBrush );
+				Win32.Api.SelectObject( hdc, prevhPen );
+			
 			}
 
 	// Draw an arc within a rectangle defined by four points.
-	public override void DrawArc
-				( System.Drawing.Point[] rect,
-				 float startAngle, float sweepAngle )
+	public override void DrawArc( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
-
-				int p1X, p1Y, p2X, p2Y;
-				RectangleAngleToPoints( rect, startAngle, sweepAngle, out p1X, out p1Y, out p2X, out p2Y );
-				Win32.Api.Arc( hdc, rect[0].X, rect[0].Y, rect[2].X, rect[2].Y, p1X, p1Y, p2X, p2Y );
+				IntPtr prevhPen = Win32.Api.SelectObject( hdc, selectedPen.hPen );
+				Rectangle intersect = EllipseIntersect( rect, startAngle, sweepAngle );
+				Win32.Api.Arc( hdc, rect[0].X, rect[0].Y, rect[2].X, rect[2].Y, intersect.Left, intersect.Top, intersect.Right, intersect.Bottom );
+				Win32.Api.SelectObject( hdc, prevhPen );
 
 			}
 
 	// Draw a pie slice within a rectangle defined by four points.
 	public override void DrawPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
+				
+				Pie( rect, startAngle, sweepAngle, Win32.Api.GetStockObject( Win32.Api.StockObjectType.HOLLOW_BRUSH ), selectedPen.hPen );
+			}
 
-				IntPtr prevBrush = Win32.Api.SelectObject(hdc, Win32.Api.GetStockObject(Win32.Api.StockObjectType.HOLLOW_BRUSH));
-				int p1X, p1Y, p2X, p2Y;
-				RectangleAngleToPoints( rect, startAngle, sweepAngle, out p1X, out p1Y, out p2X, out p2Y );
-				Win32.Api.Pie( hdc, rect[0].X, rect[0].Y, rect[2].X, rect[2].Y, p1X, p1Y, p2X, p2Y);
+	// Fill a pie slice within a rectangle defined by four points.
+	public override void FillPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
+			{
+				Pie( rect, startAngle, sweepAngle, selectedBrush.hBrush, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN) );
+			}
+
+	private void Pie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle, IntPtr hBrush, IntPtr hPen )
+			{
+				IntPtr prevBrush = Win32.Api.SelectObject( hdc, hBrush );
+				IntPtr prevPen = Win32.Api.SelectObject( hdc, hPen );
+				Rectangle intersect = EllipseIntersect( rect, startAngle, sweepAngle );
+						
+				Win32.Api.Pie( hdc, rect[0].X, rect[0].Y, rect[2].X, rect[2].Y, intersect.Left, intersect.Top, intersect.Right, intersect.Bottom );
+				Win32.Api.SelectObject( hdc, prevPen );
 				Win32.Api.SelectObject( hdc, prevBrush );
 
 			}
 
-	// Fill a pie slice within a rectangle defined by four points.
-	public override void FillPie (System.Drawing.Point[] rect, float startAngle, float sweepAngle)
-			{
-
-				IntPtr prevPen = Win32.Api.SelectObject( hdc, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN ) );
-				int p1X, p1Y, p2X, p2Y;
-				RectangleAngleToPoints( rect, startAngle, sweepAngle, out p1X, out p1Y, out p2X, out p2Y );
-				Win32.Api.Pie( hdc, rect[0].X, rect[0].Y, rect[2].X, rect[2].Y, p1X, p1Y, p2X, p2Y );
-				Win32.Api.SelectObject( hdc, prevPen );
-
-			}
-
 	//Woops this is works only for a square - id better get some trig going
-	private void RectangleAngleToPoints(System.Drawing.Point[] rect, float startAngle, float sweepAngle,
-		out int p1X, out int p1Y, out int p2X, out int p2Y)
+	//Top left of return rectangle is the one intersect, bottom right is the other.
+	private Rectangle EllipseIntersect( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
-
 				double centerX = (rect[0].X+rect[2].X)/2;
 				double centerY = (rect[0].Y+rect[2].Y)/2;
 				double r = Math.Sqrt((Math.Pow(rect[0].X-rect[2].X,2))+Math.Pow(rect[0].Y-rect[2].Y,2))/2;
 				double a = startAngle*Math.PI/180;
 				double b = (startAngle+sweepAngle)*Math.PI/180;
+				int p1X, p1Y, p2X, p2Y;
 				p1X = (int)(Math.Cos(b)*r+centerX+.5);
 				p1Y = (int)(Math.Sin(b)*r+centerY+.5);
 				p2X = (int)(Math.Cos(a)*r+centerX+.5);
 				p2Y = (int)(Math.Sin(a)*r+centerY+.5);
-
+				return new Rectangle(p1X, p1Y, p2X - p1X, p2Y - p1Y);
 			}
 
 	// Draw a string using the current font and brush.
@@ -172,6 +177,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				4) EndPath
 				5) StrokeAndFillPath*/
 
+				Win32.Api.SelectObject(hdc, selectedFont.hFont);
 				Win32.Api.SetTextColor(hdc, ColorToWin32(selectedBrush.color));
 				Win32.Api.SetBkMode(hdc,Win32.Api.BackGroundModeType.TRANSPARENT);
 				Win32.Api.TextOutA(hdc, x, y , s, s.Length);
@@ -182,6 +188,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	public override Size MeasureString( String s, System.Drawing.Point[] layoutRectangle, StringFormat format, out int charactersFitted, out int linesFilled, bool ascentOnly )
 			{
 				// TODO: line wrapping, etc
+				Win32.Api.SelectObject(hdc, selectedFont.hFont);
 				Win32.Api.SIZE size;
 				size.cx = 0;
 				size.cy = 0;
@@ -217,7 +224,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Release a HDC that was obtained using "GetHdc()".
 	public override void ReleaseHdc(IntPtr hdc)
 			{
-				Win32.Api.DeleteObject(hdc);
+				DeleteDC();
 			}
 
 	// Set the clipping region to empty.
@@ -266,6 +273,38 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 			{
 				return color.R | color.G<<8 | color.B<<16;
 			}
+
+	//Under 95/98 an object(fonts, pens or brushes) cant be disposed when it is select into a dc
+	//This leads to a leak. So, if a dc is disposed, select out all the object types so when the objects are actually disposed, they will actually dispose.
+	private void DeleteDC()
+	{
+		Win32.Api.DeleteObject(hdc);
+		hdc = IntPtr.Zero;
+	}
+
+	internal DrawingPen SelectPen
+	{
+		set
+		{
+			selectedPen = value;
+		}
+	}
+
+	internal DrawingBrush SelectBrush
+	{
+		set
+		{
+			selectedBrush = value;
+		}
+	}
+
+	internal DrawingFont SelectFont
+	{
+		set
+		{
+			selectedFont = value;
+		}
+	}
 
 }; // class DrawingGraphics
 

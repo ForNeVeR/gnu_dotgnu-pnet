@@ -28,9 +28,7 @@ namespace System.Drawing.Toolkit
 	abstract class DrawingBrush : IToolkitBrush, IDisposable
 	{
 		// Internal state.
-		protected IntPtr hBrush;
-		private static IntPtr hPrevBrush;
-		protected DrawingGraphics drawingGraphics;
+		protected internal IntPtr hBrush;
 		protected internal Color color;
 		protected IToolkit toolkit;
 
@@ -43,17 +41,12 @@ namespace System.Drawing.Toolkit
 		// Select this brush into a graphics object.
 		public virtual void Select(IToolkitGraphics graphics)
 		{
-			drawingGraphics = (graphics as DrawingGraphics);
-			drawingGraphics.selectedBrush = this;
-			IntPtr hOldBrush = Win32.Api.SelectObject(drawingGraphics.hdc, hBrush);
-			if (hPrevBrush == IntPtr.Zero)
-				hPrevBrush = hOldBrush;
+			(graphics as DrawingGraphics).SelectBrush = this;
 		}
 
 		// Dispose of this object.
 		public void Dispose()
 		{
-			Win32.Api.SelectObject(drawingGraphics.hdc, hPrevBrush);
 			Win32.Api.DeleteObject(hBrush);
 			hBrush = IntPtr.Zero;
 		}

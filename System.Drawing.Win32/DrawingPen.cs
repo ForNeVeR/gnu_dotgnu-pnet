@@ -29,9 +29,7 @@ internal class DrawingPen : IToolkitPen, IDisposable
 {
 	// Internal state.
 	internal Pen properties;
-	private IntPtr hPen;
-	private static IntPtr hPrevPen;
-	private DrawingGraphics drawingGraphics;
+	internal IntPtr hPen;
 	private IToolkit toolkit;
 
 	// Constructor.
@@ -47,21 +45,14 @@ internal class DrawingPen : IToolkitPen, IDisposable
 	// Select this pen into a graphics object.
 	public void Select(IToolkitGraphics graphics)
 			{
-				drawingGraphics = graphics as DrawingGraphics;
-				if(drawingGraphics != null)
-				{
-					drawingGraphics.selectedPen = this;
-					IntPtr hOldPen = Win32.Api.SelectObject(drawingGraphics.hdc, hPen);
-					if (hPrevPen == IntPtr.Zero)
-						hPrevPen = hOldPen;
-				}
+				(graphics as DrawingGraphics).SelectPen = this;
 			}
 
 	// Dispose of this object.
 	public void Dispose()
 	{
-		Win32.Api.SelectObject(drawingGraphics.hdc, hPrevPen);
 		Win32.Api.DeleteObject(hPen);
+		hPen = IntPtr.Zero;
 	}
 
 }; // class DrawingPen

@@ -22,6 +22,8 @@
 namespace System.Globalization
 {
 
+#if CONFIG_REFLECTION
+
 using System.Text;
 
 // This class exists to allow us to query culture information from
@@ -105,5 +107,7 @@ public abstract class _I18NCultureHandler
 			}
 
 }; // class _I18NCultureHandler
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Globalization

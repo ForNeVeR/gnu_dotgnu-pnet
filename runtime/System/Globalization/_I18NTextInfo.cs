@@ -22,6 +22,8 @@
 namespace System.Globalization
 {
 
+#if CONFIG_REFLECTION
+
 // This class exists to allow us to inherit from "TextInfo" within
 // the "I18N" code.  It must not be used in application programs.  There
 // really isn't any other way of doing this because the specification
@@ -33,5 +35,7 @@ public abstract class _I18NTextInfo : TextInfo
 	public _I18NTextInfo(int culture) : base(culture) {}
 
 }; // class _I18NTextInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Globalization

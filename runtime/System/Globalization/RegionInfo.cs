@@ -21,6 +21,8 @@
 namespace System.Globalization
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Private;
 
@@ -160,5 +162,7 @@ public class RegionInfo
 			}
 
 }; // class RegionInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Globalization

@@ -22,6 +22,8 @@
 namespace System.Private
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Globalization;
 
@@ -739,5 +741,7 @@ internal sealed class CultureNameTable
 			}
 
 }; // class CultureNameTable
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Private

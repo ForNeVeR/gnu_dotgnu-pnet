@@ -383,6 +383,7 @@ class ResourceManager
 	// Get the name of a resource file for a particular culture.
 	protected virtual String GetResourceFileName(CultureInfo culture)
 			{
+			#if CONFIG_REFLECTION
 				if(culture == null || culture.LCID == 0x7F)
 				{
 					// This is the invariant culture.
@@ -393,6 +394,9 @@ class ResourceManager
 					// This is a named culture.
 					return BaseNameField + "." + culture.Name + ".resources";
 				}
+			#else
+				return BaseNameField + ".resources";
+			#endif
 			}
 
 	// Find a resource set for a particular culture.

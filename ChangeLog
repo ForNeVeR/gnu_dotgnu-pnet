@@ -49,6 +49,24 @@
 	don't bind the string resources to the assemblies if we don't
 	have "RuntimeInfrastructure" to enable loading them.
 
+	* I18N/Common/Manager.cs,
+	runtime/System/Globalization/CharacterInfo.cs,
+	runtime/System/Globalization/CompareInfo.cs,
+	runtime/System/Globalization/CultureInfo.cs,
+	runtime/System/Globalization/CultureTypes.cs,
+	runtime/System/Globalization/RegionInfo.cs,
+	runtime/System/Globalization/TextInfo.cs,
+	runtime/System/Globalization/_I18NCompareInfo.cs,
+	runtime/System/Globalization/_I18NCultureHandler.cs,
+	runtime/System/Globalization/_I18NTextInfo.cs,
+	runtime/System/Private/CultureName.cs,
+	runtime/System/Private/CultureNameTable.cs,
+	runtime/System/Private/RegionName.cs,
+	runtime/System/Private/RegionNameTable.cs,
+	runtime/System/Resources/ResourceManager.cs: remove the bulk
+	of the culture handling if reflection is disabled because there
+	is no way to load the I18N handlers if reflection is not present.
+
 2003-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Array.cs, runtime/System/Convert.cs,

@@ -22,6 +22,8 @@
 namespace System.Globalization
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Runtime.InteropServices;
 using Platform;
@@ -144,5 +146,7 @@ public class CharacterInfo
 			}
 
 }; // class CharacterInfo
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Globalization

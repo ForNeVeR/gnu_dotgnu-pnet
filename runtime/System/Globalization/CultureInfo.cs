@@ -26,17 +26,21 @@ using System.Private;
 using System.Runtime.CompilerServices;
 using System.Text;
 
+// Note: if we don't have reflection, then we cannot load I18N handlers,
+// and all "CultureInfo" objects act like the invariant culture.
+
 public class CultureInfo : ICloneable, IFormatProvider
 {
 
 	// Cached culture objects.
 	private static CultureInfo invariantCulture;
+#if CONFIG_REFLECTION
 	private static CultureInfo currentCulture;
 	private static bool gettingCurrent;
+#endif
 
 	// Internal state.
 	private int         cultureID;
-	private CultureName cultureName;
 	private bool		readOnly;
 	private Calendar	calendar;
 	private Calendar[]	otherCalendars;
@@ -45,10 +49,13 @@ public class CultureInfo : ICloneable, IFormatProvider
 	private DateTimeFormatInfo dateTimeFormat;
 	private TextInfo	textInfo;
 	private bool        userOverride;
+#if CONFIG_REFLECTION
+	private CultureName cultureName;
 	private _I18NCultureHandler handler;
 
 	// Culture identifier for "es-ES" with traditional sort rules.
 	private const int TraditionalSpanish = 0x040A;
+#endif
 
 	// Constructors.
 	public CultureInfo(int culture)
@@ -68,6 +75,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					throw new ArgumentOutOfRangeException
 						("culture", _("ArgRange_NonNegative"));
 				}
+			#if CONFIG_REFLECTION
 				if(culture == TraditionalSpanish)
 				{
 					cultureID   = culture;
@@ -93,6 +101,9 @@ public class CultureInfo : ICloneable, IFormatProvider
 					handler = _I18NCultureHandler.GetCultureHandler
 						(cultureID, useUserOverride);
 				}
+			#else
+				cultureID = culture;
+			#endif
 				userOverride = useUserOverride;
 			}
 	public CultureInfo(String name, bool useUserOverride)
@@ -101,11 +112,16 @@ public class CultureInfo : ICloneable, IFormatProvider
 				{
 					throw new ArgumentNullException("name");
 				}
+			#if CONFIG_REFLECTION
 				cultureName = CultureNameTable.GetNameInfoByName(name, true);
 				cultureID   = cultureName.cultureID;
 				userOverride = useUserOverride;
 				handler = _I18NCultureHandler.GetCultureHandler
 					(cultureID, useUserOverride);
+			#else
+				cultureID = 0x007F;
+				userOverride = useUserOverride;
+			#endif
 			}
 
 	// Get the invariant culture object.
@@ -125,6 +141,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 					}
 				}
 			}
+
+#if CONFIG_REFLECTION
 
 	// Get the current culture identifier from the runtime engine.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -186,6 +204,20 @@ public class CultureInfo : ICloneable, IFormatProvider
 					}
 				}
 			}
+
+#else // !CONFIG_REFLECTION
+
+	// Get the current culture object for the running thread.
+	public static CultureInfo CurrentCulture
+			{
+				get
+				{
+					// The invariant culture is the only one in the system.
+					return InvariantCulture;
+				}
+			}
+
+#endif // !CONFIG_REFLECTION
 
 	// Get the current UI culture object for the running thread.
 	public static CultureInfo CurrentUICulture
@@ -266,6 +298,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					{
 						if(calendar == null)
 						{
+						#if CONFIG_REFLECTION
 							if(handler != null)
 							{
 								calendar = handler.CultureCalendar;
@@ -275,6 +308,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 								}
 							}
 							else
+						#endif
 							{
 								calendar = new GregorianCalendar();
 							}
@@ -293,6 +327,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					{
 						if(compareInfo == null)
 						{
+						#if CONFIG_REFLECTION
 							if(handler != null)
 							{
 								compareInfo = handler.CultureCompareInfo;
@@ -303,6 +338,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 								}
 							}
 							else
+						#endif
 							{
 								compareInfo = CompareInfo.InvariantCompareInfo;
 							}
@@ -325,6 +361,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 							// return the invariant date time format info.
 							return DateTimeFormatInfo.InvariantInfo;
 						}
+					#if CONFIG_REFLECTION
 						else if(handler != null)
 						{
 							dateTimeFormat = handler.CultureDateTimeFormatInfo;
@@ -334,6 +371,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 							}
 						}
 						else
+					#endif
 						{
 							dateTimeFormat = new DateTimeFormatInfo();
 						}
@@ -361,6 +399,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 					dateTimeFormat = value;
 				}
 			}
+
+#if CONFIG_REFLECTION
 
 	// Get the display name for this culture.
 	public virtual String DisplayName
@@ -391,15 +431,6 @@ public class CultureInfo : ICloneable, IFormatProvider
 				}
 			}
 
-	// Determine if this culture instance is read-only.
-	public virtual bool IsReadOnly
-			{
-				get
-				{
-					return readOnly;
-				}
-			}
-
 	// Get the culture identifier for this instance.
 	public virtual int LCID
 			{
@@ -427,6 +458,29 @@ public class CultureInfo : ICloneable, IFormatProvider
 				}
 			}
 
+#else // !CONFIG_REFLECTION
+
+	// Get the culture name.
+	public virtual String Name
+			{
+				get
+				{
+					// All cultures are invariant if no reflection.
+					return "";
+				}
+			}
+
+#endif // !CONFIG_REFLECTION
+
+	// Determine if this culture instance is read-only.
+	public virtual bool IsReadOnly
+			{
+				get
+				{
+					return readOnly;
+				}
+			}
+
 	// Get or set the number formatting information for this culture.
 	public virtual NumberFormatInfo NumberFormat
 			{
@@ -440,6 +494,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 							// return the invariant number format info.
 							return NumberFormatInfo.InvariantInfo;
 						}
+					#if CONFIG_REFLECTION
 						else if(handler != null)
 						{
 							numberFormat = handler.CultureNumberFormatInfo;
@@ -449,6 +504,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 							}
 						}
 						else
+					#endif
 						{
 							numberFormat = new NumberFormatInfo();
 						}
@@ -486,11 +542,13 @@ public class CultureInfo : ICloneable, IFormatProvider
 					{
 						if(otherCalendars == null)
 						{
+						#if CONFIG_REFLECTION
 							if(handler != null)
 							{
 								otherCalendars = handler.CultureOtherCalendars;
 							}
 							else
+						#endif
 							{
 								otherCalendars = new Calendar [0];
 							}
@@ -525,6 +583,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					{
 						if(textInfo == null)
 						{
+						#if CONFIG_REFLECTION
 							if(handler != null)
 							{
 								textInfo = handler.CultureTextInfo;
@@ -534,6 +593,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 								}
 							}
 							else
+						#endif
 							{
 								textInfo = new TextInfo(cultureID);
 							}
@@ -542,6 +602,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 					}
 				}
 			}
+
+#if CONFIG_REFLECTION
 
 	// Get the 3-letter ISO language name for this culture.
 	public virtual String ThreeLetterISOLanguageName
@@ -569,6 +631,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 					return cultureName.twoLetterISOName;
 				}
 			}
+
+#endif // CONFIG_REFLECTION
 
 	// Determine if this culture is configured for user overrides.
 	public virtual bool UseUserOverride
@@ -598,6 +662,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 				}
 			}
 
+#if CONFIG_REFLECTION
+
 	// Map a culture name to an identifier.
 	internal static int MapNameToID(String name, bool throwOnError)
 			{
@@ -612,6 +678,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 					return 0;
 				}
 			}
+
+#endif // CONFIG_REFLECTION
 
 }; // class CultureInfo
 

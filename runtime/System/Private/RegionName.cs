@@ -21,6 +21,8 @@
 namespace System.Private
 {
 
+#if !ECMA_COMPAT
+
 using System;
 
 internal sealed class RegionName
@@ -56,5 +58,7 @@ internal sealed class RegionName
 			}
 
 }; // class RegionName
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Private

@@ -177,7 +177,7 @@ public class TextInfo : IDeserializationCallback
 				bool wordStart = true;
 				foreach(char ch in str)
 				{
-					if(CharacterInfo.IsSeparator(ch))
+					if(Char.IsSeparator(ch))
 					{
 						wordStart = true;
 						builder.Append(ch);

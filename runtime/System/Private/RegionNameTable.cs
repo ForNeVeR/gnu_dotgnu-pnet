@@ -22,6 +22,8 @@
 namespace System.Private
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Globalization;
 
@@ -538,5 +540,7 @@ internal sealed class RegionNameTable
 			}
 
 }; // class RegionNameTable
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Private

@@ -62,6 +62,7 @@ public class CompareInfo : IDeserializationCallback
 	// Get the comparison information for a specific culture.
 	public static CompareInfo GetCompareInfo(int culture)
 			{
+			#if CONFIG_REFLECTION
 				_I18NCultureHandler handler;
 				CompareInfo info;
 
@@ -75,6 +76,7 @@ public class CompareInfo : IDeserializationCallback
 						return info;
 					}
 				}
+			#endif
 
 				// Return the invariant culture information.
 				return InvariantCompareInfo;
@@ -85,7 +87,11 @@ public class CompareInfo : IDeserializationCallback
 				{
 					throw new ArgumentNullException("culture");
 				}
+			#if CONFIG_REFLECTION
 				return GetCompareInfo(CultureInfo.MapNameToID(culture, true));
+			#else
+				return InvariantCompareInfo;
+			#endif
 			}
 #if CONFIG_REFLECTION
 	public static CompareInfo GetCompareInfo(int culture, Assembly assembly)
@@ -259,6 +265,7 @@ public class CompareInfo : IDeserializationCallback
 							("length2", _("ArgRange_StringRange"));
 					}
 				}
+			#if CONFIG_REFLECTION
 				if(this is _I18NCompareInfo)
 				{
 					// Use the I18N-supplied comparison routine.
@@ -267,6 +274,7 @@ public class CompareInfo : IDeserializationCallback
 						 string2, offset2, length2, options);
 				}
 				else
+			#endif
 				{
 					// Use the invariant comparison method in the engine.
 					return String.InternalCompare

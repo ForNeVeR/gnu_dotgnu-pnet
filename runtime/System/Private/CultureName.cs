@@ -22,6 +22,8 @@
 namespace System.Private
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 
 internal sealed class CultureName
@@ -52,5 +54,7 @@ internal sealed class CultureName
 			}
 
 }; // class CultureName
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Private

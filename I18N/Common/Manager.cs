@@ -189,6 +189,8 @@ public class Manager
 				return num;
 			}
 
+#if !ECMA_COMPAT
+
 	// Determine if a handler name matches the "GetCultures" requirements.
 	private static bool CultureMatch(String name, CultureTypes types)
 			{
@@ -259,6 +261,8 @@ public class Manager
 				// Return the culture list to the caller.
 				return cultures;
 			}
+
+#endif // !ECMA_COMPAT
 
 	// Instantiate a handler class.  Returns null if it is not
 	// possible to instantiate the class.

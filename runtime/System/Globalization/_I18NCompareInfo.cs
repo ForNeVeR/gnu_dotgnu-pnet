@@ -22,6 +22,8 @@
 namespace System.Globalization
 {
 
+#if CONFIG_REFLECTION
+
 // This class exists to allow us to inherit from "CompareInfo" within
 // the "I18N" code.  It must not be used in application programs.  There
 // really isn't any other way of doing this because the specification
@@ -44,5 +46,7 @@ public abstract class _I18NCompareInfo : CompareInfo
 										  CompareOptions options);
 
 }; // class _I18NCompareInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Globalization

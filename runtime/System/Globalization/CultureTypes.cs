@@ -22,6 +22,8 @@
 namespace System.Globalization
 {
 
+#if !ECMA_COMPAT
+
 using System;
 
 [Flags]
@@ -34,5 +36,7 @@ public enum CultureTypes
 	InstalledWin32Cultures = 0x0004
 
 }; // enum CultureTypes
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Globalization

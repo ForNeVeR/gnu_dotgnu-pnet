@@ -1,9 +1,9 @@
 /*
- * Component.cs - Implementation of "System.ComponentModel.Component" class 
+ * Component.cs - Implementation of the
+ *		"System.ComponentModel.Component" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation, Inc.
- * 
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,95 +19,162 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public class Component: MarshalByRefObject, IDisposable, IComponent
-	{
-		[TODO]
-		public Component()
-		{
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public void Dispose()
-		{
-			throw new NotImplementedException("Dispose");
-		}
+using System;
 
-		[TODO]
-		protected virtual void Dispose(bool release_all)
-		{
-			throw new NotImplementedException("Dispose");
-		}
+public class Component : MarshalByRefObject, IComponent, IDisposable
+{
+	// Internal state.
+	private static readonly Object disposedId = new Object();
+	private EventHandlerList events;
+	private ISite site;
 
-		[TODO]
-		~Component()
-		{
-			// TODO
-		}
+	// Constructor.
+	public Component() {}
 
-		[TODO]
-		protected virtual Object GetService(Type service)
-		{
-			throw new NotImplementedException("GetService");
-		}
-
-		[TODO]
-		public override String ToString()
-		{
-			throw new NotImplementedException("ToString");
-		}
-
-		public IContainer Container 
-		{
-			get
+	// Destructor.
+	~Component()
 			{
-				throw new NotImplementedException("Container");
+				Dispose(false);
 			}
-		}
 
-		protected bool DesignMode 
-		{
-			get
+	// Get this component's container.
+	public IContainer Container
 			{
-				throw new NotImplementedException("DesignMode");
+				get
+				{
+					if(site != null)
+					{
+						return site.Container;
+					}
+					else
+					{
+						return null;
+					}
+				}
 			}
-		}
 
-		protected EventHandlerList Events 
-		{
-			get
+	// Determine if this component is in "design mode".
+	protected bool DesignMode
 			{
-				throw new NotImplementedException("Events");
+				get
+				{
+					if(site != null)
+					{
+						return site.DesignMode;
+					}
+					else
+					{
+						return false;
+					}
+				}
 			}
-		}
 
-		public virtual ISite Site 
-		{
-			get
+	// Get the event handler list for this component.
+	protected EventHandlerList Events
 			{
-				throw new NotImplementedException("Site");
+				get
+				{
+					lock(this)
+					{
+						if(events == null)
+						{
+							events = new EventHandlerList();
+						}
+						return events;
+					}
+				}
 			}
-			set
+
+	// Get or set the site associated with this component.
+	public virtual ISite Site
 			{
-				throw new NotImplementedException("Site");
+				get
+				{
+					return site;
+				}
+				set
+				{
+					site = value;
+				}
 			}
-		}
-		public event EventHandler Disposed
-		{
-			add
+
+	// Event that is raised when a component is disposed.
+	public event EventHandler Disposed
 			{
-				throw new NotImplementedException("Disposed");
+				add
+				{
+					Events.AddHandler(disposedId, value);
+				}
+				remove
+				{
+					Events.RemoveHandler(disposedId, value);
+				}
 			}
-			remove
+
+	// Implement the IDisposable interface.
+	public void Dispose()
 			{
-				throw new NotImplementedException("Disposed");
+				Dispose(true);
+				GC.SuppressFinalize(this);
 			}
-		}
-	}
-#endif
-}//namespace
+
+	// Dispose this component.
+	protected virtual void Dispose(bool disposing)
+			{
+				if(disposing)
+				{
+					lock(this)
+					{
+						EventHandler dispose;
+						if(site != null && site.Container != null)
+						{
+							site.Container.Remove(this);
+						}
+						if(events != null)
+						{
+							dispose = (EventHandler)(events[disposedId]);
+							if(dispose != null)
+							{
+								dispose(this, EventArgs.Empty);
+							}
+						}
+					}
+				}
+			}
+
+	// Get a service that is implemented by this component.
+	protected virtual Object GetService(Type service)
+			{
+				if(site != null)
+				{
+					return site.GetService(service);
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				if(site != null)
+				{
+					return site.Name + "[" + GetType().ToString() + "]";
+				}
+				else
+				{
+					return GetType().ToString();
+				}
+			}
+
+}; // class Component
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

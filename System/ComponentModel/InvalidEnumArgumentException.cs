@@ -1,9 +1,8 @@
 /*
- * InvalidEnumArgumentException.cs - Implementation of 
- *						"System.ComponentModel.InvalidEnumArgumentException" 
+ * InvalidEnumArgumentException.cs - Implementation of the
+ *		"System.ComponentModel.InvalidEnumArgumentException" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,44 +19,61 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public class InvalidEnumArgumentException: ArgumentException
-	{
-		[TODO]
-		public InvalidEnumArgumentException()
-		{
-			HResult = (int)0x80070057;
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public InvalidEnumArgumentException(String message)
-		{
-			HResult = (int)0x80070057;
-			throw new NotImplementedException(".ctor");
-		}
+using System;
 
-		[TODO]
-		public InvalidEnumArgumentException(String argumentName, 
-							int invalidValue, Type enumClass)
-		{
-			HResult = (int)0x80070057;
-			throw new NotImplementedException(".ctor");
-		}
+[Serializable]
+public class InvalidEnumArgumentException : ArgumentException
+{
+	// Internal state.
+	private int invalidValue;
+	private Type enumClass;
 
-		[TODO]
-		public override String Message 
-		{
-			get
+	// Constructors.
+	public InvalidEnumArgumentException()
+			: base(S._("Exception_InvalidEnum"))
 			{
-				throw new NotImplementedException("Message");
+				HResult = (int)0x80070057;
 			}
-		}
+	public InvalidEnumArgumentException(String message)
+			: base(message)
+			{
+				HResult = (int)0x80070057;
+			}
+	public InvalidEnumArgumentException(String argumentName,
+										int invalidValue,
+										Type enumClass)
+			: base(null, argumentName)
+			{
+				HResult = (int)0x80070057;
+				this.invalidValue = invalidValue;
+				this.enumClass = enumClass;
+			}
 
-	}
-#endif	
-}//namespace
+	// Get the exception message.
+	public override String Message
+			{
+				get
+				{
+					if(enumClass != null)
+					{
+						return String.Format(S._("Exception_InvalidEnumValue"),
+											 invalidValue.ToString(),
+											 ParamName, enumClass.ToString());
+					}
+					else
+					{
+						return base.Message;
+					}
+				}
+			}
+
+}; // class InvalidEnumArgumentException
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

@@ -1,9 +1,8 @@
 /*
- * RecommendedAsConfigurableAttribute.cs - Implementation of 
- *					"System.ComponentModel.RecommendedAsConfigurableAttribute" 
+ * RecommendedAsConfigurableAttribute.cs - Implementation of the
+ *			"System.ComponentModel.RecommendedAsConfigurableAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,55 +19,69 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public class RecommendedAsConfigurableAttribute: Attribute
-	{
-		[TODO]
-		public RecommendedAsConfigurableAttribute(
-							bool recommendedAsConfigurable)
-		{
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public override bool Equals(Object obj)
-		{
-			throw new NotImplementedException("Equals");
-		}
+[AttributeUsage(AttributeTargets.Property)]
+public class RecommendedAsConfigurableAttribute : Attribute
+{
+	// Internal state.
+	private bool flag;
 
-		[TODO]
-		public override int GetHashCode()
-		{
-			throw new NotImplementedException("GetHashCode");
-		}
+	// Pre-defined attribute values.
+	public static readonly RecommendedAsConfigurableAttribute Default
+			= new RecommendedAsConfigurableAttribute(false);
+	public static readonly RecommendedAsConfigurableAttribute No
+			= new RecommendedAsConfigurableAttribute(false);
+	public static readonly RecommendedAsConfigurableAttribute Yes
+			= new RecommendedAsConfigurableAttribute(true);
 
-		[TODO]
-		public override bool IsDefaultAttribute()
-		{
-			throw new NotImplementedException("IsDefaultAttribute");
-		}
-
-		[TODO]
-		public static readonly System.ComponentModel.RecommendedAsConfigurableAttribute Default;
-
-		[TODO]
-		public static readonly System.ComponentModel.RecommendedAsConfigurableAttribute No;
-
-		[TODO]
-		public static readonly System.ComponentModel.RecommendedAsConfigurableAttribute Yes;
-
-		public bool RecommendedAsConfigurable 
-		{
-			get
+	// Constructors.
+	public RecommendedAsConfigurableAttribute(bool flag)
 			{
-				throw new NotImplementedException("RecommendedAsConfigurable");
+				this.flag = flag;
 			}
-		}
 
-	}
-#endif	
-}//namespace
+	// Get the attribute's value.
+	public bool RecommendedAsConfigurable
+			{
+				get
+				{
+					return flag;
+				}
+			}
+
+	// Determine if two attribute values are equal.
+	public override bool Equals(Object obj)
+			{
+				RecommendedAsConfigurableAttribute other =
+						(obj as RecommendedAsConfigurableAttribute);
+				if(other != null)
+				{
+					return (flag == other.flag);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get the hash code for this value.
+	public override int GetHashCode()
+			{
+				return GetType().GetHashCode() + (flag ? 1 : 0);
+			}
+
+	// Determine if this is a default attribute value.
+	public override bool IsDefaultAttribute()
+			{
+				return Equals(Default);
+			}
+
+}; // class RecommendedAsConfigurableAttribute
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

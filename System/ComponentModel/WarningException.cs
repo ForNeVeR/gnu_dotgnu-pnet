@@ -1,9 +1,8 @@
 /*
- * WarningException.cs - Implementation of 
- *							"System.ComponentModel.WarningException" 
+ * WarningException.cs - Implementation of the
+ *		"System.ComponentModel.WarningException" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,53 +19,58 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public class WarningException: SystemException
-	{
-		[TODO]
-		public WarningException(String message)
-		{
-			HResult = (int)0x80131501;
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public WarningException(String message, String helpUrl)
-		{
-			HResult = (int)0x80131501;
-			throw new NotImplementedException(".ctor");
-		}
+using System;
 
-		[TODO]
-		public WarningException(String message, String helpUrl, 
-										String helpTopic)
-		{
-			HResult = (int)0x80131501;
-			throw new NotImplementedException(".ctor");
-		}
+public class WarningException : SystemException
+{
+	// Internal state.
+	private String helpUrl;
+	private String helpTopic;
 
-		[TODO]
-		public String HelpTopic 
-		{
-			get
+	// Constructors.
+	public WarningException(String message)
+			: base(message)
 			{
-				throw new NotImplementedException("HelpTopic");
+				HResult = (int)0x80131501;
 			}
-		}
-
-		[TODO]
-		public String HelpUrl 
-		{
-			get
+	public WarningException(String message, String helpUrl)
+			: base(message)
 			{
-				throw new NotImplementedException("HelpUrl");
+				HResult = (int)0x80131501;
+				this.helpUrl = helpUrl;
 			}
-		}
+	public WarningException(String message, String helpUrl, String helpTopic)
+			: base(message)
+			{
+				HResult = (int)0x80131501;
+				this.helpUrl = helpUrl;
+				this.helpTopic = helpTopic;
+				this.helpUrl = helpUrl;
+			}
 
-	}
-#endif	
-}//namespace
+	// Get the exception properties.
+	public String HelpTopic
+			{
+				get
+				{
+					return helpTopic;
+				}
+			}
+	public String HelpUrl
+			{
+				get
+				{
+					return helpUrl;
+				}
+			}
+
+}; // class WarningException
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

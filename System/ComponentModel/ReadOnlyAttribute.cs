@@ -1,9 +1,8 @@
 /*
- * ReadOnlyAttribute.cs - Implementation of 
- *							"System.ComponentModel.ReadOnlyAttribute" 
+ * ReadOnlyAttribute.cs - Implementation of the
+ *			"System.ComponentModel.ReadOnlyAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,54 +19,68 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public sealed class ReadOnlyAttribute: Attribute
-	{
-		[TODO]
-		public ReadOnlyAttribute(bool read_only)
-		{
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public override bool Equals(Object o)
-		{
-			throw new NotImplementedException("Equals");
-		}
+[AttributeUsage(AttributeTargets.All)]
+public sealed class ReadOnlyAttribute : Attribute
+{
+	// Internal state.
+	private bool flag;
 
-		[TODO]
-		public override int GetHashCode()
-		{
-			throw new NotImplementedException("GetHashCode");
-		}
+	// Pre-defined attribute values.
+	public static readonly ReadOnlyAttribute Default
+			= new ReadOnlyAttribute(false);
+	public static readonly ReadOnlyAttribute No
+			= new ReadOnlyAttribute(false);
+	public static readonly ReadOnlyAttribute Yes
+			= new ReadOnlyAttribute(true);
 
-		[TODO]
-		public override bool IsDefaultAttribute()
-		{
-			throw new NotImplementedException("IsDefaultAttribute");
-		}
-
-		[TODO]
-		public static readonly System.ComponentModel.ReadOnlyAttribute Default;
-
-		[TODO]
-		public static readonly System.ComponentModel.ReadOnlyAttribute No;
-
-		[TODO]
-		public static readonly System.ComponentModel.ReadOnlyAttribute Yes;
-
-		public bool IsReadOnly 
-		{
-			get
+	// Constructors.
+	public ReadOnlyAttribute(bool flag)
 			{
-				throw new NotImplementedException("IsReadOnly");
+				this.flag = flag;
 			}
-		}
 
-	}
-#endif	
-}//namespace
+	// Get the attribute's value.
+	public bool IsReadOnly
+			{
+				get
+				{
+					return flag;
+				}
+			}
+
+	// Determine if two attribute values are equal.
+	public override bool Equals(Object obj)
+			{
+				ReadOnlyAttribute other = (obj as ReadOnlyAttribute);
+				if(other != null)
+				{
+					return (flag == other.flag);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get the hash code for this value.
+	public override int GetHashCode()
+			{
+				return GetType().GetHashCode() + (flag ? 1 : 0);
+			}
+
+	// Determine if this is a default attribute value.
+	public override bool IsDefaultAttribute()
+			{
+				return Equals(Default);
+			}
+
+}; // class ReadOnlyAttribute
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

@@ -1,9 +1,8 @@
 /*
- * EditorBrowsableAttribute.cs - Implementation of 
- *						"System.ComponentModel.EditorBrowsableAttribute" 
+ * EditorBrowsableAttribute.cs - Implementation of the
+ *			"System.ComponentModel.EditorBrowsableAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,54 +19,68 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public sealed class EditorBrowsableAttribute: Attribute
-	{
-		private EditorBrowsableState state;
 
-		public EditorBrowsableAttribute(EditorBrowsableState state)
-		{
-			this.state = state;
-		}
+[AttributeUsage(AttributeTargets.Class |
+			    AttributeTargets.Constructor |
+				AttributeTargets.Delegate |
+				AttributeTargets.Enum |
+				AttributeTargets.Event |
+				AttributeTargets.Field |
+				AttributeTargets.Interface |
+				AttributeTargets.Method |
+				AttributeTargets.Property |
+				AttributeTargets.Struct)]
+public sealed class EditorBrowsableAttribute : Attribute
+{
+	// Internal state.
+	private EditorBrowsableState state;
 
-		public EditorBrowsableAttribute()
-		{
-			state = EditorBrowsableState.Always;
-		}
-
-		public EditorBrowsableState State 
-		{
-			get
+	// Constructors.
+	public EditorBrowsableAttribute()
 			{
-				return state;
+				this.state = EditorBrowsableState.Always;
 			}
-		}
-
-		public override bool Equals(Object value)
-		{
-			EditorBrowsableAttribute temp;
-
-			temp = value as EditorBrowsableAttribute;
-
-			if (temp != null)
+	public EditorBrowsableAttribute(EditorBrowsableState state)
 			{
-				return (temp.State == state);
+				this.state = state;
 			}
-			else
+
+	// Get the attribute's properties.
+	public EditorBrowsableState State
 			{
-				return false;
+				get
+				{
+					return state;
+				}
 			}
-		}
 
-		public override int GetHashCode()
-		{
-			return state.GetHashCode();
-		}
+	// Determine if two instances of this class are equal.
+	public override bool Equals(Object obj)
+			{
+				EditorBrowsableAttribute other =
+					(obj as EditorBrowsableAttribute);
+				if(other != null)
+				{
+					return (state == other.state);
+				}
+				else
+				{
+					return false;
+				}
+			}
 
-	}
-#endif	
-}//namespace
+	// Get the hash code for this attribute.
+	public override int GetHashCode()
+			{
+				return (int)state;
+			}
+
+}; // class EditorBrowsableAttribute
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

@@ -2,7 +2,7 @@
  * AttributeCollection.cs - Implementation of the
  *		"System.ComponentModel.ComponentModel.AttributeCollection" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,15 +25,161 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 
 using System.Collections;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
-[TODO]
 [ComVisible(true)]
-public class AttributeCollection
+public class AttributeCollection : ICollection, IEnumerable
 {
-	// TODO
+	// Internal state.
+	private ArrayList coll;
 
-	public AttributeCollection(Attribute[] attributes) {}
+	// The empty attribute collection.
+	public static readonly AttributeCollection Empty
+			= new AttributeCollection(null);
+
+	// Constructor.
+	public AttributeCollection(Attribute[] attributes)
+			{
+				coll = new ArrayList();
+				if(attributes != null)
+				{
+					coll.AddRange(attributes);
+				}
+			}
+
+	// Implement the ICollection interface.
+	public void CopyTo(Array array, int index)
+			{
+				coll.CopyTo(array, index);
+			}
+	public int Count
+			{
+				get
+				{
+					return coll.Count;
+				}
+			}
+	public bool IsSynchronized
+			{
+				get
+				{
+					return false;
+				}
+			}
+	public Object SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
+
+	// Implement the IEnumerable interface.
+	public IEnumerator GetEnumerator()
+			{
+				return coll.GetEnumerator();
+			}
+
+	// Get an element from this collection, by index.
+	public virtual Attribute this[int index]
+			{
+				get
+				{
+					return (Attribute)(coll[index]);
+				}
+			}
+
+	// Get an element from this collection, by type.
+	public virtual Attribute this[Type type]
+			{
+				get
+				{
+					foreach(Attribute attr in coll)
+					{
+						if(attr != null && attr.GetType() == type)
+						{
+							return attr;
+						}
+					}
+					return GetDefaultAttribute(type);
+				}
+			}
+
+	// Determine if this collection contains a particular attribute.
+	public bool Contains(Attribute attr)
+			{
+				return coll.Contains(attr);
+			}
+
+	// Determine if this collection contains a list of attributes.
+	public bool Contains(Attribute[] attributes)
+			{
+				if(attributes != null)
+				{
+					foreach(Attribute attr in attributes)
+					{
+						if(!Contains(attr))
+						{
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+
+	// Get the default attribute value of a particular type.
+	protected Attribute GetDefaultAttribute(Type attributeType)
+			{
+				FieldInfo field = attributeType.GetField
+					("Default", BindingFlags.Public | BindingFlags.Static);
+				if(field != null)
+				{
+					return (Attribute)(field.GetValue(null));
+				}
+				else
+				{
+					Attribute attr;
+					attr = (Attribute)(Activator.CreateInstance(attributeType));
+					if(attr != null && attr.IsDefaultAttribute())
+					{
+						return attr;
+					}
+					else
+					{
+						return null;
+					}
+				}
+			}
+
+	// Determine if an attribute matches something in the collection.
+	public bool Matches(Attribute attr)
+			{
+				foreach(Attribute attr2 in coll)
+				{
+					if(attr2 != null && attr2.Match(attr))
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+
+	// Determine if all attributes in a list match something.
+	public bool Matches(Attribute[] attributes)
+			{
+				if(attributes != null)
+				{
+					foreach(Attribute attr in attributes)
+					{
+						if(!Matches(attr))
+						{
+							return false;
+						}
+					}
+				}
+				return true;
+			}
 
 }; // class AttributeCollection
 

@@ -1,9 +1,8 @@
 /*
- * NotifyParentPropertyAttribute.cs - Implementation of 
- *						"System.ComponentModel.NotifyParentPropertyAttribute" 
+ * NotifyParentPropertyAttribute.cs - Implementation of the
+ *			"System.ComponentModel.NotifyParentPropertyAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,54 +19,69 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public sealed class NotifyParentPropertyAttribute: Attribute
-	{
-		[TODO]
-		public NotifyParentPropertyAttribute(bool notifyParent)
-		{
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public override bool Equals(Object obj)
-		{
-			throw new NotImplementedException("Equals");
-		}
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class NotifyParentPropertyAttribute : Attribute
+{
+	// Internal state.
+	private bool flag;
 
-		[TODO]
-		public override int GetHashCode()
-		{
-			throw new NotImplementedException("GetHashCode");
-		}
+	// Pre-defined attribute values.
+	public static readonly NotifyParentPropertyAttribute Default
+			= new NotifyParentPropertyAttribute(false);
+	public static readonly NotifyParentPropertyAttribute No
+			= new NotifyParentPropertyAttribute(false);
+	public static readonly NotifyParentPropertyAttribute Yes
+			= new NotifyParentPropertyAttribute(true);
 
-		[TODO]
-		public override bool IsDefaultAttribute()
-		{
-			throw new NotImplementedException("IsDefaultAttribute");
-		}
-
-		[TODO]
-		public static readonly System.ComponentModel.NotifyParentPropertyAttribute Default;
-
-		[TODO]
-		public static readonly System.ComponentModel.NotifyParentPropertyAttribute No;
-
-		[TODO]
-		public static readonly System.ComponentModel.NotifyParentPropertyAttribute Yes;
-
-		public bool NotifyParent 
-		{
-			get
+	// Constructors.
+	public NotifyParentPropertyAttribute(bool flag)
 			{
-				throw new NotImplementedException("NotifyParent");
+				this.flag = flag;
 			}
-		}
 
-	}
-#endif	
-}//namespace
+	// Get the attribute's value.
+	public bool NotifyParent
+			{
+				get
+				{
+					return flag;
+				}
+			}
+
+	// Determine if two attribute values are equal.
+	public override bool Equals(Object obj)
+			{
+				NotifyParentPropertyAttribute other =
+						(obj as NotifyParentPropertyAttribute);
+				if(other != null)
+				{
+					return (flag == other.flag);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get the hash code for this value.
+	public override int GetHashCode()
+			{
+				return GetType().GetHashCode() + (flag ? 1 : 0);
+			}
+
+	// Determine if this is a default attribute value.
+	public override bool IsDefaultAttribute()
+			{
+				return Equals(Default);
+			}
+
+}; // class NotifyParentPropertyAttribute
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

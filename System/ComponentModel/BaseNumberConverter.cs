@@ -31,11 +31,8 @@ namespace System.ComponentModel
 
 	public class BaseNumberConverter: TypeConverter
 	{
-		[TODO]
-		public BaseNumberConverter()
-		{
-			throw new NotImplementedException(".ctor");
-		}
+		// Constructor - nothing to do.
+		public BaseNumberConverter() {}
 
 	}
 #endif

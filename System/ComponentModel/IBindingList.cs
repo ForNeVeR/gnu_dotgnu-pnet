@@ -27,7 +27,6 @@ namespace System.ComponentModel
 using System;
 using System.Collections;
 
-[TODO]
 public interface IBindingList : IList, ICollection, IEnumerable
 {
 
@@ -76,10 +75,8 @@ public interface IBindingList : IList, ICollection, IEnumerable
 	// Remove any sorting that was applied by "ApplySort".
 	void RemoveSort();
 
-#if false
 	// Event that is raised when the list changes.
 	event ListChangedEventHandler ListChanged;
-#endif
 
 }; // interface IBindingList
 

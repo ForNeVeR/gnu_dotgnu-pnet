@@ -1,9 +1,8 @@
 /*
- * ToolboxItemAttribute.cs - Implementation of 
- *								"System.ComponentModel.ToolboxItemAttribute" 
+ * ToolboxItemAttribute.cs - Implementation of the
+ *			"System.ComponentModel.ToolboxItemAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,73 +19,108 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public class ToolboxItemAttribute: Attribute
-	{
-		[TODO]
-		public ToolboxItemAttribute(bool defaultType)
-		{
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public ToolboxItemAttribute(String toolboxItemName)
-		{
-			throw new NotImplementedException(".ctor");
-		}
+[AttributeUsage(AttributeTargets.All)]
+public class ToolboxItemAttribute : Attribute
+{
+	// Internal state.
+	private Type toolboxItemType;
+	private String toolboxItemTypeName;
 
-		[TODO]
-		public ToolboxItemAttribute(Type toolboxItemType)
-		{
-			throw new NotImplementedException(".ctor");
-		}
+	// Pre-defined attribute values.
+	public static readonly ToolboxItemAttribute Default
+			= new ToolboxItemAttribute(true);
+	public static readonly ToolboxItemAttribute None
+			= new ToolboxItemAttribute(false);
 
-		[TODO]
-		public override bool Equals(Object o)
-		{
-			throw new NotImplementedException("Equals");
-		}
-
-		[TODO]
-		public override int GetHashCode()
-		{
-			throw new NotImplementedException("GetHashCode");
-		}
-
-		[TODO]
-		public override bool IsDefaultAttribute()
-		{
-			throw new NotImplementedException("IsDefaultAttribute");
-		}
-
-		[TODO]
-		public static readonly ToolboxItemAttribute Default;
-
-		[TODO]
-		public static readonly ToolboxItemAttribute None;
-
-		[TODO]
-		public Type ToolboxItemType 
-		{
-			get
+	// Constructors.
+	public ToolboxItemAttribute(bool defaultType)
 			{
-				throw new NotImplementedException("ToolboxItemType");
+				if(defaultType)
+				{
+					toolboxItemTypeName =
+						"System.Drawing.Design.ToolboxItem,System.Drawing";
+				}
 			}
-		}
-	
-		[TODO]
-		public String ToolboxItemTypeName 
-		{
-			get
+	public ToolboxItemAttribute(String toolboxItemName)
 			{
-				throw new NotImplementedException("ToolboxItemTypeName");
+				this.toolboxItemTypeName = toolboxItemName;
 			}
-		}
+	public ToolboxItemAttribute(Type toolboxItemType)
+			{
+				this.toolboxItemType = toolboxItemType;
+			}
 
-	}
-#endif	
-}//namespace
+	// Get the attribute's value.
+	public Type ToolboxItemType
+			{
+				get
+				{
+					if(toolboxItemType != null)
+					{
+						return toolboxItemType;
+					}
+					else
+					{
+						toolboxItemType = Type.GetType(toolboxItemTypeName);
+						return toolboxItemType;
+					}
+				}
+			}
+	public String ToolboxItemTypeName
+			{
+				get
+				{
+					if(toolboxItemTypeName != null)
+					{
+						return toolboxItemTypeName;
+					}
+					else if(toolboxItemType != null)
+					{
+						toolboxItemTypeName =
+							toolboxItemType.AssemblyQualifiedName;
+						return toolboxItemTypeName;
+					}
+					else
+					{
+						return String.Empty;
+					}
+				}
+			}
+
+	// Determine if two attribute values are equal.
+	public override bool Equals(Object obj)
+			{
+				ToolboxItemAttribute other = (obj as ToolboxItemAttribute);
+				if(other != null)
+				{
+					return (ToolboxItemTypeName == other.ToolboxItemTypeName);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get the hash code for this value.
+	public override int GetHashCode()
+			{
+				return ToolboxItemTypeName.GetHashCode();
+			}
+
+	// Determine if this is a default attribute value.
+	public override bool IsDefaultAttribute()
+			{
+				return (ToolboxItemTypeName ==
+						  "System.Drawing.Design.ToolboxItem,System.Drawing");
+			}
+
+}; // class ToolboxItemAttribute
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

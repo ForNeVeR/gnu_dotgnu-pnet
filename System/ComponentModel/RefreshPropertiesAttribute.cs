@@ -1,9 +1,8 @@
 /*
- * RefreshPropertiesAttribute.cs - Implementation of 
- *						"System.ComponentModel.RefreshPropertiesAttribute" 
+ * RefreshPropertiesAttribute.cs - Implementation of the
+ *			"System.ComponentModel.RefreshPropertiesAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,54 +19,70 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public sealed class RefreshPropertiesAttribute: Attribute
-	{
-		[TODO]
-		public RefreshPropertiesAttribute(RefreshProperties refresh)
-		{
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public override bool Equals(Object obj)
-		{
-			throw new NotImplementedException("Equals");
-		}
+[AttributeUsage(AttributeTargets.All,
+				AllowMultiple=false, Inherited=true)]
+public sealed class RefreshPropertiesAttribute : Attribute
+{
+	// Internal state.
+	private RefreshProperties refresh;
 
-		[TODO]
-		public override int GetHashCode()
-		{
-			throw new NotImplementedException("GetHashCode");
-		}
+	// Pre-defined attribute values.
+	public static readonly RefreshPropertiesAttribute All
+			= new RefreshPropertiesAttribute(RefreshProperties.All);
+	public static readonly RefreshPropertiesAttribute Default
+			= new RefreshPropertiesAttribute(RefreshProperties.None);
+	public static readonly RefreshPropertiesAttribute Repaint
+			= new RefreshPropertiesAttribute(RefreshProperties.Repaint);
 
-		[TODO]
-		public override bool IsDefaultAttribute()
-		{
-			throw new NotImplementedException("IsDefaultAttribute");
-		}
-
-		[TODO]
-		public static readonly RefreshPropertiesAttribute All;
-
-		[TODO]
-		public static readonly RefreshPropertiesAttribute Default;
-
-		[TODO]
-		public static readonly RefreshPropertiesAttribute Repaint;
-
-		public RefreshProperties RefreshProperties 
-		{
-			get
+	// Constructor.
+	public RefreshPropertiesAttribute(RefreshProperties refresh)
 			{
-				throw new NotImplementedException("RefreshProperties");
+				this.refresh = refresh;
 			}
-		}
 
-	}
-#endif	
-}//namespace
+	// Get the attribute's value.
+	public RefreshProperties RefreshProperties
+			{
+				get
+				{
+					return refresh;
+				}
+			}
+
+	// Determine if two attribute values are equal.
+	public override bool Equals(Object obj)
+			{
+				RefreshPropertiesAttribute other =
+						(obj as RefreshPropertiesAttribute);
+				if(other != null)
+				{
+					return (refresh == other.refresh);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get the hash code for this value.
+	public override int GetHashCode()
+			{
+				return GetType().GetHashCode() + (int)refresh;
+			}
+
+	// Determine if this is a default attribute value.
+	public override bool IsDefaultAttribute()
+			{
+				return (refresh == RefreshProperties.None);
+			}
+
+}; // class RefreshPropertiesAttribute
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

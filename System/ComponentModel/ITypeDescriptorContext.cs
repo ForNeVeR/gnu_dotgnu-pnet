@@ -2,7 +2,7 @@
  * ITypeDescriptorContext.cs - Implementation of the
  *		"System.ComponentModel.ITypeDescriptorContext" interface.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,10 +27,22 @@ namespace System.ComponentModel
 using System;
 using System.Globalization;
 
-[TODO]
 public interface ITypeDescriptorContext : IServiceProvider
 {
-	// TODO
+	// Get the container for this context.
+	IContainer Container { get; }
+
+	// Get the instance information for this context.
+	Object Instance { get; }
+
+	// Get the property descriptor for this context.
+	PropertyDescriptor PropertyDescriptor { get; }
+
+	// Method that is called when the component is changed.
+	void OnComponentChanged();
+
+	// Method that is called when the component is about to change.
+	void OnComponentChanging();
 
 }; // interface ITypeDescriptorContext
 

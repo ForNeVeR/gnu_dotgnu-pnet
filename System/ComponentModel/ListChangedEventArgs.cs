@@ -1,9 +1,8 @@
 /*
- * ListChangedEventArgs.cs - Implementation of 
- *							"System.ComponentModel.ListChangedEventArgs" 
+ * ListChangedEventArgs.cs - Implementation of the
+ *			"System.ComponentModel.ListChangedEventArgs" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,64 +19,64 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public class ListChangedEventArgs: EventArgs
-	{
-		private ListChangedType listChangedType;
-		private int newIndex;
-		private int oldIndex;
-	
-		public ListChangedEventArgs(ListChangedType listChangedType, 
-										int newIndex)
-		{
-			this.listChangedType = listChangedType;
-			this.newIndex = newIndex;
-		}
 
-		[TODO]
-		public ListChangedEventArgs(ListChangedType listChangedType, 
-											PropertyDescriptor propDesc)
-		{
-			//this.listChangedType = listChangedType;
-			throw new NotImplementedException("ListChangedEventArgs");
-		}
+public class ListChangedEventArgs : EventArgs
+{
+	// Internal state.
+	private ListChangedType listChangedType;
+	private int oldIndex;
+	private int newIndex;
+	private PropertyDescriptor propDesc;
 
-		public ListChangedEventArgs(ListChangedType listChangedType, 
-											int newIndex, int oldIndex)
-		{
-			this.listChangedType = listChangedType;
-			this.newIndex = newIndex;
-			this.oldIndex = oldIndex;
-		}
-
-		public ListChangedType ListChangedType  
-		{
-			get
+	// Constructors.
+	public ListChangedEventArgs(ListChangedType listChangedType, int newIndex)
 			{
-				return listChangedType;
+				this.listChangedType = listChangedType;
+				this.newIndex = newIndex;
 			}
-		}
-
-		public int NewIndex 
-		{
-			get
+	public ListChangedEventArgs(ListChangedType listChangedType,
+								int newIndex, int oldIndex)
 			{
-				return newIndex;
+				this.listChangedType = listChangedType;
+				this.newIndex = newIndex;
+				this.oldIndex = oldIndex;
 			}
-		}
-
-		public int OldIndex 
-		{
-			get
+	public ListChangedEventArgs(ListChangedType listChangedType,
+								PropertyDescriptor propDesc)
 			{
-				return oldIndex;
+				this.listChangedType = listChangedType;
+				this.propDesc = propDesc;
 			}
-		}
 
-	}
-#endif	
-}//namespace
+	// Get the object's property values.
+	public ListChangedType ListChangedType
+			{
+				get
+				{
+					return listChangedType;
+				}
+			}
+	public int NewIndex
+			{
+				get
+				{
+					return newIndex;
+				}
+			}
+	public int OldIndex
+			{
+				get
+				{
+					return oldIndex;
+				}
+			}
+
+}; // class ListChangedEventArgs
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

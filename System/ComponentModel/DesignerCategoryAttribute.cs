@@ -1,6 +1,6 @@
 /*
- * EditorAttribute.cs - Implementation of the
- *			"System.ComponentModel.EditorAttribute" class.
+ * DesignerCategoryAttribute.cs - Implementation of the
+ *			"System.ComponentModel.DesignerCategoryAttribute" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,49 +24,40 @@ namespace System.ComponentModel
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.All)]
-public sealed class EditorAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class)]
+public sealed class DesignerCategoryAttribute : Attribute
 {
 	// Internal state.
-	private String typeName;
-	private String baseTypeName;
+	private String category;
+
+	// Pre-defined attribute values.
+	public static readonly DesignerCategoryAttribute Component =
+			new DesignerCategoryAttribute("Component");
+	public static readonly DesignerCategoryAttribute Form =
+			new DesignerCategoryAttribute("Form");
+	public static readonly DesignerCategoryAttribute Generic =
+			new DesignerCategoryAttribute("Generic");
 
 	// Constructors.
-	public EditorAttribute()
+	public DesignerCategoryAttribute()
 			{
-				this.typeName = String.Empty;
+				this.category = String.Empty;
 			}
-	public EditorAttribute(String typeName, String baseTypeName)
+	public DesignerCategoryAttribute(String category)
 			{
-				this.typeName = typeName;
-				this.baseTypeName = baseTypeName;
-			}
-	public EditorAttribute(String typeName, Type baseType)
-			{
-				this.typeName = typeName;
-				this.baseTypeName = baseType.AssemblyQualifiedName;
-			}
-	public EditorAttribute(Type type, Type baseType)
-			{
-				this.typeName = type.AssemblyQualifiedName;
-				this.baseTypeName = baseType.AssemblyQualifiedName;
+				this.category = category;
 			}
 
-	// Get the attribute's properties.
-	public String EditorBaseTypeName
+	// Get the attribute's value.
+	public String Category
 			{
 				get
 				{
-					return baseTypeName;
+					return category;
 				}
 			}
-	public String EditorTypeName
-			{
-				get
-				{
-					return typeName;
-				}
-			}
+
+	// Get the type identifier for this attribute.
 	public override Object TypeId
 			{
 				get
@@ -78,11 +69,11 @@ public sealed class EditorAttribute : Attribute
 	// Determine if two instances of this class are equal.
 	public override bool Equals(Object obj)
 			{
-				EditorAttribute other = (obj as EditorAttribute);
+				DesignerCategoryAttribute other =
+						(obj as DesignerCategoryAttribute);
 				if(other != null)
 				{
-					return (typeName == other.typeName &&
-							baseTypeName == other.baseTypeName);
+					return (category == other.category);
 				}
 				else
 				{
@@ -93,9 +84,9 @@ public sealed class EditorAttribute : Attribute
 	// Get the hash code for this attribute.
 	public override int GetHashCode()
 			{
-				if(typeName != null)
+				if(category != null)
 				{
-					return typeName.GetHashCode();
+					return category.GetHashCode();
 				}
 				else
 				{
@@ -103,7 +94,13 @@ public sealed class EditorAttribute : Attribute
 				}
 			}
 
-}; // class EditorAttribute
+	// Determine if this is the default attribute value.
+	public override bool IsDefaultAttribute()
+			{
+				return (category == null || category == String.Empty);
+			}
+
+}; // class DesignerCategoryAttribute
 
 #endif // !ECMA_COMPAT
 

@@ -1,9 +1,8 @@
 /*
- * LocalizableAttribute.cs - Implementation of 
- *							"System.ComponentModel.LocalizableAttribute" 
+ * LocalizableAttribute.cs - Implementation of the
+ *			"System.ComponentModel.LocalizableAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,34 +19,40 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !ECMA_COMPAT
-	public sealed class LocalizableAttribute: Attribute
-	{
-		[TODO]
-		public LocalizableAttribute(bool localizable)
-		{
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public static readonly LocalizableAttribute No;
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class LocalizableAttribute : Attribute
+{
+	// Internal state.
+	private bool localizable;
 
-		[TODO]
-		public static readonly LocalizableAttribute Yes;
+	// Pre-defined attribute values.
+	public static readonly LocalizableAttribute No
+			= new LocalizableAttribute(false);
+	public static readonly LocalizableAttribute Yes
+			= new LocalizableAttribute(true);
 
-		[TODO]
-		public bool IsLocalizable 
-		{
-			get
+	// Constructor.
+	public LocalizableAttribute(bool localizable)
 			{
-				throw new NotImplementedException("IsLocalizable");
+				this.localizable = localizable;
 			}
-		}
 
-	}
-#endif	
-}//namespace
+	// Get the attribute's value.
+	public bool IsLocalizable
+			{
+				get
+				{
+					return localizable;
+				}
+			}
+
+}; // class LocalizableAttribute
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

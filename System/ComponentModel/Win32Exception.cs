@@ -30,39 +30,29 @@ namespace System.ComponentModel
 	{
 		private int nativeErrorCode;
 
-		[TODO]
 		public Win32Exception() : base()
 		{
 			HResult = (int)0x80004005;
 		}
-
-		[TODO]
 		public Win32Exception(int error) : base()
 		{
 			nativeErrorCode = error;
 			HResult = (int)0x80004005;
 		}
-
-		[TODO]
 		public Win32Exception(int error, String message) : base(message)
 		{
 			nativeErrorCode = error;
 			HResult = (int)0x80004005;
 		}
-
-		[TODO]
 		internal Win32Exception(String message) : base (message)
 		{
 			HResult = (int)0x80004005;
 		}
-
-		[TODO]
 		internal Win32Exception(String message,Exception inner) 
 			: base (message,inner)
 		{
 			HResult = (int)0x80004005;
 		}
-
 		protected Win32Exception(SerializationInfo info,
 								 StreamingContext context)
 			: base(info, context)

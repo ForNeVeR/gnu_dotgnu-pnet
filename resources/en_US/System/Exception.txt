@@ -21,3 +21,5 @@ Exception_Web=A failure occurred during an Internet related operation
 Exception_Protocol=Protocol error occurred
 Exception_Socket=A network error occurred
 Exception_Disposed=This instance has been disposed
+Exception_InvalidEnum=Invalid enumerated value for argument
+Exception_InvalidEnumValue=Invalid enumerated value `{0}' for argument `{1}' of type `{2}'

@@ -27,13 +27,52 @@ namespace System.ComponentModel
 using System.Collections;
 using System.Runtime.InteropServices;
 
-[TODO]
 [ComVisible(true)]
-public class ComponentCollection
+public class ComponentCollection : ReadOnlyCollectionBase
 {
-	// TODO
+	// Constructor.
+	public ComponentCollection(IComponent[] components)
+			{
+				InnerList.AddRange(components);
+			}
 
-	public ComponentCollection() {}
+	// Get a collection element by index.
+	public virtual IComponent this[int index]
+			{
+				get
+				{
+					return (IComponent)(InnerList[index]);
+				}
+			}
+
+	// Get a collection element by name.
+	public virtual IComponent this[String name]
+			{
+				get
+				{
+					if(name == null)
+					{
+						return null;
+					}
+					ISite site;
+					foreach(IComponent component in InnerList)
+					{
+						site = component.Site;
+						if(site != null && site.Name != null &&
+						   String.Compare(name, site.Name, true) == 0)
+						{
+							return component;
+						}
+					}
+					return null;
+				}
+			}
+
+	// Copy the contents of this collection to an array.
+	public void CopyTo(IComponent[] array, int index)
+			{
+				InnerList.CopyTo(array, index);
+			}
 
 }; // class ComponentCollection
 

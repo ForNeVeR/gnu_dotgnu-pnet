@@ -295,8 +295,13 @@ internal sealed class DefaultEncoding : Encoding
 				(byte[] bytes, int index, int count);
 
 	// Get the default code page number.  Zero if unknown.
+#if ECMA_COMPAT
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static int InternalCodePage();
+#else
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern new internal static int InternalCodePage();
+#endif
 
 }; // class DefaultEncoding
 

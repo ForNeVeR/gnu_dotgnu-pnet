@@ -28,80 +28,67 @@ extern	"C" {
 static ILBuiltinType const ILSystemBoolean =
 	{"System", "Boolean",
 	 ILType_Boolean,
-	 ILMachineType_Boolean,
-	 0, 0};
-
-static ILBuiltinType const ILSystemInt64 =
-	{"System", "Int64",
-	 ILType_Int64,
-	 ILMachineType_Int64,
-	 0, 0};
-
-static ILBuiltinType const ILSystemUInt64 =
-	{"System", "UInt64",
-	 ILType_UInt64,
-	 ILMachineType_UInt64,
-	 0, 0};
-
-static ILBuiltinType const ILSystemDouble =
-	{"System", "Double",
-	 ILType_Float64,
-	 ILMachineType_Float64,
-	 0, 0};
-
-static ILBuiltinType const ILSystemSingle =
-	{"System", "Single",
-	 ILType_Float32,
-	 ILMachineType_Float32,
-	 &ILSystemDouble, &ILSystemDouble};
+	 ILMachineType_Boolean};
 
 static ILBuiltinType const ILSystemDecimal =
 	{"System", "Decimal",
 	 ILType_Invalid	/* Decimal is represented as a struct */,
-	 ILMachineType_Decimal,
-	 0, 0};
+	 ILMachineType_Decimal};
+
+static ILBuiltinType const ILSystemDouble =
+	{"System", "Double",
+	 ILType_Float64,
+	 ILMachineType_Float64};
+
+static ILBuiltinType const ILSystemSingle =
+	{"System", "Single",
+	 ILType_Float32,
+	 ILMachineType_Float32};
+
+static ILBuiltinType const ILSystemInt64 =
+	{"System", "Int64",
+	 ILType_Int64,
+	 ILMachineType_Int64};
+
+static ILBuiltinType const ILSystemUInt64 =
+	{"System", "UInt64",
+	 ILType_UInt64,
+	 ILMachineType_UInt64};
 
 static ILBuiltinType const ILSystemInt32 =
 	{"System", "Int32",
 	 ILType_Int32,
-	 ILMachineType_Int32,
-	 &ILSystemInt64, &ILSystemInt64};
+	 ILMachineType_Int32};
 
 static ILBuiltinType const ILSystemUInt32 =
 	{"System", "UInt32",
 	 ILType_UInt32,
-	 ILMachineType_UInt32,
-	 &ILSystemUInt64, &ILSystemInt64};
+	 ILMachineType_UInt32};
 
 static ILBuiltinType const ILSystemInt16 =
 	{"System", "Int16",
 	 ILType_Int16,
-	 ILMachineType_Int16,
-	 &ILSystemInt32, &ILSystemInt32};
+	 ILMachineType_Int16};
 
 static ILBuiltinType const ILSystemUInt16 =
 	{"System", "UInt16",
 	 ILType_UInt16,
-	 ILMachineType_UInt16,
-	 &ILSystemUInt32, &ILSystemInt32};
+	 ILMachineType_UInt16};
 
 static ILBuiltinType const ILSystemSByte =
 	{"System", "SByte",
 	 ILType_Int8,
-	 ILMachineType_Int8,
-	 &ILSystemInt16, &ILSystemInt16};
+	 ILMachineType_Int8};
 
 static ILBuiltinType const ILSystemByte =
 	{"System", "Byte",
 	 ILType_UInt8,
-	 ILMachineType_UInt8,
-	 &ILSystemUInt16, &ILSystemInt16};
+	 ILMachineType_UInt8};
 
 static ILBuiltinType const ILSystemChar =
 	{"System", "Char",
 	 ILType_Char,
-	 ILMachineType_Char,
-	 &ILSystemUInt16, &ILSystemInt32};
+	 ILMachineType_Char};
 
 #define	IL_BEGIN_OPERATOR_TABLE(op)	\
 	ILOperator const ILOp_##op[] = {
@@ -1060,58 +1047,32 @@ void ILApplyConversion(ILGenInfo *info, ILNode *node, ILNode **parent,
 	InsertPrimitive(info, node, parent, conv->outtype->valueType);
 }
 
-/*
- * Determine if it is possible to implicitly coerce
- * a builtin type to another builtin type.  This is
- * used for the "missing" operators on types such
- * as "byte", "sbyte", "short", and "ushort".
- */
-static int ImplicitCoerceTo(const ILBuiltinType *fromType,
-							const ILBuiltinType *toType)
-{
-	const ILBuiltinType *type;
-
-	/* Try the first path to find an implicit conversion */
-	type = fromType->implicitUp1;
-	while(type != 0)
-	{
-		if(type == toType)
-		{
-			return 1;
-		}
-		type = type->implicitUp1;
-	}
-
-	/* Try the second path to find an implicit conversion */
-	type = fromType->implicitUp2;
-	while(type != 0)
-	{
-		if(type == toType)
-		{
-			return 1;
-		}
-		type = type->implicitUp2;
-	}
-
-	/* No implicit conversion found */
-	return 0;
-}
-
 const ILOperator *ILFindUnaryOperator(const ILOperator *table,
 								 	  ILType *argType1)
 {
+	/* Convert the type into its builtin form */
 	const ILBuiltinType *type1 = GetBuiltinType(argType1);
 	if(!type1)
 	{
 		return 0;
 	}
+
+	/* Apply numeric promotions to the type */
+	if(type1 == &ILSystemSByte || type1 == &ILSystemByte ||
+	   type1 == &ILSystemInt16 || type1 == &ILSystemUInt16 ||
+	   type1 == &ILSystemChar)
+	{
+		type1 = &ILSystemInt32;
+	}
+	else if(type1 == &ILSystemUInt32 && table == ILOp_Neg)
+	{
+		type1 = &ILSystemInt64;
+	}
+
+	/* Search for a matching operator */
 	while(table->outtype != 0)
 	{
 		if(table->intype1 == type1)
-		{
-			return table;
-		}
-		else if(ImplicitCoerceTo(type1, table->intype1))
 		{
 			return table;
 		}
@@ -1135,20 +1096,129 @@ void ILApplyUnaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
 const ILOperator *ILFindBinaryOperator(const ILOperator *table,
 								 	   ILType *argType1, ILType *argType2)
 {
+	/* Convert the types into their builtin forms */
 	const ILBuiltinType *type1 = GetBuiltinType(argType1);
 	const ILBuiltinType *type2 = GetBuiltinType(argType2);
 	if(!type1 || !type2)
 	{
 		return 0;
 	}
+
+	/* Apply numeric promotions */
+	if(table != ILOp_Shl && table != ILOp_Shr)
+	{
+		/* Arithmetic or bitwise operator */
+		if(type1 == &ILSystemDecimal)
+		{
+			if(type2 == &ILSystemSingle || type2 == &ILSystemDouble)
+			{
+				return 0;
+			}
+			type2 = &ILSystemDecimal;
+		}
+		else if(type2 == &ILSystemDecimal)
+		{
+			if(type1 == &ILSystemSingle || type1 == &ILSystemDouble)
+			{
+				return 0;
+			}
+			type1 = &ILSystemDecimal;
+		}
+		else if(type1 == &ILSystemDouble)
+		{
+			type2 = &ILSystemDouble;
+		}
+		else if(type2 == &ILSystemDouble)
+		{
+			type1 = &ILSystemDouble;
+		}
+		else if(type1 == &ILSystemSingle)
+		{
+			type2 = &ILSystemSingle;
+		}
+		else if(type2 == &ILSystemSingle)
+		{
+			type1 = &ILSystemSingle;
+		}
+		else if(type1 == &ILSystemUInt64)
+		{
+			if(type2 == &ILSystemSByte || type2 == &ILSystemInt16 ||
+			   type2 == &ILSystemInt32 || type2 == &ILSystemInt64)
+			{
+				return 0;
+			}
+			type2 = &ILSystemUInt64;
+		}
+		else if(type2 == &ILSystemUInt64)
+		{
+			if(type1 == &ILSystemSByte || type1 == &ILSystemInt16 ||
+			   type1 == &ILSystemInt32 || type1 == &ILSystemInt64)
+			{
+				return 0;
+			}
+			type1 = &ILSystemUInt64;
+		}
+		else if(type1 == &ILSystemInt64)
+		{
+			type2 = &ILSystemInt64;
+		}
+		else if(type2 == &ILSystemInt64)
+		{
+			type1 = &ILSystemInt64;
+		}
+		else if(type1 == &ILSystemUInt32)
+		{
+			if(type2 == &ILSystemSByte || type2 == &ILSystemInt16 ||
+			   type2 == &ILSystemInt32)
+			{
+				type1 = &ILSystemInt64;
+				type2 = &ILSystemInt64;
+			}
+			else
+			{
+				type2 = &ILSystemUInt32;
+			}
+		}
+		else if(type2 == &ILSystemUInt32)
+		{
+			if(type1 == &ILSystemSByte || type1 == &ILSystemInt16 ||
+			   type1 == &ILSystemInt32)
+			{
+				type1 = &ILSystemInt64;
+				type2 = &ILSystemInt64;
+			}
+			else
+			{
+				type1 = &ILSystemUInt32;
+			}
+		}
+		else
+		{
+			type1 = &ILSystemInt32;
+			type2 = &ILSystemInt32;
+		}
+	}
+	else
+	{
+		/* Shift operator: promote the arguments separately */
+		if(type1 == &ILSystemSByte || type1 == &ILSystemByte ||
+		   type1 == &ILSystemInt16 || type1 == &ILSystemUInt16 ||
+		   type1 == &ILSystemChar)
+		{
+			type1 = &ILSystemInt32;
+		}
+		if(type2 == &ILSystemSByte || type2 == &ILSystemByte ||
+		   type2 == &ILSystemInt16 || type2 == &ILSystemUInt16 ||
+		   type2 == &ILSystemChar)
+		{
+			type2 = &ILSystemInt32;
+		}
+	}
+
+	/* Search for a matching operator */
 	while(table->outtype != 0)
 	{
 		if(table->intype1 == type1 && table->intype2 == type2)
-		{
-			return table;
-		}
-		else if(ImplicitCoerceTo(type1, table->intype1) &&
-				ImplicitCoerceTo(type2, table->intype2))
 		{
 			return table;
 		}

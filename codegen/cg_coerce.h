@@ -33,8 +33,6 @@ struct _tagILBuiltinType
 	const char	   *name;				/* Name of the type */
 	ILType		   *type;				/* Built-in element type */
 	ILMachineType	valueType;			/* Value type used by runtime */
-	const ILBuiltinType *implicitUp1;	/* Implicit up-conversion parent */
-	const ILBuiltinType *implicitUp2;	/* Implicit up-conversion parent */
 
 };
 

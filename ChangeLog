@@ -25,6 +25,9 @@
 	support/w32_defs.h, support/wakeup.c: implement condition mutexes,
 	condition variables, thread wakeup objects, and thread sleeping.
 
+	* support/w32_defs.h: missing definitions for the "_ILCondMutex"
+	and "_ILCondVar" types.
+
 2002-04-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/pt_include.h, support/pt_mutex.c, support/pt_thread.c,

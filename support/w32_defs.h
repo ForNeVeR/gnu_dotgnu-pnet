@@ -29,6 +29,8 @@ extern	"C" {
  * Types that are needed elsewhere.
  */
 typedef CRITICAL_SECTION	_ILMutex;
+typedef HANDLE				_ILCondMutex;
+typedef HANDLE				_ILCondVar;
 typedef HANDLE				_ILThreadHandle;
 typedef DWORD				_ILThreadIdentifier;
 typedef HANDLE				_ILSemaphore;

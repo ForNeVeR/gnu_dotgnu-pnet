@@ -1,4 +1,9 @@
 
+2002-05-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/ser_parse.c (ILSerializeReaderGetExtra): reversed the parse
+	order of an extra field's name and type.
+
 2002-05-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/spawn.c: report signals from spawned child processes.

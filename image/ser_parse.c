@@ -477,7 +477,7 @@ int ILSerializeReaderGetExtra(ILSerializeReader *reader,
 							  const char **nameReturn,
 							  int *nameLenReturn)
 {
-	int type;
+	int type, extraType;
 	ILClass *info;
 	ILMember *member;
 	const char *name;
@@ -490,14 +490,43 @@ int ILSerializeReaderGetExtra(ILSerializeReader *reader,
 	{
 		return -1;
 	}
-	type = (int)(*(reader->meta.data));
+	extraType = (int)(*(reader->meta.data));
 	reader->meta.data += 1;
 	reader->meta.len -= 1;
-	if(type != IL_META_SERIALTYPE_FIELD &&
-	   type != IL_META_SERIALTYPE_PROPERTY)
+	if(extraType != IL_META_SERIALTYPE_FIELD &&
+	   extraType != IL_META_SERIALTYPE_PROPERTY)
 	{
 		return -1;
 	}
+
+	/* Read the serialization type from the blob */
+	if(reader->meta.len < 1)
+	{
+		return -1;
+	}
+	type = ((int)(*(reader->meta.data)));
+	switch(type)
+	{
+		case IL_META_SERIALTYPE_BOOLEAN:
+		case IL_META_SERIALTYPE_I1:
+		case IL_META_SERIALTYPE_U1:
+		case IL_META_SERIALTYPE_I2:
+		case IL_META_SERIALTYPE_U2:
+		case IL_META_SERIALTYPE_CHAR:
+		case IL_META_SERIALTYPE_I4:
+		case IL_META_SERIALTYPE_U4:
+		case IL_META_SERIALTYPE_I8:
+		case IL_META_SERIALTYPE_U8:
+		case IL_META_SERIALTYPE_R4:
+		case IL_META_SERIALTYPE_R8:
+		case IL_META_SERIALTYPE_STRING:
+		case IL_META_SERIALTYPE_TYPE:		break;
+
+		/* The blob specified an invalid serialization type */
+		default: return -1;
+	}
+	reader->meta.data += 1;
+	reader->meta.len -= 1;
 
 	/* Get the member's name */
 	nameLen = ILSerializeReaderGetString(reader, &name);
@@ -507,19 +536,19 @@ int ILSerializeReaderGetExtra(ILSerializeReader *reader,
 	}
 
 	/* Search for the field or property within the class and its ancestors */
-	if(type == IL_META_SERIALTYPE_FIELD)
+	if(extraType == IL_META_SERIALTYPE_FIELD)
 	{
-		type = IL_META_MEMBERKIND_FIELD;
+		extraType = IL_META_MEMBERKIND_FIELD;
 	}
 	else
 	{
-		type = IL_META_MEMBERKIND_PROPERTY;
+		extraType = IL_META_MEMBERKIND_PROPERTY;
 	}
-	info = reader->info;
+	info = ILClassResolve(reader->info);
 	member = 0;
 	while(info != 0)
 	{
-		while((member = ILClassNextMemberByKind(info, member, type)) != 0)
+		while((member = ILClassNextMemberByKind(info, member, extraType)) != 0)
 		{
 			if(!strncmp(member->name, name, nameLen) &&
 			   member->name[nameLen] == '\0')
@@ -535,10 +564,11 @@ int ILSerializeReaderGetExtra(ILSerializeReader *reader,
 	}
 
 	/* The member must have public access and be an instance member.
-	   If it is a property, then it must also have a setter */
+	   If it is a property, then it must also have a setter.  If we
+	   did not find a member, then believe the data as to the type */
 	if(member != 0)
 	{
-		if(type == IL_META_MEMBERKIND_FIELD)
+		if(extraType == IL_META_MEMBERKIND_FIELD)
 		{
 			if((member->attributes & IL_META_FIELDDEF_FIELD_ACCESS_MASK)
 					!= IL_META_FIELDDEF_PUBLIC ||
@@ -566,57 +596,18 @@ int ILSerializeReaderGetExtra(ILSerializeReader *reader,
 		}
 
 		/* Convert the member type into a serialization type */
-		type = ILSerializeGetType(memberType);
-		if(type == -1 || (type & IL_META_SERIALTYPE_ARRAYOF) != 0)
+		extraType = ILSerializeGetType(memberType);
+		if(extraType == -1 || (extraType & IL_META_SERIALTYPE_ARRAYOF) != 0)
+		{
+			return -1;
+		}
+
+		/* Validate the specified type against the actual type */
+		if(type != extraType)
 		{
 			return -1;
 		}
 	}
-	else
-	{
-		type = -2;
-	}
-
-	/* Read the serialization type from the blob and check it */
-	if(reader->meta.len < 1)
-	{
-		return -1;
-	}
-	if(type == -2)
-	{
-		/* We don't have a member, so believe what the blob tells us */
-		type = ((int)(*(reader->meta.data)));
-		switch(type)
-		{
-			case IL_META_SERIALTYPE_BOOLEAN:
-			case IL_META_SERIALTYPE_I1:
-			case IL_META_SERIALTYPE_U1:
-			case IL_META_SERIALTYPE_I2:
-			case IL_META_SERIALTYPE_U2:
-			case IL_META_SERIALTYPE_CHAR:
-			case IL_META_SERIALTYPE_I4:
-			case IL_META_SERIALTYPE_U4:
-			case IL_META_SERIALTYPE_I8:
-			case IL_META_SERIALTYPE_U8:
-			case IL_META_SERIALTYPE_R4:
-			case IL_META_SERIALTYPE_R8:
-			case IL_META_SERIALTYPE_STRING:
-			case IL_META_SERIALTYPE_TYPE:		break;
-
-			/* The blob specified an invalid serialization type */
-			default: return -1;
-		}
-	}
-	else
-	{
-		/* Check the blob against the member */
-		if(((int)(*(reader->meta.data))) != type)
-		{
-			return -1;
-		}
-	}
-	reader->meta.data += 1;
-	reader->meta.len -= 1;
 
 	/* Check that we have sufficient space in the blob for the value */
 	if(!HasSufficientSpace(reader, type))

@@ -17,6 +17,7 @@ install-data-local:
 			-Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
 			-f "$(srcdir)/nunit.console.build" -i all
+	$(LN_S) clrwrap $(DESTDIR)$(bindir)/nunit-console
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)

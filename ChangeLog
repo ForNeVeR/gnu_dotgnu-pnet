@@ -1,4 +1,11 @@
 
+2004-08-04  Gopal.V  <gopalv82@yahoo.com>
+	
+	* Makefile.am, nunit20/nunit-console/Makefile.am,
+	nunit20/nunit-console/nunit.console.build, nunit20/util/nunit.util.build:
+	Add nunit20 to the default build and swap around the assembly references.
+	Install nunit-console into the PATH using clrwrap.
+	
 2004-08-03  Gopal.V  <gopalv82@yahoo.com>
 
 	* tools/wsdl/Makefile.am: change a "wdsl" to "wsdl" for the install

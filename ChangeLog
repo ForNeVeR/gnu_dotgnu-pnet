@@ -1,3 +1,7 @@
+2002-04-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/Other/CP57002.cs (GetChars): should add "shift", not subtract.
+
 2002-04-29  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Net/IPAddress.cs: small syntax change for new arrays.

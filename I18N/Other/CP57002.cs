@@ -283,7 +283,7 @@ public abstract class ISCIIEncoding : Encoding
 					else
 					{
 						// Shift the ISCII character into the Unicode page.
-						chars[charIndex++] = (char)(byteval - shift);
+						chars[charIndex++] = (char)(byteval + shift);
 					}
 				}
 				return byteCount;

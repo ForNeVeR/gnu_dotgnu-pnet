@@ -10,6 +10,12 @@
 	* libffi/configure.in, libffi/configure: prevent the display of an
 	error message when gcc doesn't support "-print-multi-os-directory".
 
+	* libffi/ChangeLog, libffi/src/powerpc/aix_closure.S,
+	libffi/src/powerpc/asm.h, libffi/src/powerpc/darwin_closure.S,
+	libffi/src/powerpc/ffi.c, libffi/src/powerpc/ffi_darwin.c,
+	libffi/src/powerpc/sysv.S: updates to the powerpc version of
+	libffi from the gcc CVS tree.
+
 2003-02-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/pecoff_writer.c: fall back to the original back-patch

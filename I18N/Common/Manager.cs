@@ -44,14 +44,14 @@ public class Manager
 	private static Manager manager;
 
 	// Internal state.
-	private Hashtable handlers;		// List of all handler classes.
+	private HandlerCollection handlers; // List of all handler classes.
 	private Hashtable active;		// Currently active handlers.
 	private Hashtable assemblies;	// Currently loaded region assemblies.
 
 	// Constructor.
 	private Manager()
 			{
-				handlers = new Hashtable();
+				handlers = new HandlerCollection();
 				active = new Hashtable(16);
 				assemblies = new Hashtable(8);
 				LoadClassList();
@@ -396,10 +396,7 @@ public class Manager
 						// Add the namespace to the "handlers" hash,
 						// attached to the name of the handler class.
 						String name = line.Substring(posn + 1);
-						if(!handlers.Contains(name))
-						{
-							handlers.Add(name, line.Substring(0, posn));
-						}
+						handlers.Add(name, line.Substring(0, posn));
 					}
 				}
 				reader.Close();
@@ -419,10 +416,7 @@ public class Manager
 						// Add the namespace to the "handlers" hash,
 						// attached to the name of the handler class.
 						String name = line.Substring(posn + 1);
-						if(!handlers.Contains(name))
-						{
-							handlers.Add(name, line.Substring(0, posn));
-						}
+						handlers.Add(name, line.Substring(0, posn));
 					}
 				}
 			}

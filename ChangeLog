@@ -6,6 +6,10 @@
 	to avoid the use of "ToString(0, length - 1)", which is less
 	efficient than "ToString()".
 
+	* I18N/Common/HandlerCollection.cs, I18N/Common/Manager.cs:
+	change the representation of the I18N handler table to reduce
+	the startup code associated with the hash table version.
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's

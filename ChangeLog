@@ -5,6 +5,10 @@
 	ilalink/link_library.c, ilalink/linker.h, include/il_linker.h:
 	normalize the linker's search path with the rest of the system.
 
+	* cscc/cscc.c, cscc/common/cc_main.c: modify path searching so
+	that it is consistent with the engine and linker with respect
+	to system assemblies.
+
 2002-07-02  Gopal.V  <gopalv82@symonds.net>
 
 	* doc/Doxyfile: Add Doxygen configuration file (contributed

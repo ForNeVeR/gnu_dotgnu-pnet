@@ -297,31 +297,6 @@ static void PreprocessClose(void)
 }
 
 /*
- * Check for the existence of a library within a particular directory.
- * Returns the full pathname, allocated with "ILMalloc", if found.
- * Otherwise returns NULL.
- */
-static char *CheckPath(const char *directory, const char *name, int len)
-{
-	int dirlen = strlen(directory);
-	char *path = ILMalloc(dirlen + len + 6);
-	if(!path)
-	{
-		CCOutOfMemory();
-	}
-	strcpy(path, directory);
-	path[dirlen++] = '/';
-	ILMemCpy(path + dirlen, name, len);
-	strcpy(path + dirlen + len, ".dll");
-	if(ILFileExists(path, (char **)0))
-	{
-		return path;
-	}
-	ILFree(path);
-	return 0;
-}
-
-/*
  * Load a library from a specific path.  Returns zero on failure.
  * If "freePath" is non-zero, then free "path" afterwards.
  */
@@ -418,31 +393,12 @@ static int LoadLibrary(const char *name)
 	}
 
 	/* Search the library link path for the name */
-	for(index = 0; index < num_link_dirs; ++index)
-	{
-		path = CheckPath(link_dirs[index], name, len);
-		if(path)
-		{
-			return LoadLibraryFromPath(path, 1);
-		}
-	}
-
-	/* Look in the current directory in case the programmer has
-	   all of their libraries locally */
-	path = CheckPath(".", name, len);
+	path = ILImageSearchPath(name, 0, 0,
+							 (const char **)link_dirs, num_link_dirs,
+							 0, 0, nostdlib_flag, 0);
 	if(path)
 	{
 		return LoadLibraryFromPath(path, 1);
-	}
-
-	/* Try the system-wide search order */
-	if(!nostdlib_flag)
-	{
-		path = ILImageSearchPath(name, 0, 0, 0, 0, 0, 0, 0, 0);
-		if(path)
-		{
-			return LoadLibraryFromPath(path, 1);
-		}
 	}
 
 	/* Could not locate the library */

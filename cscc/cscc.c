@@ -474,6 +474,9 @@ static void ParseCommandLine(int argc, char *argv[])
 		}
 	}
 
+	/* We always want "." on the end of the link path */
+	CCStringListAdd(&link_dirs, &num_link_dirs, ".");
+
 	/* Add the system link directories */
 	if(!nostdlib_flag)
 	{
@@ -1440,8 +1443,6 @@ static int LinkExecutable(void)
 		AddArgument(&cmdline, &cmdline_size, "-L");
 		AddArgument(&cmdline, &cmdline_size, sys_link_dirs[posn]);
 	}
-	AddArgument(&cmdline, &cmdline_size, "-L");
-	AddArgument(&cmdline, &cmdline_size, ".");
 	for(posn = 0; posn < num_libraries; ++posn)
 	{
 		AddArgument(&cmdline, &cmdline_size, "-l");

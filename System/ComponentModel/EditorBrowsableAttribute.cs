@@ -27,24 +27,45 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 	public sealed class EditorBrowsableAttribute: Attribute
 	{
-		[TODO]
-		public void EditorBrowsableAttribute(EditorBrowsableState state)
+		private EditorBrowsableState state;
+
+		public EditorBrowsableAttribute(EditorBrowsableState state)
 		{
-			throw new NotImplementedException(".ctor");
+			this.state = state;
 		}
 
-		[TODO]
-		public void EditorBrowsableAttribute()
+		public EditorBrowsableAttribute()
 		{
-			throw new NotImplementedException(".ctor");
+			state = EditorBrowsableState.Always;
 		}
 
 		public EditorBrowsableState State 
 		{
 			get
 			{
-				throw new NotImplementedException("State");
+				return state;
 			}
+		}
+
+		public override bool Equals(Object value)
+		{
+			EditorBrowsableAttribute temp;
+
+			temp = value as EditorBrowsableAttribute;
+
+			if (temp != null)
+			{
+				return (temp.State == state);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		public override int GetHashCode()
+		{
+			return state.GetHashCode();
 		}
 
 	}

@@ -28,51 +28,58 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 	public sealed class DesignTimeVisibleAttribute: Attribute
 	{
-		[TODO]
-		public void DesignTimeVisibleAttribute()
+		
+		private bool visible;
+
+		public DesignTimeVisibleAttribute()
 		{
-			throw new NotImplementedException(".ctor");
+			visible = true;
 		}
 
-		[TODO]
-		public void DesignTimeVisibleAttribute(bool visible)
+		public DesignTimeVisibleAttribute(bool visible)
 		{
-			throw new NotImplementedException(".ctor");
+			this.visible = visible;
 		}
 
-		[TODO]
 		public override bool Equals(Object value)
 		{
-			throw new NotImplementedException("Equals");
+			DesignTimeVisibleAttribute temp;
+			
+			temp = value as DesignTimeVisibleAttribute;
+
+			if (temp != null)
+			{
+				return (temp.Visible == this.visible);
+			}
+			else
+			{
+				return false;
+			}
 		}
 
-		[TODO]
 		public override int GetHashCode()
 		{
-			throw new NotImplementedException("GetHashCode");
+			return visible.GetHashCode();
 		}
 
-		[TODO]
 		public override bool IsDefaultAttribute()
 		{
-			throw new NotImplementedException("IsDefaultAttribute");
+			return Equals(Default);
 		}
 
-		[TODO]
-		public static readonly DesignTimeVisibleAttribute Default;
+		public static readonly DesignTimeVisibleAttribute Default = Yes;
 
-		[TODO]
-		public static readonly DesignTimeVisibleAttribute No;
+		public static readonly DesignTimeVisibleAttribute No = 
+								new DesignTimeVisibleAttribute(false);
 
-		[TODO]
-		public static readonly DesignTimeVisibleAttribute Yes;
+		public static readonly DesignTimeVisibleAttribute Yes =
+								new DesignTimeVisibleAttribute(true);
 
-		[TODO]
 		public bool Visible 
 		{
 			get
 			{
-				throw new NotImplementedException("Visible");
+				return visible;
 			}
 		}
 

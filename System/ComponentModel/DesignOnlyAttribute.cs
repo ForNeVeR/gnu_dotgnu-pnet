@@ -27,27 +27,52 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 	public sealed class DesignOnlyAttribute: Attribute
 	{
-		[TODO]
-		public void DesignOnlyAttribute(bool design_only)
+		private bool designOnly;
+	
+		public DesignOnlyAttribute(bool designOnly)
 		{
-			throw new NotImplementedException(".ctor");
+			this.designOnly = designOnly;
 		}
 
-		[TODO]
-		public static readonly DesignOnlyAttribute No;
+		public static readonly DesignOnlyAttribute No = 
+								new DesignOnlyAttribute(false);
 
-		[TODO]
-		public static readonly DesignOnlyAttribute Yes;
+		public static readonly DesignOnlyAttribute Yes =
+								new DesignOnlyAttribute(true);
 
-		[TODO]
+		public static readonly DesignOnlyAttribute Default = No;
+	
 		public bool IsDesignOnly 
 		{
 			get
 			{
-				throw new NotImplementedException("IsDesignOnly");
+				return designOnly;
 			}
 		}
 
+		public override bool Equals(object obj)
+		{
+	  		DesignOnlyAttribute temp = obj as DesignOnlyAttribute;
+
+			if (temp != null)
+	  		{
+				return (temp.IsDesignOnly == this.designOnly);
+			}
+			else 
+	  		{
+				return false;
+	  		}
+		}
+
+		public override int GetHashCode()
+		{
+			return designOnly.GetHashCode();
+		}
+
+		public override bool IsDefaultAttribute()
+		{
+			return Equals(Default);
+		}
 	}
-#endif	
+#endif
 }//namespace

@@ -1,4 +1,12 @@
 
+2002-12-29  Ian Fung  <if26@cornell.edu>
+	
+	* System/ComponentModel/DesignOnlyAttribute.cs,
+	System/ComponentModel/DesignTimeVisibleAttribute.cs,
+	System/ComponentModel/DesignerSerializationVisibilityAttribute.cs,
+	System/ComponentModel/EditorBrowsableAttribute.cs: Add these attributes
+	for compatibility (Patch #894,Gopal)
+	
 2002-12-28  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/STAThreadAttribute.cs: Add this attribute for 

@@ -97,6 +97,7 @@ static int Task_Delete(CSAntTask *task)
 		fprintf(stderr, "no file to delete in <delete>\n");
 		return 0;
 	}
+	file = CSAntDirCombine(CSAntBaseBuildDir, file);
 	if(!CSAntSilent)
 	{
 		if(!fail || ILStrICmp(fail, "true") != 0)
@@ -129,6 +130,7 @@ static int Task_Mkdir(CSAntTask *task)
 		fprintf(stderr, "no directory to make in <mkdir>\n");
 		return 0;
 	}
+	dir = CSAntDirCombine(CSAntBaseBuildDir, dir);
 	if(!CSAntSilent)
 	{
 		printf("mkdir %s\n", dir);
@@ -169,6 +171,8 @@ static int Task_Copy(CSAntTask *task)
 		fprintf(stderr, "no destination file in <copy>\n");
 		return 0;
 	}
+	fromfile = CSAntDirCombine(CSAntBaseBuildDir, fromfile);
+	tofile = CSAntDirCombine(CSAntBaseBuildDir, tofile);
 
 	/* Report the command that we will be executing */
 	if(!CSAntSilent)

@@ -1252,7 +1252,7 @@ ILBinary_ApplyOp(ILNode_Rem, ILMachineType_UInt32),
 ILBinary_ApplyOp(ILNode_Rem, ILMachineType_UInt64),
 ILBinary_ApplyOp(ILNode_Rem, ILMachineType_NativeUInt)
 {
-	ILGenSimple(info, IL_OP_REM);
+	ILGenSimple(info, IL_OP_REM_UN);
 }
 ILBinary_ApplyOp(ILNode_Rem, ILMachineType_Float32)
 {

@@ -319,6 +319,50 @@ static void Coder_StoreStaticField(ILCoder *coder, ILField *field,
 							       ILType *fieldType, ILEngineType valueType)
 {
 }
+static void Coder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
+							 ILEngineType srcPtrType, ILClass *classInfo)
+{
+}
+static void Coder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
+							ILEngineType srcPtrType)
+{
+}
+static void Coder_InitObject(ILCoder *coder, ILEngineType ptrType,
+							 ILClass *classInfo)
+{
+}
+static void Coder_InitBlock(ILCoder *coder, ILEngineType ptrType)
+{
+}
+static void Coder_Box(ILCoder *coder, ILClass *boxClass,
+					  ILEngineType valueType, ILUInt32 size)
+{
+}
+static void Coder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
+					   		 ILEngineType valueType, ILType *smallerType)
+{
+}
+static void Coder_Unbox(ILCoder *coder, ILClass *boxClass)
+{
+}
+static void Coder_MakeTypedRef(ILCoder *coder, ILClass *classInfo)
+{
+}
+static void Coder_RefAnyVal(ILCoder *coder, ILClass *classInfo)
+{
+}
+static void Coder_RefAnyType(ILCoder *coder)
+{
+}
+static void Coder_PushToken(ILCoder *coder, ILProgramItem *item)
+{
+}
+static void Coder_SizeOf(ILCoder *coder, ILType *type)
+{
+}
+static void Coder_ArgList(ILCoder *coder)
+{
+}
 
 /*
  * Default coder class and instance.
@@ -364,6 +408,19 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_LoadStaticFieldAddr,
 	Coder_StoreField,
 	Coder_StoreStaticField,
+	Coder_CopyObject,
+	Coder_CopyBlock,
+	Coder_InitObject,
+	Coder_InitBlock,
+	Coder_Box,
+	Coder_BoxSmaller,
+	Coder_Unbox,
+	Coder_MakeTypedRef,
+	Coder_RefAnyVal,
+	Coder_RefAnyType,
+	Coder_PushToken,
+	Coder_SizeOf,
+	Coder_ArgList,
 };
 static ILCoder DefaultCoder = {&DefaultCoderClass};
 

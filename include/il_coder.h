@@ -56,7 +56,8 @@ typedef enum
 	ILEngineType_O,
 	ILEngineType_T,
 	ILEngineType_MV,
-	ILEngineType_Invalid
+	ILEngineType_Invalid,
+	ILEngineType_TypedRef,
 
 } ILEngineType;
 #define	ILEngineType_ValidTypes	8
@@ -67,6 +68,7 @@ typedef enum
 struct _tagILCoder
 {
 	const ILCoderClass *classInfo;
+	ILExecThread       *thread;
 
 };
 
@@ -321,6 +323,80 @@ struct _tagILCoderClass
 	void (*storeStaticField)(ILCoder *coder, ILField *field,
 							 ILType *fieldType, ILEngineType valueType);
 
+	/*
+	 * Copy the contents of an object, which has the class "classInfo".
+	 */
+	void (*copyObject)(ILCoder *coder, ILEngineType destPtrType,
+					   ILEngineType srcPtrType, ILClass *classInfo);
+
+	/*
+	 * Copy the contents of a block of memory.
+	 */
+	void (*copyBlock)(ILCoder *coder, ILEngineType destPtrType,
+					  ILEngineType srcPtrType);
+
+	/*
+	 * Initialize the contents of an object, which has the class "classInfo".
+	 */
+	void (*initObject)(ILCoder *coder, ILEngineType ptrType,
+					   ILClass *classInfo);
+
+	/*
+	 * Initialize the contents of a block of memory.
+	 */
+	void (*initBlock)(ILCoder *coder, ILEngineType ptrType);
+
+	/*
+	 * Box a value which is already in its natural representation.
+	 */
+	void (*box)(ILCoder *coder, ILClass *boxClass,
+				ILEngineType valueType, ILUInt32 size);
+
+	/*
+	 * Box a value which needs to be converted into a smaller
+	 * representation before being copied to the final object.
+	 * "smallerType" will be one of "ILType_Int8", "ILType_Int16",
+	 * "ILType_Float32", or "ILType_Float64".
+	 */
+	void (*boxSmaller)(ILCoder *coder, ILClass *boxClass,
+					   ILEngineType valueType, ILType *smallerType);
+
+	/*
+	 * Unbox an object into a managed pointer.
+	 */
+	void (*unbox)(ILCoder *coder, ILClass *boxClass);
+
+	/*
+	 * Make a typed reference from a pointer.
+	 */
+	void (*makeTypedRef)(ILCoder *coder, ILClass *classInfo);
+
+	/*
+	 * Extract the value part of a typed reference.
+	 */
+	void (*refAnyVal)(ILCoder *coder, ILClass *classInfo);
+
+	/*
+	 * Extract the type part of a typed reference.
+	 */
+	void (*refAnyType)(ILCoder *coder);
+
+	/*
+	 * Push a token item pointer onto the stack.
+	 */
+	void (*pushToken)(ILCoder *coder, ILProgramItem *item);
+
+	/*
+	 * Push the size of a type onto the stack as an unsigned I4.
+	 */
+	void (*sizeOf)(ILCoder *coder, ILType *type);
+
+	/*
+	 * Push a managed value of type "RuntimeArgumentHandle",
+	 * which represents the arguments of the current method.
+	 */
+	void (*argList)(ILCoder *coder);
+
 };
 
 /*
@@ -376,9 +452,9 @@ struct _tagILCoderClass
 												  (itype), (etype)))
 #define	ILCoderPtrAccess(coder,opcode)	\
 			((*((coder)->classInfo->ptrAccess))((coder), (opcode)))
-#define	ILCoderPtrAccessManaged(coder,opcode,classInfo)	\
+#define	ILCoderPtrAccessManaged(coder,opcode,_classInfo)	\
 			((*((coder)->classInfo->ptrAccessManaged))((coder), (opcode), \
-													   (classInfo)))
+													   (_classInfo)))
 #define	ILCoderBranch(coder,opcode,dest,type1,type2)	\
 			((*((coder)->classInfo->branch))((coder), (opcode), (dest), \
 											 (type1), (type2)))
@@ -404,8 +480,8 @@ struct _tagILCoderClass
 											   (lengthType)))
 #define	ILCoderLocalAlloc(coder,sizeType) \
 			((*((coder)->classInfo->localAlloc))((coder), (sizeType)))
-#define	ILCoderCastClass(coder,classInfo,throwException) \
-			((*((coder)->classInfo->castClass))((coder), (classInfo), \
+#define	ILCoderCastClass(coder,_classInfo,throwException) \
+			((*((coder)->classInfo->castClass))((coder), (_classInfo), \
 												(throwException)))
 #define	ILCoderLoadField(coder,ptrType,objectType,field,fieldType) \
 			((*((coder)->classInfo->loadField))((coder), (ptrType), \
@@ -428,6 +504,37 @@ struct _tagILCoderClass
 #define	ILCoderStoreStaticField(coder,field,fieldType,valueType) \
 			((*((coder)->classInfo->storeStaticField))((coder), (field), \
 											       (fieldType), (valueType)))
+#define	ILCoderCopyObject(coder,destPtrType,srcPtrType,_classInfo) \
+			((*((coder)->classInfo->copyObject))((coder), (destPtrType), \
+											     (srcPtrType), (_classInfo)))
+#define	ILCoderCopyBlock(coder,destPtrType,srcPtrType) \
+			((*((coder)->classInfo->copyBlock))((coder), (destPtrType), \
+											    (srcPtrType)))
+#define	ILCoderInitObject(coder,ptrType,_classInfo) \
+			((*((coder)->classInfo->initObject))((coder), (ptrType), \
+											     (_classInfo)))
+#define	ILCoderInitBlock(coder,ptrType) \
+			((*((coder)->classInfo->initBlock))((coder), (ptrType)))
+#define	ILCoderBox(coder,boxClass,valueType,size) \
+			((*((coder)->classInfo->box))((coder), (boxClass), \
+										  (valueType), (size)))
+#define	ILCoderBoxSmaller(coder,boxClass,valueType,smallerType) \
+			((*((coder)->classInfo->boxSmaller))((coder), (boxClass), \
+										         (valueType), (smallerType)))
+#define	ILCoderUnbox(coder,boxClass) \
+			((*((coder)->classInfo->unbox))((coder), (boxClass)))
+#define	ILCoderMakeTypedRef(coder,_classInfo) \
+			((*((coder)->classInfo->makeTypedRef))((coder), (_classInfo)))
+#define	ILCoderRefAnyVal(coder,_classInfo) \
+			((*((coder)->classInfo->refAnyVal))((coder), (_classInfo)))
+#define	ILCoderRefAnyType(coder) \
+			((*((coder)->classInfo->refAnyType))((coder)))
+#define	ILCoderPushToken(coder,item) \
+			((*((coder)->classInfo->pushToken))((coder), (item)))
+#define	ILCoderSizeOf(coder,_classInfo) \
+			((*((coder)->classInfo->sizeOf))((coder), (_classInfo)))
+#define	ILCoderArgList(coder) \
+			((*((coder)->classInfo->argList))((coder)))
 
 #ifdef	__cplusplus
 };

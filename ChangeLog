@@ -57,6 +57,10 @@ to value type constructors.
 * engine/verify_const.c: use "ILClassResolveSystem" instead of
 "_ILCreateSystemType" to resolve "System.String".
 
+* engine/verify_obj.c: use "ILClassResolveSystem" in "GetSystemValueType";
+fix stack size handling for "ldsfld", "ldsflda", and "stsfld"; fix result
+type for "unbox".
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

@@ -205,7 +205,9 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
  */
 static ILType *GetSystemValueType(ILMethod *method, const char *name)
 {
-	ILClass *classInfo = _ILCreateSystemType(ILProgramItem_Image(method), name);
+	ILClass *classInfo;
+	classInfo = ILClassResolveSystem(ILProgramItem_Image(method), 0,
+									 name, "System");
 	if(classInfo)
 	{
 		return ILType_FromValueType(classInfo);
@@ -335,7 +337,7 @@ case IL_OP_UNBOX:
 		/* Unbox the object to produce a managed pointer */
 		ILCoderUnbox(coder, classInfo);
 		stack[stackSize - 1].engineType = ILEngineType_M;
-		stack[stackSize - 1].typeInfo = ILType_FromValueType(classInfo);
+		stack[stackSize - 1].typeInfo = ILClassToType(classInfo);
 	}
 	else
 	{
@@ -659,8 +661,9 @@ case IL_OP_LDSFLD:
 	{
 		classType = ILField_Type(fieldInfo);
 		ILCoderLoadStaticField(coder, fieldInfo, classType);
-		stack[stackSize - 1].engineType = TypeToEngineType(classType);
-		stack[stackSize - 1].typeInfo = classType;
+		stack[stackSize].engineType = TypeToEngineType(classType);
+		stack[stackSize].typeInfo = classType;
+		++stackSize;
 	}
 	else
 	{
@@ -679,8 +682,9 @@ case IL_OP_LDSFLDA:
 	{
 		classType = ILField_Type(fieldInfo);
 		ILCoderLoadStaticFieldAddr(coder, fieldInfo, classType);
-		stack[stackSize - 1].engineType = ILEngineType_M;
-		stack[stackSize - 1].typeInfo = classType;
+		stack[stackSize].engineType = ILEngineType_M;
+		stack[stackSize].typeInfo = classType;
+		++stackSize;
 	}
 	else
 	{
@@ -701,7 +705,7 @@ case IL_OP_STSFLD:
 		if(AssignCompatible(&(stack[stackSize - 1]), classType))
 		{
 			ILCoderStoreStaticField(coder, fieldInfo, classType, STK_UNARY);
-			stackSize -= 2;
+			--stackSize;
 		}
 		else
 		{

@@ -67,6 +67,7 @@ for dir in Custommarshalers \
 		  Mono.Posix \
 		  Mono.Cairo \
 		  Novell.Directory.Ldap \
+		  System.DirectoryServices \
 		  Mono.Security \
 		  Mono.Security.Win32 \
 		  System.Security ; do

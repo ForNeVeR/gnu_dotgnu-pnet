@@ -273,6 +273,7 @@ class/Mono.Cairo/Makefile
 class/System.Data.SqlXml/Makefile
 class/System.Data.ObjectSpaces/Makefile
 class/Novell.Directory.Ldap/Makefile
+class/System.DirectoryServices/Makefile
 class/Mono.Security/Makefile
 class/Mono.Security.Win32/Makefile
 class/System.Security/Makefile

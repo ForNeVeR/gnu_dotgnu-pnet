@@ -18,6 +18,7 @@ SUBDIRS = Custommarshalers \
 		  System.Data.SqlXml \
 		  System.Data.ObjectSpaces \
 		  Novell.Directory.Ldap \
+		  System.DirectoryServices \
 		  Mono.Security \
 		  Mono.Security.Win32 \
 		  System.Security

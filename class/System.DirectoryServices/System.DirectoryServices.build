@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<project name="System.DirectoryServices" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="System.DirectoryServices.dll"
+				 debug="${debug.flag}"
+				 unsafe="true"
+				 install="true"
+				 installasdefault="true">
+
+			<sources basedir="${mono.sources}/class/System.DirectoryServices">
+				<includes name="**/*.cs"/> 
+				<!-- TODO: the following two files are busted - add back later -->
+				<excludes name="System.DirectoryServices/SearchResultCollection.cs"/>
+				<excludes name="System.DirectoryServices/SearchResult.cs"/>
+				<excludes name="Test/**"/>
+			</sources>
+
+			<references>
+				<file name="../Novell.Directory.Ldap/Novell.Directory.Ldap.dll"/>
+				<file name="System.dll"/>
+			</references>
+
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
+			<arg compiler="cscc" value="-fassembly-key=ms"/>
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-flatin1-charset"/>
+
+		</compile>
+	</target>
+</project>

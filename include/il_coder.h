@@ -519,6 +519,21 @@ struct _tagILCoderClass
 	void (*returnInsn)(ILCoder *coder, ILEngineType engineType,
 					   ILType *returnType);
 
+	/*
+	 * Load the address of a function onto the stack.
+	 */
+	void (*loadFuncAddr)(ILCoder *coder, ILMethod *methodInfo);
+
+	/*
+	 * Load the address of a virtual function onto the stack.
+	 */
+	void (*loadVirtualAddr)(ILCoder *coder, ILMethod *methodInfo);
+
+	/*
+	 * Load the address of an interface function onto the stack.
+	 */
+	void (*loadInterfaceAddr)(ILCoder *coder, ILMethod *methodInfo);
+
 };
 
 /*
@@ -705,6 +720,12 @@ struct _tagILCoderClass
 #define	ILCoderReturnInsn(coder,engineType,returnType) \
 			((*((coder)->classInfo->returnInsn))((coder), (engineType), \
 												 (returnType)))
+#define	ILCoderLoadFuncAddr(coder,methodInfo) \
+			((*((coder)->classInfo->loadFuncAddr))((coder), (methodInfo)))
+#define	ILCoderLoadVirtualAddr(coder,methodInfo) \
+			((*((coder)->classInfo->loadVirtualAddr))((coder), (methodInfo)))
+#define	ILCoderLoadInterfaceAddr(coder,methodInfo) \
+			((*((coder)->classInfo->loadInterfaceAddr))((coder), (methodInfo)))
 
 #ifdef	__cplusplus
 };

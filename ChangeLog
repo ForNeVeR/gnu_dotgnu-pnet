@@ -10,6 +10,9 @@ pointer, and delegate types.
 * engine/verify.c: modify "TypeToEngineType" and "AssignCompatible"
 to pass method pointers around the system as type "I".
 
+* include/il_coder.h, engine/ilverify.c, engine/verify_call.c,
+engine/cvmc.c, engine/cvmc_call.c: verification for "ldftn" and "ldvirtfn".
+
 2001-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ChangeLog, doc/ChangeLog-1: move the contents of "ChangeLog" to

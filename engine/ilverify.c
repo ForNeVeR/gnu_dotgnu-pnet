@@ -433,6 +433,15 @@ static void Coder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 							 ILType *returnType)
 {
 }
+static void Coder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
+{
+}
+static void Coder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
+{
+}
+static void Coder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
+{
+}
 
 /*
  * Default coder class and instance.
@@ -507,6 +516,9 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_CallInterface,
 	Coder_JumpMethod,
 	Coder_ReturnInsn,
+	Coder_LoadFuncAddr,
+	Coder_LoadVirtualAddr,
+	Coder_LoadInterfaceAddr,
 };
 static ILCoder DefaultCoder = {&DefaultCoderClass};
 

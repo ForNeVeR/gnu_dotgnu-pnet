@@ -213,4 +213,19 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 	}
 }
 
+static void CVMCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
+{
+	/* TODO */
+}
+
+static void CVMCoder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
+{
+	/* TODO */
+}
+
+static void CVMCoder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
+{
+	/* TODO */
+}
+
 #endif	/* IL_CVMC_CODE */

@@ -431,6 +431,9 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_CallInterface,
 	CVMCoder_JumpMethod,
 	CVMCoder_ReturnInsn,
+	CVMCoder_LoadFuncAddr,
+	CVMCoder_LoadVirtualAddr,
+	CVMCoder_LoadInterfaceAddr,
 };
 
 #ifdef	__cplusplus

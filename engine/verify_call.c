@@ -770,13 +770,77 @@ break;
 
 case IL_OP_PREFIX + IL_PREFIX_OP_LDFTN:
 {
-	/* TODO */
+	/* Load the address of a function onto the stack as "I" */
+	methodInfo = GetMethodToken(method, pc);
+	if(methodInfo && !ILMethod_IsAbstract(methodInfo))
+	{
+		if(ILMemberAccessible((ILMember *)methodInfo, ILMethod_Owner(method)))
+		{
+			ILCoderLoadFuncAddr(coder, methodInfo);
+			stack[stackSize].engineType = ILEngineType_I;
+			stack[stackSize].typeInfo = ILMethod_Signature(methodInfo);
+			++stackSize;
+		}
+		else
+		{
+			VERIFY_TYPE_ERROR();
+		}
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
 }
 break;
 
 case IL_OP_PREFIX + IL_PREFIX_OP_LDVIRTFTN:
 {
-	/* TODO */
+	/* Load the address of a virtual function onto the stack as "I" */
+	methodInfo = GetMethodToken(method, pc);
+	if(methodInfo && STK_UNARY == ILEngineType_O)
+	{
+		classInfo = ILMethod_Owner(method);
+		if(AssignCompatible(method, &(stack[stackSize - 1]),
+							ILType_FromClass(classInfo)))
+		{
+			if(ILMemberAccessible((ILMember *)methodInfo, classInfo))
+			{
+				if(!ILMethod_IsVirtual(methodInfo))
+				{
+					/* It is possible to use "ldvirtfn" to access a
+					   non-virtual instance method, even though
+					   "ldftn" is probably a better way to do it */
+					if(!ILMethod_IsAbstract(methodInfo))
+					{
+						ILCoderPop(coder, STK_UNARY, STK_UNARY_TYPEINFO);
+						ILCoderLoadFuncAddr(coder, methodInfo);
+					}
+				}
+				else if(ILClass_IsInterface(classInfo))
+				{
+					ILCoderLoadInterfaceAddr(coder, methodInfo);
+				}
+				else
+				{
+					ILCoderLoadVirtualAddr(coder, methodInfo);
+				}
+				stack[stackSize - 1].engineType = ILEngineType_I;
+				stack[stackSize - 1].typeInfo = ILMethod_Signature(methodInfo);
+			}
+			else
+			{
+				VERIFY_TYPE_ERROR();
+			}
+		}
+		else
+		{
+			VERIFY_TYPE_ERROR();
+		}
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
 }
 break;
 

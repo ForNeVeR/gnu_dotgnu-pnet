@@ -1,4 +1,12 @@
 
+2002-09-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,
+	samples/I18N.Other.dll, samples/I18N.Rare.dll,
+	samples/I18N.West.dll, samples/I18N.dll,
+	samples/System.Xml.dll, samples/System.dll,
+	samples/mscorlib.dll: update all assemblies from pnetlib.
+
 2002-08-23  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_stmt.tc, codegen/cg_nodes.tc, codegen/cg_stmt.tc:

@@ -304,6 +304,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 {
 	CSSemValue value;
+	ILNode_AccessorDeclaration *accessor;
 
 	/* Enter an unsafe context for the property if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
@@ -317,12 +318,32 @@ ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 		CSUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
+#if 0
 	/* FIXME: optional attributes ? */
 	/* modifier already done in parser */
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
 	/* FIXME: name, do we need to do anything */
 	value = ILNode_SemAnalysis(node->getAccessor, info, &(node->getAccessor));
 	value = ILNode_SemAnalysis(node->setAccessor, info, &(node->setAccessor));
+#endif
+
+	/* Perform semantic analysis on the accessor bodies */
+	if(node->getAccessor)
+	{
+		accessor = ((ILNode_AccessorDeclaration *)(node->getAccessor));
+		if(accessor->body)
+		{
+			ILNode_SemAnalysis(accessor->body, info, &(accessor->body));
+		}
+	}
+	if(node->setAccessor)
+	{
+		accessor = ((ILNode_AccessorDeclaration *)(node->setAccessor));
+		if(accessor->body)
+		{
+			ILNode_SemAnalysis(accessor->body, info, &(accessor->body));
+		}
+	}
 
 	/* Leave the unsafe context for the property */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)

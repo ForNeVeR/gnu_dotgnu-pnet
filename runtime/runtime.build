@@ -15,7 +15,7 @@
 			</sources>
 
 			<resources>
-				<file name="../resources/en_US/runtime/runtime.resources"/>
+				<file name="${resources}/runtime/runtime.resources"/>
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>

@@ -8,6 +8,10 @@
 
 	* resources/Makefile.am: add the de_DE dir to resource build
 
+	* configure.in, runtime/runtime.build, System/System.build,
+	System.Xml/Xml.build, I18N/I18N.build: allow ./configure 
+	--with-resources= NAME to modify the resources being linked in.
+
 2002-12-11  Rainer Groesslinger <rainer.groesslinger@gmx.net>
 
 	* resources/de_DE/I18N/I18NRes.txt, resources/de_DE/runtime/Arg.txt,

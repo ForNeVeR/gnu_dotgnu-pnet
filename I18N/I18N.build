@@ -16,7 +16,7 @@
 			</sources>
 
 			<resources>
-				<file name="../resources/en_US/I18N/I18N.resources"/>
+				<file name="${resources}/en_US/I18N/I18N.resources"/>
 			</resources>
 
 			<references>

@@ -346,7 +346,12 @@ int main(int argc, char *argv[])
 		if(ilprogram)
 		{
 			strcpy(ilprogram, argv[1]);
-			strcat(ilprogram, ".exe");
+			strcat(ilprogram, ".EXE");
+			if(!ILFileExists(ilprogram, (char **)0))
+			{
+				strcpy(ilprogram, argv[1]);
+				strcat(ilprogram, ".exe");
+			}
 		}
 		else
 		{

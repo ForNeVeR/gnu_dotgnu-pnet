@@ -40,6 +40,18 @@ extern	"C" {
 #define	IL_SIG_INTERRUPT	SIGFPE
 
 /*
+ * Signals that are used inside pthreads itself.  This is a bit of
+ * a hack, but there isn't any easy way to get this information.
+ */
+#if !defined(__SIGRTMIN) || (__SIGRTMAX - __SIGRTMIN < 3)
+#define PTHREAD_SIG_RESTART	SIGUSR1
+#define PTHREAD_PSIG_CANCEL	SIGUSR2
+#else
+#define PTHREAD_SIG_RESTART	(__SIGRTMIN)
+#define PTHREAD_SIG_CANCEL	(__SIGRTMIN+1)
+#endif
+
+/*
  * Make sure that "ThreadInit" is only called once.
  */
 static pthread_once_t threadInitOnce = PTHREAD_ONCE_INIT;
@@ -64,14 +76,18 @@ static long volatile numBackgroundThreads = 0;
 static sem_t startupAck;
 
 /*
- * Suspend until we receive either IL_SIG_RESUME or SIG_SUSPEND.
+ * Suspend until we receive IL_SIG_RESUME from another thread
+ * in this process.
  *
- * This implementation assumes a Linux-like threads implementation
- * that uses one process per thread, and probably won't work on
- * other pthreads implementations.
+ * This implementation currently assumes a Linux-like threads
+ * implementation that uses one process per thread, and may not
+ * work on other pthreads implementations.
  *
  * The "SIG_SUSPEND" signal is used by the garbage collector to stop
  * the world for garbage collection, and so we must not block it.
+ *
+ * The "PTHREAD_SIG_CANCEL" signal is used by pthreads itself to
+ * cancel running threads, and must not be blocked by us.
  */
 static void SuspendUntilResumed(ILThread *self)
 {
@@ -80,9 +96,8 @@ static void SuspendUntilResumed(ILThread *self)
 	/* Set up the signal mask to allow through only selected signals */
 	sigfillset(&mask);
 	sigdelset(&mask, IL_SIG_RESUME);
-#ifdef SIG_SUSPEND
 	sigdelset(&mask, SIG_SUSPEND);
-#endif
+	sigdelset(&mask, PTHREAD_SIG_CANCEL);
 	sigdelset(&mask, SIGINT);
 	sigdelset(&mask, SIGQUIT);
 	sigdelset(&mask, SIGTERM);
@@ -130,6 +145,11 @@ static void InterruptSignal(int sig)
 {
 	/* There is nothing to do here - this signal exists purely
 	   to force system calls to exit with EINTR */
+}
+
+int ILHasThreads(void)
+{
+	return 1;
 }
 
 /*
@@ -216,6 +236,9 @@ static void *ThreadStart(void *arg)
 	/* Detach ourselves because we won't be using "pthread_join"
 	   to detect when the thread exits */
 	pthread_detach(thread->threadId);
+
+	/* Set the cancel type to asynchronous */
+	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, (int *)0);
 
 	/* Block the IL_SIG_RESUME signal in the current thread.
 	   It will be unblocked by "SuspendUntilResumed" */
@@ -324,6 +347,29 @@ int ILThreadStart(ILThread *thread)
 	/* Unlock the thread object and return */
 	pthread_mutex_unlock(&(thread->lock));
 	return result;
+}
+
+void ILThreadDestroy(ILThread *thread)
+{
+	/* Bail out if this is the current thread */
+	if(thread == ILThreadSelf())
+	{
+		return;
+	}
+
+	/* Lock down the thread object */
+	pthread_mutex_lock(&(thread->lock));
+
+	/* Nothing to do if the thread is already stopped or aborted */
+	if((thread->state & (IL_TS_STOPPED | IL_TS_ABORTED)) == 0)
+	{
+		thread->state |= IL_TS_ABORTED;
+		pthread_cancel(thread->threadId);
+	}
+
+	/* Unlock the thread object, free it, and return */
+	pthread_mutex_unlock(&(thread->lock));
+	ILFree(thread);
 }
 
 ILThread *ILThreadSelf(void)

@@ -74,6 +74,11 @@ static long volatile numBackgroundThreads = 0;
  */
 static CRITICAL_SECTION atomicLock;
 
+int ILHasThreads(void)
+{
+	return 1;
+}
+
 void ILThreadInit(void)
 {
 	/* Allocate a TLS key for storing thread objects */
@@ -212,6 +217,30 @@ int ILThreadStart(ILThread *thread)
 	/* Unlock the thread object and return */
 	LeaveCriticalSection(&(thread->lock));
 	return result;
+}
+
+void ILThreadDestroy(ILThread *thread)
+{
+	/* Bail out if this is the current thread */
+	if(thread == ILThreadSelf())
+	{
+		return;
+	}
+
+	/* Lock down the thread object */
+	EnterCriticalSection(&(thread->lock));
+
+	/* Nothing to do if the thread is already stopped or aborted */
+	if((thread->state & (IL_TS_STOPPED | IL_TS_ABORTED)) == 0)
+	{
+		thread->state |= IL_TS_ABORTED;
+		TerminateThread(thread->handle);
+		CloseHandle(thread->handle);
+	}
+
+	/* Unlock the thread object, free it, and return */
+	LeaveCriticalSection(&(thread->lock));
+	ILFree(thread);
 }
 
 ILThread *ILThreadSelf(void)

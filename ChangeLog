@@ -6,6 +6,12 @@
 	* configure.in, include/il_config.h.in: add "usleep" to the set
 	of functions that are autoconf'ed.
 
+	* include/il_thread.h, support/README.threads, support/no_thread.c,
+	support/pt_thread.c, support/w32_thread.c: implement some more
+	thread primitives; unblock the pthreads cancel signal during
+	thread suspends; describe what needs to be done to add a new
+	thread package.
+
 2002-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_thread.h, support/Makefile.am, support/no_thread.c,

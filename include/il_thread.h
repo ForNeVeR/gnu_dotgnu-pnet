@@ -56,6 +56,12 @@ typedef struct _tagILRWLock     ILRWLock;
 typedef struct _tagILWaitHandle ILWaitHandle;
 
 /*
+ * Determine if the system has thread support.  This can
+ * be called either before or after "ILThreadInit".
+ */
+int ILHasThreads(void);
+
+/*
  * Initialize the thread support routines.  Only needs to be
  * called once but it is safe to call multiple times.
  */
@@ -74,6 +80,12 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg);
  * correct state to start.
  */
 int ILThreadStart(ILThread *thread);
+
+/*
+ * Destroy a thread.  This cannot be used to destroy
+ * the current thread.
+ */
+void ILThreadDestroy(ILThread *thread);
 
 /*
  * Get the thread descriptor for the current thread.

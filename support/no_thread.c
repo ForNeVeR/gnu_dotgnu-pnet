@@ -40,6 +40,12 @@ struct _tagILThread
  */
 static ILThread *globalThread = 0;
 
+int ILHasThreads(void)
+{
+	/* We don't have thread support on this system */
+	return 0;
+}
+
 void ILThreadInit(void)
 {
 	/* Bail out if already initialized */
@@ -69,6 +75,12 @@ int ILThreadStart(ILThread *thread)
 	   never get called.  If it is, then the thread cannot
 	   be started */
 	return 0;
+}
+
+void ILThreadDestroy(ILThread *thread)
+{
+	/* Nothing to do here - there is only one thread in the
+	   system and it is the current one which we cannot destroy */
 }
 
 ILThread *ILThreadSelf(void)

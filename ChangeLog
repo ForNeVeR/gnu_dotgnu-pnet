@@ -22,6 +22,8 @@ XML file is loaded; report the assembly name in generated documentation.
 can be used to validate IL binaries such as "mscorlib.dll" against the
 ECMA-supplied XML documentation file.
 
+* samples/mscorlib.dll: new version with "System.Text" namespace.
+
 2001-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * support/filemap.c: modify the #ifdef's according to suggestions from

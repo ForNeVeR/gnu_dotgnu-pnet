@@ -4,6 +4,8 @@
 	* engine/lib_dir.c: temporarily disable GetFilesInDirectory
 	because it won't build until pnetlib has been updated.
 
+	* engine/lib_reflect.c: eliminate a warning.
+
 2002-10-21  Gopal.V  <gopalv82@symonds.net>
 
 	* configure.in,include/il_config.h.in,support/dir.c,

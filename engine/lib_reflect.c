@@ -200,7 +200,7 @@ static ILObject *DeserializeAttribute(ILExecThread *thread,
 	int serialType;
 	/* see below for named args */
 	ILMember *member=NULL;
-	char *name=NULL;
+	const char *name=NULL;
 	unsigned int nameLen;
 	ILObject *obj;
 

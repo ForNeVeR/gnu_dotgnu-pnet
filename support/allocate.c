@@ -20,6 +20,8 @@
 
 #include "thr_defs.h"
 #include "il_system.h"
+#include "il_align.h"
+#include "mem_debug.h"
 #ifdef HAVE_SYS_TYPES_H
 	#include <sys/types.h>
 #endif
@@ -41,24 +43,118 @@
 extern	"C" {
 #endif
 
+/*
+ * If memory usage debugging is enabled, then track how many
+ * bytes are malloc'ed by the system.  This doesn't count the
+ * heap overhead due to rounding of block sizes.
+ */
+#ifdef IL_MEMUSAGE_DEBUG
+static unsigned long mallocBytes = 0;
+static unsigned long mallocMax = 0;
+#define	MEM_TO_DATA(ptr)	\
+			((void *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT))
+#define	MEM_FROM_DATA(ptr)	\
+			((void *)(((unsigned char *)ptr) - IL_BEST_ALIGNMENT))
+#endif
+
+long _ILMallocMaxUsage(void)
+{
+#ifdef IL_MEMUSAGE_DEBUG
+	return (long)mallocMax;
+#else
+	return -1;
+#endif
+}
+
 void *ILMalloc(unsigned long size)
 {
+#ifdef IL_MEMUSAGE_DEBUG
+	void *ptr = malloc(size + IL_BEST_ALIGNMENT);
+	if(ptr)
+	{
+		mallocBytes += size;
+		if(mallocBytes > mallocMax)
+		{
+			mallocMax = mallocBytes;
+		}
+		*((unsigned long *)ptr) = size;
+		return MEM_TO_DATA(ptr);
+	}
+	else
+	{
+		return 0;
+	}
+#else
 	return malloc(size);
+#endif
 }
 
 void *ILRealloc(void *ptr, unsigned long size)
 {
+#ifdef IL_MEMUSAGE_DEBUG
+	unsigned long prevSize;
+	if(!ptr)
+	{
+		return ILMalloc(size);
+	}
+	prevSize = *((unsigned long *)(MEM_FROM_DATA(ptr)));
+	ptr = realloc(MEM_FROM_DATA(ptr), size + IL_BEST_ALIGNMENT);
+	if(ptr)
+	{
+		mallocBytes = mallocBytes - prevSize + size;
+		if(mallocBytes > mallocMax)
+		{
+			mallocMax = mallocBytes;
+		}
+		*((unsigned long *)ptr) = size;
+		return MEM_TO_DATA(ptr);
+	}
+	else
+	{
+		return 0;
+	}
+#else
 	return realloc(ptr, size);
+#endif
 }
 
 void *ILCalloc(unsigned long nelems, unsigned long size)
 {
+#ifdef IL_MEMUSAGE_DEBUG
+	void *ptr;
+	size *= nelems;
+	ptr = calloc(size + IL_BEST_ALIGNMENT, 1);
+	if(ptr)
+	{
+		mallocBytes += size;
+		if(mallocBytes > mallocMax)
+		{
+			mallocMax = mallocBytes;
+		}
+		*((unsigned long *)ptr) = size;
+		return MEM_TO_DATA(ptr);
+	}
+	else
+	{
+		return 0;
+	}
+#else
 	return calloc(nelems, size);
+#endif
 }
 
 void ILFree(void *ptr)
 {
+#ifdef IL_MEMUSAGE_DEBUG
+	if(ptr)
+	{
+		unsigned long size = *((unsigned long *)(MEM_FROM_DATA(ptr)));
+		mallocBytes -= size;
+		free(MEM_FROM_DATA(ptr));
+	}
+#else
 	free(ptr);
+#endif
 }
 
 char *ILDupString(const char *str)
@@ -174,6 +270,7 @@ static int zero_fd = -1;
  */
 static void PageInit(void)
 {
+#ifndef IL_MEMUSAGE_DEBUG
 	void *addr;
 	zero_fd = open("/dev/zero", O_RDWR, 0);
 	if(zero_fd != -1)
@@ -196,6 +293,7 @@ static void PageInit(void)
 			munmap(addr, ILPageAllocSize());
 		}
 	}
+#endif
 }
 
 #endif

@@ -394,10 +394,16 @@ int main(int argc, char *argv[])
 	}
 	if(dumpParams)
 	{
+		long mallocMax;
 		printf("GC Heap Size      = %ld\n",
 			   ILExecProcessGetParam(process, IL_EXEC_PARAM_GC_SIZE));
 		printf("Method Cache Size = %ld\n",
 			   ILExecProcessGetParam(process, IL_EXEC_PARAM_MC_SIZE));
+		mallocMax = ILExecProcessGetParam(process, IL_EXEC_PARAM_MALLOC_MAX);
+		if(mallocMax != -1)
+		{
+			printf("Max Malloc Usage  = %ld\n", mallocMax);
+		}
 	}
 #endif
 

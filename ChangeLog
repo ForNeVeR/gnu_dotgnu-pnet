@@ -50,6 +50,10 @@
 
 	* engine/cvm_doc.txt: describe the "dformat" tag.
 
+	* engine/ilrun.c, engine/process.c, include/il_engine.h,
+	support/allocate.c, support/filemap.c, support/mem_debug.h:
+	add some debug code that allows "ILMalloc" usage to be tracked.
+
 2002-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_engine.h, engine/thread.c: add "ILExecThreadCurrent",

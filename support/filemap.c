@@ -19,6 +19,7 @@
  */
 
 #include "il_system.h"
+#include "mem_debug.h"
 #ifdef HAVE_SYS_TYPES_H
 	#include <sys/types.h>
 #endif
@@ -46,8 +47,12 @@ extern	"C" {
 #if defined(HAVE_MMAP) && defined(HAVE_MUNMAP)
 
 /* We have a Unix-style mmap available to us */
+#ifndef IL_MEMUSAGE_DEBUG
 #define	mmapPerform(fd,offset,len,end)	\
 			(mmap((void *)0, (len), PROT_READ, MAP_SHARED, (fd), (offset)))
+#else
+#define	mmapPerform(fd,offset,len,end)	((void *)(-1))
+#endif
 #define	mmapInvalid(addr)	\
 			((addr) == ((void *)0) || (addr) == ((void *)(-1)))
 

@@ -363,6 +363,13 @@ long ILExecProcessGetParam(ILExecProcess *process, int type)
 			return (long)(ILCoderGetCacheSize(process->coder));
 		}
 		/* Not reached */
+
+		case IL_EXEC_PARAM_MALLOC_MAX:
+		{
+			extern long _ILMallocMaxUsage(void);
+			return _ILMallocMaxUsage();
+		}
+		/* Not reached */
 	}
 	return -1;
 }

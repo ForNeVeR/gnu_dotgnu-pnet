@@ -162,8 +162,9 @@ int ILExecProcessEntryType(ILMethod *method);
 /*
  * Type values for "ILExecProcessGetParam".
  */
-#define	IL_EXEC_PARAM_GC_SIZE	1		/* Size of the GC heap */
-#define	IL_EXEC_PARAM_MC_SIZE	2		/* Size of the method cache */
+#define	IL_EXEC_PARAM_GC_SIZE		1	/* Size of the GC heap */
+#define	IL_EXEC_PARAM_MC_SIZE		2	/* Size of the method cache */
+#define	IL_EXEC_PARAM_MALLOC_MAX	3	/* Maximum malloc usage */
 
 /*
  * Get parameter information about a process.  Returns -1 if

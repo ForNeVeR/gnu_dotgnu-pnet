@@ -1,1 +1,1 @@
-SUBDIRS = runtime System System.Xml
+SUBDIRS = runtime System System.Xml JScript

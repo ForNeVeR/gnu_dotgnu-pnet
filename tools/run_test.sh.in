@@ -32,4 +32,6 @@ exec "$ILRUN" -L"$TOP_BUILDDIR"/runtime \
 	-L"$TOP_BUILDDIR"/System \
 	-L"$TOP_BUILDDIR"/System.Xml \
 	-L"$TOP_BUILDDIR"/csunit \
+	-L"$TOP_BUILDDIR"/compat \
+	-L"$TOP_BUILDDIR"/JScript \
 	"$TOP_BUILDDIR/csunit/csunit.exe" $*

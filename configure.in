@@ -23,6 +23,12 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PATH_PROG(CYGPATH, cygpath)
+AC_PATH_PROG(TREECC, treecc,, ${prefix}/bin:$PATH)
+if test -z "$TREECC" ; then
+    echo "treecc is required to build and can be obtained from"
+    echo "http://www.southern-storm.com.au/treecc.html"
+    exit 1
+fi
 
 dnl The --with-pnet option can be used to specify the location of
 dnl Portable.NET, so that we know where to get the C# compiler, etc.
@@ -185,10 +191,12 @@ csunit/Makefile
 csunit/TestVersion.cs
 csupport/Makefile
 compat/Makefile
+JScript/Makefile
 tests/Makefile
 tests/System/Makefile
 tests/System.Xml/Makefile
 tests/runtime/Makefile
+tests/JScript/Makefile
 resources/Makefile
 resources/en_US/Makefile
 resources/en_US/runtime/Makefile

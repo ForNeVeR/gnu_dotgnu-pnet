@@ -1,8 +1,15 @@
 
+2003-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, JScript/*, doc/JScript-embed.txt,
+	doc/JScript-internals.txt, tests/Makefile.am, tests/JScript/*,
+	tools/run_test.sh.in: perform the initial check-in of the
+	JScript implementation (requires treecc 0.2.0 or higher).
+
 2003-01-13  Gopal.V  <gopalv82@symonds.net>
 	
-	* runtime/System/Reflection/Assembly.cs: Add some new methods for supporting
-	some external libraries.
+	* runtime/System/Reflection/Assembly.cs: Add some new methods for
+	supporting some external libraries.
 
 2003-01-12  Gopal.V  <gopalv82@symonds.net>
 	

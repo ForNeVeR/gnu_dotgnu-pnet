@@ -1,0 +1,464 @@
+/*
+ * JExpr.tc - Input file for "treecc" that defines JScript expression nodes.
+ *
+ * Copyright (C) 2003 Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+// Evaluate constants.
+Eval(JConstant)
+{
+	return value;
+}
+
+// Evaluate "undefined" constants.
+Eval(JUndefined)
+{
+	return null;
+}
+
+// Evaluate expression list elements.
+Eval(JExprListElem)
+{
+	// Nothing to do here: handled by the higher level.
+	return null;
+}
+
+// Evaluate array literals.
+Eval(JArrayLiteral)
+{
+	// Create a new instance of "Array".
+	ArrayObject value = new ArrayObject
+		(EngineInstance.GetEngineInstance(engine).GetArrayPrototype());
+
+	// Evaluate and add the elements.
+	JExprListElem elem = first;
+	int index = 0;
+	while(elem != null)
+	{
+		value[index] = elem.expr.Eval(engine);
+		elem = elem.next;
+	}
+
+	// Return the object to the caller.
+	return value;
+}
+
+// Evaluate object literals.
+Eval(JObjectLiteral)
+{
+	// Create a new instance of "Object".
+	JSObject value = new JSObject(EngineInstance.GetEngineInstance(engine)
+										.GetObjectPrototype());
+
+	// Evaluate and add the properties.
+	JExprListElem elem = first;
+	while(elem != null)
+	{
+		value.SetProperty(Convert.ToString(elem.name),
+						  elem.expr.Eval(engine),
+						  PropertyAttributes.None);
+		elem = elem.next;
+	}
+
+	// Return the object to the caller.
+	return value;
+}
+
+// Evaluate the "this" value.
+Eval(JThis),
+Eval(JSuper)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate identifiers in the current execution context.
+Eval(JIdentifier)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate "as is" nodes, which are typically used to surround
+// bracketed expressions to allow "identifier" and "(identifier)"
+// to be distinguished in statement label positions.
+Eval(JAsIs)
+{
+	return expr.Eval(engine);
+}
+
+// Evaluate "comma" nodes.
+Eval(JComma)
+{
+	expr1.Eval(engine);
+	return expr2.Eval(engine);
+}
+
+// Evaluate an assignment statement.
+Eval(JAssign)
+{
+	Object data1 = null;
+	Object data2 = null;
+	Object value;
+	expr1.Prepare(engine, ref data1, ref data2);
+	value = expr2.Eval(engine);
+	expr1.Store(engine, data1, data2, value);
+	return value;
+}
+
+// Evaluate an operator-based assignment statement.
+Eval(JAssignOp)
+{
+	Object data1 = null;
+	Object data2 = null;
+	Object value1, value2;
+	value1 = expr1.GetAndPrepare(engine, ref data1, ref data2);
+	value2 = expr2.Eval(engine);
+	// TODO: compute "value1 op value2".
+	expr1.Store(engine, data1, data2, value1);
+	return value1;
+}
+
+// Evaluate a conditional expression.
+Eval(JIfExpr)
+{
+	Object value = expr1.Eval(engine);
+	if(Convert.ToBoolean(value))
+	{
+		return expr2.Eval(engine);
+	}
+	else
+	{
+		return expr3.Eval(engine);
+	}
+}
+
+// Evaluate a logical OR expression.
+Eval(JLogicalOr)
+{
+	Object value = expr1.Eval(engine);
+	if(Convert.ToBoolean(value))
+	{
+		return value;
+	}
+	else
+	{
+		return expr2.Eval(engine);
+	}
+}
+
+// Evaluate a logical AND expression.
+Eval(JLogicalAnd)
+{
+	Object value = expr1.Eval(engine);
+	if(!Convert.ToBoolean(value))
+	{
+		return value;
+	}
+	else
+	{
+		return expr2.Eval(engine);
+	}
+}
+
+// Evaluate a bitwise OR expression.
+Eval(JBitwiseOr)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a bitwise XOR expression.
+Eval(JBitwiseXor)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a bitwise AND expression.
+Eval(JBitwiseAnd)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate an equality expression.
+Eval(JEq)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate an inequality expression.
+Eval(JNe)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a strict equality expression.
+Eval(JStrictEq)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a strict inequality expression.
+Eval(JStrictNe)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a less than expression.
+Eval(JLt)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a less than or equal expression.
+Eval(JLe)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a greater than expression.
+Eval(JGt)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a greater than or equal expression.
+Eval(JGe)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate an "instanceof" expression.
+Eval(JInstanceof)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate an "in" expression.
+Eval(JIn)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a left shift expression.
+Eval(JShl)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a right shift expression.
+Eval(JShr)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate an unsigned right shift expression.
+Eval(JUShr)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate an addition expression.
+Eval(JAdd)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a subtraction expression.
+Eval(JSub)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a multiplication expression.
+Eval(JMul)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a division expression.
+Eval(JDiv)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a remainder expression.
+Eval(JRem)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a negate expression.
+Eval(JNeg)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a unary plus expression.
+Eval(JUnaryPlus)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a "delete" expression.
+Eval(JDelete)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a "void" expression.
+Eval(JVoid)
+{
+	// Evaluate the sub-expression and then return "undefined".
+	expr.Eval(engine);
+	return null;
+}
+
+// Evaluate a "typeof" expression.
+Eval(JTypeof)
+{
+	return Support.Typeof(expr.Eval(engine));
+}
+
+// Evaluate a pre-increment expression.
+Eval(JPreInc)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a pre-decrement expression.
+Eval(JPreDec)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a post-increment expression.
+Eval(JPostInc)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a post-decrement expression.
+Eval(JPostDec)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a bitwise NOT expression.
+Eval(JBitwiseNot)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a logical NOT expression.
+Eval(JLogicalNot)
+{
+	if(Convert.ToBoolean(expr.Eval(engine)))
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+// Evaluate a "new" expression.
+Eval(JNew)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate an array access expression.
+Eval(JArrayAccess)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a field access expression.
+Eval(JFieldAccess)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate a function call expression.
+Eval(JCall)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate an argument list expression.
+Eval(JArgList)
+{
+	// TODO
+	return null;
+}
+
+// Evaluate an "eval" expression.
+Eval(JEval)
+{
+	return Microsoft.JScript.Eval.JScriptEvaluate(expr.Eval(engine), engine);
+}
+
+// Evaluate a "print" expression.
+Eval(JPrint)
+{
+	Object value = expr.Eval(engine);
+	String pvalue;
+	if(value is ArrayObject)
+	{
+		pvalue = ArrayPrototype.join(value, String.Empty);
+	}
+	else
+	{
+		pvalue = Convert.ToString(value);
+	}
+	Console.WriteLine(pvalue);
+	return Empty.Value;
+}

@@ -1,5 +1,5 @@
-bin_PROGRAMS       = csdoc2texi csdoc2html csdocvalil csdoc2stub csdoc2test
-noinst_PROGRAMS    = src2xml
+bin_PROGRAMS       = csdoc2texi csdoc2html
+noinst_PROGRAMS    = csdocvalil csdoc2stub csdoc2test src2xml
 man_MANS           = csdoc2texi.1 csdoc2html.1
 EXTRA_DIST         = $(man_MANS)
 

@@ -8,6 +8,9 @@
 	* include/il_values.h: remove parentheses that were causing
 	build breakages on MacOSX.
 
+	* csdoc/Makefile.am: move "csdocvalil", "csdoc2stub", and
+	"csdoc2test" to "noinst_PROGRAMS".
+
 2002-05-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/src/powerpc/ffi_darwin.c: rearrange declarations

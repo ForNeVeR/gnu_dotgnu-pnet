@@ -296,6 +296,9 @@ static void Coder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 static void Coder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 {
 }
+static void Coder_TailCall(ILCoder *coder, ILMethod *methodInfo)
+{
+}
 static void Coder_SetupExceptions(ILCoder *coder, ILException *exceptions,
 								  int hasRethrow)
 {
@@ -419,6 +422,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_LoadFuncAddr,
 	Coder_LoadVirtualAddr,
 	Coder_LoadInterfaceAddr,
+	Coder_TailCall,
 	Coder_SetupExceptions,
 	Coder_Throw,
 	Coder_Rethrow,

@@ -351,4 +351,10 @@ static void CVMCoder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 	CVM_PTR(methodInfo->member.owner);
 }
 
+static void CVMCoder_TailCall(ILCoder *coder, ILMethod *methodInfo)
+{
+	CVM_BYTE(COP_PREFIX);
+	CVM_BYTE(COP_PREFIX_TAIL);
+}
+
 #endif	/* IL_CVMC_CODE */

@@ -1004,7 +1004,89 @@ break;
 
 case IL_OP_PREFIX + IL_PREFIX_OP_TAIL:
 {
-	/* TODO: tail calls are not yet supported */
+	/* Missing: (?)
+	 *
+	 * Correct CIL must not branch to the call instruction, but it is
+	 * permitted to branch to ret.
+	 *
+	 * The tail.call (or calli or callvirt) instruction cannot be used
+	 * to transfer control out of a try, filter, catch, or finally block.
+	 */
+
+	/* Confirm that the .tail precedes a call */
+	if (( pc[2] == IL_OP_CALL || 
+		pc[2] == IL_OP_CALLI || 
+		pc[2] == IL_OP_CALLVIRT
+		) && pc[3 + sizeof(void *)] == IL_OP_RET)
+	{
+		/*  Initialization */
+		methodInfo = 0;
+		methodSignature = 0;
+		numParams = 0;
+
+		/*  Get called method information as appropriate. */
+		switch(pc[2]) 
+		{
+		case IL_OP_CALL:
+			/* Test that only the target method's arguments are on the stack */
+			methodInfo = GetMethodToken(method, &pc[2]);
+			methodSignature = ILMethod_Signature(methodInfo);
+			numParams = MatchSignature(coder, stack, stackSize,
+								   methodSignature, methodInfo,
+								   unsafeAllowed, 0);
+
+		case IL_OP_CALLI:
+		case IL_OP_CALLVIRT:
+			/*  TODO - Implement CALLI and CALLVIRT tails */
+			break;
+		}
+
+		/*  A method exists and it's not synchronized? */
+		if (methodInfo && !ILMethod_IsSynchronized(methodInfo)) 
+		{
+			/*  Test that the stack contents are sane */
+			if (stackSize == numParams) 
+			{
+				if (unsafeAllowed) 
+				{
+					/*  Don't bother checking for pointers */
+					ILCoderTailCall(coder, method);
+				} 
+				else 
+				{
+					/*  Test for managed pointers on the stack - a no-no */
+					int i, mPtrFlag;
+					mPtrFlag = 0;
+					for (i=0; i<numParams; i++)
+					{
+						if (stack[i].engineType == ILEngineType_M ||
+								stack[i].engineType == ILEngineType_T)
+						{
+							mPtrFlag = 1;
+							break;
+						}
+					}
+
+					if (mPtrFlag) 
+					{
+						VERIFY_TYPE_ERROR();
+					} 
+					else 
+					{
+						ILCoderTailCall(coder, method);
+					}
+				}
+			}
+			else
+			{
+				VERIFY_STACK_ERROR();
+			}
+		}
+	} 
+	else 
+	{
+		VERIFY_INSN_ERROR();
+	}
 }
 break;
 

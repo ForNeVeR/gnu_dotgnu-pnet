@@ -289,7 +289,7 @@ int main(int argc, char *argv[])
 	thread = ILExecProcessGetMain(process);
 	args = ILExecThreadNew(thread, "[oSystem.String;",
 						   "(Ti)V", (ILVaInt)(argc - 2));
-	if(args)
+	if(args && !ILExecThreadHasException(thread))
 	{
 		for(opt = 0; opt < (argc - 2); ++opt)
 		{

@@ -54,6 +54,7 @@ extern	"C" {
 #define	CVM_OPER_PREFIX				23
 #define	CVM_OPER_METHOD				24
 #define	CVM_OPER_LD_INTERFACE		25
+#define	CVM_OPER_TAIL				26
 
 /*
  * Table of CVM opcodes.  This must be kept in sync with "cvm.h".
@@ -450,7 +451,7 @@ static CVMOpcode const prefixOpcodes[80] = {
 	/*
 	 * Prefixed call management opcodes.
 	 */
-	{"tail",			CVM_OPER_NONE},
+	{"tail",			CVM_OPER_TAIL},
 	{"ldftn",			CVM_OPER_METHOD},
 	{"ldvirtftn",		CVM_OPER_UINT32},
 	{"ldinterfftn",		CVM_OPER_LD_INTERFACE},
@@ -871,6 +872,28 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 				case CVM_OPER_NONE:
 				{
 					size = 2;
+				}
+				break;
+
+				case CVM_OPER_TAIL:
+				{
+					fprintf(stream,"%s ",opcodes[pc[2]].name);
+
+					switch(pc[3]) {
+					case COP_CALL:
+					case COP_CALL_EXTERN:
+						method = (ILMethod *)CVMReadPointer(pc + 3);
+						ILDumpMethodType(stream, ILProgramItem_Image(currMethod),
+									ILMethod_Signature(method), 0,
+									ILMethod_Owner(method),
+									ILMethod_Name(method), method);
+						size = 3 + sizeof(void *);
+						break;
+
+					default:
+						size = 2;
+						break;
+					}
 				}
 				break;
 

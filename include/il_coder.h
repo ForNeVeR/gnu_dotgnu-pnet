@@ -551,6 +551,12 @@ struct _tagILCoderClass
 	void (*loadInterfaceAddr)(ILCoder *coder, ILMethod *methodInfo);
 
 	/*
+	 * Mark the following call, calli, or callvirt as being a
+	 * tail call -- pop current frame before calling.
+	 */
+	void (*tailCall)(ILCoder *coder, ILMethod *methodInfo);
+
+	/*
 	 * Set up exception handling for the current method.
 	 */
 	void (*setupExceptions)(ILCoder *coder, ILException *exceptions,
@@ -831,6 +837,8 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->loadVirtualAddr))((coder), (methodInfo)))
 #define	ILCoderLoadInterfaceAddr(coder,methodInfo) \
 			((*((coder)->classInfo->loadInterfaceAddr))((coder), (methodInfo)))
+#define ILCoderTailCall(coder,methodInfo) \
+			((*((coder)->classInfo->tailCall))((coder), (methodInfo)))
 #define	ILCoderSetupExceptions(coder,exceptions,hasRethrow) \
 			((*((coder)->classInfo->setupExceptions))((coder), (exceptions), \
 													  (hasRethrow)))

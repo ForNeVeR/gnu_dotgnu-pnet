@@ -45,6 +45,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 	if((newframe = (ILCallFrame *)ILGCAllocPersistent
 				(sizeof(ILCallFrame) * newsize)) == 0)
 	{
+	    thread->thrownException = thread->process->outOfMemoryObject;
 		return 0;
 	}
 	ILMemCpy(newframe, thread->frameStack,
@@ -125,7 +126,9 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 #elif defined(IL_CVM_LOCALS)
 
 ILMethod *methodToCall;
+ILType *methodSignature;
 ILCallFrame *callFrame;
+ILInt32 numParams;
 
 #elif defined(IL_CVM_MAIN)
 
@@ -1020,9 +1023,61 @@ COP_WADDR_NATIVE_WIDE(7, 7);
  */
 case COP_PREFIX_TAIL:
 {
-	/* Perform a tail call to another method */
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/*
+	 * It will be necessary to adjust the stack based upon the
+	 * number of parameters in the called function.
+	 */
+	switch (pc[2]) 
+	{
+	case COP_CALL:
+	case COP_CALL_EXTERN:
+
+		/* Retreive the target method */
+		methodToCall = (ILMethod *)(ReadPointer(pc + 3));
+		methodSignature = ILMethod_Signature(methodToCall);
+		numParams = ILTypeNumParams(methodSignature);
+
+		if (pc[2] == COP_CALL) 
+		{
+			tempptr = (void *)(methodToCall->userData);
+		}
+		else
+		{
+			COPY_STATE_TO_THREAD();
+			tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+			RESTORE_STATE_FROM_THREAD();
+
+			if (!tempptr)
+			{
+				MISSING_METHOD_EXCEPTION();
+			}
+		}
+
+		/* Purge the stack (except for call arguments) if necessary */
+		if (numParams < stacktop - frame) 
+		{
+			int i;
+			for (i=0; i<numParams; i++)
+			{
+				frame[i] = stacktop[i-numParams];
+			}
+			stacktop = frame + numParams;
+		}
+
+		/*  Transfer control  */
+		REPORT_METHOD_CALL();
+		pc = (unsigned char *)tempptr;
+		thread->exceptHeight = 0;
+		method = methodToCall;
+#ifdef IL_PROFILE_CVM_METHODS
+		++(method->count);
+#endif
+
+	default:
+		MODIFY_PC_AND_STACK(2, 0);
+		/* TODO - Implement other call styles */
+		break;
+	}
 }
 break;
 

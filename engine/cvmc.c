@@ -477,6 +477,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_LoadFuncAddr,
 	CVMCoder_LoadVirtualAddr,
 	CVMCoder_LoadInterfaceAddr,
+	CVMCoder_TailCall,
 	CVMCoder_SetupExceptions,
 	CVMCoder_Throw,
 	CVMCoder_Rethrow,

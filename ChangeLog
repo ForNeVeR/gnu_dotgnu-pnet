@@ -39,6 +39,22 @@
 	add some assembly hacks to prevent gcc getting overeager when
 	it optimises the method call code.
 
+2002-05-10  Jonathan Springer <jspringer@verizon.net>
+
+	* engine/cvm_call.c (_ILAllocCallFrame): Throw an 
+	OutOfMemoryException (pre-allocated) if new memory can
+	not be allocated to extend the frame stack.
+
+	* engine/cvm_call.c, engine/cvm_dasm.c,
+	engine/cvmc.c, engine/cvmc_call.c, engine/null_coder.c,
+	engine/verify_call.c, include/il_coder.h:  Add support 
+	for IL 'tail. call' sequence.  Note that tail. does not 
+	yes support 'calli' or 'callvirt' instructions, which 
+	is OK by ECMA-335.  
+
+	* engine/ilrun.c:  When argument parsing throws an
+	exception, print it out using the standard mechanisms.
+
 2002-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c: don't report "unresolved type reference"

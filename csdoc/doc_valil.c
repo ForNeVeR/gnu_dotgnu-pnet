@@ -2684,6 +2684,26 @@ static int ValidateType(FILE *stream, ILContext *context, ILDocType *type)
 }
 
 /*
+ * Determine if an extra type is known to be a non-standard extra.
+ */
+static int IsNonStandardExtra(ILClass *classInfo)
+{
+	ILAttribute *attr = 0;
+	ILMethod *method;
+	while((attr = ILProgramItemNextAttribute
+				(ILToProgramItem(classInfo), attr)) != 0)
+	{
+		method = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
+		if(method && !strcmp(ILClass_Name(ILMethod_Owner(method)),
+							 "NonStandardExtraAttribute"))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/*
  * Determine if we have an assembly match between a type
  * and an image.
  */
@@ -2720,21 +2740,24 @@ static int CheckForExtraTypes(FILE *stream, ILImage *image,
 			if(!type)
 			{
 				/* This is an extra type */
-				++numExtras;
-				if(xmlOutput)
+				if(!IsNonStandardExtra(classInfo))
 				{
-					fputs("\t<class name=\"", stream);
-					PrintString(fullName, stream);
-					fputs("\" assembly=\"", stream);
-					PrintString(ILImageGetAssemblyName
-						(ILProgramItem_Image(classInfo)), stream);
-					fputs("\">\n", stream);
-					fprintf(stream, "\t\t<extra/>\n");
-					fprintf(stream, "\t</class>\n");
-				}
-				else
-				{
-					fprintf(stream, "%s is not documented\n", fullName);
+					++numExtras;
+					if(xmlOutput)
+					{
+						fputs("\t<class name=\"", stream);
+						PrintString(fullName, stream);
+						fputs("\" assembly=\"", stream);
+						PrintString(ILImageGetAssemblyName
+							(ILProgramItem_Image(classInfo)), stream);
+						fputs("\">\n", stream);
+						fprintf(stream, "\t\t<extra/>\n");
+						fprintf(stream, "\t</class>\n");
+					}
+					else
+					{
+						fprintf(stream, "%s is not documented\n", fullName);
+					}
 				}
 			}
 			else if(!AssemblyMatch(type->assembly, assemName))

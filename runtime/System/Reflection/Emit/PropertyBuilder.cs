@@ -29,190 +29,349 @@ using System.Reflection;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-[TODO]
-public sealed class PropertyBuilder : PropertyInfo
+public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 {
-	[TODO]
+	// Internal state.
+	private TypeBuilder type;
+	private Type returnType;
+	private MethodInfo getMethod;
+	private MethodInfo setMethod;
+	private IntPtr privateData;
+
+	// Constructor.
+	internal PropertyBuilder(TypeBuilder type, String name,
+							 PropertyAttributes attributes,
+				 			 Type returnType, Type[] parameterTypes)
+			{
+				// Validate the parameters.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(returnType == null)
+				{
+					throw new ArgumentNullException("returnType");
+				}
+
+				// Initialize this object's internal state.
+				this.type = type;
+				this.returnType = returnType;
+				this.getMethod = null;
+				this.setMethod = null;
+
+				// Create the property.
+				this.privateData = ClrPropertyCreate
+					(((IClrProgramItem)type).ClrHandle, name,
+					 attributes, returnType, parameterTypes);
+			}
+
+	// Add an "other" method to this property.
 	public void AddOtherMethod(MethodBuilder mdBuilder)
-	{
-		 throw new NotImplementedException("AddOtherMethod");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					if(mdBuilder == null)
+					{
+						throw new ArgumentNullException("mdBuilder");
+					}
+					ClrPropertyAddSemantics
+						(privateData, MethodSemanticsAttributes.Other,
+						 type.module.GetMethodToken(mdBuilder));
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Get the accessor methods for this property.
 	public override MethodInfo[] GetAccessors(bool nonPublic)
-	{
-		 throw new NotImplementedException("GetAccessors");
-	}
+			{
+		 		throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Get custom attributes form this property.
 	public override Object[] GetCustomAttributes(bool inherit)
-	{
-		 throw new NotImplementedException("GetCustomAttributes");
-	}
-
-	[TODO]
+			{
+		 		throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 	public override Object[] GetCustomAttributes(Type attributeType, 
 												 bool inherit)
-	{
-		 throw new NotImplementedException("GetCustomAttributes");
-	}
+			{
+		 		throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Get the "get" method for this property.
 	public override MethodInfo GetGetMethod(bool nonPublic)
-	{
-		 throw new NotImplementedException("GetGetMethod");
-	}
+			{
+				if(getMethod == null || nonPublic)
+				{
+					return getMethod;
+				}
+				else if((getMethod.Attributes &
+							MethodAttributes.MemberAccessMask) ==
+						MethodAttributes.Public)
+				{
+					return getMethod;
+				}
+				else
+				{
+					return null;
+				}
+			}
 
-	[TODO]
+	// Get the index parameters for this property.
 	public override ParameterInfo[] GetIndexParameters()
-	{
-		 throw new NotImplementedException("GetIndexParameters");
-	}
+			{
+		 		throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Get the "set" method for this property.
 	public override MethodInfo GetSetMethod(bool nonPublic)
-	{
-		 throw new NotImplementedException("GetSetMethod");
-	}
+			{
+				if(setMethod == null || nonPublic)
+				{
+					return setMethod;
+				}
+				else if((setMethod.Attributes &
+							MethodAttributes.MemberAccessMask) ==
+						MethodAttributes.Public)
+				{
+					return setMethod;
+				}
+				else
+				{
+					return null;
+				}
+			}
 
-	[TODO]
+	// Get the value of this property on an object.
 	public override Object GetValue(Object obj, Object[] index)
-	{
-		 throw new NotImplementedException("GetValue");
-	}
-
-	[TODO]
+			{
+		 		throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 	public override Object GetValue(Object obj, BindingFlags invokeAttr, 
 									Binder binder, Object[] index, 
 									CultureInfo culture)
-	{
-		 throw new NotImplementedException("GetValue");
-	}
+			{
+		 		throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Determine if a particular custom attribute is defined on this property.
 	public override bool IsDefined(Type attributeType, bool inherit)
-	{
-		 throw new NotImplementedException("IsDefined");
-	}
+			{
+		 		throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Set the constant value on this property.
 	public void SetConstant(Object defaultValue)
-	{
-		 throw new NotImplementedException("SetConstant");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					FieldBuilder.ValidateConstant(returnType, defaultValue);
+					ClrPropertySetConstant(privateData, defaultValue);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set a custom attribute on this property.
 	public void SetCustomAttribute(CustomAttributeBuilder customBuilder)
-	{
-		 throw new NotImplementedException("SetCustomAttribute");
-	}
-
-	[TODO]
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.SetCustomAttribute
+						(this, customBuilder);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 	public void SetCustomAttribute(ConstructorInfo con, byte[] binaryAttribute)
-	{
-		 throw new NotImplementedException("SetCustomAttribute");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.SetCustomAttribute
+						(this, con, binaryAttribute);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set the "get" method on this property.
 	public void SetGetMethod(MethodBuilder mdBuilder)
-	{
-		 throw new NotImplementedException("SetGetMethod");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					if(mdBuilder == null)
+					{
+						throw new ArgumentNullException("mdBuilder");
+					}
+					else if(getMethod != null)
+					{
+						throw new ArgumentException
+							(_("Emit_GetAlreadyDefined"));
+					}
+					ClrPropertyAddSemantics
+						(privateData, MethodSemanticsAttributes.Getter,
+						 type.module.GetMethodToken(mdBuilder));
+					getMethod = mdBuilder;
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set the "set" method on this property.
 	public void SetSetMethod(MethodBuilder mdBuilder)
-	{
-		 throw new NotImplementedException("SetSetMethod");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					if(mdBuilder == null)
+					{
+						throw new ArgumentNullException("mdBuilder");
+					}
+					else if(setMethod != null)
+					{
+						throw new ArgumentException
+							(_("Emit_SetAlreadyDefined"));
+					}
+					ClrPropertyAddSemantics
+						(privateData, MethodSemanticsAttributes.Setter,
+						 type.module.GetMethodToken(mdBuilder));
+					setMethod = mdBuilder;
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set the value of this property on an object.
 	public override void SetValue(Object obj, Object value, Object[] index)
-	{
-		 throw new NotImplementedException("SetValue");
-	}
-
-	[TODO]
+			{
+		 		throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 	public override void SetValue(Object obj, Object value, 
 								  BindingFlags invokeAttr, 
 								  Binder binder, Object[] index, 
 								  CultureInfo culture)
-	{
-		 throw new NotImplementedException("SetValue");
-	}
+			{
+		 		throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Get the attributes for this property.
 	public override PropertyAttributes Attributes 
-	{
-		get
-		{
-			throw new NotImplementedException("Attributes");
-		}
-	}
+			{
+				get
+				{
+					return (PropertyAttributes)
+						ClrHelpers.GetMemberAttrs(privateData);
+				}
+			}
 
-	[TODO]
+	// Determine if we can read from this property.
 	public override bool CanRead 
-	{
-		get
-		{
-			throw new NotImplementedException("CanRead");
-		}
-	}
+			{
+				get
+				{
+					return (getMethod != null);
+				}
+			}
 
-	[TODO]
+	// Determine if we can write to this property.
 	public override bool CanWrite 
-	{
-		get
-		{
-			throw new NotImplementedException("CanWrite");
-		}
-	}
+			{
+				get
+				{
+					return (setMethod != null);
+				}
+			}
 
-	[TODO]
+	// Get the type that this property is declared within.
 	public override Type DeclaringType 
-	{
-		get
-		{
-			throw new NotImplementedException("DeclaringType");
-		}
-	}
+			{
+				get
+				{
+					return type;
+				}
+			}
 
-	[TODO]
+	// Get the name of this property.
 	public override String Name 
-	{
-		get
-		{
-			throw new NotImplementedException("Name");
-		}
-	}
+			{
+				get
+				{
+					return ClrHelpers.GetName(this);
+				}
+			}
 
-	[TODO]
+	// Get the token associated with this property.
 	public PropertyToken PropertyToken 
-	{
-		get
-		{
-			throw new NotImplementedException("PropertyToken");
-		}
-	}
+			{
+				get
+				{
+					return new PropertyToken
+						(AssemblyBuilder.ClrGetItemToken(privateData));
+				}
+			}
 
-	[TODO]
+	// Get the type associated with this property.
 	public override Type PropertyType 
-	{
-		get
-		{
-			throw new NotImplementedException("PropertyType");
-		}
-	}
+			{
+				get
+				{
+					return returnType;
+				}
+			}
 
-	[TODO]
+	// Get the reflected type that this property exists within.
 	public override Type ReflectedType 
-	{
-		get
-		{
-			throw new NotImplementedException("ReflectedType");
-		}
-	}
+			{
+				get
+				{
+					return type;
+				}
+			}
 
-	// TODO
+	// Get the CLR handle for this property.
+	IntPtr IClrProgramItem.ClrHandle
+			{
+				get
+				{
+					return privateData;
+				}
+			}
+
+	// Create a new event and attach it to a particular class.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static IntPtr ClrPropertyCreate
+			(IntPtr classInfo, String name,
+			 PropertyAttributes attributes,
+			 Type returnType, Type[] parameterTypes);
+
+	// Add semantic information to this property.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrPropertyAddSemantics
+			(IntPtr item, MethodSemanticsAttributes attr,
+			 MethodToken token);
+
+	// Internal version of "SetConstant".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrPropertySetConstant
+			(IntPtr item, Object value);
 
 }; // class PropertyBuilder
 

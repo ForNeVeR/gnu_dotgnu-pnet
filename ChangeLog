@@ -1,4 +1,17 @@
 
+2003-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Reflection/ClrField.cs,
+	runtime/System/Reflection/Emit/AssemblyBuilder.cs,
+	runtime/System/Reflection/Emit/EventBuilder.cs,
+	runtime/System/Reflection/Emit/FieldBuilder.cs,
+	runtime/System/Reflection/Emit/ModuleBuilder.cs,
+	runtime/System/Reflection/Emit/PropertyBuilder.cs,
+	runtime/System/Reflection/Emit/TypeBuilder.cs,
+	runtime/System/Reflection/Emit/UnmanagedMarshal.cs:
+	continue implementation of Reflection.Emit; events, fields,
+	properties, and marshalling.
+
 2003-03-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/Emit/EnumBuilder.cs,

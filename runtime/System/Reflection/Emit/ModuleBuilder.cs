@@ -36,7 +36,7 @@ using System.Runtime.CompilerServices;
 public class ModuleBuilder : Module
 {
 	// Internal state.
-	private AssemblyBuilder assembly;
+	internal AssemblyBuilder assembly;
 	private String name;
 	private bool transient;
 	private bool emitSymbolInfo;

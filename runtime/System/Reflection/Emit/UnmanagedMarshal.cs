@@ -1,9 +1,11 @@
 /*
- * UnmanagedMarshal.cs - Implementation of "System.Reflection.Emit.UnmanagedMarshal" 
+ * UnmanagedMarshal.cs - Implementation of the
+ *		"System.Reflection.Emit.UnmanagedMarshal" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  * 
- * Contributed by Gopal.V <gopalv82@symonds.net> 
+ * Contributions from by Gopal.V <gopalv82@symonds.net> 
+ *                       Rhys Weatherley <rweather@southern-storm.com.au>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,82 +22,199 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-using System.Runtime.InteropServices;
+namespace System.Reflection.Emit
+{
 
 #if !ECMA_COMPAT
 
-namespace System.Reflection.Emit
+using System;
+using System.Runtime.InteropServices;
+
+public sealed class UnmanagedMarshal
 {
-	public sealed class UnmanagedMarshal
-	{
-		[TODO]
-		public static UnmanagedMarshal DefineByValArray(int elemCount)
-		{
-			throw new NotImplementedException("DefineByValArray");
-		}
+	// Internal state.
+	private UnmanagedType type;
+	private UnmanagedType baseType;
+	private int elemCount;
 
-		[TODO]
-		public static UnmanagedMarshal DefineByValTStr(int elemCount)
-		{
-			throw new NotImplementedException("DefineByValTStr");
-		}
-
-		[TODO]
-		public static UnmanagedMarshal DefineLPArray(UnmanagedType elemType)
-		{
-			throw new NotImplementedException("DefineLPArray");
-		}
-
-		[TODO]
-		public static UnmanagedMarshal DefineSafeArray(UnmanagedType elemType)
-		{
-			throw new NotImplementedException("DefineSafeArray");
-		}
-
-		[TODO]
-		public static UnmanagedMarshal DefineUnmanagedMarshal(UnmanagedType unmanagedType)
-		{
-			throw new NotImplementedException("DefineUnmanagedMarshal");
-		}
-
-		[TODO]
-		public UnmanagedType BaseType 
-		{
-			get
+	// Constructor.
+	private UnmanagedMarshal(UnmanagedType type)
 			{
-				throw new NotImplementedException("BaseType");
+				this.type = type;
 			}
-		}
-
-		[TODO]
-		public int ElementCount 
-		{
-			get
+	private UnmanagedMarshal(UnmanagedType type, int elemCount)
 			{
-				throw new NotImplementedException("ElementCount");
+				this.type = type;
+				this.elemCount = elemCount;
 			}
-		}
-
-		[TODO]
-		public UnmanagedType GetUnmanagedType 
-		{
-			get
+	private UnmanagedMarshal(UnmanagedType type, UnmanagedType baseType)
 			{
-				throw new NotImplementedException("GetUnmanagedType");
+				this.type = type;
+				this.elemCount = elemCount;
 			}
-		}
 
-		[TODO]
-		public Guid IIDGuid 
-		{
-			get
+	// Define a by-value array type.
+	public static UnmanagedMarshal DefineByValArray(int elemCount)
 			{
-				throw new NotImplementedException("IIDGuid");
+				return new UnmanagedMarshal
+					(UnmanagedType.ByValArray, elemCount);
 			}
-		}
 
-	}
-}//namespace
+	// Define a by-value TSTR type.
+	public static UnmanagedMarshal DefineByValTStr(int elemCount)
+			{
+				return new UnmanagedMarshal
+					(UnmanagedType.ByValTStr, elemCount);
+			}
 
-#endif
+	// Define an LP array type.
+	public static UnmanagedMarshal DefineLPArray(UnmanagedType elemType)
+			{
+				return new UnmanagedMarshal(UnmanagedType.LPArray, elemType);
+			}
+
+	// Define a safe array.
+	public static UnmanagedMarshal DefineSafeArray(UnmanagedType elemType)
+			{
+				return new UnmanagedMarshal(UnmanagedType.SafeArray, elemType);
+			}
+
+	// Define a simple unmanaged marshalling behaviour.
+	public static UnmanagedMarshal DefineUnmanagedMarshal
+				(UnmanagedType unmanagedType)
+			{
+				// Must be a simple unmanaged type.
+				if(unmanagedType == UnmanagedType.ByValArray ||
+				   unmanagedType == UnmanagedType.ByValTStr ||
+				   unmanagedType == UnmanagedType.LPArray ||
+				   unmanagedType == UnmanagedType.SafeArray ||
+				   unmanagedType == UnmanagedType.CustomMarshaler)
+				{
+					throw new ArgumentException
+						(_("Emit_NotSimpleUnmanagedType"));
+				}
+				return new UnmanagedMarshal(unmanagedType);
+			}
+
+	// Get the base type for marshalling behaviour.
+	public UnmanagedType BaseType 
+			{
+				get
+				{
+					if(type == UnmanagedType.LPArray ||
+					   type == UnmanagedType.SafeArray)
+					{
+						return baseType;
+					}
+					else
+					{
+						throw new ArgumentException
+							(_("Emit_NoUnmanagedBaseType"));
+					}
+				}
+			}
+
+	// Get the number of elements in an array type.
+	public int ElementCount 
+			{
+				get
+				{
+					if(type == UnmanagedType.ByValArray ||
+					   type == UnmanagedType.ByValTStr)
+					{
+						return elemCount;
+					}
+					else
+					{
+						throw new ArgumentException
+							(_("Emit_NoUnmanagedElementCount"));
+					}
+				}
+			}
+
+	// Get the primary unmanaged type code for marshalling behaviour.
+	public UnmanagedType GetUnmanagedType 
+			{
+				get
+				{
+					return type;
+				}
+			}
+
+	// Get the GUID information for custom marshalling.
+	public Guid IIDGuid 
+			{
+				get
+				{
+					if(type == UnmanagedType.CustomMarshaler)
+					{
+						// It is not actually possible to set the GUID
+						// through any of the API's, so it will always
+						// be the empty GUID.
+						return Guid.Empty;
+					}
+					else
+					{
+						throw new ArgumentException(_("Emit_NotCustom"));
+					}
+				}
+			}
+
+	// Convert this object into an array of marshalling bytes.
+	internal byte[] ToBytes()
+			{
+				byte[] bytes;
+				switch(type)
+				{
+					case UnmanagedType.ByValArray:
+					case UnmanagedType.ByValTStr:
+					{
+						if(elemCount < 0x80)
+						{
+							bytes = new byte [1];
+							bytes[0] = (byte)type;
+							bytes[1] = (byte)elemCount;
+						}
+						else if(elemCount < 0x4000)
+						{
+							bytes = new byte [2];
+							bytes[0] = (byte)type;
+							bytes[1] = (byte)((elemCount >> 8) | 0x80);
+							bytes[2] = (byte)(elemCount & 0xFF);
+						}
+						else
+						{
+							bytes = new byte [5];
+							bytes[0] = (byte)type;
+							bytes[1] = (byte)((elemCount >> 24) | 0x80);
+							bytes[2] = (byte)((elemCount >> 16) | 0x80);
+							bytes[3] = (byte)((elemCount >> 8) | 0x80);
+							bytes[4] = (byte)(elemCount & 0xFF);
+						}
+					}
+					break;
+
+					case UnmanagedType.LPArray:
+					case UnmanagedType.SafeArray:
+					{
+						bytes = new byte [2];
+						bytes[0] = (byte)type;
+						bytes[1] = (byte)baseType;
+					}
+					break;
+
+					default:
+					{
+						bytes = new byte [1];
+						bytes[0] = (byte)type;
+					}
+					break;
+				}
+				return bytes;
+			}
+
+}; // class UnmanagedMarshal
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.Reflection.Emit

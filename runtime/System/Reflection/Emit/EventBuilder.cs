@@ -29,52 +29,133 @@ using System.Reflection;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-[TODO]
-public sealed class EventBuilder
+public sealed class EventBuilder : IClrProgramItem
 {
-	[TODO]
+	// Internal state.
+	private TypeBuilder type;
+	private IntPtr privateData;
+
+	// Constructor.
+	internal EventBuilder(TypeBuilder type, String name,
+						  EventAttributes attributes, Type eventType)
+			{
+				// Validate the parameters.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(eventType == null)
+				{
+					throw new ArgumentNullException("eventType");
+				}
+
+				// Create the event.
+				this.type = type;
+				this.privateData = ClrEventCreate
+					(((IClrProgramItem)type).ClrHandle, name,
+					 eventType, attributes);
+			}
+
+	// Add method semantics to this event.
+	private void AddSemantics(MethodSemanticsAttributes attr,
+							  MethodBuilder mdBuilder)
+			{
+				try
+				{
+					type.StartSync();
+					if(mdBuilder == null)
+					{
+						throw new ArgumentNullException("mdBuilder");
+					}
+					ClrEventAddSemantics
+						(privateData, attr,
+						 type.module.GetMethodToken(mdBuilder));
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
+
+	// Add an "other" method to this event.
 	public void AddOtherMethod(MethodBuilder mdBuilder)
-	{
-		 throw new NotImplementedException("AddOtherMethod");
-	}
+			{
+				AddSemantics(MethodSemanticsAttributes.Other, mdBuilder);
+			}
 
-	[TODO]
+	// Get the token code for this event.
 	public EventToken GetEventToken()
-	{
-		 throw new NotImplementedException("GetEventToken");
-	}
+			{
+				return new EventToken
+					(AssemblyBuilder.ClrGetItemToken(privateData));
+			}
 
-	[TODO]
+	// Set the "add on" method for this event.
 	public void SetAddOnMethod(MethodBuilder mdBuilder)
-	{
-		 throw new NotImplementedException("SetAddOnMethod");
-	}
+			{
+				AddSemantics(MethodSemanticsAttributes.AddOn, mdBuilder);
+			}
 
-	[TODO]
+	// Set custom attributes for this event.
 	public void SetCustomAttribute(CustomAttributeBuilder customBuilder)
-	{
-		 throw new NotImplementedException("SetCustomAttribute");
-	}
-
-	[TODO]
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.SetCustomAttribute
+						(this, customBuilder);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 	public void SetCustomAttribute(ConstructorInfo con, byte[] binaryAttribute)
-	{
-		 throw new NotImplementedException("SetCustomAttribute");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.SetCustomAttribute
+						(this, con, binaryAttribute);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set the "raise" method for this event.
 	public void SetRaiseMethod(MethodBuilder mdBuilder)
-	{
-		 throw new NotImplementedException("SetRaiseMethod");
-	}
+			{
+				AddSemantics(MethodSemanticsAttributes.Fire, mdBuilder);
+			}
 
-	[TODO]
+	// Set the "remove on" method for this event.
 	public void SetRemoveOnMethod(MethodBuilder mdBuilder)
-	{
-		 throw new NotImplementedException("SetRemoveOnMethod");
-	}
+			{
+				AddSemantics(MethodSemanticsAttributes.RemoveOn, mdBuilder);
+			}
 
-// TODO
+	// Get the CLR handle for this object.
+	IntPtr IClrProgramItem.ClrHandle
+			{
+				get
+				{
+					return privateData;
+				}
+			}
+
+	// Create a new event and attach it to a particular class.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static IntPtr ClrEventCreate
+			(IntPtr classInfo, String name, Type type,
+			 EventAttributes attributes);
+
+	// Add semantic information to this event.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrEventAddSemantics
+			(IntPtr eventInfo, MethodSemanticsAttributes attr,
+			 MethodToken token);
 
 }; // class EventBuilder
 

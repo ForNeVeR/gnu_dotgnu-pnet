@@ -25,6 +25,7 @@ namespace System.Reflection.Emit
 #if !ECMA_COMPAT
 
 using System;
+using System.Collections;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -34,7 +35,8 @@ using System.Security.Permissions;
 public sealed class TypeBuilder : Type, IClrProgramItem
 {
 	// Internal state.
-	private ModuleBuilder module;
+	private IntPtr privateData;			// Must be the first field.
+	internal ModuleBuilder module;
 	private String name;
 	private String nspace;
 	internal TypeAttributes attr;
@@ -45,8 +47,8 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 	private Type declaringType;
 	private ClrType type;
 	private TypeToken token;
-	private IntPtr privateData;
 	private Type underlyingSystemType;
+	private ArrayList methods;
 
 	// Constants.
 	public const int UnspecifiedTypeSize = 0;
@@ -88,6 +90,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 				this.type = null;
 				this.underlyingSystemType = null;
 				this.token = new TypeToken(0);	// TODO
+				this.methods = new ArrayList();
 			}
 
 	// Get the attribute flags for this type.
@@ -260,7 +263,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			}
 
 	// Check that the type has not yet been created.
-	private void CheckNotCreated()
+	internal void CheckNotCreated()
 			{
 				if(type != null)
 				{
@@ -269,7 +272,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			}
 
 	// Check that the type has been created.
-	private void CheckCreated()
+	internal void CheckCreated()
 			{
 				if(type == null)
 				{
@@ -279,7 +282,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			}
 
 	// Start a synchronized type builder operation.
-	private void StartSync()
+	internal void StartSync()
 			{
 				module.StartSync();
 				if(type != null)
@@ -289,7 +292,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			}
 
 	// End a synchronized type builder operation.
-	private void EndSync()
+	internal void EndSync()
 			{
 				module.EndSync();
 			}
@@ -410,15 +413,13 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			}
 
 	// Define an event for this class.
-	[TODO]
 	public EventBuilder DefineEvent
 				(String name, EventAttributes attributes, Type eventType)
 			{
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					return new EventBuilder(this, name, attributes, eventType);
 				}
 				finally
 				{
@@ -427,20 +428,18 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			}
 
 	// Define a field for this class.
-	[TODO]
 	public FieldBuilder DefineField
 				(String name, Type type, FieldAttributes attributes)
 			{
 				try
 				{
 					StartSync();
-					// TODO
 					if(IsEnum && underlyingSystemType == null &&
 					   (attributes & FieldAttributes.Static) == 0)
 					{
 						underlyingSystemType = type;
 					}
-					return null;
+					return new FieldBuilder(this, name, type, attributes);
 				}
 				finally
 				{
@@ -651,8 +650,8 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					return new PropertyBuilder
+						(this, name, attributes, returnType, parameterTypes);
 				}
 				finally
 				{
@@ -960,27 +959,26 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			}
 
 	// Set a custom attribute on this type builder.
-	[TODO]
 	public void SetCustomAttribute(CustomAttributeBuilder customBuilder)
 			{
 				try
 				{
 					StartSync();
-					// TODO
+					module.assembly.SetCustomAttribute(this, customBuilder);
 				}
 				finally
 				{
 					EndSync();
 				}
 			}
-	[TODO]
 	public void SetCustomAttribute(ConstructorInfo con,
 								   byte[] binaryAttribute)
 			{
 				try
 				{
 					StartSync();
-					// TODO
+					module.assembly.SetCustomAttribute
+						(this, con, binaryAttribute);
 				}
 				finally
 				{
@@ -1019,6 +1017,12 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 				{
 					return privateData;
 				}
+			}
+
+	// Add a method to this type for later processing during "CreateType".
+	internal void AddMethod(MethodBase method)
+			{
+				methods.Add(method);
 			}
 
 }; // class TypeBuilder

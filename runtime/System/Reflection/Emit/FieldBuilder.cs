@@ -29,134 +29,260 @@ using System.Reflection;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-[TODO]
-public sealed class FieldBuilder : FieldInfo
+public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 {
-	[TODO]
-	public override Object[] GetCustomAttributes(bool inherit)
-	{
-		throw new NotImplementedException("GetCustomAttributes");
-	}
+	// Internal state.
+	private TypeBuilder type;
+	private IntPtr privateData;
 
-	[TODO]
+	// Constructor.
+	internal FieldBuilder(TypeBuilder type, String name, Type fieldType,
+						  FieldAttributes attributes)
+			{
+				this.type = type;
+				this.privateData = ClrFieldCreate
+					(((IClrProgramItem)type).ClrHandle,
+					 name, fieldType, attributes);
+			}
+
+	// Get the custom attributes associated with this field.
+	public override Object[] GetCustomAttributes(bool inherit)
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 	public override Object[] GetCustomAttributes(Type attributeType, 
 												 bool inherit)
-	{
-		throw new NotImplementedException("GetCustomAttributes");
-	}
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Get the token code for this field.
 	public FieldToken GetToken()
-	{
-		throw new NotImplementedException("GetToken");
-	}
+			{
+				return new FieldToken
+					(AssemblyBuilder.ClrGetItemToken(privateData));
+			}
 
-	[TODO]
+	// Get the value associated with this field on an object.
 	public override Object GetValue(Object obj)
-	{
-		throw new NotImplementedException("GetValue");
-	}
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Determine if a custom attribute is defined on this field.
 	public override bool IsDefined(Type attributeType, bool inherit)
-	{
-		throw new NotImplementedException("IsDefined");
-	}
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Set the constant value on this field.
 	public void SetConstant(Object defaultValue)
-	{
-		throw new NotImplementedException("SetConstant");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					ValidateConstant(FieldType, defaultValue);
+					ClrFieldSetConstant(privateData, defaultValue);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set a custom attribute on this field.
 	public void SetCustomAttribute(CustomAttributeBuilder customBuilder)
-	{
-		throw new NotImplementedException("SetCustomAttribute");
-	}
-
-	[TODO]
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.SetCustomAttribute
+						(this, customBuilder);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 	public void SetCustomAttribute(ConstructorInfo con, byte[] binaryAttribute)
-	{
-		throw new NotImplementedException("SetCustomAttribute");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.SetCustomAttribute
+						(this, con, binaryAttribute);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set the marshalling information for this field.
 	public void SetMarshal(UnmanagedMarshal unmanagedMarshal)
-	{
-		throw new NotImplementedException("SetMarshal");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					if(unmanagedMarshal == null)
+					{
+						throw new ArgumentNullException("unmanagedMarshal");
+					}
+					ClrFieldSetMarshal(privateData, unmanagedMarshal.ToBytes());
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set the offset of this field in an explicitly laid out class.
 	public void SetOffset(int iOffset)
-	{
-		throw new NotImplementedException("SetOffset");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					ClrFieldSetOffset(privateData, iOffset);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set the value of this field on an object.
 	public override void SetValue(Object obj, Object val, 
 								  BindingFlags invokeAttr, 
 								  Binder binder, 
 								  CultureInfo culture)
-	{
-		throw new NotImplementedException("SetValue");
-	}
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Get the attributes for this field.
 	public override FieldAttributes Attributes 
-	{
-		get
-		{
-			throw new NotImplementedException("Attributes");
-		}
-	}
+			{
+				get
+				{
+					return (FieldAttributes)
+						ClrHelpers.GetMemberAttrs(privateData);
+				}
+			}
 
-	[TODO]
+	// Get the type that declares this field
 	public override Type DeclaringType 
-	{
-		get
-		{
-			throw new NotImplementedException("DeclaringType");
-		}
-	}
+			{
+				get
+				{
+					return type;
+				}
+			}
 
-	[TODO]
+	// Get the handle associated with this field.
 	public override RuntimeFieldHandle FieldHandle 
-	{
-		get
-		{
-			throw new NotImplementedException("FieldHandle");
-		}
-	}
+			{
+				get
+				{
+					throw new NotSupportedException(_("NotSupp_Builder"));
+				}
+			}
 
-	[TODO]
+	// Get the field type.
 	public override Type FieldType 
-	{
-		get
-		{
-			throw new NotImplementedException("FieldType");
-		}
-	}
+			{
+				get
+				{
+					return ClrField.GetFieldType(privateData);
+				}
+			}
 
-	[TODO]
+	// Get the name of this field.
 	public override String Name 
-	{
-		get
-		{
-			throw new NotImplementedException("Name");
-		}
-	}
+			{
+				get
+				{
+					return ClrHelpers.GetName(this);
+				}
+			}
 
-	[TODO]
+	// Get the reflected type for this field.
 	public override Type ReflectedType 
-	{
-		get
-		{
-			throw new NotImplementedException("ReflectedType");
-		}
-	}
+			{
+				get
+				{
+					return type;
+				}
+			}
 
-	// TODO
+	// Get the CLR handle for this field.
+	IntPtr IClrProgramItem.ClrHandle
+			{
+				get
+				{
+					return privateData;
+				}
+			}
+
+	// Validate a constant value against a type.
+	internal static void ValidateConstant(Type type, Object value)
+			{
+				if(value == null)
+				{
+					// Cannot be null if a value type.
+					if(type.IsValueType)
+					{
+						throw new ArgumentException(_("Emit_InvalidConstant"));
+					}
+				}
+				else if(type.IsEnum)
+				{
+					// Process enumerated type values.
+					if(type != value.GetType() &&
+					   type.UnderlyingSystemType != value.GetType())
+					{
+						throw new ArgumentException(_("Emit_InvalidConstant"));
+					}
+				}
+				else if(value is IConvertible)
+				{
+					// Determine if it is a simple recognised constant.
+					TypeCode code = ((IConvertible)value).GetTypeCode();
+					if(code == TypeCode.Empty || code == TypeCode.Object ||
+					   code == TypeCode.DBNull || code == TypeCode.DateTime)
+					{
+						throw new ArgumentException(_("Emit_InvalidConstant"));
+					}
+
+					// Check the types.
+					if(type != value.GetType())
+					{
+						throw new ArgumentException(_("Emit_InvalidConstant"));
+					}
+				}
+				else
+				{
+					// Not a useful constant value.
+					throw new ArgumentException(_("Emit_InvalidConstant"));
+				}
+			}
+
+	// Create a new field and attach it to a particular class.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static IntPtr ClrFieldCreate
+			(IntPtr classInfo, String name, Type type,
+			 FieldAttributes attributes);
+
+	// Internal version of "SetOffset".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrFieldSetOffset(IntPtr item, int offset);
+
+	// Internal version of "SetMarshal".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrFieldSetMarshal(IntPtr item, byte[] data);
+
+	// Internal version of "SetConstant".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrFieldSetConstant(IntPtr item, Object value);
 
 }; // class FieldBuilder
 

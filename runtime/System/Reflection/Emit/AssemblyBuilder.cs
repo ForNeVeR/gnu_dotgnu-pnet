@@ -282,16 +282,40 @@ public sealed class AssemblyBuilder : Assembly
 		 		throw new NotImplementedException("Save");
 			}
 
-	[TODO]
+	// Set a custom attribute on this assembly.
 	public void SetCustomAttribute(CustomAttributeBuilder customBuilder)
 			{
-		 		throw new NotImplementedException("SetCustomAttribute");
+				try
+				{
+					StartSync();
+					if(saved)
+					{
+						throw new InvalidOperationException
+							(_("Emit_AlreadySaved"));
+					}
+					SetCustomAttribute(this, customBuilder);
+				}
+				finally
+				{
+					EndSync();
+				}
 			}
-
-	[TODO]
 	public void SetCustomAttribute(ConstructorInfo con, byte[] binaryAttribute)
 			{
-		 		throw new NotImplementedException("SetCustomAttribute");
+				try
+				{
+					StartSync();
+					if(saved)
+					{
+						throw new InvalidOperationException
+							(_("Emit_AlreadySaved"));
+					}
+					SetCustomAttribute(this, con, binaryAttribute);
+				}
+				finally
+				{
+					EndSync();
+				}
 			}
 
 	// Set the entry point for this assembly builder.
@@ -317,6 +341,21 @@ public sealed class AssemblyBuilder : Assembly
 				entryPoint = entryMethod;
 			}
 
+	// Set custom attributes on a program item in this assembly.
+	[TODO]
+	internal void SetCustomAttribute
+				(IClrProgramItem item, CustomAttributeBuilder customBuilder)
+			{
+		 		throw new NotImplementedException("SetCustomAttribute");
+			}
+	[TODO]
+	internal void SetCustomAttribute
+				(IClrProgramItem item, ConstructorInfo con,
+				 byte[] binaryAttribute)
+			{
+		 		throw new NotImplementedException("SetCustomAttribute");
+			}
+
 	// Create a new assembly.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrAssemblyCreate
@@ -327,6 +366,10 @@ public sealed class AssemblyBuilder : Assembly
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private void ClrSetEntryPoint(IntPtr clrMethod,
 										 PEFileKinds fileKind);
+
+	// Get the token associated with a particular program item.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static int ClrGetItemToken(IntPtr item);
 
 }; // class AssemblyBuilder
 

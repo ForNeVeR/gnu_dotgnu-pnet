@@ -108,7 +108,7 @@ internal sealed class ClrField : FieldInfo, IClrProgramItem
 
 	// Get the type of this field item.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Type GetFieldType(IntPtr item);
+	extern internal static Type GetFieldType(IntPtr item);
 
 #if !ECMA_COMPAT
 

@@ -967,7 +967,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 		if(signature)
 		{
 			if(!ILType_IsClass(signature) ||
-			   !ILClass_IsInterface(ILType_ToClass(signature)))
+			   !ILClass_IsInterface(ILClassResolve(ILType_ToClass(signature))))
 			{
 				CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
 							  "`%s' is not an interface",
@@ -975,7 +975,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 			}
 			else
 			{
-				interface = ILType_ToClass(signature);
+				interface = ILClassResolve(ILType_ToClass(signature));
 
 				/* Modify the method name to include the fully-qualified
 				   form of the interface's class name */

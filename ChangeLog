@@ -4,6 +4,10 @@
 	* cscc/csharp/cs_lvalue.tc: Roll back the changes made yesterday
 	as it broke the build .
 
+	* cscc/csharp/cs_lvalue.tc, csharp/cscc/cs_gather.c: Load up types
+	directly using ILFindNonSystemType and make sure all types are 
+	resolved properly during type gather.
+
 2004-04-18  Gopal V <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Call ILNode_SemanalysisType for 

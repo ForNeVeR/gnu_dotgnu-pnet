@@ -1,3 +1,111 @@
+2003-09-28  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Windows.Forms/ScrollBar.cs, System.Windows.Forms/ListBox.cs
+	System.Windows.Forms/ListControl.cs
+	System.Windows.Forms/ComboBox.cs : apply patch 1981,
+	ListBox:IntegralHeight,MultiColumn,etc. ScrollBar:layout fix Brian Luft
+	<brian@electroly.com>.
+
+	* System.Drawing/Design/CategoryNameCollection.cs,
+	System.Drawing/Design/IPropertyValueUIService.cs,
+	System.Drawing/Design/PaintValueEventArgs.cs,
+	System.Drawing/Design/PropertyValueUIHandler.cs,
+	System.Drawing/Design/PropertyValueUIItem.cs,
+	System.Drawing/Design/PropertyValueUIItemInvokeHandler.cs,
+	System.Drawing/Design/UITypeEditorStyle.cs,
+	System.Drawing/Design/UITypeEditor.cs : implemented.
+
+	* System.Drawing/ColorBlend.cs : moved to System.Drawing.Drawing2D
+	and implemented.
+	
+	* System.Drawing/Drawing2D/BrushType.cs,
+	System.Drawing/Drawing2D/GraphicsPathIterator.cs : stubbed.
+
+	* System.Drawing/Printing/PageSettings.cs : small fix.
+
+	* System.Drawing/SystemIcons.cs,
+	System.Drawing/Icon.cs : partial implementation.
+
+	* System.Drawing/IconConverter.cs,
+	System.Drawing/ImageConverter.cs,
+	System.Drawing/ImageFormatConverter.cs : implemented.
+
+	* System.Drawing/ImageAnimator.cs : stubbed.
+
+	* System.Drawing.Win32/DrawingControlWindow.cs
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingPen.cs,
+	System.Drawing.Win32/DrawingPopupWindow.cs,
+	System.Drawing.Win32/DrawingRootTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Win32/Win32.cs : change implementation so not reliant
+	on a newer Win32 api. Should be compatible with Windows CE now.
+
+	* System.Windows.Forms/CancelEventArgs.cs,
+	System.Windows.Forms/CancelEventHandler.cs : removed, these are
+	already in System.ComponentModel.
+
+	* System.Windows.Forms/AccessibleObject.cs,
+	System.Windows.Forms/Application.cs,
+	System.Windows.Forms/Binding.cs,
+	System.Windows.Forms/DataFormats.cs,
+	System.Windows.Forms/Form.cs,
+	System.Windows.Forms/ImageList.cs,
+	System.Windows.Forms/ItemChangedEventArgs.cs,
+	System.Windows.Forms/LinkLabel.cs,
+	System.Windows.Forms/Menu.cs,
+	System.Windows.Forms/PropertyTabChangedEventArgs.cs,
+	System.Windows.Forms/StatusBar.cs,
+	System.Windows.Forms/StatusBarPanel.cs,
+	System.Windows.Forms/ToolBar.cs,
+	System.Windows.Forms/ToolTip.cs,
+	System.Windows.Forms/TreeNode.cs,
+	System.Windows.Forms/CurrencyManager.cs : small changes, mostly
+	compiler warnings.
+
+	* System.Windows.Forms/PropertyTab.cs : moved to Design.
+
+	* System.Windows.Forms/ButtonBase.cs,
+	System.Windows.Forms/CheckBox.cs : to prevent flicker, only redraw
+	if FlatStyle.Popup. Don't overdraw text in checkbox.
+
+	* System.Windows.Forms/Control.cs : stub ControlAccessibleObject.
+	Implement elementary version of MousePosition.
+
+	* System.Windows.Forms/ProgressBar.cs
+	: redraw when SetBoundsCore.
+
+	* System.Windows.Forms/ColorDialog.cs
+	System.Windows.Forms/ListView.cs,
+	System.Windows.Forms/ListViewItem.cs,
+	System.Windows.Forms/ColumnHeader.cs,
+	System.Windows.Forms/CheckListBox.cs,
+	System.Windows.Forms/Cursor.cs,
+	System.Windows.Forms/Cursors.cs,
+	System.Windows.Forms/GridItem.cs,
+	System.Windows.Forms/CursorConverter.cs : stubbed and some
+	implementation.
+
+	* System.Windows.Forms/TrackBar.cs : start implementation.
+
+	* System.Windows.Forms/ContentsResizedEventArgs.cs
+	System.Windows.Forms/ContentsResizedEventHandler.cs
+	System.Windows.Forms/DateBoldEventArgs.cs
+	System.Windows.Forms/DateBoldEventHandler.cs
+	System.Windows.Forms/GridItemCollection.cs : Implemented
+
+	* System.Windows.Forms/Design/ComponentEditorForm.cs
+	System.Windows.Forms/Design/ComponentEditorPage.cs
+	System.Windows.Forms/Design/EventsTab.cs
+	System.Windows.Forms/Design/IUIService.cs
+	System.Windows.Forms/Design/IWindowsFormsEditorService.cs
+	System.Windows.Forms/Design/PropertyTab.cs
+	System.Windows.Forms/Design/WindowsFormsComponentEditor.cs
+	: stubbed
+
+	* samples/FormsTest.cs : small change.
 
 2003-09-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 

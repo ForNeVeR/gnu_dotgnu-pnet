@@ -3,7 +3,7 @@
    
    Alpha/OSF Foreign Function Interface 
 
-   $Id: osf.S,v 1.1 2002/05/10 23:04:40 rweather Exp $
+   $Id: osf.S,v 1.2 2003/02/06 01:15:38 rweather Exp $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the

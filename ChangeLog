@@ -1,4 +1,8 @@
 
+2003-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* libffi/*: update the libffi library from the gcc CVS tree.
+
 2003-02-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, Makefile.am: automatically add "-fno-inline-functions"

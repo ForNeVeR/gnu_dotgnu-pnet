@@ -1,4 +1,14 @@
 
+2003-02-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/ResolveEventArgs.cs,
+	runtime/System/ResolveEventHandler.cs,
+	runtime/System/IO/DirectoryInfo.cs,
+	runtime/System/IO/FileAttributes.cs,
+	runtime/System/IO/FileInfo.cs,
+	runtime/System/IO/FileSystemInfo.cs: add some non-ECMA classes
+	that are required by SharpDevelop.
+
 2003-01-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/StreamWriter.cs: default UTF8 behaviour

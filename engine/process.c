@@ -164,6 +164,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 #ifdef IL_CONFIG_RUNTIME_INFRA
 	/* Destroy the GC handle table */
+	if(process->gcHandles)
 	{
 		extern void _ILGCHandleTableFree(struct _tagILGCHandleTable *table);
 		_ILGCHandleTableFree(process->gcHandles);

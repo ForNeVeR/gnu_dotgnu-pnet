@@ -11,6 +11,9 @@
 	samples/mscorlib.dll, support/def_gc.c, support/hb_gc.c:
 	implement GC handles and weak references.
 
+	* engine/process.c (ILExecProcessDestroy): bug fix for SEGV
+	in previous check-in.
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/convert.c, engine/cvm_arith.c, engine/cvm_var.c,

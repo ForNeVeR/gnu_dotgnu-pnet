@@ -95,15 +95,59 @@ num == 0x0E46 || num == 0x0EC6 || num == 0x3005 ||
         		}                		
 	
 	
-	[TODO]
-	public virtual bool IsStartElement(String localname, String ns)
-			{ return false; }
+	public virtual bool IsStartElement(string localname, string ns)
+			{
+				XmlNodeType node = MoveToContent(); 
+				if (node == XmlNodeType.None)
+				{
+					// End Of Input
+					return false;
+				}
+				// Test localname and ns
+				if (localname == this.LocalName 
+				&& ns == this.NamespaceURI)	
+				{
+					return true;
+				}
+				else
+				{
+					return false;	
+				}
+			}
 	
-	[TODO]
-	public virtual bool IsStartElement(String name) { return false; }
-	
-	[TODO]
-	public virtual bool IsStartElement() { return false; }
+	public virtual bool IsStartElement(string name) 
+		{
+			XmlNodeType node = MoveToContent();
+			if (node == XmlNodeType.None)
+			{
+				// End Of Input
+				return false;
+			}
+			// Test the name of the Xml Node
+			if (name == this.Name)
+			{
+				return true;
+			}
+			else
+			{	
+				return false;
+			}
+		}			
+
+	public virtual bool IsStartElement() 
+		{
+			XmlNodeType node = MoveToContent();
+			if (node == XmlNodeType.None)
+			{
+				// End Of Input
+				return false;
+			}
+			else
+			{
+				// It's an Element
+				return true;
+			}
+		}
 	
 	public abstract String LookupNamespace(String prefix);
 	
@@ -113,9 +157,39 @@ num == 0x0E46 || num == 0x0EC6 || num == 0x3005 ||
 	
 	public abstract bool MoveToAttribute(String name);
 	
-	[TODO]
-	public virtual XmlNodeType MoveToContent() { return XmlNodeType.None; }
-	
+	public virtual XmlNodeType MoveToContent() 
+		{
+			// Current Node can't contain content
+			if (!(this.NodeType == XmlNodeType.Attribute || 
+			this.NodeType == XmlNodeType.CDATA ||
+			this.NodeType == XmlNodeType.Element || 
+			this.NodeType == XmlNodeType.EndElement ||
+			this.NodeType == XmlNodeType.EntityReference ||
+			this.NodeType == XmlNodeType.EndEntity || 
+			this.NodeType == XmlNodeType.Text))
+			{
+				XmlNodeType n;
+				do
+				{
+					n = this.NodeType;
+				} while (this.Read() && !(n == 
+				XmlNodeType.Attribute || 
+				n == XmlNodeType.CDATA ||
+				n == XmlNodeType.Element || 
+				n == XmlNodeType.EndElement ||
+				n == XmlNodeType.EntityReference ||
+				n == XmlNodeType.EndEntity || 
+				n == XmlNodeType.Text || 
+				n == XmlNodeType.Empty)); 
+				
+				return this.NodeType;
+			}
+			else
+			{
+				return this.NodeType;
+			}
+		}
+				
 	public abstract bool MoveToElement();
 	
 	public abstract bool MoveToFirstAttribute();
@@ -126,9 +200,27 @@ num == 0x0E46 || num == 0x0EC6 || num == 0x3005 ||
 	
 	public abstract bool ReadAttributeValue();
 	
-	[TODO]
-	public virtual String ReadElementString(String localname, String ns)
-			{ return null; }
+	public virtual string ReadElementString(string localname, string ns)
+			{
+				XmlNodeType node = MoveToContent(); 
+				if (node == XmlNodeType.None)
+				{
+					// Not an Element
+					throw new XmlException();
+				}
+				// Test localname and ns
+				if (localname == this.LocalName 
+				&& ns == this.NamespaceURI)	
+				{
+					// Read contents of this element
+					return this.ReadString();
+				}
+				else
+				{
+					// No node with localname and ns
+					throw new XmlException();
+				}
+		}
 	
 	[TODO]
 	public virtual String ReadElementString(String name) { return null; }

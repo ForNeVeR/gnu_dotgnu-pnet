@@ -4,6 +4,9 @@
 	* engine/verify_call.c: fix the verification of tail calls to
 	use the correct length of the "call" instruction.
 
+	* libffi/src/types.c: add type size and alignment information
+	for the IA64 architecture.
+
 2002-11-22  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/lib_regexp.c, support/regexp.c, support/Makefile.am,

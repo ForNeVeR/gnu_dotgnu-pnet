@@ -13,6 +13,10 @@
 	tests/runtime/System/Security/Cryptography/TestTripleDES.cs:
 	semantic bugs shown up by latest MS compiler.
 
+	* aclocal.m4, auto_gen.sh: remove "aclocal.m4" from the
+	repository, as it is causing problems with different versions
+	of automake/autoconf.
+
 2002-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/runtime/System/Security/Cryptography/CryptoTestCase.cs,

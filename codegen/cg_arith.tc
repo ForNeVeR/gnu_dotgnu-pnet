@@ -1223,6 +1223,12 @@ ILBinary_ApplyOp(ILNode_Rem, ILMachineType_ManagedValue)
 /*
  * Apply the bitwise AND operator to various types.
  */
+ILBitwise_ApplyOp(ILNode_And, ILMachineType_Boolean)
+{
+	/* Returns true if both arguments are true.  We assume
+	   that both arguments are clamped to the set {0,1} */
+	ILGenSimple(info, IL_OP_AND);
+}
 ILBitwise_ApplyOp(ILNode_And, ILMachineType_Int8)
 {
 	/* Perform the operation and then clamp the result to "int8" */
@@ -1262,7 +1268,6 @@ ILBitwise_ApplyOp(ILNode_And, ILMachineType_Float64),
 ILBitwise_ApplyOp(ILNode_And, ILMachineType_NativeFloat),
 ILBitwise_ApplyOp(ILNode_And, ILMachineType_Decimal),
 ILBitwise_ApplyOp(ILNode_And, ILMachineType_Void),
-ILBitwise_ApplyOp(ILNode_And, ILMachineType_Boolean),
 ILBitwise_ApplyOp(ILNode_And, ILMachineType_String),
 ILBitwise_ApplyOp(ILNode_And, ILMachineType_ObjectRef),
 ILBitwise_ApplyOp(ILNode_And, ILMachineType_UnmanagedPtr),
@@ -1277,6 +1282,12 @@ ILBitwise_ApplyOp(ILNode_And, ILMachineType_ManagedValue)
 /*
  * Apply the bitwise OR operator to various types.
  */
+ILBitwise_ApplyOp(ILNode_Or, ILMachineType_Boolean)
+{
+	/* Returns true if one of the arguments is true.  We assume
+	   that both arguments are clamped to the set {0,1} */
+	ILGenSimple(info, IL_OP_OR);
+}
 ILBitwise_ApplyOp(ILNode_Or, ILMachineType_Int8)
 {
 	/* Perform the operation and then clamp the result to "int8" */
@@ -1316,7 +1327,6 @@ ILBitwise_ApplyOp(ILNode_Or, ILMachineType_Float64),
 ILBitwise_ApplyOp(ILNode_Or, ILMachineType_NativeFloat),
 ILBitwise_ApplyOp(ILNode_Or, ILMachineType_Decimal),
 ILBitwise_ApplyOp(ILNode_Or, ILMachineType_Void),
-ILBitwise_ApplyOp(ILNode_Or, ILMachineType_Boolean),
 ILBitwise_ApplyOp(ILNode_Or, ILMachineType_String),
 ILBitwise_ApplyOp(ILNode_Or, ILMachineType_ObjectRef),
 ILBitwise_ApplyOp(ILNode_Or, ILMachineType_UnmanagedPtr),
@@ -1331,6 +1341,12 @@ ILBitwise_ApplyOp(ILNode_Or, ILMachineType_ManagedValue)
 /*
  * Apply the bitwise XOR operator to various types.
  */
+ILBitwise_ApplyOp(ILNode_Xor, ILMachineType_Boolean)
+{
+	/* Returns the XOR of the boolean arguments.  We assume
+	   that both arguments are clamped to the set {0,1} */
+	ILGenSimple(info, IL_OP_XOR);
+}
 ILBitwise_ApplyOp(ILNode_Xor, ILMachineType_Int8)
 {
 	/* Perform the operation and then clamp the result to "int8" */
@@ -1370,7 +1386,6 @@ ILBitwise_ApplyOp(ILNode_Xor, ILMachineType_Float64),
 ILBitwise_ApplyOp(ILNode_Xor, ILMachineType_NativeFloat),
 ILBitwise_ApplyOp(ILNode_Xor, ILMachineType_Decimal),
 ILBitwise_ApplyOp(ILNode_Xor, ILMachineType_Void),
-ILBitwise_ApplyOp(ILNode_Xor, ILMachineType_Boolean),
 ILBitwise_ApplyOp(ILNode_Xor, ILMachineType_String),
 ILBitwise_ApplyOp(ILNode_Xor, ILMachineType_ObjectRef),
 ILBitwise_ApplyOp(ILNode_Xor, ILMachineType_UnmanagedPtr),

@@ -10,6 +10,9 @@ floating-point constants.
 
 * cscc/cs_oper.tc: semantic analysis for many of the C# operators.
 
+* codegen/cg_arith.tc, codegen/jv_arith.tc, codegen/cg_optable.c:
+implement "&", "^", and "|" for the "bool" type.
+
 2001-08-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_scope.h, codegen/cg_scope.c: add node information to all

@@ -474,6 +474,7 @@ IL_END_OPERATOR_TABLE
 
 /*
 
+bool operator&(bool x, bool y);
 int operator&(int x, int y);
 uint operator&(uint x, uint y);
 long operator&(long x, long y);
@@ -482,6 +483,7 @@ ulong operator&(ulong x, ulong y);
 */
 
 IL_BEGIN_OPERATOR_TABLE(And)
+	IL_BINARY_OPERATOR(Boolean, Boolean, Boolean)
 	IL_BINARY_OPERATOR(Int32, Int32, Int32)
 	IL_BINARY_OPERATOR(UInt32, UInt32, UInt32)
 	IL_BINARY_OPERATOR(Int64, Int64, Int64)
@@ -490,6 +492,7 @@ IL_END_OPERATOR_TABLE
 
 /*
 
+bool operator|(bool x, bool y);
 int operator|(int x, int y);
 uint operator|(uint x, uint y);
 long operator|(long x, long y);
@@ -498,6 +501,7 @@ ulong operator|(ulong x, ulong y);
 */
 
 IL_BEGIN_OPERATOR_TABLE(Or)
+	IL_BINARY_OPERATOR(Boolean, Boolean, Boolean)
 	IL_BINARY_OPERATOR(Int32, Int32, Int32)
 	IL_BINARY_OPERATOR(UInt32, UInt32, UInt32)
 	IL_BINARY_OPERATOR(Int64, Int64, Int64)
@@ -506,6 +510,7 @@ IL_END_OPERATOR_TABLE
 
 /*
 
+bool operator^(bool x, bool y);
 int operator^(int x, int y);
 uint operator^(uint x, uint y);
 long operator^(long x, long y);
@@ -514,6 +519,7 @@ ulong operator^(ulong x, ulong y);
 */
 
 IL_BEGIN_OPERATOR_TABLE(Xor)
+	IL_BINARY_OPERATOR(Boolean, Boolean, Boolean)
 	IL_BINARY_OPERATOR(Int32, Int32, Int32)
 	IL_BINARY_OPERATOR(UInt32, UInt32, UInt32)
 	IL_BINARY_OPERATOR(Int64, Int64, Int64)

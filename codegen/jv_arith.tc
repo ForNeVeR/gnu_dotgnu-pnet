@@ -1001,6 +1001,13 @@ JavaBinary_ApplyOp(ILNode_Rem, ILMachineType_ManagedValue)
 /*
  * Apply the bitwise AND operator to various types.
  */
+JavaBitwise_ApplyOp(ILNode_And, ILMachineType_Boolean)
+{
+	/* Returns true if both arguments are true.  We assume
+	   that both arguments are clamped to the set {0,1} */
+	JavaGenSimple(info, JAVA_OP_IAND);
+	JavaGenAdjust(info, -1);
+}
 JavaBitwise_ApplyOp(ILNode_And, ILMachineType_Int8)
 {
 	/* Perform the operation and then clamp the result to "int8" */
@@ -1037,7 +1044,6 @@ JavaBitwise_ApplyOp(ILNode_And, ILMachineType_Float64),
 JavaBitwise_ApplyOp(ILNode_And, ILMachineType_NativeFloat),
 JavaBitwise_ApplyOp(ILNode_And, ILMachineType_Decimal),
 JavaBitwise_ApplyOp(ILNode_And, ILMachineType_Void),
-JavaBitwise_ApplyOp(ILNode_And, ILMachineType_Boolean),
 JavaBitwise_ApplyOp(ILNode_And, ILMachineType_String),
 JavaBitwise_ApplyOp(ILNode_And, ILMachineType_ObjectRef),
 JavaBitwise_ApplyOp(ILNode_And, ILMachineType_UnmanagedPtr),
@@ -1053,6 +1059,13 @@ JavaBitwise_ApplyOp(ILNode_And, ILMachineType_ManagedValue)
 /*
  * Apply the bitwise OR operator to various types.
  */
+JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_Boolean)
+{
+	/* Returns true if one of the arguments is true.  We assume
+	   that both arguments are clamped to the set {0,1} */
+	JavaGenSimple(info, JAVA_OP_IOR);
+	JavaGenAdjust(info, -1);
+}
 JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_Int8),
 JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_UInt8),
 JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_Int16),
@@ -1077,7 +1090,6 @@ JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_Float64),
 JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_NativeFloat),
 JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_Decimal),
 JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_Void),
-JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_Boolean),
 JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_String),
 JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_ObjectRef),
 JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_UnmanagedPtr),
@@ -1093,6 +1105,13 @@ JavaBitwise_ApplyOp(ILNode_Or, ILMachineType_ManagedValue)
 /*
  * Apply the bitwise XOR operator to various types.
  */
+JavaBitwise_ApplyOp(ILNode_Xor, ILMachineType_Boolean)
+{
+	/* Returns the XOR of the boolean arguments.  We assume
+	   that both arguments are clamped to the set {0,1} */
+	JavaGenSimple(info, JAVA_OP_IXOR);
+	JavaGenAdjust(info, -1);
+}
 JavaBitwise_ApplyOp(ILNode_Xor, ILMachineType_Int8)
 {
 	/* Perform the operation and then clamp the result to "int8" */
@@ -1129,7 +1148,6 @@ JavaBitwise_ApplyOp(ILNode_Xor, ILMachineType_Float64),
 JavaBitwise_ApplyOp(ILNode_Xor, ILMachineType_NativeFloat),
 JavaBitwise_ApplyOp(ILNode_Xor, ILMachineType_Decimal),
 JavaBitwise_ApplyOp(ILNode_Xor, ILMachineType_Void),
-JavaBitwise_ApplyOp(ILNode_Xor, ILMachineType_Boolean),
 JavaBitwise_ApplyOp(ILNode_Xor, ILMachineType_String),
 JavaBitwise_ApplyOp(ILNode_Xor, ILMachineType_ObjectRef),
 JavaBitwise_ApplyOp(ILNode_Xor, ILMachineType_UnmanagedPtr),

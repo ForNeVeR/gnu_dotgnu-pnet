@@ -34,11 +34,91 @@ public sealed class Version : ICloneable, IComparable
 				build = -1;
 				revision = -1;
 			}
-	[TODO]
-	public Version(String version)
+
+	public Version(String version) 
 			{
-				// TODO
+				if (version == 0)
+				{
+					throw new ArgumentNullException
+						("version", _("Arg_NotNull"));
+				}
+
+				String[] substrings;
+				substrings = version.Split('.');
+
+				switch(substrings.Length)
+				{
+					case 2:
+						try
+						{
+							this.major = Int32.Parse(substrings[0]);
+							this.minor = Int32.Parse(substrings[1]);
+						}
+						catch(Exception e)
+						{
+							throw new FormatException
+								("version", _("Exception_Format"));
+						}
+						break;
+
+					case 3:
+						try
+						{
+							this.major = Int32.Parse(substrings[0]);
+							this.minor = Int32.Parse(substrings[1]);
+							this.revision = Int32.Parse(substrings[2]);
+						}
+						catch(Exception e)
+						{
+							throw new FormatException
+								("version", _("Exception_Format"));
+						}
+						break;
+
+					case 4:
+						try
+						{
+							this.major = Int32.Parse(substrings[0]);
+							this.minor = Int32.Parse(substrings[1]);
+							this.revision = Int32.Parse(substrings[2]);
+							this.build = Int32.Parse(substrings[3]);
+						}
+						catch(Exception e)
+						{
+							throw new FormatException
+								("version", _("Exception_Format"));
+						}
+						break;
+
+					default:
+						throw new ArgumentException
+							("version", _("Arg_VersionFields"));
+						break;
+				}
+
+				if(this.major < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("major", _("ArgRange_NonNegative"));
+				}
+				if(this.minor < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("minor", _("ArgRange_NonNegative"));
+				}
+				if(this.build < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("build", _("ArgRange_NonNegative"));
+				}
+				if(this.revision < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("revision", _("ArgRange_NonNegative"));
+				}
 			}
+
+
 	public Version(int major, int minor)
 			{
 				if(major < 0)

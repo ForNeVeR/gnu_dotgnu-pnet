@@ -114,7 +114,7 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 	writer->entryPoint = 0;
 	writer->sections = 0;
 	writer->stream = stream;
-	writer->seekable = seekable;
+	writer->seekable = (stream ? seekable : 0);
 	writer->outOfMemory = 0;
 	writer->writeFailed = 0;
 	writer->debugTokens = 0;
@@ -162,17 +162,11 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 
 void ILWriterSetStream(ILWriter *writer, FILE *stream, int seekable)
 {
-	if (!(writer->stream))
+	if (!(writer->stream) && stream)
 	{
 		writer->stream = stream;
 		writer->seekable = seekable;
 	}
-}
-
-void ILWriterResetTypeAndFlags(ILWriter *writer, int type, int flags)
-{
-	writer->type = type;
-	writer->flags = flags;
 }
 
 /*

@@ -96,9 +96,12 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags);
 void ILWriterSetStream(ILWriter *writer, FILE *stream, int seekable);
 
 /*
- * Reset the type and flags of the image writer.
+ * Reset the type and flags of the image writer. If the current or given types
+ * are not equal to either IL_IMAGETYPE_DLL or IL_IMAGETYPE_EXE then nothing is
+ * changed. If the current or given flags have IL_WRITEFLAG_JVM_MODE set then
+ * nothing is changed. Returns 1 on success, 0 on failure.
  */
-void ILWriterResetTypeAndFlags(ILWriter *writer, int type, int flags);
+int ILWriterResetTypeAndFlags(ILWriter *writer, int type, int flags);
 
 /*
  * Output the metadata from an image structure into an

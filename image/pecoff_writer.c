@@ -1071,6 +1071,60 @@ void _ILWriteFieldRVAFixups(ILWriter *writer, unsigned long dataSection,
 	}
 }
 
+int ILWriterResetTypeAndFlags(ILWriter *writer, int type, int flags)
+{
+	if (type != IL_IMAGETYPE_DLL &&
+	    type != IL_IMAGETYPE_EXE)
+	{
+		return 0;
+	}
+	if (writer->type != IL_IMAGETYPE_DLL &&
+	    writer->type != IL_IMAGETYPE_EXE)
+	{
+		return 0;
+	}
+	if ((flags & IL_WRITEFLAG_JVM_MODE) != 0 ||
+	    (writer->flags & IL_WRITEFLAG_JVM_MODE) != 0)
+	{
+		return 0;
+	}
+	if (writer->type != type)
+	{
+		writer->type = type;
+		if(type == IL_IMAGETYPE_DLL)
+		{
+			WriteBackPatch16(writer, (writer->peOffset)+18, 0x210E);
+			WriteBackPatch32(writer, (writer->optOffset)+28, 0x10000000);
+		}
+		else
+		{
+			WriteBackPatch16(writer, (writer->peOffset)+18, 0x010E);
+			WriteBackPatch32(writer, (writer->optOffset)+28, 0x00400000);
+		}
+	}
+	if (writer->flags != flags)
+	{
+		writer->flags = flags;
+		if((flags & IL_WRITEFLAG_SUBSYS_GUI) != 0)
+		{
+			WriteBackPatch16(writer, (writer->optOffset)+68, 2);
+		}
+		else
+		{
+			WriteBackPatch16(writer, (writer->optOffset)+68, 3);
+		}
+		if((flags & IL_WRITEFLAG_32BIT_ONLY) != 0)
+		{
+			WriteBackPatch32(writer, (writer->runtimeOffset)+16, 3);
+		}
+		else
+		{
+			WriteBackPatch32(writer, (writer->runtimeOffset)+16, 1);
+		}
+	}
+	return 1;
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -37,6 +37,15 @@
 	* image/writer.c, include/il_writer.h: add functions for resetting
 	ILWriter properties normally provided on writer creation.
 
+	* engine/lib_emit.c: implement a couple more internal calls.
+
+	* image/pecoff_writer.c, image/writer.c, include/il_writer.h: modify
+	ILWriterResetTypeAndFlags to fix the pe headers using back-patching and
+	default seekable to false in ILWriterCreate if the supplied stream is
+	null.
+
+	* include/il_types.h: add ILType_IsField macro.
+
 2003-07-19  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_type.c: enable GetType of array expressions like

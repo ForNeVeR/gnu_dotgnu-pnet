@@ -1531,8 +1531,49 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateMethodCopy(ILExecThread *_thread,
                                                        ILNativeInt module,
                                                        ILInt32 methodToken)
 {
-	/* TODO */
-	return 0;
+	ILType *retval;
+	ILContext *cntxt;
+	ILProgramItem *item;
+	ILImage *image;
+	ILMethod *method;
+	ILType *methodType;
+	ILType *tmp;
+	ILUInt32 callConv;
+	unsigned long params;
+	unsigned long i;
+
+	if (!context || !module) { return 0; }
+
+	IL_METADATA_WRLOCK(_thread);
+
+	cntxt = (ILContext *)context;
+	item = (ILProgramItem *)module;
+	image = ILProgramItem_Image(item);
+	method = ILMethod_FromToken(image, (ILToken)methodToken);
+	methodType = ILMethod_Signature(method);
+	tmp = ILTypeGetReturnWithPrefixes(methodType);
+	callConv = ILType_CallConv(methodType);
+	if (!(retval = ILTypeCreateMethod(cntxt, tmp)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	ILTypeSetCallConv(retval, callConv);
+	params = ILTypeNumParams(methodType);
+	for (i = 0; i < params; ++i)
+	{
+		tmp = ILTypeGetParamWithPrefixes(methodType, i);
+		if (!(ILTypeAddParam(cntxt, retval, tmp)))
+		{
+			IL_METADATA_UNLOCK(_thread);
+			ILExecThreadThrowOutOfMemory(_thread);
+			return 0;
+		}
+	}
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILNativeInt)retval;
 }
 
 /*
@@ -1568,8 +1609,51 @@ System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
                                                  ILNativeInt module,
                                                  ILNativeInt sig)
 {
-	/* TODO */
-	return 0;
+	ILProgramItem *item;
+	ILImage *image;
+	ILType *type;
+	ILUInt8 *buf;
+	System_Array *bytes;
+	unsigned long offset;
+	unsigned long length;
+	unsigned char *blob;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	item = (ILProgramItem *)module;
+	image = ILProgramItem_Image(item);
+	type = (ILType *)sig;
+	if (ILType_IsMethod(type))
+	{
+		offset = ILTypeToMethodSig(image, type);
+	}
+	else if (ILType_IsField(type))
+	{
+		offset = ILTypeToFieldSig(image, type);
+	}
+	else
+	{
+		offset = ILTypeToOtherSig(image, type);
+	}
+	if (!offset)
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	blob = (unsigned char *)ILImageGetBlob(image, offset, &length);
+	bytes = (System_Array *)ILExecThreadNew(_thread, "[B", "(Ti)V", (ILVaInt)length);
+	if (!bytes)
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	buf = (ILUInt8 *)ArrayToBuffer(bytes);
+	ILMemCpy(buf, blob, length);
+
+	IL_METADATA_UNLOCK(_thread);
+	return bytes;
 }
 
 /*

@@ -2557,7 +2557,7 @@ namespace FormsTest
 			try
 			{
 				using (Graphics g = Graphics.FromImage(imageNew))
-					g.DrawImage(imageOld, 0, 0, width - 1, height - 1);
+					g.DrawImage(imageOld, 0, 0, width, height);
 			}
 			catch
 			{
@@ -2893,7 +2893,7 @@ namespace FormsTest
 		{
 			formsButton1 = new Button();
 			formsButton1.Bounds = new Rectangle(20, 20, 120, 20);
-			formsButton1.Text = "New Normal Form";
+			formsButton1.Text = "New Normal &Form";
 			formsButton1.Click+=new EventHandler(FormsTestClick);
 
 			formsButton2 = new Button();

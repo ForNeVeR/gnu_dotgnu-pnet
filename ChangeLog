@@ -38,6 +38,9 @@
 	Invalidate. This should stop the occasional "hang" noticed before.
 	FlushInvalidate now updates without clearing. This stops flickering.
 
+	* System.Windows.Forms/Control.cs, samples/forms/FormsTest.cs:
+	change Update to update children. small fix to images test.
+
 2004-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing.Xsharp/DrawingWindowBuffer.cs,

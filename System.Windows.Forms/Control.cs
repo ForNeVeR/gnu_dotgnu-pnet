@@ -1876,7 +1876,7 @@ public class Control : IWin32Window, IDisposable
 					for(int i = 0; i < numChildren; i++)
 					{
 						Control child = children[i];
-						if (child.Visible)
+						if (child.visible)
 						{
 							Region region1 = (Region)region.Clone();
 							region1.Intersect(child.Bounds);
@@ -1890,7 +1890,7 @@ public class Control : IWin32Window, IDisposable
 				for(int i = 0; i < numChildren; i++)
 				{
 					Control child = children[i];
-					if (child.Visible)
+					if (child.visible)
 					{
 						region.Exclude(children[i].Bounds);
 					}
@@ -2749,8 +2749,19 @@ public class Control : IWin32Window, IDisposable
 	// Update the invalidated regions in this control.
 	public void Update()
 			{
-				if (toolkitWindow != null)
-					toolkitWindow.Update();
+				if (toolkitWindow == null || !visible)
+				{
+					return;
+				}
+				for(int i = 0; i < numChildren; i++)
+				{
+					Control child = children[i];
+					if (child.visible)
+					{
+						child.Update();
+					}
+				}
+				toolkitWindow.Update();
 			}
 
 	// Update the bounds of the control.

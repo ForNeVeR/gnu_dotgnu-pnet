@@ -1,4 +1,10 @@
 
+2003-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/process.c: set the "system" image when the standard
+	classes are loaded so that types like "System.Array" get resolved
+	properly by "ILClassResolveSystem".
+
 2003-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_object.c:

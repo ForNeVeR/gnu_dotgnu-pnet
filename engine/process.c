@@ -489,6 +489,10 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 			"OutOfMemoryException", "System");
 		if(classInfo)
 		{
+			/* Set the system image, for standard type resolutions */
+			ILContextSetSystem(ILImageToContext(image),
+						   	   ILProgramItem_Image(classInfo));
+
 			/* We don't call the "OutOfMemoryException" constructor,
 			to avoid various circularity problems at this stage
 			of the loading process */

@@ -721,7 +721,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 	// if the name is invalid.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static Object GetEnumValueFromName
-				(Type enumType, Object value, bool ignoreCase);
+				(Type enumType, String name, bool ignoreCase);
 
 	// Or two enumerated values together to form a new value.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -10,6 +10,9 @@
 	implement weak references in terms of GC handles; fine-tune the
 	internalcall interface for GC handles.
 
+	* runtime/System/Enum.cs: rationalise parameter naming for
+	"Enum.GetEnumValueFromName".
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/NotImplementedException.cs: add the exception

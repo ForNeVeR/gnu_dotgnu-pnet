@@ -1,4 +1,9 @@
 
+2004-09-15  Gopal V  <gopalv82@yahoo.com>
+
+	* samples/jscript/hello.js, samples/jscript/md5.js,
+	samples/jscript/sha1.js: Add some jscript samples .
+
 2004-09-14  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Collections/Hashtable.cs: Fix a few cases where 

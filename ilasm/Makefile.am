@@ -21,7 +21,7 @@ CLEANFILES = ilasm_grammar.c ilasm_scanner.c ilasm_grammar.h
 AM_CFLAGS = -I$(top_srcdir)/include
 
 install-data-local:
-	$(LN_S) -s ilasm.1.gz $(DESTDIR)$(man1dir)/al.1.gz
+	$(LN_S) -f ilasm.1.gz $(DESTDIR)$(man1dir)/al.1.gz
 
 uninstall-local:
 	rm -f $(DESTDIR)$(man1dir)/al.1.gz

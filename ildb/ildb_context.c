@@ -32,6 +32,9 @@ ILDb *ILDbCreate(int argc, char **argv)
 {
 	ILDb *db;
 
+	/* Initialize the runtime engine's global data */
+	ILExecInit(0);
+
 	/* Allocate and initialize the context structure */
 	if((db = (ILDb *)ILMalloc(sizeof(ILDb))) == 0)
 	{
@@ -45,6 +48,11 @@ ILDb *ILDbCreate(int argc, char **argv)
 	db->listSize = 10;
 	db->process = 0;
 	db->dbgContext = 0;
+	db->debugProgram = 0;
+	db->args = 0;
+	db->entryPoint = 0;
+	db->running = 0;
+	db->printFullNames = 0;
 
 	/* Set the initial source directory search path */
 	db->dirSearch = 0;
@@ -52,6 +60,7 @@ ILDb *ILDbCreate(int argc, char **argv)
 	ILDbSearchReset(db);
 
 	/* Register the standard command lists */
+	ILDbRegisterCommands(db, ILDbRunCommands, ILDbNumRunCommands);
 	ILDbRegisterCommands(db, ILDbListCommands, ILDbNumListCommands);
 	ILDbRegisterCommands(db, ILDbDisplayCommands, ILDbNumDisplayCommands);
 	ILDbRegisterCommands(db, ILDbShowCommands, ILDbNumShowCommands);
@@ -65,6 +74,14 @@ ILDb *ILDbCreate(int argc, char **argv)
 
 void ILDbDestroy(ILDb *db)
 {
+	if(db->debugProgram)
+	{
+		ILFree(db->debugProgram);
+	}
+	ILDbFreeStringArray(db->args, -1);
+	if(db->args)
+	{
+	}
 	if(db->dbgContext)
 	{
 		ILDebugDestroy(db->dbgContext);

@@ -46,6 +46,21 @@ char *ILDbInputGetLine(char *prompt);
  */
 void ILDbInputClearRepeat(void);
 
+/*
+ * Disable input temporarily.
+ */
+void ILDbInputDisable(void);
+
+/*
+ * Re-enable input.
+ */
+void ILDbInputEnable(void);
+
+/*
+ * Confirm an action by action for a y/n answer.
+ */
+int ILDbInputConfirm(char *prompt, int defAnswer);
+
 #ifdef	__cplusplus
 };
 #endif

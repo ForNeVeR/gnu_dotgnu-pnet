@@ -9,10 +9,12 @@ ildb_SOURCES = ildb_cmd.c \
 			   ildb_list.c \
 			   ildb_main.c \
 			   ildb_parse.c \
+			   ildb_run.c \
 			   ildb_search.c \
 			   ildb_set.c \
 			   ildb_show.c \
-			   ildb_system.c
+			   ildb_system.c \
+			   ildb_utils.c
 ildb_LDADD   = ../engine/libILEngine.a ../image/libILImage.a \
 			   ../support/libILSupport.a $(FFILIBS) $(GCLIBS) \
 			   $(READLINELIBS)

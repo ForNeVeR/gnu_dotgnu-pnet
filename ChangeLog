@@ -4,6 +4,12 @@
 	* ildb/ildb_display.c, ildb/ildb_utils.h: debugger support for
 	printing the contents of memory values.
 
+	* ildb/Makefile.am, ildb/ildb_cmd.h, ildb/ildb_context.c,
+	ildb/ildb_context.h, ildb/ildb_input.c, ildb/ildb_input.h,
+	ildb/ildb_main.c, ildb/ildb_run.c, ildb/ildb_utils.c,
+	ildb/ildb_utils.h: add support to the debugger to load and run
+	applications (breakpoints are not yet supported though).
+
 2002-06-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lookup.c (CSResolveMemberName): special hack

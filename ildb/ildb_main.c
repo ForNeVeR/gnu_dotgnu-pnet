@@ -22,6 +22,7 @@
 #include "ildb_input.h"
 #include "ildb_cmd.h"
 #include "ildb_utils.h"
+#include "ildb_search.h"
 #include "il_system.h"
 
 #ifdef	__cplusplus
@@ -108,7 +109,7 @@ int main(int argc, char *argv[])
 			else if(!strncmp(argv[arg], "-directory=", 11))
 			{
 				/* Directory to add to search path: form 1 */
-				/* TODO */
+				ILDbSearchAdd(db, argv[arg] + 11);
 			}
 			else if(!strcmp(argv[arg], "-d") ||
 			        !strcmp(argv[arg], "-directory"))
@@ -117,7 +118,7 @@ int main(int argc, char *argv[])
 				if(arg < (argc - 1))
 				{
 					++arg;
-					/* TODO */
+					ILDbSearchAdd(db, argv[arg]);
 				}
 			}
 			else if(!strcmp(argv[arg], "-quiet") ||
@@ -151,7 +152,7 @@ int main(int argc, char *argv[])
 					!strcmp(argv[arg], "-f"))
 			{
 				/* Print the full name information when stopped */
-				/* TODO */
+				db->printFullNames = 1;
 			}
 			else if(!strcmp(argv[arg], "-trace"))
 			{
@@ -248,6 +249,18 @@ int main(int argc, char *argv[])
 	{
 		fputs(header, stdout);
 		fflush(stdout);
+	}
+
+	/* Load the program to be debugged */
+	if(debugProgram)
+	{
+		debugProgram = ILExpandFilename(debugProgram, (char *)0);
+		if(!debugProgram)
+		{
+			ILDbOutOfMemory(db);
+		}
+		db->debugProgram = debugProgram;
+		ILDbCreateProcess(db);
 	}
 
 	/* Enter the main input loop */

@@ -22,6 +22,7 @@
 #define	_ILDB_CONTEXT_H
 
 #include <stdio.h>
+#include <setjmp.h>
 #include "il_engine.h"
 #include "il_debug.h"
 
@@ -49,6 +50,12 @@ typedef struct
 	unsigned long	listSize;			/* Default size for "list" displays */
 	ILExecProcess  *process;			/* Process that is being debugged */
 	ILDebugContext *dbgContext;			/* Current debug context */
+	char           *debugProgram;		/* Program being debugged */
+	char          **args;				/* Arguments for the program */
+	ILMethod       *entryPoint;			/* Entry point for the program */
+	int				running;			/* Non-zero if program is running */
+	jmp_buf			jumpBack;			/* Jump point to abort the program */
+	int				printFullNames;		/* Print full names when stopped */
 
 } ILDb;
 
@@ -66,6 +73,12 @@ void ILDbDestroy(ILDb *db);
  * Get a debug context for a specific image.
  */
 ILDebugContext *ILDbGetDebugContext(ILDb *db, ILImage *image);
+
+/*
+ * Create the process information for an application.
+ * Returns zero if something went wrong.
+ */
+int ILDbCreateProcess(ILDb *db);
 
 #ifdef	__cplusplus
 };

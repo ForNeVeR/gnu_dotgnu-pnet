@@ -72,6 +72,8 @@ void ILDbDispatchCommand(ILDb *db, char *cmd);
 /*
  * Standard command lists.
  */
+extern ILDbCmdInfo ILDbRunCommands[];
+extern int         ILDbNumRunCommands;
 extern ILDbCmdInfo ILDbListCommands[];
 extern int         ILDbNumListCommands;
 extern ILDbCmdInfo ILDbDisplayCommands[];

@@ -173,6 +173,52 @@ void ILDbInputClearRepeat(void)
 	canRepeat = 0;
 }
 
+void ILDbInputDisable(void)
+{
+}
+
+void ILDbInputEnable(void)
+{
+}
+
+int ILDbInputConfirm(char *prompt, int defAnswer)
+{
+	char *line;
+	ILDbInputClearRepeat();
+	do
+	{
+		line = ILDbInputGetLine(prompt);
+		ILDbInputClearRepeat();
+		if(!line)
+		{
+			return defAnswer;
+		}
+		while(*line != '\0')
+		{
+			if(*line != ' ' && *line != '\t')
+			{
+				break;
+			}
+			++line;
+		}
+		if(*line == 'y' || *line == 'Y')
+		{
+			return 1;
+		}
+		else if(*line == 'n' || *line == 'N')
+		{
+			return 0;
+		}
+		else if(*line != '\0')
+		{
+			fputs("Incorrect response. Please enter y or n.\n", stdout);
+			fflush(stdout);
+		}
+	}
+	while(*line != '\0');
+	return defAnswer;
+}
+
 #ifdef	__cplusplus
 };
 #endif

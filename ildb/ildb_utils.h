@@ -83,6 +83,16 @@ void ILDbPrintValue(ILExecThread *thread, void *ptr, ILType *type,
 void ILDbPrintStatic(ILExecThread *thread, ILClass *classInfo,
 					 int expand, int hexFlag);
 
+/*
+ * Duplicate an array of strings.
+ */
+char **ILDbDupStringArray(ILDb *db, char **array, int len);
+
+/*
+ * Free an array of strings.
+ */
+void ILDbFreeStringArray(char **array, int len);
+
 #ifdef	__cplusplus
 };
 #endif

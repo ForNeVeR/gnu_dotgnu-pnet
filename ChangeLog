@@ -7,6 +7,8 @@
 	support/w32_defs.h: rearrange the threading code so that
 	90% of it is common between platforms.
 
+	* support/w32_defs.h: minor macro bugs in previous check-in.
+
 2002-04-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/pt_include.h, support/pt_mutex.c, support/pt_thread.c,

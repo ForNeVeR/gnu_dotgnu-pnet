@@ -55,7 +55,7 @@ typedef CRITICAL_SECTION	_ILRWLock;
 			} while (0)
 #define	_ILThreadSuspendSelf(thread)	\
 			do { \
-				WaitForSingleObject(thread->resumeAck, INFINITE);
+				WaitForSingleObject(thread->resumeAck, INFINITE); \
 			} while (0)
 #define	_ILThreadResumeOther(thread)	\
 			do { \
@@ -115,11 +115,11 @@ typedef CRITICAL_SECTION	_ILRWLock;
  * Primitive read/write lock operations.  Note: the "Lock" and
  * "Unlock" operations are not "suspend-safe".
  */
-#define	_ILRWLockCreate(rwlock)				(_ILMutexCreate((rwlock)))
-#define	_ILRWLockDestroy(rwlock)			(_ILMutexDestroy((rwlock)))
-#define	_ILRWLockReadLockUnsafe(rwlock)		(_ILMutexLockUnsafe((rwlock)))
-#define	_ILRWLockWriteLockUnsafe(rwlock)	(_ILMutexLockUnsafe((rwlock)))
-#define	_ILRWLockUnlockUnsafe(rwlock)		(_ILMutexUnlockUnsafe((rwlock)))
+#define	_ILRWLockCreate(rwlock)				_ILMutexCreate((rwlock))
+#define	_ILRWLockDestroy(rwlock)			_ILMutexDestroy((rwlock))
+#define	_ILRWLockReadLockUnsafe(rwlock)		_ILMutexLockUnsafe((rwlock))
+#define	_ILRWLockWriteLockUnsafe(rwlock)	_ILMutexLockUnsafe((rwlock))
+#define	_ILRWLockUnlockUnsafe(rwlock)		_ILMutexUnlockUnsafe((rwlock))
 
 /*
  * Primitive semaphore operations.

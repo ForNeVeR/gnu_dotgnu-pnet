@@ -26,6 +26,9 @@
 	fix bug #4197 - "unchecked" is required for numeric constant
 	casts such as "uint" to "int".
 
+	* Makefile.am, configure.in, ilstrip/.cvsignore, ilstrip/Makefile.am,
+	ilstrip/ilstrip.1, ilstrip/ilstrip.c: add the "ilstrip" program.
+
 2003-07-04  Gopal.V  <gopalv82@symonds.net>
 	
 	* include/il_sysio.h, support/socket.c: Partially implelement the 

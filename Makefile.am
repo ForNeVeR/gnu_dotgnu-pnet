@@ -3,7 +3,7 @@ if PNET_TOOLS
 
 SUBDIRS = . include support image dumpasm engine ilasm ildasm \
 		  ilalink ilsize ilnative ilheader ilfind ildiff ildd codegen cscc \
-		  resgen ildb csdoc csant clrwrap samples doc tests
+		  resgen ilstrip ildb csdoc csant clrwrap samples doc tests
 
 else
 

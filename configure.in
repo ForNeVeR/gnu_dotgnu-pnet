@@ -423,6 +423,7 @@ cscc/vb/Makefile
 cscc/java/Makefile
 cscc/bf/Makefile
 resgen/Makefile
+ilstrip/Makefile
 ildb/Makefile
 csdoc/Makefile
 csant/Makefile

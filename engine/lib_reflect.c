@@ -119,7 +119,7 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 	System_Array * arrayVal;
 	ILObject ** buf;
 	ILType *typeAttr;
-	ILType *systemType=ILExecThreadLookupType(thread,"oSystem.Type");
+	ILType *systemType=ILExecThreadLookupType(thread,"oSystem.Type;");
 	ILClass *classInfo;
 	char *copyStr;
 	

@@ -243,10 +243,7 @@ public sealed class Dns
 	// Get the host name of the local machine.
 	public static String GetHostName()
 			{
-				IPHostEntry x=GetHostByAddress(IPAddress.Loopback);
-				// this is a crude hack , call gethostname() from
-				// icalls later
-				return x.HostName;
+				return DnsMethods.InternalGetHostName();			
 			}
 
 	// Resolve a name or IP address synchronously.

@@ -4,8 +4,11 @@
 	* System/Net/Dns.cs, System/Platform/DnsMethods.cs: Create a new
 	DnsMethods class and move all internal calls in Dns class .
 
-	* System/Net/DnsMethods.cs: Add InternalGetHostName to get the 
+	* System/Platform/DnsMethods.cs: Add InternalGetHostName to get the 
 	primary hostname of localhost.
+
+	* System/Net/Dns.cs: Hook up the DnsMethods.InternalGetHostName from 
+	Dns.GetHostName()
 
 2004-06-17  Thong Nguyen  <tum@veridicus.com>
 

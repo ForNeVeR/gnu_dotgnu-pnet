@@ -29,14 +29,31 @@ using I18N.Common;
 
 public class CID0016 : RootCulture
 {
-	private CultureName cultureName;
+	public CID0016() : base(0x0016) {}
+	public CID0016(int culture) : base(culture) {}
 
-	public CID0016()
-		: base(0x0016, CultureNameTable.GetNameInfoByID(0x0016)) {}
-	public CID0016(int culture, CultureName cultureName)
-		: base(culture, cultureName) {}
-
-	public override String Language
+	public override String Name
+	{
+		get
+		{
+			return "pt";
+		}
+	}
+	public override String ThreeLetterISOLanguageName
+	{
+		get
+		{
+			return "por";
+		}
+	}
+	public override String ThreeLetterWindowsLanguageName
+	{
+		get
+		{
+			return "PTB";
+		}
+	}
+	public override String TwoLetterISOLanguageName
 	{
 		get
 		{

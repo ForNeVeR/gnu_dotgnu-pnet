@@ -11,6 +11,9 @@
 	NativeName, based on the information in the locale files;
 	move the English locales into "I18N.dll" to support EnglishName.
 
+	* I18N/*: remove the final dependencies on CultureNameTable
+	by moving the name information into the culture handlers.
+
 2003-06-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Uri.cs: Remove multiple static constructors in the code.

@@ -29,14 +29,20 @@ using I18N.Common;
 
 public class CID1007 : CID0007
 {
-	public CID1007()
-		: base(0x1007, CultureNameTable.GetNameInfoByID(0x1007)) {}
+	public CID1007() : base(0x1007) {}
 
-	public override String Language
+	public override String Name
 	{
 		get
 		{
-			return "de";
+			return "de-LU";
+		}
+	}
+	public override String ThreeLetterWindowsLanguageName
+	{
+		get
+		{
+			return "DEL";
 		}
 	}
 	public override String Country

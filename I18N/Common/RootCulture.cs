@@ -28,13 +28,7 @@ using System.Globalization;
 
 public abstract class RootCulture : CultureInfo
 {
-	private CultureName cultureName;
-
-	public RootCulture(int culture, CultureName cultureName)
-		: base(0x40000000 + culture)
-	{
-		this.cultureName = cultureName;
-	}
+	public RootCulture(int culture) : base(0x40000000 + culture) {}
 
 	public override String DisplayName
 	{
@@ -50,13 +44,6 @@ public abstract class RootCulture : CultureInfo
 			return Manager.GetEnglishName(this);
 		}
 	}
-	public override String Name
-	{
-		get
-		{
-			return cultureName.name;
-		}
-	}
 	public override String NativeName
 	{
 		get
@@ -64,29 +51,6 @@ public abstract class RootCulture : CultureInfo
 			return Manager.GetNativeName(this);
 		}
 	}
-	public override String ThreeLetterISOLanguageName
-	{
-		get
-		{
-			return cultureName.threeLetterISOName;
-		}
-	}
-	public override String ThreeLetterWindowsLanguageName
-	{
-		get
-		{
-			return cultureName.threeLetterWindowsName;
-		}
-	}
-	public override String TwoLetterISOLanguageName
-	{
-		get
-		{
-			return cultureName.twoLetterISOName;
-		}
-	}
-
-	public abstract String Language { get; }
 	public virtual String Country
 	{
 		get

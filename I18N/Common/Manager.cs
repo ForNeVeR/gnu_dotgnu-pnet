@@ -163,17 +163,38 @@ public class Manager
 	// Determine if a particular culture exists.
 	public bool HasCulture(int culture)
 			{
-				return (CultureNameTable.GetNameInfoByID(culture) != null);
+				// Create the hex version of the culture identifier.
+				StringBuilder builder = new StringBuilder();
+				builder.Append("CID");
+				builder.Append(hex[(culture >> 12) & 0x0F]);
+				builder.Append(hex[(culture >> 8) & 0x0F]);
+				builder.Append(hex[(culture >> 4) & 0x0F]);
+				builder.Append(hex[culture & 0x0F]);
+				String name = builder.ToString();
+
+				// Determine if a handler exists for this culture.
+				return (handlers.IndexOf(name) != -1);
 			}
 	public bool HasCulture(String name)
 			{
-				return (CultureNameTable.GetNameInfoByName(name) != null);
+				// Validate the parameter.
+				if(name == null)
+				{
+					return false;
+				}
+
+				// Normalize the culture name.
+				name = Normalize(name);
+
+				// Determine if a handler exists for this culture.
+				return (handlers.IndexOf(name) != -1);
 			}
 
 	// Resolve a culture name using a string culture.
 	private static String GetCultureName(RootCulture info, RootCulture str)
 			{
-				String name = str.ResolveLanguage(info.Language);
+				String name = str.ResolveLanguage
+					(info.TwoLetterISOLanguageName);
 				String country = info.Country;
 				if(country != null)
 				{

@@ -28,6 +28,9 @@ Usage: loc2cul [options] file
 	--name str				Human-readable culture name (e.g. "en-US")
 	--alias str				Human-readable alias name
 	--root					Generate definitions for the root culture
+	--iso2 str				Two-letter ISO name
+	--iso3 str				Three-letter ISO name
+	--windows str			Three-letter Windows name
 
 */
 
@@ -42,6 +45,9 @@ static char *region = 0;
 static int identifier = 0;
 static char *name = 0;
 static char *alias = 0;
+static char *iso2 = 0;
+static char *iso3 = 0;
+static char *windows = 0;
 static const char *filename = 0;
 
 /*
@@ -87,6 +93,23 @@ int main(int argc, char *argv[])
 			alias = argv[2];
 			++argv;
 			--argc;
+		}
+		else if(!strcmp(argv[1], "--iso2") && argc > 2)
+		{
+			iso2 = argv[2];
+			++argv;
+			--argc;
+		}
+		else if(!strcmp(argv[1], "--iso3") && argc > 2)
+		{
+			iso3 = argv[2];
+			++argv;
+			--argc;
+		}
+		else if(!strcmp(argv[1], "--windows") && argc > 2)
+		{
+			windows = argv[2];
+			++argv;
 		}
 		else if(!strcmp(argv[1], "--root"))
 		{
@@ -144,6 +167,9 @@ static void usage(char *progname)
 	fprintf(stderr, "    --name str       Human-readable culture name\n");
 	fprintf(stderr, "    --alias str      Human-readable alias name\n");
 	fprintf(stderr, "    --root           Generate definitions for the root culture\n");
+	fprintf(stderr, "    --iso2 str       Two-letter ISO name\n");
+	fprintf(stderr, "    --iso3 str       Three-letter ISO name\n");
+	fprintf(stderr, "    --windows str    Three-letter Windows name\n");
 }
 
 /*
@@ -567,12 +593,8 @@ static void printHeader(void)
 		   definition, and that it should not attempt to recursively
 		   load the culture again */
 		printf("public abstract class RootCulture : CultureInfo\n{\n");
-		printf("\tprivate CultureName cultureName;\n\n");
-		printf("\tpublic RootCulture(int culture, CultureName cultureName)\n");
-		printf("\t\t: base(0x40000000 + culture)\n");
-		printf("\t{\n");
-		printf("\t\tthis.cultureName = cultureName;\n");
-		printf("\t}\n\n");
+		printf("\tpublic RootCulture(int culture) ");
+		printf(": base(0x40000000 + culture) {}\n\n");
 
 		/* Override the name properties */
 		printf("\tpublic override String DisplayName\n");
@@ -589,13 +611,6 @@ static void printHeader(void)
 		printf("\t\t\treturn Manager.GetEnglishName(this);\n");
 		printf("\t\t}\n");
 		printf("\t}\n");
-		printf("\tpublic override String Name\n");
-		printf("\t{\n");
-		printf("\t\tget\n");
-		printf("\t\t{\n");
-		printf("\t\t\treturn cultureName.name;\n");
-		printf("\t\t}\n");
-		printf("\t}\n");
 		printf("\tpublic override String NativeName\n");
 		printf("\t{\n");
 		printf("\t\tget\n");
@@ -603,30 +618,8 @@ static void printHeader(void)
 		printf("\t\t\treturn Manager.GetNativeName(this);\n");
 		printf("\t\t}\n");
 		printf("\t}\n");
-		printf("\tpublic override String ThreeLetterISOLanguageName\n");
-		printf("\t{\n");
-		printf("\t\tget\n");
-		printf("\t\t{\n");
-		printf("\t\t\treturn cultureName.threeLetterISOName;\n");
-		printf("\t\t}\n");
-		printf("\t}\n");
-		printf("\tpublic override String ThreeLetterWindowsLanguageName\n");
-		printf("\t{\n");
-		printf("\t\tget\n");
-		printf("\t\t{\n");
-		printf("\t\t\treturn cultureName.threeLetterWindowsName;\n");
-		printf("\t\t}\n");
-		printf("\t}\n");
-		printf("\tpublic override String TwoLetterISOLanguageName\n");
-		printf("\t{\n");
-		printf("\t\tget\n");
-		printf("\t\t{\n");
-		printf("\t\t\treturn cultureName.twoLetterISOName;\n");
-		printf("\t\t}\n");
-		printf("\t}\n\n");
 
-		/* Declare the "Language" and "Country" properties for the root */
-		printf("\tpublic abstract String Language { get; }\n");
+		/* Declare the "Country" property for the root */
 		printf("\tpublic virtual String Country\n");
 		printf("\t{\n");
 		printf("\t\tget\n");
@@ -639,14 +632,10 @@ static void printHeader(void)
 	{
 		/* This is a neutral culture: inherit from RootCulture */
 		printf("public class CID%04x : RootCulture\n{\n", identifier);
-		printf("\tprivate CultureName cultureName;\n\n");
-		printf("\tpublic CID%04x()\n", identifier);
-		printf("\t\t: base(0x%04X, "
-					"CultureNameTable.GetNameInfoByID(0x%04X)) {}\n",
-			   identifier, identifier);
-		printf("\tpublic CID%04x(int culture, CultureName cultureName)\n",
-			   identifier);
-		printf("\t\t: base(culture, cultureName) {}\n\n");
+		printf("\tpublic CID%04x() ", identifier);
+		printf(": base(0x%04X) {}\n", identifier);
+		printf("\tpublic CID%04x(int culture) ", identifier);
+		printf(": base(culture) {}\n\n");
 	}
 	else
 	{
@@ -654,21 +643,51 @@ static void printHeader(void)
 		   as to pick up default fallback behaviours */
 		printf("public class CID%04x : CID%04x\n{\n",
 			   identifier, (identifier & 0x03FF));
-		printf("\tpublic CID%04x()\n", identifier);
-		printf("\t\t: base(0x%04X, "
-					"CultureNameTable.GetNameInfoByID(0x%04X)) {}\n\n",
-			   identifier, identifier);
+		printf("\tpublic CID%04x() ", identifier);
+		printf(": base(0x%04X) {}\n\n", identifier);
 	}
 	if(identifier != 0)
 	{
-		/* Declare the "Language" and "Country" properties for a culture */
-		printf("\tpublic override String Language\n");
+		/* Declare the name properties */
+		printf("\tpublic override String Name\n");
 		printf("\t{\n");
 		printf("\t\tget\n");
 		printf("\t\t{\n");
-		printf("\t\t\treturn \"%c%c\";\n", name[0], name[1]);
+		printf("\t\t\treturn \"%s\";\n", name);
 		printf("\t\t}\n");
 		printf("\t}\n");
+		if(iso3)
+		{
+			printf("\tpublic override String ThreeLetterISOLanguageName\n");
+			printf("\t{\n");
+			printf("\t\tget\n");
+			printf("\t\t{\n");
+			printf("\t\t\treturn \"%s\";\n", iso3);
+			printf("\t\t}\n");
+			printf("\t}\n");
+		}
+		if(windows)
+		{
+			printf("\tpublic override String ThreeLetterWindowsLanguageName\n");
+			printf("\t{\n");
+			printf("\t\tget\n");
+			printf("\t\t{\n");
+			printf("\t\t\treturn \"%s\";\n", windows);
+			printf("\t\t}\n");
+			printf("\t}\n");
+		}
+		if(iso2)
+		{
+			printf("\tpublic override String TwoLetterISOLanguageName\n");
+			printf("\t{\n");
+			printf("\t\tget\n");
+			printf("\t\t{\n");
+			printf("\t\t\treturn \"%s\";\n", iso2);
+			printf("\t\t}\n");
+			printf("\t}\n");
+		}
+
+		/* Declare the "Country" property for a culture */
 		if(strlen(name) > 2)
 		{
 			printf("\tpublic override String Country\n");

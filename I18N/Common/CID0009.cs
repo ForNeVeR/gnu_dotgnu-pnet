@@ -28,14 +28,31 @@ using System.Globalization;
 
 public class CID0009 : RootCulture
 {
-	private CultureName cultureName;
+	public CID0009() : base(0x0009) {}
+	public CID0009(int culture) : base(culture) {}
 
-	public CID0009()
-		: base(0x0009, CultureNameTable.GetNameInfoByID(0x0009)) {}
-	public CID0009(int culture, CultureName cultureName)
-		: base(culture, cultureName) {}
-
-	public override String Language
+	public override String Name
+	{
+		get
+		{
+			return "en";
+		}
+	}
+	public override String ThreeLetterISOLanguageName
+	{
+		get
+		{
+			return "eng";
+		}
+	}
+	public override String ThreeLetterWindowsLanguageName
+	{
+		get
+		{
+			return "ENU";
+		}
+	}
+	public override String TwoLetterISOLanguageName
 	{
 		get
 		{

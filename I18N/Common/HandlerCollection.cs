@@ -50,7 +50,7 @@ public sealed class HandlerCollection : IDictionary
 			}
 
 	// Find the index of a specific name.
-	private int IndexOf(String name)
+	public int IndexOf(String name)
 			{
 				int posn;
 				for(posn = 0; posn < numHandlers; ++posn)

@@ -28,14 +28,20 @@ using System.Globalization;
 
 public class CID3409 : CID0009
 {
-	public CID3409()
-		: base(0x3409, CultureNameTable.GetNameInfoByID(0x3409)) {}
+	public CID3409() : base(0x3409) {}
 
-	public override String Language
+	public override String Name
 	{
 		get
 		{
-			return "en";
+			return "en-PH";
+		}
+	}
+	public override String ThreeLetterWindowsLanguageName
+	{
+		get
+		{
+			return "ENP";
 		}
 	}
 	public override String Country

@@ -28,14 +28,13 @@ using System.Globalization;
 
 public class CID0409 : CID0009
 {
-	public CID0409()
-		: base(0x0409, CultureNameTable.GetNameInfoByID(0x0409)) {}
+	public CID0409() : base(0x0409) {}
 
-	public override String Language
+	public override String Name
 	{
 		get
 		{
-			return "en";
+			return "en-US";
 		}
 	}
 	public override String Country

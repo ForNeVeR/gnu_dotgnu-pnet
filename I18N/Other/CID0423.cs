@@ -29,14 +29,13 @@ using I18N.Common;
 
 public class CID0423 : CID0023
 {
-	public CID0423()
-		: base(0x0423, CultureNameTable.GetNameInfoByID(0x0423)) {}
+	public CID0423() : base(0x0423) {}
 
-	public override String Language
+	public override String Name
 	{
 		get
 		{
-			return "be";
+			return "be-BY";
 		}
 	}
 	public override String Country

@@ -421,6 +421,12 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem, IDetachItem
 				return builder.ToString();
 			}
 
+	// Set symbol attribute information for this method.
+	public void SetSymCustomAttribute(String name, byte[] data)
+			{
+				// We don't support symbols at present - ignored.
+			}
+
 	// Get the attributes for this method.
 	public override MethodAttributes Attributes 
 			{

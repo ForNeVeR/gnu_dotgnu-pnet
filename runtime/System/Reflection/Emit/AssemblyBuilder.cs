@@ -27,6 +27,7 @@ namespace System.Reflection.Emit
 using System;
 using System.IO;
 using System.Collections;
+using System.Resources;
 using System.Reflection;
 using System.Security;
 using System.Security.Policy;
@@ -125,6 +126,19 @@ public sealed class AssemblyBuilder : Assembly
 				}
 			}
 	
+	// Get the runtime image version that will be embedded in the assembly.
+	public override String ImageRuntimeVersion
+			{
+				get
+				{
+					// Our runtime engine versions are different from
+					// Microsoft's, but we want to match things up.
+					// Use a version number from one of Microsoft's
+					// public release versions.
+					return "v1.1.4322";
+				}
+			}
+
 	[TODO]
 	public void AddResourceFile(String name, String fileName)
 			{
@@ -194,7 +208,6 @@ public sealed class AssemblyBuilder : Assembly
 		 		throw new NotSupportedException(_("Emit_ExternalModule"));
 			}
 
-/*
 	[TODO]
 	public IResourceWriter DefineResource(String name, String description, 
 										  String fileName)
@@ -209,7 +222,7 @@ public sealed class AssemblyBuilder : Assembly
 			{
 		 		throw new NotImplementedException("DefineResource");
 			}
-*/
+
 	[TODO]
 	public void DefineUnmanagedResource(byte[] resource)
 			{
@@ -234,19 +247,6 @@ public sealed class AssemblyBuilder : Assembly
 										  String trademark)
 			{
 		 		throw new NotImplementedException("DefineVersionInfoResource");
-			}
-
-	[TODO]
-	public void EmbedResourceFile(String name, String fileName)
-			{
-		 		throw new NotImplementedException("EmbedResourceFile");
-			}
-
-	[TODO]
-	public void EmbedResourceFile(String name, String fileName, 
-								  ResourceAttributes attribute)
-			{
-		 		throw new NotImplementedException("EmbedResourceFile");
 			}
 
 	// Get a particular module within this assembly.
@@ -281,6 +281,40 @@ public sealed class AssemblyBuilder : Assembly
 	public override FileStream GetFile(String name)
 			{
 		 		throw new NotImplementedException("GetFile");
+			}
+
+	[TODO]
+	public override FileStream[] GetFiles(bool getResourceModules)
+			{
+		 		throw new NotImplementedException("GetFiles");
+			}
+
+	// Get information about a particular manifest resource.
+	[TODO]
+	public override ManifestResourceInfo
+				GetManifestResourceInfo(String resourceName)
+			{
+		 		throw new NotImplementedException("GetManifestResourceInfo");
+			}
+
+	// Get the names of all manifest resources in this assembly.
+	public override String[] GetManifestResourceNames()
+			{
+		 		throw new NotImplementedException("GetManifestResourceNames");
+			}
+
+	// Get a stream for a particular manifest resource.
+	[TODO]
+	public override Stream GetManifestResourceStream(String name)
+			{
+		 		throw new NotImplementedException("GetManifestResourceNames");
+			}
+
+	// Get a stream for a particular manifest resource, scoped by a type.
+	[TODO]
+	public override Stream GetManifestResourceStream(Type type, String name)
+			{
+		 		throw new NotImplementedException("GetManifestResourceStream");
 			}
 
 	[TODO]

@@ -1102,6 +1102,14 @@ public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 				return false;
 			}
 
+	// Determine if this type is assignable from another type.
+	[TODO]
+	public override bool IsAssignableFrom(Type c)
+			{
+				// TODO
+				return base.IsAssignableFrom(c);
+			}
+
 	// Determine if this type is a "by reference" type.
 	protected override bool IsByRefImpl()
 			{

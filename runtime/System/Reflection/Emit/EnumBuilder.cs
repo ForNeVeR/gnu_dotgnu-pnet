@@ -274,10 +274,21 @@ public sealed class EnumBuilder : Type
 				return false;
 			}
 
-	// Determine if this type is a subclass of "c".
-	public override bool IsSubclassOf(Type c)
+	// Determine if this is a value type.
+	protected override bool IsValueTypeImpl()
 			{
-				return builder.IsSubclassOf(c);
+				return true;
+			}
+
+	// Set a custom attribute on this enum builder.
+	public void SetCustomAttribute(CustomAttributeBuilder customBuilder)
+			{
+				builder.SetCustomAttribute(customBuilder);
+			}
+	public void SetCustomAttribute(ConstructorInfo con,
+								   byte[] binaryAttribute)
+			{
+				builder.SetCustomAttribute(con, binaryAttribute);
 			}
 
 	// Get the assembly associated with this type.
@@ -295,6 +306,15 @@ public sealed class EnumBuilder : Type
 				get
 				{
 					return builder.AssemblyQualifiedName;
+				}
+			}
+
+	// Get the declaring type.
+	public override Type DeclaringType
+			{
+				get
+				{
+					return builder.DeclaringType;
 				}
 			}
 
@@ -349,6 +369,15 @@ public sealed class EnumBuilder : Type
 				get
 				{
 					return builder.Namespace;
+				}
+			}
+
+	// Get the reflected type.
+	public override Type ReflectedType
+			{
+				get
+				{
+					return builder.ReflectedType;
 				}
 			}
 

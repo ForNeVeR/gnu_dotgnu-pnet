@@ -5,6 +5,10 @@
 	tests/System.Xml/TestXml.cs, tests/System.Xml/TestXmlConvert.cs:
 	test cases and bug fixes for "NameTable" and "XmlConvert".
 
+	* System.Xml/XmlNamespaceManager.cs, tests/System.Xml/TestXml.cs,
+	tests/System.Xml/TestXmlNamespaceManager.cs: test cases and
+	bug fixes for "XmlNamespaceManager".
+
 2002-12-01  Stephen Compall  <rushing@sigecom.net>
 
 	* pnetlib.spec.in: Fixed requires, new & improved description.

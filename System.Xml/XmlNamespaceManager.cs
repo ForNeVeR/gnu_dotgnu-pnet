@@ -79,16 +79,14 @@ public class XmlNamespaceManager : IEnumerable
 				{
 					throw new ArgumentNullException("uri");
 				}
-				else if(((Object)prefix) == xmlCompareQuick ||
-			 	        ((Object)prefix) == xmlNsCompareQuick)
+				prefix = nameTable.Add(prefix);
+				uri = nameTable.Add(uri);
+				if(((Object)prefix) == xmlCompareQuick ||
+		 	       ((Object)prefix) == xmlNsCompareQuick)
 				{
 					throw new ArgumentException
 						(S._("Xml_InvalidNamespace"), "prefix");
 				}
-
-				// Map the names into the name table.
-				prefix = nameTable.Add(prefix);
-				uri = nameTable.Add(uri);
 
 				// See if we already have this prefix in the current scope.
 				NamespaceInfo info = namespaces;
@@ -114,13 +112,17 @@ public class XmlNamespaceManager : IEnumerable
 				NamespaceInfo info = namespaces;
 				while(info != null)
 				{
-					if(info.prefix != null)
+					if(info.prefix != null &&
+					   !list.Contains(info.prefix))
 					{
 						list.Add(info.prefix, null);
 					}
 					info = info.next;
 				}
-				list.Add(String.Empty, null);
+				if(!list.Contains(String.Empty))
+				{
+					list.Add(String.Empty, null);
+				}
 				return list.Keys.GetEnumerator();
 			}
 
@@ -305,6 +307,10 @@ public class XmlNamespaceManager : IEnumerable
 							namespaces = info.next;
 						}
 						return;
+					}
+					else
+					{
+						info = info.next;
 					}
 				}
 			}

@@ -30,6 +30,7 @@ public class TestXml
 				suite.AddTests(typeof(TestNameTable));
 				suite.AddTests(typeof(TestXmlConvert));
 				suite.AddTests(typeof(TestXmlException));
+				suite.AddTests(typeof(TestXmlNamespaceManager));
 				return suite;
 			}
 

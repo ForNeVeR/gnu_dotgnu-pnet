@@ -26,6 +26,7 @@ TESTS = arglist1.cs \
 		enum1.cs \
 		enum2.cs \
 		enum3.cs \
+		ident1.cs \
 		incdec1.cs \
 		incdec2.cs \
 		indexer1.cs \

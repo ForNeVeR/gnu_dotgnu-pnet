@@ -98,6 +98,32 @@ ILCallFrame *callFrame;
 
 #elif defined(IL_CVM_MAIN)
 
+/**
+ * <opcode name="call">
+ *   <operation>Call a method which is internal to the CVM
+ *              method cache</operation>
+ *
+ *   <format>call<fsep/>offset<fsep/>mptr</format>
+ *
+ *   <form name="call" code="COP_CALL"/>
+ *
+ *   <description>The <i>call</i> instruction effects a method
+ *   call to <i>mptr</i>, whose first instruction is known to
+ *   be located at <i>pc + offset</i>.</description>
+ *
+ *   <notes>The <i>offset</i> value is a signed 32-bit value, and
+ *   the <i>mptr</i> is a 32-bit or 64-bit method pointer reference.<p/>
+ *
+ *   The <i>call</i> instruction is typically used when the CVM
+ *   bytecode translation process discovers that the method has
+ *   already been translated.  Normally, <i>call_extern</i> is
+ *   output for a method call, but <i>call</i> is slightly more
+ *   efficient on existing methods.<p/>
+ *
+ *   See the description of the <i>call_extern</i> instruction for
+ *   a full account of frame handling, argument handling, etc.</notes>
+ * </opcode>
+ */
 case COP_CALL:
 {
 	/* Call a method that has already been converted into CVM code */
@@ -119,6 +145,48 @@ case COP_CALL:
 }
 break;
 
+/**
+ * <opcode name="call_extern">
+ *   <operation>Call a method which may be external to the
+ *              CVM method cache</operation>
+ *
+ *   <format>call_extern<fsep/>0<fsep/>0<fsep/>0<fsep/>0<fsep/>mptr</format>
+ *
+ *   <form name="call_extern" code="COP_CALL_EXTERN"/>
+ *
+ *   <description>The <i>call_extern</i> instruction effects a method
+ *   call to <i>mptr</i>.  The call proceeds as follows:
+ *
+ *   <ul>
+ *     <li>The method is converted into CVM bytecode.  If this is not
+ *         possible, then <code>System.MissingMethodException</code>
+ *         will be thrown.</li>
+ *     <li>A new call frame is allocated.</li>
+ *     <li>The current method, program counter, frame pointer, and
+ *         exception frame height are saved into the call frame.</li>
+ *     <li>The program counter is set to the first instruction in
+ *         the method <i>mptr</i>.</li>
+ *     <li>The exception frame height is set to zero.</li>
+ *     <li>The current method is set to <i>mptr</i>.</li>
+ *   </ul>
+ *   </description>
+ *
+ *   <notes>The <i>mptr</i> value is a 32-bit or 64-bit method
+ *   pointer reference.<p/>
+ *
+ *   The <i>call_extern</i> instruction does not set up a new frame pointer.
+ *   The <i>set_num_args</i> instruction is used to set up local variable
+ *   frames at the start of the new method's code.
+ *
+ *   The <i>return*</i> instructions are responsible for popping the
+ *   method arguments from the stack at method exit.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.MissingMethodException">Raised if
+ *     the method could not be translated into CVM bytecode.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_CALL_EXTERN:
 {
 	/* Call a method that we don't know if it has been converted */
@@ -134,6 +202,11 @@ case COP_CALL_EXTERN:
 		MISSING_METHOD_EXCEPTION();
 	}
 
+#if 0
+	/* TODO: completely remove this and the supporting code in cvmc,
+	   as it isn't thread-safe to modify the method as it is being
+	   executed */
+
 	/* Patch the instruction stream to call directly next time */
 	if(methodToCall->userData2 == method->userData2)
 	{
@@ -144,6 +217,7 @@ case COP_CALL_EXTERN:
 		pc[3] = (unsigned char)(tempNum >> 16);
 		pc[4] = (unsigned char)(tempNum >> 24);
 	}
+#endif
 
 	/* Allocate a new call frame */
 	ALLOC_CALL_FRAME();
@@ -162,8 +236,39 @@ case COP_CALL_EXTERN:
 }
 break;
 
+/**
+ * <opcode name="call_ctor">
+ *   <operation>Call a constructor</operation>
+ *
+ *   <format>call_ctor<fsep/>0<fsep/>0<fsep/>0<fsep/>0<fsep/>mptr</format>
+ *
+ *   <form name="call_ctor" code="COP_CALL_CTOR"/>
+ *
+ *   <description>The <i>call_ctor</i> instruction effects a method
+ *   call to the constructor identified by <i>mptr</i>.</description>
+ *
+ *   <notes>Constructors in the CVM system have two entry points: one
+ *   which creates a block of memory and then initializes it; and the
+ *   other which initializes a pre-allocated block.  The particular
+ *   entry point is chosen based on the constructor's usage in the
+ *   original CIL bytecode:
+ *
+ *   <ul>
+ *     <li>If the CIL bytecode invoked the constructor method using
+ *         <i>newobj</i>, then <i>call_ctor</i> should be used.</li>
+ *     <li>If the CIL bytecode invoked a parent class's constructor
+ *         method directly using <i>call</i>, then <i>call_extern</i>
+ *         should be used.</li>
+ *   </ul>
+ *
+ *   See the description of the <i>call_extern</i> instruction for
+ *   a full account of frame handling, argument handling, etc.</notes>
+ * </opcode>
+ */
 case COP_CALL_CTOR:
 {
+/* TODO: remove the unnecessary offset value */
+
 	/* Call a constructor that we don't know if it has been converted */
 	methodToCall = (ILMethod *)(ReadPointer(pc + 5));
 
@@ -194,6 +299,36 @@ case COP_CALL_CTOR:
 }
 break;
 
+/**
+ * <opcode name="call_native">
+ *   <operation>Call a native function that has a return value</operation>
+ *
+ *   <format>call_native<fsep/>function<fsep/>cif</format>
+ *
+ *   <form name="call_native" code="COP_CALL_NATIVE"/>
+ *
+ *   <before>..., address</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>call_native</i> instruction effects a native
+ *   function call to <i>function</i>, using <i>cif</i> to define the
+ *   format of the function arguments and return value.  The return
+ *   value is stored at <i>address</i>.  The arguments are assumed
+ *   to have already been stored into the "native argument buffer"
+ *   using the <i>waddr_native*</i> instructions.</description>
+ *
+ *   <notes>Both <i>function</i> and <i>cif</i> are native pointers,
+ *   which may be either 32 or 64 bits in size, depending upon the
+ *   platform.<p/>
+ *
+ *   Native function calls occur in CIL "InternalCall" and "PInvoke"
+ *   methods.  For each such method, the CVM translation process
+ *   creates a CVM stub method that transfers the arguments on
+ *   the CVM stack to the native argument buffer, makes the native
+ *   call, and then puts the function's return value back onto
+ *   the CVM stack prior to exiting.</notes>
+ * </opcode>
+ */
 case COP_CALL_NATIVE:
 {
 	/* Call a native method */
@@ -207,6 +342,19 @@ case COP_CALL_NATIVE:
 }
 break;
 
+/**
+ * <opcode name="call_native_void">
+ *   <operation>Call a native function with no return value</operation>
+ *
+ *   <format>call_native_void<fsep/>function<fsep/>cif</format>
+ *
+ *   <form name="call_native_void" code="COP_CALL_NATIVE_VOID"/>
+ *
+ *   <description>The <i>call_native_void</i> instruction is identical
+ *   to <i>call_native</i>, except that the native function is assumed
+ *   not to have a return value.</description>
+ * </opcode>
+ */
 case COP_CALL_NATIVE_VOID:
 {
 	/* Call a native method that has no return value */
@@ -219,6 +367,33 @@ case COP_CALL_NATIVE_VOID:
 }
 break;
 
+/**
+ * <opcode name="call_virtual">
+ *   <operation>Call a virtual method</operation>
+ *
+ *   <format>call_virtual<fsep/>N[1]<fsep/>M[1]</format>
+ *   <format>wide<fsep/>call_virtual<fsep/>N[4]<fsep/>M[4]</format>
+ *
+ *   <form name="call_virtual" code="COP_CALL_VIRTUAL"/>
+ *
+ *   <description>The <i>call_virtual</i> instruction effects a
+ *   virtual method call.  The value <i>N</i> indicates the
+ *   position of the <code>this</code> pointer on the stack:
+ *   1 indicates the top of stack, 2 indicates the stack word
+ *   just below the top-most stack word, etc.  The value <i>M</i>
+ *   is the offset into the object's vtable for the method.</description>
+ *
+ *   <notes>See the description of the <i>call_extern</i> instruction for
+ *   a full account of frame handling, argument handling, etc.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException">Raised if
+ *     the <code>this</code> pointer is <code>null</code>.</exception>
+ *     <exception name="System.MissingMethodException">Raised if
+ *     the method could not be translated into CVM bytecode.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_CALL_VIRTUAL:
 {
 	/* Call a virtual method */
@@ -261,6 +436,37 @@ case COP_CALL_VIRTUAL:
 }
 break;
 
+/**
+ * <opcode name="call_interface">
+ *   <operation>Call an interface method</operation>
+ *
+ *   <format>call_interface<fsep/>N[1]<fsep/>M[1]<fsep/>cptr</format>
+ *   <format>wide<fsep/>call_interface<fsep/>N[4]<fsep/>M[4]<fsep/>cptr</format>
+ *
+ *   <form name="call_interface" code="COP_CALL_INTERFACE"/>
+ *
+ *   <description>The <i>call_interface</i> instruction effects an
+ *   interface method call.  The value <i>N</i> indicates the
+ *   position of the <code>this</code> pointer on the stack:
+ *   1 indicates the top of stack, 2 indicates the stack word
+ *   just below the top-most stack word, etc.  The value <i>M</i>
+ *   is the offset into the interface's vtable for the method.  The value
+ *   <i>cptr</i> indicates the interface class pointer.</description>
+ *
+ *   <notes>See the description of the <i>call_extern</i> instruction for
+ *   a full account of frame handling, argument handling, etc.<p/>
+ *
+ *   The <i>cptr</i> value is a native pointer that may be either 32 or
+ *   64 bits in size, depending upon the platform.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException">Raised if
+ *     the <code>this</code> pointer is <code>null</code>.</exception>
+ *     <exception name="System.MissingMethodException">Raised if
+ *     the method could not be translated into CVM bytecode.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_CALL_INTERFACE:
 {
 	/* Call an interface method */
@@ -308,6 +514,28 @@ case COP_CALL_INTERFACE:
 }
 break;
 
+/**
+ * <opcode name="cctor_once">
+ *   <operation>Block the current method from being executed
+ *              more than once</operation>
+ *
+ *   <format>cctor_once</format>
+ *
+ *   <form name="cctor_once" code="COP_CCTOR_ONCE"/>
+ *
+ *   <description>The <i>cctor_once</i> instruction is typically
+ *   the first instruction in a static constructor.  If this is the
+ *   first time that the static constructor has been called, then
+ *   the method will continue.  Otherwise, the effect will be the
+ *   same as for <i>return</i>.</description>
+ *
+ *   <notes>This instruction permits CVM bytecode to call static
+ *   constructors from anywhere in the system, without having to
+ *   worry about whether it has already been called.  This instruction
+ *   will also prevent recursive static constructor calls from
+ *   looping indefinitely.</notes>
+ * </opcode>
+ */
 case COP_CCTOR_ONCE:
 {
 	/* Execute the rest of this static constructor method once only */
@@ -321,6 +549,30 @@ case COP_CCTOR_ONCE:
 }
 /* Fall through to the next case */
 
+/**
+ * <opcode name="return">
+ *   <operation>Return from the current method with no return value</operation>
+ *
+ *   <format>return</format>
+ *
+ *   <form name="return" code="COP_RETURN"/>
+ *
+ *   <description>Return control to the method that called the current
+ *   method, as follows:
+ *
+ *   <ul>
+ *     <li>Set the top of stack pointer to the frame pointer.</li>
+ *     <li>Pop the top-most call frame from the call frame stack.</li>
+ *     <li>Retrieve the method pointer, progrm counter, exception frame
+ *         height, and the frame pointer from the call frame.</li>
+ *   </ul>
+ *   </description>
+ *
+ *   <notes>The <i>set_num_args</i> instruction has previously set the
+ *   frame pointer to the address of the first argument.  When <i>return</i>
+ *   is executed, the first step above will pop all of the arguments.</notes>
+ * </opcode>
+ */
 case COP_RETURN:
 {
 	/* Return from a method with no return value */
@@ -350,6 +602,34 @@ popFrame:
 }
 break;
 
+/**
+ * <opcode name="return_1">
+ *   <operation>Return from the current method with a single stack
+ *              word as a return value</operation>
+ *
+ *   <format>return_1</format>
+ *
+ *   <form name="return_1" code="COP_RETURN_1"/>
+ *
+ *   <description>Return control to the method that called the current
+ *   method, as follows:
+ *
+ *   <ul>
+ *     <li>Copy the top-most word on the stack to the position
+ *         indicated by the frame pointer, and then set the top
+ *         of stack pointer to point just after the copy.</li>
+ *     <li>Pop the top-most call frame from the call frame stack.</li>
+ *     <li>Retrieve the method pointer, progrm counter, exception frame
+ *         height, and the frame pointer from the call frame.</li>
+ *   </ul>
+ *   </description>
+ *
+ *   <notes>The <i>set_num_args</i> instruction has previously set the
+ *   frame pointer to the address of the first argument.  When <i>return_1</i>
+ *   is executed, the first step above will pop all of the arguments,
+ *   with the single-word return value left in their place.</notes>
+ * </opcode>
+ */
 case COP_RETURN_1:
 {
 	/* Return from a method with a single-word return value */
@@ -359,6 +639,34 @@ case COP_RETURN_1:
 }
 /* Not reached */
 
+/**
+ * <opcode name="return_2">
+ *   <operation>Return from the current method with two stack
+ *              words as the return value</operation>
+ *
+ *   <format>return_2</format>
+ *
+ *   <form name="return_2" code="COP_RETURN_2"/>
+ *
+ *   <description>Return control to the method that called the current
+ *   method, as follows:
+ *
+ *   <ul>
+ *     <li>Copy the two top-most words on the stack to the position
+ *         indicated by the frame pointer, and then set the top
+ *         of stack pointer to point just after the two copied words.</li>
+ *     <li>Pop the top-most call frame from the call frame stack.</li>
+ *     <li>Retrieve the method pointer, progrm counter, exception frame
+ *         height, and the frame pointer from the call frame.</li>
+ *   </ul>
+ *   </description>
+ *
+ *   <notes>The <i>set_num_args</i> instruction has previously set the
+ *   frame pointer to the address of the first argument.  When <i>return_2</i>
+ *   is executed, the first step above will pop all of the arguments,
+ *   with the double-word return value left in their place.</notes>
+ * </opcode>
+ */
 case COP_RETURN_2:
 {
 	/* Return from a method with a double-word return value */
@@ -369,6 +677,34 @@ case COP_RETURN_2:
 }
 /* Not reached */
 
+/**
+ * <opcode name="return_n">
+ *   <operation>Return from the current method with <i>n</i> stack
+ *              words as the return value</operation>
+ *
+ *   <format>return_n</format>
+ *
+ *   <form name="return_2" code="COP_RETURN_N"/>
+ *
+ *   <description>Return control to the method that called the current
+ *   method, as follows:
+ *
+ *   <ul>
+ *     <li>Copy the <i>n</i> top-most words on the stack to the position
+ *         indicated by the frame pointer, and then set the top of
+ *         stack pointer to point just after the <i>n</i> copied words.</li>
+ *     <li>Pop the top-most call frame from the call frame stack.</li>
+ *     <li>Retrieve the method pointer, progrm counter, exception frame
+ *         height, and the frame pointer from the call frame.</li>
+ *   </ul>
+ *   </description>
+ *
+ *   <notes>The <i>set_num_args</i> instruction has previously set the
+ *   frame pointer to the address of the first argument.  When <i>return_n</i>
+ *   is executed, the first step above will pop all of the arguments,
+ *   with the <i>n</i>-word return value left in their place.</notes>
+ * </opcode>
+ */
 case COP_RETURN_N:
 {
 	/* Return from a method with an N-word return value */
@@ -379,6 +715,21 @@ case COP_RETURN_N:
 }
 /* Not reached */
 
+/**
+ * <opcode name="push_thread">
+ *   <operation>Push the thread identifier onto the native
+ *              argument stack</operation>
+ *
+ *   <format>push_thread</format>
+ *
+ *   <form name="push_thread" code="COP_PUSH_THREAD"/>
+ *
+ *   <description>Pushes an identifier for the current thread onto
+ *   the native argument stack.  This is only used for "InternalCall"
+ *   methods.  "PInvoke" methods should use "waddr_native_m1" instead.
+ *   </description>
+ * </opcode>
+ */
 case COP_PUSH_THREAD:
 {
 	/* Push a pointer to the thread value onto the native argument stack */
@@ -387,6 +738,29 @@ case COP_PUSH_THREAD:
 }
 break;
 
+/**
+ * <opcode name="pushdown">
+ *   <operation>Push the <code>ptr</code> value at the top of
+ *              stack down and duplicate it twice</operation>
+ *
+ *   <format>pushdown<fsep/>N[4]</format>
+ *
+ *   <form name="pushdown" code="COP_PUSHDOWN"/>
+ *
+ *   <before>..., val1, ..., valN, value</before>
+ *   <after>..., value, value, val1, ..., valN</after>
+ *
+ *   <description>The <i>value</i> at the top of the stack is popped,
+ *   pushed down <i>N</i> stack words, and duplicated twice.</description>
+ *
+ *   <notes>This instruction is used in combination with <i>new</i>
+ *   to construct a block of memory for a new object.  The block
+ *   is allocated, and then pushed down.  The lowest duplicated
+ *   <i>value</i> becomes the return value for the constructor method.
+ *   The other duplicated <i>value</i> becomes the <code>this</code>
+ *   argument for the constructor method.</description>
+ * </opcode>
+ */
 case COP_PUSHDOWN:
 {
 	/* Push a value on the stack top down and duplicate it twice */
@@ -419,14 +793,152 @@ case COP_WADDR_NATIVE_##name: \
 } \
 break
 
+/**
+ * <opcode name="waddr_native_m1">
+ *   <operation>Set position -1 of the native argument buffer
+ *              to the address of a local variable</operation>
+ *
+ *   <format>waddr_native_m1<fsep/>N[1]</format>
+ *   <format>wide<fsep/>waddr_native_m1<fsep/>N[4]</format>
+ *
+ *   <form name="waddr_native_m1" code="COP_WADDR_NATIVE_M1"/>
+ *
+ *   <description>Set position -1 of the native argument buffer
+ *   to the address of local variable <i>N</i>.  This is the
+ *   first argument for a "PInvoke" method.  Use <i>push_thread</i>
+ *   instead for an "InternalCall" method.</description>
+ * </opcode>
+ */
 COP_WADDR_NATIVE(M1, -1);
+
+/**
+ * <opcode name="waddr_native_0">
+ *   <operation>Set position 0 of the native argument buffer
+ *              to the address of a local variable</operation>
+ *
+ *   <format>waddr_native_0<fsep/>N[1]</format>
+ *   <format>wide<fsep/>waddr_native_0<fsep/>N[4]</format>
+ *
+ *   <form name="waddr_native_0" code="COP_WADDR_NATIVE_0"/>
+ *
+ *   <description>Set position 0 of the native argument buffer
+ *   to the address of local variable <i>N</i>.  This is the
+ *   first argument for an "InternalCall" method and the second
+ *   argument for a "PInvoke" method.</description>
+ * </opcode>
+ */
 COP_WADDR_NATIVE(0, 0);
+
+/**
+ * <opcode name="waddr_native_1">
+ *   <operation>Set position 1 of the native argument buffer
+ *              to the address of a local variable</operation>
+ *
+ *   <format>waddr_native_1<fsep/>N[1]</format>
+ *   <format>wide<fsep/>waddr_native_1<fsep/>N[4]</format>
+ *
+ *   <form name="waddr_native_1" code="COP_WADDR_NATIVE_1"/>
+ *
+ *   <description>Set position 1 of the native argument buffer
+ *   to the address of local variable <i>N</i>.</description>
+ * </opcode>
+ */
 COP_WADDR_NATIVE(1, 1);
+
+/**
+ * <opcode name="waddr_native_2">
+ *   <operation>Set position 2 of the native argument buffer
+ *              to the address of a local variable</operation>
+ *
+ *   <format>waddr_native_2<fsep/>N[1]</format>
+ *   <format>wide<fsep/>waddr_native_2<fsep/>N[4]</format>
+ *
+ *   <form name="waddr_native_2" code="COP_WADDR_NATIVE_2"/>
+ *
+ *   <description>Set position 2 of the native argument buffer
+ *   to the address of local variable <i>N</i>.</description>
+ * </opcode>
+ */
 COP_WADDR_NATIVE(2, 2);
+
+/**
+ * <opcode name="waddr_native_3">
+ *   <operation>Set position 3 of the native argument buffer
+ *              to the address of a local variable</operation>
+ *
+ *   <format>waddr_native_3<fsep/>N[1]</format>
+ *   <format>wide<fsep/>waddr_native_3<fsep/>N[4]</format>
+ *
+ *   <form name="waddr_native_3" code="COP_WADDR_NATIVE_3"/>
+ *
+ *   <description>Set position 3 of the native argument buffer
+ *   to the address of local variable <i>N</i>.</description>
+ * </opcode>
+ */
 COP_WADDR_NATIVE(3, 3);
+
+/**
+ * <opcode name="waddr_native_4">
+ *   <operation>Set position 4 of the native argument buffer
+ *              to the address of a local variable</operation>
+ *
+ *   <format>waddr_native_4<fsep/>N[1]</format>
+ *   <format>wide<fsep/>waddr_native_4<fsep/>N[4]</format>
+ *
+ *   <form name="waddr_native_4" code="COP_WADDR_NATIVE_4"/>
+ *
+ *   <description>Set position 4 of the native argument buffer
+ *   to the address of local variable <i>N</i>.</description>
+ * </opcode>
+ */
 COP_WADDR_NATIVE(4, 4);
+
+/**
+ * <opcode name="waddr_native_5">
+ *   <operation>Set position 5 of the native argument buffer
+ *              to the address of a local variable</operation>
+ *
+ *   <format>waddr_native_5<fsep/>N[1]</format>
+ *   <format>wide<fsep/>waddr_native_5<fsep/>N[4]</format>
+ *
+ *   <form name="waddr_native_5" code="COP_WADDR_NATIVE_5"/>
+ *
+ *   <description>Set position 5 of the native argument buffer
+ *   to the address of local variable <i>N</i>.</description>
+ * </opcode>
+ */
 COP_WADDR_NATIVE(5, 5);
+
+/**
+ * <opcode name="waddr_native_6">
+ *   <operation>Set position 6 of the native argument buffer
+ *              to the address of a local variable</operation>
+ *
+ *   <format>waddr_native_6<fsep/>N[1]</format>
+ *   <format>wide<fsep/>waddr_native_6<fsep/>N[4]</format>
+ *
+ *   <form name="waddr_native_6" code="COP_WADDR_NATIVE_6"/>
+ *
+ *   <description>Set position 6 of the native argument buffer
+ *   to the address of local variable <i>N</i>.</description>
+ * </opcode>
+ */
 COP_WADDR_NATIVE(6, 6);
+
+/**
+ * <opcode name="waddr_native_7">
+ *   <operation>Set position 7 of the native argument buffer
+ *              to the address of a local variable</operation>
+ *
+ *   <format>waddr_native_7<fsep/>N[1]</format>
+ *   <format>wide<fsep/>waddr_native_7<fsep/>N[4]</format>
+ *
+ *   <form name="waddr_native_7" code="COP_WADDR_NATIVE_7"/>
+ *
+ *   <description>Set position 7 of the native argument buffer
+ *   to the address of local variable <i>N</i>.</description>
+ * </opcode>
+ */
 COP_WADDR_NATIVE(7, 7);
 
 #elif defined(IL_CVM_WIDE)
@@ -557,6 +1069,20 @@ COP_WADDR_NATIVE_WIDE(7, 7);
 
 #elif defined(IL_CVM_PREFIX)
 
+/**
+ * <opcode name="tail">
+ *   <operation>Modify the next call instruction to make
+ *				it a tail call</operation>
+ *
+ *   <format>prefix<fsep/>tail</format>
+ *
+ *   <form name="tail" code="COP_PREFIX_TAIL"/>
+ *
+ *   <description>Modify the next <i>call</i>, <i>call_extern</i>,
+ *   <i>call_virtual</i> or <i>call_interface</i> instruction to
+ *   use tail call semantics.</description>
+ * </opcode>
+ */
 case COP_PREFIX_TAIL:
 {
 	/* Perform a tail call to another method */
@@ -565,6 +1091,24 @@ case COP_PREFIX_TAIL:
 }
 break;
 
+/**
+ * <opcode name="ldftn">
+ *   <operation>Load the address of a function method onto the stack</operation>
+ *
+ *   <format>prefix<fsep/>ldftn<fsep/>method</format>
+ *
+ *   <form name="ldftn" code="COP_PREFIX_LDFTN"/>
+ *
+ *   <before>...</before>
+ *   <after>..., method</after>
+ *
+ *   <description>Push <i>method</i> onto the stack as a <code>ptr</code>
+ *   value.</description>
+ *
+ *   <notes>The <i>method</i> value may be either 32 or 64 bits in size,
+ *   depending upon the platform.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_LDFTN:
 {
 	/* Load the address of a function onto the stack */
@@ -573,6 +1117,24 @@ case COP_PREFIX_LDFTN:
 }
 break;
 
+/**
+ * <opcode name="ldvirtftn">
+ *   <operation>Load the address of a virtual function method
+ *				onto the stack</operation>
+ *
+ *   <format>prefix<fsep/>ldvirtftn<fsep/>index[4]</format>
+ *
+ *   <form name="ldvirtftn" code="COP_PREFIX_LDVIRTFTN"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., address</after>
+ *
+ *   <description>Pop <i>object</i> from the stack as type <code>ptr</code>
+ *   and locate the virtual method at <i>index</i> within the object's
+ *   vtable.  The address of this method is pushed onto the stack
+ *   as type <code>ptr</code>.</description>
+ * </opcode>
+ */
 case COP_PREFIX_LDVIRTFTN:
 {
 	/* Load the address of a virtual function onto the stack */
@@ -591,6 +1153,28 @@ case COP_PREFIX_LDVIRTFTN:
 }
 break;
 
+/**
+ * <opcode name="ldinterfftn">
+ *   <operation>Load the address of an interface function method
+ *				onto the stack</operation>
+ *
+ *   <format>prefix<fsep/>ldinterfftn<fsep/>index[4]<fsep/>class</format>
+ *
+ *   <form name="ldinterfftn" code="COP_PREFIX_LDINTERFFTN"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., address</after>
+ *
+ *   <description>Pop <i>object</i> from the stack as type <code>ptr</code>
+ *   and locate the virtual method at <i>index</i> within the object's
+ *   interface vtable for the interface <i>class</i>.  The address of
+ *   this method is pushed onto the stack as type
+ *   <code>ptr</code>.</description>
+ *
+ *   <notes>The <i>class</i> value may be either 32 or 64 bits in size,
+ *   depending upon the platform.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_LDINTERFFTN:
 {
 	/* Load the address of an interface function onto the stack */

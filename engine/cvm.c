@@ -398,6 +398,17 @@ int _ILCVMInterpreter(ILExecThread *thread)
 	#endif
 		switch(pc[0])
 		{
+			/**
+			 * <opcode name="nop">
+			 *   <operation>Do nothing</operation>
+			 *
+			 *   <format>nop</format>
+			 *
+			 *   <form name="nop" code="COP_NOP"/>
+			 *
+			 *   <description>Do nothing.</description>
+			 * </opcode>
+			 */
 			case COP_NOP:
 			{
 				/* The world's simplest instruction */
@@ -420,6 +431,22 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			#include "cvm_inline.c"
 			#undef IL_CVM_MAIN
 
+			/**
+			 * <opcode name="wide">
+			 *   <operation>Modify an instruction to its wide form</operation>
+			 *
+			 *   <format>wide<fsep/>opcode<fsep/>...</format>
+			 *
+			 *   <form name="wide" code="COP_WIDE"/>
+			 *
+			 *   <description>The <i>wide</i> instruction modifies another
+			 *   instruction to take longer operands.  The format of the
+			 *   operands depends upon the <i>opcode</i>.</description>
+			 *
+			 *   <notes>The documentation for other instructions includes
+			 *   information on their wide forms where appropriate.</notes>
+			 * </opcode>
+			 */
 			case COP_WIDE:
 			{
 				switch(pc[1])
@@ -449,6 +476,21 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			}
 			break;
 
+			/**
+			 * <opcode name="prefix">
+			 *   <operation>Prefix an alternative instruction</operation>
+			 *
+			 *   <format>prefix<fsep/>opcode<fsep/>...</format>
+			 *
+			 *   <form name="prefix" code="COP_PREFIX"/>
+			 *
+			 *   <description>The <i>prefix</i> instruction is used to
+			 *   switch the runtime engine into an alternative instruction
+			 *   set.  The alternative instruction is <i>opcode</i>.
+			 *   Prefixing is necessary because the VM has more than
+			 *   256 distinct instructions.</description>
+			 * </opcode>
+			 */
 			case COP_PREFIX:
 			{
 				/* Execute a prefixed opcode */

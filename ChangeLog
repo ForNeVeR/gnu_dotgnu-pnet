@@ -1,4 +1,10 @@
 
+2002-04-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm.c, engine/cvm_arith.c, engine/cvm_branch.c,
+	engine/cvm_call.c, engine/cvmc_branch.c: add XML documentation
+	for the CVM arithmetic, branch, and call instructions.
+
 2002-04-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/method_cache.c, engine/method_cache.h:

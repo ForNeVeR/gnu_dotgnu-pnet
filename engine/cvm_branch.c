@@ -28,17 +28,38 @@
 
 #elif defined(IL_CVM_MAIN)
 
-/*
- * Branch instructions are always 6 bytes long, but may
- * contain either short or long forms of a branch.  The
- * short form is "opcode offset pad" where "offset" is an
- * 8-bit offset and "pad" is 4 bytes of padding.  The
- * long form is "br.long opcode loffset" where "loffset"
- * is a 32-bit offset.  This allows the code generator to
- * output branch instructions with a uniform length, while
- * the interpreter runs faster on short branches.
+/**
+ * <opcode name="br">
+ *   <operation>Branch unconditionally</operation>
+ *
+ *   <format>br<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>br
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="br" code="COP_BR"/>
+ *
+ *   <before>...</before>
+ *   <after>...</after>
+ *
+ *   <description>In the first form, the program branches to the
+ *   address <i>pc + offset</i>, where <i>pc</i> is the address of
+ *   the first byte of the <i>br</i> instruction, and <i>offset</i>
+ *   is a signed 8-bit quantity.<p/>
+ *
+ *   In the second form, <i>offset</i> is constructed by interpreting
+ *   <i>offset1</i>, ..., <i>offset4</i> as a 32-bit signed quantity
+ *   in little-endian order.</description>
+ *
+ *   <notes>Branch instructions are always 6 bytes long, but may
+ *   contain either short or long forms of a branch.  The short form
+ *   is always "<i>opcode offset pad</i>" where <i>offset</i> is an
+ *   8-bit offset and <i>pad</i> is 4 bytes of padding.  The long form
+ *   is always "<i>br.long opcode loffset</i>" where <i>loffset</i>
+ *   is a 32-bit offset.  This allows the code generator to output
+ *   branch instructions with a uniform length, while the interpreter
+ *   runs faster on short branches.</notes>
+ * </opcode>
  */
-
 case COP_BR:
 {
 	/* Unconditional branch */
@@ -46,6 +67,31 @@ case COP_BR:
 }
 break;
 
+/**
+ * <opcode name="beq">
+ *   <operation>Branch conditionally if <code>int32</code> values
+ *   are equal</operation>
+ *
+ *   <format>beq<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>beq
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="beq" code="COP_BEQ"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>int32</i>.  If the values are equal,
+ *   then the program branches to <i>pc + offset</i>.  Otherwise,
+ *   the program continues with the next instruction.</description>
+ *
+ *   <notes>This instruction must not be confused with <code>peq</code>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of space in a stack word on
+ *   all platforms.</notes>
+ * </opcode>
+ */
 case COP_BEQ:
 {
 	/* Branch if the top two integers are equal */
@@ -61,6 +107,31 @@ case COP_BEQ:
 }
 break;
 
+/**
+ * <opcode name="bne">
+ *   <operation>Branch conditionally if <code>int32</code> values
+ *   are not equal</operation>
+ *
+ *   <format>bne<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>bne
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="bne" code="COP_BNE"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>int32</i>.  If the values are not equal,
+ *   then the program branches to <i>pc + offset</i>.  Otherwise,
+ *   the program continues with the next instruction.</description>
+ *
+ *   <notes>This instruction must not be confused with <code>pne</code>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of space in a stack word on
+ *   all platforms.</notes>
+ * </opcode>
+ */
 case COP_BNE:
 {
 	/* Branch if the top two integers are not equal */
@@ -76,6 +147,26 @@ case COP_BNE:
 }
 break;
 
+/**
+ * <opcode name="blt">
+ *   <operation>Branch conditionally if <code>int32</code> values
+ *   are less than</operation>
+ *
+ *   <format>blt<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>blt
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="blt" code="COP_BLT"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>int32</i>.  If <i>value1</i> is less
+ *   than <i>value2</i>, then the program branches to <i>pc + offset</i>.
+ *   Otherwise, the program continues with the next instruction.</description>
+ * </opcode>
+ */
 case COP_BLT:
 {
 	/* Branch if the top two integers are less than */
@@ -91,6 +182,26 @@ case COP_BLT:
 }
 break;
 
+/**
+ * <opcode name="blt_un">
+ *   <operation>Branch conditionally if <code>uint32</code> values
+ *   are less than</operation>
+ *
+ *   <format>blt_un<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>blt_un
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="blt_un" code="COP_BLT_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>uint32</i>.  If <i>value1</i> is less
+ *   than <i>value2</i>, then the program branches to <i>pc + offset</i>.
+ *   Otherwise, the program continues with the next instruction.</description>
+ * </opcode>
+ */
 case COP_BLT_UN:
 {
 	/* Branch if the top two unsigned integers are less than */
@@ -106,6 +217,27 @@ case COP_BLT_UN:
 }
 break;
 
+/**
+ * <opcode name="ble">
+ *   <operation>Branch conditionally if <code>int32</code> values
+ *   are less than or equal</operation>
+ *
+ *   <format>ble<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>ble
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="ble" code="COP_BLE"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>int32</i>.  If <i>value1</i> is less
+ *   than or equal to <i>value2</i>, then the program branches to
+ *   <i>pc + offset</i>.  Otherwise, the program continues with the
+ *   next instruction.</description>
+ * </opcode>
+ */
 case COP_BLE:
 {
 	/* Branch if the top two integers are less than or equal */
@@ -121,6 +253,27 @@ case COP_BLE:
 }
 break;
 
+/**
+ * <opcode name="ble_un">
+ *   <operation>Branch conditionally if <code>uint32</code> values
+ *   are less than or equal</operation>
+ *
+ *   <format>ble_un<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>ble_un
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="ble_un" code="COP_BLE_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>uint32</i>.  If <i>value1</i> is less
+ *   than or equal to <i>value2</i>, then the program branches to
+ *   <i>pc + offset</i>.  Otherwise, the program continues with the
+ *   next instruction.</description>
+ * </opcode>
+ */
 case COP_BLE_UN:
 {
 	/* Branch if the top two unsigned integers
@@ -137,6 +290,26 @@ case COP_BLE_UN:
 }
 break;
 
+/**
+ * <opcode name="bgt">
+ *   <operation>Branch conditionally if <code>int32</code> values
+ *   are greater than</operation>
+ *
+ *   <format>bgt<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>bgt
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="bgt" code="COP_BGT"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>int32</i>.  If <i>value1</i> is greater
+ *   than <i>value2</i>, then the program branches to <i>pc + offset</i>.
+ *   Otherwise, the program continues with the next instruction.</description>
+ * </opcode>
+ */
 case COP_BGT:
 {
 	/* Branch if the top two integers are greater than */
@@ -152,6 +325,26 @@ case COP_BGT:
 }
 break;
 
+/**
+ * <opcode name="bgt_un">
+ *   <operation>Branch conditionally if <code>uint32</code> values
+ *   are greater than</operation>
+ *
+ *   <format>bgt_un<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>bgt_un
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="bgt_un" code="COP_BGT_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>uint32</i>.  If <i>value1</i> is greater
+ *   than <i>value2</i>, then the program branches to <i>pc + offset</i>.
+ *   Otherwise, the program continues with the next instruction.</description>
+ * </opcode>
+ */
 case COP_BGT_UN:
 {
 	/* Branch if the top two unsigned integers are greater than */
@@ -167,6 +360,27 @@ case COP_BGT_UN:
 }
 break;
 
+/**
+ * <opcode name="bge">
+ *   <operation>Branch conditionally if <code>int32</code> values
+ *   are greater than or equal</operation>
+ *
+ *   <format>bge<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>bge
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="bge" code="COP_BGE"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>int32</i>.  If <i>value1</i> is greater
+ *   than or equal to <i>value2</i>, then the program branches to
+ *   <i>pc + offset</i>.  Otherwise, the program continues with the
+ *   next instruction.</description>
+ * </opcode>
+ */
 case COP_BGE:
 {
 	/* Branch if the top two integers are greater than or equal */
@@ -182,6 +396,27 @@ case COP_BGE:
 }
 break;
 
+/**
+ * <opcode name="bge_un">
+ *   <operation>Branch conditionally if <code>uint32</code> values
+ *   are greater than or equal</operation>
+ *
+ *   <format>bge_un<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>bge_un
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="bge_un" code="COP_BGE_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>uint32</i>.  If <i>value1</i> is greater
+ *   than or equal to <i>value2</i>, then the program branches to
+ *   <i>pc + offset</i>.  Otherwise, the program continues with the
+ *   next instruction.</description>
+ * </opcode>
+ */
 case COP_BGE_UN:
 {
 	/* Branch if the top two unsigned integers
@@ -198,6 +433,31 @@ case COP_BGE_UN:
 }
 break;
 
+/**
+ * <opcode name="brtrue">
+ *   <operation>Branch conditionally if <code>int32</code> value
+ *   is non-zero</operation>
+ *
+ *   <format>brtrue<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>brtrue
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="brtrue" code="COP_BRTRUE"/>
+ *
+ *   <before>..., value</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as type
+ *   <i>int32</i>.  If <i>value</i> is non-zero, then the program branches
+ *   to <i>pc + offset</i>.  Otherwise, the program continues with the
+ *   next instruction.</description>
+ *
+ *   <notes>This instruction must not be confused with <code>brnonnull</code>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of space in a stack word on
+ *   all platforms.</notes>
+ * </opcode>
+ */
 case COP_BRTRUE:
 {
 	/* Branch if the top value is non-zero */
@@ -213,6 +473,31 @@ case COP_BRTRUE:
 }
 break;
 
+/**
+ * <opcode name="brfalse">
+ *   <operation>Branch conditionally if <code>int32</code> value
+ *   is zero</operation>
+ *
+ *   <format>brfalse<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>brfalse
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="brfalse" code="COP_BRFALSE"/>
+ *
+ *   <before>..., value</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as type
+ *   <i>int32</i>.  If <i>value</i> is zero, then the program branches
+ *   to <i>pc + offset</i>.  Otherwise, the program continues with the
+ *   next instruction.</description>
+ *
+ *   <notes>This instruction must not be confused with <code>brnull</code>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of space in a stack word on
+ *   all platforms.</notes>
+ * </opcode>
+ */
 case COP_BRFALSE:
 {
 	/* Branch if the top value is zero */
@@ -228,6 +513,31 @@ case COP_BRFALSE:
 }
 break;
 
+/**
+ * <opcode name="brnull">
+ *   <operation>Branch conditionally if <code>ptr</code> value
+ *   is <code>null</code></operation>
+ *
+ *   <format>brnull<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>brnull
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="brnull" code="COP_BRNULL"/>
+ *
+ *   <before>..., value</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as type
+ *   <i>ptr</i>.  If <i>value</i> is <code>null</code>, then the program
+ *   branches to <i>pc + offset</i>.  Otherwise, the program continues
+ *   with the next instruction.</description>
+ *
+ *   <notes>This instruction must not be confused with <code>brfalse</code>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of space in a stack word on
+ *   all platforms.</notes>
+ * </opcode>
+ */
 case COP_BRNULL:
 {
 	/* Branch if the top value is null */
@@ -243,6 +553,31 @@ case COP_BRNULL:
 }
 break;
 
+/**
+ * <opcode name="brnonnull">
+ *   <operation>Branch conditionally if <code>ptr</code> value
+ *   is not <code>null</code></operation>
+ *
+ *   <format>brnonnull<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>brnonnull
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="brnonnull" code="COP_BRNONNULL"/>
+ *
+ *   <before>..., value</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as type
+ *   <i>ptr</i>.  If <i>value</i> is not <code>null</code>, then the program
+ *   branches to <i>pc + offset</i>.  Otherwise, the program continues
+ *   with the next instruction.</description>
+ *
+ *   <notes>This instruction must not be confused with <code>brtrue</code>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of space in a stack word on
+ *   all platforms.</notes>
+ * </opcode>
+ */
 case COP_BRNONNULL:
 {
 	/* Branch if the top value is non-null */
@@ -258,6 +593,31 @@ case COP_BRNONNULL:
 }
 break;
 
+/**
+ * <opcode name="peq">
+ *   <operation>Branch conditionally if <code>ptr</code> values
+ *   are equal</operation>
+ *
+ *   <format>peq<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>peq
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="peq" code="COP_PEQ"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>ptr</i>.  If the values are equal,
+ *   then the program branches to <i>pc + offset</i>.  Otherwise,
+ *   the program continues with the next instruction.</description>
+ *
+ *   <notes>This instruction must not be confused with <code>beq</code>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of space in a stack word on
+ *   all platforms.</notes>
+ * </opcode>
+ */
 case COP_BR_PEQ:
 {
 	/* Branch if the top two pointers are equal */
@@ -273,6 +633,31 @@ case COP_BR_PEQ:
 }
 break;
 
+/**
+ * <opcode name="pne">
+ *   <operation>Branch conditionally if <code>ptr</code> values
+ *   are not equal</operation>
+ *
+ *   <format>pne<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>pne
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="pne" code="COP_PNE"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <i>ptr</i>.  If the values are not equal,
+ *   then the program branches to <i>pc + offset</i>.  Otherwise,
+ *   the program continues with the next instruction.</description>
+ *
+ *   <notes>This instruction must not be confused with <code>bne</code>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of space in a stack word on
+ *   all platforms.</notes>
+ * </opcode>
+ */
 case COP_BR_PNE:
 {
 	/* Branch if the top two pointers are not equal */
@@ -288,6 +673,21 @@ case COP_BR_PNE:
 }
 break;
 
+/**
+ * <opcode name="br_long">
+ *   <operation>Modify a branch instruction to its long form</operation>
+ *
+ *   <format>br_long<fsep/>opcode<fsep/>...</format>
+ *
+ *   <form name="br_long" code="COP_BR_LONG"/>
+ *
+ *   <description>The <i>br_long</i> instruction modifies a branch
+ *   instruction to take longer operands.</description>
+ *
+ *   <notes>The documentation for other branch instructions includes
+ *   information on their long forms.</notes>
+ * </opcode>
+ */
 case COP_BR_LONG:
 {
 	/* Determine which type of long branch to use */
@@ -559,6 +959,28 @@ case COP_BR_LONG:
 }
 break;
 
+/**
+ * <opcode name="switch">
+ *   <operation>Switch on <code>uint32</code> value</operation>
+ *
+ *   <format>switch<fsep/>max<fsep/>defoffset<fsep/>...</format>
+ *
+ *   <form name="switch" code="COP_SWITCH"/>
+ *
+ *   <before>..., value</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <i>uint32</code>.  If it is greater than or equal to
+ *   <i>max</i>, then the program continues at <i>pc + defoffset</i>.
+ *   Otherwise, the 32-bit signed value at <i>pc + 9 + value * 4</i>
+ *   is fetched and added to <i>pc</i>.</description>
+ *
+ *   <notes>The <i>max</i> value is an unsigned 32-bit value, and
+ *   the <i>defoffset</i> is a signed 32-bit value.  All 32-bit
+ *   values are in little-endian byte order.</notes>
+ * </opcode>
+ */
 case COP_SWITCH:
 {
 	/* Process a switch statement */
@@ -567,11 +989,13 @@ case COP_SWITCH:
 		/* Jump to a specific case */
 		tempNum = 9 + stacktop[-1].uintValue * 4;
 		pc += IL_READ_INT32(pc + tempNum);
+		--stacktop;
 	}
 	else
 	{
 		/* Jump to the default case */
 		pc += IL_READ_INT32(pc + 5);
+		--stacktop;
 	}
 }
 break;

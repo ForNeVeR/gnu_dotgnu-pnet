@@ -347,6 +347,32 @@ static IL_INLINE ILNativeFloat FRem(ILNativeFloat a, ILNativeFloat b)
 
 #elif defined(IL_CVM_MAIN)
 
+/**
+ * <opcode name="iadd">
+ *   <operation>Add <code>int32</code></operation>
+ *
+ *   <format>iadd</format>
+ *
+ *   <form name="iadd" code="COP_IADD"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 + value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 32 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int32</code>.  If overflow occurs, then
+ *   the sign of the result may not be the same as the sign of the
+ *   mathematical sum of the two values.</description>
+ *
+ *   <notes>The <i>iadd</i> instruction can also be used to add
+ *   values of type <code>uint32</code>.</notes>
+ * </opcode>
+ */
 case COP_IADD:
 {
 	/* Integer add */
@@ -355,6 +381,34 @@ case COP_IADD:
 }
 break;
 
+/**
+ * <opcode name="iadd_ovf">
+ *   <operation>Add <code>int32</code> with overflow detection</operation>
+ *
+ *   <format>iadd_ovf</format>
+ *
+ *   <form name="iadd_ovf" code="COP_IADD_OVF"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 + value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 32 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int32</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>int32</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_IADD_OVF:
 {
 	/* Integer add with overflow detection */
@@ -370,6 +424,34 @@ case COP_IADD_OVF:
 }
 break;
 
+/**
+ * <opcode name="iadd_ovf_un">
+ *   <operation>Add <code>uint32</code> with overflow detection</operation>
+ *
+ *   <format>iadd_ovf_un</format>
+ *
+ *   <form name="iadd_ovf_un" code="COP_IADD_OVF_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint32</code>.  The
+ *   <code>uint32</code> <i>result</i> is <i>value1 + value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 32 low-order bits of the true mathematical
+ *   result in a sufficiently wide unsigned format, represented
+ *   as a value of type <code>uint32</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>uint32</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_IADD_OVF_UN:
 {
 	/* Unsigned integer add with overflow detection */
@@ -385,6 +467,32 @@ case COP_IADD_OVF_UN:
 }
 break;
 
+/**
+ * <opcode name="isub">
+ *   <operation>Subtract <code>int32</code></operation>
+ *
+ *   <format>isub</format>
+ *
+ *   <form name="isub" code="COP_ISUB"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 - value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 32 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int32</code>.  If overflow occurs, then
+ *   the sign of the result may not be the same as the sign of the
+ *   mathematical difference of the two values.</description>
+ *
+ *   <notes>The <i>isub</i> instruction can also be used to subtract
+ *   values of type <code>uint32</code>.</notes>
+ * </opcode>
+ */
 case COP_ISUB:
 {
 	/* Integer subtract */
@@ -393,6 +501,34 @@ case COP_ISUB:
 }
 break;
 
+/**
+ * <opcode name="isub_ovf">
+ *   <operation>Subtract <code>int32</code> with overflow detection</operation>
+ *
+ *   <format>isub_ovf</format>
+ *
+ *   <form name="isub_ovf" code="COP_ISUB_OVF"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 - value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 32 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int32</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>int32</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_ISUB_OVF:
 {
 	/* Integer subtract with overflow detection */
@@ -408,6 +544,34 @@ case COP_ISUB_OVF:
 }
 break;
 
+/**
+ * <opcode name="isub_ovf_un">
+ *   <operation>Subtract <code>uint32</code> with overflow detection</operation>
+ *
+ *   <format>isub_ovf_un</format>
+ *
+ *   <form name="isub_ovf_un" code="COP_ISUB_OVF_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint32</code>.  The
+ *   <code>uint32</code> <i>result</i> is <i>value1 - value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 32 low-order bits of the true mathematical
+ *   result in a sufficiently wide unsigned format, represented
+ *   as a value of type <code>uint32</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>uint32</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_ISUB_OVF_UN:
 {
 	/* Unsigned integer subtract with overflow detection */
@@ -423,6 +587,32 @@ case COP_ISUB_OVF_UN:
 }
 break;
 
+/**
+ * <opcode name="imul">
+ *   <operation>Multiply <code>int32</code></operation>
+ *
+ *   <format>imul</format>
+ *
+ *   <form name="imul" code="COP_IMUL"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 * value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 32 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int32</code>.  If overflow occurs, then
+ *   the sign of the result may not be the same as the sign of the
+ *   mathematical multiplication of the two values.</description>
+ *
+ *   <notes>The <i>imul</i> instruction can also be used to multiply
+ *   values of type <code>uint32</code>.</notes>
+ * </opcode>
+ */
 case COP_IMUL:
 {
 	/* Integer (and unsigned integer) multiply */
@@ -431,6 +621,34 @@ case COP_IMUL:
 }
 break;
 
+/**
+ * <opcode name="imul_ovf">
+ *   <operation>Multiply <code>int32</code> with overflow detection</operation>
+ *
+ *   <format>imul_ovf</format>
+ *
+ *   <form name="imul_ovf" code="COP_IMUL_OVF"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 * value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 32 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int32</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>int32</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_IMUL_OVF:
 {
 	/* Integer multiply with overflow detection */
@@ -446,6 +664,34 @@ case COP_IMUL_OVF:
 }
 break;
 
+/**
+ * <opcode name="imul_ovf_un">
+ *   <operation>Multiply <code>uint32</code> with overflow detection</operation>
+ *
+ *   <format>imul_ovf_un</format>
+ *
+ *   <form name="imul_ovf_un" code="COP_IMUL_OVF_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint32</code>.  The
+ *   <code>uint32</code> <i>result</i> is <i>value1 * value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 32 low-order bits of the true mathematical
+ *   result in a sufficiently wide unsigned format, represented
+ *   as a value of type <code>uint32</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>uint32</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_IMUL_OVF_UN:
 {
 	/* Unsigned integer multiply with overflow detection */
@@ -461,6 +707,30 @@ case COP_IMUL_OVF_UN:
 }
 break;
 
+/**
+ * <opcode name="idiv">
+ *   <operation>Divide <code>int32</code></operation>
+ *
+ *   <format>idiv</format>
+ *
+ *   <form name="idiv" code="COP_IDIV"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 / value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.DivideByZeroException">Raised if
+ *     <i>value2</i> is zero.</exception>
+ *     <exception name="System.ArithmeticException">Raised if
+ *     <i>value1</i> is -1 and <i>value2</i> is -2147483648.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_IDIV:
 {
 	/* Integer divide */
@@ -484,6 +754,28 @@ case COP_IDIV:
 }
 break;
 
+/**
+ * <opcode name="idiv_un">
+ *   <operation>Divide <code>uint32</code></operation>
+ *
+ *   <format>idiv_un</format>
+ *
+ *   <form name="idiv_un" code="COP_IDIV_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint32</code>.  The
+ *   <code>uint32</code> <i>result</i> is <i>value1 / value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.DivideByZeroException">Raised if
+ *     <i>value2</i> is zero.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_IDIV_UN:
 {
 	/* Unsigned integer divide */
@@ -499,6 +791,30 @@ case COP_IDIV_UN:
 }
 break;
 
+/**
+ * <opcode name="irem">
+ *   <operation>Remainder <code>int32</code></operation>
+ *
+ *   <format>irem</format>
+ *
+ *   <form name="irem" code="COP_IREM"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 % value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.DivideByZeroException">Raised if
+ *     <i>value2</i> is zero.</exception>
+ *     <exception name="System.ArithmeticException">Raised if
+ *     <i>value1</i> is -1 and <i>value2</i> is -2147483648.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_IREM:
 {
 	/* Integer remainder */
@@ -522,6 +838,28 @@ case COP_IREM:
 }
 break;
 
+/**
+ * <opcode name="irem_un">
+ *   <operation>Remainder <code>uint32</code></operation>
+ *
+ *   <format>irem_un</format>
+ *
+ *   <form name="irem_un" code="COP_IREM_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint32</code>.  The
+ *   <code>uint32</code> <i>result</i> is <i>value1 % value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.DivideByZeroException">Raised if
+ *     <i>value2</i> is zero.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_IREM_UN:
 {
 	/* Unsigned integer remainder */
@@ -537,6 +875,27 @@ case COP_IREM_UN:
 }
 break;
 
+/**
+ * <opcode name="ineg">
+ *   <operation>Negate <code>int32</code></operation>
+ *
+ *   <format>ineg</format>
+ *
+ *   <form name="ineg" code="COP_INEG"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack
+ *   as type <code>int32</code>.  The <code>int32</code> <i>result</i>
+ *   is <i>-value</i>.  The <i>result</i> is pushed onto
+ *   the stack.</description>
+ *
+ *   <notes>To perform negation with overflow detection, use
+ *   <i>isub_ovf</i> with the first argument set to 0 and the
+ *   second argument set to <i>value</i>.</notes>
+ * </opcode>
+ */
 case COP_INEG:
 {
 	/* Integer negate */
@@ -545,6 +904,39 @@ case COP_INEG:
 }
 break;
 
+/**
+ * <opcode name="ladd">
+ *   <operation>Add <code>int64</code></operation>
+ *
+ *   <format>ladd</format>
+ *
+ *   <form name="ladd" code="COP_LADD"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 + value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 64 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int64</code>.  If overflow occurs, then
+ *   the sign of the result may not be the same as the sign of the
+ *   mathematical sum of the two values.</description>
+ *
+ *   <notes>The <i>ladd</i> instruction can also be used to add
+ *   values of type <code>uint64</code>.<p/>
+ *
+ *   Values of type <code>int64</code> typically occupy 2 stack slots
+ *   on 32-bit machines and 1 stack slot on 64-bit machines, although
+ *   this is layout not fixed.  When we say that <i>value1</i> and
+ *   <i>value2</i> are popped, we assume that the correct number of
+ *   stack slots for the machine are popped.  Similarly when <i>result</i>
+ *   is pushed.</notes>
+ * </opcode>
+ */
 case COP_LADD:
 {
 	/* Long add */
@@ -555,6 +947,34 @@ case COP_LADD:
 }
 break;
 
+/**
+ * <opcode name="ladd_ovf">
+ *   <operation>Add <code>int64</code> with overflow detection</operation>
+ *
+ *   <format>ladd_ovf</format>
+ *
+ *   <form name="ladd_ovf" code="COP_LADD_OVF"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 + value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 64 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int64</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>int64</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LADD_OVF:
 {
 	/* Long add with overflow detection */
@@ -570,6 +990,34 @@ case COP_LADD_OVF:
 }
 break;
 
+/**
+ * <opcode name="ladd_ovf_un">
+ *   <operation>Add <code>uint64</code> with overflow detection</operation>
+ *
+ *   <format>ladd_ovf_un</format>
+ *
+ *   <form name="ladd_ovf_un" code="COP_LADD_OVF_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint64</code>.  The
+ *   <code>uint64</code> <i>result</i> is <i>value1 + value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 64 low-order bits of the true mathematical
+ *   result in a sufficiently wide unsignedcomplement format, represented
+ *   as a value of type <code>uint64</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>uint64</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LADD_OVF_UN:
 {
 	/* Unsigned long add with overflow detection */
@@ -585,6 +1033,32 @@ case COP_LADD_OVF_UN:
 }
 break;
 
+/**
+ * <opcode name="lsub">
+ *   <operation>Subtract <code>int64</code></operation>
+ *
+ *   <format>lsub</format>
+ *
+ *   <form name="lsub" code="COP_LSUB"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 - value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 64 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int64</code>.  If overflow occurs, then
+ *   the sign of the result may not be the same as the sign of the
+ *   mathematical difference of the two values.</description>
+ *
+ *   <notes>The <i>lsub</i> instruction can also be used to subtract
+ *   values of type <code>uint64</code>.</notes>
+ * </opcode>
+ */
 case COP_LSUB:
 {
 	/* Long subtract */
@@ -595,6 +1069,34 @@ case COP_LSUB:
 }
 break;
 
+/**
+ * <opcode name="lsub_ovf">
+ *   <operation>Subtract <code>int64</code> with overflow detection</operation>
+ *
+ *   <format>lsub_ovf</format>
+ *
+ *   <form name="lsub_ovf" code="COP_LSUB_OVF"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 - value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 64 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int64</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>int64</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LSUB_OVF:
 {
 	/* Long subtract with overflow detection */
@@ -610,6 +1112,34 @@ case COP_LSUB_OVF:
 }
 break;
 
+/**
+ * <opcode name="lsub_ovf_un">
+ *   <operation>Subtract <code>uint64</code> with overflow detection</operation>
+ *
+ *   <format>lsub_ovf_un</format>
+ *
+ *   <form name="lsub_ovf_un" code="COP_LSUB_OVF_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint64</code>.  The
+ *   <code>uint64</code> <i>result</i> is <i>value1 - value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 64 low-order bits of the true mathematical
+ *   result in a sufficiently wide unsignedcomplement format, represented
+ *   as a value of type <code>uint64</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>uint64</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LSUB_OVF_UN:
 {
 	/* Unsigned long subtract with overflow detection */
@@ -625,6 +1155,32 @@ case COP_LSUB_OVF_UN:
 }
 break;
 
+/**
+ * <opcode name="lmul">
+ *   <operation>Multiply <code>int64</code></operation>
+ *
+ *   <format>lmul</format>
+ *
+ *   <form name="lmul" code="COP_LMUL"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 * value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 64 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int64</code>.  If overflow occurs, then
+ *   the sign of the result may not be the same as the sign of the
+ *   mathematical multiplication of the two values.</description>
+ *
+ *   <notes>The <i>lmul</i> instruction can also be used to multiply
+ *   values of type <code>uint64</code>.</notes>
+ * </opcode>
+ */
 case COP_LMUL:
 {
 	/* Long (and unsigned long) multiply */
@@ -635,6 +1191,34 @@ case COP_LMUL:
 }
 break;
 
+/**
+ * <opcode name="lmul_ovf">
+ *   <operation>Multiply <code>int64</code> with overflow detection</operation>
+ *
+ *   <format>lmul_ovf</format>
+ *
+ *   <form name="lmul_ovf" code="COP_LMUL_OVF"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 * value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 64 low-order bits of the true mathematical
+ *   result in a sufficiently wide two's-complement format, represented
+ *   as a value of type <code>int64</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>int64</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LMUL_OVF:
 {
 	/* Long multiply with overflow detection */
@@ -650,6 +1234,34 @@ case COP_LMUL_OVF:
 }
 break;
 
+/**
+ * <opcode name="lmul_ovf_un">
+ *   <operation>Multiply <code>uint64</code> with overflow detection</operation>
+ *
+ *   <format>lmul_ovf_un</format>
+ *
+ *   <form name="lmul_ovf_un" code="COP_LMUL_OVF_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint64</code>.  The
+ *   <code>uint64</code> <i>result</i> is <i>value1 * value2</i>.
+ *   The <i>result</i> is pushed onto the stack.<p/>
+ *
+ *   The result is the 64 low-order bits of the true mathematical
+ *   result in a sufficiently wide unsignedcomplement format, represented
+ *   as a value of type <code>uint64</code>.  If overflow occurs, then
+ *   <code>System.OverflowException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OverflowException">Raised if
+ *     the true mathemetical result is too large to be represented
+ *     as a value of type <code>uint64</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LMUL_OVF_UN:
 {
 	/* Unsigned long multiply with overflow detection */
@@ -665,6 +1277,31 @@ case COP_LMUL_OVF_UN:
 }
 break;
 
+/**
+ * <opcode name="ldiv">
+ *   <operation>Divide <code>int64</code></operation>
+ *
+ *   <format>ldiv</format>
+ *
+ *   <form name="ldiv" code="COP_LDIV"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 / value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.DivideByZeroException">Raised if
+ *     <i>value2</i> is zero.</exception>
+ *     <exception name="System.ArithmeticException">Raised if
+ *     <i>value1</i> is -1 and <i>value2</i> is -9223372036854775808.
+ *     </exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LDIV:
 {
 	/* Long divide */
@@ -685,6 +1322,28 @@ case COP_LDIV:
 }
 break;
 
+/**
+ * <opcode name="ldiv_un">
+ *   <operation>Divide <code>uint64</code></operation>
+ *
+ *   <format>ldiv_un</format>
+ *
+ *   <form name="ldiv_un" code="COP_LDIV_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint64</code>.  The
+ *   <code>uint64</code> <i>result</i> is <i>value1 / value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.DivideByZeroException">Raised if
+ *     <i>value2</i> is zero.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LDIV_UN:
 {
 	/* Unsigned long divide */
@@ -700,6 +1359,31 @@ case COP_LDIV_UN:
 }
 break;
 
+/**
+ * <opcode name="lrem">
+ *   <operation>Remainder <code>int64</code></operation>
+ *
+ *   <format>lrem</format>
+ *
+ *   <form name="lrem" code="COP_LREM"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 % value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.DivideByZeroException">Raised if
+ *     <i>value2</i> is zero.</exception>
+ *     <exception name="System.ArithmeticException">Raised if
+ *     <i>value1</i> is -1 and <i>value2</i> is -9223372036854775808.
+ *     </exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LREM:
 {
 	/* Long remainder */
@@ -720,6 +1404,28 @@ case COP_LREM:
 }
 break;
 
+/**
+ * <opcode name="lrem_un">
+ *   <operation>Remainder <code>uint64</code></operation>
+ *
+ *   <format>lrem_un</format>
+ *
+ *   <form name="lrem_un" code="COP_LREM_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint64</code>.  The
+ *   <code>uint64</code> <i>result</i> is <i>value1 % value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.DivideByZeroException">Raised if
+ *     <i>value2</i> is zero.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LREM_UN:
 {
 	/* Unsigned long remainder */
@@ -735,6 +1441,27 @@ case COP_LREM_UN:
 }
 break;
 
+/**
+ * <opcode name="lneg">
+ *   <operation>Negate <code>int64</code></operation>
+ *
+ *   <format>lneg</format>
+ *
+ *   <form name="lneg" code="COP_LNEG"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack
+ *   as type <code>int64</code>.  The <code>int64</code> <i>result</i>
+ *   is <i>-value</i>.  The <i>result</i> is pushed onto
+ *   the stack.</description>
+ *
+ *   <notes>To perform negation with overflow detection, use
+ *   <i>lsub_ovf</i> with the first argument set to 0 and the
+ *   second argument set to <i>value</i>.</notes>
+ * </opcode>
+ */
 case COP_LNEG:
 {
 	/* Long negate */
@@ -754,12 +1481,114 @@ case COP_##name: \
 } \
 break
 
-/* Binary floating point operations */
+/**
+ * <opcode name="fadd">
+ *   <operation>Add <code>native float</code></operation>
+ *
+ *   <format>fadd</format>
+ *
+ *   <form name="fadd" code="COP_FADD"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>native float</code>.  The
+ *   <code>native float</code> <i>result</i> is <i>value1 + value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>Values of type <code>native float</code> typically occupy
+ *   multiple stack slots.  The exact number of slots is machine-dependent,
+ *   as is the precision of the <code>native float</code> type.<p/>
+ *
+ *   When we say that <i>value1</i> and <i>value2</i> are popped,
+ *   we assume that the correct number of stack slots for the machine
+ *   are popped.  Similarly when <i>result</i> is pushed.<p/>
+ *
+ *   To perform strict 32-bit floating point addition, use <i>fadd</i>
+ *   followed by <i>f2f</i>.  To perform strict 64-bit floating point
+ *   addition, use <i>fadd</i> followed by <i>f2d</i>.</notes>
+ * </opcode>
+ */
 COP_FLOAT_OP(FADD, +);
+
+/**
+ * <opcode name="fsub">
+ *   <operation>Subtract <code>native float</code></operation>
+ *
+ *   <format>fsub</format>
+ *
+ *   <form name="fsub" code="COP_FSUB"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>native float</code>.  The
+ *   <code>native float</code> <i>result</i> is <i>value1 - value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ * </opcode>
+ */
 COP_FLOAT_OP(FSUB, -);
+
+/**
+ * <opcode name="fmul">
+ *   <operation>Multiply <code>native float</code></operation>
+ *
+ *   <format>fmul</format>
+ *
+ *   <form name="fmul" code="COP_FMUL"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>native float</code>.  The
+ *   <code>native float</code> <i>result</i> is <i>value1 * value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ * </opcode>
+ */
 COP_FLOAT_OP(FMUL, *);
+
+/**
+ * <opcode name="fdiv">
+ *   <operation>Divide <code>native float</code></operation>
+ *
+ *   <format>fdiv</format>
+ *
+ *   <form name="fdiv" code="COP_FDIV"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>native float</code>.  The
+ *   <code>native float</code> <i>result</i> is <i>value1 / value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ * </opcode>
+ */
 COP_FLOAT_OP(FDIV, /);
 
+/**
+ * <opcode name="frem">
+ *   <operation>Remainder <code>native float</code></operation>
+ *
+ *   <format>frem</format>
+ *
+ *   <form name="frem" code="COP_FREM"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>native float</code>.  The
+ *   <code>native float</code> <i>result</i> is <i>value1 % value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>The remainder operation is similar to the C <code>fmod</code>
+ *   function, not IEEE remainder.</notes>
+ * </opcode>
+ */
 case COP_FREM:
 {
 	/* Floating point remainder */
@@ -771,6 +1600,23 @@ case COP_FREM:
 }
 break;
 
+/**
+ * <opcode name="fneg">
+ *   <operation>Negate <code>native float</code></operation>
+ *
+ *   <format>fneg</format>
+ *
+ *   <form name="fneg" code="COP_FNEG"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as type
+ *   <code>native float</code>.  The <code>native float</code>
+ *   <i>result</i> is <i>-value</i>.  The <i>result</i> is pushed
+ *   onto the stack.</description>
+ * </opcode>
+ */
 case COP_FNEG:
 {
 	/* Floating point negate */
@@ -780,6 +1626,26 @@ case COP_FNEG:
 }
 break;
 
+/**
+ * <opcode name="iand">
+ *   <operation>Bitwise AND <code>int32</code></operation>
+ *
+ *   <format>iand</format>
+ *
+ *   <form name="iand" code="COP_IAND"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 &amp; value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>The <i>iand</i> instruction can also be used to AND
+ *   values of type <code>uint32</code>.</notes>
+ * </opcode>
+ */
 case COP_IAND:
 {
 	/* Integer bitwise AND */
@@ -788,6 +1654,26 @@ case COP_IAND:
 }
 break;
 
+/**
+ * <opcode name="ior">
+ *   <operation>Bitwise OR <code>int32</code></operation>
+ *
+ *   <format>ior</format>
+ *
+ *   <form name="ior" code="COP_IOR"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 | value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>The <i>ior</i> instruction can also be used to OR
+ *   values of type <code>uint32</code>.</notes>
+ * </opcode>
+ */
 case COP_IOR:
 {
 	/* Integer bitwise OR */
@@ -796,6 +1682,26 @@ case COP_IOR:
 }
 break;
 
+/**
+ * <opcode name="ixor">
+ *   <operation>Bitwise XOR <code>int32</code></operation>
+ *
+ *   <format>ixor</format>
+ *
+ *   <form name="ixor" code="COP_IXOR"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is <i>value1 ^ value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>The <i>ixor</i> instruction can also be used to XOR
+ *   values of type <code>uint32</code>.</notes>
+ * </opcode>
+ */
 case COP_IXOR:
 {
 	/* Integer bitwise XOR */
@@ -804,6 +1710,26 @@ case COP_IXOR:
 }
 break;
 
+/**
+ * <opcode name="inot">
+ *   <operation>Bitwise NOT <code>int32</code></operation>
+ *
+ *   <format>inot</format>
+ *
+ *   <form name="inot" code="COP_INOT"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>int32</code>.  The <code>int32</code> <i>result</i>
+ *   is <i>~value</i>.  The <i>result</i> is pushed onto the
+ *   stack.</description>
+ *
+ *   <notes>The <i>inot</i> instruction can also be used to NOT
+ *   values of type <code>uint32</code>.</notes>
+ * </opcode>
+ */
 case COP_INOT:
 {
 	/* Integer bitwise NOT */
@@ -812,6 +1738,28 @@ case COP_INOT:
 }
 break;
 
+/**
+ * <opcode name="ishl">
+ *   <operation>Left shift <code>int32</code></operation>
+ *
+ *   <format>ishl</format>
+ *
+ *   <form name="ishl" code="COP_ISHL"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as the types <code>int32</code>
+ *   and <code>uint32</code> respectively.  The <code>int32</code>
+ *   <i>result</i> is <i>(value1 &lt;&lt; (value2 &amp; 0x1F))</i>.
+ *   Bits that are shifted out the top of <i>value1</i> are discarded.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>The <i>ishl</i> instruction can also be used to shift
+ *   values of type <code>uint32</code>.</notes>
+ * </opcode>
+ */
 case COP_ISHL:
 {
 	/* Integer shift left */
@@ -820,6 +1768,26 @@ case COP_ISHL:
 }
 break;
 
+/**
+ * <opcode name="ishr">
+ *   <operation>Right arithmetic shift <code>int32</code></operation>
+ *
+ *   <format>ishr</format>
+ *
+ *   <form name="ishr" code="COP_ISHR"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as the types <code>int32</code>
+ *   and <code>uint32</code> respectively.  The <code>int32</code>
+ *   <i>result</i> is <i>(value1 &gt;&gt; (value2 &amp; 0x1F))</i>.
+ *   The top-most bit of <i>value1</i> is used to fill new bits shifted
+ *   in from the top.  The <i>result</i> is pushed onto the
+ *   stack.</description>
+ * </opcode>
+ */
 case COP_ISHR:
 {
 	/* Integer shift right */
@@ -828,6 +1796,25 @@ case COP_ISHR:
 }
 break;
 
+/**
+ * <opcode name="ishr_un">
+ *   <operation>Right unsigned shift <code>uint32</code></operation>
+ *
+ *   <format>ishr_un</format>
+ *
+ *   <form name="ishr_un" code="COP_ISHR_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint32</code>.  The
+ *   <code>uint32</code> <i>result</i> is <i>(value1 &gt;&gt;
+ *   (value2 &amp; 0x1F))</i>.  Zeroes are used to fill new
+ *   bits shifted in from the top.  The <i>result</i> is pushed
+ *   onto the stack.</description>
+ * </opcode>
+ */
 case COP_ISHR_UN:
 {
 	/* Unsigned integer shift right */
@@ -836,6 +1823,26 @@ case COP_ISHR_UN:
 }
 break;
 
+/**
+ * <opcode name="land">
+ *   <operation>Bitwise AND <code>int64</code></operation>
+ *
+ *   <format>land</format>
+ *
+ *   <form name="land" code="COP_LAND"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 &amp; value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>The <i>land</i> instruction can also be used to AND
+ *   values of type <code>uint64</code>.</notes>
+ * </opcode>
+ */
 case COP_LAND:
 {
 	/* Long bitwise AND */
@@ -846,6 +1853,26 @@ case COP_LAND:
 }
 break;
 
+/**
+ * <opcode name="lor">
+ *   <operation>Bitwise OR <code>int64</code></operation>
+ *
+ *   <format>lor</format>
+ *
+ *   <form name="lor" code="COP_LOR"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 | value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>The <i>lor</i> instruction can also be used to OR
+ *   values of type <code>uint64</code>.</notes>
+ * </opcode>
+ */
 case COP_LOR:
 {
 	/* Long bitwise OR */
@@ -856,6 +1883,26 @@ case COP_LOR:
 }
 break;
 
+/**
+ * <opcode name="lxor">
+ *   <operation>Bitwise XOR <code>int64</code></operation>
+ *
+ *   <format>lxor</format>
+ *
+ *   <form name="lxor" code="COP_LXOR"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int64</code> <i>result</i> is <i>value1 ^ value2</i>.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>The <i>lxor</i> instruction can also be used to XOR
+ *   values of type <code>uint64</code>.</notes>
+ * </opcode>
+ */
 case COP_LXOR:
 {
 	/* Long bitwise XOR */
@@ -866,6 +1913,26 @@ case COP_LXOR:
 }
 break;
 
+/**
+ * <opcode name="lnot">
+ *   <operation>Bitwise NOT <code>int64</code></operation>
+ *
+ *   <format>lnot</format>
+ *
+ *   <form name="lnot" code="COP_LNOT"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>int64</code>.  The <code>int64</code> <i>result</i>
+ *   is <i>~value</i>.  The <i>result</i> is pushed onto the
+ *   stack.</description>
+ *
+ *   <notes>The <i>lnot</i> instruction can also be used to NOT
+ *   values of type <code>uint64</code>.</notes>
+ * </opcode>
+ */
 case COP_LNOT:
 {
 	/* Long bitwise NOT */
@@ -875,6 +1942,28 @@ case COP_LNOT:
 }
 break;
 
+/**
+ * <opcode name="lshl">
+ *   <operation>Left shift <code>int64</code></operation>
+ *
+ *   <format>lshl</format>
+ *
+ *   <form name="lshl" code="COP_LSHL"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as the types <code>int64</code>
+ *   and <code>uint32</code> respectively.  The <code>int64</code>
+ *   <i>result</i> is <i>(value1 &lt;&lt; (value2 &amp; 0x3F))</i>.
+ *   Bits that are shifted out the top of <i>value1</i> are discarded.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>The <i>lshl</i> instruction can also be used to shift
+ *   values of type <code>uint64</code>.</notes>
+ * </opcode>
+ */
 case COP_LSHL:
 {
 	/* Long shift left */
@@ -885,6 +1974,26 @@ case COP_LSHL:
 }
 break;
 
+/**
+ * <opcode name="lshr">
+ *   <operation>Right arithmetic shift <code>int64</code></operation>
+ *
+ *   <format>lshr</format>
+ *
+ *   <form name="lshr" code="COP_LSHR"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as the types <code>int64</code>
+ *   and <code>uint32</code> respectively.  The <code>int64</code>
+ *   <i>result</i> is <i>(value1 &gt;&gt; (value2 &amp; 0x3F))</i>.
+ *   The top-most bit of <i>value1</i> is used to fill new bits shifted
+ *   in from the top.  The <i>result</i> is pushed onto the
+ *   stack.</description>
+ * </opcode>
+ */
 case COP_LSHR:
 {
 	/* Long shift right */
@@ -895,6 +2004,25 @@ case COP_LSHR:
 }
 break;
 
+/**
+ * <opcode name="lshr_un">
+ *   <operation>Right unsigned shift <code>uint64</code></operation>
+ *
+ *   <format>lshr_un</format>
+ *
+ *   <form name="lshr_un" code="COP_LSHR_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as the types <code>uint64</code>
+ *   and <code>uint32</code> respectively.  The <code>uint64</code>
+ *   <i>result</i> is <i>(value1 &gt;&gt; (value2 &amp; 0x3F))</i>.
+ *   Zeroes are used to fill new bits shifted in from the top.
+ *   The <i>result</i> is pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_LSHR_UN:
 {
 	/* Unsigned long shift right */
@@ -907,6 +2035,28 @@ break;
 
 #elif defined(IL_CVM_PREFIX)
 
+/**
+ * <opcode name="ckfinite">
+ *   <operation>Check <code>native float</code> for finite</operation>
+ *
+ *   <format>prefix<fsep/>ckfinite</format>
+ *
+ *   <form name="ckfinite" code="COP_PREFIX_CKFINITE"/>
+ *
+ *   <before>..., value</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as type
+ *   <code>native float</code>.  If <i>value</i> is not finite (i.e.
+ *   it is NaN, positive infinity, or negative infinity), then
+ *   <code>System.ArithmeticException</code> is thrown.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.ArithmeticException">Raised if
+ *     <i>value</i> is not finite.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_PREFIX_CKFINITE:
 {
 	/* Check the top-most float value to see if it is finite */

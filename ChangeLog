@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.5.4 release.
 
+	* configure.in: update working version to "0.5.7".
+
 2003-05-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/ComponentModel/EventDescriptorCollection.cs,

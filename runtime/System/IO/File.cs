@@ -32,7 +32,7 @@ namespace System.IO
 			return new StreamWriter(path, true);
 		}	
 	
-		[TODO]
+
 		public static void Copy(string source, string dest) 
 		{
 			return Copy(source, dest, false);
@@ -44,7 +44,7 @@ namespace System.IO
 		
 			
 	
-		[TODO]
+		
 		public static void Copy(string src, string dest, bool overwrite) 
 		{
 			
@@ -66,8 +66,7 @@ namespace System.IO
 				
 				
 				// If Dest Exists
-				case Errno.EEXIST
-				{
+				case Errno.EEXIST:
 					if (overwrite)
 					{
 						Move(src, dest);
@@ -76,12 +75,11 @@ namespace System.IO
 					{
 						throw new IOException(_("IO_CopyFileExists"));
 					}
-                                }
+                                
 
 
 				// Directory or File not found
-				case Errno.ENOENT
-				{
+				case Errno.ENOENT:
 					if (Exists(source)) 
 					{
 						throw new DirectoryNotFoundException(_("IO_DirNotFound"));
@@ -91,13 +89,13 @@ namespace System.IO
 						throw new FileNotFoundExceptio(_("IO_FileNotFound"));		       
 					}
 
-				}
+					
 				
 				case Errno.EIO:
 					throw new IOException(_("IO_Error"));
 				
 				case Errno.EACCES:
-					throw new SecurityException(_("IO_PathnameSecurity");
+					throw new SecurityException(_("IO_PathnameSecurity"));
 				
 			
 		}
@@ -105,7 +103,7 @@ namespace System.IO
 	
 		public static FileStream Create(string path) 
 		{
-		return Create(path, FileStream.DefaultBufferSize);
+			return Create(path, FileStream.DefaultBufferSize);
 		}
 
 		public static FileStream Create(string path, int buffersize) 
@@ -118,7 +116,7 @@ namespace System.IO
 			return new StreamWriter(path, false);
 		}
 
-		[TODO]
+		
 		public static void Delete(string path) 
 		{
 			if (path == null) 
@@ -126,13 +124,35 @@ namespace System.IO
 				throw new ArgumentNullException();
 			}
 		
-			if (FileMethods.ValidatePathname(path) == false) 
+			if (!FileMethods.ValidatePathname(path)) 
 			{
 				throw new ArgumentException();
 			}
 		
-			Errno err = DirMethods.Delete(path);			
-		}
+			Errno err = DirMethods.Delete(path);
+			
+			switch(err) 
+			{
+				case Errno.EIO:
+					throw new IOException(_("IO_Error"));
+				case Errno.ENOENT:
+					// Exists checks files
+					if (Exists(path)) 
+					{
+						throw new DirectoryNotFoundException(_("IO_DirNotFound"));
+					}
+					else
+					{
+						throw new FileNotFoundException(_("IO_FileNotFound"));
+					} 
+
+				case Errno.EACCESS:
+					throw new SecurityException(_("IO_PathnameSecurity"));
+
+		
+				
+	}
+}
 
 		public static bool Exists(string path) 
 		{
@@ -152,24 +172,31 @@ namespace System.IO
 			return true;
 		}
 		
-		[TODO]
+		
 		public static DateTime GetCreationTime(string path)
 		{
 			long time;
 			DirMethods.GetCreationTime(path, time);
-			return new DateTime(time);  
+			DateTime datetime = new DateTime(time);
+			return DateTime.Parse(String.Concat(datetime.ToShortDateString(), " ", datetime.ToShortTimeString()));  
 		}	
 			
-		[TODO]
+		
 		public static DateTime GetLastAccessTime(string path) 
 		{
-			return new DateTime(0);
+			long time;
+			DirMethods.GetLastAccess(path, time);
+			DateTime datetime = new DateTime(time);
+			return DateTime.Parse(String.Concat(datetime.ToShortDateString(), " ", datetime.ToShortDateString()));
 		}	
 
 		[TODO]
 		public static DateTime GetLastWriteTime(string path) 
 		{
-			return new DateTime(null);
+			long time;
+			DirMethods.GetCreationTime(path, time);
+			DateTime datetime = new DateTime(time);
+			return DateTime.Parse(String.Concat(datetime.ToLongDateString(), " ", datetime.ToLongTimeString() ) ); 
 		}	
 
 	
@@ -230,3 +257,24 @@ namespace System.IO
 }			
 		
 		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

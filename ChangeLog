@@ -1,4 +1,9 @@
 
+2002-01-27  Charlie Carnow <carnow@gmx.net>
+
+	* runtime/System/IO/File.cs: Implemented GetAccessTime, and other
+	methods to better fit DirMethods. Fixed syntax errors found by cscc.
+				
 2002-01-26  Abhaya Agarwal  <abhayag@cse.iitk.ac.in>
 
 	* runtime/System/DateTime.cs: implementation of "DateTime.Compare".

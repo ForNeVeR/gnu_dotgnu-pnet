@@ -30,11 +30,15 @@ extern	"C" {
 typedef struct _tagILInputContext ILInputContext;
 struct _tagILInputContext
 {
+#ifndef REDUCED_STDIO
 	FILE		   *stream;
+#endif
 	const char	   *buffer;
 	unsigned long	bufLen;
 	int (*readFunc)(ILInputContext *ctx, void *buf, unsigned len);
 };
+
+#ifndef REDUCED_STDIO
 
 /*
  * Stdio-based read operation.
@@ -43,6 +47,12 @@ static int StdioRead(ILInputContext *ctx, void *buf, unsigned len)
 {
 	return (int)fread(buf, 1, len, ctx->stream);
 }
+
+#else
+
+#define	fileno(f)	0
+
+#endif
 
 /*
  * Memory-based read operation.
@@ -453,7 +463,11 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 		isMapped = 1;
 		isInPlace = 0;
 	}
+#ifndef REDUCED_STDIO
 	else if(!(ctx->stream) && (flags & IL_LOADFLAG_IN_PLACE) != 0)
+#else
+	else if((flags & IL_LOADFLAG_IN_PLACE) != 0)
+#endif
 	{
 		/* Execute directly from the supplied buffer */
 		data = (char *)(ctx->buffer);
@@ -629,6 +643,8 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 	return 0;
 }
 
+#ifndef REDUCED_STDIO
+
 int ILImageLoad(FILE *file, const char *filename,
 				ILContext *context, ILImage **image, int flags)
 {
@@ -689,12 +705,16 @@ int ILImageLoadFromFile(const char *filename, ILContext *context,
 	return loadError;
 }
 
+#endif /* !REDUCED_STDIO */
+
 int ILImageLoadFromMemory(const void *buffer, unsigned long bufLen,
 						  ILContext *context, ILImage **image,
 						  int flags, const char *filename)
 {
 	ILInputContext ctx;
+#ifndef REDUCED_STDIO
 	ctx.stream = 0;
+#endif
 	ctx.buffer = (const char *)buffer;
 	ctx.bufLen = bufLen;
 	ctx.readFunc = MemoryRead;

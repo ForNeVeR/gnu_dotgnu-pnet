@@ -25,7 +25,12 @@
 #include "il_system.h"
 #include "il_utils.h"
 #include "il_program.h"
+#if !defined(__palmos__)
+#define	IL_USE_WRITER
+#endif
+#ifdef	IL_USE_WRITER
 #include "il_writer.h"
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -303,6 +308,8 @@ struct _tagILFixup
 #define	IL_FIXUP_TOKEN		0
 #define	IL_FIXUP_FIELD_RVA	1
 
+#ifdef IL_USE_WRITER
+
 /*
  * Internal structure used when writing IL binaries.
  */
@@ -363,6 +370,8 @@ struct _tagILWriter
 
 };
 
+#endif /* !REDUCED_STDIO */
+
 /*
  * Create a persistent version of a string if necessary.
  * This is typically used on class names and the like which
@@ -383,11 +392,15 @@ const char *_ILContextPersistMalloc(ILImage *image, char *str);
  */
 ILImage *_ILImageCreate(ILContext *context, unsigned size);
 
+#ifdef IL_CONFIG_JAVA
+
 /*
  * Declare the Java image loading function for use by "ILImageLoad".
  */
 int _ILImageJavaLoad(FILE *file, const char *filename, ILContext *context,
 					 ILImage **image, int flags, char *buffer);
+
+#endif /* IL_CONFIG_JAVA */
 
 /*
  * Free a section map.
@@ -447,6 +460,8 @@ void _ILImageFreeTokens(ILImage *image);
 int _ILImageSetToken(ILImage *image, ILProgramItem *item,
 					 unsigned long token, unsigned long tokenKind);
 
+#ifdef IL_USE_WRITER
+
 /*
  * Compute the size of all token types prior to writing
  * the metadata to an image.
@@ -489,6 +504,8 @@ void _ILWBufferListDestroy(ILWBufferList *list);
  */
 int _ILWBufferListAdd(ILWBufferList *list, const void *buffer, unsigned size);
 
+#endif /* IL_USE_WRITER */
+
 /*
  * Remove all classes for an image from the class lookup hash.
  */
@@ -512,6 +529,8 @@ ILClass *_ILTypeToSyntheticOther(ILImage *image, ILType *type);
  */
 ILClass *_ILTypeToSyntheticInstantiation
 		(ILImage *image, ILType *type, ILType *classParams);
+
+#if IL_USE_WRITER
 
 /*
  * Compact all type and member references in an image to
@@ -539,6 +558,8 @@ void _ILWriteJavaHeaders(ILWriter *writer);
  * Write a java class
  */
 void WriteJavaClass(ILWriter *writer, ILClass *class);
+
+#endif /* IL_USE_WRITER */
 
 /*
  * Recommended number of token columns for use with "ILImageRawTokenData".
@@ -775,7 +796,11 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 /*
  * Define this to 1 to enable debugging.
  */
+#ifndef	REDUCED_STDIO
 #define	IL_DEBUG_META		1
+#else
+#define	IL_DEBUG_META		0
+#endif
 
 /*
  * Debugging support.

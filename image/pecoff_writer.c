@@ -19,6 +19,9 @@
  */
 
 #include "program.h"
+
+#ifdef IL_USE_WRITER
+
 #include <time.h>
 
 #ifdef	__cplusplus
@@ -1031,3 +1034,5 @@ void _ILWriteFieldRVAFixups(ILWriter *writer, unsigned long dataSection,
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_USE_WRITER */

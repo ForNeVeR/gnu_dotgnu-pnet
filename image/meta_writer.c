@@ -20,6 +20,8 @@
 
 #include "program.h"
 
+#ifdef IL_USE_WRITER
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -1620,3 +1622,5 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_USE_WRITER */

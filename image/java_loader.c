@@ -21,6 +21,8 @@
 #include "program.h"
 #include "il_jopcodes.h"
 
+#ifdef IL_CONFIG_JAVA
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -2392,3 +2394,5 @@ ILField *ILJavaGetField(ILClass *info, ILUInt32 index,
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_CONFIG_JAVA */

@@ -21,6 +21,12 @@
 	option to "configure" to enable building just the runtime engine
 	on platforms that cannot support the full developer toolchain.
 
+	* image/class.c, image/compress.c, image/debug_writer.c, image/image.h,
+	image/java_loader.c, image/java_writer.c, image/link.c,
+	image/meta_writer.c, image/pecoff_loader.c, image/pecoff_writer.c,
+	image/writer.c, include/il_image.h, include/il_program.h:
+	port the "image" library to m68k-palmos.
+
 2003-05-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csdoc.c: avoid semantic analysis of method bodies with

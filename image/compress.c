@@ -47,7 +47,7 @@ int ILMetaCompressData(unsigned char *buf, unsigned long data)
 		buf[1] = (unsigned char)data;
 		return 2;
 	}
-	else if(data < (unsigned long)(1 << 29))
+	else if(data < (unsigned long)(1L << 29))
 	{
 		buf[0] = (unsigned char)((data >> 24) | 0xC0);
 		buf[1] = (unsigned char)(data >> 16);
@@ -108,7 +108,7 @@ int ILMetaCompressInt(unsigned char *buf, long data)
 			buf[1] = (unsigned char)(data << 1);
 			return 2;
 		}
-		else if(data < (unsigned long)(1 << 28))
+		else if(data < (unsigned long)(1L << 28))
 		{
 			buf[0] = (unsigned char)((data >> 23) | 0xC0);
 			buf[1] = (unsigned char)(data >> 15);
@@ -139,7 +139,7 @@ int ILMetaCompressInt(unsigned char *buf, long data)
 			buf[1] = (unsigned char)((data << 1) | 0x01);
 			return 2;
 		}
-		else if(data >= ((long)-(1 << 29)))
+		else if(data >= ((long)-(1L << 29)))
 		{
 			buf[0] = (unsigned char)(((data >> 23) & 0x1F) | 0xC0);
 			buf[1] = (unsigned char)(data >> 15);

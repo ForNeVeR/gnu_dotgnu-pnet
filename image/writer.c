@@ -19,6 +19,9 @@
  */
 
 #include "program.h"
+
+#ifdef IL_USE_WRITER
+
 #include <time.h>
 
 #ifdef	__cplusplus
@@ -664,3 +667,5 @@ int ILWriterDestroy(ILWriter *writer)
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_USE_WRITER */

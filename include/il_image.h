@@ -171,6 +171,8 @@ void ILContextSetLibraryDirs(ILContext *context,
  */
 ILImage *ILImageCreate(ILContext *context);
 
+#ifndef REDUCED_STDIO
+
 /*
  * Load an IL image into memory.  The specified "file" can
  * be a non-seekable stream.  The file is assumed to be positioned
@@ -181,6 +183,8 @@ ILImage *ILImageCreate(ILContext *context);
  */
 int ILImageLoad(FILE *file, const char *filename, ILContext *context,
 				ILImage **image, int flags);
+
+#endif
 
 /*
  * Load an IL image from a file.  Returns -1 if the file

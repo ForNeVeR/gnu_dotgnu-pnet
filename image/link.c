@@ -174,6 +174,7 @@ static void SplitPathString(char *list, char *stdpath, char *defaultPath)
  */
 static void LoadSystemPath(void)
 {
+#if !defined(__palmos__)
 	if(!systemPath)
 	{
 		SplitPathString(getenv("CSCC_LIB_PATH"),
@@ -186,6 +187,7 @@ static void LoadSystemPath(void)
 		SplitPathString(getenv("PATH"), 0, 0);
 	#endif
 	}
+#endif
 }
 
 /*

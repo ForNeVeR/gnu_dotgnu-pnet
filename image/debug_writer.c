@@ -20,6 +20,8 @@
 
 #include "program.h"
 
+#ifdef IL_USE_WRITER
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -295,3 +297,5 @@ void _ILWriteDebug(ILWriter *writer)
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_USE_WRITER */

@@ -1060,9 +1060,9 @@ typedef struct
 	void		   *code;				/* Beginning of the code */
 	ILUInt32		codeLen;			/* Length of the code */
 	ILStandAloneSig	*localVarSig;		/* Local variable signature */
-	int				initLocals : 1;		/* Non-zero to initialize locals */
-	int				moreSections : 1;	/* Non-zero if more sections */
-	int				javaLocals : 30;	/* Maximum number of Java locals */
+	ILInt32			initLocals : 1;		/* Non-zero to initialize locals */
+	ILInt32			moreSections : 1;	/* Non-zero if more sections */
+	ILInt32			javaLocals : 30;	/* Maximum number of Java locals */
 	ILUInt32		remaining;			/* Remaining space in code section */
 
 } ILMethodCode;

@@ -346,7 +346,7 @@ ILClass *ILClassResolve(ILClass *info)
 ILProgramItem *ILClassGlobalScope(ILImage *image)
 {
 	/* The global scope is the first module definition record */
-	if(image->tokenCount[IL_META_TOKEN_MODULE >> 24] > 0)
+	if(image->tokenCount[((ILUInt32)IL_META_TOKEN_MODULE) >> 24] > 0)
 	{
 		return (ILProgramItem *)ILImageTokenInfo
 					(image, (IL_META_TOKEN_MODULE | 1));

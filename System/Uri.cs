@@ -28,14 +28,25 @@ namespace System
 {
 
 using System.Text;
+using System.IO;
 
 public class Uri : MarshalByRefObject
 {
 
 	internal static const String LOCALHOST = "localhost";
 	private static const String LOCALHOSTIP = "127.0.0.1";
-	private static const String HEXCHARS = "0123456789ABCDEFabcdef";
-	private static const String VALIDSCHEMECHARS = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm0123456789.+-";
+	// no point in kludging this one for speed
+	private static const String RESERVED_CHARS = ";/:@&=+$,";
+
+	// the capital letters are between 0x41 and 0x5A
+	// the lowercase letters are between 0x61 and 0x7A
+	// the numbers are between 0x30 and 0x39
+	// .=2E +=2B -=2D
+	// beware, for they are valid scheme chars
+	// now I don't need the string anymore FOR VALIDSCHEMECHARS
+
+	// this also includes anything under 32 or over 127
+	private static const String EXCLUDED_UNWISE_CHARS = "<>#%\"{}|\\^[]`"
 
 	// magic strings...
 	public static readonly String SchemeDelimiter = "://";
@@ -111,14 +122,30 @@ public class Uri : MarshalByRefObject
 	{
 		if (schemeName == null || schemeName.Length == 0)
 			return false;
-		int charloc = Uri.VALIDSCHEMECHARS.IndexOf(schemeName[0]);
-		if (charloc < 0 || charloc > 52) return false;
+		char charloc = schemeName[0];
+		if (charloc < 'a' && charloc > 'z' &&
+		    charloc < 'A' && charloc > 'Z')
+			return false;
 		for (int i = 1; ++i < schemeName.Length;)
 		{
-			if (Uri.VALIDSCHEMECHARS.IndexOf(schemeName[i]) == -1)
+			if (!Uri.isValidSchemeChar(schemeName[i]))
 				return false;
 		}
 		return true;
+	}
+
+	// support for above method
+	private static bool isValidSchemeChar(char character)
+	{
+		return (
+		// check letters
+		(character >= 'a' && character <= 'z') ||
+		(character >= 'A' && character <= 'Z') ||
+		// check numbers
+		(character >= '0' && character <= '9') ||
+		// check the other three
+		character == '.' || character == '+' || character == '-'
+		)
 	}
 
 	protected virtual void CheckSecurity()
@@ -167,10 +194,14 @@ public class Uri : MarshalByRefObject
 
 	public static int FromHex(char digit)
 	{
-		int placement = HEXCHARS.IndexOf(digit);
-		if (placement == -1) throw new ArgumentException(_("Exception_Argument_HexDigit"), "digit");
-		else if (placement <= 15) return placement;
-		else return placement - 6;
+		if (digit >= '0' && digit <= '9')
+			return digit - '0';
+		else if (digit >= 'A' && digit <= 'F')
+			return digit - 55;
+		else if (digit >= 'a' && digit <= 'f')
+			return digit - 87;
+		else
+			throw new ArgumentException(_("Exception_Argument_HexDigit"), "digit");
 	}
 
 	public override int GetHashCode()
@@ -192,10 +223,21 @@ public class Uri : MarshalByRefObject
 	{
 		if (character > 255)
 			throw new ArgumentOutOfRangeException("character");
-		char first = Uri.HEXCHARS[character >> 4];
+		char[] maker = new char[3];
+		maker[0] = '%';
+		maker[1] = HexForIndex(character >> 4);
 		// 0b00001111 == 0x0F == 15
-		char second = Uri.HEXCHARS[character & 15];
-		return new StringBuilder(3).Append('%').Append(first).Append(second).ToString();
+		maker[2] = HexForIndex(character & 15);
+		return new String(maker);
+	}
+
+	// support for above method, no error checking
+	private static char HexForIndex(char index)
+	{
+		if (index <= 9)
+			return index + '0';
+		else
+			return index + 55;
 	}
 
 	[TODO]
@@ -204,19 +246,26 @@ public class Uri : MarshalByRefObject
 	{
 	}
 
-	[TODO]
 	protected virtual bool IsBadFileSystemCharacter(char character)
 	{
+		return (Array.IndexOf(Path.InvalidPathChars, character)
+			>= 0);
 	}
 
-	[TODO]
 	protected static bool IsExcludedCharacter(char character)
 	{
+		return (character < 0x20 || character > 0x7F ||
+			EXCLUDED_UNWISE_CHARS.IndexOf(character) >= 0);
 	}
 
-	[TODO]
 	public static bool IsHexDigit(char character)
 	{
+		return
+		(
+			(character >= '0' && character <= '9') ||
+			(character >= 'A' && character <= 'F') ||
+			(character >= 'a' && character <= 'f')
+		);
 	}
 
 	[TODO]
@@ -224,9 +273,9 @@ public class Uri : MarshalByRefObject
 	{
 	}
 
-	[TODO]
 	protected virtual bool IsReservedCharacter(char character)
 	{
+		return (RESERVED_CHARS.IndexOf(character) >= 0);
 	}
 
 	[TODO]

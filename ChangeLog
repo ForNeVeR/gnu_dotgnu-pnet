@@ -1,3 +1,7 @@
+2002-03-12  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Made the code less kludgy with Strings, added a
+	few simple static methods.
 
 2002-03-12  Abhaya Agarwal  <abhayag@cse.iitk.ac.in>
 

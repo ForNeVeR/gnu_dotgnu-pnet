@@ -1809,7 +1809,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 			/* Refers to a type which is named using a signature */
 			spec = ILTypeSpec_FromToken
 						(image, values[IL_OFFSET_MEMBERREF_PARENT]);
-			classInfo = ILTypeSpecGetClass(spec);
+			classInfo = ILTypeSpecGetClassRef(spec);
 			member = 0;
 			if(!classInfo)
 			{

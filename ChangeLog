@@ -31,6 +31,9 @@ involved examples.
 experimental program that can optimize the CVM interpreter on x86 platforms
 better than gcc can.
 
+* image/meta_build.c: use "ILTypeSpecGetClassRef" to resolve TypeSpec
+MemberRef's instead of the original "ILTypeSpecGetClass".
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_var.c, engine/verify_call.c: handle value type "this"

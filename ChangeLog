@@ -37,6 +37,8 @@
 	* engine/int_proto.h, engine/int_table.c, engine/lib_task.c:
 	add the "TaskMethods.GetRuntimeVerison" internalcall.
 
+	* samples/mscorlib.dll: updated assembly with latest pnetlib changes.
+
 2002-11-27  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_varusage.h , codegen/cg_varusage.c, codegen/cg_gen.h,

@@ -1,4 +1,12 @@
 
+2002-07-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/bignum.c, tests/test_crypt.c: rewrite the big number
+	division algorithm to use a simpler, and more reliable, algorithm.
+
+	* include/il_bignum.h, support/bignum.c, tests/test_crypt.c:
+	test cases and bug fixes for "ILBigNumInv".
+
 2002-07-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/des.c: fix bugs in the structure of Triple-DES.
@@ -7,9 +15,6 @@
 
 	* support/bignum.c, tests/test_crypt.c: big number regression tests
 	and bug fixes.
-
-	* support/bignum.c, tests/test_crypt.c: rewrite the big number
-	division algorithm to use a simpler, and more reliable, algorithm.
 
 2002-07-14  Gopal.V  <gopalv82@symonds.net>
 

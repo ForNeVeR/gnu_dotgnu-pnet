@@ -1085,7 +1085,7 @@ ILBigNum *ILBigNumInv(ILBigNum *num, ILBigNum *modulus)
 	if(u1->neg)
 	{
 		/* Convert negative integers into positive modulo values */
-		t1 = ILBigNumSub(modulus, u1, (ILBigNum *)0);
+		t1 = ILBigNumAdd(modulus, u1, (ILBigNum *)0);
 		ILBigNumFree(u1);
 		return t1;
 	}

@@ -86,7 +86,9 @@ ILBigNum *ILBigNumMod(ILBigNum *num, ILBigNum *modulus);
 
 /*
  * Get the modulo inverse of a big number.  Returns NULL if
- * insufficient memory to allocate the result.
+ * insufficient memory to allocate the result.  This will only
+ * give correct results if "x" and "modulus" are relatively prime,
+ * which is normally the case for cryptographic use.
  */
 ILBigNum *ILBigNumInv(ILBigNum *num, ILBigNum *modulus);
 

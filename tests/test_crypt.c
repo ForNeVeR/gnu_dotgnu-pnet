@@ -1022,6 +1022,20 @@ static BigNumTestInfo bignum_mod_9 = {
 };
 
 /*
+ * Test vectors for "ILBigNumInv".
+ */
+static BigNumTestInfo bignum_inv_1 = {
+	(BigNumFunc)ILBigNumInv,
+	"123464321", 0, "87654799657", "77297000318"
+};
+static BigNumTestInfo bignum_inv_2 = {
+	(BigNumFunc)ILBigNumInv,
+	"8845687365823749572489562465786", 0,
+		"786762344653457615451453456235462534536457623547",
+		"610921967315598200582789257447220428606668978817"
+};
+
+/*
  * Test big number operations.
  */
 static void test_bignum_oper(BigNumTestInfo *arg)
@@ -1225,6 +1239,9 @@ void ILUnitRegisterTests(void)
 	RegisterCrypt(test_bignum_oper, bignum_mod_7);
 	RegisterCrypt(test_bignum_oper, bignum_mod_8);
 	RegisterCrypt(test_bignum_oper, bignum_mod_9);
+
+	RegisterCrypt(test_bignum_oper, bignum_inv_1);
+	RegisterCrypt(test_bignum_oper, bignum_inv_2);
 }
 
 #ifdef	__cplusplus

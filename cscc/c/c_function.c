@@ -37,6 +37,19 @@ static ILType *localVarSig = 0;
 static int initNumber = 0;
 
 /*
+ * List of local variables and temporaries that have complex
+ * types, requiring special layout constraints at runtime.
+ */
+typedef struct
+{
+	unsigned index;
+	ILType *type;
+
+} SpecialLocal;
+static SpecialLocal *specials = 0;
+static int numSpecials = 0;
+
+/*
  * Report an error that resulted from the compiler trying to
  * infer the prototype of a forwardly-declared function, but
  * failing to do so correctly.
@@ -55,7 +68,7 @@ static void ReportInferError(ILGenInfo *info, ILNode *node,
 	fputs(_("previously inferred prototype was `"), stderr);
 
 	/* Print the return type */
-	typeName = CTypeToName(info, ILTypeGetReturnWithPrefixes(signature));
+	typeName = CTypeToName(info, CTypeGetReturn(signature));
 	fputs(typeName, stderr);
 	ILFree(typeName);
 
@@ -75,8 +88,7 @@ static void ReportInferError(ILGenInfo *info, ILNode *node,
 		{
 			needComma = 1;
 		}
-		typeName = CTypeToName
-			(info, ILTypeGetParamWithPrefixes(signature, param));
+		typeName = CTypeToName(info, CTypeGetParam(signature, param));
 		fputs(typeName, stderr);
 		ILFree(typeName);
 	}
@@ -112,8 +124,8 @@ static int SameSignature(ILType *sig1, ILType *sig2, int forwardKind)
 	{
 		/* K&R forward definitions must have the same return type,
 		   and the new definition must not be "vararg" */
-		if(!CTypeIsIdentical(ILTypeGetReturnWithPrefixes(sig1),
-							 ILTypeGetReturnWithPrefixes(sig2)))
+		if(!CTypeIsIdentical(CTypeGetReturn(sig1),
+							 CTypeGetReturn(sig2)))
 		{
 			return 0;
 		}
@@ -353,6 +365,12 @@ ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
 
 	/* Clear the local variable signature, ready for allocation */
 	localVarSig = 0;
+	if(specials)
+	{
+		ILFree(specials);
+		specials = 0;
+		numSpecials = 0;
+	}
 
 	/* The method block is ready to go */
 	return method;
@@ -373,9 +391,24 @@ void CFunctionDeclareParams(ILGenInfo *info, ILMethod *method)
 		{
 			/* Declare this parameter into the scope with the given index */
 			CScopeAddParam(name, (unsigned)(ILParameter_Num(param) - 1),
-						   ILTypeGetParamWithPrefixes
-						   		(signature, ILParameter_Num(param)));
+						   CTypeGetParam(signature, ILParameter_Num(param)));
 		}
+	}
+}
+
+/*
+ * Dump the memory allocation block for special locals.
+ */
+static void DumpSpecialLocals(ILGenInfo *info)
+{
+	int spec;
+	for(spec = 0; spec < numSpecials; ++spec)
+	{
+		CGenSizeOf(info, specials[spec].type);
+		ILGenSimple(info, IL_OP_CONV_U);
+		ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_LOCALLOC);
+		ILGenStoreLocal(info, specials[spec].index);
+		ILGenAdjust(info, -1);
 	}
 }
 
@@ -444,6 +477,9 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body,
 				".RuntimeHelpers::RunClassConstructor"
 				"(valuetype [.library]System.RuntimeTypeHandle)\n", stream);
 	}
+
+	/* Allocate memory for the special locals that have complex layout */
+	DumpSpecialLocals(info);
 
 	/* Create the "setjmp" header if necessary */
 	if(numSetJmpRefs > 0)
@@ -747,21 +783,7 @@ ILType *CFunctionNaturalType(ILGenInfo *info, ILType *type, int vararg)
 
 			case IL_META_ELEMTYPE_I:
 			{
-				if(vararg)
-				{
-					if(CTypePtrSize == 4)
-					{
-						return ILType_Int32;
-					}
-					else
-					{
-						return ILType_Int64;
-					}
-				}
-				else
-				{
-					return ILType_Int;
-				}
+				return ILType_Int;
 			}
 			/* Not reached */
 
@@ -769,14 +791,7 @@ ILType *CFunctionNaturalType(ILGenInfo *info, ILType *type, int vararg)
 			{
 				if(vararg)
 				{
-					if(CTypePtrSize == 4)
-					{
-						return ILType_Int32;
-					}
-					else
-					{
-						return ILType_Int64;
-					}
+					return ILType_Int;
 				}
 				else
 				{
@@ -797,14 +812,7 @@ ILType *CFunctionNaturalType(ILGenInfo *info, ILType *type, int vararg)
 			   around cast issues in the "refanyval" instruction */
 			if(vararg)
 			{
-				if(CTypePtrSize == 4)
-				{
-					return ILType_Int32;
-				}
-				else
-				{
-					return ILType_Int64;
-				}
+				return ILType_Int;
 			}
 		}
 		else if(ILType_Kind(type) == IL_TYPE_COMPLEX_CMOD_OPT ||
@@ -879,6 +887,7 @@ ILMethod *CFunctionGetCurrent(void)
 unsigned CGenAllocLocal(ILGenInfo *info, ILType *type)
 {
 	unsigned num;
+	CTypeLayoutInfo layout;
 	CTypeMarkForOutput(info, type);
 	if(!localVarSig)
 	{
@@ -889,9 +898,31 @@ unsigned CGenAllocLocal(ILGenInfo *info, ILType *type)
 		}
 	}
 	num = (unsigned)ILTypeNumLocals(localVarSig);
-	if(!ILTypeAddLocal(info->context, localVarSig, type))
+	CTypeGetLayoutInfo(type, &layout);
+	if(layout.category != C_TYPECAT_COMPLEX)
 	{
-		ILGenOutOfMemory(info);
+		/* We can allocate the local directly in the local variable frame */
+		if(!ILTypeAddLocal(info->context, localVarSig, type))
+		{
+			ILGenOutOfMemory(info);
+		}
+	}
+	else
+	{
+		/* We need to use "localloc" to allocate memory for the
+		   complex type, and then store it as a pointer */
+		if((specials = (SpecialLocal *)ILRealloc
+				(specials, sizeof(SpecialLocal) * (numSpecials + 1))) == 0)
+		{
+			ILGenOutOfMemory(info);
+		}
+		specials[numSpecials].index = num;
+		specials[numSpecials].type = type;
+		++numSpecials;
+		if(!ILTypeAddLocal(info->context, localVarSig, ILType_Int))
+		{
+			ILGenOutOfMemory(info);
+		}
 	}
 	return num;
 }

@@ -6,7 +6,7 @@
 <h1>Application Binary Interface for C within CLI</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2004/02/27 09:54:41 $<p>
+Last Modified: $Date: 2004/03/06 09:47:38 $<p>
 
 Copyright &copy; 2002, 2003 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -28,9 +28,10 @@ that meets the following goals:<p>
 		External dependencies should always be in the form of C# classes
 		that use standard C# library features<sup>2</sup>.</li>
 	<li><b>Minimal name mangling</b>: The names of <code>struct</code>,
-	    <code>union</code>, and other special C types must be mangled to
-		conform with CLI conventions, but such mangling should still be
-		readable to a human debugging the compiler.</li>
+	<code>union</code>, and other special C types may need to be mangled
+		to conform with CLI conventions, but such mangling should still be
+		readable to a human debugging the compiler.  Where appropriate,
+		mangling should result in a type name that is accessible from C#.</li>
 	<li><b>Vendor-neutral naming conventions</b>: The names of support
 		classes and libraries that are used to implement the ABI must not
 		suggest any particular vendor's product or trademark<sup>3</sup>.</li>
@@ -59,158 +60,32 @@ enable access to CLI-specific features.  This syntax is only a suggestion.
 Two compilers that use different syntax for the same feature can still
 interoperate if they translate their syntax into the same ABI conventions.<p>
 
-All extension keywords begin and end in "<code>__</code>", following
-standard C practice.  We recommend that compiler vendors seriously consider
-adopting the proposed keywords to make it easier to port source code from
-one compiler to another.<p>
-
 <blockquote>
 <b>Note: Some of the features described in this document haven't been
 fully implemented by Portable.NET's C compiler yet.  This document
 is therefore subject to change.</b>
 </blockquote>
 
-<h2>2. Memory models</h2>
+<h2>2. ABI support library</h2>
 
-This ABI defines two primary memory models for the CLI, which we will
-refer to as "Model 64" and "Model 32":  They may be briefly summarised
-as follows:
-
-<ul>
-	<li><b>Model 64</b>: <code>int</code>'s are 32 bits in size,
-		<code>long</code>'s and pointers are 64 bits in size.</li>
-	<li><b>Model 32</b>: <code>int</code>'s, <code>long</code>'s, and
-		pointers are all 32 bits in size.</li>
-</ul>
-
-We recommend that "Model 64" be the default for all compilers that adhere
-to this ABI specification.  Programs that use "Model 64" will work on
-all implementations of the CLI, be they 32-bit or 64-bit.  "Model 32"
-programs will be more memory-efficient on 32-bit platforms, but will
-not run at all on 64-bit implementations of the CLI.<p>
-
-<blockquote>
-<font size="-1">Note: A "Model 64" program will fail to work on a
-128-bit CLI implementation, for the same reason that "Model 32" programs
-fail on 64-bit CLI implementations.  When and if 128-bit CLI
-implementations become common-place, it will be easy to extend
-this ABI to include a "Model 128".</font>
-</blockquote>
-
-When the compiler builds an object file, application, or library, it
-MUST tag the corresponding module with the memory model.  For example,
-the following module is tagged as "Model 64":<p>
-
-<blockquote><pre>.module test.exe
-.custom instance void [OpenSystem.C]OpenSystem.C.MemoryModelAttribute::.ctor
-       (int32) = (01 00 40 00 00 00 00 00)</pre></blockquote>
-
-Linkers can use the presence of this attribute to detect that a C
-application is being linked, rather than a C# application, and then
-modify their behaviour accordingly.  For example, by adding additional
-libraries to the link that aren't normally required by C# applications.<p>
-
-The two primary memory models are designed to mirror existing 64-bit and
-32-bit CPU architectures.  But sometimes the programmer will want to
-exactly match the memory model to the underlying operating system,
-to improve interoperability with native code.  In the process, portability
-is sacrificed, so this must only be used when absolutely necessary.<p>
-
-To match an underlying operating system, the compiler chooses either
-"Model 64" or "Model 32", based on the size of the system's
-"<code>void *</code>" type.  The compiler then applies a number of
-"model modifiers" to alter type alignment values to match the
-system.  These modifiers are as follows:<p>
+The "<code>OpenSystem.C</code>" assembly is assumed to exist in any
+system that conforms to this ABI.  It provides a number of classes for
+tagging C applications and implementing ABI support facilities.
+The following list summarises the important classes in the
+"<code>OpenSystem.C</code>" namespace:<p>
 
 <dl>
-<dt><code>0x00000001</code></dt>
-	<dd>16-bit <code>short</code> values are aligned on 1-byte boundaries,
-		rather than 2-byte boundaries.</dd>
-<dt><code>0x00000002</code></dt>
-	<dd>32-bit <code>int</code> values are aligned on 1-byte boundaries,
-		rather than 4-byte boundaries.</dd>
-<dt><code>0x00000004</code></dt>
-	<dd>32-bit <code>int</code> values are aligned on 2-byte boundaries,
-		rather than 4-byte boundaries.</dd>
-<dt><code>0x00000008</code></dt>
-	<dd>64-bit <code>long long</code> values are aligned on 1-byte boundaries,
-		rather than 8-byte boundaries.</dd>
-<dt><code>0x00000010</code></dt>
-	<dd>64-bit <code>long long</code> values are aligned on 2-byte boundaries,
-		rather than 8-byte boundaries.</dd>
-<dt><code>0x00000020</code></dt>
-	<dd>64-bit <code>long long</code> values are aligned on 4-byte boundaries,
-		rather than 8-byte boundaries.</dd>
-<dt><code>0x00000040</code></dt>
-	<dd>32-bit <code>float</code> values are aligned on 1-byte boundaries,
-		rather than 4-byte boundaries.</dd>
-<dt><code>0x00000080</code></dt>
-	<dd>32-bit <code>float</code> values are aligned on 2-byte boundaries,
-		rather than 4-byte boundaries.</dd>
-<dt><code>0x00000100</code></dt>
-	<dd>64-bit <code>double</code> values are aligned on 1-byte boundaries,
-		rather than 8-byte boundaries.</dd>
-<dt><code>0x00000200</code></dt>
-	<dd>64-bit <code>double</code> values are aligned on 2-byte boundaries,
-		rather than 8-byte boundaries.</dd>
-<dt><code>0x00000400</code></dt>
-	<dd>64-bit <code>double</code> values are aligned on 4-byte boundaries,
-		rather than 8-byte boundaries.</dd>
-<dt><code>0x00000800</code></dt>
-	<dd><code>native float</code> values are aligned on 1-byte boundaries.</dd>
-<dt><code>0x00001000</code></dt>
-	<dd><code>native float</code> values are aligned on 2-byte boundaries.</dd>
-<dt><code>0x00002000</code></dt>
-	<dd><code>native float</code> values are aligned on 4-byte boundaries.</dd>
-<dt><code>0x00004000</code></dt>
-	<dd><code>native float</code> values are aligned on 8-byte boundaries.</dd>
-<dt><code>0x00008000</code></dt>
-	<dd><code>native float</code> values are aligned on 16-byte boundaries.</dd>
-<dt><code>0x00010000</code></dt>
-	<dd>Pointer values are aligned on 1-byte boundaries.</dd>
-<dt><code>0x00020000</code></dt>
-	<dd>Pointer values are aligned on 2-byte boundaries.</dd>
-<dt><code>0x00040000</code></dt>
-	<dd>Pointer values are aligned on 4-byte boundaries and the primary
-		memory model is "Model 64".  This modifier should not be set if the
-		primary memory model is "Model 32".</dd>
-<dt><code>0x00080000</code></dt>
-	<dd>Bit fields are allocated in big-endian order rather than the
-		default of little-endian.</dd>
-</dl><p>
-
-These modifiers describe how the actual memory model differs from either
-"Model 32" or "Model 64".  Programs that are compiled with non-zero
-modifier values are unlikely to work on runtime engines that use a
-different combination of flags.  Programs with zero modifier values should
-work on all runtime engines that support the memory model.<p>
-
-When the object file is generated, the modifier flags are written into
-the "<code>MemoryModel</code>" attribute declaration, as an optional
-argument:<p>
-
-<blockquote><pre>.module test.exe
-.custom instance void [OpenSystem.C]OpenSystem.C.MemoryModelAttribute::.ctor
-       (int32, int32) = (01 00 20 00 00 00 20 04 00 00 00 00)</pre></blockquote>
-
-This indicates "Model 32 with 4-byte alignment of 64-bit integers
-and doubles".  If the second parameter is not present, the default
-modifier flag value is zero.<p>
-
-<h2>3. ABI support library</h2>
-
-The "<code>MemoryModelAttribute</code>" example in the previous section
-demonstrated the use of the "<code>OpenSystem.C</code>" assembly, which
-provides a number of classes for tagging C applications, and for implementing
-ABI support facilities.  The following summarises the important classes
-in the "<code>OpenSystem.C</code>" namespace:<p>
-
-<dl>
+<dt><code>ModuleAttribute</code></dt>
+    <dd>An attribute that marks an assembly as being a C module.</dd>
 <dt><code>IsConst</code></dt>
 	<dd>A modifier class for marking a type as "<code>const</code>".</dd>
 <dt><code>IsFunctionPointer</code></dt>
 	<dd>A modifier class for marking a type as a function pointer, rather
 	    than as a function signature.</dd>
+<dt><code>IsComplexPointer</code></dt>
+	<dd>A modifier class for marking a type that is passed as a pointer
+		to a function but is really a complex pass by value struct or union
+		type.</dd>
 <dt><code>BitFieldAttribute</code></dt>
 	<dd>An attribute that describes the position and size of a bit
 		field within a larger integer field.</dd>
@@ -242,8 +117,6 @@ in the "<code>OpenSystem.C</code>" namespace:<p>
 		after those with higher order values.  The default order value
 		is zero.  Normally an initializer and its corresponding
 		finalizer will have identical order values.</dd>
-<dt><code>MemoryModelAttribute</code></dt>
-	<dd>An attribute that specifies the memory model for a C module.</dd>
 <dt><code>OriginalNameAttribute</code></dt>
 	<dd>An attribute that specifies the original name of a symbol that
 		had to be renamed to resolve link-time naming conflicts.</dd>
@@ -274,130 +147,121 @@ Other classes may be provided to support "libc" implementations,
 but they are beyond the scope of this specification.<p>
 
 To simplify discussion, we will use an abbreviated syntax to describe
-attributes in CIL assembly code examples.  For example, the memory
-model designation in the previous section can also be written as:
+attributes in CIL assembly code examples.  For example, the following
+two examples are equivalent:
 
 <blockquote><pre>.module test.exe
-.custom [OpenSystem.C.MemoryModel(64)]</pre></blockquote>
+.custom instance void [OpenSystem.C]OpenSystem.C.ModuleAttribute::.ctor()
+       = (01 00 00 00)
+
+.module test.exe
+.custom [OpenSystem.C.Module]</pre></blockquote>
 
 This abbreviation is for exposition purposes only.  It isn't intended
 to suggest an alternative syntax for CIL assemblers.<p>
+
+<h2>3. Marking C modules for the linker</h2>
+
+Every assembly or object file that conforms to this ABI must be marked
+with the "<code>OpenSystem.C.ModuleAttribute</code>":<p>
+
+<blockquote><pre>.module test.exe
+.custom instance void [OpenSystem.C]OpenSystem.C.ModuleAttribute::.ctor()
+       = (01 00 00 00)</pre></blockquote>
+
+Linkers can use the presence of this attribute to detect that a C
+application is being linked, rather than a C# application, and then
+modify their behaviour accordingly.  For example, by adding additional
+libraries to the link that aren't normally required by C# applications.<p>
 
 <h2>4. Type representation</h2>
 
 <h3>4.1. Primitive types</h3>
 
-The size and alignment of the primitive types in "Model 64" and
-"Model 32" are defined as follows:<p>
+The names and sizes of the primitive types in this ABI are defined
+as follows:<p>
 
 <table border="1">
-<tr><td>Type</td><td>Model 64<br>Size/Align<sup>1</sup></td>
-	<td>Model 32<br>Size/Align<sup>1</sup></code><td>Description</td></tr>
+<tr><td>Type</td><td>Size</td><td>Description</td></tr>
 <tr><td><code>void</code></td>
-	<td>1/1 <sup>2</sup></td>
-	<td>1/1</sup></td>
+	<td>1 <sup>1</sup></td>
 	<td>Void type</td></tr>
 <tr><td><code>_Bool</code></td>
-	<td>1/1</td>
-	<td>1/1</td>
+	<td>1</td>
 	<td>8-bit boolean value (C# "<code>bool</code>")</td></tr>
 <tr><td><code>char</code></td>
-	<td>1/1</td>
-	<td>1/1</td>
+	<td>1</td>
 	<td>Signed 8-bit integer</td></tr>
 <tr><td><code>unsigned char</code></td>
-	<td>1/1</td>
-	<td>1/1</td>
+	<td>1</td>
 	<td>Unsigned 8-bit integer</td></tr>
 <tr><td><code>short</code></td>
-	<td>2/2</td>
-	<td>2/2</td>
+	<td>2</td>
 	<td>Signed 16-bit integer</td></tr>
 <tr><td><code>unsigned short</code></td>
-	<td>2/2</td>
-	<td>2/2</td>
+	<td>2</td>
 	<td>Unsigned 16-bit</td></tr>
 <tr><td><code>__wchar__</code></td>
-	<td>2/2</td>
-	<td>2/2</td>
+	<td>2</td>
 	<td>16-bit wide character value (C# "<code>char</code>")</td></tr>
 <tr><td><code>int</code></td>
-	<td>4/4</td>
-	<td>4/4</td>
+	<td>4</td>
 	<td>Signed 32-bit integer</td></tr>
 <tr><td><code>unsigned int</code></td>
-	<td>4/4</td>
-	<td>4/4</td>
+	<td>4</td>
 	<td>Unsigned 32-bit integer</td></tr>
 <tr><td><code>long</code></td>
-	<td>8/8</td>
-	<td>4/4</td>
+	<td>4/8 <sup>2</sup></td>
 	<td>Signed 64-bit or 32-bit integer</td></tr>
 <tr><td><code>unsigned long</code></td>
-	<td>8/8</td>
-	<td>4/4</td>
+	<td>4/8 <sup>2</sup></td>
 	<td>Unsigned 64-bit or 32-bit integer</td></tr>
 <tr><td><code>long long</code></td>
-	<td>8/8</td>
-	<td>8/8</td>
+	<td>8</td>
 	<td>Signed 64-bit integer</td></tr>
 <tr><td><code>unsigned long long</code></td>
-	<td>8/8</td>
-	<td>8/8</td>
+	<td>8</td>
 	<td>Unsigned 64-bit integer</td></tr>
 <tr><td><code>float</code></td>
-	<td>4/4</td>
-	<td>4/4</td>
+	<td>4</td>
 	<td>32-bit IEEE 754 floating-point</td></tr>
 <tr><td><code>double</code></td>
-	<td>8/8</td>
-	<td>8/8</td>
+	<td>8</td>
 	<td>64-bit IEEE 754 floating-point</td></tr>
 <tr><td><code>long double</code></td>
-	<td>8/8</td>
-	<td>8/8</td>
+	<td>8</td>
 	<td>Same as <code>double</code></td></tr>
 <tr><td><code>type *</code></td>
-	<td>8/8</td>
-	<td>4/4</td>
+	<td>4/8 <sup>3</sup></td>
 	<td>Pointer to "<code>type</code>"</td></tr>
 <tr><td><code>float _Complex</code></td>
-	<td>8/4</td>
-	<td>8/4</td>
+	<td>8</td>
 	<td>Complex number type based on <code>float</code></td></tr>
 <tr><td><code>double _Complex</code></td>
-	<td>16/8</td>
-	<td>16/8</td>
+	<td>16</td>
 	<td>Complex number type based on <code>double</code></td></tr>
 <tr><td><code>long double _Complex</code></td>
-	<td>16/8</td>
-	<td>16/8</td>
+	<td>16</td>
 	<td>Same as <code>double _Complex</code></td></tr>
 <tr><td><code>float _Imaginary</code></td>
-	<td>4/4</td>
-	<td>4/4</td>
+	<td>4</td>
 	<td>Imaginary number type based on <code>float</code></td></tr>
 <tr><td><code>double _Imaginary</code></td>
-	<td>8/8</td>
-	<td>8/8</td>
+	<td>8</td>
 	<td>Imaginary number type based on <code>double</code></td></tr>
 <tr><td><code>long double _Imaginary</code></td>
-	<td>8/8</td>
-	<td>8/8</td>
+	<td>8</td>
 	<td>Same as <code>double _Imaginary</code></td></tr>
 </table><p>
 
-<font size="-1">Note 1. These size and alignment values refer to the
-primary memory model.  The values may be different if there are non-zero
-model modifier flags in effect.<br>
-Note 2. The size of "<code>void</code>" is 1, to be
-consistent with gcc.</font><p>
-
-In "Model 64", pointers are allocated 8 bytes of memory, and aligned
-on an 8-byte boundary, even on platforms that only support 32-bit pointers.
-The expression "<code>sizeof(void *)</code>" will always return 8.
-This behaviour is necessary to provide a consistent "<code>struct</code>"
-layout on all CLI implementations, as we will see in the following sections.<p>
+<font size="-1">Note 1. The size of "<code>void</code>" is 1, to be
+consistent with gcc.<br>
+Note 1. The "<code>long</code>" type is represented by
+the IL "<code>native int</code> type so that it is the same size as
+pointers on the underlying platform.  The "<code>unsigned long</code>"
+type is represented by "<code>native unsigned int</code>" for a
+similar reason.  The size of these types is determined at runtime.<br>
+Note 3. The size of pointer types is determined at runtime.</font><p>
 
 The CLI specifications describe a primitive "<code>native float</code>" type
 which would be the ideal representation for "<code>long double</code>".
@@ -438,33 +302,207 @@ with other CLI-compatible languages.  The "<code>IsConst</code>" modifier
 is optional, because other CLI-compatible languages can safely ignore it
 (the programmer on the other hand probably shouldn't ignore it).<p>
 
-<h3>4.3. Type layout</h3>
+<h3>4.3. Fixed, dynamic, complex, and unknown types</h3>
 
-Types in the ABI may have three kinds of layout: "fixed", "dynamic",
-or "unknown".<p>
+Types in the ABI may have four categories of layout: "fixed", "dynamic",
+"complex", or "unknown".<p>
 
-Fixed types have a constant size and alignment.  The expression
-"<code>sizeof(T)</code>" can be evaluated to a constant at compile time.<p>
+Fixed types have a constant size.  The expression "<code>sizeof(T)</code>"
+can be evaluated to a constant at compile time.  An example is
+"<code>sizeof(int)</code>", which is always 4.<p>
 
-Dynamic types have a constant size and alignment, but these values
-are not known until runtime.  Native types (described in a later
-section) are an example, as are C# value types.<p>
+Dynamic and complex types have a constant size, but these values
+are not known until runtime.  An example of a dynamic type is
+"<code>long</code>", whose size may be either 4 or 8 depending
+upon the runtime platform.<p>
+
+Dynamic and complex types are distinguished by the difficulty of
+determining the size of the type at runtime.  Dynamic types can
+use the IL "<code>sizeof</code>" instruction, but complex types
+must compute the size through manual measurement and alignment
+of type members.<p>
 
 Unknown types have no known size.  An example is "<code>char[]</code>",
 which cannot be used as the type of a structure field, as its storage
 size cannot be determined.<p>
 
-Traditional C compilers only have "fixed" and "unknown" types.  One of
-the goals of this ABI is to minimize the occurence of "dynamic" types
-so that "<code>struct</code>" layout can be computed efficiently.<p>
+Traditional C compilers only have "fixed" and "unknown" types.<p>
+
+[Historical note: an earlier version of this ABI tried to make as many
+types "fixed" as possible, using explicit layout for everything.
+This was successful, but very wasteful of memory on 32-bit platforms.]
+
+<h3>4.3.1. Determining the type category</h3>
+
+The following primitive C types are always fixed: "<code>void</code>",
+"<code>_Bool</code>", "<code>char</code>", "<code>unsigned char</code>",
+"<code>__whar__</code>", "<code>short</code>", "<code>unsigned short</code>",
+"<code>int</code>", "<code>unsigned int</code>",
+"<code>long long</code>", "<code>unsigned long long</code>",
+"<code>float</code>", and "<code>double</code>".<p>
+
+The primitive C types "<code>long</code>" and "<code>unsigned long</code>",
+are dynamic, as they are based on the "<code>System.IntPtr</code>" and
+"<code>System.UIntPtr</code>" types, which have an unknown size at
+compile time.<p>
+
+Enumerated types and bit fields are fixed or dynamic based on the
+category of the primitive integer type upon which they are based.<p>
+
+Pointer types are always dynamic.  This includes function pointers
+and object references.  At runtime, "<code>sizeof System.IntPtr</code>"
+can be used to intuit the platform's actual pointer size.<p>
+
+Any structure, union, or array type with an unknown element is itself
+unknown.<p>
+
+Structure types with at least one complex field are complex.  Structure
+types with at least one dynamic field (but no complex fields) are dynamic.<p>
+
+Structure types whose fields are all fixed may also be fixed
+if the start of each field exactly matches the end of the previous field
+using the default alignment rule of "a type's alignment is the same
+as its size".  i.e. default alignment must not leave any padding gaps.
+This includes the gap at the end that results from aligning the entire
+structure.  Padding gaps cause the structure to be labelled dynamic.<p>
+
+As an example, the first structure below is fixed because there are
+no default alignment padding gaps.  The second structure is dynamic
+because default alignment will leave a padding gap of 4 bytes at the end:<p>
+
+<blockquote><pre>struct A
+{
+    long long x;
+    int y;
+    int z;
+};
+
+struct B
+{
+    long long x;
+    int y;
+};</pre></blockquote><p>
+
+Union types with at least one complex field are complex.  Union types
+with at least one dynamic field (but no complex fields) are dynamic.
+All other union types are fixed.<p>
+
+An array whose element type is fixed and whose size expression is
+a compile time constant, is fixed.  All other arrays are complex.
+The first example below is fixed and the other two are complex:<p>
+
+<blockquote><pre>char a[100];
+char b[sizeof(void *)];
+void *c[100];</pre></blockquote><p>
+
+<h3>4.3.2. Getting the size of a type</h3>
+
+The size of a fixed type can be evaluated to a compile time constant.<p>
+
+The size of a dynamic type is evaluated at runtime using the IL
+"<code>sizeof</code>" instruction.<p>
+
+The size of a complex type is evaluated at runtime by emitting a
+"<code>ldsfld</code>" instruction for the read-only static field
+"<code>type::'size.of'</code>".  The compiler is responsible for
+emitting a static constructor that computes the actual size and
+places it into this field (more information on this is given in
+later sections).<p>
+
+<h3>4.3.3. Getting alignment information for a type</h3>
+
+When computing the size of complex types, it is necessary to explicitly
+align size values on the appropriate boundaries.  The compiler cannot
+determine what the boundary may be at compile time, but it can use a
+metadata coding trick to intuit the boundary at runtime.<p>
+
+If the compiler needs to determine the alignment of a type "<code>T</code>",
+it emits a value type definition of the following form:<p>
+
+<blockquote><pre>.class public sequential sealed ansi 'align T' extends System.ValueType
+{
+    .field public int8 pad
+    .field public T value
+}</pre></blockquote><p>
+
+Then the alignment value can be obtained with the following IL code:<p>
+
+<blockquote><pre>ldc.i4.0
+conv.i
+ldflda T 'align T'::value
+conv.u4</pre></blockquote><p>
+
+The result is an unsigned 32-bit value corresponding to the number of bytes
+that are needed to align "<code>T</code>" correctly.  Optimizing CLR's
+will fold the above sequence into a simple constant value.<p>
+
+The "<code>OpenSystem.C.Crt0</code>" type provides a helper method
+that can assist with aligning complex structure types.  The method
+has the following prototype:<p>
+
+<blockquote><pre>public static uint Align(uint size, uint flags);</pre></blockquote><p>
+
+The "<code>Crt0.Align</code>" method aligns the "<code>size</code>"
+value according to the supplied alignment "<code>flags</code>":<p>
+
+<dl>
+<dt><code>0x0001</code><dt>
+<dd>The type contains "<code>byte</code>" fields.</dd>
+
+<dt><code>0x0002</code><dt>
+<dd>The type contains fields with explicit 2-byte alignment.</dd>
+
+<dt><code>0x0004</code><dt>
+<dd>The type contains fields with explicit 4-byte alignment.</dd>
+
+<dt><code>0x0008</code><dt>
+<dd>The type contains fields with explicit 8-byte alignment.</dd>
+
+<dt><code>0x0010</code><dt>
+<dd>The type contains fields with explicit 16-byte alignment.</dd>
+
+<dt><code>0x0020</code><dt>
+<dd>The type contains "<code>short</code>" fields.</dd>
+
+<dt><code>0x0040</code><dt>
+<dd>The type contains "<code>int</code>" fields.</dd>
+
+<dt><code>0x0080</code><dt>
+<dd>The type contains "<code>long long</code>" fields.</dd>
+
+<dt><code>0x0100</code><dt>
+<dd>The type contains "<code>float</code>" fields.</dd>
+
+<dt><code>0x0200</code><dt>
+<dd>The type contains "<code>double</code>" fields.</dd>
+
+<dt><code>0x0400</code><dt>
+<dd>The type contains pointer or "<code>long</code>" fields.</dd>
+</dl><p>
+
+The alignment flag set for a structure or union type is the bitwise OR of
+the flag sets for each of its member fields.  The "<code>Crt0.Align</code>"
+method chooses the largest alignment value for all of the supplied flags.
+If no flags are supplied, then byte alignment is assumed.<p>
+
+The first five flag values typically result from the compiler explicitly
+measuring an "<code>align T</code>" type with the code presented above.
+The other flag values are shortcuts: the compiler can avoid measuring
+primitive types and just pass the corresponding flag.  The
+"<code>Crt0.Align</code>" method performs the primitive type
+measurement itself.<p>
+
+The integer and floating-point types of the same size use different flags
+on purpose, because the FPU might use different alignment rules than the
+integer CPU.  On some systems, 64-bit integers might be alignable
+on 32-bit boundaries, but 64-bit floating point values still need
+64-bit alignment.<p>
 
 <h3>4.4. Struct representation</h3>
 
 Structure types (e.g. "<code>struct A</code>") are converted into a value
-type called "<code>struct_A</code>", with no namespace qualifier.  This
-value type is marked as having explicit layout, with pre-computed class
-packing and size values.  Each field within the structure has a
-pre-computed offset.  For example, on a "Model 64" system:
+type called "<code>A</code>", with no namespace qualifier.  This
+value type is marked as having sequential layout:
 
 <blockquote><pre>struct A
 {
@@ -472,81 +510,19 @@ pre-computed offset.  For example, on a "Model 64" system:
     struct A *next;
 };
 
-.class public explicit sealed ansi 'struct_A' extends System.ValueType
+.class public sequential serializable sealed ansi 'A' extends System.ValueType
 {
-    .pack 8
-    .size 16
-    .field [0] public int32 item
-    .field [8] public 'struct_A' * next
+    .field public int32 item
+    .field public 'A' * next
 }</pre></blockquote>
 
-On a "Model 32" system, the structure would be encoded as:<p>
+Anonymous structures are assigned a unique value based on hashing the
+fields within the structure using the MD5 hash algorithm:<p>
 
-<blockquote><pre>.class public explicit sealed ansi 'struct_A' extends System.ValueType
+<blockquote><pre>.class public sequential sealed serializable ansi
+          'struct (4AvbtDhe7KLdkQCXpqa4ME)' extends System.ValueType
 {
-    .pack 4
-    .size 8
-    .field [0] public int32 item
-    .field [4] public 'struct_A' * next
-}</pre></blockquote>
-
-Structures may only contain fields with "fixed" layout.  Native structures
-(described later) can contain fields with both "fixed" and "dynamic"
-layout, but their usage is restricted.<p>
-
-If a structure contains sub-structures, they are converted into companion
-structure types:<p>
-
-<blockquote><pre>struct A
-{
-    int x;
-    struct
-    {
-        int y;
-    } z;
-    struct B
-    {
-        int w;
-    } v;
-};
-
-.class public explicit sealed ansi 'struct_A' extends System.ValueType
-{
-    .pack 4
-    .size 12
-    .field [0] public int32 x
-    .class public explicit sealed ansi 'struct_(1)'
-                extends System.ValueType
-    {
-        .pack 4
-        .size 4
-        .field [0] public int32 y
-    }
-    .field [4] public valuetype 'struct_A'/'struct_(1)' z
-    .field [8] public valuetype 'struct_B' v
-}
-.class public explicit sealed ansi 'struct_B' extends System.ValueType
-{
-    .pack 4
-    .size 4
-    .field [0] public int32 w
-}</pre></blockquote>
-
-As can be seen, nested anonymous structures are assigned a unique numeric
-code, and are encoded as nested types.  The code is unique to the surrounding
-structure, so that the same code will be generated each time the program
-is compiled.<p>
-
-Anonymous structures at the outer-most declaration level are assigned a
-unique value based on hashing the fields within the structure using
-the MD5 hash algorithm:<p>
-
-<blockquote><pre>.class public explicit sealed serializable ansi
-          'struct_(9XdODzujHI7gA0jgpJ72wA)' extends System.ValueType
-{
-    .size 4
-    .pack 4
-    .field [0] public int32 x
+    .field public int32 'x'
 }</pre></blockquote>
 
 Hashing ensures that two definitions of the structure in different
@@ -555,30 +531,61 @@ modules will always evaluate to the same name.  See the function
 within the Portable.NET source code for precise details of the hash
 algorithm to use.<p>
 
-<blockquote><font size="-1">Note: It would be desirable to allow the
-runtime engine to perform structure layout dynamically, rather than
-fix types to specific sizes and fields to specific offsets.  Readers
-who think it may be possible to do so may like to ponder how to
-efficiently compile the following code so that it will work
-regardless of the runtime size of "<code>void *</code>" and the
-runtime alignment of "<code>y</code>":<p>
+Complex structures need some additional fields to assist with runtime
+layout.  For example, consider the following type:<p>
 
-<blockquote><pre>struct item
+<blockquote><pre>struct B
 {
-    char x[sizeof(void *)];
-    long long y;
-};
+    char      data[sizeof(void *)];
+    struct B *next;
+};</pre></blockquote><p>
 
-long long get_y(struct item *i)
+To assist with computing the size of this structure and with accessing its
+fields, we add static fields called "<code>size.of</code>" and
+"<code>next.offset</code>":<p>
+
+<blockquote><pre>.class public sequential serializable beforefieldinit
+        sealed ansi 'A' extends System.ValueType
 {
-    return i->y;
-}</pre></blockquote>
-</font></blockquote>
+    .field public 'array char[sizeof(void *)]' data
+    .field public 'B' * next
+    .field public static initonly unsigned int32 'size.of'
+    .field public static initonly unsigned int32 'next.offset'
+
+    .method private static hidebysig specialname rtspecialname
+        void .cctor() cil managed
+    {
+        ...
+    }				
+}</pre></blockquote><p>
+
+The static constructor computes the size of the structure, and the offset
+of the "<code>next</code>" field, and places them into the respective
+static fields.  There is no need to compute the offset of
+"<code>data</code>" because it will always be zero.  In C#, the
+static constructor code would look something like this:<p>
+
+<blockquote><pre>
+'next.offset' = Crt0.Align(sizeof(byte) * sizeof(void *), 0x0400);
+'size.of' = Crt0.Align('next.offset' + sizeof(B *), 0x0401);
+</pre></blockquote><p>
+
+The "<code>next</code>" field is aligned using pointer alignment,
+as it is a pointer.  The entire structure is aligned with both
+pointer and byte alignment, as it contains both pointer and byte values.<p>
+
+The compiler may use any static constructor code that is equivalent to
+the above; there are plenty of other ways that those values could be
+computed.<p>
+
+Because the "<code>size.of</code>" and "<code>next.offset</code>" fields
+are init-only, an optimizing CLR may be able to inline their constant
+values once the static initializer has been executed.<p>
 
 <h3>4.5. Union representation</h3>
 
 Unions (e.g. "<code>union A</code>") are represented as value types with
-the name "<code>union_A</code>", and all fields explicitly laid out to
+the name "<code>A</code>", and all fields explicitly laid out to
 start at offset 0.
 
 <blockquote><pre>
@@ -588,23 +595,31 @@ union A
     double y;
 }
 
-.class public explicit sealed ansi 'union_A' extends System.ValueType
+.class public explicit sealed ansi 'A' extends System.ValueType
 {
-    .pack 8
-    .size 8
     .field [0] public int32 x
     .field [0] public float64 y
 }</pre></blockquote>
 
-Unions may only contain fields with "fixed" layout.  Anonymous unions
-are named in a similar manner to anonymous structures.<p>
+If the union type is complex, then it must contain a public static
+field called "<code>size.of</code>" which is initialized to the
+type size.  See the previous section on struct representation for
+more information on computing size values.<p>
+
+Note: In this ABI, it is impossible to have both a struct and a
+union with the same name, as both "<code>struct A</code>" and
+"<code>union A</code>" will be represented by a value type called
+"<code>A</code>".  It was considered more important that C types have
+natural names, to ease integration with C# code.  Since C programmers
+rarely use the same name for different type kinds, this isn't expected
+to be a problem in practice.<p>
 
 <h3>4.6. Representation of bit fields</h3>
 
 Bit fields are represented as regular fields, with an attribute to
-indicate the field's position and size.  Bits are allocated from the
-least significant bit, unless the big-endian modifier was specified
-in the memory model (see section 2 for further details).<p>
+indicate the field's position and size.  Bits are always allocated from
+the least significant bit, as there is no way to know what bit order
+is used by the runtime platform.<p>
 
 <blockquote><pre>struct A
 {
@@ -614,16 +629,14 @@ in the memory model (see section 2 for further details).<p>
     int w;
 }
 
-.class public explicit sealed ansi 'struct_A' extends System.ValueType
+.class public sequential sealed ansi 'A' extends System.ValueType
 {
     .custom [OpenSystem.C.BitField("x", ".bitfield-1", 0, 8)]
     .custom [OpenSystem.C.BitField("y", ".bitfield-1", 8, 1)]
     .custom [OpenSystem.C.BitField("z", ".bitfield-2", 0, 16)]
-    .pack 4
-    .size 12
-    .field [0] public int32 '.bitfield-1'
-    .field [4] public unsigned int32 '.bitfield-2'
-    .field [8] public int32 w
+    .field public int32 '.bitfield-1'
+    .field public unsigned int32 '.bitfield-2'
+    .field public int32 w
 }</pre></blockquote>
 
 <h3>4.7. Enumerated types</h3>
@@ -631,7 +644,7 @@ in the memory model (see section 2 for further details).<p>
 Enumerated types are encoded using the same CLI mechanisms as C#.
 That is, enumerated types inherit from "<code>System.Enum</code>"
 and contain literal static fields for each constant value.
-The C type called "<code>enum A</code>" is named "<code>enum_A</code>"
+The C type called "<code>enum A</code>" is named "<code>A</code>"
 within the final CLI output.<p>
 
 Anonymous enumerations are not encoded as CLI types.  Instead, every
@@ -647,28 +660,26 @@ enum { R, G, B } y;
 .field public static int32 'y'
 
 .class public auto sealed serializable ansi
-              'enum_Color' extends System.Enum
+              'Color' extends System.Enum
 {
     .field public specialname rtspecialname int32 'value__'
     .field public static literal valuetype
-              'enum_Color' 'Red' = int32(0x00000000)
+              'Color' 'Red' = int32(0x00000000)
     .field public static literal valuetype
-              'enum_Color' 'Green' = int32(0x00000001)
+              'Color' 'Green' = int32(0x00000001)
     .field public static literal valuetype
-              'enum_Color' 'Blue' = int32(0x00000002)
+              'Color' 'Blue' = int32(0x00000002)
 }</pre></blockquote>
 
 <h3>4.8. Array types</h3>
 
 Array types of the form "<code>A[]</code>" are mapped to a value
-type called "<code>array_A[]</code>".  For example, "<code>int[]</code>"
+type called "<code>array A[]</code>".  For example, "<code>int[]</code>"
 is encoded as follows:
 
-<blockquote><pre>.class public explicit sealed ansi 'array_int[]'
+<blockquote><pre>.class public sequential sealed ansi 'array_int[]'
             extends System.ValueType
 {
-    .pack 4
-    .size 0
     .field private static specialname int32 elem__
 }</pre></blockquote>
 
@@ -683,136 +694,55 @@ The encoding is specified here because the compiler does need to
 distinguish "<code>A[]</code>" from "<code>A *</code>" in certain
 circumstances.</font></blockquote><p>
 
-If the array type includes a non-zero size value, then it is encoded
-as a value type with an explicit size defining the total size of the
-array.  For example, "<code>int[100]</code> is encoded as follows:
+If the array type includes a non-zero size value, the size
+is a compile-time constant, and the element type is fixed, then
+the array type is defined with an explicit size.  For example,
+"<code>int[100]</code>" is encoded as follows:
 
-<blockquote><pre>.class public explicit sealed ansi 'array_int[100]'
-            extends System.ValueType
+<blockquote><pre>.class public explicit sealed serializable ansi
+           'array int[100]' extends System.ValueType
 {
-    .pack 4
-    .size 400
-    .field [0] public specialname int32 elem__
-}</pre></blockquote>
+    .size 400 // == 4 * 100
+    .field public specialname int32 elem__
+}</pre></blockquote><p>
 
-The size of the array is determined by dividing "<code>.size</code>"
-by the size of the element type.  The "<code>elem__</code>" field in
-this case must be "<code>public specialname</code>".  Arrays with
-a zero size are encoded as follows:<p>
+The "<code>elem__</code>" field in this case must be
+"<code>public specialname</code>", to distinguish it from the
+open array case.<p>
 
-<blockquote><pre>.class public explicit sealed ansi 'array_int[0]'
-            extends System.ValueType
+All other arrays are complex.  The element type is encoded in a
+field called "<code>elem__</code>", and the total size is computed
+at runtime and placed in the public static field "<code>size.of</code>".
+For example, "<code>char[sizeof(void *)]</code>" and
+"<code>void *[100]</code>" would be encoded as follows:<p>
+
+<blockquote><pre>.class public seqential sealed serializable ansi
+           'array char[sizeof(void *)]' extends System.ValueType
 {
-    .pack 4
-    .size 0
-    .field [0] public static specialname int32 elem__
-}</pre></blockquote>
+    .field public specialname int8 elem__
+    .field public static unsigned int32 'size.of'
 
-Here, the "<code>elem__</code>" field is "<code>static</code>".  This
-type can be distinguished from the encoding for "<code>int[]</code>"
-because the "<code>elem__</code>" field is "<code>public</code>"
-instead of "<code>private</code>".<p>
-
-Array element types must have "fixed" layout.  The programmer can
-allocate arrays of "dynamic" types using "<code>malloc</code>"
-or "<code>alloca</code>".<p>
-
-The following is an example of encoding the two-dimensional array type
-"<code>int [300][400]</code>":
-
-<blockquote><pre>.class public explicit sealed ansi 'array_int[300][400]'
-            extends System.ValueType
-{
-    .pack 4
-    .size 480000  // == 300 * 400 * 4
-    .field [0] public specialname valuetype 'array_int[400]' elem__
+    .method private static hidebysig specialname rtspecialname
+        void .cctor() cil managed
+    {
+        ...
+    }				
 }
 
-.class public explicit sealed ansi 'array_int[400]'
-            extends System.ValueType
+.class public seqential sealed serializable ansi
+           'array void *[100]' extends System.ValueType
 {
-    .pack 4
-    .size 1600  // == 400 * 4
-    .field [0] public specialname int32 elem__
+    .field public specialname void * elem__
+    .field public static unsigned int32 'size.of'
+
+    .method private static hidebysig specialname rtspecialname
+        void .cctor() cil managed
+    {
+        ...
+    }				
 }</pre></blockquote>
 
-<h3>4.9. Native types</h3>
-
-Sometimes it is necessary to access the native type representation of
-the underlying runtime engine, particularly when importing external
-library functions using PInvoke, or when accessing code written in other
-CLI-compliant languages.<p>
-
-All of the types that are described in this section have "dynamic"
-layout.  They cannot be used as array element types, or as the members
-of non-native structures and unions.<p>
-
-The use of these native types is highly discouraged, except where it is
-absolutely essential to interoperate with other system components:<p>
-
-<table border="1">
-<tr><td>Type</td><td>Description</td></tr>
-<tr><td><code>__native__ int</code></td>
-	<td>Signed native integer (C# "<code>IntPtr</code>")</td></tr>
-<tr><td><code>unsigned __native__ int</code></td>
-	<td>Unsigned native integer (C# "<code>UIntPtr</code>")</td></tr>
-</table><p>
-
-The native integer types are "<code>__native__ int</code>" and
-"<code>unsigned __native__ int</code>".  They may be either 4 or 8 bytes in
-size, depending upon the underlying platform.  The expressions
-"<code>sizeof(__native__ int)</code>" and
-"<code>sizeof(unsigned __native__ int)</code>" are evaluated at run time.<p>
-
-Structures can be specified to have native layout at declaration time:<p>
-
-<blockquote><pre>struct __native__ A
-{
-    int item;
-    struct A *next;
-};</pre></blockquote><p>
-
-This is represented by a sequential type definition in the program's
-metadata:<p>
-
-<blockquote><pre>.class public sequential sealed ansi 'struct_A' extends System.ValueType
-{
-    .field public int32 item
-    .field public 'struct_A' * next
-}</pre></blockquote>
-
-The runtime engine will lay this out using platform-specific type sizes
-and alignment.  The expression "<code>sizeof(struct A)</code>" will be
-evaluated at runtime.<p>
-
-Unions can also be specified to have native layout at declaration time:<p>
-
-<blockquote><pre>
-union __native__ A
-{
-    int   x;
-    void *y;
-}
-
-.class public explicit sealed ansi 'union_A' extends System.ValueType
-{
-    .field [0] public int32 x
-    .field [0] public void * y
-}</pre></blockquote>
-
-The type is declared explicit, so that all fields can be defined with
-an offset of zero, but the type does not have an overall size.<p>
-
-Types with "fixed" and "dynamic" layout may be used as the members
-of native structures and unions.<p>
-
-It is recommended that the compiler issue a warning when bit fields are
-used in native structures and unions, and the memory model does not have
-an appropriate memory model modifier set.  The compiler's bit order may not
-match the native platform's bit order, leading to problems with PInvoke'd
-functions.<p>
-
-<h3>4.10. Function pointer types</h3>
+<h3>4.9. Function pointer types</h3>
 
 CLI metadata uses the same representation for method signatures and
 pointers to methods.  C requires that signatures and pointers be
@@ -824,7 +754,7 @@ the "<code>OpenSystem.C.IsFunctionPointer</code>" modifier:
 .field public static method void * (int32) modopt(IsFunctionPointer) func
 </pre></blockquote>
 
-<h3>4.11. Argument types</h3>
+<h3>4.10. Argument types</h3>
 
 When arguments are passed to a function, it is sometimes necessary
 to alter the type to conform with C conventions or to work around
@@ -843,6 +773,15 @@ pointer form.  For example:<p>
 {
     ...
 }</pre></blockquote><p>
+
+Fixed and dynamic struct and union types are passed by value.
+Complex struct and union types are passed by pointer, and should be
+marked with the "<code>OpenSystem.C.IsComplexPointer</code>" modifier.<p>
+
+Complex struct and union types are returned by pointer.  The function
+should copy the value into a block allocated by "<code>AllocHGlobal</code>"
+and return a pointer to the block.  The caller then copies the value
+out and frees the block with "<code>FreeHGlobal</code>".<p>
 
 Functions that take a variable number of arguments must be declared
 with "<code>vararg</code>" calling conventions:<p>
@@ -879,14 +818,10 @@ converted into their "natural passing type" first:<p>
 	<td><code>int</code></td></tr>
 <tr><td><code>unsigned int</code></td>
 	<td><code>int</code></td></tr>
-<tr><td><code>__native__ int</code></td>
-	<td><code>long</code></td></tr>
-<tr><td><code>unsigned __native__ int</code></td>
-	<td><code>long</code></td></tr>
 <tr><td><code>long</code></td>
-	<td><code>long</code></td></tr>
+	<td><code>System.IntPtr</code></td></tr>
 <tr><td><code>unsigned long</code></td>
-	<td><code>long</code></td></tr>
+	<td><code>System.IntPtr</code></td></tr>
 <tr><td><code>long long</code></td>
 	<td><code>long long</code></td></tr>
 <tr><td><code>unsigned long long</code></td>
@@ -895,8 +830,12 @@ converted into their "natural passing type" first:<p>
 	<td><code>double</code></td></tr>
 <tr><td><code>double</code></td>
 	<td><code>double</code></td></tr>
+<tr><td><code>long double</code></td>
+	<td><code>double</code></td></tr>
 <tr><td><code>type *</code></td>
-	<td><code>long</code></td></tr>
+	<td><code>System.IntPtr</code></td></tr>
+<tr><td><code>enum</code></td>
+	<td><code>int</code></td></tr>
 <tr><td><code>struct</code> and <code>union</code></td>
 	<td>Same as input type</td></tr>
 </table><p>
@@ -935,13 +874,13 @@ In addition, we want C# compilers to be able to link against a C library
 assembly and import the definitions into a C# program.  There is no way
 to refer to an obscure type name like "<code>&lt;Module&gt;</code>"
 from within C# code (Portable.NET's C# compiler did have a
-"<code>__module</code>" keyword for this purpose, but it is
-deprecated).<p>
+"<code>__module</code>" keyword for this purpose at one point,
+but it is deprecated).<p>
 
 The C linker must choose an ordinary C# identifier to name the global
 module within a library assembly.  We recommend using the assembly
 name, minus any model qualifiers.  For example, all global C definitions
-in "<code>libc64.dll</code>" will be found in a type called
+in "<code>libc.dll</code>" will be found in a type called
 "<code>libc</code>", with no namespace.<p>
 
 Global module types of this form must be marked with the
@@ -1054,7 +993,8 @@ definitions for a function or variable, then a linker error will occur.<p>
 Structure, union, and array types may also conflict when two
 object files are linked together.  In most cases, the two definitions
 will be the same, because the same type is being used in both object
-files (e.g. "<code>struct _IO_FILE</code>" in glibc's stdio implementation).<p>
+files (e.g. "<code>struct __stdio_file</code>" in Portable.NET's
+stdio implementation).<p>
 
 When two types have identical definitions, the linker will copy one
 into the output file and ignore the other.  When the two types have
@@ -1086,7 +1026,7 @@ symbol information prior to renaming.<p>
 
 <h3>5.5. Weak and strong aliases</h3>
 
-C libraries such as "glibc" make heavy use of weak aliases to allow
+Modern C libraries make heavy use of weak aliases to allow
 programs to replace certain functions with their own implementation.
 For example, the following is used in "glibc" for the definition
 of the "<code>getuid</code>" function (paraphrased a little):
@@ -1270,7 +1210,7 @@ a small amount of CIL code is added to define the application entry point.
 This code calls facilities in the "<code>OpenSystem.C.Crt0</code>" class
 to initialize the application, to invoke "<code>main</code>", and to
 handle shutdown tasks when "<code>main</code>" exits.  Using C# syntax,
-the startup code looks like this:
+the startup code looks something like this:
 
 <pre>public static void .start(String[] args)
 {
@@ -1279,9 +1219,9 @@ the startup code looks like this:
         int argc;
         IntPtr argv;
         IntPtr envp;
-        argv = Crt0.GetArgV(args, sizeof(void *), out argc);
+        argv = Crt0.GetArgV(args, out argc);
         envp = Crt0.GetEnvironment();
-        Crt0.Startup("libcNN");
+        Crt0.Startup();
         Crt0.Shutdown(main(argc, argv, envp));
     }
     catch(OutOfMemoryException)
@@ -1294,15 +1234,12 @@ the startup code looks like this:
     }
 }</pre></blockquote>
 
-where "<code>libcNN</code>" is the name of the "libc" implementation
-that the program was compiled against.  This will normally be
-"<code>libc64</code>" for "Model 64" and "<code>libc32</code>" for
-"Model 32".  The compiler will only pass those parameters to
-"<code>main</code>" that the programmer specified in their source code.<p>
+The compiler will only pass those parameters to "<code>main</code>"
+that the programmer specified in their source code.<p>
 
 The startup code in the application is kept deliberately simple,
 with most of the real work being done in the "<code>OpenSystem.C.Crt0</code>"
-class.  This allows the crt0 code to be modified to accomodate new "libc"
+class.  This allows the crt0 code to be modified to accomodate new libc
 requirements in the future, without needing all existing applications
 to be recompiled.<p>
 

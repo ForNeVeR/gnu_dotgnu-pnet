@@ -417,11 +417,19 @@ ILNode_CSemAnalysis(ILNode_CAssignArray)
 		/* Assign the contents of an array initializer to an array */
 		init = ((ILNode_CArrayInit *)(node->expr2))->expr;
 		ILNode_ListIter_Init(&iter, init);
-		InitializerSemAnalysis(info, node->type, init, &iter);
-		if(ILNode_ListIter_Next(&iter) != 0)
+		if(CTypeGetNumElems(CSemGetType(value1)) != IL_MAX_UINT32)
 		{
-			CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
-							_("excess elements in array initializer"));
+			InitializerSemAnalysis(info, node->type, init, &iter);
+			if(ILNode_ListIter_Next(&iter) != 0)
+			{
+				CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+								_("excess elements in array initializer"));
+			}
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("array size is unknown at compile time"));
 		}
 	}
 	else
@@ -510,6 +518,7 @@ static void WriteInitializer(ILGenInfo *info, ILType *type,
 	ILField *nextField;
 	ILNode_ListIter inner;
 	int popped;
+	CTypeLayoutInfo layout;
 
 	if(CTypeIsArray(type))
 	{
@@ -573,7 +582,7 @@ static void WriteInitializer(ILGenInfo *info, ILType *type,
 			}
 			popped = 0;
 			index = 0;
-			size = CTypeSizeAndAlign(elemType, 0);
+			CTypeGetLayoutInfo(elemType, &layout);
 			while(numElems > 0 && node != 0)
 			{
 				if(numElems > 1)
@@ -588,9 +597,9 @@ static void WriteInitializer(ILGenInfo *info, ILType *type,
 				if(index != 0)
 				{
 					/* Adjust the pointer to account for the array index */
-					if(size != CTYPE_DYNAMIC)
+					if(layout.category == C_TYPECAT_FIXED)
 					{
-						ILGenUIntNative(info, index * size);
+						ILGenUIntNative(info, index * layout.size);
 						ILGenSimple(info, IL_OP_ADD);
 						ILGenExtend(info, 1);
 					}

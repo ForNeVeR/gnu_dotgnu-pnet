@@ -439,7 +439,10 @@ static void CVMCoder_LoadFieldAddr(ILCoder *coder, ILEngineType ptrType,
 		CVM_OUT_NONE(COP_IU2L);
 	}
 #endif
-	CVM_OUT_NONE(COP_CKNULL);
+	if(ptrType == ILEngineType_O)
+	{
+		CVM_OUT_NONE(COP_CKNULL);
+	}
 	if(field->offset < 256)
 	{
 		if(field->offset != 0)

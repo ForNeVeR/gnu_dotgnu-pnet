@@ -696,7 +696,8 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 	}
 
 	/* Dump the return type */
-	DumpParamType(stream, image, methodInfo, ILTypeGetReturn(type), 0, flags);
+	DumpParamType(stream, image, methodInfo,
+				  ILTypeGetReturnWithPrefixes(type), 0, flags);
 	putc(' ', stream);
 
 	/* Dump the class name and method name */

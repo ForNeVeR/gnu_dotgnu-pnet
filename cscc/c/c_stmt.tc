@@ -278,8 +278,8 @@ ILNode_CSemAnalysis(ILNode_Continue)
 ILNode_CSemAnalysis(ILNode_Return)
 {
 	ILMethod *method = CFunctionGetCurrent();
-	ILType *returnType = ILTypeGetReturn(ILMethod_Signature(method));
-	if(returnType != ILType_Void)
+	ILType *returnType = CTypeGetReturn(ILMethod_Signature(method));
+	if(ILTypeStripPrefixes(returnType) != ILType_Void)
 	{
 		/* Emit a warning if the return type is not "void".  This really
 		   should be an error, but we copy what gcc does for compatibility */
@@ -296,8 +296,7 @@ ILNode_CSemAnalysis(ILNode_ReturnExpr)
 {
 	CSemValue value;
 	ILMethod *method = CFunctionGetCurrent();
-	ILType *returnType = ILTypeGetReturnWithPrefixes
-			(ILMethod_Signature(method));
+	ILType *returnType = CTypeGetReturn(ILMethod_Signature(method));
 
 	/* Perform semantic analysis on the expression */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
@@ -333,6 +332,13 @@ ILNode_CSemAnalysis(ILNode_ReturnExpr)
 		if(CCanCoerceValue(value, returnType))
 		{
 			CCoerceNode(info, node->expr, &(node->expr), value, returnType);
+			if(CTypeIsComplex(returnType))
+			{
+				/* We need to make a copy of a complex value before
+				   returning it to the caller */
+				node->expr = ILNode_CopyComplex_create
+					(node->expr, returnType);
+			}
 		}
 		else
 		{
@@ -346,6 +352,58 @@ ILNode_CSemAnalysis(ILNode_ReturnExpr)
 
 	/* Done */
 	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for a "copy complex" expression.
+ */
+ILNode_CSemAnalysis(ILNode_CopyComplex)
+{
+	/* Not called, so nothing to do here */
+	return CSemValueDefault;
+}
+
+/*
+ * Get the type information for a "copy complex" expression.
+ */
+ILNode_GetType(ILNode_CopyComplex)
+{
+	/* We are always copying into a pointer */
+	return ILMachineType_UnmanagedPtr;
+}
+
+/*
+ * Generate value code for a "copy complex" expression.
+ */
+ILNode_GenValue(ILNode_CopyComplex)
+{
+	/* Allocate global memory for the value */
+	CGenSizeOf(info, node->type);
+	if(info->asmOutput)
+	{
+		fputs("\tcall\tnative int [.library]System.Runtime.InteropServices."
+			  "Marshal::AllocHGlobal(int32)\n", info->asmOutput);
+	}
+
+	/* Duplicate the pointer because we need it for the return logic */
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+
+	/* Push the value onto the stack that we will be returning */
+	ILNode_GenValue(node->expr, info);
+
+	/* Copy the value into the block that we allocated */
+	CGenSizeOf(info, node->type);
+	ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED, 1);
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
+	ILGenAdjust(info, -3);
+
+	/* The return type is a pointer */
+	return ILMachineType_UnmanagedPtr;
+}
+JavaGenValue(ILNode_CopyComplex)
+{
+	return ILMachineType_UnmanagedPtr;
 }
 
 %decls %{

@@ -37,6 +37,8 @@ static ILType *currentEnum = 0;
 static ILInt32 currentEnumValue = 0;
 static ILNode *initializers = 0;
 static int usedGlobalVar = 0;
+static unsigned long globalInitNum = 0;
+static int inhibitRollBack = 0;
 
 /*
  * Imports from the lexical analyser.
@@ -51,6 +53,11 @@ extern char c_text[];
 static void yyerror(char *msg)
 {
 	CCPluginParseError(msg, c_text);
+}
+
+void CInhibitNodeRollback(void)
+{
+	inhibitRollBack = 1;
 }
 
 /*
@@ -489,9 +496,8 @@ static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
 			if(decl.isKR)
 			{
 				if(!CTypeIsIdentical
-						(ILTypeGetReturnWithPrefixes(signature),
-						 ILTypeGetReturnWithPrefixes
-						 	(CScopeGetType(data))))
+						(CTypeGetReturn(signature),
+						 CTypeGetReturn(CScopeGetType(data))))
 				{
 					ReportRedeclared(decl.name, decl.node, data);
 				}
@@ -516,9 +522,8 @@ static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
 		{
 			/* The previous definition was a K&R prototype */
 			if(!CTypeIsIdentical
-					(ILTypeGetReturnWithPrefixes(signature),
-					 ILTypeGetReturnWithPrefixes
-					 	(CScopeGetType(data))))
+					(CTypeGetReturn(signature),
+					 CTypeGetReturn(CScopeGetType(data))))
 			{
 				ReportRedeclared(decl.name, decl.node, data);
 			}
@@ -604,6 +609,7 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 	ILNode *assign;
 	ILType *prevType;
 	ILUInt32 size;
+	CTypeLayoutInfo layout;
 
 	/* If there is a parameter list associated with the declarator, then
 	   we are declaring a forward function reference, not a variable */
@@ -720,8 +726,9 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 			type = CTypeCreateArray(&CCCodeGen, CTypeGetElemType(type), size);
 		}
 
-		/* Make sure that the type size is fixed or dynamic */
-		if(CTypeSizeAndAlign(type, 0) == CTYPE_UNKNOWN)
+		/* Make sure that the type size is fixed, dynamic, or complex */
+		CTypeGetLayoutInfo(type, &layout);
+		if(layout.category == C_TYPECAT_NO_LAYOUT)
 		{
 			CCErrorOnLine(yygetfilename(decl.node), yygetlinenum(decl.node),
 						  _("storage size of `%s' is not known"), decl.name);
@@ -743,6 +750,11 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 			}
 			ILDumpType(CCCodeGen.asmOutput, CCCodeGen.image, type,
 					   IL_DUMP_QUOTE_NAMES);
+			if(layout.category == C_TYPECAT_COMPLEX)
+			{
+				/* Complex types must be stored by pointer, not value */
+				fputs(" *", CCCodeGen.asmOutput);
+			}
 			putc(' ', CCCodeGen.asmOutput);
 			ILDumpIdentifier(CCCodeGen.asmOutput, decl.name, 0,
 							 IL_DUMP_QUOTE_NAMES);
@@ -763,6 +775,40 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 		else
 		{
 			CScopeAddGlobal(decl.name, decl.node, type);
+		}
+
+		/* If the type is complex, then we need to allocate memory for it */
+		if(layout.category == C_TYPECAT_COMPLEX && CCCodeGen.asmOutput)
+		{
+			long stackHeight;
+			long maxStackHeight;
+			fprintf(CCCodeGen.asmOutput, ".method private static specialname "
+					"void '.global-%lu' () cil managed\n{\n",
+					++globalInitNum);
+			fputs(".custom instance void OpenSystem.C.InitializerAttribute"
+				  "::.ctor()  = (01 00 00 00)\n", CCCodeGen.asmOutput);
+			fputs(".custom instance void OpenSystem.C.InitializerOrderAttribute"
+				  "::.ctor(int32)  = (01 00 00 00 00 80 00 00)\n",
+				  CCCodeGen.asmOutput);
+			stackHeight = CCCodeGen.stackHeight;
+			maxStackHeight = CCCodeGen.maxStackHeight;
+			CCCodeGen.stackHeight = 0;
+			CCCodeGen.maxStackHeight = 0;
+			CGenSizeOf(&CCCodeGen, type);
+			fputs("\tcall\tnative int [.library]System.Runtime.InteropServices."
+				  "Marshal::AllocHGlobal(int32)\n", CCCodeGen.asmOutput);
+			fputs("\tstsfld\t", CCCodeGen.asmOutput);
+			ILDumpType(CCCodeGen.asmOutput, CCCodeGen.image, type,
+					   IL_DUMP_QUOTE_NAMES);
+			fputs(" * ", CCCodeGen.asmOutput);
+			ILDumpIdentifier(CCCodeGen.asmOutput, decl.name, 0,
+							 IL_DUMP_QUOTE_NAMES);
+			fputs("\n\tret\n", CCCodeGen.asmOutput);
+			fprintf(CCCodeGen.asmOutput, "\t.maxstack %ld\n",
+					CCCodeGen.maxStackHeight);
+			CCCodeGen.stackHeight = stackHeight;
+			CCCodeGen.maxStackHeight = maxStackHeight;
+			fputs("}\n", CCCodeGen.asmOutput);
 		}
 
 		/* Process the initializer */
@@ -801,7 +847,7 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 					(&CCCodeGen, CTypeGetElemType(type), size);
 			}
 
-			/* Allocate the global variable */
+			/* Allocate the local variable */
 			index = CGenAllocLocal(&CCCodeGen, type);
 			CScopeAddLocal(decl.name, decl.node, index, type);
 			if(init)
@@ -859,14 +905,15 @@ static void ProcessUsingTypeDeclaration(ILType *type, ILNode *declNode)
  * Evaluate a constant expression to an "unsigned int" value.
  * Used for array and bit field sizes.
  */
-static ILUInt32 EvaluateSize(ILNode *expr)
+static ILNode *EvaluateSize(ILNode *expr)
 {
 	CSemValue value;
 	ILEvalValue *evalValue;
 	ILUInt32 size;
+	ILNode *node;
 
 	/* Perform inline semantic analysis on the expression */
-	value = CSemInlineAnalysis(&CCCodeGen, expr, CCurrentScope);
+	value = CSemInlineAnalysis(&CCCodeGen, expr, &expr, CCurrentScope);
 	if(!CSemIsConstant(value))
 	{
 		if(!CSemIsError(value))
@@ -874,17 +921,27 @@ static ILUInt32 EvaluateSize(ILNode *expr)
 			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
 						  _("constant value required"));
 		}
-		return 1;
+		size = 1;
+		goto done;
 	}
 
 	/* Convert the constant value into an "unsigned int" value */
 	evalValue = CSemGetConstant(value);
 	if(!evalValue)
 	{
-		CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
-					  _("compile-time constant value required"));
-		return 1;
+		/* This is a dynamic constant: cast the value to "unsigned int" */
+		if(!CCanCoerceValue(value, ILType_UInt32))
+		{
+			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+						  _("compile-time integer constant value required"));
+			size = 1;
+			goto done;
+		}
+		CCastNode(&CCCodeGen, expr, &expr, value, ILType_UInt32);
+		return expr;
 	}
+
+	/* Fold the constant value to a "ILUInt32" value */
 	size = 1;
 	switch(evalValue->valueType)
 	{
@@ -957,7 +1014,24 @@ static ILUInt32 EvaluateSize(ILNode *expr)
 	}
 
 	/* Return the computed size to the caller */
-	return size;
+done:
+	node = ILNode_UInt32_create((ILUInt64)size, 0, 1);
+	CGenCloneLine(node, expr);
+	return node;
+}
+
+/*
+ * Evaluate the size of a bit field.
+ */
+static ILUInt32 EvaluateBitFieldSize(ILNode *expr)
+{
+	ILEvalValue value;
+	ILNode *size = EvaluateSize(expr);
+	if(!size || !ILNode_EvalConst(size, &CCCodeGen, &value))
+	{
+		return 0;
+	}
+	return (ILUInt32)(value.un.i4Value);
 }
 
 /*
@@ -970,7 +1044,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 	ILEvalValue *evalValue;
 
 	/* Perform inline semantic analysis on the expression */
-	value = CSemInlineAnalysis(&CCCodeGen, expr, CCurrentScope);
+	value = CSemInlineAnalysis(&CCCodeGen, expr, &expr, CCurrentScope);
 	if(!CSemIsConstant(value))
 	{
 		if(!CSemIsError(value))
@@ -1112,10 +1186,9 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_ATTRIBUTE		"`__attribute__'"
 %token K_BOOL			"`_Bool'"
 %token K_WCHAR			"`__wchar__'"
-%token K_NATIVE			"`__native__'"
 %token K_FUNCTION		"`__FUNCTION__'"
 %token K_FUNC			"`__func__'"
-%token K_LONG_LONG		"`__long_long__'"
+%token K_INT64			"`__int64'"
 %token K_UINT			"`__unsigned_int__'"
 %token K_TRY			"`__try__'"
 %token K_CATCH			"`__catch__'"
@@ -1540,7 +1613,7 @@ UnaryExpression
 	| K_CS_TYPEOF UnaryExpression	{
 				/* Perform inline semantic analysis on the expression */
 				CSemValue value = CSemInlineAnalysis
-						(&CCCodeGen, $2, CCurrentScope);
+						(&CCCodeGen, $2, &($2), CCurrentScope);
 
 				/* Use the type of the expression as our return value */
 				$$ = ILNode_CSharpTypeOf_create(CSemGetType(value));
@@ -1923,11 +1996,10 @@ TypeSpecifier
 	| K_SHORT			{ CDeclSpecSet($$, C_SPEC_SHORT); }
 	| K_INT				{ CDeclSpecSetType($$, ILType_Int32); }
 	| K_LONG			{ CDeclSpecSet($$, C_SPEC_LONG); }
-	| K_LONG_LONG		{ CDeclSpecSetType($$, ILType_Int64); }
+	| K_INT64			{ CDeclSpecSetType($$, ILType_Int64); }
 	| K_UINT			{ CDeclSpecSetType($$, ILType_UInt32); }
 	| K_SIGNED			{ CDeclSpecSet($$, C_SPEC_SIGNED); }
 	| K_UNSIGNED		{ CDeclSpecSet($$, C_SPEC_UNSIGNED); }
-	| K_NATIVE			{ CDeclSpecSet($$, C_SPEC_NATIVE); }
 	| K_FLOAT			{ CDeclSpecSetType($$, ILType_Float32); }
 	| K_DOUBLE			{ CDeclSpecSetType($$, ILType_Float64); }
 	| K_CONST			{ CDeclSpecSet($$, C_SPEC_CONST); }
@@ -1943,7 +2015,7 @@ TypeSpecifier
 	| K_TYPEOF '(' Expression ')'	{
 				/* Perform inline semantic analysis on the expression */
 				CSemValue value = CSemInlineAnalysis
-						(&CCCodeGen, $3, CCurrentScope);
+						(&CCCodeGen, $3, &($3), CCurrentScope);
 
 				/* Use the type of the expression as our return value */
 				CDeclSpecSetType($$, CSemGetType(value));
@@ -2064,9 +2136,7 @@ StructOrUnionSpecifier
 
 StructOrUnion
 	: K_STRUCT					{ $$ = C_STKIND_STRUCT; }
-	| K_STRUCT K_NATIVE			{ $$ = C_STKIND_STRUCT_NATIVE; }
 	| K_UNION					{ $$ = C_STKIND_UNION; }
-	| K_UNION K_NATIVE			{ $$ = C_STKIND_UNION_NATIVE; }
 	;
 
 StructDeclarationList
@@ -2148,13 +2218,13 @@ StructDeclaratorList
 StructDeclarator
 	: Declarator				{ $$ = ILNode_CDeclarator_create($1); }
 	| ':' ConstantExpression	{
-				ILUInt32 size = EvaluateSize($2);
+				ILUInt32 size = EvaluateBitFieldSize($2);
 				CDeclarator decl;
 				CDeclSetName(decl, 0, 0);
 				$$ = ILNode_CBitFieldDeclarator_create(decl, size);
 			}
 	| Declarator ':' ConstantExpression		{
-				ILUInt32 size = EvaluateSize($3);
+				ILUInt32 size = EvaluateBitFieldSize($3);
 				$$ = ILNode_CBitFieldDeclarator_create($1, size);
 			}
 	| TYPE_NAME		{
@@ -2164,7 +2234,7 @@ StructDeclarator
 			}
 	| TYPE_NAME ':' ConstantExpression		{
 				CDeclarator decl;
-				ILUInt32 size = EvaluateSize($3);
+				ILUInt32 size = EvaluateBitFieldSize($3);
 				CDeclSetName(decl, $1, ILQualIdentSimple($1));
 				$$ = ILNode_CBitFieldDeclarator_create(decl, size);
 			}
@@ -2335,14 +2405,14 @@ Declarator2
 			}
 	| Declarator2 GCSpecifier '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
-				ILUInt32 size = EvaluateSize($4);
+				ILNode *size = EvaluateSize($4);
 
 				/* Create the array */
 				$$ = CDeclCreateArray(&CCCodeGen, $1, size, $2);
 			}
 	| Declarator2 GCSpecifier '[' ConstantExpression ']' Attributes	{
 				/* Evaluate the constant value */
-				ILUInt32 size = EvaluateSize($4);
+				ILNode *size = EvaluateSize($4);
 
 				/* Create the array */
 				$$ = CDeclCreateArray(&CCCodeGen, $1, size, $2);
@@ -2407,7 +2477,8 @@ ConstantAttributeExpression
 				ILNode *node = ILNode_ToConst_create($1);
 				CSemValue value;
 				ILEvalValue evalValue;
-				value = CSemInlineAnalysis(&CCCodeGen, node, CCurrentScope);
+				value = CSemInlineAnalysis
+					(&CCCodeGen, node, &node, CCurrentScope);
 				if(CSemIsRValue(value))
 				{
 					if(yyisa($1, ILNode_CString))
@@ -2620,7 +2691,7 @@ AbstractDeclarator2
 			}
 	| GCSpecifier '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
-				ILUInt32 size = EvaluateSize($3);
+				ILNode *size = EvaluateSize($3);
 
 				/* Create the array */
 				CDeclSetName($$, 0, 0);
@@ -2628,7 +2699,7 @@ AbstractDeclarator2
 			}
 	| GCSpecifier '[' ConstantExpression ']' Attributes	{
 				/* Evaluate the constant value */
-				ILUInt32 size = EvaluateSize($3);
+				ILNode *size = EvaluateSize($3);
 
 				/* Create the array */
 				CDeclSetName($$, 0, 0);
@@ -2644,7 +2715,7 @@ AbstractDeclarator2
 			}
 	| AbstractDeclarator2 GCSpecifier '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
-				ILUInt32 size = EvaluateSize($4);
+				ILNode *size = EvaluateSize($4);
 
 				/* Create the array */
 				$$ = CDeclCreateArray(&CCCodeGen, $1, size, $2);
@@ -2652,7 +2723,7 @@ AbstractDeclarator2
 	| AbstractDeclarator2 GCSpecifier '[' ConstantExpression ']'
 			Attributes	{
 				/* Evaluate the constant value */
-				ILUInt32 size = EvaluateSize($4);
+				ILNode *size = EvaluateSize($4);
 
 				/* Create the array */
 				$$ = CDeclCreateArray(&CCCodeGen, $1, size, $2);
@@ -3033,8 +3104,11 @@ File
 				CGenGotoDestroy();
 
 				/* Roll the treecc node heap back to the last check point */
-				yynodepop();
-				yynodepush();
+				if(!inhibitRollBack)
+				{
+					yynodepop();
+					yynodepush();
+				}
 			}
 	| /* empty */
 	;
@@ -3047,8 +3121,16 @@ File2
 ExternalDefinition
 	: FunctionDefinition	{
 				/* Roll the treecc node heap back to the last check point */
-				yynodepop();
-				yynodepush();
+				if(inhibitRollBack)
+				{
+					yynodepush();
+					inhibitRollBack = 0;
+				}
+				else
+				{
+					yynodepop();
+					yynodepush();
+				}
 			}
 	| Declaration			{ /* Nothing to do here */ }
 	| UsingDeclaration

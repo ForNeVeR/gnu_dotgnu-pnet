@@ -182,6 +182,10 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	classInfo = CreateClass(info, scope, "IsUnmanaged", objectClass);
 	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
 
+	/* Create "OpenSystem.C.IsComplexPointer" */
+	classInfo = CreateClass(info, scope, "IsComplexPointer", objectClass);
+	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
+
 	/* Create "OpenSystem.C.BitFieldAttribute" */
 	classInfo = CreateClass(info, scope, "BitFieldAttribute", attributeClass);
 	AddConstructor4(classInfo, stringType, stringType,

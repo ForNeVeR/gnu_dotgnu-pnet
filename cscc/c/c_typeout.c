@@ -169,6 +169,18 @@ void CGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 }
 
 /*
+ * Store to a global variable.
+ */
+static void StoreGlobal(ILGenInfo *info, ILClass *classInfo,
+						const char *name1, const char *name2,
+						FILE *stream)
+{
+	fputs("\tstsfld\tunsigned int32 ", stream);
+	ILDumpClassName(stream, info->image, classInfo, IL_DUMP_QUOTE_NAMES);
+	fprintf(stream, "::'%s.%s'\n", name1, name2);
+}
+
+/*
  * Output the definition of a pending class and mark any other
  * classes that it may depend upon.
  */
@@ -180,6 +192,10 @@ static void OutputPendingClass(ILGenInfo *info, ILClass *classInfo,
 	ILField *field;
 	ILClassLayout *classLayout;
 	ILFieldLayout *fieldLayout;
+	ILType *type;
+	CTypeLayoutInfo layout;
+	ILNode *node;
+	int first;
 
 	/* Ignore class references, which will normally be struct's or
 	   union's that weren't fully defined in the current module */
@@ -188,10 +204,19 @@ static void OutputPendingClass(ILGenInfo *info, ILClass *classInfo,
 		return;
 	}
 
+	/* Determine if the type is complex */
+	type = ILClassToType(classInfo);
+	CTypeGetLayoutInfo(type, &layout);
+
 	/* Output the class header.  We assume that there are no interfaces
 	   because C structs, unions, etc do not need interfaces */
 	fputs(".class ", stream);
-	ILDumpFlags(stream, ILClass_Attrs(classInfo), ILTypeDefinitionFlags, 0);
+	ILDumpFlags(stream, ILClass_Attrs(classInfo) &
+						~IL_META_TYPEDEF_TYPE_BITS, ILTypeDefinitionFlags, 0);
+	if(layout.category == C_TYPECAT_COMPLEX)
+	{
+		fputs("beforefieldinit ", stream);
+	}
 	ILDumpIdentifier(stream, ILClass_Name(classInfo), 0, IL_DUMP_QUOTE_NAMES);
 	parent = ILClass_Parent(classInfo);
 	if(parent)
@@ -248,6 +273,71 @@ static void OutputPendingClass(ILGenInfo *info, ILClass *classInfo,
 
 		/* Mark the field's type for later output */
 		CTypeMarkForOutput(info, ILMember_Signature(field));
+	}
+
+	/* If the type is complex, then we need to output some static fields */
+	if(layout.category == C_TYPECAT_COMPLEX)
+	{
+		/* Output the "size.of" field, which defines the type's size */
+		fputs(".field public static initonly unsigned int32 'size.of'\n",
+			  stream);
+		if(CTypeIsStruct(type))
+		{
+			field = 0;
+			first = 1;
+			while((field = CTypeNextField(type, field)) != 0)
+			{
+				if(!first)
+				{
+					fprintf(stream,
+							".field public static initonly unsigned int32 "
+							"'%s.offset'\n", ILField_Name(field));
+				}
+				else
+				{
+					/* We don't need the offset of the first field,
+					   because it will always be zero */
+					first = 0;
+				}
+			}
+		}
+
+		/* Output the header for the static constructor */
+		fputs(".method private static hidebysig specialname rtspecialname "
+			  "void .cctor() cil managed\n{\n", stream);
+		info->stackHeight = 0;
+		info->maxStackHeight = 0;
+
+		/* Generate code to compute the size and field offsets */
+		node = CTypeCreateSizeNode(type);
+		ILNode_GenValue(node, info);
+		StoreGlobal(info, classInfo, "size", "of", stream);
+		ILGenAdjust(info, -1);
+		if(CTypeIsStruct(type))
+		{
+			field = 0;
+			first = 1;
+			while((field = CTypeNextField(type, field)) != 0)
+			{
+				if(!first)
+				{
+					node = CTypeCreateOffsetNode(type, ILField_Name(field));
+					ILNode_GenValue(node, info);
+					StoreGlobal(info, classInfo, ILField_Name(field),
+								"offset", stream);
+					ILGenAdjust(info, -1);
+				}
+				else
+				{
+					/* We don't need the offset of the first field,
+					   because it will always be zero */
+					first = 0;
+				}
+			}
+		}
+
+		/* Output the footer for the static constructor */
+		fprintf(stream, "\tret\n\t.maxstack %ld\n}\n", info->maxStackHeight);
 	}
 
 	/* Output the class footer */

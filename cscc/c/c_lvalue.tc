@@ -1,7 +1,7 @@
 /*
  * c_lvalue.tc - L-value node handling for C.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,8 @@ ILNode_CSemAnalysis(ILNode_CMemberField)
 		return CSemValueError;
 	}
 
-	/* Save the field for the code generator */
+	/* Save the owner type and the field for the code generator */
+	node->ownerType = type;
 	node->field = field;
 
 	/* Determine if the result is an l-value or an r-value */
@@ -143,14 +144,20 @@ typeError:
 }
 
 /*
- * Get the type of a member access node.
+ * Get the type of a member access or dereference node.
  */
-ILNode_GetType(ILNode_CMemberField)
+ILNode_GetType(ILNode_CMemberField),
+ILNode_GetType(ILNode_CDerefField)
 {
 	ILType *type = ILField_Type(node->field);
 	if(CTypeIsArray(type))
 	{
 		/* Arrays decay to r-value pointers when accessed */
+		return ILMachineType_UnmanagedPtr;
+	}
+	else if(CTypeIsComplex(type))
+	{
+		/* Complex types are passed on the stack as a pointer */
 		return ILMachineType_UnmanagedPtr;
 	}
 	else
@@ -160,20 +167,147 @@ ILNode_GetType(ILNode_CMemberField)
 }
 
 /*
- * Generate discard code for a member access node.
+ * Generate discard code for a member access or dereference node.
  */
-ILNode_GenDiscard(ILNode_CMemberField)
+ILNode_GenDiscard(ILNode_CMemberField),
+ILNode_GenDiscard(ILNode_CDerefField)
 {
 	ILNode_GenDiscard(node->expr, info);
 }
 
+%output "c_nodes.c"
+
+%{
+
 /*
- * Generate value code for a member access node.
+ * Load a value from a pointer.  If the type is complex or an array,
+ * then leave the pointer as-is.  Returns a modified type representing
+ * the actual value pushed onto the stack.
  */
-ILNode_GenValue(ILNode_CMemberField)
+static ILType *LoadValueFromPointer(ILGenInfo *info, ILType *type)
+{
+	if(CTypeIsComplex(type) || CTypeIsArray(type))
+	{
+		return CTypeCreateVoidPtr(info);
+	}
+	else
+	{
+		type = ILTypeStripPrefixes(type);
+		ILGenLoadManaged(info, ILTypeToMachineType(type), type);
+		return type;
+	}
+}
+
+/*
+ * Store a value into a pointer.  If the type is complex,
+ * then the value is expected to be a pointer to a complex
+ * value, which is then copied into its final location.
+ * If "field" is non-NULL, then it indicates that the pointer
+ * is a base for a structure, not the location itself.
+ * If "leave" is non-zero, then the value should be left
+ * on the stack after the store has finished.
+ */
+static void StoreValueToPointer(ILGenInfo *info, ILType *type,
+								ILField *field, int leave)
+{
+	ILType *tempType;
+	unsigned tempVar = ~((unsigned)0);
+	if(CTypeIsComplex(type))
+	{
+		/* Complex values are passed on the stack as pointers */
+		tempType = CTypeCreateVoidPtr(info);
+	}
+	else
+	{
+		tempType = ILTypeStripPrefixes(type);
+	}
+	if(leave)
+	{
+		/* Make a copy of the final value before storing it */
+		tempVar = ILGenTempTypedVar(info, tempType);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempVar);
+		ILGenAdjust(info, -1);
+	}
+	if(CTypeIsComplex(type))
+	{
+		/* Copy a complex value into its destination */
+		CGenSizeOf(info, type);
+		ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED, 1);
+		ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
+		ILGenAdjust(info, -3);
+	}
+	else if(field)
+	{
+		/* Store into a structure field */
+		ILGenFieldRef(info, IL_OP_STFLD, field);
+		ILGenAdjust(info, -2);
+	}
+	else
+	{
+		/* Store directly into a pointer */
+		ILGenStoreManaged(info, ILTypeToMachineType(tempType), tempType);
+		ILGenAdjust(info, -2);
+	}
+	if(leave)
+	{
+		ILGenLoadLocal(info, tempVar);
+		ILGenReleaseTempVar(info, tempVar);
+		ILGenAdjust(info, 1);
+	}
+}
+
+/* Imported from "c_semantics.c" */
+void CAddComplexFieldOffset(ILGenInfo *info, ILType *type, ILField *field);
+
+%}
+
+%output "c_semantics.c"
+
+%{
+
+/*
+ * Add a complex field offset value to a pointer on the stack.
+ */
+void CAddComplexFieldOffset(ILGenInfo *info, ILType *type, ILField *field)
+{
+	if(CTypeIsStruct(type) && CTypeNextField(type, 0) != field)
+	{
+		if(info->asmOutput)
+		{
+			fputs("\tldsfld\tunsigned int32 ", info->asmOutput);
+			ILDumpClassName
+				(info->asmOutput, info->image,
+				 ILTypeToClass(info, ILTypeStripPrefixes(type)),
+				 IL_DUMP_QUOTE_NAMES);
+			fputs("::'", info->asmOutput);
+			fputs(ILField_Name(field), info->asmOutput);
+			fputs(".offset'\n", info->asmOutput);
+		}
+		ILGenAdjust(info, 1);
+		ILGenSimple(info, IL_OP_CONV_U);
+		ILGenSimple(info, IL_OP_ADD);
+		ILGenAdjust(info, -1);
+	}
+}
+
+%}
+
+/*
+ * Generate value code for a member access or dereference node.
+ */
+ILNode_GenValue(ILNode_CMemberField),
+ILNode_GenValue(ILNode_CDerefField)
 {
 	ILType *type = ILField_Type(node->field);
-	if(yyisa(node->expr, ILNode_LValue))
+	if(CTypeIsComplex(node->ownerType))
+	{
+		/* Fetch a field from a complex owner type */
+		CGenAddress(info, (ILNode *)node);
+		return ILTypeToMachineType(LoadValueFromPointer(info, type));
+	}
+	if(yyisa(node, ILNode_CMemberField) && yyisa(node->expr, ILNode_LValue))
 	{
 		CGenAddress(info, node->expr);
 	}
@@ -193,40 +327,79 @@ ILNode_GenValue(ILNode_CMemberField)
 		return ILTypeToMachineType(type);
 	}
 }
-JavaGenValue(ILNode_CMemberField)
+JavaGenValue(ILNode_CMemberField),
+JavaGenValue(ILNode_CDerefField)
 {
 	/* Nothing to do here: will never be called */
 	return ILMachineType_Void;
 }
 
 /*
- * Prepare to store to a member access node.
+ * Prepare to store to a member access or dereference node.
  */
-ILNode_Prepare(ILNode_CMemberField)
-{
-	CGenAddress(info, node->expr);
-	return ILTypeToMachineType(ILField_Type(node->field));
-}
-JavaPrepare(ILNode_CMemberField)
-{
-	/* Nothing to do here: will never be called */
-	return ILMachineType_Void;
-}
-
-/*
- * Get and prepare to store to a member access node.
- */
-ILNode_GetAndPrepare(ILNode_CMemberField)
+ILNode_Prepare(ILNode_CMemberField),
+ILNode_Prepare(ILNode_CDerefField)
 {
 	ILType *type = ILField_Type(node->field);
-	CGenAddress(info, node->expr);
-	ILGenSimple(info, IL_OP_DUP);
-	ILGenAdjust(info, 1);
-	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	if(CTypeIsComplex(type) || CTypeIsComplex(node->ownerType))
+	{
+		CGenAddress(info, (ILNode *)node);
+		return ILMachineType_UnmanagedPtr;
+	}
+	else if(yyisa(node, ILNode_CMemberField))
+	{
+		CGenAddress(info, node->expr);
+		return ILTypeToMachineType(type);
+	}
+	else
+	{
+		ILNode_GenValue(node->expr, info);
+		return ILTypeToMachineType(type);
+	}
+}
+JavaPrepare(ILNode_CMemberField),
+JavaPrepare(ILNode_CDerefField)
+{
+	/* Nothing to do here: will never be called */
+	return ILMachineType_Void;
+}
+
+/*
+ * Get and prepare to store to a member access or dereference node.
+ */
+ILNode_GetAndPrepare(ILNode_CMemberField),
+ILNode_GetAndPrepare(ILNode_CDerefField)
+{
+	ILType *type = ILField_Type(node->field);
+	ILType *tempType = type;
+	if(CTypeIsComplex(node->ownerType) || CTypeIsComplex(type))
+	{
+		/* Fetch a field from a complex owner type or a complex field */
+		CGenAddress(info, (ILNode *)node);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		tempType = LoadValueFromPointer(info, type);
+	}
+	else if(yyisa(node, ILNode_CMemberField))
+	{
+		/* Fetch a field from a non-complex owner type (member form) */
+		CGenAddress(info, node->expr);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	}
+	else
+	{
+		/* Fetch a field from a non-complex owner type (deref form) */
+		ILNode_GenValue(node->expr, info);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	}
 	if(leave)
 	{
 		/* Rearrange the stack to leave the value in the correct position */
-		unsigned tempVar1 = ILGenTempTypedVar(info, type);
+		unsigned tempVar1 = ILGenTempTypedVar(info, tempType);
 		unsigned tempVar2 = ILGenTempTypedVar(info, ILType_Int);
 		ILGenStoreLocal(info, tempVar1);
 		ILGenStoreLocal(info, tempVar2);
@@ -237,67 +410,79 @@ ILNode_GetAndPrepare(ILNode_CMemberField)
 		ILGenReleaseTempVar(info, tempVar1);
 		ILGenReleaseTempVar(info, tempVar2);
 	}
-	return ILTypeToMachineType(ILField_Type(node->field));
+	return ILTypeToMachineType(tempType);
 }
-JavaGetAndPrepare(ILNode_CMemberField)
+JavaGetAndPrepare(ILNode_CMemberField),
+JavaGetAndPrepare(ILNode_CDerefField)
 {
 	/* Nothing to do here: will never be called */
 	return ILMachineType_Void;
 }
 
 /*
- * Store to a member access node.
+ * Store to a member access or dereference node.
  */
-ILNode_Store(ILNode_CMemberField)
+ILNode_Store(ILNode_CMemberField),
+ILNode_Store(ILNode_CDerefField)
 {
-	if(leave)
+	ILType *type = ILField_Type(node->field);
+	if(CTypeIsComplex(node->ownerType) || CTypeIsComplex(type))
 	{
-		ILType *type = ILField_Type(node->field);
-		unsigned tempVar1 = ILGenTempTypedVar(info, type);
-		ILGenSimple(info, IL_OP_DUP);
-		ILGenAdjust(info, 1);
-		ILGenStoreLocal(info, tempVar1);
-		ILGenFieldRef(info, IL_OP_STFLD, node->field);
-		ILGenAdjust(info, -2);
-		ILGenLoadLocal(info, tempVar1);
-		ILGenReleaseTempVar(info, tempVar1);
+		StoreValueToPointer(info, type, 0, leave);
 	}
 	else
 	{
-		ILGenFieldRef(info, IL_OP_STFLD, node->field);
-		ILGenAdjust(info, -2);
+		StoreValueToPointer(info, type, node->field, leave);
 	}
 }
-JavaStore(ILNode_CMemberField)
+JavaStore(ILNode_CMemberField),
+JavaStore(ILNode_CDerefField)
 {
 	/* Nothing to do here: will never be called */
 }
 
 /*
- * Generate a reference for a member access node.
+ * Generate a reference for a member access or dereference node.
  */
-ILNode_GenRef(ILNode_CMemberField)
+ILNode_GenRef(ILNode_CMemberField),
+ILNode_GenRef(ILNode_CDerefField)
 {
 	CGenAddress(info, (ILNode *)node);
 }
 
 /*
- * Generate the address of a member access node.
+ * Generate the address of a member access or dereference node.
  */
-ILNode_CGenAddress(ILNode_CMemberField)
+ILNode_CGenAddress(ILNode_CMemberField),
+ILNode_CGenAddress(ILNode_CDerefField)
 {
 	CAddress addr;
-	ILFieldLayout *layout = ILFieldLayoutGetFromOwner(node->field);
-	if(layout)
+	if(CTypeIsComplex(node->ownerType))
 	{
-		/* Adjust the address using the field's explict offset */
-		addr = ILNode_CGenAddress((ILNode_LValue *)(node->expr), info);
-		addr.offset += (ILInt32)(ILFieldLayoutGetOffset(layout));
+		/* Complex types need special adjustment for their fields */
+		if(yyisa(node, ILNode_CMemberField))
+		{
+			CGenAddress(info, node->expr);
+		}
+		else
+		{
+			ILNode_GenValue(node->expr, info);
+		}
+		CAddComplexFieldOffset(info, node->ownerType, node->field);
+		addr.ptrOnStack = 1;
+		addr.offset = 0;
 	}
 	else
 	{
 		/* We need to use "ldflda" to find the field's dynamic address */
-		CGenAddress(info, node->expr);
+		if(yyisa(node, ILNode_CMemberField))
+		{
+			CGenAddress(info, node->expr);
+		}
+		else
+		{
+			ILNode_GenValue(node->expr, info);
+		}
 		ILGenFieldRef(info, IL_OP_LDFLDA, node->field);
 		addr.ptrOnStack = 1;
 		addr.offset = 0;
@@ -692,6 +877,7 @@ ILNode_CSemAnalysis(ILNode_CDerefField)
 
 	/* Save the field for the code generator */
 	node->field = field;
+	node->ownerType = structType;
 
 	/* Determine if the result is an l-value or an r-value */
 	fieldType = ILMember_Signature(field);
@@ -730,161 +916,6 @@ typeError:
 		  _("request for member `%s' in something not a structure or union"),
 		  node->name);
 	return CSemValueError;
-}
-
-/*
- * Get the type of a field dereference node.
- */
-ILNode_GetType(ILNode_CDerefField)
-{
-	ILType *type = ILField_Type(node->field);
-	if(CTypeIsArray(type))
-	{
-		/* Arrays decay to r-value pointers when accessed */
-		return ILMachineType_UnmanagedPtr;
-	}
-	else
-	{
-		return ILTypeToMachineType(type);
-	}
-}
-
-/*
- * Generate discard code for a field deference node.
- */
-ILNode_GenDiscard(ILNode_CDerefField)
-{
-	ILNode_GenDiscard(node->expr, info);
-}
-
-/*
- * Generate value code for a field dereference node.
- */
-ILNode_GenValue(ILNode_CDerefField)
-{
-	ILType *type = ILField_Type(node->field);
-	ILNode_GenValue(node->expr, info);
-	if(CTypeIsArray(type))
-	{
-		/* Arrays decay to r-value pointers when accessed */
-		ILGenFieldRef(info, IL_OP_LDFLDA, node->field);
-		return ILMachineType_UnmanagedPtr;
-	}
-	else
-	{
-		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
-		return ILTypeToMachineType(type);
-	}
-}
-JavaGenValue(ILNode_CDerefField)
-{
-	/* Nothing to do here: will never be called */
-	return ILMachineType_Void;
-}
-
-/*
- * Prepare to store to a field dereference node.
- */
-ILNode_Prepare(ILNode_CDerefField)
-{
-	ILNode_GenValue(node->expr, info);
-	return ILTypeToMachineType(ILField_Type(node->field));
-}
-JavaPrepare(ILNode_CDerefField)
-{
-	/* Nothing to do here: will never be called */
-	return ILMachineType_Void;
-}
-
-/*
- * Get and prepare to store to a field dereference node.
- */
-ILNode_GetAndPrepare(ILNode_CDerefField)
-{
-	ILType *type = ILField_Type(node->field);
-	ILNode_GenValue(node->expr, info);
-	ILGenSimple(info, IL_OP_DUP);
-	ILGenAdjust(info, 1);
-	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
-	if(leave)
-	{
-		/* Rearrange the stack to leave the value in the correct position */
-		unsigned tempVar1 = ILGenTempTypedVar(info, type);
-		unsigned tempVar2 = ILGenTempTypedVar(info, ILType_Int);
-		ILGenStoreLocal(info, tempVar1);
-		ILGenStoreLocal(info, tempVar2);
-		ILGenLoadLocal(info, tempVar1);
-		ILGenLoadLocal(info, tempVar2);
-		ILGenLoadLocal(info, tempVar1);
-		ILGenAdjust(info, 1);
-		ILGenReleaseTempVar(info, tempVar1);
-		ILGenReleaseTempVar(info, tempVar2);
-	}
-	return ILTypeToMachineType(ILField_Type(node->field));
-}
-JavaGetAndPrepare(ILNode_CDerefField)
-{
-	/* Nothing to do here: will never be called */
-	return ILMachineType_Void;
-}
-
-/*
- * Store to a field dereference node.
- */
-ILNode_Store(ILNode_CDerefField)
-{
-	if(leave)
-	{
-		ILType *type = ILField_Type(node->field);
-		unsigned tempVar1 = ILGenTempTypedVar(info, type);
-		ILGenSimple(info, IL_OP_DUP);
-		ILGenAdjust(info, 1);
-		ILGenStoreLocal(info, tempVar1);
-		ILGenFieldRef(info, IL_OP_STFLD, node->field);
-		ILGenAdjust(info, -2);
-		ILGenLoadLocal(info, tempVar1);
-		ILGenReleaseTempVar(info, tempVar1);
-	}
-	else
-	{
-		ILGenFieldRef(info, IL_OP_STFLD, node->field);
-		ILGenAdjust(info, -2);
-	}
-}
-JavaStore(ILNode_CDerefField)
-{
-	/* Nothing to do here: will never be called */
-}
-
-/*
- * Generate a reference for a field dereference node.
- */
-ILNode_GenRef(ILNode_CDerefField)
-{
-	CGenAddress(info, (ILNode *)node);
-}
-
-/*
- * Generate the address of a field dereference node.
- */
-ILNode_CGenAddress(ILNode_CDerefField)
-{
-	CAddress addr;
-	ILFieldLayout *layout = ILFieldLayoutGetFromOwner(node->field);
-	ILNode_GenValue(node->expr, info);
-	addr.ptrOnStack = 1;
-	if(layout)
-	{
-		/* Adjust the address using the field's explict offset */
-		addr.offset = (ILInt32)(ILFieldLayoutGetOffset(layout));
-	}
-	else
-	{
-		/* We need to use "ldflda" to find the field's dynamic address */
-		ILGenFieldRef(info, IL_OP_LDFLDA, node->field);
-		addr.offset = 0;
-	}
-	return addr;
 }
 
 /*
@@ -927,6 +958,21 @@ ILNode_CSemAnalysis(ILNode_CLocalVar)
 }
 
 /*
+ * Get the type for a C local variable reference.
+ */
+ILNode_GetType(ILNode_CLocalVar)
+{
+	if(node->type == node->decayedType && !CTypeIsComplex(node->type))
+	{
+		return node->machineType;
+	}
+	else
+	{
+		return ILMachineType_UnmanagedPtr;
+	}
+}
+
+/*
  * Generate value code for a C local variable reference.
  * This overrides the standard code in "codegen" so that
  * we can handle arrays that decay into pointers.
@@ -936,16 +982,39 @@ ILNode_GenValue(ILNode_CLocalVar)
 	if(node->type == node->decayedType)
 	{
 		/* This is an ordinary local variable */
-		ILGenLoadLocal(info, node->index);
-		ILGenAdjust(info, 1);
+		if(!CTypeIsComplex(node->type))
+		{
+			ILGenLoadLocal(info, node->index);
+			ILGenAdjust(info, 1);
+			return node->machineType;
+		}
+		else
+		{
+			ILGenLoadLocal(info, node->index);
+			ILGenAdjust(info, 1);
+			return ILMachineType_UnmanagedPtr;
+		}
 	}
 	else
 	{
 		/* This local variable decays immediately into a pointer */
-		ILGenLoadLocalAddr(info, node->index);
-		ILGenAdjust(info, 1);
+		if(!CTypeIsComplex(node->type))
+		{
+			ILGenLoadLocalAddr(info, node->index);
+			ILGenAdjust(info, 1);
+		}
+		else
+		{
+			ILGenLoadLocal(info, node->index);
+			ILGenAdjust(info, 1);
+		}
+		return ILMachineType_UnmanagedPtr;
 	}
-	return node->machineType;
+}
+JavaGenValue(ILNode_CLocalVar)
+{
+	/* Nothing to do here */
+	return ILMachineType_Void;
 }
 
 /*
@@ -954,11 +1023,108 @@ ILNode_GenValue(ILNode_CLocalVar)
 ILNode_CGenAddress(ILNode_CLocalVar)
 {
 	CAddress addr;
-	ILGenLoadLocalAddr(info, node->index);
+	if(!CTypeIsComplex(node->type))
+	{
+		ILGenLoadLocalAddr(info, node->index);
+	}
+	else
+	{
+		ILGenLoadLocal(info, node->index);
+	}
 	ILGenAdjust(info, 1);
 	addr.ptrOnStack = 1;
 	addr.offset = 0;
 	return addr;
+}
+
+/*
+ * Prepare for a store into a local variable.
+ */
+ILNode_Prepare(ILNode_CLocalVar)
+{
+	if(CTypeIsComplex(node->type))
+	{
+		ILGenLoadLocal(info, node->index);
+		ILGenAdjust(info, 1);
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		return node->machineType;
+	}
+}
+JavaPrepare(ILNode_CLocalVar)
+{
+	/* Nothing to do here */
+	return ILMachineType_Void;
+}
+
+/*
+ * Generate reference code for a local variable.
+ */
+ILNode_GenRef(ILNode_CLocalVar)
+{
+	CGenAddress(info, (ILNode *)node);
+}
+
+/*
+ * Get and prepare for a store into a local variable.
+ * We assume that this will never be called for complex types
+ * because it isn't possible to do "++", "+=", etc on such types.
+ * Semantic analysis should weed out such cases before we get here.
+ */
+ILNode_GetAndPrepare(ILNode_CLocalVar)
+{
+	ILGenLoadLocal(info, node->index);
+	ILGenAdjust(info, 1);
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	return node->machineType;
+}
+JavaGetAndPrepare(ILNode_CLocalVar)
+{
+	/* Nothing to do here */
+	return ILMachineType_Void;
+}
+
+/*
+ * Store into a local variable.
+ */
+ILNode_Store(ILNode_CLocalVar)
+{
+	if(!CTypeIsComplex(node->type))
+	{
+		/* Perform a store for a non-complex local variable type */
+		if(leave)
+		{
+			ILGenSimple(info, IL_OP_DUP);
+			ILGenAdjust(info, 1);
+		}
+		ILGenStoreLocal(info, node->index);
+		ILGenAdjust(info, -1);
+	}
+	else
+	{
+		/* Copy the contents of the complex type into the local variable */
+		CGenSizeOf(info, node->type);
+		ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED, 1);
+		ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
+		ILGenAdjust(info, -3);
+
+		/* If we should leave the value, then reload the local variable */
+		if(leave)
+		{
+			ILGenLoadLocal(info, node->index);
+			ILGenAdjust(info, 1);
+		}
+	}
+}
+JavaStore(ILNode_CLocalVar)
+{
+	/* Nothing to do here */
 }
 
 /*
@@ -972,12 +1138,160 @@ ILNode_CSemAnalysis(ILNode_CArgumentVar)
 }
 
 /*
+ * Get type information for an argument reference.
+ */
+ILNode_GetType(ILNode_CArgumentVar)
+{
+	if(CTypeIsComplex(node->type))
+	{
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		return node->machineType;
+	}
+}
+
+/*
+ * Generate discard code for an argument reference.
+ */
+ILNode_GenDiscard(ILNode_CArgumentVar)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Generate value code for an argument reference.
+ */
+ILNode_GenValue(ILNode_CArgumentVar)
+{
+	if(!CTypeIsComplex(node->type))
+	{
+		/* Ordinary values are pushed by value */
+		ILGenLoadArg(info, node->index);
+		ILGenAdjust(info, 1);
+		return node->machineType;
+	}
+	else
+	{
+		/* Complex values are pushed by reference */
+		ILGenLoadArg(info, node->index);
+		ILGenAdjust(info, 1);
+		return ILMachineType_UnmanagedPtr;
+	}
+}
+JavaGenValue(ILNode_CArgumentVar)
+{
+	/* Nothing to do here */
+	return ILMachineType_Void;
+}
+
+/*
+ * Prepare for a store into an argument variable.
+ */
+ILNode_Prepare(ILNode_CArgumentVar)
+{
+	if(CTypeIsComplex(node->type))
+	{
+		ILGenLoadArg(info, node->index);
+		ILGenAdjust(info, 1);
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		return node->machineType;
+	}
+}
+JavaPrepare(ILNode_CArgumentVar)
+{
+	/* Nothing to do here */
+	return ILMachineType_Void;
+}
+
+/*
+ * Generate reference code for an argument variable.
+ */
+ILNode_GenRef(ILNode_CArgumentVar)
+{
+	CGenAddress(info, (ILNode *)node);
+}
+
+/*
+ * Get and prepare for a store into an argument variable.
+ * We assume that this will never be called for complex types
+ * because it isn't possible to do "++", "+=", etc on such types.
+ * Semantic analysis should weed out such cases before we get here.
+ */
+ILNode_GetAndPrepare(ILNode_CArgumentVar)
+{
+	ILGenLoadArg(info, node->index);
+	ILGenAdjust(info, 1);
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	return node->machineType;
+}
+JavaGetAndPrepare(ILNode_CArgumentVar)
+{
+	/* Nothing to do here */
+	return ILMachineType_Void;
+}
+
+/*
+ * Store into an argument variable.
+ */
+ILNode_Store(ILNode_CArgumentVar)
+{
+	if(!CTypeIsComplex(node->type))
+	{
+		/* Perform a store for a non-complex argument type */
+		if(leave)
+		{
+			ILGenSimple(info, IL_OP_DUP);
+			ILGenAdjust(info, 1);
+		}
+		ILGenStoreArg(info, node->index);
+		ILGenAdjust(info, -1);
+	}
+	else
+	{
+		/* Copy the contents of the complex type into the argument variable */
+		CGenSizeOf(info, node->type);
+		ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED, 1);
+		ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
+		ILGenAdjust(info, -3);
+
+		/* If we should leave the value, then reload the argument pointer */
+		if(leave)
+		{
+			ILGenLoadArg(info, node->index);
+			ILGenAdjust(info, 1);
+		}
+	}
+}
+JavaStore(ILNode_CArgumentVar)
+{
+	/* Nothing to do here */
+}
+
+/*
  * Generate the address of an argument reference.
  */
 ILNode_CGenAddress(ILNode_CArgumentVar)
 {
 	CAddress addr;
-	ILGenLoadArgAddr(info, node->index);
+	if(!CTypeIsComplex(node->type))
+	{
+		/* Ordinary types are passed by value, so take the arg address */
+		ILGenLoadArgAddr(info, node->index);
+	}
+	else
+	{
+		/* The argument is passed by reference, so push it directly */
+		ILGenLoadArg(info, node->index);
+	}
 	ILGenAdjust(info, 1);
 	addr.ptrOnStack = 1;
 	addr.offset = 0;
@@ -1039,7 +1353,14 @@ ILNode_CSemAnalysis(ILNode_CGlobalVar)
  */
 ILNode_GetType(ILNode_CGlobalVar)
 {
-	return ILTypeToMachineType(node->decayedType);
+	if(!CTypeIsComplex(node->type))
+	{
+		return ILTypeToMachineType(node->decayedType);
+	}
+	else
+	{
+		return ILMachineType_UnmanagedPtr;
+	}
 }
 
 /*
@@ -1057,7 +1378,7 @@ ILNode_GenValue(ILNode_CGlobalVar)
 {
 	if(info->asmOutput)
 	{
-		if(node->type == node->decayedType)
+		if(node->type == node->decayedType || CTypeIsComplex(node->type))
 		{
 			fputs("\tldsfld\t", info->asmOutput);
 		}
@@ -1068,12 +1389,23 @@ ILNode_GenValue(ILNode_CGlobalVar)
 		ILDumpType(info->asmOutput, info->image, node->type,
 				   IL_DUMP_QUOTE_NAMES);
 		putc(' ', info->asmOutput);
+		if(CTypeIsComplex(node->type))
+		{
+			fputs("* ", info->asmOutput);
+		}
 		ILDumpIdentifier(info->asmOutput, node->name, 0,
 						 IL_DUMP_QUOTE_NAMES);
 		putc('\n', info->asmOutput);
 	}
 	ILGenAdjust(info, 1);
-	return ILTypeToMachineType(node->decayedType);
+	if(!CTypeIsComplex(node->type))
+	{
+		return ILTypeToMachineType(node->decayedType);
+	}
+	else
+	{
+		return ILMachineType_UnmanagedPtr;
+	}
 }
 
 /*
@@ -1081,12 +1413,21 @@ ILNode_GenValue(ILNode_CGlobalVar)
  */
 ILNode_Prepare(ILNode_CGlobalVar)
 {
-	/* Nothing to do here */
-	return ILTypeToMachineType(node->decayedType);
+	if(CTypeIsComplex(node->type))
+	{
+		return ILNode_GenValue((ILNode *)node, info);
+	}
+	else
+	{
+		return ILTypeToMachineType(node->decayedType);
+	}
 }
 
 /*
  * Get and prepare a C global variable reference.
+ * We assume that this will never be called for complex types
+ * because it isn't possible to do "++", "+=", etc on such types.
+ * Semantic analysis should weed out such cases before we get here.
  */
 ILNode_GetAndPrepare(ILNode_CGlobalVar)
 {
@@ -1114,19 +1455,37 @@ ILNode_GetAndPrepare(ILNode_CGlobalVar)
  */
 ILNode_Store(ILNode_CGlobalVar)
 {
-	if(leave)
+	if(!CTypeIsComplex(node->type))
 	{
-		ILGenSimple(info, IL_OP_DUP);
-		ILGenAdjust(info, 1);
+		/* Handle a non-complex type */
+		if(leave)
+		{
+			ILGenSimple(info, IL_OP_DUP);
+			ILGenAdjust(info, 1);
+		}
+		fputs("\tstsfld\t", info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, node->type,
+				   IL_DUMP_QUOTE_NAMES);
+		putc(' ', info->asmOutput);
+		ILDumpIdentifier(info->asmOutput, node->name, 0,
+						 IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
+		ILGenAdjust(info, -1);
 	}
-	fputs("\tstsfld\t", info->asmOutput);
-	ILDumpType(info->asmOutput, info->image, node->type,
-			   IL_DUMP_QUOTE_NAMES);
-	putc(' ', info->asmOutput);
-	ILDumpIdentifier(info->asmOutput, node->name, 0,
-					 IL_DUMP_QUOTE_NAMES);
-	putc('\n', info->asmOutput);
-	ILGenAdjust(info, -1);
+	else
+	{
+		/* Copy the complex value into the pointer on the stack */
+		CGenSizeOf(info, node->type);
+		ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED, 1);
+		ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
+		ILGenAdjust(info, -3);
+
+		/* Push the address of the global variable in leave mode */
+		if(leave)
+		{
+			ILNode_GenValue((ILNode *)node, info);
+		}
+	}
 }
 
 /*
@@ -1136,10 +1495,21 @@ ILNode_GenRef(ILNode_CGlobalVar)
 {
 	if(info->asmOutput)
 	{
-		fputs("\tldsflda\t", info->asmOutput);
+		if(CTypeIsComplex(node->type))
+		{
+			fputs("\tldsfld\t", info->asmOutput);
+		}
+		else
+		{
+			fputs("\tldsflda\t", info->asmOutput);
+		}
 		ILDumpType(info->asmOutput, info->image, node->type,
 				   IL_DUMP_QUOTE_NAMES);
 		putc(' ', info->asmOutput);
+		if(CTypeIsComplex(node->type))
+		{
+			fputs("* ", info->asmOutput);
+		}
 		ILDumpIdentifier(info->asmOutput, node->name, 0,
 						 IL_DUMP_QUOTE_NAMES);
 		putc('\n', info->asmOutput);
@@ -1267,11 +1637,26 @@ ILNode_CSemAnalysis(ILNode_CArrayAccess)
 }
 
 /*
+ * Get the type for an array access node.
+ */
+ILNode_GetType(ILNode_CArrayAccess)
+{
+	if(CTypeIsComplex(node->elemType))
+	{
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		return ILTypeToMachineType(node->elemType);
+	}
+}
+
+/*
  * Generate value code for an array access node.
  */
 ILNode_GenValue(ILNode_CArrayAccess)
 {
-	ILMachineType type = ILTypeToMachineType(node->elemType);
+	ILType *type = node->elemType;
 
 	/* Push the address of the array element onto the stack */
 	CGenAddress(info, (ILNode *)node);
@@ -1279,11 +1664,11 @@ ILNode_GenValue(ILNode_CArrayAccess)
 	/* Load the value from the pointer if not a sub-array */
 	if(node->elemType == CTypeGetPtrRef(node->arrayType))
 	{
-		ILGenLoadManaged(info, type, ILTypeStripPrefixes(node->elemType));
+		type = LoadValueFromPointer(info, type);
 	}
 
 	/* Return the machine type for the element */
-	return type;
+	return ILTypeToMachineType(type);
 }
 
 /*
@@ -1303,7 +1688,7 @@ ILNode_Prepare(ILNode_CArrayAccess)
  */
 ILNode_GetAndPrepare(ILNode_CArrayAccess)
 {
-	ILMachineType type = ILTypeToMachineType(node->elemType);
+	ILType *tempType;
 	unsigned tempVar1;
 	unsigned tempVar2;
 
@@ -1315,14 +1700,13 @@ ILNode_GetAndPrepare(ILNode_CArrayAccess)
 	ILGenAdjust(info, 1);
 
 	/* Load the current value from the pointer */
-	ILGenLoadManaged(info, type, ILTypeStripPrefixes(node->elemType));
+	tempType = LoadValueFromPointer(info, node->elemType);
 
 	/* Rearrange the contents of the stack if "leave" is set */
 	if(leave)
 	{
 		tempVar1 = ILGenTempTypedVar(info, ILType_Int);
-		tempVar2 = ILGenTempTypedVar
-			(info, ILTypeStripPrefixes(node->elemType));
+		tempVar2 = ILGenTempTypedVar(info, tempType);
 		ILGenStoreLocal(info, tempVar2);
 		ILGenStoreLocal(info, tempVar1);
 		ILGenLoadLocal(info, tempVar2);
@@ -1334,7 +1718,7 @@ ILNode_GetAndPrepare(ILNode_CArrayAccess)
 	}
 
 	/* Return the machine type for the element */
-	return type;
+	return ILTypeToMachineType(tempType);
 }
 
 /*
@@ -1342,25 +1726,7 @@ ILNode_GetAndPrepare(ILNode_CArrayAccess)
  */
 ILNode_Store(ILNode_CArrayAccess)
 {
-	ILMachineType type = ILTypeToMachineType(node->elemType);
-	unsigned tempVar;
-	if(leave)
-	{
-		tempVar = ILGenTempTypedVar
-			(info, ILTypeStripPrefixes(node->elemType));
-		ILGenSimple(info, IL_OP_DUP);
-		ILGenAdjust(info, 1);
-		ILGenStoreLocal(info, tempVar);
-		ILGenStoreManaged(info, type, ILTypeStripPrefixes(node->elemType));
-		ILGenLoadLocal(info, tempVar);
-		ILGenAdjust(info, -2);
-		ILGenReleaseTempVar(info, tempVar);
-	}
-	else
-	{
-		ILGenStoreManaged(info, type, ILTypeStripPrefixes(node->elemType));
-		ILGenAdjust(info, -2);
-	}
+	StoreValueToPointer(info, node->elemType, 0, leave);
 }
 
 /*
@@ -1380,8 +1746,8 @@ ILNode_CGenAddress(ILNode_CArrayAccess)
 {
 	CAddress addr;
 	ILEvalValue value;
-	ILUInt32 size;
 	ILInt64 temp;
+	CTypeLayoutInfo layout;
 
 	/* Get the address of the array start */
 	if(ILNode_EvalConst(node->array, info, &value) &&
@@ -1398,11 +1764,12 @@ ILNode_CGenAddress(ILNode_CArrayAccess)
 	}
 
 	/* Adjust the pointer by the array index */
-	size = CTypeSizeAndAlign(node->elemType, 0);
-	if(size != CTYPE_DYNAMIC && ILNode_EvalConst(node->indices, info, &value))
+	CTypeGetLayoutInfo(node->elemType, &layout);
+	if(layout.category == C_TYPECAT_FIXED &&
+	   ILNode_EvalConst(node->indices, info, &value))
 	{
 		/* Adjust the address offset by a constant index */
-		temp = (ILInt64)size;
+		temp = (ILInt64)(layout.size);
 		switch(value.valueType)
 		{
 			case ILMachineType_Int8:
@@ -1477,9 +1844,9 @@ ILNode_CGenAddress(ILNode_CArrayAccess)
 		ILGenAdjust(info, 1);
 
 		/* Multiply the array index by the element size */
-		if(size != CTYPE_DYNAMIC)
+		if(layout.category == C_TYPECAT_FIXED)
 		{
-			switch(size)
+			switch(layout.size)
 			{
 				case 1:		break;
 
@@ -1509,7 +1876,7 @@ ILNode_CGenAddress(ILNode_CArrayAccess)
 
 				default:
 				{
-					ILGenIntNative(info, (ILInt32)size);
+					ILGenIntNative(info, (ILInt32)(layout.size));
 					ILGenSimple(info, IL_OP_MUL);
 					ILGenExtend(info, 1);
 				}
@@ -1548,6 +1915,7 @@ ILNode_EvalConst(ILNode_CArrayAccess)
 {
 	ILEvalValue arrayValue;
 	ILEvalValue indexValue;
+	CTypeLayoutInfo layout;
 	ILUInt32 size;
 	ILInt64 ptr;
 
@@ -1560,11 +1928,12 @@ ILNode_EvalConst(ILNode_CArrayAccess)
 	}
 
 	/* Get the size of the array element type */
-	size = CTypeSizeAndAlign(node->elemType, 0);
-	if(size == CTYPE_DYNAMIC)
+	CTypeGetLayoutInfo(node->elemType, &layout);
+	if(layout.category != C_TYPECAT_FIXED)
 	{
 		return 0;
 	}
+	size = layout.size;
 
 	/* Compute the new constant pointer value */
 	ptr = (ILInt64)(arrayValue.un.i4Value);
@@ -1680,7 +2049,14 @@ ILNode_CSemAnalysis(ILNode_CDeref)
  */
 ILNode_GetType(ILNode_CDeref)
 {
-	return node->machineType;
+	if(CTypeIsComplex(node->type))
+	{
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		return node->machineType;
+	}
 }
 
 /*
@@ -1697,9 +2073,7 @@ ILNode_GenDiscard(ILNode_CDeref)
 ILNode_GenValue(ILNode_CDeref)
 {
 	ILNode_GenValue(node->expr, info);
-	ILGenLoadManaged(info, node->machineType,
-					 ILTypeStripPrefixes(node->type));
-	return node->machineType;
+	return ILTypeToMachineType(LoadValueFromPointer(info, node->type));
 }
 JavaGenValue(ILNode_CDeref)
 {
@@ -1713,7 +2087,7 @@ JavaGenValue(ILNode_CDeref)
 ILNode_Prepare(ILNode_CDeref)
 {
 	ILNode_GenValue(node->expr, info);
-	return node->machineType;
+	return ILNode_GetType((ILNode *)node, info);
 }
 JavaPrepare(ILNode_CDeref)
 {
@@ -1726,15 +2100,15 @@ JavaPrepare(ILNode_CDeref)
  */
 ILNode_GetAndPrepare(ILNode_CDeref)
 {
+	ILType *tempType = ILTypeStripPrefixes(node->type);
 	ILNode_GenValue(node->expr, info);
 	ILGenSimple(info, IL_OP_DUP);
 	ILGenAdjust(info, 1);
-	ILGenLoadManaged(info, node->machineType,
-					 ILTypeStripPrefixes(node->type));
+	tempType = LoadValueFromPointer(info, tempType);
 	if(leave)
 	{
 		/* Rearrange the stack to leave the value in the correct position */
-		unsigned tempVar1 = ILGenTempTypedVar(info, node->type);
+		unsigned tempVar1 = ILGenTempTypedVar(info, tempType);
 		unsigned tempVar2 = ILGenTempTypedVar(info, ILType_Int);
 		ILGenStoreLocal(info, tempVar1);
 		ILGenStoreLocal(info, tempVar2);
@@ -1745,7 +2119,7 @@ ILNode_GetAndPrepare(ILNode_CDeref)
 		ILGenReleaseTempVar(info, tempVar1);
 		ILGenReleaseTempVar(info, tempVar2);
 	}
-	return node->machineType;
+	return ILTypeToMachineType(tempType);
 }
 JavaGetAndPrepare(ILNode_CDeref)
 {
@@ -1758,24 +2132,7 @@ JavaGetAndPrepare(ILNode_CDeref)
  */
 ILNode_Store(ILNode_CDeref)
 {
-	if(leave)
-	{
-		unsigned tempVar1 = ILGenTempTypedVar(info, node->type);
-		ILGenSimple(info, IL_OP_DUP);
-		ILGenAdjust(info, 1);
-		ILGenStoreLocal(info, tempVar1);
-		ILGenStoreManaged(info, node->machineType,
-						  ILTypeStripPrefixes(node->type));
-		ILGenAdjust(info, -2);
-		ILGenLoadLocal(info, tempVar1);
-		ILGenReleaseTempVar(info, tempVar1);
-	}
-	else
-	{
-		ILGenStoreManaged(info, node->machineType,
-						  ILTypeStripPrefixes(node->type));
-		ILGenAdjust(info, -2);
-	}
+	StoreValueToPointer(info, node->type, 0, leave);
 }
 JavaStore(ILNode_CDeref)
 {
@@ -2049,6 +2406,8 @@ static void BitFieldToRaw(ILGenInfo *info, ILMachineType type,
  */
 ILNode_GenValue(ILNode_CBitField)
 {
+	ILType *ownerType;
+
 	/* Push the address or value onto the stack */
 	if(node->genExprAsAddr)
 	{
@@ -2060,7 +2419,16 @@ ILNode_GenValue(ILNode_CBitField)
 	}
 
 	/* Load the contents of the storage field */
-	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	ownerType = ILClassToType(ILField_Owner(node->field));
+	if(CTypeIsComplex(ownerType))
+	{
+		CAddComplexFieldOffset(info, ownerType, node->field);
+		LoadValueFromPointer(info, ILField_Type(node->field));
+	}
+	else
+	{
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	}
 
 	/* Mask off unnecessary bits, shift down, and sign-extend */
 	RawToBitField(info, node->machineType, node->bitFieldStart,
@@ -2080,6 +2448,8 @@ JavaGenValue(ILNode_CBitField)
  */
 ILNode_Prepare(ILNode_CBitField)
 {
+	ILType *ownerType = ILClassToType(ILField_Owner(node->field));
+
 	/* Push the address of the structure onto the stack */
 	if(node->genExprAsAddr)
 	{
@@ -2089,10 +2459,21 @@ ILNode_Prepare(ILNode_CBitField)
 	{
 		ILNode_GenValue(node->expr, info);
 	}
+	if(CTypeIsComplex(ownerType))
+	{
+		CAddComplexFieldOffset(info, ownerType, node->field);
+	}
 
 	/* Fetch the current value and mask off the bit field */
 	ILGenSimple(info, IL_OP_DUP);
-	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	if(CTypeIsComplex(ownerType))
+	{
+		LoadValueFromPointer(info, ILField_Type(node->field));
+	}
+	else
+	{
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	}
 	ILGenAdjust(info, 1);
 	if(node->machineType == ILMachineType_Int64 ||
 	   node->machineType == ILMachineType_UInt64)
@@ -2124,6 +2505,8 @@ JavaPrepare(ILNode_CBitField)
  */
 ILNode_GetAndPrepare(ILNode_CBitField)
 {
+	ILType *ownerType = ILClassToType(ILField_Owner(node->field));
+
 	/* Push the address of the structure onto the stack */
 	if(node->genExprAsAddr)
 	{
@@ -2133,10 +2516,21 @@ ILNode_GetAndPrepare(ILNode_CBitField)
 	{
 		ILNode_GenValue(node->expr, info);
 	}
+	if(CTypeIsComplex(ownerType))
+	{
+		CAddComplexFieldOffset(info, ownerType, node->field);
+	}
 
 	/* Fetch the current value of the storage field */
 	ILGenSimple(info, IL_OP_DUP);
-	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	if(CTypeIsComplex(ownerType))
+	{
+		LoadValueFromPointer(info, ILField_Type(node->field));
+	}
+	else
+	{
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	}
 	ILGenAdjust(info, 1);
 
 	/* Extract the bit field value and prepare the remainder for storing */
@@ -2166,6 +2560,7 @@ JavaGetAndPrepare(ILNode_CBitField)
  */
 ILNode_Store(ILNode_CBitField)
 {
+	ILType *ownerType = ILClassToType(ILField_Owner(node->field));
 	unsigned tempVar = ~((unsigned)0);
 
 	/* Save the value in a temporary variable if we need to leave it */
@@ -2182,8 +2577,15 @@ ILNode_Store(ILNode_CBitField)
 				  node->bitFieldSize);
 
 	/* Store the combined value back into the storage field */
-	ILGenFieldRef(info, IL_OP_STFLD, node->field);
-	ILGenAdjust(info, -2);
+	if(CTypeIsComplex(ownerType))
+	{
+		StoreValueToPointer(info, ILField_Type(node->field), 0, 0);
+	}
+	else
+	{
+		ILGenFieldRef(info, IL_OP_STFLD, node->field);
+		ILGenAdjust(info, -2);
+	}
 
 	/* Reload the value onto the stack if necessary */
 	if(leave)

@@ -146,6 +146,7 @@ static void InsertInitializer(ILLinker *linker, ILInitFiniList *list,
 	if(current->last)
 	{
 		current->last->next = info;
+		current->last = info;
 	}
 	else
 	{

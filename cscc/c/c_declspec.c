@@ -43,10 +43,10 @@ static StorageClassInfo const storageClasses[] = {
 		"extern"},
 	{C_SPEC_THREAD_SPECIFIC | C_SPEC_STATIC,
 		C_KIND_GLOBAL_NAME | C_KIND_LOCAL_NAME,
-		"static __thread_specific__"},
+		"static __declspec(thread)"},
 	{C_SPEC_THREAD_SPECIFIC,
 		C_KIND_GLOBAL_NAME,
-		"__thread_specific__"},
+		"__declspec(thread)"},
 	{C_SPEC_STATIC | C_SPEC_INLINE,
 		C_KIND_FUNCTION,
 		"static inline"},
@@ -206,7 +206,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 					switch((spec1.specifiers | spec2.specifiers)
 							& (C_SPEC_SIGNED | C_SPEC_UNSIGNED |
 							   C_SPEC_SHORT | C_SPEC_LONG |
-							   C_SPEC_LONG_LONG | C_SPEC_NATIVE))
+							   C_SPEC_LONG_LONG))
 					{
 						case C_SPEC_SIGNED:
 						{
@@ -219,27 +219,6 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 						{
 							result.baseType = ILType_UInt32;
 							okSpecifiers = C_SPEC_UNSIGNED;
-						}
-						break;
-
-						case C_SPEC_NATIVE:
-						{
-							result.baseType = ILType_Int;
-							okSpecifiers = C_SPEC_NATIVE;
-						}
-						break;
-
-						case C_SPEC_SIGNED | C_SPEC_NATIVE:
-						{
-							result.baseType = ILType_Int;
-							okSpecifiers = C_SPEC_SIGNED | C_SPEC_NATIVE;
-						}
-						break;
-
-						case C_SPEC_UNSIGNED | C_SPEC_NATIVE:
-						{
-							result.baseType = ILType_UInt;
-							okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_NATIVE;
 						}
 						break;
 
@@ -261,28 +240,14 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 						case C_SPEC_LONG:
 						case C_SPEC_SIGNED | C_SPEC_LONG:
 						{
-							if(CTypeLongSize == 4)
-							{
-								result.baseType = ILType_Int32;
-							}
-							else
-							{
-								result.baseType = ILType_Int64;
-							}
+							result.baseType = ILType_Int;
 							okSpecifiers = C_SPEC_SIGNED | C_SPEC_LONG;
 						}
 						break;
 
 						case C_SPEC_UNSIGNED | C_SPEC_LONG:
 						{
-							if(CTypeLongSize == 4)
-							{
-								result.baseType = ILType_UInt32;
-							}
-							else
-							{
-								result.baseType = ILType_UInt64;
-							}
+							result.baseType = ILType_UInt;
 							okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_LONG;
 						}
 						break;
@@ -314,8 +279,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 				{
 					/* Look for "short", "long", or "long long" */
 					switch((spec1.specifiers | spec2.specifiers)
-							& (C_SPEC_SHORT | C_SPEC_LONG |
-							   C_SPEC_LONG_LONG | C_SPEC_NATIVE))
+							& (C_SPEC_SHORT | C_SPEC_LONG | C_SPEC_LONG_LONG))
 					{
 						case C_SPEC_SHORT:
 						{
@@ -324,23 +288,9 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 						}
 						break;
 
-						case C_SPEC_NATIVE:
-						{
-							result.baseType = ILType_UInt;
-							okSpecifiers = C_SPEC_NATIVE | C_SPEC_UNSIGNED;
-						}
-						break;
-
 						case C_SPEC_LONG:
 						{
-							if(CTypeLongSize == 4)
-							{
-								result.baseType = ILType_UInt32;
-							}
-							else
-							{
-								result.baseType = ILType_UInt64;
-							}
+							result.baseType = ILType_UInt;
 							okSpecifiers = C_SPEC_LONG | C_SPEC_UNSIGNED;
 						}
 						break;
@@ -406,34 +356,79 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 
 				case IL_META_ELEMTYPE_I:
 				{
-					/* Look for "signed" and "unsigned" */
+					/* Look for "long long", "signed", and "unsigned" */
 					if(((spec1.specifiers | spec2.specifiers)
-							& C_SPEC_UNSIGNED) != 0)
+							& C_SPEC_LONG_LONG) != 0)
+					{
+						if(((spec1.specifiers | spec2.specifiers)
+								& C_SPEC_UNSIGNED) != 0)
+						{
+							result.baseType = ILType_UInt64;
+							okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_LONG |
+										   C_SPEC_LONG_LONG;
+						}
+						else if(((spec1.specifiers | spec2.specifiers)
+									& C_SPEC_SIGNED) != 0)
+						{
+							result.baseType = ILType_Int64;
+							okSpecifiers = C_SPEC_SIGNED | C_SPEC_LONG |
+										   C_SPEC_LONG_LONG;
+						}
+						else
+						{
+							result.baseType = ILType_Int64;
+							okSpecifiers = C_SPEC_LONG | C_SPEC_LONG_LONG;
+						}
+					}
+					else if(((spec1.specifiers | spec2.specifiers)
+								& C_SPEC_UNSIGNED) != 0)
 					{
 						result.baseType = ILType_UInt;
-						okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_NATIVE;
+						okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_LONG;
 					}
 					else if(((spec1.specifiers | spec2.specifiers)
 								& C_SPEC_SIGNED) != 0)
 					{
 						result.baseType = ILType_Int;
-						okSpecifiers = C_SPEC_SIGNED | C_SPEC_NATIVE;
+						okSpecifiers = C_SPEC_SIGNED | C_SPEC_LONG;
 					}
 					else
 					{
-						okSpecifiers = C_SPEC_NATIVE;
+						okSpecifiers = C_SPEC_LONG | C_SPEC_SIGNED |
+									   C_SPEC_UNSIGNED;
 					}
 				}
 				break;
 
 				case IL_META_ELEMTYPE_U:
 				{
-					/* Look for "unsigned" */
+					/* Look for "long long" and "unsigned" */
 					if(((spec1.specifiers | spec2.specifiers)
-							& C_SPEC_UNSIGNED) != 0)
+							& C_SPEC_LONG_LONG) != 0)
+					{
+						if(((spec1.specifiers | spec2.specifiers)
+									& C_SPEC_UNSIGNED) != 0)
+						{
+							result.baseType = ILType_UInt64;
+							okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_LONG |
+										   C_SPEC_LONG_LONG;
+						}
+						else
+						{
+							result.baseType = ILType_UInt64;
+							okSpecifiers = C_SPEC_LONG | C_SPEC_UNSIGNED |
+										   C_SPEC_LONG_LONG;
+						}
+					}
+					else if(((spec1.specifiers | spec2.specifiers)
+								& C_SPEC_UNSIGNED) != 0)
 					{
 						result.baseType = ILType_UInt;
-						okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_NATIVE;
+						okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_LONG;
+					}
+					else
+					{
+						okSpecifiers = C_SPEC_LONG | C_SPEC_UNSIGNED;
 					}
 				}
 				break;
@@ -512,11 +507,10 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 		result.dupSpecifiers |= C_SPEC_LONG_AND_SHORT;
 	}
 
-	/* Check for duplicate "signed", "unsigned", "short", and "__native__"
-	   but don't worry about "long" as we max out the sizes above */
+	/* Check for duplicate "signed", "unsigned", and "short" but don't
+	   worry about "long" as we max out the sizes above */
 	result.dupSpecifiers |= (spec1.specifiers & spec2.specifiers &
-								(C_SPEC_SIGNED | C_SPEC_UNSIGNED |
-								 C_SPEC_SHORT | C_SPEC_NATIVE));
+						(C_SPEC_SIGNED | C_SPEC_UNSIGNED | C_SPEC_SHORT));
 
 	/* Done */
 	return result;
@@ -676,9 +670,8 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_SIGNED, "signed");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_UNSIGNED, "unsigned");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_SHORT, "short");
-	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_NATIVE, "__native__");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_THREAD_SPECIFIC,
-					"__thread_specific__");
+					"__declspec(thread)");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_BOX, "__box");
 
 	/* Copy the common type qualifiers to "result.specifiers" */
@@ -697,13 +690,8 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 			{
 				result.baseType = ILType_Int16;
 			}
-			if((spec.specifiers & C_SPEC_NATIVE) != 0)
-			{
-				spec.dupSpecifiers |= C_SPEC_INVALID_COMBO;
-			}
 		}
-		else if((spec.specifiers & C_SPEC_LONG_LONG) != 0 &&
-				CTypeLongSize == 4)
+		else if((spec.specifiers & C_SPEC_LONG_LONG) != 0)
 		{
 			if((spec.specifiers & C_SPEC_UNSIGNED) != 0)
 			{
@@ -713,42 +701,8 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 			{
 				result.baseType = ILType_Int64;
 			}
-			if((spec.specifiers & C_SPEC_NATIVE) != 0)
-			{
-				spec.dupSpecifiers |= C_SPEC_INVALID_COMBO;
-			}
 		}
-		else if((spec.specifiers & C_SPEC_LONG) != 0 && CTypeLongSize == 4)
-		{
-			if((spec.specifiers & C_SPEC_UNSIGNED) != 0)
-			{
-				result.baseType = ILType_UInt32;
-			}
-			else
-			{
-				result.baseType = ILType_Int32;
-			}
-			if((spec.specifiers & C_SPEC_NATIVE) != 0)
-			{
-				spec.dupSpecifiers |= C_SPEC_INVALID_COMBO;
-			}
-		}
-		else if((spec.specifiers & (C_SPEC_LONG | C_SPEC_LONG_LONG)) != 0)
-		{
-			if((spec.specifiers & C_SPEC_UNSIGNED) != 0)
-			{
-				result.baseType = ILType_UInt64;
-			}
-			else
-			{
-				result.baseType = ILType_Int64;
-			}
-			if((spec.specifiers & C_SPEC_NATIVE) != 0)
-			{
-				spec.dupSpecifiers |= C_SPEC_INVALID_COMBO;
-			}
-		}
-		else if((spec.specifiers & C_SPEC_NATIVE) != 0)
+		else if((spec.specifiers & C_SPEC_LONG) != 0)
 		{
 			if((spec.specifiers & C_SPEC_UNSIGNED) != 0)
 			{
@@ -825,8 +779,8 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 			== C_SPEC_INVALID_COMBO)
 	{
 		ReportError(node, name,
-			_("long, short, signed, unsigned or __native__ invalid for `%s'"),
-			_("long, short, signed, unsigned or __native__ invalid here"));
+			_("long, short, signed, or unsigned invalid for `%s'"),
+			_("long, short, signed, or unsigned invalid here"));
 	}
 
 	/* Return the result to the caller */
@@ -892,7 +846,7 @@ CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem,
 }
 
 CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem,
-							 ILUInt32 size, int gcSpecifier)
+							 ILNode *size, int gcSpecifier)
 {
 	CDeclarator result;
 	ILType *type;
@@ -906,13 +860,7 @@ CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem,
 	{
 		ILGenOutOfMemory(info);
 	}
-	if(((long)size) == (long)(-1L))
-	{
-		/* Prevent confusion with "CDeclCreateOpenArray".  The size
-		   will eventually be rejected by "ReplaceArrayTypes" anyway */
-		--size;
-	}
-	ILTypeSetSize(type, 0, (long)size);
+	ILTypeSetSize(type, 0, (long)(ILNativeInt)size);
 	hole = &(ILType_ElemType(type));
 
 	/* Mark the type with the GC specifier if necessary */
@@ -1206,6 +1154,12 @@ static ILType *ParamsToSignature(ILGenInfo *info, ILNode *params,
 			/* Decay array types to their pointer forms */
 			type = CTypeDecay(info, type);
 
+			/* Pass complex types by pointer, not by value */
+			if(CTypeIsComplex(type))
+			{
+				type = CTypeCreateComplexPointer(info, type);
+			}
+
 			/* Add the new parameter to the function signature */
 			if(!ILTypeAddParam(info->context, signature, type))
 			{
@@ -1311,8 +1265,8 @@ CDeclarator CDeclCombine(CDeclarator decl1, CDeclarator decl2)
  */
 static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 {
+	CTypeLayoutInfo layout;
 	ILType *elemType;
-	ILUInt32 elemSize;
 	char *name;
 
 	if(type != 0 && ILType_IsComplex(type))
@@ -1393,19 +1347,12 @@ static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 					}
 				}
 
-				/* Report an error if the type has unknown or variable size */
-				elemSize = CTypeSizeAndAlign(elemType, 0);
-				if(elemSize == CTYPE_UNKNOWN)
+				/* Report an error if the type has unknown layout */
+				CTypeGetLayoutInfo(elemType, &layout);
+				if(layout.category == C_TYPECAT_NO_LAYOUT)
 				{
 					name = CTypeToName(info, elemType);
 					CCError(_("storage size of `%s' is not known"), name);
-					ILFree(name);
-					elemType = ILType_Int32;
-				}
-				else if(elemSize == CTYPE_DYNAMIC)
-				{
-					name = CTypeToName(info, elemType);
-					CCError(_("storage size of `%s' is not constant"), name);
 					ILFree(name);
 					elemType = ILType_Int32;
 				}
@@ -1417,7 +1364,9 @@ static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 				}
 				else
 				{
-					type = CTypeCreateArray(info, elemType, ILType_Size(type));
+					type = CTypeCreateArrayNode
+						(info, elemType,
+						 (ILNode *)(ILNativeInt)ILType_Size(type));
 					if(!type)
 					{
 						CCError(_("size of array is too large"));
@@ -1444,6 +1393,12 @@ static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 				type->un.method__.retType__ =
 					CTypeDecay(info, ReplaceArrayTypes
 						(info, type->un.method__.retType__));
+				if(CTypeIsComplex(type->un.method__.retType__))
+				{
+					type->un.method__.retType__ =
+						CTypeCreateComplexPointer
+							(info, type->un.method__.retType__);
+				}
 			}
 			break;
 
@@ -1508,6 +1463,10 @@ ILType *CDeclFinalize(ILGenInfo *info, CDeclSpec spec, CDeclarator decl,
 		signature = ParamsToSignature(info, decl.params, declaredParams,
 									  method, &returnHole);
 		*returnHole = CTypeDecay(info, type);
+		if(CTypeIsComplex(*returnHole))
+		{
+			*returnHole = CTypeCreateComplexPointer(info, *returnHole);
+		}
 		type = signature;
 		ILMemberSetSignature((ILMember *)method, signature);
 		ILMethodSetCallConv(method, ILType_CallConv(signature));
@@ -1517,6 +1476,10 @@ ILType *CDeclFinalize(ILGenInfo *info, CDeclSpec spec, CDeclarator decl,
 		/* Create a function signature pointer type */
 		signature = ParamsToSignature(info, decl.params, 0, 0, &returnHole);
 		*returnHole = CTypeDecay(info, type);
+		if(CTypeIsComplex(*returnHole))
+		{
+			*returnHole = CTypeCreateComplexPointer(info, *returnHole);
+		}
 		type = signature;
 	}
 

@@ -107,6 +107,11 @@ void CGenSizeOf(ILGenInfo *info, ILType *type);
  */
 ILUInt32 CArrayInitializerSize(ILType *type, ILNode *init);
 
+/*
+ * Inhibit treecc node allocation rollback.
+ */
+void CInhibitNodeRollback(void);
+
 #ifdef	__cplusplus
 };
 #endif

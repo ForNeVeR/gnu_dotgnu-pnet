@@ -354,7 +354,7 @@ ILNode_CSemAnalysis(ILNode_AllocA)
 			  _("`alloca' must be used at the outermost expression level"));
 	}
 
-	/* Coerce the argument to "unsigned __native__ int" */
+	/* Coerce the argument to "unsigned long" */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
 	if(!CCanCoerceValue(value, ILType_UInt))
 	{

@@ -331,7 +331,8 @@ extern CSemValue CSemValueError;
 /*
  * Perform inline semantic analysis on a node, in a specific scope.
  */
-CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
+CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node,
+							 ILNode **parent, ILScope *scope);
 
 /*
  * Determine if a semantic value is zero.
@@ -424,13 +425,17 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 {
 	char *code;
 }
-%node ILNode_CLocalVar ILNode_LocalVar =
+%node ILNode_CLocalVar ILNode_LValue =
 {
+	unsigned long index;
+	ILMachineType machineType;
 	ILType *type;
 	ILType *decayedType;
 }
-%node ILNode_CArgumentVar ILNode_ArgumentVar =
+%node ILNode_CArgumentVar ILNode_LValue =
 {
+	unsigned long index;
+	ILMachineType machineType;
 	ILType *type;
 }
 %node ILNode_CGlobalVar ILNode_LValue =
@@ -460,6 +465,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 	ILNode *expr;
 	char *name;
 	%nocreate ILField *field = {0};
+	%nocreate ILType *ownerType = {0};
 }
 %node ILNode_CDerefField ILNode_CFieldAccess
 %node ILNode_CMemberField ILNode_CFieldAccess
@@ -542,6 +548,27 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 	int useGlobalDelete;
 	%nocreate ILMethod *dtor = {0};
 }
+%node ILNode_CSizeOfRaw ILNode_Expression =
+{
+	ILType *type;
+}
+%node ILNode_CSizeTempVar ILNode_Expression =
+{
+	%nocreate unsigned tempVar = {~((unsigned)0)};
+}
+%node ILNode_CSizeReleaseTempVar ILNode_BinaryExpression
+%node ILNode_CSizeMax ILNode_BinaryExpression
+%node ILNode_CSizeAlign ILNode_Expression =
+{
+	ILNode *size;
+	ILUInt32 alignFlags;
+	ILType *measureType;
+	ILNode *alignVar;
+}
+%node ILNode_CopyComplex ILNode_UnaryExpression =
+{
+	ILType *type;
+}
 
 %output "c_semantics.c"
 
@@ -602,3 +629,4 @@ ILNode_CollectCases(ILNode)
 %include "c_oper.tc"
 %include "c_stmt.tc"
 %include "c_stubs.tc"
+%include "c_name.tc"

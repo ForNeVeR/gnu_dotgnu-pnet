@@ -309,15 +309,15 @@ ILNode_GenDiscard(ILNode_PostIncPtr)
 	if(node->size != IL_MAX_UINT32)
 	{
 		ILGenUIntNative(info, node->size);
+		ILGenAdjust(info, 1);
 	}
-	else
+	else if(node->sizeNode)
 	{
-		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
-						node->classInfo);
+		ILNode_GenValue(node->sizeNode, info);
 		ILGenSimple(info, IL_OP_CONV_U);
 	}
 	ILGenSimple(info, IL_OP_ADD);
-	ILGenExtend(info, 1);
+	ILGenAdjust(info, -1);
 
 	/* Store the value into the destination */
 	ILNode_Store(node->expr, info, 0, data1, data2);
@@ -338,15 +338,15 @@ ILNode_GenDiscard(ILNode_PostDecPtr)
 	if(node->size != IL_MAX_UINT32)
 	{
 		ILGenUIntNative(info, node->size);
+		ILGenAdjust(info, 1);
 	}
-	else
+	else if(node->sizeNode)
 	{
-		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
-						node->classInfo);
+		ILNode_GenValue(node->sizeNode, info);
 		ILGenSimple(info, IL_OP_CONV_U);
 	}
 	ILGenSimple(info, IL_OP_SUB);
-	ILGenExtend(info, 1);
+	ILGenAdjust(info, -1);
 
 	/* Store the value into the destination */
 	ILNode_Store(node->expr, info, 0, data1, data2);
@@ -536,15 +536,15 @@ ILNode_GenValue(ILNode_PreIncPtr)
 	if(node->size != IL_MAX_UINT32)
 	{
 		ILGenUIntNative(info, node->size);
+		ILGenAdjust(info, 1);
 	}
-	else
+	else if(node->sizeNode)
 	{
-		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
-						node->classInfo);
+		ILNode_GenValue(node->sizeNode, info);
 		ILGenSimple(info, IL_OP_CONV_U);
 	}
 	ILGenSimple(info, IL_OP_ADD);
-	ILGenExtend(info, 1);
+	ILGenAdjust(info, -1);
 
 	/* Store the value into the destination */
 	ILNode_Store(node->expr, info, 1, data1, data2);
@@ -567,15 +567,15 @@ ILNode_GenValue(ILNode_PostIncPtr)
 	if(node->size != IL_MAX_UINT32)
 	{
 		ILGenUIntNative(info, node->size);
+		ILGenAdjust(info, 1);
 	}
-	else
+	else if(node->sizeNode)
 	{
-		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
-						node->classInfo);
+		ILNode_GenValue(node->sizeNode, info);
 		ILGenSimple(info, IL_OP_CONV_U);
 	}
 	ILGenSimple(info, IL_OP_ADD);
-	ILGenExtend(info, 1);
+	ILGenAdjust(info, -1);
 
 	/* Store the value into the destination */
 	ILNode_Store(node->expr, info, 0, data1, data2);
@@ -598,15 +598,15 @@ ILNode_GenValue(ILNode_PreDecPtr)
 	if(node->size != IL_MAX_UINT32)
 	{
 		ILGenUIntNative(info, node->size);
+		ILGenAdjust(info, 1);
 	}
-	else
+	else if(node->sizeNode)
 	{
-		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
-						node->classInfo);
+		ILNode_GenValue(node->sizeNode, info);
 		ILGenSimple(info, IL_OP_CONV_U);
 	}
 	ILGenSimple(info, IL_OP_SUB);
-	ILGenExtend(info, 1);
+	ILGenAdjust(info, -1);
 
 	/* Store the value into the destination */
 	ILNode_Store(node->expr, info, 1, data1, data2);
@@ -629,15 +629,15 @@ ILNode_GenValue(ILNode_PostDecPtr)
 	if(node->size != IL_MAX_UINT32)
 	{
 		ILGenUIntNative(info, node->size);
+		ILGenAdjust(info, 1);
 	}
 	else
 	{
-		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
-						node->classInfo);
+		ILNode_GenValue(node->sizeNode, info);
 		ILGenSimple(info, IL_OP_CONV_U);
 	}
 	ILGenSimple(info, IL_OP_SUB);
-	ILGenExtend(info, 1);
+	ILGenAdjust(info, -1);
 
 	/* Store the value into the destination */
 	ILNode_Store(node->expr, info, 0, data1, data2);

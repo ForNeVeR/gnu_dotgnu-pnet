@@ -3,6 +3,20 @@
 
 	* cscc/cpp/Makefile.am, cscc/cpp/obstack.c: add a missing file.
 
+	* codegen/cg_assign.tc, codegen/cg_nodes.tc, cscc/c/.cvsignore,
+	cscc/c/Makefile.am, cscc/c/c_ainit.tc, cscc/c/c_builtin.tc,
+	cscc/c/c_coerce.c, cscc/c/c_crt0.c, cscc/c/c_declspec.c,
+	cscc/c/c_declspec.h, cscc/c/c_defs.tc, cscc/c/c_function.c,
+	cscc/c/c_grammar.y, cscc/c/c_internal.c, cscc/c/c_internal.h,
+	cscc/c/c_invoke.tc, cscc/c/c_library.c, cscc/c/c_lvalue.tc,
+	cscc/c/c_name.tc, cscc/c/c_oper.tc, cscc/c/c_scanner.l,
+	cscc/c/c_scope.c, cscc/c/c_stmt.tc, cscc/c/c_typeout.c,
+	cscc/c/c_types.c, cscc/c/c_types.h, cscc/csharp/cs_oper.tc,
+	doc/c_language_abi.html, dumpasm/dump_type.c, engine/cvmc_obj.c,
+	engine/layout.c, ilalink/link_init.c: redesign the type system
+	in the C compiler so that it uses dynamic layout for structures
+	instead of static layout.
+
 2004-03-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in: detect some extra headers in configure.in for "cpp".

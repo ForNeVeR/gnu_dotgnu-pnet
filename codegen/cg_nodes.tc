@@ -352,7 +352,7 @@ struct _tagILSwitchValue
 %node ILNode_IncOrDecPtr ILNode_UnaryExpression %abstract =
 {
 	ILUInt32	size;
-	ILClass    *classInfo;
+	ILNode     *sizeNode;
 }
 %node ILNode_PreIncPtr ILNode_IncOrDecPtr
 %node ILNode_PreDecPtr ILNode_IncOrDecPtr

@@ -7,4 +7,5 @@ c_grammar.h
 c_nodes.c
 c_scanner.c
 c_semantics.c
+c_name.c
 c_defs.h

@@ -571,6 +571,11 @@ static CSemValue ApplyCoercion(ILGenInfo *info, ILNode *node, ILNode **parent,
 					CSemSetRValue(fromValue, toType);
 				}
 			}
+			else if(CSemIsDynConstant(fromValue))
+			{
+				/* Dynamic constant conversion: result is still a constant */
+				CSemSetDynConstant(fromValue, toType);
+			}
 			else
 			{
 				CSemSetRValue(fromValue, toType);
@@ -580,6 +585,11 @@ static CSemValue ApplyCoercion(ILGenInfo *info, ILNode *node, ILNode **parent,
 		{
 			/* Constant conversion that doesn't change the machine type */
 			CSemLToRValue(fromValue);
+			fromValue.type__ = toType;
+		}
+		else if(CSemIsDynConstant(fromValue))
+		{
+			/* Dynamic constant conversion that doesn't change machine type */
 			fromValue.type__ = toType;
 		}
 		else

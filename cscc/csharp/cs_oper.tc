@@ -1162,7 +1162,7 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 									 ILMachineType type),
 							  ILNode *(*createPtrFunc)
 							  		(ILNode *expr, ILUInt32 size,
-									 ILClass *classInfo))
+									 ILNode *sizeNode))
 {
 	ILMethod *method;
 	CSSemValue value;
@@ -1216,12 +1216,15 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 			{
 				ILType *elemType =
 					ILTypeStripPrefixes(ILType_Ref(CSSemGetType(value)));
-				ILClass *classInfo = ILTypeToClass(info, elemType);
-				if(elemType != ILType_Void && classInfo)
+				if(elemType != ILType_Void)
 				{
+					ILNode_SizeOf *sizeNode = (ILNode_SizeOf *)
+						ILNode_SizeOf_create(0);
+					sizeNode->type = elemType;
+					sizeNode->size = GetPrimitiveTypeSize(elemType);
 					*parent = (*createPtrFunc)
 						(node->expr, GetPrimitiveTypeSize(elemType),
-						 classInfo);
+						 (ILNode *)sizeNode);
 					return value;
 				}
 			}

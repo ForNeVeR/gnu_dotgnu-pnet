@@ -7,11 +7,12 @@ TREECC_INPUTS = c_ainit.tc \
 				c_const.tc \
 				c_invoke.tc \
 				c_lvalue.tc \
+				c_name.tc \
 				c_oper.tc \
 				c_stmt.tc \
 				c_stubs.tc
 
-TREECC_SRCOUT = c_nodes.c c_semantics.c
+TREECC_SRCOUT = c_nodes.c c_semantics.c c_name.c
 
 TREECC_OUTPUT = $(TREECC_SRCOUT) c_defs.h
 

@@ -454,26 +454,27 @@ static int IsSignedMachineType(ILMachineType type)
  */
 static ILNode *MulPtrSize(ILNode *node, CSemValue value, ILType *elemType)
 {
-	ILUInt32 elemSize = CTypeSizeAndAlign(elemType, 0);
 	ILEvalValue *evalValue = CSemGetConstant(value);
 	ILNode *newNode;
 	ILInt64 totalSize;
-	if(elemSize != CTYPE_DYNAMIC)
+	CTypeLayoutInfo layout;
+	CTypeGetLayoutInfo(elemType, &layout);
+	if(layout.category == C_TYPECAT_FIXED)
 	{
 		/* The size is constant, so try to compute at compile time */
-		if(elemSize == 0)
+		if(layout.size == 0)
 		{
 			newNode = ILNode_Int_create(0, 0, 0);
 			CGenCloneLine(newNode, node);
 			return newNode;
 		}
-		else if(elemSize == 1)
+		else if(layout.size == 1)
 		{
 			return node;
 		}
 		if(evalValue && IsSmallIntegerMachineType(evalValue->valueType))
 		{
-			totalSize = ((ILInt64)elemSize) *
+			totalSize = ((ILInt64)(layout.size)) *
 						((ILInt64)(evalValue->un.i4Value));
 			if(totalSize >= (ILInt64)IL_MIN_INT32 &&
 			   totalSize <= (ILInt64)IL_MAX_INT32)
@@ -491,17 +492,17 @@ static ILNode *MulPtrSize(ILNode *node, CSemValue value, ILType *elemType)
 				return newNode;
 			}
 		}
-		if(elemSize == 2)
+		if(layout.size == 2)
 		{
 			newNode = ILNode_Shl_create
 				(node, ILNode_Int32_create(1, 0, 1));
 		}
-		else if(elemSize == 4)
+		else if(layout.size == 4)
 		{
 			newNode = ILNode_Shl_create
 				(node, ILNode_Int32_create(2, 0, 1));
 		}
-		else if(elemSize == 8)
+		else if(layout.size == 8)
 		{
 			newNode = ILNode_Shl_create
 				(node, ILNode_Int32_create(3, 0, 1));
@@ -509,7 +510,7 @@ static ILNode *MulPtrSize(ILNode *node, CSemValue value, ILType *elemType)
 		else
 		{
 			newNode = ILNode_Mul_create
-				(node, ILNode_UInt32_create((ILUInt32)elemSize, 0, 1));
+				(node, ILNode_UInt32_create((ILUInt64)layout.size, 0, 1));
 		}
 	}
 	else
@@ -535,25 +536,26 @@ static ILNode *MulPtrSize(ILNode *node, CSemValue value, ILType *elemType)
  */
 static ILNode *DivPtrSize(ILNode *node, ILType *elemType)
 {
-	ILUInt32 elemSize = CTypeSizeAndAlign(elemType, 0);
 	ILNode *newNode;
-	if(elemSize != CTYPE_DYNAMIC)
+	CTypeLayoutInfo layout;
+	CTypeGetLayoutInfo(elemType, &layout);
+	if(layout.category == C_TYPECAT_FIXED)
 	{
-		if(elemSize == 1)
+		if(layout.size == 1)
 		{
 			return node;
 		}
-		else if(elemSize == 2)
+		else if(layout.size == 2)
 		{
 			newNode = ILNode_Shr_create
 				(node, ILNode_Int32_create(1, 0, 1));
 		}
-		else if(elemSize == 4)
+		else if(layout.size == 4)
 		{
 			newNode = ILNode_Shr_create
 				(node, ILNode_Int32_create(2, 0, 1));
 		}
-		else if(elemSize == 8)
+		else if(layout.size == 8)
 		{
 			newNode = ILNode_Shr_create
 				(node, ILNode_Int32_create(3, 0, 1));
@@ -561,7 +563,7 @@ static ILNode *DivPtrSize(ILNode *node, ILType *elemType)
 		else
 		{
 			newNode = ILNode_Div_create
-				(node, ILNode_Int_create((ILInt32)elemSize, 0, 1));
+				(node, ILNode_Int_create((ILInt64)(layout.size), 0, 1));
 		}
 	}
 	else
@@ -1008,9 +1010,9 @@ static CSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	CSemValue value;
 	ILMachineType type;
 	ILType *elemType;
-	ILUInt32 elemSize;
-	ILClass *elemClass;
 	ILNode *newNode;
+	CTypeLayoutInfo layout;
+	ILNode *sizeNode;
 
 	/* Perform semantic analysis on the l-value argument */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), 0);
@@ -1046,34 +1048,37 @@ static CSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 		case ILMachineType_UnmanagedPtr:
 		{
 			elemType = CTypeGetPtrRef(CSemGetType(value));
-			elemSize = CTypeSizeAndAlign(elemType, 0);
-			if(elemSize != 1)
+			CTypeGetLayoutInfo(elemType, &layout);
+			if(layout.category == C_TYPECAT_FIXED)
 			{
-				elemType = ILTypeStripPrefixes(elemType);
-				elemClass = ILTypeToClass(info, elemType);
-				if(yyisa(node, ILNode_PreInc))
-				{
-					newNode = ILNode_PreIncPtr_create
-						(node->expr, elemSize, elemClass);
-				}
-				else if(yyisa(node, ILNode_PreDec))
-				{
-					newNode = ILNode_PreDecPtr_create
-						(node->expr, elemSize, elemClass);
-				}
-				else if(yyisa(node, ILNode_PostInc))
-				{
-					newNode = ILNode_PostIncPtr_create
-						(node->expr, elemSize, elemClass);
-				}
-				else
-				{
-					newNode = ILNode_PostDecPtr_create
-						(node->expr, elemSize, elemClass);
-				}
-				CGenCloneLine(newNode, (ILNode *)node);
-				*parent = newNode;
+				sizeNode = 0;
 			}
+			else
+			{
+				sizeNode = ILNode_SizeOfType_create(elemType);
+			}
+			if(yyisa(node, ILNode_PreInc))
+			{
+				newNode = ILNode_PreIncPtr_create
+					(node->expr, layout.size, sizeNode);
+			}
+			else if(yyisa(node, ILNode_PreDec))
+			{
+				newNode = ILNode_PreDecPtr_create
+					(node->expr, layout.size, sizeNode);
+			}
+			else if(yyisa(node, ILNode_PostInc))
+			{
+				newNode = ILNode_PostIncPtr_create
+					(node->expr, layout.size, sizeNode);
+			}
+			else
+			{
+				newNode = ILNode_PostDecPtr_create
+					(node->expr, layout.size, sizeNode);
+			}
+			CGenCloneLine(newNode, (ILNode *)node);
+			*parent = newNode;
 		}
 		break;
 
@@ -2502,9 +2507,9 @@ ILNode_CSemAnalysis(ILNode_ToConst)
  */
 ILNode_CSemAnalysis(ILNode_SizeOfExpr)
 {
-	ILUInt32 size;
 	CSemValue value;
 	ILEvalValue evalValue;
+	CTypeLayoutInfo layout;
 
 	/* Special cases for strings */
 	if(yyisa(node->expr, ILNode_CString))
@@ -2552,13 +2557,19 @@ ILNode_CSemAnalysis(ILNode_SizeOfExpr)
 	}
 
 	/* Determine the size based on the type */
-	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);
-	if(size != CTYPE_DYNAMIC)
+	CTypeGetLayoutInfo(node->type, &layout);
+	if(layout.category == C_TYPECAT_FIXED)
 	{
 		/* We can replace this node with a compile-time constant */
 		evalValue.valueType = ILMachineType_UInt32;
-		evalValue.un.i4Value = (ILInt32)size;
+		evalValue.un.i4Value = (ILInt32)(layout.size);
 		CSemSetConstant(value, ILType_UInt32, evalValue);
+	}
+	else if(layout.category == C_TYPECAT_NO_LAYOUT)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("invalid operand to `sizeof'"));
+		CSemSetDynConstant(value, ILType_UInt32);
 	}
 	else
 	{
@@ -2573,17 +2584,17 @@ ILNode_CSemAnalysis(ILNode_SizeOfExpr)
  */
 ILNode_EvalConst(ILNode_SizeOfExpr)
 {
-	ILUInt32 size;
+	CTypeLayoutInfo layout;
 	if(!(node->type))
 	{
 		return 0;
 	}
-	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);
-	if(size != CTYPE_DYNAMIC)
+	CTypeGetLayoutInfo(node->type, &layout);
+	if(layout.category == C_TYPECAT_FIXED)
 	{
 		/* The type's size can be evaluated to a compile-time constant */
 		value->valueType = ILMachineType_UInt32;
-		value->un.i4Value = (ILInt32)size;
+		value->un.i4Value = (ILInt32)(layout.size);
 		return 1;
 	}
 	else
@@ -2598,17 +2609,24 @@ ILNode_EvalConst(ILNode_SizeOfExpr)
  */
 ILNode_CSemAnalysis(ILNode_SizeOfType)
 {
-	ILUInt32 size;
 	CSemValue value;
 	ILEvalValue evalValue;
+	CTypeLayoutInfo layout;
 
-	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);
-	if(size != CTYPE_DYNAMIC)
+	CTypeGetLayoutInfo(node->type, &layout);
+	if(layout.category == C_TYPECAT_FIXED)
 	{
 		/* We can replace this node with a compile-time constant */
 		evalValue.valueType = ILMachineType_UInt32;
-		evalValue.un.i4Value = (ILInt32)size;
+		evalValue.un.i4Value = (ILInt32)(layout.size);
 		CSemSetConstant(value, ILType_UInt32, evalValue);
+	}
+	else if(layout.category == C_TYPECAT_NO_LAYOUT)
+	{
+		/* The supplied type does not have any layout information */
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("invalid operand to `sizeof'"));
+		CSemSetDynConstant(value, ILType_UInt32);
 	}
 	else
 	{
@@ -2623,13 +2641,13 @@ ILNode_CSemAnalysis(ILNode_SizeOfType)
  */
 ILNode_EvalConst(ILNode_SizeOfType)
 {
-	ILUInt32 size;
-	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);
-	if(size != CTYPE_DYNAMIC)
+	CTypeLayoutInfo layout;
+	CTypeGetLayoutInfo(node->type, &layout);
+	if(layout.category == C_TYPECAT_FIXED)
 	{
 		/* The type's size can be evaluated to a compile-time constant */
 		value->valueType = ILMachineType_UInt32;
-		value->un.i4Value = (ILInt32)size;
+		value->un.i4Value = (ILInt32)(layout.size);
 		return 1;
 	}
 	else
@@ -2790,4 +2808,256 @@ ILNode_GenValue(ILNode_CBox),
 JavaGenValue(ILNode_CBox)
 {
 	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Perform semantic analysis for a raw "sizeof" expression.
+ */
+ILNode_CSemAnalysis(ILNode_CSizeOfRaw)
+{
+	CSemValue value;
+	CSemSetDynConstant(value, ILType_UInt32);
+	return value;
+}
+
+/*
+ * Perform semantic analysis for temporary variable assignment.
+ */
+ILNode_CSemAnalysis(ILNode_CSizeTempVar)
+{
+	/* Not used during semantic analysis */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for temporary variable release.
+ */
+ILNode_CSemAnalysis(ILNode_CSizeReleaseTempVar)
+{
+	return ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), stmtLevel);
+}
+
+/*
+ * Perform semantic analysis for a "max sizeof" expression.
+ */
+ILNode_CSemAnalysis(ILNode_CSizeMax)
+{
+	CSemValue value1;
+	CSemValue value2;
+	value1 = ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), 0);
+	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), 0);
+	if(CSemIsConstant(value1) && CSemIsConstant(value2))
+	{
+		/* Both expressions are constant, so compute the result now */
+		if(CSemGetConstant(value1)->un.i4Value >
+		   CSemGetConstant(value2)->un.i4Value)
+		{
+			*parent = node->expr1;
+			CGenCloneLine(*parent, (ILNode *)node);
+			return value1;
+		}
+		else
+		{
+			*parent = node->expr2;
+			CGenCloneLine(*parent, (ILNode *)node);
+			return value2;
+		}
+	}
+	CSemSetDynConstant(value1, ILType_UInt32);
+	return value1;
+}
+
+/*
+ * Perform semantic analysis for an "alignof" expression.
+ */
+ILNode_CSemAnalysis(ILNode_CSizeAlign)
+{
+	CSemValue value;
+	ILNode_CSemAnalysis(node->size, info, &(node->size), 0);
+	CSemSetDynConstant(value, ILType_UInt32);
+	return value;
+}
+
+/*
+ * Get type information for "sizeof" expressions.
+ */
+ILNode_GetType(ILNode_CSizeOfRaw),
+ILNode_GetType(ILNode_CSizeTempVar),
+ILNode_GetType(ILNode_CSizeReleaseTempVar),
+ILNode_GetType(ILNode_CSizeMax),
+ILNode_GetType(ILNode_CSizeAlign)
+{
+	return ILMachineType_UInt32;
+}
+
+/*
+ * Generate value code for a raw "sizeof" expression.
+ */
+ILNode_GenValue(ILNode_CSizeOfRaw)
+{
+	ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+				    ILTypeToClass(info, node->type));
+	ILGenAdjust(info, 1);
+	return ILMachineType_UInt32;
+}
+
+/*
+ * Generate value code for temporary variable assignment.
+ */
+ILNode_GenValue(ILNode_CSizeTempVar)
+{
+	/* Not used during code generation */
+	return ILMachineType_UInt32;
+}
+
+/*
+ * Generate value code for a temporary variable release.
+ */
+ILNode_GenValue(ILNode_CSizeReleaseTempVar)
+{
+	ILNode_CSizeTempVar *var = (ILNode_CSizeTempVar *)(node->expr2);
+	ILNode_GenValue(node->expr1, info);
+	if(var->tempVar != ~((unsigned)0))
+	{
+		ILGenReleaseTempVar(info, var->tempVar);
+		var->tempVar = ~((unsigned)0);
+	}
+	return ILMachineType_UInt32;
+}
+
+/*
+ * Generate value code for a "max sizeof" expression.
+ */
+ILNode_GenValue(ILNode_CSizeMax)
+{
+	unsigned tempVar1 = ILGenTempTypedVar(info, ILType_UInt32);
+	unsigned tempVar2 = ILGenTempTypedVar(info, ILType_UInt32);
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+
+	/* Compute the two values and store them in local variables */
+	ILNode_GenValue(node->expr1, info);
+	ILGenStoreLocal(info, tempVar1);
+	ILGenAdjust(info, -1);
+	ILNode_GenValue(node->expr2, info);
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+	ILGenStoreLocal(info, tempVar2);
+	ILGenAdjust(info, -1);
+
+	/* Compare the two values (tempVar2 > tempVar1) */
+	ILGenLoadLocal(info, tempVar1);
+	ILGenAdjust(info, 1);
+	ILGenJump(info, IL_OP_BGT, &label1);
+	ILGenAdjust(info, -2);
+
+	/* Push the result onto the stack */
+	ILGenLoadLocal(info, tempVar1);
+	ILGenJump(info, IL_OP_BR, &label2);
+	ILGenLabel(info, &label1);
+	ILGenLoadLocal(info, tempVar2);
+	ILGenLabel(info, &label2);
+	ILGenAdjust(info, 1);
+
+	/* Free the temporary variables that we no longer require */
+	ILGenReleaseTempVar(info, tempVar1);
+	ILGenReleaseTempVar(info, tempVar2);
+	return ILMachineType_UInt32;
+}
+
+/*
+ * Generate value code for an "alignof" expression.
+ */
+ILNode_GenValue(ILNode_CSizeAlign)
+{
+	ILNode_CSizeTempVar *tempVar = (ILNode_CSizeTempVar *)(node->alignVar);
+	ILField *field;
+
+	/* Compute the size value to be aligned */
+	ILNode_GenValue(node->size, info);
+
+	/* Perform the alignment according to the supplied parameters */
+	if(node->alignFlags == C_ALIGN_BYTE)
+	{
+		/* Nothing to be done if we have byte alignment */
+		return ILMachineType_UInt32;
+	}
+	else if((node->alignFlags & C_ALIGN_UNKNOWN) == 0)
+	{
+		/* Ordinary alignment with no unknown elements */
+		ILGenUInt32(info, node->alignFlags);
+		ILGenAdjust(info, 1);
+	}
+	else if(node->measureType)
+	{
+		/* Use the "LDFLDA" instruction to measure the alignment */
+		field = CTypeGetMeasureField(info, node->measureType);
+		ILGenUIntNative(info, 0);
+		ILGenAdjust(info, 1);
+		ILGenFieldRef(info, IL_OP_LDFLDA, field);
+		ILGenSimple(info, IL_OP_CONV_U4);
+
+		/* Merge the flags into the total structure alignment */
+		if(tempVar)
+		{
+			ILGenSimple(info, IL_OP_DUP);
+			ILGenAdjust(info, -1);
+			if(tempVar->tempVar == ~((unsigned)0))
+			{
+				tempVar->tempVar = ILGenTempTypedVar(info, ILType_UInt32);
+				ILGenStoreLocal(info, tempVar->tempVar);
+				ILGenAdjust(info, -1);
+			}
+			else
+			{
+				ILGenLoadLocal(info, tempVar->tempVar);
+				ILGenAdjust(info, 1);
+				ILGenSimple(info, IL_OP_OR);
+				ILGenStoreLocal(info, tempVar->tempVar);
+				ILGenAdjust(info, -2);
+			}
+		}
+	}
+	else if(tempVar && tempVar->tempVar != ~((unsigned)0))
+	{
+		/* Use the final alignment from the temporary variable */
+		if((node->alignFlags & ~C_ALIGN_UNKNOWN) != 0)
+		{
+			ILGenUInt32(info, node->alignFlags & ~C_ALIGN_UNKNOWN);
+			ILGenLoadLocal(info, tempVar->tempVar);
+			ILGenAdjust(info, 2);
+			ILGenSimple(info, IL_OP_OR);
+			ILGenAdjust(info, -1);
+		}
+		else
+		{
+			ILGenLoadLocal(info, tempVar->tempVar);
+			ILGenAdjust(info, 1);
+		}
+	}
+	else
+	{
+		/* We didn't encounter any unknown fields, so ignore the variable */
+		ILGenUInt32(info, node->alignFlags & ~C_ALIGN_UNKNOWN);
+		ILGenAdjust(info, 1);
+	}
+
+	/* Align the size value using the alignment flags on the stack */
+	ILGenCallByName(info,
+		"unsigned int32 [OpenSystem.C]OpenSystem.C.Crt0::Align"
+			"(unsigned int32, unsigned int32)");
+	ILGenAdjust(info, -1);
+	return ILMachineType_UInt32;
+}
+
+/*
+ * Stub out Java code generation methods for "sizeof" expressions.
+ */
+JavaGenValue(ILNode_CSizeOfRaw),
+JavaGenValue(ILNode_CSizeTempVar),
+JavaGenValue(ILNode_CSizeReleaseTempVar),
+JavaGenValue(ILNode_CSizeMax),
+JavaGenValue(ILNode_CSizeAlign)
+{
+	return ILMachineType_UInt32;
 }

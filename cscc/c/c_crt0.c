@@ -91,9 +91,8 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	ILNode *node;
 	ILType *signature;
 	ILType *type;
-	int flags, ptrSize;
+	int flags;
 	unsigned long numParams;
-	char *libcName;
 
 	/* Find the module class */
 	moduleClass = ILClassLookup(ILClassGlobalScope(info->image), "<Module>", 0);
@@ -211,34 +210,18 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	fputs(".try { \n", stream);
 
 	/* Determine the "argc", "argv", and "envp" values for the program */
-	ptrSize = CTypePtrSize;
 	fputs("\tldarg.0\n", stream);
-	fprintf(stream, "\tldc.i4.%d\n", ptrSize);
 	fputs("\tldloca\t0\n", stream);
 	fputs("\tcall\tnative int 'OpenSystem.C'.'Crt0'::"
-			"GetArgV(class [.library]System.String[], int32, int32 &)\n",
+			"GetArgV(class [.library]System.String[], int32 &)\n",
 			stream);
 	fputs("\tstloc.1\n", stream);
 	fputs("\tcall\tnative int 'OpenSystem.C'.'Crt0'::GetEnvironment()\n",
 		  stream);
 	fputs("\tstloc.2\n", stream);
 
-	/* Push the name of the "libc" library assembly onto the stack, so
-	   that the "Crt0" class knows where to look for global definitions */
-	libcName = CCStringListGetValue(extension_flags, num_extension_flags,
-									"libc-name");
-	if(libcName != 0 && *libcName != '\0')
-	{
-		fprintf(stream, "\tldstr \"%s\"\n", libcName);
-	}
-	else
-	{
-		fprintf(stream, "\tldstr \"libc%d\"\n", ptrSize * 8);
-	}
-
 	/* Perform other system startup tasks */
-	fputs("\tcall\tvoid 'OpenSystem.C'.'Crt0'::Startup"
-				"(class [.library]System.String)\n", stream);
+	fputs("\tcall\tvoid 'OpenSystem.C'.'Crt0'::Startup()\n", stream);
 
 	/* Invoke the "main" function with the required arguments */
 	if((flags & C_MAIN_ARGC) != 0)

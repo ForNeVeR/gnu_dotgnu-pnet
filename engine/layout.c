@@ -59,6 +59,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout);
  */
 static int LayoutType(ILType *type, LayoutInfo *layout)
 {
+	type = ILTypeStripPrefixes(type);
 	if(ILType_IsPrimitive(type))
 	{
 		/* Lay out a primitive type */

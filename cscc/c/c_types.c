@@ -79,7 +79,7 @@ ILType *CTypeCreateStructOrUnion(ILGenInfo *info, const char *name,
 	}
 
 	/* Mark the reference so that we know if it is a struct or union */
-	if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
+	if(kind == C_STKIND_STRUCT)
 	{
 		ILClassSetAttrs(classInfo,
 						IL_META_TYPEDEF_TYPE_BITS,
@@ -157,7 +157,7 @@ ILType *CTypeCreateEnum(ILGenInfo *info, const char *name,
  * Format the name of an array type.
  */
 static char *FormatArrayName(ILGenInfo *info, ILType *elemType,
-							 ILUInt32 size, int isOpen)
+							 ILUInt32 size, ILNode *sizeNode, int isOpen)
 {
 	char *innerName;
 	char sizeName[64];
@@ -175,6 +175,15 @@ static char *FormatArrayName(ILGenInfo *info, ILType *elemType,
 	if(isOpen)
 	{
 		innerName = AppendThree(info, 0, innerName, "[]");
+	}
+	else if(sizeNode)
+	{
+		/* Convert the size node into a name */
+		CName nameInfo = ILNode_CName(sizeNode);
+		innerName = AppendThree(info, 0, innerName, "[");
+		innerName = AppendThree(info, 0, innerName, nameInfo.name);
+		innerName = AppendThree(info, 0, innerName, "]");
+		ILFree(nameInfo.name);
 	}
 	else
 	{
@@ -206,17 +215,18 @@ static char *FormatArrayName(ILGenInfo *info, ILType *elemType,
  * Create an array type, with either a size or an open-ended definition.
  */
 static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
-						   ILUInt32 size, int isOpen)
+						   ILUInt32 size, ILNode *sizeNode, int isOpen)
 {
 	char *name;
-	ILUInt32 elemSize, align;
 	ILUInt32 attrs;
 	ILClass *classInfo;
 	ILField *field;
+	CTypeLayoutInfo layout;
+	int needClassLayout;
 
 	/* Format the name of the array type */
 	name = AppendThree(info, "array ",
-				FormatArrayName(info, elemType, size, isOpen), 0);
+				FormatArrayName(info, elemType, size, sizeNode, isOpen), 0);
 
 	/* See if we already have a type with this name */
 	classInfo = ILClassLookup(ILClassGlobalScope(info->image), name, 0);
@@ -227,18 +237,26 @@ static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
 	}
 
 	/* Get the size and alignment of the element type */
-	elemSize = CTypeSizeAndAlign(elemType, &align);
-	if(elemSize == CTYPE_DYNAMIC || elemSize == CTYPE_UNKNOWN)
+	CTypeGetLayoutInfo(elemType, &layout);
+	if(layout.category == C_TYPECAT_NO_LAYOUT)
 	{
 		return 0;
 	}
 
 	/* Validate the array size: it must not overflow the ".size" field
 	   within the class's metadata structure */
-	if((((ILUInt64)elemSize) * ((ILUInt64)size)) >
-			(ILUInt64)(ILInt64)IL_MAX_INT32)
+	if(layout.category == C_TYPECAT_FIXED && !sizeNode && !isOpen && size != 0)
 	{
-		return 0;
+		if((((ILUInt64)(layout.size)) * ((ILUInt64)size)) >
+				(ILUInt64)(ILInt64)IL_MAX_INT32)
+		{
+			return 0;
+		}
+		needClassLayout = 1;
+	}
+	else
+	{
+		needClassLayout = 0;
 	}
 
 	/* Determine the attributes for the array type */
@@ -254,9 +272,17 @@ static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
 		/* Export the array type to match the element type */
 		attrs = IL_META_TYPEDEF_PUBLIC;
 	}
-	attrs |= IL_META_TYPEDEF_SEALED |
-			 IL_META_TYPEDEF_SERIALIZABLE |
-			 IL_META_TYPEDEF_EXPLICIT_LAYOUT;
+	attrs |= IL_META_TYPEDEF_SEALED | IL_META_TYPEDEF_SERIALIZABLE;
+	if(needClassLayout)
+	{
+		/* Use explicit layout for arrays with fixed layout */
+		attrs |= IL_META_TYPEDEF_EXPLICIT_LAYOUT;
+	}
+	else
+	{
+		/* Use sequential layout for arrays with complex layout */
+		attrs |= IL_META_TYPEDEF_LAYOUT_SEQUENTIAL;
+	}
 
 	/* Create the class that corresponds to the array type */
 	classInfo = ILType_ToClass(ILFindSystemType(info, "ValueType"));
@@ -268,27 +294,36 @@ static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
 	}
 	ILClassSetAttrs(classInfo, ~((ILUInt32)0), attrs);
 
-	/* Set the explicit size and alignment of the entire array type */
-	if(!ILClassLayoutCreate(info->image, 0, classInfo,
-						    align, elemSize * size))
+	/* Set the explicit size for the entire array type */
+	if(needClassLayout)
 	{
-		ILGenOutOfMemory(info);
+		if(!ILClassLayoutCreate(info->image, 0, classInfo,
+							    0, layout.size * size))
+		{
+			ILGenOutOfMemory(info);
+		}
+	}
+
+	/* If we have a size node, then add it as user data and inhibit
+	   the parser from rolling back the nodes with "yynodepop()" */
+	if(!needClassLayout && !sizeNode && !isOpen)
+	{
+		/* Create a node for the constant size, because we cannot store
+		   the value in the ".size" directive on the class */
+		sizeNode = ILNode_UInt32_create((ILUInt64)size, 0, 1);
+	}
+	if(sizeNode)
+	{
+		ILClassSetUserData(classInfo, sizeNode);
+		CInhibitNodeRollback();
 	}
 
 	/* Create the "elem__" field which defines the type */
 	if(isOpen)
 	{
-		/* Zero-sized arrays store the type as a "private static" field */
+		/* Open arrays store the type as a "private static" field */
 		field = ILFieldCreate(classInfo, 0, "elem__",
 							  IL_META_FIELDDEF_PRIVATE |
-							  IL_META_FIELDDEF_STATIC |
-							  IL_META_FIELDDEF_SPECIAL_NAME);
-	}
-	else if(size == 0)
-	{
-		/* Zero-sized arrays store the type as a "public static" field */
-		field = ILFieldCreate(classInfo, 0, "elem__",
-							  IL_META_FIELDDEF_PUBLIC |
 							  IL_META_FIELDDEF_STATIC |
 							  IL_META_FIELDDEF_SPECIAL_NAME);
 	}
@@ -298,9 +333,12 @@ static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
 		field = ILFieldCreate(classInfo, 0, "elem__",
 							  IL_META_FIELDDEF_PUBLIC |
 							  IL_META_FIELDDEF_SPECIAL_NAME);
-		if(!ILFieldLayoutCreate(info->image, 0, field, 0))
+		if(needClassLayout)
 		{
-			ILGenOutOfMemory(info);
+			if(!ILFieldLayoutCreate(info->image, 0, field, 0))
+			{
+				ILGenOutOfMemory(info);
+			}
 		}
 	}
 	if(!field)
@@ -315,12 +353,25 @@ static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
 
 ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size)
 {
-	return CreateArray(info, elemType, size, 0);
+	return CreateArray(info, elemType, size, 0, 0);
+}
+
+ILType *CTypeCreateArrayNode(ILGenInfo *info, ILType *elemType, ILNode *size)
+{
+	ILEvalValue value;
+	if(ILNode_EvalConst(size, info, &value))
+	{
+		return CreateArray(info, elemType, (ILUInt32)(value.un.i4Value), 0, 0);
+	}
+	else
+	{
+		return CreateArray(info, elemType, 0, size, 0);
+	}
 }
 
 ILType *CTypeCreateOpenArray(ILGenInfo *info, ILType *elemType)
 {
-	return CreateArray(info, elemType, 0, 1);
+	return CreateArray(info, elemType, 0, 0, 1);
 }
 
 ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType)
@@ -331,6 +382,41 @@ ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType)
 		ILGenOutOfMemory(info);
 	}
 	return type;
+}
+
+/*
+ * Add a qualifier to a type.
+ */
+static ILType *AddQualifier(ILGenInfo *info, ILType *type,
+							const char *name, int checkDups)
+{
+	ILClass *classInfo;
+	ILType *modifiers;
+	classInfo = ILType_ToClass(ILFindNonSystemType
+			(info, name, "OpenSystem.C"));
+	if(checkDups && ILTypeHasModifier(type, classInfo))
+	{
+		/* The type already has the specified modifier, so don't add again */
+		return type;
+	}
+	else
+	{
+		/* Add a modifier prefix to the type */
+		modifiers = ILTypeCreateModifier(info->context, 0,
+										 IL_TYPE_COMPLEX_CMOD_OPT,
+										 classInfo);
+		if(!modifiers)
+		{
+			ILGenOutOfMemory(info);
+		}
+		return ILTypeAddModifiers(info->context, modifiers, type);
+	}
+}
+
+ILType *CTypeCreateComplexPointer(ILGenInfo *info, ILType *refType)
+{
+	ILType *type = CTypeCreatePointer(info, refType);
+	return AddQualifier(info, type, "IsComplexPointer", 1);
 }
 
 ILType *CTypeCreateByRef(ILGenInfo *info, ILType *refType)
@@ -383,27 +469,7 @@ ILType *CTypeCreateWCharPtr(ILGenInfo *info)
 
 ILType *CTypeAddConst(ILGenInfo *info, ILType *type)
 {
-	ILClass *classInfo;
-	ILType *modifiers;
-	classInfo = ILType_ToClass(ILFindNonSystemType
-			(info, "IsConst", "OpenSystem.C"));
-	if(ILTypeHasModifier(type, classInfo))
-	{
-		/* The type already has the specified modifier, so don't add again */
-		return type;
-	}
-	else
-	{
-		/* Add a modifier prefix to the type */
-		modifiers = ILTypeCreateModifier(info->context, 0,
-										 IL_TYPE_COMPLEX_CMOD_OPT,
-										 classInfo);
-		if(!modifiers)
-		{
-			ILGenOutOfMemory(info);
-		}
-		return ILTypeAddModifiers(info->context, modifiers, type);
-	}
+	return AddQualifier(info, type, "IsConst", 1);
 }
 
 ILType *CTypeAddVolatile(ILGenInfo *info, ILType *type)
@@ -433,59 +499,17 @@ ILType *CTypeAddVolatile(ILGenInfo *info, ILType *type)
 
 ILType *CTypeAddFunctionPtr(ILGenInfo *info, ILType *type)
 {
-	ILClass *classInfo;
-	ILType *modifiers;
-	classInfo = ILType_ToClass(ILFindNonSystemType
-			(info, "IsFunctionPointer", "OpenSystem.C"));
-	if(ILTypeHasModifier(type, classInfo))
-	{
-		/* The type already has the specified modifier, so don't add again */
-		return type;
-	}
-	else
-	{
-		/* Add a modifier prefix to the type */
-		modifiers = ILTypeCreateModifier(info->context, 0,
-										 IL_TYPE_COMPLEX_CMOD_OPT,
-										 classInfo);
-		if(!modifiers)
-		{
-			ILGenOutOfMemory(info);
-		}
-		return ILTypeAddModifiers(info->context, modifiers, type);
-	}
+	return AddQualifier(info, type, "IsFunctionPointer", 1);
 }
 
 ILType *CTypeAddManaged(ILGenInfo *info, ILType *type)
 {
-	ILClass *classInfo;
-	ILType *modifiers;
-	classInfo = ILType_ToClass(ILFindNonSystemType
-			(info, "IsManaged", "OpenSystem.C"));
-	modifiers = ILTypeCreateModifier(info->context, 0,
-									 IL_TYPE_COMPLEX_CMOD_OPT,
-									 classInfo);
-	if(!modifiers)
-	{
-		ILGenOutOfMemory(info);
-	}
-	return ILTypeAddModifiers(info->context, modifiers, type);
+	return AddQualifier(info, type, "IsManaged", 0);
 }
 
 ILType *CTypeAddUnmanaged(ILGenInfo *info, ILType *type)
 {
-	ILClass *classInfo;
-	ILType *modifiers;
-	classInfo = ILType_ToClass(ILFindNonSystemType
-			(info, "IsUnmanaged", "OpenSystem.C"));
-	modifiers = ILTypeCreateModifier(info->context, 0,
-									 IL_TYPE_COMPLEX_CMOD_OPT,
-									 classInfo);
-	if(!modifiers)
-	{
-		ILGenOutOfMemory(info);
-	}
-	return ILTypeAddModifiers(info->context, modifiers, type);
+	return AddQualifier(info, type, "IsUnmanaged", 0);
 }
 
 ILType *CTypeStripGC(ILType *type)
@@ -517,44 +541,22 @@ int CTypeAlreadyDefined(ILType *type)
  */
 static void SetupStructAttrs(ILGenInfo *info, ILClass *classInfo, int kind)
 {
-	if(kind != C_STKIND_STRUCT_NATIVE)
+	if(kind == C_STKIND_STRUCT)
 	{
-		/* Mark the structure as needing explicit layout */
-		ILClassSetAttrs(classInfo, ~((ILUInt32)0),
-						IL_META_TYPEDEF_PUBLIC |
-						IL_META_TYPEDEF_SERIALIZABLE |
-						IL_META_TYPEDEF_EXPLICIT_LAYOUT |
-						IL_META_TYPEDEF_SEALED);
-	
-		/* The type initially has a packing alignment
-		   of 1 and a total size of 0 */
-		if(kind != C_STKIND_UNION_NATIVE)
-		{
-			if(!ILClassLayoutCreate(info->image, 0, classInfo, 1, 0))
-			{
-				ILGenOutOfMemory(info);
-			}
-		}
-	}
-	else
-	{
-		/* Mark native structures with sequential layout */
 		ILClassSetAttrs(classInfo, ~((ILUInt32)0),
 						IL_META_TYPEDEF_PUBLIC |
 						IL_META_TYPEDEF_SERIALIZABLE |
 						IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
-						IL_META_TYPEDEF_SEALED);
-	}
-	if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
-	{
-		ILClassSetAttrs(classInfo,
-						IL_META_TYPEDEF_TYPE_BITS,
+						IL_META_TYPEDEF_SEALED |
 						IL_META_TYPEDEF_IS_STRUCT);
 	}
 	else
 	{
-		ILClassSetAttrs(classInfo,
-						IL_META_TYPEDEF_TYPE_BITS,
+		ILClassSetAttrs(classInfo, ~((ILUInt32)0),
+						IL_META_TYPEDEF_PUBLIC |
+						IL_META_TYPEDEF_SERIALIZABLE |
+						IL_META_TYPEDEF_EXPLICIT_LAYOUT |
+						IL_META_TYPEDEF_SEALED |
 						IL_META_TYPEDEF_IS_UNION);
 	}
 }
@@ -591,7 +593,6 @@ ILType *CTypeDefineStructOrUnion(ILGenInfo *info, const char *name,
 ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 							  		 const char *funcName, int kind)
 {
-	int parentKind;
 	long number;
 	ILNestedInfo *nested;
 	ILClass *parentInfo;
@@ -604,21 +605,6 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 	/* Get the number to assign to the anonymous type */
 	if(parent)
 	{
-		/* If the parent is native, then the child must be too */
-		parentKind = CTypeGetStructKind(parent);
-		if(parentKind == C_STKIND_STRUCT_NATIVE ||
-		   parentKind == C_STKIND_UNION_NATIVE)
-		{
-			if(kind == C_STKIND_STRUCT)
-			{
-				kind = C_STKIND_STRUCT_NATIVE;
-			}
-			else if(kind == C_STKIND_UNION)
-			{
-				kind = C_STKIND_UNION_NATIVE;
-			}
-		}
-
 		/* Count the nested types to determine the number */
 		parentInfo = ILType_ToValueType(parent);
 		number = 1;
@@ -649,7 +635,7 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 		{
 			ILGenOutOfMemory(info);
 		}
-		if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
+		if(kind == C_STKIND_STRUCT)
 		{
 			newName = AppendThree(info, "struct ", newName, name);
 		}
@@ -661,7 +647,7 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 	else
 	{
 		/* Format the name as "struct (N)" */
-		if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
+		if(kind == C_STKIND_STRUCT)
 		{
 			sprintf(name, "struct (%ld)", number);
 		}
@@ -820,11 +806,9 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 					 	  const char *fieldName, ILType *fieldType)
 {
 	ILClass *classInfo = ILType_ToValueType(structType);
-	ILClassLayout *layout = ILClassLayoutGetFromOwner(classInfo);
-	ILUInt32 size, align;
-	ILUInt32 classSize, offset;
-	int isUnion = CTypeIsUnion(structType);
+	CTypeLayoutInfo layout;
 	ILField *field;
+	ILFieldLayout *flayout;
 
 	/* Convert open arrays into zero-length arrays, so that
 	   "type[]" can be used in a struct to mean "type[0]" */
@@ -834,33 +818,10 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	}
 
 	/* Determine the size and alignment of the new field */
-	size = CTypeSizeAndAlign(fieldType, &align);
-	if(layout)
+	CTypeGetLayoutInfo(fieldType, &layout);
+	if(layout.category == C_TYPECAT_NO_LAYOUT)
 	{
-		if(size == CTYPE_UNKNOWN)
-		{
-			return 0;
-		}
-		if(size == CTYPE_DYNAMIC)
-		{
-			/* Special case: allow "long double" to be used inside
-			   struct's and union's, even though it is a dynamic type */
-			if(ILTypeStripPrefixes(fieldType) == ILType_Float)
-			{
-				size = align;
-			}
-			else
-			{
-				return 0;
-			}
-		}
-	}
-	else
-	{
-		if(size == CTYPE_UNKNOWN)
-		{
-			return 0;
-		}
+		return 0;
 	}
 
 	/* Create the new field */
@@ -871,46 +832,16 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	}
 	ILMemberSetSignature((ILMember *)field, fieldType);
 
-	/* Bail out early if this is a native struct or union */
-	if(!layout)
+	/* If we are within a union, then set the starting offset to 0.
+	   This will cause the runtime engine to make all fields overlap */
+	if(CTypeIsUnion(structType))
 	{
-		if(isUnion)
+		flayout = ILFieldLayoutCreate(ILProgramItem_Image(classInfo),
+									  0, field, 0);
+		if(!flayout)
 		{
-			/* Unions lay out all of their fields at offset zero */
-			if(!ILFieldLayoutCreate(info->image, 0, field, 0))
-			{
-				ILGenOutOfMemory(info);
-			}
+			ILGenOutOfMemory(info);
 		}
-		return field;
-	}
-
-	/* Perform explicit layout on the field */
-	classSize = ILClassLayoutGetClassSize(layout);
-	if(isUnion)
-	{
-		offset = 0;
-	}
-	else
-	{
-		offset = classSize;
-	}
-	if((offset % align) != 0)
-	{
-		offset += align - (offset % align);
-	}
-	if(!ILFieldLayoutCreate(info->image, 0, field, offset))
-	{
-		ILGenOutOfMemory(info);
-	}
-	offset += size;
-	if(offset > classSize)
-	{
-		ILClassLayoutSetClassSize(layout, offset);
-	}
-	if(align > ILClassLayoutGetPackingSize(layout))
-	{
-		ILClassLayoutSetPackingSize(layout, align);
 	}
 
 	/* Return the final field to the caller */
@@ -1134,14 +1065,7 @@ int CTypeDefineBitField(ILGenInfo *info, ILType *structType,
 
 	/* Initialize variables for the bit field number and default position */
 	num = 1;
-	if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
-	{
-		posn = maxBits;
-	}
-	else
-	{
-		posn = 0;
-	}
+	posn = 0;
 
 	/* Determine if the last field in the structure is a bit
 	   field of the right type, with sufficient space available */
@@ -1187,10 +1111,6 @@ int CTypeDefineBitField(ILGenInfo *info, ILType *structType,
 	   Don't do this if the field is anonymous */
 	if(fieldName)
 	{
-		if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
-		{
-			posn -= numBits;
-		}
 		BitFieldAdd(info, classInfo, fieldName, strlen(fieldName),
 					ILField_Name(field), strlen(ILField_Name(field)),
 					posn, numBits);
@@ -1401,7 +1321,7 @@ static char *CreateNewAnonName(ILGenInfo *info, ILType *type,
 
 	/* Format the name */
 	structKind = CTypeGetStructKind(type);
-	if(structKind == C_STKIND_STRUCT || structKind == C_STKIND_STRUCT_NATIVE)
+	if(structKind == C_STKIND_STRUCT)
 	{
 		strcpy(name, "struct (");
 		posn = 8;
@@ -1568,18 +1488,6 @@ static void CloneStruct(ILGenInfo *info, ILClass *dest, ILClass *src)
 ILType *CTypeEndStruct(ILGenInfo *info, ILType *structType, int renameAnon)
 {
 	ILClass *classInfo = ILType_ToValueType(structType);
-	ILClassLayout *layout = ILClassLayoutGetFromOwner(classInfo);
-	ILUInt32 size, align;
-	if(layout != 0)
-	{
-		size = ILClassLayoutGetClassSize(layout);
-		align = ILClassLayoutGetPackingSize(layout);
-		if((size % align) != 0)
-		{
-			size += align - (size % align);
-			ILClassLayoutSetClassSize(layout, size);
-		}
-	}
 	if(renameAnon)
 	{
 		char *newName;
@@ -1810,6 +1718,11 @@ int CTypeIsUnmanaged(ILType *type)
 	return CheckForModifier(type, "IsUnmanaged", "OpenSystem.C");
 }
 
+int CTypeIsComplexPointer(ILType *type)
+{
+	return CheckForModifier(type, "IsComplexPointer", "OpenSystem.C");
+}
+
 int CTypeIsPrimitive(ILType *type)
 {
 	type = ILTypeStripPrefixes(type);
@@ -1890,26 +1803,12 @@ int CTypeGetStructKind(ILType *type)
 		if((ILClass_Attrs(ILType_ToValueType(type)) &
 				IL_META_TYPEDEF_IS_STRUCT) != 0)
 		{
-			if(ILClass_IsExplicitLayout(ILType_ToValueType(type)))
-			{
-				return C_STKIND_STRUCT;
-			}
-			else
-			{
-				return C_STKIND_STRUCT_NATIVE;
-			}
+			return C_STKIND_STRUCT;
 		}
 		else if((ILClass_Attrs(ILType_ToValueType(type)) &
 					IL_META_TYPEDEF_IS_UNION) != 0)
 		{
-			if(ILClassLayoutGetFromOwner(ILType_ToValueType(type)) != 0)
-			{
-				return C_STKIND_UNION;
-			}
-			else
-			{
-				return C_STKIND_UNION_NATIVE;
-			}
+			return C_STKIND_UNION;
 		}
 	}
 	return -1;
@@ -2064,8 +1963,10 @@ ILUInt32 CTypeGetNumElems(ILType *type)
 	ILClass *classInfo;
 	ILField *field;
 	ILType *elemType;
-	ILUInt32 elemSize;
-	ILClassLayout *layout;
+	ILClassLayout *clayout;
+	CTypeLayoutInfo layout;
+	ILNode *node;
+	ILEvalValue value;
 
 	/* Strip the prefixes and check that this is actually an array type */
 	type = ILTypeStripPrefixes(type);
@@ -2083,27 +1984,32 @@ ILUInt32 CTypeGetNumElems(ILType *type)
 	}
 	elemType = ILField_Type(field);
 
-	/* Determine the size */
-	layout = ILClassLayoutGetFromOwner(classInfo);
-	if(layout != 0)
+	/* Determine the size from the class layout information */
+	clayout = ILClassLayoutGetFromOwner(classInfo);
+	if(clayout != 0)
 	{
 		/* The size is determined from the class and element sizes */
-		elemSize = CTypeSizeAndAlign(elemType, 0);
-		if(elemSize == 0)
+		CTypeGetLayoutInfo(elemType, &layout);
+		if(layout.size == 0)
 		{
 			/* Avoid divide by zero errors when the element type is empty */
 			return 0;
 		}
 		else
 		{
-			return (ILClassLayoutGetClassSize(layout) / elemSize);
+			return (ILClassLayoutGetClassSize(clayout) / layout.size);
 		}
 	}
-	else
+
+	/* See if we have a constant size node associated with the type */
+	node = CTypeGetComplexArraySize(type);
+	if(node && ILNode_EvalConst(node, &CCCodeGen, &value))
 	{
-		/* No explicit layout: this shouldn't happen */
-		return 0;
+		return (ILUInt32)(value.un.i4Value);
 	}
+
+	/* The array has a complex type which cannot be computed at compile time */
+	return IL_MAX_UINT32;
 }
 
 ILType *CTypeGetElemType(ILType *type)
@@ -2132,35 +2038,6 @@ ILType *CTypeGetElemType(ILType *type)
 		{
 			return ILField_Type(field);
 		}
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-ILUInt32 CTypeGetNumFields(ILType *type)
-{
-	ILClass *classInfo;
-	ILField *field;
-	ILUInt32 num;
-
-	type = ILTypeStripPrefixes(type);
-	if(CTypeIsStruct(type) || CTypeIsUnion(type))
-	{
-		classInfo = ILType_ToValueType(type);
-		field = 0;
-		num = 0;
-		while((field = (ILField *)ILClassNextMemberByKind
-					(classInfo, (ILMember *)field,
-					 IL_META_MEMBERKIND_FIELD)) != 0)
-		{
-			if(!ILField_IsStatic(field))
-			{
-				++num;
-			}
-		}
-		return num;
 	}
 	else
 	{
@@ -2225,148 +2102,7 @@ ILType *CTypeDecay(ILGenInfo *info, ILType *type)
 
 int CTypeIsIdentical(ILType *type1, ILType *type2)
 {
-	/* TODO: handle qualifiers */
 	return ILTypeIdentical(type1, type2);
-}
-
-ILUInt32 CTypeSizeAndAlign(ILType *_type, ILUInt32 *align)
-{
-	ILType *type = ILTypeStripPrefixes(_type);
-	ILUInt32 alignTemp;
-	ILType *subType;
-	ILClass *classInfo;
-	ILClassLayout *layout;
-
-	if(!align)
-	{
-		align = &alignTemp;
-	}
-	if(ILType_IsPrimitive(type))
-	{
-		/* Decode the primitive type */
-		switch(ILType_ToElement(type))
-		{
-			case IL_META_ELEMTYPE_VOID:
-			case IL_META_ELEMTYPE_BOOLEAN:
-			case IL_META_ELEMTYPE_I1:
-			case IL_META_ELEMTYPE_U1:
-			{
-				*align = 1;
-				return 1;
-			}
-			/* Not reached */
-
-			case IL_META_ELEMTYPE_I2:
-			case IL_META_ELEMTYPE_U2:
-			case IL_META_ELEMTYPE_CHAR:
-			{
-				*align = CTypeShortAlign;
-				return CTypeShortSize;
-			}
-			/* Not reached */
-
-			case IL_META_ELEMTYPE_I4:
-			case IL_META_ELEMTYPE_U4:
-			{
-				*align = CTypeIntAlign;
-				return CTypeIntSize;
-			}
-			/* Not reached */
-
-			case IL_META_ELEMTYPE_I8:
-			case IL_META_ELEMTYPE_U8:
-			{
-				*align = CTypeLongLongAlign;
-				return CTypeLongLongSize;
-			}
-			/* Not reached */
-
-			case IL_META_ELEMTYPE_I:
-			case IL_META_ELEMTYPE_U:
-			{
-				*align = CTypeNativeIntAlign;
-				return CTypeNativeIntSize;
-			}
-			/* Not reached */
-
-			case IL_META_ELEMTYPE_R4:
-			{
-				*align = CTypeFloatAlign;
-				return CTypeFloatSize;
-			}
-			/* Not reached */
-
-			case IL_META_ELEMTYPE_R8:
-			{
-				*align = CTypeDoubleAlign;
-				return CTypeDoubleSize;
-			}
-			/* Not reached */
-
-			case IL_META_ELEMTYPE_R:
-			{
-				*align = CTypeLongDoubleAlign;
-				return CTypeLongDoubleSize;
-			}
-			/* Not reached */
-		}
-		*align = CTypeIntAlign;
-		return CTypeIntSize;
-	}
-	else if(ILType_IsValueType(type))
-	{
-		/* Check for enumerated types */
-		if((subType = ILTypeGetEnumType(type)) != type)
-		{
-			/* Use the size of the type underlying the enumeration */
-			return CTypeSizeAndAlign(subType, align);
-		}
-
-		/* Bail out if this is a struct or union with unknown size */
-		classInfo = ILClassResolve(ILType_ToClass(type));
-		if(ILClassIsRef(classInfo))
-		{
-			*align = 1;
-			return CTYPE_UNKNOWN;
-		}
-
-		/* If the type is an open-ended array, then it is unknown */
-		if(!strncmp(ILClass_Name(classInfo), "array ", 6))
-		{
-			if(CTypeIsOpenArray(type))
-			{
-				*align = 1;
-				return CTYPE_UNKNOWN;
-			}
-		}
-
-		/* Look for explicit size and alignment values on the class */
-		layout = ILClassLayoutGetFromOwner(classInfo);
-		if(layout != 0)
-		{
-			*align = ILClassLayoutGetPackingSize(layout);
-			return ILClassLayoutGetClassSize(layout);
-		}
-
-		/* If we don't have explicit information, then this is probably a
-		   native structure or foreign value type which has a dynamic size */
-		*align = 1;
-		return CTYPE_DYNAMIC;
-	}
-	else if(type != 0 && ILType_IsComplex(type))
-	{
-		/* Check for pointer and method pointer types */
-		if(ILType_Kind(type) == IL_TYPE_COMPLEX_PTR ||
-		   (ILType_Kind(type) & IL_TYPE_COMPLEX_METHOD) != 0)
-		{
-			*align = CTypePtrAlign;
-			return CTypePtrSize;
-		}
-	}
-
-	/* Assume that everything else is dynamic */
-	*align = CTypePtrAlign;
-	return CTYPE_DYNAMIC;
 }
 
 /*
@@ -2431,7 +2167,7 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 		switch(ILType_ToElement(type))
 		{
 			case IL_META_ELEMTYPE_VOID:		cname = "void"; break;
-			case IL_META_ELEMTYPE_BOOLEAN:	cname = "__bool__"; break;
+			case IL_META_ELEMTYPE_BOOLEAN:	cname = "_Bool"; break;
 			case IL_META_ELEMTYPE_I1:		cname = "char"; break;
 			case IL_META_ELEMTYPE_U1:		cname = "unsigned char"; break;
 			case IL_META_ELEMTYPE_I2:		cname = "short"; break;
@@ -2439,31 +2175,12 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 			case IL_META_ELEMTYPE_CHAR:		cname = "__wchar__"; break;
 			case IL_META_ELEMTYPE_I4:		cname = "int"; break;
 			case IL_META_ELEMTYPE_U4:		cname = "unsigned int"; break;
-			case IL_META_ELEMTYPE_I:		cname = "__native__ int"; break;
-			case IL_META_ELEMTYPE_U:
-				cname = "unsigned __native__ int"; break;
-
-			case IL_META_ELEMTYPE_I8:
-			{
-				if(CTypeLongLongSize == 4)
-					cname = "long long";
-				else
-					cname = "long";
-			}
-			break;
-
-			case IL_META_ELEMTYPE_U8:
-			{
-				if(CTypeLongLongSize == 4)
-					cname = "unsigned long long";
-				else
-					cname = "unsigned long";
-			}
-			break;
-
+			case IL_META_ELEMTYPE_I:		cname = "long"; break;
+			case IL_META_ELEMTYPE_U:		cname = "unsigned long"; break;
+			case IL_META_ELEMTYPE_I8:		cname = "long long"; break;
+			case IL_META_ELEMTYPE_U8:		cname = "unsigned long long"; break;
 			case IL_META_ELEMTYPE_R4:		cname = "float"; break;
 			case IL_META_ELEMTYPE_R8:		cname = "double"; break;
-			case IL_META_ELEMTYPE_R:		cname = "long double"; break;
 			default:						cname = 0; break;
 		}
 		if(cname)
@@ -2494,14 +2211,18 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 		}
 		else if(!strncmp(cname, "array ", 6))
 		{
+			ILNode *sizeNode = (ILNode *)ILClassGetUserData
+					(ILType_ToValueType(type));
 			if(CTypeIsOpenArray(type))
 			{
-				return FormatArrayName(info, CTypeGetElemType(type), 0, 1);
+				return FormatArrayName
+					(info, CTypeGetElemType(type), 0, sizeNode, 1);
 			}
 			else
 			{
-				return FormatArrayName(info, CTypeGetElemType(type),
-									   CTypeGetNumElems(type), 0);
+				return FormatArrayName
+					(info, CTypeGetElemType(type), CTypeGetNumElems(type),
+					 sizeNode, 0);
 			}
 		}
 		else if(!strcmp(cname, "ArgIterator"))
@@ -2658,6 +2379,630 @@ ILType *CTypeFromCSharp(ILGenInfo *info, char *assembly, ILNode *node)
 
 	/* Convert builtin classes to their primitive forms */
 	return ILClassToType(classInfo);
+}
+
+ILField *CTypeNextField(ILType *type, ILField *field)
+{
+	type = ILTypeStripPrefixes(type);
+	if(ILType_IsValueType(type))
+	{
+		while((field = (ILField *)ILClassNextMemberByKind
+				(ILType_ToValueType(type), (ILMember *)field,
+				 IL_META_MEMBERKIND_FIELD)) != 0)
+		{
+			if(!ILField_IsStatic(field))
+			{
+				return field;
+			}
+		}
+	}
+	return 0;
+}
+
+/*
+ * Get the layout information for a "struct" or "union" type.
+ */
+static void StructOrUnionLayout(ILType *type, int isUnion,
+								CTypeLayoutInfo *info)
+{
+	ILField *field;
+	ILType *fieldType;
+	CTypeLayoutInfo fieldInfo;
+	int first, wasFirst;
+	ILUInt32 maxAlign;
+
+	/* If the type is a reference, then it has no layout */
+	if(!CTypeAlreadyDefined(type))
+	{
+		info->category = C_TYPECAT_NO_LAYOUT;
+		info->size = CTYPE_UNKNOWN;
+		info->alignFlags = C_ALIGN_UNKNOWN;
+		info->measureType = type;
+		return;
+	}
+
+	/* Initialize the category information */
+	info->category = C_TYPECAT_FIXED_BIT;
+	info->size = 0;
+	info->alignFlags = 0;
+	info->measureType = type;
+
+	/* Scan the fields and inspect their categories */
+	first = 1;
+	field = 0;
+	while((field = CTypeNextField(type, field)) != 0)
+	{
+		/* Get the field's type layout information */
+		fieldType = ILFieldGetTypeWithPrefixes(field);
+		CTypeGetLayoutInfo(fieldType, &fieldInfo);
+		wasFirst = first;
+		first = 0;
+
+		/* Merge the field's alignment with the overall type alignment */
+		info->alignFlags |= fieldInfo.alignFlags;
+
+		/* Handle the non-fixed categories */
+		if(fieldInfo.category == C_TYPECAT_NO_LAYOUT)
+		{
+			info->category |= C_TYPECAT_NO_LAYOUT_BIT;
+			continue;
+		}
+		else if(fieldInfo.category == C_TYPECAT_COMPLEX)
+		{
+			info->category |= C_TYPECAT_COMPLEX_BIT;
+			continue;
+		}
+		else if(fieldInfo.category == C_TYPECAT_DYNAMIC)
+		{
+			info->category |= C_TYPECAT_DYNAMIC_BIT;
+			continue;
+		}
+
+		/* Get the maximum alignment for this field */
+		maxAlign = CTypeGetMaxAlign(fieldInfo.alignFlags);
+		if(!maxAlign)
+		{
+			/* The alignment is unknown, so make the result dynamic */
+			info->category |= C_TYPECAT_DYNAMIC_BIT;
+			continue;
+		}
+
+		/* We handle unions and structures slightly differently */
+		if(isUnion)
+		{
+			/* Update the size to reflect the maximum of all union arms */
+			if(wasFirst || fieldInfo.size > info->size)
+			{
+				info->size = fieldInfo.size;
+			}
+		}
+		else
+		{
+			if((info->size % maxAlign) != 0)
+			{
+				/* The structure is not aligned correctly */
+				info->category |= C_TYPECAT_DYNAMIC_BIT;
+				info->size += maxAlign - (info->size % maxAlign);
+			}
+			info->size += fieldInfo.size;
+		}
+	}
+	if(first)
+	{
+		/* The CLI specs require empty structs to have a size of 1, not 0 */
+		info->size = 1;
+		info->alignFlags |= C_ALIGN_BYTE;
+	}
+
+	/* Align the entire structure on its maximal alignment */
+	maxAlign = CTypeGetMaxAlign(info->alignFlags);
+	if(!maxAlign || (info->size % maxAlign) != 0)
+	{
+		info->category |= C_TYPECAT_DYNAMIC_BIT;
+	}
+
+	/* Get the final type category */
+	if((info->category & C_TYPECAT_NO_LAYOUT_BIT) != 0)
+	{
+		info->category = C_TYPECAT_NO_LAYOUT;
+		info->size = CTYPE_UNKNOWN;
+	}
+	else if((info->category & C_TYPECAT_COMPLEX_BIT) != 0)
+	{
+		info->category = C_TYPECAT_COMPLEX;
+		info->size = CTYPE_DYNAMIC;
+	}
+	else if((info->category & C_TYPECAT_DYNAMIC_BIT) != 0)
+	{
+		info->category = C_TYPECAT_DYNAMIC;
+		info->size = CTYPE_DYNAMIC;
+	}
+	else
+	{
+		info->category = C_TYPECAT_FIXED;
+	}
+}
+
+void CTypeGetLayoutInfo(ILType *type, CTypeLayoutInfo *info)
+{
+	ILClassLayout *clayout;
+
+	/* Strip the prefixes from the type */
+	type = ILTypeStripPrefixes(type);
+
+	/* Determine what to do based on the type category */
+	if(ILType_IsPrimitive(type))
+	{
+		/* Get the size and alignment information for a primitive type */
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_VOID:
+			case IL_META_ELEMTYPE_BOOLEAN:
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:
+				info->category = C_TYPECAT_FIXED;
+				info->size = 1;
+				info->alignFlags = C_ALIGN_BYTE;
+				info->measureType = type;
+				return;
+
+			case IL_META_ELEMTYPE_CHAR:
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:
+				info->category = C_TYPECAT_FIXED;
+				info->size = 2;
+				info->alignFlags = C_ALIGN_SHORT;
+				info->measureType = type;
+				return;
+
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+				info->category = C_TYPECAT_FIXED;
+				info->size = 4;
+				info->alignFlags = C_ALIGN_INT;
+				info->measureType = type;
+				return;
+
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+				info->category = C_TYPECAT_FIXED;
+				info->size = 8;
+				info->alignFlags = C_ALIGN_LONG;
+				info->measureType = type;
+				return;
+
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+				info->category = C_TYPECAT_DYNAMIC;
+				info->size = CTYPE_DYNAMIC;
+				info->alignFlags = C_ALIGN_POINTER;
+				info->measureType = type;
+				return;
+
+			case IL_META_ELEMTYPE_R4:
+				info->category = C_TYPECAT_FIXED;
+				info->size = 4;
+				info->alignFlags = C_ALIGN_FLOAT;
+				info->measureType = type;
+				return;
+
+			case IL_META_ELEMTYPE_R8:
+				info->category = C_TYPECAT_FIXED;
+				info->size = 8;
+				info->alignFlags = C_ALIGN_DOUBLE;
+				info->measureType = type;
+				return;
+
+			case IL_META_ELEMTYPE_R:
+			case IL_META_ELEMTYPE_TYPEDBYREF:
+				info->category = C_TYPECAT_DYNAMIC;
+				info->size = CTYPE_DYNAMIC;
+				info->alignFlags = C_ALIGN_UNKNOWN;
+				info->measureType = type;
+				return;
+		}
+	}
+	else if(CTypeIsEnum(type))
+	{
+		/* Get layout information for an enumerated type */
+		if(CTypeAlreadyDefined(type))
+		{
+			/* Use the underlying type to get the actual layout */
+			CTypeGetLayoutInfo(ILTypeGetEnumType(type), info);
+		}
+		else
+		{
+			/* The enum is not defined, so it has no layout */
+			info->category = C_TYPECAT_NO_LAYOUT;
+			info->size = CTYPE_UNKNOWN;
+			info->alignFlags = C_ALIGN_UNKNOWN;
+			info->measureType = type;
+		}
+		return;
+	}
+	else if(CTypeIsStruct(type))
+	{
+		/* Get layout information for a struct type */
+		StructOrUnionLayout(type, 0, info);
+		return;
+	}
+	else if(CTypeIsUnion(type))
+	{
+		/* Get layout information for a union type */
+		StructOrUnionLayout(type, 1, info);
+		return;
+	}
+	else if(CTypeIsOpenArray(type))
+	{
+		/* Get layout information for an open array type */
+		CTypeGetLayoutInfo(CTypeGetElemType(type), info);
+		info->category = C_TYPECAT_NO_LAYOUT;
+		info->size = CTYPE_UNKNOWN;
+		info->measureType = type;
+		return;
+	}
+	else if(CTypeIsArray(type))
+	{
+		/* Get layout information for a regular array type */
+		CTypeGetLayoutInfo(CTypeGetElemType(type), info);
+		if(info->category == C_TYPECAT_FIXED)
+		{
+			/* Get the fixed size information from the array type */
+			clayout = ILClassLayoutGetFromOwner(ILType_ToValueType(type));
+			if(clayout)
+			{
+				info->size = ILClassLayoutGetClassSize(clayout);
+			}
+			else
+			{
+				/* If we don't have a class size, then the size of
+				   the array is a complex expression */
+				info->category = C_TYPECAT_COMPLEX;
+				info->size = CTYPE_DYNAMIC;
+			}
+		}
+		else if(info->category != C_TYPECAT_NO_LAYOUT)
+		{
+			/* Arrays with dynamic or complex element types are complex */
+			info->category = C_TYPECAT_COMPLEX;
+			info->size = CTYPE_DYNAMIC;
+		}
+		info->measureType = type;
+		return;
+	}
+	else if(ILType_IsValueType(type))
+	{
+		/* Foreign value type that was imported from another language.
+		   We have to assume that it is in another assembly and that
+		   the definition may change in the future, or that the definition
+		   differs from one CLR to another.  Therefore, both the size
+		   and the alignment are unknown at compile time */
+		info->category = C_TYPECAT_DYNAMIC;
+		info->size = CTYPE_DYNAMIC;
+		info->alignFlags = C_ALIGN_UNKNOWN;
+		info->measureType = type;
+		return;
+	}
+
+	/* If we get here, then assume that the type is a pointer or
+	   object reference that has pointer alignment and dynamic layout.
+	   We use "System.IntPtr" as the measuring type because the
+	   "sizeof" IL opcode may not work on the actual type */
+	info->category = C_TYPECAT_DYNAMIC;
+	info->size = CTYPE_DYNAMIC;
+	info->alignFlags = C_ALIGN_POINTER;
+	info->measureType = ILType_Int;
+}
+
+ILUInt32 CTypeGetMaxAlign(ILUInt32 alignFlags)
+{
+	ILUInt32 size = 1;
+	if((alignFlags & (C_ALIGN_SHORT | C_ALIGN_2)) != 0)
+	{
+		size = 2;
+	}
+	if((alignFlags & (C_ALIGN_INT | C_ALIGN_FLOAT | C_ALIGN_4)) != 0)
+	{
+		size = 4;
+	}
+	if((alignFlags & (C_ALIGN_LONG | C_ALIGN_DOUBLE |
+					  C_ALIGN_POINTER | C_ALIGN_8)) != 0)
+	{
+		size = 8;
+	}
+	if((alignFlags & C_ALIGN_16) != 0)
+	{
+		size = 16;
+	}
+	if((alignFlags & C_ALIGN_UNKNOWN) != 0)
+	{
+		size = 0;
+	}
+	return size;
+}
+
+/*
+ * Get the size node for a "struct" or "union" type.
+ */
+static ILNode *StructOrUnionSizeNode(ILType *type, int isUnion,
+									 ILUInt32 overallAlignment,
+									 const char *stopAt)
+{
+	ILNode *size = 0;
+	ILField *field;
+	ILType *fieldType;
+	CTypeLayoutInfo fieldInfo;
+	ILUInt32 alignFlags = 0;
+	ILNode *fieldSize;
+	int changedAlignment = 0;
+	int first = 1;
+	ILNode *alignVar = 0;
+
+	/* If the type contains fields with unknown alignment,
+	   then we will need a temporary variable to collect up
+	   the actual alignment flags at runtime */
+	if((overallAlignment & C_ALIGN_UNKNOWN) != 0 && !stopAt)
+	{
+		alignVar = ILNode_CSizeTempVar_create();
+	}
+
+	/* Scan the fields and collect up their sizes */
+	field = 0;
+	while((field = CTypeNextField(type, field)) != 0)
+	{
+		/* Get the layout information for the field */
+		fieldType = ILFieldGetTypeWithPrefixes(field);
+		CTypeGetLayoutInfo(fieldType, &fieldInfo);
+
+		/* Merge the field's alignment flags with the total alignment */
+		if(fieldInfo.alignFlags != alignFlags && !first)
+		{
+			alignFlags |= fieldInfo.alignFlags;
+			changedAlignment = 1;
+		}
+		else
+		{
+			alignFlags |= fieldInfo.alignFlags;
+		}
+		first = 0;
+
+		/* Is this the field that we need to stop at? */
+		if(stopAt && !strcmp(ILField_Name(field), stopAt))
+		{
+			/* Align the field appropriately and then exit */
+			if(size && changedAlignment)
+			{
+				size = ILNode_CSizeAlign_create
+					(size, fieldInfo.alignFlags,
+					 fieldInfo.measureType, alignVar);
+			}
+			return size;
+		}
+
+		/* Create the size node for the field type */
+		fieldSize = CTypeCreateSizeNode(fieldType);
+
+		/* Alignment is different for unions and structures */
+		if(isUnion)
+		{
+			if(!size)
+			{
+				size = fieldSize;
+			}
+			else
+			{
+				size = ILNode_CSizeMax_create(size, fieldSize);
+			}
+		}
+		else if(!size)
+		{
+			size = fieldSize;
+		}
+		else if(changedAlignment)
+		{
+			size = ILNode_Add_create
+				(ILNode_CSizeAlign_create
+					(size, fieldInfo.alignFlags,
+					 fieldInfo.measureType, alignVar),
+				 fieldSize);
+		}
+		else
+		{
+			size = ILNode_Add_create(size, fieldSize);
+		}
+	}
+	if(!size)
+	{
+		/* If there are no fields, then the default size is 1 */
+		ILNode_UInt32_create((ILUInt64)1, 0, 1);
+	}
+
+	/* Align the entire structure if the fields have differing alignments */
+	if(changedAlignment)
+	{
+		size = ILNode_CSizeAlign_create
+			(size, overallAlignment, 0, alignVar);
+	}
+
+	/* Release the temporary variable once we know the complete size */
+	if(alignVar)
+	{
+		size = ILNode_CSizeReleaseTempVar_create(size, alignVar);
+	}
+
+	/* Return the final size node to the caller */
+	return size;
+}
+
+ILNode *CTypeCreateSizeNode(ILType *type)
+{
+	CTypeLayoutInfo info;
+	ILClassLayout *clayout;
+	ILNode *arraySize;
+	ILNode *elemSize;
+
+	/* Get the layout information for the type */
+	CTypeGetLayoutInfo(type, &info);
+
+	/* If the type is not "complex", then getting the size is easy */
+	if(info.category == C_TYPECAT_FIXED)
+	{
+		return ILNode_UInt32_create((ILUInt64)(info.size), 0, 1);
+	}
+	else if(info.category == C_TYPECAT_DYNAMIC)
+	{
+		return ILNode_CSizeOfRaw_create(info.measureType);
+	}
+	else if(info.category == C_TYPECAT_NO_LAYOUT)
+	{
+		return 0;
+	}
+
+	/* Determine the kind of complex layout to be performed */
+	type = ILTypeStripPrefixes(type);
+	if(CTypeIsStruct(type))
+	{
+		return StructOrUnionSizeNode(type, 0, info.alignFlags, 0);
+	}
+	else if(CTypeIsUnion(type))
+	{
+		return StructOrUnionSizeNode(type, 1, info.alignFlags, 0);
+	}
+	else if(CTypeIsArray(type))
+	{
+		clayout = ILClassLayoutGetFromOwner(ILType_ToValueType(type));
+		if(clayout)
+		{
+			/* Use the pre-computed size on the array */
+			return ILNode_UInt32_create
+				((ILUInt64)ILClassLayoutGetClassSize(clayout), 0, 1);
+		}
+		arraySize = CTypeGetComplexArraySize(type);
+		elemSize = CTypeCreateSizeNode(CTypeGetElemType(type));
+		return ILNode_Mul_create(arraySize, elemSize);
+	}
+
+	/* If we get here, then we don't know how to compute the size */
+	return 0;
+}
+
+ILNode *CTypeCreateOffsetNode(ILType *type, const char *name)
+{
+	type = ILTypeStripPrefixes(type);
+	if(CTypeIsStruct(type))
+	{
+		CTypeLayoutInfo info;
+		CTypeGetLayoutInfo(type, &info);
+		return StructOrUnionSizeNode(type, 0, info.alignFlags, name);
+	}
+	return 0;
+}
+
+ILNode *CTypeGetComplexArraySize(ILType *type)
+{
+	type = ILTypeStripPrefixes(type);
+	if(CTypeIsArray(type))
+	{
+		return (ILNode *)ILClassGetUserData(ILType_ToValueType(type));
+	}
+	return 0;
+}
+
+ILField *CTypeGetMeasureField(ILGenInfo *info, ILType *type)
+{
+	char *name;
+	ILClass *classInfo;
+	ILField *field;
+
+	/* Get the name of the alignment type */
+	type = ILTypeStripPrefixes(type);
+	name = AppendThree(info, "align ", CTypeToName(info, type), 0);
+
+	/* See if we already have the alignment type in the program */
+	classInfo = ILClassLookup(ILClassGlobalScope(info->image), name, 0);
+	if(!classInfo)
+	{
+		/* Create the alignment measuring type for the first time */
+		classInfo = ILType_ToClass(ILFindSystemType(info, "ValueType"));
+		classInfo = ILClassCreate(ILClassGlobalScope(info->image), 0,
+							  	  name, 0, classInfo);
+		if(!classInfo)
+		{
+			ILGenOutOfMemory(info);
+		}
+		ILClassSetAttrs(classInfo, ~((ILUInt32)0),
+						IL_META_TYPEDEF_PUBLIC |
+						IL_META_TYPEDEF_SERIALIZABLE |
+						IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
+						IL_META_TYPEDEF_SEALED);
+
+		/* Add the "pad" field, which has type "byte" */
+		field = ILFieldCreate(classInfo, 0, "pad", IL_META_FIELDDEF_PUBLIC);
+		if(!field)
+		{
+			ILGenOutOfMemory(info);
+		}
+		ILMemberSetSignature((ILMember *)field, ILType_UInt8);
+
+		/* Add the "value" field, which has the type being measured */
+		field = ILFieldCreate(classInfo, 0, "value", IL_META_FIELDDEF_PUBLIC);
+		if(!field)
+		{
+			ILGenOutOfMemory(info);
+		}
+		ILMemberSetSignature((ILMember *)field, type);
+
+		/* Mark the type for output */
+		CTypeMarkForOutput(info, ILType_FromValueType(classInfo));
+
+		/* Return the "value" field to the caller */
+		return field;
+	}
+
+	/* Look up the "value" field and return it */
+	type = ILType_FromValueType(classInfo);
+	field = 0;
+	while((field = CTypeNextField(type, field)) != 0)
+	{
+		if(!strcmp(ILField_Name(field), "value"))
+		{
+			break;
+		}
+	}
+	return field;
+}
+
+int CTypeIsComplex(ILType *type)
+{
+	CTypeLayoutInfo layout;
+	CTypeGetLayoutInfo(type, &layout);
+	return (layout.category == C_TYPECAT_COMPLEX);
+}
+
+ILType *CTypeGetParam(ILType *signature, unsigned long param)
+{
+	ILType *type = ILTypeGetParamWithPrefixes(signature, param);
+	if(CTypeIsComplexPointer(type))
+	{
+		return CTypeGetPtrRef(type);
+	}
+	else
+	{
+		return type;
+	}
+}
+
+ILType *CTypeGetReturn(ILType *signature)
+{
+	ILType *type = ILTypeGetReturnWithPrefixes(signature);
+	if(CTypeIsComplexPointer(type))
+	{
+		return CTypeGetPtrRef(type);
+	}
+	else
+	{
+		return type;
+	}
 }
 
 #ifdef	__cplusplus

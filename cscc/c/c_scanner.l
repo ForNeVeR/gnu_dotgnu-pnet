@@ -161,7 +161,6 @@ WHITE			[ \t\v\r\f]
 
 "_Bool"					{ RETURNTOK(K_BOOL); }
 "__wchar__"				{ RETURNTOK(K_WCHAR); }
-"__native__"			{ RETURNTOK(K_NATIVE); }
 "__unsigned_int__"		{ RETURNTOK(K_UINT); }
 
 "__FUNCTION__"			{ RETURNTOK(K_FUNCTION); }
@@ -184,7 +183,7 @@ WHITE			[ \t\v\r\f]
 "__delete__"			{ RETURNTOK(K_DELETE); }
 
 "__typeof"				{ RETURNTOK(K_CS_TYPEOF); /* Managed C++ compat */ }
-"__int64"				{ RETURNTOK(K_LONG_LONG); }
+"__int64"				{ RETURNTOK(K_INT64); }
 "__finally"				{ RETURNTOK(K_FINALLY); }
 "__box"					{ RETURNTOK(K_BOX); }
 "__declspec"			{ RETURNTOK(K_DECLSPEC); }

@@ -174,7 +174,7 @@ static void CoerceArgs(ILGenInfo *info, ILNode_CInvocationExpression *node,
 	/* Coerce the arguments that we have left */
 	for(paramNum = 0; paramNum < numParams; ++paramNum)
 	{
-		type = ILTypeGetParamWithPrefixes(signature, paramNum + 1);
+		type = CTypeGetParam(signature, paramNum + 1);
 		if(CTypeIsByRef(type))
 		{
 			/* This argument is passed by reference (i.e. 'type & name') */

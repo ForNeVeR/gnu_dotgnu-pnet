@@ -39,16 +39,15 @@ extern	"C" {
 #define	C_SPEC_LONG_LONG		(1<<8)
 #define	C_SPEC_SIGNED			(1<<9)
 #define	C_SPEC_UNSIGNED			(1<<10)
-#define	C_SPEC_NATIVE			(1<<11)
-#define	C_SPEC_CONST			(1<<12)
-#define	C_SPEC_VOLATILE			(1<<13)
-#define	C_SPEC_MULTIPLE_BASES	(1<<14)
-#define	C_SPEC_LONG_AND_SHORT	(1<<15)
-#define	C_SPEC_SIGN_AND_UNSIGN	(1<<16)
-#define	C_SPEC_INVALID_COMBO	(1<<17)
-#define	C_SPEC_ENUM				(1<<18)
-#define C_SPEC_THREAD_SPECIFIC	(1<<19)
-#define C_SPEC_BOX				(1<<20)
+#define	C_SPEC_CONST			(1<<11)
+#define	C_SPEC_VOLATILE			(1<<12)
+#define	C_SPEC_MULTIPLE_BASES	(1<<13)
+#define	C_SPEC_LONG_AND_SHORT	(1<<14)
+#define	C_SPEC_SIGN_AND_UNSIGN	(1<<15)
+#define	C_SPEC_INVALID_COMBO	(1<<16)
+#define	C_SPEC_ENUM				(1<<17)
+#define C_SPEC_THREAD_SPECIFIC	(1<<18)
+#define C_SPEC_BOX				(1<<19)
 
 /*
  * Useful specifier combinations.
@@ -71,8 +70,7 @@ extern	"C" {
 			 C_SPEC_LONG | \
 			 C_SPEC_LONG_LONG | \
 			 C_SPEC_SIGNED | \
-			 C_SPEC_UNSIGNED | \
-			 C_SPEC_NATIVE)
+			 C_SPEC_UNSIGNED)
 
 /*
  * Kinds of declarations, for checking the applicability of specifiers.
@@ -176,7 +174,7 @@ CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem,
  * Create an array declarator, with a specified size.
  */
 CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem,
-							 ILUInt32 size, int gcSpecifier);
+							 ILNode *size, int gcSpecifier);
 
 /*
  * Create a pointer declarator.  "refType" will be non-NULL when

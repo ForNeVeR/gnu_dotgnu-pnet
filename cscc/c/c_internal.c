@@ -43,12 +43,13 @@ void CGenCloneLine(ILNode *newNode, ILNode *oldNode)
 	yysetlinenum(newNode, yygetlinenum(oldNode));
 }
 
-CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope)
+CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node,
+							 ILNode **parent, ILScope *scope)
 {
 	ILScope *currentScope = info->currentScope;
 	CSemValue result;
 	info->currentScope = scope;
-	result = ILNode_CSemAnalysis(node, info, &node, 1);
+	result = ILNode_CSemAnalysis(node, info, parent, 1);
 	info->currentScope = currentScope;
 	return result;
 }
@@ -179,13 +180,20 @@ void CGenAddress(ILGenInfo *info, ILNode *node)
 
 void CGenSizeOf(ILGenInfo *info, ILType *type)
 {
-	ILUInt32 size = CTypeSizeAndAlign(type, 0);
-	if(size != CTYPE_DYNAMIC)
+	CTypeLayoutInfo layout;
+	ILClass *classInfo;
+
+	CTypeGetLayoutInfo(type, &layout);
+	if(layout.category == C_TYPECAT_FIXED)
 	{
-		ILGenUInt32(info, size);
+		/* Output the fixed size as a constant */
+		ILGenUInt32(info, layout.size);
+		ILGenAdjust(info, 1);
 	}
-	else
+	else if(layout.category == C_TYPECAT_DYNAMIC)
 	{
+		/* We need to get the size dynamically from "layout.measureType" */
+		type = layout.measureType;
 		if(ILType_IsPrimitive(type) || ILType_IsValueType(type))
 		{
 			/* Calculate the size of the underlying value type */
@@ -198,8 +206,21 @@ void CGenSizeOf(ILGenInfo *info, ILType *type)
 			ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
 						    ILTypeToClass(info, ILType_Int));
 		}
+		ILGenAdjust(info, 1);
 	}
-	ILGenAdjust(info, 1);
+	else if(layout.category == C_TYPECAT_COMPLEX)
+	{
+		/* Complex types: load the read-only "size.of" field onto the stack */
+		classInfo = ILTypeToClass(info, ILTypeStripPrefixes(type));
+		if(classInfo && info->asmOutput)
+		{
+			fputs("\tldsfld\tunsigned int32 ", info->asmOutput);
+			ILDumpClassName(info->asmOutput, info->image, classInfo,
+							IL_DUMP_QUOTE_NAMES);
+			fputs("::'size.of'\n", info->asmOutput);
+		}
+		ILGenAdjust(info, 1);
+	}
 }
 
 #ifdef	__cplusplus

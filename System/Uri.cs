@@ -1,7 +1,7 @@
 /*
  * Uri.cs - Implementation of "System.Uri".
  *
- * Copyright (C) 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2002  Free Software Foundation, Inc.
  *
  * Contributed by Stephen Compall <rushing@sigecom.net>
  * Contributions by Gerard Toonstra <toonstra@ntlworld.com>
@@ -158,6 +158,16 @@ public class Uri : MarshalByRefObject
 		{
 			path = StripMetaDirectories(path);
 		}
+
+		// remove the slash at the end, unless it's alone
+		int psize = path.Length; // efficiency
+		if (psize > 1)
+		{
+			if (path[psize-1] == '/')
+				path = path.Substring(0, psize-1);
+		}
+		else
+			path = "/";
 	}
 
 	// The following takes . or .. directories out of an absolute path.
@@ -190,6 +200,8 @@ public class Uri : MarshalByRefObject
 		foreach (String dir in dirs)
 			if (dir.Length > 0) // visible?
 				newpath.Append('/').Append(dir);
+		if (newpath.Length == 0)
+			newpath.Append('/');
 		return newpath.ToString();
 	}
 
@@ -546,6 +558,7 @@ public class Uri : MarshalByRefObject
 	}
 
 	// needs debugging. Also, figure out exactly how it works.
+	// I have emailed chiraz on this, awaiting reply now...
 	[TODO]
 	public String MakeRelative(Uri toUri)
 	{

@@ -1,3 +1,10 @@
+2003-07-15  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ScrollBar.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/IThemePainter.cs: fix several problems with
+	the drawing of scrollbars, implement DrawGrid, and fix the problems with
+	DrawScrollButton.
 
 2003-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 

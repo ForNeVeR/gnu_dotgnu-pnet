@@ -33,6 +33,14 @@ using System.Drawing.Drawing2D;
 
 internal class DefaultThemePainter : IThemePainter
 {
+
+	// Cached values
+	protected bool gridDark = true;
+	protected Size gridSpacing = Size.Empty;
+	protected Brush gridBrush = null;
+
+
+
 	// Draw a simple button border.
 	public virtual void DrawBorder
 				(Graphics graphics, Rectangle bounds,
@@ -1079,11 +1087,48 @@ internal class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw a grid of dots.
-	[TODO]
-	public virtual void DrawGrid(Graphics graphics, Rectangle area,
-								 Size pixelsBetweenDots, Color backColor)
+	public virtual void DrawGrid
+				(Graphics graphics, Rectangle area,
+				 Size pixelsBetweenDots, Color backColor)
 			{
-				// TODO
+				// this is called from ControlPaint static methods
+				// which are supposed to be thread safe, so lock
+				// this while changing state
+				lock(this)
+				{
+					bool dark = (backColor.GetBrightness() >= 0.5f);
+					if (gridBrush == null ||
+					    gridDark != dark ||
+					    gridSpacing != pixelsBetweenDots)
+					{
+						if (gridBrush != null)
+						{
+							gridBrush.Dispose();
+							gridBrush = null;
+						}
+
+						gridDark = dark;
+						Color color;
+						if (gridDark)
+						{
+							color = Color.Black;
+						}
+						else
+						{
+							color = Color.White;
+						}
+
+						gridSpacing = pixelsBetweenDots;
+						int spaceX = gridSpacing.Width;
+						int spaceY = gridSpacing.Height;
+						using (Bitmap bmp = new Bitmap(spaceX+1,spaceY+1))
+						{
+							bmp.SetPixel(0, 0, color);
+							gridBrush = new TextureBrush(bmp);
+						}
+					}
+				}
+				graphics.FillRectangle(gridBrush, area);
 			}
 
 	// Draw an image in its disabled state.
@@ -1169,26 +1214,34 @@ internal class DefaultThemePainter : IThemePainter
 				 Color foreColor, Color backColor,
 				 Brush backgroundBrush,
 				 bool vertical, bool enabled,
-				 Rectangle bar,
+				 Rectangle bar, Rectangle track,
 				 Rectangle decrement, bool decDown,
 				 Rectangle increment, bool incDown)
 			{
-				int x = bounds.X;
-				int y = bounds.Y;
-				int width = bounds.Width;
-				int height = bounds.Height;
-
 				// fill in the background
-				graphics.FillRectangle(backgroundBrush,
-				                       x, y, width, height);
+				graphics.FillRectangle(backgroundBrush, bounds);
 
-				// add the border
-				DrawBorder3D(graphics,
-				             x, y, width, height,
-					     foreColor, backColor,
-				             Border3DStyle.SunkenInner,
-				             Border3DSide.Left | Border3DSide.Top |
-				             Border3DSide.Right | Border3DSide.Bottom);
+				Color color;
+				if (backColor.GetBrightness() > 0.5f)
+				{
+					color = Color.White;
+				}
+				else
+				{
+					color = Color.Black;
+				}
+				using (Brush brush = new HatchBrush(HatchStyle.Percent50,
+				                                    backColor, color))
+				{
+					graphics.FillRectangle(brush, track);
+				}
+
+				// workaround some strange visual bugs with the
+				// hatch... comment these out to see... take a
+				// screen shot and zoom in on decrement and bar
+				graphics.FillRectangle(backgroundBrush, bar);
+				graphics.FillRectangle(backgroundBrush, decrement);
+				graphics.FillRectangle(backgroundBrush, increment);
 
 				// setup the arrow directions for the scroll buttons
 				ScrollButton decButton;
@@ -1249,7 +1302,6 @@ internal class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw a scroll button control.
-	[TODO]
 	public virtual void DrawScrollButton
 				(Graphics graphics, int x, int y, int width, int height,
 				 ScrollButton button, ButtonState state,
@@ -1265,89 +1317,78 @@ internal class DefaultThemePainter : IThemePainter
 				y += 2; // skip border
 				width -= 4; // skip border
 				height -= 4; // skip border
-				if ((state & ButtonState.Pushed) != 0)
+				if ((state & ButtonState.Pushed) == 0)
 				{
-					x += 1;
-					y += 1;
+					// the center calculation is off by one
+					// so if we don't need "click shift"
+					// then minus one from our x and y
+					// offsets instead of adding one
+					//
+					// TODO: "click shift" should probably
+					// be set via a protected field or
+					// property so themes which don't have
+					// it can more easily use this as a base
+					x -= 1;
+					y -= 1;
 				}
 
-				Point center=new Point(x+width/2,y+height/2);
-				Size [] offsets;
-				Point [] vertices=new Point[4];
-				int arrowWidth, arrowHeight;
-				arrowWidth=width/2;
-				arrowHeight=height/2;
-				if(width>=20 && height>=20)
+				// setup the glyph shape
+				int glyphWidth = 3;
+				int glyphHeight = 3;
+				if (button == ScrollButton.Up || button == ScrollButton.Down)
 				{
-					// arrowHeight and arrowWidth form the bounding
-					// rectangle rather than the arrow parameters
-					arrowWidth-=3;
-					arrowHeight-=3;
+					glyphWidth *= 2;
 				}
-				if(width>=10 && height>=10)
+				else
 				{
-					// arrowHeight and arrowWidth form the bounding
-					// rectangle rather than the arrow parameters
-					arrowWidth-=1;
-					arrowHeight-=1;
+					glyphHeight *= 2;
 				}
-				// 8 offsets pre-calculated in clockwise direction
-				// from the center
-				//   7-------------0-------------1
-				//   |             |             |
-				//   |             |             |
-				//   6-------------+-------------2
-				//   |             |             |
-				//   |             |             |
-				//   5-------------4-------------3
-				//
-				offsets=new Size[]{
-								new Size(0,-arrowHeight),
-								new Size(arrowWidth,-arrowHeight),
-								new Size(arrowWidth,0),
-								new Size(arrowWidth, arrowHeight),
-								new Size(0,arrowHeight),
-								new Size(-arrowWidth,arrowHeight),
-								new Size(-arrowWidth,0),
-								new Size(-arrowWidth,-arrowHeight),
-								};
+				Point[] glyph = new Point[3];
+				int offsetX = x+((width-glyphWidth)/2);
+				int offsetY = y+((height-glyphHeight)/2);
 				switch (button)
 				{
 					case ScrollButton.Up:
 					{
-						// due to a quirk of fate, this is faster
-						// than 2 center.X and Y get/add/set :)
-						vertices[0]=center+offsets[0];
-						vertices[1]=center+offsets[3];
-						vertices[2]=center+offsets[5];
-						vertices[3]=center+offsets[0];
+						glyph[0] = new Point(offsetX+3,
+						                     offsetY);
+						glyph[1] = new Point(offsetX+6,
+						                     offsetY+3);
+						glyph[2] = new Point(offsetX,
+						                     offsetY+3);
 					}
 					break;
 
 					case ScrollButton.Down:
 					{
-						vertices[0]=center+offsets[1];
-						vertices[1]=center+offsets[4];
-						vertices[2]=center+offsets[7];
-						vertices[3]=center+offsets[1];
+						glyph[0] = new Point(offsetX,
+						                     offsetY);
+						glyph[1] = new Point(offsetX+6,
+						                     offsetY);
+						glyph[2] = new Point(offsetX+3,
+						                     offsetY+3);
 					}
 					break;
 
 					case ScrollButton.Left:
 					{
-						vertices[0]=center+offsets[3];
-						vertices[1]=center+offsets[6];
-						vertices[2]=center+offsets[1];
-						vertices[3]=center+offsets[3];
+						glyph[0] = new Point(offsetX,
+						                     offsetY+3);
+						glyph[1] = new Point(offsetX+3,
+						                     offsetY);
+						glyph[2] = new Point(offsetX+3,
+						                     offsetY+6);
 					}
 					break;
 
 					case ScrollButton.Right:
 					{
-						vertices[0]=center+offsets[2];
-						vertices[1]=center+offsets[5];
-						vertices[2]=center+offsets[7];
-						vertices[3]=center+offsets[2];
+						glyph[0] = new Point(offsetX,
+						                     offsetY);
+						glyph[1] = new Point(offsetX,
+						                     offsetY+6);
+						glyph[2] = new Point(offsetX+3,
+						                     offsetY+3);
 					}
 					break;
 
@@ -1366,7 +1407,11 @@ internal class DefaultThemePainter : IThemePainter
 				}
 				using (Brush brush = new SolidBrush(color))
 				{
-					graphics.FillPolygon(brush,vertices);
+					graphics.FillPolygon(brush,glyph);
+				}
+				using (Pen pen = new Pen(color))
+				{
+					graphics.DrawPolygon(pen,glyph);
 				}
 			}
 

@@ -120,7 +120,7 @@ internal interface IThemePainter
 				 Color foreColor, Color backColor,
 				 Brush backgroundBrush,
 				 bool vertical, bool enabled,
-				 Rectangle bar,
+				 Rectangle bar, Rectangle track,
 				 Rectangle decrement, bool decDown,
 				 Rectangle increment, bool incDown);
 

@@ -183,7 +183,6 @@ public abstract class ScrollBar : Control
 			if (value == maximum) { return; }
 			maximum = value;
 			Redraw();
-			//range = max - min;
 		}
 	}
 
@@ -200,7 +199,6 @@ public abstract class ScrollBar : Control
 			if (value == minimum) { return; }
 			minimum = value;
 			Redraw();
-			//range = max - min;
 		}
 	}
 
@@ -246,10 +244,12 @@ public abstract class ScrollBar : Control
 		int tmp = (value-smallChange);
 		tmp = tmp > minimum ?
 		      tmp : minimum;
-		if (value == tmp) { return; }
-		Value = tmp;
-		OnScroll(new ScrollEventArgs(this,ScrollEventType.SmallDecrement,value));
-		SetPositionByValue();
+		if (value != tmp)
+		{
+			Value = tmp;
+			OnScroll(new ScrollEventArgs(this,ScrollEventType.SmallDecrement,value));
+			SetPositionByValue();
+		}
 		Redraw(false);
 	}
 
@@ -276,10 +276,6 @@ public abstract class ScrollBar : Control
 		int height = clientSize.Height;
 
 		Rectangle bounds = new Rectangle(x,y,width,height);
-		x += 2; // skip border
-		y += 2; // skip border
-		width -= 4; // skip border
-		height -= 4; // skip border
 
 		if (layout)
 		{
@@ -300,7 +296,7 @@ public abstract class ScrollBar : Control
 			                                       ForeColor,BackColor,
 			                                       bgBrush,
 				                               vertical,Enabled,
-			                                       bar,
+			                                       bar, track,
 			                                       decrement,decDown,
 				                               increment,incDown);
 		}
@@ -312,10 +308,12 @@ public abstract class ScrollBar : Control
 		int tmp2 = (maximum-largeChange+1);
 		tmp = tmp < tmp2 ?
 		      tmp : tmp2;
-		if (value == tmp) { return; }
-		Value = tmp;
-		OnScroll(new ScrollEventArgs(this,ScrollEventType.SmallIncrement,value));
-		SetPositionByValue();
+		if (value != tmp)
+		{
+			Value = tmp;
+			OnScroll(new ScrollEventArgs(this,ScrollEventType.SmallIncrement,value));
+			SetPositionByValue();
+		}
 		Redraw(false);
 	}
 
@@ -400,6 +398,7 @@ public abstract class ScrollBar : Control
 		int scrolls = (maximum-minimum)/largeChange;
 		int position = (value-minimum) < guiMax ?
 		               (value-minimum) : guiMax;
+
 		// layout rectangle for decrement button
 		decrement = new Rectangle(x,y,width,width);
 		y += width; // increase by decrement size
@@ -420,7 +419,7 @@ public abstract class ScrollBar : Control
 		// range to the track's visual range, and layout the scroll bar
 		int scrollSize = trackRange/scrolls;
 		int trackMax = trackRange-scrollSize;
-		int scrollPos = (trackMax)*(position/guiMax);
+		int scrollPos = (trackMax*position)/guiMax;
 		scrollPos = trackMax < scrollPos ?
 		            trackMax : scrollPos;
 		scrollPos += trackStart;
@@ -440,7 +439,6 @@ public abstract class ScrollBar : Control
 
 	protected override void OnKeyDown(KeyEventArgs e)
 	{
-		Console.WriteLine("OnKeyDown("+e.KeyCode+")");
 		if (keyDown) { return; }
 
 		switch (e.KeyCode)
@@ -610,8 +608,23 @@ public abstract class ScrollBar : Control
 				{
 					newPos = guiMax;
 				}
-				barDown = y;
-				bar.Y = newPos;
+				if (newPos != bY)
+				{
+					barDown = y;
+					bar.Y = newPos;
+					OnScroll(new ScrollEventArgs(this,ScrollEventType.ThumbTrack,value));
+					SetValueByPosition();
+					Redraw(false);
+				}
+				else
+				{
+					// if the mouse has gone too far up or
+					// down and we're still tracking it,
+					// make sure when it comes back that
+					// it's tracked by the center of the
+					// scroll bar
+					barDown = bY+bHeight/2;
+				}
 			}
 			else
 			{
@@ -629,12 +642,24 @@ public abstract class ScrollBar : Control
 				{
 					newPos = guiMax;
 				}
-				barDown = x;
-				bar.X = newPos;
+				if (newPos != bX)
+				{
+					barDown = x;
+					bar.X = newPos;
+					OnScroll(new ScrollEventArgs(this,ScrollEventType.ThumbTrack,value));
+					SetValueByPosition();
+					Redraw(false);
+				}
+				else
+				{
+					// if the mouse has gone too far right
+					// or left and we're still tracking it,
+					// make sure when it comes back that
+					// it's tracked by the center of the
+					// scroll bar
+					barDown = bX+bWidth/2;
+				}
 			}
-			OnScroll(new ScrollEventArgs(this,ScrollEventType.ThumbTrack,value));
-			SetValueByPosition();
-			Redraw(false);
 		}
 		base.OnMouseMove(e);
 	}

@@ -73,7 +73,8 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 
 	/* Attach a finalizer to the object if the class has
 	   a non-trival finalizer method attached to it */
-	if(((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
+	if(classInfo != 0 &&
+	   ((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
 	{
 		ILGCRegisterFinalizer(ptr, FinalizeObject, 0);
 	}

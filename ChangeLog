@@ -47,6 +47,9 @@ within the garbage collector.
 engine/thread.c: use persistent memory allocation for all engine blocks
 that may contain object pointers that need to seen by the garbage collector.
 
+* engine/heap.c: bug - handle NULL class descriptors when checking for
+finalizers.
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

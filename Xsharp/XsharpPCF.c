@@ -757,7 +757,7 @@ void XSharpPCFDestroy(void *dpy, void *renderer)
 	/* Nothing to do here */
 }
 
-void *XSharpPCFCreate(Display *dpy, void *image)
+void *XSharpPCFCreate(void *dpy, void *image)
 {
 	/* Nothing to do here */
 }

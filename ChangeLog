@@ -9,6 +9,8 @@ new files to round out the bytecode verfier's instruction coverage.
 
 * engine/verify_arith.c: bytecode verification for "ckfinite".
 
+* engine/verify.c: include the new files that make up the verifier source.
+
 2001-10-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc: add "ILNode_ForeachCollection" and add extra

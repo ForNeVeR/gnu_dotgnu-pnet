@@ -211,6 +211,12 @@ static int ProcessJumpTarget(JumpTarget **targetList, ILUInt32 offset,
 #include "verify_arith.c"
 #include "verify_branch.c"
 #include "verify_conv.c"
+#include "verify_stack.c"
+#include "verify_call.c"
+#include "verify_ptr.c"
+#include "verify_obj.c"
+#include "verify_except.c"
+#include "verify_ann.c"
 #undef IL_VERIFY_GLOBALS
 
 /*
@@ -371,6 +377,7 @@ static int AssignCompatible(StackItem *item, ILType *type)
 #define	VERIFY_INSN_ERROR()		goto cleanup
 #define	VERIFY_STACK_ERROR()	goto cleanup
 #define	VERIFY_TYPE_ERROR()		goto cleanup
+#define	VERIFY_MEMORY_ERROR()	goto cleanup
 
 /*
  * Check for certain opcode types.
@@ -409,6 +416,12 @@ int _ILVerify(ILCoder *coder, ILMethod *method,
 #include "verify_arith.c"
 #include "verify_branch.c"
 #include "verify_conv.c"
+#include "verify_stack.c"
+#include "verify_call.c"
+#include "verify_ptr.c"
+#include "verify_obj.c"
+#include "verify_except.c"
+#include "verify_ann.c"
 #undef IL_VERIFY_LOCALS
 
 restart:
@@ -418,7 +431,7 @@ restart:
 	/* Set up the coder to process the method */
 	if(!ILCoderSetup(coder, method, code))
 	{
-		goto cleanup;
+		VERIFY_MEMORY_ERROR();
 	}
 
 	/* Initialize the memory allocator that is used for temporary
@@ -432,7 +445,7 @@ restart:
 					(&allocator, BYTES_FOR_MASK(code->codeLen * 2));
 	if(!jumpMask)
 	{
-		goto cleanup;
+		VERIFY_MEMORY_ERROR();
 	}
 
 	/* Scan the code looking for all jump targets, and validating
@@ -607,7 +620,7 @@ restart:
 				(&allocator, sizeof(StackItem) * code->maxStack);
 	if(!stack)
 	{
-		goto cleanup;
+		VERIFY_MEMORY_ERROR();
 	}
 	stackSize = 0;
 
@@ -639,7 +652,7 @@ restart:
 			if(!ProcessJumpTarget(&targetList, offset, stack,
 								  stackSize, &allocator))
 			{
-				goto cleanup;
+				VERIFY_MEMORY_ERROR();
 			}
 
 			/* Notify the coder of a label at this position */
@@ -685,51 +698,13 @@ restart:
 #include "verify_arith.c"
 #include "verify_branch.c"
 #include "verify_conv.c"
+#include "verify_stack.c"
+#include "verify_call.c"
+#include "verify_ptr.c"
+#include "verify_obj.c"
+#include "verify_except.c"
+#include "verify_ann.c"
 #undef IL_VERIFY_CODE
-
-			case IL_OP_DUP:
-			{
-				/* Duplicate the current top of stack */
-				ILCoderDup(coder, stack[stackSize - 1].engineType,
-						   stack[stackSize - 1].typeInfo);
-				stack[stackSize] = stack[stackSize - 1];
-				++stackSize;
-			}
-			break;
-
-			case IL_OP_POP:
-			{
-				/* Pop the current top of stack */
-				ILCoderPop(coder, stack[stackSize - 1].engineType,
-						   stack[stackSize - 1].typeInfo);
-				--stackSize;
-			}
-			break;
-
-			case IL_OP_JMP:
-			{
-				/* TODO */
-			}
-			break;
-
-			case IL_OP_CALL:
-			{
-				/* TODO */
-			}
-			break;
-
-			case IL_OP_CALLI:
-			{
-				/* TODO */
-			}
-			break;
-
-			case IL_OP_RET:
-			{
-				/* TODO */
-				lastWasJump = 1;
-			}
-			break;
 
 		}
 

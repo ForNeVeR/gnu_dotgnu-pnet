@@ -1,3 +1,9 @@
+
+2004-10-18  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/Private/XmlDocumentNavigator.cs: Skip XmlDeclarations
+	and EntityReferences when doing a MoveNext()
+
 2004-10-18  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListBox.cs: implement ItemHeight property.

@@ -115,18 +115,27 @@ internal class XmlDocumentNavigator : XPathNavigator
 			if(node.Attributes.Count != 0)
 			{
 				node = node.Attributes[0];
+				return true;
 			}
-			return true;
 		}
 		return false;
 	}
 
 	public override bool MoveToFirstChild()
 	{
-		//TODO: handle DTD entries
-		if(node.FirstChild != null)
+		XmlNode next = node.FirstChild;
+		// TODO: implement normalization
+		while(next!= null && 
+				(next.NodeType == XmlNodeType.EntityReference || 
+				next.NodeType == XmlNodeType.DocumentType ||
+				next.NodeType == XmlNodeType.XmlDeclaration))
 		{
-			node = node.FirstChild;
+			next = next.NextSibling;
+		}
+
+		if(next != null)
+		{
+			node = next;
 			return true;
 		}
 		return false;
@@ -151,11 +160,20 @@ internal class XmlDocumentNavigator : XPathNavigator
 	{
 		XmlNode next = node.NextSibling;
 		// TODO: implement normalization
+		while(next!= null && 
+				(next.NodeType == XmlNodeType.EntityReference || 
+				next.NodeType == XmlNodeType.DocumentType ||
+				next.NodeType == XmlNodeType.XmlDeclaration))
+		{
+			next = next.NextSibling;
+		}
+		
 		if(next	!= null)
 		{
 			node = next;
 			return true;	
 		}
+		
 		return false;
 	}
 
@@ -190,9 +208,8 @@ internal class XmlDocumentNavigator : XPathNavigator
 			if(i != list.Count)
 			{
 				node = list[i];
+				return true;
 			}
-
-			return true;
 		}
 		return false;
 	}

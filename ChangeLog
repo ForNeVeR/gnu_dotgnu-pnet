@@ -1,4 +1,9 @@
 
+2002-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/expr/array1.il, csharp/expr/array3.il,
+	csharp/expr/typedref1.il: new output files after "ldelema" fix.
+
 2002-07-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/event1.il: new output file after cscc event fix.

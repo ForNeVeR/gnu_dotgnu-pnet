@@ -226,7 +226,7 @@
 {
 	ldarg.1
 	ldarg.2
-	ldelema
+	ldelema	['.library']'System'.'Decimal'
 	ldc.i4.2
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
 	stobj	['.library']'System'.'Decimal'
@@ -238,10 +238,10 @@
 	ldarg.2
 	dup
 	stloc.1
-	ldelema
+	ldelema	['.library']'System'.'Decimal'
 	ldloc.0
 	ldloc.1
-	ldelema
+	ldelema	['.library']'System'.'Decimal'
 	ldobj	['.library']'System'.'Decimal'
 	ldc.i4.2
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
@@ -249,7 +249,7 @@
 	stobj	['.library']'System'.'Decimal'
 	ldarg.1
 	ldarg.2
-	ldelema
+	ldelema	['.library']'System'.'Decimal'
 	ldobj	['.library']'System'.'Decimal'
 	ret
 	.maxstack 3

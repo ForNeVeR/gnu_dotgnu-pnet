@@ -71,7 +71,7 @@
 	ldarg.0
 	ldarg.1
 	ldarg.2
-	ldelema
+	ldelema	int32
 	mkrefany	int32
 	call	instance void 'Test'::'m1'(typedref)
 	ret

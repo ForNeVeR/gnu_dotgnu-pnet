@@ -14,12 +14,12 @@
 	ldarg.0
 	ldarg.1
 	ldarg.2
-	ldelema
+	ldelema	int32
 	call	instance void 'Test'::'m2'(int32 &)
 	ldarg.0
 	ldarg.1
 	ldarg.2
-	ldelema
+	ldelema	int32
 	call	instance void 'Test'::'m3'(int32 &)
 	ret
 	.maxstack 3

@@ -684,7 +684,7 @@ public class Uri : MarshalByRefObject
 
 		if(!CheckSchemeName(this.scheme))
 		{
-			throw new UriFormatException(S._("Arg_InvalidScheme"));
+			throw new UriFormatException(S._("Arg_UriScheme"));
 		}
 		if(portString!= null)
 		{

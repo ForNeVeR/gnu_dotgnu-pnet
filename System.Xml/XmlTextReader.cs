@@ -1541,17 +1541,16 @@ public class XmlTextReader : XmlReader
 				if(count > buffer.Length - index)
 				{
 					throw new ArgumentException
-						(S._("ArgumentExceedsLength"), "count");
+						(S._("ArgRange_Array"), "count");
 				}
 				else if (buffer == null)
 				{
-					throw new ArgumentNullException
-						(S._("ArgumentIsNull"), "buffer");
+					throw new ArgumentNullException("buffer");
 				}
 				else if ( index < 0 || count < 0 )
 				{
 					throw new ArgumentOutOfRangeException
-						(S._("ArgumentOutOfRange"));
+						("index", S._("ArgRange_Array"));
 				}
 				else if (nodeType != XmlNodeType.Text && nodeType != XmlNodeType.Element)
 				{

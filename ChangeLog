@@ -20,6 +20,23 @@
 	"mscorlib.dll", because our Forms implementation may be
 	running on a CLR that doesn't have our mscorlib.
 
+	* System/Uri.cs, System/Diagnostics/TraceListener.cs,
+	System/Net/HttpWebRequest.cs, System/Timers/Timer.cs,
+	System.Xml/XmlTextReader.cs, resources/de_DE/runtime/Arg.txt,
+	resources/en_US/System/Arg.txt, resources/en_US/Xsharp/Xsharp.txt,
+	resources/en_US/runtime/Arg.txt, resources/en_US/runtime/Emit.txt,
+	resources/en_US/runtime/Format.txt, resources/en_US/runtime/IO.txt,
+	resources/en_US/runtime/Invalid.txt,
+	resources/en_US/runtime/Makefile.am,
+	resources/en_US/runtime/Remoting.txt,
+	resources/en_US/runtime/Security.txt,
+	resources/en_US/runtime/Serialize.txt,
+	runtime/System/Reflection/Assembly.cs,
+	runtime/System/Security/Cryptography/DSACryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/RSACryptoServiceProvider.cs,
+	runtime/System/Security/Policy/Evidence.cs: add missing resources
+	and fix tag name spelling mistakes in the source.
+
 2003-10-12  Neil Cawse  <neilcawse@hotmail.com>
 
 	* System.Windows.Forms/TreeView.cs: fix paint crash when no nodes bug.

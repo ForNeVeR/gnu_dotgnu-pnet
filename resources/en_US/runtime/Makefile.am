@@ -6,12 +6,14 @@ RESOURCEFILES = Arg.txt \
 				Cast.txt \
 				Crypto.txt \
 				DivZero.txt \
+				Emit.txt \
 				Exception.txt \
 				Format.txt \
 				IO.txt \
 				NotSupp.txt \
 				Overflow.txt \
 				Reflection.txt \
+				Remoting.txt \
 				Security.txt \
 				Serialize.txt
 

@@ -104,7 +104,7 @@ public class HttpWebRequest : WebRequest
 			throw new ArgumentOutOfRangeException("from > to ",
 				S._("Arg_OutOfRange"));
 		if(rangeSpecifier == null)
-			throw new ArgumentNullException("rangeSpecifier",S._("Arg_Null"));
+			throw new ArgumentNullException("rangeSpecifier");
 
 		if(this.Method != null && ! this.Method.Equals("GET"))
 			throw new InvalidOperationException("Invalid Method");
@@ -116,7 +116,7 @@ public class HttpWebRequest : WebRequest
 		if(from <0) 
 			throw new ArgumentOutOfRangeException("from",S._("Arg_OutOfRange"));
 		if(rangeSpecifier == null)
-			throw new ArgumentNullException("rangeSpecifier",S._("Arg_Null"));
+			throw new ArgumentNullException("rangeSpecifier");
 		if(this.Method != null && ! this.Method.Equals("GET"))
 			throw new InvalidOperationException("Invalid Method");
 		this.Headers.Set("Range",rangeSpecifier+"="+from+"-");

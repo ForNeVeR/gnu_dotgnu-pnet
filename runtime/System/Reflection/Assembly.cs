@@ -655,7 +655,7 @@ public class Assembly : IClrProgramItem
 				else if(name.Length == 0)
 				{
 					throw new ArgumentException
-						(_("ArgRange_StringNotEmpty"), "name");
+						(_("ArgRange_StringNonEmpty"), "name");
 				}
 				return GetModuleInternal(name);
 			}

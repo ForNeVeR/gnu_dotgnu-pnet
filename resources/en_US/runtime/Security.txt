@@ -29,3 +29,4 @@ Security_PermissionSetNotFound=Could not find the specified permission set
 Security_FullTrustPresent=Full trust information is already present
 Security_FullTrustNotPresent=Full trust information is not present
 Security_RootGroupDescription=Root code group that grants access to everything
+Security_CodeGroupName=Incorrect XML tag name for security code group

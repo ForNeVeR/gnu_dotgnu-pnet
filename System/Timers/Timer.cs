@@ -113,7 +113,7 @@ public class Timer : Component, ISupportInitialize
 					if(value < 0.0)
 					{
 						throw new ArgumentException
-							(S._("Arg_NonNegative"));
+							(S._("ArgRange_NonNegative"));
 					}
 					interval = value;
 				}

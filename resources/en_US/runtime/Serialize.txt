@@ -32,3 +32,4 @@ Serialize_KeyValueMismatch=The key and value arrays for the hash table have diff
 Serialize_UnknownAssembly=Unknown assembly specified
 Serialize_DelegateTargetMismatch=The delegate target does not match the expected type
 Serialize_DelegateNotPublic=The delegate method is not public
+Serialize_CannotSerialize=Cannot serialize {0}

@@ -74,13 +74,13 @@ public sealed class RSACryptoServiceProvider : RSA
 					else if(result == CryptoMethods.UnknownKey)
 					{
 						throw new CryptographicException
-							(_("Crypt_UnknownKey"),
+							(_("Crypto_UnknownKey"),
 							 parameters.KeyContainerName);
 					}
 					else if(result == CryptoMethods.NotPermitted)
 					{
 						throw new CryptographicException
-							(_("Crypt_NoKeyAccess"),
+							(_("Crypto_NoKeyAccess"),
 							 parameters.KeyContainerName);
 					}
 					else if(result == CryptoMethods.GenerateKey)

@@ -75,7 +75,7 @@ public abstract class TraceListener : MarshalByRefObject, IDisposable
 					if(value < 0)
 					{
 						throw new ArgumentOutOfRangeException
-							("value", S._("Arg_NonNegative"));
+							("value", S._("ArgRange_NonNegative"));
 					}
 					indentSize = value;
 				}

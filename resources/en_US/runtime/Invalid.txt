@@ -37,3 +37,6 @@ Invalid_IsolatedQuota=Isolated storage quota is not specified
 Invalid_ContextFrozen=The context is already frozen
 Invalid_PropertyClash=There is already a context property with the specified name
 Invalid_ModifyLease=Modifying a lease that is not in the initial state
+Invalid_ResourceNotString=The specified resource is not a string
+Invalid_ResourceReaderClosed=The resource reader has already been closed
+Invalid_ResourceWriterClosed=The resource writer has already been closed

@@ -304,7 +304,7 @@ public sealed class Evidence : ICollection, IEnumerable
 							if(index < 0)
 							{
 								throw new InvalidOperationException
-									(_("Invalid_BadEnumertorPosition"));
+									(_("Invalid_BadEnumeratorPosition"));
 							}
 							else if(index < evidence.HostCount)
 							{
@@ -318,7 +318,7 @@ public sealed class Evidence : ICollection, IEnumerable
 							else
 							{
 								throw new InvalidOperationException
-									(_("Invalid_BadEnumertorPosition"));
+									(_("Invalid_BadEnumeratorPosition"));
 							}
 						}
 						else if(enumHosts)
@@ -326,7 +326,7 @@ public sealed class Evidence : ICollection, IEnumerable
 							if(index < 0 || index >= evidence.HostCount)
 							{
 								throw new InvalidOperationException
-									(_("Invalid_BadEnumertorPosition"));
+									(_("Invalid_BadEnumeratorPosition"));
 							}
 							else
 							{
@@ -338,7 +338,7 @@ public sealed class Evidence : ICollection, IEnumerable
 							if(index < 0 || index >= evidence.AssemblyCount)
 							{
 								throw new InvalidOperationException
-									(_("Invalid_BadEnumertorPosition"));
+									(_("Invalid_BadEnumeratorPosition"));
 							}
 							else
 							{

@@ -4,6 +4,7 @@
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
  * Contributions from Charlie Carnow <carnow@gmx.net>
+ * Contributions from Gopal V <gopalv82@symonds.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,30 +38,15 @@ namespace System.IO
 		public static readonly char PathSeparatorChar = p.pathSeparator;
 		public static readonly char[] InvalidPathChars = p.invalidPathChars;
 		private static readonly char[] PathSeparatorChars = { DirectorySeparatorChar, AltDirectorySeparatorChar, VolumeSeparatorChar};
-		
-		/* counter is for the MkTempFile function; its static
-		 * so that the only time the MkTempFile function has 
-                 * to go through the loop more than once is when
-		 * its called for the first time
-		 */
-		private static int counter; 
-		
-				
+			
+		// entropy for GetTempFilename()
+		static Random r=new Random();
 
-		[TODO]
 		public static String ChangeExtension(String path, String extension)
 		{
-			/* TODO: Figure out how to get the System-Dependant
-                         * Extension Separator instead of just assuming it's
-			 * a '.'; Mail to the DotGnu Developers mailing
-			 * list or me (Charlie Carnow <carnow@gmx.net> 
-			 * and the DotGnu Mailing list
-                         * on this topic would be nice
-                         */
-			char[] separator = { '.' };	
-			string[] patharray = path.Split(separator);
-			string ext = extension;
-			return String.Concat(patharray[0], '.', extension);
+			if(!HasExtension(path))return path;
+			String fname=path.Substring(0,path.LastIndexOf('.'));
+			return fname+'.'+extension;
 		}
 		
 		
@@ -92,55 +78,86 @@ namespace System.IO
 				 path1 = path1.Insert(path1.Length, new String(DirectorySeparatorChar, 1));
 		        }
 
-	return String.Concat(path1, path2);
-}
+			return String.Concat(path1, path2);
+		}
 		
-		[TODO]
 		public static String GetDirectoryName(String path)
 		{
-			return null;
+			if(path==null)return null;
+	
+			bool isDir=path.EndsWith(""+DirectorySeparatorChar);
+			String retval;
+			if(!isDir)
+			{
+				int len=path.Length-GetFileName(path).Length;
+				if(len >1 && path[len-1]==DirectorySeparatorChar)len--;
+				// skip last slash for all dirs except '/file' => '/'
+				retval=path.Substring(0,len);
+			}
+			else
+			{
+				if(path.Length==1)return null; // Viz '/'
+				if(path.Length==3 && path[1]==VolumeSeparatorChar)
+					return null; // C:\
+				retval=path.Substring(0,path.Length-1);
+			}
+			return retval;
 		}
 
-		[TODO]
 		public static String GetFileName(String path)
 		{
-			/* TODO: Allow use of AltDirectorySeparator, etc. */
-			/* Seperate Directories */
-		      string y;
-		      char[] separator = {DirectorySeparatorChar};
-		      string[] dirs = path.Split(separator);
-		      y = path;
-		      foreach (string x in dirs)
-			{
-				y = x;
-			} /* The last string should be the filename */
-			return y;
+			if(path==null)return null;
+			if(path.Length==0)return String.Empty;
+		    char[] separator = {DirectorySeparatorChar,AltDirectorySeparatorChar};
+			/* Optimize: Replace with LastIndexOf */
+		    string[] dirs = path.Split(separator);
+			return dirs[dirs.Length-1];
 		}
 		
-		[TODO]
 		public static String GetFileNameWithoutExtension(String path)
 		{
-			/* TODO: See TODO note at ChangeExtension */
-			/* Split at the dot..The first element
-                         * of filename should now have the filename without
-		         * the extension */
-			string[] filename;
-			try 
-			{
-				char[] separator = {'.'};
-				filename = GetFileName(path).Split(separator);
-			}
-			catch (ArgumentException e) 
-			{	
-				throw new ArgumentException(e.Message, e);
-			}
-			return filename[0];
+			String fname=GetFileName(path);
+			if(fname.IndexOf('.')==-1)return fname;
+			return	fname.Substring(0,fname.LastIndexOf('.'));
 		}
 		
-		[TODO]
 		public static String GetFullPath(String path)
 		{
-			return null;
+			if(path==null)return null;
+
+			String dir=path;
+			if(!IsPathRooted(dir))dir=DirMethods.GetCurrentDirectory()+'/'+
+				path;
+			dir=Normalize(dir);	
+			// TODO: Permission check
+			return dir;
+		}
+		
+		private static String Normalize(String path)
+		{
+			StringBuilder sb=new StringBuilder(path.Length);
+			if(!IsPathRooted(path))return path;
+			String []frags=path.Split(new char[]{VolumeSeparatorChar,
+									DirectorySeparatorChar});
+			for(int i=0;i<frags.Length;i++)
+			{
+				if(frags[i]=="..")
+				{
+					if(i==1)
+					{
+						throw new ArgumentException("path");
+					}
+					sb.Length=sb.Length-frags[i-1].Length-1; 
+					/* Hack : instead of 'removing' , I just trim it 
+					   like this , faster this way */
+				}
+				else if(frags[i].Length>0)
+				{
+					sb.Append('/');
+					sb.Append(frags[i]);
+				}
+			}
+			return sb.ToString();
 		}
 		
 		[TODO]
@@ -154,62 +171,72 @@ namespace System.IO
 			return path.Substring(0, 1);
 		}
 		
-		/* Based on tempfile.py function mktemp */
-		
+		/* generate /tmp/pnetXXXXXX */
 		public static String GetTempFilename()
 		{
-			// Assume prefix tmp- I don't know a way to
-			// get the OS were running on
-			string dir = GetTempPath();
-			string pre = "tmp";
-			string file;
+			String dir = GetTempPath();
+			String pre = "pnet";
+			String file;
 			while(true)
 			{	
-				/* Counter is a
-				counter += 1;
-				/* cat the strings together */
-				file = dir + pre + NumToString(counter);
-
-			/* TODO: "File" does not exist yet
-				if (!File.exists(file))
+				file = dir +DirectorySeparatorChar+ pre + UniqName();
+				if (!File.Exists(file))
 				{
 					return file;
 				}				 
-			*/
 			}
-				
-		}
-		
-		[TODO]
-		private static String NumToString(int num)
-		{
-			// TODO: Implement
 			return null;
 		}
+
+		private static String UniqName()
+		{
+			String index="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz_";
+			int num=r.Next(); // Take potluck
+			String retval="";
+			int radix=index.Length;
+			for(int i=0;i<6;i++)
+			{
+				retval = retval + index[num%radix];
+				num=num/radix;
+			}
+			return retval;
+		}		
 		
-		[TODO]
 		public static String GetTempPath()
 		{
-			/* TODO: Implement */
-			return "/tmp";
+			String tmp=Environment.GetEnvironmentVariable("TMPDIR"); // *nix
+			if(tmp!=null)return tmp;
+			tmp=Environment.GetEnvironmentVariable("TEMP_DIR"); // Win32 (?)
+			if(tmp!=null)return tmp;
+			return "/tmp"; 
+			/* TODO : might just think about returning P_tmpdir from stdio.h */
 		}
 		
-		[TODO]
 		public static bool HasExtension(String path)
 		{
-			/* TODO: See Note at ChangeExtension */
-			char[] separator = {'.'}; 
-			return (path.Split('.').Length > 1);		
+			if(path==null)return false;
+			String [] elems=path.Split(DirectorySeparatorChar);
+			String filename=elems[elems.Length-1];
+			if(filename.IndexOf('.')!=-1)
+			{
+				return true;
+			}
+			return false;
 		}
 		
 		
 		public static bool IsPathRooted(String path)
 		{
-			return path.StartsWith(new String(VolumeSeparatorChar, 1));
+			if(path==null)return false;
+			if(path.Length==0)return false;
+			if(path.Length==1)return (path[0]==DirectorySeparatorChar);	
+			return
+				(
+				(path[0]==DirectorySeparatorChar) || // Unix -> "/foo"
+				(path[1]==VolumeSeparatorChar)    // Win32 -> "C:/foo"
+				);
 		}
-
 	}
-
 }
 
 

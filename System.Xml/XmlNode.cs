@@ -35,12 +35,21 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	// Internal state.
 	internal XmlNode  parent;
 	internal NodeList list;
+	internal int depth;
 
 	// Constructor.  Only accessible to internal subclasses.
 	protected internal XmlNode(XmlNode parent)
 			{
 				this.parent = parent;
 				this.list = null;		// Created on demand to save memory.
+				if(parent != null)
+				{
+					depth = parent.depth + 1;
+				}
+				else
+				{
+					depth = 1;
+				}
 			}
 
 	// Get a collection that contains all of the attributes for this node.
@@ -49,6 +58,16 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				get
 				{
 					return null;
+				}
+			}
+
+	// Get the attribute collection for node types that don't override
+	// "Attributes" according to the specification.
+	internal virtual XmlAttributeCollection AttributesInternal
+			{
+				get
+				{
+					return Attributes;
 				}
 			}
 
@@ -268,7 +287,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			{
 				get
 				{
-					return null;
+					return String.Empty;
 				}
 				set
 				{

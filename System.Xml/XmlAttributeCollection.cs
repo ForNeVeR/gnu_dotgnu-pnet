@@ -35,6 +35,10 @@ class XmlAttributeCollection
 
 	public int Count { get { return 0; /* TODO */ } }
 
+	public XmlAttribute this[int i] { get { return null; } }
+	public XmlAttribute this[String name] { get { return null; } }
+	public XmlAttribute this[String name, String ns] { get { return null; } }
+
 }; // class XmlAttributeCollection
 
 }; // namespace System.Xml

@@ -27,6 +27,10 @@
 	tests/System/TestWebHeaderCollection.cs: semantic errors shown
 	up by csc.
 
+	* System.Xml/XmlAttribute.cs, System.Xml/XmlAttributeCollection.cs,
+	System.Xml/XmlNode.cs, System.Xml/XmlTextReader.cs,
+	resources/en_US/System.Xml/Xml.txt: continue implementing System.Xml.
+
 2002-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlConvert.cs, tests/System.Xml/TestNameTable.cs,

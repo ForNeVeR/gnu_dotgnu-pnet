@@ -40,3 +40,4 @@ Xml_InvalidEntityHandling=Invalid entity handling value
 Xml_InvalidNodeType=Invalid node type
 Xml_InvalidValidationType=Invalid validation type value
 Xml_NotTextReader=The specified XmlReader is not an XmlTextReader
+Xml_InvalidAttributeIndex=Invalid attribute index value

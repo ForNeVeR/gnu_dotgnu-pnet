@@ -36,6 +36,8 @@ class XmlAttribute : XmlNode
 	private String localName;
 	private String ns;
 	private String name;
+	internal char quoteChar;
+	internal XmlAttribute next;
 
 	// Constructor.
 	internal XmlAttribute(XmlNode owner, String prefix,
@@ -54,6 +56,16 @@ class XmlAttribute : XmlNode
 				{
 					name = localName;
 					prefix = String.Empty;
+				}
+				quoteChar = '"';
+			}
+
+	// Get the attribute collection from the parent node.
+	internal override XmlAttributeCollection AttributesInternal
+			{
+				get
+				{
+					return ParentNode.AttributesInternal;
 				}
 			}
 

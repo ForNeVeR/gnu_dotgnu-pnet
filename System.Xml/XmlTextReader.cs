@@ -45,6 +45,7 @@ public class XmlTextReader : XmlReader
 	private TextReader reader;
 	private String baseURI;
 	private Encoding encoding;
+	private XmlNode currentNode;
 
 	// Constructors.
 	protected XmlTextReader()
@@ -71,6 +72,7 @@ public class XmlTextReader : XmlReader
 				linePosition = 1;
 				baseURI = String.Empty;
 				encoding = null;
+				currentNode = null;
 			}
 	public XmlTextReader(Stream input)
 			: this(String.Empty, input, new NameTable())
@@ -207,26 +209,67 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Returns the value of an attribute with a specific index.
-	[TODO]
 	public override String GetAttribute(int i)
 			{
-				// TODO
-				return null;
+				XmlAttributeCollection attributes;
+				if(currentNode == null)
+				{
+					attributes = null;
+				}
+				else
+				{
+					attributes = currentNode.AttributesInternal;
+				}
+				if(attributes != null)
+				{
+					if(i >= 0 && i < attributes.Count)
+					{
+						return attributes[i].Value;
+					}
+				}
+				throw new ArgumentOutOfRangeException
+					("i", S._("Xml_InvalidAttributeIndex"));
 			}
 
 	// Returns the value of an attribute with a specific name.
-	[TODO]
 	public override String GetAttribute(String name, String namespaceURI)
 			{
-				// TODO
+				XmlAttributeCollection attributes;
+				XmlAttribute attribute;
+				if(currentNode == null)
+				{
+					return null;
+				}
+				attributes = currentNode.AttributesInternal;
+				if(attributes != null)
+				{
+					attribute = attributes[name, namespaceURI];
+					if(attribute != null)
+					{
+						return attribute.Value;
+					}
+				}
 				return null;
 			}
 
 	// Returns the value of an attribute with a specific qualified name.
-	[TODO]
 	public override String GetAttribute(String name)
 			{
-				// TODO
+				XmlAttributeCollection attributes;
+				XmlAttribute attribute;
+				if(currentNode == null)
+				{
+					return null;
+				}
+				attributes = currentNode.AttributesInternal;
+				if(attributes != null)
+				{
+					attribute = attributes[name];
+					if(attribute != null)
+					{
+						return attribute.Value;
+					}
+				}
 				return null;
 			}
 
@@ -245,50 +288,125 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Move the current position to a particular attribute.
-	[TODO]
 	public override void MoveToAttribute(int i)
 			{
-				// TODO
+				XmlAttributeCollection attributes;
+				if(currentNode == null)
+				{
+					attributes = null;
+				}
+				else
+				{
+					attributes = currentNode.AttributesInternal;
+				}
+				if(attributes != null)
+				{
+					if(i >= 0 && i < attributes.Count)
+					{
+						currentNode = attributes[i];
+						return;
+					}
+				}
+				throw new ArgumentOutOfRangeException
+					("i", S._("Xml_InvalidAttributeIndex"));
 			}
 
 	// Move the current position to an attribute with a particular name.
-	[TODO]
 	public override bool MoveToAttribute(String name, String ns)
 			{
-				// TODO
+				XmlAttributeCollection attributes;
+				XmlAttribute attribute;
+				if(currentNode == null)
+				{
+					return false;
+				}
+				attributes = currentNode.AttributesInternal;
+				if(attributes != null)
+				{
+					attribute = attributes[name, ns];
+					if(attribute != null)
+					{
+						currentNode = attribute;
+						return true;
+					}
+				}
 				return false;
 			}
 
 	// Move the current position to an attribute with a qualified name.
-	[TODO]
 	public override bool MoveToAttribute(String name)
 			{
-				// TODO
+				XmlAttributeCollection attributes;
+				XmlAttribute attribute;
+				if(currentNode == null)
+				{
+					return false;
+				}
+				attributes = currentNode.AttributesInternal;
+				if(attributes != null)
+				{
+					attribute = attributes[name];
+					if(attribute != null)
+					{
+						currentNode = attribute;
+						return true;
+					}
+				}
 				return false;
 			}
 
 	// Move to the element that owns the current attribute.
-	[TODO]
 	public override bool MoveToElement()
 			{
-				// TODO
-				return false;
+				XmlAttribute attr = (currentNode as XmlAttribute);
+				if(attr != null)
+				{
+					currentNode = attr.parent;
+					return true;
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 	// Move to the first attribute owned by the current element.
-	[TODO]
 	public override bool MoveToFirstAttribute()
 			{
-				// TODO
+				XmlAttributeCollection attributes;
+				if(currentNode != null)
+				{
+					attributes = currentNode.AttributesInternal;
+					if(attributes != null && attributes.Count > 0)
+					{
+						currentNode = attributes[0];
+						return true;
+					}
+				}
 				return false;
 			}
 
 	// Move to the next attribute owned by the current element.
-	[TODO]
 	public override bool MoveToNextAttribute()
 			{
-				// TODO
-				return false;
+				XmlAttribute attr = (currentNode as XmlAttribute);
+				if(attr != null)
+				{
+					attr = attr.next;
+					if(attr != null)
+					{
+						currentNode = attr;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return MoveToFirstAttribute();
+				}
 			}
 
 	// Read the next node in the input stream.
@@ -370,13 +488,19 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Get the number of attributes on the current node.
-	[TODO]
 	public override int AttributeCount
 			{
 				get
 				{
-					// TODO
-					return 0;
+					XmlElement element = (currentNode as XmlElement);
+					if(element != null)
+					{
+						return element.Attributes.Count;
+					}
+					else
+					{
+						return 0;
+					}
 				}
 			}
 
@@ -390,24 +514,27 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Get the depth of the current node.
-	[TODO]
 	public override int Depth
 			{
 				get
 				{
-					// TODO
-					return 0;
+					if(currentNode != null)
+					{
+						return currentNode.depth;
+					}
+					else
+					{
+						return 0;
+					}
 				}
 			}
 
 	// Determine if we have reached the end of the input stream.
-	[TODO]
 	public override bool EOF
 			{
 				get
 				{
-					// TODO
-					return false;
+					return (readState == ReadState.EndOfFile);
 				}
 			}
 
@@ -428,35 +555,59 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Determine if the current node can have an associated text value.
-	[TODO]
 	public override bool HasValue
 			{
 				get
 				{
-					// TODO
+					switch(NodeType)
+					{
+						case XmlNodeType.Attribute:
+						case XmlNodeType.CDATA:
+						case XmlNodeType.Comment:
+						case XmlNodeType.DocumentType:
+						case XmlNodeType.ProcessingInstruction:
+						case XmlNodeType.SignificantWhitespace:
+						case XmlNodeType.Text:
+						case XmlNodeType.Whitespace:
+						case XmlNodeType.XmlDeclaration:
+							return true;
+						default: break;
+					}
 					return false;
 				}
 			}
 
 	// Determine if the current node's value was generated from a DTD default.
-	[TODO]
 	public override bool IsDefault
 			{
 				get
 				{
-					// TODO
-					return false;
+					XmlAttribute attr = (currentNode as XmlAttribute);
+					if(attr != null)
+					{
+						return !(attr.Specified);
+					}
+					else
+					{
+						return false;
+					}
 				}
 			}
 
 	// Determine if the current node is an empty element.
-	[TODO]
 	public override bool IsEmptyElement
 			{
 				get
 				{
-					// TODO
-					return false;
+					XmlElement element = (currentNode as XmlElement);
+					if(element != null)
+					{
+						return element.IsEmpty;
+					}
+					else
+					{
+						return false;
+					}
 				}
 			}
 
@@ -514,24 +665,34 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Get the local name of the current node.
-	[TODO]
 	public override String LocalName
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(currentNode != null)
+					{
+						return currentNode.LocalName;
+					}
+					else
+					{
+						return String.Empty;
+					}
 				}
 			}
 
 	// Get the fully-qualified name of the current node.
-	[TODO]
 	public override String Name
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(currentNode != null)
+					{
+						return currentNode.Name;
+					}
+					else
+					{
+						return String.Empty;
+					}
 				}
 			}
 
@@ -545,13 +706,18 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Get the namespace URI associated with the current node.
-	[TODO]
 	public override String NamespaceURI
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(currentNode != null)
+					{
+						return currentNode.NamespaceURI;
+					}
+					else
+					{
+						return String.Empty;
+					}
 				}
 			}
 
@@ -592,35 +758,51 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Get the type of the current node.
-	[TODO]
 	public override XmlNodeType NodeType
 			{
 				get
 				{
-					// TODO
-					return XmlNodeType.None;
+					if(currentNode != null)
+					{
+						return currentNode.NodeType;
+					}
+					else
+					{
+						return XmlNodeType.None;
+					}
 				}
 			}
 
 	// Get the namespace prefix associated with the current node.
-	[TODO]
 	public override String Prefix
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(currentNode != null)
+					{
+						return currentNode.Prefix;
+					}
+					else
+					{
+						return String.Empty;
+					}
 				}
 			}
 
 	// Get the quote character that was used to enclose an attribute value.
-	[TODO]
 	public override char QuoteChar
 			{
 				get
 				{
-					// TODO
-					return '"';
+					XmlAttribute attr = (currentNode as XmlAttribute);
+					if(attr != null)
+					{
+						return attr.quoteChar;
+					}
+					else
+					{
+						return '"';
+					}
 				}
 			}
 
@@ -634,13 +816,18 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Get the text value of the current node.
-	[TODO]
 	public override String Value
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(currentNode != null)
+					{
+						return currentNode.Value;
+					}
+					else
+					{
+						return String.Empty;
+					}
 				}
 			}
 

@@ -44,7 +44,7 @@ extern	"C" {
  * The default heap size.  The "IL_CONFIG_GC_HEAP_SIZE" variable can
  * be set to a non-zero value in the profile to override this value.
  */
-#define	IL_DEFAULT_GC_HEAP_SIZE		(128 * 1024)
+#define	IL_DEFAULT_GC_HEAP_SIZE		(128L * 1024L)
 
 /*
  * Global data for the GC heap.

@@ -132,6 +132,7 @@ struct _tagILGenInfo
 	ILNode		   *currentMethod;		/* Current method being processed */
 	ILNode         *currentNamespace;	/* Current namespace being processed */
 	ILArrayInit    *arrayInit;			/* Array initialization information */
+	ILHashTable    *itemHash;			/* Hash program items to nodes */
 
 };
 

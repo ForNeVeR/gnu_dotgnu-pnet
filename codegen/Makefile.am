@@ -53,6 +53,7 @@ libILCodeGen_a_SOURCES = $(TREECC_SRCOUT) \
 						 cg_gen.c \
 						 cg_interface.c \
 						 cg_library.c \
+						 cg_nodemap.c \
 						 cg_optable.c \
 						 cg_output.c \
 						 cg_rbtree.c \

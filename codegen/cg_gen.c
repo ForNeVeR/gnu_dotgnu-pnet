@@ -21,6 +21,7 @@
 #include "cg_nodes.h"
 #include "cg_scope.h"
 #include "cg_resolve.h"
+#include "cg_nodemap.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -133,10 +134,12 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->currentMethod = 0;
 	info->currentNamespace = 0;
 	info->arrayInit = 0;
+	info->itemHash = 0;
 	if(useBuiltinLibrary)
 	{
 		ILGenMakeLibrary(info);
 	}
+	ILProgramItemHashCreate(info);
 }
 
 void ILGenInfoToJava(ILGenInfo *info)
@@ -183,6 +186,9 @@ void ILGenInfoDestroy(ILGenInfo *info)
 
 	/* Destroy Java-specific information */
 	JavaGenDestroy(info);
+
+	/* Destroy the program item hash */
+	ILHashDestroy(info->itemHash);
 
 	/* Destroy the image and context */
 	ILImageDestroy(info->image);

@@ -1,4 +1,11 @@
 
+2002-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/Makefile.am, codegen/cg_gen.c, codegen/cg_gen.h,
+	codegen/cg_nodemap.c, codegen/cg_nodemap.h: introduce an associative
+	map that allows nodes to be associated with program items, to easily
+	map from one to the other.
+
 2002-06-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/cvm_call.c, engine/engine.h,

@@ -156,10 +156,8 @@ WHITE			[ \t\v\r\f]
 "__builtin_alloca"		{ return K_ALLOCA; }
 "__attribute__"			{ return K_ATTRIBUTE; }
 
-"__bool__"				{ return K_BOOL; }
+"_Bool"					{ return K_BOOL; }
 "__wchar__"				{ return K_WCHAR; }
-"__true__"				{ return K_TRUE; }
-"__false__"				{ return K_FALSE; }
 "__native__"			{ return K_NATIVE; }
 "__csharp__"			{ return K_CSHARP; }
 "__invoke__"			{ return K_INVOKE; }

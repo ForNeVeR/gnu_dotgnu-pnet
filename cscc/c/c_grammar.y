@@ -889,10 +889,8 @@ static ILUInt32 EvaluateSize(ILNode *expr)
 %token K_SETJMP			"`__builtin_setjmp'"
 %token K_ALLOCA			"`__builtin_alloca'"
 %token K_ATTRIBUTE		"`__attribute__'"
-%token K_BOOL			"`__bool__'"
+%token K_BOOL			"`_Bool'"
 %token K_WCHAR			"`__wchar__'"
-%token K_TRUE			"`__true__'"
-%token K_FALSE			"`__false__'"
 %token K_NATIVE			"`__native__'"
 %token K_CSHARP			"`__csharp__'"
 %token K_INVOKE			"`__invoke__'"
@@ -1104,8 +1102,6 @@ PrimaryExpression
 					$$ = ILNode_Float64_create($1.value);
 				}
 			}
-	| K_TRUE				{ $$ = ILNode_True_create(); }
-	| K_FALSE				{ $$ = ILNode_False_create(); }
 	| StringLiteral			{
 				$$ = ILNode_CString_create($1.string, $1.len);
 			}

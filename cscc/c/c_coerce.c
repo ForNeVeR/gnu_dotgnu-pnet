@@ -37,12 +37,13 @@ extern	"C" {
 #define	C_COERCE_SIMPLE				(1<<6)
 
 /*
- * Determine if a primitive type is numeric.
+ * Determine if a primitive type is numeric or boolean.
  */
-static int TypeIsNumeric(int elemType)
+static int TypeIsNumericOrBoolean(int elemType)
 {
 	switch(elemType)
 	{
+		case IL_META_ELEMTYPE_BOOLEAN:
 		case IL_META_ELEMTYPE_I1:
 		case IL_META_ELEMTYPE_U1:
 		case IL_META_ELEMTYPE_I2:
@@ -179,17 +180,11 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 	{
 		if(ILType_IsPrimitive(toType))
 		{
-			if(TypeIsNumeric(ILType_ToElement(fromType)) &&
-			   TypeIsNumeric(ILType_ToElement(toType)))
+			if(TypeIsNumericOrBoolean(ILType_ToElement(fromType)) &&
+			   TypeIsNumericOrBoolean(ILType_ToElement(toType)))
 			{
-				/* Can coerce any numeric type to any other numeric type */
-				return C_COERCE_SIMPLE;
-			}
-			else if(fromType == ILType_Boolean &&
-					(toType == ILType_Boolean ||
-					 TypeIsInteger(ILType_ToElement(toType))))
-			{
-				/* Can coerce "__bool__" to itself or any integer type */
+				/* Can coerce any numeric type or bool to any other
+				   numeric type or bool */
 				return C_COERCE_SIMPLE;
 			}
 		}
@@ -254,6 +249,11 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 		{
 			/* Coercing a pointer to an integer type */
 			return C_COERCE_PTR_TO_INT | constFlags;
+		}
+		else if(toType == ILType_Boolean)
+		{
+			/* Coercing a pointer to "_Bool" */
+			return C_COERCE_SIMPLE | constFlags;
 		}
 	}
 	else if(CTypeIsFunction(fromType) && CTypeIsFunctionPtr(toType))

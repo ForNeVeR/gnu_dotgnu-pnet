@@ -1,3 +1,8 @@
+2004-12-30  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/ComboBox.cs: If list is empty, do not attempt
+	to draw a dropdown.  Fixes bug #11428.
+
 2004-12-30  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/Control.cs: implement the Disposing property.

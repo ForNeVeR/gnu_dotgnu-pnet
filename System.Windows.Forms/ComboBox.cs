@@ -92,7 +92,6 @@ namespace System.Windows.Forms
 			scrollbar.BackColor = SystemColors.Control;
 			scrollbar.ValueChanged+=new EventHandler(scrollbar_ValueChanged);
 			popup.Controls.Add(scrollbar);
-
 		}
 
 		protected override Size DefaultSize
@@ -219,7 +218,8 @@ namespace System.Windows.Forms
 			}
 			set
 			{
-				if (value == droppedDown)
+				if (value == droppedDown ||
+						items.Count == 0)
 					return;
 				droppedDown = value;
 				if (value)

@@ -21,6 +21,7 @@
 #include "ildb_context.h"
 #include "ildb_utils.h"
 #include "ildb_cmd.h"
+#include "ildb_search.h"
 #include "il_system.h"
 
 #ifdef	__cplusplus
@@ -32,7 +33,7 @@ extern	"C" {
  */
 static void Show_Directories(ILDb *db, char *argv[])
 {
-	ILDbInfo(db, "Source directories searched: $cdir:$cwd");
+	ILDbSearchPrint(db);
 }
 
 /*
@@ -48,14 +49,18 @@ static void Info_Line(ILDb *db, char *argv[])
  */
 ILDbCmdInfo ILDbShowCommands[] = {
 	{"show", 3, "directories", 3, Show_Directories, 0,
-		"show directories help"},
+		"show the directories that are searched for source files",
+		0},
 	{"show", 3, 0, 0, 0, 0,
-		"show help"},
+		"show information about the debugger",
+		0},
 
 	{"info", 3, "line", 2, Info_Line, 0,
-		"info ilne help"},
+		"show information on a particular source line",
+		0},
 	{"info", 3, 0, 0, 0, 0,
-		"info help"},
+		"show information about the program",
+		0},
 };
 int ILDbNumShowCommands = (sizeof(ILDbShowCommands) / sizeof(ILDbCmdInfo));
 

@@ -18,16 +18,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1
-#endif
 #include "ildb_context.h"
 #include "ildb_utils.h"
 #include "ildb_cmd.h"
 #include "il_system.h"
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -46,21 +40,12 @@ static void Quit(ILDb *db, char *argv[])
  */
 static void Pwd(ILDb *db, char *argv[])
 {
-#if HAVE_GET_CURRENT_DIR_NAME
-	char *dir = get_current_dir_name();
-#elif HAVE_GETCWD
-	char name[8192];
-	char *dir = getcwd(name, sizeof(name));
-#elif HAVE_GETWD
-	char name[8192];
-	char *dir = getwd(name);
-#else
-	char *dir = 0;
-#endif
+	char *dir = ILGetCwd();
 	ILDbInfo(db, "Working directory %s.", (dir ? dir : "."));
-#if HAVE_GET_CURRENT_DIR_NAME
-	free(dir);
-#endif
+	if(dir)
+	{
+		ILFree(dir);
+	}
 }
 
 /*
@@ -68,9 +53,11 @@ static void Pwd(ILDb *db, char *argv[])
  */
 ILDbCmdInfo ILDbSystemCommands[] = {
 	{"quit", 1, 0, 0, Quit, 0,
-		"quit help"},
+		"quit the debugger",
+		0},
 	{"pwd", 2, 0, 0, Pwd, 0,
-		"pwd help"},
+		"print the current working directory",
+		0},
 };
 int ILDbNumSystemCommands = (sizeof(ILDbSystemCommands) /
 							 sizeof(ILDbCmdInfo));

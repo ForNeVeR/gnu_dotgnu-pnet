@@ -42,6 +42,8 @@ typedef struct
 	ILDbCmdList	   *commands;			/* Registered commands */
 	ILDbCmdList	   *lastCommands;		/* Last registered command list */
 	FILE		   *traceStream;		/* Trace message stream */
+	char		  **dirSearch;			/* Directory search path */
+	int				dirSearchNum;		/* Number of search path entries */
 
 } ILDb;
 

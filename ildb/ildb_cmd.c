@@ -318,7 +318,7 @@ void ILDbDispatchCommand(ILDb *db, char *cmd)
 				}
 
 				/* Skip the sub-command name, which we have now matched */
-				if(subCmdName)
+				if(info->subName)
 				{
 					cmd += subCmdNameLen;
 					while(ILDbIsSpace(*cmd))
@@ -358,21 +358,149 @@ void ILDbDispatchCommand(ILDb *db, char *cmd)
 			ILDbError(db, "Undefined %s command: \"%s\".  Try \"help %s\".\n",
 					  cmdName, subCmdName, cmdName);
 			subCmdName[subCmdNameLen] = savech2;
+			ILDbTrace(db, "undefined command `%s'", cmdName);
 		}
 		else
 		{
 			/* No sub-command, so print a generic message */
 			ILDbError(db, "Unspecified sub-command for \"%s\".  "
 					  "Try \"help %s\".\n", cmdName, cmdName);
+			ILDbTrace(db, "sub-command required for `%s'", cmdName);
 		}
 	}
 	else
 	{
 		/* This is a regular command with no sub-commands */
 		ILDbError(db, "Undefined command: \"%s\".  Try \"help\".\n", cmdName);
+		ILDbTrace(db, "undefined command `%s'", cmdName);
 	}
 	cmdName[cmdNameLen] = savech;
 }
+
+/*
+ * Print help on specific commands.
+ */
+static void Show_Help(ILDb *db, char *argv[])
+{
+	ILDbCmdList *list;
+	int cmd;
+
+	if(argv[0] && argv[1])
+	{
+		/* Print help on a command that has sub-commands */
+		int helpShown = 0;
+		list = db->commands;
+		while(list != 0)
+		{
+			for(cmd = 0; cmd < list->numCmds; ++cmd)
+			{
+				if(CommandMatch(&(list->cmds[cmd]),
+								argv[0], strlen(argv[0]),
+							    argv[1], strlen(argv[1])) &&
+				   list->cmds[cmd].subName)
+				{
+					if(list->cmds[cmd].longHelp)
+					{
+						/* Print the long help for the command */
+						ILDbInfo(db, "%s", list->cmds[cmd].longHelp);
+						helpShown = 1;
+					}
+					else if(list->cmds[cmd].help)
+					{
+						/* Print the short help for the command */
+						ILDbInfo(db, "%s -- %s",
+								 list->cmds[cmd].name,
+								 list->cmds[cmd].help);
+						helpShown = 1;
+					}
+				}
+			}
+			list = list->next;
+		}
+		if(!helpShown)
+		{
+			ILDbError(db, "No help found for `%s %s'", argv[0], argv[1]);
+		}
+	}
+	else if(argv[0])
+	{
+		/* Print help on a main command */
+		int subCommand = 0;
+		int helpShown = 0;
+		list = db->commands;
+		while(list != 0)
+		{
+			for(cmd = 0; cmd < list->numCmds; ++cmd)
+			{
+				if(!ILStrICmp(list->cmds[cmd].name, argv[0]))
+				{
+					if(list->cmds[cmd].subName)
+					{
+						/* List short help for the matching sub-commands */
+						if(list->cmds[cmd].help)
+						{
+							/* Print the short help for the command */
+							ILDbInfo(db, "%s %s -- %s",
+									 list->cmds[cmd].name,
+									 list->cmds[cmd].subName,
+									 list->cmds[cmd].help);
+							helpShown = 1;
+						}
+						subCommand = 1;
+					}
+					else if(!subCommand)
+					{
+						if(list->cmds[cmd].longHelp)
+						{
+							/* Print the long help for the command */
+							ILDbInfo(db, "%s", list->cmds[cmd].longHelp);
+							helpShown = 1;
+						}
+						else if(list->cmds[cmd].help)
+						{
+							/* Print the short help for the command */
+							ILDbInfo(db, "%s -- %s",
+									 list->cmds[cmd].name,
+									 list->cmds[cmd].help);
+							helpShown = 1;
+						}
+					}
+				}
+			}
+			list = list->next;
+		}
+		if(!helpShown)
+		{
+			ILDbError(db, "No help found for `%s'", argv[0]);
+		}
+	}
+	else
+	{
+		/* Print help on all main commands and categories */
+		list = db->commands;
+		while(list != 0)
+		{
+			for(cmd = 0; cmd < list->numCmds; ++cmd)
+			{
+				if(!(list->cmds[cmd].subName) && list->cmds[cmd].help)
+				{
+					ILDbInfo(db, "%s -- %s",
+							 list->cmds[cmd].name,
+							 list->cmds[cmd].help);
+				}
+			}
+			list = list->next;
+		}
+	}
+}
+
+/*
+ * Table of "help" commands.
+ */
+ILDbCmdInfo ILDbHelpCommands[] = {
+	{"help", 1, 0, 0, Show_Help, 0, "print list of commands", 0},
+};
+int ILDbNumHelpCommands = (sizeof(ILDbHelpCommands) / sizeof(ILDbCmdInfo));
 
 #ifdef	__cplusplus
 };

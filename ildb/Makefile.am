@@ -8,6 +8,7 @@ ildb_SOURCES = ildb_cmd.c \
 			   ildb_input.c \
 			   ildb_list.c \
 			   ildb_main.c \
+			   ildb_search.c \
 			   ildb_set.c \
 			   ildb_show.c \
 			   ildb_system.c

@@ -46,8 +46,11 @@ typedef struct
 	/* Function that is called for commands that parse their own parameters */
 	void      (*cmdParseFunc)(ILDb *db, char *args);
 
-	/* Help message string for the command */
+	/* Short help message string for the command */
 	char	   *help;
+
+	/* Long help message string for the command */
+	char	   *longHelp;
 
 } ILDbCmdInfo;
 
@@ -79,6 +82,8 @@ extern ILDbCmdInfo ILDbSystemCommands[];
 extern int         ILDbNumSystemCommands;
 extern ILDbCmdInfo ILDbSetCommands[];
 extern int         ILDbNumSetCommands;
+extern ILDbCmdInfo ILDbHelpCommands[];
+extern int         ILDbNumHelpCommands;
 
 #ifdef	__cplusplus
 };

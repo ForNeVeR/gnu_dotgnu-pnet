@@ -21,6 +21,7 @@
 #include "ildb_context.h"
 #include "ildb_cmd.h"
 #include "ildb_utils.h"
+#include "ildb_search.h"
 #include "il_system.h"
 
 #ifdef	__cplusplus
@@ -42,12 +43,18 @@ ILDb *ILDbCreate(int argc, char **argv)
 	db->lastCommands = 0;
 	db->traceStream = 0;
 
+	/* Set the initial source directory search path */
+	db->dirSearch = 0;
+	db->dirSearchNum = 0;
+	ILDbSearchReset(db);
+
 	/* Register the standard command lists */
 	ILDbRegisterCommands(db, ILDbListCommands, ILDbNumListCommands);
 	ILDbRegisterCommands(db, ILDbDisplayCommands, ILDbNumDisplayCommands);
 	ILDbRegisterCommands(db, ILDbShowCommands, ILDbNumShowCommands);
 	ILDbRegisterCommands(db, ILDbSystemCommands, ILDbNumSystemCommands);
 	ILDbRegisterCommands(db, ILDbSetCommands, ILDbNumSetCommands);
+	ILDbRegisterCommands(db, ILDbHelpCommands, ILDbNumHelpCommands);
 
 	/* Return the context to the caller */
 	return db;
@@ -56,6 +63,7 @@ ILDb *ILDbCreate(int argc, char **argv)
 void ILDbDestroy(ILDb *db)
 {
 	ILDbFreeCommands(db);
+	ILDbSearchDestroy(db);
 	ILDbTraceClose(db);
 	ILFree(db);
 }

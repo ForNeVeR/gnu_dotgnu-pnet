@@ -1,7 +1,7 @@
 /*
- * ildb_display.c - Processing for "display" and "print" commands.
+ * ildb_search.h - Support for searching for source files.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,33 +18,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "ildb_context.h"
-#include "ildb_utils.h"
-#include "ildb_cmd.h"
-#include "il_system.h"
+#ifndef	_ILDB_SEARCH_H
+#define	_ILDB_SEARCH_H
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
 
 /*
- * Display the value of an expression every time we stop.
+ * Destroy the source search path.
  */
-static void Display(ILDb *db, char *args)
-{
-}
+void ILDbSearchDestroy(ILDb *db);
 
 /*
- * Table of "display" and "print" commands.
+ * Reset the source search path.
  */
-ILDbCmdInfo ILDbDisplayCommands[] = {
-	{"display", 4, 0, 0, 0, Display,
-		"print an expression value each time the program stops",
-		0},
-};
-int ILDbNumDisplayCommands = (sizeof(ILDbDisplayCommands) /
-							  sizeof(ILDbCmdInfo));
+void ILDbSearchReset(ILDb *db);
+
+/*
+ * Add a directory to the front of the source search path if
+ * it is not already present.
+ */
+void ILDbSearchAdd(ILDb *db, const char *directory);
+
+/*
+ * Print the source search path.
+ */
+void ILDbSearchPrint(ILDb *db);
 
 #ifdef	__cplusplus
 };
 #endif
+
+#endif	/* _ILDB_SEARCH_H */

@@ -21,6 +21,7 @@
 #include "ildb_context.h"
 #include "ildb_utils.h"
 #include "ildb_cmd.h"
+#include "ildb_search.h"
 #include "il_system.h"
 
 #ifdef	__cplusplus
@@ -30,9 +31,51 @@ extern	"C" {
 /*
  * Set the directories that are searched for source files.
  */
-static void Set_Directories(ILDb *db, char *argv[])
+static void Set_Directory(ILDb *db, char *argv[])
 {
-	ILDbInfo(db, "Source directories searched: $cdir:$cwd");
+	int posn;
+	char *dir;
+	int len;
+
+	/* Reset the path or add new entries to it */
+	if(!(argv[0]))
+	{
+		/* TODO: query the user before obliterating the path */
+		ILDbSearchReset(db);
+	}
+	else
+	{
+		/* Process the entries in reverse order, so that they
+		   are moved to the front of the path correctly */
+		posn = 0;
+		while(argv[posn + 1] != 0)
+		{
+			++posn;
+		}
+		while(posn >= 0)
+		{
+			/* Split this argument into sections separated by ':' */
+			dir = argv[posn];
+			len = strlen(dir);
+			while(len > 0)
+			{
+				while(len > 0 && dir[len - 1] != ':')
+				{
+					--len;
+				}
+				ILDbSearchAdd(db, dir + len);
+				if(len > 0)
+				{
+					--len;
+					dir[len] = '\0';
+				}
+			}
+			--posn;
+		}
+	}
+
+	/* Print the new state of the directory search path */
+	ILDbSearchPrint(db);
 }
 
 /*
@@ -49,10 +92,12 @@ static void Set_Default(ILDb *db, char *argv[])
  * Table of "set" commands.
  */
 ILDbCmdInfo ILDbSetCommands[] = {
-	{"directories", 2, 0, 0, Set_Directories, 0,
-		"set directories help"},
+	{"directory", 3, 0, 0, Set_Directory, 0,
+		"set the directories to search for source files",
+		0},
 	{"set", 3, 0, 0, Set_Default, 0,
-		"set help"},
+		"set debugger options and variables",
+		0},
 };
 int ILDbNumSetCommands = (sizeof(ILDbSetCommands) / sizeof(ILDbCmdInfo));
 

@@ -38,10 +38,10 @@ static void List(ILDb *db, char *args)
  * Table of "list" commands.
  */
 ILDbCmdInfo ILDbListCommands[] = {
-	{"l", 1, 0, 0, 0, List,
-		"list help"},
+	{"l", 1, 0, 0, 0, List, 0, 0},
 	{"list", 2, 0, 0, 0, List,
-		"list help"},
+		"list source lines",
+		0},
 };
 int ILDbNumListCommands = (sizeof(ILDbListCommands) / sizeof(ILDbCmdInfo));
 

@@ -551,9 +551,6 @@ case IL_OP_NEWARR:
 	if(classType != 0 &&
 	   (STK_UNARY == ILEngineType_I || STK_UNARY == ILEngineType_I4))
 	{
-		/* TODO: We need to find some way to cache the array type
-		   so that we don't keep recreating new arrays every time
-		   the method is converted */
 		classType = ILTypeCreateArray
 				(ILImageToContext(ILProgramItem_Image(method)), 1, classType);
 		if(!classType)

@@ -22,6 +22,8 @@
 	* engine/verify.c (AssignCompatible): allow managed pointers to
 	be assigned to any pointer-like destination in "unsafe" mode.
 
+	* engine/verify_ptr.c: remove obsolete comment.
+
 2002-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am: add mising .h files to the install.

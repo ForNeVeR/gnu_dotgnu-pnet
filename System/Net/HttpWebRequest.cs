@@ -489,7 +489,6 @@ public class HttpWebRequest : WebRequest
 		}
 	}
 
-	[TODO]
 	public override IWebProxy Proxy 
 	{
 		get
@@ -738,16 +737,19 @@ public class HttpWebRequest : WebRequest
 		private static Socket OpenSocket(HttpWebRequest req)
 		{
 			IPAddress ip=null;
-			if(req.Address.HostNameType == UriHostNameType.Dns)
+			Uri nextHop=(req.Proxy!=null) ?
+			       	req.Proxy.GetProxy(req.Address) : req.Address;
+			
+			if(nextHop.HostNameType == UriHostNameType.Dns)
 			{
-				ip=Dns.Resolve(req.Address.Host).AddressList[0];
+				ip=Dns.Resolve(nextHop.Host).AddressList[0];
 			}
-			else if(req.Address.HostNameType == UriHostNameType.IPv4 ||
-					req.Address.HostNameType == UriHostNameType.IPv6)
+			else if(nextHop.HostNameType == UriHostNameType.IPv4 ||
+					nextHop.HostNameType == UriHostNameType.IPv6)
 			{
-				ip=IPAddress.Parse(req.Address.Host);
+				ip=IPAddress.Parse(nextHop.Host);
 			}
-			IPEndPoint ep = new IPEndPoint(ip,req.Address.Port);
+			IPEndPoint ep = new IPEndPoint(ip,nextHop.Port);
 			Socket server=new 
 					Socket(ip.AddressFamily, SocketType.Stream,
 							ProtocolType.Tcp);
@@ -761,6 +763,7 @@ public class HttpWebRequest : WebRequest
 			if(req.isSecured)
 			{
 #if CONFIG_SSL
+				/* TODO: Tunnel via Proxy before starting SSL */
 				SecureConnection secured=new SecureConnection();
 				Stream retval=secured.OpenStream(sock);
 				return retval;
@@ -779,10 +782,21 @@ public class HttpWebRequest : WebRequest
 			StreamWriter writer=new StreamWriter(this);
 			request.headerSent=true; 
 			/* fake it before sending to allow for atomicity */
-			String requestString= request.Method+" "+
+			String requestString= null;
+			if(request.Proxy!=null)
+			{
+				requestString= request.Method+" "+
+					request.Address+
+					" HTTP/"+request.protocolVersion.Major+
+					"."+request.protocolVersion.Minor+"\r\n";
+			}
+			else
+			{
+				requestString= request.Method+" "+
 					request.Address.PathAndQuery+
 					" HTTP/"+request.protocolVersion.Major+
 					"."+request.protocolVersion.Minor+"\r\n";
+			}
 			writer.Write(requestString);
 			writer.Write(request.Headers.ToString());
 			writer.Write("\r\n");// terminating CRLF

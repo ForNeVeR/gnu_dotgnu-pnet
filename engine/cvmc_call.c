@@ -301,6 +301,54 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 			return 1;
 		}
 		/* Not reached */
+
+		case IL_INLINEMETHOD_GET2D_INT:
+		{
+			CVMP_OUT_NONE(COP_PREFIX_GET2D);
+			CVM_OUT_NONE(COP_IREAD);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_GET2D_OBJECT:
+		{
+			CVMP_OUT_NONE(COP_PREFIX_GET2D);
+			CVM_OUT_NONE(COP_PREAD);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_GET2D_DOUBLE:
+		{
+			CVMP_OUT_NONE(COP_PREFIX_GET2D);
+			CVM_OUT_NONE(COP_DREAD);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_SET2D_INT:
+		{
+			CVMP_OUT_WORD(COP_PREFIX_SET2D, 1);
+			CVM_OUT_NONE(COP_IWRITE);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_SET2D_OBJECT:
+		{
+			CVMP_OUT_WORD(COP_PREFIX_SET2D, 1);
+			CVM_OUT_NONE(COP_PWRITE);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_SET2D_DOUBLE:
+		{
+			CVMP_OUT_WORD(COP_PREFIX_SET2D, CVM_WORDS_PER_NATIVE_FLOAT);
+			CVM_OUT_NONE(COP_DWRITE);
+			return 1;
+		}
+		/* Not reached */
 	}
 
 	/* If we get here, then we don't know how to inline the method */

@@ -798,6 +798,24 @@ static void InsertCtorArgs(ILEngineStackItem *stack, ILUInt32 stackSize,
 }
 
 /*
+ * Determine if a class corresponds to a synthetic 2-D array type.
+ */
+static int Is2DArrayClass(ILClass *classInfo)
+{
+	ILType *type;
+	type = ILClassGetSynType(ILClassResolve(classInfo));
+	if(type && ILType_IsArray(type))
+	{
+		if(ILType_Kind(type) == IL_TYPE_COMPLEX_ARRAY_CONTINUE &&
+		   ILType_Kind(ILType_ElemType(type)) == IL_TYPE_COMPLEX_ARRAY)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/*
  * Determine if a method is inlineable, and return its inline type.
  * Returns -1 if the method is not inlineable.
  */
@@ -926,6 +944,45 @@ static int GetInlineMethodType(ILMethod *method)
 		   					  "(vSystem.RuntimeTypeHandle;)oSystem.Type;"))
 		{
 			return IL_INLINEMETHOD_TYPE_FROM_HANDLE;
+		}
+		return -1;
+	}
+	else if(Is2DArrayClass(owner))
+	{
+		/* Two-dimensional array operation */
+		name = ILMethod_Name(method);
+		signature = ILMethod_Signature(method);
+		if(!strcmp(name, "Get"))
+		{
+			signature = ILTypeGetReturn(signature);
+			if(signature == ILType_Int32)
+			{
+				return IL_INLINEMETHOD_GET2D_INT;
+			}
+			else if(signature == ILType_Float64)
+			{
+				return IL_INLINEMETHOD_GET2D_DOUBLE;
+			}
+			else if(ILType_IsClass(signature))
+			{
+				return IL_INLINEMETHOD_GET2D_OBJECT;
+			}
+		}
+		else if(!strcmp(name, "Set") && ILTypeNumParams(signature) > 0)
+		{
+			signature = ILTypeGetParam(signature, ILTypeNumParams(signature));
+			if(signature == ILType_Int32)
+			{
+				return IL_INLINEMETHOD_SET2D_INT;
+			}
+			else if(signature == ILType_Float64)
+			{
+				return IL_INLINEMETHOD_SET2D_DOUBLE;
+			}
+			else if(ILType_IsClass(signature))
+			{
+				return IL_INLINEMETHOD_SET2D_OBJECT;
+			}
 		}
 		return -1;
 	}

@@ -407,6 +407,8 @@ unsigned char const _ILCVMLengths[512] = {
 	/* lwrite_elem */		CVMP_LEN_NONE,
 	/* fwrite_elem */		CVMP_LEN_NONE,
 	/* dwrite_elem */		CVMP_LEN_NONE,
+	/* get2d */				CVMP_LEN_NONE,
+	/* set2d */				CVMP_LEN_WORD,
 
 	/*
 	 * Prefixed call management opcodes.
@@ -427,8 +429,6 @@ unsigned char const _ILCVMLengths[512] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	/* preserved_1c */		CVMP_LEN_NONE,
-	/* preserved_1d */		CVMP_LEN_NONE,
 	/* preserved_1e */		CVMP_LEN_NONE,
 
 	/*

@@ -1,4 +1,11 @@
 
+2002-12-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm_lengths.c, engine/cvm_ptr.c, engine/cvmc_call.c,
+	engine/verify_call.c, include/il_coder.h: inline 2-D array
+	accesses with new CVM instructions, which speeds up the Float
+	benchmark in PNetMark quite considerably.
+
 2002-12-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/ilrun.c, engine/lib_defs.h, engine/lib_diag.c,

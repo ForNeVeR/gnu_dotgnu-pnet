@@ -125,6 +125,12 @@ public class ILGenerator : IDetachItem
 				tokenFixups = null;
 				module.assembly.AddDetach(this);
 			}
+	private ILGenerator(ModuleBuilder module, byte[] explicitBody)
+			: this(module, explicitBody.Length)
+			{
+				Array.Copy(explicitBody, 0, code, 0, explicitBody.Length);
+				maxHeight = 8;
+			}
 
 	// Terminate the previous exception clause.
 	private void TerminateClause()
@@ -1222,6 +1228,23 @@ public class ILGenerator : IDetachItem
 	void IDetachItem.Detach()
 			{
 				tokenFixups = null;
+			}
+
+	// Write the contents of this generator to the code section
+	// and return the RVA that corresponds to it.
+	internal int WriteCode(bool initLocals)
+			{
+				// TODO
+				return 0;
+			}
+
+	// Write an explicit method body to the code section and
+	// return the RVA that corresponds to it.
+	internal static int WriteExplicitCode
+				(ModuleBuilder module, byte[] explicitBody, bool initLocals)
+			{
+				ILGenerator ilgen = new ILGenerator(module, explicitBody);
+				return ilgen.WriteCode(initLocals);
 			}
 
 }; // class ILGenerator.cs

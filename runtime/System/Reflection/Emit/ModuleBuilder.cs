@@ -690,6 +690,14 @@ public class ModuleBuilder : Module, IDetachItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static int ClrModuleCreateString(IntPtr module, String str);
 
+	// Write data directly to the ".sdata" section of a module.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static int ClrModuleWriteData(IntPtr module, byte[] data);
+
+	// Write zero data directly to the ".sdata" section of a module.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static int ClrModuleWriteGap(IntPtr module, int size);
+
 }; // class ModuleBuilder
 
 #endif // !ECMA_COMPAT

@@ -3,6 +3,17 @@
 
 	* tests/System.Xml/TestXmlTextWriter.cs: ECMA fix for test case.
 
+	* runtime/System/Reflection/Emit/ConstructorBuilder.cs,
+	runtime/System/Reflection/Emit/FieldBuilder.cs,
+	runtime/System/Reflection/Emit/ILGenerator.cs,
+	runtime/System/Reflection/Emit/LocalBuilder.cs,
+	runtime/System/Reflection/Emit/MethodBuilder.cs,
+	runtime/System/Reflection/Emit/ModuleBuilder.cs,
+	runtime/System/Reflection/Emit/ParameterBuilder.cs,
+	runtime/System/Reflection/Emit/PropertyBuilder.cs,
+	runtime/System/Reflection/Emit/TypeBuilder.cs: continue implementation
+	of the Reflection.Emit API.
+
 2003-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs,

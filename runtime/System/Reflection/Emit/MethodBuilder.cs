@@ -26,6 +26,7 @@ namespace System.Reflection.Emit
 
 using System;
 using System.Security;
+using System.Text;
 using System.Reflection;
 using System.Globalization;
 using System.Security.Permissions;
@@ -65,7 +66,28 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem, IDetachItem
 				{
 					returnType = typeof(void);
 				}
-				// TODO
+				if((attributes & MethodAttributes.Static) == 0)
+				{
+					callingConvention |= CallingConventions.HasThis;
+				}
+				else if((attributes & MethodAttributes.Virtual) != 0)
+				{
+					throw new ArgumentException
+						(_("Emit_BothStaticAndVirtual"));
+				}
+				if((type.Attributes & TypeAttributes.ClassSemanticsMask)
+						== TypeAttributes.Interface &&
+				   (attributes & MethodAttributes.SpecialName) == 0)
+				{
+					if((attributes & (MethodAttributes.Virtual |
+									  MethodAttributes.Abstract))
+						!= (MethodAttributes.Virtual |
+							MethodAttributes.Abstract))
+					{
+						throw new ArgumentException
+							(_("Emit_InterfaceMethodAttrs"));
+					}
+				}
 
 				// Set the local state.
 				this.type = type;
@@ -162,7 +184,7 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem, IDetachItem
 							("position", _("Emit_InvalidParamNum"));
 					}
 					return new ParameterBuilder
-						(this, position, attributes, strParamName);
+						(type, this, position, attributes, strParamName);
 				}
 				finally
 				{
@@ -320,7 +342,7 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem, IDetachItem
 					if(returnBuilder != null)
 					{
 						returnBuilder = new ParameterBuilder
-							(this, 0, ParameterAttributes.None, null);
+							(type, this, 0, ParameterAttributes.None, null);
 					}
 					returnBuilder.SetMarshal(unmanagedMarshal);
 				}
@@ -383,11 +405,20 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem, IDetachItem
 			}
 
 	// Convert this method into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return String.Empty;
+				StringBuilder builder = new StringBuilder();
+				builder.Append("Name: ");
+				builder.Append(Name);
+				builder.Append(Environment.NewLine);
+				builder.Append("Attributes: ");
+				builder.Append(Attributes.ToString());
+				builder.Append(Environment.NewLine);
+				builder.Append("Method Signature: ");
+				builder.Append(helper.ToString());
+				builder.Append(Environment.NewLine);
+				builder.Append(Environment.NewLine);
+				return builder.ToString();
 			}
 
 	// Get the attributes for this method.
@@ -507,7 +538,31 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem, IDetachItem
 	// Finalize this method by writing its code to the output image.
 	internal void FinalizeMethod()
 			{
-				// TODO
+				int rva;
+				if(bodySet)
+				{
+					if(explicitBody == null)
+					{
+						rva = 0;
+					}
+					else
+					{
+						rva = ILGenerator.WriteExplicitCode
+							(type.module, explicitBody, initLocals);
+					}
+				}
+				else if(ilGenerator != null)
+				{
+					rva = ilGenerator.WriteCode(initLocals);
+				}
+				else
+				{
+					rva = 0;
+				}
+				lock(typeof(AssemblyBuilder))
+				{
+					ClrMethodSetRVA(privateData, rva);
+				}
 			}
 
 	// Detach this item.
@@ -531,6 +586,15 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem, IDetachItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static int ClrMethodCreateVarArgRef
 			(IntPtr module, int methodToken, IntPtr signature);
+
+	// Set the RVA for a method's code.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static void ClrMethodSetRVA(IntPtr method, int rva);
+
+	// Add a PInvoke declaration to a method.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static void ClrMethodAddPInvoke
+			(IntPtr method, int pinvAttrs, String dllName, String entryName);
 
 }; // class MethodBuilder
 

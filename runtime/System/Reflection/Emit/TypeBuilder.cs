@@ -71,10 +71,6 @@ public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 				{
 					nspace = String.Empty;
 				}
-				// TODO
-
-				// Check for an existing type with this name.
-				// TODO
 
 				// Initialize the internal state.
 				this.module = module;
@@ -89,18 +85,33 @@ public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 				this.methods = new ArrayList();
 				this.needsDefaultConstructor = true;
 
-				// Register this item to be detached later.
-				module.assembly.AddDetach(this);
-
-				// Create the type.
+				// We need the AssemblyBuilder lock for the next part.
 				lock(typeof(AssemblyBuilder))
 				{
+					// Determine the scope to use to declare the type.
+					IntPtr scope;
+					if(declaringType == null)
+					{
+						scope = IntPtr.Zero;
+					}
+					else
+					{
+						scope = ((IClrProgramItem)declaringType).ClrHandle;
+					}
+
+					// Create the type.
 					privateData = ClrTypeCreate
-						(((IClrProgramItem)module).ClrHandle, name,
+						(((IClrProgramItem)module).ClrHandle, scope, name,
 					 	(nspace == String.Empty ? null : nspace), attr,
 					 	(parent == null
 							? new System.Reflection.Emit.TypeToken(0)
 					 		: module.GetTypeToken(parent)));
+					if(privateData == IntPtr.Zero)
+					{
+						throw new ArgumentException
+							(_("Emit_TypeAlreadyExists"));
+					}
+					module.assembly.AddDetach(this);
 					if(packingSize != PackingSize.Unspecified)
 					{
 						ClrTypeSetPackingSize(privateData, (int)packingSize);
@@ -606,7 +617,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 				// Define the field and set the data on it.
 				FieldBuilder field = DefineField
 					(name, type, attributes | FieldAttributes.Static);
-				// TODO: set the data
+				field.SetData(data, size);
 				return field;
 			}
 
@@ -657,14 +668,38 @@ public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 			}
 
 	// Define a method override declaration for this class.
-	[TODO]
 	public void DefineMethodOverride
 				(MethodInfo methodInfoBody, MethodInfo methodInfoDeclaration)
 			{
 				try
 				{
 					StartSync();
-					// TODO
+					
+					// Validate the parameters.
+					if(methodInfoBody == null)
+					{
+						throw new ArgumentNullException("methodInfoBody");
+					}
+					if(methodInfoDeclaration == null)
+					{
+						throw new ArgumentNullException
+							("methodInfoDeclaration");
+					}
+					if(methodInfoBody.DeclaringType != this)
+					{
+						throw new ArgumentException
+							(_("Emit_OverrideBodyNotInType"));
+					}
+					MethodToken bodyToken = module.GetMethodToken
+						(methodInfoBody);
+					MethodToken declToken = module.GetMethodToken
+						(methodInfoDeclaration);
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrTypeAddOverride
+							(module.privateData,
+							 bodyToken.Token, declToken.Token);
+					}
 				}
 				finally
 				{
@@ -727,7 +762,6 @@ public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 			}
 
 	// Define a PInvoke method for this class.
-	[TODO]
 	public MethodBuilder DefinePInvokeMethod
 				(String name, String dllName, String entryName,
 				 MethodAttributes attributes,
@@ -738,9 +772,76 @@ public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 			{
 				try
 				{
+					// Lock down the assembly while we do this.
 					StartSync();
-					// TODO
-					return null;
+
+					// Validate the parameters.
+					if(name == null)
+					{
+						throw new ArgumentNullException("name");
+					}
+					if(name == String.Empty)
+					{
+						throw new ArgumentException(_("Emit_NameEmpty"));
+					}
+					if(dllName == null)
+					{
+						throw new ArgumentNullException("dllName");
+					}
+					if(dllName == String.Empty)
+					{
+						throw new ArgumentException(_("Emit_NameEmpty"));
+					}
+					if(entryName == null)
+					{
+						throw new ArgumentNullException("entryName");
+					}
+					if(entryName == String.Empty)
+					{
+						throw new ArgumentException(_("Emit_NameEmpty"));
+					}
+					if((type.Attributes & TypeAttributes.ClassSemanticsMask)
+							== TypeAttributes.Interface)
+					{
+						throw new ArgumentException
+							(_("Emit_PInvokeInInterface"));
+					}
+					if((attributes & MethodAttributes.Abstract) != 0)
+					{
+						throw new ArgumentException
+							(_("Emit_PInvokeAbstract"));
+					}
+
+					// Create the underlying method.
+					MethodBuilder method = new MethodBuilder
+							(this, name,
+							 attributes | MethodAttributes.PinvokeImpl,
+							 callingConvention, returnType, parameterTypes);
+
+					// Build the attributes for the PInvoke declaration.
+					int pinvAttrs = (((int)nativeCallConv) << 8);
+					switch(nativeCharSet)
+					{
+						case CharSet.Ansi:		pinvAttrs |= 0x0002; break;
+						case CharSet.Unicode:	pinvAttrs |= 0x0004; break;
+						case CharSet.Auto:		pinvAttrs |= 0x0006; break;
+						default:				break;
+					}
+
+					// Create the PInvoke declaration on the method.
+					if(entryName == name)
+					{
+						entryName = null;
+					}
+					lock(typeof(AssemblyBuilder))
+					{
+						MethodBuilder.ClrMethodAddPInvoke
+							(((IClrProgramItem)method).ClrHandle,
+							 pinvAttrs, dllName, entryName);
+					}
+
+					// Return the method to the caller.
+					return method;
 				}
 				finally
 				{
@@ -781,16 +882,11 @@ public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 	// Define a type initializer for this class.
 	public ConstructorBuilder DefineTypeInitializer()
 			{
-				try
-				{
-					StartSync();
-					// TODO
-					return null;
-				}
-				finally
-				{
-					EndSync();
-				}
+				return DefineConstructor(MethodAttributes.Private |
+										 MethodAttributes.Static |
+										 MethodAttributes.SpecialName,
+										 CallingConventions.Standard,
+										 null);
 			}
 
 	// Define uninitialized data within this class.
@@ -1165,7 +1261,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 	// Create a new type.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrTypeCreate
-			(IntPtr module, String name, String nspace,
+			(IntPtr module, IntPtr nestedParent, String name, String nspace,
 			 TypeAttributes attr, TypeToken parent);
 
 	// Set the parent of a type to a new value.
@@ -1205,6 +1301,11 @@ public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static int ClrTypeImportMember
 			(IntPtr module, IntPtr memberInfo);
+
+	// Add an override declaration.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrTypeAddOverride
+			(IntPtr module, int bodyToken, int declToken);
 
 }; // class TypeBuilder
 

@@ -44,12 +44,10 @@ public sealed class LocalBuilder
 				this.index = index;
 			}
 
-	// Set the symbol information for a local variable.
-	[TODO]
+	// Set the symbol information for a local variable.  Not used here.
 	public void SetLocalSymInfo(String lname, int startOffset, int endOffset)
 			{
 				name = lname;
-				// TODO: write debug information about the local variable
 			}
 	public void SetLocalSymInfo(String lname)
 			{

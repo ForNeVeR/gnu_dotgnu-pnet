@@ -302,6 +302,26 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem, IDetachItem
 				privateData = IntPtr.Zero;
 			}
 
+	// Set data on this field within the ".sdata" section of the binary.
+	internal void SetData(byte[] data, int size)
+			{
+				int rva;
+				lock(typeof(AssemblyBuilder))
+				{
+					if(data != null)
+					{
+						rva = ModuleBuilder.ClrModuleWriteData
+							(type.module.privateData, data);
+					}
+					else
+					{
+						rva = ModuleBuilder.ClrModuleWriteGap
+							(type.module.privateData, size);
+					}
+					ClrFieldSetRVA(privateData, rva);
+				}
+			}
+
 	// Create a new field and attach it to a particular class.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrFieldCreate
@@ -312,13 +332,18 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem, IDetachItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static void ClrFieldSetOffset(IntPtr item, int offset);
 
-	// Internal version of "SetMarshal".
+	// Internal version of "SetMarshal" (used by ParameterBuilder also).
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void ClrFieldSetMarshal(IntPtr item, byte[] data);
+	extern internal static void ClrFieldSetMarshal(IntPtr item, byte[] data);
 
-	// Internal version of "SetConstant".
+	// Internal version of "SetConstant" (used by ParameterBuilder and
+	// PropertyBuilder also).
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void ClrFieldSetConstant(IntPtr item, Object value);
+	extern internal static void ClrFieldSetConstant(IntPtr item, Object value);
+
+	// Set the RVA on a field.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrFieldSetRVA(IntPtr item, int rva);
 
 }; // class FieldBuilder
 

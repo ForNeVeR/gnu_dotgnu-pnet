@@ -25,6 +25,7 @@ namespace System.Reflection.Emit
 #if !ECMA_COMPAT
 
 using System;
+using System.Text;
 using System.Security;
 using System.Reflection;
 using System.Globalization;
@@ -107,7 +108,7 @@ public sealed class ConstructorBuilder
 							("iSequence", _("Emit_InvalidParamNum"));
 					}
 					return new ParameterBuilder
-						(this, iSequence, attributes, strParamName);
+						(type, this, iSequence, attributes, strParamName);
 				}
 				finally
 				{
@@ -250,11 +251,20 @@ public sealed class ConstructorBuilder
 			}
 
 	// Convert this constructor into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return String.Empty;
+				StringBuilder builder = new StringBuilder();
+				builder.Append("Name: ");
+				builder.Append(Name);
+				builder.Append(Environment.NewLine);
+				builder.Append("Attributes: ");
+				builder.Append(Attributes.ToString());
+				builder.Append(Environment.NewLine);
+				builder.Append("Method Signature: ");
+				builder.Append(helper.ToString());
+				builder.Append(Environment.NewLine);
+				builder.Append(Environment.NewLine);
+				return builder.ToString();
 			}
 
 	// Get the attributes for this constructor.
@@ -352,7 +362,19 @@ public sealed class ConstructorBuilder
 	// Finalize this constructor by writing its code to the output image.
 	internal void FinalizeConstructor()
 			{
-				// TODO
+				int rva;
+				if(ilGenerator != null)
+				{
+					rva = ilGenerator.WriteCode(initLocals);
+				}
+				else
+				{
+					rva = 0;
+				}
+				lock(typeof(AssemblyBuilder))
+				{
+					MethodBuilder.ClrMethodSetRVA(privateData, rva);
+				}
 			}
 
 	// Detach this item.

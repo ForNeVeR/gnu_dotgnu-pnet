@@ -188,7 +188,8 @@ public sealed class PropertyBuilder
 					FieldBuilder.ValidateConstant(returnType, defaultValue);
 					lock(typeof(AssemblyBuilder))
 					{
-						ClrPropertySetConstant(privateData, defaultValue);
+						FieldBuilder.ClrFieldSetConstant
+							(privateData, defaultValue);
 					}
 				}
 				finally
@@ -405,11 +406,6 @@ public sealed class PropertyBuilder
 	extern private static void ClrPropertyAddSemantics
 			(IntPtr item, MethodSemanticsAttributes attr,
 			 MethodToken token);
-
-	// Internal version of "SetConstant".
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void ClrPropertySetConstant
-			(IntPtr item, Object value);
 
 }; // class PropertyBuilder
 

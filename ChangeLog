@@ -9,6 +9,10 @@
 	load the global C variable and function definitions from the
 	link images into a hash table prior to processing.
 
+	* ilalink/link_class.c, ilalink/link_image.c, ilalink/link_type.c,
+	ilalink/linker.h: rename private classes in C object files so
+	that the same name can be used in multiple objects (e.g. "$strings").
+
 2002-08-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_grammar.y, cscc/c/c_scope.c, cscc/c/c_scope.h,

@@ -248,12 +248,14 @@ int ILLinkerPerformLink(ILLinker *linker)
 {
 	ILLinkImage *image = linker->images;
 	int ok = 1;
+	linker->imageNum = 1;
 	while(image != 0)
 	{
 		if(!ProcessImage(linker, image->image, image->filename))
 		{
 			ok = 0;
 		}
+		++(linker->imageNum);
 		image = image->next;
 	}
 	return ok;

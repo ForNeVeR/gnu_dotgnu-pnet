@@ -125,6 +125,7 @@ struct _tagILLinker
 	int				is32Bit;		/* Non-zero if "-m32bit-only" supplied */
 	ILLinkImage    *images;			/* List of images to be linked */
 	ILLinkImage    *lastImage;		/* Last image on the "images" list */
+	ILUInt32		imageNum;		/* Number of the image being linked */
 	unsigned long	resourceRVA;	/* RVA of resource section start */
 	ILMethod       *entryPoint;		/* Current entry point that is set */
 	ILUInt32		dataLength;		/* Length of ".sdata" section */
@@ -314,6 +315,12 @@ const char *_ILLinkerModuleName(ILLinker *linker);
  * Get the module class information record for the current image.
  */
 ILClass *_ILLinkerModuleClass(ILLinker *linker);
+
+/*
+ * Get a new name for a private class, that must be renamed
+ * to prevent clashes with similar classes in other modules.
+ */
+char *_ILLinkerNewClassName(ILLinker *linker, ILClass *classInfo);
 
 #ifdef	__cplusplus
 };

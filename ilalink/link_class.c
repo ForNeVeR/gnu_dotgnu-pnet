@@ -35,6 +35,7 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 	ILClass *parent;
 	const char *name;
 	const char *namespace;
+	char *newName = 0;
 	int isModule = 0;
 	ILClassLayout *layout;
 	ILImplements *implements;
@@ -69,6 +70,17 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		/* Map the "<Module>" class to its final name */
 		name = _ILLinkerModuleName(linker);
 	}
+	else if(ILClass_IsPrivate(classInfo) && linker->memoryModel != 0)
+	{
+		/* Rename the private class to prevent name clashes
+		   with definitions in other C object files */
+		newName = _ILLinkerNewClassName(linker, classInfo);
+		if(newName)
+		{
+			name = newName;
+			namespace = 0;
+		}
+	}
 	newClass = ILClassLookup(scope, name, namespace);
 	if(newClass)
 	{
@@ -80,6 +92,10 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 			if(!newClass)
 			{
 				_ILLinkerOutOfMemory(linker);
+				if(newName)
+				{
+					ILFree(newName);
+				}
 				return 0;
 			}
 		}
@@ -98,6 +114,10 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 								classInfo, 0);
 				fputs(" : defined multiple times\n", stderr);
 				linker->error = 1;
+				if(newName)
+				{
+					ILFree(newName);
+				}
 				return 1;
 			}
 		}
@@ -109,8 +129,16 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		if(!newClass)
 		{
 			_ILLinkerOutOfMemory(linker);
+			if(newName)
+			{
+				ILFree(newName);
+			}
 			return 0;
 		}
+	}
+	if(newName)
+	{
+		ILFree(newName);
 	}
 
 	/* Copy the class attributes if this isn't the "<Module>" type */
@@ -264,6 +292,24 @@ int _ILLinkerConvertClasses(ILLinker *linker, ILImage *image)
 
 	/* Done */
 	return 1;
+}
+
+char *_ILLinkerNewClassName(ILLinker *linker, ILClass *classInfo)
+{
+	char buf[64];
+	const char *name = ILClass_Name(classInfo);
+	char *newName;
+	sprintf(buf, "-%lu-%lu", (unsigned long)(linker->imageNum),
+			(unsigned long)(ILClass_Token(classInfo) & ~IL_META_TOKEN_MASK));
+	newName = (char *)ILMalloc(strlen(name) + strlen(buf) + 1);
+	if(!newName)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	strcpy(newName, name);
+	strcat(newName, buf);
+	return newName;
 }
 
 #ifdef	__cplusplus

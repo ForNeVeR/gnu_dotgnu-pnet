@@ -46,6 +46,7 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 	ILLibrary *library;
 	const char *name;
 	const char *namespace;
+	char *newName = 0;
 	int result;
 
 	/* Is the class nested? */
@@ -127,19 +128,42 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 	{
 		name = _ILLinkerModuleName(linker);
 	}
+	else if(ILClass_IsPrivate(classInfo) && linker->memoryModel != 0)
+	{
+		/* Rename the private class to prevent name clashes
+		   with definitions in other C object files */
+		newName = _ILLinkerNewClassName(linker, classInfo);
+		if(newName)
+		{
+			name = newName;
+			namespace = 0;
+		}
+	}
 	newClass = ILClassLookup(scope, name, namespace);
 	if(newClass)
 	{
 		*resultInfo = newClass;
+		if(newName)
+		{
+			ILFree(newName);
+		}
 		return CONVERT_REF_LOCAL;
 	}
 	newClass = ILClassCreateRef(scope, 0, name, namespace);
 	if(!newClass)
 	{
 		_ILLinkerOutOfMemory(linker);
+		if(newName)
+		{
+			ILFree(newName);
+		}
 		return CONVERT_REF_MEMORY;
 	}
 	*resultInfo = newClass;
+	if(newName)
+	{
+		ILFree(newName);
+	}
 	return CONVERT_REF_LOCAL;
 }
 

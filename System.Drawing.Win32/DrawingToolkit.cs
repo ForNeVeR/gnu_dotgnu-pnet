@@ -765,6 +765,20 @@ WindowText				= 26,*/
 		return new DrawingWindowBuffer(window);
 	}
 
+	internal static IntPtr RectanglesToRegion(Rectangle[] rects)
+	{
+		IntPtr region = Win32.Api.CreateRectRgn(0,0,0,0);
+		IntPtr region1 = Win32.Api.CreateRectRgn(0,0,0,0);
+		for (int i = 0; i < rects.Length; i++)
+		{
+			Rectangle rect = rects[i];
+			Win32.Api.SetRectRgn(region1, rect.Left, rect.Top, rect.Right, rect.Bottom);
+			Win32.Api.CombineRgn(region, region, region1, Win32.Api.RegionCombineMode.RGN_OR);
+		}
+		Win32.Api.DeleteObject(region1);
+		return region;
+	}
+
 }; // class DrawingToolkit
 
 }; // namespace System.Drawing.Toolkit

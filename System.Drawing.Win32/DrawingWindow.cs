@@ -336,7 +336,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	public void Invalidate()
 	{
 		if (hwnd != IntPtr.Zero)
-			Win32.Api.InvalidateRect(hwnd, IntPtr.Zero, true);
+			Win32.Api.InvalidateRect(hwnd, IntPtr.Zero, false);
 		//Console.WriteLine("DrawingWindow.Invalidate, "+sink);
 	}
 

@@ -932,6 +932,9 @@ internal class Api
 
 	[DllImport("gdi32")]
 	public static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
+	
+	[DllImport("gdi32")]
+	public static extern bool SetRectRgn(IntPtr hrgn, int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
 
 	[DllImport("gdi32")]
 	public static extern int CombineRgn( IntPtr hrgnDest, IntPtr hrgnSrc1, IntPtr hrgnSrc2, RegionCombineMode fnCombineMode);

@@ -11,6 +11,10 @@
 	* Xsharp/EmbeddedApplication.cs: recognise applications like
 	kcalc that look like dialogs but are really top-level windows.
 
+	* Xsharp/EmbeddedApplication.cs, Xsharp/Widget.cs,
+	samples/XClockEmbed.cs: make the shutdown process on embedded
+	applications more predictable, to avoid X server crashes.
+
 2003-10-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Display.cs, Xsharp/EmbeddedApplication.cs,

@@ -35,13 +35,12 @@ public class XClockEmbed : TopLevelWindow
 
 	// Internal state.
 	private EmbeddedApplication embed;
-	private bool allowClose;
 
 	// Constructor.
 	public XClockEmbed(String title, int width, int height)
 		: base(title, width, height)
 	{
-		embed = new Embedder(this, 0, 0, width, height);
+		embed = new EmbeddedApplication(this, 0, 0, width, height);
 		embed.Program = "xclock";
 		embed.Launch();
 	}
@@ -51,36 +50,5 @@ public class XClockEmbed : TopLevelWindow
 	{
 		embed.Resize(width, height);
 	}
-
-	// Handle close events on the main application window.
-	// We pass the close down to the embedded application.
-	protected override bool OnClose()
-	{
-		if(allowClose)
-		{
-			return true;
-		}
-		else
-		{
-			embed.Close();
-			return false;
-		}
-	}
-
-	// Embed window, overriding the "OnClose()" notification.
-	private class Embedder : EmbeddedApplication
-	{
-		// Constructor.
-		public Embedder(Widget parent, int x, int y, int width, int height)
-			: base(parent, x, y, width, height) {}
-
-		// Receive notification of application closure.
-		protected override void OnClose()
-		{
-			((XClockEmbed)Parent).allowClose = true;
-			((XClockEmbed)Parent).Close();
-		}
-
-	}; // class Embedder
 
 }; // class XClockEmbed

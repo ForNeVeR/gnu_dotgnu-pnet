@@ -67,6 +67,7 @@ public class EmbeddedApplication : InputOutputWidget
 	private Xlib.XAppGroup group;
 	private AppGroupWidget groupWrapper;
 	private Xlib.Window child;
+	private bool closeEventSent;
 	private bool closeNotifySent;
 	private static bool errorReported;
 	private static bool displayProbed;
@@ -239,28 +240,8 @@ public class EmbeddedApplication : InputOutputWidget
 	// Called when the child window is destroyed.
 	private void ChildDestroyed()
 			{
+				// Clear the child window and destroy the application group.
 				child = Xlib.Window.Zero;
-				if(!(process.HasExited))
-				{
-					process.WaitForExit();
-				}
-				if(authorityFile != null)
-				{
-					File.Delete(authorityFile);
-					authorityFile = null;
-				}
-				if(!closeNotifySent)
-				{
-					closeNotifySent = true;
-					OnClose();
-				}
-			}
-
-	/// <summary>
-	/// <para>Destroy this widget if it is currently active.</para>
-	/// </summary>
-	public override void Destroy()
-			{
 				try
 				{
 					IntPtr d = dpy.Lock();
@@ -274,8 +255,64 @@ public class EmbeddedApplication : InputOutputWidget
 				{
 					dpy.Unlock();
 				}
+
+				// Wait for the child process to exit properly.
+				if(process != null && !(process.HasExited))
+				{
+					if(!process.WaitForExit(5000))
+					{
+						// Process is still alive!  Kill it the hard way.
+						process.Kill();
+						process = null;
+					}
+				}
+
+				// Delete the authority file, which we no longer require.
+				if(authorityFile != null)
+				{
+					File.Delete(authorityFile);
+					authorityFile = null;
+				}
+
+				// Notify subclasses that the child was destroyed.
+				if(!closeNotifySent)
+				{
+					closeNotifySent = true;
+					OnClose();
+				}
+			}
+
+	// Disassociate this widget instance and all of its children
+	// from their X window handles, as the mirror copy in the X
+	// server has been lost.
+	internal override void Disassociate()
+			{
+				// Perform the basic disassociation tasks first.
+				base.Disassociate();
+
+				// Send a close message and destroy the application group.
+				try
+				{
+					IntPtr d = dpy.Lock();
+					if(child != Xlib.Window.Zero && !closeEventSent)
+					{
+						closeEventSent = true;
+						Xlib.XSharpSendClose(d, child);
+						Xlib.XFlush(d);
+					}
+					if(group != Xlib.XAppGroup.Zero)
+					{
+						Xlib.XagDestroyApplicationGroup(d, group);
+						group = Xlib.XAppGroup.Zero;
+					}
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+
+				// Clean up the child process.
 				ChildDestroyed();
-				base.Destroy();
 			}
 
 	/// <summary>
@@ -296,9 +333,11 @@ public class EmbeddedApplication : InputOutputWidget
 				try
 				{
 					IntPtr display = dpy.Lock();
-					if(child != Xlib.Window.Zero)
+					if(child != Xlib.Window.Zero && !closeEventSent)
 					{
+						closeEventSent = true;
 						Xlib.XSharpSendClose(display, child);
+						Xlib.XFlush(display);
 					}
 				}
 				finally
@@ -329,6 +368,7 @@ public class EmbeddedApplication : InputOutputWidget
 				if(process != null && !(process.HasExited))
 				{
 					process.Kill();
+					process = null;
 					ChildDestroyed();
 				}
 			}

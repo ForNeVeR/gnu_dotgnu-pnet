@@ -123,7 +123,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 	// Disassociate this widget instance and all of its children
 	// from their X window handles, as the mirror copy in the X
 	// server has been lost.
-	internal void Disassociate()
+	internal virtual void Disassociate()
 			{
 				if(handle != Xlib.Drawable.Zero)
 				{
@@ -152,8 +152,9 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					IntPtr d = dpy.Lock();
 					if(handle != Xlib.Drawable.Zero)
 					{
-						Xlib.XDestroyWindow(d, (Xlib.Window)handle);
+						Xlib.Drawable tempHandle = handle;
 						Disassociate();
+						Xlib.XDestroyWindow(d, (Xlib.Window)tempHandle);
 					}
 				}
 				finally

@@ -21,156 +21,265 @@
 namespace System.Xml
 {
 
-using System;
-using System.Collections;
+	using System;
+	using System.Collections;
 
-internal class ElementList : XmlNodeList
-{
-	// Internal state.
-	private XmlNode parent;
-	private XmlDocument doc;
-	private String name;
-	private String namespaceURI;
-	private String matchAll;
-	private bool uriForm;
-	private bool docChanged;
-	private XmlNode lastItem;
-	private int lastItemAt;
+	internal class ElementList : XmlNodeList
+	{
+		// Internal state.
+		private XmlNode parent;
+		private XmlDocument doc;
+		private String name;
+		private String namespaceURI;
+		private String matchAll;
+		private bool uriForm;
+		private bool docChanged;
+		private XmlNode lastItem;
+		private int lastItemAt;
 
-	// Create a new element list.
-	private ElementList(XmlNode parent)
-			{
-				this.parent = parent;
-				this.doc = parent.OwnerDocument;
-				this.matchAll = doc.NameTable.Add("*");
-				this.docChanged = false;
-				this.lastItem = null;
-				this.lastItemAt = -1;
-				this.doc.NodeInserted +=
-					new XmlNodeChangedEventHandler(DocumentChanged);
-				this.doc.NodeRemoved +=
-					new XmlNodeChangedEventHandler(DocumentChanged);
-			}
-	public ElementList(XmlNode parent, String name)
+		// Create a new element list.
+		private ElementList(XmlNode parent)
+		{
+			this.parent = parent;
+			this.doc = parent.OwnerDocument;
+			this.matchAll = doc.NameTable.Add("*");
+			this.docChanged = false;
+			this.lastItem = null;
+			this.lastItemAt = -1;
+			this.doc.NodeInserted +=
+				new XmlNodeChangedEventHandler(DocumentChanged);
+			this.doc.NodeRemoved +=
+				new XmlNodeChangedEventHandler(DocumentChanged);
+		}
+		public ElementList(XmlNode parent, String name)
 			: this(parent)
 			{
 				this.name = doc.NameTable.Add(name);
 				this.namespaceURI = null;
 				this.uriForm = false;
 			}
-	public ElementList(XmlNode parent, String localName,
-					   String namespaceURI)
+		public ElementList(XmlNode parent, String localName,
+				String namespaceURI)
 			: this(parent)
 			{
 				this.name =
 					(localName != null ? doc.NameTable.Add(localName) : null);
 				this.namespaceURI =
 					(namespaceURI != null
-						? doc.NameTable.Add(namespaceURI) : null);
+					 ? doc.NameTable.Add(namespaceURI) : null);
 				this.uriForm = true;
 			}
 
-	// Track changes to the document that may affect the search order.
-	private void DocumentChanged(Object sender, XmlNodeChangedEventArgs args)
-			{
-				docChanged = true;
-			}
+		// Track changes to the document that may affect the search order.
+		private void DocumentChanged(Object sender, XmlNodeChangedEventArgs args)
+		{
+			docChanged = true;
+		}
 
-	// Get the node that follows another in pre-order traversal.
-	private XmlNode GetFollowingNode(XmlNode node)
+		// Get the node that follows another in pre-order traversal.
+		private XmlNode GetFollowingNode(XmlNode node)
+		{
+			XmlNode current = node.FirstChild;
+			if(current == null)
 			{
-				XmlNode current = node.FirstChild;
-				if(current == null)
+				// We don't have any children, so look for a next sibling.
+				current = node;
+				while(current != null && current != parent &&
+						current.NextSibling == null)
 				{
-					// We don't have any children, so look for a next sibling.
-					current = node;
-					while(current != null && current != parent &&
-					      current.NextSibling == null)
-					{
-						current = current.ParentNode;
-					}
-					if(current != null && current != parent)
-					{
-						current = current.NextSibling;
-					}
+					current = current.ParentNode;
 				}
-				if(current == parent)
+				if(current != null && current != parent)
 				{
-					// We've finished the traversal.
-					return null;
-				}
-				else
-				{
-					// This is the next node in sequence.
-					return current;
+					current = current.NextSibling;
 				}
 			}
-
-	// Determine if a node matches the selection criteria.
-	private bool NodeMatches(XmlNode node)
+			if(current == parent)
 			{
-				if(node.NodeType != XmlNodeType.Element)
+				// We've finished the traversal.
+				return null;
+			}
+			else
+			{
+				// This is the next node in sequence.
+				return current;
+			}
+		}
+
+		// Determine if a node matches the selection criteria.
+		private bool NodeMatches(XmlNode node)
+		{
+			if(node.NodeType != XmlNodeType.Element)
+			{
+				return false;
+			}
+			if(!uriForm)
+			{
+				if(((Object)name) == ((Object)matchAll) ||
+						((Object)name) == ((Object)(node.Name)))
 				{
-					return false;
+					return true;
 				}
-				if(!uriForm)
+			}
+			else
+			{
+				if(((Object)name) == ((Object)matchAll) ||
+						((Object)name) == ((Object)(node.LocalName)))
 				{
-					if(((Object)name) == ((Object)matchAll) ||
-					   ((Object)name) == ((Object)(node.Name)))
+					if(((Object)namespaceURI) == ((Object)matchAll) ||
+							((Object)namespaceURI) ==
+							((Object)(node.NamespaceURI)))
 					{
 						return true;
 					}
 				}
-				else
+			}
+			return false;
+		}
+
+		// Get the number of entries in the node list.
+		public override int Count
+		{
+			get
+			{
+				int count = 0;
+				XmlNode current = parent;
+				while((current = GetFollowingNode(current)) != null)
 				{
-					if(((Object)name) == ((Object)matchAll) ||
-					   ((Object)name) == ((Object)(node.LocalName)))
+					if(NodeMatches(current))
 					{
-						if(((Object)namespaceURI) == ((Object)matchAll) ||
-						   ((Object)namespaceURI) ==
-						   		((Object)(node.NamespaceURI)))
-						{
-							return true;
-						}
+						++count;
 					}
 				}
-				return false;
+				return count;
+			}
+		}
+
+		// Get a particular item within this node list.
+		public override XmlNode Item(int i)
+		{
+			if(i >= this.Count)		
+			{
+				return null;
+			}	
+			XmlNode item = parent;
+			int a = -1;
+			while((item = GetFollowingNode(item)) != null)
+			{
+
+				if(NodeMatches(item))
+				{
+					a++;
+					if(i == a) return item;
+				}
+
+
+			}
+			return null;
+		}
+
+		// Implement the "IEnumerable" interface.
+		public override IEnumerator GetEnumerator()
+		{
+			return new NodeListEnumerator(this);
+		}
+
+		// Tell if document has been modified
+		internal bool IsModified
+		{
+			get
+			{
+				return docChanged;
+			}
+		}
+		
+		// Implementation of the node list enumerator.
+		private sealed class NodeListEnumerator : IEnumerator
+		{
+			// Internal state.
+			private ElementList list;
+			private XmlNode current;
+			private bool isModified;
+			private bool done;
+
+			// Constructor.
+			public NodeListEnumerator(ElementList list)
+			{
+				this.list = list;
+				this.current = null;
+				this.isModified = false;
+				this.done = false;
 			}
 
-	// Get the number of entries in the node list.
-	public override int Count
+			// Implement the "IEnumerator" interface.
+			public bool MoveNext()
+			{
+				if(isModified != list.IsModified)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_CollectionModified"));
+				}
+				if(current == null)
+				{
+					if(done)
+					{
+						return false;
+					}
+					current = list.parent;
+					if(current == null)
+					{
+						done = true;
+						return false;
+					}
+					else
+					{
+						return true;
+					}
+				}
+				current = current.list.nextSibling;
+				if(current != null)
+				{
+					return true;
+				}
+				else
+				{
+					done = true;
+					return false;
+				}
+			}
+			public void Reset()
+			{
+				if(isModified != list.IsModified)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_CollectionModified"));
+				}
+				current = null;
+				done = false;
+			}
+			public Object Current
 			{
 				get
 				{
-					int count = 0;
-					XmlNode current = parent;
-					while((current = GetFollowingNode(current)) != null)
+					if(isModified != list.IsModified)
 					{
-						if(NodeMatches(current))
-						{
-							++count;
-						}
+						throw new InvalidOperationException
+							(S._("Invalid_CollectionModified"));
 					}
-					return count;
+					if(current != null)
+					{
+						return current;
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_BadEnumeratorPosition"));
+					}
 				}
 			}
 
-	// Get a particular item within this node list.
-	[TODO]
-	public override XmlNode Item(int i)
-			{
-				// TODO
-				return null;
-			}
+		}; // class NodeListEnumerator
 
-	// Implement the "IEnumerable" interface.
-	[TODO]
-	public override IEnumerator GetEnumerator()
-			{
-				// TODO
-				return null;
-			}
-
-}; // class ElementList
+	}; // class ElementList
 
 }; // namespace System.Xml

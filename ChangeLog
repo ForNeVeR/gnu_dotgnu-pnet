@@ -1,4 +1,9 @@
 
+2002-10-27  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_oper.tc: Coercion of constants in arithmetic
+	expressions. (ie 0 will match ulong in arithmetic operations).
+	
 2002-10-26  Richard Baumann <biochem333@nyc.rr.com>
 
 	* support/file.c, support/time.c, engine/lib_dir.c, include/il_sysio.h,

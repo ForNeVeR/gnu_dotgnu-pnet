@@ -138,6 +138,25 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		EvalOperator(info, *parent, parent, &value1);
 		return value1;
 	}
+	/* Determine which of the types is the result type */
+	else if(ILCanCoerceNode(info, node->expr1, CSSemGetType(value1),
+					   CSSemGetType(value2)))
+	{
+		ILCoerce(info, node->expr1, &(node->expr1), CSSemGetType(value1),
+				 CSSemGetType(value2));
+		CSSemSetRValue(value1, CSSemGetType(value2));
+		EvalOperator(info, *parent, parent, &value2);
+		return value2;
+	}
+	else if(ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),
+					   CSSemGetType(value1)))
+	{
+		ILCoerce(info, node->expr2, &(node->expr2), CSSemGetType(value2),
+				 CSSemGetType(value1));
+		CSSemSetRValue(value2, CSSemGetType(value1));
+		EvalOperator(info, *parent, parent, &value1);
+		return value1;
+	}
 
 	/* Look for a user-specified operator */
 	method = FindUserBinaryOperator(info, name, CSSemGetType(value1),
@@ -296,6 +315,25 @@ ILNode_SemAnalysis(ILNode_Add)
 		}
 		EvalOperator(info, *parent, parent, &value1);
 		return value1;
+	} 
+	/* Determine which of the types is the result type */
+	else if(ILCanCoerceNode(info, node->expr1, CSSemGetType(value1),
+					   CSSemGetType(value2)))
+	{
+		ILCoerce(info, node->expr1, &(node->expr1), CSSemGetType(value1),
+				 CSSemGetType(value2));
+		CSSemSetRValue(value1, CSSemGetType(value2));
+		EvalOperator(info, *parent, parent, &value2);
+		return value2;
+	}
+	else if(ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),
+					   CSSemGetType(value1)))
+	{
+		ILCoerce(info, node->expr2, &(node->expr2), CSSemGetType(value2),
+				 CSSemGetType(value1));
+		CSSemSetRValue(value2, CSSemGetType(value1));
+		EvalOperator(info, *parent, parent, &value1);
+		return value1;
 	}
 
 	/* Look for a user-specified operator */
@@ -397,6 +435,25 @@ ILNode_SemAnalysis(ILNode_Sub)
 		{
 			CSSemSetRValue(value1, ILFindSystemType(info, "Decimal"));
 		}
+		EvalOperator(info, *parent, parent, &value1);
+		return value1;
+	}
+	/* Determine which of the types is the result type */
+	else if(ILCanCoerceNode(info, node->expr1, CSSemGetType(value1),
+					   CSSemGetType(value2)))
+	{
+		ILCoerce(info, node->expr1, &(node->expr1), CSSemGetType(value1),
+				 CSSemGetType(value2));
+		CSSemSetRValue(value1, CSSemGetType(value2));
+		EvalOperator(info, *parent, parent, &value2);
+		return value2;
+	}
+	else if(ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),
+					   CSSemGetType(value1)))
+	{
+		ILCoerce(info, node->expr2, &(node->expr2), CSSemGetType(value2),
+				 CSSemGetType(value1));
+		CSSemSetRValue(value2, CSSemGetType(value1));
 		EvalOperator(info, *parent, parent, &value1);
 		return value1;
 	}
@@ -641,7 +698,7 @@ ILNode_SemAnalysis(ILNode_Assign)
 		CSSemSetRValue(value1, CSSemGetType(value1));
 		return value1;
 	}
-
+	
 	/* Perform semantic analysis and coercion on the rvalue */
 	if(!CSSemExpectValue(node->expr2, info, &(node->expr2), &value2) ||
 	   !ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),

@@ -497,6 +497,31 @@ void *ILQueueRemove(ILQueueEntry **listRoot);
  */
 char *ILFormatReal(double value, char *format, int buflen);
 
+/*
+ * Opaque handle for regexp_
+ */
+typedef void* ILRegexpHandle;
+
+/* 
+ * Regexp compile mapping on to regcomp 
+ */
+ILRegexpHandle ILRegexpCompile(char* pattern,int flags, int* error);
+
+/*
+ * Regexp execute mapping onto regexec
+ */
+int ILRegexpExec(ILRegexpHandle handle,char* input,int flags);
+
+/*
+ * Regexp error reporting function (auto alloc)
+ */
+char* ILRegexpError(int errorcode, ILRegexpHandle handle);
+
+/*
+ * Regexp free to free the handle
+ */
+void ILRegexpFree(ILRegexpHandle handle);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -31,6 +31,7 @@ libILEngine_a_SOURCES = cvm.c \
 						lib_numformat.c \
 						lib_object.c \
 						lib_reflect.c \
+						lib_regexp.c \
 						lib_security.c \
 						lib_socket.c \
 						lib_stdio.c \

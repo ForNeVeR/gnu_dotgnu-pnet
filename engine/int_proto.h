@@ -461,6 +461,16 @@ extern void _IL_CryptoMethods_Decrypt(ILExecThread * _thread, ILNativeInt state,
 extern void _IL_CryptoMethods_Encrypt(ILExecThread * _thread, ILNativeInt state, System_Array * inBuffer, ILInt32 inOffset, System_Array * outBuffer, ILInt32 outOffset);
 extern void _IL_CryptoMethods_StoreKey(ILExecThread * _thread, ILInt32 algorithm, ILString * name, System_Array * key);
 
+
+extern ILNativeInt _IL_RegexpMethods_CompileInternal(ILExecThread * _thread, 
+										ILString * pattern, ILInt32 flags);
+
+extern ILInt32 _IL_RegexpMethods_ExecInternal(ILExecThread * _thread,
+						ILNativeInt compiled, ILString * input, ILInt32 flags);
+
+void _IL_RegexpMethods_FreeInternal(ILExecThread * _thread, 
+											ILNativeInt compiled);
+
 extern ILBool _IL_SocketMethods_Create(ILExecThread * _thread, ILInt32 af, ILInt32 st, ILInt32 pt, ILNativeInt * handle);
 extern ILBool _IL_SocketMethods_Bind(ILExecThread * _thread, ILNativeInt handle, ILInt32 af, ILInt64 address, ILInt32 port);
 extern ILBool _IL_SocketMethods_Shutdown(ILExecThread * _thread, ILNativeInt handle, ILInt32 how);

@@ -1,4 +1,9 @@
 
+2004-10-18  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/Form.cs: Add extra MoveResize to set the
+	start location of a Form when creating it. (bug #9881)
+
 2004-10-18  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Decimal.cs: Throw correct exception on division by zero.

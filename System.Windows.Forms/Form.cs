@@ -711,6 +711,16 @@ public class Form : ContainerControl
 							 (screenSize.Height - cp.Height) / 2,
 							 window.Dimensions.Width, window.Dimensions.Height);
 				}
+				else
+				{
+					window.MoveResize
+						(
+							cp.X,
+							cp.Y,
+							window.Dimensions.Width,
+							window.Dimensions.Height
+						);
+				}
 				return window;
 			}
 

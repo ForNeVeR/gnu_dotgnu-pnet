@@ -31,6 +31,12 @@
 	support/thread.c: Moved background threads support down to
 	the "ILThread" level rather than the "ILExecThread" level.
 	
+	* libgc/win32_threads.c, libgc/configure.in, libgc/include/gc.h:
+	Fix so that GC_CreateThread gets registered with the GC even if
+	libgc is compiled under cygwin.
+	
+	* docs/libgc_changes.txt: Documents changes made to libgc.
+	
 2003-07-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c, image/member.c, include/il_program.h:

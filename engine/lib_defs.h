@@ -199,6 +199,17 @@ typedef struct
 } System_Delegate;
 
 /*
+ * Structure of the "System.Diagnostics.PackedStackFrame" class.
+ */
+typedef struct
+{
+	ILMethod	   *method;
+	ILInt32			offset;
+	ILInt32			nativeOffset;
+
+} PackedStackFrame;
+
+/*
  * Prototype all of the "internalcall" methods in the engine.
  */
 #include "int_proto.h"

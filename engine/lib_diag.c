@@ -399,17 +399,6 @@ ILString *_IL_StackFrame_InternalGetDebugInfo
 }
 
 /*
- * Structure of the "System.Diagnostics.PackedStackFrame" class.
- */
-typedef struct
-{
-	ILMethod	   *method;
-	ILInt32			offset;
-	ILInt32			nativeOffset;
-
-} PackedStackFrame;
-
-/*
  * internal static PackedStackFrame[] GetExceptionStackTrace();
  */
 System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)

@@ -117,8 +117,6 @@ int main(int argc, char *argv[])
 	ILInt32 retval;
 	ILExecThread *thread;
 	ILObject *args;
-	ILString *argString;
-	ILObject *exception;
 	int sawException;
 	int registerMode = 0;
 	char *ilprogram;
@@ -359,25 +357,7 @@ int main(int argc, char *argv[])
 	/* Print the top-level exception that occurred */
 	if(sawException)
 	{
-		exception = ILExecThreadGetException(thread);
-		ILExecThreadClearException(thread);
-		argString = ILObjectToString(thread, exception);
-		if(argString != 0 &&
-		   (param = ILStringToAnsi(thread, argString)) != 0)
-		{
-			fputs("Uncaught exception: ", stderr);
-			fputs(param, stderr);
-			putc('\n', stderr);
-		}
-		else if(exception)
-		{
-			fputs("An exception occurred which could not be converted "
-			      "into a string\n", stderr);
-		}
-		else
-		{
-			fputs("virtual memory exhausted\n", stderr);
-		}
+		ILExecThreadPrintException(thread);
 	}
 
 #ifndef IL_CONFIG_REDUCE_CODE

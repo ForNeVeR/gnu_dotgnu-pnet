@@ -18,7 +18,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "engine.h"
+#include "engine_private.h"
+#include "lib_defs.h"
+#include "il_debug.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -191,6 +193,121 @@ void ILExecThreadThrowOutOfMemory(ILExecThread *thread)
 	if(!ILExecThreadHasException(thread))
 	{
 		ILExecThreadSetException(thread, thread->process->outOfMemoryObject);
+	}
+}
+
+void ILExecThreadPrintException(ILExecThread *thread)
+{
+	ILObject *exception;
+	ILString *str;
+	char *ansistr;
+	ILClass *classInfo;
+	ILClass *exceptionClass;
+	ILField *field;
+	ILObject *stackTrace;
+	ILInt32 length;
+	ILInt32 posn;
+	PackedStackFrame *frames;
+	ILMethod *method;
+	ILImage *image;
+	ILDebugContext *dbg;
+	const char *filename;
+	ILUInt32 line;
+	ILUInt32 col;
+
+	/* Get the exception object from the thread.  If there is no object,
+	   then assume that memory is exhausted */
+	exception = ILExecThreadGetException(thread);
+	ILExecThreadClearException(thread);
+	if(!exception)
+	{
+		exception = thread->process->outOfMemoryObject;
+	}
+
+	/* Attempt to use "ToString" to format the exception, but not
+	   if we know that the exception is reporting out of memory */
+	if(exception != thread->process->outOfMemoryObject)
+	{
+		str = ILObjectToString(thread, exception);
+		if(str != 0 && (ansistr = ILStringToAnsi(thread, str)) != 0)
+		{
+			fputs("Uncaught exception: ", stderr);
+			fputs(ansistr, stderr);
+			putc('\n', stderr);
+			return;
+		}
+	}
+
+	/* Print the class information for the exception */
+	fputs("Uncaught exception: ", stderr);
+	classInfo = GetObjectClass(exception);
+	if(ILClass_Namespace(classInfo))
+	{
+		fputs(ILClass_Namespace(classInfo), stderr);
+		putc('.', stderr);
+	}
+	fputs(ILClass_Name(classInfo), stderr);
+	putc('\n', stderr);
+
+	/* Extract the stack trace from the exception object */
+	exceptionClass = ILExecThreadLookupClass(thread, "System.Exception");
+	stackTrace = 0;
+	if(exceptionClass && ILClassInheritsFrom(classInfo, exceptionClass))
+	{
+		field = 0;
+		while((field = (ILField *)ILClassNextMemberByKind
+					(exceptionClass, (ILMember *)field,
+					 IL_META_MEMBERKIND_FIELD)) != 0)
+		{
+			if(!strcmp(ILField_Name(field), "stackTrace"))
+			{
+				stackTrace = *((ILObject **)(((unsigned char *)exception) +
+											 field->offset));
+				break;
+			}
+		}
+	}
+
+	/* Print the exception stack trace */
+	if(stackTrace)
+	{
+		frames = (PackedStackFrame *)ArrayToBuffer(stackTrace);
+		length = ((System_Array *)stackTrace)->length;
+		for(posn = 0; posn < length; ++posn)
+		{
+			method = frames[posn].method;
+			if(method)
+			{
+				fputs("\tat ", stderr);
+				classInfo = ILMethod_Owner(method);
+				if(ILClass_Namespace(classInfo))
+				{
+					fputs(ILClass_Namespace(classInfo), stderr);
+					putc('.', stderr);
+				}
+				fputs(ILClass_Name(classInfo), stderr);
+				putc('.', stderr);
+				fputs(ILMethod_Name(method), stderr);
+				putc('(', stderr);
+				putc('?', stderr);
+				putc(')', stderr);
+				image = ILProgramItem_Image(method);
+				if(ILDebugPresent(image) && (dbg = ILDebugCreate(image)) != 0)
+				{
+					filename = ILDebugGetLineInfo
+						(dbg, ILMethod_Token(method),
+						 frames[posn].offset, &line, &col);
+					if(filename)
+					{
+						fputs(" in ", stderr);
+						fputs(filename, stderr);
+						fprintf(stderr, ":%ld", (long)line);
+					}
+					ILDebugDestroy(dbg);
+				}
+				putc('\n', stderr);
+			}
+		}
 	}
 }
 

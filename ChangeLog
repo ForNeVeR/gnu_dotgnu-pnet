@@ -1,4 +1,11 @@
 
+2002-12-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/ilrun.c, engine/lib_defs.h, engine/lib_diag.c,
+	engine/throw.c: use an alternative strategy for printing information
+	about an exception if calling "ToString()" fails, to hopefully give
+	a better indication as to what is happening.
+
 2002-12-25  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* support/dir.c, include/il_sysio.h, engine/lib_file.c, 

@@ -626,6 +626,11 @@ ILObject *ILExecThreadBox(ILExecThread *thread, ILType *type, void *ptr);
 int ILExecThreadUnbox(ILExecThread *thread, ILType *type,
 					  ILObject *object, void *ptr);
 
+/*
+ * Print the current exception object to standard error.
+ */
+void ILExecThreadPrintException(ILExecThread *thread);
+
 #ifdef	__cplusplus
 };
 #endif

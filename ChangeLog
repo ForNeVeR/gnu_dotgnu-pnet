@@ -1,4 +1,12 @@
 
+2004-12-07  Deryk Robosson <deryk@0x0a.com>	
+
+	* System.Windows.Forms/TrackBar.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/IThemePainter.cs,
+	samples/forms/FormsTest.cs: Implement basic TrackBar features
+	along with a sample test case. (patch #3552, Gopal)
+
 2004-11-28  LXS  <lxs@dev-fr.com>
 
 	* runtime/System/Reflection/ClrType.cs: fix bug in CompareMembers that

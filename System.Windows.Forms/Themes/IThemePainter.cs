@@ -157,6 +157,11 @@ public interface IThemePainter
 	// Draw a menu separator line.
 	void DrawSeparator(Graphics graphics, Rectangle rectangle);
 
+	// Draw a scroll bar control.
+	void DrawTrackBar(Graphics graphics, Rectangle clientRect,
+			Rectangle barRect, Orientation orientation, 
+			bool enabled, int ticks, TickStyle style);
+
 }; // class IThemePainter
 
 }; // namespace System.Windows.Forms.Themes

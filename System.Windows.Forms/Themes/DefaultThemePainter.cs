@@ -2147,6 +2147,174 @@ public class DefaultThemePainter : IThemePainter
 					 x + width - 1, y + 1);
 			}
 
+	// Draw a track bar control.
+	public virtual void DrawTrackBar(Graphics graphics, Rectangle clientRect,
+					Rectangle barRect, Orientation orientation, bool enabled,
+					int ticks, TickStyle style)
+	{
+		int x = 0;
+		int lineheight = 4;
+		int linewidth = 4;
+
+		if(orientation == Orientation.Horizontal) 
+		{ // Draw horizontal
+			x = (clientRect.Width / ticks) + 1;
+
+			if(style == TickStyle.BottomRight) 
+			{
+				for(int cnt = x; cnt <= clientRect.Width; cnt += x) 
+				{
+					// right tick
+					DrawBorder3D(graphics,
+						clientRect.Left + cnt,
+						clientRect.Height / 2,
+						linewidth,
+						clientRect.Height / lineheight,
+						SystemColors.ControlText, SystemColors.Control,
+						Border3DStyle.Sunken, Border3DSide.All);
+				}
+			}
+			else if(style == TickStyle.TopLeft) 
+			{
+				for(int cnt = x; cnt <= clientRect.Width; cnt += x) 
+				{
+					// left tick
+					DrawBorder3D(graphics,
+						clientRect.Left + cnt,
+						clientRect.Top + clientRect.Height / lineheight,
+						linewidth,
+						clientRect.Height / lineheight,
+						SystemColors.ControlText, SystemColors.Control,
+						Border3DStyle.Sunken, Border3DSide.All);
+				}
+			}
+			else if(style == TickStyle.Both) 
+			{
+				for(int cnt = x; cnt <= clientRect.Width; cnt += x) 
+				{
+					// left tick
+					DrawBorder3D(graphics,
+						clientRect.Left + cnt,
+						clientRect.Height / 2 - lineheight,
+						linewidth,
+						lineheight * 2 + lineheight / 2,
+						SystemColors.ControlText, SystemColors.Control,
+						Border3DStyle.Sunken, Border3DSide.All);
+				}
+			}
+		}
+		else 
+		{ // Draw vertical
+			x = (clientRect.Height / ticks) + 1;
+
+			if(style == TickStyle.BottomRight) 
+			{
+				for(int cnt = x; cnt < clientRect.Height; cnt += x) 
+				{
+					// right tick
+					DrawBorder3D(graphics,
+						clientRect.Width / 2,
+						clientRect.Top + cnt,
+						clientRect.Width / linewidth,
+						lineheight,
+						SystemColors.ControlText, SystemColors.Control,
+						Border3DStyle.Sunken, Border3DSide.All);
+				}
+			}
+			else if(style == TickStyle.TopLeft) 
+			{
+				for(int cnt = x; cnt < clientRect.Height; cnt += x) 
+				{
+					// left tick
+					DrawBorder3D(graphics,
+						clientRect.Left + clientRect.Width / linewidth,
+						clientRect.Top + cnt,
+						clientRect.Width / linewidth,
+						lineheight,
+						SystemColors.ControlText, SystemColors.Control,
+						Border3DStyle.Sunken, Border3DSide.All);
+				}
+			}
+			else if(style == TickStyle.Both) 
+			{
+				for(int cnt = x; cnt < clientRect.Height; cnt += x) 
+				{
+					// left tick
+					DrawBorder3D(graphics,
+						clientRect.Width / 2 - linewidth,
+						clientRect.Top + cnt,
+						linewidth * 2 + linewidth / 2,
+						lineheight,
+						SystemColors.ControlText, SystemColors.Control,
+						Border3DStyle.Sunken, Border3DSide.All);
+				}
+			}
+		}
+
+		// draw end lines if we have a tickstyle
+		if(style != TickStyle.None) 
+		{
+			if(orientation == Orientation.Horizontal) 
+			{
+				// Draw middle bar
+				DrawBorder3D(graphics,
+					clientRect.Left, (clientRect.Height / 2) - (lineheight / 2),
+					clientRect.Width, lineheight,
+					SystemColors.ControlText, SystemColors.Control,
+					Border3DStyle.Sunken, Border3DSide.All);
+
+				// left vertical bar
+				DrawBorder3D(graphics,
+					clientRect.Left, clientRect.Top,
+					linewidth, clientRect.Height,
+					SystemColors.ControlText, SystemColors.Control,
+					Border3DStyle.Sunken, Border3DSide.All);
+
+				// right vertical bar
+				DrawBorder3D(graphics,
+					clientRect.Right - linewidth, clientRect.Top,
+					linewidth, clientRect.Height,
+					SystemColors.ControlText, SystemColors.Control,
+					Border3DStyle.Sunken, Border3DSide.All);
+			}
+			else 
+			{
+				// Draw middle bar
+				DrawBorder3D(graphics,
+					clientRect.Width / 2 - 1, clientRect.Y,
+					linewidth, clientRect.Height,
+					SystemColors.ControlText, SystemColors.Control,
+					Border3DStyle.Sunken, Border3DSide.All);
+
+				// top horizontal bar
+				DrawBorder3D(graphics,
+					clientRect.Left, clientRect.Top,
+					clientRect.Width, lineheight,
+					SystemColors.ControlText, SystemColors.Control,
+					Border3DStyle.Sunken, Border3DSide.All);
+
+				// bottom horizontal bar
+				DrawBorder3D(graphics,
+					clientRect.Left, clientRect.Bottom - lineheight,
+					clientRect.Width, lineheight,
+					SystemColors.ControlText, SystemColors.Control,
+					Border3DStyle.Sunken, Border3DSide.All);
+			}
+		}
+
+		// draw the button
+		if (((barRect.Height > 0) ||
+			(barRect.Width > 0)) && barRect.IntersectsWith(clientRect))
+		{
+			DrawButton(graphics,
+				barRect.X, barRect.Y,
+				barRect.Width,
+				barRect.Height,
+				(enabled ? ButtonState.Normal : ButtonState.Inactive),
+				SystemColors.ControlText, SystemColors.Control,
+				false);
+		}
+	}
 }; // class DefaultThemePainter
 
 }; // namespace System.Windows.Forms.Themes

@@ -40,6 +40,7 @@ namespace FormsTest
 		private TabPage tabPage25;
 		private TabPage tabPage26;
 		private TabPage tabPage27;
+		private TabPage tabPage28;
 		
 		// Tab1 Labels Test
 		private Label label;
@@ -246,6 +247,13 @@ namespace FormsTest
 		private TextBox scroll1TextBoxMin, scroll1TextBoxMax, scroll1TextBoxValue, scroll1TextBoxLarge, scroll1TextBoxSmall;
 		private TextBox scroll2TextBoxMin, scroll2TextBoxMax, scroll2TextBoxValue, scroll2TextBoxLarge, scroll2TextBoxSmall;
 
+		private TrackBar vTrackBar;
+		private TrackBar hTrackBar;
+		private Label track1LabelMin, track1LabelMax, track1LabelValue, track1LabelLarge, track1LabelSmall;
+		private Label track2LabelMin, track2LabelMax, track2LabelValue, track2LabelLarge, track2LabelSmall;
+		private TextBox track1TextBoxMin, track1TextBoxMax, track1TextBoxValue, track1TextBoxLarge, track1TextBoxSmall;
+		private TextBox track2TextBoxMin, track2TextBoxMax, track2TextBoxValue, track2TextBoxLarge, track2TextBoxSmall;
+
 		private TextBox textBoxTest2a, textBoxTest2b;
 
 		private PictureBox pictureBox1;
@@ -387,7 +395,7 @@ namespace FormsTest
 			tabPage3.Text = "TextBox";
 			tabControl1.Controls.Add(tabPage3);
 			tabPage18 = new TabPage();
-			tabPage18.Text = "Scrollbar";
+			tabPage18.Text = "ScrollBar";
 			tabControl1.Controls.Add(tabPage18);
 			tabPage15 = new TabPage();
 			tabPage15.Text = "Transform";
@@ -429,6 +437,10 @@ namespace FormsTest
 			tabPage27 = new TabPage();
 			tabPage27.Text = "UpDown";
 			tabControl1.Controls.Add(tabPage27);
+			tabPage28 = new TabPage();
+			tabPage28.Text = "TrackBar";
+			tabControl1.Controls.Add(tabPage28);
+			Controls.Add(tabControl1);
 			
 			Controls.Add(tabControl1);
 
@@ -461,6 +473,7 @@ namespace FormsTest
 			AddImageListTest(tabPage25);
 			AddMessageBoxTest(tabPage26);
 			AddUpDownTest(tabPage27);
+			AddTrackbarTest(tabPage28);
 
 			ResumeLayout(false);
 			MinimumSize = new Size(300, 300);
@@ -3748,6 +3761,158 @@ namespace FormsTest
 			upDown2ro.Items.Add(upDownString3);
 			upDown2ro.Items.Add(upDownString4);
 
+		}
+
+		private void AddTrackbarTest(Control c)
+		{
+			vTrackBar = new TrackBar();
+			vTrackBar.Bounds = new Rectangle(10, 10, 20, 160);
+			vTrackBar.Orientation = Orientation.Vertical;
+			vTrackBar.ValueChanged+=new EventHandler(vTrackBar_ValueChanged);
+			vTrackBar.Maximum = 100;
+			vTrackBar.TickFrequency = 5;
+			vTrackBar.TickStyle = TickStyle.Both;
+			c.Controls.Add(vTrackBar);
+
+			hTrackBar = new TrackBar();
+			hTrackBar.Bounds = new Rectangle(200, 10, 250, 20);
+			hTrackBar.Orientation = Orientation.Horizontal;
+			hTrackBar.ValueChanged+=new EventHandler(hTrackBar_ValueChanged);
+			hTrackBar.Maximum = 100;
+			hTrackBar.TickFrequency = 5;
+			hTrackBar.TickStyle = TickStyle.Both;
+			c.Controls.Add(hTrackBar);
+
+			track1LabelMin = new Label();
+			track1LabelMin.Text = "min";
+			track1LabelMin.Bounds = new Rectangle(vTrackBar.Right + 10, vTrackBar.Top + 100, 35, 20);
+			c.Controls.Add(track1LabelMin);
+			track1TextBoxMin = new TextBox();
+			track1TextBoxMin.Text = vTrackBar.Minimum.ToString();
+			track1TextBoxMin.Bounds = new Rectangle(track1LabelMin.Right + 5, track1LabelMin.Top, 30, 20);
+			track1TextBoxMin.TextChanged+=new EventHandler(trackTextBox_TextChanged);
+			c.Controls.Add(track1TextBoxMin);
+
+			track1LabelMax = new Label();
+			track1LabelMax.Text = "max";
+			track1LabelMax.Bounds = new Rectangle(track1LabelMin.Left, track1LabelMin.Bottom + 10, 35, 20);
+			c.Controls.Add(track1LabelMax);
+			track1TextBoxMax = new TextBox();
+			track1TextBoxMax.Text = vTrackBar.Maximum.ToString();
+			track1TextBoxMax.Bounds = new Rectangle(track1LabelMax.Right + 5, track1LabelMax.Top, 30, 20); 
+			track1TextBoxMax.TextChanged+=new EventHandler(trackTextBox_TextChanged);
+			c.Controls.Add(track1TextBoxMax);
+
+			track1LabelValue = new Label();
+			track1LabelValue.Text = "value";
+			track1LabelValue.Bounds = new Rectangle(track1LabelMax.Left, track1LabelMax.Bottom + 10, 35, 20);
+			c.Controls.Add(track1LabelValue);
+			track1TextBoxValue = new TextBox();
+			track1TextBoxValue.Text = vTrackBar.Value.ToString();
+			track1TextBoxValue.Bounds = new Rectangle(track1LabelValue.Right + 5, track1LabelValue.Top, 30, 20); 
+			track1TextBoxValue.TextChanged+=new EventHandler(trackTextBox_TextChanged);
+			c.Controls.Add(track1TextBoxValue);
+
+			track1LabelLarge = new Label();
+			track1LabelLarge.Text = "large";
+			track1LabelLarge.Bounds = new Rectangle(track1LabelValue.Left, track1LabelValue.Bottom + 10, 35, 20);
+			c.Controls.Add(track1LabelLarge);
+			track1TextBoxLarge = new TextBox();
+			track1TextBoxLarge.Text = vTrackBar.LargeChange.ToString();
+			track1TextBoxLarge.Bounds = new Rectangle(track1LabelLarge.Right + 5, track1LabelLarge.Top, 30, 20); 
+			track1TextBoxLarge.TextChanged+=new EventHandler(trackTextBox_TextChanged);
+			c.Controls.Add(track1TextBoxLarge);
+
+			track1LabelSmall = new Label();
+			track1LabelSmall.Text = "small";
+			track1LabelSmall.Bounds = new Rectangle(track1LabelLarge.Left, track1LabelLarge.Bottom + 10, 35, 20);
+			c.Controls.Add(track1LabelSmall);
+			track1TextBoxSmall = new TextBox();
+			track1TextBoxSmall.Text = vTrackBar.SmallChange.ToString();
+			track1TextBoxSmall.Bounds = new Rectangle(track1LabelSmall.Right + 5, track1LabelSmall.Top, 30, 20); 
+			track1TextBoxSmall.TextChanged+=new EventHandler(trackTextBox_TextChanged);
+			c.Controls.Add(track1TextBoxSmall);
+
+			track2LabelMin = new Label();
+			track2LabelMin.Text = "min";
+			track2LabelMin.Bounds = new Rectangle(hTrackBar.Left + 90, hTrackBar.Bottom + 10, 35, 20);
+			c.Controls.Add(track2LabelMin);
+			track2TextBoxMin = new TextBox();
+			track2TextBoxMin.Text = hTrackBar.Minimum.ToString();
+			track2TextBoxMin.Bounds = new Rectangle(track2LabelMin.Right + 5, track2LabelMin.Top, 30, 20); 
+			track2TextBoxMin.TextChanged+=new EventHandler(trackTextBox_TextChanged);
+			c.Controls.Add(track2TextBoxMin);
+
+			track2LabelMax = new Label();
+			track2LabelMax.Text = "max";
+			track2LabelMax.Bounds = new Rectangle(track2LabelMin.Left, track2LabelMin.Bottom + 10, 35, 20);
+			c.Controls.Add(track2LabelMax);
+			track2TextBoxMax = new TextBox();
+			track2TextBoxMax.Text = hTrackBar.Maximum.ToString();
+			track2TextBoxMax.Bounds = new Rectangle(track2LabelMax.Right + 5, track2LabelMax.Top, 30, 20); 
+			track2TextBoxMax.TextChanged+=new EventHandler(trackTextBox_TextChanged);
+			c.Controls.Add(track2TextBoxMax);
+
+			track2LabelValue = new Label();
+			track2LabelValue.Text = "value";
+			track2LabelValue.Bounds = new Rectangle(track2LabelMax.Left, track2LabelMax.Bottom + 10, 35, 20);
+			c.Controls.Add(track2LabelValue);
+			track2TextBoxValue = new TextBox();
+			track2TextBoxValue.Text = hTrackBar.Value.ToString();
+			track2TextBoxValue.Bounds = new Rectangle(track2LabelValue.Right + 5, track2LabelValue.Top, 30, 20); 
+			track2TextBoxValue.TextChanged+=new EventHandler(trackTextBox_TextChanged);
+			c.Controls.Add(track2TextBoxValue);
+
+			track2LabelLarge = new Label();
+			track2LabelLarge.Text = "large";
+			track2LabelLarge.Bounds = new Rectangle(track2LabelValue.Left, track2LabelValue.Bottom + 10, 35, 20);
+			c.Controls.Add(track2LabelLarge);
+			track2TextBoxLarge = new TextBox();
+			track2TextBoxLarge.Text = vTrackBar.LargeChange.ToString();
+			track2TextBoxLarge.Bounds = new Rectangle(track2LabelLarge.Right + 5, track2LabelLarge.Top, 30, 20); 
+			track2TextBoxLarge.TextChanged+=new EventHandler(trackTextBox_TextChanged);
+			c.Controls.Add(track2TextBoxLarge);
+
+			track2LabelSmall = new Label();
+			track2LabelSmall.Text = "small";
+			track2LabelSmall.Bounds = new Rectangle(track2LabelLarge.Left, track2LabelLarge.Bottom + 10, 35, 20);
+			c.Controls.Add(track2LabelSmall);
+			track2TextBoxSmall = new TextBox();
+			track2TextBoxSmall.Text = vTrackBar.SmallChange.ToString();
+			track2TextBoxSmall.Bounds = new Rectangle(track2LabelSmall.Right + 5, track2LabelSmall.Top, 30, 20); 
+			track2TextBoxSmall.TextChanged+=new EventHandler(trackTextBox_TextChanged);
+			c.Controls.Add(track2TextBoxSmall);
+
+		}
+
+		private void vTrackBar_ValueChanged(object sender, EventArgs e)
+		{
+			track1TextBoxValue.Text = vTrackBar.Value.ToString();
+		}
+
+		private void hTrackBar_ValueChanged(object sender, EventArgs e)
+		{
+			track2TextBoxValue.Text = hTrackBar.Value.ToString();
+		}
+
+		private void trackTextBox_TextChanged(object sender, EventArgs e)
+		{
+			try //Lazy!!
+			{
+				vTrackBar.Minimum = int.Parse(track1TextBoxMin.Text);
+				vTrackBar.Maximum = int.Parse(track1TextBoxMax.Text);
+				vTrackBar.Value = int.Parse(track1TextBoxValue.Text);
+				vTrackBar.LargeChange = int.Parse(track1TextBoxLarge.Text);
+				vTrackBar.SmallChange = int.Parse(track1TextBoxSmall.Text);
+				hTrackBar.Minimum = int.Parse(track2TextBoxMin.Text);
+				hTrackBar.Maximum = int.Parse(track2TextBoxMax.Text);
+				hTrackBar.Value = int.Parse(track2TextBoxValue.Text);
+				hTrackBar.LargeChange = int.Parse(track2TextBoxLarge.Text);
+				hTrackBar.SmallChange = int.Parse(track2TextBoxSmall.Text);
+			}
+			catch
+			{}
+			
 		}
 	}
 }

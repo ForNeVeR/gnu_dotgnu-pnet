@@ -404,6 +404,8 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 {
 	ILMember *member;
 	ILImplements *impl;
+	int kind = ILMemberGetKind(notThis);
+
 	while(classInfo != 0)
 	{
 		/* Scan the members of this class */
@@ -414,14 +416,30 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 			   !strcmp(ILMember_Name(member), name) &&
 			   ILMemberAccessible(member, scope))
 			{
-				if(!ILMember_IsMethod(member))
+				if(ILMemberGetKind(member) != kind)
 				{
 					return member;
 				}
 				else if(CSSignatureIdentical(ILMemberGetSignature(member),
 										     signature))
 				{
-					return member;
+					if(ILMember_IsMethod(member) &&
+					   ILMethod_HasSpecialName((ILMethod *)member) &&
+					   !strncmp(name, "op_", 3))
+					{
+						/* This is an operator, which includes the
+						   return type in its signature definition */
+						if(ILTypeIdentical
+							  (ILTypeGetReturn(ILMemberGetSignature(member)),
+							   ILTypeGetReturn(signature)))
+						{
+							return member;
+						}
+					}
+					else
+					{
+						return member;
+					}
 				}
 			}
 		}
@@ -668,34 +686,41 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	AddMemberToScope(info->currentScope, IL_SCOPE_METHOD,
 					 name, (ILMember *)methodInfo, method->name);
 
-	/* Look for duplicates and report on them */
-	member = FindMemberBySignature(classInfo, name, signature,
-								   (ILMember *)methodInfo, classInfo);
-	if(member)
+	/* Ignore property methods with "specialname", as they are
+	   tested elsewhere for duplicates */
+	if(!ILMethod_HasSpecialName(methodInfo) ||
+	   (strncmp(ILMethod_Name(methodInfo), "get_", 4) != 0 &&
+	    strncmp(ILMethod_Name(methodInfo), "set_", 4) != 0))
 	{
-		if(ILMember_IsMethod(member) &&
-		   ILMethod_IsVirtual((ILMethod *)member) &&
-		   !ILMethod_IsNewSlot(methodInfo))
+		/* Look for duplicates and report on them */
+		member = FindMemberBySignature(classInfo, name, signature,
+									   (ILMember *)methodInfo, classInfo);
+		if(member)
 		{
-			/* Check for the correct form of virtual method overrides */
-			if((method->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
+			if(ILMember_IsMethod(member) &&
+			   ILMethod_IsVirtual((ILMethod *)member) &&
+			   !ILMethod_IsNewSlot(methodInfo))
 			{
-				CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
-		  			"declaration of `%s' overrides an inherited member, "
-					"and `override' was not present", name);
+				/* Check for the correct form of virtual method overrides */
+				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
+				{
+					CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+			  			"declaration of `%s' overrides an inherited member, "
+						"and `override' was not present", name);
+				}
+			}
+			else if(ILMember_Owner(member) == classInfo ||
+			        (!ILMethodIsConstructor(methodInfo) &&
+					 !ILMethodIsStaticConstructor(methodInfo)))
+			{
+				ReportDuplicates(method->name, (ILMember *)methodInfo,
+								 member, classInfo, method->modifiers, name);
 			}
 		}
-		else if(ILMember_Owner(member) == classInfo ||
-		        (!ILMethodIsConstructor(methodInfo) &&
-				 !ILMethodIsStaticConstructor(methodInfo)))
+		else if((method->modifiers & CS_SPECIALATTR_NEW) != 0)
 		{
-			ReportDuplicates(method->name, (ILMember *)methodInfo,
-							 member, classInfo, method->modifiers, name);
+			ReportUnnecessaryNew(method->name, name);
 		}
-	}
-	else if((method->modifiers & CS_SPECIALATTR_NEW) != 0)
-	{
-		ReportUnnecessaryNew(method->name, name);
 	}
 }
 
@@ -748,6 +773,31 @@ static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
+ * Determine if a property is virtual by inspecting its get or set methods.
+ */
+static int PropertyIsVirtual(ILProperty *property)
+{
+	ILMethod *method;
+
+	/* Check the "get" method */
+	method = ILPropertyGetGetter(property);
+	if(method)
+	{
+		return ILMethod_IsVirtual(method);
+	}
+
+	/* Check the "set" method */
+	method = ILPropertyGetSetter(property);
+	if(method)
+	{
+		return ILMethod_IsVirtual(method);
+	}
+
+	/* No "get" or "set", so assume that it isn't virtual */
+	return 0;
+}
+
+/*
  * Create a property definition.
  */
 static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
@@ -788,9 +838,6 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 		   interface property (TODO) */
 		name = ILQualIdentName(property->name, 0);
 	}
-
-	/* Look for duplicates */
-	member = FindMemberByName(classInfo, name, classInfo);
 
 	/* Get the property type */
 	propType = CSSemType(property->type, info, &(property->type));
@@ -855,20 +902,37 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 		}
 	}
 
-	/* Report on duplicates */
+	/* Add the property to the current scope */
+	AddMemberToScope(info->currentScope, IL_SCOPE_PROPERTY,
+					 name, (ILMember *)propertyInfo, property->name);
+
+	/* Look for duplicates and report on them */
+	member = FindMemberBySignature(classInfo, name, signature,
+								   (ILMember *)propertyInfo, classInfo);
 	if(member)
 	{
-		ReportDuplicates(property->name, (ILMember *)propertyInfo,
-						 member, classInfo, property->modifiers, name);
+		if(ILMember_IsProperty(member) &&
+		   PropertyIsVirtual((ILProperty *)member) &&
+		   (property->modifiers & IL_META_METHODDEF_NEW_SLOT) == 0)
+		{
+			/* Check for the correct form of virtual method overrides */
+			if((property->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
+			{
+				CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
+		  			"declaration of `%s' overrides an inherited member, "
+					"and `override' was not present", name);
+			}
+		}
+		else
+		{
+			ReportDuplicates(property->name, (ILMember *)propertyInfo,
+							 member, classInfo, property->modifiers, name);
+		}
 	}
 	else if((property->modifiers & CS_SPECIALATTR_NEW) != 0)
 	{
 		ReportUnnecessaryNew(property->name, name);
 	}
-
-	/* Add the property to the current scope */
-	AddMemberToScope(info->currentScope, IL_SCOPE_PROPERTY,
-					 name, (ILMember *)propertyInfo, property->name);
 }
 
 /*

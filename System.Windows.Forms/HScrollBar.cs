@@ -26,9 +26,8 @@ using System.ComponentModel;
 
 public class HScrollBar : ScrollBar
 {
-	public HScrollBar()
+	public HScrollBar() : base()
 	{
-		Dock = DockStyle.Bottom;
 		vertical = false;
 	}
 

@@ -9,6 +9,10 @@
 	* System.Windows.Forms/ScrollBar.cs: add support for key events, and
 	fix some broken mouse events.
 
+	* System.Windows.Forms/HScrollBar.cs,
+	System.Windows.Forms/VScrollBar.cs, samples/FormsHello.cs: fix default
+	docking behavior.
+
 2003-07-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Microsoft/Win32/Win32KeyProvider.cs: detect Win32 in

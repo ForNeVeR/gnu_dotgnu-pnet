@@ -80,8 +80,10 @@ public class FormsHello : Form
 
 		// Create a scrollbar control.
 		scrollbar = new HScrollBar();
+		scrollbar.Dock = DockStyle.Bottom;
 		Controls.Add(scrollbar);
 		scrollbar = new VScrollBar();
+		scrollbar.Dock = DockStyle.Right;
 		Controls.Add(scrollbar);
 	}
 

@@ -26,9 +26,8 @@ using System.ComponentModel;
 
 public class VScrollBar : ScrollBar
 {
-	public VScrollBar()
+	public VScrollBar() : base()
 	{	
-		Dock = DockStyle.Right;
 		vertical = true;
 	}
 
@@ -45,19 +44,7 @@ public class VScrollBar : ScrollBar
 	public override RightToLeft RightToLeft
 	{
 		get { return base.RightToLeft; }
-		set
-		{
-			if (value == base.RightToLeft) { return; }
-			base.RightToLeft = value;
-			if (base.RightToLeft == RightToLeft.Yes)
-			{
-				Dock = DockStyle.Left;
-			}
-			else
-			{
-				Dock = DockStyle.Right;
-			}
-		}
+		set { base.RightToLeft = value; }
 	}
 
 }; // class VScrollBar

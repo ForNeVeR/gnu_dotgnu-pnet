@@ -1,7 +1,7 @@
 /*
  * MulticastDelegate.cs - Implementation of "System.MulticastDelegate".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ public abstract class MulticastDelegate : Delegate
 				{
 					return false;
 				}
-				else if(!ReferenceEquals(prev, null))
+				else if(((Object)prev) != null)
 				{
 					return prev.Equals(((MulticastDelegate)obj).prev);
 				}
@@ -76,7 +76,7 @@ public abstract class MulticastDelegate : Delegate
 				int posn = len - 1;
 				MulticastDelegate current = this;
 				MulticastDelegate clone;
-				while(!ReferenceEquals(current, null))
+				while(((Object)current) != null)
 				{
 					clone = (MulticastDelegate)(current.MemberwiseClone());
 					clone.prev = null;
@@ -88,9 +88,9 @@ public abstract class MulticastDelegate : Delegate
 	// Operators.
 	public static bool operator==(MulticastDelegate d1, MulticastDelegate d2)
 			{
-				if(ReferenceEquals(d1, null))
+				if(((Object)d1) == null)
 				{
-					return (ReferenceEquals(d2, null));
+					return (((Object)d2) == null);
 				}
 				else
 				{
@@ -99,9 +99,9 @@ public abstract class MulticastDelegate : Delegate
 			}
 	public static bool operator!=(MulticastDelegate d1, MulticastDelegate d2)
 			{
-				if(ReferenceEquals(d1, null))
+				if(((Object)d1) == null)
 				{
-					return !ReferenceEquals(d2, null);
+					return (((Object)d2) != null);
 				}
 				else
 				{
@@ -117,7 +117,7 @@ public abstract class MulticastDelegate : Delegate
 				list = (MulticastDelegate)
 							(((MulticastDelegate)d).MemberwiseClone());
 				current = list;
-				while(!ReferenceEquals(current.prev, null))
+				while(((Object)(current.prev)) != null)
 				{
 					current.prev = (MulticastDelegate)
 						(current.prev.MemberwiseClone());
@@ -130,7 +130,7 @@ public abstract class MulticastDelegate : Delegate
 	// Implementation of dynamic invocation.
 	protected override Object DynamicInvokeImpl(Object[] args)
 			{
-				if(!ReferenceEquals(prev, null))
+				if(((Object)prev) != null)
 				{
 					prev.DynamicInvokeImpl(args);
 				}
@@ -148,11 +148,11 @@ public abstract class MulticastDelegate : Delegate
 				{
 					list = list.prev;
 					d = d.prev;
-					if(ReferenceEquals(list, null))
+					if(((Object)list) == null)
 					{
-						return (d == null);
+						return (((Object)d) == null);
 					}
-					else if(ReferenceEquals(d, null))
+					else if(((Object)d) == null)
 					{
 						return false;
 					}
@@ -164,7 +164,7 @@ public abstract class MulticastDelegate : Delegate
 	private static int GetLength(MulticastDelegate d)
 			{
 				int len = 0;
-				while(!ReferenceEquals(d, null))
+				while(((Object)d) != null)
 				{
 					++len;
 					d = d.prev;
@@ -193,7 +193,7 @@ public abstract class MulticastDelegate : Delegate
 				// See if the delegate is actually on the list.
 				// If not, then return the list as-is.
 				current = this;
-				while(!ReferenceEquals(current, null))
+				while(((Object)current) != null)
 				{
 					if(ListMatch(current, dmulti))
 					{
@@ -201,7 +201,7 @@ public abstract class MulticastDelegate : Delegate
 					}
 					current = current.prev;
 				}
-				if(ReferenceEquals(current, null))
+				if(((Object)current) == null)
 				{
 					return this;
 				}
@@ -220,7 +220,7 @@ public abstract class MulticastDelegate : Delegate
 				// delegate removed from it.
 				list = (MulticastDelegate)(MemberwiseClone());
 				current = list;
-				while(!ReferenceEquals(current.prev, null))
+				while(((Object)(current.prev)) != null)
 				{
 					if(ListMatch(current.prev, dmulti))
 					{
@@ -244,7 +244,7 @@ public abstract class MulticastDelegate : Delegate
 				// See if the delegate is actually on the list.
 				// If not, then return the list as-is.
 				current = this;
-				while(!ReferenceEquals(current, null))
+				while(((Object)current) != null)
 				{
 					if(ListMatch(current, dmulti))
 					{
@@ -252,7 +252,7 @@ public abstract class MulticastDelegate : Delegate
 					}
 					current = current.prev;
 				}
-				if(ReferenceEquals(current, null))
+				if(((Object)current) == null)
 				{
 					return this;
 				}
@@ -263,12 +263,12 @@ public abstract class MulticastDelegate : Delegate
 				// Strip the delegate from the front of the list as
 				// many times as is necessary to get to a non-copy.
 				list = this;
-				while(!ReferenceEquals(list, null) &&
+				while(((Object)list) != null &&
 				      ListMatch(list, dmulti))
 				{
 					return Skip(list, len);
 				}
-				if(ReferenceEquals(list, null))
+				if(((Object)list) == null)
 				{
 					return null;
 				}
@@ -277,7 +277,7 @@ public abstract class MulticastDelegate : Delegate
 				// delegate removed from it.
 				list = (MulticastDelegate)(list.MemberwiseClone());
 				current = list;
-				while(!ReferenceEquals(current.prev, null))
+				while(((Object)(current.prev)) != null)
 				{
 					if(ListMatch(current.prev, dmulti))
 					{

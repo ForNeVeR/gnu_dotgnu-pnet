@@ -1,4 +1,10 @@
 
+2002-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Delegate.cs, runtime/System/MulticastDelegate.cs:
+	be careful when comparing delegates using "==" and "!=" so as
+	not to accidentally pick up the user-defined operator versions.
+
 2002-06-28  Charlie Carnow   <carnow@gmx.net>
 
 	* System.Xml/XmlReader.cs: Implemented 

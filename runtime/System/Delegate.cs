@@ -1,7 +1,7 @@
 /*
  * Delegate.cs - Implementation of the "System.Delegate" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -90,11 +90,11 @@ public abstract class Delegate : ICloneable
 	// Combine the invocation lists of two delegates.
 	public static Delegate Combine(Delegate a, Delegate b)
 			{
-				if(a == null)
+				if(((Object)a) == null)
 				{
 					return b;
 				}
-				else if(b == null)
+				else if(((Object)b) == null)
 				{
 					return a;
 				}
@@ -166,7 +166,7 @@ public abstract class Delegate : ICloneable
 
 				// Create a blank delegate to hold the method.
 				Delegate d = CreateBlankDelegate(type, methodInfo as ClrMethod);
-				if(d == null)
+				if(((Object)d) == null)
 				{
 					throw new ArgumentException(_("Arg_DelegateSignature"));
 				}
@@ -214,7 +214,7 @@ public abstract class Delegate : ICloneable
 
 				// Create a blank delegate to hold the method.
 				Delegate d = CreateBlankDelegate(type, methodInfo as ClrMethod);
-				if(d == null)
+				if(((Object)d) == null)
 				{
 					throw new ArgumentException(_("Arg_DelegateSignature"));
 				}
@@ -251,7 +251,7 @@ public abstract class Delegate : ICloneable
 
 				// Create a blank delegate to hold the method.
 				Delegate d = CreateBlankDelegate(type, method as ClrMethod);
-				if(d == null)
+				if(((Object)d) == null)
 				{
 					throw new ArgumentException(_("Arg_DelegateSignature"));
 				}
@@ -273,7 +273,7 @@ public abstract class Delegate : ICloneable
 	public override bool Equals(Object obj)
 			{
 				Delegate d = (obj as Delegate);
-				if(d != null && GetType() == d.GetType())
+				if(((Object)d) != null && GetType() == d.GetType())
 				{
 					return (target == d.target &&
 							method.Value == d.method.Value);
@@ -301,11 +301,12 @@ public abstract class Delegate : ICloneable
 	// Remove a delegate from a source list.
 	public static Delegate Remove(Delegate source, Delegate value)
 			{
-				if(source == null || source == value)
+				if(((Object)source) == null ||
+				   ((Object)source) == ((Object)value))
 				{
 					return null;
 				}
-				else if(value == null)
+				else if(((Object)value) == null)
 				{
 					return source;
 				}
@@ -318,11 +319,12 @@ public abstract class Delegate : ICloneable
 	// Remove an all instances of an invocation list from a source list.
 	public static Delegate RemoveAll(Delegate source, Delegate value)
 			{
-				if(source == null || source == value)
+				if(((Object)source) == null ||
+				   ((Object)source) == ((Object)value))
 				{
 					return null;
 				}
-				else if(value == null)
+				else if(((Object)value) == null)
 				{
 					return source;
 				}
@@ -335,9 +337,9 @@ public abstract class Delegate : ICloneable
 	// Operators.
 	public static bool operator==(Delegate d1, Delegate d2)
 			{
-				if(d1 == null)
+				if(((Object)d1) == null)
 				{
-					return (d2 == null);
+					return (((Object)d2) == null);
 				}
 				else
 				{
@@ -346,9 +348,9 @@ public abstract class Delegate : ICloneable
 			}
 	public static bool operator!=(Delegate d1, Delegate d2)
 			{
-				if(d1 == null)
+				if(((Object)d1) == null)
 				{
-					return (d2 != null);
+					return (((Object)d2) != null);
 				}
 				else
 				{

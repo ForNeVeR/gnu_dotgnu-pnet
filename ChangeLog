@@ -2,6 +2,10 @@
 
 	* System.Xml/XmlTextWriter.cs: filestream in 
 	read mode instead of write.
+	* System.Xml/XmlTextReader.cs, 
+	tests/System.Xml/TestXmlTextReader.cs: fix for apostrophes,
+	implemented GetRemainder, and Clean. Added Test case
+	for GetRemainder
 
 2003-03-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Private;
+using System.Globalization;
 
 public sealed class Convert
 {
@@ -1862,9 +1863,17 @@ public sealed class Convert
 	// Change the type of an object.
 	public static Object ChangeType(Object value, Type conversionType)
 			{
-				if(conversionType is IConvertible)
+				return ChangeType(value, conversionType,
+								  CultureInfo.CurrentCulture);
+			}
+	public static Object ChangeType(Object value, Type conversionType,
+									IFormatProvider provider)
+			{
+				IConvertible iconv = (value as IConvertible);
+				if(iconv != null)
 				{
-					return ((IConvertible)value).ToType(conversionType, null);
+					return DefaultToType(iconv, conversionType,
+										 provider, false);
 				}
 				else if(value != null || conversionType != null)
 				{
@@ -1884,6 +1893,11 @@ public sealed class Convert
 				}
 			}
 	public static Object ChangeType(Object value, TypeCode typeCode)
+			{
+				return ChangeType(value, typeCode, CultureInfo.CurrentCulture);
+			}
+	public static Object ChangeType(Object value, TypeCode typeCode,
+									IFormatProvider provider)
 			{
 				if(value is IConvertible)
 				{
@@ -1912,91 +1926,91 @@ public sealed class Convert
 
 						case TypeCode.Boolean:
 						{
-							return (Object)(iconv.ToBoolean(null));
+							return (Object)(iconv.ToBoolean(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.Char:
 						{
-							return (Object)(iconv.ToChar(null));
+							return (Object)(iconv.ToChar(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.SByte:
 						{
-							return (Object)(iconv.ToSByte(null));
+							return (Object)(iconv.ToSByte(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.Byte:
 						{
-							return (Object)(iconv.ToByte(null));
+							return (Object)(iconv.ToByte(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.Int16:
 						{
-							return (Object)(iconv.ToInt16(null));
+							return (Object)(iconv.ToInt16(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.UInt16:
 						{
-							return (Object)(iconv.ToUInt16(null));
+							return (Object)(iconv.ToUInt16(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.Int32:
 						{
-							return (Object)(iconv.ToInt32(null));
+							return (Object)(iconv.ToInt32(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.UInt32:
 						{
-							return (Object)(iconv.ToUInt32(null));
+							return (Object)(iconv.ToUInt32(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.Int64:
 						{
-							return (Object)(iconv.ToInt64(null));
+							return (Object)(iconv.ToInt64(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.UInt64:
 						{
-							return (Object)(iconv.ToUInt64(null));
+							return (Object)(iconv.ToUInt64(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.Single:
 						{
-							return (Object)(iconv.ToSingle(null));
+							return (Object)(iconv.ToSingle(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.Double:
 						{
-							return (Object)(iconv.ToDouble(null));
+							return (Object)(iconv.ToDouble(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.Decimal:
 						{
-							return (Object)(iconv.ToDecimal(null));
+							return (Object)(iconv.ToDecimal(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.DateTime:
 						{
-							return (Object)(iconv.ToDateTime(null));
+							return (Object)(iconv.ToDateTime(provider));
 						}
 						/* Not reached */
 
 						case TypeCode.String:
 						{
-							return (Object)(iconv.ToString(null));
+							return (Object)(iconv.ToString(provider));
 						}
 						/* Not reached */
 
@@ -2022,7 +2036,8 @@ public sealed class Convert
 	// Default implementation of the "ToType" methods in
 	// the primitive classes like Byte, Int32, Boolean, etc.
 	internal static Object DefaultToType(IConvertible obj, Type targetType,
-										 IFormatProvider provider)
+										 IFormatProvider provider,
+										 bool recursive)
 			{
 				if(targetType != null)
 				{
@@ -2104,12 +2119,18 @@ public sealed class Convert
 						throw new InvalidCastException
 							(_("InvalidCast_DBNull"));
 					}
-					else
+					else if(recursive)
 					{
 						throw new InvalidCastException
 							(String.Format
 								(_("InvalidCast_FromTo"),
 		 					     obj.GetType().FullName, targetType.FullName));
+					}
+					else
+					{
+						// We weren't called from a "ToType" method,
+						// so we can use it to handle the default case.
+						return obj.ToType(targetType, provider);
 					}
 				}
 				else
@@ -2131,10 +2152,6 @@ public sealed class Convert
 					return false;
 				}
 			}
-	public static bool IsEmpty(Object value)
-			{
-				return (value == null);
-			}
 	public static TypeCode GetTypeCode(Object value)
 			{
 				if(value != null)
@@ -2154,7 +2171,86 @@ public sealed class Convert
 				}
 			}
 
+	// Convert a set of base64 characters into an array of bytes.
+	public static byte[] FromBase64CharArray(char[] inArray, int offset,
+											 int length)
+			{
+				// Validate the parameters.
+				if(inArray == null)
+				{
+					throw new ArgumentNullException("inArray");
+				}
+				else if(offset < 0 || offset > inArray.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("offset", _("ArgRange_Array"));
+				}
+				else if(length < 0 || (inArray.Length - offset) < length)
+				{
+					throw new ArgumentException
+						(_("Arg_InvalidArrayRange"));
+				}
+				else if(length < 4 || (length % 4) != 0)
+				{
+					throw new FormatException
+						(_("Format_Base64ArrayLength"));
+				}
+
+				// Convert the contents of the array.
+				// TODO
+				return null;
+			}
+
 #endif // !ECMA_COMPAT
+
+	// Determine if we can convert from one type to another.
+	internal static bool CanConvert(Type fromType, Type toType)
+			{
+				// We can convert if the types are directly assignable.
+				if(toType.IsAssignableFrom(fromType))
+				{
+					return true;
+				}
+
+			#if ECMA_COMPAT
+				// We don't have IConvertible in the ECMA library.
+				return false;
+			#else
+				// If both types implement or inherit from IConvertible, then
+				// we assume that the conversion is theoretically possible.
+				// It may throw an exception later in ConvertObject.
+				Type iconv = typeof(IConvertible);
+				return (iconv.IsAssignableFrom(fromType) &&
+				        iconv.IsAssignableFrom(toType));
+			#endif
+			}
+
+	// Convert an object to a new type.
+	internal static Object ConvertObject(Object obj, Type toType)
+			{
+				// If the types are directly assignable, then
+				// return the original object as-is.
+				if(toType.IsAssignableFrom(obj.GetType()))
+				{
+					return obj;
+				}
+
+			#if !ECMA_COMPAT
+				// Try to use "DefaultToType" to do the work.
+				IConvertible iconv = (obj as IConvertible);
+				if(iconv != null)
+				{
+					return DefaultToType
+						(iconv, toType, CultureInfo.CurrentCulture, false);
+				}
+			#endif
+
+				// The conversion is impossible.
+				throw new InvalidCastException
+					(String.Format
+						(_("InvalidCast_FromTo"),
+ 					     obj.GetType().FullName, toType.FullName));
+			}
 
 }; // class Convert
 

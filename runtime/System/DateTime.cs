@@ -442,7 +442,7 @@ public struct DateTime : IComparable, IFormattable
 			}
 	Object IConvertible.ToType(Type ct, IFormatProvider provider)
 			{
-				return Convert.DefaultToType(this, ct, provider);
+				return Convert.DefaultToType(this, ct, provider, true);
 			}
 	Boolean IConvertible.ToBoolean(IFormatProvider provider)
 			{

@@ -26,3 +26,5 @@ Format_Version=Bad format for Version value
 Format_IP=Bad format for IP address
 Format_FormatString=Invalid format specification
 Format_FormatArgNumber=Invalid argument number in format specification
+Format_Base64ArrayLength=Invalid base64 character array length
+Format_Base64ArrayChar=Invalid base64 character in input

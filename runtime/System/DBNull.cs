@@ -41,7 +41,7 @@ public sealed class DBNull : IConvertible
 	public TypeCode GetTypeCode() { return TypeCode.DBNull; }
 	Object IConvertible.ToType(Type ct, IFormatProvider provider)
 			{
-				return Convert.DefaultToType(this, ct, provider);
+				return Convert.DefaultToType(this, ct, provider, true);
 			}
 	Boolean IConvertible.ToBoolean(IFormatProvider provider)
 			{

@@ -180,7 +180,8 @@ public struct Byte : IComparable, IFormattable
 			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
-				return Convert.DefaultToType(this, conversionType, provider);
+				return Convert.DefaultToType(this, conversionType,
+											 provider, true);
 			}
 
 #endif // !ECMA_COMPAT

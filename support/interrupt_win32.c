@@ -35,6 +35,7 @@ extern	"C" {
 static LPTOP_LEVEL_EXCEPTION_FILTER __previousFilter;
 
 #ifdef IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS
+
 static LONG CALLBACK __UnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 {
 	ILThread *thread = ILThreadSelf();
@@ -48,17 +49,18 @@ static LONG CALLBACK __UnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInf
 		#ifdef IL_INTERRUPT_HAVE_X86_CONTEXT
 
 		/* Integer registers */
+		context.Eax = ExceptionInfo->ContextRecord->Eax;
+		context.Ebx = ExceptionInfo->ContextRecord->Ebx;
+		context.Ecx = ExceptionInfo->ContextRecord->Ecx;
+		context.Edx = ExceptionInfo->ContextRecord->Edx;
 		context.Edi = ExceptionInfo->ContextRecord->Edi;
 		context.Esi = ExceptionInfo->ContextRecord->Esi;
-		context.Ebx = ExceptionInfo->ContextRecord->Ebx;
-		context.Edx = ExceptionInfo->ContextRecord->Edx;
-		context.Ecx = ExceptionInfo->ContextRecord->Ecx;
-		context.Eax = ExceptionInfo->ContextRecord->Eax;
 
 		/* Control registers */
 		context.Ebp = ExceptionInfo->ContextRecord->Ebp;
 		context.Eip = ExceptionInfo->ContextRecord->Eip;
 		context.Esp = ExceptionInfo->ContextRecord->Esp;
+
 		#endif
 
 		thread->illegalMemoryAccessHandler(&context);
@@ -68,6 +70,7 @@ static LONG CALLBACK __UnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInf
 
 	return EXCEPTION_CONTINUE_SEARCH;
 }
+
 #endif
 
 void _ILInterruptInit()
@@ -79,7 +82,9 @@ void _ILInterruptInit()
 
 void _ILInterruptDeinit()
 {
+#ifdef IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS
 	SetUnhandledExceptionFilter(__previousFilter);
+#endif
 }
 
 #ifdef	__cplusplus

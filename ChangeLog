@@ -1,9 +1,14 @@
 2004-06-16  Thong Nguyen  <tum@veridicus.com>
 
-	* engine/cvm_ptr.c: Removed null check alimination in COP_CKNULL.
+	* engine/cvm_ptr.c: Removed null check elimination in COP_CKNULL.
 	
 	* engine/unroll_ptr.c: Unrolled COP_CKNULL opcode.
+
+	* support/wait_mutex.c: Removed some unused locals.
 	
+	* support/interrupt_win32.c, support/interrupt_posix.c: Tidied
+	up formatting, fixed signal() handling for posix.
+
 2004-06-14  Thong Nguyen  <tum@veridicus.com>
 
 	* support/hb_gc.c: Fix ILGCDisableFinalizers not atomically

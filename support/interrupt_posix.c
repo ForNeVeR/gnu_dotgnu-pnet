@@ -39,6 +39,8 @@ extern	"C" {
 	#include <sys/ucontext.h>
 #endif
 
+#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
+
 #if defined(HAVE_SIGACTION)
 
 static void __sigaction_handler(int signo, siginfo_t *info, void *ctx)
@@ -59,12 +61,12 @@ static void __sigaction_handler(int signo, siginfo_t *info, void *ctx)
 		#if defined(IL_INTERRUPT_HAVE_X86_CONTEXT)
 
 		/* Integer registers */
+		context.Eax = uc->uc_mcontext.gregs[REG_EAX];
+		context.Ebx = uc->uc_mcontext.gregs[REG_EBX];
+		context.Ecx = uc->uc_mcontext.gregs[REG_ECX];
+		context.Edx = uc->uc_mcontext.gregs[REG_EDX];
 		context.Edi = uc->uc_mcontext.gregs[REG_EDI];
 		context.Esi = uc->uc_mcontext.gregs[REG_ESI];
-		context.Ebx = uc->uc_mcontext.gregs[REG_EBX];
-		context.Edx = uc->uc_mcontext.gregs[REG_EDX];
-		context.Ecx = uc->uc_mcontext.gregs[REG_ECX];
-		context.Eax = uc->uc_mcontext.gregs[REG_EAX];
 
 		/* Control registers */
 		context.Ebp = uc->uc_mcontext.gregs[REG_EBP];
@@ -93,6 +95,8 @@ static void __signal_handler(int signal)
 
 #endif
 
+#endif /* IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS */
+
 void _ILInterruptInit()
 {
 #ifdef IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS	
@@ -106,13 +110,15 @@ void _ILInterruptInit()
 		sigaction(SIGSEGV, &sa, 0);
 		sigaction(SIGBUS, &sa, 0);
 	#elif defined(HAVE_SIGNAL)
-		signal(SIG_SEGV, __signal_handler);
+		#warning sigaction() not available, using signal() which may be inaccurate
+		signal(SIGSEGV, __signal_handler);
+		signal(SIGBUS, __signal_handler);
 	#endif
 #endif
 }
 
 void _ILInterruptDeinit()
-{	
+{
 }
 
 #ifdef	__cplusplus

@@ -39,7 +39,7 @@ public struct UInt32 : IComparable, IFormattable
 	// Override inherited methods.
 	public override int GetHashCode()
 			{
-				return unchecked(((int)value_) & 0x7FFFFFFF);
+				return unchecked((int)value_);
 			}
 	public override bool Equals(Object value)
 			{

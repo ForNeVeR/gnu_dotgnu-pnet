@@ -4,6 +4,12 @@
 	* System.Xml/XPath/XmlSortOrder.cs: Fix visibility based on
 	profile.
 
+	* runtime/System/Int32.cs, runtime/System/UInt32.cs, 
+	runtime/System/Int64.cs, runtime/System/UInt64.cs: Effectively
+	double the hash space by removing the "& 0x7FFFFFFF". Halve the 
+	collisions so that now all integers below 32 bit to have unique 
+	hashes and all 64 bit integers have only 1 collision in hash space.
+
 2003-07-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Diagnostics/Process.cs: modify GetMainWindowHandle to

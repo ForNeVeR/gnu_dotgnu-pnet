@@ -37,7 +37,7 @@ public struct Int32 : IComparable, IFormattable
 
 	// Override inherited methods.
 	public override int GetHashCode()
-			{ return (value_ & 0x7FFFFFFF); }
+			{ return (value_); }
 	public override bool Equals(Object value)
 			{
 				if(value is Int32)

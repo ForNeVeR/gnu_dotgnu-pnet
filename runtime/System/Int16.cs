@@ -38,9 +38,8 @@ public struct Int16 : IComparable, IFormattable
 	// Override inherited methods.
 	public override int GetHashCode()
 			{
-				return unchecked((((int)(ushort)value_) |
-								 (((int)(ushort)value_) << 16))
-										& 0x7FFFFFFF);
+				return unchecked(((int)(ushort)value_) |
+								 (((int)(ushort)value_) << 16));
 			}
 	public override bool Equals(Object value)
 			{

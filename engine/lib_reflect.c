@@ -1468,6 +1468,27 @@ ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread *_thread,
 	}
 }
 
+/*
+ * private static byte *ResourceGetAddress(IntPtr handle, long position);
+ */
+ILUInt8 *_IL_ClrResourceStream_ResourceGetAddress(ILExecThread *_thread,
+												  ILNativeInt handle,
+												  ILInt64 position)
+{
+	ILImage *image = (ILImage *)handle;
+	unsigned char *section;
+	unsigned long sectionLen;
+	if(image && ILImageGetSection(image, IL_SECTION_RESOURCES,
+								  (void **)&section, &sectionLen))
+	{
+		return (ILUInt8 *)(section + (ILNativeInt)position);
+	}
+	else
+	{
+		return (ILUInt8 *)0;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

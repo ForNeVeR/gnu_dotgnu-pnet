@@ -369,6 +369,7 @@ IL_METHOD_END
 IL_METHOD_BEGIN(ClrResourceStream_Methods)
 	IL_METHOD("ResourceRead", "(jl[Bii)i", _IL_ClrResourceStream_ResourceRead)
 	IL_METHOD("ResourceReadByte", "(jl)i", _IL_ClrResourceStream_ResourceReadByte)
+	IL_METHOD("ResourceGetAddress", "(jl)*B", _IL_ClrResourceStream_ResourceGetAddress)
 IL_METHOD_END
 
 IL_METHOD_BEGIN(ClrType_Methods)

@@ -30,6 +30,9 @@
 
 	* engine/ilrun.c (main): initialize the locale on entry to ilrun.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c:
+	implement the "ClrResourceStream.ResourceGetAddress" internalcall.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

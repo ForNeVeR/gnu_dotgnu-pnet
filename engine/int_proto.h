@@ -296,6 +296,7 @@ extern ILObject * _IL_ClrProperty_GetPropertyType(ILExecThread * _thread, ILNati
 
 extern ILInt32 _IL_ClrResourceStream_ResourceRead(ILExecThread * _thread, ILNativeInt handle, ILInt64 position, System_Array * buffer, ILInt32 offset, ILInt32 count);
 extern ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread * _thread, ILNativeInt handle, ILInt64 position);
+extern ILUInt8 * _IL_ClrResourceStream_ResourceGetAddress(ILExecThread * _thread, ILNativeInt handle, ILInt64 position);
 
 extern ILInt32 _IL_ClrType_GetClrArrayRank(ILExecThread * _thread, ILObject * _this);
 extern ILInt32 _IL_ClrType_GetAttributeFlagsImpl(ILExecThread * _thread, ILObject * _this);

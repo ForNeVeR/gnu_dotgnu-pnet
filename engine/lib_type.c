@@ -267,7 +267,38 @@ void *_ILClrFromObject(ILExecThread *thread, ILObject *object)
 static ILImage *ResolveAssembly(ILExecThread *thread,
 								ILUInt16 *name, ILInt32 len)
 {
-	return 0;
+	ILInt32 posn;
+	ILString *str;
+	char *utf8;
+
+	/* Extract the assembly name, ignoring version and key information
+	   which are unlikely to ever be the same between different CLI's */
+	while(len > 0 && (name[0] == ' ' || name[0] == '\t'))
+	{
+		++name;
+		--len;
+	}
+	posn = 0;
+	while(posn < len && name[posn] != ' ' && name[posn] != '\t' &&
+	      name[posn] != ',')
+	{
+		++posn;
+	}
+	if(!posn)
+	{
+		return 0;
+	}
+
+	/* Convert the name into UTF-8 */
+	str = ILStringWCreateLen(thread, name, (int)posn);
+	utf8 = ILStringToUTF8(thread, str);
+	if(!utf8)
+	{
+		return 0;
+	}
+
+	/* Look for an image with a matching assembly name */
+	return ILContextGetAssembly(thread->process->context, utf8);
 }
 
 ILObject *_ILGetTypeFromImage(ILExecThread *thread,

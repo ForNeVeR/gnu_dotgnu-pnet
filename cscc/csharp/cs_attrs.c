@@ -244,63 +244,39 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	const void *blob;
 	unsigned long blobLen;
 	ILAttribute *attribute;
-	ILNode *nameNode=NULL;
-	int alreadySeen=0;
+	ILNode *nameNode;
+	int retry;
 
-	/* Make sure that the attribute type name ends in "Attribute" */
-	if(yyisa(attr->name, ILNode_Identifier))
+	/* Try the attribute name without "Attribute" first */
+	nameNode = attr->name;
+	retry = 1;
+	type = 0;
+	if(CSSemExpectType(attr->name, info, &(attr->name)))
 	{
-		ModifyAttrName((ILNode_Identifier *)(attr->name),0);
-	}
-	else if(yyisa(attr->name, ILNode_QualIdent))
-	{
-		ModifyAttrName
-		  ((ILNode_Identifier *)(((ILNode_QualIdent *)(attr->name))->right),0);
+		type = CSSemType(attr->name, info, &(attr->name));
+	    if(ILTypeAssignCompatible(info->image, type,
+	   						      ILFindSystemType(info, "Attribute")))
+		{
+			retry = 0;
+		}
 	}
 
-	nameNode=attr->name;
-	if(!CSSemExpectType(attr->name,info,&(attr->name)))
+	/* Retry with "Attribute" appended to the name if necessary */
+	if(retry)
 	{
-		/* restore and rename */
-		attr->name=nameNode;
-		/* Make sure that the attribute type name ends in "Attribute" */
+		attr->name = nameNode;
 		if(yyisa(attr->name, ILNode_Identifier))
 		{
-			ModifyAttrName((ILNode_Identifier *)(attr->name),1);
+			ModifyAttrName((ILNode_Identifier *)(attr->name), 1);
 		}
 		else if(yyisa(attr->name, ILNode_QualIdent))
 		{
 			ModifyAttrName((ILNode_Identifier *)(((ILNode_QualIdent *)
-											(attr->name))->right),1);
+											(attr->name))->right), 1);
 		}
-		alreadySeen=1;
-	}
-	
-	/* Perform semantic analysis on the attribute type */
-	type = CSSemType(attr->name, info, &(attr->name));
-
-	/* To handle stuff like System.Xml.XmlAttribute which is not an
-	 * attribute, but there is System.Xml.Serialization.XmlAttributeAttribute
-	 * which is also [XmlAttribute]
-	 */
-	if((!alreadySeen) && (!ILTypeAssignCompatible
-			(info->image, type, ILFindSystemType(info, "Attribute"))))
-	{
-		attr->name=nameNode;
-		/* Make sure that the attribute type name ends in "Attribute" */
-		if(yyisa(attr->name, ILNode_Identifier))
-		{
-			ModifyAttrName((ILNode_Identifier *)(attr->name),1);
-		}
-		else if(yyisa(attr->name, ILNode_QualIdent))
-		{
-			ModifyAttrName((ILNode_Identifier *)(((ILNode_QualIdent *)
-											(attr->name))->right),1);
-		}
-		/* Perform semantic analysis on the attribute type */
 		type = CSSemType(attr->name, info, &(attr->name));
 	}
-
+	
 	/* The type must inherit from "System.Attribute" and not be abstract */
 	if(!ILTypeAssignCompatible
 			(info->image, type, ILFindSystemType(info, "Attribute")))

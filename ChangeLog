@@ -4,6 +4,11 @@
 	* codegen/cg_decls.tc: structs with no instance fields should
 	be 1-sized instead of 0-sized, even if there are statics.
 
+	* cscc/csharp/cs_attrs.c: clean up the code that checks for
+	attributes with and without "Attribute" appended so that it
+	will also work for attribute classes whose names don't end
+	in "Attribute" at all.
+
 2003-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/Makefile.am: add $(SOCKETLIBS) to the build for "test_verify"

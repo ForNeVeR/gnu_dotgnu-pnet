@@ -210,7 +210,10 @@ public class HttpWebRequest : WebRequest
 		this.response=newRequest.GetResponse(); 
 		
 		this.haveResponse=true; // I hope this is correct
-		(outStream as HttpStream).ContentLength=response.ContentLength;
+		if(outStream!=null)
+		{
+			(outStream as HttpStream).ContentLength=response.ContentLength;
+		}
 		return this.response; 
 	}
 
@@ -732,7 +735,7 @@ public class HttpWebRequest : WebRequest
 	 * The basic assumption is that this WebRequest and the stream is of no further
 	 * use. So beware , content will be lost for the last call .
 	 * However the response will be retained if it is an incomplete Reset*/
-	internal void ResetRequest() 
+	internal void ResetRequest(bool complete) 
 	{
 		if(outStream!=null) 
 		{
@@ -741,7 +744,10 @@ public class HttpWebRequest : WebRequest
 			outStream.Close();
 		}
 		headerSent=false;
-		response=null;
+		if(complete)
+		{
+			response=null;
+		}
 		outStream=null;
 	}
 
@@ -754,6 +760,9 @@ public class HttpWebRequest : WebRequest
 			}
 	}
 
+	/* Note: the next cycle of refactoring should split this single
+	 * stream class into two http streams . Current hack works, but
+	 * only *just* */
 	private class HttpStream : Stream
 	{	
 		private HttpWebRequest request;
@@ -770,6 +779,15 @@ public class HttpWebRequest : WebRequest
 			this.request=req;
 			this.underlying=underlying;
 			SendHeaders();
+		}
+
+		~HttpStream()
+		{
+			if(underlying!=null)
+			{
+				underlying.Close();
+				underlying=null;
+			}
 		}
 
 		// Stub out all stream functionality.
@@ -816,7 +834,7 @@ public class HttpWebRequest : WebRequest
 
 		public override void Close()
 		{
-			underlying.Close();
+			/* Nothing */
 		}
 
 		public override bool CanRead 
@@ -930,6 +948,13 @@ public class HttpWebRequest : WebRequest
 			String requestString= null;
 			if(request.Proxy!=null)
 			{
+				if(request.Proxy.Credentials != null &&
+					request.Method != "GET" && 
+					request.Method != "HEAD")
+				{
+					request.AddProxyAuthHeaders("Basic");
+				}		
+						
 				requestString= request.Method+" "+
 					request.Address+
 					" HTTP/"+request.protocolVersion.Major+
@@ -1039,10 +1064,11 @@ public class HttpWebRequest : WebRequest
 							return request;
 						}
 						challenge=response.Headers["Proxy-Authenticate"];
-						request.ResetRequest();
+						request.ResetRequest(false);
 						if(request.AddProxyAuthHeaders(challenge))
 						{
-							proxy=HttpAuthState.OK;
+							request.ResetRequest(true);
+							proxy=HttpAuthState.Trying;
 							return request;
 						}
 						else
@@ -1063,10 +1089,11 @@ public class HttpWebRequest : WebRequest
 							return request;
 						}
 						challenge=response.Headers["WWW-Authenticate"];
-						request.ResetRequest();
+						request.ResetRequest(false);
 						if(request.AddHttpAuthHeaders(challenge))
 						{
-							http=HttpAuthState.OK;
+							request.ResetRequest(true);
+							http=HttpAuthState.Trying;
 							return request;
 						}
 						else
@@ -1091,11 +1118,11 @@ public class HttpWebRequest : WebRequest
 							(request.Method=="GET" || request.Method=="HEAD"))
 						{
 							/* ok redirect it */
-							request.ResetRequest();
+							request.ResetRequest(true);
 							request.SetAddress(newUri);
 							redirections++;
+							return request;
 						}
-						return request;
 				}
 				break;
 

@@ -300,6 +300,7 @@ static int ConvertCode(ILLinker *linker, ILMethod *method,
 						_ILLinkerOutOfMemory(linker);
 						return 0;
 					}
+					token |= IL_META_TOKEN_STRING;
 				}
 				else
 				{

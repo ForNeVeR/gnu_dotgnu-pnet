@@ -158,6 +158,7 @@ int main(int argc, char *argv[])
 	int sawException;
 	int registerMode = 0;
 	char *ilprogram;
+	char *newExePath;
 	int ilprogramLen;
 	ILExecValue execValue;
 	ILExecValue retValue;
@@ -341,9 +342,15 @@ int main(int argc, char *argv[])
 	/* Get the name of the IL program, appending ".exe" if necessary */
 	ilprogram = argv[1];
 	ilprogramLen = strlen(ilprogram);
-	if(!ILFileExists(ilprogram, (char **)0) &&
-	   (ilprogramLen < 4 ||
-	    ILStrICmp(ilprogram + ilprogramLen - 4, ".exe") != 0))
+	if(ILFileExists(ilprogram, &newExePath))
+	{
+		if(newExePath)
+		{
+			ilprogram = newExePath;
+		}
+	}
+	else if(ilprogramLen < 4 ||
+	        ILStrICmp(ilprogram + ilprogramLen - 4, ".exe") != 0)
 	{
 		ilprogram = (char *)ILMalloc(ilprogramLen + 5);
 		if(ilprogram)

@@ -11,6 +11,9 @@
 	* csdoc/Makefile.am: move "csdocvalil", "csdoc2stub", and
 	"csdoc2test" to "noinst_PROGRAMS".
 
+	* ilnative/ilinternal.c: generate marshalling stubs for use when
+	libffi is not present on a system.
+
 2002-05-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/src/powerpc/ffi_darwin.c: rearrange declarations

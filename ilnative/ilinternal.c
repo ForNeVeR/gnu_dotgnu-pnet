@@ -785,6 +785,286 @@ static void dumpLookupType(FILE *outfile, ILType *type, int topLevel)
 }
 
 /*
+ * FFI marshalling types.
+ */
+#define	IL_FFI_VOID				0
+#define	IL_FFI_UINT8			1
+#define	IL_FFI_SINT8			2
+#define	IL_FFI_UINT16			3
+#define	IL_FFI_SINT16			4
+#define	IL_FFI_UINT32			5
+#define	IL_FFI_SINT32			6
+#define	IL_FFI_UINT64			7
+#define	IL_FFI_SINT64			8
+#define	IL_FFI_UINTPTR			9
+#define	IL_FFI_SINTPTR			10
+#define	IL_FFI_FLOAT32			11
+#define	IL_FFI_FLOAT64			12
+#define	IL_FFI_FLOAT			13
+#define	IL_FFI_PTR				14
+#define	IL_FFI_TYPEDREF			15
+
+/*
+ * Get the FFI marshalling type for an IL type.
+ */
+static int getFfiType(ILType *type)
+{
+	/* Handle primitive and enumerated types */
+	if(ILType_IsPrimitive(type))
+	{
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_VOID:		  return IL_FFI_VOID;
+			case IL_META_ELEMTYPE_BOOLEAN:	  return IL_FFI_SINT8;
+			case IL_META_ELEMTYPE_I1:		  return IL_FFI_SINT8;
+			case IL_META_ELEMTYPE_U1:		  return IL_FFI_UINT8;
+			case IL_META_ELEMTYPE_I2:		  return IL_FFI_SINT16;
+			case IL_META_ELEMTYPE_U2:		  return IL_FFI_UINT16;
+			case IL_META_ELEMTYPE_CHAR:		  return IL_FFI_UINT16;
+			case IL_META_ELEMTYPE_I4:		  return IL_FFI_SINT32;
+			case IL_META_ELEMTYPE_U4:		  return IL_FFI_UINT32;
+			case IL_META_ELEMTYPE_I8:		  return IL_FFI_SINT64;
+			case IL_META_ELEMTYPE_U8:		  return IL_FFI_UINT64;
+			case IL_META_ELEMTYPE_I:		  return IL_FFI_SINTPTR;
+			case IL_META_ELEMTYPE_U:		  return IL_FFI_UINTPTR;
+			case IL_META_ELEMTYPE_R4:		  return IL_FFI_FLOAT32;
+			case IL_META_ELEMTYPE_R8:		  return IL_FFI_FLOAT64;
+			case IL_META_ELEMTYPE_R:		  return IL_FFI_FLOAT;
+			case IL_META_ELEMTYPE_TYPEDBYREF: return IL_FFI_TYPEDREF;
+			default:						  break;
+		}
+	}
+	else if(ILType_IsValueType(type))
+	{
+		if(ILTypeIsEnum(type))
+		{
+			return getFfiType(ILTypeGetEnumType(type));
+		}
+	}
+
+	/* Everything else is a pointer */
+	return IL_FFI_PTR;
+}
+
+/*
+ * Maximum size of FFI profile for an internalcall method.
+ */
+#define	IL_FFI_SIZE		16
+
+/*
+ * Get the complete FFI marshalling profile for an internalcall method.
+ */
+static int getFfiProfile(ILMethod *method, char *profile)
+{
+	ILType *signature = ILMethod_Signature(method);
+	ILType *returnType;
+	int size = 0;
+	unsigned long numParams;
+	unsigned long param;
+	int suppressThis = 0;
+
+	/* Get the marshalling information for the return type */
+	returnType = ILTypeGetReturn(signature);
+	if(ILMethodIsConstructor(method))
+	{
+		if(!ILClassIsValueType(ILMethod_Owner(method)))
+		{
+			profile[size++] = IL_FFI_PTR;
+			suppressThis = 1;
+		}
+		else
+		{
+			profile[size++] = IL_FFI_VOID;
+		}
+	}
+	else if(ILType_IsValueType(returnType) && !ILTypeIsEnum(returnType))
+	{
+		profile[size++] = IL_FFI_VOID;
+	}
+	else
+	{
+		profile[size++] = getFfiType(returnType);
+	}
+
+	/* All internalcalls are passed the "thread" as the first argument */
+	profile[size++] = IL_FFI_PTR;
+
+	/* Add the result pointer if the return type is a value type */
+	if(ILType_IsValueType(returnType) && !ILTypeIsEnum(returnType))
+	{
+		profile[size++] = IL_FFI_PTR;
+	}
+
+	/* Add the pointer argument for the "this" pointer */
+	if(ILType_HasThis(signature) && !suppressThis)
+	{
+		profile[size++] = IL_FFI_PTR;
+	}
+
+	/* Convert the parameters into FFI marshalling values */
+	numParams = ILTypeNumParams(signature);
+	for(param = 1; param <= numParams; ++param)
+	{
+		profile[size++] = getFfiType(ILTypeGetParam(signature, param));
+	}
+
+	/* Return the size of the profile to the caller */
+	return size;
+}
+
+/*
+ * Dump the C name of a FFI marshalling type.
+ */
+static void dumpFfiType(FILE *outfile, int ffiType)
+{
+	switch(ffiType)
+	{
+		case IL_FFI_VOID:		fputs("void", outfile); break;
+		case IL_FFI_UINT8:		fputs("ILUInt8", outfile); break;
+		case IL_FFI_SINT8:		fputs("ILInt8", outfile); break;
+		case IL_FFI_UINT16:		fputs("ILUInt16", outfile); break;
+		case IL_FFI_SINT16:		fputs("ILInt16", outfile); break;
+		case IL_FFI_UINT32:		fputs("ILUInt32", outfile); break;
+		case IL_FFI_SINT32:		fputs("ILInt32", outfile); break;
+		case IL_FFI_UINT64:		fputs("ILUInt64", outfile); break;
+		case IL_FFI_SINT64:		fputs("ILInt64", outfile); break;
+		case IL_FFI_UINTPTR:	fputs("ILNativeInt", outfile); break;
+		case IL_FFI_SINTPTR:	fputs("ILNativeUInt", outfile); break;
+		case IL_FFI_FLOAT32:	fputs("ILFloat", outfile); break;
+		case IL_FFI_FLOAT64:	fputs("ILDouble", outfile); break;
+		case IL_FFI_FLOAT:		fputs("ILNativeFloat", outfile); break;
+		case IL_FFI_PTR:		fputs("void *", outfile); break;
+		case IL_FFI_TYPEDREF:	fputs("ILTypedRef", outfile); break;
+		default:				break;
+	}
+}
+
+/*
+ * Dump the name of a marshalling function.
+ */
+static void dumpFfiMarshalerName(FILE *outfile, char *profile, int size)
+{
+	int index;
+
+	fputs("marshal_", outfile);
+	for(index = 0; index < size; ++index)
+	{
+		switch(profile[index])
+		{
+			case IL_FFI_VOID:		putc('v', outfile); break;
+			case IL_FFI_UINT8:		putc('B', outfile); break;
+			case IL_FFI_SINT8:		putc('b', outfile); break;
+			case IL_FFI_UINT16:		putc('S', outfile); break;
+			case IL_FFI_SINT16:		putc('s', outfile); break;
+			case IL_FFI_UINT32:		putc('I', outfile); break;
+			case IL_FFI_SINT32:		putc('i', outfile); break;
+			case IL_FFI_UINT64:		putc('L', outfile); break;
+			case IL_FFI_SINT64:		putc('l', outfile); break;
+			case IL_FFI_UINTPTR:	putc('J', outfile); break;
+			case IL_FFI_SINTPTR:	putc('j', outfile); break;
+			case IL_FFI_FLOAT32:	putc('f', outfile); break;
+			case IL_FFI_FLOAT64:	putc('d', outfile); break;
+			case IL_FFI_FLOAT:		putc('D', outfile); break;
+			case IL_FFI_PTR:		putc('p', outfile); break;
+			case IL_FFI_TYPEDREF:	putc('r', outfile); break;
+		}
+	}
+}
+
+/*
+ * List of marshalling profiles that have already been seen.
+ */
+static char **profiles = 0;
+static int    numProfiles = 0;
+static int    maxProfiles = 0;
+
+/*
+ * Dump a marshalling function for a particular method profile.
+ */
+static void dumpFfiMarshaler(FILE *outfile, char *profile, int size)
+{
+	int index;
+	char **newProfiles;
+
+	/* Determine if we've seen this marshalling profile before */
+	for(index = 0; index < numProfiles; ++index)
+	{
+		if(profiles[index][0] == size &&
+		   !ILMemCmp(profiles[index] + 1, profile, size))
+		{
+			return;
+		}
+	}
+	if(numProfiles >= maxProfiles)
+	{
+		newProfiles = (char **)ILRealloc
+			(profiles, (numProfiles + 64) * sizeof(char *));
+		if(!newProfiles)
+		{
+			fputs("virtual memory exhauted\n", stderr);
+			exit(1);
+		}
+		profiles = newProfiles;
+		maxProfiles += 64;
+	}
+	if((profiles[numProfiles] = (char *)ILMalloc(size + 1)) == 0)
+	{
+		fputs("virtual memory exhauted\n", stderr);
+		exit(1);
+	}
+	profiles[numProfiles][0] = (char)size;
+	ILMemCpy(profiles[numProfiles] + 1, profile, size);
+	++numProfiles;
+
+	/* Dump the function heading */
+	fputs("#if !defined(HAVE_LIBFFI)\n\n", outfile);
+	fputs("static void ", outfile);
+	dumpFfiMarshalerName(outfile, profile, size);
+	fputs("(void (*fn)(), void *rvalue, void **avalue)\n{\n", outfile);
+
+	/* Assign the return value */
+	putc('\t', outfile);
+	if(profile[0] != IL_FFI_VOID)
+	{
+		fputs("*((", outfile);
+		dumpFfiType(outfile, profile[0]);
+		fputs(" *)rvalue) = ", outfile);
+	}
+
+	/* Cast the function pointer to the correct prototype and call it */
+	fputs("(*(", outfile);
+	dumpFfiType(outfile, profile[0]);
+	putc(' ', outfile);
+	fputs("(*)(", outfile);
+	for(index = 1; index < size; ++index)
+	{
+		if(index != 1)
+		{
+			fputs(", ", outfile);
+		}
+		dumpFfiType(outfile, profile[index]);
+	}
+	fputs("))fn)", outfile);
+
+	/* Output the arguments */
+	putc('(', outfile);
+	for(index = 1; index < size; ++index)
+	{
+		if(index != 1)
+		{
+			fputs(", ", outfile);
+		}
+		fputs("*((", outfile);
+		dumpFfiType(outfile, profile[index]);
+		fprintf(outfile, " *)(avalue[%d]))", index - 1);
+	}
+	fputs(");\n", outfile);
+
+	/* Dump the function footing */
+	fputs("}\n\n#endif\n\n", outfile);
+}
+
+/*
  * Dump all of the "internalcall" methods for a class.
  */
 static void dumpClassInternals(FILE *outfile, const char *prefix,
@@ -793,6 +1073,8 @@ static void dumpClassInternals(FILE *outfile, const char *prefix,
 	ILMethod *method;
 	ILMethod *nextMethod;
 	int needMangle;
+	char profile[IL_FFI_SIZE];
+	int profileSize;
 
 	/* Scan the class and declare the method prototypes */
 	method = 0;
@@ -840,6 +1122,13 @@ static void dumpClassInternals(FILE *outfile, const char *prefix,
 			{
 				dumpMethodPrototype(outfile, prefix, method, needMangle);
 			}
+
+			/* Dump marshalling information for the method */
+			if((modes & OUT_MODE_TABLES) != 0)
+			{
+				profileSize = getFfiProfile(method, profile);
+				dumpFfiMarshaler(outfile, profile, profileSize);
+			}
 		}
 	}
 	if((modes & OUT_MODE_PROTOTYPES) != 0)
@@ -860,6 +1149,7 @@ static void dumpClassInternals(FILE *outfile, const char *prefix,
 		{
 			if(ILMethod_IsInternalCall(method))
 			{
+				profileSize = getFfiProfile(method, profile);
 				needMangle = ((ILMethod_ImplAttrs(method) &
 									MANGLE_MARK_BIT) != 0);
 				if(ILMethodIsConstructor(method))
@@ -873,14 +1163,18 @@ static void dumpClassInternals(FILE *outfile, const char *prefix,
 						/* Value type constructors use a regular method call */
 						fputs(prefix, outfile);
 						dumpMethodFuncName(outfile, method, needMangle);
-						fputs(", 0)\n", outfile);
+						fputs(", ", outfile);
+						dumpFfiMarshalerName(outfile, profile, profileSize);
+						fputs(", 0, 0)\n", outfile);
 					}
 					else
 					{
 						/* Object constructors use manual allocation */
-						fputs("0, ", outfile);
+						fputs("0, 0, ", outfile);
 						fputs(prefix, outfile);
 						dumpMethodFuncName(outfile, method, needMangle);
+						fputs(", ", outfile);
+						dumpFfiMarshalerName(outfile, profile, profileSize);
 						fputs(")\n", outfile);
 					}
 				}
@@ -894,6 +1188,8 @@ static void dumpClassInternals(FILE *outfile, const char *prefix,
 					fputs("\", ", outfile);
 					fputs(prefix, outfile);
 					dumpMethodFuncName(outfile, method, needMangle);
+					fputs(", ", outfile);
+					dumpFfiMarshalerName(outfile, profile, profileSize);
 					fputs(")\n", outfile);
 				}
 			}

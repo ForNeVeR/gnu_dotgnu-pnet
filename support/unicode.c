@@ -110,6 +110,27 @@ double ILGetUnicodeValue(unsigned ch)
 	return -1.0;
 }
 
+int ILIsWhitespaceUnicode(unsigned ch)
+{
+#ifndef SMALL_UNICODE_TABLE
+	if(ch < 0x0100)
+	{
+#endif
+		/* Check for simple Latin-1 whitespace characters */
+		return (ch == 0x0020 || ch == 0x0009 ||
+				ch == 0x000A || ch == 0x000B ||
+				ch == 0x000C || ch == 0x000D ||
+				ch == 0x0085 || ch == 0x00A0);
+#ifndef SMALL_UNICODE_TABLE
+	}
+	else
+	{
+		/* Check for general Unicode whitespace characters */
+		return (ILGetUnicodeCategory(ch) == ILUnicode_SpaceSeparator);
+	}
+#endif
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -222,6 +222,11 @@ ILUnicodeCategory ILGetUnicodeCategory(unsigned ch);
 double ILGetUnicodeValue(unsigned ch);
 
 /*
+ * Determine if a Unicode character is white space.
+ */
+int ILIsWhitespaceUnicode(unsigned ch);
+
+/*
  * Option descriptors for command-line parsing support.
  */
 typedef struct

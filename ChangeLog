@@ -6,6 +6,8 @@
 	option to list out the build options and multiple "-D" for
 	more verbose output.
 
+	* engine/dumpconfig.cs: Add GPL header.
+
 2003-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.c, include/il_system.h, support/Makefile.am,

@@ -1,4 +1,8 @@
 
+2004-10-18  Klaus Treichel  <ktreichel@web.de>
+
+	* copy-mcs.sh: Copy the tests for corlib, System and System.XML too.
+
 2004-10-07  Klaus Treichel  <ktreichel@web.de>
 
 	* class/System.Data/SqlNotificationInfo.cs,

@@ -35,6 +35,8 @@ mkdir mcs-sources/build
 mkdir mcs-sources/class
 mkdir mcs-sources/class/corlib
 mkdir mcs-sources/class/corlib/System
+mkdir mcs-sources/class/System
+mkdir mcs-sources/class/System.XML
 mkdir mcs-sources/tools
 
 if test -f "$MCS_SOURCES/class/library.make" ; then
@@ -43,6 +45,9 @@ else
 	cp -p "$MCS_SOURCES/build/library.make" mcs-sources/build/library.make
 fi
 cp -p "$MCS_SOURCES/class/corlib/System/TODOAttribute.cs" mcs-sources/class/corlib/System/TODOAttribute.cs
+cp -pr "$MCS_SOURCES/class/corlib/Test" mcs-sources/class/corlib
+cp -pr "$MCS_SOURCES/class/System/Test" mcs-sources/class/System
+cp -pr "$MCS_SOURCES/class/System.XML/Test" mcs-sources/class/System.XML
 cp -pr "$MCS_SOURCES/tools/SqlSharp" mcs-sources/tools
 cp -pr "$MCS_SOURCES/tools/wsdl" mcs-sources/tools
 cp -pr "$MCS_SOURCES/jay" mcs-sources/

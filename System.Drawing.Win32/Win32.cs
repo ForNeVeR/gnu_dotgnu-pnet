@@ -346,6 +346,41 @@ internal class Api
 		RGN_MAX = RGN_COPY
 	}
 
+	public enum RopType : uint
+	{
+		SRCCOPY = 0x00CC0020, /* dest = source */
+		SRCPAINT = 0x00EE0086, /* dest = source OR dest */
+		SRCAND =0x008800C6, /* dest = source AND dest */
+		SRCINVERT = 0x00660046, /* dest = source XOR dest */
+		SRCERASE =0x00440328, /* dest = source AND (NOT dest ) */
+		NOTSRCCOPY =0x00330008, /* dest = (NOT source) */
+		NOTSRCERASE =0x001100A6, /* dest = (NOT src) AND (NOT dest) */
+		MERGECOPY =0x00C000CA, /* dest = (source AND pattern) */
+		MERGEPAINT =0x00BB0226, /* dest = (NOT source) OR dest */
+		PATCOPY =0x00F00021, /* dest = pattern */
+		PATPAINT =0x00FB0A09, /* dest = DPSnoo */
+		PATINVERT =0x005A0049, /* dest = pattern XOR dest */
+		DSTINVERT =0x00550009 ,/* dest = (NOT dest) */
+		BLACKNESS =0x00000042, /* dest = BLACK */
+		WHITENESS =0x00FF0062 /* dest = WHITE */
+	}
+
+	public enum DibColorTableType : uint
+	{
+		DIB_RGB_COLORS = 0, /* color table in RGBs */
+		DIB_PAL_COLORS = 1 /* color table in palette indices */
+	}
+
+	public enum BitMapInfoCompressionType : uint
+	{
+		BI_RGB = 0,
+		BI_RLE8 = 1,
+		BI_RLE4 = 2,
+		BI_BITFIELDS = 3,
+		BI_JPEG = 4,
+		BI_PNG = 5
+	}
+
 	[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi)]
 	public struct WNDCLASS 
 	{
@@ -462,7 +497,7 @@ internal class Api
 	{
 		public LogBrushStyles lbStyle;
 		public int lbColor;
-		public long lbHatch;
+		public int lbHatch;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -634,6 +669,36 @@ internal class Api
 		public uint flags;
 	}
 
+// Not used	
+	[StructLayout(LayoutKind.Sequential)]
+	public class BITMAPINFO
+	{
+		public int biSize;
+		public int biWidth;
+		public int biHeight;
+		public short biPlanes;
+		public short biBitCount;
+		public BitMapInfoCompressionType biCompression;
+		public int biSizeImage = 0;
+		public int biXPelsPerMeter = 0;
+		public int biYPelsPerMeter = 0;
+		public int biClrUsed = 0;
+		public int biClrImportant = 0;
+		[MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValArray, SizeConst=1024)]
+		public byte[] bmiColors; 
+	};
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct RGNDATA
+	{
+		public uint dwSize; 
+		public uint iType; 
+		public uint nCount; 
+		public uint nRgnSize; 
+		public RECT rcBound;
+		public byte[] buffer;
+	}
+
 	public delegate void TimerProc(IntPtr hwnd, uint uMsg, uint idEvent, uint dwTime);
 
 	[DllImport("user32")] //ANSI
@@ -743,7 +808,7 @@ internal class Api
 
 	//Get font information
 	[DllImport("gdi32")]
-	public static extern bool GetTextMetrics( IntPtr hdc, out TEXTMETRIC lptm);
+	public static extern bool GetTextMetricsA( IntPtr hdc, out TEXTMETRIC lptm);
 
 	//Measure size and width of text
 	[DllImport("gdi32")] //ANSI
@@ -816,13 +881,13 @@ internal class Api
 	public static extern IntPtr CreateBitmap( int nWidth, int nHeight, uint cPlanes, uint cBitsPerPel, byte[] lpvBits);
 
 	[DllImport("user32")]
-	public static extern long SetWindowLong( IntPtr hWnd, SetWindowLongType nIndex, WindowStyle dwNewLong);
+	public static extern int SetWindowLongA( IntPtr hWnd, SetWindowLongType nIndex, WindowStyle dwNewLong);
 
 	[DllImport("user32")]
-	public static extern long SetWindowLong( IntPtr hWnd, SetWindowLongType nIndex, WindowsExtendedStyle dwNewLong);
+	public static extern int SetWindowLongA( IntPtr hWnd, SetWindowLongType nIndex, WindowsExtendedStyle dwNewLong);
 
 	[DllImport("user32")]
-	public static extern long GetWindowLong( IntPtr hWnd, SetWindowLongType nIndex);
+	public static extern int GetWindowLongA( IntPtr hWnd, SetWindowLongType nIndex);
 
 	[DllImport("user32")]
 	public static extern bool RedrawWindow( IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, RedrawWindowFlags flags);
@@ -840,7 +905,16 @@ internal class Api
 	public static extern int CombineRgn( IntPtr hrgnDest, IntPtr hrgnSrc1, IntPtr hrgnSrc2, RegionCombineMode fnCombineMode);
 		
 	[DllImport("gdi32")]
+	public static extern int ExtSelectClipRgn( IntPtr hdc, IntPtr hrgn, RegionCombineMode fnMode );
+
+	[DllImport("gdi32")]
+	public static extern int GetClipRgn( IntPtr hdc, IntPtr hrgn );
+
+	[DllImport("gdi32")]
 	public static extern int SelectClipRgn(IntPtr hdc, IntPtr hrgn);
+
+	[DllImport("gdi32")]
+	public static extern int OffsetRgn( IntPtr hrgn, int nXOffset, int nYOffset );
 
 	[DllImport("gdi32")]
 	public static extern int GetObject( IntPtr hgdiobj, int cbBuffer, out LOGFONT lpvObject );
@@ -850,6 +924,9 @@ internal class Api
 
 	[DllImport("user32")]
 	public static extern uint SetTimer(IntPtr hwnd, uint nIDEvent, uint uElapse, TimerProc lpTimerFunc);
+
+	[DllImport("user32")]
+	public static extern uint SetTimer(IntPtr hwnd, uint nIDEvent, uint uElapse, IntPtr lpTimerFunc);
 
 	[DllImport("user32")]
 	public static extern bool KillTimer(IntPtr hwnd, uint uIDEvent);
@@ -877,6 +954,50 @@ internal class Api
 
 	[DllImport("user32")]
 	public static extern IntPtr WindowFromPoint( POINT Point);
+
+	[DllImport("gdi32")]
+	public static extern IntPtr CreateDIBSection(IntPtr hdc, [In,MarshalAs(UnmanagedType.LPStruct)] BITMAPINFO pbmi, DibColorTableType iUsage, out IntPtr ppvBits, IntPtr hSection, uint dwOffset);
+
+	[DllImport("gdi32")]
+	public static extern int BitBlt (IntPtr hdcDest, int x, int y, int nWidth, int nHeight, IntPtr hSrcDC, int xSrc, int ySrc, RopType dwRop);
+
+	[DllImport("gdi32")]
+	public static extern IntPtr CreateCompatibleDC( IntPtr hdc);
+
+	[DllImport("gdi32")]
+	public static extern int SetDIBitsToDevice(
+		IntPtr hdc,                 // handle to DC
+		int XDest,               // x-coord of destination upper-left corner
+		int YDest,               // y-coord of destination upper-left corner 
+		uint dwWidth,           // source rectangle width
+		uint dwHeight,          // source rectangle height
+		int XSrc,                // x-coord of source lower-left corner
+		int YSrc,                // y-coord of source lower-left corner
+		uint uStartScan,         // first scan line in array
+		uint cScanLines,         // number of scan lines
+		ref byte lpvBits,     // array of DIB bits
+		BITMAPINFO lpbmi, // bitmap information
+	uint fuColorUse          // RGB or palette indexes
+		);
+
+	[DllImport("kernel32")]
+	public static extern IntPtr GlobalLock( IntPtr hMem);
+
+	[DllImport("kernel32")]
+	public static extern bool GlobalUnlock(IntPtr hMem);
+
+	[DllImport("gdi32")]
+	public static extern int SaveDC( IntPtr hdc );
+
+	[DllImport("gdi32")]
+	public static extern bool RestoreDC( IntPtr hdc, int nSavedDC );
+
+	[DllImport("gdi32")]
+	public static extern IntPtr ExtCreateRegion( IntPtr lpXform, uint nCount, ref byte lpRgnData);
+
+	[DllImport("gdi32")]
+	public static extern uint GetRegionData( IntPtr hRgn, uint dwCount, ref byte lpRgnData);
+
 
 }//Api
 

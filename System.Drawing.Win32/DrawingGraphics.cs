@@ -222,7 +222,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				Win32.Api.GetTextExtentPoint32A(hdc, s, s.Length, ref size);
 
 				Win32.Api.TEXTMETRIC tm;
-				Win32.Api.GetTextMetrics(hdc, out tm);
+				Win32.Api.GetTextMetricsA(hdc, out tm);
 				
 				charactersFitted = 0;
 				linesFilled = 0;
@@ -301,7 +301,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	public override int GetLineSpacing()
 			{
 				Win32.Api.TEXTMETRIC lptm;
-				Win32.Api.GetTextMetrics(hdc, out lptm);
+				Win32.Api.GetTextMetricsA(hdc, out lptm);
 				return lptm.tmHeight;
 			}
 
@@ -342,8 +342,29 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 		}
 	}
 
+	// Write an image at x, y taking into account the mask
 	public override void DrawImage(IToolkitImage image, int x, int y)
 	{
+		DrawingImage di = image as DrawingImage;
+
+		if (di.hMaskRegion != IntPtr.Zero)
+		{
+			// Save the current clipping so we can restore later.
+			Win32.Api.SaveDC(hdc);
+			// Move mask to position
+			Win32.Api.OffsetRgn(di.hMaskRegion, x, y);
+			// Set the mask
+			Win32.Api.ExtSelectClipRgn(hdc, di.hMaskRegion, Win32.Api.RegionCombineMode.RGN_DIFF);
+			// Move mask back to origin
+			Win32.Api.OffsetRgn(di.hMaskRegion, -x, -y);
+		}
+
+		// Draw the image
+		Win32.Api.SetDIBitsToDevice( hdc, x, y, (uint)di.frame.Width,(uint)di.frame.Height, 0, 0, 0, (uint)di.frame.Height,ref di.frame.Data[0], di.bitMapInfo, 0 /*RGB*/);
+
+		// Restore the clipping
+		if (di.hMaskRegion != IntPtr.Zero)
+			Win32.Api.RestoreDC(hdc, -1);
 	}
 
 }; // class DrawingGraphics

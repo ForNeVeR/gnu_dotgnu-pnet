@@ -66,16 +66,16 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 				Win32.Api.WindowsExtendedStyle extendedStyle;
 				
 				toolkit.GetWin32StylesFromFlags( flags, out style, out extendedStyle);
-				
 				//Now set the style
-				if (Win32.Api.SetWindowLong(hwnd, Win32.Api.SetWindowLongType.GWL_STYLE,style) == 0)
+				if (Win32.Api.SetWindowLongA(hwnd, Win32.Api.SetWindowLongType.GWL_STYLE,style) == 0)
 					throw new InvalidOperationException("Unable to change the window style");
-				if (Win32.Api.SetWindowLong(hwnd, Win32.Api.SetWindowLongType.GWL_EXSTYLE,extendedStyle) == 0)
+				if (Win32.Api.SetWindowLongA(hwnd, Win32.Api.SetWindowLongType.GWL_EXSTYLE,extendedStyle) == 0)
 					throw new InvalidOperationException("Unable to change the extended window style");
-
+				
 				// Redraw the entire window including the non client portion
 				Win32.Api.RedrawWindow( hwnd, IntPtr.Zero, IntPtr.Zero, Win32.Api.RedrawWindowFlags.RDW_INVALIDATE | Win32.Api.RedrawWindowFlags.RDW_FRAME );
 				// Console.WriteLine( "DrawingTopLevelWindow.SetWindowFlags, " + sink );
+				
 
 			}
 

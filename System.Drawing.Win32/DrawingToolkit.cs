@@ -31,7 +31,7 @@ using DotGNU.Images;
 
 public class DrawingToolkit : IToolkit
 {
-	private ArrayList timers = new ArrayList();
+	private static ArrayList timers = new ArrayList();
 	internal ArrayList windows = new ArrayList();
 	// The child window or control that has captured or null for none
 	internal DrawingWindow capturedWindow;
@@ -442,10 +442,15 @@ public class DrawingToolkit : IToolkit
 	public Object RegisterTimer
 				(Object owner, int interval, EventHandler expire)
 	{
-		Timer timer = new Timer(owner, expire);
-		timers.Add(timer);
-		timer.cookie = Win32.Api.SetTimer( IntPtr.Zero, 0, (uint)interval, new Win32.Api.TimerProc(timer.TimerHandler) );
-		return timer.cookie;
+		uint cookie;
+		if (timers.Count == 0)
+			cookie = 0;
+		else
+			cookie = (uint)(timers[timers.Count-1] as Timer).cookie + 1;
+		// Assume for now that the first window created will service the timers
+		Win32.Api.SetTimer( (windows[0] as DrawingWindow).hwnd, cookie, (uint)interval, IntPtr.Zero );
+		timers.Add(new Timer(owner, cookie, expire));
+		return cookie;
 	}
 
 	// Unregister a timer.
@@ -454,13 +459,48 @@ public class DrawingToolkit : IToolkit
 		Win32.Api.KillTimer( IntPtr.Zero, (uint)cookie );
 		for( int i = 0; i < timers.Count;  i++ )
 		{
-			Timer timer = timers[i] as Timer;
-			if ( timer.cookie == (uint)cookie )
+			if ( (timers[i] as Timer).cookie == (uint)cookie )
 			{
 				timers.RemoveAt(i);
 				break;
 			}
 		}
+	}
+
+	
+	//An instance is created for each timer registered
+	private class Timer
+	{
+		private Object owner;
+		private EventHandler expire;
+		internal uint cookie;
+		
+		public Timer( Object owner, uint cookie, EventHandler expire )
+		{
+			this.owner = owner;
+			this.cookie = cookie;
+			this.expire = expire;
+		}
+
+		public void Fire()
+		{
+			expire( owner, EventArgs.Empty );
+		}
+
+	}
+
+	private static void TimerFired( int wParam)
+	{
+		foreach( Timer timer in timers)
+		{
+			if (timer.cookie == wParam)
+			{
+				timer.Fire();
+				break;
+			}
+		}
+		// If we reach here, there was a timer on the message queue when we killed it
+		// Its okay just ignore it.
 	}
 
 	// Convert a client point for a window into a screen point.
@@ -481,26 +521,6 @@ public class DrawingToolkit : IToolkit
 		p.y = point.Y;
 		Win32.Api.ScreenToClient( (window as DrawingWindow).hwnd, ref p );
 		return new Point( p.x, p.y );
-	}
-
-	//An instance is created for each timer registered
-	private class Timer
-	{
-		internal Object owner;
-		internal EventHandler expire;
-		internal uint cookie;
-		
-		public Timer( Object owner, EventHandler expire )
-		{
-			this.owner = owner;
-			this.expire = expire;
-		}
-
-		public void TimerHandler(IntPtr hwnd, uint msg,  uint idEvent, uint dwTime)
-		{
-			expire( owner, EventArgs.Empty );
-		}
-
 	}
 
 	//The main windows loop. Messages are handed off
@@ -624,6 +644,10 @@ public class DrawingToolkit : IToolkit
 
 			case Win32.Api.WindowsMessages.WM_SETTINGCHANGE:
 				DrawingWindow(hwnd).SettingsChange( wParam );
+				break;
+
+			case Win32.Api.WindowsMessages.WM_TIMER:
+				TimerFired( wParam);
 				break;
 
 			default:

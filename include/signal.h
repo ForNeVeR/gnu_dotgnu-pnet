@@ -174,6 +174,7 @@ extern int sigignore (int __sig);
 extern int sigpause (int __sig);
 extern int sigrelse (int __sig);
 extern sighandler_t sigset (int __sig, sighandler_t __handler);
+extern int sigwait (__const sigset_t *__restrict __set, int *__restrict __sig);
 
 __END_DECLS
 

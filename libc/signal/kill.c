@@ -208,8 +208,32 @@ sigpending (sigset_t *sigmask)
   return 0;
 }
 
+int
+__sigwait (const sigset_t *__restrict set, int *__restrict sig)
+{
+  sigset_t old;
+
+  /* Validate the signal set */
+  if (!set)
+    {
+      errno = EINVAL;
+      return -1;
+    }
+
+  /* Block the signals in the mask and then wait for something to arrive */
+  old = thread_mask;
+  thread_mask = *set;
+  *sig = __syscall_sigsuspend (__pthread_self (), process_mask | thread_mask);
+  thread_mask = old;
+
+  /* Dispatch the signal that we saw */
+  __sigdispatch (*sig);
+  return 0;
+}
+
 weak_alias (__kill, kill)
 weak_alias (__killpg, killpg)
 weak_alias (__sigqueue, sigqueue)
 weak_alias (__sigprocmask, sigprocmask)
 weak_alias (__sigsuspend, sigsuspend)
+weak_alias (__sigwait, sigwait)

@@ -42,4 +42,18 @@ pthread_sigmask (int how, const sigset_t * __restrict set,
   return __pthread_sigmask (how, set, oset);
 }
 
+extern int __sigwait (__const sigset_t *__restrict __set,
+                      int *__restrict __sig);
+
+int
+sigwait (const sigset_t *__restrict set, int *__restrict sig)
+{
+  /* Overrides the "sigwait" in "libc" to provide cancellation semantics */
+  int result;
+  pthread_testcancel ();
+  result = __sigwait (set, sig);
+  pthread_testcancel ();
+  return result;
+}
+
 weak_alias (raise, gsignal)

@@ -1,4 +1,9 @@
 
+2004-02-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/signal.h, libc/signal/kill.c, libpthread/pthread_kill.c:
+	add the "sigwait" function.
+
 2004-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, include/pthread-support.h,

@@ -695,10 +695,6 @@ public class XmlTextWriter : XmlWriter
 
 				// Pop the current scope.
 				PopScope();
-				if(xmlSpace != System.Xml.XmlSpace.Preserve)
-				{
-					writer.WriteLine();
-				}
 				writeState = System.Xml.WriteState.Content;
 				prevWasText = false;
 			}
@@ -750,10 +746,6 @@ public class XmlTextWriter : XmlWriter
 
 				// Pop the current scope.
 				PopScope();
-				if(xmlSpace != System.Xml.XmlSpace.Preserve)
-				{
-					writer.WriteLine();
-				}
 				writeState = System.Xml.WriteState.Content;
 				prevWasText = false;
 			}
@@ -998,7 +990,8 @@ public class XmlTextWriter : XmlWriter
 					DoIndent();
 				}
 				writer.Write('<');
-				if(((Object)prefix) != null && ((Object)ns) != null)
+				if(((Object)prefix) != null && prefix != String.Empty &&
+				   ((Object)ns) != null && ns != String.Empty)
 				{
 					// We need to associate a prefix with a namespace.
 					String currMapping = LookupPrefix(ns);
@@ -1030,7 +1023,7 @@ public class XmlTextWriter : XmlWriter
 						scopeShown = true;
 					}
 				}
-				else if(((Object)prefix) != null)
+				else if(((Object)prefix) != null && prefix != String.Empty)
 				{
 					// We were only given a prefix, so output it directly.
 					if(prefix != currPrefix)
@@ -1041,7 +1034,7 @@ public class XmlTextWriter : XmlWriter
 					}
 					writer.Write(localName);
 				}
-				else if(((Object)ns) != null)
+				else if(((Object)ns) != null && ns != String.Empty)
 				{
 					// We were only given a namespace, so find the prefix.
 					prefix = LookupPrefix(ns);

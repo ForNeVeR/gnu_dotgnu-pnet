@@ -27,36 +27,131 @@ using System.Collections;
 internal class ElementList : XmlNodeList
 {
 	// Internal state.
-	private XmlElement element;
+	private XmlNode parent;
+	private XmlDocument doc;
 	private String name;
 	private String namespaceURI;
+	private String matchAll;
 	private bool uriForm;
+	private bool docChanged;
+	private XmlNode lastItem;
+	private int lastItemAt;
 
 	// Create a new element list.
-	public ElementList(XmlElement element, String name)
+	private ElementList(XmlNode parent)
 			{
-				this.element = element;
-				this.name = name;
+				this.parent = parent;
+				this.doc = parent.OwnerDocument;
+				this.matchAll = doc.NameTable.Add("*");
+				this.docChanged = false;
+				this.lastItem = null;
+				this.lastItemAt = -1;
+				this.doc.NodeInserted +=
+					new XmlNodeChangedEventHandler(DocumentChanged);
+				this.doc.NodeRemoved +=
+					new XmlNodeChangedEventHandler(DocumentChanged);
+			}
+	public ElementList(XmlNode parent, String name)
+			: this(parent)
+			{
+				this.name = doc.NameTable.Add(name);
 				this.namespaceURI = null;
 				this.uriForm = false;
 			}
-	public ElementList(XmlElement element, String localName,
+	public ElementList(XmlNode parent, String localName,
 					   String namespaceURI)
+			: this(parent)
 			{
-				this.element = element;
-				this.name = localName;
-				this.namespaceURI = namespaceURI;
+				this.name =
+					(localName != null ? doc.NameTable.Add(localName) : null);
+				this.namespaceURI =
+					(namespaceURI != null
+						? doc.NameTable.Add(namespaceURI) : null);
 				this.uriForm = true;
 			}
 
+	// Track changes to the document that may affect the search order.
+	private void DocumentChanged(Object sender, XmlNodeChangedEventArgs args)
+			{
+				docChanged = true;
+			}
+
+	// Get the node that follows another in pre-order traversal.
+	private XmlNode GetFollowingNode(XmlNode node)
+			{
+				XmlNode current = node.FirstChild;
+				if(current == null)
+				{
+					// We don't have any children, so look for a next sibling.
+					current = node;
+					while(current != null && current != parent &&
+					      current.NextSibling == null)
+					{
+						current = current.ParentNode;
+					}
+					if(current != null && current != parent)
+					{
+						current = current.NextSibling;
+					}
+				}
+				if(current == parent)
+				{
+					// We've finished the traversal.
+					return null;
+				}
+				else
+				{
+					// This is the next node in sequence.
+					return current;
+				}
+			}
+
+	// Determine if a node matches the selection criteria.
+	private bool NodeMatches(XmlNode node)
+			{
+				if(node.NodeType != XmlNodeType.Element)
+				{
+					return false;
+				}
+				if(!uriForm)
+				{
+					if(((Object)name) == ((Object)matchAll) ||
+					   ((Object)name) == ((Object)(node.Name)))
+					{
+						return true;
+					}
+				}
+				else
+				{
+					if(((Object)name) == ((Object)matchAll) ||
+					   ((Object)name) == ((Object)(node.LocalName)))
+					{
+						if(((Object)namespaceURI) == ((Object)matchAll) ||
+						   ((Object)namespaceURI) ==
+						   		((Object)(node.NamespaceURI)))
+						{
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+
 	// Get the number of entries in the node list.
-	[TODO]
 	public override int Count
 			{
 				get
 				{
-					// TODO
-					return 0;
+					int count = 0;
+					XmlNode current = parent;
+					while((current = GetFollowingNode(current)) != null)
+					{
+						if(NodeMatches(current))
+						{
+							++count;
+						}
+					}
+					return count;
 				}
 			}
 

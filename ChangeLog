@@ -1,4 +1,19 @@
 
+2002-12-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/ElementList.cs, System.Xml/XmlElement.cs,
+	System.Xml/XmlTextWriter.cs, tests/System.Xml/TestXml.cs:
+	new test cases for "XmlElement".
+
+2002-12-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, resources/de_DE/I18N/Makefile.am,
+	resources/de_DE/System/Makefile.am,
+	resources/de_DE/System.Xml/Makefile.am,
+	resources/de_DE/runtime/Makefile.am, tools/.cvsignore,
+	tools/link_res.sh.in: introduce the "link_res.sh" script, to handle
+	linking satellite assemblies under different compilers.
+
 2002-12-11  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	* runtime/System/IO/Path.cs: use TEMP environment variable

@@ -49,6 +49,7 @@ public class TestXml
 				suite.AddTests(typeof(TestXmlDocument));
 				suite.AddTests(typeof(TestXmlDocumentFragment));
 				suite.AddTests(typeof(TestXmlDocumentType));
+				suite.AddTests(typeof(TestXmlElement));
 				suite.AddTests(typeof(TestXmlSignificantWhitespace));
 				suite.AddTests(typeof(TestXmlText));
 				suite.AddTests(typeof(TestXmlWhitespace));

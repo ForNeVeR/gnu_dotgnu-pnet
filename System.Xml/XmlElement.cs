@@ -86,7 +86,7 @@ class XmlElement : XmlLinkedNode
 					else
 					{
 						// Remove the children and create a new text node.
-						RemoveAll();
+						RemoveContents();
 						AppendChild(OwnerDocument.CreateTextNode(value));
 					}
 				}
@@ -106,7 +106,7 @@ class XmlElement : XmlLinkedNode
 				}
 			}
 
-	// Get or set the format of this element.
+	// Get or set the empty state of this element.
 	public bool IsEmpty
 			{
 				get
@@ -115,6 +115,10 @@ class XmlElement : XmlLinkedNode
 				}
 				set
 				{
+					if(value)
+					{
+						RemoveContents();
+					}
 					isEmpty = value;
 				}
 			}
@@ -196,7 +200,6 @@ class XmlElement : XmlLinkedNode
 			{
 				XmlElement clone = OwnerDocument.CreateElement
 					(Prefix, LocalName, NamespaceURI);
-				clone.isEmpty = isEmpty;
 				if(attributes != null)
 				{
 					foreach(XmlAttribute attr in Attributes)
@@ -306,6 +309,12 @@ class XmlElement : XmlLinkedNode
 				{
 					attributes.RemoveAll();
 				}
+			}
+
+	// Remove the element contents, but not the attributes.
+	private void RemoveContents()
+			{
+				base.RemoveAll();
 			}
 
 	// Remove a specified attribute by name.
@@ -446,7 +455,7 @@ class XmlElement : XmlLinkedNode
 						attr.WriteTo(w);
 					}
 				}
-				if(!isEmpty)
+				if(!IsEmpty)
 				{
 					WriteContentTo(w);
 					w.WriteFullEndElement();

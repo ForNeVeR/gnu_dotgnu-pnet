@@ -206,7 +206,7 @@ public class StreamWriter : TextWriter
 				{
 					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
-				Convert(true);
+				Convert(false);
 				stream.Flush();
 			}
 

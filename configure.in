@@ -13,6 +13,7 @@ AC_SUBST(RESGEN)
 AC_SUBST(RESGEN_FLAGS)
 AC_SUBST(ILRUN)
 AC_SUBST(ILFIND)
+AC_SUBST(ASSEMBLY_LINKER)
 AC_SUBST(PNET_PATH)
 
 dnl Checks for programs.
@@ -128,6 +129,13 @@ else
 	fi
 fi
 
+dnl Find the Microsoft "al" assembly linker, for satellite resources.
+if test "$MSTOOLS" = "yes"; then
+	AC_PATH_PROG(ASSEMBLY_LINKER, al)
+else
+	ASSEMBLY_LINKER=pnet
+fi
+
 dnl Determine which version of RESGEN we are using (Portable.NET or Microsoft).
 RESGEN_ERROR=`"$RESGEN" -v.txt 2>&1`
 case "$RESGEN_ERROR" in
@@ -186,7 +194,9 @@ samples/Makefile
 samples/ilrun.sh
 tools/run_test.sh
 tools/csccwrap.sh
+tools/link_res.sh
 pnetlib.spec])
 
 chmod +x "${srcdir}/tools/csccwrap.sh"
+chmod +x "${srcdir}/tools/link_res.sh"
 chmod +x "${srcdir}/samples/ilrun.sh"

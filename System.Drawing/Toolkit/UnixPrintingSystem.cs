@@ -64,6 +64,10 @@ internal sealed class UnixPrintingSystem : IToolkitPrintingSystem
 				{
 					return new UnixPrinter(name);
 				}
+				else if(name == null)
+				{
+					return new UnixPrinter(DefaultPrinterName);
+				}
 				else
 				{
 					return null;

@@ -67,8 +67,25 @@ public sealed class ToolkitManager
 				}
 			}
 
+	// Determine if this platform appears to be Unix-ish.
+	private static bool IsUnix()
+			{
+			#if !ECMA_COMPAT
+				if(Environment.OSVersion.Platform != (PlatformID)128) /* Unix */
+			#else
+				if(Path.DirectorySeparatorChar == '\\' ||
+				   Path.AltDirectorySeparatorChar == '\\')
+			#endif
+				{
+					return false;
+				}
+				else
+				{
+					return true;
+				}
+			}
+
 	// Get or set the active printing system.
-	[TODO]
 	public static IToolkitPrintingSystem PrintingSystem
 			{
 				get
@@ -77,8 +94,15 @@ public sealed class ToolkitManager
 					{
 						if(printingSystem == null)
 						{
-							// TODO: create a system-specific printing system.
-							printingSystem = new NullPrintingSystem();
+							if(IsUnix())
+							{
+								printingSystem = new UnixPrintingSystem();
+							}
+							else
+							{
+								// TODO: Win32 printing system.
+								printingSystem = new NullPrintingSystem();
+							}
 						}
 						return printingSystem;
 					}
@@ -127,18 +151,13 @@ public sealed class ToolkitManager
 			#if CONFIG_REFLECTION
 				// Determine the name of the toolkit we wish to use.
 				String name;
-			#if !ECMA_COMPAT
-				if(Environment.OSVersion.Platform != (PlatformID)128) /* Unix */
-			#else
-				if(Path.DirectorySeparatorChar == '\\' ||
-				   Path.AltDirectorySeparatorChar == '\\')
-			#endif
+				if(IsUnix())
 				{
-					name = "System.Drawing.Win32";
+					name = "System.Drawing.Xsharp";
 				}
 				else
 				{
-					name = "System.Drawing.Xsharp";
+					name = "System.Drawing.Win32";
 				}
 
 				// Load the toolkit's assembly.

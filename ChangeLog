@@ -6,6 +6,11 @@
 	basic infrastructure in place to output page headers and
 	footers to "output.ps".
 
+	* System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Drawing/Toolkit/UnixPrintingSystem.cs: create the correct
+	printing system for Unix systems; use the default printer if the
+	printer name is "null".
+
 2003-07-18  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Private/NumberFormat/Formatter.cs,

@@ -108,6 +108,21 @@ ILType *CTypeAddVolatile(ILGenInfo *info, ILType *type);
 ILType *CTypeAddFunctionPtr(ILGenInfo *info, ILType *type);
 
 /*
+ * Mark a C type with the "__gc" modifier.
+ */
+ILType *CTypeAddManaged(ILGenInfo *info, ILType *type);
+
+/*
+ * Mark a C type with the "__nogc" modifier.
+ */
+ILType *CTypeAddUnmanaged(ILGenInfo *info, ILType *type);
+
+/*
+ * Strip the "__gc" or "__nogc" modifier from a type.
+ */
+ILType *CTypeStripGC(ILType *type);
+
+/*
  * Determine if a type returned from "CTypeCreateStruct",
  * "CTypeCreateUnion", or "CTypeCreateEnum" has already
  * been defined by the compiler.
@@ -197,6 +212,16 @@ int CTypeIsConst(ILType *type);
  * Determine if a C type has the "volatile" qualifier.
  */
 int CTypeIsVolatile(ILType *type);
+
+/*
+ * Determine if a C type has the "__gc" qualifier.
+ */
+int CTypeIsManaged(ILType *type);
+
+/*
+ * Determine if a C type has the "__nogc" qualifier.
+ */
+int CTypeIsUnmanaged(ILType *type);
 
 /*
  * Determine if a C type is primitive (this includes enumerated types).

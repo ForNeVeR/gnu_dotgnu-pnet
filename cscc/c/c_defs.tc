@@ -370,6 +370,16 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 %}
 
 /*
+ * gc/nogc flag specifiers.
+ */
+%enum ILGCSpecifier =
+{
+	ILGC_Unknown,
+	ILGC_Managed,
+	ILGC_Unmanaged
+}
+
+/*
  * Define extra node types that are required by C.
  */
 %node ILNode_CString ILNode_String
@@ -511,6 +521,27 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 	ILType *type;
 }
 %node ILNode_CBox ILNode_UnaryExpression
+%node ILNode_CNewObject ILNode_Expression =
+{
+	ILGCSpecifier specifier;
+	ILType *type;
+	ILNode *args;
+	int useGlobalNew;
+}
+%node ILNode_CNewArray ILNode_Expression =
+{
+	ILGCSpecifier specifier;
+	ILType *type;
+	ILNode *expr;
+	int useGlobalNew;
+	%nocreate ILType *resultType = {0};
+}
+%node ILNode_CDelete ILNode_BinaryExpression =
+{
+	int arrayDelete;
+	int useGlobalDelete;
+	%nocreate ILMethod *dtor = {0};
+}
 
 %output "c_semantics.c"
 

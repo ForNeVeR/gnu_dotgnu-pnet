@@ -833,10 +833,12 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 	return result;
 }
 
-CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem)
+CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem,
+								 int gcSpecifier)
 {
 	CDeclarator result;
 	ILType *type;
+	ILType **hole;
 
 	/* Create a C#-style array reference, which we will turn into a
 	   C-style array type when "CDeclFinalize" is called.  For now,
@@ -847,6 +849,19 @@ CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem)
 		ILGenOutOfMemory(info);
 	}
 	ILTypeSetSize(type, 0, (long)(-1L));
+	hole = &(ILType_ElemType(type));
+
+	/* Mark the type with the GC specifier if necessary */
+	if(gcSpecifier == ILGC_Managed)
+	{
+		*hole = CTypeAddManaged(info, *hole);
+		hole = &((*hole)->un.modifier__.type__);
+	}
+	else if(gcSpecifier == ILGC_Unmanaged)
+	{
+		*hole = CTypeAddUnmanaged(info, *hole);
+		hole = &((*hole)->un.modifier__.type__);
+	}
 
 	/* Insert "type" into the hole in "elem" to create "result" */
 	result.name = elem.name;
@@ -854,10 +869,10 @@ CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem)
 	if(elem.typeHole != 0)
 	{
 		result.type = elem.type;
-		ILType_ElemType(type) = *(elem.typeHole);
+		*hole = *(elem.typeHole);
 		if(*(elem.typeHole) == ILType_Invalid)
 		{
-			result.typeHole = &(ILType_ElemType(type));
+			result.typeHole = hole;
 		}
 		else
 		{
@@ -868,7 +883,7 @@ CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem)
 	else
 	{
 		result.type = type;
-		result.typeHole = &(ILType_ElemType(type));
+		result.typeHole = hole;
 	}
 	result.isKR = 0;
 	result.params = elem.params;
@@ -876,10 +891,12 @@ CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem)
 	return result;
 }
 
-CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem, ILUInt32 size)
+CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem,
+							 ILUInt32 size, int gcSpecifier)
 {
 	CDeclarator result;
 	ILType *type;
+	ILType **hole;
 
 	/* Create a C#-style array reference, which we will turn into a
 	   C-style array type when "CDeclFinalize" is called.  For now,
@@ -896,6 +913,19 @@ CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem, ILUInt32 size)
 		--size;
 	}
 	ILTypeSetSize(type, 0, (long)size);
+	hole = &(ILType_ElemType(type));
+
+	/* Mark the type with the GC specifier if necessary */
+	if(gcSpecifier == ILGC_Managed)
+	{
+		*hole = CTypeAddManaged(info, *hole);
+		hole = &((*hole)->un.modifier__.type__);
+	}
+	else if(gcSpecifier == ILGC_Unmanaged)
+	{
+		*hole = CTypeAddUnmanaged(info, *hole);
+		hole = &((*hole)->un.modifier__.type__);
+	}
 
 	/* Insert "type" into the hole in "elem" to create "result" */
 	result.name = elem.name;
@@ -903,10 +933,10 @@ CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem, ILUInt32 size)
 	if(elem.typeHole != 0)
 	{
 		result.type = elem.type;
-		ILType_ElemType(type) = *(elem.typeHole);
+		*hole = *(elem.typeHole);
 		if(*(elem.typeHole) == ILType_Invalid)
 		{
-			result.typeHole = &(ILType_ElemType(type));
+			result.typeHole = hole;
 		}
 		else
 		{
@@ -917,7 +947,7 @@ CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem, ILUInt32 size)
 	else
 	{
 		result.type = type;
-		result.typeHole = &(ILType_ElemType(type));
+		result.typeHole = hole;
 	}
 	result.isKR = 0;
 	result.params = elem.params;
@@ -1283,6 +1313,7 @@ static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 {
 	ILType *elemType;
 	ILUInt32 elemSize;
+	char *name;
 
 	if(type != 0 && ILType_IsComplex(type))
 	{
@@ -1314,21 +1345,66 @@ static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 
 			case IL_TYPE_COMPLEX_ARRAY:
 			{
-				/* Replace array types in the element type */
-				elemType = ReplaceArrayTypes(info, ILType_ElemType(type));
+				/* Check for "__gc" and "__nogc" modifiers */
+				if(CTypeIsManaged(ILType_ElemType(type)))
+				{
+					/* Turn an unmanaged array into its managed counterpart */
+					elemType = ReplaceArrayTypes
+						(info, CTypeStripGC(ILType_ElemType(type)));
+					if(ILTypeIsReference(elemType) || ILTypeIsValue(elemType))
+					{
+						goto managed;
+					} 
+					else
+					{
+						name = CTypeToName(info, elemType);
+						CCError(_("__gc used with unmanaged type `%s'"), name);
+						ILFree(name);
+					}
+				}
+				else if(CTypeIsUnmanaged(ILType_ElemType(type)))
+				{
+					/* We expect the element type to be unmanaged */
+					elemType = ReplaceArrayTypes
+						(info, CTypeStripGC(ILType_ElemType(type)));
+					if(ILTypeIsReference(elemType))
+					{
+						name = CTypeToName(info, elemType);
+						CCError(_("__nogc used with managed type `%s'"), name);
+						ILFree(name);
+						goto managed;
+					}
+				}
+				else
+				{
+					/* Determine the array type from the element type */
+					elemType = ReplaceArrayTypes(info, ILType_ElemType(type));
+					if(ILTypeIsReference(elemType))
+					{
+					managed:
+						if(ILType_Size(type) != (long)(-1))
+						{
+							CCError(_("cannot specify a size for managed "
+									  "array types"));
+						}
+						ILTypeSetSize(type, 0, 0);
+						ILType_ElemType(type) = elemType;
+						break;
+					}
+				}
 
 				/* Report an error if the type has unknown or variable size */
 				elemSize = CTypeSizeAndAlign(elemType, 0);
 				if(elemSize == CTYPE_UNKNOWN)
 				{
-					char *name = CTypeToName(info, elemType);
+					name = CTypeToName(info, elemType);
 					CCError(_("storage size of `%s' is not known"), name);
 					ILFree(name);
 					elemType = ILType_Int32;
 				}
 				else if(elemSize == CTYPE_DYNAMIC)
 				{
-					char *name = CTypeToName(info, elemType);
+					name = CTypeToName(info, elemType);
 					CCError(_("storage size of `%s' is not constant"), name);
 					ILFree(name);
 					elemType = ILType_Int32;

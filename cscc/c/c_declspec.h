@@ -169,12 +169,14 @@ typedef struct
 /*
  * Create an array declarator, with unspecified size.
  */
-CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem);
+CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem,
+								 int gcSpecifier);
 
 /*
  * Create an array declarator, with a specified size.
  */
-CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem, ILUInt32 size);
+CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem,
+							 ILUInt32 size, int gcSpecifier);
 
 /*
  * Create a pointer declarator.  "refType" will be non-NULL when

@@ -453,6 +453,50 @@ ILType *CTypeAddFunctionPtr(ILGenInfo *info, ILType *type)
 	}
 }
 
+ILType *CTypeAddManaged(ILGenInfo *info, ILType *type)
+{
+	ILClass *classInfo;
+	ILType *modifiers;
+	classInfo = ILType_ToClass(ILFindNonSystemType
+			(info, "IsManaged", "OpenSystem.C"));
+	modifiers = ILTypeCreateModifier(info->context, 0,
+									 IL_TYPE_COMPLEX_CMOD_OPT,
+									 classInfo);
+	if(!modifiers)
+	{
+		ILGenOutOfMemory(info);
+	}
+	return ILTypeAddModifiers(info->context, modifiers, type);
+}
+
+ILType *CTypeAddUnmanaged(ILGenInfo *info, ILType *type)
+{
+	ILClass *classInfo;
+	ILType *modifiers;
+	classInfo = ILType_ToClass(ILFindNonSystemType
+			(info, "IsUnmanaged", "OpenSystem.C"));
+	modifiers = ILTypeCreateModifier(info->context, 0,
+									 IL_TYPE_COMPLEX_CMOD_OPT,
+									 classInfo);
+	if(!modifiers)
+	{
+		ILGenOutOfMemory(info);
+	}
+	return ILTypeAddModifiers(info->context, modifiers, type);
+}
+
+ILType *CTypeStripGC(ILType *type)
+{
+	if(CTypeIsManaged(type) || CTypeIsUnmanaged(type))
+	{
+		return type->un.modifier__.type__;
+	}
+	else
+	{
+		return type;
+	}
+}
+
 int CTypeAlreadyDefined(ILType *type)
 {
 	if(ILType_IsValueType(type))
@@ -1739,6 +1783,16 @@ int CTypeIsVolatile(ILType *type)
 {
 	return CheckForModifier(type, "IsVolatile",
 							"System.Runtime.CompilerServices");
+}
+
+int CTypeIsManaged(ILType *type)
+{
+	return CheckForModifier(type, "IsManaged", "OpenSystem.C");
+}
+
+int CTypeIsUnmanaged(ILType *type)
+{
+	return CheckForModifier(type, "IsUnmanaged", "OpenSystem.C");
 }
 
 int CTypeIsPrimitive(ILType *type)

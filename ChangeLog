@@ -3,6 +3,12 @@
 
 	* configure.in: detect some extra headers in configure.in for "cpp".
 
+	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_defs.tc,
+	cscc/c/c_grammar.y, cscc/c/c_invoke.tc, cscc/c/c_library.c,
+	cscc/c/c_scanner.l, cscc/c/c_types.c, cscc/c/c_types.h:
+	add the "__new__", "__delete__", "__gc", and "__nogc" keywords
+	to the C compiler.
+
 2004-03-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_lexutils.c, cscc/c/c_lexutils.h, cscc/c/c_scanner.l:

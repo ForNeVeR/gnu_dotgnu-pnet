@@ -180,12 +180,16 @@ WHITE			[ \t\v\r\f]
 "__lock__"				{ RETURNTOK(K_LOCK); }
 "__using__"				{ RETURNTOK(K_USING); }
 "__namespace__"			{ RETURNTOK(K_NAMESPACE); }
+"__new__"				{ RETURNTOK(K_NEW); }
+"__delete__"			{ RETURNTOK(K_DELETE); }
 
 "__typeof"				{ RETURNTOK(K_CS_TYPEOF); /* Managed C++ compat */ }
 "__int64"				{ RETURNTOK(K_LONG_LONG); }
 "__finally"				{ RETURNTOK(K_FINALLY); }
 "__box"					{ RETURNTOK(K_BOX); }
 "__declspec"			{ RETURNTOK(K_DECLSPEC); }
+"__gc"					{ RETURNTOK(K_GC); }
+"__nogc"				{ RETURNTOK(K_NOGC); }
 
 \"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
 								  RETURNTOK(STRING_LITERAL); }

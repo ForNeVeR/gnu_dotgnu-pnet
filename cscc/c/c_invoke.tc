@@ -752,3 +752,240 @@ ILNode_CSemAnalysis(ILNode_CSharpInvocation)
 		return value;
 	}
 }
+
+/*
+ * Perform semantic analysis for "new object" expressions.
+ */
+ILNode_CSemAnalysis(ILNode_CNewObject)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Get the type of a "new object" expression.
+ */
+ILNode_GetType(ILNode_CNewObject)
+{
+	return ILTypeToMachineType(node->type);
+}
+
+/*
+ * Generate value code for "new object" expressions.
+ */
+ILNode_GenValue(ILNode_CNewObject)
+{
+	/* TODO */
+	return ILTypeToMachineType(node->type);
+}
+JavaGenValue(ILNode_CNewObject)
+{
+	/* Nothing to do here */
+	return ILTypeToMachineType(node->type);
+}
+
+/*
+ * Perform semantic analysis for "new array" expressions.
+ */
+ILNode_CSemAnalysis(ILNode_CNewArray)
+{
+	CSemValue value;
+
+	/* Deal with unknown "new" specifiers */
+	if(node->specifier == ILGC_Unknown)
+	{
+		if(ILTypeIsReference(node->type))
+		{
+			node->specifier = ILGC_Managed;
+		}
+		else
+		{
+			node->specifier = ILGC_Unmanaged;
+		}
+	}
+
+	/* Determine the result type */
+	if(node->specifier == ILGC_Managed)
+	{
+		node->resultType = ILTypeCreateArray(info->context, 1, node->type);
+		if(!(node->resultType))
+		{
+			CCOutOfMemory();
+		}
+	}
+	else
+	{
+		node->resultType = CTypeCreatePointer(info, node->type);
+	}
+
+	/* Perform semantic analysis on the size expression */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsRValue(value))
+	{
+		if(!CSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("invalid size argument to array construction"));
+		}
+	}
+	else if(!CCanCoerceValue(value, ILType_UInt32))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("size argument is not numeric"));
+	}
+	else
+	{
+		CCoerceNode(info, node->expr, &(node->expr), value, ILType_UInt32);
+	}
+
+	/* Set the result type and exit */
+	CSemSetRValue(value, node->resultType);
+	return value;
+}
+
+/*
+ * Get the type of a "new array" expression.
+ */
+ILNode_GetType(ILNode_CNewArray)
+{
+	return ILTypeToMachineType(node->resultType);
+}
+
+/*
+ * Generate value code for "new array" expressions.
+ */
+ILNode_GenValue(ILNode_CNewArray)
+{
+	ILNode_GenValue(node->expr, info);
+	if(node->specifier == ILGC_Managed)
+	{
+		/* Allocate a managed array */
+		ILGenArrayNew(info, node->type);
+	}
+	else
+	{
+		/* Allocate an unmanaged array using "malloc" */
+		/* TODO: overloaded "new" operators */
+		CGenSizeOf(info, node->type);
+		ILGenSimple(info, IL_OP_MUL);
+		ILGenAdjust(info, -1);
+		ILGenCallByName(info, "void * 'malloc'(unsigned int32)");
+	}
+	return ILTypeToMachineType(node->resultType);
+}
+JavaGenValue(ILNode_CNewArray)
+{
+	/* Nothing to do here */
+	return ILTypeToMachineType(node->resultType);
+}
+
+/*
+ * Perform semantic analysis for "delete" expressions.
+ */
+ILNode_CSemAnalysis(ILNode_CDelete)
+{
+	CSemValue value;
+	CSemValue arraySize;
+	ILType *type;
+	ILType *stripped;
+	ILMethod *method;
+
+	/* Perform semantic analysis on the sub-expressions */
+	if(node->expr1)
+	{
+		arraySize = ILNode_CSemAnalysis
+			(node->expr1, info, &(node->expr1), stmtLevel);
+		if(!CSemIsRValue(arraySize))
+		{
+			if(!CSemIsError(arraySize))
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  _("invalid size operand to `delete'"));
+			}
+			arraySize = CSemValueDefault;
+		}
+	}
+	else
+	{
+		arraySize = CSemValueDefault;
+	}
+	value = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), stmtLevel);
+	if(!CSemIsRValue(value))
+	{
+		if(!CSemIsError(value))
+		{
+			goto invalid;
+		}
+		return CSemValueError;
+	}
+
+	/* Determine how to delete the specified value */
+	type = CSemGetType(value);
+	stripped = ILTypeStripPrefixes(type);
+	if(CTypeIsPointer(type))
+	{
+		/* TODO: overloaded operators and array element destruction */
+
+		/* Use the default destructor to free the pointer */
+		return CSemValueDefault;
+	}
+	else if(ILType_IsClass(stripped))
+	{
+		/* See if the class has a "__dtor" method */
+		method = ILResolveInstanceMethod
+				(info, ILType_ToClass(stripped),
+				 ILClassLookup(ILClassGlobalScope(info->image), "<Module>", 0),
+				 "__dtor", 0, 0);
+		if(method)
+		{
+			node->dtor = method;
+			return CSemValueDefault;
+		}
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("`%s' does not have a public destructor"),
+					  CTypeToName(info, type));
+		return CSemValueError;
+	}
+
+invalid:
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("invalid operand to `delete'"));
+	return CSemValueError;
+}
+
+/*
+ * Get the type of a "delete" expression.
+ */
+ILNode_GetType(ILNode_CDelete)
+{
+	return ILMachineType_Void;
+}
+
+/*
+ * Generate discard and value code for "delete" expressions.
+ */
+ILNode_GenDiscard(ILNode_CDelete)
+{
+	ILNode_GenValue(node->expr2, info);
+	if(node->dtor)
+	{
+		/* Use the destructor that we discovered earlier */
+		ILGenCallByMethod(info, node->dtor);
+	}
+	else
+	{
+		/* The default destructor calls the "free" function */
+		ILGenCallByName(info, "void 'free'(void *)");
+	}
+	ILGenAdjust(info, -1);
+}
+ILNode_GenValue(ILNode_CDelete)
+{
+	ILNode_GenDiscard(node, info);
+	return ILMachineType_Void;
+}
+JavaGenValue(ILNode_CDelete)
+{
+	/* Nothing to do here */
+	return ILMachineType_Void;
+}

@@ -1021,6 +1021,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 		char		   *id;
 		ILNode         *idNode;
 	}					catchInfo;
+	ILGCSpecifier		gcSpecifier;
 
 }
 
@@ -1128,9 +1129,13 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_LOCK			"`__lock__'"
 %token K_USING			"`__using__'"
 %token K_NAMESPACE		"`__namespace__'"
+%token K_NEW			"`__new__'"
+%token K_DELETE			"`__delete__'"
 %token K_CS_TYPEOF		"`__typeof'"
 %token K_BOX			"`__box'"
 %token K_DECLSPEC		"`__declspec'"
+%token K_GC				"`__gc'"
+%token K_NOGC			"`__nogc'"
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -1151,7 +1156,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <node>		LogicalOrExpression ConditionalExpression
 %type <node>		AssignmentExpression Expression ConstantExpression
 %type <node>		BoolExpression ConstantAttributeExpression
-%type <node>		AttributeArgs
+%type <node>		AttributeArgs NewExpression DeleteExpression
 
 %type <node>		Statement Statement2 LabeledStatement CompoundStatement
 %type <node>		OptDeclarationList DeclarationList Declaration
@@ -1178,7 +1183,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 
 %type <node>		FunctionBody Attributes AttributeList Attribute
 
-%type <type>		TypeName StructOrUnionSpecifier EnumSpecifier
+%type <type>		TypeName StructOrUnionSpecifier EnumSpecifier TypeId
 %type <type>		NamespaceQualifiedType NamespaceQualifiedRest
 
 %type <declSpec>	StorageClassSpecifier TypeSpecifier DeclarationSpecifiers
@@ -1188,7 +1193,9 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <decl>		AbstractDeclarator2 ParamDeclarator /*ParamDeclarator*/
 
 %type <kind>		StructOrUnion TypeQualifierList TypeQualifier
-%type <kind>		DeclSpecArg
+%type <kind>		DeclSpecArg New Delete
+
+%type <gcSpecifier>	GCSpecifier
 
 %expect 18
 
@@ -1544,6 +1551,8 @@ UnaryExpression
 	| K_BOX '(' Expression ')'	{
 				$$ = ILNode_CBox_create($3);
 			}
+	| NewExpression		{ $$ = $1; }
+	| DeleteExpression	{ $$ = $1; }
 	;
 
 CastExpression
@@ -1551,6 +1560,59 @@ CastExpression
 	| '(' TypeName ')' CastExpression	{
 				$$ = ILNode_CastType_create($4, $2);
 			}
+	;
+
+
+NewExpression
+	: New TypeId '(' ')'	{
+				$$ = ILNode_CNewObject_create(ILGC_Unknown, $2, 0, $1); 
+			}
+	| New TypeId '(' ArgumentExpressionList ')'	{
+				$$ = ILNode_CNewObject_create(ILGC_Unknown, $2, $4, $1); 
+			}
+	| K_GC New TypeId '(' ')'	{
+				$$ = ILNode_CNewObject_create(ILGC_Managed, $3, 0, $2); 
+			}
+	| K_GC New TypeId '(' ArgumentExpressionList ')'	{
+				$$ = ILNode_CNewObject_create(ILGC_Managed, $3, $5, $2); 
+			}
+	| K_NOGC New TypeId '(' ')'	{
+				$$ = ILNode_CNewObject_create(ILGC_Unmanaged, $3, 0, $2); 
+			}
+	| K_NOGC New TypeId '(' ArgumentExpressionList ')'	{
+				$$ = ILNode_CNewObject_create(ILGC_Unmanaged, $3, $5, $2); 
+			}
+	| New TypeId '[' Expression ']' {
+				$$ = ILNode_CNewArray_create(ILGC_Unknown, $2, $4, $1);
+			}
+	| K_GC New TypeId '[' Expression ']' {
+				$$ = ILNode_CNewArray_create(ILGC_Managed, $3, $5, $2);
+			}
+	| K_NOGC New TypeId '[' Expression ']' {
+				$$ = ILNode_CNewArray_create(ILGC_Unmanaged, $3, $5, $2);
+			}
+	;
+
+DeleteExpression
+	: Delete CastExpression		{
+				$$ = ILNode_CDelete_create(0, $2, 0, $1);
+			}
+	| Delete '[' ']' CastExpression	{
+				$$ = ILNode_CDelete_create(0, $4, 1, $1);
+			}
+	| Delete '[' Expression ']' CastExpression	{
+				$$ = ILNode_CDelete_create($3, $5, 1, $1);
+			}
+	;
+
+New
+	: K_NEW						{ $$ = 0; }
+	| COLON_COLON_OP K_NEW		{ $$ = 1; }
+	;
+
+Delete
+	: K_DELETE					{ $$ = 0; }
+	| COLON_COLON_OP Delete		{ $$ = 1; }
 	;
 
 MultiplicativeExpression
@@ -2264,27 +2326,27 @@ Declarator2
 				$$.attrs = $2;
 			}
 	| '(' Declarator ')'		{ $$ = $2; }
-	| Declarator2 '[' ']'		{
-				$$ = CDeclCreateOpenArray(&CCCodeGen, $1);
+	| Declarator2 GCSpecifier '[' ']'		{
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $1, $2);
 			}
-	| Declarator2 '[' ']' Attributes		{
-				$$ = CDeclCreateOpenArray(&CCCodeGen, $1);
-				$$.attrs = $4;
-			}
-	| Declarator2 '[' ConstantExpression ']'	{
-				/* Evaluate the constant value */
-				ILUInt32 size = EvaluateSize($3);
-
-				/* Create the array */
-				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
-			}
-	| Declarator2 '[' ConstantExpression ']' Attributes	{
-				/* Evaluate the constant value */
-				ILUInt32 size = EvaluateSize($3);
-
-				/* Create the array */
-				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
+	| Declarator2 GCSpecifier '[' ']' Attributes		{
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $1, $2);
 				$$.attrs = $5;
+			}
+	| Declarator2 GCSpecifier '[' ConstantExpression ']'	{
+				/* Evaluate the constant value */
+				ILUInt32 size = EvaluateSize($4);
+
+				/* Create the array */
+				$$ = CDeclCreateArray(&CCCodeGen, $1, size, $2);
+			}
+	| Declarator2 GCSpecifier '[' ConstantExpression ']' Attributes	{
+				/* Evaluate the constant value */
+				ILUInt32 size = EvaluateSize($4);
+
+				/* Create the array */
+				$$ = CDeclCreateArray(&CCCodeGen, $1, size, $2);
+				$$.attrs = $6;
 			}
 	| Declarator2 '(' ')'		{
 				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, 0);
@@ -2304,6 +2366,12 @@ Declarator2
 	| Declarator2 '(' ParameterIdentifierList ')' Attributes {
 				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, $5);
 			}
+	;
+
+GCSpecifier
+	: /* empty */			{ $$ = ILGC_Unknown; }
+	| K_GC					{ $$ = ILGC_Managed; }
+	| K_NOGC				{ $$ = ILGC_Unmanaged; }
 	;
 
 Attributes
@@ -2423,6 +2491,16 @@ TypeSpecifierList
 	| TypeSpecifierList TypeSpecifier	{ $$ = CDeclSpecCombine($1, $2); }
 	;
 
+TypeId
+	: TypeSpecifierList		{
+				CDeclarator decl;
+				CDeclSpec spec;
+				CDeclSetName(decl, 0, 0);
+				spec = CDeclSpecFinalize($1, 0, 0, 0);
+				$$ = CDeclFinalize(&CCCodeGen, spec, decl, 0, 0);
+			}
+	;
+
 ParameterIdentifierList
 	: IdentifierList
 	| IdentifierList ',' K_ELIPSIS	{
@@ -2531,53 +2609,54 @@ AbstractDeclarator
 
 AbstractDeclarator2
 	: '(' AbstractDeclarator ')'		{ $$ = $2; }
-	| '[' ']'			{
+	| GCSpecifier '[' ']'			{
 				CDeclSetName($$, 0, 0);
-				$$ = CDeclCreateOpenArray(&CCCodeGen, $$);
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $$, $1);
 			}
-	| '[' ']' Attributes			{
+	| GCSpecifier '[' ']' Attributes			{
 				CDeclSetName($$, 0, 0);
-				$$ = CDeclCreateOpenArray(&CCCodeGen, $$);
-				$$.attrs = $3;
-			}
-	| '[' ConstantExpression ']'	{
-				/* Evaluate the constant value */
-				ILUInt32 size = EvaluateSize($2);
-
-				/* Create the array */
-				CDeclSetName($$, 0, 0);
-				$$ = CDeclCreateArray(&CCCodeGen, $$, size);
-			}
-	| '[' ConstantExpression ']' Attributes	{
-				/* Evaluate the constant value */
-				ILUInt32 size = EvaluateSize($2);
-
-				/* Create the array */
-				CDeclSetName($$, 0, 0);
-				$$ = CDeclCreateArray(&CCCodeGen, $$, size);
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $$, $1);
 				$$.attrs = $4;
 			}
-	| AbstractDeclarator2 '[' ']'	{
-				$$ = CDeclCreateOpenArray(&CCCodeGen, $1);
-			}
-	| AbstractDeclarator2 '[' ']' Attributes	{
-				$$ = CDeclCreateOpenArray(&CCCodeGen, $1);
-				$$.attrs = $4;
-			}
-	| AbstractDeclarator2 '[' ConstantExpression ']'	{
+	| GCSpecifier '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
 				ILUInt32 size = EvaluateSize($3);
 
 				/* Create the array */
-				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
+				CDeclSetName($$, 0, 0);
+				$$ = CDeclCreateArray(&CCCodeGen, $$, size, $1);
 			}
-	| AbstractDeclarator2 '[' ConstantExpression ']' Attributes	{
+	| GCSpecifier '[' ConstantExpression ']' Attributes	{
 				/* Evaluate the constant value */
 				ILUInt32 size = EvaluateSize($3);
 
 				/* Create the array */
-				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
+				CDeclSetName($$, 0, 0);
+				$$ = CDeclCreateArray(&CCCodeGen, $$, size, $1);
 				$$.attrs = $5;
+			}
+	| AbstractDeclarator2 GCSpecifier '[' ']'	{
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $1, $2);
+			}
+	| AbstractDeclarator2 GCSpecifier '[' ']' Attributes	{
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $1, $2);
+				$$.attrs = $5;
+			}
+	| AbstractDeclarator2 GCSpecifier '[' ConstantExpression ']'	{
+				/* Evaluate the constant value */
+				ILUInt32 size = EvaluateSize($4);
+
+				/* Create the array */
+				$$ = CDeclCreateArray(&CCCodeGen, $1, size, $2);
+			}
+	| AbstractDeclarator2 GCSpecifier '[' ConstantExpression ']'
+			Attributes	{
+				/* Evaluate the constant value */
+				ILUInt32 size = EvaluateSize($4);
+
+				/* Create the array */
+				$$ = CDeclCreateArray(&CCCodeGen, $1, size, $2);
+				$$.attrs = $6;
 			}
 	| '(' ')'		{
 				CDeclSetName($$, 0, 0);

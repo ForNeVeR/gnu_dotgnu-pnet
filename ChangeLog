@@ -1,4 +1,10 @@
 
+2002-09-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* c/expr/Makefile.am, c/expr/funcptr4.3il, c/expr/funcptr4.c,
+	c/expr/funcptr4.il: test function pointer expressions that
+	involve "&".
+
 2002-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/expr/Makefile.am, c/expr/funcptr1.c, c/expr/funcptr2.c,

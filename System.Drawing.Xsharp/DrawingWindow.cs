@@ -220,7 +220,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 			}
 
 	// Map an Xsharp key description into a "ToolkitKeys" value.
-	internal static ToolkitKeys MapKey(KeyName key, ModifierMask modifiers)
+	private static ToolkitKeys MapKey(KeyName key)
 			{
 				switch(key)
 				{
@@ -328,6 +328,25 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 					case KeyName.XK_Caps_Lock:		return ToolkitKeys.CapsLock;
 				}
 				return ToolkitKeys.None;
+			}
+
+	// Map an Xsharp key description into a "ToolkitKeys" value.
+	internal static ToolkitKeys MapKey(KeyName key, ModifierMask modifiers)
+			{
+				ToolkitKeys toolkitKey = MapKey(key);
+				if((modifiers & ModifierMask.ControlMask) != 0)
+				{
+					toolkitKey |= ToolkitKeys.Control;
+				}
+				if((modifiers & ModifierMask.ShiftMask) != 0)
+				{
+					toolkitKey |= ToolkitKeys.Shift;
+				}
+				if((modifiers & ModifierMask.Mod1Mask) != 0)
+				{
+					toolkitKey |= ToolkitKeys.Alt;
+				}
+				return toolkitKey;
 			}
 
 	// Map an Xsharp button name into a "ToolkitMouseButtons" value.

@@ -5,6 +5,9 @@
 	adjustments to pnetlib to use DllNotFoundException and
 	EntryPointNotFoundException instead of MissingMethodException.
 
+	* System.Drawing.Xsharp/DrawingWindow.cs: modify "MapKey" to
+	add the modifier masks.
+
 2003-07-26  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* System.Windows.Forms/TextBox.cs: corrected issues with right

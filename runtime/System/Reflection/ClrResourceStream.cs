@@ -35,13 +35,15 @@ using System.Runtime.CompilerServices;
 internal sealed class ClrResourceStream : FileStream
 {
 	// Internal state.
+	private long start;
 	private long length;
 
 	// Constructor.
-	public ClrResourceStream(IntPtr handle, long length)
+	public ClrResourceStream(IntPtr handle, long start, long length)
 			: base()
 			{
 				this.handle = handle;
+				this.start  = start;
 				this.length = length;
 				position = 0;
 				access = FileAccess.Read;
@@ -144,7 +146,8 @@ internal sealed class ClrResourceStream : FileStream
 				SetupRead();
 
 				// Read data into the caller's buffer.
-				result = ResourceRead(handle, position, buffer, offset, count);
+				result = ResourceRead(handle, start + position,
+									  buffer, offset, count);
 				if(result > 0)
 				{
 					position = result;
@@ -169,7 +172,7 @@ internal sealed class ClrResourceStream : FileStream
 				}
 
 				// Read a single byte from the resource.
-				byteval = ResourceReadByte(handle, position);
+				byteval = ResourceReadByte(handle, start + position);
 				if(byteval != -1)
 				{
 					++position;

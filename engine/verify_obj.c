@@ -111,104 +111,114 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 /*
  * Process a "box" operation on a value.  Returns zero if
  * invalid parameters.
- *
- * TODO: Better checking to ensure that "boxClass" is consistent.
  */
 static int BoxValue(ILCoder *coder, ILEngineType valueType,
 					ILType *typeInfo, ILClass *boxClass)
 {
 	ILUInt32 size;
+	ILType *rawType;
+
+	/* Determine the raw version of the boxing type */
+	rawType = ILTypeGetEnumType(ILClassToType(boxClass));
 
 	/* Get the size of the value type */
-	size = _ILSizeOfTypeLocked(ILType_FromValueType(boxClass));
+	size = _ILSizeOfTypeLocked(rawType);
 
-	/* Determine how to box the value based on its engine type */
-	if(valueType == ILEngineType_I4)
+	/* Determine how to box the value */
+	if(ILType_IsPrimitive(rawType))
 	{
-		/* Determine if we are boxing a byte, short, or int
-		   based on the size of the value type */
-		if(size == 1)
+		if(valueType == ILEngineType_I4)
 		{
-			ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Int8);
-			return 1;
+			/* Determine if we are boxing a byte, short, or int
+			   based on the raw type */
+			switch(ILType_ToElement(rawType))
+			{
+				case IL_META_ELEMTYPE_BOOLEAN:
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_U1:
+				{
+					ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Int8);
+					return 1;
+				}
+				/* Not reached */
+	
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_CHAR:
+				{
+					ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Int16);
+					return 1;
+				}
+				/* Not reached */
+	
+				case IL_META_ELEMTYPE_I4:
+				case IL_META_ELEMTYPE_U4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					ILCoderBox(coder, boxClass, valueType, size);
+					return 1;
+				}
+				/* Not reached */
+			}
 		}
-		else if(size == 2)
+		else if(valueType == ILEngineType_I)
 		{
-			ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Int16);
-			return 1;
+			/* Box a native integer */
+			switch(ILType_ToElement(rawType))
+			{
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+				{
+					ILCoderBox(coder, boxClass, valueType, size);
+					return 1;
+				}
+				/* Not reached */
+			}
 		}
-		else if(size == 4)
+		else if(valueType == ILEngineType_I8)
 		{
-			ILCoderBox(coder, boxClass, valueType, size);
-			return 1;
+			/* Box a 64-bit integer */
+			switch(ILType_ToElement(rawType))
+			{
+				case IL_META_ELEMTYPE_I8:
+				case IL_META_ELEMTYPE_U8:
+				{
+					ILCoderBox(coder, boxClass, valueType, size);
+					return 1;
+				}
+				/* Not reached */
+			}
 		}
-		else
+		else if(valueType == ILEngineType_F)
 		{
-			return 0;
-		}
-	}
-	else if(valueType == ILEngineType_I)
-	{
-		/* Box a native integer */
-		if(size == sizeof(ILNativeInt))
-		{
-			ILCoderBox(coder, boxClass, valueType, size);
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else if(valueType == ILEngineType_I8)
-	{
-		/* Box a 64-bit integer */
-		if(size == 8)
-		{
-			ILCoderBox(coder, boxClass, valueType, size);
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else if(valueType == ILEngineType_F)
-	{
-		/* Determine if we are boxing a float or double
-		   based on the size of the value type */
-		if(size == 4)
-		{
-			ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Float32);
-			return 1;
-		}
-		else if(size == 8)
-		{
-			ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Float64);
-			return 1;
-		}
-		else
-		{
-			return 0;
+			/* Determine if we are boxing a float or double
+			   based on the size of the value type */
+			if(rawType == ILType_Float32)
+			{
+				ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Float32);
+				return 1;
+			}
+			else if(rawType == ILType_Float64 ||
+				    rawType == ILType_Float)
+			{
+				ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Float64);
+				return 1;
+			}
 		}
 	}
 	else if(valueType == ILEngineType_MV ||
 			valueType == ILEngineType_TypedRef)
 	{
-		if(ILTypeIdentical(typeInfo, ILType_FromValueType(boxClass)))
+		if(ILTypeIdentical(typeInfo, ILClassToType(boxClass)))
 		{
 			ILCoderBox(coder, boxClass, valueType, size);
 			return 1;
 		}
-		else
-		{
-			return 0;
-		}
 	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 }
 
 /*

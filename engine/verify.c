@@ -333,6 +333,7 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 	ILClass *classInfo;
 	ILClass *classInfo2;
 	ILMethod *methodRef;
+	ILType *objType;
 
 	/* Check for safe and unsafe pointer assignments */
 	if(item->engineType == ILEngineType_I)
@@ -432,10 +433,18 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 			/* Both types must be object references */
 			return 0;
 		}
+		/* make a copy to avoid unecessary complications */
+		objType=item->typeInfo;
+		if(ILType_IsArray(type) && ILType_IsArray(objType) &&
+			(ILTypeGetRank(type) == ILTypeGetRank(objType)))
+		{
+			objType=ILTypeGetElemType(objType);
+			type=ILTypeGetElemType(type);
+		}
 		image = ILProgramItem_Image(method);
 		classInfo = ILClassResolve(ILClassFromType(image, 0, type, 0));
 		classInfo2 = ILClassResolve
-			(ILClassFromType(image, 0, item->typeInfo, 0));
+			(ILClassFromType(image, 0, objType, 0));
 		if(classInfo && classInfo2)
 		{
 			/* Is the type a regular class or an interface? */

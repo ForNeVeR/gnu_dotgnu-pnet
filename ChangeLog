@@ -14,6 +14,9 @@
 	* engine/verify.c: Allow storing native ints to byref and pointer
 	locations.
 
+	* engine/verify.c: Modify AssignCompatible to check for elemtypes
+	and ranks for array data types.
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
  
 	* engine/mkint.sh: look in the pnetlib sources for the assemblies

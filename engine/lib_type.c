@@ -699,11 +699,27 @@ ILObject *_IL_ClrType_GetElementType(ILExecThread *thread, ILObject *_this)
 /*
  * Determine if we have an interface name match for "GetInterface".
  */
-static int InterfaceNameMatch(ILClass *interface, ILString *name,
-							  ILBool ignoreCase)
+static int InterfaceNameMatch(ILExecThread *thread, ILClass *interface,
+                              ILString *name, ILBool ignoreCase)
 {
-	/* TODO */
-	return 0;
+	const char *nameUtf8;
+
+	if (!name) { return 0; }
+
+	if (!(nameUtf8 = ILStringToUTF8(thread, name)))
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+
+	if (!ignoreCase)
+	{
+		return (!strcmp(interface->className->name, nameUtf8));
+	}
+	else
+	{
+		return (!ILStrICmp(interface->className->name, nameUtf8));
+	}
 }
 
 /*
@@ -717,7 +733,7 @@ static ILClass *GetInterface(ILExecThread *thread, ILClass *classInfo,
 	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 	{
 		interface = ILImplementsGetInterface(impl);
-		if(InterfaceNameMatch(interface, name, ignoreCase))
+		if(InterfaceNameMatch(thread, interface, name, ignoreCase))
 		{
 			return interface;
 		}

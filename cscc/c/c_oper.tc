@@ -2051,8 +2051,9 @@ ILNode_CSemAnalysis(ILNode_CastType)
 	/* Perform semantic analysis on the argument value */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
 
-	/* Bail out if not an r-value */
-	if(!CSemIsRValue(value))
+	/* Bail out if not an r-value or a "void"-to-"void" cast */
+	if(!CSemIsRValue(value) &&
+	   (!CSemIsVoid(value) || node->type != ILType_Void))
 	{
 		if(!CSemIsError(value))
 		{
@@ -2061,6 +2062,13 @@ ILNode_CSemAnalysis(ILNode_CastType)
 		}
 		CSemSetRValue(value, node->type);
 		return value;
+	}
+
+	/* It is always possible to cast to "void" */
+	if(node->type == ILType_Void)
+	{
+		*parent = node->expr;
+		return CSemValueDefault;
 	}
 
 	/* Can we coerce to the destination type? */

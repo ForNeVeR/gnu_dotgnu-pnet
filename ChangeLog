@@ -14,6 +14,9 @@
 	* cscc/c/c_oper.tc (ILNode_Conditional): error in semantic analysis
 	for the third sub-expression of "?:".
 
+	* cscc/c/c_oper.tc (ILNode_CastType): it is always possible to
+	cast to "void" in C.
+
 2003-06-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/java/.cvsignore, cscc/bf/.cvsignore : add generated

@@ -33,6 +33,9 @@ constructor for single-dimensional arrays.
 engine/cvmc_ptr.c: modify the "NewArray" coder API so that it takes
 the entire array type instead of just the element type.
 
+* engine/cvm_dasm.c, engine/engine.h, engine/cvm.c, engine/Makefile.am:
+add a mini-disassembler for CVM to the engine to assist with debugging.
+
 2001-10-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/engine.h: remove the thread argument

@@ -4,6 +4,7 @@ lib_LIBRARIES = libILEngine.a
 libILEngine_a_SOURCES = call.c \
 						convert.c \
 						cvm.c \
+						cvm_dasm.c \
 						cvmc.c \
 						heap.c \
 						internal.c \
@@ -22,11 +23,13 @@ libILEngine_a_SOURCES = call.c \
 						verify.c
 
 ilrun_SOURCES = ilrun.c
-ilrun_LDADD = libILEngine.a ../image/libILImage.a ../support/libILSupport.a \
+ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
+			  ../image/libILImage.a ../support/libILSupport.a \
 			  ../libffi/libffi.a
 
 ilverify_SOURCES = ilverify.c
-ilverify_LDADD = libILEngine.a ../image/libILImage.a ../support/libILSupport.a \
+ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
+			     ../image/libILImage.a ../support/libILSupport.a \
 			     ../libffi/libffi.a
 
 if USINGGCC

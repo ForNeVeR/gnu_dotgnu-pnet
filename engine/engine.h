@@ -265,6 +265,12 @@ ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
  */
 ILInt32 _ILStringToBuffer(ILExecThread *thread, ILString *str, ILUInt16 **buf);
 
+/*
+ * Dump a CVM instruction starting at a particular address.
+ * Returns the size of the instruction.
+ */
+int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc);
+
 #ifdef	__cplusplus
 };
 #endif

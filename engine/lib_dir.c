@@ -157,6 +157,7 @@ ILString *_IL_DirMethods_GetCurrentDirectory(ILExecThread *_thread)
 	}
 }
 
+#if 0
 /*
  * public static Errno GetFilesInDirectory(String path, out 
  * 											Platform.FileInfo files);
@@ -232,10 +233,10 @@ cleanup:
 	return IL_ERRNO_EPERM;
 #endif
 }
-#if 0
+#else
 ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread *_thread,
 										   ILString *path,
-										   System_Array **files)
+										   ILString **files)
 {
 	/* TODO */
 	return IL_ERRNO_EPERM;

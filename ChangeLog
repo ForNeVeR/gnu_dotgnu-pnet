@@ -20,6 +20,12 @@ classes with "[.library]".
 
 * codegen/cg_gen.c: change the name of "libImage" to ".library".
 
+* ilasm/ilasm_build.h, ilasm/ilasm_build.c: use ILAsmLibraryName to specify
+the name of the system library.
+
+* cscc/cs_oper.tc (EqualitySem): handle object comparisons correctly in
+semantic analysis for "==" and "!=".
+
 2001-09-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_types.h: mark array ranks explicitly with "ARRAY_CONTINUE",

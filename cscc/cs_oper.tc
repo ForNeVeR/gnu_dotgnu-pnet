@@ -1067,6 +1067,19 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		return value1;
 	}
 
+	/* If both arguments are objects, then we can compare them
+	   using the built-in code generator logic */
+	if(ILType_IsClass(value1.type) && ILType_IsClass(value2.type))
+	{
+		if(ILCanCoerceNode(info, node->expr1, value1.type, value2.type) ||
+		   ILCanCoerceNode(info, node->expr2, value2.type, value1.type))
+		{
+			value1.kind = CS_SEMKIND_RVALUE;
+			value1.type = ILType_Boolean;
+			return value1;
+		}
+	}
+
 	/* Could not find a suitable operator */
 error:
 	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),

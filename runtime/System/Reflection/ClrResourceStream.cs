@@ -128,7 +128,7 @@ internal sealed class ClrResourceStream : Stream
 
 				// Validate the parameters and setup the object for reading.
 				ValidateBuffer(buffer, offset, count);
-				if(((long)count) < (length - position))
+				if(((long)count) > (length - position))
 				{
 					count = (int)(length - position);
 				}

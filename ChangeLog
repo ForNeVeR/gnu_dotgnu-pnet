@@ -11,6 +11,9 @@
 	runtime/System/Text/jis.table, runtime/System/Text/uni2tab.c,
 	runtime/runtime.build: add the JIS conversion table to "mscorlib.dll".
 
+	* runtime/System/Reflection/ClrResourceStream.cs: reversed test
+	in "ClrResourceStream.Read".
+
 2002-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/NotSupp.txt,

@@ -57,6 +57,11 @@ extern	"C" {
 #define	CS_SPECIALATTR_OVERRIDE		0x01000000
 
 /*
+ * Flag bit that is used to distinguish args from locals.
+ */
+#define	CS_LOCAL_IS_ARG				0x80000000
+
+/*
  * Pre-processor object that is being used by the lexer.
  */
 extern CSPreProc CSPreProcessorStream;

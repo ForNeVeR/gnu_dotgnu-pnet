@@ -39,6 +39,120 @@ public abstract class PropertyDescriptor : MemberDescriptor
 
 	protected PropertyDescriptor(MemberDescriptor desc, Attribute[] attrs) 
 				: base(desc) {}
+	[TODO]
+	public virtual void AddValueChanged(Object component, EventHandler handler)
+	{
+		 throw new NotImplementedException("AddValueChanged");
+	}
+
+	public abstract bool CanResetValue(Object component);
+
+	[TODO]
+	protected Object CreateInstance(Type type)
+	{
+		 throw new NotImplementedException("CreateInstance");
+	}
+
+	[TODO]
+	public override bool Equals(Object obj)
+	{
+		 throw new NotImplementedException("Equals");
+	}
+
+	[TODO]
+	public PropertyDescriptorCollection GetChildProperties()
+	{
+		 throw new NotImplementedException("GetChildProperties");
+	}
+
+	[TODO]
+	public PropertyDescriptorCollection GetChildProperties(Attribute[] filter)
+	{
+		 throw new NotImplementedException("GetChildProperties");
+	}
+
+	[TODO]
+	public PropertyDescriptorCollection GetChildProperties(Object instance)
+	{
+		 throw new NotImplementedException("GetChildProperties");
+	}
+
+	[TODO]
+	public virtual PropertyDescriptorCollection GetChildProperties(Object instance, Attribute[] filter)
+	{
+		 throw new NotImplementedException("GetChildProperties");
+	}
+
+	[TODO]
+	public virtual Object GetEditor(Type editorBaseType)
+	{
+		 throw new NotImplementedException("GetEditor");
+	}
+
+	[TODO]
+	public override int GetHashCode()
+	{
+		 throw new NotImplementedException("GetHashCode");
+	}
+
+	[TODO]
+	protected Type GetTypeFromName(String typeName)
+	{
+		 throw new NotImplementedException("GetTypeFromName");
+	}
+
+	public abstract Object GetValue(Object component);
+
+	[TODO]
+	protected virtual void OnValueChanged(Object component, EventArgs e)
+	{
+		 throw new NotImplementedException("OnValueChanged");
+	}
+
+	[TODO]
+	public virtual void RemoveValueChanged(Object component, EventHandler handler)
+	{
+		 throw new NotImplementedException("RemoveValueChanged");
+	}
+
+	public abstract void ResetValue(Object component);
+
+	public abstract void SetValue(Object component, Object value);
+
+	public abstract bool ShouldSerializeValue(Object component);
+
+	public abstract Type ComponentType { get; }
+
+	[TODO]
+	public virtual TypeConverter Converter 
+	{
+ 		get
+		{
+			throw new NotImplementedException("Converter");
+		}
+	}
+
+	[TODO]
+	public virtual bool IsLocalizable 
+	{
+ 		get
+		{
+			throw new NotImplementedException("IsLocalizable");
+		}
+	}
+
+	public abstract bool IsReadOnly { get; } 
+
+	public abstract Type PropertyType { get; } 
+
+	[TODO]
+	public DesignerSerializationVisibility SerializationVisibility 
+	{
+ 		get
+		{
+			throw new NotImplementedException("SerializationVisibility");
+		}
+	}
 
 }; // class PropertyDescriptor
 

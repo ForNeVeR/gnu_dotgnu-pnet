@@ -10,6 +10,9 @@
 	System/Configuration/NameValueSectionHandler.cs,
 	System/Configuration/SingleTagSectionHandler.cs	: Add a missing
 	"public" modifier to the 'Create' method. 
+
+	* System/ComponentModel/PropertyDescriptor.cs: Stub out some of
+	the functionality for compatibility.
 	
 2003-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -182,6 +182,11 @@ public sealed class MdiClient : Control
 			}
 
 	// Receive notification that a particular child was activated.
+	internal override void MdiActivate(IToolkitWindow child) 
+			{
+				Activate(child);
+			}
+
 	internal void Activate(IToolkitWindow child)
 			{
 				if(child == null)
@@ -234,14 +239,16 @@ public sealed class MdiClient : Control
 							(S._("SWF_NotMdiChild"));
 					}
 					mdiClient.controls.Add(value);
-					base.Add(value);
+					// TODO: figure out how to add Forms without reparenting
+					//base.Add(value);
 				}
 
 		// Remove a control from this collection.
 		public override void Remove(Control value)
 				{
 					mdiClient.controls.Remove(value);
-					base.Remove(value);
+					// TODO: figure out how to add Forms without reparenting
+					//base.Remove(value);
 				}
 
 	}; // class ControlCollection

@@ -4,6 +4,8 @@
 	* samples/dcop/DcopBrowser.cs: Display error message box if KDE is not
 	present.
 
+	* System.Windows.Forms/MdiClient.c: Set ActiveMdiChild properly.
+
 2004-06-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlElement.cs: fixed IsEmpty behavior for non-empty

@@ -1,6 +1,6 @@
 /*
- * ITypeDescriptorContext.cs - Implementation of the
- *		"System.ComponentModel.ITypeDescriptorContext" interface.
+ * PropertyDescriptorCollection.cs - Implementation of the
+ *	"System.ComponentModel.ComponentModel.PropertyDescriptorCollection" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -24,15 +24,20 @@ namespace System.ComponentModel
 
 #if !ECMA_COMPAT
 
-using System;
-using System.Globalization;
+using System.Collections;
+using System.Runtime.InteropServices;
 
 [TODO]
-public interface ITypeDescriptorContext : IServiceProvider
+[ComVisible(true)]
+public class PropertyDescriptorCollection
 {
 	// TODO
 
-}; // interface ITypeDescriptorContext
+	public PropertyDescriptorCollection() {}
+
+	public void Sort(String[] names) {}
+
+}; // class PropertyDescriptorCollection
 
 #endif // !ECMA_COMPAT
 

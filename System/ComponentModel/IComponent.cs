@@ -1,6 +1,6 @@
 /*
- * ITypeDescriptorContext.cs - Implementation of the
- *		"System.ComponentModel.ITypeDescriptorContext" interface.
+ * IComponent.cs - Implementation of the
+ *		"System.ComponentModel.IComponent" interface.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,19 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 
 using System;
-using System.Globalization;
+using System.Runtime.InteropServices;
 
-[TODO]
-public interface ITypeDescriptorContext : IServiceProvider
+[ComVisible(true)]
+public interface IComponent : IDisposable
 {
-	// TODO
 
-}; // interface ITypeDescriptorContext
+	// Get or set the site associated with this component.
+	ISite Site { get; set; }
+
+	// Event that is raised when a component is disposed.
+	event EventHandler Disposed;
+
+}; // interface IComponent
 
 #endif // !ECMA_COMPAT
 

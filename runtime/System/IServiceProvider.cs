@@ -1,6 +1,6 @@
 /*
- * ITypeDescriptorContext.cs - Implementation of the
- *		"System.ComponentModel.ITypeDescriptorContext" interface.
+ * IServiceProvider.cs - Implementation of the
+ *		"System.IServiceProvider" interface.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -19,21 +19,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.ComponentModel
+namespace System
 {
 
 #if !ECMA_COMPAT
 
-using System;
-using System.Globalization;
+using System.Runtime.InteropServices;
 
-[TODO]
-public interface ITypeDescriptorContext : IServiceProvider
+[ComVisible(false)]
+public interface IServiceProvider
 {
-	// TODO
 
-}; // interface ITypeDescriptorContext
+	// Get a service that is provided by this object.
+	Object GetService(Type serviceType);
+
+}; // interface IServiceProvider
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.ComponentModel
+}; // namespace System

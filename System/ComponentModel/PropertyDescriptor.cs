@@ -1,6 +1,6 @@
 /*
- * ITypeDescriptorContext.cs - Implementation of the
- *		"System.ComponentModel.ITypeDescriptorContext" interface.
+ * PropertyDescriptor.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.PropertyDescriptor" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -24,15 +24,18 @@ namespace System.ComponentModel
 
 #if !ECMA_COMPAT
 
-using System;
-using System.Globalization;
+using System.Collections;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 [TODO]
-public interface ITypeDescriptorContext : IServiceProvider
+[ComVisible(true)]
+public class PropertyDescriptor : MemberDescriptor
 {
 	// TODO
+	public PropertyDescriptor(String name) : base(name) {}
 
-}; // interface ITypeDescriptorContext
+}; // class PropertyDescriptor
 
 #endif // !ECMA_COMPAT
 

@@ -9,6 +9,20 @@
 	XmlTextReader; implementing XmlValidatingReader as a non-validating
 	wrapper around XmlTextReader.
 
+	* System/ComponentModel/AttributeCollection.cs,
+	System/ComponentModel/ComponentCollection.cs,
+	System/ComponentModel/IBindingList.cs,
+	System/ComponentModel/IComponent.cs,
+	System/ComponentModel/IContainer.cs,
+	System/ComponentModel/ISite.cs,
+	System/ComponentModel/ITypeDescriptorContext.cs,
+	System/ComponentModel/Makefile,
+	System/ComponentModel/MemberDescriptor.cs,
+	System/ComponentModel/PropertyDescriptor.cs,
+	System/ComponentModel/PropertyDescriptorCollection.cs,
+	System/ComponentModel/TypeConverter.cs,
+	runtime/System/IServiceProvider.cs: new ComponentModel classes.
+
 2002-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlConvert.cs, tests/System.Xml/TestNameTable.cs,

@@ -1,6 +1,6 @@
 /*
- * ITypeDescriptorContext.cs - Implementation of the
- *		"System.ComponentModel.ITypeDescriptorContext" interface.
+ * IContainer.cs - Implementation of the
+ *		"System.ComponentModel.IContainer" interface.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,23 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 
 using System;
-using System.Globalization;
+using System.Runtime.InteropServices;
 
-[TODO]
-public interface ITypeDescriptorContext : IServiceProvider
+[ComVisible(true)]
+public interface IContainer : IDisposable
 {
-	// TODO
 
-}; // interface ITypeDescriptorContext
+	// Get a collection of all components in this container.
+	ComponentCollection Components { get; }
+
+	// Add a component to this container.
+	void Add(IComponent component);
+	void Add(IComponent component, String name);
+
+	// Remove a component from this container.
+	void Remove(IComponent component);
+
+}; // interface IContainer
 
 #endif // !ECMA_COMPAT
 

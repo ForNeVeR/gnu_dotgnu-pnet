@@ -1,6 +1,6 @@
 /*
- * ITypeDescriptorContext.cs - Implementation of the
- *		"System.ComponentModel.ITypeDescriptorContext" interface.
+ * ISite.cs - Implementation of the
+ *		"System.ComponentModel.ISite" interface.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,25 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 
 using System;
-using System.Globalization;
+using System.Runtime.InteropServices;
 
-[TODO]
-public interface ITypeDescriptorContext : IServiceProvider
+[ComVisible(true)]
+public interface ISite : IServiceProvider
 {
-	// TODO
 
-}; // interface ITypeDescriptorContext
+	// Get the component associated with this site.
+	IComponent Component { get; }
+
+	// Get the container associated with this site.
+	IContainer Container { get; }
+
+	// Determine if the component is in design mode.
+	bool DesignMode { get; }
+
+	// Get or set the name of the component.
+	String Name { get; set; }
+
+}; // interface ISite
 
 #endif // !ECMA_COMPAT
 

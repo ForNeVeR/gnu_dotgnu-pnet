@@ -1,6 +1,6 @@
 /*
- * ITypeDescriptorContext.cs - Implementation of the
- *		"System.ComponentModel.ITypeDescriptorContext" interface.
+ * ComponentCollection.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.ComponentCollection" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -24,15 +24,18 @@ namespace System.ComponentModel
 
 #if !ECMA_COMPAT
 
-using System;
-using System.Globalization;
+using System.Collections;
+using System.Runtime.InteropServices;
 
 [TODO]
-public interface ITypeDescriptorContext : IServiceProvider
+[ComVisible(true)]
+public class ComponentCollection
 {
 	// TODO
 
-}; // interface ITypeDescriptorContext
+	public ComponentCollection() {}
+
+}; // class ComponentCollection
 
 #endif // !ECMA_COMPAT
 

@@ -1,6 +1,6 @@
 /*
- * ITypeDescriptorContext.cs - Implementation of the
- *		"System.ComponentModel.ITypeDescriptorContext" interface.
+ * AttributeCollection.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.AttributeCollection" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -24,15 +24,18 @@ namespace System.ComponentModel
 
 #if !ECMA_COMPAT
 
-using System;
-using System.Globalization;
+using System.Collections;
+using System.Runtime.InteropServices;
 
 [TODO]
-public interface ITypeDescriptorContext : IServiceProvider
+[ComVisible(true)]
+public class AttributeCollection
 {
 	// TODO
 
-}; // interface ITypeDescriptorContext
+	public AttributeCollection(Attribute[] attributes) {}
+
+}; // class AttributeCollection
 
 #endif // !ECMA_COMPAT
 

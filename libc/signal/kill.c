@@ -22,7 +22,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
-#include <pthread.h>
+#include <pthread-support.h>
 #include <stdlib.h>
 
 /*
@@ -55,7 +55,7 @@ process_pending_signals (void)
   sigset_t set;
   for (;;)
     {
-      sig = __syscall_signext (pthread_self (), process_mask | thread_mask);
+      sig = __syscall_signext (__pthread_self (), process_mask | thread_mask);
       if (sig == -1)
       	break;
       __sigdispatch (sig);
@@ -82,7 +82,7 @@ __kill (pid_t pid, int sig)
     }
 
   /* Make sure that signal handling is enabled on the current thread */
-  __syscall_siginit (pthread_self ());
+  __syscall_siginit (__pthread_self ());
 
   /* Deliver the signal to any thread that hasn't got it blocked */
   __syscall_sigdeliver (-1, sig);
@@ -110,7 +110,7 @@ __sigqueue (pid_t pid, int sig, const sigval_t value)
 }
 
 int
-pthread_kill (long long thread, int sig)
+__pthread_kill (__pthread_t thread, int sig)
 {
   /* Validate the signal number */
   if (sig < 0 || sig >= NSIG || sig == SIGKILL || sig == SIGSTOP)
@@ -123,17 +123,11 @@ pthread_kill (long long thread, int sig)
   __syscall_sigdeliver (thread, sig);
 
   /* Handle the signal if it was actually delivered to this thread */
-  if (thread == pthread_self ())
+  if (thread == __pthread_self ())
     process_pending_signals ();
 
   /* The signal has been delivered and/or handled */
   return 0;
-}
-
-int
-raise (int sig)
-{
-  return pthread_kill (pthread_self (), sig);
 }
 
 int
@@ -160,8 +154,8 @@ __sigprocmask (int how, const sigset_t * __restrict set,
 }
 
 int
-pthread_sigmask (int how, const sigset_t * __restrict set,
-                 sigset_t * __restrict oset)
+__pthread_sigmask (int how, const sigset_t * __restrict set,
+                   sigset_t * __restrict oset)
 {
   if (set)
     {
@@ -191,7 +185,7 @@ __sigsuspend (sigset_t *sigmask)
   /* Block the signals in the mask and then wait for something to arrive */
   old = thread_mask;
   thread_mask = *sigmask;
-  sig = __syscall_sigsuspend (pthread_self (), process_mask | thread_mask);
+  sig = __syscall_sigsuspend (__pthread_self (), process_mask | thread_mask);
   thread_mask = old;
 
   /* Dispatch the signal that we saw */
@@ -209,7 +203,7 @@ sigpending (sigset_t *sigmask)
   process_pending_signals ();
 
   /* Get the set of pending signals that are still blocked */
-  *sigmask = __syscall_sigpending (pthread_self ())
+  *sigmask = __syscall_sigpending (__pthread_self ())
   			& (process_mask | thread_mask);
   return 0;
 }
@@ -217,6 +211,5 @@ sigpending (sigset_t *sigmask)
 weak_alias (__kill, kill)
 weak_alias (__killpg, killpg)
 weak_alias (__sigqueue, sigqueue)
-weak_alias (raise, gsignal)
 weak_alias (__sigprocmask, sigprocmask)
 weak_alias (__sigsuspend, sigsuspend)

@@ -30,7 +30,7 @@
 #include <pwd.h>
 #include <string.h>
 #include <unistd.h>
-#include <pthread.h>
+#include <pthread-support.h>
 #include "pwent.h"
 #include "fake-ids.h"
 
@@ -38,7 +38,7 @@ typedef __csharp__(System.String) String;
 typedef __csharp__(System.Runtime.InteropServices.Marshal) Marshal;
 typedef __csharp__(System.Environment) Environment;
 
-static pthread_mutex_t currentUserMutex = PTHREAD_MUTEX_INITIALIZER;
+static __libc_monitor_t currentUserMutex = __LIBC_MONITOR_INITIALIZER;
 static char *currentUser, *currentReal, *currentHome, *currentShell;
 
 int
@@ -62,7 +62,7 @@ __nextpwent (int posn, struct passwd *pwd)
       case 1:
         {
           /* Return information about "user" */
-	  pthread_mutex_lock(&currentUserMutex);
+	  __libc_monitor_lock(&currentUserMutex);
 	  if(!currentUser)
 	    {
 	      currentUser = getlogin();
@@ -96,7 +96,7 @@ __nextpwent (int posn, struct passwd *pwd)
           pwd->pw_gecos  = currentReal;
           pwd->pw_dir    = currentHome;
           pwd->pw_shell  = currentShell;
-	  pthread_mutex_unlock(&currentUserMutex);
+	  __libc_monitor_unlock(&currentUserMutex);
         }
         return 1;
 

@@ -19,10 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <pthread.h>
+#include <pthread-support.h>
 
-pthread_t
-pthread_self (void)
+long long
+__pthread_self (void)
 {
   /* TODO */
   return 1;

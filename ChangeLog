@@ -24,6 +24,13 @@
 	libc/signal/sigpause.c, libc/signal/sigrelse.c, libc/signal/sigset.c,
 	libc/unistd/pid-stub.c: add signal functions to the library.
 
+	* include/Makefile.am, include/pthread-support.h,
+	libc/pthread/Makefile.am, libc/pthread/monitor.cs,
+	libc/pthread/mutex.c, libc/pthread/self.c, libc/pwd/pwent.c,
+	libc/signal/kill.c, libc/unistd/getlogin.c: strip down the
+	pthread routines inside of "libc" to the bare minimum so
+	that we can eject the bulk of pthreads into a separate library.
+
 2004-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.2" release.

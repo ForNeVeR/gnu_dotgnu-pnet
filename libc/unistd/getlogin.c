@@ -21,20 +21,20 @@
 
 #include <unistd.h>
 #include <string.h>
-#include <pthread.h>
+#include <pthread-support.h>
 
 typedef __csharp__(System.String) String;
 typedef __csharp__(System.Runtime.InteropServices.Marshal) Marshal;
 typedef __csharp__(System.Environment) Environment;
 
-static pthread_mutex_t loginMutex = PTHREAD_MUTEX_INITIALIZER;
+static __libc_monitor_t loginMutex = __LIBC_MONITOR_INITIALIZER;
 static char *loginName;
 
 char *
 getlogin (void)
 {
   char *login;
-  pthread_mutex_lock(&loginMutex);
+  __libc_monitor_lock(&loginMutex);
   if (!loginName)
     {
        String str = Environment::get_UserName ();
@@ -45,7 +45,7 @@ getlogin (void)
 	 }
     }
   login = loginName;
-  pthread_mutex_lock(&loginMutex);
+  __libc_monitor_unlock(&loginMutex);
   return login;
 }
 

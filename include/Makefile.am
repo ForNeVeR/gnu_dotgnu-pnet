@@ -37,6 +37,6 @@ libinclude_HEADERS = \
 	wctype.h \
 	xlocale.h
 
-## This file is not installed because it is only used when
-## compiling the library.  It isn't needed to compile apps.
-EXTRA_DIST = libc-symbols.h
+## These file are not installed because they are only used when
+## compiling the library.  They aren't needed to compile apps.
+EXTRA_DIST = libc-symbols.h pthread-support.h

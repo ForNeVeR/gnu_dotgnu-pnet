@@ -437,14 +437,6 @@ static ILObject *System_Type_GetType(ILExecThread *thread,
 }
 
 /*
- * Method table for the "System.Type" class.
- */
-IL_METHOD_BEGIN(_ILSystemTypeMethods)
-	IL_METHOD("GetType", "(oSystem.String;ZZ)oSystem.Type;",
-					System_Type_GetType)
-IL_METHOD_END
-
-/*
  * private int InternalGetArrayRank();
  */
 static ILInt32 System_RuntimeType_InternalGetArrayRank(ILExecThread *thread,
@@ -735,7 +727,7 @@ static ILObject *System_RuntimeType_InternalGetBaseType(ILExecThread *thread,
 }
 
 /*
- * private Type InternalGetAssembly();
+ * private Assembly InternalGetAssembly();
  */
 static ILObject *System_RuntimeType_InternalGetAssembly(ILExecThread *thread,
 											      		ILObject *_this)
@@ -754,25 +746,264 @@ static ILObject *System_RuntimeType_InternalGetAssembly(ILExecThread *thread,
 }
 
 /*
+ * private Module InternalGetModule();
+ */
+static ILObject *System_RuntimeType_InternalGetModule(ILExecThread *thread,
+											          ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILImage *image = (classInfo ? ILClassToImage(classInfo) : 0);
+	if(image)
+	{
+		/* TODO */
+		return 0;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Output a string to a Unicode name buffer, or compute the length
+ * of the buffer.  Returns the length.
+ */
+static ILInt32 NameOutputString(ILUInt16 *buf, const char *str, int quoteDot)
+{
+	int slen, sposn;
+	ILInt32 len = 0;
+	unsigned long ch;
+	unsigned long tempch;
+	slen = strlen(str);
+	sposn = 0;
+	while(sposn < len)
+	{
+		ch = ILUTF8ReadChar(str, slen, &sposn);
+		if(ch == '\\' || (ch == '.' && quoteDot) || ch == '+' ||
+		   ch == ',' || ch == '[' || ch == ']' || ch == '&' || ch == '*')
+		{
+			/* We need to quote this character */
+			if(buf)
+			{
+				buf[0] = (ILUInt16)'\\';
+				buf[1] = (ILUInt16)ch;
+				buf += 2;
+			}
+			len += 2;
+		}
+		else if(ch < (unsigned long)0x10000)
+		{
+			/* Ordinary character */
+			if(buf)
+			{
+				*buf++ = (ILUInt16)ch;
+			}
+		}
+		else if(ch < ((((unsigned long)1)) << 20))
+		{
+			/* Surrogate-based character */
+			if(buf)
+			{
+				tempch = ((ch >> 10) + 0xD800);
+				buf[0] = (ILUInt16)tempch;
+				tempch = ((ch & ((((ILUInt32)1) << 10) - 1)) + 0xDC00);
+				buf[1] = (ILUInt16)tempch;
+				buf += 2;
+			}
+			len += 2;
+		}
+	}
+	return len;
+}
+
+/*
+ * Output a character to a Unicode name buffer.
+ */
+static ILInt32 NameOutputChar(ILUInt16 *buf, unsigned ch)
+{
+	if(buf)
+	{
+		buf[0] = (ILUInt16)ch;
+	}
+	return 1;
+}
+
+/*
+ * Output a class name to a Unicode name buffer, or compute the length.
+ * Returns the computed length.
+ */
+static ILInt32 NameOutputClassName(ILUInt16 *buf, ILClass *classInfo,
+								   int fullyQualified)
+{
+	ILClass *nestedParent;
+	ILInt32 len;
+	const char *namespace;
+	if(fullyQualified)
+	{
+		nestedParent = ILClass_NestedParent(classInfo);
+		if(nestedParent != 0)
+		{
+			len = NameOutputClassName(buf, ILClassResolve(nestedParent),
+									  fullyQualified);
+			len += NameOutputChar(buf + len, '+');
+		}
+		else
+		{
+			namespace = ILClass_Namespace(classInfo);
+			if(namespace)
+			{
+				len = NameOutputString(buf, namespace, 0);
+				len += NameOutputChar(buf + len, '.');
+			}
+			else
+			{
+				len = 0;
+			}
+		}
+	}
+	else
+	{
+		len = 0;
+	}
+	return len + NameOutputString(buf + len, ILClass_Name(classInfo), 1);
+}
+
+/*
+ * Output the suffixes for a type, or compute the buffer length.
+ * Returns the computed length.
+ */
+static ILInt32 NameOutputTypeSuffixes(ILUInt16 *buf, ILType *type)
+{
+	ILInt32 len = 0;
+	ILInt32 rank;
+	if(type != 0 && ILType_IsComplex(type))
+	{
+		if(type->kind == IL_TYPE_COMPLEX_ARRAY)
+		{
+			len += NameOutputTypeSuffixes(buf, type->un.array.elemType);
+			len += NameOutputChar(buf + len, '[');
+			len += NameOutputChar(buf + len, ']');
+		}
+		else if(type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		{
+			rank = 1;
+			type = type->un.array.elemType;
+			while(type != 0 && ILType_IsComplex(type) &&
+			      type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+			{
+				++rank;
+				type = type->un.array.elemType;
+			}
+			len += NameOutputTypeSuffixes(buf, type);
+			len += NameOutputChar(buf + len, '[');
+			while(rank > 0)
+			{
+				len += NameOutputChar(buf + len, ',');
+				--rank;
+			}
+			len += NameOutputChar(buf + len, ']');
+		}
+		else if(type->kind == IL_TYPE_COMPLEX_BYREF)
+		{
+			len += NameOutputTypeSuffixes(buf, type->un.refType);
+			len += NameOutputChar(buf + len, '&');
+		}
+		else if(type->kind == IL_TYPE_COMPLEX_PTR)
+		{
+			len += NameOutputTypeSuffixes(buf, type->un.refType);
+			len += NameOutputChar(buf + len, '*');
+		}
+	}
+	return len;
+}
+
+/*
+ * Get the name of a type in either regular or fully-qualified form.
+ */
+static ILString *GetTypeName(ILExecThread *thread, ILObject *_this,
+							 int fullyQualified)
+{
+	ILClass *classInfo;
+	ILClass *elemInfo;
+	ILInt32 len;
+	ILString *str;
+	ILUInt16 *buf;
+	ILType *synType;
+
+	/* Get the ILClass structure for the runtime type */
+	classInfo = GetRuntimeClass(thread, _this);
+	if(!classInfo)
+	{
+		/* Shouldn't happen, but do something sane anyway */
+		return 0;
+	}
+
+	/* Find the innermost element type if this is a complex type */
+	elemInfo = classInfo;
+	synType = ILClassGetSynType(classInfo);
+	while(synType != 0 && ILType_IsComplex(synType))
+	{
+		if(synType->kind == IL_TYPE_COMPLEX_ARRAY ||
+		   synType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		{
+			synType = synType->un.array.elemType;
+		}
+		else if(synType->kind == IL_TYPE_COMPLEX_BYREF ||
+		        synType->kind == IL_TYPE_COMPLEX_PTR)
+		{
+			synType = synType->un.refType;
+		}
+		else
+		{
+			break;
+		}
+	}
+	if(synType != 0)
+	{
+		elemInfo = ILClassFromType(ILProgramItem_Image(thread->method),
+								   0, synType, 0);
+		if(!elemInfo)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+	}
+
+	/* Compute the size of the full name */
+	len = NameOutputClassName(0, elemInfo, fullyQualified);
+	if(classInfo != elemInfo)
+	{
+		len += NameOutputTypeSuffixes(buf + len, synType);
+	}
+
+	/* Allocate a string to hold the full name */
+	str = 0;
+	ILExecThreadNew(thread, "System.String", "(Tci)V",
+					&str, (ILVaInt)' ', (ILVaInt)len);
+	if(!str)
+	{
+		return 0;
+	}
+
+	/* Write the name into the string */
+	if(_ILStringToBuffer(thread, str, &buf))
+	{
+		len = NameOutputClassName(buf, elemInfo, fullyQualified);
+		if(classInfo != elemInfo)
+		{
+			NameOutputTypeSuffixes(buf + len, synType);
+		}
+	}
+	return str;
+}
+
+/*
  * private String InternalGetFullName();
  */
 static ILString *System_RuntimeType_InternalGetFullName(ILExecThread *thread,
 											      		ILObject *_this)
 {
-	/*ILClass *classInfo = GetRuntimeClass(thread, _this);*/
-	/* TODO */
-	return 0;
-}
-
-/*
- * private String InternalGetAssemblyQualifiedName();
- */
-static ILString *System_RuntimeType_InternalGetAssemblyQualifiedName
-					(ILExecThread *thread, ILObject *_this)
-{
-	/*ILClass *classInfo = GetRuntimeClass(thread, _this);*/
-	/* TODO */
-	return 0;
+	return GetTypeName(thread, _this, 1);
 }
 
 /*
@@ -784,17 +1015,128 @@ static void System_RuntimeType_InternalGetGUID(ILExecThread *thread,
 {
 	/* We don't use GUID's in this system, as they are intended for
 	   use with COM, which we don't have.  Besides, they are a stupid
-	   way to refer to globally-unique values.  URI's are much better */
+	   way to specify globally-unique names.  URI's are much better */
 	ILMemZero(result, 16);
 }
+
+/*
+ * private Type InternalGetNestedDeclaringType();
+ */
+static ILObject *System_RuntimeType_InternalGetNestedDeclaringType
+					(ILExecThread *thread, ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *nestedParent = (classInfo ? ILClass_NestedParent(classInfo) : 0);
+	if(nestedParent)
+	{
+		return GetRuntimeType(thread, nestedParent);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private RuntimeTypeHandle InternalGetClassHandle();
+ */
+static void System_RuntimeType_InternalGetClassHandle
+					(ILExecThread *thread, void *result, ILObject *_this)
+{
+	*((ILClass **)result) = GetRuntimeClass(thread, _this);
+}
+
+/*
+ * private String InternalGetName();
+ */
+static ILString *System_RuntimeType_InternalGetName(ILExecThread *thread,
+													ILObject *_this)
+{
+	return GetTypeName(thread, _this, 0);
+}
+
+/*
+ * private String InternalGetNamespace();
+ */
+static ILString *System_RuntimeType_InternalGetNamespace(ILExecThread *thread,
+													     ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *nestedParent;
+	ILType *synType;
+	const char *namespace;
+	if(classInfo)
+	{
+		/* Find the innermost element type if the class is synthesised */
+		synType = ILClassGetSynType(classInfo);
+		while(synType != 0 && ILType_IsComplex(synType))
+		{
+			if(synType->kind == IL_TYPE_COMPLEX_ARRAY ||
+			   synType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+			{
+				synType = synType->un.array.elemType;
+			}
+			else if(synType->kind == IL_TYPE_COMPLEX_BYREF ||
+			        synType->kind == IL_TYPE_COMPLEX_PTR)
+			{
+				synType = synType->un.refType;
+			}
+			else
+			{
+				break;
+			}
+		}
+		if(synType != 0)
+		{
+			classInfo = ILClassFromType(ILProgramItem_Image(thread->method),
+									    0, synType, 0);
+			if(!classInfo)
+			{
+				ILExecThreadThrowOutOfMemory(thread);
+				return 0;
+			}
+		}
+
+		/* Find the outermost type in the nesting levels, to
+		   determine the namespace in which nested types reside */
+		while((nestedParent = ILClass_NestedParent(classInfo)) != 0)
+		{
+			classInfo = ILClassResolve(nestedParent);
+		}
+		namespace = ILClass_Namespace(classInfo);
+		if(namespace)
+		{
+			return ILStringCreate(thread, namespace);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Method table for the "System.Type" class.
+ */
+IL_METHOD_BEGIN(_ILSystemTypeMethods)
+	IL_METHOD("GetType",
+					"(oSystem.String;ZZ)oSystem.Type;",
+					System_Type_GetType)
+IL_METHOD_END
 
 /*
  * Method table for the "System.RuntimeType" class.
  */
 IL_METHOD_BEGIN(_ILSystemRuntimeTypeMethods)
-	IL_METHOD("InternalGetArrayRank", "(T)i",
+	IL_METHOD("InternalGetArrayRank",
+					"(T)i",
 					System_RuntimeType_InternalGetArrayRank)
-	IL_METHOD("GetAttributeFlagsImpl", "(T)i",
+	IL_METHOD("GetAttributeFlagsImpl",
+					"(T)i",
 					System_RuntimeType_GetAttributeFlagsImpl)
 	IL_METHOD("InternalGetTypeHandleFromObject",
 					"(oSystem.Object;)vSystem.RuntimeTypeHandle;",
@@ -802,36 +1144,60 @@ IL_METHOD_BEGIN(_ILSystemRuntimeTypeMethods)
 	IL_METHOD("GetTypeFromHandleImpl",
 					"(vSystem.RuntimeTypeHandle;)oSystem.Type;",
 					System_RuntimeType_GetTypeFromHandleImpl)
-	IL_METHOD("IsArrayImpl", "(T)Z", System_RuntimeType_IsArrayImpl)
-	IL_METHOD("IsByRefImpl", "(T)Z", System_RuntimeType_IsByRefImpl)
-	IL_METHOD("IsCOMObjectImpl", "(T)Z", System_RuntimeType_IsCOMObjectImpl)
-	IL_METHOD("InternalIsContextful", "(T)i",
+	IL_METHOD("IsArrayImpl",
+					"(T)Z",
+					System_RuntimeType_IsArrayImpl)
+	IL_METHOD("IsByRefImpl",
+					"(T)Z",
+					System_RuntimeType_IsByRefImpl)
+	IL_METHOD("IsCOMObjectImpl",
+					"(T)Z",
+					System_RuntimeType_IsCOMObjectImpl)
+	IL_METHOD("InternalIsContextful",
+					"(T)i",
 					System_RuntimeType_InternalIsContextful)
-	IL_METHOD("InternalIsMarshalByRef", "(T)i",
+	IL_METHOD("InternalIsMarshalByRef",
+					"(T)i",
 					System_RuntimeType_InternalIsMarshalByRef)
-	IL_METHOD("IsPointerImpl", "(T)Z", System_RuntimeType_IsPointerImpl)
-	IL_METHOD("IsPrimitiveImpl", "(T)Z", System_RuntimeType_IsPrimitiveImpl)
-	IL_METHOD("IsSubclassOf", "(ToSystem.Type;)Z",
+	IL_METHOD("IsPointerImpl",
+					"(T)Z",
+					System_RuntimeType_IsPointerImpl)
+	IL_METHOD("IsPrimitiveImpl",
+					"(T)Z",
+					System_RuntimeType_IsPrimitiveImpl)
+	IL_METHOD("IsSubclassOf",
+					"(ToSystem.Type;)Z",
 					System_RuntimeType_IsSubclassOf)
-	IL_METHOD("IsNestedTypeImpl", "(T)Z", System_RuntimeType_IsNestedTypeImpl)
+	IL_METHOD("IsNestedTypeImpl",
+					"(T)Z",
+					System_RuntimeType_IsNestedTypeImpl)
 	IL_METHOD("InternalGetBaseType",
 					"(T)oSystem.Type;",
 					System_RuntimeType_InternalGetBaseType)
 	IL_METHOD("InternalGetAssembly",
 					"(T)oSystem.Reflection.Assembly;",
 					System_RuntimeType_InternalGetAssembly)
-	IL_METHOD("InternalGetPropertyQualifiedName",  /* Alias */
-					"(T)oSystem.String;",
-					System_RuntimeType_InternalGetFullName)
+	IL_METHOD("InternalGetModule",
+					"(T)oSystem.Reflection.Module;",
+					System_RuntimeType_InternalGetModule)
 	IL_METHOD("InternalGetFullName",
 					"(T)oSystem.String;",
 					System_RuntimeType_InternalGetFullName)
-	IL_METHOD("InternalGetAssemblyQualifiedName",
-					"(T)oSystem.String;",
-					System_RuntimeType_InternalGetAssemblyQualifiedName)
 	IL_METHOD("InternalGetGUID",
 					"(T)vSystem.Guid;",
 					System_RuntimeType_InternalGetGUID)
+	IL_METHOD("InternalGetNestedDeclaringType",
+					"(T)oSystem.Type;",
+					System_RuntimeType_InternalGetNestedDeclaringType)
+	IL_METHOD("InternalGetClassHandle",
+					"(T)vSystem.RuntimeTypeHandle;",
+					System_RuntimeType_InternalGetClassHandle)
+	IL_METHOD("InternalGetName",
+					"(T)vSystem.String;",
+					System_RuntimeType_InternalGetName)
+	IL_METHOD("InternalGetNamespace",
+					"(T)vSystem.String;",
+					System_RuntimeType_InternalGetNamespace)
 IL_METHOD_END
 
 #ifdef	__cplusplus

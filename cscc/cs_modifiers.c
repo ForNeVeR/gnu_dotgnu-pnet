@@ -394,11 +394,7 @@ ILUInt32 CSModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers)
 	}
 	if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 	{
-		attrs |= IL_META_METHODDEF_VIRTUAL;
-		if((modifiers & CS_MODIFIER_NEW) != 0)
-		{
-			attrs |= IL_META_METHODDEF_NEW_SLOT;
-		}
+		attrs |= IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_NEW_SLOT;
 		if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 		{
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -414,7 +410,7 @@ ILUInt32 CSModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers)
 						  "cannot use both `override' and `new'");
 		}
 	}
-	else if((modifiers & CS_MODIFIER_NEW) != 0)
+	if((modifiers & CS_MODIFIER_NEW) != 0)
 	{
 		attrs |= CS_SPECIALATTR_NEW;
 	}
@@ -514,11 +510,7 @@ ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
 	}
 	if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 	{
-		attrs |= IL_META_METHODDEF_VIRTUAL;
-		if((modifiers & CS_MODIFIER_NEW) != 0)
-		{
-			attrs |= IL_META_METHODDEF_NEW_SLOT;
-		}
+		attrs |= IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_NEW_SLOT;
 		if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 		{
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -534,7 +526,7 @@ ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
 						  "cannot use both `override' and `new'");
 		}
 	}
-	else if((modifiers & CS_MODIFIER_NEW) != 0)
+	if((modifiers & CS_MODIFIER_NEW) != 0)
 	{
 		attrs |= CS_SPECIALATTR_NEW;
 	}

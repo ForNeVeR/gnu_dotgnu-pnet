@@ -1,3 +1,14 @@
+2002-05-25 Stephen Compall  <rushing@sigecom.net>
+
+	* runtime/System/IO/MemoryStream.cs: Added in Mr. Shivanan's
+	code, along with some fixes to same and quite a few comments
+	on overall implementation.
+
+2002-05-21 Haran Shivanan  <ch99057@che.iitm.ac.in>
+
+	* runtime/System/IO/MemoryStream.cs: Modified MemoryStream class
+	to implement Seek(...).
+
 2002-05-12 Abhaya Agarwal <abhayag@iitk.ac.in>
 
 	* runtime/Platform/DirMethods.cs: Added 2 icalls viz

@@ -4,6 +4,7 @@
  * Copyright (C) 2002  Free Software Foundation, Inc.
  *
  * Contributed by Stephen Compall <rushing@sigecom.net>.
+ * Contributions by Haran Shivanan <ch99057@che.iitm.ac.in>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +23,24 @@
 
 // TODO:
 // some longs returned by posn, length, etc. will have to be cast
+
+// Stephen says:
+// I had a great deal of trouble with the problem of Position indexing,
+// and had to rewrite portions of the class twice because of this
+// particular ECMA standard, which is in some cases contradictory to the
+// documentation for System.IO.Stream and NotSupportedException
+
+// Also please note that, at various places, I have written some weird
+// code to get state, instead of accessing the private variables
+// directly. This is because most of this stuff is virtual, and
+// unfortunately, the Properties are virtual too. So if someone finds it
+// a quick solution to just override a property and expect the real
+// methods to work with them, I want the class to be able to do so, to
+// it's fullest potential. For example, if GetBuffer doesn't work,
+// thanks to the child class, then that screws it up, but there's no way
+// we can do anything about that in this file.
+
+// The point of this diatribe is that you should also follow this standard.
 
 namespace System.IO
 {
@@ -42,9 +61,8 @@ public class MemoryStream : Stream
 	// readable and seekable are always true
 	private bool writable, resizable, visibleBuffer;
 
-	// position is always indexed to bottomLimit
-	// it's safe to assume so, because any1 who uses the constructors with
-	// `index' better know what he/she is doing anyway
+	// position is always indexed to bottomLimit; that is, when
+	// bottomLimit is 5, "Position = 0" will access impl_buffer[5]
 	private int position = 0;
 	// a capacity variable is unnecessary
 
@@ -128,7 +146,8 @@ public class MemoryStream : Stream
 
 	public override void Close()
 	{
-		// effectively call Flush()
+		// effectively call Flush(); this is the kind of silliness
+		// I referred to in the note about child classes
 		this.Flush();
 		streamclosed = true;
 		base.Close();
@@ -187,21 +206,49 @@ public class MemoryStream : Stream
 		}
 	}
 
-	[TODO]
+
+	// The stream should only reveal through the regular Stream methods
+	// the range given to it by the constructor index&count, that is,
+	// bottomLimit and topLimit. Haran, you are correct.
 	public override long Seek(long offset, SeekOrigin loc)
 	{
+		long l = Length; // for `virtual' portability, see note at top
+		if (streamclosed)
+			throw new ObjectDisposedException(null, _("IO_StreamClosed"));
+
+		// ECMA says, throw ArgumentOutOfRange if offset > maximum stream length
+		if (offset > l)
+			throw new ArgumentOutOfRangeException("value",_("Arg_InvalidArrayIndex"));
+
 		switch (loc)
 		{
 		case SeekOrigin.Begin:
+			// We have already tested for (offset>stream length) above
+			if (offset < 0) // attempt to seek before begin
+				throw new IOException(_("Arg_InvalidArrayIndex"));
+
+			forcePositionSet(offset);
 			break;
+		
 		case SeekOrigin.Current:
+			long oldpos = Position;
+			if ( offset+oldpos > l || offset+oldpos < 0)
+				throw new IOException(_("Arg_InvalidArrayIndex"));
+
+			forcePositionChange(offset);
 			break;
+
 		case SeekOrigin.End:
+			if (offset > 0 || offset < -l) // out of range
+				throw new IOException(_("Arg_InvalidArrayIndex"));
+
+			forcePositionSet(l+offset);
 			break;
+		
 		default:
-			throw new ObjectDisposedException(_("IO_StreamClosed"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
-		return -1;
+		return Position;
 	}
 
 	[TODO]
@@ -309,6 +356,8 @@ public class MemoryStream : Stream
 			// forcePositionChange(int) to comply
 			if (streamclosed)
 				throw new ObjectDisposedException(null, _("IO_StreamClosed"));
+			// little neat technicality: the check for CanSeek
+			// must come before the range check, < ECMA
 			if (!CanSeek)
 				throw new NotSupportedException(_("IO_NotSupp_Seek"));
 			if (value > Capacity || value < 0)
@@ -322,16 +371,20 @@ public class MemoryStream : Stream
 
 	// force position to change, either by virtual property or internally
 	// specify increment to posn
-	private void forcePositionChange(int increment)
+	private void forcePositionChange(long increment)
 	{
-		long posn = Position;
+		forcePositionSet(Position + increment);
+	}
+
+	private void forcePositionSet(long newpos)
+	{
 		try
 		{
-			Position = posn + increment;
+			Position = newpos;
 		}
 		catch (NotSupportedException)
 		{
-			position = (int)(posn + increment);
+			position = newpos;
 		}
 		catch (ArgumentOutOfRangeException)
 		{

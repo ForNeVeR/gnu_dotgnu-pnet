@@ -82,6 +82,11 @@ extern int _ILCVMInsnCount[];
 	#define	CVM_DOUBLES_ALIGNED_WORD
 	#define CVM_WORDS_AND_PTRS_SAME_SIZE
 #endif
+#if defined(__arm) || defined(__arm__)
+	#define	CVM_ARM
+	#define	CVM_LONGS_ALIGNED_WORD
+	#define CVM_WORDS_AND_PTRS_SAME_SIZE
+#endif
 
 /*
  * Determine the style of interpreter to use, which is one
@@ -174,6 +179,14 @@ extern int _ILCVMInsnCount[];
 	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
 	defined(IL_CONFIG_UNROLL)
 #define	IL_CVM_DIRECT_UNROLLED_X86
+#define	IL_CVM_DIRECT_UNROLLED
+#endif
+#if defined(IL_CVM_DIRECT) && defined(CVM_ARM) && \
+	defined(__GNUC__) && !defined(IL_NO_ASM) && \
+	!defined(IL_CVM_PROFILE_CVM_METHODS) && \
+	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
+	defined(IL_CONFIG_UNROLL)
+#define	IL_CVM_DIRECT_UNROLLED_ARM
 #define	IL_CVM_DIRECT_UNROLLED
 #endif
 

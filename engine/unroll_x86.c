@@ -1213,7 +1213,9 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	return 1;
 }
 
-#else /* !IL_CVM_DIRECT_UNROLLED_X86 */
+#endif /* IL_CVM_DIRECT_UNROLLED_X86 */
+
+#ifndef IL_CVM_DIRECT_UNROLLED
 
 /*
  * Stub out the unroll API on other platforms.
@@ -1234,7 +1236,7 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	return 0;
 }
 
-#endif /* !IL_CVM_DIRECT_UNROLLED_X86 */
+#endif /* !IL_CVM_DIRECT_UNROLLED */
 
 #ifdef	__cplusplus
 };

@@ -1,4 +1,13 @@
 
+2003-05-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/Makefile.am, engine/arm_codegen.h, engine/cvm.c,
+	engine/cvm_config.h, engine/unroll_arm.c, engine/unroll_arm_arith.c,
+	engine/unroll_arm_branch.c, engine/unroll_arm_const.c,
+	engine/unroll_arm_conv.c, engine/unroll_arm_ptr.c,
+	engine/unroll_arm_var.c, engine/unroll_x86.c: add the ARM
+	unroller to the engine (2-3 times improvement in performance).
+
 2003-05-05  Gopal.V  <gopalv82@symonds.net>
 
 	* image/ser_parse.c , cscc/csharp/cs_attrs.c: Tagged objects in

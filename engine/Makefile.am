@@ -50,6 +50,7 @@ libILEngine_a_SOURCES = cvm.c \
 						thread.c \
 						throw.c \
 						unroll_x86.c \
+						unroll_arm.c \
 						verify.c
 
 PACKAGE_LIBS = $(FFILIBS) $(GCLIBS) $(SOCKETLIBS)

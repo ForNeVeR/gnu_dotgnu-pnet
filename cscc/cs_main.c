@@ -279,11 +279,175 @@ static void PreprocessClose(void)
 }
 
 /*
+ * Check for the existence of a library within a particular directory.
+ * Returns the full pathname, allocated with "ILMalloc", if found.
+ * Otherwise returns NULL.
+ */
+static char *CheckPath(const char *directory, const char *name, int len)
+{
+	int dirlen = strlen(directory);
+	char *path = ILMalloc(dirlen + len + 6);
+	if(!path)
+	{
+		CSOutOfMemory();
+	}
+	strcpy(path, directory);
+	path[dirlen++] = '/';
+	ILMemCpy(path + dirlen, name, len);
+	strcpy(path + dirlen + len, ".dll");
+	if(ILFileExists(path, (char **)0))
+	{
+		return path;
+	}
+	ILFree(path);
+	return 0;
+}
+
+/*
+ * Load a library from a specific path.  Returns zero on failure.
+ * If "freePath" is non-zero, then free "path" afterwards.
+ */
+static int LoadLibraryFromPath(const char *path, int freePath)
+{
+	FILE *file;
+	ILImage *image;
+	int loadError;
+
+	/* Attempt to open the library file */
+	if((file = fopen(path, "rb")) == NULL)
+	{
+		/* Try again with "r", in case libc does not understand "rb" */
+		if((file = fopen(path, "r")) == NULL)
+		{
+			perror(path);
+			if(freePath)
+			{
+				ILFree((char *)path);
+			}
+			return 0;
+		}
+	}
+
+	/* Attempt to load the image */
+	loadError = ILImageLoad(file, path, CSCodeGen.context, &image,
+							IL_LOADFLAG_FORCE_32BIT |
+							IL_LOADFLAG_PRE_VALIDATE);
+	if(loadError != 0)
+	{
+		fclose(file);
+		fprintf(stderr, "%s: %s\n", path, ILImageLoadError(loadError));
+		if(freePath)
+		{
+			ILFree((char *)path);
+		}
+		return 0;
+	}
+	fclose(file);
+
+	/* Clean up and exit */
+	if(freePath)
+	{
+		ILFree((char *)path);
+	}
+	return 1;
+}
+
+/*
+ * Load the contents of a library into the code generator's context.
+ * Returns zero if the library load failed.
+ */
+static int LoadLibrary(const char *name)
+{
+	int len;
+	int index;
+	char *path;
+	ILImage *image;
+	ILAssembly *assem;
+	const char *assemName;
+	int ch1, ch2;
+
+	/* If the name includes a path, then don't bother searching */
+	if(strchr(name, '/') != 0 || strchr(name, '\\') != 0)
+	{
+		return LoadLibraryFromPath(name, 0);
+	}
+
+	/* Strip the ".dll" from the name, if present */
+	len = strlen(name);
+	if(len >= 4 && !ILStrICmp(name + len - 4, ".dll"))
+	{
+		len -= 4;
+	}
+
+	/* If we already have an assembly with this name,
+	   then we assume that we already have the library.
+	   It could have been loaded during dynamic linking,
+	   or because the programmer specified the same
+	   library twice on the compiler command-line */
+	image = 0;
+	while((image = ILContextNextImage(CSCodeGen.context, image)) != 0)
+	{
+		assem = ILAssembly_FromToken(image, (IL_META_TOKEN_ASSEMBLY | 1));
+		if(assem)
+		{
+			assemName = ILAssembly_Name(assem);
+			index = 0;
+			while(assemName[index] != '\0' && index < len)
+			{
+				/* Use case-insensitive comparisons on assembly names */
+				ch1 = assemName[index];
+				if(ch1 >= 'a' && ch1 <= 'z')
+				{
+					ch1 = (ch1 - 'a' + 'A');
+				}
+				ch2 = name[index];
+				if(ch2 >= 'a' && ch2 <= 'z')
+				{
+					ch2 = (ch2 - 'a' + 'A');
+				}
+				if(ch1 != ch2)
+				{
+					break;
+				}
+				++index;
+			}
+			if(assemName[index] == '\0' && index == len)
+			{
+				/* The assembly is already loaded */
+				return 1;
+			}
+		}
+	}
+
+	/* Search the library link path for the name */
+	for(index = 0; index < num_link_dirs; ++index)
+	{
+		path = CheckPath(link_dirs[index], name, len);
+		if(path)
+		{
+			return LoadLibraryFromPath(path, 1);
+		}
+	}
+
+	/* Last try: look in the current directory */
+	path = CheckPath(".", name, len);
+	if(path)
+	{
+		return LoadLibraryFromPath(path, 1);
+	}
+
+	/* Could not locate the library */
+	fprintf(stderr, "%s: No such library\n", name);
+	return 0;
+}
+
+/*
  * Initialize the code generator for tree building and assembly output.
  */
 static int InitCodeGen(void)
 {
 	FILE *outfile;
+	int library;
 
 	/* Attempt to open the assembly output stream */
 	if(!CSStringListContains(extension_flags, num_extension_flags,
@@ -331,6 +495,30 @@ static int InitCodeGen(void)
 	if(CSStringListContains(machine_flags, num_machine_flags, "jvm"))
 	{
 		ILGenInfoToJava(&CSCodeGen);
+	}
+
+	/* Load the "mscorlib" library, to get the standard library */
+	if(!nostdlib_flag)
+	{
+		char *name = CSStringListGetValue(extension_flags, num_extension_flags,
+										  "stdlib-name");
+		if(!name)
+		{
+			name = "mscorlib";
+		}
+		if(!LoadLibrary(name))
+		{
+			return 1;
+		}
+	}
+
+	/* Load all of the other libraries, in reverse order */
+	for(library = num_libraries - 1; library >= 0; --library)
+	{
+		if(!LoadLibrary(libraries[library]))
+		{
+			return 1;
+		}
 	}
 
 	/* Ready to go now */

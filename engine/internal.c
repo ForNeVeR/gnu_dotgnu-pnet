@@ -106,7 +106,7 @@ int _ILFindInternalCall(ILMethod *method, int ctorAlloc, ILInternalInfo *info)
 	namespace = ILClass_Namespace(owner);
 	if(!namespace)
 	{
-		return 0;
+		goto runtimeOnly;
 	}
 	name = ILClass_Name(owner);
 

@@ -9,6 +9,9 @@
 	* engine/verify.c, engine/verify_call.c, engine/verify_obj.c:
 	verify delegate construction.
 
+	* engine/internal.c (_ILFindInternalCall): if the namespace is
+	not present, then we still want to process arrays and delegates.
+
 2002-06-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/delegate.c, engine/engine.h,

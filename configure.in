@@ -9,10 +9,6 @@ AM_INIT_AUTOMAKE(pnet, 0.3.7)
 AM_CONFIG_HEADER(include/il_config.h)
 AM_MAINTAINER_MODE
 
-dnl Check for file extensions.
-AC_EXEEXT
-AC_OBJEXT
-
 dnl Checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
@@ -28,6 +24,10 @@ if test -z "$TREECC" ; then
     echo "http://www.southern-storm.com.au"
     exit 1
 fi
+
+dnl Check for file extensions.
+AC_EXEEXT
+AC_OBJEXT
 
 dnl The --without-libffi option can be used to disable libffi.
 AC_ARG_WITH(libffi,

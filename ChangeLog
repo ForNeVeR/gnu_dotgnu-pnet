@@ -16,6 +16,9 @@
 
 	* engine/cvm.h: fix the definition of "CVMWord::padding".
 
+	* configure.in: move AC_EXEEXT and AC_OBJEXT down to after
+	AC_PROG_CC, because they depend upon on it on some platforms.
+
 2002-05-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_array.c: add special cases for 2-dimensional arrays.

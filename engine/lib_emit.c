@@ -118,6 +118,8 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
 		return 0;
 	}
 
+	ILAssemblySetVersionSplit(retval, v1, v2, v3, v4);
+
 	/* Unlock and return the information to the caller */
 	IL_METADATA_UNLOCK(_thread);
 	*writerReturn = (ILNativeInt)writer;

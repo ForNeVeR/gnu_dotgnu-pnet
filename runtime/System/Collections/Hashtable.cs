@@ -54,6 +54,8 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 	private SerializationInfo info;
 #endif
 
+	// Place holder for a removed object.
+	private static readonly Object removed = new Object();
 	// Table of the first 400 prime numbers.
 	private static readonly int[] primes = {
 		2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
@@ -401,7 +403,6 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 			}
 
 #endif // CONFIG_SERIALIZATION
-
 	// Add the contents of a dictionary to this hash table.
 	private void AddDictionaryContents(IDictionary d)
 			{
@@ -420,7 +421,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				hash = (int)(((uint)hash) % ((uint)capacity));
 				for(;;)
 				{
-					if(table[hash].key == null)
+					if(table[hash].key == null || table[hash].key == removed)
 					{
 						// We've found an empty slot, so add the entry.
 						table[hash].key = key;
@@ -504,7 +505,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				while(origSize > 0)
 				{
 					--origSize;
-					if(orig[origSize].key != null)
+					if(orig[origSize].key != null && orig[origSize].key != removed)
 					{
 						AddDirect(orig[origSize].key, orig[origSize].value);
 					}
@@ -554,7 +555,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					int posn;
 					for(posn = 0; posn < table.Length; ++posn)
 					{
-						if(table[posn].key != null)
+						if(table[posn].key != null && table[posn].key != removed)
 						{
 							array.SetValue
 								(new DictionaryEntry(table[posn].key,
@@ -601,7 +602,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				int count = capacity;
 				while(count > 0)
 				{
-					if(table[hash].key == null)
+					if(table[hash].key == null || table[hash].key == removed)
 					{
 						// We've found an empty slot.  Check the capacity.
 						if(num >= capacityLimit)
@@ -663,7 +664,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					}
 					else if(KeyEquals(table[hash].key, key))
 					{
-						table[hash].key = null;
+						table[hash].key = removed;
 						table[hash].value = null;
 						--num;
 						++generation;
@@ -727,26 +728,13 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					}
 					hash = (int)(((uint)hash) % ((uint)capacity));
 					int count = capacity;
+					int removed_hash = -1;
 					while(count > 0)
 					{
-						if(table[hash].key == null)
-						{
-							// We've found an empty slot.  Check the capacity.
-							if(num >= capacityLimit)
-							{
-								// We must increase the capacity before adding.
-								ExpandAndAdd(key, value);
-							}
-							else
-							{
-								// Add the entry to the empty slot.
-								table[hash].key = key;
-								table[hash].value = value;
-								++num;
-								++generation;
-							}
-							return;
-						}
+						if(table[hash].key == removed && removed_hash == -1)
+							removed_hash = hash;
+						else if(table[hash].key == null)
+							break;
 						else if(KeyEquals(table[hash].key, key))
 						{
 							// There is already an entry with the key,
@@ -758,7 +746,26 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 						hash = (hash + 1) % capacity;
 						--count;
 					}
-					ExpandAndAdd(key, value);
+					// The key wan't in the table.  Add it.
+					//
+					// This code assums the invariant:
+					//     capacity >= capacityLimit
+					// always holds true.
+					if(num >= capacityLimit)
+					{
+						// We must increase the capacity before adding.
+						ExpandAndAdd(key, value);
+					}
+					else
+					{
+						// Add the entry to the empty slot.
+						if (removed_hash != -1)
+							hash = removed_hash;
+						table[hash].key = key;
+						table[hash].value = value;
+						++num;
+						++generation;
+					}
 				}
 			}
 	public virtual ICollection Keys
@@ -814,7 +821,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				int posn;
 				for(posn = capacity - 1; posn >= 0; --posn)
 				{
-					if(table[posn].key != null &&
+					if(table[posn].key != null && table[posn].key != removed &&
 					   table[posn].value == value)
 					{
 						return true;
@@ -1293,7 +1300,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					}
 					while(++posn < table.capacity)
 					{
-						if(table.table[posn].key != null)
+						if(table.table[posn].key != null && table.table[posn].key != removed)
 						{
 							return true;
 						}

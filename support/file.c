@@ -156,8 +156,21 @@ ILSysIOHandle ILSysIOOpenFile(const char *path, ILUInt32 mode,
 						      ILUInt32 access, ILUInt32 share)
 {
 	int result;
-	int newAccess = (((access & ILFileAccess_Read) ? O_RDONLY : 0) |
-	                 ((access & ILFileAccess_Write) ? O_WRONLY : 0));
+	int newAccess;
+
+	switch(access)
+	{
+		case ILFileAccess_Read:			newAccess = O_RDONLY; break;
+		case ILFileAccess_Write:		newAccess = O_WRONLY; break;
+		case ILFileAccess_ReadWrite:	newAccess = O_RDWR; break;
+
+		default:
+		{
+			errno = EACCES;
+			return (ILSysIOHandle)(ILNativeInt)(-1);
+		}
+		/* Not reached */
+	}
 
 	switch(mode)
 	{

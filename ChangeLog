@@ -1,4 +1,9 @@
 
+2002-09-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/file.c (ILSysIOOpen): bug in the conversion of
+	file access modes from C#-style to POSIX-style.
+
 2002-09-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_coerce.h, codegen/cg_optable.c, cscc/csharp/cs_oper.tc:

@@ -67,6 +67,24 @@ static void OutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 	}
 }
 
+/*
+ * Determine if a class has no instance fields.
+ */
+static int ClassIsEmpty(ILClass *classInfo)
+{
+	ILField *field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)field,
+					 IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(!ILField_IsStatic(field))
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
 %}
 
 /*
@@ -168,9 +186,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 						(unsigned long)(ILClassLayout_PackingSize(layout)));
 			}
 		}
-		else if(!ILClassNextMemberByKind
-					(classInfo, 0, IL_META_MEMBERKIND_FIELD) &&
-			    ILClassIsValueType(classInfo))
+		else if(ClassIsEmpty(classInfo) && ILClassIsValueType(classInfo))
 		{
 			/* Make sure that "struct"'s are never zero-sized */
 			fprintf(info->asmOutput, ".size 1\n");

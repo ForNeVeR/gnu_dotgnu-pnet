@@ -287,6 +287,22 @@ void ILGenMakeLibrary(ILGenInfo *info)
 		ILGenOutOfMemory(info);
 	}
 
+	/* Add the "==" and "!=" operators to the "System.String" class */
+	if(!AddMethod(stringClass, "op_Equality",
+				  ILType_Boolean, ILType_FromClass(stringClass),
+				  ILType_FromClass(stringClass),
+				  IL_META_METHODDEF_STATIC | IL_META_METHODDEF_SPECIAL_NAME))
+	{
+		ILGenOutOfMemory(info);
+	}
+	if(!AddMethod(stringClass, "op_Inequality",
+				  ILType_Boolean, ILType_FromClass(stringClass),
+				  ILType_FromClass(stringClass),
+				  IL_META_METHODDEF_STATIC | IL_META_METHODDEF_SPECIAL_NAME))
+	{
+		ILGenOutOfMemory(info);
+	}
+
 	/* Create the "System.ValueType" class */
 	ABORT_IF(valueTypeClass,
 			 ILClassCreate(scope, 0, "ValueType", "System", objectClass));

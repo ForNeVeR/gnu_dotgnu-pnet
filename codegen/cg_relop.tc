@@ -30,12 +30,8 @@ static ILMachineType Relational_CommonType(ILGenInfo *info,
 										   ILMachineType type1,
 										   ILMachineType type2)
 {
-	if(type1 == ILMachineType_String || type2 == ILMachineType_String)
-	{
-		return ILMachineType_String;
-	}
-	else if(type1 == ILMachineType_ObjectRef ||
-			type2 == ILMachineType_ObjectRef)
+	if(type1 == ILMachineType_ObjectRef || type2 == ILMachineType_ObjectRef ||
+	   type1 == ILMachineType_String || type2 == ILMachineType_String)
 	{
 		return ILMachineType_ObjectRef;
 	}

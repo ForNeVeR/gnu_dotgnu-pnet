@@ -426,6 +426,7 @@ ILNode_GenValue(ILNode_UserBinaryOp)
 
 	/* Call the operator */
 	ILGenCallByMethod(info, node->method);
+	ILGenAdjust(info, -1);
 	return node->machineType;
 }
 

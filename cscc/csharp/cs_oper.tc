@@ -1426,17 +1426,11 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		return value1;
 	}
 
-	/* If both of the arguments are strings, or one is a string
-	   and the other is null, then the code generator knows how
-	   to handle the operation */
+	/* If one of the arguments is a string and the other is null,
+	   then the code generator knows how to handle the operation */
 	if(ILTypeIsStringClass(CSSemGetType(value1)))
 	{
-		if(ILTypeIsStringClass(CSSemGetType(value2)))
-		{
-			CSSemSetRValue(value1, ILType_Boolean);
-			return value1;
-		}
-		else if(CSSemGetType(value2) == ILType_Null)
+		if(CSSemGetType(value2) == ILType_Null)
 		{
 			if(table == ILOp_Eq)
 			{

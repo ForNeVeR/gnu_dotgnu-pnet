@@ -281,11 +281,17 @@ JavaGenValue(ILNode_Not)
  */
 JavaGenValue(ILNode_UserUnaryOp)
 {
+	ILMachineType type;
+
 	/* Generate code to compute the value of the argument */
-	JavaGenValue(node->expr, info);
+	type = JavaGenValue(node->expr, info);
 
 	/* Call the operator */
 	JavaGenCallByMethod(info, node->method);
+
+	/* Adjust the stack height and return */
+	JavaGenAdjust(info, -(JavaGenTypeSize(type)));
+	JavaGenAdjust(info, JavaGenTypeSize(node->machineType));
 	return node->machineType;
 }
 
@@ -294,12 +300,19 @@ JavaGenValue(ILNode_UserUnaryOp)
  */
 JavaGenValue(ILNode_UserBinaryOp)
 {
+	ILMachineType type1;
+	ILMachineType type2;
+
 	/* Generate code to compute the value of the arguments */
-	JavaGenValue(node->expr1, info);
-	JavaGenValue(node->expr2, info);
+	type1 = JavaGenValue(node->expr1, info);
+	type2 = JavaGenValue(node->expr2, info);
 
 	/* Call the operator */
 	JavaGenCallByMethod(info, node->method);
+
+	/* Adjust the stack height and return */
+	JavaGenAdjust(info, -(JavaGenTypeSize(type1) + JavaGenTypeSize(type2)));
+	JavaGenAdjust(info, JavaGenTypeSize(node->machineType));
 	return node->machineType;
 }
 

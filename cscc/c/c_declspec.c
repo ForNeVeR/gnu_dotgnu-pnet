@@ -679,6 +679,7 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_NATIVE, "__native__");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_THREAD_SPECIFIC,
 					"__thread_specific__");
+	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_BOX, "__box");
 
 	/* Copy the common type qualifiers to "result.specifiers" */
 	result.specifiers |= (spec.specifiers & C_SPEC_TYPE_COMMON);
@@ -777,6 +778,26 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 	else
 	{
 		result.baseType = spec.baseType;
+	}
+
+	/* If "__box" is present, then convert value types into reference types */
+	if((spec.specifiers & C_SPEC_BOX) != 0)
+	{
+		if(ILTypeIsValue(result.baseType))
+		{
+			ILClass *classInfo = ILTypeToClass(&CCCodeGen, result.baseType);
+			if(!classInfo)
+			{
+				CCOutOfMemory();
+			}
+			result.baseType = ILType_FromClass(classInfo);
+		}
+		else
+		{
+			ReportError(node, name,
+						_("cannot use `__box' in declaration of `%s'"),
+						_("cannot use `__box' in declaration"));
+		}
 	}
 
 	/* Print pending errors that were detected by "CDeclSpecCombine" */

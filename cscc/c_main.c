@@ -60,7 +60,7 @@ int CCPluginInit(void)
 		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 						"__WORDSIZE=64");
 		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-						"__PTRDIFF_TYPE__=__long_long__");
+						"__PTRDIFF_TYPE__=__int64");
 	}
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__SIZE_TYPE__=__unsigned_int__");

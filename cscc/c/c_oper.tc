@@ -2726,3 +2726,68 @@ JavaGenValue(ILNode_CTypeExpression)
 	/* Should never be called */
 	return ILMachineType_Void;
 }
+
+/*
+ * Perform semantic analysis for a "__box" expression.
+ */
+ILNode_CSemAnalysis(ILNode_CBox)
+{
+	CSemValue value;
+	ILType *objectType;
+	ILClass *classInfo;
+
+	/* Perform semantic analysis on the sub-expression */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsRValue(value))
+	{
+		if(!CSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("invalid operator to `__box' operator"));
+		}
+		return CSemValueError;
+	}
+
+	/* If the value is already a reference type, then leave it as-is */
+	if(ILTypeIsReference(CSemGetType(value)))
+	{
+		*parent = node->expr;
+		CSemLToRValue(value);
+		return value;
+	}
+
+	/* Determine if we have a boxing conversion */
+	objectType = ILFindSystemType(info, "Object");
+	if(!ILCanCoerceKind(info, CSemGetType(value), objectType,
+						IL_CONVERT_BOXING, 0))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("cannot box values of type `%s'"),
+					  CTypeToName(info, CSemGetType(value)));
+		return CSemValueError;
+	}
+
+	/* Perform the coercion */
+	ILCoerceKind(info, node->expr, &(node->expr), CSemGetType(value),
+				 objectType, IL_CONVERT_BOXING, 0);
+
+	/* Set the return type to the reference form of the value's type */
+	classInfo = ILTypeToClass(info, CSemGetType(value));
+	if(!classInfo)
+	{
+		CCOutOfMemory();
+	}
+	*parent = node->expr;
+	CSemSetRValue(value, ILType_FromClass(classInfo));
+	return value;
+}
+
+/*
+ * Stub out the code generation functions for "__box", which we don't need.
+ */
+ILNode_GetType(ILNode_CBox),
+ILNode_GenValue(ILNode_CBox),
+JavaGenValue(ILNode_CBox)
+{
+	return ILMachineType_ObjectRef;
+}

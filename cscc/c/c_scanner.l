@@ -162,13 +162,11 @@ WHITE			[ \t\v\r\f]
 "_Bool"					{ RETURNTOK(K_BOOL); }
 "__wchar__"				{ RETURNTOK(K_WCHAR); }
 "__native__"			{ RETURNTOK(K_NATIVE); }
+"__unsigned_int__"		{ RETURNTOK(K_UINT); }
 
 "__FUNCTION__"			{ RETURNTOK(K_FUNCTION); }
 "__PRETTY_FUNCTION__"	{ RETURNTOK(K_FUNCTION); }
 "__func__"				{ RETURNTOK(K_FUNC); }
-
-"__long_long__"			{ RETURNTOK(K_LONG_LONG); }
-"__unsigned_int__"		{ RETURNTOK(K_UINT); }
 
 "__thread_specific__"	{ RETURNTOK(K_THREAD_SPECIFIC); }
 
@@ -188,6 +186,7 @@ WHITE			[ \t\v\r\f]
 "__typeof"				{ RETURNTOK(K_CS_TYPEOF); /* Managed C++ compat */ }
 "__int64"				{ RETURNTOK(K_LONG_LONG); }
 "__finally"				{ RETURNTOK(K_FINALLY); }
+"__box"					{ RETURNTOK(K_BOX); }
 
 \"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
 								  RETURNTOK(STRING_LITERAL); }

@@ -1130,6 +1130,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_USING			"`__using__'"
 %token K_NAMESPACE		"`__namespace__'"
 %token K_CS_TYPEOF		"`__typeof'"
+%token K_BOX			"`__box'"
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -1188,7 +1189,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 
 %type <kind>		StructOrUnion TypeQualifierList TypeQualifier
 
-%expect 13
+%expect 18
 
 %start File
 %%
@@ -1529,6 +1530,9 @@ UnaryExpression
 	| K_CS_TYPEOF '(' TypeName ')'	{
 				$$ = ILNode_CSharpTypeOf_create($3);
 			}
+	| K_BOX '(' Expression ')'	{
+				$$ = ILNode_CBox_create($3);
+			}
 	;
 
 CastExpression
@@ -1855,6 +1859,7 @@ TypeSpecifier
 	| K_DOUBLE			{ CDeclSpecSetType($$, ILType_Float64); }
 	| K_CONST			{ CDeclSpecSet($$, C_SPEC_CONST); }
 	| K_VOLATILE		{ CDeclSpecSet($$, C_SPEC_VOLATILE); }
+	| K_BOX				{ CDeclSpecSet($$, C_SPEC_BOX); }
 	| K_VOID			{ CDeclSpecSetType($$, ILType_Void); }
 	| K_BOOL			{ CDeclSpecSetType($$, ILType_Boolean); }
 	| K_WCHAR			{ CDeclSpecSetType($$, ILType_Char); }

@@ -48,6 +48,7 @@ extern	"C" {
 #define	C_SPEC_INVALID_COMBO	(1<<17)
 #define	C_SPEC_ENUM				(1<<18)
 #define C_SPEC_THREAD_SPECIFIC	(1<<19)
+#define C_SPEC_BOX				(1<<20)
 
 /*
  * Useful specifier combinations.
@@ -63,6 +64,7 @@ extern	"C" {
 #define	C_SPEC_TYPE_COMMON		\
 			(C_SPEC_CONST | \
 			 C_SPEC_VOLATILE | \
+			 C_SPEC_BOX | \
 			 C_SPEC_ENUM)
 #define	C_SPEC_TYPE_CHANGE		\
 			(C_SPEC_SHORT | \

@@ -4,6 +4,12 @@
 	* cscc/c/c_lexutils.c, cscc/c/c_lexutils.h, cscc/c/c_scanner.l:
 	add support for the "#using" directive to the C compiler.
 
+	* cscc/c_main.c, cscc/c/c_coerce.c, cscc/c/c_declspec.c,
+	cscc/c/c_declspec.h, cscc/c/c_defs.tc, cscc/c/c_grammar.y,
+	cscc/c/c_lexutils.c, cscc/c/c_oper.tc, cscc/c/c_scanner.l:
+	add the "__box" keyword for Managed C++ compatibility;
+	remove the "__long_long__" keyword and replace it with "__int64".
+
 2004-02-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_scope.c, codegen/cg_scope.h, cscc/c/c_grammar.y,

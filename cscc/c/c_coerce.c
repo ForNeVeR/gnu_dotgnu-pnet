@@ -44,10 +44,13 @@ extern	"C" {
  * C# conversion rules that we can use within C.  Basically, everything
  * except numeric and user-defined.
  */
-#define	IL_CONVERT_C_RULES	(IL_CONVERT_ENUM | \
-							 IL_CONVERT_REFERENCE | \
-							 IL_CONVERT_BOXING | \
-							 IL_CONVERT_CONSTANT)
+#define	IL_CONVERT_C_RULES_IMPLICIT	(IL_CONVERT_ENUM | \
+							 		 IL_CONVERT_REFERENCE | \
+							 		 IL_CONVERT_CONSTANT)
+#define	IL_CONVERT_C_RULES_EXPLICIT	(IL_CONVERT_ENUM | \
+							 		 IL_CONVERT_REFERENCE | \
+							 		 IL_CONVERT_UNBOXING | \
+							 		 IL_CONVERT_CONSTANT)
 
 /*
  * Determine if a primitive type is numeric or boolean.
@@ -371,11 +374,13 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 	}
 
 	/* Determine if we can perform a C# type coercion */
-	if(ILCanCoerceKind(&CCCodeGen, fromType, toType, IL_CONVERT_C_RULES, 0))
+	if(ILCanCoerceKind(&CCCodeGen, fromType, toType,
+					   IL_CONVERT_C_RULES_IMPLICIT, 0))
 	{
 		return C_COERCE_CSHARP;
 	}
-	if(ILCanCastKind(&CCCodeGen, fromType, toType, IL_CONVERT_C_RULES, 0))
+	if(ILCanCastKind(&CCCodeGen, fromType, toType,
+					 IL_CONVERT_C_RULES_EXPLICIT, 0))
 	{
 		return C_COERCE_CSHARP_EXPLICIT;
 	}
@@ -452,14 +457,14 @@ static CSemValue ApplyCoercion(ILGenInfo *info, ILNode *node, ILNode **parent,
 			return fromValue;
 		}
 		ILCoerceKind(info, node, parent, CSemGetType(fromValue), toType,
-				     IL_CONVERT_C_RULES, 0);
+				     IL_CONVERT_C_RULES_IMPLICIT, 0);
 		CSemSetRValue(fromValue, toType);
 		return fromValue;
 	}
 	if(rules == C_COERCE_CSHARP_EXPLICIT)
 	{
 		ILCastKind(info, node, parent, CSemGetType(fromValue), toType,
-			       IL_CONVERT_C_RULES, 0);
+			       IL_CONVERT_C_RULES_EXPLICIT, 0);
 		CSemSetRValue(fromValue, toType);
 		return fromValue;
 	}

@@ -112,6 +112,7 @@ static void InferIntType(const char *text, CLexIntConst *value)
 	int numl, numu;
 
 	/* Infer a default type for the value */
+#if 0
 	if(value->value <= (ILUInt64)127)
 	{
 		value->type = ILMachineType_Int8;
@@ -128,7 +129,8 @@ static void InferIntType(const char *text, CLexIntConst *value)
 	{
 		value->type = ILMachineType_UInt16;
 	}
-	else if(value->value <= (ILUInt64)(ILInt64)IL_MAX_INT32)
+#endif
+	if(value->value <= (ILUInt64)(ILInt64)IL_MAX_INT32)
 	{
 		value->type = ILMachineType_Int32;
 	}

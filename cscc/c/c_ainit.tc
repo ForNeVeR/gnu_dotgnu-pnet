@@ -115,14 +115,9 @@ static int SkipStructInitializer(ILNode_ListIter *iter, ILType *type)
  */
 static int SkipInitializer(ILNode_ListIter *iter, ILType *type)
 {
-	if(CTypeIsStruct(type))
+	if(CTypeIsStruct(type) || CTypeIsUnion(type))
 	{
 		return SkipStructInitializer(iter, type);
-	}
-	else if(CTypeIsUnion(type))
-	{
-		/* Cannot use "union" types within array initializers */
-		return 0;
 	}
 	else if(CTypeIsArray(type))
 	{
@@ -239,9 +234,9 @@ static void InitializerSemAnalysis(ILGenInfo *info, ILType *type,
 			}
 		}
 	}
-	else if(CTypeIsStruct(type))
+	else if(CTypeIsStruct(type) || CTypeIsUnion(type))
 	{
-		/* Assign to the fields of a structure */
+		/* Assign to the fields of a structure or union */
 		classInfo = ILType_ToValueType(ILTypeStripPrefixes(type));
 		field = 0;
 		while((field = (ILField *)ILClassNextMemberByKind
@@ -258,11 +253,6 @@ static void InitializerSemAnalysis(ILGenInfo *info, ILType *type,
 			}
 			node = IterLookAhead(iter);
 		}
-	}
-	else if(CTypeIsUnion(type))
-	{
-		CCErrorOnLine(yygetfilename(init), yygetlinenum(init),
-					  _("union initializers are not supported"));
 	}
 	else
 	{
@@ -467,8 +457,8 @@ ILNode_CSemAnalysis(ILNode_CAssignStruct)
 	}
 	node->type = CSemGetType(value1);
 
-	/* We must have a structure type at this point */
-	if(!CTypeIsStruct(node->type))
+	/* We must have a structure or union type at this point */
+	if(!CTypeIsStruct(node->type) && !CTypeIsUnion(node->type))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  _("lvalue is not a structure"));
@@ -646,7 +636,7 @@ static void WriteInitializer(ILGenInfo *info, ILType *type,
 			}
 		}
 	}
-	else if(CTypeIsStruct(type))
+	else if(CTypeIsStruct(type) || CTypeIsUnion(type))
 	{
 		/* Write the elements of a structure */
 		if(field)

@@ -12,6 +12,9 @@
 	* cscc/c/c_oper.tc (ILNode_Conditional): handle function pointers
 	as arguments to "?:".
 
+	* cscc/c/c_ainit.tc, cscc/c/c_grammar.y: treat "union" initializers
+	the same as "struct" initializers.
+
 2007-07-03  Thong Nguyen  <tum@veridicus.com>
 
 	* support/hb_gc.c: ILGCDeinit now performs a garbage collection

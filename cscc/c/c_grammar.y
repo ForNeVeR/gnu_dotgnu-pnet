@@ -304,7 +304,7 @@ static ILNode *BuildAssignInit(ILNode *var, ILNode *init, ILType *type)
 		{
 			stmt = ILNode_CAssignArray_create(var, init);
 		}
-		else if(CTypeIsStruct(type))
+		else if(CTypeIsStruct(type) || CTypeIsUnion(type))
 		{
 			stmt = ILNode_CAssignStruct_create(var, init);
 		}

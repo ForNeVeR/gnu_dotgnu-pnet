@@ -24,8 +24,11 @@
 ILNode_SemAnalysis(ILNode_ClassDefn)
 {
 	CSSemValue value;
+	ILNode *savedClass;
 	if(node->body)
 	{
+		savedClass = info->currentClass;
+		info->currentClass = (ILNode *)node;
 		if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 		{
 			CSUnsafeEnter(info, (ILNode *)node, "unsafe class declaration");
@@ -35,6 +38,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		{
 			CSUnsafeLeave(info);
 		}
+		info->currentClass = savedClass;
 		return value;
 	}
 	else
@@ -119,30 +123,6 @@ ILNode_SemAnalysis(ILNode_ConstDeclarator)
 }
 
 /*
- * Perform semantic analysis for local variable declaration.
- */
-ILNode_SemAnalysis(ILNode_VarDeclaration)
-{
-	CSSemValue value, valueChild;
-	ILNode_ListIter iter;
-	ILNode *child;
-
-	/* FIXME: optional attributes ? */
-	/* modifier already done in parser */
-	value = ILNode_SemAnalysis(node->type, info, &(node->type));
-	ILNode_ListIter_Init(&iter, node->varDeclarators);
-	while ((child = ILNode_ListIter_Next(&iter)) != 0)
-	{
-		valueChild = ILNode_SemAnalysis(child, info, &(child));
-		/*
-		 * FIXME: need to verify that the optional initializers 
-		 * of the fields are consistent with the type declaration
-		 */
-	}
-	return value;
-}
-
-/*
  * Perform semantic analysis for field declaration.
  */
 ILNode_SemAnalysis(ILNode_FieldDeclaration)
@@ -171,22 +151,10 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 	return CSSemValueDefault;
 }
 
-ILNode_SemAnalysis(ILNode_VarDeclarator)
+ILNode_SemAnalysis(ILNode_FieldDeclarator)
 {
-	/* name is guaranteed to be an identifier by the parser */
-	/* TODO: check that the name hasn't been declared previously */
-
-	if (node->initializer)
-	{
-		return ILNode_SemAnalysis(node->initializer, info, &(node->initializer));
-	}
-	else
-	{
-		CSSemValue value;
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILType_Int32;
-		return value;
-	}
+	/* Place-holder only: the real processing is done elsewhere */
+	return CSSemValueDefault;
 }
 
 ILNode_SemAnalysis(ILNode_EventFieldDeclaration)
@@ -264,6 +232,12 @@ ILNode_SemAnalysis(ILNode_EventPropertyDeclaration)
 
 ILNode_SemAnalysis(ILNode_MethodDeclaration)
 {
+	ILNode *savedMethod;
+
+	/* Record the current method that we are in */
+	savedMethod = info->currentMethod;
+	info->currentMethod = (ILNode *)node;
+
 	/* Enter an unsafe context for the method if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
@@ -296,6 +270,9 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	{
 		CSUnsafeLeave(info);
 	}
+
+	/* Return to the previous method level */
+	info->currentMethod = savedMethod;
 
 	/* Methods don't really have a semantic value, so return the default */
 	return CSSemValueDefault;

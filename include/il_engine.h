@@ -159,10 +159,16 @@ ILMethod *ILExecThreadStackMethod(ILExecThread *thread, unsigned long num);
 ILUInt32 ILSizeOfType(ILType *type);
 
 /*
+ * Look up a class name within a particular thread's context.
+ * Returns NULL if the name could not be found.
+ */
+ILClass *ILExecThreadLookupClass(ILExecThread *thread, const char *className);
+
+/*
  * Look up a type name within a particular thread's context.
  * Returns NULL if the name could not be found.
  */
-ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName);
+ILType *ILExecThreadLookupType(ILExecThread *thread, const char *typeName);
 
 /*
  * Look up a method by type name, method name, and signature.

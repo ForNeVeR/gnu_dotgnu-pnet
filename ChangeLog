@@ -10,6 +10,10 @@ references for the same label properly.
 * include/il_engine.h, engine/lib_array.c: "ILExecThreadGetElem" and
 "ILExecThreadSetElem".
 
+* include/il_engine.h, engine/lookup.c, engine/lib_type.c: rename
+"ILExecThreadLookupType" to "ILExecThreadLookupClass", and then implement
+a new "ILExecThreadLookupType" that returns "ILType" instead of "ILClass".
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

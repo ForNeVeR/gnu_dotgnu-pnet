@@ -583,7 +583,7 @@ static ILInt32 System_RuntimeType_InternalIsContextful(ILExecThread *thread,
 											           ILObject *_this)
 {
 	ILClass *classInfo;
-	classInfo = ILExecThreadLookupType(thread, "System.ContextBoundObject");
+	classInfo = ILExecThreadLookupClass(thread, "System.ContextBoundObject");
 	if(classInfo)
 	{
 		return ILClassInheritsFrom(GetObjectClass(_this), classInfo);
@@ -601,7 +601,7 @@ static ILInt32 System_RuntimeType_InternalIsMarshalByRef(ILExecThread *thread,
 											             ILObject *_this)
 {
 	ILClass *classInfo;
-	classInfo = ILExecThreadLookupType(thread, "System.MarshalByRefObject");
+	classInfo = ILExecThreadLookupClass(thread, "System.MarshalByRefObject");
 	if(classInfo)
 	{
 		return ILClassInheritsFrom(GetObjectClass(_this), classInfo);

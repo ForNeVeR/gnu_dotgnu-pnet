@@ -52,6 +52,7 @@ Signatures are specified using the following characters:
 	oname;		object reference called "name"
 	[type		array of "type"
 	{n,type		n-dimensional array of "type"
+	%(parms)ret	method pointer type
 	T			"this" parameter, indicating an instance method
 
 An example of a signature:
@@ -70,7 +71,11 @@ An example of a signature:
 extern	"C" {
 #endif
 
-ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
+/*
+ * Look up a class name that is length-specified.
+ */
+static ILClass *LookupClass(ILExecThread *thread, const char *className,
+							int classNameLen)
 {
 	int len, dot;
 	const char *name;
@@ -80,18 +85,12 @@ ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 	ILClass *classInfo;
 	ILImage *image;
 
-	/* Sanity-check the arguments */
-	if(!thread || !typeName)
-	{
-		return 0;
-	}
-
 	/* Get the name of the global type */
 	len = 0;
 	dot = -1;
-	while(typeName[len] != '\0' && typeName[len] != '/')
+	while(len < classNameLen && className[len] != '/')
 	{
-		if(typeName[len] == '.')
+		if(className[len] == '.')
 		{
 			dot = len;
 		}
@@ -101,14 +100,14 @@ ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 	/* Break the global type into namespace and name components */
 	if(dot != -1)
 	{
-		name = typeName + dot + 1;
+		name = className + dot + 1;
 		nameLen = len - dot - 1;
-		namespace = typeName;
+		namespace = className;
 		namespaceLen = dot;
 	}
 	else
 	{
-		name = typeName;
+		name = className;
 		nameLen = len;
 		namespace = 0;
 		namespaceLen = 0;
@@ -136,15 +135,15 @@ ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 	}
 
 	/* Resolve nested type names */
-	while(classInfo != 0 && typeName[len] == '/')
+	while(classInfo != 0 && len < classNameLen && className[len] == '/')
 	{
 		++len;
 		dot = len;
-		while(typeName[len] != '\0' && typeName[len] != '/')
+		while(len < classNameLen && className[len] != '/')
 		{
 			++len;
 		}
-		name = typeName + dot;
+		name = className + dot;
 		nameLen = len - dot;
 		classInfo = ILClassLookupLen(ILToProgramItem(classInfo),
 									 name, nameLen, 0, 0);
@@ -161,6 +160,170 @@ ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 
 	/* Return the final class structure to the caller */
 	return classInfo;
+}
+
+ILClass *ILExecThreadLookupClass(ILExecThread *thread, const char *className)
+{
+	ILType *type;
+
+	/* Sanity-check the arguments */
+	if(!thread || !className)
+	{
+		return 0;
+	}
+
+	/* If the class name begins with a type modifier,
+	   then we need to look for a synthetic class */
+	if(*className == '[' || *className == '{' ||
+	   *className == '&' || *className == '*' ||
+	   *className == ':')
+	{
+		type = ILExecThreadLookupType
+				  (thread, (*className != ':' ? className : (className + 1)));
+		if(type == ILType_Invalid)
+		{
+			return 0;
+		}
+		return ILClassFromType(ILContextNextImage(thread->process->context, 0),
+							   0, type, 0);
+	}
+
+	/* Look up the class */
+	return LookupClass(thread, className, strlen(className));
+}
+
+ILType *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
+{
+	int len;
+	ILClass *classInfo;
+	ILType *type;
+
+	/* Sanity-check the arguments */
+	if(!thread || !typeName)
+	{
+		return ILType_Invalid;
+	}
+
+	/* Determine how to parse the type */
+	switch(*typeName++)
+	{
+		case 'V':		return ILType_Void;
+		case 'Z':		return ILType_Boolean;
+		case 'b':		return ILType_Int8;
+		case 'B':		return ILType_UInt8;
+		case 's':		return ILType_Int16;
+		case 'S':		return ILType_UInt16;
+		case 'c':		return ILType_Char;
+		case 'i':		return ILType_Int32;
+		case 'I':		return ILType_UInt32;
+		case 'j':		return ILType_Int;
+		case 'J':		return ILType_UInt;
+		case 'l':		return ILType_Int64;
+		case 'L':		return ILType_UInt64;
+		case 'f':		return ILType_Float32;
+		case 'd':		return ILType_Float64;
+		case 'D':		return ILType_Float;
+		case 'r':		return ILType_TypedRef;
+
+		case '&':
+		{
+			/* Recognise a reference type */
+			type = ILExecThreadLookupType(thread, typeName);
+			if(type != ILType_Invalid)
+			{
+				return ILTypeCreateRef(thread->process->context,
+									   IL_TYPE_COMPLEX_BYREF, type);
+			}
+		}
+		break;
+
+		case '*':
+		{
+			/* Recognise a pointer type */
+			type = ILExecThreadLookupType(thread, typeName);
+			if(type != ILType_Invalid)
+			{
+				return ILTypeCreateRef(thread->process->context,
+									   IL_TYPE_COMPLEX_PTR, type);
+			}
+		}
+		break;
+
+		case 'v':
+		{
+			/* Recognise a named value type */
+			len = 0;
+			while(typeName[len] != '\0' && typeName[len] != ';')
+			{
+				++len;
+			}
+			classInfo = LookupClass(thread, typeName, len);
+			if(classInfo)
+			{
+				return ILType_FromValueType(classInfo);
+			}
+		}
+		break;
+
+		case 'o':
+		{
+			/* Recognise a named object reference type */
+			len = 0;
+			while(typeName[len] != '\0' && typeName[len] != ';')
+			{
+				++len;
+			}
+			classInfo = LookupClass(thread, typeName, len);
+			if(classInfo)
+			{
+				return ILType_FromClass(classInfo);
+			}
+		}
+		break;
+
+		case '[':
+		{
+			/* Recognise a single-dimensional array type */
+			type = ILExecThreadLookupType(thread, typeName);
+			if(type != ILType_Invalid)
+			{
+				return ILTypeCreateArray(thread->process->context, 1, type);
+			}
+		}
+		break;
+
+		case '{':
+		{
+			/* Recognise a multi-dimensional array type */
+			len = 0;
+			while(*typeName >= '0' && *typeName <= '9')
+			{
+				len = len * 10 + (*typeName - '0');
+			}
+			if(*typeName != ',' || len <= 0)
+			{
+				return ILType_Invalid;
+			}
+			type = ILExecThreadLookupType(thread, typeName + 1);
+			if(type != ILType_Invalid)
+			{
+				return ILTypeCreateArray(thread->process->context, len, type);
+			}
+		}
+		break;
+
+		case '%':
+		{
+			/* Recognise a method pointer type */
+			/* TODO */
+		}
+		break;
+
+		default: break;
+	}
+
+	/* If we get here, we have no idea what the type is */
+	return ILType_Invalid;
 }
 
 /*
@@ -463,6 +626,16 @@ static int MatchTypeName(ILType *type, const char *name)
 				return len + rank;
 			}
 		}
+		else if((type->kind & IL_TYPE_COMPLEX_METHOD) != 0)
+		{
+			/* Match a method pointer type */
+			if(*name != '%')
+			{
+				return 0;
+			}
+			/* TODO */
+			return 0;
+		}
 		else
 		{
 			/* Don't know how to match this type */
@@ -531,7 +704,7 @@ ILMethod *ILExecThreadLookupMethod(ILExecThread *thread,
 	}
 
 	/* Look up the type */
-	classInfo = ILExecThreadLookupType(thread, typeName);
+	classInfo = ILExecThreadLookupClass(thread, typeName);
 
 	/* Resolve the method within the type or any of its ancestors */
 	while(classInfo != 0)
@@ -591,7 +764,7 @@ ILField *ILExecThreadLookupField(ILExecThread *thread,
 	}
 
 	/* Look up the type */
-	classInfo = ILExecThreadLookupType(thread, typeName);
+	classInfo = ILExecThreadLookupClass(thread, typeName);
 
 	/* Resolve the field within the type or any of its ancestors */
 	while(classInfo != 0)

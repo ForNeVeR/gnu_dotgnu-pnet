@@ -101,6 +101,7 @@ public abstract class TreeBase<KeyT, ValueT>
 				{
 					y.right.parent = x;
 				}
+				y.parent = x.parent;
 				if(x == root)
 				{
 					root = y;
@@ -339,7 +340,7 @@ public abstract class TreeBase<KeyT, ValueT>
 							w.red = false;
 							x_parent.red = true;
 							RotateRight(x_parent);
-							x = x_parent.left;
+							w = x_parent.left;
 						}
 						if((w.right == null || !(w.right.red)) &&
 						   (w.left == null || !(w.left.red)))

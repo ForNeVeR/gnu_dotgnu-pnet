@@ -36,6 +36,11 @@
 	* cscc/cs_preproc.c (ParsePrimaryExpression): bug fix - (E) should
 	be applied to "or expressions", not "equality expressions".
 
+	* cscc/cs_preproc.c (RefillLineBuffer): don't process directives
+	if they are in a suppressed #if block; fix the display of error
+	and warning messages so we don't get "error: error" and
+	"warning: warning".
+
 2001-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_cast.tc, cscc/cs_lvalue.tc, cscc/cs_oper.tc,

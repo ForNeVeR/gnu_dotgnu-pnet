@@ -631,6 +631,15 @@ static char *DirectiveName(char *line)
 			  (dirname)[(len)] == '\v' || (dirname)[(len)] == CTRL_Z))
 
 /*
+ * Determine if the current line is active according to
+ * the current #if context.
+ */
+#define	LINE_IS_ACTIVE()	\
+			(!(preproc->currentScope) || \
+			   (preproc->currentScope->active && \
+			    preproc->currentScope->ancestor))
+
+/*
  * Report an error or warning message for a specific line.
  */
 static void Message(CSPreProcLine *line, const char *msg1, const char *msg2)
@@ -1078,23 +1087,29 @@ static int RefillLineBuffer(CSPreProc *preproc)
 			if(MATCH_DIRECTIVE(dirname, "define", 6))
 			{
 				/* Define a symbol */
-				dirname += 6;
-				symbol = ParseIdentifier(preproc, &(lines[line]), &dirname);
-				if(symbol)
+				if(LINE_IS_ACTIVE())
 				{
-					CheckAtEnd(preproc, &(lines[line]), &dirname);
-					CSPreProcDefine(preproc, symbol);
+					dirname += 6;
+					symbol = ParseIdentifier(preproc, &(lines[line]), &dirname);
+					if(symbol)
+					{
+						CheckAtEnd(preproc, &(lines[line]), &dirname);
+						CSPreProcDefine(preproc, symbol);
+					}
 				}
 			}
 			else if(MATCH_DIRECTIVE(dirname, "undef", 5))
 			{
 				/* Undefine a symbol */
-				dirname += 5;
-				symbol = ParseIdentifier(preproc, &(lines[line]), &dirname);
-				if(symbol)
+				if(LINE_IS_ACTIVE())
 				{
-					CheckAtEnd(preproc, &(lines[line]), &dirname);
-					CSPreProcUndefine(preproc, symbol);
+					dirname += 5;
+					symbol = ParseIdentifier(preproc, &(lines[line]), &dirname);
+					if(symbol)
+					{
+						CheckAtEnd(preproc, &(lines[line]), &dirname);
+						CSPreProcUndefine(preproc, symbol);
+					}
 				}
 			}
 			else if(MATCH_DIRECTIVE(dirname, "if", 2))
@@ -1206,28 +1221,38 @@ static int RefillLineBuffer(CSPreProc *preproc)
 			}
 			else if(MATCH_DIRECTIVE(dirname, "error", 5))
 			{
-				/* Emit a compiler error */
-				preproc->buffer[lines[line].posn + lines[line].len - 1] = '\0';
-				while(*dirname == ' ' || *dirname == '\t' ||
-				      *dirname == '\f' || *dirname == '\v' ||
-					  *dirname == CTRL_Z)
+				/* Emit a compiler error if this #if scope is active */
+				if(LINE_IS_ACTIVE())
 				{
-					++dirname;
+					preproc->buffer[lines[line].posn +
+									lines[line].len - 1] = '\0';
+					dirname += 5;
+					while(*dirname == ' ' || *dirname == '\t' ||
+					      *dirname == '\f' || *dirname == '\v' ||
+						  *dirname == CTRL_Z)
+					{
+						++dirname;
+					}
+					Message(&(lines[line]), "error: ", dirname);
+					preproc->error = 1;
 				}
-				Message(&(lines[line]), "error: ", dirname);
-				preproc->error = 1;
 			}
 			else if(MATCH_DIRECTIVE(dirname, "warning", 7))
 			{
-				/* Emit a compiler warning */
-				preproc->buffer[lines[line].posn + lines[line].len - 1] = '\0';
-				while(*dirname == ' ' || *dirname == '\t' ||
-				      *dirname == '\f' || *dirname == '\v' ||
-					  *dirname == CTRL_Z)
+				/* Emit a compiler warning if this #if scope is active */
+				if(LINE_IS_ACTIVE())
 				{
-					++dirname;
+					dirname += 7;
+					preproc->buffer[lines[line].posn +
+									lines[line].len - 1] = '\0';
+					while(*dirname == ' ' || *dirname == '\t' ||
+					      *dirname == '\f' || *dirname == '\v' ||
+						  *dirname == CTRL_Z)
+					{
+						++dirname;
+					}
+					Message(&(lines[line]), "warning: ", dirname);
 				}
-				Message(&(lines[line]), "warning: ", dirname);
 			}
 			else if(MATCH_DIRECTIVE(dirname, "line", 4))
 			{
@@ -1299,9 +1324,7 @@ static int RefillLineBuffer(CSPreProc *preproc)
 		else
 		{
 			/* Normal line: has it been suppressed by conditions? */
-			if(preproc->currentScope &&
-			   (!(preproc->currentScope->active) ||
-			    !(preproc->currentScope->ancestor)))
+			if(!LINE_IS_ACTIVE())
 			{
 				/* Replace this suppressed line with an empty line */
 				preproc->buffer[lines[line].posn] = '\n';

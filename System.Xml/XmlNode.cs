@@ -22,19 +22,42 @@ namespace System.Xml
 {
 
 using System;
+using System.Collections;
 
 //Quadruple linked list used for storing an XML tree
 internal class XmlNode
 {
-	public XmlNode parent; //Pointer to the parent node, NULL if no parent
-	public XmlNode prev; //Pointer to the previous node, NULL if no previous
-	public XmlNode next; //Pointer to the next node, NULL if no next
-	public XmlNode children; //Pointer to the first child node, NULL if no children
+	public XmlNode Parent = null; //Pointer to the parent node, NULL if no parent
+	public XmlNode Prev = null; //Pointer to the previous node, NULL if no previous
+	public XmlNode Next = null; //Pointer to the next node, NULL if no next
+	public ArrayList Children = null; //Pointer to the child nodes, NULL if no children
 
-	public XmlNodeType type; //The type of this node
-	public String text; //The text of this node, 
-				 	//for example the name of an element node
-
+	public XmlNodeType Type; //The type of this node
+	public String Text; //The text of this node, 
+						//for example the name of an element node
+	public int Depth = -1; //The Depth of the current node, 0 is the top layer,
+						   //1 the layer under top, etc. -1 Is error.
+	
+	
+	public XmlNode(XmlNode prev, XmlNode up, XmlNodeType type, String text, int depth)
+	{
+		if (prev != null)
+		{
+			prev.Next = this;
+			this.Prev = prev;
+		}
+		
+		if (up != null)
+		{
+			this.Parent = up;
+			up.Children = up.Children.Add(this);
+		}
+		
+		this.Type = type;
+		this.Text = text;
+		this.Depth = depth;
+	}
+	
 }; //class XmlNode
 
 }; //namespace System.Xml

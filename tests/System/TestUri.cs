@@ -68,7 +68,7 @@ public class TestUri : TestCase
 				}
 				catch (Exception)
 				{
-					Fail("{0} threw an exception it shouldn't have!", lasturi);
+					Fail(lasturi.ToString()+" threw an exception it shouldn't have!");
 				}
 			}
 		}

@@ -294,7 +294,7 @@ public class TestString : TestCase
 		AssertEquals("String.Format (\"<{0,5}>\", 12)",
 			String.Format ("<{0,-5}>", 12),"<12   >");
 
-		AssertEquals ("String.Format(\"The {0} of {1}\",\"Church\",\"Emacs\")"
+		AssertEquals ("String.Format(\"The {0} of {1}\",\"Church\",\"Emacs\")",
 			String.Format ("The {0} of {1}","Church", "Emacs"),
 			"The Church of Emacs");
 		
@@ -318,7 +318,7 @@ public class TestString : TestCase
 	public void TestStringGetEnumerator()
 	{
 		String str = "foobar";
-		char[] c = new char[s1.Length];
+		char[] c = new char[str.Length];
 		CharEnumerator en = str.GetEnumerator();
 		AssertNotNull("CharEnumerator en!=null", en);
 		
@@ -523,7 +523,6 @@ public class TestString : TestCase
 		}
 	}
 
-	}
 
 	public void TestStringToCharArray()
 	{

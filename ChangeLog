@@ -1,4 +1,9 @@
 
+2002-09-16  Gopal.V  <gopalv82@symonds.net>
+
+	* tests/System/TestUri.cs , tests/System/TestString.cs : fix minor 
+	syntax errors in testcases
+
 2002-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Uri.cs, System/Net/Sockets/TcpClient.cs: fix minor semantic

@@ -353,6 +353,7 @@ System.Drawing/Makefile
 System.Drawing.Xsharp/Makefile
 System.Drawing.Win32/Makefile
 System.Drawing.Postscript/Makefile
+System.EnterpriseServices/Makefile
 System.Windows.Forms/Makefile
 tests/Makefile
 tests/System/Makefile

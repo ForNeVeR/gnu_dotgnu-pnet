@@ -1,4 +1,9 @@
 
+2003-09-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, System.EnterpriseServices/*:
+	check in an implementation of "System.EnterpriseServices".
+
 2003-09-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/Control.cs: remove a call to "OnClick"

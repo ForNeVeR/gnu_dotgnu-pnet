@@ -95,6 +95,8 @@ public class TextBox : TextBoxBase
 		textAlign = HorizontalAlignment.Left;
 
 		BackColor = SystemColors.Window;
+		ForeColor = SystemColors.WindowText;
+
 		// TODO Get this value from SystemInformation
 		CaretSetPosition(0);
 

@@ -7,6 +7,9 @@
 	* System.Windows.Forms/TabPage.cs: Make sure that both the constructors 
 	set visible to true (bug #10466).
 
+	* System.Windows.Forms/TextBox.cs: Initialize ForeColor to WindowText
+	by default (bug #10468).
+
 2004-09-21  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* JScript/Builtins/JSBuiltin.cs, JScript/Builtins/GlobalObject.cs: Added

@@ -110,7 +110,7 @@ static ILMachineType AssignCommon(ILNode_AssignExpression *node,
 	ILNode_BinaryExpression *bnode = (ILNode_BinaryExpression *)(node->assign);
 
 	/* Get and prepare the l-value for a later store operation */
-	finalType = ILNode_GetAndPrepare(node->lvalue, info, leave, &data1, &data2);
+	finalType = ILNode_GetAndPrepare(node->lvalue, info, 0, &data1, &data2);
 
 	/* Perform the operation */
 	if(yyisa(bnode, ILNode_Concat))
@@ -118,7 +118,8 @@ static ILMachineType AssignCommon(ILNode_AssignExpression *node,
 		if(finalType == ILMachineType_String &&
 		   ILNode_GetType(bnode->expr2, info) == ILMachineType_String)
 		{
-			ILGenCast(info, ILNode_GenValue(bnode->expr2, info), ILMachineType_String);
+			ILGenCast(info, ILNode_GenValue(bnode->expr2, info),
+					  ILMachineType_String);
 			ILGenCallByName(info,
 			  "class [.library]System.String [.library]System.String::Concat"
 					"(class [.library]System.String, "
@@ -127,7 +128,8 @@ static ILMachineType AssignCommon(ILNode_AssignExpression *node,
 		}
 		else
 		{
-			ILGenCast(info, ILNode_GenValue(bnode->expr2, info), ILMachineType_ObjectRef);
+			ILGenCast(info, ILNode_GenValue(bnode->expr2, info),
+					  ILMachineType_ObjectRef);
 			ILGenCallByName(info,
 			  "class [.library]System.String [.library]System.String::Concat"
 					"(class [.library]System.Object, "
@@ -138,7 +140,8 @@ static ILMachineType AssignCommon(ILNode_AssignExpression *node,
 	}
 	else if(yyisa(bnode, ILNode_DelegateAdd))
 	{
-		ILGenCast(info, ILNode_GenValue(bnode->expr2, info), ILMachineType_ObjectRef);
+		ILGenCast(info, ILNode_GenValue(bnode->expr2, info),
+				  ILMachineType_ObjectRef);
 		ILGenCallByName(info,
 		  "class [.library]System.Delegate [.library]System.Delegate::Combine"
 				"(class [.library]System.Delegate, "
@@ -150,7 +153,8 @@ static ILMachineType AssignCommon(ILNode_AssignExpression *node,
 	}
 	else if(yyisa(bnode, ILNode_DelegateSub))
 	{
-		ILGenCast(info, ILNode_GenValue(bnode->expr2, info), ILMachineType_ObjectRef);
+		ILGenCast(info, ILNode_GenValue(bnode->expr2, info),
+				  ILMachineType_ObjectRef);
 		ILGenCallByName(info,
 		  "class [.library]System.Delegate [.library]System.Delegate::Remove"
 				"(class [.library]System.Delegate, "

@@ -678,7 +678,6 @@ static CSSemValue AssignSem(ILGenInfo *info,
 	/*  Re-jigger arguments from the original version  */
 	ILNode_BinaryExpression *node = (ILNode_BinaryExpression *)anode->assign;
 	ILNode **parent = &(anode->assign);
-
 	const ILOperator *oper;
 	ILMethod *method;
 	ILType *returnType;
@@ -689,7 +688,6 @@ static CSSemValue AssignSem(ILGenInfo *info,
 	/* Perform semantic analysis on the arguments */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
 	anode->lvalue = node->expr1;  /* Preserve lvalue for later */
-
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 
 	/* The first argument must be an event or an lvalue */
@@ -738,6 +736,11 @@ static CSSemValue AssignSem(ILGenInfo *info,
 	{
 		goto error;
 	}
+
+	/* Replace node->expr1 with an empty expression, so that it
+	   doesn't double-evaluate during code generation */
+	node->expr1 = ILNode_EmptyExpr_create
+			(ILTypeToMachineType(CSSemGetType(value1)));
 
 	/* Look for a builtin operator */
 	oper = ILFindBinaryOperator(table, CSSemGetType(value1),

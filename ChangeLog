@@ -1,4 +1,10 @@
 
+2002-10-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_assign.tc, codegen/jv_assign.tc, cscc/csharp/cs_oper.tc:
+	prevent double-evaluation of l-values in operator assignment,
+	and update Java assignment.
+
 2002-10-20  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* codegen/cg_assign.tc, codegen/jv_assign.tc, cscc/csharp/cs_oper.tc:  

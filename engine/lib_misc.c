@@ -137,6 +137,8 @@ ILFloat _IL_BitConverter_Int32BitsToFloat(ILExecThread *thread,
 #endif
 }
 
+#ifdef IL_CONFIG_VARARGS
+
 /*
  * Structure of an "ArgIterator" object.  Variable arguments
  * are packed into "Object[]" arrays by the caller, from where
@@ -334,17 +336,6 @@ ILInt32 _IL_ArgIterator_GetRemainingCount(ILExecThread *_thread,
 }
 
 /*
- * private static Delegate CreateBlankDelegate(Type type, ClrMethod method);
- */
-ILObject *_IL_Delegate_CreateBlankDelegate(ILExecThread *_thread,
-										   ILObject *type,
-										   ILObject *method)
-{
-	/* TODO */
-	return 0;
-}
-
-/*
  * private static TypedReference ClrMakeTypedReference(Object target,
  *													   FieldInfo[] flds);
  */
@@ -393,6 +384,19 @@ ILObject *_IL_TypedReference_ToObject(ILExecThread *_thread, ILTypedRef value)
 	{
 		return 0;
 	}
+}
+
+#endif /* IL_CONFIG_VARARGS */
+
+/*
+ * private static Delegate CreateBlankDelegate(Type type, ClrMethod method);
+ */
+ILObject *_IL_Delegate_CreateBlankDelegate(ILExecThread *_thread,
+										   ILObject *type,
+										   ILObject *method)
+{
+	/* TODO */
+	return 0;
 }
 
 #ifdef	__cplusplus

@@ -170,6 +170,8 @@ static ILUInt32 StackWordsForType(ILExecThread *thread, ILType *type)
 	}
 }
 
+#ifdef IL_CONFIG_VARARGS
+
 /*
  * Pack a set of arguments into a vararg "Object[]" array.
  * Returns the number of stack words to pop from the function,
@@ -337,6 +339,8 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 	/* Return the height of the varargs arguments to the caller */
 	return height;
 }
+
+#endif /* IL_CONFIG_VARARGS */
 
 /*
  * Get the number of parameter words for a tail call method.
@@ -1614,6 +1618,7 @@ VMBREAK(COP_PREFIX_LDINTERFFTN);
 VMCASE(COP_PREFIX_PACK_VARARGS):
 {
 	/* Pack a set of arguments for a vararg method call */
+#ifdef IL_CONFIG_VARARGS
 	COPY_STATE_TO_THREAD();
 	tempNum = PackVarArgs(thread, stacktop, CVMP_ARG_WORD, CVMP_ARG_WORD2,
 						  CVMP_ARG_WORD2_PTR(ILType *), &tempptr);
@@ -1621,6 +1626,9 @@ VMCASE(COP_PREFIX_PACK_VARARGS):
 	stacktop -= tempNum;
 	stacktop[0].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(CVMP_LEN_WORD2_PTR, 1);
+#else
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD2_PTR, 0);
+#endif
 }
 VMBREAK(COP_PREFIX_PACK_VARARGS);
 

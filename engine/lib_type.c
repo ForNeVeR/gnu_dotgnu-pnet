@@ -26,16 +26,6 @@
 extern	"C" {
 #endif
 
-/*
- * Resolve an assembly name to an image.  Returns NULL if the
- * assembly could not be located.
- */
-static ILImage *ResolveAssembly(ILExecThread *thread,
-								ILUInt16 *name, ILInt32 len)
-{
-	return 0;
-}
-
 ILImage *_ILClrCallerImage(ILExecThread *thread)
 {
 	ILImage *systemImage;
@@ -232,6 +222,8 @@ ILClass *_ILGetClrClass(ILExecThread *thread, ILObject *type)
 	}
 }
 
+#ifdef IL_CONFIG_REFLECTION
+
 /*
  * Hash table entry information for a reflection mapping.
  */
@@ -328,6 +320,16 @@ void *_ILClrFromObject(ILExecThread *thread, ILObject *object)
 	{
 		return 0;
 	}
+}
+
+/*
+ * Resolve an assembly name to an image.  Returns NULL if the
+ * assembly could not be located.
+ */
+static ILImage *ResolveAssembly(ILExecThread *thread,
+								ILUInt16 *name, ILInt32 len)
+{
+	return 0;
 }
 
 ILObject *_ILGetTypeFromImage(ILExecThread *thread,
@@ -587,46 +589,6 @@ ILObject *_ILGetTypeFromImage(ILExecThread *thread,
 
 	/* Convert the class information block into a "ClrType" instance */
 	return _ILGetClrType(thread, classInfo);
-}
-
-/*
- * public static Type GetType(String name, bool throwOnError, bool ignoreCase);
- */
-ILObject *_IL_Type_GetType(ILExecThread *thread, ILString *name,
-						   ILBool throwOnError, ILBool ignoreCase)
-{
-	return _ILGetTypeFromImage(thread, 0, name, throwOnError, ignoreCase);
-}
-
-/*
- * public static RuntimeTypeHandle GetTypeHandle(Object o);
- */
-void _IL_Type_GetTypeHandle(ILExecThread *thread, void *handle, ILObject *obj)
-{
-	if(obj)
-	{
-		*((ILClass **)handle) = GetObjectClass(obj);
-	}
-	else
-	{
-		ILExecThreadThrowArgNull(thread, "obj");
-	}
-}
-
-/*
- * public static Type GetTypeFromHandle(RuntimeTypeHandle handle);
- */
-ILObject *_IL_Type_GetTypeFromHandle(ILExecThread *thread, void *handle)
-{
-	ILClass *classInfo = *((ILClass **)handle);
-	if(classInfo)
-	{
-		return _ILGetClrType(thread, classInfo);
-	}
-	else
-	{
-		return 0;
-	}
 }
 
 /*
@@ -2117,6 +2079,56 @@ ILObject *_IL_ClrType_GetMembersImpl(ILExecThread *thread,
 	/* Truncate the array to its actual length and return it */
 	array->length = numFound;
 	return (ILObject *)array;
+}
+
+#endif /* IL_CONFIG_REFLECTION */
+
+/*
+ * public static Type GetType(String name, bool throwOnError, bool ignoreCase);
+ */
+ILObject *_IL_Type_GetType(ILExecThread *thread, ILString *name,
+						   ILBool throwOnError, ILBool ignoreCase)
+{
+#ifdef IL_CONFIG_REFLECTION
+	return _ILGetTypeFromImage(thread, 0, name, throwOnError, ignoreCase);
+#else
+	if(throwOnError)
+	{
+		ThrowTypeLoad(thread, name);
+	}
+	return 0;
+#endif
+}
+
+/*
+ * public static RuntimeTypeHandle GetTypeHandle(Object o);
+ */
+void _IL_Type_GetTypeHandle(ILExecThread *thread, void *handle, ILObject *obj)
+{
+	if(obj)
+	{
+		*((ILClass **)handle) = GetObjectClass(obj);
+	}
+	else
+	{
+		ILExecThreadThrowArgNull(thread, "obj");
+	}
+}
+
+/*
+ * public static Type GetTypeFromHandle(RuntimeTypeHandle handle);
+ */
+ILObject *_IL_Type_GetTypeFromHandle(ILExecThread *thread, void *handle)
+{
+	ILClass *classInfo = *((ILClass **)handle);
+	if(classInfo)
+	{
+		return _ILGetClrType(thread, classInfo);
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 #ifdef	__cplusplus

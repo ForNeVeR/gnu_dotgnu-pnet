@@ -182,13 +182,16 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 	ILEngineStackItem *item;
 	int hasThis;
 	int isValueThis;
-	int isVarArg;
 	ILType *thisType;
+#ifdef IL_CONFIG_VARARGS
+	int isVarArg;
+#endif
 
 	/* TODO: match explicit this information for indirect calls */
 
 	/* Check the vararg vs non-vararg conventions, and get the
 	   number of non-vararg parameters */
+#ifdef IL_CONFIG_VARARGS
 	if(indirectCall)
 	{
 		/* We don't have a method to compare against for indirect calls */
@@ -252,6 +255,23 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 		totalParams = numParams;
 		isVarArg = 0;
 	}
+#else /* !IL_CONFIG_VARARGS */
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		return -1;
+	}
+	if(method)
+	{
+		if((ILMethodGetCallConv(method) & IL_META_CALLCONV_MASK) ==
+				IL_META_CALLCONV_VARARG)
+		{
+			return -1;
+		}
+	}
+	numParams = ILTypeNumParams(signature);
+	totalParams = numParams;
+#endif /* !IL_CONFIG_VARARGS */
 
 	/* Determine if the signature needs an extra "this" parameter */
 	hasThis = (ILType_HasThis(signature) && !suppressThis);
@@ -593,12 +613,14 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 		}
 	}
 
+#ifdef IL_CONFIG_VARARGS
 	/* Convert the vararg parameters into an "Object[]" array */
 	if(isVarArg)
 	{
 		ILCoderPackVarArgs(coder, signature, numParams + 2,
 						   stack + numParams, totalParams - numParams);
 	}
+#endif /* IL_CONFIG_VARARGS */
 
 	/* If we get here, then a match has occurred */
 	return (ILInt32)totalParams;

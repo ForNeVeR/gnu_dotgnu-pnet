@@ -229,6 +229,7 @@ typedef struct
  */
 System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 {
+#ifdef IL_CONFIG_REFLECTION
 	ILInt32 num;
 	ILInt32 skipFrames;
 	int sawNormal;
@@ -343,6 +344,9 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 
 	/* Done */
 	return (System_Array *)array;
+#else
+	return 0;
+#endif
 }
 
 #ifdef	__cplusplus

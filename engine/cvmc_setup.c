@@ -147,6 +147,7 @@ static int CVMEntryAllocArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 		}
 	}
 
+#ifdef IL_CONFIG_VARARGS
 	/* Vararg methods have an extra parameter to pass the variable
 	   arguments within an "Object[]" array */
 	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
@@ -157,6 +158,7 @@ static int CVMEntryAllocArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 		coder->argOffsets[argIndex++] = offset;
 		++offset;
 	}
+#endif
 
 	/* Set the argument word count and return */
 	ctx->numArgWords = offset;

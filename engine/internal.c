@@ -34,6 +34,32 @@ extern	"C" {
 	#define	_IL_Double_suppressed
 	#define	_IL_Decimal_suppressed
 #endif
+#if !defined(IL_CONFIG_VARARGS)
+	#define _IL_ArgIterator_suppressed
+	#define _IL_TypedReference_suppressed
+#endif
+#if !defined(IL_CONFIG_NETWORKING)
+	#define _IL_IPAddress_suppressed
+	#define _IL_SocketMethods_suppressed
+#endif
+#if !defined(IL_CONFIG_REFLECTION)
+	#define _IL_Assembly_suppressed
+	#define _IL_AssemblyBuilder_suppressed
+	#define _IL_ClrConstructor_suppressed
+	#define _IL_ClrField_suppressed
+	#define _IL_ClrHelpers_suppressed
+	#define _IL_ClrMethod_suppressed
+	#define _IL_ClrParameter_suppressed
+	#define _IL_ClrProperty_suppressed
+	#define _IL_ClrResourceStream_suppressed
+	#define _IL_ClrType_suppressed
+	#define _IL_CodeTable_suppressed
+	#define _IL_FieldInfo_suppressed
+	#define _IL_MethodBase_suppressed
+	#define _IL_Module_suppressed
+	#define _IL_ModuleBuilder_suppressed
+	#define _IL_RuntimeMethodHandle_suppressed
+#endif
 
 /*
  * Import the method tables of all internal classes.

@@ -106,7 +106,7 @@ public struct DateTime : IComparable, IFormattable
 			}
 
 	// Convert a time into a number of ticks.
-	private static long TimeToTicks(int hour, int minute, int second)
+	internal static long TimeToTicks(int hour, int minute, int second)
 			{
 				if(hour >= 0 && hour <= 23 &&
 				   minute >= 0 && minute <= 59 &&

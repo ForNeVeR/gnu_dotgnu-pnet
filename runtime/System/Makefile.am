@@ -149,6 +149,8 @@ CSSRC = Activator.cs \
 		Globalization/DateTimeStyles.cs \
 		Globalization/GregorianCalendar.cs \
 		Globalization/GregorianCalendarTypes.cs \
+		Globalization/HebrewCalendar.cs \
+		Globalization/JulianCalendar.cs \
 		Globalization/NumberFormatInfo.cs \
 		Globalization/NumberStyles.cs \
 		Globalization/TextInfo.cs \

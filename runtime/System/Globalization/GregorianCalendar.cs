@@ -32,6 +32,9 @@ public class GregorianCalendar : Calendar
 	// Internal state.
 	private GregorianCalendarTypes calendarType;
 
+	// Useful constants.
+	private const int DefaultTwoDigitMax = 2029;
+
 	// Constructors.
 	public GregorianCalendar()
 			{
@@ -79,8 +82,8 @@ public class GregorianCalendar : Calendar
 					else
 					{
 						// Set the default value.
-						base.TwoDigitYearMax = 2029;
-						return 2029;
+						base.TwoDigitYearMax = DefaultTwoDigitMax;
+						return DefaultTwoDigitMax;
 					}
 				}
 				set
@@ -180,6 +183,15 @@ public class GregorianCalendar : Calendar
 			}
 
 	// Determine if a particular day is a leap day.
+	//
+	// Note: according to the Calendar FAQ, the leap day is actually
+	// the 24th of February, not the 29th!  This comes from the
+	// ancient Roman calendar.  However, since most people in the
+	// modern world think it is the 29th, Microsoft and others have
+	// actually implemented this function "wrong".  We've matched
+	// this "wrong" implementation here, for compatibility reasons.
+	//
+	// See: http://www.tondering.dk/claus/calendar.html
 	public override bool IsLeapDay(int year, int month, int day, int era)
 			{
 				if(day < 1 || day > GetDaysInMonth(year, month, era))

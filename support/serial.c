@@ -82,7 +82,6 @@ extern	"C" {
 #endif
 
 #if defined(USE_TTY_SERIAL)
-
 /*
  * Structure of a serial port information block.
  */
@@ -93,6 +92,7 @@ struct _tagILSerial
 	ILInt32		writeTimeout;
 
 };
+
 
 /*
  * Get the name of a serial port.  This will probably need modification
@@ -668,6 +668,288 @@ void ILSerialInterrupt(ILThread *thread)
 #ifdef IL_USE_PTHREADS
 	pthread_kill(thread->handle, IL_SIG_ABORT);
 #endif
+}
+
+#elif IL_WIN32_PLATFORM  /* Win32 Serial I/O */
+
+/*
+ * Structure of a serial port information block.
+ */
+struct _tagILSerial
+{
+	HANDLE		fd;
+	ILInt32		readTimeout;
+	ILInt32		writeTimeout;
+
+};
+
+/*
+ * Get the name of a serial port. 
+ */
+static void GetSerialName(char *name, ILInt32 type, ILInt32 portNumber)
+{
+	if(type == IL_SERIAL_REGULAR)
+	{
+		if(portNumber < 9)
+		{
+			sprintf(name, "COM%d", (int)(portNumber));
+		}
+		else
+		{
+			sprintf(name, "\\\\.\\COM%d", (int)(portNumber));
+		}
+	}
+	else if(type == IL_SERIAL_INFRARED)
+	{
+		/* TODO: I have virtualized serial ports*/
+		sprintf(name, "/dev/ircomm%d", (int)(portNumber));
+	}
+	else
+	{
+		/* TODO: I have virtualized serial ports*/
+		sprintf(name, "/dev/ttyUSB%d", (int)(portNumber));
+	}
+}
+
+/* TODO */
+int SerialIsValid(ILInt32 type, ILInt32 portNumber, int checkAccess)
+{
+	if(type != IL_SERIAL_REGULAR)
+	{
+		return 0;
+	}
+	if(portNumber < 1 || portNumber > 256)
+	{
+		return 0;
+	}
+	return 1;
+}
+
+int ILSerialIsValid(ILInt32 type, ILInt32 portNumber)
+{
+	return SerialIsValid(type, portNumber, 0);
+}
+
+int ILSerialIsAccessible(ILInt32 type, ILInt32 portNumber)
+{
+	return SerialIsValid(type, portNumber, 1);
+}
+
+ILSerial *ILSerialOpen(ILInt32 type, ILInt32 portNumber,
+					   ILSerialParameters *parameters)
+{
+	ILSerial *serial;
+	char name[64];
+
+	/* Bail out if the serial port specification is not valid */
+	if(!SerialIsValid(type, portNumber, 0))
+	{
+		return 0;
+	}
+
+	/* Allocate space for the control structure and initialize it */
+	if((serial = (ILSerial *)ILMalloc(sizeof(ILSerial))) == 0)
+	{
+		return 0;
+	}
+
+	serial->fd = INVALID_HANDLE_VALUE;
+	serial->readTimeout = parameters->readTimeout;
+	serial->writeTimeout = parameters->writeTimeout;
+
+	/* Attempt to open the designated serial port */
+	GetSerialName(name, type, portNumber);
+
+	serial->fd = CreateFile(name,
+                    GENERIC_READ | GENERIC_WRITE, 
+                    0, 
+                    NULL, 
+                    OPEN_EXISTING,
+                    FILE_ATTRIBUTE_NORMAL,
+                    NULL);
+	
+	if(serial->fd == INVALID_HANDLE_VALUE)
+	{
+		ILFree(serial);
+		return 0;
+	}
+
+	/* TODO: 4k buffers or parameter */
+	SetupComm(serial->fd, 4096, 4096);
+
+	PurgeComm(serial->fd, PURGE_TXCLEAR | PURGE_TXABORT |
+                          PURGE_RXCLEAR | PURGE_RXABORT);
+
+	SetCommMask(serial->fd, EV_ERR);
+	
+
+	/* Set the initial serial port parameters */
+	ILSerialModify(serial, parameters);
+
+	return serial;
+}
+
+void ILSerialClose(ILSerial *handle)
+{
+	CloseHandle(handle->fd);
+	ILFree(handle);
+}
+
+void ILSerialModify(ILSerial *handle, ILSerialParameters *parameters)
+{
+	DCB dcb = {0};
+	
+	/* Record the timeout values in the control structure */
+	handle->readTimeout = parameters->readTimeout;
+	handle->writeTimeout = parameters->writeTimeout;
+
+	if(!GetCommState(handle->fd, &dcb))
+	{
+		/* Error */
+		return;
+	}
+
+	dcb.BaudRate = parameters->baudRate;
+	dcb.ByteSize = parameters->dataBits;
+	dcb.fBinary = 1; /* binary data */
+
+	switch(parameters->parity)
+	{
+		case IL_PARITY_NONE:
+		case IL_PARITY_MARK:
+		case IL_PARITY_SPACE:
+		{
+			dcb.Parity = NOPARITY;
+			dcb.fParity = 0; /* disable */
+		}
+		break;
+		case IL_PARITY_ODD:
+		{
+			dcb.Parity = ODDPARITY;
+		}
+		break;
+		case IL_PARITY_EVEN:
+		{
+			dcb.Parity = EVENPARITY;
+		}
+		break;
+		default:
+		{
+			/* Error */
+		}
+		break;
+	}
+
+	dcb.StopBits = parameters->stopBits;
+	dcb.fNull = 0;
+	dcb.fOutxCtsFlow     = 0;
+    dcb.fOutxDsrFlow     = 0;
+    dcb.fOutX            = 0;
+    dcb.fInX             = 0;
+	
+	
+	if(!SetCommState(handle->fd, &dcb))
+	{
+		/* Error */
+		return;
+	}
+}
+
+ILInt32 ILSerialGetBytesToRead(ILSerial *handle)
+{
+	COMSTAT comStat;
+	DWORD   dwErrors;
+	if (!ClearCommError(handle->fd, &dwErrors, &comStat))
+	{
+		return -1;
+	}
+
+	return  comStat.cbInQue;
+}
+
+ILInt32 ILSerialGetBytesToWrite(ILSerial *handle)
+{
+	COMSTAT comStat;
+	DWORD   dwErrors;
+	if (!ClearCommError(handle->fd, &dwErrors, &comStat))
+	{
+		return -1;
+	}
+
+	return  comStat.cbOutQue;
+}
+
+ILInt32 ILSerialReadPins(ILSerial *handle)
+{
+	/* TODO : use GetCommModemStatus ?*/
+	return 0;
+}
+
+void ILSerialWritePins(ILSerial *handle, ILInt32 mask, ILInt32 value)
+{
+	/* TODO */
+}
+
+void ILSerialGetRecommendedBufferSizes
+			(ILInt32 *readBufferSize, ILInt32 *writeBufferSize,
+			 ILInt32 *receivedBytesThreshold)
+{
+	*readBufferSize = 1024;
+	*writeBufferSize = 1024;
+	*receivedBytesThreshold = 768;
+}
+
+void ILSerialDiscardInBuffer(ILSerial *handle)
+{
+	PurgeComm(handle->fd, PURGE_RXCLEAR | PURGE_RXABORT);
+}
+
+void ILSerialDiscardOutBuffer(ILSerial *handle)
+{
+	PurgeComm(handle->fd, PURGE_TXCLEAR | PURGE_TXABORT);
+}
+
+void ILSerialDrainOutBuffer(ILSerial *handle)
+{
+	/* TODO */
+}
+
+ILInt32 ILSerialRead(ILSerial *handle, void *buffer, ILInt32 count)
+{
+	DWORD readCount = 0;
+
+	if (!ReadFile(handle->fd, buffer, count , &readCount , NULL)) 
+	{
+		return -1;
+	}
+	return readCount;
+}
+
+void ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count)
+{
+	DWORD writeCount = 0;
+	if(!WriteFile(handle->fd, buffer, count, &writeCount, NULL))
+	{
+		/* error */
+	}
+	return ;
+}
+
+/* TODO */
+int ILSerialWaitForPinChange(ILSerial *handle)
+{
+	return -1;
+}
+
+int ILSerialWaitForInput(ILSerial *handle)
+{
+	/* TODO */
+	return -1;
+}
+
+void ILSerialInterrupt(ILThread *thread)
+{
+	/* TODO */
 }
 
 #else /* No serial port support on this platform */

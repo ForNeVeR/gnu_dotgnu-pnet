@@ -3,6 +3,9 @@
 
 	* ilasm/ilasm_grammar.y: Add missing intialization and fix segfault.
 
+	* support/serial.c: Implement serial I/O open, read, write and close
+	operations for Win32.
+
 2004-10-12  Gopal V  <gopalv82@yahoo.com>
 
 	* ilasm/ilasm_grammar.y, ilasm/ilasm_data.c, ilasm/ilasm_data.c: Implement

@@ -381,6 +381,8 @@ int operator<<(int x, int count);
 uint operator<<(uint x, int count);
 long operator<<(long x, int count);
 ulong operator<<(ulong x, int count);
+E operator<<(E x, int count)
+U operator<<(E x, int count)
 
 */
 
@@ -389,6 +391,14 @@ IL_BEGIN_OPERATOR_TABLE(Shl)
 	IL_BINARY_OPERATOR(UInt32, UInt32, Int32)
 	IL_BINARY_OPERATOR(Int64, Int64, Int32)
 	IL_BINARY_OPERATOR(UInt64, UInt64, Int32)
+	{&ILEnumByte, &ILEnumByte, &ILSystemInt32},
+	{&ILEnumSByte, &ILEnumSByte, &ILSystemInt32},
+	{&ILEnumInt16, &ILEnumInt16, &ILSystemInt32},
+	{&ILEnumUInt16, &ILEnumUInt16, &ILSystemInt32},
+	{&ILEnumInt32, &ILEnumInt32, &ILSystemInt32},
+	{&ILEnumUInt32, &ILEnumUInt32, &ILSystemInt32},
+	{&ILEnumInt64, &ILEnumInt64, &ILSystemInt32},
+	{&ILEnumUInt64, &ILEnumUInt64, &ILSystemInt32},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -397,6 +407,8 @@ int operator>>(int x, int count);
 uint operator>>(uint x, int count);
 long operator>>(long x, int count);
 ulong operator>>(ulong x, int count);
+E operator>>(E x, int count)
+U operator>>(E x, int count)
 
 */
 
@@ -405,6 +417,14 @@ IL_BEGIN_OPERATOR_TABLE(Shr)
 	IL_BINARY_OPERATOR(UInt32, UInt32, Int32)
 	IL_BINARY_OPERATOR(Int64, Int64, Int32)
 	IL_BINARY_OPERATOR(UInt64, UInt64, Int32)
+	{&ILEnumByte, &ILEnumByte, &ILSystemInt32},
+	{&ILEnumSByte, &ILEnumSByte, &ILSystemInt32},
+	{&ILEnumInt16, &ILEnumInt16, &ILSystemInt32},
+	{&ILEnumUInt16, &ILEnumUInt16, &ILSystemInt32},
+	{&ILEnumInt32, &ILEnumInt32, &ILSystemInt32},
+	{&ILEnumUInt32, &ILEnumUInt32, &ILSystemInt32},
+	{&ILEnumInt64, &ILEnumInt64, &ILSystemInt32},
+	{&ILEnumUInt64, &ILEnumUInt64, &ILSystemInt32},
 IL_END_OPERATOR_TABLE
 
 /*

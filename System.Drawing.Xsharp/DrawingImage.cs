@@ -1,5 +1,5 @@
 /*
- * DrawingFont.cs - Implementation of fonts for System.Drawing.
+ * DrawingImage.cs - Implementation of images for System.Drawing.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *

@@ -79,6 +79,12 @@ internal sealed class PostscriptToolkit : NullToolkit
 				return null;
 			}
 
+	// Create a toolkit image from the properties in the specified object.
+	IToolkitImage CreateImage(DotGNU.Images.Image image, int frame)
+			{
+				return new PostscriptImage(image, frame);
+			}
+
 }; // class PostscriptToolkit
 
 }; // namespace System.Drawing.Postscript

@@ -1,3 +1,20 @@
+2003-12-26  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* DotGNU.Images/Frame.cs: fix a bug in mask sizing, and add support for
+	more pixel formats in the GetPixel method.
+
+	* System.Drawing/Toolkit/ToolkitGraphicsBase.cs: fix a bug in the
+	ComputeSteps method.
+
+	* System.Drawing.Postscript/PostscriptGraphics.cs,
+	System.Drawing.Postscript/PostscriptImage.cs,
+	System.Drawing.Postscript/PostscriptToolkit.cs: add image support.
+
+	* System.Drawing.Postscript/PostscriptGraphics.cs: implement several
+	drawing methods.
+
+	* System.Drawing.Xsharp/DrawingImage.cs: fix a typo in the file header.
+
 2003-12-24  Adam Ballai  <adam@thefrontnetworks.net>
 	
 	* System.Windows.Forms/Control.cs: Reverse reading on controls

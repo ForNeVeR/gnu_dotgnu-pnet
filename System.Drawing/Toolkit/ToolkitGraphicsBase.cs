@@ -394,7 +394,7 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 				
 				length+=Math.Sqrt((x1-x2)*(x1-x2) + (y1-y2) * (y1-y2));
 				length+=Math.Sqrt((x2-x3)*(x2-x3) + (y2-y3) * (y2-y3));
-				length+=Math.Sqrt((x3-x4)*(x3-x3) + (y3-y3) * (y3-y3));
+				length+=Math.Sqrt((x3-x4)*(x3-x4) + (y3-y4) * (y3-y4));
 
 				return (int)Math.Ceiling(length);	
 			}

@@ -233,7 +233,7 @@ public class Frame : MarshalByRefObject, IDisposable
 			{
 				if(mask == null)
 				{
-					mask = new byte [width * maskStride];
+					mask = new byte[height * maskStride];
 				}
 			}
 
@@ -272,9 +272,44 @@ public class Frame : MarshalByRefObject, IDisposable
 				int ptr = y * stride;
 				switch (pixelFormat)
 				{
+					case (PixelFormat.Format64bppPArgb):
+					{
+						ptr += 8 * x;
+						byte a = data[ptr+7];
+						if(a == 0) { return 0; }
+						byte b = (byte)((data[ptr+1] * 255) / a);
+						byte g = (byte)((data[ptr+3] * 255) / a);
+						byte r = (byte)((data[ptr+5] * 255) / a);
+						return b | g << 8 | r << 16;
+					}
+					case (PixelFormat.Format64bppArgb):
+					{
+						ptr += 8 * x;
+						return data[ptr+1] | data[ptr+3] << 8 | data[ptr+5] << 16;
+					}
+					case (PixelFormat.Format48bppRgb):
+					{
+						ptr += 6 * x;
+						return data[ptr+1] | data[ptr+3] << 8 | data[ptr+5] << 16;
+					}
+					case (PixelFormat.Format32bppPArgb):
+					{
+						ptr += 4 * x;
+						byte a = data[ptr+3];
+						if(a == 0) { return 0; }
+						byte b = (byte)((data[ptr] * 255) / a);
+						byte g = (byte)((data[ptr+1] * 255) / a);
+						byte r = (byte)((data[ptr+2] * 255) / a);
+						return b | g << 8 | r << 16;
+					}
 					case (PixelFormat.Format32bppArgb):
 						ptr += 4 * x;
 						return data[ptr++] | data[ptr++] << 8 | data[ptr++] << 16;
+					case (PixelFormat.Format32bppRgb):
+					{
+						ptr += 4 * x;
+						return data[ptr] | data[ptr+1] << 8 | data[ptr+2] << 16;
+					}
 					case (PixelFormat.Format24bppRgb):
 						ptr += 3 * x;
 						return data[ptr++] | data[ptr++] << 8 | data[ptr++] << 16;
@@ -297,6 +332,12 @@ public class Frame : MarshalByRefObject, IDisposable
 						g =( r << 3 & 0x18  | g >> 5 & 0x07) * 255 / 31;
 						r = ( r >> 2 & 0x1F) * 255 / 31;
 						return r | g << 8 | b << 16;
+					}
+					case (PixelFormat.Format16bppGrayScale):
+					{
+						ptr += 2 * x;
+						byte all = data[ptr+1];
+						return all | all << 8 | all << 16;
 					}
 					case (PixelFormat.Format8bppIndexed):
 						return palette[data[ptr]];

@@ -1,0 +1,289 @@
+/*
+ * cs_invoke.tc - Semantic analysis for method invocation.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ * Perform semantic analysis for the argument list operator.
+ */
+ILNode_SemAnalysis(ILNode_ArgList)
+{
+	CSSemValue value1;
+	CSSemValue value2;
+	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid operands to binary `,'");
+	}
+	return value2;
+}
+
+ILNode_SemAnalysis(ILNode_Argument)
+{
+	/* TODO: ref and out parameters */
+	return ILNode_SemAnalysis(node->expression, info, &(node->expression));
+}
+
+%{
+
+/*
+ * Count the number of arguments in an ArgList.
+ */
+static unsigned CountArgList(ILNode *argList)
+{
+	unsigned count;
+	if(!argList)
+	{
+		return 0;
+	}
+	count = 1;
+	while(yyisa(argList, ILNode_ArgList))
+	{
+		++count;
+		argList = ((ILNode_ArgList *)argList)->expr1;
+	}
+	return count;
+}
+
+/*
+ * Get an argument node from an ArgList.
+ */
+static ILNode *GetArgNode(ILNode *argList, unsigned num, unsigned count)
+{
+	if(!argList || num > count)
+	{
+		return 0;
+	}
+	while(num < count)
+	{
+		argList = ((ILNode_ArgList *)argList)->expr1;
+		++num;
+	}
+	if(yyisa(argList, ILNode_ArgList))
+	{
+		return ((ILNode_ArgList *)argList)->expr2;
+	}
+	else
+	{
+		return argList;
+	}
+}
+
+/*
+ * Set an argument node within an ArgList.
+ */
+static void SetArgNode(ILNode **parent, unsigned num,
+					   unsigned count, ILNode *arg)
+{
+	ILNode *list = *parent;
+	if(!list || num > count)
+	{
+		return;
+	}
+	while(num < count)
+	{
+		parent = &(((ILNode_ArgList *)list)->expr1);
+		list = ((ILNode_ArgList *)list)->expr1;
+		++num;
+	}
+	if(yyisa(list, ILNode_ArgList))
+	{
+		((ILNode_ArgList *)list)->expr2 = arg;
+	}
+	else
+	{
+		*parent = arg;
+	}
+}
+
+%}
+
+/*
+ * Perform semantic analysis for a method invocation.
+ */
+ILNode_SemAnalysis(ILNode_InvocationExpression)
+{
+	CSSemValue value;
+	CSSemValue method;
+	ILMethod *methodInfo;
+	ILType *signature;
+	unsigned numParams, param;
+	unsigned argCount;
+	ILType *paramType;
+	ILNode *currentArg;
+	int argErrors;
+
+	/* TODO: delegate invocation */
+
+	/* Perform semantic analysis on the method expression */
+	method = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	if(method.kind != CS_SEMKIND_METHOD_GROUP)
+	{
+		CSErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
+					  "called object is not a method");
+		return CSSemValueDefault;
+	}
+
+	/* Bail out if the method group is NULL.  This is used by "BaseInit"
+	   to indicate no parent constructor in "System.Object" */
+	if(value.type == 0)
+	{
+		if(node->expr2)
+		{
+			/* Cannot use arguments on "System.Object"'s base initializer */
+			CSErrorOnLine(yygetfilename(node->expr2),
+						  yygetlinenum(node->expr2),
+						  "too many arguments to base type constructor");
+		}
+		value.kind = CS_SEMKIND_VOID;
+		value.type = (ILType *)0;
+		return value;
+	}
+
+	/* Get the first method (TODO: handle method overloading) */
+	methodInfo = CSGetGroupMember((void *)(method.type), 0);
+	signature = ILMethod_Signature(methodInfo);
+	node->methodInfo = methodInfo;
+
+	/* Handle the "this" parameter if necessary */
+	if(!ILMethod_IsStatic(methodInfo))
+	{
+		node->thisExpr = node->expr1;
+	}
+
+	/* Perform semantic analysis on the arguments */
+	numParams = signature->num;
+	argCount = CountArgList(node->expr2);
+	argErrors = 0;
+	for(param = 1; param <= numParams; ++param)
+	{
+		/* Get the argument value */
+		currentArg = GetArgNode(node->expr2, param, argCount);
+		if(!currentArg)
+		{
+			/* TODO: better error message */
+			CSErrorOnLine(yygetfilename(node->expr1),
+						  yygetlinenum(node->expr1),
+						  "too few arguments to method");
+			argErrors = 1;
+			continue;
+		}
+
+		/* Perform semantic analysis on the argument value */
+		value = ILNode_SemAnalysis(currentArg, info, &currentArg);
+		SetArgNode(&(node->expr2), param, argCount, currentArg);
+		if(!CSIsSemValue(value.kind))
+		{
+			CSErrorOnLine(yygetfilename(currentArg),
+						  yygetlinenum(currentArg),
+						  "invalid value for argument %u", param);
+			argErrors = 1;
+			continue;
+		}
+
+		/* Attempt to coerce to the parameter type */
+		paramType = ILTypeGetParam(signature, param);
+		if(!ILCoerce(info, currentArg, &currentArg, value.type, paramType))
+		{
+			CSErrorOnLine(yygetfilename(currentArg),
+						  yygetlinenum(currentArg),
+						  "no conversion from `%s' to `%s' in argument %u",
+						  value.type, paramType, param);
+			argErrors = 1;
+			continue;
+		}
+		SetArgNode(&(node->expr2), param, argCount, currentArg);
+	}
+	if(numParams < argCount)
+	{
+		/* TODO: better error message */
+		CSErrorOnLine(yygetfilename(node->expr1),
+					  yygetlinenum(node->expr1),
+					  "too many arguments to method");
+		argErrors = 1;
+	}
+	if(argErrors)
+	{
+		return CSSemValueDefault;
+	}
+
+	/* The semantic value is the method's return type as an r-value */
+	if(signature->un.method.retType == ILType_Void)
+	{
+		value.kind = CS_SEMKIND_VOID;
+		value.type = 0;
+	}
+	else
+	{
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = signature->un.method.retType;
+	}
+	return value;
+}
+
+/*
+ * Perform semantic analysis for a reference to a base constructor.
+ */
+ILNode_SemAnalysis(ILNode_BaseInit)
+{
+	CSSemValue value;
+	ILClass *classInfo;
+	ILClass *parentInfo;
+
+	/* If we are compiling "System.Object", then we need to
+	   bail out with an empty method group.  This tells
+	   "InvocationExpression" to ignore the call */
+	classInfo = ((ILNode_ClassDefn *)(info->currentClass))->classInfo;
+	parentInfo = (classInfo ? ILClass_Parent(classInfo) : 0);
+	if(!parentInfo)
+	{
+		value.kind = CS_SEMKIND_METHOD_GROUP;
+		value.type = (ILType *)0;
+		return value;
+	}
+
+	/* Resolve ".ctor" within the base class */
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_FromClass(parentInfo);
+	value = CSResolveMemberName(info, (ILNode *)node, value, ".ctor");
+
+	/* Replace the current expression with "this" */
+	*parent = ILNode_This_create();
+	return value;
+}
+
+/*
+ * Perform semantic analysis for a reference to a "this" constructor.
+ */
+ILNode_SemAnalysis(ILNode_ThisInit)
+{
+	CSSemValue value;
+	ILClass *classInfo;
+
+	/* Resolve ".ctor" within the current class */
+	classInfo = ((ILNode_ClassDefn *)(info->currentClass))->classInfo;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_FromClass(classInfo);
+	value = CSResolveMemberName(info, (ILNode *)node, value, ".ctor");
+
+	/* Replace the current expression with "this" */
+	*parent = ILNode_This_create();
+	return value;
+}

@@ -8,6 +8,8 @@ documentation elements.
 
 * cscc/cs_misc.tc: remove invoke-related node types.
 
+* cscc/cs_invoke.tc: semantic analysis for method invocation.
+
 2001-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/csdoc.dtd: update the DTD for the XML documentation format.

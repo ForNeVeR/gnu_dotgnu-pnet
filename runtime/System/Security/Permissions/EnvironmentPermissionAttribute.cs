@@ -76,6 +76,12 @@ public sealed class EnvironmentPermissionAttribute
 	// Set both the read and write permission values.
 	public String All
 			{
+#if !ECMA_COMPAT
+				get
+				{
+					throw new NotSupportedException ("All");
+				}
+#endif
 				set
 				{
 					read = value;

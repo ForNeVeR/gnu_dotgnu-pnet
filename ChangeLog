@@ -1,3 +1,9 @@
+2004-06-11  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Security/Permissions/EnvironmentPermissionAttribute.cs,
+	runtime/System/Security/Permissions/FileIOPermissionAttribute.cs: stub
+	out the non-ECMA get accessor for All property
+
 2004-06-11  Russell Stuart <russell-savannah@stuart.id.au>
 
 	* tests/runtime/System/Threading/TestTimer.cs: Fixed bug in unit

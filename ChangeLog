@@ -6,6 +6,8 @@
 	* codegen/cg_decls.tc, cscc/csharp/cs_decls.tc: process attributes
 	for fields and events.
 
+	* cscc/csharp/cs_attrs.c: coerce named arguments to their final types.
+
 2002-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/Makefile.am, image/ser_writer.c, include/il_serialize.h:

@@ -209,6 +209,29 @@ static ILProgramItem *LookupAttrField(ILGenInfo *info, ILType *type,
 }
 
 /*
+ * Get the type that is associated with a field or property.
+ */
+static ILType *GetAttrFieldType(ILProgramItem *item)
+{
+	ILField *field = ILProgramItemToField(item);
+	ILProperty *property = ILProgramItemToProperty(item);
+	ILMethod *setter;
+	if(field)
+	{
+		return ILField_Type(field);
+	}
+	else if(property)
+	{
+		setter = ILProperty_Setter(property);
+		return ILTypeGetParam(ILMethod_Signature(setter), 1);
+	}
+	else
+	{
+		return ILType_Invalid;
+	}
+}
+
+/*
  * Process a single attribute in a section.
  */
 static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
@@ -442,6 +465,33 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			   					 &(namedValues[argNum])))
 			{
 				haveErrors = 1;
+			}
+
+			/* Cast the constant to the final type */
+			if(!haveErrors)
+			{
+				if(ILCoerce(info, namedArgs[argNum].node,
+							namedArgs[argNum].parent,
+							namedArgs[argNum].type,
+							GetAttrFieldType(namedFields[argNum])) &&
+				   ILGenCastConst
+				   		(info, &(namedValues[argNum]),
+				   		 namedValues[argNum].valueType,
+						 ILTypeToMachineType
+								(GetAttrFieldType(namedFields[argNum]))))
+				{
+					namedArgs[argNum].node = *(namedArgs[argNum].parent);
+				}
+				else
+				{
+					CCErrorOnLine(yygetfilename(namedArgs[argNum].node),
+								  yygetlinenum(namedArgs[argNum].node),
+								  "cannot coerce from `%s' to `%s'",
+								  CSTypeToName(namedArgs[argNum].type),
+								  CSTypeToName(GetAttrFieldType
+								  		(namedFields[argNum])));
+					haveErrors = 1;
+				}
 			}
 
 			/* Advance to the next argument */

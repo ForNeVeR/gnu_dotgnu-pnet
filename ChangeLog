@@ -17,6 +17,8 @@ that they make more sense.
 
 * ilalink/ilalink.1: manual page for "ilalink".
 
+* ilalink/ilalink.1: minor bugs detected during second-pass proof read.
+
 2001-11-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilalink/linker.h: include "il_dumpasm.h" because it is needed in multiple

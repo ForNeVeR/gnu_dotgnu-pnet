@@ -3,6 +3,9 @@
 
 	* engine/lib_emit.c: Fix compiler warning with gcc.
 
+	* engine/Makefile.am: add libgc include paths for the without tools
+	build.
+
 2004-09-24  Gopal V  <gopalv82@yahoo.com>
 
 	* image/sig_writer.c: Import classes before writing class tokens.

@@ -1,4 +1,9 @@
 
+2004-10-03  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/Makefile.am, tests/Test.build: split test for corlib into tests per
+	Namespace.
+
 2004-09-28  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: add class/ByteFX.Data/MAkefile to the files to be created

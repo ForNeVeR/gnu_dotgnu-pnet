@@ -5,6 +5,10 @@
 	support/mkcase.c, support/unicase.c, support/unicode.c:
 	add support routines for performing Unicode case conversion.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_string.c:
+	implement the "String.CompareInternal" internalcall in terms
+	of the Unicode comparison support routines.
+
 2003-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, image/link.c, image/pecoff_loader.c,

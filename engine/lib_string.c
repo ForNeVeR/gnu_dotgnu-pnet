@@ -351,8 +351,6 @@ System_String *_IL_String_ctor_pb(ILExecThread *thread, ILInt8 *value)
 
 /*
  * Compare two Unicode strings.
- *
- * TODO: replace this with something better and move to "support".
  */
 static int ILStrCmpUnicode(const ILUInt16 *str1, ILInt32 length1,
 						   const ILUInt16 *str2, ILInt32 length2)
@@ -369,53 +367,6 @@ static int ILStrCmpUnicode(const ILUInt16 *str1, ILInt32 length1,
 		}
 		++str1;
 		++str2;
-		--length1;
-		--length2;
-	}
-	if(length1 > 0)
-	{
-		return 1;
-	}
-	else if(length2 > 0)
-	{
-		return -1;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-/*
- * Compare two Unicode strings, while ignoring case.
- *
- * TODO: replace this with something better and move to "support".
- */
-static int ILStrICmpUnicode(const ILUInt16 *str1, ILInt32 length1,
-							const ILUInt16 *str2, ILInt32 length2)
-{
-	ILUInt16 ch1;
-	ILUInt16 ch2;
-	while(length1 > 0 && length2 > 0)
-	{
-		ch1 = *str1++;
-		ch2 = *str2++;
-		if(ch1 >= 'a' && ch1 <= 'z')
-		{
-			ch1 = (ILUInt16)(ch1 - 'a' + 'A');
-		}
-		if(ch2 >= 'a' && ch2 <= 'z')
-		{
-			ch2 = (ILUInt16)(ch2 - 'a' + 'A');
-		}
-		if(ch1 < ch2)
-		{
-			return -1;
-		}
-		else if(ch1 > ch2)
-		{
-			return 1;
-		}
 		--length1;
 		--length2;
 	}
@@ -467,18 +418,19 @@ ILInt32 _IL_String_Compare(ILExecThread *thread,
 }
 
 /*
- * public static int InternalCompare(String strA, int indexA, int lengthA,
+ * public static int CompareInternal(String strA, int indexA, int lengthA,
  *									 String strB, int indexB, int lengthB,
- *							 		 bool ignoreCase, CultureInfo culture);
+ *							 		 bool ignoreCase);
  */
-ILInt32 _IL_String_InternalCompare(ILExecThread *thread,
+ILInt32 _IL_String_CompareInternal(ILExecThread *thread,
 						   		   System_String *strA,
 								   ILInt32 indexA, ILInt32 lengthA,
 						   		   System_String *strB,
 								   ILInt32 indexB, ILInt32 lengthB,
-						   		   ILBool ignoreCase,
-						   		   ILObject *culture)
+						   		   ILBool ignoreCase)
 {
+	int cmp;
+
 	/* Handle the easy cases first */
 	if(!strA)
 	{
@@ -496,13 +448,40 @@ ILInt32 _IL_String_InternalCompare(ILExecThread *thread,
 		return 1;
 	}
 
-	/* TODO: handle culture information */
-
 	/* Compare the two strings */
 	if(ignoreCase)
 	{
-		return ILStrICmpUnicode(StringToBuffer(strA) + indexA, lengthA,
-							    StringToBuffer(strB) + indexB, lengthB);
+		if(lengthA >= lengthB)
+		{
+			cmp = ILUnicodeStringCompare
+					(StringToBuffer(strA) + indexA,
+					 StringToBuffer(strB) + indexB,
+					 (unsigned long)(long)lengthB);
+			if(cmp != 0)
+			{
+				return cmp;
+			}
+			if(lengthA > lengthB)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			cmp = ILUnicodeStringCompare
+					(StringToBuffer(strA) + indexA,
+					 StringToBuffer(strB) + indexB,
+					 (unsigned long)(long)lengthA);
+			if(cmp != 0)
+			{
+				return cmp;
+			}
+			return -1;
+		}
 	}
 	else
 	{
@@ -1564,13 +1543,13 @@ int ILStringCompare(ILExecThread *thread, ILString *strA, ILString *strB)
 int ILStringCompareIgnoreCase(ILExecThread *thread, ILString *strA,
 							  ILString *strB)
 {
-	return (int)(_IL_String_InternalCompare
+	return (int)(_IL_String_CompareInternal
 						(thread,
 						 (System_String *)strA, 0,
 						 ((strA != 0) ? ((System_String *)strA)->length : 0),
 						 (System_String *)strB, 0,
 						 ((strB != 0) ? ((System_String *)strB)->length : 0),
-						 (ILBool)1, (void *)0));
+						 (ILBool)1));
 }
 
 int ILStringCompareOrdinal(ILExecThread *thread, ILString *strA,

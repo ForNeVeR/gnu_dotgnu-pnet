@@ -410,15 +410,6 @@ static void marshal_ippiipii(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_ippiipiibp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32, ILInt32, ILInt8, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((ILInt8 *)(avalue[7])), *((void * *)(avalue[8])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
 static void marshal_ppppi(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])));
@@ -431,6 +422,15 @@ static void marshal_ppppi(void (*fn)(), void *rvalue, void **avalue)
 static void marshal_pppiip(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ippiipiib(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32, ILInt32, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((ILInt8 *)(avalue[7])));
 }
 
 #endif
@@ -511,7 +511,6 @@ IL_METHOD_BEGIN(String_Methods)
 	IL_METHOD("Copy", "(oSystem.String;ioSystem.String;ii)V", _IL_String_Copy_StringiStringii, marshal_vppipii)
 	IL_METHOD("IndexOf", "(Tcii)i", _IL_String_IndexOf, marshal_ippSii)
 	IL_METHOD("InternalOrdinal", "(oSystem.String;iioSystem.String;ii)i", _IL_String_InternalOrdinal, marshal_ippiipii)
-	IL_METHOD("InternalCompare", "(oSystem.String;iioSystem.String;iiZoSystem.Globalization.CultureInfo;)i", _IL_String_InternalCompare, marshal_ippiipiibp)
 	IL_METHOD("Trim", "(T[ci)oSystem.String;", _IL_String_Trim, marshal_ppppi)
 	IL_CONSTRUCTOR(".ctor", "(T*cii)V", 0, 0, _IL_String_ctor_pcii, marshal_pppii)
 	IL_CONSTRUCTOR(".ctor", "(T*c)V", 0, 0, _IL_String_ctor_pc, marshal_ppp)
@@ -519,6 +518,7 @@ IL_METHOD_BEGIN(String_Methods)
 	IL_CONSTRUCTOR(".ctor", "(T*bii)V", 0, 0, _IL_String_ctor_pbii, marshal_pppii)
 	IL_CONSTRUCTOR(".ctor", "(T*b)V", 0, 0, _IL_String_ctor_pb, marshal_ppp)
 	IL_METHOD("Compare", "(oSystem.String;oSystem.String;)i", _IL_String_Compare, marshal_ippp)
+	IL_METHOD("CompareInternal", "(oSystem.String;iioSystem.String;iiZ)i", _IL_String_CompareInternal, marshal_ippiipiib)
 	IL_METHOD("NewBuilder", "(oSystem.String;i)oSystem.String;", _IL_String_NewBuilder, marshal_pppi)
 	IL_METHOD("Copy", "(oSystem.String;ioSystem.String;)V", _IL_String_Copy_StringiString, marshal_vppip)
 	IL_METHOD("InsertSpace", "(oSystem.String;ii)V", _IL_String_InsertSpace, marshal_vppii)

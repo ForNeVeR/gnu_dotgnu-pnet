@@ -73,7 +73,6 @@ extern System_String * _IL_String_NewString(ILExecThread * _thread, ILInt32 _p1)
 extern void _IL_String_Copy_StringiStringii(ILExecThread * _thread, System_String * _p1, ILInt32 _p2, System_String * _p3, ILInt32 _p4, ILInt32 _p5);
 extern ILInt32 _IL_String_IndexOf(ILExecThread * _thread, System_String * _this, ILUInt16 _p1, ILInt32 _p2, ILInt32 _p3);
 extern ILInt32 _IL_String_InternalOrdinal(ILExecThread * _thread, System_String * _p1, ILInt32 _p2, ILInt32 _p3, System_String * _p4, ILInt32 _p5, ILInt32 _p6);
-extern ILInt32 _IL_String_InternalCompare(ILExecThread * _thread, System_String * _p1, ILInt32 _p2, ILInt32 _p3, System_String * _p4, ILInt32 _p5, ILInt32 _p6, ILBool _p7, ILObject * _p8);
 extern System_String * _IL_String_Trim(ILExecThread * _thread, System_String * _this, System_Array * _p1, ILInt32 _p2);
 extern System_String * _IL_String_ctor_pcii(ILExecThread * _thread, ILUInt16 * _p1, ILInt32 _p2, ILInt32 _p3);
 extern System_String * _IL_String_ctor_pc(ILExecThread * _thread, ILUInt16 * _p1);
@@ -81,6 +80,7 @@ extern System_String * _IL_String_ctor_pbiiEncoding(ILExecThread * _thread, ILIn
 extern System_String * _IL_String_ctor_pbii(ILExecThread * _thread, ILInt8 * _p1, ILInt32 _p2, ILInt32 _p3);
 extern System_String * _IL_String_ctor_pb(ILExecThread * _thread, ILInt8 * _p1);
 extern ILInt32 _IL_String_Compare(ILExecThread * _thread, System_String * _p1, System_String * _p2);
+extern ILInt32 _IL_String_CompareInternal(ILExecThread * _thread, System_String * _p1, ILInt32 _p2, ILInt32 _p3, System_String * _p4, ILInt32 _p5, ILInt32 _p6, ILBool _p7);
 extern System_String * _IL_String_NewBuilder(ILExecThread * _thread, System_String * _p1, ILInt32 _p2);
 extern void _IL_String_Copy_StringiString(ILExecThread * _thread, System_String * _p1, ILInt32 _p2, System_String * _p3);
 extern void _IL_String_InsertSpace(ILExecThread * _thread, System_String * _p1, ILInt32 _p2, ILInt32 _p3);

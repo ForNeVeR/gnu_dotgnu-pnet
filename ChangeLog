@@ -1,4 +1,9 @@
 
+2003-11-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/Makefile.am, engine/int_proto.h, engine/int_table.c,
+	engine/lib_serial.c: stub out internalcalls for "PortMethods".
+
 2003-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, engine/Makefile.am, engine/lib_stdio.c,

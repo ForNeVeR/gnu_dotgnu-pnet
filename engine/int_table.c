@@ -2301,6 +2301,15 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_vpiS(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILInt32, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILUInt16 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_vpii(void (*fn)(), void *rvalue, void **avalue)
 {
 	(*(void (*)(void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILInt32 *)(avalue[2])));
@@ -2335,15 +2344,6 @@ static void marshal_vpipii(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vpiS(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, ILInt32, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILUInt16 *)(avalue[2])));
-}
-
-#endif
-
 #ifndef _IL_Stdio_suppressed
 
 IL_METHOD_BEGIN(Stdio_Methods)
@@ -2351,6 +2351,7 @@ IL_METHOD_BEGIN(Stdio_Methods)
 	IL_METHOD("Beep", "()V", _IL_Stdio_Beep, marshal_vp)
 	IL_METHOD("Clear", "()V", _IL_Stdio_Clear, marshal_vp)
 	IL_METHOD("ReadKey", "(&c&i&i)V", _IL_Stdio_ReadKey, marshal_vpppp)
+	IL_METHOD("StdWrite", "(ic)V", _IL_Stdio_StdWrite_ic, marshal_vpiS)
 	IL_METHOD("SetCursorPosition", "(ii)V", _IL_Stdio_SetCursorPosition, marshal_vpii)
 	IL_METHOD("SetTextAttributes", "(i)V", _IL_Stdio_SetTextAttributes, marshal_vpi)
 	IL_METHOD("GetBufferSize", "(&i&i)V", _IL_Stdio_GetBufferSize, marshal_vppp)
@@ -2365,7 +2366,6 @@ IL_METHOD_BEGIN(Stdio_Methods)
 	IL_METHOD("StdFlush", "(i)V", _IL_Stdio_StdFlush, marshal_vpi)
 	IL_METHOD("StdRead", "(i[Bii)i", _IL_Stdio_StdRead_iaBii, marshal_ipipii)
 	IL_METHOD("StdWrite", "(i[Bii)V", _IL_Stdio_StdWrite_iaBii, marshal_vpipii)
-	IL_METHOD("StdWrite", "(ic)V", _IL_Stdio_StdWrite_ic, marshal_vpiS)
 	IL_METHOD("StdWrite", "(i[cii)V", _IL_Stdio_StdWrite_iacii, marshal_vpipii)
 	IL_METHOD("StdWrite", "(ioSystem.String;)V", _IL_Stdio_StdWrite_iString, marshal_vpip)
 IL_METHOD_END
@@ -2839,6 +2839,46 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_bpii(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_jpiip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((void * *)(avalue[3])));
+}
+
+#endif
+
+#ifndef _IL_PortMethods_suppressed
+
+IL_METHOD_BEGIN(PortMethods_Methods)
+	IL_METHOD("GetRecommendedBufferSizes", "(&i&i&i)V", _IL_PortMethods_GetRecommendedBufferSizes, marshal_vpppp)
+	IL_METHOD("IsValid", "(ii)Z", _IL_PortMethods_IsValid, marshal_bpii)
+	IL_METHOD("Modify", "(joPlatform.PortMethods/Parameters;)V", _IL_PortMethods_Modify, marshal_vpjp)
+	IL_METHOD("GetBytesToRead", "(j)i", _IL_PortMethods_GetBytesToRead, marshal_ipj)
+	IL_METHOD("GetBytesToWrite", "(j)i", _IL_PortMethods_GetBytesToWrite, marshal_ipj)
+	IL_METHOD("ReadPins", "(j)i", _IL_PortMethods_ReadPins, marshal_ipj)
+	IL_METHOD("WritePins", "(jii)V", _IL_PortMethods_WritePins, marshal_vpjii)
+	IL_METHOD("Close", "(j)V", _IL_PortMethods_Close, marshal_vpj)
+	IL_METHOD("DiscardInBuffer", "(j)V", _IL_PortMethods_DiscardInBuffer, marshal_vpj)
+	IL_METHOD("DiscardOutBuffer", "(j)V", _IL_PortMethods_DiscardOutBuffer, marshal_vpj)
+	IL_METHOD("IsAccessible", "(ii)Z", _IL_PortMethods_IsAccessible, marshal_bpii)
+	IL_METHOD("Open", "(iioPlatform.PortMethods/Parameters;)j", _IL_PortMethods_Open, marshal_jpiip)
+	IL_METHOD("DrainOutBuffer", "(j)V", _IL_PortMethods_DrainOutBuffer, marshal_vpj)
+	IL_METHOD("Read", "(j[Bii)i", _IL_PortMethods_Read, marshal_ipjpii)
+	IL_METHOD("Write", "(j[Bii)V", _IL_PortMethods_Write, marshal_vpjpii)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_lpl(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *, ILInt64))fn)(*((void * *)(avalue[0])), *((ILInt64 *)(avalue[1])));
@@ -3063,6 +3103,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_ParameterBuilder_suppressed
 	{"ParameterBuilder", "System.Reflection.Emit", ParameterBuilder_Methods},
+#endif
+#ifndef _IL_PortMethods_suppressed
+	{"PortMethods", "Platform", PortMethods_Methods},
 #endif
 #ifndef _IL_Process_suppressed
 	{"Process", "System.Diagnostics", Process_Methods},

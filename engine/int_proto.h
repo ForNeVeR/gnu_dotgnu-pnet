@@ -500,6 +500,7 @@ extern void _IL_Stdio_SetConsoleMode(ILExecThread * _thread, ILInt32 mode);
 extern void _IL_Stdio_Beep(ILExecThread * _thread);
 extern void _IL_Stdio_Clear(ILExecThread * _thread);
 extern void _IL_Stdio_ReadKey(ILExecThread * _thread, ILUInt16 * ch, ILInt32 * key, ILInt32 * modifiers);
+extern void _IL_Stdio_StdWrite_ic(ILExecThread * _thread, ILInt32 fd, ILUInt16 value);
 extern void _IL_Stdio_SetCursorPosition(ILExecThread * _thread, ILInt32 x, ILInt32 y);
 extern void _IL_Stdio_SetTextAttributes(ILExecThread * _thread, ILInt32 attrs);
 extern void _IL_Stdio_GetBufferSize(ILExecThread * _thread, ILInt32 * width, ILInt32 * height);
@@ -514,7 +515,6 @@ extern ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread * _thread, ILInt32 fd, Syste
 extern void _IL_Stdio_StdFlush(ILExecThread * _thread, ILInt32 fd);
 extern ILInt32 _IL_Stdio_StdRead_iaBii(ILExecThread * _thread, ILInt32 fd, System_Array * value, ILInt32 index, ILInt32 count);
 extern void _IL_Stdio_StdWrite_iaBii(ILExecThread * _thread, ILInt32 fd, System_Array * value, ILInt32 index, ILInt32 count);
-extern void _IL_Stdio_StdWrite_ic(ILExecThread * _thread, ILInt32 fd, ILUInt16 value);
 extern void _IL_Stdio_StdWrite_iacii(ILExecThread * _thread, ILInt32 fd, System_Array * value, ILInt32 index, ILInt32 count);
 extern void _IL_Stdio_StdWrite_iString(ILExecThread * _thread, ILInt32 fd, ILString * value);
 
@@ -649,6 +649,22 @@ extern ILBool _IL_SocketMethods_CanStartThreads(ILExecThread * _thread);
 extern ILBool _IL_SocketMethods_QueueCompletionItem(ILExecThread * _thread, ILObject * callback, ILObject * state);
 extern ILObject * _IL_SocketMethods_CreateManualResetEvent(ILExecThread * _thread);
 extern void _IL_SocketMethods_WaitHandleSet(ILExecThread * _thread, ILObject * waitHandle);
+
+extern void _IL_PortMethods_GetRecommendedBufferSizes(ILExecThread * _thread, ILInt32 * readBufferSize, ILInt32 * writeBufferSize, ILInt32 * receivedBytesThreshold);
+extern ILBool _IL_PortMethods_IsValid(ILExecThread * _thread, ILInt32 type, ILInt32 portNumber);
+extern void _IL_PortMethods_Modify(ILExecThread * _thread, ILNativeInt handle, ILObject * parameters);
+extern ILInt32 _IL_PortMethods_GetBytesToRead(ILExecThread * _thread, ILNativeInt handle);
+extern ILInt32 _IL_PortMethods_GetBytesToWrite(ILExecThread * _thread, ILNativeInt handle);
+extern ILInt32 _IL_PortMethods_ReadPins(ILExecThread * _thread, ILNativeInt handle);
+extern void _IL_PortMethods_WritePins(ILExecThread * _thread, ILNativeInt handle, ILInt32 mask, ILInt32 value);
+extern void _IL_PortMethods_Close(ILExecThread * _thread, ILNativeInt handle);
+extern void _IL_PortMethods_DiscardInBuffer(ILExecThread * _thread, ILNativeInt handle);
+extern void _IL_PortMethods_DiscardOutBuffer(ILExecThread * _thread, ILNativeInt handle);
+extern ILBool _IL_PortMethods_IsAccessible(ILExecThread * _thread, ILInt32 type, ILInt32 portNumber);
+extern ILNativeInt _IL_PortMethods_Open(ILExecThread * _thread, ILInt32 type, ILInt32 portNumber, ILObject * parameters);
+extern void _IL_PortMethods_DrainOutBuffer(ILExecThread * _thread, ILNativeInt handle);
+extern ILInt32 _IL_PortMethods_Read(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 count);
+extern void _IL_PortMethods_Write(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 count);
 
 extern ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread * _thread, ILInt32 host);
 extern ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread * _thread, ILInt32 network);

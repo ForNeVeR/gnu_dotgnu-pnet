@@ -6,6 +6,9 @@
 
 	* cscc/c/c_oper.tc (BinarySem): minor bug in previous check-in.
 
+	* cscc/common/cc_main.c: add "-w" to the cpp command-line to
+	stop GNU cpp complaining about the symbols that we redefine.
+
 2002-08-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c (_ILCallPackVaParams): copy the "va_list"

@@ -778,7 +778,11 @@ static void ParseFile(const char *filename, int is_stdin)
 				CCStringListAdd(&argv, &argc, "-C");
 			}
 		}
-		CCStringListAdd(&argv, &argc, "-Wall");
+		/* Note: we have to inhibit all cpp warnings or GNU cpp gets
+		   touchy when we redefine some of its builtin symbols.  This
+		   wouldn't be necessary if "-undef" actually did what it is
+		   supposed to do, but it only undefines some symbols, not all */
+		CCStringListAdd(&argv, &argc, "-w");
 		CCStringListAdd(&argv, &argc, "-nostdinc");
 		CCStringListAdd(&argv, &argc, "-nostdinc++");
 		CCStringListAdd(&argv, &argc, "-undef");

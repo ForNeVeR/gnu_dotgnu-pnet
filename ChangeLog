@@ -7,6 +7,11 @@
 	csharp/expr/newarray4.jerr: test cases for array initializers
 	used within "new" expressions.
 
+	* c/decl/Makefile.am, c/decl/type1.c, c/decl/type2.3err,
+	c/decl/type2.c, c/decl/type2.err, c/decl/type3.3il,
+	c/decl/type3.c, c/decl/type3.il: new test cases for type
+	specifiers and declarations.
+
 2002-08-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/decl/type1.3il, c/decl/type1.c, c/decl/type1.il,

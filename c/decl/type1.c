@@ -1,5 +1,5 @@
 /*
- * type1.cs - Test simple type specifiers on basic types.
+ * type1.c - Test simple type specifiers on basic types.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *

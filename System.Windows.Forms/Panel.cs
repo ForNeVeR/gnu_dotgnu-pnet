@@ -31,6 +31,7 @@ namespace System.Windows.Forms
 			TabStop = false;
 			SetStyle(ControlStyles.AllPaintingInWmPaint /*| ControlStyles.Selectable*/, false);
 			SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+			SetStyle(ControlStyles.Selectable, false);
 		}
 
 		public BorderStyle BorderStyle 

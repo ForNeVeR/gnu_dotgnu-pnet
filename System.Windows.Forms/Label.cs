@@ -44,6 +44,8 @@ public class Label : Control
 			{
 				SetStyle(ControlStyles.ResizeRedraw, true);
 				SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+				SetStyle(ControlStyles.Selectable, false);
+
 				this.useMnemonic = true;
 				this.flatStyle = FlatStyle.Standard;
 				this.alignment = ContentAlignment.TopLeft;

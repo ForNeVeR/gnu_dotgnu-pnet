@@ -36,6 +36,7 @@ namespace System.Windows.Forms
 
 		public ProgressBar() : base("ProgressBar")
 			{
+				SetStyle(ControlStyles.Selectable, false);
 			}
 
 		/* NOTE: not really sure how the stuff is drawn , but

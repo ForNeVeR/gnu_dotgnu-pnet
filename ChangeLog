@@ -1,3 +1,10 @@
+2005-03-24  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/Label.cs, System.Windows.Forms/Panel.cs,
+	System.Windows.Forms/PictureBox.cs,
+	System.Windows.Forms/Progressbar.cs: Prevent controls from receiving
+	input focus, opt-out style as suggested by Marc Haisenko.
+
 2005-03-22  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Xml/XmlReader.cs: Fix bug in Skip(). (Bug #12385)

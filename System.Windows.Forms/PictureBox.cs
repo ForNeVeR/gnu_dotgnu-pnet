@@ -37,6 +37,7 @@ namespace System.Windows.Forms
 			sizeMode = PictureBoxSizeMode.Normal;
 			TabStop = false;
 			SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+			SetStyle(ControlStyles.Selectable, false);
 		}
 
 		public override bool AllowDrop

@@ -211,6 +211,7 @@ public class TextBox : TextBoxBase
 				Controls.Add(vScrollBar);
 				//TODO adjust scrollbar
 			}
+			vScrollBar.Maximum = 0;
 		}
 		else if (vScrollBar != null)
 		{
@@ -230,6 +231,7 @@ public class TextBox : TextBoxBase
 				Controls.Add(hScrollBar);
 				//TODO adjust scrollbar
 			}
+			hScrollBar.Maximum = 0;
 		}
 		else if (hScrollBar != null)
 		{
@@ -274,21 +276,28 @@ public class TextBox : TextBoxBase
 				hScrollBar.Visible = true;
 		}
 
+
 		if (vScrollBar != null)
 		{
 			vScrollBar.Bounds = new Rectangle(ClientRectangle.Width - vScrollBar.Width, 0, vScrollBar.Width, height);
-			vScrollBar.Maximum = MaxTextDimensions.Height;
+			int maxTextDimensions = MaxTextDimensions.Height;
+			if (vScrollBar.Maximum < maxTextDimensions)
+				vScrollBar.Maximum = maxTextDimensions;
+			if (vScrollBar.Maximum < TextDrawArea.Height)
+				vScrollBar.Maximum = TextDrawArea.Height;
 			vScrollBar.SmallChange = Font.Height;
-
-			int largeChange = TextDrawArea.Height;
-			vScrollBar.LargeChange = largeChange;
+			vScrollBar.LargeChange = TextDrawArea.Height + 1;			
 		}
 		if (hScrollBar != null)
 		{
 			hScrollBar.Bounds = new Rectangle(0, ClientRectangle.Height - hScrollBar.Height, width, hScrollBar.Height);
-			hScrollBar.Maximum = MaxTextDimensions.Width;
+			int maxTextDimensions = MaxTextDimensions.Width;
+			if (hScrollBar.Maximum < maxTextDimensions)
+				hScrollBar.Maximum = maxTextDimensions;
+			if (hScrollBar.Maximum < TextDrawArea.Width)
+				hScrollBar.Maximum = TextDrawArea.Width;
 			hScrollBar.SmallChange = 5;
-			hScrollBar.LargeChange = TextDrawArea.Width/5;
+			hScrollBar.LargeChange = TextDrawArea.Width + 1;
 		}
 	}
 
@@ -539,6 +548,8 @@ public class TextBox : TextBoxBase
 		caretHiding = true;
 		Redraw(ControlGraphics);
 		mouseDown = false;
+		// We dont need to update any selection
+		selectedRegion = null;
 	}
 
 	protected override void OnFontChanged(EventArgs e)
@@ -931,6 +942,8 @@ public class TextBox : TextBoxBase
 			Region redrawRegion = newRegion.Clone();
 			redrawRegion.Xor(selectedRegion);
 			redrawRegion.Translate(-xViewOffset, -yViewOffset);
+			// Only allow updates in the TextDrawArea
+			redrawRegion.Intersect(new Region(TextDrawArea));
 			AddUpdate(redrawRegion);
 		}
 		else

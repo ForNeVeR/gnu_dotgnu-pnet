@@ -368,8 +368,9 @@ public class Control : IWin32Window
 				}
 				set
 				{
-					SetBoundsCore(value.Left, value.Top, value.Width, 
-						value.Height, BoundsSpecified.All);
+					if (value != Bounds)
+						SetBoundsCore(value.Left, value.Top, value.Width, 
+							value.Height, BoundsSpecified.All);
 				}
 			}
 	public bool CanFocus

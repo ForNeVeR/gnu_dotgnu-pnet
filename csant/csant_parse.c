@@ -194,19 +194,39 @@ static int IncludesDependency(CSAntTarget *desc1, CSAntTarget *desc2)
  */
 static int RecordDependency(char *target, const char *dependsOn)
 {
-	CSAntTarget *desc1 = FindTarget(target);
-	CSAntTarget *desc2 = FindTarget(dependsOn);
-	if(IncludesDependency(desc2, desc1))
+	const char* pos;
+  	const char* commaPosition;
+	char *dependsFileName;
+	CSAntTarget *desc1;
+	CSAntTarget *desc2;
+	
+	for (pos = dependsOn; ; pos = commaPosition + 1)
 	{
-		return 0;
+	  	commaPosition = strchr(pos, ',');
+		if(!commaPosition)
+			commaPosition = strchr(pos, '\0');
+		dependsFileName = ILDupNString(pos, commaPosition - pos);
+		if (!dependsFileName)
+		{
+			CSAntOutOfMemory();
+		}
+		desc1 = FindTarget(target);
+		desc2 = FindTarget(dependsFileName);
+		ILFree(dependsFileName);
+		if(IncludesDependency(desc2, desc1))
+		{
+			return 0;
+		}
+		desc1->dependsOn = (CSAntTarget **)ILRealloc
+			(desc1->dependsOn, sizeof(CSAntTarget *) * (desc1->numDependsOn + 1));
+		if(!(desc1->dependsOn))
+		{
+			CSAntOutOfMemory();
+		}
+		desc1->dependsOn[(desc1->numDependsOn)++] = desc2;
+		if (*commaPosition == '\0')
+			break;
 	}
-	desc1->dependsOn = (CSAntTarget **)ILRealloc
-		(desc1->dependsOn, sizeof(CSAntTarget *) * (desc1->numDependsOn + 1));
-	if(!(desc1->dependsOn))
-	{
-		CSAntOutOfMemory();
-	}
-	desc1->dependsOn[(desc1->numDependsOn)++] = desc2;
 	return 1;
 }
 

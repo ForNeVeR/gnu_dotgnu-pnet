@@ -1,4 +1,11 @@
 
+2002-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/type1.cs,
+	csharp/class/type1.il, csharp/class/type1.jl: test the
+	use of identifiers as both types and non-types in the
+	same class.
+
 2002-03-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/interface1.il,

@@ -118,8 +118,22 @@ namespace System.IO
 		public static String GetFileNameWithoutExtension(String path)
 		{
 			String fname=GetFileName(path);
+			
+			if (fname == null) return null;
+
 			if(fname.IndexOf('.')==-1)return fname;
 			return	fname.Substring(0,fname.LastIndexOf('.'));
+		}
+
+		public static String GetExtension(String path)
+		{
+			String fname = GetFileName( path );
+
+			if (fname == null) return null;
+
+			if (fname.IndexOf( '.' ) == -1) return String.Empty;
+
+			return fname.Substring( fname.LastIndexOf( '.' ) );
 		}
 		
 		public static String GetFullPath(String path)

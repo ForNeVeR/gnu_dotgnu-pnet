@@ -1,4 +1,9 @@
 
+2002-12-08  Craig Altenburg (Qeygh) <craiga@qonos.org>
+	
+	* System/IO/Path.cs: Update to System.IO.Path (Patch ID: 784),
+	(checked in by Gopal).
+
 2002-12-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/native.html: remove "native.html" because it is hopelessly

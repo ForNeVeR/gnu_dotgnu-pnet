@@ -139,10 +139,6 @@ public sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 					return -1;
 				}
 				value |= (byteval << 24);
-				if(value < 0)
-				{
-					return -1;
-				}
 				return value;
 			}
 
@@ -197,6 +193,41 @@ public sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 				return Encoding.UTF8.GetString(buf, 0, length);
 			}
 
+	// Read a Unicode string value from a stream.  Returns null if invalid.
+	private static String ReadUnicodeString(Stream stream)
+			{
+				int length = ReadLength(stream);
+				if(length < 0)
+				{
+					return null;
+				}
+				length /= 2;
+				if(length == 0)
+				{
+					return String.Empty;
+				}
+				StringBuilder builder = new StringBuilder(length);
+				int ch, byteval;
+				while(length > 0)
+				{
+					byteval = stream.ReadByte();
+					if(byteval == -1)
+					{
+						return null;
+					}
+					ch = byteval;
+					byteval = stream.ReadByte();
+					if(byteval == -1)
+					{
+						return null;
+					}
+					ch |= (byteval << 8);
+					builder.Append((char)ch);
+					--length;
+				}
+				return builder.ToString();
+			}
+
 	// Read the resource stream header.  Returns false if
 	// the header was invalid in some way.
 	private bool ReadHeader()
@@ -236,6 +267,7 @@ public sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 				while(numTypes > 0)
 				{
 					ReadString(stream);
+					--numTypes;
 				}
 
 				// Read the name hash table into memory.
@@ -329,7 +361,7 @@ public sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 				while(left <= right)
 				{
 					stream.Seek(nameStart + namePosn[left], SeekOrigin.Begin);
-					test = ReadString(stream);
+					test = ReadUnicodeString(stream);
 					if(test != null && test.Equals(name))
 					{
 						// We have found a name match: fetch the value.
@@ -380,7 +412,7 @@ public sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 					{
 						stream.Seek(reader.nameStart + reader.namePosn[posn],
 									SeekOrigin.Begin);
-						key = ReadString(stream);
+						key = ReadUnicodeString(stream);
 						if(key == null)
 						{
 							throw new InvalidOperationException

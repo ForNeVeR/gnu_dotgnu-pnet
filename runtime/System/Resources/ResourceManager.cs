@@ -208,7 +208,12 @@ public class ResourceManager
 				}
 				lock(this)
 				{
-					// TODO
+					ResourceSet set = InternalGetResourceSet
+						(culture, true, true);
+					if(set != null)
+					{
+						return set.GetObject(name);
+					}
 				}
 				return null;
 			}
@@ -246,7 +251,12 @@ public class ResourceManager
 				}
 				lock(this)
 				{
-					// TODO
+					ResourceSet set = InternalGetResourceSet
+						(culture, true, true);
+					if(set != null)
+					{
+						return set.GetString(name);
+					}
 				}
 				return name;
 			}

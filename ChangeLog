@@ -3,6 +3,11 @@
 
 	* System/Net/SocketAddress.cs: fix semantic compile errors.
 
+	* runtime/System/Reflection/ClrResourceStream.cs,
+	runtime/System/Resources/ResourceManager.cs,
+	runtime/System/Resources/ResourceReader.cs: fix the parsing
+	of text resources so that _(xxx) works properly.
+
 2002-06-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/SocketAddress.cs: fix some syntax errors.

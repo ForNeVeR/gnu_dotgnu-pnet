@@ -139,7 +139,7 @@ internal sealed class ClrResourceStream : Stream
 									  buffer, offset, count);
 				if(result > 0)
 				{
-					position = result;
+					position += result;
 				}
 
 				// Return the number of bytes that were read to the caller.

@@ -41,6 +41,11 @@
 	* System.Xml/XmlParserContext.cs: make the namespace manager test
 	a little clearer to understand.
 
+	* System.Xml/XmlConvert.cs, System.Xml/XmlReader.cs,
+	System.Xml/XmlTextReader.cs, resources/en_US/System.Xml/Xml.txt:
+	re-implement "XmlReader" according to the ECMA specification,
+	and add lots more comments for greater code clarity.
+
 2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.2.6" release.

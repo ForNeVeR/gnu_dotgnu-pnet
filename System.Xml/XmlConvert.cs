@@ -139,7 +139,7 @@ public class XmlConvert
 			}
 
 	// Determine if a character is a name start.
-	private static bool IsNameStart(char ch, bool allowColon)
+	internal static bool IsNameStart(char ch, bool allowColon)
 			{
 				UnicodeCategory category = Char.GetUnicodeCategory(ch);
 				if(category == UnicodeCategory.LowercaseLetter ||
@@ -157,7 +157,7 @@ public class XmlConvert
 			}
 
 	// Determine if a character is a non-start name character.
-	private static bool IsNameNonStart(char ch, bool allowColon)
+	internal static bool IsNameNonStart(char ch, bool allowColon)
 			{
 				UnicodeCategory category = Char.GetUnicodeCategory(ch);
 				if(category == UnicodeCategory.LowercaseLetter ||

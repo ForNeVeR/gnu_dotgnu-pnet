@@ -23,3 +23,5 @@ Xml_InvalidPrefix=The specified prefix is invalid
 Xml_BooleanFormat=Invalid format for boolean value
 Xml_InvalidName=Name is not in a valid XML format
 Xml_InvalidNamespace=Invalid namespace specified
+Xml_IncorrectNode=Node was unexpected at this point in the XML input
+Xml_UnexpectedEOF=The end of the XML input stream was encountered unexpectedly

@@ -51,8 +51,10 @@ using System.Text;
 public class XmlTextReader : XmlReader
 {
 	//Variables inherited from XmlReader (DO NOT UNCOMMENT):
-	//internal protected XmlNode root;  The root node, it can be used to access all other nodes
-	//internal protected XmlNode current;  The pointer node
+	// they've now been uncommented because XmlReader should not have state
+	// -- Rhys.
+	internal XmlNode root;  // The root node, it can be used to access all other nodes
+	internal XmlNode current;  // The pointer node
 
 	private ReadState readstate;
 	private String rawxml;

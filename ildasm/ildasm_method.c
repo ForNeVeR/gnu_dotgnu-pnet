@@ -849,6 +849,29 @@ static void DumpLocals(ILImage *image, FILE *outstream,
 	}
 }
 
+/*
+ * Dump the custom attributes on the parameters.
+ */
+static void DumpParameterAttributes(ILImage *image, FILE *outstream,
+									ILMethod *method, int flags)
+{
+	ILParameter *param = 0;
+	ILAttribute *attr;
+	while((param = ILMethodNextParam(method, param)) != 0)
+	{
+		attr = ILProgramItemNextAttribute(ILToProgramItem(param), 0);
+		if(attr || ILConstantGetFromOwner(ILToProgramItem(param)) != 0)
+		{
+			fprintf(outstream, "\t\t.param [%ld]",
+					(long)(ILParameter_Num(param)));
+			ILDumpConstant(outstream, ILToProgramItem(param), 0);
+			putc('\n', outstream);
+			ILDAsmDumpCustomAttrs(image, outstream, flags, 2,
+								  ILToProgramItem(param));
+		}
+	}
+}
+
 void ILDAsmDumpMethod(ILImage *image, FILE *outstream,
 					  ILMethod *method, int flags,
 					  int isEntryPoint)
@@ -885,6 +908,7 @@ void ILDAsmDumpMethod(ILImage *image, FILE *outstream,
 	/* Output method header information */
 	fprintf(outstream, "\t\t// Start of method header: %lx\n",
 			(unsigned long)(addr - code.headerSize));
+	DumpParameterAttributes(image, outstream, method, flags);
 	if(isEntryPoint)
 	{
 		fputs("\t\t.entrypoint\n", outstream);

@@ -1,4 +1,9 @@
 
+2003-06-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ildasm/ildasm_method.c: dump custom attribute and constant
+	values that are attached to method parameters.
+
 2003-06-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y: Wrap all 'using' blocks in a new local

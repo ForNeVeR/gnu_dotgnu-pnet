@@ -1,3 +1,9 @@
+pnet (0.5.2) unstable; urgency=low
+
+  * New upstream release
+
+ -- Andrew Mitchell <ajmitch@ajmitch.dhis.org>  Sun, 9 Feb 2003 17:14:41 +1300
+
 pnet (0.4.8-1) unstable; urgency=low
 
   * New upstream release

@@ -49,8 +49,12 @@ install: build
 
 	# Add here commands to install the package into debian/pnet.
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/pnet
-	#cp -a samples/System $(CURDIR)/debian/pnet/usr/share/doc/pnet
+	ln -sf ilalink.1 $(CURDIR)/debian/pnet/usr/share/man/man1/al.1 
+	mv debian/pnet/usr/bin/ilasm debian/pnet/usr/bin/ilasm.pnet
+	mv debian/pnet/usr/share/man/man1/ilasm.1 \
+	debian/pnet/usr/share/man/man1/ilasm.pnet.1 
 	dh_movefiles --sourcedir=debian/pnet
+
 
 binary-indep: build install
 	dh_testdir -i
@@ -81,7 +85,7 @@ binary-arch: build install
 	dh_fixperms -a
 	dh_makeshlibs -a
 	dh_installdeb -a
-	dh_shlibdeps -a
+	dh_shlibdeps -a -X libreadline4
 	dh_gencontrol -a
 	dh_md5sums -a
 	dh_builddeb -a

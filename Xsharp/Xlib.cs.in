@@ -209,6 +209,23 @@ internal sealed class Xlib
 			 out Xuint width_return, out Xuint height_return,
 			 out Xuint border_width_return, out Xuint depth_return);
 
+	[DllImport("X11")]
+	extern public static @X_int@ XGrabKeyboard
+			(IntPtr display, Window grab_window, Bool owner_events,
+			 @X_int@ pointer_mode, @X_int@ keyboard_mode, Time time);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XGrabPointer
+			(IntPtr display, Window grab_window, Bool owner_events,
+			 @X_uint@ event_mask, @X_int@ pointer_mode, @X_int@ keyboard_mode,
+			 Window confine_to, Cursor cursor, Time time);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XUngrabKeyboard(IntPtr display, Time time);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XUngrabPointer(IntPtr display, Time time);
+
 	// Declare pixmap-related external functions.
 
 	[DllImport("X11")]

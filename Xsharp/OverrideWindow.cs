@@ -1,7 +1,7 @@
 /*
- * ModifierMask.cs - Key modifier mask values.
+ * OverrideWindow.cs - Widget handling for override-redirect windows.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,30 +24,24 @@ namespace Xsharp
 using System;
 
 /// <summary>
-/// <para>The <see cref="T:Xsharp.ModifierMask"/> enumeration specifies
-/// masks for key modifiers such as Shift, Control, etc.</para>
+/// <para>The <see cref="T:Xsharp.OverrideWindow"/> class manages
+/// windows that have the override-redirect bit set.</para>
+///
+/// <para>Applications should inherit from <see cref="T:Xsharp.PopupWindow"/>
+/// instead of this class.</para>
 /// </summary>
-[Flags]
-public enum ModifierMask
+public class OverrideWindow : InputOutputWidget
 {
+	// Constructor.
+	internal OverrideWindow(Widget parent, int x, int y, int width, int height)
+			: base(parent, x, y, width, height,
+				   new Color(StandardColor.Foreground),
+				   new Color(StandardColor.Background),
+				   true, true)
+			{
+				// Nothing to do here.
+			}
 
-	ShiftMask		= (1<<0),
-	LockMask		= (1<<1),
-	ControlMask		= (1<<2),
-	Mod1Mask		= (1<<3),
-	Mod2Mask		= (1<<4),
-	Mod3Mask		= (1<<5),
-	Mod4Mask		= (1<<6),
-	Mod5Mask		= (1<<7),
-	Button1Mask		= (1<<8),
-	Button2Mask		= (1<<9),
-	Button3Mask		= (1<<10),
-	Button4Mask		= (1<<11),
-	Button5Mask		= (1<<12),
-	AnyModifier		= (1<<15),
-	AllButtons		= Button1Mask | Button2Mask | Button3Mask |
-					  Button4Mask | Button5Mask
-
-} // enum ModifierMask
+} // class OverrideWindow
 
 } // namespace Xsharp

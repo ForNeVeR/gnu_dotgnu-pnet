@@ -44,6 +44,7 @@ public sealed class Screen
 	private int numBitmapGCs;
 	private const int GCCacheSize = 16;
 	private Color[] standardColors;
+	internal GrabWindow grabWindow;
 
 	// Constructor.
 	internal Screen(Display dpy, int number, IntPtr screen)
@@ -73,6 +74,9 @@ public sealed class Screen
 
 				// Create the placeholder window for parent-less widgets.
 				placeholder = new PlaceholderWindow(rootWindow);
+
+				// Create the grab window for managing popup window events.
+				grabWindow = new GrabWindow(rootWindow);
 			}
 
 	/// <summary>

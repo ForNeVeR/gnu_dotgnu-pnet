@@ -33,6 +33,7 @@ public class XmlTextWriter : XmlWriter
 	private System.Xml.Formatting formatting;
 	private int indentation;
 	private char indentChar;
+	private char[] indentChars;
 	private bool namespaces;
 	private char quoteChar;
 	private System.Xml.WriteState writeState;
@@ -43,7 +44,6 @@ public class XmlTextWriter : XmlWriter
 	private XmlSpace xmlSpace;
 	private String xmlLang;
 	private int pseudoNSNumber;
-	private bool prevWasText;
 	internal bool autoShiftToContent;
 	private enum Special
 	{
@@ -93,9 +93,13 @@ public class XmlTextWriter : XmlWriter
 				xmlSpace = XmlSpace.None;
 				xmlLang = null;
 				pseudoNSNumber = 1;
-				prevWasText = false;
 				special = Special.None;
 				autoShiftToContent = false;
+				indentChars = new char[indentation];
+				for (int i = 0; i < indentation; i++)
+				{
+					indentChars[i] = indentChar;
+				}
 			}
 
 	// Push a new element scope.
@@ -107,14 +111,12 @@ public class XmlTextWriter : XmlWriter
 					(localName != null ? nameTable.Add(localName) : null);
 				scope.xmlns = (xmlns != null ? nameTable.Add(xmlns) : null);
 				scope.scopeShown = scopeShown;
+				scope.indentLevel = indentLevel;
 				if(formatting == System.Xml.Formatting.Indented)
 				{
-					scope.indentLevel = indentLevel + indentation;
+					indentLevel++;
 				}
-				else
-				{
-					scope.indentLevel = indentLevel;
-				}
+				scope.indent = false;
 				scope.xmlSpace = xmlSpace;
 				scope.xmlLang = xmlLang;
 				namespaceManager.PushScope();
@@ -131,17 +133,24 @@ public class XmlTextWriter : XmlWriter
 			}
 
 	// Add indentation before the current element.
-	private void DoIndent()
+	private void DoIndent(bool useScope)
 			{
-				if(xmlSpace != System.Xml.XmlSpace.Preserve &&
-				   formatting == System.Xml.Formatting.Indented)
+				if(xmlSpace != System.Xml.XmlSpace.Preserve)
 				{
-					int indent = indentLevel;
-					writer.Write(Environment.NewLine);
-					while(indent > 0)
+					if(formatting == System.Xml.Formatting.Indented)
 					{
-						writer.Write(indentChar);
-						--indent;
+						int indent = useScope ? scope.indentLevel : indentLevel;
+						writer.Write(Environment.NewLine);
+						while(indent > 0)
+						{
+							writer.Write(indentChars);
+							--indent;
+						}
+						// flag that perent element needs DoIndent on WriteEndElement
+						if (!useScope && (scope != null))
+						{
+							scope.indent = true;
+						}
 					}
 				}
 			}
@@ -160,8 +169,10 @@ public class XmlTextWriter : XmlWriter
 	}; // enum WriteStateFlag
 
 	// Synchronize the output with a particular document area.
-	private void Sync(WriteStateFlag flags)
+	private void Sync(WriteStateFlag flags, bool indent)
 			{
+				System.Xml.WriteState writeStateOnCalling = writeState;
+
 				// Determine if the current write state is compatible
 				// with the synchronisation flags, and shift to the
 				// requested state if necessary.
@@ -250,12 +261,33 @@ public class XmlTextWriter : XmlWriter
 					}
 					break;
 				}
-				if(writeState == System.Xml.WriteState.Content)
+				if(indent) // do indent if possible
 				{
-					// Record that we wrote some text to a content field.
-					prevWasText = true;
+					bool needIndent;
+
+					if(scope != null)
+					{
+						needIndent = scope.indent;
+					}
+					else
+					{
+						needIndent = false;
+					}
+					if((writeStateOnCalling == System.Xml.WriteState.Prolog) ||
+						(writeStateOnCalling == System.Xml.WriteState.Element) ||
+						(writeStateOnCalling == System.Xml.WriteState.Attribute) ||
+						needIndent)
+					{
+						DoIndent(false);
+					}
 				}
 			}
+
+
+	private void WriteRawData(String value)
+	{
+		writer.Write(value);
+	}
 
 	// Write an xml declaration.
 	private void WriteXmlDeclaration(String text)
@@ -331,10 +363,6 @@ public class XmlTextWriter : XmlWriter
 						{
 							PopScope();
 						}
-						if(xmlSpace != System.Xml.XmlSpace.Preserve)
-						{
-							writer.WriteLine();
-						}
 					}
 					else if(writeState == System.Xml.WriteState.Element)
 					{
@@ -349,17 +377,18 @@ public class XmlTextWriter : XmlWriter
 					}
 					while(scope != null)
 					{
-						DoIndent();
+						if (scope.indent)
+						{
+							DoIndent(true);
+						}
 						writer.Write("</");
 						writer.Write(scope.localName);
 						writer.Write('>');
 						PopScope();
-						if(xmlSpace != System.Xml.XmlSpace.Preserve)
-						{
-							writer.WriteLine();
-						}
 					}
 
+					// write last newline
+					DoIndent(false);
 					// Flush and close the TextWriter stream.
 					Flush();
 					writer.Close();
@@ -409,7 +438,11 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidWriteState"));
 				}
 		
-				WriteRaw(XmlConvert.ToBase64String(buffer, index, count));
+				// Synchronize to the content or attribute area.
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag, false);
+
+				WriteRawData(XmlConvert.ToBase64String(buffer, index, count));
 			}
 	
 	// Encode an array as BinHex and write it out as text.
@@ -439,16 +472,13 @@ public class XmlTextWriter : XmlWriter
 				{
 					throw new InvalidOperationException
 						(S._("Xml_InvalidWriteState"));
-				}	
-				char[] hexCode = new char[] {'0','1','2','3','4','5','6','7'
-				,'8','9','A','B','C','D','E','F'};
-				byte currentByte;
-				for(int a = 0; a < count; a++)
-				{
-					currentByte = buffer[index+a];
-					WriteRaw(Convert.ToString(hexCode[currentByte >> 4]));
-					WriteRaw(Convert.ToString(hexCode[currentByte & 0xF]));
 				}
+
+				// Synchronize to the content or attribute area.
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag, false);
+
+				WriteRawData(XmlConvert.ToHexString(buffer, index, count));	
 			}
 
 	// Write out a CDATA block.
@@ -459,8 +489,9 @@ public class XmlTextWriter : XmlWriter
 					throw new ArgumentException
 						(S._("Xml_InvalidXmlWritten"), "text");
 				}
-				Sync(WriteStateFlag.ContentFlag);
+				Sync(WriteStateFlag.ContentFlag, false);
 				writer.Write("<![CDATA[");
+
 				if(text != null)
 				{
 					writer.Write(text);
@@ -472,7 +503,7 @@ public class XmlTextWriter : XmlWriter
 	public override void WriteCharEntity(char ch)
 			{
 				Sync(WriteStateFlag.ContentFlag |
-					 WriteStateFlag.AttributeFlag);
+					 WriteStateFlag.AttributeFlag, false);
 				writer.Write("&#x{0:X2};", (int)ch);
 			}
 
@@ -497,7 +528,7 @@ public class XmlTextWriter : XmlWriter
 
 				// Synchronize to the content or attribute area.
 				Sync(WriteStateFlag.ContentFlag |
-					 WriteStateFlag.AttributeFlag);
+					 WriteStateFlag.AttributeFlag, false);
 
 				// The buffer must not end in a low surrogate.
 				if(count > 0 &&
@@ -617,17 +648,19 @@ public class XmlTextWriter : XmlWriter
 	// Write a comment.
 	public override void WriteComment(String text)
 			{
-				// Bail out if the comment text contains "-->".
-				if(text != null && text.IndexOf("-->") != -1)
+				// Bail out if the comment text contains "--".
+				if (text !=  null && text.Length > 0)
 				{
-					throw new ArgumentException
-						(S._("Xml_InvalidXmlWritten"), "text");
+					if(text.IndexOf("--") != -1)
+					{
+						throw new ArgumentException
+							(S._("Xml_InvalidXmlWritten"), "text");
+					}
 				}
-
 				// Synchronize to an area that allows comments.
 				Sync(WriteStateFlag.StartFlag |
 				     WriteStateFlag.ContentFlag |
-					 WriteStateFlag.PrologFlag);
+					 WriteStateFlag.PrologFlag, true);
 
 				// Write out the comment.
 				writer.Write("<!--");
@@ -668,6 +701,7 @@ public class XmlTextWriter : XmlWriter
 				}
 
 				// Write out the document type information.
+				DoIndent(false);
 				writer.Write("<!DOCTYPE ");
 				writer.Write(name);
 				writeState = System.Xml.WriteState.Attribute;
@@ -700,7 +734,6 @@ public class XmlTextWriter : XmlWriter
 
 				// Return to the prolog.
 				writeState = System.Xml.WriteState.Prolog;
-				prevWasText = false;
 			}
 
 	// Write the end of an attribute.
@@ -735,35 +768,25 @@ public class XmlTextWriter : XmlWriter
 					writer.Write(quoteChar);
 					writer.Write(" />");
 					PopScope();
-					if(xmlSpace != System.Xml.XmlSpace.Preserve)
-					{
-						writer.WriteLine();
-					}
 				}
 				else if(writeState == System.Xml.WriteState.Element)
 				{
 					// Terminate the element start.
 					writer.Write(" />");
 					PopScope();
-					if(xmlSpace != System.Xml.XmlSpace.Preserve)
-					{
-						writer.WriteLine();
-					}
 				}
 				while(scope != null)
 				{
-					DoIndent();
+					if (scope.indent)
+					{
+						DoIndent(true);
+					}
 					writer.Write("</");
 					writer.Write(scope.localName);
 					writer.Write('>');
 					PopScope();
-					if(xmlSpace != System.Xml.XmlSpace.Preserve)
-					{
-						writer.WriteLine();
-					}
 				}
 				writeState = System.Xml.WriteState.Start;
-				prevWasText = false;
 			}
 
 	// Write the end of an element and pop the namespace scope.
@@ -778,9 +801,9 @@ public class XmlTextWriter : XmlWriter
 				else if(writeState == System.Xml.WriteState.Content)
 				{
 					// Terminate the element with a full end tag.
-					if(xmlSpace != System.Xml.XmlSpace.Preserve && !prevWasText)
+					if(scope.indent)
 					{
-						DoIndent();
+						DoIndent(true);
 					}
 					writer.Write("</");
 					if(scope.scopeShown && scope.prefix != null && scope.prefix != String.Empty)
@@ -800,7 +823,6 @@ public class XmlTextWriter : XmlWriter
 				// Pop the current scope.
 				PopScope();
 				writeState = System.Xml.WriteState.Content;
-				prevWasText = false;
 			}
 
 	// Write an entity reference.
@@ -812,7 +834,7 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidEntityRef"), "name");
 				}
 				Sync(WriteStateFlag.ContentFlag |
-					 WriteStateFlag.AttributeFlag);
+					 WriteStateFlag.AttributeFlag, false);
 				writer.Write("&{0};", name);
 			}
 
@@ -829,9 +851,9 @@ public class XmlTextWriter : XmlWriter
 				   writeState == System.Xml.WriteState.Content)
 				{
 					// Terminate the element with a full end tag.
-					if(xmlSpace != System.Xml.XmlSpace.Preserve && !prevWasText)
+					if(scope.indent)
 					{
-						DoIndent();
+						DoIndent(true);
 					}
 					writer.Write("</");
 					if(scope.scopeShown && scope.prefix != null && scope.prefix != String.Empty)
@@ -851,7 +873,6 @@ public class XmlTextWriter : XmlWriter
 				// Pop the current scope.
 				PopScope();
 				writeState = System.Xml.WriteState.Content;
-				prevWasText = false;
 			}
 
 	// Write a name, as long as it is XML-compliant.
@@ -863,7 +884,7 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidName"), "name");
 				}
 				Sync(WriteStateFlag.ContentFlag |
-					 WriteStateFlag.AttributeFlag);
+					 WriteStateFlag.AttributeFlag, false);
 				writer.Write(name);
 			}
 
@@ -876,7 +897,7 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidName"), "name");
 				}
 				Sync(WriteStateFlag.ContentFlag |
-					 WriteStateFlag.AttributeFlag);
+					 WriteStateFlag.AttributeFlag, false);
 				writer.Write(name);
 			}
 
@@ -907,16 +928,16 @@ public class XmlTextWriter : XmlWriter
 				// Synchronize to an area that allows processing instructions.
 				Sync(WriteStateFlag.StartFlag |
 				     WriteStateFlag.PrologFlag |
-				     WriteStateFlag.ContentFlag);
+				     WriteStateFlag.ContentFlag, true);
 
 				// Write out the processing instruction.
 				if(text != null && text.Length != 0)
 				{
-					writer.WriteLine("<?{0} {1}?>", name, text);
+					writer.Write("<?{0} {1}?>", name, text);
 				}
 				else
 				{
-					writer.WriteLine("<?{0}?>",name);
+					writer.Write("<?{0}?>",name);
 				}
 			}
 
@@ -1305,13 +1326,13 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidWriteState"));
 				}
 			#if !ECMA_COMPAT
-				writer.WriteLine
+				writer.Write
 					("<?xml version=\"1.0\" encoding=\"{0}\" " +
 					 "standalone=\"{1}\"?>",
 					 writer.Encoding.WebName,
 					 (standalone ? "yes" : "no"));
 			#else
-				writer.WriteLine
+				writer.Write
 					("<?xml version=\"1.0\" standalone=\"{0}\"?>",
 					 (standalone ? "yes" : "no"));
 			#endif
@@ -1327,10 +1348,10 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidWriteState"));
 				}
 			#if !ECMA_COMPAT
-				writer.WriteLine("<?xml version=\"1.0\" encoding=\"{0}\"?>",
+				writer.Write("<?xml version=\"1.0\" encoding=\"{0}\"?>",
 					 			 writer.Encoding.WebName);
 			#else
-				writer.WriteLine("<?xml version=\"1.0\"?>");
+				writer.Write("<?xml version=\"1.0\"?>");
 			#endif
 				writeState = System.Xml.WriteState.Prolog;
 			}
@@ -1351,7 +1372,7 @@ public class XmlTextWriter : XmlWriter
 					 WriteStateFlag.AttributeFlag |
 					 WriteStateFlag.ContentFlag |
 					 WriteStateFlag.StartFlag |
-					 WriteStateFlag.PrologFlag);
+					 WriteStateFlag.PrologFlag, true);
 
 				// Get the current scope prefix.
 				String currPrefix;
@@ -1366,10 +1387,6 @@ public class XmlTextWriter : XmlWriter
 
 				// Output the name of the element, with appropriate prefixes.
 				bool scopeShown = false;
-				if(xmlSpace != System.Xml.XmlSpace.Preserve && !prevWasText)
-				{
-					DoIndent();
-				}
 				writer.Write('<');
 				if(((Object)prefix) != null && prefix != String.Empty &&
 				   ((Object)ns) != null && ns != String.Empty)
@@ -1476,7 +1493,6 @@ public class XmlTextWriter : XmlWriter
 
 				// We are now in the element state.
 				writeState = System.Xml.WriteState.Element;
-				prevWasText = false;
 			}
 
 	// Write a quoted string.
@@ -1636,7 +1652,7 @@ public class XmlTextWriter : XmlWriter
 
 				// If we are in the element state, then shift to content.
 				Sync(WriteStateFlag.ContentFlag |
-					 WriteStateFlag.AttributeFlag);
+					 WriteStateFlag.AttributeFlag, false);
 
 				// Bail out if the text is empty.
 				if(((Object)text) == null || text.Length == 0)
@@ -1662,7 +1678,7 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidSurrogate"), "highChar");
 				}
 				Sync(WriteStateFlag.ContentFlag |
-					 WriteStateFlag.AttributeFlag);
+					 WriteStateFlag.AttributeFlag, false);
 				int ch = 0x10000 + ((highChar - 0xD800) << 10) +
 							(lowChar - 0xDC00);
 				writer.Write("&#x{0:X5};", ch);
@@ -1686,7 +1702,7 @@ public class XmlTextWriter : XmlWriter
 				}
 				Sync(WriteStateFlag.ContentFlag |
 					 WriteStateFlag.AttributeFlag |
-					 WriteStateFlag.PrologFlag);
+					 WriteStateFlag.PrologFlag, false);
 				writer.Write(ws);
 			}
 
@@ -1729,6 +1745,10 @@ public class XmlTextWriter : XmlWriter
 				set
 				{
 					indentChar = value;
+					for (int i = 0; i < indentation; i++)
+					{
+						indentChars[i] = indentChar;
+					}
 				}
 			}
 
@@ -1747,6 +1767,11 @@ public class XmlTextWriter : XmlWriter
 							(S._("ArgRange_NonNegative"), "value");
 					}
 					indentation = value;
+					indentChars = new char[indentation];
+					for (int i = 0; i < indentation; i++)
+					{
+						indentChars[i] = indentChar;
+					}
 				}
 			}
 
@@ -1824,6 +1849,7 @@ public class XmlTextWriter : XmlWriter
 		public String xmlLang;			// XmlLang for next higher scope.
 		public ElementScope next;		// The next higher scope.
 		public String xmlns;			// Xmlnamespace in scope.
+		public bool indent;				// flag that surrounding element needs DoIndent on end
 		public ElementScope(ElementScope next)
 				{
 					this.next = next;

@@ -97,6 +97,9 @@ public class XmlConvert
 		"--MM--zzzzzz"
 	};
 
+	private static readonly	char[] hexCode = {'0','1','2','3','4','5','6','7'
+				,'8','9','A','B','C','D','E','F'};
+	
 	// Constructor.
 	public XmlConvert() {}
 
@@ -771,6 +774,42 @@ public class XmlConvert
 				{
 					builder.Append(base64[bits << (6 - numBits)]);
 					builder.Append('=');
+				}
+
+				// Finished.
+				return builder.ToString();
+			}
+
+	// Convert a byte buffer into a hex String.
+	internal static String ToHexString
+				(byte[] inArray, int offset, int length)
+			{
+				// Validate the parameters.
+				if(inArray == null)
+				{
+					throw new ArgumentNullException("inArray");
+				}
+				if(offset < 0 || offset > inArray.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("offset", S._("ArgRange_Array"));
+				}
+				if(length < 0 || length > (inArray.Length - offset))
+				{
+					throw new ArgumentOutOfRangeException
+						("length", S._("ArgRange_Array"));
+				}
+
+				byte currentByte;
+				// Convert the bytes.
+				StringBuilder builder =
+					new StringBuilder
+						((int)(((long)length) * 2L));
+				for(int a = 0; a < length; a++)
+				{
+					currentByte = inArray[offset+a];
+					builder.Append(hexCode[currentByte >> 4]);
+					builder.Append(hexCode[currentByte & 0xF]);
 				}
 
 				// Finished.

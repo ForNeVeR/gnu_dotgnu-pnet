@@ -86,10 +86,10 @@ public class TestXmlTextWriter : TestCase
 				xml.WriteProcessingInstruction(name, text);
 #if !ECMA_COMPAT
 				Check("ProcessingInstruction (1)",
-						"<?xml version=\"1.0\" encoding=\"utf-16\"?>\n<?xsl-stylesheet href=\"test.xsl\"?>\n");
+						"<?xml version=\"1.0\" encoding=\"utf-16\"?><?xsl-stylesheet href=\"test.xsl\"?>");
 #else
 				Check("ProcessingInstruction (1)",
-						"<?xml version=\"1.0\"?>\n<?xsl-stylesheet href=\"test.xsl\"?>\n");
+						"<?xml version=\"1.0\"?><?xsl-stylesheet href=\"test.xsl\"?>");
 #endif
 			}
 	
@@ -165,10 +165,10 @@ public class TestXmlTextWriter : TestCase
 				xml.WriteStartDocument();
 			#if !ECMA_COMPAT
 				Check("StartDocument (1)",
-					  "<?xml version=\"1.0\" encoding=\"utf-16\"?>\n");
+					  "<?xml version=\"1.0\" encoding=\"utf-16\"?>");
 			#else
 				Check("StartDocument (1)",
-					  "<?xml version=\"1.0\"?>\n");
+					  "<?xml version=\"1.0\"?>");
 			#endif
 				AssertEquals("StartDocument (2)",
 							 WriteState.Prolog, xml.WriteState);
@@ -179,10 +179,10 @@ public class TestXmlTextWriter : TestCase
 			#if !ECMA_COMPAT
 				Check("StartDocument (3)",
 					  "<?xml version=\"1.0\" encoding=\"utf-16\" " +
-					  "standalone=\"yes\"?>\n");
+					  "standalone=\"yes\"?>");
 			#else
 				Check("StartDocument (3)",
-					  "<?xml version=\"1.0\" standalone=\"yes\"?>\n");
+					  "<?xml version=\"1.0\" standalone=\"yes\"?>");
 			#endif
 				AssertEquals("StartDocument (4)",
 							 WriteState.Prolog, xml.WriteState);
@@ -193,10 +193,10 @@ public class TestXmlTextWriter : TestCase
 			#if !ECMA_COMPAT
 				Check("StartDocument (5)",
 					  "<?xml version=\"1.0\" encoding=\"utf-16\" " +
-					  "standalone=\"no\"?>\n");
+					  "standalone=\"no\"?>");
 			#else
 				Check("StartDocument (5)",
-					  "<?xml version=\"1.0\" standalone=\"no\"?>\n");
+					  "<?xml version=\"1.0\" standalone=\"no\"?>");
 			#endif
 				AssertEquals("StartDocument (6)",
 							 WriteState.Prolog, xml.WriteState);
@@ -227,9 +227,159 @@ public class TestXmlTextWriter : TestCase
 				Clear();
 				xml.WriteStartElement("foo");
 				xml.WriteEndDocument();
-				Check("StartDocument (9)", "<foo />\n");
+				Check("StartDocument (9)", "<foo />");
 				AssertEquals("StartDocument (10)",
 							 WriteState.Start, xml.WriteState);
 			}
+
+	public void TestIndent ()
+			{
+				Reset();
+
+				xml.Formatting = Formatting.Indented;
+				xml.WriteStartDocument();
+				xml.WriteStartElement("root");
+				xml.WriteStartElement("test");
+				xml.WriteString("test");
+				xml.WriteStartElement("foo");
+				xml.WriteEndElement();
+				xml.WriteString("string");
+				xml.WriteEndElement();
+				xml.WriteStartElement("test");
+				xml.WriteString("string");
+				xml.WriteEndElement();
+				xml.WriteEndElement();
+				xml.WriteEndDocument();
+			#if !ECMA_COMPAT
+				Check("TestIndent",
+					"<?xml version=\"1.0\" encoding=\"utf-16\"?>\n" +
+					"<root>\n  <test>test<foo />string</test>\n" +
+					"  <test>string</test>\n</root>");
+			#else
+				Check("TestIndent",
+					"<?xml version=\"1.0\"?>\n" +
+					"<root>\n  <test>test<foo />string</test>\n" +
+					"  <test>string</test>\n</root>");
+			#endif
+			}
+
+/* Exclude these tests because they fail
+
+	public void TestWriteRawProceedToProlog ()
+			{
+				Reset();
+
+				xml.WriteRaw ("");
+				AssertEquals (WriteState.Prolog, xml.WriteState);
+			}
+
+	public void TestWriteRaw ()
+			{
+				Clear();
+
+				xml.WriteRaw("&<>\"'");
+				Check("WriteRaw 1", "&<>\"'");
+				
+				Clear();
+
+				xml.WriteRaw(null);
+				Check("WriteRaw 2", "&<>\"'");
+
+				Clear();
+
+				xml.WriteRaw("");
+				Check("WriteRaw 3", "&<>\"'");
+			}
+
+	public void TestWriteRawInvalidInAttribute ()
+			{
+				xml.WriteStartElement ("foo");
+				xml.WriteStartAttribute ("bar", null);
+				xml.WriteRaw ("&<>\"'");
+				xml.WriteEndAttribute ();
+				xml.WriteEndElement ();
+				Check("WriteRaw invalid in Attribute", "<foo bar='&<>\"'' />");
+			}
+*/
+
+	public void TestWriteBase64 ()
+			{
+				UTF8Encoding encoding = new UTF8Encoding();
+				byte[] fooBar = encoding.GetBytes("foobar");
+
+				xml.WriteStartDocument();
+				xml.WriteStartElement("test");
+
+				Clear();
+
+				xml.WriteBase64 (fooBar, 0, 6);
+				Check("WriteBase64 1", ">Zm9vYmFy");
+
+				try
+				{
+					xml.WriteBase64 (fooBar, 3, 6);
+					Fail("Should have thrown an ArgumentException.");
+				}
+				catch (ArgumentException)
+				{
+				}
+				catch (Exception)
+				{
+					Fail("Wrong Exception: Expected an ArgumentException.");
+				}
+		
+				try
+				{
+					xml.WriteBase64 (fooBar, -1, 6);
+					Fail("Should have thrown an ArgumentException.");
+				}
+				catch (ArgumentException)
+				{
+				}
+				catch (Exception)
+				{
+					Fail("Wrong Exception: Expected an ArgumentException.");
+				}
+
+				try
+				{
+					xml.WriteBase64 (fooBar, 3, -1);
+					Fail("Should have thrown an ArgumentException.");
+				}
+				catch (ArgumentException)
+				{
+				}
+				catch (Exception)
+				{
+					Fail("Wrong Exception: Expected an ArgumentException.");
+				}
+
+				try
+				{
+					xml.WriteBase64 (null, 0, 6);
+					Fail("Should have thrown an ArgumentException.");
+				}
+				catch (ArgumentException)
+				{
+				}
+				catch (Exception)
+				{
+					Fail("Wrong Exception: Expected an ArgumentException.");
+				}
+			}
+
+	public void TestWriteBinHex ()
+			{
+				byte [] bytes = new byte [] {4,14,34, 54,94,114, 134,194,255, 0,5};
+
+				xml.WriteStartDocument();
+				xml.WriteStartElement("test");
+
+				Clear();
+
+				xml.WriteBinHex (bytes, 0, 11);
+				Check("TestWriteBinHex 1", ">040E22365E7286C2FF0005");
+			}
+
 
 }; // class TestXmlTextWriter

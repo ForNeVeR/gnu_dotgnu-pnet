@@ -1,4 +1,17 @@
 
+0.0.8 (17 November 2001)
+
+	* New classes in "System.Resources", "System.Threading",
+	  "System.Runtime.CompilerServices", and "System.Runtime.InteropServices".
+	* Bug fixes in "DateTime".
+	* New comparison functions in "String".
+	* Uncomment the "Write" methods in "System.IO.TextWriter" because
+	  we have the requisite support methods now.
+	* Use "CompilerServices.MethodImplAttribute" instead of the one
+	  in "InteropServices", to be consistent with the ECMA specification.
+	* Remove some obsolete classes.
+	* Convert the "native.txt" file into HTML and add some more information.
+
 0.0.6 (3 November 2001)
 
 	* Remove "System.Radix", which is no longer ECMA-compliant.

@@ -4,6 +4,8 @@
 * doc/native.html, doc/native.txt: convert the "native.txt" file into
 HTML, and continue the documentation of the library's "internalcall" methods.
 
+* configure.in, NEWS: update for the "0.0.8" release.
+
 2001-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/Runtime/CompilerServices/*.cs,

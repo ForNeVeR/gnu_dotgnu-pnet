@@ -539,7 +539,6 @@ exit 0
 #  50936 Simplified Chinese
 #  50937 US/Canada and Traditional Chinese
 #  50939 Japanese (Latin) Extended and Japanese
-#  51932 Japanese (EUC)
 #  51936 Chinese Simplified (EUC)
 #  51949 Korean (EUC)
 #  51950 Traditional Chinese (EUC)

@@ -1,3 +1,7 @@
+2005-03-22  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/thread.c: Fix a possibe engine lookup.
+
 2005-03-09  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_string.c: change String.Replace so that a new string is

@@ -606,6 +606,8 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 		ILGCFreePersistent(thread->frameStack);
 		ILGCFreePersistent(thread);
 
+		ILMutexUnlock(process->lock);
+
 		return 0;
 	}
 	thread->process = process;

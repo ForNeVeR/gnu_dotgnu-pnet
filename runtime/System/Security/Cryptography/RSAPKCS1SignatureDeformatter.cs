@@ -70,7 +70,7 @@ public class RSAPKCS1SignatureDeformatter : AsymmetricSignatureDeformatter
 				if(hashAlgorithm == null)
 				{
 					throw new CryptographicUnexpectedOperationException
-						(_("Crypto_MD5OrSHA1"));
+						(_("Crypto_PKCS1Hash"));
 				}
 				return keyContainer.VerifyHash
 					(rgbHash, hashAlgorithm, rgbSignature);

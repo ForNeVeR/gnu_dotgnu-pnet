@@ -87,14 +87,7 @@ public class RSAOAEPKeyExchangeFormatter : AsymmetricKeyExchangeFormatter
 					throw new CryptographicException
 						(_("Crypto_MissingKey"));
 				}
-				if(padding == null)
-				{
-					return keyContainer.Encrypt(data, true);
-				}
-				else
-				{
-					return keyContainer.EncryptOAEP(data, padding);
-				}
+				return keyContainer.EncryptOAEP(data, padding);
 			}
 	public override byte[] CreateKeyExchange(byte[] data, Type symAlgType)
 			{

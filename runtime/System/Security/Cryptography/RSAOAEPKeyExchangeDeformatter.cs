@@ -64,7 +64,7 @@ public class RSAOAEPKeyExchangeDeformatter
 					throw new CryptographicException
 						(_("Crypto_MissingKey"));
 				}
-				return keyContainer.Decrypt(rgb, true);
+				return keyContainer.DecryptOAEP(rgb);
 			}
 
 	// Set the private key to use for decryption.

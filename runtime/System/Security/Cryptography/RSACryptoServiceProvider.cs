@@ -33,9 +33,8 @@ using Platform;
 // system is using smart cards or some other kind of crypto dongle.
 // We will modify this class when and if that becomes an issue.
 //
-// This implementation is based on the RSA description in the second
-// edition of "Applied Cryptography: Protocols, Algorithms, and
-// Source Code in C", Bruce Schneier, John Wiley & Sons, Inc, 1996.
+// This implementation is based on the RSA description in PKCS #1 v2.1,
+// available from "http://www.rsa.com/".
 
 public class RSACryptoServiceProvider : RSA
 {
@@ -142,44 +141,410 @@ public class RSACryptoServiceProvider : RSA
 				}
 			}
 
+	// Apply the public key to a value.
+	private byte[] ApplyPublic(byte[] value)
+			{
+				if(rsaParams.Modulus == null)
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAParamsNotSet"));
+				}
+				return CryptoMethods.NumPow(value, rsaParams.Exponent,
+											rsaParams.Modulus);
+			}
+
+	// Apply the private key to a value.
+	private byte[] ApplyPrivate(byte[] value)
+			{
+				if(rsaParams.P != null)
+				{
+					// Use the Chinese Remainder Theorem exponents.
+					// Based on the description in PKCS #1.
+					byte[] m1   = CryptoMethods.NumPow(value, rsaParams.DP,
+													   rsaParams.P);
+					byte[] m2   = CryptoMethods.NumPow(value, rsaParams.DQ,
+													   rsaParams.Q);
+					byte[] diff = CryptoMethods.NumSub(m1, m2, null);
+					byte[] h    = CryptoMethods.NumMul(diff,
+													   rsaParams.InverseQ,
+													   rsaParams.P);
+					byte[] prod = CryptoMethods.NumMul(rsaParams.Q, h, null);
+					byte[] m    = CryptoMethods.NumAdd(m2, prod, null);
+
+					// Clear all temporary values.
+					m1.Initialize();
+					m2.Initialize();
+					diff.Initialize();
+					h.Initialize();
+					prod.Initialize();
+					
+					// Return the decrypted message.
+					return m;
+				}
+				else if(rsaParams.D != null)
+				{
+					// Use the private exponent directly.
+					return CryptoMethods.NumPow(value, rsaParams.D,
+												rsaParams.Modulus);
+				}
+				else
+				{
+					// Insufficient parameters for private key operations.
+					throw new CryptographicException
+						(_("Crypto_RSAParamsNotSet"));
+				}
+			}
+
+	// Decrypt a value using the RSA private key and OAEP padding.
+	internal byte[] DecryptOAEP(byte[] rgb)
+			{
+				// Check the data against null.
+				if(rgb == null)
+				{
+					throw new ArgumentNullException("rgb");
+				}
+
+				// Make sure that we have sufficient RSA parameters.
+				if(rsaParams.Modulus == null)
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAParamsNotSet"));
+				}
+
+				// Check the length of the incoming value.
+				int k = rsaParams.Modulus.Length;
+				if(k < (2 * 20 + 2))
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAKeyTooShort"));
+				}
+
+				// Decrypt the incoming value, and expand to k octets,
+				// as the big number routines in the engine may have
+				// stripped leading zeroes from the value.
+				byte[] decrypted = ApplyPrivate(rgb);
+				if(decrypted.Length > k)
+				{
+					decrypted.Initialize();
+					throw new CryptographicException
+						(_("Crypto_RSAInvalidCiphertext"));
+				}
+				byte[] msg = new byte [k];
+				Array.Copy(decrypted, 0, msg, k - decrypted.Length,
+						   decrypted.Length);
+
+				// Acquire a mask generation method, based on SHA-1.
+				MaskGenerationMethod maskGen = new PKCS1MaskGenerationMethod();
+
+				// Extract the non-seed part of the decrypted message.
+				byte[] maskedMsg = new byte [k - 20 - 1];
+				Array.Copy(msg, 0, maskedMsg, 0, k - 20 - 1);
+
+				// Decrypt the seed value.
+				byte[] seedMask = maskGen.GenerateMask(maskedMsg, 20);
+				byte[] seed = new byte [20];
+				int index;
+				for(index = 0; index < 20; ++index)
+				{
+					seed[index] = (byte)(msg[index + 1] ^ seedMask[index]);
+				}
+
+				// Decrypt the non-seed part of the decrypted message.
+				byte[] msgMask = maskGen.GenerateMask(seed, maskedMsg.Length);
+				for(index = 0; index < maskedMsg.Length; ++index)
+				{
+					maskedMsg[index] ^= msgMask[index];
+				}
+
+				// Validate the format of the unmasked message.  We do this
+				// carefully, to prevent attackers from performing timing
+				// attacks on the algorithm.  See PKCS #1 for details.
+				int error = msg[0];
+				for(index = 0; index < 20; ++index)
+				{
+					error |= (maskedMsg[index] ^ label[index]);
+				}
+				for(index = 20; index < (k - 20 - 2); ++index)
+				{
+					// Question: is this careful enough to prevent
+					// timing attacks?  May need revisiting later.
+					if(maskedMsg[index] != 0)
+					{
+						break;
+					}
+				}
+				error |= (maskedMsg[index] ^ 0x01);
+				if(error != 0)
+				{
+					// Something is wrong with the decrypted padding data.
+					decrypted.Initialize();
+					msg.Initialize();
+					maskedMsg.Initialize();
+					seedMask.Initialize();
+					seed.Initialize();
+					msgMask.Initialize();
+					throw new CryptographicException
+						(_("Crypto_RSAInvalidCiphertext"));
+				}
+				++index;
+
+				// Extract the final decrypted message.
+				byte[] finalMsg = new byte [maskedMsg.Length - index];
+				Array.Copy(maskedMsg, index, finalMsg, 0,
+						   maskedMsg.Length - index);
+
+				// Destroy sensitive values.
+				decrypted.Initialize();
+				msg.Initialize();
+				maskedMsg.Initialize();
+				seedMask.Initialize();
+				seed.Initialize();
+				msgMask.Initialize();
+
+				// Done.
+				return finalMsg;
+			}
+
+	// Decrypt a value using the RSA private key and PKCS1 decoding.
+	internal byte[] DecryptPKCS1(byte[] rgb)
+			{
+				// Check the data against null.
+				if(rgb == null)
+				{
+					throw new ArgumentNullException("rgb");
+				}
+
+				// Make sure that we have sufficient RSA parameters.
+				if(rsaParams.Modulus == null)
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAParamsNotSet"));
+				}
+
+				// Check the length of the incoming value.
+				int k = rsaParams.Modulus.Length;
+				if(k < 11)
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAKeyTooShort"));
+				}
+
+				// Decrypt the incoming value, and expand to k octets,
+				// as the big number routines in the engine may have
+				// stripped leading zeroes from the value.
+				byte[] decrypted = ApplyPrivate(rgb);
+				if(decrypted.Length > k)
+				{
+					decrypted.Initialize();
+					throw new CryptographicException
+						(_("Crypto_RSAInvalidCiphertext"));
+				}
+				byte[] msg = new byte [k];
+				Array.Copy(decrypted, 0, msg, k - decrypted.Length,
+						   decrypted.Length);
+
+				// Check the format of the padding data.  We need to
+				// harden this against timing attacks.  It is hard to
+				// do so since we don't know the expected length of
+				// the final message.
+				int error = msg[0] | (msg[1] ^ 0x02);
+				int index = 2;
+				while(index < (msg.Length - 1) && msg[index] != 0x00)
+				{
+					++index;
+				}
+				error |= msg[index];
+				if(error != 0)
+				{
+					decrypted.Initialize();
+					msg.Initialize();
+					throw new CryptographicException
+						(_("Crypto_RSAInvalidCiphertext"));
+				}
+				++index;
+
+				// Extract the final message.
+				byte[] finalMsg = new byte [msg.Length - index];
+				Array.Copy(msg, index, finalMsg, 0, finalMsg.Length);
+
+				// Destroy sensitive values.
+				decrypted.Initialize();
+				msg.Initialize();
+
+				// Done.
+				return finalMsg;
+			}
+
 	// Decrypt a value using the RSA private key and optional OAEP padding.
 	public byte[] Decrypt(byte[] rgb, bool fOAEP)
 			{
-				// TODO
-				return null;
+				if(fOAEP)
+				{
+					return DecryptOAEP(rgb);
+				}
+				else
+				{
+					return DecryptPKCS1(rgb);
+				}
 			}
 
 	// Decrypt a value using the RSA private key.
 	public override byte[] DecryptValue(byte[] rgb)
 			{
-				return Decrypt(rgb, false);
+				return DecryptPKCS1(rgb);
 			}
+
+	// Label value for OAEP encryption.  SHA-1 hash of the empty string.
+	private static readonly byte[] label =
+			{(byte)0xDA, (byte)0x39, (byte)0xA3, (byte)0xEE,
+			 (byte)0x5E, (byte)0x6B, (byte)0x4B, (byte)0x0D,
+			 (byte)0x32, (byte)0x55, (byte)0xBF, (byte)0xEF,
+			 (byte)0x95, (byte)0x60, (byte)0x18, (byte)0x90,
+			 (byte)0xAF, (byte)0xD8, (byte)0x07, (byte)0x09};
 
 	// Encrypt a value using a specified OAEP padding array.
+	// The array may be null to pad with zeroes.
 	internal byte[] EncryptOAEP(byte[] rgb, byte[] padding)
 			{
-				// TODO
-				return null;
+				// Check the data against null.
+				if(rgb == null)
+				{
+					throw new ArgumentNullException("rgb");
+				}
+
+				// Make sure that we have sufficient RSA parameters.
+				if(rsaParams.Modulus == null)
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAParamsNotSet"));
+				}
+
+				// Format the label, padding string, and rgb into a message.
+				int k = rsaParams.Modulus.Length;
+				if(rgb.Length > (k - 2 * 20 - 2))
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAMessageTooLong"));
+				}
+				byte[] msg = new byte [k - 20 - 1];
+				int posn = 0;
+				Array.Copy(label, 0, msg, posn, 20);
+				posn += 20;
+				int padlen = k - rgb.Length - 2 * 20 - 2;
+				if(padlen > 0 && padding != null)
+				{
+					if(padding.Length <= padlen)
+					{
+						Array.Copy(padding, 0, msg, posn, padding.Length);
+					}
+					else
+					{
+						Array.Copy(padding, 0, msg, posn, padlen);
+					}
+				}
+				posn += padlen;
+				msg[posn++] = (byte)0x01;
+				Array.Copy(rgb, 0, msg, posn, rgb.Length);
+
+				// Acquire a mask generation method, based on SHA-1.
+				MaskGenerationMethod maskGen = new PKCS1MaskGenerationMethod();
+
+				// Generate a random seed to use to generate masks.
+				byte[] seed = new byte [20];
+				CryptoMethods.GenerateRandom(seed, 0, 20);
+
+				// Generate a mask and encrypt the above message.
+				byte[] mask = maskGen.GenerateMask(seed, msg.Length);
+				int index;
+				for(index = 0; index < msg.Length; ++index)
+				{
+					msg[index] ^= mask[index];
+				}
+
+				// Generate another mask and encrypt the seed.
+				byte[] seedMask = maskGen.GenerateMask(msg, 20);
+				for(index = 0; index < 20; ++index)
+				{
+					seed[index] ^= seedMask[index];
+				}
+
+				// Build the value to be encrypted using RSA.
+				byte[] value = new byte [k];
+				Array.Copy(seed, 0, value, 1, 20);
+				Array.Copy(msg, 0, value, 21, msg.Length);
+
+				// Encrypt the value.
+				byte[] encrypted = ApplyPublic(value);
+
+				// Destroy sensitive data.
+				msg.Initialize();
+				seed.Initialize();
+				mask.Initialize();
+				seedMask.Initialize();
+				value.Initialize();
+
+				// Done.
+				return encrypted;
 			}
 
-	// Encrypt a value using the RSA private key and the PKCS1 encoding.
+	// Encrypt a value using the RSA public key and the PKCS1 encoding.
 	internal byte[] EncryptPKCS1(byte[] rgb, RandomNumberGenerator rng)
 			{
-				// TODO
-				return null;
+				// Check the data against null.
+				if(rgb == null)
+				{
+					throw new ArgumentNullException("rgb");
+				}
+
+				// Make sure that we have sufficient RSA parameters.
+				if(rsaParams.Modulus == null)
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAParamsNotSet"));
+				}
+
+				// Format the type codes, padding string, and data.
+				int k = rsaParams.Modulus.Length;
+				if(rgb.Length > (k - 11))
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAMessageTooLong"));
+				}
+				byte[] msg = new byte [k];
+				msg[1] = (byte)0x02;
+				byte[] padding = new byte [k - rgb.Length - 3];
+				rng.GetNonZeroBytes(padding);
+				Array.Copy(padding, 0, msg, 2, padding.Length);
+				Array.Copy(rgb, 0, msg, k - rgb.Length, rgb.Length);
+
+				// Encrypt the message.
+				byte[] encrypted = ApplyPublic(msg);
+
+				// Destroy sensitive data.
+				msg.Initialize();
+				padding.Initialize();
+
+				// Done.
+				return encrypted;
 			}
 
 	// Encrypt a value using the RSA private key and optional OAEP padding.
 	public byte[] Encrypt(byte[] rgb, bool fOAEP)
 			{
-				// TODO
-				return null;
+				if(fOAEP)
+				{
+					return EncryptOAEP(rgb, null);
+				}
+				else
+				{
+					return EncryptPKCS1(rgb, new RNGCryptoServiceProvider());
+				}
 			}
 
 	// Encrypt a value using the RSA public key.
 	public override byte[] EncryptValue(byte[] rgb)
 			{
-				return Encrypt(rgb, false);
+				return EncryptPKCS1(rgb, new RNGCryptoServiceProvider());
 			}
 
 	// Export the parameters for RSA signature generation.
@@ -241,26 +606,169 @@ public class RSACryptoServiceProvider : RSA
 					throw new ArgumentException
 						(_("Crypto_NeedsHash"), "halg");
 				}
-				if(!(alg is SHA1) && !(alg is MD5))
+				if(!(alg is SHA1) && !(alg is MD5) &&
+				   !(alg is SHA256) && !(alg is SHA384) &&
+				   !(alg is SHA512))
 				{
 					throw new CryptographicException
-						(_("Crypto_MD5OrSHA1"));
+						(_("Crypto_PKCS1Hash"));
 				}
 				return alg;
 			}
 
-	// Perform a sign operation.
-	private byte[] Sign(byte[] rgbHash, Type alg)
+	// PKCS #1 headers for various hash algorithms.
+	private static readonly byte[] md5Header =
+			{(byte)0x30, (byte)0x20, (byte)0x30, (byte)0x0C,
+			 (byte)0x06, (byte)0x08, (byte)0x2A, (byte)0x86,
+			 (byte)0x48, (byte)0x86, (byte)0xF7, (byte)0x0D,
+			 (byte)0x02, (byte)0x05, (byte)0x05, (byte)0x00,
+			 (byte)0x04, (byte)0x10};
+	private static readonly byte[] sha1Header =
+			{(byte)0x30, (byte)0x21, (byte)0x30, (byte)0x09,
+			 (byte)0x06, (byte)0x05, (byte)0x2B, (byte)0x0E,
+			 (byte)0x03, (byte)0x02, (byte)0x1A, (byte)0x05,
+			 (byte)0x00, (byte)0x04, (byte)0x14};
+	private static readonly byte[] sha256Header =
+			{(byte)0x30, (byte)0x31, (byte)0x30, (byte)0x0D,
+			 (byte)0x06, (byte)0x09, (byte)0x60, (byte)0x86,
+			 (byte)0x48, (byte)0x01, (byte)0x65, (byte)0x03,
+			 (byte)0x04, (byte)0x02, (byte)0x01, (byte)0x05,
+			 (byte)0x00, (byte)0x04, (byte)0x20};
+	private static readonly byte[] sha384Header =
+			{(byte)0x30, (byte)0x41, (byte)0x30, (byte)0x0D,
+			 (byte)0x06, (byte)0x09, (byte)0x60, (byte)0x86,
+			 (byte)0x48, (byte)0x01, (byte)0x65, (byte)0x03,
+			 (byte)0x04, (byte)0x02, (byte)0x02, (byte)0x05,
+			 (byte)0x00, (byte)0x04, (byte)0x30};
+	private static readonly byte[] sha512Header =
+			{(byte)0x30, (byte)0x41, (byte)0x30, (byte)0x0D,
+			 (byte)0x06, (byte)0x09, (byte)0x60, (byte)0x86,
+			 (byte)0x48, (byte)0x01, (byte)0x65, (byte)0x03,
+			 (byte)0x04, (byte)0x02, (byte)0x03, (byte)0x05,
+			 (byte)0x00, (byte)0x04, (byte)0x40};
+
+	// Convert a hash algorithm instance into a PKCS #1 header.
+	private byte[] HashAlgToHeader(HashAlgorithm alg)
 			{
-				// TODO
-				return null;
+				if(alg is MD5)
+				{
+					return md5Header;
+				}
+				else if(alg is SHA1)
+				{
+					return sha1Header;
+				}
+				else if(alg is SHA256)
+				{
+					return sha256Header;
+				}
+				else if(alg is SHA384)
+				{
+					return sha384Header;
+				}
+				else
+				{
+					return sha512Header;
+				}
+			}
+
+	// Convert a hash algorithm name into a PKCS #1 header.
+	private byte[] HashAlgToHeader(String alg)
+			{
+				if(alg == "MD5")
+				{
+					return md5Header;
+				}
+				else if(alg == null || alg == "SHA1")
+				{
+					return sha1Header;
+				}
+				else if(alg == "SHA256")
+				{
+					return sha256Header;
+				}
+				else if(alg == "SHA384")
+				{
+					return sha384Header;
+				}
+				else if(alg == "SHA512")
+				{
+					return sha512Header;
+				}
+				else
+				{
+					throw new CryptographicException
+						(_("Crypto_PKCS1Hash"));
+				}
+			}
+
+	// Perform a sign operation.
+	private byte[] Sign(byte[] rgbHash, byte[] header)
+			{
+				// Validate the parameters.
+				if(rgbHash == null)
+				{
+					throw new ArgumentNullException("rgbHash");
+				}
+				if(rgbHash.Length != header[header.Length - 1])
+				{
+					throw new CryptographicException
+						(_("Crypto_InvalidHashSize"));
+				}
+
+				// Make sure that we have sufficient RSA parameters.
+				if(rsaParams.Modulus == null)
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAParamsNotSet"));
+				}
+
+				// Check the length of the incoming value.
+				int k = rsaParams.Modulus.Length;
+				if(k < (header.Length + rgbHash.Length + 11))
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAKeyTooShort"));
+				}
+
+				// Format the value to be signed.
+				byte[] msg = new byte [k];
+				msg[1] = (byte)0x01;
+				int index, posn;
+				posn = k - header.Length - rgbHash.Length;
+				for(index = 2; index < (posn - 1); ++index)
+				{
+					msg[posn] = (byte)0xFF;
+				}
+				Array.Copy(header, 0, msg, posn, header.Length);
+				Array.Copy(rgbHash, 0, msg, posn + header.Length,
+						   rgbHash.Length);
+
+				// Sign the value with the private key.
+				byte[] signedValue = ApplyPrivate(msg);
+				if(signedValue.Length < k)
+				{
+					// Zero-extend the value if necessary.
+					byte[] zextend = new byte [k];
+					Array.Copy(signedValue, 0, zextend, k - signedValue.Length,
+							   signedValue.Length);
+					signedValue.Initialize();
+					signedValue = zextend;
+				}
+
+				// Destroy sensitive values.
+				msg.Initialize();
+
+				// Done.
+				return signedValue;
 			}
 
 	// Compute a hash value over a buffer and sign it.
 	public byte[] SignData(byte[] buffer, Object halg)
 			{
 				HashAlgorithm alg = ObjectToHashAlg(halg);
-				return Sign(alg.ComputeHash(buffer), alg.GetType());
+				return Sign(alg.ComputeHash(buffer),
+							HashAlgToHeader(alg));
 			}
 
 	// Compute a hash value over a buffer fragment and sign it.
@@ -268,67 +776,110 @@ public class RSACryptoServiceProvider : RSA
 			{
 				HashAlgorithm alg = ObjectToHashAlg(halg);
 				return Sign(alg.ComputeHash(buffer, offset, count),
-							alg.GetType());
+							HashAlgToHeader(alg));
 			}
 
 	// Compute a hash value over a stream and sign it.
 	public byte[] SignData(Stream inputStream, Object halg)
 			{
 				HashAlgorithm alg = ObjectToHashAlg(halg);
-				return Sign(alg.ComputeHash(inputStream), alg.GetType());
+				return Sign(alg.ComputeHash(inputStream),
+							HashAlgToHeader(alg));
 			}
 
 	// Sign an explicit hash value.
 	public byte[] SignHash(byte[] rgbHash, String str)
 			{
-				if(str == null || str == "SHA1")
-				{
-					return Sign(rgbHash, typeof(SHA1CryptoServiceProvider));
-				}
-				else if(str == "MD5")
-				{
-					return Sign(rgbHash, typeof(MD5CryptoServiceProvider));
-				}
-				else
-				{
-					throw new CryptographicException
-						(_("Crypto_MD5OrSHA1"));
-				}
+				return Sign(rgbHash, HashAlgToHeader(str));
 			}
 
 	// Perform a verify operation.
-	private bool Verify(byte[] rgbHash, Type alg, byte[] rgbSignature)
+	private bool Verify(byte[] rgbHash, byte[] header, byte[] rgbSignature)
 			{
-				// TODO
-				return false;
+				// Validate the parameters.
+				if(rgbHash == null)
+				{
+					throw new ArgumentNullException("rgbHash");
+				}
+				if(rgbHash.Length != header[header.Length - 1])
+				{
+					throw new CryptographicException
+						(_("Crypto_InvalidHashSize"));
+				}
+				if(rgbSignature == null)
+				{
+					throw new ArgumentNullException("rgbSignature");
+				}
+
+				// Make sure that we have sufficient RSA parameters.
+				if(rsaParams.Modulus == null)
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAParamsNotSet"));
+				}
+
+				// Check the length of the incoming value.
+				int k = rsaParams.Modulus.Length;
+				if(k < (header.Length + rgbHash.Length + 11))
+				{
+					throw new CryptographicException
+						(_("Crypto_RSAKeyTooShort"));
+				}
+
+				// Decode the signed value.
+				byte[] msg = ApplyPublic(rgbSignature);
+				if(msg.Length < k)
+				{
+					// Zero-extend the value if necessary.
+					byte[] zextend = new byte [k];
+					Array.Copy(msg, 0, zextend, k - msg.Length,
+							   msg.Length);
+					msg.Initialize();
+					msg = zextend;
+				}
+
+				// Check the decoded value against the expected data.
+				bool ok = (msg[0] == 0x00 && msg[1] == 0x01);
+				int index, posn;
+				posn = k - header.Length - rgbHash.Length;
+				for(index = 2; index < (posn - 1); ++index)
+				{
+					if(msg[posn] != 0xFF)
+					{
+						ok = false;
+					}
+				}
+				if(msg[posn - 1] != 0x00)
+				{
+					ok = false;
+				}
+				for(index = 0; index < rgbHash.Length; ++index)
+				{
+					if(msg[posn + index] != rgbHash[index])
+					{
+						ok = false;
+					}
+				}
+
+				// Destroy sensitive values.
+				msg.Initialize();
+
+				// Done.
+				return ok;
 			}
 
 	// Verify the signature on a buffer of data.
 	public bool VerifyData(byte[] buffer, Object halg, byte[] rgbSignature)
 			{
 				HashAlgorithm alg = ObjectToHashAlg(halg);
-				return Verify(alg.ComputeHash(buffer), alg.GetType(),
-							  rgbSignature);
+				return Verify(alg.ComputeHash(buffer),
+							  HashAlgToHeader(alg), rgbSignature);
 			}
 
 	// Verify a signature from an explicit hash value.
 	public bool VerifyHash(byte[] rgbHash, String str, byte[] rgbSignature)
 			{
-				if(str == null || str == "SHA1")
-				{
-					return Verify(rgbHash, typeof(SHA1CryptoServiceProvider),
-								  rgbSignature);
-				}
-				else if(str == "MD5")
-				{
-					return Verify(rgbHash, typeof(MD5CryptoServiceProvider),
-								  rgbSignature);
-				}
-				else
-				{
-					throw new CryptographicException
-						(_("Crypto_MD5OrSHA1"));
-				}
+				return Verify(rgbHash, HashAlgToHeader(str), rgbSignature);
 			}
 
 }; // class RSACryptoServiceProvider

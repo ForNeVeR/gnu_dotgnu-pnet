@@ -79,12 +79,9 @@ public class RSAPKCS1KeyExchangeFormatter : AsymmetricKeyExchangeFormatter
 				}
 				if(rng == null)
 				{
-					return keyContainer.Encrypt(data, false);
+					rng = new RNGCryptoServiceProvider();
 				}
-				else
-				{
-					return keyContainer.EncryptPKCS1(data, rng);
-				}
+				return keyContainer.EncryptPKCS1(data, rng);
 			}
 	public override byte[] CreateKeyExchange(byte[] data, Type symAlgType)
 			{

@@ -1,4 +1,17 @@
 
+2002-07-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Crypto.txt,
+	runtime/Platform/CryptoMethods.cs,
+	runtime/System/Security/Cryptography/RSACryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/RSAOAEPKeyExchangeDeformatter.cs,
+	runtime/System/Security/Cryptography/RSAOAEPKeyExchangeFormatter.cs,
+	runtime/System/Security/Cryptography/RSAPKCS1KeyExchangeDeformatter.cs,
+	runtime/System/Security/Cryptography/RSAPKCS1KeyExchangeFormatter.cs,
+	runtime/System/Security/Cryptography/RSAPKCS1SignatureDeformatter.cs,
+	runtime/System/Security/Cryptography/RSAPKCS1SignatureFormatter.cs:
+	implement encrypt, decrypt, sign, and verify operations for RSA.
+
 2002-07-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/String.cs: replace the "EqualRange" internalcall

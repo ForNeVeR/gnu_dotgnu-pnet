@@ -64,7 +64,7 @@ public class RSAPKCS1KeyExchangeDeformatter
 					throw new CryptographicException
 						(_("Crypto_MissingKey"));
 				}
-				return keyContainer.Decrypt(rgb, false);
+				return keyContainer.DecryptPKCS1(rgb);
 			}
 
 	// Set the private key to use for decryption.

@@ -115,6 +115,10 @@ internal sealed class CryptoMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static byte[] NumAdd(byte[] x, byte[] y, byte[] modulus);
 
+	// Perform a big number subtraction.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static byte[] NumSub(byte[] x, byte[] y, byte[] modulus);
+
 	// Perform a big number multiplication.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static byte[] NumMul(byte[] x, byte[] y, byte[] modulus);

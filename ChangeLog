@@ -5,6 +5,8 @@
 	and GC.ReRegisterForFinalize, to be consistent with other CLR
 	implementations.
 
+	* samples/System.dll: add extra collection classes.
+
 2002-11-06  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_gc.c: Allow inherited methods to invoke GC.SuppressFinalize

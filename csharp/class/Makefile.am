@@ -4,6 +4,7 @@ TESTS = ainit1.cs \
 		const2.cs \
 		constructor1.cs \
 		constructor2.cs \
+		constructor3.cs \
 		delegate1.cs \
 		enum1.cs \
 		enum2.cs \

@@ -20,6 +20,10 @@ marshalling.
 
 * include/il_program.h, image/misc.c (ILTypeSpecGetClassRef): new function.
 
+* ilasm/ilasm_build.c: use "ILTypeSpecGetClassRef" instead of the original
+"ILTypeSpecGetClass" function, so that the synthetic class is imported
+correctly during member resolution.
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

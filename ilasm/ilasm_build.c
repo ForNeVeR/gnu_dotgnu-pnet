@@ -545,7 +545,7 @@ ILToken ILAsmResolveMember(ILProgramItem *scope, const char *name,
 	/* Convert TypeSpec tokens into class tokens */
 	if((spec = ILProgramItemToTypeSpec(scope)) != 0)
 	{
-		classInfo = ILTypeSpecGetClass(spec);
+		classInfo = ILTypeSpecGetClassRef(spec);
 		if(!classInfo)
 		{
 			ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,

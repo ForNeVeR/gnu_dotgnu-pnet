@@ -13,6 +13,10 @@
 	* configure.in: disable libffi on hppa* systems, as it isn't
 	ported to PA-RISC yet.
 
+	* image/image.h, image/meta_build.c, image/meta_index.c:
+	put some of the infrastructure in place to support on-demand
+	loading of tokens from "ILImageTokenInfo" (temporarily disabled).
+
 2003-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/*: update the libffi library from the gcc CVS tree.

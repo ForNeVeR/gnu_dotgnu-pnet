@@ -899,8 +899,7 @@ static int Load_TypeDef(ILImage *image, ILUInt32 *values,
 	ILProgramItem *scope;
 
 	/* If we have already loaded this type, then bail out */
-	info = ILClass_FromToken(image, token);
-	if(info)
+	if(_ILImageTokenAlreadyLoaded(image, token))
 	{
 		return 0;
 	}
@@ -2423,6 +2422,139 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	/* Done */
 	return 0;
 }
+
+#if 0
+
+/*
+ * Table of all token loading functions.
+ */
+static TokenLoadFunc const TokenLoadFunctions[] = {
+	Load_Module,				/* 00 */
+	0, /*Load_TypeRef,*/
+	Load_TypeDef,
+	0,
+	Load_FieldDef,
+	0,
+	Load_MethodDef,
+	0,
+	Load_ParamDef,				/* 08 */
+	Load_InterfaceImpl,
+	Load_MemberRef,
+	Load_Constant,
+	Load_CustomAttr,
+	Load_FieldMarshal,
+	Load_DeclSecurity,
+	Load_ClassLayout,
+	Load_FieldLayout,			/* 10 */
+	Load_StandAloneSig,
+	0, /*Load_EventMap,*/
+	0,
+	Load_Event,
+	0, /*Load_PropertyMap,*/
+	0,
+	Load_Property,
+	0, /*Load_MethodSemantics,*/		/* 18 */
+	0, /*Load_MethodImpl,*/
+	Load_ModuleRef,
+	Load_TypeSpec,
+	0, /*Load_ImplMap,*/
+	Load_FieldRVA,
+	0,
+	0,
+	Load_Assembly,				/* 20 */
+	Load_ProcessorDef,
+	Load_OSDef,
+	Load_AssemblyRef,
+	Load_ProcessorRef,
+	Load_OSRef,
+	Load_File,
+	Load_ExportedType,
+	0, /*Load_ManifestResource,*/		/* 28 */
+	0, /*Load_NestedClass,*/
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,							/* 30 */
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,							/* 38 */
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+};
+
+void *_ILImageLoadOnDemand(ILImage *image, ILToken token)
+{
+	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
+	ILUInt32 valuesNext[IL_IMAGE_TOKEN_COLUMNS];
+	ILUInt32 *pvaluesNext;
+	TokenLoadFunc func;
+	void **data;
+
+	/* Load the values for the token */
+	if(!_ILImageRawTokenData(image, token, values))
+	{
+		return 0;
+	}
+
+	/* Load the values for the following token, in case it is a range */
+	if((token + 1) <= ((token & IL_META_TOKEN_MASK) |
+					   image->tokenCount[token >> 24]))
+	{
+		if(!_ILImageRawTokenData(image, token + 1, valuesNext))
+		{
+			return 0;
+		}
+		pvaluesNext = valuesNext;
+	}
+	else
+	{
+		pvaluesNext = 0;
+	}
+
+	/* Find the loading function for this token type */
+	func = TokenLoadFunctions[token >> 24];
+	if(!func)
+	{
+		return 0;
+	}
+
+	/* Load the token information */
+	if((*func)(image, values, pvaluesNext, token, 0) != 0)
+	{
+		/* A metadata error was detected */
+		return 0;
+	}
+
+	/* Retrieve the program item from the token table */
+	data = image->tokenData[token >> 24];
+	if(data)
+	{
+		return data[(token & ~IL_META_TOKEN_MASK) - 1];
+	}
+	return 0;
+}
+
+#else
+
+void *_ILImageLoadOnDemand(ILImage *image, ILToken token)
+{
+	return 0;
+}
+
+#endif
 
 #ifdef	__cplusplus
 };

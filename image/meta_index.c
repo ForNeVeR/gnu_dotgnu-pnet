@@ -1224,6 +1224,7 @@ unsigned long ILImageNumTokens(ILImage *image, ILToken tokenType)
 void *ILImageTokenInfo(ILImage *image, ILToken token)
 {
 	void **data;
+	void *item;
 	if(token < (unsigned long)0x40000000)
 	{
 		ILToken tokenId = (token & (unsigned long)0x00FFFFFF);
@@ -1233,7 +1234,38 @@ void *ILImageTokenInfo(ILImage *image, ILToken token)
 			data = image->tokenData[tokenType];
 			if(data)
 			{
-				return data[tokenId - 1];
+				item = data[tokenId - 1];
+				if(item)
+				{
+					return item;
+				}
+			}
+			if(image->type != IL_IMAGETYPE_BUILDING)
+			{
+				/* Perform on-demand loading of the token */
+				return _ILImageLoadOnDemand(image, token);
+			}
+		}
+	}
+	return 0;
+}
+
+int _ILImageTokenAlreadyLoaded(ILImage *image, ILToken token)
+{
+	void **data;
+	if(token < (unsigned long)0x40000000)
+	{
+		ILToken tokenId = (token & (unsigned long)0x00FFFFFF);
+		ILToken tokenType = (token >> 24);
+		if(tokenId >= 1 && tokenId <= image->tokenCount[tokenType])
+		{
+			data = image->tokenData[tokenType];
+			if(data)
+			{
+				if(data[tokenId - 1])
+				{
+					return 1;
+				}
 			}
 		}
 	}
@@ -1254,13 +1286,11 @@ void *ILImageSearchForToken(ILImage *image, ILToken tokenType,
 	ILToken maxToken;
 	ILToken token;
 	ILToken left, right;
-	void **data;
 	void *item;
 	int cmp;
 
 	/* Find the table in question */
 	maxToken = (tokenType | image->tokenCount[tokenType >> 24]);
-	data = image->tokenData[tokenType >> 24];
 
 	/* Is the table sorted? */
 	if((image->sorted & (((ILUInt64)1) << (tokenType >> 24))) != 0)
@@ -1271,7 +1301,7 @@ void *ILImageSearchForToken(ILImage *image, ILToken tokenType,
 		while(left <= right)
 		{
 			token = ((left + right) / 2);
-			item = data[(token & ~IL_META_TOKEN_MASK) - 1];
+			item = ILImageTokenInfo(image, token);
 			if(!item)
 			{
 				/* There is a gap in the table: revert to linear search */
@@ -1298,7 +1328,7 @@ void *ILImageSearchForToken(ILImage *image, ILToken tokenType,
 	linearSearch:
 		for(token = (tokenType | 1); token <= maxToken; ++token)
 		{
-			item = data[(token & ~IL_META_TOKEN_MASK) - 1];
+			item = ILImageTokenInfo(image, token);
 			if(item && (*compareFunc)(item, userData) == 0)
 			{
 				return item;

@@ -409,6 +409,16 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 								int loadFlags);
 
 /*
+ * Load a token information block on demand.
+ */
+void *_ILImageLoadOnDemand(ILImage *image, ILToken token);
+
+/*
+ * Determine if a token has already been loaded.
+ */
+int _ILImageTokenAlreadyLoaded(ILImage *image, ILToken token);
+
+/*
  * Perform dynamic linking on an image to resolve all
  * assemblies that it refers to.  Returns a load error.
  */

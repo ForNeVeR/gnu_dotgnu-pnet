@@ -45,9 +45,10 @@ public class SocketMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool Listen(IntPtr handle, int backlog);
 
-	// Accept an incoming connection (returns socket descriptor for new connected socket)
+	// Accept an incoming connection
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int Accept(IntPtr handle, ref long address, ref int port);
+	extern public static bool Accept(IntPtr handle, out long address,
+									 out int port, out IntPtr newHandle);
 
 	// Connect to specified address
 	// TODO: add support for something other than IPv4
@@ -60,7 +61,7 @@ public class SocketMethods
 
 	// Receive bytes from specified EndPoint (noted in address and port)
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int ReceiveFrom(IntPtr handle, byte[] buffer, int offset, int size, int flags, ref long address, ref int port);
+	extern public static int ReceiveFrom(IntPtr handle, byte[] buffer, int offset, int size, int flags, out long address, out int port);
 
 	// Send bytes to connected socket
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -68,7 +69,7 @@ public class SocketMethods
 
 	// Receive bytes from specified EndPoint (noted in address and port)
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int SendTo(IntPtr handle, byte[] buffer, int offset, int size, int flags, ref long address, ref int port);
+	extern public static int SendTo(IntPtr handle, byte[] buffer, int offset, int size, int flags, long address, int port);
 
 	// Close a socket (regardless of pending in/output)
 	[MethodImpl(MethodImplOptions.InternalCall)]

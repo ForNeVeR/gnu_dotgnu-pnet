@@ -11,7 +11,7 @@
 {
 .method public hidebysig instance void 'm1'(class 'Test' 't') cil managed 
 {
-	.locals	(class ['.library']'System'.'String', class ['.library']'System'.'String', class ['.library']'System'.'String')
+	.locals init	(class ['.library']'System'.'String', class ['.library']'System'.'String', class ['.library']'System'.'String')
 	ldstr	"Hello"
 	stloc.0
 	ldstr	" World"

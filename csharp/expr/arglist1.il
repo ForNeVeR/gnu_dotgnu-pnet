@@ -11,7 +11,7 @@
 {
 .method private hidebysig vararg instance void 'm1'() cil managed 
 {
-	.locals	(valuetype ['.library']'System'.'RuntimeArgumentHandle')
+	.locals init	(valuetype ['.library']'System'.'RuntimeArgumentHandle')
 	arglist
 	stloc.0
 	ret
@@ -19,7 +19,7 @@
 } // method m1
 .method private hidebysig vararg instance void 'm1'(class ['.library']'System'.'String' 'format') cil managed 
 {
-	.locals	(valuetype ['.library']'System'.'RuntimeArgumentHandle')
+	.locals init	(valuetype ['.library']'System'.'RuntimeArgumentHandle')
 	arglist
 	stloc.0
 	ret

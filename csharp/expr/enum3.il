@@ -18,7 +18,7 @@
 {
 .method private hidebysig instance void 'm1'() cil managed 
 {
-	.locals	(valuetype 'Color', bool, valuetype 'Color')
+	.locals init	(valuetype 'Color', bool, valuetype 'Color')
 	ldc.i4.0
 	stloc.0
 	ldloc.0

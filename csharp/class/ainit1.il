@@ -13,7 +13,7 @@
 .field public static int64[] 'y'
 .method public static hidebysig void 'test'() cil managed 
 {
-	.locals	(int32[])
+	.locals init	(int32[])
 	ldc.i4.4
 	newarr	['.library']'System'.'Int32'
 	dup

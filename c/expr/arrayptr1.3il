@@ -16,7 +16,7 @@
 } // method func3
 .method public static void 'func2'() cil managed 
 {
-	.locals	(valuetype 'array int[100]')
+	.locals init	(valuetype 'array int[100]')
 	ldloca.s	0
 	call	void 'func'(int32 *)
 	ldloca.s	0

@@ -73,7 +73,7 @@
 } // method m2
 .method private hidebysig instance int32 'm3'() cil managed 
 {
-	.locals	(valuetype 'X')
+	.locals init	(valuetype 'X')
 	ldarg.0
 	callvirt	instance valuetype 'X' 'Test'::'m2'()
 	stloc.0
@@ -84,7 +84,7 @@
 } // method m3
 .method private hidebysig instance int32 'm4'() cil managed 
 {
-	.locals	(valuetype 'X')
+	.locals init	(valuetype 'X')
 	ldarg.0
 	callvirt	instance valuetype 'X' 'Test'::'m2'()
 	stloc.0
@@ -102,7 +102,7 @@
 } // method m5
 .method private hidebysig instance int32 'm6'() cil managed 
 {
-	.locals	(valuetype 'X')
+	.locals init	(valuetype 'X')
 	ldarg.0
 	callvirt	instance valuetype 'X' 'Test'::'m2'()
 	stloc.0
@@ -120,7 +120,7 @@
 } // method m7
 .method private hidebysig instance int32 'm8'() cil managed 
 {
-	.locals	(valuetype 'X')
+	.locals init	(valuetype 'X')
 	ldarg.0
 	callvirt	instance valuetype 'X' 'Test'::'m2'()
 	stloc.0

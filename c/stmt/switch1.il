@@ -6,7 +6,7 @@
 .custom instance void OpenSystem.C.MemoryModelAttribute::.ctor(int32) = (01 00 40 00 00 00 00 00)
 .method public static void 'm1'(int32 'x') cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldarg.0
 	dup
 	ldc.i4.0
@@ -291,7 +291,7 @@
 } // method m1
 .method public static void 'm2'(int64 'x') cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldarg.0
 	dup
 	ldc.i4.0

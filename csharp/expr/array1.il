@@ -11,7 +11,7 @@
 {
 .method private hidebysig instance void 'm1_int'(int32[] 'x', int32 'y') cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldarg.1
 	ldarg.2
 	ldelem.i4
@@ -20,8 +20,8 @@
 	ldarg.2
 	ldloc.0
 	stelem.i4
-	.locals	(int32[])
-	.locals	(int32)
+	.locals init	(int32[])
+	.locals init	(int32)
 	ldarg.1
 	dup
 	stloc.1
@@ -68,7 +68,7 @@
 	ldarg.2
 	dup
 	stloc.2
-	.locals	(int32)
+	.locals init	(int32)
 	ldelem.i4
 	dup
 	stloc.3
@@ -84,7 +84,7 @@
 } // method m1_int
 .method private hidebysig instance void 'm1_byte'(unsigned int8[] 'x', int32 'y') cil managed 
 {
-	.locals	(unsigned int8)
+	.locals init	(unsigned int8)
 	ldarg.1
 	ldarg.2
 	ldelem.u1
@@ -93,8 +93,8 @@
 	ldarg.2
 	ldloc.0
 	stelem.i1
-	.locals	(unsigned int8[])
-	.locals	(int32)
+	.locals init	(unsigned int8[])
+	.locals init	(int32)
 	ldarg.1
 	dup
 	stloc.1
@@ -107,7 +107,7 @@
 	ldc.i4.1
 	add
 	conv.u1
-	.locals	(unsigned int8)
+	.locals init	(unsigned int8)
 	dup
 	stloc.3
 	stelem.i1
@@ -148,7 +148,7 @@
 } // method m1_byte
 .method private hidebysig instance void 'm1_long'(int64[] 'x', int32 'y') cil managed 
 {
-	.locals	(int64)
+	.locals init	(int64)
 	ldarg.1
 	ldarg.2
 	ldelem.i8
@@ -157,8 +157,8 @@
 	ldarg.2
 	ldloc.0
 	stelem.i8
-	.locals	(int64[])
-	.locals	(int32)
+	.locals init	(int64[])
+	.locals init	(int32)
 	ldarg.1
 	dup
 	stloc.1
@@ -183,7 +183,7 @@
 	ldc.i4.1
 	conv.i8
 	add
-	.locals	(int64)
+	.locals init	(int64)
 	dup
 	stloc.3
 	stelem.i8
@@ -230,8 +230,8 @@
 	ldc.i4.2
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
 	stobj	['.library']'System'.'Decimal'
-	.locals	(valuetype ['.library']'System'.'Decimal'[])
-	.locals	(int32)
+	.locals init	(valuetype ['.library']'System'.'Decimal'[])
+	.locals init	(int32)
 	ldarg.1
 	dup
 	stloc.0
@@ -268,7 +268,7 @@
 } // method m1_string
 .method private hidebysig instance void 'm2_int'(int32[,] 'x', int32 'y', int32 'z') cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldarg.1
 	ldarg.2
 	ldarg.3
@@ -279,9 +279,9 @@
 	ldarg.3
 	ldloc.0
 	call	instance void int32[,]::'Set'(int32, int32, int32)
-	.locals	(int32[,])
-	.locals	(int32)
-	.locals	(int32)
+	.locals init	(int32[,])
+	.locals init	(int32)
+	.locals init	(int32)
 	ldarg.1
 	dup
 	stloc.1
@@ -343,7 +343,7 @@
 	ldarg.3
 	dup
 	stloc.3
-	.locals	(int32)
+	.locals init	(int32)
 	call	instance int32 int32[,]::'Get'(int32, int32)
 	dup
 	stloc.s	4
@@ -360,7 +360,7 @@
 } // method m2_int
 .method private hidebysig instance void 'm2_byte'(unsigned int8[,] 'x', int32 'y', int32 'z') cil managed 
 {
-	.locals	(unsigned int8)
+	.locals init	(unsigned int8)
 	ldarg.1
 	ldarg.2
 	ldarg.3
@@ -371,9 +371,9 @@
 	ldarg.3
 	ldloc.0
 	call	instance void unsigned int8[,]::'Set'(int32, int32, unsigned int8)
-	.locals	(unsigned int8[,])
-	.locals	(int32)
-	.locals	(int32)
+	.locals init	(unsigned int8[,])
+	.locals init	(int32)
+	.locals init	(int32)
 	ldarg.1
 	dup
 	stloc.1
@@ -390,7 +390,7 @@
 	ldc.i4.1
 	add
 	conv.u1
-	.locals	(unsigned int8)
+	.locals init	(unsigned int8)
 	dup
 	stloc.s	4
 	call	instance void unsigned int8[,]::'Set'(int32, int32, unsigned int8)
@@ -439,7 +439,7 @@
 } // method m2_byte
 .method private hidebysig instance void 'm2_long'(int64[,] 'x', int32 'y', int32 'z') cil managed 
 {
-	.locals	(int64)
+	.locals init	(int64)
 	ldarg.1
 	ldarg.2
 	ldarg.3
@@ -450,9 +450,9 @@
 	ldarg.3
 	ldloc.0
 	call	instance void int64[,]::'Set'(int32, int32, int64)
-	.locals	(int64[,])
-	.locals	(int32)
-	.locals	(int32)
+	.locals init	(int64[,])
+	.locals init	(int32)
+	.locals init	(int32)
 	ldarg.1
 	dup
 	stloc.1
@@ -485,7 +485,7 @@
 	ldc.i4.1
 	conv.i8
 	add
-	.locals	(int64)
+	.locals init	(int64)
 	dup
 	stloc.s	4
 	call	instance void int64[,]::'Set'(int32, int32, int64)
@@ -540,9 +540,9 @@
 	ldc.i4.2
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
 	call	instance void valuetype ['.library']'System'.'Decimal'[,]::'Set'(int32, int32, valuetype ['.library']'System'.'Decimal')
-	.locals	(valuetype ['.library']'System'.'Decimal'[,])
-	.locals	(int32)
-	.locals	(int32)
+	.locals init	(valuetype ['.library']'System'.'Decimal'[,])
+	.locals init	(int32)
+	.locals init	(int32)
 	ldarg.1
 	dup
 	stloc.0

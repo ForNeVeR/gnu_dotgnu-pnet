@@ -119,11 +119,11 @@
 {
 .method private hidebysig instance int32 'm1'(class 'TestEnumerable' 'en') cil managed 
 {
-	.locals	(class ['.library']'System'.'String', char)
+	.locals init	(class ['.library']'System'.'String', char)
 	ldstr	""
 	stloc.0
-	.locals	(class 'TestEnumerator')
-	.locals	(class ['.library']'System'.'IDisposable')
+	.locals init	(class 'TestEnumerator')
+	.locals init	(class ['.library']'System'.'IDisposable')
 	ldarg.1
 	call	instance class 'TestEnumerator' 'TestEnumerable'::'GetEnumerator'()
 	stloc.2

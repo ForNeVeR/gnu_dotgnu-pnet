@@ -11,7 +11,7 @@
 {
 .method private hidebysig instance void 'm1'(int32 & 'x') cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldarg.1
 	ldind.i4
 	ldc.i4.1

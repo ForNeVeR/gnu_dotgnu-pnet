@@ -11,7 +11,7 @@
 {
 .method private hidebysig instance void 'm1'() cil managed 
 {
-	.locals	(int32[], valuetype ['.library']'System'.'Decimal'[], int32[,], int32[,])
+	.locals init	(int32[], valuetype ['.library']'System'.'Decimal'[], int32[,], int32[,])
 	ldc.i4.4
 	newarr	['.library']'System'.'Int32'
 	dup

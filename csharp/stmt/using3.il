@@ -26,7 +26,7 @@
 {
 .method public static hidebysig void 'Main'() cil managed 
 {
-	.locals	(class 'Disposable')
+	.locals init	(class 'Disposable')
 	newobj	instance void 'Disposable'::'.ctor'()
 	stloc.0
 	.try {
@@ -40,7 +40,7 @@
 ?L2:
 	}
 ?L1:
-	.locals	(class ['.library']'System'.'IDisposable')
+	.locals init	(class ['.library']'System'.'IDisposable')
 	newobj	instance void 'Disposable'::'.ctor'()
 	stloc.1
 	.try {

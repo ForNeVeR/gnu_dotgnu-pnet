@@ -30,10 +30,10 @@
 {
 .method private hidebysig instance void 'm1'() cil managed 
 {
-	.locals	(int32, valuetype 'X', valuetype 'Color', class 'Test2', class ['.library']'System'.'Object')
+	.locals init	(int32, valuetype 'X', valuetype 'Color', class 'Test2', class ['.library']'System'.'Object')
 	ldc.i4.0
 	stloc.0
-	.locals	(valuetype 'X')
+	.locals init	(valuetype 'X')
 	ldloca.s	5
 	initobj	'X'
 	ldloc.s	5

@@ -89,7 +89,7 @@
 	ldarg.1
 	ldarg.2
 	ldstr	"Hello World"
-	.locals	(class ['.library']'System'.'Object')
+	.locals init	(class ['.library']'System'.'Object')
 	dup
 	stloc.0
 	call	instance void 'Dictionary'::'set_Item'(class ['.library']'System'.'Object', class ['.library']'System'.'Object')
@@ -99,8 +99,8 @@
 } // method m2
 .method private hidebysig instance int32 'm3'(class 'Counters' 'c') cil managed 
 {
-	.locals	(class 'Counters')
-	.locals	(int32)
+	.locals init	(class 'Counters')
+	.locals init	(int32)
 	ldarg.1
 	dup
 	stloc.0

@@ -12,7 +12,7 @@
 } // method Compare
 .method public static int32 'main'() cil managed 
 {
-	.locals	(int32 * *, unsigned int32)
+	.locals init	(int32 * *, unsigned int32)
 	ldc.i4.0
 	conv.i
 	stloc.0

@@ -30,7 +30,7 @@
 {
 .method private hidebysig instance void 'm1'(int32 'dim', unsigned int32 'dim2', int64 'dim3', unsigned int64 'dim4') cil managed 
 {
-	.locals	(int32[], valuetype 'X'[], valuetype 'Color'[,], class 'Test'[], class 'Test'[][], class ['.library']'System'.'Object'[,,], class ['.library']'System'.'Object'[,,][][,,,], class ['.library']'System'.'Object'[,])
+	.locals init	(int32[], valuetype 'X'[], valuetype 'Color'[,], class 'Test'[], class 'Test'[][], class ['.library']'System'.'Object'[,,], class ['.library']'System'.'Object'[,,][][,,,], class ['.library']'System'.'Object'[,])
 	ldc.i4.3
 	newarr	['.library']'System'.'Int32'
 	stloc.0

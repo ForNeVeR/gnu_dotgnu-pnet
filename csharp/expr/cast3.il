@@ -11,7 +11,7 @@
 {
 .method private hidebysig instance void 'm1'(class 'Test' 'x', class 'Test'[] 'y', class 'Test'[,] 'z') cil managed 
 {
-	.locals	(class 'Test', class 'Test'[], class 'Test'[,])
+	.locals init	(class 'Test', class 'Test'[], class 'Test'[,])
 	ldarg.1
 	stloc.0
 	ldarg.2

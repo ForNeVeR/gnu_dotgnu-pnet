@@ -57,7 +57,7 @@
 {
 .method public static hidebysig void 'NormalCase'() cil managed 
 {
-	.locals	(int32, int32)
+	.locals init	(int32, int32)
 	ldc.i4.0
 	stloc.0
 	br	?L1

@@ -30,7 +30,7 @@
 } // method m3
 .method private static hidebysig void 'm4'() cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldloca.s	0
 	call	int32 'Test'::'m1'(int32 &)
 	pop

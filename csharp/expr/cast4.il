@@ -26,7 +26,7 @@
 .field public static literal valuetype 'Color' 'red' = int32(0x00000000)
 .method private hidebysig instance void 'm1'() cil managed 
 {
-	.locals	(valuetype 'Color', valuetype 'ColorSmall', int8, unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, char, float32, float64, valuetype ['.library']'System'.'Decimal')
+	.locals init	(valuetype 'Color', valuetype 'ColorSmall', int8, unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, char, float32, float64, valuetype ['.library']'System'.'Decimal')
 	ldc.i4.3
 	conv.i1
 	stloc.2

@@ -11,12 +11,12 @@
 {
 .method private hidebysig instance int32 'm1'(class ['.library']'System'.'String' 'str') cil managed 
 {
-	.locals	(int32, char)
+	.locals init	(int32, char)
 	ldc.i4.0
 	stloc.0
-	.locals	(class ['.library']'System'.'String')
-	.locals	(int32)
-	.locals	(int32)
+	.locals init	(class ['.library']'System'.'String')
+	.locals init	(int32)
+	.locals init	(int32)
 	ldarg.1
 	dup
 	stloc.2

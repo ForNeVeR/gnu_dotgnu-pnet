@@ -12,7 +12,7 @@
 .field public static initonly valuetype 'Color' 'c'
 .method public hidebysig instance void 'Foo'() cil managed 
 {
-	.locals	(valuetype 'Color')
+	.locals init	(valuetype 'Color')
 	ldc.i4.2
 	stloc.0
 	ret

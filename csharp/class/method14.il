@@ -41,7 +41,7 @@
 {
 .method public static hidebysig void 'Main'() cil managed 
 {
-	.locals	(class 'Child')
+	.locals init	(class 'Child')
 	newobj	instance void 'Child'::'.ctor'()
 	stloc.0
 	ldloc.0

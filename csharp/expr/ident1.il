@@ -31,7 +31,7 @@
 .field private static int32 'foo'
 .method private static hidebysig void 'Main'() cil managed 
 {
-	.locals	(class 'foo', int32)
+	.locals init	(class 'foo', int32)
 	ldc.i4.1
 	stsfld	int32 'bar'::'foo'
 	ldsfld	int32 'bar'::'foo'

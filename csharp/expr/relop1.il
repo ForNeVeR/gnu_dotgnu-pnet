@@ -11,7 +11,7 @@
 {
 .method private hidebysig instance void 'm1'() cil managed 
 {
-	.locals	(bool, int8, unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, char, float32, float64, valuetype ['.library']'System'.'Decimal', class ['.library']'System'.'Object', int8, unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, char, float32, float64, valuetype ['.library']'System'.'Decimal', class ['.library']'System'.'Object')
+	.locals init	(bool, int8, unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, char, float32, float64, valuetype ['.library']'System'.'Decimal', class ['.library']'System'.'Object', int8, unsigned int8, int16, unsigned int16, int32, unsigned int32, int64, unsigned int64, char, float32, float64, valuetype ['.library']'System'.'Decimal', class ['.library']'System'.'Object')
 	ldc.i4.s	34
 	conv.i1
 	stloc.1

@@ -21,7 +21,7 @@
 {
 .method private hidebysig instance void 'm1'() cil managed 
 {
-	.locals	(bool, class ['.library']'System'.'Object', class 'Test', class 'Test2', class 'I', class ['.library']'System'.'ValueType', int32, valuetype 'Color')
+	.locals init	(bool, class ['.library']'System'.'Object', class 'Test', class 'Test2', class 'I', class ['.library']'System'.'ValueType', int32, valuetype 'Color')
 	ldnull
 	ldnull
 	ceq

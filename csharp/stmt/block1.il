@@ -11,19 +11,19 @@
 {
 .method private hidebysig instance void 'm1'() cil managed 
 {
-	.locals	(int32, int32, int32)
+	.locals init	(int32, int32, int32)
 	ret
 	.maxstack 0
 } // method m1
 .method private hidebysig instance void 'm2'(int32 'x') cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ret
 	.maxstack 0
 } // method m2
 .method private hidebysig instance void 'm3'() cil managed 
 {
-	.locals	(int32, int32)
+	.locals init	(int32, int32)
 	ldc.i4.0
 	stloc.0
 	br	?L1

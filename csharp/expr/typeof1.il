@@ -11,7 +11,7 @@
 {
 .method private hidebysig instance void 'm1'() cil managed 
 {
-	.locals	(class ['.library']'System'.'Object')
+	.locals init	(class ['.library']'System'.'Object')
 	ldtoken	['.library']'System'.'Int32'
 	call	class [.library]System.Type [.library]System.Type::GetTypeFromHandle(valuetype [.library]System.RuntimeTypeHandle)
 	stloc.0

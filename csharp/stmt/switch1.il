@@ -23,7 +23,7 @@
 {
 .method private hidebysig instance void 'm1'(int32 'x') cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldarg.1
 	dup
 	ldc.i4.0
@@ -308,7 +308,7 @@
 } // method m1
 .method private hidebysig instance void 'm2'(int64 'x') cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldarg.1
 	dup
 	ldc.i4.0
@@ -438,7 +438,7 @@
 } // method m2
 .method private hidebysig instance void 'm3'(class ['.library']'System'.'String' 'x') cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldarg.1
 	dup
 	brfalse	?L65
@@ -565,7 +565,7 @@
 } // method m3
 .method private hidebysig instance void 'm4'(valuetype 'Color' 'x') cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldarg.1
 	dup
 	ldc.i4.0

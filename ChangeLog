@@ -1,4 +1,31 @@
 
+2002-12-21  Gopal.V <gopalv82@symonds.net>
+
+	* c/expr/arrayptr1.3il, c/expr/arrayptr1.il, c/expr/assign1.3il
+	c/expr/assign1.il, c/expr/binary1.3il, c/expr/binary1.il, 
+	c/expr/funcptr3.3il, c/expr/funcptr3.il, c/expr/funcptr4.3il,
+	c/expr/funcptr4.il, c/expr/ptr1.3il, c/expr/ptr1.il, c/expr/ptr2.3il
+	c/expr/ptr2.il, c/stmt/switch1.3il, c/stmt/switch1.il: Update the
+	C test suite output to reflect changes in the compiler.
+
+	* csharp/class/ainit1.il, csharp/class/enum4.il, csharp/class/indexer1.il, 
+	csharp/class/interface1.il, csharp/class/method13.il, 
+	csharp/class/method14.il, csharp/class/method2.il, csharp/expr/arglist1.il, 
+	csharp/expr/array1.il, csharp/expr/as1.il, csharp/expr/binary1.il, 
+	csharp/expr/binary3.il, csharp/expr/binary4.il, csharp/expr/bitwise1.il, 
+	csharp/expr/cast1.il, csharp/expr/cast3.il, csharp/expr/cast4.il, 
+	csharp/expr/cast6.il, csharp/expr/const1.il, csharp/expr/enum1.il, 
+	csharp/expr/enum3.il, csharp/expr/ident1.il, csharp/expr/incdec1.il, 
+	csharp/expr/indexer1.il, csharp/expr/invoke1.il, csharp/expr/is1.il, 
+	csharp/expr/new1.il, csharp/expr/newarray1.il, csharp/expr/newarray3.il, 
+	csharp/expr/ref1.il, csharp/expr/relop1.il, csharp/expr/relop3.il, 
+	csharp/expr/shift1.il, csharp/expr/sizeof1.il, csharp/expr/typedref1.il, 
+	csharp/expr/typeof1.il, csharp/expr/unary1.il, csharp/stmt/block1.il, 
+	csharp/stmt/foreach1.il, csharp/stmt/foreach3.il, csharp/stmt/foreach4.il, 
+	csharp/stmt/foreach5.il, csharp/stmt/locals2.il, csharp/stmt/lock1.il, 
+	csharp/stmt/switch1.il, csharp/stmt/using1.il, csharp/stmt/using3.il:
+	Update the C# test suite output to reflect changes in the compiler.
+	
 2002-12-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tools/run_test.sh.in: remove "./" from the start of test output

@@ -62,7 +62,7 @@
 {
 .method public static hidebysig void 'Main'() cil managed 
 {
-	.locals	(class 'INHERIT'.'B')
+	.locals init	(class 'INHERIT'.'B')
 	ldc.i4.1
 	ldc.i4.2
 	newobj	instance void 'INHERIT'.'B'::'.ctor'(int32, int32)

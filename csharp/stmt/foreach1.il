@@ -11,11 +11,11 @@
 {
 .method private hidebysig instance int32 'm1'(int32[] 'array') cil managed 
 {
-	.locals	(int32, int32)
+	.locals init	(int32, int32)
 	ldc.i4.0
 	stloc.0
-	.locals	(int32[])
-	.locals	(int32)
+	.locals init	(int32[])
+	.locals init	(int32)
 	ldarg.1
 	stloc.2
 	ldc.i4.0

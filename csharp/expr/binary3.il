@@ -57,7 +57,7 @@
 {
 .method private hidebysig instance void 'm1'() cil managed 
 {
-	.locals	(valuetype 'Y', valuetype 'Y', valuetype 'X', valuetype 'Y')
+	.locals init	(valuetype 'Y', valuetype 'Y', valuetype 'X', valuetype 'Y')
 	ldc.i4.1
 	newobj	instance void 'Y'::'.ctor'(int32)
 	stloc.0

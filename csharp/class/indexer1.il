@@ -32,7 +32,7 @@
 } // property Item
 .method public hidebysig instance void 'test'() cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldarg.0
 	ldc.i4.1
 	ldc.i4.8

@@ -195,7 +195,7 @@
 {
 .method private hidebysig instance void 'm1'(class 'IDictionary' 'dict') cil managed 
 {
-	.locals	(class 'IDictionaryEnumerator')
+	.locals init	(class 'IDictionaryEnumerator')
 	ldarg.1
 	callvirt	instance class 'IDictionaryEnumerator' 'IDictionary'::'GetEnumerator'()
 	stloc.0

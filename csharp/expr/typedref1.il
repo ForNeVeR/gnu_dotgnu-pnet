@@ -15,7 +15,7 @@
 {
 .method private hidebysig instance void 'm1'(typedref 'tref') cil managed 
 {
-	.locals	(class ['.library']'System'.'Type', int32, class 'Test', class 'Test'[], valuetype 'W')
+	.locals init	(class ['.library']'System'.'Type', int32, class 'Test', class 'Test'[], valuetype 'W')
 	ldarg.1
 	refanytype
 	call	class [.library]System.Type [.library]System.Type::GetTypeFromHandle(valuetype [.library]System.RuntimeTypeHandle)
@@ -44,7 +44,7 @@
 .field private static class 'Test' 'fld3'
 .method private hidebysig instance void 'm2'() cil managed 
 {
-	.locals	(int32)
+	.locals init	(int32)
 	ldc.i4.0
 	stloc.0
 	ldarg.0

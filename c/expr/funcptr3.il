@@ -11,7 +11,7 @@
 } // method n
 .method public static int32 'main'() cil managed 
 {
-	.locals	(method void *())
+	.locals init	(method void *())
 	ldftn	void 'n'()
 	stloc.0
 	ldloc.0

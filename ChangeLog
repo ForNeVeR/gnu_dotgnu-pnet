@@ -7,6 +7,8 @@
 	* csant/csant_cscc.c: convert '/' into '\' for the output filename
 	when building on Win32 platforms with csc.
 
+	* csant/csant_fileset.c: regular expression and directory fixes.
+
 2001-03-21 Gopal.V <gopalv82@yahoo.com>
 	* csdoc/doc_stub.c : Added the Csdoc to C# stub generation.
 

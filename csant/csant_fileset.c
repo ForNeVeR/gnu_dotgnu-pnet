@@ -205,7 +205,28 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 				else
 				{
 					/* Match an ordinary character */
+				#ifdef _WIN32
+					if(ch >= 'A' && ch <= 'Z')
+					{
+						REGEX_CHAR('[');
+						REGEX_CHAR(ch);
+						REGEX_CHAR(ch - 'A' + 'a');
+						REGEX_CHAR(']');
+					}
+					else if(ch >= 'a' && ch <= 'z')
+					{
+						REGEX_CHAR('[');
+						REGEX_CHAR(ch - 'a' + 'A');
+						REGEX_CHAR(ch);
+						REGEX_CHAR(']');
+					}
+					else
+					{
+						REGEX_CHAR(ch);
+					}
+				#else
 					REGEX_CHAR(ch);
+				#endif
 				}
 			}
 			REGEX_CHAR('$');
@@ -433,8 +454,12 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name)
 		}
 
 		/* Free the current directory name, which we no longer require */
-		ILFree(currentDir);
+		if(currentDir != baseDir)
+		{
+			ILFree(currentDir);
+		}
 	}
+	ILFree(baseDir);
 
 	/* Free the regular expression state */
 #ifdef HAVE_REGCOMP

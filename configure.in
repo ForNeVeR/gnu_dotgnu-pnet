@@ -589,6 +589,8 @@ DotGNU.Terminal/Makefile
 DotGNU.XmlRpc/Makefile
 OpenSystem.Platform/Makefile
 OpenSystem.Platform/Types.cs
+Themes/Makefile
+Themes/WinXP/Makefile
 tests/Makefile
 tests/System/Makefile
 tests/System.Xml/Makefile

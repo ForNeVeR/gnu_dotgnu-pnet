@@ -18,6 +18,12 @@
 	Basic/CompilerServices/StringType.cs, Basic/CompilerServices/Utils.cs:
 	signature-compatibility fixes.
 
+	* Makefile.am, configure.in, Themes/.cvsignore, Themes/Makefile.am,
+	Themes/WinXP/.cvsignore, Themes/WinXP/Makefile.am,
+	Themes/WinXP/Readme.html, Themes/WinXP/ThemePainterXP.cs,
+	Themes/WinXP/Themes.XP.build, Themes/WinXP/UxTheme.cs,
+	Themes/WinXP/WinAPI.cs: add the WinXP themer to the CVS server.
+
 2004-07-17  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Private/NumberParser.cs: ParseDouble and ParseDecimal

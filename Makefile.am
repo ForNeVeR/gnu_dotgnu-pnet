@@ -8,7 +8,7 @@ SUBDIRS = tools config resources runtime I18N OpenSystem.Platform \
 		  System.Drawing.Win32 System.Drawing.Postscript \
 		  System.EnterpriseServices System.Windows.Forms \
 		  System.Design Basic DotGNU.Terminal DotGNU.XmlRpc \
-		  tests samples 
+		  Themes tests samples 
 else
 SUBDIRS = tools config resources runtime I18N OpenSystem.Platform \
 		  DotGNU.SSL System System.Xml . \

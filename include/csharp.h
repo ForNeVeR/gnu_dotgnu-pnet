@@ -43,6 +43,8 @@ __using__ __namespace__ System;
 #define false           __false__
 #undef  new
 #define new             __new__
+#undef  delete
+#define delete          __delete__
 #undef  try
 #define try             __try__
 #undef  catch

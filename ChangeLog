@@ -1,4 +1,8 @@
 
+2004-03-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/csharp.h: add the "delete" keyword to csharp.h.
+
 2004-03-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, include/Makefile.am, include/csharp.h,

@@ -2863,6 +2863,12 @@ ildd [OPTIONS] PATTERN INPUT ...
 @end example
 
 @table @code
+@cindex -p option (ildd)
+@cindex --pinvoke option (ildd)
+@item -p
+@itemx --pinvoke
+Print detailed information about PInvoke declarations.
+
 @cindex --help option (ildd)
 @item --help
 Print a usage message for the ildd program.

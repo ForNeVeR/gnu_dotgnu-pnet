@@ -32,6 +32,10 @@ extern	"C" {
  * Table of command-line options.
  */
 static ILCmdLineOption const options[] = {
+	{"-p", 'p', 0, 0, 0},
+	{"--pinvoke", 'p', 0,
+		"--pinvoke or -p",
+		"Print detailed information on PInvoke declarations."},
 	{"-v", 'v', 0, 0, 0},
 	{"--version", 'v', 0,
 		"--version or -v",
@@ -45,11 +49,12 @@ static ILCmdLineOption const options[] = {
 static void usage(const char *progname);
 static void version(void);
 static int printDependencies(const char *filename, ILContext *context,
-							 int multiple);
+							 int multiple, int pinvoke);
 
 int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
+	int pinvoke = 0;
 	int sawStdin;
 	int state, opt;
 	char *param;
@@ -64,6 +69,12 @@ int main(int argc, char *argv[])
 	{
 		switch(opt)
 		{
+			case 'p':
+			{
+				pinvoke = 1;
+			}
+			break;
+
 			case 'v':
 			{
 				version();
@@ -106,14 +117,14 @@ int main(int argc, char *argv[])
 			/* Dump the contents of stdin, but only once */
 			if(!sawStdin)
 			{
-				errors |= printDependencies("-", context, multiple);
+				errors |= printDependencies("-", context, multiple, pinvoke);
 				sawStdin = 1;
 			}
 		}
 		else
 		{
 			/* Dump the contents of a regular file */
-			errors |= printDependencies(argv[1], context, multiple);
+			errors |= printDependencies(argv[1], context, multiple, pinvoke);
 		}
 		++argv;
 		--argc;
@@ -153,17 +164,20 @@ static void version(void)
  * Load an IL image from an input stream and print its dependency information.
  */
 static int printDependencies(const char *filename, ILContext *context,
-							 int multiple)
+							 int multiple, int pinvoke)
 {
 	ILImage *image;
 	ILAssembly *assem;
+	ILModule *module;
 	const char *name;
 	const ILUInt16 *version;
 	char *path;
 	ILPInvoke *pinv;
 	ILMethod *method;
+#if 0
 	void *dynlib;
 	void *symbol;
+#endif
 
 	/* Attempt to load the image into memory */
 	if(ILImageLoadFromFile(filename, context, &image,
@@ -215,9 +229,17 @@ static int printDependencies(const char *filename, ILContext *context,
 		putc('\n', stdout);
 	}
 
+	/* Print the module references that this file depends upon */
+	module = 0;
+	while((module = (ILModule *)ILImageNextToken
+				(image, IL_META_TOKEN_MODULE_REF, module)) != 0)
+	{
+		printf("\tmodule %s\n", ILModule_Name(module));
+	}
+
 	/* Print the external PInvoke'd functions that this file depends upon */
 	pinv = 0;
-	while((pinv = (ILPInvoke *)ILImageNextToken
+	while(pinvoke && (pinv = (ILPInvoke *)ILImageNextToken
 				(image, IL_META_TOKEN_IMPL_MAP, pinv)) != 0)
 	{
 		/* Print the name of the PInvoke method */
@@ -243,6 +265,7 @@ static int printDependencies(const char *filename, ILContext *context,
 		if(path)
 		{
 			fputs(path, stdout);
+#if 0
 			dynlib = ILDynLibraryOpen(path);
 			if(!dynlib)
 			{
@@ -257,6 +280,7 @@ static int printDependencies(const char *filename, ILContext *context,
 				}
 			}
 			ILFree(path);
+#endif
 		}
 		else
 		{

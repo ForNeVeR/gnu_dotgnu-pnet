@@ -97,8 +97,8 @@ int ILMemberAccessible(ILMember *member, ILClass *scope)
 
 			case IL_META_METHODDEF_PRIVATE:
 			{
-				/* Only accessible to the class itself */
-				return (info == scope);
+				/* Only accessible to the class and its nested children */
+				return (info == scope || ILClassIsNested(info, scope));
 			}
 			/* Not reached */
 

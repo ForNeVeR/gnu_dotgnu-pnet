@@ -323,6 +323,8 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 {
 	ILType *type;
 	void *data;
+	unsigned index;
+	ILNode *assign;
 
 	/* If there is a parameter list associated with the declarator, then
 	   we are declaring a forward function reference, not a variable */
@@ -449,8 +451,22 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 		}
 		else
 		{
-			CScopeAddLocal(decl.name, decl.node,
-						   CGenAllocLocal(&CCCodeGen, type), type);
+			index = CGenAllocLocal(&CCCodeGen, type);
+			CScopeAddLocal(decl.name, decl.node, index, type);
+			if(init)
+			{
+				if(!(*list))
+				{
+					*list = ILNode_List_create();
+				}
+				assign = ILNode_CLocalVar_create
+					(index, ILTypeToMachineType(type), type,
+					 CTypeDecay(&CCCodeGen, type));
+				CGenCloneLine(assign, decl.node);
+				assign = ILNode_Assign_create(assign, init);
+				CGenCloneLine(assign, init);
+				ILNode_List_Add(*list, assign);
+			}
 		}
 	}
 }

@@ -455,6 +455,149 @@ invalid:
 	return CSemValueError;
 }
 
+/*
+ * Perform semantic analysis for binary operator assignment.
+ */
+static CSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
+						   ILNode **parent, const char *name, int opkind)
+{
+	CSemValue value1;
+	CSemValue value2;
+	ILMachineType type1;
+	ILMachineType type2;
+	ILMachineType common2;
+	ILNode *temp;
+	ILType *elemType;
+
+	/* Perform semantic analysis on the two arguments, and check
+	   that the first is an l-value and second an r-value */
+	value1 = ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), 0);
+	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), 0);
+	if(!CSemIsLValue(value1))
+	{
+		if(!CSemIsError(value1))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("invalid lvalue in assignment"));
+		}
+		if(!CSemIsRValue(value2) && !CSemIsError(value2))
+		{
+			goto invalid;
+		}
+		return CSemValueError;
+	}
+	if(!CSemIsRValue(value2))
+	{
+		/* Pass error conditions up, but otherwise ignore the problem.
+		   We've already reported the error at the lower level */
+		if(CSemIsError(value2))
+		{
+			return CSemValueError;
+		}
+		goto invalid;
+	}
+
+	/* Find a common type to use for the operation */
+	type1 = ILTypeToMachineType(CSemGetType(value1));
+	type2 = ILTypeToMachineType(CSemGetType(value2));
+	if(opkind == C_BINARY_SHIFT)
+	{
+		/* Shift operator that can only support integer operands */
+		if(IsIntegerMachineType(type1) && IsIntegerMachineType(type2))
+		{
+			common2 = ILMachineType_Int32;
+		}
+		else
+		{
+			goto invalid;
+		}
+	}
+	else if(opkind == C_BINARY_BITWISE || opkind == C_BINARY_REM)
+	{
+		/* Operator that can only support integer operands */
+		if(IsIntegerMachineType(type1) && IsIntegerMachineType(type2))
+		{
+			common2 = type1;
+		}
+		else
+		{
+			goto invalid;
+		}
+	}
+	else
+	{
+		/* The operator can support all numeric operands */
+		if(IsNumericMachineType(type1) && IsNumericMachineType(type2))
+		{
+			common2 = type1;
+		}
+		else if(opkind == C_BINARY_ADD)
+		{
+			if(type1 == ILMachineType_UnmanagedPtr &&
+			   IsIntegerMachineType(type2))
+			{
+				/* Add pointer and integer */
+				elemType = CTypeGetPtrRef(CSemGetType(value1));
+				node->expr2 = MulPtrSize(node->expr2, value2, elemType);
+				if(IsSignedMachineType(type2))
+				{
+					common2 = ILMachineType_NativeInt;
+				}
+				else
+				{
+					common2 = ILMachineType_NativeUInt;
+				}
+			}
+			else
+			{
+				goto invalid;
+			}
+		}
+		else if(opkind == C_BINARY_SUB)
+		{
+			if(type1 == ILMachineType_UnmanagedPtr &&
+			   IsIntegerMachineType(type2))
+			{
+				/* Subtract pointer and integer */
+				elemType = CTypeGetPtrRef(CSemGetType(value1));
+				node->expr2 = MulPtrSize(node->expr2, value2, elemType);
+				if(IsSignedMachineType(type2))
+				{
+					common2 = ILMachineType_NativeInt;
+				}
+				else
+				{
+					common2 = ILMachineType_NativeUInt;
+				}
+			}
+			else
+			{
+				goto invalid;
+			}
+		}
+		else
+		{
+			goto invalid;
+		}
+	}
+
+	/* Cast the arguments to their final types and return */
+	if(common2 != type2)
+	{
+		temp = ILNode_CastSimple_create(node->expr2, common2);
+		CGenCloneLine(temp, node->expr2);
+		node->expr2 = temp;
+	}
+	CSemSetRValue(value1, CSemGetType(value1));
+	return value1;
+
+	/* Report an invalid operands error and bail out */
+invalid:
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("invalid operands to binary `%s'"), name);
+	return CSemValueError;
+}
+
 %}
 
 /*
@@ -507,7 +650,84 @@ ILNode_CSemAnalysis(ILNode_Rem)
  */
 ILNode_CSemAnalysis(ILNode_Neg)
 {
-	/* TODO */
+	CSemValue value;
+	ILMachineType type;
+	ILMachineType common;
+	ILNode *temp;
+
+	/* Perform semantic analysis on the argument */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsRValue(value))
+	{
+		/* Pass error conditions up, but otherwise ignore the problem.
+		   We've already reported the error at the lower level */
+		if(CSemIsError(value))
+		{
+			return CSemValueError;
+		}
+		goto invalid;
+	}
+
+	/* Find an appropriate numeric type to negate within */
+	type = ILTypeToMachineType(CSemGetType(value));
+	switch(type)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		{
+			common = ILMachineType_Int32;
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			common = ILMachineType_Int64;
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		{
+			common = ILMachineType_NativeInt;
+		}
+		break;
+
+		case ILMachineType_Float32:
+		case ILMachineType_Float64:
+		{
+			common = ILMachineType_Float64;
+		}
+		break;
+
+		case ILMachineType_NativeFloat:
+		{
+			common = ILMachineType_NativeFloat;
+		}
+		break;
+
+		default: goto invalid;
+	}
+
+	/* Cast the argument to its final type and return */
+	if(common != type)
+	{
+		temp = ILNode_CastSimple_create(node->expr, common);
+		CGenCloneLine(temp, node->expr);
+		node->expr = temp;
+	}
+	CSemSetRValue(value, ILValueTypeToType(info, common));
+	return value;
+
+	/* Report an invalid operands error and bail out */
+invalid:
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("invalid operand to unary `-'"));
 	return CSemValueError;
 }
 
@@ -516,7 +736,85 @@ ILNode_CSemAnalysis(ILNode_Neg)
  */
 ILNode_CSemAnalysis(ILNode_UnaryPlus)
 {
-	/* TODO */
+	CSemValue value;
+	ILMachineType type;
+	ILMachineType common;
+	ILNode *temp;
+
+	/* Perform semantic analysis on the argument */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsRValue(value))
+	{
+		/* Pass error conditions up, but otherwise ignore the problem.
+		   We've already reported the error at the lower level */
+		if(CSemIsError(value))
+		{
+			return CSemValueError;
+		}
+		goto invalid;
+	}
+
+	/* Find an appropriate numeric type to process with */
+	type = ILTypeToMachineType(CSemGetType(value));
+	switch(type)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		{
+			common = ILMachineType_Int32;
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			common = ILMachineType_Int64;
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		{
+			common = ILMachineType_NativeInt;
+		}
+		break;
+
+		case ILMachineType_Float32:
+		case ILMachineType_Float64:
+		{
+			common = ILMachineType_Float64;
+		}
+		break;
+
+		case ILMachineType_NativeFloat:
+		{
+			common = ILMachineType_NativeFloat;
+		}
+		break;
+
+		default: goto invalid;
+	}
+
+	/* Cast the argument to its final type and return */
+	if(common != type)
+	{
+		temp = ILNode_CastSimple_create(node->expr, common);
+		CGenCloneLine(temp, node->expr);
+		node->expr = temp;
+	}
+	*parent = node->expr;
+	CSemSetRValue(value, ILValueTypeToType(info, common));
+	return value;
+
+	/* Report an invalid operands error and bail out */
+invalid:
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("invalid operand to unary `+'"));
 	return CSemValueError;
 }
 
@@ -552,7 +850,86 @@ ILNode_CSemAnalysis(ILNode_Xor)
  */
 ILNode_CSemAnalysis(ILNode_Not)
 {
-	/* TODO */
+	CSemValue value;
+	ILMachineType type;
+	ILMachineType common;
+	ILNode *temp;
+
+	/* Perform semantic analysis on the argument */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsRValue(value))
+	{
+		/* Pass error conditions up, but otherwise ignore the problem.
+		   We've already reported the error at the lower level */
+		if(CSemIsError(value))
+		{
+			return CSemValueError;
+		}
+		goto invalid;
+	}
+
+	/* Find an appropriate numeric type to NOT within */
+	type = ILTypeToMachineType(CSemGetType(value));
+	switch(type)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		{
+			common = ILMachineType_Int32;
+		}
+		break;
+
+		case ILMachineType_UInt32:
+		{
+			common = ILMachineType_UInt32;
+		}
+		break;
+
+		case ILMachineType_Int64:
+		{
+			common = ILMachineType_Int64;
+		}
+		break;
+
+		case ILMachineType_UInt64:
+		{
+			common = ILMachineType_UInt64;
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		{
+			common = ILMachineType_NativeInt;
+		}
+		break;
+
+		case ILMachineType_NativeUInt:
+		{
+			common = ILMachineType_NativeUInt;
+		}
+		break;
+
+		default: goto invalid;
+	}
+
+	/* Cast the argument to its final type and return */
+	if(common != type)
+	{
+		temp = ILNode_CastSimple_create(node->expr, common);
+		CGenCloneLine(temp, node->expr);
+		node->expr = temp;
+	}
+	CSemSetRValue(value, ILValueTypeToType(info, common));
+	return value;
+
+	/* Report an invalid operands error and bail out */
+invalid:
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("invalid operand to unary `~'"));
 	return CSemValueError;
 }
 
@@ -580,8 +957,49 @@ ILNode_CSemAnalysis(ILNode_UShr)
  */
 ILNode_CSemAnalysis(ILNode_Assign)
 {
-	/* TODO */
-	return CSemValueError;
+	CSemValue value1;
+	CSemValue value2;
+
+	/* Perform semantic analysis on the two values */
+	value1 = ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), 0);
+	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), 0);
+
+	/* Check that the first is an l-value and the second is an r-value */
+	if(!CSemIsLValue(value1))
+	{
+		if(!CSemIsError(value1))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "invalid lvalue in assignment");
+		}
+		return CSemValueError;
+	}
+	if(!CSemIsRValue(value2))
+	{
+		if(!CSemIsError(value2))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "invalid rvalue in assignment");
+		}
+		return CSemValueError;
+	}
+
+	/* Check that we can coerce from "value2" to "value1"'s type */
+	if(!CCanCoerceValue(value2, CSemGetType(value1)))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "incompatible types in assignment");
+		CSemSetRValue(value1, CSemGetType(value1));
+		return value1;
+	}
+
+	/* Insert coercion nodes to convert the rvalue appropriately */
+	CCoerceNode(info, node->expr2, &(node->expr2),
+				value2, CSemGetType(value1));
+
+	/* Convert value1 into an rvalue and return its type */
+	CSemSetRValue(value1, CSemGetType(value1));
+	return value1;
 }
 
 /*
@@ -589,8 +1007,8 @@ ILNode_CSemAnalysis(ILNode_Assign)
  */
 ILNode_CSemAnalysis(ILNode_AssignAdd)
 {
-	/* TODO */
-	return CSemValueError;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), "+", C_BINARY_ADD);
 }
 
 /*
@@ -598,8 +1016,8 @@ ILNode_CSemAnalysis(ILNode_AssignAdd)
  */
 ILNode_CSemAnalysis(ILNode_AssignSub)
 {
-	/* TODO */
-	return CSemValueError;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), "-", C_BINARY_SUB);
 }
 
 /*
@@ -607,8 +1025,8 @@ ILNode_CSemAnalysis(ILNode_AssignSub)
  */
 ILNode_CSemAnalysis(ILNode_AssignMul)
 {
-	/* TODO */
-	return CSemValueError;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), "*", C_BINARY_NUMERIC);
 }
 
 /*
@@ -616,8 +1034,8 @@ ILNode_CSemAnalysis(ILNode_AssignMul)
  */
 ILNode_CSemAnalysis(ILNode_AssignDiv)
 {
-	/* TODO */
-	return CSemValueError;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), "/", C_BINARY_NUMERIC);
 }
 
 /*
@@ -625,8 +1043,8 @@ ILNode_CSemAnalysis(ILNode_AssignDiv)
  */
 ILNode_CSemAnalysis(ILNode_AssignRem)
 {
-	/* TODO */
-	return CSemValueError;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), "%", C_BINARY_REM);
 }
 
 /*
@@ -634,8 +1052,8 @@ ILNode_CSemAnalysis(ILNode_AssignRem)
  */
 ILNode_CSemAnalysis(ILNode_AssignAnd)
 {
-	/* TODO */
-	return CSemValueError;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), "&", C_BINARY_BITWISE);
 }
 
 /*
@@ -643,8 +1061,8 @@ ILNode_CSemAnalysis(ILNode_AssignAnd)
  */
 ILNode_CSemAnalysis(ILNode_AssignOr)
 {
-	/* TODO */
-	return CSemValueError;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), "|", C_BINARY_BITWISE);
 }
 
 /*
@@ -652,8 +1070,8 @@ ILNode_CSemAnalysis(ILNode_AssignOr)
  */
 ILNode_CSemAnalysis(ILNode_AssignXor)
 {
-	/* TODO */
-	return CSemValueError;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), "^", C_BINARY_BITWISE);
 }
 
 /*
@@ -661,8 +1079,8 @@ ILNode_CSemAnalysis(ILNode_AssignXor)
  */
 ILNode_CSemAnalysis(ILNode_AssignShl)
 {
-	/* TODO */
-	return CSemValueError;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), "<<", C_BINARY_SHIFT);
 }
 
 /*
@@ -671,8 +1089,8 @@ ILNode_CSemAnalysis(ILNode_AssignShl)
 ILNode_CSemAnalysis(ILNode_AssignShr),
 ILNode_CSemAnalysis(ILNode_AssignUShr)
 {
-	/* TODO */
-	return CSemValueError;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ">>", C_BINARY_SHIFT);
 }
 
 /*

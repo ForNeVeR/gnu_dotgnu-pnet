@@ -768,6 +768,7 @@ ILBinary_ApplyOp(ILNode_Add, ILMachineType_NativeFloat)
 }
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_UInt32),
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_UInt64),
+ILBinary_ApplyOp(ILNode_Add, ILMachineType_UnmanagedPtr),
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_NativeUInt)
 {
 	if(info->overflowInsns)
@@ -814,7 +815,6 @@ ILBinary_ApplyOp(ILNode_Add, ILMachineType_String)
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_Void),
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_Boolean),
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_ObjectRef),
-ILBinary_ApplyOp(ILNode_Add, ILMachineType_UnmanagedPtr),
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_ManagedPtr),
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_TransientPtr),
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_ManagedValue)
@@ -895,6 +895,7 @@ ILBinary_ApplyOp(ILNode_Sub, ILMachineType_NativeFloat)
 }
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_UInt32),
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_UInt64),
+ILBinary_ApplyOp(ILNode_Sub, ILMachineType_UnmanagedPtr),
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_NativeUInt)
 {
 	if(info->overflowInsns)
@@ -936,7 +937,6 @@ ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Void),
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Boolean),
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_String),
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_ObjectRef),
-ILBinary_ApplyOp(ILNode_Sub, ILMachineType_UnmanagedPtr),
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_ManagedPtr),
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_TransientPtr),
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_ManagedValue)
@@ -3110,6 +3110,11 @@ ILMachineType ILCommonType(ILGenInfo *info, ILMachineType type1,
 	if(type1 == ILMachineType_Int64 || type2 == ILMachineType_Int64)
 	{
 		return ILMachineType_Int64;
+	}
+	if(type1 == ILMachineType_UnmanagedPtr ||
+	   type2 == ILMachineType_UnmanagedPtr)
+	{
+		return ILMachineType_UnmanagedPtr;
 	}
 	if(type1 == ILMachineType_NativeUInt || type2 == ILMachineType_NativeUInt)
 	{

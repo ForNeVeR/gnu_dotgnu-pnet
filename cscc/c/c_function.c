@@ -428,6 +428,9 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 		ILGenSimple(info, IL_OP_RET);
 	}
 
+	/* Output the maximum stack height for the method */
+	fprintf(stream, "\t.maxstack %ld\n", info->maxStackHeight);
+
 	/* Output the function footer */
 	fprintf(stream, "} // method %s\n", ILMethod_Name(method));
 

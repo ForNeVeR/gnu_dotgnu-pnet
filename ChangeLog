@@ -9,6 +9,10 @@
 	because automake 1.4 cannot handle directory specifications in
 	SOURCES lines.
 
+	* class/System.Data/.cvsignore, class/System.Web/.cvsignore,
+	class/System.Web.Services/.cvsignore: add some auto-generated
+	files to .cvsignore.
+
 2004-05-24  Gopal.V  <gopalv82@yahoo.com>
 
 	* copy-mcs.sh: Add the new directories to copy-mcs.sh.

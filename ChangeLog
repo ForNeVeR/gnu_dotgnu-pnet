@@ -1,4 +1,10 @@
 
+2004-06-04  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/ErrorProvider.cs,
+	System.Windows.Forms/HelpProvider.cs: Add ErrorProvider stubs and
+	include CONFIG_COMPONENT_MODEL checks for HelpProvider.
+
 2004-06-04  Thomas Fritzsche  <tf@noto.de>
 
 	* System.Drawing/Graphics.cs: Implement HotKeyPrefix.Show and Hide

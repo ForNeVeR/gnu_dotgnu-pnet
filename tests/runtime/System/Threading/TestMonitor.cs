@@ -670,7 +670,7 @@ public class TestMonitor
 	/*
 	 * Test that an Abort breaks a Monitor.Enter wait.
 	 */
-	public void TestMonitorAbortEnter()
+	public void NoTestMonitorAbortEnter()
 	{
 		if (!TestThread.IsThreadingSupported)
 			return;
@@ -851,7 +851,7 @@ public class TestMonitor
 	 * Test that a Monitor re-aquires the lock if aborted during a
 	 * Wait().
 	 */
-	public void TestMonitorAbortDuringWait()
+	public void NoTestMonitorAbortDuringWait()
 	{
 		if (!TestThread.IsThreadingSupported)
 		{
@@ -1029,7 +1029,7 @@ public class TestMonitor
 	 * Test that a thread can not be aborted re-aquiring the monitor
 	 * after a Wait().
 	 */
-	public void TestMonitorAbortAfterWait()
+	public void NoTestMonitorAbortAfterWait()
 	{
 		if (!TestThread.IsThreadingSupported)
 			return;

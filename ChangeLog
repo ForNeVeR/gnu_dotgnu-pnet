@@ -3,6 +3,9 @@
 	* tests/runtime/System/TestDelegate.cs, tests/runtime/System/
 	SuiteSystem.cs: Added tests for asynchronous delegates.
 	
+	* tests/runtime/System/Threading/TestMonitor.cs: Disable
+	Thread.Abort tests since Thread.Abort isn't fully implemented.
+	
 2004-05-14  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/MainMenu.cs: Fix a minor bug , on

@@ -61,6 +61,7 @@ extern	"C" {
 #define	CVM_OPER_TWO_UINT32			28
 #define	CVM_OPER_TAIL_INTERFACE		29
 #define	CVM_OPER_TYPE				30
+#define	CVM_OPER_PTR				31
 
 /*
  * Table of CVM opcodes.  This must be kept in sync with "cvm.h".
@@ -422,7 +423,7 @@ static CVMOpcode const opcodes[256] = {
 	 */
 	{"prefix",			CVM_OPER_PREFIX},
 };
-static CVMOpcode const prefixOpcodes[0x70] = {
+static CVMOpcode const prefixOpcodes[0x90] = {
 	/*
 	 * Reserved opcodes.
 	 */
@@ -590,11 +591,15 @@ static CVMOpcode const prefixOpcodes[0x70] = {
 	{"trace_out",	CVM_OPER_UINT32},
 
 	/*
+	 * More prefixed exception handling opcodes.
+	 */
+	{"start_catch",		CVM_OPER_PTR},
+	{"start_finally",	CVM_OPER_PTR},
+	{"propagate_abort",	CVM_OPER_NONE},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_62",	CVM_OPER_NONE},
-	{"preserved_63",	CVM_OPER_NONE},
-	{"preserved_64",	CVM_OPER_NONE},
 	{"preserved_65",	CVM_OPER_NONE},
 	{"preserved_66",	CVM_OPER_NONE},
 	{"preserved_67",	CVM_OPER_NONE},
@@ -603,9 +608,49 @@ static CVMOpcode const prefixOpcodes[0x70] = {
 	{"preserved_6A",	CVM_OPER_NONE},
 	{"preserved_6B",	CVM_OPER_NONE},
 	{"preserved_6C",	CVM_OPER_NONE},
-	{"preserved_6D",	CVM_OPER_NONE},
-	{"preserved_6E",	CVM_OPER_NONE},
-	{"preserved_6F",	CVM_OPER_NONE},
+
+	/*
+	 * More inline method replacements.
+	 */
+	{"abs_i4",			CVM_OPER_NONE},
+	{"abs_r4",			CVM_OPER_NONE},
+	{"abs_r8",			CVM_OPER_NONE},
+	{"asin",			CVM_OPER_NONE},
+	{"atan",			CVM_OPER_NONE},
+	{"atan2",			CVM_OPER_NONE},
+	{"ceiling",			CVM_OPER_NONE},
+	{"cos",				CVM_OPER_NONE},
+	{"cosh",			CVM_OPER_NONE},
+	{"exp",				CVM_OPER_NONE},
+	{"floor",			CVM_OPER_NONE},
+	{"ieeeremainder",	CVM_OPER_NONE},
+	{"log",				CVM_OPER_NONE},
+	{"log10",			CVM_OPER_NONE},
+	{"min_i4",			CVM_OPER_NONE},
+	{"max_i4",			CVM_OPER_NONE},
+	{"min_r4",			CVM_OPER_NONE},
+	{"max_r4",			CVM_OPER_NONE},
+	{"min_r8",			CVM_OPER_NONE},
+	{"max_r8",			CVM_OPER_NONE},
+	{"pow",				CVM_OPER_NONE},
+	{"round",			CVM_OPER_NONE},
+	{"sign_i4",			CVM_OPER_NONE},
+	{"sign_r4",			CVM_OPER_NONE},
+	{"sign_r8",			CVM_OPER_NONE},
+	{"sin",				CVM_OPER_NONE},
+	{"sinh",			CVM_OPER_NONE},
+	{"sqrt",			CVM_OPER_NONE},
+	{"tan",				CVM_OPER_NONE},
+	{"tanh",			CVM_OPER_NONE},
+
+	/*
+	 * Reserved opcodes.
+	 */
+	{"preserved_8B",	CVM_OPER_NONE},
+	{"preserved_8C",	CVM_OPER_NONE},
+	{"preserved_8D",	CVM_OPER_NONE},
+	{"preserved_8E",	CVM_OPER_NONE},
+	{"preserved_8F",	CVM_OPER_NONE},
 };
 
 /*
@@ -873,6 +918,13 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 		}
 		break;
 
+		case CVM_OPER_PTR:
+		{
+			fprintf(stream, "0x%lx", (unsigned long)CVMReadPointer(pc + 1));
+			size = 1 + sizeof(void *);
+		}
+		break;
+
 		case CVM_OPER_WIDE:
 		{
 			opcode = &(opcodes[pc[1]]);
@@ -1046,6 +1098,14 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 									classInfo, 0);
 				#endif
 					size = 10 + sizeof(void *);
+				}
+				break;
+
+				case CVM_OPER_PTR:
+				{
+					fprintf(stream, "0x%lx",
+							(unsigned long)CVMReadPointer(pc + 2));
+					size = 2 + sizeof(void *);
 				}
 				break;
 

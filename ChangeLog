@@ -1,4 +1,8 @@
 
+2004-07-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm_dasm.c: add missing opcode names.
+
 2004-07-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/image.h, image/meta_build.c, image/meta_index.c,

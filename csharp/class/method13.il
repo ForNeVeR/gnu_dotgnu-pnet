@@ -68,7 +68,7 @@
 	newobj	instance void 'INHERIT'.'B'::'.ctor'(int32, int32)
 	stloc.0
 	ldloc.0
-	call	instance void 'INHERIT'.'B'::'show'()
+	callvirt	instance void 'INHERIT'.'B'::'show'()
 	ret
 	.maxstack 2
 } // method Main

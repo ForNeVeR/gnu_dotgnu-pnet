@@ -24,7 +24,7 @@
 	ldarg.0
 	callvirt	instance void 'Test1'::'m3'()
 	ldarg.0
-	call	instance void 'Test1'::'m4'()
+	callvirt	instance void 'Test1'::'m4'()
 	ret
 	.maxstack 1
 } // method m7
@@ -55,7 +55,7 @@
 	ldarg.0
 	callvirt	instance void 'Test1'::'m3'()
 	ldarg.0
-	call	instance void 'Test1'::'m4'()
+	callvirt	instance void 'Test1'::'m4'()
 	ret
 	.maxstack 1
 } // method m5

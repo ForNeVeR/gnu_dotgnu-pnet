@@ -1,4 +1,13 @@
 
+2002-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/method1.il, csharp/class/method13.il,
+	csharp/class/method14.il, csharp/class/method3.il,
+	csharp/expr/arglist1.il, csharp/expr/array3.il,
+	csharp/expr/invoke1.il, csharp/expr/ref1.il,
+	csharp/expr/typedref1.il, csharp/stmt/lock1.il:
+	new test output files that are affected by the "callvirt" change.
+
 2002-11-14  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/stmt/Makefile.am, csharp/stmt/foreach5.cs,

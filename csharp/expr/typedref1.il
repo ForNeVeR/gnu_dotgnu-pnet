@@ -50,21 +50,21 @@
 	ldarg.0
 	ldloca.s	0
 	mkrefany	int32
-	call	instance void 'Test'::'m1'(typedref)
+	callvirt	instance void 'Test'::'m1'(typedref)
 	ldarg.0
 	ldarg.0
 	ldflda	int32 'Test'::'fld'
 	mkrefany	int32
-	call	instance void 'Test'::'m1'(typedref)
+	callvirt	instance void 'Test'::'m1'(typedref)
 	ldarg.0
 	ldarg.0
 	ldflda	valuetype 'W' 'Test'::'fld2'
 	mkrefany	'W'
-	call	instance void 'Test'::'m1'(typedref)
+	callvirt	instance void 'Test'::'m1'(typedref)
 	ldarg.0
 	ldsflda	class 'Test' 'Test'::'fld3'
 	mkrefany	'Test'
-	call	instance void 'Test'::'m1'(typedref)
+	callvirt	instance void 'Test'::'m1'(typedref)
 	ret
 	.maxstack 2
 } // method m2
@@ -75,7 +75,7 @@
 	ldarg.2
 	ldelema	int32
 	mkrefany	int32
-	call	instance void 'Test'::'m1'(typedref)
+	callvirt	instance void 'Test'::'m1'(typedref)
 	ret
 	.maxstack 3
 } // method m3

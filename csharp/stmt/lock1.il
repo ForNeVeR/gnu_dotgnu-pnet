@@ -19,7 +19,7 @@
 	.try {
 	ldarg.0
 	ldarg.1
-	call	instance void 'Test'::'m2'(class ['.library']'System'.'Object')
+	callvirt	instance void 'Test'::'m2'(class ['.library']'System'.'Object')
 	leave	?L1
 	}
 	finally {

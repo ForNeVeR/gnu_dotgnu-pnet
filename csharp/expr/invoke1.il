@@ -75,7 +75,7 @@
 {
 	.locals	(valuetype 'X')
 	ldarg.0
-	call	instance valuetype 'X' 'Test'::'m2'()
+	callvirt	instance valuetype 'X' 'Test'::'m2'()
 	stloc.0
 	ldloca.s	0
 	call	instance int32 'X'::'getX'()
@@ -86,7 +86,7 @@
 {
 	.locals	(valuetype 'X')
 	ldarg.0
-	call	instance valuetype 'X' 'Test'::'m2'()
+	callvirt	instance valuetype 'X' 'Test'::'m2'()
 	stloc.0
 	ldloca.s	0
 	call	instance int32 'X'::'getX2'()
@@ -104,7 +104,7 @@
 {
 	.locals	(valuetype 'X')
 	ldarg.0
-	call	instance valuetype 'X' 'Test'::'m2'()
+	callvirt	instance valuetype 'X' 'Test'::'m2'()
 	stloc.0
 	ldloca.s	0
 	call	instance int32 'X'::'get_XProp'()
@@ -122,7 +122,7 @@
 {
 	.locals	(valuetype 'X')
 	ldarg.0
-	call	instance valuetype 'X' 'Test'::'m2'()
+	callvirt	instance valuetype 'X' 'Test'::'m2'()
 	stloc.0
 	ldloca.s	0
 	call	instance int32 'X'::'get_XProp2'()
@@ -140,7 +140,7 @@
 .method private hidebysig instance class ['.library']'System'.'String' 'm10'() cil managed 
 {
 	ldarg.0
-	call	instance valuetype 'X' 'Test'::'m2'()
+	callvirt	instance valuetype 'X' 'Test'::'m2'()
 	box	'X'
 	callvirt	instance class ['.library']'System'.'String' ['.library']'System'.'Object'::'ToString'()
 	ret

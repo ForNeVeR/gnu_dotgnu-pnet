@@ -47,7 +47,7 @@
 	ldloc.0
 	ldc.i4.s	42
 	conv.r4
-	call	instance void 'Child'::'Foo'(float32)
+	callvirt	instance void 'Child'::'Foo'(float32)
 	ret
 	.maxstack 2
 } // method Main

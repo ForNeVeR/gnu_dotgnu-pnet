@@ -32,14 +32,14 @@
 	ldc.i4.2
 	ldstr	"3"
 	ldc.r4	float32(0x40800000)
-	call	vararg instance void 'Test'::'m1'(..., int32, int32, class ['.library']'System'.'String', float64)
+	callvirt	vararg instance void 'Test'::'m1'(..., int32, int32, class ['.library']'System'.'String', float64)
 	ldarg.0
 	ldstr	"%d,%d,%s,%f"
 	ldc.i4.1
 	ldc.i4.2
 	ldstr	"3"
 	ldc.r4	float32(0x40800000)
-	call	vararg instance void 'Test'::'m1'(class ['.library']'System'.'String', ..., int32, int32, class ['.library']'System'.'String', float64)
+	callvirt	vararg instance void 'Test'::'m1'(class ['.library']'System'.'String', ..., int32, int32, class ['.library']'System'.'String', float64)
 	ret
 	.maxstack 6
 } // method m2

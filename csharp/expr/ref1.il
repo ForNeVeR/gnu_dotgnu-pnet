@@ -41,10 +41,10 @@
 {
 	ldarg.0
 	ldarga.s	1
-	call	instance void 'Test'::'m1'(int32 &)
+	callvirt	instance void 'Test'::'m1'(int32 &)
 	ldarg.0
 	ldarga.s	1
-	call	instance void 'Test'::'m2'(int32 &)
+	callvirt	instance void 'Test'::'m2'(int32 &)
 	ret
 	.maxstack 2
 } // method m3
@@ -52,10 +52,10 @@
 {
 	ldarg.0
 	ldarg.1
-	call	instance void 'Test'::'m1'(int32 &)
+	callvirt	instance void 'Test'::'m1'(int32 &)
 	ldarg.0
 	ldarg.1
-	call	instance void 'Test'::'m2'(int32 &)
+	callvirt	instance void 'Test'::'m2'(int32 &)
 	ret
 	.maxstack 2
 } // method m4

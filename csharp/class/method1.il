@@ -30,21 +30,21 @@
 .method private hidebysig instance int32 'm4'() cil managed 
 {
 	ldarg.0
-	call	instance int32 'Test'::'m3'()
+	callvirt	instance int32 'Test'::'m3'()
 	ret
 	.maxstack 1
 } // method m4
 .method private static hidebysig int32 'm5'(class 'Test' 't') cil managed 
 {
 	ldarg.0
-	call	instance int32 'Test'::'m3'()
+	callvirt	instance int32 'Test'::'m3'()
 	ret
 	.maxstack 1
 } // method m5
 .method private hidebysig instance int32 'm6'(class 'Test' 't') cil managed 
 {
 	ldarg.1
-	call	instance int32 'Test'::'m4'()
+	callvirt	instance int32 'Test'::'m4'()
 	ret
 	.maxstack 1
 } // method m6

@@ -186,6 +186,9 @@ public abstract class ScrollBar : Control
 				return;
 			
 			largeChange = value;
+			if (largeChange > maximum - minimum)
+				largeChange = maximum - minimum + 1;
+			
 			LayoutScrollBar();
 			Draw();
 		}
@@ -338,7 +341,9 @@ public abstract class ScrollBar : Control
 
 		int v = value + smallChange;
 		int v1 = maximum - largeChange + 1;
-		if (v1 < v)
+		if (v1 < minimum)
+			v1 = minimum;
+		if (v > v1)
 			v = v1;
 		Rectangle oldBounds = bar;
 		GenerateManualScrollEvents(v, ScrollEventType.SmallIncrement);
@@ -352,6 +357,8 @@ public abstract class ScrollBar : Control
 
 		int newValue = value + largeChange;
 		int maxValue = maximum - largeChange + 1;
+		if (maxValue < minimum)
+			maxValue = minimum;
 		if (newValue > maxValue)
 			newValue = maxValue;
 
@@ -405,6 +412,8 @@ public abstract class ScrollBar : Control
 		
 		// Track
 		trackHeight = s.Height - 2 * s.Width;
+		if (trackHeight < 0)
+			trackHeight = 0;
 		track  = new Rectangle(0, s.Width, s.Width, trackHeight);
 		
 		// Decrement and increment buttons
@@ -424,13 +433,22 @@ public abstract class ScrollBar : Control
 		
 		// Thumb.
 		zeroMax = maximum - minimum;
+		if (zeroMax == 0)
+		{
+			bar = Rectangle.Empty;
+			return;
+		}
 		zeroVal = value - minimum;
-		percentage = (double) largeChange / zeroMax;
+		percentage = (double) (largeChange) / zeroMax;
 		thumbHeight = (int) (percentage * trackHeight) - 1;
+		if (thumbHeight > trackHeight)
+			thumbHeight = trackHeight;
 		percentage = (double) zeroVal / zeroMax;
 		thumbPos = (int) (percentage * trackHeight);
 		if (thumbPos > trackHeight - thumbHeight)
 			thumbPos = trackHeight - thumbHeight;
+		if (thumbPos < 0)
+			thumbPos = 0;
 		bar = new Rectangle(0, s.Width + thumbPos, s.Width, thumbHeight);
 	}
 
@@ -745,14 +763,10 @@ public abstract class ScrollBar : Control
 		if (incDown)
 		{
 			IncrementDown = false;
-			using (Graphics g = CreateGraphics())
-				Draw(g, increment);
 		}
 		else if (decDown)
 		{
 			DecrementDown = false;
-			using (Graphics g = CreateGraphics())
-				Draw(g, decrement);
 		}
 		else if (trackDown)
 		{

@@ -1,5 +1,8 @@
 2003-10-18  Adam Ballai  <adam@thefrontnetworks.net>
 
+	* resources/ca_ES/Xsharp/Makefile.am,
+	resources/ca_ES/Xsharp/Xsharp.txt: Forgot these two as well.
+
 	* configure.in, resources/Makefile.am,
 	resources/ca_ES/Makefile.am, resources/ca_ES/README,
 	resources/ca_ES/Basic/Basic.txt,

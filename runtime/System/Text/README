@@ -14,13 +14,11 @@ tour of the main encoding classes:
 
 		Internal class that handles the default encoding.  The runtime
 		engine provides this encoding when it doesn't otherwise support
-		code pages.  Code page 0 can also be used to obtain an object
-		of this class.
+		code pages.
 
 	Latin1Encoding
 
-		Internal class that handles the "iso-8859-1" and "Windows-1252"
-		encodings, corresponding to Latin1.
+		Internal class that handles the "iso-8859-1" encoding.
 
 	UTF7Encoding
 
@@ -34,9 +32,22 @@ tour of the main encoding classes:
 
 		Handles the "utf-16" encoding in little-endian and big-endian forms.
 
+	CPnnnn
+
+		Code page handler for Windows code page "nnnn".  See below.
+
+	ENCname
+
+		Encoding handler for Web encoding "name".  See below.
+
+	ByteEncoding
+
+		Abstract base class that is used by many of the "CPnnnn" classes
+		to provide common encoding functionality.
+
 The method "DefaultEncoding.InternalCodePage()" is used to detect the
 default code page supported by the runtime engine.  This method may
-return 0 if there is no way for the engine to return a valid number.
+return 0 if there is no way for the engine to obtain a valid number.
 
 It is possible to create your own code page and encoding handlers to
 extend the set above.
@@ -61,9 +72,24 @@ class "System.Text.CP20866" to handle the code page and the subclass
 			...
 		}
 
-		internal class ENCkoi8_r : CP20866 {}
+		internal class ENCkoi8_r : CP20866
+		{
+			public ENCkoi8_r() : base() {}
+		}
 	}
 
 The "ENCname" class will typically be empty: it exists purely as a naming
 convenience to redirect "Encoding.GetEncoding(String)" to the correct
 code page implementation.
+
+A number of standard Windows code pages have been supplied.  They were
+generated from the "*.ucm" files in this directory using the "ucm2cp"
+program.  These files originally came from IBM's "ICU" project.
+
+To regenerate the code page handlers from the "*.ucm" files, use the
+"cvt.sh" script.
+
+Currently, "ucm2cp" can only handle single-byte character sets.  The
+double-byte character sets are too complex to be handled using the
+simple code conversion technique used by "ByteEncoding".  Support for
+double-byte character sets must be coded manually.

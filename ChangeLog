@@ -1,3 +1,35 @@
+
+2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/.cvsignore, runtime/System/Text/ByteEncoding.cs,
+	runtime/System/Text/CP10000.cs, runtime/System/Text/CP1250.cs,
+	runtime/System/Text/CP1251.cs, runtime/System/Text/CP1252.cs,
+	runtime/System/Text/CP1253.cs, runtime/System/Text/CP1254.cs,
+	runtime/System/Text/CP1255.cs, runtime/System/Text/CP1256.cs,
+	runtime/System/Text/CP1257.cs, runtime/System/Text/CP1258.cs,
+	runtime/System/Text/CP20866.cs, runtime/System/Text/CP28592.cs,
+	runtime/System/Text/CP28605.cs, runtime/System/Text/CP37.cs,
+	runtime/System/Text/CP437.cs, runtime/System/Text/CP500.cs,
+	runtime/System/Text/CP850.cs, runtime/System/Text/CP860.cs,
+	runtime/System/Text/CP861.cs, runtime/System/Text/CP863.cs,
+	runtime/System/Text/CP865.cs, runtime/System/Text/CP874.cs,
+	runtime/System/Text/Encoding.cs, runtime/System/Text/Latin1Encoding.cs,
+	runtime/System/Text/README, runtime/System/Text/cvt.sh,
+	runtime/System/Text/ibm-1275.ucm, runtime/System/Text/ibm-37.ucm,
+	runtime/System/Text/ibm-437.ucm, runtime/System/Text/ibm-500.ucm,
+	runtime/System/Text/ibm-5346.ucm, runtime/System/Text/ibm-5347.ucm,
+	runtime/System/Text/ibm-5348.ucm, runtime/System/Text/ibm-5349.ucm,
+	runtime/System/Text/ibm-5350.ucm, runtime/System/Text/ibm-5351.ucm,
+	runtime/System/Text/ibm-5352.ucm, runtime/System/Text/ibm-5353.ucm,
+	runtime/System/Text/ibm-5354.ucm, runtime/System/Text/ibm-850.ucm,
+	runtime/System/Text/ibm-860.ucm, runtime/System/Text/ibm-861.ucm,
+	runtime/System/Text/ibm-863.ucm, runtime/System/Text/ibm-865.ucm,
+	runtime/System/Text/ibm-874.ucm, runtime/System/Text/ibm-878.ucm,
+	runtime/System/Text/ibm-912.ucm, runtime/System/Text/ibm-923.ucm,
+	runtime/System/Text/ucm2cp.c: implement code page converters for
+	a large number of single-byte Windows code pages, based on the
+	conversion data from IBM's ICU package.
+
 2002-04-14  Stephen Compall  <rushing@sigecom.net>
 
 	* tests/System/TestUri.cs, tests/System/TestSystem.cs: added a

@@ -1,6 +1,5 @@
 /*
- * Latin1Encoding.cs - Implementation of the
- *			"System.Text.Latin1Encoding" class.
+ * ByteEncoding.cs - Implementation of the "System.Text.ByteEncoding" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -24,16 +23,44 @@ namespace System.Text
 
 using System;
 
-internal class Latin1Encoding : Encoding
+// This class provides an abstract base for encodings that use a single
+// byte per character.  The bulk of the work is done in this class, with
+// subclasses providing implementations of the "ToBytes" methods to perform
+// the char->byte conversion.
+
+internal abstract class ByteEncoding : Encoding
 {
-	// Magic number used by Windows for the ISO Latin1 code page.
-	internal const int ISOLATIN_CODE_PAGE = 28591;
+	// Internal state.
+	protected char[] toChars;
+	protected String encodingName;
+	protected String bodyName;
+	protected String headerName;
+	protected String webName;
+	protected bool isBrowserDisplay;
+	protected bool isBrowserSave;
+	protected bool isMailNewsDisplay;
+	protected bool isMailNewsSave;
+	protected int windowsCodePage;
 
 	// Constructor.
-	public Latin1Encoding()
-			: base(ISOLATIN_CODE_PAGE)
+	protected ByteEncoding(int codePage, char[] toChars,
+						   String encodingName, String bodyName,
+						   String headerName, String webName,
+						   bool isBrowserDisplay, bool isBrowserSave,
+						   bool isMailNewsDisplay, bool isMailNewsSave,
+						   int windowsCodePage)
+			: base(codePage)
 			{
-				// Nothing to do here.
+				this.toChars = toChars;
+				this.encodingName = encodingName;
+				this.bodyName = bodyName;
+				this.headerName = headerName;
+				this.webName = webName;
+				this.isBrowserDisplay = isBrowserDisplay;
+				this.isBrowserSave = isBrowserSave;
+				this.isMailNewsDisplay = isMailNewsDisplay;
+				this.isMailNewsSave = isMailNewsSave;
+				this.windowsCodePage = windowsCodePage;
 			}
 
 	// Get the number of bytes needed to encode a character buffer.
@@ -65,6 +92,16 @@ internal class Latin1Encoding : Encoding
 				}
 				return s.Length;
 			}
+
+	// Convert an array of characters into a byte buffer,
+	// once the parameters have been validated.
+	protected abstract void ToBytes(char[] chars, int charIndex, int charCount,
+									byte[] bytes, int byteIndex);
+
+	// Convert a string into a byte buffer, once the parameters
+	// have been validated.
+	protected abstract void ToBytes(String s, int charIndex, int charCount,
+									byte[] bytes, int byteIndex);
 
 	// Get the bytes that result from encoding a character buffer.
 	public override int GetBytes(char[] chars, int charIndex, int charCount,
@@ -98,20 +135,7 @@ internal class Latin1Encoding : Encoding
 					throw new ArgumentException
 						(_("Arg_InsufficientSpace"));
 				}
-				int count = charCount;
-				char ch;
-				while(count-- > 0)
-				{
-					ch = chars[charIndex++];
-					if(ch < (char)0x0100)
-					{
-						bytes[byteIndex++] = (byte)ch;
-					}
-					else
-					{
-						bytes[byteIndex++] = (byte)'?';
-					}
-				}
+				ToBytes(chars, charIndex, charCount, bytes, byteIndex);
 				return charCount;
 			}
 
@@ -146,20 +170,7 @@ internal class Latin1Encoding : Encoding
 				{
 					throw new ArgumentException(_("Arg_InsufficientSpace"));
 				}
-				int count = charCount;
-				char ch;
-				while(count-- > 0)
-				{
-					ch = s[charIndex++];
-					if(ch < (char)0x0100)
-					{
-						bytes[byteIndex++] = (byte)ch;
-					}
-					else
-					{
-						bytes[byteIndex++] = (byte)'?';
-					}
-				}
+				ToBytes(s, charIndex, charCount, bytes, byteIndex);
 				return charCount;
 			}
 
@@ -215,9 +226,10 @@ internal class Latin1Encoding : Encoding
 					throw new ArgumentException(_("Arg_InsufficientSpace"));
 				}
 				int count = byteCount;
+				char[] cvt = toChars;
 				while(count-- > 0)
 				{
-					chars[charIndex++] = (char)(bytes[byteIndex++]);
+					chars[charIndex++] = cvt[(int)(bytes[byteIndex++])];
 				}
 				return byteCount;
 			}
@@ -265,9 +277,10 @@ internal class Latin1Encoding : Encoding
 				}
 				String s = String.NewString(count);
 				int posn = 0;
+				char[] cvt = toChars;
 				while(count-- > 0)
 				{
-					s.SetChar(posn++, (char)(bytes[index++]));
+					s.SetChar(posn++, cvt[(int)(bytes[index++])]);
 				}
 				return s;
 			}
@@ -280,9 +293,10 @@ internal class Latin1Encoding : Encoding
 				int count = bytes.Length;
 				int posn = 0;
 				String s = String.NewString(count);
+				char[] cvt = toChars;
 				while(count-- > 0)
 				{
-					s.SetChar(posn, (char)(bytes[posn]));
+					s.SetChar(posn, cvt[(int)(bytes[posn])]);
 					++posn;
 				}
 				return s;
@@ -295,7 +309,7 @@ internal class Latin1Encoding : Encoding
 			{
 				get
 				{
-					return "iso-8859-1";
+					return bodyName;
 				}
 			}
 
@@ -304,7 +318,7 @@ internal class Latin1Encoding : Encoding
 			{
 				get
 				{
-					return "Western European (ISO)";
+					return encodingName;
 				}
 			}
 
@@ -313,7 +327,7 @@ internal class Latin1Encoding : Encoding
 			{
 				get
 				{
-					return "iso-8859-1";
+					return headerName;
 				}
 			}
 
@@ -322,7 +336,7 @@ internal class Latin1Encoding : Encoding
 			{
 				get
 				{
-					return true;
+					return isBrowserDisplay;
 				}
 			}
 
@@ -331,7 +345,7 @@ internal class Latin1Encoding : Encoding
 			{
 				get
 				{
-					return true;
+					return isBrowserSave;
 				}
 			}
 
@@ -340,7 +354,7 @@ internal class Latin1Encoding : Encoding
 			{
 				get
 				{
-					return true;
+					return isMailNewsDisplay;
 				}
 			}
 
@@ -349,7 +363,7 @@ internal class Latin1Encoding : Encoding
 			{
 				get
 				{
-					return true;
+					return isMailNewsSave;
 				}
 			}
 
@@ -358,12 +372,21 @@ internal class Latin1Encoding : Encoding
 			{
 				get
 				{
-					return "iso-8859-1";
+					return webName;
+				}
+			}
+
+	// Get the Windows code page represented by this object.
+	public override int WindowsCodePage
+			{
+				get
+				{
+					return windowsCodePage;
 				}
 			}
 
 #endif // !ECMA_COMPAT
 
-}; // class ASCIIEncoding
+}; // class ByteEncoding
 
 }; // namespace System.Text

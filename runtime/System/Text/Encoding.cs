@@ -18,31 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
-
-Note: code pages are a very Windows-specific thing.  However, it is
-possible to create your own code page and encoding handlers if you wish.
-
-Create a "private" class called "System.Text.CPnnnn" that inherits from
-"Encoding" where "nnnn" is the code page number.  The lookup method
-"Encoding.GetEncoding(int)" function will detect this class and create
-an instance of it.
-
-Also create a "private" class called "System.Text.ENCname" that inherits
-from "System.Text.CPnnnn", where "name" is the lower-case version of the
-Web encoding name.  This will be returned by "Encoding.GetEncoding(String)".
-
-For example, to handle code page 20866 [Cyrillic (KOI8-R)], create the
-class "System.Text.CP20866" to handle the code page and the subclass
-"System.Text.ENCkoi8_r" to handle the web encoding.
-
-Code page "0" is used to represent the default encoding used by the
-underlying runtime engine.  Normally, nothing more is known about it.
-However, "DefaultEncoding.InternalCodePage()" can be used to return
-the engine's code page for creating a more specific encoding object.
-
-*/
-
 namespace System.Text
 {
 
@@ -279,9 +254,6 @@ public abstract class Encoding
 					case UnicodeEncoding.BIG_UNICODE_CODE_PAGE:
 						return BigEndianUnicode;
 
-					case Latin1Encoding.WINLATIN_CODE_PAGE:
-						return WinLatin1;
-
 					case Latin1Encoding.ISOLATIN_CODE_PAGE:
 						return ISOLatin1;
 
@@ -317,15 +289,14 @@ public abstract class Encoding
 
 	// Table of builtin web encoding names and the corresponding code pages.
 	private static readonly String[] encodingNames =
-		{"us-ascii", "utf-7", "utf-8", "utf-16", "unicodeFFFE",
-		 "Windows-1252", "iso-8859-1"};
+		{"us-ascii", "utf-7", "utf-8", "utf-16",
+		 "unicodeFFFE", "iso-8859-1"};
 	private static readonly int[] encodingCodePages =
 		{ASCIIEncoding.ASCII_CODE_PAGE,
 		 UTF7Encoding.UTF7_CODE_PAGE,
 		 UTF8Encoding.UTF8_CODE_PAGE,
 		 UnicodeEncoding.UNICODE_CODE_PAGE,
 		 UnicodeEncoding.BIG_UNICODE_CODE_PAGE,
-		 Latin1Encoding.WINLATIN_CODE_PAGE,
 		 Latin1Encoding.ISOLATIN_CODE_PAGE};
 
 	// Get an encoding object for a specific web encoding name.
@@ -509,7 +480,6 @@ public abstract class Encoding
 	private static Encoding utf7Encoding = null;
 	private static Encoding utf8Encoding = null;
 	private static Encoding unicodeEncoding = null;
-	private static Encoding winLatin1Encoding = null;
 	private static Encoding isoLatin1Encoding = null;
 
 	// Get the standard ASCII encoding object.
@@ -577,23 +547,6 @@ public abstract class Encoding
 				}
 			}
 
-	// Get the Windows Latin1 encoding object.
-	private static Encoding WinLatin1
-			{
-				get
-				{
-					lock(typeof(Encoding))
-					{
-						if(winLatin1Encoding == null)
-						{
-							winLatin1Encoding = new Latin1Encoding
-								(Latin1Encoding.WINLATIN_CODE_PAGE);
-						}
-						return winLatin1Encoding;
-					}
-				}
-			}
-
 	// Get the ISO Latin1 encoding object.
 	private static Encoding ISOLatin1
 			{
@@ -603,8 +556,7 @@ public abstract class Encoding
 					{
 						if(isoLatin1Encoding == null)
 						{
-							isoLatin1Encoding = new Latin1Encoding
-								(Latin1Encoding.ISOLATIN_CODE_PAGE);
+							isoLatin1Encoding = new Latin1Encoding();
 						}
 						return isoLatin1Encoding;
 					}

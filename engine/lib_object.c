@@ -54,7 +54,7 @@ ILObject *_IL_Object_GetType(ILExecThread *thread, ILObject *_this)
 
 ILInt32 _IL_Object_GetHashCode(ILExecThread *thread, ILObject *_this)
 {
-	return (ILInt32)_this;
+	return (ILInt32)(ILNativeInt)_this;
 }
 
 ILBool _IL_Object_Equals(ILExecThread *thread, ILObject *_this, ILObject *obj)

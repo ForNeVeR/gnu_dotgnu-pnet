@@ -1630,7 +1630,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 	ILMember *resolvedMember;
 	int isMethod;
 	ILMethod *method;
-	int loadFlags = (int)userData;
+	int loadFlags = (int)(ILNativeInt)userData;
 	ILType *origSig = ILType_Invalid;
 
 	/* Get the member's name */
@@ -2375,7 +2375,7 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 
 	/* Load member references to other images */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_MEMBER_REF,
-							 Load_MemberRef, (void *)loadFlags));
+							 Load_MemberRef, (void *)(ILNativeInt)loadFlags));
 
 	/* Load the override declarations */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_METHOD_IMPL,

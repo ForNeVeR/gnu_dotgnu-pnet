@@ -214,13 +214,13 @@ ILSysIOHandle ILSysIOOpenFile(const char *path, ILUInt32 mode,
 
 	/* TODO: sharing modes */
 
-	return (ILSysIOHandle)result;
+	return (ILSysIOHandle)(ILNativeInt)result;
 }
 
 int ILSysIOCheckHandleAccess(ILSysIOHandle handle, ILUInt32 access)
 {
 #if defined(HAVE_FCNTL) && defined(F_GETFL)
-	int flags = fcntl((int)handle, F_GETFL, 0);
+	int flags = fcntl((int)(ILNativeInt)handle, F_GETFL, 0);
   	if(flags != -1)
     {
 		switch(access)
@@ -240,7 +240,7 @@ int ILSysIOCheckHandleAccess(ILSysIOHandle handle, ILUInt32 access)
 int ILSysIOClose(ILSysIOHandle handle)
 {
 	int result;
-	while((result = close((int)handle)) < 0)
+	while((result = close((int)(ILNativeInt)handle)) < 0)
 	{
 		/* Retry if the system call was interrupted */
 		if(errno != EINTR)
@@ -254,7 +254,8 @@ int ILSysIOClose(ILSysIOHandle handle)
 ILInt32 ILSysIORead(ILSysIOHandle handle, void *buf, ILInt32 size)
 {
 	int result;
-	while((result = read((int)handle, buf, (unsigned int)size)) < 0)
+	while((result = read((int)(ILNativeInt)handle,
+						 buf, (unsigned int)size)) < 0)
 	{
 		/* Retry if the system call was interrupted */
 		if(errno != EINTR)
@@ -272,7 +273,7 @@ ILInt32 ILSysIOWrite(ILSysIOHandle handle, const void *buf, ILInt32 size)
 	while(size > 0)
 	{
 		/* Write as much as we can, and retry if system call was interrupted */
-		result = write((int)handle, buf, (unsigned int)size);
+		result = write((int)(ILNativeInt)handle, buf, (unsigned int)size);
 		if(result >= 0)
 		{
 			written += result;
@@ -296,7 +297,8 @@ ILInt32 ILSysIOWrite(ILSysIOHandle handle, const void *buf, ILInt32 size)
 ILInt64 ILSysIOSeek(ILSysIOHandle handle, ILInt64 offset, int whence)
 {
 	ILInt64 result;
-	while((result = (ILInt64)(lseek((int)handle, (off_t)offset, whence)))
+	while((result = (ILInt64)(lseek((int)(ILNativeInt)handle,
+									(off_t)offset, whence)))
 				== (ILInt64)(-1))
 	{
 		/* Retry if the system call was interrupted */
@@ -324,7 +326,7 @@ int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn)
 {
 #ifdef HAVE_FTRUNCATE
 	int result;
-	while((result = ftruncate((int)handle, (off_t)posn)) < 0)
+	while((result = ftruncate((int)(ILNativeInt)handle, (off_t)posn)) < 0)
 	{
 		/* Retry if the system call was interrupted */
 		if(errno != EINTR)

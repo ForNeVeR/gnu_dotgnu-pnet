@@ -44,6 +44,11 @@
 	* ilalink/link_library.c (ILLinkerResolveLibrary): bug in the
 	handling of assembly names that contain '.' but don't end in ".dll".
 
+	* engine/lib_object.c, image/meta_build.c, image/meta_index.c,
+	image/test_macros.c, support/file.c, support/socket.c,
+	tests/test_thread.c: eliminate compiler warnings on IA-64 that
+	were due to mismatches between the size of "int" and "void *".
+
 2002-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/configure, libffi/configure.in: add host detection

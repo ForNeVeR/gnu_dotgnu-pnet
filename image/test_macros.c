@@ -40,7 +40,7 @@ void IgnoreResult(int value)
 {
 }
 
-#define	IGNORE(x)	IgnoreResult((int)(x))
+#define	IGNORE(x)	IgnoreResult((int)(ILNativeUInt)(x))
 
 /* Passed a class to check that the cast is working */
 void TestProgramItemMacros(ILClass *info)

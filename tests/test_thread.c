@@ -214,7 +214,7 @@ static void thread_create_suspended(void *arg)
  */
 static void sleepThread(void *arg)
 {
-	sleepFor((int)arg);
+	sleepFor((int)(ILNativeInt)arg);
 }
 
 /*
@@ -758,7 +758,7 @@ static int volatile sleepDone;
  */
 static void sleepILThread(void *arg)
 {
-	sleepResult = ILThreadSleep((ILUInt32)STEPS_TO_MS((int)arg));
+	sleepResult = ILThreadSleep((ILUInt32)STEPS_TO_MS((int)(ILNativeInt)arg));
 	sleepDone = 1;
 }
 

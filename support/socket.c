@@ -57,7 +57,7 @@ extern	"C" {
 
 ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol)
 {
-	return (ILSysIOHandle)(socket(domain, type, protocol));
+	return (ILSysIOHandle)(ILNativeInt)(socket(domain, type, protocol));
 }
 
 int ILSysIOSocketBind(ILSysIOHandle sockfd, ILSysIOSockAddr *local_addr)
@@ -69,7 +69,7 @@ int ILSysIOSocketBind(ILSysIOHandle sockfd, ILSysIOSockAddr *local_addr)
 	addr.sin_family = local_addr->family;
 	addr.sin_addr.s_addr = local_addr->addr;
 
-	return (bind((int)sockfd, (struct sockaddr *)&addr,
+	return (bind((int)(ILNativeInt)sockfd, (struct sockaddr *)&addr,
 				 sizeof(struct sockaddr_in)) == 0);
 }
 
@@ -82,13 +82,13 @@ int ILSysIOSocketConnect(ILSysIOHandle sockfd, ILSysIOSockAddr *serv_addr)
 	addr.sin_family = serv_addr->family;
 	addr.sin_addr.s_addr = serv_addr->addr;
 
-	return (connect((int)sockfd, (struct sockaddr *)&addr,
+	return (connect((int)(ILNativeInt)sockfd, (struct sockaddr *)&addr,
 					sizeof(struct sockaddr_in)) == 0);
 }
 
 int ILSysIOSocketListen(ILSysIOHandle sockfd, ILInt32 backlog)
 {
-	return (listen((int)sockfd, backlog) == 0);
+	return (listen((int)(ILNativeInt)sockfd, backlog) == 0);
 }
 
 ILSysIOHandle ILSysIOSocketAccept(ILSysIOHandle sockfd, ILSysIOSockAddr *out)
@@ -99,25 +99,25 @@ ILSysIOHandle ILSysIOSocketAccept(ILSysIOHandle sockfd, ILSysIOSockAddr *out)
 	size = sizeof(struct sockaddr_in);
 	ILMemZero(&addr, sizeof(addr));
 	
-	newfd = accept((int)sockfd, (struct sockaddr *)&addr, &size);
+	newfd = accept((int)(ILNativeInt)sockfd, (struct sockaddr *)&addr, &size);
   
 	out->port = ntohs(addr.sin_port);
 	out->family = addr.sin_family;
 	out->addr = addr.sin_addr.s_addr;
 
-	return (ILSysIOHandle)newfd;
+	return (ILSysIOHandle)(ILNativeInt)newfd;
 }
 
 ILInt32 ILSysIOSocketReceive(ILSysIOHandle sockfd, void *buff,
 						     ILInt32 len, ILInt32 flags)
 {
-	return (ILInt32)(recv((int)sockfd, buff, len, flags));
+	return (ILInt32)(recv((int)(ILNativeInt)sockfd, buff, len, flags));
 }
 
 ILInt32 ILSysIOSocketSend(ILSysIOHandle sockfd, const void *msg,
 					      ILInt32 len, ILInt32 flags)
 {
-	return (ILInt32)(send((int)sockfd, msg, len, flags));
+	return (ILInt32)(send((int)(ILNativeInt)sockfd, msg, len, flags));
 }
 
 ILInt32 ILSysIOSocketSendTo(ILSysIOHandle sockfd, const void *msg,
@@ -131,7 +131,7 @@ ILInt32 ILSysIOSocketSendTo(ILSysIOHandle sockfd, const void *msg,
 	addr.sin_family = to->family;
 	addr.sin_addr.s_addr = to->addr;
 
-	return sendto((int)sockfd, msg, len, flags,
+	return sendto((int)(ILNativeInt)sockfd, msg, len, flags,
 				  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 }
 
@@ -145,7 +145,7 @@ ILInt32 ILSysIOSocketRecvFrom(ILSysIOHandle sockfd, void *buf,
 	ILMemZero(&addr, sizeof(addr));
   	fromlen = sizeof(struct sockaddr_in);
 
-	result = recvfrom((int)sockfd, buf, len, flags,
+	result = recvfrom((int)(ILNativeInt)sockfd, buf, len, flags,
 					  (struct sockaddr *)&addr, &fromlen);
 
 	from->port = ntohs(addr.sin_port);
@@ -157,12 +157,12 @@ ILInt32 ILSysIOSocketRecvFrom(ILSysIOHandle sockfd, void *buf,
 
 int ILSysIOSocketClose(ILSysIOHandle sockfd)
 {
-	return (close((int)sockfd) == 0);
+	return (close((int)(ILNativeInt)sockfd) == 0);
 }
 
 int ILSysIOSocketShutdown(ILSysIOHandle sockfd, ILInt32 how)
 {
-	return (shutdown((int)sockfd, how) == 0);
+	return (shutdown((int)(ILNativeInt)sockfd, how) == 0);
 }
 
 ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
@@ -186,7 +186,7 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 		readPtr = &readSet;
 		for(index = 0; index < numRead; ++index)
 		{
-			fd = (int)(readfds[index]);
+			fd = (int)(ILNativeInt)(readfds[index]);
 			if(fd != -1)
 			{
 				FD_SET(fd, &readSet);
@@ -209,7 +209,7 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 		writePtr = &writeSet;
 		for(index = 0; index < numWrite; ++index)
 		{
-			fd = (int)(writefds[index]);
+			fd = (int)(ILNativeInt)(writefds[index]);
 			if(fd != -1)
 			{
 				FD_SET(fd, &writeSet);
@@ -232,7 +232,7 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 		exceptPtr = &exceptSet;
 		for(index = 0; index < numExcept; ++index)
 		{
-			fd = (int)(exceptfds[index]);
+			fd = (int)(ILNativeInt)(exceptfds[index]);
 			if(fd != -1)
 			{
 				FD_SET(fd, &exceptSet);
@@ -324,7 +324,7 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 		{
 			for(index = 0; index < numRead; ++index)
 			{
-				fd = (int)(readfds[index]);
+				fd = (int)(ILNativeInt)(readfds[index]);
 				if(fd != -1 && !FD_ISSET(fd, &readSet))
 				{
 					readfds[index] = ILSysIOHandle_Invalid;
@@ -337,7 +337,7 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 		{
 			for(index = 0; index < numWrite; ++index)
 			{
-				fd = (int)(writefds[index]);
+				fd = (int)(ILNativeInt)(writefds[index]);
 				if(fd != -1 && !FD_ISSET(fd, &writeSet))
 				{
 					writefds[index] = ILSysIOHandle_Invalid;
@@ -350,7 +350,7 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 		{
 			for(index = 0; index < numExcept; ++index)
 			{
-				fd = (int)(exceptfds[index]);
+				fd = (int)(ILNativeInt)(exceptfds[index]);
 				if(fd != -1 && !FD_ISSET(fd, &exceptSet))
 				{
 					exceptfds[index] = ILSysIOHandle_Invalid;

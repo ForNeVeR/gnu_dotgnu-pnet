@@ -461,42 +461,42 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 	{
 		while((type = *desc++) != END_FIELD)
 		{
-			if((((ILUInt32)type) & 1) != 0)
+			if((((ILUInt32)(ILNativeUInt)type) & 1) != 0)
 			{
 				/* Simple type, or direct token table index */
-				switch((ILUInt32)type)
+				switch((ILUInt32)(ILNativeUInt)type)
 				{
-					case (ILUInt32)STRREF_FIELD:
+					case (ILUInt32)(ILNativeUInt)STRREF_FIELD:
 					{
 						size += strRefSize;
 					}
 					break;
 
-					case (ILUInt32)BLOBREF_FIELD:
+					case (ILUInt32)(ILNativeUInt)BLOBREF_FIELD:
 					{
 						size += blobRefSize;
 					}
 					break;
 
-					case (ILUInt32)GUIDREF_FIELD:
+					case (ILUInt32)(ILNativeUInt)GUIDREF_FIELD:
 					{
 						size += guidRefSize;
 					}
 					break;
 
-					case (ILUInt32)UINT16_FIELD:
+					case (ILUInt32)(ILNativeUInt)UINT16_FIELD:
 					{
 						size += 2;
 					}
 					break;
 
-					case (ILUInt32)UINT32_FIELD:
+					case (ILUInt32)(ILNativeUInt)UINT32_FIELD:
 					{
 						size += 4;
 					}
 					break;
 
-					case (ILUInt32)FIELD_FIELD:
+					case (ILUInt32)(ILNativeUInt)FIELD_FIELD:
 					{
 						if(image->tokenCount
 								[IL_META_TOKEN_FIELD_DEF >> 24]
@@ -511,7 +511,7 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 					}
 					break;
 
-					case (ILUInt32)METHOD_FIELD:
+					case (ILUInt32)(ILNativeUInt)METHOD_FIELD:
 					{
 						if(image->tokenCount
 								[IL_META_TOKEN_METHOD_DEF >> 24]
@@ -526,7 +526,7 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 					}
 					break;
 
-					case (ILUInt32)PARAM_FIELD:
+					case (ILUInt32)(ILNativeUInt)PARAM_FIELD:
 					{
 						if(image->tokenCount
 								[IL_META_TOKEN_PARAM_DEF >> 24]
@@ -543,7 +543,8 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 
 					default:
 					{
-						if(image->tokenCount[((ILUInt32)type) >> 24]
+						if(image->tokenCount
+								[((ILUInt32)(ILNativeUInt)type) >> 24]
 									> (unsigned long)0xFFFF)
 						{
 							size += 4;
@@ -596,12 +597,12 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 	{
 		while((type = *desc++) != END_FIELD)
 		{
-			if((((ILUInt32)type) & 1) != 0)
+			if((((ILUInt32)(ILNativeUInt)type) & 1) != 0)
 			{
 				/* Simple type, or direct token table index */
-				switch((ILUInt32)type)
+				switch((ILUInt32)(ILNativeUInt)type)
 				{
-					case (ILUInt32)STRREF_FIELD:
+					case (ILUInt32)(ILNativeUInt)STRREF_FIELD:
 					{
 						/* Read a string index and validate it */
 						if(strRefSize == 2)
@@ -621,7 +622,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 					}
 					break;
 
-					case (ILUInt32)BLOBREF_FIELD:
+					case (ILUInt32)(ILNativeUInt)BLOBREF_FIELD:
 					{
 						/* Read a blob index and validate it.  This
 						   results in three fields in the output array */
@@ -666,7 +667,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 					}
 					break;
 
-					case (ILUInt32)GUIDREF_FIELD:
+					case (ILUInt32)(ILNativeUInt)GUIDREF_FIELD:
 					{
 						/* Read an index into the "#GUID" entry */
 						unsigned long size;
@@ -703,21 +704,21 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 					}
 					break;
 
-					case (ILUInt32)UINT16_FIELD:
+					case (ILUInt32)(ILNativeUInt)UINT16_FIELD:
 					{
 						values[index++] = IL_READ_UINT16(ptr);
 						ptr += 2;
 					}
 					break;
 
-					case (ILUInt32)UINT32_FIELD:
+					case (ILUInt32)(ILNativeUInt)UINT32_FIELD:
 					{
 						values[index++] = IL_READ_UINT32(ptr);
 						ptr += 4;
 					}
 					break;
 
-					case (ILUInt32)FIELD_FIELD:
+					case (ILUInt32)(ILNativeUInt)FIELD_FIELD:
 					{
 						/* Read a field index.  If the value is the
 						   size of the field table + 1, then it
@@ -750,7 +751,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 					}
 					break;
 
-					case (ILUInt32)METHOD_FIELD:
+					case (ILUInt32)(ILNativeUInt)METHOD_FIELD:
 					{
 						/* Read a method index.  If the value is the
 						   size of the method table + 1, then it
@@ -783,7 +784,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 					}
 					break;
 
-					case (ILUInt32)PARAM_FIELD:
+					case (ILUInt32)(ILNativeUInt)PARAM_FIELD:
 					{
 						/* Read a parameter index.  If the value is the
 						   size of the parameter table + 1, then it
@@ -819,7 +820,8 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 					default:
 					{
 						/* Read a normal token table index */
-						limit = image->tokenCount[((ILUInt32)type) >> 24];
+						limit = image->tokenCount
+							[((ILUInt32)(ILNativeUInt)type) >> 24];
 						if(limit <= (unsigned long)0xFFFF)
 						{
 							temp = IL_READ_UINT16(ptr);
@@ -833,12 +835,13 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 						if(temp > 0 && temp <= (ILUInt32)limit)
 						{
 							values[index++] =
-								((((ILUInt32)type) & 0xFF000000) | temp);
+								((((ILUInt32)(ILNativeUInt)type)
+										& 0xFF000000) | temp);
 						}
 						else
 						{
-							META_INDEX_ERROR
-								(tokenNames[((ILUInt32)type) >> 24]);
+							META_INDEX_ERROR(tokenNames
+									[((ILUInt32)(ILNativeUInt)type) >> 24]);
 							return IL_LOADERR_BAD_META;
 						}
 					}
@@ -1495,12 +1498,12 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 	index = 0;
 	while((type = *desc++) != END_FIELD)
 	{
-		if((((ILUInt32)type) & 1) != 0)
+		if((((ILUInt32)(ILNativeUInt)type) & 1) != 0)
 		{
 			/* Simple type, or direct token table index */
-			switch((ILUInt32)type)
+			switch((ILUInt32)(ILNativeUInt)type)
 			{
-				case (ILUInt32)STRREF_FIELD:
+				case (ILUInt32)(ILNativeUInt)STRREF_FIELD:
 				{
 					/* Write a string index */
 					if(strRefBig)
@@ -1517,7 +1520,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 				}
 				break;
 
-				case (ILUInt32)BLOBREF_FIELD:
+				case (ILUInt32)(ILNativeUInt)BLOBREF_FIELD:
 				{
 					/* Write a blob index */
 					if(blobRefBig)
@@ -1534,7 +1537,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 				}
 				break;
 
-				case (ILUInt32)GUIDREF_FIELD:
+				case (ILUInt32)(ILNativeUInt)GUIDREF_FIELD:
 				{
 					/* Write a GUID reference */
 					if(values[index] == IL_MAX_UINT32)
@@ -1559,7 +1562,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 				}
 				break;
 
-				case (ILUInt32)UINT16_FIELD:
+				case (ILUInt32)(ILNativeUInt)UINT16_FIELD:
 				{
 					WRITE16(ptr, values[index]);
 					++index;
@@ -1567,7 +1570,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 				}
 				break;
 
-				case (ILUInt32)UINT32_FIELD:
+				case (ILUInt32)(ILNativeUInt)UINT32_FIELD:
 				{
 					WRITE32(ptr, values[index]);
 					++index;
@@ -1575,7 +1578,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 				}
 				break;
 
-				case (ILUInt32)FIELD_FIELD:
+				case (ILUInt32)(ILNativeUInt)FIELD_FIELD:
 				{
 					/* Write a field index */
 					limit = image->tokenCount
@@ -1598,7 +1601,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 				}
 				break;
 
-				case (ILUInt32)METHOD_FIELD:
+				case (ILUInt32)(ILNativeUInt)METHOD_FIELD:
 				{
 					/* Write a method index */
 					limit = image->tokenCount
@@ -1621,7 +1624,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 				}
 				break;
 
-				case (ILUInt32)PARAM_FIELD:
+				case (ILUInt32)(ILNativeUInt)PARAM_FIELD:
 				{
 					/* Write a parameter index */
 					limit = image->tokenCount
@@ -1647,7 +1650,8 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 				default:
 				{
 					/* Write a normal token table index */
-					limit = image->tokenCount[((ILUInt32)type) >> 24];
+					limit = image->tokenCount
+						[((ILUInt32)(ILNativeUInt)type) >> 24];
 					val = values[index++];
 					if(limit <= (unsigned long)0xFFFF)
 					{

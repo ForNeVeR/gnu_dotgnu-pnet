@@ -1,7 +1,7 @@
 /*
  * FileStream.cs - Implementation of the "System.IO.FileStream" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -835,6 +835,64 @@ public class FileStream : Stream
 					{
 						return _("IO_UnknownFile");
 					}
+				}
+			}
+
+	// Lock a region of the file stream.
+	[TODO]
+	public virtual void Lock(long position, long length)
+			{
+				if(position < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("position", _("ArgRange_NonNegative"));
+				}
+				if(length < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("position", _("ArgRange_NonNegative"));
+				}
+				lock(this)
+				{
+					if(handle == invalidHandle)
+					{
+						throw new ObjectDisposedException(_("IO_StreamClosed"));
+					}
+					// TODO
+				}
+			}
+
+	// Unlock a region of the file stream.
+	[TODO]
+	public virtual void Unlock(long position, long length)
+			{
+				if(position < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("position", _("ArgRange_NonNegative"));
+				}
+				if(length < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("position", _("ArgRange_NonNegative"));
+				}
+				lock(this)
+				{
+					if(handle == invalidHandle)
+					{
+						throw new ObjectDisposedException(_("IO_StreamClosed"));
+					}
+					// TODO
+				}
+			}
+
+	// Get the underlying file stream handle.
+	public virtual IntPtr Handle
+			{
+				get
+				{
+					Flush();
+					return handle;
 				}
 			}
 

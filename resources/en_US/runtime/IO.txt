@@ -53,3 +53,6 @@ IO_RegistryKeyNotExist=Registry key does not exist
 IO_RegistryHasSubKeys=Registry key still has sub keys
 IO_UnknownFile=Unknown filename
 IO_AccessDenied=Access to the specified pathname is not allowed
+IO_NoBufferAccess=Cannot obtain a reference to the memory stream's buffer
+IO_InvalidLength=Cannot change the stream length to the specified value
+IO_InvalidSeekPosition=Invalid seek position

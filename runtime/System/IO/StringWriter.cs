@@ -1,9 +1,7 @@
 /*
  * StringWriter.cs - Implementation of the "System.IO.StringWriter" class.
  *
- * Copyright (C) 2002 Free Software Foundation, Inc.
- *
- * Contributed by Stephen Compall <rushing@earthling.net>
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,138 +16,122 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
  */
 
 namespace System.IO
 {
 
 using System;
-using System.Globalization;
 using System.Text;
 
-public class StringWriter : TextWriter, IDisposable
+public class StringWriter : TextWriter
 {
-
-	// state
-
-	// the System.Text.StringBuilder to work with (like java.lang.StringBuffer).
- 	private StringBuilder buffer;
-	// closing is very simple...just look at this!
-	private bool streamclosed = false;
+	// Internal state.
+	private StringBuilder builder;
+	private Encoding encoding;
+	private bool closed;
 
 	// Constructors.
-	public StringWriter()
-	{
-		// TODO: consider using the StringBuilder(int) constructor
-		// instead, because the default size for that is 16 :(
-		this.buffer = new StringBuilder();
-	}
+	public StringWriter() : base()
+			{
+				builder = new StringBuilder();
+				closed = false;
+			}
+	public StringWriter(IFormatProvider provider) : base(provider)
+			{
+				builder = new StringBuilder();
+				closed = false;
+			}
+	public StringWriter(StringBuilder sb) : base()
+			{
+				if(sb == null)
+				{
+					throw new ArgumentNullException("sb");
+				}
+				builder = sb;
+				closed = false;
+			}
+	public StringWriter(StringBuilder sb, IFormatProvider provider)
+			: base(provider)
+			{
+				if(sb == null)
+				{
+					throw new ArgumentNullException("sb");
+				}
+				builder = sb;
+				closed = false;
+			}
 
-	public StringWriter(IFormatProvider formatProvider) : base(formatProvider)
-	{
-		// hmmmm...gonna let TextWriter handle this one
-		this.buffer = new StringBuilder();
-	}
-
-	public StringWriter(StringBuilder sb)
-	{
-		if (sb == null) throw new ArgumentNullException("sb");
-		this.buffer = sb;
-	}
-
-	public StringWriter(StringBuilder sb, IFormatProvider formatProvider) :
-		base(formatProvider)
-	{
-		if (sb == null) throw new ArgumentNullException("sb");
-		this.buffer = sb;
-	}
-
-	// methods
-
+	// Close this writer.
 	public override void Close()
-	{
-		this.streamclosed = true;
-		// still keep the this.buffer, though...norm for streams to save :)
-		// although TextWriter.Close(bool) wants you to get rid of it
-	}
+			{
+				Dispose(true);
+			}
 
+	// Dispose of this writer.
 	protected override void Dispose(bool disposing)
-	{
-		// however, if you don't need the object anymore (see
-		// System.IDisposable), then it can gc the StringBuilder.
-		if (disposing)
-		{
-			this.buffer = null;
-			this.streamclosed = true;
-		}
-		// safe for call multiple times
+			{
+				closed = true;
+			}
 
-		// I don't know if it automatically chains these, but just in
-		// case base.Dispose actually does something...
-		base.Dispose(disposing);
-	}
-
+	// Get the underlying string builder.
 	public virtual StringBuilder GetStringBuilder()
-	{
-		return this.buffer;
-	}
+			{
+				return builder;
+			}
 
+	// Convert this object into a string.
 	public override String ToString()
-	{
-		return this.buffer.ToString();
-	}
+			{
+				return builder.ToString();
+			}
 
+	// Write values to this writer.
 	public override void Write(String value)
-	{
-		if (this.streamclosed) throw new ObjectDisposedException(null, _("IO_StreamClosed"));
-		this.buffer.Append(value);
-	}
-
-	public override void Write(char value)
-	{
-		if (this.streamclosed) throw new ObjectDisposedException(null, _("IO_StreamClosed"));
-		this.buffer.Append(value);
-	}
-
+			{
+				if(closed)
+				{
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
+				}
+				if(value != null)
+				{
+					builder.Append(value);
+				}
+			}
 	public override void Write(char[] buffer, int index, int count)
-	{
-		if (this.streamclosed) throw new ObjectDisposedException(null, _("IO_StreamClosed"));
+			{
+				Stream.ValidateBuffer(buffer, index, count);
+				if(closed)
+				{
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
+				}
+				if(count > 0)
+				{
+					builder.Append(buffer, index, count);
+				}
+			}
+	public override void Write(char ch)
+			{
+				if(closed)
+				{
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
+				}
+				builder.Append(ch);
+			}
 
-		// StringBuilder puts another requirement on this one, but not us!
-		if (buffer == null) throw new ArgumentNullException("buffer");
-
-		try
-		{
-			this.buffer.Append(buffer, index, count);
-		}
-		catch (ArgumentOutOfRangeException aoore)
-		// the definition combines the cases for StringBuilder, and
-		// differentiates for StringWriter. Oh well.
-		{
-			if (index < 0 || count < 0)
-				// kind of improper, but faster
-				throw aoore;
-			else
-				throw new ArgumentException(_("ArgRange_Array"));
-		}
-
-	}
-
-	// Properties.
-
+	// Get the encoding for this writer.
 	public override Encoding Encoding
-	{
-		get 
-		{
-			// Since presumably, StringBuilder is implemented
-			// internally as a char[], this being the most efficient
-			// method, and programs relying on performance would
-			// certainly see this Stream as very efficient,
-			return new UnicodeEncoding();
-		}
-	}
+			{
+				get
+				{
+					if(encoding == null)
+					{
+						encoding = new UnicodeEncoding(false, false);
+					}
+					return encoding;
+				}
+			}
 
-} // StringWriter
+}; // class StringWriter
 
-} // namespace
+}; // namespace System.IO

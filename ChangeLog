@@ -24,6 +24,12 @@
 	runtime/System/IO/IOException.cs, runtime/System/IO/TextWriter.cs:
 	rewrite and/or improve various classes in "System.IO".
 
+	* resources/en_US/runtime/IO.txt, runtime/System/IO/FileStream.cs,
+	runtime/System/IO/Stream.cs, runtime/System/IO/StringReader.cs,
+	runtime/System/IO/StringWriter.cs,
+	runtime/System/IO/IsolatedStorage/IsolatedStorageFile.cs:
+	more improvements to the "System.IO" namespace.
+
 2003-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/BestFitMappingAttribute.cs,

@@ -338,8 +338,29 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 	// Get the current position within the stream.
 	public abstract long Position { get; set; }
 
-	// Helper function for validating buffer arguments.
-	internal void ValidateBuffer(byte[] buffer, int offset, int count)
+	// Helper methods for validating buffer arguments.
+	internal static void ValidateBuffer(byte[] buffer, int offset, int count)
+			{
+				if(buffer == null)
+				{
+					throw new ArgumentNullException("buffer");
+				}
+				else if(offset < 0 || offset > buffer.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("offset", _("ArgRange_Array"));
+				}
+				else if(count < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("count", _("ArgRange_Array"));
+				}
+				else if((buffer.Length - offset) < count)
+				{
+					throw new ArgumentException(_("Arg_InvalidArrayRange"));
+				}
+			}
+	internal static void ValidateBuffer(char[] buffer, int offset, int count)
 			{
 				if(buffer == null)
 				{

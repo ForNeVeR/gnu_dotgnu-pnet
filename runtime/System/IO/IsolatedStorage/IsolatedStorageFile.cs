@@ -80,7 +80,7 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 
 	// Delete a file from this storage area.
 	[TODO]
-	public void Delete(String file)
+	public void DeleteFile(String file)
 			{
 				// TODO
 			}
@@ -137,7 +137,7 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 	// Get an isolated storage area.
 	[TODO]
 	public static IsolatedStorageFile GetStore
-				(IsolatedStorage scope, Object domainIdentity,
+				(IsolatedStorageScope scope, Object domainIdentity,
 				 Object assemblyIdentity)
 			{
 				// TODO
@@ -145,7 +145,7 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 			}
 	[TODO]
 	public static IsolatedStorageFile GetStore
-				(IsolatedStorage scope, Type domainEvidenceType,
+				(IsolatedStorageScope scope, Type domainEvidenceType,
 				 Type assemblyEvidenceType)
 			{
 				// TODO
@@ -153,7 +153,7 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 			}
 	[TODO]
 	public static IsolatedStorageFile GetStore
-				(IsolatedStorage scope, Evidence domainEvidence,
+				(IsolatedStorageScope scope, Evidence domainEvidence,
 				 Type domainEvidenceType, Evidence assemblyEvidence,
 				 Type assemblyEvidenceType)
 			{

@@ -56,7 +56,7 @@ namespace System.Private.DateTimeFormat
 				hasMinute;
 			
 			DateTime new_dt;
-			if( style == DateTimeStyles.NoCurrentDateDefault)
+			if( (style == DateTimeStyles.NoCurrentDateDefault) && !hasDate)
 			{
 				hasStyle=true;
 			}

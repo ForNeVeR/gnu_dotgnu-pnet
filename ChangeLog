@@ -1,4 +1,13 @@
 
+2003-03-06  Michael Moore <mtmoore@uga.edu>
+
+	* runtime/System/Private/DateTimeFormat/ParsedDateTime.cs: ECMA update 
+	for Parse()/ParseExact(). Only if a date is not specified should the 
+	DateTimeStyles.NoCurrentDateDefault have an effect on the returned 
+	DateTime object. So, !hasDate was added to the if clause determining 
+	if the object should use styles.
+	(Gopal,Patch #1157)
+
 2003-03-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/UnicodeEncoding.cs: wrong buffer index used

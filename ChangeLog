@@ -1,4 +1,10 @@
 
+2004-04-18  Andre Seidelt <pnet-devel01@foobarquarium.de>
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs :
+	Implement binary serialization for decimal, array, string and fix null
+	value object serialization for reference types. (Gopal, patch #2940)
+
 2004-04-18  Ilyak Kasnacheev <ilyak@online.ru>
 
 	* Xsharp/Application.cs: Use the "DISPLAY" environment variable

@@ -206,6 +206,7 @@ internal abstract class BinaryValueWriter
 
 				// Handle the primitive types first.
 				code = GetPrimitiveTypeCode(type);
+
 				switch(code)
 				{
 					case BinaryPrimitiveTypeCode.Boolean:
@@ -290,6 +291,7 @@ internal abstract class BinaryValueWriter
 										  Assembly assembly)
 			{
 				String name = assembly.FullName;
+				
 				if(context.formatter.AssemblyFormat ==
 						FormatterAssemblyStyle.Full)
 				{
@@ -455,6 +457,9 @@ internal abstract class BinaryValueWriter
 						MemberInfo[] members =
 							FormatterServices.GetSerializableMembers
 								(type, context.formatter.Context);
+						// write out number of members
+						context.writer.Write((int)members.Length);
+
 						int index;
 						Type fieldType;
 						for(index = 0; index < members.Length; ++index)
@@ -806,7 +811,7 @@ internal abstract class BinaryValueWriter
 										 Object value, Type type,
 										 Type fieldType)
 				{
-					context.writer.Write((ushort)(char)value);
+					context.writer.Write((char)value);
 				}
 
 	}; // class CharWriter
@@ -987,11 +992,9 @@ internal abstract class BinaryValueWriter
 										 Object value, Type type,
 										 Type fieldType)
 				{
-					int[] bits = Decimal.GetBits((Decimal)value);
-					context.writer.Write(bits[3]);
-					context.writer.Write(bits[2]);
-					context.writer.Write(bits[0]);
-					context.writer.Write(bits[1]);
+					// NOTE: it's stupid ... but Bug for bug compatibility
+					// was much simpler to write the bits out and read it back
+					context.writer.Write(value.ToString());
 				}
 
 	}; // class DecimalWriter
@@ -1055,7 +1058,32 @@ internal abstract class BinaryValueWriter
 										 Object value, Type type,
 										 Type fieldType)
 				{
-					context.writer.Write((String)value);
+					bool firstTime;
+
+					if(value == null)
+					{
+						// Write a null value.
+						context.writer.Write
+							((byte)(BinaryElementType.NullValue));
+						return;
+					} 
+					else 
+					{
+						long objectID = context.gen.GetId(value, out firstTime);
+						if(firstTime) 
+						{
+							context.writer.Write
+								((byte)(BinaryElementType.String));
+							context.writer.Write((int)objectID);
+							context.writer.Write((String)value);
+						} 
+						else 
+						{
+							context.writer.Write
+								((byte)(BinaryElementType.ObjectReference));
+							context.writer.Write((int)objectID);
+						}
+					}
 				}
 
 		// Write the object header information for a type.
@@ -1064,13 +1092,39 @@ internal abstract class BinaryValueWriter
 											   long objectID, long prevObject)
 				{
 					context.writer.Write((byte)(BinaryElementType.String));
+					context.writer.Write(objectID);
 				}
 
 		// Write the object form of values for a type.
 		public override void WriteObject(BinaryValueContext context,
 										 Object value, Type type)
 				{
-					context.writer.Write((String)value);
+					bool firstTime;
+
+					if(value == null)
+					{
+						// Write a null value.
+						context.writer.Write
+							((byte)(BinaryElementType.NullValue));
+						return;
+					} 
+					else 
+					{
+						long objectID = context.gen.GetId(value, out firstTime);
+						if(firstTime) 
+						{
+							context.writer.Write
+								((byte)(BinaryElementType.String));
+							context.writer.Write((int)objectID);
+							context.writer.Write((String)value);
+						} 
+						else 
+						{
+							context.writer.Write
+								((byte)(BinaryElementType.ObjectReference));
+							context.writer.Write((int)objectID);
+						}
+					}
 				}
 
 	}; // class StringWriter
@@ -1197,7 +1251,17 @@ internal abstract class BinaryValueWriter
 						}
 						else
 						{
-							// TODO: generic array typespecs
+							bool firstTime;
+							long assemblyId;
+							assemblyId = context.gen.GetId
+							(type.GetElementType().Assembly, out firstTime);
+							context.writer.Write(type.FullName);
+							context.writer.Write((int)assemblyId);
+							if(firstTime)
+							{
+								// We need to output the assembly later.
+								context.assemblyQueue.Enqueue(type.Assembly);
+							}
 						}
 					}
 				}
@@ -1295,9 +1359,23 @@ internal abstract class BinaryValueWriter
 		public override void WriteObject(BinaryValueContext context,
 										 Object value, Type type)
 				{
-					// TODO: write the array contents
+					Array ar = (Array) value;
+					int length = ar.GetLength(0);
+					for(int i = 0; i < length; i++) 
+					{
+						BinaryValueWriter writer = GetWriter(context, ar[i].GetType());
+						if(writer != null)
+						{
+							writer.WriteInline(context, ar[i], ar[i].GetType(), type);
+						}
+						else
+						{
+							throw new SerializationException
+								(String.Format
+									(_("Serialize_CannotSerialize"), type));
+						}
+					}
 				}
-
 	}; // class ArrayWriter
 
 }; // class BinaryValueWriter

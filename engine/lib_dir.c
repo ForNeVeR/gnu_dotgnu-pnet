@@ -268,7 +268,7 @@ extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread,ILStrin
 
     ILQueueDestroy(&fileQueue);
 
- 	return ILSysIOConvertErrno(errno);
+ 	return IL_ERRNO_Success;
 }
 
 /*

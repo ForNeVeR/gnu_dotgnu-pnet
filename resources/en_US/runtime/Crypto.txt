@@ -28,3 +28,4 @@ Crypto_InvalidCipherMode=Invalid cipher mode
 Crypto_InvalidPaddingMode=Invalid padding mode
 Crypto_InvalidStreamMode=Invalid cryptographic stream mode
 Crypto_BigNumUnderflow=Big number computation underflowed
+Crypto_NoProvider=The system does not provide support for {0}

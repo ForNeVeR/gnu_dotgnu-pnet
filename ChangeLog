@@ -31,6 +31,22 @@
 	runtime/System/Security/Cryptography/SymmetricAlgorithm.cs:
 	begin implementing the "System.Security.Cryptography" namespace.
 
+	* resources/en_US/runtime/Crypto.txt,
+	runtime/Platform/CryptoMethods.cs,
+	runtime/System/Security/Cryptography/CryptoConfig.cs,
+	runtime/System/Security/Cryptography/MD5.cs,
+	runtime/System/Security/Cryptography/MD5CryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/SHA1.cs,
+	runtime/System/Security/Cryptography/SHA1CryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/SHA1Managed.cs,
+	runtime/System/Security/Cryptography/SHA256.cs,
+	runtime/System/Security/Cryptography/SHA256Managed.cs,
+	runtime/System/Security/Cryptography/SHA384.cs,
+	runtime/System/Security/Cryptography/SHA384Managed.cs,
+	runtime/System/Security/Cryptography/SHA512.cs,
+	runtime/System/Security/Cryptography/SHA512Managed.cs:
+	more classes in the "System.Security.Cryptography" namespace.
+
 2002-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Delegate.cs, runtime/System/MulticastDelegate.cs:

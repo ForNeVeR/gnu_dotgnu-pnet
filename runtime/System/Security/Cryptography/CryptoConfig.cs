@@ -29,9 +29,22 @@ using System;
 public class CryptoConfig
 {
 	// Default algorithms of various categories.
-	internal static readonly string AsymmetricDefault = "RSA";
-	internal static readonly string HashDefault = "SHA1Managed";
-	internal static readonly string SymmetricDefault = "DES";
+	internal const String AsymmetricDefault =
+		"System.Security.Cryptography.AsymmetricAlgorithm";
+	internal const String HashDefault =
+		"System.Security.Cryptography.HashAlgorithm";
+	internal const String SymmetricDefault =
+		"System.Security.Cryptography.SymmetricAlgorithm";
+	internal const String MD5Default =
+		"System.Security.Cryptography.MD5";
+	internal const String SHA1Default =
+		"System.Security.Cryptography.SHA1";
+	internal const String SHA256Default =
+		"System.Security.Cryptography.SHA256";
+	internal const String SHA384Default =
+		"System.Security.Cryptography.SHA384";
+	internal const String SHA512Default =
+		"System.Security.Cryptography.SHA512";
 
 	// Create an instance of a specific cryptographic object.
 	public static Object CreateFromName(String name)

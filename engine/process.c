@@ -42,6 +42,8 @@ ILExecProcess *ILExecProcessCreate(void)
 	process->frameStackSize = IL_ENGINE_FRAME_STACK_SIZE;
 	process->context = 0;
 	process->exitStatus = 0;
+	process->coder = 0;
+	process->coderGeneration = 0;
 
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)
@@ -58,6 +60,14 @@ ILExecProcess *ILExecProcessCreate(void)
 		return 0;
 	}
 
+	/* Initialize the CVM coder */
+	process->coder = (*(_ILCVMCoderClass.create))(process->mainThread, 100000);
+	if(!(process->coder))
+	{
+		ILExecProcessDestroy(process);
+		return 0;
+	}
+
 	/* Return the process record to the caller */
 	return process;
 }
@@ -69,6 +79,9 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	{
 		ILExecThreadDestroy(process->firstThread);
 	}
+
+	/* Destroy the CVM coder instance */
+	ILCoderDestroy(process->coder);
 
 	/* Destroy the image loading context */
 	if(process->context)

@@ -499,9 +499,14 @@ sealed class BitConverter
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_Array"));
 				}
-				else if(length < 0 || (value.Length - startIndex) < length)
+				else if(length < 0)
 				{
 					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
+				else if((value.Length - startIndex) < length)
+				{
+					throw new ArgumentException
 						("length", _("ArgRange_Array"));
 				}
 				if(length == 0)

@@ -1,7 +1,7 @@
 /*
- * SuiteCollections.cs - Tests for the "System.Collections" namespace.
+ * TestHashTable.cs - Tests for the "HashTable" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +20,37 @@
 
 using CSUnit;
 using System;
+using System.Collections;
 
-public class SuiteCollections
+public class TestHashTable : TestCase
 {
-
-	public static TestSuite Suite()
+	// Constructor.
+	public TestHashTable(String name)
+			: base(name)
 			{
-				TestSuite suite = new TestSuite("Collection Tests");
-				suite.AddTests(typeof(TestArrayList));
-				suite.AddTests(typeof(TestHashTable));
-				return suite;
+				// Nothing to do here.
 			}
 
-}; // class SuiteCollections
+	// Set up for the tests.
+	protected override void Setup()
+			{
+				// Nothing to do here.
+			}
+
+	// Clean up after the tests.
+	protected override void Cleanup()
+			{
+				// Nothing to do here.
+			}
+
+	// test CopyTo on a empty HashTable
+	public void TestHashTableCopyToEmpty ()
+			{
+				Hashtable hashTable = new Hashtable ();
+				AssertEquals ("count", 0, hashTable.Count);
+				object[] array = new object [hashTable.Count];
+				hashTable.CopyTo (array, 0);
+			}
+
+}; // class TestHashTable
+

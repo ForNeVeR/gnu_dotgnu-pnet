@@ -535,6 +535,12 @@ internal abstract class Formatter
 			throw new FormatException(_("Format_StringException"));
 		}
 
+		// handle empty format
+		if(format.Length == 0)
+		{
+			return new CustomFormatter(format);
+		}
+
 		//  Search for cached formats
 		if (formats[format] != null)
 		{

@@ -59,6 +59,22 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				{
 					throw new ArgumentNullException("c");
 				}
+#if !ECMA_COMPAT
+				Array chkArray = c as Array;
+				if (chkArray != null)
+				{
+					if(chkArray.Rank != 1)
+					{
+						throw new RankException(_("Arg_RankMustBe1"));
+					}
+					// now we can use this information to use Array.Copy
+					count = chkArray.Length;
+					store = new Object[count];
+					Array.Copy(chkArray, 0, store, 0, count);
+					generation = 0;
+					return;
+				}
+#endif
 				count = c.Count;
 				store = new Object [count];
 				enumerator = c.GetEnumerator();
@@ -418,6 +434,15 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 	// Implement the ICollection interface.
 	public virtual void CopyTo(Array array, int arrayIndex)
 			{
+				// addidtonal checks to throw the correct exception
+				if(array == null)
+				{
+					throw new ArgumentNullException("array");
+				}
+				if(array.Rank > 1)
+				{
+					throw new ArgumentException("array", _("Arg_RankMustBe1"));
+				}
 				Array.Copy(store, 0, array, arrayIndex, count);
 			}
 	public virtual int Count
@@ -664,7 +689,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				count = c.Count;
 				if((this.count - index) < count)
 				{
-					throw new ArgumentException(_("Arg_InvalidArrayRange"));
+					throw new ArgumentOutOfRangeException(_("Arg_InvalidArrayRange"));
 				}
 				enumerator = c.GetEnumerator();
 				while(enumerator.MoveNext())

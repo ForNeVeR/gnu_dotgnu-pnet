@@ -43,6 +43,23 @@ public class TestArrayList : TestCase
 				// Nothing to do here.
 			}
 
+#if !ECMA_COMPAT
+	// check the creation of an ArrayList from a multidimensional Array
+	// this is not specified in ECMA but fails for MS
+	public void TestArrayListCtor1()
+			{
+				Char[,] charArray = new Char[2,2];
+				try
+				{
+					ArrayList arrayList = new ArrayList(charArray);
+					Fail("Should have thrown a RankException");
+				}
+				catch(RankException e)
+				{
+				}
+			}
+#endif // !ECMA_COMPAT
+
 	// Test insertion into an array list.
 	public void TestArrayListInsert()
 			{
@@ -114,6 +131,88 @@ public class TestArrayList : TestCase
 				}
 			}
 
+	public void TestArrayListCopyToNull()
+			{
+				Char[] c1 = new Char[2];
+				ArrayList al1 = new ArrayList(c1);
+				try
+				{
+					al1.CopyTo(null, 2);
+					Fail("Should have thrown an ArgumentNullException");
+				}
+				catch (ArgumentNullException)
+				{
+				}
+			}
+
+	public void TestArrayListCopyToWrongArrayType()
+			{
+				String[] stringArray = {"String", "array"};
+				Char[] charArray = new Char[2];
+				ArrayList arrayList = new ArrayList(stringArray);
+				try
+				{
+					arrayList.CopyTo(charArray, 0);
+					Fail("Should have thrown an InvalidCastException");
+				}
+				catch(InvalidCastException e)
+				{
+				}
+			}
+
+	public void TestArrayListCopyToWrongRank()
+			{
+				Char[] charArray1 = new Char[2];
+				Char[,] charArray2 = new Char[2,2];
+				ArrayList arrayList = new ArrayList(charArray1);
+				try
+				{
+					arrayList.CopyTo(charArray2, 2);
+					Fail("Should have thrown an ArgumentException");
+				}
+				catch(ArgumentException e)
+				{
+				}
+			}
+
+	public void TestArrayListCopyTo()
+			{
+				Char[] orig = {'a', 'b', 'c', 'd'};
+				ArrayList al = new ArrayList(orig);
+				Char[] copy = new Char[10];
+				Array.Clear(copy, 0, copy.Length);
+				al.CopyTo(copy, 3);
+				AssertEquals("Wrong CopyTo 0", (char)0, copy[0]);
+				AssertEquals("Wrong CopyTo 1", (char)0, copy[1]);
+				AssertEquals("Wrong CopyTo 2", (char)0, copy[2]);
+				AssertEquals("Wrong CopyTo 3", orig[0], copy[3]);
+				AssertEquals("Wrong CopyTo 4", orig[1], copy[4]);
+				AssertEquals("Wrong CopyTo 5", orig[2], copy[5]);
+				AssertEquals("Wrong CopyTo 6", orig[3], copy[6]);
+				AssertEquals("Wrong CopyTo 7", (char)0, copy[7]);
+				AssertEquals("Wrong CopyTo 8", (char)0, copy[8]);
+				AssertEquals("Wrong CopyTo 9", (char)0, copy[9]);
+			}
+
+	public void TestArrayListCopyToArrayIndexOverflow () 
+			{
+				ArrayList al = new ArrayList ();
+				al.Add (this);
+				try
+				{
+					al.CopyTo (0, new byte [2], Int32.MaxValue, 0);
+					Fail("Test should have thrown an ArgumentException");
+				}
+				catch(ArgumentException e)
+				{
+				}
+				catch(Exception e)
+				{
+					Fail("Test should have thrown an ArgumentException instead of " +
+							e.GetType().Name);
+				}
+			}
+
 	// Test sorting an array list.
 	public void TestArrayListSort()
 			{
@@ -141,6 +240,25 @@ public class TestArrayList : TestCase
 				AssertEquals("Sort (6)", 97, list[0]);
 				AssertEquals("Sort (7)", 98, list[1]);
 				AssertEquals("Sort (8)", 104, list[2]);
+			}
+
+	public void TestArrayListSetRangeOverflow () 
+			{
+				ArrayList arrayList = new ArrayList ();
+				arrayList.Add (this);
+				try
+				{
+					arrayList.SetRange (Int32.MaxValue, new ArrayList ());
+					Fail("Should have thrown an ArgumentOutOfRangeException");
+				}
+				catch(ArgumentOutOfRangeException e)
+				{
+				}
+				catch(Exception e)
+				{
+					Fail("Should have thrown an ArgumentOutOfRangeException instead of " + 
+							e.GetType().Name);
+				}
 			}
 
 }; // class TestArrayList

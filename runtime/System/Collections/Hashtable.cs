@@ -552,15 +552,18 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				}
 				else
 				{
-					int posn;
-					for(posn = 0; posn < table.Length; ++posn)
+					if(table != null)
 					{
-						if(table[posn].key != null && table[posn].key != removed)
+						int posn;
+						for(posn = 0; posn < table.Length; ++posn)
 						{
-							array.SetValue
-								(new DictionaryEntry(table[posn].key,
-													 table[posn].value),
-								 index++);
+							if(table[posn].key != null && table[posn].key != removed)
+							{
+								array.SetValue
+									(new DictionaryEntry(table[posn].key,
+														 table[posn].value),
+									 index++);
+							}
 						}
 					}
 				}

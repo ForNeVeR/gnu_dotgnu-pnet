@@ -1,4 +1,27 @@
 
+2004-10-11  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Array.cs, runtime/System/BitConverter.cs: Throw the correct
+	exceptions as specified in ECMA.
+
+	* runtime/System/Buffer.cs: Throw exceptions so that they pass ml-pnet tests
+	
+	* runtime/System/Collections/ArrayList.cs: Add additional checks to throw
+	the correct exceptions (ECMA) and one check to be compatible.
+
+	* runtime/System/Collections/Hashtable.cs: Fix NullReferenceException in
+	CopyTo if Hashtable is empty.
+
+	* runtime/System/Private/NumberFormat/Formatter.cs: Handle empty format in
+	CreateFormatter.
+
+	* tests/runtime/System/Collections/TestHashtable.cs: Added.
+
+	* tests/runtime/System/Collections/TestArrayList.cs: Add additional tests.
+
+	* tests/runtime/System/Collections/SuiteCollections: Add TestHashtable to
+	the executing tests.
+  
 2004-10-08  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/Makefile.am, System.Xml/XPath/Private/XPathAxis.cs,

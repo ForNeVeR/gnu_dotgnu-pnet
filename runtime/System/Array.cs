@@ -260,13 +260,12 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		int srcLength = sourceArray.Length;
 		int dstLower = destinationArray.GetLowerBound(0);
 		int dstLength = destinationArray.Length;
-		if(sourceIndex < srcLower || (sourceIndex - srcLower) > srcLength)
+		if(sourceIndex < srcLower)
 		{
 			throw new ArgumentOutOfRangeException
 				("sourceIndex", _("ArgRange_Array"));
 		}
-		if(destinationIndex < dstLower ||
-		   (destinationIndex - dstLower) > dstLength)
+		if(destinationIndex < dstLower)
 		{
 			throw new ArgumentOutOfRangeException
 				("destinationIndex", _("ArgRange_Array"));
@@ -276,8 +275,10 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new ArgumentOutOfRangeException
 				("length", _("ArgRange_NonNegative"));
 		}
-		if((srcLength - (sourceIndex - srcLower)) < length ||
-		   (dstLength - (destinationIndex - dstLower)) < length)
+		int srcRelative = sourceIndex - srcLower;
+		int dstRelative = destinationIndex - dstLower;
+		if((srcLength - (srcRelative)) < length ||
+		   (dstLength - (dstRelative)) < length)
 		{
 			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
@@ -290,8 +291,8 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		if(arrayType1 == arrayType2)
 		{
 			InternalCopy
-				(sourceArray, sourceIndex - srcLower,
-				 destinationArray, destinationIndex - dstLower,
+				(sourceArray, srcRelative,
+				 destinationArray, dstRelative,
 				 length);
 			return;
 		}
@@ -310,10 +311,18 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		int index;
 		for(index = 0; index < length; ++index)
 		{
-			destinationArray.SetRelative(
-				Convert.ConvertObject(
-					sourceArray.GetRelative(sourceIndex + index - srcLower), 
-					arrayType2), destinationIndex + index - dstLower);
+			try
+			{
+				destinationArray.SetRelative(
+					Convert.ConvertObject(
+						sourceArray.GetRelative(srcRelative + index), 
+						arrayType2), dstRelative + index);
+			}
+			catch(FormatException e)
+			{
+				throw new InvalidCastException(String.Format(_("InvalidCast_FromTo"),
+ 						     arrayType1, arrayType2), e);
+			}
 		}
 	}
 
@@ -324,9 +333,13 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		else if(array.Rank != 1 || Rank != 1)
+		else if(Rank != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
+		}
+		else if(array.Rank > 1)
+		{
+			throw new ArgumentException("array", _("Arg_RankMustBe1"));
 		}
 		else
 		{

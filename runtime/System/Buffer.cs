@@ -52,24 +52,29 @@ public sealed class Buffer
 			{
 				int srcLen = ValidatePrimitive(src, "src");
 				int dstLen = ValidatePrimitive(dst, "dst");
-				if(srcOffset < 0 || srcOffset >= srcLen)
+				if(srcOffset < 0)
 				{
 					throw new ArgumentOutOfRangeException
 						("srcOffset", _("ArgRange_Array"));
 				}
-				else if(count < 0 || (srcLen - srcOffset) < count)
+				if(count < 0)
 				{
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_Array"));
 				}
-				if(dstOffset < 0 || dstOffset >= dstLen)
+				if((srcLen - srcOffset) < count)
+				{
+					throw new ArgumentException
+						("count", _("ArgRange_Array"));
+				}
+				if(dstOffset < 0 )
 				{
 					throw new ArgumentOutOfRangeException
 						("dstOffset", _("ArgRange_Array"));
 				}
-				else if((dstLen - dstOffset) < count)
+				if((dstLen - dstOffset) < count)
 				{
-					throw new ArgumentOutOfRangeException
+					throw new ArgumentException
 						("count", _("ArgRange_Array"));
 				}
 				Copy(src, srcOffset, dst, dstOffset, count);

@@ -328,6 +328,12 @@ struct _tagILEvalValue
 	ILParameterModifier	modifier;
 	ILNode *expression;
 }
+%node ILNode_ArgArray ILNode_Expression =
+{
+	ILType  *elemType;
+	ILUInt32 numElems;
+	ILNode  *args;
+}
 %node ILNode_BoxingExpression ILNode_Expression %abstract =
 {
 	ILNode  *expr;

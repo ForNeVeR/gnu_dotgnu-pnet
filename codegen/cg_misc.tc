@@ -222,6 +222,14 @@ ILNode_GetType(ILNode_Argument)
 }
 
 /*
+ * Get the type of an argument array expression.
+ */
+ILNode_GetType(ILNode_ArgArray)
+{
+	return ILMachineType_ObjectRef;
+}
+
+/*
  * Get the type of an "as" expression.
  */
 ILNode_GetType(ILNode_As)
@@ -643,6 +651,152 @@ ILNode_GenValue(ILNode_Argument)
 {
 	/* TODO: reference and out parameters */
 	return ILNode_GenValue(node->expression, info);
+}
+
+%{
+
+/*
+ * Get an array element from an argument array list.
+ */
+static ILNode *GetArgArrayElem(ILNode *list, ILUInt32 posn, ILUInt32 num)
+{
+	while(posn != (num - 1))
+	{
+		list = ((ILNode_ArgList *)list)->expr1;
+		++posn;
+	}
+	if(yyisa(list, ILNode_ArgList))
+	{
+		return ((ILNode_ArgList *)list)->expr2;
+	}
+	else
+	{
+		return list;
+	}
+}
+
+%}
+
+/*
+ * Generate value code for an argument array.
+ */
+ILNode_GenValue(ILNode_ArgArray)
+{
+	ILMachineType machineType;
+
+	if(!(node->numElems))
+	{
+		/* Push "null" if the element array is empty */
+		ILGenSimple(info, IL_OP_LDNULL);
+		ILGenAdjust(info, 1);
+	}
+	else
+	{
+		ILUInt32 posn;
+
+		/* Create a new array of the desired size */
+		ILGenUInt32(info, node->numElems);
+		ILGenTypeToken(info, IL_OP_NEWARR, node->elemType);
+		ILGenAdjust(info, 1);
+
+		/* Populate the members of the array */
+		machineType = ILTypeToMachineType(node->elemType);
+		for(posn = 0; posn < node->numElems; ++posn)
+		{
+			if(machineType == ILMachineType_Decimal ||
+			   machineType == ILMachineType_ManagedValue)
+			{
+				ILGenSimple(info, IL_OP_DUP);
+				ILGenUInt32(info, posn);
+				ILGenAdjust(info, 2);
+				ILGenTypeToken(info, IL_OP_LDELEMA, node->elemType);
+				ILGenAdjust(info, -1);
+			}
+			else
+			{
+				ILGenSimple(info, IL_OP_DUP);
+				ILGenUInt32(info, posn);
+				ILGenAdjust(info, 2);
+			}
+			ILGenCast(info, ILNode_GenValue
+				(GetArgArrayElem(node->args, posn, node->numElems), info),
+				machineType);
+			switch(machineType)
+			{
+				case ILMachineType_Void: break;
+
+				case ILMachineType_Boolean:
+				case ILMachineType_Int8:
+				case ILMachineType_UInt8:
+				{
+					ILGenSimple(info, IL_OP_STELEM_I1);
+				}
+				break;
+
+				case ILMachineType_Int16:
+				case ILMachineType_UInt16:
+				case ILMachineType_Char:
+				{
+					ILGenSimple(info, IL_OP_STELEM_I2);
+				}
+				break;
+
+				case ILMachineType_Int32:
+				case ILMachineType_UInt32:
+				{
+					ILGenSimple(info, IL_OP_STELEM_I4);
+				}
+				break;
+
+				case ILMachineType_Int64:
+				case ILMachineType_UInt64:
+				{
+					ILGenSimple(info, IL_OP_STELEM_I8);
+				}
+				break;
+
+				case ILMachineType_NativeInt:
+				case ILMachineType_NativeUInt:
+				{
+					ILGenSimple(info, IL_OP_STELEM_I);
+				}
+				break;
+
+				case ILMachineType_Float32:
+				{
+					ILGenSimple(info, IL_OP_STELEM_R4);
+				}
+				break;
+
+				case ILMachineType_Float64:
+				case ILMachineType_NativeFloat:
+				{
+					ILGenSimple(info, IL_OP_STELEM_R8);
+				}
+				break;
+
+				case ILMachineType_Decimal:
+				case ILMachineType_ManagedValue:
+				{
+					ILGenTypeToken(info, IL_OP_STOBJ, node->elemType);
+					ILGenAdjust(info, 1);	/* Correct for -3 below */
+				}
+				break;
+
+				case ILMachineType_String:
+				case ILMachineType_ObjectRef:
+				case ILMachineType_UnmanagedPtr:
+				case ILMachineType_ManagedPtr:
+				case ILMachineType_TransientPtr:
+				{
+					ILGenSimple(info, IL_OP_STELEM_REF);
+				}
+				break;
+			}
+			ILGenAdjust(info, -3);
+		}
+	}
+	return ILMachineType_ObjectRef;
 }
 
 ILNode_GenValue(ILNode_NewExpression)

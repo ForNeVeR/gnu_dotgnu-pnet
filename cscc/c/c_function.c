@@ -1115,6 +1115,7 @@ void CFunctionPInvoke(ILGenInfo *info, const char *name, ILNode *node,
 	{
 		return;
 	}
+	CTypeMarkForOutput(info, signature);
 	fputs(".method ", stream);
 	if(isPrivate)
 		fputs("private static pinvokeimpl(", stream);

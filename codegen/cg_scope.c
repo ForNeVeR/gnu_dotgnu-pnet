@@ -850,11 +850,6 @@ unsigned long ILScopeDataGetIndex(ILScopeData *data)
 	return (unsigned long)(data->data);
 }
 
-ILNode *ILScopeDataGetDataNode(ILScopeData *data)
-{
-	return (ILNode *)(data->data);
-}
-
 void *ILScopeDataGetData1(ILScopeData *data)
 {
 	return data->data;
@@ -863,6 +858,15 @@ void *ILScopeDataGetData1(ILScopeData *data)
 void *ILScopeDataGetData2(ILScopeData *data)
 {
 	return data->data2;
+}
+
+void ILScopeDataModify(ILScopeData *data, int kind, ILNode *node,
+					   void *data1, void *data2)
+{
+	data->rbnode.kind = kind;
+	data->node = node;
+	data->data = data1;
+	data->data2 = data2;
 }
 
 ILScope *ILScopeGetParent(ILScope *scope)

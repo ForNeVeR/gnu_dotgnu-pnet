@@ -159,7 +159,8 @@ void CScopeAddInferredFunction(const char *name, ILType *signature)
 
 void CScopeUpdateFunction(void *data, ILNode *node, ILType *signature)
 {
-	/* TODO */
+	ILScopeDataModify((ILScopeData *)data,
+					  C_SCDATA_FUNCTION, PersistNode(node), 0, signature);
 }
 
 void CScopeAddParam(const char *name, unsigned index, ILType *type)
@@ -181,6 +182,19 @@ void CScopeAddGlobal(const char *name, ILNode *node, ILType *type)
 {
 	ILScopeDeclareItem(CGlobalScope, name,
 					   C_SCDATA_GLOBAL_VAR, PersistNode(node), 0, type);
+}
+
+void CScopeAddGlobalForward(const char *name, ILNode *node, ILType *type)
+{
+	ILScopeDeclareItem(CGlobalScope, name,
+					   C_SCDATA_GLOBAL_VAR_FORWARD,
+					   PersistNode(node), 0, type);
+}
+
+void CScopeUpdateGlobal(void *data, int kind, ILNode *node, ILType *type)
+{
+	ILScopeDataModify((ILScopeData *)data, kind,
+					  PersistNode(node), 0, type);
 }
 
 void CScopeAddUndeclared(const char *name)

@@ -140,6 +140,17 @@ void CScopeAddLocal(const char *name, ILNode *node,
 void CScopeAddGlobal(const char *name, ILNode *node, ILType *type);
 
 /*
+ * Add information about a global variable forward declaration
+ * to the current scope.
+ */
+void CScopeAddGlobalForward(const char *name, ILNode *node, ILType *type);
+
+/*
+ * Update information about a global variable.
+ */
+void CScopeUpdateGlobal(void *data, int kind, ILNode *node, ILType *type);
+
+/*
  * Add an entry to the current scope that records that an identifier
  * was undeclared, but that we don't want to know about it again.
  */

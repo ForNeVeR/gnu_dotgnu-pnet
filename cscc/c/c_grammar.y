@@ -325,6 +325,7 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 	void *data;
 	unsigned index;
 	ILNode *assign;
+	ILType *prevType;
 
 	/* If there is a parameter list associated with the declarator, then
 	   we are declaring a forward function reference, not a variable */
@@ -353,56 +354,61 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 			CScopeAddTypedef(decl.name, type, decl.node);
 		}
 	}
-	else if((spec.specifiers & C_SPEC_STATIC) != 0)
-	{
-		/* Declare a global variable that is private to this module */
-		if(data)
-		{
-			if(CScopeGetKind(data) != C_SCDATA_GLOBAL_VAR_FORWARD)
-			{
-				ReportRedeclared(decl.name, decl.node, data);
-				return;
-			}
-			/* TODO: replace the forward reference with a real reference */
-		}
-
-		/* TODO: extend open arrays to the same size as initializers */
-
-		/* Make sure that the type size is fixed or dynamic */
-		if(CTypeSizeAndAlign(type, 0) == CTYPE_UNKNOWN)
-		{
-			CCErrorOnLine(yygetfilename(decl.node), yygetlinenum(decl.node),
-						  _("storage size of `%s' is not known"), decl.name);
-		}
-
-		/* Mark the type for output */
-		CTypeMarkForOutput(&CCCodeGen, type);
-
-		/* Declare the global variable in the assembly output stream */
-		if(CCCodeGen.asmOutput)
-		{
-			fputs(".field private static ", CCCodeGen.asmOutput);
-			ILDumpType(CCCodeGen.asmOutput, CCCodeGen.image, type,
-					   IL_DUMP_QUOTE_NAMES);
-			putc(' ', CCCodeGen.asmOutput);
-			ILDumpIdentifier(CCCodeGen.asmOutput, decl.name, 0,
-							 IL_DUMP_QUOTE_NAMES);
-			putc('\n', CCCodeGen.asmOutput);
-		}
-
-		/* Add the global variable to the current scope */
-		CScopeAddGlobal(decl.name, decl.node, type);
-
-		/* TODO: process initializers */
-	}
 	else if((spec.specifiers & C_SPEC_EXTERN) != 0)
 	{
 		/* Declare a forward reference for a global variable */
-		/* TODO */
+		if(data)
+		{
+			if(CScopeGetKind(data) == C_SCDATA_GLOBAL_VAR ||
+			   CScopeGetKind(data) == C_SCDATA_GLOBAL_VAR_FORWARD)
+			{
+				/* We've already seen this variable - this may be a
+				   redundant redeclaration */
+				prevType = CScopeGetType(data);
+				if(!CTypeIsIdentical(type, prevType))
+				{
+					ReportRedeclared(decl.name, decl.node, data);
+				}
+				else if(init != 0)
+				{
+					CCWarningOnLine(yygetfilename(decl.node),
+									yygetlinenum(decl.node),
+						_("`%s' initialized and declared `extern'"),
+						decl.name);
+				}
+			}
+			else
+			{
+				/* Already declared as a different kind of symbol */
+				ReportRedeclared(decl.name, decl.node, data);
+			}
+			return;
+		}
+
+		/* Cannot use initializers with "extern" variables */
+		if(init != 0)
+		{
+			CCWarningOnLine(yygetfilename(decl.node),
+							yygetlinenum(decl.node),
+							_("`%s' initialized and declared `extern'"),
+							decl.name);
+		}
+
+		/* Declare the global variable for later */
+		if(data)
+		{
+			CScopeUpdateGlobal(data, C_SCDATA_GLOBAL_VAR_FORWARD,
+							   decl.node, type);
+		}
+		else
+		{
+			CScopeAddGlobalForward(decl.name, decl.node, type);
+		}
 	}
-	else if(CCurrentScope == CGlobalScope)
+	else if(CCurrentScope == CGlobalScope ||
+	        (spec.specifiers & C_SPEC_STATIC) != 0)
 	{
-		/* Declare a global variable that is exported from this module */
+		/* Declare a global variable */
 		if(data)
 		{
 			if(CScopeGetKind(data) != C_SCDATA_GLOBAL_VAR_FORWARD)
@@ -410,7 +416,6 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 				ReportRedeclared(decl.name, decl.node, data);
 				return;
 			}
-			/* TODO: replace the forward reference with a real reference */
 		}
 
 		/* TODO: extend open arrays to the same size as initializers */
@@ -428,7 +433,14 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 		/* Declare the global variable in the assembly output stream */
 		if(CCCodeGen.asmOutput)
 		{
-			fputs(".field public static ", CCCodeGen.asmOutput);
+			if((spec.specifiers & C_SPEC_STATIC) != 0)
+			{
+				fputs(".field private static ", CCCodeGen.asmOutput);
+			}
+			else
+			{
+				fputs(".field public static ", CCCodeGen.asmOutput);
+			}
 			ILDumpType(CCCodeGen.asmOutput, CCCodeGen.image, type,
 					   IL_DUMP_QUOTE_NAMES);
 			putc(' ', CCCodeGen.asmOutput);
@@ -438,7 +450,14 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 		}
 
 		/* Add the global variable to the current scope */
-		CScopeAddGlobal(decl.name, decl.node, type);
+		if(data)
+		{
+			CScopeUpdateGlobal(data, C_SCDATA_GLOBAL_VAR, decl.node, type);
+		}
+		else
+		{
+			CScopeAddGlobal(decl.name, decl.node, type);
+		}
 
 		/* TODO: process initializers */
 	}

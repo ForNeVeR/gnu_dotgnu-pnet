@@ -818,7 +818,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	else if ( data && ILScopeDataGetKind(data) == IL_SCOPE_LOCAL_CONST)
 	{
 		method = (ILNode_MethodDeclaration *)(info->currentMethod);
-		constVar = (ILNode_SemGuard*)ILScopeDataGetDataNode(data);
+		constVar = (ILNode_SemGuard*)ILScopeDataGetData1(data);
 		value = constVar->value; /* return type information */
 		*parent = constVar->expr; /* rewrite node */
 		value.kind = CS_SEMKIND_RVALUE;

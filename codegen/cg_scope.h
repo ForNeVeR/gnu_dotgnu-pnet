@@ -184,11 +184,6 @@ ILMember *ILScopeDataGetMember(ILScopeData *data);
 unsigned long ILScopeDataGetIndex(ILScopeData *data);
 
 /*
- * Get the node of a local const scope item.
- */
-ILNode *ILScopeDataGetDataNode(ILScopeData *data);
-
-/*
  * Get the "data1" value from a scope item.
  */
 void *ILScopeDataGetData1(ILScopeData *data);
@@ -197,6 +192,12 @@ void *ILScopeDataGetData1(ILScopeData *data);
  * Get the "data2" value from a scope item.
  */
 void *ILScopeDataGetData2(ILScopeData *data);
+
+/*
+ * Modify the contents of a scope item.
+ */
+void ILScopeDataModify(ILScopeData *data, int kind, ILNode *node,
+					   void *data1, void *data2);
 
 /*
  * Get the parent of a scope.

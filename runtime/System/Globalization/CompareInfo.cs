@@ -71,7 +71,7 @@ public class CompareInfo : IDeserializationCallback
 					throw new ArgumentNullException("culture");
 				}
 			#if CONFIG_REFLECTION
-				return GetCompareInfo(CultureInfo.MapNameToID(culture, true));
+				return (new CultureInfo(culture)).CompareInfo;
 			#else
 				return InvariantCompareInfo;
 			#endif

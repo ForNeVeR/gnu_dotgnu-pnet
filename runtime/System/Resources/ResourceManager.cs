@@ -29,7 +29,7 @@ using System.IO;
 using System.Reflection;
 using System.Globalization;
 using System.Collections;
-using System.Private;
+using System.Text;
 
 #if ECMA_COMPAT
 internal
@@ -304,30 +304,45 @@ class ResourceManager
 				}
 			}
 
+#if !ECMA_COMPAT
+
+	// Flag that protects "GetNeutralResourcesLanguage" from re-entry.
+	private static bool gettingNeutralLanguage;
+
+#endif
+
 	// Get the neutral culture to use, based on an assembly's attributes.
 	protected static CultureInfo GetNeutralResourcesLanguage(Assembly a)
 			{
 			#if !ECMA_COMPAT
-				Object[] attrs = a.GetCustomAttributes
-					(typeof(NeutralResourcesLanguageAttribute), false);
-				if(attrs != null && attrs.Length > 0)
+				lock(typeof(ResourceManager))
 				{
-					String culture;
-					culture = ((NeutralResourcesLanguageAttribute)(attrs[0]))
-									.CultureName;
-					if(culture != null)
+					if(gettingNeutralLanguage)
 					{
-						// Make sure that the culture name exists.
-						// We are careful not to throw an exception,
-						// because that may recursively re-enter us!
-						CultureName name;
-						name = CultureNameTable.GetNameInfoByName
-							(culture, false);
-						if(name != null)
+						// We were recursively re-entered, so bail out.
+						return CultureInfo.InvariantCulture;
+					}
+					gettingNeutralLanguage = true;
+					Object[] attrs = a.GetCustomAttributes
+						(typeof(NeutralResourcesLanguageAttribute), false);
+					if(attrs != null && attrs.Length > 0)
+					{
+						String culture;
+						culture = ((NeutralResourcesLanguageAttribute)
+							(attrs[0])).CultureName;
+						if(culture != null)
 						{
-							return new CultureInfo(culture);
+							// Make sure that the culture name exists.
+							Object value = Encoding.InvokeI18N
+								("HasCulture", culture);
+							if(value != null && ((bool)value))
+							{
+								gettingNeutralLanguage = false;
+								return new CultureInfo(culture);
+							}
 						}
 					}
+					gettingNeutralLanguage = false;
 				}
 			#endif
 				return CultureInfo.InvariantCulture;

@@ -8,6 +8,13 @@
 	I18N/tools/loc2cul.c: add culture handling for DateTimeFormatInfo
 	and NumberFormatInfo data.
 
+	* I18N/Common/Manager.cs, runtime/System/Globalization/CompareInfo.cs,
+	runtime/System/Globalization/CultureInfo.cs,
+	runtime/System/Private/CultureName.cs,
+	runtime/System/Private/CultureNameTable.cs,
+	runtime/System/Resources/ResourceManager.cs: remove the culture
+	name table from "mscorlib" because it is now in "I18N".
+
 2003-05-31  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebRequest.cs, System/Net/HttpWebRequest.cs,

@@ -160,6 +160,16 @@ public class Manager
 				return (Instantiate("CN" + name.ToString()) as CultureInfo);
 			}
 
+	// Determine if a particular culture exists.
+	public bool HasCulture(int culture)
+			{
+				return (CultureNameTable.GetNameInfoByID(culture) != null);
+			}
+	public bool HasCulture(String name)
+			{
+				return (CultureNameTable.GetNameInfoByName(name) != null);
+			}
+
 	// Convert a culture identifier from hex.
 	private static int FromHex(String name, int index)
 			{

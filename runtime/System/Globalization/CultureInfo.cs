@@ -22,7 +22,6 @@ namespace System.Globalization
 {
 
 using System;
-using System.Private;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -50,7 +49,6 @@ public class CultureInfo : ICloneable, IFormatProvider
 	private TextInfo	textInfo;
 	private bool        userOverride;
 #if CONFIG_REFLECTION
-	private CultureName cultureName;
 	private CultureInfo handler;
 
 	// Culture identifier for "es-ES" with traditional sort rules.
@@ -70,6 +68,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 	public CultureInfo(int culture, bool useUserOverride)
 			{
+				if(culture < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("culture", _("ArgRange_NonNegative"));
+				}
 				if((culture & 0x40000000) != 0)
 				{
 					// This flag is a special indication from the I18N
@@ -78,33 +81,19 @@ public class CultureInfo : ICloneable, IFormatProvider
 					this.cultureID = (culture & ~0x40000000);
 					return;
 				}
-				if(culture < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("culture", _("ArgRange_NonNegative"));
-				}
 			#if CONFIG_REFLECTION
 				if(culture == TraditionalSpanish)
 				{
 					cultureID   = culture;
-					cultureName = CultureNameTable.GetNameInfoByID
-						(0x0C0A, true);
 					handler = GetCultureHandler(cultureID, useUserOverride);
 				}
 				else if(culture == 0x007F)
 				{
 					cultureID   = 0x007F;
-					cultureName =
-						new CultureName
-							("", 0x007F, "iv", "IVL", "IVL",
-							 "Invariant Language (Invariant Country)",
-							 "Invariant Language (Invariant Country)");
 				}
 				else
 				{
 					cultureID   = culture;
-					cultureName = CultureNameTable.GetNameInfoByID
-						(culture, true);
 					handler = GetCultureHandler(cultureID, useUserOverride);
 				}
 			#else
@@ -119,15 +108,22 @@ public class CultureInfo : ICloneable, IFormatProvider
 					throw new ArgumentNullException("name");
 				}
 			#if CONFIG_REFLECTION
-				cultureName = CultureNameTable.GetNameInfoByName(name, true);
-				cultureID   = cultureName.cultureID;
 				userOverride = useUserOverride;
-				handler = GetCultureHandler(cultureID, useUserOverride);
+				handler = GetCultureHandler(name, useUserOverride);
+				cultureID = handler.LCID;
 			#else
 				cultureID = 0x007F;
 				userOverride = useUserOverride;
 			#endif
 			}
+#if CONFIG_REFLECTION
+	private CultureInfo(CultureInfo handler, bool useUserOverride)
+			{
+				this.handler = handler;
+				this.userOverride = useUserOverride;
+				this.cultureID = handler.LCID;
+			}
+#endif
 
 	// Get the invariant culture object.
 	public static CultureInfo InvariantCulture
@@ -175,33 +171,38 @@ public class CultureInfo : ICloneable, IFormatProvider
 						}
 						gettingCurrent = true;
 						int id = InternalCultureID();
+						CultureInfo handler;
 						if(id <= 0)
 						{
-							// Try getting the name instead, in case this
+							// Try getting by name instead, in case the
 							// engine doesn't know about culture ID's.
 							String name = InternalCultureName();
-							id = MapNameToID(name, false);
-						}
-						if(id <= 0 || GetCultureHandler(id, true) == null)
-						{
-							// TODO: this is a temporary hack - it must
-							// be removed once there are real culture
-							// handlers in the I18N assemblies.
-							if(id == 0x007F || id <= 0)
+							if(name != null)
 							{
-								currentCulture = InvariantCulture;
+								handler = GetCultureHandler(name, true);
 							}
 							else
 							{
-								currentCulture = new CultureInfo(id);
-								currentCulture.readOnly = true;
+								handler = null;
 							}
+						}
+						else if(id == 0x007F)
+						{
+							handler = null;
 						}
 						else
 						{
-							currentCulture = new CultureInfo(id);
-							currentCulture.readOnly = true;
+							handler = GetCultureHandler(id, true);
 						}
+						if(handler == null)
+						{
+							// Could not find a handler, so use invariant.
+							currentCulture = InvariantCulture;
+							gettingCurrent = false;
+							return currentCulture;
+						}
+						currentCulture = new CultureInfo(handler, true);
+						currentCulture.readOnly = true;
 						gettingCurrent = false;
 						return currentCulture;
 					}
@@ -412,7 +413,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 				{
 					// We use the prevailing resources to translate
 					// the english name into a display name.
-					return _(cultureName.englishName);
+					return _(EnglishName);
 				}
 			}
 
@@ -421,7 +422,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					return cultureName.englishName;
+					if(handler != null)
+					{
+						return handler.EnglishName;
+					}
+					return "Invariant Language (Invariant Country)";
 				}
 			}
 
@@ -448,7 +453,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					return cultureName.name;
+					if(handler != null)
+					{
+						return handler.Name;
+					}
+					return "";
 				}
 			}
 
@@ -457,7 +466,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					return cultureName.nativeName;
+					if(handler != null)
+					{
+						return handler.NativeName;
+					}
+					return "Invariant Language (Invariant Country)";
 				}
 			}
 
@@ -613,7 +626,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					return cultureName.threeLetterISOName;
+					if(handler != null)
+					{
+						return handler.ThreeLetterISOLanguageName;
+					}
+					return "IVL";
 				}
 			}
 
@@ -622,7 +639,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					return cultureName.threeLetterWindowsName;
+					if(handler != null)
+					{
+						return handler.ThreeLetterWindowsLanguageName;
+					}
+					return "IVL";
 				}
 			}
 
@@ -631,7 +652,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					return cultureName.twoLetterISOName;
+					if(handler != null)
+					{
+						return handler.TwoLetterISOLanguageName;
+					}
+					return "iv";
 				}
 			}
 
@@ -699,21 +724,6 @@ public class CultureInfo : ICloneable, IFormatProvider
 
 #if CONFIG_REFLECTION
 
-	// Map a culture name to an identifier.
-	internal static int MapNameToID(String name, bool throwOnError)
-			{
-				CultureName cultureName =
-					CultureNameTable.GetNameInfoByName(name, throwOnError);
-				if(cultureName != null)
-				{
-					return cultureName.cultureID;
-				}
-				else
-				{
-					return 0;
-				}
-			}
-
 	// Get the culture handler for a specific culture.
 	internal static CultureInfo GetCultureHandler
 				(int culture, bool useUserOverride)
@@ -726,6 +736,13 @@ public class CultureInfo : ICloneable, IFormatProvider
 					obj = Encoding.InvokeI18N
 						("GetCulture", culture & 0x03FF, useUserOverride);
 				}
+				return (CultureInfo)obj;
+			}
+	internal static CultureInfo GetCultureHandler
+				(String culture, bool useUserOverride)
+			{
+				Object obj = Encoding.InvokeI18N
+						("GetCulture", culture, useUserOverride);
 				return (CultureInfo)obj;
 			}
 

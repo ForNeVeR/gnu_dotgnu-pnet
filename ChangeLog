@@ -20,6 +20,10 @@
 	* csant/csant_fileset.c (CSAntFileSetLoad): off by 1 bug when
 	checking the "excludes" list.
 
+	* csant/csant_fileset.c (CSAntFileSetLoad): add the "basedir"
+	attribute to the "file" tag to override the source or build
+	directory that is used by default.
+
 2002-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_ainit.tc, codegen/cg_lvalue.tc, codegen/cg_utils.c:

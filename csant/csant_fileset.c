@@ -335,6 +335,7 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name,
 	CSAntFileSet *fileset;
 	CSAntTask *node;
 	const char *arg;
+	const char *arg2;
 	char *baseDir;
 	char *currentDir;
 	char *pathname;
@@ -495,7 +496,15 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name,
 			arg = CSAntTaskParam(node, "name");
 			if(arg)
 			{
-				pathname = CSAntDirCombine(baseDir, arg);
+				arg2 = CSAntTaskParam(node, "basedir");
+				if(arg2)
+				{
+					pathname = CSAntDirCombine(arg2, arg);
+				}
+				else
+				{
+					pathname = CSAntDirCombine(baseDir, arg);
+				}
 				AddToFileSet(fileset, pathname);
 			}
 		}

@@ -22,6 +22,7 @@ AC_SUBST(XFT_LIB)
 AC_SUBST(CYG_RESGEN)
 AC_SUBST(CYG_ILGAC)
 AC_SUBST(CYG_CACHE)
+AC_SUBST(INSTALL_AS_DEFAULT)
 
 dnl Checks for programs.
 AC_PROG_AWK
@@ -168,6 +169,16 @@ if test "$ILGAC" = "" ; then
 	exit 1
 fi
 
+dnl Find the Portable.NET "clrwrap" program.
+AC_PATH_PROG(CLRWRAP, clrwrap,, $PNET_PATH/clrwrap:${prefix}/bin:$PATH)
+if test "$CLRWRAP" = "" ; then
+	echo '**************************************************************'
+	echo "Portable.NET'clrwrap ilgac tool is required to build the system."
+	echo "Use the --with-pnet option to specify Portable.NET's location."
+	echo '**************************************************************'
+	exit 1
+fi
+
 dnl Find the C# compiler to use.
 if test "$MSTOOLS" = "no"; then
 	AC_PATH_PROG(CSHARP_COMPILER, cscc,, $PNET_PATH/cscc:${prefix}/bin:$PATH)
@@ -252,6 +263,14 @@ dnl Determine if the system supports reflection, because there
 dnl are some things that we can't build or test without reflection.
 REF_FLAG=`grep 'CONFIG_REFLECTION" value="true"' "${srcdir}/profiles/${PROFILE_NAME}"`
 AM_CONDITIONAL(HAS_REFLECTION, test "x$REF_FLAG" != "x")
+
+dnl Determine if assemblies should be installed as default versions.
+DEF_FLAG=`grep 'INSTALL_AS_DEFAULT" value="true"' "${srcdir}/profiles/${PROFILE_NAME}"`
+if test "x$DEF_FLAG" != "x" ; then
+	INSTALL_AS_DEFAULT=true
+else
+	INSTALL_AS_DEFAULT=false
+fi
 
 dnl The --with-types option can be used to specify the sizes of
 dnl the native int and long types for Xsharp.  Set to one of:
@@ -428,6 +447,7 @@ samples/Makefile
 samples/ilrun.sh
 tools/run_test.sh
 tools/link_res.sh
+tools/wrapper.sh
 pnetlib.spec])
 
 chmod +x "${srcdir}/tools/link_res.sh"

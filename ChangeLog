@@ -1,3 +1,15 @@
+
+2003-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, JScript/JScript.build, JScript/Makefile.am,
+	JScript/jsrun.sh, System.Configuration.Install/Makefile.am,
+	System.Configuration.Install/System.Configuration.Install.build,
+	System.Configuration.Install/ilinstall-run.sh,
+	csunit/Makefile.am, csunit/csunit-run.sh, csunit/csunit.build,
+	tools/.cvsignore, tools/wrapper.sh.in: install the "csunit",
+	"ilinstall", and "jsrun" executables in the assembly cache,
+	and replace the clrwrap redirect scripts with symlinks to clrwrap.
+
 2003-11-26  Adam Ballai <adam@thefrontnetworks.net>
 
 	* System.Xml/XmlDocument.cs, System.Xml/XmlTextReader.cs:

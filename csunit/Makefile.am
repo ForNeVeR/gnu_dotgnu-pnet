@@ -15,8 +15,10 @@ install-exec-local:
 	"$(CSANT)" $(CSANT_FLAGS) -f csunit.build \
 			-a $(DESTDIR)$(libdir)/cscc/lib -i all
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) csunit.exe $(DESTDIR)$(bindir)/csunit.exe
-	$(INSTALL_SCRIPT) $(srcdir)/csunit-run.sh $(DESTDIR)$(bindir)/csunit
+	rm -f $(DESTDIR)$(bindir)/csunit.exe
+	rm -f $(DESTDIR)$(bindir)/csunit
+	$(SHELL) $(top_builddir)/tools/wrapper.sh \
+			$(DESTDIR)$(bindir)/csunit$(EXEEXT)
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)

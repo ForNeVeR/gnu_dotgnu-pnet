@@ -21,8 +21,10 @@ install-exec-local:
 	"$(CSANT)" $(CSANT_FLAGS) -f JScript.build \
 			-a $(DESTDIR)$(libdir)/cscc/lib -i all
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) jsrun.exe $(DESTDIR)$(bindir)/jsrun.exe
-	$(INSTALL_SCRIPT) $(srcdir)/jsrun.sh $(DESTDIR)$(bindir)/jsrun
+	rm -f $(DESTDIR)$(bindir)/jsrun.exe
+	rm -f $(DESTDIR)$(bindir)/jsrun
+	$(SHELL) $(top_builddir)/tools/wrapper.sh \
+			$(DESTDIR)$(bindir)/jsrun$(EXEEXT)
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)

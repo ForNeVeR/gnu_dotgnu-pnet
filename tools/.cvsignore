@@ -4,3 +4,4 @@ Makefile.in
 run_test.sh
 csccwrap.sh
 link_res.sh
+wrapper.sh

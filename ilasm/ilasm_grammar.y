@@ -2626,7 +2626,7 @@ DataBody
 
 DataItemList
 	: DataItem
-	| DataItem ',' DataItemList
+	| DataItemList ',' DataItem
 	;
 
 DataItemCount

@@ -1,4 +1,9 @@
 
+2003-03-10  Gopal.V  <gopalv82@symonds.net>
+	
+	* ilasm/ilasm_grammar.y: Fix right recursion and replace with 
+	left recursion (thanks to Patrick Hedlin).
+
 2003-03-09  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_oper.tc: Fix a typo in the ternary conditional

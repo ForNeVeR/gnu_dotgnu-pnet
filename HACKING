@@ -98,6 +98,15 @@ return your tree to a pristine pre-configure state.  Always test your
 patches on a pristine build that has been updated from the CVS repository
 before submitting them.
 
+Standards
+---------
+
+The ECMA standards for C# and the Common Language Infrastructure (CLI)
+can be found at the ECMA Web site:
+
+	http://www.ecma.ch/ecma1/STAND/ECMA-334.htm   (C#)
+	http://www.ecma.ch/ecma1/STAND/ECMA-335.htm   (CLI)
+
 Version numbers
 ---------------
 

@@ -1422,6 +1422,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 			CCOutOfMemory();
 		}
 		ILMemberSetSignature((ILMember *)field, eventType);
+		eventDecl->backingField = field;
 	}
 }
 

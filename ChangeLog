@@ -11,6 +11,9 @@
 	* image/lib_attrs.c (DllImportAttribute): set the "pinvokeimpl"
 	flag when a "DllImport" attribute is processed.
 
+	* codegen/cg_nodes.tc, cscc/csharp/cs_attrs.c, cscc/csharp/cs_gather.c:
+	process attribute target specifications.
+
 2002-07-25  Andrew Mitchell  <ajmitch@dunedin.lug.net.nz>
 
 	* debian/*: Update Deabin packaging scripte to reflect that the pnet

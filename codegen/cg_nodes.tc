@@ -812,6 +812,7 @@ struct _tagILSwitchValue
 	ILNode	   *addAccessor;
 	ILNode	   *removeAccessor;
 	%nocreate ILEvent *eventInfo = {0};
+	%nocreate ILField *backingField = {0};
 	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 	%nocreate ILNode_EventDeclaration *backLink = {0};
 }

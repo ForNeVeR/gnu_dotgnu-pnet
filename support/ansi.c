@@ -26,6 +26,9 @@
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#if HAVE_LIMITS_H
+#include <limits.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -45,6 +48,10 @@ extern	"C" {
 #endif
 #endif
 
+#ifndef	MB_LEN_MAX
+#define	MB_LEN_MAX	6
+#endif
+
 unsigned long ILAnsiGetByteCount(const unsigned short *chars,
 								 unsigned long count)
 {
@@ -54,7 +61,7 @@ unsigned long ILAnsiGetByteCount(const unsigned short *chars,
 #if HAVE_WCRTOMB
 	/* Use the re-entrant function to perform the conversion */
 	mbstate_t state;
-	char buf[MB_CUR_MAX+1];
+	char buf[MB_LEN_MAX+1];
 	size_t chlen;
 	unsigned short ch;
 	unsigned long len = 0;
@@ -82,7 +89,7 @@ unsigned long ILAnsiGetByteCount(const unsigned short *chars,
 	/* Use the non re-entrant function to perform the conversion
 	   and just hope that the underlying libc takes care of the
 	   thread-safety issues for us */
-	char buf[MB_CUR_MAX];
+	char buf[MB_LEN_MAX+1];
 	int chlen;
 	unsigned long len = 0;
 	wctomb((char *)0, 0);
@@ -134,7 +141,7 @@ long ILAnsiGetBytes(const unsigned short *chars, unsigned long charCount,
 #if HAVE_WCRTOMB
 	/* Use the re-entrant function to perform the conversion */
 	mbstate_t state;
-	char buf[MB_CUR_MAX+1];
+	char buf[MB_LEN_MAX+1];
 	size_t chlen;
 	unsigned short ch;
 	unsigned long len = 0;
@@ -175,7 +182,7 @@ long ILAnsiGetBytes(const unsigned short *chars, unsigned long charCount,
 	/* Use the non re-entrant function to perform the conversion
 	   and just hope that the underlying libc takes care of the
 	   thread-safety issues for us */
-	char buf[MB_CUR_MAX];
+	char buf[MB_LEN_MAX+1];
 	int chlen;
 	unsigned long len = 0;
 	wctomb((char *)0, 0);
@@ -399,7 +406,7 @@ unsigned long ILAnsiGetMaxByteCount(unsigned long charCount)
 #ifdef IL_CONFIG_LATIN1
 	return charCount;
 #else
-	return charCount * MB_CUR_MAX;
+	return charCount * MB_LEN_MAX;
 #endif
 }
 

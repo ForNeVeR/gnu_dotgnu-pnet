@@ -130,7 +130,7 @@ public abstract class Attribute
 					throw new ArgumentNullException("attributeType");
 				}
 				attrs = element.GetCustomAttributes(attributeType, inherit);
-				if(attrs == null)
+				if(attrs == null || attrs.Length < 1)
 				{
 					return null;
 				}

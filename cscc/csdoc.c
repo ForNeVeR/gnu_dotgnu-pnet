@@ -537,6 +537,81 @@ static void GenerateDocsForField(FILE *stream, ILNode_FieldDeclaration *decl,
 }
 
 /*
+ * Generate documentation for a specific enumerated member definition.
+ */
+static void GenerateDocsForEnum(FILE *stream,
+								ILNode_EnumMemberDeclaration *decl,
+							    int indent)
+{
+	ILField *field;
+
+	/* Get the field descriptor */
+	field = decl->fieldInfo;
+	if(!field)
+	{
+		return;
+	}
+
+	/* Output the member header */
+	Indent(stream, indent);
+	fputs("<Member MemberName=\"", stream);
+	fputs(ILField_Name(field), stream);
+	fputs("\">\n", stream);
+
+	/* Output the signature in ILASM form */
+	Indent(stream, indent + 2);
+	fputs("<MemberSignature Language=\"ILASM\" Value=\".field ", stream);
+	ILDumpFlags(stream, ILField_Attrs(field), ILFieldDefinitionFlags, 0);
+	ILDumpType(stream, ILProgramItem_Image(field),
+			   ILField_Type(field), 0);
+	putc(' ', stream);
+	fputs(ILField_Name(field), stream);
+	fputs("\"/>\n", stream);
+
+	/* Output the signature in C# form */
+	Indent(stream, indent + 2);
+	fputs("<MemberSignature Language=\"C#\" Value=\"", stream);
+	fputs(ILField_Name(field), stream);
+	if(ILField_IsLiteral(field))
+	{
+		/* TODO: dump the constant value */
+	}
+	fputs("\"/>\n", stream);
+
+	/* Output the member kind */
+	Indent(stream, indent + 2);
+	fputs("<MemberType>Field</MemberType>\n", stream);
+
+	/* Dump the attributes for the enumerated member */
+	DumpAttributes(stream, decl->attributes, indent + 2);
+
+	/* Output the field's type */
+	Indent(stream, indent + 2);
+	fputs("<ReturnValue>\n", stream);
+	Indent(stream, indent + 4);
+	fprintf(stream, "<ReturnType>%s</ReturnType>\n",
+			CSTypeToName(ILField_Type(field)));
+	Indent(stream, indent + 2);
+	fputs("</ReturnValue>\n", stream);
+
+	/* Fields don't have parameters */
+	Indent(stream, indent + 2);
+	fputs("<Parameters/>\n", stream);
+
+	/* Dump the field's constant value if necessary */
+	/* TODO: MemberValue */
+
+	/* Dump the doc comments for the field */
+	DumpDocComments(stream, decl->attributes, indent + 2);
+
+	/* Output the member footer */
+	Indent(stream, indent + 2);
+	fputs("<Excluded>0</Excluded>\n", stream);
+	Indent(stream, indent);
+	fputs("</Member>\n", stream);
+}
+
+/*
  * Find the parameter information block for a particular method parameter.
  */
 static ILParameter *FindMethodParam(ILMethod *method, ILUInt32 param)
@@ -1231,6 +1306,11 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 		{
 			GenerateDocsForMethod(stream, (ILNode_MethodDeclaration *)member,
 								  indent);
+		}
+		else if(yykind(member) == yykindof(ILNode_EnumMemberDeclaration))
+		{
+			GenerateDocsForEnum(stream, (ILNode_EnumMemberDeclaration *)member,
+							    indent);
 		}
 		else if(yykind(member) == yykindof(ILNode_PropertyDeclaration))
 		{

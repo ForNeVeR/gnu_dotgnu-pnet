@@ -1,4 +1,8 @@
 
+2001-10-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* cscc/csdoc.c (GenerateDocsForEnum): new function.
+
 2001-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_invoke.tc: bug fix in "CSEvalArguments"; make sure "ref" and "out"

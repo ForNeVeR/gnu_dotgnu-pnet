@@ -115,6 +115,11 @@ void JavaGenLoadArg(ILGenInfo *info, unsigned varNum,
 				    ILMachineType type);
 
 /*
+ * Increment an integer local variable.
+ */
+void JavaGenIncLocal(ILGenInfo *info, unsigned varNum, ILInt32 amount);
+
+/*
  * Output a "ret" instruction, taking the address from a specific local.
  */
 void JavaGenRet(ILGenInfo *info, unsigned varNum);
@@ -123,6 +128,16 @@ void JavaGenRet(ILGenInfo *info, unsigned varNum);
  * Get the number of stack positions occupied by a machine type.
  */
 int JavaGenTypeSize(ILMachineType type);
+
+/*
+ * Load a value from an array element.
+ */
+void JavaGenLoadArray(ILGenInfo *info, ILMachineType type);
+
+/*
+ * Store a value to an array element.
+ */
+void JavaGenStoreArray(ILGenInfo *info, ILMachineType type);
 
 /*
  * Output a call to a static method given its named signature.
@@ -149,6 +164,13 @@ void JavaGenCallVirtIntrinsic(ILGenInfo *info, const char *className,
 						      const char *methodName, const char *signature);
 
 /*
+ * Output a call to a named interface method.
+ */
+void JavaGenCallInterface(ILGenInfo *info, const char *className,
+						  const char *methodName, const char *signature,
+						  long numArgs);
+
+/*
  * Output a call to a method given its description block.
  */
 void JavaGenCallByMethod(ILGenInfo *info, ILMethod *method);
@@ -168,6 +190,12 @@ void JavaGenCallInterfaceByMethod(ILGenInfo *info, ILMethod *method,
  * Output a call to a special method given its description block.
  */
 void JavaGenCallSpecialByMethod(ILGenInfo *info, ILMethod *method);
+
+/*
+ * Call a method using one of the 4 above functions, depending
+ * upon the type of method block we are given.
+ */
+void JavaGenCallMethod(ILGenInfo *info, ILMethod *method, long startArgs);
 
 /*
  * Output a "new" instruction.
@@ -195,6 +223,11 @@ void JavaGenCallCtorIntrinsic(ILGenInfo *info, const char *className,
  * Generate an instruction that refers to a class.
  */
 void JavaGenClassRef(ILGenInfo *info, int opcode, ILClass *classInfo);
+
+/*
+ * Generate an instruction that refers to a class by name.
+ */
+void JavaGenClassName(ILGenInfo *info, int opcode, const char *className);
 
 /*
  * Output a "new array" instruction.

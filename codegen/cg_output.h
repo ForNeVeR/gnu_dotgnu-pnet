@@ -126,6 +126,11 @@ void ILGenNewObj(ILGenInfo *info, const char *className,
 void ILGenClassToken(ILGenInfo *info, int opcode, ILClass *classInfo);
 
 /*
+ * Output an instruction that takes a class name as an argument.
+ */
+void ILGenClassName(ILGenInfo *info, int opcode, const char *className);
+
+/*
  * Output an instruction that takes a type token as an argument.
  */
 void ILGenTypeToken(ILGenInfo *info, int opcode, ILType *type);

@@ -322,6 +322,26 @@ void ILGenClassToken(ILGenInfo *info, int opcode, ILClass *classInfo)
 	}
 }
 
+void ILGenClassName(ILGenInfo *info, int opcode, const char *className)
+{
+	if(info->asmOutput)
+	{
+		putc('\t', info->asmOutput);
+		if(opcode < IL_OP_PREFIX)
+		{
+			fputs(ILMainOpcodeTable[opcode].name, info->asmOutput);
+		}
+		else
+		{
+			fputs(ILPrefixOpcodeTable[opcode - IL_OP_PREFIX].name,
+				  info->asmOutput);
+		}
+		putc('\t', info->asmOutput);
+		fputs(className, info->asmOutput);
+		putc('\n', info->asmOutput);
+	}
+}
+
 void ILGenTypeToken(ILGenInfo *info, int opcode, ILType *type)
 {
 	if(info->asmOutput)

@@ -285,6 +285,189 @@ void ILGenConst(ILGenInfo *info, ILEvalValue *value)
 	}
 }
 
+void ILGenLoadArray(ILGenInfo *info, ILMachineType elemMachineType,
+					ILType *elemType)
+{
+	switch(elemMachineType)
+	{
+		case ILMachineType_Void:	break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_I1);
+		}
+		break;
+
+		case ILMachineType_UInt8:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_U1);
+		}
+		break;
+
+		case ILMachineType_Int16:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_I2);
+		}
+		break;
+
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_U2);
+		}
+		break;
+
+		case ILMachineType_Int32:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_I4);
+		}
+		break;
+
+		case ILMachineType_UInt32:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_U4);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_I8);
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		case ILMachineType_UnmanagedPtr:
+		case ILMachineType_ManagedPtr:
+		case ILMachineType_TransientPtr:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_I);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_R4);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_R8);
+		}
+		break;
+
+		case ILMachineType_Decimal:
+		case ILMachineType_ManagedValue:
+		{
+			ILGenSimple(info, IL_OP_LDELEMA);
+			ILGenTypeToken(info, IL_OP_LDOBJ, elemType);
+		}
+		break;
+
+		case ILMachineType_String:
+		case ILMachineType_ObjectRef:
+		{
+			ILGenSimple(info, IL_OP_LDELEM_REF);
+		}
+		break;
+	}
+}
+
+int ILGenStoreArrayPrepare(ILGenInfo *info, ILMachineType elemMachineType,
+					 	   ILType *elemType)
+{
+	if(elemMachineType == ILMachineType_Decimal ||
+	   elemMachineType == ILMachineType_ManagedValue)
+	{
+		ILGenSimple(info, IL_OP_LDELEMA);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void ILGenStoreArray(ILGenInfo *info, ILMachineType elemMachineType,
+					 ILType *elemType)
+{
+	switch(elemMachineType)
+	{
+		case ILMachineType_Void:	break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		{
+			ILGenSimple(info, IL_OP_STELEM_I1);
+		}
+		break;
+
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		{
+			ILGenSimple(info, IL_OP_STELEM_I2);
+		}
+		break;
+
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		{
+			ILGenSimple(info, IL_OP_STELEM_I4);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			ILGenSimple(info, IL_OP_STELEM_I8);
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		case ILMachineType_UnmanagedPtr:
+		case ILMachineType_ManagedPtr:
+		case ILMachineType_TransientPtr:
+		{
+			ILGenSimple(info, IL_OP_STELEM_I);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			ILGenSimple(info, IL_OP_STELEM_R4);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			ILGenSimple(info, IL_OP_STELEM_R8);
+		}
+		break;
+
+		case ILMachineType_Decimal:
+		case ILMachineType_ManagedValue:
+		{
+			ILGenTypeToken(info, IL_OP_STOBJ, elemType);
+		}
+		break;
+
+		case ILMachineType_String:
+		case ILMachineType_ObjectRef:
+		{
+			ILGenSimple(info, IL_OP_STELEM_REF);
+		}
+		break;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

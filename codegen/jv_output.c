@@ -464,6 +464,16 @@ void JavaGenLoadArg(ILGenInfo *info, unsigned varNum,
 	LoadLocal(info, info->javaInfo->localMap[varNum], type);
 }
 
+void JavaGenIncLocal(ILGenInfo *info, unsigned varNum, ILInt32 amount)
+{
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, "\tiinc\t%u, %ld\n",
+				info->javaInfo->localMap[varNum + info->javaInfo->numArgs],
+				(long)amount);
+	}
+}
+
 void JavaGenRet(ILGenInfo *info, unsigned varNum)
 {
 	if(info->asmOutput)
@@ -489,6 +499,163 @@ int JavaGenTypeSize(ILMachineType type)
 	else
 	{
 		return 1;
+	}
+}
+
+void JavaGenLoadArray(ILGenInfo *info, ILMachineType type)
+{
+	switch(type)
+	{
+		case ILMachineType_Void: break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		{
+			JavaGenSimple(info, JAVA_OP_BALOAD);
+		}
+		break;
+
+		case ILMachineType_UInt8:
+		{
+			JavaGenSimple(info, JAVA_OP_BALOAD);
+			JavaGenInt32(info, 0xFF);
+			JavaGenSimple(info, JAVA_OP_IAND);
+		}
+		break;
+
+		case ILMachineType_Int16:
+		{
+			JavaGenSimple(info, JAVA_OP_SALOAD);
+		}
+		break;
+
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		{
+			JavaGenSimple(info, JAVA_OP_CALOAD);
+		}
+		break;
+
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		{
+			JavaGenSimple(info, JAVA_OP_IALOAD);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			JavaGenSimple(info, JAVA_OP_LALOAD);
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		{
+			JavaGenSimple(info, JAVA_OP_IALOAD);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			JavaGenSimple(info, JAVA_OP_FALOAD);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			JavaGenSimple(info, JAVA_OP_DALOAD);
+		}
+		break;
+
+		case ILMachineType_Decimal:
+		case ILMachineType_ManagedValue:
+		case ILMachineType_String:
+		case ILMachineType_ObjectRef:
+		case ILMachineType_UnmanagedPtr:
+		case ILMachineType_ManagedPtr:
+		case ILMachineType_TransientPtr:
+		{
+			JavaGenSimple(info, JAVA_OP_AALOAD);
+		}
+		break;
+	}
+}
+
+void JavaGenStoreArray(ILGenInfo *info, ILMachineType type)
+{
+	switch(type)
+	{
+		case ILMachineType_Void: break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		{
+			JavaGenSimple(info, JAVA_OP_BASTORE);
+		}
+		break;
+
+		case ILMachineType_Int16:
+		{
+			JavaGenSimple(info, JAVA_OP_SASTORE);
+		}
+		break;
+
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		{
+			JavaGenSimple(info, JAVA_OP_CASTORE);
+		}
+		break;
+
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		{
+			JavaGenSimple(info, JAVA_OP_IASTORE);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			JavaGenSimple(info, JAVA_OP_LASTORE);
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		{
+			JavaGenSimple(info, JAVA_OP_IASTORE);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			JavaGenSimple(info, JAVA_OP_FASTORE);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			JavaGenSimple(info, JAVA_OP_DASTORE);
+		}
+		break;
+
+		case ILMachineType_Decimal:
+		case ILMachineType_ManagedValue:
+		case ILMachineType_String:
+		case ILMachineType_ObjectRef:
+		case ILMachineType_UnmanagedPtr:
+		case ILMachineType_ManagedPtr:
+		case ILMachineType_TransientPtr:
+		{
+			JavaGenSimple(info, JAVA_OP_AASTORE);
+		}
+		break;
 	}
 }
 
@@ -527,6 +694,18 @@ void JavaGenCallVirtIntrinsic(ILGenInfo *info, const char *className,
 		fprintf(info->asmOutput, "\tinvokevirtual\t\""
 						"System/Intrinsics/%s\" \"%s\" \"%s\"\n",
 				className, methodName, signature);
+	}
+}
+
+void JavaGenCallInterface(ILGenInfo *info, const char *className,
+						  const char *methodName, const char *signature,
+						  long numArgs)
+{
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput,
+				"\tinvokeinterface\t\"%s\" \"%s\" \"%s\" %ld\n",
+				className, methodName, signature, numArgs);
 	}
 }
 
@@ -579,6 +758,30 @@ void JavaGenCallSpecialByMethod(ILGenInfo *info, ILMethod *method)
 	}
 }
 
+void JavaGenCallMethod(ILGenInfo *info, ILMethod *method, long startArgs)
+{
+	if(ILMethod_IsVirtual(method))
+	{
+		if(ILClass_IsInterface(ILMethod_Owner(method)))
+		{
+			JavaGenCallInterfaceByMethod(info, method,
+										 info->stackHeight - startArgs);
+		}
+		else
+		{
+			JavaGenCallVirtByMethod(info, method);
+		}
+	}
+	else if(ILMethod_IsStatic(method))
+	{
+		JavaGenCallByMethod(info, method);
+	}
+	else
+	{
+		JavaGenCallSpecialByMethod(info, method);
+	}
+}
+
 void JavaGenNewObj(ILGenInfo *info, const char *className)
 {
 	if(info->asmOutput)
@@ -618,6 +821,11 @@ void JavaGenCallCtorIntrinsic(ILGenInfo *info, const char *className,
 }
 
 void JavaGenClassRef(ILGenInfo *info, int opcode, ILClass *classInfo)
+{
+	/* TODO */
+}
+
+void JavaGenClassName(ILGenInfo *info, int opcode, const char *className)
 {
 	/* TODO */
 }

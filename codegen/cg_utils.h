@@ -90,6 +90,26 @@ void ILGenLoadArgAddr(ILGenInfo *info, unsigned num);
  */
 void ILGenConst(ILGenInfo *info, ILEvalValue *value);
 
+/*
+ * Load the contents of an array element onto the stack.
+ */
+void ILGenLoadArray(ILGenInfo *info, ILMachineType elemMachineType,
+					ILType *elemType);
+
+/*
+ * Prepare to store the contents of an array element,
+ * before the value is pushed.  Returns the number of
+ * stack values popped from the stack during the prepare.
+ */
+int ILGenStoreArrayPrepare(ILGenInfo *info, ILMachineType elemMachineType,
+					 	   ILType *elemType);
+
+/*
+ * Store the contents of an array element from the stack.
+ */
+void ILGenStoreArray(ILGenInfo *info, ILMachineType elemMachineType,
+					 ILType *elemType);
+
 #ifdef	__cplusplus
 };
 #endif

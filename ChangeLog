@@ -8,6 +8,10 @@ generator.
 * codegen/cg_stmt.tc, codegen/jv_stmt.tc: implement code generation for
 the "foreach" statement.
 
+* codegen/cg_utils.h, codegen/cg_utils.c, codegen/cg_output.h,
+codegen/cg_output.c, codegen/jv_output.h, codegen/jv_output.c:
+new functions to support code generation for "foreach" statements.
+
 2001-10-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/csdoc.c (GenerateDocsForEnum): new function.

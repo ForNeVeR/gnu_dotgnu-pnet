@@ -8,6 +8,7 @@ TESTS = arglist1.cs \
 		as2.cs \
 		binary1.cs \
 		binary2.cs \
+		binary3.cs \
 		bitwise1.cs \
 		bitwise2.cs \
 		cast1.cs \

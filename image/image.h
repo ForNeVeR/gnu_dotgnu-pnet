@@ -335,6 +335,12 @@ const char *_ILContextPersistMalloc(ILImage *image, char *str);
 ILImage *_ILImageCreate(ILContext *context, unsigned size);
 
 /*
+ * Declare the Java image loading function for use by "ILImageLoad".
+ */
+int _ILImageJavaLoad(FILE *file, const char *filename, ILContext *context,
+					 ILImage **image, int flags, char *buffer);
+
+/*
  * Free a section map.
  */
 void _ILFreeSectionMap(ILSectionMap *map);

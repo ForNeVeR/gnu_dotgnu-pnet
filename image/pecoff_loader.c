@@ -198,6 +198,15 @@ int ILImageLoad(FILE *file, const char *filename,
 		offset = 20;
 		isOBJ = 1;
 	}
+#ifndef IL_NO_JAVA
+	else if((buffer[0] == (char)0xCA && buffer[1] == (char)0xFE) ||
+	        (buffer[0] == 'P' && buffer[1] == 'K'))
+	{
+		/* This looks like a Java ".class" or ".jar" file, which
+		   we need to pass off to "_ILImageJavaLoad" to handle */
+		return _ILImageJavaLoad(file, filename, context, image, flags, buffer);
+	}
+#endif
 	else
 	{
 		/* Unknown file format */

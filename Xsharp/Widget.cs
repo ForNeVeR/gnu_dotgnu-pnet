@@ -460,7 +460,8 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				get
 				{
 					Widget widget = this;
-					while(widget != null && !(widget is TopLevelWindow))
+					while(widget != null && widget.parent != null &&
+								!(widget.parent is RootWindow))
 					{
 						widget = widget.parent;
 					}

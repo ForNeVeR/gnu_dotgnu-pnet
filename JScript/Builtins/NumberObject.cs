@@ -27,7 +27,7 @@ using System.Globalization;
 public class NumberObject : JSObject
 {
 	// underlying value
-	protected Object value;
+	internal Object value;
 	
 	// internal constructor
 	internal NumberObject(ScriptObject parent, Object value)

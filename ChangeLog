@@ -1,4 +1,20 @@
 
+2004-11-24  Neil Cawse  <neilcawse@geotab.com>
+
+	* Basic/File.cs, Basic/Information.cs, Basic/S.cs, Basic/Strings.cs,
+	Basic/TODOAttribute.cs, Basic/CompilerServices/Utils.cs, JScript/jsrun.cs,
+	JScript/Builtins/ArrayObject.cs, JScript/Builtins/NumberConstructor.cs,
+	JScript/Builtins/NumberObject.cs, JScript/Builtins/NumberPrototype.cs,
+	JScript/Builtins/GlobalObject.cs, JScript/Execute/Convert.cs,
+	JScript/Execute/GlobalField.cs, JScript/Execute/WithScope.cs,
+	JScript/Parser/JSParser.cs, JScript/Parser/JSScanner.cs,
+	System.Deployment/DFServiceEntryPoint.cs,
+	System.Windows.Forms/ErrorProvider.cs, System.Windows.Forms/TextBox.cs,
+	System.Xml/XPath/Private/XPathExpressionBase.cs,
+	System.Xml/XPath/Private/XPathTokenizer.cs,
+	Themes/WinXP/UxTheme.cs, runtime/System/IO/SymbolicLinks.cs: compiter error
+	patches to allow pnetlib to compile with the Visual Studio overlay.
+
 2004-11-23  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/Form.cs: Generate an OnLoad event only once

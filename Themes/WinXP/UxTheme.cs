@@ -396,7 +396,7 @@ namespace ThemeXP.UxTheme
 
 namespace ThemeXP
 {
-	public class Theme : UxTheme.UxThemeAPI
+	internal class Theme : UxTheme.UxThemeAPI
 	{
 		// theme cache lookup table
 		private static Hashtable _hThemeLookup = new Hashtable ();

@@ -126,7 +126,7 @@ public sealed class Information
 								DoubleType.Parse(ic.ToString(null));
 								return true;
 							}
-							catch(Exception e)
+							catch(Exception)
 							{
 								// If we cannot parse, then it isn't numeric.
 							}

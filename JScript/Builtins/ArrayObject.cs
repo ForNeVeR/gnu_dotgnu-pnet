@@ -216,7 +216,7 @@ public class ArrayObject : JSObject
 				{
 					int index = Convert.ToInt32(name);
 					return (index >= 0 && (uint)index < arrayLen &&
-						array != null && index < array.Length && array[index] != null);
+						array != null && index < array.Length && array.GetValue(index) != null);
 				}
 				else
 				{
@@ -234,7 +234,7 @@ public class ArrayObject : JSObject
 				else if(IsArrayIndex(name))
 				{
 					int index = Convert.ToInt32(name);
-					if(array != null && array[index] != null)
+					if(array != null && array.GetValue(index) != null)
 					{
 						array.SetValue(null, Convert.ToInt32(name));
 						return true;
@@ -366,7 +366,7 @@ public class ArrayObject : JSObject
 			{
 				for(; current < array.Length - 1;)
 				{
-					if(array[++current] != null)
+					if(array.GetValue(++current) != null)
 					{
 						return true;
 					}

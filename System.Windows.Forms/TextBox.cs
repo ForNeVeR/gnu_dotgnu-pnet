@@ -426,20 +426,20 @@ public class TextBox : TextBoxBase
 			}
 			string[] lines = new string[line];
 			int start = 0;
-			int i = 0;
+			int j = 0;
 			line = 0;
 			// Break into strings
-			while(i < Text.Length)
+			while(j < Text.Length)
 			{
-				if (Text[i] == '\r' && i < Text.Length - 1 && Text[i+1] == '\n') // Look for CRLF
+				if (Text[j] == '\r' && j < Text.Length - 1 && Text[j+1] == '\n') // Look for CRLF
 				{
-					lines[line++] = Text.Substring(start, i - start);
-					i+=2; 
-					start = i;
+					lines[line++] = Text.Substring(start, j - start);
+					j+=2; 
+					start = j;
 				}
 				else
 				{
-					i+=1;
+					j+=1;
 				}
 			}
 

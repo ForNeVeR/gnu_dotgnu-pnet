@@ -137,7 +137,7 @@ internal abstract class XPathExpressionBase : XPathExpression
 			break;
 			case XPathResultType.String:
 			{
-				String strValue;
+				String strValue = String.Empty;
 				if(result is XPathNavigator)
 				{
 					result = (result as XPathNavigator).Value;

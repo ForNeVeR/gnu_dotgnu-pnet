@@ -38,25 +38,25 @@ internal sealed class WithScope : ScriptObject, IActivationObject,
 			}
 
 	// Implement the IActivationObject interface.
-	public virtual Object GetDefaultThisObject()
+	public Object GetDefaultThisObject()
 			{
 				return withObject;
 			}
-	public virtual GlobalScope GetGlobalScope()
+	public GlobalScope GetGlobalScope()
 			{
 				return ((IActivationObject)parent).GetGlobalScope();
 			}
-	public virtual FieldInfo GetLocalField(String name)
+	public FieldInfo GetLocalField(String name)
 			{
 				// This method is not used.
 				return null;
 			}
-	public virtual Object GetMemberValue(String name, int lexlevel)
+	public Object GetMemberValue(String name, int lexlevel)
 			{
 				// TODO
 				return Missing.Value;
 			}
-	public virtual FieldInfo GetField(String name, int lexlevel)
+	public FieldInfo GetField(String name, int lexlevel)
 			{
 				// TODO
 				return null;

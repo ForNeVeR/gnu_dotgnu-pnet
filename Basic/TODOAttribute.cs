@@ -21,6 +21,7 @@
 
 namespace Microsoft.VisualBasic
 {
+using System;
 
 // This is a pseudo attribute which is used to tag classes, methods,
 // fields, properties, etc, that are not yet complete.  This allows

@@ -125,7 +125,6 @@ public sealed class Utils
 						elemType = elemType.GetElementType();
 					}
 					AppendType(builder, elemType);
-					int rank;
 					while(type != elemType)
 					{
 						builder.Append('(');
@@ -156,7 +155,7 @@ public sealed class Utils
 				if(Method is ConstructorInfo)
 				{
 					isCtor = true;
-					returnType = typeof(Void);
+					returnType = typeof(void);
 				}
 				else
 				{
@@ -196,7 +195,7 @@ public sealed class Utils
 				{
 					builder.Append("Sub New ");
 				}
-				else if(returnType == typeof(Void))
+				else if(returnType == typeof(void))
 				{
 					builder.Append("Sub ");
 				}
@@ -279,7 +278,7 @@ public sealed class Utils
 				builder.Append(")");
 
 				// Output the return type for functions.
-				if(returnType != typeof(Void))
+				if(returnType != typeof(void))
 				{
 					builder.Append(" As ");
 					AppendType(builder, returnType);

@@ -1026,7 +1026,6 @@ public sealed class JSScanner
 	public int SkipMultiLineComment()
 			{
 				int ch;
-				bool gotEOL = false;
 				for(;;)
 				{
 					ch = Fetch();
@@ -1070,7 +1069,6 @@ public sealed class JSScanner
 						}
 						++line;
 						lineStart = posn;
-						gotEOL = true;
 					}
 				}
 			}

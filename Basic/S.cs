@@ -20,7 +20,7 @@
 
 namespace Microsoft.VisualBasic
 {
-
+using System;
 using System.Reflection;
 using System.Resources;
 

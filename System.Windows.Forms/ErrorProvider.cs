@@ -201,5 +201,5 @@ namespace System.Windows.Forms
  		}
 
 	}
-#endif /* CONFIG_COMPONENT_MODEL */
+#endif // CONFIG_COMPONENT_MODEL
 }//namespace

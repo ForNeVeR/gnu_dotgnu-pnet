@@ -36,12 +36,12 @@ public sealed class NumberConstructor : ScriptFunction
 	internal NumberConstructor(FunctionPrototype parent)
 		: base(parent, "Number", 1)
 	{
-		Put("MAX_VALUE", 1.7976931348623157e308,
+		Put("MAX_VALUE", Double.MaxValue,
 			PropertyAttributes.DontEnum|
 			PropertyAttributes.DontDelete|
 			PropertyAttributes.ReadOnly);
 		
-		Put("MIN_VALUE", -1.79769313486232e308,
+		Put("MIN_VALUE", Double.MinValue,
 			PropertyAttributes.DontEnum|
 			PropertyAttributes.DontDelete|
 			PropertyAttributes.ReadOnly);

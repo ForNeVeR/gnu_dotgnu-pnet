@@ -240,7 +240,7 @@ public sealed class SymbolicLinks
 	}; // enum ShortcutAttributes
 
 	// "Show window" values for a Windows shortcut file.
-	private enum ShowWindow
+	public enum ShowWindow
 	{
 		Hide			= 0,
 		Normal			= 1,

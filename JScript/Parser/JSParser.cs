@@ -215,7 +215,7 @@ public class JSParser
 			{
 				Context save = tokenInfo.MakeCopy();
 				JObjectLiteral literal = new JObjectLiteral(save);
-				Object name;
+				Object name = null;
 				JNode expr;
 				NextToken();		// Skip the '{'.
 				while(token != JSToken.RightCurly)
@@ -1246,8 +1246,9 @@ public class JSParser
 	private JNode CaseBlock()
 			{
 				JNode stmt = null;
-				JNode expr, caseStmt, body;
-				Context save;
+				JNode expr = null;
+				JNode caseStmt, body;
+				Context save = null;
 				JNode defCase = null;
 				JNode prev = null;
 				while(token != JSToken.RightCurly)
@@ -1813,7 +1814,7 @@ public class JSParser
 						}
 					}
 				}
-				catch(JSScanner.ScannerFailure e)
+				catch(JSScanner.ScannerFailure)
 				{
 					// The scanner detected an error in the input stream.
 					throw new JScriptException(JSError.SyntaxError,
@@ -1861,7 +1862,7 @@ public class JSParser
 					// We need to be at EOF now.
 					Expect(JSToken.EndOfFile, "end of file expected");
 				}
-				catch(JSScanner.ScannerFailure e)
+				catch(JSScanner.ScannerFailure)
 				{
 					// The scanner detected an error in the input stream.
 					throw new JScriptException(JSError.SyntaxError,

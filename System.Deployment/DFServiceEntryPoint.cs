@@ -24,7 +24,7 @@ namespace System.Deployment
 
 using System;
 
-public abstract sealed class DFServiceEntryPoint
+public abstract class DFServiceEntryPoint
 {
 	// Constructors.
 	private DFServiceEntryPoint() {}

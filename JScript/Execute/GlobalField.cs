@@ -30,7 +30,7 @@ internal sealed class GlobalField : JSVariableField
 	// Constructor.
 	public GlobalField(FieldAttributes attributes, String name,
 					   ScriptObject obj, Object value)
-			: this(attributes, name, obj, value)
+			: base(attributes, name, obj, value)
 			{
 				// Nothing to do here.
 			}

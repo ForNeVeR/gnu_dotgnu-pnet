@@ -123,11 +123,10 @@ public sealed class Strings
 			}
 
 	// Filter an array of strings on a condition.
-	[OptionCompare]
 	public static String[] Filter
 				(Object[] source, String Match,
 				 [Optional][DefaultValue(true)] bool Include,
-				 [Optional][DefaultValue(CompareMethod.Binary)]
+				 [Optional, OptionCompare][DefaultValue(CompareMethod.Binary)]
 				 		CompareMethod Compare)
 			{
 				if(source == null)
@@ -142,11 +141,10 @@ public sealed class Strings
 				}
 				return Filter(strSource, Match, Include, Compare);
 			}
-	[OptionCompare]
 	public static String[] Filter
 				(String[] source, String Match,
 				 [Optional][DefaultValue(true)] bool Include,
-				 [Optional][DefaultValue(CompareMethod.Binary)]
+				 [Optional, OptionCompare][DefaultValue(CompareMethod.Binary)]
 				 		CompareMethod Compare)
 			{
 				if(Match == null || Match.Length == 0)

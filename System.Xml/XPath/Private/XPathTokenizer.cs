@@ -88,22 +88,18 @@ namespace System.Xml.XPath.Private
 				{
 					return Token.OP_AND;
 				}
-				break;
 				case "or":
 				{
 					return Token.OP_OR;
 				}
-				break;
 				case "div":
 				{
 					return Token.OP_DIV;
 				}
-				break;
 				case "mod":
 				{
 					return Token.OP_MOD;
 				}
-				break;
 
 				/* xpath axes */
 				case "ancestor":
@@ -111,31 +107,26 @@ namespace System.Xml.XPath.Private
 					Value = XPathAxis.Ancestor;
 					return Token.AXISNAME;
 				}
-				break;
 				case "ancestor-or-self":
 				{
 					Value = XPathAxis.AncestorOrSelf;
 					return Token.AXISNAME;
 				}
-				break;
 				case "attribute":
 				{
 					Value = XPathAxis.Attribute;
 					return Token.AXISNAME;
 				}
-				break;
 				case "child":
 				{
 					Value = XPathAxis.Child;
 					return Token.AXISNAME;
 				}
-				break;
 				case "descendant":
 				{
 					Value = XPathAxis.Descendant;
 					return Token.AXISNAME;
 				}
-				break;
 				case "descendant-or-self":
 				{
 					Value = XPathAxis.DescendantOrSelf;
@@ -147,43 +138,36 @@ namespace System.Xml.XPath.Private
 					Value = XPathAxis.Following;
 					return Token.AXISNAME;
 				}
-				break;
 				case "following-sibling":
 				{
 					Value = XPathAxis.FollowingSibling;
 					return Token.AXISNAME;
 				}
-				break;
 				case "namespace":
 				{
 					Value = XPathAxis.Namespace;
 					return Token.AXISNAME;
 				}
-				break;
 				case "parent":
 				{
 					Value = XPathAxis.Parent;
 					return Token.AXISNAME;
 				}
-				break;
 				case "preceding":
 				{
 					Value = XPathAxis.Preceding;
 					return Token.AXISNAME;
 				}
-				break;
 				case "preceding-sibling":
 				{
 					Value = XPathAxis.PrecedingSibling;
 					return Token.AXISNAME;
 				}
-				break;
 				case "self":
 				{
 					Value = XPathAxis.Self;
 					return Token.AXISNAME;
 				}
-				break;
 				
 				/* node types */
 				case "comment":
@@ -191,25 +175,21 @@ namespace System.Xml.XPath.Private
 					Value = XPathNodeType.Comment;
 					return Token.NODETYPE;
 				}
-				break;
 				case "text":
 				{
 					Value = XPathNodeType.Text;
 					return Token.NODETYPE;
 				}
-				break;
 				case "processing-instruction":
 				{
 					Value = XPathNodeType.ProcessingInstruction;
 					return Token.NODETYPE;
 				}
-				break;
 				case "node":
 				{
 					Value = XPathNodeType.All;
 					return Token.NODETYPE;
 				}
-				break;
 
 				/* function names */
 
@@ -244,7 +224,6 @@ namespace System.Xml.XPath.Private
 					Value = text;
 					return Token.FUNCTIONNAME;
 				}
-				break;
 
 			}
 
@@ -301,7 +280,6 @@ namespace System.Xml.XPath.Private
 				{
 					return Token.EOF;
 				}
-				break;
 				case '(':
 				case '[':
 				case '@':
@@ -312,14 +290,12 @@ namespace System.Xml.XPath.Private
 					inOperator = true;
 					goto case ')'; // too bad we don't have fall throughs
 				}
-				break;
 				case ')':
 				case ']':
 				{
 					Assert(Read() == ch);
 					return (int)ch;
 				}
-				break;
 
 				case '.':
 				{
@@ -335,7 +311,6 @@ namespace System.Xml.XPath.Private
 					}
 					return (int)'.';
 				}
-				break;
 
 				/* [29] Literal */
 				case '"':
@@ -352,7 +327,6 @@ namespace System.Xml.XPath.Private
 					Value = sb.ToString();
 					return Token.LITERAL;
 				}
-				break;
 
 				case '+':
 				{
@@ -360,7 +334,6 @@ namespace System.Xml.XPath.Private
 					Assert(Read() == ch);
 					return Token.OP_PLUS;
 				}
-				break;
 
 				case '-':
 				{
@@ -368,7 +341,6 @@ namespace System.Xml.XPath.Private
 					Assert(Read() == ch);
 					return Token.OP_MINUS;
 				}
-				break;
 				
 				case '=':
 				{
@@ -376,7 +348,6 @@ namespace System.Xml.XPath.Private
 					inOperator = true;
 					return Token.OP_EQ;
 				}
-				break;
 
 				case '!':
 				{
@@ -389,7 +360,6 @@ namespace System.Xml.XPath.Private
 					}
 					return Token.ERROR;
 				}
-				break;
 
 				case '<':
 				case '>':
@@ -419,7 +389,6 @@ namespace System.Xml.XPath.Private
 					}
 					return (int)ch;
 				}
-				break;
 
 				case '*':
 				{
@@ -432,7 +401,6 @@ namespace System.Xml.XPath.Private
 					Value = new XmlQualifiedName();
 					return Token.WILDCARD;
 				}
-				break;
 
 				default:
 				{
@@ -569,7 +537,7 @@ namespace System.Xml.XPath.Private
 			}
 		}
 
-		public int Token
+		public int CurrentToken
 		{
 			get
 			{
@@ -598,7 +566,7 @@ namespace System.Xml.XPath.Private
 
 		public int token()
 		{
-			return Token;
+			return CurrentToken;
 		}
 
 	}

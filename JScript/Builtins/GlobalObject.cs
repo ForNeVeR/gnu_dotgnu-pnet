@@ -356,7 +356,7 @@ public class GlobalObject
 			{
 				get
 				{
-					return typeof(Void);
+					return typeof(void);
 				}
 			}
 

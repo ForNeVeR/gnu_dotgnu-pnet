@@ -667,7 +667,7 @@ public sealed class Convert
 			}
 
 	// Convert an object into a primitive value.
-	public static Object ToPrimitive(Object value, DefaultValueHint hint)
+	internal static Object ToPrimitive(Object value, DefaultValueHint hint)
 			{
 				if(value is ScriptObject)
 				{

@@ -98,9 +98,10 @@ public class NumberPrototype : NumberObject
 		JSBuiltin.Number_valueOf)]
 	public static Object valueOf(Object thisob)
 	{
-		if(thisob is NumberObject)
+		NumberObject numbob = thisob as NumberObject;
+		if(numbob != null)
 		{
-			return ((NumberObject)thisob).value;
+			return numbob.value;
 		}
 		
 		switch(Type.GetTypeCode(thisob.GetType()))

@@ -57,10 +57,7 @@ public sealed class JSRun
 	public static int Main(String[] args)
 			{
 #if CONFIG_EXTENDED_NUMERICS && CONFIG_REFLECTION
-				StreamReader reader;
-				StringBuilder builder;
-				String script;
-				char[] buffer;
+				StreamReader reader = null;
 				int len;
 				VsaEngine engine;
 				IVsaCodeItem item;
@@ -88,12 +85,10 @@ public sealed class JSRun
 					case "--help":
 						Usage();
 						return 0;
-						break;
 					case "-v":
 					case "--version":
 						Version();
 						return 0;
-						break;
 					default:
 						// matches both short and long options. (-/--)
 						if (arg.StartsWith("-"))
@@ -151,18 +146,18 @@ public sealed class JSRun
 							}
 
 							// Load the script into memory as a string.
-							StringBuilder builder = new StringBuilder();
-							char[] buffer = new char [512];
-							while((len = reader.Read(buffer, 0, 512)) > 0)
+							StringBuilder scriptBuilder = new StringBuilder();
+							char[] scriptBuffer = new char [512];
+							while((len = reader.Read(scriptBuffer, 0, 512)) > 0)
 							{
-								builder.Append(buffer, 0, len);
+								scriptBuilder.Append(scriptBuffer, 0, len);
 							}
 							reader.Close();
 
 							item = (IVsaCodeItem)(engine.Items.CreateItem
 									(String.Concat("script",engine.Items.Count+1),
 									VsaItemType.Code, VsaItemFlag.None));
-							item.SourceText = builder.ToString();
+							item.SourceText = scriptBuilder.ToString();
 							item.SetOption("codebase", arg);
 						}
 						break;

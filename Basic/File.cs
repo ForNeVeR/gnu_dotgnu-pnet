@@ -223,7 +223,7 @@ internal sealed class File
 			}
 
 	// File table for an assembly.
-	private sealed class FileTable
+	internal sealed class FileTable
 	{
 		public Assembly assembly;
 		public File[] table;

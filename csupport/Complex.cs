@@ -25,7 +25,7 @@ namespace OpenSystem.C
 using System;
 using System.Runtime.InteropServices;
 
-[StructLayout(LayoutKind.Explicit)]
+[StructLayout(LayoutKind.Explicit, Size=8, Pack=4)]
 [CName("float _Complex")]
 public struct FloatComplex
 {
@@ -97,7 +97,7 @@ public struct FloatComplex
 
 } // struct FloatComplex
 
-[StructLayout(LayoutKind.Explicit)]
+[StructLayout(LayoutKind.Explicit, Size=4, Pack=4)]
 [CName("float _Imaginary")]
 public struct FloatImaginary
 {
@@ -115,7 +115,7 @@ public struct FloatImaginary
 
 } // struct FloatImaginary
 
-[StructLayout(LayoutKind.Explicit)]
+[StructLayout(LayoutKind.Explicit, Size=16, Pack=8)]
 [CName("double _Complex")]
 public struct DoubleComplex
 {
@@ -195,7 +195,7 @@ public struct DoubleComplex
 
 } // struct DoubleComplex
 
-[StructLayout(LayoutKind.Explicit)]
+[StructLayout(LayoutKind.Explicit, Size=8, Pack=8)]
 [CName("double _Imaginary")]
 public struct DoubleImaginary
 {

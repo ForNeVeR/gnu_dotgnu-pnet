@@ -185,6 +185,7 @@ static void DumpClassNameSP(FILE *stream, ILClass *classInfo)
 			if(*namespace != '.')
 			{
 				putc(*namespace, stream);
+				namespace++;
 			}
 			else
 			{

@@ -18,6 +18,8 @@ image/test_macros.c, image/writer.c, include/il_image.h,
 include/il_meta.h, include/il_opcodes.h, include/il_program.h,
 include/il_writer.h: remove obsolete code related to Beta 1 support.
 
+* doc/metadata.html: remove obsolete documentation file.
+
 2001-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: add support for .jar files to the loader.

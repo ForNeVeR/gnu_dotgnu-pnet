@@ -408,9 +408,12 @@ public sealed class TypeDescriptor
 					{
 						Type converterType =
 							Type.GetType(attr.ConverterTypeName);
-						element.converter = (TypeConverter)
-							Activator.CreateInstance(converterType);
-						return element.converter;
+						if(converterType != null)
+						{
+							element.converter = (TypeConverter)
+								Activator.CreateInstance(converterType);
+							return element.converter;
+						}
 					}
 					element.converter = GetBuiltinConverter(type);
 					return element.converter;

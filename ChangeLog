@@ -1,3 +1,9 @@
+
+2003-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/ComponentModel/TypeDescriptor.cs: fix a bug in
+	"GetConverter" related to handling "TypeConverter.Default".
+
 2003-11-16  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/PointConverter.cs,

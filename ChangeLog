@@ -7,6 +7,8 @@
 	* copy-mcs.sh: add a helper script for copying the mcs sources
 	into a release tarball.
 
+	* NEWS, configure.in: update version for the "0.5.8" release.
+
 2003-06-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* class/ByteFX.Data/ByteFX.Data.build,

@@ -349,6 +349,7 @@ ILNode_GenValue(ILNode_BinaryArith)
 	ILMachineType type1;
 	ILMachineType type2;
 	ILMachineType commonType;
+	ILNode *reducedNode = NULL;
 
 	/* Get the types of the sub-expressions */
 	type1 = ILNode_GetType(node->expr1, info);
@@ -357,9 +358,12 @@ ILNode_GenValue(ILNode_BinaryArith)
 	/* Determine the common type */
 	commonType = ILCommonType(info, type1, type2, 0);
 
-	if(ReduceOperator(info,(ILNode*)node,(ILNode**)(&node),commonType))
+	if(ReduceOperator(info,(ILNode*)node,(ILNode**)(&reducedNode),commonType))
 	{
-		return ILNode_GenValue(node,info);
+		if(reducedNode != NULL)
+		{
+			return ILNode_GenValue(reducedNode,info);
+		}
 	}
 
 	/* Evaluate the sub-expressions and cast to the common type */

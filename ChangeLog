@@ -4,6 +4,9 @@
 	* engine/lib_emit.c: Allow NULL parameters for ClrParameter names
 	for unnamed parameters (bug #9921).
 
+	* codegen/cg_arith.tc: Work around GCC inline optimisation issues in 
+	PPC64 by checking for out parameter instead of result from function.
+
 2004-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.8" release.

@@ -11,6 +11,9 @@
 	defer anchoring information gathering during layout suspension until
 	layout resumption.
 
+	* System.Windows.Forms/Control.cs: fix backwards z-ordering of child
+	controls (bug #10657).
+
 2004-10-26  Carl-Adam Brengesjo <ca.brengesjo@telia.com>
 
 	* JScript/Execute/ActivationObject.cs, JScript/Execute/BlockScope.cs,

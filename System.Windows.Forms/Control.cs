@@ -784,13 +784,13 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					if (toolkitWindow != null && toolkitWindow.Focused)
+					if(toolkitWindow != null && toolkitWindow.Focused)
 					{
 						return true;
 					}
-					for (int i = 0; i < numChildren; i++)
+					for(int i = (numChildren - 1); i >= 0; --i)
 					{
-						if (children[i].ContainsFocus)
+						if(children[i].ContainsFocus)
 						{
 							return true;
 						}
@@ -1972,8 +1972,7 @@ public class Control : IWin32Window, IDisposable
 				CreateHandle();
 
 				// Create the child controls.
-				int posn;
-				for(posn = 0; posn < numChildren; ++posn)
+				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
 					Control child = children[posn];
 					// We only need to create a control if its visible.
@@ -2455,9 +2454,9 @@ public class Control : IWin32Window, IDisposable
 
 	private void InvalidateInternal(Region region, bool invalidateChildren)
 			{
-				if (invalidateChildren)
+				if(invalidateChildren)
 				{
-					for(int i = 0; i < numChildren; i++)
+					for(int i = (numChildren - 1); i >= 0; --i)
 					{
 						Control child = children[i];
 						if (child.visible)
@@ -2471,7 +2470,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// Exclude the children from the invalidate
-				for(int i = 0; i < numChildren; i++)
+				for(int i = (numChildren - 1); i >= 0; --i)
 				{
 					Control child = children[i];
 					if (child.visible)
@@ -2486,13 +2485,13 @@ public class Control : IWin32Window, IDisposable
 				// The rectangle relative to the toolkit that is the bounds for this control.
 				Rectangle parentInvalidateBounds = new Rectangle(xOrigin, yOrigin, ClientSize.Width, ClientSize.Height);
 				RectangleF[] rs = region.GetRegionScans(new Drawing.Drawing2D.Matrix());
-				for (int i = 0; i < rs.Length; i++)
+				for(int i = 0; i < rs.Length; i++)
 				{
 					Rectangle b = Rectangle.Truncate(rs[i]);
 					// Get in local coordinates.
 					b.Offset(xOrigin, yOrigin);
 					b.Intersect(parentInvalidateBounds);
-					if (!b.IsEmpty)
+					if(!b.IsEmpty)
 					{
 						if(toolkitWindow == null)
 						{
@@ -3192,10 +3191,12 @@ public class Control : IWin32Window, IDisposable
 					newHeight = (int) (dy *  (top + height) + 0.5) - newTop;
 				SetBoundsCore(newLeft, newTop, newWidth, newHeight, BoundsSpecified.All);
 				// Scale the children.
-				if (children != null)
+				if(children != null)
 				{
-					for (int i = 0; i < numChildren; i++)
+					for(int i = (numChildren - 1); i >= 0; --i)
+					{
 						children[i].Scale(dx, dy);
+					}
 				}
 				layoutSuspended--;
 
@@ -3414,14 +3415,14 @@ public class Control : IWin32Window, IDisposable
 	// Update the invalidated regions in this control.
 	public void Update()
 			{
-				if (toolkitWindow == null || !visible)
+				if(toolkitWindow == null || !visible)
 				{
 					return;
 				}
-				for(int i = 0; i < numChildren; i++)
+				for(int i = (numChildren - 1); i >= 0; --i)
 				{
 					Control child = children[i];
-					if (child.visible)
+					if(child.visible)
 					{
 						child.Update();
 					}
@@ -4327,8 +4328,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// Pass the change notification to the children.
-				int posn;
-				for(posn = 0; posn < numChildren; ++posn)
+				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
 					children[posn].OnParentBackColorChanged(e);
 				}
@@ -4354,8 +4354,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// Pass the change notification to the children.
-				int posn;
-				for(posn = 0; posn < numChildren; ++posn)
+				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
 					children[posn].OnParentBackgroundImageChanged(e);
 				}
@@ -4375,8 +4374,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// Pass the change notification to the children.
-				int posn;
-				for(posn = 0; posn < numChildren; ++posn)
+				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
 					children[posn].OnParentBindingContextChanged(e);
 				}
@@ -4569,8 +4567,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// Pass the change notification to the children.
-				int posn;
-				for(posn = 0; posn < numChildren; ++posn)
+				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
 					children[posn].OnParentEnabledChanged(e);
 				}
@@ -4621,8 +4618,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// Pass the change notification to the children.
-				int posn;
-				for(posn = 0; posn < numChildren; ++posn)
+				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
 					children[posn].OnParentForeColorChanged(e);
 				}
@@ -5127,8 +5123,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// Pass the change notification to the children.
-				int posn;
-				for(posn = 0; posn < numChildren; ++posn)
+				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
 					children[posn].OnParentRightToLeftChanged(e);
 				}
@@ -5270,8 +5265,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// Pass the change notification to the children.
-				int posn;
-				for(posn = 0; posn < numChildren; ++posn)
+				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
 					children[posn].OnParentVisibleChanged(e);
 				}
@@ -5281,7 +5275,7 @@ public class Control : IWin32Window, IDisposable
 	private void ForceLayout()
 			{
 				PerformLayout();
-				for(int posn = 0; posn < numChildren; posn++)
+				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
 					children[posn].ForceLayout();
 				}

@@ -227,7 +227,7 @@ static int ComputeInterfaceTable(ILClass *info, ILClass *interface)
 	size = ((ILClassPrivate *)(interface->userData))->vtableSize;
 	impl = (ILImplPrivate *)ILMemStackAllocItem
 					(&(info->programItem.image->memStack),
-				     sizeof(ILImplPrivate *) + size * sizeof(ILUInt16));
+				     sizeof(ILImplPrivate) + size * sizeof(ILUInt16));
 	if(!impl)
 	{
 		return 0;

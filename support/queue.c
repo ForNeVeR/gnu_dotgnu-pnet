@@ -31,6 +31,12 @@
 extern	"C" {
 #endif
 
+struct _tagILQueueEntry
+{
+	void *data;
+	struct _tagILQueueEntry *nextNode;
+};
+
 ILQueueEntry *ILQueueCreate(void)
 {
 	return NULL; /* could have saved a func -- Gopal */

@@ -6,6 +6,13 @@
 	a && b from blocking threads waiting inside WaitOne for handle
 	a || b.
 	
+	* include/il_utils.h, support/queue.c: Moved definition of
+	Queue structure to a private structure of queue.c
+	
+	* include/il_utils.h, support/list.c: Added support for general
+	purpose lists and two implementations (SinglelyLinkedList
+	& ArrayList).
+	
 2004-06-13  Thong Nguyen  <tum@veridicus.com>
 
 	* support/thread.c: Added supporting for threads that need to

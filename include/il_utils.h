@@ -25,6 +25,10 @@
 extern	"C" {
 #endif
 
+#ifdef HAVE_STDLIB_H
+#include "stdlib.h"
+#endif
+
 /*
  * Structure of an intern'ed string.
  */
@@ -511,12 +515,8 @@ unsigned ILGetCultureID(void);
 /* Get the culture name of this system (NULL if unknown) */
 char *ILGetCultureName(void);
 
-/* an implementation of a linked list queue */
-typedef struct _tagILQueueEntry
-{
-	void *data;
-	struct _tagILQueueEntry *nextNode;
-}ILQueueEntry;
+/* An implementation of a linked list queue */
+typedef struct _tagILQueueEntry ILQueueEntry;
 
 /* Create a queue with 0 elements */
 ILQueueEntry *ILQueueCreate(void);
@@ -529,6 +529,65 @@ int ILQueueAdd(ILQueueEntry **listRoot, void *newData);
 
 /* Remove entry and Free entry , but not data . return NULL on fail */
 void *ILQueueRemove(ILQueueEntry **listRoot);
+
+/*
+ * Typedefs for ILList
+ */
+
+typedef struct _tagILList ILList;
+
+typedef int (*ILListWalkCallback)(ILList *list, void **data, void *state);
+
+typedef int (*ILListAppendFunc)(ILList *list, void *data);
+typedef void (*ILListDestroyFunc)(ILList *list);
+typedef void *(*ILListGetAtFunc)(ILList *list, int index);
+typedef int (*ILListWalkFunc)(ILList *list, ILListWalkCallback walkCallback, void *state);
+typedef int (*ILListRemoveAtFunc)(ILList *list, int index);
+typedef int (*ILListRemoveFunc)(ILList *list, void *data);
+typedef void **(*ILListFindFunc)(ILList *list, void *data);
+
+struct _tagILList
+{
+	int count;
+	ILListDestroyFunc	destroyFunc;
+	ILListGetAtFunc		getAtFunc;
+	ILListAppendFunc	appendFunc;
+	ILListFindFunc		findFunc;
+	ILListFindFunc		reverseFindFunc;
+	ILListRemoveFunc	removeFunc;
+	ILListRemoveAtFunc	removeAtFunc;
+	ILListWalkFunc		walkFunc;
+};
+
+/* Creates a singlely linked list */
+ILList *ILSinglelyLinkedListCreate();
+
+/* Creates an array list */
+ILList *ILArrayListCreate(int capacity);
+
+#define ILListGetAt(list, index) \
+	list->getAtFunc(list, index)
+
+#define ILListGetCount(list, index) \
+	list->count
+
+#define ILListDestroy(list) \
+	list->destroyFunc(list)
+
+#define ILListAppend(list, data) \
+	list->appendFunc(list, data)
+
+#define ILListFind(list, data) \
+	list->findFunc(list, data)
+
+#define ILListReverseFind(list, data) \
+	list->reverseFindFunc(list, data)
+
+#define ILListRemove(list, data) \
+	list->removeFunc(list, data);
+
+#define ILListWalk(list, _operatorFunc, state) \
+	list->walkFunc(list, _operatorFunc, state)
 
 #ifdef	__cplusplus
 };

@@ -45,6 +45,8 @@ engine/cvm_ptr.c: new instructions "cctor_once", "maddr", "squash",
 * image/program.h: define "IL_META_TYPEDEF_CCTOR_ONCE" as a reversed
 flag on "ILClass" records.
 
+* engine/cvmc_obj.c: implement load and store operations for fields.
+
 2001-10-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/internal.c, engine/lib_stdio.c, engine/Makefile.am: add

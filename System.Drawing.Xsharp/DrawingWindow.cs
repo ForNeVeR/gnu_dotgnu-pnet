@@ -32,6 +32,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	// Internal state.
 	private IToolkit toolkit;
 	private IToolkitEventSink sink;
+	private ButtonName button;
 
 	// Constructor.
 	public DrawingWindow(IToolkit toolkit, Widget parent,
@@ -89,6 +90,12 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				{
 					return Focused;
 				}
+			}
+
+	// Set the focus to this window.
+	void IToolkitWindow.Focus()
+			{
+				RequestFocus();
 			}
 
 	// Destroy this window and all of its children.
@@ -197,7 +204,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 			{
 				DrawingToolkit.ValidateWindowPosition(ref x, ref y);
 				DrawingToolkit.ValidateWindowSize(ref width, ref height);
-				Repaint();
+				Repaint(x, y, width, height);
 			}
 
 	// Force an update of all invalidated regions.
@@ -250,6 +257,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 						 MapKey(KeyName.XK_VoidSymbol, modifiers),
 						 1, x, y, 0);
 				}
+				this.button = button;
 			}
 
 	// Override the button release event from Xsharp.
@@ -263,6 +271,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 						 MapKey(KeyName.XK_VoidSymbol, modifiers),
 						 1, x, y, 0);
 				}
+				this.button = 0;
 			}
 
 	// Override the button double click event from Xsharp.
@@ -285,7 +294,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				if(sink != null)
 				{
 					sink.ToolkitMouseMove
-						(ToolkitMouseButtons.None,
+						(MapButton(button),
 						 MapKey(KeyName.XK_VoidSymbol, modifiers),
 						 0, x, y, 0);
 				}

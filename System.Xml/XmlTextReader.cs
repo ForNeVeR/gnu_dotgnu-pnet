@@ -993,6 +993,7 @@ public class XmlTextReader : XmlReader
 						AnalyzeChar(ch, true);
 						// set back to Element node type
 						// for proper implementation behavior
+						attributeIndex = -1;	
 						nodeType = XmlNodeType.Element;
 						SetName(tempName);
 						value = String.Empty;
@@ -1013,6 +1014,7 @@ public class XmlTextReader : XmlReader
 						AnalyzeChar(ch, true);
 						// set back to Element node type
 						// for proper implementation behavior
+						attributeIndex = -1;
 						nodeType = XmlNodeType.Element;
 						SetName(tempName);
 						value = String.Empty;

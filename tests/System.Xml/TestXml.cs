@@ -41,6 +41,10 @@ public class TestXml
 				suite.AddTests(typeof(TestXmlTextWriter));
 				fullSuite.AddTest(suite);
 
+				suite = new TestSuite("Reader Tests");
+				suite.AddTests(typeof(TestXmlTextReader));
+				fullSuite.AddTest(suite);
+
 			#if !ECMA_COMPAT
 				suite = new TestSuite("Node Tests");
 				suite.AddTests(typeof(TestXmlAttribute));

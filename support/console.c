@@ -1203,9 +1203,10 @@ void ILConsoleWriteChar(ILInt32 ch)
 			/* Backspace and erase one character */
 			if(screenX > 0)
 			{
-				putc(0x08, stdout);
-				putc(0x20, stdout);
-				putc(0x08, stdout);
+				if(!OutputStringCap("bc"))
+				{
+					putc(0x08, stdout);
+				}
 				--screenX;
 			}
 			else if(screenY > 0)
@@ -1215,15 +1216,14 @@ void ILConsoleWriteChar(ILInt32 ch)
 				if(tgetflag("bw"))
 				{
 					/* The terminal will wrap to the previous line for us */
-					putc(0x08, stdout);
-					putc(0x20, stdout);
-					putc(0x08, stdout);
+					if(!OutputStringCap("bc"))
+					{
+						putc(0x08, stdout);
+					}
 				}
 				else
 				{
 					/* Simulate a wrap back to the previous line */
-					ILConsoleSetPosition(screenX, screenY);
-					putc(0x20, stdout);
 					ILConsoleSetPosition(screenX, screenY);
 				}
 			}

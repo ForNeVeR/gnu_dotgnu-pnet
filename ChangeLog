@@ -18,6 +18,9 @@
 	* engine/verify_call.c (MatchSignature): recognize method pointers
 	as valid type-I values in signature verification (Gopal V).
 
+	* support/console.c (ILConsoleWriteChar): the backspace character
+	'\u0008' should not erase by default when output.
+
 2003-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/console.c: add extra keycodes to the function/arrow key

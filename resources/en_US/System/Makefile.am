@@ -2,7 +2,10 @@ SUFFIXES = .txt .resources
 
 RESOURCENAME = System.resources
 
-RESOURCEFILES = Exception.txt
+RESOURCEFILES = Arg.txt \
+				Exception.txt \
+				Invalid.txt \
+				IO.txt
 
 noinst_DATA = $(RESOURCENAME)
 

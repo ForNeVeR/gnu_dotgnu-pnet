@@ -1,4 +1,8 @@
 
+2003-01-10  Jeff Post  <j_post@pacbell.net>
+
+	* System/ComponentModel/EnumConverter.cs: clean-up of ConvertFrom
+
 2003-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/IReflect.cs: bug in the signature for

@@ -60,21 +60,17 @@ namespace System.ComponentModel
 			if (val == null)
 				return base.ConvertFrom(context, culture, value);
 			string[] values = val.Split(new char[] {','});
-			int j;
-			IList vals = (IList) Enum.GetValues(this.type);
+			object temp;
 
 			foreach (string s in values)
 			{
-				for (j=0; j<vals.Count; j++)
-				{
-					if (s == vals[j].ToString())
-						return Enum.ToObject(type, j);
-				}
+				temp = Enum.Parse(type, s, true);
+				if (temp != null)
+					return temp;
 			}
-			return Enum.ToObject(type, -1);  // not a valid enum string, throw an exception? which one?
+			return null;
 		}
-		
-		
+
 		public override Object ConvertTo(ITypeDescriptorContext context, 
 				CultureInfo culture, Object value, Type destinationType)
 		{

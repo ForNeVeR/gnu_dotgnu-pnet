@@ -208,8 +208,12 @@ static void WriteBackPatchBytes(ILWriter *writer, unsigned long posn,
 			if(fread(writer->backpatchBuf, 1, (unsigned)(writer->backpatchLen),
 					 writer->stream) != (unsigned)(writer->backpatchLen))
 			{
-				writer->writeFailed = 1;
-				return;
+				/* The stream may not have been opened in a read-write mode,
+				   so fall back to the simple "seek and write" method */
+				writer->currSeek = ~((unsigned long)0);
+				ILFree(writer->backpatchBuf);
+				writer->backpatchBuf = 0;
+				goto fallback;
 			}
 			writer->currSeek = writer->backpatchSeek + writer->backpatchLen;
 
@@ -221,6 +225,7 @@ static void WriteBackPatchBytes(ILWriter *writer, unsigned long posn,
 		}
 
 		/* Seek back in the file and write the change */
+	fallback:
 		if(posn != writer->currSeek)
 		{
 			if(fseek(writer->stream, posn, 0) < 0)

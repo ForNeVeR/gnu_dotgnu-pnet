@@ -1,1 +1,1 @@
-SUBDIRS = resources runtime csunit tests
+SUBDIRS = tools resources runtime csunit tests

@@ -10,6 +10,7 @@ AC_SUBST(CSCC_COMPILE)
 AC_SUBST(CSCC_EXE_LIBS)
 AC_SUBST(RESGEN)
 AC_SUBST(RESGEN_FLAGS)
+AC_SUBST(ILRUN)
 
 dnl Checks for programs.
 AC_PROG_AWK
@@ -110,8 +111,19 @@ case "$RESGEN_ERROR" in
 esac
 AM_CONDITIONAL(PNET_RESGEN, test "$RESGEN_FLAGS" != "")
 
+dnl Find the Portable.NET runtime engine.
+AC_PATH_PROG(ILRUN, ilrun,, $PNET_PATH/engine:$PATH)
+if test "$ILRUN" = "" ; then
+	echo '**************************************************************'
+	echo "Portable.NET is required to run the test suite."
+	echo "Use the --with-pnet option to specify Portable.NET's location."
+	echo '**************************************************************'
+	exit 1
+fi
+
 AC_OUTPUT([
 Makefile
+tools/Makefile
 runtime/Makefile
 runtime/System/Makefile
 resources/Makefile
@@ -120,4 +132,5 @@ resources/en_US/runtime/Makefile
 csunit/Makefile
 tests/Makefile
 tests/System/Makefile
-csunit/TestVersion.cs])
+csunit/TestVersion.cs
+tools/run_test.sh])

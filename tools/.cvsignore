@@ -1,0 +1,4 @@
+Makefile
+Makefile.in
+.deps
+run_test.sh

@@ -119,10 +119,11 @@ extern	"C" {
  */
 #define	FILEPROC_TYPE_BINARY		0	/* Binary for linking */
 #define	FILEPROC_TYPE_IL			1	/* Process with the assembler */
-#define	FILEPROC_TYPE_SINGLE		2	/* Process with single-file plugin */
-#define	FILEPROC_TYPE_MULTIPLE		3	/* Process with multiple-file plugin */
-#define	FILEPROC_TYPE_DONE			4	/* Already processed */
-#define	FILEPROC_TYPE_UNKNOWN		5	/* Unknown format: can't process */
+#define	FILEPROC_TYPE_JL			2	/* Process with the assembler (JVM) */
+#define	FILEPROC_TYPE_SINGLE		3	/* Process with single-file plugin */
+#define	FILEPROC_TYPE_MULTIPLE		4	/* Process with multiple-file plugin */
+#define	FILEPROC_TYPE_DONE			5	/* Already processed */
+#define	FILEPROC_TYPE_UNKNOWN		6	/* Unknown format: can't process */
 
 /*
  * Global variables.
@@ -139,7 +140,7 @@ static void ParseCommandLine(int argc, char *argv[]);
 static char *FindLanguagePlugin(char *name, char *ext);
 static int CompareExtensions(const char *ext1, const char *ext2);
 static int IsSinglePlugin(const char *filename);
-static int ProcessWithAssembler(const char *filename);
+static int ProcessWithAssembler(const char *filename, int jvmMode);
 static int ProcessWithPlugin(const char *filename, char *plugin,
 							 int filenum, int isMultiple);
 
@@ -211,6 +212,12 @@ int main(int argc, char *argv[])
 					language = "il";
 					extension = 0;
 				}
+				else if(CompareExtensions(filename + len, "jl"))
+				{
+					/* This is an assembly file with JVM bytecode */
+					language = "jl";
+					extension = 0;
+				}
 				else if(CompareExtensions(filename + len, "cs"))
 				{
 					/* This is a C# source file */
@@ -243,6 +250,11 @@ int main(int argc, char *argv[])
 		{
 			/* Assemble this input file using "ilasm" */
 			file_proc_types[filenum] = FILEPROC_TYPE_IL;
+		}
+		else if(!strcmp(language, "jl"))
+		{
+			/* Assemble this input file using "ilasm" in JVM mode */
+			file_proc_types[filenum] = FILEPROC_TYPE_JL;
 		}
 		else if((plugin = FindLanguagePlugin(language, extension)) != 0)
 		{
@@ -285,7 +297,18 @@ int main(int argc, char *argv[])
 			case FILEPROC_TYPE_IL:
 			{
 				/* Assemble this input file using "ilasm" */
-				newstatus = ProcessWithAssembler(filename);
+				newstatus = ProcessWithAssembler(filename, 0);
+				if(newstatus && !status)
+				{
+					status = newstatus;
+				}
+			}
+			break;
+
+			case FILEPROC_TYPE_JL:
+			{
+				/* Assemble this input file using "ilasm" in JVM mode */
+				newstatus = ProcessWithAssembler(filename, 1);
 				if(newstatus && !status)
 				{
 					status = newstatus;
@@ -435,8 +458,15 @@ static void ParseCommandLine(int argc, char *argv[])
 		}
 		else if(assemble_flag)
 		{
-			/* Use the name of the source file with a ".il" extension */
-			output_filename = ChangeExtension(input_files[0], "il");
+			/* Use the source file name with a ".il" or ".jl" extension */
+			if(!CSStringListContains(machine_flags, num_machine_flags, "jvm"))
+			{
+				output_filename = ChangeExtension(input_files[0], "il");
+			}
+			else
+			{
+				output_filename = ChangeExtension(input_files[0], "jl");
+			}
 		}
 		else if(!preprocess_flag)
 		{
@@ -460,6 +490,10 @@ static void ParseCommandLine(int argc, char *argv[])
 		if(prog_language == PROG_LANG_IL)
 		{
 			prog_language_name = "il";
+		}
+		else if(prog_language == PROG_LANG_JL)
+		{
+			prog_language_name = "jl";
 		}
 		else
 		{
@@ -831,7 +865,7 @@ static int IsSinglePlugin(const char *filename)
 /*
  * Process an input file using the assembler.
  */
-static int ProcessWithAssembler(const char *filename)
+static int ProcessWithAssembler(const char *filename, int jvmMode)
 {
 	FindILAsmProgram();
 	return 0;
@@ -1036,7 +1070,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	}
 	for(posn = 0; posn < num_machine_flags; ++posn)
 	{
-		AddArgument(&cmdline, &cmdline_size, "-f");
+		AddArgument(&cmdline, &cmdline_size, "-m");
 		AddArgument(&cmdline, &cmdline_size, machine_flags[posn]);
 	}
 	if(verbose_mode == VERBOSE_FILENAMES)
@@ -1054,12 +1088,23 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 			AddArgument(&cmdline, &cmdline_size, output_filename);
 			asm_output = output_filename;
 		}
+		else if(CSStringListContains(machine_flags, num_machine_flags, "jvm"))
+		{
+			/* Create a JL assembly output name based on the input */
+			asm_output = ChangeExtension((char *)filename, "jl");
+			AddArgument(&cmdline, &cmdline_size, asm_output);
+		}
 		else
 		{
-			/* Create an assembly output name based on the input */
+			/* Create an IL assembly output name based on the input */
 			asm_output = ChangeExtension((char *)filename, "il");
 			AddArgument(&cmdline, &cmdline_size, asm_output);
 		}
+	}
+	else if(CSStringListContains(machine_flags, num_machine_flags, "jvm"))
+	{
+		asm_output = ChangeExtension((char *)filename, "jltmp");
+		AddArgument(&cmdline, &cmdline_size, asm_output);
 	}
 	else
 	{
@@ -1134,6 +1179,10 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 							"no-short-insns"))
 	{
 		AddArgument(&cmdline, &cmdline_size, "-l");
+	}
+	if(CSStringListContains(machine_flags, num_machine_flags, "jvm"))
+	{
+		AddArgument(&cmdline, &cmdline_size, "-J");
 	}
 	AddArgument(&cmdline, &cmdline_size, asm_output);
 	AddArgument(&cmdline, &cmdline_size, 0);

@@ -28,6 +28,8 @@ default "checked" state to "off".
 
 * cscc/cs_options.h, cscc/cs_options.c: new language type for "JL".
 
+* cscc/cscc.c: JL support; pass "-m" options to plugins as "-m", not "-f".
+
 2001-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions

@@ -18,6 +18,10 @@ operations on pointers.
 csdoc/doc_tree.h: keep track of the assembly name for a type when the
 XML file is loaded; report the assembly name in generated documentation.
 
+* csdoc/doc_valil.c, csdoc/Makefile.am: begin writing "csdocvalil", which
+can be used to validate IL binaries such as "mscorlib.dll" against the
+ECMA-supplied XML documentation file.
+
 2001-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * support/filemap.c: modify the #ifdef's according to suggestions from

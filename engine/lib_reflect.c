@@ -1462,7 +1462,7 @@ ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
 	{
 		/* We must have a target, and it must be of the right class */
 		if(!obj || !ILClassInheritsFrom(GetObjectClass(obj),
-									    ILClassResolve(ILField_Owner(obj))))
+									    ILClassResolve(ILField_Owner(field))))
 		{
 			ThrowTargetException(thread);
 		}
@@ -1527,7 +1527,7 @@ void _IL_ClrField_SetValue(ILExecThread *thread, ILObject *_this,
 	{
 		/* We must have a target, and it must be of the right class */
 		if(!obj || !ILClassInheritsFrom(GetObjectClass(obj),
-									    ILClassResolve(ILField_Owner(obj))))
+									    ILClassResolve(ILField_Owner(field))))
 		{
 			ThrowTargetException(thread);
 		}

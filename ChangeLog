@@ -1,4 +1,9 @@
 
+2003-01-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_reflect.c: wrong value used to check for superclass
+	in "ClrField.GetValue" and "ClrField.SetValue".
+
 2003-01-09  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_file.c,

@@ -1,4 +1,9 @@
 
+2002-12-11  Dawkins, David  <david.dawkins@brooks-pri.com>
+
+	* make_patch.sh: warn the user if updates occurred during the
+	"cvs update" step of "make_patch.sh".
+
 2002-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.c, cscc/common/cc_options.c, cscc/common/cc_options.h:

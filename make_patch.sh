@@ -24,6 +24,7 @@
 # Determine which temporary files to use, and arrange for them
 # to be clean up on exit.
 CHANGEDFILES="/tmp/mp$$"
+CHANGEDFILES_COPY="/tmp/cvs_update_$$.log"
 COMMENTS="/tmp/mpc$$"
 trap 'rm -f ${CHANGEDFILES} ${COMMENTS}' 0 1 2 15
 
@@ -53,16 +54,58 @@ else
 	fi
 fi
 
+# Define a function that silently searches for a given pattern.
+# $? will be 0 if the pattern was found
+grep_qs()
+{
+	grep -q -s "$1" $2
+}
+
 # Determine the list of files to be patched.
 if test -z "$1" ; then
 	# Contact the CVS server to collect up a list of all changed files.
-	echo 'Contacting the CVS server to determine which files have changed ...' 1>&2
+	echo 'Contacting the CVS server to determine which files have changed' 1>&2
+	echo '(this will update your source tree).' 1>&2
 	if cvs -z3 update -d >${CHANGEDFILES} 2>/dev/null ; then
 		:
 	else
 		echo "${PROGNAME}: 'cvs -z3 update -d' command failed"
+
+		# We can get here when there are conflicts in the update,
+		# so let the user see the log file.
+		cp ${CHANGEDFILES} ${CHANGEDFILES_COPY}
+		echo "(See ${CHANGEDFILES_COPY} for details)." 1>&2
 		exit 1
 	fi
+
+	grep_qs "^[UP] " ${CHANGEDFILES}
+	if test $? -eq 0 ; then
+		echo 'Your source tree was not up-to-date. Please check that you still' 1>&2
+		echo 'have a clean build, and then rerun this script.' 1>&2
+		cp ${CHANGEDFILES} ${CHANGEDFILES_COPY}
+		echo "(See ${CHANGEDFILES_COPY} for details)." 1>&2
+		exit 1
+	fi
+
+	grep_qs "^C " ${CHANGEDFILES}
+	if test $? -eq 0 ; then
+		echo 'There were conflicts during the update of your source tree.' 1>&2
+		echo 'Please fix them before rerunning this script.' 1>&2
+		cp ${CHANGEDFILES} ${CHANGEDFILES_COPY}
+		echo "(See ${CHANGEDFILES_COPY} for details)." 1>&2
+		exit 1
+	fi
+
+	grep_qs "^Merging differences" ${CHANGEDFILES}
+	if test $? -eq 0 ; then
+		echo 'Your source tree was not up-to-date (merges were made).' 1>&2
+		echo 'Please check that you still have a clean build, and then' 1>&2
+		echo 'rerun this script.' 1>&1
+		cp ${CHANGEDFILES} ${CHANGEDFILES_COPY}
+		echo "(See ${CHANGEDFILES_COPY} for details)." 1>&2
+		exit 1
+	fi
+
 else
 	# Use the file list on the command-line.
 	>${CHANGEDFILES}

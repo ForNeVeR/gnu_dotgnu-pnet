@@ -315,6 +315,7 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 	{
 		result = ILThreadSuspend(supportThread);
 
+		/* Notify any threads waiting for us to suspend */
 		ILWaitMonitorEnter(monitor);
 		ILWaitMonitorPulseAll(monitor);
 		ILWaitMonitorLeave(monitor);
@@ -390,7 +391,7 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 			/* Resume the thread */
 			ILThreadResume(supportThread);
 
-			/* Wait until the thread aborts itself */
+			/* Wait until the thread suspends itself */
 			ILWaitMonitorWait(monitor, -1);
 		}		
 

@@ -11,6 +11,9 @@
 	* System.Drawing/Graphics.cs: clean out some of the unnecessary
 	TODO's in "DrawImage".
 
+	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs: do not
+	dispose the toolkit image when the graphics object is disposed.
+
 2004-01-25  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/BmpResizer.cs, DotGNU.Images/Frame.cs,

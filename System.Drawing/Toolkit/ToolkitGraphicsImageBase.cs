@@ -43,11 +43,6 @@ namespace System.Drawing.Toolkit
 
 		protected override void Dispose(bool disposing)
 		{
-			if (image != null)
-			{
-				image.Dispose();
-				image = null;
-			}
 		}
 
 

@@ -43,7 +43,8 @@ typedef struct _tagILScopeData ILScopeData;
 #define	IL_SCOPE_EVENT			8	/* Item is an event */
 #define	IL_SCOPE_LOCAL			9	/* Item is a local variable */
 #define	IL_SCOPE_LOCAL_CONST	10	/* Item is a local variable */
-#define	IL_SCOPE_DUMMY			11	/* Used internally */
+#define	IL_SCOPE_ALIAS			11	/* Item is a local variable */
+#define	IL_SCOPE_DUMMY			12	/* Used internally */
 
 /*
  * Error codes for scope definitions.
@@ -153,6 +154,11 @@ int ILScopeDeclareLocal(ILScope *scope, const char *name,
 int ILScopeDeclareLocalConst(ILScope *scope, const char *name,
 						ILNode *guarded, ILNode *node);
 
+/* Declare an alias in a particular scope, this returns a scope
+ * error if already declared.
+ */
+int ILScopeDeclareAlias(ILScope *scope, const char *name,
+						ILNode *node, ILNode *valueNode);
 /*
  * Get the kind value associated with a scope item.
  */

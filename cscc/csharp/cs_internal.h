@@ -150,6 +150,11 @@ ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule);
 CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 							   const char *name, int literalType);
 
+/* 
+ * Resolve a simple name to a semantic value ignoring errors if any.
+ */
+CSSemValue CSResolveSimpleNameQuiet(ILGenInfo *genInfo, ILNode *node,
+										const char *name, int literalType);
 /*
  * Resolve a namespace member name
  */

@@ -1,4 +1,12 @@
 
+2002-11-14  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_lvalue.tc, codegen/cg_scope.c, codegen/cg_scope.h,
+	cscc/csharp/cs_grammar.y, cscc/csharp/cs_lookup.c, 
+	cscc/csharp/cs_internal.h, cscc/csharp/cs_defs.tc:	Rework the 
+	UsingAlias code to simplify alias lookups and straighten out the
+	alias substitutions to operate at lowest priority.
+
 2002-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_misc.tc, cscc/csharp/cs_invoke.tc, engine/cvmc.c,

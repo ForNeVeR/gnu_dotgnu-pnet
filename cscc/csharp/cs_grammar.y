@@ -1109,22 +1109,17 @@ NamespaceBody
 	;
 
 UsingDirective
-	: USING IDENTIFIER '=' NamespaceIdentifier ';'	{
+	: USING IDENTIFIER '=' QualifiedIdentifier ';'	{
 				ILScope *globalScope = GlobalScope();
-				ILNode_UsingAlias *alias;
+				ILNode *alias;
 				if(ILScopeLookup(globalScope, $2, 1))
 				{
 					CCError("`%s' is already declared", $2);
 				}
-				else if(!ILScopeUsing(globalScope, $4.string, $2))
-				{
-					CCError("`%s' is not a namespace", $4.string);
-				}
-				alias = (ILNode_UsingAlias *)
-					ILNode_UsingAlias_create($2, $4.string);
-				InitGlobalNamespace();
-				alias->next = CurrNamespaceNode->aliases;
-				CurrNamespaceNode->aliases = alias;
+				alias = ILNode_UsingAlias_create($2, ILQualIdentName($4,0));
+				ILScopeDeclareAlias(globalScope, $2,alias,$4);
+				/* NOTE: CSSemGuard is not needed as ILNode_UsingAlias is
+				         never Semanalyzed */
 			}
 	| USING NamespaceIdentifier ';'		{
 				ILScope *globalScope = GlobalScope();

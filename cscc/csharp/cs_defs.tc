@@ -154,15 +154,13 @@
 {
 	char *name;
 	ILNode_Namespace *enclosing;
-	%nocreate ILNode_UsingAlias *aliases = {0};
 	%nocreate ILNode_UsingNamespace *using = {0};
 }
 %node ILNode_UsingAlias ILNode_DummySem =
 {
 	char *name;
 	char *ref;
-	%nocreate ILClass *classInfo = {0};
-	%nocreate ILNode_UsingAlias *next = {0};
+	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 }
 %node ILNode_UsingNamespace ILNode_DummySem =
 {

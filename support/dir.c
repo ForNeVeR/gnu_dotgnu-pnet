@@ -203,6 +203,11 @@ ILDirEnt *ILReadDir(ILDir *directory)
 		ILFree(result);
 		return NULL;
 	}
+	if(!(result->dptr)) /* yet another terminating condition */
+	{
+		ILFree(result);
+		return NULL;
+	}
 
 	GetDirEntryType(directory, result);
 	return result;

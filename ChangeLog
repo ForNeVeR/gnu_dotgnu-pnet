@@ -1,4 +1,9 @@
 
+2002-11-09  Gopal.V  <gopalv82@symonds.net>
+
+	* support/dir.c: commit fix to prevent readdir_r from choking at
+	the end of directory.
+
 2002-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_internal.h, cscc/csharp/cs_invoke.tc,

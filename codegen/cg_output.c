@@ -280,6 +280,18 @@ void ILGenCallByMethod(ILGenInfo *info, ILMethod *method)
 	}
 }
 
+void ILGenCallVirtByMethod(ILGenInfo *info, ILMethod *method)
+{
+	if(info->asmOutput)
+	{
+		fputs("\tcallvirt\t", info->asmOutput);
+		ILDumpMethodType(info->asmOutput, 0, ILMethod_Signature(method),
+						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
+						 ILMethod_Name(method), 0);
+		putc('\n', info->asmOutput);
+	}
+}
+
 void ILGenNewObj(ILGenInfo *info, const char *className,
 				 const char *signature)
 {

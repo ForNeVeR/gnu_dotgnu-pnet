@@ -533,6 +533,43 @@ void JavaGenCallByMethod(ILGenInfo *info, ILMethod *method)
 	}
 }
 
+void JavaGenCallVirtByMethod(ILGenInfo *info, ILMethod *method)
+{
+	if(info->asmOutput)
+	{
+		fputs("\tinvokevirtual\t", info->asmOutput);
+		ILDumpMethodType(info->asmOutput, 0, ILMethod_Signature(method),
+						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
+						 ILMethod_Name(method), 0);
+		putc('\n', info->asmOutput);
+	}
+}
+
+void JavaGenCallInterfaceByMethod(ILGenInfo *info, ILMethod *method,
+								  long numArgs)
+{
+	if(info->asmOutput)
+	{
+		fputs("\tinvokeinterface\t", info->asmOutput);
+		ILDumpMethodType(info->asmOutput, 0, ILMethod_Signature(method),
+						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
+						 ILMethod_Name(method), 0);
+		fprintf(info->asmOutput, " %ld\n", numArgs);
+	}
+}
+
+void JavaGenCallSpecialByMethod(ILGenInfo *info, ILMethod *method)
+{
+	if(info->asmOutput)
+	{
+		fputs("\tinvokespecial\t", info->asmOutput);
+		ILDumpMethodType(info->asmOutput, 0, ILMethod_Signature(method),
+						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
+						 ILMethod_Name(method), 0);
+		putc('\n', info->asmOutput);
+	}
+}
+
 void JavaGenNewObj(ILGenInfo *info, const char *className)
 {
 	if(info->asmOutput)

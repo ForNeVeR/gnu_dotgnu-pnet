@@ -149,6 +149,22 @@ void JavaGenCallVirtIntrinsic(ILGenInfo *info, const char *className,
 void JavaGenCallByMethod(ILGenInfo *info, ILMethod *method);
 
 /*
+ * Output a call to a virtual method given its description block.
+ */
+void JavaGenCallVirtByMethod(ILGenInfo *info, ILMethod *method);
+
+/*
+ * Output a call to an interface method given its description block.
+ */
+void JavaGenCallInterfaceByMethod(ILGenInfo *info, ILMethod *method,
+								  long numArgs);
+
+/*
+ * Output a call to a special method given its description block.
+ */
+void JavaGenCallSpecialByMethod(ILGenInfo *info, ILMethod *method);
+
+/*
  * Output a "new" instruction.
  */
 void JavaGenNewObj(ILGenInfo *info, const char *className);

@@ -21,6 +21,9 @@ invocation and argument evaluation.
 * codegen/cg_decls.tc, codegen/jv_decls.tc, cscc/cs_decls.tc: remove
 references to Argument, which is no longer a declaration.
 
+* codegen/cg_output.c, codegen/cg_output.h, codegen/jv_output.c,
+codegen/jv_output.h: code output functions for various kinds of method calls.
+
 2001-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/csdoc.dtd: update the DTD for the XML documentation format.

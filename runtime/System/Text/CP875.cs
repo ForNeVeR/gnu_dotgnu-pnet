@@ -20,8 +20,6 @@
 
 // Generated from "ibm-875.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -916,5 +914,3 @@ internal class ENCibm875 : CP875
 }; // class ENCibm875
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

@@ -20,8 +20,6 @@
 
 // Generated from "ibm-273.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -900,5 +898,3 @@ internal class ENCibm273 : CP20273
 }; // class ENCibm273
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

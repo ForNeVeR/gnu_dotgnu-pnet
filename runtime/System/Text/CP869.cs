@@ -20,8 +20,6 @@
 
 // Generated from "ibm-869.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -906,5 +904,3 @@ internal class ENCibm869 : CP869
 }; // class ENCibm869
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

@@ -1,4 +1,8 @@
 
+2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/*.cs: activate the rare code page handlers.
+
 2002-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/NotSupp.txt,

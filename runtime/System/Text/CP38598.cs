@@ -20,8 +20,6 @@
 
 // Generated from "ibm-916.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -756,5 +754,3 @@ internal class ENCwindows_38598 : CP38598
 }; // class ENCwindows_38598
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

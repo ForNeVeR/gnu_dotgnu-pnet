@@ -20,8 +20,6 @@
 
 // Generated from "ibm-420.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -1076,5 +1074,3 @@ internal class ENCibm420 : CP20420
 }; // class ENCibm420
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

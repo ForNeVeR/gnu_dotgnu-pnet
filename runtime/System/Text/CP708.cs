@@ -20,8 +20,6 @@
 
 // Generated from "ibm-1089.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -1040,5 +1038,3 @@ internal class ENCasmo_708 : CP708
 }; // class ENCasmo_708
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

@@ -20,8 +20,6 @@
 
 // Generated from "ibm-1148.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -898,5 +896,3 @@ internal class ENCibm1148 : CP1148
 }; // class ENCibm1148
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

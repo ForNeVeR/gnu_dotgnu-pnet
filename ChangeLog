@@ -1,4 +1,9 @@
 
+2002-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/CodeDom/gencdom.c, System/CodeDom/rules.txt: add
+	a rule-based code generator for autogenerating CodeDom classes.
+
 2002-11-08  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/IO/BinaryWriter.cs: Add missing byteCount for

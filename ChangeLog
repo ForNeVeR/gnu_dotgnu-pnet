@@ -7,6 +7,9 @@
 	* runtime/System/String.cs: bug fixes to "IndexOf" and "LastIndexOf",
 	when searching for a string.
 
+	* runtime/System/Globalization/NumberFormatInfo.cs: adjust the
+	invariant number formatting information to match the ECMA spec.
+
 2002-01-23  Charlie Carnow <carnow@gmx.net> 
 
 	* runtime/Platform/DirMethods.cs: Added internal methods for

@@ -596,11 +596,11 @@ public sealed class NumberFormatInfo : ICloneable, IFormatProvider
 				percentGroupSizes = new int[1];
 				percentGroupSizes[0] = 3;
 				currencyGroupSeparator = ",";
-				currencySymbol = "$";
+				currencySymbol = "\u00a4";
 				nanSymbol = "NaN";
 				currencyPositivePattern = 0;
 				currencyNegativePattern = 0;
-				numberNegativePattern = 0;
+				numberNegativePattern = 1;
 				percentPositivePattern = 0;
 				percentNegativePattern = 0;
 				positiveInfinitySymbol = "Infinity";

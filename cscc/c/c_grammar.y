@@ -1112,7 +1112,6 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_BOOL			"`_Bool'"
 %token K_WCHAR			"`__wchar__'"
 %token K_NATIVE			"`__native__'"
-%token K_CSHARP			"`__csharp__'"
 %token K_FUNCTION		"`__FUNCTION__'"
 %token K_FUNC			"`__func__'"
 %token K_LONG_LONG		"`__long_long__'"
@@ -1174,9 +1173,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <node>		CSharpStatement
 %type <catchInfo>	CatchNameInfo
 
-%type <type>		CSharpSpecifier CSharpType CSharpBuiltinType
 %type <node>		QualifiedIdentifier TypeOrNamespaceDesignator
-%type <kind>		DimensionSeparators DimensionSeparatorList
 
 %type <node>		FunctionBody Attributes AttributeList Attribute
 
@@ -1876,7 +1873,6 @@ TypeSpecifier
 				CDeclSpecSetType($$, type);
 			}
 	| NamespaceQualifiedType		{ CDeclSpecSetType($$, $1); }
-	| CSharpSpecifier	{ CDeclSpecSetType($$, $1); }
 	;
 
 StructOrUnionSpecifier
@@ -2210,103 +2206,11 @@ Enumerator
 			}
 	;
 
-CSharpSpecifier
-	: K_CSHARP '(' CSharpType ')'	{ $$ = $3; }
-	;
-
-CSharpType
-	: QualifiedIdentifier	{
-				/* Resolve the qualified identifier to a type name */
-				$$ = CTypeFromCSharp(&CCCodeGen, 0, $1);
-				if(!($$))
-				{
-					CCError(_("could not resolve `%s' as a C# type"),
-							ILQualIdentName($1, 0));
-					$$ = ILType_Int32;
-				}
-			}
-	| '[' QualifiedIdentifier ']' QualifiedIdentifier	{
-				/* Resolve the assembly-qualified identifier to a type name */
-				char *assembly = ILQualIdentName($2, 0);
-				$$ = CTypeFromCSharp(&CCCodeGen, assembly, $4);
-				if(!($$))
-				{
-					CCError(_("could not resolve `[%s]%s' as a C# type"),
-							assembly, ILQualIdentName($4, 0));
-					$$ = ILType_Int32;
-				}
-			}
-	| CSharpBuiltinType
-	| CSharpType '[' DimensionSeparators ']'	{
-				/* Create a C# array type */
-				if(!ILType_IsArray($1))
-				{
-					/* Create a simple array from a non-array element type */
-					$$ = ILTypeCreateArray(CCCodeGen.context,
-										   (unsigned long)($3), $1);
-					if(!($$))
-					{
-						CCOutOfMemory();
-					}
-				}
-				else
-				{
-					/* Find the position of the innermost element type */
-					ILType **elem = &(ILType_ElemType($1));
-					while(ILType_IsArray(*elem))
-					{
-						elem = &(ILType_ElemType(*elem));
-					}
-
-					/* Replace the element type with a new array */
-					*elem = ILTypeCreateArray(CCCodeGen.context,
-										      (unsigned long)($3), *elem);
-					if(!(*elem))
-					{
-						CCOutOfMemory();
-					}
-					$$ = $1;
-				}
-			}
-	| CSharpType '*'	{
-				/* Create a C# pointer type */
-				$$ = ILTypeCreateRef(CCCodeGen.context,
-									 IL_TYPE_COMPLEX_PTR, $1);
-				if(!($$))
-				{
-					CCOutOfMemory();
-				}
-			}
-	;
-
 QualifiedIdentifier
 	: AnyIdentifier		{ $$ = ILQualIdentSimple($1); }
 	| QualifiedIdentifier '.' AnyIdentifier	{
 				$$ = ILNode_QualIdent_create($1, ILQualIdentSimple($3));
 			}
-	;
-
-/* This is a list of builtin C# types that are also C keywords.
-   Other C# builtin types are captured by "QualifiedIdentifier"
-   and then resolved by "CTypeFromCSharp" */
-CSharpBuiltinType
-	: K_VOID			{ $$ = ILType_Void; }
-	| K_SHORT			{ $$ = ILType_Int16; }
-	| K_INT				{ $$ = ILType_Int32; }
-	| K_LONG			{ $$ = ILType_Int64; }
-	| K_CHAR			{ $$ = ILType_Char; }
-	| K_FLOAT			{ $$ = ILType_Float32; }
-	| K_DOUBLE			{ $$ = ILType_Float64; }
-	;
-
-DimensionSeparators
-	: /* empty */					{ $$ = 1; }
-	| DimensionSeparatorList		{ $$ = $1; }
-	;
-
-DimensionSeparatorList
-	: ','							{ $$ = 2; }
-	| DimensionSeparatorList ','	{ $$ = $1 + 1; }
 	;
 
 Declarator

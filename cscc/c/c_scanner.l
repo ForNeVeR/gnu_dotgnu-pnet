@@ -161,7 +161,6 @@ WHITE			[ \t\v\r\f]
 "_Bool"					{ RETURNTOK(K_BOOL); }
 "__wchar__"				{ RETURNTOK(K_WCHAR); }
 "__native__"			{ RETURNTOK(K_NATIVE); }
-"__csharp__"			{ RETURNTOK(K_CSHARP); }
 
 "__FUNCTION__"			{ RETURNTOK(K_FUNCTION); }
 "__PRETTY_FUNCTION__"	{ RETURNTOK(K_FUNCTION); }

@@ -7,6 +7,9 @@
 	compiler so that they can be used to resolve C# types using
 	the "Namespace::Type" syntax.
 
+	* cscc/c/c_grammar.y, cscc/c/c_scanner.l: remove the "__csharp__"
+	keyword from the C compiler as it is no longer necessary.
+
 2004-02-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_oper.tc (MulPtrSize): fix a bug where 1 * sizeof(type)

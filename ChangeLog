@@ -3,6 +3,9 @@
 
 	* engine/lib_type.c (InternalGetSerializableMembers): misplaced "++".
 
+	* cscc/c/c_coerce.c (ApplyCoercion): handle constant coercions
+	when the underlying machine type does not change.
+
 2003-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_oper.tc: improve the handling of boolean constant

@@ -429,6 +429,12 @@ static CSemValue ApplyCoercion(ILGenInfo *info, ILNode *node, ILNode **parent,
 				CSemSetRValue(fromValue, toType);
 			}
 		}
+		else if(CSemGetConstant(fromValue) != 0)
+		{
+			/* Constant conversion that doesn't change the machine type */
+			CSemLToRValue(fromValue);
+			fromValue.type__ = toType;
+		}
 		else
 		{
 			CSemSetRValue(fromValue, toType);

@@ -1073,6 +1073,37 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 					}
 					CVM_ADJUST(1);
 				}
+
+				/* Truncate or sign-extend small values just in case
+				   "libffi" didn't do it for us */
+				switch(ILType_ToElement(returnType))
+				{
+					case IL_META_ELEMTYPE_BOOLEAN:
+					case IL_META_ELEMTYPE_I1:
+					{
+						CVM_OUT_NONE(COP_I2B);
+					}
+					break;
+
+					case IL_META_ELEMTYPE_U1:
+					{
+						CVM_OUT_NONE(COP_I2UB);
+					}
+					break;
+
+					case IL_META_ELEMTYPE_I2:
+					{
+						CVM_OUT_NONE(COP_I2S);
+					}
+					break;
+
+					case IL_META_ELEMTYPE_U2:
+					case IL_META_ELEMTYPE_CHAR:
+					{
+						CVM_OUT_NONE(COP_I2US);
+					}
+					break;
+				}
 				CVM_OUT_RETURN(1);
 			#else
 				CVM_OUT_DWIDE(COP_MLOAD, ctx->returnOffset, CVM_WORDS_PER_LONG);

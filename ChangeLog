@@ -1,4 +1,10 @@
 
+2003-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvmc_setup.c: truncate or sign-extend 8-bit and 16-bit values
+	from PInvoke/internalcall methods just in case "libffi" sets the
+	high bits to garbage.
+
 2003-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_crypt.c, include/il_crypt.h, support/Makefile.am,

@@ -160,6 +160,21 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 	return writer;
 }
 
+void ILWriterSetStream(ILWriter *writer, FILE *stream, int seekable)
+{
+	if (!(writer->stream))
+	{
+		writer->stream = stream;
+		writer->seekable = seekable;
+	}
+}
+
+void ILWriterResetTypeAndFlags(ILWriter *writer, int type, int flags)
+{
+	writer->type = type;
+	writer->flags = flags;
+}
+
 /*
  * Write the contents of a buffer list to the ".text" section.
  */

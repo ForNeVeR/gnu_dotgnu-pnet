@@ -5,15 +5,6 @@ extern ILInt32 _IL_Object_GetHashCode(ILExecThread * _thread, ILObject * _this);
 extern ILBool _IL_Object_Equals(ILExecThread * _thread, ILObject * _this, ILObject * _p1);
 extern ILObject * _IL_Object_MemberwiseClone(ILExecThread * _thread, ILObject * _this);
 
-extern ILObject * _IL_Enum_GetEnumValue(ILExecThread * _thread, ILObject * _this);
-extern ILString * _IL_Enum_FormatEnumWithFlags(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
-extern ILString * _IL_Enum_GetEnumName(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
-extern ILBool _IL_Enum_IsEnumValue(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
-extern ILObject * _IL_Enum_GetEnumValueFromName(ILExecThread * _thread, ILObject * _p1, ILString * _p2, ILBool _p3);
-extern ILObject * _IL_Enum_EnumValueOr(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
-extern ILObject * _IL_Enum_EnumIntToObject(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
-extern ILObject * _IL_Enum_EnumLongToObject(ILExecThread * _thread, ILObject * _p1, ILInt64 _p2);
-
 extern void _IL_ArgIterator_ctor_RuntimeArgumentHandle(ILExecThread * _thread, void * _this, void * _p1);
 extern void _IL_ArgIterator_ctor_RuntimeArgumentHandlepV(ILExecThread * _thread, void * _this, void * _p1, void * _p2);
 extern void _IL_ArgIterator_End(ILExecThread * _thread, void * _this);
@@ -22,24 +13,33 @@ extern ILTypedRef _IL_ArgIterator_GetNextArg_RuntimeTypeHandle(ILExecThread * _t
 extern void _IL_ArgIterator_GetNextArgType(ILExecThread * _thread, void * _result, void * _this);
 extern ILInt32 _IL_ArgIterator_GetRemainingCount(ILExecThread * _thread, void * _this);
 
-extern void _IL_Array_Initialize(ILExecThread * _thread, ILObject * _this);
-extern ILObject * _IL_Array_CreateArray_jiiii(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5);
-extern void _IL_Array_Set_Objectiii(ILExecThread * _thread, ILObject * _this, ILObject * _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4);
 extern ILObject * _IL_Array_Get_iii(ILExecThread * _thread, ILObject * _this, ILInt32 _p1, ILInt32 _p2, ILInt32 _p3);
 extern ILInt32 _IL_Array_GetLowerBound(ILExecThread * _thread, ILObject * _this, ILInt32 _p1);
 extern ILInt32 _IL_Array_GetUpperBound(ILExecThread * _thread, ILObject * _this, ILInt32 _p1);
 extern ILInt32 _IL_Array_GetRank(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Array_Clear(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2, ILInt32 _p3);
+extern void _IL_Array_Initialize(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Array_InternalCopy(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2, ILObject * _p3, ILInt32 _p4, ILInt32 _p5);
 extern ILObject * _IL_Array_GetRelative(ILExecThread * _thread, ILObject * _this, ILInt32 _p1);
 extern void _IL_Array_SetRelative(ILExecThread * _thread, ILObject * _this, ILObject * _p1, ILInt32 _p2);
 extern ILInt32 _IL_Array_GetLength_(ILExecThread * _thread, ILObject * _this);
+extern ILObject * _IL_Array_CreateArray_jiiii(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5);
 extern ILObject * _IL_Array_CreateArray_jaiai(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, System_Array * _p3);
 extern ILObject * _IL_Array_Get_ai(ILExecThread * _thread, ILObject * _this, System_Array * _p1);
 extern ILInt32 _IL_Array_GetLength_i(ILExecThread * _thread, ILObject * _this, ILInt32 _p1);
+extern void _IL_Array_Set_Objectiii(ILExecThread * _thread, ILObject * _this, ILObject * _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4);
 extern void _IL_Array_Set_Objectai(ILExecThread * _thread, ILObject * _this, ILObject * _p1, System_Array * _p2);
 
 extern ILObject * _IL_Delegate_CreateBlankDelegate(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
+
+extern ILObject * _IL_Enum_GetEnumValue(ILExecThread * _thread, ILObject * _this);
+extern ILString * _IL_Enum_FormatEnumWithFlags(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
+extern ILString * _IL_Enum_GetEnumName(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
+extern ILBool _IL_Enum_IsEnumValue(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
+extern ILObject * _IL_Enum_GetEnumValueFromName(ILExecThread * _thread, ILObject * _p1, ILString * _p2, ILBool _p3);
+extern ILObject * _IL_Enum_EnumValueOr(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
+extern ILObject * _IL_Enum_EnumIntToObject(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
+extern ILObject * _IL_Enum_EnumLongToObject(ILExecThread * _thread, ILObject * _p1, ILInt64 _p2);
 
 extern ILBool _IL_BitConverter_GetLittleEndian(ILExecThread * _thread);
 extern ILInt64 _IL_BitConverter_DoubleToInt64Bits(ILExecThread * _thread, ILDouble _p1);
@@ -108,16 +108,16 @@ extern ILBool _IL_Single_IsNaN(ILExecThread * _thread, ILFloat _p1);
 extern ILInt32 _IL_Single_TestInfinity(ILExecThread * _thread, ILFloat _p1);
 
 extern System_String * _IL_String_Concat_StringString(ILExecThread * _thread, System_String * _p1, System_String * _p2);
-extern System_String * _IL_String_ctor_acii(ILExecThread * _thread, System_Array * _p1, ILInt32 _p2, ILInt32 _p3);
 extern System_String * _IL_String_ctor_ci(ILExecThread * _thread, ILUInt16 _p1, ILInt32 _p2);
 extern System_String * _IL_String_ctor_ac(ILExecThread * _thread, System_Array * _p1);
 extern ILBool _IL_String_Equals(ILExecThread * _thread, System_String * _p1, System_String * _p2);
 extern ILUInt16 _IL_String_GetChar(ILExecThread * _thread, System_String * _this, ILInt32 _p1);
+extern ILInt32 _IL_String_IndexOf(ILExecThread * _thread, System_String * _this, ILUInt16 _p1, ILInt32 _p2, ILInt32 _p3);
 extern System_String * _IL_String_NewString(ILExecThread * _thread, ILInt32 _p1);
 extern void _IL_String_Copy_StringiStringii(ILExecThread * _thread, System_String * _p1, ILInt32 _p2, System_String * _p3, ILInt32 _p4, ILInt32 _p5);
-extern ILInt32 _IL_String_IndexOf(ILExecThread * _thread, System_String * _this, ILUInt16 _p1, ILInt32 _p2, ILInt32 _p3);
 extern ILInt32 _IL_String_InternalCompare(ILExecThread * _thread, System_String * _p1, ILInt32 _p2, ILInt32 _p3, System_String * _p4, ILInt32 _p5, ILInt32 _p6, ILBool _p7, ILObject * _p8);
 extern System_String * _IL_String_Trim(ILExecThread * _thread, System_String * _this, System_Array * _p1, ILInt32 _p2);
+extern System_String * _IL_String_ctor_acii(ILExecThread * _thread, System_Array * _p1, ILInt32 _p2, ILInt32 _p3);
 extern System_String * _IL_String_ctor_pcii(ILExecThread * _thread, ILUInt16 * _p1, ILInt32 _p2, ILInt32 _p3);
 extern System_String * _IL_String_ctor_pc(ILExecThread * _thread, ILUInt16 * _p1);
 extern System_String * _IL_String_ctor_pbiiEncoding(ILExecThread * _thread, ILInt8 * _p1, ILInt32 _p2, ILInt32 _p3, ILObject * _p4);
@@ -179,6 +179,7 @@ extern ILNativeInt _IL_Mutex_InternalCreateMutex(ILExecThread * _thread, ILBool 
 extern void _IL_Mutex_InternalReleaseMutex(ILExecThread * _thread, ILNativeInt _p1);
 
 extern ILInt32 _IL_Thread_InternalGetThreadId(ILExecThread * _thread);
+extern ILObject * _IL_Thread_InternalCurrentThread(ILExecThread * _thread);
 extern void _IL_Thread_InitializeThread(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Thread_FinalizeThread(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Thread_Abort(ILExecThread * _thread, ILObject * _this);
@@ -213,7 +214,6 @@ extern void _IL_Thread_VolatileWrite_RJJ(ILExecThread * _thread, ILNativeUInt * 
 extern void _IL_Thread_VolatileWrite_Rff(ILExecThread * _thread, ILFloat * _p1, ILFloat _p2);
 extern void _IL_Thread_VolatileWrite_Rdd(ILExecThread * _thread, ILDouble * _p1, ILDouble _p2);
 extern void _IL_Thread_VolatileWrite_RObjectObject(ILExecThread * _thread, ILObject * * _p1, ILObject * _p2);
-extern ILObject * _IL_Thread_InternalCurrentThread(ILExecThread * _thread);
 extern ILInt32 _IL_Thread_InternalGetState(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Thread_InternalSetBackground(ILExecThread * _thread, ILObject * _this, ILBool _p1);
 extern ILInt32 _IL_Thread_InternalGetPriority(ILExecThread * _thread, ILObject * _this);
@@ -332,6 +332,16 @@ extern ILBool _IL_ClrHelpers_HasSemantics(ILExecThread * _thread, ILNativeInt _p
 extern ILObject * _IL_ClrMethod_Invoke(ILExecThread * _thread, ILObject * _this, ILObject * _p1, ILInt32 _p2, ILObject * _p3, System_Array * _p4, ILObject * _p5);
 extern ILObject * _IL_ClrMethod_GetBaseDefinition(ILExecThread * _thread, ILObject * _this);
 
+extern ILInt32 _IL_ClrParameter_GetParamAttrs(ILExecThread * _thread, ILNativeInt _p1);
+extern ILString * _IL_ClrParameter_GetParamName(ILExecThread * _thread, ILNativeInt _p1);
+extern ILObject * _IL_ClrParameter_GetDefault(ILExecThread * _thread, ILNativeInt _p1);
+
+extern ILObject * _IL_ClrProperty_GetPropertyType(ILExecThread * _thread, ILNativeInt _p1);
+
+extern ILInt32 _IL_ClrResourceStream_ResourceRead(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2, System_Array * _p3, ILInt32 _p4, ILInt32 _p5);
+extern ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2);
+extern ILUInt8 * _IL_ClrResourceStream_ResourceGetAddress(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2);
+
 extern ILInt32 _IL_ClrType_GetClrArrayRank(ILExecThread * _thread, ILObject * _this);
 extern ILInt32 _IL_ClrType_GetAttributeFlagsImpl(ILExecThread * _thread, ILObject * _this);
 extern ILInt32 _IL_ClrType_GetClrTypeCategory(ILExecThread * _thread, ILObject * _this);
@@ -356,16 +366,6 @@ extern System_Array * _IL_ClrType_GetInstantiation(ILExecThread * _thread, ILObj
 extern ILObject * _IL_ClrType_Instantiate(ILExecThread * _thread, ILObject * _this, System_Array * _p1);
 extern ILObject * _IL_ClrType_GetGenericType(ILExecThread * _thread, ILObject * _this);
 
-extern ILInt32 _IL_ClrParameter_GetParamAttrs(ILExecThread * _thread, ILNativeInt _p1);
-extern ILString * _IL_ClrParameter_GetParamName(ILExecThread * _thread, ILNativeInt _p1);
-extern ILObject * _IL_ClrParameter_GetDefault(ILExecThread * _thread, ILNativeInt _p1);
-
-extern ILObject * _IL_ClrProperty_GetPropertyType(ILExecThread * _thread, ILNativeInt _p1);
-
-extern ILInt32 _IL_ClrResourceStream_ResourceRead(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2, System_Array * _p3, ILInt32 _p4, ILInt32 _p5);
-extern ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2);
-extern ILUInt8 * _IL_ClrResourceStream_ResourceGetAddress(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2);
-
 extern ILObject * _IL_Module_GetAssembly(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Module_GetModuleType(ILExecThread * _thread, ILObject * _this);
 extern ILString * _IL_Module_GetFullName(ILExecThread * _thread, ILObject * _this);
@@ -374,7 +374,7 @@ extern System_Array * _IL_Module_GetTypes(ILExecThread * _thread, ILObject * _th
 extern ILBool _IL_Module_IsResource(ILExecThread * _thread, ILObject * _this);
 
 extern ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread * _thread, ILString * _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5, ILInt32 _p6, ILNativeInt * writer);
-extern void _IL_AssemblyBuilder_ClrSetEntryPoint(ILExecThread * _thread, ILObject * _this, ILNativeInt _p1, ILInt32 _p2);
+extern ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2, ILString * _p3, ILNativeInt _p4, ILInt32 _p5);
 extern ILInt32 _IL_AssemblyBuilder_ClrGetItemToken(ILExecThread * _thread, ILNativeInt _p1);
 extern ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 

@@ -634,6 +634,11 @@ int ILTypeNeedsInstantiation(ILType *type);
 ILType *ILTypeInstantiate(ILContext *context, ILType *type,
 						  ILType *classParams, ILType *methodParams);
 
+/*
+ * Returns a hash code value for the given type.
+ */
+unsigned long ILTypeHash(ILType *type);
+
 #ifdef	__cplusplus
 };
 #endif

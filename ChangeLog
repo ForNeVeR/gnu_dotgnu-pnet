@@ -1,3 +1,15 @@
+2003-07-20  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_emit.c: update for
+	changes to System.Reflection.Emit.AssemblyBuilder in pnetlib.
+
+	* engine/lib_emit.c: implement most of the remaining internal calls.
+
+	* image/synthetic.c, include/il_types.h: export ILTypeHash for use in
+	lib_emit internal calls.
+
+	* image/writer.c, include/il_writer.h: add functions for resetting
+	ILWriter properties normally provided on writer creation.
 
 2003-07-19  Gopal.V  <gopalv82@symonds.net>
 	

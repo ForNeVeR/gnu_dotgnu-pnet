@@ -89,6 +89,18 @@ typedef struct _tagILWriter ILWriter;
 ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags);
 
 /*
+ * Set the stream of the image writer if the stream supplied on creation was
+ * null. If "seekable" is non-zero, then the stream is seekable. Does nothing
+ * if the stream has already been set or if the supplied stream is null.
+ */
+void ILWriterSetStream(ILWriter *writer, FILE *stream, int seekable);
+
+/*
+ * Reset the type and flags of the image writer.
+ */
+void ILWriterResetTypeAndFlags(ILWriter *writer, int type, int flags);
+
+/*
  * Output the metadata from an image structure into an
  * image writer's output stream.  This is typically called
  * just before "ILWriterDestroy".

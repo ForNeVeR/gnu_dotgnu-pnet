@@ -29,14 +29,15 @@ extern	"C" {
 
 /*
  * private static IntPtr ClrAssemblyCreate(String name, int v1, int v2,
- *										   int v3, int v4,
+ *                                         int v3, int v4,
  *                                         AssemblyBuilderAccess access,
- *										   out IntPtr writer);
+ *                                         out IntPtr writer);
  */
-ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate
-		(ILExecThread *_thread, ILString *name, ILInt32 v1,
-		 ILInt32 v2, ILInt32 v3, ILInt32 v4, ILInt32 access,
-		 ILNativeInt *writerReturn)
+ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
+                                                  ILString *name, ILInt32 v1,
+                                                  ILInt32 v2, ILInt32 v3,
+                                                  ILInt32 v4, ILInt32 access,
+                                                  ILNativeInt *writerReturn)
 {
 	const char *utf8Name;
 	ILContext *context;
@@ -123,21 +124,22 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate
 }
 
 /*
- * private void ClrSetEntryPoint(IntPtr nativeMethod, PEFileKinds fileKind);
+ * private static bool ClrSave(IntPtr assembly, IntPtr writer, String path,
+ *                             IntPtr entryMethod, PEFileKinds fileKind);
  */
-void _IL_AssemblyBuilder_ClrSetEntryPoint(ILExecThread *thread,
-										  ILObject *_this,
-										  ILNativeInt clrMethod,
-										  ILInt32 fileKind)
+ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt assembly,
+                                   ILNativeInt writer, ILString *path,
+                                   ILNativeInt entryMethod, ILInt32 fileKind)
 {
 	/* TODO */
+	return (ILBool)0;
 }
 
 /*
  * internal static int ClrGetItemToken(IntPtr item);
  */
 ILInt32 _IL_AssemblyBuilder_ClrGetItemToken(ILExecThread *_thread,
-											ILNativeInt item)
+                                            ILNativeInt item)
 {
 	if(item)
 	{
@@ -153,8 +155,8 @@ ILInt32 _IL_AssemblyBuilder_ClrGetItemToken(ILExecThread *_thread,
  * internal static IntPtr GetItemFromToken(IntPtr assembly, int token);
  */
 ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread *_thread,
-													ILNativeInt assembly,
-													ILInt32 token)
+                                                    ILNativeInt assembly,
+                                                    ILInt32 token)
 {
 	if(assembly)
 	{
@@ -169,67 +171,289 @@ ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread *_thread,
 
 /*
  * private static IntPtr ClrEventCreate(IntPtr classInfo, String name,
- *									    IntPtr type, EventAttributes attrs);
+ *                                      IntPtr type, EventAttributes attrs);
  */
 ILNativeInt _IL_EventBuilder_ClrEventCreate(ILExecThread *_thread,
-											ILNativeInt classInfo,
-											ILString *name, ILNativeInt type,
-											ILInt32 attrs)
+                                            ILNativeInt classInfo,
+                                            ILString *name, ILNativeInt type,
+                                            ILInt32 attrs)
 {
-	/* TODO */
-	return 0;
+	ILEvent *retval;
+	ILClass *info;
+	ILClass *typeInfo;
+	const char *str;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	info = (ILClass *)classInfo;
+	typeInfo = (ILClass *)type;
+	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if (!(retval = ILEventCreate(info, 0, str, (ILUInt32)attrs, typeInfo)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILNativeInt)retval;
 }
 
 /*
  * private static ClrEventAddSemantics(IntPtr eventInfo,
- *									   MethodSemanticsAttributes attr,
- *									   MethodToken token);
+ *                                     MethodSemanticsAttributes attr,
+ *                                     MethodToken token);
  */
 void _IL_EventBuilder_ClrEventAddSemantics(ILExecThread *_thread,
-										   ILNativeInt eventInfo,
-										   ILInt32 attr, void *token)
+                                           ILNativeInt eventInfo,
+                                           ILInt32 attr, void *token)
 {
-	/* TODO */
+	ILProgramItem *item;
+	ILImage *image;
+	ILToken tok;
+	ILMethod *method;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	item = (ILProgramItem *)eventInfo;
+	image = ILProgramItem_Image(item);
+	tok = *((ILToken *)token);
+	if (!(method = ILMethod_FromToken(image,tok)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	if (!(ILMethodSemCreate(item, 0, (ILUInt32)attr, method)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
 }
 
 /*
  * private static IntPtr ClrFieldCreate(IntPtr classInfo, String name,
- *										IntPtr type, FieldAttributes attrs);
+ *                                      IntPtr type, FieldAttributes attrs);
  */
 ILNativeInt _IL_FieldBuilder_ClrFieldCreate(ILExecThread *_thread,
-											ILNativeInt classInfo,
-											ILString *name, ILNativeInt type,
-											ILInt32 attrs)
+                                            ILNativeInt classInfo,
+                                            ILString *name, ILNativeInt type,
+                                            ILInt32 attrs)
 {
-	/* TODO */
-	return 0;
+	ILField *retval;
+	ILClass *info;
+	ILType *sig;
+	const char *str;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	info = (ILClass *)classInfo;
+	sig = (ILType *)type;
+	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if (!(retval = ILFieldCreate(info, 0, str, (ILUInt32)attrs)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	ILMemberSetSignature((ILMember *)retval, sig);
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILNativeInt)retval;
 }
 
 /*
  * private static void ClrFieldSetConstant(IntPtr item, Object value);
  */
 void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread *_thread,
-										  ILNativeInt item,
-										  ILObject *value)
+                                          ILNativeInt item,
+                                          ILObject *value)
 {
-	/* TODO */
+	ILImage *image;
+	ILProgramItem *owner;
+	ILField *field;
+	ILType *type;
+	ILType *valueType;
+	ILUInt32 elemType;
+	ILConstant *constant;
+	ILExecValue blob;
+	unsigned long len;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	owner = (ILProgramItem *)item;
+	image = ILProgramItem_Image(owner);
+	field = (ILField *)item;
+	type = ILTypeStripPrefixes(ILField_Type(field));
+	valueType = ILClassToType(GetObjectClass(value));
+	type = ILTypeGetEnumType(type);
+	valueType = ILTypeGetEnumType(valueType);
+	if (!(ILTypeAssignCompatible(image, valueType, type)))
+	{
+		return;
+	}
+	elemType = ILType_ToElement(type);
+
+	/* handle null objects */
+	if (!value)
+	{
+		if (!(constant = ILConstantCreate(image, 0, owner, IL_META_ELEMTYPE_CLASS)))
+		{
+			IL_METADATA_UNLOCK(_thread);
+			ILExecThreadThrowOutOfMemory(_thread);
+			return;
+		}
+		blob.int32Value = (ILInt32)0;
+		if (!(ILConstantSetValue(constant, &blob, 4)))
+		{
+			IL_METADATA_UNLOCK(_thread);
+			ILExecThreadThrowOutOfMemory(_thread);
+			return;
+		}
+		IL_METADATA_UNLOCK(_thread);
+		return;
+	}
+
+	switch(elemType)
+	{
+		case IL_META_ELEMTYPE_BOOLEAN:
+		case IL_META_ELEMTYPE_I1:
+		case IL_META_ELEMTYPE_U1:
+		case IL_META_ELEMTYPE_CHAR:
+		case IL_META_ELEMTYPE_I2:
+		case IL_META_ELEMTYPE_U2:
+		case IL_META_ELEMTYPE_I4:
+		case IL_META_ELEMTYPE_U4:
+		case IL_META_ELEMTYPE_R4:
+		case IL_META_ELEMTYPE_I8:
+		case IL_META_ELEMTYPE_U8:
+		case IL_META_ELEMTYPE_R8:
+		case IL_META_ELEMTYPE_I:
+		case IL_META_ELEMTYPE_U:
+		case IL_META_ELEMTYPE_R:
+		{
+			len = (unsigned long)ILSizeOfType(_thread, type);
+		}
+		break;
+
+		case IL_META_ELEMTYPE_STRING:
+		{
+			ILUInt16 *chars;
+			ILUInt16 *ptr;
+			unsigned long i;
+
+			len = (((System_String *)value)->length);
+			if (!(blob.ptrValue = (ILUInt16 *)ILMalloc(len*2)))
+			{
+				IL_METADATA_UNLOCK(_thread);
+				ILExecThreadThrowOutOfMemory(_thread);
+				return;
+			}
+			chars = StringToBuffer(value);
+			ptr = (ILUInt16 *)blob.ptrValue;
+			for (i = 0; i < len; ++i, ++ptr)
+			{
+				IL_WRITE_UINT16(ptr, chars[i]);
+			}
+			if (!(constant = ILConstantCreate(image, 0, owner, elemType)))
+			{
+				ILFree(blob.ptrValue);
+				IL_METADATA_UNLOCK(_thread);
+				ILExecThreadThrowOutOfMemory(_thread);
+				return;
+			}
+			if (!(ILConstantSetValue(constant, blob.ptrValue, len*2)))
+			{
+				ILFree(blob.ptrValue);
+				IL_METADATA_UNLOCK(_thread);
+				ILExecThreadThrowOutOfMemory(_thread);
+				return;
+			}
+			ILFree(blob.ptrValue);
+			IL_METADATA_UNLOCK(_thread);
+		}
+		return;
+
+		default:
+		{
+			IL_METADATA_UNLOCK(_thread);
+		}
+		return;
+	}
+	if (!(ILExecThreadUnbox(_thread, type, value, &blob)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		return;
+	}
+	if (!(constant = ILConstantCreate(image, 0, owner, elemType)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	if (!(ILConstantSetValue(constant, &blob, len)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
 }
 
 /*
  * private static void ClrFieldSetMarshal(IntPtr item, byte[] data);
  */
 void _IL_FieldBuilder_ClrFieldSetMarshal(ILExecThread *_thread,
-										 ILNativeInt item,
-										 System_Array *data)
+                                         ILNativeInt item,
+                                         System_Array *data)
 {
-	/* TODO */
+	ILFieldMarshal *marshal;
+	ILProgramItem *owner;
+	ILImage *image;
+	ILUInt8 *blob;
+	unsigned long length;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	owner = (ILProgramItem *)item;
+	image = ILProgramItem_Image(owner);
+	blob = (ILUInt8 *)ArrayToBuffer(data);
+	length = (unsigned long)data->length;
+	if (!(marshal = ILFieldMarshalCreate(image, 0, owner)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	if (!(ILFieldMarshalSetType(marshal, blob, length)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
 }
 
 /*
  * private static void ClrFieldSetOffset(IntPtr item, int offset);
  */
 void _IL_FieldBuilder_ClrFieldSetOffset(ILExecThread *_thread,
-										ILNativeInt item, ILInt32 offset)
+                                        ILNativeInt item, ILInt32 offset)
 {
 	ILFieldLayout *layout;
 	IL_METADATA_WRLOCK(_thread);
@@ -257,7 +481,7 @@ void _IL_FieldBuilder_ClrFieldSetOffset(ILExecThread *_thread,
  * private static void ClrFieldSetRVA(IntPtr item, int rva);
  */
 void _IL_FieldBuilder_ClrFieldSetRVA(ILExecThread *_thread,
-									 ILNativeInt item, ILInt32 rva)
+                                     ILNativeInt item, ILInt32 rva)
 {
 	ILFieldRVA *rvainfo;
 	IL_METADATA_WRLOCK(_thread);
@@ -285,8 +509,8 @@ void _IL_FieldBuilder_ClrFieldSetRVA(ILExecThread *_thread,
  * private static IntPtr ClrModuleCreate(IntPtr assembly, String name);
  */
 ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
-											  ILNativeInt assembly,
-											  ILString *name)
+                                              ILNativeInt assembly,
+                                              ILString *name)
 {
 	ILImage *image = ILProgramItem_Image(assembly);
 	ILToken token = ILProgramItem_Token(assembly);
@@ -298,19 +522,38 @@ ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
  * private static int ClrModuleCreateString(IntPtr module, String str);
  */
 ILInt32 _IL_ModuleBuilder_ClrModuleCreateString(ILExecThread *_thread,
-											    ILNativeInt module,
-												ILString *str)
+                                                ILNativeInt module,
+                                                ILString *str)
 {
-	/* TODO */
-	return 0;
+	unsigned long retval;
+	ILProgramItem *item;
+	ILImage *image;
+	const char *string;
+	int length;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	item = (ILProgramItem *)module;
+	image = ILProgramItem_Image(item);
+	length = (int)(((System_String *)str)->length);
+	string = (const char *)ILStringToAnsi(_thread, str);
+	if (!(retval = ILImageAddUserString(image, string, length)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILInt32)(retval | IL_META_TOKEN_STRING);
 }
 
 /*
  * internal static int ClrModuleWriteData(IntPtr module, byte[] data);
  */
 ILInt32 _IL_ModuleBuilder_ClrModuleWriteData(ILExecThread *_thread,
-											 ILNativeInt module,
-											 System_Array *data)
+                                             ILNativeInt module,
+                                             System_Array *data)
 {
 	/* TODO */
 	return 0;
@@ -320,7 +563,7 @@ ILInt32 _IL_ModuleBuilder_ClrModuleWriteData(ILExecThread *_thread,
  * internal static int ClrModuleWriteGap(IntPtr module, int size);
  */
 ILInt32 _IL_ModuleBuilder_ClrModuleWriteGap(ILExecThread *_thread,
-											ILNativeInt module, ILInt32 size)
+                                            ILNativeInt module, ILInt32 size)
 {
 	/* TODO */
 	return 0;
@@ -328,40 +571,214 @@ ILInt32 _IL_ModuleBuilder_ClrModuleWriteGap(ILExecThread *_thread,
 
 /*
  * private static IntPtr ClrPropertyCreate(IntPtr classInfo, String name,
- *										   PropertyAttributes attrs,
- *										   IntPtr signature);
+ *                                         PropertyAttributes attrs,
+ *                                         IntPtr signature);
  */
 ILNativeInt _IL_PropertyBuilder_ClrPropertyCreate(ILExecThread *_thread,
-												  ILNativeInt classInfo,
-												  ILString *name,
-												  ILInt32 attrs,
-												  ILNativeInt signature)
+                                                  ILNativeInt classInfo,
+                                                  ILString *name,
+                                                  ILInt32 attrs,
+                                                  ILNativeInt signature)
 {
-	/* TODO */
-	return 0;
+	ILProperty *retval;
+	ILClass *info;
+	ILType *sig;
+	const char *str;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	info = (ILClass *)classInfo;
+	sig = (ILType *)signature;
+	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if (!(retval = ILPropertyCreate(info, 0, str, (ILUInt32)attrs, sig)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILNativeInt)retval;
 }
 
 /*
  * private static void ClrPropertyAddSemantics(IntPtr item,
- *											   MethodSemanticsAttributes attr,
- *											   MethodToken token);
+ *                                             MethodSemanticsAttributes attr,
+ *                                             MethodToken token);
  */
 void _IL_PropertyBuilder_ClrPropertyAddSemantics(ILExecThread *_thread,
-												 ILNativeInt item,
-												 ILInt32 attr,
-												 void *token)
+                                                 ILNativeInt item,
+                                                 ILInt32 attr,
+                                                 void *token)
 {
-	/* TODO */
+	ILProgramItem *itemInfo;
+	ILImage *image;
+	ILToken tok;
+	ILMethod *method;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	itemInfo = (ILProgramItem *)item;
+	image = ILProgramItem_Image(itemInfo);
+	tok = *((ILToken *)token);
+	if (!(method = ILMethod_FromToken(image,tok)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	if (!(ILMethodSemCreate(itemInfo, 0, (ILUInt32)attr, method)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
 }
 
 /*
  * private static void ClrPropertySetConstant(IntPtr item, Object value);
  */
 void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
-												ILNativeInt item,
-												ILObject *value)
+                                                ILNativeInt item,
+                                                ILObject *value)
 {
-	/* TODO */
+	ILImage *image;
+	ILProgramItem *owner;
+	ILProperty *property;
+	ILType *type;
+	ILType *valueType;
+	ILUInt32 elemType;
+	ILConstant *constant;
+	ILExecValue blob;
+	unsigned long len;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	owner = (ILProgramItem *)item;
+	image = ILProgramItem_Image(owner);
+	property = (ILProperty *)item;
+	type = ILTypeGetReturn(ILProperty_Signature(property));
+	valueType = ILClassToType(GetObjectClass(value));
+	type = ILTypeGetEnumType(type);
+	valueType = ILTypeGetEnumType(valueType);
+	if (!(ILTypeAssignCompatible(image, valueType, type)))
+	{
+		return;
+	}
+	elemType = ILType_ToElement(type);
+
+	/* handle null objects */
+	if (!value)
+	{
+		if (!(constant = ILConstantCreate(image, 0, owner, IL_META_ELEMTYPE_CLASS)))
+		{
+			IL_METADATA_UNLOCK(_thread);
+			ILExecThreadThrowOutOfMemory(_thread);
+			return;
+		}
+		blob.int32Value = (ILInt32)0;
+		if (!(ILConstantSetValue(constant, &blob, 4)))
+		{
+			IL_METADATA_UNLOCK(_thread);
+			ILExecThreadThrowOutOfMemory(_thread);
+			return;
+		}
+		IL_METADATA_UNLOCK(_thread);
+		return;
+	}
+
+	switch(elemType)
+	{
+		case IL_META_ELEMTYPE_BOOLEAN:
+		case IL_META_ELEMTYPE_I1:
+		case IL_META_ELEMTYPE_U1:
+		case IL_META_ELEMTYPE_CHAR:
+		case IL_META_ELEMTYPE_I2:
+		case IL_META_ELEMTYPE_U2:
+		case IL_META_ELEMTYPE_I4:
+		case IL_META_ELEMTYPE_U4:
+		case IL_META_ELEMTYPE_R4:
+		case IL_META_ELEMTYPE_I8:
+		case IL_META_ELEMTYPE_U8:
+		case IL_META_ELEMTYPE_R8:
+		case IL_META_ELEMTYPE_I:
+		case IL_META_ELEMTYPE_U:
+		case IL_META_ELEMTYPE_R:
+		{
+			len = (unsigned long)ILSizeOfType(_thread, type);
+		}
+		break;
+
+		case IL_META_ELEMTYPE_STRING:
+		{
+			ILUInt16 *chars;
+			ILUInt16 *ptr;
+			unsigned long i;
+
+			len = (((System_String *)value)->length);
+			if (!(blob.ptrValue = (ILUInt16 *)ILMalloc(len*2)))
+			{
+				IL_METADATA_UNLOCK(_thread);
+				ILExecThreadThrowOutOfMemory(_thread);
+				return;
+			}
+			chars = StringToBuffer(value);
+			ptr = (ILUInt16 *)blob.ptrValue;
+			for (i = 0; i < len; ++i, ++ptr)
+			{
+				IL_WRITE_UINT16(ptr, chars[i]);
+			}
+			if (!(constant = ILConstantCreate(image, 0, owner, elemType)))
+			{
+				ILFree(blob.ptrValue);
+				IL_METADATA_UNLOCK(_thread);
+				ILExecThreadThrowOutOfMemory(_thread);
+				return;
+			}
+			if (!(ILConstantSetValue(constant, blob.ptrValue, len*2)))
+			{
+				ILFree(blob.ptrValue);
+				IL_METADATA_UNLOCK(_thread);
+				ILExecThreadThrowOutOfMemory(_thread);
+				return;
+			}
+			ILFree(blob.ptrValue);
+			IL_METADATA_UNLOCK(_thread);
+		}
+		return;
+
+		default:
+		{
+			IL_METADATA_UNLOCK(_thread);
+		}
+		return;
+	}
+	if (!(ILExecThreadUnbox(_thread, type, value, &blob)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		return;
+	}
+	if (!(constant = ILConstantCreate(image, 0, owner, elemType)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	if (!(ILConstantSetValue(constant, &blob, len)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
 }
 
 /*
@@ -435,8 +852,8 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
  * private static void ClrTypeSetPackingSize(IntPtr classInfo, int packingSize);
  */
 void _IL_TypeBuilder_ClrTypeSetPackingSize(ILExecThread *_thread,
-										   ILNativeInt classInfo,
-										   ILInt32 packingSize)
+                                           ILNativeInt classInfo,
+                                           ILInt32 packingSize)
 {
 	ILClassLayout *layout;
 	IL_METADATA_WRLOCK(_thread);
@@ -465,8 +882,8 @@ void _IL_TypeBuilder_ClrTypeSetPackingSize(ILExecThread *_thread,
  * private static void ClrTypeSetClassSize(IntPtr classInfo, int classSize);
  */
 void _IL_TypeBuilder_ClrTypeSetClassSize(ILExecThread *_thread,
-										 ILNativeInt classInfo,
-										 ILInt32 classSize)
+                                         ILNativeInt classInfo,
+                                         ILInt32 classSize)
 {
 	ILClassLayout *layout;
 	IL_METADATA_WRLOCK(_thread);
@@ -495,8 +912,8 @@ void _IL_TypeBuilder_ClrTypeSetClassSize(ILExecThread *_thread,
  * private static void ClrTypeAddInterface(IntPtr classInfo, TypeToken iface);
  */
 void _IL_TypeBuilder_ClrTypeAddInterface(ILExecThread *_thread,
-										 ILNativeInt classInfo,
-										 void *iface)
+                                         ILNativeInt classInfo,
+                                         void *iface)
 {
 	ILClass *class;
 	ILToken token;
@@ -528,7 +945,7 @@ void _IL_TypeBuilder_ClrTypeAddInterface(ILExecThread *_thread,
  * private static int ClrTypeGetPackingSize(IntPtr classInfo);
  */
 ILInt32 _IL_TypeBuilder_ClrTypeGetPackingSize(ILExecThread *_thread,
-											  ILNativeInt classInfo)
+                                              ILNativeInt classInfo)
 {
 	ILInt32 size = 0;
 	ILClassLayout *layout;
@@ -549,7 +966,7 @@ ILInt32 _IL_TypeBuilder_ClrTypeGetPackingSize(ILExecThread *_thread,
  * private static int ClrTypeGetClassSize(IntPtr classInfo);
  */
 ILInt32 _IL_TypeBuilder_ClrTypeGetClassSize(ILExecThread *_thread,
-											ILNativeInt classInfo)
+                                            ILNativeInt classInfo)
 {
 	ILInt32 size = 0;
 	ILClassLayout *layout;
@@ -570,8 +987,8 @@ ILInt32 _IL_TypeBuilder_ClrTypeGetClassSize(ILExecThread *_thread,
  * private static void ClrTypeSetParent(IntPtr classInfo, TypeToken parent);
  */
 void _IL_TypeBuilder_ClrTypeSetParent(ILExecThread *_thread,
-									  ILNativeInt classInfo,
-									  void *parent)
+                                      ILNativeInt classInfo,
+                                      void *parent)
 {
 	ILClass *class;
 	ILToken token;
@@ -598,8 +1015,8 @@ void _IL_TypeBuilder_ClrTypeSetParent(ILExecThread *_thread,
  * internal static int ClrTypeImport(IntPtr module, IntPtr classInfo);
  */
 ILInt32 _IL_TypeBuilder_ClrTypeImport(ILExecThread *_thread,
-									  ILNativeInt module,
-									  ILNativeInt classInfo)
+                                      ILNativeInt module,
+                                      ILNativeInt classInfo)
 {
 	ILImage *image;
 	ILClass *import;
@@ -623,8 +1040,8 @@ ILInt32 _IL_TypeBuilder_ClrTypeImport(ILExecThread *_thread,
  * internal static int ClrTypeImportMember(IntPtr module, IntPtr memberInfo);
  */
 ILInt32 _IL_TypeBuilder_ClrTypeImportMember(ILExecThread *_thread,
-											ILNativeInt module,
-											ILNativeInt memberInfo)
+                                            ILNativeInt module,
+                                            ILNativeInt memberInfo)
 {
 	ILImage *image;
 	ILMember *import;
@@ -648,12 +1065,12 @@ ILInt32 _IL_TypeBuilder_ClrTypeImportMember(ILExecThread *_thread,
 
 /*
  * private static void ClrTypeAddOverride(IntPtr module, int bodyToken,
- *										  int declToken);
+ *                                        int declToken);
  */
 void _IL_TypeBuilder_ClrTypeAddOverride(ILExecThread *_thread,
-										ILNativeInt module,
-										ILInt32 bodyToken,
-										ILInt32 declToken)
+                                        ILNativeInt module,
+                                        ILInt32 bodyToken,
+                                        ILInt32 declToken)
 {
 	ILImage *image;
 	ILMethod *body;
@@ -688,14 +1105,14 @@ void _IL_TypeBuilder_ClrTypeAddOverride(ILExecThread *_thread,
 
 /*
  * internal static IntPtr ClrMethodCreate(IntPtr classInfo, String name,
- *										  MethodAttributes attributes,
- *										  IntPtr signature);
+ *                                        MethodAttributes attributes,
+ *                                        IntPtr signature);
  */
 ILNativeInt _IL_MethodBuilder_ClrMethodCreate(ILExecThread *_thread,
-											  ILNativeInt classInfo,
-											  ILString *name,
-											  ILInt32 attributes,
-											  ILNativeInt signature)
+                                              ILNativeInt classInfo,
+                                              ILString *name,
+                                              ILInt32 attributes,
+                                              ILNativeInt signature)
 {
 	ILClass *class;
 	const char *str;
@@ -724,11 +1141,11 @@ ILNativeInt _IL_MethodBuilder_ClrMethodCreate(ILExecThread *_thread,
 
 /*
  * internal static void ClrMethodSetImplAttrs(IntPtr method,
- *											  MethodImplAttributes attributes);
+ *                                            MethodImplAttributes attributes);
  */
 void _IL_MethodBuilder_ClrMethodSetImplAttrs(ILExecThread *_thread,
-											 ILNativeInt item,
-											 ILInt32 attributes)
+                                             ILNativeInt item,
+                                             ILInt32 attributes)
 {
 	if(item)
 	{
@@ -739,13 +1156,13 @@ void _IL_MethodBuilder_ClrMethodSetImplAttrs(ILExecThread *_thread,
 
 /*
  * internal static int ClrMethodCreateVarArgRef(IntPtr module,
- *												int methodToken,
- *												IntPtr signature);
+ *                                              int methodToken,
+ *                                              IntPtr signature);
  */
 ILInt32 _IL_MethodBuilder_ClrMethodCreateVarArgRef(ILExecThread *_thread,
-												   ILNativeInt module,
-												   ILInt32 methodToken,
-												   ILNativeInt signature)
+                                                   ILNativeInt module,
+                                                   ILInt32 methodToken,
+                                                   ILNativeInt signature)
 {
 	/* TODO */
 	return 0;
@@ -755,7 +1172,7 @@ ILInt32 _IL_MethodBuilder_ClrMethodCreateVarArgRef(ILExecThread *_thread,
  * internal static void ClrMethodSetRVA(IntPtr method, int rva);
  */
 void _IL_MethodBuilder_ClrMethodSetRVA(ILExecThread *_thread,
-									   ILNativeInt method, ILInt32 rva)
+                                       ILNativeInt method, ILInt32 rva)
 {
 	if(method)
 	{
@@ -765,25 +1182,60 @@ void _IL_MethodBuilder_ClrMethodSetRVA(ILExecThread *_thread,
 
 /*
  * internal static void ClrMethodAddPInvoke(IntPtr method, int pinvAttrs,
- *											String dllName, String entryName);
+ *                                          String dllName, String entryName);
  */
 void _IL_MethodBuilder_ClrMethodAddPInvoke(ILExecThread *_thread,
-										   ILNativeInt method,
-										   ILInt32 pinvAttrs,
-										   ILString *dllName,
-										   ILString *entryName)
+                                           ILNativeInt method,
+                                           ILInt32 pinvAttrs,
+                                           ILString *dllName,
+                                           ILString *entryName)
 {
-	/* TODO */
+	ILMethod *methodInfo;
+	ILModule *module;
+	ILImage * image;
+	const char *dll;
+	const char *entry;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	methodInfo = (ILMethod *)method;
+	image = ((ILProgramItem *)methodInfo)->image;
+	if (!(dll = (const char *)ILStringToAnsi(_thread, dllName)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	if (!(entry = (const char *)ILStringToAnsi(_thread, entryName)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	if (!(module = ILModuleCreate(image, 0, dll, 0)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	if (!(ILPInvokeCreate(methodInfo, 0, (ILUInt32)pinvAttrs, module, entry)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
 }
 
 /*
  * private static IntPtr ClrSigCreateMethod(IntPtr context, int callConv,
- *											IntPtr returnType);
+ *                                          IntPtr returnType);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreateMethod(ILExecThread *_thread,
-												   ILNativeInt context,
-												   ILInt32 callConv,
-												   ILNativeInt returnType)
+                                                   ILNativeInt context,
+                                                   ILInt32 callConv,
+                                                   ILNativeInt returnType)
 {
 	ILType *type = 0;
 	IL_METADATA_WRLOCK(_thread);
@@ -807,8 +1259,8 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateMethod(ILExecThread *_thread,
  *            (IntPtr context, IntPtr returnType);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreateProperty(ILExecThread *_thread,
-													 ILNativeInt context,
-													 ILNativeInt returnType)
+                                                     ILNativeInt context,
+                                                     ILNativeInt returnType)
 {
 	ILType *type = 0;
 	IL_METADATA_WRLOCK(_thread);
@@ -830,7 +1282,7 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateProperty(ILExecThread *_thread,
  * private static IntPtr ClrSigModuleToContext(IntPtr module);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigModuleToContext(ILExecThread *_thread,
-													  ILNativeInt module)
+                                                      ILNativeInt module)
 {
 	if(module)
 	{
@@ -847,8 +1299,8 @@ ILNativeInt _IL_SignatureHelper_ClrSigModuleToContext(ILExecThread *_thread,
  * private static IntPtr ClrSigCreatePrimitive(IntPtrContext, Type type);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreatePrimitive(ILExecThread *_thread,
-													  ILNativeInt context,
-													  ILObject *type)
+                                                      ILNativeInt context,
+                                                      ILObject *type)
 {
 	ILClass *classInfo = _ILGetClrClass(_thread, type);
 	if(classInfo)
@@ -863,12 +1315,12 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreatePrimitive(ILExecThread *_thread,
 
 /*
  * private static IntPtr ClrSigCreateArray(IntPtr context, int rank,
- *										   IntPtr elemType);
+ *                                         IntPtr elemType);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreateArray(ILExecThread *_thread,
-												  ILNativeInt context,
-												  ILInt32 rank,
-												  ILNativeInt elemType)
+                                                  ILNativeInt context,
+                                                  ILInt32 rank,
+                                                  ILNativeInt elemType)
 {
 	ILType *type = 0;
 	IL_METADATA_WRLOCK(_thread);
@@ -892,8 +1344,8 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateArray(ILExecThread *_thread,
  * private static IntPtr ClrSigCreatePointer(IntPtr context, IntPtr elemType);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreatePointer(ILExecThread *_thread,
-													ILNativeInt context,
-													ILNativeInt elemType)
+                                                    ILNativeInt context,
+                                                    ILNativeInt elemType)
 {
 	ILType *type = 0;
 	IL_METADATA_WRLOCK(_thread);
@@ -916,8 +1368,8 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreatePointer(ILExecThread *_thread,
  * private static IntPtr ClrSigCreateByRef(IntPtr context, IntPtr elemType);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreateByRef(ILExecThread *_thread,
-												  ILNativeInt context,
-												  ILNativeInt elemType)
+                                                  ILNativeInt context,
+                                                  ILNativeInt elemType)
 {
 	ILType *type = 0;
 	IL_METADATA_WRLOCK(_thread);
@@ -940,8 +1392,8 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateByRef(ILExecThread *_thread,
  * private static IntPtr ClrSigCreateValueType(IntPtr module, int token);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreateValueType(ILExecThread *_thread,
-													  ILNativeInt module,
-													  ILInt32 token)
+                                                      ILNativeInt module,
+                                                      ILInt32 token)
 {
 	if(module && token)
 	{
@@ -959,8 +1411,8 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateValueType(ILExecThread *_thread,
  * private static IntPtr ClrSigCreateClass(IntPtr module, int token);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreateClass(ILExecThread *_thread,
-												  ILNativeInt module,
-												  ILInt32 token)
+                                                  ILNativeInt module,
+                                                  ILInt32 token)
 {
 	if(module && token)
 	{
@@ -978,7 +1430,7 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateClass(ILExecThread *_thread,
  * private static IntPtr ClrSigCreateField(IntPtr context);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreateField(ILExecThread *_thread,
-												  ILNativeInt context)
+                                                  ILNativeInt context)
 {
 	/* TODO */
 	return 0;
@@ -988,7 +1440,7 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateField(ILExecThread *_thread,
  * private static IntPtr ClrSigCreateLocal(IntPtr context);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreateLocal(ILExecThread *_thread,
-												  ILNativeInt context)
+                                                  ILNativeInt context)
 {
 	ILType *type = 0;
 	IL_METADATA_WRLOCK(_thread);
@@ -1008,12 +1460,12 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateLocal(ILExecThread *_thread,
 
 /*
  * private static bool ClrSigAddArgument(IntPtr context, IntPtr sig,
- *										 IntPtr arg);
+ *                                       IntPtr arg);
  */
 ILBool _IL_SignatureHelper_ClrSigAddArgument(ILExecThread *_thread,
-											 ILNativeInt context,
-											 ILNativeInt sig,
-											 ILNativeInt arg)
+                                             ILNativeInt context,
+                                             ILNativeInt sig,
+                                             ILNativeInt arg)
 {
 	int result = 0;
 	IL_METADATA_WRLOCK(_thread);
@@ -1051,8 +1503,8 @@ ILBool _IL_SignatureHelper_ClrSigAddArgument(ILExecThread *_thread,
  * private static bool ClrSigAddSentinel(IntPtr context, IntPtr sig);
  */
 ILBool _IL_SignatureHelper_ClrSigAddSentinel(ILExecThread *_thread,
-											 ILNativeInt context,
-											 ILNativeInt sig)
+                                             ILNativeInt context,
+                                             ILNativeInt sig)
 {
 	int result = 0;
 	IL_METADATA_WRLOCK(_thread);
@@ -1072,12 +1524,12 @@ ILBool _IL_SignatureHelper_ClrSigAddSentinel(ILExecThread *_thread,
 
 /*
  * private static IntPtr ClrSigCreateMethodCopy(IntPtr context, IntPtr module,
- *												int methodToken);
+ *                                              int methodToken);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreateMethodCopy(ILExecThread *_thread,
-													   ILNativeInt context,
-													   ILNativeInt module,
-													   ILInt32 methodToken)
+                                                       ILNativeInt context,
+                                                       ILNativeInt module,
+                                                       ILInt32 methodToken)
 {
 	/* TODO */
 	return 0;
@@ -1087,8 +1539,8 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateMethodCopy(ILExecThread *_thread,
  * private static bool ClrSigIdentical(IntPtr sig1, IntPtr sig2);
  */
 ILBool _IL_SignatureHelper_ClrSigIdentical(ILExecThread *_thread,
-										   ILNativeInt sig1,
-										   ILNativeInt sig2)
+                                           ILNativeInt sig1,
+                                           ILNativeInt sig2)
 {
 	return (ILBool)(ILTypeIdentical((ILType *)sig1, (ILType *)sig2));
 }
@@ -1097,15 +1549,24 @@ ILBool _IL_SignatureHelper_ClrSigIdentical(ILExecThread *_thread,
  * private static int ClrSigGetHashCode(IntPtr sig);
  */
 ILInt32 _IL_SignatureHelper_ClrSigGetHashCode(ILExecThread *_thread,
-											  ILNativeInt sig)
+                                              ILNativeInt sig)
 {
-	/* TODO */
-	return 0;
+	if (sig)
+	{
+		return (ILInt32)ILTypeHash((ILType *)sig);
+	}
+	else
+	{
+		return 0;
+	}
 }
 
+/*
+ * private static byte[] ClrSigGetBytes(IntPtr module, IntPtr sig);
+ */
 System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
-												 ILNativeInt module,
-												 ILNativeInt sig)
+                                                 ILNativeInt module,
+                                                 ILNativeInt sig)
 {
 	/* TODO */
 	return 0;
@@ -1113,24 +1574,44 @@ System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
 
 /*
  * internal static IntPtr ClrParameterCreate(IntPtr method, int position,
- *											 ParameterAttributes attributes,
- *											 String name);
+ *                                           ParameterAttributes attributes,
+ *                                           String name);
  */
 ILNativeInt _IL_ParameterBuilder_ClrParameterCreate(ILExecThread *_thread,
-													ILNativeInt method,
-													ILInt32 position,
-													ILInt32 attributes,
-													ILString *name)
+                                                    ILNativeInt method,
+                                                    ILInt32 position,
+                                                    ILInt32 attributes,
+                                                    ILString *name)
 {
-	/* TODO */
-	return 0;
+	ILParameter *retval;
+	ILMethod *methodInfo;
+	const char *str;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	methodInfo = (ILMethod *)method;
+	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if (!(retval = ILParameterCreate(methodInfo, 0, str, (ILUInt32)attributes, (ILUInt32)position)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILNativeInt)retval;
 }
 
 /*
  * internal static int ClrParameterGetPosition(IntPtr parameter);
  */
 ILInt32 _IL_ParameterBuilder_ClrParameterGetPosition(ILExecThread *_thread,
-													 ILNativeInt parameter)
+                                                     ILNativeInt parameter)
 {
 	if(parameter)
 	{
@@ -1147,7 +1628,7 @@ ILInt32 _IL_ParameterBuilder_ClrParameterGetPosition(ILExecThread *_thread,
  *						(IntPtr parameter);
  */
 ILInt32 _IL_ParameterBuilder_ClrParameterGetAttrs(ILExecThread *_thread,
-												  ILNativeInt parameter)
+                                                  ILNativeInt parameter)
 {
 	if(parameter)
 	{
@@ -1163,7 +1644,7 @@ ILInt32 _IL_ParameterBuilder_ClrParameterGetAttrs(ILExecThread *_thread,
  * internal static String ClrParameterGetName(IntPtr parameter);
  */
 ILString *_IL_ParameterBuilder_ClrParameterGetName(ILExecThread *_thread,
-												   ILNativeInt parameter)
+                                                   ILNativeInt parameter)
 {
 	if(parameter)
 	{

@@ -551,6 +551,11 @@ ILClass *_ILTypeToSyntheticInstantiation
 	return ILHashFindType(image->context->syntheticHash, type, ILClass);
 }
 
+unsigned long ILTypeHash(ILType *type)
+{
+	return HashType(0, type);
+}
+
 #ifdef	__cplusplus
 };
 #endif

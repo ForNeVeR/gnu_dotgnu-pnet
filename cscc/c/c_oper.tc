@@ -1100,8 +1100,8 @@ static CSemValue RelationalSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 			type2 == ILMachineType_UnmanagedPtr)
 	{
 		/* Compare pointer values */
-		elemType = ILTypeStripPrefixes(CSemGetType(value1));
-		elemType2 = ILTypeStripPrefixes(CSemGetType(value2));
+		elemType = ILTypeStripPrefixes(CTypeGetPtrRef(CSemGetType(value1)));
+		elemType2 = ILTypeStripPrefixes(CTypeGetPtrRef(CSemGetType(value2)));
 		if(elemType != ILType_Void && elemType2 != ILType_Void &&
 		   !ILTypeIdentical(elemType, elemType2))
 		{

@@ -1427,7 +1427,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	{
 		if(ILMember_IsProperty(member) &&
 		   PropertyIsVirtual((ILProperty *)member) &&
-		   (property->modifiers & IL_META_METHODDEF_NEW_SLOT) == 0)
+		   (property->modifiers & CS_SPECIALATTR_NEW) == 0)
 		{
 			/* Check for the correct form of virtual method overrides */
 			if((property->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)

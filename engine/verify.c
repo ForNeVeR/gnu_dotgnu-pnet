@@ -1113,6 +1113,18 @@ restart:
 		TempAllocatorDestroy(&allocator);
 		goto restart;
 	}
+#ifdef IL_VERIFY_DEBUG
+	else if(result == IL_CODER_END_TOO_BIG)
+	{
+		ILMethodCode code;
+		ILMethodGetCode(method,&code);
+		fprintf(stderr, "%s::%s - method is too big (%d%s bytes)\n",
+							ILClass_Name(ILMethod_Owner(method)),
+							ILMethod_Name(method),
+							code.codeLen,
+							(code.moreSections != 0) ? "+" : "");
+	}
+#endif
 	result = (result == IL_CODER_END_OK);
 
 	/* Clean up and exit */

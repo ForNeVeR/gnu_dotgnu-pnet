@@ -1122,9 +1122,11 @@ by cscc, and that described in the ECMA specification.
 @cindex Special Keywords
 
 The C# standard reserves identifiers that begin with @code{__} for
-use by the language implementation.  We provide one such extension:
-@code{__builtin_constant}.
+use by the language implementation.  We provide five such extensions:
+@code{__builtin_constant}, @code{__arglist}, @code{__makeref},
+@code{__reftype}, and @code{__refvalue}.
 
+@cindex __builtin_constant keyword
 The @code{__builtin_constant} keyword can be used to insert special
 constants into the input stream that may otherwise be difficult to
 represent accurately with regular C# language features.
@@ -1165,6 +1167,89 @@ The programmer will not normally use these constructs.  Instead,
 they should use the corresponding constants in the @code{System.Single}
 and @code{System.Double} classes.  The @code{__builtin_constant} keyword
 is intended solely for use in implementing the C# library.
+
+@cindex __arglist keyword
+The @code{__arglist} keyword is used to assist interoperation with
+C code that uses variable argument lists.  For example:
+
+@example
+int AddInts(__arglist)
+@{
+    int sum = 0;
+    ArgIterator iter = new ArgIterator(__arglist);
+    while(iter.GetRemainingCount() > 0)
+    @{
+        sum += __refvalue(iter.GetNextArg(), int);
+    @}
+    return sum;
+@}
+
+void Call()
+@{
+    int result = AddInts(__arglist(1, 2, 3, 4, 5));
+@}
+@end example
+
+@noindent
+The @code{__arglist} keyword is typically used in three different places:
+
+@itemize @bullet
+@item
+As the last formal parameter in a method declaration.  This indicates
+that the method takes a variable number of arguments.
+
+@item
+As the parameter to the @code{System.ArgIterator} constructor.  This
+initializes an iterator to traverse the variable arguments.
+
+@item
+As the last actual parameter in a method call to specify the variable
+arguments to be passed.  The construct @code{__arglist()} is used
+when there are no variable arguments to be passed.
+@end itemize
+
+@cindex __makeref keyword
+The @code{__makeref} keyword is used to convert a variable into
+an instance of @code{System.TypedReference}.  The single argument can
+be any l-value that can be passed by reference using the @code{ref}
+keyword (local variables, object fields, array elements, etc).
+For example:
+
+@example
+int x;
+TypedReference tref;
+...
+tref = __makeref(x);
+@end example
+
+@cindex __reftype keyword
+The @code{__reftype} keyword is used to extract the type component
+from an instance of @code{System.TypedReference}.  For example:
+
+@example
+TypedReference tref;
+Type type;
+...
+type = __reftype(tref);
+@end example
+
+@cindex __refvalue keyword
+The @code{__refvalue} keyword is used to extract the value component
+from an instance of @code{System.TypedReference}, where the second
+argument specifies the type to extract.  @code{System.InvalidCastException}
+will be thrown if the value component is not of the specified type.
+For example:
+
+@example
+TypedReference tref;
+int x;
+...
+x = __refvalue(tref, int);
+@end example
+
+The @code{__arglist}, @code{__makeref}, @code{__reftype}, and
+@code{__refvalue} extensions are present in C# compilers from other
+vendors.  The @code{__builtin_constant} extension is unique to cscc.
 
 @c -----------------------------------------------------------------------
 

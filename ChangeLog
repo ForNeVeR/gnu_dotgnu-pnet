@@ -6,6 +6,8 @@
 	cscc/csharp/cs_scanner.l: implement the "__makeref", "__reftype",
 	and "__refvalue" operators.
 
+	* doc/pnettools.texi: document the new compiler keywords.
+
 2002-05-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_scope.c, codegen/cg_scope.h, cscc/csharp/Makefile.am,

@@ -48,7 +48,7 @@ static IL_INLINE int StringEquals(System_String *str1,
 
 #elif defined(IL_CVM_LOCALS)
 
-/* No locals required */
+System_Text_StringBuilder *builder;
 
 #elif defined(IL_CVM_MAIN)
 
@@ -382,5 +382,69 @@ VMCASE(COP_PREFIX_MONITOR_EXIT):
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
 VMBREAK(COP_PREFIX_MONITOR_EXIT);
+
+/**
+ * <opcode name="append_char" group="Inline methods">
+ *   <operation>Append a character to a string builder</operation>
+ *
+ *   <format>prefix<fsep/>append_char<fsep/>method</format>
+ *   <dformat>{append_char}<fsep/>method</dformat>
+ *
+ *   <form name="append_char" code="COP_PREFIX_APPEND_CHAR"/>
+ *
+ *   <before>..., builder, ch</before>
+ *   <after>..., builder</after>
+ *
+ *   <description>The <i>builder</i> and <i>ch</i> are popped from the
+ *   stack as the types <code>ptr</code> and <code>int32</code> respectively.
+ *   The character <i>ch</i> is appended to the end of the string builder
+ *   indicated by <i>builder</i>.  The <i>builder</i> is then pushed
+ *   back onto the stack.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>StringBuilder.Append(char)</code> method.  The <i>method</i>
+ *   argument must be a pointer to this method, because the interpreter
+ *   will "bail out" to the C# class library if the append is too
+ *   difficult to perform (e.g. the string must be reallocated).</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException">Raised if
+ *     <i>builder</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_APPEND_CHAR):
+{
+	/* Append a character to a string builder */
+	if(stacktop[-2].ptrValue)
+	{
+		builder = (System_Text_StringBuilder *)(stacktop[-2].ptrValue);
+		if(!(builder->needsCopy) &&
+		   builder->buildString->length < builder->buildString->capacity)
+		{
+			/* We can insert the character into the string directly */
+			(StringToBuffer(builder->buildString))
+				[(builder->buildString->length)++] =
+					(ILUInt16)(stacktop[-1].intValue);
+			MODIFY_PC_AND_STACK(CVMP_LEN_PTR, -1);
+		}
+		else
+		{
+			/* We need to reallocate the builder, so call the C# library */
+			COPY_STATE_TO_THREAD();
+			ILExecThreadCallVirtual(thread, CVMP_ARG_PTR(ILMethod *),
+									&(stacktop[-2].ptrValue),
+									stacktop[-2].ptrValue,
+									(ILVaInt)(stacktop[-1].intValue));
+			RESTORE_STATE_FROM_THREAD();
+			MODIFY_PC_AND_STACK(CVMP_LEN_PTR, -1);
+		}
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
+}
+VMBREAK(COP_PREFIX_APPEND_CHAR);
 
 #endif /* IL_CVM_PREFIX */

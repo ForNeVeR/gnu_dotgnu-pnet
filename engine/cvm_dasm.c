@@ -542,6 +542,7 @@ static CVMOpcode const prefixOpcodes[96] = {
 	{"type_from_handle", CVM_OPER_NONE},
 	{"monitor_enter",	CVM_OPER_NONE},
 	{"monitor_exit",	CVM_OPER_NONE},
+	{"append_char",		CVM_OPER_METHOD},
 
 	/*
 	 * Binary value fixups.
@@ -567,7 +568,6 @@ static CVMOpcode const prefixOpcodes[96] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_56",	CVM_OPER_NONE},
 	{"preserved_57",	CVM_OPER_NONE},
 	{"preserved_58",	CVM_OPER_NONE},
 	{"preserved_59",	CVM_OPER_NONE},

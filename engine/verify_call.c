@@ -947,6 +947,31 @@ static int GetInlineMethodType(ILMethod *method)
 		}
 		return -1;
 	}
+	else if(!strcmp(name, "StringBuilder"))
+	{
+		/* Make sure that this is really "System.Text.StringBuilder" */
+		name = ILClass_Namespace(owner);
+		if(!name || strcmp(name, "System.Text") != 0)
+		{
+			return -1;
+		}
+		image = ILClassToImage(owner);
+		systemImage = ILContextGetSystem(ILImageToContext(image));
+		if(systemImage && systemImage != image)
+		{
+			return -1;
+		}
+
+		/* Check for known inlineable methods */
+		name = ILMethod_Name(method);
+		signature = ILMethod_Signature(method);
+		if(!strcmp(name, "Append") &&
+		   _ILLookupTypeMatch(signature, "(Tc)oSystem.Text.StringBuilder;"))
+		{
+			return IL_INLINEMETHOD_BUILDER_APPEND_CHAR;
+		}
+		return -1;
+	}
 	else if(Is2DArrayClass(owner))
 	{
 		/* Two-dimensional array operation */
@@ -1066,7 +1091,7 @@ case IL_OP_CALL:
 				}
 				inlineType = GetInlineMethodType(methodInfo);
 				if(inlineType == -1 ||
-				   !ILCoderCallInlineable(coder, inlineType))
+				   !ILCoderCallInlineable(coder, inlineType, methodInfo))
 				{
 					ILCoderCallMethod(coder, stack + stackSize - numParams,
 									  (ILUInt32)numParams, &(stack[stackSize]),
@@ -1249,7 +1274,7 @@ case IL_OP_CALLVIRT:
 					   "call" is probably a better way to do it */
 					inlineType = GetInlineMethodType(methodInfo);
 					if(inlineType == -1 ||
-					   !ILCoderCallInlineable(coder, inlineType))
+					   !ILCoderCallInlineable(coder, inlineType, methodInfo))
 					{
 						if(numParams > 0 && !ILMethod_IsStatic(methodInfo) &&
 						   (stack + stackSize - numParams)->engineType

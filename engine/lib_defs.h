@@ -49,6 +49,17 @@ typedef struct
 #define	StringToBuffer(str)		((ILUInt16 *)(((System_String *)(str)) + 1))
 
 /*
+ * Internal structure of a string builder.
+ */
+typedef struct
+{
+	System_String *buildString;
+	ILInt32		   maxCapacity;
+	ILBool		   needsCopy;
+
+} System_Text_StringBuilder;
+
+/*
  * Internal structure of an array header, padded to the best alignment.
  */
 typedef union

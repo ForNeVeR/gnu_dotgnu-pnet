@@ -296,7 +296,8 @@ static void Coder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
 								ILMethod *methodInfo)
 {
 }
-static int Coder_CallInlineable(ILCoder *coder, int inlineType)
+static int Coder_CallInlineable(ILCoder *coder, int inlineType,
+								ILMethod *methodInfo)
 {
 	return 0;
 }

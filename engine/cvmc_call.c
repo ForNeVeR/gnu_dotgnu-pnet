@@ -191,7 +191,8 @@ static void CVMCoder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
 	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
-static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
+static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType,
+								   ILMethod *methodInfo)
 {
 	/* Inline methods cannot be tail calls */
 	((ILCVMCoder *)coder)->tailCallFlag = 0;
@@ -346,6 +347,15 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		{
 			CVMP_OUT_WORD(COP_PREFIX_SET2D, CVM_WORDS_PER_NATIVE_FLOAT);
 			CVM_OUT_NONE(COP_DWRITE);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_BUILDER_APPEND_CHAR:
+		{
+			/* Concatenate four string objects */
+			CVMP_OUT_PTR(COP_PREFIX_APPEND_CHAR, methodInfo);
+			CVM_ADJUST(-1);
 			return 1;
 		}
 		/* Not reached */

@@ -16,6 +16,12 @@
 
 	* engine/null_coder.c: stub out ILCoderSetFlags in the null coder.
 
+	* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_inline.c,
+	engine/cvm_lengths.c, engine/cvmc_call.c, engine/lib_defs.h,
+	engine/null_coder.c, engine/verify_call.c, include/il_coder.h:
+	inline "StringBuilder.Append(char)" because it is heavily used
+	in stream and string code within pnetlib.
+
 2003-02-22  CH Gowri Kumar  <gkumar@csa.iisc.ernet.in>
 
 	* engine/cvm.h, engine/cvm_call.c, engine/cvm_dasm.c,

@@ -100,6 +100,7 @@ struct _tagILCoder
 #define	IL_INLINEMETHOD_SET2D_INT			13
 #define	IL_INLINEMETHOD_SET2D_OBJECT		14
 #define	IL_INLINEMETHOD_SET2D_DOUBLE		15
+#define	IL_INLINEMETHOD_BUILDER_APPEND_CHAR	16
 
 /*
  * Return values for "ILCoderFinish".
@@ -567,7 +568,7 @@ struct _tagILCoderClass
 	 * Call an inlineable method.  Returns zero if the coder
 	 * cannot inline the method.
 	 */
-	int (*callInlineable)(ILCoder *coder, int inlineType);
+	int (*callInlineable)(ILCoder *coder, int inlineType, ILMethod *methodInfo);
 
 	/*
 	 * Jump to a method with the same signature as the current method.
@@ -897,8 +898,9 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->callInterface))((coder), (args), \
 												    (numArgs), (returnItem), \
 													(methodInfo)))
-#define	ILCoderCallInlineable(coder,inlineType) \
-			((*((coder)->classInfo->callInlineable))((coder), (inlineType)))
+#define	ILCoderCallInlineable(coder,inlineType,methodInfo) \
+			((*((coder)->classInfo->callInlineable))((coder), (inlineType), \
+													 (methodInfo)))
 #define	ILCoderJumpMethod(coder,methodInfo) \
 			((*((coder)->classInfo->jumpMethod))((coder), (methodInfo)))
 #define	ILCoderReturnInsn(coder,engineType,returnType) \

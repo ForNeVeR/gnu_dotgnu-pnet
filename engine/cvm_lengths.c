@@ -500,6 +500,7 @@ unsigned char const _ILCVMLengths[512] = {
 	/* type_from_handle */	CVMP_LEN_NONE,
 	/* monitor_enter */		CVMP_LEN_NONE,
 	/* monitor_exit */		CVMP_LEN_NONE,
+	/* append_char */		CVMP_LEN_PTR,
 
 	/*
 	 * Binary value fixups.
@@ -525,7 +526,6 @@ unsigned char const _ILCVMLengths[512] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	/* preserved_56 */		CVMP_LEN_NONE,
 	/* preserved_57 */		CVMP_LEN_NONE,
 	/* preserved_58 */		CVMP_LEN_NONE,
 	/* preserved_59 */		CVMP_LEN_NONE,

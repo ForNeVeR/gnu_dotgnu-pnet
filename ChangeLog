@@ -1,4 +1,9 @@
 
+2002-03-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/ainit1.il: new output file to reflect a
+	compiler change to use "InitializeArray" for constant arrays.
+
 2002-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/ainit1.cs,

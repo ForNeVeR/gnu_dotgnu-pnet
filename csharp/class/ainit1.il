@@ -17,25 +17,22 @@
 	ldc.i4.4
 	newarr	['.library']'System'.'Int32'
 	dup
-	ldc.i4.0
-	ldc.i4.0
-	stelem.i4
-	dup
-	ldc.i4.1
-	ldc.i4.1
-	stelem.i4
-	dup
-	ldc.i4.2
-	ldc.i4.2
-	stelem.i4
-	dup
-	ldc.i4.3
-	ldc.i4.3
-	stelem.i4
+.data D1 = {int32(0), int32(1), int32(2), int32(3)}
+	ldtoken	field valuetype 'Test'/'<T1>' 'Test'/'<D1>'::'data'
+	call	void [.library]System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(class [.library]System.Array, valuetype [.library]System.RuntimeFieldHandle)
 	stloc.0
 	ret
-	.maxstack 4
+	.maxstack 3
 } // method test
+.class nested private explicit sealed '<T1>' extends [.library]System.ValueType
+{
+	.pack 1
+	.size 16
+}
+.class nested assembly '<D1>' extends [.library]System.Object
+{
+	.field assembly static valuetype 'Test'/'<T1>' 'data' at D1
+}
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {
 	ldarg.0
@@ -48,45 +45,36 @@
 	ldc.i4.4
 	newarr	['.library']'System'.'Int32'
 	dup
-	ldc.i4.0
-	ldc.i4.0
-	stelem.i4
-	dup
-	ldc.i4.1
-	ldc.i4.1
-	stelem.i4
-	dup
-	ldc.i4.2
-	ldc.i4.2
-	stelem.i4
-	dup
-	ldc.i4.3
-	ldc.i4.3
-	stelem.i4
+.data D2 = {int32(0), int32(1), int32(2), int32(3)}
+	ldtoken	field valuetype 'Test'/'<T2>' 'Test'/'<D2>'::'data'
+	call	void [.library]System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(class [.library]System.Array, valuetype [.library]System.RuntimeFieldHandle)
 	stsfld	int32[] 'Test'::'x'
 	ldc.i4.4
 	newarr	['.library']'System'.'Int64'
 	dup
-	ldc.i4.0
-	ldc.i4.0
-	conv.i8
-	stelem.i8
-	dup
-	ldc.i4.1
-	ldc.i4.1
-	conv.i8
-	stelem.i8
-	dup
-	ldc.i4.2
-	ldc.i4.2
-	conv.i8
-	stelem.i8
-	dup
-	ldc.i4.3
-	ldc.i8	0x3000000000000000
-	stelem.i8
+.data D3 = {int64(0x0000000000000000), int64(0x0000000000000001), int64(0x0000000000000002), int64(0x3000000000000000)}
+	ldtoken	field valuetype 'Test'/'<T3>' 'Test'/'<D3>'::'data'
+	call	void [.library]System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(class [.library]System.Array, valuetype [.library]System.RuntimeFieldHandle)
 	stsfld	int64[] 'Test'::'y'
 	ret
-	.maxstack 4
+	.maxstack 3
 } // method .cctor
+.class nested private explicit sealed '<T3>' extends [.library]System.ValueType
+{
+	.pack 1
+	.size 32
+}
+.class nested assembly '<D3>' extends [.library]System.Object
+{
+	.field assembly static valuetype 'Test'/'<T3>' 'data' at D3
+}
+.class nested private explicit sealed '<T2>' extends [.library]System.ValueType
+{
+	.pack 1
+	.size 16
+}
+.class nested assembly '<D2>' extends [.library]System.Object
+{
+	.field assembly static valuetype 'Test'/'<T2>' 'data' at D2
+}
 } // class Test

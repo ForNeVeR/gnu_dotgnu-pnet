@@ -6,14 +6,15 @@
 #
 
 PNET_PATH="@PNET_PATH@"
+PNETLIB_PATH="@PNETLIB_PATH@"
 ILRUN="@ILRUN@"
 
 ILRUN_FLAGS=""
-if test -f "$PNET_PATH/csupport/OpenSystem.C.dll" ; then
-	ILRUN_FLAGS="$ILRUN_FLAGS -L$PNET_PATH/csupport"
+if test -f "$PNETLIB_PATH/csupport/OpenSystem.C.dll" ; then
+	ILRUN_FLAGS="$ILRUN_FLAGS -L$PNETLIB_PATH/csupport"
 fi
-if test -f "$PNET_PATH/samples/mscorlib.dll" ; then
-	ILRUN_FLAGS="$ILRUN_FLAGS -L$PNET_PATH/samples"
+if test -f "$PNETLIB_PATH/runtime/mscorlib.dll" ; then
+	ILRUN_FLAGS="$ILRUN_FLAGS -L$PNETLIB_PATH/runtime"
 fi
 
 if ! test -f "../libc/libc@LIBRARY_SUFFIX@.dll" ; then

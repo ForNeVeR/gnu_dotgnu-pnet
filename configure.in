@@ -28,6 +28,27 @@ AC_ARG_WITH(pnet,
 	PNET_PATH="`pwd`/../pnet"
 ])
 
+dnl The --with-pnetlib option can be used to specify the location of
+dnl the Portable.NET C# library, so that we know where to get the
+dnl mscorlib.dll assembly to use with "ilrun".  The default location
+dnl is assumed to be "../pnetlib".
+AC_SUBST(PNETLIB_PATH)
+AC_ARG_WITH(pnetlib,
+[  --with-pnetlib=DIR      specify the location of pnetlib],
+[
+	if test -n "$withval"; then
+		case "$withval" in
+		  ../*) PNETLIB_PATH="`pwd`/$withval" ;;
+		     *) PNETLIB_PATH="$withval" ;;
+		esac
+	else
+		PNETLIB_PATH="`pwd`/../pnetlib"
+	fi
+],
+[
+	PNETLIB_PATH="`pwd`/../pnetlib"
+])
+
 dnl The --with-32bit option can be used to force a 32-bit only build.
 AC_SUBST(LIBRARY_SUFFIX)
 AC_ARG_WITH(32bit,
@@ -58,11 +79,11 @@ fi
 if test -x "$PNET_PATH/cscc/cscc-c-s" ; then
 	CFLAGS="$CFLAGS -fplugin-c-path=$PNET_PATH/cscc/cscc-c-s"
 fi
-if test -f "$PNET_PATH/csupport/OpenSystem.C.dll" ; then
-	CFLAGS="$CFLAGS -L$PNET_PATH/csupport"
+if test -f "$PNETLIB_PATH/csupport/OpenSystem.C.dll" ; then
+	CFLAGS="$CFLAGS -L$PNETLIB_PATH/csupport"
 fi
-if test -f "$PNET_PATH/samples/mscorlib.dll" ; then
-	CFLAGS="$CFLAGS -L$PNET_PATH/samples"
+if test -f "$PNETLIB_PATH/runtime/mscorlib.dll" ; then
+	CFLAGS="$CFLAGS -L$PNETLIB_PATH/runtime"
 fi
 
 dnl Modify the environment to force autoconf/automake to use "cscc"

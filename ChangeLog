@@ -1,4 +1,9 @@
 
+2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, samples/ilrun.sh.in: look for OpenSystem.C.dll and
+	mscorlib.dll in pnetlib, not pnet.
+
 2002-09-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.0.2" release.

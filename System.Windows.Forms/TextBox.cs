@@ -37,7 +37,7 @@ public class TextBox : TextBoxBase
 	private Brush foreBrush, backBrush, disabledBackBrush;
 	private Pen backPen;
 	private bool inTextChangedEvent;
-
+	
 	// The position and drawing information for each item
 	protected LayoutInfo layout;
 	// Start of a selection
@@ -62,6 +62,9 @@ public class TextBox : TextBoxBase
 
 	// Cached Graphics
 	private Graphics graphics;
+
+	// Height chosen, if not multiline could be different from actual
+	private int chosenHeight;
 
 	public TextBox()
 	{
@@ -456,7 +459,8 @@ public class TextBox : TextBoxBase
 	// Handle "DoubleClick" events for the text box.
 	private void HandleDoubleClick(Object sender, EventArgs e)
 	{
-		ProcessMouse(new MouseEventArgs(MouseButtons.Left, 2, MousePosition.X, MousePosition.Y, 0));
+		Point pt = PointToClient(MousePosition);
+		ProcessMouse(new MouseEventArgs(MouseButtons.Left, 2, pt.X, pt.Y, 0));
 	}
 
 	// Handle "Paint" events for the text box.
@@ -492,10 +496,10 @@ public class TextBox : TextBoxBase
 	// Handle the event when multiline is changed.
 	private void HandleMultilineChanged(object sender, EventArgs e)
 	{
-		// Force the control to relayout
-		LayoutFromText();
+		// Set back the actual chosen height
+		// Will cause LayoutFromText to be called
+		Height = chosenHeight;
 		CaretReset();
-		Redraw(ControlGraphics);
 	}
 
 	private Graphics ControlGraphics
@@ -1005,6 +1009,7 @@ public class TextBox : TextBoxBase
 
 	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 	{
+		chosenHeight = height;
 		// If not Multiline then the control height is the font height
 		if (!Multiline)
 			height = ClientToBounds(Size.Empty).Height + Font.Height;

@@ -1,5 +1,5 @@
 /*
- * socket.c - Create a new socket.
+ * getsockname.c - Get the local name on a socket.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -21,49 +21,30 @@
 
 #include "socket-glue.h"
 
-extern int __syscall_socket (int domain, int type);
-
 int
-__socket (int domain, int type, int protocol)
+__getsockname (int fd, struct sockaddr *addr, socklen_t *len)
 {
-  int fd;
+  Socket *socket;
+  EndPoint *ep = null;
 
-  /* Validate the parameters */
-  if (domain != AF_INET && domain != AF_INET6)
+  /* Get the socket object associated with the descriptor */
+  socket = syscall_get_socket (fd);
+  if (!socket)
+    return -1;
+
+  /* Get the socket name */
+  try
     {
-      errno = EAFNOSUPPORT;
-      return -1;
+      ep = socket->LocalEndPoint;
     }
-  if (type == SOCK_STREAM)
+  catch (SocketException)
     {
-      if (protocol != 0 && protocol != IPPROTO_TCP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else if (type == SOCK_DGRAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_UDP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else
-    {
-      errno = EACCES;
+      errno = EINVAL;
       return -1;
     }
 
-  /* Create the socket and bind it to a file descriptor */
-  fd = __syscall_socket (domain, type);
-  if (fd < 0)
-    {
-      errno = -fd;
-      return -1;
-    }
-  return fd;
+  /* Convert the end point into a socket address */
+  return __endpoint_to_sockaddr (fd, ep, addr, len);
 }
 
-weak_alias (__socket, socket)
+weak_alias (__getsockname, getsockname)

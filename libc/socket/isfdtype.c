@@ -1,5 +1,5 @@
 /*
- * socket.c - Create a new socket.
+ * isfdtype.c - Determine if an fd is a socket or something else.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -20,50 +20,37 @@
  */
 
 #include "socket-glue.h"
-
-extern int __syscall_socket (int domain, int type);
+#include <sys/stat.h>
 
 int
-__socket (int domain, int type, int protocol)
+__isfdtype (int fd, int fdtype)
 {
-  int fd;
-
-  /* Validate the parameters */
-  if (domain != AF_INET && domain != AF_INET6)
+  int error;
+  Socket *socket;
+#ifdef S_IFSOCK
+  if (fdtype == S_IFSOCK || fdtype == S_IFIFO)
+#else
+  if (fdtype == S_IFIFO)
+#endif
     {
-      errno = EAFNOSUPPORT;
-      return -1;
+      socket = __syscall_get_socket (fd, &error);
+      if (socket)
+        return 1;
+      else
+        return 0;
     }
-  if (type == SOCK_STREAM)
+  else if (fdtype == S_IFREG)
     {
-      if (protocol != 0 && protocol != IPPROTO_TCP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else if (type == SOCK_DGRAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_UDP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
+      socket = __syscall_get_socket (fd, &error);
+      if (socket)
+        return 0;
+      else
+        return (error == ENOTSOCK);
     }
   else
     {
-      errno = EACCES;
-      return -1;
+      return 0;
     }
-
-  /* Create the socket and bind it to a file descriptor */
-  fd = __syscall_socket (domain, type);
-  if (fd < 0)
-    {
-      errno = -fd;
-      return -1;
-    }
-  return fd;
 }
 
-weak_alias (__socket, socket)
+weak_alias (__isfdtype, isfdtype)

@@ -24,6 +24,7 @@ namespace OpenSystem.C
 
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
@@ -35,11 +36,15 @@ public class LibCSocket
 	{
 		// Internal state.
 		private Socket socket;
+		private bool connected;
+		private bool listening;
 
 		// Constructor.
 		public SocketStream(Socket socket)
 				{
 					this.socket = socket;
+					this.connected = false;
+					this.listening = false;
 				}
 
 		// Get the socket that underlies this stream.
@@ -48,6 +53,32 @@ public class LibCSocket
 					get
 					{
 						return socket;
+					}
+				}
+
+		// Get or set the "connected" state on this socket.
+		public bool Connected
+				{
+					get
+					{
+						return connected;
+					}
+					set
+					{
+						connected = value;
+					}
+				}
+
+		// Get or set the "listening" state on this socket.
+		public bool Listening
+				{
+					get
+					{
+						return listening;
+					}
+					set
+					{
+						listening = value;
 					}
 				}
 
@@ -219,6 +250,25 @@ public class LibCSocket
 				if(fd == -1)
 				{
 					stream.Close();
+					return fd;
+				}
+				FileTable.SetFileDescriptor(fd, stream);
+				return fd;
+			}
+
+	// Wrap a socket that was just accepted with a file descriptor.
+	public static int __syscall_wrap_accept(Socket socket)
+			{
+				// Wrap the socket within a stream.
+				SocketStream stream = new SocketStream(socket);
+				stream.Connected = true;
+
+				// Associate the stream with a file descriptor.
+				int fd = FileTable.AllocFD();
+				if(fd == -1)
+				{
+					stream.Close();
+					return fd;
 				}
 				FileTable.SetFileDescriptor(fd, stream);
 				return fd;
@@ -244,6 +294,210 @@ public class LibCSocket
 					*errno = 88;	/* ENOTSOCK */
 					return null;
 				}
+			}
+
+	// Create an end point object for an IPv4 socket address.
+	public static EndPoint __create_ipv4_endpoint(uint address, int port)
+			{
+				return new IPEndPoint((long)address, port);
+			}
+
+	// Create an end point object for an IPv6 socket address.
+	public static EndPoint __create_ipv6_endpoint
+				(IntPtr address, uint scope, int port)
+			{
+				byte[] addr = new byte [16];
+				Marshal.Copy(address, addr, 0, 16);
+				return new IPEndPoint
+					(new IPAddress(addr, (long)scope), port);
+			}
+
+	// Decode an end point for an IPv4 socket address into its components.
+	public static int __decode_ipv4_endpoint
+				(EndPoint ep, ref uint address, ref int port)
+			{
+				if(!(ep is IPEndPoint) ||
+				   ep.AddressFamily != AddressFamily.InterNetwork)
+				{
+					address = 0;
+					port = 0;
+					return 0;
+				}
+				IPEndPoint iep = (IPEndPoint)ep;
+				address = (uint)(iep.Address.Address);
+				port = iep.Port;
+				return 1;
+			}
+
+	// Decode an end point for an IPv6 socket address into its components.
+	public static int __decode_ipv6_endpoint
+				(EndPoint ep, IntPtr address, ref uint scope, ref int port)
+			{
+				if(!(ep is IPEndPoint) ||
+				   ep.AddressFamily != AddressFamily.InterNetworkV6)
+				{
+					scope = 0;
+					port = 0;
+					return 0;
+				}
+				IPEndPoint iep = (IPEndPoint)ep;
+				byte[] addr = iep.Address.GetAddressBytes();
+				Marshal.Copy(addr, 0, address, 16);
+				scope = (uint)(iep.Address.ScopeId);
+				port = iep.Port;
+				return 1;
+			}
+
+	// Get the address family for a socket file descriptor.
+	// Returns a negative errno code if not a socket.
+	public static int __syscall_socket_family(int fd)
+			{
+				Stream stream = FileTable.GetStream(fd);
+				if(stream == null)
+				{
+					return -9;		/* EBADF */
+				}
+				SocketStream sstream = (stream as SocketStream);
+				if(sstream == null)
+				{
+					return -88;		/* ENOTSOCK */
+				}
+				AddressFamily family = sstream.Socket.AddressFamily;
+				if(family == AddressFamily.InterNetwork)
+				{
+					return 2;		/* AF_INET */
+				}
+				else if(family == AddressFamily.InterNetworkV6)
+				{
+					return 10;		/* AF_INET6 */
+				}
+				else
+				{
+					return -22;		/* EINVAL */
+				}
+			}
+
+	// Determine if a socket has been marked for listening.
+	public static int __syscall_is_listening(int fd)
+			{
+				Stream stream = FileTable.GetStream(fd);
+				if(stream is SocketStream)
+				{
+					return (((SocketStream)stream).Listening ? 1 : 0);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+
+	// Set the listening state on a socket.
+	public static void __syscall_set_listening(int fd, int value)
+			{
+				Stream stream = FileTable.GetStream(fd);
+				if(stream is SocketStream)
+				{
+					((SocketStream)stream).Listening = (value != 0);
+				}
+			}
+
+	// Determine if a socket has been marked as connected.
+	public static int __syscall_is_connected(int fd)
+			{
+				Stream stream = FileTable.GetStream(fd);
+				if(stream is SocketStream)
+				{
+					return (((SocketStream)stream).Connected ? 1 : 0);
+				}
+				else
+				{
+					return 0;
+				}
+			}
+
+	// Set the connected state on a socket.
+	public static void __syscall_set_connected(int fd, int value)
+			{
+				Stream stream = FileTable.GetStream(fd);
+				if(stream is SocketStream)
+				{
+					((SocketStream)stream).Connected = (value != 0);
+				}
+			}
+
+	// Structure that mirrors "struct hostent".
+	[StructLayout(LayoutKind.Sequential)]
+	private unsafe struct HostEnt
+	{
+		public IntPtr h_name;
+		public void **h_aliases;
+		public int h_addrtype;
+		public int h_length;
+		public void **h_addr_list;
+
+	} // struct HostEnt
+
+	// Convert an IPHostEntry object into a hostent structure.
+	public unsafe static void __syscall_convert_hostent
+				(IPHostEntry input, IntPtr output)
+			{
+				HostEnt *ent = (HostEnt *)(void *)output;
+
+				// Convert the primary host name.
+				ent->h_name = Marshal.StringToHGlobalAnsi(input.HostName);
+
+				// Convert the alias list.
+				String[] aliases = input.Aliases;
+				int posn;
+				if(aliases != null)
+				{
+					ent->h_aliases = (void **)(void *)Marshal.AllocHGlobal
+						(sizeof(void *) * (aliases.Length + 1));
+					for(posn = 0; posn < aliases.Length; ++posn)
+					{
+						ent->h_aliases[posn] =
+							(void *)Marshal.StringToHGlobalAnsi(aliases[posn]);
+					}
+					ent->h_aliases[posn] = null;
+				}
+				else
+				{
+					ent->h_aliases = (void **)(void *)
+						Marshal.AllocHGlobal(sizeof(void *));
+					ent->h_aliases[0] = null;
+				}
+
+				// Set the address type and length.
+				IPAddress[] addrlist = input.AddressList;
+				if(addrlist[0].AddressFamily == AddressFamily.InterNetwork)
+				{
+					ent->h_addrtype = 2;	/* AF_INET */
+					ent->h_length = 4;
+				}
+				else if(addrlist[0].AddressFamily ==
+							AddressFamily.InterNetworkV6)
+				{
+					ent->h_addrtype = 10;	/* AF_INET6 */
+					ent->h_length = 16;
+				}
+				else
+				{
+					ent->h_addrtype = 0;
+					ent->h_length = 0;
+				}
+
+				// Convert the IP address length.
+				ent->h_addr_list = (void **)(void *)Marshal.AllocHGlobal
+					(sizeof(void *) * (addrlist.Length + 1));
+				for(posn = 0; posn < addrlist.Length; ++posn)
+				{
+					byte[] addr = addrlist[posn].GetAddressBytes();
+					ent->h_addr_list[posn] = (void *)
+						Marshal.AllocHGlobal(addr.Length);
+					Marshal.Copy(addr, 0, (IntPtr)(ent->h_addr_list[posn]),
+								 addr.Length);
+				}
+				ent->h_addr_list[0] = null;
 			}
 
 } // class LibCSocket

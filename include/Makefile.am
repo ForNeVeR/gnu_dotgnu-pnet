@@ -21,6 +21,7 @@ libinclude_HEADERS = \
 	locale.h \
 	malloc.h \
 	math.h \
+	netdb.h \
 	pthread.h \
 	pwd.h \
 	semaphore.h \

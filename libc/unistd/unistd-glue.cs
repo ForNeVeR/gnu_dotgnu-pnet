@@ -24,6 +24,8 @@ namespace OpenSystem.C
 
 using System;
 using System.IO;
+using System.Reflection;
+using System.Net.Sockets;
 using System.Security;
 using System.Runtime.InteropServices;
 
@@ -47,9 +49,9 @@ public class LibCUnistd
 				// Open the file stream.
 				try
 				{
+					String name = Marshal.PtrToStringAnsi(path);
 					stream = new FileStream
-					      (Marshal.PtrToStringAnsi(path),
-						   (FileMode)mode, (FileAccess)access);
+				      (name, (FileMode)mode, (FileAccess)access);
 				}
 				catch(SecurityException)
 				{
@@ -152,6 +154,10 @@ public class LibCUnistd
 				{
 					return -22;		/* EINVAL */
 				}
+				catch(SocketException)
+				{
+					return -11;		/* EAGAIN */
+				}
 				return result;
 			}
 
@@ -233,6 +239,10 @@ public class LibCUnistd
 				{
 					return -22;		/* EINVAL */
 				}
+				catch(SocketException)
+				{
+					return -11;		/* EAGAIN */
+				}
 				return result;
 			}
 
@@ -290,6 +300,10 @@ public class LibCUnistd
 				catch(NotSupportedException)
 				{
 					return -22;		/* EINVAL */
+				}
+				catch(SocketException)
+				{
+					return -11;		/* EAGAIN */
 				}
 				return result;
 			}
@@ -364,6 +378,10 @@ public class LibCUnistd
 				catch(NotSupportedException)
 				{
 					return -22;		/* EINVAL */
+				}
+				catch(SocketException)
+				{
+					return -11;		/* EAGAIN */
 				}
 				return result;
 			}

@@ -1,5 +1,5 @@
 /*
- * socket.c - Create a new socket.
+ * hostent.c - Host database entries.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -19,51 +19,39 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "socket-glue.h"
+#include <netdb.h>
 
-extern int __syscall_socket (int domain, int type);
+/* The "/etc/hosts" database is not supported in this implementation.
+   Use "gethostbyname" or "gethostbyaddr" instead */
 
-int
-__socket (int domain, int type, int protocol)
+void
+sethostent (int stay_open)
 {
-  int fd;
-
-  /* Validate the parameters */
-  if (domain != AF_INET && domain != AF_INET6)
-    {
-      errno = EAFNOSUPPORT;
-      return -1;
-    }
-  if (type == SOCK_STREAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_TCP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else if (type == SOCK_DGRAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_UDP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else
-    {
-      errno = EACCES;
-      return -1;
-    }
-
-  /* Create the socket and bind it to a file descriptor */
-  fd = __syscall_socket (domain, type);
-  if (fd < 0)
-    {
-      errno = -fd;
-      return -1;
-    }
-  return fd;
+  /* Nothing to do here */
 }
 
-weak_alias (__socket, socket)
+void
+endhostent (void)
+{
+  /* Nothing to do here */
+}
+
+struct hostent *
+gethostent (void)
+{
+  /* Nothing to do here */
+  return 0;
+}
+
+int
+gethostent_r (struct hostent *__restrict result_buf,
+              char *__restrict buf, size_t buflen,
+			  struct hostent **__restrict result,
+			  int *__restrict h_errnop)
+{
+  if (result)
+    *result = 0;
+  if (h_errnop)
+    *h_errnop = HOST_NOT_FOUND;
+  return -1;
+}

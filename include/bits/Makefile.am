@@ -5,6 +5,7 @@ libinclude_HEADERS = \
 	libc-lock.h \
 	local_lim.h \
 	mman.h \
+	netdb.h \
 	posix1_lim.h \
 	posix2_lim.h \
 	sockaddr.h \

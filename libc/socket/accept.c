@@ -1,5 +1,5 @@
 /*
- * socket.c - Create a new socket.
+ * accept.c - Accept a connection on a socket.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -21,49 +21,47 @@
 
 #include "socket-glue.h"
 
-extern int __syscall_socket (int domain, int type);
-
 int
-__socket (int domain, int type, int protocol)
+__accept (int fd, struct sockaddr *addr, socklen_t *len)
 {
-  int fd;
+  Socket *socket;
+  Socket *newSocket;
+  EndPoint *ep = null;
+  int result;
 
-  /* Validate the parameters */
-  if (domain != AF_INET && domain != AF_INET6)
+  /* Get the socket object associated with the descriptor */
+  socket = syscall_get_socket (fd);
+  if (!socket)
+    return -1;
+  if (!__syscall_is_listening (fd))
     {
-      errno = EAFNOSUPPORT;
-      return -1;
-    }
-  if (type == SOCK_STREAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_TCP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else if (type == SOCK_DGRAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_UDP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else
-    {
-      errno = EACCES;
+      errno = EINVAL;
       return -1;
     }
 
-  /* Create the socket and bind it to a file descriptor */
-  fd = __syscall_socket (domain, type);
-  if (fd < 0)
+  /* Accept an incoming connection */
+  try
     {
-      errno = -fd;
+      newSocket = socket->Accept();
+      ep = newSocket->LocalEndPoint;
+    }
+  catch (SocketException)
+    {
+      if (socket->Blocking)
+        errno = EINVAL;
+      else
+        errno = EAGAIN;
       return -1;
     }
-  return fd;
+
+  /* Convert the end point into a socket address */
+  result = __endpoint_to_sockaddr (fd, ep, addr, len);
+  if (result < 0)
+    {
+      newSocket.Close();
+      return -1;
+    }
+  return __syscall_wrap_accept (newSocket);
 }
 
-weak_alias (__socket, socket)
+weak_alias (__accept, accept)

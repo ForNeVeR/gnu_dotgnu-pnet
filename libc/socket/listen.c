@@ -1,5 +1,5 @@
 /*
- * socket.c - Create a new socket.
+ * listen.c - Listen for connections on a socket.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -21,49 +21,41 @@
 
 #include "socket-glue.h"
 
-extern int __syscall_socket (int domain, int type);
-
 int
-__socket (int domain, int type, int protocol)
+__listen (int fd, int n)
 {
-  int fd;
+  Socket *socket;
+  int result;
 
-  /* Validate the parameters */
-  if (domain != AF_INET && domain != AF_INET6)
+  /* Validate the parameter */
+  if (n <= 0)
     {
-      errno = EAFNOSUPPORT;
-      return -1;
-    }
-  if (type == SOCK_STREAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_TCP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else if (type == SOCK_DGRAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_UDP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else
-    {
-      errno = EACCES;
+      errno = EINVAL;
       return -1;
     }
 
-  /* Create the socket and bind it to a file descriptor */
-  fd = __syscall_socket (domain, type);
-  if (fd < 0)
+  /* Get the socket object associated with the descriptor */
+  socket = syscall_get_socket (fd);
+  if (!socket)
+    return -1;
+  if (__syscall_is_listening (fd))
     {
-      errno = -fd;
+      errno = EOPNOTSUPP;
       return -1;
     }
-  return fd;
+
+  /* Listen for connections */
+  try
+    {
+      socket->Listen (n);
+    }
+  catch (SocketException)
+    {
+      errno = EOPNOTSUPP;
+      return -1;
+    }
+  __syscall_set_listening (fd, 1);
+  return 0;
 }
 
-weak_alias (__socket, socket)
+weak_alias (__listen, listen)

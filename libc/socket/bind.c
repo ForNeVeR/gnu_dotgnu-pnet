@@ -1,5 +1,5 @@
 /*
- * socket.c - Create a new socket.
+ * bind.c - Bind a name to a socket.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -21,49 +21,34 @@
 
 #include "socket-glue.h"
 
-extern int __syscall_socket (int domain, int type);
-
 int
-__socket (int domain, int type, int protocol)
+__bind (int fd, const struct sockaddr *addr, socklen_t len)
 {
-  int fd;
+  Socket *socket;
+  EndPoint *ep = null;
+  int result;
 
-  /* Validate the parameters */
-  if (domain != AF_INET && domain != AF_INET6)
-    {
-      errno = EAFNOSUPPORT;
-      return -1;
-    }
-  if (type == SOCK_STREAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_TCP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else if (type == SOCK_DGRAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_UDP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else
-    {
-      errno = EACCES;
-      return -1;
-    }
+  /* Convert the address into an end point */
+  result = __sockaddr_to_endpoint (fd, ep, addr, len);
+  if (result < 0)
+    return -1;
 
-  /* Create the socket and bind it to a file descriptor */
-  fd = __syscall_socket (domain, type);
-  if (fd < 0)
+  /* Get the socket object associated with the descriptor */
+  socket = syscall_get_socket (fd);
+  if (!socket)
+    return -1;
+
+  /* Bind the address to the socket */
+  try
     {
-      errno = -fd;
+      socket->Bind (ep);
+      return 0;
+    }
+  catch (SocketException)
+    {
+      errno = EINVAL;
       return -1;
     }
-  return fd;
 }
 
-weak_alias (__socket, socket)
+weak_alias (__bind, bind)

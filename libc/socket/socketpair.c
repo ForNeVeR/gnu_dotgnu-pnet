@@ -1,5 +1,5 @@
 /*
- * socket.c - Create a new socket.
+ * socketpair.c - Create a new socket pair.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -19,51 +19,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "socket-glue.h"
-
-extern int __syscall_socket (int domain, int type);
+#include <sys/socket.h>
+#include <errno.h>
 
 int
-__socket (int domain, int type, int protocol)
+__socketpair (int domain, int type, int protocol, int fds[2])
 {
-  int fd;
-
-  /* Validate the parameters */
-  if (domain != AF_INET && domain != AF_INET6)
-    {
-      errno = EAFNOSUPPORT;
-      return -1;
-    }
-  if (type == SOCK_STREAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_TCP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else if (type == SOCK_DGRAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_UDP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else
-    {
-      errno = EACCES;
-      return -1;
-    }
-
-  /* Create the socket and bind it to a file descriptor */
-  fd = __syscall_socket (domain, type);
-  if (fd < 0)
-    {
-      errno = -fd;
-      return -1;
-    }
-  return fd;
+  /* No way to implement this using the C# library */
+  errno = ENOSYS;
+  return -1;
 }
 
-weak_alias (__socket, socket)
+weak_alias (__socketpair, socketpair)

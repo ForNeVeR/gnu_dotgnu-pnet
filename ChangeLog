@@ -1,4 +1,20 @@
 
+2004-03-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/Makefile.am, include/netdb.h, include/bits/Makefile.am,
+	include/bits/netdb.h, libc/socket/Makefile.am, libc/socket/accept.c,
+	libc/socket/bind.c, libc/socket/bindresv.c, libc/socket/connect.c,
+	libc/socket/gethostby.c, libc/socket/getpeername.c,
+	libc/socket/getsockname.c, libc/socket/h_errno.c,
+	libc/socket/hostent.c, libc/socket/in6addr.c, libc/socket/isfdtype.c,
+	libc/socket/listen.c, libc/socket/netent.c, libc/socket/servent.c,
+	libc/socket/shutdown.c, libc/socket/sockaddr.c,
+	libc/socket/socket-glue.cs, libc/socket/socket-glue.h,
+	libc/socket/socket.c, libc/socket/socketpair.c,
+	libc/unistd/Makefile.am, libc/unistd/readv.c,
+	libc/unistd/unistd-glue.cs, libc/unistd/writev.c:
+	add a large number of socket and netdb related functions.
+
 2004-03-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libc/unistd/unistd-glue.cs: add the "LibCFDOperations" interface,

@@ -1,5 +1,5 @@
 /*
- * socket.c - Create a new socket.
+ * h_errno.c - Declaration of "h_errno" and friends.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -19,51 +19,43 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "socket-glue.h"
+#include <netdb.h>
+#include <stdio.h>
 
-extern int __syscall_socket (int domain, int type);
+#undef h_errno
+int __declspec(thread) h_errno;
 
-int
-__socket (int domain, int type, int protocol)
+int *
+__h_errno_location (void)
 {
-  int fd;
-
-  /* Validate the parameters */
-  if (domain != AF_INET && domain != AF_INET6)
-    {
-      errno = EAFNOSUPPORT;
-      return -1;
-    }
-  if (type == SOCK_STREAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_TCP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else if (type == SOCK_DGRAM)
-    {
-      if (protocol != 0 && protocol != IPPROTO_UDP)
-        {
-	  errno = EPROTONOSUPPORT;
-	  return -1;
-	}
-    }
-  else
-    {
-      errno = EACCES;
-      return -1;
-    }
-
-  /* Create the socket and bind it to a file descriptor */
-  fd = __syscall_socket (domain, type);
-  if (fd < 0)
-    {
-      errno = -fd;
-      return -1;
-    }
-  return fd;
+  return &h_errno;
 }
 
-weak_alias (__socket, socket)
+void
+herror (const char *str)
+{
+  if (str)
+    {
+      fputs (str, stderr);
+      fputs (": ", stderr);
+    }
+  fputs (hstrerror (h_errno), stderr);
+  putc ('\n', stderr);
+}
+
+static const char * const h_errors [] = {
+        "Resolver Error 0 (no error)",
+        "Unknown host",
+        "Host name lookup failure",
+        "Unknown server error",
+        "No address associated with name",
+        "Unknown resolver error"
+};
+
+const char *
+hstrerror (int err_num)
+{
+  if (err_num < 0 || err_num > 5)
+    err_num = 5;
+  return h_errors[err_num];
+}

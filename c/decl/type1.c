@@ -134,6 +134,6 @@ long double long lld2;
 double long long lld3;
 
 /* special types */
-__bool__ b;
+_Bool b;
 __wchar__ wc;
 __builtin_va_list va;

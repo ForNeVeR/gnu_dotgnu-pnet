@@ -25,7 +25,7 @@ volatile long volatile long x3;
 
 /* multiple base types */
 int int y;
-int __bool__ y2;
+int _Bool y2;
 
 /* signed and unsigned specified together */
 signed unsigned i;

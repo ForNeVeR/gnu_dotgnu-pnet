@@ -1,3 +1,9 @@
+
+2004-05-04  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/lib_reflect.c , engine/int_proto.h, engine/int_table.c:
+	Add the ClrConstructor::InvokeOnEmpty() internal call.
+
 2004-05-14  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* cscc/csharp/cs_gather.c: modify the access modifier checks for

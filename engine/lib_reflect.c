@@ -2834,6 +2834,53 @@ ILObject *_IL_ClrConstructor_Invoke(ILExecThread *thread,
 }
 
 /*
+ * public override Object InvokeOnEmpty(Object obj,
+ * 								 BindingFlags invokeAttr, Binder binder,
+ *								 Object[] parameters, CultureInfo culture);
+ */
+ILObject *_IL_ClrConstructor_InvokeOnEmpty(ILExecThread *thread,
+									ILObject *_this,
+									ILObject * obj,
+									ILInt32 invokeAttr,
+									ILObject *binder,
+									System_Array *parameters,
+									ILObject *culture)
+{
+	ILMethod *method;
+	ILType *signature;
+
+	/* Extract the method item from the "this" object */
+	method = ILProgramItemToMethod(_ILClrFromObject(thread, _this));
+	if(!method)
+	{
+		/* Something is wrong with the object */
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException", 0);
+		return 0;
+	}
+
+	/* Check that we have sufficient access credentials for the method */
+	if(!_ILClrCheckAccess(thread, 0, (ILMember *)method))
+	{
+		ILExecThreadThrowSystem
+			(thread, "System.Security.SecurityException", 0);
+		return 0;
+	}
+
+	/* We cannot use this on static constructors */
+	if(ILMethod_IsStaticConstructor(method))
+	{
+		ILExecThreadThrowSystem(thread, "System.MemberAccessException", 0);
+		return 0;
+	}
+
+	/* Get the constructor's signature */
+	signature = ILMethod_Signature(method);
+
+	/* Invoke the constructor method as a normal method */
+	return InvokeMethod(thread, method, signature, obj, parameters, 0);
+}
+
+/*
  * public override Object Invoke(Object obj, BindingFlags invokeAttr,
  *								 Binder binder, Object[] parameters,
  *								 CultureInfo culture);

@@ -7,6 +7,8 @@
 	* image/link.c (SearchForDllMap): add a temporary hack to
 	recognize Gtk# module references and remap them to shared objects.
 
+	* NEWS, configure.in: update version for the "0.5.6" release.
+
 2003-05-02  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_attrs.c: Split out the serialization stuff into a

@@ -1,4 +1,67 @@
 
+0.5.6 (3 May 2003)
+
+	Runtime engine:
+
+	* Internalcalls to support CAS-based security.
+	* Revised internalcalls for socket support.
+	* Add more functionality to the regex internalcalls, to expose
+	  the full GNU regex syntax to C# libraries.
+	* Stub internalcalls for "FormatterServices", "Process", "TimeMethods".
+	* Off-by-1 bugs in vararg packing.
+	* Fix "ArgIterator.GetNextArg" for unmanaged C++ code.
+	* Set the correct array bounds for multi-dimensional arrays with
+	  lower bound specifications.
+	* Disable finalizers while laying out classes, to prevent deadlocks.
+	* Set exception stack traces at the point of throw, not create.
+	* Fixes for the "kernel" and "compact" profiles.
+	* Support for thread-static values.
+	* Check for long overflow correctly.
+	* Restore 2D "index1" correctly when bounds check fails on "index2".
+	* Add "String[]" to the set of types recognized for PInvoke handling.
+
+	C# Compiler:
+
+	* Add the ILOp_UShr opcode to support Java compilation (Gopal V).
+	* Handle empty "__arglist" parameter lists correctly.
+	* Don't use "RuntimeHelpers.InitializeArray" for zero-sized arrays.
+	* Incorrect "ILGenSimple" in JVM code generator (Gopal V).
+	* Recognize "where" as an identifier in some circumstances.
+	* Error messages for missing event implementations (Gopal V).
+	* Resolve multiple indexer definitions in a class (Gopal V).
+	* Serialization of enum values in attributes (Gopal V).
+
+	C Compiler:
+
+	* Fix recognition of types like "short int" and "unsigned short int".
+	* Convert struct fields with type "X[]" into "X[0]".
+	* Permit enum's to be used to declare bit fields.
+	* Constant evaluation for the "sizeof" operator.
+
+	Assembler:
+
+	* Allow additional vararg call sites to be added after a class
+	  has been marked as "completed".
+	* Set the permissions on exe files to "+x".
+
+	Loader and Metadata:
+
+	* Recognize boxing conversions in "ILTypeAssignCompatible".
+	* Map "ComImportAttribute" to the "import" typedef flag.
+	* Add a temporary hack to remap Gtk# library dependencies.
+
+	Platform Support:
+
+	* Use 32-bit arithmetic for RC2 under ARM because it has problems
+	  with unsigned 16-bit arithmetic.
+	* Implement data cache flushing for ARM.
+
+	Other:
+
+	* Class size estimation in "ilsize" to give a rough indication of the
+	  runtime memory requirements of a class.
+	* Make ildd more useful at showing the assemblies and modules used.
+
 0.5.4 (29 March 2003)
 
 	Runtime engine:

@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2003 Southern Storm Software, Pty Ltd.
  *
+ * Contributions by Carl-Adam Brengesjo <ca.brengesjo@telia.com>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -17,16 +19,40 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 using System;
 using System.IO;
 using System.Text;
+using System.Collections.Specialized;
 using Microsoft.JScript;
 using Microsoft.JScript.Vsa;
 using Microsoft.Vsa;
 
 public sealed class JSRun
 {
+	private static Version jsrunVersion = new Version("1.5");
+
+	private static void Version()
+			{
+				Console.WriteLine("JSRUN {0} - JScript Commandline Executer", jsrunVersion);
+				Console.WriteLine("Copyright (C) 2003 Southern Storm Software, Pty Ltd.");
+				Console.WriteLine();
+				Console.WriteLine("JSRUN comes with ABSOLUTELY NO WARRANTY.  This is free software,");
+				Console.WriteLine("and you are welcome to redistribute it under the terms of the");
+				Console.WriteLine("GNU General Public License.  See the file COPYING for further details.");
+			}
+
+	private static void Usage()
+			{
+				Console.WriteLine("JSRUN {0} - JScript Commandline Executer", jsrunVersion);
+				Console.WriteLine("Copyright (C) 2003 Southern Storm Software, Pty Ltd.");
+				Console.WriteLine();
+				Console.WriteLine("Usage: jsrun [options] script [args]");
+				Console.WriteLine();
+				Console.WriteLine("  -h  --help	 Prints this help and exits.");
+				Console.WriteLine("  -v  --version  Prints version and exts.");
+			}
+
 	// Main entry point for the application.
 	public static int Main(String[] args)
 			{
@@ -38,59 +64,141 @@ public sealed class JSRun
 				int len;
 				VsaEngine engine;
 				IVsaCodeItem item;
-
-				// We need at least one argument.
-				if(args.Length == 0)
-				{
-				#if CONFIG_SMALL_CONSOLE
-					Console.WriteLine("Usage: jsrun script [args]");
-				#else
-					Console.Error.WriteLine("Usage: jsrun script [args]");
-				#endif
-					return 1;
-				}
-
-				// Load the script into memory as a string.
-				try
-				{
-					reader = new StreamReader(args[0]);
-				}
-				catch(FileNotFoundException)
-				{
-				#if CONFIG_SMALL_CONSOLE
-					Console.WriteLine
-						("jsrun: {0}: No such file or directory", args[0]);
-				#else
-					Console.Error.WriteLine
-						("jsrun: {0}: No such file or directory", args[0]);
-				#endif
-					return 1;
-				}
-				builder = new StringBuilder();
-				buffer = new char [512];
-				while((len = reader.Read(buffer, 0, 512)) > 0)
-				{
-					builder.Append(buffer, 0, len);
-				}
-				reader.Close();
-				script = builder.ToString();
+				StringCollection scripts = new StringCollection();
 
 				// Create an engine instance and add the script to it.
 				engine = VsaEngine.CreateEngine();
 				engine.SetOption("print", true);
-				item = (IVsaCodeItem)(engine.Items.CreateItem
-						("script1", VsaItemType.Code, VsaItemFlag.None));
-				item.SourceText = script;
-				item.SetOption("codebase", args[0]);
+
+				// get command-line arguments
+				int i = 0;
+				String arg = args.Length == 0 ? null : args[0];
+				while(arg != null)
+				{
+					String next = null;
+					if (arg.StartsWith("-") && !arg.StartsWith("--") &&
+							arg.Length > 2)
+					{
+						next = "-" + arg.Substring(2, arg.Length - 2);
+						arg = arg.Substring(0,2);
+					}
+					switch(arg)
+					{
+					case "-h":
+					case "--help":
+						Usage();
+						return 0;
+						break;
+					case "-v":
+					case "--version":
+						Version();
+						return 0;
+						break;
+					default:
+						// matches both short and long options. (-/--)
+						if (arg.StartsWith("-"))
+						{
+#if !CONFIG_SMALL_CONSOLE
+							Console.Error.WriteLine
+#else
+							Console.WriteLine
+#endif
+								("jsrun: unkown option `{0}'", arg);
+							return 1;
+						}
+						// not an option - assumes script path
+						else
+						{
+							// To prevent a relative and a absolute pathname to same file!
+							FileInfo fi = new FileInfo(arg);
+							if(!fi.Exists)
+							{
+#if !CONFIG_SMALL_CONSOLE
+								Console.Error.WriteLine
+#else
+								Console.WriteLine
+#endif
+									("jsrun: {0}: No such file or directory", arg);
+								return 1;
+							}
+							// Cannot load same script source twice!
+							if(scripts.Contains(fi.FullName))
+							{
+#if !CONFIG_SMALL_CONSOLE
+								Console.Error.WriteLine
+#else
+								Console.WriteLine
+#endif
+								("jsrun: {0}: use of duplicate sources illegal.", fi.FullName);
+							}
+							else
+							{
+								scripts.Add(fi.FullName);
+							}
+							// Load script file
+							try
+							{
+								reader = new StreamReader(arg);
+							}
+							catch(Exception e)
+							{
+#if !CONFIG_SMALL_CONSOLE
+								Console.Error.WriteLine
+#else
+								Console.WriteLine
+#endif
+									("jsrun: ({0}): {1}", e.GetType(), e.Message);
+							}
+
+							// Load the script into memory as a string.
+							StringBuilder builder = new StringBuilder();
+							char[] buffer = new char [512];
+							while((len = reader.Read(buffer, 0, 512)) > 0)
+							{
+								builder.Append(buffer, 0, len);
+							}
+							reader.Close();
+
+							item = (IVsaCodeItem)(engine.Items.CreateItem
+									(String.Concat("script",engine.Items.Count+1),
+									VsaItemType.Code, VsaItemFlag.None));
+							item.SourceText = builder.ToString();
+							item.SetOption("codebase", arg);
+						}
+						break;
+					} // switch(arg)
+
+					if(next != null)
+					{
+						arg = next;
+					}
+					else if(i + 1 >= args.Length)
+					{
+						arg = null;
+					}
+					else
+					{
+						i = i + 1;
+						arg = args[i];
+					}
+				} // for each in args
+
+				// We need at least one item.
+				if(engine.Items.Count == 0)
+				{
+					Usage();
+					return 1;
+				}
 
 				// Compile and run the script.
 				if(!engine.Compile())
 				{
-				#if CONFIG_SMALL_CONSOLE
-					Console.WriteLine("jsrun: Could not compile script");
-				#else
-					Console.Error.WriteLine("jsrun: Could not compile script");
-				#endif
+#if !CONFIG_SMALL_CONSOLE
+					Console.Error.WriteLine
+#else
+					Console.WriteLine
+#endif
+						("jsrun: Could not compile script");
 					return 1;
 				}
 				engine.Run();
@@ -99,11 +207,17 @@ public sealed class JSRun
 				engine.Close();
 				return 0;
 #else
+				// Use error output and exit status in case any
+				// script/program is depending on output.
+#if !CONFIG_SMALL_CONSOLE
+				Console.Error.WriteLine
+#else
 				Console.WriteLine
+#endif
 					("JScript is not available in this configuration " +
 					 "because the library does\n" +
 					 "not have sufficient features to support JScript.");
-				return 0;
+				return 1;
 #endif
 			}
 

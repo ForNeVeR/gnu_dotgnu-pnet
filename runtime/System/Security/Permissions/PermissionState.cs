@@ -22,11 +22,15 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_PERMISSIONS
+
 public enum PermissionState
 {
 	None         = 0,
 	Unrestricted = 1
 
 }; // enum PermissionState
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security.Permissions

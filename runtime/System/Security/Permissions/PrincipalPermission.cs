@@ -22,7 +22,7 @@
 namespace System.Security.Permissions
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS && CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 using System;
 using System.Collections;
@@ -343,6 +343,6 @@ public sealed class PrincipalPermission
 
 }; // class PrincipalPermission
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS && CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

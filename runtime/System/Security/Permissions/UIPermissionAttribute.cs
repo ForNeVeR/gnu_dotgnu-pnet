@@ -22,7 +22,7 @@
 namespace System.Security.Permissions
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 using System;
 using System.Security;
@@ -88,6 +88,6 @@ public sealed class UIPermissionAttribute : CodeAccessSecurityAttribute
 
 }; // class UIPermissionAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

@@ -21,7 +21,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && CONFIG_POLICY_OBJECTS
 
 using System.Collections;
 using System.Security.Permissions;
@@ -352,9 +352,9 @@ public sealed class Evidence : ICollection, IEnumerable
 
 }; // class Evidence
 
-#else // ECMA_COMPAT
+#else // !(CONFIG_PERMISSIONS && CONFIG_POLICY_OBJECTS)
 
-// Dummy class for ECMA compilation mode.
+// Define a dummy Evidence class if we aren't using policy objects.
 
 public sealed class Evidence
 {
@@ -362,6 +362,6 @@ public sealed class Evidence
 
 }; // class Evidence
 
-#endif // ECMA_COMPAT
+#endif // !(CONFIG_PERMISSIONS && CONFIG_POLICY_OBJECTS)
 
 }; // namespace System.Security.Policy

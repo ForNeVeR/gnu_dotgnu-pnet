@@ -22,7 +22,7 @@
 namespace System.Security
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && (CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS)
 
 using System;
 using System.Runtime.Serialization;
@@ -58,6 +58,6 @@ public sealed class XmlSyntaxException : SystemException
 
 }; // class XmlSyntaxException
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && (CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS)
 
 }; // namespace System.Security

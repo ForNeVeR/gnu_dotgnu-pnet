@@ -23,6 +23,8 @@
 namespace System.Net
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.Security;
 using System.Security.Permissions;
@@ -58,5 +60,7 @@ public sealed class DnsPermissionAttribute : CodeAccessSecurityAttribute
 	}
 	
 } // class DnsPermissionAttribute
+
+#endif // CONFIG_PERMISSIONS
 
 } //namespace System.Net

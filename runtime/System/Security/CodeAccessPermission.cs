@@ -22,6 +22,8 @@
 namespace System.Security
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.Security.Permissions;
 using System.Runtime.CompilerServices;
@@ -271,5 +273,7 @@ public abstract class CodeAccessPermission
 			}
 
 }; // class CodeAccessPermission
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security

@@ -22,6 +22,8 @@
 namespace System.Security
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 
 #if ECMA_COMPAT
@@ -46,5 +48,7 @@ interface IStackWalk
 	void PermitOnly();
 
 }; // interface IStackWalk
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security

@@ -22,7 +22,7 @@
 namespace System.Security
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 using System;
 using System.Security.Policy;
@@ -35,6 +35,6 @@ public interface ISecurityPolicyEncodable
 
 }; // interface ISecurityPolicyEncodable
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security

@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.IO;
 using System.Collections;
@@ -449,5 +451,7 @@ public sealed class EnvironmentPermission
 #endif // !ECMA_COMPAT
 
 }; // class EnvironmentPermission
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security.Permissions

@@ -11,6 +11,9 @@
 	fixes to CONFIG_X509_CERTIFICATES mode when CONFIG_CRYPTO is
 	not present.
 
+	* all/*: add new profile options - CONFIG_PERMISSIONS and
+	CONFIG_POLICY_OBJECTS.
+
 2003-05-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/SocketAddress.cs, System/Net/Sockets/Socket.cs,

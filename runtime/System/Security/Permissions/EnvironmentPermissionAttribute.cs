@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.Security;
 
@@ -99,5 +101,7 @@ public sealed class EnvironmentPermissionAttribute
 			}
 
 }; // class EnvironmentPermissionAttribute
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security.Permissions

@@ -22,7 +22,7 @@
 namespace System.Security.Permissions
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 public enum UIPermissionClipboard
 {
@@ -33,6 +33,6 @@ public enum UIPermissionClipboard
 
 }; // enum UIPermissionClipboard
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 [Flags]
 [Serializable]
@@ -35,6 +35,6 @@ public enum PolicyStatementAttribute
 
 }; // enum PolicyStatementAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

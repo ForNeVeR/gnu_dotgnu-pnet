@@ -22,7 +22,7 @@
 namespace System.Security.Permissions
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 using System;
 using System.Security;
@@ -75,6 +75,6 @@ public abstract class IsolatedStoragePermissionAttribute
 
 }; // class IsolatedStoragePermissionAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

@@ -22,12 +22,15 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 using System.Security.Permissions;
 
 [Serializable]
-public sealed class StrongName : IIdentityPermissionFactory
+public sealed class StrongName
+#if CONFIG_PERMISSIONS
+	: IIdentityPermissionFactory
+#endif
 {
 	// Internal state.
 	private StrongNamePublicKeyBlob blob;
@@ -84,11 +87,15 @@ public sealed class StrongName : IIdentityPermissionFactory
 				return new StrongName(blob, name, version);
 			}
 
+#if CONFIG_PERMISSIONS
+
 	// Implement the IIdentityPermissionFactory interface
 	public IPermission CreateIdentityPermission(Evidence evidence)
 			{
 				return new StrongNameIdentityPermission(blob, name, version);
 			}
+
+#endif
 
 	// Determine if two objects are equal.
 	public override bool Equals(Object obj)
@@ -122,6 +129,6 @@ public sealed class StrongName : IIdentityPermissionFactory
 
 }; // class StrongName
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

@@ -22,6 +22,8 @@
 namespace System.Security
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.Collections;
 using System.Security.Permissions;
@@ -568,5 +570,7 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 #endif // !ECMA_COMPAT
 
 }; // class PermissionSet
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security

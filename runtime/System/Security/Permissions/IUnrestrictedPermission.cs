@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 
 #if ECMA_COMPAT
@@ -36,5 +38,7 @@ interface IUnrestrictedPermission
 	bool IsUnrestricted();
 
 }; // interface IUnrestrictedPermission
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security.Permissions

@@ -21,6 +21,8 @@
 namespace System.Security
 {
 
+#if CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
+
 using System;
 
 // This class is used by "SecurityElement" to implement a very
@@ -392,5 +394,7 @@ internal sealed class MiniXml
 			}
 
 }; // class MiniXml
+
+#endif // CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security

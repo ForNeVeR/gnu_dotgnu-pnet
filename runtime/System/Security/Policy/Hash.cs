@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if CONFIG_CRYPTO
+#if CONFIG_CRYPTO && CONFIG_POLICY_OBJECTS
 
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -120,6 +120,6 @@ public sealed class Hash
 
 }; // class Hash
 
-#endif // CONFIG_CRYPTO
+#endif // CONFIG_CRYPTO && CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 using System.Collections;
 
@@ -142,6 +142,6 @@ public class EventLogPermissionEntryCollection : CollectionBase
 
 }; // class EventLogPermissionEntryCollection
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Diagnostics

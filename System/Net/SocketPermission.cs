@@ -22,6 +22,8 @@
 namespace System.Net
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.Collections;
 using System.Security;
@@ -609,5 +611,7 @@ public sealed class SocketPermission : CodeAccessPermission
 #endif // !ECMA_COMPAT
 
 }; // class SocketPermission
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Net

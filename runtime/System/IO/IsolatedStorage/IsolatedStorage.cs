@@ -117,9 +117,13 @@ public abstract class IsolatedStorage : MarshalByRefObject
 				}
 			}
 
+#if CONFIG_PERMISSIONS
+
 	// Get isolated storage permission information from a permission set.
 	protected abstract IsolatedStoragePermission
 			GetPermission(PermissionSet ps);
+
+#endif
 
 	// Initialise this storage object.  We don't use the evidence information,
 	// because we let the underlying filesystem enforce security constraints.

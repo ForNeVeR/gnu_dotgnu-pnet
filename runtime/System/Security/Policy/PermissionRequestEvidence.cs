@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && CONFIG_POLICY_OBJECTS
 
 [Serializable]
 public sealed class PermissionRequestEvidence
@@ -82,6 +82,6 @@ public sealed class PermissionRequestEvidence
 
 }; // class PermissionRequestEvidence
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

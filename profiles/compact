@@ -38,4 +38,10 @@
 <!-- Use X.509 certificate facilities -->
 <define name="CONFIG_X509_CERTIFICATES" value="false"/>
 
+<!-- Use permissions objects from System.Security.Permissions -->
+<define name="CONFIG_PERMISSIONS" value="true"/>
+
+<!-- Use policy objects from System.Security.Policy -->
+<define name="CONFIG_POLICY_OBJECTS" value="false"/>
+
 </profile>

@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 using System.Collections;
 using System.Security.Permissions;
@@ -145,6 +145,6 @@ public sealed class FileCodeGroup : CodeGroup
 
 }; // class FileCodeGroup
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

@@ -22,6 +22,8 @@
 namespace System.Net
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.Security;
 using System.Security.Permissions;
@@ -141,5 +143,7 @@ public sealed class SocketPermissionAttribute : CodeAccessSecurityAttribute
 			}
 
 }; // class SocketPermissionAttribute
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Net

@@ -22,12 +22,19 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
+
+#if !CONFIG_PERMISSIONS
+
+public sealed class PolicyStatement {}
+
+#else // CONFIG_PERMISSIONS
 
 [Serializable]
 public sealed class PolicyStatement
 	: ISecurityEncodable, ISecurityPolicyEncodable
 {
+
 	// Internal state.
 	private PermissionSet permSet;
 	private PolicyStatementAttribute attributes;
@@ -124,6 +131,8 @@ public sealed class PolicyStatement
 
 }; // class PolicyStatement
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS
+
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

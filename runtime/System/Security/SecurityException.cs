@@ -27,7 +27,7 @@ using System.Runtime.Serialization;
 
 public class SecurityException : SystemException
 {
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS
 	// Internal state.
 	private String permissionState;
 	private Type permissionType;
@@ -50,7 +50,7 @@ public class SecurityException : SystemException
 				permissionState = info.GetString("PermissionState");
 			}
 #endif
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS
 	public SecurityException(String message, Type type)
 			: base(message)
 			{
@@ -82,7 +82,7 @@ public class SecurityException : SystemException
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS
 
 	// Get the permission type.
 	public Type PermissionType
@@ -120,6 +120,14 @@ public class SecurityException : SystemException
 				}
 			}
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return base.ToString();
+			}
+
+#endif // CONFIG_PERMISSIONS
+
 #if CONFIG_SERIALIZATION
 
 	// Get the serialization data for this object.
@@ -127,18 +135,12 @@ public class SecurityException : SystemException
 									   StreamingContext context)
 			{
 				base.GetObjectData(info, context);
+			#if CONFIG_PERMISSIONS
 				info.AddValue("PermissionState", permissionState);
+			#endif
 			}
 
 #endif
-
-	// Convert this object into a string.
-	public override String ToString()
-			{
-				return base.ToString();
-			}
-
-#endif // !ECMA_COMPAT
 
 }; // class SecurityException
 

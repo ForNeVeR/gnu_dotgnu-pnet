@@ -22,7 +22,7 @@
 namespace System.Security.Principal
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 using System.Runtime.Serialization;
 
@@ -222,6 +222,6 @@ public class WindowsIdentity
 
 }; // class WindowsIdentity
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Principal

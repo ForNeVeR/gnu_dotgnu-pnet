@@ -22,7 +22,7 @@
 namespace System.Web
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 using System.Security;
 using System.Security.Permissions;
@@ -191,6 +191,6 @@ public sealed class AspNetHostingPermission
 
 }; // class AspNetHostingPermission
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Web

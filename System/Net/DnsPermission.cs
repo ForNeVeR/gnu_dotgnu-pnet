@@ -23,6 +23,8 @@
 namespace System.Net
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.Security;
 using System.Security.Permissions;
@@ -194,5 +196,7 @@ class DnsPermission : CodeAccessPermission
 #endif
 
 } // class DnsPermission
+
+#endif // CONFIG_PERMISSIONS
 
 } // namespace System.Net

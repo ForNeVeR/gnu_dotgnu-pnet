@@ -22,7 +22,7 @@
 namespace System.Security.Permissions
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 [Flags]
 public enum FileDialogPermissionAccess
@@ -35,6 +35,6 @@ public enum FileDialogPermissionAccess
 
 }; // enum FileDialogPermissionAccess
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

@@ -22,6 +22,8 @@
 namespace System.Security
 {
 
+#if CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
+
 using System;
 
 #if ECMA_COMPAT
@@ -36,5 +38,7 @@ interface ISecurityEncodable
 	SecurityElement ToXml();
 
 }; // interface ISecurityEncodable
+
+#endif // CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security

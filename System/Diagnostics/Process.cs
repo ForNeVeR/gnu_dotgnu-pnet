@@ -36,8 +36,10 @@ using System.Security.Permissions;
 // features roughly corresponds to "Windows 98 mode" in other systems.
 
 // We need unrestricted permissions to start and manage processes.
+#if CONFIG_PERMISSIONS
 [PermissionSet(SecurityAction.LinkDemand, Unrestricted=true)]
 [PermissionSet(SecurityAction.InheritanceDemand, Unrestricted=true)]
+#endif
 [DefaultProperty("StartInfo")]
 [DefaultEvent("Exited")]
 [Designer("System.Diagnostics.Design.ProcessDesigner, System.Design")]

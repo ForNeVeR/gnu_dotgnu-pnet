@@ -32,6 +32,8 @@ using System.Security.Permissions;
 internal sealed class ClrPermissions
 {
 
+#if CONFIG_PERMISSIONS
+
 	// Accessible internal state.
 	public PermissionSet granted;
 	public PermissionSet denied;
@@ -63,6 +65,15 @@ internal sealed class ClrPermissions
 			{
 				return new ClrPermissions(granted, denied, set);
 			}
+
+#else
+
+	// Accessible internal state.
+	public Object granted;
+	public Object denied;
+	public Object permitOnly;
+
+#endif
 
 }; // class ClrPermissions
 

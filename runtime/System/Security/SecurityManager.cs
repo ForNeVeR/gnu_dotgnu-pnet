@@ -22,7 +22,7 @@
 namespace System.Security
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && (CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS)
 
 using System.Collections;
 using System.Security.Policy;
@@ -31,6 +31,8 @@ public sealed class SecurityManager
 {
 	// Cannot instantiate this class.
 	private SecurityManager() {}
+
+#if CONFIG_PERMISSIONS
 
 	// Determine if a specific permission has been granted.
 	[TODO]
@@ -43,6 +45,10 @@ public sealed class SecurityManager
 				// TODO
 				return false;
 			}
+
+#endif
+
+#if CONFIG_POLICY_OBJECTS
 
 	// Load policy level information from a file.
 	[TODO]
@@ -77,6 +83,8 @@ public sealed class SecurityManager
 				// TODO
 			}
 
+#if CONFIG_PERMISSIONS
+
 	// Resolve policy information.
 	[TODO]
 	public static PermissionSet ResolvePolicy
@@ -94,6 +102,8 @@ public sealed class SecurityManager
 				// TODO
 				return null;
 			}
+
+#endif
 
 	// Resolve policy group information.
 	[TODO]
@@ -150,8 +160,11 @@ public sealed class SecurityManager
 				origin = null;
 			}
 
+#endif // CONFIG_POLICY_OBJECTS
+
 }; // class SecurityManager
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && (CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS)
+
 
 }; // namespace System.Security

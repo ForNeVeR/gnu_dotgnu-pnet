@@ -104,9 +104,11 @@ public class IsolatedStorageFileStream : FileStream
 				// Get the base directory for the isolated storage area.
 				String baseDir = sf.BaseDirectory;
 
+#if CONFIG_PERMISSIONS
 				// Assert that we have permission to do this.
 				(new FileIOPermission
 					(FileIOPermissionAccess.AllAccess, baseDir)).Assert();
+#endif
 
 				// Open the real stream.
 				realStream = new FileStream

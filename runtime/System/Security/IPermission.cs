@@ -22,6 +22,8 @@
 namespace System.Security
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 
 public interface IPermission : ISecurityEncodable
@@ -44,5 +46,7 @@ public interface IPermission : ISecurityEncodable
 	IPermission Union(IPermission target);
 
 }; // interface IPermission
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security

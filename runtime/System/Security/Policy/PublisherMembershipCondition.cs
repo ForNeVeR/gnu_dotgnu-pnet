@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if CONFIG_X509_CERTIFICATES
+#if CONFIG_X509_CERTIFICATES && CONFIG_POLICY_OBJECTS
 
 using System.Security.Permissions;
 using System.Security.Cryptography.X509Certificates;
@@ -123,6 +123,6 @@ public sealed class PublisherMembershipCondition
 
 }; // class PublisherMembershipCondition
 
-#endif // CONFIG_X509_CERTIFICATES
+#endif // CONFIG_X509_CERTIFICATES && CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

@@ -22,7 +22,7 @@
 namespace System.Security.Permissions
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS && !ECMA_COMPAT
 
 using System;
 using System.Text;
@@ -159,6 +159,6 @@ public sealed class StrongNamePublicKeyBlob
 
 }; // class StrongNamePublicKeyBlob
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS && !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

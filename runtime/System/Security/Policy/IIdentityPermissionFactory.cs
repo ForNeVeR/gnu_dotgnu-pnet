@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS && CONFIG_PERMISSIONS
 
 public interface IIdentityPermissionFactory
 {
@@ -32,6 +32,6 @@ public interface IIdentityPermissionFactory
 
 }; // interface IIdentityPermissionFactory
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS && CONFIG_PERMISSIONS
 
 }; // namespace System.Security.Policy

@@ -22,7 +22,7 @@
 namespace System.Security
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 using System;
 using System.Collections;
@@ -145,6 +145,6 @@ public sealed class NamedPermissionSet : PermissionSet
 
 }; // class NamedPermissionSet
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Security

@@ -24,7 +24,7 @@ namespace System.Security
 
 using System;
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 [AttributeUsage(AttributeTargets.Assembly,
 				AllowMultiple=false, Inherited=false)]
@@ -39,6 +39,6 @@ public sealed class AllowPartiallyTrustedCallersAttribute: Attribute
 
 }; // class AllowPartiallyTrustedCallersAttribute
 
-#endif
+#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Security

@@ -22,7 +22,7 @@
 namespace System.Security
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 public enum SecurityZone
 {
@@ -36,6 +36,6 @@ public enum SecurityZone
 
 }; // enum SecurityZone
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security

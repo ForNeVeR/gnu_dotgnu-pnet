@@ -31,7 +31,7 @@ namespace System.Security.Permissions
 			 	AttributeTargets.Constructor |
 			 	AttributeTargets.Method,
 			 	AllowMultiple=true, Inherited=false)]
-#if __CSCC__
+#if __CSCC__ && CONFIG_PERMISSIONS
 public sealed class SecurityPermissionAttribute : CodeAccessSecurityAttribute
 #else
 public sealed class SecurityPermissionAttribute : Attribute
@@ -47,7 +47,7 @@ public sealed class SecurityPermissionAttribute : Attribute
 				// Nothing to do here.
 			}
 
-#if __CSCC__
+#if __CSCC__ && CONFIG_PERMISSIONS
 	// Create a permission object that corresponds to this attribute.
 	public override IPermission CreatePermission()
 			{
@@ -98,7 +98,7 @@ public sealed class SecurityPermissionAttribute : Attribute
 				}
 			}
 
-#if __CSCC__ && !ECMA_COMPAT
+#if __CSCC__ && !ECMA_COMPAT && CONFIG_PERMISSIONS
 
 	// Non-ECMA properties.
 	public bool Assertion
@@ -332,7 +332,7 @@ public sealed class SecurityPermissionAttribute : Attribute
 				}
 			}
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_PERMISSIONS
 
 }; // class SecurityPermissionAttribute
 

@@ -22,7 +22,7 @@
 namespace System.Security.Principal
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 // Impersonation is highly security-sensitive, so we deliberately
 // don't implement it.  i.e. the class below is deliberately a stub.
@@ -40,6 +40,6 @@ public class WindowsImpersonationContext
 
 }; // class WindowsImpersonationContext
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Principal

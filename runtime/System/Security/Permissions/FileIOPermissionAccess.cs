@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
+
 [Flags]
 public enum FileIOPermissionAccess
 {
@@ -34,5 +36,7 @@ public enum FileIOPermissionAccess
 	AllAccess     = 0x000F
 
 }; // enum FileIOPermissionAccess
+
+#endif // CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Permissions

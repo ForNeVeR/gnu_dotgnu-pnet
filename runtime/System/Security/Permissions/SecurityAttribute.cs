@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.Security;
 
@@ -84,5 +86,7 @@ public abstract class SecurityAttribute : Attribute
 			}
 
 }; // class SecurityAttribute
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security.Permissions

@@ -22,7 +22,7 @@
 namespace System.Security.Principal
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 [Serializable]
 public class WindowsPrincipal : IPrincipal
@@ -66,6 +66,6 @@ public class WindowsPrincipal : IPrincipal
 
 }; // class WindowsPrincipal
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Principal

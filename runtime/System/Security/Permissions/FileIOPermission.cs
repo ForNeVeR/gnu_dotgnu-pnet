@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.IO;
 using System.Collections;
@@ -530,5 +532,7 @@ public sealed class FileIOPermission
 #endif // !ECMA_COMPAT
 
 }; // class FileIOPermission
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security.Permissions

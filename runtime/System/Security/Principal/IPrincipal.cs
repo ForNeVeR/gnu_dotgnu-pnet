@@ -22,7 +22,7 @@
 namespace System.Security.Principal
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 public interface IPrincipal
 {
@@ -35,6 +35,6 @@ public interface IPrincipal
 
 }; // interface IPrincipal
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Principal

@@ -22,13 +22,16 @@
 namespace System.Security.Policy
 {
 
-#if CONFIG_X509_CERTIFICATES
+#if CONFIG_X509_CERTIFICATES && CONFIG_POLICY_OBJECTS
 
 using System.Security.Permissions;
 using System.Security.Cryptography.X509Certificates;
 
 [Serializable]
-public sealed class Publisher : IIdentityPermissionFactory
+public sealed class Publisher
+#if CONFIG_PERMISSIONS
+	: IIdentityPermissionFactory
+#endif
 {
 	// Internal state.
 	private X509Certificate cert;
@@ -58,11 +61,15 @@ public sealed class Publisher : IIdentityPermissionFactory
 				return new Publisher(cert);
 			}
 
+#if CONFIG_PERMISSIONS
+
 	// Implement the IIdentityPermissionFactory interface
 	public IPermission CreateIdentityPermission(Evidence evidence)
 			{
 				return new PublisherIdentityPermission(cert);
 			}
+
+#endif
 
 	// Determine if two objects are equal.
 	public override bool Equals(Object obj)
@@ -94,6 +101,6 @@ public sealed class Publisher : IIdentityPermissionFactory
 
 }; // class Publisher
 
-#endif // CONFIG_X509_CERTIFICATES
+#endif // CONFIG_X509_CERTIFICATES && CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

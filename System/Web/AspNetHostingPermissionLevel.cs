@@ -22,7 +22,7 @@
 namespace System.Web
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 [Serializable]
 public enum AspNetHostingPermissionLevel
@@ -36,6 +36,6 @@ public enum AspNetHostingPermissionLevel
 
 }; // enum AspNetHostingPermissionLevel
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Web

@@ -154,8 +154,18 @@ interface _AppDomain
 	Assembly Load(byte[] rawAssembly, byte[] rawSymbolStore,
 				  Evidence assemblySecurity);
 
+#if CONFIG_POLICY_OBJECTS
+
 	// Set policy information for this application domain.
 	void SetAppDomainPolicy(PolicyLevel domainPolicy);
+
+	// Set the policy for principals.
+	void SetPrincipalPolicy(PrincipalPolicy policy);
+
+	// Set the default principal object for a thread.
+	void SetThreadPrincipal(IPrincipal principal);
+
+#endif
 
 	// Set the cache location for shadow copied assemblies.
 	void SetCachePath(String s);
@@ -163,14 +173,8 @@ interface _AppDomain
 	// Set a data item on this application domain.
 	void SetData(String name, Object data);
 
-	// Set the policy for principals.
-	void SetPrincipalPolicy(PrincipalPolicy policy);
-
 	// Set the location of the shadow copy directory.
 	void SetShadowCopyPath(String s);
-
-	// Set the default principal object for a thread.
-	void SetThreadPrincipal(IPrincipal principal);
 
 	// Methods that are normally in System.Object, but which must be
 	// redeclared here for some unknown reason.

@@ -22,7 +22,7 @@
 namespace System.Security.Permissions
 {
 
-#if CONFIG_REFLECTION
+#if CONFIG_PERMISSIONS && CONFIG_REFLECTION
 
 using System;
 using System.Security;
@@ -232,6 +232,6 @@ public sealed class ReflectionPermission
 
 }; // class ReflectionPermission
 
-#endif // CONFIG_REFLECTION
+#endif // CONFIG_PERMISSIONS && CONFIG_REFLECTION
 
 }; // namespace System.Security.Permissions

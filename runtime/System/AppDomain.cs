@@ -634,11 +634,27 @@ public sealed class AppDomain
 				}
 			}
 
+#if CONFIG_POLICY_OBJECTS
+
 	// Set policy information for this application domain.
 	public void SetAppDomainPolicy(PolicyLevel domainPolicy)
 			{
 				// Nothing to do here: we don't use such policies.
 			}
+
+	// Set the policy for principals.
+	public void SetPrincipalPolicy(PrincipalPolicy policy)
+			{
+				// Nothing to do here: we don't use such policies.
+			}
+
+	// Set the default principal object for a thread.
+	public void SetThreadPrincipal(IPrincipal principal)
+			{
+				// Nothing to do here: we don't use such principals.
+			}
+
+#endif
 
 	// Set the cache location for shadow copied assemblies.
 	public void SetCachePath(String s)
@@ -659,12 +675,6 @@ public sealed class AppDomain
 				setup.DynamicBase = path;
 			}
 
-	// Set the policy for principals.
-	public void SetPrincipalPolicy(PrincipalPolicy policy)
-			{
-				// Nothing to do here: we don't use such policies.
-			}
-
 	// Turn on shadow copying.
 	public void SetShadowCopyFiles()
 			{
@@ -675,12 +685,6 @@ public sealed class AppDomain
 	public void SetShadowCopyPath(String s)
 			{
 				setup.ShadowCopyDirectories = s;
-			}
-
-	// Set the default principal object for a thread.
-	public void SetThreadPrincipal(IPrincipal principal)
-			{
-				// Nothing to do here: we don't use such principals.
 			}
 
 	// Event that is emitted to resolve assemblies.

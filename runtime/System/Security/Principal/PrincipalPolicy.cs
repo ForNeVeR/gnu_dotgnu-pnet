@@ -22,7 +22,7 @@
 namespace System.Security.Principal
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 public enum PrincipalPolicy
 {
@@ -32,6 +32,6 @@ public enum PrincipalPolicy
 
 }; // enum PrincipalPolicy
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Principal

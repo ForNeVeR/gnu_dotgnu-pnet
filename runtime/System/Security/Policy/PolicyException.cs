@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 using System;
 using System.Runtime.Serialization;
@@ -62,6 +62,6 @@ public class PolicyException : SystemException
 
 }; // class PolicyException
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

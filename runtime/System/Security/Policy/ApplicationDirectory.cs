@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 [Serializable]
 public sealed class ApplicationDirectory
@@ -87,6 +87,6 @@ public sealed class ApplicationDirectory
 
 }; // class ApplicationDirectory
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

@@ -22,7 +22,7 @@
 namespace System.Security.Permissions
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 [Flags]
 public enum RegistryPermissionAccess
@@ -36,6 +36,6 @@ public enum RegistryPermissionAccess
 
 }; // enum RegistryPermissionAccess
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_PERMISSIONS
+
 [Flags]
 public enum EnvironmentPermissionAccess
 {
@@ -32,5 +34,7 @@ public enum EnvironmentPermissionAccess
 	AllAccess = 0x0003
 
 }; // enum EnvironmentPermissionAccess
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security.Permissions

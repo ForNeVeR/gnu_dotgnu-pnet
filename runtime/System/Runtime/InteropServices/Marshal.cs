@@ -33,7 +33,7 @@ using System.Security;
 // This class is not ECMA-compatible, strictly speaking.  But it is
 // usually necessary for any application that uses PInvoke or C.
 
-#if !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && !ECMA_COMPAT
 [SuppressUnmanagedCodeSecurity]
 #endif
 public sealed class Marshal

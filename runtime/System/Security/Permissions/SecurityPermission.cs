@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.Security;
 
@@ -229,5 +231,7 @@ public sealed class SecurityPermission
 #endif // !ECMA_COMPAT
 
 }; // class SecurityPermission
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Security.Permissions

@@ -247,6 +247,8 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 				}
 			}
 
+#if CONFIG_PERMISSIONS
+
 	// Get isolated storage permission information from a permission set.
 	protected override IsolatedStoragePermission
 				GetPermission(PermissionSet ps)
@@ -266,6 +268,8 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 					  (ps.GetPermission(typeof(IsolatedStorageFilePermission)));
 				}
 			}
+
+#endif
 
 	// Get the base directory for an isolated storage scope.
 	[TODO]

@@ -22,6 +22,8 @@
 namespace System.Security
 {
 
+#if CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
+
 using System;
 using System.Text;
 using System.Collections;
@@ -636,5 +638,7 @@ public sealed class SecurityElement
 			}
 
 }; // class SecurityElement
+
+#endif // CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security

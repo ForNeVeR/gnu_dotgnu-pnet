@@ -22,7 +22,7 @@
 namespace System.Security
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 public enum PolicyLevelType
 {
@@ -34,6 +34,6 @@ public enum PolicyLevelType
 
 }; // enum PolicyLevelType
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security

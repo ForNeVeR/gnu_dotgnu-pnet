@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 public interface IMembershipCondition
 	: ISecurityEncodable, ISecurityPolicyEncodable
@@ -42,6 +42,6 @@ public interface IMembershipCondition
 
 }; // interface IMembershipCondition
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

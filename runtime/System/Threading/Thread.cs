@@ -482,6 +482,8 @@ public sealed class Thread
 				}
 			}
 
+#if CONFIG_POLICY_OBJECTS
+
 	// Get or set the principal representing the thread's security context.
 	[TODO]
 	public static IPrincipal CurrentPrincipal
@@ -496,6 +498,8 @@ public sealed class Thread
 					// TODO
 				}
 			}
+
+#endif
 
 	// Get or set the current UI culture for the thread.
 	public CultureInfo CurrentUICulture

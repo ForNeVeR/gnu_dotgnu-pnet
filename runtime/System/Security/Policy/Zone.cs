@@ -22,12 +22,15 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 using System.Security.Permissions;
 
 [Serializable]
-public sealed class Zone : IIdentityPermissionFactory
+public sealed class Zone
+#if CONFIG_PERMISSIONS
+	: IIdentityPermissionFactory
+#endif
 {
 	// Internal state.
 	private SecurityZone zone;
@@ -69,11 +72,15 @@ public sealed class Zone : IIdentityPermissionFactory
 				return new Zone(SecurityZone.Internet);
 			}
 
+#if CONFIG_PERMISSIONS
+
 	// Implement the IIdentityPermissionFactory interface
 	public IPermission CreateIdentityPermission(Evidence evidence)
 			{
 				return new ZoneIdentityPermission(zone);
 			}
+
+#endif
 
 	// Determine if two objects are equal.
 	public override bool Equals(Object obj)
@@ -103,6 +110,6 @@ public sealed class Zone : IIdentityPermissionFactory
 
 }; // class Zone
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 using System.Collections;
 
@@ -102,6 +102,8 @@ public sealed class PolicyLevel
 				// TODO
 			}
 
+#if CONFIG_PERMISSIONS
+
 	// Add an entry to the "named permission sets" list.
 	public void AddNamedPermissionSet(NamedPermissionSet permSet)
 			{
@@ -129,19 +131,6 @@ public sealed class PolicyLevel
 				return null;
 			}
 
-	// Create a policy level object for the current application domain.
-	public static PolicyLevel CreateAppDomainLevel()
-			{
-				return new PolicyLevel("AppDomain");
-			}
-
-	// Load policy information from an XML element.
-	[TODO]
-	public void FromXml(SecurityElement e)
-			{
-				// TODO
-			}
-
 	// Get a specific named permission set.
 	public NamedPermissionSet GetNamedPermissionSet(String name)
 			{
@@ -157,24 +146,6 @@ public sealed class PolicyLevel
 					}
 				}
 				return null;
-			}
-
-	// Recover the last backed-up policy configuration.
-	public void Recover()
-			{
-				// Nothing to do here: we don't support backups.
-			}
-
-	// Remove an entry from the "full trust assembly" list.
-	[TODO]
-	public void RemoveFullTrustAssembly(StrongName sn)
-			{
-				// TODO
-			}
-	[TODO]
-	public void RemoveFullTrustAssembly(StrongNameMembershipCondition snMC)
-			{
-				// TODO
 			}
 
 	// Remove a named permission set.
@@ -198,6 +169,39 @@ public sealed class PolicyLevel
 				}
 				// TODO
 				return null;
+			}
+
+#endif // CONFIG_PERMISSIONS
+
+	// Create a policy level object for the current application domain.
+	public static PolicyLevel CreateAppDomainLevel()
+			{
+				return new PolicyLevel("AppDomain");
+			}
+
+	// Load policy information from an XML element.
+	[TODO]
+	public void FromXml(SecurityElement e)
+			{
+				// TODO
+			}
+
+	// Recover the last backed-up policy configuration.
+	public void Recover()
+			{
+				// Nothing to do here: we don't support backups.
+			}
+
+	// Remove an entry from the "full trust assembly" list.
+	[TODO]
+	public void RemoveFullTrustAssembly(StrongName sn)
+			{
+				// TODO
+			}
+	[TODO]
+	public void RemoveFullTrustAssembly(StrongNameMembershipCondition snMC)
+			{
+				// TODO
 			}
 
 	// Reset to the default state.
@@ -239,6 +243,6 @@ public sealed class PolicyLevel
 
 }; // class PolicyLevel
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_POLICY_OBJECTS
 
 [Serializable]
 public sealed class AllMembershipCondition
@@ -98,6 +98,6 @@ public sealed class AllMembershipCondition
 
 }; // class AllMembershipCondition
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_POLICY_OBJECTS
 
 }; // namespace System.Security.Policy

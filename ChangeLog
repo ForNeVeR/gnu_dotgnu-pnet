@@ -1,4 +1,10 @@
-2007-7-03   Thong Nguyen  <tum@veridicus.com>
+
+2003-07-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_grammar.y: make the C compiler more robust against
+	failures of "CTypeDefineStructOrUnion".
+
+2007-07-03  Thong Nguyen  <tum@veridicus.com>
 
 	* support/hb_gc.c: ILGCDeinit now performs a garbage collection
 	before calling the finalizers one last time.

@@ -1772,6 +1772,20 @@ StructOrUnionSpecifier
 					/* Define the struct or union type */
 					$<structInfo>$.type = CTypeDefineStructOrUnion
 							(&CCCodeGen, $2, $1, functionName);
+					if(!($<structInfo>$.type))
+					{
+						/* This shouldn't happen, but fail gracefully */
+						if($1 == C_STKIND_STRUCT)
+						{
+							CCError(_("`struct %s' is already defined"), $2);
+						}
+						else
+						{
+							CCError(_("`union %s' is already defined"), $2);
+						}
+						$<structInfo>$.type = CTypeDefineAnonStructOrUnion
+							(&CCCodeGen, currentStruct, functionName, $1);
+					}
 				}
 				else
 				{

@@ -32,7 +32,12 @@ public class IPHostEntry
 	private String hostName;
 
 	// Constructor.
-	protected IPHostEntry() {}
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	IPHostEntry() {}
 
 	// Get or set the list of addresses associated with this entry.
 	public IPAddress[] AddressList

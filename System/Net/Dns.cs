@@ -22,6 +22,9 @@ namespace System.Net
 {
 
 using System;
+using System.Runtime.CompilerServices;
+using System.Net;
+using System.Net.Sockets;
 
 public sealed class Dns
 {
@@ -63,42 +66,87 @@ public sealed class Dns
 			}
 
 	// Get a host by address synchronously.
-	[TODO]
 	public static IPHostEntry GetHostByAddress(String address)
 			{
-				// TODO
-				return null;
+				//allow Parse to throw FormatException or ArgumentNullException
+				IPAddress ip=IPAddress.Parse(address);
+				return GetHostByAddress(ip);
 			}
-	[TODO]
+
 	public static IPHostEntry GetHostByAddress(IPAddress address)
 			{
-				// TODO
-				return null;
+				if(address==null)
+				{
+					throw new ArgumentNullException("address");
+				}
+				String h_name;
+				String [] h_aliases;
+				long [] h_addr_list;
+				
+				if(!InternalGetHostByAddr(address.Address, out h_name, 
+						out h_aliases, out h_addr_list))
+				{
+					throw new SocketException(); // Hm...	
+				}
+				return ToIPHostEntry(h_name,h_aliases,h_addr_list);
 			}
 
 	// Get a host by name synchronously.
-	[TODO]
 	public static IPHostEntry GetHostByName(String hostName)
 			{
-				// TODO
-				return null;
+				if(hostName==null)
+				{
+					throw new ArgumentNullException("hostname");
+				}
+				String h_name;
+				String [] h_aliases;
+				long [] h_addr_list;
+				
+				if(!InternalGetHostByName(hostName, out h_name, 
+						out h_aliases, out h_addr_list))
+				{
+					throw new SocketException(); // Hm...	
+				}
+				return ToIPHostEntry(h_name,h_aliases,h_addr_list);
 			}
 
 	// Get the host name of the local machine.
-	[TODO]
 	public static String GetHostName()
 			{
-				// TODO
-				return null;
+				IPHostEntry x=GetHostByAddress(IPAddress.Loopback);
+				// this is a crude hack , call gethostname() from
+				// icalls later
+				return x.HostName;
 			}
 
 	// Resolve a name or IP address synchronously.
-	[TODO]
 	public static IPHostEntry Resolve(String hostName)
 			{
-				// TODO
-				return null;
+				return GetHostByName(hostName);
 			}
+	
+	private static IPHostEntry ToIPHostEntry(String h_name,
+				String []h_aliases,long[] h_addr_list)
+	{
+		IPHostEntry entry=new IPHostEntry();
+		entry.HostName=h_name;
+		entry.Aliases=h_aliases;
+		entry.AddressList=new IPAddress[h_addr_list.Length];
+		for(int i=0;i<h_addr_list.Length;i++)
+		{
+			entry.AddressList[i]=new IPAddress(h_addr_list[i]);
+		}
+		return entry;
+	}
+
+	//helper functions
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	private extern static bool InternalGetHostByName(String host,out String h_name,
+	out String[] h_aliases, out long[] h_addr_list);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	private extern static bool InternalGetHostByAddr(long address,out String h_name,
+	out String[] h_aliases, out long[] h_addr_list);
 
 }; // class Dns
 

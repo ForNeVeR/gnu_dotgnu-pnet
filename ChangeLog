@@ -13,6 +13,8 @@
 	samples/System.Xml.dll, samples/System.dll,
 	samples/mscorlib.dll: update all assemblies from pnetlib.
 
+	* doc/pnet_faq.html: update the FAQ.
+
 2002-11-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_arith.tc, cscc/csharp/cs_oper.tc: Move the reduction in

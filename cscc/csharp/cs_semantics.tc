@@ -110,7 +110,7 @@ ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
 	if(type)
 	{
 		save = info->inSemType;
-		info->inSemType = 1;
+		info->inSemType = info->typeGather;
 		value = ILNode_SemAnalysis(type, info, parent);
 		info->inSemType = save;
 		if(value.kind != CS_SEMKIND_TYPE)
@@ -136,7 +136,7 @@ int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,
 {
 	CSSemValue value;
 	int save = info->inSemType;
-	info->inSemType = 1;
+	info->inSemType = info->typeGather;
 	value = ILNode_SemAnalysis(type, info, parent);
 	info->inSemType = save;
 	if(value.kind == CS_SEMKIND_TYPE)

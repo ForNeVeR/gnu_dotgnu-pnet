@@ -235,6 +235,25 @@ ILType *ILFindSystemType(ILGenInfo *info, const char *name)
 	}
 }
 
+static int InheritsFromValueType(ILClass *info)
+{
+	const char *namespace;
+	while(info != 0)
+	{
+		info = ILClassResolve(info);
+		if(!strcmp(ILClass_Name(info), "ValueType"))
+		{
+			namespace = ILClass_Namespace(info);
+			if(!strcmp(namespace, "System") && !ILClass_NestedParent(info))
+			{
+				return 1;
+			}
+		}
+		info = ILClass_ParentRef(info);
+	}
+	return 0;
+}
+
 ILType *ILClassToType(ILClass *info)
 {
 	const char *name;
@@ -242,7 +261,7 @@ ILType *ILClassToType(ILClass *info)
 
 	/* Check for system classes with primitive equivalents */
 	name = ILClass_Name(info);
-	namespace = ILClass_Name(info);
+	namespace = ILClass_Namespace(info);
 	if(namespace && !strcmp(namespace, "System") &&
 	   ILClass_NestedParent(info) == 0)
 	{
@@ -314,7 +333,8 @@ ILType *ILClassToType(ILClass *info)
 
 	/* Convert into either a value type or a class type */
 	if(ILClass_IsValueType(info) ||
-	   ILClass_IsUnmanagedValueType(info))
+	   ILClass_IsUnmanagedValueType(info) ||
+	   (ILClass_IsSealed(info) && InheritsFromValueType(info)))
 	{
 		return ILType_FromValueType(info);
 	}
@@ -462,6 +482,9 @@ ILMachineType ILTypeToMachineType(ILType *type)
 {
 	ILClass *classInfo;
 	const char *namespace;
+
+	/* Convert enumerated types into their underlying type */
+	type = ILTypeGetEnumType(type);
 
 	if(ILType_IsPrimitive(type))
 	{

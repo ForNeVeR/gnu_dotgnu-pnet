@@ -441,12 +441,23 @@ void *_ILMakeCifForConstructor(ILMethod *method, int isInternal)
 			} while (0)
 
 /*
+ * User data for "PackDelegateParams".
+ */
+typedef struct
+{
+	void     **args;
+	ILMethod  *pinvokeInfo;
+
+} PackDelegateUserData;
+
+/*
  * Pack the parameters for a delegate closure call onto the CVM stack.
  */
 static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 					          int isCtor, void *_this, void *userData)
 {
-	void **args = (void **)userData;
+	void **args = ((PackDelegateUserData *)userData)->args;
+	ILMethod *pinvokeInfo = ((PackDelegateUserData *)userData)->pinvokeInfo;
 	ILType *signature = ILMethod_Signature(method);
 	CVMWord *stacktop, *stacklimit;
 	ILUInt32 param, numParams;
@@ -477,7 +488,7 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 	for(param = 1; param <= numParams; ++param)
 	{
 		/* Marshal parameters that need special handling */
-		marshalType = ILPInvokeGetMarshalType(0, method, param,
+		marshalType = ILPInvokeGetMarshalType(0, pinvokeInfo, param,
 											  &customName, &customNameLen,
 											  &customCookie, &customCookieLen);
 		if(marshalType != IL_META_MARSHAL_DIRECT)
@@ -700,8 +711,9 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
  * Unpack the result of a delegate closure call.
  */
 static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
-					             int isCtor, void *result)
+					             int isCtor, void *result, void *userData)
 {
+	ILMethod *pinvokeInfo = ((PackDelegateUserData *)userData)->pinvokeInfo;
 	ILType *signature = ILMethod_Signature(method);
 	ILType *paramType;
 	ILUInt32 size, sizeInWords;
@@ -714,7 +726,7 @@ static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
 
 	/* Marshal return types that need special handling */
 	marshalType = ILPInvokeGetMarshalType
-			(0, method, 0, &customName, &customNameLen,
+			(0, pinvokeInfo, 0, &customName, &customNameLen,
 			 &customCookie, &customCookieLen);
 	if(marshalType != IL_META_MARSHAL_DIRECT)
 	{
@@ -896,6 +908,7 @@ static void DelegateInvoke(ffi_cif *cif, void *result,
 	ILMethod *method;
 	ILType *type;
 	ILUInt32 size;
+	PackDelegateUserData userData;
 
 	/* If this is a multicast delegate, then execute "prev" first */
 	if(((System_Delegate *)delegate)->prev)
@@ -918,10 +931,13 @@ static void DelegateInvoke(ffi_cif *cif, void *result,
 	}
 
 	/* Call the method */
+	userData.args = args;
+	userData.pinvokeInfo = (ILMethod *)ILTypeGetDelegateMethod
+		(ILType_FromClass(GetObjectClass(delegate)));
 	if(_ILCallMethod(thread, method,
 				     UnpackDelegateResult, result,
 				     0, ((System_Delegate *)delegate)->target,
-				     PackDelegateParams, args))
+				     PackDelegateParams, &userData))
 	{
 		/* An exception occurred, which is already stored in the thread */
 		type = ILMethod_Signature(method);

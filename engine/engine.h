@@ -271,14 +271,14 @@ int _ILCallPackVParams(ILExecThread *thread, ILMethod *method,
  * a direct result buffer.
  */
 void _ILCallUnpackDirectResult(ILExecThread *thread, ILMethod *method,
-					           int isCtor, void *result);
+					           int isCtor, void *result, void *userData);
 
 /*
  * Unpack a method result from the CVM stack and store it into
  * an ILExecValue result buffer.
  */
 void _ILCallUnpackVResult(ILExecThread *thread, ILMethod *method,
-				          int isCtor, void *result);
+				          int isCtor, void *result, void *userData);
 
 /*
  * Prototype for a parameter packing function.
@@ -290,7 +290,7 @@ typedef int (*ILCallPackFunc)(ILExecThread *thread, ILMethod *method,
  * Prototype for a return value unpacking function.
  */
 typedef void (*ILCallUnpackFunc)(ILExecThread *thread, ILMethod *method,
-					             int isCtor, void *result);
+					             int isCtor, void *result, void *userData);
 
 /*
  * Call a method using the supplied packing and unpacking rules.

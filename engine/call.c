@@ -410,7 +410,7 @@ int _ILCallPackVParams(ILExecThread *thread, ILMethod *method,
 }
 
 void _ILCallUnpackDirectResult(ILExecThread *thread, ILMethod *method,
-					           int isCtor, void *result)
+					           int isCtor, void *result, void *userData)
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILType *paramType;
@@ -542,7 +542,7 @@ void _ILCallUnpackDirectResult(ILExecThread *thread, ILMethod *method,
 }
 
 void _ILCallUnpackVResult(ILExecThread *thread, ILMethod *method,
-				          int isCtor, void *_result)
+				          int isCtor, void *_result, void *userData)
 {
 	ILExecValue *result = (ILExecValue *)_result;
 	ILType *signature = ILMethod_Signature(method);
@@ -710,7 +710,7 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	else
 	{
 		/* Unpack the return value */
-		(*unpack)(thread, method, isCtor, result);
+		(*unpack)(thread, method, isCtor, result, userData);
 	}
 
 	/* Restore the original PC: everything else was restored

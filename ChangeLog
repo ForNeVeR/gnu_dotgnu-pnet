@@ -1,4 +1,10 @@
 
+2003-02-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/call.c, engine/engine.h, engine/pinvoke.c: use the
+	marshalling information on the delegate for closure processing,
+	instead of the marshalling information on the target.
+
 2003-02-18  Jonathan Springer  <jonathan.springer@verizon.net>
 
 	* support/decimal.c:  Eliminate a very pesky bug in Decimal

@@ -113,6 +113,11 @@ void ILExecProcessSetLibraryDirs(ILExecProcess *process,
 								 int numLibraryDirs);
 
 /*
+ * Get the IL context associated with a process.
+ */
+ILContext *ILExecProcessGetContext(ILExecProcess *process);
+
+/*
  * Get the "main" thread for a process.
  */
 ILExecThread *ILExecProcessGetMain(ILExecProcess *process);

@@ -22,6 +22,8 @@
 #define	_ILDB_CONTEXT_H
 
 #include <stdio.h>
+#include "il_engine.h"
+#include "il_debug.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -44,6 +46,9 @@ typedef struct
 	FILE		   *traceStream;		/* Trace message stream */
 	char		  **dirSearch;			/* Directory search path */
 	int				dirSearchNum;		/* Number of search path entries */
+	unsigned long	listSize;			/* Default size for "list" displays */
+	ILExecProcess  *process;			/* Process that is being debugged */
+	ILDebugContext *dbgContext;			/* Current debug context */
 
 } ILDb;
 
@@ -56,6 +61,11 @@ ILDb *ILDbCreate(int argc, char **argv);
  * Destroy the debugger context.
  */
 void ILDbDestroy(ILDb *db);
+
+/*
+ * Get a debug context for a specific image.
+ */
+ILDebugContext *ILDbGetDebugContext(ILDb *db, ILImage *image);
 
 #ifdef	__cplusplus
 };

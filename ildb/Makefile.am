@@ -8,13 +8,14 @@ ildb_SOURCES = ildb_cmd.c \
 			   ildb_input.c \
 			   ildb_list.c \
 			   ildb_main.c \
+			   ildb_parse.c \
 			   ildb_search.c \
 			   ildb_set.c \
 			   ildb_show.c \
 			   ildb_system.c
 ildb_LDADD   = ../engine/libILEngine.a ../image/libILImage.a \
 			   ../support/libILSupport.a ../libffi/libffi.a \
-			   $(READLINELIBS)
+			   ../libgc/.libs/libgc.a $(READLINELIBS)
 
 if USINGGCC
 INCLUDES = -Wall

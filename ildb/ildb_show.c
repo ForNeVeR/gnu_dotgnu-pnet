@@ -37,6 +37,22 @@ static void Show_Directories(ILDb *db, char *argv[])
 }
 
 /*
+ * Show the default size of listings.
+ */
+static void Show_ListSize(ILDb *db, char *argv[])
+{
+	if(db->listSize != 0 && db->listSize != (unsigned long)(long)(-1))
+	{
+		ILDbInfo(db, "The number of lines displayed by default is %lu.",
+				 db->listSize);
+	}
+	else
+	{
+		ILDbInfo(db, "The number of lines displayed by default is unlimited.");
+	}
+}
+
+/*
  * Print information about the current line in the program.
  */
 static void Info_Line(ILDb *db, char *argv[])
@@ -50,6 +66,9 @@ static void Info_Line(ILDb *db, char *argv[])
 ILDbCmdInfo ILDbShowCommands[] = {
 	{"show", 3, "directories", 3, Show_Directories, 0,
 		"show the directories that are searched for source files",
+		0},
+	{"show", 3, "listsize", 2, Show_ListSize, 0,
+		"show the default list size",
 		0},
 	{"show", 3, 0, 0, 0, 0,
 		"show information about the debugger",

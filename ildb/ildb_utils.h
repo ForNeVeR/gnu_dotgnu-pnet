@@ -64,6 +64,12 @@ void ILDbTraceClose(ILDb *db);
 						 (ch) == '\r' || (ch) == '\n' || \
 						 (ch) == '\f' || (ch) == '\v')
 
+/*
+ * Parse a numeric quantity.
+ */
+long ILDbParseNumber(ILDb *db, char *value, int len,
+					 const char *name, long defValue);
+
 #ifdef	__cplusplus
 };
 #endif

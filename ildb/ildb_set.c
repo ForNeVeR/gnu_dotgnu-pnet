@@ -79,6 +79,15 @@ static void Set_Directory(ILDb *db, char *argv[])
 }
 
 /*
+ * Set the number of source lines to show by default with "list".
+ */
+static void Set_ListSize(ILDb *db, char *argv[])
+{
+	db->listSize = (unsigned long)ILDbParseNumber(db, argv[0], -1, "list size",
+											      (long)(db->listSize));
+}
+
+/*
  * Default set command handler, which ignores its arguments.
  * Useful as a catch-all for programs that think that they
  * are talking to gdb, when they really aren't.
@@ -94,6 +103,10 @@ static void Set_Default(ILDb *db, char *argv[])
 ILDbCmdInfo ILDbSetCommands[] = {
 	{"directory", 3, 0, 0, Set_Directory, 0,
 		"set the directories to search for source files",
+		0},
+
+	{"set", 3, "listsize", 2, Set_ListSize, 0,
+		"set number of source lines displayed by default",
 		0},
 	{"set", 3, 0, 0, Set_Default, 0,
 		"set debugger options and variables",

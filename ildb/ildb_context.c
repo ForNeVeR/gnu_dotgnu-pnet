@@ -42,6 +42,9 @@ ILDb *ILDbCreate(int argc, char **argv)
 	db->commands = 0;
 	db->lastCommands = 0;
 	db->traceStream = 0;
+	db->listSize = 10;
+	db->process = 0;
+	db->dbgContext = 0;
 
 	/* Set the initial source directory search path */
 	db->dirSearch = 0;
@@ -62,10 +65,39 @@ ILDb *ILDbCreate(int argc, char **argv)
 
 void ILDbDestroy(ILDb *db)
 {
+	if(db->dbgContext)
+	{
+		ILDebugDestroy(db->dbgContext);
+	}
+	if(db->process)
+	{
+		ILExecProcessDestroy(db->process);
+	}
 	ILDbFreeCommands(db);
 	ILDbSearchDestroy(db);
 	ILDbTraceClose(db);
 	ILFree(db);
+}
+
+ILDebugContext *ILDbGetDebugContext(ILDb *db, ILImage *image)
+{
+	if(db->dbgContext)
+	{
+		/* We may already have a cached context for this image */
+		if(ILDebugToImage(db->dbgContext) == image)
+		{
+			return db->dbgContext;
+		}
+
+		/* Destroy the current context */
+		ILDebugDestroy(db->dbgContext);
+	}
+	db->dbgContext = ILDebugCreate(image);
+	if(!(db->dbgContext))
+	{
+		ILDbOutOfMemory(db);
+	}
+	return db->dbgContext;
 }
 
 #ifdef	__cplusplus

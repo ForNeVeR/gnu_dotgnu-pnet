@@ -137,6 +137,11 @@ void ILExecProcessSetLibraryDirs(ILExecProcess *process,
 	ILContextSetLibraryDirs(process->context, libraryDirs, numLibraryDirs);
 }
 
+ILContext *ILExecProcessGetContext(ILExecProcess *process)
+{
+	return process->context;
+}
+
 ILExecThread *ILExecProcessGetMain(ILExecProcess *process)
 {
 	return process->mainThread;

@@ -88,7 +88,10 @@ break;
 /* Label that we jump to when the engine throws an internal exception */
 throwException:
 {
+	if(!ILCoderPCToHandler(thread->process->coder, pc, 0))
+#if 0
 	if(thread->except == IL_INVALID_EXCEPT)
+#endif
 	{
 		goto throwCaller;
 	}
@@ -104,7 +107,10 @@ case COP_PREFIX_THROW:
 	/* Search the exception handler table for an applicable handler */
 searchForHandler:
 	tempNum = (ILUInt32)(pc - (unsigned char *)(method->userData1));
+	pc = ILCoderPCToHandler(thread->process->coder, pc, 0);
+#if 0
 	pc = thread->except;
+#endif
 	while(tempNum < IL_READ_UINT32(pc) || tempNum >= IL_READ_UINT32(pc + 4))
 	{
 		pc += IL_READ_UINT32(pc + 8);
@@ -144,12 +150,16 @@ throwCaller:
 			return 1;
 		}
 	}
-	while(thread->except == IL_INVALID_EXCEPT);
+	while(!ILCoderPCToHandler(thread->process->coder, pc, 1));
 
 	/* Copy the exception object into place */
 	stacktop = frame + thread->exceptHeight;
 	stacktop[0].ptrValue = tempptr;
 	++stacktop;
+
+	/* Back up one byte to ensure that the pc falls within
+	   the exception region for the method */
+	--pc;
 
 	/* Search for an exception handler within this method */
 	goto searchForHandler;

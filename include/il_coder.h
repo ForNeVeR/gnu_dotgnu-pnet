@@ -597,6 +597,29 @@ struct _tagILCoderClass
 	void (*catchClause)(ILCoder *coder, ILException *exception,
 						ILClass *classInfo, int hasRethrow);
 
+	/*
+	 * Convert a program counter into an exception handler address.
+	 * Returns NULL if no exception handler for the PC.  If "beyond"
+	 * is zero, then the pc points to the start of an instruction.
+	 * If "beyond" is non-zero, then the pc points beyond the end
+	 * of an instruction.
+	 */
+	void *(*pcToHandler)(ILCoder *coder, void *pc, int beyond);
+
+	/*
+	 * Convert a program counter into an ILMethod descriptor.
+	 * Returns NULL if the PC is not within a converted method.
+	 * If "beyond" is zero, then the pc points to the start of
+	 * an instruction.  If "beyond" is non-zero, then the pc
+	 * points beyond the end of an instruction.
+	 */
+	ILMethod *(*pcToMethod)(ILCoder *coder, void *pc, int beyond);
+
+	/*
+	 * Sentinel string to catch missing methods in class tables.
+	 */
+	const char *sentinel;
+
 };
 
 /*
@@ -805,6 +828,10 @@ struct _tagILCoderClass
 #define	ILCoderCatch(coder,exception,info,hasRethrow) \
 			((*((coder)->classInfo->catchClause))((coder), (exception), \
 												  (info), (hasRethrow)))
+#define	ILCoderPCToHandler(coder,pc,beyond) \
+			((*((coder)->classInfo->pcToHandler))((coder), (pc), (beyond)))
+#define	ILCoderPCToMethod(coder,pc,beyond) \
+			((*((coder)->classInfo->pcToMethod))((coder), (pc), (beyond)))
 
 #ifdef	__cplusplus
 };

@@ -635,28 +635,31 @@ void _ILCacheNewRegion(ILCachePosn *posn, void *cookie)
 	posn->cache->method = newMethod;
 }
 
+void _ILCacheSetCookie(ILCachePosn *posn, void *cookie)
+{
+	posn->cache->method->cookie = cookie;
+}
+
 void *_ILCacheGetMethod(ILCache *cache, void *pc, void **cookie)
 {
 	ILCacheMethod *node = cache->head.right;
-	int cmp;
 	while(node != &(cache->nil))
 	{
-		cmp = CacheCompare(cache, (unsigned char *)pc, node);
-		if(cmp == 0)
+		if(((unsigned char *)pc) < node->start)
+		{
+			node = GetLeft(node);
+		}
+		else if(((unsigned char *)pc) >= node->end)
+		{
+			node = GetRight(node);
+		}
+		else
 		{
 			if(cookie)
 			{
 				*cookie = node->cookie;
 			}
 			return node->method;
-		}
-		else if(cmp < 0)
-		{
-			node = GetLeft(node);
-		}
-		else
-		{
-			node = GetRight(node);
 		}
 	}
 	return 0;

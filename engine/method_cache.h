@@ -117,6 +117,11 @@ void _ILCacheMarkBytecode(ILCachePosn *posn, ILUInt32 offset);
 void _ILCacheNewRegion(ILCachePosn *posn, void *cookie);
 
 /*
+ * Set the exception region cookie for the current region.
+ */
+void _ILCacheSetCookie(ILCachePosn *posn, void *cookie);
+
+/*
  * Find the method that is associated with a particular
  * program counter.  Returns NULL if the PC is not associated
  * with a method within the cache.  The exception region
@@ -233,6 +238,7 @@ ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start, ILUInt32 offset);
 #define	ILCacheAlignMethod		_ILCacheAlignMethod
 #define	ILCacheMarkBytecode		_ILCacheMarkBytecode
 #define	ILCacheNewRegion		_ILCacheNewRegion
+#define	ILCacheSetCookie		_ILCacheSetCookie
 #define	ILCacheGetMethod		_ILCacheGetMethod
 #define	ILCacheGetNative		_ILCacheGetNative
 #define	ILCacheGetBytecode		_ILCacheGetBytecode

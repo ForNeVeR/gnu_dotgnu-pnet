@@ -387,6 +387,9 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_TryHandlerStart,
 	CVMCoder_TryHandlerEnd,
 	CVMCoder_Catch,
+	CVMCoder_PCToHandler,
+	CVMCoder_PCToMethod,
+	"sentinel"
 };
 
 #ifdef	__cplusplus

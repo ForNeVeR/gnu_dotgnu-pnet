@@ -322,6 +322,14 @@ static void Coder_Catch(ILCoder *coder, ILException *exception,
 					    ILClass *classInfo, int hasRethrow)
 {
 }
+static void *Coder_PCToHandler(ILCoder *coder, void *pc, int beyond)
+{
+	return 0;
+}
+static ILMethod *Coder_PCToMethod(ILCoder *coder, void *pc, int beyond)
+{
+	return 0;
+}
 
 /*
  * Null coder class and instance.
@@ -406,6 +414,9 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_TryHandlerStart,
 	Coder_TryHandlerEnd,
 	Coder_Catch,
+	Coder_PCToHandler,
+	Coder_PCToMethod,
+	"sentinel"
 };
 ILCoder _ILNullCoder = {&_ILNullCoderClass};
 

@@ -15,6 +15,11 @@
 	to use pointers rather than offsets, because CVM methods are
 	now fixed in memory within the new cache.
 
+	* engine/cvm_except.c, engine/cvmc.c, engine/cvmc_except.c,
+	engine/method_cache.c, engine/method_cache.h, engine/null_coder.c,
+	include/il_coder.h: convert exception handling to use the
+	method cache for throw lookups.
+
 2002-04-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/pnettools.texi, image/Makefile.am, image/debug_reader.c,

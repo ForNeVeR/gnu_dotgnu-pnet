@@ -67,6 +67,9 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 		coder->maxHeight += extraLocals;
 	}
 
+	/* Start the method's primary exception region here */
+	ILCacheNewRegion(&(coder->codePosn), (void *)0);
+
 	/* Set up the method's frame to perform exception handling */
 	coder->enterTry = CVM_POSN();
 	CVM_BYTE(COP_PREFIX);
@@ -137,6 +140,13 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
 	{
 		IL_WRITE_UINT32(coder->enterTry + 2, CVM_POSN() - coder->enterTry);
 		coder->enterTry = 0;
+
+		/* Set the cookie for the method's exception region
+		   to the current method position */
+		ILCacheSetCookie(&(coder->codePosn), CVM_POSN());
+
+		/* End the exception region and start a normal region */
+		ILCacheNewRegion(&(coder->codePosn), 0);
 	}
 
 	/* Output the start and end of the code covered by the handler */
@@ -226,6 +236,38 @@ static void CVMCoder_Catch(ILCoder *_coder, ILException *exception,
 
 	/* Adjust the stack back to its original height */
 	CVM_ADJUST(-1);
+}
+
+/*
+ * Convert a program counter into an exception handler.
+ */
+static void *CVMCoder_PCToHandler(ILCoder *_coder, void *pc, int beyond)
+{
+	void *cookie;
+	if(beyond)
+	{
+		pc = ILCacheRetAddrToPC(pc);
+	}
+	if(ILCacheGetMethod(((ILCVMCoder *)_coder)->cache, pc, &cookie))
+	{
+		return cookie;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Convert a program counter into a method descriptor.
+ */
+static ILMethod *CVMCoder_PCToMethod(ILCoder *_coder, void *pc, int beyond)
+{
+	if(beyond)
+	{
+		pc = ILCacheRetAddrToPC(pc);
+	}
+	return ILCacheGetMethod(((ILCVMCoder *)_coder)->cache, pc, (void **)0);
 }
 
 #endif	/* IL_CVMC_CODE */

@@ -46,6 +46,13 @@ if test x$cygwin = xfalse ; then
   suppress_libm=yes
 else
   suppress_libm=no
+  case "$host" in
+  	*-*-mingw*)
+      SOCKETLIBS="-lwsock32"
+      suppress_libm=yes
+	;;
+	*) ;;
+  esac
 fi
 
 dnl Check for file extensions.

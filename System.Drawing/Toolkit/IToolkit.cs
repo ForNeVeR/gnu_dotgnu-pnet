@@ -86,22 +86,25 @@ public interface IToolkit
 	IntPtr GetHalftonePalette();
 
 	// Create a top-level application window.
-	IToolkitWindow CreateTopLevelWindow(int width, int height);
+	IToolkitWindow CreateTopLevelWindow(int width, int height,
+										IToolkitEventSink sink);
 
 	// Create a top-level dialog shell.
 	IToolkitWindow CreateTopLevelDialog
 			(int width, int height, bool modal, bool resizable,
-			 IToolkitWindow dialogParent);
+			 IToolkitWindow dialogParent, IToolkitEventSink sink);
 
 	// Create a top-level popup window.  Popup windows do not have
 	// any borders and grab the mouse and keyboard when they are mapped
 	// to the screen.  They are used for menus, drop-down lists, etc.
-	IToolkitWindow CreatePopupWindow(int x, int y, int width, int height);
+	IToolkitWindow CreatePopupWindow(int x, int y, int width, int height,
+									 IToolkitEventSink sink);
 
 	// Create a child window.  If "parent" is null, then the child
 	// does not yet have a "real" parent - it will be reparented later.
 	IToolkitWindow CreateChildWindow(IToolkitWindow parent,
-									 int x, int y, int width, int height);
+									 int x, int y, int width, int height,
+									 IToolkitEventSink sink);
 
 	// Get a list of all font families on this system, or all font
 	// families that are compatible with a particular IToolkitGraphics.

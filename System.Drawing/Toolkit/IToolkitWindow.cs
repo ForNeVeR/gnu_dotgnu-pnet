@@ -100,9 +100,6 @@ public interface IToolkitWindow
 	// Force an update of all invalidated regions.
 	void Update();
 
-	// Set the event sink to use for this window.
-	void SetEventSink(IToolkitEventSink sink);
-
 }; // interface IToolkitWindow
 
 }; // namespace System.Drawing.Toolkit

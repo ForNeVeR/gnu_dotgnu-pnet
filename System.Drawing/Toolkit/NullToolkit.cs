@@ -129,7 +129,8 @@ public class NullToolkit : IToolkit
 			}
 
 	// Create a top-level application window.
-	public virtual IToolkitWindow CreateTopLevelWindow(int width, int height)
+	public virtual IToolkitWindow CreateTopLevelWindow(int width, int height,
+													   IToolkitEventSink sink)
 			{
 				return null;
 			}
@@ -137,7 +138,7 @@ public class NullToolkit : IToolkit
 	// Create a top-level dialog shell.
 	public virtual IToolkitWindow CreateTopLevelDialog
 				(int width, int height, bool modal, bool resizable,
-				 IToolkitWindow dialogParent)
+				 IToolkitWindow dialogParent, IToolkitEventSink sink)
 			{
 				return null;
 			}
@@ -146,7 +147,7 @@ public class NullToolkit : IToolkit
 	// any borders and grab the mouse and keyboard when they are mapped
 	// to the screen.  They are used for menus, drop-down lists, etc.
 	public virtual IToolkitWindow CreatePopupWindow
-				(int x, int y, int width, int height)
+				(int x, int y, int width, int height, IToolkitEventSink sink)
 			{
 				return null;
 			}
@@ -154,7 +155,8 @@ public class NullToolkit : IToolkit
 	// Create a child window.  If "parent" is null, then the child
 	// does not yet have a "real" parent - it will be reparented later.
 	public virtual IToolkitWindow CreateChildWindow
-				(IToolkitWindow parent, int x, int y, int width, int height)
+				(IToolkitWindow parent, int x, int y, int width, int height,
+				 IToolkitEventSink sink)
 			{
 				return null;
 			}

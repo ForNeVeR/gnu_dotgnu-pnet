@@ -181,28 +181,30 @@ extern arm_inst_ptr _arm_alu_reg_imm(arm_inst_ptr inst, int opc, int dreg,
 							         int sreg, int imm, int saveWork);
 #define	arm_alu_reg_imm(inst,opc,dreg,sreg,imm)	\
 			do { \
-				int __value = (int)(imm); \
-				if(__value >= 0 && __value < 256) \
+				int __alu_imm = (int)(imm); \
+				if(__alu_imm >= 0 && __alu_imm < 256) \
 				{ \
-					arm_alu_reg_imm8((inst), (opc), (dreg), (sreg), __value); \
+					arm_alu_reg_imm8 \
+						((inst), (opc), (dreg), (sreg), __alu_imm); \
 				} \
 				else \
 				{ \
 					(inst) = _arm_alu_reg_imm \
-						((inst), (opc), (dreg), (sreg), __value, 0); \
+						((inst), (opc), (dreg), (sreg), __alu_imm, 0); \
 				} \
 			} while (0)
 #define	arm_alu_reg_imm_save_work(inst,opc,dreg,sreg,imm)	\
 			do { \
-				int __value = (int)(imm); \
-				if(__value >= 0 && __value < 256) \
+				int __alu_imm_save = (int)(imm); \
+				if(__alu_imm_save >= 0 && __alu_imm_save < 256) \
 				{ \
-					arm_alu_reg_imm8((inst), (opc), (dreg), (sreg), __value); \
+					arm_alu_reg_imm8 \
+						((inst), (opc), (dreg), (sreg), __alu_imm_save); \
 				} \
 				else \
 				{ \
 					(inst) = _arm_alu_reg_imm \
-						((inst), (opc), (dreg), (sreg), __value, 1); \
+						((inst), (opc), (dreg), (sreg), __alu_imm_save, 1); \
 				} \
 			} while (0)
 #define arm_alu_reg(inst,opc,dreg,sreg)	\
@@ -260,14 +262,14 @@ extern arm_inst_ptr _arm_alu_reg_imm(arm_inst_ptr inst, int opc, int dreg,
 			} while (0)
 #define arm_test_reg_imm(inst,opc,sreg,imm)	\
 			do { \
-				int __value = (int)(imm); \
-				if(__value >= 0 && __value < 256) \
+				int __test_imm = (int)(imm); \
+				if(__test_imm >= 0 && __test_imm < 256) \
 				{ \
-					arm_alu_cc_reg_imm8((inst), (opc), 0, (sreg), __value); \
+					arm_alu_cc_reg_imm8((inst), (opc), 0, (sreg), __test_imm); \
 				} \
 				else \
 				{ \
-					arm_mov_reg_imm((inst), ARM_WORK, __value); \
+					arm_mov_reg_imm((inst), ARM_WORK, __test_imm); \
 					arm_test_reg_reg((inst), (opc), (sreg), ARM_WORK); \
 				} \
 			} while (0)
@@ -297,24 +299,24 @@ extern arm_inst_ptr _arm_alu_reg_imm(arm_inst_ptr inst, int opc, int dreg,
 extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 #define	arm_mov_reg_imm(inst,reg,imm)	\
 			do { \
-				int __value = (int)(imm); \
-				if(__value >= 0 && __value < 256) \
+				int __imm = (int)(imm); \
+				if(__imm >= 0 && __imm < 256) \
 				{ \
-					arm_mov_reg_imm8((inst), (reg), __value); \
+					arm_mov_reg_imm8((inst), (reg), __imm); \
 				} \
 				else if((reg) == ARM_PC) \
 				{ \
-					(inst) = _arm_mov_reg_imm((inst), ARM_WORK, __value); \
+					(inst) = _arm_mov_reg_imm((inst), ARM_WORK, __imm); \
 					arm_mov_reg_reg((inst), ARM_PC, ARM_WORK); \
 				} \
-				else if(__value > -256 && __value < 0) \
+				else if(__imm > -256 && __imm < 0) \
 				{ \
-					arm_mov_reg_imm8((inst), (reg), ~(__value)); \
+					arm_mov_reg_imm8((inst), (reg), ~(__imm)); \
 					arm_alu_reg((inst), ARM_MVN, (reg), (reg)); \
 				} \
 				else \
 				{ \
-					(inst) = _arm_mov_reg_imm((inst), (reg), __value); \
+					(inst) = _arm_mov_reg_imm((inst), (reg), __imm); \
 				} \
 			} while (0)
 
@@ -396,9 +398,9 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
  */
 #define	arm_branch(inst,cond,target)	\
 			do { \
-				int __offset = (int)(((unsigned char *)(target)) - \
-							        (((unsigned char *)(inst)) + 8)); \
-				arm_branch_imm((inst), (cond), __offset); \
+				int __br_offset = (int)(((unsigned char *)(target)) - \
+							           (((unsigned char *)(inst)) + 8)); \
+				arm_branch_imm((inst), (cond), __br_offset); \
 			} while (0)
 #define	arm_jump(inst,target)	arm_branch((inst), ARM_CC_AL, (target))
 
@@ -408,11 +410,11 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
  */
 #define	arm_jump_long(inst,target)	\
 			do { \
-				int __offset = (int)(((unsigned char *)(target)) - \
-							        (((unsigned char *)(inst)) + 8)); \
-				if(__offset >= -0x04000000 && __offset < 0x04000000) \
+				int __jmp_offset = (int)(((unsigned char *)(target)) - \
+							            (((unsigned char *)(inst)) + 8)); \
+				if(__jmp_offset >= -0x04000000 && __jmp_offset < 0x04000000) \
 				{ \
-					arm_jump_imm((inst), __offset); \
+					arm_jump_imm((inst), __jmp_offset); \
 				} \
 				else \
 				{ \
@@ -425,10 +427,11 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
  */
 #define	arm_patch(inst,target)	\
 			do { \
-				int __offset = (int)(((unsigned char *)(target)) - \
-							        (((unsigned char *)(inst)) + 8)); \
-				__offset = (__offset >> 2) & 0x00FFFFFF; \
-				*((int *)(inst)) = (*((int *)(inst)) & 0xFF000000) | __offset; \
+				int __p_offset = (int)(((unsigned char *)(target)) - \
+							          (((unsigned char *)(inst)) + 8)); \
+				__p_offset = (__p_offset >> 2) & 0x00FFFFFF; \
+				*((int *)(inst)) = (*((int *)(inst)) & 0xFF000000) | \
+					__p_offset; \
 			} while (0)
 
 /*
@@ -446,11 +449,11 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
  */
 #define	arm_call(inst,target)	\
 			do { \
-				int __offset = (int)(((unsigned char *)(target)) - \
-							        (((unsigned char *)(inst)) + 8)); \
-				if(__offset >= -0x04000000 && __offset < 0x04000000) \
+				int __call_offset = (int)(((unsigned char *)(target)) - \
+							             (((unsigned char *)(inst)) + 8)); \
+				if(__call_offset >= -0x04000000 && __call_offset < 0x04000000) \
 				{ \
-					arm_call_imm((inst), __offset); \
+					arm_call_imm((inst), __call_offset); \
 				} \
 				else \
 				{ \
@@ -503,24 +506,24 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
  */
 #define arm_load_membase_either(inst,reg,basereg,imm,mask)	\
 			do { \
-				int __offset = (int)(imm); \
-				if(__offset >= 0 && __offset < (1 << 12)) \
+				int __mb_offset = (int)(imm); \
+				if(__mb_offset >= 0 && __mb_offset < (1 << 12)) \
 				{ \
 					*(inst)++ = arm_prefix(0x05900000 | (mask)) | \
 								(((unsigned int)(basereg)) << 16) | \
 								(((unsigned int)(reg)) << 12) | \
-								 ((unsigned int)__offset); \
+								 ((unsigned int)__mb_offset); \
 				} \
-				else if(__offset > -(1 << 12) && __offset < 0) \
+				else if(__mb_offset > -(1 << 12) && __mb_offset < 0) \
 				{ \
 					*(inst)++ = arm_prefix(0x05100000 | (mask)) | \
 								(((unsigned int)(basereg)) << 16) | \
 								(((unsigned int)(reg)) << 12) | \
-								 ((unsigned int)(-__offset)); \
+								 ((unsigned int)(-__mb_offset)); \
 				} \
 				else \
 				{ \
-					arm_mov_reg_imm((inst), ARM_WORK, __offset); \
+					arm_mov_reg_imm((inst), ARM_WORK, __mb_offset); \
 					*(inst)++ = arm_prefix(0x07900000 | (mask)) | \
 								(((unsigned int)(basereg)) << 16) | \
 								(((unsigned int)(reg)) << 12) | \
@@ -566,24 +569,24 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
  */
 #define arm_store_membase_either(inst,reg,basereg,imm,mask)	\
 			do { \
-				int __offset = (int)(imm); \
-				if(__offset >= 0 && __offset < (1 << 12)) \
+				int __sm_offset = (int)(imm); \
+				if(__sm_offset >= 0 && __sm_offset < (1 << 12)) \
 				{ \
 					*(inst)++ = arm_prefix(0x05800000 | (mask)) | \
 								(((unsigned int)(basereg)) << 16) | \
 								(((unsigned int)(reg)) << 12) | \
-								 ((unsigned int)__offset); \
+								 ((unsigned int)__sm_offset); \
 				} \
-				else if(__offset > -(1 << 12) && __offset < 0) \
+				else if(__sm_offset > -(1 << 12) && __sm_offset < 0) \
 				{ \
 					*(inst)++ = arm_prefix(0x05000000 | (mask)) | \
 								(((unsigned int)(basereg)) << 16) | \
 								(((unsigned int)(reg)) << 12) | \
-								 ((unsigned int)(-__offset)); \
+								 ((unsigned int)(-__sm_offset)); \
 				} \
 				else \
 				{ \
-					arm_mov_reg_imm((inst), ARM_WORK, __offset); \
+					arm_mov_reg_imm((inst), ARM_WORK, __sm_offset); \
 					*(inst)++ = arm_prefix(0x07800000 | (mask)) | \
 								(((unsigned int)(basereg)) << 16) | \
 								(((unsigned int)(reg)) << 12) | \

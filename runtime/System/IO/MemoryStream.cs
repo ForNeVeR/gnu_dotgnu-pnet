@@ -60,7 +60,7 @@ public class MemoryStream : Stream
 		if (capacity < defaultCapacity)
 			capacity = defaultCapacity;
 
-		impl_buffer = new char[capacity];
+		impl_buffer = new byte[capacity];
 		writable = resizable = visibleBuffer = true;
 	}
 
@@ -159,9 +159,9 @@ public class MemoryStream : Stream
 		byte[] src_buffer = forceGetBuffer();
 
 		if (count > topLimit - Position) // Copy will throw
-			count = topLimit - Position; // fixed
+			count = (int)(topLimit - Position); // fixed
 
-		Array.Copy(impl_buffer, Position, buffer, offset, count);
+		Array.Copy(impl_buffer, (int)Position, buffer, offset, count);
 		forcePositionChange(count);
 		return count;
 	}
@@ -306,7 +306,7 @@ public class MemoryStream : Stream
 			if (value > topLimit || value < bottomLimit)
 				throw new ArgumentOutOfRangeException("value", _("Arg_InvalidArrayIndex"));
 
-			position = value;
+			position = (int)value;
 		}
 	}
 
@@ -316,7 +316,7 @@ public class MemoryStream : Stream
 	// specify increment to posn
 	private void forcePositionChange(int increment)
 	{
-		int posn = Position + increment;
+		int posn = (int)(Position + increment);
 		Position = posn;
 		if (Position != posn) // weird but quite possible
 			position = posn;
@@ -326,9 +326,13 @@ public class MemoryStream : Stream
 	private byte[] forceGetBuffer()
 	{
 		try // for derived classes with their own buffers
+		{
 			return GetBuffer();
+		}
 		catch (UnauthorizedAccessException) // they can override themselves
+		{
 			return this.impl_buffer;
+		}
 	}
 
 } // class MemoryStream

@@ -3,6 +3,8 @@
 	*  System/Net/Sockets/Socket.cs: reversed order of parameters to
 	"SocketMethods.Create"; semantic errors in "Socket.Select".
 
+	* runtime/System/IO/MemoryStream.cs: fix semantic errors.
+
 2002-04-26  Stephen Compall  <rushing@sigecom.net>
 
 	* runtime/System/IO/MemoryStream.cs: More implementation, including all

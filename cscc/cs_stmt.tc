@@ -639,3 +639,11 @@ ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
 	/* Return the default value to the caller */
 	return CSSemValueDefault;
 }
+
+/*
+ * Perform semantic analysis for line number information blocks.
+ */
+ILNode_SemAnalysis(ILNode_LineInfo)
+{
+	return ILNode_SemAnalysis(node->stmt, info, &(node->stmt));
+}

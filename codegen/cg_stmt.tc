@@ -1035,3 +1035,19 @@ ILNode_GenDiscard(ILNode_LocalVarDeclaration)
 {
 	/* Nothing to do here: the declaration is done in the method header */
 }
+
+/*
+ * Generate discard code for line number information nodes.
+ */
+ILNode_GenDiscard(ILNode_LineInfo)
+{
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, ".line %ld \"%s\"\n",
+				yygetlinenum(node), yygetfilename(node));
+	}
+	if(node->stmt)
+	{
+		ILNode_GenDiscard(node->stmt, info);
+	}
+}

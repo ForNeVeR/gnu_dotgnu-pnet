@@ -16,6 +16,10 @@ implement the new node types "StaticField" and "MemberField".
 
 * cscc/cs_lvalue.tc: field identifier references, and a bug fix for "this".
 
+* codegen/cg_nodes.tc, codegen/cg_stmt.tc, codegen/jv_stmt.tc,
+cscc/cs_stmt.tc, cscc/cs_grammar.y, cs/cs_scanner.l: track source line
+numbers so that they can be output to the assembly stream in debug mode.
+
 2001-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_const.tc, codegen/jv_const.tc: bug in GenThen/GenElse for

@@ -607,12 +607,13 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 %type <node>		SwitchSection SwitchLabels SwitchLabel IterationStatement
 %type <node>		ForInitializer ForInitializerInner ForCondition
 %type <node>		ForIterator ForeachExpression ExpressionStatementList
-%type <node>		JumpStatement TryStatement CatchClauses
+%type <node>		JumpStatement TryStatement CatchClauses LineStatement
 %type <node>		OptSpecificCatchClauses SpecificCatchClauses
 %type <node>		SpecificCatchClause OptGeneralCatchClause
 %type <node>		GeneralCatchClause FinallyClause LockStatement
 %type <node>		UsingStatement ResourceAcquisition FixedStatement
 %type <node>		FixedPointerDeclarators FixedPointerDeclarator
+%type <node>		InnerEmbeddedStatement InnerExpressionStatement
 
 %type <node>		ConstantDeclaration ConstantDeclarators ConstantDeclarator
 %type <node>		FieldDeclaration FieldDeclarators FieldDeclarator
@@ -1411,7 +1412,7 @@ OptComma
  */
 
 Statement
-	: Identifier ':' Statement		{
+	: Identifier ':' LineStatement		{
 				/* Convert the identifier into a "GotoLabel" node */
 				ILNode *label = ILNode_GotoLabel_create(ILQualIdentName($1, 0));
 
@@ -1420,13 +1421,29 @@ Statement
 			}
 	| LocalVariableDeclaration ';'	{ $$ = $1; }
 	| LocalConstantDeclaration ';'	{ $$ = $1; }
-	| EmbeddedStatement				{ $$ = $1; }
+	| InnerEmbeddedStatement		{ $$ = $1; }
 	;
 
 EmbeddedStatement
+	: InnerEmbeddedStatement		{
+			#ifdef YYBISON
+				if(debug_flag)
+				{
+					$$ = ILNode_LineInfo_create($1);
+					yysetlinenum($$, @1.first_line);
+				}
+				else
+			#endif
+				{
+					$$ = $1;
+				}
+			}
+	;
+
+InnerEmbeddedStatement
 	: Block							{ $$ = $1; }
 	| ';'							{ MakeSimple(Empty); }
-	| ExpressionStatement ';'		{ $$ = $1; }
+	| InnerExpressionStatement ';'	{ $$ = $1; }
 	| SelectionStatement			{ $$ = $1; }
 	| IterationStatement			{ $$ = $1; }
 	| JumpStatement					{ $$ = $1; }
@@ -1512,7 +1529,19 @@ LocalConstantDeclaration
 	;
 
 Block
-	: '{' OptStatementList '}'	{ MakeUnary(NewScope, $2); }
+	: '{' OptStatementList '}'		{
+			#ifdef YYBISON
+				if(yykind($2) == yykindof(ILNode_Empty) && debug_flag)
+				{
+					$$ = ILNode_LineInfo_create($2);
+					yysetlinenum($$, @1.first_line);
+				}
+				else
+			#endif
+				{
+					$$ = $2;
+				}
+			}
 	| '{' error '}'		{
 				/*
 				 * This production recovers from parse errors in
@@ -1528,11 +1557,43 @@ OptStatementList
 	;
 
 StatementList
-	: Statement					{ $$ = $1; }
-	| StatementList Statement	{ $$ = ILNode_Compound_CreateFrom($1, $2); }
+	: LineStatement					{ $$ = $1; }
+	| StatementList LineStatement	{ $$ = ILNode_Compound_CreateFrom($1, $2); }
+	;
+
+LineStatement
+	: Statement		{
+			#ifdef YYBISON
+				if(debug_flag)
+				{
+					$$ = ILNode_LineInfo_create($1);
+					yysetlinenum($$, @1.first_line);
+				}
+				else
+			#endif
+				{
+					$$ = $1;
+				}
+	  		}
 	;
 
 ExpressionStatement
+	: InnerExpressionStatement		{
+			#ifdef YYBISON
+				if(debug_flag)
+				{
+					$$ = ILNode_LineInfo_create($1);
+					yysetlinenum($$, @1.first_line);
+				}
+				else
+			#endif
+				{
+					$$ = $1;
+				}
+			}
+	;
+
+InnerExpressionStatement
 	: InvocationExpression				{ $$ = $1; }
 	| ObjectCreationExpression			{ $$ = $1; }
 	| AssignmentExpression				{ $$ = $1; }

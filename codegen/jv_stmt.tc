@@ -718,3 +718,11 @@ JavaGenDiscard(ILNode_LocalVarDeclaration)
 {
 	/* Nothing to do here: the declaration is done in the method header */
 }
+
+/*
+ * Generate discard code for line number information nodes.
+ */
+JavaGenDiscard(ILNode_LineInfo)
+{
+	/* TODO */
+}

@@ -27,6 +27,9 @@
 #include "cs_grammar.h"
 
 extern YYSTYPE yylval;
+#ifdef YYLTYPE
+extern YYLTYPE yylloc;
+#endif
 
 CSPreProc CSPreProcessorStream;
 int       CSGetSetKeywords = 0;
@@ -38,6 +41,19 @@ int       CSGetSetKeywords = 0;
 	{ \
 		result = CSPreProcGetBuffer(&CSPreProcessorStream, buf, maxSize); \
 	}
+
+/*
+ * Update the line number information and return a token code.
+ */
+#ifdef YYLTYPE
+#define	RETURNTOK(x)		\
+			do { \
+				yylloc.first_line = CSPreProcessorStream.lexerLineNumber; \
+				return (x); \
+			} while (0)
+#else
+#define	RETURNTOK(x)		return (x)
+#endif
 
 unsigned long CSCurrentLine(void)
 {
@@ -797,164 +813,164 @@ WHITE			[ \t\r\f\v\032]
 
 %%
 
-"++"					{ return INC_OP; }
-"--"					{ return DEC_OP; }
-"<<"					{ return LEFT_OP; }
-">>"					{ return RIGHT_OP; }
-"<="					{ return LE_OP; }
-">="					{ return GE_OP; }
-"=="					{ return EQ_OP; }
-"!="					{ return NE_OP; }
-"&&"					{ return AND_OP; }
-"||"					{ return OR_OP; }
-"*="					{ return MUL_ASSIGN_OP; }
-"/="					{ return DIV_ASSIGN_OP; }
-"%="					{ return MOD_ASSIGN_OP; }
-"+="					{ return ADD_ASSIGN_OP; }
-"-="					{ return SUB_ASSIGN_OP; }
-"<<="					{ return LEFT_ASSIGN_OP; }
-">>="					{ return RIGHT_ASSIGN_OP; }
-"&="					{ return AND_ASSIGN_OP; }
-"^="					{ return XOR_ASSIGN_OP; }
-"|="					{ return OR_ASSIGN_OP; }
-"->"					{ return PTR_OP; }
+"++"					{ RETURNTOK(INC_OP); }
+"--"					{ RETURNTOK(DEC_OP); }
+"<<"					{ RETURNTOK(LEFT_OP); }
+">>"					{ RETURNTOK(RIGHT_OP); }
+"<="					{ RETURNTOK(LE_OP); }
+">="					{ RETURNTOK(GE_OP); }
+"=="					{ RETURNTOK(EQ_OP); }
+"!="					{ RETURNTOK(NE_OP); }
+"&&"					{ RETURNTOK(AND_OP); }
+"||"					{ RETURNTOK(OR_OP); }
+"*="					{ RETURNTOK(MUL_ASSIGN_OP); }
+"/="					{ RETURNTOK(DIV_ASSIGN_OP); }
+"%="					{ RETURNTOK(MOD_ASSIGN_OP); }
+"+="					{ RETURNTOK(ADD_ASSIGN_OP); }
+"-="					{ RETURNTOK(SUB_ASSIGN_OP); }
+"<<="					{ RETURNTOK(LEFT_ASSIGN_OP); }
+">>="					{ RETURNTOK(RIGHT_ASSIGN_OP); }
+"&="					{ RETURNTOK(AND_ASSIGN_OP); }
+"^="					{ RETURNTOK(XOR_ASSIGN_OP); }
+"|="					{ RETURNTOK(OR_ASSIGN_OP); }
+"->"					{ RETURNTOK(PTR_OP); }
 
-"abstract"				{ return ABSTRACT; }
-"as"					{ return AS; }
-"base"					{ return BASE; }
-"bool"					{ return BOOL; }
-"break"					{ return BREAK; }
-"__builtin_constant"	{ return BUILTIN_CONSTANT; }
-"byte"					{ return BYTE; }
-"case"					{ return CASE; }
-"catch"					{ return CATCH; }
-"char"					{ return CHAR; }
-"checked"				{ return CHECKED; }
-"class"					{ return CLASS; }
-"const"					{ return CONST; }
-"continue"				{ return CONTINUE; }
-"decimal"				{ return DECIMAL; }
-"default"				{ return DEFAULT; }
-"delegate"				{ return DELEGATE; }
-"do"					{ return DO; }
-"double"				{ return DOUBLE; }
-"else"					{ return ELSE; }
-"enum"					{ return ENUM; }
-"event"					{ return EVENT; }
-"explicit"				{ return EXPLICIT; }
-"extern"				{ return EXTERN; }
-"false"					{ return FALSE; }
-"finally"				{ return FINALLY; }
-"fixed"					{ return FIXED; }
-"float"					{ return FLOAT; }
-"for"					{ return FOR; }
-"foreach"				{ return FOREACH; }
-"goto"					{ return GOTO; }
-"if"					{ return IF; }
-"implicit"				{ return IMPLICIT; }
-"in"					{ return IN; }
-"int"					{ return INT; }
-"interface"				{ return INTERFACE; }
-"internal"				{ return INTERNAL; }
-"is"					{ return IS; }
-"lock"					{ return LOCK; }
-"long"					{ return LONG; }
-"namespace"				{ return NAMESPACE; }
-"new"					{ return NEW; }
-"null"					{ return NULL_TOK; }
-"object"				{ return OBJECT; }
-"operator"				{ return OPERATOR; }
-"out"					{ return OUT; }
-"override"				{ return OVERRIDE; }
-"params"				{ return PARAMS; }
-"private"				{ return PRIVATE; }
-"protected"				{ return PROTECTED; }
-"public"				{ return PUBLIC; }
-"readonly"				{ return READONLY; }
-"ref"					{ return REF; }
-"return"				{ return RETURN; }
-"sbyte"					{ return SBYTE; }
-"sealed"				{ return SEALED; }
-"short"					{ return SHORT; }
-"sizeof"				{ return SIZEOF; }
-"stackalloc"			{ return STACKALLOC; }
-"static"				{ return STATIC; }
-"string"				{ return STRING; }
-"struct"				{ return STRUCT; }
-"switch"				{ return SWITCH; }
-"this"					{ return THIS; }
-"throw"					{ return THROW; }
-"true"					{ return TRUE; }
-"try"					{ return TRY; }
-"typeof"				{ return TYPEOF; }
-"uint"					{ return UINT; }
-"ulong"					{ return ULONG; }
-"unchecked"				{ return UNCHECKED; }
-"unsafe"				{ return UNSAFE; }
-"ushort"				{ return USHORT; }
-"using"					{ return USING; }
-"virtual"				{ return VIRTUAL; }
-"void"					{ return VOID; }
-"while"					{ return WHILE; }
+"abstract"				{ RETURNTOK(ABSTRACT); }
+"as"					{ RETURNTOK(AS); }
+"base"					{ RETURNTOK(BASE); }
+"bool"					{ RETURNTOK(BOOL); }
+"break"					{ RETURNTOK(BREAK); }
+"__builtin_constant"	{ RETURNTOK(BUILTIN_CONSTANT); }
+"byte"					{ RETURNTOK(BYTE); }
+"case"					{ RETURNTOK(CASE); }
+"catch"					{ RETURNTOK(CATCH); }
+"char"					{ RETURNTOK(CHAR); }
+"checked"				{ RETURNTOK(CHECKED); }
+"class"					{ RETURNTOK(CLASS); }
+"const"					{ RETURNTOK(CONST); }
+"continue"				{ RETURNTOK(CONTINUE); }
+"decimal"				{ RETURNTOK(DECIMAL); }
+"default"				{ RETURNTOK(DEFAULT); }
+"delegate"				{ RETURNTOK(DELEGATE); }
+"do"					{ RETURNTOK(DO); }
+"double"				{ RETURNTOK(DOUBLE); }
+"else"					{ RETURNTOK(ELSE); }
+"enum"					{ RETURNTOK(ENUM); }
+"event"					{ RETURNTOK(EVENT); }
+"explicit"				{ RETURNTOK(EXPLICIT); }
+"extern"				{ RETURNTOK(EXTERN); }
+"false"					{ RETURNTOK(FALSE); }
+"finally"				{ RETURNTOK(FINALLY); }
+"fixed"					{ RETURNTOK(FIXED); }
+"float"					{ RETURNTOK(FLOAT); }
+"for"					{ RETURNTOK(FOR); }
+"foreach"				{ RETURNTOK(FOREACH); }
+"goto"					{ RETURNTOK(GOTO); }
+"if"					{ RETURNTOK(IF); }
+"implicit"				{ RETURNTOK(IMPLICIT); }
+"in"					{ RETURNTOK(IN); }
+"int"					{ RETURNTOK(INT); }
+"interface"				{ RETURNTOK(INTERFACE); }
+"internal"				{ RETURNTOK(INTERNAL); }
+"is"					{ RETURNTOK(IS); }
+"lock"					{ RETURNTOK(LOCK); }
+"long"					{ RETURNTOK(LONG); }
+"namespace"				{ RETURNTOK(NAMESPACE); }
+"new"					{ RETURNTOK(NEW); }
+"null"					{ RETURNTOK(NULL_TOK); }
+"object"				{ RETURNTOK(OBJECT); }
+"operator"				{ RETURNTOK(OPERATOR); }
+"out"					{ RETURNTOK(OUT); }
+"override"				{ RETURNTOK(OVERRIDE); }
+"params"				{ RETURNTOK(PARAMS); }
+"private"				{ RETURNTOK(PRIVATE); }
+"protected"				{ RETURNTOK(PROTECTED); }
+"public"				{ RETURNTOK(PUBLIC); }
+"readonly"				{ RETURNTOK(READONLY); }
+"ref"					{ RETURNTOK(REF); }
+"return"				{ RETURNTOK(RETURN); }
+"sbyte"					{ RETURNTOK(SBYTE); }
+"sealed"				{ RETURNTOK(SEALED); }
+"short"					{ RETURNTOK(SHORT); }
+"sizeof"				{ RETURNTOK(SIZEOF); }
+"stackalloc"			{ RETURNTOK(STACKALLOC); }
+"static"				{ RETURNTOK(STATIC); }
+"string"				{ RETURNTOK(STRING); }
+"struct"				{ RETURNTOK(STRUCT); }
+"switch"				{ RETURNTOK(SWITCH); }
+"this"					{ RETURNTOK(THIS); }
+"throw"					{ RETURNTOK(THROW); }
+"true"					{ RETURNTOK(TRUE); }
+"try"					{ RETURNTOK(TRY); }
+"typeof"				{ RETURNTOK(TYPEOF); }
+"uint"					{ RETURNTOK(UINT); }
+"ulong"					{ RETURNTOK(ULONG); }
+"unchecked"				{ RETURNTOK(UNCHECKED); }
+"unsafe"				{ RETURNTOK(UNSAFE); }
+"ushort"				{ RETURNTOK(USHORT); }
+"using"					{ RETURNTOK(USING); }
+"virtual"				{ RETURNTOK(VIRTUAL); }
+"void"					{ RETURNTOK(VOID); }
+"while"					{ RETURNTOK(WHILE); }
 
 {IDALPHA}({DIGIT}|{IDALPHA})*		{
 			if(!CSGetSetKeywords)
 			{
 				yylval.name = (ParseString(yytext)).string;
-				return IDENTIFIER;
+				RETURNTOK(IDENTIFIER);
 			}
 			else if(!strcmp(yytext, "get"))
 			{
-				return GET;
+				RETURNTOK(GET);
 			}
 			else if(!strcmp(yytext, "set"))
 			{
-				return SET;
+				RETURNTOK(SET);
 			}
 			else if(!strcmp(yytext, "add"))
 			{
-				return ADD;
+				RETURNTOK(ADD);
 			}
 			else if(!strcmp(yytext, "remove"))
 			{
-				return REMOVE;
+				RETURNTOK(REMOVE);
 			}
 			else
 			{
 				yylval.name = (ParseString(yytext)).string;
-				return IDENTIFIER;
+				RETURNTOK(IDENTIFIER);
 			}
 		}
 "@"{IDALPHA}({DIGIT}|{IDALPHA})*	{
 			yylval.name = (ParseString(yytext)).string;
-			return IDENTIFIER;
+			RETURNTOK(IDENTIFIER);
 		}
 
-{DIGIT}+{EXPONENT}{FTYPE}?					{ return ParseFloat(yytext); }
-{DIGIT}*"."{DIGIT}+({EXPONENT})?{FTYPE}?	{ return ParseFloat(yytext); }
-{DIGIT}+"."{DIGIT}*({EXPONENT})?{FTYPE}?	{ return ParseFloat(yytext); }
-{DIGIT}+{FTYPE}								{ return ParseFloat(yytext); }
+{DIGIT}+{EXPONENT}{FTYPE}?					{ RETURNTOK(ParseFloat(yytext)); }
+{DIGIT}*"."{DIGIT}+({EXPONENT})?{FTYPE}?	{ RETURNTOK(ParseFloat(yytext)); }
+{DIGIT}+"."{DIGIT}*({EXPONENT})?{FTYPE}?	{ RETURNTOK(ParseFloat(yytext)); }
+{DIGIT}+{FTYPE}								{ RETURNTOK(ParseFloat(yytext)); }
 
-0[xX]{HEX}+{ITYPE}?			{ ParseInt(yytext); return INTEGER_CONSTANT; }
-{DIGIT}+{ITYPE}?			{ ParseInt(yytext); return INTEGER_CONSTANT; }
+0[xX]{HEX}+{ITYPE}?			{ ParseInt(yytext); RETURNTOK(INTEGER_CONSTANT); }
+{DIGIT}+{ITYPE}?			{ ParseInt(yytext); RETURNTOK(INTEGER_CONSTANT); }
 
 '(\\.|[^\\'])+'	{
 			yylval.charValue = (ILUInt16)(ParseCharConstant(yytext));
-		  	return CHAR_CONSTANT;
+		  	RETURNTOK(CHAR_CONSTANT);
 		}
 
 \"(\\.|[^\\"])*\"			{ yylval.string = ParseString(yytext + 1);
-							  return STRING_LITERAL; }
+							  RETURNTOK(STRING_LITERAL); }
 "@"\"("@".|[^@"])*\"		{ yylval.string = ParseLitString(yytext);
-							  return STRING_LITERAL; }
+							  RETURNTOK(STRING_LITERAL); }
 
 {WHITE}+			;
 
 \n					;
 
 "///"[^\n]*\n		{ yylval.string = ILInternString(yytext, -1);
-					  return DOC_COMMENT; }
+					  RETURNTOK(DOC_COMMENT); }
 
-.					{ return (((int)(yytext[0])) & 0xFF); }
+.					{ RETURNTOK(((int)(yytext[0])) & 0xFF); }
 
 %%

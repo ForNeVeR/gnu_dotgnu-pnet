@@ -657,7 +657,8 @@ class XmlDocument : XmlNode
 	public virtual void Load(XmlReader reader)
 			{
 				RemoveAll();
-				if(!BuildStructure((XmlTextReader)reader))
+				Console.WriteLine(reader.GetType());
+				if(!BuildStructure(reader))
 				{
 					throw new XmlException(S._("XmlException_NoXml"));
 				}
@@ -676,7 +677,7 @@ class XmlDocument : XmlNode
 			}
 
 	// Used by Load/LoadXml methods to do the DOM structure
-	private bool BuildStructure(XmlTextReader reader)
+	private bool BuildStructure(XmlReader reader)
 			{
 				// check if we should read in a full document
 				bool complete = (reader.Depth == 0);

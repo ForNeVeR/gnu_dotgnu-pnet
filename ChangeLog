@@ -1,4 +1,8 @@
-
+2003-07-05  Adam Ballai  <minddog@cannibutter.com>
+        
+	* System.Xml/XmlTextReader.cs:  Fix for bug #4194. Incorrect 
+	NodeType state for ReadAttributeValue.
+	
 2003-07-02  Cecilio Pardo  <cpardo@imayhem.com>
 	
 	* System.Windows.Forms/ListBox.cs: Stub out this class

@@ -2,7 +2,7 @@
  * LongType.cs - Implementation of the
  *			"Microsoft.VisualBasic.LongType" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,16 +33,6 @@ public sealed class LongType
 {
 	// This class cannot be instantiated.
 	private LongType() {}
-
-#if !ECMA_COMPAT
-
-	// Convert a decimal value into a long.
-	public static long DecimalToLong(IConvertible ValueInterface)
-			{
-				return Convert.ToInt64(ValueInterface.ToDecimal(null));
-			}
-
-#endif
 
 	// Convert an object into a long value.
 	public static long FromObject(Object Value)

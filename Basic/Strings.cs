@@ -218,6 +218,15 @@ public sealed class Strings
 				return count;
 			}
 
+	// Format an object according to a particular style.
+	[TODO]
+	public static String Format
+				(Object Expression, [Optional][DefaultValue("")] String Style)
+			{
+				// TODO
+				return null;
+			}
+
 	// Format a currency value.
 	public static String FormatCurrency
 				(Object Expression,
@@ -812,7 +821,7 @@ public sealed class Strings
 			}
 
 	// Create a string with "Number" spaces in it.
-	public static String Spaces(int Number)
+	public static String Space(int Number)
 			{
 				if(Number < 0)
 				{
@@ -965,7 +974,7 @@ public sealed class Strings
 						(S._("VB_NonNegative"), "Number");
 				}
 			}
-	public static String StrDup(int Number, Object Character)
+	public static Object StrDup(int Number, Object Character)
 			{
 				if(Number < 0)
 				{

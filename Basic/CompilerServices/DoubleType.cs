@@ -2,7 +2,7 @@
  * DoubleType.cs - Implementation of the
  *			"Microsoft.VisualBasic.DoubleType" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,16 +34,6 @@ public sealed class DoubleType
 {
 	// This class cannot be instantiated.
 	private DoubleType() {}
-
-#if !ECMA_COMPAT
-
-	// Convert a decimal value into a double value.
-	public static double DecimalToDouble(IConvertible ValueInterface)
-			{
-				return Convert.ToDouble(ValueInterface.ToDecimal(null));
-			}
-
-#endif
 
 	// Convert an object into a double value.
 	public static double FromObject(Object Value)

@@ -47,7 +47,7 @@ public sealed class Utils
 					int rank = arySrc.Rank;
 					if(rank != aryDest.Rank)
 					{
-						ThrowException
+						ThrowExceptionInternal
 							(new InvalidCastException
 								(S._("VB_MismatchedRanks")));
 					}
@@ -56,7 +56,7 @@ public sealed class Utils
 						if(arySrc.GetUpperBound(dim) !=
 						   aryDest.GetUpperBound(dim))
 						{
-							ThrowException
+							ThrowExceptionInternal
 								(new ArrayTypeMismatchException
 									(S._("VB_MismatchedDimensions")));
 						}
@@ -309,7 +309,7 @@ public sealed class Utils
 			}
 
 	// Throw a particular exception, after setting the error number.
-	internal static void ThrowException(Exception exception)
+	private static void ThrowExceptionInternal(Exception exception)
 			{
 				SetErrorNumber(ErrObject.GetNumberForException(exception));
 				throw exception;

@@ -2,7 +2,7 @@
  * FileSystem.cs - Implementation of the
  *			"Microsoft.VisualBasic.FileSystem" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -762,19 +762,19 @@ public sealed class FileSystem
 				byte[] buf = enc.GetBytes(Value);
 				file.stream.Write(buf, 0, nbytes);
 			}
-	[TODO]
+	[Obsolete("Use FilePutObject to write Object types, or coerce FileNumber and RecordNumber to Integer for writing non-Object types")]
 	public static void FilePut
 				(Object FileNumber, Object Value,
-			     [Optional] [DefaultValue(-1L)] long RecordNumber)
-			{
-				// TODO
-			}
-	[Obsolete("Use FilePut(Object, Object, long) instead")]
-	public static void FilePutObject
-				(int FileNumber, Object Value,
-			     [Optional] [DefaultValue(null)] Object RecordNumber)
+			     [Optional] [DefaultValue(-1L)] Object RecordNumber)
 			{
 				throw new ArgumentException(S._("VB_Obsolete"));
+			}
+	[TODO]
+	public static void FilePutObject
+				(int FileNumber, Object Value,
+			     [Optional] [DefaultValue(null)] long RecordNumber)
+			{
+				// TODO
 			}
 
 	// Set the record width for a file.

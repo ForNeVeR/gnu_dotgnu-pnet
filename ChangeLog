@@ -6,6 +6,18 @@
 	* Basic/Basic.build: use the "-fhidebyname" option when building
 	the VB library, so that the methods have the correct attributes.
 
+	* Basic/Constants.cs, Basic/ControlChars.cs, Basic/FileSystem.cs,
+	Basic/Information.cs, Basic/Interaction.cs, Basic/Strings.cs,
+	Basic/CompilerServices/BooleanType.cs,
+	Basic/CompilerServices/ByteType.cs,
+	Basic/CompilerServices/DoubleType.cs,
+	Basic/CompilerServices/IntegerType.cs,
+	Basic/CompilerServices/LongType.cs,
+	Basic/CompilerServices/ShortType.cs,
+	Basic/CompilerServices/SingleType.cs,
+	Basic/CompilerServices/StringType.cs, Basic/CompilerServices/Utils.cs:
+	signature-compatibility fixes.
+
 2004-07-17  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Private/NumberParser.cs: ParseDouble and ParseDecimal

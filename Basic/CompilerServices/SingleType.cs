@@ -2,7 +2,7 @@
  * SingleType.cs - Implementation of the
  *			"Microsoft.VisualBasic.SingleType" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,16 +34,6 @@ public sealed class SingleType
 {
 	// This class cannot be instantiated.
 	private SingleType() {}
-
-#if !ECMA_COMPAT
-
-	// Convert a decimal value into a float value.
-	public static float DecimalToSingle(IConvertible ValueInterface)
-			{
-				return Convert.ToSingle(ValueInterface.ToDecimal(null));
-			}
-
-#endif
 
 	// Convert an object into a float value.
 	public static float FromObject(Object Value)

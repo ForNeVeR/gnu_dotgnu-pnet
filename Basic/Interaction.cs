@@ -2,7 +2,7 @@
  * Interaction.cs - Implementation of the
  *			"Microsoft.VisualBasic.Interaction" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -316,7 +316,7 @@ public sealed class Interaction
 				(Object Prompt,
 				 [Optional] [DefaultValue(MsgBoxStyle.OKOnly)]
 				 		MsgBoxStyle Buttons,
-				 [Optional] [DefaultValue(null)] String Title)
+				 [Optional] [DefaultValue(null)] Object Title)
 			{
 			#if CONFIG_REFLECTION
 
@@ -387,7 +387,8 @@ public sealed class Interaction
 				// Pop up the message box and get the WinForms result.
 				DialogResult result;
 				result = MessageBox.Show
-					(parent, StringType.FromObject(Prompt), Title,
+					(parent, StringType.FromObject(Prompt),
+					 StringType.FromObject(Title),
 					 buttons, icon, def, options);
 				return (MsgBoxResult)result;
 

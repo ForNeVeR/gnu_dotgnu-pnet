@@ -2,7 +2,7 @@
  * ByteType.cs - Implementation of the
  *			"Microsoft.VisualBasic.ByteType" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,16 +33,6 @@ public sealed class ByteType
 {
 	// This class cannot be instantiated.
 	private ByteType() {}
-
-#if !ECMA_COMPAT
-
-	// Convert a decimal value into a byte.
-	public static byte DecimalToByte(IConvertible ValueInterface)
-			{
-				return Convert.ToByte(ValueInterface.ToDecimal(null));
-			}
-
-#endif
 
 	// Convert an object into a byte value.
 	public static byte FromObject(Object Value)

@@ -2,7 +2,7 @@
  * StringType.cs - Implementation of the
  *			"Microsoft.VisualBasic.StringType" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,19 +53,6 @@ public sealed class StringType
 			{
 				return Value.ToString();
 			}
-	public static String FromCharAndCount(char Value, int Count)
-			{
-				return new String(Value, Count);
-			}
-	public static String FromCharArray(char[] Value)
-			{
-				return new String(Value);
-			}
-	public static String FromCharArray
-				(char[] Value, int StartIndex, int Length)
-			{
-				return new String(Value, StartIndex, Length);
-			}
 
 	// Convert a date value into a string.
 	public static String FromDate(DateTime Value)
@@ -89,12 +76,12 @@ public sealed class StringType
 			}
 
 	// Convert a decimal value into a string.
-	public static String FromDecimal(DateTime Value)
+	public static String FromDecimal(Decimal Value)
 			{
 				return Value.ToString("G", null);
 			}
 	public static String FromDecimal
-				(DateTime Value, NumberFormatInfo NumberFormat)
+				(Decimal Value, NumberFormatInfo NumberFormat)
 			{
 				return Value.ToString("G", NumberFormat);
 			}
@@ -117,7 +104,7 @@ public sealed class StringType
 			}
 
 	// Convert a long value into a string.
-	public static String FromLong(int Value)
+	public static String FromLong(long Value)
 			{
 				return Value.ToString();
 			}
@@ -160,7 +147,7 @@ public sealed class StringType
 			}
 
 	// Convert a short value into a string.
-	public static String FromShort(int Value)
+	public static String FromShort(short Value)
 			{
 				return Value.ToString();
 			}

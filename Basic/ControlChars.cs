@@ -2,7 +2,7 @@
  * ControlChars.cs - Implementation of the
  *			"Microsoft.VisualBasic.ControlChars" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ public sealed class ControlChars
 	public const String CrLf		= "\r\n";
 	public const char FormFeed		= '\u000C';
 	public const char Lf			= '\n';
-	public const String Newline		= "\r\n";
+	public const String NewLine		= "\r\n";
 	public const char NullChar		= '\0';
 	public const char Quote			= '"';
 	public const char Tab			= '\t';

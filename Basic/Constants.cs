@@ -2,7 +2,7 @@
  * Constants.cs - Implementation of the
  *			"Microsoft.VisualBasic.Constants" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,10 +55,9 @@ public sealed class Constants
 	public const String vbCrLf = "\r\n";
 	public const String vbFormFeed = "\u000C";
 	public const String vbLf = "\n";
-	public const String vbNewline = "\r\n";
+	public const String vbNewLine = "\r\n";
 	public const String vbNullChar = "\0";
 	public const String vbNullString = null;
-	public const String vbQuote = "\"";
 	public const String vbTab = "\t";
 	public const String vbVerticalTab = "\u000B";
 
@@ -68,22 +67,6 @@ public sealed class Constants
 	public const DateFormat vbShortDate = DateFormat.ShortDate;
 	public const DateFormat vbLongTime = DateFormat.LongTime;
 	public const DateFormat vbShortTime = DateFormat.ShortTime;
-
-	// DateInterval values.
-	public const DateInterval vbYear = DateInterval.Year;
-	public const DateInterval vbQuarter = DateInterval.Quarter;
-	public const DateInterval vbMonth = DateInterval.Month;
-	public const DateInterval vbDayOfYear = DateInterval.DayOfYear;
-	public const DateInterval vbDay = DateInterval.Day;
-	public const DateInterval vbWeekOfYear = DateInterval.WeekOfYear;
-	public const DateInterval vbWeekday = DateInterval.Weekday;
-	public const DateInterval vbHour = DateInterval.Hour;
-	public const DateInterval vbMinute = DateInterval.Minute;
-	public const DateInterval vbSecond = DateInterval.Second;
-
-	// DueDate values.
-	public const DueDate vbEndOfPeriod = DueDate.EndOfPeriod;
-	public const DueDate vbBegOfPeriod = DueDate.BegOfPeriod;
 
 	// FileAttribute values.
 	public const FileAttribute vbNormal = FileAttribute.Normal;
@@ -122,7 +105,7 @@ public sealed class Constants
 	public const MsgBoxResult vbNo = MsgBoxResult.No;
 
 	// MsgBoxStyle values.
-	public const MsgBoxStyle vbApplicationModel = MsgBoxStyle.ApplicationModal;
+	public const MsgBoxStyle vbApplicationModal = MsgBoxStyle.ApplicationModal;
 	public const MsgBoxStyle vbDefaultButton1 = MsgBoxStyle.DefaultButton1;
 	public const MsgBoxStyle vbOKOnly = MsgBoxStyle.OKOnly;
 	public const MsgBoxStyle vbOKCancel = MsgBoxStyle.OKCancel;
@@ -151,7 +134,6 @@ public sealed class Constants
 	// VariantType values.
 	public const VariantType vbEmpty = VariantType.Empty;
 	public const VariantType vbNull = VariantType.Null;
-	public const VariantType vbShort = VariantType.Short;
 	public const VariantType vbInteger = VariantType.Integer;
 	public const VariantType vbSingle = VariantType.Single;
 	public const VariantType vbDouble = VariantType.Double;
@@ -159,19 +141,15 @@ public sealed class Constants
 	public const VariantType vbDate = VariantType.Date;
 	public const VariantType vbString = VariantType.String;
 	public const VariantType vbObject = VariantType.Object;
-	public const VariantType vbError = VariantType.Error;
 	public const VariantType vbBoolean = VariantType.Boolean;
 	public const VariantType vbVariant = VariantType.Variant;
-	public const VariantType vbDataObject = VariantType.DataObject;
 	public const VariantType vbDecimal = VariantType.Decimal;
 	public const VariantType vbByte = VariantType.Byte;
-	public const VariantType vbChar = VariantType.Char;
 	public const VariantType vbLong = VariantType.Long;
 	public const VariantType vbUserDefinedType = VariantType.UserDefinedType;
 	public const VariantType vbArray = VariantType.Array;
 
 	// VbStrConv values.
-	public const VbStrConv vbNone = VbStrConv.None;
 	public const VbStrConv vbUpperCase = VbStrConv.UpperCase;
 	public const VbStrConv vbLowerCase = VbStrConv.LowerCase;
 	public const VbStrConv vbProperCase = VbStrConv.ProperCase;

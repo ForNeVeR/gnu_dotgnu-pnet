@@ -2,7 +2,7 @@
  * Information.cs - Implementation of the
  *			"Microsoft.VisualBasic.Information" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,9 @@ public sealed class Information
 	private Information() {}
 
 	// Get the ERL code for the current error object.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 	public static int Erl()
 			{
 				return Err().Erl;

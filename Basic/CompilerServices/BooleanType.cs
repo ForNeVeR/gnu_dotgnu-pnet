@@ -2,7 +2,7 @@
  * BooleanType.cs - Implementation of the
  *			"Microsoft.VisualBasic.BooleanType" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,16 +33,6 @@ public sealed class BooleanType
 {
 	// This class cannot be instantiated.
 	private BooleanType() {}
-
-#if !ECMA_COMPAT
-
-	// Convert a decimal value into boolean.
-	public static bool DecimalToBoolean(IConvertible ValueInterface)
-			{
-				return Convert.ToBoolean(ValueInterface.ToDecimal(null));
-			}
-
-#endif
 
 	// Convert an object into a boolean value.
 	public static bool FromObject(Object Value)

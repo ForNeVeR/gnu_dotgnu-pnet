@@ -2,7 +2,7 @@
  * ShortType.cs - Implementation of the
  *			"Microsoft.VisualBasic.ShortType" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,16 +33,6 @@ public sealed class ShortType
 {
 	// This class cannot be instantiated.
 	private ShortType() {}
-
-#if !ECMA_COMPAT
-
-	// Convert a decimal value into a short.
-	public static short DecimalToShort(IConvertible ValueInterface)
-			{
-				return Convert.ToInt16(ValueInterface.ToDecimal(null));
-			}
-
-#endif
 
 	// Convert an object into a short value.
 	public static short FromObject(Object Value)

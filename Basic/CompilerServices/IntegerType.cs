@@ -2,7 +2,7 @@
  * IntegerType.cs - Implementation of the
  *			"Microsoft.VisualBasic.IntegerType" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,16 +33,6 @@ public sealed class IntegerType
 {
 	// This class cannot be instantiated.
 	private IntegerType() {}
-
-#if !ECMA_COMPAT
-
-	// Convert a decimal value into an integer.
-	public static int DecimalToInteger(IConvertible ValueInterface)
-			{
-				return Convert.ToInt32(ValueInterface.ToDecimal(null));
-			}
-
-#endif
 
 	// Convert an object into an integer value.
 	public static int FromObject(Object Value)

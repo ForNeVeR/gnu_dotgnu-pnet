@@ -271,8 +271,8 @@ int ILThreadStart(ILThread *thread)
 
 void ILThreadDestroy(ILThread *thread)
 {
-	/* Bail out if this is the current thread */
-	if(thread == _ILThreadGetSelf())
+	/* Bail out if this is the current thread or main thread */
+	if(thread == _ILThreadGetSelf() && thread != &mainThread)
 	{
 		return;
 	}

@@ -576,7 +576,12 @@ internal abstract class DrawingWindow : IToolkitWindow
 	
 		if (found != null)
 		{
-			Rectangle child = found.DimensionsScreen;
+			// Adjust the coordinates relative to the "found" window.
+			Rectangle child;
+			if (toolkit.capturedWindow == null)
+				child = found.DimensionsScreen;
+			else
+				child = toolkit.capturedWindow.DimensionsScreen;
 			x -= child.X;
 			y -= child.Y;
 		}

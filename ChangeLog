@@ -1,4 +1,13 @@
 
+2002-12-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, resources/de_DE/I18N/Makefile.am,
+	resources/de_DE/System/Makefile.am,
+	resources/de_DE/System.Xml/Makefile.am,
+	resources/de_DE/runtime/Makefile.am, tools/csccwrap.sh.in:
+	remove the "csccwrap.sh" script; make sure that $(SHELL) is
+	used when calling "link_res.sh".
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* runtime/System/IO/Directory.cs: Support recursive directory deletion,

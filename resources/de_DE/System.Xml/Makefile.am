@@ -13,7 +13,7 @@ resassembliesdir = $(libdir)/cscc/lib/$(RESOURCELANGUAGE)
 resassemblies_DATA = $(RESOURCEDLL)
 
 $(RESOURCEDLL): $(RESOURCENAME)
-	"$(top_srcdir)/tools/link_res.sh" $(RESOURCEDLL) $(RESOURCENAME) $(RESOURCELANGUAGE)
+	$(SHELL) "$(top_srcdir)/tools/link_res.sh" $(RESOURCEDLL) $(RESOURCENAME) $(RESOURCELANGUAGE)
 
 CLEANFILES = $(RESOURCENAME) $(RESOURCEBASE).resources $(RESOURCEDLL) tempres.txt
 

@@ -7,8 +7,8 @@ dnl Extra substitution variables.
 AC_SUBST(CSANT)
 AC_SUBST(CSANT_FLAGS)
 AC_SUBST(CSHARP_COMPILER)
+AC_SUBST(CSHARP_PLUGIN)
 AC_SUBST(CSCC_FLAGS)
-AC_SUBST(CSCC_EXE_LIBS)
 AC_SUBST(RESGEN)
 AC_SUBST(RESGEN_FLAGS)
 AC_SUBST(ILRUN)
@@ -91,11 +91,9 @@ if test "$MSTOOLS" = "no"; then
 			exit 1
 		fi
 		CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
-		CSCC_EXE_LIBS=""
 	else
-		CSANT_FLAGS='--compiler cscc -Dcscc="${top_srcdir}/tools/csccwrap.sh" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
-		# Note: "-nostdlib" used temporarily until cscc is a real compiler.
-		CSCC_EXE_LIBS='-L$(top_srcdir)/runtime/System -nostdlib'
+		AC_PATH_PROG(CSHARP_PLUGIN, cscc-cs,, $PNET_PATH/cscc:${prefix}/lib/cscc/plugins:${prefix}/bin:$PATH)
+		CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
 	fi
 else
 	AC_PATH_PROG(CSHARP_COMPILER, csc)
@@ -106,7 +104,6 @@ else
 		exit 1
 	fi
 	CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
-	CSCC_EXE_LIBS=""
 fi
 
 dnl Find the .NET resource generator to use.
@@ -193,10 +190,8 @@ resources/de_DE/System.Xml/Makefile
 samples/Makefile
 samples/ilrun.sh
 tools/run_test.sh
-tools/csccwrap.sh
 tools/link_res.sh
 pnetlib.spec])
 
-chmod +x "${srcdir}/tools/csccwrap.sh"
 chmod +x "${srcdir}/tools/link_res.sh"
 chmod +x "${srcdir}/samples/ilrun.sh"

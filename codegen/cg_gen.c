@@ -108,6 +108,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 	info->javaInfo = 0;
 	info->numLoops = 0;
 	info->numSwitches = 0;
+	info->unsafeLevel = 0;
 	ILGenMakeLibrary(info);
 }
 

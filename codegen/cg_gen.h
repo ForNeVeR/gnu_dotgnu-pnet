@@ -109,6 +109,7 @@ struct _tagILGenInfo
 	ILJavaGenInfo  *javaInfo;			/* Java-specific information */
 	long			numLoops;			/* Number of loops in force */
 	long			numSwitches;		/* Number of switches in force */
+	long			unsafeLevel;		/* Number of unsafe contexts */
 
 };
 

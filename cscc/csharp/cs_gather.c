@@ -1110,7 +1110,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 					class2=ILMethod_Owner(methodInfo);
 					CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
 						"cannot change the access modifiers while overriding "
-						"virtual method '%s%s%s::%s' with '%s%s%s::%s' ",
+						"method '%s%s%s.%s' with '%s%s%s.%s' ",
 						ILClass_Namespace(class1) ? 
 						ILClass_Namespace(class1) : "" ,
 						ILClass_Namespace(class1) ? "." : "",

@@ -190,6 +190,12 @@ ILNode *CSBuiltinConstant(char *name);
  */
 ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree);
 
+/*
+ * Validate a block of documentation comments to ensure
+ * that all XML tags are properly balanced.
+ */
+void CSValidateDocs(ILNode *docList);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -1,4 +1,9 @@
 
+2004-04-29  Gopal V <gopalv82@yahoo.com>
+
+	* engine/lib_type.c: Type.GetType picks up types from the caller 
+	method's image if not found in the system library.
+
 2004-04-28  Ilyak Kasnacheev  <ilyak@office.uw.ru>
 
 	* image/link.c : Remap a few more gtk# related dll references.

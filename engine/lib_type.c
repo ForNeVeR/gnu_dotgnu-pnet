@@ -2484,7 +2484,16 @@ ILObject *_IL_Type_GetType(ILExecThread *thread, ILString *name,
 						   ILBool throwOnError, ILBool ignoreCase)
 {
 #ifdef IL_CONFIG_REFLECTION
-	return _ILGetTypeFromImage(thread, 0, name, throwOnError, ignoreCase);
+	ILObject * retval = NULL;
+	retval = _ILGetTypeFromImage(thread, 0, name, 0, ignoreCase);
+	if(!retval)
+	{
+		return retval;
+	}
+	// NOTE: Pickup the assembly from the first method outside 
+	// the system library
+	return _ILGetTypeFromImage(thread, _ILClrCallerImage(thread), name, 
+								throwOnError, ignoreCase); 
 #else
 	_ILClrNotImplemented(thread);
 	return 0;

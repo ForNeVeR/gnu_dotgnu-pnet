@@ -4,6 +4,13 @@
 	* engine/Makefile.am, engine/ilrun.1, engine/ilverify.1:
 	add a man page for "ilverify"; minor edits to the "ilrun" man page.
 
+	* tests/Makefile.am, tests/test_thread.c, tests/test_varith.c,
+	tests/test_vbranch.c, tests/test_vcompare.c, tests/test_vconst.c,
+	tests/test_vconv.c, tests/test_verify.c, tests/test_verify.h,
+	tests/test_vlocal.c, tests/test_vmisc.c: remove the "test_verify"
+	program because it isn't used any more, and won't work since
+	mscorlib.dll was moved out of pnet anyway.
+
 2003-10-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/pnet_faq.html: more updates to the FAQ.

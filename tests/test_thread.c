@@ -20,6 +20,7 @@
 
 #include "ilunit.h"
 #include "il_thread.h"
+#include "il_gc.h"
 #if HAVE_UNISTD_H
 	#include <unistd.h>
 #endif
@@ -1331,7 +1332,7 @@ void ILUnitRegisterTests(void)
 	/*
 	 * Initialize the GC system (the GC is used to create threads).
 	 */
-	ILGCInit();	
+	ILGCInit(0);	
 
 	/*
 	 * Test the properties of the "main" thread.

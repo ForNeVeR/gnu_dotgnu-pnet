@@ -34,6 +34,9 @@
 	* engine/lookup.c (LookupClass): detect classes within the
 	"System" namespace correctly.
 
+	* samples/mscorlib.dll: new version of the class library, which
+	is hardened against runtime engines that are missing reflection.
+
 2002-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_engine.h, engine/thread.c: add "ILExecThreadCurrent",

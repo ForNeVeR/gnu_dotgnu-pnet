@@ -259,9 +259,6 @@ internal class RuntimeType : Type, ICloneable
 	extern private System.Reflection.Assembly InternalGetAssembly();
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private String InternalGetAssemblyQualifiedName();
-
-	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private Type InternalGetBaseType();
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -297,7 +294,7 @@ internal class RuntimeType : Type, ICloneable
 			{
 				get
 				{
-					return InternalGetAssemblyQualifiedName();
+					return FullName + ", " + Assembly.ToString();
 				}
 			}
 	public override Type BaseType

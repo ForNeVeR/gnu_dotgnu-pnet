@@ -7,6 +7,9 @@ method on "System.RuntimeType".
 * runtime/System/Decimal.cs: Rearrange the field order to match that
 used by other C# library implementors.
 
+* runtime/System/RuntimeType.cs: remove "InternalGetAssemblyQualifiedName"
+and synthesise its behaviour using "FullName" and "Assembly".
+
 2001-10-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/*.cs, resources/en_US/runtime/*.txt: many changes to

@@ -2732,6 +2732,7 @@ namespace FormsTest
 			treeView1.ImageIndex = 0;
 			treeView1.SelectedImageIndex = 1;
 			treeView1.Nodes.Add("Node1");
+			treeView1.Nodes[0].ImageIndex = 1;
 			treeView1.Nodes[0].Nodes.Add("Node11");
 			treeView1.Nodes[0].Nodes[0].Nodes.Add("Node111");
 			treeView1.Nodes[0].Nodes.Add("Node12");

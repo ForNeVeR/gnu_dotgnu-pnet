@@ -52,6 +52,9 @@ namespace System.Windows.Forms
 		private TreeNode topNode;
 		private TextBox textBox;
 		private bool layoutSuspended;
+
+		// No of pixels on the left and right of an image.
+		private const int imagePad = 3;
  
 		public event TreeViewEventHandler AfterCheck;
 		public event TreeViewEventHandler AfterCollapse;
@@ -622,16 +625,15 @@ namespace System.Windows.Forms
 					node.bounds.Location = new Point(x + indent, y + 1);
 					if (imageList != null)
 					{
-						// Padding.
-						imageWidth += 3;
-						Image image;
-						if (node == selectedNode)
-							image = imageList.Images[selectedImageIndex];
-						else
-							image = imageList.Images[imageIndex];
-						g.DrawImage(image, node.bounds.X + imageWidth, node.bounds.Y);
-						// Padding and size.
-						imageWidth += image.Width + 3;
+						int index = GetDisplayIndex(node);
+						
+						if (index < imageList.Images.Count)
+						{
+							Image image = imageList.Images[index];
+							g.DrawImage(image, node.bounds.X + imageWidth, node.bounds.Y);
+							// Padding and image size.
+							imageWidth += image.Width + imagePad;
+						}
 					}
 					Size textSize = g.MeasureString(node.Text, Font).ToSize();
 					node.bounds.Size = new Size(textSize.Width +imageWidth, textSize.Height);
@@ -659,6 +661,29 @@ namespace System.Windows.Forms
 				line++;
 			}
 			// Set node.bounds = Rectangle.Empty for all non displayed nodes
+		}
+
+		// Get the node image index to display depending on what is set.
+		private int GetDisplayIndex( TreeNode node)
+		{
+			int index = 0;
+			if (node == selectedNode)
+			{
+				if (node.SelectedImageIndex > -1)
+					index = node.SelectedImageIndex;
+				else if (selectedImageIndex > -1)
+					index = selectedImageIndex;
+				else if (this.imageIndex > -1)
+					index = this.imageIndex;
+			}
+			else
+			{
+				if (node.ImageIndex > -1)
+					index = node.ImageIndex;
+				else if (this.imageIndex > -1)
+					index = this.imageIndex;
+			}
+			return index;
 		}
 
 		protected override void OnMouseDown(MouseEventArgs e)
@@ -711,7 +736,11 @@ namespace System.Windows.Forms
 				Controls.Add(textBox);
 				textBox.Leave +=new EventHandler(textBox_Leave);
 			}
-			textBox.Location = node.bounds.Location - new Size(2,2);
+			Point location = node.bounds.Location - new Size(2,2);
+			int index = GetDisplayIndex(node);
+			if (index < imageList.Images.Count)
+				location.X += imageList.Images[index].Width + imagePad;
+			textBox.Location = location;
 			textBox.Size = new Size(node.bounds.Width + 14, node.bounds.Height + 4);
 			textBox.Text = editNode.Text;
 			textBox.Visible = true;

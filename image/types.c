@@ -351,14 +351,29 @@ int ILTypeIdentical(ILType *type1, ILType *type2)
 	{
 		return (type1 == type2);
 	}
-	else if(ILType_IsClass(type1) || ILType_IsValueType(type1))
+	else if(ILType_IsClass(type1))
 	{
-		if(type1 == type2)
+		if(ILType_IsClass(type2))
 		{
-			return 1;
+			return (ILClassResolve(ILType_ToClass(type1)) ==
+					ILClassResolve(ILType_ToClass(type2)));
 		}
-		return (ILClassResolve(ILType_ToClass(type1)) ==
-				ILClassResolve(ILType_ToClass(type2)));
+		else
+		{
+			return 0;
+		}
+	}
+	else if(ILType_IsValueType(type1))
+	{
+		if(ILType_IsValueType(type2))
+		{
+			return (ILClassResolve(ILType_ToClass(type1)) ==
+					ILClassResolve(ILType_ToClass(type2)));
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	/* Determine how to perform the test based on the complex type kind */

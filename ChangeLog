@@ -99,6 +99,9 @@ linker to create the global module and assembly.
 ilalink/Makefile.am: add conversion routines for methods and
 custom attributes.
 
+* image/types.c (ILTypeIdentical): bug in class/valuetype handling
+that caused it to try to resolve non-class types in some cases.
+
 2001-10-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/lib_array.c: bug fix - set the array length in a newly-allocated

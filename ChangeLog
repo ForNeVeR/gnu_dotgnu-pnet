@@ -3,6 +3,8 @@
 
 	* NEWS, configure.in: update version for the "0.5.6" release.
 
+	* configure.in: update working version to "0.5.7".
+
 2003-03-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.5.4" release.

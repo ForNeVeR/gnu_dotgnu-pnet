@@ -55,7 +55,7 @@ public class Form : ContainerControl
 	private Color transparencyKey;
 	private FormWindowState windowState;
 	internal static Form activeForm;
-
+	
 	// Constructor.
 	public Form()
 			{
@@ -395,6 +395,7 @@ public class Form : ContainerControl
 						if(menu != null)
 						{
 							menu.RemoveFromForm();
+							menu = null;
 						}
 						if(value != null)
 						{
@@ -559,7 +560,7 @@ public class Form : ContainerControl
 				// Create the window and set its initial caption.
 				IToolkitWindow window =
 					ToolkitManager.Toolkit.CreateTopLevelWindow
-						(cp.Width, cp.Height);
+						(cp.Width - ToolkitDrawSize.Width, cp.Height - ToolkitDrawSize.Height, this);
 				window.SetTitle(cp.Caption);
 
 				// Adjust the window decorations to match our requirements.
@@ -1126,6 +1127,8 @@ public class Form : ContainerControl
 	protected override void OnPaint(PaintEventArgs e)
 			{
 				base.OnPaint(e);
+				if (menu != null)
+					menu.OnPaint();
 			}
 
 	// Override the "PrimaryEnter" event.
@@ -1230,20 +1233,52 @@ public class Form : ContainerControl
 				base.SetBoundsCore(x, y, width, height, specified);
 			}
 
-	// Inner core of setting the client size.
-	protected override void SetClientSizeCore(int x, int y)
+	public override Point ClientOrigin
 			{
-				// Get the border adjustment values from the toolkit.
-				int leftAdjust = 0;
-				int topAdjust = 0;
-				int rightAdjust = 0;
-				int bottomAdjust = 0;
+				get 
+				{
+					if (menu != null)
+						return ToolkitDrawOrigin + new Size(0, SystemInformation.MenuHeight);
+					else
+						return ToolkitDrawOrigin;
+				}
+			}
+
+	protected override Point ToolkitDrawOrigin
+			{
+				get
+				{
+					int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
+					ToolkitManager.Toolkit.GetWindowAdjust
+						(out leftAdjust, out topAdjust,
+						out rightAdjust, out bottomAdjust, GetFullFlags());
+					return new Point(leftAdjust, topAdjust);
+				}
+			}
+
+	protected override Size ToolkitDrawSize
+	{
+		get
+		{
+			int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
+			ToolkitManager.Toolkit.GetWindowAdjust
+				(out leftAdjust, out topAdjust,
+				out rightAdjust, out bottomAdjust, GetFullFlags());
+			return new Size(leftAdjust + rightAdjust, topAdjust + bottomAdjust);
+		}
+	}
+	
+	// Convert a client size into a window bounds size.
+	internal override Size ClientToBounds(Size size)
+			{
+				int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
 				ToolkitManager.Toolkit.GetWindowAdjust
 					(out leftAdjust, out topAdjust,
-					 out rightAdjust, out bottomAdjust, GetFullFlags());
-				base.SetClientSizeCore
-					(x + leftAdjust + rightAdjust,
-					 y + topAdjust + bottomAdjust);
+					out rightAdjust, out bottomAdjust, GetFullFlags());
+				if (Menu != null)
+					topAdjust += SystemInformation.MenuHeight;
+				return new Size(size.Width + leftAdjust + rightAdjust,
+					size.Height + topAdjust + bottomAdjust);
 			}
 
 	// Inner core of setting the visibility state.
@@ -1264,19 +1299,7 @@ public class Form : ContainerControl
 				}
 			}
 
-	// Convert a client size into a window bounds size.
-	internal override Size ClientToBounds(Size size)
-			{
-				int leftAdjust = 0;
-				int topAdjust = 0;
-				int rightAdjust = 0;
-				int bottomAdjust = 0;
-				ToolkitManager.Toolkit.GetWindowAdjust
-					(out leftAdjust, out topAdjust,
-					 out rightAdjust, out bottomAdjust, GetFullFlags());
-				return new Size(size.Width + leftAdjust + rightAdjust,
-								size.Height + topAdjust + bottomAdjust);
-			}
+	
 
 #if !CONFIG_COMPACT_FORMS
 
@@ -1321,6 +1344,35 @@ public class Form : ContainerControl
 				}
 
 	}; // class ControlCollection
+
+
+	protected override void OnMouseDown(MouseEventArgs e)
+	{
+		// If the mouse is in the non client area,
+		// it must be over the menu
+		if (e.Y < 0 && menu != null)
+			menu.OnMouseDown(e);
+				
+		base.OnMouseDown (e);
+	}
+
+	protected override void OnMouseLeave(EventArgs e)
+	{
+		// The menu needs to remove the highlighting
+		if (menu != null)
+			menu.OnMouseLeave();
+		base.OnMouseLeave (e);
+	}
+
+
+	protected override void OnMouseMove(MouseEventArgs e)
+	{
+		// If the mouse is in the non client area,
+		// it must be over the menu
+		if (e.Y < 0 && menu != null)
+			menu.OnMouseMove(e);
+		base.OnMouseMove (e);
+	}
 
 }; // class Form
 

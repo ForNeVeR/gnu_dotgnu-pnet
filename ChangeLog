@@ -1,4 +1,11 @@
 
+2003-04-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/IO.txt, resources/en_US/runtime/Invalid.txt,
+	runtime/System/IO/IsolatedStorage/IsolatedStorage.cs,
+	runtime/System/IO/IsolatedStorage/IsolatedStorageFile.cs:
+	fill out the implementation of "System.IO.IsolatedStorage".
+
 2003-04-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/ASCIIEncoding.cs,

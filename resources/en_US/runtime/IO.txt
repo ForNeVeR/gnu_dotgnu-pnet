@@ -56,3 +56,5 @@ IO_AccessDenied=Access to the specified pathname is not allowed
 IO_NoBufferAccess=Cannot obtain a reference to the memory stream's buffer
 IO_InvalidLength=Cannot change the stream length to the specified value
 IO_InvalidSeekPosition=Invalid seek position
+IO_IsolatedStorage=An error occurred while accessing isolated storage
+IO_IsolatedPermissions=Insufficient permissions to access isolated storage

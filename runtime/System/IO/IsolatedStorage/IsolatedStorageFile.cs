@@ -28,11 +28,28 @@ using System.Collections;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
+using System.Text;
 
+// Note: see the general comments in "IsolatedStorage.cs".
+
+[TODO]
 public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 {
+	// Internal state.
+	private String baseDirectory;
+	private int refCount;
+	private bool closed;
+	private static Hashtable stores = new Hashtable();
+
 	// Constructor.
-	internal IsolatedStorageFile() {}
+	internal IsolatedStorageFile(IsolatedStorageScope scope,
+								 String baseDirectory)
+			{
+				InitStore(scope, null, null);
+				this.baseDirectory = baseDirectory;
+				this.refCount = 1;
+				this.closed = false;
+			}
 
 	// Destructor.
 	~IsolatedStorageFile()
@@ -40,78 +57,194 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 				Close();
 			}
 
-	// Get the current amount of space that has be used.
-	[TODO]
+	// Get the current amount of space that has been used.
 	[CLSCompliant(false)]
 	public override ulong CurrentSize
 			{
 				get
 				{
-					// TODO
-					return 0;
+					return base.CurrentSize;
 				}
 			}
 
 	// Get the maximum amount of space that can be used.
-	[TODO]
 	[CLSCompliant(false)]
 	public override ulong MaximumSize
 			{
 				get
 				{
-					// TODO
 					return base.MaximumSize;
 				}
 			}
 
 	// Close this storage area.
-	[TODO]
 	public void Close()
 			{
-				// TODO
+				lock(typeof(IsolatedStorageFile))
+				{
+					if(!closed)
+					{
+						if(--refCount == 0)
+						{
+							// Remove the store from the global list because
+							// nothing is referencing it at the moment.
+							stores.Remove(Scope);
+						}
+						closed = true;
+					}
+				}
+			}
+
+	// Get the full path of an item in this storage area.
+	private String GetFullPath(String name, String path)
+			{
+				// Perform simple validation on the pathname.
+				if(path == null)
+				{
+					throw new ArgumentNullException(name);
+				}
+
+				// Validate the pathname components and build
+				// the full pathname.
+				StringBuilder builder = new StringBuilder();
+				int posn = 0;
+				int posn2;
+				builder.Append(baseDirectory);
+				builder.Append(Path.DirectorySeparatorChar);
+				while(posn < path.Length)
+				{
+					posn2 = posn;
+					while(posn2 < path.Length &&
+						  path[posn2] != '\\' && path[posn2] != '/' &&
+						  path[posn2] != Path.DirectorySeparatorChar &&
+						  path[posn2] != Path.AltDirectorySeparatorChar)
+					{
+						++posn2;
+					}
+					if(posn2 == posn)
+					{
+						// Empty pathname component.
+						throw new IsolatedStorageException
+							(_("IO_InvalidPathname"));
+					}
+					else if(posn2 == (posn + 1) && path[posn] == '.')
+					{
+						// Reference to the "current" directory.
+						throw new IsolatedStorageException
+							(_("IO_InvalidPathname"));
+					}
+					else if(posn2 == (posn + 2) && path[posn] == '.' &&
+							path[posn + 1] == '.')
+					{
+						// Reference to the "parent" directory.
+						throw new IsolatedStorageException
+							(_("IO_InvalidPathname"));
+					}
+					builder.Append(path, posn, posn2 - posn);
+					if(posn2 < path.Length)
+					{
+						posn = posn2 + 1;
+						builder.Append(Path.DirectorySeparatorChar);
+					}
+					else
+					{
+						posn = posn2;
+					}
+				}
+
+				// Return the final pathname to the caller.
+				return builder.ToString();
 			}
 
 	// Create a directory within this storage area.
-	[TODO]
 	public void CreateDirectory(String dir)
 			{
-				// TODO
+				try
+				{
+					Directory.CreateDirectory(GetFullPath("dir", dir));
+				}
+				catch(IOException e)
+				{
+					throw new IsolatedStorageException
+						(_("IO_IsolatedStorage"), e);
+				}
 			}
 
 	// Delete a file from this storage area.
-	[TODO]
 	public void DeleteFile(String file)
 			{
-				// TODO
+				try
+				{
+					File.Delete(GetFullPath("file", file));
+				}
+				catch(IOException e)
+				{
+					throw new IsolatedStorageException
+						(_("IO_IsolatedStorage"), e);
+				}
 			}
 
 	// Delete a directory from this storage area.
-	[TODO]
 	public void DeleteDirectory(String dir)
 			{
-				// TODO
+				try
+				{
+					Directory.Delete(GetFullPath("dir", dir), false);
+				}
+				catch(IOException e)
+				{
+					throw new IsolatedStorageException
+						(_("IO_IsolatedStorage"), e);
+				}
 			}
 
 	// Dispose this storage area.
 	public void Dispose()
 			{
 				Close();
+				GC.SuppressFinalize(this);
 			}
 
 	// Get a list of directories from a storage area directory.
-	[TODO]
 	public String[] GetDirectoryNames(String searchPattern)
 			{
-				// TODO
-				return null;
+				// Split the pattern into directory and wildcards.
+				String fullPath = GetFullPath("searchPattern", searchPattern);
+				int index = fullPath.LastIndexOf(Path.DirectorySeparatorChar);
+				searchPattern = fullPath.Substring(index);
+				fullPath = fullPath.Substring(0, index - 1);
+
+				// Scan the directory and return the names.
+				try
+				{
+					return Directory.GetDirectories(fullPath, searchPattern);
+				}
+				catch(IOException e)
+				{
+					throw new IsolatedStorageException
+						(_("IO_IsolatedStorage"), e);
+				}
 			}
 
 	// Get a list of files from a storage area directory.
-	[TODO]
 	public String[] GetFileNames(String searchPattern)
 			{
-				// TODO
-				return null;
+				// Split the pattern into directory and wildcards.
+				String fullPath = GetFullPath("searchPattern", searchPattern);
+				int index = fullPath.LastIndexOf(Path.DirectorySeparatorChar);
+				searchPattern = fullPath.Substring(index);
+				fullPath = fullPath.Substring(0, index - 1);
+
+				// Scan the directory and return the names.
+				try
+				{
+					return Directory.GetFiles(fullPath, searchPattern);
+				}
+				catch(IOException e)
+				{
+					throw new IsolatedStorageException
+						(_("IO_IsolatedStorage"), e);
+				}
 			}
 
 	// Get isolated storage permission information from a permission set.
@@ -134,69 +267,147 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 				}
 			}
 
-	// Get an isolated storage area.
+	// Get the base directory for an isolated storage scope.
 	[TODO]
+	private static String GetBaseDirectory(IsolatedStorageScope scope)
+			{
+				// TODO
+				throw new SecurityException(_("IO_IsolatedPermissions"));
+			}
+
+	// Get an isolated storage area.  We don't use evidence information
+	// in this implementation because the underlying filesystem classes
+	// take care of the security issues.
+	private static IsolatedStorageFile GetStore(IsolatedStorageScope scope)
+			{
+				lock(typeof(IsolatedStorageFile))
+				{
+					// Search for an existing open reference to the scope.
+					IsolatedStorageFile file;
+					file = (IsolatedStorageFile)(stores[scope]);
+					if(file != null)
+					{
+						++(file.refCount);
+						return file;
+					}
+
+					// Get the base directory for the scope, which will also
+					// check that the caller has sufficient permissions.
+					String baseDirectory = GetBaseDirectory(scope);
+
+					// Make sure that the directory exists, because
+					// it may have been removed previously.
+					if(!Directory.Exists(baseDirectory))
+					{
+						try
+						{
+							Directory.CreateDirectory(baseDirectory);
+						}
+						catch(IOException e)
+						{
+							throw new IsolatedStorageException
+								(_("IO_IsolatedStorage"), e);
+						}
+					}
+
+					// Create a new isolated storage area.
+					file = new IsolatedStorageFile(scope, baseDirectory);
+
+					// Add the storage area to the global list.
+					stores[scope] = file;
+
+					// Return the store to the caller.
+					return file;
+				}
+			}
 	public static IsolatedStorageFile GetStore
 				(IsolatedStorageScope scope, Object domainIdentity,
 				 Object assemblyIdentity)
 			{
-				// TODO
-				return null;
+				return GetStore(scope);
 			}
-	[TODO]
 	public static IsolatedStorageFile GetStore
 				(IsolatedStorageScope scope, Type domainEvidenceType,
 				 Type assemblyEvidenceType)
 			{
-				// TODO
-				return null;
+				return GetStore(scope);
 			}
-	[TODO]
 	public static IsolatedStorageFile GetStore
 				(IsolatedStorageScope scope, Evidence domainEvidence,
 				 Type domainEvidenceType, Evidence assemblyEvidence,
 				 Type assemblyEvidenceType)
 			{
-				// TODO
-				return null;
+				return GetStore(scope);
 			}
 
 	// Get the user storage area for the current assembly.
-	[TODO]
 	public static IsolatedStorageFile GetUserStoreForAssembly()
 			{
-				// TODO
-				return null;
+				return GetStore(IsolatedStorageScope.User |
+								IsolatedStorageScope.Assembly);
 			}
 
 	// Get the user storage area for the current domain.
-	[TODO]
 	public static IsolatedStorageFile GetUserStoreForDomain()
 			{
-				// TODO
-				return null;
+				return GetStore(IsolatedStorageScope.User |
+								IsolatedStorageScope.Domain);
 			}
 
 	// Remove this isolated storage object.
-	[TODO]
 	public override void Remove()
 			{
-				// TODO
+				try
+				{
+					Directory.Delete(baseDirectory, true);
+				}
+				catch(IOException e)
+				{
+					throw new IsolatedStorageException
+						(_("IO_IsolatedStorage"), e);
+				}
 			}
 
 	// Remove all stores of a particular type.
-	[TODO]
 	public static void Remove(IsolatedStorageScope scope)
 			{
-				// TODO
+				IsolatedStorageFile file = GetStore(scope);
+				try
+				{
+					file.Remove();
+				}
+				finally
+				{
+					file.Close();
+				}
 			}
 
 	// Enumerate all storage areas of a particular type.
-	[TODO]
 	public static IEnumerator GetEnumerator(IsolatedStorageScope scope)
 			{
-				// TODO
-				return null;
+				IsolatedStorageFile store;
+
+				// We can only do this for particular storage scopes.
+				if(scope == IsolatedStorageScope.User ||
+				   scope == (IsolatedStorageScope.User |
+						     IsolatedStorageScope.Roaming))
+				{
+					try
+					{
+						store = GetStore(scope);
+					}
+					catch(Exception)
+					{
+						store = null;
+					}
+				}
+				else
+				{
+					store = null;
+				}
+
+				// Build and return an enumerator for the scope that we found.
+				return new ScopeEnumerator(store);
 			}
 
 	// Get the base directory for this isolated storage area.
@@ -204,10 +415,69 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 			{
 				get
 				{
-					// TODO
-					return null;
+					return baseDirectory;
 				}
 			}
+
+	// Enumerator class for isolated storage areas.
+	private sealed class ScopeEnumerator : IEnumerator
+	{
+		// Internal state.
+		private IsolatedStorageFile store;
+		private IsolatedStorageFile current;
+		private bool done;
+		private bool reset;
+
+		// Constructor.
+		public ScopeEnumerator(IsolatedStorageFile store)
+				{
+					this.store = store;
+					this.current = null;
+					this.done = (store == null);
+					this.reset = false;
+				}
+
+		// Implement the IEnumerator interface.
+		public bool MoveNext()
+				{
+					if(done)
+					{
+						current = null;
+						return false;
+					}
+					else if(reset)
+					{
+						current = store;
+						reset = false;
+						return true;
+					}
+					else
+					{
+						current = null;
+						done = true;
+						return false;
+					}
+				}
+		public void Reset()
+				{
+					done = (store == null);
+					current = null;
+					reset = true;
+				}
+		public Object Current
+				{
+					get
+					{
+						if(current == null)
+						{
+							throw new InvalidOperationException
+								(_("Invalid_BadEnumeratorPosition"));
+						}
+						return current;
+					}
+				}
+
+	}; // class ScopeEnumerator
 
 }; // class IsolatedStorageFile
 

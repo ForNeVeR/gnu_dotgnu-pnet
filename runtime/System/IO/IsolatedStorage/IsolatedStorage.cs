@@ -27,57 +27,66 @@ namespace System.IO.IsolatedStorage
 using System.Security;
 using System.Security.Permissions;
 
+// Isolated storage is used in the .NET Framework SDK to create "compartments"
+// that are physically separated from the rest of the file system and from
+// "less trusted" applications, on a per user or per domain basis.
+//
+// Physical separation isn't really possible on most platforms, and arguably
+// it is a bad idea as it may prevent the user from accessing data created by
+// applications running on their system.
+//
+// In this implementation, we use the regular filesystem operations with no
+// physical separation, and let the underlying runtime engine and operating
+// system worry about the security issues.  Per user and per domain profiles
+// are handled by basing all operations in a store on a "base" directory.
+
 public abstract class IsolatedStorage : MarshalByRefObject
 {
 	// Internal state.
 	private IsolatedStorageScope scope;
+	private Object assemblyIdentity;
+	private Object domainIdentity;
 
 	// Constructor.
 	protected IsolatedStorage() {}
 
-	// Get the current amount of space that has be used.
-	[TODO]
+	// Get the current amount of space that has been used.
 	[CLSCompliant(false)]
 	public virtual ulong CurrentSize
 			{
 				get
 				{
-					// TODO
-					return 0;
+					throw new InvalidOperationException
+						(_("Invalid_IsolatedCurrentSize"));
 				}
 			}
 
 	// Get the assembly identity for this isolated storage object.
-	[TODO]
 	public Object AssemblyIdentity
 			{
 				get
 				{
-					// TODO
-					return null;
+					return assemblyIdentity;
 				}
 			}
 
 	// Get the domain identity for this isolated storage object.
-	[TODO]
 	public Object DomainIdentity
 			{
 				get
 				{
-					// TODO
-					return null;
+					return domainIdentity;
 				}
 			}
 
 	// Get the maximum amount of space that can be used.
-	[TODO]
 	[CLSCompliant(false)]
 	public virtual ulong MaximumSize
 			{
 				get
 				{
-					// TODO
-					return 0;
+					throw new InvalidOperationException
+						(_("Invalid_IsolatedQuota"));
 				}
 			}
 
@@ -95,7 +104,7 @@ public abstract class IsolatedStorage : MarshalByRefObject
 			{
 				get
 				{
-					return Path.DirectorySeparatorChar;
+					return '\\';
 				}
 			}
 
@@ -112,14 +121,15 @@ public abstract class IsolatedStorage : MarshalByRefObject
 	protected abstract IsolatedStoragePermission
 			GetPermission(PermissionSet ps);
 
-	// Initialise this storage object.
-	[TODO]
+	// Initialise this storage object.  We don't use the evidence information,
+	// because we let the underlying filesystem enforce security constraints.
 	protected void InitStore(IsolatedStorageScope scope,
 							 Type domainEvidenceType,
 							 Type assemblyEvidenceType)
 			{
-				// TODO
 				this.scope = scope;
+				this.assemblyIdentity = null;
+				this.domainIdentity = null;
 			}
 
 	// Remove this isolated storage object.

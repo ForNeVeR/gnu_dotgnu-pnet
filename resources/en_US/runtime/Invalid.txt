@@ -32,3 +32,5 @@ Invalid_PermissionXml=Invalid XML data for permission definition
 Invalid_PermissionSetName=Invalid name for a permission set
 Invalid_RWLock=Invalid read/write lock operation
 Invalid_RemoteRegistry=Access to remote registry denied
+Invalid_IsolatedCurrentSize=The current size of this isolated storage object is not available
+Invalid_IsolatedQuota=Isolated storage quota is not specified

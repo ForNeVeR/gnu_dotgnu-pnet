@@ -4,6 +4,10 @@
 	* engine/lib_regexp.c: Minor fix to CompileWithSyntaxInternal ,
 	IL_re_compile_pattern returns NULL on success.
 
+	* engine/lib_regexp.c: Generate (-1,-1) pairs for all unmatched
+	sub-expressions for regexps and always maintain sub-expression 
+	index order.
+
 2003-05-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/ser_parse.c (ILSerializeGetType): assume that an

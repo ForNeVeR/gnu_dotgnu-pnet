@@ -144,7 +144,7 @@ ILObject *_IL_RegexpMethods_MatchInternal(ILExecThread *_thread,
 	regmatch_t *matches;
 	ILClass *elemClass;
 	ILObject *array;
-	ILInt32 numMatches;
+	ILInt32 numMatches, index;
 	RegexMatch *matchList;
 
 	pat= ILStringToAnsi(_thread,input);
@@ -184,11 +184,11 @@ ILObject *_IL_RegexpMethods_MatchInternal(ILExecThread *_thread,
 		}
 		return 0;
 	}
-	numMatches = 0;
-	while(numMatches < maxMatches && matches[numMatches].rm_so != -1)
-	{
-		++numMatches;
-	}
+	
+	numMatches = ((regex_t*)compiled)->re_nsub + 1;
+
+	numMatches = (maxMatches < numMatches) ? maxMatches : numMatches ;
+							
 	array = _IL_Array_CreateArray_jiiii
 		(_thread, (ILNativeInt)elemClass, 1, numMatches, 0, 0);
 	if(!array)
@@ -200,12 +200,13 @@ ILObject *_IL_RegexpMethods_MatchInternal(ILExecThread *_thread,
 		return 0;
 	}
 	matchList = ArrayToBuffer(array);
-	numMatches = 0;
-	while(numMatches < maxMatches && matches[numMatches].rm_so != -1)
+
+	index = 0;
+	while(index < numMatches)
 	{
-		matchList[numMatches].start = (ILInt32)(matches[numMatches].rm_so);
-		matchList[numMatches].end = (ILInt32)(matches[numMatches].rm_eo);
-		++numMatches;
+		matchList[index].start = (ILInt32)(matches[index].rm_so);
+		matchList[index].end = (ILInt32)(matches[index].rm_eo);
+		++index;
 	}
 	if(matches != 0)
 	{

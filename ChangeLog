@@ -45,6 +45,9 @@
 	* samples/forms/ImageViewer.cs: add some more file types to the
 	open dialog's drop-down list.
 
+	* System.Windows.Forms/FileDialog.cs: add the default extension
+	if the user did not specify one.
+
 2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon

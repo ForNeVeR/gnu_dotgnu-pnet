@@ -2004,7 +2004,59 @@ public abstract class FileDialog : CommonDialog
 		// The filename may be modified to include a default extension.
 		private bool FilenameAcceptable(ref String filename)
 				{
-					// TODO: default extension handling.
+					// Add a default extension if necessary.
+					if(fileDialogParent.AddExtension &&
+					   !Path.HasExtension(filename) &&
+					   !File.Exists(filename))
+					{
+						int index = fileDialogParent.GetWildcardFilterIndex
+							(pattern);
+						String extension = fileDialogParent.defaultExt;
+						String filterPattern;
+						if(index != 0)
+						{
+							filterPattern =
+								fileDialogParent.filterPatterns[index - 1];
+						}
+						else
+						{
+							filterPattern = String.Empty;
+						}
+						if(fileDialogParent.CheckFileExists)
+						{
+							// Look for any extension for which the file
+							// actually exists in the filesystem.
+							String[] patterns = filterPattern.Split(';');
+							foreach(String patt in patterns)
+							{
+								if(patt != "*.*" && patt.StartsWith("*."))
+								{
+									String temp = filename + patt.Substring(1);
+									if(File.Exists(temp))
+									{
+										extension = patt.Substring(1);
+										break;
+									}
+								}
+							}
+						}
+						else
+						{
+							// Only look at the first pattern.
+							index = filterPattern.IndexOf(';');
+							if(index != -1)
+							{
+								filterPattern = filterPattern.Substring
+									(0, index);
+							}
+							if(filterPattern != "*.*" &&
+							   filterPattern.StartsWith("*."))
+							{
+								extension = filterPattern.Substring(1);
+							}
+						}
+						filename += extension;
+					}
 
 					// Check for file and path existence.
 					if(fileDialogParent.CheckFileExists)

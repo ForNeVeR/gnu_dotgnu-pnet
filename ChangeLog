@@ -1,3 +1,9 @@
+
+2003-01-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/IO/StreamWriter.cs: default UTF8 behaviour
+	should not have byte order marks.
+
 2003-01-27  Adam Ballai	 <minddog@cannibutter.com>
 
 	* System.Xml/XmlDocument.cs, System.Xml/XmlTextReader.cs: Implemented ReadNode

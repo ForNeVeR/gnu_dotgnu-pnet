@@ -50,7 +50,7 @@ public class StreamWriter : TextWriter
 
 	// Constructors that are based on a stream.
 	public StreamWriter(Stream stream)
-			: this(stream, Encoding.UTF8, STREAM_BUFSIZ) {}
+			: this(stream, new UTF8Encoding(false, true), STREAM_BUFSIZ) {}
 	public StreamWriter(Stream stream, Encoding encoding)
 			: this(stream, encoding, STREAM_BUFSIZ) {}
 	public StreamWriter(Stream stream, Encoding encoding, int bufferSize)
@@ -95,9 +95,10 @@ public class StreamWriter : TextWriter
 
 	// Constructors that are based on a filename.
 	public StreamWriter(String path)
-			: this(path, false, Encoding.UTF8, STREAM_BUFSIZ) {}
+			: this(path, false, new UTF8Encoding(false, true), STREAM_BUFSIZ) {}
 	public StreamWriter(String path, bool append)
-			: this(path, append, Encoding.UTF8, STREAM_BUFSIZ) {}
+			: this(path, append, new UTF8Encoding(false, true),
+				   STREAM_BUFSIZ) {}
 	public StreamWriter(String path, bool append, Encoding encoding)
 			: this(path, append, encoding, STREAM_BUFSIZ) {}
 	public StreamWriter(String path, bool append,

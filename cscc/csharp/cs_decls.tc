@@ -710,6 +710,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	CSSemValue value;
 	ILEvalValue evalValue;
 	ILNode *savedMethod;
+	ILNode *initializer;
 
 	savedMethod=info->currentMethod;
 
@@ -748,8 +749,11 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	/* Non-static fields are initialized differently */
 	if(node->owner && (node->owner->modifiers & IL_META_FIELDDEF_STATIC) == 0)
 	{
-		CSAddInitCtor(info, ILNode_Assign_create
-						(node->name, node->initializer));
+		initializer = ILNode_Assign_create(node->name, node->initializer);
+		yysetfilename(initializer,yygetfilename(node));
+		yysetlinenum(initializer,yygetlinenum(node));
+		
+		CSAddInitCtor(info, initializer);
 		goto done;
 	}
 
@@ -818,8 +822,12 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	/* Add a statement to the static constructor to initialize the field */
 	/*	CSAddStaticCtor(info,  
 	                 ILNode_Assign_create(node->name, node->initializer)); */
-	node->staticCtor = ILNode_NewScope_create
-						(ILNode_Assign_create(node->name, node->initializer));
+
+	initializer=ILNode_Assign_create(node->name, node->initializer);
+	yysetfilename(initializer,yygetfilename(node));
+	yysetlinenum(initializer,yygetlinenum(node));
+
+	node->staticCtor = ILNode_NewScope_create(initializer);
 
 done:
 	/* Mark the node as done and return */

@@ -60,7 +60,7 @@ static ILDocText *AllocTextNode(ILXMLReader *reader, ILDocText *parent)
 	{
 		text->parent = parent;
 		text->next = 0;
-		text->isTag = 1;
+		text->isTag = 0;
 		text->size = 0;
 		text->children = 0;
 		strcpy(text->text, data);
@@ -232,6 +232,7 @@ static int ParseAttributes(ILDocAttribute **list, ILXMLReader *reader)
 				{
 					ILXMLSkip(reader);
 				}
+				ILXMLReadNext(reader);
 			}
 		}
 		else
@@ -266,6 +267,7 @@ static int ParseMember(ILDocTree *tree, ILDocType *type,
 	member->type = type;
 	member->name = 0;
 	member->memberType = ILDocMemberType_Unknown;
+	member->fullyQualify = 0;
 	member->ilasmSignature = 0;
 	member->csSignature = 0;
 	member->returnType = 0;
@@ -306,7 +308,7 @@ static int ParseMember(ILDocTree *tree, ILDocType *type,
 			{
 				/* Assembly code signature */
 				value = ILXMLGetParam(reader, "Value");
-				if(value && !(type->ilasmSignature))
+				if(value && !(member->ilasmSignature))
 				{
 					if((member->ilasmSignature = ILDupString(value)) == 0)
 					{
@@ -318,7 +320,7 @@ static int ParseMember(ILDocTree *tree, ILDocType *type,
 			{
 				/* C# signature */
 				value = ILXMLGetParam(reader, "Value");
-				if(value && !(type->csSignature))
+				if(value && !(member->csSignature))
 				{
 					if((member->csSignature = ILDupString(value)) == 0)
 					{
@@ -594,6 +596,54 @@ static int ParseTypeContents(ILDocTree *tree, ILDocType *type,
 }
 
 /*
+ * Get the kind associated with a type.
+ */
+static ILDocTypeKind GetTypeKind(char *signature)
+{
+	int len;
+	while(*signature != '\0')
+	{
+		if(*signature == ' ' || *signature == '\t' ||
+		   *signature == '\n' || *signature == '\r' ||
+		   *signature == '\f' || *signature == '\v')
+		{
+			++signature;
+			continue;
+		}
+		len = 1;
+		while(signature[len] != '\0' &&
+		      signature[len] != ' ' && signature[len] != '\t' &&
+		      signature[len] != '\n' && signature[len] != '\r' &&
+		      signature[len] != '\f' && signature[len] != '\v')
+		{
+			++len;
+		}
+		if(len == 5 && !strncmp(signature, "class", 5))
+		{
+			return ILDocTypeKind_Class;
+		}
+		else if(len == 9 && !strncmp(signature, "interface", 9))
+		{
+			return ILDocTypeKind_Interface;
+		}
+		else if(len == 6 && !strncmp(signature, "struct", 6))
+		{
+			return ILDocTypeKind_Struct;
+		}
+		else if(len == 4 && !strncmp(signature, "enum", 4))
+		{
+			return ILDocTypeKind_Enum;
+		}
+		else if(len == 8 && !strncmp(signature, "delegate", 8))
+		{
+			return ILDocTypeKind_Delegate;
+		}
+		signature += len;
+	}
+	return ILDocTypeKind_Class;
+}
+
+/*
  * Parse a list of types within a library.  The XML stream
  * is positioned on the first item within the "Types" element.
  */
@@ -618,8 +668,11 @@ static int ParseTypes(ILDocTree *tree, ILDocLibrary *library,
 			}
 			type->tree = tree;
 			type->library = library;
+			type->namespace = 0;
+			type->kind = ILDocTypeKind_Class;
 			type->name = 0;
 			type->fullName = 0;
+			type->fullyQualify = 0;
 			type->ilasmSignature = 0;
 			type->csSignature = 0;
 			type->baseType = 0;
@@ -628,6 +681,7 @@ static int ParseTypes(ILDocTree *tree, ILDocLibrary *library,
 			type->doc = 0;
 			type->members = 0;
 			type->next = 0;
+			type->nextNamespace = 0;
 			if(last)
 			{
 				last->next = type;
@@ -674,6 +728,12 @@ static int ParseTypes(ILDocTree *tree, ILDocLibrary *library,
 				{
 					return 0;
 				}
+			}
+
+			/* Determine the type kind */
+			if(type->csSignature)
+			{
+				type->kind = GetTypeKind(type->csSignature);
 			}
 		}
 		else
@@ -762,6 +822,7 @@ ILDocTree *ILDocTreeCreate()
 	}
 	tree->libraries = 0;
 	tree->lastLibrary = 0;
+	tree->namespaces = 0;
 	return tree;
 }
 

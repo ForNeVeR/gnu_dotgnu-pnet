@@ -197,7 +197,7 @@ ILSysIOHandle ILSysIOOpenFile(const char *path, ILUInt32 mode,
 
 #ifdef IL_WIN32_PLATFORM
 	/* Unbelievably, windows defaults to text mode!!! */
-	_fmode = _O_BINARY;
+	newAccess |= _O_BINARY;
 #endif
 
 	switch(mode)

@@ -9,6 +9,10 @@
 	tests/System.Xml/TestXmlNamespaceManager.cs: test cases and
 	bug fixes for "XmlNamespaceManager".
 
+	* tests/System.Xml/TestXml.cs,
+	tests/System.Xml/TestXmlParserContext.cs: test cases for
+	"XmlParserContext".
+
 2002-12-01  Stephen Compall  <rushing@sigecom.net>
 
 	* pnetlib.spec.in: Fixed requires, new & improved description.

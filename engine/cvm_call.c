@@ -21,6 +21,16 @@
 #if defined(IL_CVM_GLOBALS)
 
 /*
+ * A little bit of assembler magic to stop gcc doing tail-end combination
+ * on some of the switch cases related to method calls.
+ */
+#if defined(CVM_X86) && defined(__GNUC__) && !defined(IL_NO_ASM)
+#define	CVM_OPTIMIZE_BLOCK()		__asm__ ("")
+#else
+#define	CVM_OPTIMIZE_BLOCK()
+#endif
+
+/*
  * Allocate a new call frame.
  */
 ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
@@ -159,8 +169,8 @@ case COP_CALL:
 
 	/* Pass control to the new method */
 	pc = (unsigned char *)(methodToCall->userData);
-	thread->exceptHeight = 0;
 	method = methodToCall;
+	CVM_OPTIMIZE_BLOCK();
 #ifdef IL_PROFILE_CVM_METHODS
 	++(method->count);
 #endif
@@ -226,8 +236,8 @@ case COP_CALL_EXTERN:
 
 		/* Pass control to the new method */
 		pc = (unsigned char *)(methodToCall->userData);
-		thread->exceptHeight = 0;
 		method = methodToCall;
+		CVM_OPTIMIZE_BLOCK();
 	}
 	else
 	{
@@ -253,8 +263,8 @@ case COP_CALL_EXTERN:
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
 		pc = (unsigned char *)tempptr;
-		thread->exceptHeight = 0;
 		method = methodToCall;
+		CVM_OPTIMIZE_BLOCK();
 	}
 #ifdef IL_PROFILE_CVM_METHODS
 	++(method->count);
@@ -318,8 +328,8 @@ case COP_CALL_CTOR:
 	/* Restore the state information and jump to the new method */
 	RESTORE_STATE_FROM_THREAD();
 	pc = ((unsigned char *)tempptr) - ILCoderCtorOffset(thread->process->coder);
-	thread->exceptHeight = 0;
 	method = methodToCall;
+	CVM_OPTIMIZE_BLOCK();
 #ifdef IL_PROFILE_CVM_METHODS
 	++(method->count);
 #endif
@@ -453,8 +463,8 @@ case COP_CALL_VIRTUAL:
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
 		pc = (unsigned char *)tempptr;
-		thread->exceptHeight = 0;
 		method = methodToCall;
+		CVM_OPTIMIZE_BLOCK();
 	#ifdef IL_PROFILE_CVM_METHODS
 		++(method->count);
 	#endif
@@ -534,8 +544,8 @@ case COP_CALL_INTERFACE:
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
 		pc = (unsigned char *)tempptr;
-		thread->exceptHeight = 0;
 		method = methodToCall;
+		CVM_OPTIMIZE_BLOCK();
 	#ifdef IL_PROFILE_CVM_METHODS
 		++(method->count);
 	#endif
@@ -894,8 +904,8 @@ case COP_CALL_VIRTUAL:
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
 		pc = (unsigned char *)tempptr;
-		thread->exceptHeight = 0;
 		method = methodToCall;
+		CVM_OPTIMIZE_BLOCK();
 	#ifdef IL_PROFILE_CVM_METHODS
 		++(method->count);
 	#endif
@@ -944,8 +954,8 @@ case COP_CALL_INTERFACE:
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
 		pc = (unsigned char *)tempptr;
-		thread->exceptHeight = 0;
 		method = methodToCall;
+		CVM_OPTIMIZE_BLOCK();
 	#ifdef IL_PROFILE_CVM_METHODS
 		++(method->count);
 	#endif

@@ -29,6 +29,11 @@
 	convert the "frame" variable in the thread object and call frames
 	into a pointer because it is more efficient than a relative offset.
 
+	* engine/cvm_call.c: don't reset "thread->exceptHeight" on entry
+	to a method because it will be overwritten if it is needed anyway;
+	add some assembly hacks to prevent gcc getting overeager when
+	it optimises the method call code.
+
 2002-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c: don't report "unresolved type reference"

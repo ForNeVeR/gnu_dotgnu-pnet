@@ -77,6 +77,23 @@ ILClass *ILTypeSpecGetClass(ILTypeSpec *spec)
 	}
 }
 
+ILClass *ILTypeSpecGetClassRef(ILTypeSpec *spec)
+{
+	ILClass *info = ILTypeSpecGetClass(spec);
+	if(info->programItem.image == spec->programItem.image)
+	{
+		return info;
+	}
+	info = ILClassImport(spec->programItem.image, info);
+	if(!info)
+	{
+		return 0;
+	}
+	info->programItem.token = spec->programItem.token;
+	info->synthetic = spec->type;
+	return info;
+}
+
 void _ILTypeSpecSetTypeIndex(ILTypeSpec *spec, ILUInt32 index)
 {
 	spec->typeBlob = index;

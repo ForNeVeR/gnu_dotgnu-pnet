@@ -1671,9 +1671,16 @@ ILType *ILTypeSpecGetType(ILTypeSpec *spec);
 void ILTypeSpecSetClass(ILTypeSpec *spec, ILClass *classInfo);
 
 /*
- * Get the class information block tha corresponds to a TypeSpec.
+ * Get the class information block that corresponds to a TypeSpec.
+ * The returned class may be in the foreign synthetic image.
  */
 ILClass *ILTypeSpecGetClass(ILTypeSpec *spec);
+
+/*
+ * Get the class information block that corresponds to a TypeSpec.
+ * The returned class is guarnteed to be in the same image.
+ */
+ILClass *ILTypeSpecGetClassRef(ILTypeSpec *spec);
 
 /*
  * Helper macros for querying information about a TypeSpec's.

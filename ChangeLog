@@ -18,6 +18,8 @@ marshalling.
 
 * ilalink/link_image.c: call "_ILLinkerConvertClasses".
 
+* include/il_program.h, image/misc.c (ILTypeSpecGetClassRef): new function.
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

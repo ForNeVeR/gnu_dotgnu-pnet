@@ -3,7 +3,7 @@
 
 	* support/aes.c: make the AES code 16-bit friendly.
 
-	* support/def_gc.c: add "L" prefixes to a constant to make
+	* support/def_gc.c: add "L" suffixes to a constant to make
 	the def_gc module 16-bit friendly.
 
 2003-05-14  Gopal.V  <gopalv82@symonds.net>

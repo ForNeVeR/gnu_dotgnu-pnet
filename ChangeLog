@@ -62,6 +62,9 @@ new coder API called "SetupExternCtor".
 * engine/cvm.h: add the "call_ctor", "call_interface", and "new_value"
 instructions.
 
+* include/il_coder.h, engine/ilverify.c: modify the coder API's related
+to method calls and constructors.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

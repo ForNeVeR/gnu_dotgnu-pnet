@@ -200,6 +200,10 @@ static int Coder_SetupExternCtor(ILCoder *coder, unsigned char **start,
 {
 	return 1;
 }
+static int Coder_CtorOffset(ILCoder *coder)
+{
+	return 0;
+}
 static void Coder_Destroy(ILCoder *coder)
 {
 }
@@ -396,27 +400,27 @@ static void Coder_DownConvertArg(ILCoder *coder, ILEngineStackItem *args,
 						         ILType *paramType)
 {
 }
-static void Coder_NewObj(ILCoder *coder, ILClass *classInfo)
-{
-}
-static void Coder_CtorArgs(ILCoder *coder, ILEngineStackItem *args,
-					 	   ILUInt32 numArgs)
-{
-}
 static void Coder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 								ILEngineStackItem *args, ILUInt32 numArgs)
 {
 }
 static void Coder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
-					   		 ILUInt32 numArgs, ILMethod *methodInfo)
+					   		 ILUInt32 numArgs, ILEngineStackItem *returnItem,
+							 ILMethod *methodInfo)
+{
+}
+static void Coder_CallCtor(ILCoder *coder, ILEngineStackItem *args,
+					   	   ILUInt32 numArgs, ILMethod *methodInfo)
 {
 }
 static void Coder_CallVirtual(ILCoder *coder, ILEngineStackItem *args,
-					    	  ILUInt32 numArgs, ILMethod *methodInfo)
+					    	  ILUInt32 numArgs, ILEngineStackItem *returnItem,
+							  ILMethod *methodInfo)
 {
 }
 static void Coder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
-					      		ILUInt32 numArgs, ILMethod *methodInfo)
+					      		ILUInt32 numArgs, ILEngineStackItem *returnItem,
+								ILMethod *methodInfo)
 {
 }
 static void Coder_JumpMethod(ILCoder *coder, ILMethod *methodInfo)
@@ -437,6 +441,7 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_Setup,
 	Coder_SetupExtern,
 	Coder_SetupExternCtor,
+	Coder_CtorOffset,
 	Coder_Destroy,
 	Coder_Flush,
 	Coder_Finish,
@@ -491,10 +496,9 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_ArgList,
 	Coder_UpConvertArg,
 	Coder_DownConvertArg,
-	Coder_NewObj,
-	Coder_CtorArgs,
 	Coder_ValueCtorArgs,
 	Coder_CallMethod,
+	Coder_CallCtor,
 	Coder_CallVirtual,
 	Coder_CallInterface,
 	Coder_JumpMethod,

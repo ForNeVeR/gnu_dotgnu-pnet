@@ -129,6 +129,12 @@ struct _tagILCoderClass
 					       void *ctorfn, void *ctorcif, int isInternal);
 
 	/*
+	 * Get the offset to use to convert a method entry point
+	 * into an allocation constructor entry point.
+	 */
+	int (*ctorOffset)(ILCoder *coder);
+
+	/*
 	 * Destroy a coder instance.
 	 */
 	void (*destroy)(ILCoder *coder);
@@ -463,22 +469,9 @@ struct _tagILCoderClass
 						   ILType *paramType);
 
 	/*
-	 * Construct the memory for a new object and push a
-	 * reference onto the stack.
-	 */
-	void (*newObj)(ILCoder *coder, ILClass *classInfo);
-
-	/*
-	 * Rearrange the evaluation stack to insert an object
-	 * reference twice just before constructor arguments.
-	 */
-	void (*ctorArgs)(ILCoder *coder, ILEngineStackItem *args,
-					 ILUInt32 numArgs);
-
-	/*
-	 * Rearrange the evaluation stack to insert a value
-	 * and a managed pointer to the value just before
-	 * constructor arguments.
+	 * Insert two values into the stack for value type construction.
+	 * The first is a managed value, and the second is a pointer
+	 * to the managed value.
 	 */
 	void (*valueCtorArgs)(ILCoder *coder, ILClass *classInfo,
 						  ILEngineStackItem *args, ILUInt32 numArgs);
@@ -487,19 +480,28 @@ struct _tagILCoderClass
 	 * Call a method directly.
 	 */
 	void (*callMethod)(ILCoder *coder, ILEngineStackItem *args,
-					   ILUInt32 numArgs, ILMethod *methodInfo);
+					   ILUInt32 numArgs, ILEngineStackItem *returnItem,
+					   ILMethod *methodInfo);
+
+	/*
+	 * Call a constructor method directly.
+	 */
+	void (*callCtor)(ILCoder *coder, ILEngineStackItem *args,
+					 ILUInt32 numArgs, ILMethod *methodInfo);
 
 	/*
 	 * Call a virtual method.
 	 */
 	void (*callVirtual)(ILCoder *coder, ILEngineStackItem *args,
-					    ILUInt32 numArgs, ILMethod *methodInfo);
+					    ILUInt32 numArgs, ILEngineStackItem *returnItem,
+						ILMethod *methodInfo);
 
 	/*
 	 * Call an interface method.
 	 */
 	void (*callInterface)(ILCoder *coder, ILEngineStackItem *args,
-					      ILUInt32 numArgs, ILMethod *methodInfo);
+					      ILUInt32 numArgs, ILEngineStackItem *returnItem,
+						  ILMethod *methodInfo);
 
 	/*
 	 * Jump to a method with the same signature as the current method.
@@ -534,6 +536,8 @@ struct _tagILCoderClass
 						((coder), (start), (method), \
 						 (fn), (cif), (ctorfn), \
 						 (ctorcif), (isInternal)))
+#define	ILCoderCtorOffset(coder) \
+			((*((coder)->classInfo->ctorOffset))((coder)))
 #define	ILCoderDestroy(coder) \
 			((*((coder)->classInfo->destroy))((coder)))
 #define	ILCoderFlush(coder) \
@@ -672,22 +676,24 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->downConvertArg))((coder), (stack), \
 												     (numParams), (param), \
 												     (paramType)))
-#define	ILCoderNewObj(coder,_classInfo) \
-			((*((coder)->classInfo->newObj))((coder), (_classInfo)))
-#define	ILCoderCtorArgs(coder,args,numArgs) \
-			((*((coder)->classInfo->ctorArgs))((coder), (args), (numArgs)))
 #define	ILCoderValueCtorArgs(coder,_classInfo,args,numArgs) \
 			((*((coder)->classInfo->valueCtorArgs))((coder), (_classInfo), \
-													(args), (numArgs)))
-#define	ILCoderCallMethod(coder,args,numArgs,methodInfo) \
+												    (args), (numArgs)))
+#define	ILCoderCallMethod(coder,args,numArgs,returnItem,methodInfo) \
 			((*((coder)->classInfo->callMethod))((coder), (args), \
-												 (numArgs), (methodInfo)))
-#define	ILCoderCallVirtual(coder,args,numArgs,methodInfo) \
+												 (numArgs), (returnItem), \
+												 (methodInfo)))
+#define	ILCoderCallCtor(coder,args,numArgs,methodInfo) \
+			((*((coder)->classInfo->callCtor))((coder), (args), \
+											   (numArgs), (methodInfo)))
+#define	ILCoderCallVirtual(coder,args,numArgs,returnItem,methodInfo) \
 			((*((coder)->classInfo->callVirtual))((coder), (args), \
-												  (numArgs), (methodInfo)))
-#define	ILCoderCallInterface(coder,args,numArgs,methodInfo) \
+												  (numArgs), (returnItem), \
+												  (methodInfo)))
+#define	ILCoderCallInterface(coder,args,numArgs,returnItem,methodInfo) \
 			((*((coder)->classInfo->callInterface))((coder), (args), \
-												    (numArgs), (methodInfo)))
+												    (numArgs), (returnItem), \
+													(methodInfo)))
 #define	ILCoderJumpMethod(coder,methodInfo) \
 			((*((coder)->classInfo->jumpMethod))((coder), (methodInfo)))
 #define	ILCoderReturnInsn(coder,engineType,returnType) \

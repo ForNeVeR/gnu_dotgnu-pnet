@@ -84,7 +84,16 @@ using System.Drawing;
 			{
 				int i = 0;
 				if (value != null)
-					i = Math.Min(value.Length, 16);
+				{
+					if(value.Length < 16)
+					{
+						i = value.Length;
+					}
+					else
+					{
+						i = 16;
+					}
+				}
 				if (i > 0)
 					Array.Copy(value, 0, customColors, 0, i);
 				for (; i < 16; i++)

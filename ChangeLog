@@ -19,6 +19,32 @@
 	System.Windows.Forms/PropertyTabChangedEventHandler.cs,
 	System.Windows.Forms/ToolTip.cs, compat/Vsa.cs: ECMA fixes.
 
+	* System/ComponentModel/MemberDescriptor.cs,
+	System/ComponentModel/TypeDescriptor.cs,
+	System/ComponentModel/Win32Exception.cs,
+	System.Configuration.Install/Installer.cs,
+	System.Configuration.Install/ManagedInstallerClass.cs,
+	System.Drawing/Bitmap.cs, System.Drawing/Color.cs,
+	System.Drawing/ContentAlignment.cs, System.Drawing/Font.cs,
+	System.Drawing/Graphics.cs, System.Drawing/ImageFormatConverter.cs,
+	System.Drawing/Region.cs, System.Drawing/Drawing2D/ColorBlend.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs,
+	System.Drawing.Postscript/PostscriptPen.cs,
+	System.Drawing.Postscript/PostscriptPrintSession.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Windows.Forms/ColorDialog.cs,
+	System.Windows.Forms/ListBox.cs,
+	System.Windows.Forms/ScrollBar.cs,
+	System.Windows.Forms/TextBox.cs,
+	System.Xml/Serialization/SoapCodeExporter.cs,
+	System.Xml/Serialization/XmlCodeExporter.cs,
+	runtime/System/IO/BinaryWriter.cs,
+	runtime/System/Reflection/ClrType.cs,
+	runtime/System/Runtime/Remoting/InternalRemotingServices.cs,
+	runtime/System/Runtime/Remoting/SoapServices.cs,
+	runtime/System/Security/Policy/Evidence.cs: more fixes for
+	build profiles, particularly those lacking floating point.
+
 2003-09-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/ScrollBar.cs, System.Windows.Forms/ListBox.cs

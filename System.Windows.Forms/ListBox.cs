@@ -33,6 +33,30 @@ namespace System.Windows.Forms
 [TODO]
 public class ListBox : ListControl
 {
+	// Helpers, to replace the missing "Math" class in some profiles.
+	private static int Math_Max(int a, int b)
+	{
+		if(a > b)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+	}
+	private static int Math_Min(int a, int b)
+	{
+		if(a < b)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+	}
+
  	public class ObjectCollection : IList	
  	{
  		private ListBox owner;
@@ -114,7 +138,7 @@ public class ListBox : ListControl
 				else
 					List[index] = value;
 					
-				this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
+				this.maxWidth = Math_Max(this.maxWidth, TextWidth(value));
 				this.owner.CalculateScrollbars();
 				
 				if(this.owner.sorted)
@@ -139,7 +163,7 @@ public class ListBox : ListControl
 				else
 					List[index] = value;
 
-				this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
+				this.maxWidth = Math_Max(this.maxWidth, TextWidth(value));
 				this.owner.CalculateScrollbars();
 
 				if(this.owner.sorted)
@@ -163,7 +187,7 @@ public class ListBox : ListControl
 			else
 				result = List.Add(value);
 
-			this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
+			this.maxWidth = Math_Max(this.maxWidth, TextWidth(value));
 			this.owner.CalculateScrollbars();
 			
 			if(this.owner.Sorted)
@@ -179,7 +203,7 @@ public class ListBox : ListControl
  			List.AddRange(items);
 			
 			foreach(object value in items)
-				this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
+				this.maxWidth = Math_Max(this.maxWidth, TextWidth(value));
 
 			if(this.owner.Sorted)
 				this.Sort();
@@ -207,7 +231,7 @@ public class ListBox : ListControl
 
  		public void Insert(int index, Object value)
  		{
-			this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));	
+			this.maxWidth = Math_Max(this.maxWidth, TextWidth(value));	
 
 			if(this.owner.Sorted)
 				this.AddSorted(value);
@@ -1438,7 +1462,7 @@ public class ListBox : ListControl
 				// Normal data sources must be grokked to find
 				// the longest string, unfortunately.
 				foreach(object value in (IList) base.dataSource)
-					maxWidth = Math.Max(maxWidth, (int) this.nonClientGraphics.MeasureString(value.ToString(), this.Font).Width);
+					maxWidth = Math_Max(maxWidth, (int) this.nonClientGraphics.MeasureString(value.ToString(), this.Font).Width);
 			}
 			
 			return maxWidth;
@@ -2075,7 +2099,7 @@ public class ListBox : ListControl
 					int col = this.FocusedItem / this.NumItemsPerColumn;
 					int row = this.FocusedItem - this.NumItemsPerColumn * col;
 					col--;
-					this.FocusedItem = Math.Max(row,
+					this.FocusedItem = Math_Max(row,
 						row + col * this.NumItemsPerColumn);
 				}
 				else if(this.FocusedItem > 0)
@@ -2096,7 +2120,7 @@ public class ListBox : ListControl
 					col++;
 					if(col < this.NumDataColumns)
 					{
-						this.FocusedItem = Math.Min(maxInd,
+						this.FocusedItem = Math_Min(maxInd,
 							row + col * this.NumItemsPerColumn);
 					}
 				}
@@ -2110,7 +2134,7 @@ public class ListBox : ListControl
 				break;
 			
 			case Keys.PageUp:
-				this.FocusedItem = Math.Max(
+				this.FocusedItem = Math_Max(
 					0, 
 					this.FocusedItem - this.NumItemsVisible);
 				
@@ -2121,7 +2145,7 @@ public class ListBox : ListControl
 				break;
 			
 			case Keys.PageDown:
-				this.FocusedItem = Math.Min(
+				this.FocusedItem = Math_Min(
 					maxInd, 
 					this.FocusedItem + this.NumItemsVisible);
 				

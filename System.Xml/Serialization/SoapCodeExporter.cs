@@ -22,7 +22,7 @@
 namespace System.Xml.Serialization
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_CODEDOM
 
 using System;
 using System.Xml;
@@ -96,6 +96,6 @@ public class SoapCodeExporter
 
 }; // class SoapCodeExporter
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_CODEDOM
 
 }; // namespace System.Xml.Serialization

@@ -25,7 +25,7 @@ namespace System.Drawing
 using System.ComponentModel;
 using System.Drawing.Design;
 
-#if CONFIG_COMPONENT_MODEL
+#if CONFIG_COMPONENT_MODEL_DESIGN
 [Editor("System.Drawing.Design.ContentAlignmentEditor, System.Drawing.Design",
 		typeof(UITypeEditor))]
 #endif

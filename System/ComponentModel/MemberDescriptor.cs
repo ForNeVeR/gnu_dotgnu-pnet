@@ -340,6 +340,7 @@ public abstract class MemberDescriptor
 				{
 					return component;
 				}
+			#if CONFIG_COMPONENT_MODEL_DESIGN
 				IDesignerHost host = (IDesignerHost)
 					site.GetService(typeof(IDesignerHost));
 				if(host == null)
@@ -353,6 +354,9 @@ public abstract class MemberDescriptor
 					return component;
 				}
 				return designer;
+			#else
+				return component;
+			#endif
 			}
 
 	// Get a component site for an object.

@@ -28,7 +28,7 @@ using System.Drawing.Toolkit;
 using System.ComponentModel;
 using System.Drawing.Design;
 
-#if CONFIG_COMPONENT_MODEL
+#if CONFIG_COMPONENT_MODEL_DESIGN
 [Editor("System.Drawing.Design.FontEditor, System.Drawing.Design",
 		typeof(UITypeEditor))]
 [TypeConverter(typeof(FontConverter))]
@@ -205,9 +205,11 @@ public sealed class Font
 			}
 #if CONFIG_COMPONENT_MODEL
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[TypeConverter(typeof(FontConverter.FontNameConverter))]
+#endif
+#if CONFIG_COMPONENT_MODEL_DESIGN
 	[Editor("System.Drawing.Design.FontNameEditor, System.Drawing.Design",
 			typeof(UITypeEditor))]
-	[TypeConverter(typeof(FontConverter.FontNameConverter))]
 #endif
 	public String Name
 			{

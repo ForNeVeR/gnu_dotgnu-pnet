@@ -34,6 +34,8 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 {
 	// Internal state.
 	internal IntPtr privateData;
+
+#if CONFIG_REFLECTION
 	private static IComparer memberNameComparer =
 			new MemberNameComparer();
 
@@ -47,6 +49,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				}
 
 	}; // class MemberNameComparer
+#endif
 
 	// Constructor.  This class is normally instantiated
 	// by the runtime engine, not by the class library.

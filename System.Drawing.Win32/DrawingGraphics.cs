@@ -110,6 +110,8 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 			
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Draw an arc within a rectangle defined by four points.
 	public override void DrawArc( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
@@ -162,6 +164,30 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				int p2Y = (int)(r2 * Math.Sin(theta2) + 0.5 + centerY);
 				return new Rectangle(p1X, p1Y, p2X - p1X, p2Y - p1Y);
 			}
+
+#else // !CONFIG_EXTENDED_NUMERICS
+
+	// TODO: arc routines that don't need to use the "Math" class.
+
+	// Draw an arc within a rectangle defined by four points.
+	public override void DrawArc( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
+			{
+				// TODO
+			}
+
+	// Draw a pie slice within a rectangle defined by four points.
+	public override void DrawPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
+			{
+				// TODO
+			}
+
+	// Fill a pie slice within a rectangle defined by four points.
+	public override void FillPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
+			{
+				// TODO
+			}
+
+#endif // CONFIG_EXTENDED_NUMERICS
 
 	// Draw a string using the current font and brush.
 	public override void DrawString

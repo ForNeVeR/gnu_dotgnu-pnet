@@ -833,7 +833,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	[TODO]
 	public void DrawImage(Image image, float x, float y)
 			{
-				ToolkitGraphics.DrawImage(image.toolkitImage, (int)Math.Ceiling(x), (int)Math.Ceiling(y));
+				int dx, dy;
+				ConvertPoint(x, y, out dx, out dy);
+				ToolkitGraphics.DrawImage(image.toolkitImage, dx, dy);
 			}
 	[TODO]
 	public void DrawImage(Image image, Point[] destPoints,

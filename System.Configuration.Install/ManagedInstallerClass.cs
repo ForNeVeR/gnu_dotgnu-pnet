@@ -293,9 +293,15 @@ public class ManagedInstallerClass : IManagedInstaller
 					{
 						if(both)
 						{
+						#if !CONFIG_SMALL_CONSOLE
 							Console.Error.WriteLine
 								("{0}: cannot specify both `--install' and " +
 								 "`--uninstall'", program);
+						#else
+							Console.WriteLine
+								("{0}: cannot specify both `--install' and " +
+								 "`--uninstall'", program);
+						#endif
 							return 1;
 						}
 						uninstall = false;

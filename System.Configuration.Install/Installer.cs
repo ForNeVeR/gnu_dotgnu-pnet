@@ -28,8 +28,10 @@ using System.Collections;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 
-#if CONFIG_COMPONENT_MODEL
+#if CONFIG_COMPONENT_MODEL_DESIGN
 [Designer("Microsoft.VisualStudio.Configuration.InstallerDesigner, Microsoft.VisualStudio", typeof(IRootDesigner))]
+#endif
+#if CONFIG_COMPONENT_MODEL
 [DefaultEvent("AfterInstall")]
 public class Installer : Component
 #else

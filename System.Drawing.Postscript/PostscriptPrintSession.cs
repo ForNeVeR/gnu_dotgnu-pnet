@@ -142,7 +142,11 @@ internal sealed class PostscriptPrintSession : IToolkitPrintSession
 				else
 				{
 					temp = (e.PageBounds.Height * 72.0) / 100.0;
+				#if CONFIG_EXTENDED_NUMERICS
 					writer.WriteLine("0 {0} translate 1 -1 scale", temp);
+				#else
+					writer.WriteLine("0 {0} translate 1 -1 scale", (int)temp);
+				#endif
 				}
 
 				// Mark the end of the page header information.

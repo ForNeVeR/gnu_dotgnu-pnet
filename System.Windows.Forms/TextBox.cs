@@ -66,6 +66,41 @@ public class TextBox : TextBoxBase
 	// Height chosen, if not multiline could be different from actual
 	private int chosenHeight;
 
+	// Helpers, to replace the missing "Math" class in some profiles.
+	private static int Math_Max(int a, int b)
+	{
+		if(a > b)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+	}
+	private static int Math_Min(int a, int b)
+	{
+		if(a < b)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+	}
+	private static int Math_Abs(int a)
+	{
+		if(a < 0)
+		{
+			return -a;
+		}
+		else
+		{
+			return a;
+		}
+	}
+
 	public TextBox()
 	{
 		// Trap interesting events.  We do it this way rather
@@ -782,7 +817,7 @@ public class TextBox : TextBoxBase
 		if (prevLayout)
 		{
 			Region update = new Region(RectangleF.Empty);
-			for (int i=0;i < Math.Max(oldText.Length, text.Length);i++)
+			for (int i=0;i < Math_Max(oldText.Length, text.Length);i++)
 			{
 				if (i >= oldText.Length)
 					update.Union( layout.Items[i].bounds);
@@ -803,14 +838,14 @@ public class TextBox : TextBoxBase
 	// Get the length of the selection.
 	internal override int GetSelectionLength()
 	{
-		return Math.Abs(selectionLengthActual);
+		return Math_Abs(selectionLengthActual);
 	}
 
 	// Get the start of the selection.
 	// Our length could be negative
 	internal override int GetSelectionStart()
 	{
-		return Math.Min(selectionStartActual, selectionStartActual + selectionLengthActual);
+		return Math_Min(selectionStartActual, selectionStartActual + selectionLengthActual);
 	}
 
 	// Set the start of the selection and the caret position
@@ -940,13 +975,13 @@ public class TextBox : TextBoxBase
 					if (textAlign == HorizontalAlignment.Center && xViewOffset > maxXY/2 - ClientSize.Width/2)
 					{
 						xViewOffset -= widthText - layout.Items[layout.Items.Length - 1].bounds.Right;
-						xViewOffset = Math.Max(xViewOffset, maxXY/2 - ClientSize.Width/2);
+						xViewOffset = Math_Max(xViewOffset, maxXY/2 - ClientSize.Width/2);
 						UpdateClientArea();
 					}
 					else if (textAlign == HorizontalAlignment.Left && xViewOffset > 0)
 					{
 						xViewOffset -= widthText - layout.Items[layout.Items.Length - 1].bounds.Right;
-						xViewOffset = Math.Max(xViewOffset, 0);
+						xViewOffset = Math_Max(xViewOffset, 0);
 						UpdateClientArea();
 					}
 				}

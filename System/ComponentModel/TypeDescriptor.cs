@@ -57,6 +57,8 @@ public sealed class TypeDescriptor
 				// Nothing to do here - we don't use editor tables.
 			}
 
+#if CONFIG_COMPONENT_MODEL_DESIGN
+
 	// Create a designer for a specific component.
 	public static IDesigner CreateDesigner
 				(IComponent component, Type designerBaseType)
@@ -105,6 +107,8 @@ public sealed class TypeDescriptor
 				// We were unable to find a suitable designer declaration.
 				return null;
 			}
+
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 	// Create a new event descriptor.
 	public static EventDescriptor CreateEvent

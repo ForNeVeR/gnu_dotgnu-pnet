@@ -27,7 +27,9 @@ using System.Drawing;
 	public sealed class ColorBlend
 	{
 		private Color[] colors;
+	#if CONFIG_EXTENDED_NUMERICS
 		private float[] positions;
+	#endif
 
 		public Color[] Colors
 		{
@@ -42,6 +44,7 @@ using System.Drawing;
 			}
 		}
 
+	#if CONFIG_EXTENDED_NUMERICS
 		public float[] Positions
 		{
 			get
@@ -54,17 +57,22 @@ using System.Drawing;
 				positions = value;
 			}
 		}
+	#endif
 
 		public ColorBlend()
 		{
 			colors = new Color[1];
+	#if CONFIG_EXTENDED_NUMERICS
 			positions = new float[1];
+	#endif
 		}
 
 		public ColorBlend(int count)
 		{
 			colors = new Color[count];
+	#if CONFIG_EXTENDED_NUMERICS
 			positions = new float[count];
+	#endif
 		}
 	}
 

@@ -157,6 +157,52 @@ public sealed class Region : MarshalByRefObject, IDisposable
 		// TODO
 	}
 
+	// Helpers, to replace missing "Math" class in some profiles.
+	private static int Math_Min(int a, int b)
+	{
+		if(a < b)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+	}
+	private static float Math_Min(float a, float b)
+	{
+		if(a < b)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+	}
+	private static int Math_Max(int a, int b)
+	{
+		if(a > b)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+	}
+	private static float Math_Max(float a, float b)
+	{
+		if(a > b)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+	}
+
 	// Make an exact copy of this region.
 	public Region Clone()
 	{
@@ -783,8 +829,8 @@ public sealed class Region : MarshalByRefObject, IDisposable
 		{
 			RectangleF rect1 = reg1.rects[r1];
 			RectangleF rect2 = reg2.rects[r2];
-			left = Math.Max(rect1.Left, rect2.Left);
-			right =	Math.Min(rect1.Right, rect2.Right);
+			left = Math_Max(rect1.Left, rect2.Left);
+			right =	Math_Min(rect1.Right, rect2.Right);
 
 			/*
 			 * If there's any overlap between the two rectangles, add that
@@ -988,7 +1034,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 		 * reallocate and copy the array, which is time consuming, yet we don't
 		 * want to use too much memory.
 		 */
-		Region newReg = new Region(Math.Max(reg1.rects.Length, reg2.rects.Length) * 2);
+		Region newReg = new Region(Math_Max(reg1.rects.Length, reg2.rects.Length) * 2);
 		// The total number of rectangles we have written to the array
 		int nextRectangle = 0;
     
@@ -1053,8 +1099,8 @@ public sealed class Region : MarshalByRefObject, IDisposable
 			 */
 			if (rect1.Top < rect2.Top)
 			{
-				top = Math.Max(rect1.Top, ybot);
-				bot = Math.Min(rect1.Bottom, rect2.Top);
+				top = Math_Max(rect1.Top, ybot);
+				bot = Math_Min(rect1.Bottom, rect2.Top);
 
 				if ((top != bot))
 				{
@@ -1068,8 +1114,8 @@ public sealed class Region : MarshalByRefObject, IDisposable
 			}
 			else if (rect2.Top < rect1.Top)
 			{
-				top = Math.Max(rect2.Top, ybot);
-				bot = Math.Min(rect2.Bottom, rect1.Top);
+				top = Math_Max(rect2.Top, ybot);
+				bot = Math_Min(rect2.Bottom, rect1.Top);
 
 				if (top != bot)
 				{
@@ -1097,7 +1143,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 			 * Now see if we've hit an intersecting band. The two bands only
 			 * intersect if ybot > ytop
 			 */
-			ybot = Math.Min(rect1.Bottom, rect2.Bottom);
+			ybot = Math_Min(rect1.Bottom, rect2.Bottom);
 			curBand = nextRectangle;
 			if (ybot > ytop)
 			{
@@ -1138,9 +1184,9 @@ public sealed class Region : MarshalByRefObject, IDisposable
 					while (r1BandEnd < r1End && reg1.rects[r1BandEnd].Top == rect1.Top)
 						r1BandEnd++;
 					if (regionOperationType == RegionOperationType.Subtract)
-						SubtractNonOverlapBands(newReg, ref nextRectangle, reg1, r1, r1BandEnd, Math.Max(rect1.Top, ybot), rect1.Bottom);
+						SubtractNonOverlapBands(newReg, ref nextRectangle, reg1, r1, r1BandEnd, Math_Max(rect1.Top, ybot), rect1.Bottom);
 					else if (regionOperationType == RegionOperationType.Union)
-						UnionNonOverlapBands(newReg, ref nextRectangle, reg1, r1, r1BandEnd, Math.Max(rect1.Top, ybot), rect1.Bottom);
+						UnionNonOverlapBands(newReg, ref nextRectangle, reg1, r1, r1BandEnd, Math_Max(rect1.Top, ybot), rect1.Bottom);
 					r1 = r1BandEnd;
 				}
 				while (r1 != r1End);
@@ -1154,7 +1200,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 				r2BandEnd = r2;
 				while (r2BandEnd < r2End && reg2.rects[r2BandEnd].Top == rect2.Top)
 					r2BandEnd++;
-				UnionNonOverlapBands(newReg, ref nextRectangle, reg2, r2, r2BandEnd, Math.Max(rect2.Top, ybot), rect2.Bottom);
+				UnionNonOverlapBands(newReg, ref nextRectangle, reg2, r2, r2BandEnd, Math_Max(rect2.Top, ybot), rect2.Bottom);
 				r2 = r2BandEnd;
 			} while (r2 != r2End);
 		}

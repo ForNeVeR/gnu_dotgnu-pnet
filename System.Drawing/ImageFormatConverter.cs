@@ -36,9 +36,11 @@ using System.Reflection;
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 		{
+		#if CONFIG_COMPONENT_MODEL_DESIGN
 			if (destinationType == typeof(InstanceDescriptor))
 				return true;
 			else
+		#endif
 				return base.CanConvertTo(context, destinationType);
 		}
 
@@ -82,8 +84,10 @@ using System.Reflection;
 				{
 					if (destinationType == typeof(string))
 						return property.Name;
+				#if CONFIG_COMPONENT_MODEL_DESIGN
 					else if (destinationType == typeof(InstanceDescriptor))
 						return new InstanceDescriptor(property, null);
+				#endif
 				}
 			}
 			return base.ConvertTo(context, culture, value, destinationType);

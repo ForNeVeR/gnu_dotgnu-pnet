@@ -358,6 +358,7 @@ public sealed class Evidence : ICollection, IEnumerable
 
 public sealed class Evidence
 {
+	public Evidence() {}
 	public Evidence(Evidence e) {}
 
 }; // class Evidence

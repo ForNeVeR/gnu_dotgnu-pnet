@@ -43,12 +43,16 @@ public class InternalRemotingServices
 	[Conditional("_DEBUG")]
 	public static void RemotingAssert(bool condition, String message) {}
 
+#if CONFIG_REMOTING
+
 	// Set the server identity on a method call object.
 	[CLSCompliant(false)]
 	public static void SetServerIdentity(MethodCall m, Object srvID)
 			{
 				m.SetServerIdentity(srvID);
 			}
+
+#endif
 
 	// Get the cached SOAP attribute data for an object.
 	public static SoapAttribute GetCachedSoapAttribute(Object reflectionObject)

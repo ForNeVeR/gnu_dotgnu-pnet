@@ -217,6 +217,8 @@ class BinaryWriter : IDisposable
 				WriteBuffer(8);
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Write floating-point values to the output.
 	public virtual void Write(float value)
 			{
@@ -287,6 +289,8 @@ class BinaryWriter : IDisposable
 				smallBuffer[15] = (byte)(bits[3] >> 24);
 				WriteBuffer(16);
 			}
+
+#endif // CONFIG_EXTENDED_NUMERICS
 
 	// Write an array of bytes to the output.
 	public virtual void Write(byte[] buffer)

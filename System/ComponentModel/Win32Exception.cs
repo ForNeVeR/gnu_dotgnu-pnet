@@ -29,7 +29,9 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
 [Serializable]
+#if CONFIG_PERMISSIONS
 [SuppressUnmanagedCodeSecurity]
+#endif
 public class Win32Exception : ExternalException
 {
 	// Internal state.

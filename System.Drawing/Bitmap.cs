@@ -34,7 +34,7 @@ using System.Drawing.Toolkit;
 [Serializable]
 [ComVisible(true)]
 #endif
-#if CONFIG_COMPONENT_MODEL
+#if CONFIG_COMPONENT_MODEL_DESIGN
 [Editor("System.Drawing.Design.BitmapEditor, System.Drawing.Design",
 		typeof(UITypeEditor))]
 #endif

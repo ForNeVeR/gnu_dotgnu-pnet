@@ -269,6 +269,8 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 	// Fill a polygon using the current brush.
 	public abstract void FillPolygon(Point[] points, FillMode fillMode);
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	private static Point ComputePoint(float u,
 										int x1, int y1,
 										int x2, int y2,
@@ -384,18 +386,6 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 				DrawLines(ComputeBezier(x1,y1,x2,y2,x3,y3,x4,y4));
 			}
 
-	// Draw an arc within a rectangle defined by four points.
-	public abstract void DrawArc
-			(Point[] rect, float startAngle, float sweepAngle);
-
-	// Draw a pie slice within a rectangle defined by four points.
-	public abstract void DrawPie
-			(Point[] rect, float startAngle, float sweepAngle);
-
-	// Fill a pie slice within a rectangle defined by four points.
-	public abstract void FillPie
-			(Point[] rect, float startAngle, float sweepAngle);
-
 	// Draw a closed cardinal curve using the current pen.
 	public virtual void DrawClosedCurve(Point[] points, float tension)
 			{			
@@ -458,6 +448,50 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 					DrawLines(ComputeSplineSegment(points[i],points[i+1],tangent[i],tangent[i+1]));
 			}
 
+#else // !CONFIG_EXTENDED_NUMERICS
+
+	// Stub out spline operations if we don't have floating-point.
+
+	// Draw a bezier curve using the current pen.
+	public virtual void DrawBezier(int x1, int y1, int x2, int y2,
+								   int x3, int y3, int x4, int y4)
+			{
+				// Nothing to do here.
+			}
+
+	// Draw a closed cardinal curve using the current pen.
+	public virtual void DrawClosedCurve(Point[] points, float tension)
+			{			
+				// Nothing to do here.
+			}
+
+	// Fill a closed cardinal curve using the current brush.
+	public virtual void FillClosedCurve
+				(Point[] points, float tension, FillMode fillMode)
+			{
+				// Nothing to do here.
+			}
+
+	// Draw a cardinal curve using the current pen.
+	public virtual void DrawCurve(Point[] points, int offset,
+				   				  int numberOfSegments, float tension)
+			{
+				// Nothing to do here.
+			}
+
+#endif // !CONFIG_EXTENDED_NUMERICS
+
+	// Draw an arc within a rectangle defined by four points.
+	public abstract void DrawArc
+			(Point[] rect, float startAngle, float sweepAngle);
+
+	// Draw a pie slice within a rectangle defined by four points.
+	public abstract void DrawPie
+			(Point[] rect, float startAngle, float sweepAngle);
+
+	// Fill a pie slice within a rectangle defined by four points.
+	public abstract void FillPie
+			(Point[] rect, float startAngle, float sweepAngle);
 
 	// Draw a string using the current font and brush.
 	public abstract void DrawString

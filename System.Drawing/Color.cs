@@ -31,7 +31,7 @@ using System.Text;
 [Serializable]
 [ComVisible(true)]
 #endif
-#if CONFIG_COMPONENT_MODEL
+#if CONFIG_COMPONENT_MODEL_DESIGN
 [TypeConverter(typeof(ColorConverter))]
 [Editor("System.Drawing.Design.ColorEditor, System.Drawing.Design",
 		typeof(UITypeEditor))]

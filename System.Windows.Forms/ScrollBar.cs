@@ -54,6 +54,30 @@ public abstract class ScrollBar : Control
 	private Timer idleTimer;
 	private MouseEventArgs idleMouse;
 
+	// Helpers, to replace the missing "Math" class in some profiles.
+	private static int Math_Max(int a, int b)
+	{
+		if(a > b)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+	}
+	private static int Math_Min(int a, int b)
+	{
+		if(a < b)
+		{
+			return a;
+		}
+		else
+		{
+			return b;
+		}
+	}
+
 	// Constructors
 	public ScrollBar() : base()
 	{
@@ -482,7 +506,7 @@ public abstract class ScrollBar : Control
 		thumbHeight = (int)( percentage * trackHeight );
 		percentage  = (double) zeroVal / zeroMax;
 		thumbPos    = (int)( percentage * trackHeight );
-		thumbPos    = Math.Min(thumbPos, trackHeight - thumbHeight);
+		thumbPos    = Math_Min(thumbPos, trackHeight - thumbHeight);
 		this.bar    = new Rectangle(0, s.Width + thumbPos, 
 		                            s.Width, thumbHeight);
 	}
@@ -1004,8 +1028,8 @@ public abstract class ScrollBar : Control
 			value += minimum;
 		}
 		
-		value = Math.Max(minimum, value);
-		value = Math.Min(maximum, value);
+		value = Math_Max(minimum, value);
+		value = Math_Min(maximum, value);
 	}
 	private static Rectangle SwapRectValues(Rectangle rect)
 	{

@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 using System.Collections;
 using System.Reflection;
@@ -871,6 +871,6 @@ public class SoapServices
 
 }; // class SoapServices
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting

@@ -1,4 +1,30 @@
 
+2003-04-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/runtime.build,
+	runtime/System/Diagnostics/DebuggableAttribute.cs,
+	runtime/System/Diagnostics/Debugger.cs,
+	runtime/System/Diagnostics/DebuggerHiddenAttribute.cs,
+	runtime/System/Diagnostics/DebuggerStepThroughAttribute.cs,
+	runtime/System/Diagnostics/StackFrame.cs,
+	runtime/System/Diagnostics/StackTrace.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolBinder.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolDocument.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolDocumentWriter.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolMethod.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolNamespace.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolReader.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolScope.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolVariable.cs,
+	runtime/System/Diagnostics/SymbolStore/ISymbolWriter.cs,
+	runtime/System/Diagnostics/SymbolStore/SymAddressKind.cs,
+	runtime/System/Diagnostics/SymbolStore/SymDocumentType.cs,
+	runtime/System/Diagnostics/SymbolStore/SymLanguageType.cs,
+	runtime/System/Diagnostics/SymbolStore/SymLanguageVendor.cs,
+	runtime/System/Diagnostics/SymbolStore/SymbolToken.cs:
+	add ECMA_COMPAT to non-ECMA classes under System.Diagnostics;
+	implement remaining TODO's.
+
 2003-04-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/Serialization/SerializationInfo.cs:

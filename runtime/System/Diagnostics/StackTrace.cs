@@ -26,7 +26,12 @@ using System.Reflection;
 using System.Threading;
 using System.Runtime.CompilerServices;
 
-public class StackTrace
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+class StackTrace
 {
 	// Internal state.
 	private StackFrame[] frames;

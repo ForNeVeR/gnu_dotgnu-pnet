@@ -25,7 +25,12 @@ namespace System.Diagnostics
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-public class StackFrame
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+class StackFrame
 {
 	// Internal state.
 	private String 		filename;

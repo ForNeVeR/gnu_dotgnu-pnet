@@ -21,34 +21,43 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#if !ECMA_COMPAT
+
 using System;
 
 namespace System.Diagnostics.SymbolStore
 {
 	public struct SymbolToken
 	{
-		[TODO]
+		private int token;
+
 		public SymbolToken(int val)
 		{
-			 throw new NotImplementedException(".ctor");
+			 this.token = val;
 		}
 
-		[TODO]
 		public int GetToken()
 		{
-			 throw new NotImplementedException("GetToken");
+			 return token;
 		}
 
-		[TODO]
 		public override bool Equals(Object obj)
 		{
-			 throw new NotImplementedException("Equals");
+			 if(obj is SymbolToken)
+			 {
+			 	return (token == ((SymbolToken)obj).token);
+			 }
+			 else
+			 {
+			 	return false;
+			 }
 		}
 
-		[TODO]
 		public override int GetHashCode()
 		{
-			 throw new NotImplementedException("GetHashCode");
+			 return token;
 		}
 	}
 }//namespace
+
+#endif // !ECMA_COMPAT

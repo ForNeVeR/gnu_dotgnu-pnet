@@ -22,6 +22,8 @@
 namespace System.Diagnostics
 {
 
+#if !ECMA_COMPAT
+
 using System.Runtime.CompilerServices;
 
 public sealed class Debugger
@@ -75,5 +77,7 @@ public sealed class Debugger
 	extern public static void Log(int level, String category, String message);
 
 }; // class Debugger
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Diagnostics

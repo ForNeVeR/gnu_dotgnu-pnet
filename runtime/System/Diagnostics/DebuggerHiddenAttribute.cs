@@ -22,6 +22,8 @@
 namespace System.Diagnostics
 {
 
+#if !ECMA_COMPAT
+
 [AttributeUsage(AttributeTargets.Property |
 				AttributeTargets.Method |
 				AttributeTargets.Constructor,
@@ -32,5 +34,7 @@ public sealed class DebuggerHiddenAttribute : Attribute
 	public DebuggerHiddenAttribute() : base() {}
 
 }; // class DebuggerHiddenAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Diagnostics

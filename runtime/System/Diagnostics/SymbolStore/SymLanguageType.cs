@@ -21,50 +21,47 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#if !ECMA_COMPAT
+
 using System;
 
 namespace System.Diagnostics.SymbolStore
 {
 	public class SymLanguageType
 	{
-		[TODO]
-		public SymLanguageType()
-		{
-			 throw new NotImplementedException(".ctor");
-		}
+		public static readonly Guid Basic
+			= new Guid("3a12d0b8-c26c-11d0-b442-00a0244a1dd2");
 
-		[TODO]
-		public static readonly Guid Basic;
+		public static readonly Guid C
+			= new Guid("63a08714-fc37-11d2-904c-00c04fa302a1");
 
-		[TODO]
-		public static readonly Guid C;
+		public static readonly Guid Cobol
+			= new Guid("af046cd1-d0e1-11d2-977c-00a0c9b4d50c");
 
-		[TODO]
-		public static readonly Guid CPlusPlus;
+		public static readonly Guid CPlusPlus
+			= new Guid("3a12d0b7-c26c-11d0-b442-00a0244a1dd2");
 
-		[TODO]
-		public static readonly Guid CSharp;
+		public static readonly Guid CSharp
+			= new Guid("3f5162f8-07c6-11d3-9053-00c04fa302a1");
 
-		[TODO]
-		public static readonly Guid Cobol;
+		public static readonly Guid ILAssembly
+			= new Guid("af046cd3-d0e1-11d2-977c-00a0c9b4d50c");
 
-		[TODO]
-		public static readonly Guid ILAssembly;
+		public static readonly Guid Java
+			= new Guid("3a12d0b4-c26c-11d0-b442-00a0244a1dd2");
 
-		[TODO]
-		public static readonly Guid JScript;
+		public static readonly Guid JScript
+			= new Guid("3a12d0b6-c26c-11d0-b442-00a0244a1dd2");
 
-		[TODO]
-		public static readonly Guid Java;
+		public static readonly Guid MCPlusPlus
+			= new Guid("4b35fde8-07c6-11d3-9053-00c04fa302a1");
 
-		[TODO]
-		public static readonly Guid MCPlusPlus;
+		public static readonly Guid Pascal
+			= new Guid("af046cd2-d0e1-11d2-977c-00a0c9b4d50c");
 
-		[TODO]
-		public static readonly Guid Pascal;
-
-		[TODO]
-		public static readonly Guid SMC;
-
+		public static readonly Guid SMC
+			= new Guid("0d9b9f7b-6611-11d3-bd2a-0000f80849bd");
 	}
 }//namespace
+
+#endif // !ECMA_COMPAT

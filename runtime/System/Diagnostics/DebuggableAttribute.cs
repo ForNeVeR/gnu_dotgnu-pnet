@@ -22,6 +22,8 @@
 namespace System.Diagnostics
 {
 
+#if !ECMA_COMPAT
+
 [AttributeUsage(AttributeTargets.Assembly |
 				AttributeTargets.Module,
 				AllowMultiple=false, Inherited=true)]
@@ -56,5 +58,7 @@ public sealed class DebuggableAttribute : Attribute
 			}
 
 }; // class DebuggableAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Diagnostics

@@ -22,7 +22,10 @@
 namespace System.Diagnostics
 {
 
-[AttributeUsage(AttributeTargets.Property |
+#if !ECMA_COMPAT
+
+[AttributeUsage(AttributeTargets.Class |
+				AttributeTargets.Struct |
 				AttributeTargets.Method |
 				AttributeTargets.Constructor,
 				Inherited=false)]
@@ -32,5 +35,7 @@ public sealed class DebuggerStepThroughAttribute : Attribute
 	public DebuggerStepThroughAttribute() : base() {}
 
 }; // class DebuggerStepThroughAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Diagnostics

@@ -21,6 +21,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#if !ECMA_COMPAT
+
 using System;
 
 namespace System.Diagnostics.SymbolStore
@@ -55,3 +57,5 @@ namespace System.Diagnostics.SymbolStore
 
 	}
 }//namespace
+
+#endif // !ECMA_COMPAT

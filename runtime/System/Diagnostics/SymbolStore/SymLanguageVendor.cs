@@ -21,20 +21,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#if !ECMA_COMPAT
+
 using System;
 
 namespace System.Diagnostics.SymbolStore
 {
 	public class SymLanguageVendor
 	{
-		[TODO]
-		public SymLanguageVendor()
-		{
-			 throw new NotImplementedException(".ctor");
-		}
-
-		[TODO]
-		public static readonly Guid Microsoft;
+		public static readonly Guid Microsoft
+			= new Guid("994b45c4-e6e9-11d2-903f-00c04fa302a1");
 
 	}
 }//namespace
+
+#endif // !ECMA_COMPAT

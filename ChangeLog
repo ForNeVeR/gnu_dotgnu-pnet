@@ -47,6 +47,10 @@
 	of checkboxes; fix some drawing/logic bugs in "CheckBox" and
 	"ButtonBase".
 
+	* System.Windows.Forms/CheckBox.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs:
+	draw the "indeterminate" state of a three-state checkbox properly.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

@@ -1007,6 +1007,12 @@ internal class DefaultThemePainter : IThemePainter
 					graphics.FillRectangle
 						(SystemBrushes.Control, x, y, width, height);
 				}
+				else if((state & (ButtonState)0x10000) != 0)
+				{
+					// Checkbox is in the indeterminate state.
+					graphics.FillRectangle
+						(SystemBrushes.ControlLightLight, x, y, width, height);
+				}
 				else
 				{
 					graphics.FillRectangle
@@ -1019,6 +1025,11 @@ internal class DefaultThemePainter : IThemePainter
 					Color color;
 					if((state & ButtonState.Inactive) != 0)
 					{
+						color = SystemColors.ControlDark;
+					}
+					else if((state & (ButtonState)0x10000) != 0)
+					{
+						// Checkbox is in the indeterminate state.
 						color = SystemColors.ControlDark;
 					}
 					else

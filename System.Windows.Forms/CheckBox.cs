@@ -111,10 +111,19 @@ public class CheckBox : ButtonBase
 						checkY = 0;
 						break;
 				}
-				ButtonState checkState = ButtonState.Normal;
-				if (state == CheckState.Checked == true)
+				ButtonState checkState;
+				if(state == CheckState.Unchecked)
+				{
+					checkState = ButtonState.Normal;
+				}
+				else if(state == CheckState.Checked)
 				{
 					checkState = ButtonState.Checked;
+				}
+				else if(state == CheckState.Indeterminate)
+				{
+					// Special flag for "IThemePainter.DrawCheckBox".
+					checkState = ButtonState.Checked | (ButtonState)0x10000;
 				}
 				if(pressed && entered)
 				{

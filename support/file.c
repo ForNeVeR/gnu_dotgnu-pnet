@@ -64,7 +64,7 @@ int ILFileExists(const char *filename, char **newExePath)
 		*newExePath = 0;
 	}
 
-#ifdef __CYGWIN__
+#ifdef IL_WIN32_PLATFORM
 	/* If we are on Windows, then check for ".exe" first */
 	if(newExePath)
 	{

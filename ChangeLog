@@ -42,6 +42,9 @@
 	* engine/ilrun.c: automatically append ".exe" to the name
 	of the IL application if it was omitted.
 
+	* support/file.c (ILFileExists): perform the ".exe" handling
+	on both cygwin and mingw32.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

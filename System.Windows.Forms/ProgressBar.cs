@@ -182,5 +182,11 @@ namespace System.Windows.Forms
 
 	 		}
 
+		protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
+			{
+				base.SetBoundsCore (x, y, width, height, specified);
+				using (Graphics g = CreateGraphics())
+					Draw(g);
+			}
 	}
 }//namespace

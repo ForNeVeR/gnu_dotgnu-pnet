@@ -11,6 +11,8 @@ AC_SUBST(CSHARP_COMPILER_CYGWIN)
 AC_SUBST(CSHARP_PLUGIN)
 AC_SUBST(CSCC_FLAGS)
 AC_SUBST(PNET_PATH)
+AC_SUBST(ILRUN)
+AC_SUBST(ML_PNET_PATH)
 AC_SUBST(MONO_SOURCE_PATH)
 AC_SUBST(DEBUG_FLAG)
 AC_SUBST(CYG_ILGAC)
@@ -23,6 +25,8 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PATH_PROG(CYGPATH, cygpath)
+
+ML_PNET_PATH="`pwd`"
 
 dnl The --with-pnet option can be used to specify the location of
 dnl Portable.NET, so that we know where to get the C# compiler, etc.
@@ -42,6 +46,16 @@ AC_ARG_WITH(pnet,
 [
 	PNET_PATH="`pwd`/../pnet"
 ])
+
+dnl Find the Portable.NET runtime engine.
+AC_PATH_PROG(ILRUN, ilrun,, $PNET_PATH/engine:${prefix}/bin:$PATH)
+if test "$ILRUN" = "" ; then
+	echo '**************************************************************'
+	echo "Portable.NET is required to run the test suite."
+	echo "Use the --with-pnet option to specify Portable.NET's location."
+	echo '**************************************************************'
+	exit 1
+fi
 
 dnl The --with-pnetlib option can be used to specify the location of
 dnl the Portable.NET C# library, so that we know where to get the
@@ -290,6 +304,7 @@ nunit20/framework/Makefile
 nunit20/core/Makefile
 nunit20/util/Makefile
 nunit20/nunit-console/Makefile
+tools/run_test.sh
 tools/Makefile
 tools/SqlSharp/Makefile
 jay/Makefile

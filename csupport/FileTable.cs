@@ -150,6 +150,19 @@ public sealed class FileTable
 				}
 				return -1;
 			}
+	private static int NewFD(int after)
+			{
+				StreamRef[] table = fds;
+				int fd;
+				for(fd = after; fd >= 0 && fd < MaxDescriptors; ++fd)
+				{
+					if(table[fd] == null)
+					{
+						return fd;
+					}
+				}
+				return -1;
+			}
 
 	// Allocate a new file descriptor, with no stream association.
 	public static int AllocFD()
@@ -189,6 +202,27 @@ public sealed class FileTable
 						return -2;
 					}
 					int newFd = NewFD();
+					if(newFd == -1)
+					{
+						return -1;
+					}
+					StreamRef sref = fds[fd];
+					++(sref.count);
+					fds[newFd] = sref;
+					return newFd;
+				}
+			}
+
+	// Duplicate a file descriptor, starting at a particular position.
+	public static int DupAfter(int fd, int after)
+			{
+				lock(typeof(FileTable))
+				{
+					if(fd < 0 || fd >= MaxDescriptors || fds[fd] == null)
+					{
+						return -2;
+					}
+					int newFd = NewFD(after);
 					if(newFd == -1)
 					{
 						return -1;

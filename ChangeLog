@@ -4,6 +4,8 @@
 	* csupport/Crt0.cs: call "__syscall_wrap_stdfds" in libc to
 	apply additional wrapping; add the "InvokeFini()" method.
 
+	* csupport/FileTable.cs: add the "FileTable.DupAfter" method.
+
 2004-03-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/TabControl.cs: reimplement the

@@ -935,7 +935,10 @@ ILNode_GenValue(ILNode_VarArgList)
 ILNode_GenValue(ILNode_VarArgExpand)
 {
 	/* Expand to the list of arguments */
-	ILNode_GenValue(node->expr, info);
+	if(node->expr)
+	{
+		ILNode_GenValue(node->expr, info);
+	}
 	return ILMachineType_Void;
 }
 

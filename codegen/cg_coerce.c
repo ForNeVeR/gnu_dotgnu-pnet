@@ -328,13 +328,6 @@ static int GetBoxingConvertRules(ILGenInfo *info, ILType *fromType,
 }
 
 /*
- * Determine if a type is pointer-based.
- */
-#define	ILType_IsPointer(type)	\
-			((type) != 0 && ILType_IsComplex((type)) && \
-			 ILType_Kind((type)) == IL_TYPE_COMPLEX_PTR)
-
-/*
  * Get the rules to be used inside of an unsafe block.
  */
 static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,

@@ -109,14 +109,14 @@ ILNode_GetType(ILNode_SizeOf)
  */
 ILNode_GenValue(ILNode_SizeOf)
 {
-	if(ILType_IsValueType(node->type))
+	if(node->size != 0)
 	{
-		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
-						ILType_ToValueType(node->type));
+		ILGenInt32(info, node->size);
 	}
 	else
 	{
-		ILGenInt32(info, node->size);
+		ILClass *classInfo = ILTypeToClass(info, node->type);
+		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF, classInfo);
 	}
 	ILGenAdjust(info, 1);
 	return ILMachineType_Int32;
@@ -127,7 +127,7 @@ ILNode_GenValue(ILNode_SizeOf)
  */
 ILNode_EvalConst(ILNode_SizeOf)
 {
-	if(ILType_IsPrimitive(node->type))
+	if(node->size != 0)
 	{
 		value->valueType = ILMachineType_Int32;
 		value->un.i4Value = node->size;
@@ -185,7 +185,8 @@ ILNode_SemAnalysis(ILNode_SizeOf)
 		node->type = ILType_Int32;
 	}
 	else if(!ILType_IsPrimitive(CSSemGetType(value)) &&
-			!ILType_IsValueType(CSSemGetType(value)))
+			!ILType_IsValueType(CSSemGetType(value)) &&
+			!ILType_IsPointer(CSSemGetType(value)))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "cannot take the size of a managed type");
@@ -202,6 +203,11 @@ ILNode_SemAnalysis(ILNode_SizeOf)
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`void' type is not allowed in this context");
 		node->type = ILType_Int32;
+	}
+	else if(ILType_IsPointer(CSSemGetType(value)))
+	{
+		/* Pointers always have the same size as a native integer */
+		node->type = ILType_Int;
 	}
 	else
 	{

@@ -234,6 +234,13 @@ struct _tagILType
 				  ((type)->kind__ & 0xFF) == IL_TYPE_COMPLEX_SENTINEL))
 
 /*
+ * Determine if a type is a pointer.
+ */
+#define	ILType_IsPointer(type)	\
+				((type) != 0 && ILType_IsComplex((type)) && \
+				 ILType_Kind((type)) == IL_TYPE_COMPLEX_PTR)
+
+/*
  * Get the kind that is associated with a complex type.
  */
 #define	ILType_Kind(type)		((type)->kind__ & 0xFF)

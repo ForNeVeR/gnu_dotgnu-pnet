@@ -25,6 +25,9 @@
 	* codegen/cg_coerce.c, codegen/cg_optable.c: add explicit conversions
 	from numeric to pointer types.
 
+	* codegen/cg_coerce.c, cscc/csharp/cs_misc.tc, include/il_types.h:
+	correctly handle pointer types with the "sizeof" operator.
+
 2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,

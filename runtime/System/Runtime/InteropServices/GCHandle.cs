@@ -34,10 +34,6 @@ public struct GCHandle
 	private GCHandle(Object value, GCHandleType type)
 			{
 				handle = GCAlloc(value, type);
-				if(type == GCHandleType.Pinned)
-				{
-					handle |= 1;
-				}
 			}
 
 	// Private constructor that boxes up a handle value.
@@ -49,14 +45,14 @@ public struct GCHandle
 	// Get the address of a pinned object that is referred to by this handle.
 	public IntPtr AddrOfPinnedObject()
 			{
-				if((handle & 1) != 0)
+				if((handle & 3) == 3)
 				{
 					// The handle is valid and pinned.
-					return GCAddrOfPinnedObject(handle & ~1);
+					return GCAddrOfPinnedObject(handle);
 				}
 				else if(handle != 0)
 				{
-					// The handle has not been pinned.
+					// The handle is not pinned.
 					throw new InvalidOperationException
 						(_("Invalid_GCHandleNotPinned"));
 				}
@@ -91,7 +87,7 @@ public struct GCHandle
 			{
 				if(handle != 0)
 				{
-					GCFree(handle & ~1);
+					GCFree(handle);
 					handle = 0;
 				}
 				else
@@ -144,7 +140,7 @@ public struct GCHandle
 				{
 					if(handle != 0)
 					{
-						return GCGetTarget(handle & ~1);
+						return GCGetTarget(handle);
 					}
 					else
 					{
@@ -156,7 +152,7 @@ public struct GCHandle
 				{
 					if(handle != 0)
 					{
-						GCSetTarget(handle & ~1, value, (handle & 1) != 0);
+						GCSetTarget(handle, value);
 					}
 					else
 					{
@@ -171,8 +167,13 @@ public struct GCHandle
 	extern private static Object GCGetTarget(int handle);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void GCSetTarget(int handle, Object value,
-										   bool isPinned);
+	extern private static void GCSetTarget(int handle, Object value);
+
+	// Get the type of this GC handle.
+	internal GCHandleType GetHandleType()
+			{
+				return (GCHandleType)(handle & 3);
+			}
 
 }; // struct GCHandle
 

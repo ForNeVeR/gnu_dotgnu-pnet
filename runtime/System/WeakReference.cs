@@ -23,26 +23,37 @@ namespace System
 
 #if !ECMA_COMPAT
 
+using System.Runtime.InteropServices;
+
 public class WeakReference
 {
 
 	// Internal state.
-	private Object obj;
-	private bool trackResurrection;
+	private GCHandle handle;
 
 	// Constructors.
 	public WeakReference(Object obj) : this(obj, false) {}
 	public WeakReference(Object obj, bool trackResurrection)
 			{
-				// TODO: the current semantics result in "strong" references.
-				this.obj = obj;
-				this.trackResurrection = trackResurrection;
+				if(obj == null)
+				{
+					throw new ArgumentNullException("obj");
+				}
+				if(trackResurrection)
+				{
+					this.handle = GCHandle.Alloc
+						(obj, GCHandleType.WeakTrackResurrection);
+				}
+				else
+				{
+					this.handle = GCHandle.Alloc(obj, GCHandleType.Weak);
+				}
 			}
 
 	// Destructor.
 	~WeakReference()
 			{
-				// TODO
+				handle.Free();
 			}
 
 	// Determine if the referenced object is still alive.
@@ -50,8 +61,7 @@ public class WeakReference
 			{
 				get
 				{
-					// TODO
-					return (obj != null);
+					return (handle.Target != null);
 				}
 			}
 
@@ -60,13 +70,11 @@ public class WeakReference
 			{
 				get
 				{
-					// TODO
-					return obj;
+					return handle.Target;
 				}
 				set
 				{
-					// TODO
-					obj = value;
+					handle.Target = value;
 				}
 			}
 
@@ -75,8 +83,8 @@ public class WeakReference
 			{
 				get
 				{
-					// TODO
-					return trackResurrection;
+					return (handle.GetHandleType() ==
+								GCHandleType.WeakTrackResurrection);
 				}
 			}
 

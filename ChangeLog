@@ -5,6 +5,11 @@
 	runtime/System/WeakReference.cs: implement non-ECMA garbage collection
 	functionality.
 
+	* runtime/System/WeakReference.cs,
+	runtime/System/Runtime/InteropServices/GCHandle.cs:
+	implement weak references in terms of GC handles; fine-tune the
+	internalcall interface for GC handles.
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/NotImplementedException.cs: add the exception

@@ -33,6 +33,10 @@
 
 	* support/cmdline.c: expand wildcards on the command-line.
 
+	* support/cmdline.c: map "*.*" to "match everything", even filenames
+	that don't include a ".", to be consistent with standard Windows
+	practice.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

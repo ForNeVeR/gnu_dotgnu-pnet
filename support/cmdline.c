@@ -430,58 +430,69 @@ static void ExpandWildcards(int *argc, char ***argv, int *maxArgc, char *value)
 	{
 		OutOfMemory();
 	}
-	posn = 0;
-	regex[posn++] = '^';
-	first = 1;
-	while(*baseName != '\0')
+	if(!strcmp(baseName, "*.*"))
 	{
-		ch = *baseName++;
-		if(ch == '?')
-		{
-			if(first)
-			{
-				/* Don't match '.' at the start of the name */
-				regex[posn++] = '[';
-				regex[posn++] = '^';
-				regex[posn++] = '.';
-				regex[posn++] = ']';
-			}
-			else
-			{
-				regex[posn++] = '.';
-			}
-		}
-		else if(ch == '*')
-		{
-			if(first)
-			{
-				/* Don't match '.' at the start of the name */
-				regex[posn++] = '[';
-				regex[posn++] = '^';
-				regex[posn++] = '.';
-				regex[posn++] = ']';
-				regex[posn++] = '*';
-			}
-			else
-			{
-				regex[posn++] = '.';
-				regex[posn++] = '*';
-			}
-		}
-		else if(ch == '.' || ch == '^' || ch == '$' || ch == '[' ||
-				ch == ']' || ch == '\\' || ch == '(' || ch == ')')
-		{
-			regex[posn++] = '\\';
-			regex[posn++] = (char)ch;
-		}
-		else
-		{
-			regex[posn++] = (char)ch;
-		}
-		first = 0;
+		/* Special case: map "*.*" to "match everything", even
+		   those filenames that don't include a ".", to be
+		   consistent with standard Windows practice */
+		strcpy(regex, "^[^.].*$");
 	}
-	regex[posn++] = '$';
-	regex[posn] = '\0';
+	else
+	{
+		posn = 0;
+		regex[posn++] = '^';
+		first = 1;
+		while(*baseName != '\0')
+		{
+			ch = *baseName++;
+			if(ch == '?')
+			{
+				if(first)
+				{
+					/* Don't match '.' at the start of the name */
+					regex[posn++] = '[';
+					regex[posn++] = '^';
+					regex[posn++] = '.';
+					regex[posn++] = ']';
+				}
+				else
+				{
+					regex[posn++] = '.';
+				}
+			}
+			else if(ch == '*')
+			{
+				if(first)
+				{
+					/* Don't match '.' at the start of the name */
+					regex[posn++] = '[';
+					regex[posn++] = '^';
+					regex[posn++] = '.';
+					regex[posn++] = ']';
+					regex[posn++] = '.';
+					regex[posn++] = '*';
+				}
+				else
+				{
+					regex[posn++] = '.';
+					regex[posn++] = '*';
+				}
+			}
+			else if(ch == '.' || ch == '^' || ch == '$' || ch == '[' ||
+					ch == ']' || ch == '\\' || ch == '(' || ch == ')')
+			{
+				regex[posn++] = '\\';
+				regex[posn++] = (char)ch;
+			}
+			else
+			{
+				regex[posn++] = (char)ch;
+			}
+			first = 0;
+		}
+		regex[posn++] = '$';
+		regex[posn] = '\0';
+	}
 	if(IL_regcomp(&state, regex, REG_EXTENDED | REG_NOSUB) != 0)
 	{
 		fprintf(stderr, "Invalid regular expression: %s\n", regex);

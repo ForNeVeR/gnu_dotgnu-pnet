@@ -8,6 +8,8 @@
 
 	* NEWS, configure.in: update version for the "0.1.6" release.
 
+	* configure.in: update working version to "0.1.7".
+
 2002-03-25  Stephen Compall  <rushing@sigecom.net>
 
 	* System/UriBuilder.cs: Fixed compiler error as reported by

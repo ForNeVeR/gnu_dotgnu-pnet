@@ -250,13 +250,13 @@ public sealed class CryptoAPITransform : ICryptoTransform, IDisposable
 			{
 				get
 				{
-					if(mode == CipherMode.CFB || mode == CipherMode.OFB)
+					if(mode == CipherMode.ECB || mode == CipherMode.CBC)
 					{
-						return 1;
+						return blockSize;
 					}
 					else
 					{
-						return blockSize;
+						return 1;
 					}
 				}
 			}
@@ -266,13 +266,13 @@ public sealed class CryptoAPITransform : ICryptoTransform, IDisposable
 			{
 				get
 				{
-					if(mode == CipherMode.CFB || mode == CipherMode.OFB)
+					if(mode == CipherMode.ECB || mode == CipherMode.CBC)
 					{
-						return 1;
+						return blockSize;
 					}
 					else
 					{
-						return blockSize;
+						return 1;
 					}
 				}
 			}

@@ -325,15 +325,26 @@ public class TestDES : CryptoTestCase
 				SymmetricPropertyTest(DES.Create(), 64, 64);
 			}
 
-#if false
 	// Run mode tests.
 	public void TestDESECB()
 			{
-				DES alg = DES.Create();
-				RunModeTest(alg, CipherMode.ECB, PaddingMode.None);
-				RunModeTest(alg, CipherMode.ECB, PaddingMode.PKCS7);
-				RunModeTest(alg, CipherMode.ECB, PaddingMode.Zeros);
+				RunModeTest(DES.Create(), CipherMode.ECB);
 			}
-#endif
+	public void TestDESCBC()
+			{
+				RunModeTest(DES.Create(), CipherMode.CBC);
+			}
+	public void TestDESOFB()
+			{
+				RunModeTest(DES.Create(), CipherMode.OFB);
+			}
+	public void TestDESCFB()
+			{
+				RunModeTest(DES.Create(), CipherMode.CFB);
+			}
+	public void TestDESCTS()
+			{
+				RunModeTest(DES.Create(), CipherMode.CTS);
+			}
 
 }; // TestDES

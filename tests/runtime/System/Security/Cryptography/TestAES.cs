@@ -117,4 +117,26 @@ public class TestAES : CryptoTestCase
 				SymmetricPropertyTest(Rijndael.Create(), 128, 128);
 			}
 
+	// Run mode tests.
+	public void TestAESECB()
+			{
+				RunModeTest(Rijndael.Create(), CipherMode.ECB);
+			}
+	public void TestAESCBC()
+			{
+				RunModeTest(Rijndael.Create(), CipherMode.CBC);
+			}
+	public void TestAESOFB()
+			{
+				RunModeTest(Rijndael.Create(), CipherMode.OFB);
+			}
+	public void TestAESCFB()
+			{
+				RunModeTest(Rijndael.Create(), CipherMode.CFB);
+			}
+	public void TestAESCTS()
+			{
+				RunModeTest(Rijndael.Create(), CipherMode.CTS);
+			}
+
 }; // TestAES

@@ -76,4 +76,26 @@ public class TestRC2 : CryptoTestCase
 				SymmetricPropertyTest(RC2.Create(), 128, 64);
 			}
 
+	// Run mode tests.
+	public void TestRC2ECB()
+			{
+				RunModeTest(RC2.Create(), CipherMode.ECB);
+			}
+	public void TestRC2CBC()
+			{
+				RunModeTest(RC2.Create(), CipherMode.CBC);
+			}
+	public void TestRC2OFB()
+			{
+				RunModeTest(RC2.Create(), CipherMode.OFB);
+			}
+	public void TestRC2CFB()
+			{
+				RunModeTest(RC2.Create(), CipherMode.CFB);
+			}
+	public void TestRC2CTS()
+			{
+				RunModeTest(RC2.Create(), CipherMode.CTS);
+			}
+
 }; // TestRC2

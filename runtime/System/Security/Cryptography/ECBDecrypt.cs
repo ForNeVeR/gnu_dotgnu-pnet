@@ -126,12 +126,12 @@ internal sealed class ECBDecrypt
 					if(transform.padding == PaddingMode.PKCS7)
 					{
 						// Use PKCS #7 padding.
-						pad = tempBuffer[2 * blockSize - 1];
+						pad = tempBuffer[blockSize - 1];
 						if(pad == 0 || pad > blockSize)
 						{
 							pad = blockSize;
 						}
-						Array.Copy(tempBuffer, blockSize, outputBuffer,
+						Array.Copy(tempBuffer, 0, outputBuffer,
 								   offset, blockSize - pad);
 						offset += blockSize - pad;
 						pad = 0;
@@ -140,19 +140,18 @@ internal sealed class ECBDecrypt
 					{
 						// Strip zeroes from the end of the block.
 						index = blockSize;
-						while(index > 0 &&
-							  tempBuffer[index - 1 + blockSize] == 0)
+						while(index > 0 && tempBuffer[index - 1] == 0)
 						{
 							--index;
 						}
-						Array.Copy(tempBuffer, blockSize, outputBuffer,
+						Array.Copy(tempBuffer, 0, outputBuffer,
 								   offset, index);
 						offset += index;
 					}
 					else
 					{
 						// No padding, so return the whole block.
-						Array.Copy(tempBuffer, blockSize, outputBuffer,
+						Array.Copy(tempBuffer, 0, outputBuffer,
 								   offset, blockSize);
 						offset += blockSize;
 					}

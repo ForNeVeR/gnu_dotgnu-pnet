@@ -295,4 +295,26 @@ public class TestTripleDES : CryptoTestCase
 					 0xE0, 0xE0, 0xE0, 0xE0,  0xF1, 0xF1, 0xF1, 0xF1});
 			}
 
+	// Run mode tests.
+	public void TestTripleDESECB()
+			{
+				RunModeTest(TripleDES.Create(), CipherMode.ECB);
+			}
+	public void TestTripleDESCBC()
+			{
+				RunModeTest(TripleDES.Create(), CipherMode.CBC);
+			}
+	public void TestTripleDESOFB()
+			{
+				RunModeTest(TripleDES.Create(), CipherMode.OFB);
+			}
+	public void TestTripleDESCFB()
+			{
+				RunModeTest(TripleDES.Create(), CipherMode.CFB);
+			}
+	public void TestTripleDESCTS()
+			{
+				RunModeTest(TripleDES.Create(), CipherMode.CTS);
+			}
+
 }; // TestTripleDES

@@ -55,6 +55,9 @@ The C# compiler.  @xref{C# Compiler}, for more information.
 @item csdoc
 The C# documentation conversion utility.  @xref{Documentation}, for
 more information.
+@item csdoc2hier
+Used to convert C# XML documentation into a tree hierarhcy diagram.
+@xref{csdoc2hier invocation}, for more information.
 @item csdoc2html
 Used to convert C# XML documentation into HTML.  @xref{csdoc2html invocation},
 for more information.
@@ -1394,9 +1397,13 @@ output is an XML file.
 This XML file is then fed into another program to produce the
 desired output format.  One such program, @code{csdoc2html},
 converts the XML file into a collection of HTML files which
-can be viewed using a standard Web browser.  Another such program,
-@code{csdoc2texi}, converts the XML file into texinfo, from
-which online or printed manuals can be derived.
+can be viewed using a standard Web browser.
+
+Another such program, @code{csdoc2texi}, converts the XML file
+into texinfo, from which online or printed manuals can be derived.
+
+A third program, @code{csdoc2hier}, converts the XML file into
+a tree hierarchy diagram of all types in the input.
 
 @menu
 * Documentation Sections::  XML tags used for documentation sections
@@ -1405,6 +1412,7 @@ which online or printed manuals can be derived.
 * csdoc invocation::        Invoking csdoc
 * csdoc2html invocation::   Invoking csdoc2html
 * csdoc2texi invocation::   Invoking csdoc2texi
+* csdoc2hier invocation::   Invoking csdoc2hier
 @end menu
 
 @c -----------------------------------------------------------------------
@@ -1791,7 +1799,7 @@ source file.
 
 @c -----------------------------------------------------------------------
 
-@node csdoc2texi invocation, Assembler, csdoc2html invocation, Documentation
+@node csdoc2texi invocation, csdoc2hier invocation, csdoc2html invocation, Documentation
 @section Invoking csdoc2texi
 @cindex csdoc2texi invocation
 
@@ -1940,7 +1948,60 @@ can be viewed or printed with the usual PDF tools.
 
 @c -----------------------------------------------------------------------
 
-@node Assembler, ilasm invocation, csdoc2texi invocation, Top
+@node csdoc2hier invocation, Assembler, csdoc2texi invocation, Documentation
+@section Invoking csdoc2hier
+@cindex csdoc2hier invocation
+
+The general form of the csdoc2hier syntax is as follows:
+
+@example
+csdoc2hier [OPTIONS] INPUT.xml ...
+@end example
+
+Csdoc2hier reads the supplied XML input files, and converts them into
+a textual diagram of the type hierarchy.
+
+Specifying multiple input files is exactly the same as specifying
+one input file which is the concatenation of all of the files.
+Only one output file is created.  Csdoc2hier must be invoked multiple
+times to convert multiple input files into multiple output files.
+
+@table @code
+@cindex -o option (csdoc2hier)
+@cindex --output option (csdoc2hier)
+@item -o FILE
+@itemx --output FILE
+Specify the name of the file to write the output to.  The
+default is standard output.  If @code{FILE} is @code{-}, then the output
+is also written to standard output.
+
+@cindex -fby-library option (csdoc2hier)
+@item -fby-library
+Organise the output by library.
+
+@cindex --help option (csdoc2hier)
+@item --help
+Print a usage message for the csdoc2hier program.
+
+@cindex -v option (csdoc2hier)
+@cindex --version option (csdoc2hier)
+@item -v
+@itemx --version
+Print the version of the csdoc2hier program.
+
+@item --
+Marks the end of the command-line options, and the beginning of
+the input filenames.  You may need to use this if your filename
+begins with @code{-}.  e.g. @code{csdoc2hier -- -input.xml}.  This is
+not needed if the input is stdin: @code{csdoc2hier -} is perfectly valid.
+@end table
+
+The exit status is 1 if an error occurred while processing the input.
+Otherwise the exit status is 0.
+
+@c -----------------------------------------------------------------------
+
+@node Assembler, ilasm invocation, csdoc2hier invocation, Top
 @chapter Intermediate language assembler
 @cindex Assembler
 @cindex ilasm

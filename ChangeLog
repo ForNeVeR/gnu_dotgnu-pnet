@@ -7,6 +7,10 @@
 	* engine/lib_type.c: begin implementing "ClrType.GetInterface" and
 	"ClrType.GetInterfaces".
 
+	* csdoc/Makefile.am, csdoc/csdoc2hier.1, doc/pnettools.texi:
+	add the "csdoc2hier" program to the system, which dumps a
+	tree hierarchy of the classes in an XML documentation file.
+
 2002-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/heap.c (InitializeClass): throw "TypeInitializationException"

@@ -1,4 +1,9 @@
 
+2003-05-08  Gopal.V <gopalv82@symonds.net>
+	
+	* csharp/class/type2.cs , csharp/class/type2.il,  csharp/class/type2.jl:
+	Tests for type resolution conflicts with local variables.
+
 2003-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/decl/type1.3il, c/decl/type1.c, c/decl/type1.il:

@@ -60,7 +60,7 @@ internal sealed class CultureNameTable
 	public static void PopulateNameTable()
 	{
 		Add(new CultureName
-			("iv",    0x007F, "iv", "IVL", "IVL",
+			("",      0x007F, "iv", "IVL", "IVL",
 			 "Invariant Language (Invariant Country)",
 			 "Invariant Language (Invariant Country)"));
 		Add(new CultureName

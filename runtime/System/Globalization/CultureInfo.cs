@@ -81,7 +81,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					cultureID   = 0x007F;
 					cultureName =
 						new CultureName
-							("iv",    0x007F, "iv", "IVL", "IVL",
+							("", 0x007F, "iv", "IVL", "IVL",
 							 "Invariant Language (Invariant Country)",
 							 "Invariant Language (Invariant Country)");
 				}

@@ -1,4 +1,10 @@
 
+2003-02-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Globalization/CultureInfo.cs,
+	runtime/System/Private/CultureNameTable.cs: use "" for the
+	invariant culture name instead of "iv" (Bug #2493).
+
 2003-02-07  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Diagnostics/SymbolStore/ISymbolBinder.cs,

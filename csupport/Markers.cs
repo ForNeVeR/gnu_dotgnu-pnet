@@ -103,11 +103,20 @@ public sealed class CNameAttribute : Attribute
 }
 
 // An attribute class that is used to export a C# type's contents
-// into the global scope for direct access by C functions.
-[AttributeUsage(AttributeTargets.Method)]
+// into the global scope for direct access by C functions.  This
+// is intended for use by user code.
+[AttributeUsage(AttributeTargets.Class)]
 public sealed class GlobalScopeAttribute : Attribute
 {
 	public GlobalScopeAttribute() {}
+}
+
+// An attribute class that is used to mark a type as a module scope.
+// This should only be used by the linker, never by user code.
+[AttributeUsage(AttributeTargets.Class)]
+public sealed class ModuleScopeAttribute : Attribute
+{
+	public ModuleScopeAttribute() {}
 }
 
 } // namespace OpenSystem.C

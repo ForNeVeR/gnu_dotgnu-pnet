@@ -1,3 +1,10 @@
+
+2004-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csupport/Complex.cs, csupport/LongDouble.cs, csupport/Markers.cs:
+	remove references to "__long_double" as they aren't needed any
+	more; add "ModuleScopeAttribute" for use by the linker.
+
 2004-02-18  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlDocument.cs: fix document loading (fixes bug #7536).

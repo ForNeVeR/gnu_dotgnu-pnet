@@ -6,6 +6,9 @@
 	cscc/csharp/cs_grammar.y, cscc/csharp/cs_misc.tc: semantic
 	analysis and code generation for array "new" operator.
 
+	* samples/codepage.cs: add command-line options to assist with
+	dumping the contents of code pages.
+
 2002-04-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_thread.h, support/no_defs.h, support/pt_defs.c,

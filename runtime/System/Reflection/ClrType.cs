@@ -22,6 +22,7 @@ namespace System.Reflection
 {
 
 using System;
+using System.Collections;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
@@ -232,7 +233,165 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 										 BindingFlags bindingAttr,
 										 Type arrayType,
 										 String name);
+	
+	
+	[Flags]
+	private enum MemberComparison
+	{
+		None = 0x01,
+		Candidate = 0x02,
+		Override = 0x04,
+	}
+	
+	/* 
+	 * Check if m1 overrides m2
+	 */
+	private MemberComparison CompareMembers(MemberInfo m1, MemberInfo m2)
+			{
+				if(m1.MemberType != m2.MemberType || m1.Name!=m2.Name)
+				{	
+					return MemberComparison.None;
+				}
+				if(m1.MemberType==MemberTypes.Field)
+				{
+					if(((FieldInfo)m1).Attributes==((FieldInfo)m2).Attributes)
+					{
+						goto overrideCheck;
+					}
+				}
+				MethodBase method1, method2;
+				switch(m1.MemberType)
+				{
+					case MemberTypes.Constructor:
+					{
+						method1=(MethodBase)m1;
+						method2=(MethodBase)m2;
+					}
+					break;
 
+					case MemberTypes.Method:
+					{
+						method1=(MethodBase)m1;
+						method2=(MethodBase)m2;
+					}
+					break;
+					
+					case MemberTypes.Property:
+					{
+						if(((PropertyInfo)m1).GetAccessors().Length==0 &&
+						   ((PropertyInfo)m2).GetAccessors().Length==0)
+						{
+							if(((PropertyInfo)m1).Attributes == 
+									((PropertyInfo)m2).Attributes)
+							{
+								goto overrideCheck;
+							}
+						}
+
+						method1=((PropertyInfo)m1).GetGetMethod() != null ?
+									((PropertyInfo)m1).GetGetMethod() :
+									((PropertyInfo)m1).GetSetMethod() ;
+						
+						method2=((PropertyInfo)m2).GetGetMethod() != null ?
+									((PropertyInfo)m2).GetGetMethod() :
+									((PropertyInfo)m2).GetSetMethod() ;
+					}
+					break;
+					
+					case MemberTypes.Event:
+					{
+						method1=((EventInfo)m1).GetAddMethod() != null ?
+									((EventInfo)m1).GetAddMethod() :
+									((EventInfo)m1).GetRemoveMethod() ;
+						
+						method2=((EventInfo)m2).GetAddMethod() != null ?
+									((EventInfo)m2).GetAddMethod() :
+									((EventInfo)m2).GetRemoveMethod() ;
+					}
+					break;
+				}
+				if((method1.Attributes | MethodAttributes.NewSlot) 
+							!= (method1.Attributes | MethodAttributes.NewSlot))
+				{
+					return MemberComparison.None;
+				}
+
+				ParameterInfo [] pinfo1 = method1.GetParameters();
+				ParameterInfo [] pinfo2 = method2.GetParameters();
+				if(pinfo1.Length != pinfo2.Length)
+				{
+					return MemberComparison.None;
+				}
+				for(int i=0;i<pinfo1.Length;i++)
+				{
+					if(pinfo1[i].Attributes!=pinfo2[i].Attributes ||
+						pinfo1[i].ParameterType != pinfo2[i].ParameterType)
+					{
+						return MemberComparison.None;
+					}
+				}
+
+				if(method1 is MethodInfo)
+				{
+					if(((MethodInfo)method2).ReturnType.Equals(
+								((MethodInfo)method1).ReturnType))
+					{
+						return MemberComparison.None;
+					}
+				}
+			overrideCheck:
+				if(m1.DeclaringType.IsSubclassOf(m2.DeclaringType))
+				{
+					return MemberComparison.Candidate 
+							| MemberComparison.Override;
+				}
+				return MemberComparison.Candidate;
+			}
+
+	/// <summary>
+	/// This function sorts and removes overrides from an array of
+	/// MemberInfo[]
+	/// </summary>
+	private Object TrimMembers(Object memberArray, Type type)
+			{
+				MemberInfo[] members=(MemberInfo[])(memberArray);
+				ArrayList list=new ArrayList(members.Length/2);
+				int best;
+
+				for(int i=0;i<members.Length-1;i++)
+				{
+					best=i;
+					if(members[best]==null)
+					{
+						continue;
+					}
+					for(int j=i+1;j<members.Length;j++)
+					{
+						if(members[j]==null)
+						{
+							continue;
+						}
+
+						MemberComparison cmp=CompareMembers(members[j], 
+															members[best]);
+						if((cmp & MemberComparison.Candidate)!= 0)
+						{
+							if((cmp & MemberComparison.Override)!= 0)
+							{
+								members[best]=null;
+								best=j;
+							}
+							else
+							{
+								members[j]=null;
+							}
+						}
+					}
+					list.Add(members[best]);
+				}
+				return list.ToArray(type);
+			}
+	
 	// Implementation of "GetConstructor" provided by subclasses.
 	protected override ConstructorInfo
 					GetConstructorImpl(BindingFlags bindingAttr,
@@ -261,10 +420,11 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					bindingAttr = BindingFlags.Public |
 								  BindingFlags.Instance;
 				}
-				return (ConstructorInfo[])GetMembersImpl
+				return (ConstructorInfo[])TrimMembers(GetMembersImpl
 							(MemberTypes.Constructor,
 							 bindingAttr | BindingFlags.DeclaredOnly,
-							 typeof(ConstructorInfo[]), null);
+							 typeof(ConstructorInfo[]), null),
+							 typeof(ConstructorInfo));
 			}
 
 	// Get an event from this type.
@@ -279,9 +439,10 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all events from this type.
 	public override EventInfo[] GetEvents(BindingFlags bindingAttr)
 			{
-				return (EventInfo[])GetMembersImpl
+				return (EventInfo[])TrimMembers(GetMembersImpl
 							(MemberTypes.Event, bindingAttr,
-							 typeof(EventInfo[]), null);
+							 typeof(EventInfo[]), null),
+							 typeof(EventInfo));
 			}
 
 	// Get a field from this type.
@@ -296,9 +457,10 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all fields from this type.
 	public override FieldInfo[] GetFields(BindingFlags bindingAttr)
 			{
-				return (FieldInfo[])GetMembersImpl
-							(MemberTypes.Field, bindingAttr,
-							 typeof(FieldInfo[]), null);
+				return (FieldInfo[]) TrimMembers(GetMembersImpl
+										(MemberTypes.Field, bindingAttr,
+										 typeof(FieldInfo[]), null), 
+										 typeof(FieldInfo));
 			}
 
 	// Get a member from this type.
@@ -314,16 +476,20 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				{
 					throw new ArgumentNullException("name");
 				}
-				return (MemberInfo[])GetMembersImpl
-					(type, bindingAttr, typeof(MemberInfo[]), name);
+				return (MemberInfo[]) TrimMembers(GetMembersImpl
+										(type, bindingAttr, 
+										typeof(MemberInfo[]), name),
+										typeof(MemberInfo));
 			}
 
 	// Get all members from this type.
 	public override MemberInfo[] GetMembers(BindingFlags bindingAttr)
 			{
-				return (MemberInfo[])GetMembersImpl
-							(MemberTypes.All, bindingAttr,
-							 typeof(MemberInfo[]), null);
+				return (MemberInfo[]) TrimMembers(GetMembersImpl
+										(MemberTypes.All, 
+										bindingAttr, 
+										typeof(MemberInfo[]), null),
+										typeof(MemberInfo));
 			}
 
 	// Implementation of "GetMethod" provided by subclasses.
@@ -343,9 +509,10 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all methods from this type.
 	public override MethodInfo[] GetMethods(BindingFlags bindingAttr)
 			{
-				return (MethodInfo[])GetMembersImpl
-							(MemberTypes.Method, bindingAttr,
-							 typeof(MethodInfo[]), null);
+				return (MethodInfo[]) TrimMembers(GetMembersImpl
+									(MemberTypes.Method, bindingAttr,
+									 typeof(MethodInfo[]), null), 
+									 typeof(MethodInfo));
 			}
 
 	// Get a nested type from this type.
@@ -381,9 +548,9 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all properties from this type.
 	public override PropertyInfo[] GetProperties(BindingFlags bindingAttr)
 			{
-				return (PropertyInfo[])GetMembersImpl
+				return (PropertyInfo[])TrimMembers(GetMembersImpl
 							(MemberTypes.Property, bindingAttr,
-							 typeof(PropertyInfo[]), null);
+							 typeof(PropertyInfo[]), null),typeof(PropertyInfo));
 			}
 
 	// Implementation of the "HasElementType" property.

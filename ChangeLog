@@ -4,6 +4,9 @@
 	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c:
 	support static fields in "ClrField.GetValue" and "ClrField.SetValue".
 
+	* support/serial.c: work around missing termio symbols under
+	FreeBSD and OpenBSD.
+
 2003-11-13  Miroslaw Dobrzanski-Neumann  <mne@mosaic-ag.com>
 
 	* configure.in: detect cc options such as "-fno-gcse" with a

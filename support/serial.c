@@ -186,6 +186,22 @@ void ILSerialClose(ILSerial *handle)
 	ILFree(handle);
 }
 
+/*
+ * Work around missing symbols on some platforms.
+ */
+#ifndef	IUCLC
+#define	IUCLC	0
+#endif
+#ifndef	OLCUC
+#define	OLCUC	0
+#endif
+#ifndef	OFILL
+#define	OFILL	0
+#endif
+#ifndef	OFDEL
+#define	OFDEL	0
+#endif
+
 void ILSerialModify(ILSerial *handle, ILSerialParameters *parameters)
 {
 	struct termios current;

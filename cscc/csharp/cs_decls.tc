@@ -448,9 +448,12 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		/* The field must be static to have an initial value */
 		if((node->modifiers & IL_META_FIELDDEF_STATIC) == 0)
 		{
+			/* TODO: temporarily commented out for now */
+		/*
 			CCErrorOnLine(yygetfilename(decl->initializer),
 						  yygetlinenum(decl->initializer),
 						  "initializer used on non-static field");
+		*/
 			continue;
 		}
 

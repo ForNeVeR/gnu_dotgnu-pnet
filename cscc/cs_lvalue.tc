@@ -57,8 +57,8 @@ ILNode_SemAnalysis(ILNode_NewScope)
 	info->currentScope = node->scope;
 	StmtSem(node->stmt, info, &(node->stmt));
 	info->currentScope = savedScope;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
 	return value;
 }
 

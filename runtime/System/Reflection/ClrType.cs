@@ -354,7 +354,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 
 				if(method1 is MethodInfo)
 				{
-					if(((MethodInfo)method2).ReturnType.Equals(
+					if(!((MethodInfo)method2).ReturnType.Equals(
 								((MethodInfo)method1).ReturnType))
 					{
 						return MemberComparison.None;

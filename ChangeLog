@@ -1,4 +1,10 @@
 
+2004-11-28  LXS  <lxs@dev-fr.com>
+
+	* runtime/System/Reflection/ClrType.cs: fix bug in CompareMembers that
+	caused Members to be twice in the Memberinfoarray for subclasses (base and
+	subclass). (patch #3539, Klaus)
+ 
 2004-11-25  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/runtime/System/TestString.cs: Fix tests comparing upper and lower

@@ -33,6 +33,8 @@ use the new float writing routines.
 
 * include/il_dumpasm.h, dumpasm/dump_const.c (ILDumpConstant): new function.
 
+* dumpasm/Makefile.am: add "dump_const.c" to the "libILDumpAsm.a" build.
+
 2001-09-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h: field for the kind of a type (class, struct, etc);

@@ -81,3 +81,6 @@ IL_CONFIG_GROW_FRAMES=n
 
 # Use filtered exceptions (y/n).
 IL_CONFIG_FILTERED_EXCEPTIONS=n
+
+# Use debug line information (y/n).
+IL_CONFIG_DEBUG_LINES=n

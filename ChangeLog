@@ -41,6 +41,10 @@
 	an internalcall method is not present, and "MissingMethodException"
 	if a PInvoke method is not present.
 
+	* engine/internal.c, profiles/compact, profiles/compact-fp,
+	profiles/full, profiles/kernel, profiles/kernel-fp: #ifdef out
+	debug line support if specified by the profile.
+
 2002-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_config_win.h, include/il_values.h: remove the out

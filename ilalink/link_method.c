@@ -779,7 +779,6 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	ILTypeSpec *spec;
 	const char *name;
 	ILType *signature;
-	ILType *newSignature;
 	ILMethod *method;
 	ILField *field;
 
@@ -818,6 +817,11 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	/* Search for an existing member with the requested signature */
 	name = ILMember_Name(member);
 	signature = ILMember_Signature(member);
+	signature = _ILLinkerConvertType(linker, signature);
+	if(!signature)
+	{
+		return 0;
+	}
 	if(ILMember_IsMethod(member))
 	{
 		/* Searching for a method */
@@ -839,13 +843,8 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 			_ILLinkerOutOfMemory(linker);
 			return 0;
 		}
-		newSignature = _ILLinkerConvertType(linker, signature);
-		if(!newSignature)
-		{
-			return 0;
-		}
-		ILMemberSetSignature((ILMember *)method, newSignature);
-		ILMethodSetCallConv(method, ILType_CallConv(newSignature));
+		ILMemberSetSignature((ILMember *)method, signature);
+		ILMethodSetCallConv(method, ILType_CallConv(signature));
 		return (ILMember *)method;
 	}
 	else
@@ -869,12 +868,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 			_ILLinkerOutOfMemory(linker);
 			return 0;
 		}
-		newSignature = _ILLinkerConvertType(linker, signature);
-		if(!newSignature)
-		{
-			return 0;
-		}
-		ILMemberSetSignature((ILMember *)field, newSignature);
+		ILMemberSetSignature((ILMember *)field, signature);
 		return (ILMember *)field;
 	}
 }

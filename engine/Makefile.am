@@ -26,6 +26,7 @@ COMMON_ENGINE_SOURCES = box.c \
 						lib_platform.c \
 						lib_reflect.c \
 						lib_security.c \
+						lib_socket.c \
 						lib_stdio.c \
 						lib_string.c \
 						lib_thread.c \

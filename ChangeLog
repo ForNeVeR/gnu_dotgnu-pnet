@@ -4,6 +4,10 @@
 	* ilnative/ilinternal.c (processFile): do not free "classTable"
 	on exit from this function.
 
+	* engine/Makefile.am, engine/int_proto.h, engine/int_table.c,
+	engine/lib_reflect.c, engine/lib_socket.c: stub out the internalcall's
+	for "ClrResourceStream" and "SocketMethods".
+
 2002-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/process.c, ildb/Makefile.am, ildb/ildb_context.c,

@@ -289,6 +289,9 @@ extern ILObject * _IL_ClrParameter_GetDefault(ILExecThread * _thread, ILNativeIn
 
 extern ILObject * _IL_ClrProperty_GetPropertyType(ILExecThread * _thread, ILNativeInt item);
 
+extern ILInt32 _IL_ClrResourceStream_ResourceRead(ILExecThread * _thread, ILNativeInt handle, ILInt64 position, System_Array * buffer, ILInt32 offset, ILInt32 count);
+extern ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread * _thread, ILNativeInt handle, ILInt64 position);
+
 extern ILInt32 _IL_ClrType_GetClrArrayRank(ILExecThread * _thread, ILObject * _this);
 extern ILInt32 _IL_ClrType_GetAttributeFlagsImpl(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_ClrType_GetElementType(ILExecThread * _thread, ILObject * _this);
@@ -357,6 +360,21 @@ extern ILBool _IL_RuntimeSecurityManager_CanOpenFile(ILExecThread * _thread, ILO
 
 extern ILObject * _IL_Security_GetSecurityManager(ILExecThread * _thread);
 extern void _IL_Security_SetSecurityManager(ILExecThread * _thread, ILObject * mgr);
+
+extern ILBool _IL_SocketMethods_Create(ILExecThread * _thread, ILInt32 af, ILInt32 st, ILInt32 pt, ILNativeInt * handle);
+extern ILBool _IL_SocketMethods_Bind(ILExecThread * _thread, ILNativeInt handle, ILInt32 af, ILInt64 address, ILInt32 port);
+extern ILBool _IL_SocketMethods_Shutdown(ILExecThread * _thread, ILNativeInt handle, ILInt32 how);
+extern ILBool _IL_SocketMethods_Listen(ILExecThread * _thread, ILNativeInt handle, ILInt32 backlog);
+extern ILInt32 _IL_SocketMethods_Accept(ILExecThread * _thread, ILNativeInt handle, ILInt64 * address, ILInt32 * port);
+extern ILBool _IL_SocketMethods_Connect(ILExecThread * _thread, ILNativeInt handle, ILInt32 af, ILInt64 address, ILInt32 port);
+extern ILInt32 _IL_SocketMethods_Receive(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 size, ILInt32 flags);
+extern ILInt32 _IL_SocketMethods_ReceiveFrom(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 size, ILInt32 flags, ILInt64 * address, ILInt32 * port);
+extern ILInt32 _IL_SocketMethods_Send(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 size, ILInt32 flags);
+extern ILInt32 _IL_SocketMethods_SendTo(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 size, ILInt32 flags, ILInt64 * address, ILInt32 * port);
+extern ILBool _IL_SocketMethods_Close(ILExecThread * _thread, ILNativeInt handle);
+extern ILInt32 _IL_SocketMethods_Select(ILExecThread * _thread, System_Array * readarray, System_Array * writearray, System_Array * errorarray, ILInt64 timeout);
+extern ILInt32 _IL_SocketMethods_GetErrno(ILExecThread * _thread);
+extern ILString * _IL_SocketMethods_GetErrnoMessage(ILExecThread * _thread, ILInt32 errno);
 
 extern void _IL_Stdio_StdClose(ILExecThread * _thread, ILInt32 fd);
 extern void _IL_Stdio_StdFlush(ILExecThread * _thread, ILInt32 fd);

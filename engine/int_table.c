@@ -361,6 +361,11 @@ IL_METHOD_BEGIN(ClrProperty_Methods)
 	IL_METHOD("GetPropertyType", "(j)oSystem.Type;", _IL_ClrProperty_GetPropertyType)
 IL_METHOD_END
 
+IL_METHOD_BEGIN(ClrResourceStream_Methods)
+	IL_METHOD("ResourceRead", "(jl[Bii)i", _IL_ClrResourceStream_ResourceRead)
+	IL_METHOD("ResourceReadByte", "(jl)i", _IL_ClrResourceStream_ResourceReadByte)
+IL_METHOD_END
+
 IL_METHOD_BEGIN(ClrType_Methods)
 	IL_METHOD("GetClrArrayRank", "(T)i", _IL_ClrType_GetClrArrayRank)
 	IL_METHOD("GetAttributeFlagsImpl", "(T)vSystem.Reflection.TypeAttributes;", _IL_ClrType_GetAttributeFlagsImpl)
@@ -446,6 +451,23 @@ IL_METHOD_BEGIN(Security_Methods)
 	IL_METHOD("SetSecurityManager", "(oPlatform.ISecurityManager;)V", _IL_Security_SetSecurityManager)
 IL_METHOD_END
 
+IL_METHOD_BEGIN(SocketMethods_Methods)
+	IL_METHOD("Create", "(iii&j)Z", _IL_SocketMethods_Create)
+	IL_METHOD("Bind", "(jili)Z", _IL_SocketMethods_Bind)
+	IL_METHOD("Shutdown", "(ji)Z", _IL_SocketMethods_Shutdown)
+	IL_METHOD("Listen", "(ji)Z", _IL_SocketMethods_Listen)
+	IL_METHOD("Accept", "(j&l&i)i", _IL_SocketMethods_Accept)
+	IL_METHOD("Connect", "(jili)Z", _IL_SocketMethods_Connect)
+	IL_METHOD("Receive", "(j[Biii)i", _IL_SocketMethods_Receive)
+	IL_METHOD("ReceiveFrom", "(j[Biii&l&i)i", _IL_SocketMethods_ReceiveFrom)
+	IL_METHOD("Send", "(j[Biii)i", _IL_SocketMethods_Send)
+	IL_METHOD("SendTo", "(j[Biii&l&i)i", _IL_SocketMethods_SendTo)
+	IL_METHOD("Close", "(j)Z", _IL_SocketMethods_Close)
+	IL_METHOD("Select", "([j[j[jl)i", _IL_SocketMethods_Select)
+	IL_METHOD("GetErrno", "()vPlatform.Errno;", _IL_SocketMethods_GetErrno)
+	IL_METHOD("GetErrnoMessage", "(vPlatform.Errno;)oSystem.String;", _IL_SocketMethods_GetErrnoMessage)
+IL_METHOD_END
+
 IL_METHOD_BEGIN(Stdio_Methods)
 	IL_METHOD("StdClose", "(i)V", _IL_Stdio_StdClose)
 	IL_METHOD("StdFlush", "(i)V", _IL_Stdio_StdFlush)
@@ -501,6 +523,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"ClrMethod", "System.Reflection", ClrMethod_Methods},
 	{"ClrParameter", "System.Reflection", ClrParameter_Methods},
 	{"ClrProperty", "System.Reflection", ClrProperty_Methods},
+	{"ClrResourceStream", "System.Reflection", ClrResourceStream_Methods},
 	{"ClrSecurity", "System.Security", ClrSecurity_Methods},
 	{"ClrType", "System.Reflection", ClrType_Methods},
 	{"CodeAccessPermission", "System.Security", CodeAccessPermission_Methods},
@@ -528,6 +551,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"RuntimeSecurityManager", "Platform", RuntimeSecurityManager_Methods},
 	{"Security", "Platform", Security_Methods},
 	{"Single", "System", Single_Methods},
+	{"SocketMethods", "Platform", SocketMethods_Methods},
 	{"StackFrame", "System.Diagnostics", StackFrame_Methods},
 	{"Stdio", "Platform", Stdio_Methods},
 	{"String", "System", String_Methods},

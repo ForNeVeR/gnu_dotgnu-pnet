@@ -1281,6 +1281,32 @@ ILString *_IL_Module_GetFullName(ILExecThread *_thread, ILObject *_this)
 	return 0;
 }
 
+/*
+ * private static int ResourceRead(IntPtr handle, long position,
+ *								   byte[] buffer, int offset, int count);
+ */
+ILInt32 _IL_ClrResourceStream_ResourceRead(ILExecThread *_thread,
+										   ILNativeInt handle,
+										   ILInt64 position,
+										   System_Array *buffer,
+										   ILInt32 offset,
+										   ILInt32 count)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static int ResourceReadByte(IntPtr handle, long position);
+ */
+ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread *_thread,
+											   ILNativeInt handle,
+											   ILInt64 position)
+{
+	/* TODO */
+	return -1;
+}
+
 #ifdef	__cplusplus
 };
 #endif

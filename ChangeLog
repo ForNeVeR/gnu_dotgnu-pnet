@@ -5,6 +5,10 @@
 	assembly/module remains unresolvable and there are redo items,
 	then queue the TypeRef for redo also.
 
+	* ilasm/ilasm_grammar.y, image/meta_build.c, image/misc_token.c,
+	include/il_program.h: set an exported type's scope when it is
+	created so that the correct ILClassName is constructed.
+
 2003-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c: "redo" processing for nested and exported

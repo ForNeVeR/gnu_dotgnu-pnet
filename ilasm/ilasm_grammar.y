@@ -3673,7 +3673,7 @@ ExportHeading
 				const char *namespace;
 				ILAsmSplitName($3.string, $3.len, &name, &namespace);
 				type = ILExportedTypeCreate(ILAsmImage, 0, (ILUInt32)($2),
-											name, namespace);
+											name, namespace, 0);
 				ILAsmBuildPushScope(type);
 			}
 	;

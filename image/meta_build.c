@@ -3156,10 +3156,6 @@ static int Load_ExportedType(ILImage *image, ILUInt32 *values,
 				   	 		 void *userData)
 {
 	ILExportedType *type;
-	ILProgramItem *scope;
-	ILFileDecl *decl;
-	ILAssembly *assem;
-	ILExportedType *expType;
 
 	/* Create the exported type record */
 	type = ILExportedTypeCreate(image, token,
@@ -3167,7 +3163,9 @@ static int Load_ExportedType(ILImage *image, ILUInt32 *values,
 				    ILImageGetString
 						(image, values[IL_OFFSET_EXPTYPE_NAME]),
 				    ILImageGetString
-						(image, values[IL_OFFSET_EXPTYPE_NAMESPACE]));
+						(image, values[IL_OFFSET_EXPTYPE_NAMESPACE]),
+					ILProgramItem_FromToken
+						(image, values[IL_OFFSET_EXPTYPE_FILE]));
 	if(!type)
 	{
 		return IL_LOADERR_MEMORY;
@@ -3175,21 +3173,6 @@ static int Load_ExportedType(ILImage *image, ILUInt32 *values,
 
 	/* Set the foreign class identifier */
 	ILExportedTypeSetId(type, values[IL_OFFSET_EXPTYPE_CLASS]);
-
-	/* Set the scope */
-	scope = ILProgramItem_FromToken(image, values[IL_OFFSET_EXPTYPE_FILE]);
-	if((decl = ILProgramItemToFileDecl(scope)) != 0)
-	{
-		ILExportedTypeSetScopeFile(type, decl);
-	}
-	else if((assem = ILProgramItemToAssembly(scope)) != 0)
-	{
-		ILExportedTypeSetScopeAssembly(type, assem);
-	}
-	else if((expType = ILProgramItemToExportedType(scope)) != 0)
-	{
-		ILExportedTypeSetScopeType(type, expType);
-	}
 
 	/* Add the exported type to the "redo" list */
 	if((image->loadFlags & IL_LOADFLAG_NO_RESOLVE) == 0)

@@ -2223,7 +2223,8 @@ ILUInt32 ILManifestResGetAttrs(ILManifestRes *res);
 ILExportedType *ILExportedTypeCreate(ILImage *image, ILToken token,
 									 ILUInt32 attributes,
 									 const char *name,
-									 const char *nspace);
+									 const char *nspace,
+									 ILProgramItem *scope);
 
 /*
  * Set the foreign type ID associated with an exported type declaration.

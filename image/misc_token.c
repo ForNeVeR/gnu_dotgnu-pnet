@@ -884,7 +884,8 @@ ILUInt32 ILManifestResGetAttrs(ILManifestRes *res)
 ILExportedType *ILExportedTypeCreate(ILImage *image, ILToken token,
 									 ILUInt32 attributes,
 									 const char *name,
-									 const char *namespace)
+									 const char *namespace,
+									 ILProgramItem *scope)
 {
 	ILExportedType *type;
 
@@ -899,11 +900,11 @@ ILExportedType *ILExportedTypeCreate(ILImage *image, ILToken token,
 	type->classItem.programItem.image = image;
 	type->classItem.attributes = attributes | IL_META_TYPEDEF_REFERENCE;
 	type->classItem.className =
-		_ILClassNameLookup(image, 0, 0, name, namespace);
+		_ILClassNameLookup(image, scope, 0, name, namespace);
 	if(!(type->classItem.className))
 	{
 		type->classItem.className =
-			_ILClassNameCreate(image, token, name, namespace, 0, 0);
+			_ILClassNameCreate(image, token, name, namespace, scope, 0);
 	}
 	if(!(type->classItem.className))
 	{

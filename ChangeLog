@@ -2,6 +2,8 @@
 
 	* System.Windows.Forms/ImageList.cs: Implemented as much as I could.
 
+	* System.Windows.Forms/ImageListStreamer.cs: Add stub.
+
 2003-06-22  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/System.build, System.Xml/Xml.build, compat/compat.build

@@ -1,4 +1,9 @@
 
+2003-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/Makefile.am: changes to the I18N Makefile.am file to
+	work around build problems on some systems.
+
 2003-08-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/ASCIIEncoding.cs,

@@ -4,15 +4,14 @@ REGION_ASSEMBLIES = I18N.CJK.dll I18N.MidEast.dll \
 					I18N.West.dll
 HANDLER_FILE = I18N-handlers.def
 
-.PHONY: phase-one phase-two
+.PHONY: build-assemblies
 
-all-local: phase-one $(HANDLER_FILE) phase-two
+all-local: build-assemblies
 
-phase-one:
+build-assemblies:
 	test -d first || mkdir first
 	"$(CSANT)" $(CSANT_FLAGS) -f I18N.build all
-
-phase-two:
+	@$(MAKE) $(AM_MAKEFLAGS) $(HANDLER_FILE)
 	"$(CSANT)" $(CSANT_FLAGS) -f I18N.build phase-two
 
 $(HANDLER_FILE): first/I18N.dll $(REGION_ASSEMBLIES)

@@ -1,3 +1,6 @@
+2003-01-11  Adam Ballai  <minddog@cannibutter.com>
+
+	* System.Xml/XmlTextReader.cs: more fixes in Read method
 
 2003-01-11  Adam Ballai  <minddog@cannibutter.com>
 

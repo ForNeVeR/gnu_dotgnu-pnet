@@ -596,21 +596,25 @@ public class XmlTextReader : XmlReader
 						// Check for correct structure 
 						if(structFlag != true)
 						{
-							throw new XmlException
-								(S._("Xml_Malformed"));
+							SkipWhite();
+							Expect('>');
+							nodeType = XmlNodeType.EndElement;
+							isEmpty = true;
 						}
-						
-						// End element tag.
-						name = ReadIdentifier(-1);
-						SkipWhite();
-						Expect('>');
-						nodeType = XmlNodeType.EndElement;
-						SetName(name);
-						value = String.Empty;
-						attributes = null;
-						attributeIndex = -1;
-						isEmpty = false;
-						--depth;	
+						else
+						{
+							// End element tag.
+							name = ReadIdentifier(-1);
+							SkipWhite();
+							Expect('>');
+							nodeType = XmlNodeType.EndElement;
+							SetName(name);
+							value = String.Empty;
+							attributes = null;
+							attributeIndex = -1;
+							isEmpty = false;
+							--depth;	
+						}
 						break;
 					case '?':
 						// TODO: Processing Instructions
@@ -732,6 +736,7 @@ public class XmlTextReader : XmlReader
 						name = builder.ToString();
 						SetName(name);
 						nodeType = XmlNodeType.Attribute;
+						attributeIndex++;
 						// reset buffer
 						builder = new StringBuilder();
 						break;

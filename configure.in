@@ -25,6 +25,16 @@ if test -z "$TREECC" ; then
     exit 1
 fi
 
+dnl The --without-libffi option can be used to disable libffi.
+AC_ARG_WITH(libffi,
+[  --without-libffi        disable libffi support],
+[
+	withffi=no
+],
+[
+	withffi=yes
+])
+
 dnl This code was borrowed from "libgc" to test for the correct
 dnl thread package to use, and to notify the garbage collector's
 dnl "gc.h" file of the correct features to enable.  See the
@@ -205,6 +215,16 @@ AC_FUNC_ALLOCA
 dnl Add the thread libraries to the end of the link line.
 LIBS="$LIBS $THREADLIBS"
 
+dnl Set up libffi-related variables.
+AC_SUBST(FFILIBS)
+if test x$withffi = xyes ; then
+	FFILIBS='$(top_builddir)/libffi/.libs/libffi.a'
+	AC_DEFINE(HAVE_LIBFFI)
+else
+	FFILIBS=""
+fi
+AM_CONDITIONAL(USING_LIBFFI, test x$withffi = xyes)
+
 AC_OUTPUT([
 Makefile
 include/Makefile
@@ -235,8 +255,10 @@ dnl Configure libffi and libgc.  We do these manually to avoid
 dnl some issues with different versions of autotools, and so that
 dnl we can pass specific options to the packages.
 if test "x$no_recursion" != "xyes"; then
-	cd "${srcdir}/libffi"
-	./configure --disable-multilib --disable-shared
+	if test x$withffi = xyes ; then
+		cd "${srcdir}/libffi"
+		./configure --disable-multilib --disable-shared
+	fi
 	cd ../libgc
 	./configure --enable-threads=$THREADS
 fi

@@ -205,6 +205,9 @@ typedef struct
 	const char	   *methodName;
 	const char	   *signature;
 	void           *func;
+#if !defined(HAVE_LIBFFI)
+	void           *marshal;
+#endif
 
 } ILMethodTableEntry;
 
@@ -213,13 +216,23 @@ typedef struct
  */
 #define	IL_METHOD_BEGIN(name)	\
 			static ILMethodTableEntry const name[] = {
-#define	IL_METHOD(name,sig,func)	\
+#if defined(HAVE_LIBFFI)
+#define	IL_METHOD(name,sig,func,marshal)	\
 			{(name), (sig), (void *)(func)},
-#define	IL_CONSTRUCTOR(name,sig,func,allocFunc)	\
+#define	IL_CONSTRUCTOR(name,sig,func,marshal,allocFunc,allocMarshal)	\
 			{(name), (sig), (void *)(func)}, \
 			{(name), 0, (void *)(allocFunc)},
 #define	IL_METHOD_END			\
 			{0, 0, 0}};
+#else
+#define	IL_METHOD(name,sig,func,marshal)	\
+			{(name), (sig), (void *)(func), (void *)(marshal)},
+#define	IL_CONSTRUCTOR(name,sig,func,marshal,allocFunc,allocMarshal)	\
+			{(name), (sig), (void *)(func), (void *)(marshal)}, \
+			{(name), 0, (void *)(allocFunc), (void *)(allocMarshal)},
+#define	IL_METHOD_END			\
+			{0, 0, 0, 0}};
+#endif
 
 /*
  * Class information for the CVM coder.

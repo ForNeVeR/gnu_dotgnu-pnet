@@ -40,7 +40,7 @@ libILEngine_a_SOURCES = cvm.c \
 						throw.c \
 						verify.c
 
-PACKAGE_LIBS = ../libffi/.libs/libffi.a ../libgc/.libs/libgc.a
+PACKAGE_LIBS = $(FFILIBS) ../libgc/.libs/libgc.a
 
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \

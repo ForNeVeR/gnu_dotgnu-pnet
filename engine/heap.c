@@ -73,7 +73,7 @@ void _ILFinalizeObject(void *block, void *data)
 
 	/* Get the object's class and locate the "Finalize" method */
 	classInfo = GetObjectClass(object);
-	
+
 	if (ILExecThreadCurrent() == 0)
 	{
 		/* The thread the finalizer is running on can't execute managed code */
@@ -99,6 +99,8 @@ void _ILFinalizeObject(void *block, void *data)
 				if(ILTypeGetReturn(signature) == ILType_Void &&
 				   ILTypeNumParams(signature) == 0)
 				{
+					ILGCRegisterFinalizer(block, 0, 0);
+		
 					/* Invoke the "Finalize" method on the object */
 					if(ILExecThreadCall(ILExecThreadCurrent(),
 										method, (void *)0, object))
@@ -188,6 +190,14 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 	else
 	{
 		SetObjectClassPrivate(obj, 0);
+	}
+
+	/* Attach a finalizer to the object if the class has
+	   a non-trival finalizer method attached to it */
+	if(classInfo != 0 &&
+	   ((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
+	{
+		ILGCRegisterFinalizer(ptr, _ILFinalizeObject, 0);
 	}
 
 	/* Return a pointer to the object */

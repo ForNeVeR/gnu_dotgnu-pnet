@@ -1,3 +1,8 @@
+2002-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Reflection/Emit/TypeBuilder.cs: apply patch
+	from <biochem333@nyc.rr.com>.
+
 2002-09-27  Francis Rogers  <franny644@comcast.net>
 
 	* System/Net/Sockets/TcpListener.cs: New extension class.

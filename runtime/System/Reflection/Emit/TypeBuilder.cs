@@ -238,7 +238,7 @@ public sealed class TypeBuilder : Type
 	// Check that the type has been created.
 	private void CheckCreated()
 			{
-				if(type != null)
+				if(type == null)
 				{
 					throw new NotSupportedException
 						(_("NotSupp_TypeNotCreated"));
@@ -706,7 +706,7 @@ public sealed class TypeBuilder : Type
 				{
 					return type.GetInterfaces();
 				}
-				else if(interfaces != null)
+				else if(interfaces == null)
 				{
 					return new Type [0];
 				}

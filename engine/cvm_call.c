@@ -31,6 +31,30 @@
 #endif
 
 /*
+ * Call a function via the FFI interface.  If we have "libffi",
+ * then use the "ffi_call" and "ffi_raw_call" functions.
+ * Otherwise, we assume that "cif" is the marshalling stub
+ * that we need to use.
+ */
+#if defined(HAVE_LIBFFI)
+#define	FFI_CALL(cif,fn,rvalue,avalue)	\
+			ffi_call((ffi_cif *)(cif), (void (*)())(fn), \
+			         (void *)(rvalue), (void **)(avalue))
+#if !FFI_NO_RAW_API && FFI_NATIVE_RAW_API
+#define	FFI_RAW_CALL(cif,fn,rvalue,avalue)	\
+			ffi_raw_call((ffi_cif *)(cif), (void (*)())(fn), \
+			             (void *)(rvalue), (ffi_raw *)(avalue))
+#else
+#define	FFI_RAW_CALL(cif,fn,rvalue,avalue)
+#endif
+#else
+#define	FFI_CALL(cif,fn,rvalue,avalue)	\
+			(*((void (*)(void (*)(), void *, void **))(cif)))	\
+				((void (*)())(fn), (void *)(rvalue), (void **)(avalue))
+#define	FFI_RAW_CALL(cif,fn,rvalue,avalue)
+#endif
+
+/*
  * Allocate a new call frame.
  */
 ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
@@ -577,9 +601,77 @@ VMCASE(COP_CALL_NATIVE_VOID):
 	FFI_CALL(CVM_ARG_PTR2(void *), CVM_ARG_PTR(void *), 0, nativeArgs);
 	RESTORE_STATE_FROM_THREAD();
 	pc = thread->pc;
-	MODIFY_PC_AND_STACK(CVM_LEN_PTR2, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_PTR2, 0);
 }
 VMBREAK(COP_CALL_NATIVE_VOID);
+
+/**
+ * <opcode name="call_native_raw" group="Call management instructions">
+ *   <operation>Call a native function that has a return value,
+ *              using a raw call</operation>
+ *
+ *   <format>call_native_raw<fsep/>function<fsep/>cif</format>
+ *   <dformat>{call_native_raw}<fsep/>function<fsep/>cif</dformat>
+ *
+ *   <form name="call_native_raw" code="COP_CALL_NATIVE_RAW"/>
+ *
+ *   <before>..., avalue, rvalue</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>call_native_raw</i> instruction effects a native
+ *   function call to <i>function</i>, using <i>cif</i> to define the
+ *   format of the function arguments and return value.  The arguments
+ *   are stored on the stack beginning at <i>avalue</i>.  The return
+ *   value is stored at <i>rvalue</i>.</description>
+ *
+ *   <notes>This instruction differs from <i>call_native</i> in the manner
+ *   in which the call is performed.  This instruction uses a "raw" call,
+ *   which is only applicable on some platforms.  The arguments are
+ *   passed on the stack, instead of in a separate native argument
+ *   buffer.</notes>
+ * </opcode>
+ */
+VMCASE(COP_CALL_NATIVE_RAW):
+{
+	/* Call a native method using the raw API */
+	COPY_STATE_TO_THREAD();
+	FFI_RAW_CALL(CVM_ARG_PTR2(void *), CVM_ARG_PTR(void *),
+	             stacktop[-1].ptrValue, stacktop[-2].ptrValue);
+	RESTORE_STATE_FROM_THREAD();
+	pc = thread->pc;
+	MODIFY_PC_AND_STACK(CVM_LEN_PTR2, -2);
+}
+VMBREAK(COP_CALL_NATIVE_RAW);
+
+/**
+ * <opcode name="call_native_void_raw" group="Call management instructions">
+ *   <operation>Call a native function with no return value
+ *              using a raw call</operation>
+ *
+ *   <format>call_native_void_raw<fsep/>function<fsep/>cif</format>
+ *   <dformat>{call_native_void_raw}<fsep/>function<fsep/>cif</dformat>
+ *
+ *   <form name="call_native_void_raw" code="COP_CALL_NATIVE_VOID_RAW"/>
+ *
+ *   <before>..., avalue</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>call_native_void_raw</i> instruction is identical
+ *   to <i>call_native_raw</i>, except that the native function is assumed
+ *   not to have a return value.</description>
+ * </opcode>
+ */
+VMCASE(COP_CALL_NATIVE_VOID_RAW):
+{
+	/* Call a native method that has no return value using the raw API */
+	COPY_STATE_TO_THREAD();
+	FFI_RAW_CALL(CVM_ARG_PTR2(void *), CVM_ARG_PTR(void *),
+				 0, stacktop[-1].ptrValue);
+	RESTORE_STATE_FROM_THREAD();
+	pc = thread->pc;
+	MODIFY_PC_AND_STACK(CVM_LEN_PTR2, -1);
+}
+VMBREAK(COP_CALL_NATIVE_VOID_RAW);
 
 /**
  * <opcode name="call_virtual" group="Call management instructions">
@@ -965,6 +1057,31 @@ VMCASE(COP_PUSH_THREAD):
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_PUSH_THREAD);
+
+/**
+ * <opcode name="push_thread_raw" group="Call management instructions">
+ *   <operation>Push the thread identifier onto the native
+ *              argument stack as a raw value</operation>
+ *
+ *   <format>push_thread_raw</format>
+ *   <dformat>{push_thread_raw}</dformat>
+ *
+ *   <form name="push_thread_raw" code="COP_PUSH_THREAD_RAW"/>
+ *
+ *   <description>Pushes an identifier for the current thread onto
+ *   the native argument stack.  This is only used for "InternalCall"
+ *   methods.  This instruction differs from <i>push_thread</i> in
+ *   that it is intended for use with <i>call_native_raw</i> instead
+ *   of <i>call_native</i>.</description>
+ * </opcode>
+ */
+VMCASE(COP_PUSH_THREAD_RAW):
+{
+	/* Push the thread value onto the stack */
+	stacktop[0].ptrValue = (void *)thread;
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 1);
+}
+VMBREAK(COP_PUSH_THREAD_RAW);
 
 /**
  * <opcode name="pushdown" group="Call management instructions">

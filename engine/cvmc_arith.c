@@ -46,11 +46,11 @@ static void AdjustMixedBinary(ILCoder *coder, int isUnsigned,
 	{
 		if(isUnsigned)
 		{
-			CVM_OUT_NONE(COP_FIX_I4_U);
+			CVMP_OUT_NONE(COP_PREFIX_FIX_I4_U);
 		}
 		else
 		{
-			CVM_OUT_NONE(COP_FIX_I4_I);
+			CVMP_OUT_NONE(COP_PREFIX_FIX_I4_I);
 		}
 		CVM_ADJUST(CVM_WORDS_PER_NATIVE_INT - 1);
 	}

@@ -26,6 +26,9 @@
 #include "lib_defs.h"
 #include "method_cache.h"
 #include "cvm_config.h"
+#if defined(HAVE_LIBFFI)
+#include "ffi.h"
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {

@@ -3,6 +3,10 @@
 
 	* engine/lib_array.c: add special cases for 2-dimensional arrays.
 
+	* engine/cvm.h, engine/cvm_call.c, engine/cvm_conv.c,
+	engine/cvm_dasm.c, engine/cvmc.c, engine/cvmc_arith.c,
+	engine/engine.h: add new instructions that can support raw ffi calls.
+
 2002-05-24  Andrew Mitchell  <ajmitch@dunedin.lug.net.nz>
 
 	* debian/*: add files related to Debian packaging.

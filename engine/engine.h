@@ -235,21 +235,6 @@ typedef struct
 #endif
 
 /*
- * Call a function via the FFI interface.  If we have "libffi",
- * then use the "ffi_call" function.  Otherwise, we assume that
- * "cif" is the marshalling stub that we need to use.
- */
-#if defined(HAVE_LIBFFI)
-#define	FFI_CALL(cif,fn,rvalue,avalue)	\
-			ffi_call((ffi_cif *)(cif), (void (*)())(fn), \
-			         (void *)(rvalue), (void **)(avalue))
-#else
-#define	FFI_CALL(cif,fn,rvalue,avalue)	\
-			(*((void (*)(void (*)(), void *, void **))(cif)))	\
-				((void (*)())(fn), (void *)(rvalue), (void **)(avalue))
-#endif
-
-/*
  * Class information for the CVM coder.
  */
 extern ILCoderClass const _ILCVMCoderClass;

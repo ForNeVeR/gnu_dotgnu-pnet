@@ -696,96 +696,6 @@ VMCASE(COP_I2P_LOWER):
 }
 VMBREAK(COP_I2P_LOWER);
 
-/**
- * <opcode name="fix_i4_i" group="Conversion operators">
- *   <operation>Convert a <code>int32</code>/<code>native int</code> pair
- *   of values into <code>native int</code>/<code>native int</code></operation>
- *
- *   <format>fix_i4_i</format>
- *   <dformat>{fix_i4_i}</dformat>
- *
- *   <form name="fix_i4_i" code="COP_FIX_I4_I"/>
- *
- *   <before>..., value1, value2</before>
- *   <after>..., result, value2</after>
- *
- *   <description>Both <i>value1</i> and <i>value2</i> are popped from
- *   the stack as types <code>int32</code> and <code>native int</code>
- *   respectively.  The <code>native int</code> <i>result</i> is formed
- *   by sign-extending <i>value1</i>.  Then, <i>result</i> and <i>value2</i>
- *   are pushed onto the stack.</description>
- *
- *   <notes>This is typically used to promote CIL I4 values to I when
- *   used with a binary arithmetic operation.<p/>
- *
- *   On 32-bit platforms, this instruction will typically do nothing
- *   because the <code>int32</code> and <code>native int</code> types
- *   will be identical.<p/>
- *
- *   There is no <i>fix_i_i4</i> instruction because <i>i2l</i> can
- *   be used to acheive the same result on 64-bit platforms.</notes>
- * </opcode>
- */
-VMCASE(COP_FIX_I4_I):
-{
-	/* Fix a (I4, I) pair on the stack to be (I, I) */
-#ifdef IL_NATIVE_INT64
-	WriteLong(&(stacktop[-1]),
-		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
-	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
-		(ILInt64)(stacktop[-(CVM_WORDS_PER_LONG + 1)].intValue));
-	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_LONG - 1);
-#else
-	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
-#endif
-}
-VMBREAK(COP_FIX_I4_I);
-
-/**
- * <opcode name="fix_i4_u" group="Conversion operators">
- *   <operation>Convert a <code>uint32</code>/<code>native uint</code> pair of
- *   values into <code>native uint</code>/<code>native uint</code></operation>
- *
- *   <format>fix_i4_u</format>
- *   <dformat>{fix_i4_u}</dformat>
- *
- *   <form name="fix_i4_u" code="COP_FIX_I4_U"/>
- *
- *   <before>..., value1, value2</before>
- *   <after>..., result, value2</after>
- *
- *   <description>Both <i>value1</i> and <i>value2</i> are popped from
- *   the stack as types <code>uint32</code> and <code>native uint</code>
- *   respectively.  The <code>native uint</code> <i>result</i> is formed
- *   by zero-extending <i>value1</i>.  Then, <i>result</i> and <i>value2</i>
- *   are pushed onto the stack.</description>
- *
- *   <notes>This is typically used to promote CIL I4 values to U when
- *   used with a binary arithmetic operation.<p/>
- *
- *   On 32-bit platforms, this instruction will typically do nothing
- *   because the <code>uint32</code> and <code>native uint</code> types
- *   will be identical.<p/>
- *
- *   There is no <i>fix_u_i4</i> instruction because <i>iu2l</i> can
- *   be used to acheive the same result on 64-bit platforms.</notes>
- * </opcode>
- */
-VMCASE(COP_FIX_I4_U):
-{
-	/* Fix a (I4, U) pair on the stack to be (U, U) */
-#ifdef IL_NATIVE_INT64
-	WriteULong(&(stacktop[-1]),
-		ReadULong(&(stacktop[-CVM_WORDS_PER_LONG])));
-	WriteULong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
-		(ILUInt64)(stacktop[-(CVM_WORDS_PER_LONG + 1)].uintValue));
-	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_LONG - 1);
-#else
-	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
-#endif
-}
-VMBREAK(COP_FIX_I4_U);
-
 #elif defined(IL_CVM_WIDE)
 
 case COP_I2P_LOWER:
@@ -1843,5 +1753,95 @@ VMCASE(COP_PREFIX_STR2UTF8):
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_STR2UTF8);
+
+/**
+ * <opcode name="fix_i4_i" group="Conversion operators">
+ *   <operation>Convert a <code>int32</code>/<code>native int</code> pair
+ *   of values into <code>native int</code>/<code>native int</code></operation>
+ *
+ *   <format>prefix<fsep/>fix_i4_i</format>
+ *   <dformat>{fix_i4_i}</dformat>
+ *
+ *   <form name="fix_i4_i" code="COP_PREFIX_FIX_I4_I"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result, value2</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped from
+ *   the stack as types <code>int32</code> and <code>native int</code>
+ *   respectively.  The <code>native int</code> <i>result</i> is formed
+ *   by sign-extending <i>value1</i>.  Then, <i>result</i> and <i>value2</i>
+ *   are pushed onto the stack.</description>
+ *
+ *   <notes>This is typically used to promote CIL I4 values to I when
+ *   used with a binary arithmetic operation.<p/>
+ *
+ *   On 32-bit platforms, this instruction will typically do nothing
+ *   because the <code>int32</code> and <code>native int</code> types
+ *   will be identical.<p/>
+ *
+ *   There is no <i>fix_i_i4</i> instruction because <i>i2l</i> can
+ *   be used to acheive the same result on 64-bit platforms.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_FIX_I4_I):
+{
+	/* Fix a (I4, I) pair on the stack to be (I, I) */
+#ifdef IL_NATIVE_INT64
+	WriteLong(&(stacktop[-1]),
+		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
+	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
+		(ILInt64)(stacktop[-(CVM_WORDS_PER_LONG + 1)].intValue));
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, CVM_WORDS_PER_LONG - 1);
+#else
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+#endif
+}
+VMBREAK(COP_PREFIX_FIX_I4_I);
+
+/**
+ * <opcode name="fix_i4_u" group="Conversion operators">
+ *   <operation>Convert a <code>uint32</code>/<code>native uint</code> pair of
+ *   values into <code>native uint</code>/<code>native uint</code></operation>
+ *
+ *   <format>prefix<fsep/>fix_i4_u</format>
+ *   <dformat>{fix_i4_u}</dformat>
+ *
+ *   <form name="fix_i4_u" code="COP_PREFIX_FIX_I4_U"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result, value2</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped from
+ *   the stack as types <code>uint32</code> and <code>native uint</code>
+ *   respectively.  The <code>native uint</code> <i>result</i> is formed
+ *   by zero-extending <i>value1</i>.  Then, <i>result</i> and <i>value2</i>
+ *   are pushed onto the stack.</description>
+ *
+ *   <notes>This is typically used to promote CIL I4 values to U when
+ *   used with a binary arithmetic operation.<p/>
+ *
+ *   On 32-bit platforms, this instruction will typically do nothing
+ *   because the <code>uint32</code> and <code>native uint</code> types
+ *   will be identical.<p/>
+ *
+ *   There is no <i>fix_u_i4</i> instruction because <i>iu2l</i> can
+ *   be used to acheive the same result on 64-bit platforms.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_FIX_I4_U):
+{
+	/* Fix a (I4, U) pair on the stack to be (U, U) */
+#ifdef IL_NATIVE_INT64
+	WriteULong(&(stacktop[-1]),
+		ReadULong(&(stacktop[-CVM_WORDS_PER_LONG])));
+	WriteULong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
+		(ILUInt64)(stacktop[-(CVM_WORDS_PER_LONG + 1)].uintValue));
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, CVM_WORDS_PER_LONG - 1);
+#else
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+#endif
+}
+VMBREAK(COP_PREFIX_FIX_I4_U);
 
 #endif /* IL_CVM_PREFIX */

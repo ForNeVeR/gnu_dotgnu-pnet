@@ -237,12 +237,6 @@ static CVMOpcode const opcodes[256] = {
 	{"i2p_lower",		CVM_OPER_WIDE_UINT},
 
 	/*
-	 * Binary value fixups.
-	 */
-	{"fix_i4_i",		CVM_OPER_NONE},
-	{"fix_i4_u",		CVM_OPER_NONE},
-
-	/*
 	 * Pointer arithmetic and manipulation.
 	 */
 	{"padd_offset",		CVM_OPER_UINT8},
@@ -342,6 +336,8 @@ static CVMOpcode const opcodes[256] = {
 	{"call_ctor",		CVM_OPER_CALL},
 	{"call_native",		CVM_OPER_CALL_NATIVE},
 	{"call_native_void", CVM_OPER_CALL_NATIVE},
+	{"call_native_raw",	CVM_OPER_CALL_NATIVE},
+	{"call_native_void_raw", CVM_OPER_CALL_NATIVE},
 	{"call_virtual",	CVM_OPER_WIDE_TWO_UINT},
 	{"call_interface",	CVM_OPER_CALL_INTERFACE},
 	{"return",			CVM_OPER_NONE},
@@ -351,6 +347,7 @@ static CVMOpcode const opcodes[256] = {
 	{"jsr",				CVM_OPER_BRANCH},
 	{"ret_jsr",			CVM_OPER_NONE},
 	{"push_thread",		CVM_OPER_NONE},
+	{"push_thread_raw",	CVM_OPER_NONE},
 	{"pushdown",		CVM_OPER_UINT32},
 	{"cctor_once",		CVM_OPER_NONE},
 	{"calli",			CVM_OPER_NONE},
@@ -401,7 +398,6 @@ static CVMOpcode const opcodes[256] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"reserved_fb",		CVM_OPER_NONE},
 	{"reserved_fc",		CVM_OPER_NONE},
 
 	/*
@@ -540,10 +536,14 @@ static CVMOpcode const prefixOpcodes[80] = {
 	{"type_from_handle", CVM_OPER_NONE},
 
 	/*
+	 * Binary value fixups.
+	 */
+	{"fix_i4_i",		CVM_OPER_NONE},
+	{"fix_i4_u",		CVM_OPER_NONE},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_47",	CVM_OPER_NONE},
-	{"preserved_48",	CVM_OPER_NONE},
 	{"preserved_49",	CVM_OPER_NONE},
 	{"preserved_4a",	CVM_OPER_NONE},
 	{"preserved_4b",	CVM_OPER_NONE},

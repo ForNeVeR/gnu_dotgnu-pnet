@@ -195,111 +195,107 @@ extern	"C" {
 #define	COP_I2P_LOWER				0x84
 
 /*
- * Binary value fixups.
- */
-#define	COP_FIX_I4_I				0x85
-#define	COP_FIX_I4_U				0x86
-
-/*
  * Pointer arithmetic and manipulation.
  */
-#define	COP_PADD_OFFSET				0x87
-#define	COP_PADD_OFFSET_N			0x88
-#define	COP_PADD_I4					0x89
-#define	COP_PADD_I4_R				0x8A
-#define	COP_PADD_I8					0x8B
-#define	COP_PADD_I8_R				0x8C
-#define	COP_PSUB					0x8D
-#define	COP_PSUB_I4					0x8E
-#define	COP_PSUB_I8					0x8F
-#define	COP_CKNULL					0x90
-#define	COP_CKNULL_N				0x91
-#define	COP_LDRVA					0x92
+#define	COP_PADD_OFFSET				0x85
+#define	COP_PADD_OFFSET_N			0x86
+#define	COP_PADD_I4					0x87
+#define	COP_PADD_I4_R				0x88
+#define	COP_PADD_I8					0x89
+#define	COP_PADD_I8_R				0x8A
+#define	COP_PSUB					0x8B
+#define	COP_PSUB_I4					0x8C
+#define	COP_PSUB_I8					0x8D
+#define	COP_CKNULL					0x8E
+#define	COP_CKNULL_N				0x8F
+#define	COP_LDRVA					0x90
 
 /*
  * Constant opcodes.
  */
-#define	COP_LDNULL					0x93
-#define	COP_LDC_I4_M1				0x94
-#define	COP_LDC_I4_0				0x95
-#define	COP_LDC_I4_1				0x96
-#define	COP_LDC_I4_2				0x97
-#define	COP_LDC_I4_3				0x98
-#define	COP_LDC_I4_4				0x99
-#define	COP_LDC_I4_5				0x9A
-#define	COP_LDC_I4_6				0x9B
-#define	COP_LDC_I4_7				0x9C
-#define	COP_LDC_I4_8				0x9D
-#define	COP_LDC_I4_S				0x9E
-#define	COP_LDC_I4					0x9F
-#define	COP_LDC_I8					0xA0
-#define	COP_LDC_R4					0xA1
-#define	COP_LDC_R8					0xA2
+#define	COP_LDNULL					0x91
+#define	COP_LDC_I4_M1				0x92
+#define	COP_LDC_I4_0				0x93
+#define	COP_LDC_I4_1				0x94
+#define	COP_LDC_I4_2				0x95
+#define	COP_LDC_I4_3				0x96
+#define	COP_LDC_I4_4				0x97
+#define	COP_LDC_I4_5				0x98
+#define	COP_LDC_I4_6				0x99
+#define	COP_LDC_I4_7				0x9A
+#define	COP_LDC_I4_8				0x9B
+#define	COP_LDC_I4_S				0x9C
+#define	COP_LDC_I4					0x9D
+#define	COP_LDC_I8					0x9E
+#define	COP_LDC_R4					0x9F
+#define	COP_LDC_R8					0xA0
 
 /*
  * Branch opcodes.
  */
-#define	COP_BR						0xA3
-#define	COP_BEQ						0xA4
-#define	COP_BNE						0xA5
-#define	COP_BLT						0xA6
-#define	COP_BLT_UN					0xA7
-#define	COP_BLE						0xA8
-#define	COP_BLE_UN					0xA9
-#define	COP_BGT						0xAA
-#define	COP_BGT_UN					0xAB
-#define	COP_BGE						0xAC
-#define	COP_BGE_UN					0xAD
-#define	COP_BRTRUE					0xAE
-#define	COP_BRFALSE					0xAF
-#define	COP_BRNULL					0xB0
-#define	COP_BRNONNULL				0xB1
-#define	COP_BR_PEQ					0xB2
-#define	COP_BR_PNE					0xB3
-#define	COP_BR_LONG					0xB4
-#define	COP_SWITCH					0xB5
+#define	COP_BR						0xA1
+#define	COP_BEQ						0xA2
+#define	COP_BNE						0xA3
+#define	COP_BLT						0xA4
+#define	COP_BLT_UN					0xA5
+#define	COP_BLE						0xA6
+#define	COP_BLE_UN					0xA7
+#define	COP_BGT						0xA8
+#define	COP_BGT_UN					0xA9
+#define	COP_BGE						0xAA
+#define	COP_BGE_UN					0xAB
+#define	COP_BRTRUE					0xAC
+#define	COP_BRFALSE					0xAD
+#define	COP_BRNULL					0xAE
+#define	COP_BRNONNULL				0xAF
+#define	COP_BR_PEQ					0xB0
+#define	COP_BR_PNE					0xB1
+#define	COP_BR_LONG					0xB2
+#define	COP_SWITCH					0xB3
 
 /*
  * Array opcodes.
  */
-#define	COP_BREAD_ELEM				0xB6
-#define	COP_UBREAD_ELEM				0xB7
-#define	COP_SREAD_ELEM				0xB8
-#define	COP_USREAD_ELEM				0xB9
-#define	COP_IREAD_ELEM				0xBA
-#define	COP_PREAD_ELEM				0xBB
-#define	COP_BWRITE_ELEM				0xBC
-#define	COP_SWRITE_ELEM				0xBD
-#define	COP_IWRITE_ELEM				0xBE
-#define	COP_PWRITE_ELEM				0xBF
-#define	COP_CKARRAY_LOAD_I4			0xC0
-#define	COP_CKARRAY_LOAD_I8			0xC1
-#define	COP_CKARRAY_STORE_I8		0xC2
-#define	COP_ARRAY_LEN				0xC3
+#define	COP_BREAD_ELEM				0xB4
+#define	COP_UBREAD_ELEM				0xB5
+#define	COP_SREAD_ELEM				0xB6
+#define	COP_USREAD_ELEM				0xB7
+#define	COP_IREAD_ELEM				0xB8
+#define	COP_PREAD_ELEM				0xB9
+#define	COP_BWRITE_ELEM				0xBA
+#define	COP_SWRITE_ELEM				0xBB
+#define	COP_IWRITE_ELEM				0xBC
+#define	COP_PWRITE_ELEM				0xBD
+#define	COP_CKARRAY_LOAD_I4			0xBE
+#define	COP_CKARRAY_LOAD_I8			0xBF
+#define	COP_CKARRAY_STORE_I8		0xC0
+#define	COP_ARRAY_LEN				0xC1
 
 /*
  * Field opcodes.
  */
-#define	COP_BREAD_FIELD				0xC4
-#define	COP_UBREAD_FIELD			0xC5
-#define	COP_SREAD_FIELD				0xC6
-#define	COP_USREAD_FIELD			0xC7
-#define	COP_IREAD_FIELD				0xC8
-#define	COP_PREAD_FIELD				0xC9
-#define	COP_BWRITE_FIELD			0xCA
-#define	COP_SWRITE_FIELD			0xCB
-#define	COP_IWRITE_FIELD			0xCC
-#define	COP_PWRITE_FIELD			0xCD
-#define	COP_PREAD_THIS				0xCE
-#define	COP_IREAD_THIS				0xCF
+#define	COP_BREAD_FIELD				0xC2
+#define	COP_UBREAD_FIELD			0xC3
+#define	COP_SREAD_FIELD				0xC4
+#define	COP_USREAD_FIELD			0xC5
+#define	COP_IREAD_FIELD				0xC6
+#define	COP_PREAD_FIELD				0xC7
+#define	COP_BWRITE_FIELD			0xC8
+#define	COP_SWRITE_FIELD			0xC9
+#define	COP_IWRITE_FIELD			0xCA
+#define	COP_PWRITE_FIELD			0xCB
+#define	COP_PREAD_THIS				0xCC
+#define	COP_IREAD_THIS				0xCD
 
 /*
  * Call management opcodes.
  */
-#define	COP_CALL					0xD0
-#define	COP_CALL_CTOR				0xD1
-#define	COP_CALL_NATIVE				0xD2
-#define	COP_CALL_NATIVE_VOID		0xD3
+#define	COP_CALL					0xCE
+#define	COP_CALL_CTOR				0xCF
+#define	COP_CALL_NATIVE				0xD0
+#define	COP_CALL_NATIVE_VOID		0xD1
+#define	COP_CALL_NATIVE_RAW			0xD2
+#define	COP_CALL_NATIVE_VOID_RAW	0xD3
 #define	COP_CALL_VIRTUAL			0xD4
 #define	COP_CALL_INTERFACE			0xD5
 #define	COP_RETURN					0xD6
@@ -309,52 +305,53 @@ extern	"C" {
 #define	COP_JSR						0xDA
 #define	COP_RET_JSR					0xDB
 #define	COP_PUSH_THREAD				0xDC
-#define	COP_PUSHDOWN				0xDD
-#define	COP_CCTOR_ONCE				0xDE
-#define	COP_CALLI					0xDF
-#define	COP_JMPI					0xE0
+#define	COP_PUSH_THREAD_RAW			0xDD
+#define	COP_PUSHDOWN				0xDE
+#define	COP_CCTOR_ONCE				0xDF
+#define	COP_CALLI					0xE0
+#define	COP_JMPI					0xE1
 
 /*
  * Class-related opcodes.
  */
-#define	COP_CASTCLASS				0xE1
-#define	COP_ISINST					0xE2
-#define	COP_CASTINTERFACE			0xE3
-#define	COP_ISINTERFACE				0xE4
-#define	COP_GET_STATIC				0xE5
-#define	COP_NEW						0xE6
-#define	COP_NEW_VALUE				0xE7
-#define	COP_LDSTR					0xE8
-#define	COP_LDTOKEN					0xE9
-#define	COP_BOX						0xEA
-#define	COP_BOX_PTR					0xEB
+#define	COP_CASTCLASS				0xE2
+#define	COP_ISINST					0xE3
+#define	COP_CASTINTERFACE			0xE4
+#define	COP_ISINTERFACE				0xE5
+#define	COP_GET_STATIC				0xE6
+#define	COP_NEW						0xE7
+#define	COP_NEW_VALUE				0xE8
+#define	COP_LDSTR					0xE9
+#define	COP_LDTOKEN					0xEA
+#define	COP_BOX						0xEB
+#define	COP_BOX_PTR					0xEC
 
 /*
  * Memory-related opcodes.
  */
-#define	COP_MEMCPY					0xEC
-#define	COP_MEMMOVE					0xED
-#define	COP_MEMZERO					0xEE
-#define	COP_MEMSET					0xEF
+#define	COP_MEMCPY					0xED
+#define	COP_MEMMOVE					0xEE
+#define	COP_MEMZERO					0xEF
+#define	COP_MEMSET					0xF0
 
 /*
  * Argument packing for native calls.
  */
-#define	COP_WADDR_NATIVE_M1			0xF0
-#define	COP_WADDR_NATIVE_0			0xF1
-#define	COP_WADDR_NATIVE_1			0xF2
-#define	COP_WADDR_NATIVE_2			0xF3
-#define	COP_WADDR_NATIVE_3			0xF4
-#define	COP_WADDR_NATIVE_4			0xF5
-#define	COP_WADDR_NATIVE_5			0xF6
-#define	COP_WADDR_NATIVE_6			0xF7
-#define	COP_WADDR_NATIVE_7			0xF8
+#define	COP_WADDR_NATIVE_M1			0xF1
+#define	COP_WADDR_NATIVE_0			0xF2
+#define	COP_WADDR_NATIVE_1			0xF3
+#define	COP_WADDR_NATIVE_2			0xF4
+#define	COP_WADDR_NATIVE_3			0xF5
+#define	COP_WADDR_NATIVE_4			0xF6
+#define	COP_WADDR_NATIVE_5			0xF7
+#define	COP_WADDR_NATIVE_6			0xF8
+#define	COP_WADDR_NATIVE_7			0xF9
 
 /*
  * Quick byte loads and stores.
  */
-#define	COP_BLOAD					0xF9
-#define	COP_BSTORE					0xFA
+#define	COP_BLOAD					0xFA
+#define	COP_BSTORE					0xFB
 
 /*
  * Make the next instruction wider.
@@ -466,6 +463,12 @@ extern	"C" {
 #define	COP_PREFIX_STRING_NE		0x44
 #define	COP_PREFIX_STRING_GET_CHAR	0x45
 #define	COP_PREFIX_TYPE_FROM_HANDLE	0x46
+
+/*
+ * Binary value fixups.
+ */
+#define	COP_PREFIX_FIX_I4_I			0x47
+#define	COP_PREFIX_FIX_I4_U			0x48
 
 /*
  * Definition of a CVM stack word which can hold

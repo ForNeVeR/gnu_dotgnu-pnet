@@ -1,4 +1,9 @@
 
+2004-03-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* pnetlib.spec.in: clean up the spec file (thanks to
+	Russell Stuart <russell@stuart.id.au>).
+
 2004-03-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, tools/.cvsignore, tools/Makefile.am:

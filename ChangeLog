@@ -4,6 +4,9 @@
 	* configure.in, libc/Makefile.am, libm/Makefile.am: update the
 	pnetC build system to use the assembly cache.
 
+	* missing: update the "missing" script so that it is no longer
+	"too old or missing".
+
 2003-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.0" release.

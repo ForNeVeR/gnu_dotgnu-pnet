@@ -67,13 +67,14 @@
 static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 						 ILMethod *method, ILStandAloneSig *localVarSig,
 						 ILType *returnType, int isConstructor,
-						 int suppressThis)
+						 int isExtern, int suppressThis)
 {
 	ILUInt32 offset;
 	ILUInt32 maxArgOffset;
 	ILUInt32 num;
 	ILUInt32 current;
 	ILUInt32 argIndex;
+	ILUInt32 extraLocals;
 	ILType *signature;
 	ILType *type;
 	unsigned long pushDown;
@@ -137,6 +138,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		argIndex = 0;
 		offset = 0;
 	}
+	extraLocals = 0;
 	for(current = 1; current <= num; ++current)
 	{
 		type = ILTypeGetEnumType(ILTypeGetParam(signature, current));
@@ -148,6 +150,13 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		else
 		{
 			offset += GetTypeSize(type);
+
+			/* We need an extra local to pass value types
+			   by pointer to native methods */
+			if(ILType_IsValueType(type))
+			{
+				++extraLocals;
+			}
 		}
 	}
 	maxArgOffset = offset;
@@ -240,12 +249,32 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 			offset += GetTypeSize(type);
 		}
 	}
-	else if(returnType)
+	else if(isExtern)
 	{
-		/* We need a temporary local for the return value */
-		ALLOC_LOCALS(1);
-		coder->localOffsets[0] = offset;
-		offset += GetTypeSize(returnType);
+		/* Allocate locals for external native methods */
+		if(returnType)
+		{
+			/* We need a temporary local for the return value,
+			   plus temporary locals for the value type arguments */
+			ALLOC_LOCALS(1 + extraLocals);
+			coder->localOffsets[0] = offset;
+			offset += GetTypeSize(returnType);
+			for(current = 0; current < extraLocals; ++current)
+			{
+				coder->localOffsets[current + 1] = offset;
+				++offset;
+			}
+		}
+		else
+		{
+			/* We need temporary locals for the value type arguments */
+			ALLOC_LOCALS(extraLocals);
+			for(current = 0; current < extraLocals; ++current)
+			{
+				coder->localOffsets[current] = offset;
+				++offset;
+			}
+		}
 	}
 
 	/* Output the stack height check instruction, which is fixed
@@ -293,7 +322,7 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 {
 	return CVMEntryPoint((ILCVMCoder *)_coder, start, method,
 						 code->localVarSig, 0,
-						 ILMethod_IsConstructor(method), 0);
+						 ILMethod_IsConstructor(method), 0, 0);
 }
 
 /*
@@ -308,13 +337,15 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	ILType *returnType = signature->un.method.retType;
 	ILUInt32 numArgs;
 	ILUInt32 param;
+	ILUInt32 extraLocals;
+	int returnIsTop;
 
 	/* Output the entry point code */
 	returnType = ILTypeGetEnumType(returnType);
 	if(returnType == ILType_Void)
 	{
 		if(!CVMEntryPoint(coder, start, method, 0, (ILType *)0,
-						  ILMethod_IsConstructor(method), 0))
+						  ILMethod_IsConstructor(method), 1, 0))
 		{
 			return 0;
 		}
@@ -322,7 +353,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	else
 	{
 		if(!CVMEntryPoint(coder, start, method, 0, returnType,
-						  ILMethod_IsConstructor(method), 0))
+						  ILMethod_IsConstructor(method), 1, 0))
 		{
 			return 0;
 		}
@@ -337,12 +368,18 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 		CVM_ADJUST(1);
 		++numArgs;
 	}
+	extraLocals = 0;
+	returnIsTop = 1;
 	if(ILType_IsValueType(returnType))
 	{
 		/* Value type return pointers are pushed just after the thread */
 		CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
 		CVM_ADJUST(1);
 		++numArgs;
+	}
+	if(returnType != ILType_Void)
+	{
+		++extraLocals;
 	}
 	if(ILType_HasThis(signature))
 	{
@@ -362,6 +399,15 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 		{
 			CVM_WIDE(COP_WADDR, coder->argOffsets[param]);
 			CVM_ADJUST(1);
+			if(param > 0 &&
+			   ILType_IsValueType(ILTypeGetEnumType
+			   		(ILTypeGetParam(signature, param))))
+			{
+				CVM_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
+				CVM_WIDE(COP_WADDR, coder->localOffsets[extraLocals]);
+				++extraLocals;
+				returnIsTop = 0;
+			}
 			++numArgs;
 		}
 	}
@@ -372,6 +418,14 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 		{
 			CVM_WIDE(COP_WADDR, coder->argOffsets[param]);
 			CVM_ADJUST(1);
+			if(ILType_IsValueType(ILTypeGetEnumType
+			   		(ILTypeGetParam(signature, param + 1))))
+			{
+				CVM_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
+				CVM_WIDE(COP_WADDR, coder->localOffsets[extraLocals]);
+				++extraLocals;
+				returnIsTop = 0;
+			}
 			++numArgs;
 		}
 	}
@@ -470,8 +524,19 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 
 			default:
 			{
-				param = GetTypeSize(returnType);
-				CVM_RETURN(param);
+				if(returnIsTop)
+				{
+					param = GetTypeSize(returnType);
+					CVM_RETURN(param);
+				}
+				else
+				{
+					param = GetTypeSize(returnType);
+					CVM_DWIDE(COP_MLOAD, coder->localOffsets[0], param);
+					CVM_ADJUST(param);
+					CVM_RETURN(param);
+					CVM_ADJUST(-((ILInt32)param));
+				}
 			}
 			break;
 		}
@@ -497,6 +562,8 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	ILType *signature = ILMethod_Signature(method);
 	ILUInt32 numArgs;
 	ILUInt32 param;
+	ILUInt32 extraLocals;
+	int returnIsTop;
 	ILInt32 dest;
 	unsigned char *start2;
 
@@ -522,7 +589,7 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 
 	/* Output the entry point code for the allocating constructor */
 	if(!CVMEntryPoint(coder, &start2, method, 0,
-					  ILType_FromClass(ILMethod_Owner(method)), 0, 1))
+					  ILType_FromClass(ILMethod_Owner(method)), 0, 1, 1))
 	{
 		return 0;
 	}
@@ -538,6 +605,8 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 
 	/* Push the arguments for the call onto the stack */
 	numArgs = 0;
+	returnIsTop = 1;
+	extraLocals = 1;
 	if(isInternal)
 	{
 		/* Push a pointer to the thread value */
@@ -549,6 +618,14 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	{
 		CVM_WIDE(COP_WADDR, coder->argOffsets[param]);
 		CVM_ADJUST(1);
+		if(ILType_IsValueType(ILTypeGetEnumType
+		   		(ILTypeGetParam(signature, param + 1))))
+		{
+			CVM_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
+			CVM_WIDE(COP_WADDR, coder->localOffsets[extraLocals]);
+			++extraLocals;
+			returnIsTop = 0;
+		}
 		++numArgs;
 	}
 	CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
@@ -561,7 +638,17 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	CVM_ADJUST(-((ILInt32)(numArgs + 1)));
 
 	/* Return the contents of the local, which is the allocated object */
-	CVM_RETURN(1);
+	if(returnIsTop)
+	{
+		CVM_RETURN(1);
+	}
+	else
+	{
+		CVM_WIDE(COP_PLOAD, coder->localOffsets[0]);
+		CVM_ADJUST(1);
+		CVM_RETURN(1);
+		CVM_ADJUST(-1);
+	}
 
 	/* Done */
 	return 1;

@@ -7,6 +7,9 @@
 * engine/lib_thread.c, engine/internal.c, engine/Makefile.am: implement
 the "internalcall" methods for "System.Threading.Monitor".
 
+* engine/cvmc_setup.c: make sure that value type arguments are
+passed to native methods by pointer correctly.
+
 2001-10-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm_dasm.c, engine/cvmc_obj.c, engine/cvm_ptr.c,

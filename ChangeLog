@@ -23,6 +23,9 @@
 	runtime/System/Threading/Thread.cs: implement local data store
 	slots for threads, based around a "[ThreadStatic]" variable.
 
+	* System/Diagnostics/Process.cs: create the "StartInfo" object
+	if one doesn't exist yet.
+
 2003-07-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Reflection/Emit/ILGenerator.cs: Fix minor array size

@@ -520,6 +520,10 @@ public class Process
 			{
 				get
 				{
+					if(startInfo == null)
+					{
+						startInfo = new ProcessStartInfo();
+					}
 					return startInfo;
 				}
 				set

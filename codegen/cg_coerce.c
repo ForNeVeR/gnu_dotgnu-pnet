@@ -121,8 +121,8 @@ static int GetReferenceConvertRules(ILGenInfo *info, ILType *fromType,
 	}
 
 	/* Convert "fromType" and "toType" into their class versions */
-	classFrom = ILTypeToClass(info, fromType);
-	classTo = ILTypeToClass(info, toType);
+	classFrom = ILClassResolve(ILTypeToClass(info, fromType));
+	classTo = ILClassResolve(ILTypeToClass(info, toType));
 	if(!classFrom || !classTo)
 	{
 		return 0;

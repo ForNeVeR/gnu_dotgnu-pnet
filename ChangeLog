@@ -1,3 +1,10 @@
+
+2004-01-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_coerce.c (GetReferenceConvertRules): make sure
+	that the "from" and "to" classes are fully resolved before
+	testing their relationship.
+
 2004-01-13  Adam Ballai <adam@thefrontnetworks.net>
 
 	* configure.in, support/thr_choose.h, pt_defs.h: Enable

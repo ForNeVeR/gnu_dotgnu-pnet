@@ -29,6 +29,14 @@
 				<file name="../resources/en_US/Xsharp/Xsharp.resources"/>
 			</resources>
 
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-flatin1-charset"/>
+			<arg compiler="csc" value="/nowarn:626"/>
+			<arg compiler="csc" value="/nowarn:649"/>
+			<arg compiler="csc" value="/nowarn:168"/>
+			<arg compiler="csc" value="/nowarn:67"/>
+			<arg compiler="csc" value="/nowarn:169"/>
 		</compile>
 
 	</target>

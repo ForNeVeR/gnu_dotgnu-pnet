@@ -21,6 +21,7 @@
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
 			<arg compiler="cscc" value="-Wno-empty-input"/>
 			<arg compiler="cscc" value="-fminimize-parameters"/>
 			<arg compiler="csc" value="/nowarn:626"/>
@@ -54,6 +55,7 @@
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
 			<arg compiler="cscc" value="-Wno-empty-input"/>
 			<arg compiler="cscc" value="-fminimize-parameters"/>
 			<arg compiler="csc" value="/nowarn:626"/>
@@ -79,6 +81,7 @@
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
 			<arg compiler="cscc" value="-Wno-empty-input"/>
 			<arg compiler="cscc" value="-fminimize-parameters"/>
 			<arg compiler="csc" value="/nowarn:626"/>
@@ -104,6 +107,7 @@
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
 			<arg compiler="cscc" value="-Wno-empty-input"/>
 			<arg compiler="cscc" value="-fminimize-parameters"/>
 			<arg compiler="csc" value="/nowarn:626"/>
@@ -129,6 +133,7 @@
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
 			<arg compiler="cscc" value="-Wno-empty-input"/>
 			<arg compiler="cscc" value="-fminimize-parameters"/>
 			<arg compiler="csc" value="/nowarn:626"/>
@@ -154,6 +159,7 @@
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
 			<arg compiler="cscc" value="-Wno-empty-input"/>
 			<arg compiler="cscc" value="-fminimize-parameters"/>
 			<arg compiler="csc" value="/nowarn:626"/>
@@ -187,6 +193,7 @@
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
 			<arg compiler="cscc" value="-Wno-empty-input"/>
 			<arg compiler="cscc" value="-fminimize-parameters"/>
 			<arg compiler="csc" value="/nowarn:626"/>

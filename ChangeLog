@@ -46,6 +46,16 @@
 	runtime/System/Security/Policy/ProvideAssemblyEvidenceEventArgs.cs:
 	mark up 1.2 features properly in the code.
 
+	* DotGNU.Images/DotGNU.Images.build, DotGNU.SSL/SSL.build,
+	DotGNU.Terminal/DotGNU.Terminal.build, I18N/I18N.build,
+	System.Drawing.Postscript/System.Drawing.Postscript.build,
+	System.Drawing.Win32/System.Drawing.Win32.build,
+	System.Drawing.Xsharp/System.Drawing.Xsharp.build,
+	Xsharp/Xsharp.build, csunit/csunit.build, csupport/csupport.build:
+	set the version numbers for our helper assemblies to match the
+	framework version, so that we can eventually have multiple
+	helper versions side by side.
+
 2003-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, DotGNU.Terminal/.cvsignore,

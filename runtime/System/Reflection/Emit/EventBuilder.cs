@@ -32,8 +32,49 @@ using System.Runtime.CompilerServices;
 [TODO]
 public sealed class EventBuilder
 {
+	[TODO]
+	public void AddOtherMethod(MethodBuilder mdBuilder)
+	{
+		 throw new NotImplementedException("AddOtherMethod");
+	}
 
-	// TODO
+	[TODO]
+	public EventToken GetEventToken()
+	{
+		 throw new NotImplementedException("GetEventToken");
+	}
+
+	[TODO]
+	public void SetAddOnMethod(MethodBuilder mdBuilder)
+	{
+		 throw new NotImplementedException("SetAddOnMethod");
+	}
+
+	[TODO]
+	public void SetCustomAttribute(CustomAttributeBuilder customBuilder)
+	{
+		 throw new NotImplementedException("SetCustomAttribute");
+	}
+
+	[TODO]
+	public void SetCustomAttribute(ConstructorInfo con, byte[] binaryAttribute)
+	{
+		 throw new NotImplementedException("SetCustomAttribute");
+	}
+
+	[TODO]
+	public void SetRaiseMethod(MethodBuilder mdBuilder)
+	{
+		 throw new NotImplementedException("SetRaiseMethod");
+	}
+
+	[TODO]
+	public void SetRemoveOnMethod(MethodBuilder mdBuilder)
+	{
+		 throw new NotImplementedException("SetRemoveOnMethod");
+	}
+
+// TODO
 
 }; // class EventBuilder
 

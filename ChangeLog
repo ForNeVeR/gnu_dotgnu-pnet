@@ -8,6 +8,10 @@
 	* runtime/System/Reflection/Emit/OpCodes.cs: fix typo in the
 	fields (Cgt_un to Cgt_Un).
 
+	* runtime/System/Reflection/Emit/EventBuilder.cs,
+	runtime/System/Reflection/Emit/ModuleBuilder.cs: Even more
+	stubs for Reflection.Emit namespace.
+
 2003-03-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Generics/Generics.html, Generics/TreeBase.cs,

@@ -25,12 +25,13 @@ namespace System.Reflection.Emit
 #if !ECMA_COMPAT
 
 using System;
-using System.Reflection;
 using System.Security;
+using System.Resources;
+using System.Reflection;
 using System.Security.Policy;
+using System.Diagnostics.SymbolStore;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
-using System.Resources;
 
 public class ModuleBuilder : Module
 {
@@ -87,7 +88,7 @@ public class ModuleBuilder : Module
 				// TODO
 			}
 
-#if false // TODO - debug symbol support
+	// TODO - debug symbol support
 
 	// Define a document for source.
 	[TODO]
@@ -98,8 +99,6 @@ public class ModuleBuilder : Module
 				// TODO
 				return null;
 			}
-
-#endif
 
 	// Define an enumerated type within this module.
 	[TODO]
@@ -411,8 +410,6 @@ public class ModuleBuilder : Module
 				return new StringToken(0);
 			}
 
-#if false // TODO - debug symbol support
-
 	// Get the symbol writer associated with this module.
 	[TODO]
 	public ISymbolWriter GetSymWriter()
@@ -420,8 +417,6 @@ public class ModuleBuilder : Module
 				// TODO
 				return null;
 			}
-
-#endif
 
 	// Find a type within this module.  Returns NULL if not present.
 	[TODO]

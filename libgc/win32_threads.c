@@ -7,6 +7,13 @@
 #include <windows.h>
 #endif
 
+/* Temporary hack to work around cygwin 1.3 compile issues */
+#if defined(__CYGWIN__) || defined(__MINGW32__)
+#define	__try
+#define	__except(x)	if(0)
+#define	__finally	if(0)
+#endif
+
 #define MAX_THREADS 64
 
 struct thread_entry {

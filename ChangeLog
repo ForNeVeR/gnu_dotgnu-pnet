@@ -15,6 +15,9 @@
 	for libffi and libgc, to ensure that the "-mno-cygwin" flag
 	is passed down correctly.
 
+	* libgc/mark.c, libgc/win32_threads.c: work around problems
+	with "__try" under mingw32 compilers.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

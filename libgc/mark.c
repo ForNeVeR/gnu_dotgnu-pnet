@@ -20,7 +20,7 @@
 # include "private/gc_pmark.h"
 
 /* Temporary hack to work around cygwin 1.3 compile issues */
-#if defined(__CYGWIN__)
+#if defined(__CYGWIN__) || defined(__MINGW32__)
 #define	__try
 #define	__except(x)	if(0)
 #endif

@@ -4,6 +4,9 @@
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon
 	box in the file dialog (navigation is not possible yet).
 
+	* System.Windows.Forms/FileDialog.cs: add key navigation support
+	to the file dialog (incomplete).
+
 2003-12-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Remoting.txt,

@@ -500,6 +500,20 @@ public abstract class FileDialog : CommonDialog
 					}
 				}
 
+		// Determine if this entry's name starts with a particular character.
+		// The "ch" value is assumed to be lower case.
+		public bool StartsWith(char ch)
+				{
+					if(name.Length > 0 && Char.ToLower(name[0]) == ch)
+					{
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+
 	}; // class FilesystemEntry
 
 	// Determine if we appear to be running on Windows.
@@ -654,8 +668,10 @@ public abstract class FileDialog : CommonDialog
 	private sealed class FileIconListBox : Control
 	{
 		// Internal state.
+		private FileDialogForm dialog;
 		private HScrollBar scrollBar;
 		private FilesystemEntry[] entries;
+		private int numEntries;
 		private int columns;
 		private int rows;
 		private int leftMostColumn;
@@ -666,13 +682,15 @@ public abstract class FileDialog : CommonDialog
 		private Icon[] icons;
 
 		// Constructor.
-		public FileIconListBox()
+		public FileIconListBox(FileDialogForm dialog)
 				{
 					// Set the appropriate style properties for this control.
+					this.dialog = dialog;
 					ForeColor = SystemColors.WindowText;
 					BackColor = SystemColors.Window;
 					BorderStyleInternal = BorderStyle.Fixed3D;
 					ResizeRedraw = true;
+					TabStop = true;
 
 					// Create the horizontal scroll bar and position it.
 					scrollBar = new HScrollBar();
@@ -680,6 +698,7 @@ public abstract class FileDialog : CommonDialog
 					scrollBar.BackColor = SystemColors.Control;
 					scrollBar.Visible = false;
 					scrollBar.Dock = DockStyle.Bottom;
+					scrollBar.TabStop = false;
 					Controls.Add(scrollBar);
 
 					// Load the icons.  We need icons for drives and links.
@@ -722,6 +741,14 @@ public abstract class FileDialog : CommonDialog
 					set
 					{
 						entries = value;
+						if(entries != null)
+						{
+							numEntries = entries.Length;
+						}
+						else
+						{
+							numEntries = 0;
+						}
 						LayoutControl();
 						Invalidate();
 					}
@@ -731,7 +758,7 @@ public abstract class FileDialog : CommonDialog
 		private void LayoutControl()
 				{
 					// Bail out early if there are no entries to display.
-					if(entries == null || entries.Length == 0)
+					if(numEntries == 0)
 					{
 						rows = 1;
 						columns = 1;
@@ -786,7 +813,7 @@ public abstract class FileDialog : CommonDialog
 					{
 						rows = 1;
 					}
-					columns = (entries.Length + rows - 1) / rows;
+					columns = (numEntries + rows - 1) / rows;
 					int visibleColumns =
 						(client.Width + columnWidth - 1) / columnWidth;
 					leftMostColumn = 0;
@@ -804,7 +831,7 @@ public abstract class FileDialog : CommonDialog
 						{
 							rows = 1;
 						}
-						columns = (entries.Length + rows - 1) / rows;
+						columns = (numEntries + rows - 1) / rows;
 						scrollBar.Value = 0;
 						scrollBar.Maximum = columns - 1;
 						scrollBar.SmallChange = 1;
@@ -826,7 +853,7 @@ public abstract class FileDialog : CommonDialog
 							   bool clearBackground)
 				{
 					// Bail out if the entry index is out of range.
-					if(entries == null || entry < 0 || entry >= entries.Length)
+					if(entry < 0 || entry >= numEntries)
 					{
 						return;
 					}
@@ -835,9 +862,14 @@ public abstract class FileDialog : CommonDialog
 					String name = entries[entry].name;
 					SizeF size = graphics.MeasureString(name, font);
 					int width = ((int)(size.Width)) + TextSelectOverlap * 2;
+					int height = textHeight + 2;
+					if(height > rowHeight)
+					{
+						height = rowHeight;
+					}
 					Rectangle textBounds = new Rectangle
 						(x + (IconWidth + IconSpacing - TextSelectOverlap),
-						 y + (rowHeight - textHeight) / 2, width, textHeight);
+						 y + (rowHeight - height) / 2, width, height);
 
 					// Draw the icon to the left of the text.
 					graphics.DrawIcon
@@ -877,14 +909,14 @@ public abstract class FileDialog : CommonDialog
 					graphics.DrawString
 							(name, font, foreground,
 							 (float)(textBounds.X + TextSelectOverlap),
-							 (float)(textBounds.Y));
+							 (float)(y + (rowHeight - textHeight) / 2));
 				}
 
 		// Draw a particular entry at its proper location.
 		private void DrawEntry(int entry)
 				{
 					// Bail out if the entry index is out of range.
-					if(entries == null || entry < 0 || entry >= entries.Length)
+					if(entry < 0 || entry >= numEntries)
 					{
 						return;
 					}
@@ -901,6 +933,23 @@ public abstract class FileDialog : CommonDialog
 					using(Graphics graphics = CreateGraphics())
 					{
 						DrawEntry(graphics, entry, x, y, Font, true);
+					}
+				}
+
+		// Change the selection.
+		private void ChangeSelection(int entry)
+				{
+					if(entry < 0 || entry >= numEntries)
+					{
+						entry = -1;
+					}
+					if(selected != entry)
+					{
+						int oldSelected = selected;
+						selected = entry;
+						DrawEntry(oldSelected);
+						DrawEntry(entry);
+						// TODO: scroll the entry into view if necessary.
 					}
 				}
 
@@ -928,6 +977,200 @@ public abstract class FileDialog : CommonDialog
 					}
 				}
 
+		// Handle a "focus enter" event.
+		protected override void OnEnter(EventArgs e)
+				{
+					base.OnEnter(e);
+					if(selected == -1)
+					{
+						// Set the focus to the first entry by default.
+						selected = 0;
+					}
+					DrawEntry(selected);
+				}
+
+		// Handle a "focus leave" event.
+		protected override void OnLeave(EventArgs e)
+				{
+					base.OnLeave(e);
+					if(selected != -1)
+					{
+						DrawEntry(selected);
+					}
+				}
+
+		// Determine if a character is recognized by a control as an input char.
+		protected override bool IsInputChar(char c)
+				{
+					if(Char.IsLetterOrDigit(c))
+					{
+						return false;
+					}
+					else
+					{
+						return base.IsInputChar(c);
+					}
+				}
+
+		// Process a dialog character.  We use letters and digits to
+		// select the next file starting with that character.
+		protected override bool ProcessDialogChar(char charCode)
+				{
+					if(Char.IsLetterOrDigit(charCode))
+					{
+						int current = selected;
+						int count = numEntries;
+						charCode = Char.ToLower(charCode);
+						while(count > 0)
+						{
+							++current;
+							if(current >= numEntries)
+							{
+								current = 0;
+							}
+							if(entries[current].StartsWith(charCode))
+							{
+								ChangeSelection(current);
+								break;
+							}
+							--count;
+						}
+						return true;
+					}
+					else
+					{
+						return base.ProcessDialogChar(charCode);
+					}
+				}
+
+		// Process a dialog key.
+		protected override bool ProcessDialogKey(Keys keyData)
+				{
+					int next = selected;
+					int visibleColumns;
+					switch(keyData)
+					{
+						case Keys.Left:
+						{
+							if(next >= rows)
+							{
+								next -= rows;
+							}
+						}
+						break;
+
+						case Keys.Right:
+						{
+							if(next == -1)
+							{
+								next = 0;
+							}
+							else
+							{
+								next += rows;
+								if(next >= numEntries)
+								{
+									next = numEntries - 1;
+								}
+							}
+						}
+						break;
+
+						case Keys.Up:
+						{
+							if(next > 0)
+							{
+								--next;
+							}
+						}
+						break;
+
+						case Keys.Down:
+						{
+							++next;
+							if(next >= numEntries)
+							{
+								next = numEntries - 1;
+							}
+						}
+						break;
+
+						case Keys.Home:
+						{
+							next = 0;
+						}
+						break;
+
+						case Keys.End:
+						{
+							next = numEntries - 1;
+						}
+						break;
+
+						case Keys.PageUp:
+						{
+							visibleColumns =
+								(columnWidth != 0 ?
+									((ClientSize.Width + columnWidth - 1)
+										/ columnWidth) : 0);
+							next -= rows * visibleColumns;
+							if(next < 0)
+							{
+								next = 0;
+							}
+						}
+						break;
+
+						case Keys.PageDown:
+						{
+							visibleColumns =
+								(columnWidth != 0 ?
+									((ClientSize.Width + columnWidth - 1)
+										/ columnWidth) : 0);
+							next += rows * visibleColumns;
+							if(next >= numEntries)
+							{
+								next = numEntries - 1;
+							}
+						}
+						break;
+
+						case Keys.Enter:
+						{
+							ActivateSelected();
+							return true;
+						}
+						// Not reached.
+
+						default: return base.ProcessDialogKey(keyData);
+					}
+					ChangeSelection(next);
+					return true;
+				}
+
+		// Activate the selected item.
+		private void ActivateSelected()
+				{
+					// Bail out if nothing is selected.
+					if(selected < 0 || selected >= numEntries)
+					{
+						return;
+					}
+
+					// Get the selected entry and check its type.
+					FilesystemEntry entry = entries[selected];
+					if(entry.isDirectory)
+					{
+						// This is a sub-directory which we should enter.
+						dialog.ChangeDirectory(entry.fullName);
+					}
+					else
+					{
+						// The user has selected a file: end the dialog.
+						// TODO
+					}
+				}
+
 	}; // class FileIconListBox
 
 	// Form that defines the UI of a file dialog.
@@ -942,12 +1185,14 @@ public abstract class FileDialog : CommonDialog
 		private ComboBox directory;
 		private Button upButton;
 		private Button newDirButton;
+		private Button homeButton;
 		private Label nameLabel;
 		private TextBox name;
 		private Label typeLabel;
 		private ComboBox type;
 		private Button okButton;
 		private Button cancelButton;
+		private String currentDirectory;
 
 		// Constructor.
 		public FileDialogForm(FileDialog fileDialogParent)
@@ -962,7 +1207,7 @@ public abstract class FileDialog : CommonDialog
 					vbox = new VBoxLayout();
 					vbox.Dock = DockStyle.Fill;
 					hbox = new HBoxLayout();
-					listBox = new FileIconListBox();
+					listBox = new FileIconListBox(this);
 					grid = new GridLayout(3, 2);
 					grid.StretchColumn = 1;
 					vbox.Controls.Add(hbox);
@@ -978,10 +1223,14 @@ public abstract class FileDialog : CommonDialog
 					newDirButton = new Button();
 					newDirButton.FlatStyle = FlatStyle.Popup;
 					newDirButton.Text = "New";	// TODO: change to an image.
+					homeButton = new Button();
+					homeButton.FlatStyle = FlatStyle.Popup;
+					homeButton.Text = "Home";	// TODO: change to an image.
 					hbox.StretchControl = directory;
 					hbox.Controls.Add(directory);
 					hbox.Controls.Add(upButton);
 					hbox.Controls.Add(newDirButton);
+					hbox.Controls.Add(homeButton);
 
 					// The second line is "listBox", already created above.
 
@@ -1019,6 +1268,12 @@ public abstract class FileDialog : CommonDialog
 					ClientSize = size;
 					MinimumSize = size;
 
+					// Hook up interesting events.
+					upButton.Click += new EventHandler(UpOneLevel);
+					homeButton.Click += new EventHandler(Home);
+					directory.SelectedIndexChanged +=
+						new EventHandler(DirectorySelectionChanged);
+
 					// Scan the initial directory.
 					String dir = fileDialogParent.InitialDirectory;
 					if(dir == null || dir.Length == 0)
@@ -1037,10 +1292,104 @@ public abstract class FileDialog : CommonDialog
 		// Change to a new directory.
 		public void ChangeDirectory(String dir)
 				{
+					// Record the current directory.
+					currentDirectory = dir;
+
+					// Scan the current directory and display the entries.
 					FilesystemEntry[] entries;
 					entries = ScanDirectory
 						(dir, "*.*", fileDialogParent.DereferenceLinks);
 					listBox.Entries = entries;
+
+					// Update the directory combo box with the list.
+					directory.BeginUpdate();
+					ComboBox.ObjectCollection items = directory.Items;
+					items.Clear();
+					String d = currentDirectory;
+					while(d != Path.GetPathRoot(d))
+					{
+						items.Add(Path.GetFileName(d));
+						d = Path.GetDirectoryName(d);
+					}
+					items.Add(d);
+					directory.Text = currentDirectory;
+					directory.EndUpdate();
+				}
+
+		// Reload the current view to match the current settings.
+		public void Reload()
+				{
+					ChangeDirectory(currentDirectory);
+				}
+
+		// Go up one level.
+		public void UpOneLevel()
+				{
+					if(currentDirectory != Path.GetPathRoot(currentDirectory))
+					{
+						ChangeDirectory
+							(Path.GetDirectoryName(currentDirectory));
+					}
+				}
+		private void UpOneLevel(Object sender, EventArgs e)
+				{
+					UpOneLevel();
+				}
+
+		// Go to the home directory.
+		public void Home()
+				{
+					String home = Environment.GetEnvironmentVariable("HOME");
+					if(home != null && home.Length > 0)
+					{
+						ChangeDirectory(home);
+					}
+				}
+		private void Home(Object sender, EventArgs e)
+				{
+					Home();
+				}
+
+		// Process a dialog key.
+		protected override bool ProcessDialogKey(Keys keyData)
+				{
+					if(keyData == Keys.F4)
+					{
+						directory.Focus();
+						directory.DroppedDown = true;
+						return true;
+					}
+					else if(keyData == Keys.F5)
+					{
+						Reload();
+						return true;
+					}
+					else if(keyData == (Keys.Alt | Keys.Home))
+					{
+						Home();
+						return true;
+					}
+					return base.ProcessDialogKey(keyData);
+				}
+
+		// Process a change of directory selection in a combo box.
+		private void DirectorySelectionChanged(Object sender, EventArgs e)
+				{
+					int index = directory.SelectedIndex;
+					String d = currentDirectory;
+					while(d != Path.GetPathRoot(d))
+					{
+						if(index <= 0)
+						{
+							break;
+						}
+						--index;
+						d = Path.GetDirectoryName(d);
+					}
+					if(d != currentDirectory)
+					{
+						ChangeDirectory(d);
+					}
 				}
 
 	}; // class FileDialogForm

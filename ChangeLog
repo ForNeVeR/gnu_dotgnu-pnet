@@ -1,3 +1,7 @@
+2002-09-06  Francis Rogers  <franny644@comcast.net>
+
+	* System/Net/Sockets/TcpClient.cs: New non-standard class.
+
 2002-09-06  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs (Parse): Lots of fixes.

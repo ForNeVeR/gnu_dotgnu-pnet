@@ -9,6 +9,9 @@
 
 	* System/IO/Ports/SerialPort.cs: Fix smallBuffer size from 0 to 1.
 
+	* System/IO/Ports/SerialPort.cs, samples/simple/portsample.cs: Implement
+	ReadExisting() and add a small sample for System.IO.Ports.
+
 2004-10-12  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XmlNode.cs, System.Xml/Private/SelectNodeList.cs, 

@@ -861,6 +861,15 @@ public class SerialPort
 	public String ReadExisting()
 			{
 				// TODO
+				int toRead = BytesToRead;
+				if(toRead > 0)
+				{
+					byte[] buffer = new byte[toRead];
+					if(Read(buffer, 0, toRead) > 0)
+					{
+						return encoding.GetString(buffer);
+					}
+				}
 				return null;
 			}
 

@@ -90,7 +90,7 @@ static void CallStaticConstructor(ILCoder *coder, ILClass *classInfo,
 			if(cctor != ((ILCVMCoder *)coder)->currentMethod)
 			{
 				/* Output a call to the static constructor */
-				CVM_BYTE(COP_CALL_EXTERN);
+				CVM_BYTE(COP_CALL);
 				CVM_PTR(cctor);
 			}
 		}
@@ -123,17 +123,7 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 								ILMethod *methodInfo)
 {
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 0);
-	if(ILMethodGetUserData(methodInfo) != 0)
-	{
-		/* We already know that the method is translated,
-		   so we can take a shortcut at call time */
-		CVM_BYTE(COP_CALL);
-	}
-	else
-	{
-		/* We may need to translate the method at call time */
-		CVM_BYTE(COP_CALL_EXTERN);
-	}
+	CVM_BYTE(COP_CALL);
 	CVM_PTR(methodInfo);
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
 }

@@ -43,18 +43,17 @@ extern	"C" {
 #define	CVM_OPER_BRANCH_LONG		12
 #define	CVM_OPER_SWITCH				13
 #define	CVM_OPER_CALL				14
-#define	CVM_OPER_CALL_EXTERN		15
-#define	CVM_OPER_CALL_NATIVE		16
-#define	CVM_OPER_CALL_INTERFACE		17
-#define	CVM_OPER_CLASS				18
-#define	CVM_OPER_UINT_AND_CLASS		19
-#define	CVM_OPER_ITEM				20
-#define	CVM_OPER_STRING				21
-#define	CVM_OPER_WIDE				22
-#define	CVM_OPER_PREFIX				23
-#define	CVM_OPER_METHOD				24
-#define	CVM_OPER_LD_INTERFACE		25
-#define	CVM_OPER_TAIL				27
+#define	CVM_OPER_CALL_NATIVE		15
+#define	CVM_OPER_CALL_INTERFACE		16
+#define	CVM_OPER_CLASS				17
+#define	CVM_OPER_UINT_AND_CLASS		18
+#define	CVM_OPER_ITEM				19
+#define	CVM_OPER_STRING				20
+#define	CVM_OPER_WIDE				21
+#define	CVM_OPER_PREFIX				22
+#define	CVM_OPER_METHOD				23
+#define	CVM_OPER_LD_INTERFACE		24
+#define	CVM_OPER_TAIL				25
 #define	CVM_OPER_PACK_VARARGS		26
 
 /*
@@ -340,8 +339,7 @@ static CVMOpcode const opcodes[256] = {
 	 * Call management opcodes.
 	 */
 	{"call",			CVM_OPER_CALL},
-	{"call_extern",		CVM_OPER_CALL_EXTERN},
-	{"call_ctor",		CVM_OPER_CALL_EXTERN},
+	{"call_ctor",		CVM_OPER_CALL},
 	{"call_native",		CVM_OPER_CALL_NATIVE},
 	{"call_native_void", CVM_OPER_CALL_NATIVE},
 	{"call_virtual",	CVM_OPER_WIDE_TWO_UINT},
@@ -403,6 +401,7 @@ static CVMOpcode const opcodes[256] = {
 	/*
 	 * Reserved opcodes.
 	 */
+	{"reserved_fb",		CVM_OPER_NONE},
 	{"reserved_fc",		CVM_OPER_NONE},
 
 	/*
@@ -710,7 +709,6 @@ dumpOpcode:
 		break;
 
 		case CVM_OPER_CALL:
-		case CVM_OPER_CALL_EXTERN:
 		{
 			method = (ILMethod *)CVMReadPointer(pc + 1);
 			ILDumpMethodType(stream, ILProgramItem_Image(currMethod),

@@ -37,6 +37,12 @@
 
 	* engine/cvm_dasm.c: simplify the reporting of "tail" instructions.
 
+	* engine/cvm.h, engine/cvm_call.c, engine/cvm_dasm.c,
+	engine/cvmc_call.c: collapse "call" and "call_extern" into a
+	single "call" instruction; look for a cached method entry point
+	in "call_ctor"; use the correct number of parameter words when
+	collapsing the stack for tail calls.
+
 2002-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_except.c, engine/engine.h:

@@ -265,78 +265,61 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 	return height;
 }
 
+/*
+ * Get the number of parameter words for a tail call method.
+ */
+static ILUInt32 GetTailParamCount(ILMethod *method, int suppressThis)
+{
+	ILType *signature = ILMethod_Signature(method);
+	ILUInt32 num = 0;
+	ILUInt32 numParams;
+	ILUInt32 param;
+
+	/* Account for the "this" argument */
+	if(ILType_HasThis(signature) && !suppressThis)
+	{
+		++num;
+	}
+
+	/* Account for the size of the regular arguments */
+	numParams = ILTypeNumParams(signature);
+	for(param = 1; param <= numParams; ++param)
+	{
+		num += StackWordsForType(ILTypeGetParam(signature, param));
+	}
+
+	/* Account for the vararg array parameter */
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+				IL_META_CALLCONV_VARARG)
+	{
+		++num;
+	}
+
+	/* Return the word count to the caller */
+	return num;
+}
+
 #elif defined(IL_CVM_LOCALS)
 
 ILMethod *methodToCall;
-ILType *methodSignature;
 ILCallFrame *callFrame;
-ILInt32 numParams;
 
 #elif defined(IL_CVM_MAIN)
 
 /**
  * <opcode name="call" group="Call management instructions">
- *   <operation>Call a method which is internal to the CVM
- *              method cache</operation>
+ *   <operation>Call a method</operation>
  *
  *   <format>call<fsep/>mptr</format>
  *
  *   <form name="call" code="COP_CALL"/>
  *
  *   <description>The <i>call</i> instruction effects a method
- *   call to <i>mptr</i>.</description>
- *
- *   <notes>The <i>mptr</i> value is a 32-bit or 64-bit method
- *   pointer reference.<p/>
- *
- *   The <i>call</i> instruction is typically used when the CVM
- *   bytecode translation process discovers that the method has
- *   already been translated.  Since it is not necessary to check
- *   for translation at run time, then engine can take a short cut.<p/>
- *
- *   See the description of the <i>call_extern</i> instruction for
- *   a full account of frame handling, argument handling, etc.</notes>
- * </opcode>
- */
-VMCASE(COP_CALL):
-{
-	/* Call a method that has already been converted into CVM code */
-	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
-
-	/* Allocate a new call frame */
-	ALLOC_CALL_FRAME();
-
-	/* Fill in the call frame details */
-	callFrame->method = method;
-	callFrame->pc = pc + sizeof(void *) + 1;
-	callFrame->frame = frame;
-	callFrame->exceptHeight = thread->exceptHeight;
-
-	/* Pass control to the new method */
-	pc = (unsigned char *)(methodToCall->userData);
-	method = methodToCall;
-	CVM_OPTIMIZE_BLOCK();
-#ifdef IL_PROFILE_CVM_METHODS
-	++(method->count);
-#endif
-}
-VMBREAK;
-
-/**
- * <opcode name="call_extern" group="Call management instructions">
- *   <operation>Call a method which may be external to the
- *              CVM method cache</operation>
- *
- *   <format>call_extern<fsep/>mptr</format>
- *
- *   <form name="call_extern" code="COP_CALL_EXTERN"/>
- *
- *   <description>The <i>call_extern</i> instruction effects a method
  *   call to <i>mptr</i>.  The call proceeds as follows:
  *
  *   <ul>
  *     <li>The method is converted into CVM bytecode.  If this is not
- *         possible, then <code>System.MissingMethodException</code>
+ *         possible, then <code>System.Security.VerificationException</code>
  *         will be thrown.</li>
  *     <li>A new call frame is allocated.</li>
  *     <li>The current method, program counter, frame pointer, and
@@ -350,7 +333,7 @@ VMBREAK;
  *   <notes>The <i>mptr</i> value is a 32-bit or 64-bit method
  *   pointer reference.<p/>
  *
- *   The <i>call_extern</i> instruction does not set up a new frame pointer.
+ *   The <i>call</i> instruction does not set up a new frame pointer.
  *   The <i>set_num_args</i> instruction is used to set up local variable
  *   frames at the start of the new method's code.
  *
@@ -358,14 +341,14 @@ VMBREAK;
  *   method arguments from the stack at method exit.</notes>
  *
  *   <exceptions>
- *     <exception name="System.MissingMethodException">Raised if
+ *     <exception name="System.Security.VerificationException">Raised if
  *     the method could not be translated into CVM bytecode.</exception>
  *   </exceptions>
  * </opcode>
  */
-VMCASE(COP_CALL_EXTERN):
+VMCASE(COP_CALL):
 {
-	/* Call a method that we don't know if it has been converted */
+	/* Call a method */
 	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
 	if(methodToCall->userData)
 	{
@@ -437,11 +420,11 @@ VMBREAK;
  *     <li>If the CIL bytecode invoked the constructor method using
  *         <i>newobj</i>, then <i>call_ctor</i> should be used.</li>
  *     <li>If the CIL bytecode invoked a parent class's constructor
- *         method directly using <i>call</i>, then <i>call_extern</i>
- *         should be used.</li>
+ *         method directly using the IL <i>call</i> instruction,
+ *         then <i>call</i> should be used.</li>
  *   </ul>
  *
- *   See the description of the <i>call_extern</i> instruction for
+ *   See the description of the <i>call</i> instruction for
  *   a full account of frame handling, argument handling, etc.</notes>
  * </opcode>
  */
@@ -450,30 +433,52 @@ VMCASE(COP_CALL_CTOR):
 	/* Call a constructor that we don't know if it has been converted */
 	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
 
-	/* Copy the state back into the thread object */
-	COPY_STATE_TO_THREAD();
-
-	/* Convert the method */
-	tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
-	if(!tempptr)
+	/* Determine if we have already converted the constructor */
+	if(methodToCall->userData)
 	{
-		VERIFY_FAILED_EXCEPTION();
+		/* It is converted: allocate a new call frame */
+		ALLOC_CALL_FRAME();
+
+		/* Fill in the call frame details */
+		callFrame->method = method;
+		callFrame->pc = pc + 1 + sizeof(void *);
+		callFrame->frame = frame;
+		callFrame->exceptHeight = thread->exceptHeight;
+
+		/* Pass control to the new method */
+		pc = ((unsigned char *)(methodToCall->userData)) -
+			 ILCoderCtorOffset(thread->process->coder);
+		method = methodToCall;
+		CVM_OPTIMIZE_BLOCK();
 	}
+	else
+	{
+		/* Copy the state back into the thread object */
+		COPY_STATE_TO_THREAD();
 
-	/* Allocate a new call frame */
-	ALLOC_CALL_FRAME();
+		/* Convert the method */
+		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		if(!tempptr)
+		{
+			VERIFY_FAILED_EXCEPTION();
+		}
 
-	/* Fill in the call frame details */
-	callFrame->method = method;
-	callFrame->pc = thread->pc + 1 + sizeof(void *);
-	callFrame->frame = thread->frame;
-	callFrame->exceptHeight = thread->exceptHeight;
+		/* Allocate a new call frame */
+		ALLOC_CALL_FRAME();
 
-	/* Restore the state information and jump to the new method */
-	RESTORE_STATE_FROM_THREAD();
-	pc = ((unsigned char *)tempptr) - ILCoderCtorOffset(thread->process->coder);
-	method = methodToCall;
-	CVM_OPTIMIZE_BLOCK();
+		/* Fill in the call frame details */
+		callFrame->method = method;
+		callFrame->pc = thread->pc + 1 + sizeof(void *);
+		callFrame->frame = thread->frame;
+		callFrame->exceptHeight = thread->exceptHeight;
+
+		/* Restore the state information and jump to the new method */
+		RESTORE_STATE_FROM_THREAD();
+		pc = ((unsigned char *)tempptr) -
+			 ILCoderCtorOffset(thread->process->coder);
+		method = methodToCall;
+		CVM_OPTIMIZE_BLOCK();
+	}
 #ifdef IL_PROFILE_CVM_METHODS
 	++(method->count);
 #endif
@@ -564,13 +569,13 @@ VMBREAK;
  *   just below the top-most stack word, etc.  The value <i>M</i>
  *   is the offset into the object's vtable for the method.</description>
  *
- *   <notes>See the description of the <i>call_extern</i> instruction for
+ *   <notes>See the description of the <i>call</i> instruction for
  *   a full account of frame handling, argument handling, etc.</notes>
  *
  *   <exceptions>
  *     <exception name="System.NullReferenceException">Raised if
  *     the <code>this</code> pointer is <code>null</code>.</exception>
- *     <exception name="System.MissingMethodException">Raised if
+ *     <exception name="System.Security.VerificationException">Raised if
  *     the method could not be translated into CVM bytecode.</exception>
  *   </exceptions>
  * </opcode>
@@ -637,7 +642,7 @@ VMBREAK;
  *   is the offset into the interface's vtable for the method.  The value
  *   <i>cptr</i> indicates the interface class pointer.</description>
  *
- *   <notes>See the description of the <i>call_extern</i> instruction for
+ *   <notes>See the description of the <i>call</i> instruction for
  *   a full account of frame handling, argument handling, etc.<p/>
  *
  *   The <i>cptr</i> value is a native pointer that may be either 32 or
@@ -646,7 +651,7 @@ VMBREAK;
  *   <exceptions>
  *     <exception name="System.NullReferenceException">Raised if
  *     the <code>this</code> pointer is <code>null</code>.</exception>
- *     <exception name="System.MissingMethodException">Raised if
+ *     <exception name="System.Security.VerificationException">Raised if
  *     the method could not be translated into CVM bytecode.</exception>
  *   </exceptions>
  * </opcode>
@@ -1157,65 +1162,59 @@ COP_WADDR_NATIVE_WIDE(7, 7);
  *
  *   <form name="tail" code="COP_PREFIX_TAIL"/>
  *
- *   <description>Modify the next <i>call</i>, <i>call_extern</i>,
- *   <i>call_virtual</i> or <i>call_interface</i> instruction to
- *   use tail call semantics.</description>
+ *   <description>Modify the next <i>call</i>, <i>call_virtual</i>,
+ *   or <i>call_interface</i> instruction to use tail call
+ *   semantics.</description>
  * </opcode>
  */
 VMCASE(COP_PREFIX_TAIL):
 {
-	/*
-	 * It will be necessary to adjust the stack based upon the
-	 * number of parameters in the called function.
-	 */
-	switch (pc[2]) 
+	switch(pc[2]) 
 	{
-	case COP_CALL:
-	case COP_CALL_EXTERN:
-
-		/* Retreive the target method */
-		methodToCall = (ILMethod *)(ReadPointer(pc + 3));
-		methodSignature = ILMethod_Signature(methodToCall);
-		numParams = ILTypeNumParams(methodSignature);
-
-		if (pc[2] == COP_CALL) 
+		case COP_CALL:
 		{
-			tempptr = (void *)(methodToCall->userData);
-		}
-		else
-		{
-			COPY_STATE_TO_THREAD();
-			tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
-			if (!tempptr)
+			/* Retrieve the target method */
+			methodToCall = (ILMethod *)(ReadPointer(pc + 3));
+
+			/* Convert the method if necessary */
+			if(methodToCall->userData)
 			{
-				VERIFY_FAILED_EXCEPTION();
+				tempptr = methodToCall->userData;
 			}
-			RESTORE_STATE_FROM_THREAD();
-		}
-
-		/* Purge the stack (except for call arguments) if necessary */
-		if (numParams < stacktop - frame) 
-		{
-			int i;
-			for (i=0; i<numParams; i++)
+			else
 			{
-				frame[i] = stacktop[i-numParams];
+				COPY_STATE_TO_THREAD();
+				tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+				if (!tempptr)
+				{
+					VERIFY_FAILED_EXCEPTION();
+				}
+				RESTORE_STATE_FROM_THREAD();
 			}
-			stacktop = frame + numParams;
-		}
 
-		/*  Transfer control  */
-		REPORT_METHOD_CALL();
-		pc = (unsigned char *)tempptr;
-		method = methodToCall;
-#ifdef IL_PROFILE_CVM_METHODS
-		++(method->count);
-#endif
+			/* Copy the parameters down to the start of the frame */
+			/* TODO: we should add an argument to the "tail" instruction
+			   that contains "tempNum", so that we don't have to compute
+			   the value dynamically */
+			tempNum = GetTailParamCount(methodToCall, 0);
+			IL_MEMMOVE(frame, stacktop - tempNum, tempNum * sizeof(CVMWord));
+			stacktop = frame + tempNum;
+
+			/* Transfer control to the new method */
+			REPORT_METHOD_CALL();
+			pc = (unsigned char *)tempptr;
+			method = methodToCall;
+		#ifdef IL_PROFILE_CVM_METHODS
+			++(method->count);
+		#endif
+		}
 		break;
 
-	default:
-		MODIFY_PC_AND_STACK(2, 0);
-		/* TODO - Implement other call styles */
+		default:
+		{
+			/* TODO - Implement other call styles */
+			MODIFY_PC_AND_STACK(2, 0);
+		}
 		break;
 	}
 }

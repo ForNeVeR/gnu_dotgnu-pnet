@@ -5,6 +5,9 @@
 	,engine/convert.c: Enable addition of external internal calls as process
 	locals.
 
+	* codegen/cg_optable.c: Override numeric type promotion for boolean data
+	types.
+
 2002-11-16  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_oper.tc: Correct a minor fix in coercion of the 

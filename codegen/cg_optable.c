@@ -1557,6 +1557,10 @@ const ILOperator *ILFindBinaryOperator(const ILOperator *table,
 					type1 = &ILSystemUInt32;
 				}
 			}
+			else if(type1 == &ILSystemBoolean && type2 == &ILSystemBoolean)
+			{
+				/* bool cannot be promoted */
+			}
 			else
 			{
 				type1 = &ILSystemInt32;

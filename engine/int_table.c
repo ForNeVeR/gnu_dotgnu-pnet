@@ -1802,6 +1802,12 @@ static void marshal_ppppippp(void (*fn)(), void *rvalue, void **avalue)
 IL_METHOD_BEGIN(ClrMethod_Methods)
 	IL_METHOD("Invoke", "(ToSystem.Object;vSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;[oSystem.Object;oSystem.Globalization.CultureInfo;)oSystem.Object;", _IL_ClrMethod_Invoke, marshal_ppppippp)
 	IL_METHOD("GetBaseDefinition", "(T)oSystem.Reflection.MethodInfo;", _IL_ClrMethod_GetBaseDefinition, marshal_ppp)
+	IL_METHOD("HasGenericArgumentsImpl", "(T)Z", _IL_ClrMethod_HasGenericArgumentsImpl, marshal_bpp)
+	IL_METHOD("HasGenericParametersImpl", "(T)Z", _IL_ClrMethod_HasGenericParametersImpl, marshal_bpp)
+	IL_METHOD("GetGenericArgumentsImpl", "(T)[oSystem.Type;", _IL_ClrMethod_GetGenericArgumentsImpl, marshal_ppp)
+	IL_METHOD("GetGenericMethodDefinitionImpl", "(T)oSystem.Reflection.ClrMethod;", _IL_ClrMethod_GetGenericMethodDefinitionImpl, marshal_ppp)
+	IL_METHOD("GetArity", "(T)i", _IL_ClrMethod_GetArity, marshal_ipp)
+	IL_METHOD("BindGenericParametersImpl", "(T[oSystem.Type;)oSystem.Reflection.MethodInfo;", _IL_ClrMethod_BindGenericParametersImpl, marshal_pppp)
 IL_METHOD_END
 
 #endif

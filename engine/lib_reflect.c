@@ -2404,6 +2404,66 @@ ILObject *_IL_ClrMethod_GetBaseDefinition(ILExecThread *thread,
 }
 
 /*
+ * protected override bool HasGenericArgumentsImpl();
+ */
+ILBool _IL_ClrMethod_HasGenericArgumentsImpl(ILExecThread *_thread,
+											 ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * protected override bool HasGenericParametersImpl();
+ */
+ILBool _IL_ClrMethod_HasGenericParametersImpl(ILExecThread *_thread,
+											  ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private Type[] GetGenericArgumentsImpl();
+ */
+System_Array *_IL_ClrMethod_GetGenericArgumentsImpl(ILExecThread *_thread,
+													ILObject * _this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private ClrMethod GetGenericMethodDefinitionImpl();
+ */
+ILObject *_IL_ClrMethod_GetGenericMethodDefinitionImpl(ILExecThread *_thread,
+													   ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private int GetArity();
+ */
+ILInt32 _IL_ClrMethod_GetArity(ILExecThread *_thread, ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private MethodInfo BindGenericParametersImpl(Type[] typeArgs);
+ */
+ILObject *_IL_ClrMethod_BindGenericParametersImpl(ILExecThread *_thread,
+												  ILObject *_this,
+												  System_Array *typeArgs)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
  * public virtual Type GetType(String name, bool throwOnError,
  *							   bool ignoreCase);
  */

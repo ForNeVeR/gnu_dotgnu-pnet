@@ -365,6 +365,12 @@ extern ILBool _IL_ClrHelpers_HasSemantics(ILExecThread * _thread, ILNativeInt _p
 
 extern ILObject * _IL_ClrMethod_Invoke(ILExecThread * _thread, ILObject * _this, ILObject * _p1, ILInt32 _p2, ILObject * _p3, System_Array * _p4, ILObject * _p5);
 extern ILObject * _IL_ClrMethod_GetBaseDefinition(ILExecThread * _thread, ILObject * _this);
+extern ILBool _IL_ClrMethod_HasGenericArgumentsImpl(ILExecThread * _thread, ILObject * _this);
+extern ILBool _IL_ClrMethod_HasGenericParametersImpl(ILExecThread * _thread, ILObject * _this);
+extern System_Array * _IL_ClrMethod_GetGenericArgumentsImpl(ILExecThread * _thread, ILObject * _this);
+extern ILObject * _IL_ClrMethod_GetGenericMethodDefinitionImpl(ILExecThread * _thread, ILObject * _this);
+extern ILInt32 _IL_ClrMethod_GetArity(ILExecThread * _thread, ILObject * _this);
+extern ILObject * _IL_ClrMethod_BindGenericParametersImpl(ILExecThread * _thread, ILObject * _this, System_Array * _p1);
 
 extern ILObject * _IL_ClrProperty_GetPropertyType(ILExecThread * _thread, ILNativeInt _p1);
 

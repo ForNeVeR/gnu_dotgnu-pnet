@@ -29,9 +29,9 @@ public class Frame : MarshalByRefObject, IDisposable
 {
 	// Internal state.
 	private Image image;
-	private int width;
-	private int height;
-	private int stride;
+	internal int width;
+	internal int height;
+	internal int stride;
 	private int maskStride;
 	internal PixelFormat pixelFormat;
 	private int[] palette;
@@ -526,7 +526,7 @@ public class Frame : MarshalByRefObject, IDisposable
 			{
 				// Return if there are no changes.
 				if (originx1 == destx1 && originy1 == desty1 && originx2 == destx2 &&
-					originy2 == originy2 && originx3 == destx3 && originy3 == desty3)
+					originy2 == desty2 && originx3 == destx3 && originy3 == desty3)
 					return this.CloneFrame(null);
 				// TODO
 				if (originx1 != originx3 || originy1 != originy2 || desty2 != 0 || destx3 != 0)
@@ -672,7 +672,7 @@ public class Frame : MarshalByRefObject, IDisposable
 
 				int destXOffset = x * bits / 8;
 				int pDestinationRow = y * destStride + destXOffset;
-				int lineLength = width /8 * bits;
+				int lineLength = (width * bits + 7) / 8;
 				
 				if (bits >= 8)
 				{

@@ -1,3 +1,9 @@
+2004-07-19  Neil Cawse  <neilcawse@geotab.com>
+
+        * DotGNU.Images/BmpReformatter.cs,
+        DotGNU.Images/BmpResizer.cs,
+        DotGNU.Images/Frame.cs: fix conversion and sizing bugs. Add in support
+        for 32bpp ARBG. Drawing still needs to be implemented.
 
 2004-07-19  Gopal V  <gopalv82@yahoo.com>
 

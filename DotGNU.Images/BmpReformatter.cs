@@ -27,40 +27,136 @@ using System;
 		public static Frame Reformat(Frame oldFrame, PixelFormat format)
 				{
 					if (oldFrame.pixelFormat == format)
+					{
 						return oldFrame.CloneFrame(null);
-					Frame newFrame = oldFrame.CloneFrameEmpty(oldFrame.Width, oldFrame.Height, format);
-					newFrame.data = new byte[newFrame.Height * newFrame.Stride];
+					}
+					Frame newFrame = oldFrame.CloneFrameEmpty(oldFrame.width, oldFrame.height, format);
+					newFrame.data = new byte[newFrame.height * newFrame.stride];
 					if (oldFrame.Mask != null)
+					{
 						newFrame.mask = (byte[])oldFrame.Mask.Clone();
-								
-					// 24 bpp Format.
-					if (oldFrame.pixelFormat == PixelFormat.Format24bppRgb)
+					}
+
+					// alpha 32 bpp Format.
+					if (oldFrame.pixelFormat == PixelFormat.Format32bppArgb)
 					{
 						switch(format)
 						{
+							case(PixelFormat.Format32bppRgb):
+								Reformat32bppRemoveAlpha(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format24bppRgb):
+								Reformat32bppTo24bpp(oldFrame, newFrame);
+								break;
 							case(PixelFormat.Format16bppRgb555):
-								return Reformat24bppTo16bpp(oldFrame, newFrame,  true);
+								Reformat32bppTo16bpp(oldFrame, newFrame, true);
+								break;
 							case(PixelFormat.Format16bppRgb565):
-								return Reformat24bppTo16bpp(oldFrame, newFrame, false);
+								Reformat32bppTo16bpp(oldFrame, newFrame, false);
+								break;
 							case(PixelFormat.Format8bppIndexed):
-								Octree octree = new Octree (Utils.FormatToBitCount(format));
-								octree.Process(oldFrame, newFrame);
-								return newFrame;
+								Reformat32bppTo8bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format4bppIndexed):
+								Reformat32bppTo1bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format1bppIndexed):
+								Reformat32bppTo1bpp(oldFrame, newFrame);
+								break;
+							default:
+								throw new NotSupportedException();
+						}
+					}
+
+					// no alpha 32 bpp Format.
+					else if (oldFrame.pixelFormat == PixelFormat.Format32bppRgb)
+					{
+						switch(format)
+						{
+							case(PixelFormat.Format32bppArgb):
+								Array.Copy(oldFrame.data, newFrame.data, oldFrame.data.Length);
+								break;
+							case(PixelFormat.Format24bppRgb):
+								Reformat32bppTo24bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format16bppRgb555):
+								Reformat32bppTo16bpp(oldFrame, newFrame, true);
+								break;
+							case(PixelFormat.Format16bppRgb565):
+								Reformat32bppTo16bpp(oldFrame, newFrame, false);
+								break;
+							case(PixelFormat.Format8bppIndexed):
+								Reformat32bppTo8bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format4bppIndexed):
+								Reformat32bppTo1bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format1bppIndexed):
+								Reformat32bppTo1bpp(oldFrame, newFrame);
+								break;
+							default:
+								throw new NotSupportedException();
+						}
+					}
+								
+					// 24 bpp Format.
+					else if (oldFrame.pixelFormat == PixelFormat.Format24bppRgb)
+					{
+						switch(format)
+						{
+							case(PixelFormat.Format32bppArgb):
+							case(PixelFormat.Format32bppRgb):
+								Reformat24bppTo32bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format16bppRgb555):
+								Reformat24bppTo16bpp(oldFrame, newFrame, true);
+								break;
+							case(PixelFormat.Format16bppRgb565):
+								Reformat24bppTo16bpp(oldFrame, newFrame, false);
+								break;
+							case(PixelFormat.Format8bppIndexed):
+								Reformat24bppTo8bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format4bppIndexed):
+								Reformat24bppTo4bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format1bppIndexed):
+								Reformat24bppTo1bpp(oldFrame, newFrame);
+								break;
 							default:
 								throw new NotSupportedException();
 						}
 					}
 					// 16 bpp Format.
-					if (oldFrame.pixelFormat == PixelFormat.Format16bppRgb565 || oldFrame.pixelFormat == PixelFormat.Format16bppRgb555)
+					else if (oldFrame.pixelFormat == PixelFormat.Format16bppRgb565 || oldFrame.pixelFormat == PixelFormat.Format16bppRgb555)
 					{
 						switch (format)
 						{
+							case(PixelFormat.Format32bppArgb):
+							case(PixelFormat.Format32bppRgb):
+								Reformat16bppTo32bpp(oldFrame, oldFrame.pixelFormat == PixelFormat.Format16bppRgb555, newFrame);
+								break;
 							case(PixelFormat.Format24bppRgb):
-								return Reformat16bppTo24bpp(oldFrame, newFrame, oldFrame.pixelFormat == PixelFormat.Format16bppRgb555);
+								Reformat16bppTo24bpp(oldFrame, oldFrame.pixelFormat == PixelFormat.Format16bppRgb555, newFrame);
+								break;
 							case(PixelFormat.Format16bppRgb555):
-								return Reformat16bpp(oldFrame, newFrame, true);
+								Reformat16bpp(oldFrame, newFrame, true);
+								break;
 							case(PixelFormat.Format16bppRgb565):
-								return Reformat16bpp(oldFrame, newFrame, false);
+								Reformat16bpp(oldFrame, newFrame, false);
+								break;
+							case(PixelFormat.Format8bppIndexed):
+								//TODO: Not efficient.
+								Reformat32bppTo8bpp(Reformat(oldFrame, PixelFormat.Format32bppRgb), newFrame);
+								break;
+							case(PixelFormat.Format4bppIndexed):
+								//TODO: Not efficient.
+								Reformat32bppTo4bpp(Reformat(oldFrame, PixelFormat.Format32bppRgb), newFrame);
+								break;
+							case(PixelFormat.Format1bppIndexed):
+								//TODO: Not efficient.
+								Reformat32bppTo1bpp(Reformat(oldFrame, PixelFormat.Format32bppRgb), newFrame);
+								break;
 							default:
 								throw new NotSupportedException();
 						}
@@ -70,12 +166,29 @@ using System;
 					{
 						switch (format)
 						{
+							case(PixelFormat.Format32bppArgb):
+								Reformat8bppTo32bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format32bppRgb):
+								Reformat8bppTo32bpp(oldFrame, newFrame);
+								break;
 							case(PixelFormat.Format24bppRgb):
-								return Reformat8bppTo24bpp(oldFrame, newFrame);
+								Reformat8bppTo24bpp(oldFrame, newFrame);
+								break;
 							case(PixelFormat.Format16bppRgb555):
-								return Reformat8bppTo16bpp(oldFrame, newFrame, true);
+								Reformat8bppTo16bpp(oldFrame, newFrame, true);
+								break;
 							case(PixelFormat.Format16bppRgb565):
-								return Reformat8bppTo16bpp(oldFrame, newFrame, false);
+								Reformat8bppTo16bpp(oldFrame, newFrame, false);
+								break;
+							case(PixelFormat.Format4bppIndexed):
+								//TODO: Not efficient.
+								Reformat32bppTo4bpp(Reformat(oldFrame, PixelFormat.Format32bppRgb), newFrame);
+								break;
+							case(PixelFormat.Format1bppIndexed):
+								//TODO: Not efficient.
+								Reformat32bppTo1bpp(Reformat(oldFrame, PixelFormat.Format32bppRgb), newFrame);
+								break;
 							default:
 								throw new NotSupportedException();
 						}
@@ -85,14 +198,28 @@ using System;
 					{
 						switch (format)
 						{
-							case(PixelFormat.Format8bppIndexed):
-								return Reformat4bppTo8bpp(oldFrame, newFrame);
+							case(PixelFormat.Format32bppArgb):
+								Reformat4bppTo32bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format32bppRgb):
+								Reformat4bppTo32bpp(oldFrame, newFrame);
+								break;
 							case(PixelFormat.Format24bppRgb):
-								return Reformat4bppTo24bpp(oldFrame, newFrame);
+								Reformat4bppTo24bpp(oldFrame, newFrame);
+								break;
 							case(PixelFormat.Format16bppRgb555):
-								return Reformat4bppTo16bpp(oldFrame, newFrame, true);
+								Reformat4bppTo16bpp(oldFrame, newFrame, true);
+								break;
 							case(PixelFormat.Format16bppRgb565):
-								return Reformat4bppTo16bpp(oldFrame, newFrame, false);
+								Reformat4bppTo16bpp(oldFrame, newFrame, false);
+								break;
+							case(PixelFormat.Format8bppIndexed):
+								Reformat4bppTo8bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format1bppIndexed):
+								//TODO: Not efficient.
+								Reformat32bppTo1bpp(Reformat(oldFrame, PixelFormat.Format32bppRgb), newFrame);
+								break;
 							default:
 								throw new NotSupportedException();
 						}
@@ -102,25 +229,326 @@ using System;
 					{
 						switch (format)
 						{
-							case(PixelFormat.Format4bppIndexed):
-								return Reformat1bppTo4bpp(oldFrame, newFrame);
-							case(PixelFormat.Format8bppIndexed):
-								return Reformat1bppTo8bpp(oldFrame, newFrame);
+							case(PixelFormat.Format32bppArgb):
+							case(PixelFormat.Format32bppRgb):
+								Reformat1bppTo32bpp(oldFrame, newFrame);
+								break;
 							case(PixelFormat.Format24bppRgb):
-								return Reformat1bppTo24bpp(oldFrame, newFrame);
+								Reformat1bppTo24bpp(oldFrame, newFrame);
+								break;
 							case(PixelFormat.Format16bppRgb555):
-								return Reformat1bppTo16bpp(oldFrame, newFrame, true);
+								Reformat1bppTo16bpp(oldFrame, newFrame, true);
+								break;
 							case(PixelFormat.Format16bppRgb565):
-								return Reformat1bppTo16bpp(oldFrame, newFrame, false);
+								Reformat1bppTo16bpp(oldFrame, newFrame, false);
+								break;
+							case(PixelFormat.Format8bppIndexed):
+								Reformat1bppTo8bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format4bppIndexed):
+								Reformat1bppTo4bpp(oldFrame, newFrame);
+								break;
+							case(PixelFormat.Format1bppIndexed):
+								//TODO: Not efficient.
+								Reformat32bppTo1bpp(Reformat(oldFrame, PixelFormat.Format32bppRgb), newFrame);
+								break;
 							default:
 								throw new NotSupportedException();
 						}
 					}
-					throw new NotSupportedException();
+					else
+					{
+						throw new NotSupportedException();
+					}
+					return newFrame;
+				}
+
+		private static void Reformat16bppTo32bpp(Frame oldFrame, bool format555, Frame newFrame)
+				{
+					int ptrOld = 0;
+					byte[] oldData = oldFrame.Data;
+					int[] palette = oldFrame.Palette;
+					int ptrNew = 0;
+					byte[] newData = newFrame.Data;
+					for(int y = 0; y < oldFrame.height; y++)
+					{
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 4;
+						while(ptrNew < newByteEnd)
+						{
+							byte g = oldData[ptrOld++];
+							byte r = oldData[ptrOld++];
+							byte b = (byte)(g & 0x1F);
+							if (format555)
+							{
+								g = (byte)(r << 3 & 0x18  | g >> 5 & 0x07);
+								g = (byte)((int)g * 255 / 31);
+								r = (byte)(r >> 2 & 0x1F);
+							}
+							else
+							{
+								g = (byte)(r << 3 & 0x38  | g >> 5 & 0x07);
+								g = (byte)((int)g * 255 / 63);
+								r = (byte)(r >> 3);
+							}
+							r = (byte)((int)r * 255 / 31);
+							b = (byte)((int)b * 255 / 31);
+							newData[ptrNew++] = b;
+							newData[ptrNew++] = g;
+							newData[ptrNew] = r;
+							ptrNew += 2;
+						}
+					}
+				}
+
+		private static void Reformat24bppTo32bpp(Frame oldFrame, Frame newFrame)
+				{
+					int ptrOld = 0;
+					byte[] oldData = oldFrame.Data;
+								
+					int ptrNew = 0;
+					byte[] newData = newFrame.Data;
+					for(int y = 0; y < oldFrame.height; y++)
+					{
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 4;
+						while(ptrNew < newByteEnd)
+						{
+							newData[ptrNew++] = oldData[ptrOld++];
+							newData[ptrNew++] = oldData[ptrOld++];
+							newData[ptrNew] = oldData[ptrOld++];
+							// alpha component is zero.
+							ptrNew += 2;
+						}
+					}
+				}
+
+		private static void Reformat8bppTo32bpp(Frame oldFrame, Frame newFrame)
+				{
+					int ptrOld = 0;
+					byte[] oldData = oldFrame.Data;
+					int[] palette = oldFrame.Palette;
+					int ptrNew = 0;
+					byte[] newData = newFrame.Data;
+					for(int y = 0; y < oldFrame.height; y++)
+					{
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 4;
+						while(ptrNew < newByteEnd)
+						{
+							int color = palette[oldData[ptrOld++]];
+							newData[ptrNew++] = (byte)color;
+							newData[ptrNew++] = (byte)(color>>8);
+							newData[ptrNew] = (byte)(color>>16);
+							ptrNew += 2;
+						}
+					}
+				}
+
+		private static void Reformat4bppTo32bpp(Frame oldFrame, Frame newFrame)
+				{
+					int ptrOld = 0;
+					byte[] oldData = oldFrame.Data;
+					int[] palette = oldFrame.Palette;
+					int ptrNew = 0;
+					byte[] newData = newFrame.Data;
+					for(int y = 0; y < oldFrame.height; y++)
+					{
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						bool firstNibble = true;
+						byte byteData = 0;
+						int newByteEnd = ptrNew + newFrame.width * 4;
+						while(ptrNew < newByteEnd)
+						{
+							int color;
+							if (firstNibble)
+							{
+								byteData = oldData[ptrOld];
+								color = palette[(byteData & 0xF0) >> 4];
+							}
+							else
+							{
+								color = palette[byteData & 0x0F];
+								ptrOld++;
+							}
+							firstNibble = !firstNibble;
+							newData[ptrNew++] = (byte)color;
+							newData[ptrNew++] = (byte)(color>>8);
+							newData[ptrNew] = (byte)(color>>16);
+							ptrNew += 2;
+						}
+					}
+				}
+
+		private static void Reformat1bppTo32bpp(Frame oldFrame, Frame newFrame)
+				{
+					int ptrOld = 0;
+					byte[] oldData = oldFrame.Data;
+					int colorBlack = oldFrame.Palette[0];
+					int colorWhite = oldFrame.Palette[1];
+					byte colorBlackR = (byte)(colorBlack>>16);
+					byte colorBlackG = (byte)(colorBlack>>8);
+					byte colorBlackB = (byte)(colorBlack);
+					byte colorWhiteR = (byte)(colorWhite>>16);
+					byte colorWhiteG = (byte)(colorWhite>>8);
+					byte colorWhiteB = (byte)(colorWhite);
+					int ptrNew = 0;
+					byte[] newData = newFrame.Data;
+					for(int y = 0; y < oldFrame.height; y++)
+					{
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int bit = 128;
+						byte byteData = 0;
+						int newByteEnd = ptrNew + newFrame.width * 4;
+						if (ptrNew < newByteEnd)
+							byteData = oldData[ptrOld];
+						while(ptrNew < newByteEnd)
+						{
+							if ((byteData & bit) != 0)
+							{
+								newData[ptrNew++] = colorWhiteB;
+								newData[ptrNew++] = colorWhiteG;
+								newData[ptrNew] = colorWhiteR;
+							}
+							else
+							{
+								newData[ptrNew++] = colorBlackB;
+								newData[ptrNew++] = colorBlackG;
+								newData[ptrNew] = colorBlackR;
+							}
+							ptrNew += 2;
+							bit = bit>>1;
+							if (bit == 0 && ptrNew < newByteEnd)
+							{
+								bit = 128;
+								ptrOld++;
+								byteData = oldData[ptrOld];
+							}
+						}
+					}
+				}
+
+		private static void Reformat32bppTo24bpp(Frame oldFrame, Frame newFrame)
+				{
+					int ptrOld = 0;
+					byte[] oldData = oldFrame.Data;
+						
+					int ptrNew = 0;
+					byte[] newData = newFrame.Data;
+					for(int y = 0; y < oldFrame.height; y++)
+					{
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 3;
+						while(ptrNew < newByteEnd)
+						{
+							newData[ptrNew++] = oldData[ptrOld++];
+							newData[ptrNew++] = oldData[ptrOld++];
+							newData[ptrNew++] = oldData[ptrOld++];
+							// Skip the alpha component.
+							ptrOld++;
+						}
+					}
+				}
+
+		private static void Reformat32bppTo16bpp(Frame oldFrame, Frame newFrame, bool format555)
+				{
+					int ptrOld = 0;
+					byte[] oldData = oldFrame.Data;
+							
+					int ptrNew = 0;
+					byte[] newData = newFrame.Data;
+					for(int y = 0; y < oldFrame.height; y++)
+					{
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 2;
+						while(ptrNew < newByteEnd)
+						{
+							int color = oldData[ptrOld++] | oldData[ptrOld++] <<8 | oldData[ptrOld++] << 16;
+							// Skip the alpha
+							ptrOld++;
+							if (format555)
+							{
+								newData[ptrNew++] =  (byte)((color>>6 & 0xE0) | (color>>3 & 0x1F));
+								newData[ptrNew++] =  (byte)((color>>17 & 0x7C) | (color >>14 & 0x03));
+							}
+							else
+							{
+								newData[ptrNew++] = (byte)((color>>5 & 0xE0) | (color >> 3 & 0x1F)) ;
+								newData[ptrNew++] = (byte)((color>>16 & 0xF8) | (color >>13 & 0x07));
+							}
+						}
+					}
+				}
+
+		private static void Reformat32bppTo8bpp(Frame oldFrame, Frame newFrame)
+				{
+					Octree octree = new Octree (Utils.FormatToBitCount(newFrame.pixelFormat));
+					octree.Process(oldFrame, newFrame);
+				}
+
+		private static void Reformat24bppTo8bpp(Frame oldFrame, Frame newFrame)
+				{
+					Octree octree = new Octree (Utils.FormatToBitCount(newFrame.pixelFormat));
+					octree.Process(oldFrame, newFrame);
+				}
+
+		private static void Reformat32bppTo4bpp(Frame oldFrame, Frame newFrame)
+				{
+					Octree octree = new Octree (Utils.FormatToBitCount(newFrame.pixelFormat));
+					octree.Process(oldFrame, newFrame);
+				}
+
+		private static void Reformat24bppTo4bpp(Frame oldFrame, Frame newFrame)
+				{
+					Octree octree = new Octree (Utils.FormatToBitCount(newFrame.pixelFormat));
+					octree.Process(oldFrame, newFrame);
+				}
+
+		private static void Reformat32bppTo1bpp(Frame oldFrame, Frame newFrame)
+				{
+					Octree octree = new Octree (Utils.FormatToBitCount(newFrame.pixelFormat));
+					octree.Process(oldFrame, newFrame);
+				}
+
+		private static void Reformat24bppTo1bpp(Frame oldFrame, Frame newFrame)
+				{
+					Octree octree = new Octree (Utils.FormatToBitCount(newFrame.pixelFormat));
+					octree.Process(oldFrame, newFrame);
+				}
+		
+		private static void Reformat32bppRemoveAlpha(Frame oldFrame, Frame newFrame)
+				{
+					int ptrOld = 0;
+					byte[] oldData = oldFrame.Data;
+					
+					int ptrNew = 0;
+					byte[] newData = newFrame.Data;
+					for(int y = 0; y < oldFrame.height; y++)
+					{
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 4;
+						while(ptrNew < newByteEnd)
+						{
+							newData[ptrNew++] = oldData[ptrOld++];
+							newData[ptrNew++] = oldData[ptrOld++];
+							newData[ptrNew++] = oldData[ptrOld++];
+							// Skip the alpha component.
+							ptrOld++;
+							ptrNew++;
+						}
+					}
 				}
 
 		// Not supported by .NET
-		private static Frame Reformat4bppTo8bpp(Frame oldFrame, Frame newFrame)
+		private static void Reformat4bppTo8bpp(Frame oldFrame, Frame newFrame)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
@@ -128,13 +556,13 @@ using System;
 					newFrame.Palette = (int[])oldFrame.Palette.Clone();
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
 						bool firstNibble = true;
 						byte byteData = 0;
-						int newByteEnd = ptrNew + newFrame.Width;
+						int newByteEnd = ptrNew + newFrame.width;
 						for(; ptrNew < newByteEnd; ptrNew++)
 						{
 							int palettePos;
@@ -152,22 +580,21 @@ using System;
 							newData[ptrNew] = (byte)palettePos;
 						}
 					}
-					return newFrame;
 				}
-		private static Frame Reformat4bppTo24bpp(Frame oldFrame, Frame newFrame)
+		private static void Reformat4bppTo24bpp(Frame oldFrame, Frame newFrame)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
 						bool firstNibble = true;
 						byte byteData = 0;
-						int newByteEnd = ptrNew + newFrame.Width * 3;
+						int newByteEnd = ptrNew + newFrame.width * 3;
 						while(ptrNew < newByteEnd)
 						{
 							int color;
@@ -187,23 +614,22 @@ using System;
 							newData[ptrNew++] = (byte)(color>>16);
 						}
 					}
-					return newFrame;
 				}
 		
-		private static Frame Reformat4bppTo16bpp(Frame oldFrame, Frame newFrame, bool format555)
+		private static void Reformat4bppTo16bpp(Frame oldFrame, Frame newFrame, bool format555)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
 						bool firstNibble = true;
 						byte byteData = 0;
-						int newByteEnd = ptrNew + newFrame.Width * 2;
+						int newByteEnd = ptrNew + newFrame.width * 2;
 						while(ptrNew < newByteEnd)
 						{
 							int color;
@@ -230,10 +656,9 @@ using System;
 							}
 						}
 					}
-					return newFrame;
 				}
 		
-		private static Frame Reformat1bppTo24bpp(Frame oldFrame, Frame newFrame)
+		private static void Reformat1bppTo24bpp(Frame oldFrame, Frame newFrame)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
@@ -247,13 +672,13 @@ using System;
 					byte colorWhiteB = (byte)(colorWhite);
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
 						int bit = 128;
 						byte byteData = 0;
-						int newByteEnd = ptrNew + newFrame.Width * 3;
+						int newByteEnd = ptrNew + newFrame.width * 3;
 						if (ptrNew < newByteEnd)
 							byteData = oldData[ptrOld];
 						while(ptrNew < newByteEnd)
@@ -279,11 +704,10 @@ using System;
 							}
 						}
 					}
-					return newFrame;
 				}
 		
 		// Not supported by .NET
-		private static Frame Reformat1bppTo4bpp(Frame oldFrame, Frame newFrame)
+		private static void Reformat1bppTo4bpp(Frame oldFrame, Frame newFrame)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
@@ -291,15 +715,15 @@ using System;
 					newFrame.Palette = (int[])oldFrame.Palette.Clone();
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
 						int bit = 0;
 						bool firstNibble = true;
 						byte byteNewData = 0;
 						byte byteOldData = 0;
-						for(int x = 0; x < oldFrame.Width; x++)
+						for(int x = 0; x < oldFrame.width; x++)
 						{
 							if (bit == 0)
 							{
@@ -324,10 +748,9 @@ using System;
 							
 						}
 					}
-					return newFrame;
 				}
 		// Not supported by .NET
-		private static Frame Reformat1bppTo8bpp(Frame oldFrame, Frame newFrame)
+		private static void Reformat1bppTo8bpp(Frame oldFrame, Frame newFrame)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
@@ -335,13 +758,13 @@ using System;
 					newFrame.Palette = (int[])oldFrame.Palette.Clone();
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
 						int bit = 0;
 						byte byteData = 0;
-						int newByteEnd = ptrNew + newFrame.Width;
+						int newByteEnd = ptrNew + newFrame.width;
 						for(; ptrNew < newByteEnd; ptrNew++)
 						{
 							if (bit == 0)
@@ -356,9 +779,8 @@ using System;
 							bit = bit>>1;
 						}
 					}
-					return newFrame;
 				}
-		private static Frame Reformat1bppTo16bpp(Frame oldFrame, Frame newFrame, bool format555)
+		private static void Reformat1bppTo16bpp(Frame oldFrame, Frame newFrame, bool format555)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
@@ -383,13 +805,13 @@ using System;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
 						int bit = 0;
 						byte byteData = 0;
-						int newByteEnd = ptrNew + newFrame.Width * 2;
+						int newByteEnd = ptrNew + newFrame.width * 2;
 						while(ptrNew < newByteEnd)
 						{
 							if (bit == 0)
@@ -410,21 +832,20 @@ using System;
 							bit = bit>>1;
 						}
 					}
-					return newFrame;
 				}
 		
-		private static Frame Reformat8bppTo24bpp(Frame oldFrame, Frame newFrame)
+		private static void Reformat8bppTo24bpp(Frame oldFrame, Frame newFrame)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
-						int newByteEnd = ptrNew + newFrame.Width * 3;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 3;
 						while(ptrNew < newByteEnd)
 						{
 							int color = palette[oldData[ptrOld++]];
@@ -433,20 +854,20 @@ using System;
 							newData[ptrNew++] = (byte)(color>>16);
 						}
 					}
-					return newFrame;
 				}
-		private static Frame Reformat8bppTo16bpp(Frame oldFrame, Frame newFrame, bool format555)
+
+		private static void Reformat8bppTo16bpp(Frame oldFrame, Frame newFrame, bool format555)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
-						int newByteEnd = ptrNew + newFrame.Width * 2;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 2;
 						while(ptrNew < newByteEnd)
 						{
 							int color = palette[oldData[ptrOld++]];
@@ -462,21 +883,20 @@ using System;
 							}
 						}
 					}
-					return newFrame;
 				}
 
-		private static Frame Reformat16bppTo24bpp(Frame oldFrame, Frame newFrame, bool format555)
+		private static void Reformat16bppTo24bpp(Frame oldFrame, bool format555, Frame newFrame)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
-						int newByteEnd = ptrNew + newFrame.Width * 3;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 3;
 						while(ptrNew < newByteEnd)
 						{
 							byte g = oldData[ptrOld++];
@@ -484,15 +904,15 @@ using System;
 							byte b = (byte)(g & 0x1F);
 							if (format555)
 							{
-								g =(byte)( r << 3 & 0x18  | g >> 5 & 0x07);
+								g = (byte)(r << 3 & 0x18  | g >> 5 & 0x07);
 								g = (byte)((int)g * 255 / 31);
-								r = (byte)( r >> 2 & 0x1F);
+								r = (byte)(r >> 2 & 0x1F);
 							}
 							else
 							{
 								g = (byte)(r << 3 & 0x38  | g >> 5 & 0x07);
 								g = (byte)((int)g * 255 / 63);
-								r =  (byte)(r >> 3);
+								r = (byte)(r >> 3);
 							}
 							r = (byte)((int)r * 255 / 31);
 							b = (byte)((int)b * 255 / 31);
@@ -501,20 +921,19 @@ using System;
 							newData[ptrNew++] = r;
 						}
 					}
-					return newFrame;
 				}
-		private static Frame Reformat16bpp(Frame oldFrame, Frame newFrame, bool formatTo555)
+		private static void Reformat16bpp(Frame oldFrame, Frame newFrame, bool formatTo555)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
-						int newByteEnd = ptrNew + newFrame.Width * 2;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 2;
 						while(ptrNew < newByteEnd)
 						{
 							byte b1 = oldData[ptrOld++];
@@ -533,9 +952,8 @@ using System;
 							newData[ptrNew++] = b2;
 						}
 					}
-					return newFrame;
 				}
-		private static Frame Reformat24bppTo16bpp(Frame oldFrame, Frame newFrame, bool format555)
+		private static void Reformat24bppTo16bpp(Frame oldFrame, Frame newFrame, bool format555)
 				{
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
@@ -543,11 +961,11 @@ using System;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
-					for(int y = 0; y < oldFrame.Height; y++)
+					for(int y = 0; y < oldFrame.height; y++)
 					{
-						ptrOld = y * oldFrame.Stride;
-						ptrNew = y * newFrame.Stride;
-						int newByteEnd = ptrNew + newFrame.Width * 2;
+						ptrOld = y * oldFrame.stride;
+						ptrNew = y * newFrame.stride;
+						int newByteEnd = ptrNew + newFrame.width * 2;
 						while(ptrNew < newByteEnd)
 						{
 							int color = oldData[ptrOld++] | oldData[ptrOld++] <<8 | oldData[ptrOld++] << 16;
@@ -563,7 +981,6 @@ using System;
 							}
 						}
 					}
-					return newFrame;
 				}
 			
 		private class Octree
@@ -576,7 +993,7 @@ using System;
 			// Store the last node quantized.
 			private OctreeNode previousNode = null;
 			// Cache the previous color quantized.
-			private int previousColor = -1;
+			private int previousColor;
 			// Mask used when getting the appropriate pixels for a given node.
 			private static int[] mask = new int[8] { 0x80 , 0x40 , 0x20 , 0x10 , 0x08 , 0x04 , 0x02 , 0x01 };
 			public Octree (int maxColorBits)
@@ -587,16 +1004,16 @@ using System;
 					}
 
 			// Reduce the depth of the tree.
-			private void Reduce ()
+			private void Reduce (ref int childrenNeedingReduction)
 					{
 						int i;
 						// Find the deepest level containing at least one reducible node.
-						for (i = maxColorBits - 1; (i > 0) && (reducibleNodes[i] == null); i--);
+						for (i = maxColorBits - 1; i > 0 && reducibleNodes[i] == null; i--);
 
 						// Reduce the node most recently added to the list at level 'index'.
 						OctreeNode node = reducibleNodes[i];
 						reducibleNodes[i] = node.nextReducible;
-						leafCount -= node.Reduce();
+						leafCount -= node.Reduce(ref childrenNeedingReduction);
 
 						// Just in case we have reduced the last color to be added, and the next color to
 						// be added is the same, invalidate the previousNode.
@@ -605,24 +1022,45 @@ using System;
 
 			public void Process(Frame sourceFrame, Frame destFrame)
 					{
+						previousColor = -1;
 						byte[] destData = destFrame.Data;
 						byte[] sourceData = sourceFrame.Data;
 						int color;
+						bool is32 = sourceFrame.pixelFormat == PixelFormat.Format32bppArgb || sourceFrame.pixelFormat == PixelFormat.Format32bppRgb;
+						if (!is32 && sourceFrame.pixelFormat != PixelFormat.Format24bppRgb)
+						{
+							throw new NotSupportedException();
+						}
 
 						int pSourceRow = 0;
 						int pSourcePixel;
-						
+								
 						// Loop through each row.
-						for (int row = 0 ; row <  sourceFrame.Height ; row++)
+						for (int row = 0 ; row <  sourceFrame.height ; row++)
 						{
 							// Set the source pixel to the first pixel in this row
 							pSourcePixel = pSourceRow ;
-							for (int col = 0 ; col < sourceFrame.Width ; col++)
+							for (int col = 0 ; col < sourceFrame.width ; col++)
 							{
-								// Add the color to the octree
-								int b = sourceData[pSourcePixel++];
-								int g = sourceData[pSourcePixel++];
-								int r = sourceData[pSourcePixel++];
+								int b;
+								int g;
+								int r;
+								if (is32)
+								{
+									// Add the color to the octree
+									b = sourceData[pSourcePixel++];
+									g = sourceData[pSourcePixel++];
+									r = sourceData[pSourcePixel];
+									pSourcePixel += 2;
+								}
+								else
+								{
+									// Add the color to the octree
+									b = sourceData[pSourcePixel++];
+									g = sourceData[pSourcePixel++];
+									r = sourceData[pSourcePixel++];
+								}
+								
 								color = b | g << 8 | r << 16;
 								// Add a given color value to the octree
 								// Check if this request is for the same color as the last
@@ -637,48 +1075,182 @@ using System;
 									root.AddColor (maxColorBits , 0 , this, r, g, b);
 								}
 							}
-							pSourceRow += sourceFrame.Stride;
+							pSourceRow += sourceFrame.stride;
 						}
 
-						destFrame.Palette = CreatePalette(1<<maxColorBits);
+						destFrame.Palette = CreatePalette(1 << maxColorBits);
 
 						// Do the second pass.
 						pSourceRow = 0;
 						pSourcePixel = pSourceRow;
 						int pDestinationRow =0;
-						int pDestinationPixel = pDestinationRow ;
+						int pDestinationPixel = pDestinationRow;
+						byte destByte = 0;
 
 						// And convert the first pixel, so that I have values going into the loop
 						int prevColor = -1;
 						byte prevPixelValue = 0;
-						for (int row = 0 ; row <  sourceFrame.Height ; row++)
-						{
-							pSourcePixel = pSourceRow ;
-							pDestinationPixel = pDestinationRow ;
 
-							// Loop through each pixel on this scan line
-							for (int col = 0 ; col < sourceFrame.Width ; col++ , pDestinationPixel++)
+						if (destFrame.pixelFormat == PixelFormat.Format8bppIndexed)
+						{
+							for (int row = 0 ; row < sourceFrame.height; row++)
 							{
-								color = sourceData[pSourcePixel++] | sourceData[pSourcePixel++] << 8 | sourceData[pSourcePixel++] << 16;
-								if (color == prevColor)
-									destData[pDestinationPixel] = prevPixelValue;
-								else
+								pSourcePixel = pSourceRow;
+								pDestinationPixel = pDestinationRow;
+
+								// Loop through each pixel on this scan line
+								for (int col = 0; col < sourceFrame.width; col++)
 								{
-									prevColor = color;
-									prevPixelValue = (byte)root.GetPaletteIndex (color , 0);
-									destData[pDestinationPixel] = prevPixelValue;
+									if (is32)
+									{
+										color = sourceData[pSourcePixel++] | sourceData[pSourcePixel++] << 8 | sourceData[pSourcePixel] << 16;
+										pSourcePixel += 2;
+									}
+									else
+									{
+										color = sourceData[pSourcePixel++] | sourceData[pSourcePixel++] << 8 | sourceData[pSourcePixel++] << 16;
+									}
+									if (color == prevColor)
+									{
+										destData[pDestinationPixel] = prevPixelValue;
+									}
+									else
+									{
+										prevColor = color;
+										prevPixelValue = (byte)root.GetPaletteIndex (color , 0);
+										destData[pDestinationPixel] = prevPixelValue;
+									}
+									pDestinationPixel++;
 								}
+								pSourceRow += sourceFrame.stride;
+								pDestinationRow += destFrame.stride;
+							}		
+						}
+						else if(destFrame.pixelFormat == PixelFormat.Format4bppIndexed)
+						{
+							for (int row = 0 ; row < sourceFrame.height; row++)
+							{
+								pSourcePixel = pSourceRow;
+								pDestinationPixel = pDestinationRow;
+
+								// Loop through each pixel on this scan line
+								for (int col = 0 ; col < sourceFrame.width ; col++)
+								{
+									// Get the color from the source.
+									if (is32)
+									{
+										color = sourceData[pSourcePixel++] | sourceData[pSourcePixel++] << 8 | sourceData[pSourcePixel] << 16;
+										pSourcePixel += 2;
+									}
+									else
+									{
+										color = sourceData[pSourcePixel++] | sourceData[pSourcePixel++] << 8 | sourceData[pSourcePixel++] << 16;
+									}
+
+									// Use the cached color if the source color hasnt changed.
+									byte pixelValue;
+									if (color == prevColor)
+									{
+										pixelValue = prevPixelValue;
+									}
+									else
+									{
+										pixelValue = (byte)root.GetPaletteIndex (color , 0);
+										prevColor = color;
+										prevPixelValue = pixelValue;
+										destData[pDestinationPixel] = prevPixelValue;
+									}
+									if ((col & 0x1) == 0)
+									{
+										destByte = (byte)(pixelValue << 4);
+									}
+									else
+									{
+										destByte |= pixelValue;
+										destData[pDestinationPixel++] = destByte;
+									}
+								}
+								// In case we are not on a nibble boundary
+								if ((destFrame.width & 0x1) > 0)
+								{
+									destData[pDestinationPixel] = destByte;
+								}
+
+								pSourceRow += sourceFrame.stride;
+								pDestinationRow += destFrame.stride;
+							}		
+						}
+						else if(destFrame.pixelFormat == PixelFormat.Format1bppIndexed)
+						{
+							for (int row = 0 ; row < sourceFrame.height; row++)
+							{
+								pSourcePixel = pSourceRow;
+								pDestinationPixel = pDestinationRow;
+
+								// Loop through each pixel on this scan line
+								for (int col = 0 ; col < sourceFrame.width ; col++)
+								{
+									// Get the color from the source.
+									if (is32)
+									{
+										color = sourceData[pSourcePixel++] | sourceData[pSourcePixel++] << 8 | sourceData[pSourcePixel] << 16;
+										pSourcePixel += 2;
+									}
+									else
+									{
+										color = sourceData[pSourcePixel++] | sourceData[pSourcePixel++] << 8 | sourceData[pSourcePixel++] << 16;
+									}
+									
+									// Use the cached color if the source color hasnt changed.
+									byte pixelValue;
+									if (color == prevColor)
+									{
+										pixelValue = prevPixelValue;
+									}
+									else
+									{
+										pixelValue = (byte)root.GetPaletteIndex (color , 0);
+										prevColor = color;
+										prevPixelValue = pixelValue;
+										destData[pDestinationPixel] = prevPixelValue;
+									}
+									// Which bit must be written?
+									int pos = 7 - col & 0x7;
+									
+									if (pixelValue > 0)
+									{
+										destByte = (byte)(destByte | 1 << pos);
+									}
+									// If we are at the end of the byte then write it to the destination.
+									if (pos == 0)
+									{
+										destData[pDestinationPixel++] = destByte;
+										destByte = 0;
+									}
+								}
+								// In case we are not on an 8 bit boundary
+								if ((destFrame.width & 0x7) > 0)
+								{
+									destData[pDestinationPixel] = destByte;
+								}
+								pSourceRow += sourceFrame.stride;
+								pDestinationRow += destFrame.stride;
 							}
-							pSourceRow += sourceFrame.Stride;
-							pDestinationRow += destFrame.Stride;
-						}		
+						}
+						else
+						{
+							throw new NotSupportedException();
+						}
 					}
 
 			// Convert the nodes in the octree to a palette with a maximum of colorCount colors
 			public int[] CreatePalette (int colorCount)
 					{
+						int childrenNeedingReduction = leafCount - colorCount;
 						while (leafCount > colorCount)
-							Reduce();
+						{
+							Reduce(ref childrenNeedingReduction);
+						}
 						int[] palette = new int[leafCount];
 						int paletteIndex = 0;
 						root.CreatePalette (palette , ref paletteIndex);
@@ -687,27 +1259,26 @@ using System;
 
 			// Class which encapsulates each node in the tree
 			private class OctreeNode
-					{
-						// Flag indicating that this is a leaf node
-						private	bool leaf;
-						private	int pixelCount = 0;
-						private	int red = 0;
-						private	int green = 0;
-						private int blue= 0;
-						private OctreeNode[] children;
-						// Next reducible node
-						internal OctreeNode nextReducible;
-						// The index of this node in the palette
-						private	int paletteIndex;
+			{
+				private	int pixelCount = 0;
+				private	int red = 0;
+				private	int green = 0;
+				private int blue= 0;
+				// if the children are null then we are a leaf node.
+				private OctreeNode[] children;
+				// Next reducible node
+				internal OctreeNode nextReducible;
+				// The index of this node in the palette
+				private	int paletteIndex;
 
-						// Construct the node
-						public OctreeNode (int level , int colorBits , Octree octree)
+				// Construct the node
+				public OctreeNode (int level , int colorBits , Octree octree)
 						{
-							// Construct the new node
-							leaf = (level == colorBits);
 							// If a leaf, increment the leaf count
-							if (leaf)
+							if (level == colorBits)
+							{
 								octree.leafCount++;
+							}
 							else
 							{
 								// Otherwise add this to the reducible nodes
@@ -717,11 +1288,11 @@ using System;
 							}
 						}
 
-						// Add a color into the tree
-						public void AddColor (int colorBits , int level , Octree octree, int r, int g, int b)
+				// Add a color into the tree
+				public void AddColor (int colorBits , int level , Octree octree, int r, int g, int b)
 						{
 							// Update the color information if this is a leaf
-							if (leaf)
+							if (children == null)
 							{
 								Increment(r, g, b);
 								// Setup the previous node
@@ -730,11 +1301,9 @@ using System;
 							else
 							{
 								// Go to the next level down in the tree
-								int index = ((r & mask[level]) >> (5 - level)) |
-									((g & mask[level]) >> (6 - level)) |
-									((b & mask[level]) >> (7 - level));
+								int index = (r & mask[level]) >> (5 - level) | (g & mask[level]) >> (6 - level) | (b & mask[level]) >> (7 - level);
 
-								OctreeNode	child = children[index];
+								OctreeNode child = children[index];
 								if (child == null)
 								{
 									// Create a new child node & store in the array
@@ -746,35 +1315,81 @@ using System;
 							}
 						}
 
-						// Reduce this node by removing all of its children
-						public int Reduce ()
+				// Reduce this node by removing children leaving a minimum number 
+				public int Reduce (ref int childrenNeedingReduction)
 						{
 							red = green = blue = 0;
-							int childrenCount = 0;
-
-							// Loop through all children and add their information to this node
-							for (int index = 0; index < 8; index++)
+							int childrenReduced = 0;
+							if (childrenNeedingReduction >= 8)
 							{
-								if (children[index] != null)
+								// Loop through all children and add their information to this node
+								for (int index = 0; index < 8; index++)
 								{
-									red += children[index].red;
-									green += children[index].green;
-									blue += children[index].blue;
-									pixelCount += children[index].pixelCount;
-									childrenCount++;
-									children[index] = null;
+									OctreeNode node = children[index];
+									if (node != null)
+									{
+										red += node.red;
+										green += node.green;
+										blue += node.blue;
+										pixelCount += node.pixelCount;
+										childrenReduced++;
+										children[index] = null;
+									}
 								}
+								// Add one more node because this node is becoming a leaf.
+								childrenReduced--;
+								childrenNeedingReduction -= childrenReduced;
 							}
-							// Now change this to a leaf node
-							leaf = true;
+							else
+							{
+								while (childrenNeedingReduction > 0)
+								{
+									// Find the node with the least items.
+									int leastItems = int.MaxValue;
+									int leastItemIndex = -1;
+									OctreeNode node;
+									for (int index = 0; index < 8; index++)
+									{
+										node = children[index];
+										if (node != null && node.pixelCount < leastItems)
+										{
+											leastItems = node.pixelCount;
+											leastItemIndex = index;
+										}
+									}
+									if (leastItemIndex == -1)
+									{
+										break;	
+									}
+									node = children[leastItemIndex];
+									red += node.red;
+									green += node.green;
+									blue += node.blue;
+									pixelCount += node.pixelCount;
+									children[leastItemIndex] = null;
+									childrenReduced++;
+									childrenNeedingReduction--;
+								}
+								for (int i = 0; i < 8; i++)
+								{
+									if (children[i] != null)
+									{
+										return childrenReduced;
+									}
+								}
+								// Add one more node because this node is becoming a leaf.
+								childrenReduced--;
+								childrenNeedingReduction++;
+							}
+							children = null;
 							// Return the number of nodes to decrement the leaf count by
-							return (childrenCount - 1);
+							return childrenReduced;
 						}
 
-						// Traverse the tree, building up the color palette
-						public void CreatePalette (int[] palette , ref int paletteIndex)
+				// Traverse the tree, building up the color palette
+				public void CreatePalette (int[] palette , ref int paletteIndex)
 						{
-							if (leaf)
+							if (children == null)
 							{
 								this.paletteIndex = paletteIndex++;
 								// Set the color of the palette entry
@@ -786,41 +1401,64 @@ using System;
 								for (int index = 0; index < 8; index++)
 								{
 									if (null != children[index])
+									{
 										children[index].CreatePalette (palette , ref paletteIndex);
+									}
 								}
 							}
 						}
 
-						// Return the palette index for the passed color
-						public int GetPaletteIndex (int pixel , int level)
+				// Return the palette index for the passed color
+				public int GetPaletteIndex (int pixel , int level)
 						{
-							if (leaf)
-								return paletteIndex;
-							else
+							if (children != null)
 							{
-								int red = pixel >>16;
+								int red = pixel >> 16;
 								int green = (byte)(pixel >> 8);
 								int blue = (byte)pixel;
-								int index = ((red & mask[level]) >> (5 - level)) |
-									((green & mask[level]) >> (6 - level)) |
-									((blue & mask[level]) >> (7 - level));
+								int index = (red & mask[level]) >> (5 - level) | (green & mask[level]) >> (6 - level) | (blue & mask[level]) >> (7 - level);
 								if (children[index] != null)
+								{
 									return children[index].GetPaletteIndex (pixel , level + 1);
+								}
 								else
-									throw new Exception ();
+								{
+									// Find the closest palette.
+									for (int i = 1; i <= 7; i++)
+									{
+										int tryPos = index - i;
+										if (tryPos >= 0)
+										{
+											if (children[tryPos] != null)
+											{
+												return children[tryPos].GetPaletteIndex (pixel , level + 1);
+											}
+										}
+										tryPos = index + i;
+										if (tryPos <= 7)
+										{
+											if (children[tryPos] != null)
+											{
+												return children[tryPos].GetPaletteIndex (pixel , level + 1);
+											}
+										}
+									}
+									throw new InvalidOperationException();
+								}
 							}
+							return paletteIndex;
 						}
 
-						// Increment the pixel count and add to the color information
-						public void Increment (int r, int g, int b)
+				// Increment the pixel count and add to the color information
+				public void Increment (int r, int g, int b)
 						{
 							pixelCount++;
 							red += r;
 							green += g;
 							blue += b;
 						}
-					}
-				}
+			}
+		}
 
 	}
 }

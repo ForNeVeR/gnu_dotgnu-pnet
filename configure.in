@@ -630,6 +630,7 @@ samples/Makefile
 samples/ilrun.sh
 samples/simple/Makefile
 samples/xsharp/Makefile
+samples/dcop/Makefile
 samples/forms/Makefile
 tools/run_test.sh
 tools/link_res.sh

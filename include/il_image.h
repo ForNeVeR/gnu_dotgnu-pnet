@@ -183,6 +183,14 @@ int ILImageLoadFromFile(const char *filename, ILContext *context,
 						ILImage **image, int flags, int printErrors);
 
 /*
+ * Load an assembly by name into an existing context, relative
+ * to a particular parent image.  Returns a load error, 0 if OK,
+ * or -1 if the assembly file was not found.
+ */
+int ILImageLoadAssembly(const char *name, ILContext *context,
+						ILImage *parentImage, ILImage **image);
+
+/*
  * Destroy an IL image and all memory associated with it.
  */
 void ILImageDestroy(ILImage *image);

@@ -255,8 +255,8 @@ extern System_Array * _IL_Assembly_GetManifestResourceNames(ILExecThread * _thre
 extern ILObject * _IL_Assembly_GetManifestResourceStream(ILExecThread * _thread, ILObject * _this, ILString * name);
 extern ILObject * _IL_Assembly_GetType(ILExecThread * _thread, ILObject * _this, ILString * typeName, ILBool throwOnError, ILBool ignoreCase);
 extern System_Array * _IL_Assembly_GetTypes(ILExecThread * _thread, ILObject * _this);
-extern ILObject * _IL_Assembly_LoadFromName(ILExecThread * _thread, ILString * name, ILInt32 * error);
-extern ILObject * _IL_Assembly_LoadFromFile(ILExecThread * _thread, ILString * name, ILInt32 * error);
+extern ILObject * _IL_Assembly_LoadFromName(ILExecThread * _thread, ILString * name, ILInt32 * error, ILObject * parent);
+extern ILObject * _IL_Assembly_LoadFromFile(ILExecThread * _thread, ILString * name, ILInt32 * error, ILObject * parent);
 
 extern ILObject * _IL_MethodBase_GetMethodFromHandle(ILExecThread * _thread, void * handle);
 extern ILObject * _IL_MethodBase_GetCurrentMethod(ILExecThread * _thread);
@@ -409,4 +409,6 @@ extern ILInt64 _IL_TimeMethods_GetCurrentTime(ILExecThread * _thread);
 extern ILInt64 _IL_TimeMethods_GetCurrentUtcTime(ILExecThread * _thread);
 extern ILInt32 _IL_TimeMethods_GetTimeZoneAdjust(ILExecThread * _thread);
 extern ILInt32 _IL_TimeMethods_GetUpTime(ILExecThread * _thread);
+
+extern ILUInt8 * _IL_CodeTable_GetAddress(ILExecThread * _thread, ILObject * stream, ILInt64 position);
 

@@ -816,23 +816,58 @@ System_Array *_IL_Assembly_GetTypes(ILExecThread *_thread, ILObject *_this)
 #define	LoadError_Security		4
 
 /*
- * private static Assembly LoadFromName(String name, out int error);
+ * private static Assembly LoadFromName(String name, out int error,
+ *										Assembly parent);
  */
 ILObject *_IL_Assembly_LoadFromName(ILExecThread *thread,
 									ILString *name,
-									ILInt32 *error)
+									ILInt32 *error,
+									ILObject *parent)
 {
-	/* TODO */
-	*error = LoadError_FileNotFound;
-	return 0;
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(thread, parent);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	char *str = ILStringToUTF8(thread, name);
+	if(image && str)
+	{
+		int loadError;
+		ILImage *newImage;
+		loadError = ILImageLoadAssembly(str, thread->process->context,
+										image, &newImage);
+		if(loadError == 0)
+		{
+			return ImageToAssembly(thread, newImage);
+		}
+		else if(loadError == -1)
+		{
+			*error = LoadError_FileNotFound;
+			return 0;
+		}
+		else if(loadError == IL_LOADERR_MEMORY)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		else
+		{
+			*error = LoadError_BadImage;
+			return 0;
+		}
+	}
+	else
+	{
+		*error = LoadError_FileNotFound;
+		return 0;
+	}
 }
 
 /*
- * private static Assembly LoadFromFile(String name, out int error);
+ * private static Assembly LoadFromFile(String name, out int error,
+ *										Assembly parent);
  */
 ILObject *_IL_Assembly_LoadFromFile(ILExecThread *thread,
 									ILString *name,
-									ILInt32 *error)
+									ILInt32 *error,
+									ILObject *parent)
 {
 	char *filename;
 	ILImage *image;
@@ -1626,6 +1661,44 @@ ILUInt8 *_IL_ClrResourceStream_ResourceGetAddress(ILExecThread *_thread,
 	{
 		return (ILUInt8 *)0;
 	}
+}
+
+/*
+ * private static byte *I18N.CJK.CodeTable.GetAddress(Stream stream,
+ *													  long position);
+ *
+ * This provides back door access to "ResourceGetAddress" from "I18N.CJK".
+ */
+ILUInt8 *_IL_CodeTable_GetAddress(ILExecThread *_thread,
+								  ILObject *stream,
+								  ILInt64 position)
+{
+	ILClass *classInfo;
+	ILUInt8 *result;
+
+	/* Verify that "stream" is an instance of "ClrResourceStream" */
+	if(!stream)
+	{
+		return 0;
+	}
+	classInfo = ILExecThreadLookupClass
+		(_thread, "System.Reflection.ClrResourceStream");
+	if(!classInfo)
+	{
+		return 0;
+	}
+	if(GetObjectClass(stream) != classInfo)
+	{
+		return 0;
+	}
+
+	/* Make a call to "ClrResourceStream.GetAddress", which will find
+	   the resource handle and adjust "position" for the resource start.
+	   It will then call back to "ResourceGetAddress" above */
+	result = 0;
+	ILExecThreadCallNamed(_thread, "System.Reflection.ClrResourceStream",
+						  "GetAddress", "(Tl)*B", &result, stream, position);
+	return result;
 }
 
 #ifdef	__cplusplus

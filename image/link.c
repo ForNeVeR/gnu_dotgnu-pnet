@@ -408,6 +408,60 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 	return 0;
 }
 
+int ILImageLoadAssembly(const char *name, ILContext *context,
+						ILImage *parentImage, ILImage **image)
+{
+	int len;
+	char *pathname;
+	int sameDir;
+	int flags;
+	int error;
+
+	/* Bail out if the assembly name is invalid-looking */
+	if(!name)
+	{
+		return -1;
+	}
+	len = strlen(name);
+	while(len > 0 && name[len - 1] != '/' && name[len - 1] != '\\' &&
+		  name[len - 1] != ':')
+	{
+		--len;
+	}
+	if(len > 0)
+	{
+		return IL_LOADERR_UNRESOLVED;
+	}
+
+	/* See if we already have an assembly with this name */
+	*image = ILContextGetAssembly(context, name);
+	if(*image != 0)
+	{
+		return 0;
+	}
+
+	/* Try to locate the assembly relative to its parent assembly */
+	pathname = LocateAssembly(context, name, (ILUInt16 *)0,
+							  parentImage->filename, &sameDir);
+	if(!pathname)
+	{
+		return -1;
+	}
+
+	/* If the assembly was loaded from a system directory, then we
+	   can assume that it is being loaded from a secure location */
+	flags = IL_LOADFLAG_FORCE_32BIT;
+	if(sameDir)
+	{
+		flags |= (parentImage->secure ? 0 : IL_LOADFLAG_INSECURE);
+	}
+
+	/* Load the image */
+	error = ILImageLoadFromFile(pathname, context, image, flags, 0);
+	ILFree(pathname);
+	return error;
+}
+
 #if defined(CSCC_HOST_TRIPLET) || defined(CSCC_HOST_ALIAS)
 
 /*

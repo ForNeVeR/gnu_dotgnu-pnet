@@ -15,6 +15,9 @@
 
 	* samples/mscorlib.dll: new version with "System.IO" fixes.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c,
+	image/link.c, include/il_image.h: implement by-name assembly loads.
+
 2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with UTF-7 encoding and

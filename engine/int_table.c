@@ -310,8 +310,8 @@ IL_METHOD_BEGIN(Assembly_Methods)
 	IL_METHOD("GetManifestResourceStream", "(ToSystem.String;)oSystem.IO.Stream;", _IL_Assembly_GetManifestResourceStream)
 	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;", _IL_Assembly_GetType)
 	IL_METHOD("GetTypes", "(T)[oSystem.Type;", _IL_Assembly_GetTypes)
-	IL_METHOD("LoadFromName", "(oSystem.String;&i)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromName)
-	IL_METHOD("LoadFromFile", "(oSystem.String;&i)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromFile)
+	IL_METHOD("LoadFromName", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromName)
+	IL_METHOD("LoadFromFile", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromFile)
 IL_METHOD_END
 
 IL_METHOD_BEGIN(MethodBase_Methods)
@@ -510,6 +510,10 @@ IL_METHOD_BEGIN(TimeMethods_Methods)
 	IL_METHOD("GetUpTime", "()i", _IL_TimeMethods_GetUpTime)
 IL_METHOD_END
 
+IL_METHOD_BEGIN(CodeTable_Methods)
+	IL_METHOD("GetAddress", "(oSystem.IO.Stream;l)*B", _IL_CodeTable_GetAddress)
+IL_METHOD_END
+
 typedef struct
 {
 	const char *name;
@@ -533,6 +537,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"ClrSecurity", "System.Security", ClrSecurity_Methods},
 	{"ClrType", "System.Reflection", ClrType_Methods},
 	{"CodeAccessPermission", "System.Security", CodeAccessPermission_Methods},
+	{"CodeTable", "I18N.CJK", CodeTable_Methods},
 	{"Debugger", "System.Diagnostics", Debugger_Methods},
 	{"Decimal", "System", Decimal_Methods},
 	{"DefaultEncoding", "System.Text", DefaultEncoding_Methods},

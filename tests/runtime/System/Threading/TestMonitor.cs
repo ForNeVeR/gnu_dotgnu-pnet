@@ -984,6 +984,7 @@ public class TestMonitor
 				Monitor.Pulse(o);
 				Thread.Sleep(2*1000);
 				thread.Interrupt();
+				Thread.Sleep(2*1000);
 				this.seen = true;
 			}
 			thread.Join();
@@ -1059,6 +1060,7 @@ public class TestMonitor
 				Monitor.Pulse(o);
 				Thread.Sleep(2*1000);
 				thread.Abort();
+				Thread.Sleep(2*1000);
 				this.seen = true;
 			}
 			thread.Join();
@@ -1101,6 +1103,7 @@ public class TestMonitor
 				if (!this.seen)
 				{
 					this.result = "Wait did not re-aquire lock after abort";
+				Thread.Sleep(2*1000);
 					return;
 				}
 				try

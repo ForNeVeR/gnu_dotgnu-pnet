@@ -1,0 +1,114 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(runtime/System/Object.cs)
+AM_INIT_AUTOMAKE(pnetlib, 0.0.2)
+
+dnl Extra substitution variables.
+AC_SUBST(CSCC)
+AC_SUBST(CSCC_SYSTEM_FLAGS)
+AC_SUBST(CSCC_FLAGS)
+AC_SUBST(CSCC_COMPILE)
+AC_SUBST(RESGEN)
+AC_SUBST(RESGEN_FLAGS)
+
+dnl Checks for programs.
+AC_PROG_AWK
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+
+dnl The --with-pnet option can be used to specify the location of
+dnl Portable.NET, so that we know where to get the C# compiler, etc.
+dnl The default location is assumed to be "../pnet".
+AC_ARG_WITH(pnet,
+[  --with-pnet=DIR         specify the location of Portable.NET],
+[
+	if test -n "$withval"; then
+		case "$withval" in
+		  ../*) PNET_PATH="`pwd`/$withval" ;;
+		     *) PNET_PATH="$withval" ;;
+		esac
+	else
+		PNET_PATH="`pwd`/../pnet"
+	fi
+],
+[
+	PNET_PATH="`pwd`/../pnet"
+])
+
+dnl The --with-mstools option can be used to force the use of
+dnl Microsoft's toolchain instead of Portable.NET's.
+AC_ARG_WITH(mstools,
+[  --with-mstools          use Microsoft tools instead of Portable.NET's],
+[
+	MSTOOLS=yes
+],
+[
+	MSTOOLS=no
+])
+
+dnl Find the C# compiler to use.
+if test "$MSTOOLS" = "no"; then
+	AC_PATH_PROG(CSCC, cscc,, $PNET_PATH/cscc:$PATH)
+	if test "$CSCC" = "" ; then
+		AC_PATH_PROG(CSCC, csc)
+		if test "$CSCC" = ""; then
+			echo '******************************************************'
+			echo "Portable.NET's cscc or Microsoft's csc.exe is required"
+			echo "to build.  Use the --with-pnet option to specify the"
+			echo "location of the Portable.NET source tree."
+			echo '******************************************************'
+			exit 1
+		fi
+		CSCC_COMPILE='@sh $(top_srcdir)/tools/mscsc.sh "$(CSCC)" $(CSCC_SYSTEM_FLAGS) $(CSCC_FLAGS)'
+		CSCC_SYSTEM_FLAGS="-fsyntax-check"
+	else
+		CSCC_SYSTEM_FLAGS=`sh "${srcdir}/tools/csccflags.sh" "$CSCC" "$PNET_PATH"`" -fsyntax-check"
+		CSCC_COMPILE='"$(CSCC)" $(CSCC_SYSTEM_FLAGS) $(CSCC_FLAGS)'
+	fi
+else
+	AC_PATH_PROG(CSCC, csc)
+	if test "$CSCC" = ""; then
+		echo '***************************************************'
+		echo "Could not locate Microsoft's C# compiler (csc.exe)."
+		echo '***************************************************'
+		exit 1
+	fi
+	CSCC_COMPILE='@sh $(top_srcdir)/tools/mscsc.sh "$(CSCC)" $(CSCC_SYSTEM_FLAGS) $(CSCC_FLAGS)'
+	CSCC_SYSTEM_FLAGS="-fsyntax-check"
+fi
+
+dnl Find the .NET resource generator to use.
+if test "$MSTOOLS" = "no"; then
+	AC_PATH_PROG(RESGEN, resgen,, $PNET_PATH/resgen:$PATH)
+	if test "$RESGEN" = "" ; then
+		echo '**************************************************************'
+		echo "Portable.NET's or Microsoft's resgen is required to build."
+		echo "Use the --with-pnet option to specify Portable.NET's location."
+		echo '**************************************************************'
+		exit 1
+	fi
+else
+	AC_PATH_PROG(RESGEN, resgen)
+	if test "$RESGEN" = "" ; then
+		echo '***********************************************************'
+		echo "Could not locate Microsoft's resource utility (resgen.exe)."
+		echo '***********************************************************'
+		exit 1
+	fi
+fi
+
+dnl Determine which version of RESGEN we are using (Portable.NET or Microsoft).
+RESGEN_ERROR=`"$RESGEN" -v.txt 2>&1`
+case "$RESGEN_ERROR" in
+  RESGEN*) RESGEN_FLAGS="-tR" ;;
+        *) RESGEN_FLAGS="" ;;
+esac
+AM_CONDITIONAL(PNET_RESGEN, test "$RESGEN_FLAGS" != "")
+
+AC_OUTPUT([
+Makefile
+runtime/Makefile
+runtime/System/Makefile
+resources/Makefile
+resources/en_US/Makefile
+resources/en_US/runtime/Makefile])

@@ -1,0 +1,51 @@
+// IList.cs
+// A reimplementation of the orginal .NET System.Collections.IList interface
+// Copyright (C) 2001 Mike Krueger
+// 
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+namespace System.Collections {
+
+	public interface IList : ICollection, IEnumerable
+	{
+
+		bool IsFixedSize {
+			get;
+		}
+		
+		bool IsReadOnly {
+			get;
+		}
+		
+		object this[int index] {
+			get; 
+			set;
+		}
+		
+		int Add(object val);
+		
+		void Clear();
+		
+		bool Contains(object val);
+		
+		int IndexOf(object val);
+		
+		void Insert(int index, object val);
+		
+		void Remove(object val);
+		
+		void RemoveAt(int index);
+	}
+}

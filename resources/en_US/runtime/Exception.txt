@@ -1,0 +1,36 @@
+#
+# Exception.txt - Resources for exception messages.
+#
+# Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+Exception_WasThrown={0} was thrown
+Exception_Access=Cannot access member.
+Exception_System=There was an error in the system.
+Exception_InvalidCast=Could not cast to the specified type.
+Exception_Overflow=Overflow occurred.
+Exception_Arithmetic=Arithmetic failure occurred.
+Exception_Argument=Argument value was invalid.
+Exception_InvalidOperation=An invalid operation occurred.
+Exception_Format=The supplied value did not have the correct format.
+Exception_NoSystemDir=This platform does not have a "System" directory.
+Exception_NoCmdLine=This platform does not support command-line arguments.
+Exception_NotSupported=The requested feature is not supported.
+Exception_ComTypeLoad=[Assembly {0}] Type {1} cannot be created through COM
+Exception_TypeLoad=Could not load the specified type.
+Exception_AppDomainUnloaded=The application domain has been unloaded.
+Exception_Application=An application exception occurred.
+Exception_NotImplemented=The requested functionality is not implemented.

@@ -1,0 +1,48 @@
+#
+# Arg.txt - Resources for argument errors.
+#
+# Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+Arg_MustBeBoolean=Object must be of type Boolean
+Arg_MustBeByte=Object must be of type Byte
+Arg_MustBeSByte=Object must be of type SByte
+Arg_MustBeChar=Object must be of type Char
+Arg_MustBeInt16=Object must be of type Int16
+Arg_MustBeUInt16=Object must be of type UInt16
+Arg_MustBeInt32=Object must be of type Int32
+Arg_MustBeUInt32=Object must be of type UInt32
+Arg_MustBeInt64=Object must be of type Int64
+Arg_MustBeUInt64=Object must be of type UInt64
+Arg_MustBeDecimal=Object must be of type Decimal
+Arg_MustBeSingle=Object must be of type Single
+Arg_MustBeDouble=Object must be of type Double
+Arg_MustBeCurrency=Object must be of type Currency
+Arg_MustBeDateTime=Object must be of type DateTime
+Arg_MustBeTimeSpan=Object must be of type TimeSpan
+Arg_InvalidBase=Base must be 2, 8, 10, or 16
+Arg_UnknownTypeCode=Unknown type code
+Arg_InvalidHexStyle=Invalid hexadecimal number style
+Arg_DecBitCtor=Invalid bit array supplied to Decimal constructor
+Arg_NotNull=Argument cannot be null
+Arg_OutOfRange=Argument is out of range
+Arg_OutOfRangeValue=Argument value: {0}
+Arg_DateTimeRange=DateTime value is out of range
+ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
+ArgRange_YMD=Year, month, day specification is out of range
+ArgRange_HMS=Hour, minute, second specification is out of range
+ArgRange_DateTimeTicks=Ticks value for DateTime is out of range
+ArgRange_TimeSpan=TimeSpan value is out of range

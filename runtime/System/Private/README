@@ -1,0 +1,4 @@
+The classes in this directory are not strictly part of the standard
+.NET library.  We use "System.Private" for internal housekeeping
+classes and methods that the rest of the library uses.  Other programs
+should NOT use these facilities or portabilty will be affected.

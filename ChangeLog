@@ -1,5 +1,15 @@
 2004-05-26  Thong Nguyen <tum@veridicus.com>
 
+	* support/dir.c: Fix for Win32 version of ILCloseDir (return
+	1 rather than 0 on success).
+	
+	* support/file.c: Set file mode to binary mode on calls
+	to ILSysIOOpenFile if system is windows.  Windows defaults
+	to text mode (unbelievable!) causing files to randomly not 
+	open properly.
+	
+2004-05-26  Thong Nguyen <tum@veridicus.com>
+
 	* Most changes are for supporting Thread.Abort.
 
 	* include/il_program.h, image/member.c: Added ptrUserData

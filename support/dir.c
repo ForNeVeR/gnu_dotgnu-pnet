@@ -483,9 +483,11 @@ ILDirEnt *ILReadDir(ILDir *dir)
 
 int ILCloseDir(ILDir *dir)
 {
-	_findclose(dir->handle);
+	int result;
+
+	result = _findclose(dir->handle) == 0;
 	ILFree(dir);
-	return 0;
+	return result;
 }
 
 const char *ILDirEntName(ILDirEnt *entry)

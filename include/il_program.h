@@ -1462,7 +1462,8 @@ ILPInvoke *ILPInvokeFind(ILMethod *method);
  */
 ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 								 unsigned long param, char **customName,
-								 int *customNameLen);
+								 int *customNameLen, char **customCookie,
+								 int *customCookieLen);
 
 /*
  * Resolve the module information for a PInvoke declaration

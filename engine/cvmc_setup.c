@@ -539,6 +539,8 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 	ILUInt32 marshalType;
 	char *customName;
 	int customNameLen;
+	char *customCookie;
+	int customCookieLen;
 #endif
 
 	/* Get the PInvoke information */
@@ -573,7 +575,9 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 		/* Perform PInvoke expansions on the parameter */
 		if(!isInternal &&
 		   (marshalType = ILPInvokeGetMarshalType(pinv, method, param,
-		   										  &customName, &customNameLen))
+		   										  &customName, &customNameLen,
+												  &customCookie,
+												  &customCookieLen))
 				!= IL_META_MARSHAL_DIRECT)
 		{
 			offset = coder->argOffsets[param - thisAdjust];
@@ -803,6 +807,8 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 	ILUInt32 marshalType;
 	char *customName;
 	int customNameLen;
+	char *customCookie;
+	int customCookieLen;
 
 	/* Push the address of the argument array onto the stack */
 	if(useRawCalls)
@@ -1024,7 +1030,8 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 		{
 			/* Marshal the PInvoke return value back into a CLR object */
 			marshalType = ILPInvokeGetMarshalType
-				(ILPInvokeFind(method), method, 0, &customName, &customNameLen);
+				(ILPInvokeFind(method), method, 0, &customName, &customNameLen,
+				 &customCookie, &customCookieLen);
 			switch(marshalType)
 			{
 				case IL_META_MARSHAL_ANSI_STRING:

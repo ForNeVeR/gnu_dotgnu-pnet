@@ -64,9 +64,22 @@ static ILUInt32 StringCharSet(ILPInvoke *pinvoke, ILMethod *method)
 	}
 }
 
+/*
+ * Extract a string from a custom marshaling declaration.
+ */
+#define	ExtractCustomString(name,namelen)	\
+			do { \
+				unsigned long size = ILMetaUncompressData(&reader); \
+				*(name) = (char *)(reader.data); \
+				*(namelen) = (int)size; \
+				reader.data += size; \
+				reader.len -= size; \
+			} while (0)
+
 ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 								 unsigned long param, char **customName,
-								 int *customNameLen)
+								 int *customNameLen, char **customCookie,
+								 int *customCookieLen)
 {
 	ILType *type = ILTypeGetParam(method->member.signature, param);
 	ILParameter *parameter;
@@ -103,6 +116,8 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 	/* Initialize the custom name return information to nothing */
 	*customName = 0;
 	*customNameLen = 0;
+	*customCookie = 0;
+	*customCookieLen = 0;
 
 	/* If the native type is "interface", then always marshal directly.
 	   This is normally used to force strings, delegates, and arrays
@@ -116,7 +131,22 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 	if(nativeTypeCode == IL_META_NATIVETYPE_CUSTOMMARSHALER &&
 	   ILTypeIsReference(type))
 	{
-		return IL_META_MARSHAL_CUSTOM;
+		ILMetaDataRead reader;
+		reader.data = nativeType + 1;
+		reader.len = nativeTypeLen - 1;
+		reader.error = 0;
+		ExtractCustomString(customName, customNameLen);	/* Unused GUID */
+		ExtractCustomString(customName, customNameLen);	/* Unused native name */
+		ExtractCustomString(customName, customNameLen);
+		ExtractCustomString(customCookie, customCookieLen);
+		if(customNameLen > 0)
+		{
+			return IL_META_MARSHAL_CUSTOM;
+		}
+		else
+		{
+			return IL_META_MARSHAL_DIRECT;
+		}
 	}
 
 	/* Determine what to do based on the parameter type */

@@ -457,6 +457,8 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 	ILUInt32 marshalType;
 	char *customName;
 	int customNameLen;
+	char *customCookie;
+	int customCookieLen;
 	char *strValue;
 
 	/* Get the top and extent of the stack */
@@ -476,7 +478,8 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 	{
 		/* Marshal parameters that need special handling */
 		marshalType = ILPInvokeGetMarshalType(0, method, param,
-											  &customName, &customNameLen);
+											  &customName, &customNameLen,
+											  &customCookie, &customCookieLen);
 		if(marshalType != IL_META_MARSHAL_DIRECT)
 		{
 			switch(marshalType)
@@ -705,10 +708,13 @@ static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
 	ILUInt32 marshalType;
 	char *customName;
 	int customNameLen;
+	char *customCookie;
+	int customCookieLen;
 
 	/* Marshal return types that need special handling */
 	marshalType = ILPInvokeGetMarshalType
-			(0, method, 0, &customName, &customNameLen);
+			(0, method, 0, &customName, &customNameLen,
+			 &customCookie, &customCookieLen);
 	if(marshalType != IL_META_MARSHAL_DIRECT)
 	{
 		switch(marshalType)

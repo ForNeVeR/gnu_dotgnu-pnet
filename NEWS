@@ -1,4 +1,78 @@
 
+0.3.0 (11 February 2002)
+
+	Runtime engine:
+
+	* Implement native methods for "Platform.TaskMethods" and
+	  "Platform.DirMethods".
+	* Bug fixes for the CVM "switch" instruction.
+	* Bugs in "ldarg" and "ldloc" when "byref" types were present.
+	* Fix the implementation of "String.Replace".
+	* Bug in the CVM "return_n" instruction which caused it to
+	  return the wrong stack words.
+
+	C# Compiler:
+
+	* Lexer fixes for identifiers, verbatim string literals, hexadecimal
+	  characters, octal characters.
+	* Add the "volatile" field modifier.
+	* Validate the type of initialization expressions against constants.
+	* Fixes to the representation of constant blobs.
+	* Store decimal constants as "DecimalConstantAttribute".
+	* Update the pre-processor's condition syntax to match the latest
+	  C# language specification.
+	* Various fixes to the pre-processor directives.
+	* Expand constant fields inline.
+	* Compilation of properties, fields, casts, increment, decrement,
+	  "as", "is", "new", "typeof", "switch".
+	* Parser fixes for events, modifiers.
+	* Duplicate testing for fields, enumerated constants, and properties.
+	* Improve the coercion and cast API's to allow for subsetting.
+	* Implement more implicit and explicit conversions.
+	* Convert between Java and C# string objects where required.
+	* Default constructors.
+	* Use the values of literal constant fields during type gathering.
+	* Array access operators.
+	* Filter method groups to remove methods in base classes with
+	  identical signatures.
+	* Indexers.
+	* Fixes to interface declarations.
+	* Synchronous delegates.
+	* Bug fixes to string equality and inequality handling.
+	* Optimise checks of strings against "null" to use reference testing
+	  instead of operator calls.
+	* Report errors when instance members are accessed from static members.
+
+	Documentation:
+
+	* Add the top-level HACKING file to the tree.
+
+	Assembler:
+
+	* Add the "nullref" field initializer.
+
+	Linker:
+
+	* Fix forward references to methods and fields.
+	* Make sure that the converted type is used in method and field
+	  comparisons, not the original type.
+
+	Loader and Metadata:
+
+	* Ignore PE/COFF sections that are zero bytes in size when
+	  calculating minimum and maximum addresses ranges.
+	* Make the "il_types.h" API more opaque, and implement several new
+	  helper functions that are useful for the compiler.
+
+	Other:
+
+	* New helper functions for UTF-8 and UTF-16 string processing.
+	* More portability fixes for Solaris 8.
+	* Change all tools to output help message to stdout instead of
+	  stderr, to be consistent with the GNU Coding Standards.
+	* Alter the Fibonacci example, and add the "getenv" example.
+	* Implement the missing "ILDecimalFromDouble" function.
+
 0.2.8 (7 January 2002)
 
 	Runtime engine:

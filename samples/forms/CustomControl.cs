@@ -33,8 +33,7 @@ public class MainForm : Form
 	public static void Main(String[] args)
 	{
 		Form form = new MainForm();
-		form.Width = 400;
-		form.Height = 350;
+		form.ClientSize = new Size(400, 330);
 		form.Text = "Graphs app";
 		GraphItem[] data=new GraphItem[] 
 							{
@@ -118,7 +117,7 @@ public class GraphPoint: Control
 		label.Visible=false;
 		label.Width=50;
 		label.ForeColor=Color.Blue;
-		label.Location=this.Location+offset;
+		label.Location=this.Location+new Size(offset.Width + radius + 3, offset.Height - label.Height/2);
 	}
 
 	public Point Point
@@ -219,7 +218,6 @@ public class GraphControl: Control
 
 	public GraphControl(GraphItem[] dataset,int left,int top,int right, int bottom) : base("GraphControl",left,top,right,bottom)
 	{
-		CreateHandle();
 		this.points=new GraphPoint[dataset.Length];
 		offset=new Size(5,2);
 		for(int i=0;i<dataset.Length;i++)

@@ -348,23 +348,32 @@ namespace System.Windows.Forms
 				for( int i = 0; i < tabPageCollection.Count; i++ )
 				{
 					if (row == PositionInfo.positions[i].row && i != selectedIndex)
-						OnDrawItem( new DrawItemEventArgs(e.Graphics, Font, GetTabRect(i), i, DrawItemState.None, ForeColor, BackColor));
+					{
+						Rectangle bounds = GetTabRect(i);
+						// Remove bottom line off bounds if not selected so border isnt covered
+						e.Graphics.SetClip(new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height -1));
+						OnDrawItem( new DrawItemEventArgs(e.Graphics, Font, bounds, i, DrawItemState.None, ForeColor, BackColor));
+					}
 				}
 			}
 			if (selectedIndex > -1)
 			{
+				Rectangle bounds = GetTabRect(selectedIndex);
+				e.Graphics.SetClip(new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height));
+						
 				DrawItemState state = Focused?DrawItemState.Focus:DrawItemState.None;
-				OnDrawItem( new DrawItemEventArgs(e.Graphics, Font, GetTabRect(selectedIndex), selectedIndex, state, ForeColor, BackColor));
+				OnDrawItem( new DrawItemEventArgs(e.Graphics, Font, bounds, selectedIndex, state, ForeColor, BackColor));
 			}
 
 			// Draw the Tab move buttons if necessary
 			if (moveButtonsShowing)
 			{
-				moveButtonLeftBounds = moveButtonRightBounds = new Rectangle( Width - moveButtonSize.Width *2, 2, moveButtonSize.Width, moveButtonSize.Height );
+				moveButtonLeftBounds = moveButtonRightBounds = new Rectangle( Width - moveButtonSize.Width *2, 1, moveButtonSize.Width, moveButtonSize.Height );
 				moveButtonRightBounds.Offset( moveButtonLeftBounds.Width, 0);
 
 				using (SolidBrush b = new SolidBrush( foreColor) )
 				{
+					e.Graphics.ResetClip();
 					ControlPaint.DrawButton(e.Graphics, moveButtonLeftBounds, moveButtonLeftState);
 					// Left Arrow
 					e.Graphics.FillPolygon(b, new Point[]
@@ -474,7 +483,7 @@ namespace System.Windows.Forms
 					}
 
 					tabs[i]=new TabPosition( new Rectangle( pos, 0, measuredWidth, 0 ), row, false );
-					pos += measuredWidth -1;
+					pos += measuredWidth;
 				}
 			}
 		}
@@ -666,18 +675,11 @@ namespace System.Windows.Forms
 		protected virtual void OnDrawItem( DrawItemEventArgs e )
 		{
 			e.DrawBackground();
-			Rectangle bounds = e.Bounds;
-			
-			using ( SolidBrush backBrush = new SolidBrush(BackColor) )
-			{
-				// Clear out the border of tabbase where it is connected to the selected tab
-				if ( e.Index == selectedIndex)
-					e.Graphics.FillRectangle(backBrush, new Rectangle(e.Bounds.Left + 1, e.Bounds.Bottom, e.Bounds.Width - 3 + 1, 2+1));
-			}
 			Rectangle borderBounds = new Rectangle(e.Bounds.Left, e.Bounds.Top, e.Bounds.Width, e.Bounds.Height+2);
 			
 			//TODO: If Appearance is tab then this ok, need to do for button & flat button
-			// Draw tab edging
+			// Draw tab edging & clip a border edge above the bottom
+			
 			DrawTab( e.Graphics, borderBounds, alignment, PositionInfo.positions[e.Index].leftExposed );
 
 			// Owner Draw does their own drawing
@@ -685,7 +687,7 @@ namespace System.Windows.Forms
 			{
 				//TODO: If imageindex & imagelist then draw
 				
-				Rectangle textBounds = new Rectangle(bounds.Left + tabTextWidthMargin, bounds.Top + tabTextHeightMargin, bounds.Width - tabTextWidthMargin*2, bounds.Height - tabTextHeightMargin * 2);
+				Rectangle textBounds = new Rectangle(e.Bounds.Left + tabTextWidthMargin, e.Bounds.Top + tabTextHeightMargin, e.Bounds.Width - tabTextWidthMargin*2, e.Bounds.Height - tabTextHeightMargin * 2);
 				Rectangle focusBounds = textBounds;
 				focusBounds.Inflate(1,1);
 
@@ -757,7 +759,9 @@ namespace System.Windows.Forms
 			{
 				moveButtonRightState = ButtonState.Normal;
 				Focus();
-				SelectedIndex = GetMouseOverTab( e.X, e.Y );
+				int selectedIndex =  GetMouseOverTab( e.X, e.Y );
+				if (selectedIndex > -1)
+					SelectedIndex = selectedIndex;
 			}
 		}
 

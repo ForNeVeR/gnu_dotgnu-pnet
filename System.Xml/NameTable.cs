@@ -26,75 +26,190 @@ using System.Collections;
 
 public class NameTable : XmlNameTable
 {
-	private ArrayList myarraylist = new ArrayList();
+	// Internal state.
+	private NameHashtable table;
 	
-	public NameTable() {}
+	// Constructor.
+	public NameTable()
+			{
+				table = new NameHashtable();
+			}
 	
+	// Add a string to the table if it doesn't already exist.
 	public override String Add(String key)
-	{
-		if (key == null)
-			throw new ArgumentNullException("key");		
-		
-		foreach(String s in myarraylist)
-		{
-			if (s == key)
 			{
-				return s;
+				// Validate the parameters.
+				if(key == null)
+				{
+					throw new ArgumentNullException("key");		
+				}
+
+				// If the key is zero length, then always return String.Empty.
+				if(key.Length == 0)
+				{
+					return String.Empty;
+				}
+		 
+				// Retrieve the current string if the name is already present.
+				String current = (String)(table[key]);
+				if(current != null)
+				{
+					return current;
+				}
+
+				// Add the new string to the table.
+				table[key] = key;
+				return key;
 			}
-		}
-		
-		myarraylist.Add(key);
-		return key;
-	}
 	
+	// Add a string to the table from an array.
 	public override String Add(char[] key, int start, int len)
-	{
-		if (len < 0)
-			throw new ArgumentOutOfRangeException("len");
-		
-		if ((len > key.Length - start) && (len != 0))
-			throw new IndexOutOfRangeException("key");
-		
-		if ((start < 0 || start >= key.Length) && (len != 0))
-			throw new IndexOutOfRangeException("start");
-		
-		String newstr = new String(key, start, len);
-		
-		return Add(newstr);
-	}
-	
-	public override String Get(String value)
-	{
-		if (value == null)
-			throw new ArgumentNullException("value");		
-		
-		foreach(String s in myarraylist)
-		{
-			if (s == value)
 			{
-				return s;
+				// Validate the parameters.
+				if(key == null)
+				{
+					throw new ArgumentNullException("key");
+				}
+				else if(len < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("len", S._("ArgRange_StringRange"));
+				}
+
+				// If the key is zero length, then always return String.Empty.
+				if(len == 0)
+				{
+					return String.Empty;
+				}
+		 
+				// Retrieve the current string if the name is already present.
+				String current = table.Lookup(key, start, len);
+				if(current != null)
+				{
+					return current;
+				}
+
+				// Add the new string to the table.
+				String skey = new String(key, start, len);
+				table[skey] = skey;
+				return skey;
 			}
-		}
-		
-		return null;
-	}
+
+	// Get a string from the table by name.
+	public override String Get(String value)
+			{
+				// Validate the parameters.
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+
+				// If the string has zero length, then return String.Empty.
+				if(value.Length == 0)
+				{
+					return String.Empty;
+				}
+
+				// Get the current value from the table.
+				return (String)(table[value]);
+			}
 	
-	public override String Get(char[] value, int offset, int length)
+	// Get a string from the table by array name.
+	public override String Get(char[] key, int start, int len)
+			{
+				// Validate the parameters.
+				if(key == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				else if(len < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("len", S._("ArgRange_StringRange"));
+				}
+
+				// If the key is zero length, then always return String.Empty.
+				if(len == 0)
+				{
+					return String.Empty;
+				}
+		 
+		 		// Retrieve the current value from the table.
+				return table.Lookup(key, start, len);
+			}
+
+	// Hash table specialization for doing lookups in different ways.
+	private class NameHashtable : Hashtable
 	{
-		if (length < 0)
-			throw new ArgumentOutOfRangeException("length");
-		
-		if ((length > value.Length - offset) && (length != 0))
-			throw new IndexOutOfRangeException("value");
-		
-		if ((offset < 0 || offset >= value.Length) && (length != 0))
-			throw new IndexOutOfRangeException("offset");
-		
-		String newstr = new String(value, offset, length);
-		
-		return Get(newstr);
-	}
+		// Internal state.
+		private char[] arrayKey;
+		private int arrayOffset;
+		private int arrayLength;
 
-}; //class NameTable
+		// Constructor.
+		public NameHashtable() : base() {}
 
-}; //namespace System.Xml
+		// Do a lookup based on a character array.
+		public String Lookup(char[] key, int offset, int length)
+				{
+					arrayKey = key;
+					arrayOffset = offset;
+					arrayLength = length;
+					String result = (String)(this[key]);
+					arrayKey = null;
+					return result;
+				}
+
+		// Get the hash value for a key.
+		protected override int GetHash(Object key)
+				{
+					if(arrayKey == null)
+					{
+						return base.GetHash(key);
+					}
+					else
+					{
+						// This must match the hash algorithm for
+						// "String.GetHashCode()" in the engine.
+						int hash = 0;
+						int posn;
+						for(posn = 0; posn < arrayLength; ++posn)
+						{
+							hash = (hash << 5) + hash +
+								   (int)(arrayKey[arrayOffset + posn]);
+						}
+						return hash;
+					}
+				}
+
+		// Determine if two keys are equal.
+		protected override bool KeyEquals(Object _item, Object key)
+				{
+					if(arrayKey == null)
+					{
+						return ((String)_item) == ((String)key);
+					}
+					else
+					{
+						String item = ((String)_item);
+						if(item.Length != arrayLength)
+						{
+							return false;
+						}
+						int posn;
+						for(posn = 0; posn < arrayLength; ++posn)
+						{
+							if(item[posn] != arrayKey[arrayOffset + posn])
+							{
+								return false;
+							}
+						}
+						return true;
+					}
+				}
+
+	}; // class NameHashtable
+
+}; // class NameTable
+
+}; // namespace System.Xml

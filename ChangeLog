@@ -25,6 +25,9 @@
 	runtime/System/Runtime/Serialization/StreamingContextStates.cs:
 	add new "System.Runtime.Serialization" classes.
 
+	* System.Xml/NameTable.cs: reimplement "System.Xml.NameTable" to
+	use a hash table, for greater efficiency.
+
 2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.2.6" release.

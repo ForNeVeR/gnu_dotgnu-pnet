@@ -2,7 +2,7 @@
  * ComImportAttribute.cs - Implementation of the
  *			"System.Runtime.InteropServices.ComImportAttribute" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,16 @@
 namespace System.Runtime.InteropServices
 {
 
-[TODO]
-public class ComImportAttribute : Attribute
-{
+#if !ECMA_COMPAT
 
-// TODO
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
+public sealed class ComImportAttribute : Attribute
+{
+	// Constructor.
+	public ComImportAttribute() {}
 
 }; // class ComImportAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.InteropServices

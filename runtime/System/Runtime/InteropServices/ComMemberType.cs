@@ -2,7 +2,7 @@
  * ComMemberType.cs - Implementation of the
  *			"System.Runtime.InteropServices.ComMemberType" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,16 @@
 namespace System.Runtime.InteropServices
 {
 
+#if !ECMA_COMPAT
+
 public enum ComMemberType
 {
-	Method,
-	PropGet,
-	PropSet
+	Method     = 0,
+	PropGet    = 1,
+	PropSet    = 2
 
 }; // enum ComMemberType
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.InteropServices

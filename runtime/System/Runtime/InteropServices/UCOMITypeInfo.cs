@@ -1,8 +1,8 @@
 /*
  * UCOMITypeInfo.cs - Implementation of the
- *			"System.Runtime.InteropServices.UCOMITypeInfo" interface.
+ *			"System.Runtime.InteropServices.UCOMITypeInfo" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +24,34 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-using System;
-
+[Guid("")]
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 public interface UCOMITypeInfo
 {
-	// TODO
+	void AddressOfMember(int memid, INVOKEKIND invKind, out IntPtr ppv);
+	void CreateInstance(Object pUnkOuter, ref Guid riid, out Object ppvObj);
+	void GetContainingTypeLib(out UCOMITypeLib ppTLB, out int pIndex);
+	void GetDllEntry(int memid, INVOKEKIND invKind, out String pBstrDllName,
+					 out String pBstrName, out short pwOrdinal);
+	void GetDocumentation(int index, out String strName,
+						  out String strDocString, out int dwHelpContext,
+						  out String strHelpFile);
+	void GetFuncDesc(int index, out IntPtr ppFuncDesc);
+	void GetIDsOfNames(String[] rgszNames, int cNames, int[] pMemId);
+	void GetImplTypeFlags(int index, out int pImplTypeFlags);
+	void GetMops(int memid, out String pBstrMops);
+	void GetNames(int memid, String[] rgBstrNames, int cMaxNames,
+				  out int pcNames);
+	void GetRefTypeInfo(int hRef, out UCOMITypeInfo ppTI);
+	void GetTypeAttr(out IntPtr ppTypeAttr);
+	void GetTypeComp(out UCOMITypeComp ppTComp);
+	void GetVarDesc(int index, out IntPtr ppVarDesc);
+	void Invoke(Object pvInstance, int memid, short wFlags,
+				ref DISPPARAMS pDispParams, out Object pVarResult,
+				out EXCEPINFO pExcepInfo, out int puArgErr);
+	void ReleaseFuncDesc(IntPtr pFuncDesc);
+	void ReleaseTypeAttr(IntPtr pTypeAttr);
+	void ReleaseVarDesc(IntPtr pVarDesc);
 
 }; // class UCOMITypeInfo
 

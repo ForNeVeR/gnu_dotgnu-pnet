@@ -2,7 +2,7 @@
  * DispIdAttribute.cs - Implementation of the
  *			"System.Runtime.InteropServices.DispIdAttribute" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,34 @@
 namespace System.Runtime.InteropServices
 {
 
-[TODO]
-public class DispIdAttribute : Attribute
-{
+#if !ECMA_COMPAT
 
-// TODO
+[AttributeUsage(AttributeTargets.Method |
+				AttributeTargets.Field |
+				AttributeTargets.Property |
+				AttributeTargets.Event)]
+public sealed class DispIdAttribute : Attribute
+{
+	// Internal state.
+	private int dispId;
+
+	// Constructor.
+	public DispIdAttribute(int dispId)
+			{
+				this.dispId = dispId;
+			}
+
+	// Get this attribute's value.
+	public int Value
+			{
+				get
+				{
+					return dispId;
+				}
+			}
 
 }; // class DispIdAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.InteropServices

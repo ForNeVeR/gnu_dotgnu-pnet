@@ -33,8 +33,8 @@ using System.Threading;
 public sealed class Marshal
 {
 	// Character size information.
-	public static readonly int SystemDefaultCharSize = 1;	// TODO
-	public static readonly int SystemMaxDBCSCharSize = 6;	// TODO
+	public static readonly int SystemDefaultCharSize = 1;
+	public static readonly int SystemMaxDBCSCharSize = 6;
 
 	// Allocate memory from the global (malloc) heap.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -377,11 +377,13 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
+#if !ECMA_COMPAT
 	public static MemberInfo GetMethodInfoForComSlot
 				(Type t, int slot, ref ComMemberType memberType)
 			{
 				throw new NotImplementedException();
 			}
+#endif
 	public static Object GetObjectForIUnknown(IntPtr pUnk)
 			{
 				throw new NotImplementedException();

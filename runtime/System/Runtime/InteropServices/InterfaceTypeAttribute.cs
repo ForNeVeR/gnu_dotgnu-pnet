@@ -24,6 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
+[AttributeUsage(AttributeTargets.Interface)]
 public sealed class InterfaceTypeAttribute : Attribute
 {
 	private ComInterfaceType type;

@@ -2,7 +2,7 @@
  * ComInterfaceType.cs - Implementation of the
  *			"System.Runtime.InteropServices.ComInterfaceType" enum.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,18 @@
 
 namespace System.Runtime.InteropServices
 {
+
 #if !ECMA_COMPAT
-	public enum ComInterfaceType
-	{
-		InterfaceIsDual = 0x00,
-		InterfaceIsIUnknown = 0x01,
-		InterfaceIsIDispatch = 0x02		
-	}
-#endif
-}
+
+[Serializable]
+public enum ComInterfaceType
+{
+	InterfaceIsDual			= 0,
+	InterfaceIsIUnknown		= 1,
+	InterfaceIsIDispatch	= 2
+
+}; // enum ComInterfaceType
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.Runtime.InteropServices

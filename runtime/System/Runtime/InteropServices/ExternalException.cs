@@ -21,6 +21,11 @@
 namespace System.Runtime.InteropServices
 {
 
+#if !ECMA_COMPAT
+
+using System.Runtime.Serialization;
+
+[Serializable]
 public class ExternalException : SystemException
 {
 
@@ -28,16 +33,19 @@ public class ExternalException : SystemException
 
 	// Constructors.
 	public ExternalException()
-		: base(_("Exception_System")) {}
+			: base(_("Exception_System")) {}
 	public ExternalException(String msg)
-		: base(msg) {}
+			: base(msg) {}
 	public ExternalException(String msg, Exception inner)
-		: base(msg, inner) {}
+			: base(msg, inner) {}
 	public ExternalException(String msg, int errorCode)
-		: base(msg)
-	{
-		this.errorCode=errorCode;
-	}
+			: base(msg)
+			{
+				this.errorCode = errorCode;
+			}
+	protected ExternalException(SerializationInfo info,
+								StreamingContext context)
+			: base(info, context) {}
 
 	public virtual int ErrorCode
 	{
@@ -47,6 +55,17 @@ public class ExternalException : SystemException
 		}
 	}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return _("Exception_System");
+				}
+			}
+
 }; // class ExternalException
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.InteropServices

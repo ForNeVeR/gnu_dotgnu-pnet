@@ -1,8 +1,8 @@
 /*
- * ExposeHResultAttribute.cs - Implementation of the
- *			"System.Runtime.InteropServices.ExposeHResultAttribute" class.
+ * TYPEATTR.cs - Implementation of the
+ *			"System.Runtime.InteropServices.TYPEATTR" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,34 @@
 namespace System.Runtime.InteropServices
 {
 
-[TODO]
-public class ExposeHResultAttribute : Attribute
+#if !ECMA_COMPAT
+
+[ComVisible(false)]
+public struct TYPEATTR
 {
+	// Accessible state.
+	public const int MEMBER_ID_NIL = -1;
+	public Guid guid;
+	public int lcid;
+	public int dwReserved;
+	public int memidConstructor;
+	public int memidDestructor;
+	public IntPtr lpstrSchema;
+	public int cbSizeInstance;
+	public TYPEKIND typekind;
+	public short cFuncs;
+	public short cVars;
+	public short cImplTypes;
+	public short cbSizeVft;
+	public short cbAlignment;
+	public TYPEFLAGS wTypeFlags;
+	public short wMajorVerNum;
+	public short wMinorVerNum;
+	public TYPEDESC tdescAlias;
+	public IDLDESC ildescType;
 
-// TODO
+}; // struct TYPEATTR
 
-}; // class ExposeHResultAttribute
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.InteropServices

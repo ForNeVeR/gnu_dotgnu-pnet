@@ -11,6 +11,10 @@
 	* runtime/Microsoft/Win32/Win32KeyProvider.cs: use the correct
 	form of the "preservesig" attributes.
 
+	* runtime/System/Runtime/InteropServices/*: add a large number
+	of missing non-ECMA classes in the "System.Runtime.InteropServices"
+	namespace.
+
 2003-04-03  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/IO/Directory.cs, resources/en_US/runtime/IO.txt:

@@ -1,8 +1,8 @@
 /*
  * UCOMITypeLib.cs - Implementation of the
- *			"System.Runtime.InteropServices.UCOMITypeLib" interface.
+ *			"System.Runtime.InteropServices.UCOMITypeLib" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +24,23 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-using System;
-
+[Guid("")]
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 public interface UCOMITypeLib
 {
-	// TODO
+	void FindName(String szNameBuf, int lHashVal, UCOMITypeInfo[] ppTInfo,
+				  int[] rgMemId, ref short pcFound);
+	void GetDocumentation(int index, out String strName,
+						  out String strDocString, out int dwHelpContext,
+						  out String strHelpFile);
+	void GetLibAttr(out IntPtr ppTLibAttr);
+	void GetTypeComp(out UCOMITypeComp ppTComp);
+	void GetTypeInfo(int index, out UCOMITypeInfo ppTI);
+	int GetTypeInfoCount();
+	void GetTypeInfoOfGuid(ref Guid guid, out UCOMITypeInfo ppTI);
+	void GetTypeInfoType(int index, out TYPEKIND pTKind);
+	bool IsName(String szNameBuf, int lHashVal);
+	void ReleaseTLibAttr(IntPtr pTLibAttr);
 
 }; // class UCOMITypeLib
 

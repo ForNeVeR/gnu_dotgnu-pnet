@@ -1,3 +1,7 @@
+2005-01-25  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* configure.in: fix xft check (patch #3646).
+
 2005-01-24  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Text/StringBuilder.cs: Fix allocation bug in AppendSpace
@@ -5,7 +9,7 @@
 
 2005-01-23  Russell Stuart  <russell-savannah@stuart.id.au>
 
-	* Updated build-depian-packages.sh for new release.
+	* Updated build-debian-packages.sh for new release.
 
 2005-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -76,7 +76,7 @@ if test "x$no_x" = "xyes" ; then
 	XFT_INC=
 else
 	X11_LIB=-lX11
-	if test "x$xft" != "xfalse" && "x$FREETYPE_CONFIG" != "xno" ; then
+	if test "x$xft" != "xfalse" && test "x$FREETYPE_CONFIG" != "xno" ; then
 		XFT_LIB=-lXft
 		XFT_INC=`$FREETYPE_CONFIG --cflags`
 		AC_DEFINE(USE_XFT_EXTENSION)

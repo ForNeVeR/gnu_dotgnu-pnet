@@ -137,15 +137,32 @@ public sealed class Bitmap : System.Drawing.Image
 	public Bitmap Clone
 				(Rectangle rect, System.Drawing.Imaging.PixelFormat format)
 			{
-				// TODO
-				return null;
+				// TODO : There has to be a better way !!
+				Bitmap b = new Bitmap(rect.Width, rect.Height, format);
+				for(int x = 0 ; x < rect.Width ; x++)
+				{
+					for(int y = 0 ; y < rect.Height ; y++)
+					{
+						b.SetPixel(x,y, GetPixel(rect.Left+x,rect.Top+y));
+					}
+				}
+				return b;
 			}
 	[TODO]
 	public Bitmap Clone
 				(RectangleF rect, System.Drawing.Imaging.PixelFormat format)
 			{
-				// TODO
-				return null;
+				// TODO : There has to be a better way !!
+				Bitmap b = new Bitmap((int)rect.Width, (int)rect.Height, format);
+				for(int x = 0 ; x < rect.Width ; x++)
+				{
+					for(int y = 0 ; y < rect.Height ; y++)
+					{
+						b.SetPixel(x,y,
+								GetPixel((int)rect.Left+x, (int)rect.Top+y));
+					}
+				}
+				return b;
 			}
 
 	// Create a bitmap from a native icon handle.

@@ -5,6 +5,9 @@
 	System.Windows.Forms/ImageListStreamer.cs: Implement image list
 	stream deserialization .
 
+	* System.Drawing/Bitmap.cs: Implement Bitmap.Clone() methods using
+	GetPixel/SetPixel to convert between pixel formats.
+
 2004-06-04  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/ErrorProvider.cs,

@@ -107,6 +107,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	public override void FillPolygon
 				(System.Drawing.Point[] points, FillMode fillMode)
 			{
+				ExpandFilledObject( ref points);
 				if(fillMode == FillMode.Alternate)
 				{
 					graphics.FillRule = FillRule.EvenOddRule;
@@ -117,6 +118,25 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				}
 				graphics.FillPolygon(ConvertPoints(points, false));
 			}
+
+	// Expand the outside away from the first point of a filled object by 1
+	private void ExpandFilledObject( ref System.Drawing.Point[] points)
+			{
+				System.Drawing.Point first = points[0];
+				for(int posn = 0; posn < points.Length; posn++)
+				{
+					int x = points[posn].X;
+					int y = points[posn].Y;
+					//Move the points 1 away from the first point
+					if (x!=first.X)
+						x += x > first.X ? 1 : -1;
+					if (y!=first.Y)
+						y += y > first.Y ? 1 : -1;
+
+					points[posn] = new System.Drawing.Point(x, y);
+				}
+			}
+
 
 	// Draw an arc within a rectangle defined by four points.
 	public override void DrawArc
@@ -177,7 +197,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 					(s, font, out width, out ascent, out descent);
 				if(!ascentOnly)
 				{
-					return new Size(width, ascent + descent);
+					return new Size(width, ascent + descent - 1);
 				}
 				else
 				{

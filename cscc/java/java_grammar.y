@@ -569,6 +569,7 @@ PackageOrImportIdentifier
 					 		(ILInternString(".", 1),
 							 ILInternString($3, strlen($3))));
 	}
+	;
 
 ImportDeclarationZeroOrMore
 	: /* empty */ {}

@@ -7,6 +7,8 @@
 	* cscc/vb/vb_grammar.y: Fix error with Bison 1.75
 
 	* cscc/java/java_grammar.y: Fix error with Bison 1.75
+	
+	* cscc/java/java_grammar.y: Fixed another error with Bison 1.75
 
 2003-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 

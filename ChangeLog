@@ -13,6 +13,10 @@
 	ilfind/Makefile.am, ilfind/ilfind.c: modify csant and ilfind to
 	use the builtin pnet regex routines.
 
+	* doc/pnettools.texi, ilfind/ilfind.1: update the ilfind manual
+	to remove the "documented bug" about needing a POSIX-compatible
+	regex library.
+
 2002-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ildb/ildb.1, ildb/Makefile.am: add the manpage for ildb.

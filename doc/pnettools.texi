@@ -2781,14 +2781,6 @@ The exit status is 1 if an error occurred while processing the input.
 Otherwise the exit status is 0.  @xref{Load Errors}, for a
 complete list of errors that may occur when loading an IL image file.
 
-Ilfind assumes a POSIX-style regular expression package is being used.
-If this is not the case, then the results may not always be as expected,
-especially when both @code{--grep-regex} and @code{--ignore-case} are used.
-
-The GNU regex package has POSIX support.  It is recommended that you
-re-compile ilfind against that library if your system does not
-support POSIX regular expressions natively.
-
 @c -----------------------------------------------------------------------
 
 @node Dependencies, ildd invocation, ilfind invocation, Top

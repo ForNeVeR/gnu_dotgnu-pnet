@@ -87,13 +87,3 @@ http://www.southern-storm.com.au/
 .SH "SEE ALSO"
 ilasm(1), ildasm(1), ilnative(1), ilsize(1), cscc(1), size(1), grep(1),
 sh(1), csh(1)
-.SH "BUGS"
-.B Ilfind
-assumes a POSIX-style regular expression package is being used.
-If this is not the case, then the results may not always be as expected,
-especially when both `\fB\-\-grep\-regex\fR' and
-`\fB\-\-ignore\-case\fR' are used.
-
-The GNU regex package has POSIX support.  It is recommended that you
-re-compile \fBilfind\fR against that library if your system does not
-support POSIX regular expressions natively.

@@ -1,4 +1,9 @@
 
+2002-11-05  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_grammar.y: Fix the indexername returned , using
+	an ILInternString of the variable name value.
+
 2002-11-05  Robert Hwang <hwang_rob@yahoo.ca>
 
 	* cscc/csharp/cs_oper.tc: fix the CoerceArrayInit to conduct

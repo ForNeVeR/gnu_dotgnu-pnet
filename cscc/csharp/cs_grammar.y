@@ -353,13 +353,15 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 							if(!prefix)
 							{
 								return ILQualIdentSimple(
-										ILInternString("Item", 4).string);
+									ILInternString(evalValue.un.strValue.str,
+										evalValue.un.strValue.len).string);
 							}
 							else 
 							{
 								return ILNode_QualIdent_create(prefixName,
-										ILQualIdentSimple(
-											ILInternString("Item",4).string));
+									ILQualIdentSimple(
+									ILInternString(evalValue.un.strValue.str,
+										evalValue.un.strValue.len).string));
 							}
 						}
 					}

@@ -23,18 +23,25 @@ if test -z "$1" ; then
 	exit 1
 fi
 if test ! -f "$1/class/library.make" ; then
-	echo "Could not fine mcs in the specified directory" 1>&2
-	exit 1
+	if test ! -f "$1/build/library.make" ; then
+		echo "Could not fine mcs in the specified directory" 1>&2
+		exit 1
+	fi
 fi
 MCS_SOURCES="$1"
 
 mkdir mcs-sources
+mkdir mcs-sources/build
 mkdir mcs-sources/class
 mkdir mcs-sources/class/corlib
 mkdir mcs-sources/class/corlib/System
 mkdir mcs-sources/tools
 
-cp -p "$MCS_SOURCES/class/library.make" mcs-sources/class/library.make
+if test -f "$MCS_SOURCES/class/library.make" ; then
+	cp -p "$MCS_SOURCES/class/library.make" mcs-sources/class/library.make
+else
+	cp -p "$MCS_SOURCES/build/library.make" mcs-sources/build/library.make
+fi
 cp -p "$MCS_SOURCES/class/corlib/System/TODOAttribute.cs" mcs-sources/class/corlib/System/TODOAttribute.cs
 cp -pr "$MCS_SOURCES/tools/SqlSharp" mcs-sources/tools
 

@@ -1,4 +1,9 @@
 
+2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, copy-mcs.sh: look for "build/library.make" in
+	some other places as well.
+
 2003-07-19  Gopal.V  <gopalv82@symonds.net>
 	
 	* configure.in: look for build/library.make as well

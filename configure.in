@@ -59,24 +59,39 @@ if test "x$MONO_SOURCE_PATH" = "x" ; then
 	if test -f "./mcs-sources/class/library.make" ; then
 		MONO_SOURCE_PATH="`pwd`/mcs-sources"
 	else
-		if test -f "../mono/mcs/class/library.make" ; then
-			MONO_SOURCE_PATH="`pwd`/../mono/mcs"
+		if test -f "./mcs-sources/build/library.make" ; then
+			MONO_SOURCE_PATH="`pwd`/mcs-sources"
 		else
-			if test -f "../mcs/class/library.make" ; then
-				MONO_SOURCE_PATH="`pwd`/../mcs"
+			if test -f "../mono/mcs/class/library.make" ; then
+				MONO_SOURCE_PATH="`pwd`/../mono/mcs"
 			else
-				AC_MSG_WARN(not found)
-				echo '****************************************************'
-				echo "Supply the --with-mono-sources option to specify the"
-				echo "location of the Mono library sources."
-				echo '****************************************************'
-				exit 1
+				if test -f "../mono/mcs/build/library.make" ; then
+					MONO_SOURCE_PATH="`pwd`/../mono/mcs"
+				else
+					if test -f "../mcs/class/library.make" ; then
+						MONO_SOURCE_PATH="`pwd`/../mcs"
+					else
+						if test -f "../mcs/build/library.make" ; then
+							MONO_SOURCE_PATH="`pwd`/../mcs"
+						else
+							AC_MSG_WARN(not found)
+							echo '****************************************************'
+							echo "Supply the --with-mono-sources option to specify the"
+							echo "location of the Mono library sources."
+							echo '****************************************************'
+							exit 1
+						fi
+					fi
+				fi
 			fi
 		fi
 	fi
 else
 	# Add an extra "mcs" if the user omitted it.
 	if test -f "$MONO_SOURCE_PATH/mcs/class/library.make" ; then
+		MONO_SOURCE_PATH="$MONO_SOURCE_PATH/mcs"
+	fi
+	if test -f "$MONO_SOURCE_PATH/mcs/build/library.make" ; then
 		MONO_SOURCE_PATH="$MONO_SOURCE_PATH/mcs"
 	fi
 fi

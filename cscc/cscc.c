@@ -361,6 +361,16 @@ int main(int argc, char *argv[])
 			status = LinkExecutable();
 		}
 	}
+	else if(CSStringListContains(extension_flags, num_extension_flags,
+							     "syntax-check"))
+	{
+		fputs("****************** Warning ************************\n", stderr);
+		fputs("The compiler has only done a syntax check, and not\n", stderr);
+		fputs("a full compile.  Portable.NET is a work in progress\n", stderr);
+		fputs("and full compilation is still to be completed.  You\n", stderr);
+		fputs("will need to use Microsoft's compiler to build.\n", stderr);
+		fputs("***************************************************\n", stderr);
+	}
 
 	/* Delete temporary files that were created prior to the link */
 	for(len = 0; len < num_files_to_link; ++len)

@@ -5,6 +5,10 @@
 include/il_program.h, include/il_types.h: implement "ILPInvokeGetMarshalType",
 which determines how a parameter should be marshalled to a PInvoke method.
 
+* cscc/cscc.c: print a warning message if "-fsyntax-check" is supplied to
+let users know that the C# compiler is still a work in progress.  Hopefully
+this will stop the newbies asking "why doesn't it compile?" all the time.
+
 2001-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c,

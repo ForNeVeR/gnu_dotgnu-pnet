@@ -46,6 +46,9 @@
 	* samples/FormsTest.cs: hook up the "Help" button on the caption
 	bar to an event that displays a message box.
 
+	* System/Diagnostics/Process.cs: order of evaluation bug when
+	initializing the current process object.
+
 2003-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Font.cs: remove a public constructor that is no longer

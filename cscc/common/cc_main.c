@@ -581,7 +581,14 @@ static void CloseCodeGen(void)
 static char *FindCpp(void)
 {
 	char *newPath = 0;
-	if(ILFileExists("/usr/bin/cpp", &newPath))
+	if(ILFileExists("/usr/bin/cpp3", &newPath))
+	{
+		if(newPath)
+			return newPath;
+		else
+			return "/usr/bin/cpp3";
+	}
+	else if(ILFileExists("/usr/bin/cpp", &newPath))
 	{
 		if(newPath)
 			return newPath;
@@ -789,6 +796,16 @@ static void ParseFile(const char *filename, int is_stdin)
 		   touchy when we redefine some of its builtin symbols.  This
 		   wouldn't be necessary if "-undef" actually did what it is
 		   supposed to do, but it only undefines some symbols, not all */
+#ifdef __APPLE__ 
+#ifdef __MACH__
+		/* Apple shipped a special "pre-compiled header" CPP with the
+		   Darwin OS.  That obviously won't do us much good here, so
+		   we need to set a flag to fall back on standard headers.
+
+			TODO:  Can this end be achieved dynamically?  */
+		CCStringListAdd(&argv, &argc, "-no-cpp-precomp");
+#endif
+#endif
 		CCStringListAdd(&argv, &argc, "-w");
 		CCStringListAdd(&argv, &argc, "-nostdinc");
 		CCStringListAdd(&argv, &argc, "-nostdinc++");

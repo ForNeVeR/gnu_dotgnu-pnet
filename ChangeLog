@@ -1,3 +1,9 @@
+2003-03-23  Jonathan Springer  <jonathan.springer@verizon.net>
+
+	* cscc/c_main.c, cscc/common/cc_main.c: Small changes to deal with the
+	rather brain-damaged Apple Darwin pre-compiler.  The one in c_main.c
+	is an acknowledged #ifdef hack.
+
 2003-03-22  Stephen Compall  <s11@member.fsf.org>
 
 	* config.sub, config.guess: Updated from CVS, per Debian

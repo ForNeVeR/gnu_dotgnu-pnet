@@ -232,16 +232,9 @@ extern ILInt32 _IL_DefaultEncoding_InternalGetMaxByteCount(ILExecThread * _threa
 extern ILInt32 _IL_DefaultEncoding_InternalGetMaxCharCount(ILExecThread * _thread, ILInt32 _p1);
 extern ILString * _IL_DefaultEncoding_InternalGetString(ILExecThread * _thread, System_Array * _p1, ILInt32 _p2, ILInt32 _p3);
 
-extern ILBool _IL_ClrSecurity_Assert(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
-extern ILBool _IL_ClrSecurity_Demand(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
-extern void _IL_ClrSecurity_Deny(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
-extern void _IL_ClrSecurity_SetPermitOnlyBlock(ILExecThread * _thread, ILInt32 _p1);
-extern void _IL_ClrSecurity_PermitOnly(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
-
-extern void _IL_CodeAccessPermission_RevertAll(ILExecThread * _thread);
-extern void _IL_CodeAccessPermission_RevertAssert(ILExecThread * _thread);
-extern void _IL_CodeAccessPermission_RevertDeny(ILExecThread * _thread);
-extern void _IL_CodeAccessPermission_RevertPermitOnly(ILExecThread * _thread);
+extern ILObject * _IL_ClrSecurity_GetPermissionsFrom(ILExecThread * _thread, ILInt32 _p1);
+extern ILObject * _IL_ClrSecurity_GetPermissions(ILExecThread * _thread, ILInt32 _p1);
+extern void _IL_ClrSecurity_SetPermissions(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
 
 extern void _IL_GCHandle_GCFree(ILExecThread * _thread, ILInt32 _p1);
 extern ILObject * _IL_GCHandle_GCGetTarget(ILExecThread * _thread, ILInt32 _p1);

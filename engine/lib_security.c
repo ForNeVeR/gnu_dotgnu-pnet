@@ -26,86 +26,58 @@ extern	"C" {
 #endif
 
 /*
- * public static bool Assert(CodeAccessPermission perm, int skipFrames);
+ * public static ClrPermissions GetPermissionsFrom(int skipFrames);
  */
-ILBool _IL_ClrSecurity_Assert(ILExecThread *_thread,
-							  ILObject *perm,
-							  ILInt32 skipFrames)
+ILObject *_IL_ClrSecurity_GetPermissionsFrom(ILExecThread *_thread,
+											 ILInt32 skipFrames)
 {
-	/* TODO */
-	return 0;
+	ILCallFrame *frame = _ILGetCallFrame(_thread, skipFrames);
+	if(frame)
+	{
+		while(frame != 0)
+		{
+			if(frame->permissions)
+			{
+				return (ILObject *)(frame->permissions);
+			}
+			frame = _ILGetNextCallFrame(_thread, frame);
+		}
+		return 0;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*
- * public static bool Demand(CodeAccessPermission perm, int skipFrames);
+ * public static ClrPermissions GetPermissions(int skipFrames);
  */
-ILBool _IL_ClrSecurity_Demand(ILExecThread *_thread,
-							  ILObject *perm,
-							  ILInt32 skipFrames)
+ILObject *_IL_ClrSecurity_GetPermissions(ILExecThread *_thread,
+										 ILInt32 skipFrames)
 {
-	/* TODO */
-	return 0;
+	ILCallFrame *frame = _ILGetCallFrame(_thread, skipFrames);
+	if(frame)
+	{
+		return (ILObject *)(frame->permissions);
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*
- * public static void Deny(CodeAccessPermission perm, int skipFrames);
+ * public static void SetPermissions(ClrPermissions perm, int skipFrames);
  */
-void _IL_ClrSecurity_Deny(ILExecThread *_thread,
-						  ILObject *perm,
-						  ILInt32 skipFrames)
+void _IL_ClrSecurity_SetPermissions(ILExecThread *_thread,
+									ILObject *perm, ILInt32 skipFrames)
 {
-	/* TODO */
-}
-
-/*
- * public static void SetPermitOnlyBlock(int skipFrames);
- */
-void _IL_ClrSecurity_SetPermitOnlyBlock(ILExecThread *_thread,
-										ILInt32 skipFrames)
-{
-	/* TODO */
-}
-
-/*
- * public static void PermitOnly(CodeAccessPermission perm, int skipFrames);
- */
-void _IL_ClrSecurity_PermitOnly(ILExecThread *_thread,
-								ILObject *perm,
-								ILInt32 skipFrames)
-{
-	/* TODO */
-}
-
-/*
- * public static void RevertAll();
- */
-void _IL_CodeAccessPermission_RevertAll(ILExecThread *_thread)
-{
-	/* TODO */
-}
-
-/*
- * public static void RevertAssert();
- */
-void _IL_CodeAccessPermission_RevertAssert(ILExecThread *_thread)
-{
-	/* TODO */
-}
-
-/*
- * public static void RevertDeny();
- */
-void _IL_CodeAccessPermission_RevertDeny(ILExecThread *_thread)
-{
-	/* TODO */
-}
-
-/*
- * public static void RevertPermitOnly();
- */
-void _IL_CodeAccessPermission_RevertPermitOnly(ILExecThread *_thread)
-{
-	/* TODO */
+	ILCallFrame *frame = _ILGetCallFrame(_thread, skipFrames);
+	if(frame)
+	{
+		frame->permissions = (void *)perm;
+	}
 }
 
 /*

@@ -439,6 +439,7 @@ VMCASE(COP_CALL):
 		callFrame->pc = CVM_ARG_CALL_RETURN(pc);
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
+		callFrame->permissions = 0;
 
 		/* Pass control to the new method */
 		pc = (unsigned char *)(methodToCall->userData);
@@ -465,6 +466,7 @@ VMCASE(COP_CALL):
 		callFrame->pc = CVM_ARG_CALL_RETURN(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
+		callFrame->permissions = 0;
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -521,6 +523,7 @@ VMCASE(COP_CALL_CTOR):
 		callFrame->pc = CVM_ARG_CALL_RETURN(pc);
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
+		callFrame->permissions = 0;
 
 		/* Pass control to the new method */
 		pc = ((unsigned char *)(methodToCall->userData)) - CVM_CTOR_OFFSET;
@@ -547,6 +550,7 @@ VMCASE(COP_CALL_CTOR):
 		callFrame->pc = CVM_ARG_CALL_RETURN(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
+		callFrame->permissions = 0;
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -742,6 +746,7 @@ VMCASE(COP_CALL_VIRTUAL):
 			callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(pc);
 			callFrame->frame = frame;
 			callFrame->exceptHeight = thread->exceptHeight;
+			callFrame->permissions = 0;
 
 			/* Pass control to the new method */
 			pc = (unsigned char *)(methodToCall->userData);
@@ -768,6 +773,7 @@ VMCASE(COP_CALL_VIRTUAL):
 			callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(thread->pc);
 			callFrame->frame = thread->frame;
 			callFrame->exceptHeight = thread->exceptHeight;
+			callFrame->permissions = 0;
 
 			/* Restore the state information and jump to the new method */
 			RESTORE_STATE_FROM_THREAD();
@@ -841,6 +847,7 @@ VMCASE(COP_CALL_INTERFACE):
 			callFrame->pc = CVM_ARG_CALLI_RETURN_SMALL(pc);
 			callFrame->frame = frame;
 			callFrame->exceptHeight = thread->exceptHeight;
+			callFrame->permissions = 0;
 
 			/* Pass control to the new method */
 			pc = (unsigned char *)(methodToCall->userData);
@@ -867,6 +874,7 @@ VMCASE(COP_CALL_INTERFACE):
 			callFrame->pc = CVM_ARG_CALLI_RETURN_SMALL(thread->pc);
 			callFrame->frame = thread->frame;
 			callFrame->exceptHeight = thread->exceptHeight;
+			callFrame->permissions = 0;
 
 			/* Restore the state information and jump to the new method */
 			RESTORE_STATE_FROM_THREAD();
@@ -1243,6 +1251,7 @@ VMCASE(COP_CALLI):
 		callFrame->pc = CVM_ARG_CALLIND_RETURN(pc);
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
+		callFrame->permissions = 0;
 
 		/* Pass control to the new method */
 		pc = (unsigned char *)(methodToCall->userData);
@@ -1269,6 +1278,7 @@ VMCASE(COP_CALLI):
 		callFrame->pc = CVM_ARG_CALLIND_RETURN(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
+		callFrame->permissions = 0;
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -1321,6 +1331,7 @@ case COP_CALL_VIRTUAL:
 		callFrame->pc = CVM_ARG_CALLV_RETURN_LARGE(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
+		callFrame->permissions = 0;
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -1368,6 +1379,7 @@ case COP_CALL_INTERFACE:
 		callFrame->pc = CVM_ARG_CALLI_RETURN_LARGE(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
+		callFrame->permissions = 0;
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();

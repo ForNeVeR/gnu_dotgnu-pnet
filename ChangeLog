@@ -1,4 +1,12 @@
 
+2003-03-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/call.c, engine/cvm_call.c, engine/cvm_except.c,
+	engine/engine.h, engine/int_proto.h, engine/int_table.c,
+	engine/lib_security.c: new internalcall interface for code
+	access security (CAS); add an extra "permissions" field to
+	the call frame structure to support CAS.
+
 2003-03-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c:

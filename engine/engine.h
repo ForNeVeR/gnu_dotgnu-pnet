@@ -171,6 +171,7 @@ typedef struct _tagILCallFrame
 	unsigned char  *pc;				/* PC to return to in the parent method */
 	CVMWord		   *frame;			/* Base of the local variable frame */
 	CVMWord		   *exceptHeight;	/* Height of the frame for exceptions */
+	void           *permissions;	/* Permissions for this stack frame */
 
 } ILCallFrame;
 #define	IL_INVALID_PC		((unsigned char *)(ILNativeInt)(-1))

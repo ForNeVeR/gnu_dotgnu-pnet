@@ -62,6 +62,7 @@ void *_ILSystemException(ILExecThread *thread, const char *className)
 			callFrame->pc = thread->pc;
 			callFrame->frame = thread->frame;
 			callFrame->exceptHeight = thread->exceptHeight;
+			callFrame->permissions = 0;
 
 			/* Get the stack trace and pop the frame */
 			trace = (ILObject *)_IL_StackFrame_GetExceptionStackTrace(thread);

@@ -1243,22 +1243,9 @@ IL_METHOD_END
 #ifndef _IL_ClrSecurity_suppressed
 
 IL_METHOD_BEGIN(ClrSecurity_Methods)
-	IL_METHOD("Assert", "(oSystem.Security.CodeAccessPermission;i)Z", _IL_ClrSecurity_Assert, marshal_bppi)
-	IL_METHOD("Demand", "(oSystem.Security.CodeAccessPermission;i)Z", _IL_ClrSecurity_Demand, marshal_bppi)
-	IL_METHOD("Deny", "(oSystem.Security.CodeAccessPermission;i)V", _IL_ClrSecurity_Deny, marshal_vppi)
-	IL_METHOD("SetPermitOnlyBlock", "(i)V", _IL_ClrSecurity_SetPermitOnlyBlock, marshal_vpi)
-	IL_METHOD("PermitOnly", "(oSystem.Security.CodeAccessPermission;i)V", _IL_ClrSecurity_PermitOnly, marshal_vppi)
-IL_METHOD_END
-
-#endif
-
-#ifndef _IL_CodeAccessPermission_suppressed
-
-IL_METHOD_BEGIN(CodeAccessPermission_Methods)
-	IL_METHOD("RevertAll", "()V", _IL_CodeAccessPermission_RevertAll, marshal_vp)
-	IL_METHOD("RevertAssert", "()V", _IL_CodeAccessPermission_RevertAssert, marshal_vp)
-	IL_METHOD("RevertDeny", "()V", _IL_CodeAccessPermission_RevertDeny, marshal_vp)
-	IL_METHOD("RevertPermitOnly", "()V", _IL_CodeAccessPermission_RevertPermitOnly, marshal_vp)
+	IL_METHOD("GetPermissionsFrom", "(i)oSystem.Security.ClrPermissions;", _IL_ClrSecurity_GetPermissionsFrom, marshal_ppi)
+	IL_METHOD("GetPermissions", "(i)oSystem.Security.ClrPermissions;", _IL_ClrSecurity_GetPermissions, marshal_ppi)
+	IL_METHOD("SetPermissions", "(oSystem.Security.ClrPermissions;i)V", _IL_ClrSecurity_SetPermissions, marshal_vppi)
 IL_METHOD_END
 
 #endif
@@ -2705,9 +2692,6 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_ClrType_suppressed
 	{"ClrType", "System.Reflection", ClrType_Methods},
-#endif
-#ifndef _IL_CodeAccessPermission_suppressed
-	{"CodeAccessPermission", "System.Security", CodeAccessPermission_Methods},
 #endif
 #ifndef _IL_CryptoMethods_suppressed
 	{"CryptoMethods", "Platform", CryptoMethods_Methods},

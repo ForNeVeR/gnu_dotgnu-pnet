@@ -688,6 +688,7 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	frame->pc = IL_INVALID_PC;
 	frame->frame = thread->frame;
 	frame->exceptHeight = thread->exceptHeight;
+	frame->permissions = 0;
 
 	/* Call the method */
 	if(isCtor)

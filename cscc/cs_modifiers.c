@@ -589,7 +589,7 @@ ILUInt32 CSModifiersToOperatorAttrs(ILNode *node, ILUInt32 modifiers)
 	}
 	BadModifiers(node,
 				 modifiers & ~(CS_MODIFIER_PUBLIC | CS_MODIFIER_STATIC |
-							   CS_MODIFIER_UNSAFE | CS_MODIFIER_VOLATILE));
+							   CS_MODIFIER_UNSAFE));
 	return (attrs | IL_META_METHODDEF_PUBLIC | IL_META_METHODDEF_STATIC |
 			IL_META_METHODDEF_SPECIAL_NAME | IL_META_METHODDEF_HIDE_BY_SIG);
 }

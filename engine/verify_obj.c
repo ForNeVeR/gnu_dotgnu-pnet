@@ -97,15 +97,147 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 	}
 }
 
+/*
+ * Process a "box" operation on a value.  Returns zero if
+ * invalid parameters.
+ *
+ * TODO: Better checking to ensure that "boxClass" is consistent.
+ */
+static int BoxValue(ILCoder *coder, ILEngineType valueType,
+					ILType *typeInfo, ILClass *boxClass)
+{
+	ILUInt32 size;
+
+	/* Get the size of the value type */
+	size = ILSizeOfType(coder->thread, ILType_FromValueType(boxClass));
+
+	/* Determine how to box the value based on its engine type */
+	if(valueType == ILEngineType_I4)
+	{
+		/* Determine if we are boxing a byte, short, or int
+		   based on the size of the value type */
+		if(size == 1)
+		{
+			ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Int8);
+			return 1;
+		}
+		else if(size == 2)
+		{
+			ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Int16);
+			return 1;
+		}
+		else if(size == 4)
+		{
+			ILCoderBox(coder, boxClass, valueType, size);
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else if(valueType == ILEngineType_I)
+	{
+		/* Box a native integer */
+		if(size == sizeof(ILNativeInt))
+		{
+			ILCoderBox(coder, boxClass, valueType, size);
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else if(valueType == ILEngineType_I8)
+	{
+		/* Box a 64-bit integer */
+		if(size == 8)
+		{
+			ILCoderBox(coder, boxClass, valueType, size);
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else if(valueType == ILEngineType_F)
+	{
+		/* Determine if we are boxing a float or double
+		   based on the size of the value type */
+		if(size == 4)
+		{
+			ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Float32);
+			return 1;
+		}
+		else if(size == 8)
+		{
+			ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Float64);
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else if(valueType == ILEngineType_MV ||
+			valueType == ILEngineType_TypedRef)
+	{
+		if(ILTypeIdentical(typeInfo, ILType_FromValueType(boxClass)))
+		{
+			ILCoderBox(coder, boxClass, valueType, size);
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Get a particular system type.
+ */
+static ILType *GetSystemType(ILMethod *method, const char *name)
+{
+	ILClass *classInfo = _ILCreateSystemType(ILProgramItem_Image(method), name);
+	return ClassTokenToType(classInfo);
+}
+
 #elif defined(IL_VERIFY_LOCALS)
 
 ILField *fieldInfo;
+ILMethod *methodInfo;
+ILProgramItem *item;
 
 #else /* IL_VERIFY_CODE */
 
+#define	IsCPPointer(type,typeInfo,classInfo)	\
+			((((type) == ILEngineType_M || (type) == ILEngineType_T) && \
+			  ILTypeIdentical(typeInfo, ILType_FromValueType(classInfo))) || \
+			 (unsafeAllowed && \
+			  ((type) == ILEngineType_I || (type) == ILEngineType_I4)))
+
 case IL_OP_CPOBJ:
 {
-	/* TODO */
+	/* Copy a value type */
+	classInfo = GetValueTypeToken(method, pc);
+	if(classInfo &&
+	   IsCPPointer(STK_BINARY_1, stack[stackSize - 2].typeInfo, classInfo) &&
+	   IsCPPointer(STK_BINARY_2, stack[stackSize - 1].typeInfo, classInfo))
+	{
+		ILCoderCopyObject(coder, STK_BINARY_1, STK_BINARY_2, classInfo);
+		stackSize -= 2;
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
 }
 break;
 
@@ -157,13 +289,51 @@ break;
 
 case IL_OP_BOX:
 {
-	/* TODO */
+	/* Box a value into an object */
+	classInfo = GetValueTypeToken(method, pc);
+	if(classInfo)
+	{
+		if(BoxValue(coder, stack[stackSize - 1].engineType,
+					stack[stackSize - 1].typeInfo, classInfo))
+		{
+			stack[stackSize - 1].engineType = ILEngineType_O;
+			stack[stackSize - 1].typeInfo = ILType_FromClass(classInfo);
+		}
+		else
+		{
+			VERIFY_TYPE_ERROR();
+		}
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
 }
 break;
 
 case IL_OP_UNBOX:
 {
-	/* TODO */
+	/* Unbox a value from an object */
+	classInfo = GetValueTypeToken(method, pc);
+	if(classInfo && STK_UNARY == ILEngineType_O)
+	{
+		/* Cast the value to the required type first.  This takes
+		   care of throwing the "InvalidCastException" if the value
+		   is not of the correct class */
+		if(!IsSubClass(stack[stackSize - 1].typeInfo, classInfo))
+		{
+			ILCoderCastClass(coder, classInfo, 1);
+		}
+
+		/* Unbox the object to produce a managed pointer */
+		ILCoderUnbox(coder, classInfo);
+		stack[stackSize - 1].engineType = ILEngineType_M;
+		stack[stackSize - 1].typeInfo = ILType_FromValueType(classInfo);
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
 }
 break;
 
@@ -540,57 +710,227 @@ case IL_OP_STSFLD:
 }
 break;
 
-case IL_OP_REFANYVAL:
-{
-	/* TODO */
-}
-break;
-
 case IL_OP_MKREFANY:
 {
-	/* TODO */
+	/* Make a typed reference from a pointer */
+	classInfo = GetClassToken(method, pc);
+	if(classInfo)
+	{
+		classType = ClassTokenToType(classInfo);
+		if((STK_UNARY == ILEngineType_M || STK_UNARY == ILEngineType_T) &&
+		   ILTypeIdentical(classType, stack[stackSize - 1].typeInfo))
+		{
+			ILCoderMakeTypedRef(coder, classInfo);
+			stack[stackSize - 1].engineType = ILEngineType_TypedRef;
+			stack[stackSize - 1].typeInfo = 0;
+		}
+		else if(unsafeAllowed &&
+		        (STK_UNARY == ILEngineType_I || STK_UNARY == ILEngineType_I4))
+		{
+			ILCoderToPointer(coder, STK_UNARY, ILEngineType_Invalid);
+			ILCoderMakeTypedRef(coder, classInfo);
+			stack[stackSize - 1].engineType = ILEngineType_TypedRef;
+			stack[stackSize - 1].typeInfo = 0;
+		}
+		else
+		{
+			VERIFY_TYPE_ERROR();
+		}
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
 }
 break;
 
-case IL_OP_LDTOKEN:
+case IL_OP_REFANYVAL:
 {
-	/* TODO */
-}
-break;
-
-case IL_OP_PREFIX + IL_PREFIX_OP_ARGLIST:
-{
-	/* TODO */
-}
-break;
-
-case IL_OP_PREFIX + IL_PREFIX_OP_INITOBJ:
-{
-	/* TODO */
-}
-break;
-
-case IL_OP_PREFIX + IL_PREFIX_OP_CPBLK:
-{
-	/* TODO */
-}
-break;
-
-case IL_OP_PREFIX + IL_PREFIX_OP_INITBLK:
-{
-	/* TODO */
-}
-break;
-
-case IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF:
-{
-	/* TODO */
+	/* Extract the address from a typed reference */
+	classInfo = GetClassToken(method, pc);
+	if(classInfo && STK_UNARY == ILEngineType_TypedRef)
+	{
+		ILCoderRefAnyVal(coder, classInfo);
+		stack[stackSize - 1].engineType = ILEngineType_M;
+		stack[stackSize - 1].typeInfo = ClassTokenToType(classInfo);
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
 }
 break;
 
 case IL_OP_PREFIX + IL_PREFIX_OP_REFANYTYPE:
 {
-	/* TODO */
+	/* Extract the type from a typed reference */
+	if(STK_UNARY == ILEngineType_TypedRef)
+	{
+		ILCoderRefAnyType(coder);
+		stack[stackSize - 1].engineType = ILEngineType_MV;
+		stack[stackSize - 1].typeInfo =
+				GetSystemType(method, "RuntimeTypeHandle");
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
+case IL_OP_LDTOKEN:
+{
+	/* Load a token onto the stack */
+	item = (ILProgramItem *)ILImageTokenInfo(ILProgramItem_Image(method),
+											 IL_READ_UINT32(pc + 1));
+	if(item)
+	{
+		if((classInfo = ILProgramItemToClass(item)) != 0)
+		{
+			if(ILClassAccessible(classInfo, ILMethod_Owner(method)))
+			{
+				ILCoderPushToken(coder, (ILProgramItem *)classInfo);
+				stack[stackSize - 1].engineType = ILEngineType_MV;
+				stack[stackSize - 1].typeInfo =
+						GetSystemType(method, "RuntimeTypeHandle");
+			}
+			else
+			{
+				VERIFY_TYPE_ERROR();
+			}
+		}
+		else if((methodInfo = ILProgramItemToMethod(item)) != 0)
+		{
+			if(ILMemberAccessible((ILMember *)methodInfo,
+								  ILMethod_Owner(method)))
+			{
+				ILCoderPushToken(coder, (ILProgramItem *)methodInfo);
+				stack[stackSize - 1].engineType = ILEngineType_MV;
+				stack[stackSize - 1].typeInfo =
+						GetSystemType(method, "RuntimeMethodHandle");
+			}
+			else
+			{
+				VERIFY_TYPE_ERROR();
+			}
+		}
+		else if((fieldInfo = ILProgramItemToField(item)) != 0)
+		{
+			if(ILMemberAccessible((ILMember *)fieldInfo,
+								  ILMethod_Owner(method)))
+			{
+				ILCoderPushToken(coder, (ILProgramItem *)fieldInfo);
+				stack[stackSize - 1].engineType = ILEngineType_MV;
+				stack[stackSize - 1].typeInfo =
+						GetSystemType(method, "RuntimeFieldHandle");
+			}
+			else
+			{
+				VERIFY_TYPE_ERROR();
+			}
+		}
+		else
+		{
+			VERIFY_TYPE_ERROR();
+		}
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
+case IL_OP_PREFIX + IL_PREFIX_OP_ARGLIST:
+{
+	/* Get a pointer to the variable argument list */
+	if((ILMethod_Signature(method)->kind & (IL_META_CALLCONV_VARARG << 8)) != 0)
+	{
+		ILCoderArgList(coder);
+		stack[stackSize - 1].engineType = ILEngineType_MV;
+		stack[stackSize - 1].typeInfo =
+				GetSystemType(method, "RuntimeArgumentHandle");
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
+case IL_OP_PREFIX + IL_PREFIX_OP_INITOBJ:
+{
+	/* Initialize a value type */
+	classInfo = GetValueTypeToken(method, pc);
+	if(classInfo &&
+	   IsCPPointer(STK_UNARY, stack[stackSize - 1].typeInfo, classInfo))
+	{
+		ILCoderInitObject(coder, STK_UNARY, classInfo);
+		--stackSize;
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
+#define	IsBlkPointer(type)	\
+			((type) == ILEngineType_I || \
+			 (type) == ILEngineType_I4 || \
+			 (type) == ILEngineType_M || \
+			 (type) == ILEngineType_T)
+
+case IL_OP_PREFIX + IL_PREFIX_OP_CPBLK:
+{
+	/* Copy a memory block */
+	if(unsafeAllowed &&
+	   IsBlkPointer(STK_TERNARY_1) &&
+	   IsBlkPointer(STK_TERNARY_2) &&
+	   STK_TERNARY_3 == ILEngineType_I4)
+	{
+		ILCoderCopyBlock(coder, STK_TERNARY_1, STK_TERNARY_2);
+		stackSize -= 3;
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
+case IL_OP_PREFIX + IL_PREFIX_OP_INITBLK:
+{
+	/* Initialize a memory block to a value */
+	if(unsafeAllowed &&
+	   IsBlkPointer(STK_TERNARY_1) &&
+	   STK_TERNARY_2 == ILEngineType_I4 &&
+	   STK_TERNARY_3 == ILEngineType_I4)
+	{
+		ILCoderInitBlock(coder, STK_TERNARY_1);
+		stackSize -= 3;
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
+case IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF:
+{
+	/* Compute the size of a value type */
+	classInfo = GetValueTypeToken(method, pc);
+	if(classInfo)
+	{
+		ILCoderSizeOf(coder, ILType_FromValueType(classInfo));
+		stack[stackSize].engineType = ILEngineType_I4;
+		stack[stackSize].typeInfo = 0;
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
 }
 break;
 

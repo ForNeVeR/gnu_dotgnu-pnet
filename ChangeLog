@@ -1,3 +1,8 @@
+
+2003-09-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing/ColorBlend.cs: remove conflicting file.
+
 2003-09-26  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/TextBox.cs: Remember previous height in case

@@ -43,6 +43,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	ILNode *savedClass;
 	ILNode *savedNamespace;
 	int hadStaticCtorsBefore;
+	int target;
 
 	/* Determine if we have already visited this node */
 	if(node->visited == ILVisitMode_Processing)
@@ -56,6 +57,30 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		return CSSemValueDefault;
 	}
 	node->visited = ILVisitMode_Processing;
+
+	/* Process the attributes for the class */
+	if(ILClass_IsInterface(node->classInfo))
+	{
+		target = CS_ATTR_INTERFACE;
+	}
+	else if(ILTypeIsEnum(ILType_FromValueType(node->classInfo)))
+	{
+		target = CS_ATTR_ENUM;
+	}
+	else if(ILTypeIsDelegate(ILType_FromClass(node->classInfo)))
+	{
+		target = CS_ATTR_DELEGATE;
+	}
+	else if(ILClassIsValueType(node->classInfo))
+	{
+		target = CS_ATTR_STRUCT;
+	}
+	else
+	{
+		target = CS_ATTR_CLASS;
+	}
+	CSProcessAttrs(info, ILToProgramItem(node->classInfo),
+				   node->attributes, target);
 
 	/* Perform semantic analysis on the node */
 	hadStaticCtorsBefore = (node->staticCtors != 0);
@@ -554,6 +579,8 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	}
 	node->visited = ILVisitMode_Processing;
 
+	/* TODO: field attributes */
+
 	/* Skip the field if no initializer or ILField block */
 	if(!(node->initializer) || !(node->fieldInfo))
 	{
@@ -696,6 +723,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	ILScope *scope;
 	ILScope *savedScope;
 	unsigned long argNum;
+	unsigned long argIndex;
 	ILNode_ListIter iter;
 	ILNode_FormalParameter *param;
 	ILScopeData *data;
@@ -715,6 +743,19 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		return CSSemValueDefault;
 	}
 	node->visited = ILVisitMode_Processing;
+
+	/* Process the attributes on the method */
+	if(ILMethod_IsConstructor(node->methodInfo) ||
+	   ILMethod_IsStaticConstructor(node->methodInfo))
+	{
+		CSProcessAttrs(info, ILToProgramItem(node->methodInfo),
+					   node->attributes, CS_ATTR_CONSTRUCTOR);
+	}
+	else
+	{
+		CSProcessAttrs(info, ILToProgramItem(node->methodInfo),
+					   node->attributes, CS_ATTR_METHOD);
+	}
 
 	/* Record the current method that we are in */
 	savedMethod = info->currentMethod;
@@ -758,14 +799,18 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		/* Static parameters start at argument 0 */
 		argNum = 0;
 	}
+	argIndex = 1;
 	ILNode_ListIter_Init(&iter, node->params);
 	while((param = (ILNode_FormalParameter *)ILNode_ListIter_Next(&iter)) != 0)
 	{
 		if(param->pmod == ILParamMod_arglist)
 		{
 			++argNum;
+			++argIndex;
 			continue;
 		}
+		CSProcessAttrsForParam(info, node->methodInfo,
+							   argIndex, param->attributes);
 		name = ILQualIdentName(param->name, 0);
 		data = ILScopeLookup(scope, name, 0);
 		if(data)
@@ -787,6 +832,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 								param->name);
 		}
 		++argNum;
+		++argIndex;
 	}
 
 	/* Perform semantic analysis on the method body */
@@ -874,6 +920,10 @@ ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 	}
 	node->visited = ILVisitMode_Processing;
 
+	/* Process attributes on the property */
+	CSProcessAttrs(info, ILToProgramItem(node->propertyInfo),
+				   node->attributes, CS_ATTR_PROPERTY);
+
 	/* Enter an unsafe context for the property if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
@@ -927,6 +977,10 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 		return CSSemValueDefault;
 	}
 	node->visited = ILVisitMode_Processing;
+
+	/* Process attributes on the enumerated value */
+	CSProcessAttrs(info, ILToProgramItem(node->fieldInfo),
+				   node->attributes, CS_ATTR_FIELD);
 
 	/* Determine the type of the enumeration */
 	type = ILClassToType(defn->classInfo);

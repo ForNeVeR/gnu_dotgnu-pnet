@@ -15,6 +15,10 @@
 	protect declaration nodes from double-evaluation during semantic
 	analysis; handle forward definitions of constants.
 
+	* cscc/csharp/cs_attrs.c, cscc/csharp/cs_decls.tc,
+	cscc/csharp/cs_internal.h: add some of the scaffolding that is
+	necessary to process attributes for classes, methods, and properties.
+
 2002-06-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/cvm_call.c, engine/engine.h,

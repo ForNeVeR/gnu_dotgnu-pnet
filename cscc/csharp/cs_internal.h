@@ -202,14 +202,35 @@ void CSAddStaticCtor(ILGenInfo *info, ILNode *stmt);
 void CSAddInitCtor(ILGenInfo *info, ILNode *stmt);
 
 /*
- * Initialize the attributes on a class.
+ * Attribute target flags.
  */
-void CSClassInitAttrs(ILGenInfo *info, ILClass *classInfo);
+#define	CS_ATTR_ASSEMBLY		0x0001
+#define	CS_ATTR_MODULE			0x0002
+#define	CS_ATTR_CLASS			0x0004
+#define	CS_ATTR_STRUCT			0x0008
+#define	CS_ATTR_ENUM			0x0010
+#define	CS_ATTR_CONSTRUCTOR		0x0020
+#define	CS_ATTR_METHOD			0x0040
+#define	CS_ATTR_PROPERTY		0x0080
+#define	CS_ATTR_FIELD			0x0100
+#define	CS_ATTR_EVENT			0x0200
+#define	CS_ATTR_INTERFACE		0x0400
+#define	CS_ATTR_PARAMETER		0x0800
+#define	CS_ATTR_DELEGATE		0x1000
+#define	CS_ATTR_RETURNVALUE		0x2000
 
 /*
- * Initialize the attributes on a class member.
+ * Process the attributes on a program item.
  */
-void CSMemberInitAttrs(ILGenInfo *info, ILMember *member);
+void CSProcessAttrs(ILGenInfo *info, ILProgramItem *item,
+					ILNode *attributes, int target);
+
+/*
+ * Process the attributes on a method parameter.
+ */
+void CSProcessAttrsForParam(ILGenInfo *info, ILMethod *method,
+							unsigned long paramNum,
+							ILNode *attributes);
 
 #ifdef	__cplusplus
 };

@@ -4,6 +4,9 @@
 	* runtime/System/Environment.cs: harden the static constructor
 	against missing functionality in the runtime engine.
 
+	* runtime/System/IO/TextWriter.cs: use "Environment.NewLine" as
+	the default newline string, to be compatible with ECMA.
+
 2002-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/SocketAddress.cs: fix semantic compile errors.

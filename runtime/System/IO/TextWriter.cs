@@ -38,12 +38,12 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 	// Constructors.
 	protected TextWriter()
 			{
-				newLine = "\r\n".ToCharArray();
+				newLine = Environment.NewLine.ToCharArray();
 				provider = null;
 			}
 	protected TextWriter(IFormatProvider provider)
 			{
-				newLine = "\r\n".ToCharArray();
+				newLine = Environment.NewLine.ToCharArray();
 				this.provider = provider;
 			}
 

@@ -60,6 +60,61 @@ static System_String *System_String_ctor_1(ILExecThread *thread,
 	System_String *_this;
 
 	/* Validate the parameters */
+	if(!value)
+	{
+		ILExecThreadThrowArgNull(thread, "value");
+		return 0;
+	}
+	if(startIndex < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "startIndex",
+								  "ArgRange_Array");
+		return 0;
+	}
+	if(length < 0 || (value->length - startIndex) < length)
+	{
+		ILExecThreadThrowArgRange(thread, "length",
+								  "ArgRange_Array");
+		return 0;
+	}
+
+	/* Allocate space for the string object */
+	_this = AllocString(thread, length);
+	if(!_this)
+	{
+		return 0;
+	}
+
+	/* Copy the contents of the character array into the string */
+	if(length > 0)
+	{
+		ILMemCpy(StringToBuffer(_this), ArrayToBuffer(value) + startIndex,
+				 sizeof(ILUInt16) * length);
+	}
+
+	/* The string has been initialized */
+	return _this;
+}
+
+/*
+ * public String(char[] value);
+ */
+static System_String *System_String_ctor_2(ILExecThread *thread,
+								           System_Array *value)
+{
+	System_String *_this;
+	ILInt32 length;
+
+	/* Determine the length of the final string.  A null argument
+	   indicates that the empty string should be constructed */
+	if(value)
+	{
+		length = value->length;
+	}
+	else
+	{
+		length = 0;
+	}
 
 	/* Allocate space for the string object */
 	_this = AllocString(thread, length);
@@ -80,16 +135,6 @@ static System_String *System_String_ctor_1(ILExecThread *thread,
 }
 
 /*
- * public String(char[] value);
- */
-static System_String *System_String_ctor_2(ILExecThread *thread,
-								           System_Array *value)
-{
-	return System_String_ctor_1(thread, value, 0,
-								(value ? value->length : 0));
-}
-
-/*
  * public String(char c, int count);
  */
 static System_String *System_String_ctor_3(ILExecThread *thread,
@@ -99,6 +144,12 @@ static System_String *System_String_ctor_3(ILExecThread *thread,
 	ILUInt16 *buffer;
 
 	/* Validate the parameters */
+	if(count < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "count",
+								  "ArgRange_NonNegative");
+		return 0;
+	}
 
 	/* Allocate space for the string object */
 	_this = AllocString(thread, count);
@@ -130,6 +181,18 @@ static System_String *System_String_ctor_4(ILExecThread *thread,
 	System_String *_this;
 
 	/* Validate the parameters */
+	if(startIndex < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "startIndex",
+								  "ArgRange_Array");
+		return 0;
+	}
+	if(length < 0 || (!value && length != 0))
+	{
+		ILExecThreadThrowArgRange(thread, "length",
+								  "ArgRange_Array");
+		return 0;
+	}
 
 	/* Allocate space for the string object */
 	_this = AllocString(thread, length);
@@ -158,13 +221,15 @@ static System_String *System_String_ctor_5(ILExecThread *thread,
 	System_String *_this;
 	ILInt32 length;
 
-	/* Validate the parameters */
-
-	/* Determine the length of the input */
+	/* Determine the length of the input.  A null pointer is valid
+	   and indicates that an empty string should be created */
 	length = 0;
-	while(value[length] != 0)
+	if(value != 0)
 	{
-		++length;
+		while(value[length] != 0)
+		{
+			++length;
+		}
 	}
 
 	/* Allocate space for the string object */
@@ -199,6 +264,18 @@ static System_String *System_String_ctor_6(ILExecThread *thread,
 	ILInt32 posn;
 
 	/* Validate the parameters */
+	if(startIndex < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "startIndex",
+								  "ArgRange_Array");
+		return 0;
+	}
+	if(length < 0 || (!value && length != 0))
+	{
+		ILExecThreadThrowArgRange(thread, "length",
+								  "ArgRange_Array");
+		return 0;
+	}
 
 	/* Find the default encoding object to use */
 	if(!encoding)
@@ -238,6 +315,7 @@ static System_String *System_String_ctor_6(ILExecThread *thread,
 
 	/* Call "String System.Text.Encoding.GetChars(byte[])"
 	   to construct the final string that we need */
+	_this = 0;
 	if(ILExecThreadCallNamedVirtual(thread, "System.Text.Encoding",
 							        "GetChars", "(T[B)oSystem.String;",
 							        &_this, encoding, array))
@@ -360,7 +438,33 @@ static int System_String_IndexOf(ILExecThread *thread,
 								 ILInt32 startIndex,
 								 ILInt32 count)
 {
-	/* TODO */
+	ILUInt16 *buf;
+
+	/* Validate the parameters */
+	if(startIndex < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "startIndex",
+								  "ArgRange_StringIndex");
+		return -1;
+	}
+	if(count < 0 || (_this->length - startIndex) < count)
+	{
+		ILExecThreadThrowArgRange(thread, "count",
+								  "ArgRange_StringRange");
+		return -1;
+	}
+
+	/* Search for the value */
+	buf = StringToBuffer(_this) + startIndex;
+	while(count > 0)
+	{
+		if(*buf++ == value)
+		{
+			return startIndex;
+		}
+		++startIndex;
+		--count;
+	}
 	return -1;
 }
 
@@ -373,7 +477,54 @@ static int System_String_IndexOfAny(ILExecThread *thread,
 								    ILInt32 startIndex,
 								    ILInt32 count)
 {
-	/* TODO */
+	ILUInt16 *buf;
+	ILUInt16 *anyBuf;
+	ILInt32 anyLength;
+	ILInt32 anyPosn;
+
+	/* Validate the parameters */
+	if(!anyOf)
+	{
+		ILExecThreadThrowArgNull(thread, "anyOf");
+		return -1;
+	}
+	if(startIndex < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "startIndex",
+								  "ArgRange_StringIndex");
+		return -1;
+	}
+	if(count < 0 || (_this->length - startIndex) < count)
+	{
+		ILExecThreadThrowArgRange(thread, "count",
+								  "ArgRange_StringRange");
+		return -1;
+	}
+
+	/* Get the start and extent of the "anyOf" array */
+	anyBuf = ArrayToBuffer(anyOf);
+	anyLength = anyOf->length;
+	if(!anyLength)
+	{
+		/* Bail out because there is nothing to find */
+		return -1;
+	}
+
+	/* Search for the value */
+	buf = StringToBuffer(_this) + startIndex;
+	while(count > 0)
+	{
+		for(anyPosn = 0; anyPosn < anyLength; ++anyPosn)
+		{
+			if(*buf == anyBuf[anyPosn])
+			{
+				return startIndex;
+			}
+		}
+		++buf;
+		++startIndex;
+		--count;
+	}
 	return -1;
 }
 
@@ -386,7 +537,33 @@ static int System_String_LastIndexOf(ILExecThread *thread,
 								 	 ILInt32 startIndex,
 								 	 ILInt32 count)
 {
-	/* TODO */
+	ILUInt16 *buf;
+
+	/* Validate the parameters */
+	if(startIndex < 0 || startIndex >= _this->length)
+	{
+		ILExecThreadThrowArgRange(thread, "startIndex",
+								  "ArgRange_StringIndex");
+		return -1;
+	}
+	if(count < 0 || (startIndex - count) < -1)
+	{
+		ILExecThreadThrowArgRange(thread, "count",
+								  "ArgRange_StringRange");
+		return -1;
+	}
+
+	/* Search for the value */
+	buf = StringToBuffer(_this) + startIndex;
+	while(count > 0)
+	{
+		if(*buf-- == value)
+		{
+			return startIndex;
+		}
+		--startIndex;
+		--count;
+	}
 	return -1;
 }
 
@@ -399,8 +576,71 @@ static int System_String_LastIndexOfAny(ILExecThread *thread,
 								    	 ILInt32 startIndex,
 								    	 ILInt32 count)
 {
-	/* TODO */
+	ILUInt16 *buf;
+	ILUInt16 *anyBuf;
+	ILInt32 anyLength;
+	ILInt32 anyPosn;
+
+	/* Validate the parameters */
+	if(!anyOf)
+	{
+		ILExecThreadThrowArgNull(thread, "anyOf");
+		return -1;
+	}
+	if(startIndex < 0 || startIndex >= _this->length)
+	{
+		ILExecThreadThrowArgRange(thread, "startIndex",
+								  "ArgRange_StringIndex");
+		return -1;
+	}
+	if(count < 0 || (startIndex - count) < -1)
+	{
+		ILExecThreadThrowArgRange(thread, "count",
+								  "ArgRange_StringRange");
+		return -1;
+	}
+
+	/* Get the start and extent of the "anyOf" array */
+	anyBuf = ArrayToBuffer(anyOf);
+	anyLength = anyOf->length;
+	if(!anyLength)
+	{
+		/* Bail out because there is nothing to find */
+		return -1;
+	}
+
+	/* Search for the value */
+	buf = StringToBuffer(_this) + startIndex;
+	while(count > 0)
+	{
+		for(anyPosn = 0; anyPosn < anyLength; ++anyPosn)
+		{
+			if(*buf == anyBuf[anyPosn])
+			{
+				return startIndex;
+			}
+		}
+		--buf;
+		--startIndex;
+		--count;
+	}
 	return -1;
+}
+
+/*
+ * private bool EqualRange(int srcIndex, int count,
+ *						   String dest, int destIndex);
+ */
+static ILBool System_String_EqualRange(ILExecThread *thread,
+									   System_String *_this,
+									   ILInt32 srcIndex,
+									   ILInt32 count,
+									   System_String *dest,
+									   ILInt32 destIndex)
+{
+	ILUInt16 *buf1 = StringToBuffer(_this) + srcIndex;
+	ILUInt16 *buf2 = StringToBuffer(dest) + destIndex;
+	return (!ILMemCmp(buf1, buf2, count * sizeof(ILUInt16)));
 }
 
 /*
@@ -448,8 +688,41 @@ static System_String *System_String_Replace_1(ILExecThread *thread,
 								    		  ILUInt16 oldChar,
 								    		  ILUInt16 newChar)
 {
-	/* TODO */
-	return _this;
+	System_String *str;
+	ILUInt16 *buf1;
+	ILUInt16 *buf2;
+	ILInt32 len;
+
+	/* If nothing will happen, then return the current string as-is */
+	len = _this->length;
+	if(oldChar == newChar || len == 0)
+	{
+		return _this;
+	}
+
+	/* Allocate a new string */
+	str = AllocString(thread, len);
+	if(!str)
+	{
+		return 0;
+	}
+
+	/* Scan the two strings, copying and replacing as we go */
+	buf1 = StringToBuffer(_this);
+	buf2 = StringToBuffer(str);
+	while(len > 0)
+	{
+		if(*buf1 != oldChar)
+		{
+			*buf2++ = *buf1++;
+		}
+		else
+		{
+			*buf2++ = newChar;
+		}
+		--len;
+	}
+	return str;
 }
 
 /*
@@ -460,25 +733,113 @@ static System_String *System_String_Replace_2(ILExecThread *thread,
 								    		  System_String *oldValue,
 								    		  System_String *newValue)
 {
-	/* TODO */
-	return _this;
-}
+	ILInt32 oldLen;
+	ILInt32 newLen;
+	ILInt32 finalLen;
+	ILInt32 posn;
+	System_String *str;
+	ILUInt16 *buf;
 
-/*
- * public String[] Split(char[] separator, int count);
- */
-static System_Array *System_String_Split(ILExecThread *thread,
-							 	    	 System_String *_this,
-								    	 System_Array *separator,
-								    	 ILInt32 count)
-{
-	/* TODO */
-	return 0;
+	/* If "oldValue" is null or an empty string, then the
+	   string will not be changed */
+	if(!oldValue || !(oldValue->length))
+	{
+		return _this;
+	}
+
+	/* Get the length of the old and new values */
+	oldLen = oldValue->length;
+	if(newValue)
+	{
+		newLen = newValue->length;
+	}
+	else
+	{
+		newLen = 0;
+	}
+
+	/* Determine the length of the final string */
+	finalLen = 0;
+	posn = 0;
+	while((posn + oldLen) <= _this->length)
+	{
+		if(System_String_EqualRange(thread, _this, posn, oldLen,
+									oldValue, 0))
+		{
+			finalLen += newLen;
+			posn += oldLen;
+		}
+		else
+		{
+			++finalLen;
+			++posn;
+		}
+		if(((ILUInt32)finalLen) > (ILUInt32)((IL_MAX_INT32 / 4) - 16))
+		{
+			/* The resulting string will be way too big */
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+	}
+	finalLen += _this->length - posn;
+
+	/* Allocate a new string */
+	str = AllocString(thread, finalLen);
+	if(!str)
+	{
+		return 0;
+	}
+
+	/* Scan the input string again and perform the replacement */
+	buf = StringToBuffer(str);
+	posn = 0;
+	while((posn + oldLen) <= _this->length)
+	{
+		if(System_String_EqualRange(thread, _this, posn, oldLen,
+									oldValue, 0))
+		{
+			if(newLen > 0)
+			{
+				ILMemCpy(buf + finalLen, StringToBuffer(newValue),
+						 newLen * sizeof(ILUInt16));
+			}
+			finalLen += newLen;
+			posn += oldLen;
+		}
+		else
+		{
+			buf[finalLen++] = StringToBuffer(_this)[posn++];
+		}
+	}
+
+	/* Return the final replaced string to the caller */
+	return str;
 }
 
 #define	TRIM_HEAD		0
 #define	TRIM_TAIL		1
 #define	TRIM_BOTH		2
+
+/*
+ * Match a character against an array of characters.
+ */
+static IL_INLINE int IsCharMatch(System_Array *trimChars, ILUInt16 ch)
+{
+	if(trimChars)
+	{
+		ILInt32 len = trimChars->length;
+		ILUInt16 *buf = StringToBuffer(trimChars);
+		while(len > 0)
+		{
+			if(*buf++ == ch)
+			{
+				return 1;
+			}
+			--len;
+		}
+	}
+	return 0;
+}
 
 /*
  * private String TrimHelper(char[] trimChars, int trimType);
@@ -488,8 +849,39 @@ static System_String *System_String_TrimHelper(ILExecThread *thread,
 								    	 	   System_Array *trimChars,
 								    	 	   ILInt32 trimType)
 {
-	/* TODO */
-	return _this;
+	ILInt32 start, end;
+	ILUInt16 *buf = StringToBuffer(_this);
+	System_String *str;
+	start = 0;
+	end = _this->length;
+	if(trimType == TRIM_HEAD || trimType == TRIM_BOTH)
+	{
+		while(start < end && IsCharMatch(trimChars, buf[start]))
+		{
+			++start;
+		}
+	}
+	if(trimType == TRIM_TAIL || trimType == TRIM_BOTH)
+	{
+		while(start < end && IsCharMatch(trimChars, buf[end - 1]))
+		{
+			--end;
+		}
+	}
+	str = AllocString(thread, end - start);
+	if(str)
+	{
+		if(start < end)
+		{
+			ILMemCpy(StringToBuffer(str), buf + start,
+					 (end - start) * sizeof(ILUInt16));
+		}
+		return str;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*
@@ -505,7 +897,8 @@ static ILUInt16 System_String_InternalGetChar(ILExecThread *thread,
 	}
 	else
 	{
-		/* Throw an "IndexOutOfRangeException" */
+		ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
+								"ArgRange_StringIndex");
 		return 0;
 	}
 }
@@ -534,6 +927,8 @@ IL_METHOD_BEGIN(_ILSystemStringMethods)
 	IL_METHOD("GetHashCode", "(T)i",	System_String_GetHashCode)
 	IL_METHOD("IndexOf",	 "(Tcii)i",	System_String_IndexOf)
 	IL_METHOD("IndexOfAny",	 "(T[cii)i", System_String_IndexOfAny)
+	IL_METHOD("EqualRange",	 "(TiioSystem.String;i)Z",
+					System_String_EqualRange)
 	IL_METHOD("Intern",		 "(T)oSystem.String;", System_String_Intern)
 	IL_METHOD("IsInterned",	 "(T)oSystem.String;", System_String_IsInterned)
 	IL_METHOD("LastIndexOf", "(Tcii)i", System_String_LastIndexOf)
@@ -542,7 +937,6 @@ IL_METHOD_BEGIN(_ILSystemStringMethods)
 	IL_METHOD("Replace",	 "(Tcc)oSystem.String;", System_String_Replace_1)
 	IL_METHOD("Replace",	 "(ToSystem.String;oSystem.String;)oSystem.String;",
 					System_String_Replace_2)
-	IL_METHOD("Split",		 "(T[ci)[oSystem.String;", System_String_Split)
 	IL_METHOD("TrimHelper",	 "(T[ci)oSystem.String;", System_String_TrimHelper)
 	IL_METHOD("InternalGetChar", "(Ti)c", System_String_InternalGetChar)
 IL_METHOD_END

@@ -248,6 +248,61 @@ ILMethod *ILExecProcessGetEntry(ILExecProcess *process)
 	return 0;
 }
 
+int ILExecProcessEntryType(ILMethod *method)
+{
+	ILType *signature;
+	ILType *paramType;
+	int entryType;
+
+	/* The method must be static */
+	if(!ILMethod_IsStatic(method))
+	{
+		return IL_ENTRY_INVALID;
+	}
+
+	/* The method must have either "void" or "int" as the return type */
+	signature = ILMethod_Signature(method);
+	if(ILType_HasThis(signature))
+	{
+		return IL_ENTRY_INVALID;
+	}
+	paramType = ILTypeGetReturn(signature);
+	if(paramType == ILType_Void)
+	{
+		entryType = IL_ENTRY_NOARGS_VOID;
+	}
+	else if(paramType == ILType_Int32)
+	{
+		entryType = IL_ENTRY_NOARGS_INT;
+	}
+	else
+	{
+		return IL_ENTRY_INVALID;
+	}
+
+	/* The method must either have no args or a single "String[]" arg */
+	if(ILTypeNumParams(signature) != 0)
+	{
+		if(ILTypeNumParams(signature) != 1)
+		{
+			return IL_ENTRY_INVALID;
+		}
+		paramType = ILTypeGetParam(signature, 1);
+		if(!ILType_IsSimpleArray(paramType))
+		{
+			return IL_ENTRY_INVALID;
+		}
+		if(!ILTypeIsStringClass(ILTypeGetElemType(paramType)))
+		{
+			return IL_ENTRY_INVALID;
+		}
+		entryType += (IL_ENTRY_ARGS_VOID - IL_ENTRY_NOARGS_VOID);
+	}
+
+	/* Return the entry point type to the caller */
+	return entryType;
+}
+
 #ifdef	__cplusplus
 };
 #endif

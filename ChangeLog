@@ -1,4 +1,10 @@
 
+2002-04-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/ilrun.c, engine/process.c, include/il_engine.h:
+	recognise invalid program entry points and refuse to run
+	the program if one is supplied.
+
 2002-04-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/Makefile.am, support/mutex.c, support/no_defs.c,

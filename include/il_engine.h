@@ -146,6 +146,20 @@ int ILExecProcessGetStatus(ILExecProcess *process);
 ILMethod *ILExecProcessGetEntry(ILExecProcess *process);
 
 /*
+ * Entry point types.
+ */
+#define	IL_ENTRY_INVALID		0		/* Invalid entry point */
+#define	IL_ENTRY_NOARGS_VOID	1		/* static void Main() */
+#define	IL_ENTRY_NOARGS_INT		2		/* static int Main() */
+#define	IL_ENTRY_ARGS_VOID		3		/* static void Main(String[]) */
+#define	IL_ENTRY_ARGS_INT		4		/* static int Main(String[]) */
+
+/*
+ * Validate a program entry point and return its type.
+ */
+int ILExecProcessEntryType(ILMethod *method);
+
+/*
  * Create a new thread and attach it to a process.
  * Returns NULL if out of memory.
  */

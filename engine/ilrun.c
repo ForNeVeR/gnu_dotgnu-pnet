@@ -260,6 +260,14 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	/* Validate the entry point */
+	if(ILExecProcessEntryType(method) == IL_ENTRY_INVALID)
+	{
+		fprintf(stderr, "%s: invalid entry point\n", argv[1]);
+		ILExecProcessDestroy(process);
+		return 1;
+	}
+
 	/* Convert the arguments into an array of strings */
 	thread = ILExecProcessGetMain(process);
 	args = ILExecThreadNew(thread, "[oSystem.String;",

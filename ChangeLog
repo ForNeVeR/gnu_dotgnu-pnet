@@ -5,6 +5,9 @@
 	include/il_utils.h, samples/mscorlib.dll, support/locale.c:
 	integrate the culture-determination code.
 
+	* samples/mscorlib.dll, samples/I18N.dll: updated version with
+	the latest culture support.
+
 2002-11-13  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: generate a warning when a no-body

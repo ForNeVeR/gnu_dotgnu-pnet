@@ -1,6 +1,6 @@
 /*
- * StringConverter.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.StringConverter" class.
+ * UInt16Converter.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.UInt16Converter" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -28,48 +28,31 @@ using System;
 using System.Collections;
 using System.Globalization;
 
-public class StringConverter : TypeConverter
+public class UInt16Converter : BaseNumberConverter
 {
 	// Constructor.
-	public StringConverter()
+	public UInt16Converter()
 			{
 				// Nothing to do here.
 			}
 
-	// Determine if we can convert from a specific type to this one.
-	public override bool CanConvertFrom
-				(ITypeDescriptorContext context, Type sourceType)
+	// Internal conversion from a string.
+	internal override Object DoConvertFrom(String value, NumberFormatInfo nfi)
 			{
-				if(sourceType == typeof(String))
-				{
-					return true;
-				}
-				else
-				{
-					return base.CanConvertFrom(context, sourceType);
-				}
+				return UInt16.Parse(value, NumberStyles.Integer, nfi);
+			}
+	internal override Object DoConvertFromHex(String value)
+			{
+				return Convert.ToUInt16(value, 16);
 			}
 
-	// Convert from another type to the one represented by this class.
-	public override Object ConvertFrom(ITypeDescriptorContext context,
-									   CultureInfo culture,
-									   Object value)
+	// Internal convert to a string.
+	internal override String DoConvertTo(Object value, NumberFormatInfo nfi)
 			{
-				if(value == null)
-				{
-					return String.Empty;
-				}
-				else if(value is String)
-				{
-					return (String)value;
-				}
-				else
-				{
-					return base.ConvertFrom(context, culture, value);
-				}
+				return ((ushort)value).ToString(null, nfi);
 			}
 
-}; // class StringConverter
+}; // class UInt16Converter
 
 #endif // CONFIG_COMPONENT_MODEL
 

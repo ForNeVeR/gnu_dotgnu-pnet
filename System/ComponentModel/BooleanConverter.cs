@@ -1,6 +1,6 @@
 /*
- * StringConverter.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.StringConverter" class.
+ * BooleanConverter.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.BooleanConverter" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -28,10 +28,10 @@ using System;
 using System.Collections;
 using System.Globalization;
 
-public class StringConverter : TypeConverter
+public class BooleanConverter : TypeConverter
 {
 	// Constructor.
-	public StringConverter()
+	public BooleanConverter()
 			{
 				// Nothing to do here.
 			}
@@ -55,13 +55,9 @@ public class StringConverter : TypeConverter
 									   CultureInfo culture,
 									   Object value)
 			{
-				if(value == null)
+				if(value is String)
 				{
-					return String.Empty;
-				}
-				else if(value is String)
-				{
-					return (String)value;
+					return Boolean.Parse((String)value);
 				}
 				else
 				{
@@ -69,7 +65,29 @@ public class StringConverter : TypeConverter
 				}
 			}
 
-}; // class StringConverter
+	// Return a collection of standard values for this data type.
+	public override StandardValuesCollection GetStandardValues
+				(ITypeDescriptorContext context)
+			{
+				return new StandardValuesCollection
+					(new Object [] {true, false});
+			}
+
+	// Determine if the list of standard values is an exclusive list.
+	public override bool GetStandardValuesExclusive
+				(ITypeDescriptorContext context)
+			{
+				return true;
+			}
+
+	// Determine if "GetStandardValues" is supported.
+	public override bool GetStandardValuesSupported
+				(ITypeDescriptorContext context)
+			{
+				return true;
+			}
+
+}; // class BooleanConverter
 
 #endif // CONFIG_COMPONENT_MODEL
 

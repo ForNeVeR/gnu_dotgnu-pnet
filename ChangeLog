@@ -10,6 +10,23 @@
 	JScript/Jsc/Plus.cs, JScript/Jsc/Relational.cs,
 	JScript/Nodes/JExpr.tc: implement some easy TODO's in JScript.
 
+	* System/ComponentModel/BaseNumberConverter.cs,
+	System/ComponentModel/BooleanConverter.cs,
+	System/ComponentModel/ByteConverter.cs,
+	System/ComponentModel/DecimalConverter.cs,
+	System/ComponentModel/DoubleConverter.cs,
+	System/ComponentModel/Int16Converter.cs,
+	System/ComponentModel/Int32Converter.cs,
+	System/ComponentModel/Int64Converter.cs,
+	System/ComponentModel/RunInstallerAttribute.cs,
+	System/ComponentModel/SByteConverter.cs,
+	System/ComponentModel/SingleConverter.cs,
+	System/ComponentModel/StringConverter.cs,
+	System/ComponentModel/UInt16Converter.cs,
+	System/ComponentModel/UInt32Converter.cs,
+	System/ComponentModel/UInt64Converter.cs: implement number
+	conversion routines in "System.ComponentModel".
+
 2003-08-04  Neil Cawse   <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: small changes to MeasureCharacterRanges.

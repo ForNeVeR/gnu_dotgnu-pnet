@@ -161,7 +161,6 @@ class/Mono.Data.Tds/Makefile
 class/System.Data/Makefile
 class/Mono.Data.PostgreSqlClient/Makefile
 class/Mono.Data.MySql/Makefile
-class/ByteFX.Data/Makefile
 class/Npgsql/Makefile
 class/System.Data.OracleClient/Makefile
 class/Mono.Data.DB2Client/Makefile

@@ -1,7 +1,7 @@
 /*
- * constructor1.cs - Test constructor declarations.
+ * constructor2.cs - Test invalid constructor declarations.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,36 +20,49 @@
 
 class Test
 {
-	public Test()
-	{
-	}
-	public Test(int x)
-	{
-	}
-}
-
-class Test2 : Test
-{
-	public Test2() : base()
-	{
-	}
-	public Test2(int x) : base(x)
+	// Name mismatch in constructor.
+	public Test2()
 	{
 	}
 }
 
-class Test3 : Test
+class Test2
 {
-	public Test3() : base(3)
-	{
-	}
-	public Test3(int x)
-		: this()
+	public Test2()
 	{
 	}
 }
 
-// Default constructors for abstract classes should be "protected".
-abstract class Test4
+class Test3 : Test2
 {
+	// Cannot locate base class constructor.
+	public Test3()
+		: base(3)
+	{
+	}
+}
+
+class Test4
+{
+	// Cannot locate "this" constructor.
+	public Test4()
+		: this(3)
+	{
+	}
+}
+
+class Test5
+{
+	Test5()
+	{
+	}
+}
+
+class Test6 : Test5
+{
+	// Inaccessible base class constructor.
+	Test6()
+		: base()
+	{
+	}
 }

@@ -55,7 +55,7 @@
 .method public hidebysig instance void 'm7'() cil managed java 
 {
 } // method m7
-.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
+.method family hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {
 	aload_0
 	invokespecial	instance void ['.library']'System'.'Object'::'.ctor'()
@@ -95,7 +95,7 @@
 	.locals 1
 	.maxstack 0
 } // method m6
-.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
+.method family hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {
 	aload_0
 	invokespecial	instance void 'Test'::'.ctor'()

@@ -37,6 +37,14 @@
 	csharp/stmt/lock1.jl: update all output files to include default
 	constructors where appropriate.
 
+	* csharp/class/Makefile.am, csharp/class/constructor1.cs,
+	csharp/class/constructor1.il, csharp/class/constructor1.jl,
+	csharp/class/constructor2.cs, csharp/class/constructor2.err,
+	csharp/class/constructor2.jerr, csharp/class/property2.il,
+	csharp/class/property2.jl, csharp/parser/member_access1.il,
+	csharp/parser/member_access1.jl: new tests and bug fixes for
+	constructor declarations.
+
 2001-01-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/typeof1.jl: new JVM output file for the "typeof1" test.

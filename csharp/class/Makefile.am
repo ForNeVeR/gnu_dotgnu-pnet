@@ -2,6 +2,7 @@
 TESTS = const1.cs \
 		const2.cs \
 		constructor1.cs \
+		constructor2.cs \
 		enum1.cs \
 		enum2.cs \
 		field1.cs \

@@ -534,17 +534,17 @@ public class FontDialog : CommonDialog
 
 					// Add the top-level hbox to the dialog and set the size.
 					Controls.Add(hbox);
-					Size size = hbox.RecommendedSize;
-					if(size.Width < 450)
+					Size drawsize = hbox.RecommendedSize;
+					if(drawsize.Width < 450)
 					{
-						size.Width = 450;
+						drawsize.Width = 450;
 					}
-					if(size.Height < 280)
+					if(drawsize.Height < 280)
 					{
-						size.Height = 280;
+						drawsize.Height = 280;
 					}
-					ClientSize = size;
-					MinimumSize = size;
+					ClientSize = drawsize;
+					MinimumSize = drawsize;
 					MinimizeBox = false;
 					ShowInTaskbar = false;
 

@@ -366,18 +366,18 @@ internal class XmlDTDParserInput : XmlParserInputBase
 							// read until we consume all the digits
 							while(input.NextChar() && input.currChar != ';')
 							{
-								value *= 0x10;
+								value *= (char)0x10;
 								if(input.currChar >= '0' && input.currChar <= '9')
 								{
-									value += input.currChar - '0';
+									value += (char)(input.currChar - '0');
 								}
 								else if(input.currChar >= 'A' && input.currChar <= 'F')
 								{
-									value += (input.currChar - 'A') + 10;
+									value += (char)((input.currChar - 'A') + 10);
 								}
 								else if(input.currChar >= 'a' && input.currChar <= 'f')
 								{
-									value += (input.currChar - 'a') + 10;
+									value += (char)((input.currChar - 'a') + 10);
 								}
 								else
 								{
@@ -390,10 +390,10 @@ internal class XmlDTDParserInput : XmlParserInputBase
 							// read until we consume all the digits
 							while(input.NextChar() && input.currChar != ';')
 							{
-								value *= 10;
+								value *= (char)10;
 								if(input.currChar >= '0' && input.currChar <= '9')
 								{
-									value += input.currChar - '0';
+									value += (char)(input.currChar - '0');
 								}
 								else
 								{

@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
+ * Contributions from Deryk Robosson <deryk@0x0a.com>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -58,7 +60,15 @@ public class XmlUrlResolver : XmlResolver
 					return null;
 				}
 
-				// TODO: create and return the stream.
+				if(absoluteUri.IsFile == false) {
+					WebClient client = new WebClient();
+					client.Credentials = credentials;
+					return client.OpenRead(absoluteUri.ToString());
+				}
+				else if(absoluteUri.IsFile == true ||
+					absoluteUri.IsUnc == true) {
+					return new FileStream(absoluteUri.LocalPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+				}
 				return null;
 			}
 
@@ -102,7 +112,6 @@ public class XmlUrlResolver : XmlResolver
 					credentials = value;
 				}
 			}
-
 }; // class XmlUrlResolver
 
 }; // namespace System.Xml

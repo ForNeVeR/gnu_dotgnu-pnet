@@ -41,7 +41,7 @@ abstract class XPathNavigator : ICloneable
 	// Implement the ICloneable interface.
 	public abstract XPathNavigator Clone();
 
-	private Object ICloneable.Clone()
+	Object ICloneable.Clone()
 			{
 				return Clone();
 			}

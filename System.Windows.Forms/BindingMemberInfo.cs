@@ -49,6 +49,7 @@ public struct BindingMemberInfo
 					field = dataMember;
 					path = String.Empty;
 				}
+				fieldType = null;
 			}
 
 	// Get this object's properties.

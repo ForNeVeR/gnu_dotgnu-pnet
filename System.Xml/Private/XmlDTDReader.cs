@@ -395,7 +395,7 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 
 				// scan for a separator or finish with the ')' character
 				if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
-				char separator;
+				char separator = (char)0;
 				if(input.currChar == ')')
 				{
 					return;

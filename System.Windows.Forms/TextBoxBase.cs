@@ -1193,14 +1193,14 @@ public abstract class TextBoxBase : Control
 		internal abstract class TextNode
 		{
 			// Internal state.
-			protected bool     valid;
-			protected int      level;
-			protected int      lineCount;
-			protected int      charCount;
-			protected TextNode parent;
-			protected TextNode prev;
-			protected TextNode next;
-			protected Size     size;
+			internal bool     valid;
+			internal int      level;
+			internal int      lineCount;
+			internal int      charCount;
+			internal TextNode parent;
+			internal TextNode prev;
+			internal TextNode next;
+			internal Size     size;
 
 
 			// Constructor.
@@ -1642,8 +1642,9 @@ public abstract class TextBoxBase : Control
 						TextLine prev = null;
 
 						// find and create new lines, quickly
-						fixed(char* curr = &slice.chars[slice.start])
+						fixed(char* start = &slice.chars[slice.start])
 						{
+							char* curr = start;
 							// get the insertion end position
 							char* end = (curr + slice.length);
 
@@ -3169,10 +3170,14 @@ public abstract class TextBoxBase : Control
 					ShiftGap(gapStart - pos);
 
 					// copy data and normalize line ending characters, quickly
-					fixed(char* input = &(chars[start]),
-					      output = &(((char[])array)[gapStart]))
+					fixed(char* startInput = &(chars[start]),
+					      startOutput = &(((char[])array)[gapStart]))
 					{
 						// save a copy of the output start position
+						// use pointer aliases for pointer arithmetic. csc doesn't like pointer arithmetic
+						// done on pointers declared within the fixed expression
+						char* input = startInput;
+						char* output = startOutput;
 						char* outputStart = output;
 
 						// get the input end position

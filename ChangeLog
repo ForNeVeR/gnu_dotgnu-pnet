@@ -1,3 +1,18 @@
+2004-07-19  Chris Ferell  <chrissferrell@yahoo.com>
+
+	* System.Windows.Forms/FontDialog.cs, 
+	System.Windows.Forms/TextBoxBase.cs,
+	System.Windows.Forms/BindingMemberInfo.cs, 
+	System.Xml/XmlTextReader.cs,
+	System.Xml/XPath/XPathNavigator.cs, 
+	System.Xml/Private/XmlDTDParserInput.cs,
+	System.Xml/Private/XmlDTDReader.cs: Fix all compile errors while building
+	with CSC. (patches #3217, #3219, #3220, #3215, #3213, #3212, Gopal)
+
+2004-07-18  Deryk Robosson <deryk@0x0a.com>
+
+	* System.Xml/XmlUrlResolver.cs: implement GetEntity functionality. 
+	(patches #3214, Gopal)
 
 2004-07-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 

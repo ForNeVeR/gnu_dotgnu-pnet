@@ -22,6 +22,7 @@ namespace System.Text
 {
 
 using System;
+using System.IO;
 using System.Reflection;
 using System.Globalization;
 using System.Security;
@@ -258,6 +259,24 @@ public abstract class Encoding
 							catch(NotImplementedException)
 							{
 								// Assembly loading unsupported by the engine.
+								i18nDisabled = true;
+								return null;
+							}
+							catch(FileNotFoundException)
+							{
+								// Could not locate the I18N assembly.
+								i18nDisabled = true;
+								return null;
+							}
+							catch(BadImageFormatException)
+							{
+								// Something was wrong with the I18N assembly.
+								i18nDisabled = true;
+								return null;
+							}
+							catch(SecurityException)
+							{
+								// The engine refused to load I18N.
 								i18nDisabled = true;
 								return null;
 							}

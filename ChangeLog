@@ -1,4 +1,9 @@
 
+2002-12-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/Encoding.cs: make "InvokeI18N" more robust
+	against errors when loading "I18N".
+
 2002-12-17  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/File.cs: Change some of the formatting of earlier

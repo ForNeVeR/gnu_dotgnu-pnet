@@ -20,8 +20,7 @@
 
 #if defined(IL_VERIFY_GLOBALS)
 
-/* Defined in image/synthetic.c */
-ILClass *_ILCreateSystemType(ILImage *image, const char *name);
+/* No globals required */
 
 #elif defined(IL_VERIFY_LOCALS)
 
@@ -95,8 +94,8 @@ case IL_OP_LDSTR:
 	/* String constants */
 	if(!stringClass)
 	{
-		stringClass = _ILCreateSystemType(ILProgramItem_Image(method),
-										  "String");
+		stringClass = ILClassResolveSystem(ILProgramItem_Image(method), 0,
+										   "String", "System");
 		if(!stringClass)
 		{
 			goto cleanup;

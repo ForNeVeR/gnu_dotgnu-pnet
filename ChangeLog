@@ -1,3 +1,9 @@
+
+2003-09-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Reflection/ClrType.cs: redesign the "TrimMembers"
+	function so that it is O(n log n) instead of O(n^2).
+
 2003-09-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/ScrollBar.cs, System.Windows.Forms/ListBox.cs

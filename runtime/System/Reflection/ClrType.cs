@@ -34,6 +34,19 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 {
 	// Internal state.
 	internal IntPtr privateData;
+	private static IComparer memberNameComparer =
+			new MemberNameComparer();
+
+	// Comparer class for member names.
+	private sealed class MemberNameComparer : IComparer
+	{
+		public int Compare(Object x, Object y)
+				{
+					return String.CompareOrdinal
+						(((MemberInfo)x).Name, ((MemberInfo)y).Name);
+				}
+
+	}; // class MemberNameComparer
 
 	// Constructor.  This class is normally instantiated
 	// by the runtime engine, not by the class library.
@@ -362,37 +375,35 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				ArrayList list=new ArrayList(members.Length/2);
 				int best;
 
-				for(int i=0;i<members.Length;i++)
-				{
-					best=i;
-					if(members[best]==null)
-					{
-						continue;
-					}
-					for(int j=i+1;j<members.Length;j++)
-					{
-						if(members[j]==null)
-						{
-							continue;
-						}
+				// Sort the members on name to make it easier to
+				// efficiently remove overrides.
+				Array.Sort(members, memberNameComparer);
 
-						MemberComparison cmp=CompareMembers(members[j], 
-															members[best]);
-						if((cmp & MemberComparison.Candidate)!= 0)
+				// Remove overrides from the list.
+				int i = 0;
+				while(i < members.Length)
+				{
+					best = i;
+					++i;
+					while(i < members.Length &&
+					      members[i].Name == members[best].Name)
+					{
+						MemberComparison cmp = CompareMembers(members[i], 
+															  members[best]);
+						if(cmp == MemberComparison.None)
 						{
-							if((cmp & MemberComparison.Override)!= 0)
+							break;
+						}
+						if((cmp & MemberComparison.Candidate) != 0)
+						{
+							if((cmp & MemberComparison.Override) != 0)
 							{
-								members[best]=null;
-								best=j;
-							}
-							else
-							{
-								members[j]=null;
+								best = i;
 							}
 						}
+						++i;
 					}
 					list.Add(members[best]);
-					members[best]=null;
 				}
 				return list.ToArray(type);
 			}

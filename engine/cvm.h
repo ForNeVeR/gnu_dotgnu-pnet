@@ -467,17 +467,19 @@ extern	"C" {
 #define	COP_PREFIX_STRING_NE		0x46
 #define	COP_PREFIX_STRING_GET_CHAR	0x47
 #define	COP_PREFIX_TYPE_FROM_HANDLE	0x48
+#define	COP_PREFIX_MONITOR_ENTER	0x49
+#define	COP_PREFIX_MONITOR_EXIT		0x4A
 
 /*
  * Binary value fixups.
  */
-#define	COP_PREFIX_FIX_I4_I			0x49
-#define	COP_PREFIX_FIX_I4_U			0x4A
+#define	COP_PREFIX_FIX_I4_I			0x4B
+#define	COP_PREFIX_FIX_I4_U			0x4C
 
 /*
  * Trigger method unrolling.
  */
-#define	COP_PREFIX_UNROLL_METHOD	0x4B
+#define	COP_PREFIX_UNROLL_METHOD	0x4D
 
 /*
  * Definition of a CVM stack word which can hold

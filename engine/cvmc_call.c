@@ -186,9 +186,15 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 	{
 		case IL_INLINEMETHOD_MONITOR_ENTER:
 		{
-			/* We don't support threads yet, so just pop the object */
-			/* TODO: support for real threads */
-			CVM_OUT_NONE(COP_POP);
+			/* Enter the monitor on the top-most object */
+			if(ILHasThreads())
+			{
+				CVMP_OUT_NONE(COP_PREFIX_MONITOR_ENTER);
+			}
+			else
+			{
+				CVM_OUT_NONE(COP_POP);
+			}
 			CVM_ADJUST(-1);
 			return 1;
 		}
@@ -196,9 +202,15 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 
 		case IL_INLINEMETHOD_MONITOR_EXIT:
 		{
-			/* We don't support threads yet, so just pop the object */
-			/* TODO: support for real threads */
-			CVM_OUT_NONE(COP_POP);
+			/* Exit the monitor on the top-most object */
+			if(ILHasThreads())
+			{
+				CVMP_OUT_NONE(COP_PREFIX_MONITOR_EXIT);
+			}
+			else
+			{
+				CVM_OUT_NONE(COP_POP);
+			}
 			CVM_ADJUST(-1);
 			return 1;
 		}

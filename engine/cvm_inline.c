@@ -325,4 +325,62 @@ VMCASE(COP_PREFIX_TYPE_FROM_HANDLE):
 }
 VMBREAK(COP_PREFIX_TYPE_FROM_HANDLE);
 
+/**
+ * <opcode name="monitor_enter" group="Inline methods">
+ *   <operation>Enter a monitor on an object</operation>
+ *
+ *   <format>prefix<fsep/>monitor_enter</format>
+ *   <dformat>{monitor_enter}</dformat>
+ *
+ *   <form name="monitor_enter" code="COP_PREFIX_MONITOR_ENTER"/>
+ *
+ *   <before>..., object</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>object</i> is popped from the stack as the
+ *   type <code>ptr</code>.  The current thread is made to enter the
+ *   synchronisation monitor on <i>object</i>.  Execution continues
+ *   once the monitor has been acquired.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>Monitor.Enter(Object)</code> method.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_MONITOR_ENTER):
+{
+	/* Enter a monitor on an object */
+	/* TODO: waiting for thread support to be completed */
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
+}
+VMBREAK(COP_PREFIX_MONITOR_ENTER);
+
+/**
+ * <opcode name="monitor_exit" group="Inline methods">
+ *   <operation>Exit a monitor on an object</operation>
+ *
+ *   <format>prefix<fsep/>monitor_exit</format>
+ *   <dformat>{monitor_exit}</dformat>
+ *
+ *   <form name="monitor_exit" code="COP_PREFIX_MONITOR_EXIT"/>
+ *
+ *   <before>..., object</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>object</i> is popped from the stack as the
+ *   type <code>ptr</code>.  The current thread is made to exit the
+ *   synchronisation monitor on <i>object</i>.  Execution continues
+ *   once the monitor has been released.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>Monitor.Exit(Object)</code> method.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_MONITOR_EXIT):
+{
+	/* Exit a monitor on an object */
+	/* TODO: waiting for thread support to be completed */
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
+}
+VMBREAK(COP_PREFIX_MONITOR_EXIT);
+
 #endif /* IL_CVM_PREFIX */

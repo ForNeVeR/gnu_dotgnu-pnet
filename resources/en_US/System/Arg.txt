@@ -38,3 +38,4 @@ Arg_SocketOption=Invalid socket option
 Arg_SocketOptionValue=Invalid socket option value
 Arg_NotSocket=The supplied value was not an open socket
 ArgRange_NonNegative=Value must not be negative
+ArgRange_Port=Port number is out of range

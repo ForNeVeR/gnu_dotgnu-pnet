@@ -11,6 +11,10 @@
 	* System/Net/Sockets/Socket.cs: wrong return types for
 	"EndSend" and "EndSendTo".
 
+	* System/Net/Sockets/TcpClient.cs, System/Net/Sockets/TcpListener.cs,
+	resources/en_US/System/Arg.txt, resources/en_US/System/Invalid.txt:
+	rewrite the "TcpClient" and "TcpListener" classes.
+
 2003-04-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Threading/AutoResetEvent.cs,

@@ -1,10 +1,8 @@
 /*
  * TcpListener.cs - Implementation of the
- * "System.Net.Sockets.TcpListener" class.
+ *			"System.Net.Sockets.TcpListener" class.
  *
- * Copyright (C) 2002  Francis Rogers.
- *
- * Contributed by Francis Rogers <franny644@comcast.net>
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,100 +19,173 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// this is a non-ECMA class
-#if !ECMA_COMPAT
-using System;
-using System.Net;
-using System.Net.Sockets;
-
 namespace System.Net.Sockets
 {
 
+#if !ECMA_COMPAT
+
+using System;
+
 public class TcpListener
 {
-	private static Socket sock;
-	private IPEndPoint endpoint;
-	private bool listening;
+	// Internal state.
+	private Socket server;
+	private IPEndPoint serverEP;
 
-	public System.Net.Sockets.Socket AcceptSocket()
-	{
-		return sock.Accept();
-	}
-
-	public System.Net.Sockets.TcpClient AcceptTcpClient()
-	{
-		Socket newsock = sock.Accept();
-		TcpClient tcpc = new TcpClient(newsock);
-		return tcpc;
-	}
-
-	public bool Pending()
-	{
-		return sock.Poll(0, SelectMode.SelectRead);
-	}
-
+	// Constructors.
+	public TcpListener(IPEndPoint localEP)
+			{
+				if(localEP == null)
+				{
+					throw new ArgumentNullException("localEP");
+				}
+				server = null;
+				serverEP = localEP;
+			}
+	public TcpListener(IPAddress localaddr, int port)
+			: this(new IPEndPoint(localaddr, port))
+			{
+				// Nothing to do here.
+			}
 	public TcpListener(int port)
-	{
-		sock = new Socket(AddressFamily.InterNetwork, 
-				  SocketType.Stream, ProtocolType.Tcp);
-		endpoint = new IPEndPoint(Dns.Resolve(Dns.GetHostName()).AddressList[0], port);
-		sock.Bind(endpoint);
-		listening = false;
-	}
+			: this(new IPEndPoint(IPAddress.Any, port))
+			{
+				// Nothing to do here.
+			}
 
-	public TcpListener(System.Net.IPAddress localaddr, int port)
-	{
-		sock = new Socket(AddressFamily.InterNetwork, 
-				  SocketType.Stream, 
-				  ProtocolType.Tcp);
-		endpoint = new IPEndPoint(localaddr, port);
-		sock.Bind(endpoint);
-		listening = false;
-	}
+	// Destructor.
+	~TcpListener()
+			{
+				Stop();
+			}
 
-	public TcpListener(System.Net.IPEndPoint localEP)
-	{
-		sock = new Socket(AddressFamily.InterNetwork, 
-				  SocketType.Stream, 
-				  ProtocolType.Tcp);
-		sock.Bind(localEP);
-		listening = false;
-	}
+	// Accept the next incoming connection on a listener and
+	// return it as a raw socket with no "TcpClient" wrapper.
+	public Socket AcceptSocket()
+			{
+				if(server == null)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_ServerNotCreated"));
+				}
+				else
+				{
+					return server.Accept();
+				}
+			}
 
+	// Accept the next incoming connection on a listener and
+	// wrap it in a "TcpClient" object.
+	public TcpClient AcceptTcpClient()
+			{
+				if(server == null)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_ServerNotCreated"));
+				}
+				else
+				{
+					return new TcpClient(server.Accept());
+				}
+			}
+
+	// Determine if there is a pending connection on a listener.
+	public bool Pending()
+			{
+				if(server == null)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_ServerNotCreated"));
+				}
+				else
+				{
+					return server.Poll(0, SelectMode.SelectRead);
+				}
+			}
+
+	// Start the listener.
 	public void Start()
-	{
-		sock.Listen((int)SocketOptionName.MaxConnections);
-	}
+			{
+				if(server != null)
+				{
+					server = new Socket(AddressFamily.InterNetwork,
+										SocketType.Stream,
+										ProtocolType.Tcp);
+					try
+					{
+						// Attempt to reuse an existing address, to prevent
+						// delays in re-binding to the same port after a
+						// server crash.
+						server.SetSocketOption
+							(SocketOptionLevel.Socket,
+							 SocketOptionName.ReuseAddress, 1);
+					}
+					catch(SocketException)
+					{
+						// Don't get too concerned if we cannot reuse.
+						// It isn't serious - just annoying.
+					}
+					try
+					{
+						server.Bind(serverEP);
+						server.Listen(Int32.MaxValue);
+					}
+					catch(SocketException)
+					{
+						// Clean up the socket if the bind or listen failed.
+						server.Close();
+						server = null;
+						throw;
+					}
+				}
+			}
 
+	// Stop the listener.
 	public void Stop()
-	{
-		sock.Close();
-	}
+			{
+				if(server != null)
+				{
+					server.Close();
+					server = null;
+				}
+			}
 
+	// Determine if the server socket is active.
 	protected bool Active
-	{
-		get
-		{
-			return listening;
-		}
-	}
+			{
+				get
+				{
+					return (server != null);
+				}
+			}
 
-	public System.Net.EndPoint LocalEndpoint
-	{
-		get
-		{
-			return endpoint;
-		}
-	}
+	// Get the local end-point for the server.
+	public EndPoint LocalEndpoint
+			{
+				get
+				{
+					if(server != null)
+					{
+						return server.LocalEndPoint;
+					}
+					else
+					{
+						return serverEP;
+					}
+				}
+			}
 
-	protected System.Net.Sockets.Socket Server
-	{
-		get
-		{
-			return sock;
-		}
-	}
-}
+	// Get the socket that is acting as the server.
+	protected Socket Server
+			{
+				get
+				{
+					return server;
+				}
+			}
 
-}
+}; // class TcpListener
+
 #endif // !ECMA_COMPAT
+
+}; // namespace System.Net.Sockets

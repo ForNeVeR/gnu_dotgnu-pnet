@@ -19,3 +19,4 @@
 #
 Invalid_AsyncAndBlocking=An asyncronous call is pending and a blocking method has been called.
 Invalid_CGWriterExists=This code generator already has a different text writer
+Invalid_ServerNotCreated=Listening TCP server has not been created

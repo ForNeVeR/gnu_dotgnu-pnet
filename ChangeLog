@@ -1,4 +1,9 @@
 
+2003-03-09  Mike Peters <mpeters@aktifkablo.net>
+
+	* runtime/System/Private/NumberFormat/GeneralFormatter.cs: One liner
+	fix for formatting bytes as decimals. (Gopal)
+
 2003-03-09  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/BadImageFormatException.cs,

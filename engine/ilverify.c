@@ -260,6 +260,12 @@ static void Coder_BranchPtr(ILCoder *coder, int opcode, ILUInt32 dest,
 				   		    ILEngineType type1, ILEngineType type2)
 {
 }
+static void Coder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
+{
+}
+static void Coder_SwitchEntry(ILCoder *coder, ILUInt32 dest)
+{
+}
 static void Coder_Compare(ILCoder *coder, int opcode,
 				   		  ILEngineType type1, ILEngineType type2)
 {
@@ -395,6 +401,10 @@ static void Coder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
 static void Coder_JumpMethod(ILCoder *coder, ILMethod *methodInfo)
 {
 }
+static void Coder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
+							 ILType *returnType)
+{
+}
 
 /*
  * Default coder class and instance.
@@ -425,6 +435,8 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_PtrAccessManaged,
 	Coder_Branch,
 	Coder_BranchPtr,
+	Coder_SwitchStart,
+	Coder_SwitchEntry,
 	Coder_Compare,
 	Coder_ComparePtr,
 	Coder_Conv,
@@ -461,6 +473,7 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_CallVirtual,
 	Coder_CallInterface,
 	Coder_JumpMethod,
+	Coder_ReturnInsn,
 };
 static ILCoder DefaultCoder = {&DefaultCoderClass};
 

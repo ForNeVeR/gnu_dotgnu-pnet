@@ -230,6 +230,16 @@ struct _tagILCoderClass
 				      ILEngineType type1, ILEngineType type2);
 
 	/*
+	 * Output the start of a switch statement.
+	 */
+	void (*switchStart)(ILCoder *coder, ILUInt32 numEntries);
+
+	/*
+	 * Output a specific switch entry.
+	 */
+	void (*switchEntry)(ILCoder *coder, ILUInt32 dest);
+
+	/*
 	 * Output a comparison instruction.
 	 */
 	void (*compare)(ILCoder *coder, int opcode,
@@ -461,6 +471,13 @@ struct _tagILCoderClass
 	 */
 	void (*jumpMethod)(ILCoder *coder, ILMethod *methodInfo);
 
+	/*
+	 * Return from the current method.  "engineType" will be
+	 * "ILEngineType_Invalid" if the return type is "void".
+	 */
+	void (*returnInsn)(ILCoder *coder, ILEngineType engineType,
+					   ILType *returnType);
+
 };
 
 /*
@@ -526,6 +543,10 @@ struct _tagILCoderClass
 #define	ILCoderBranchPtr(coder,opcode,dest,type1,type2)	\
 			((*((coder)->classInfo->branchPtr))((coder), (opcode), (dest), \
 											    (type1), (type2)))
+#define	ILCoderSwitchStart(coder,numEntries) \
+			((*((coder)->classInfo->switchStart))((coder), (numEntries)))
+#define	ILCoderSwitchEntry(coder,dest) \
+			((*((coder)->classInfo->switchEntry))((coder), (dest)))
 #define	ILCoderCompare(coder,opcode,type1,type2)	\
 			((*((coder)->classInfo->compare))((coder), (opcode), \
 											  (type1), (type2)))
@@ -623,6 +644,9 @@ struct _tagILCoderClass
 												    (numArgs), (methodInfo)))
 #define	ILCoderJumpMethod(coder,methodInfo) \
 			((*((coder)->classInfo->jumpMethod))((coder), (methodInfo)))
+#define	ILCoderReturnInsn(coder,engineType,returnType) \
+			((*((coder)->classInfo->returnInsn))((coder), (engineType), \
+												 (returnType)))
 
 #ifdef	__cplusplus
 };

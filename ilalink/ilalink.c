@@ -89,6 +89,9 @@ static ILCmdLineOption const options[] = {
 	{"--resources-only", 'R', 0,
 		"--resources-only            or -R",
 		"Create an output that only contains resources."},
+	{"-p", 'p', 0,
+		"-fprivate-resources         or -p",
+		"Mark the resources as private to the output assembly."},
 	{"-H", 'H', 1,
 		"-fhash-algorithm=name       or -H name",
 		"Specify the algorithm to use to hash files (SHA1 or MD5)"},
@@ -117,7 +120,8 @@ static void version(void);
 static void outOfMemory(void);
 static int parseVersion(ILUInt16 *version, const char *str);
 static int addLibrary(ILLinker *linker, const char *filename);
-static int addResource(ILLinker *linker, const char *filename);
+static int addResource(ILLinker *linker, const char *filename,
+					   FILE *stream, int privateResources, int isStdin);
 static int processFile(ILLinker *linker, const char *filename,
 					   FILE *stream, int isStdin);
 
@@ -150,6 +154,7 @@ int main(int argc, char *argv[])
 	int jvmMode = 0;
 	int useStdlib = 1;
 	int isStatic = 0;
+	int privateResources = 0;
 	int temp, temp2;
 	ILLinker *linker;
 
@@ -287,6 +292,12 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+			case 'p':
+			{
+				privateResources = 1;
+			}
+			break;
+
 			case 'S':
 			{
 				stdLibrary = param;
@@ -360,6 +371,10 @@ int main(int argc, char *argv[])
 				{
 					param += 15;
 					goto parseHashAlg;
+				}
+				else if(!strcmp(param, "private-resources"))
+				{
+					privateResources = 1;
 				}
 				else
 				{
@@ -561,27 +576,24 @@ int main(int argc, char *argv[])
 		errors |= addLibrary(linker, stdLibrary);
 	}
 
-	/* Add the resources to the linker context */
-	for(temp = 0; temp < numResources; ++temp)
-	{
-		errors |= addResource(linker, resources[temp]);
-	}
-
 	/* Process the input files that aren't libraries */
 	sawStdin = 0;
 	while(argc > 1)
 	{
-		if(resourcesOnly)
-		{
-			/* All command-line arguments are resource files */
-			errors |= addResource(linker, argv[1]);
-		}
-		else if(!strcmp(argv[1], "-"))
+		if(!strcmp(argv[1], "-"))
 		{
 			/* Process the contents of stdin, but only once */
 			if(!sawStdin)
 			{
-				errors |= processFile(linker, "stdin", stdin, 1);
+				if(resourcesOnly)
+				{
+					errors |= addResource(linker, "stdin", stdin,
+										  privateResources, 1);
+				}
+				else
+				{
+					errors |= processFile(linker, "stdin", stdin, 1);
+				}
 				sawStdin = 1;
 			}
 		}
@@ -600,10 +612,50 @@ int main(int argc, char *argv[])
 					continue;
 				}
 			}
-			errors |= processFile(linker, argv[1], infile, 0);
+			if(resourcesOnly)
+			{
+				errors |= addResource(linker, argv[1], infile,
+									  privateResources, 0);
+			}
+			else
+			{
+				errors |= processFile(linker, argv[1], infile, 0);
+			}
 		}
 		++argv;
 		--argc;
+	}
+
+	/* Add the explicit resource files to the linker context */
+	for(temp = 0; temp < numResources; ++temp)
+	{
+		if(!strcmp(resources[temp], "-"))
+		{
+			/* Process the contents of stdin, but only once */
+			if(!sawStdin)
+			{
+				errors |= addResource(linker, "stdin", stdin,
+									  privateResources, 1);
+				sawStdin = 1;
+			}
+		}
+		else
+		{
+			if((infile = fopen(resources[temp], "rb")) == NULL)
+			{
+				/* Try again with "r" in case libc does not understand "rb" */
+				if((infile = fopen(resources[temp], "r")) == NULL)
+				{
+					perror(resources[temp]);
+					errors = 1;
+				}
+			}
+			if(infile != NULL)
+			{
+				errors |= addResource(linker, resources[temp], infile,
+									  privateResources, 0);
+			}
+		}
 	}
 
 	/* Destroy the linker context */
@@ -754,9 +806,34 @@ static int addLibrary(ILLinker *linker, const char *filename)
 /*
  * Add a resource file to the final image.
  */
-static int addResource(ILLinker *linker, const char *filename)
+static int addResource(ILLinker *linker, const char *filename,
+					   FILE *stream, int privateResources, int isStdin)
 {
-	/* TODO */
+	int len;
+
+	/* Determine the name of the resource from the filename */
+	len = strlen(filename);
+	while(len > 0 && filename[len - 1] != '/' &&
+	      filename[len - 1] != '\\')
+	{
+		--len;
+	}
+
+	/* Add the resource to the linker image */
+	if(!ILLinkerAddResource(linker, filename + len, privateResources, stream))
+	{
+		if(!isStdin)
+		{
+			fclose(stream);
+		}
+		return 1;
+	}
+
+	/* Done */
+	if(!isStdin)
+	{
+		fclose(stream);
+	}
 	return 0;
 }
 

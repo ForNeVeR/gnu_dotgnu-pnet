@@ -85,6 +85,13 @@ int ILLinkerAddLibrary(ILLinker *linker, ILImage *image, const char *filename);
  */
 int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename);
 
+/*
+ * Add a binary resource to a linker context.  Returns zero
+ * if out of memory.
+ */
+int ILLinkerAddResource(ILLinker *linker, const char *name,
+						int isPrivate, FILE *stream);
+
 #ifdef	__cplusplus
 };
 #endif

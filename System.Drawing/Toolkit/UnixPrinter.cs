@@ -22,12 +22,17 @@
 namespace System.Drawing.Toolkit
 {
 
+using System.Reflection;
 using System.Drawing.Printing;
 
 internal sealed class UnixPrinter : IToolkitPrinter
 {
 	// Internal state.
 	private String name;
+#if CONFIG_REFLECTION
+	private static Assembly driver;
+	private static Type driverType;
+#endif
 
 	// Constructor.
 	public UnixPrinter(String name)
@@ -119,21 +124,51 @@ internal sealed class UnixPrinter : IToolkitPrinter
 				// Nothing to do here: the standard defaults are good enough.
 			}
 
+	// Call the print driver (currently, System.Drawing.Postscript).
+	private static Object CallDriver(String name, Object[] args)
+			{
+			#if CONFIG_REFLECTION
+				lock(typeof(UnixPrinter))
+				{
+					if(driver == null)
+					{
+						driver = Assembly.Load("System.Drawing.Postscript");
+					}
+					if(driverType == null)
+					{
+						driverType = driver.GetType
+							("System.Drawing.Toolkit.PostscriptDriver");
+						if(driverType == null)
+						{
+							throw new NotSupportedException();
+						}
+					}
+					return driverType.InvokeMember
+								(name,
+								 BindingFlags.InvokeMethod |
+								 	BindingFlags.Static |
+									BindingFlags.Public,
+								 null, null, args, null, null, null);
+				}
+			#else
+				throw new NotSupportedException();
+			#endif
+			}
+
 	// Create an "IToolkitGraphics" object that can be used
 	// to perform text measurement for this printer.
-	[TODO]
 	public IToolkitGraphics CreateMeasurementGraphics()
 			{
-				// TODO
-				return null;
+				return (IToolkitGraphics)CallDriver
+					("CreateMeasurementGraphics",
+					 new Object[] {name});
 			}
 
 	// Get a session handler for this printer to print a document.
-	[TODO]
 	public IToolkitPrintSession GetSession(PrintDocument document)
 			{
-				// TODO
-				return null;
+				return (IToolkitPrintSession)CallDriver
+					("GetSession", new Object[] {name, document});
 			}
 
 }; // class UnixPrinter

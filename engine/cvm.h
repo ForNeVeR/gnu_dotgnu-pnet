@@ -396,7 +396,7 @@ extern	"C" {
 /*
  * Prefixed call management opcodes.
  */
-#define	COP_PREFIX_TAIL				0x14
+#define	COP_PREFIX_TAIL_CALL		0x14
 #define	COP_PREFIX_LDFTN			0x15
 #define	COP_PREFIX_LDVIRTFTN		0x16
 #define	COP_PREFIX_LDINTERFFTN		0x17

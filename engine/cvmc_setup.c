@@ -88,6 +88,9 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	coder->labelList = 0;
 	coder->labelOutOfMemory = 0;
 
+	/* Reset the tail call flag for the new method */
+	coder->tailCallFlag = 0;
+
 	/* Determine where the new method will start output within the buffer */
 	if(newStart)
 	{

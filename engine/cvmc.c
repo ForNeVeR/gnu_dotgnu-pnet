@@ -71,6 +71,7 @@ struct _tagILCVMCoder
 	int				labelOutOfMemory;
 	unsigned char  *switchStart;
 	ILMethod	   *currentMethod;
+	int				tailCallFlag;
 
 };
 
@@ -152,6 +153,7 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	coder->labelOutOfMemory = 0;
 	coder->switchStart = 0;
 	coder->currentMethod = 0;
+	coder->tailCallFlag = 0;
 
 	/* Call the interpreter to export the label tables for
 	   use in code generation for direct threading */

@@ -12,6 +12,12 @@
 	engine/cvmc_gen.h, engine/mklabel.sh: turn on direct threading
 	support in the CVM interpreter.
 
+	* engine/cvm.h, engine/cvm_call.c, engine/cvm_dasm.c,
+	engine/cvm_format.h, engine/cvmc.c, engine/cvmc_call.c,
+	engine/cvmc_setup.c: convert the "tail" instruction into a
+	"tail_call" instruction which combines "tail" and "call";
+	implement tail calls for the direct threaded interpreter.
+
 2002-05-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/locale.c: #ifdef for CODESET because it isn't defined

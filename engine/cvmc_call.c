@@ -119,8 +119,16 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 								ILMethod *methodInfo)
 {
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 0);
-	CVM_OUT_PTR(COP_CALL, methodInfo);
+	if(((ILCVMCoder *)coder)->tailCallFlag)
+	{
+		CVMP_OUT_PTR(COP_PREFIX_TAIL_CALL, methodInfo);
+	}
+	else
+	{
+		CVM_OUT_PTR(COP_CALL, methodInfo);
+	}
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
+	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
 static void CVMCoder_CallCtor(ILCoder *coder, ILEngineStackItem *args,
@@ -130,6 +138,7 @@ static void CVMCoder_CallCtor(ILCoder *coder, ILEngineStackItem *args,
 	CVM_OUT_PTR(COP_CALL_CTOR, methodInfo);
 	CVM_ADJUST(-(ILInt32)ComputeStackSize(coder, args, numArgs));
 	CVM_ADJUST(1);
+	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
 static void CVMCoder_CallVirtual(ILCoder *coder, ILEngineStackItem *args,
@@ -140,6 +149,7 @@ static void CVMCoder_CallVirtual(ILCoder *coder, ILEngineStackItem *args,
 	ILUInt32 argSize = ComputeStackSize(coder, args, numArgs);
 	CVM_OUT_DWIDE(COP_CALL_VIRTUAL, argSize, methodInfo->index);
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
+	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
 static void CVMCoder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
@@ -151,10 +161,14 @@ static void CVMCoder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
 	ILUInt32 argSize = ComputeStackSize(coder, args, numArgs);
 	CVM_OUT_DWIDE_PTR(COP_CALL_INTERFACE, argSize, methodInfo->index, ptr);
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
+	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
 static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 {
+	/* Inline methods cannot be tail calls */
+	((ILCVMCoder *)coder)->tailCallFlag = 0;
+
 	/* Determine what to do for the inlineable method type */
 	switch(inlineType)
 	{
@@ -336,7 +350,7 @@ static void CVMCoder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 
 static void CVMCoder_TailCall(ILCoder *coder, ILMethod *methodInfo)
 {
-	CVMP_OUT_NONE(COP_PREFIX_TAIL);
+	((ILCVMCoder *)coder)->tailCallFlag = 1;
 }
 
 #endif	/* IL_CVMC_CODE */

@@ -291,8 +291,6 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 	return height;
 }
 
-#ifndef IL_CVM_DIRECT
-
 /*
  * Get the number of parameter words for a tail call method.
  */
@@ -326,8 +324,6 @@ static ILUInt32 GetTailParamCount(ILMethod *method, int suppressThis)
 	/* Return the word count to the caller */
 	return num;
 }
-
-#endif /* !IL_CVM_DIRECT */
 
 #elif defined(IL_CVM_LOCALS)
 
@@ -1182,80 +1178,56 @@ COP_WADDR_NATIVE_WIDE(7, 7);
 #elif defined(IL_CVM_PREFIX)
 
 /**
- * <opcode name="tail" group="Call management instructions">
- *   <operation>Modify the next call instruction to make
- *				it a tail call</operation>
+ * <opcode name="tail_call" group="Call management instructions">
+ *   <operation>Call a method using tail call semantics</operation>
  *
- *   <format>prefix<fsep/>tail</format>
+ *   <format>prefix<fsep/>tail_call<fsep/>mptr</format>
  *
- *   <form name="tail" code="COP_PREFIX_TAIL"/>
+ *   <form name="tail_call" code="COP_PREFIX_TAIL_CALL"/>
  *
- *   <description>Modify the next <i>call</i>, <i>call_virtual</i>,
- *   or <i>call_interface</i> instruction to use tail call
- *   semantics.</description>
+ *   <description>This instruction is identical to <i>call</i>, except
+ *   that it performs a tail-optimized call to the method identified
+ *   by <i>mptr</i>.</description>
  * </opcode>
  */
-#ifndef IL_CVM_DIRECT
-VMCASE(COP_PREFIX_TAIL):
+VMCASE(COP_PREFIX_TAIL_CALL):
 {
-	switch(CVM_ARG_TAIL_OPCODE)
+	/* Retrieve the target method */
+	methodToCall = CVM_ARG_TAIL_METHOD;
+
+	/* Convert the method if necessary */
+	if(methodToCall->userData)
 	{
-		case COP_CALL:
-		{
-			/* Retrieve the target method */
-			methodToCall = CVM_ARG_TAIL_METHOD;
-
-			/* Convert the method if necessary */
-			if(methodToCall->userData)
-			{
-				tempptr = methodToCall->userData;
-			}
-			else
-			{
-				COPY_STATE_TO_THREAD();
-				tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
-				if (!tempptr)
-				{
-					VERIFY_FAILED_EXCEPTION();
-				}
-				RESTORE_STATE_FROM_THREAD();
-			}
-
-			/* Copy the parameters down to the start of the frame */
-			/* TODO: we should add an argument to the "tail" instruction
-			   that contains "tempNum", so that we don't have to compute
-			   the value dynamically */
-			tempNum = GetTailParamCount(methodToCall, 0);
-			IL_MEMMOVE(frame, stacktop - tempNum, tempNum * sizeof(CVMWord));
-			stacktop = frame + tempNum;
-
-			/* Transfer control to the new method */
-			REPORT_METHOD_CALL();
-			pc = (unsigned char *)tempptr;
-			method = methodToCall;
-		#ifdef IL_PROFILE_CVM_METHODS
-			++(method->count);
-		#endif
-		}
-		break;
-
-		default:
-		{
-			/* TODO - Implement other call styles */
-			MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
-		}
-		break;
+		tempptr = methodToCall->userData;
 	}
+	else
+	{
+		COPY_STATE_TO_THREAD();
+		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		if (!tempptr)
+		{
+			VERIFY_FAILED_EXCEPTION();
+		}
+		RESTORE_STATE_FROM_THREAD();
+	}
+
+	/* Copy the parameters down to the start of the frame */
+	/* TODO: we should add an argument to the "tail" instruction
+	   that contains "tempNum", so that we don't have to compute
+	   the value dynamically */
+	tempNum = GetTailParamCount(methodToCall, 0);
+	IL_MEMMOVE(frame, stacktop - tempNum, tempNum * sizeof(CVMWord));
+	stacktop = frame + tempNum;
+
+	/* Transfer control to the new method */
+	REPORT_METHOD_CALL();
+	pc = (unsigned char *)tempptr;
+	method = methodToCall;
+#ifdef IL_PROFILE_CVM_METHODS
+	++(method->count);
+#endif
 }
-VMBREAK(COP_PREFIX_TAIL);
-#else /* IL_CVM_DIRECT */
-VMCASE(COP_PREFIX_TAIL):
-{
-	/* "tail" is not yet supported in direct mode */
-	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
-}
-VMBREAK(COP_PREFIX_TAIL);
-#endif /* IL_CVM_DIRECT */
+VMBREAK(COP_PREFIX_TAIL_CALL);
 
 /**
  * <opcode name="ldftn" group="Call management instructions">

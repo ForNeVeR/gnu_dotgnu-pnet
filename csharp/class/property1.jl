@@ -9,14 +9,14 @@
 .module '<Module>'
 .class private auto ansi 'Test' extends ['.library']'System'.'Object'
 {
-.method private specialname instance int32 'get_x'() cil managed java 
+.method private hidebysig specialname instance int32 'get_x'() cil managed java 
 {
 	iconst_0
 	ireturn
 	.locals 1
 	.maxstack 1
 } // method get_x
-.method private specialname instance void 'set_x'(int32 'value') cil managed java 
+.method private hidebysig specialname instance void 'set_x'(int32 'value') cil managed java 
 {
 	return
 	.locals 2

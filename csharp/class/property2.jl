@@ -9,10 +9,10 @@
 .module '<Module>'
 .class private auto abstract ansi 'Test' extends ['.library']'System'.'Object'
 {
-.method public virtual abstract specialname instance int32 'get_x'() cil managed java 
+.method public virtual hidebysig newslot abstract specialname instance int32 'get_x'() cil managed java 
 {
 } // method get_x
-.method public virtual abstract specialname instance void 'set_x'(int32 'value') cil managed java 
+.method public virtual hidebysig newslot abstract specialname instance void 'set_x'(int32 'value') cil managed java 
 {
 } // method set_x
 .property instance int32 'x'()

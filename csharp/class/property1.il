@@ -9,13 +9,13 @@
 .module '<Module>'
 .class private auto ansi 'Test' extends ['.library']'System'.'Object'
 {
-.method private specialname instance int32 'get_x'() cil managed 
+.method private hidebysig specialname instance int32 'get_x'() cil managed 
 {
 	ldc.i4.0
 	ret
 	.maxstack 1
 } // method get_x
-.method private specialname instance void 'set_x'(int32 'value') cil managed 
+.method private hidebysig specialname instance void 'set_x'(int32 'value') cil managed 
 {
 	ret
 	.maxstack 0

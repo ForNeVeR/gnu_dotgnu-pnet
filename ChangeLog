@@ -11,6 +11,10 @@
 	csharp/class/property2.il, csharp/class/property2.jl:
 	test abstract property accessors.
 
+	* csharp/class/property1.il, csharp/class/property1.jl,
+	csharp/class/property2.il, csharp/class/property2.jl: new property
+	test output files to match fixes to cscc's modifier handling.
+
 2001-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Initial check-in of the test suite.

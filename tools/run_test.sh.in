@@ -30,6 +30,7 @@ shift
 exec "$ILRUN" -L"$TOP_BUILDDIR"/runtime \
 	-L"$TOP_BUILDDIR"/I18N \
 	-L"$TOP_BUILDDIR"/System \
+	-L"$TOP_BUILDDIR"/DotGNU.SSL \
 	-L"$TOP_BUILDDIR"/System.Xml \
 	-L"$TOP_BUILDDIR"/csunit \
 	-L"$TOP_BUILDDIR"/compat \

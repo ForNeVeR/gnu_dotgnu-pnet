@@ -122,12 +122,12 @@ namespace System.Windows.Forms
 			if (selectedIndex == -1 || selectedIndex >= TabCount)
 				return;
 			SuspendLayout();
-			positionInfo = null;
 			if (prevSelectedIndex > -1)
 			{
 				GetChildByIndex( prevSelectedIndex ).Visible = false;
 			}
 			GetChildByIndex( selectedIndex ).Visible = true;
+			SetTabPageBounds();
 			
 			if (SelectedIndexChanged != null)
 				SelectedIndexChanged( this, EventArgs.Empty );
@@ -259,7 +259,14 @@ namespace System.Windows.Forms
 		{
 			get
 			{
-				return tabPageCollection[selectedIndex] as TabPage;
+				if (selectedIndex == -1)
+				{
+					return null;
+				}
+				else
+				{
+					return tabPageCollection[selectedIndex] as TabPage;
+				}
 			}
 			set
 			{
@@ -328,6 +335,12 @@ namespace System.Windows.Forms
 			{
 				control.Visible = false;
 				base.Add(control);
+				tabOwner.InvalidateTabs	();
+				tabOwner.SetTabPageBounds();
+				if (tabOwner.SelectedTab == control)
+				{
+					control.Visible = true;
+				}
 			}
 
 		};
@@ -774,14 +787,17 @@ namespace System.Windows.Forms
 		public int SelectedIndex {
 			get
 			{
-				return selectedIndex;
+				if (selectedIndex == -1)
+				{
+					return 0;
+				}
+				else
+				{
+					return selectedIndex;
+				}
 			}
 			set
 			{
-				if (value == -1)
-				{
-					value = 0;
-				}
 				if (value != selectedIndex)
 				{
 					prevSelectedIndex = selectedIndex;
@@ -890,7 +906,6 @@ namespace System.Windows.Forms
 				if (moveButtonsTabOffset > 0)
 				{
 					moveButtonsTabOffset--;
-					positionInfo = null;
 					InvalidateTabs();
 				}
 			}
@@ -900,7 +915,6 @@ namespace System.Windows.Forms
 				if (moveButtonsTabOffset < tabPageCollection.Count - 1 && moveButtonsCovered)
 				{
 					moveButtonsTabOffset++;
-					positionInfo = null;
 					InvalidateTabs();
 				}
 			}
@@ -1068,6 +1082,7 @@ namespace System.Windows.Forms
 
 		internal void InvalidateTabs()
 		{
+			positionInfo = null;
 			if (!IsHandleCreated)
 				return;
 			Rectangle bounds = GetTabsBounds();
@@ -1107,7 +1122,7 @@ namespace System.Windows.Forms
 			// Force the positions of the tabs to update if the size changes
 			if ((specified & BoundsSpecified.Size) != 0)
 			{
-				positionInfo = null;
+				InvalidateTabs();
 				SetTabPageBounds();
 				Invalidate(false);
 			}
@@ -1116,10 +1131,6 @@ namespace System.Windows.Forms
 		protected override void OnCreateControl()
 		{
 			base.OnCreateControl();
-			if (selectedIndex == -1)
-			{
-				SelectedIndex = 0;
-			}
 			SetTabPageBounds();
 		}
 

@@ -225,6 +225,7 @@ fi
 AC_OUTPUT([
 Makefile
 include/Makefile
+include/assembly/Makefile
 include/bits/Makefile
 include/gnu/Makefile
 include/sys/Makefile

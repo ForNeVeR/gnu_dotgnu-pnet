@@ -1,10 +1,11 @@
 
-SUBDIRS = . bits gnu sys
+SUBDIRS = . assembly bits gnu sys
 
 libincludedir      = $(datadir)/cscc/include
 libinclude_HEADERS = \
 	alloca.h \
 	assert.h \
+	csharp.h \
 	ctype.h \
 	dirent.h \
 	errno.h \

@@ -155,6 +155,8 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 	ILType *enumType;
 	ILInt8 boxByte;
 	ILInt16 boxShort;
+	ILFloat boxFloat;
+	ILDouble boxDouble;
 	void *ptr;
 
 	/* Allocate an array to hold all of the arguments */
@@ -199,6 +201,21 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 				{
 					boxShort = (ILInt16)(stacktop->intValue);
 					ptr = &boxShort;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R4:
+				{
+					boxFloat = (ILFloat)(ReadFloat(stacktop));
+					ptr = &boxFloat;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R8:
+				case IL_META_ELEMTYPE_R:
+				{
+					boxDouble = (ILDouble)(ReadFloat(stacktop));
+					ptr = &boxDouble;
 				}
 				break;
 

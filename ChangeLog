@@ -18,6 +18,9 @@
 	abstraction for CVM code generation to make it easier to change
 	the representation format in the future.
 
+	* engine/cvm_call.c (PackVarArgs): box "float" and "double"
+	values correctly during vararg method calls.
+
 2002-05-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.c: "-fsave-asm" saves the assembly output even if

@@ -19,6 +19,7 @@
  */
 
 #include "engine_private.h"
+#include "cvm_config.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -465,6 +466,20 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		return start;
 	}
 }
+
+#ifdef IL_CVM_DIRECT_UNROLLED
+
+int _ILUnrollMethod(ILExecThread *thread, ILCoder *coder,
+					unsigned char *pc, ILMethod *method)
+{
+	int result;
+	METADATA_WRLOCK(thread);
+	result = _ILCVMUnrollMethod(coder, pc, method);
+	METADATA_UNLOCK(thread);
+	return result;
+}
+
+#endif /* IL_CVM_DIRECT_UNROLLED */
 
 #ifdef	__cplusplus
 };

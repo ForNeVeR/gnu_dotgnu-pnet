@@ -555,6 +555,12 @@ int _ILCVMUnrollPossible(void);
 int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method);
 
 /*
+ * Unroll a CVM method to native code - locked version.
+ */
+int _ILUnrollMethod(ILExecThread *thread, ILCoder *coder,
+					unsigned char *pc, ILMethod *method);
+
+/*
  * Determine the size of a type's values in bytes.  This assumes
  * that the caller has obtained the metadata write lock.
  */

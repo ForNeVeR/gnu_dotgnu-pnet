@@ -654,8 +654,8 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					{
 						/* Unroll the current method to native code */
 					#ifdef IL_CVM_DIRECT_UNROLLED
-						if(_ILCVMUnrollMethod(thread->process->coder,
-											  pc, method))
+						if(_ILUnrollMethod(thread, thread->process->coder,
+										   pc, method))
 						{
 							VMSWITCH(0);
 						}

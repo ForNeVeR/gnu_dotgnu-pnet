@@ -14,6 +14,9 @@
 	cscc/cs_lookup.c, cscc/cs_lvalue.tc: implement semantic analysis
 	and code generation for indexers.
 
+	* samples/getenv.cs: extend the "getenv" example so that it can
+	also access environment variables by way of a dictionary indexer.
+
 2001-01-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvmc_setup.c, engine/internal.c, engine/lib_platform.c,

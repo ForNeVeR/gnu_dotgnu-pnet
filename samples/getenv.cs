@@ -5,6 +5,9 @@
 //
 // "getenv" with an argument will print the value of just that
 // environment variable.
+//
+// "getenv" with two arguments, where the first is "-d", will
+// access environment variables by way of a dictionary indexer.
 
 using System.Collections;
 
@@ -12,9 +15,28 @@ public class getenv
 {
 	public static void Main(String[] args)
 	{
-		if(args.Length != 0)
+		String value;
+		IDictionary vars;
+
+		if(args.Length == 2 && args[0].Equals("-d"))
 		{
-			String value = Environment.GetEnvironmentVariable(args[0]);
+			// Access the value through a dictionary indexer.
+			vars = Environment.GetEnvironmentVariables();
+			value = (String)(vars[args[1]]);
+			if(value != null)
+			{
+				Console.WriteLine(value);
+			}
+			else
+			{
+				Console.Write(args[1]);
+				Console.WriteLine(" does not exist in the environment");
+			}
+		}
+		else if(args.Length == 1)
+		{
+			// Access the value through "GetEnvironmentVariable".
+			value = Environment.GetEnvironmentVariable(args[0]);
 			if(value != null)
 			{
 				Console.WriteLine(value);
@@ -27,7 +49,8 @@ public class getenv
 		}
 		else
 		{
-			IDictionary vars = Environment.GetEnvironmentVariables();
+			// Dump the contents of all environment variables.
+			vars = Environment.GetEnvironmentVariables();
 			IDictionaryEnumerator e = vars.GetEnumerator();
 			while(e.MoveNext())
 			{

@@ -30,7 +30,6 @@ extern	"C" {
  */
 typedef struct _tagILType      ILType;
 typedef struct _tagILClass     ILClass;
-typedef struct _tagILParameter ILParameter;
 
 /*
  * Invalid type code.
@@ -125,12 +124,12 @@ typedef struct _tagILParameter ILParameter;
 #define	IL_TYPE_COMPLEX_BYREF					1
 #define	IL_TYPE_COMPLEX_PTR						2
 #define	IL_TYPE_COMPLEX_ARRAY					3
-#define	IL_TYPE_COMPLEX_CMOD_REQD				4
-#define	IL_TYPE_COMPLEX_CMOD_OPT				5
-#define	IL_TYPE_COMPLEX_PROPERTY				6
-#define	IL_TYPE_COMPLEX_SENTINEL				8
-#define	IL_TYPE_COMPLEX_PINNED					9
-#define	IL_TYPE_COMPLEX_PARAM					10
+#define	IL_TYPE_COMPLEX_ARRAY_CONTINUE			4
+#define	IL_TYPE_COMPLEX_CMOD_REQD				6
+#define	IL_TYPE_COMPLEX_CMOD_OPT				7
+#define	IL_TYPE_COMPLEX_PROPERTY				8
+#define	IL_TYPE_COMPLEX_SENTINEL				9
+#define	IL_TYPE_COMPLEX_PINNED					10
 #define	IL_TYPE_COMPLEX_LOCALS					11
 #define	IL_TYPE_COMPLEX_METHOD					16
 #define	IL_TYPE_COMPLEX_METHOD_SENTINEL			1
@@ -158,10 +157,6 @@ struct _tagILType
 			ILType *param[4];	/* Overflow parameters */
 			ILType *next;		/* Overflow for the rest of the parameters */
 		} params;
-		struct {
-			ILType *type;		/* Type of the parameter */
-			ILParameter *param;	/* Parameter modifier block */
-		} paramInfo;
 		struct {
 			ILClass *info;		/* Information on the modifier's class */
 			ILType  *type;		/* The type that is being modified */

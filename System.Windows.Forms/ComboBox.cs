@@ -673,6 +673,7 @@ namespace System.Windows.Forms
 				height = PreferredHeight;
 			base.SetBoundsCore(x, y, width, height, specified);	
 			textEntry.Size = new Size(ClientSize.Width - ButtonSize.Width, ClientSize.Height + 5);
+			dropDownWidth = width;
 		}
 
 		protected override void SetItemsCore(IList list)

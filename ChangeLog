@@ -1,4 +1,10 @@
 
+2003-11-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/Stdio.cs, runtime/System/Console.cs:
+	reflect the extended console routines through to interncalls
+	in "Platform.Stdio" so that the runtime engine can handle them.
+
 2003-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/EmbeddedApplication.cs, samples/ilrun.sh.in: detect ssh

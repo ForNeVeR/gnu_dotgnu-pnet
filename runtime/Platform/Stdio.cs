@@ -65,6 +65,59 @@ internal class Stdio
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static int StdPeek(int fd);
 
+	// Set the console mode.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void SetConsoleMode(int mode);
+
+	// Supported console modes.
+	public const int MODE_NORMAL = 0;
+	public const int MODE_CBREAK = 1;
+	public const int MODE_RAW    = 2;
+
+	// Get the buffer dimensions for the console.  If the console
+	// does not support scroll-back buffering, or cannot query the
+	// value, then this returns the same value as the window size.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void GetBufferSize(out int width, out int height);
+
+	// Get the window size and position information.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void GetWindowSize
+			(out int left, out int top, out int width, out int height);
+
+	// Get the cursor position.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void GetCursorPosition(out int x, out int y);
+
+	// Set the cursor position.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void SetCursorPosition(int x, int y);
+
+	// Set the title on the console window.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void SetConsoleTitle(String title);
+
+	// Issue a beep on the console.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void Beep();
+
+	// Clear the console to the current foreground and backgroun colors.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void Clear();
+
+	// Set the foreground and background text attributes.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void SetTextAttributes(int attrs);
+
+	// Determine if a key is available for reading at the console.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool KeyAvailable();
+
+	// Read a key from the console.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void ReadKey
+			(out char ch, out int key, out int modifiers);
+
 }; // class Stdio
 
 }; // namespace Platform

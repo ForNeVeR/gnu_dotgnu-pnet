@@ -180,12 +180,14 @@ public sealed class Console
 	// Read a character from the standard input stream.
 	public static int Read()
 			{
+				NormalMode();
 				return In.Read();
 			}
 
 	// Read a line from the standard input stream.
 	public static String ReadLine()
 			{
+				NormalMode();
 				return In.ReadLine();
 			}
 
@@ -399,6 +401,7 @@ public sealed class Console
 			{
 				StringBuilder builder = new StringBuilder();
 				int ch;
+				NormalMode();
 				while((ch = Stdio.StdRead(0)) != -1 && ch != '\n')
 				{
 					if(ch != '\r')
@@ -550,105 +553,182 @@ public sealed class Console
 
 #if CONFIG_EXTENDED_CONSOLE
 
+	// Global state for the extended console.
+	private static String title = String.Empty;
+	private static bool specialMode = false;
+	private static bool treatControlCAsInput = false;
+
+	// Enable the "normal" input mode on the console.
+	private static void NormalMode()
+			{
+				lock(typeof(Console))
+				{
+					if(specialMode)
+					{
+						specialMode = false;
+						Stdio.SetConsoleMode(Stdio.MODE_NORMAL);
+					}
+				}
+			}
+
+	// Enable the "special" character-at-a-time input mode on the console.
+	private static void SpecialMode()
+			{
+				lock(typeof(Console))
+				{
+					if(!specialMode)
+					{
+						specialMode = true;
+						if(treatControlCAsInput)
+						{
+							Stdio.SetConsoleMode(Stdio.MODE_RAW);
+						}
+						else
+						{
+							Stdio.SetConsoleMode(Stdio.MODE_CBREAK);
+						}
+					}
+				}
+			}
+
 	// Output a beep on the console.
-	[TODO]
 	public static void Beep()
 			{
-				// TODO
+				lock(typeof(Console))
+				{
+					SpecialMode();
+					Stdio.Beep();
+				}
 			}
 
 	// Clear the display to the current foreground and background color.
-	[TODO]
 	public static void Clear()
 			{
-				// TODO
+				lock(typeof(Console))
+				{
+					SpecialMode();
+					Stdio.Clear();
+				}
 			}
 
 	// Read a key from the console.  If "intercept" is "false",
 	// then the key is echoed to the console.
-	[TODO]
 	public static ConsoleKeyInfo ReadKey()
 			{
 				return ReadKey(false);
 			}
-	[TODO]
 	public static ConsoleKeyInfo ReadKey(bool intercept)
 			{
-				// TODO
-				return new ConsoleKeyInfo('\0', (ConsoleKey)0,
-										  (ConsoleModifiers)0);
+				lock(typeof(Console))
+				{
+					SpecialMode();
+					char ch;
+					int key, modifiers;
+					Stdio.ReadKey(out ch, out key, out modifiers);
+					return new ConsoleKeyInfo
+						(ch, (ConsoleKey)key, (ConsoleModifiers)modifiers);
+				}
 			}
 
 	// Set the cursor position.
 	// This is a guess - fix later.
-	[TODO]
 	public static void SetCursorPosition(int x, int y)
 			{
-				// TODO
+				lock(typeof(Console))
+				{
+					SpecialMode();
+					Stdio.SetCursorPosition(x, y);
+				}
 			}
 
 	// Set the current text foreground and background attributes.
 	// This is a guess - fix later.
-	[TODO]
 	public static void SetTextAttribute(ConsoleColor foreground,
 										ConsoleColor background)
 			{
-				// TODO
+				lock(typeof(Console))
+				{
+					SpecialMode();
+					Stdio.SetTextAttributes
+						(((int)foreground) | (((int)background) << 4));
+				}
 			}
 
 	// Console properties.
-	[TODO]
 	public static int BufferHeight
 			{
 				get
 				{
-					// TODO
-					return 25;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						int width, height;
+						Stdio.GetBufferSize(out width, out height);
+						return height;
+					}
 				}
 			}
-	[TODO]
 	public static int BufferWidth
 			{
 				get
 				{
-					// TODO
-					return 80;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						int width, height;
+						Stdio.GetBufferSize(out width, out height);
+						return width;
+					}
 				}
 			}
-	[TODO]
 	public static int CursorLeft
 			{
 				get
 				{
-					// TODO
-					return 0;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						int x, y;
+						Stdio.GetCursorPosition(out x, out y);
+						return x;
+					}
 				}
 			}
-	[TODO]
 	public static int CursorTop
 			{
 				get
 				{
-					// TODO
-					return 0;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						int x, y;
+						Stdio.GetCursorPosition(out x, out y);
+						return y;
+					}
 				}
 			}
-	[TODO]
 	public static bool KeyAvailable
 			{
 				get
 				{
-					// TODO
-					return false;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						return Stdio.KeyAvailable();
+					}
 				}
 			}
-	[TODO]
 	public static String Title
 			{
 				get
 				{
-					// TODO
-					return String.Empty;
+					// Note: we never query the initial console title
+					// from the system because it may contain sensitive
+					// data that we don't want the program to have access to.
+					lock(typeof(Console))
+					{
+						return title;
+					}
 				}
 				set
 				{
@@ -656,63 +736,119 @@ public sealed class Console
 					{
 						throw new ArgumentNullException("value");
 					}
-					// TODO
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						title = value;
+						Stdio.SetConsoleTitle(title);
+					}
 				}
 			}
-	[TODO]
 	public static bool TreatControlCAsInput
 			{
 				get
 				{
-					// TODO
-					return false;
+					lock(typeof(Console))
+					{
+						return treatControlCAsInput;
+					}
 				}
 				set
 				{
-					// TODO
+					lock(typeof(Console))
+					{
+						if(treatControlCAsInput != value)
+						{
+							specialMode = false;
+							treatControlCAsInput = value;
+							SpecialMode();
+						}
+					}
 				}
 			}
-	[TODO]
 	public static int WindowHeight
 			{
 				get
 				{
-					// TODO
-					return 25;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						int left, top, width, height;
+						Stdio.GetWindowSize
+							(out left, out top, out width, out height);
+						return height;
+					}
 				}
 			}
-	[TODO]
 	public static int WindowLeft
 			{
 				get
 				{
-					// TODO
-					return 0;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						int left, top, width, height;
+						Stdio.GetWindowSize
+							(out left, out top, out width, out height);
+						return left;
+					}
 				}
 			}
-	[TODO]
 	public static int WindowTop
 			{
 				get
 				{
-					// TODO
-					return 0;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						int left, top, width, height;
+						Stdio.GetWindowSize
+							(out left, out top, out width, out height);
+						return top;
+					}
 				}
 			}
-	[TODO]
 	public static int WindowWidth
 			{
 				get
 				{
-					// TODO
-					return 80;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						int left, top, width, height;
+						Stdio.GetWindowSize
+							(out left, out top, out width, out height);
+						return width;
+					}
 				}
 			}
 
 	// Event that is emitted for cancel keycodes like CTRL+C.
 	public static event ConsoleCancelEventHandler CancelKeyPress;
 
-#endif // CONFIG_EXTENDED_CONSOLE
+	// Method that is called from the runtime engine to handle "cancel" events.
+	// Returns "false" to quit the application, or "true" to continue.
+	private static bool HandleCancel(int specialKeys)
+			{
+				ConsoleCancelEventArgs args;
+				args = new ConsoleCancelEventArgs
+					((ConsoleSpecialKeys)specialKeys);
+				if(CancelKeyPress != null)
+				{
+					CancelKeyPress(null, args);
+				}
+				return args.Cancel;
+			}
+
+#else // !CONFIG_EXTENDED_CONSOLE
+
+	// Enable the "normal" input mode on the console.
+	private static void NormalMode()
+			{
+				// Nothing to do if we don't have an extended console.
+			}
+
+#endif // !CONFIG_EXTENDED_CONSOLE
 
 }; // class Console
 

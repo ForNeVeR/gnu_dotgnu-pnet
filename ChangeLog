@@ -10,6 +10,8 @@
 	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c:
 	add the "Assembly.GetSatellitePath" internalcall.
 
+	* configure.in: add the missing "access" system call to configure.in.
+
 2002-12-11  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_oper.tc: Implement AddressOf operator to generate

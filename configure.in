@@ -291,7 +291,7 @@ AC_CHECK_FUNCS(acos asin atan atan2 ceil cos cosh exp floor remainder)
 AC_CHECK_FUNCS(log log10 pow rint sin sinh sqrt tan tanh)
 AC_CHECK_FUNCS(wctomb wcrtomb mbtowc mbrtowc nl_langinfo setlocale)
 AC_CHECK_FUNCS(usleep gethostbyname gethostbyaddr isatty getlogin)
-AC_CHECK_FUNCS(opendir readdir readdir_r closedir chdir)
+AC_CHECK_FUNCS(opendir readdir readdir_r closedir chdir access)
 AC_CHECK_FUNCS(cygwin_conv_to_win32_path snprintf)
 AC_CHECK_FUNCS(regcomp regexec regfree regerror)
 AC_FUNC_ALLOCA

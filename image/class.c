@@ -825,16 +825,22 @@ int ILClassInheritsFrom(ILClass *info, ILClass *ancestor)
 	return 0;
 }
 
-int ILClassImplements(ILClass *info, ILClass *interface)
+static int ImplementsResolved(ILClass *info, ILClass *interface)
 {
 	ILImplements *temp;
-	info = (ILClass *)(_ILProgramItemResolve(&(info->programItem)));
+	ILClass *tempInterface;
 	while(info != 0)
 	{
 		temp = info->implements;
 		while(temp != 0)
 		{
-			if(ILClassInheritsFrom(temp->interface, interface))
+			tempInterface = (ILClass *)(_ILProgramItemResolve
+								(&(temp->interface->programItem)));
+			if(tempInterface == interface)
+			{
+				return 1;
+			}
+			else if(ImplementsResolved(tempInterface, interface))
 			{
 				return 1;
 			}
@@ -847,6 +853,13 @@ int ILClassImplements(ILClass *info, ILClass *interface)
 		}
 	}
 	return 0;
+}
+
+int ILClassImplements(ILClass *info, ILClass *interface)
+{
+	info = (ILClass *)(_ILProgramItemResolve(&(info->programItem)));
+	interface = (ILClass *)(_ILProgramItemResolve(&(interface->programItem)));
+	return ImplementsResolved(info, interface);
 }
 
 ILImplements *ILClassNextImplements(ILClass *info, ILImplements *last)

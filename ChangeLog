@@ -13,6 +13,9 @@ new resource and thread classes.
 * engine/layout.c: temporary disable "ComputeInterfaceTable" because
 it is causing "Hello World" to fail.
 
+* image/class.c: fix the implementation of "ILClassImplements" so that
+it recursively scans all interface parents that an interface has.
+
 2001-11-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/layout.c: compute the interface lookup tables for the class.

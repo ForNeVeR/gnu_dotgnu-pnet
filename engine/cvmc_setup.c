@@ -397,9 +397,9 @@ static void CVMEntryPushLeadIn(CVMEntryContext *ctx, ILCVMCoder *coder,
 
 	/* Process value type return values */
 	returnType = ILTypeGetEnumType(ILTypeGetReturn(signature));
-	if(ILType_IsValueType(returnType))
+	if(ILType_IsValueType(returnType) && isInternal)
 	{
-		/* Value types are passed by reference to the method */
+		/* Value types are passed by reference to "internalcall" methods */
 		if(coder)
 		{
 			/* Allocate space for the return value */
@@ -552,7 +552,7 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 		{
 			/* We need extra locals for value type parameters when
 			   we use the non-raw version of function invocation */
-			if(!useRawCalls && ILType_IsValueType(paramType))
+			if(!useRawCalls && isInternal && ILType_IsValueType(paramType))
 			{
 				CVMEntryNeedExtraLocal(ctx, 0);
 			}
@@ -692,7 +692,9 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 			}
 			else if(ILType_IsValueType(paramType))
 			{
-				/* Push a pointer to the value type instance */
+				/* Push a pointer to the value type instance.  Note: this
+				   will never be used in the method is PInvoke, because
+				   PInvoke value types never use the raw call form */
 				CVM_OUT_WIDE(COP_WADDR, offset);
 				CVM_ADJUST(1);
 				++(ctx->nativeArgWords);
@@ -714,7 +716,7 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 		}
 		else if(ctx->nativeArg < CVM_MAX_NATIVE_ARGS)
 		{
-			if(ILType_IsValueType(paramType))
+			if(isInternal && ILType_IsValueType(paramType))
 			{
 				/* Push a pointer to the value type onto the native stack */
 				CVM_OUT_WIDE(COP_WADDR, coder->argOffsets[param - thisAdjust]);
@@ -747,7 +749,8 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
  */
 static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 							   ILType *signature, void *fn, void *cif,
-							   int useRawCalls, int isConstructor)
+							   int useRawCalls, int isInternal,
+							   int isConstructor)
 {
 	ILType *returnType = ILTypeGetEnumType(ILTypeGetReturn(signature));
 	int hasReturn;
@@ -763,9 +766,17 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 	/* Push the address of the return value onto the stack */
 	if(returnType != ILType_Void || isConstructor)
 	{
-		CVM_OUT_WIDE(COP_WADDR, ctx->returnOffset);
-		CVM_ADJUST(1);
-		hasReturn = 1;
+		if(!isInternal || !ILType_IsValueType(returnType))
+		{
+			CVM_OUT_WIDE(COP_WADDR, ctx->returnOffset);
+			CVM_ADJUST(1);
+			hasReturn = 1;
+		}
+		else
+		{
+			/* Value type return for "internalcall" method */
+			hasReturn = 0;
+		}
 	}
 	else
 	{
@@ -998,13 +1009,14 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 /*
  * Determine if we can use raw libffi calls for a particular method.
  */
-int _ILCVMCanUseRawCalls(ILMethod *method)
+int _ILCVMCanUseRawCalls(ILMethod *method, int isInternal)
 {
 #if defined(HAVE_LIBFFI)
 	#if !FFI_NO_RAW_API && FFI_NATIVE_RAW_API
 		ILType *signature;
 		unsigned long num;
 		unsigned long param;
+		ILType *type;
 
 		/* Check the size of the stack word against libffi's expectations */
 		if(sizeof(CVMWord) != sizeof(ffi_raw))
@@ -1012,17 +1024,21 @@ int _ILCVMCanUseRawCalls(ILMethod *method)
 			return 0;
 		}
 
-		/* The method's signature must not include ILType_TypedRef,
-		   because raw mode doesn't support structures very well */
+		/* The method's signature must not include ILType_TypedRef, or value
+		   types because raw mode doesn't support structures very well */
 		signature = ILMethod_Signature(method);
-		if(ILTypeGetReturn(signature) == ILType_TypedRef)
+		type = ILTypeGetEnumType(ILTypeGetReturn(signature));
+		if(type == ILType_TypedRef ||
+		   (ILType_IsValueType(type) && !isInternal))
 		{
 			return 0;
 		}
 		num = ILTypeNumParams(signature);
 		for(param = 1; param <= num; ++param)
 		{
-			if(ILTypeGetParam(signature, param) == ILType_TypedRef)
+			type = ILTypeGetEnumType(ILTypeGetParam(signature, param));
+			if(type == ILType_TypedRef ||
+			   (ILType_IsValueType(type) && !isInternal))
 			{
 				return 0;
 			}
@@ -1060,7 +1076,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	}
 
 	/* Determine if we can use raw libffi calls */
-	useRawCalls = _ILCVMCanUseRawCalls(method);
+	useRawCalls = _ILCVMCanUseRawCalls(method, isInternal);
 
 	/* Compute the number of extra locals that we need */
 	CVMEntryPushLeadIn(&ctx, (ILCVMCoder *)0, signature, useRawCalls,
@@ -1079,7 +1095,8 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	CVMEntryPushLeadIn(&ctx, coder, signature, useRawCalls, isInternal, 0);
 	CVMEntryPushNativeArgs(&ctx, coder, method, signature,
 						   useRawCalls, isInternal);
-	CVMEntryCallNative(&ctx, coder, signature, fn, cif, useRawCalls, 0);
+	CVMEntryCallNative(&ctx, coder, signature, fn, cif,
+					   useRawCalls, isInternal, 0);
 	return 1;
 }
 
@@ -1131,7 +1148,7 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	}
 
 	/* Determine if we can use raw libffi calls */
-	useRawCalls = _ILCVMCanUseRawCalls(method);
+	useRawCalls = _ILCVMCanUseRawCalls(method, isInternal);
 
 	/* Compute the number of extra locals that we need */
 	CVMEntryPushLeadIn(&ctx, (ILCVMCoder *)0, signature, useRawCalls,
@@ -1154,7 +1171,7 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	CVMEntryPushNativeArgs(&ctx, coder, method, signature,
 						   useRawCalls, isInternal);
 	CVMEntryCallNative(&ctx, coder, signature, ctorfn,
-					   ctorcif, useRawCalls, 1);
+					   ctorcif, useRawCalls, isInternal, 1);
 	return 1;
 }
 

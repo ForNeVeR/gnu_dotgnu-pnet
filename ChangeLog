@@ -4,6 +4,9 @@
 	* engine/engine.h, engine/layout.c: use the image's "secure" bit
 	to determine if explicit class layout is permitted.
 
+	* engine/cvmc_setup.c, engine/pinvoke.c: pass value types by value
+	to PInvoke methods.
+
 2002-05-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_nodes.tc, codegen/cg_stmt.tc,

@@ -25,7 +25,7 @@
 #include "ffi.h"
 
 /* Imported from "cvmc_setup.c" */
-int _ILCVMCanUseRawCalls(ILMethod *method);
+int _ILCVMCanUseRawCalls(ILMethod *method, int isInternal);
 
 /*
  * The hard work is done using "libffi", which is a generic library
@@ -66,9 +66,147 @@ static ffi_type ffi_type_typedref =
 };
 
 /*
+ * Forward declarations.
+ */
+static ffi_type *TypeToFFI(ILType *type, int isInternal);
+static ffi_type *StructToFFI(ILClass *classInfo);
+
+#if !FFI_NO_STRUCTS
+
+/*
+ * Populate a list of "ffi" type descriptors with information
+ * about the non-static fields of a class.  Returns zero if
+ * one of the fields is a structure that cannot be marshalled.
+ */
+static int PopulateStructFFI(ILClass *classInfo, ffi_type **fieldTypes,
+							 unsigned *posn)
+{
+	ILClass *parent;
+	ILField *field;
+	ILType *type;
+	ffi_type *ffi;
+
+	/* Process the parent class first */
+	parent = ILClassGetParent(classInfo);
+	if(parent)
+	{
+		if(!PopulateStructFFI(parent, fieldTypes, posn))
+		{
+			return 0;
+		}
+	}
+
+	/* Process the non-static fields in this class */
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+			(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(!ILField_IsStatic(field))
+		{
+			type = ILTypeGetEnumType(ILField_Type(field));
+			if(ILType_IsValueType(type))
+			{
+				/* Process an embedded structure type */
+				ffi = StructToFFI(ILType_ToValueType(type));
+				if(!ffi)
+				{
+					return 0;
+				}
+			}
+			else
+			{
+				/* Process a non-structure type */
+				ffi = TypeToFFI(type, 0);
+			}
+			fieldTypes[(*posn)++] = ffi;
+		}
+	}
+
+	/* Done */
+	return 1;
+}
+
+#endif /* !FFI_NO_STRUCTS */
+
+/*
+ * Convert a "struct" class into a "ffi" type descriptor.
+ * Returns zero if the structure cannot be marshalled.
+ */
+static ffi_type *StructToFFI(ILClass *classInfo)
+{
+#if !FFI_NO_STRUCTS
+	ILClass *current;
+	ILField *field;
+	unsigned numFields;
+	ffi_type *descr;
+	ffi_type **fieldTypes;
+
+	/* We cannot pass "explicit" structures by value because we
+	   have no way to inform libffi about the layout rules */
+	if(ILClass_IsExplicitLayout(classInfo))
+	{
+#endif /* !FFI_NO_STRUCTS */
+		char *name = ILTypeToName(ILType_FromValueType(classInfo));
+		if(name)
+		{
+			fprintf(stderr, "Cannot pass structures of type `%s' by value to "
+							"PInvoke methods\n", name);
+			ILFree(name);
+		}
+		return 0;
+#if !FFI_NO_STRUCTS
+	}
+
+	/* Count the number of non-static fields in the class */
+	numFields = 0;
+	current = classInfo;
+	while(current != 0)
+	{
+		field = 0;
+		while((field = (ILField *)ILClassNextMemberByKind
+				(current, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+		{
+			if(!ILField_IsStatic(field))
+			{
+				++numFields;
+			}
+		}
+		current = ILClassGetParent(current);
+	}
+
+	/* Allocate space for the struct's type descriptor */
+	descr = (ffi_type *)ILMalloc(sizeof(ffi_type) +
+								 sizeof(ffi_type *) * (numFields + 1));
+	if(!descr)
+	{
+		return 0;
+	}
+	fieldTypes = (ffi_type **)(descr + 1);
+
+	/* Initialize the main descriptor's fields */
+	descr->size = 0;
+	descr->alignment = 0;
+	descr->type = FFI_TYPE_STRUCT;
+	descr->elements = fieldTypes;
+
+	/* Populate the "fieldTypes" table with the "ffi" type descriptors */
+	fieldTypes[numFields] = 0;
+	numFields = 0;
+	if(!PopulateStructFFI(classInfo, fieldTypes, &numFields))
+	{
+		ILFree(descr);
+		return 0;
+	}
+
+	/* Return the descriptor to the caller */
+	return descr;
+#endif /* !FFI_NO_STRUCTS */
+}
+
+/*
  * Convert an IL type into an "ffi" type descriptor.
  */
-static ffi_type *TypeToFFI(ILType *type)
+static ffi_type *TypeToFFI(ILType *type, int isInternal)
 {
 	if(ILType_IsPrimitive(type))
 	{
@@ -104,6 +242,12 @@ static ffi_type *TypeToFFI(ILType *type)
 		}
 		return &ffi_type_pointer;
 	}
+	else if(!isInternal && ILType_IsValueType(type))
+	{
+		/* Structure that is passed by value to a PInvoke method */
+		ffi_type *ffi = StructToFFI(ILClassResolve(ILType_ToValueType(type)));
+		return (ffi ? ffi : &ffi_type_pointer);
+	}
 	else
 	{
 		/* Everything else is passed as a pointer */
@@ -134,12 +278,13 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 		/* This is an "internalcall" or "runtime" method
 		   which needs an extra argument for the thread */
 		++numArgs;
-	}
-	if(ILType_IsValueType(returnType))
-	{
-		/* We need an extra argument to pass a pointer to
-		   the buffer to use to return the result */
-		++numArgs;
+		if(ILType_IsValueType(returnType))
+		{
+			/* We need an extra argument to pass a pointer to
+			   the buffer to use to return the result */
+			++numArgs;
+			returnType = ILType_Void;
+		}
 	}
 
 	/* Allocate space for the cif */
@@ -152,7 +297,7 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 	args = ((ffi_type **)(cif + 1));
 
 	/* Convert the return type */
-	rtype = TypeToFFI(returnType);
+	rtype = TypeToFFI(returnType, isInternal);
 
 	/* Convert the argument types */
 	arg = 0;
@@ -160,12 +305,11 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 	{
 		/* Pointer argument for the thread */
 		args[arg++] = &ffi_type_pointer;
-	}
-	if(ILType_IsValueType(returnType))
-	{
-		/* Pointer argument for value type returns */
-		args[arg++] = &ffi_type_pointer;
-		rtype = &ffi_type_void;
+		if(ILType_IsValueType(returnType))
+		{
+			/* Pointer argument for value type returns */
+			args[arg++] = &ffi_type_pointer;
+		}
 	}
 	if(ILType_HasThis(signature))
 	{
@@ -175,11 +319,13 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 	for(param = 1; param <= numParams; ++param)
 	{
 		args[arg++] = TypeToFFI(ILTypeGetEnumType
-									(ILTypeGetParam(signature, param)));
+									(ILTypeGetParam(signature, param)),
+							    isInternal);
 	}
 
 	/* Limit the number of arguments if we cannot use raw mode */
-	if(!_ILCVMCanUseRawCalls(method) && numArgs > (CVM_MAX_NATIVE_ARGS + 1))
+	if(!_ILCVMCanUseRawCalls(method, isInternal) &&
+	   numArgs > (CVM_MAX_NATIVE_ARGS + 1))
 	{
 		numArgs = CVM_MAX_NATIVE_ARGS + 1;
 	}
@@ -234,11 +380,13 @@ void *_ILMakeCifForConstructor(ILMethod *method, int isInternal)
 	for(param = 1; param <= numParams; ++param)
 	{
 		args[arg++] = TypeToFFI(ILTypeGetEnumType
-									(ILTypeGetParam(signature, param)));
+									(ILTypeGetParam(signature, param)),
+							    isInternal);
 	}
 
 	/* Limit the number of arguments if we cannot use raw mode */
-	if(!_ILCVMCanUseRawCalls(method) && numArgs > (CVM_MAX_NATIVE_ARGS + 1))
+	if(!_ILCVMCanUseRawCalls(method, isInternal) &&
+	   numArgs > (CVM_MAX_NATIVE_ARGS + 1))
 	{
 		numArgs = CVM_MAX_NATIVE_ARGS + 1;
 	}

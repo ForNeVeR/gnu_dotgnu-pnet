@@ -436,10 +436,15 @@ typedef ppc_inst_ptr	md_inst_ptr;
 /*
  * Truncate floating point values to 32-bit or 64-bit.
  */
-#define	md_reg_to_float_32(inst,reg)	\
-			do { ; } while (0)
-#define	md_reg_to_float_64(inst,reg)	\
-			do { ; } while (0)
+#define	md_reg_to_float_32(inst, freg)	\
+		do { \
+			int __freg32 = (freg) & (~MD_FREG_MASK);\
+			ppc_fpu_fsrp(inst, __freg32, __freg32);\
+		}while(0)
+#define	md_reg_to_float_64(inst,freg)	\
+			do { /* it is f64 by default for all operations \
+			        All f32 operations are rounded back after \
+					operation */; } while (0)
 
 /*
  * Swap the top two items on the floating-point stack.
@@ -450,19 +455,42 @@ typedef ppc_inst_ptr	md_inst_ptr;
  * Floating point arithmetic operations
  */
 #define	md_add_reg_reg_float(inst,reg1,reg2)	\
-			do { ; } while (0)
+		do { \
+			int __freg1 = (reg1) & (~MD_FREG_MASK);\
+			int __freg2 = (reg2) & (~MD_FREG_MASK);\
+			ppc_fpu_reg_dab(inst, 1 /* f64 */ , PPC_FADD, \
+								__freg1, __freg1, __freg2);\
+		} while(0)
 #define	md_sub_reg_reg_float(inst,reg1,reg2)	\
-			do { ; } while (0)
+		do { \
+			int __freg1 = (reg1) & (~MD_FREG_MASK);\
+			int __freg2 = (reg2) & (~MD_FREG_MASK);\
+			ppc_fpu_reg_dab(inst, 1 /* f64 */ , PPC_FSUB, \
+								__freg1, __freg1, __freg2);\
+		} while(0)
 #define	md_mul_reg_reg_float(inst,reg1,reg2)	\
-			do { ; } while (0)
+		do { \
+			int __freg1 = (reg1) & (~MD_FREG_MASK);\
+			int __freg2 = (reg2) & (~MD_FREG_MASK);\
+			ppc_fpu_reg_dac(inst, 1 /* f64 */ , PPC_FMUL, \
+								__freg1, __freg1, __freg2);\
+		} while(0)
 #define	md_div_reg_reg_float(inst,reg1,reg2)	\
-			do { ; } while (0)
+		do { \
+			int __freg1 = (reg1) & (~MD_FREG_MASK);\
+			int __freg2 = (reg2) & (~MD_FREG_MASK);\
+			ppc_fpu_reg_dab(inst, 1 /* f64 */ , PPC_FDIV, \
+								__freg1, __freg1, __freg2);\
+		} while(0)
 #define	md_rem_reg_reg_float(inst,reg1,reg2,used)	\
-			do { ; } while (0)
+		TODO_trap(inst)
 #define	md_neg_reg_float(inst,reg)	\
-			do { ; } while (0)
+		do { \
+			int __freg1 = (reg) & (~MD_FREG_MASK);\
+			ppc_fpu_reg_dab(inst, 1, PPC_FNEG, __freg1, 0, __freg1);\
+		}while(0)
 #define	md_cmp_reg_reg_float(inst,dreg,sreg1,sreg2,lessop)	\
-			do { ; } while (0)
+		TODO_trap(inst)
 
 /*
  * Jump back into the CVM interpreter to execute the instruction

@@ -1,4 +1,9 @@
 
+2004-12-28  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/md_ppc.h, engine/ppc_codegen.h, engine/unroll.c: Implement
+	FPU ops for add/sub/mul/div.
+
 2004-12-25  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/md_ppc.h, engine/ppc_codegen.h: Stub macros for FPU ops and

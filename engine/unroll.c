@@ -151,7 +151,7 @@ static int FlushRegisterStackNoUpdate(MDUnroll *unroll)
 #elif MD_FREG_0 != -1
 			/* Flush an FP register */
 			md_store_membase_float_native
-				(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
+				(unroll->out, reg, MD_REG_STACK, stackHeight);
 			stackHeight += CVM_WORDS_PER_NATIVE_FLOAT * sizeof(CVMWord);
 #endif
 		}

@@ -168,6 +168,20 @@ typedef enum
 } PPC_OP;
 
 /*
+ * FPU operations.
+ */
+typedef enum
+{
+	PPC_FADD	= 21,			/* Add (dab) */
+	PPC_FSUB	= 20,			/* Sub (dab) */
+	PPC_FMUL	= 25,			/* Mul (dac) */
+	PPC_FDIV	= 18,			/* div (dab) */
+	PPC_FCMPU	= 0, 			/* fcmpu (ab) */
+	PPC_FCMPO	= 32,			/* fcmpo (ab) */
+	PPC_FNEG	= 40,			/* fneg (db) */
+} PPC_FLOP;
+
+/*
  * Type for instruction pointers (word-based, not byte-based).
  */
 typedef unsigned int *ppc_inst_ptr;
@@ -428,6 +442,33 @@ typedef unsigned int *ppc_inst_ptr;
 					} \
 				} \
 			} while (0)
+
+
+#define ppc_fpu_reg_dab(inst, f64, opc, dreg, freg1, freg2) \
+	do {\
+		*(inst)++ = (((f64 ? 63 : 59) << 26) \
+						| (((unsigned int)(dreg)) << 21) \
+						| (((unsigned int)(freg1)) << 16) \
+						| (((unsigned int)(freg2)) << 11) \
+						| (((unsigned int)(opc)) << 1));\
+	}while(0)
+
+#define ppc_fpu_reg_dac(inst, f64, opc, dreg, freg1, freg2) \
+	do {\
+		*(inst)++ = (((f64 ? 63 : 59) << 26) \
+						| (((unsigned int)(dreg)) << 21) \
+						| (((unsigned int)(freg1)) << 16) \
+						| (((unsigned int)(freg2)) << 6) \
+						| (((unsigned int)(opc)) << 1));\
+	}while(0)
+
+#define ppc_fpu_fsrp(inst, dreg, freg1) \
+	do {\
+		*(inst)++ = ((63 << 26) \
+						| (((unsigned int)(dreg)) << 21) \
+						| (((unsigned int)(freg1)) << 11) \
+						| (((unsigned int)(12)) << 1));\
+	}while(0)
 
 /*
  * Jump to a particular address.

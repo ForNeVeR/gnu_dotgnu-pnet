@@ -547,6 +547,13 @@ internal sealed class Xlib
 	[DllImport("XsharpSupport")]
 	extern public static void XSharpFreeResources(IntPtr value);
 
+	[DllImport("XsharpSupport")]
+	extern public static @X_int@ XSharpGetRegionSize(IntPtr region);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpGetRegionRect
+			(IntPtr region, @X_int@ index, out XRectangle rect);
+
 	// Helper functions from "libImlib.so" for loading images.
 
 	[DllImport("Imlib")]

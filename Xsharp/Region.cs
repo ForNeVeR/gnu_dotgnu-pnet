@@ -1283,6 +1283,43 @@ public sealed class Region : IDisposable, ICloneable
 				}
 			}
 
+	/// <summary>
+	/// <para>Get the list of rectangles that defines this region.</para>
+	/// </summary>
+	///
+	/// <returns>
+	/// <para>An array of <see cref="T:Xsharp.Rectangle"/> instances
+	/// corresponding to the rectangles that make up the region.
+	/// Returns a zero-length array if the region is empty.</para>
+	/// </returns>
+	public Rectangle[] GetRectangles()
+			{
+				lock(typeof(Region))
+				{
+					if(region == IntPtr.Zero)
+					{
+						return new Rectangle [0];
+					}
+					else
+					{
+						Rectangle[] rects;
+						XRectangle xrect;
+						int size, index;
+						size = Xlib.XSharpGetRegionSize(region);
+						rects = new Rectangle [size];
+						for(index = 0; index < size; ++index)
+						{
+							Xlib.XSharpGetRegionRect(region, index, out xrect);
+							rects[index].x = xrect.x;
+							rects[index].y = xrect.y;
+							rects[index].width = xrect.width;
+							rects[index].height = xrect.height;
+						}
+						return rects;
+					}
+				}
+			}
+
 	// Get the Xlib region structure, and make sure it is non-NULL.
 	internal IntPtr GetRegion()
 			{

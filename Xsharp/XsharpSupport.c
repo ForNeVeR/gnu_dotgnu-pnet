@@ -909,6 +909,44 @@ void XSharpDestroyImage(XImage *image)
 	}
 }
 
+/*
+ * Internal structure of X11 region objects.  We have to define
+ * this here because there is no public header that contains it.
+ */
+typedef struct
+{
+    short x1, x2, y1, y2;
+
+} BOX;
+typedef struct
+{
+    long size;
+    long numRects;
+    BOX *rects;
+    BOX extents;
+
+} REGION;
+
+/*
+ * Get the number of rectangles contained in a region structure.
+ */
+int XSharpGetRegionSize(Region region)
+{
+	return (int)(((REGION *)region)->numRects);
+}
+
+/*
+ * Get the bounding area of a particular rectangle within a region structure.
+ */
+void XSharpGetRegionRect(Region region, int index, XRectangle *rect)
+{
+	BOX *box = &(((REGION *)region)->rects[index]);
+	rect->x = box->x1;
+	rect->y = box->y1;
+	rect->width = box->x2 - box->x1;
+	rect->height = box->y2 - box->y1;
+}
+
 #else /* X_DISPLAY_MISSING || !HAVE_SELECT */
 
 int XNextEventWithTimeout(void *dpy, void *event, int timeout)
@@ -971,6 +1009,17 @@ void *XSharpCreateImageFromDIB(void *screen, int width, int height,
 }
 
 void XSharpDestroyImage(void *image)
+{
+	/* Nothing to do here */
+}
+
+int XSharpGetRegionSize(void *region)
+{
+	/* Nothing to do here */
+	return 0;
+}
+
+void XSharpGetRegionRect(void *region, int index, void *rect)
 {
 	/* Nothing to do here */
 }

@@ -5,6 +5,10 @@
 	"ExposeRegion" property to the "Xsharp.Graphics" class so that
 	higher layers can query the expose region during an "OnPaint" event.
 
+	* Xsharp/Region.cs, Xsharp/Xlib.cs.in, Xsharp/XsharpSupport.c:
+	add a "GetRectangles()" method to "Xsharp.Region" to allow callers
+	to query the list of rectangles that make up the region.
+
 2003-07-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Reflection/Emit/ILGenerator.cs: Fix minor array size

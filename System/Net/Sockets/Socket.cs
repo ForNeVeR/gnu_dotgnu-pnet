@@ -28,19 +28,20 @@ using System.Net;
 public class Socket : IDisposable
 {
 	//Internal variables
+	private int disposed = 1;	//If this instance gets disposed this is set to 0
 	private AddressFamily myaddressfamily;
 	private ProtocolType myprotocoltype; 
 	private SocketType mysockettype;
 	private EndPoint mylocalendpoint;
 	private EndPoint myremotendpoint;
-	private bool iamblocking;
+	private bool connected = false;
+	private bool blocking = false; 
 	
-	//SocketInfo is platform dependent and it's members are declared private
-	//so that they are visible only to intercall functions.
-	//SocketInfo is stored here so that it may give socket information about 
-	//this socket to the socket intercall functions.
-	public SocketInfo mysocketinfo; 
-		
+	//This represents the number of pending asyncronous calls
+	private int pending;
+	
+	
+	[TODO]
 	public Socket(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
 			{
 				//A couple of convenience variables for the enums
@@ -62,16 +63,46 @@ public class Socket : IDisposable
 				myprotocoltype = protocolType;
 				mysockettype = socketType;	
 				
-				//Create the socket and check for errors
-				if (SocketMethods.CreateSocket(mysocketinfo) < 0)
-					throw new SocketException();	
-					
+				//Now create the socket
+				//TODO: call the intercall
 			}
 			
 	[TODO]	
 	public Socket Accept()
-			{
-
+			{	
+				if (disposed == 0)			
+					throw new ObjectDisposedException(_("Exception_Disposed"));
+				if (blocking == false)
+					return null;
+				if (pending != 0) //This function blocks
+					throw new InvalidOperationException(_("Invalid_AsyncAndBlocking"));
+				
+				blocking = true;
+				
+				try
+				{
+					//Now create the socket
+					Socket newsock = 0; //TODO: exchange the 0 for the intercall
+				}
+				catch(Exception e)
+				{
+					throw new ArgumentException(_("Arg_SocketCreating"));
+				}
+	
+				try
+				{
+					newsock.myaddressfamily = this.myaddressaamily;
+					newsock.blocking = this.blocking;
+					newsock.mylocalendpoint = this.mylocalendpoint;
+					newsock.myprotocoltype = this.myprotocoltype;
+					newsock.mysockettype = this.mysockettype;
+					newsock.connected = true;
+					//TODO: Set the remote endpoint of the new socket	
+				}
+				catch(Exception e)
+				{
+					throw new SocketException();
+				}
 			}
 			
 	[TODO]
@@ -113,7 +144,17 @@ public class Socket : IDisposable
 	[TODO]
 	public void Bind(EndPoint localEP)
 			{
-			
+				if (disposed == 0)
+					throw new ObjectDisposedException(_("Exception_Disposed"));
+				
+				if (localEP == 0)
+					throw new ArgumentNullException("localEP", _("Arg_NotNull"));					
+				
+				//TODO: check for security problems and eventually throw
+				//SecurityException
+
+				//TODO: Bind the socket and eventually throw SocketException
+								
 			}
 	
 	[TODO]
@@ -126,7 +167,20 @@ public class Socket : IDisposable
 	[TODO]
 	public void Connect(EndPoint remoteEP)
 			{
-			
+				if (disposed == 0)
+					throw new ObjectDisposedException(_("Exception_Disposed"));
+				
+				if (localEP == 0)
+					throw new ArgumentNullException("remoteEP", _("Arg_NotNull"));					
+				
+				//Connect is blocking I believe
+				if (pending != 0) //This function blocks
+					throw new InvalidOperationException(_("Invalid_AsyncAndBlocking"));				
+				
+				blocking = true;
+				
+				//TODO: Call the intercall and check for security and socket errors				
+							
 			}
 	
 	[TODO]
@@ -350,7 +404,13 @@ public class Socket : IDisposable
 	public bool Blocking { get; set; }
 
 	[TODO]
-	public bool Connected { get; }
+	public bool Connected 
+			{ 
+				get
+				{
+					return connected;
+				}
+			}
 	
 	[TODO]
 	public IntPtr Handle { get; }

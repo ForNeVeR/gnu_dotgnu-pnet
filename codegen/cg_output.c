@@ -294,6 +294,18 @@ void ILGenCallVirtByMethod(ILGenInfo *info, ILMethod *method)
 	}
 }
 
+void ILGenCallMethod(ILGenInfo *info, ILMethod *method)
+{
+	if(ILMethod_IsVirtual(method))
+	{
+		ILGenCallVirtByMethod(info, method);
+	}
+	else
+	{
+		ILGenCallByMethod(info, method);
+	}
+}
+
 void ILGenNewObj(ILGenInfo *info, const char *className,
 				 const char *signature)
 {

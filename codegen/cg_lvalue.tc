@@ -217,7 +217,7 @@ ILNode_GenValue(ILNode_StaticProperty)
 {
 	ILMethod *getter = ILProperty_Getter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	ILGenCallByMethod(info, getter);
+	ILGenCallMethod(info, getter);
 	ILGenAdjust(info, 1);
 	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
@@ -231,7 +231,7 @@ ILNode_GenValue(ILNode_MemberProperty)
 	ILType *signature = ILProperty_Signature(node->property);
 	ILGenCast(info, ILNode_GenValue(node->expr, info),
 			  ILMachineType_ObjectRef);
-	ILGenCallByMethod(info, getter);
+	ILGenCallMethod(info, getter);
 	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
@@ -451,7 +451,7 @@ ILNode_GetAndPrepare(ILNode_StaticProperty)
 {
 	ILMethod *getter = ILProperty_Getter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	ILGenCallByMethod(info, getter);
+	ILGenCallMethod(info, getter);
 	ILGenAdjust(info, 1);
 	if(leave)
 	{
@@ -478,7 +478,7 @@ ILNode_GetAndPrepare(ILNode_MemberProperty)
 		/* Duplicate it and get the current value */
 		ILGenSimple(info, IL_OP_DUP);
 		ILGenAdjust(info, 1);
-		ILGenCallByMethod(info, getter);
+		ILGenCallMethod(info, getter);
 
 		/* Store the current value into a temporary local */
 		node->tempVar = ILGenTempTypedVar(info, propType);
@@ -497,7 +497,7 @@ ILNode_GetAndPrepare(ILNode_MemberProperty)
 		ILGenAdjust(info, 1);
 
 		/* Load the current value from the property */
-		ILGenCallByMethod(info, getter);
+		ILGenCallMethod(info, getter);
 
 		/* We don't need to reload a previous value in "Store" */
 		node->tempVar = IL_MAX_UINT32;
@@ -636,7 +636,7 @@ ILNode_Store(ILNode_StaticProperty)
 		ILGenSimple(info, IL_OP_DUP);
 		ILGenAdjust(info, 1);
 	}
-	ILGenCallByMethod(info, setter);
+	ILGenCallMethod(info, setter);
 	ILGenAdjust(info, -1);
 }
 
@@ -657,7 +657,7 @@ ILNode_Store(ILNode_MemberProperty)
 		ILGenExtend(info, 1);
 
 		/* Store the value into the property */
-		ILGenCallByMethod(info, setter);
+		ILGenCallMethod(info, setter);
 		ILGenAdjust(info, -2);
 
 		/* Do we need to restore a previous value to the stack top? */
@@ -676,7 +676,7 @@ ILNode_Store(ILNode_MemberProperty)
 	else
 	{
 		/* Store the value into the property */
-		ILGenCallByMethod(info, setter);
+		ILGenCallMethod(info, setter);
 		ILGenAdjust(info, -2);
 
 		/* Do we need to restore a previous value to the stack top? */

@@ -5,6 +5,12 @@
 	cscc/cs_decls.tc, cscc/cs_gather.c, cscc/cs_grammar.y: modify
 	the way events are created and managed in the compiler.
 
+	* cscc/cs_modifiers.c: disallow the use of "virtual" and
+	"abstract" on the same declaration.
+
+	* codegen/cg_lvalue.tc, codegen/cg_output.h, codegen/cg_output.c:
+	bug fix - virtual properties were being called incorrectly.
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_library.c,

@@ -1,4 +1,9 @@
 
+2002-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* tools/csccflags.sh, tools/make_test.sh.in, tools/run_test.sh.in:
+	make some adjustments to the test scripts, to support C tests.
+
 2002-08-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/binary4.il: change output after bug fixes to

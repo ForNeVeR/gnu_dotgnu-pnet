@@ -55,6 +55,11 @@ if test -x "$CSCC_DIR/cscc-java" ; then
 	FLAGS="$FLAGS -fplugin-java-path=\"$CSCC_DIR/cscc-java\""
 fi
 
+# Locate "cscc-c-s" and add its path to the command-line options.
+if test -x "$CSCC_DIR/cscc-c-s" ; then
+	FLAGS="$FLAGS -fplugin-c-path=\"$CSCC_DIR/cscc-c-s\""
+fi
+
 # Output the flags to stdout and exit.
 echo "$FLAGS"
 exit 0

@@ -46,9 +46,12 @@ else
 fi
 
 # Determine the base name to use for output files.
+CTEST="no"
 case "$FILE" in
 	*.cs)	BASE=`dirname "$FILE"`/`basename "$FILE" .cs` ;;
 	*.java)	BASE=`dirname "$FILE"`/`basename "$FILE" .java` ;;
+	*.c)	BASE=`dirname "$FILE"`/`basename "$FILE" .java`
+			CTEST="yes" ;;
 	*)		echo "$1: Do not know how to test this type of file"
 			exit 1 ;;
 esac
@@ -65,14 +68,16 @@ else
 fi
 
 # Run the compiler again to determine the JVM output files.
-if ${CSCC_INVOKE} ${CSCC_FLAGS} -mjvm -o "${BASE}.jl" -S "${FILE}" >"${BASE}.jerr" 2>&1 ; then
-	if test ! -s "${BASE}.jerr" ; then
-		# Test should only produce assembly code.
-		rm -f "${BASE}.jerr"
+if test "$CTEST" = "no" ; then
+	if ${CSCC_INVOKE} ${CSCC_FLAGS} -mjvm -o "${BASE}.jl" -S "${FILE}" >"${BASE}.jerr" 2>&1 ; then
+		if test ! -s "${BASE}.jerr" ; then
+			# Test should only produce assembly code.
+			rm -f "${BASE}.jerr"
+		fi
+	else
+		# Test should only produce errors.
+		rm -f "${BASE}.jl"
 	fi
-else
-	# Test should only produce errors.
-	rm -f "${BASE}.jl"
 fi
 
 exit 0

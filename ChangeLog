@@ -15,6 +15,9 @@
 	* cscc/c/c_types.c: clone bit-field declarations when a struct
 	type is cloned.
 
+	* cscc/c/c_declspec.h, cscc/c/c_grammar.y: inhibit the "useless
+	keyword" warning for anonymous enumerations.
+
 2003-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c, cscc/csharp/cs_internal.h,

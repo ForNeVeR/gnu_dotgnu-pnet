@@ -46,6 +46,7 @@ extern	"C" {
 #define	C_SPEC_LONG_AND_SHORT	(1<<15)
 #define	C_SPEC_SIGN_AND_UNSIGN	(1<<16)
 #define	C_SPEC_INVALID_COMBO	(1<<17)
+#define	C_SPEC_ENUM				(1<<18)
 
 /*
  * Useful specifier combinations.
@@ -59,7 +60,8 @@ extern	"C" {
 			 C_SPEC_INLINE)
 #define	C_SPEC_TYPE_COMMON		\
 			(C_SPEC_CONST | \
-			 C_SPEC_VOLATILE)
+			 C_SPEC_VOLATILE | \
+			 C_SPEC_ENUM)
 #define	C_SPEC_TYPE_CHANGE		\
 			(C_SPEC_SHORT | \
 			 C_SPEC_LONG | \

@@ -1581,6 +1581,7 @@ Declaration
 				/* Check for useless declarations */
 				if((!CTypeIsStruct(spec.baseType) &&
 				    !CTypeIsUnion(spec.baseType) &&
+					(spec.specifiers & C_SPEC_ENUM) == 0 &&
 					!CTypeIsEnum(spec.baseType)) ||
 				    (spec.specifiers & C_SPEC_STORAGE) != 0)
 				{
@@ -1721,7 +1722,8 @@ TypeSpecifier
 	| K_WCHAR			{ CDeclSpecSetType($$, ILType_Char); }
 	| K_VA_LIST			{ CDeclSpecSetType($$, CTypeCreateVaList(&CCCodeGen)); }
 	| StructOrUnionSpecifier		{ CDeclSpecSetType($$, $1); }
-	| EnumSpecifier					{ CDeclSpecSetType($$, $1); }
+	| EnumSpecifier					{ CDeclSpecSetType($$, $1);
+									  $$.specifiers = C_SPEC_ENUM; }
 	| K_TYPEOF '(' Expression ')'	{
 				/* Perform inline semantic analysis on the expression */
 				CSemValue value = CSemInlineAnalysis

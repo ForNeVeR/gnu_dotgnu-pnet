@@ -26,18 +26,123 @@ namespace System
 
 public sealed class LocalDataStoreSlot
 {
+	// Internal state.
+	private LocalDataStoreSlot nextNamed;
+	private String name;
+	private int slotNum;
+	private bool free;
+	private bool isNamed;
+	private static int nextSlotNum;
+	private static LocalDataStoreSlot namedSlots;
+	[ThreadStatic] private static Object[] data;
+
 	// Constructor.
-	[TODO]
-	internal LocalDataStoreSlot()
+	internal LocalDataStoreSlot(bool isNamed, String name)
 			{
-				// TODO
+				this.isNamed = isNamed;
+				this.name = name;
+				lock(typeof(LocalDataStoreSlot))
+				{
+					slotNum = nextSlotNum++;
+				}
 			}
 
 	// Destructor.
-	[TODO]
 	~LocalDataStoreSlot()
 			{
-				// TODO
+				// Not used in this implementation.
+			}
+
+	// Get a data store slot with a specific name.
+	internal static LocalDataStoreSlot GetNamed(String name)
+			{
+				lock(typeof(LocalDataStoreSlot))
+				{
+					LocalDataStoreSlot slot = namedSlots;
+					while(slot != null)
+					{
+						if(slot.isNamed && slot.name == name)
+						{
+							return slot;
+						}
+						slot = slot.nextNamed;
+					}
+					slot = new LocalDataStoreSlot(true, name);
+					slot.nextNamed = namedSlots;
+					namedSlots = slot;
+					return slot;
+				}
+			}
+
+	// Free a data store slot with a specific name.
+	internal static void FreeNamed(String name)
+			{
+				lock(typeof(LocalDataStoreSlot))
+				{
+					LocalDataStoreSlot slot = namedSlots;
+					LocalDataStoreSlot prev = null;
+					while(slot != null)
+					{
+						if(slot.isNamed && slot.name == name)
+						{
+							if(prev != null)
+							{
+								prev.nextNamed = slot.nextNamed;
+							}
+							else
+							{
+								namedSlots = slot.nextNamed;
+							}
+							slot.free = true;
+							return;
+						}
+						prev = slot;
+						slot = slot.nextNamed;
+					}
+				}
+			}
+
+	// Get or set the data in this slot for the current thread.
+	internal Object Data
+			{
+				get
+				{
+					if(free)
+					{
+						return null;
+					}
+					Object[] tempData = data;
+					if(tempData != null && slotNum < tempData.Length)
+					{
+						return tempData[slotNum];
+					}
+					else
+					{
+						return null;
+					}
+				}
+				set
+				{
+					if(free)
+					{
+						return;
+					}
+					Object[] tempData = data;
+					if(tempData != null && slotNum < tempData.Length)
+					{
+						tempData[slotNum] = value;
+					}
+					else
+					{
+						Object[] tempData = new Object [(slotNum + 8) & ~7];
+						if(data != null)
+						{
+							Array.Copy(data, 0, tempData, 0, data.Length);
+						}
+						data = tempData;
+						tempData[slotNum] = value;
+					}
+				}
 			}
 
 }; // class LocalDataStoreSlot

@@ -353,26 +353,21 @@ public sealed class Thread
 #if !ECMA_COMPAT
 
 	// Allocate a local data store slot.
-	[TODO]
 	public static LocalDataStoreSlot AllocateDataSlot()
 			{
-				// TODO
-				return null;
+				return new LocalDataStoreSlot(false, null);
 			}
 
 	// Allocate a named data store slot.
-	[TODO]
 	public static LocalDataStoreSlot AllocateNamedDataSlot(String name)
 			{
-				// TODO
-				return null;
+				return LocalDataStoreSlot.GetNamed(name);
 			}
 
 	// Free a named data store slot.
-	[TODO]
 	public static void FreeNamedDataSlot(String name)
 			{
-				// TODO
+				LocalDataStoreSlot.FreeNamed(name);
 			}
 
 	// Get the compressed stack for a thread.
@@ -382,11 +377,16 @@ public sealed class Thread
 			}
 
 	// Get the data in a particular data store slot.
-	[TODO]
 	public static Object GetData(LocalDataStoreSlot slot)
 			{
-				// TODO
-				return null;
+				if(slot == null)
+				{
+					return null;
+				}
+				else
+				{
+					return slot.Data;
+				}
 			}
 
 	// Get the current domain identifier.
@@ -398,11 +398,9 @@ public sealed class Thread
 			}
 
 	// Get a previously allocated named data store slot.
-	[TODO]
 	public static LocalDataStoreSlot GetNamedDataSlot(String name)
 			{
-				// TODO
-				return null;
+				return LocalDataStoreSlot.GetNamed(name);
 			}
 
 	// Interrupt this thread.
@@ -426,10 +424,12 @@ public sealed class Thread
 			}
 
 	// Set the data in a particular local data store slot.
-	[TODO]
 	public static void SetData(LocalDataStoreSlot slot, Object data)
 			{
-				// TODO
+				if(slot != null)
+				{
+					slot.Data = data;
+				}
 			}
 
 	// Perform a spin wait for a given number of iterations.

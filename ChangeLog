@@ -21,6 +21,9 @@
 	* coremul/corwin32.h: comment out inclusion of <wchar.h> because
 	not all platforms have it.
 
+	* Makefile.am: remove "coremul" from the build for now, because
+	there are some problems under Darwin.
+
 2003-02-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/pecoff_writer.c: fall back to the original back-patch

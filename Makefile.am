@@ -1,6 +1,6 @@
 SUBDIRS = . include support image dumpasm engine ilasm ildasm \
 		  ilalink ilsize ilnative ilheader ilfind ildiff ildd codegen cscc \
-		  resgen ildb csdoc csant clrwrap coremul samples doc tests
+		  resgen ildb csdoc csant clrwrap samples doc tests
 
 ## We build libffi and libgc carefully, because we need to be
 ## able to turn them off in "configure".

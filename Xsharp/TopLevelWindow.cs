@@ -37,6 +37,7 @@ public class TopLevelWindow : InputOutputWidget
 	// Internal state.
 	private String name;
 	private bool iconic;
+	private bool maximized;
 	private bool hasPrimaryFocus;
 	private bool reparented;
 	private bool firstMapDone;
@@ -124,6 +125,7 @@ public class TopLevelWindow : InputOutputWidget
 				// Initialize this object's state.
 				this.name = ((name != null) ? name : String.Empty);
 				this.iconic = false;
+				this.maximized = false;
 				this.hasPrimaryFocus = false;
 				this.reparented = false;
 				this.keyBuffer = IntPtr.Zero;
@@ -215,7 +217,8 @@ public class TopLevelWindow : InputOutputWidget
 					SelectInput(EventMask.KeyPressMask |
 								EventMask.KeyReleaseMask |
 								EventMask.FocusChangeMask |
-								EventMask.StructureNotifyMask);
+								EventMask.StructureNotifyMask |
+								EventMask.PropertyChangeMask);
 				}
 				finally
 				{
@@ -348,6 +351,58 @@ public class TopLevelWindow : InputOutputWidget
 						(display, handle, ref textprop,
 						 Xlib.XInternAtom(display, property, Xlib.Bool.False));
 					textprop.Free();
+				}
+			}
+
+	// Set the "_NET_WM_STATE" property, to include extended state requests.
+	private void SetNetState(IntPtr display, Xlib.Window handle)
+			{
+				Xlib.Xlong[] atoms = new Xlib.Xlong [8];
+				int numAtoms = 0;
+
+				// Determine if the window should be hidden from the taskbar.
+				if((otherHints & OtherHints.HideFromTaskBar) != 0)
+				{
+					atoms[numAtoms++] =
+						(Xlib.Xlong)Xlib.XInternAtom
+							(display, "_NET_WM_STATE_SKIP_TASKBAR",
+							 Xlib.Bool.False);
+				}
+
+				// Determine if the window should be made top-most on-screen.
+				if((otherHints & OtherHints.TopMost) != 0)
+				{
+					atoms[numAtoms++] =
+						(Xlib.Xlong)Xlib.XInternAtom
+							(display, "_NET_WM_STATE_ABOVE",
+						     Xlib.Bool.False);
+				}
+
+				// Determine if the window should be maximized by default.
+				if(maximized)
+				{
+					atoms[numAtoms++] =
+						(Xlib.Xlong)Xlib.XInternAtom
+							(display, "_NET_WM_STATE_MAXIMIZED_VERT",
+						     Xlib.Bool.False);
+					atoms[numAtoms++] =
+						(Xlib.Xlong)Xlib.XInternAtom
+							(display, "_NET_WM_STATE_MAXIMIZED_HORZ",
+						     Xlib.Bool.False);
+				}
+
+				// Update the "_NET_WM_STATE" property as appropriate.
+				Xlib.Atom type = Xlib.XInternAtom
+					(display, "ATOM", Xlib.Bool.False);
+				if(numAtoms > 0)
+				{
+					Xlib.XChangeProperty
+						(display, handle, dpy.wmNetState, type,
+						 32, 0 /* PropModeReplace */, atoms, numAtoms);
+				}
+				else
+				{
+					Xlib.XDeleteProperty(display, handle, dpy.wmNetState);
 				}
 			}
 
@@ -492,6 +547,38 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	/// <summary>
+	/// <para>Determine if this widget is currently maximized.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>Returns <see langword="true"/> if the widget is maximized;
+	/// <see langword="false"/> otherwise.</para>
+	/// </value>
+	///
+	/// <remarks>
+	/// <para>Setting this property is equivalent to calling either
+	/// <c>Maximize</c> or <c>Restore</c>.</para>
+	/// </remarks>
+	public bool IsMaximized
+			{
+				get
+				{
+					return maximized;
+				}
+				set
+				{
+					if(value)
+					{
+						Maximize();
+					}
+					else
+					{
+						Restore();
+					}
+				}
+			}
+
+	/// <summary>
 	/// <para>Map this widget to the screen.</para>
 	/// </summary>
 	public override void Map()
@@ -610,6 +697,108 @@ public class TopLevelWindow : InputOutputWidget
 							mapped = true;
 							firstMapDone = true;
 							OnMapStateChanged();
+						}
+					}
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	// Send a maximize or restore message to the window manager.
+	private void SendMaximizeMessage
+				(IntPtr display, Xlib.Window handle, bool maximize)
+			{
+				XEvent xevent;
+				xevent.xany.type = (int)(EventType.ClientMessage);
+				xevent.xany.window = handle;
+				xevent.xclient.message_type = Xlib.XInternAtom
+					(display, "_NET_WM_STATE", Xlib.Bool.False);
+				xevent.xclient.format = 32;
+				if(maximize)
+				{
+					xevent.xclient.setl(0, 1 /* _NET_WM_STATE_ADD */ );
+				}
+				else
+				{
+					xevent.xclient.setl(0, 0 /* _NET_WM_STATE_REMOVE */ );
+				}
+				Xlib.Atom atom1 = Xlib.XInternAtom
+					(display, "_NET_WM_STATE_MAXIMIZED_VERT", Xlib.Bool.False);
+				Xlib.Atom atom2 = Xlib.XInternAtom
+					(display, "_NET_WM_STATE_MAXIMIZED_HORZ", Xlib.Bool.False);
+				xevent.xclient.setl(1, (int)atom1);
+				xevent.xclient.setl(2, (int)atom2);
+				Xlib.XSendEvent
+					(display, screen.RootWindow.GetWidgetHandle(),
+					 Xlib.Bool.False, (int)(EventMask.NoEventMask),
+					 ref xevent);
+			}
+
+	/// <summary>
+	/// <para>Maximize this window.</para>
+	/// </summary>
+	public void Maximize()
+			{
+				try
+				{
+					IntPtr display = dpy.Lock();
+					if(!maximized)
+					{
+						if(firstMapDone)
+						{
+							// Send a "maximize" message to the window manager,
+							// which will take care of maximizing the window.
+							// Not all window managers support this message.
+							SendMaximizeMessage
+								(display, GetWidgetHandle(), true);
+							maximized = true;
+							OnMaximizedStateChanged(true);
+						}
+						else
+						{
+							// We haven't been mapped for the first time yet,
+							// so merely update the _NET_WM_STATE hint.
+							maximized = true;
+							SetNetState(display, GetWidgetHandle());
+							OnMaximizedStateChanged(true);
+						}
+					}
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Restore this window from the maximized state.</para>
+	/// </summary>
+	public void Restore()
+			{
+				try
+				{
+					IntPtr display = dpy.Lock();
+					if(maximized)
+					{
+						if(firstMapDone)
+						{
+							// Send a "restore" message to the window manager,
+							// which will take care of restoring the window.
+							// Not all window managers support this message.
+							SendMaximizeMessage
+								(display, GetWidgetHandle(), false);
+							maximized = false;
+							OnMaximizedStateChanged(false);
+						}
+						else
+						{
+							// We haven't been mapped for the first time yet,
+							// so merely update the _NET_WM_STATE hint.
+							maximized = false;
+							SetNetState(display, GetWidgetHandle());
+							OnMaximizedStateChanged(false);
 						}
 					}
 				}
@@ -909,51 +1098,7 @@ public class TopLevelWindow : InputOutputWidget
 							// before it is first mapped at present.
 							if(!firstMapDone)
 							{
-								data[0] = Xlib.Xlong.Zero;
-								data[1] = Xlib.Xlong.Zero;
-								if((value & OtherHints.HideFromTaskBar) != 0)
-								{
-									data[0] = (Xlib.Xlong)Xlib.XInternAtom
-										(display,
-										 "_NET_WM_STATE_SKIP_TASKBAR",
-										 Xlib.Bool.False);
-								}
-								if((value & OtherHints.TopMost) != 0)
-								{
-									type = Xlib.XInternAtom
-										(display,
-										 "_NET_WM_STATE_ABOVE",
-										 Xlib.Bool.False);
-									if(data[0] == Xlib.Xlong.Zero)
-									{
-										data[0] = (Xlib.Xlong)type;
-									}
-									else
-									{
-										data[1] = (Xlib.Xlong)type;
-									}
-								}
-								wmType = Xlib.XInternAtom
-									(display, "_NET_WM_STATE",
-									 Xlib.Bool.False);
-								if(data[0] != Xlib.Xlong.Zero &&
-								   data[1] != Xlib.Xlong.Zero)
-								{
-									Xlib.XChangeProperty
-										(display, handle, wmType, wmAtom,
-										 32, 0 /* PropModeReplace */, data, 2);
-								}
-								else if(data[0] != Xlib.Xlong.Zero)
-								{
-									Xlib.XChangeProperty
-										(display, handle, wmType, wmAtom,
-										 32, 0 /* PropModeReplace */, data, 1);
-								}
-								else
-								{
-									Xlib.XDeleteProperty
-										(display, handle, wmType);
-								}
+								SetNetState(display, handle);
 							}
 						}
 						finally
@@ -1223,6 +1368,15 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	/// <summary>
+	/// <para>Method that is called when the window's maximized state
+	/// changes.</para>
+	/// </summary>
+	protected virtual void OnMaximizedStateChanged(bool maximized)
+			{
+				// Nothing to do in this base class.
+			}
+
+	/// <summary>
 	/// <para>Method that is called when the window's close box is
 	/// clicked by the user.</para>
 	/// </summary>
@@ -1369,12 +1523,129 @@ public class TopLevelWindow : InputOutputWidget
 				OnResize(width, height);
 			}
 
+	// Get the contents of a 32-bit window property.
+	private Xlib.Xlong[] GetWindowProperty(Xlib.Atom name)
+			{
+				try
+				{
+					// Lock down the display and get the window handle.
+					IntPtr display = dpy.Lock();
+					Xlib.Window handle = GetWidgetHandle();
+
+					// Fetch the value of the property.
+					Xlib.Atom actualTypeReturn;
+					Xlib.Xint actualFormatReturn;
+					Xlib.Xulong nitemsReturn;
+					Xlib.Xulong bytesAfterReturn;
+					IntPtr propReturn;
+					nitemsReturn = Xlib.Xulong.Zero;
+					if(Xlib.XGetWindowProperty
+							(display, handle, name, 0, 256,
+							 Xlib.Bool.False, Xlib.Atom.Zero,
+							 out actualTypeReturn, out actualFormatReturn,
+							 out nitemsReturn, out bytesAfterReturn,
+							 out propReturn) == Xlib.Status.Zero)
+					{
+						if(((uint)bytesAfterReturn) > 0)
+						{
+							// We didn't get everything, so try again.
+							if(propReturn != IntPtr.Zero)
+							{
+								Xlib.XFree(propReturn);
+								propReturn = IntPtr.Zero;
+							}
+							int length = 256 + (((int)bytesAfterReturn) / 4);
+							nitemsReturn = Xlib.Xulong.Zero;
+							if(Xlib.XGetWindowProperty
+									(display, handle, name, 0, length,
+									 Xlib.Bool.False, Xlib.Atom.Zero,
+									 out actualTypeReturn,
+									 out actualFormatReturn,
+									 out nitemsReturn, out bytesAfterReturn,
+									 out propReturn) != Xlib.Status.Zero)
+							{
+								propReturn = IntPtr.Zero;
+								nitemsReturn = Xlib.Xulong.Zero;
+							}
+						}
+					}
+					else
+					{
+						propReturn = IntPtr.Zero;
+						nitemsReturn = Xlib.Xulong.Zero;
+					}
+
+					// Convert the property data into an array of longs.
+					Xlib.Xlong[] data = new Xlib.Xlong [(int)nitemsReturn];
+					int size, posn;
+					unsafe
+					{
+						size = sizeof(Xlib.Xlong);
+					}
+					for(posn = 0; posn < (int)nitemsReturn; ++posn)
+					{
+						if(size == 4)
+						{
+							data[posn] = (Xlib.Xlong)
+								Marshal.ReadInt32(propReturn, size * posn);
+						}
+						else if(size == 8)
+						{
+							data[posn] = (Xlib.Xlong)
+								Marshal.ReadInt64(propReturn, size * posn);
+						}
+					}
+
+					// Free the property data.
+					if(propReturn != IntPtr.Zero)
+					{
+						Xlib.XFree(propReturn);
+					}
+
+					// Return the final data to the caller.
+					return data;
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	// Determine if a property list contains a "maximized" state atom.
+	private bool ContainsMaximizedAtom(Xlib.Xlong[] list)
+			{
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.Atom atom1 = Xlib.XInternAtom
+						(display, "_NET_WM_STATE_MAXIMIZED_VERT",
+						 Xlib.Bool.False);
+					Xlib.Atom atom2 = Xlib.XInternAtom
+						(display, "_NET_WM_STATE_MAXIMIZED_HORZ",
+						 Xlib.Bool.False);
+					foreach(Xlib.Xlong value in list)
+					{
+						if(atom1 == (Xlib.Atom)value ||
+						   atom2 == (Xlib.Atom)value)
+						{
+							return true;
+						}
+					}
+					return false;
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
 	// Dispatch an event to this widget.
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
 				Xlib.KeySym keysym;
 				Widget widget;
 				InputOnlyWidget io;
+				Xlib.Xlong[] data;
 
 				switch((EventType)(xevent.xany.type__))
 				{
@@ -1398,6 +1669,84 @@ public class TopLevelWindow : InputOutputWidget
 							{
 								// The user pressed the "help" button.
 								OnHelp();
+							}
+						}
+					}
+					break;
+
+					case EventType.PropertyNotify:
+					{
+						// Handle a property change notification.
+						if(xevent.xproperty.atom == dpy.wmState)
+						{
+							// The "WM_STATE" property has changed.
+							if(xevent.xproperty.state == 0)
+							{
+								// New value for the window state.
+								data = GetWindowProperty(dpy.wmState);
+								if(data.Length >= 1 && data[0] == (Xlib.Xlong)3)
+								{
+									// The window is now in the iconic state.
+									if(!iconic)
+									{
+										iconic = true;
+										OnIconicStateChanged(true);
+									}
+								}
+								else
+								{
+									// The window is now in the normal state.
+									if(iconic)
+									{
+										iconic = false;
+										OnIconicStateChanged(false);
+									}
+								}
+							}
+							else
+							{
+								// Property removed, so it is "normal" now.
+								if(iconic)
+								{
+									iconic = false;
+									OnIconicStateChanged(false);
+								}
+							}
+						}
+						else if(xevent.xproperty.atom == dpy.wmNetState)
+						{
+							// The "_NET_WM_STATE" property has changed.
+							if(xevent.xproperty.state == 0)
+							{
+								// New value: look for maximized state atoms.
+								data = GetWindowProperty(dpy.wmNetState);
+								if(ContainsMaximizedAtom(data))
+								{
+									// The window is now maximized.
+									if(!maximized)
+									{
+										maximized = true;
+										OnMaximizedStateChanged(true);
+									}
+								}
+								else
+								{
+									// The window has been restored.
+									if(maximized)
+									{
+										maximized = false;
+										OnMaximizedStateChanged(false);
+									}
+								}
+							}
+							else
+							{
+								// Value removed, so not maximized any more.
+								if(maximized)
+								{
+									maximized = false;
+									OnMaximizedStateChanged(false);
+								}
 							}
 						}
 					}

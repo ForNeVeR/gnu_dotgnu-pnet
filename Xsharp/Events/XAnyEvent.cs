@@ -36,7 +36,8 @@ internal struct XAnyEvent
 	public Xlib.Window	window;
 
 	// Convert odd fields into types that are useful.
-	public int type    { get { return (int)type__; } }
+	public int type    { get { return (int)type__; }
+						 set { type__ = (Xlib.Xint)value; } }
 	public uint serial { get { return (uint)serial__; } }
 	public bool send_event
 		{ get { return (send_event__ != Xlib.Bool.False); } }

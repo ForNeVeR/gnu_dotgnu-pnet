@@ -9,6 +9,14 @@
 	make the "-iconic", "-name", and "-synchronous" Xt command-line
 	options work correctly.
 
+	* System.Drawing/Toolkit/IToolkitEventSink.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs,
+	Xsharp/Display.cs, Xsharp/TopLevelWindow.cs, Xsharp/Xlib.cs.in,
+	Xsharp/Events/XAnyEvent.cs, Xsharp/Events/XClientMessageEvent.cs:
+	implement window maximize and restore; track dynamic changes to
+	the minimized and maximized window states.
+
 2003-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/IO.txt, runtime/Platform/FileMethods.cs,

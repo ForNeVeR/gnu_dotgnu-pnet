@@ -4875,8 +4875,16 @@ protected virtual void Dispose(bool disposing)
 				OnHelpRequested(new HelpEventArgs(new Point(0, 0)));
 			}
 
-	// Close request received - processed by the "Form" class.
+	// Event that is emitted when the window state changes.
+	// The argument is the "int" version of a "FormWindowState" value.
+	void IToolkitEventSink.ToolkitStateChanged(int state)
+			{
+				WindowStateChanged((FormWindowState)state);
+			}
+
+	// Close or state request received - processed by the "Form" class.
 	internal virtual void CloseRequest() {}
+	internal virtual void WindowStateChanged(FormWindowState state) {}
 
 	// Create a brush that can be used to fill with the background color/image.
 	internal Brush CreateBackgroundBrush()

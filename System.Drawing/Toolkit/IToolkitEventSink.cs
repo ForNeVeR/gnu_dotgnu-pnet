@@ -101,6 +101,10 @@ public interface IToolkitEventSink
 	// is selected by the user.
 	void ToolkitHelp();
 
+	// Event that is emitted when the window state changes.
+	// The argument is the "int" version of a "FormWindowState" value.
+	void ToolkitStateChanged(int state);
+
 }; // interface IToolkitEventSink
 
 }; // namespace System.Drawing.Toolkit

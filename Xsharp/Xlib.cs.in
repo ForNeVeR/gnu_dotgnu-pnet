@@ -316,6 +316,11 @@ internal sealed unsafe class Xlib
 	extern public static @X_int@ XSelectInput(IntPtr display, Window w,
 											  @X_long@ mode);
 
+	[DllImport("X11")]
+	extern public static Status XSendEvent
+			(IntPtr display, Window w, Bool propagate,
+			 @X_long@ event_mask, ref XEvent event_send);
+
 	// Declare GC-related external functions.
 
 	[DllImport("X11")]
@@ -534,6 +539,17 @@ internal sealed unsafe class Xlib
 	[DllImport("X11")]
 	extern public static @X_int@ XDeleteProperty
 			(IntPtr display, Window w, Atom property);
+
+	[DllImport("X11")]
+	extern public static Status XGetWindowProperty
+			(IntPtr display, Window w, Atom property,
+			 @X_long@ long_offset, @X_long@ long_length,
+			 Bool deleteProp, Atom req_type,
+			 out Atom actual_type_return,
+			 out Xlib.Xint actual_format_return,
+			 out Xlib.Xulong nitems_return,
+			 out Xlib.Xulong bytes_after_return,
+			 out IntPtr prop_return);
 
 	// Text property and string functions.
 

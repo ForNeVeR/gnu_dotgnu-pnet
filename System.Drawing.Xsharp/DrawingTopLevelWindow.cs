@@ -223,13 +223,24 @@ internal sealed class DrawingTopLevelWindow
 	// Maximize the window.
 	void IToolkitTopLevelWindow.Maximize()
 			{
-				// TODO
+				Maximize();
+				if(IsIconic)
+				{
+					Deiconify();
+				}
 			}
 
 	// Restore the window from its iconified or maximized state.
 	void IToolkitTopLevelWindow.Restore()
 			{
-				// TODO
+				if(IsIconic)
+				{
+					Deiconify();
+				}
+				if(IsMaximized)
+				{
+					Restore();
+				}
 			}
 
 	// Set the owner for modal and modeless dialog support.
@@ -577,6 +588,40 @@ internal sealed class DrawingTopLevelWindow
 				{
 					sink.ToolkitHelp();
 				}
+			}
+
+	// Process a change in window state from Xsharp.
+	private void WindowStateChanged()
+			{
+				int state;
+				if(IsIconic)
+				{
+					state = 1;		// FormWindowState.Minimized.
+				}
+				else if(IsMaximized)
+				{
+					state = 2;		// FormWindowState.Maximized.
+				}
+				else
+				{
+					state = 0;		// FormWindowState.Normal.
+				}
+				if(sink != null)
+				{
+					sink.ToolkitStateChanged(state);
+				}
+			}
+
+	// Override the "OnIconicStateChanged" event from Xsharp.
+	protected override void OnIconicStateChanged(bool value)
+			{
+				WindowStateChanged();
+			}
+
+	// Override the "OnMaximizedStateChanged" event from Xsharp.
+	protected override void OnMaximizedStateChanged(bool value)
+			{
+				WindowStateChanged();
 			}
 
 }; // class DrawingTopLevelWindow

@@ -73,11 +73,11 @@ internal struct XClientMessageEvent
 	[StructLayout(LayoutKind.Sequential)]
 	internal struct LongMessage
 	{
-		public Xlib.Xlong s0;
-		public Xlib.Xlong s1;
-		public Xlib.Xlong s2;
-		public Xlib.Xlong s3;
-		public Xlib.Xlong s4;
+		public Xlib.Xlong l0;
+		public Xlib.Xlong l1;
+		public Xlib.Xlong l2;
+		public Xlib.Xlong l3;
+		public Xlib.Xlong l4;
 
 	} // struct LongMessage
 	[StructLayout(LayoutKind.Explicit)]
@@ -103,7 +103,8 @@ internal struct XClientMessageEvent
 	public Xlib.Window window { get { return common__.window; } }
 
 	// Convert odd fields into types that are useful.
-	public int format         { get { return (int)format__; } }
+	public int format         { get { return (int)format__; }
+								set { format__ = (Xlib.Xint)value; } }
 	public sbyte b(int n)
 			{
 				switch(n)
@@ -152,13 +153,24 @@ internal struct XClientMessageEvent
 			{
 				switch(n)
 				{
-					case 0:		return (int)(data__.l.s0);
-					case 1:		return (int)(data__.l.s1);
-					case 2:		return (int)(data__.l.s2);
-					case 3:		return (int)(data__.l.s3);
-					case 4:		return (int)(data__.l.s4);
+					case 0:		return (int)(data__.l.l0);
+					case 1:		return (int)(data__.l.l1);
+					case 2:		return (int)(data__.l.l2);
+					case 3:		return (int)(data__.l.l3);
+					case 4:		return (int)(data__.l.l4);
 				}
 				return 0;
+			}
+	public void setl(int n, int value)
+			{
+				switch(n)
+				{
+					case 0:		data__.l.l0 = (Xlib.Xlong)value; break;
+					case 1:		data__.l.l1 = (Xlib.Xlong)value; break;
+					case 2:		data__.l.l2 = (Xlib.Xlong)value; break;
+					case 3:		data__.l.l3 = (Xlib.Xlong)value; break;
+					case 4:		data__.l.l4 = (Xlib.Xlong)value; break;
+				}
 			}
 
 	// Convert this object into a string.

@@ -1478,7 +1478,11 @@ public class Form : ContainerControl
 				}
 			}
 
-	
+	// Window state change request received.
+	internal override void WindowStateChanged(FormWindowState state)
+			{
+				windowState = state;
+			}
 
 #if !CONFIG_COMPACT_FORMS
 

@@ -1,4 +1,10 @@
 
+2002-12-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am: put the libffi and libgc logic back because we
+	need to be able to turn libffi and libgc off in configure, and
+	the previous change did not support this.
+
 2002-12-29  Gopal.V  <gopalv82@symonds.net>
 	
 	* Makefile.am: Include libgc and libffi directories while doing 

@@ -25,7 +25,7 @@ public enum XmlSpace
 {
 	Default = 1,
 	None = 0,
-	Preseve = 2
+	Preserve = 2
 }; //enum XmlSpace
 
 }; //namespace System.Xml

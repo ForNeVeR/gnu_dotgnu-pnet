@@ -3,6 +3,10 @@
 
 	* System.Xml/XmlWriter.cs: implement missing functionality.
 
+	* System.Xml/XmlSpace.cs, System.Xml/XmlTextWriter.cs,
+	resources/en_US/System.Xml/Xml.txt: begin implementing the missing
+	"System.Xml.XmlTextWriter" class.
+
 2002-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Exception.txt,

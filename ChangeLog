@@ -5,6 +5,12 @@
 	include/assembly/*: check in a large number of headers under
 	<assembly/xxx.h> to ease the importing of C# assemblies into C code.
 
+	* include/errno.h, libc/misc/errno.c, libc/pthread/self.c,
+	libc/pwd/setgrent.c, libc/pwd/setpwent.c, libc/signal/kill.c,
+	libc/time/gmtime.c, libpthread/pthread_key.c,
+	libpthread/pthread_thread.c: replace references to the
+	"__thread_specific__" keyword with "__declspec(thread)".
+
 2004-02-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/pthread-support.h, libc/ctype/ctype.c,

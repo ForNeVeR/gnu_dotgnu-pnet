@@ -28,9 +28,9 @@
 /*
  * Thread-specific information that is used by a thread.
  */
-static __thread_specific__ jmp_buf exit_buf;
-static __thread_specific__ void *exit_retval;
-static __thread_specific__ struct _pthread_cleanup_buffer *cleanup_handlers;
+static __declspec(thread) jmp_buf exit_buf;
+static __declspec(thread) void *exit_retval;
+static __declspec(thread) struct _pthread_cleanup_buffer *cleanup_handlers;
 
 /*
  * Imports from "pthread_glue.cs" and "pthread_key.c".

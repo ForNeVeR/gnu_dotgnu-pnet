@@ -2,7 +2,7 @@
  * errno.c - Manage the "errno" value.
  *
  * This file is part of the Portable.NET C library.
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-int __thread_specific__ errno;
+int __declspec(thread) errno;
 
 int *
 __errno_location (void)

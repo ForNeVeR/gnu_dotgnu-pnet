@@ -22,7 +22,7 @@
 #include <grp.h>
 #include "grent.h"
 
-struct group_info __thread_specific__ __grinfo;
+struct group_info __declspec(thread) __grinfo;
 
 void
 setgrent (void)

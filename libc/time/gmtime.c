@@ -22,8 +22,8 @@
 #include <time.h>
 #include "time-defs.h"
 
-static struct tm __thread_specific__ gmbuf;
-static struct tm __thread_specific__ locbuf;
+static struct tm __declspec(thread) gmbuf;
+static struct tm __declspec(thread) locbuf;
 
 struct tm *
 gmtime (time_t *timer)

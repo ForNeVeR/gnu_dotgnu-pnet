@@ -49,7 +49,7 @@ typedef struct pthread_key_data_t
 static pthread_mutex_t key_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_key_t key_last;
 static pthread_key_info_t *key_info;
-static __thread_specific__ pthread_key_data_t *key_data;
+static __declspec(thread) pthread_key_data_t *key_data;
 
 int
 pthread_key_create (pthread_key_t *key, void (*destr_function) (void *))

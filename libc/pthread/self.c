@@ -21,7 +21,7 @@
 
 #include <pthread-support.h>
 
-static __thread_specific__ __pthread_t self;
+static __declspec(thread) __pthread_t self;
 
 __pthread_t
 __pthread_self (void)

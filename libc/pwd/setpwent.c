@@ -22,7 +22,7 @@
 #include <pwd.h>
 #include "pwent.h"
 
-struct passwd_info __thread_specific__ __pwinfo;
+struct passwd_info __declspec(thread) __pwinfo;
 
 void
 setpwent (void)

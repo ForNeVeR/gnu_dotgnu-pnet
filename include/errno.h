@@ -155,7 +155,7 @@ extern int errno;
 extern int *__errno_location(void);
 
 /* Note: not needed in this implementation because "errno" is
-   declared internally as __thread_specific__ */
+   declared internally as thread-specific */
 /*#define errno (*__errno_location())*/
 
 __END_DECLS

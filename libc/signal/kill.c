@@ -38,7 +38,7 @@ extern unsigned int __syscall_sigpending(long long thread);
  * The signal masks for the overall process and the current thread.
  */
 static sigset_t volatile process_mask;
-static sigset_t __thread_specific__ thread_mask;
+static sigset_t __declspec(thread) thread_mask;
 
 /*
  * Import the signal dispatcher from "sigaction.c".

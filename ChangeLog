@@ -5,6 +5,9 @@
 	accounts in a better way; make sure that SSH_CLIENT is properly
 	exported with older versions of bash.
 
+	* Xsharp/EmbeddedApplication.cs (CanEmbed): rearrange the code
+	a little so that XREALDISPLAY is consulted before SSH_CLIENT.
+
 2003-10-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Display.cs, Xsharp/EmbeddedApplication.cs,

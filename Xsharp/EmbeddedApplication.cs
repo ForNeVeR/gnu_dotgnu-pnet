@@ -427,6 +427,35 @@ public class EmbeddedApplication : InputOutputWidget
 				return CanEmbed(dpy, false, out displayName);
 			}
 
+	// Probe an X display to see if it is usable.
+	private static bool ProbeDisplay(String displayName, bool reportErrors)
+			{
+				if(!displayProbed)
+				{
+					// Probe the new display to see if it can be used.
+					displayProbed = true;
+					IntPtr probe = Xlib.XOpenDisplay(displayName);
+					if(probe == IntPtr.Zero)
+					{
+						if(reportErrors && !errorReported)
+						{
+							Console.Error.WriteLine
+								("The X server at `{0}' is not " +
+								 "accessible.  You may need",
+								 displayName);
+							Console.Error.WriteLine
+								("to use `xhost +' to permit access.");
+							errorReported = true;
+						}
+						displayExists = false;
+						return false;
+					}
+					Xlib.XCloseDisplay(probe);
+					displayExists = true;
+				}
+				return displayExists;
+			}
+
 	// Determine if the X server supports embedding - inner version.
 	// "displayName" will be set to a non-null value if it is necessary
 	// to redirect the DISPLAY environment variable elsewhere.
@@ -450,10 +479,11 @@ public class EmbeddedApplication : InputOutputWidget
 						{
 							Console.Error.WriteLine
 								("The X server `{0}' does not support the " +
-								 "XC-APPGROUP extension, which is required",
+								 "XC-APPGROUP extension,",
 								 display.displayName);
 							Console.Error.WriteLine
-								("for application embedding.");
+								("which is required for application " +
+								 "embedding.");
 							errorReported = true;
 						}
 						return false;
@@ -465,10 +495,11 @@ public class EmbeddedApplication : InputOutputWidget
 						{
 							Console.Error.WriteLine
 								("The X server `{0}' does not support the " +
-								 "SECURITY extension, which is required",
+								 "SECURITY extension,",
 								 display.displayName);
 							Console.Error.WriteLine
-								("for application embedding.");
+								("which is required for for application " +
+								 "embedding.");
 							errorReported = true;
 						}
 						return false;
@@ -477,9 +508,21 @@ public class EmbeddedApplication : InputOutputWidget
 					// If we are in an ssh shell account, then we cannot
 					// connect via ssh's X11 forwarding mechanism as it
 					// does not know how to proxy appgroup security tokens.
-					// Try to discover where the ssh client lives.
+					// Try to discover where the ssh client actually lives.
+					displayName = Environment.GetEnvironmentVariable
+							("XREALDISPLAY");
 					client = Environment.GetEnvironmentVariable("SSH_CLIENT");
-					if(client != null && client.Length > 0)
+					if(displayName != null && displayName.Length > 0)
+					{
+						// The user specified a display override with
+						// the XREALDISPLAY environment variable.
+						if(!ProbeDisplay(displayName, reportErrors))
+						{
+							displayName = null;
+							return false;
+						}
+					}
+					else if(client != null && client.Length > 0)
 					{
 						// Synthesize a display name from the ssh client name.
 						index = client.IndexOf(' ');
@@ -488,7 +531,11 @@ public class EmbeddedApplication : InputOutputWidget
 							index = client.Length;
 						}
 						displayName = client.Substring(0, index) + ":0.0";
-						goto probeDisplay;
+						if(!ProbeDisplay(displayName, reportErrors))
+						{
+							displayName = null;
+							return false;
+						}
 					}
 					else if(Environment.GetEnvironmentVariable("SSH_ASKPASS")
 								!= null ||
@@ -497,66 +544,41 @@ public class EmbeddedApplication : InputOutputWidget
 					{
 						// Older versions of bash do not export SSH_CLIENT
 						// within an ssh login session.
-						displayName = Environment.GetEnvironmentVariable
-							("XREALDISPLAY");
-						if(displayName == null || displayName.Length == 0)
+						if(reportErrors && !errorReported)
 						{
-							if(reportErrors && !errorReported)
-							{
-								Console.Error.WriteLine
-									("The `SSH_CLIENT' environment variable " +
-									 "is not exported from the shell.");
-								Console.Error.WriteLine
-									("Either export `SSH_CLIENT' or set the " +
-									 "`XREALDISPLAY' environment");
-								Console.Error.WriteLine
-									("variable to the name of the real " +
-									 "X display.");
-								errorReported = true;
-							}
-							displayName = null;
-							return false;
+							Console.Error.WriteLine
+								("The `SSH_CLIENT' environment variable " +
+								 "is not exported from the shell.");
+							Console.Error.WriteLine
+								("Either export `SSH_CLIENT' or set the " +
+								 "`XREALDISPLAY' environment");
+							Console.Error.WriteLine
+								("variable to the name of the real " +
+								 "X display.");
+							errorReported = true;
 						}
-					probeDisplay:
-						if(!displayProbed)
-						{
-							// Probe the new display to see if it can be used.
-							displayProbed = true;
-							IntPtr probe = Xlib.XOpenDisplay(displayName);
-							if(probe == IntPtr.Zero)
-							{
-								if(reportErrors && !errorReported)
-								{
-									Console.Error.WriteLine
-										("The X server at `{0}' is not " +
-										 "accessible.  You may need",
-										 displayName);
-									Console.Error.WriteLine
-										("to use `xhost +' to permit access.");
-									errorReported = true;
-								}
-								displayName = null;
-								return false;
-							}
-							Xlib.XCloseDisplay(probe);
-							displayExists = true;
-						}
-						else if(!displayExists)
-						{
-							return false;
-						}
+						displayName = null;
+						return false;
+					}
+					else
+					{
+						// No ssh, so use the original "DISPLAY" value as-is.
+						displayName = null;
 					}
 				}
 				catch(MissingMethodException)
 				{
+					displayName = null;
 					return false;
 				}
 				catch(DllNotFoundException)
 				{
+					displayName = null;
 					return false;
 				}
 				catch(EntryPointNotFoundException)
 				{
+					displayName = null;
 					return false;
 				}
 				finally

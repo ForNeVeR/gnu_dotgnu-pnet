@@ -11,6 +11,10 @@
 	"Microsoft.VisualBasic.Interaction" class and add WinForms to
 	the dependencies for the VB system library.
 
+	* Basic/Financial.cs, resources/en_US/Basic/Basic.txt:
+	implement some of the VB financial functions, using kspread
+	as a guide to how they should function.
+
 2004-07-08  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/Form.cs: Add dummy implementation of 

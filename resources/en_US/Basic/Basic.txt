@@ -64,3 +64,7 @@ VB_MustBeEvenSized=Array must have an even number of elements
 VB_InvalidCallType=Invalid late binding call type
 VB_CouldntExecute=Could not find {0} or could not execute it
 VB_InvalidAppWinStyle=Invalid application window style
+VB_InvalidDDB=Invalid arguments to DDB function
+VB_InvalidNPer=Invalid arguments to NPer function
+VB_InvalidSLN=Invalid arguments to SLN function
+VB_InvalidSYD=Invalid arguments to SYD function

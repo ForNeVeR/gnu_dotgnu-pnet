@@ -38,7 +38,6 @@ extern	"C" {
 static _ILMutex threadLockAll;
 static long volatile numThreads;
 static long volatile numBackgroundThreads;
-static _ILSemaphore startupAck;
 
 /*
  * Global mutex for atomic operations.
@@ -64,8 +63,7 @@ static void ThreadInit(void)
 	_ILThreadInitSystem(&mainThread);
 
 	/* Initialize synchronization objects that we need */
-	_ILMutexCreate(&threadLockAll);
-	_ILSemaphoreCreate(&startupAck);
+	_ILMutexCreate(&threadLockAll);	
 	_ILMutexCreate(&atomicLock);
 
 	/* Set up the "main" thread.  "_ILThreadInitSystem" has already
@@ -98,12 +96,6 @@ void ILThreadInit(void)
 void _ILThreadRun(ILThread *thread)
 {
 	int isbg;
-
-	/* Signal "ILThreadCreate" that the thread is ready to go */
-	_ILSemaphorePost(&startupAck);
-
-	/* Wait until the thread is really started by a call to "ILThreadStart" */
-	_ILThreadSuspendSelf(thread);
 
 	/* If we still have a startup function, then execute it.
 	   The field may have been replaced with NULL if the thread
@@ -157,26 +149,10 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	thread->objectArg = objectArg;
 	_ILWakeupCreate(&(thread->wakeup));
 	_ILWakeupQueueCreate(&(thread->joinQueue));
+	thread->handle = 0;
 
 	/* Lock out the thread system */
 	_ILMutexLock(&threadLockAll);
-
-	/* Create the new thread */
-	if(!_ILThreadCreateSystem(thread))
-	{
-		_ILMutexUnlock(&threadLockAll);
-		_ILWakeupQueueDestroy(&(thread->joinQueue));
-		_ILWakeupDestroy(&(thread->wakeup));
-		_ILSemaphoreDestroy(&(thread->suspendAck));
-		_ILSemaphoreDestroy(&(thread->resumeAck));
-		_ILMutexDestroy(&(thread->lock));
-		ILFree(thread);
-		return 0;
-	}
-
-	/* Wait until the thread startup ack is posted, so that
-	   we know that the thread is ready to go */
-	_ILSemaphoreWait(&startupAck);
 
 	/* We have one extra thread in the system at present */
 	++numThreads;
@@ -196,10 +172,17 @@ int ILThreadStart(ILThread *thread)
 	/* Are we in the correct state to start? */
 	if((thread->state & IL_TS_UNSTARTED) != 0)
 	{
-		/* Resume the thread, which is suspended in "ThreadStart" */
-		thread->state &= ~IL_TS_UNSTARTED;
-		_ILThreadResumeSelf(thread);
-		result = 1;
+		/* Create the new thread */
+		if(!_ILThreadCreateSystem(thread))
+		{
+			result = 0;
+		}
+		else
+		{
+			/* Set the thread state to running (0) */
+			thread->state &= ~IL_TS_UNSTARTED;
+			result = 1;
+		}
 	}
 	else
 	{
@@ -433,7 +416,7 @@ int ILThreadAbort(ILThread *thread)
 			/* Already aborted */
 			result = 0;
 		}
-		else if((thread->state & IL_TS_ABORT_REQUESTED) != 0)
+			else if((thread->state & IL_TS_ABORT_REQUESTED) != 0)
 		{
 			/* Abort was requested */
 			thread->state &= ~IL_TS_ABORT_REQUESTED;
@@ -461,6 +444,7 @@ int ILThreadAbort(ILThread *thread)
 		{
 			_ILMutexUnlock(&(thread->lock));
 			_ILWakeupInterrupt(&(thread->wakeup));
+
 			return 0;
 		}
 

@@ -341,3 +341,27 @@ ILNode_SemAnalysis(ILNode_LocalVariableType)
 	/* TODO */
 	return CSSemValueDefault;
 }
+
+ILNode_SemAnalysis(ILNode_Attribute)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_AttrArgs)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_NamedArg)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_Argument)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}

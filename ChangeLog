@@ -1,4 +1,12 @@
 
+2001-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* codegen/cg_decls.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,
+codegen/jv_decls.tc, codegen/jv_misc.tc, cscc/Makefile.am,
+cscc/cs_decls.tc, cscc/cs_grammar.y, cscc/cs_misc.tc: apply a
+patch from Norman Stevens <norman@arcady.u-net.com> that adds
+most of the node creation functionality to the C# grammar.
+
 2001-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * pnet.spec: applied patch submitted by mdaniel to create RPM spec file.

@@ -492,6 +492,13 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 %type <node>		NormalOperatorDeclarator ConversionOperatorDeclarator 
 %type <charValue>	OverloadableOperator
 %type <node>		TypeSuffix TypeSuffixList TypeSuffixes
+%type <node>		OptAttributes AttributeSections AttributeSection
+%type <node>		AttributeList Attribute AttributeArguments
+%type <node>		PositionalArgumentList PositionalArgument NamedArgumentList
+%type <node>		NamedArgument AttributeArgumentExpression
+%type <node>		RankSpecifiers RankSpecifierList 
+%type <node>		OptArrayInitializer ArrayInitializer
+%type <node>		OptVariableInitializerList VariableInitializerList
 
 %type <catchinfo>	CatchNameInfo
 %expect 24
@@ -801,8 +808,12 @@ PrimaryExpression
 	| PrimaryExpression INC_OP		{ MakeUnary(PostInc, $1); }
 	| PrimaryExpression DEC_OP		{ MakeUnary(PostDec, $1); }
 	| ObjectCreationExpression		{ $$ = $1; }
-	| NEW Type '[' ExpressionList ']' RankSpecifiers OptArrayInitializer	{}
-	| NEW Type ArrayInitializer		{}
+	| NEW Type '[' ExpressionList ']' RankSpecifiers OptArrayInitializer	{
+				$$ = ILNode_NewExpression_create($2, $4, $6, $7);
+			}
+	| NEW Type ArrayInitializer		{
+				$$ = ILNode_NewExpression_create($2, 0, 0, $3);
+			}
 	| TYPEOF '(' ReturnType ')'		{ MakeUnary(TypeOf, $3); }
 	| SIZEOF '(' Type ')'			{
 				/*
@@ -891,11 +902,15 @@ LiteralExpression
 	;
 
 InvocationExpression
-	: PrimaryExpression '(' OptArgumentList ')'		{ $$ = 0; }
+	: PrimaryExpression '(' OptArgumentList ')'		{ 
+				MakeBinary(InvocationExpression, $1, $3); 
+			}
 	;
 
 ObjectCreationExpression
-	: NEW Type '(' OptArgumentList ')'	{ $$ = 0; }
+	: NEW Type '(' OptArgumentList ')'	{ 
+				MakeBinary(ObjectCreationExpression, $2, $4); 
+			}
 	;
 
 OptArgumentList
@@ -909,9 +924,9 @@ ArgumentList
 	;
 
 Argument
-	: Expression						{ $$ = $1; }
-	| OUT Expression					{ $$ = $2; }
-	| REF Expression					{ $$ = $2; }
+	: Expression			{ MakeBinary(Argument, ILParamMod_empty, $1); }
+	| OUT Expression		{ MakeBinary(Argument, ILParamMod_out, $2); }
+	| REF Expression		{ MakeBinary(Argument, ILParamMod_ref, $2); }
 	;
 
 ExpressionList
@@ -920,13 +935,19 @@ ExpressionList
 	;
 
 RankSpecifiers
-	: /* empty */
-	| RankSpecifierList
+	: /* empty */			{ $$ = 0;}
+	| RankSpecifierList		{ $$ = $1;}
 	;
 
 RankSpecifierList
-	: '[' DimensionSeparators ']'
-	| RankSpecifierList '[' DimensionSeparators ']'
+	: '[' DimensionSeparators ']'			{
+					$$ = ILNode_List_create ();
+					ILNode_List_Add($$, $2);
+				}
+	| RankSpecifierList '[' DimensionSeparators ']'	{
+					ILNode_List_Add($1, $3);
+					$$ = $1;
+				}
 	;
 
 /*
@@ -1206,27 +1227,33 @@ ParenBooleanExpression
  */
 
 OptArrayInitializer
-	: /* empty */
-	| ArrayInitializer
+	: /* empty */			{ $$ = 0;}
+	| ArrayInitializer		{ $$ = $1;}
 	;
 
 ArrayInitializer
-	: '{' OptVariableInitializerList OptComma '}'
+	: '{' OptVariableInitializerList OptComma '}' {$$ = $2;}
 	;
 
 OptVariableInitializerList
-	: /* empty */
-	| VariableInitializerList
+	: /* empty */				{ $$ = 0;}
+	| VariableInitializerList	{ $$ = $1;}
 	;
 
 VariableInitializerList
-	: VariableInitializer {}
-	| VariableInitializerList ',' VariableInitializer {}
+	: VariableInitializer {	
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, $1);
+			}
+	| VariableInitializerList ',' VariableInitializer {
+				ILNode_List_Add($1, $3);
+				$$ = $1;
+			}
 	;
 
 VariableInitializer
 	: Expression				{ $$ = $1;}
-	| ArrayInitializer			{}
+	| ArrayInitializer			{ $$ = $1;}
 	;
 
 OptComma
@@ -1432,7 +1459,7 @@ ForInitializer
 	;
 
 ForInitializerInner
-	: LocalVariableDeclaration	{ $$ = 0; }
+	: LocalVariableDeclaration	{ $$ = $1; }
 	| ExpressionStatementList	{ $$ = $1; }
 	;
 
@@ -1641,62 +1668,105 @@ FixedPointerDeclarator
  */
 
 OptAttributes
-	: /* empty */
-	| AttributeSections
+	: /* empty */ 		{ $$ = 0; }
+	| AttributeSections	{ $$ = $1; }
 	;
 
 AttributeSections
-	: AttributeSection
-	| AttributeSections AttributeSection
+	: AttributeSection	{
+				$$ = ILNode_List_create();
+				if ($1)
+				{
+					ILNode_List_Add($$, $1);
+				}
+			}
+	| AttributeSections AttributeSection	{
+				$$ = $1;
+				if ($2)
+				{
+					ILNode_List_Add($1, $2);
+				}
+			}
 	;
 
 AttributeSection
-	: '[' AttributeList ']'
-	| '[' AttributeList ',' ']'
-	| DOC_COMMENT		{}
+	: '[' AttributeList ']'		{ $$ = $2; }
+	| '[' AttributeList ',' ']'	{ $$ = $2; }
+	| DOC_COMMENT				{ $$ = 0; }
 	| '[' error ']'		{
 				/*
 				 * This production recovers from errors in attributes.
 				 */
+				$$ = 0;
 			}
 	;
 
 AttributeList
-	: Attribute
-	| AttributeList ',' Attribute
+	: Attribute	{
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, $1);
+			}
+	| AttributeList ',' Attribute	{
+				ILNode_List_Add($1, $3);
+				$$ = $1;
+			}
 	;
 
 Attribute
-	: QualifiedIdentifier						{}
-	| QualifiedIdentifier AttributeArguments	{}
+	: QualifiedIdentifier						{ 
+				MakeBinary(Attribute, $1, 0);
+			}
+	| QualifiedIdentifier AttributeArguments	{ 
+				MakeBinary(Attribute, $1, $2);
+			}
 	;
 
 AttributeArguments
-	: '(' PositionalArgumentList ')'
-	| '(' PositionalArgumentList ',' NamedArgumentList ')'
-	| '(' NamedArgumentList ')'
+	: '(' PositionalArgumentList ')'			{
+				MakeBinary(AttrArgs, $2, 0);
+			}
+	| '(' PositionalArgumentList ',' NamedArgumentList ')'	{
+				MakeBinary(AttrArgs, $2, $4);
+			}
+	| '(' NamedArgumentList ')'	{
+				MakeBinary(AttrArgs, 0, $2);
+			}
 	;
 
 PositionalArgumentList
-	: PositionalArgument
-	| PositionalArgumentList ',' PositionalArgument
+	: PositionalArgument		{
+				$$ = ILNode_List_create ();
+				ILNode_List_Add ($$, $1);
+			}
+	| PositionalArgumentList ',' PositionalArgument	{
+				ILNode_List_Add($1, $3);
+				$$ = $1;
+			}
 	;
 
 PositionalArgument
-	: AttributeArgumentExpression
+	: AttributeArgumentExpression {$$ = $1;}
 	;
 
 NamedArgumentList
-	: NamedArgument
-	| NamedArgumentList ',' NamedArgument
+	: NamedArgument		{
+				$$ = ILNode_List_create ();
+				ILNode_List_Add($$, $1);
+			}
+	| NamedArgumentList ',' NamedArgument	{
+				ILNode_List_Add($1, $3);
+				$$ = $1;
+			}
 	;
 
 NamedArgument
-	: Identifier '=' AttributeArgumentExpression	{}
+	: Identifier '=' AttributeArgumentExpression	{
+				MakeBinary(NamedArg, $1, $3);
+			}
 	;
 
 AttributeArgumentExpression
-	: Expression			{}
+	: Expression			{ $$ = $1; }
 	;
 
 /*
@@ -1770,7 +1840,7 @@ ClassDeclaration
 
 				/* Create the class definition */
 				$$ = ILNode_ClassDefn_create
-							(0,						/* OptAttributes */
+							($1,					/* OptAttributes */
 							 $2,					/* OptModifiers */
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
@@ -1834,7 +1904,7 @@ ClassMemberDeclaration
 ConstantDeclaration
 	: OptAttributes OptModifiers CONST Type ConstantDeclarators ';' {
 				ILUInt32 attrs = CSModifiersToConstAttrs($2);
-				$$ = ILNode_ConstDeclaration_create(0/*FIXME*/, attrs, $4, $5);
+				$$ = ILNode_ConstDeclaration_create($1, attrs, $4, $5);
 			}
 	;
 
@@ -1866,7 +1936,7 @@ FieldDeclaration
 				{
 					CSUnsafeTypeMessage();
 				}
-				$$ = ILNode_FieldDeclaration_create(0/*FIXME*/, attrs, $3, $4);
+				$$ = ILNode_FieldDeclaration_create($1, attrs, $3, $4);
 			}
 	;
 
@@ -1887,8 +1957,7 @@ MethodHeader
 				{
 					CSUnsafeTypeMessage();
 				}
-				$$ = ILNode_MethodHeader_create (0/*FIXME: optAttributes*/,
-												 attrs, $3, $4, $6);
+				$$ = ILNode_MethodHeader_create ($1, attrs, $3, $4, $6);
 			}
 	| OptAttributes OptModifiers VOID QualifiedIdentifier
 			'(' OptFormalParameterList ')'	{
@@ -1897,8 +1966,7 @@ MethodHeader
 				{
 					CSUnsafeTypeMessage();
 				}
-				$$ = ILNode_MethodHeader_create (0/*FIXME: optAttributes*/,
-												 attrs, 0, $4, $6);
+				$$ = ILNode_MethodHeader_create ($1, attrs, 0, $4, $6);
 			}
 	;
 
@@ -1930,7 +1998,7 @@ FormalParameterList
 
 FormalParameter
 	: OptAttributes ParameterModifier Type Identifier		{
-				$$ = ILNode_FormalParameter_create(0, $2, $3, $4);
+				$$ = ILNode_FormalParameter_create($1, $2, $3, $4);
 			}
 	;
 
@@ -1955,7 +2023,7 @@ PropertyDeclaration
 				}
 			}
 			StartAccessorBlock AccessorBlock				{
-				$$ = ILNode_PropertyDeclaration_create(0 /*FIXME attributes*/,
+				$$ = ILNode_PropertyDeclaration_create($1,
 								   $2, $3, $4, $7.item1, $7.item2);
 			}
 
@@ -1998,7 +2066,7 @@ OptGetAccessorDeclaration
 
 GetAccessorDeclaration
 	: OptAttributes GET TurnOffGetSet AccessorBody TurnOnGetSet		{
-				MakeBinary(AccessorDeclaration, 0 /*FIXME attributes*/, $4);
+				MakeBinary(AccessorDeclaration, $1, $4);
 			}
 	;
 
@@ -2009,7 +2077,7 @@ OptSetAccessorDeclaration
 
 SetAccessorDeclaration
 	: OptAttributes SET TurnOffGetSet AccessorBody TurnOnGetSet		{
-				MakeBinary(AccessorDeclaration, 0 /*FIXME attributes*/, $4);
+				MakeBinary(AccessorDeclaration, $1, $4);
 			}
 	;
 
@@ -2042,7 +2110,7 @@ EventFieldDeclaration
 				{
 					CSUnsafeTypeMessage();
 				}
-				$$ = ILNode_EventFieldDeclaration_create(0/*FIXME*/, attrs, $4, $5);
+				$$ = ILNode_EventFieldDeclaration_create($1, attrs, $4, $5);
 			}
 	;
 
@@ -2056,7 +2124,7 @@ EventPropertyDeclaration
 				$2 = attrs;
 			}
 			StartAccessorBlock EventAccessorBlock				{
-				$$ = ILNode_EventPropertyDeclaration_create(0/*FIXME*/, 
+				$$ = ILNode_EventPropertyDeclaration_create($1, 
 									$2, $4, $5, $8.item1, $8.item2);
 			}
 	;
@@ -2094,7 +2162,7 @@ OptAddAccessorDeclaration
 
 AddAccessorDeclaration
 	: OptAttributes ADD TurnOffGetSet AccessorBody TurnOnGetSet		{
-				MakeBinary(AccessorDeclaration, 0, $4);
+				MakeBinary(AccessorDeclaration, $1, $4);
 			}
 	;
 
@@ -2105,7 +2173,7 @@ OptRemoveAccessorDeclaration
 
 RemoveAccessorDeclaration
 	: OptAttributes REMOVE TurnOffGetSet AccessorBody TurnOnGetSet	{
-				MakeBinary(AccessorDeclaration, 0, $4);
+				MakeBinary(AccessorDeclaration, $1, $4);
 			}
 	;
 
@@ -2119,7 +2187,7 @@ IndexerDeclaration
 				$2 = attrs;
 			}
 			StartAccessorBlock AccessorBlock		{
-				$$ = ILNode_IndexerDeclaration_create(0/*FIXME optAttributes*/,
+				$$ = ILNode_IndexerDeclaration_create($1,
 						   $2, $3, $6.item1, $6.item2);
 			}
 	;
@@ -2156,7 +2224,7 @@ FormalIndexParameterList
 
 FormalIndexParameter
 	: OptAttributes Type Identifier 					{
-				$$ = ILNode_FormalParameter_create(0, ILParamMod_empty, $2, $3);
+				$$ = ILNode_FormalParameter_create($1, ILParamMod_empty, $2, $3);
 			}
 	;
 
@@ -2167,7 +2235,7 @@ FormalIndexParameter
 OperatorDeclaration
 	: OptAttributes OptModifiers OperatorDeclarator Block	{
 				ILUInt32 attrs = CSModifiersToOperatorAttrs($2);
-				$$ = ILNode_OperatorDeclaration_create(0, attrs, $3, $4);
+				$$ = ILNode_OperatorDeclaration_create($1, attrs, $3, $4);
 			}
 	;
 
@@ -2232,7 +2300,7 @@ ConversionOperatorDeclarator
 ConstructorDeclaration
 	: OptAttributes OptModifiers ConstructorDeclarator MethodBody	{
 				ILUInt32 attrs = CSModifiersToConstructorAttrs($2);
-				$$ = ILNode_ConstructorDeclaration_create (0, attrs, $3, $4);
+				$$ = ILNode_ConstructorDeclaration_create ($1, attrs, $3, $4);
 			}
 	;
 
@@ -2260,7 +2328,7 @@ ConstructorInitializer
 
 DestructorDeclaration
 	: OptAttributes '~' Identifier '(' ')' Block		{
-				$$ = ILNode_DestructorDeclaration_create(0, $3, $6);
+				$$ = ILNode_DestructorDeclaration_create($1, $3, $6);
 			}
 	;
 
@@ -2313,7 +2381,7 @@ StructDeclaration
 
 				/* Create the class definition */
 				$$ = ILNode_ClassDefn_create
-							(0,						/* OptAttributes */
+							($1,					/* OptAttributes */
 							 $2,					/* OptModifiers */
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
@@ -2352,8 +2420,7 @@ InterfaceDeclaration
 			InterfaceBody OptSemiColon	{
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
-				$$ = ILNode_InterfaceDeclaration_create(0 /*FIXME */, 
-													   $2, $4, $5, $7);
+				$$ = ILNode_InterfaceDeclaration_create($1, $2, $4, $5, $7);
 			}
 	;
 
@@ -2398,11 +2465,11 @@ InterfaceMemberDeclaration
 
 InterfaceMethodDeclaration
 	: OptAttributes OptNew Type Identifier '(' OptFormalParameterList ')' ';' {
-				$$ = ILNode_InterfaceMethodDeclaration_create (0, 
+				$$ = ILNode_InterfaceMethodDeclaration_create ($1, 
 									$2, $3, $4, $6);
 			}
 	| OptAttributes OptNew VOID Identifier '(' OptFormalParameterList ')' ';' {
-				$$ = ILNode_InterfaceMethodDeclaration_create (0, 
+				$$ = ILNode_InterfaceMethodDeclaration_create ($1, 
 									$2, 0, $4, $6);
 			}
 	;
@@ -2415,7 +2482,7 @@ OptNew
 InterfacePropertyDeclaration
 	: OptAttributes OptNew Type Identifier
 				StartInterfaceAccessorBody InterfaceAccessorBody		{ 
-				$$ = ILNode_InterfacePropertyDeclaration_create (0,
+				$$ = ILNode_InterfacePropertyDeclaration_create ($1,
 									$2, $3, $4, $6);
 			}
 	;
@@ -2449,7 +2516,7 @@ InterfaceAccessors
 InterfaceEventDeclaration
 	: OptAttributes OptNew EVENT Type Identifier ';'		{
 				$$ = ILNode_InterfaceEventDeclaration_create
-					(0, $2, $4, $5);
+					($1, $2, $4, $5);
 			}
 	;
 
@@ -2457,7 +2524,7 @@ InterfaceIndexerDeclaration
 	: OptAttributes OptNew Type THIS FormalIndexParameters
 				StartInterfaceAccessorBody InterfaceAccessorBody		{
 				$$ = ILNode_InterfaceIndexerDeclaration_create
-					(0, $2, $3, $5, $7);
+					($1, $2, $3, $5, $7);
 			}
 	;
 
@@ -2474,7 +2541,7 @@ EnumDeclaration
 			EnumBase EnumBody OptSemiColon	{
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
-				$$ = ILNode_EnumDeclaration_create (0, $2, $4, $6, $7);
+				$$ = ILNode_EnumDeclaration_create ($1, $2, $4, $6, $7);
 			}
 	;
 
@@ -2513,10 +2580,10 @@ EnumMemberDeclarations
 
 EnumMemberDeclaration
 	: OptAttributes Identifier		{
-			$$ = ILNode_EnumMemberDeclaration_create(0, $2, 0);
+			$$ = ILNode_EnumMemberDeclaration_create($1, $2, 0);
 		}
 	| OptAttributes Identifier '=' ConstantExpression	{
-			$$ = ILNode_EnumMemberDeclaration_create(0, $2, $4);
+			$$ = ILNode_EnumMemberDeclaration_create($1, $2, $4);
 		}
 	;
 
@@ -2532,6 +2599,6 @@ DelegateDeclaration
 
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
-				$$ = ILNode_DelegateDeclaration_create(0, attrs, $4, $5, $7);
+				$$ = ILNode_DelegateDeclaration_create($1, attrs, $4, $5, $7);
 			}
 	;

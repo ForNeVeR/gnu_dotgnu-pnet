@@ -259,3 +259,21 @@ ILNode_SemAnalysis(ILNode_StackAlloc)
 	value1.type = ILType_Int32;			/* TODO */
 	return value1;
 }
+
+ILNode_SemAnalysis(ILNode_NewExpression)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_InvocationExpression)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}

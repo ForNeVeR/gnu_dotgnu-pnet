@@ -109,6 +109,24 @@ ILNode_GetType(ILNode_UserConversion)
 	return node->machineType;
 }
 
+ILNode_GetType(ILNode_NewExpression)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+ILNode_GetType(ILNode_ObjectCreationExpression)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+ILNode_GetType(ILNode_InvocationExpression)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
 %{
 
 /*
@@ -564,6 +582,24 @@ ILNode_GenValue(ILNode_ArgList)
 {
 	ILNode_GenValue(node->expr1, info);
 	return ILNode_GenValue(node->expr2, info);
+}
+
+ILNode_GenValue(ILNode_NewExpression)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+ILNode_GenValue(ILNode_ObjectCreationExpression)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+ILNode_GenValue(ILNode_InvocationExpression)
+{
+	/* TODO */
+	return ILMachineType_Void;
 }
 
 %{

@@ -315,6 +315,26 @@ struct _tagILEvalValue
 	ILMachineType machineType;
 }
 
+%node ILNode_NewExpression ILNode_Expression =
+{
+	ILNode	   *type;
+	ILNode	   *indexes;
+	ILNode	   *rank;
+	ILNode	   *arrayInitializer;
+}
+
+%node ILNode_ObjectCreationExpression ILNode_Expression =
+{
+	ILNode	   *type;
+	ILNode	   *argList;
+}
+
+%node ILNode_InvocationExpression ILNode_Expression =
+{
+	ILNode	   *function;
+	ILNode	   *argList;
+}
+
 /*
  * Identifiers and l-values.
  */
@@ -739,6 +759,37 @@ struct _tagILEvalValue
 {
 	ILNode	   *type;
 	ILNode	   *suffixes;
+}
+
+/*
+ * Attributes and sub types
+ */
+%node ILNode_Attribute ILNode_Declaration =
+{
+	ILNode	   *name;
+	ILNode	   *args;
+}
+
+%node ILNode_AttrArgs ILNode_Declaration =
+{
+	ILNode	   *positionalArgs;
+	ILNode	   *namedArgs;
+}
+
+%node ILNode_NamedArg ILNode_Declaration =
+{
+	ILNode	   *name;
+	ILNode	   *value;
+}
+
+/*
+ * Argument
+ */
+
+%node ILNode_Argument ILNode_Declaration =
+{
+	ILParameterModifier	modifier;
+	ILNode	   *expression;
 }
 
 /*

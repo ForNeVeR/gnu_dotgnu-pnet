@@ -1106,6 +1106,24 @@ JavaGenValue(ILNode_Unbox)
 	return type;
 }
 
+JavaGenValue(ILNode_NewExpression)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+JavaGenValue(ILNode_ObjectCreationExpression)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+JavaGenValue(ILNode_InvocationExpression)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
 /*
  * Generate the "then" branch for a comma expression.
  */

@@ -474,3 +474,23 @@ ILNode_GenDiscard(ILNode_LocalVariableType)
 {
 	/* TODO */
 }
+
+ILNode_GenDiscard(ILNode_Attribute)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_AttrArgs)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_NamedArg)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_Argument)
+{
+	/* TODO */
+}

@@ -49,7 +49,7 @@ BUILT_SOURCES = $(STAMP)
 
 cscc_cs_DEPENDENCIES = $(STAMP)
 
-$(STAMP): $(TREECC_INPUTS)
+$(STAMP): $(TREECC_INPUTS) ../codegen/$(STAMP)
 	$(TREECC) cs_defs.tc && touch $@
 
 install-exec-local:

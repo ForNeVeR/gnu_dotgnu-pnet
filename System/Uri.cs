@@ -195,7 +195,7 @@ public class Uri : MarshalByRefObject
 		private void Remove(ref int toBeRemoved, int tbrCache)
 		{
 			if (toBeRemoved == 0)
-				throw new UriFormatException(_("Arg_UriPathAbs"));
+				throw new UriFormatException(S._("Arg_UriPathAbs"));
 			printthisdir[toBeRemoved] = false;
 			if (String.Equals(dirs[toBeRemoved], ".."))
 				Remove(ref --toBeRemoved, ++tbrCache);

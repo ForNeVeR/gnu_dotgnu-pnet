@@ -40,6 +40,16 @@
 	#ifndef WIFEXITED
 		#define	WIFEXITED(status)		(((status) & 255) == 0)
 	#endif
+	#ifndef WTERMSIG
+		#define	WTERMSIG(status)		(((unsigned)(status)) & 0x7F)
+	#endif
+	#ifndef WIFSIGNALLED
+		#define	WIFSIGNALLED(status)	(((status) & 255) != 0)
+	#endif
+	#ifndef WCOREDUMP
+		#define	WCOREDUMP(status)		(((status) & 0x80) != 0)
+	#endif
+	#include <signal.h>
 #endif
 
 #ifdef	__cplusplus
@@ -179,6 +189,34 @@ int ILSpawnProcess(char *argv[])
 #if defined(HAVE_FORK) && defined(HAVE_EXECV) && (defined(HAVE_WAITPID) || defined(HAVE_WAIT))
 
 /*
+ * Determine if a signal is important enough to be reported.
+ * Simple exits like SIGINT, SIGTERM, etc are not considered
+ * important as they are "normal" ways to abort a process.
+ */
+static int ImportantSignal(unsigned sig)
+{
+#ifdef SIGSEGV
+	if(sig == SIGSEGV) return 1;
+#endif
+#ifdef SIGILL
+	if(sig == SIGILL) return 1;
+#endif
+#ifdef SIGBUS
+	if(sig == SIGBUS) return 1;
+#endif
+#ifdef SIGABRT
+	if(sig == SIGABRT) return 1;
+#endif
+#ifdef SIGFPE
+	if(sig == SIGFPE) return 1;
+#endif
+#ifdef SIGSTKFLT
+	if(sig == SIGSTKFLT) return 1;
+#endif
+	return 0;
+}
+
+/*
  * Use Unix-specific functions to spawn child processes.
  */
 int ILSpawnProcess(char *argv[])
@@ -216,9 +254,18 @@ int ILSpawnProcess(char *argv[])
 			/* Return the child's exit status as the final status */
 			return WEXITSTATUS(status);
 		}
-		else
+		else if(WIFSIGNALLED(status) &&
+		        (ImportantSignal(WTERMSIG(status)) || WCOREDUMP(status)))
 		{
 			/* Some kind of signal occurred */
+			fprintf(stderr, "%s: exited with signal %d%s\n",
+					argv[0], (int)(WTERMSIG(status)),
+					(WCOREDUMP(status) ? " (core dumped)" : ""));
+			return -1;
+		}
+		else
+		{
+			/* Some other kind of signal or error */
 			return -1;
 		}
 	}

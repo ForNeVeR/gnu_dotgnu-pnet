@@ -4,6 +4,9 @@
 	* configure.in: look for "mcs-sources" locally first, in case
 	we have the mcs sources in the local directory.
 
+	* copy-mcs.sh: add a helper script for copying the mcs sources
+	into a release tarball.
+
 2003-06-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* class/ByteFX.Data/ByteFX.Data.build,

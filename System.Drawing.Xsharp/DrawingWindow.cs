@@ -261,6 +261,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 					case KeyName.XK_KP_Insert:		return ToolkitKeys.Insert;
 					case KeyName.XK_Help:			return ToolkitKeys.Help;
 					case KeyName.XK_Num_Lock:		return ToolkitKeys.NumLock;
+					case KeyName.XK_space:			return ToolkitKeys.Space;
 					case KeyName.XK_KP_Space:		return ToolkitKeys.Space;
 					case KeyName.XK_F1:				return ToolkitKeys.F1;
 					case KeyName.XK_KP_F1:			return ToolkitKeys.F1;
@@ -326,6 +327,68 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 					case KeyName.XK_Hyper_R:
 							return ToolkitKeys.RMenu;
 					case KeyName.XK_Caps_Lock:		return ToolkitKeys.CapsLock;
+					case KeyName.XK_0:				return ToolkitKeys.D0;
+					case KeyName.XK_1:				return ToolkitKeys.D1;
+					case KeyName.XK_2:				return ToolkitKeys.D2;
+					case KeyName.XK_3:				return ToolkitKeys.D3;
+					case KeyName.XK_4:				return ToolkitKeys.D4;
+					case KeyName.XK_5:				return ToolkitKeys.D5;
+					case KeyName.XK_6:				return ToolkitKeys.D6;
+					case KeyName.XK_7:				return ToolkitKeys.D7;
+					case KeyName.XK_8:				return ToolkitKeys.D8;
+					case KeyName.XK_9:				return ToolkitKeys.D9;
+					case KeyName.XK_A:				return ToolkitKeys.A;
+					case KeyName.XK_B:				return ToolkitKeys.B;
+					case KeyName.XK_C:				return ToolkitKeys.C;
+					case KeyName.XK_D:				return ToolkitKeys.D;
+					case KeyName.XK_E:				return ToolkitKeys.E;
+					case KeyName.XK_F:				return ToolkitKeys.F;
+					case KeyName.XK_G:				return ToolkitKeys.G;
+					case KeyName.XK_H:				return ToolkitKeys.H;
+					case KeyName.XK_I:				return ToolkitKeys.I;
+					case KeyName.XK_J:				return ToolkitKeys.J;
+					case KeyName.XK_K:				return ToolkitKeys.K;
+					case KeyName.XK_L:				return ToolkitKeys.L;
+					case KeyName.XK_M:				return ToolkitKeys.M;
+					case KeyName.XK_N:				return ToolkitKeys.N;
+					case KeyName.XK_O:				return ToolkitKeys.O;
+					case KeyName.XK_P:				return ToolkitKeys.P;
+					case KeyName.XK_Q:				return ToolkitKeys.Q;
+					case KeyName.XK_R:				return ToolkitKeys.R;
+					case KeyName.XK_S:				return ToolkitKeys.S;
+					case KeyName.XK_T:				return ToolkitKeys.T;
+					case KeyName.XK_U:				return ToolkitKeys.U;
+					case KeyName.XK_V:				return ToolkitKeys.V;
+					case KeyName.XK_W:				return ToolkitKeys.W;
+					case KeyName.XK_X:				return ToolkitKeys.X;
+					case KeyName.XK_Y:				return ToolkitKeys.Y;
+					case KeyName.XK_Z:				return ToolkitKeys.Z;
+					case KeyName.XK_a:				return ToolkitKeys.A;
+					case KeyName.XK_b:				return ToolkitKeys.B;
+					case KeyName.XK_c:				return ToolkitKeys.C;
+					case KeyName.XK_d:				return ToolkitKeys.D;
+					case KeyName.XK_e:				return ToolkitKeys.E;
+					case KeyName.XK_f:				return ToolkitKeys.F;
+					case KeyName.XK_g:				return ToolkitKeys.G;
+					case KeyName.XK_h:				return ToolkitKeys.H;
+					case KeyName.XK_i:				return ToolkitKeys.I;
+					case KeyName.XK_j:				return ToolkitKeys.J;
+					case KeyName.XK_k:				return ToolkitKeys.K;
+					case KeyName.XK_l:				return ToolkitKeys.L;
+					case KeyName.XK_m:				return ToolkitKeys.M;
+					case KeyName.XK_n:				return ToolkitKeys.N;
+					case KeyName.XK_o:				return ToolkitKeys.O;
+					case KeyName.XK_p:				return ToolkitKeys.P;
+					case KeyName.XK_q:				return ToolkitKeys.Q;
+					case KeyName.XK_r:				return ToolkitKeys.R;
+					case KeyName.XK_s:				return ToolkitKeys.S;
+					case KeyName.XK_t:				return ToolkitKeys.T;
+					case KeyName.XK_u:				return ToolkitKeys.U;
+					case KeyName.XK_v:				return ToolkitKeys.V;
+					case KeyName.XK_w:				return ToolkitKeys.W;
+					case KeyName.XK_x:				return ToolkitKeys.X;
+					case KeyName.XK_y:				return ToolkitKeys.Y;
+					case KeyName.XK_z:				return ToolkitKeys.Z;
 				}
 				return ToolkitKeys.None;
 			}
@@ -432,12 +495,9 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				{
 					// Emit the "KeyDown" event.
 					ToolkitKeys keyData = MapKey(key, modifiers);
-					if(keyData != ToolkitKeys.None)
+					if(sink.ToolkitKeyDown(keyData))
 					{
-						if(sink.ToolkitKeyDown(keyData))
-						{
-							processed = true;
-						}
+						processed = true;
 					}
 
 					// Emit the "KeyChar" event if necessary.
@@ -462,10 +522,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				{
 					// Emit the "KeyUp" event.
 					ToolkitKeys keyData = MapKey(key, modifiers);
-					if(keyData != ToolkitKeys.None)
-					{
-						return sink.ToolkitKeyUp(keyData);
-					}
+					return sink.ToolkitKeyUp(keyData);
 				}
 				return false;
 			}

@@ -1,3 +1,11 @@
+
+2003-07-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs: map alphabetic and digit
+	keys in "DrawingWindow.MapKey"; always deliver KeyDown/KeyUp
+	events even if the key could not be successfully mapped.
+
 2003-07-28  Neil Cawse   <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: Fixes and lineAlignment to

@@ -337,12 +337,9 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				{
 					// Emit the "KeyDown" event.
 					ToolkitKeys keyData = DrawingWindow.MapKey(key, modifiers);
-					if(keyData != ToolkitKeys.None)
+					if(sink.ToolkitKeyDown(keyData))
 					{
-						if(sink.ToolkitKeyDown(keyData))
-						{
-							processed = true;
-						}
+						processed = true;
 					}
 
 					// Emit the "KeyChar" event if necessary.
@@ -367,10 +364,7 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				{
 					// Emit the "KeyUp" event.
 					ToolkitKeys keyData = DrawingWindow.MapKey(key, modifiers);
-					if(keyData != ToolkitKeys.None)
-					{
-						return sink.ToolkitKeyUp(keyData);
-					}
+					return sink.ToolkitKeyUp(keyData);
 				}
 				return false;
 			}

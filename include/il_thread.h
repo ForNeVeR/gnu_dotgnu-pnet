@@ -60,8 +60,9 @@ typedef void (*ILThreadStartFunc)(void *startArg);
  */
 typedef void (*ILThreadCleanupFunc)(ILThread *thread);
 
+typedef struct _tagILInterruptContext ILInterruptContext;
 
-typedef void (*ILIllegalMemoryAccessHandler)(void *address);
+typedef void (*ILIllegalMemoryAccessHandler)(ILInterruptContext *context);
 
 int ILThreadRegisterIllegalMemoryAccessHandler(ILThread *thread, ILIllegalMemoryAccessHandler handler);
 

@@ -258,7 +258,7 @@ AC_CHECK_HEADERS(sys/socket.h netinet/in.h langinfo.h locale.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h netdb.h sys/cygwin.h dirent.h sys/utime.h utime.h)
 AC_CHECK_HEADERS(linux/types.h limits.h inttypes.h stddef.h sys/param.h)
 AC_CHECK_HEADERS(sys/file.h sys/wait.h malloc.h stdbool.h)
-AC_CHECK_HEADERS(setjmp.h)
+AC_CHECK_HEADERS(setjmp.h sys/ucontext.h)
 AC_CHECK_HEADERS([linux/irda.h], [], [],
 [[#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -460,7 +460,7 @@ AC_CHECK_FUNCS(cygwin_conv_to_win32_path snprintf rename utime)
 AC_CHECK_FUNCS(mkdir ioctl setsockopt getsockopt uname)
 AC_CHECK_FUNCS(tcgetattr readlink symlink rmdir strsignal)
 AC_CHECK_FUNCS(chmod umask)
-AC_CHECK_FUNCS(setjmp longjmp signal sigaction abort exit _exit)
+AC_CHECK_FUNCS(setjmp longjmp signal sigaction abort exit _exit siglongjmp sigsetjmp)
 AC_FUNC_ALLOCA
 
 dnl check for F_SETLKW fcntl function.

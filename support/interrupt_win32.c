@@ -38,11 +38,31 @@ static LPTOP_LEVEL_EXCEPTION_FILTER __previousFilter;
 static LONG CALLBACK __UnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 {
 	ILThread *thread = ILThreadSelf();
+	ILInterruptContext context;
 
 	switch (ExceptionInfo->ExceptionRecord->ExceptionCode)
 	{
 	case EXCEPTION_ACCESS_VIOLATION:
-		thread->illegalMemoryAccessHandler(ExceptionInfo->ExceptionRecord->ExceptionAddress);
+		context.address = ExceptionInfo->ExceptionRecord->ExceptionAddress;
+
+		#ifdef IL_INTERRUPT_HAVE_X86_CONTEXT
+
+		/* Integer registers */
+		context.Edi = ExceptionInfo->ContextRecord->Edi;
+		context.Esi = ExceptionInfo->ContextRecord->Esi;
+		context.Ebx = ExceptionInfo->ContextRecord->Ebx;
+		context.Edx = ExceptionInfo->ContextRecord->Edx;
+		context.Ecx = ExceptionInfo->ContextRecord->Ecx;
+		context.Eax = ExceptionInfo->ContextRecord->Eax;
+
+		/* Control registers */
+		context.Ebp = ExceptionInfo->ContextRecord->Ebp;
+		context.Eip = ExceptionInfo->ContextRecord->Eip;
+		context.Esp = ExceptionInfo->ContextRecord->Esp;
+		#endif
+
+		thread->illegalMemoryAccessHandler(&context);
+
 		break;
 	}
 

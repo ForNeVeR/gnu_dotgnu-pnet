@@ -26,6 +26,31 @@
 #include "il_config.h"
 #include "il_values.h"
 
+#if defined(__i386) || defined(__i386__) || defined(__x86_64__)
+struct _tagILInterruptContext
+{
+	void *address;
+	
+	/* Integer registers */
+	unsigned int Eax;
+	unsigned int Ebx;	
+	unsigned int Ecx;
+	unsigned int Edx;
+	unsigned int Edi;
+	unsigned int Esi;
+
+	/* Control registers */
+	unsigned int Ebp;
+	unsigned int Eip;
+	unsigned int Esp;
+};
+#else
+struct _tagILInterruptContext
+{
+	void *address;
+};
+#endif
+
 #if (defined(HAVE_SETJMP) || defined(HAVE_SETJMP_H)) \
 	&& defined(HAVE_LONGJMP)
 
@@ -43,6 +68,18 @@
 		#define IL_INTERRUPT_SUPPORTS 1
 		#define IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS 1
 		#define IL_INTERRUPT_WIN32 1
+		#if defined(__i386) || defined(__i386__) || defined(__x86_64__)
+			#define IL_INTERRUPT_HAVE_X86_CONTEXT 1
+		#endif
+	#elif defined(linux) || defined(__linux) || defined(__linux__) \
+		&& (defined(HAVE_SIGNAL) || defined(HAVE_SIGACTION))
+		#define IL_INTERRUPT_SUPPORTS 1
+		#define IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS 1
+		#define IL_INTERRUPT_POSIX 1
+		#if (defined(__i386) || defined(__i386__)) || defined(__x86_64__) \
+			&& defined(HAVE_SIGACTION) && defined(HAVE_UCONTEXT_H) \
+			#define IL_INTERRUPT_HAVE_X86_CONTEXT 1
+		#endif
 	#endif
 
 #endif

@@ -3,6 +3,24 @@
 	* support/hb_gc.c: Fix ILGCDisableFinalizers not atomically
 	checking existing disable status.
 	
+	* configure.in: Added check for sys/ucontext.h, exit, _exit,
+	siglongjmp and sigsetjmp.
+	
+	* include/il_thread.h: Added ILInterruptContext and added it
+	as the only argument for ILIllegalMemoryAccessHandler.
+	
+	* support/interrupt.c: Updated formatting.
+	
+	* support/interrupt.h: Added implementation of ILInterruptContext
+	for x86 and generic platforms.  Added support for posix systems.
+	
+	* support/interrupt_posix.c: Added interrupt support for posix
+	systems using sigaction or signal if availab.e  Added support
+	for x86 interrupt register contexts.
+	
+	* support/interrupt_win32.c: Added support for x86 interrupt
+	register contexts.	
+	
 2004-06-14  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/test_thread.c: Changed thread_other_object test

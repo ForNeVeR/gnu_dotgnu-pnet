@@ -27,9 +27,8 @@ using System.Collections;
 public class ArrayObject : JSObject
 {
 	// Internal state.
-	private Object[] array;
-	private uint arrayLen;
-	private bool isSparse;
+	internal Array array;
+	internal uint arrayLen;
 
 	// Constructor.
 	internal ArrayObject(ScriptObject prototype)
@@ -37,7 +36,12 @@ public class ArrayObject : JSObject
 			{
 				array = null;
 				arrayLen = 0;
-				isSparse = false;
+			}
+	internal ArrayObject(ScriptObject prototype, uint len)
+			: base(prototype)
+			{
+				array = null;
+				arrayLen = len;
 			}
 
 	// Get or set the length of the array.
@@ -56,7 +60,28 @@ public class ArrayObject : JSObject
 				}
 				set
 				{
-					// TODO
+					double num = Convert.ToNumber(value);
+					uint inum = Convert.ToUInt32(value);
+					if(num != (double)inum)
+					{
+						throw new JScriptException
+							(JSError.ArrayLengthAssignIncorrect);
+					}
+					if(array != null && inum < arrayLen &&
+					   inum < (uint)(array.Length))
+					{
+						if(arrayLen < (uint)(array.Length))
+						{
+							Array.Clear(array, (int)inum,
+										(int)(arrayLen - inum));
+						}
+						else
+						{
+							Array.Clear(array, (int)inum,
+										array.Length - (int)inum);
+						}
+					}
+					arrayLen = inum;
 				}
 			}
 
@@ -78,16 +103,31 @@ public class ArrayObject : JSObject
 				}
 				else
 				{
-					return base.Get(name);
+					double num = Convert.ToNumber(name);
+					uint inum = Convert.ToUInt32(name);
+					if(num != (double)inum)
+					{
+						return base.Get(name);
+					}
+					else if(inum < arrayLen && array != null &&
+							inum < (uint)(array.Length))
+					{
+						return array.GetValue((int)inum);
+					}
+					else
+					{
+						return null;
+					}
 				}
 			}
 
 	// Get a property from this object by numeric index.
 	internal override Object GetIndex(int index)
 			{
-				if(!isSparse && index >= 0 && ((uint)index) < arrayLen)
+				if(index >= 0 && ((uint)index) < arrayLen &&
+				   array != null && index < array.Length)
 				{
-					return array[index];
+					return array.GetValue(index);
 				}
 				else
 				{
@@ -102,7 +142,7 @@ public class ArrayObject : JSObject
 				{
 					length = value;
 				}
-				else
+				else if(CanPut(name))
 				{
 					// TODO
 				}
@@ -141,6 +181,78 @@ public class ArrayObject : JSObject
 				// TODO
 				return null;
 			}
+
+	// Wrapper class for wrapping up a native array.
+	internal sealed class Wrapper : ArrayObject
+	{
+		// Constructor.
+		public Wrapper(ScriptObject prototype, Array array)
+				: base(prototype, (uint)(array.Length))
+				{
+					this.array = array;
+				}
+
+		// Get or set the length of the array.
+		public override Object length
+				{
+					get
+					{
+						return array.Length;
+					}
+					set
+					{
+						throw new JScriptException
+							(JSError.AssignmentToReadOnly);
+					}
+				}
+
+		// Get a property from this object by numeric index.
+		internal override Object GetIndex(int index)
+				{
+					if(index >= 0 && index < array.Length)
+					{
+						return array.GetValue(index);
+					}
+					else
+					{
+						return null;
+					}
+				}
+
+		// Put a property to this object.
+		internal override void Put(String name, Object value)
+				{
+					if(name == "length")
+					{
+						length = value;
+					}
+					else if(CanPut(name))
+					{
+						double num = Convert.ToNumber(name);
+						uint inum = Convert.ToUInt32(name);
+						if(num != (double)inum)
+						{
+							// Force an array index exception.
+							inum = (uint)(array.Length);
+						}
+						array.SetValue(value, (int)inum);
+					}
+				}
+
+		// Put a property to this object by numeric index.
+		internal override void PutIndex(int index, Object value)
+				{
+					array.SetValue(value, index);
+				}
+
+		// Delete a property from this object.
+		internal override bool Delete(String name)
+				{
+					// Deletions are not allowed on native arrays.
+					return false;
+				}
+
+	}; // class Wrapper
 
 }; // class ArrayObject
 

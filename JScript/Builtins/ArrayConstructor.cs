@@ -35,44 +35,110 @@ public sealed class ArrayConstructor : ScriptFunction
 	// Construct a new array from a list of elements.
 	public ArrayObject ConstructArray(Object[] args)
 			{
-				// TODO
-				return null;
+				ArrayObject obj = new ArrayObject
+					(EngineInstance.GetEngineInstance(engine)
+							.GetArrayPrototype());
+				int index, len;
+				len = args.Length;
+				for(index = 0; index < len; ++index)
+				{
+					obj.PutIndex(index, args[index]);
+				}
+				return obj;
 			}
 
 	// Construct a new "Array" instance.
 	[JSFunction(JSFunctionAttributeEnum.HasVarArgs)]
 	public new ArrayObject CreateInstance(params Object[] args)
 			{
-				// TODO
-				return null;
+				return (ArrayObject)Construct(engine, args);
 			}
 
 	// Invoke this constructor.
 	[JSFunction(JSFunctionAttributeEnum.HasVarArgs)]
 	public ArrayObject Invoke(params Object[] args)
 			{
-				if(args.Length == 1 && args[0] is Array)
-				{
-					// TODO: wrap the normal array in a JScript array object.
-					return null;
-				}
-				else
-				{
-					return CreateInstance(args);
-				}
+				return (ArrayObject)Construct(engine, args);
 			}
 
 	// Perform a call on this object.
 	internal override Object Call
 				(VsaEngine engine, Object thisob, Object[] args)
 			{
-				return Invoke(args);
+				return Construct(engine, args);
 			}
 
 	// Perform a constructor call on this object.
 	internal override Object Construct(VsaEngine engine, Object[] args)
 			{
-				return CreateInstance(args);
+				ArrayObject obj;
+				int index, len;
+				if(args.Length != 1)
+				{
+					// Construct an array from a list of values.
+					obj = new ArrayObject
+						(EngineInstance.GetEngineInstance(engine)
+								.GetArrayPrototype(), (uint)(args.Length));
+					len = args.Length;
+					for(index = 0; index < len; ++index)
+					{
+						obj.PutIndex(index, args[index]);
+					}
+				}
+				else if(args[0] is Array)
+				{
+					// Wrap an existing array.
+					Array array = (Array)(args[0]);
+					if(array.Rank != 1)
+					{
+						throw new JScriptException(JSError.TypeMismatch);
+					}
+					obj = new ArrayObject.Wrapper
+						(EngineInstance.GetEngineInstance(engine)
+								.GetArrayPrototype(), (Array)(args[0]));
+				}
+				else
+				{
+					// Construct an array from a length value.
+					switch(Support.TypeCodeForObject(args[0]))
+					{
+						case TypeCode.Byte:
+						case TypeCode.SByte: 
+						case TypeCode.Char: 
+						case TypeCode.Int16: 
+						case TypeCode.UInt16:
+						case TypeCode.Int32:
+						case TypeCode.UInt32:
+						case TypeCode.Int64:
+						case TypeCode.UInt64:
+						case TypeCode.Single:
+						case TypeCode.Double:
+						case TypeCode.Decimal:
+						{
+							double num = Convert.ToNumber(args[0]);
+							uint inum = Convert.ToUInt32(args[0]);
+							if(num == (double)inum)
+							{
+								return new ArrayObject
+									(EngineInstance.GetEngineInstance(engine)
+											.GetArrayPrototype(), inum);
+							}
+							else
+							{
+								throw new JScriptException
+									(JSError.ArrayLengthConstructIncorrect);
+							}
+						}
+						// Not reached.
+					}
+
+					// The length is not numeric, so it is actually a value.
+					obj = new ArrayObject
+						(EngineInstance.GetEngineInstance(engine)
+								.GetArrayPrototype());
+					obj.PutIndex(0, args[0]);
+				}
+				return obj;
 			}
 
 }; // class ArrayConstructor

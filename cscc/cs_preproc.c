@@ -675,8 +675,8 @@ static char *ParseIdentifier(CSPreProc *preproc, CSPreProcLine *info,
 	line = (*_line);
 
 	/* Is this a legal identifier start character? */
-	if((*line >= 'A' && *line <= 'Z') ||
-	   (*line >= 'a' && *line <= 'z') || *line == '_')
+	if((*line < 'A' || *line > 'Z') &&
+	   (*line < 'a' || *line > 'z') && *line != '_')
 	{
 		Message(info, "pre-processor identifier expected", 0);
 		preproc->error = 1;

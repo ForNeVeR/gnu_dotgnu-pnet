@@ -226,6 +226,12 @@ internal sealed class ClrResourceStream : Stream
 				throw new NotSupportedException(_("IO_NotSupp_Write"));
 			}
 
+	// Get the raw address of a specific position in this stream.
+	public unsafe byte *GetAddress(long position)
+			{
+				return ResourceGetAddress(handle, start + position);
+			}
+
 	// Determine if we can read from this stream.
 	public override bool CanRead
 			{
@@ -285,6 +291,11 @@ internal sealed class ClrResourceStream : Stream
 	// that the position is valid for the resource, with an implied count of 1.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static int ResourceReadByte(IntPtr handle, long position);
+
+	// Get the raw address of a position within a manifest resource.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private unsafe static byte *ResourceGetAddress
+				(IntPtr handle, long position);
 
 }; // class ClrResourceStream
 

@@ -1,4 +1,13 @@
 
+2002-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/NotSupp.txt,
+	runtime/System/Reflection/ClrResourceStream.cs,
+	runtime/System/Text/CP932.cs,
+	runtime/System/Text/CodeTable.cs,
+	runtime/System/Text/JISConvert.cs: add support for code page 932,
+	Japanese (Shift-JIS); conversion tables are still to be done.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/.cvsignore, runtime/System/Text/ByteEncoding.cs,

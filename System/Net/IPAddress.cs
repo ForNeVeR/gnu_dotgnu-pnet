@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
- * Contributed by Gerard Toonstra <toonstra@ntlworld.com>
+ * Contributions by Gerard Toonstra <toonstra@ntlworld.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,21 +27,22 @@ using System;
 
 public class IPAddress
 {
+
+	// note that the address long is backwards; that is, 1.2.3.4 becomes
+	// 0x0000000004030201
+	// at least it is here. However, host-byte-order is what it is supposed to be,
+	// and I don't know if all hosts are little word, little endian ;)
 	private long value__;
-	
-	public IPAddress(long newAddress) 
+
+	IPAddress(long newAddress)
 			{
 				if ((newAddress < 0) || (newAddress > 0x00000000FFFFFFFF))
-					throw new ArgumentOutOfRangeException("newAddress",_("Arg_OutOfRange")); 
-				value__ = newAddress;
+					throw new ArgumentOutOfRangeException("newAddress",_("Arg_OutOfRange"));
+				this.value__ = newAddress;
 
 				// Any, Broadcast, Loopback, and None are static
-				Any = new IPAddress(0x0000000000000000);
-				Broadcast = new IPAddress(0x00000000FFFFFFFF);
-				Loopback = new IPAddress(0x000000000100007F);
-				None = new IPAddress(0x00000000FFFFFFFF);
 			}
-	
+
 	public override bool Equals(Object comparand)
 			{
 				if (comparand is IPAddress)
@@ -59,7 +60,7 @@ public class IPAddress
 				return unchecked(((int)(value__ ^ (value__ >> 32)))
 										& 0xFFFFFFFF);
 			}
-	
+	// I think the next three will have to be InternalCalls
 	[TODO]
 	public static long HostToNetworkOrder(long host)
 			{
@@ -77,17 +78,11 @@ public class IPAddress
 			}
 	public static bool IsLoopback(IPAddress address)
 			{
-				if ((address.value__ >= 0x000000000000007F) && (address.value__ <=
- 0x00000000FFFFFF7F))
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
+				// careful here, after all, 0x80 >= 0x7F, but should return false
+				// only LSByte value matters
+				return ((address.value__ & 0x00000000000000FF) == 0x000000000000007F);
 			}
-	
+	// I think the next three will have to be InternalCalls
 	[TODO]
 	public static long NetworkToHostOrder(long network)
 			{
@@ -103,10 +98,10 @@ public class IPAddress
 			{
 				return 0;
 			}
-	public static IPAddress Parse(string ipString)
+	public static IPAddress Parse(String ipString)
 			{
 				IPAddress parsed;
-				string[]  tokenizedString;
+				String[]  tokenizedString;
 				ulong quadA;
 				ulong quadB;
 				ulong quadC;
@@ -118,13 +113,17 @@ public class IPAddress
 					throw new ArgumentNullException("ipString",_("Arg_NotNull"));
 				}
 
-				tokenizedString = String.Split(".", 4);
+				char[] point = {'.'};
+				// this only takes char[]. not String
+				tokenizedString = String.Split(point, 4);
 				
 				if (tokenizedString.Length < 4)
 				{
 					throw new FormatException("ipString", _("Format_IP"));
 				}
 
+				// this might be easier to understand were it implemented
+				// in terms of System.Byte.Parse(String)
 				if ((!NumberParser.StringToNumber(tokenizedString[0], 10, quadA,
  numbersign)) ||
 					(!NumberParser.StringToNumber(tokenizedString[1], 10, quadB, numbersign))
@@ -133,7 +132,7 @@ public class IPAddress
  ||
 					(!NumberParser.StringToNumber(tokenizedString[3], 10, quadD, numbersign)))
 				{
-					throw new FormatException("ipString", _("Format_IP"));				
+					throw new FormatException("ipString", _("Format_IP"));
 				}
 
 				parsed = (quadA + (quadB << 2) + (quadC << 4) + (quadD << 6));

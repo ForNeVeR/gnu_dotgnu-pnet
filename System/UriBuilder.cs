@@ -47,9 +47,6 @@ using System.Text;
 
 public class UriBuilder
 {
-	// questionmark and hash are now not necessary
-	private static const String SLASH = "/";
-
 	// State.
 
 	// Holds the scheme information. (search 0->:)
@@ -79,7 +76,7 @@ public class UriBuilder
 	{
 		this.fragment = String.Empty;
 		// localhost, not loopback!
-		this.host = Uri.LOCALHOST;
+		this.host = "localhost";
 		this.password = String.Empty;
 		this.path = String.Empty;
 		this.port = -1;
@@ -168,7 +165,8 @@ public class UriBuilder
 		// parsing Authority:
 		// note: fixed this to stop before ? or #, which don't require
 		// path to come first (look at mailto:)
-		int eoAuthority = instr.IndexOfAny(['/', '?', '#'], curpos);
+		char[] sqh = {'/', '?', '#'};
+		int eoAuthority = instr.IndexOfAny(sqh, curpos);
 		if (eoAuthority == -1) eoAuthority = instr.Length;
 		int eoSect = instr.IndexOf('@', curpos, eoAuthority - curpos);
 		if (eoSect > 0)
@@ -239,7 +237,7 @@ public class UriBuilder
 			this.path = ValidatePath(instr.Substring(curpos,
 				eoAuthority - curpos), escaped);
 		else
-			this.path = UriBuilder.SLASH;
+			this.path = "/";
 
 		if (eoAuthority < eoSect)
 			this.query = ValidateQuery(instr.Substring(eoAuthority + 1,
@@ -346,7 +344,7 @@ public class UriBuilder
 		set
 		{
 			if (value.Length == 0)
-				this.path = SLASH;
+				this.path = "/";
 			else if (value[0] == '/')
 				this.path = value;
 			else

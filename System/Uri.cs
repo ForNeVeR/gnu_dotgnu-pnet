@@ -21,7 +21,7 @@
  */
 
 // global TODO:
-// move const character-strings here, make internal, fix UriBuilder to use
+// find where the Trim(String) function is
 // go through the comparison code, do not assume escaping (possibly parse always)
 
 namespace System
@@ -33,20 +33,12 @@ using System.IO;
 public class Uri : MarshalByRefObject
 {
 
-	internal static const String LOCALHOST = "localhost";
-	private static const String LOCALHOSTIP = "127.0.0.1";
-	// no point in kludging this one for speed
-	private static const String RESERVED_CHARS = ";/:@&=+$,";
-
 	// the capital letters are between 0x41 and 0x5A
 	// the lowercase letters are between 0x61 and 0x7A
 	// the numbers are between 0x30 and 0x39
 	// .=2E +=2B -=2D
 	// beware, for they are valid scheme chars
 	// now I don't need the string anymore FOR VALIDSCHEMECHARS
-
-	// this also includes anything under 32 or over 127
-	private static const String EXCLUDED_UNWISE_CHARS = "<>#%\"{}|\\^[]`"
 
 	// magic strings...
 	public static readonly String SchemeDelimiter = "://";
@@ -63,12 +55,27 @@ public class Uri : MarshalByRefObject
 
 	// state. mostly the same as UriBuilder
 
+
+	// here's some of chiraz's extras
+	// note that I did not make them capitalised; I do not want namespace conflict
+	private String          absolutePath; // the path to the resource on the host (/uri/blah)
+	private String          absolutePathEscaped; // the unescaped version of the absolute path.
+	private String          absoluteUri;  // the absolute uri to the resource (in it's entirety)
+	// is true if the user had already escaped the URL before it was passed
+	// into the constructor. (escaped was true).
+	// however, if the user did escape it, but didn't tell the constructor, it
+	// is up to the system to detect whether or not it was escaped.
+	private bool		userEscaped;
+	// authority, hostnametype, isdefaultport, isloopback,
+
 	// Holds the scheme information. (search 0->:)
+	// doesn't contain ://
 	private String scheme;
 
 	// authority = userinfo+host+port
 	// userinfo = username:password
 	private String userinfo;
+	// host does not contain the port
 	private String host;
 	private int port;
 
@@ -87,24 +94,52 @@ public class Uri : MarshalByRefObject
 	// end of state
 
 	// Constructors.
-	[TODO]
-	Uri(String uriString)
+	Uri(String uriString) : this(uriString, false)
 	{
 	}
 
-	[TODO]
-	public Uri(String uriString, bool dontEscape)
+	Uri(String uriString, bool dontEscape)
 	{
+		if (uriString == null)
+		{
+			throw new ArgumentNullException("uriString");
+		}
+
+		userEscaped = dontEscape;
+		this.absoluteUri = Trim(uriString);
+
+		this.Parse();
+		this.Canonicalize();
 	}
 
-	[TODO]
-	public Uri(Uri baseUri, String relativeUri)
+	Uri(Uri baseUri, String relativeUri) : this(baseUri, relativeUri, false)
 	{
 	}
 
 	[TODO]
 	public Uri(Uri baseUri, String relativeUri, bool dontEscape)
+	// improve efficiency of this code (EndsWith, StartsWith to IndexOf)
 	{
+	if (baseUri== null)
+		throw new ArgumentNullException("baseUri");
+
+	if (relativeUri== null)
+		throw new ArgumentNullException("relativeUri");
+
+	// Making local copies that we use for modification
+	String myBaseUri = Trim(baseUri.AbsoluteUri);
+	String myRelativeUri = Trim(relativeUri);
+	UserEscaped = dontEscape;
+	while (myBaseUri.EndsWith("/"))
+		myBaseUri = myBaseUri.Substring(0, myBaseUri.Length() - 2);
+
+	while (myRelativeUri.StartsWith("/"))
+		relativeUri = relativeUri.Substring( 1 );
+
+	this.absoluteUri = baseUri + "/" + relativeUri;
+
+	Parse();
+	Canonicalize();
 	}
 
 	// methods
@@ -145,7 +180,7 @@ public class Uri : MarshalByRefObject
 		(character >= '0' && character <= '9') ||
 		// check the other three
 		character == '.' || character == '+' || character == '-'
-		)
+		);
 	}
 
 	protected virtual void CheckSecurity()
@@ -270,7 +305,7 @@ public class Uri : MarshalByRefObject
 	protected static bool IsExcludedCharacter(char character)
 	{
 		return (character < 0x20 || character > 0x7F ||
-			EXCLUDED_UNWISE_CHARS.IndexOf(character) >= 0);
+			"<>#%\"{}|\\^[]`".IndexOf(character) >= 0);
 	}
 
 	public static bool IsHexDigit(char character)
@@ -290,7 +325,7 @@ public class Uri : MarshalByRefObject
 
 	protected virtual bool IsReservedCharacter(char character)
 	{
-		return (RESERVED_CHARS.IndexOf(character) >= 0);
+		return (";/:@&=+$,".IndexOf(character) >= 0);
 	}
 
 	[TODO]
@@ -398,8 +433,10 @@ public class Uri : MarshalByRefObject
 	{
 		get
 		{
-			return (String.Equals(this.host, Uri.LOCALHOST) ||
-				String.Equals(this.host, Uri.LOCALHOSTIP));
+			return (String.Equals(this.host, "localhost") ||
+				// according to System.Net.IPAddress, anything in 127.X.Y.Z
+				// is loopback. Maybe change this to comply.
+				String.Equals(this.host, "127.0.0.1"));
 		}
 	}
 

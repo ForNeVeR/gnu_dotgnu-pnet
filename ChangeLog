@@ -1,3 +1,18 @@
+2002-03-22  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Began to integrate changes from chiraz's patch
+	and the original implementation into one *working*
+	implementation. Also, fixed syntax errors.
+
+	* System/UriBuilder.cs: Got rid of last `static const' string in
+	favor of the efficient ilrun persistent-string system. Also, fixed
+	syntax errors.
+
+	* System/Net/IPAddress.cs: Made syntax fixes and other minor
+	changes.
+
+	* resources/en_US/runtime/Format.txt: Added new string,
+	"Format_IP", from chiraz's patch.
 
 2002-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

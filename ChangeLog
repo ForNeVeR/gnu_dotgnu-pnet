@@ -41,6 +41,9 @@ runtime/System/MulticastDelegate.cs,
 runtime/System/Reflection/ClrHelpers.cs: implement unicast and multicast
 delegates.
 
+* runtime/System/Empty.cs: declare this class as "internal", because it
+is only important to the internal workings of the library.
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

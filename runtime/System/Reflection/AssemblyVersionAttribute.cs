@@ -22,8 +22,6 @@
 namespace System.Reflection
 {
 
-#if !ECMA_COMPAT
-
 using System;
 using System.Configuration.Assemblies;
 
@@ -51,7 +49,5 @@ public sealed class AssemblyVersionAttribute : Attribute
 			}
 
 }; // class AssemblyVersionAttribute
-
-#endif // !ECMA_COMPAT
 
 }; // namespace System.Reflection

@@ -11,6 +11,9 @@
 	* configure.in: use "cygpath" to convert the "cscc" and
 	"cscc-cs" pathnames into Windows form under Cygwin.
 
+	* runtime/System/Reflection/AssemblyVersionAttribute.cs:
+	remove ECMA_COMPAT protection from AssemblyVersionAttribute.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* runtime/System/IO/Directory.cs: Support recursive directory deletion,

@@ -56,6 +56,11 @@ typedef struct
 } ILDebugIter;
 
 /*
+ * Determine if an image has debug information.
+ */
+int ILDebugPresent(ILImage *image);
+
+/*
  * Create a debug context for an image.  Returns NULL if out of memory.
  */
 ILDebugContext *ILDebugCreate(ILImage *image);

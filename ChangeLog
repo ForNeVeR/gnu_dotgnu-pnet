@@ -9,6 +9,11 @@
 	image/debug_writer.c: output debug line information from the
 	assembler.
 
+	* ilalink/link_attrs.c, ilalink/link_class.c, ilalink/link_field.c,
+	ilalink/link_method.c, ilalink/link_misc.c, ilalink/linker.h,
+	image/debug_reader.c, include/il_debug.h: link debug information
+	from object files into the final assembly.
+
 2002-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, include/il_config.h.in: detect some new library

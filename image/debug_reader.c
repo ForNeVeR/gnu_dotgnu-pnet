@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "image.h"
 #include "il_debug.h"
-#include "il_system.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -39,6 +39,11 @@ struct _tagILDebugContext
 	unsigned long			stringsLen;
 
 };
+
+int ILDebugPresent(ILImage *image)
+{
+	return (image->debugRVA != 0);
+}
 
 ILDebugContext *ILDebugCreate(ILImage *image)
 {

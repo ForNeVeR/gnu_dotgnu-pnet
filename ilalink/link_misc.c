@@ -98,6 +98,13 @@ int _ILLinkerConvertProperty(ILLinker *linker, ILProperty *property,
 		return 0;
 	}
 
+	/* Convert the debug information that is attached to the property */
+	if(!_ILLinkerConvertDebug(linker, (ILProgramItem *)property,
+						      (ILProgramItem *)newProperty))
+	{
+		return 0;
+	}
+
 	/* Done */
 	return 1;
 }
@@ -149,6 +156,13 @@ int _ILLinkerConvertEvent(ILLinker *linker, ILEvent *event,
 
 	/* Convert the attributes that are attached to the event */
 	if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)event,
+						      (ILProgramItem *)newEvent))
+	{
+		return 0;
+	}
+
+	/* Convert the debug information that is attached to the event */
+	if(!_ILLinkerConvertDebug(linker, (ILProgramItem *)event,
 						      (ILProgramItem *)newEvent))
 	{
 		return 0;

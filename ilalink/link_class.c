@@ -133,6 +133,13 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		return 0;
 	}
 
+	/* Convert the debug information that is attached to the class */
+	if(!_ILLinkerConvertDebug(linker, (ILProgramItem *)classInfo,
+							  (ILProgramItem *)newClass))
+	{
+		return 0;
+	}
+
 	/* Copy the class layout information */
 	layout = ILClassLayoutGetFromOwner(classInfo);
 	if(layout)

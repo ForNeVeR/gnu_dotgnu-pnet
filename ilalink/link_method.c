@@ -675,6 +675,13 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 		return 0;
 	}
 
+	/* Convert the debug information that is attached to the method */
+	if(!_ILLinkerConvertDebug(linker, (ILProgramItem *)method,
+						      (ILProgramItem *)newMethod))
+	{
+		return 0;
+	}
+
 	/* Convert the PInvoke information for the method */
 	pinvoke = ILPInvokeFind(method);
 	if(pinvoke)

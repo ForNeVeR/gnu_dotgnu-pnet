@@ -28,6 +28,7 @@
 #include "il_system.h"
 #include "il_utils.h"
 #include "il_dumpasm.h"
+#include "il_debug.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -178,6 +179,12 @@ int _ILLinkerConvertAttrs(ILLinker *linker, ILProgramItem *oldItem,
  */
 int _ILLinkerConvertSecurity(ILLinker *linker, ILProgramItem *oldItem,
 						     ILProgramItem *newItem);
+
+/*
+ * Convert debug information from an old item to a new item.
+ */
+int _ILLinkerConvertDebug(ILLinker *linker, ILProgramItem *oldItem,
+						  ILProgramItem *newItem);
 
 /*
  * Convert all classes from a link image.

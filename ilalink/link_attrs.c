@@ -120,6 +120,192 @@ int _ILLinkerConvertSecurity(ILLinker *linker, ILProgramItem *oldItem,
 	return 1;
 }
 
+int _ILLinkerConvertDebug(ILLinker *linker, ILProgramItem *oldItem,
+						  ILProgramItem *newItem)
+{
+	ILDebugContext *dbg;
+	ILDebugIter iter;
+	ILMetaDataRead reader;
+	char buf[1024];
+	unsigned long len;
+	const char *name;
+	unsigned long nameIndex;
+	unsigned long temp1;
+	unsigned long temp2;
+	unsigned long temp3;
+
+	/* Bail out if no debug information for the old image */
+	if(!ILDebugPresent(ILProgramItem_Image(oldItem)))
+	{
+		return 1;
+	}
+
+	/* Create a debug context for the old image */
+	dbg = ILDebugCreate(ILProgramItem_Image(oldItem));
+	if(!dbg)
+	{
+		return 0;
+	}
+
+	/* Scan through all debug blocks for the old item */
+	ILDebugIterInit(&iter, dbg, ILProgramItem_Token(oldItem));
+	while(ILDebugIterNext(&iter))
+	{
+		/* Initalize a reader for the block */
+		reader.data = iter.data;
+		reader.len = iter.length;
+		reader.error = 0;
+
+		/* Convert the contents of the block */
+		switch(iter.type)
+		{
+			case IL_DEBUGTYPE_LINE_COL:
+			case IL_DEBUGTYPE_LINE_OFFSETS:
+			{
+				/* Line and column/offset information */
+				name = ILDebugGetString(dbg, ILMetaUncompressData(&reader));
+				if(!name)
+				{
+					break;
+				}
+				nameIndex = ILWriterDebugString(linker->writer, name);
+				len = 0;
+				while(!(reader.error) && reader.len > 0)
+				{
+					temp1 = ILMetaUncompressData(&reader);
+					temp2 = ILMetaUncompressData(&reader);
+					if(!len)
+					{
+						len = ILMetaCompressData(buf, nameIndex);
+					}
+					len += ILMetaCompressData(buf + len, temp1);
+					len += ILMetaCompressData(buf + len, temp2);
+					if(len >= (sizeof(buf) - IL_META_COMPRESS_MAX_SIZE * 3))
+					{
+						ILWriterDebugAdd(linker->writer, newItem,
+										 (int)(iter.type), buf, len);
+						len = 0;
+					}
+				}
+				if(len > 0)
+				{
+					ILWriterDebugAdd(linker->writer, newItem,
+									 (int)(iter.type), buf, len);
+				}
+			}
+			break;
+
+			case IL_DEBUGTYPE_LINE_COL_OFFSETS:
+			{
+				/* Line, column, and offset information */
+				name = ILDebugGetString(dbg, ILMetaUncompressData(&reader));
+				if(!name)
+				{
+					break;
+				}
+				nameIndex = ILWriterDebugString(linker->writer, name);
+				len = 0;
+				while(!(reader.error) && reader.len > 0)
+				{
+					temp1 = ILMetaUncompressData(&reader);
+					temp2 = ILMetaUncompressData(&reader);
+					temp3 = ILMetaUncompressData(&reader);
+					if(!len)
+					{
+						len = ILMetaCompressData(buf, nameIndex);
+					}
+					len += ILMetaCompressData(buf + len, temp1);
+					len += ILMetaCompressData(buf + len, temp2);
+					len += ILMetaCompressData(buf + len, temp3);
+					if(len >= (sizeof(buf) - IL_META_COMPRESS_MAX_SIZE * 4))
+					{
+						ILWriterDebugAdd(linker->writer, newItem,
+										 (int)(iter.type), buf, len);
+						len = 0;
+					}
+				}
+				if(len > 0)
+				{
+					ILWriterDebugAdd(linker->writer, newItem,
+									 (int)(iter.type), buf, len);
+				}
+			}
+			break;
+
+			case IL_DEBUGTYPE_VARS:
+			{
+				/* Local variable information with no scope */
+				len = 0;
+				while(!(reader.error) && reader.len > 0)
+				{
+					name = ILDebugGetString(dbg, ILMetaUncompressData(&reader));
+					if(!name)
+					{
+						break;
+					}
+					nameIndex = ILWriterDebugString(linker->writer, name);
+					temp1 = ILMetaUncompressData(&reader);
+					len += ILMetaCompressData(buf + len, nameIndex);
+					len += ILMetaCompressData(buf + len, temp1);
+					if(len >= (sizeof(buf) - IL_META_COMPRESS_MAX_SIZE * 2))
+					{
+						ILWriterDebugAdd(linker->writer, newItem,
+										 (int)(iter.type), buf, len);
+						len = 0;
+					}
+				}
+				if(len > 0)
+				{
+					ILWriterDebugAdd(linker->writer, newItem,
+									 (int)(iter.type), buf, len);
+				}
+			}
+			break;
+
+			case IL_DEBUGTYPE_VARS_OFFSETS:
+			{
+				/* Local variable information with specified scope */
+				temp1 = ILMetaUncompressData(&reader);
+				temp2 = ILMetaUncompressData(&reader);
+				len = 0;
+				while(!(reader.error) && reader.len > 0)
+				{
+					name = ILDebugGetString(dbg, ILMetaUncompressData(&reader));
+					if(!name)
+					{
+						break;
+					}
+					nameIndex = ILWriterDebugString(linker->writer, name);
+					temp3 = ILMetaUncompressData(&reader);
+					if(!len)
+					{
+						len += ILMetaCompressData(buf + len, temp1);
+						len += ILMetaCompressData(buf + len, temp2);
+					}
+					len += ILMetaCompressData(buf + len, nameIndex);
+					len += ILMetaCompressData(buf + len, temp3);
+					if(len >= (sizeof(buf) - IL_META_COMPRESS_MAX_SIZE * 4))
+					{
+						ILWriterDebugAdd(linker->writer, newItem,
+										 (int)(iter.type), buf, len);
+						len = 0;
+					}
+				}
+				if(len > 0)
+				{
+					ILWriterDebugAdd(linker->writer, newItem,
+									 (int)(iter.type), buf, len);
+				}
+			}
+			break;
+		}
+	}
+
+	/* Done */
+	ILDebugDestroy(dbg);
+	return 1;
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -90,6 +90,13 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 		return 0;
 	}
 
+	/* Convert the debug information that is attached to the field */
+	if(!_ILLinkerConvertDebug(linker, (ILProgramItem *)field,
+							  (ILProgramItem *)newField))
+	{
+		return 0;
+	}
+
 	/* Convert the field marshalling and layout information */
 	if(!_ILLinkerConvertMarshal(linker, (ILProgramItem *)field,
 								(ILProgramItem *)newField, 0))

@@ -7,7 +7,15 @@ Mono.Security.dll:
 	"$(CSANT)" $(CSANT_FLAGS) -Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-b "$(srcdir)" -B . -f Mono.Security.build all
 
-CLEANFILES = Mono.Security.dll
+Mono.Security_test.dll:
+	"$(CSANT)" $(CSANT_FLAGS) -Dmono.sources="$(MONO_SOURCE_PATH)" \
+			-b "$(srcdir)" -B . -f Mono.Security.build test
+
+
+CLEANFILES = Mono.Security.dll Mono.Security_test.dll
+
+TESTS = Mono.Security_test.dll
+TESTS_ENVIRONMENT = $(SHELL) $(top_builddir)/tools/run_test.sh $(top_builddir)
 
 install-data-local:
 	@$(NORMAL_INSTALL)

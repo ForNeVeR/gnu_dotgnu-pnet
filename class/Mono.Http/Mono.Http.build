@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<project name="Mono.Http" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="Mono.Http.dll"
+				 debug="${debug.flag}"
+				 unsafe="true"
+				 install="true"
+				 installasdefault="true">
+
+			<sources basedir="${mono.sources}/class/Mono.Http">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+			</sources>
+
+			<references>
+				<file name="System.Drawing.dll"/>
+				<file name="../System.Web/System.Web.dll"/>
+			</references>
+
+		</compile>
+	</target>
+</project>

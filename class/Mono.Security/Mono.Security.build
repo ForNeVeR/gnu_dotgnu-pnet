@@ -35,4 +35,28 @@
 
 		</compile>
 	</target>
+
+	<target name="test">
+		<compile target="library"
+				 output="Mono.Security_test.dll"
+				 debug="${debug.flag}"
+				 unsafe="true"
+				 install="false"
+				 installasdefault="false">
+
+			<sources basedir="${mono.sources}/class/Mono.Security/Test">
+				<includes name="**/*.cs"/>
+				<excludes name="tools/tlstest/**"/> 
+			</sources>
+
+			<references>
+				<file name="System.dll"/>
+				<file name="../System.Security/System.Security.dll"/>
+				<file name="./Mono.Security.dll"/>
+				<file name="../../nunit20/framework/nunitframework/nunit.framework.dll"/>
+			</references>
+
+		</compile>
+	</target>
+
 </project>

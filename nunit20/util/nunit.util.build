@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<project name="nunit.util" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="nunit.util.dll"
+				 debug="${debug.flag}"
+				 unsafe="false"
+				 install="true"
+				 installasdefault="true">
+
+			<define name="MONO" value="true"/>
+
+			<sources basedir="${mono.sources}/nunit20/util/">
+				<includes name="**/*.cs"/> 
+			</sources>
+
+			<resources basedir="${mono.sources}/nunit20/util/">
+				<includes name="Transform.resources"/>
+			</resources>
+
+			<references>
+				<file name="System.dll"/>
+				<file name="System.Drawing.dll"/>
+				<file name="System.Windows.Forms.dll"/>
+				<file name="../framework/nunit.framework.dll"/>
+				<file name="../core/nunit.core.dll"/>
+			</references>
+
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
+			<arg compiler="cscc" value="-fassembly-key=neutral"/>
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+		</compile>
+	</target>
+</project>

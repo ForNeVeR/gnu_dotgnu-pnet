@@ -284,6 +284,12 @@ class/System.Web.Services/Makefile
 class/Mono.Security/Makefile
 class/Mono.Security.Win32/Makefile
 class/System.Security/Makefile
+class/Mono.Http/Makefile
+nunit20/Makefile
+nunit20/framework/Makefile
+nunit20/core/Makefile
+nunit20/util/Makefile
+nunit20/nunit-console/Makefile
 tools/Makefile
 tools/SqlSharp/Makefile
 jay/Makefile

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<project name="nunit.console" default="all">
+	<target name="all">
+		<compile target="executable"
+				 output="nunit-console.exe"
+				 debug="${debug.flag}"
+				 unsafe="false"
+				 install="true"
+				 installasdefault="true">
+
+			<sources basedir="${mono.sources}/nunit20/nunit-console/">
+				<includes name="**/*.cs"/> 
+			</sources>
+
+			<references>
+				<file name="System.dll"/>
+				<file name="System.Drawing.dll"/>
+				<file name="System.Windows.Forms.dll"/>
+				<file name="../core/nunit.core.dll"/>
+				<file name="../framework/nunit.framework.dll"/>
+				<file name="../util/nunit.util.dll"/>
+			</references>
+
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+		</compile>
+	</target>
+</project>

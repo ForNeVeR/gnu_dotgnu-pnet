@@ -1,4 +1,27 @@
+2004-06-02  Klaus Treichel  <ktreichel@web.de>
 
+	* Makefile.am: add nunit20 to SUBDIRS
+
+	* configure.in: add building of Mono.Http/Makefile,
+	nunit20/Makefile, nunit20/framework/Makefile, nunit20/core/Makefile,
+	nunit20/util/Makefile, nunit20/nunit-console/Makefile
+
+	* class/Makefile.am: add Mono.Http to SUBDIRS
+
+	* class/Mono.Http/Makefile.am, class/Mono.Http/Mono.Http.build,
+	class/Mono.Http/.cvsignore: added
+
+	* nunit20/Makefile.am, nunit20/.cvsignore, nunit20/core/Makefile.am,
+	nunit20/core/nunit.core.build, nunit20/core/.cvsignore,
+	nunit20/framework/Makefile.am, nunit20/framework/nunit.framework.build,
+	nunit20/framework/.cvsignore, nunit20/nunit-console/Makefile.am,
+	nunit20/nunit-console/nunit.console.build,
+	nunit20/nunit-console/.cvsignore, nutil20/util/Makefile.am,
+	nunit20/util/nunit.util.build, nunit20/util/.cvsignore: added
+
+	* class/Mono.Security/Makefile.am, class/Mono.Security/Mono.Security.build:
+	added building of testcases (make check) executing is not yet supported.
+ 
 2004-05-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* class/System.Data/Makefile.am, jay/.cvsignore, jay/Makefile.am,

@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.5.10 release.
 
+	* configure.in: update working version to "0.5.11".
+
 2003-07-26  Thong Nguyen  <tum@veridicus.com>
 
 	* System/Net/Sockets/TcpListener.cs: Small fix for TcpListener.Start.

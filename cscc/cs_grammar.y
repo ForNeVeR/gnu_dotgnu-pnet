@@ -727,9 +727,15 @@ NonExpressionType
  * The expressions are converted into types during semantic analysis.
  */
 LocalVariableType
-	: PrimaryExpression TypeSuffixes	{MakeBinary(LocalVariableType, $1, $2);}
-	| BuiltinType TypeSuffixes			{MakeBinary(LocalVariableType, $1, $2);}
-	| VOID TypeSuffixes					{MakeBinary(LocalVariableType, 0, $2);}
+	: PrimaryExpression TypeSuffixes	{
+				MakeBinary(LocalVariableType, $1, $2);
+			}
+	| BuiltinType TypeSuffixes			{
+				MakeBinary(LocalVariableType, $1, $2);
+			}
+	| VOID TypeSuffixes					{
+				MakeBinary(LocalVariableType, ILNode_VoidType_create(), $2);
+			}
 	;
 
 TypeSuffixes
@@ -764,21 +770,21 @@ DimensionSeparatorList
 	;
 
 BuiltinType
-	: BOOL			{ $$ = MakeSystemType(Boolean); }
-	| SBYTE			{ $$ = MakeSystemType(SByte); }
-	| BYTE			{ $$ = MakeSystemType(Byte); }
-	| SHORT			{ $$ = MakeSystemType(Int16); }
-	| USHORT		{ $$ = MakeSystemType(UInt16); }
-	| INT			{ $$ = MakeSystemType(Int32); }
-	| UINT			{ $$ = MakeSystemType(UInt32); }
-	| LONG			{ $$ = MakeSystemType(Int64); }
-	| ULONG			{ $$ = MakeSystemType(UInt64); }
-	| CHAR			{ $$ = MakeSystemType(Char); }
-	| FLOAT			{ $$ = MakeSystemType(Single); }
-	| DOUBLE		{ $$ = MakeSystemType(Double); }
-	| DECIMAL		{ $$ = MakeSystemType(Decimal); }
-	| OBJECT		{ $$ = MakeSystemType(Object); }
-	| STRING		{ $$ = MakeSystemType(String); }
+	: BOOL			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_BOOLEAN); }
+	| SBYTE			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I1); }
+	| BYTE			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_U1); }
+	| SHORT			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I2); }
+	| USHORT		{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_U2); }
+	| INT			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I4); }
+	| UINT			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_U4); }
+	| LONG			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I8); }
+	| ULONG			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_U8); }
+	| CHAR			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_CHAR); }
+	| FLOAT			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_R4); }
+	| DOUBLE		{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_R8); }
+	| DECIMAL		{ MakeSimple(DecimalType); }
+	| OBJECT		{ MakeSimple(ObjectType); }
+	| STRING		{ MakeSimple(StringType); }
 	;
 
 /*
@@ -941,7 +947,7 @@ RankSpecifiers
 
 RankSpecifierList
 	: '[' DimensionSeparators ']'			{
-					$$ = ILNode_List_create ();
+					$$ = ILNode_List_create();
 					ILNode_List_Add($$, $2);
 				}
 	| RankSpecifierList '[' DimensionSeparators ']'	{

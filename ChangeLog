@@ -1,4 +1,9 @@
 
+2003-01-18  Gopal.V  <gopalv82@symonds.net>
+	
+	* System.Xml/XmlTextWriter.cs: Change LookupPrefix to conform to 
+	ECMA standards (as suggested by Atsushi Enomoto).
+
 2003-01-17  Adam Ballai	 <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs: Cleaned up Read Method and

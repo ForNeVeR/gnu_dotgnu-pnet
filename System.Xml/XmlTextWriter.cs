@@ -332,7 +332,8 @@ public class XmlTextWriter : XmlWriter
 				{
 					throw new ArgumentNullException("ns");
 				}
-				return namespaceManager.LookupPrefix(ns);
+				String prefix = namespaceManager.LookupPrefix(ns);
+				return (prefix == String.Empty) ? null : prefix;
 			}
 
 	// Encode an array as base64 and write it out as text.

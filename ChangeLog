@@ -18,6 +18,8 @@ of qualified identifiers.
 
 * samples/fib.cs, samples/Makefile.am: new sample program.
 
+* NEWS, configure.in: update to version 0.1.6 prior to release.
+
 2001-09-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_xml.h, include/Makefile.am, support/xml.c, support/Makefile.am:

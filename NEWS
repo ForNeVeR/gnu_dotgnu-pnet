@@ -1,4 +1,57 @@
 
+0.1.6 (11 September 2001)
+
+	* Convert operator declarations into method nodes.
+	* Convert indexer declarations into property nodes.
+	* Convert constructors and destructors into method nodes.
+	* Rearrange the C# grammar to allow better reuse of node types.
+	* Semantic analysis for identifier nodes.
+	* Add "System.TypedReference" to the set of builtin compiler types.
+	* New scope item kinds for methods, fields, local variables, etc.
+	* Handle primitive types in the C# grammar in a better way.
+	* Semantic analysis for types, fields, methods, and properties.
+	* Make sure that library types are properly imported in the code generator.
+	* Move unsafe warnings and errors out of the grammar and into
+	  semantic analysis.
+	* Type gathering for fields, methods, and properties.
+	* Code generation for fields, methods, and properties.
+	* Never allow unsafe constructs when the output is JVM bytecode.
+	* Convert "void" into a first-class type to simplify the grammar.
+	  Places where "void" is disallowed is now caught in semantic analysis.
+	* Unsafe statement blocks.
+	* Semantic analysis and code generation for "ToBool", including
+	  user-defined boolean conversions.
+	* Add node information to all scope items to assist error reporting.
+	* Keep track of the current class and method during semantic analysis.
+	* Semantic analysis and code generation for local variables.
+	* Wrap method bodies in a "NewScope" node to provide correct scoping.
+	* Semantic analysis for return statements.
+	* Semantic analysis and code generation fixes for C# operators.
+	* Semantic analysis and code generation fixes for C# constants.
+	* Semantic analysis and code generation for object/static field access.
+	* Track source line numbers for the -g compiler option.
+	* Better error reporting in the C# compiler.
+	* Semantic analysis and code generation for "typeof" and "sizeof".
+	* Improvements to the cast and coercion logic.
+	* Reimplement the numeric promotion rules for the builtin binary and
+	  unary operators.
+	* Added "auto_gen.sh" to assist people who are building from CVS.
+	* Bug fixes in "support/decimal.c".
+	* Change the implementation of array types so that multi-dimensional
+	  arrays are handled correctly.
+	* Use the keyword ".library" in the assembler to refer to the C#
+	  standard library assembly (usually "mscorlib").
+	* Convert the JVM output routines in the compiler to output JL assembly
+	  code instead of binary bytecode.
+	* Modify the assembler to support the JL syntax.
+	* Compilation of classes, fields, and methods to JL assembly code.
+	* Modify the compiler's default overflow checking state to off.
+	* More documentation of the assembler syntax.
+	* Started implementation of "csdoc", which converts C# source code
+	  into an XML document representing the program documentation.
+	* Modifications to "resgen" to support the Beta2 binary resource
+	  format, and the XML-based resource format.
+
 0.1.4 (21 August 2001)
 
 	* Converted ChangeLog into the GNU format and moved the previous

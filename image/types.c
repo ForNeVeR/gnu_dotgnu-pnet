@@ -972,6 +972,27 @@ int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest)
 	}
 }
 
+int ILTypeHasModifier(ILType *type, ILClass *classInfo)
+{
+	classInfo = ILClassResolve(classInfo);
+	while(type != 0 && ILType_IsComplex(type))
+	{
+		if(type->kind__ == IL_TYPE_COMPLEX_CMOD_REQD ||
+		   type->kind__ == IL_TYPE_COMPLEX_CMOD_OPT)
+		{
+			if(ILClassResolve(type->un.modifier__.info__) == classInfo)
+			{
+				return 1;
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

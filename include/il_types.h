@@ -477,6 +477,11 @@ int ILTypeIsObjectClass(ILType *type);
  */
 int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest);
 
+/*
+ * Determine if a type contains a particular system modifier.
+ */
+int ILTypeHasModifier(ILType *type, ILClass *classInfo);
+
 #ifdef	__cplusplus
 };
 #endif

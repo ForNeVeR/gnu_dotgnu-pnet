@@ -22,8 +22,6 @@
 namespace System.Windows.Forms
 {
 
-#if !CONFIG_COMPACT_FORMS
-
 [Flags]
 public enum BoundsSpecified
 {
@@ -37,7 +35,5 @@ public enum BoundsSpecified
 	All			= 0x000F
 
 }; // enum BoundsSpecified
-
-#endif // !CONFIG_COMPACT_FORMS
 
 }; // namespace System.Windows.Forms

@@ -18,6 +18,16 @@
 	works right now); changes to Xsharp and System.Drawing to
 	support Forms; new "FormsHello" sample.
 
+	* System.Drawing/Toolkit/IToolkitEventSink.cs,
+	System.Drawing/Toolkit/IToolkitWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs,
+	System.Windows.Forms/BoundsSpecified.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs,
+	Xsharp/InputOutputWidget.cs, samples/FormsHello.cs: process
+	user-initiated move and resize events from the window manager;
+	implement "SetBoundsCore" and window invalidation.
+
 2003-06-10  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/MemoryStream.cs: Fix a minor bug in SetLength

@@ -343,7 +343,6 @@ public class Control : IWin32Window
 					return top + height;
 				}
 			}
-	[TODO]
 	public Rectangle Bounds
 			{
 				get
@@ -352,15 +351,8 @@ public class Control : IWin32Window
 				}
 				set
 				{
-					// TODO
-					top = value.X;
-					left = value.Y;
-					width = value.Width;
-					height = value.Height;
-					if(toolkitWindow != null)
-					{
-						toolkitWindow.MoveResize(top, left, width, height);
-					}
+					SetBoundsCore(top, left, width, height,
+								  BoundsSpecified.All);
 				}
 			}
 	public bool CanFocus
@@ -419,6 +411,7 @@ public class Control : IWin32Window
 			{
 				get
 				{
+					CreateControl();
 					int leftAdjust = 0;
 					int topAdjust = 0;
 					int rightAdjust = 0;
@@ -434,20 +427,7 @@ public class Control : IWin32Window
 				}
 				set
 				{
-					int leftAdjust = 0;
-					int topAdjust = 0;
-					int rightAdjust = 0;
-					int bottomAdjust = 0;
-					if(toolkitWindow != null)
-					{
-						toolkitWindow.GetClientAreaAdjust
-							(ref leftAdjust, ref topAdjust,
-							 ref rightAdjust, ref bottomAdjust);
-					}
-					Bounds = new Rectangle
-						(left, top,
-						 value.Width + leftAdjust + rightAdjust,
-						 value.Height + topAdjust + bottomAdjust);
+					SetClientSizeCore(value.Width, value.Height);
 				}
 			}
 	[TODO]
@@ -711,7 +691,6 @@ public class Control : IWin32Window
 					if(font != value)
 					{
 						font = value;
-						InvalidateAll();
 						OnFontChanged(EventArgs.Empty);
 					}
 				}
@@ -771,7 +750,8 @@ public class Control : IWin32Window
 				}
 				set
 				{
-					Bounds = new Rectangle(left, top, width, value);
+					SetBoundsCore(left, top, width, value,
+								  BoundsSpecified.Height);
 				}
 			}
 	public ImeMode ImeMode
@@ -824,7 +804,8 @@ public class Control : IWin32Window
 				}
 				set
 				{
-					Bounds = new Rectangle(value, top, width, height);
+					SetBoundsCore(value, top, width, height,
+								  BoundsSpecified.X);
 				}
 			}
 	public Point Location
@@ -835,7 +816,8 @@ public class Control : IWin32Window
 				}
 				set
 				{
-					Bounds = new Rectangle(value.X, value.Y, width, height);
+					SetBoundsCore(value.X, value.Y, width, height,
+								  BoundsSpecified.Location);
 				}
 			}
 	public String Name
@@ -965,17 +947,15 @@ public class Control : IWin32Window
 					return null;
 				}
 			}
-	[TODO]
 	protected bool ResizeRedraw
 			{
 				get
 				{
-					// TODO
-					return false;
+					return GetStyle(ControlStyles.ResizeRedraw);
 				}
 				set
 				{
-					// TODO
+					SetStyle(ControlStyles.ResizeRedraw, value);
 				}
 			}
 	public int Right
@@ -1011,22 +991,32 @@ public class Control : IWin32Window
 					}
 				}
 			}
-	[TODO]
 	protected virtual bool ShowFocusCues
 			{
 				get
 				{
-					// TODO
-					return true;
+					if(parent != null)
+					{
+						return parent.ShowFocusCues;
+					}
+					else
+					{
+						return true;
+					}
 				}
 			}
-	[TODO]
 	protected virtual bool ShowKeyboardCues
 			{
 				get
 				{
-					// TODO
-					return true;
+					if(parent != null)
+					{
+						return parent.ShowKeyboardCues;
+					}
+					else
+					{
+						return true;
+					}
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -1050,8 +1040,8 @@ public class Control : IWin32Window
 				}
 				set
 				{
-					Bounds = new Rectangle
-						(left, top, value.Width, value.Height);
+					SetBoundsCore(left, top, value.Width, value.Height,
+								  BoundsSpecified.Size);
 				}
 			}
 	public int TabIndex
@@ -1118,7 +1108,8 @@ public class Control : IWin32Window
 				}
 				set
 				{
-					Bounds = new Rectangle(left, value, width, height);
+					SetBoundsCore(left, value, width, height,
+								  BoundsSpecified.Y);
 				}
 			}
 	public Control TopLevelControl
@@ -1165,7 +1156,8 @@ public class Control : IWin32Window
 				}
 				set
 				{
-					Bounds = new Rectangle(left, top, value, height);
+					SetBoundsCore(left, top, value, height,
+								  BoundsSpecified.Width);
 				}
 			}
 	internal virtual bool IsTopLevel
@@ -1538,24 +1530,30 @@ public class Control : IWin32Window
 			}
 
 	// Invalidate a region of the control and queue up a repaint request.
-	[TODO]
 	public void Invalidate()
 			{
-				// TODO
+				if(toolkitWindow != null && Visible)
+				{
+					toolkitWindow.Invalidate();
+				}
 			}
 	[TODO]
 	public void Invalidate(bool invalidateChildren)
 			{
+				Invalidate();
 				// TODO
 			}
-	[TODO]
 	public void Invalidate(Rectangle rc)
 			{
-				// TODO
+				if(toolkitWindow != null && Visible)
+				{
+					toolkitWindow.Invalidate(rc.X, rc.Y, rc.Width, rc.Height);
+				}
 			}
 	[TODO]
 	public void Invalidate(Rectangle rc, bool invalidateChildren)
 			{
+				Invalidate(rc);
 				// TODO
 			}
 	[TODO]
@@ -1565,13 +1563,6 @@ public class Control : IWin32Window
 			}
 	[TODO]
 	public void Invalidate(Region region, bool invalidateChildren)
-			{
-				// TODO
-			}
-
-	// Invalidate this control and all of its children.
-	[TODO]
-	private void InvalidateAll()
 			{
 				// TODO
 			}
@@ -1968,50 +1959,15 @@ public class Control : IWin32Window
 				}
 			}
 
-#if !CONFIG_COMPACT_FORMS
-
 	// Set the bounds of the control.
 	public void SetBounds(int x, int y, int width, int height)
 			{
-				Bounds = new Rectangle(x, y, width, height);
+				SetBoundsCore(x, y, width, height, BoundsSpecified.All);
 			}
 	public void SetBounds(int x, int y, int width, int height,
 						  BoundsSpecified specified)
 			{
-				if((specified & BoundsSpecified.All) ==
-						BoundsSpecified.All)
-				{
-					Bounds = new Rectangle(x, y, width, height);
-				}
-				else if((specified & BoundsSpecified.All) ==
-							BoundsSpecified.Location)
-				{
-					Location = new Point(x, y);
-				}
-				else if((specified & BoundsSpecified.All) ==
-							BoundsSpecified.Size)
-				{
-					Size = new Size(width, height);
-				}
-				else
-				{
-					if((specified & BoundsSpecified.X) != 0)
-					{
-						Left = x;
-					}
-					if((specified & BoundsSpecified.Y) != 0)
-					{
-						Top = y;
-					}
-					if((specified & BoundsSpecified.Width) != 0)
-					{
-						Width = width;
-					}
-					if((specified & BoundsSpecified.Height) != 0)
-					{
-						Height = height;
-					}
-				}
+				SetBoundsCore(x, y, width, height, specified);
 			}
 
 	// Inner core of "SetBounds".
@@ -2020,16 +1976,59 @@ public class Control : IWin32Window
 				(int x, int y, int width, int height,
 				 BoundsSpecified specified)
 			{
-				// TODO
+				// Set unspecified components to the right values.
+				if((specified & BoundsSpecified.X) == 0)
+				{
+					x = this.left;
+				}
+				if((specified & BoundsSpecified.Y) == 0)
+				{
+					y = this.top;
+				}
+				if((specified & BoundsSpecified.Width) == 0)
+				{
+					width = this.width;
+				}
+				if((specified & BoundsSpecified.Height) == 0)
+				{
+					height = this.height;
+				}
+
+				// Move and resize the toolkit version of the control.
+				if(toolkitWindow != null)
+				{
+					if(x != this.left || y != this.top ||
+					   width != this.width || height != this.height)
+					{
+						toolkitWindow.MoveResize(x, y, width, height);
+					}
+				}
+
+				// Update the bounds and emit the necessary events.
+				UpdateBounds(x, y, width, height);
+
+				// TODO: layout the child controls, apply docking rules, etc
 			}
 
-#endif
-
 	// Inner core of setting the client size.
-	[TODO]
 	protected virtual void SetClientSizeCore(int x, int y)
 			{
-				// TODO
+				CreateControl();
+				int leftAdjust = 0;
+				int topAdjust = 0;
+				int rightAdjust = 0;
+				int bottomAdjust = 0;
+				if(toolkitWindow != null)
+				{
+					toolkitWindow.GetClientAreaAdjust
+						(ref leftAdjust, ref topAdjust,
+						 ref rightAdjust, ref bottomAdjust);
+				}
+				SetBoundsCore
+					(left, top,
+					 x + leftAdjust + rightAdjust,
+					 y + topAdjust + bottomAdjust,
+					 BoundsSpecified.Size);
 			}
 
 	// Set a style bit.
@@ -2083,21 +2082,35 @@ public class Control : IWin32Window
 			}
 
 	// Update the bounds of the control.
-	[TODO]
 	protected void UpdateBounds()
 			{
-				// TODO
+				UpdateBounds(left, top, width, height);
 			}
-	[TODO]
 	protected void UpdateBounds(int x, int y, int width, int height)
 			{
-				// TODO
+				bool moved;
+				bool resized;
+				moved = (x != this.left || y != this.top);
+				resized = (width != this.width || height != this.height);
+				this.left = x;
+				this.top = y;
+				this.width = width;
+				this.height = height;
+				if(moved)
+				{
+					OnMove(EventArgs.Empty);
+				}
+				if(resized)
+				{
+					OnResize(EventArgs.Empty);
+				}
 			}
-	[TODO]
 	protected void UpdateBounds(int x, int y, int width, int height,
 								int clientWidth, int clientHeight)
 			{
-				// TODO
+				// Ignore the client size information: we assume that
+				// the client area remains fixed relative to the bounds.
+				UpdateBounds(x, y, width, height);
 			}
 
 	// Apply the changed styles to the control.
@@ -2117,25 +2130,22 @@ public class Control : IWin32Window
 #if !CONFIG_COMPACT_FORMS
 
 	// Default window procedure for this control class.
-	[TODO]
 	protected virtual void DefWndProc(ref Message msg)
 			{
-				// TODO
+				// Window procedures are not used in this implementation.
 			}
 
 	// Pre-process a message before it is dispatched by the event loop.
-	[TODO]
 	public virtual bool PreProcessMessage(ref Message msg)
 			{
-				// TODO
+				// Window procedures are not used in this implementation.
 				return false;
 			}
 
 	// Process a message.
-	[TODO]
 	public virtual void WndProc(ref Message m)
 			{
-				// TODO
+				// Window procedures are not used in this implementation.
 			}
 
 #endif // !CONFIG_COMPACT_FORMS
@@ -3436,6 +3446,13 @@ public class Control : IWin32Window
 #endif
 	protected virtual void OnResize(EventArgs e)
 			{
+				// Force a repaint if "ResizeRedraw" is set.
+				if(GetStyle(ControlStyles.ResizeRedraw))
+				{
+					Invalidate();
+				}
+
+				// Invoke the event handler.
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.Resize));
 				if(handler != null)
@@ -3964,72 +3981,6 @@ public class Control : IWin32Window
 
 	}; // class ControlCollectionEnumerator
 
-	// Toolkit expose event, which calls "OnPaint".
-	private void ToolkitExpose(Graphics graphics)
-			{
-			}
-
-	// Toolkit key down event, which calls "OnKeyDown".
-	private void ToolkitKeyDown(ToolkitKeys keyData)
-			{
-			}
-
-	// Toolkit key up event, which calls "OnKeyUp".
-	private void ToolkitKeyUp(ToolkitKeys keyData)
-			{
-				OnKeyUp(new KeyEventArgs((Keys)keyData));
-			}
-
-	// Toolkit key character event, which calls "OnKeyPress".
-	private void ToolkitKeyChar(char charCode)
-			{
-			}
-
-	// Toolkit mouse down event.
-	private void ToolkitMouseDown
-				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
-				 int clicks, int x, int y, int delta)
-			{
-				OnMouseDown(new MouseEventArgs
-					((MouseButtons)buttons, clicks, x, y, delta));
-			}
-
-	// Toolkit mouse up event.
-	private void ToolkitMouseUp
-				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
-				 int clicks, int x, int y, int delta)
-			{
-				OnMouseUp(new MouseEventArgs
-					((MouseButtons)buttons, clicks, x, y, delta));
-			}
-
-	// Toolkit mouse move event.
-	private void ToolkitMouseMove
-				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
-				 int clicks, int x, int y, int delta)
-			{
-				OnMouseMove(new MouseEventArgs
-					((MouseButtons)buttons, clicks, x, y, delta));
-			}
-
-	// Toolkit mouse hover event.
-	private void ToolkitMouseHover
-				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
-				 int clicks, int x, int y, int delta)
-			{
-				OnMouseHover(new MouseEventArgs
-					((MouseButtons)buttons, clicks, x, y, delta));
-			}
-
-	// Toolkit mouse wheel event.
-	private void ToolkitMouseWheel
-				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
-				 int clicks, int x, int y, int delta)
-			{
-				OnMouseWheel(new MouseEventArgs
-					((MouseButtons)buttons, clicks, x, y, delta));
-			}
-
 	// Toolkit event that is emitted for an expose on this window.
 	void IToolkitEventSink.ToolkitExpose(Graphics graphics)
 			{
@@ -4124,6 +4075,26 @@ public class Control : IWin32Window
 			{
 				OnMouseWheel(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
+			}
+
+	// Toolkit event that is emitted when the window is moved by
+	// external means (e.g. the user dragging the window).
+	void IToolkitEventSink.ToolkitExternalMove(int x, int y)
+			{
+				if(x != left || y != top)
+				{
+					Location = new Point(x, y);
+				}
+			}
+
+	// Toolkit event that is emitted when the window is resized by
+	// external means (e.g. the user resizing the window).
+	void IToolkitEventSink.ToolkitExternalResize(int width, int height)
+			{
+				if(width != this.width || height != this.height)
+				{
+					Size = new Size(width, height);
+				}
 			}
 
 }; // class Control

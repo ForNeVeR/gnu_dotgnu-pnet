@@ -327,6 +327,61 @@ public class InputOutputWidget : InputOnlyWidget
 			}
 
 	/// <summary>
+	/// <para>Force a repaint on a section of this widget.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the top-left corner of
+	/// the section to repaint.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the top-left corner of
+	/// the section to repaint.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The width of the section to repaint.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The height of the section to repaint.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>Raised if <paramref name="x"/>, <paramref name="y"/>,
+	/// <paramref name="width"/>, or <paramref name="height"/> are
+	/// out of range.</para>
+	/// </exception>
+	public void Repaint(int x, int y, int width, int height)
+			{
+				if(x < -32768 || x > 32767 ||
+				   y < -32768 || y > 32767)
+				{
+					throw new XException(S._("X_InvalidPosition"));
+				}
+				if(width < 1 || width > 32767 ||
+				   height < 1 || height > 32767)
+				{
+					throw new XException(S._("X_InvalidSize"));
+				}
+				try
+				{
+					IntPtr display = dpy.Lock();
+					if(mapped && AncestorsMapped)
+					{
+						Xlib.XClearArea(display, GetWidgetHandle(),
+										x, y, (uint)width, (uint)height,
+										Xlib.Bool.True);
+					}
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
 	/// <para>Process a color theme change for this widget.</para>
 	/// </summary>
 	public override void ThemeChange()

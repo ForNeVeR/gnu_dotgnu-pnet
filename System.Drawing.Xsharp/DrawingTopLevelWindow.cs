@@ -200,6 +200,26 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				return IntPtr.Zero;
 			}
 
+	// Invalidate this window.
+	void IToolkitWindow.Invalidate()
+			{
+				Repaint();
+			}
+
+	// Invalidate a rectangle within this window.
+	void IToolkitWindow.Invalidate(int x, int y, int width, int height)
+			{
+				DrawingToolkit.ValidateWindowPosition(ref x, ref y);
+				DrawingToolkit.ValidateWindowSize(ref width, ref height);
+				Repaint();
+			}
+
+	// Force an update of all invalidated regions.
+	void IToolkitWindow.Update()
+			{
+				// TODO
+			}
+
 	// Set the event sink to use for this window.
 	void IToolkitWindow.SetEventSink(IToolkitEventSink sink)
 			{
@@ -341,6 +361,24 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 						ToolkitManager.CreateGraphics(g);
 					sink.ToolkitExpose(gr);
 					gr.Dispose();
+				}
+			}
+
+	// Override the move event from Xsharp.
+	protected override void OnMove(int x, int y)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitExternalMove(x, y);
+				}
+			}
+
+	// Override the resize event from Xsharp.
+	protected override void OnResize(int width, int height)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitExternalResize(width, height);
 				}
 			}
 

@@ -76,6 +76,14 @@ public interface IToolkitEventSink
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		 int clicks, int x, int y, int delta);
 
+	// Event that is emitted when the window is moved by
+	// external means (e.g. the user dragging the window).
+	void ToolkitExternalMove(int x, int y);
+
+	// Event that is emitted when the window is resized by
+	// external means (e.g. the user resizing the window).
+	void ToolkitExternalResize(int width, int height);
+
 }; // interface IToolkitEventSink
 
 }; // namespace System.Drawing.Toolkit

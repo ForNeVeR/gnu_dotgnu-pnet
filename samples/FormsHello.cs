@@ -23,9 +23,15 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-public class FormsHello
+public class FormsHello : Form
 {
-	private static void Paint(Object sender, PaintEventArgs e)
+	
+	private FormsHello()
+	{
+		SetStyle(ControlStyles.ResizeRedraw, true);
+	}
+
+	private static void HandlePaint(Object sender, PaintEventArgs e)
 	{
 		Graphics graphics = e.Graphics;
 		Form form = (sender as Form);
@@ -56,11 +62,11 @@ public class FormsHello
 
 	public static void Main(String[] args)
 	{
-		Form form = new Form();
+		Form form = new FormsHello();
 		form.Width = 400;
 		form.Height = 250;
 		form.Text = "Forms Hello";
-		form.Paint += new PaintEventHandler(Paint);
+		form.Paint += new PaintEventHandler(HandlePaint);
 		Application.Run(form);
 	}
 }

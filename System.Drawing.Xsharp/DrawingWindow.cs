@@ -196,6 +196,26 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				return IntPtr.Zero;
 			}
 
+	// Invalidate this window.
+	void IToolkitWindow.Invalidate()
+			{
+				Repaint();
+			}
+
+	// Invalidate a rectangle within this window.
+	void IToolkitWindow.Invalidate(int x, int y, int width, int height)
+			{
+				DrawingToolkit.ValidateWindowPosition(ref x, ref y);
+				DrawingToolkit.ValidateWindowSize(ref width, ref height);
+				Repaint();
+			}
+
+	// Force an update of all invalidated regions.
+	void IToolkitWindow.Update()
+			{
+				// TODO
+			}
+
 	// Set the event sink to use for this window.
 	void IToolkitWindow.SetEventSink(IToolkitEventSink sink)
 			{

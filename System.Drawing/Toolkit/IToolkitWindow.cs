@@ -91,6 +91,15 @@ public interface IToolkitWindow
 	// Get the HWND for this window.  IntPtr.Zero if not supported.
 	IntPtr GetHwnd();
 
+	// Invalidate this window.
+	void Invalidate();
+
+	// Invalidate a rectangle within this window.
+	void Invalidate(int x, int y, int width, int height);
+
+	// Force an update of all invalidated regions.
+	void Update();
+
 	// Set the event sink to use for this window.
 	void SetEventSink(IToolkitEventSink sink);
 

@@ -53,6 +53,15 @@ public class Form : Control
 				return window;
 			}
 
+	// Determine if this is a top-level control which cannot have parents.
+	internal override bool IsTopLevel
+			{
+				get
+				{
+					return true;
+				}
+			}
+
 }; // class Form
 
 }; // namespace System.Windows.Forms

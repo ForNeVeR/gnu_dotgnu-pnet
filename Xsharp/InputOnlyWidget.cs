@@ -115,7 +115,7 @@ public class InputOnlyWidget : Widget
 						Xlib.Window window = Xlib.XCreateWindow
 								(display, pwindow,
 								 x, y, (uint)width, (uint)height, (uint)0,
-								 screen.DefaultDepth, 2 /* InputOnly */,
+								 0 /* depth */, 2 /* InputOnly */,
 								 screen.DefaultVisual,
 								 (uint)0, IntPtr.Zero);
 						SetWidgetHandle(window);

@@ -20,6 +20,9 @@
 	* Xsharp/Display.cs, Xsharp/TopLevelWindow.cs: implement the
 	"_NET_WM_PID" and "_NET_WM_PING" protocols.
 
+	* Xsharp/InputOnlyWidget.cs: wrong depth value supplied to
+	"XCreateWindow" when creating an input-only window.
+
 2003-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/IO.txt, runtime/Platform/FileMethods.cs,

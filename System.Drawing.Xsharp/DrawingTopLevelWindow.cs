@@ -564,6 +564,7 @@ internal sealed class DrawingTopLevelWindow
 	// Override the resize event from Xsharp.
 	protected override void OnResize(int width, int height)
 			{
+				base.OnResize(width, height);
 				if(sink != null)
 				{
 					sink.ToolkitExternalResize(width, height);

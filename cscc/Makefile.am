@@ -1,4 +1,4 @@
-noinst_PROGRAMS = cscc-cs cscc
+noinst_PROGRAMS = cscc-cs cscc csdoc
 man_MANS = cscc.1
 EXTRA_DIST = $(man_MANS)
 
@@ -33,6 +33,18 @@ cscc_cs_SOURCES = $(TREECC_SRCOUT) \
 cscc_cs_LDADD   = ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
 				  ../image/libILImage.a ../support/libILSupport.a
 
+csdoc_SOURCES = $(TREECC_SRCOUT) \
+				csdoc.c \
+				cs_errors.c \
+				cs_gather.c \
+				cs_grammar.y \
+				cs_modifiers.c \
+			    cs_options.c \
+				cs_preproc.c \
+				cs_scanner.l
+csdoc_LDADD   = ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
+				../image/libILImage.a ../support/libILSupport.a
+
 YFLAGS = -d
 
 if USINGGCC
@@ -58,6 +70,7 @@ install-exec-local:
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) cscc-cs $(DESTDIR)$(libdir)/cscc/plugins/cscc-cs
 	$(INSTALL_PROGRAM) cscc $(DESTDIR)$(bindir)/cscc
+	$(INSTALL_PROGRAM) csdoc $(DESTDIR)$(bindir)/csdoc
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp
 	$(LN_S) cscc-cs $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp
 
@@ -65,5 +78,6 @@ uninstall-local:
 	@$(NORMALL_UNINSTALL)
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-cs
 	rm -f $(DESTDIR)$(bindir)/cscc
+	rm -f $(DESTDIR)$(bindir)/csdoc
 
 CLEANFILES = cs_grammar.c cs_scanner.c cs_grammar.h $(TREECC_OUTPUT) $(STAMP)

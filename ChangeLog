@@ -32,6 +32,9 @@
 	assignment-compatibility testing so that interfaces can be
 	properly assigned to "System.Object".
 
+	* engine/verify_except.c (OutputExceptionTable): bug fix - the
+	range for exception handler blocks was incorrect.
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/internal.c, engine/lib_reflect.c: continue implementing

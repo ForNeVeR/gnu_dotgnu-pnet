@@ -82,7 +82,7 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 		while(exception != 0)
 		{
 			if(offset >= exception->tryOffset &&
-			   offset < (exception->tryOffset + exception->handlerOffset))
+			   offset < (exception->tryOffset + exception->tryLength))
 			{
 				if((exception->flags & (IL_META_EXCEPTION_FINALLY |
 										IL_META_EXCEPTION_FAULT)) != 0)

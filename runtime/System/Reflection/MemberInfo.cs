@@ -21,7 +21,7 @@
 namespace System.Reflection
 {
 
-public abstract class MemberInfo
+public abstract class MemberInfo : ICustomAttributeProvider
 {
 
 	// Constructor.

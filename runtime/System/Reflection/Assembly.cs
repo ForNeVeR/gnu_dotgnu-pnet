@@ -26,7 +26,7 @@ using System.IO;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-public class Assembly : IClrProgramItem
+public class Assembly : IClrProgramItem, ICustomAttributeProvider
 {
 
 	// Built-in handle for the assembly.  This must be the first field.
@@ -86,17 +86,17 @@ public class Assembly : IClrProgramItem
 	extern public static Assembly GetCallingAssembly();
 
 	// Get the custom attributes associated with this assembly.
-	public virtual Object[] GetCustomAttributes(bool inherit)
+	public Object[] GetCustomAttributes(bool inherit)
 			{
 				return ClrHelpers.GetCustomAttributes(this, inherit);
 			}
-	public virtual Object[] GetCustomAttributes(Type type, bool inherit)
+	public Object[] GetCustomAttributes(Type type, bool inherit)
 			{
 				return ClrHelpers.GetCustomAttributes(this, type, inherit);
 			}
 
 	// Determine if custom attributes are associated with this assembly.
-	public virtual bool IsDefined(Type type, bool inherit)
+	public bool IsDefined(Type type, bool inherit)
 			{
 				return ClrHelpers.IsDefined(this, type, inherit);
 			}

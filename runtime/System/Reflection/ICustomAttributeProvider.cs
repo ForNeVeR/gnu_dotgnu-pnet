@@ -1,6 +1,6 @@
 /*
- * ParameterInfo.cs - Implementation of the
- *			"System.Reflection.ParameterInfo" class.
+ * ICustomAttributeProvider.cs - Implementation of the
+ *		"System.Reflection.ICustomAttributeProvider" interface.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -22,26 +22,20 @@
 namespace System.Reflection
 {
 
-public class ParameterInfo : ICustomAttributeProvider
+using System;
+
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+interface ICustomAttributeProvider
 {
 
-// TODO
+	Object[] GetCustomAttributes(bool inherit);
+	Object[] GetCustomAttributes(Type type, bool inherit);
+	bool IsDefined(Type type, bool inherit);
 
-	public virtual Type ParameterType
-			{
-				get
-				{
-					return typeof(int);
-				}
-			}
-
-	public Object[] GetCustomAttributes(bool inherit)
-			{ return null; }
-	public Object[] GetCustomAttributes(Type type, bool inherit)
-			{ return null; }
-	public bool IsDefined(Type type, bool inherit)
-			{ return false; }
-
-}; // class ParameterInfo
+}; // interface ICustomAttributeProvider
 
 }; // namespace System.Reflection

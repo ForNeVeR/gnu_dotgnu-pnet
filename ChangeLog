@@ -37,6 +37,15 @@ alter other classes that depend upon it.
 runtime/System/AppDomainUnloadedException.cs, runtime/System/ArgIterator.cs:
 insert "ECMA_COMPAT" where necessary to #if out non-ECMA definitions.
 
+* runtime/System/Attribute.cs,
+runtime/System/Reflection/Assembly.cs,
+runtime/System/Reflection/ICustomAttributeProvider.cs,
+runtime/System/Reflection/MemberInfo.cs,
+runtime/System/Reflection/Module.cs,
+runtime/System/Reflection/ParameterInfo.cs: implement "GetCustomAttributes"
+and "IsDefined" within the "Attribute" class, together with the extra
+reflection functionality needed to support it.
+
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/Platform/Errno.cs: list of Unix-style errno codes for interfacing

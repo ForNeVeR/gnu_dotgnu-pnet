@@ -21,7 +21,7 @@
 namespace System.Reflection
 {
 
-public class Module
+public class Module : ICustomAttributeProvider
 {
 
 // TO DO
@@ -33,6 +33,13 @@ public class Module
 					return null;
 				}
 			}
+
+	public Object[] GetCustomAttributes(bool inherit)
+			{ return null; }
+	public Object[] GetCustomAttributes(Type type, bool inherit)
+			{ return null; }
+	public bool IsDefined(Type type, bool inherit)
+			{ return false; }
 
 }; // class Module
 

@@ -1,4 +1,9 @@
 
+2002-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/il_config_win.h, include/il_values.h: remove the out
+	of date file "il_config_win.h".
+
 2002-06-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, codegen/jv_stmt.tc: make sure that the

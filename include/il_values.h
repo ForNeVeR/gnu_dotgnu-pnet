@@ -22,13 +22,9 @@
 #define	_IL_VALUES_H
 
 #if defined(WIN32) && !defined(__CYGWIN__)
-/* Probably compiling with Visual Studio, so use
-   an alternative set of configuration settings */
-#include "il_config_win.h"
 #define	IL_NATIVE_WIN32
-#else
-#include "il_config.h"
 #endif
+#include "il_config.h"
 
 #ifdef	__cplusplus
 extern	"C" {

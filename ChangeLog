@@ -1,4 +1,10 @@
 
+2003-06-21  Gopal.V  <gopalv82@symonds.net>
+	
+	* System.Windows.Forms/ProgressBar.cs, 
+	System.Windows.Forms/ControlPaint.cs : Split out the entire progressbar
+	drawing code into ControlPaint.
+
 2003-06-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/AccessibleObject.cs, compat/Accessibility.cs:

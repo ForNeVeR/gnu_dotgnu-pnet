@@ -440,20 +440,48 @@ public sealed class ControlPaint
 				// TODO
 			}
 
-	public static void DrawBlock(Graphics graphics, int x, int y,
+	internal static void DrawProgressBar(Graphics graphics, int x, int y,
+										int width, int height, 
+										int steps, int step,
+										int value, bool enabled)
+			{
+				// TODO : draw disabled mode progressbar
+				// TODO : handle large no of blocks ie merge cases
+				int blockWidth, blockHeight, xSpacing, ySpacing;
+				DrawBorder3D(graphics,x,y,width,height);
+				width-=4;
+				height-=4;
+				x+=2;
+				y+=2;
+
+				xSpacing=2;
+				ySpacing=2;
+				width=width-((steps-1)*xSpacing);
+				blockWidth=width/steps;
+				blockHeight=height-ySpacing-1;
+						
+				x+=2*xSpacing;
+
+				for(int i=0;i<steps;i++)
+				{
+					if((i*step) < value)
+					{
+						ControlPaint.DrawBlock(graphics, x, y+ySpacing, 
+											blockWidth,
+											blockHeight,
+											SystemColors.Highlight);
+					}
+					x+=blockWidth+xSpacing;
+				}
+			}
+
+	internal static void DrawBlock(Graphics graphics, int x, int y,
 									int width, int height,
 									Color color)
 			{
 				Brush brush;
 				Pen pen;
 				brush=new SolidBrush(color);
-				/*pen=new Pen(Light(color),1.0f);				
-				graphics.DrawRectangle(pen, x, y, width, height);
-				pen.Dispose();
-				x+=1;
-				y+=1;
-				width-=2;
-				height-=2;*/
 				graphics.FillRectangle(brush, x, y, width, height);
 				brush.Dispose();
 			}

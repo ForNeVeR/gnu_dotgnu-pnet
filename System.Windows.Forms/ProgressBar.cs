@@ -31,7 +31,7 @@ namespace System.Windows.Forms
 		
 		private int min=0,max=100,value=0;
 		private int step=10;
-		private int range=max-min;
+		private int range=100;
 
 		public ProgressBar() : base("ProgressBar")
 			{
@@ -47,43 +47,19 @@ namespace System.Windows.Forms
 				Size clientSize = ClientSize;
 				int x = 0;
 				int y = 0;
-				int width = clientSize.Width;
-				int height = clientSize.Height;
+				int width=clientSize.Width;
+				int height=clientSize.Height;
 				int steps=range/step;
-				int blockWidth, blockHeight, xSpacing, ySpacing;
 				
 				using(Brush brush=CreateBackgroundBrush())
 				{
 					graphics.FillRectangle(brush,x,y,width,height);
 				}
-
-				ControlPaint.DrawBorder3D(graphics, 
-											  x,y,width,height);
-
-				width-=4;
-				height-=4;
-				x+=2;
-				y+=2;
-
-				xSpacing=2;
-				ySpacing=2;
-				width=width-((steps-1)*xSpacing);
-				blockWidth=width/steps;
-				blockHeight=height-ySpacing-1;
-						
-				x+=2*xSpacing;
-
-				for(int i=0;i<steps;i++)
-				{
-					if((i*step) < value)
-					{
-						ControlPaint.DrawBlock(graphics, x, y+ySpacing, 
-											blockWidth,
-											blockHeight,
-											SystemColors.Highlight);
-					}
-					x+=blockWidth+xSpacing;
-				}
+				ControlPaint.DrawProgressBar(graphics, x, y, 
+											clientSize.Width,
+											clientSize.Height, 
+											steps, step,
+											value, this.Enabled);
 			}
 
 
@@ -102,7 +78,7 @@ namespace System.Windows.Forms
 
 		protected override void OnPaint(PaintEventArgs args)
 			{
-				Redraw();
+				Draw(args.Graphics);
 				base.OnPaint(args);
 			}
 
@@ -114,14 +90,7 @@ namespace System.Windows.Forms
 
 		public void PerformStep()
 			{
-				if(value>=max)
-				{
-					value=min;
-				}
-				else
-				{
-					value=(value + (step - (value % step)));
-				}
+				value=(value + (step - (value % step)));
 				Redraw();
 			}
 

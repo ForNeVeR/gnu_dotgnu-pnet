@@ -35,6 +35,8 @@ public class Frame : MarshalByRefObject, IDisposable
 	private PixelFormat pixelFormat;
 	private int[] palette;
 	private int transparentPixel;
+	private int hotspotX;
+	private int hotspotY;
 	private byte[] data;
 	private byte[] mask;
 
@@ -49,6 +51,8 @@ public class Frame : MarshalByRefObject, IDisposable
 				this.pixelFormat = pixelFormat;
 				this.palette = null;
 				this.transparentPixel = -1;
+				this.hotspotX = 0;
+				this.hotspotY = 0;
 				this.data = new byte [width * stride];
 				this.mask = null;
 			}
@@ -75,6 +79,8 @@ public class Frame : MarshalByRefObject, IDisposable
 					}
 				}
 				transparentPixel = frame.transparentPixel;
+				hotspotX = frame.hotspotX;
+				hotspotY = frame.hotspotY;
 				if(frame.data != null)
 				{
 					data = (byte[])(frame.data.Clone());
@@ -164,6 +170,28 @@ public class Frame : MarshalByRefObject, IDisposable
 				set
 				{
 					transparentPixel = value;
+				}
+			}
+	public int HotspotX
+			{
+				get
+				{
+					return hotspotX;
+				}
+				set
+				{
+					hotspotX = value;
+				}
+			}
+	public int HotspotY
+			{
+				get
+				{
+					return hotspotY;
+				}
+				set
+				{
+					hotspotY = value;
 				}
 			}
 

@@ -65,7 +65,7 @@ internal sealed class BmpWriter
 				SaveBitmapInfo(stream, frame, bitCount, size, buffer);
 
 				// Write the bitmap data in the frame to the stream.
-				SaveBitmapData(stream, frame, false);
+				SaveBitmapData(stream, frame, false, false);
 			}
 
 	// Save a BITMAPINFO structure for a frame.
@@ -110,11 +110,12 @@ internal sealed class BmpWriter
 			}
 
 	// Save the bitmap data in a frame.
-	public static void SaveBitmapData(Stream stream, Frame frame, bool mask)
+	public static void SaveBitmapData(Stream stream, Frame frame,
+									  bool mask, bool inverted)
 			{
 				byte[] data;
 				int stride;
-				int line;
+				int line, column;
 
 				// Get the buffer and stride for the frame.
 				if(!mask)
@@ -130,9 +131,23 @@ internal sealed class BmpWriter
 				}
 
 				// BMP images are stored upside down in the stream.
-				for(line = frame.Height - 1; line >= 0; --line)
+				if(!inverted)
 				{
-					stream.Write(data, line * stride, stride);
+					for(line = frame.Height - 1; line >= 0; --line)
+					{
+						stream.Write(data, line * stride, stride);
+					}
+				}
+				else
+				{
+					for(line = frame.Height - 1; line >= 0; --line)
+					{
+						for(column = 0; column < stride; ++column)
+						{
+							stream.WriteByte
+								((byte)(data[line * stride + column] ^ 0xFF));
+						}
+					}
 				}
 			}
 

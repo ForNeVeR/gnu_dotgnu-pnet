@@ -43,6 +43,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	public static readonly String Tiff = "tiff";
 	public static readonly String Bmp = "bmp";
 	public static readonly String Icon = "icon";
+	public static readonly String Cursor = "cursor";
 
 	// Constructors.
 	public Image()
@@ -249,14 +250,16 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	public static bool CanLoadFormat(String format)
 			{
 				// TODO: other formats
-				return (format == Bmp);
+				return (format == Bmp || format == Icon ||
+				        format == Cursor);
 			}
 
 	// Determine if it is possible to save a particular format.
 	public static bool CanSaveFormat(String format)
 			{
 				// TODO: other formats
-				return (format == Bmp);
+				return (format == Bmp || format == Icon ||
+				        format == Cursor);
 			}
 
 	// Load an image from a stream into this object.  This will
@@ -282,12 +285,20 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				stream.Read(magic, 0, 4);
 				if(magic[0] == (byte)'B' && magic[1] == (byte)'M')
 				{
+					// Windows bitmap image.
 					BmpReader.Load(stream, this);
 				}
 				else if(magic[0] == 0 && magic[1] == 0 &&
 						magic[2] == 1 && magic[3] == 0)
 				{
-					// TODO: this is an icon file
+					// Windows icon image.
+					IconReader.Load(stream, this, false);
+				}
+				else if(magic[0] == 0 && magic[1] == 0 &&
+						magic[2] == 2 && magic[3] == 0)
+				{
+					// Windows cursor image (same as icon, with hotspots).
+					IconReader.Load(stream, this, true);
 				}
 				// TODO: other formats
 				throw new FormatException();
@@ -336,7 +347,18 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				// Determine how to save the image.
 				if(format == Bmp)
 				{
+					// Windows bitmap image.
 					BmpWriter.Save(stream, this);
+				}
+				else if(format == Icon)
+				{
+					// Windows icon image.
+					IconWriter.Save(stream, this, false);
+				}
+				else if(format == Cursor)
+				{
+					// Windows cursor image (same as icon, with hotspots).
+					IconWriter.Save(stream, this, true);
 				}
 				// TODO: other image formats
 			}

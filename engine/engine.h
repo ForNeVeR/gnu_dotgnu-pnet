@@ -138,6 +138,18 @@ struct _tagILExecThread
 };
 
 /*
+ * Details that are stored for an interface implementation record.
+ */
+typedef struct _tagILImplPrivate ILImplPrivate;
+struct _tagILImplPrivate
+{
+	ILClass		   *interface;			/* Name of the interface */
+	ILImplPrivate  *next;				/* Next interface for the class */
+
+};
+#define	ILImplPrivate_Table(priv)	((ILUInt16 *)((priv) + 1))
+
+/*
  * Private information that is associated with a class.
  */
 typedef struct _tagILClassPrivate ILClassPrivate;
@@ -152,6 +164,7 @@ struct _tagILClassPrivate
 	ILMethod      **vtable;				/* Methods within the vtable */
 	ILObject       *runtimeType;		/* Associated runtime type object */
 	ILObject       *staticData;			/* Static data area object */
+	ILImplPrivate  *implements;			/* Interface implementation records */
 
 };
 

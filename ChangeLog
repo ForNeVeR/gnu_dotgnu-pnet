@@ -16,6 +16,11 @@ it is causing "Hello World" to fail.
 * image/class.c: fix the implementation of "ILClassImplements" so that
 it recursively scans all interface parents that an interface has.
 
+* image/program.h, engine/engine.h, engine/call.c, engine/layout.c:
+change the representation of interface tables; compute interfaces that
+inherit from other interfaces properly; this also makes "Hello World"
+work again.
+
 2001-11-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/layout.c: compute the interface lookup tables for the class.

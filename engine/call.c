@@ -729,24 +729,20 @@ ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
 								   ILClass *interfaceClass,
 								   ILUInt32 index)
 {
-	ILImplements *implements;
+	ILImplPrivate *implements;
 
 	/* Locate the interface table within the class hierarchy for the object */
 	while(objectClass != 0)
 	{
-		implements = objectClass->implements;
+		implements = ((ILClassPrivate *)(objectClass->userData))->implements;
 		while(implements != 0)
 		{
-			if(ILClassResolve(implements->interface) == interfaceClass)
+			if(implements->interface == interfaceClass)
 			{
 				/* We've found the interface, so look in the interface
 				   table to find the vtable slot, which is then used to
 				   look in the class's vtable for the actual method */
-				if(!(implements->userData))
-				{
-					return 0;
-				}
-				index = (ILUInt32)(((ILUInt16 *)(implements->userData))[index]);
+				index = (ILUInt32)((ILImplPrivate_Table(implements))[index]);
 				if(index != (ILUInt32)(ILUInt16)0xFFFF)
 				{
 					return ((ILClassPrivate *)(objectClass->userData))
@@ -759,7 +755,7 @@ ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
 					return 0;
 				}
 			}
-			implements = implements->nextInterface;
+			implements = implements->next;
 		}
 		objectClass = ILClassGetParent(objectClass);
 	}

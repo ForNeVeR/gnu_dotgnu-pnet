@@ -197,49 +197,65 @@ static ILMethod *FindVirtualAncestor(ILClass *scope, ILClass *info,
 /*
  * Compute the method table for a class's interface.
  */
-static int ComputeInterfaceTable(ILClass *info, ILImplements *implements,
-								 ILClass *interface)
+static int ComputeInterfaceTable(ILClass *info, ILClass *interface)
 {
-#if 0
 	ILClass *parent;
-	ILImplements *impl;
+	ILImplPrivate *impl;
+	ILImplPrivate *impl2;
 	ILUInt32 size;
 	ILUInt16 *table;
 	ILUInt32 slot;
 	ILMethod *method;
 	ILMethod *method2;
 	ILOverride *over;
+	ILImplements *implBlock;
+
+	/* Determine if we already have an implementation of this interface.
+	   This may happen if we reach the same interface via two different
+	   paths in the interface inheritance tree */
+	impl = ((ILClassPrivate *)(info->userData))->implements;
+	while(impl != 0)
+	{
+		if(impl->interface == interface)
+		{
+			return 1;
+		}
+		impl = impl->next;
+	}
 
 	/* Create a new interface method table for the class */
 	size = ((ILClassPrivate *)(interface->userData))->vtableSize;
-	table = (ILUInt16 *)ILMemStackAllocItem
+	impl = (ILImplPrivate *)ILMemStackAllocItem
 					(&(info->programItem.image->memStack),
-				     size * sizeof(ILUInt16));
-	if(!table)
+				     sizeof(ILImplPrivate *) + size * sizeof(ILUInt16));
+	if(!impl)
 	{
 		return 0;
 	}
+	table = ILImplPrivate_Table(impl);
+	impl->next = ((ILClassPrivate *)(info->userData))->implements;
+	((ILClassPrivate *)(info->userData))->implements = impl;
 
 	/* Determine if the parent class implements the interface */
 	parent = info;
-	impl = 0;
-	while(impl != 0 && (parent = ILClassGetParent(parent)) != 0)
+	impl2 = 0;
+	while(impl2 != 0 && (parent = ILClassGetParent(parent)) != 0)
 	{
-		impl = parent->implements;
-		while(impl != 0)
+		impl2 = ((ILClassPrivate *)(parent->userData))->implements;
+		while(impl2 != 0)
 		{
-			if(ILClassResolve(impl->interface) == interface)
+			if(impl2->interface == interface)
 			{
 				break;
 			}
-			impl = impl->nextInterface;
+			impl2 = impl2->next;
 		}
 	}
 
 	/* Copy the parent's interface method table, or mark all slots abstract */
-	if(impl && impl->userData)
+	if(impl2)
 	{
-		ILMemCpy(table, impl->userData, size * sizeof(ILUInt16));
+		ILMemCpy(table, ILImplPrivate_Table(impl2), size * sizeof(ILUInt16));
 	}
 	else
 	{
@@ -337,8 +353,18 @@ static int ComputeInterfaceTable(ILClass *info, ILImplements *implements,
 		}
 	}
 
+	/* Recursively compute all interfaces that the interface inherits from */
+	implBlock = interface->implements;
+	while(implBlock != 0)
+	{
+		if(!ComputeInterfaceTable(info, ILClassResolve(implBlock->interface)))
+		{
+			return 0;
+		}
+		implBlock = implBlock->nextInterface;
+	}
+
 	/* Done */
-#endif
 	return 1;
 }
 
@@ -668,20 +694,24 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	}
 
 	/* Compute the interface tables for this class */
-	implements = info->implements;
-	while(implements != 0)
+	if((info->attributes & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK) !=
+				IL_META_TYPEDEF_INTERFACE)
 	{
-		parent = ILClassResolve(implements->interface);
-		if(parent->userData &&
-		   ((ILClassPrivate *)(parent->userData))->vtableSize)
+		implements = info->implements;
+		while(implements != 0)
 		{
-			if(!ComputeInterfaceTable(info, implements, parent))
+			parent = ILClassResolve(implements->interface);
+			if(parent->userData &&
+			   ((ILClassPrivate *)(parent->userData))->vtableSize)
 			{
-				info->userData = 0;
-				return 0;
+				if(!ComputeInterfaceTable(info, parent))
+				{
+					info->userData = 0;
+					return 0;
+				}
 			}
+			implements = implements->nextInterface;
 		}
-		implements = implements->nextInterface;
 	}
 
 	/* Record the layout information for this class */

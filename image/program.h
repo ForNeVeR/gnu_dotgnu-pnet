@@ -191,7 +191,6 @@ struct _tagILImplements
 	ILClass		   *implement;			/* Implementing class */
 	ILClass		   *interface;			/* Implemented interface */
 	ILImplements   *nextInterface;		/* Next implemented interface */
-	void           *userData;			/* Data added by the runtime engine */
 
 };
 

@@ -31,14 +31,13 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Permissions;
 
-public sealed class TypeBuilder : Type
+public sealed class TypeBuilder : Type, IClrProgramItem
 {
 	// Internal state.
-	private AssemblyBuilder assembly;
-	private Module module;
+	private ModuleBuilder module;
 	private String name;
 	private String nspace;
-	private TypeAttributes attr;
+	internal TypeAttributes attr;
 	private Type parent;
 	private Type[] interfaces;
 	private PackingSize packingSize;
@@ -46,18 +45,37 @@ public sealed class TypeBuilder : Type
 	private Type declaringType;
 	private ClrType type;
 	private TypeToken token;
+	private IntPtr privateData;
+	private Type underlyingSystemType;
 
 	// Constants.
 	public const int UnspecifiedTypeSize = 0;
 
 	// Constructor.
-	internal TypeBuilder(AssemblyBuilder assembly, Module module,
-						 String name, String nspace,
+	internal TypeBuilder(ModuleBuilder module, String name, String nspace,
 						 TypeAttributes attr, Type parent, Type[] interfaces,
 						 PackingSize packingSize, int typeSize,
 						 Type declaringType)
 			{
-				this.assembly = assembly;
+				// Validate the parameters.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(name == String.Empty)
+				{
+					throw new ArgumentException(_("Emit_NameEmpty"));
+				}
+				if(nspace == null)
+				{
+					nspace = String.Empty;
+				}
+				// TODO
+
+				// Check for an existing type with this name.
+				// TODO
+
+				// Initialize the internal state.
 				this.module = module;
 				this.name = name;
 				this.nspace = nspace;
@@ -68,6 +86,7 @@ public sealed class TypeBuilder : Type
 				this.typeSize = typeSize;
 				this.declaringType = declaringType;
 				this.type = null;
+				this.underlyingSystemType = null;
 				this.token = new TypeToken(0);	// TODO
 			}
 
@@ -216,12 +235,26 @@ public sealed class TypeBuilder : Type
 			}
 
 	// Get the underlying system type for this type.
-	[TODO]
 	public override Type UnderlyingSystemType
 			{
 				get
 				{
-					// TODO: enumerated type handling.
+					if(type != null)
+					{
+						return type.UnderlyingSystemType;
+					}
+					else if(IsEnum)
+					{
+						if(underlyingSystemType != null)
+						{
+							return underlyingSystemType;
+						}
+						else
+						{
+							throw new InvalidOperationException
+								(_("Emit_UnderlyingNotSet"));
+						}
+					}
 					return this;
 				}
 			}
@@ -248,7 +281,7 @@ public sealed class TypeBuilder : Type
 	// Start a synchronized type builder operation.
 	private void StartSync()
 			{
-				assembly.StartSync();
+				module.StartSync();
 				if(type != null)
 				{
 					throw new NotSupportedException(_("NotSupp_TypeCreated"));
@@ -258,7 +291,7 @@ public sealed class TypeBuilder : Type
 	// End a synchronized type builder operation.
 	private void EndSync()
 			{
-				assembly.EndSync();
+				module.EndSync();
 			}
 
 	// Add declarative security to this type.
@@ -402,6 +435,11 @@ public sealed class TypeBuilder : Type
 				{
 					StartSync();
 					// TODO
+					if(IsEnum && underlyingSystemType == null &&
+					   (attributes & FieldAttributes.Static) == 0)
+					{
+						underlyingSystemType = type;
+					}
 					return null;
 				}
 				finally
@@ -410,16 +448,62 @@ public sealed class TypeBuilder : Type
 				}
 			}
 
+	// Define a data field within this class.
+	private FieldBuilder DefineData(String name, byte[] data,
+								    int size, FieldAttributes attributes)
+			{
+				// Validate the parameters.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(name == String.Empty)
+				{
+					throw new ArgumentException(_("Emit_NameEmpty"));
+				}
+				else if(size <= 0 || size > 0x003EFFFF)
+				{
+					throw new ArgumentException(_("Emit_DataSize"));
+				}
+
+				// We must not have created the type yet.
+				CheckNotCreated();
+
+				// Look for or create a value type for the field.
+				String typeName = "$ArrayType$" + size.ToString();
+				Type type = module.GetType(typeName);
+				if(type == null)
+				{
+					TypeBuilder builder;
+					builder = module.DefineType
+							(typeName,
+							 TypeAttributes.Public |
+							 TypeAttributes.Sealed |
+							 TypeAttributes.ExplicitLayout,
+							 typeof(System.ValueType),
+							 PackingSize.Size1, size);
+					type = builder.CreateType();
+				}
+
+				// Define the field and set the data on it.
+				FieldBuilder field = DefineField
+					(name, type, attributes | FieldAttributes.Static);
+				// TODO: set the data
+				return field;
+			}
+
 	// Define static initialized data within this class.
-	[TODO]
 	public FieldBuilder DefineInitializedData
 				(String name, byte[] data, FieldAttributes attributes)
 			{
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					if(data == null)
+					{
+						throw new ArgumentNullException("data");
+					}
+					return DefineData(name, data, data.Length, attributes);
 				}
 				finally
 				{
@@ -471,7 +555,6 @@ public sealed class TypeBuilder : Type
 			}
 
 	// Define a nested type within this class.
-	[TODO]
 	private TypeBuilder DefineNestedType
 				(String name, TypeAttributes attr, Type parent,
 				 Type[] interfaces, int typeSize, PackingSize packSize)
@@ -479,8 +562,10 @@ public sealed class TypeBuilder : Type
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					return new TypeBuilder(module,
+										   name, null, attr, parent,
+										   interfaces, packingSize,
+										   typeSize, this);
 				}
 				finally
 				{
@@ -597,8 +682,7 @@ public sealed class TypeBuilder : Type
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					return DefineData(name, null, size, attributes);
 				}
 				finally
 				{
@@ -926,6 +1010,15 @@ public sealed class TypeBuilder : Type
 	public override String ToString()
 			{
 				return name;
+			}
+
+	// Implement the IClrProgramItem interface.
+	IntPtr IClrProgramItem.ClrHandle
+			{
+				get
+				{
+					return privateData;
+				}
 			}
 
 }; // class TypeBuilder

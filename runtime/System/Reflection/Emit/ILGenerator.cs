@@ -32,6 +32,7 @@ namespace System.Reflection.Emit
 public class ILGenerator
 {
 	// Internal state.
+	private ModuleBuilder module;
 	private byte[] code;
 	private int offset;
 	private int height;
@@ -58,8 +59,9 @@ public class ILGenerator
 	}; // class LabelRef
 
 	// Constructor.
-	internal ILGenerator()
+	internal ILGenerator(ModuleBuilder module)
 			{
+				this.module = module;
 				code = new byte [32];
 				offset = 0;
 				height = 0;
@@ -136,6 +138,26 @@ public class ILGenerator
 					code = newCode;
 				}
 				code[offset++] = (byte)value;
+			}
+
+	// Emit a token value to the current method's code.
+	private void EmitToken(int token)
+			{
+				EmitByte(token);
+				EmitByte(token >> 8);
+				EmitByte(token >> 16);
+				EmitByte(token >> 24);
+			}
+
+	// Emit a token value to the current method's code and register it
+	// to have a token fixup at the end of the assembly output process.
+	private void EmitTokenWithFixup(int token)
+			{
+				// TODO: fixups
+				EmitByte(token);
+				EmitByte(token >> 8);
+				EmitByte(token >> 16);
+				EmitByte(token >> 24);
 			}
 
 	// Emit an opcode value to the current method's code and then
@@ -285,6 +307,13 @@ public class ILGenerator
 				EmitByte(bytes[6]);
 				EmitByte(bytes[7]);
 			}
+	public virtual void Emit(OpCode opcode, String val)
+			{
+				StringToken token = module.GetStringConstant(val);
+				EmitOpcode(ref opcode);
+				EmitToken(token.Token);
+			}
+
 
 	[TODO]
 	public virtual void Emit(OpCode opcode, ConstructorInfo constructor)
@@ -411,12 +440,6 @@ public class ILGenerator
 
 	[TODO]
 	public virtual void Emit(OpCode opcode, SignatureHelper shelper)
-	{
-		throw new NotImplementedException("Emit");
-	}
-
-	[TODO]
-	public virtual void Emit(OpCode opcode, String val)
 	{
 		throw new NotImplementedException("Emit");
 	}

@@ -1,4 +1,12 @@
 
+2003-03-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Reflection/Emit/EnumBuilder.cs,
+	runtime/System/Reflection/Emit/ILGenerator.cs,
+	runtime/System/Reflection/Emit/ModuleBuilder.cs,
+	runtime/System/Reflection/Emit/TypeBuilder.cs: continue the
+	implementation of the Reflection.Emit API.
+
 2003-03-17  Jonathan Springer  <jonathan.springer@verizon.net>
 
 	* runtime/System/Private/NumberParser.cs,

@@ -54,7 +54,7 @@ public class ModuleBuilder : Module
 				privateData = ClrModuleCreate(assembly.privateData, name);
 
 				// Create the module type for this module.
-				moduleType = new TypeBuilder(assembly, this, "<Module>",
+				moduleType = new TypeBuilder(this, "<Module>",
 											 null, TypeAttributes.NotPublic,
 											 null, null,
 											 PackingSize.Unspecified, 0, null);
@@ -70,22 +70,21 @@ public class ModuleBuilder : Module
 			}
 
 	// Start a synchronized operation on this module.
-	private void StartSync()
+	internal void StartSync()
 			{
 				assembly.StartSync();
 			}
 
 	// End a synchronized operation on this module.
-	private void EndSync()
+	internal void EndSync()
 			{
 				assembly.EndSync();
 			}
 
 	// Create the global functions in this module.
-	[TODO]
 	public void CreateGlobalFunctions()
 			{
-				// TODO
+				moduleType.CreateType();
 			}
 
 	// TODO - debug symbol support
@@ -101,15 +100,25 @@ public class ModuleBuilder : Module
 			}
 
 	// Define an enumerated type within this module.
-	[TODO]
 	public EnumBuilder DefineEnum(String name, TypeAttributes visibility,
 								  Type underlyingType)
 			{
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					int index = name.LastIndexOf('.');
+					String nspace;
+					if(index != -1)
+					{
+						nspace = name.Substring(0, index);
+						name = name.Substring(index + 1);
+					}
+					else
+					{
+						nspace = null;
+					}
+					return new EnumBuilder(this, name, nspace,
+										   visibility, underlyingType);
 				}
 				finally
 				{
@@ -118,7 +127,6 @@ public class ModuleBuilder : Module
 			}
 
 	// Define a global method within this module.
-	[TODO]
 	public MethodBuilder DefineGlobalMethod
 				(String name, MethodAttributes attributes,
 				 CallingConventions callingConvention,
@@ -127,8 +135,13 @@ public class ModuleBuilder : Module
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					if((attributes & MethodAttributes.Static) == 0)
+					{
+						throw new ArgumentException(_("Emit_GlobalNonStatic"));
+					}
+					return moduleType.DefineMethod
+						(name, attributes, callingConvention,
+						 returnType, parameterTypes);
 				}
 				finally
 				{
@@ -145,15 +158,14 @@ public class ModuleBuilder : Module
 			}
 
 	// Define initialized data as a global field.
-	[TODO]
 	public FieldBuilder DefineInitializedData
 				(String name, byte[] data, FieldAttributes attributes)
 			{
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					return moduleType.DefineInitializedData
+						(name, data, attributes);
 				}
 				finally
 				{
@@ -162,7 +174,6 @@ public class ModuleBuilder : Module
 			}
 
 	// Define a global PInvoke method.
-	[TODO]
 	public MethodBuilder DefinePInvokeMethod
 				(String name, String dllName, String entryName,
 				 MethodAttributes attributes,
@@ -171,16 +182,10 @@ public class ModuleBuilder : Module
 				 CallingConvention nativeCallConv,
 				 CharSet nativeCharSet)
 			{
-				try
-				{
-					StartSync();
-					// TODO
-					return null;
-				}
-				finally
-				{
-					EndSync();
-				}
+				return moduleType.DefinePInvokeMethod
+					(name, dllName, entryName, attributes,
+				     callingConvention, returnType, parameterTypes,
+				 	 nativeCallConv, nativeCharSet);
 			}
 	public MethodBuilder DefinePInvokeMethod
 				(String name, String dllName,
@@ -190,10 +195,10 @@ public class ModuleBuilder : Module
 				 CallingConvention nativeCallConv,
 				 CharSet nativeCharSet)
 			{
-				return DefinePInvokeMethod(name, dllName, name,
-										   attributes, callingConvention,
-										   returnType, parameterTypes,
-										   nativeCallConv, nativeCharSet);
+				return moduleType.DefinePInvokeMethod
+					(name, dllName, name, attributes,
+				     callingConvention, returnType, parameterTypes,
+				 	 nativeCallConv, nativeCharSet);
 			}
 
 	// Define a resource within a module.
@@ -220,7 +225,6 @@ public class ModuleBuilder : Module
 			}
 
 	// Define a type witin this module.
-	[TODO]
 	private TypeBuilder DefineType(String name, TypeAttributes attr,
 								   Type parent, Type[] interfaces,
 								   PackingSize packSize, int typeSize)
@@ -228,8 +232,20 @@ public class ModuleBuilder : Module
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					int index = name.LastIndexOf('.');
+					String nspace;
+					if(index != -1)
+					{
+						nspace = name.Substring(0, index);
+						name = name.Substring(index + 1);
+					}
+					else
+					{
+						nspace = null;
+					}
+					return new TypeBuilder(this, name, nspace, attr,
+										   parent, interfaces, packSize,
+										   typeSize, null);
 				}
 				finally
 				{
@@ -279,15 +295,14 @@ public class ModuleBuilder : Module
 			}
 
 	// Define uninitialized data as a global field.
-	[TODO]
 	public FieldBuilder DefineUninitializedData
-				(String name, byte[] data, FieldAttributes attributes)
+				(String name, int size, FieldAttributes attributes)
 			{
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					return moduleType.DefineUninitializedData
+						(name, size, attributes);
 				}
 				finally
 				{
@@ -406,6 +421,10 @@ public class ModuleBuilder : Module
 	[TODO]
 	public StringToken GetStringConstant(String str)
 			{
+				if(str == null)
+				{
+					throw new ArgumentNullException("str");
+				}
 				// TODO
 				return new StringToken(0);
 			}

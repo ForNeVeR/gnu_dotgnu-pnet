@@ -334,7 +334,7 @@ internal class GrabWindow : OverrideWindow
 				Xlib.KeySym keysym;
 				PopupWindow popup;
 				InputOutputWidget child = null;
-				switch(xevent.type)
+				switch((EventType)(xevent.xany.type__))
 				{
 					case EventType.ButtonPress:
 					{

@@ -855,7 +855,7 @@ public class TopLevelWindow : InputOutputWidget
 				Widget widget;
 				InputOnlyWidget io;
 
-				switch(xevent.type)
+				switch((EventType)(xevent.xany.type__))
 				{
 					case EventType.ClientMessage:
 					{

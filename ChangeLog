@@ -26,6 +26,12 @@
 	* samples/FormsTest.cs: set both the width and height at once
 	when setting the initial window size.
 
+	* Xsharp/Display.cs, Xsharp/GrabWindow.cs, Xsharp/InputOnlyWidget.cs,
+	Xsharp/InputOutputWidget.cs, Xsharp/RootWindow.cs,
+	Xsharp/TopLevelWindow.cs: access common event member fields directly,
+	rather than via properties, to reduce the number of method calls
+	that are needed to break an event down into its components.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

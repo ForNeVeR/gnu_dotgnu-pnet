@@ -264,7 +264,8 @@ public sealed class RootWindow : Widget
 	/// Dispatch an event to this widget.
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
-				if(xevent.type == EventType.PropertyNotify &&
+				if(((EventType)(xevent.xany.type__)) ==
+						EventType.PropertyNotify &&
 				   xevent.xproperty.atom == resourceManager)
 				{
 					// The "RESOURCE_MANAGER" property has changed.

@@ -619,7 +619,7 @@ public class InputOnlyWidget : Widget
 				ButtonName button;
 				Xlib.Time time;
 	
-				switch(xevent.type)
+				switch((EventType)(xevent.xany.type__))
 				{
 					case EventType.ButtonPress:
 					{

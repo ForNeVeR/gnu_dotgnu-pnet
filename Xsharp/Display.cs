@@ -683,7 +683,7 @@ public sealed class Display : IDisposable
 			{
 				// Record the time at which the event occurred.  We need
 				// this to process keyboard and pointer grabs correctly.
-				switch(xevent.type)
+				switch((EventType)(xevent.xany.type__))
 				{
 					case EventType.KeyPress:
 					case EventType.KeyRelease:
@@ -745,7 +745,7 @@ public sealed class Display : IDisposable
 				}
 
 				// Find the widget that should process the event.
-				Widget widget = handleMap[xevent.window];
+				Widget widget = handleMap[xevent.xany.window];
 
 				// Dispatch the event to the widget.
 				if(widget != null)

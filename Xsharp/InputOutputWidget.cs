@@ -435,7 +435,7 @@ public class InputOutputWidget : InputOnlyWidget
 	// Dispatch an event to this widget.
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
-				switch(xevent.type)
+				switch((EventType)(xevent.xany.type__))
 				{
 					case EventType.Expose:
 					case EventType.GraphicsExpose:
@@ -445,10 +445,10 @@ public class InputOutputWidget : InputOnlyWidget
 						{
 							// This is the first rectangle in an expose.
 							exposeRegion = new Region
-								(xevent.xexpose.x,
-								 xevent.xexpose.y,
-								 xevent.xexpose.width,
-								 xevent.xexpose.height);
+								((int)(xevent.xexpose.x__),
+								 (int)(xevent.xexpose.y__),
+								 (int)(xevent.xexpose.width__),
+								 (int)(xevent.xexpose.height__));
 
 							// Queue this widget for later repainting.
 							// We don't do it now or the system will be
@@ -459,10 +459,10 @@ public class InputOutputWidget : InputOnlyWidget
 						{
 							// This is an extra rectangle in an expose.
 							exposeRegion.Union
-								(xevent.xexpose.x,
-								 xevent.xexpose.y,
-								 xevent.xexpose.width,
-								 xevent.xexpose.height);
+								((int)(xevent.xexpose.x__),
+								 (int)(xevent.xexpose.y__),
+								 (int)(xevent.xexpose.width__),
+								 (int)(xevent.xexpose.height__));
 						}
 					}
 					break;

@@ -33,7 +33,7 @@ void ILExecInit(unsigned long maxSize)
 	ILThreadInit();
 }
 
-ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
+ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cachePageSize)
 {
 	ILExecProcess *process;
 
@@ -87,7 +87,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	}
 
 	/* Initialize the CVM coder */
-	process->coder = ILCoderCreate(&_ILCVMCoderClass, 100000);
+	process->coder = ILCoderCreate(&_ILCVMCoderClass, 100000, cachePageSize);
 	if(!(process->coder))
 	{
 		ILExecProcessDestroy(process);

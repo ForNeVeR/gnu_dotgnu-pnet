@@ -1,9 +1,18 @@
 
+2003-06-22  Yannis Bres  <Yannis.BRES@sophia.inria.fr>
+
+	* engine/cvmc.c, engine/ilrun.c, engine/method_cache.c,
+	engine/method_cache.h, engine/null_coder.c, engine/process.c,
+	ildb/ildb_run.c, include/il_coder.h, include/il_engine.h: Add 
+	the '-C' option to control the size of the converted method cache.
+	(Gopal, Patch #1643 and fixes Bug #1014)
+
 2003-06-22  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_coerce.c: Fix indirect casting to use a 3 step conversion
 	instead of obtaining rules.
-
+	
+	
 2003-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/process.c (ILExecProcessDestroy): run a final garbage

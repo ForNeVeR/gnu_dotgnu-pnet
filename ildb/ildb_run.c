@@ -64,7 +64,7 @@ int ILDbCreateProcess(ILDb *db)
 	db->currLine = 1;
 
 	/* Create the execution process and install the debug hook */
-	db->process = ILExecProcessCreate(0);
+	db->process = ILExecProcessCreate(0, 0);
 	if(!(db->process))
 	{
 		ILDbOutOfMemory(db);

@@ -179,7 +179,7 @@ void ILExecInit(unsigned long maxSize);
 /*
  * Create a new process, including the "main" thread.
  */
-ILExecProcess *ILExecProcessCreate(unsigned long frameStackSize);
+ILExecProcess *ILExecProcessCreate(unsigned long frameStackSize, unsigned long cachePageSize);
 
 /*
  * Destroy a process and all threads associated with it.

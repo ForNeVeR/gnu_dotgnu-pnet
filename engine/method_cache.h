@@ -48,7 +48,7 @@ typedef struct
  * If "limit" is non-zero, then it specifies the maximum
  * size of the cache in bytes.
  */
-ILCache *_ILCacheCreate(long limit);
+ILCache *_ILCacheCreate(long limit,unsigned long cachePageSize);
 
 /*
  * Destroy a method cache.

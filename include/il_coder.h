@@ -137,7 +137,7 @@ struct _tagILCoderClass
 	/*
 	 * Create a coder instance.  Returns NULL if not possible.
 	 */
-	ILCoder *(*create)(ILUInt32 size);
+	ILCoder *(*create)(ILUInt32 size,unsigned long cachePageSize);
 	
 	/*
 	 * Enable debug mode.  The coder will output extra information
@@ -720,8 +720,8 @@ struct _tagILCoderClass
 /*
  * Helper macros for calling coder methods.
  */
-#define	ILCoderCreate(classInfo,size)	\
-			((*((classInfo)->create))((size)))
+#define	ILCoderCreate(classInfo,size,cachePageSize)	\
+			((*((classInfo)->create))((size),(cachePageSize)))
 #define	ILCoderEnableDebug(coder)	\
 			((*((coder)->classInfo->enableDebug))((coder)))
 #define	ILCoderAlloc(coder,size)	\

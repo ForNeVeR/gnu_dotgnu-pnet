@@ -63,6 +63,10 @@ static ILCmdLineOption const options[] = {
 	{"--stack-size", 'S', 1, 
 	        "--stack-size value  or -S value",
 	        "Set the operation stack size to `value' kilobytes."},
+	{"-C", 'C', 1, 0, 0},
+	{"--method-cache-page", 'C', 1, 
+	        "--method-cache-page value  or -C value",
+	        "Set the method cache page size to `value' kilobytes."},
 	{"-L", 'L', 1, 0, 0},
 	{"--library-dir", 'L', 1,
 		"--library-dir dir       or -L dir",
@@ -111,6 +115,7 @@ int main(int argc, char *argv[])
 	char *progname = argv[0];
 	unsigned long heapSize = IL_CONFIG_GC_HEAP_SIZE;
 	unsigned long stackSize = IL_CONFIG_STACK_SIZE;
+	unsigned long methodCachePageSize = IL_CONFIG_CACHE_PAGE_SIZE;
 	char **libraryDirs;
 	int numLibraryDirs;
 	int state, opt;
@@ -168,6 +173,18 @@ int main(int argc, char *argv[])
 					++param;
 				}
 				heapSize *= 1024;
+			}
+			break;
+
+			case 'C':
+			{
+				methodCachePageSize = 0;
+				while(*param >= '0' && *param <= '9')
+				{
+					methodCachePageSize = methodCachePageSize * 10 + (unsigned long)(*param - '0');
+					++param;
+				}
+				methodCachePageSize *= 1024;
 			}
 			break;
 
@@ -262,7 +279,7 @@ int main(int argc, char *argv[])
 	ILExecInit(heapSize);
 
 	/* Create a process to load the program into */
-	process = ILExecProcessCreate(stackSize);
+	process = ILExecProcessCreate(stackSize, methodCachePageSize);
 	if(!process)
 	{
 	#ifndef REDUCED_STDIO

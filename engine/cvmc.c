@@ -129,7 +129,7 @@ static ILUInt32 GetStackTypeSize(ILType *type)
 /*
  * Create a new CVM coder instance.
  */
-static ILCoder *CVMCoder_Create(ILUInt32 size)
+static ILCoder *CVMCoder_Create(ILUInt32 size, unsigned long cachePageSize)
 {
 	ILCVMCoder *coder;
 	if((coder = (ILCVMCoder *)ILMalloc(sizeof(ILCVMCoder))) == 0)
@@ -137,7 +137,7 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 		return 0;
 	}
 	coder->coder.classInfo = &_ILCVMCoderClass;
-	if((coder->cache = ILCacheCreate(0)) == 0)
+	if((coder->cache = ILCacheCreate(0, cachePageSize)) == 0)
 	{
 		ILFree(coder);
 		return 0;

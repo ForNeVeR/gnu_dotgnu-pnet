@@ -28,7 +28,7 @@ extern	"C" {
 /*
  * Stubs for coder functions.
  */
-static ILCoder *Coder_Create(ILUInt32 size)
+static ILCoder *Coder_Create(ILUInt32 size, unsigned long cachePageSize)
 {
 	return 0;
 }

@@ -387,7 +387,7 @@ static void WriteCacheDebug(ILCachePosn *posn, long offset, long nativeOffset)
 	}
 }
 
-ILCache *_ILCacheCreate(long limit)
+ILCache *_ILCacheCreate(long limit, unsigned long cachePageSize)
 {
 	ILCache *cache;
 	unsigned long size;
@@ -402,7 +402,11 @@ ILCache *_ILCacheCreate(long limit)
 	cache->pages = 0;
 	cache->numPages = 0;
 	size = ILPageAllocSize();
-	size = (IL_CONFIG_CACHE_PAGE_SIZE / size) * size;
+	if (cachePageSize == 0)
+	{
+		cachePageSize= IL_CONFIG_CACHE_PAGE_SIZE;
+	}
+	size = (cachePageSize / size) * size;
 	if(!size)
 	{
 		size = ILPageAllocSize();

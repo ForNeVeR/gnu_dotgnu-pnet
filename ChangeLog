@@ -5,6 +5,8 @@
 implement ECMA validation for fields, methods, constructors, properties,
 and events.
 
+* samples/mscorlib.dll: new version with ECMA compliance updates.
+
 2001-12-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/Makefile.am, engine/lib_array.c, engine/lib_defs.h,

@@ -4,6 +4,12 @@
 	* cscc/csharp/cs_invoke.tc: improve the error message that results
 	when a base/this constructor call cannot be resolved.
 
+	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,
+	samples/I18N.Other.dll, samples/I18N.Rare.dll,
+	samples/I18N.West.dll, samples/I18N.dll, samples/System.Xml.dll,
+	samples/System.dll, samples/mscorlib.dll: update all assemblies
+	from pnetlib.
+
 2002-11-19  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_oper.tc: Add a number of linenum & filename copies

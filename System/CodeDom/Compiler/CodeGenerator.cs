@@ -190,6 +190,10 @@ public abstract class CodeGenerator : ICodeGenerator
 			{
 				get
 				{
+					if(options == null)
+					{
+						options = new CodeGeneratorOptions();
+					}
 					return options;
 				}
 			}

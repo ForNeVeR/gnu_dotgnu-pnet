@@ -17,6 +17,10 @@
 	an event in "XNextEvent", so that other threads can issue X
 	requests in the interim.
 
+	* System/CodeDom/Compiler/CSharpCodeCompiler.cs,
+	System/CodeDom/Compiler/CodeGenerator.cs: implement some of the
+	missing C# code generation TODO's in CodeDom.
+
 2003-07-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Xml/XmlTextWriter.cs: Fix indentation problem with textwriter

@@ -27,6 +27,7 @@ namespace System.CodeDom.Compiler
 using System.IO;
 using System.Reflection;
 using System.Globalization;
+using System.Text;
 
 internal class CSharpCodeCompiler : CodeCompiler
 {
@@ -314,6 +315,7 @@ internal class CSharpCodeCompiler : CodeCompiler
 					case "System.Double":	type = "double"; break;
 					case "System.Decimal":	type = "decimal"; break;
 					case "System.String":	type = "string"; break;
+					case "System.Object":	type = "object"; break;
 					default:				break;
 				}
 				return type;
@@ -463,11 +465,6 @@ internal class CSharpCodeCompiler : CodeCompiler
 				OutputExpressionList(e.Parameters);
 				Output.Write(")");
 			}
-	protected override void GenerateParameterDeclarationExpression
-				(CodeParameterDeclarationExpression e)
-			{
-				// TODO
-			}
 	protected override void GeneratePropertyReferenceExpression
 				(CodePropertyReferenceExpression e)
 			{
@@ -502,7 +499,15 @@ internal class CSharpCodeCompiler : CodeCompiler
 	// Start a new indented block.
 	private void StartBlock()
 			{
-				Output.WriteLine("{");
+				if(Options.BracingStyle == "C")
+				{
+					Output.WriteLine();
+					Output.WriteLine("{");
+				}
+				else
+				{
+					Output.WriteLine(" {");
+				}
 				Indent += 1;
 			}
 
@@ -538,14 +543,14 @@ internal class CSharpCodeCompiler : CodeCompiler
 			{
 				Output.Write("if (");
 				GenerateExpression(e.Condition);
-				Output.WriteLine(")");
+				Output.Write(")");
 				StartBlock();
 				GenerateStatements(e.TrueStatements);
 				EndBlock();
 				CodeStatementCollection stmts = e.FalseStatements;
 				if(stmts.Count > 0 || Options.ElseOnClosing)
 				{
-					Output.WriteLine("else");
+					Output.Write("else");
 					StartBlock();
 					GenerateStatements(stmts);
 					EndBlock();
@@ -577,7 +582,7 @@ internal class CSharpCodeCompiler : CodeCompiler
 					// Special case - output a "while" statement.
 					Output.Write("while (");
 					GenerateExpression(e.TestExpression);
-					Output.WriteLine(")");
+					Output.Write(")");
 					StartBlock();
 					GenerateStatements(e.Statements);
 					EndBlock();
@@ -602,7 +607,7 @@ internal class CSharpCodeCompiler : CodeCompiler
 						GenerateStatement(e.IncrementStatement);
 					}
 					outputForInit = false;
-					Output.WriteLine(")");
+					Output.Write(")");
 					StartBlock();
 					GenerateStatements(e.Statements);
 					EndBlock();
@@ -656,7 +661,7 @@ internal class CSharpCodeCompiler : CodeCompiler
 	protected override void GenerateTryCatchFinallyStatement
 				(CodeTryCatchFinallyStatement e)
 			{
-				Output.WriteLine("try");
+				Output.Write("try");
 				StartBlock();
 				GenerateStatements(e.TryStatements);
 				EndBlock();
@@ -674,11 +679,11 @@ internal class CSharpCodeCompiler : CodeCompiler
 								Output.Write(" ");
 								OutputIdentifier(clause.LocalName);
 							}
-							Output.WriteLine(")");
+							Output.Write(")");
 						}
 						else
 						{
-							Output.WriteLine("catch");
+							Output.Write("catch");
 						}
 						StartBlock();
 						GenerateStatements(clause.Statements);
@@ -688,7 +693,7 @@ internal class CSharpCodeCompiler : CodeCompiler
 				CodeStatementCollection fin = e.FinallyStatements;
 				if(fin.Count > 0)
 				{
-					Output.WriteLine("finally");
+					Output.Write("finally");
 					StartBlock();
 					GenerateStatements(fin);
 					EndBlock();
@@ -713,12 +718,12 @@ internal class CSharpCodeCompiler : CodeCompiler
 	protected override void GenerateAttributeDeclarationsStart
 				(CodeAttributeDeclarationCollection attributes)
 			{
-				// TODO
+				Output.Write("[");
 			}
 	protected override void GenerateAttributeDeclarationsEnd
 				(CodeAttributeDeclarationCollection attributes)
 			{
-				// TODO
+				Output.Write("]");
 			}
 	protected override void GenerateConstructor
 				(CodeConstructor e, CodeTypeDeclaration c)
@@ -751,11 +756,21 @@ internal class CSharpCodeCompiler : CodeCompiler
 			}
 	protected override void GenerateNamespaceStart(CodeNamespace e)
 			{
-				// TODO
+				String name = e.Name;
+				if(name != null && name.Length != 0)
+				{
+					Output.Write("namespace ");
+					OutputIdentifier(name);
+					StartBlock();
+				}
 			}
 	protected override void GenerateNamespaceEnd(CodeNamespace e)
 			{
-				// TODO
+				String name = e.Name;
+				if(name != null && name.Length != 0)
+				{
+					EndBlock();
+				}
 			}
 	protected override void GenerateNamespaceImport(CodeNamespaceImport e)
 			{
@@ -777,13 +792,52 @@ internal class CSharpCodeCompiler : CodeCompiler
 			}
 	protected override void GenerateTypeEnd(CodeTypeDeclaration e)
 			{
-				// TODO
+				if(!IsCurrentDelegate)
+				{
+					--Indent;
+					Output.WriteLine("}");
+				}
 			}
 
 	// Generate various misc categories.
 	protected override void GenerateComment(CodeComment e)
 			{
-				// TODO
+				String text = e.Text;
+				String commentSeq = (e.DocComment ? "/// " : "// ");
+				if(text == null)
+				{
+					return;
+				}
+				int posn = 0;
+				int end, next;
+				while(posn < text.Length)
+				{
+					end = posn;
+					next = end;
+					while(end < text.Length)
+					{
+						if(text[end] == '\r')
+						{
+							if((end + 1) < text.Length &&
+							   text[end + 1] == '\n')
+							{
+								next = end + 1;
+							}
+							break;
+						}
+						else if(text[end] == '\n' ||
+								text[end] == '\u2028' ||
+								text[end] == '\u2029')
+						{
+							break;
+						}
+						++end;
+						next = end;
+					}
+					Output.Write(commentSeq);
+					Output.WriteLine(text.Substring(posn, end - posn));
+					posn = next + 1;
+				}
 			}
 	protected override void GenerateLinePragmaStart(CodeLinePragma e)
 			{
@@ -798,15 +852,51 @@ internal class CSharpCodeCompiler : CodeCompiler
 			}
 	protected override String GetTypeOutput(CodeTypeReference value)
 			{
-				// TODO
-				return null;
+				String baseType;
+				if(value.ArrayElementType != null)
+				{
+					baseType = GetTypeOutput(value.ArrayElementType);
+				}
+				else
+				{
+					baseType = value.BaseType;
+				}
+				baseType = NormalizeTypeName(baseType);
+				int rank = value.ArrayRank;
+				if(rank > 0)
+				{
+					baseType += "[";
+					while(rank > 1)
+					{
+						baseType += ",";
+						--rank;
+					}
+					baseType += "]";
+				}
+				return baseType;
 			}
 
 	// Determine if "value" is a valid identifier.
 	protected override bool IsValidIdentifier(String value)
 			{
-				// TODO
-				return true;
+				if(value == null || value.Length == 0)
+				{
+					return false;
+				}
+				else if(Array.IndexOf(reservedWords, value) != -1)
+				{
+					return false;
+				}
+				else
+				{
+					return IsValidLanguageIndependentIdentifier(value);
+				}
+			}
+
+	// Output an identifier.
+	protected override void OutputIdentifier(String ident)
+			{
+				Output.Write(CreateEscapedIdentifier(ident));
 			}
 
 	// Output a type.
@@ -815,11 +905,66 @@ internal class CSharpCodeCompiler : CodeCompiler
 				Output.Write(GetTypeOutput(typeRef));
 			}
 
+	// Hex characters for use in "QuoteSnippetString".
+	private const String hexchars = "0123456789abcdef";
+
 	// Quote a snippet string.
 	protected override String QuoteSnippetString(String value)
 			{
-				// TODO
-				return value;
+				StringBuilder builder = new StringBuilder(value.Length + 16);
+				builder.Append('"');
+				int length = 0;
+				foreach(char ch in value)
+				{
+					if(ch == '\0')
+					{
+						builder.Append("\\0");
+						length += 2;
+					}
+					else if(ch == '\r')
+					{
+						builder.Append("\\r");
+						length += 2;
+					}
+					else if(ch == '\n')
+					{
+						builder.Append("\\n");
+						length += 2;
+					}
+					else if(ch == '\t')
+					{
+						builder.Append("\\t");
+						length += 2;
+					}
+					else if(ch == '\\' || ch == '"')
+					{
+						builder.Append('\\');
+						builder.Append(ch);
+						length += 2;
+					}
+					else if(ch < 0x0020 || ch > 0x007E)
+					{
+						builder.Append('\\');
+						builder.Append('u');
+						builder.Append(hexchars[(ch >> 12) & 0x0F]);
+						builder.Append(hexchars[(ch >> 8) & 0x0F]);
+						builder.Append(hexchars[(ch >> 4) & 0x0F]);
+						builder.Append(hexchars[ch & 0x0F]);
+						length += 6;
+					}
+					else
+					{
+						builder.Append(ch);
+						++length;
+					}
+					if(length >= 60)
+					{
+						builder.Append("\" +" + Output.NewLine + "\"");
+						length = 0;
+					}
+				}
+				builder.Append('"');
+				return builder.ToString();
 			}
 
 	// Determine if this code generator supports a particular

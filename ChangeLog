@@ -1,4 +1,8 @@
 
+2002-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* compat/Vsa.cs: mis-spelt identifier in the Vsa code.
+
 2002-01-02  Adam Ballai  <minddog@cannibutter.com>
 	
 	* runtime/System/Convert.cs, System.Xml/XmlTextWriter.cs: Implement

@@ -89,7 +89,7 @@ public interface IVsaItems : IEnumerable
 public interface IVsaCodeItem : IVsaItem
 {
 #if !ECMA_COMPAT
-	CodeObject CodeDom { get; }
+	CodeObject CodeDOM { get; }
 #endif
 	String SourceText { get; set; }
 	void AddEventSource(String eventSourceName, String eventSourceType);

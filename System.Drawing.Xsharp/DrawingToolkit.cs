@@ -131,9 +131,14 @@ public sealed class DrawingToolkit : IToolkit
 	// are no events in the queue, then return "false".
 	public bool ProcessEvents(bool waitForEvent)
 			{
-				// TODO
-				app.Run();
-				return false;
+				if(waitForEvent)
+				{
+					return app.WaitForEvent();
+				}
+				else
+				{
+					return app.ProcessPendingEvents();
+				}
 			}
 
 	// Send a quit message to the toolkit, which should cause

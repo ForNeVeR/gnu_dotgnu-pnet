@@ -314,6 +314,46 @@ public sealed class Application : IDisposable
 			}
 
 	/// <summary>
+	/// <para>Process pending events, and return immediately.</para>
+	/// </summary>
+	///
+	/// <returns>
+	/// <para>Returns <see langword="true"/> if events were processed,
+	/// or <see langword="false"/> if there are no pending events.</para>
+	/// </returns>
+	public bool ProcessPendingEvents()
+			{
+				if(display != null)
+				{
+					return display.ProcessPendingEvents();
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	/// <summary>
+	/// <para>Wait for the next event, process it, and then return.</para>
+	/// </summary>
+	///
+	/// <returns>
+	/// <para>Returns <see langword="true"/> if an event was processed,
+	/// or <see langword="false"/> if <c>Quit</c> was detected.</para>
+	/// </returns>
+	public bool WaitForEvent()
+			{
+				if(display != null)
+				{
+					return display.WaitForEvent();
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	/// <summary>
 	/// <para>Get the name of this program (i.e. the argv[0] value).</para>
 	/// </summary>
 	///

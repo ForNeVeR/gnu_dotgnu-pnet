@@ -54,6 +54,11 @@
 	"ControlPaint.DrawBorder" method; compute "darker" and "lighter"
 	versions of colors.
 
+	* System.Drawing.Xsharp/DrawingToolkit.cs, Xsharp/Application.cs,
+	Xsharp/Display.cs, Xsharp/Timer.cs: split the event loop into
+	"ProcessPendingEvents()" and "WaitForEvent()" so that it is
+	possible to return back to the application between events.
+
 2003-06-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/ProgressBar.cs, 

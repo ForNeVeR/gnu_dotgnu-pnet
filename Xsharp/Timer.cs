@@ -343,7 +343,7 @@ public sealed class Timer : IDisposable
 			}
 
 	// Activate timers that have fired on a particular display.
-	internal static void ActivateTimers(Display dpy)
+	internal static bool ActivateTimers(Display dpy)
 			{
 				// Bail out early if there are no timers, to avoid
 				// calling "DateTime.Now" if we don't need to.
@@ -351,12 +351,13 @@ public sealed class Timer : IDisposable
 				{
 					if(dpy.timerQueue == null)
 					{
-						return;
+						return false;
 					}
 				}
 				DateTime now = DateTime.Now;
 				Timer timer;
 				DateTime next;
+				bool activated = false;
 				for(;;)
 				{
 					// Remove the first timer from the queue if
@@ -379,6 +380,7 @@ public sealed class Timer : IDisposable
 					}
 
 					// Invoke the timer's callback delegate.
+					activated = true;
 					timer.callback(timer.state);
 
 					// Add the timer back onto the queue if necessary.
@@ -404,6 +406,7 @@ public sealed class Timer : IDisposable
 						}
 					}
 				}
+				return activated;
 			}
 
 	// Get the number of milliseconds until the next timeout.

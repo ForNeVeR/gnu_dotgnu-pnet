@@ -465,6 +465,134 @@ public sealed class Display : IDisposable
 				Bell(100);
 			}
 
+	// Event types for "HandleNextEvent".
+	private enum AppEvent
+	{
+		NoEvent,
+		Regular,
+		Timer,
+		Quit,
+
+	}; // enum AppEvent
+
+	// Handle the next event and return what kind of event it was.
+	private AppEvent HandleNextEvent(bool wait)
+			{
+				try
+				{
+					IntPtr dpy = Lock();
+					XEvent xevent;
+					int timeout;
+
+					// We are now in the main loop processing events.
+					inMainLoop = true;
+
+					// Flush any requests that are in the outgoing queue.
+					Xlib.XFlush(dpy);
+	
+					// Process "Quit".
+					if(quit)
+					{
+						return AppEvent.Quit;
+					}
+	
+					// Process timers that need to be activated.
+					if(Timer.ActivateTimers(this))
+					{
+						return AppEvent.Timer;
+					}
+	
+					// Do we have pending expose events to process?
+					if(pendingExposes)
+					{
+						// If there are still events in the queue,
+						// then process them before the exposes.
+						if(Xlib.XEventsQueued
+								(dpy, 2 /* QueuedAfterFlush */) != 0)
+						{
+							// Read the next event and dispatch it.
+							Xlib.XNextEvent(dpy, out xevent);
+							DispatchEvent(ref xevent);
+						}
+						else
+						{
+							// Process the pending expose events.
+							InputOutputWidget widget;
+							while(exposeList != null)
+							{
+								widget = exposeList;
+								exposeList = exposeList.nextExpose;
+								widget.Expose();
+							}
+							pendingExposes = false;
+						}
+						return AppEvent.Regular;
+					}
+					else
+					{
+						// Wait for the next event.
+						if(wait)
+						{
+							timeout = Timer.GetNextTimeout(this);
+						}
+						else
+						{
+							timeout = 0;
+						}
+						if(timeout < 0)
+						{
+							Xlib.XNextEvent(dpy, out xevent);
+							DispatchEvent(ref xevent);
+							return AppEvent.Regular;
+						}
+						else
+						{
+							if(Xlib.XNextEventWithTimeout
+								(dpy, out xevent, timeout) > 0)
+							{
+								DispatchEvent(ref xevent);
+								return AppEvent.Regular;
+							}
+						}
+					}
+				}
+				finally
+				{
+					inMainLoop = false;
+					Unlock();
+				}
+
+				// If we get here, then there were no events processed.
+				return AppEvent.NoEvent;
+			}
+
+	/// <summary>
+	/// <para>Process pending events, and return immediately.</para>
+	/// </summary>
+	///
+	/// <returns>
+	/// <para>Returns <see langword="true"/> if events were processed,
+	/// or <see langword="false"/> if there are no pending events.</para>
+	/// </returns>
+	public bool ProcessPendingEvents()
+			{
+				AppEvent ev = HandleNextEvent(false);
+				return (ev != AppEvent.NoEvent && ev != AppEvent.Quit);
+			}
+
+	/// <summary>
+	/// <para>Wait for the next event, process it, and then return.</para>
+	/// </summary>
+	///
+	/// <returns>
+	/// <para>Returns <see langword="true"/> if an event was processed,
+	/// or <see langword="false"/> if <c>Quit</c> was detected.</para>
+	/// </returns>
+	public bool WaitForEvent()
+			{
+				return (HandleNextEvent(true) != AppEvent.Quit);
+			}
+
 	/// <summary>
 	/// <para>Run the main event loop on this display.</para>
 	/// </summary>
@@ -475,71 +603,9 @@ public sealed class Display : IDisposable
 	/// </remarks>
 	public void Run()
 			{
-				try
+				while(HandleNextEvent(true) != AppEvent.Quit)
 				{
-					IntPtr dpy = Lock();
-					XEvent xevent;
-					int timeout;
-
-					Xlib.XFlush(dpy);
-					inMainLoop = true;
-					while(!quit)
-					{
-						// Flush any requests that are in the outgoing queue.
-						Xlib.XFlush(dpy);
-
-						// Process timers that need to be activated.
-						Timer.ActivateTimers(this);
-
-						// Do we have pending expose events to process?
-						if(pendingExposes)
-						{
-							// If there are still events in the queue,
-							// then process them before the exposes.
-							if(Xlib.XEventsQueued
-									(dpy, 2 /* QueuedAfterFlush */) != 0)
-							{
-								// Read the next event and dispatch it.
-								Xlib.XNextEvent(dpy, out xevent);
-								DispatchEvent(ref xevent);
-							}
-							else
-							{
-								// Process the pending expose events.
-								InputOutputWidget widget;
-								while(exposeList != null)
-								{
-									widget = exposeList;
-									exposeList = exposeList.nextExpose;
-									widget.Expose();
-								}
-								pendingExposes = false;
-							}
-						}
-						else
-						{
-							// Wait for the next event.
-							timeout = Timer.GetNextTimeout(this);
-							if(timeout < 0)
-							{
-								Xlib.XNextEvent(dpy, out xevent);
-								DispatchEvent(ref xevent);
-							}
-							else
-							{
-								if(Xlib.XNextEventWithTimeout
-									(dpy, out xevent, timeout) > 0)
-								{
-									DispatchEvent(ref xevent);
-								}
-							}
-						}
-					}
-				}
-				finally
-				{
-					inMainLoop = false;
-					Unlock();
+					// Nothing to do here - just wait for the quit.
 				}
 			}
 

@@ -131,7 +131,7 @@ namespace System.IO
 				{
 					if(inBufferPosn < inBufferLen)
 					{
-						Array.Copy
+						Array.InternalCopy
 							(inBuffer, inBufferPosn,
 						     inBuffer, 0, inBufferLen - inBufferPosn);
 						inBufferLen -= inBufferPosn;
@@ -207,7 +207,7 @@ namespace System.IO
 				{
 					templen = count;
 				}
-				Array.Copy(inBuffer, inBufferPosn,
+				Array.InternalCopy(inBuffer, inBufferPosn,
 						   buffer, offset, templen);
 				inBufferPosn += templen;
 				offset += templen;
@@ -272,7 +272,7 @@ namespace System.IO
 			/* simple cases first ;) */
 			if(spaceInBuffer > count)
 			{
-				Array.Copy(array, offset, outBuffer,outBufferLen, count);
+				Array.InternalCopy(array, offset, outBuffer,outBufferLen, count);
 				outBufferLen+=count;
 				return;
 			}
@@ -280,7 +280,7 @@ namespace System.IO
 			// room by moving to the front.
 			if(outBufferPosn < outBufferLen)
 			{
-				Array.Copy(outBuffer, outBufferPosn, outBuffer, 0, 
+				Array.InternalCopy(outBuffer, outBufferPosn, outBuffer, 0, 
 							outBufferLen-outBufferPosn);
 				outBufferLen -= outBufferPosn;	
 				outBufferPosn = 0;
@@ -294,7 +294,7 @@ namespace System.IO
 			spaceInBuffer=bufferSize-outBufferLen;
 			if(spaceInBuffer > count)
 			{
-				Array.Copy(array, offset, outBuffer, outBufferLen, count);
+				Array.InternalCopy(array, offset, outBuffer, outBufferLen, count);
 				outBufferLen+=count;
 				return;
 			}
@@ -306,7 +306,7 @@ namespace System.IO
 			if(keptData!=0)
 			{
 				stream.Write(array,offset,count-keptData);
-				Array.Copy(array, offset + count - keptData, 
+				Array.InternalCopy(array, offset + count - keptData, 
 							outBuffer, outBufferPosn, keptData);
 				outBufferLen+=keptData;
 			}

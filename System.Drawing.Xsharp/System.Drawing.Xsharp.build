@@ -16,6 +16,10 @@
 				<includes name="**/*.cs"/>
 			</sources>
 
+			<resources basedir="${csant.src.dir}">
+				<includes name="*.pcf"/>
+			</resources>
+
 			<references>
 				<file name="../System.Drawing/System.Drawing.dll"/>
 				<file name="../Xsharp/Xsharp.dll"/>

@@ -22,7 +22,9 @@ namespace Xsharp
 {
 
 using System;
+using System.IO;
 using System.Text;
+using System.Reflection;
 using Xsharp.Types;
 
 /// <summary>
@@ -41,12 +43,25 @@ public class Font
 
 	} // class FontInfo
 
+	// Information about a registered font.
+	private class RegisteredFont
+	{
+		public RegisteredFont next;
+		public String family;
+		public int pointSize;
+		public FontStyle style;
+		public byte[] data;
+		public IntPtr loadedData;
+
+	} // class RegisteredFont
+
 	// Internal state.
 	internal String family;
 	internal int pointSize;
 	internal FontStyle style;
 	internal String xname;
 	internal FontInfo infoList;
+	private static RegisteredFont registeredFonts;
 
 	/// <summary>
 	/// <para>The family name for the default sans-serif font.</para>
@@ -240,14 +255,37 @@ public class Font
 	/// <para>Additional styles to apply to the font.</para>
 	/// </param>
 	///
+	/// <returns>
 	/// <para>The font object that corresponds to the given parameters.</para>
 	/// </returns>
 	public static Font CreateFont
 				(String family, int pointSize, FontStyle style)
 			{
+				// Do we have a registered font for this name, size, and style?
+				RegisteredFont font;
+				lock(typeof(Font))
+				{
+					font = registeredFonts;
+					while(font != null)
+					{
+						if(font.family == family &&
+						   font.pointSize == pointSize &&
+						   font.style == (style & ~(FontStyle.Underlined |
+						   							FontStyle.StrikeOut)))
+						{
+							break;
+						}
+						font = font.next;
+					}
+				}
+				if(font != null)
+				{
+					// TODO: create a font based on a registered font image.
+				}
+
+				// Search for a regular X font that matches the conditions.
 				if(family == DefaultSansSerif)
 				{
-					// TODO: we will need to map this differently in future.
 					family = SansSerif;
 				}
 				if(Xlib.XSharpUseXft() != 0)
@@ -273,6 +311,10 @@ public class Font
 	/// <para>The name of the font family, or <see langword="null"/> to
 	/// use the default sans-serif font.</para>
 	/// </param>
+	///
+	/// <returns>
+	/// <para>The font object that corresponds to the given parameters.</para>
+	/// </returns>
 	public static Font CreateFont(String family)
 			{
 				return CreateFont(family, 120, FontStyle.Normal);
@@ -291,6 +333,10 @@ public class Font
 	/// <param name="pointSize">
 	/// <para>The point size (120 is typically "normal height").</para>
 	/// </param>
+	///
+	/// <returns>
+	/// <para>The font object that corresponds to the given parameters.</para>
+	/// </returns>
 	public static Font CreateFont(String family, int pointSize)
 			{
 				return CreateFont(family, pointSize, FontStyle.Normal);
@@ -318,6 +364,141 @@ public class Font
 				{
 					return new Font(name, true);
 				}
+			}
+
+	/// <summary>
+	/// <para>Register font data with a particular set of font
+	/// parameters.</para>
+	/// </summary>
+	///
+	/// <param name="family">
+	/// <para>The name of the font family, or <see langword="null"/> to
+	/// use the default sans-serif font.</para>
+	/// </param>
+	///
+	/// <param name="pointSize">
+	/// <para>The point size (120 is typically "normal height").</para>
+	/// </param>
+	///
+	/// <param name="style">
+	/// <para>Additional styles to apply to the font.</para>
+	/// </param>
+	///
+	/// <param name="data">
+	/// <para>The font data.  This will normally be uncompressed
+	/// PCF font data.</para>
+	/// </param>
+	///
+	/// <remarks>
+	/// <para>Registering a style will also register the underlined and
+	/// strikeout versions of the font, which are synthesized.</para>
+	/// </remarks>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="family"/> or <paramref name="data"/>
+	/// is <see langword="null"/>.</para>
+	/// </exception>
+	public static void RegisterFont
+				(String family, int pointSize, FontStyle style, byte[] data)
+			{
+				if(family == null)
+				{
+					throw new ArgumentNullException("family");
+				}
+				if(data == null)
+				{
+					throw new ArgumentNullException("data");
+				}
+				RegisteredFont font = new RegisteredFont();
+				font.family = family;
+				font.pointSize = pointSize;
+				font.style = style;
+				font.data = data;
+				font.loadedData = IntPtr.Zero;
+				lock(typeof(Font))
+				{
+					font.next = registeredFonts;
+					registeredFonts = font;
+				}
+			}
+
+	/// <summary>
+	/// <para>Register font data with a particular set of font
+	/// parameters.  The font data is obtained from a manifest resource
+	/// within an assembly.</para>
+	/// </summary>
+	///
+	/// <param name="family">
+	/// <para>The name of the font family, or <see langword="null"/> to
+	/// use the default sans-serif font.</para>
+	/// </param>
+	///
+	/// <param name="pointSize">
+	/// <para>The point size (120 is typically "normal height").</para>
+	/// </param>
+	///
+	/// <param name="style">
+	/// <para>Additional styles to apply to the font.</para>
+	/// </param>
+	///
+	/// <param name="assembly">
+	/// <para>The assembly containing the font data.</para>
+	/// </param>
+	///
+	/// <param name="resourceName">
+	/// <para>The name of the resource containing the font data.  This will
+	/// normally be uncompressed PCF font data.</para>
+	/// </param>
+	///
+	/// <remarks>
+	/// <para>Registering a style will also register the underlined and
+	/// strikeout versions of the font, which are synthesized.</para>
+	/// </remarks>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="family"/>, <paramref name="assembly"/>,
+	/// or <paramref name="resourceName"/> is <see langword="null"/>, or
+	/// if the resource does not exist in the assembly.</para>
+	/// </exception>
+	public static void RegisterFont
+				(String family, int pointSize, FontStyle style,
+				 Assembly assembly, String resourceName)
+			{
+				Stream stream;
+				byte[] data;
+
+				// Validate the parameters.
+				if(family == null)
+				{
+					throw new ArgumentNullException("family");
+				}
+				if(assembly == null)
+				{
+					throw new ArgumentNullException("assembly");
+				}
+				if(resourceName == null)
+				{
+					throw new ArgumentNullException("resourceName");
+				}
+
+				// Load the font data from the resource.
+				stream = assembly.GetManifestResourceStream(resourceName);
+				if(stream == null)
+				{
+					throw new ArgumentNullException("resourceName");
+				}
+				try
+				{
+					data = new byte [(int)(stream.Length)];
+					stream.Read(data, 0, data.Length);
+				}
+				finally
+				{
+					stream.Close();
+				}
+
+				// Register the font with the data that we just loaded.
+				RegisterFont(family, pointSize, style, data);
 			}
 
 	/// <summary>

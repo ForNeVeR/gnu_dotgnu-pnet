@@ -28,6 +28,7 @@ using System.Drawing.Toolkit;
 using System.Drawing.Text;
 using System.Drawing.Imaging;
 using System.Threading;
+using System.Reflection;
 using Xsharp;
 using DotGNU.Images;
 
@@ -46,6 +47,9 @@ public sealed class DrawingToolkit : IToolkit
 			{
 				// Create an Xsharp application instance.
 				app = new Xsharp.Application(null, null);
+
+				// Register the additional fonts that we required.
+				RegisterFonts();
 
 				// Get the placeholder widget for the screen.
 				placeholder = app.Display.DefaultScreenOfDisplay.Placeholder;
@@ -118,6 +122,34 @@ public sealed class DrawingToolkit : IToolkit
 			{
 				LoadResources();
 				// TODO: raise a repaint on all windows
+			}
+
+	// Register extra fonts that we need to imitate Winforms exactly.
+	private void RegisterFonts()
+			{
+				Assembly assembly = Assembly.GetExecutingAssembly();
+				String family = Xsharp.Font.DefaultSansSerif;
+				try
+				{
+					Xsharp.Font.RegisterFont
+						(family, 82, Xsharp.FontStyle.Normal,
+						 assembly, "mssR08.pcf");
+					Xsharp.Font.RegisterFont
+						(family, 82, Xsharp.FontStyle.Bold,
+						 assembly, "mssB08.pcf");
+					Xsharp.Font.RegisterFont
+						(family, 82, Xsharp.FontStyle.Italic,
+						 assembly, "mssI08.pcf");
+					Xsharp.Font.RegisterFont
+						(family, 82,
+						 Xsharp.FontStyle.Bold | Xsharp.FontStyle.Italic,
+						 assembly, "mssBI08.pcf");
+				}
+				catch(Exception)
+				{
+					// Ignore errors if we couldn't register a font,
+					// because we can fall back to normal X fonts.
+				}
 			}
 
 	// Process events in the event queue.  If "waitForEvent" is true,

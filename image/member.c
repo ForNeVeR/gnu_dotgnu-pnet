@@ -81,6 +81,19 @@ int ILMemberAccessible(ILMember *member, ILClass *scope)
 		}
 		member = (ILMember *)accessor;
 	}
+	else if(ILMember_IsEvent(member))
+	{
+		accessor = ILEvent_AddOn((ILEvent *)member);
+		if(!accessor)
+		{
+			accessor = ILEvent_RemoveOn((ILEvent *)member);
+		}
+		if(!accessor)
+		{
+			return 0;
+		}
+		member = (ILMember *)accessor;
+	}
 	if(ILMember_IsMethod(member) || ILMember_IsField(member))
 	{
 		switch(member->attributes & IL_META_METHODDEF_MEMBER_ACCESS_MASK)

@@ -31,6 +31,8 @@
 	* cscc/csharp/cs_lookup.c: if we find a field and an event with
 	the same name, then favour the field.
 
+	* cscc/csharp/cs_gather.c: improve duplicate detection for events.
+
 2002-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/configure, libffi/configure.in: add host detection

@@ -1341,6 +1341,9 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 			  		  "cannot declare an event called `value'");
 	}
 
+	/* Look for duplicates */
+	member = FindMemberByName(classInfo, name, classInfo);
+
 	/* Create the event information block */
 	eventInfo = ILEventCreate(classInfo, 0, name, 0,
 							  ILTypeToClass(info, eventType));
@@ -1377,8 +1380,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 	AddMemberToScope(info->currentScope, IL_SCOPE_EVENT,
 					 name, (ILMember *)eventInfo, eventName);
 
-	/* Look for duplicates and report on them */
-	member = FindMemberByName(classInfo, name, classInfo);
+	/* Report on the duplicates */
 	if(member)
 	{
 		if(ILMember_IsEvent(member) &&

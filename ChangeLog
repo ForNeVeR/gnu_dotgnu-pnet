@@ -1,3 +1,11 @@
+2005-02-25  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/Test.build: exclude dir tools/npgsql from build for Mono.Security
+	tests.
+
+	* copy-mcs.sh: allow copying of a 1.0.x tarball of mcs. (Fix problem with
+	tools/SqlSharp in 1.0.x vs tools/sqlsharp in 1.1.x or svn).
+
 2005-01-27  Marc Haisenco  <haisenko@webport.de>
 
 	* class/System.ServiceProcess/System.ServiceProcess.build: Add missing

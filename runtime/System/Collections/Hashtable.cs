@@ -96,7 +96,15 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				capacity = 0;
 				capacityLimit = 0;
 				num = 0;
-				loadFactor = 1.0f;
+				try
+				{
+					loadFactor = 1.0f;
+				}
+				catch(NotSupportedException)
+				{
+					// The runtime engine does not support floating point,
+					// but we still need hash tables when no FP.
+				}
 				table = null;
 				generation = 0;
 			}
@@ -112,7 +120,15 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				this.capacity = capacity;
 				capacityLimit = capacity;
 				num = 0;
-				loadFactor = 1.0f;
+				try
+				{
+					loadFactor = 1.0f;
+				}
+				catch(NotSupportedException)
+				{
+					// The runtime engine does not support floating point,
+					// but we still need hash tables when no FP.
+				}
 				if(capacity != 0)
 				{
 					table = new HashBucket [capacity];
@@ -130,7 +146,15 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				capacity = 0;
 				capacityLimit = 0;
 				num = 0;
-				loadFactor = 1.0f;
+				try
+				{
+					loadFactor = 1.0f;
+				}
+				catch(NotSupportedException)
+				{
+					// The runtime engine does not support floating point,
+					// but we still need hash tables when no FP.
+				}
 				table = null;
 				generation = 0;
 			}
@@ -146,7 +170,15 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				this.capacity = capacity;
 				capacityLimit = capacity;
 				num = 0;
-				loadFactor = 1.0f;
+				try
+				{
+					loadFactor = 1.0f;
+				}
+				catch(NotSupportedException)
+				{
+					// The runtime engine does not support floating point,
+					// but we still need hash tables when no FP.
+				}
 				if(capacity != 0)
 				{
 					table = new HashBucket [capacity];
@@ -168,7 +200,15 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				capacity = d.Count;
 				capacityLimit = capacity;
 				num = 0;
-				loadFactor = 1.0f;
+				try
+				{
+					loadFactor = 1.0f;
+				}
+				catch(NotSupportedException)
+				{
+					// The runtime engine does not support floating point,
+					// but we still need hash tables when no FP.
+				}
 				if(capacity != 0)
 				{
 					table = new HashBucket [capacity];
@@ -191,7 +231,15 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				capacity = d.Count;
 				capacityLimit = capacity;
 				num = 0;
-				loadFactor = 1.0f;
+				try
+				{
+					loadFactor = 1.0f;
+				}
+				catch(NotSupportedException)
+				{
+					// The runtime engine does not support floating point,
+					// but we still need hash tables when no FP.
+				}
 				if(capacity != 0)
 				{
 					table = new HashBucket [capacity];
@@ -423,7 +471,16 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				num = 0;
 
 				// Determine the new capacity limit.
-				capacityLimit = (int)(capacity * loadFactor);
+				try
+				{
+					capacityLimit = (int)(capacity * loadFactor);
+				}
+				catch(NotSupportedException)
+				{
+					// The runtime engine does not support floating point,
+					// so assume a load factor of 1.
+					capacityLimit = capacity;
+				}
 
 				// Copy the original entries to the new table.
 				while(origSize > 0)

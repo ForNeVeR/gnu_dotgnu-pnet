@@ -1,3 +1,10 @@
+2003-10-11  Neil Cawse  <neilcawse@hotmail.com>
+
+	* System.Windows.Forms/TextBox.cs: bug fixes related to scrollBars in
+	TextBox.
+
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: draw disabled
+	scroll bar differently.
 
 2003-10-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
@@ -21,24 +28,24 @@
 	System.Drawing.Win32/Win32.cs : some speed optimization. Fix in capture
 	mouse position on child windows.
 
-	* System.Windows.Forms/Control.cs : reparent origins not correct.
+	* System.Windows.Forms/Control.cs: reparent origins not correct.
 
-	* System.Windows.Forms/ControlPaint.cs : FromHSB incorrect.
+	* System.Windows.Forms/ControlPaint.cs: FromHSB incorrect.
 
-	* System.Windows.Forms/Form.cs : maintain the ClientSize after adding
+	* System.Windows.Forms/Form.cs: maintain the ClientSize after adding
 	a menu to a form.
 
-	* System.Windows.Forms/Label.cs : use BorderStyleInternal from Control,
+	* System.Windows.Forms/Label.cs: use BorderStyleInternal from Control,
 	redraw control instead of invalidating.
 
-	* System.Windows.Forms/ScrollBar.cs : handle boundary cases better.
+	* System.Windows.Forms/ScrollBar.cs: handle boundary cases better.
 	Value/Position fixes.
 
 	* System.Windows.Forms/TextBox.cs, System.Windows.Forms/TextBoxBase.cs
 	: numerous small bug fixes. Big speed up when drawing text. Begin
 	implementing scroll bar support.
 
-	* samples/FormsTest.cs : cases changed for label & textbox.
+	* samples/FormsTest.cs: cases changed for label & textbox.
 
 2003-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 

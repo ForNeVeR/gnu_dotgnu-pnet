@@ -77,7 +77,8 @@ internal class GrabWindow : OverrideWindow
 						 		EventMask.ButtonReleaseMask |
 								EventMask.PointerMotionMask),
 						 1 /* GrabModeAsync */, 1 /* GrabModeAsync */,
-						 Xlib.Window.Zero, Xlib.Cursor.Zero,
+						 Xlib.Window.Zero,
+						 dpy.GetCursor(CursorType.XC_left_ptr),
 						 dpy.knownEventTime);
 					Xlib.XFlush(display);
 				}

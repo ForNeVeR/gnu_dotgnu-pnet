@@ -88,8 +88,10 @@ public interface IToolkit
 			(int width, int height, bool modal, bool resizable,
 			 IToolkitWindow dialogParent);
 
-	// Create a top-level menu shell.
-	IToolkitWindow CreateTopLevelMenu(int x, int y, int width, int height);
+	// Create a top-level popup window.  Popup windows do not have
+	// any borders and grab the mouse and keyboard when they are mapped
+	// to the screen.  They are used for menus, drop-down lists, etc.
+	IToolkitWindow CreatePopupWindow(int x, int y, int width, int height);
 
 	// Create a child window.  If "parent" is null, then the child
 	// does not yet have a "real" parent - it will be reparented later.

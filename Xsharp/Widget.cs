@@ -671,13 +671,23 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				{
 					IntPtr display = dpy.Lock();
 					XWindowChanges changes = new XWindowChanges();
-					changes.sibling = child.GetWidgetHandle();
 					changes.stack_mode = 1;		/* Below */
-					Xlib.XConfigureWindow
-							(display, GetWidgetHandle(),
-						     (uint)(ConfigureWindowMask.CWSibling |
-							 	    ConfigureWindowMask.CWStackMode),
-							 ref changes);
+					if(child is TopLevelWindow)
+					{
+						Xlib.XConfigureWindow
+								(display, GetWidgetHandle(),
+							     (uint)(ConfigureWindowMask.CWStackMode),
+								 ref changes);
+					}
+					else
+					{
+						changes.sibling = child.GetWidgetHandle();
+						Xlib.XConfigureWindow
+								(display, GetWidgetHandle(),
+							     (uint)(ConfigureWindowMask.CWSibling |
+								 	    ConfigureWindowMask.CWStackMode),
+								 ref changes);
+					}
 				}
 				finally
 				{
@@ -692,13 +702,23 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				{
 					IntPtr display = dpy.Lock();
 					XWindowChanges changes = new XWindowChanges();
-					changes.sibling = child.GetWidgetHandle();
 					changes.stack_mode = 0;		/* Above */
-					Xlib.XConfigureWindow
-							(display, GetWidgetHandle(),
-						     (uint)(ConfigureWindowMask.CWSibling |
-							 	    ConfigureWindowMask.CWStackMode),
-							 ref changes);
+					if(child is TopLevelWindow)
+					{
+						Xlib.XConfigureWindow
+								(display, GetWidgetHandle(),
+							     (uint)(ConfigureWindowMask.CWStackMode),
+								 ref changes);
+					}
+					else
+					{
+						changes.sibling = child.GetWidgetHandle();
+						Xlib.XConfigureWindow
+								(display, GetWidgetHandle(),
+							     (uint)(ConfigureWindowMask.CWSibling |
+								 	    ConfigureWindowMask.CWStackMode),
+								 ref changes);
+					}
 				}
 				finally
 				{

@@ -354,12 +354,13 @@ public sealed class DrawingToolkit : IToolkit
 				return window;
 			}
 
-	// Create a top-level menu shell.
-	public IToolkitWindow CreateTopLevelMenu
+	// Create a top-level popup window.  Popup windows do not have
+	// any borders and grab the mouse and keyboard when they are mapped
+	// to the screen.  They are used for menus, drop-down lists, etc.
+	public IToolkitWindow CreatePopupWindow
 				(int x, int y, int width, int height)
 			{
-				// TODO
-				return null;
+				return new DrawingPopupWindow(this, x, y, width, height);
 			}
 
 	// Create a child window.  If "parent" is null, then the child

@@ -17,6 +17,15 @@
 	* System.Drawing.Win32/Win32.cs: work around pnet's lack of
 	structure marshaling.
 
+	* System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Windows.Forms/PopupControl.cs,
+	Xsharp/GrabWindow.cs, Xsharp/Widget.cs: add the internal
+	"PopupControl" class to Forms, to support popup menus and
+	combox box drop-down lists.
+
 2003-06-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/Panel.cs: Stub out the Panel control

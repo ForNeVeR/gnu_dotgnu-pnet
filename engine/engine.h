@@ -150,6 +150,13 @@ struct _tagILExecProcess
 
 #endif /* IL_CONFIG_DEBUG_LINES */
 
+	/* Cryptographic seed material */
+	ILMutex        	   *randomLock;
+	int					randomBytesDelivered;
+	ILInt64				randomLastTime;
+	unsigned char		randomPool[20];
+	int					randomCount;
+
 };
 
 /*

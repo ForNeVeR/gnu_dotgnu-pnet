@@ -22,6 +22,18 @@
 #include "lib_defs.h"
 #include "il_crypt.h"
 #include "il_bignum.h"
+#ifdef HAVE_SYS_STAT_H
+	#include <sys/stat.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+	#include <sys/types.h>
+#endif
+#ifdef HAVE_UNISTD_H
+	#include <unistd.h>
+#endif
+#ifdef HAVE_FCNTL_H
+	#include <fcntl.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -368,12 +380,117 @@ ILBool _IL_CryptoMethods_SameKey(ILExecThread *_thread, System_Array *key1,
 
 /*
  * pubilc static void GenerateRandom(byte[] buf, int offset, int count);
+ *
+ * The mixing algorithm used here is based on that described in section
+ * 17.14 of the second edition of "Applied Cryptography.
+ *
+ * We extract seed information from the system (which is "/dev/random" if
+ * it is present), and then mix it to generate the material that we require.
+ * Once we've extracted roughly 1024 bytes, or the pool is more than
+ * 2 seconds old, we discard the pool and acquire new seed material.
+ *
+ * Feel free to submit patches that make this a better random number
+ * generator, particularly when acquiring seed material from the system.
  */
-void _IL_CryptoMethods_GenerateRandom(ILExecThread *_thread,
+static void SeedMix(unsigned char *pool, void *data, int len)
+{
+	ILSHAContext sha;
+	ILSHAInit(&sha);
+	ILSHAData(&sha, pool, IL_SHA_HASH_SIZE);
+	ILSHAData(&sha, data, len);
+	ILSHAFinalize(&sha, pool);
+}
+void _IL_CryptoMethods_GenerateRandom(ILExecThread *thread,
 									  System_Array *buf, ILInt32 offset,
 									  ILInt32 count)
 {
-	/* TODO */
+	unsigned char *output;
+	ILCurrTime currentTime;
+	ILInt32 num;
+	ILSHAContext sha;
+	unsigned char hash[IL_SHA_HASH_SIZE];
+#ifdef HAVE_OPEN
+	int fd, size;
+#endif
+
+	/* Lock the seed pool while we do this, as only one thread
+	   can access the seed information at a time */
+	ILMutexLock(thread->process->randomLock);
+
+	/* Convert the array into a flat buffer to be filled */
+	output = ((unsigned char *)(ArrayToBuffer(buf))) + offset;
+
+	/* Fill the buffer */
+	while(count > 0)
+	{
+		/* Do we need to acquire new seed material? */
+		ILGetCurrTime(&currentTime);
+		if(thread->process->randomBytesDelivered >= 1024 ||
+		   (currentTime.secs - thread->process->randomLastTime) >= 2)
+		{
+			/* Warning!  If the system doesn't have /dev/random,
+			   then this code is unlikely to give good results.
+
+			   Most Unix-like systems do have /dev/random these days,
+			   but non-Unix OS'es may require changes to this code.
+
+			   We deliberately don't use /dev/urandom as we want the
+			   kernel to make sure that the values returned are based
+			   on actual system entropy, and not expanded entropy.
+			   We will expand the entropy ourselves. */
+			ILMemZero(thread->process->randomPool, IL_SHA_HASH_SIZE);
+		#ifdef HAVE_OPEN
+			fd = open("/dev/random", O_RDONLY, 0);
+			if(fd >= 0)
+			{
+				size = read(fd, hash, IL_SHA_HASH_SIZE);
+				if(size > 0)
+				{
+					SeedMix(thread->process->randomPool, hash, size);
+				}
+				close(fd);
+				ILMemZero(hash, IL_SHA_HASH_SIZE);
+			}
+		#endif
+			SeedMix(thread->process->randomPool, &currentTime,
+					sizeof(currentTime));
+			thread->process->randomBytesDelivered = 0;
+			thread->process->randomLastTime = currentTime.secs;
+			thread->process->randomCount = 0;
+		}
+
+		/* How many bytes do we need to extract this time? */
+		num = count;
+		if(num > IL_SHA_HASH_SIZE)
+		{
+			num = IL_SHA_HASH_SIZE;
+		}
+
+		/* Mix the seed pool with SHA and extract the output bytes */
+		ILSHAInit(&sha);
+		ILSHAData(&sha, thread->process->randomPool, IL_SHA_HASH_SIZE);
+		ILSHAData(&sha, &(thread->process->randomCount),
+				  sizeof(thread->process->randomCount));
+		if(num == IL_SHA_HASH_SIZE)
+		{
+			ILSHAFinalize(&sha, output);
+		}
+		else
+		{
+			ILSHAFinalize(&sha, hash);
+			ILMemCpy(output, hash, num);
+			ILMemZero(hash, IL_SHA_HASH_SIZE);
+		}
+		++(thread->process->randomCount);
+
+		/* Advance to the next buffer position to be filled */
+		output += num;
+		count -= num;
+		thread->process->randomBytesDelivered += num;
+	}
+
+	/* Unlock the seed pool */
+	ILMutexUnlock(thread->process->randomLock);
 }
 
 /*

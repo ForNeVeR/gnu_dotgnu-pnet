@@ -74,6 +74,9 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	process->debugWatchList = 0;
 	process->debugWatchAll = 0;
 #endif
+	process->randomBytesDelivered = 1024;
+	process->randomLastTime = 0;
+	process->randomCount = 0;
 
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)
@@ -115,6 +118,14 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	}
 	process->mainThread->osThread = ILThreadSelf();
 	ILThreadSetObject(process->mainThread->osThread, process->mainThread);
+
+	/* Initialize the random seed pool lock */
+	process->randomLock = ILMutexCreate();
+	if(!(process->randomLock))
+	{
+		ILExecProcessDestroy(process);
+		return 0;
+	}
 
 	/* Return the process record to the caller */
 	return process;
@@ -192,6 +203,10 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		}
 	}
 #endif
+
+	/* Destroy the random seed pool */
+	ILMutexDestroy(process->randomLock);
+	ILMemZero(process->randomPool, sizeof(process->randomPool));
 
 	/* Destroy the object lock */
 	ILMutexDestroy(process->lock);

@@ -183,6 +183,13 @@ int ILCastKind(ILGenInfo *info, ILNode *node, ILNode **parent,
 		       ILType *fromType, ILType *toType, int kinds);
 
 /*
+ * Get the class to use for an explicit conversion.  Returns
+ * NULL if there is no explicit conversion possible.
+ */
+ILClass *ILGetExplicitConv(ILGenInfo *info, ILType *fromType,
+						   ILType *toType, int kinds);
+
+/*
  * Determine which of T1 and T2 results in a better conversion
  * from a type S.
  */

@@ -1295,6 +1295,7 @@ ILNode_SemAnalysis(ILNode_Deref)
 {
 	CSSemValue value;
 	CSUnsafeMessage(info, (ILNode *)node, "unsafe pointer dereference");
+	/* TODO */
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
 	return value;
@@ -1415,9 +1416,10 @@ ILNode_SemAnalysis(ILNode_Comma)
  */
 ILNode_SemAnalysis(ILNode_AsUntyped)
 {
-#if 0
 	CSSemValue value;
+	CSSemValue result;
 	ILType *type;
+	ILClass *classInfo;
 
 	/* Perform semantic analysis on the two arguments */
 	if(!CSSemExpectValue(node->expr1, info, &(node->expr1), &value))
@@ -1430,32 +1432,39 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	type = CSSemType(node->expr2, info, &(node->expr2));
 
 	/* The type must be an object reference type */
-	if(!ILTypeAssignCompatible(info->image, 0, type))
+	if(!ILTypeIsReference(type))
 	{
 		CSErrorOnLine(yygetfilename(node->expr2), yygetlinenum(node->expr2),
 					  "reference type required");
 		type = ILFindSystemType(info, "Object");
 	}
 
-	/* TODO: box the value if it isn't a reference */
+	/* Create the result semantic value */
+	result.kind = CS_SEMKIND_RVALUE;
+	result.type = type;
 
-	/* Determine if there is an implicit reference coercion.
-	   The C# standard */
-
-	/* If there is an implicit coercion to "type", then use that */
-	if(ILCoerce(info, node->expr1, &(node->expr1), value.type, type))
+	/* Determine if there is an implicit reference or boxing coercion */
+	if(ILCoerceKind(info, node->expr1, &(node->expr1), value.type, type,
+					IL_CONVERT_REFERENCE | IL_CONVERT_BOXING))
 	{
 		*parent = node->expr1;
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = type;
-		return value;
+		return result;
 	}
-#endif
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+
+	/* Determine if there is an explicit reference conversion */
+	classInfo = ILGetExplicitConv(info, value.type, type,
+								  IL_CONVERT_REFERENCE);
+	if(classInfo != 0)
+	{
+		*parent = ILNode_As_create(node->expr1, classInfo, 0);
+		return result;
+	}
+
+	/* Report an error for the conversion */
+	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		  		  "no conversion from `%s' to `%s'",
+		  		  CSTypeToName(value.type), type);
+	return result;
 }
 
 /*
@@ -1463,11 +1472,62 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
  */
 ILNode_SemAnalysis(ILNode_IsUntyped)
 {
-	/* TODO */
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	CSSemValue result;
+	ILType *type;
+	ILClass *classInfo;
+
+	/* Perform semantic analysis on the two arguments */
+	if(!CSSemExpectValue(node->expr1, info, &(node->expr1), &value))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid operands to binary `is'");
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILFindSystemType(info, "Object");
+	}
+	type = CSSemType(node->expr2, info, &(node->expr2));
+
+	/* Create the result semantic value */
+	result.kind = CS_SEMKIND_RVALUE;
+	result.type = ILType_Boolean;
+
+	/* Determine if there is an implicit reference or boxing coercion */
+	if(ILCoerceKind(info, node->expr1, &(node->expr1), value.type, type,
+					IL_CONVERT_REFERENCE | IL_CONVERT_BOXING))
+	{
+		if(ILTypeIsReference(value.type))
+		{
+			/* Reference types: test the expression against null */
+			CSWarningOnLine(yygetfilename(node), yygetlinenum(node),
+				    "`is' expression is equivalent to a test against `null'");
+			*parent = ILNode_Ne_create(node->expr1, ILNode_Null_create());
+		}
+		else
+		{
+			/* Value types: the result is always true, but we should
+			   still evaluate the expression for its side-effects */
+			CSWarningOnLine(yygetfilename(node), yygetlinenum(node),
+						    "`is' expression is always true");
+			*parent = ILNode_Comma_create(node->expr1, ILNode_True_create());
+		}
+		return result;
+	}
+
+	/* Determine if there is an explicit reference or unboxing conversion */
+	classInfo = ILGetExplicitConv(info, value.type, type,
+								  IL_CONVERT_REFERENCE | IL_CONVERT_UNBOXING);
+	if(classInfo != 0)
+	{
+		*parent = ILNode_Is_create(node->expr1, classInfo, 0);
+		return result;
+	}
+
+	/* The result will always be "false", but we should still
+	   evaluate the expression for its side-effects */
+	CSWarningOnLine(yygetfilename(node), yygetlinenum(node),
+		  		    "`is' expression is always false");
+	*parent = ILNode_Comma_create(node->expr1, ILNode_False_create());
+	return result;
 }
 
 /*

@@ -9,6 +9,9 @@
 
 	* samples/mscorlib.dll: new version with "System.IO.StringWriter".
 
+	* codegen/cg_coerce.c, codegen/cg_coerce.h, cscc/cs_oper.tc:
+	implement semantic analysis for the "as" and "is" operators.
+
 2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_coerce.h, include/il_types.h, image/types.c:

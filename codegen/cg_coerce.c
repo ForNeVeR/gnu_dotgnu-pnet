@@ -774,6 +774,31 @@ int ILCastKind(ILGenInfo *info, ILNode *node, ILNode **parent,
 	}
 }
 
+ILClass *ILGetExplicitConv(ILGenInfo *info, ILType *fromType,
+						   ILType *toType, int kinds)
+{
+	ConvertRules rules;
+	if(GetConvertRules(info, fromType, toType, 1, kinds, &rules))
+	{
+		if(rules.castType)
+		{
+			return ILTypeToClass(info, rules.castType);
+		}
+		else if(rules.unboxClass)
+		{
+			return rules.unboxClass;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 int ILBetterConversion(ILGenInfo *info, ILType *sType,
 					   ILType *t1Type, ILType *t2Type)
 {

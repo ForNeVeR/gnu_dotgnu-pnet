@@ -295,10 +295,10 @@ namespace FormsTest
 			tabPage8.Text = "Graphics";
 			tabControl1.Controls.Add(tabPage8);
 			tabPage16 = new TabPage();
-			tabPage16.Text = "GraphicsPath";
+			tabPage16.Text = "Path";
 			tabControl1.Controls.Add(tabPage16);
 			tabPage17 = new TabPage();
-			tabPage17.Text = "GraphicsDrawString";
+			tabPage17.Text = "DrawString";
 			tabControl1.Controls.Add(tabPage17);
 			tabPage9 = new TabPage();
 			tabPage9.Text = "ContextMenu";

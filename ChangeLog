@@ -55,6 +55,9 @@
 	resources/en_US/runtime/IO.txt, resources/en_US/runtime/NotSupp.txt
 	runtime/System/Delegate.cs: remove obsolete string resources.
 
+	* samples/FormsTest.cs: make a small adjustment to FormsTest so
+	that the "Image" tag is selectable once more.
+
 2003-10-12  Neil Cawse  <neilcawse@hotmail.com>
 
 	* System.Windows.Forms/TreeView.cs: fix paint crash when no nodes bug.

@@ -29,7 +29,7 @@ public sealed class ThreadAbortException : SystemException
 
 	// Constructor that is called from the runtime engine.
 	private ThreadAbortException(Object stateInfo)
-			: base(Environment.GetResourceString("Exception_ThreadAbort"))
+			: base(_("Exception_ThreadAbort"))
 			{
 				this.stateInfo = stateInfo;
 			}

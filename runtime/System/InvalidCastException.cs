@@ -27,7 +27,7 @@ public class InvalidCastException : SystemException
 
 	// Constructors.
 	public InvalidCastException()
-		: base(Environment.GetResourceString("Exception_InvalidCast")) {}
+		: base(_("Exception_InvalidCast")) {}
 	public InvalidCastException(String msg)
 		: base(msg) {}
 	public InvalidCastException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class InvalidCastException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_InvalidCast");
+					return _("Exception_InvalidCast");
 				}
 			}
 

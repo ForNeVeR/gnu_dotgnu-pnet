@@ -44,8 +44,7 @@ public struct IntPtr
 				   (value < ((long)(Int32.MinValue)) ||
 				    value > ((long)(Int32.MaxValue))))
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Pointer"));
+					throw new OverflowException(_("Overflow_Pointer"));
 				}
 				value__ = (void *)value;
 			}
@@ -82,8 +81,7 @@ public struct IntPtr
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Pointer"));
+					throw new OverflowException(_("Overflow_Pointer"));
 				}
 			}
 	unsafe public long ToInt64()

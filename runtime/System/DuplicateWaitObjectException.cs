@@ -26,9 +26,9 @@ public class DuplicateWaitObjectException : ArgumentException
 {
 	// Constructors.
 	public DuplicateWaitObjectException()
-		: base(Environment.GetResourceString("Exception_DuplicateWait")) {}
+		: base(_("Exception_DuplicateWait")) {}
 	public DuplicateWaitObjectException(String paramName)
-		: base(Environment.GetResourceString("Exception_DuplicateWait"),
+		: base(_("Exception_DuplicateWait"),
 			   paramName) {}
 	public DuplicateWaitObjectException(String paramName, String msg)
 		: base(msg, paramName) {}
@@ -38,8 +38,7 @@ public class DuplicateWaitObjectException : ArgumentException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_DuplicateWait");
+					return _("Exception_DuplicateWait");
 				}
 			}
 

@@ -28,7 +28,7 @@ public class EndOfStreamException : IOException
 {
 	// Constructors.
 	public EndOfStreamException()
-			: base(Environment.GetResourceString("Exception_EndOfStream")) {}
+			: base(_("Exception_EndOfStream")) {}
 	public EndOfStreamException(String msg)
 			: base(msg) {}
 	public EndOfStreamException(String msg, Exception inner)
@@ -39,8 +39,7 @@ public class EndOfStreamException : IOException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_EndOfStream");
+					return _("Exception_EndOfStream");
 				}
 			}
 

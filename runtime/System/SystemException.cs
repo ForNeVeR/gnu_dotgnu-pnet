@@ -26,7 +26,7 @@ public class SystemException : Exception
 
 	// Constructors.
 	public SystemException()
-		: base(Environment.GetResourceString("Exception_System")) {}
+		: base(_("Exception_System")) {}
 	public SystemException(String msg)
 		: base(msg) {}
 	public SystemException(String msg, Exception inner)
@@ -42,8 +42,7 @@ public class SystemException : Exception
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_System");
+					return _("Exception_System");
 				}
 			}
 

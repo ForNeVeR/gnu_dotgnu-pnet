@@ -29,7 +29,7 @@ public sealed class TargetParameterCountException : ApplicationException
 
 	// Constructors.
 	public TargetParameterCountException()
-		: base(Environment.GetResourceString("Exception_TargetParam")) {}
+		: base(_("Exception_TargetParam")) {}
 	public TargetParameterCountException(String msg)
 		: base(msg) {}
 	public TargetParameterCountException(String msg, Exception inner)
@@ -40,8 +40,7 @@ public sealed class TargetParameterCountException : ApplicationException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_TargetParam");
+					return _("Exception_TargetParam");
 				}
 			}
 

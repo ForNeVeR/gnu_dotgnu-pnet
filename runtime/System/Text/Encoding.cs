@@ -90,14 +90,12 @@ public abstract class Encoding
 				if(index < 0 || index > bytes.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("index",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("index", _("ArgRange_Array"));
 				}
 				if(count < 0 || (bytes.Length - index) < count)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("count", _("ArgRange_Array"));
 				}
 				return dstEncoding.GetBytes(srcEncoding.GetChars
 							(bytes, index, count));
@@ -284,8 +282,7 @@ public abstract class Encoding
 				// We have no idea how to handle this code page.
 				throw new NotSupportedException
 					(String.Format
-						(Environment.GetResourceString("NotSupp_CodePage"),
-						 codePage.ToString()));
+						(_("NotSupp_CodePage"), codePage.ToString()));
 			}
 
 	// Get a hash code for this instance.

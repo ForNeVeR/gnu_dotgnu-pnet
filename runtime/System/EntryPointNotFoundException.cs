@@ -27,7 +27,7 @@ public class EntryPointNotFoundException : TypeLoadException
 
 	// Constructors.
 	public EntryPointNotFoundException()
-		: base(Environment.GetResourceString("Exception_EntryPoint")) {}
+		: base(_("Exception_EntryPoint")) {}
 	public EntryPointNotFoundException(String msg)
 		: base(msg) {}
 	public EntryPointNotFoundException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class EntryPointNotFoundException : TypeLoadException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_EntryPoint");
+					return _("Exception_EntryPoint");
 				}
 			}
 

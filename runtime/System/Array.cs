@@ -64,8 +64,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 				}
 				else
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_SearchCompare"));
+					throw new ArgumentException(_("Arg_SearchCompare"));
 				}
 			}
 			else if(elem != null)
@@ -120,8 +119,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		else if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		return InnerBinarySearch(array, array.GetLowerBound(0),
 								 array.GetUpperBound(0), value, comparer);
@@ -138,26 +136,22 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		else if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		else if(index < array.GetLowerBound(0))
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		else if(length < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("length",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("length", _("ArgRange_Array"));
 		}
 		else if(index > array.GetUpperBound(0) ||
 		        length > (array.GetUpperBound(0) - index + 1))
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		return InnerBinarySearch(array, index, index + length - 1,
 								 value, null);
@@ -209,8 +203,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		else if(array.Rank != 1 || Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		else
 		{
@@ -260,14 +253,12 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
 		if(runtimeType == null)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustBeType"));
+			throw new ArgumentException(_("Arg_MustBeType"));
 		}
 		if(length < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("length",
-				 Environment.GetResourceString("ArgRange_NonNegative"));
+				("length", _("ArgRange_NonNegative"));
 		}
 		return InternalCreate(runtimeType, 1, length, 0, 0);
 	}
@@ -284,20 +275,17 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
 		if(runtimeType == null)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustBeType"));
+			throw new ArgumentException(_("Arg_MustBeType"));
 		}
 		if(length1 < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("length1",
-				 Environment.GetResourceString("ArgRange_NonNegative"));
+				("length1", _("ArgRange_NonNegative"));
 		}
 		if(length2 < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("length2",
-				 Environment.GetResourceString("ArgRange_NonNegative"));
+				("length2", _("ArgRange_NonNegative"));
 		}
 		return InternalCreate(runtimeType, 2, length1, length2, 0);
 	}
@@ -314,26 +302,22 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
 		if(runtimeType == null)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustBeType"));
+			throw new ArgumentException(_("Arg_MustBeType"));
 		}
 		if(length1 < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("length1",
-				 Environment.GetResourceString("ArgRange_NonNegative"));
+				("length1", _("ArgRange_NonNegative"));
 		}
 		if(length2 < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("length2",
-				 Environment.GetResourceString("ArgRange_NonNegative"));
+				("length2", _("ArgRange_NonNegative"));
 		}
 		if(length3 < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("length3",
-				 Environment.GetResourceString("ArgRange_NonNegative"));
+				("length3", _("ArgRange_NonNegative"));
 		}
 		return InternalCreate(runtimeType, 3, length1, length2, length3);
 	}
@@ -354,13 +338,11 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
 		if(runtimeType == null)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustBeType"));
+			throw new ArgumentException(_("Arg_MustBeType"));
 		}
 		if(lengths.Length < 1)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustHaveOneElement"));
+			throw new ArgumentException(_("Arg_MustHaveOneElement"));
 		}
 		for(index = lengths.Length - 1; index >= 0; --index)
 		{
@@ -368,7 +350,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			{
 				throw new ArgumentOutOfRangeException
 					("lengths[" + (lengths[index]).ToString() + "]",
-					 Environment.GetResourceString("ArgRange_NonNegative"));
+					 _("ArgRange_NonNegative"));
 			}
 		}
 		return InternalCreateEx(runtimeType, lengths, null);
@@ -395,19 +377,16 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(lengths.Length != lowerBounds.Length)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustBeSameSize"));
+			throw new ArgumentException(_("Arg_MustBeSameSize"));
 		}
 		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
 		if(runtimeType == null)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustBeType"));
+			throw new ArgumentException(_("Arg_MustBeType"));
 		}
 		if(lengths.Length < 1)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustHaveOneElement"));
+			throw new ArgumentException(_("Arg_MustHaveOneElement"));
 		}
 		for(index = lengths.Length - 1; index >= 0; --index)
 		{
@@ -415,7 +394,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			{
 				throw new ArgumentOutOfRangeException
 					("lengths[" + (lengths[index]).ToString() + "]",
-					 Environment.GetResourceString("ArgRange_NonNegative"));
+					 _("ArgRange_NonNegative"));
 			}
 		}
 		return InternalCreateEx(runtimeType, lengths, lowerBounds);
@@ -488,8 +467,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 						else
 						{
 							throw new InvalidOperationException
-								(Environment.GetResourceString
-									("Invalid_BadEnumeratorPosition"));
+								(_("Invalid_BadEnumeratorPosition"));
 						}
 					}
 				}
@@ -570,8 +548,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 						else
 						{
 							throw new InvalidOperationException
-								(Environment.GetResourceString
-									("Invalid_BadEnumeratorPosition"));
+								(_("Invalid_BadEnumeratorPosition"));
 						}
 					}
 				}
@@ -650,8 +627,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 						else
 						{
 							throw new InvalidOperationException
-								(Environment.GetResourceString
-									("Invalid_BadEnumeratorPosition"));
+								(_("Invalid_BadEnumeratorPosition"));
 						}
 					}
 				}
@@ -685,8 +661,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(indices.Length != Rank)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustBeSameSize"));
+			throw new ArgumentException(_("Arg_MustBeSameSize"));
 		}
 		return InternalGetValueEx(indices);
 	}
@@ -696,8 +671,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	{
 		if(Rank != 1)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new ArgumentException(_("Arg_RankMustBe1"));
 		}
 		return InternalGetValue(index, 0, 0);
 	}
@@ -707,8 +681,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	{
 		if(Rank != 2)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_RankMustBe2"));
+			throw new ArgumentException(_("Arg_RankMustBe2"));
 		}
 		return InternalGetValue(index1, index2, 0);
 	}
@@ -718,8 +691,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	{
 		if(Rank != 3)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_RankMustBe3"));
+			throw new ArgumentException(_("Arg_RankMustBe3"));
 		}
 		return InternalGetValue(index1, index2, index3);
 	}
@@ -784,8 +756,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		return InnerIndexOf(array, value, array.GetLowerBound(0),
 					array.GetUpperBound(0) - array.GetLowerBound(0) + 1);
@@ -800,8 +771,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		return InnerLastIndexOf(array, value, array.GetLowerBound(0),
 					array.GetUpperBound(0) - array.GetLowerBound(0) + 1);
@@ -817,15 +787,13 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(startIndex < array.GetLowerBound(0) ||
 		   startIndex > array.GetUpperBound(0))
 		{
 			throw new ArgumentOutOfRangeException
-				("startIndex",
-				 Environment.GetResourceString("Arg_InvalidArrayIndex"));
+				("startIndex", _("Arg_InvalidArrayIndex"));
 		}
 		return InnerIndexOf(array, value, startIndex,
 							array.GetUpperBound(0) - startIndex + 1);
@@ -841,15 +809,13 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(startIndex < array.GetLowerBound(0) ||
 		   startIndex > array.GetUpperBound(0))
 		{
 			throw new ArgumentOutOfRangeException
-				("startIndex",
-				 Environment.GetResourceString("Arg_InvalidArrayIndex"));
+				("startIndex", _("Arg_InvalidArrayIndex"));
 		}
 		return InnerLastIndexOf(array, value, array.GetLowerBound(0),
 								startIndex - array.GetLowerBound(0) + 1);
@@ -866,16 +832,14 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(startIndex < array.GetLowerBound(0) ||
 		   startIndex > array.GetUpperBound(0) ||
 		   count < 0 ||
 		   count > (array.GetUpperBound(0) - startIndex + 1))
 		{
-			throw new ArgumentOutOfRangeException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentOutOfRangeException(_("Arg_InvalidArrayRange"));
 		}
 		return InnerIndexOf(array, value, startIndex, count);
 	}
@@ -891,16 +855,14 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(startIndex < array.GetLowerBound(0) ||
 		   startIndex > array.GetUpperBound(0) ||
 		   count < 0 ||
 		   count > (startIndex - array.GetLowerBound(0) + 1))
 		{
-			throw new ArgumentOutOfRangeException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentOutOfRangeException(_("Arg_InvalidArrayRange"));
 		}
 		return InnerLastIndexOf(array, value, startIndex - count + 1, count);
 	}
@@ -928,8 +890,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		InnerReverse(array, array.GetLowerBound(0), array.GetUpperBound(0));
 	}
@@ -943,26 +904,22 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(index < array.GetLowerBound(0))
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(length < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("length",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("length", _("ArgRange_Array"));
 		}
 		if(index > array.GetUpperBound(0) ||
 	       length > (array.GetUpperBound(0) - index + 1))
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		InnerReverse(array, index, index + length - 1);
 	}
@@ -983,8 +940,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(indices.Length != Rank)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustBeSameSize"));
+			throw new ArgumentException(_("Arg_MustBeSameSize"));
 		}
 		InternalSetValueEx(value, indices);
 	}
@@ -994,8 +950,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	{
 		if(Rank != 1)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new ArgumentException(_("Arg_RankMustBe1"));
 		}
 		InternalSetValue(value, index, 0, 0);
 	}
@@ -1005,8 +960,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	{
 		if(Rank != 2)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_RankMustBe2"));
+			throw new ArgumentException(_("Arg_RankMustBe2"));
 		}
 		InternalSetValue(value, index1, index2, 0);
 	}
@@ -1016,8 +970,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	{
 		if(Rank != 3)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_RankMustBe3"));
+			throw new ArgumentException(_("Arg_RankMustBe3"));
 		}
 		InternalSetValue(value, index1, index2, index3);
 	}
@@ -1115,8 +1068,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		InnerSort(array, null, array.GetLowerBound(0),
 				  array.GetUpperBound(0), comparer);
@@ -1137,25 +1089,21 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(keys.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(items != null)
 		{
 			if(items.Rank != 1)
 			{
-				throw new RankException
-					(Environment.GetResourceString("Arg_RankMustBe1"));
+				throw new RankException(_("Arg_RankMustBe1"));
 			}
 			if(items.GetLowerBound(0) != keys.GetLowerBound(0))
 			{
-				throw new ArgumentException
-					(Environment.GetResourceString("Arg_LowBoundsMustMatch"));
+				throw new ArgumentException(_("Arg_LowBoundsMustMatch"));
 			}
 			if(items.Length < keys.Length)
 			{
-				throw new ArgumentException
-					(Environment.GetResourceString("Arg_ShortItemsArray"));
+				throw new ArgumentException(_("Arg_ShortItemsArray"));
 			}
 		}
 		InnerSort(keys, items, keys.GetLowerBound(0),
@@ -1178,26 +1126,22 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(array.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(index < array.GetLowerBound(0))
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(length < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("length",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("length", _("ArgRange_Array"));
 		}
 		if(index > array.GetUpperBound(0) ||
 		   length > (array.GetUpperBound(0) - index + 1))
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		InnerSort(array, null, index, index + length - 1, comparer);
 	}
@@ -1219,45 +1163,38 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(keys.Rank != 1)
 		{
-			throw new RankException
-				(Environment.GetResourceString("Arg_RankMustBe1"));
+			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(index < keys.GetLowerBound(0))
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(length < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("length",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("length", _("ArgRange_Array"));
 		}
 		if(index > keys.GetUpperBound(0) ||
 		   length > (keys.GetUpperBound(0) - index + 1))
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		if(items != null)
 		{
 			if(items.Rank != 1)
 			{
-				throw new RankException
-					(Environment.GetResourceString("Arg_RankMustBe1"));
+				throw new RankException(_("Arg_RankMustBe1"));
 			}
 			if(index < items.GetLowerBound(0))
 			{
 				throw new ArgumentOutOfRangeException
-					("index",
-					 Environment.GetResourceString("ArgRange_Array"));
+					("index", _("ArgRange_Array"));
 			}
 			if(index > items.GetUpperBound(0) ||
 			   length > (items.GetUpperBound(0) - index + 1))
 			{
-				throw new ArgumentException
-					(Environment.GetResourceString("Arg_InvalidArrayRange"));
+				throw new ArgumentException(_("Arg_InvalidArrayRange"));
 			}
 		}
 		InnerSort(keys, items, index, index + length - 1, comparer);
@@ -1266,8 +1203,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	// Implement the "IList" interface.
 	int IList.Add(Object value)
 	{
-		throw new NotSupportedException
-			(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+		throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 	}
 	void IList.Clear()
 	{
@@ -1283,18 +1219,15 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	}
 	void IList.Insert(int index, Object value)
 	{
-		throw new NotSupportedException
-			(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+		throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 	}
 	void IList.Remove(Object value)
 	{
-		throw new NotSupportedException
-			(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+		throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 	}
 	void IList.RemoveAt(int index)
 	{
-		throw new NotSupportedException
-			(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+		throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 	}
 	public bool IsFixedSize
 	{

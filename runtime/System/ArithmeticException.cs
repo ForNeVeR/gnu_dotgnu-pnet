@@ -27,7 +27,7 @@ public class ArithmeticException : SystemException
 
 	// Constructors.
 	public ArithmeticException()
-		: base(Environment.GetResourceString("Exception_Arithmetic")) {}
+		: base(_("Exception_Arithmetic")) {}
 	public ArithmeticException(String msg)
 		: base(msg) {}
 	public ArithmeticException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class ArithmeticException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Arithmetic");
+					return _("Exception_Arithmetic");
 				}
 			}
 

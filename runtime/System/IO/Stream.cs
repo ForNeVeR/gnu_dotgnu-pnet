@@ -172,20 +172,16 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 				else if(offset < 0 || offset > buffer.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("offset",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("offset", _("ArgRange_Array"));
 				}
 				else if(count < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("count", _("ArgRange_Array"));
 				}
 				else if((buffer.Length - offset) < count)
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString
-							("Arg_InvalidArrayRange"));
+					throw new ArgumentException(_("Arg_InvalidArrayRange"));
 				}
 			}
 
@@ -205,13 +201,11 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 		public override int ReadByte() { return -1; }
 		public override long Seek(long offset, SeekOrigin origin)
 				{
-					throw new NotSupportedException
-						(Environment.GetResourceString("IO_NotSupp_Seek"));
+					throw new NotSupportedException(_("IO_NotSupp_Seek"));
 				}
 		public override void SetLength(long value)
 				{
-					throw new NotSupportedException
-						(Environment.GetResourceString("IO_NotSupp_SetLength"));
+					throw new NotSupportedException(_("IO_NotSupp_SetLength"));
 				}
 		public override void Write(byte[] buffer, int offset, int count)
 				{
@@ -225,21 +219,18 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 				{
 					get
 					{
-						throw new NotSupportedException
-							(Environment.GetResourceString("IO_NotSupp_Seek"));
+						throw new NotSupportedException(_("IO_NotSupp_Seek"));
 					}
 				}
 		public override long Position
 				{
 					get
 					{
-						throw new NotSupportedException
-							(Environment.GetResourceString("IO_NotSupp_Seek"));
+						throw new NotSupportedException(_("IO_NotSupp_Seek"));
 					}
 					set
 					{
-						throw new NotSupportedException
-							(Environment.GetResourceString("IO_NotSupp_Seek"));
+						throw new NotSupportedException(_("IO_NotSupp_Seek"));
 					}
 				}
 

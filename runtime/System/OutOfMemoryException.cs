@@ -27,7 +27,7 @@ public class OutOfMemoryException : SystemException
 
 	// Constructors.
 	public OutOfMemoryException()
-		: base(Environment.GetResourceString("Exception_NoMemory")) {}
+		: base(_("Exception_NoMemory")) {}
 	public OutOfMemoryException(String msg)
 		: base(msg) {}
 	public OutOfMemoryException(String msg, Exception inner)
@@ -37,7 +37,7 @@ public class OutOfMemoryException : SystemException
 	// to make the primary "OutOfMemoryException" object,
 	// that has no stack trace associated with it.
 	internal OutOfMemoryException(int dummy)
-		: base(Environment.GetResourceString("Exception_NoMemory"),
+		: base(_("Exception_NoMemory"),
 			   null, false) {}
 
 	// Get the default message to use for this exception type.
@@ -45,8 +45,7 @@ public class OutOfMemoryException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_NoMemory");
+					return _("Exception_NoMemory");
 				}
 			}
 

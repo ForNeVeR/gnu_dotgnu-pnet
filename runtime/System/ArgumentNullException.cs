@@ -25,8 +25,7 @@ namespace System
 public class ArgumentNullException : ArgumentException
 {
 	// Standard error message for null exceptions.
-	private static String preloadedMessage =
-		Environment.GetResourceString("Arg_NotNull");
+	private static String preloadedMessage = _("Arg_NotNull");
 
 	// Constructors.
 	public ArgumentNullException()

@@ -32,8 +32,7 @@ public class FileNotFoundException : IOException
 
 	// Constructors.
 	public FileNotFoundException()
-			: base(Errno.ENOENT,
-				   Environment.GetResourceString("Exception_FileNotFound"))
+			: base(Errno.ENOENT, _("Exception_FileNotFound"))
 			{
 				fileName = null;
 			}
@@ -94,8 +93,7 @@ public class FileNotFoundException : IOException
 					if(fileName != null)
 					{
 						return String.Format
-							   		(Environment.GetResourceString
-										("Exception_Filename"), fileName);
+							   		(_("Exception_Filename"), fileName);
 					}
 					else
 					{
@@ -112,13 +110,11 @@ public class FileNotFoundException : IOException
 					if(fileName != null)
 					{
 						return String.Format
-							(Environment.GetResourceString
-								("IO_FileNotFound"), fileName);
+							(_("IO_FileNotFound"), fileName);
 					}
 					else
 					{
-						return Environment.GetResourceString
-							("Exception_FileNotFound");
+						return _("Exception_FileNotFound");
 					}
 				}
 			}

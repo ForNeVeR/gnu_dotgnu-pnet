@@ -41,7 +41,7 @@ public sealed class Activator
 		// COM is not yet supported.
 		throw new TypeLoadException
 				(String.Format
-					(Environment.GetResourceString("Exception_ComTypeLoad"),
+					(_("Exception_ComTypeLoad"),
 	 			     (assemblyName == null ? "current" : assemblyName),
 					 typeName));
 	}

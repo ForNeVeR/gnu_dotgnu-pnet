@@ -105,8 +105,7 @@ public struct Int64 : IComparable, IFormattable, IConvertible
 				{
 					if(!(value is Int64))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString("Arg_MustBeInt64"));
+						throw new ArgumentException(_("Arg_MustBeInt64"));
 					}
 					long value2 = ((Int64)value).value__;
 					if(value__ < value2)
@@ -189,8 +188,7 @@ public struct Int64 : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Int64", "DateTime"));
+						(_("InvalidCast_FromTo"), "Int64", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

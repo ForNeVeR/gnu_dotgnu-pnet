@@ -30,7 +30,7 @@ public class TypeLoadException : SystemException
 
 	// Constructors.
 	public TypeLoadException()
-		: base(Environment.GetResourceString("Exception_TypeLoad")) {}
+		: base(_("Exception_TypeLoad")) {}
 	public TypeLoadException(String msg)
 		: base(msg) {}
 	public TypeLoadException(String msg, Exception inner)
@@ -74,8 +74,7 @@ public class TypeLoadException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_TypeLoad");
+					return _("Exception_TypeLoad");
 				}
 			}
 

@@ -27,7 +27,7 @@ public class MethodAccessException : MemberAccessException
 
 	// Constructors.
 	public MethodAccessException()
-		: base(Environment.GetResourceString("Exception_MethodAccess")) {}
+		: base(_("Exception_MethodAccess")) {}
 	public MethodAccessException(String msg)
 		: base(msg) {}
 	public MethodAccessException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class MethodAccessException : MemberAccessException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_MethodAccess");
+					return _("Exception_MethodAccess");
 				}
 			}
 

@@ -29,7 +29,7 @@ public class MissingManifestResourceException : Exception
 
 	// Constructors.
 	public MissingManifestResourceException()
-		: base(Environment.GetResourceString("Exception_MissingManRes")) {}
+		: base(_("Exception_MissingManRes")) {}
 	public MissingManifestResourceException(String msg)
 		: base(msg) {}
 	public MissingManifestResourceException(String msg, Exception inner)
@@ -40,8 +40,7 @@ public class MissingManifestResourceException : Exception
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_MissingManRes");
+					return _("Exception_MissingManRes");
 				}
 			}
 

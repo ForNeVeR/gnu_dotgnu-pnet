@@ -72,16 +72,12 @@ public sealed class StringBuilder
 				if(maxCapacity < 1)
 				{
 					throw new ArgumentOutOfRangeException
-						("maxCapacity",
-						 Environment.GetResourceString
-						 	("ArgRange_MaxStrCapacity"));
+						("maxCapacity", _("ArgRange_MaxStrCapacity"));
 				}
 				else if(capacity < 0 || capacity > maxCapacity)
 				{
 					throw new ArgumentOutOfRangeException
-						("capacity",
-						 Environment.GetResourceString
-						 	("ArgRange_StrCapacity"));
+						("capacity", _("ArgRange_StrCapacity"));
 				}
 				if(capacity < MinCapacity && maxCapacity >= MinCapacity)
 				{
@@ -269,9 +265,7 @@ public sealed class StringBuilder
 				if(repeatCount < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("repeatCount",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("repeatCount", _("ArgRange_NonNegative"));
 				}
 				else if(repeatCount == 0)
 				{
@@ -332,14 +326,12 @@ public sealed class StringBuilder
 					if(startIndex < 0 || startIndex > value.Length)
 					{
 						throw new ArgumentOutOfRangeException
-							("startIndex",
-							 Environment.GetResourceString("ArgRange_Array"));
+							("startIndex", _("ArgRange_Array"));
 					}
 					else if((value.Length - startIndex) > length)
 					{
 						throw new ArgumentOutOfRangeException
-							("length",
-							 Environment.GetResourceString("ArgRange_Array"));
+							("length", _("ArgRange_Array"));
 					}
 					length = AppendSpace(length);
 					String.FillSubstring(buildString, buildString.length,
@@ -374,14 +366,12 @@ public sealed class StringBuilder
 					if(startIndex < 0 || startIndex > value.Length)
 					{
 						throw new ArgumentOutOfRangeException
-							("startIndex",
-							 Environment.GetResourceString("ArgRange_Array"));
+							("startIndex", _("ArgRange_Array"));
 					}
 					else if((value.Length - startIndex) > length)
 					{
 						throw new ArgumentOutOfRangeException
-							("length",
-							 Environment.GetResourceString("ArgRange_Array"));
+							("length", _("ArgRange_Array"));
 					}
 				}
 				else if(startIndex != 0 || length != 0)
@@ -425,9 +415,7 @@ public sealed class StringBuilder
 				if(capacity < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("capacity",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("capacity", _("ArgRange_NonNegative"));
 				}
 				else if(capacity <= buildString.capacity)
 				{
@@ -468,9 +456,7 @@ public sealed class StringBuilder
 				if(index < 0 || index > buildLen)
 				{
 					throw new ArgumentOutOfRangeException
-						("index",
-						 Environment.GetResourceString
-						 	("ArgRange_StringIndex"));
+						("index", _("ArgRange_StringIndex"));
 				}
 
 				// Determine the new length.
@@ -624,14 +610,12 @@ public sealed class StringBuilder
 					if(startIndex < 0 || startIndex > value.Length)
 					{
 						throw new ArgumentOutOfRangeException
-							("startIndex",
-							 Environment.GetResourceString("ArgRange_Array"));
+							("startIndex", _("ArgRange_Array"));
 					}
 					else if((value.Length - startIndex) > length)
 					{
 						throw new ArgumentOutOfRangeException
-							("length",
-							 Environment.GetResourceString("ArgRange_Array"));
+							("length", _("ArgRange_Array"));
 					}
 				}
 				else if(startIndex != 0 || length != 0)
@@ -649,9 +633,7 @@ public sealed class StringBuilder
 				if(count < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("count", _("ArgRange_NonNegative"));
 				}
 				while(count > 0)
 				{
@@ -671,16 +653,12 @@ public sealed class StringBuilder
 				if(startIndex < 0 || startIndex > buildString.length)
 				{
 					throw new ArgumentOutOfRangeException
-						("startIndex",
-						 Environment.GetResourceString
-						 	("ArgRange_StringIndex"));
+						("startIndex", _("ArgRange_StringIndex"));
 				}
 				else if((buildString.length - startIndex) > length)
 				{
 					throw new ArgumentOutOfRangeException
-						("length",
-						 Environment.GetResourceString
-						 	("ArgRange_StringRange"));
+						("length", _("ArgRange_StringRange"));
 				}
 				else if(needsCopy)
 				{
@@ -716,22 +694,17 @@ public sealed class StringBuilder
 				else if(oldValue.Length == 0)
 				{
 					throw new ArgumentException
-						(Environment.GetResourceString
-							("ArgRange_StringNonEmpty"));
+						(_("ArgRange_StringNonEmpty"));
 				}
 				else if(startIndex < 0 || startIndex > buildString.length)
 				{
 					throw new ArgumentOutOfRangeException
-						("startIndex",
-						 Environment.GetResourceString
-						 	("ArgRange_StringIndex"));
+						("startIndex", _("ArgRange_StringIndex"));
 				}
 				else if((buildString.length - startIndex) > count)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString
-						 	("ArgRange_StringRange"));
+						("count", _("ArgRange_StringRange"));
 				}
 				if(count > 0)
 				{
@@ -759,16 +732,12 @@ public sealed class StringBuilder
 				if(startIndex < 0 || startIndex > buildString.length)
 				{
 					throw new ArgumentOutOfRangeException
-						("startIndex",
-						 Environment.GetResourceString
-						 	("ArgRange_StringIndex"));
+						("startIndex", _("ArgRange_StringIndex"));
 				}
 				else if((buildString.length - startIndex) > count)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString
-						 	("ArgRange_StringRange"));
+						("count", _("ArgRange_StringRange"));
 				}
 				else if(oldChar == newChar)
 				{
@@ -835,8 +804,7 @@ public sealed class StringBuilder
 					if(value < buildString.length)
 					{
 						throw new ArgumentException
-							(Environment.GetResourceString
-								("ArgRange_StrCapacity"));
+							(_("ArgRange_StrCapacity"));
 					}
 					EnsureCapacity(value);
 				}
@@ -868,9 +836,7 @@ public sealed class StringBuilder
 					if(value < 0 || value > maxCapacity)
 					{
 						throw new ArgumentOutOfRangeException
-							("value",
-							 Environment.GetResourceString
-							 	("ArgRange_StrBuilderLength"));
+							("value", _("ArgRange_StrBuilderLength"));
 					}
 					buildLen = buildString.length;
 					if(value < buildLen)

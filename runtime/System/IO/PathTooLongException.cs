@@ -29,8 +29,7 @@ public class PathTooLongException : IOException
 {
 	// Constructors.
 	public PathTooLongException()
-			: base(Errno.ENAMETOOLONG,
-				   Environment.GetResourceString("Exception_PathTooLong")) {}
+			: base(Errno.ENAMETOOLONG, _("Exception_PathTooLong")) {}
 	public PathTooLongException(String msg)
 			: base(Errno.ENAMETOOLONG, msg) {}
 	public PathTooLongException(String msg, Exception inner)
@@ -41,8 +40,7 @@ public class PathTooLongException : IOException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_PathTooLong");
+					return _("Exception_PathTooLong");
 				}
 			}
 

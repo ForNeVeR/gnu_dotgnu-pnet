@@ -76,20 +76,17 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 				if(index < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("index",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("index", _("ArgRange_Array"));
 				}
 				if(count < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("count", _("ArgRange_Array"));
 				}
 				if((buffer.Length - index) < count)
 				{
 					throw new ArgumentException
-						(Environment.GetResourceString
-						 		("Arg_InvalidArrayRange"));
+						(_("Arg_InvalidArrayRange"));
 				}
 				readLen = 0;
 				while(count > 0)

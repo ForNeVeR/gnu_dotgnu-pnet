@@ -29,7 +29,7 @@ public class ObjectDisposedException : InvalidOperationException
 
 	// Constructors.
 	public ObjectDisposedException(String objectName)
-		: base(Environment.GetResourceString("Exception_Disposed"))
+		: base(_("Exception_Disposed"))
 		{ this.objectName = objectName; }
 	public ObjectDisposedException(String objectName, String msg)
 		: base(msg) { this.objectName = objectName; }
@@ -62,8 +62,7 @@ public class ObjectDisposedException : InvalidOperationException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Disposed");
+					return _("Exception_Disposed");
 				}
 			}
 

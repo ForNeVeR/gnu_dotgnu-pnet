@@ -115,8 +115,7 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 				{
 					throw new ArgumentOutOfRangeException
 						("millisecondsTimeout",
-						 Environment.GetResourceString
-						 		("ArgRange_NonNegOrNegOne"));
+						 _("ArgRange_NonNegOrNegOne"));
 				}
 				return (InternalWait(waitHandles, millisecondsTimeout,
 								     true, exitContext) != 0);
@@ -145,8 +144,7 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 				{
 					throw new ArgumentOutOfRangeException
 						("millisecondsTimeout",
-						 Environment.GetResourceString
-						 		("ArgRange_NonNegOrNegOne"));
+						 _("ArgRange_NonNegOrNegOne"));
 				}
 				return InternalWait(waitHandles, millisecondsTimeout,
 								    false, exitContext);
@@ -177,8 +175,7 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 				{
 					throw new ArgumentOutOfRangeException
 						("millisecondsTimeout",
-						 Environment.GetResourceString
-						 		("ArgRange_NonNegOrNegOne"));
+						 _("ArgRange_NonNegOrNegOne"));
 				}
 				return InternalWaitOne(privateData, millisecondsTimeout);
 			}

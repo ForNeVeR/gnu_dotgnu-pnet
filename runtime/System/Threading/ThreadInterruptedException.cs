@@ -27,7 +27,7 @@ public class ThreadInterruptedException : SystemException
 
 	// Constructors.
 	public ThreadInterruptedException()
-		: base(Environment.GetResourceString("Exception_ThreadInterrupt")) {}
+		: base(_("Exception_ThreadInterrupt")) {}
 	public ThreadInterruptedException(String msg)
 		: base(msg) {}
 	public ThreadInterruptedException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class ThreadInterruptedException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_ThreadInterrupt");
+					return _("Exception_ThreadInterrupt");
 				}
 			}
 

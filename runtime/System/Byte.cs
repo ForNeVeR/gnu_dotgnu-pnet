@@ -94,8 +94,7 @@ public struct Byte : IComparable, IFormattable, IConvertible
 				{
 					if(!(value is Byte))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString("Arg_MustBeByte"));
+						throw new ArgumentException(_("Arg_MustBeByte"));
 					}
 					return ((int)value__) - ((int)((Byte)value).value__);
 				}
@@ -166,8 +165,7 @@ public struct Byte : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Byte", "DateTime"));
+						(_("InvalidCast_FromTo"), "Byte", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

@@ -171,8 +171,7 @@ public class Exception
 				else
 				{
 					return String.Format
-						(Environment.GetResourceString("Exception_WasThrown"),
-						 GetType().ToString());
+						(_("Exception_WasThrown"), GetType().ToString());
 				}
 			}
 		}

@@ -62,8 +62,7 @@ public struct TimeSpan : IComparable
 				catch(OverflowException)
 				{
 					throw new ArgumentOutOfRangeException
-						(Environment.GetResourceString
-							("ArgRange_TimeSpan"));
+						(_("ArgRange_TimeSpan"));
 				}
 			}
 
@@ -74,9 +73,7 @@ public struct TimeSpan : IComparable
 				{
 					if(!(value is TimeSpan))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString
-								("Arg_MustBeTimeSpan"));
+						throw new ArgumentException(_("Arg_MustBeTimeSpan"));
 					}
 					long value2 = ((TimeSpan)value).value__;
 					if(value__ < value2)
@@ -198,8 +195,7 @@ public struct TimeSpan : IComparable
 			{
 				if(Double.IsNaN(value))
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_NotANumber"));
+					throw new ArgumentException(_("Arg_NotANumber"));
 				}
 				else if(Double.IsNegativeInfinity(value))
 				{
@@ -220,8 +216,7 @@ public struct TimeSpan : IComparable
 			{
 				if(Double.IsNaN(value))
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_NotANumber"));
+					throw new ArgumentException(_("Arg_NotANumber"));
 				}
 				else if(Double.IsNegativeInfinity(value))
 				{
@@ -242,8 +237,7 @@ public struct TimeSpan : IComparable
 			{
 				if(Double.IsNaN(value))
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_NotANumber"));
+					throw new ArgumentException(_("Arg_NotANumber"));
 				}
 				else if(Double.IsNegativeInfinity(value))
 				{
@@ -265,8 +259,7 @@ public struct TimeSpan : IComparable
 			{
 				if(Double.IsNaN(value))
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_NotANumber"));
+					throw new ArgumentException(_("Arg_NotANumber"));
 				}
 				else if(Double.IsNegativeInfinity(value))
 				{
@@ -288,8 +281,7 @@ public struct TimeSpan : IComparable
 			{
 				if(Double.IsNaN(value))
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_NotANumber"));
+					throw new ArgumentException(_("Arg_NotANumber"));
 				}
 				else if(Double.IsNegativeInfinity(value))
 				{
@@ -328,8 +320,7 @@ public struct TimeSpan : IComparable
 				else
 				{
 					throw new OverflowException
-						(Environment.GetResourceString
-							("Overflow_NegateTwosCompNum"));
+						(_("Overflow_NegateTwosCompNum"));
 				}
 			}
 

@@ -93,20 +93,16 @@ internal sealed class StdReader : TextReader
 				if(index < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("index",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("index", _("ArgRange_Array"));
 				}
 				if(count < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("count", _("ArgRange_Array"));
 				}
 				if((buffer.Length - index) < count)
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString
-						 		("Arg_InvalidArrayRange"));
+					throw new ArgumentException(_("Arg_InvalidArrayRange"));
 				}
 				if(fd != -1)
 				{

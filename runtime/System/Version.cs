@@ -36,16 +36,12 @@ public sealed class Version : ICloneable, IComparable
 				if(major < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("major",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("major", _("ArgRange_NonNegative"));
 				}
 				if(minor < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("minor",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("minor", _("ArgRange_NonNegative"));
 				}
 				this.major = major;
 				this.minor = minor;
@@ -57,23 +53,17 @@ public sealed class Version : ICloneable, IComparable
 				if(major < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("major",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("major", _("ArgRange_NonNegative"));
 				}
 				if(minor < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("minor",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("minor", _("ArgRange_NonNegative"));
 				}
 				if(build < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("build",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("build", _("ArgRange_NonNegative"));
 				}
 				this.major = major;
 				this.minor = minor;
@@ -85,30 +75,22 @@ public sealed class Version : ICloneable, IComparable
 				if(major < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("major",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("major", _("ArgRange_NonNegative"));
 				}
 				if(minor < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("minor",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("minor", _("ArgRange_NonNegative"));
 				}
 				if(build < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("build",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("build", _("ArgRange_NonNegative"));
 				}
 				if(revision < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("revision",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("revision", _("ArgRange_NonNegative"));
 				}
 				this.major = major;
 				this.minor = minor;
@@ -181,8 +163,7 @@ public sealed class Version : ICloneable, IComparable
 				}
 				else if(version != null)
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_MustBeVersion"));
+					throw new ArgumentException(_("Arg_MustBeVersion"));
 				}
 				else
 				{
@@ -240,9 +221,7 @@ public sealed class Version : ICloneable, IComparable
 				   (fieldCount > 2 && build == -1) ||
 				   (fieldCount > 3 && revision == -1))
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString
-							("Arg_VersionFields"));
+					throw new ArgumentException(_("Arg_VersionFields"));
 				}
 				switch(fieldCount)
 				{

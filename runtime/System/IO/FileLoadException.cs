@@ -32,8 +32,7 @@ public class FileLoadException : IOException
 
 	// Constructors.
 	public FileLoadException()
-			: base(Errno.ENOENT,
-				   Environment.GetResourceString("Exception_FileLoad"))
+			: base(Errno.ENOENT, _("Exception_FileLoad"))
 			{
 				fileName = null;
 			}
@@ -94,8 +93,7 @@ public class FileLoadException : IOException
 					if(fileName != null)
 					{
 						return String.Format
-							   		(Environment.GetResourceString
-										("Exception_Filename"), fileName);
+							   		(_("Exception_Filename"), fileName);
 					}
 					else
 					{
@@ -112,13 +110,11 @@ public class FileLoadException : IOException
 					if(fileName != null)
 					{
 						return String.Format
-							(Environment.GetResourceString
-								("IO_FileLoad"), fileName);
+							(_("IO_FileLoad"), fileName);
 					}
 					else
 					{
-						return Environment.GetResourceString
-							("Exception_FileLoad");
+						return _("Exception_FileLoad");
 					}
 				}
 			}

@@ -27,7 +27,7 @@ public class MemberAccessException : SystemException
 
 	// Constructors.
 	public MemberAccessException()
-		: base(Environment.GetResourceString("Exception_MemberAccess")) {}
+		: base(_("Exception_MemberAccess")) {}
 	public MemberAccessException(String msg)
 		: base(msg) {}
 	public MemberAccessException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class MemberAccessException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_MemberAccess");
+					return _("Exception_MemberAccess");
 				}
 			}
 

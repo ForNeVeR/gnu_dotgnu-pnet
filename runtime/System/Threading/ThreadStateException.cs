@@ -27,7 +27,7 @@ public class ThreadStateException : SystemException
 
 	// Constructors.
 	public ThreadStateException()
-		: base(Environment.GetResourceString("Exception_ThreadState")) {}
+		: base(_("Exception_ThreadState")) {}
 	public ThreadStateException(String msg)
 		: base(msg) {}
 	public ThreadStateException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class ThreadStateException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_ThreadState");
+					return _("Exception_ThreadState");
 				}
 			}
 

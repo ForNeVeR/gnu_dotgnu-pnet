@@ -30,7 +30,7 @@ public class ArgumentException : SystemException
 
 	// Constructors.
 	public ArgumentException()
-		: base(Environment.GetResourceString("Exception_Argument")) {}
+		: base(_("Exception_Argument")) {}
 	public ArgumentException(String msg)
 		: base(msg) {}
 	public ArgumentException(String msg, Exception inner)
@@ -54,8 +54,7 @@ public class ArgumentException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Argument");
+					return _("Exception_Argument");
 				}
 			}
 
@@ -67,9 +66,7 @@ public class ArgumentException : SystemException
 					if(paramName != null)
 					{
 						return String.Format
-							   		(Environment.GetResourceString
-										("Exception_ArgParamName"),
-									 paramName);
+							   		(_("Exception_ArgParamName"), paramName);
 					}
 					else
 					{

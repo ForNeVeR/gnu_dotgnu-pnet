@@ -84,14 +84,12 @@ internal sealed class StdWriter : TextWriter
 				if(index < 0 || index > value.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("index",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("index", _("ArgRange_Array"));
 				}
 				else if(count < 0 || (value.Length - index) < count)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("count", _("ArgRange_Array"));
 				}
 				if(fd != -1)
 				{

@@ -99,8 +99,7 @@ public class ResourceManager
 					if(!usingResourceSet.IsSubclassOf(typeof(ResourceSet)))
 					{
 						throw new ArgumentException
-							(Environment.GetResourceString
-								("Arg_MustBeResourceSet"),
+							(_("Arg_MustBeResourceSet"),
 							 "usingResourceSet");
 					}
 					resourceSetType = usingResourceSet;
@@ -123,8 +122,7 @@ public class ResourceManager
 				else if(baseName.EndsWith(".resources"))
 				{
 					throw new ArgumentException
-						(Environment.GetResourceString
-							("Arg_EndsWithResources"), "baseName");
+						(_("Arg_EndsWithResources"), "baseName");
 				}
 				// TODO
 				return null;

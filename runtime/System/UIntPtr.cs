@@ -43,8 +43,7 @@ public struct UIntPtr
 				if(Size == 4 &&
 				   value > ((ulong)(UInt32.MaxValue)))
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Pointer"));
+					throw new OverflowException(_("Overflow_Pointer"));
 				}
 				value__ = (void *)value;
 			}
@@ -80,8 +79,7 @@ public struct UIntPtr
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Pointer"));
+					throw new OverflowException(_("Overflow_Pointer"));
 				}
 			}
 	unsafe public ulong ToUInt64()

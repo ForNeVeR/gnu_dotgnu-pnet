@@ -60,8 +60,7 @@ public struct Currency : IComparable, IFormattable
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Currency"));
+					throw new OverflowException(_("Overflow_Currency"));
 				}
 			}
 	public Currency(ulong value)
@@ -72,8 +71,7 @@ public struct Currency : IComparable, IFormattable
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Currency"));
+					throw new OverflowException(_("Overflow_Currency"));
 				}
 			}
 	public Currency(Decimal value)
@@ -89,8 +87,7 @@ public struct Currency : IComparable, IFormattable
 				{
 					// Trap overflow exceptions from the conversion
 					// and turn them into Currency overflows.
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Currency"));
+					throw new OverflowException(_("Overflow_Currency"));
 				}
 			}
 	public Currency(float value)
@@ -104,8 +101,7 @@ public struct Currency : IComparable, IFormattable
 				{
 					// Trap overflow exceptions from the Decimal
 					// class and turn them into Currency overflows.
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Currency"));
+					throw new OverflowException(_("Overflow_Currency"));
 				}
 			}
 	public Currency(double value)
@@ -119,8 +115,7 @@ public struct Currency : IComparable, IFormattable
 				{
 					// Trap overflow exceptions from the Decimal
 					// class and turn them into Currency overflows.
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Currency"));
+					throw new OverflowException(_("Overflow_Currency"));
 				}
 			}
 	private Currency(long value, int dummy)
@@ -157,8 +152,7 @@ public struct Currency : IComparable, IFormattable
 				{
 					// Turn the runtime overflow for the add into
 					// an overflow exception for Currency.
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Currency"));
+					throw new OverflowException(_("Overflow_Currency"));
 				}
 			}
 	public static Currency Subtract(Currency x, Currency y)
@@ -174,8 +168,7 @@ public struct Currency : IComparable, IFormattable
 				{
 					// Turn the runtime overflow for the subtract into
 					// an overflow exception for Currency.
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Currency"));
+					throw new OverflowException(_("Overflow_Currency"));
 				}
 			}
 	public static Decimal Multiply(Currency x, Currency y)
@@ -203,8 +196,7 @@ public struct Currency : IComparable, IFormattable
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Currency"));
+					throw new OverflowException(_("Overflow_Currency"));
 				}
 			}
 	public static Currency Truncate(Currency x)
@@ -220,8 +212,7 @@ public struct Currency : IComparable, IFormattable
 				else
 				{
 					throw new OverflowException
-						(Environment.GetResourceString
-							("Overflow_NegateTwosCompNum"));
+						(_("Overflow_NegateTwosCompNum"));
 				}
 			}
 	public static Currency Round(Currency x, int decimals)
@@ -236,8 +227,7 @@ public struct Currency : IComparable, IFormattable
 				{
 					// Trap overflow exceptions from the Decimal
 					// class and turn them into Currency overflows.
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Currency"));
+					throw new OverflowException(_("Overflow_Currency"));
 				}
 			}
 
@@ -271,8 +261,7 @@ public struct Currency : IComparable, IFormattable
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int32"));
+					throw new OverflowException(_("Overflow_Int32"));
 				}
 			}
 	public static uint ToUInt32(Currency value)
@@ -284,8 +273,7 @@ public struct Currency : IComparable, IFormattable
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt32"));
+					throw new OverflowException(_("Overflow_UInt32"));
 				}
 			}
 	public static long ToInt64(Currency value)
@@ -300,8 +288,7 @@ public struct Currency : IComparable, IFormattable
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt64"));
+					throw new OverflowException(_("Overflow_UInt64"));
 				}
 			}
 
@@ -402,9 +389,7 @@ public struct Currency : IComparable, IFormattable
 				{
 					if(!(value is Currency))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString
-								("Arg_MustBeCurrency"));
+						throw new ArgumentException(_("Arg_MustBeCurrency"));
 					}
 					long value2 = ((Currency)value).value__;
 					if(value__ < value2)
@@ -488,8 +473,7 @@ public struct Currency : IComparable, IFormattable
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Byte"));
+					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
 	public static explicit operator sbyte(Currency x)
@@ -501,8 +485,7 @@ public struct Currency : IComparable, IFormattable
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_SByte"));
+					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
 	public static explicit operator short(Currency x)
@@ -514,8 +497,7 @@ public struct Currency : IComparable, IFormattable
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int16"));
+					throw new OverflowException(_("Overflow_Int16"));
 				}
 			}
 	public static explicit operator ushort(Currency x)
@@ -527,8 +509,7 @@ public struct Currency : IComparable, IFormattable
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt16"));
+					throw new OverflowException(_("Overflow_UInt16"));
 				}
 			}
 	public static explicit operator int(Currency x)

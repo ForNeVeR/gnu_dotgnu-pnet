@@ -174,8 +174,7 @@ public struct Single : IComparable, IFormattable, IConvertible
 					}
 					else
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString("Arg_MustBeSingle"));
+						throw new ArgumentException(_("Arg_MustBeSingle"));
 					}
 				}
 				else
@@ -213,8 +212,7 @@ public struct Single : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Single", "Char"));
+						(_("InvalidCast_FromTo"), "Single", "Char"));
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
@@ -248,8 +246,7 @@ public struct Single : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Single", "DateTime"));
+						(_("InvalidCast_FromTo"), "Single", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

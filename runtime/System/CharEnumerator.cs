@@ -65,8 +65,7 @@ public sealed class CharEnumerator : IEnumerator, ICloneable
 					else
 					{
 						throw new InvalidOperationException
-							(Environment.GetResourceString
-								("Invalid_BadEnumeratorPosition"));
+							(_("Invalid_BadEnumeratorPosition"));
 					}
 				}
 			}
@@ -83,8 +82,7 @@ public sealed class CharEnumerator : IEnumerator, ICloneable
 					else
 					{
 						throw new InvalidOperationException
-							(Environment.GetResourceString
-								("Invalid_BadEnumeratorPosition"));
+							(_("Invalid_BadEnumeratorPosition"));
 					}
 				}
 			}

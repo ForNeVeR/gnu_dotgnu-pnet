@@ -96,8 +96,7 @@ public struct UInt32 : IComparable, IFormattable, IConvertible
 				{
 					if(!(value is UInt32))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString("Arg_MustBeUInt32"));
+						throw new ArgumentException(_("Arg_MustBeUInt32"));
 					}
 					uint value2 = ((UInt32)value).value__;
 					if(value__ < value2)
@@ -180,8 +179,7 @@ public struct UInt32 : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "UInt32", "DateTime"));
+						(_("InvalidCast_FromTo"), "UInt32", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

@@ -27,7 +27,7 @@ public class OverflowException : ArithmeticException
 
 	// Constructors.
 	public OverflowException()
-		: base(Environment.GetResourceString("Exception_Overflow")) {}
+		: base(_("Exception_Overflow")) {}
 	public OverflowException(String msg)
 		: base(msg) {}
 	public OverflowException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class OverflowException : ArithmeticException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Overflow");
+					return _("Exception_Overflow");
 				}
 			}
 

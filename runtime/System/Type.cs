@@ -67,8 +67,7 @@ public abstract class Type : MemberInfo
 	// Get the rank of this type, if it is an array.
 	public virtual int GetArrayRank()
 			{
-				throw new NotSupportedException
-					(Environment.GetResourceString("NotSupp_NotArrayType"));
+				throw new NotSupportedException(_("NotSupp_NotArrayType"));
 			}
 
 	// Get the attribute flags for this type.

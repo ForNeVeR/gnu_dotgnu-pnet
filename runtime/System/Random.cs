@@ -53,8 +53,7 @@ public class Random
 				if(maxValue < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("maxValue",
-						 Environment.GetResourceString("ArgRange_NonNegative"));
+						("maxValue", _("ArgRange_NonNegative"));
 				}
 				else if(maxValue != 0)
 				{
@@ -71,9 +70,7 @@ public class Random
 				if(minValue > maxValue)
 				{
 					throw new ArgumentOutOfRangeException
-						("minValue",
-						 Environment.GetResourceString
-						 	("ArgRange_MinValueGtMaxValue"));
+						("minValue", _("ArgRange_MinValueGtMaxValue"));
 				}
 				else if(minValue != maxValue)
 				{

@@ -27,7 +27,7 @@ public class FieldAccessException : MemberAccessException
 
 	// Constructors.
 	public FieldAccessException()
-		: base(Environment.GetResourceString("Exception_FieldAccess")) {}
+		: base(_("Exception_FieldAccess")) {}
 	public FieldAccessException(String msg)
 		: base(msg) {}
 	public FieldAccessException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class FieldAccessException : MemberAccessException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_FieldAccess");
+					return _("Exception_FieldAccess");
 				}
 			}
 

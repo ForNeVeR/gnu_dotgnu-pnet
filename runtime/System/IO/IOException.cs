@@ -31,7 +31,7 @@ public class IOException : SystemException
 
 	// Constructors.
 	public IOException()
-		: base(Environment.GetResourceString("Exception_IO"))
+		: base(_("Exception_IO"))
 		{
 			errno = Errno.EIO;
 		}
@@ -77,7 +77,7 @@ public class IOException : SystemException
 			{
 				// See if the resource file has provided an override.
 				String resource = "errno_" + errno.ToString();
-				String str = Environment.GetResourceString(resource);
+				String str = _(resource);
 				if(str != null)
 				{
 					return str;
@@ -91,7 +91,7 @@ public class IOException : SystemException
 				}
 
 				// Use the default I/O exception string.
-				return Environment.GetResourceString("Exception_IO");
+				return _("Exception_IO");
 			}
 
 	// Get the default message to use for I/O exceptions.
@@ -101,7 +101,7 @@ public class IOException : SystemException
 				{
 					if(errno == Errno.EIO)
 					{
-						return Environment.GetResourceString("Exception_IO");
+						return _("Exception_IO");
 					}
 					else
 					{

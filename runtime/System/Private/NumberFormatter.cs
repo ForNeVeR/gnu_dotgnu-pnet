@@ -389,8 +389,7 @@ internal sealed class NumberFormatter
 		}
 		else
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidBase"));
+			throw new ArgumentException(_("Arg_InvalidBase"));
 		}
 		return new String(buf);
 	}

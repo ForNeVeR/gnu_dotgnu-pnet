@@ -26,7 +26,7 @@ public class FormatException : SystemException
 
 	// Constructors.
 	public FormatException()
-		: base(Environment.GetResourceString("Exception_Format")) {}
+		: base(_("Exception_Format")) {}
 	public FormatException(String msg)
 		: base(msg) {}
 	public FormatException(String msg, Exception inner)
@@ -37,8 +37,7 @@ public class FormatException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Format");
+					return _("Exception_Format");
 				}
 			}
 

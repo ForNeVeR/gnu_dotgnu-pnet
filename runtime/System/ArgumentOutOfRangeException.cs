@@ -25,8 +25,7 @@ namespace System
 public class ArgumentOutOfRangeException : ArgumentException
 {
 	// Standard error message for out of range exceptions.
-	private static String preloadedMessage =
-		Environment.GetResourceString("Arg_OutOfRange");
+	private static String preloadedMessage = _("Arg_OutOfRange");
 
 	// Internal state.
 	private Object actualValue;
@@ -63,8 +62,7 @@ public class ArgumentOutOfRangeException : ArgumentException
 					{
 						return msg + Environment.NewLine +
 							   String.Format
-							   		(Environment.GetResourceString
-							   			("Arg_OutOfRangeValue"),
+							   		(_("Arg_OutOfRangeValue"),
 									 actualValue.ToString());
 					}
 				}

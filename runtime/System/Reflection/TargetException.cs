@@ -29,7 +29,7 @@ public class TargetException : ApplicationException
 
 	// Constructors.
 	public TargetException()
-		: base(Environment.GetResourceString("Exception_Target")) {}
+		: base(_("Exception_Target")) {}
 	public TargetException(String msg)
 		: base(msg) {}
 	public TargetException(String msg, Exception inner)
@@ -40,8 +40,7 @@ public class TargetException : ApplicationException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Target");
+					return _("Exception_Target");
 				}
 			}
 

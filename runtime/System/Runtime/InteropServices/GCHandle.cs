@@ -58,15 +58,13 @@ public struct GCHandle
 				{
 					// The handle has not been pinned.
 					throw new InvalidOperationException
-						(Environment.GetResourceString
-							("Invalid_GCHandleNotPinned"));
+						(_("Invalid_GCHandleNotPinned"));
 				}
 				else
 				{
 					// The handle has not been initialized.
 					throw new InvalidOperationException
-						(Environment.GetResourceString
-							("Invalid_GCHandleNotInit"));
+						(_("Invalid_GCHandleNotInit"));
 				}
 			}
 
@@ -99,8 +97,7 @@ public struct GCHandle
 				else
 				{
 					throw new InvalidOperationException
-						(Environment.GetResourceString
-							("Invalid_GCHandleNotInit"));
+						(_("Invalid_GCHandleNotInit"));
 				}
 			}
 
@@ -119,8 +116,7 @@ public struct GCHandle
 				else
 				{
 					throw new InvalidOperationException
-						(Environment.GetResourceString
-							("Invalid_GCHandleInvalid"));
+						(_("Invalid_GCHandleInvalid"));
 				}
 			}
 	public static explicit operator IntPtr(GCHandle handle)
@@ -153,8 +149,7 @@ public struct GCHandle
 					else
 					{
 						throw new InvalidOperationException
-							(Environment.GetResourceString
-								("Invalid_GCHandleNotInit"));
+							(_("Invalid_GCHandleNotInit"));
 					}
 				}
 				set
@@ -167,8 +162,7 @@ public struct GCHandle
 					else
 					{
 						throw new InvalidOperationException
-							(Environment.GetResourceString
-								("Invalid_GCHandleNotInit"));
+							(_("Invalid_GCHandleNotInit"));
 					}
 				}
 			}

@@ -70,8 +70,7 @@ internal sealed class NumberParser
 		}
 		if(posn >= len)
 		{
-			throw new FormatException
-				(Environment.GetResourceString("Format_Integer"));
+			throw new FormatException(_("Format_Integer"));
 		}
 
 		// Parse the main part of the number.
@@ -146,8 +145,7 @@ internal sealed class NumberParser
 		// If we are not at the end of the string, then report an error.
 		if(posn < len)
 		{
-			throw new FormatException
-				(Environment.GetResourceString("Format_Integer"));
+			throw new FormatException(_("Format_Integer"));
 		}
 
 		// Done.
@@ -188,8 +186,7 @@ internal sealed class NumberParser
 		else
 		{
 			// Parsing Int32 itself, so report the error now.
-			throw new OverflowException
-				(Environment.GetResourceString("Overflow_Int32"));
+			throw new OverflowException(_("Overflow_Int32"));
 		}
 	}
 
@@ -219,8 +216,7 @@ internal sealed class NumberParser
 		else
 		{
 			// Parsing UInt32 itself, so report the error now.
-			throw new OverflowException
-				(Environment.GetResourceString("Overflow_UInt32"));
+			throw new OverflowException(_("Overflow_UInt32"));
 		}
 	}
 
@@ -249,8 +245,7 @@ internal sealed class NumberParser
 		}
 
 		// If we get here, then an overflow has occurred.
-		throw new OverflowException
-			(Environment.GetResourceString("Overflow_Int64"));
+		throw new OverflowException(_("Overflow_Int64"));
 	}
 
 	public static ulong StringToUInt64(String value, int radix)
@@ -268,8 +263,7 @@ internal sealed class NumberParser
 		}
 
 		// If we get here, then an overflow has occurred.
-		throw new OverflowException
-			(Environment.GetResourceString("Overflow_UInt64"));
+		throw new OverflowException(_("Overflow_UInt64"));
 	}
 
 	// Validate a parse style for integer parses.
@@ -281,8 +275,7 @@ internal sealed class NumberParser
 						  NumberStyles.AllowLeadingWhite |
 						  NumberStyles.AllowTrailingWhite)) != 0)
 			{
-				throw new ArgumentException
-					(Environment.GetResourceString("Arg_InvalidHexStyle"));
+				throw new ArgumentException(_("Arg_InvalidHexStyle"));
 			}
 		}
 	}
@@ -326,8 +319,7 @@ internal sealed class NumberParser
 				}
 				if((style & NumberStyles.AllowLeadingWhite) == 0)
 				{
-					throw new FormatException
-						(Environment.GetResourceString("Format_Integer"));
+					throw new FormatException(_("Format_Integer"));
 				}
 				++posn;
 			}
@@ -377,16 +369,14 @@ internal sealed class NumberParser
 			}
 			else
 			{
-				throw new FormatException
-					(Environment.GetResourceString("Format_Integer"));
+				throw new FormatException(_("Format_Integer"));
 			}
 		}
 
 		// Bail out if the string is empty.
 		if(posn >= len)
 		{
-			throw new FormatException
-				(Environment.GetResourceString("Format_Integer"));
+			throw new FormatException(_("Format_Integer"));
 		}
 
 		// Parse the main part of the number.
@@ -400,8 +390,7 @@ internal sealed class NumberParser
 			posn += 2;
 			if(posn >= len)
 			{
-				throw new FormatException
-					(Environment.GetResourceString("Format_Integer"));
+				throw new FormatException(_("Format_Integer"));
 			}
 			do
 			{
@@ -570,8 +559,7 @@ internal sealed class NumberParser
 			if(posn < len ||
 			   (lastWasWhite && (style & NumberStyles.AllowTrailingWhite) == 0))
 			{
-				throw new FormatException
-					(Environment.GetResourceString("Format_Integer"));
+				throw new FormatException(_("Format_Integer"));
 			}
 		}
 
@@ -615,8 +603,7 @@ internal sealed class NumberParser
 		else
 		{
 			// Parsing Int32 itself, so report the error now.
-			throw new OverflowException
-				(Environment.GetResourceString("Overflow_Int32"));
+			throw new OverflowException(_("Overflow_Int32"));
 		}
 	}
 
@@ -648,8 +635,7 @@ internal sealed class NumberParser
 		else
 		{
 			// Parsing UInt32 itself, so report the error now.
-			throw new OverflowException
-				(Environment.GetResourceString("Overflow_UInt32"));
+			throw new OverflowException(_("Overflow_UInt32"));
 		}
 	}
 
@@ -679,8 +665,7 @@ internal sealed class NumberParser
 		}
 
 		// If we get here, then an overflow has occurred.
-		throw new OverflowException
-			(Environment.GetResourceString("Overflow_Int64"));
+		throw new OverflowException(_("Overflow_Int64"));
 	}
 
 	public static ulong ParseUInt64(String s, NumberStyles style,
@@ -700,8 +685,7 @@ internal sealed class NumberParser
 		}
 
 		// If we get here, then an overflow has occurred.
-		throw new OverflowException
-			(Environment.GetResourceString("Overflow_UInt64"));
+		throw new OverflowException(_("Overflow_UInt64"));
 	}
 
 	public static Decimal ParseDecimal(String s, NumberStyles style,

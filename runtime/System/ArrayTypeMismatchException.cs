@@ -27,7 +27,7 @@ public class ArrayTypeMismatchException : SystemException
 
 	// Constructors.
 	public ArrayTypeMismatchException()
-		: base(Environment.GetResourceString("Exception_ArrayTypeMismatch")) {}
+		: base(_("Exception_ArrayTypeMismatch")) {}
 	public ArrayTypeMismatchException(String msg)
 		: base(msg) {}
 	public ArrayTypeMismatchException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class ArrayTypeMismatchException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_ArrayTypeMismatch");
+					return _("Exception_ArrayTypeMismatch");
 				}
 			}
 

@@ -26,7 +26,7 @@ public class RankException : SystemException
 
 	// Constructors.
 	public RankException()
-		: base(Environment.GetResourceString("Exception_Rank")) {}
+		: base(_("Exception_Rank")) {}
 	public RankException(String msg)
 		: base(msg) {}
 	public RankException(String msg, Exception inner)
@@ -37,8 +37,7 @@ public class RankException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Rank");
+					return _("Exception_Rank");
 				}
 			}
 

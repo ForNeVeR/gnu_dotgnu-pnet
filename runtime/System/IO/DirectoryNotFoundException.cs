@@ -29,8 +29,7 @@ public class DirectoryNotFoundException : IOException
 {
 	// Constructors.
 	public DirectoryNotFoundException()
-			: base(Errno.ENOTDIR,
-				   Environment.GetResourceString("Exception_DirNotFound")) {}
+			: base(Errno.ENOTDIR, _("Exception_DirNotFound")) {}
 	public DirectoryNotFoundException(String msg)
 			: base(Errno.ENOTDIR, msg) {}
 	public DirectoryNotFoundException(String msg, Exception inner)
@@ -41,8 +40,7 @@ public class DirectoryNotFoundException : IOException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_DirNotFound");
+					return _("Exception_DirNotFound");
 				}
 			}
 

@@ -27,7 +27,7 @@ public class DivideByZeroException : ArithmeticException
 
 	// Constructors.
 	public DivideByZeroException()
-		: base(Environment.GetResourceString("Exception_DivZero")) {}
+		: base(_("Exception_DivZero")) {}
 	public DivideByZeroException(String msg)
 		: base(msg) {}
 	public DivideByZeroException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class DivideByZeroException : ArithmeticException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_DivZero");
+					return _("Exception_DivZero");
 				}
 			}
 

@@ -27,7 +27,7 @@ public class TypeUnloadedException : SystemException
 
 	// Constructors.
 	public TypeUnloadedException()
-		: base(Environment.GetResourceString("Exception_TypeUnload")) {}
+		: base(_("Exception_TypeUnload")) {}
 	public TypeUnloadedException(String msg)
 		: base(msg) {}
 	public TypeUnloadedException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class TypeUnloadedException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_TypeUnload");
+					return _("Exception_TypeUnload");
 				}
 			}
 

@@ -29,13 +29,13 @@ public sealed class TargetInvocationException : ApplicationException
 
 	// Constructors.
 	private TargetInvocationException()
-		: base(Environment.GetResourceString("Exception_TargetInvoke")) {}
+		: base(_("Exception_TargetInvoke")) {}
 	private TargetInvocationException(String msg)
 		: base(msg) {}
 	public TargetInvocationException(String msg, Exception inner)
 		: base(msg, inner) {}
 	public TargetInvocationException(Exception inner)
-		: base(Environment.GetResourceString("Exception_TargetInvoke"), inner)
+		: base(_("Exception_TargetInvoke"), inner)
 		{}
 
 	// Get the default message to use for this exception type.
@@ -43,8 +43,7 @@ public sealed class TargetInvocationException : ApplicationException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_TargetInvoke");
+					return _("Exception_TargetInvoke");
 				}
 			}
 

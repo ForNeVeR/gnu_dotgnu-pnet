@@ -27,7 +27,7 @@ public class MissingFieldException : MissingMemberException
 
 	// Constructors.
 	public MissingFieldException()
-		: base(Environment.GetResourceString("Exception_FieldMissing")) {}
+		: base(_("Exception_FieldMissing")) {}
 	public MissingFieldException(String msg)
 		: base(msg) {}
 	public MissingFieldException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class MissingFieldException : MissingMemberException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_FieldMissing");
+					return _("Exception_FieldMissing");
 				}
 			}
 

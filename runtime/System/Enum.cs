@@ -35,8 +35,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable, IConvertible
 				type = GetType();
 				if(type != target.GetType())
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_MustBeSameEnum"));
+					throw new ArgumentException(_("Arg_MustBeSameEnum"));
 				}
 				if(IsSigned(type))
 				{
@@ -267,8 +266,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Enum", "Boolean"));
+						(_("InvalidCast_FromTo"), "Enum", "Boolean"));
 			}
 	byte IConvertible.ToByte(IFormatProvider provider)
 			{
@@ -290,8 +288,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Enum", "Char"));
+						(_("InvalidCast_FromTo"), "Enum", "Char"));
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
@@ -313,29 +310,25 @@ public abstract class Enum : ValueType, IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Enum", "Single"));
+						(_("InvalidCast_FromTo"), "Enum", "Single"));
 			}
 	double IConvertible.ToDouble(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Enum", "Double"));
+						(_("InvalidCast_FromTo"), "Enum", "Double"));
 			}
 	Decimal IConvertible.ToDecimal(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Enum", "DateTime"));
+						(_("InvalidCast_FromTo"), "Enum", "DateTime"));
 			}
 	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Byte", "DateTime"));
+						(_("InvalidCast_FromTo"), "Byte", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

@@ -50,8 +50,7 @@ public sealed class Comparer : IComparer
 			{
 				return -(cmp.CompareTo(a));
 			}
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_ABMustBeComparable"));
+			throw new ArgumentException(_("Arg_ABMustBeComparable"));
 		}
 		else if(a != null)
 		{

@@ -29,10 +29,10 @@ public class NotFiniteNumberException : ArithmeticException
 
 	// Constructors.
 	public NotFiniteNumberException()
-		: base(Environment.GetResourceString("Exception_NotFinite"))
+		: base(_("Exception_NotFinite"))
 		{ number = 0.0; }
 	public NotFiniteNumberException(double offendingNumber)
-		: base(Environment.GetResourceString("Exception_NotFinite"))
+		: base(_("Exception_NotFinite"))
 		{ number = offendingNumber; }
 	public NotFiniteNumberException(String msg)
 		: base(msg) { number = 0.0; }
@@ -56,8 +56,7 @@ public class NotFiniteNumberException : ArithmeticException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_NotFinite");
+					return _("Exception_NotFinite");
 				}
 			}
 

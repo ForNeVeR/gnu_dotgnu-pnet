@@ -91,8 +91,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Byte"));
+					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
 	public static byte ToByte(short value)
@@ -103,8 +102,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Byte"));
+					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
 	public static byte ToByte(ushort value)
@@ -115,8 +113,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Byte"));
+					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
 	public static byte ToByte(int value)
@@ -127,8 +124,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Byte"));
+					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
 	public static byte ToByte(uint value)
@@ -139,8 +135,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Byte"));
+					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
 	public static byte ToByte(long value)
@@ -151,8 +146,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Byte"));
+					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
 	public static byte ToByte(ulong value)
@@ -163,8 +157,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Byte"));
+					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
 	public static byte ToByte(char value)
@@ -175,8 +168,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Byte"));
+					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
 	public static byte ToByte(float value)
@@ -231,8 +223,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_InvalidBase"));
+					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
 
@@ -246,8 +237,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_SByte"));
+					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
 	public static sbyte ToSByte(sbyte value)	{ return value; }
@@ -259,8 +249,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_SByte"));
+					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
 	public static sbyte ToSByte(ushort value)
@@ -271,8 +260,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_SByte"));
+					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
 	public static sbyte ToSByte(int value)
@@ -283,8 +271,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_SByte"));
+					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
 	public static sbyte ToSByte(uint value)
@@ -295,8 +282,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_SByte"));
+					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
 	public static sbyte ToSByte(long value)
@@ -307,8 +293,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_SByte"));
+					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
 	public static sbyte ToSByte(ulong value)
@@ -319,8 +304,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_SByte"));
+					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
 	public static sbyte ToSByte(char value)
@@ -331,8 +315,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_SByte"));
+					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
 	public static sbyte ToSByte(float value)
@@ -387,8 +370,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_InvalidBase"));
+					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
 
@@ -411,8 +393,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int16"));
+					throw new OverflowException(_("Overflow_Int16"));
 				}
 			}
 	public static short ToInt16(int value)
@@ -423,8 +404,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int16"));
+					throw new OverflowException(_("Overflow_Int16"));
 				}
 			}
 	public static short ToInt16(uint value)
@@ -435,8 +415,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int16"));
+					throw new OverflowException(_("Overflow_Int16"));
 				}
 			}
 	public static short ToInt16(long value)
@@ -447,8 +426,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int16"));
+					throw new OverflowException(_("Overflow_Int16"));
 				}
 			}
 	public static short ToInt16(ulong value)
@@ -459,8 +437,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int16"));
+					throw new OverflowException(_("Overflow_Int16"));
 				}
 			}
 	public static short ToInt16(char value)
@@ -471,8 +448,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int16"));
+					throw new OverflowException(_("Overflow_Int16"));
 				}
 			}
 	public static short ToInt16(float value)
@@ -527,8 +503,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_InvalidBase"));
+					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
 
@@ -549,8 +524,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt16"));
+					throw new OverflowException(_("Overflow_UInt16"));
 				}
 			}
 	public static ushort ToUInt16(short value)
@@ -561,8 +535,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt16"));
+					throw new OverflowException(_("Overflow_UInt16"));
 				}
 			}
 	public static ushort ToUInt16(ushort value) { return value; }
@@ -574,8 +547,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt16"));
+					throw new OverflowException(_("Overflow_UInt16"));
 				}
 			}
 	public static ushort ToUInt16(uint value)
@@ -586,8 +558,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt16"));
+					throw new OverflowException(_("Overflow_UInt16"));
 				}
 			}
 	public static ushort ToUInt16(long value)
@@ -598,8 +569,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt16"));
+					throw new OverflowException(_("Overflow_UInt16"));
 				}
 			}
 	public static ushort ToUInt16(ulong value)
@@ -610,8 +580,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt16"));
+					throw new OverflowException(_("Overflow_UInt16"));
 				}
 			}
 	public static ushort ToUInt16(char value)
@@ -670,8 +639,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_InvalidBase"));
+					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
 
@@ -702,8 +670,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int32"));
+					throw new OverflowException(_("Overflow_Int32"));
 				}
 			}
 	public static int ToInt32(long value)
@@ -714,8 +681,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int32"));
+					throw new OverflowException(_("Overflow_Int32"));
 				}
 			}
 	public static int ToInt32(ulong value)
@@ -726,8 +692,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int32"));
+					throw new OverflowException(_("Overflow_Int32"));
 				}
 			}
 	public static int ToInt32(char value)
@@ -750,8 +715,7 @@ public sealed class Convert
 				{
 					// Convert the runtime exception into
 					// one with a localized error string.
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int32"));
+					throw new OverflowException(_("Overflow_Int32"));
 				}
 			}
 	public static int ToInt32(Decimal value)
@@ -797,8 +761,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_InvalidBase"));
+					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
 
@@ -816,8 +779,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt32"));
+					throw new OverflowException(_("Overflow_UInt32"));
 				}
 			}
 	public static uint ToUInt32(short value)
@@ -828,8 +790,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt32"));
+					throw new OverflowException(_("Overflow_UInt32"));
 				}
 			}
 	public static uint ToUInt32(ushort value)
@@ -844,8 +805,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt32"));
+					throw new OverflowException(_("Overflow_UInt32"));
 				}
 			}
 	public static uint ToUInt32(uint value) { return value; }
@@ -857,8 +817,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt32"));
+					throw new OverflowException(_("Overflow_UInt32"));
 				}
 			}
 	public static uint ToUInt32(ulong value)
@@ -869,8 +828,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt32"));
+					throw new OverflowException(_("Overflow_UInt32"));
 				}
 			}
 	public static uint ToUInt32(char value)
@@ -893,8 +851,7 @@ public sealed class Convert
 				{
 					// Convert the runtime exception into
 					// one with a localized error string.
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt32"));
+					throw new OverflowException(_("Overflow_UInt32"));
 				}
 			}
 	public static uint ToUInt32(Decimal value)
@@ -940,8 +897,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_InvalidBase"));
+					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
 
@@ -980,8 +936,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int64"));
+					throw new OverflowException(_("Overflow_Int64"));
 				}
 			}
 	public static long ToInt64(char value)
@@ -1004,8 +959,7 @@ public sealed class Convert
 				{
 					// Convert the runtime exception into
 					// one with a localized error string.
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int64"));
+					throw new OverflowException(_("Overflow_Int64"));
 				}
 			}
 	public static long ToInt64(Decimal value)
@@ -1051,8 +1005,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_InvalidBase"));
+					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
 
@@ -1070,8 +1023,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt64"));
+					throw new OverflowException(_("Overflow_UInt64"));
 				}
 			}
 	public static ulong ToUInt64(short value)
@@ -1082,8 +1034,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt64"));
+					throw new OverflowException(_("Overflow_UInt64"));
 				}
 			}
 	public static ulong ToUInt64(ushort value)
@@ -1098,8 +1049,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt64"));
+					throw new OverflowException(_("Overflow_UInt64"));
 				}
 			}
 	public static ulong ToUInt64(uint value)
@@ -1114,8 +1064,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt64"));
+					throw new OverflowException(_("Overflow_UInt64"));
 				}
 			}
 	public static ulong ToUInt64(ulong value) { return value; }
@@ -1139,8 +1088,7 @@ public sealed class Convert
 				{
 					// Convert the runtime exception into
 					// one with a localized error string.
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt64"));
+					throw new OverflowException(_("Overflow_UInt64"));
 				}
 			}
 	public static ulong ToUInt64(Decimal value)
@@ -1186,8 +1134,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_InvalidBase"));
+					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
 
@@ -1204,8 +1151,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Char"));
+					throw new OverflowException(_("Overflow_Char"));
 				}
 			}
 	public static char ToChar(short value)
@@ -1216,8 +1162,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Char"));
+					throw new OverflowException(_("Overflow_Char"));
 				}
 			}
 	public static char ToChar(ushort value)
@@ -1232,8 +1177,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Char"));
+					throw new OverflowException(_("Overflow_Char"));
 				}
 			}
 	public static char ToChar(uint value)
@@ -1244,8 +1188,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Char"));
+					throw new OverflowException(_("Overflow_Char"));
 				}
 			}
 	public static char ToChar(long value)
@@ -1256,8 +1199,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Char"));
+					throw new OverflowException(_("Overflow_Char"));
 				}
 			}
 	public static char ToChar(ulong value)
@@ -1268,8 +1210,7 @@ public sealed class Convert
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Char"));
+					throw new OverflowException(_("Overflow_Char"));
 				}
 			}
 	public static char ToChar(char value) { return value; }
@@ -1317,9 +1258,7 @@ public sealed class Convert
 					}
 					else
 					{
-						throw new FormatException
-							(Environment.GetResourceString
-								("Format_NeedSingleChar"));
+						throw new FormatException(_("Format_NeedSingleChar"));
 					}
 				}
 				else
@@ -1755,8 +1694,7 @@ public sealed class Convert
 					else
 					{
 						throw new InvalidCastException
-							(Environment.GetResourceString
-								("InvalidCast_IConvertible"));
+							(_("InvalidCast_IConvertible"));
 					}
 				}
 				else
@@ -1774,8 +1712,7 @@ public sealed class Convert
 						case TypeCode.Empty:
 						{
 							throw new InvalidCastException
-								(Environment.GetResourceString
-									("InvalidCast_Empty"));
+								(_("InvalidCast_Empty"));
 						}
 						/* Not reached */
 
@@ -1788,8 +1725,7 @@ public sealed class Convert
 						case TypeCode.DBNull:
 						{
 							throw new InvalidCastException
-								(Environment.GetResourceString
-									("InvalidCast_DBNull"));
+								(_("InvalidCast_DBNull"));
 						}
 						/* Not reached */
 
@@ -1886,8 +1822,7 @@ public sealed class Convert
 						default:
 						{
 							throw new ArgumentException
-								(Environment.GetResourceString
-									("Arg_UnknownTypeCode"));
+								(_("Arg_UnknownTypeCode"));
 						}
 						/* Not reached */
 					}
@@ -1895,8 +1830,7 @@ public sealed class Convert
 				else if(value != null || typeCode != TypeCode.Empty)
 				{
 					throw new InvalidCastException
-						(Environment.GetResourceString
-							("InvalidCast_IConvertible"));
+						(_("InvalidCast_IConvertible"));
 				}
 				else
 				{
@@ -1982,21 +1916,18 @@ public sealed class Convert
 					else if(targetType == ConvertTypes[(int)TypeCode.Empty])
 					{
 						throw new InvalidCastException
-							(Environment.GetResourceString
-								("InvalidCast_Empty"));
+							(_("InvalidCast_Empty"));
 					}
 					else if(targetType == ConvertTypes[(int)TypeCode.DBNull])
 					{
 						throw new InvalidCastException
-							(Environment.GetResourceString
-								("InvalidCast_DBNull"));
+							(_("InvalidCast_DBNull"));
 					}
 					else
 					{
 						throw new InvalidCastException
 							(String.Format
-								(Environment.GetResourceString
-									("InvalidCast_FromTo"),
+								(_("InvalidCast_FromTo"),
 		 					     obj.GetType().FullName, targetType.FullName));
 					}
 				}

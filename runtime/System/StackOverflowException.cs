@@ -27,7 +27,7 @@ public sealed class StackOverflowException : SystemException
 
 	// Constructors.
 	public StackOverflowException()
-		: base(Environment.GetResourceString("Exception_StackOverflow")) {}
+		: base(_("Exception_StackOverflow")) {}
 	public StackOverflowException(String msg)
 		: base(msg) {}
 	public StackOverflowException(String msg, Exception inner)
@@ -37,7 +37,7 @@ public sealed class StackOverflowException : SystemException
 	// to make the primary "StackOverflowException" object,
 	// that has no stack trace associated with it.
 	internal StackOverflowException(int dummy)
-		: base(Environment.GetResourceString("Exception_StackOverflow"),
+		: base(_("Exception_StackOverflow"),
 			   null, false) {}
 
 	// Get the default message to use for this exception type.
@@ -45,8 +45,7 @@ public sealed class StackOverflowException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_StackOverflow");
+					return _("Exception_StackOverflow");
 				}
 			}
 

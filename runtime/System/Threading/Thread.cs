@@ -94,8 +94,7 @@ public sealed class Thread
 				{
 					throw new ArgumentOutOfRangeException
 						("millisecondsTimeout",
-						 Environment.GetResourceString
-						 		("ArgRange_NonNegOrNegOne"));
+						 _("ArgRange_NonNegOrNegOne"));
 				}
 				return InternalJoin(millisecondsTimeout);
 			}
@@ -125,8 +124,7 @@ public sealed class Thread
 				{
 					throw new ArgumentOutOfRangeException
 						("millisecondsTimeout",
-						 Environment.GetResourceString
-						 		("ArgRange_NonNegOrNegOne"));
+						 _("ArgRange_NonNegOrNegOne"));
 				}
 				InternalSleep(millisecondsTimeout);
 			}
@@ -265,8 +263,7 @@ public sealed class Thread
 						if(name != null)
 						{
 							throw new InvalidOperationException
-								(Environment.GetResourceString
-									("Invalid_WriteOnce"));
+								(_("Invalid_WriteOnce"));
 						}
 						name = value;
 					}

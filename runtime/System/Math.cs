@@ -43,8 +43,7 @@ public sealed class Math
 				else
 				{
 					throw new OverflowException
-						(Environment.GetResourceString
-							("Overflow_NegateTwosCompNum"));
+						(_("Overflow_NegateTwosCompNum"));
 				}
 			}
 	public static short Abs(short value)
@@ -60,8 +59,7 @@ public sealed class Math
 				else
 				{
 					throw new OverflowException
-						(Environment.GetResourceString
-							("Overflow_NegateTwosCompNum"));
+						(_("Overflow_NegateTwosCompNum"));
 				}
 			}
 	public static int Abs(int value)
@@ -77,8 +75,7 @@ public sealed class Math
 				else
 				{
 					throw new OverflowException
-						(Environment.GetResourceString
-							("Overflow_NegateTwosCompNum"));
+						(_("Overflow_NegateTwosCompNum"));
 				}
 			}
 	public static long Abs(long value)
@@ -94,8 +91,7 @@ public sealed class Math
 				else
 				{
 					throw new OverflowException
-						(Environment.GetResourceString
-							("Overflow_NegateTwosCompNum"));
+						(_("Overflow_NegateTwosCompNum"));
 				}
 			}
 	public static float Abs(float value)
@@ -247,9 +243,7 @@ public sealed class Math
 				if(digits < 0 || digits > 15)
 				{
 					throw new ArgumentOutOfRangeException
-						("digits",
-						 Environment.GetResourceString
-						 	("ArgRange_RoundDigits"));
+						("digits", _("ArgRange_RoundDigits"));
 				}
 				return InternalRound(value, digits);
 			}
@@ -327,8 +321,7 @@ public sealed class Math
 			{
 				if(Single.IsNaN(value))
 				{
-					throw new ArithmeticException
-						(Environment.GetResourceString("Arg_NotANumber"));
+					throw new ArithmeticException(_("Arg_NotANumber"));
 				}
 				if(value > 0)
 				{
@@ -347,8 +340,7 @@ public sealed class Math
 			{
 				if(Double.IsNaN(value))
 				{
-					throw new ArithmeticException
-						(Environment.GetResourceString("Arg_NotANumber"));
+					throw new ArithmeticException(_("Arg_NotANumber"));
 				}
 				if(value > 0)
 				{

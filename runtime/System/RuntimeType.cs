@@ -48,8 +48,7 @@ internal class RuntimeType : Type, ICloneable
 				}
 				else
 				{
-					throw new NotSupportedException
-						(Environment.GetResourceString("NotSupp_NotArrayType"));
+					throw new NotSupportedException(_("NotSupp_NotArrayType"));
 				}
 			}
 	[MethodImpl(MethodImplOptions.InternalCall)]

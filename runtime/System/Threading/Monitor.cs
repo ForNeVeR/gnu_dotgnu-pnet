@@ -50,8 +50,7 @@ public sealed class Monitor
 				{
 					throw new ArgumentOutOfRangeException
 						("millisecondsTimeout",
-						 Environment.GetResourceString
-						 		("ArgRange_NonNegOrNegOne"));
+						 _("ArgRange_NonNegOrNegOne"));
 				}
 				return InternalTryEnter(obj, millisecondsTimeout);
 			}
@@ -95,8 +94,7 @@ public sealed class Monitor
 				{
 					throw new ArgumentOutOfRangeException
 						("millisecondsTimeout",
-						 Environment.GetResourceString
-						 		("ArgRange_NonNegOrNegOne"));
+						 _("ArgRange_NonNegOrNegOne"));
 				}
 				return InternalWait(obj, millisecondsTimeout);
 			}
@@ -129,9 +127,7 @@ public sealed class Monitor
 				if(ms < -1L || ms > (long)Int32.MaxValue)
 				{
 					throw new ArgumentOutOfRangeException
-						("timeout",
-						 Environment.GetResourceString
-						 		("ArgRange_NonNegOrNegOne"));
+						("timeout", _("ArgRange_NonNegOrNegOne"));
 				}
 				return unchecked((int)ms);
 			}

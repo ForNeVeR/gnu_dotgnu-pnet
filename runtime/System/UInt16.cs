@@ -94,8 +94,7 @@ public struct UInt16 : IComparable, IFormattable, IConvertible
 				{
 					if(!(value is UInt16))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString("Arg_MustBeUInt16"));
+						throw new ArgumentException(_("Arg_MustBeUInt16"));
 					}
 					return ((int)value__) - ((int)((UInt16)value).value__);
 				}
@@ -166,8 +165,7 @@ public struct UInt16 : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "UInt16", "DateTime"));
+						(_("InvalidCast_FromTo"), "UInt16", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

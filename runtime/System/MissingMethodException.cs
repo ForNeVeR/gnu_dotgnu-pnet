@@ -27,7 +27,7 @@ public class MissingMethodException : MissingMemberException
 
 	// Constructors.
 	public MissingMethodException()
-		: base(Environment.GetResourceString("Exception_MethodMissing")) {}
+		: base(_("Exception_MethodMissing")) {}
 	public MissingMethodException(String msg)
 		: base(msg) {}
 	public MissingMethodException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class MissingMethodException : MissingMemberException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_MethodMissing");
+					return _("Exception_MethodMissing");
 				}
 			}
 

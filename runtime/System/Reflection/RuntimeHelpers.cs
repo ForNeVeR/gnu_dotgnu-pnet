@@ -44,14 +44,12 @@ internal sealed class RuntimeHelpers
 				}
 				if((runtimeType = (type as RuntimeType)) == null)
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_MustBeType"));
+					throw new ArgumentException(_("Arg_MustBeType"));
 				}
 				typePrivate = runtimeType.privateData;
 				if(typePrivate == (IntPtr)0)
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_MustBeType"));
+					throw new ArgumentException(_("Arg_MustBeType"));
 				}
 				return GetCustomAttributes(privateData, typePrivate, inherit);
 			}
@@ -71,14 +69,12 @@ internal sealed class RuntimeHelpers
 				}
 				if((runtimeType = (type as RuntimeType)) == null)
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_MustBeType"));
+					throw new ArgumentException(_("Arg_MustBeType"));
 				}
 				typePrivate = runtimeType.privateData;
 				if(typePrivate == (IntPtr)0)
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_MustBeType"));
+					throw new ArgumentException(_("Arg_MustBeType"));
 				}
 				return IsDefined(privateData, typePrivate, inherit);
 			}

@@ -27,7 +27,7 @@ public class SynchronizationLockException : SystemException
 
 	// Constructors.
 	public SynchronizationLockException()
-		: base(Environment.GetResourceString("Exception_SyncLock")) {}
+		: base(_("Exception_SyncLock")) {}
 	public SynchronizationLockException(String msg)
 		: base(msg) {}
 	public SynchronizationLockException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class SynchronizationLockException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_SyncLock");
+					return _("Exception_SyncLock");
 				}
 			}
 

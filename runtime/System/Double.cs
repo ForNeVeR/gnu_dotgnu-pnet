@@ -173,8 +173,7 @@ public struct Double : IComparable, IFormattable, IConvertible
 					}
 					else
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString("Arg_MustBeDouble"));
+						throw new ArgumentException(_("Arg_MustBeDouble"));
 					}
 				}
 				else
@@ -212,8 +211,7 @@ public struct Double : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Double", "Char"));
+						(_("InvalidCast_FromTo"), "Double", "Char"));
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
@@ -247,8 +245,7 @@ public struct Double : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Double", "DateTime"));
+						(_("InvalidCast_FromTo"), "Double", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

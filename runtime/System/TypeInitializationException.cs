@@ -28,7 +28,7 @@ public sealed class TypeInitializationException : SystemException
 
 	// Constructors.
 	private TypeInitializationException()
-		: base(Environment.GetResourceString("Exception_TypeInit")) {}
+		: base(_("Exception_TypeInit")) {}
 	private TypeInitializationException(String msg)
 		: base(msg) {}
 	private TypeInitializationException(String typeName, Exception inner)
@@ -59,13 +59,11 @@ public sealed class TypeInitializationException : SystemException
 					if(typeName != null)
 					{
 						return String.Format
-							(Environment.GetResourceString
-								("Exception_TypeInitName"), typeName);
+							(_("Exception_TypeInitName"), typeName);
 					}
 					else
 					{
-						return Environment.GetResourceString
-							("Exception_TypeInit");
+						return _("Exception_TypeInit");
 					}
 				}
 			}

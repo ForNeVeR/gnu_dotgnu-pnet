@@ -40,16 +40,12 @@ internal sealed class DefaultEncoding : Encoding
 				if(index < 0 || index > chars.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("index",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("index", _("ArgRange_Array"));
 				}
 				if(count < 0 || count > (chars.Length - index))
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("count", _("ArgRange_Array"));
 				}
 				return InternalGetByteCount(chars, index, count);
 			}
@@ -79,23 +75,17 @@ internal sealed class DefaultEncoding : Encoding
 				if(charIndex < 0 || charIndex > chars.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("charIndex",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("charIndex", _("ArgRange_Array"));
 				}
 				if(charCount < 0 || charCount > (chars.Length - charIndex))
 				{
 					throw new ArgumentOutOfRangeException
-						("charCount",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("charCount", _("ArgRange_Array"));
 				}
 				if(byteIndex < 0 || byteIndex > bytes.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("byteIndex",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("byteIndex", _("ArgRange_Array"));
 				}
 				int result = InternalGetBytes(chars, charIndex, charCount,
 											  bytes, byteIndex);
@@ -103,8 +93,7 @@ internal sealed class DefaultEncoding : Encoding
 				{
 					return result;
 				}
-				throw new ArgumentException
-					(Environment.GetResourceString("Arg_InsufficientSpace"));
+				throw new ArgumentException(_("Arg_InsufficientSpace"));
 			}
 
 	// Convenience wrappers for "GetBytes".
@@ -122,23 +111,17 @@ internal sealed class DefaultEncoding : Encoding
 				if(charIndex < 0 || charIndex > s.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("charIndex",
-						 Environment.GetResourceString
-						 	("ArgRange_StringIndex"));
+						("charIndex", _("ArgRange_StringIndex"));
 				}
 				if(charCount < 0 || charCount > (s.Length - charIndex))
 				{
 					throw new ArgumentOutOfRangeException
-						("charCount",
-						 Environment.GetResourceString
-						 	("ArgRange_StringRange"));
+						("charCount", _("ArgRange_StringRange"));
 				}
 				if(byteIndex < 0 || byteIndex > bytes.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("byteIndex",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("byteIndex", _("ArgRange_Array"));
 				}
 				int result = InternalGetBytes(s, charIndex, charCount,
 											  bytes, byteIndex);
@@ -146,8 +129,7 @@ internal sealed class DefaultEncoding : Encoding
 				{
 					return result;
 				}
-				throw new ArgumentException
-					(Environment.GetResourceString("Arg_InsufficientSpace"));
+				throw new ArgumentException(_("Arg_InsufficientSpace"));
 			}
 	public override byte[] GetBytes(String s)
 			{
@@ -170,16 +152,12 @@ internal sealed class DefaultEncoding : Encoding
 				if(index < 0 || index > bytes.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("index",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("index", _("ArgRange_Array"));
 				}
 				if(count < 0 || count > (bytes.Length - index))
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("count", _("ArgRange_Array"));
 				}
 				return InternalGetCharCount(bytes, index, count);
 			}
@@ -199,23 +177,17 @@ internal sealed class DefaultEncoding : Encoding
 				if(byteIndex < 0 || byteIndex > bytes.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("byteIndex",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("byteIndex", _("ArgRange_Array"));
 				}
 				if(byteCount < 0 || byteCount > (bytes.Length - byteIndex))
 				{
 					throw new ArgumentOutOfRangeException
-						("byteCount",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("byteCount", _("ArgRange_Array"));
 				}
 				if(charIndex < 0 || charIndex > chars.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("charIndex",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("charIndex", _("ArgRange_Array"));
 				}
 				int result = InternalGetChars(bytes, byteIndex, byteCount,
 											  chars, charIndex);
@@ -223,8 +195,7 @@ internal sealed class DefaultEncoding : Encoding
 				{
 					return result;
 				}
-				throw new ArgumentException
-					(Environment.GetResourceString("Arg_InsufficientSpace"));
+				throw new ArgumentException(_("Arg_InsufficientSpace"));
 			}
 
 	// Get the maximum number of bytes needed to encode a
@@ -234,9 +205,7 @@ internal sealed class DefaultEncoding : Encoding
 				if(charCount < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("charCount",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("charCount", _("ArgRange_NonNegative"));
 				}
 				return InternalGetMaxByteCount(charCount);
 			}
@@ -248,9 +217,7 @@ internal sealed class DefaultEncoding : Encoding
 				if(byteCount < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("byteCount",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("byteCount", _("ArgRange_NonNegative"));
 				}
 				return InternalGetMaxCharCount(byteCount);
 			}
@@ -265,16 +232,12 @@ internal sealed class DefaultEncoding : Encoding
 				if(index < 0 || index > bytes.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("index",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("index", _("ArgRange_Array"));
 				}
 				if(count < 0 || count > (bytes.Length - index))
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString
-						 	("ArgRange_Array"));
+						("count", _("ArgRange_Array"));
 				}
 				return InternalGetString(bytes, index, count);
 			}

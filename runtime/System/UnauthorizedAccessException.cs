@@ -27,7 +27,7 @@ public class UnauthorizedAccessException : SystemException
 
 	// Constructors.
 	public UnauthorizedAccessException()
-		: base(Environment.GetResourceString("Exception_Unauthorized")) {}
+		: base(_("Exception_Unauthorized")) {}
 	public UnauthorizedAccessException(String msg)
 		: base(msg) {}
 	public UnauthorizedAccessException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class UnauthorizedAccessException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Unauthorized");
+					return _("Exception_Unauthorized");
 				}
 			}
 

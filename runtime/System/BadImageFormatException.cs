@@ -30,7 +30,7 @@ public class BadImageFormatException : SystemException
 
 	// Constructors.
 	public BadImageFormatException()
-		: base(Environment.GetResourceString("Exception_BadImage")) {}
+		: base(_("Exception_BadImage")) {}
 	public BadImageFormatException(String msg)
 		: base(msg) {}
 	public BadImageFormatException(String msg, Exception inner)
@@ -76,8 +76,7 @@ public class BadImageFormatException : SystemException
 					if(fileName != null)
 					{
 						return String.Format
-							   		(Environment.GetResourceString
-										("Exception_Filename"), fileName);
+							   		(_("Exception_Filename"), fileName);
 					}
 					else
 					{
@@ -91,8 +90,7 @@ public class BadImageFormatException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_BadImage");
+					return _("Exception_BadImage");
 				}
 			}
 

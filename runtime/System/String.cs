@@ -122,39 +122,29 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				if(indexA < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("indexA",
-				 		 Environment.GetResourceString
-						 		("ArgRange_StringIndex"));
+						("indexA", _("ArgRange_StringIndex"));
 				}
 				if(indexB < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("indexB",
-				 		 Environment.GetResourceString
-						 		("ArgRange_StringIndex"));
+						("indexB", _("ArgRange_StringIndex"));
 				}
 				if(length < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("length",
-		 				 Environment.GetResourceString
-						 		("ArgRange_StringRange"));
+						("length", _("ArgRange_StringRange"));
 				}
 				if(strA != null)
 				{
 					if(indexA >= strA.Length)
 					{
 						throw new ArgumentOutOfRangeException
-							("indexA",
-					 		 Environment.GetResourceString
-							 		("ArgRange_StringIndex"));
+							("indexA", _("ArgRange_StringIndex"));
 					}
 					if(length > (strA.Length - indexA))
 					{
 						throw new ArgumentOutOfRangeException
-							("length",
-			 				 Environment.GetResourceString
-							 		("ArgRange_StringRange"));
+							("length", _("ArgRange_StringRange"));
 					}
 				}
 				else
@@ -162,16 +152,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 					if(indexA > 0)
 					{
 						throw new ArgumentOutOfRangeException
-							("indexA",
-					 		 Environment.GetResourceString
-							 		("ArgRange_StringIndex"));
+							("indexA", _("ArgRange_StringIndex"));
 					}
 					if(length > 0)
 					{
 						throw new ArgumentOutOfRangeException
-							("length",
-					 		 Environment.GetResourceString
-							 		("ArgRange_StringRange"));
+							("length", _("ArgRange_StringRange"));
 					}
 				}
 				if(strB != null)
@@ -179,16 +165,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 					if(indexB >= strB.Length)
 					{
 						throw new ArgumentOutOfRangeException
-							("indexB",
-					 		 Environment.GetResourceString
-							 		("ArgRange_StringIndex"));
+							("indexB", _("ArgRange_StringIndex"));
 					}
 					if(length > (strB.Length - indexB))
 					{
 						throw new ArgumentOutOfRangeException
-							("length",
-			 				 Environment.GetResourceString
-							 		("ArgRange_StringRange"));
+							("length", _("ArgRange_StringRange"));
 					}
 				}
 				else
@@ -196,16 +178,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 					if(indexB > 0)
 					{
 						throw new ArgumentOutOfRangeException
-							("indexB",
-					 		 Environment.GetResourceString
-							 		("ArgRange_StringIndex"));
+							("indexB", _("ArgRange_StringIndex"));
 					}
 					if(length > 0)
 					{
 						throw new ArgumentOutOfRangeException
-							("length",
-					 		 Environment.GetResourceString
-							 		("ArgRange_StringRange"));
+							("length", _("ArgRange_StringRange"));
 					}
 				}
 			}
@@ -277,8 +255,7 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 			{
 				if(!(value is String))
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_MustBeString"));
+					throw new ArgumentException(_("Arg_MustBeString"));
 				}
 				else if(value != null)
 				{
@@ -583,22 +560,19 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				if(sourceIndex < 0 || sourceIndex > length)
 				{
 					throw new ArgumentOutOfRangeException
-						("sourceIndex",
-				 		Environment.GetResourceString("ArgRange_StringIndex"));
+						("sourceIndex", _("ArgRange_StringIndex"));
 				}
 				else if(destinationIndex < 0 ||
 						destinationIndex > destination.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("destinationIndex",
-				 		Environment.GetResourceString("ArgRange_Array"));
+						("destinationIndex", _("ArgRange_Array"));
 				}
 				else if((length - sourceIndex) < count ||
 						(destination.Length - destinationIndex) < count)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-				 		Environment.GetResourceString("ArgRange_StringRange"));
+						("count", _("ArgRange_StringRange"));
 				}
 				else
 				{
@@ -733,14 +707,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				if(startIndex < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("startIndex",
-						 Environment.GetResourceString("ArgRange_StringIndex"));
+						("startIndex", _("ArgRange_StringIndex"));
 				}
 				if(count < 0 || (length - startIndex) < count)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString("ArgRange_StringRange"));
+						("count", _("ArgRange_StringRange"));
 				}
 				valueLen = value.length;
 				while((startIndex + valueLen) <= (startIndex + count))
@@ -783,8 +755,7 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				if(startIndex < 0 || startIndex > length)
 				{
 					throw new ArgumentOutOfRangeException
-						("startIndex",
-						 Environment.GetResourceString("ArgRange_StringIndex"));
+						("startIndex", _("ArgRange_StringIndex"));
 				}
 				valueLen = value.Length;
 				result = FastAllocateString(length + valueLen);
@@ -832,14 +803,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				else if(startIndex < 0 || startIndex > value.Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("startIndex",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("startIndex", _("ArgRange_Array"));
 				}
 				else if((value.Length - startIndex) < count)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("count", _("ArgRange_Array"));
 				}
 
 				// Determine the total length of the result string.
@@ -920,14 +889,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				if(startIndex < 0 || startIndex >= length)
 				{
 					throw new ArgumentOutOfRangeException
-						("startIndex",
-						 Environment.GetResourceString("ArgRange_StringIndex"));
+						("startIndex", _("ArgRange_StringIndex"));
 				}
 				if(count < 0 || (startIndex - count) < -1)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString("ArgRange_StringRange"));
+						("count", _("ArgRange_StringRange"));
 				}
 				valueLen = value.length;
 				while((startIndex - valueLen + 1) >= (startIndex - count + 1))
@@ -973,8 +940,7 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				String result;
 				if(totalWidth < 0)
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("ArgRange_NonNegative"));
+					throw new ArgumentException(_("ArgRange_NonNegative"));
 				}
 				else if(totalWidth <= length)
 				{
@@ -1003,8 +969,7 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				String result;
 				if(totalWidth < 0)
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("ArgRange_NonNegative"));
+					throw new ArgumentException(_("ArgRange_NonNegative"));
 				}
 				else if(totalWidth <= length)
 				{
@@ -1030,14 +995,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				if(startIndex < 0 || startIndex > length)
 				{
 					throw new ArgumentOutOfRangeException
-						("startIndex",
-						 Environment.GetResourceString("ArgRange_StringIndex"));
+						("startIndex", _("ArgRange_StringIndex"));
 				}
 				else if((length - startIndex) < count)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString("ArgRange_StringRange"));
+						("count", _("ArgRange_StringRange"));
 				}
 				result = FastAllocateString(length - count);
 				FillSubstring(result, 0, this, 0, startIndex);
@@ -1072,8 +1035,7 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				if(count < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("count",
-						 Environment.GetResourceString("ArgRange_NonNegative"));
+						("count", _("ArgRange_NonNegative"));
 				}
 				else if(count == 0)
 				{
@@ -1161,14 +1123,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				if(startIndex < 0 || startIndex > Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("startIndex",
-						 Environment.GetResourceString("ArgRange_StringIndex"));
+						("startIndex", _("ArgRange_StringIndex"));
 				}
 				else if((Length - startIndex) < length)
 				{
 					throw new ArgumentOutOfRangeException
-						("length",
-						 Environment.GetResourceString("ArgRange_StringRange"));
+						("length", _("ArgRange_StringRange"));
 				}
 				if(length == 0)
 				{
@@ -1193,14 +1153,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				if(startIndex < 0 || startIndex > Length)
 				{
 					throw new ArgumentOutOfRangeException
-						("startIndex",
-						 Environment.GetResourceString("ArgRange_StringIndex"));
+						("startIndex", _("ArgRange_StringIndex"));
 				}
 				else if((Length - startIndex) < length)
 				{
 					throw new ArgumentOutOfRangeException
-						("length",
-						 Environment.GetResourceString("ArgRange_StringRange"));
+						("length", _("ArgRange_StringRange"));
 				}
 				result = new char [length];
 				InternalCopyTo(0, result, 0, length);

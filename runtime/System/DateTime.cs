@@ -90,8 +90,7 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 						}
 					}
 				}
-				throw new ArgumentOutOfRangeException
-					(Environment.GetResourceString("ArgRange_YMD"));
+				throw new ArgumentOutOfRangeException(_("ArgRange_YMD"));
 			}
 
 	// Convert a time into a number of ticks.
@@ -107,8 +106,7 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 									* 10000000L;
 					}
 				}
-				throw new ArgumentOutOfRangeException
-					(Environment.GetResourceString("ArgRange_HMS"));
+				throw new ArgumentOutOfRangeException(_("ArgRange_HMS"));
 			}
 
 	// Constructors.
@@ -121,9 +119,7 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 				else
 				{
 					throw new ArgumentOutOfRangeException
-						("ticks",
-						 Environment.GetResourceString
-						 	("ArgRange_DateTimeTicks"));
+						("ticks", _("ArgRange_DateTimeTicks"));
 				}
 			}
 	public DateTime(int year, int month, int day)
@@ -146,9 +142,7 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 							  ((long)millisecond) * 10000L;
 					if(value__ < 0 || value__ > maxTicks)
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString
-								("Arg_DateTimeRange"));
+						throw new ArgumentException(_("Arg_DateTimeRange"));
 					}
 				}
 			}
@@ -224,9 +218,7 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 				{
 					if(!(value is DateTime))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString
-								("Arg_MustBeDateTime"));
+						throw new ArgumentException(_("Arg_MustBeDateTime"));
 					}
 					long value2 = ((DateTime)value).value__;
 					if(value__ < value2)
@@ -261,92 +253,79 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "Boolean"));
+						(_("InvalidCast_FromTo"), "DateTime", "Boolean"));
 			}
 	Byte IConvertible.ToByte(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "Byte"));
+						(_("InvalidCast_FromTo"), "DateTime", "Byte"));
 			}
 	SByte IConvertible.ToSByte(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "SByte"));
+						(_("InvalidCast_FromTo"), "DateTime", "SByte"));
 			}
 	Int16 IConvertible.ToInt16(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "Int16"));
+						(_("InvalidCast_FromTo"), "DateTime", "Int16"));
 			}
 	UInt16 IConvertible.ToUInt16(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "UInt16"));
+						(_("InvalidCast_FromTo"), "DateTime", "UInt16"));
 			}
 	Int32 IConvertible.ToInt32(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "Int32"));
+						(_("InvalidCast_FromTo"), "DateTime", "Int32"));
 			}
 	UInt32 IConvertible.ToUInt32(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "UInt32"));
+						(_("InvalidCast_FromTo"), "DateTime", "UInt32"));
 			}
 	Int64 IConvertible.ToInt64(IFormatProvider provider) 
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "Int64"));
+						(_("InvalidCast_FromTo"), "DateTime", "Int64"));
 			}
 	UInt64 IConvertible.ToUInt64(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "UInt64"));
+						(_("InvalidCast_FromTo"), "DateTime", "UInt64"));
 			}
 	Char IConvertible.ToChar(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "Char"));
+						(_("InvalidCast_FromTo"), "DateTime", "Char"));
 			}
 	Single IConvertible.ToSingle(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "Single"));
+						(_("InvalidCast_FromTo"), "DateTime", "Single"));
 			}
 	Double IConvertible.ToDouble(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "Double"));
+						(_("InvalidCast_FromTo"), "DateTime", "Double"));
 			}
 	Decimal IConvertible.ToDecimal(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "DateTime", "Decimal"));
+						(_("InvalidCast_FromTo"), "DateTime", "Decimal"));
 			}
 	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{

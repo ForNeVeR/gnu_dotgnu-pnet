@@ -98,8 +98,7 @@ public struct UInt64 : IComparable, IFormattable, IConvertible
 				{
 					if(!(value is UInt64))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString("Arg_MustBeUInt64"));
+						throw new ArgumentException(_("Arg_MustBeUInt64"));
 					}
 					ulong value2 = ((UInt64)value).value__;
 					if(value__ < value2)
@@ -182,8 +181,7 @@ public struct UInt64 : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "UInt64", "DateTime"));
+						(_("InvalidCast_FromTo"), "UInt64", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

@@ -102,8 +102,7 @@ public struct Int32 : IComparable, IFormattable, IConvertible
 				{
 					if(!(value is Int32))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString("Arg_MustBeInt32"));
+						throw new ArgumentException(_("Arg_MustBeInt32"));
 					}
 					int temp = ((Int32)value).value__;
 					if(value__ < temp)
@@ -186,8 +185,7 @@ public struct Int32 : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Int32", "DateTime"));
+						(_("InvalidCast_FromTo"), "Int32", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

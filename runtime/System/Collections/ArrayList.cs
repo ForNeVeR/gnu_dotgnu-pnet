@@ -148,8 +148,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0 || index > count)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(count >= store.Length)
 		{
@@ -177,8 +176,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0 || index > count)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		Delete(1, index);
 		++generation;
@@ -204,8 +202,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			if(index < 0 || index >= count)
 			{
 				throw new ArgumentOutOfRangeException
-					("index",
-					 Environment.GetResourceString("ArgRange_Array"));
+					("index", _("ArgRange_Array"));
 			}
 			return store[index];
 		}
@@ -214,8 +211,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			if(index < 0 || index >= count)
 			{
 				throw new ArgumentOutOfRangeException
-					("index",
-					 Environment.GetResourceString("ArgRange_Array"));
+					("index", _("ArgRange_Array"));
 			}
 			store[index] = value;
 			++generation;
@@ -256,8 +252,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0 || index > count)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		cCount = c.Count;
 		if((count + cCount) > store.Length)
@@ -283,19 +278,16 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(count < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("count",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("count", _("ArgRange_Array"));
 		}
 		if((this.count - index) < count)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		Delete(count, index);
 		++generation;
@@ -316,19 +308,16 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(count < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("count",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("count", _("ArgRange_Array"));
 		}
 		if((this.count - index) < count)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		return Array.BinarySearch(store, index, count, value, comparer);
 	}
@@ -381,19 +370,16 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(count < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("count",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("count", _("ArgRange_Array"));
 		}
 		if((this.count - index) < count)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		Array.Copy(store, index, array, arrayIndex, count);
 	}
@@ -404,8 +390,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(startIndex < 0 || startIndex >= count)
 		{
 			throw new ArgumentOutOfRangeException
-				("startIndex",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("startIndex", _("ArgRange_Array"));
 		}
 		return Array.IndexOf(store, value, startIndex, count - startIndex);
 	}
@@ -414,19 +399,16 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(startIndex < 0 || startIndex >= this.count)
 		{
 			throw new ArgumentOutOfRangeException
-				("startIndex",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("startIndex", _("ArgRange_Array"));
 		}
 		if(count < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("count",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("count", _("ArgRange_Array"));
 		}
 		if((this.count - startIndex) < count)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		return Array.IndexOf(store, value, startIndex, count);
 	}
@@ -448,8 +430,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(startIndex < 0 || startIndex >= count)
 		{
 			throw new ArgumentOutOfRangeException
-				("startIndex",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("startIndex", _("ArgRange_Array"));
 		}
 		return Array.LastIndexOf(store, value, startIndex);
 	}
@@ -458,19 +439,16 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(startIndex < 0 || startIndex >= this.count)
 		{
 			throw new ArgumentOutOfRangeException
-				("startIndex",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("startIndex", _("ArgRange_Array"));
 		}
 		if(count < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("count",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("count", _("ArgRange_Array"));
 		}
 		if(count > (startIndex + 1))
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		return Array.LastIndexOf(store, value, startIndex, count);
 	}
@@ -483,8 +461,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(count < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("count",
-				 Environment.GetResourceString("ArgRange_NonNegative"));
+				("count", _("ArgRange_NonNegative"));
 		}
 		if(count < 16)
 		{
@@ -514,19 +491,16 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(count < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("count",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("count", _("ArgRange_Array"));
 		}
 		if((this.count - index) < count)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		Array.Reverse(store, index, count);
 		++generation;
@@ -544,14 +518,12 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		count = c.Count;
 		if((this.count - index) < count)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		enumerator = c.GetEnumerator();
 		while(enumerator.MoveNext())
@@ -577,19 +549,16 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(count < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("count",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("count", _("ArgRange_Array"));
 		}
 		if((this.count - index) < count)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		Array.Sort(store, index, count, comparer);
 		++generation;
@@ -656,8 +625,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			if(value < count)
 			{
 				throw new ArgumentOutOfRangeException
-					("value",
-					 Environment.GetResourceString("Arg_CannotReduceCapacity"));
+					("value", _("Arg_CannotReduceCapacity"));
 			}
 			if(value != store.Length)
 			{
@@ -683,19 +651,16 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(count < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("count",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("count", _("ArgRange_Array"));
 		}
 		if((this.count - index) < count)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		return new ArrayListEnumerator(this, index, count);
 	}
@@ -723,8 +688,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			if(generation != list.generation)
 			{
 				throw new InvalidOperationException
-					(Environment.GetResourceString
-							("Invalid_CollectionModified"));
+					(_("Invalid_CollectionModified"));
 			}
 			++position;
 			return (position <= finish);
@@ -742,14 +706,12 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				if(generation != list.generation)
 				{
 					throw new InvalidOperationException
-						(Environment.GetResourceString
-								("Invalid_CollectionModified"));
+						(_("Invalid_CollectionModified"));
 				}
 				else if(position < 0)
 				{
 					throw new InvalidOperationException
-						(Environment.GetResourceString
-								("Invalid_BadEnumeratorPosition"));
+						(_("Invalid_BadEnumeratorPosition"));
 				}
 				return list.store[position];
 			}
@@ -1013,28 +975,23 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		// Implement the IList interface.
 		public int Add(Object value)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+			throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 		}
 		public void Clear()
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+			throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 		}
 		public void Insert(int index, Object value)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+			throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 		}
 		public void Remove(Object value)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+			throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 		}
 		public void RemoveAt(int index)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+			throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 		}
 		public bool IsFixedSize
 		{
@@ -1065,18 +1022,15 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		// Range-related methods.
 		public override void AddRange(ICollection c)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+			throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 		}
 		public override void InsertRange(ICollection c, int index)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+			throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 		}
 		public override void RemoveRange(int index, int count)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+			throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 		}
 
 		// Implement the ICloneable interface.
@@ -1088,8 +1042,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		// Trim the array list to its actual size.
 		public override void TrimToSize()
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+			throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 		}
 
 	} // class FixedSizeWrapper
@@ -1100,19 +1053,16 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		if(index < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("index",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("index", _("ArgRange_Array"));
 		}
 		if(count < 0)
 		{
 			throw new ArgumentOutOfRangeException
-				("count",
-				 Environment.GetResourceString("ArgRange_Array"));
+				("count", _("ArgRange_Array"));
 		}
 		if((this.count - index) < count)
 		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		return new RangeWrapper(this, index, count);
 	}
@@ -1137,8 +1087,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			if(generation != list.generation)
 			{
 				throw new InvalidOperationException
-					(Environment.GetResourceString
-						("Invalid_UnderlyingModified"));
+					(_("Invalid_UnderlyingModified"));
 			}
 		}
 
@@ -1172,8 +1121,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			if(index < 0 || index >= count)
 			{
 				throw new ArgumentOutOfRangeException
-					("index",
-					 Environment.GetResourceString("ArgRange_Array"));
+					("index", _("ArgRange_Array"));
 			}
 			list.Insert(index + this.index, value);
 			generation = list.generation;
@@ -1216,8 +1164,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				if(index < 0 || index >= count)
 				{
 					throw new ArgumentOutOfRangeException
-						("index",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("index", _("ArgRange_Array"));
 				}
 				return list[index + this.index];
 			}
@@ -1227,8 +1174,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				if(index < 0 || index >= count)
 				{
 					throw new ArgumentOutOfRangeException
-						("index",
-						 Environment.GetResourceString("ArgRange_Array"));
+						("index", _("ArgRange_Array"));
 				}
 				list[index + this.index] = value;
 				generation = list.generation;
@@ -1436,28 +1382,23 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		// Implement the IList interface.
 		public int Add(Object value)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public void Clear()
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public void Insert(int index, Object value)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public void Remove(Object value)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public void RemoveAt(int index)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public bool IsReadOnly
 		{
@@ -1474,31 +1415,26 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			}
 			set
 			{
-				throw new NotSupportedException
-					(Environment.GetResourceString("NotSupp_ReadOnly"));
+				throw new NotSupportedException(_("NotSupp_ReadOnly"));
 			}
 		}
 
 		// Range-related methods.
 		public override void AddRange(ICollection c)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public override void InsertRange(ICollection c, int index)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public override void RemoveRange(int index, int count)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public override void SetRange(int index, ICollection c)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 
 		// Implement the ICloneable interface.
@@ -1510,37 +1446,31 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		// Reverse the contents of this array list.
 		public override void Reverse()
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public override void Reverse(int index, int count)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 
 		// Sort the contents of this array list.
 		public override void Sort()
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public override void Sort(IComparer comparer)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 		public override void Sort(int index, int count, IComparer comparer)
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 
 		// Trim the array list to its actual size.
 		public override void TrimToSize()
 		{
-			throw new NotSupportedException
-				(Environment.GetResourceString("NotSupp_ReadOnly"));
+			throw new NotSupportedException(_("NotSupp_ReadOnly"));
 		}
 
 		// Get or set the current capacity of the array list.
@@ -1552,8 +1482,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			}
 			set
 			{
-				throw new NotSupportedException
-					(Environment.GetResourceString("NotSupp_ReadOnly"));
+				throw new NotSupportedException(_("NotSupp_ReadOnly"));
 			}
 		}
 

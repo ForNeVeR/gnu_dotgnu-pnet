@@ -27,11 +27,20 @@ public sealed class MulticastNotSupportedException : SystemException
 
 	// Constructors.
 	public MulticastNotSupportedException()
-		: base(Environment.GetResourceString("Exception_NoMulticast")) {}
+		: base(_("Exception_NoMulticast")) {}
 	public MulticastNotSupportedException(String msg)
 		: base(msg) {}
 	public MulticastNotSupportedException(String msg, Exception inner)
 		: base(msg, inner) {}
+
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return _("Exception_NoMulticast");
+				}
+			}
 
 }; // class MulticastNotSupportedException
 

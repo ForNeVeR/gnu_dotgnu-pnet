@@ -44,8 +44,7 @@ public struct ArgIterator
 	// Inherited methods.
 	public override bool Equals(Object obj)
 	{
-		throw new NotSupportedException
-				(Environment.GetResourceString("Exception_NotImplemented"));
+		throw new NotSupportedException(_("Exception_NotImplemented"));
 	}
 	public override int GetHashCode()
 	{

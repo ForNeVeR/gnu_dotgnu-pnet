@@ -27,7 +27,7 @@ public class NotSupportedException : SystemException
 
 	// Constructors.
 	public NotSupportedException()
-		: base(Environment.GetResourceString("Exception_NotSupported")) {}
+		: base(_("Exception_NotSupported")) {}
 	public NotSupportedException(String msg)
 		: base(msg) {}
 	public NotSupportedException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class NotSupportedException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_NotSupported");
+					return _("Exception_NotSupported");
 				}
 			}
 

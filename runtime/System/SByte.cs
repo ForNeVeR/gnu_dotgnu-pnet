@@ -104,8 +104,7 @@ public struct SByte : IComparable, IFormattable, IConvertible
 				{
 					if(!(value is SByte))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString("Arg_MustBeSByte"));
+						throw new ArgumentException(_("Arg_MustBeSByte"));
 					}
 					return ((int)value__) - ((int)((SByte)value).value__);
 				}
@@ -176,8 +175,7 @@ public struct SByte : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "SByte", "DateTime"));
+						(_("InvalidCast_FromTo"), "SByte", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

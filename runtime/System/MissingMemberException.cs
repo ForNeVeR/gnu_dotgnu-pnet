@@ -27,7 +27,7 @@ public class MissingMemberException : MemberAccessException
 
 	// Constructors.
 	public MissingMemberException()
-		: base(Environment.GetResourceString("Exception_MemberMissing")) {}
+		: base(_("Exception_MemberMissing")) {}
 	public MissingMemberException(String msg)
 		: base(msg) {}
 	public MissingMemberException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class MissingMemberException : MemberAccessException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_MemberMissing");
+					return _("Exception_MemberMissing");
 				}
 			}
 

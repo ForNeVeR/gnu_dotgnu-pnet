@@ -27,7 +27,7 @@ public class AppDomainUnloadedException : SystemException
 
 	// Constructors.
 	public AppDomainUnloadedException()
-		: base(Environment.GetResourceString("Exception_AppDomainUnloaded")) {}
+		: base(_("Exception_AppDomainUnloaded")) {}
 	public AppDomainUnloadedException(String msg)
 		: base(msg) {}
 	public AppDomainUnloadedException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class AppDomainUnloadedException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_AppDomainUnloaded");
+					return _("Exception_AppDomainUnloaded");
 				}
 			}
 

@@ -27,7 +27,7 @@ public class NullReferenceException : SystemException
 
 	// Constructors.
 	public NullReferenceException()
-		: base(Environment.GetResourceString("Exception_NullRef")) {}
+		: base(_("Exception_NullRef")) {}
 	public NullReferenceException(String msg)
 		: base(msg) {}
 	public NullReferenceException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class NullReferenceException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_NullRef");
+					return _("Exception_NullRef");
 				}
 			}
 

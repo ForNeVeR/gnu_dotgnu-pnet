@@ -86,33 +86,25 @@ public class FileStream : Stream
 				}
 				if(!FileMethods.ValidatePathname(path))
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString
-							("IO_InvalidPathname"));
+					throw new ArgumentException(_("IO_InvalidPathname"));
 				}
 				if(bufferSize <= 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("bufferSize",
-						 Environment.GetResourceString
-						 	("ArgRange_BufferSize"));
+						("bufferSize", _("ArgRange_BufferSize"));
 				}
 				if(access < FileAccess.Read ||
 				   access > FileAccess.ReadWrite)
 				{
 					throw new ArgumentOutOfRangeException
-						("access",
-						 Environment.GetResourceString
-						 	("IO_FileAccess"));
+						("access", _("IO_FileAccess"));
 				}
 				if(mode < FileMode.CreateNew ||
 				   mode > FileMode.Truncate ||
 				   mode == (FileMode)2)
 				{
 					throw new ArgumentOutOfRangeException
-						("mode",
-						 Environment.GetResourceString
-						 	("IO_FileMode"));
+						("mode", _("IO_FileMode"));
 				}
 			#if ECMA_COMPAT
 				if((((int)share) & ~0x03) != 0)
@@ -121,16 +113,13 @@ public class FileStream : Stream
 			#endif
 				{
 					throw new ArgumentOutOfRangeException
-						("share",
-						 Environment.GetResourceString
-						 	("IO_FileShare"));
+						("share", _("IO_FileShare"));
 				}
 				if(!Security.SecurityManager.CanOpenFile
 						(path, mode, access, share))
 				{
 					throw new SecurityException
-						(Environment.GetResourceString
-							("IO_PathnameSecurity"));
+						(_("IO_PathnameSecurity"));
 				}
 
 				// Attempt to open the file.
@@ -198,28 +187,22 @@ public class FileStream : Stream
 				if(bufferSize <= 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("bufferSize",
-						 Environment.GetResourceString("ArgRange_BufferSize"));
+						("bufferSize", _("ArgRange_BufferSize"));
 				}
 				if(access < FileAccess.Read ||
 				   access > FileAccess.ReadWrite)
 				{
 					throw new ArgumentOutOfRangeException
-						("access",
-						 Environment.GetResourceString
-						 	("IO_FileAccess"));
+						("access", _("IO_FileAccess"));
 				}
 				if(!Security.SecurityManager.CanUseFileHandle(handle))
 				{
-					throw new SecurityException
-						(Environment.GetResourceString
-							("IO_HandleSecurity"));
+					throw new SecurityException(_("IO_HandleSecurity"));
 				}
 				if(!FileMethods.CheckHandleAccess(handle, access))
 				{
 					throw new UnauthorizedAccessException
-						(Environment.GetResourceString
-							("IO_IncorrectAccess"));
+						(_("IO_IncorrectAccess"));
 				}
 
 				// Initialize the object state.
@@ -303,9 +286,7 @@ public class FileStream : Stream
 					if(!FileMethods.Write(handle, buffer, 0, bufferPosn))
 					{
 						throw new IOException
-							(FileMethods.GetErrno(),
-							 Environment.GetResourceString
-								("IO_WriteFailed"));
+							(FileMethods.GetErrno(), _("IO_WriteFailed"));
 					}
 					bufferPosn = 0;
 				}
@@ -317,12 +298,11 @@ public class FileStream : Stream
 				if((access & FileAccess.Read) == 0)
 				{
 					throw new NotSupportedException
-						(Environment.GetResourceString("IO_NotSupp_Read"));
+						(_("IO_NotSupp_Read"));
 				}
 				if(handle == invalidHandle)
 				{
-					throw new ObjectDisposedException
-						(Environment.GetResourceString("IO_StreamClosed"));
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
 				if(bufferOwnedByWrite)
 				{
@@ -336,13 +316,11 @@ public class FileStream : Stream
 			{
 				if((access & FileAccess.Write) == 0)
 				{
-					throw new NotSupportedException
-						(Environment.GetResourceString("IO_NotSupp_Write"));
+					throw new NotSupportedException(_("IO_NotSupp_Write"));
 				}
 				if(handle == invalidHandle)
 				{
-					throw new ObjectDisposedException
-						(Environment.GetResourceString("IO_StreamClosed"));
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
 				if(!bufferOwnedByWrite)
 				{
@@ -413,9 +391,7 @@ public class FileStream : Stream
 						if(!FileMethods.FlushWrite(handle))
 						{
 							throw new IOException
-								(FileMethods.GetErrno(),
-								 Environment.GetResourceString
-									("IO_FlushFailed"));
+								(FileMethods.GetErrno(), _("IO_FlushFailed"));
 						}
 					}
 					else
@@ -425,8 +401,7 @@ public class FileStream : Stream
 				}
 				else
 				{
-					throw new ObjectDisposedException
-						(Environment.GetResourceString("IO_StreamClosed"));
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
 			}
 
@@ -454,9 +429,7 @@ public class FileStream : Stream
 						{
 							bufferLen = 0;
 							throw new IOException
-								(FileMethods.GetErrno(),
-								 Environment.GetResourceString
-									("IO_ReadFailed"));
+								(FileMethods.GetErrno(), _("IO_ReadFailed"));
 						}
 						else if(bufferLen == 0)
 						{
@@ -504,9 +477,7 @@ public class FileStream : Stream
 					{
 						bufferLen = 0;
 						throw new IOException
-							(FileMethods.GetErrno(),
-							 Environment.GetResourceString
-								("IO_ReadFailed"));
+							(FileMethods.GetErrno(), _("IO_ReadFailed"));
 					}
 					else if(bufferLen == 0)
 					{
@@ -528,16 +499,13 @@ public class FileStream : Stream
 				// Bail out if this stream is not capable of seeking.
 				if(!canSeek)
 				{
-					throw new NotSupportedException
-						(Environment.GetResourceString
-							("IO_NotSupp_Seek"));
+					throw new NotSupportedException(_("IO_NotSupp_Seek"));
 				}
 
 				// Bail out if the handle is invalid.
 				if(handle == invalidHandle)
 				{
-					throw new ObjectDisposedException
-						(Environment.GetResourceString("IO_StreamClosed"));
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
 
 				// Don't do anything if the position won't be moving.
@@ -558,9 +526,7 @@ public class FileStream : Stream
 					newPosn = FileMethods.Seek(handle, offset, origin);
 					if(newPosn == -1)
 					{
-						throw new EndOfStreamException
-							(Environment.GetResourceString
-								("IO_EndOfStream"));
+						throw new EndOfStreamException(_("IO_EndOfStream"));
 					}
 					position = newPosn;
 				}
@@ -599,9 +565,7 @@ public class FileStream : Stream
 					newPosn = FileMethods.Seek(handle, offset, origin);
 					if(newPosn == -1)
 					{
-						throw new EndOfStreamException
-							(Environment.GetResourceString
-								("IO_EndOfStream"));
+						throw new EndOfStreamException(_("IO_EndOfStream"));
 					}
 					position = newPosn;
 				}
@@ -615,15 +579,11 @@ public class FileStream : Stream
 				if(value < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("value",
-						 Environment.GetResourceString
-						 	("ArgRange_NonNegative"));
+						("value", _("ArgRange_NonNegative"));
 				}
 				if(!canSeek)
 				{
-					throw new NotSupportedException
-						(Environment.GetResourceString
-							("IO_NotSupp_Seek"));
+					throw new NotSupportedException(_("IO_NotSupp_Seek"));
 				}
 				SetupWrite();
 
@@ -631,9 +591,7 @@ public class FileStream : Stream
 				if(!FileMethods.SetLength(handle, value))
 				{
 					throw new IOException
-						(FileMethods.GetErrno(),
-						 Environment.GetResourceString
-							("IO_SetLengthFailed"));
+						(FileMethods.GetErrno(), _("IO_SetLengthFailed"));
 				}
 			}
 
@@ -658,9 +616,7 @@ public class FileStream : Stream
 								(handle, this.buffer, 0, bufferPosn))
 						{
 							throw new IOException
-								(FileMethods.GetErrno(),
-								 Environment.GetResourceString
-									("IO_WriteFailed"));
+								(FileMethods.GetErrno(), _("IO_WriteFailed"));
 						}
 						bufferPosn = 0;
 						tempLen = bufferSize;
@@ -677,9 +633,7 @@ public class FileStream : Stream
 						if(!FileMethods.Write(handle, buffer, offset, tempLen))
 						{
 							throw new IOException
-								(FileMethods.GetErrno(),
-								 Environment.GetResourceString
-									("IO_WriteFailed"));
+								(FileMethods.GetErrno(), _("IO_WriteFailed"));
 						}
 					}
 					else
@@ -703,9 +657,7 @@ public class FileStream : Stream
 					if(!FileMethods.Write(handle, this.buffer, 0, bufferPosn))
 					{
 						throw new IOException
-							(FileMethods.GetErrno(),
-							 Environment.GetResourceString
-								("IO_WriteFailed"));
+							(FileMethods.GetErrno(), _("IO_WriteFailed"));
 					}
 					bufferPosn = 0;
 				}
@@ -723,9 +675,7 @@ public class FileStream : Stream
 					if(!FileMethods.Write(handle, this.buffer, 0, bufferPosn))
 					{
 						throw new IOException
-							(FileMethods.GetErrno(),
-							 Environment.GetResourceString
-								("IO_WriteFailed"));
+							(FileMethods.GetErrno(), _("IO_WriteFailed"));
 					}
 					bufferPosn = 0;
 				}
@@ -770,18 +720,14 @@ public class FileStream : Stream
 					// Validate that the object can actually do this.
 					if(!canSeek)
 					{
-						throw new NotSupportedException
-							(Environment.GetResourceString
-								("IO_NotSupp_Seek"));
+						throw new NotSupportedException (_("IO_NotSupp_Seek"));
 					}
 					if(handle == invalidHandle)
 					{
 						// ECMA says this should be IOException even though
 						// everywhere else uses ObjectDisposedException.
 						throw new IOException
-							(FileMethods.GetErrno(),
-							 Environment.GetResourceString
-								("IO_StreamClosed"));
+							(FileMethods.GetErrno(), _("IO_StreamClosed"));
 					}
 
 					// Flush the write buffer, because it may
@@ -811,9 +757,7 @@ public class FileStream : Stream
 					if(posn == -1)
 					{
 						throw new IOException
-							(FileMethods.GetErrno(),
-							 Environment.GetResourceString
-								("IO_SeekFailed"));
+							(FileMethods.GetErrno(), _("IO_SeekFailed"));
 					}
 					return posn;
 				}
@@ -826,9 +770,7 @@ public class FileStream : Stream
 				{
 					if(!canSeek)
 					{
-						throw new NotSupportedException
-							(Environment.GetResourceString
-								("IO_NotSupp_Seek"));
+						throw new NotSupportedException(_("IO_NotSupp_Seek"));
 					}
 					return position;
 				}

@@ -27,7 +27,7 @@ public sealed class ExecutionEngineException : SystemException
 
 	// Constructors.
 	public ExecutionEngineException()
-		: base(Environment.GetResourceString("Exception_Engine")) {}
+		: base(_("Exception_Engine")) {}
 	public ExecutionEngineException(String msg)
 		: base(msg) {}
 	public ExecutionEngineException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public sealed class ExecutionEngineException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Engine");
+					return _("Exception_Engine");
 				}
 			}
 

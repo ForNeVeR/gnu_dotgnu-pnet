@@ -53,12 +53,6 @@ public sealed class Environment
 				InvalidPathChars = pathInfo.invalidPathChars;
 			}
 
-	// Get resources from "mscorlib.dll".
-	internal static String GetResourceString(String tag)
-			{
-				return tag;
-			}
-
 	// Get the platform-specific newline string.
 	public static String NewLine
 			{
@@ -124,8 +118,7 @@ public sealed class Environment
 					else
 					{
 						throw new NotSupportedException
-							(Environment.GetResourceString
-								("Exception_NoSystemDir"));
+							(_("Exception_NoSystemDir"));
 					}
 				}
 			}
@@ -141,8 +134,7 @@ public sealed class Environment
 				else
 				{
 					throw new NotSupportedException
-						(Environment.GetResourceString
-							("Exception_NoCmdLine"));
+						(_("Exception_NoCmdLine"));
 				}
 			}
 
@@ -193,15 +185,13 @@ public sealed class Environment
 		// Add an object to this dictionary.
 		public void Add(Object key, Object value)
 				{
-					throw new NotSupportedException
-						(Environment.GetResourceString("NotSupp_ReadOnly"));
+					throw new NotSupportedException(_("NotSupp_ReadOnly"));
 				}
 
 		// Clear this dictionary.
 		public void Clear()
 				{
-					throw new NotSupportedException
-						(Environment.GetResourceString("NotSupp_ReadOnly"));
+					throw new NotSupportedException(_("NotSupp_ReadOnly"));
 				}
 
 		// Determine if this dictionary contains a specific key.
@@ -232,8 +222,7 @@ public sealed class Environment
 		// Remove a value from this dictionary.
 		public void Remove(Object key)
 				{
-					throw new NotSupportedException
-						(Environment.GetResourceString("NotSupp_ReadOnly"));
+					throw new NotSupportedException(_("NotSupp_ReadOnly"));
 				}
 
 		// Determine if this dictionary has a fixed size.
@@ -271,8 +260,7 @@ public sealed class Environment
 					}
 					set
 					{
-						throw new NotSupportedException
-							(Environment.GetResourceString("NotSupp_ReadOnly"));
+						throw new NotSupportedException(_("NotSupp_ReadOnly"));
 					}
 				}
 
@@ -360,8 +348,7 @@ public sealed class Environment
 						else
 						{
 							throw new InvalidOperationException
-								(Environment.GetResourceString
-									("Invalid_BadEnumeratorPosition"));
+								(_("Invalid_BadEnumeratorPosition"));
 						}
 					}
 				}
@@ -378,8 +365,7 @@ public sealed class Environment
 						else
 						{
 							throw new InvalidOperationException
-								(Environment.GetResourceString
-									("Invalid_BadEnumeratorPosition"));
+								(_("Invalid_BadEnumeratorPosition"));
 						}
 					}
 				}
@@ -396,8 +382,7 @@ public sealed class Environment
 						else
 						{
 							throw new InvalidOperationException
-								(Environment.GetResourceString
-									("Invalid_BadEnumeratorPosition"));
+								(_("Invalid_BadEnumeratorPosition"));
 						}
 					}
 				}

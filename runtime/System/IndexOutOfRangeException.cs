@@ -26,7 +26,7 @@ public sealed class IndexOutOfRangeException : SystemException
 
 	// Constructors.
 	public IndexOutOfRangeException()
-		: base(Environment.GetResourceString("Exception_Index")) {}
+		: base(_("Exception_Index")) {}
 	public IndexOutOfRangeException(String msg)
 		: base(msg) {}
 	public IndexOutOfRangeException(String msg, Exception inner)
@@ -37,8 +37,7 @@ public sealed class IndexOutOfRangeException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Index");
+					return _("Exception_Index");
 				}
 			}
 

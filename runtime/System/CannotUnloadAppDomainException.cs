@@ -27,7 +27,7 @@ public class CannotUnloadAppDomainException : SystemException
 
 	// Constructors.
 	public CannotUnloadAppDomainException()
-		: base(Environment.GetResourceString("Exception_CannotUnloadAD")) {}
+		: base(_("Exception_CannotUnloadAD")) {}
 	public CannotUnloadAppDomainException(String msg)
 		: base(msg) {}
 	public CannotUnloadAppDomainException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class CannotUnloadAppDomainException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_CannotUnloadAD");
+					return _("Exception_CannotUnloadAD");
 				}
 			}
 

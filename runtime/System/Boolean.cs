@@ -69,8 +69,7 @@ public struct Boolean : IComparable, IConvertible
 					{
 						return false;
 					}
-					throw new FormatException
-						(Environment.GetResourceString("Format_BadBoolean"));
+					throw new FormatException(_("Format_BadBoolean"));
 				}
 				else
 				{
@@ -85,9 +84,7 @@ public struct Boolean : IComparable, IConvertible
 				{
 					if(!(value is Boolean))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString
-								("Arg_MustBeBoolean"));
+						throw new ArgumentException(_("Arg_MustBeBoolean"));
 					}
 					bool other = ((Boolean)value).value__;
 					if(value__ == other)
@@ -138,8 +135,7 @@ public struct Boolean : IComparable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Boolean", "Char"));
+						(_("InvalidCast_FromTo"), "Boolean", "Char"));
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
@@ -173,8 +169,7 @@ public struct Boolean : IComparable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Boolean", "DateTime"));
+						(_("InvalidCast_FromTo"), "Boolean", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

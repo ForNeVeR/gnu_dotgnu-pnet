@@ -27,7 +27,7 @@ public sealed class InvalidProgramException : SystemException
 
 	// Constructors.
 	public InvalidProgramException()
-		: base(Environment.GetResourceString("Exception_InvalidProgram")) {}
+		: base(_("Exception_InvalidProgram")) {}
 	public InvalidProgramException(String msg)
 		: base(msg) {}
 	public InvalidProgramException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public sealed class InvalidProgramException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_InvalidProgram");
+					return _("Exception_InvalidProgram");
 				}
 			}
 

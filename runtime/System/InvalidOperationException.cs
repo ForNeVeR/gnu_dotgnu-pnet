@@ -27,7 +27,7 @@ public class InvalidOperationException : SystemException
 
 	// Constructors.
 	public InvalidOperationException()
-		: base(Environment.GetResourceString("Exception_InvalidOperation")) {}
+		: base(_("Exception_InvalidOperation")) {}
 	public InvalidOperationException(String msg)
 		: base(msg) {}
 	public InvalidOperationException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class InvalidOperationException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_InvalidOperation");
+					return _("Exception_InvalidOperation");
 				}
 			}
 

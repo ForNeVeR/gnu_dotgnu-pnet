@@ -27,7 +27,7 @@ public class ApplicationException : Exception
 
 	// Constructors.
 	public ApplicationException()
-		: base(Environment.GetResourceString("Exception_Application")) {}
+		: base(_("Exception_Application")) {}
 	public ApplicationException(String msg)
 		: base(msg) {}
 	public ApplicationException(String msg, Exception inner)
@@ -38,8 +38,7 @@ public class ApplicationException : Exception
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Application");
+					return _("Exception_Application");
 				}
 			}
 

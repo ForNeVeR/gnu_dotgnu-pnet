@@ -28,7 +28,7 @@ public class SecurityException : SystemException
 {
 	// Constructors.
 	public SecurityException()
-			: base(Environment.GetResourceString("Exception_Security")) {}
+			: base(_("Exception_Security")) {}
 	public SecurityException(String msg)
 			: base(msg) {}
 	public SecurityException(String msg, Exception inner)
@@ -39,8 +39,7 @@ public class SecurityException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_Security");
+					return _("Exception_Security");
 				}
 			}
 

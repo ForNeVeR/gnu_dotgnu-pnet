@@ -29,7 +29,7 @@ public sealed class AmbiguousMatchException : SystemException
 
 	// Constructors.
 	public AmbiguousMatchException()
-		: base(Environment.GetResourceString("Exception_AmbiguousMatch")) {}
+		: base(_("Exception_AmbiguousMatch")) {}
 	public AmbiguousMatchException(String msg)
 		: base(msg) {}
 	public AmbiguousMatchException(String msg, Exception inner)
@@ -40,8 +40,7 @@ public sealed class AmbiguousMatchException : SystemException
 			{
 				get
 				{
-					return Environment.GetResourceString
-						("Exception_AmbiguousMatch");
+					return _("Exception_AmbiguousMatch");
 				}
 			}
 

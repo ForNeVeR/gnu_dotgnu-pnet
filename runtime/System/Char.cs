@@ -66,9 +66,7 @@ public struct Char : IComparable, IConvertible
 					}
 					else
 					{
-						throw new FormatException
-							(Environment.GetResourceString
-								("Format_NeedSingleChar"));
+						throw new FormatException(_("Format_NeedSingleChar"));
 					}
 				}
 				else
@@ -84,8 +82,7 @@ public struct Char : IComparable, IConvertible
 				{
 					if(!(value is Char))
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString("Arg_MustBeChar"));
+						throw new ArgumentException(_("Arg_MustBeChar"));
 					}
 					return ((int)value__) - ((int)(((Char)value).value__));
 				}
@@ -104,8 +101,7 @@ public struct Char : IComparable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-	 			         "Char", "Boolean"));
+						(_("InvalidCast_FromTo"), "Char", "Boolean"));
 			}
 	byte IConvertible.ToByte(IFormatProvider provider)
 			{
@@ -147,29 +143,25 @@ public struct Char : IComparable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-	 			         "Char", "Single"));
+						(_("InvalidCast_FromTo"), "Char", "Single"));
 			}
 	double IConvertible.ToDouble(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-	 			         "Char", "Double"));
+						(_("InvalidCast_FromTo"), "Char", "Double"));
 			}
 	Decimal IConvertible.ToDecimal(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-	 			         "Char", "Decimal"));
+						(_("InvalidCast_FromTo"), "Char", "Decimal"));
 			}
 	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Char", "DateTime"));
+						(_("InvalidCast_FromTo"), "Char", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{

@@ -240,8 +240,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 				else
 				{
-					throw new ArgumentException
-						(Environment.GetResourceString("Arg_DecBitCtor"));
+					throw new ArgumentException(_("Arg_DecBitCtor"));
 				}
 			}
 	public Decimal(int _low, int _middle, int _high, bool _isneg, byte _scale)
@@ -257,8 +256,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				else
 				{
 					throw new ArgumentOutOfRangeException
-						(Environment.GetResourceString
-								("ArgRange_DecimalScale"));
+						(_("ArgRange_DecimalScale"));
 				}
 			}
 	private Decimal(int _low, int _middle, int _high, int _flags)
@@ -331,9 +329,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 					}
 					else
 					{
-						throw new ArgumentException
-							(Environment.GetResourceString
-								("Arg_MustBeDecimal"));
+						throw new ArgumentException(_("Arg_MustBeDecimal"));
 					}
 				}
 				else
@@ -371,8 +367,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Decimal", "Char"));
+						(_("InvalidCast_FromTo"), "Decimal", "Char"));
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
@@ -406,8 +401,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 			{
 				throw new InvalidCastException
 					(String.Format
-						(Environment.GetResourceString("InvalidCast_FromTo"),
-		 			     "Decimal", "DateTime"));
+						(_("InvalidCast_FromTo"), "Decimal", "DateTime"));
 			}
 	public String ToString(IFormatProvider provider)
 			{
@@ -439,8 +433,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Byte"));
+					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
 	public static sbyte ToSByte(decimal value)
@@ -451,8 +444,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_SByte"));
+					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
 	public static short ToInt16(decimal value)
@@ -463,8 +455,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int16"));
+					throw new OverflowException(_("Overflow_Int16"));
 				}
 			}
 	public static ushort ToUInt16(decimal value)
@@ -475,8 +466,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt16"));
+					throw new OverflowException(_("Overflow_UInt16"));
 				}
 			}
 	public static int ToInt32(decimal value)
@@ -487,8 +477,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int32"));
+					throw new OverflowException(_("Overflow_Int32"));
 				}
 			}
 	public static uint ToUInt32(decimal value)
@@ -500,8 +489,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt32"));
+					throw new OverflowException(_("Overflow_UInt32"));
 				}
 			}
 	public static long ToInt64(decimal value)
@@ -523,8 +511,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_Int64"));
+					throw new OverflowException(_("Overflow_Int64"));
 				}
 			}
 	public static ulong ToUInt64(decimal value)
@@ -537,8 +524,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 				else
 				{
-					throw new OverflowException
-						(Environment.GetResourceString("Overflow_UInt64"));
+					throw new OverflowException(_("Overflow_UInt64"));
 				}
 			}
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -1,4 +1,9 @@
 
+2002-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* libffi/configure, libffi/configure.in: add host detection
+	for GNU/Hurd (thanks to Andrew Mitchell).
+
 2002-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with delegate comparison fix.

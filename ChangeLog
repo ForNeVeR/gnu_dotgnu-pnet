@@ -6,6 +6,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.6.2 release.
 
+	* configure.in: update working version to "0.6.3".
+
 2004-01-02  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs: minor fixes, pre-authenticate POST

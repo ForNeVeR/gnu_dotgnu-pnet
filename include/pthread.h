@@ -28,6 +28,15 @@
 __BEGIN_DECLS
 
 /*
+ * This needs to be moved to <time.h> later.
+ */
+struct timespec
+{
+	long tv_sec;
+	long tv_nsec;
+};
+
+/*
  * Mutex types.
  */
 enum

@@ -613,6 +613,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 				/* We don't need "prefix" in direct mode, so just stub it out */
 				switch(1)
 				{
+				case 0:
 					VMPREFIXDEFAULT:
 					{
 						MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);

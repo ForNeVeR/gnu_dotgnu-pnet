@@ -392,6 +392,23 @@ if test $ac_cv_prog_cc_precomp = yes ; then
 	AC_DEFINE(HAVE_CPP_PRECOMP, 1, [Define if pre-compiling cpp is present])
 fi
 
+dnl Check to see whether cc accepts "-fno-unit-at-a-time" or not.
+AC_SUBST(NO_UNIT_AT_A_TIME)
+AC_CACHE_CHECK(whether ${CC-cc} accepts -fno-unit-at-a-time, ac_cv_prog_cc_no_unit_at_a_time,
+[echo 'int main(){return 0;}' > conftest.c
+if test -z "`${CC-cc} -fno-unit-at-a-time -o conftest conftest.c 2>&1`"; then
+  ac_cv_prog_cc_no_unit_at_a_time=yes
+else
+  ac_cv_prog_cc_no_unit_at_a_time=no
+fi
+rm -f conftest*
+])
+if test $ac_cv_prog_cc_no_unit_at_a_time = yes ; then
+	NO_UNIT_AT_A_TIME="-fno-unit-at-a-time"
+else
+	NO_UNIT_AT_A_TIME=""
+fi
+
 dnl Check to see whether cc accepts "-fno-gcse" or not.
 AC_SUBST(NO_GCSE)
 AC_CACHE_CHECK(whether ${CC-cc} accepts -fno-gcse, ac_cv_prog_cc_no_gcse,

@@ -1,4 +1,9 @@
 
+2002-11-09  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/Makefile.am, System/Makefile.am, System.Xml/Makefile.am,
+	I18N/Makefile.am: Allow "make install" on pnet built binaries.
+
 2002-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/CodeDom/gencdom.c, System/CodeDom/rules.txt: add

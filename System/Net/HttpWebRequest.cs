@@ -187,6 +187,7 @@ public class HttpWebRequest : WebRequest
 			this.response=new HttpWebResponse(this,this.outStream);
 			this.haveResponse=true; // I hope this is correct
 		}
+		(outStream as HttpStream).ContentLength=response.ContentLength;
 		return this.response; 
 	}
 
@@ -620,6 +621,7 @@ public class HttpWebRequest : WebRequest
 	{	
 		private HttpWebRequest request;
 		private Stream underlying=null;
+		private long contentLength=Int64.MaxValue;
 
 		public HttpStream(HttpWebRequest req) 
 			: this(req, HttpStream.OpenStream(req))
@@ -641,12 +643,17 @@ public class HttpWebRequest : WebRequest
 		
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			return underlying.Read(buffer, offset, count);
+			if(contentLength<=0) return -1;
+			int retval = underlying.Read(buffer, offset, count);
+			contentLength-=retval;
+			return retval;
 		}
 		
 		public override int ReadByte() 
 		{
-			return underlying.ReadByte();
+			int retval = underlying.ReadByte();
+			contentLength-=1;
+			return retval;
 		}
 
 		public override long Seek(long offset, SeekOrigin origin)
@@ -710,6 +717,21 @@ public class HttpWebRequest : WebRequest
 			set
 			{
 				underlying.Position = value;
+			}
+		}
+
+		public long ContentLength
+		{
+			set
+			{
+				if(value<=0)
+				{
+					contentLength=Int64.MaxValue;
+				}
+				else
+				{
+					contentLength=value;
+				}
 			}
 		}
 

@@ -6,6 +6,9 @@
 	Add a special case for Int64.MinValue as it cannot be negated
 	to any positive value.
 
+	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:
+	Fix HttpStream to use the ContentLength to read data.
+
 2003-07-18  Simon Guindon <simon@nureality.ca>
 	
 	* System.Windows.Forms/Control.cs: Fixes updating Parent controls 

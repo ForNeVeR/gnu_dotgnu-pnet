@@ -168,7 +168,9 @@ public class HttpWebResponse : WebResponse
 	{ 
 		get
 		{
-			return Int64.Parse(headers["Content-Length"]);
+			String contentLength=headers["Content-Length"];
+			if(contentLength==null) return 0;
+			else return Int64.Parse(contentLength);
 		}
 	}
 

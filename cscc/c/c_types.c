@@ -1241,7 +1241,7 @@ ILUInt32 CTypeSizeAndAlign(ILType *_type, ILUInt32 *align)
 	else if(ILType_IsValueType(type))
 	{
 		/* Check for enumerated types */
-		if((subType = ILTypeGetEnumType(type)) != 0)
+		if((subType = ILTypeGetEnumType(type)) != type)
 		{
 			/* Use the size of the type underlying the enumeration */
 			return CTypeSizeAndAlign(subType, align);

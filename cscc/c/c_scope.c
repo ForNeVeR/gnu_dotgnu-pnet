@@ -177,6 +177,12 @@ void CScopeAddLocal(const char *name, ILNode *node,
 					   (void *)(ILNativeUInt)index, type);
 }
 
+void CScopeAddGlobal(const char *name, ILNode *node, ILType *type)
+{
+	ILScopeDeclareItem(CGlobalScope, name,
+					   C_SCDATA_GLOBAL_VAR, PersistNode(node), 0, type);
+}
+
 void CScopeAddUndeclared(const char *name)
 {
 	ILScopeDeclareItem(CGlobalScope, name, C_SCDATA_UNDECLARED, 0, 0, 0);

@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <cscc/c/c_internal.h>
+#include "il_dumpasm.h"
 
 #define	YYERROR_VERBOSE
 
@@ -336,7 +337,44 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 	else if((spec.specifiers & C_SPEC_STATIC) != 0)
 	{
 		/* Declare a global variable that is private to this module */
-		/* TODO */
+		if(data)
+		{
+			if(CScopeGetKind(data) != C_SCDATA_GLOBAL_VAR_FORWARD)
+			{
+				ReportRedeclared(decl.name, decl.node, data);
+				return;
+			}
+			/* TODO: replace the forward reference with a real reference */
+		}
+
+		/* TODO: extend open arrays to the same size as initializers */
+
+		/* Make sure that the type size is fixed or dynamic */
+		if(CTypeSizeAndAlign(type, 0) == CTYPE_UNKNOWN)
+		{
+			CCErrorOnLine(yygetfilename(decl.node), yygetlinenum(decl.node),
+						  _("storage size of `%s' is not known"), decl.name);
+		}
+
+		/* Mark the type for output */
+		CTypeMarkForOutput(&CCCodeGen, type);
+
+		/* Declare the global variable in the assembly output stream */
+		if(CCCodeGen.asmOutput)
+		{
+			fputs(".field private static ", CCCodeGen.asmOutput);
+			ILDumpType(CCCodeGen.asmOutput, CCCodeGen.image, type,
+					   IL_DUMP_QUOTE_NAMES);
+			putc(' ', CCCodeGen.asmOutput);
+			ILDumpIdentifier(CCCodeGen.asmOutput, decl.name, 0,
+							 IL_DUMP_QUOTE_NAMES);
+			putc('\n', CCCodeGen.asmOutput);
+		}
+
+		/* Add the global variable to the current scope */
+		CScopeAddGlobal(decl.name, decl.node, type);
+
+		/* TODO: process initializers */
 	}
 	else if((spec.specifiers & C_SPEC_EXTERN) != 0)
 	{
@@ -346,7 +384,44 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 	else if(CCurrentScope == CGlobalScope)
 	{
 		/* Declare a global variable that is exported from this module */
-		/* TODO */
+		if(data)
+		{
+			if(CScopeGetKind(data) != C_SCDATA_GLOBAL_VAR_FORWARD)
+			{
+				ReportRedeclared(decl.name, decl.node, data);
+				return;
+			}
+			/* TODO: replace the forward reference with a real reference */
+		}
+
+		/* TODO: extend open arrays to the same size as initializers */
+
+		/* Make sure that the type size is fixed or dynamic */
+		if(CTypeSizeAndAlign(type, 0) == CTYPE_UNKNOWN)
+		{
+			CCErrorOnLine(yygetfilename(decl.node), yygetlinenum(decl.node),
+						  _("storage size of `%s' is not known"), decl.name);
+		}
+
+		/* Mark the type for output */
+		CTypeMarkForOutput(&CCCodeGen, type);
+
+		/* Declare the global variable in the assembly output stream */
+		if(CCCodeGen.asmOutput)
+		{
+			fputs(".field public static ", CCCodeGen.asmOutput);
+			ILDumpType(CCCodeGen.asmOutput, CCCodeGen.image, type,
+					   IL_DUMP_QUOTE_NAMES);
+			putc(' ', CCCodeGen.asmOutput);
+			ILDumpIdentifier(CCCodeGen.asmOutput, decl.name, 0,
+							 IL_DUMP_QUOTE_NAMES);
+			putc('\n', CCCodeGen.asmOutput);
+		}
+
+		/* Add the global variable to the current scope */
+		CScopeAddGlobal(decl.name, decl.node, type);
+
+		/* TODO: process initializers */
 	}
 	else
 	{

@@ -65,8 +65,8 @@ void CLexLineDirective(const char *text)
 	{
 		posn = 0;
 	}
-	CCPreProcessorStream.lexerFileName = ILInternString(filename, posn).string;
-	CCPreProcessorStream.lexerLineNumber = linenum;
+	CCPreProcessorStream.filename = ILInternString(filename, posn).string;
+	CCPreProcessorStream.lineNumber = linenum;
 }
 
 static void InferIntType(const char *text, CLexIntConst *value)

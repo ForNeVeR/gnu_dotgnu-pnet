@@ -135,6 +135,11 @@ void CScopeAddLocal(const char *name, ILNode *node,
 					unsigned index, ILType *type);
 
 /*
+ * Add information about a global variable to the current scope.
+ */
+void CScopeAddGlobal(const char *name, ILNode *node, ILType *type);
+
+/*
  * Add an entry to the current scope that records that an identifier
  * was undeclared, but that we don't want to know about it again.
  */

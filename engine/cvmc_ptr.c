@@ -401,6 +401,7 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_I1:
 		{
 			/* Load a signed byte from a pointer */
+			CVM_BYTE(COP_CKNULL);
 			CVM_BYTE(COP_BREAD);
 		}
 		break;
@@ -408,6 +409,7 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_U1:
 		{
 			/* Load an unsigned byte from a pointer */
+			CVM_BYTE(COP_CKNULL);
 			CVM_BYTE(COP_UBREAD);
 		}
 		break;
@@ -415,6 +417,7 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_I2:
 		{
 			/* Load a signed short from a pointer */
+			CVM_BYTE(COP_CKNULL);
 			CVM_BYTE(COP_SREAD);
 		}
 		break;
@@ -422,6 +425,7 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_U2:
 		{
 			/* Load an unsigned short from a pointer */
+			CVM_BYTE(COP_CKNULL);
 			CVM_BYTE(COP_USREAD);
 		}
 		break;
@@ -433,6 +437,7 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 	#endif
 		{
 			/* Load an integer from a pointer */
+			CVM_BYTE(COP_CKNULL);
 			CVM_BYTE(COP_IREAD);
 		}
 		break;
@@ -443,6 +448,7 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 	#endif
 		{
 			/* Load a long from a pointer */
+			CVM_BYTE(COP_CKNULL);
 			CVM_BYTE(COP_MREAD);
 			CVM_BYTE(8);
 			CVM_ADJUST(CVM_WORDS_PER_LONG - 1);
@@ -452,6 +458,7 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_R4:
 		{
 			/* Load a 32-bit float from a pointer */
+			CVM_BYTE(COP_CKNULL);
 			CVM_BYTE(COP_FREAD);
 			CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
 		}
@@ -460,6 +467,7 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_R8:
 		{
 			/* Load a 64-bit float from a pointer */
+			CVM_BYTE(COP_CKNULL);
 			CVM_BYTE(COP_DREAD);
 			CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
 		}
@@ -468,6 +476,7 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_REF:
 		{
 			/* Load a pointer from a pointer */
+			CVM_BYTE(COP_CKNULL);
 			CVM_BYTE(COP_PREAD);
 		}
 		break;
@@ -475,6 +484,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_STIND_REF:
 		{
 			/* Store a pointer to a pointer */
+			CVM_BYTE(COP_CKNULL_N);
+			CVM_BYTE(1);
 			CVM_BYTE(COP_PWRITE);
 			CVM_ADJUST(-2);
 		}
@@ -483,6 +494,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_STIND_I1:
 		{
 			/* Store a byte to a pointer */
+			CVM_BYTE(COP_CKNULL_N);
+			CVM_BYTE(1);
 			CVM_BYTE(COP_BWRITE);
 			CVM_ADJUST(-2);
 		}
@@ -491,6 +504,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_STIND_I2:
 		{
 			/* Store a short to a pointer */
+			CVM_BYTE(COP_CKNULL_N);
+			CVM_BYTE(1);
 			CVM_BYTE(COP_SWRITE);
 			CVM_ADJUST(-2);
 		}
@@ -502,6 +517,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 	#endif
 		{
 			/* Store an integer to a pointer */
+			CVM_BYTE(COP_CKNULL_N);
+			CVM_BYTE(1);
 			CVM_BYTE(COP_IWRITE);
 			CVM_ADJUST(-2);
 		}
@@ -513,6 +530,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 	#endif
 		{
 			/* Store a long to a pointer */
+			CVM_BYTE(COP_CKNULL_N);
+			CVM_BYTE(CVM_WORDS_PER_LONG);
 			CVM_BYTE(COP_MWRITE);
 			CVM_BYTE(8);
 			CVM_ADJUST(-(CVM_WORDS_PER_LONG + 1));
@@ -522,6 +541,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_STIND_R4:
 		{
 			/* Store a 32-bit float to a pointer */
+			CVM_BYTE(COP_CKNULL_N);
+			CVM_BYTE(CVM_WORDS_PER_NATIVE_FLOAT);
 			CVM_BYTE(COP_FWRITE);
 			CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 		}
@@ -530,6 +551,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_STIND_R8:
 		{
 			/* Store a 64-bit float to a pointer */
+			CVM_BYTE(COP_CKNULL_N);
+			CVM_BYTE(CVM_WORDS_PER_NATIVE_FLOAT);
 			CVM_BYTE(COP_DWRITE);
 			CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 		}
@@ -543,7 +566,47 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 static void CVMCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 									  ILClass *classInfo)
 {
-	/* TODO */
+	/* Compute the size of the managed value in memory and on the stack */
+	ILUInt32 memorySize = ILSizeOfType(coder->thread,
+									   ILType_FromValueType(classInfo));
+	ILUInt32 stackSize = (memorySize + sizeof(CVMWord) - 1) / sizeof(CVMWord);
+
+	/* Generate the bytecode for the instruction */
+	if(opcode == IL_OP_LDOBJ)
+	{
+		/* Load from a pointer */
+		CVM_BYTE(COP_CKNULL);
+		if(memorySize != 0)
+		{
+			CVM_WIDE(COP_MREAD, memorySize);
+			CVM_ADJUST(stackSize - 1);
+		}
+		else
+		{
+			/* Because the object is empty, there's no point
+			   performing the "mread" instruction */
+			CVM_BYTE(COP_POP);
+			CVM_ADJUST(-1);
+		}
+	}
+	else
+	{
+		/* Store to a pointer */
+		if(memorySize != 0)
+		{
+			CVM_WIDE(COP_CKNULL_N, stackSize);
+			CVM_WIDE(COP_MWRITE, memorySize);
+			CVM_ADJUST(stackSize + 1);
+		}
+		else
+		{
+			/* Because the object is empty, there's no point
+			   performing the "mwrite" instruction */
+			CVM_BYTE(COP_CKNULL);
+			CVM_BYTE(COP_POP);
+			CVM_ADJUST(-1);
+		}
+	}
 }
 
 /*
@@ -560,7 +623,7 @@ static void CVMCoder_PtrPrefix(ILCoder *coder, int alignment)
  */
 static void CVMCoder_ArrayLength(ILCoder *coder)
 {
-	/* TODO */
+	CVM_BYTE(COP_ARRAY_LEN);
 }
 
 /*

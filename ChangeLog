@@ -32,6 +32,9 @@ entire stack item as "type2".
 
 * engine/cvmc_conv.c: implement the "Conv" and "ToPointer" coder API's.
 
+* engine/cvmc_ptr.c: check for null in pointer access operations;
+implement the "PtrAccessManaged" and "ArrayLength" coder API's.
+
 2001-10-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_branch.c: verification for "switch" instructions; process

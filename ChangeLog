@@ -19,6 +19,9 @@ image/link.c, image/pecoff_loader.c, image/types.c, include/il_image.h,
 include/il_program.h: implement a new path lookup algorithm, for
 both assemblies and PInvoke-based libraries.
 
+* config.guess, config.sub: new files to support "AC_CANONICAL_SYSTEM"
+in the configure.in file.
+
 2001-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c,

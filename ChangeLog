@@ -5,6 +5,18 @@
 	StatusBarPanel's.  Rectangle calculations were being miscalculated
 	and being passed to DrawString. (patch #3578, applied by ptah).
 
+2004-12-16  Deryk Robosson  <deryk@0x0a.com>
+	* System.Drawing/System.Drawing.build,
+	System.Drawing/SystemIcons.cs,
+	System.Windows.Forms/MessageBox.cs,
+	resources/en_US/System.Drawing/Makefile.am,
+	resources/en_US/System.Drawing/System.Drawing.asterisk.ico
+	resources/en_US/System.Drawing/System.Drawing.System.Drawing.exclamation.ico,
+	resources/en_US/System.Drawing/System.Drawing.hand.ico,
+	resources/en_US/System.Drawing/System.Drawing.question.ico,
+	resources/en_US/System.Windows.Forms/Makefile.am:
+	Implement SystemIcons.
+
 2004-12-16  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* System.Xml/XmlUrlResolver.cs: Relative filenames on the filesystem

@@ -20,9 +20,23 @@
 namespace System.Drawing
 {
 using System;
+using System.Windows.Forms.Themes;
 
 	public sealed class SystemIcons
 	{
+		private enum IconType
+		{
+			Application		= 0,
+			Asterisk		= 1,
+			Error			= 2,
+			Exclamation		= 3,
+			Hand			= 4,
+			Information		= 5,
+			Question		= 6,
+			Warning			= 7,
+			WinLogo			= 8
+		}
+
 		private static Icon applicationIcon;
 		private static Icon asteriskIcon;
 		private static Icon errorIcon;
@@ -31,7 +45,7 @@ using System;
 		private static Icon informationIcon;
 		private static Icon questionIcon;
 		private static Icon warningIcon;
-		private static Icon windowsLogo;
+		private static Icon windowsLogoIcon;
 
 		[TODO]
 		public static Icon Application
@@ -40,7 +54,7 @@ using System;
 			{
 				if (applicationIcon == null)
 					//TODO
-					applicationIcon = new Icon("");
+					applicationIcon = LoadIcon(IconType.Application);
 				return applicationIcon;
 			}
 		}
@@ -53,7 +67,7 @@ using System;
 				if (asteriskIcon == null)
 				{
 					//TODO
-					asteriskIcon = new Icon("");
+					asteriskIcon = LoadIcon(IconType.Asterisk);
 				}
 				return asteriskIcon;
 			}
@@ -67,7 +81,7 @@ using System;
 				if (errorIcon == null)
 				{
 					//TODO
-					errorIcon = new Icon("");
+					errorIcon = LoadIcon(IconType.Error);
 				}
 				return errorIcon;
 			}
@@ -81,7 +95,7 @@ using System;
 				if (exclamationIcon == null)
 				{
 					//TODO
-					exclamationIcon = new Icon("");
+					exclamationIcon = LoadIcon(IconType.Exclamation);
 				}
 				return exclamationIcon;
 			}
@@ -95,7 +109,7 @@ using System;
 				if (handIcon == null)
 				{
 					//TODO
-					handIcon = new Icon("");
+					handIcon = LoadIcon(IconType.Hand);
 				}
 				return handIcon;
 			}
@@ -109,7 +123,7 @@ using System;
 				if (informationIcon == null)
 				{
 					//TODO
-					informationIcon = new Icon("");
+					informationIcon = LoadIcon(IconType.Information);
 				}
 				return informationIcon;
 			}
@@ -123,7 +137,7 @@ using System;
 				if (questionIcon == null)
 				{
 					//TODO
-					questionIcon = new Icon("");
+					questionIcon = LoadIcon(IconType.Question);
 				}
 				return questionIcon;
 			}
@@ -137,7 +151,7 @@ using System;
 				if (warningIcon == null)
 				{
 					//TODO
-					warningIcon = new Icon("");
+					warningIcon = LoadIcon(IconType.Warning);
 				}
 				return warningIcon;
 			}
@@ -148,13 +162,133 @@ using System;
 		{
 			get
 			{
-				if (windowsLogo == null)
+				if (windowsLogoIcon == null)
 				{
 					//TODO
-					windowsLogo = new Icon("");
+					windowsLogoIcon = LoadIcon(IconType.WinLogo);
 				}
-				return windowsLogo;
+				return windowsLogoIcon;
 			}
 		}
+
+		// Load a particular icon from this assembly's resources.
+		// Stolen from S.W.F.MessageBox.cs
+		private static Icon LoadIcon(SystemIcons.IconType iconType)
+		{
+			lock(typeof(SystemIcons))
+			{
+				Icon iconObject = null;
+				try
+				{
+					switch(iconType)
+					{
+						case IconType.Application:
+						{
+							if(applicationIcon == null)
+							{
+								applicationIcon = new Icon
+									(typeof(SystemIcons), "application.ico");
+							}
+							iconObject = handIcon;
+						}
+						break;
+
+						case IconType.Asterisk:
+						{
+							if(asteriskIcon == null)
+							{
+								asteriskIcon = new Icon
+									(typeof(SystemIcons), "asterisk.ico");
+							}
+							iconObject = asteriskIcon;
+						}
+						break;
+
+						case IconType.Error:
+						{
+							if(errorIcon == null)
+							{
+								errorIcon = new Icon
+									(typeof(SystemIcons), "error.ico");
+							}
+							iconObject = errorIcon;
+						}
+						break;
+
+						case IconType.Exclamation:
+						{
+							if(exclamationIcon == null)
+							{
+								exclamationIcon = new Icon
+									(typeof(SystemIcons), "exclamation.ico");
+							}
+							iconObject = exclamationIcon;
+						}
+						break;
+
+						case IconType.Hand:
+						{
+							if(handIcon == null)
+							{
+								handIcon = new Icon
+									(typeof(SystemIcons), "hand.ico");
+							}
+							iconObject = handIcon;
+						}
+						break;
+
+						case IconType.Information:
+						{
+							if(informationIcon == null)
+							{
+								informationIcon = new Icon
+									(typeof(SystemIcons), "information.ico");
+							}
+							iconObject = exclamationIcon;
+						}
+						break;
+
+						case IconType.Question:
+						{
+							if(questionIcon == null)
+							{
+								questionIcon = new Icon
+									(typeof(SystemIcons), "question.ico");
+							}
+							iconObject = questionIcon;
+						}
+						break;
+
+						case IconType.Warning:
+						{
+							if(warningIcon == null)
+							{
+								warningIcon = new Icon
+									(typeof(SystemIcons), "warning.ico");
+							}
+							iconObject = warningIcon;
+						}
+						break;
+
+						case IconType.WinLogo:
+						{
+							if(windowsLogoIcon == null)
+							{
+								windowsLogoIcon = new Icon
+									(typeof(SystemIcons), "windows.ico");
+							}
+							iconObject = windowsLogoIcon;
+						}
+						break;
+					}
+				}
+				catch
+				{
+					// Could not load the icon - ignore this condition.
+				}
+				return iconObject;
+			}
+		}
+
 	}
 }

@@ -160,8 +160,7 @@ public class MessageBox
 							{
 								if(handIcon == null)
 								{
-									handIcon = new Icon
-										(typeof(MessageBox), "hand.ico");
+									handIcon = System.Drawing.SystemIcons.Hand;
 								}
 								iconObject = handIcon;
 							}
@@ -171,8 +170,7 @@ public class MessageBox
 							{
 								if(questionIcon == null)
 								{
-									questionIcon = new Icon
-										(typeof(MessageBox), "question.ico");
+									questionIcon = System.Drawing.SystemIcons.Question;
 								}
 								iconObject = questionIcon;
 							}
@@ -182,8 +180,7 @@ public class MessageBox
 							{
 								if(exclamationIcon == null)
 								{
-									exclamationIcon = new Icon
-										(typeof(MessageBox), "exclamation.ico");
+									exclamationIcon = System.Drawing.SystemIcons.Exclamation;
 								}
 								iconObject = exclamationIcon;
 							}
@@ -193,8 +190,7 @@ public class MessageBox
 							{
 								if(asteriskIcon == null)
 								{
-									asteriskIcon = new Icon
-										(typeof(MessageBox), "asterisk.ico");
+									asteriskIcon = System.Drawing.SystemIcons.Asterisk;
 								}
 								iconObject = asteriskIcon;
 							}

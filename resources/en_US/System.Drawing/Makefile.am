@@ -8,3 +8,9 @@ System.Drawing.resources:
 			-f "$(srcdir)/resources.build" all
 
 CLEANFILES = System.Drawing.resources
+
+EXTRA_DIST = System.Drawing.asterisk.ico \
+		System.Drawing.exclamation.ico \
+		System.Drawing.hand.ico \
+		System.Drawing.question.ico
+

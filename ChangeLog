@@ -9,6 +9,9 @@ non-void method.
 * codegen/cg_decls.tc: don't output the return logic for a MethodDeclaration
 if the method body is empty.
 
+* codegen/cg_library.c: add "System.Type" to the set of builtin library
+types.
+
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition

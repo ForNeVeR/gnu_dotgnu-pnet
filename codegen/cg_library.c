@@ -60,6 +60,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILProgramItem *scope = ILClassGlobalScope(image);
 	ILClass *objectClass;
 	ILClass *stringClass;
+	ILClass *typeClass;
 	ILClass *valueTypeClass;
 	ILClass *voidClass;
 	ILClass *intPtrClass;
@@ -81,6 +82,15 @@ void ILGenMakeLibrary(ILGenInfo *info)
 				    IL_META_TYPEDEF_SERIALIZABLE |
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
+
+	/* Create the "System.Type" class */
+	ABORT_IF(typeClass,
+			 ILClassCreate(scope, 0, "Type", "System", objectClass));
+	ILClassSetAttrs(stringClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_ABSTRACT);
 
 	/* Create the "System.ValueType" class */
 	ABORT_IF(valueTypeClass,

@@ -82,6 +82,25 @@ ILNode_SemAnalysis(ILNode_UserCast)
 	/* Return an rvalue of the final type to the caller */
 	if(ILNode_EvalConst(*parent, info, &evalValue))
 	{
+		if(!(info->overflowInsns) && !(info->overflowChanged))
+		{
+			/* Re-evaluate in overflow mode to see if an explicit
+			   "unchecked(x)" is required around the expression */
+			ILEvalValue evalValue2;
+			int result;
+			info->overflowInsns = 1;
+			info->overflowChanged = 1;
+			result = ILNode_EvalConst(*parent, info, &evalValue2);
+			info->overflowInsns = 0;
+			info->overflowChanged = 0;
+			if(!result)
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "constant value cannot be converted to `%s' "
+							  "without an explicit `unchecked' context",
+							  CSTypeToName(CSSemGetType(type)));
+			}
+		}
 		CSSemSetConstant(value, CSSemGetType(type), evalValue);
 		CSSemReplaceWithConstant(parent, value);
 	}

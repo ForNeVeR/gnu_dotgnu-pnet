@@ -97,6 +97,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->nextLabel = 1;
 	info->overflowInsns = 1;
 	info->overflowGlobal = 1;
+	info->overflowChanged = 0;
 	info->pedanticArith = 0;
 	info->clsCompliant = 0;
 	info->semAnalysis = 0;

@@ -195,6 +195,7 @@ ILNode *ILEnterProgramItemContext(ILGenInfo *info, ILProgramItem *item,
 	context->currentTypeFormals = info->currentTypeFormals;
 	context->currentMethodFormals = info->currentMethodFormals;
 	context->overflowInsns = info->overflowInsns;
+	context->overflowChanged = info->overflowChanged;
 
 	/* Bail out if we don't have a node for the program item */
 	node = ILProgramItemToNode(info, item);
@@ -247,6 +248,7 @@ ILNode *ILEnterProgramItemContext(ILGenInfo *info, ILProgramItem *item,
 		info->currentMethodFormals = 0;
 	}
 	info->overflowInsns = info->overflowGlobal;
+	info->overflowChanged = 0;
 
 	/* Ready to go */
 	return node;
@@ -260,6 +262,7 @@ void ILLeaveProgramItemContext(ILGenInfo *info, ILGenItemContext *context)
 	info->currentTypeFormals = context->currentTypeFormals;
 	info->currentMethodFormals = context->currentMethodFormals;
 	info->overflowInsns = context->overflowInsns;
+	info->overflowChanged = context->overflowChanged;
 }
 
 #ifdef	__cplusplus

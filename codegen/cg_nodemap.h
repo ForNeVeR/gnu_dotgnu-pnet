@@ -36,6 +36,7 @@ typedef struct
 	ILNode	*currentTypeFormals;
 	ILNode	*currentMethodFormals;
 	int		 overflowInsns;
+	int		 overflowChanged;
 
 } ILGenItemContext;
 

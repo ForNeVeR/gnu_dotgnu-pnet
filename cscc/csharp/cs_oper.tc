@@ -2257,9 +2257,12 @@ ILNode_SemAnalysis(ILNode_Overflow)
 {
 	CSSemValue value;
 	int overflow = info->overflowInsns;
+	int changed = info->overflowChanged;
 	info->overflowInsns = 1;
+	info->overflowChanged = 1;
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 	info->overflowInsns = overflow;
+	info->overflowChanged = changed;
 	return value;
 }
 
@@ -2270,9 +2273,12 @@ ILNode_SemAnalysis(ILNode_NoOverflow)
 {
 	CSSemValue value;
 	int overflow = info->overflowInsns;
+	int changed = info->overflowChanged;
 	info->overflowInsns = 0;
+	info->overflowChanged = 1;
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 	info->overflowInsns = overflow;
+	info->overflowChanged = changed;
 	return value;
 }
 

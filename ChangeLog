@@ -28,6 +28,9 @@ element types that we know about.
 * codegen/cg_coerce.h, codegen/cg_coerce.c (GetConvertRules):
 handle "ILType_Null" in type coercions and casts.
 
+* configure.in: change "${bindir}" to "${prefix}/bin" to get around a
+shell variable expansion bug when searching for treecc.
+
 2001-08-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_scope.h, codegen/cg_scope.c: add node information to all

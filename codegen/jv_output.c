@@ -840,7 +840,13 @@ void JavaGenCallCtorIntrinsic(ILGenInfo *info, const char *className,
 
 void JavaGenClassRef(ILGenInfo *info, int opcode, ILClass *classInfo)
 {
-	/* TODO */
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, "\t%s\t", ILJavaOpcodeTable[opcode].name);
+		ILDumpClassName(info->asmOutput, info->image,
+						classInfo, IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
+	}
 }
 
 void JavaGenTypeRef(ILGenInfo *info, int opcode, ILType *type)

@@ -17,6 +17,8 @@
 
 	* cscc/cs_oper.tc (ILNode_AsUntyped): fixes to error reporting.
 
+	* codegen/jv_output.c (JavaGenClassRef): implement missing function.
+
 2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_coerce.h, include/il_types.h, image/types.c:

@@ -682,7 +682,6 @@ public class XmlTextWriter : XmlWriter
 				if(writeState == System.Xml.WriteState.Attribute)
 				{
 					// Terminate the attribute and the element start.
-					Console.WriteLine("hello");
 					writer.Write(quoteChar);
 					writer.Write(" />");
 					PopScope();

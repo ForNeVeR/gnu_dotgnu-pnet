@@ -23,14 +23,14 @@
 namespace System.Resources
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_SERIALIZATION
 
 using System;
 using System.IO;
 using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Xml;
-#if CONFIG_COMPONENT_MODEL && CONFIG_SERIALIZATION
+#if CONFIG_COMPONENT_MODEL
 using System.ComponentModel;
 #endif
 

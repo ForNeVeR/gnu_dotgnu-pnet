@@ -22,7 +22,7 @@
 namespace System.Resources
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_SERIALIZATION
 
 using System;
 using System.IO;
@@ -56,6 +56,6 @@ public class ResXResourceSet : ResourceSet
 
 }; // class ResXResourceSet
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_SERIALIZATION
 
 }; // namespace System.Resources

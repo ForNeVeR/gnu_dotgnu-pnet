@@ -23,6 +23,7 @@ using Xsharp;
 
 public class XClockEmbed : TopLevelWindow
 {
+#if CONFIG_EXTENDED_DIAGNOSTICS
 	// Main entry point.
 	public static void Main(String[] args)
 	{
@@ -50,5 +51,10 @@ public class XClockEmbed : TopLevelWindow
 	{
 		embed.Resize(width, height);
 	}
+#else
+	public XClockEmbed(String title, int width, int height)
+		: base(title, width, height) {}
+	public static void Main(String[] args) {}
+#endif
 
 }; // class XClockEmbed

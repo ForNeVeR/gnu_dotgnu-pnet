@@ -467,7 +467,6 @@ public abstract class Image
 						rawFormat = ImageFormat.Icon; break;
 				}
 				frameDimensionsList = new Guid [0];
-			#endif
 				this.dgImage = dgImage;
 				// If we are loading an icon, set the size of the image
 				// to the size of the first icon
@@ -481,6 +480,11 @@ public abstract class Image
 					width = dgImage.Width;
 					height = dgImage.Height;
 				}
+			#else
+				this.dgImage = dgImage;
+				width = dgImage.GetFrame(0).Width;
+				height = dgImage.GetFrame(0).Height;
+			#endif
 				horizontalResolution = Graphics.DefaultScreenDpi;
 				verticalResolution = Graphics.DefaultScreenDpi;
 				pixelFormat = (System.Drawing.Imaging.PixelFormat)

@@ -3332,22 +3332,26 @@ namespace FormsTest
 
 		private void buttonResXWrite_Click(object sender, EventArgs e)
 		{
+		#if !ECMA_COMPAT && CONFIG_SERIALIZATION
 			ResXResourceWriter w = new ResXResourceWriter("test.resx");
 			w.AddResource("my string", "Hello");
 			w.AddResource("my color", Color.Red);
 			w.AddResource("my byte array", new Byte[3] { 255, 254, 253 });
 			w.Generate();
 			w.Close();
+		#endif
 		}
 
 		private void buttonResXRead_Click(object sender, EventArgs e)
 		{
+		#if !ECMA_COMPAT && CONFIG_SERIALIZATION
 			ResXResourceSet rs = new ResXResourceSet("test.resx");
 			textBoxResXData.AppendText("my string:" + rs.GetObject("my string") + "\r\n");
 			textBoxResXData.AppendText("my color:" + rs.GetObject("my color") + "\r\n");
 			byte[] b = (byte[])rs.GetObject("my byte array") ;
 			textBoxResXData.AppendText("my byte array:" + b.ToString()+ "\r\n");
 			textBoxResXData.AppendText("{" + b[0] +"," + b[1]+"," + b[2]+"}");
+		#endif
 		}
 
 		private void AddImageListTest(Control c)

@@ -38,6 +38,14 @@
 	* System/Diagnostics/Switch.cs, System/Diagnostics/Trace.cs:
 	configuration of diagnostic switch options.
 
+	* System/Net/BasicClient.cs, System.Drawing/Bitmap.cs,
+	System.Drawing/Icon.cs, System.Drawing/Image.cs,
+	System.Windows.Forms/Resources/ResXNullRef.cs,
+	System.Windows.Forms/Resources/ResXResourceSet.cs,
+	System.Windows.Forms/Resources/ResXResourceWriter.cs,
+	samples/FormsTest.cs, samples/XClockEmbed.cs:
+	fix some profile-related build issues.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

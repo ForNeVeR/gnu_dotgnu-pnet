@@ -84,7 +84,7 @@ public sealed class Icon : MarshalByRefObject, ICloneable, IDisposable
 			}
 	public Icon(Type type, String resource)
 			{
-				Stream stream = type.Module.Assembly.GetManifestResourceStream
+				Stream stream = Bitmap.GetManifestResourceStream
 					(type, resource);
 				if(stream == null)
 				{

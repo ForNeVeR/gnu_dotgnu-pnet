@@ -81,8 +81,7 @@ public sealed class Bitmap : System.Drawing.Image
 			}
 	public Bitmap(Type type, String resource)
 			{
-				Stream stream = type.Module.Assembly.GetManifestResourceStream
-					(type, resource);
+				Stream stream = GetManifestResourceStream(type, resource);
 				if(stream == null)
 				{
 					throw new ArgumentException(S._("Arg_UnknownResource"));
@@ -116,6 +115,22 @@ public sealed class Bitmap : System.Drawing.Image
 	internal Bitmap(SerializationInfo info, StreamingContext context)
 			: base(info, context) {}
 #endif
+
+	// Get a manifest resource stream.  Profile-safe version.
+	internal static Stream GetManifestResourceStream(Type type, String name)
+			{
+			#if !ECMA_COMPAT
+				return type.Module.Assembly.GetManifestResourceStream
+						(type, name);
+			#else
+				if(type.Namespace != null && type.Namespace != String.Empty)
+				{
+					return type.Module.Assembly.GetManifestResourceStream
+						(type.Namespace + "." + name);
+				}
+				return type.Module.Assembly.GetManifestResourceStream(name);
+			#endif
+			}
 
 	// Clone this bitmap and transform it into a new pixel format
 	[TODO]

@@ -197,6 +197,7 @@ int ILLinkerMain(int argc, char *argv[])
 	int numLibraries = 0;
 	char **libraryDirs;
 	int numLibraryDirs = 0;
+	int sawEmbed = 0;
 	char *stdLibrary = "mscorlib";
 	char *stdCLibrary = 0;
 	char **resources;
@@ -398,6 +399,7 @@ int ILLinkerMain(int argc, char *argv[])
 				resourceNames[numResources] = (namelen > 0 ? name : filename);
 				resourcePrivate[numResources] = isPrivate;
 				++numResources;
+				sawEmbed = 1;
 			}
 			break;
 
@@ -582,11 +584,18 @@ int ILLinkerMain(int argc, char *argv[])
 		}
 	}
 
-	/* We need at least one input file argument */
+	/* We need at least one input file argument unless "/embed" was supplied */
 	if(argc <= 1)
 	{
-		usage(progname);
-		return 1;
+		if(sawEmbed)
+		{
+			resourcesOnly = 1;
+		}
+		else
+		{
+			usage(progname);
+			return 1;
+		}
 	}
 
 	/* Determine the default output format from the

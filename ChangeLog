@@ -24,6 +24,9 @@
 	implement options for "ilalink" that make it compatible with "al";
 	hard link "al" to point to "ilalink".
 
+	* ilalink/link_main.c: force "resourcesOnly" if there are only
+	"/embed" options on the linker command-line.
+
 2002-12-12 Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_defs.tc, 

@@ -24,6 +24,23 @@
 	runtime/System/Collections/KeyComparer.cs: add some new .NET
 	Framework 1.2 collection classes.
 
+	* System/IO/Ports/Handshake.cs, System/IO/Ports/Parity.cs,
+	System/IO/Ports/SerialErrorEventArgs.cs,
+	System/IO/Ports/SerialErrorEventHandler.cs,
+	System/IO/Ports/SerialErrors.cs,
+	System/IO/Ports/SerialPinChangedEventArgs.cs,
+	System/IO/Ports/SerialPinChangedEventHandler.cs,
+	System/IO/Ports/SerialPinChanges.cs,
+	System/IO/Ports/SerialPort.cs, System/IO/Ports/SerialReceived.cs,
+	System/IO/Ports/SerialReceivedEventArgs.cs,
+	System/IO/Ports/SerialReceivedEventHandler.cs,
+	System/IO/Ports/StopBits.cs, System/Platform/PortMethods.cs,
+	profiles/compact, profiles/compact-fp, profiles/ecma,
+	profiles/full, profiles/kernel, profiles/kernel-fp,
+	profiles/mscompact, profiles/tiny, profiles/tiny-fp:
+	check in an initial implementation of the .NET Framework 1.2
+	serial port classes.
+
 2003-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/Stdio.cs, runtime/System/Console.cs,

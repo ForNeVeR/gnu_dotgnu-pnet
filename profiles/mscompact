@@ -71,4 +71,7 @@
 <!-- Use SSL Support using DotGNU.SSL -->
 <define name="CONFIG_SSL" value="false"/>
 
+<!-- Use serial port classes -->
+<define name="CONFIG_SERIAL_PORTS" value="false"/>
+
 </profile>

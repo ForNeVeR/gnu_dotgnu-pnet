@@ -1120,7 +1120,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 
 %type <kind>		StructOrUnion TypeQualifierList TypeQualifier
 
-%expect 5
+%expect 6
 
 %start File
 %%
@@ -1947,6 +1947,17 @@ StructDeclarator
 	| Declarator ':' ConstantExpression		{
 				ILUInt32 size = EvaluateSize($3);
 				$$ = ILNode_CBitFieldDeclarator_create($1, size);
+			}
+	| TYPE_NAME		{
+				CDeclarator decl;
+				CDeclSetName(decl, $1, ILQualIdentSimple($1));
+				$$ = ILNode_CDeclarator_create(decl);
+			}
+	| TYPE_NAME ':' ConstantExpression		{
+				CDeclarator decl;
+				ILUInt32 size = EvaluateSize($3);
+				CDeclSetName(decl, $1, ILQualIdentSimple($1));
+				$$ = ILNode_CBitFieldDeclarator_create(decl, size);
 			}
 	;
 

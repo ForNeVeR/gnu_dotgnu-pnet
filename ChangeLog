@@ -1,4 +1,9 @@
 
+2003-08-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_grammar.y: modify struct declarators so that
+	they can include typedef names as field names (bug #4689).
+
 2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c: fix a bug where "final virtual" was

@@ -271,7 +271,7 @@ public unsafe sealed class Crt0
 				try
 				{
 					assembly = Assembly.Load(libcName);
-					type = assembly.GetType("<Module>");
+					type = assembly.GetType("$Module$");
 					if(type != null)
 					{
 						libcModule = type.Module;

@@ -30,6 +30,9 @@
 
 	* doc/c_language_abi.html: document the use of "$Module$.
 
+	* csupport/Crt0.cs: use "$Module$" to look up the module type
+	in the "libc" assembly.
+
 2002-08-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c, cscc/c/c_function.h, doc/c_language_abi.html:

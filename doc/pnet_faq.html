@@ -6,7 +6,7 @@
 <h1>DotGNU Portable.Net FAQ</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2003/10/12 03:12:32 $<p>
+Last Modified: $Date: 2003/10/13 07:13:36 $<p>
 
 Copyright &copy; 2001, 2002, 2003 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
@@ -57,7 +57,7 @@ Permission to distribute unmodified copies of this work is hereby granted.<p>
 &nbsp;&nbsp;&nbsp;&nbsp;6.6. <a href="#q6_6">Can I build applications without "make"?</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;6.7. <a href="#q6_7">What other tools do you have?</a><br>
 7. <a href="#q7">Copyright issues</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;7.1. <a href="#q7_1">Why isn't the C# library LGPL?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;7.1. <a href="#q7_1">What is the license on the C# library?</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;7.2. <a href="#q7_2">Who owns the Copyright on patches?</a><br>
 8. <a href="#q8">How can I help?</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;8.1. <a href="#q8_1">What areas need the most work?</a><br>
@@ -925,54 +925,42 @@ is a sampling:
 
 <a name="q7"><h2>7. Copyright issues</h2>
 
-<a name="q7_1"><h3>7.1. Why isn't the C# library LGPL?</h3>
+<a name="q7_1"><h3>7.1. What is the license on the C# library?</h3>
 
 The license on the C# library, "<code>pnetlib</code>", is distributed
 under a modified GPL license:
 
 <blockquote>
 The source code for the library is distributed under the terms of the
-GNU General Public License, with the following exception: if you link
-this library against your own program, then you do not need to release
-the source code for that program.  However, any changes that you make
-to the library itself, or to any native methods upon which the library
-relies, must be re-distributed in accordance with the terms of the GPL.
-</blockquote>
+GNU General Public License, with the following exception:<p>
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent modules,
+and to copy and distribute the resulting executable under terms of your
+choice, provided that you also meet, for each linked independent module,
+the terms and conditions of the license of that module.  An independent
+module is a module which is not derived from or based on this library.
+If you modify this library, you may extend this exception to your
+version of the library, but you are not obligated to do so.  If you do
+not wish to do so, delete this exception statement from your version.
+</blockquote><p>
 
 We call this the "GPL plus linking exception", which is also used by
-the GNU Classpath project.<p>
+the GNU Classpath project (<a href="http://www.gnu.org/software/classpath/classpath.html"><code>http://www.gnu.org/software/classpath/classpath.html</code></a>.<p>
 
-An obvious licensing question that many people have is why use the GPL
-instead of the LGPL for this library?  We aren't trying to restrict its
-use by commercial entities.<p>
+Earlier versions of the C# library's license had the following
+exception:<p>
 
-However, there is a small catch with the LGPL and native methods.
-A commercial entity could produce their own proprietry runtime engine
-that has "enhanced" native method support of some kind.  Under the
-terms of the LGPL, they would be obligated to release the declaration
-of the native method in the C# system library.  For example:<p>
+<blockquote>
+If you link this library against your own program, then you do not need
+to release the source code for that program.  However, any changes that
+you make to the library itself, or to any native methods upon which the
+library relies, must be re-distributed in accordance with the terms of
+the GPL.
+</blockquote><p>
 
-	<blockquote>
-	<code>extern int enhanced_method(string arg1, int arg2);</code>
-	</blockquote>
-
-But would they be obligated to release the source code to the native
-method's implementation under the terms of the LGPL?  Because it is in
-a separate program (their runtime engine), it isn't strictly part of
-the library.  The result would be a C# library that is useless without
-their proprietry native method implementation.  This state of affairs
-is undesirable.<p>
-
-Under the terms of the GPL, we can require that the source code to
-native methods must also be available, or the library modification
-is disallowed.<p>
-
-This is why we have decided to use the GPL with the linking exception
-described above.<p>
-
-[Aside: by "native method" we mean any method that is implemented in
-something other than IL bytecode.  This includes PInvoke functions and
-"internalcall" methods, among others.]<p>
+It is our intention to keep the exception synchronized with GNU Classpath,
+so that all similar libraries in the GNU Project have consistent licensing.<p>
 
 <a name="q7_2"><h3>7.2. Who owns the Copyright on patches?</h3>
 

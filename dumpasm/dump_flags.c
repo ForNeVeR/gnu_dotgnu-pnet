@@ -240,7 +240,7 @@ ILFlagInfo const ILMethodCallConvFlags[] = {
 	{"/generic", IL_META_CALLCONV_GENERIC, 0},
 	{"instance", IL_META_CALLCONV_HASTHIS, 0},
 	{"explicit", IL_META_CALLCONV_EXPLICITTHIS, 0},
-	{0, 0, 0xFFFFFF90},
+	{0, 0, 0xFFFFFF80},
 };
 
 /*

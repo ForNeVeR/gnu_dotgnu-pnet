@@ -13,6 +13,9 @@
 	* dumpasm/dump_type.c (ILDumpMethodType): wrong item used in
 	call to ILGenericParGetFromOwner.
 
+	* dumpasm/dump_flags.c: mark the "generic" calling convention
+	flag as known to prevent ildasm saying "unknown bits: 0x0010".
+
 2003-02-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* support/dir.c : fix build breaking on Mingw32 

@@ -11,7 +11,9 @@
 
 	* codegen/cg_coerce.c: Fix indirect casting to use a 3 step conversion
 	instead of obtaining rules.
-	
+
+	* engine/ilrun.c: Explicitly call the static constructor of the class
+	containing the entry point function. (fixes Bug #3593)
 	
 2003-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

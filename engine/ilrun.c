@@ -110,6 +110,26 @@ static ILCmdLineOption const options[] = {
 static void usage(const char *progname);
 static void version(void);
 
+static int CallStaticConstructor(ILExecThread *thread, ILMethod * method)
+{
+	ILClass *classInfo=ILMethod_Owner(method);
+	ILMethod *cctor = 0;
+	while((cctor = (ILMethod *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)cctor,
+					 IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		if(ILMethod_IsStaticConstructor(cctor))
+		{
+			if(ILExecThreadCall(thread, cctor, NULL))
+			{
+				/* An exception was thrown while executing the program */
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
@@ -390,8 +410,10 @@ int main(int argc, char *argv[])
 	sawException = 0;
 	if(args != 0 && !ILExecThreadHasException(thread))
 	{
-		retval = 0;
-		if(ILExecThreadCall(thread, method, &retval, args))
+		retval = CallStaticConstructor(thread, method);
+		sawException = retval;
+		
+		if(!sawException && ILExecThreadCall(thread, method, &retval, args))
 		{
 			/* An exception was thrown while executing the program */
 			sawException = 1;

@@ -77,6 +77,13 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 				StreamWriter writer;
 				for(src = 0; src < ea.Length; ++src)
 				{
+					foreach(String assembly in ea[src].ReferencedAssemblies)
+					{
+						if(!options.ReferencedAssemblies.Contains(assembly))
+						{
+							options.ReferencedAssemblies.Add(assembly);
+						}
+					}
 					tempFiles[src] = options.TempFiles.AddExtension
 							(src + FileExtension);
 					stream = new FileStream(tempFiles[src], FileMode.Create,

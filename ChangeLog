@@ -10,6 +10,11 @@
 	* runtime/System/AppDomain.cs, runtime/System/AppDomainSetup.cs:
 	Implement more fake AppDomain functionality.
 
+	* System/CodeDom/Compiler/CodeCompiler.cs,
+	System/CodeDom/Compiler/CompilerResults.cs: Fix referenced assemblies
+	for batch compiles for CodeCompiler and load the assembly from output
+	path in CompilerResults.
+
 2004-09-14  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Collections/Hashtable.cs: Fix a few cases where 

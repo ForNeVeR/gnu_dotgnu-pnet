@@ -50,7 +50,16 @@ public class CompilerResults
 			{
 				get
 				{
-					return compiledAssembly;
+					if(null != compiledAssembly)
+					{
+						return compiledAssembly;
+					}
+					if(null != pathToAssembly)
+					{
+						compiledAssembly = Assembly.LoadFrom(pathToAssembly);	
+						return compiledAssembly;	
+					}
+					return null;
 				}
 				set
 				{

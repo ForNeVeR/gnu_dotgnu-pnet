@@ -5395,6 +5395,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							// find the end of the word
 							if(c == ' ' || c == '\n' || c == '\r') { break; }
 
+							// we also split on minus to mimic MS behavior
+							if(c == '-')
+							{
+								nextIndex++;
+								break;
+							}
+
 							// move to the next character
 							++nextIndex;
 						}

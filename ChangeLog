@@ -1,4 +1,10 @@
 
+2005-03-05  Hermann Weiss  <Hermann.Weiss@de.trumpf-laser.com>
+
+	* engine/lib_task.c:  Added functions _IL_Process_GetErrnoMessage
+	_IL_Process_GetErrno to get the result of forked processes. (patch
+	#3778, applied by drobosson)
+
 2005-02-28  Marc Haisenko  <marc@darkdust.net>
 
 	* engine/cvm_call.c: callFrame now defaults to zero (otherwise I get an

@@ -579,6 +579,7 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	int pid;
 	ILInt32 argc;
 	const char *ansi;
+	int pipefds[2];
 #define	FreeStringList(list,size)	\
 		do { \
 			if((list)) \
@@ -712,6 +713,12 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 		*stderrHandle = (ILNativeInt)(stderrFds[0]);
 	}
 
+	/* Open the pipe for returning errno */
+	if(pipe(pipefds) < 0)
+	{
+		return 0;
+	}
+	
 	/* Fork and execute the process */
 	*processID = -1;
 	*processHandle = 0;
@@ -739,7 +746,13 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 			extern char **environ;
 			environ = newEnviron;
 		}
+		
+	#ifdef HAVE_FCNTL
+		fcntl(pipefds[1],F_SETFD,1);
+	#endif
+
 		execvp(fname, args);
+		write(pipefds[1],&errno, sizeof(errno));
 		exit(1);
 	}
 	else if(pid > 0)
@@ -758,6 +771,9 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 			close(stderrFds[1]);
 		}
 		*processID = (ILInt32)pid;
+		close(pipefds[1]);
+		errno = 0;
+		read(pipefds[0],&errno,sizeof(errno));
 		result = 1;
 	}
 	else
@@ -912,6 +928,29 @@ ILBool _IL_Process_WaitForInputIdle(ILExecThread *_thread,
 #endif
 }
 
+/*
+ * public static Errno GetErrno();
+ */
+ILInt32 _IL_Process_GetErrno(ILExecThread *thread)
+{
+	return ILSysIOGetErrno();
+}
+
+/*
+ * public static String GetErrnoMessage(Errno error);
+ */
+ILString *_IL_Process_GetErrnoMessage(ILExecThread *thread, ILInt32 error)
+{
+	const char *msg = ILSysIOGetErrnoMessage(error);
+	if(msg)
+	{
+		return ILStringCreate(thread, msg);
+	}
+	else
+	{
+		return 0;
+	}
+}
 #ifdef	__cplusplus
 };
 #endif

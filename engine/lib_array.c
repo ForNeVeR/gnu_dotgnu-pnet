@@ -1367,18 +1367,46 @@ void _IL_Array_Initialize(ILExecThread *thread, ILObject *thisObj)
 }
 
 /*
- * public static void Copy(Array sourceArray, int sourceIndex,
- *                         Array destArray, int destIndex,
- *                         int length);
+ * public static void InternalCopy(Array sourceArray, int sourceIndex,
+ *                                 Array destArray, int destIndex,
+ *                                 int length);
  */
-void _IL_Array_Copy(ILExecThread *thread,
-				    ILObject *sourceArray,
-				    ILInt32 sourceIndex,
-				    ILObject *destArray,
-				    ILInt32 destIndex,
-				    ILInt32 length)
+void _IL_Array_InternalCopy(ILExecThread *thread,
+				            ILObject *sourceArray,
+				            ILInt32 sourceIndex,
+				            ILObject *destArray,
+				            ILInt32 destIndex,
+				            ILInt32 length)
 {
-	/* TODO */
+	void *src, *dest;
+	ILType *synType;
+	ILInt32 size;
+
+	/* Get the base pointers for the two arrays and the element size */
+	if(_ILIsSArray((System_Array *)sourceArray))
+	{
+		src = ArrayToBuffer(sourceArray);
+		synType = ILClassGetSynType(GetObjectClass(sourceArray));
+		size = (ILInt32)(ILSizeOfType(ILType_ElemType(synType)));
+	}
+	else
+	{
+		src = ((System_MArray *)sourceArray)->data;
+		size = ((System_MArray *)sourceArray)->elemSize;
+	}
+	if(_ILIsSArray((System_Array *)destArray))
+	{
+		dest = ArrayToBuffer(destArray);
+	}
+	else
+	{
+		dest = ((System_MArray *)destArray)->data;
+	}
+
+	/* Copy the contents of the array */
+	ILMemMove(((unsigned char *)dest) + destIndex * size,
+			  ((unsigned char *)src) + sourceIndex * size,
+			  length * size);
 }
 
 /*

@@ -19,7 +19,7 @@ IL_METHOD_END
 IL_METHOD_BEGIN(Array_Methods)
 	IL_METHOD("Clear", "(oSystem.Array;ii)V", _IL_Array_Clear)
 	IL_METHOD("Initialize", "(T)V", _IL_Array_Initialize)
-	IL_METHOD("Copy", "(oSystem.Array;ioSystem.Array;ii)V", _IL_Array_Copy)
+	IL_METHOD("InternalCopy", "(oSystem.Array;ioSystem.Array;ii)V", _IL_Array_InternalCopy)
 	IL_METHOD("CreateArray", "(jiiii)oSystem.Array;", _IL_Array_CreateArray_jiiii)
 	IL_METHOD("CreateArray", "(j[i[i)oSystem.Array;", _IL_Array_CreateArray_jaiai)
 	IL_METHOD("GetLength", "(Ti)i", _IL_Array_GetLength_i)

@@ -14,7 +14,7 @@ extern ILInt32 _IL_ArgIterator_GetRemainingCount(ILExecThread * _thread, void * 
 
 extern void _IL_Array_Clear(ILExecThread * _thread, ILObject * array, ILInt32 index, ILInt32 length);
 extern void _IL_Array_Initialize(ILExecThread * _thread, ILObject * _this);
-extern void _IL_Array_Copy(ILExecThread * _thread, ILObject * sourceArray, ILInt32 sourceIndex, ILObject * destinationArray, ILInt32 destinationIndex, ILInt32 length);
+extern void _IL_Array_InternalCopy(ILExecThread * _thread, ILObject * sourceArray, ILInt32 sourceIndex, ILObject * destinationArray, ILInt32 destinationIndex, ILInt32 length);
 extern ILObject * _IL_Array_CreateArray_jiiii(ILExecThread * _thread, ILNativeInt elementType, ILInt32 rank, ILInt32 length1, ILInt32 length2, ILInt32 length3);
 extern ILObject * _IL_Array_CreateArray_jaiai(ILExecThread * _thread, ILNativeInt elementType, System_Array * lengths, System_Array * lowerBounds);
 extern ILInt32 _IL_Array_GetLength_i(ILExecThread * _thread, ILObject * _this, ILInt32 dimension);

@@ -482,7 +482,7 @@ public class ResourceManager
 							(path, out error, MainAssembly);
 						if(assembly != null && error == 0)
 						{
-							stream = MainAssembly.GetManifestResourceStream
+							stream = assembly.GetManifestResourceStream
 									(GetResourceFileName(culture));
 							if(stream != null)
 							{

@@ -5,6 +5,9 @@
 	menu selection timer , check whether the current mouse item
 	before selecting it.
 
+	* System.Drawing/SystemIcons.cs: Change the names of the various
+	icons to the right values.
+
 2004-05-13  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/TextBox.cs: Reapply last patch

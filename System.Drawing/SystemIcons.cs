@@ -34,7 +34,7 @@ using System;
 		private static Icon windowsLogo;
 
 		[TODO]
-		public static Icon ApplicationIcon
+		public static Icon Application
 		{
 			get
 			{
@@ -102,7 +102,7 @@ using System;
 		}
 
 		[TODO]
-		public static Icon InformationIcon
+		public static Icon Information
 		{
 			get
 			{

@@ -74,6 +74,10 @@ typedef struct
 #define	C_SEMKIND_NO_REF		(1<<8)
 #define	C_SEMKIND_DECAYED		(1<<9)
 #define	C_SEMKIND_ERROR			(1<<10)
+#define	C_SEMKIND_FIELD			(1<<11)
+#define	C_SEMKIND_PROPERTY		(1<<12)
+#define	C_SEMKIND_METHOD_GROUP	(1<<13)
+#define	C_SEMKIND_SVALUE		(1<<14)
 
 /*
  * The default semantic value, which is always "void".
@@ -94,7 +98,8 @@ extern CSemValue CSemValueError;
  * Test for various kinds of semantic values.
  */
 #define	CSemIsVoid(value)		(((value).kind__ & C_SEMKIND_VOID) != 0)
-#define	CSemIsLValue(value)		(((value).kind__ & C_SEMKIND_LVALUE) != 0)
+#define	CSemIsLValue(value)			\
+			(((value).kind__ & (C_SEMKIND_LVALUE | C_SEMKIND_SVALUE)) != 0)
 #define	CSemIsRValue(value)			\
 			(((value).kind__ & (C_SEMKIND_LVALUE | C_SEMKIND_RVALUE)) != 0)
 #define	CSemIsConstant(value)	(((value).kind__ & C_SEMKIND_CONSTANT) != 0)
@@ -106,6 +111,11 @@ extern CSemValue CSemValueError;
 #define	CSemIsNoRef(value)		(((value).kind__ & C_SEMKIND_NO_REF) != 0)
 #define	CSemIsDecayed(value)	(((value).kind__ & C_SEMKIND_DECAYED) != 0)
 #define	CSemIsError(value)		(((value).kind__ & C_SEMKIND_ERROR) != 0)
+#define	CSemIsField(value)		(((value).kind__ & C_SEMKIND_FIELD) != 0)
+#define	CSemIsProperty(value)	(((value).kind__ & C_SEMKIND_PROPERTY) != 0)
+#define	CSemIsMethodGroup(value)	\
+			(((value).kind__ & C_SEMKIND_METHOD_GROUP) != 0)
+#define	CSemIsSValue(value)		(((value).kind__ & C_SEMKIND_SVALUE) != 0)
 
 /*
  * Get the type field from a semantic value.
@@ -146,6 +156,17 @@ extern CSemValue CSemValueError;
 #define	CSemSetLValue(value,type)	\
 			do { \
 				(value).kind__ = C_SEMKIND_LVALUE; \
+				(value).type__ = (type); \
+				(value).extra__ = 0; \
+			} while (0)
+
+/*
+ * Set a semantic value to an s-value reference (i.e. an l-value that
+ * cannot be used as an r-value such as a write-only property).
+ */
+#define	CSemSetSValue(value,type)	\
+			do { \
+				(value).kind__ = C_SEMKIND_SVALUE | C_SEMKIND_NO_REF; \
 				(value).type__ = (type); \
 				(value).extra__ = 0; \
 			} while (0)
@@ -261,6 +282,51 @@ extern CSemValue CSemValueError;
 				(value).kind__ &= ~C_SEMKIND_LVALUE; \
 				(value).kind__ |= C_SEMKIND_RVALUE; \
 			} while (0)
+
+/*
+ * Set a semantic value to a field.
+ */
+#define	CSemSetField(value,field)	\
+			do { \
+				(value).kind__ = C_SEMKIND_FIELD; \
+				(value).type__ = ILType_Void; \
+				(value).extra__ = (void *)(field); \
+			} while (0)
+
+/*
+ * Extract the field from a semantic value.
+ */
+#define	CSemGetField(value)		((ILField *)((value).extra__))
+
+/*
+ * Set a semantic value to a property.
+ */
+#define	CSemSetProperty(value,property)	\
+			do { \
+				(value).kind__ = C_SEMKIND_PROPERTY; \
+				(value).type__ = ILType_Void; \
+				(value).extra__ = (void *)(property); \
+			} while (0)
+
+/*
+ * Extract the property from a semantic value.
+ */
+#define	CSemGetProperty(value)	((ILProperty *)((value).extra__))
+
+/*
+ * Set a semantic value to a method group.
+ */
+#define	CSemSetMethodGroup(value,type,name)	\
+			do { \
+				(value).kind__ = C_SEMKIND_METHOD_GROUP; \
+				(value).type__ = (type); \
+				(value).extra__ = (void *)(name); \
+			} while (0)
+
+/*
+ * Get the name from a method group.
+ */
+#define	CSemGetMethodName(value)	((char *)((value).extra__))
 
 /*
  * Perform inline semantic analysis on a node, in a specific scope.
@@ -387,6 +453,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 }
 %node ILNode_CDerefField ILNode_CFieldAccess
 %node ILNode_CMemberField ILNode_CFieldAccess
+%node ILNode_CStaticField ILNode_CFieldAccess
 %node ILNode_CDeref ILNode_LValue =
 {
 	ILNode *expr;
@@ -436,6 +503,10 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 	ILNode *expr;
 }
 %node ILNode_CSharpTypeOf ILNode_Expression =
+{
+	ILType *type;
+}
+%node ILNode_CTypeExpression ILNode_Expression =
 {
 	ILType *type;
 }

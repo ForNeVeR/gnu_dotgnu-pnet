@@ -2705,3 +2705,24 @@ JavaGenValue(ILNode_CSharpTypeOf)
 	/* Nothing to do here */
 	return ILMachineType_ObjectRef;
 }
+
+/*
+ * Perform semantic analysis for type expressions.
+ */
+ILNode_CSemAnalysis(ILNode_CTypeExpression)
+{
+	CSemValue value;
+	CSemSetType(value, node->type);
+	return value;
+}
+
+/*
+ * Get the type or generate value code for type expressions.
+ */
+ILNode_GetType(ILNode_CTypeExpression),
+ILNode_GenValue(ILNode_CTypeExpression),
+JavaGenValue(ILNode_CTypeExpression)
+{
+	/* Should never be called */
+	return ILMachineType_Void;
+}

@@ -10,6 +10,11 @@
 	* cscc/c/c_grammar.y, cscc/c/c_scanner.l: remove the "__csharp__"
 	keyword from the C compiler as it is no longer necessary.
 
+	* cscc/c/c_defs.tc, cscc/c/c_grammar.y, cscc/c/c_invoke.tc,
+	cscc/c/c_lvalue.tc, cscc/c/c_oper.tc: rearrange the grammar for
+	"Type::Identifier" so that it can handle more than just static
+	methods; implement a better C# member resolution algorithm.
+
 2004-02-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_oper.tc (MulPtrSize): fix a bug where 1 * sizeof(type)

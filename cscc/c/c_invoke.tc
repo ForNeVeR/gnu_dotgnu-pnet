@@ -292,7 +292,16 @@ ILNode_CSemAnalysis(ILNode_CInvocationExpression)
 		node->name = 0;
 		value = ILNode_CSemAnalysis(node->expr1, info,
 									&(node->expr1), stmtLevel);
-		if(!CSemIsRValue(value) || !CTypeIsFunctionPtr(CSemGetType(value)))
+		if(CSemIsMethodGroup(value))
+		{
+			/* Reference to a method group: switch to C# invocation */
+			/* TODO: instance methods */
+			*parent = ILNode_CSharpInvocation_create
+				(CSemGetType(value), CSemGetMethodName(value), node->expr2);
+			CGenCloneLine(*parent, (ILNode *)node);
+			return ILNode_CSemAnalysis(*parent, info, parent, stmtLevel);
+		}
+		else if(!CSemIsRValue(value) || !CTypeIsFunctionPtr(CSemGetType(value)))
 		{
 			if(!CSemIsError(value))
 			{

@@ -305,6 +305,334 @@ ILNode_CGenAddress(ILNode_CMemberField)
 	return addr;
 }
 
+%{
+
+/*
+ * Resolve a member within a C#-style type.
+ */
+static CSemValue ResolveMember(ILGenInfo *info, ILType *type,
+							   const char *name, int isStatic)
+{
+	CSemValue value;
+	ILClass *classInfo;
+	ILClass *callScope;
+	ILClass *tempClass;
+	ILClass *child;
+	ILNestedInfo *nested;
+	ILMember *member;
+	ILImplements *impl;
+
+	/* Convert the type into its class form */
+	classInfo = ILClassResolve(ILTypeToClass(info, type));
+
+	/* Get the scope that we will be calling from, for access checks */
+	callScope = ILClassLookup(ILClassGlobalScope(info->image), "<Module>", 0);
+
+	/* Check for nested types first if we are looking for static members */
+	if(isStatic)
+	{
+		tempClass = classInfo;
+		while(tempClass != 0)
+		{
+			nested = 0;
+			while((nested = ILClassNextNested(tempClass, nested)) != 0)
+			{
+				child = ILClassResolve(ILNestedInfoGetChild(nested));
+				if(!strcmp(ILClass_Name(child), name))
+				{
+					if(ILClassAccessible(child, callScope))
+					{
+						CSemSetType(value, ILClassToType(child));
+						return value;
+					}
+				}
+			}
+			tempClass = ILClass_Parent(tempClass);
+		}
+	}
+
+	/* Scan the class, its parents, and interfaces, for matches */
+	tempClass = classInfo;
+	while(tempClass != 0)
+	{
+		member = ILClassNextMemberMatch(tempClass, 0, 0, name, 0);
+		if(member && ILMemberAccessible(member, callScope))
+		{
+			if(ILMember_IsField(member))
+			{
+				if((isStatic && ILField_IsStatic((ILField *)member)) ||
+				   (!isStatic && !ILField_IsStatic((ILField *)member)))
+				{
+					CSemSetField(value, (ILField *)member);
+					return value;
+				}
+			}
+			else if(ILMember_IsMethod(member))
+			{
+				if((isStatic && ILMethod_IsStatic((ILMethod *)member)) ||
+				   (!isStatic && !ILMethod_IsStatic((ILMethod *)member)))
+				{
+					CSemSetMethodGroup(value, type, name);
+					return value;
+				}
+			}
+			else if(ILMember_IsProperty(member))
+			{
+				ILMethod *accessor = ILProperty_Getter((ILProperty *)member);
+				if(!accessor)
+				{
+					accessor = ILProperty_Setter((ILProperty *)member);
+				}
+				if(accessor)
+				{
+					if((isStatic && ILMethod_IsStatic((ILMethod *)accessor)) ||
+					   (!isStatic && !ILMethod_IsStatic((ILMethod *)accessor)))
+					{
+						CSemSetProperty(value, (ILProperty *)member);
+						return value;
+					}
+				}
+			}
+		}
+		if(!isStatic)
+		{
+			/* Scan the interfaces if we are looking for an instance member */
+			impl = 0;
+			while((impl = ILClassNextImplements(tempClass, impl)) != 0)
+			{
+				value = ResolveMember
+					(info, ILClassToType(ILImplementsGetInterface(impl)),
+					 name, isStatic);
+				if(!CSemIsError(value))
+				{
+					if(CSemIsMethodGroup(value))
+					{
+						/* Replace the interface type with the real type */
+						CSemSetMethodGroup(value, type, name);
+					}
+					return value;
+				}
+			}
+		}
+		tempClass = ILClass_Parent(tempClass);
+	}
+
+	/* If we get here, then we were unable to find anything */
+	return CSemValueError;
+}
+
+%}
+
+/*
+ * Perform semantic analysis for a static field access node.
+ */
+ILNode_CSemAnalysis(ILNode_CStaticField)
+{
+	CSemValue value;
+	ILType *type;
+	ILProperty *property;
+
+	/* Perform semantic analysis on the primary expression */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsType(value))
+	{
+		if(!CSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("type expected on left side of `::'"));
+		}
+		return CSemValueError;
+	}
+
+	/* Resolve the static member */
+	value = ResolveMember(info, CSemGetType(value), node->name, 1);
+	if(CSemIsError(value))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("`%s' has no static member named `%s'"),
+					  CTypeToName(info, CSemGetType(value)), node->name);
+		return value;
+	}
+
+	/* Determine what to do based on the returned information */
+	if(CSemIsType(value))
+	{
+		/* We've resolved a nested type */
+		*parent = ILNode_CTypeExpression_create(CSemGetType(value));
+		CGenCloneLine(*parent, (ILNode *)node);
+	}
+	else if(CSemIsField(value))
+	{
+		/* We've resolved a static field */
+		node->field = CSemGetField(value);
+		type = ILField_Type(node->field);
+		if(CTypeIsArray(type))
+		{
+			/* Arrays decay immediately into r-values */
+			CSemSetDecayedRValue(value, CTypeDecay(info, type), type);
+		}
+		else if(ILField_IsInitOnly(node->field))
+		{
+			/* Read-only fields cannot be l-values */
+			CSemSetRValue(value, type);
+		}
+		else
+		{
+			/* Everything else must be an l-value field */
+			CSemSetLValue(value, type);
+		}
+	}
+	else if(CSemIsProperty(value))
+	{
+		/* We've resolved a static property */
+		property = CSemGetProperty(value);
+		type = ILTypeGetReturn(ILProperty_Signature(property));
+		*parent = ILNode_StaticProperty_create(property);
+		CGenCloneLine(*parent, (ILNode *)node);
+		if(ILProperty_Getter(property))
+		{
+			if(ILProperty_Setter(property))
+			{
+				/* Read-write properties are l-values */
+				CSemSetLValueNoRef(value, type);
+			}
+			else
+			{
+				/* Read-only properties are r-values */
+				CSemSetRValue(value, type);
+			}
+		}
+		else
+		{
+			/* Write-only properties are s-values */
+			CSemSetSValue(value, type);
+		}
+	}
+
+	/* Return the modified value to the caller */
+	return value;
+}
+
+/*
+ * Get the type of a static field access node.
+ */
+ILNode_GetType(ILNode_CStaticField)
+{
+	ILType *type = ILField_Type(node->field);
+	if(CTypeIsArray(type))
+	{
+		/* Arrays decay to r-value pointers when accessed */
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		return ILTypeToMachineType(type);
+	}
+}
+
+/*
+ * Generate discard code for a static field access node.
+ */
+ILNode_GenDiscard(ILNode_CStaticField)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Generate value code for a static field access node.
+ */
+ILNode_GenValue(ILNode_CStaticField)
+{
+	ILType *type = ILField_Type(node->field);
+	if(CTypeIsArray(type))
+	{
+		/* Arrays decay to r-value pointers when accessed */
+		ILGenFieldRef(info, IL_OP_LDSFLDA, node->field);
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		ILGenFieldRef(info, IL_OP_LDSFLD, node->field);
+		return ILTypeToMachineType(type);
+	}
+}
+JavaGenValue(ILNode_CStaticField)
+{
+	/* Nothing to do here: will never be called */
+	return ILMachineType_Void;
+}
+
+/*
+ * Prepare to store to a static field access node.
+ */
+ILNode_Prepare(ILNode_CStaticField)
+{
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+JavaPrepare(ILNode_CStaticField)
+{
+	/* Nothing to do here: will never be called */
+	return ILMachineType_Void;
+}
+
+/*
+ * Get and prepare to store to a static field access node.
+ */
+ILNode_GetAndPrepare(ILNode_CStaticField)
+{
+	ILGenFieldRef(info, IL_OP_LDSFLD, node->field);
+	if(leave)
+	{
+		/* Duplicate the stack top to create the left value */
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+JavaGetAndPrepare(ILNode_CStaticField)
+{
+	/* Nothing to do here: will never be called */
+	return ILMachineType_Void;
+}
+
+/*
+ * Store to a static field access node.
+ */
+ILNode_Store(ILNode_CStaticField)
+{
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	ILGenFieldRef(info, IL_OP_STSFLD, node->field);
+	ILGenAdjust(info, -1);
+}
+JavaStore(ILNode_CStaticField)
+{
+	/* Nothing to do here: will never be called */
+}
+
+/*
+ * Generate a reference for a static field access node.
+ */
+ILNode_GenRef(ILNode_CStaticField)
+{
+	CGenAddress(info, (ILNode *)node);
+}
+
+/*
+ * Generate the address of a static field access node.
+ */
+ILNode_CGenAddress(ILNode_CStaticField)
+{
+	CAddress addr;
+	ILGenFieldRef(info, IL_OP_LDSFLDA, node->field);
+	addr.ptrOnStack = 1;
+	addr.offset = 0;
+	return addr;
+}
+
 /*
  * Perform semantic analysis for a field dereference node.
  */

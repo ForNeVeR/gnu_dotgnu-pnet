@@ -1188,7 +1188,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 
 %type <kind>		StructOrUnion TypeQualifierList TypeQualifier
 
-%expect 9
+%expect 13
 
 %start File
 %%
@@ -1444,13 +1444,18 @@ PostfixExpression
 				$$ = ILNode_CMemberField_create
 						(FixIdentifierNode($1, 0), $3);
 			}
-	| TYPE_NAME COLON_COLON_OP AnyIdentifier '(' ')'	{
-				$$ = ILNode_CSharpInvocation_create
-						(CScopeGetType(CScopeLookup($1)), $3, 0);
+	| TYPE_NAME COLON_COLON_OP AnyIdentifier	{
+				$$ = ILNode_CStaticField_create
+						(ILNode_CTypeExpression_create
+							(CScopeGetType(CScopeLookup($1))), $3);
 			}
-	| TYPE_NAME COLON_COLON_OP AnyIdentifier '(' ArgumentExpressionList ')'	{
-				$$ = ILNode_CSharpInvocation_create
-						(CScopeGetType(CScopeLookup($1)), $3, $5);
+	| NamespaceQualifiedType COLON_COLON_OP AnyIdentifier	{
+				$$ = ILNode_CStaticField_create
+						(ILNode_CTypeExpression_create($1), $3);
+			}
+	| PostfixExpression COLON_COLON_OP AnyIdentifier	{
+				$$ = ILNode_CStaticField_create
+						(FixIdentifierNode($1, 0), $3);
 			}
 	| PostfixExpression PTR_OP AnyIdentifier	{
 				$$ = ILNode_CDerefField_create

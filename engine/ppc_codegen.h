@@ -139,6 +139,7 @@ typedef enum
 	PPC_ADD		= 266,			/* Add */
 	PPC_ADDC	= 10,			/* Add with carry out */
 	PPC_ADDE	= 138,			/* Add with extended carry in */
+	PPC_ADDIC	= 21,			/* Add immediate with carry (ds_imm) */ 
 	PPC_SUBF	= 40,			/* Subtract from */
 	PPC_SUBFC	= 8,			/* Subtract from with carry out */
 	PPC_SUBFE	= 136,			/* Subtract from with extended carry in */
@@ -152,6 +153,7 @@ typedef enum
 	PPC_OR		= 444,			/* Or (sds) */
 	PPC_ORC		= 412,			/* Or with complement (sds) */
 	PPC_XOR		= 316,			/* Xor (sds) */
+	PPC_XORI	= 26,			/* Xor (imm) */
 	PPC_CMP		= 0,			/* Signed compare */
 	PPC_CMPL	= 32,			/* Unsigned (logical) compare */
 	PPC_NEG		= 104,			/* Negate */
@@ -160,6 +162,7 @@ typedef enum
 	PPC_SR		= 536,			/* Shift right (sds) */
 	PPC_EXTSB	= 954,			/* Extend signed byte */
 	PPC_EXTSH	= 922,			/* Extend signed half word */
+	PPC_CNTLZ   = 26,			/* Count leading zeros (ds) */
 
 } PPC_OP;
 
@@ -213,6 +216,23 @@ typedef unsigned int *ppc_inst_ptr;
 							 (((unsigned int)(dreg)) << 16) | \
 							 (((unsigned int)(opc)) << 1)); \
 			} while (0)
+
+#define ppc_alu_reg_imm(inst, opc, dreg, sreg, imm) \
+		do {\
+			int __value = (int)(imm);\
+			if(__value >= -0x8000 && __value <= 0xFFFF) \
+			{\
+				*(inst)++ = ((((unsigned int)(opc))<<	26) \
+								| (((unsigned int)(dreg)) << 21) \
+								| (((unsigned int)(sreg)) << 16) \
+								| (((unsigned int)(__value)) & 0xFFFF));\
+			}\
+			else\
+			{\
+				TODO_trap(inst);\
+			}\
+		} while(0)
+
 
 /*
  * Perform an arithmetic or logical operation and also set the
@@ -436,7 +456,7 @@ typedef unsigned int *ppc_inst_ptr;
 								| (((unsigned int)(PPC_CTR)) << 11) \
 								| (467 << 1)) ;\
 					*(inst)++ = ((19 << 26) \
-								| ((PPC_CC_ALWAYS) << 16)	\
+								| (((unsigned int)(PPC_CC_ALWAYS)) << 16) \
 								| (528 << 1)) ;\
 			} while(0);
 
@@ -523,6 +543,39 @@ typedef unsigned int *ppc_inst_ptr;
 				ppc_membase_common((inst), (reg), PPC_SP, 0, 32); \
 				ppc_add_reg_imm((inst), PPC_SP, PPC_SP, 4); \
 			} while (0)
+
+/*
+ * Rotate Left Word Immediate then AND with Mask (ppc direct) 
+ */
+
+#define ppc_alu_rlwinm(inst, dreg, reg, n, mb, me) \
+		do {\
+			*(inst)++ = ((21 << 26) \
+							| (((unsigned int)(reg)) << 21) \
+							| (((unsigned int)(dreg)) << 16) \
+							| (((unsigned int)(n)) <<  11) \
+							| (((unsigned int)(mb)) << 6) \
+							| (((unsigned int)(me)) << 1)); \
+		} while(0)
+
+/*
+ * Add immediate with carry 
+ */
+#define ppc_alu_addc_imm(inst, dreg, sreg, imm) \
+		do {\
+			int __value = (int)(imm);\
+			if(__value >= -0x8000 && __value <= 0xFFFF) \
+			{\
+				*(inst)++ = ((21 <<	26) \
+								| (((unsigned int)(dreg)) << 21) \
+								| (((unsigned int)(sreg)) << 16) \
+								| (((unsigned int)(__value)) & 0xFFFF));\
+			}\
+			else\
+			{\
+				TODO_trap(inst);\
+			}\
+		} while(0)
 
 #ifdef __cplusplus
 };

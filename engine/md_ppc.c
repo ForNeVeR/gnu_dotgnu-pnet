@@ -27,10 +27,69 @@ extern	"C" {
 
 #ifdef CVM_PPC
 
+/*
+	Please check the "Optimal Sequences" section in the
+	PPC compiler writer's guide for a description of how
+	the following code works.
+ */
 md_inst_ptr _md_ppc_setcc(md_inst_ptr inst, int reg, int cond)
 {
-	TODO_trap(inst);
-	return;
+	switch(cond)
+	{
+		case PPC_CC_EQ:
+		{
+			/*
+				count zeros and check for bit no 5 
+			*/
+			ppc_alu_reg_ds(inst, PPC_CNTLZ, reg, reg);
+			/* srwi reg, PPC_WORK, 5 */
+			ppc_alu_rlwinm(inst, reg, reg, 32-5, 5, 31);
+		}
+		break;
+		case PPC_CC_NE:
+		{
+			ppc_alu_reg_imm(inst, PPC_ADDIC, PPC_WORK, reg, -1);
+			ppc_alu_reg_dss(inst, PPC_SUBFE, reg, PPC_WORK, reg);
+		}
+		break;
+		case PPC_CC_LT:
+		{
+			/* sign bit */
+			ppc_alu_rlwinm(inst, reg, reg, 1, 31, 31);
+		}
+		break;
+		case PPC_CC_GE:
+		{
+			/* sign bit */
+			ppc_alu_rlwinm(inst, reg, reg, 1, 31, 31);
+			/* invert */
+			ppc_alu_reg_imm(inst, PPC_XORI,	reg, reg, 1);
+		}
+		break;
+		case PPC_CC_GT:
+		{
+			ppc_alu_reg_ds(inst, PPC_NEG, PPC_WORK, reg);
+			ppc_alu_reg_sds(inst, PPC_ANDC, reg, PPC_WORK,  reg);
+			/* sign bit */
+			ppc_alu_rlwinm(inst, reg, reg, 1, 31, 31);
+		}
+		break;
+		case PPC_CC_LE:
+		{
+			ppc_alu_reg_ds(inst, PPC_NEG, PPC_WORK, reg);
+			ppc_alu_reg_sds(inst, PPC_ORC, reg, reg, PPC_WORK);
+			/* sign bit */
+			ppc_alu_rlwinm(inst, reg, reg, 1, 31, 31);
+		}
+		break;
+		default:
+		{
+			TODO_trap(inst);
+		}
+		break;
+	}
+	
+	return inst;
 }
 
 md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg)

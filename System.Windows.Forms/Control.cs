@@ -417,7 +417,8 @@ public class Control : IWin32Window
 			{
 				get
 				{
-					return ClientToBounds(new Size(width, height));
+					Size offset = ClientToBounds(Size.Empty);
+					return new Size(width - offset.Width, height - offset.Height);
 				}
 				set
 				{
@@ -1907,8 +1908,8 @@ public class Control : IWin32Window
 	// Convert a screen point into client co-ordinates.
 	public Point PointToClient(Point p)
 			{
-				// TODO
-				return p;
+				Size size = ClientToBounds(Size.Empty);
+				return p - new Size(size.Width / 2, size.Height / 2);
 			}
 
 	// Convert a client point into screen co-ordinates.
@@ -2377,7 +2378,8 @@ public class Control : IWin32Window
 	// Update the invalidated regions in this control.
 	public void Update()
 			{
-				toolkitWindow.Update();
+				if (toolkitWindow != null)
+					toolkitWindow.Update();
 			}
 
 	// Update the bounds of the control.

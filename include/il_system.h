@@ -117,6 +117,34 @@ void ILDeleteFile(const char *filename);
    Use "ILFree" to free the path later */
 int ILFileExists(const char *filename, char **newExePath);
 
+/* Get the current time in nanoseconds since 12:00am Jan 1, 0001 */
+typedef struct
+{
+	ILInt64			secs;
+	ILUInt32		nsecs;
+
+} ILCurrTime;
+void ILGetCurrTime(ILCurrTime *timeValue);
+
+/* Get the current time in nanoseconds since the system was rebooted.
+   If it isn't possible to get the since-reboot time, this returns zero */
+int ILGetSinceRebootTime(ILCurrTime *timeValue);
+
+/* Get platform directory pathname information */
+typedef struct
+{
+	ILUInt16		dirSep;
+	ILUInt16		altDirSep;
+	ILUInt16		volumeSep;
+	ILUInt16		pathSep;
+	const char     *invalidPathChars;
+
+} ILPathInfo;
+void ILGetPathInfo(ILPathInfo *info);
+
+/* Get the platform-specific newline sequence */
+const char *ILGetNewLine(void);
+
 #ifdef	__cplusplus
 };
 #endif

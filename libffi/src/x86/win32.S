@@ -31,7 +31,7 @@
  
 .text
  
-.globl ffi_prep_args
+.globl _ffi_prep_args
  
         # This assumes we are using gas.
         .balign 16

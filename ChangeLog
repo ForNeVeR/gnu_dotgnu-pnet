@@ -9,6 +9,9 @@
 	Could possibly use sigaction for CYGWIN builds once its fully
 	supported (end of 2004 aparently).
 	
+	* libffi/src/x86/win32.S: Changed ffi_prep_args to
+	_ffi_prep_args so that it links properly on VC++ as well as gcc.
+	
 2004-06-16  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/cvm_ptr.c: Removed null check elimination in COP_CKNULL.

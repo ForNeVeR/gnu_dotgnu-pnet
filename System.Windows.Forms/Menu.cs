@@ -23,6 +23,7 @@ namespace System.Windows.Forms
 
 using System.ComponentModel;
 using System.Collections;
+using System.Drawing;
 
 public abstract class Menu
 #if CONFIG_COMPONENT_MODEL
@@ -31,9 +32,13 @@ public abstract class Menu
 {
 	// Internal state.
 	private int numItems;
-	private MenuItem[] itemList;
+	internal MenuItem[] itemList;
 	private MenuItemCollection items;
 	private int suppressUpdates;
+	// The bounds of each item
+	protected Rectangle[] itemBounds;
+	private static Brush backBrush, foreBrush, highlightBrush, highlightTextBrush;
+	private static Pen seperatorPen, borderPen;
 
 	// Constructor.
 	protected Menu(MenuItem[] items)
@@ -179,6 +184,160 @@ public abstract class Menu
 			{
 				// TODO
 			}
+
+	// Offset from each item to the menu text.
+	protected virtual Point ItemPaddingOrigin
+			{
+				get
+				{
+					return new Point(6, 3);
+				}
+			}
+
+	// How much bigger each item is than the text.
+	protected Size ItemPaddingSize
+			{
+				get
+				{
+					return new Size(12, 6);
+				}
+			}
+
+	// Padding offset from top left of menu.
+	protected virtual Point MenuPaddingOrigin
+			{
+				get
+				{
+					return new Point(1, 1);
+				}
+			}
+
+	// How much bigger the menu is than the text.
+	protected Size MenuPaddingSize
+			{
+				get
+				{
+					return new Size(2, 2);
+				}
+			}
+
+	protected void DrawMenuItem(Graphics g, int item, bool highlighted)
+			{
+				Rectangle bounds = itemBounds[item];
+						
+				// Get the area for the text
+				Rectangle textBounds = new Rectangle(
+					bounds.X + ItemPaddingOrigin.X,
+					bounds.Y + ItemPaddingOrigin.Y,
+					bounds.Width - ItemPaddingSize.Width,
+					bounds.Height - ItemPaddingSize.Height);
+				MenuItem menuItem = itemList[item];
+				if (menuItem.Text == "-")
+				{
+					g.FillRectangle(BackBrush, bounds);
+					g.DrawLine(SeperatorPen, bounds.X + 3, bounds.Y + 2, bounds.Right - 6, bounds.Y + 2);
+				}
+				else
+				{
+					if (menuItem.OwnerDraw)
+					{
+						DrawItemEventArgs drawItem = new DrawItemEventArgs(g, SystemInformation.MenuFont, bounds, item, DrawItemState.None);
+						menuItem.OnDrawItem(drawItem);
+					}
+					else
+					{
+						Brush fore = ForeBrush;
+						Brush back = BackBrush;
+						if (highlighted)
+						{
+							fore = HighlightTextBrush;
+							back = HighlightBrush;
+						}
+						g.FillRectangle(back, bounds);
+						g.DrawString(menuItem.Text, SystemInformation.MenuFont, fore, textBounds);
+						if (this is ContextMenu && menuItem.itemList.Length > 0)
+						{
+							int x = bounds.Right - 7;
+							int y = (bounds.Bottom + bounds.Top) / 2;
+							g.FillPolygon(fore, new PointF[]{
+								new Point(x, y), new Point(x - 5, y - 5), new Point(x - 5, y + 5)});
+						}
+					}
+				}
+			}
+
+	protected int ItemFromPoint(Point p)
+			{
+				for (int i = 0; i < MenuItems.Count; i++)
+				{
+					if (itemBounds[i].Contains(p))
+						return i;
+				}
+				return -1;
+			}
+
+	
+	protected Brush BackBrush
+	{
+		get
+		{
+			if (backBrush == null)
+				backBrush = new SolidBrush(SystemColors.Menu);
+			return backBrush;
+		}
+	}
+	
+	protected Brush ForeBrush
+	{
+		get
+		{
+			if (foreBrush == null)
+				foreBrush = new SolidBrush(SystemColors.MenuText);
+			return foreBrush;
+		}
+	}
+
+	protected Pen SeperatorPen
+	{
+		get
+		{
+			if (seperatorPen == null)
+				// TODO: Which system color?
+				seperatorPen = new Pen(SystemColors.ControlLightLight);
+			return seperatorPen;
+		}
+	}
+
+	protected Pen BorderPen
+	{
+		get
+		{
+			if (borderPen == null)
+				// TODO: Which system color;
+				borderPen = new Pen(SystemColors.MenuText);
+			return borderPen;
+		}
+	}
+
+	protected Brush HighlightBrush
+	{
+		get
+		{
+			if (highlightBrush == null)
+				highlightBrush = new SolidBrush(SystemColors.Highlight);
+			return highlightBrush;
+		}
+	}
+
+	protected Brush HighlightTextBrush
+	{
+		get
+		{
+			if (highlightTextBrush == null)
+				highlightTextBrush = new SolidBrush(SystemColors.HighlightText);
+			return highlightTextBrush;
+		}
+	}
 
 	// Collection of menu items.
 	public class MenuItemCollection : IList, ICollection, IEnumerable

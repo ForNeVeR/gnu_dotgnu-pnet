@@ -463,6 +463,26 @@ public class JSParser
 						((JIdentifier)node).name == name);
 			}
 
+	// Parse an argument list.
+	private JNode ArgumentList()
+			{
+				JNode args, arg;
+				if(token == JSToken.RightParen)
+				{
+						return null;
+				}
+				args = AssignmentExpression(false);
+				while(token == JSToken.Comma)
+				{
+					NextToken();
+					arg = AssignmentExpression(false);
+					args = new JArgList(Context.BuildRange
+											(args.context, arg.context),
+										args, arg);
+				}
+				return args;
+			}
+
 	// Parse a left hand side expression.
 	private JNode LeftHandSideExpression()
 			{
@@ -476,7 +496,7 @@ public class JSParser
 					{
 						// Parse a function call expression.
 						NextToken();
-						expr2 = Expression();
+						expr2 = ArgumentList();
 						if(token == JSToken.RightParen)
 						{
 							if(IsBuiltinCall(expr, "eval"))

@@ -113,6 +113,7 @@ internal sealed class VsaCodeItem : VsaItem, IVsaCodeItem
 					context.codebase = new CodeBase(codebaseOption, this);
 					context.codebase.site = engine.Site;
 					JSParser parser = new JSParser(context);
+					parser.printSupported = engine.printSupported;
 					try
 					{
 						parsed = parser.ParseSource(false);

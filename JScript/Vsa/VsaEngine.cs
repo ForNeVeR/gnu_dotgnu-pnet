@@ -33,7 +33,7 @@ public class VsaEngine : BaseVsaEngine, IRedirectOutput
 	// Internal state.
 	private static VsaEngine primaryEngine;
 	private bool detached;
-	private bool printSupported;
+	internal bool printSupported;
 	internal EngineInstance engineInstance;
 	private LenientGlobalObject lenientGlobalObject;
 	private GlobalScope globalScope;

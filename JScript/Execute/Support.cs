@@ -23,6 +23,7 @@ namespace Microsoft.JScript
 
 using System;
 using System.Reflection;
+using Microsoft.JScript.Vsa;
 
 internal sealed class Support
 {
@@ -278,6 +279,33 @@ internal sealed class Support
 					list.first = elem;
 				}
 				list.last = elem;
+			}
+
+	// Evaluate and print an expression tree.
+	public static void Print(VsaEngine engine, JNode expr)
+			{
+				if(expr is JArgList)
+				{
+					Print(engine, ((JArgList)expr).expr1);
+					Print(engine, ((JArgList)expr).expr2);
+				}
+				else
+				{
+					Object value = expr.Eval(engine);
+					String pvalue;
+					if(value is ArrayObject)
+					{
+						pvalue = ArrayPrototype.join(value, String.Empty);
+					}
+					else
+					{
+						pvalue = Convert.ToString(value);
+					}
+					if(pvalue != null)
+					{
+						Console.Write(pvalue);
+					}
+				}
 			}
 
 }; // class Support

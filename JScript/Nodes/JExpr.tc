@@ -447,16 +447,7 @@ Eval(JEval)
 // Evaluate a "print" expression.
 Eval(JPrint)
 {
-	Object value = expr.Eval(engine);
-	String pvalue;
-	if(value is ArrayObject)
-	{
-		pvalue = ArrayPrototype.join(value, String.Empty);
-	}
-	else
-	{
-		pvalue = Convert.ToString(value);
-	}
-	Console.WriteLine(pvalue);
+	Support.Print(engine, expr);
+	Console.WriteLine();
 	return Empty.Value;
 }

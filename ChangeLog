@@ -15,6 +15,11 @@
 	doc/JScript-internals.txt: bring the names of builtin properties
 	and functions into alignment with the names in ECMA-262.
 
+	* JScript/jsrun.cs, JScript/Execute/Support.cs,
+	JScript/Nodes/JExpr.tc, JScript/Parser/JSParser.cs,
+	JScript/Vsa/VsaCodeItem.cs, JScript/Vsa/VsaEngine.cs: make
+	the "print" function work in jsrun.
+
 2003-01-13  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextWriter.cs: Implemented CDATA, ProcessInstructions,

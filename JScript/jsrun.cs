@@ -67,6 +67,7 @@ public sealed class JSRun
 
 				// Create an engine instance and add the script to it.
 				engine = VsaEngine.CreateEngine();
+				engine.SetOption("print", true);
 				item = (IVsaCodeItem)(engine.Items.CreateItem
 						("script1", VsaItemType.Code, VsaItemFlag.None));
 				item.SourceText = script;

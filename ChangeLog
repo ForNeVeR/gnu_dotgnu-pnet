@@ -1,4 +1,9 @@
 
+2003-06-03  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_lvalue.tc: Allow enum initializers to add non-identical
+	enum types.
+
 2003-06-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_emit.c, image/misc_token.c, include/il_program.h:

@@ -418,72 +418,7 @@ JavaGenValue(ILNode_ArgArray)
 		JavaGenCast(info, JavaGenValue
 			(GetArgArrayElem(node->args, posn, node->numElems), info),
 			machineType);
-		switch(machineType)
-		{
-			case ILMachineType_Void: break;
-
-			case ILMachineType_Boolean:
-			case ILMachineType_Int8:
-			case ILMachineType_UInt8:
-			{
-				JavaGenSimple(info, JAVA_OP_BASTORE);
-			}
-			break;
-
-			case ILMachineType_Int16:
-			case ILMachineType_UInt16:
-			case ILMachineType_Char:
-			{
-				JavaGenSimple(info, JAVA_OP_CASTORE);
-			}
-			break;
-
-			case ILMachineType_Int32:
-			case ILMachineType_UInt32:
-			{
-				JavaGenSimple(info, JAVA_OP_IASTORE);
-			}
-			break;
-
-			case ILMachineType_Int64:
-			case ILMachineType_UInt64:
-			{
-				JavaGenSimple(info, JAVA_OP_LASTORE);
-			}
-			break;
-
-			case ILMachineType_NativeInt:
-			case ILMachineType_NativeUInt:
-			{
-				JavaGenSimple(info, JAVA_OP_IASTORE);
-			}
-			break;
-
-			case ILMachineType_Float32:
-			{
-				JavaGenSimple(info, JAVA_OP_FASTORE);
-			}
-			break;
-
-			case ILMachineType_Float64:
-			case ILMachineType_NativeFloat:
-			{
-				JavaGenSimple(info, JAVA_OP_DASTORE);
-			}
-			break;
-
-			case ILMachineType_Decimal:
-			case ILMachineType_ManagedValue:
-			case ILMachineType_String:
-			case ILMachineType_ObjectRef:
-			case ILMachineType_UnmanagedPtr:
-			case ILMachineType_ManagedPtr:
-			case ILMachineType_TransientPtr:
-			{
-				JavaGenSimple(info, JAVA_OP_AASTORE);
-			}
-			break;
-		}
+		JavaGenStoreArray(info, machineType);
 		JavaGenAdjust(info, -3);
 	}
 	return ILMachineType_ObjectRef;
@@ -1345,26 +1280,7 @@ JavaGenValue(ILNode_InvocationExpression)
 	/* Invoke the method */
 	if(node->methodInfo)
 	{
-		if(ILMethod_IsVirtual(node->methodInfo))
-		{
-			if(ILClass_IsInterface(ILMethod_Owner(node->methodInfo)))
-			{
-				JavaGenCallInterfaceByMethod(info, node->methodInfo,
-											 info->stackHeight - saveStack);
-			}
-			else
-			{
-				JavaGenCallVirtByMethod(info, node->methodInfo);
-			}
-		}
-		else if(ILMethod_IsStatic(node->methodInfo))
-		{
-			JavaGenCallByMethod(info, node->methodInfo);
-		}
-		else
-		{
-			JavaGenCallSpecialByMethod(info, node->methodInfo);
-		}
+		JavaGenCallMethod(info, node->methodInfo, saveStack);
 		resultType = ILTypeToMachineType(ILMethod_Signature(node->methodInfo)
 											->un.method.retType);
 	}

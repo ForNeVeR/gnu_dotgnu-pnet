@@ -12,6 +12,9 @@ the "foreach" statement.
 codegen/cg_output.c, codegen/jv_output.h, codegen/jv_output.c:
 new functions to support code generation for "foreach" statements.
 
+* codegen/cg_misc.tc, codegen/jv_misc.tc: modifications to use the
+new helper functions in "cg_utils.h", "cg_output.h", and "jv_output.h".
+
 2001-10-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/csdoc.c (GenerateDocsForEnum): new function.

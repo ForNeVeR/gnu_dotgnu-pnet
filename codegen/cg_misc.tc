@@ -696,6 +696,7 @@ ILNode_GenValue(ILNode_ArgArray)
 	ILMachineType machineType;
 	ILUInt32 posn;
 	ILClass *classType;
+	int popped;
 
 	/* Create a new array of the desired size */
 	ILGenUInt32(info, node->numElems);
@@ -714,97 +715,16 @@ ILNode_GenValue(ILNode_ArgArray)
 	machineType = ILTypeToMachineType(node->elemType);
 	for(posn = 0; posn < node->numElems; ++posn)
 	{
-		if(machineType == ILMachineType_Decimal ||
-		   machineType == ILMachineType_ManagedValue)
-		{
-			ILGenSimple(info, IL_OP_DUP);
-			ILGenUInt32(info, posn);
-			ILGenAdjust(info, 2);
-			ILGenTypeToken(info, IL_OP_LDELEMA, node->elemType);
-			ILGenAdjust(info, -1);
-		}
-		else
-		{
-			ILGenSimple(info, IL_OP_DUP);
-			ILGenUInt32(info, posn);
-			ILGenAdjust(info, 2);
-		}
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenUInt32(info, posn);
+		ILGenAdjust(info, 2);
+		popped = ILGenStoreArrayPrepare(info, machineType, node->elemType);
+		ILGenAdjust(info, -popped);
 		ILGenCast(info, ILNode_GenValue
 			(GetArgArrayElem(node->args, posn, node->numElems), info),
 			machineType);
-		switch(machineType)
-		{
-			case ILMachineType_Void: break;
-
-			case ILMachineType_Boolean:
-			case ILMachineType_Int8:
-			case ILMachineType_UInt8:
-			{
-				ILGenSimple(info, IL_OP_STELEM_I1);
-			}
-			break;
-
-			case ILMachineType_Int16:
-			case ILMachineType_UInt16:
-			case ILMachineType_Char:
-			{
-				ILGenSimple(info, IL_OP_STELEM_I2);
-			}
-			break;
-
-			case ILMachineType_Int32:
-			case ILMachineType_UInt32:
-			{
-				ILGenSimple(info, IL_OP_STELEM_I4);
-			}
-			break;
-
-			case ILMachineType_Int64:
-			case ILMachineType_UInt64:
-			{
-				ILGenSimple(info, IL_OP_STELEM_I8);
-			}
-			break;
-
-			case ILMachineType_NativeInt:
-			case ILMachineType_NativeUInt:
-			{
-				ILGenSimple(info, IL_OP_STELEM_I);
-			}
-			break;
-
-			case ILMachineType_Float32:
-			{
-				ILGenSimple(info, IL_OP_STELEM_R4);
-			}
-			break;
-
-			case ILMachineType_Float64:
-			case ILMachineType_NativeFloat:
-			{
-				ILGenSimple(info, IL_OP_STELEM_R8);
-			}
-			break;
-
-			case ILMachineType_Decimal:
-			case ILMachineType_ManagedValue:
-			{
-				ILGenTypeToken(info, IL_OP_STOBJ, node->elemType);
-				ILGenAdjust(info, 1);	/* Correct for -3 below */
-			}
-			break;
-
-			case ILMachineType_String:
-			case ILMachineType_ObjectRef:
-			case ILMachineType_UnmanagedPtr:
-			case ILMachineType_ManagedPtr:
-			case ILMachineType_TransientPtr:
-			{
-				ILGenSimple(info, IL_OP_STELEM_REF);
-			}
-			break;
-		}
-		ILGenAdjust(info, -3);
+		ILGenStoreArray(info, machineType, node->elemType);
+		ILGenAdjust(info, (-3 + popped));
 	}
 	return ILMachineType_ObjectRef;
 }

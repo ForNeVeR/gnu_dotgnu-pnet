@@ -110,6 +110,7 @@ struct _tagILLinker
 	int				numLibraryDirs;	/* Number of library directories */
 	int				outOfMemory;	/* Set to non-zero when out of memory */
 	int				error;			/* Some other error occurred */
+	int				is32Bit;		/* Non-zero if "-m32bit-only" supplied */
 	unsigned long	resourceRVA;	/* RVA of resource section start */
 	ILMethod       *entryPoint;		/* Current entry point that is set */
 	ILUInt32		dataLength;		/* Length of ".sdata" section */

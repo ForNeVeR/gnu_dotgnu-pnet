@@ -66,6 +66,7 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	linker->numLibraryDirs = 0;
 	linker->outOfMemory = 0;
 	linker->error = 0;
+	linker->is32Bit = ((flags & IL_WRITEFLAG_32BIT_ONLY) != 0);
 	linker->resourceRVA = 0;
 	linker->entryPoint = 0;
 	linker->dataLength = 0;

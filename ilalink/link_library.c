@@ -100,6 +100,7 @@ char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
 {
 	int len;
 	char *newName;
+	char *expanded;
 
 	/* Does the filename contain a path specification? */
 	len = strlen(name);
@@ -124,10 +125,46 @@ char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
 	}
 
 	/* Search the library directories for the name */
-	return ILImageSearchPath
+	newName = ILImageSearchPath
 		(name, 0, 0,
 		 (const char **)(linker->libraryDirs), linker->numLibraryDirs,
 		 0, 0, 0, 0);
+	if(newName)
+	{
+		return newName;
+	}
+
+	/* Prepend "lib" and append the memory model.  This allows us
+	   to convert references such as "-lm" into "-llibm64" */
+	if(strncmp(name, "lib", 3) == 0)
+	{
+		return 0;
+	}
+	len = strlen(name);
+	expanded = (char *)ILMalloc(len + 6);
+	if(!expanded)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	strcpy(expanded, "lib");
+	strcpy(expanded + 3, name);
+	if(linker->is32Bit)
+	{
+		strcpy(expanded + 3 + len, "32");
+	}
+	else
+	{
+		strcpy(expanded + 3 + len, "64");
+	}
+
+	/* Search the library directories for the expanded name */
+	newName = ILImageSearchPath
+		(expanded, 0, 0,
+		 (const char **)(linker->libraryDirs), linker->numLibraryDirs,
+		 0, 0, 0, 0);
+	ILFree(expanded);
+	return newName;
 }
 
 /*

@@ -107,6 +107,24 @@ typedef union
 
 } CombinedSockAddr;
 
+#ifdef IL_WIN32_NATIVE
+
+/*
+ * Initialize the winsock library.
+ */
+void _ILWinSockInit(void)
+{
+	static int volatile initialized = 0;
+	WSADATA data;
+	if(!initialized)
+	{
+		WSAStartup(MAKEWORD(1, 1), &data);
+		initialized = 1;
+	}
+}
+
+#endif /* IL_WIN32_NATIVE */
+
 /*
  * Convert a serialized address buffer into a combined socket address.
  * Returns zero if there is something wrong with the buffer.
@@ -324,6 +342,9 @@ int ILSysIOAddressFamilySupported(ILInt32 af)
 
 ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol)
 {
+#ifdef IL_WIN32_NATIVE
+	_ILWinSockInit();
+#endif
 	if(domain == IL_AF_INET)
 	{
 		domain = AF_INET;

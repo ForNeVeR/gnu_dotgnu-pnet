@@ -37,9 +37,18 @@
 extern	"C" {
 #endif
 
+#ifdef IL_WIN32_NATIVE
+
+void _ILWinSockInit(void);
+
+#endif
+
 struct hostent* ILGetHostByName(const char *name)
 {
 #ifdef HAVE_GETHOSTBYNAME
+#ifdef IL_WIN32_NATIVE
+	_ILWinSockInit();
+#endif
 	return gethostbyname(name);
 #else
 	return NULL;
@@ -50,6 +59,9 @@ struct hostent* ILGetHostByName(const char *name)
 struct hostent* ILGetHostByAddr(const void* addr, unsigned int len,int type)
 {
 #ifdef HAVE_GETHOSTBYADDR
+#ifdef IL_WIN32_NATIVE
+	_ILWinSockInit();
+#endif
 	return gethostbyaddr(addr,len,type);
 #else
 	return NULL;

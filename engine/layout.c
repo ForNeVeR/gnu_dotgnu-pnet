@@ -200,6 +200,7 @@ static ILMethod *FindVirtualAncestor(ILClass *scope, ILClass *info,
 static int ComputeInterfaceTable(ILClass *info, ILImplements *implements,
 								 ILClass *interface)
 {
+#if 0
 	ILClass *parent;
 	ILImplements *impl;
 	ILUInt32 size;
@@ -337,6 +338,7 @@ static int ComputeInterfaceTable(ILClass *info, ILImplements *implements,
 	}
 
 	/* Done */
+#endif
 	return 1;
 }
 

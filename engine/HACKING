@@ -1,0 +1,91 @@
+Introduction
+------------
+
+This is the HACKING file for Portable.NET Runtime Engine .  It describes 
+how you can get started on the development side, and provides a road map 
+for starting on the Runtime engine.
+
+    The Portable.NET engine currently uses a Byte-code transformed engine
+called the "Converted Virtual Machine" or CVM. The engine is based on a 
+custom fast instruction set which could be compared to the "Quick" opcodes
+of Java. The IL bytecode is converted into the CVM using a convert on demand
+algorithm. Whenever a method is called, it is verified and a method ie
+"_ILMethodConvert" is called to obtain the converted bytecode. This is then
+cached and reused whenever the same method is called. This method allows
+optimisation of the interpreter by using "Processor Specific" instructions.
+We have illustrated it in the "ilrun_opt" which uses x86 assumptions to 
+speed up execution. This also holds promise of a JIT using a different 
+implementation of "_ILMethodConvert". 
+
+Internal Calls
+--------------
+
+    Now from the programmer's point of view, the safest way to start work
+on the Portable.NET engine is to implement InternalCall methods. An internal
+call is a method built into the VM itself. Internal calls may be used for
+implementing system functions like Files,Sockets,Threads etc.. ,to improve
+efficiency in String & Numeric operations, etc
+
+    So let's get our hands dirty with some code. Suppose I want to implement
+InternalCall for something, say Platform.FileMethods.Close(IntPtr handle);
+To the careful observer it is obvious that the IntPtr here is almost 
+definitely a native pointer in disguise . So I start up by checking if
+the Platform.FileMethods.Close is flagged as 
+
+[MethodImpl(MethodImplOptions.InternalCall)]
+Platform.FileMethods.Close(IntPtr handle); 
+
+  Coming back to the engine, we decide to put the code in...say "lib_file.c".
+For a standard all InternalCalls are put into a "lib_*.c" file. Now, we have
+to put the native code in.
+
+[-SNIP-FROM-lib_file.c-]
+ static ILBool Platform_FileMethods_Close
+         (ILExecThread *thread, ILNativeInt handle)
+ {
+     return ILFileClose(handle);
+ };
+[-SNIP-]
+
+    The ILFileClose does the actual work of closing the file and returns 
+status. Now to export this function as the internalcall , we add an export
+definition.
+[-SNIP-FROM-engine/lib_file.c-]
+
+ IL_METHOD_BEGIN(_ILPlatformFileMethods)
+     IL_METHOD("Close", "(j)Z", Platform_FileMethods_Close)
+ IL_METHOD_END
+
+[-SNIP-]
+ The "j" is the "IntPtr" parameter (it's an IL thing).  The Z is the 
+"bool" result type. Read the lookup.c for the full type signatures. 
+Also as you may have guessed, the order of the parameters are 
+
+  IL_METHOD_BEGIN(_IL<fullclassname>)
+      IL_METHOD ("<function name>" , "<function signature>" , <functionptr>);
+  IL_METHOD_END
+    
+    And we're done with lib_file.c...now we have to add this InternalCall
+to the engine's InternalCall lookup table in engine/internal.c. So you 
+import the methodtable as 
+
+  extern ILMethodTableEntry const _ILPlatformFileMethods;
+
+and enter the class entry in the internalClassTable
+
+  {"FileMethods", "Platform", &_ILPlatformFileMethods},
+  
+in the table in sorted order (we are bsearching for efficency) according
+to the Class name ie "FileMethods". So the format here is 
+
+  {"<classname>", "<namespace>", &<method_table_entry>}, 
+
+    That's basically it, recompile, test...
+
+    New internal calls will need pnetlib to be recompiled which is
+currently out of the scope of cscc. Also actual system calls like 
+fopen, fread, fwrite are avoided inside the engine and are preferred
+to be wrapped inside the support directory for portability reasons.
+    
+    As of today, the internal calls for File, Socket and Threads are
+available for your hacking....

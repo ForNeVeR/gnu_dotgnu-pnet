@@ -899,7 +899,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				{
 					throw new ArgumentException(_("Arg_InvalidArrayRange"));
 				}
-				return new ArrayListEnumerator(this, index, count);
+				return new ArrayListEnumerator(this, index, index + count);
 			}
 
 	// Array list enumerator class.
@@ -945,7 +945,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 							throw new InvalidOperationException
 								(_("Invalid_CollectionModified"));
 						}
-						else if(position < 0 || position > finish)
+						else if(position < start || position >= finish)
 						{
 							throw new InvalidOperationException
 								(_("Invalid_BadEnumeratorPosition"));

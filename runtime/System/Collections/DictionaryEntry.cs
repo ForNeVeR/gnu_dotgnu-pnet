@@ -50,6 +50,10 @@ public struct DictionaryEntry
 		}
 		set
 		{
+			if(value == null)
+			{
+				throw new ArgumentNullException("value");
+			}
 			key_ = value;
 		}
 	}

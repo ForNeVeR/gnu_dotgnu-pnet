@@ -25,6 +25,9 @@
 	engine/cvm_var.c, engine/cvm_doc.txt: add group information
 	to the opcodes.
 
+	* engine/method_cache.c, engine/method_cache.h: implement
+	debug API's for the method cache.
+
 2002-04-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_branch.c, engine/cvm_except.c, engine/cvm_inline.c,

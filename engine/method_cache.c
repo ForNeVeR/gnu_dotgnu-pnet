@@ -25,6 +25,7 @@ See the bottom of this file for documentation on the cache system.
 #include "method_cache.h"
 #include "il_system.h"
 #include "il_align.h"
+#include "il_meta.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -40,6 +41,18 @@ extern	"C" {
 #endif
 
 /*
+ * Structure of a debug information header for a method.
+ * This header is followed by the debug data, which is
+ * stored as compressed metadata integers.
+ */
+typedef struct _tagILCacheDebug ILCacheDebug;
+struct _tagILCacheDebug
+{
+	ILCacheDebug   *next;			/* Next block for the method */
+
+};
+
+/*
  * Method information block, organised as a red-black tree node.
  * There may be more than one such block associated with a method
  * if the method contains exception regions.
@@ -51,6 +64,7 @@ struct _tagILCacheMethod
 	void		   *cookie;			/* Cookie value for the region */
 	unsigned char  *start;			/* Start of the region */
 	unsigned char  *end;			/* End of the region */
+	ILCacheDebug   *debug;			/* Debug information for method */
 	ILCacheMethod  *left;			/* Left sub-tree and red/black bit */
 	ILCacheMethod  *right;			/* Right sub-tree */
 
@@ -59,6 +73,7 @@ struct _tagILCacheMethod
 /*
  * Structure of the method cache.
  */
+#define	IL_CACHE_DEBUG_SIZE		64
 struct _tagILCache
 {
 	void		    **pages;		/* List of pages currently in the cache */
@@ -72,6 +87,11 @@ struct _tagILCache
 	ILCacheMethod    *method;		/* Information for the current method */
 	ILCacheMethod	  head;			/* Head of the lookup tree */
 	ILCacheMethod	  nil;			/* Nil pointer for the lookup tree */
+	unsigned char    *start;		/* Start of the current method */
+	unsigned char	  debugData[IL_CACHE_DEBUG_SIZE];
+	int				  debugLen;		/* Length of temporary debug data */
+	ILCacheDebug     *firstDebug;	/* First debug block for method */
+	ILCacheDebug     *lastDebug;	/* Last debug block for method */
 
 };
 
@@ -306,6 +326,67 @@ static void AddToLookupTree(ILCache *cache, ILCacheMethod *method)
 	SetBlack(cache->head.right);
 }
 
+/*
+ * Flush the current debug buffer.
+ */
+static void FlushCacheDebug(ILCachePosn *posn)
+{
+	ILCache *cache = posn->cache;
+	ILCacheDebug *debug;
+
+	/* Allocate a new ILCacheDebug structure to hold the data */
+	debug = _ILCacheAlloc(posn, (unsigned long)(sizeof(ILCacheDebug) +
+												cache->debugLen));
+	if(!debug)
+	{
+		cache->debugLen = 0;
+		return;
+	}
+
+	/* Copy the temporary debug data into the new structure */
+	ILMemCpy(debug + 1, cache->debugData, cache->debugLen);
+
+	/* Link the structure into the debug list */
+	debug->next = 0;
+	if(cache->lastDebug)
+	{
+		cache->lastDebug->next = debug;
+	}
+	else
+	{
+		cache->firstDebug = debug;
+	}
+	cache->lastDebug = debug;
+
+	/* Reset the temporary debug buffer */
+	cache->debugLen = 0;
+}
+
+/*
+ * Write a debug pair to the cache.  The pair (-1, -1)
+ * terminates the debug information for a method.
+ */
+static void WriteCacheDebug(ILCachePosn *posn, long offset, long nativeOffset)
+{
+	ILCache *cache = posn->cache;
+
+	/* Write the two values to the temporary debug buffer */
+	cache->debugLen += ILMetaCompressInt(cache->debugData + cache->debugLen,
+										 offset);
+	cache->debugLen += ILMetaCompressInt(cache->debugData + cache->debugLen,
+										 nativeOffset);
+	if((cache->debugLen + IL_META_COMPRESS_MAX_SIZE * 2 + 1) >
+			(int)(sizeof(cache->debugData)))
+	{
+		/* Overflow occurred: write -2 to mark the end of this buffer */
+		cache->debugLen += ILMetaCompressInt
+				(cache->debugData + cache->debugLen, -2);
+
+		/* Flush the debug data that we have collected so far */
+		FlushCacheDebug(posn);
+	}
+}
+
 ILCache *_ILCacheCreate(long limit)
 {
 	ILCache *cache;
@@ -348,14 +429,20 @@ ILCache *_ILCacheCreate(long limit)
 	cache->nil.cookie = 0;
 	cache->nil.start = 0;
 	cache->nil.end = 0;
+	cache->nil.debug = 0;
 	cache->nil.left = &(cache->nil);
 	cache->nil.right = &(cache->nil);
 	cache->head.method = 0;
 	cache->head.cookie = 0;
 	cache->head.start = 0;
 	cache->head.end = 0;
+	cache->head.debug = 0;
 	cache->head.left = 0;
 	cache->head.right = &(cache->nil);
+	cache->start = 0;
+	cache->debugLen = 0;
+	cache->firstDebug = 0;
+	cache->lastDebug = 0;
 
 	/* Allocate the initial cache page */
 	AllocCachePage(cache);
@@ -447,9 +534,16 @@ void *_ILCacheStartMethod(ILCache *cache, ILCachePosn *posn,
 		cache->method->cookie = 0;
 		cache->method->start = posn->ptr;
 		cache->method->end = posn->ptr;
+		cache->method->debug = 0;
 		cache->method->left = 0;
 		cache->method->right = 0;
 	}
+	cache->start = posn->ptr;
+
+	/* Clear the debug data */
+	cache->debugLen = 0;
+	cache->firstDebug = 0;
+	cache->lastDebug = 0;
 
 	/* Return the method entry point to the caller */
 	return (void *)(posn->ptr);
@@ -480,6 +574,16 @@ int _ILCacheEndMethod(ILCachePosn *posn)
 		}
 	}
 
+	/* Terminate the debug information and flush it */
+	if(cache->firstDebug || cache->debugLen)
+	{
+		WriteCacheDebug(posn, -1, -1);
+		if(cache->debugLen)
+		{
+			FlushCacheDebug(posn);
+		}
+	}
+
 	/* Flush the position information back to the cache */
 	cache->freeStart = posn->ptr;
 	cache->freeEnd = posn->limit;
@@ -492,6 +596,7 @@ int _ILCacheEndMethod(ILCachePosn *posn)
 		method->end = posn->ptr;
 		do
 		{
+			method->debug = cache->firstDebug;
 			next = method->right;
 			AddToLookupTree(cache, method);
 			method = next;
@@ -593,7 +698,8 @@ void _ILCacheAlignMethod(ILCachePosn *posn, int align, int diff, int nop)
 
 void _ILCacheMarkBytecode(ILCachePosn *posn, ILUInt32 offset)
 {
-	/* TODO */
+	WriteCacheDebug(posn, (long)offset,
+				    (long)(posn->ptr - posn->cache->start));
 }
 
 void _ILCacheNewRegion(ILCachePosn *posn, void *cookie)
@@ -665,15 +771,130 @@ void *_ILCacheGetMethod(ILCache *cache, void *pc, void **cookie)
 	return 0;
 }
 
-ILUInt32 _ILCacheGetNative(ILCache *cache, void *start, ILUInt32 offset)
+/*
+ * Temporary structure for iterating over a method's debug list.
+ */
+typedef struct
 {
-	/* TODO */
+	ILCacheDebug   *list;
+	ILMetaDataRead	reader;
+
+} ILCacheDebugIter;
+
+/*
+ * Initialize a debug information list iterator for a method.
+ */
+static void InitDebugIter(ILCacheDebugIter *iter, ILCache *cache, void *start)
+{
+	ILCacheMethod *node = cache->head.right;
+	while(node != &(cache->nil))
+	{
+		if(((unsigned char *)start) < node->start)
+		{
+			node = GetLeft(node);
+		}
+		else if(((unsigned char *)start) >= node->end)
+		{
+			node = GetRight(node);
+		}
+		else
+		{
+			iter->list = node->debug;
+			if(iter->list)
+			{
+				iter->reader.data = (unsigned char *)(iter->list + 1);
+				iter->reader.len = IL_CACHE_DEBUG_SIZE;
+				iter->reader.error = 0;
+			}
+			return;
+		}
+	}
+	iter->list = 0;
+}
+
+/*
+ * Get the next debug offset pair from a debug information list.
+ * Returns non-zero if OK, or zero at the end of the list.
+ */
+static int GetNextDebug(ILCacheDebugIter *iter, ILUInt32 *offset,
+						ILUInt32 *nativeOffset)
+{
+	long value;
+	while(iter->list)
+	{
+		value = ILMetaUncompressInt(&(iter->reader));
+		if(value == -1)
+		{
+			return 0;
+		}
+		else if(value != -2)
+		{
+			*offset = (ILUInt32)value;
+			*nativeOffset = (ILUInt32)(ILMetaUncompressInt(&(iter->reader)));
+			return 1;
+		}
+		iter->list = iter->list->next;
+		if(iter->list)
+		{
+			iter->reader.data = (unsigned char *)(iter->list + 1);
+			iter->reader.len = IL_CACHE_DEBUG_SIZE;
+			iter->reader.error = 0;
+		}
+	}
+	return 0;
+}
+
+ILUInt32 _ILCacheGetNative(ILCache *cache, void *start,
+						   ILUInt32 offset, int exact)
+{
+	ILCacheDebugIter iter;
+	ILUInt32 ofs, nativeOfs;
+	ILUInt32 prevNativeOfs = IL_MAX_UINT32;
+
+	/* Search for the bytecode offset */
+	InitDebugIter(&iter, cache, start);
+	while(GetNextDebug(&iter, &ofs, &nativeOfs))
+	{
+		if(exact)
+		{
+			if(ofs == offset)
+			{
+				return nativeOfs;
+			}
+		}
+		else if(ofs > offset)
+		{
+			return prevNativeOfs;
+		}
+		prevNativeOfs = nativeOfs;
+	}
 	return IL_MAX_UINT32;
 }
 
-ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start, ILUInt32 offset)
+ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start,
+							 ILUInt32 offset, int exact)
 {
-	/* TODO */
+	ILCacheDebugIter iter;
+	ILUInt32 ofs, nativeOfs;
+	ILUInt32 prevOfs = IL_MAX_UINT32;
+
+	/* Search for the native offset */
+	InitDebugIter(&iter, cache, start);
+	while(GetNextDebug(&iter, &ofs, &nativeOfs))
+	{
+		if(exact)
+		{
+			if(nativeOfs == offset)
+			{
+				return ofs;
+			}
+		}
+		else if(nativeOfs > offset)
+		{
+			return prevOfs;
+		}
+		prevOfs = ofs;
+	}
 	return IL_MAX_UINT32;
 }
 

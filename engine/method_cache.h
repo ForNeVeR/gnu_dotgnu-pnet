@@ -135,7 +135,8 @@ void *_ILCacheGetMethod(ILCache *cache, void *pc, void **cookie);
  * entry point for the method.  Returns IL_MAX_UINT32 if
  * the native offset could not be determined.
  */
-ILUInt32 _ILCacheGetNative(ILCache *cache, void *start, ILUInt32 offset);
+ILUInt32 _ILCacheGetNative(ILCache *cache, void *start,
+						   ILUInt32 offset, int exact);
 
 /*
  * Get the bytecode offset that is associated with a native
@@ -143,7 +144,8 @@ ILUInt32 _ILCacheGetNative(ILCache *cache, void *start, ILUInt32 offset);
  * entry point for the method.  Returns IL_MAX_UINT32 if
  * the bytecode offset could not be determined.
  */
-ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start, ILUInt32 offset);
+ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start,
+							 ILUInt32 offset, int exact);
 
 /*
  * Convert a return address into a program counter value

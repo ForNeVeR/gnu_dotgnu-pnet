@@ -20,6 +20,13 @@
 	Xsharp/Xlib.cs.in, resources/en_US/Xsharp/Xsharp.txt: add
 	timeout support to Xsharp.
 
+	* Xsharp/Bitmap.cs, Xsharp/Display.cs, Xsharp/Graphics.cs,
+	Xsharp/Image.cs, Xsharp/Pixmap.cs, Xsharp/Xlib.cs.in,
+	resources/en_US/Xsharp/Xsharp.txt, samples/XHello.cs,
+	samples/dotgnu-logo.jpg: add image loading and drawing facilities,
+	using Imlib to do the loading; update XHello to display the DotGNU
+	logo instead of crossed lines.
+
 2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Application.cs, Xsharp/Graphics.cs, Xsharp/Xlib.cs.in:

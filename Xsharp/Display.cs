@@ -59,6 +59,7 @@ public sealed class Display : IDisposable
 	internal Hashtable fonts;
 	internal BuiltinBitmaps bitmaps;
 	internal Timer timerQueue;
+	internal IntPtr imlibData;
 
 	// Constructor.
 	private Display(IntPtr dpy, String displayName, Application app)

@@ -29,21 +29,29 @@ public class XHello : TopLevelWindow
 	public static void Main(String[] args)
 	{
 		Application app = new Application("XHello", args);
-		XHello topLevel = new XHello("Hello World!", 200, 100);
+		Image image = new Image("dotgnu-logo.jpg");
+		XHello topLevel = new XHello
+			("Hello DotGNU!", image.Width, image.Height, image);
 		topLevel.Map();
 		app.Run();
 		app.Close();
 	}
 
+	// Internal state.
+	private Image image;
+
 	// Constructor.
-	public XHello(String title, int width, int height)
-		: base(title, width, height) {}
+	public XHello(String title, int width, int height, Image image)
+		: base(title, width, height)
+	{
+		this.image = image;
+		this.Background = new Color(0, 0, 0);
+	}
 
 	// Handle paint requests.
 	protected override void OnPaint(Graphics graphics)
 	{
-		graphics.DrawLine(0, 0, Width, Height);
-		graphics.DrawLine(0, Height, Width, 0);
+		graphics.DrawImage(0, 0, image);
 	}
 
 }; // class XHello

@@ -202,6 +202,13 @@ internal sealed class Xlib
 			(IntPtr display, Window w, @X_int@ x, @X_int@ y,
 			 @X_uint@ width, @X_uint@ height, Bool exposures);
 
+	[DllImport("X11")]
+	extern public static Status XGetGeometry
+			(IntPtr display, Drawable d, out Window root_return,
+			 out Xint x_return, out Xint y_return,
+			 out Xuint width_return, out Xuint height_return,
+			 out Xuint border_width_return, out Xuint depth_return);
+
 	// Declare pixmap-related external functions.
 
 	[DllImport("X11")]
@@ -486,6 +493,19 @@ internal sealed class Xlib
 	[DllImport("XsharpSupport")]
 	extern public static @X_int@ XNextEventWithTimeout
 			(IntPtr display, out XEvent xevent, @X_int@ timeout);
+
+	// Helper functions from "libImlib.so" for loading images.
+
+	[DllImport("Imlib")]
+	extern public static IntPtr Imlib_init(IntPtr disp);
+
+	[DllImport("Imlib")]
+	extern public static @X_int@ Imlib_load_file_to_pixmap
+			(IntPtr id, String filename, ref Pixmap pixmap,
+			 ref Pixmap mask);
+
+	[DllImport("Xext")]
+	extern public static Bool XShmQueryExtension(IntPtr display);
 
 } // class Xlib
 

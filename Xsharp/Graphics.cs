@@ -2006,6 +2006,113 @@ public sealed class Graphics : IDisposable
 				}
 			}
 
+	/// <summary>
+	/// <para>Draw an image to this graphics context.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the top-left point of
+	/// the image's bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the top-left point of
+	/// the image's bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="image">
+	/// <para>The image to be drawn.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="image"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate values is out of range.</para>
+	/// </exception>
+	public void DrawImage(int x, int y, Image image)
+			{
+				// Validate the image parameter.
+				if(image == null)
+				{
+					throw new ArgumentNullException("image");
+				}
+
+				// Set the context to "tiling" and fill the region.
+				SetFillTiled(image.Pixmap, x, y);
+				SetClipMask(image.Mask, x, y);
+				FillRectangle(x, y, image.Pixmap.Width, image.Pixmap.Height);
+
+				// Revert the context to a sane fill mode.
+				SetFillSolid();
+				SetClipMask(null);
+			}
+
+	/// <summary>
+	/// <para>Draw an image sub-part to this graphics context.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the top-left point of
+	/// the image's bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the top-left point of
+	/// the image's bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="image">
+	/// <para>The image to be drawn.</para>
+	/// </param>
+	///
+	/// <param name="srcX">
+	/// <para>The X co-ordinate of the top-left point of
+	/// the image sub-part to be drawn.</para>
+	/// </param>
+	///
+	/// <param name="srcY">
+	/// <para>The Y co-ordinate of the top-left point of
+	/// the image sub-part to be drawn.</para>
+	/// </param>
+	///
+	/// <param name="srcWidth">
+	/// <para>The width of the image sub-part to be drawn.</para>
+	/// </param>
+	///
+	/// <param name="srcHeight">
+	/// <para>The height of the image sub-part to be drawn.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="image"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate or size values is out of range.</para>
+	/// </exception>
+	public void DrawImage(int x, int y, Image image,
+						  int srcX, int srcY, int srcWidth, int srcHeight)
+			{
+				// Validate the image parameter.
+				if(image == null)
+				{
+					throw new ArgumentNullException("image");
+				}
+
+				// Set the context to "tiling" and fill the region.
+				SetFillTiled(image.Pixmap, x - srcX, y - srcY);
+				SetClipMask(image.Mask, x - srcX, y - srcY);
+				FillRectangle(x, y, srcWidth, srcHeight);
+
+				// Revert the context to a sane fill mode.
+				SetFillSolid();
+				SetClipMask(null);
+			}
+
 	// Draw a radio button.
 	private void DrawRadio(IntPtr display,
 						   int x, int y, int width, int height,

@@ -65,6 +65,8 @@ public sealed class Pixmap : Drawable
 							Xlib.XRootWindowOfScreen(screen.screen),
 						 (uint)width, (uint)height,
 						 (uint)Xlib.XDefaultDepthOfScreen(screen.screen)));
+					this.width = width;
+					this.height = height;
 				}
 				finally
 				{
@@ -115,6 +117,35 @@ public sealed class Pixmap : Drawable
 							Xlib.XRootWindowOfScreen(screen.screen),
 						 (uint)width, (uint)height,
 						 (uint)Xlib.XDefaultDepthOfScreen(screen.screen)));
+					this.width = width;
+					this.height = height;
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	// Internal constructor that wraps a pixmap XID.
+	internal Pixmap(Display dpy, Screen screen, Xlib.Pixmap pixmap)
+			: base(dpy, screen, DrawableKind.Bitmap)
+			{
+				SetPixmapHandle(pixmap);
+				try
+				{
+					// Get the geometry of the pixmap from the X server.
+					IntPtr display = dpy.Lock();
+					Xlib.Window root_return;
+					Xlib.Xint x_return, y_return;
+					Xlib.Xuint width_return, height_return;
+					Xlib.Xuint border_width_return, depth_return;
+					Xlib.XGetGeometry
+						(display, handle, out root_return,
+						 out x_return, out y_return,
+						 out width_return, out height_return,
+						 out border_width_return, out depth_return);
+					this.width = (int)width_return;
+					this.height = (int)height_return;
 				}
 				finally
 				{

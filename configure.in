@@ -175,6 +175,7 @@ AC_CHECK_FUNCS(get_current_dir_name dlopen strerror fcntl ftruncate)
 AC_CHECK_FUNCS(acos asin atan atan2 ceil cos cosh exp floor remainder)
 AC_CHECK_FUNCS(log log10 pow rint sin sinh sqrt tan tanh)
 AC_CHECK_FUNCS(wctomb wcrtomb mbtowc mbrtowc nl_langinfo setlocale)
+AC_CHECK_FUNCS(usleep)
 AC_FUNC_ALLOCA
 
 dnl Add the thread libraries to the end of the link line.

@@ -246,6 +246,9 @@
 /* Define if you have the unlink function.  */
 #undef HAVE_UNLINK
 
+/* Define if you have the usleep function.  */
+#undef HAVE_USLEEP
+
 /* Define if you have the vfprintf function.  */
 #undef HAVE_VFPRINTF
 

@@ -113,6 +113,7 @@ ILString *_IL_InfoMethods_GetUserName(ILExecThread *thread)
 	}
 	else
 	{
+		char *env;
 #if HAVE_GETPWUID && HAVE_GETEUID
 		struct passwd *pwd = getpwuid(geteuid());
 		if(pwd != NULL)
@@ -120,7 +121,6 @@ ILString *_IL_InfoMethods_GetUserName(ILExecThread *thread)
 			return ILStringCreate(thread, pwd->pw_name);
 		}
 #endif
-		char *env;
 		env = getenv("USER");
 		if(env && *env != '\0')
 		{

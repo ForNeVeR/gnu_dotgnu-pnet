@@ -1,4 +1,9 @@
 
+2004-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_info.c: fix a compile problem that causes breakages
+	on gcc 2.95.x.
+
 2004-08-31  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* engine/lib_info.c, configure.in: Obtain user name from UIDs instead 

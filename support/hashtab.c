@@ -197,6 +197,31 @@ void *ILHashFind(ILHashTable *hashtab, const void *key)
 	return 0;
 }
 
+void *ILHashFindAlt(ILHashTable *hashtab, const void *key,
+					ILHashKeyComputeFunc keyComputeFunc,
+					ILHashMatchFunc matchFunc)
+{
+	int hash;
+	ILHashEntry *entry;
+
+	/* Compute the hash table index */
+	hash = (int)((*keyComputeFunc)(key) % (unsigned long)(hashtab->size));
+
+	/* Search for the requested entry */
+	entry = &(hashtab->table[hash]);
+	while(entry != 0)
+	{
+		if(entry->elem != 0 && (*matchFunc)(entry->elem, key))
+		{
+			return entry->elem;
+		}
+		entry = entry->overflow;
+	}
+
+	/* The requested entry does not exist in the hash table */
+	return 0;
+}
+
 void ILHashRemove(ILHashTable *hashtab, void *elem, int freeElem)
 {
 	int hash;

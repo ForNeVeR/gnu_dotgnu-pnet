@@ -328,11 +328,22 @@ int ILHashAdd(ILHashTable *hashtab, void *elem);
 void *ILHashFind(ILHashTable *hashtab, const void *key);
 
 /*
- * Helper macro for finding an element and then casting
+ * Find an element within a hash table using an alternative
+ * key matching algorithm.  Returns the element, or NULL
+ * if not present.
+ */
+void *ILHashFindAlt(ILHashTable *hashtab, const void *key,
+					ILHashKeyComputeFunc keyComputeFunc,
+					ILHashMatchFunc matchFunc);
+
+/*
+ * Helper macros for finding an element and then casting
  * the result to a particular structure type.
  */
 #define	ILHashFindType(hashtab,key,type)	\
 			((type *)ILHashFind((hashtab), (key)))
+#define	ILHashFindAltType(hashtab,key,type,keyCompute,match)	\
+			((type *)ILHashFindAlt((hashtab), (key), (keyCompute), (match)))
 
 /*
  * Remove an element from the hash table.  The element will be

@@ -386,6 +386,24 @@ CSAntTarget *CSAntFindTarget(const char *target)
 	return 0;
 }
 
+const char* CSAntGetProfileValue(const char* name,int len)
+{
+	int i=0;
+	if(!name)return 0;
+	if(!CSAntProfileDefines || !CSAntNumProfileDefines)
+	{
+		return 0;
+	}
+	for(i=0;i<CSAntNumProfileDefines;i++)
+	{
+		if(!strncmp(name,CSAntProfileDefines[i],len))
+		{
+			return "true"; 
+		}
+	}
+	return 0;
+}
+
 const char *CSAntTaskParam(CSAntTask *task, const char *name)
 {
 	const char *value;
@@ -440,6 +458,18 @@ const char *CSAntTaskParam(CSAntTask *task, const char *name)
 				{
 					ADD_BUFFER_CH(*propValue);
 					++propValue;
+				}
+			}
+			else
+			{
+				propValue = CSAntGetProfileValue(value,nameLen);
+				if(propValue)
+				{
+					while(*propValue != '\0')
+					{
+						ADD_BUFFER_CH(*propValue);
+						++propValue;
+					}
 				}
 			}
 			if(value[nameLen] == '}')

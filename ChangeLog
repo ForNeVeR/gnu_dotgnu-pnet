@@ -1,4 +1,9 @@
 
+2003-01-04  Gopal.V  <gopalv82@symonds.net>
+	
+	* csant/csant_parse.c: Expand variables using the profile parameters
+	as well.
+
 2003-01-04  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	*  configure.in, engine/int_proto.h, engine/int_table.c,

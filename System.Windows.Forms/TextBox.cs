@@ -1419,7 +1419,7 @@ public class TextBox : TextBoxBase
 
 	protected override void SetBorderStyle(BorderStyle borderStyle)
 	{
-		this.borderStyle = borderStyle;
+		BorderStyleInternal = borderStyle;
 		// ControlGraphics must be recreated.
 		if (graphics != null)
 			graphics.Dispose();

@@ -50,7 +50,7 @@ public abstract class TextBoxBase : Control
 				readOnly = false;
 				insertMode = InsertMode.Insert;
 				wordWrap = true;
-				borderStyle = BorderStyle.Fixed3D;
+				BorderStyleInternal = BorderStyle.Fixed3D;
 				maxLength = 32767;
 				
 				// Trap key down events
@@ -94,11 +94,11 @@ public abstract class TextBoxBase : Control
 			{
 				get
 				{
-					return borderStyle;
+					return BorderStyleInternal;
 				}
 				set
 				{
-					if(borderStyle != value)
+					if(BorderStyleInternal != value)
 					{
 						SetBorderStyle(value);
 						OnBorderStyleChanged(EventArgs.Empty);
@@ -191,7 +191,7 @@ public abstract class TextBoxBase : Control
 			{
 				get
 				{
-					if(borderStyle == BorderStyle.None)
+					if(BorderStyleInternal == BorderStyle.None)
 					{
 						return FontHeight;
 					}

@@ -4,7 +4,7 @@
 	System.Windows.Forms/PopupControl.cs,
 	System.Windows.Forms/StatusBar.cs, System.Windows.Forms/TextBox.cs,
 	System.Windows.Forms/TextBoxBase.cs, System.Windows.Forms/ToolBar.cs
-	: Control now uses borderStyle so each control doesnt have to
+	: Control now uses BorderStyleInternal so each control doesnt have to
 	implement borders. Change TextBox to work like this. Other minor csc
 	compile fixes.
 

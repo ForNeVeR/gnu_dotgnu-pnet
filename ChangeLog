@@ -1,4 +1,9 @@
 
+2003-03-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c:
+	add the "Assembly.LoadFromBytes" internalcall.
+
 2003-03-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/image.h, image/pecoff_loader.c, include/il_image.h:

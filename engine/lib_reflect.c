@@ -1158,6 +1158,59 @@ ILObject *_IL_Assembly_LoadFromFile(ILExecThread *thread,
 }
 
 /*
+ * internal static Assembly LoadFromBytes(byte[] bytes, out int error,
+ *										  Assembly parent);
+ */
+ILObject *_IL_Assembly_LoadFromBytes(ILExecThread *thread,
+									 System_Array *bytes,
+									 ILInt32 *error,
+									 ILObject *parent)
+{
+	ILImage *image;
+	int loadError;
+
+	/* Bail out if "bytes" is NULL (should be trapped higher
+	   up the stack, but let's be paranoid anyway) */
+	if(!bytes)
+	{
+		*error = LoadError_FileNotFound;
+		return 0;
+	}
+
+	/* TODO: check security permissions */
+
+	/* Attempt to load the image.  Note: we deliberately don't supply
+	   the "IL_LOADFLAG_IN_PLACE" flag because we don't want the user
+	   to be able to modify the IL binary after we have loaded it.
+	   Or worse, have the garbage collector throw the "bytes" array away */
+	loadError = ILImageLoadFromMemory(ArrayToBuffer(bytes),
+									  (unsigned long)(long)(bytes->length),
+									  thread->process->context,
+									  &image, IL_LOADFLAG_FORCE_32BIT, 0);
+	if(loadError == 0)
+	{
+		*error = LoadError_OK;
+		return ImageToAssembly(thread, image);
+	}
+
+	/* Convert the error code into something the C# library knows about */
+	if(loadError == -1)
+	{
+		*error = LoadError_FileNotFound;
+	}
+	else if(loadError == IL_LOADERR_MEMORY)
+	{
+		*error = LoadError_FileNotFound;
+		ILExecThreadThrowOutOfMemory(thread);
+	}
+	else
+	{
+		*error = LoadError_BadImage;
+	}
+	return 0;
+}
+
+/*
  * private static Type GetType(String typeName, bool throwOnError,
  *							   bool ignoreCase)
  */

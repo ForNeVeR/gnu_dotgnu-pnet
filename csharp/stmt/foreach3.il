@@ -46,7 +46,7 @@
 ?L4:
 	ldloc.0
 	ret
-	.maxstack 3
+	.maxstack 2
 } // method m1
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {

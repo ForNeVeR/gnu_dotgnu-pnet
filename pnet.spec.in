@@ -81,11 +81,13 @@ test "/" = "${RPM_BUILD_ROOT}" || rm -rf ${RPM_BUILD_ROOT}
 
 %post tools
 /sbin/install-info %{_infodir}/pnettools.info.gz %{_infodir}/dir || :
-sleep 1
+sleep 2			# rpm hangs
 
 %postun tools
-test "$1" != 0 || /sbin/install-info --delete %{_infodir}/pnettools.info.gz %{_infodir}/dir || :
-sleep 1
+[ ."$1" != .0 ] ||
+  [ ! -e %{_infodir}/pnettools.info.gz ] ||
+  /sbin/install-info --delete %{_infodir}/pnettools.info.gz %{_infodir}/dir
+sleep 2			# rpm hangs
 
 %files interpreter
 %defattr(-,root,root,-)
@@ -175,6 +177,9 @@ sleep 1
 %{_includedir}/pnet/*
 
 %changelog
+* Thu Dec 16 2004 Russell Stuart <russell-rpm@stuart.id.au> 0.6.11
+  Improved handling of info files.
+
 * Thu Mar 10 2004 Russell Stuart <russell-rpm@stuart.id.au> 0.6.3
 - Removed /usr/bin/ildb, /usr/bin/ildiff and /usr/share/man/man1/ildiff.1
   for now, as they aren't being made.

@@ -31,6 +31,8 @@
 	runtime/System/Reflection/Emit/TypeToken.cs: implement a large
 	number of "System.Reflection.Emit" classes.
 
+	* System/Uri.cs: fix semantic compile errors.
+
 2002-05-02  Charlie Carnow   <carnow@gmx.net>
 
 	* runtime/System/IO/Directory.cs: new class contributed by

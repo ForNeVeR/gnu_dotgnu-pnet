@@ -251,7 +251,7 @@ public class Uri : MarshalByRefObject
 					else
 						usedZeroCompress = true;
 				}
-				parseHexWord(parts[dex], pos);
+				parseHexWord(parts[dex], ref pos);
 				if (pos != parts[dex].Length) // some bad chars in seg
 					throw new FormatException();
 			}
@@ -292,16 +292,17 @@ public class Uri : MarshalByRefObject
 	private static ushort parseHexWord(String src, ref int index)
 	{
 		int buildretval = 0;
-		for (int stop = index + 4; index < stop; ++indexcpy)
+		int stop;
+		for (stop = index + 4; index < stop; ++index)
 		{
 			if (!IsHexDigit(src[index]))
 				break;
 			buildretval <<= 4;
 			buildretval |= FromHex(src[index]);
 		}
-		if (stop == index + 4)
+		if (stop != index)
 			throw new FormatException(S._("Arg_HexDigit"));
-		return buildretval;
+		return (ushort)buildretval;
 	}
 
 	public static bool CheckSchemeName(String schemeName)

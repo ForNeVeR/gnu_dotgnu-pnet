@@ -1,3 +1,12 @@
+
+2003-07-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm_config.h, engine/dumpconfig.c: remove potentional
+	macro redefinition warnings from cvm_config.h; take out the
+	"Little Endian" configuration because CVM_LITTLE_ENDIAN doesn't
+	actually indicate a little-endian CPU and so it would be confusing;
+	use "ILHasThreads" to detect thread support rather than #ifdef's.
+
 2003-07-23  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/process.c:  Unregister the main thread when a process
@@ -37,7 +46,6 @@
 	more verbose output.
 
 	* engine/dumpconfig.cs: Add GPL header.
-
 
 2003-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

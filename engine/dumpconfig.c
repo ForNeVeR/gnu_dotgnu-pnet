@@ -91,12 +91,6 @@ int _ILDumpConfig(FILE *stream,int level)
 	PrintFormatted(stream,"Computed Goto","No");
 #endif
 
-#ifdef CVM_LITTLE_ENDIAN
-	PrintFormatted(stream,"Endian-ness","Little Endian");
-#else
-	PrintFormatted(stream,"Endian-ness","Big Endian");
-#endif
-
 	if(level > 1)
 	{
 		PrintFormatted(stream,"Fast Moves",NULL);
@@ -153,13 +147,14 @@ int _ILDumpConfig(FILE *stream,int level)
 	PrintFormatted(stream, "Libffi", "No");
 #endif
 
-#if defined(GC_LINUX_THREADS) || defined(GC_WIN32_THREADS) \
- || defined(GC_HPUX_THREADS) || defined (GC_FREEBSD_THREADS) \
- || defined(GC_SOLARIS_THREADS)
-	PrintFormatted(stream, "Threading",  "Enabled");
-#else
-	PrintFormatted(stream, "Threading",  "Disabled");
-#endif
+	if(ILHasThreads)
+	{
+		PrintFormatted(stream, "Threading",  "Enabled");
+	}
+	else
+	{
+		PrintFormatted(stream, "Threading",  "Disabled");
+	}
 
 	if(level>1)
 	{

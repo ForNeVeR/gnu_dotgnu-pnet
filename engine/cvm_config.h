@@ -187,6 +187,7 @@ extern int _ILCVMInsnCount[];
 	defined(IL_CONFIG_UNROLL)
 #define	IL_CVM_DIRECT_UNROLLED_X86
 #define	IL_CVM_DIRECT_UNROLLED
+#undef	IL_CVM_FLAVOUR
 #define	IL_CVM_FLAVOUR "Direct Unrolled (x86)"
 #endif
 #if defined(IL_CVM_DIRECT) && defined(CVM_ARM) && \
@@ -196,6 +197,7 @@ extern int _ILCVMInsnCount[];
 	defined(IL_CONFIG_UNROLL)
 #define	IL_CVM_DIRECT_UNROLLED_ARM
 #define	IL_CVM_DIRECT_UNROLLED
+#undef	IL_CVM_FLAVOUR
 #define	IL_CVM_FLAVOUR "Direct Unrolled (ARM)"
 #endif
 

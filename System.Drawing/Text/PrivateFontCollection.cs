@@ -47,6 +47,6 @@ public sealed class PrivateFontCollection : FontCollection
 				// Nothing to do here.
 			}
 
-}; // class InstalledFontCollection
+}; // class PrivateFontCollection
 
 }; // namespace System.Drawing.Text

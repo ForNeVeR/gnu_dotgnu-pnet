@@ -22,6 +22,8 @@
 namespace System.Drawing
 {
 
+#if CONFIG_COMPONENT_MODEL
+
 using System.ComponentModel;
 using System.Globalization;
 using System.Collections;
@@ -125,5 +127,7 @@ public class FontConverter : TypeConverter
 	}; // class FontNameConverter
 
 }; // class FontConverter
+
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.Drawing

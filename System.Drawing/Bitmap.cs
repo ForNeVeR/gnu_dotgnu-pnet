@@ -28,10 +28,14 @@ using System.Drawing.Imaging;
 using System.Drawing.Design;
 using System.ComponentModel;
 
+#if !ECMA_COMPAT
 [Serializable]
 [ComVisible(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL
 [Editor("System.Drawing.Design.BitmapEditor, System.Drawing.Design",
 		typeof(UITypeEditor))]
+#endif
 public sealed class Bitmap : Image
 {
 	// Constructors.
@@ -85,8 +89,10 @@ public sealed class Bitmap : Image
 			{
 				// TODO
 			}
+#if CONFIG_SERIALIZATION
 	internal Bitmap(SerializationInfo info, StreamingContext context)
 			: base(info, context) {}
+#endif
 
 	// Clone this bitmap and transform it into a new pixel format
 	[TODO]
@@ -119,13 +125,17 @@ public sealed class Bitmap : Image
 			}
 
 	// Convert this bitmap into a native bitmap handle.
+#if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	public IntPtr GetHbitmap()
 			{
 				return GetHbitmap(Color.LightGray);
 			}
 	[TODO]
+#if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	public IntPtr GetHbitmap(Color background)
 			{
 				// TODO
@@ -134,7 +144,9 @@ public sealed class Bitmap : Image
 
 	// Convert this bitmap into a native icon handle.
 	[TODO]
+#if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	public IntPtr GetHicon()
 			{
 				// TODO

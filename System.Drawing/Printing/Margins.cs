@@ -25,7 +25,9 @@ namespace System.Drawing.Printing
 using System.ComponentModel;
 using System.Text;
 
+#if CONFIG_COMPONENT_MODEL
 [TypeConverter("System.Drawing.Printing.MarginsConverter")]
+#endif
 public class Margins : ICloneable
 {
 	// Internal state.

@@ -22,6 +22,8 @@
 namespace System.Drawing.Printing
 {
 
+#if CONFIG_COMPONENT_MODEL
+
 using System.ComponentModel;
 using System.Globalization;
 using System.Collections;
@@ -92,5 +94,7 @@ public class MarginsConverter : ExpandableObjectConverter
 			}
 
 }; // class MarginsConverter
+
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.Drawing.Printing

@@ -24,17 +24,21 @@ namespace System.Drawing.Imaging
 
 using System.Runtime.InteropServices;
 
+#if !ECMA_COMPAT
 [ComVisible(false)]
+#endif
 public sealed class ImageCodecInfo
 {
 	// Internal state.
+#if !ECMA_COMPAT
 	private Guid clsid;
+	private Guid formatId;
+#endif
 	private String codecName;
 	private String dllName;
 	private String filenameExtension;
 	private ImageCodecFlags flags;
 	private String formatDescription;
-	private Guid formatId;
 	private String mimeType;
 	private byte[][] signatureMasks;
 	private byte[][] signaturePatterns;
@@ -44,6 +48,7 @@ public sealed class ImageCodecInfo
 	internal ImageCodecInfo() {}
 
 	// Get or set this object's properties.
+#if !ECMA_COMPAT
 	public Guid Clsid
 			{
 				get
@@ -55,6 +60,7 @@ public sealed class ImageCodecInfo
 					clsid = value;
 				}
 			}
+#endif
 	public String CodecName
 			{
 				get
@@ -110,6 +116,7 @@ public sealed class ImageCodecInfo
 					formatDescription = value;
 				}
 			}
+#if !ECMA_COMPAT
 	public Guid FormatID
 			{
 				get
@@ -121,6 +128,7 @@ public sealed class ImageCodecInfo
 					formatId = value;
 				}
 			}
+#endif
 	public String MimeType
 			{
 				get

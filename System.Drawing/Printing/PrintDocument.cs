@@ -24,7 +24,10 @@ namespace System.Drawing.Printing
 
 using System.ComponentModel;
 
-public class PrintDocument : Component
+public class PrintDocument
+#if CONFIG_COMPONENT_MODEL
+	: Component
+#endif
 {
 	// Internal state.
 	private PageSettings defaultPageSettings;

@@ -22,6 +22,8 @@
 namespace System.Drawing.Imaging
 {
 
+#if !ECMA_COMPAT
+
 public sealed class FrameDimension
 {
 	// Internal state.
@@ -116,5 +118,7 @@ public sealed class FrameDimension
 			}
 
 }; // class FrameDimension
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Drawing.Imaging

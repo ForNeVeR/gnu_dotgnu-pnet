@@ -33,10 +33,15 @@ using System.Drawing.Design;
 		typeof(UITypeEditor))]
 [TypeConverter(typeof(FontConverter))]
 #endif
+#if !ECMA_COMPAT
 [Serializable]
 [ComVisible(true)]
-public sealed class Font : MarshalByRefObject, ISerializable,
-						   ICloneable, IDisposable
+#endif
+public sealed class Font
+	: MarshalByRefObject, ICloneable, IDisposable
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 	// Internal state.
 	private IToolkit toolkit;
@@ -101,6 +106,7 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 				this.gdiCharSet = gdiCharSet;
 				this.gdiVerticalFont = gdiVerticalFont;
 			}
+#if CONFIG_SERIALIZATION
 	internal Font(SerializationInfo info, StreamingContext context)
 			{
 				if(info == null)
@@ -116,6 +122,7 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 				gdiCharSet = 1;
 				gdiVerticalFont = false;
 			}
+#endif
 	private Font(IToolkitFont font)
 			{
 				this.toolkit = toolkit;
@@ -177,7 +184,11 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 			{
 				get
 				{
+				#if CONFIG_EXTENDED_NUMERICS
 					return (int)(Math.Ceiling(GetHeight()));
+				#else
+					return (int)(GetHeight() + 0.99f);
+				#endif
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -528,7 +539,11 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 				builder.Append("[Font: Name=");
 				builder.Append(Name);
 				builder.Append(" Size=");
+			#if CONFIG_EXTENDED_NUMERICS
 				builder.Append(Size);
+			#else
+				builder.Append((int)Size);
+			#endif
 				builder.Append(" Units=");
 				builder.Append((int)Unit);
 				builder.Append(" GdiCharSet=");
@@ -538,6 +553,8 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 				builder.Append("]");
 				return builder.ToString();
 			}
+
+#if CONFIG_SERIALIZATION
 
 	// Get the serialization information for this object.
 	void ISerializable.GetObjectData(SerializationInfo info,
@@ -552,6 +569,8 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 				info.AddValue("Style", Style);
 				info.AddValue("Unit", Unit);
 			}
+
+#endif
 
 	// Get the toolkit version of this font for a specific toolkit.
 	internal IToolkitFont GetFont(IToolkit toolkit)

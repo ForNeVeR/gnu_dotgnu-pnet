@@ -77,7 +77,11 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 			{
 				get
 				{
+				#if CONFIG_EXTENDED_NUMERICS
 					return new float[] {m11, m12, m21, m22, dx, dy};
+				#else
+					return null;
+				#endif
 				}
 			}
 
@@ -246,6 +250,7 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 	// Perform a rotation on this matrix.
 	public void Rotate(float angle)
 			{
+			#if CONFIG_EXTENDED_NUMERICS
 				float m11, m12, m21, m22;
 
 				double radians = (angle * (Math.PI / 180.0));
@@ -261,9 +266,11 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 				this.m12 = m12;
 				this.m21 = m21;
 				this.m22 = m22;
+			#endif
 			}
 	public void Rotate(float angle, MatrixOrder order)
 			{
+			#if CONFIG_EXTENDED_NUMERICS
 				float m11, m12, m21, m22, dx, dy;
 
 				double radians = (angle * (Math.PI / 180.0));
@@ -298,6 +305,7 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 					this.dx  = dx;
 					this.dy  = dy;
 				}
+			#endif
 			}
 
 	// Rotate about a specific point.

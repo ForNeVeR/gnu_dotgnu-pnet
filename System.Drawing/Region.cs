@@ -25,7 +25,9 @@ using System.Runtime.InteropServices;
 using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
 
+#if !ECMA_COMPAT
 [ComVisible(false)]
+#endif
 public sealed class Region : MarshalByRefObject, IDisposable
 {
 	// Constructors.

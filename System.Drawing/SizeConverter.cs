@@ -22,6 +22,8 @@
 namespace System.Drawing
 {
 
+#if CONFIG_COMPONENT_MODEL
+
 using System.ComponentModel;
 using System.ComponentModel.Design.Serialization;
 using System.Globalization;
@@ -50,11 +52,13 @@ public class SizeConverter : TypeConverter
 	public override bool CanConvertTo
 				(ITypeDescriptorContext context, Type destinationType)
 			{
+			#if CONFIG_COMPONENT_MODEL_DESIGN
 				if(destinationType == typeof(InstanceDescriptor))
 				{
 					return true;
 				}
 				else
+			#endif
 				{
 					return base.CanConvertTo(context, destinationType);
 				}
@@ -103,11 +107,13 @@ public class SizeConverter : TypeConverter
 				{
 					return String.Format("{0}, {1}", size.Width, size.Height);
 				}
+			#if CONFIG_COMPONENT_MODEL_DESIGN
 				else if(destinationType == typeof(InstanceDescriptor))
 				{
 					// TODO
 					return null;
 				}
+			#endif
 				else
 				{
 					return base.ConvertTo
@@ -148,5 +154,7 @@ public class SizeConverter : TypeConverter
 			}
 
 }; // class SizeConverter
+
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.Drawing

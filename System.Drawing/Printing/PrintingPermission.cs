@@ -22,6 +22,8 @@
 namespace System.Drawing.Printing
 {
 
+#if CONFIG_PERMISSIONS
+
 using System.Security;
 using System.Security.Permissions;
 
@@ -217,6 +219,11 @@ public sealed class PrintingPermission : CodeAccessPermission
 			{
 				return (state == PermissionState.Unrestricted);
 			}
+#else
+	private bool IsUnrestricted()
+			{
+				return (state == PermissionState.Unrestricted);
+			}
 #endif
 
 	// Get or set the level on this permissions object.
@@ -233,5 +240,7 @@ public sealed class PrintingPermission : CodeAccessPermission
 			}
 
 }; // class PrintingPermission
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Drawing.Printing

@@ -411,7 +411,7 @@ public sealed class Marshal
 					throw new ArgumentNullException("fieldName");
 				}
 				IntPtr offset = OffsetOfInternal(t, fieldName);
-				if(offset == (IntPtr)(-1))
+				if(offset == new IntPtr(-1))
 				{
 					throw new ArgumentException
 						(_("Reflection_UnknownField"), "fieldName");

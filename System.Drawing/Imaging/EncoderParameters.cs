@@ -22,6 +22,8 @@
 namespace System.Drawing.Imaging
 {
 
+#if !ECMA_COMPAT
+
 public sealed class EncoderParameters : IDisposable
 {
 	// Internal state.
@@ -58,5 +60,7 @@ public sealed class EncoderParameters : IDisposable
 			}
 
 }; // class EncoderParameters
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Drawing.Imaging

@@ -24,9 +24,13 @@ namespace System.Drawing
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 
+#if !ECMA_COMPAT
 [Serializable]
 [ComVisible(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL
 [TypeConverter("System.Drawing.SizeConverter")]
+#endif
 public struct Size
 {
 	// Internal state.
@@ -83,12 +87,16 @@ public struct Size
 				}
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Convert a SizeF object into a Size object using ceiling conversion.
 	public static Size Ceiling(SizeF value)
 			{
 				return new Size((int)(Math.Ceiling(value.Width)),
 								(int)(Math.Ceiling(value.Height)));
 			}
+
+#endif
 
 	// Determine if two sizes are equal.
 	public override bool Equals(Object obj)
@@ -110,12 +118,16 @@ public struct Size
 				return (width ^ height);
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Convert a SizeF object into a Size object using rounding conversion.
 	public static Size Round(SizeF value)
 			{
 				return new Size((int)(Math.Round(value.Width)),
 								(int)(Math.Round(value.Height)));
 			}
+
+#endif
 
 	// Convert this object into a string.
 	public override String ToString()

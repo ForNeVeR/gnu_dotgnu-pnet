@@ -21,7 +21,9 @@
 namespace System.Drawing
 {
 
+#if !ECMA_COMPAT
 [Serializable]
+#endif
 public struct RectangleF
 {
 	// Internal state.
@@ -319,6 +321,8 @@ public struct RectangleF
 				this.y += pos.Y;
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Convert this object into a string.
 	public override String ToString()
 			{
@@ -327,6 +331,8 @@ public struct RectangleF
 					   ",Width=" + width.ToString() +
 					   ",Height=" + height.ToString() + "}";
 			}
+
+#endif
 
 	// Get the union of two rectangles.
 	public static RectangleF Union(RectangleF a, RectangleF b)

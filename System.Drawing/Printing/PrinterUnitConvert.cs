@@ -146,8 +146,13 @@ public sealed class PrinterUnitConvert
 	public static int Convert
 				(int value, PrinterUnit fromUnit, PrinterUnit toUnit)
 			{
+			#if CONFIG_EXTENDED_NUMERICS
 				return (int)Math.Round
 					(Convert((double)value, fromUnit, toUnit));
+			#else
+				return (int)
+					(Convert((double)value, fromUnit, toUnit) + 0.5);
+			#endif
 			}
 	public static Margins Convert
 				(Margins value, PrinterUnit fromUnit, PrinterUnit toUnit)

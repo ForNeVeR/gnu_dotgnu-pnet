@@ -1,5 +1,13 @@
 
-2003-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+2003-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing/*, System.Xml/Xsl/XsltCompileException.cs,
+	System.Xml/Xsl/XsltException.cs, Xsharp/Graphics.cs,
+	runtime/System/Runtime/InteropServices/Marshal.cs,
+	tests/runtime/System/Runtime/InteropServices/TestMarshal.cs:
+	various fixes to compile in non-full profiles.
+
+2003-06-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/Brush.cs, System.Drawing/Brushes.cs,
 	System.Drawing/ColorConverter.cs, System.Drawing/Font.cs,

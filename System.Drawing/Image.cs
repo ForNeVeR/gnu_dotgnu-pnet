@@ -26,21 +26,28 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Drawing.Imaging;
 
+#if !ECMA_COMPAT
 [Serializable]
 [ComVisible(true)]
+#endif
 public abstract class Image
-	: MarshalByRefObject, ISerializable, ICloneable, IDisposable
+	: MarshalByRefObject, ICloneable, IDisposable
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 	// Internal state.
 	internal int flags;
+#if !ECMA_COMPAT
 	internal Guid[] frameDimensionsList;
+	internal ImageFormat rawFormat;
+#endif
 	internal int height;
 	internal float horizontalResolution;
 	internal ColorPalette palette;
 	internal PixelFormat pixelFormat;
 	internal int[] propertyIdList;
 	internal PropertyItem[] propertyItems;
-	internal ImageFormat rawFormat;
 	internal float verticalResolution;
 	internal int width;
 
@@ -50,11 +57,13 @@ public abstract class Image
 			{
 				// TODO
 			}
+#if CONFIG_SERIALIZATION
 	[TODO]
 	internal Image(SerializationInfo info, StreamingContext context)
 			{
 				// TODO
 			}
+#endif
 
 	// Destructor.
 	~Image()
@@ -70,6 +79,7 @@ public abstract class Image
 					return flags;
 				}
 			}
+#if !ECMA_COMPAT
 	public Guid[] FrameDimensionsList
 			{
 				get
@@ -77,6 +87,7 @@ public abstract class Image
 					return frameDimensionsList;
 				}
 			}
+#endif
 	public int Height
 			{
 				get
@@ -138,6 +149,7 @@ public abstract class Image
 					return propertyItems;
 				}
 			}
+#if !ECMA_COMPAT
 	public ImageFormat RawFormat
 			{
 				get
@@ -145,6 +157,7 @@ public abstract class Image
 					return rawFormat;
 				}
 			}
+#endif
 	public Size Size
 			{
 				get
@@ -231,6 +244,8 @@ public abstract class Image
 				return RectangleF.Empty;
 			}
 
+#if !ECMA_COMPAT
+
 	// Get parameter information for a specific encoder.
 	[TODO]
 	public EncoderParameters GetEncoderParameterList(Guid encoder)
@@ -246,6 +261,16 @@ public abstract class Image
 				// TODO
 				return 1;
 			}
+
+	// Select a new frame and make it the active one.
+	[TODO]
+	public int SelectActiveFrame(FrameDimension dimension, int frameIndex)
+			{
+				// TODO
+				return frameIndex;
+			}
+
+#endif
 
 	// Get the number of bits per pixel in a specific format.
 	public static int GetPixelFormatSize(PixelFormat pixfmt)
@@ -322,8 +347,9 @@ public abstract class Image
 	// Save this image to a file.
 	public void Save(String filename)
 			{
-				Save(filename, RawFormat);
+				// TODO
 			}
+#if !ECMA_COMPAT
 	[TODO]
 	public void Save(String filename, ImageFormat format)
 			{
@@ -360,14 +386,7 @@ public abstract class Image
 			{
 				// TODO
 			}
-
-	// Select a new frame and make it the active one.
-	[TODO]
-	public int SelectActiveFrame(FrameDimension dimension, int frameIndex)
-			{
-				// TODO
-				return frameIndex;
-			}
+#endif
 
 	// Set a property on this image.
 	[TODO]
@@ -376,6 +395,8 @@ public abstract class Image
 				// TODO
 			}
 
+#if CONFIG_SERIALIZATION
+
 	// Implement the ISerializable interface.
 	[TODO]
 	void ISerializable.GetObjectData(SerializationInfo info,
@@ -383,6 +404,8 @@ public abstract class Image
 			{
 				// TODO
 			}
+
+#endif
 
 }; // class Image
 

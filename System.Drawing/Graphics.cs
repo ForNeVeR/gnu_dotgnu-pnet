@@ -27,7 +27,9 @@ using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Drawing.Toolkit;
 
+#if !ECMA_COMPAT
 [ComVisible(false)]
+#endif
 public sealed class Graphics : MarshalByRefObject, IDisposable
 {
 	// Internal state.
@@ -2311,13 +2313,17 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 
 	// Delegate that is used to handle abort callbacks on "DrawImage".
+#if !ECMA_COMPAT
 	[Serializable]
 	[ComVisible(false)]
+#endif
 	public delegate bool DrawImageAbort(IntPtr callbackdata);
 
 	// Delegate that is used to enumerate metafile contents.
+#if !ECMA_COMPAT
 	[Serializable]
 	[ComVisible(false)]
+#endif
 	public delegate bool EnumerateMetafileProc
 			(EmfPlusRecordType recordType, int flags, int dataSize,
 			 IntPtr data, PlayRecordCallback callbackData);

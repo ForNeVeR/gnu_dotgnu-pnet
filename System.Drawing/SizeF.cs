@@ -23,8 +23,10 @@ namespace System.Drawing
 
 using System.Runtime.InteropServices;
 
+#if !ECMA_COMPAT
 [Serializable]
 [ComVisible(true)]
+#endif
 public struct SizeF
 {
 	// Internal state.
@@ -118,12 +120,16 @@ public struct SizeF
 				return new Size((int)width, (int)height);
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Convert this object into a string.
 	public override String ToString()
 			{
 				return "{Width=" + width.ToString() +
 					   ", Height=" + height.ToString() + "}";
 			}
+
+#endif
 
 	// Overloaded operators.
 	public static SizeF operator+(SizeF sz1, SizeF sz2)

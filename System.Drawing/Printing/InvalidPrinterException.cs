@@ -36,7 +36,7 @@ public class InvalidPrinterException : SystemException
 			{
 				this.settings = settings;
 			}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected InvalidPrinterException
 				(SerializationInfo info, StreamingContext ctxt)
 			: base(info, ctxt)

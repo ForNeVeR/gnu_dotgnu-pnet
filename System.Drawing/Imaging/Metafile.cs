@@ -25,8 +25,10 @@ namespace System.Drawing.Imaging
 using System.IO;
 using System.Runtime.InteropServices;
 
+#if !ECMA_COMPAT
 [Serializable]
 [ComVisible(false)]
+#endif
 public sealed class Metafile : Image
 {
 	// Internal state.

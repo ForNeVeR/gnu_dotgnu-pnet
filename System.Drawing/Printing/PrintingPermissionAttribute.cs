@@ -22,6 +22,8 @@
 namespace System.Drawing.Printing
 {
 
+#if CONFIG_PERMISSIONS
+
 using System;
 using System.Security;
 using System.Security.Permissions;
@@ -67,5 +69,7 @@ public sealed class PrintingPermissionAttribute : CodeAccessSecurityAttribute
 			}
 
 }; // class PrintingPermissionAttribute
+
+#endif // CONFIG_PERMISSIONS
 
 }; // namespace System.Drawing.Printing

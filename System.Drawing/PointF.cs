@@ -23,8 +23,10 @@ namespace System.Drawing
 
 using System.Runtime.InteropServices;
 
+#if !ECMA_COMPAT
 [Serializable]
 [ComVisible(true)]
+#endif
 public struct PointF
 {
 	// Internal state.
@@ -96,11 +98,15 @@ public struct PointF
 				return base.GetHashCode();
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Convert this object into a string.
 	public override String ToString()
 			{
 				return "{X=" + x.ToString() + ",Y=" + y.ToString() + "}";
 			}
+
+#endif
 
 	// Overloaded operators.
 	public static PointF operator+(PointF pt, Size sz)

@@ -22,6 +22,8 @@
 namespace System.Drawing.Imaging
 {
 
+#if !ECMA_COMPAT
+
 public sealed class EncoderParameter : IDisposable
 {
 	// Storage for a tuple of values.
@@ -232,5 +234,7 @@ public sealed class EncoderParameter : IDisposable
 			}
 
 }; // class EncoderParameter
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Drawing.Imaging

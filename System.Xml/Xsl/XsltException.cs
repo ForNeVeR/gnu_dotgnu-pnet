@@ -35,6 +35,8 @@ namespace System.Xml.Xsl
 			throw new NotImplementedException(".ctor");
 		}
 
+#if CONFIG_SERIALIZATION
+
 		[TODO]
 		protected XsltException(SerializationInfo info, 
 								StreamingContext context)
@@ -48,6 +50,8 @@ namespace System.Xml.Xsl
 		{
 			throw new NotImplementedException("GetObjectData");
 		}
+
+#endif
 
 		[TODO]
 		public int LineNumber 

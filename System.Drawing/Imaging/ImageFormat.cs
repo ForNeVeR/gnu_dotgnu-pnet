@@ -22,6 +22,8 @@
 namespace System.Drawing.Imaging
 {
 
+#if !ECMA_COMPAT
+
 public sealed class ImageFormat
 {
 	// Internal state.
@@ -214,5 +216,7 @@ public sealed class ImageFormat
 			}
 
 }; // class ImageFormat
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Drawing.Imaging

@@ -24,7 +24,12 @@ namespace System.Drawing.Printing
 
 using System.ComponentModel;
 
-public class PrintEventArgs : CancelEventArgs
+public class PrintEventArgs
+#if CONFIG_COMPONENT_MODEL
+	: CancelEventArgs
+#else
+	: EventArgs
+#endif
 {
 
 	// Constructor.

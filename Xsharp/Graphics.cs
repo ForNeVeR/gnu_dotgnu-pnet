@@ -1917,6 +1917,7 @@ public sealed class Graphics : IDisposable
 									  (int)(startAngle * 64.0f),
 									  (int)(sweepAngle * 64.0f));
 
+					#if CONFIG_EXTENDED_NUMERICS
 						// Calculate the location of the arc end-points
 						// and then draw the connecting arc pie lines.
 						XPoint[] xpoints = new XPoint [3];
@@ -1938,6 +1939,7 @@ public sealed class Graphics : IDisposable
 							(short)(ymiddle - Math.Sin(radians) * yaxis);
 						Xlib.XDrawLines(display, drawableHandle, gc, xpoints,
 										3, 0 /* CoordModeOrigin */);
+					#endif
 					}
 					finally
 					{

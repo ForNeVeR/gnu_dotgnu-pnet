@@ -170,7 +170,7 @@ public class TestMarshal : TestCase
 				}
 				try
 				{
-					Marshal.Copy(new float [3], -1, new IntPtr(3), 0);
+					Marshal.Copy(new long [3], -1, new IntPtr(3), 0);
 					Fail("RangeCheck (3)");
 				}
 				catch(ArgumentOutOfRangeException)
@@ -250,7 +250,7 @@ public class TestMarshal : TestCase
 				}
 				try
 				{
-					Marshal.Copy(new IntPtr(3), new float [3], -1, 0);
+					Marshal.Copy(new IntPtr(3), new long [3], -1, 0);
 					Fail("RangeCheck (3)");
 				}
 				catch(ArgumentOutOfRangeException)

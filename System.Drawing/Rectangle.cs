@@ -24,9 +24,13 @@ namespace System.Drawing
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 
+#if !ECMA_COMPAT
 [Serializable]
 [ComVisible(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL
 [TypeConverter("System.Drawing.RectangleConverter")]
+#endif
 public struct Rectangle
 {
 	// Internal state.
@@ -179,6 +183,8 @@ public struct Rectangle
 				}
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Convert a RectangleF object into a Rectangle by ceiling conversion.
 	public static Rectangle Ceiling(RectangleF value)
 			{
@@ -187,6 +193,8 @@ public struct Rectangle
 								     (int)(Math.Ceiling(value.Width)),
 								     (int)(Math.Ceiling(value.Height)));
 			}
+
+#endif
 
 	// Determine if a rectangle contains a point.
 	public bool Contains(int x, int y)
@@ -330,6 +338,8 @@ public struct Rectangle
 				this.y += pos.Y;
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Convert a RectangleF object into a Rectangle by rounding conversion.
 	public static Rectangle Round(RectangleF value)
 			{
@@ -347,6 +357,8 @@ public struct Rectangle
 					   ",Width=" + width.ToString() +
 					   ",Height=" + height.ToString() + "}";
 			}
+
+#endif
 
 	// Convert a RectangleF object into a Rectangle by truncating conversion.
 	public static Rectangle Truncate(RectangleF value)

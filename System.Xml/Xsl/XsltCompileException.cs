@@ -37,12 +37,16 @@ namespace System.Xml.Xsl
 			throw new NotImplementedException(".ctor");
 		}
 
+#if CONFIG_SERIALIZATION
+
 		[TODO]
 		public override void GetObjectData(SerializationInfo info, 
 											StreamingContext context)
 		{
 			throw new NotImplementedException("GetObjectData");
 		}
+
+#endif
 
 		[TODO]
 		public override String Message 

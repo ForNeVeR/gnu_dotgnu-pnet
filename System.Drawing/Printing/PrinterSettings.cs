@@ -28,8 +28,10 @@ using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Collections;
 
+#if !ECMA_COMPAT
 [Serializable]
 [ComVisible(false)]
+#endif
 public class PrinterSettings : ICloneable
 {
 	// Internal state.
@@ -359,6 +361,8 @@ public class PrinterSettings : ICloneable
 					(ToolkitPrinter.CreateMeasurementGraphics());
 			}
 
+#if !ECMA_COMPAT
+
 	// Get the Win32-specific DEVMODE information for these printer settings.
 	public IntPtr GetHdevmode()
 			{
@@ -388,6 +392,8 @@ public class PrinterSettings : ICloneable
 			{
 				// Not used in this implementation.
 			}
+
+#endif
 
 	// Convert this object into a string.
 	public override String ToString()

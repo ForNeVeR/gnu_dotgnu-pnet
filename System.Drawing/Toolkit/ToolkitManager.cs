@@ -123,6 +123,7 @@ public sealed class ToolkitManager
 	// Create the default toolkit.
 	private static IToolkit CreateDefaultToolkit()
 			{
+			#if CONFIG_REFLECTION
 				// TODO: handle other graphical toolkits.
 
 				// Determine the name of the toolkit we wish to use.
@@ -140,7 +141,12 @@ public sealed class ToolkitManager
 				}
 
 				// Instantiate "DrawingToolkit" and return it.
-				return (IToolkit)(Activator.CreateInstance(type));
+				ConstructorInfo ctor = type.GetConstructor(new Type [0]);
+				return (IToolkit)(ctor.Invoke(new Object [0]));
+			#else
+				// TODO: return a null toolkit
+				return null;
+			#endif
 			}
 
 }; // class ToolkitManager

@@ -22,6 +22,8 @@
 namespace System.Drawing.Imaging
 {
 
+#if !ECMA_COMPAT
+
 public sealed class Encoder
 {
 	// Internal state.
@@ -72,5 +74,7 @@ public sealed class Encoder
 			}
 
 }; // class Encoder
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Drawing.Imaging

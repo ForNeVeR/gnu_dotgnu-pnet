@@ -24,9 +24,13 @@ namespace System.Drawing
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 
+#if !ECMA_COMPAT
 [Serializable]
 [ComVisible(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL
 [TypeConverter("System.Drawing.PointConverter")]
+#endif
 public struct Point
 {
 	// Internal state.
@@ -88,12 +92,16 @@ public struct Point
 				}
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Convert a PointF object into a Point object using ceiling conversion.
 	public static Point Ceiling(PointF value)
 			{
 				return new Point((int)(Math.Ceiling(value.X)),
 								 (int)(Math.Ceiling(value.Y)));
 			}
+
+#endif
 
 	// Determine if two points are equal.
 	public override bool Equals(Object obj)
@@ -122,12 +130,16 @@ public struct Point
 				y += dy;
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Convert a PointF object into a Point object using rounding conversion.
 	public static Point Round(PointF value)
 			{
 				return new Point((int)(Math.Round(value.X)),
 								 (int)(Math.Round(value.Y)));
 			}
+
+#endif
 
 	// Convert this object into a string.
 	public override String ToString()

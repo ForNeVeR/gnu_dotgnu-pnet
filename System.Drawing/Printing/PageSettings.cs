@@ -25,7 +25,9 @@ namespace System.Drawing.Printing
 using System.Runtime.InteropServices;
 using System.Text;
 
+#if !ECMA_COMPAT
 [ComVisible(false)]
+#endif
 public class PageSettings : ICloneable
 {
 	// Internal state.

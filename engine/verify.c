@@ -39,16 +39,6 @@ struct _tagJumpTarget
 };
 
 /*
- * Stack item information.
- */
-typedef struct
-{
-	ILEngineType	engineType;
-	ILType	   	   *typeInfo;
-
-} StackItem;
-
-/*
  * Temporary memory allocator.
  */
 typedef struct
@@ -159,7 +149,7 @@ static IL_INLINE int IsJumpTarget(unsigned long *jumpMask, ILUInt32 offset)
  * Process a jump target.
  */
 static int ProcessJumpTarget(JumpTarget **targetList, ILUInt32 offset,
-							 StackItem *stack, ILUInt32 stackSize,
+							 ILEngineStackItem *stack, ILUInt32 stackSize,
 							 TempAllocator *allocator)
 {
 	JumpTarget *target;
@@ -175,7 +165,7 @@ static int ProcessJumpTarget(JumpTarget **targetList, ILUInt32 offset,
 			if(stackSize != target->stackSize ||
 			   (stackSize != 0 &&
 			    ILMemCmp(target + 1, stack,
-						 sizeof(StackItem) * stackSize) != 0))
+						 sizeof(ILEngineStackItem) * stackSize) != 0))
 			{
 				return 0;
 			}
@@ -186,7 +176,8 @@ static int ProcessJumpTarget(JumpTarget **targetList, ILUInt32 offset,
 
 	/* Allocate a new jump target block */
 	target = (JumpTarget *)TempAllocate
-			(allocator, sizeof(JumpTarget) + (sizeof(StackItem) * stackSize));
+			(allocator, sizeof(JumpTarget) +
+					(sizeof(ILEngineStackItem) * stackSize));
 	if(!target)
 	{
 		return 0;
@@ -197,27 +188,10 @@ static int ProcessJumpTarget(JumpTarget **targetList, ILUInt32 offset,
 	target->stackSize = stackSize;
 	if(stackSize > 0)
 	{
-		ILMemCpy(target + 1, stack, sizeof(StackItem) * stackSize);
+		ILMemCpy(target + 1, stack, sizeof(ILEngineStackItem) * stackSize);
 	}
 	return 1;
 }
-
-/*
- * Declare global definitions that are required by the include files.
- */
-#define	IL_VERIFY_GLOBALS
-#include "verify_var.c"
-#include "verify_const.c"
-#include "verify_arith.c"
-#include "verify_branch.c"
-#include "verify_conv.c"
-#include "verify_stack.c"
-#include "verify_call.c"
-#include "verify_ptr.c"
-#include "verify_obj.c"
-#include "verify_except.c"
-#include "verify_ann.c"
-#undef IL_VERIFY_GLOBALS
 
 /*
  * Convert a type into an engine type.
@@ -295,7 +269,7 @@ static ILEngineType TypeToEngineType(ILType *type)
  * Determine if a stack item is assignment-compatible with
  * a particular memory slot (argument, local, field, etc).
  */
-static int AssignCompatible(StackItem *item, ILType *type)
+static int AssignCompatible(ILEngineStackItem *item, ILType *type)
 {
 	ILClass *classInfo;
 
@@ -386,6 +360,23 @@ static int AssignCompatible(StackItem *item, ILType *type)
 			((opcode) == IL_OP_BEQ_S || (opcode) == IL_OP_BNE_UN_S || \
 			 (opcode) == IL_OP_BEQ || (opcode) == IL_OP_BNE_UN)
 
+/*
+ * Declare global definitions that are required by the include files.
+ */
+#define	IL_VERIFY_GLOBALS
+#include "verify_var.c"
+#include "verify_const.c"
+#include "verify_arith.c"
+#include "verify_branch.c"
+#include "verify_conv.c"
+#include "verify_stack.c"
+#include "verify_ptr.c"
+#include "verify_call.c"
+#include "verify_obj.c"
+#include "verify_except.c"
+#include "verify_ann.c"
+#undef IL_VERIFY_GLOBALS
+
 int _ILVerify(ILCoder *coder, ILMethod *method,
 			  ILMethodCode *code, int unsafeAllowed)
 {
@@ -399,7 +390,7 @@ int _ILVerify(ILCoder *coder, ILMethod *method,
 	int insnType;
 	ILUInt32 offset;
 	JumpTarget *targetList;
-	StackItem *stack;
+	ILEngineStackItem *stack;
 	ILUInt32 stackSize;
 	const ILOpcodeInfo *insn;
 	ILType *signature;
@@ -417,8 +408,8 @@ int _ILVerify(ILCoder *coder, ILMethod *method,
 #include "verify_branch.c"
 #include "verify_conv.c"
 #include "verify_stack.c"
-#include "verify_call.c"
 #include "verify_ptr.c"
+#include "verify_call.c"
 #include "verify_obj.c"
 #include "verify_except.c"
 #include "verify_ann.c"
@@ -615,9 +606,11 @@ restart:
 		}
 	}
 
-	/* Create the stack */
-	stack = (StackItem *)TempAllocate
-				(&allocator, sizeof(StackItem) * code->maxStack);
+	/* Create the stack.  We need two extra "slop" items to allow for
+	   stack expansion during object construction.  See "verify_call.c"
+	   for further details */
+	stack = (ILEngineStackItem *)TempAllocate
+				(&allocator, sizeof(ILEngineStackItem) * (code->maxStack + 2));
 	if(!stack)
 	{
 		VERIFY_MEMORY_ERROR();
@@ -657,11 +650,7 @@ restart:
 
 			/* Notify the coder of a label at this position */
 			ILCoderLabel(coder, offset);
-			for(dest = 0; dest < stackSize; ++dest)
-			{
-				ILCoderStackItem(coder, stack[dest].engineType,
-								 stack[dest].typeInfo);
-			}
+			ILCoderStackRefresh(coder, stack, stackSize);
 		}
 
 		/* Fetch the instruction information block */
@@ -699,8 +688,8 @@ restart:
 #include "verify_branch.c"
 #include "verify_conv.c"
 #include "verify_stack.c"
-#include "verify_call.c"
 #include "verify_ptr.c"
+#include "verify_call.c"
 #include "verify_obj.c"
 #include "verify_except.c"
 #include "verify_ann.c"

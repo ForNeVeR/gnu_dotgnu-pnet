@@ -6,6 +6,10 @@
 * include/il_coder.h: define ILEngineStackItem to replace the local
 "StackItem" that used to be in "verify.c"; new coder API's for calls.
 
+* engine/verify.c: rename "StackItem" to "ILEngineStackItem"; rearrange
+includes for correct definition order; add 2 extra "slop" items to the
+verification stack to accomodate constructor requirements.
+
 2001-10-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_obj.c: verification for the remainder of the object-related

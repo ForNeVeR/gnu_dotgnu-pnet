@@ -1,4 +1,10 @@
 
+2002-06-27  Charlie Carnow   <carnow@gmx.net>
+
+	* System.Xml/XmlReader.cs: Implemented IsStartElement(System.String,
+	System.String), IsStartElement(System.String), IsStartElement(),
+	MoveToContent(), ReadElementString(System.String, System.String)
+
 2002-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/ComMemberType.cs,

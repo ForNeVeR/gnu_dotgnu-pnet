@@ -32,6 +32,7 @@ static int numSetJmpRefs = 0;
 static int currSetJmpRef = 0;
 static unsigned markerVar = 0;
 static unsigned valueVar = 0;
+static ILMethod *currMethod = 0;
 
 /*
  * Report an error that resulted from the compiler trying to
@@ -237,6 +238,7 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 	/* Set up the code generation state for this function */
 	numSetJmpRefs = 0;
 	currSetJmpRef = 0;
+	currMethod = method;
 
 	/* Perform semantic analysis on the function body */
 	info->currentScope = CCurrentScope;
@@ -581,6 +583,11 @@ void CGenSetJmp(ILGenInfo *info)
 
 	/* Advance the index for the next "setjmp" point in this function */
 	++currSetJmpRef;
+}
+
+ILMethod *CFunctionGetCurrent(void)
+{
+	return currMethod;
 }
 
 #ifdef	__cplusplus

@@ -53,8 +53,6 @@ static CSemValue StmtSem(ILNode *node, ILGenInfo *info,
 #define	C_STMT_CATCH		8
 #define	C_STMT_FINALLY		16
 
-#if 0
-
 /*
  * Push a statement context.
  */
@@ -118,8 +116,6 @@ static int StmtContextOK(ILGenInfo *info, int context, int stopContext)
 	}
 }
 
-#endif
-
 %}
 
 /*
@@ -140,8 +136,25 @@ ILNode_CSemAnalysis(ILNode_Empty)
 ILNode_CSemAnalysis(ILNode_Compound),
 ILNode_CSemAnalysis(ILNode_List)
 {
-	/* TODO */
-	return CSemValueDefault;
+	CSemValue value = CSemValueDefault;
+	ILNode_ListIter iter;
+	ILNode *stmt, *replace;
+	ILNode_ListIter_Init(&iter, node);
+	while((stmt = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		replace = stmt;
+		value = ILNode_CSemAnalysis(stmt, info, &replace, stmtLevel);
+		if(replace != stmt)
+		{
+			*(iter.last) = replace;
+		}
+		if(!CSemIsVoid(value) && !CSemIsRValue(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("invalid statement"));
+		}
+	}
+	return value;
 }
 
 /*
@@ -149,7 +162,9 @@ ILNode_CSemAnalysis(ILNode_List)
  */
 ILNode_CSemAnalysis(ILNode_If)
 {
-	/* TODO */
+	ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	StmtSem(node->thenClause, info, &(node->thenClause), stmtLevel);
+	StmtSem(node->elseClause, info, &(node->elseClause), stmtLevel);
 	return CSemValueDefault;
 }
 
@@ -158,7 +173,10 @@ ILNode_CSemAnalysis(ILNode_If)
  */
 ILNode_CSemAnalysis(ILNode_While)
 {
-	/* TODO */
+	ILNode_CSemAnalysis(node->cond, info, &(node->cond), stmtLevel);
+	PushStmtContext(info, C_STMT_LOOP);
+	StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
+	PopStmtContext(info);
 	return CSemValueDefault;
 }
 
@@ -167,7 +185,10 @@ ILNode_CSemAnalysis(ILNode_While)
  */
 ILNode_CSemAnalysis(ILNode_Do)
 {
-	/* TODO */
+	PushStmtContext(info, C_STMT_LOOP);
+	StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
+	PopStmtContext(info);
+	ILNode_CSemAnalysis(node->cond, info, &(node->cond), stmtLevel);
 	return CSemValueDefault;
 }
 
@@ -176,7 +197,12 @@ ILNode_CSemAnalysis(ILNode_Do)
  */
 ILNode_CSemAnalysis(ILNode_For)
 {
-	/* TODO */
+	StmtSem(node->init, info, &(node->init), stmtLevel);
+	ILNode_CSemAnalysis(node->cond, info, &(node->cond), stmtLevel);
+	StmtSem(node->incr, info, &(node->incr), stmtLevel);
+	PushStmtContext(info, C_STMT_LOOP);
+	StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
+	PopStmtContext(info);
 	return CSemValueDefault;
 }
 
@@ -185,7 +211,11 @@ ILNode_CSemAnalysis(ILNode_For)
  */
 ILNode_CSemAnalysis(ILNode_Break)
 {
-	/* TODO */
+	if(!StmtContextOK(info, C_STMT_LOOP | C_STMT_SWITCH, 0))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`break' used outside loop or switch");
+	}
 	return CSemValueDefault;
 }
 
@@ -194,7 +224,11 @@ ILNode_CSemAnalysis(ILNode_Break)
  */
 ILNode_CSemAnalysis(ILNode_Continue)
 {
-	/* TODO */
+	if(!StmtContextOK(info, C_STMT_LOOP, 0))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`continue' used outside loop");
+	}
 	return CSemValueDefault;
 }
 
@@ -203,7 +237,15 @@ ILNode_CSemAnalysis(ILNode_Continue)
  */
 ILNode_CSemAnalysis(ILNode_Return)
 {
-	/* TODO */
+	ILMethod *method = CFunctionGetCurrent();
+	ILType *returnType = ILTypeGetReturn(ILMethod_Signature(method));
+	if(returnType != ILType_Void)
+	{
+		/* Emit a warning if the return type is not "void".  This really
+		   should be an error, but we copy what gcc does for compatibility */
+		CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+			  "`return' with no value, in function returning non-void");
+	}
 	return CSemValueDefault;
 }
 
@@ -212,7 +254,48 @@ ILNode_CSemAnalysis(ILNode_Return)
  */
 ILNode_CSemAnalysis(ILNode_ReturnExpr)
 {
-	/* TODO */
+	CSemValue value;
+	ILMethod *method = CFunctionGetCurrent();
+	ILType *returnType = ILTypeGetReturnWithPrefixes
+			(ILMethod_Signature(method));
+
+	/* Perform semantic analysis on the expression */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(CSemIsError(value))
+	{
+		/* We've already reported an error for a bad expression,
+		   so don't bother complaining about the situation again */
+		return CSemValueDefault;
+	}
+	else if(!CSemIsRValue(value))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid return value");
+		return CSemValueDefault;
+	}
+
+	/* Determine if the value is compatible with the return type */
+	if(ILTypeStripPrefixes(returnType) == ILType_Void)
+	{
+		/* Emit a warning if the return type is "void".  This really should
+		   be an error, but we copy what gcc does for compatibility */
+		CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+			  "`return' with a value, in function returning void");
+	}
+	else
+	{
+		/* Coerce to the return type.  TODO: use C coercion rules */
+		if(0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  		  "incompatible types in return: "
+						  		"no conversion from `%s' to `%s'",
+						  CTypeToName(info, CSemGetType(value)),
+						  CTypeToName(info, returnType));
+		}
+	}
+
+	/* Done */
 	return CSemValueDefault;
 }
 

@@ -1240,11 +1240,11 @@ IterationStatement
 	;
 
 JumpStatement
-	: K_GOTO IDENTIFIER ';'		{ ILNode_Goto_create($2); }
-	| K_CONTINUE ';'			{ ILNode_Continue_create(); }
-	| K_BREAK ';'				{ ILNode_Break_create(); }
-	| K_RETURN ';'				{ ILNode_Return_create(); }
-	| K_RETURN Expression ';'	{ ILNode_ReturnExpr_create($2); }
+	: K_GOTO IDENTIFIER ';'		{ $$ = ILNode_Goto_create($2); }
+	| K_CONTINUE ';'			{ $$ = ILNode_Continue_create(); }
+	| K_BREAK ';'				{ $$ = ILNode_Break_create(); }
+	| K_RETURN ';'				{ $$ = ILNode_Return_create(); }
+	| K_RETURN Expression ';'	{ $$ = ILNode_ReturnExpr_create($2); }
 	;
 
 File

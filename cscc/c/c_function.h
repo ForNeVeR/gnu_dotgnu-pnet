@@ -64,6 +64,11 @@ void CFunctionSawSetJmp(void);
  */
 void CGenSetJmp(ILGenInfo *info);
 
+/*
+ * Get the current method that is being analysed or compiled.
+ */
+ILMethod *CFunctionGetCurrent(void);
+
 #ifdef	__cplusplus
 };
 #endif

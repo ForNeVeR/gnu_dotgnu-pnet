@@ -403,7 +403,7 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
  */
 static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 									   ILType *signature, ILMember *notThis,
-									   ILClass *scope)
+									   ILClass *scope, int interfaceOverride)
 {
 	ILMember *member;
 	ILImplements *impl;
@@ -417,7 +417,8 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 		{
 			if(member != notThis &&
 			   !strcmp(ILMember_Name(member), name) &&
-			   ILMemberAccessible(member, scope))
+			   ILMemberAccessible(member, scope) &&
+			   (!interfaceOverride || classInfo == scope))
 			{
 				if(ILMemberGetKind(member) != kind)
 				{
@@ -455,7 +456,7 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 			{
 				member = FindMemberBySignature
 					(ILClassResolve(ILImplementsGetInterface(impl)),
-					 name, signature, notThis, scope);
+					 name, signature, notThis, scope, interfaceOverride);
 				if(member)
 				{
 					return member;
@@ -929,7 +930,8 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	{
 		/* Look for duplicates and report on them */
 		member = FindMemberBySignature(classInfo, name, signature,
-									   (ILMember *)methodInfo, classInfo);
+									   (ILMember *)methodInfo, classInfo,
+									   (interface != 0));
 		if(member)
 		{
 			if(ILMember_IsMethod(member) &&
@@ -1048,6 +1050,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	ILNode_FormalParameter *fparam;
 	ILUInt32 paramNum;
 	ILMember *member;
+	int interfaceOverride;
 	
 	/* Create the get and set methods */
 	if(property->getAccessor)
@@ -1066,6 +1069,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	{
 		/* Simple property name */
 		name = ILQualIdentName(property->name, 0);
+		interfaceOverride = 0;
 	}
 	else
 	{
@@ -1090,6 +1094,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 				  "cannot use explicit interface member implementations "
 				  "within interfaces");
 		}
+		interfaceOverride = 1;
 	}
 
 	/* Get the property type */
@@ -1161,7 +1166,8 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 
 	/* Look for duplicates and report on them */
 	member = FindMemberBySignature(classInfo, name, signature,
-								   (ILMember *)propertyInfo, classInfo);
+								   (ILMember *)propertyInfo, classInfo,
+								   interfaceOverride);
 	if(member)
 	{
 		if(ILMember_IsProperty(member) &&

@@ -6,6 +6,10 @@
 	* cscc/csharp/cs_lookup.c (FindTypeInNamespace): look for declared
 	types in the program before checking libraries and builtins.
 
+	* cscc/csharp/cs_gather.c (FindMemberBySignature): look for
+	explicit interface duplicates only in the defining class, not
+	in inherited classes.
+
 2001-03-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: fix up line numbers on declarations

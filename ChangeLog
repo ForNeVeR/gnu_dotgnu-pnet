@@ -15,6 +15,8 @@ properly.
 use "ARRAY_CONTINUE" to explicitly mark array ranks; handle synthesised
 array ranks properly.
 
+* image/sig_writer.c: write out multi-rank arrays properly.
+
 2001-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c: fix a bug that caused GetBuiltinType to treat

@@ -349,95 +349,116 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				if(type->un.array.size == 0 &&
 				   type->un.array.lowBound == 0 &&
 				   (!ILType_IsComplex(type->un.array.elemType) ||
-				    type->un.array.elemType->kind != IL_TYPE_COMPLEX_ARRAY))
+				    (type->un.array.elemType->kind != IL_TYPE_COMPLEX_ARRAY &&
+					 type->un.array.elemType->kind !=
+					 		IL_TYPE_COMPLEX_ARRAY_CONTINUE)))
 				{
 					/* Single dimensional array with no specified bounds */
 					SIG_WRITE(IL_META_ELEMTYPE_SZARRAY);
 					return WriteType(buffer, type->un.array.elemType, 1);
 				}
+			}
+			/* Fall through */
+
+			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
+			{
+				/* Other types of arrays */
+				unsigned long rank;
+				unsigned long sizes;
+				int needSizes;
+				int needLowBounds;
+				ILType *elemType;
+
+				/* Determine the array rank, number of explicit sizes,
+				   and the type for the inner elements */
+				rank = 0;
+				needSizes = 0;
+				needLowBounds = 0;
+				elemType = type;
+				while(ILType_IsComplex(elemType) &&
+				      elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+				{
+					++rank;
+					if(elemType->un.array.lowBound != 0 ||
+					   elemType->un.array.size != 0)
+					{
+						needSizes = 1;
+					}
+					if(elemType->un.array.lowBound != 0)
+					{
+						needLowBounds = 1;
+					}
+					elemType = elemType->un.array.elemType;
+				}
+				if(ILType_IsComplex(elemType) &&
+				   elemType->kind == IL_TYPE_COMPLEX_ARRAY)
+				{
+					++rank;
+					if(elemType->un.array.lowBound != 0 ||
+					   elemType->un.array.size != 0)
+					{
+						needSizes = 1;
+					}
+					if(elemType->un.array.lowBound != 0)
+					{
+						needLowBounds = 1;
+					}
+					elemType = elemType->un.array.elemType;
+				}
+				if(needSizes)
+				{
+					sizes = rank;
+				}
 				else
 				{
-					/* Other types of arrays */
-					unsigned long rank;
-					unsigned long sizes;
-					int needSizes;
-					int needLowBounds;
-					ILType *elemType;
+					sizes = 0;
+				}
 
-					/* Determine the array rank, number of explicit sizes,
-					   and the type for the inner elements */
-					rank = 0;
-					needSizes = 0;
-					needLowBounds = 0;
+				/* Encode the array */
+				SIG_WRITE(IL_META_ELEMTYPE_ARRAY);
+				if(!WriteType(buffer, elemType, 1))
+				{
+					return 0;
+				}
+				if(!WriteValue(buffer, rank))
+				{
+					return 0;
+				}
+				if(!WriteValue(buffer, sizes))
+				{
+					return 0;
+				}
+				if(needSizes)
+				{
 					elemType = type;
 					while(ILType_IsComplex(elemType) &&
-					      elemType->kind == IL_TYPE_COMPLEX_ARRAY)
+					      (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
+						   elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 					{
-						++rank;
-						if(elemType->un.array.lowBound != 0 ||
-						   elemType->un.array.size != 0)
+						if(!WriteIntValue(buffer, elemType->un.array.size))
 						{
-							needSizes = 1;
-						}
-						if(elemType->un.array.lowBound != 0)
-						{
-							needLowBounds = 1;
+							return 0;
 						}
 						elemType = elemType->un.array.elemType;
 					}
-					if(needSizes)
-					{
-						sizes = rank;
-					}
-					else
-					{
-						sizes = 0;
-					}
-
-					/* Encode the array */
-					SIG_WRITE(IL_META_ELEMTYPE_ARRAY);
-					if(!WriteType(buffer, elemType, 1))
-					{
-						return 0;
-					}
-					if(!WriteValue(buffer, rank))
-					{
-						return 0;
-					}
+				}
+				if(needLowBounds)
+				{
 					if(!WriteValue(buffer, sizes))
 					{
 						return 0;
 					}
-					if(needSizes)
+					elemType = type;
+					while(ILType_IsComplex(elemType) &&
+					      (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
+						   elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 					{
-						elemType = type;
-						while(ILType_IsComplex(elemType) &&
-						      elemType->kind == IL_TYPE_COMPLEX_ARRAY)
-						{
-							if(!WriteIntValue(buffer, elemType->un.array.size))
-							{
-								return 0;
-							}
-							elemType = elemType->un.array.elemType;
-						}
-					}
-					if(needLowBounds)
-					{
-						if(!WriteValue(buffer, sizes))
+						if(!WriteIntValue(buffer,
+										  elemType->un.array.lowBound))
 						{
 							return 0;
 						}
-						elemType = type;
-						while(ILType_IsComplex(elemType) &&
-						      elemType->kind == IL_TYPE_COMPLEX_ARRAY)
-						{
-							if(!WriteIntValue(buffer,
-											  elemType->un.array.lowBound))
-							{
-								return 0;
-							}
-							elemType = elemType->un.array.elemType;
-						}
+						elemType = elemType->un.array.elemType;
 					}
 				}
 			}

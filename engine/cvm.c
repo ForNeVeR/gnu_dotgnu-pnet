@@ -51,6 +51,7 @@ extern	"C" {
 /*#define	IL_PROFILE_CVM_METHODS*/
 #ifdef IL_PROFILE_CVM_INSNS
 extern int _ILCVMInsnCount[];
+#undef HAVE_COMPUTED_GOTO
 #endif
 
 /*

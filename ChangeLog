@@ -30,6 +30,9 @@ type instead of a machine type; add the "context stack"; remove obsolete
 * cscc/cs_stmt.tc: semantic analysis for "try", "lock", and "throw";
 improve context detection for things like "break used outside loop".
 
+* cscc/cs_grammar.y: pass the variable name through to semantic analysis
+for catch clauses.
+
 2001-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_invoke.tc: bug fix in "CSEvalArguments"; make sure "ref" and "out"

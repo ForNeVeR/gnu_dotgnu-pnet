@@ -511,6 +511,7 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 	{
 		ILNode		   *type;
 		char		   *id;
+		ILNode         *idNode;
 	} catchinfo;
 	struct
 	{
@@ -1977,13 +1978,21 @@ SpecificCatchClauses
 
 SpecificCatchClause
 	: CATCH CatchNameInfo Block	{
-				MakeTernary(CatchClause, $2.type, $2.id, $3);
+				$$ = ILNode_CatchClause_create($2.type, $2.id, $2.idNode, $3);
 			}
 	;
 
 CatchNameInfo
-	: '(' Type Identifier ')' { $$.type = $2; $$.id = ILQualIdentName($3, 0); }
-	| '(' Type ')'			  { $$.type = $2; $$.id = 0; }
+	: '(' Type Identifier ')' {
+				$$.type = $2;
+				$$.id = ILQualIdentName($3, 0);
+				$$.idNode = $3;
+			}
+	| '(' Type ')'			  {
+				$$.type = $2;
+				$$.id = 0;
+				$$.idNode = 0;
+			}
 	| '(' error ')'	{
 				/*
 				 * This production recovers from errors in catch
@@ -1991,6 +2000,7 @@ CatchNameInfo
 				 */
 				$$.type = ILNode_Error_create();
 				$$.id = 0;
+				$$.idNode = 0;
 				yyerrok;
 			}
 	;
@@ -2001,7 +2011,9 @@ OptGeneralCatchClause
 	;
 
 GeneralCatchClause
-	: CATCH Block		{ MakeTernary(CatchClause, 0, 0, $2); }
+	: CATCH Block		{
+				$$ = ILNode_CatchClause_create(0, 0, 0, $2);
+			}
 	;
 
 FinallyClause

@@ -527,7 +527,9 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 	ILUInt32 offset;
 	ILUInt32 size;
 	ILPInvoke *pinv;
+#ifdef IL_CONFIG_PINVOKE
 	ILUInt32 marshalType;
+#endif
 
 	/* Get the PInvoke information */
 	if(!isInternal)
@@ -557,6 +559,7 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 			continue;
 		}
 
+	#ifdef IL_CONFIG_PINVOKE
 		/* Perform PInvoke expansions on the parameter */
 		if(!isInternal &&
 		   (marshalType = ILPInvokeGetMarshalType(pinv, method, param))
@@ -608,6 +611,7 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 			}
 			CVM_ADJUST(-1);
 		}
+	#endif /* IL_CONFIG_PINVOKE */
 
 		/* Generate the code for the parameter */
 		if(useRawCalls)

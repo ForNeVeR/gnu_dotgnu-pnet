@@ -24,6 +24,8 @@
 extern	"C" {
 #endif
 
+#ifdef IL_CONFIG_PINVOKE
+
 /*
  * Determine the character set to use for strings.
  */
@@ -125,6 +127,16 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 	/* Marshal the parameter directly */
 	return IL_META_MARSHAL_DIRECT;
 }
+
+#else	/* !IL_CONFIG_PINVOKE */
+
+ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
+								 unsigned long param)
+{
+	return IL_META_MARSHAL_DIRECT;
+}
+
+#endif	/* !IL_CONFIG_PINVOKE */
 
 #ifdef	__cplusplus
 };

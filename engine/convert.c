@@ -24,6 +24,8 @@
 extern	"C" {
 #endif
 
+#ifdef IL_CONFIG_PINVOKE
+
 /*
  * Locate or load an external module that is being referenced via "PInvoke".
  * Returns the system module pointer, or NULL if it could not be loaded.
@@ -72,6 +74,8 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name,
 	return loaded->handle;
 }
 
+#endif /* IL_CONFIG_PINVOKE */
+
 unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 {
 	ILMethodCode code;
@@ -81,9 +85,11 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	void *cif;
 	void *ctorcif;
 	int isConstructor;
+#ifdef IL_CONFIG_PINVOKE
 	ILModule *module;
 	const char *name;
 	void *moduleHandle;
+#endif
 	int result;
 	ILInternalInfo fnInfo;
 	ILInternalInfo ctorfnInfo;
@@ -130,6 +136,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 					 IL_META_METHODIMPL_INTERNAL_CALL |
 					 IL_META_METHODIMPL_JAVA))
 		{
+		#ifdef IL_CONFIG_PINVOKE
 			case IL_META_METHODIMPL_IL:
 			case IL_META_METHODIMPL_OPTIL:
 			{
@@ -173,6 +180,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
 			}
 			break;
+		#endif /* IL_CONFIG_PINVOKE */
 
 			case IL_META_METHODIMPL_RUNTIME:
 			case IL_META_METHODIMPL_IL | IL_META_METHODIMPL_INTERNAL_CALL:

@@ -462,6 +462,8 @@ int ILImageLoadAssembly(const char *name, ILContext *context,
 	return error;
 }
 
+#ifdef IL_CONFIG_PINVOKE
+
 #if defined(CSCC_HOST_TRIPLET) || defined(CSCC_HOST_ALIAS)
 
 /*
@@ -806,6 +808,15 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 	   of finding it later */
 	return baseName;
 }
+
+#else	/* !IL_CONFIG_PINVOKE */
+
+char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
+{
+	return 0;
+}
+
+#endif	/* !IL_CONFIG_PINVOKE */
 
 #ifdef	__cplusplus
 };

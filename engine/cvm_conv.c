@@ -1680,6 +1680,8 @@ VMCASE(COP_PREFIX_F2D_ALIGNED):
 }
 VMBREAK(COP_PREFIX_F2D_ALIGNED);
 
+#ifdef IL_CONFIG_PINVOKE
+
 /**
  * <opcode name="str2ansi" group="Conversion operators">
  *   <operation>Convert <code>string</code> to <code>ansi char *</code>
@@ -1896,6 +1898,22 @@ VMCASE(COP_PREFIX_ARRAY2PTR):
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_ARRAY2PTR);
+
+#else /* !IL_CONFIG_PINVOKE */
+
+VMCASE(COP_PREFIX_STR2ANSI):
+VMCASE(COP_PREFIX_STR2UTF8):
+VMCASE(COP_PREFIX_ANSI2STR):
+VMCASE(COP_PREFIX_UTF82STR):
+VMCASE(COP_PREFIX_DELEGATE2FNPTR):
+VMCASE(COP_PREFIX_ARRAY2PTR):
+{
+	/* Stub out PInvoke-related CVM opcodes */
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_STR2ANSI);
+
+#endif /* !IL_CONFIG_PINVOKE */
 
 /**
  * <opcode name="fix_i4_i" group="Conversion operators">

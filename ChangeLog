@@ -29,6 +29,10 @@
 	engine/process.c, image/pecoff_loader.c, support/unicode.c:
 	add the simple configuration profile #ifdef's to the code.
 
+	* engine/convert.c, engine/cvm_conv.c, engine/cvmc_setup.c,
+	engine/pinvoke.c, image/link.c, image/marshal.c: #ifdef out
+	PInvoke support if disabled by the profile.
+
 2002-06-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, codegen/jv_stmt.tc: make sure that the

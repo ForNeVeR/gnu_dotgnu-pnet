@@ -69,6 +69,9 @@ static ffi_type ffi_type_typedref =
  * Forward declarations.
  */
 static ffi_type *TypeToFFI(ILType *type, int isInternal);
+
+#ifdef IL_CONFIG_PINVOKE
+
 static ffi_type *StructToFFI(ILClass *classInfo);
 
 #if !FFI_NO_STRUCTS
@@ -211,6 +214,8 @@ static ffi_type *StructToFFI(ILClass *classInfo)
 #endif /* !FFI_NO_STRUCTS */
 }
 
+#endif /* IL_CONFIG_PINVOKE */
+
 /*
  * Convert an IL type into an "ffi" type descriptor.
  */
@@ -250,12 +255,14 @@ static ffi_type *TypeToFFI(ILType *type, int isInternal)
 		}
 		return &ffi_type_pointer;
 	}
+#ifdef IL_CONFIG_PINVOKE
 	else if(!isInternal && ILType_IsValueType(type))
 	{
 		/* Structure that is passed by value to a PInvoke method */
 		ffi_type *ffi = StructToFFI(ILClassResolve(ILType_ToValueType(type)));
 		return (ffi ? ffi : &ffi_type_pointer);
 	}
+#endif
 	else
 	{
 		/* Everything else is passed as a pointer */

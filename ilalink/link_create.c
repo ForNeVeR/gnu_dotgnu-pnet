@@ -19,6 +19,7 @@
  */
 
 #include "linker.h"
+#include "il_dumpasm.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -69,13 +70,112 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	return linker;
 }
 
+/*
+ * Report that a particular class is unresolved.
+ */
+static void ReportUnresolvedClass(ILLinker *linker, ILClass *classInfo)
+{
+	ILDumpClassName(stderr, ILClassToImage(classInfo), classInfo, 0);
+	fputs(" : unresolved type reference\n", stderr);
+	linker->error = 1;
+}
+
+/*
+ * Report unresolved type and member references.
+ */
+static void ReportUnresolved(ILLinker *linker)
+{
+	ILClass *classInfo;
+	ILClass *parent;
+	ILMember *member;
+	int reported;
+
+	/* Scan the TypeRef table for unresolved types */
+	classInfo = 0;
+	while((classInfo = (ILClass *)ILImageNextToken
+				(linker->image, IL_META_TOKEN_TYPE_REF, classInfo)) != 0)
+	{
+		/* Skip the reference if it has since been defined */
+		if(!ILClassIsRef(classInfo))
+		{
+			continue;
+		}
+
+		/* Make sure that all nested parents are references */
+		parent = classInfo;
+		reported = 0;
+		while((parent = ILClassGetNestedParent(parent)) != 0)
+		{
+			if(!ILClassIsRef(parent))
+			{
+				ReportUnresolvedClass(linker, classInfo);
+				reported = 1;
+				break;
+			}
+		}
+		if(reported)
+		{
+			continue;
+		}
+
+		/* If the reference is in a module scope, then it is dangling */
+		if(ILProgramItemToModule(ILClassGetScope(classInfo)) != 0)
+		{
+			ReportUnresolvedClass(linker, classInfo);
+		}
+	}
+
+	/* Scan the MemberRef table for unresolved members */
+	member = 0;
+	while((member = (ILMember *)ILImageNextToken
+				(linker->image, IL_META_TOKEN_MEMBER_REF, member)) != 0)
+	{
+		classInfo = ILMember_Owner(member);
+		if(!ILClassIsRef(classInfo) &&
+		   (ILMember_Token(member) & IL_META_TOKEN_MASK) ==
+		   		IL_META_TOKEN_MEMBER_REF)
+		{
+			/* The class has been defined, but not the member */
+			if(ILMember_IsMethod(member))
+			{
+				ILDumpMethodType(stderr, ILProgramItem_Image(classInfo),
+								 ILMethod_Signature((ILMethod *)member), 0,
+								 classInfo, ILMember_Name(member),
+								 (ILMethod *)member);
+				fputs(" : unresolved method reference\n", stderr);
+			}
+			else if(ILMember_IsField(member))
+			{
+				ILDumpType(stderr, ILProgramItem_Image(classInfo),
+						   ILField_Type((ILField *)member), 0);
+				putc(' ', stderr);
+				ILDumpClassName(stderr, ILProgramItem_Image(classInfo),
+								classInfo, 0);
+				fputs("::", stderr);
+				fputs(ILMember_Name(member), stderr);
+				fputs(" : unresolved field reference\n", stderr);
+			}
+			else
+			{
+				ILDumpClassName(stderr, ILProgramItem_Image(classInfo),
+								classInfo, 0);
+				fputs("::", stderr);
+				fputs(ILMember_Name(member), stderr);
+				fputs(" : unresolved member reference\n", stderr);
+			}
+			linker->error = 1;
+		}
+	}
+}
+
 int ILLinkerDestroy(ILLinker *linker)
 {
 	int result;
 	ILLibraryDir *libraryDir;
 	ILLibraryDir *nextLibraryDir;
 
-	/* Finalize the link by reporting any remaining unresolved references */
+	/* Report any remaining unresolved references */
+	ReportUnresolved(linker);
 
 	/* Flush the metadata to the image writer */
 	if(!(linker->outOfMemory) && !(linker->error))
@@ -130,6 +230,44 @@ int ILLinkerDestroy(ILLinker *linker)
 void _ILLinkerOutOfMemory(ILLinker *linker)
 {
 	linker->outOfMemory = 1;
+}
+
+int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
+									const char *moduleName,
+									const char *assemblyName,
+									ILUInt16 *assemblyVersion,
+									int hashAlgorithm)
+{
+	ILModule *module;
+	ILAssembly *assembly;
+
+	/* Create the module */
+	module = ILModuleCreate(linker->image, 0, moduleName, 0);
+	if(!module)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+
+	/* Create the assembly */
+	assembly = ILAssemblyCreate(linker->image, 0, assemblyName, 0);
+	if(!assembly)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	ILAssemblySetVersion(assembly, assemblyVersion);
+	ILAssemblySetHashAlgorithm(assembly, hashAlgorithm);
+
+	/* Create the "<Module>" type, which holds global functions and variables */
+	if(!ILClassCreate((ILProgramItem *)module, 0, "<Module>", 0, 0))
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+
+	/* Ready to go */
+	return 1;
 }
 
 #ifdef	__cplusplus

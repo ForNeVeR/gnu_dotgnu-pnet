@@ -47,6 +47,15 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags);
 int ILLinkerDestroy(ILLinker *linker);
 
 /*
+ * Create the module and assembly information for the image.
+ */
+int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
+									const char *moduleName,
+									const char *assemblyName,
+									ILUInt16 *assemblyVersion,
+									int hashAlgorithm);
+
+/*
  * Add a directory to a linker context to search for libraries.
  * Returns zero on error.
  */

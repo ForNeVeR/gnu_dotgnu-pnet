@@ -39,6 +39,8 @@
 	add extra "protected internal" constructors to the Xml node
 	types that are required for .NET SDK compatibility.
 
+	* runtime/System/AppDomain.cs: stub out AppDomain.SetCachePath.
+
 2003-01-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/StreamWriter.cs: default UTF8 behaviour

@@ -193,6 +193,13 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 				return null;
 			}
 
+	// Set the cache path.
+	[TODO]
+	public void SetCachePath(String s)
+			{
+				// TODO
+			}
+
 #endif // !ECMA_COMPAT
 
 }; // class AppDomain

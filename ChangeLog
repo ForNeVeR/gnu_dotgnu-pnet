@@ -23,6 +23,9 @@
 	System/Diagnostics/TraceListenerCollection.cs: signature-compatibility
 	fixes for "System.Diagnostics".
 
+	* System/Configuration/SingleTagSectionHandler.cs: fix a
+	spelling mistake.
+
 2003-05-25  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebClient.cs: Implement this non-ecma class partially for

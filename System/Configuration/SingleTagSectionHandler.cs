@@ -1,6 +1,6 @@
 /*
- * SingleTabSectionHandler.cs - Implementation of the
- *		"System.Configuration.SingleTabSectionHandler" interface.
+ * SingleTagSectionHandler.cs - Implementation of the
+ *		"System.Configuration.SingleTagSectionHandler" interface.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,10 +27,10 @@ namespace System.Configuration
 using System;
 using System.Xml;
 
-public class SingleTabSectionHandler : IConfigurationSectionHandler
+public class SingleTagSectionHandler : IConfigurationSectionHandler
 {
 	// Constructor.
-	public SingleTabSectionHandler() {}
+	public SingleTagSectionHandler() {}
 
 #if SECOND_PASS
 
@@ -44,7 +44,7 @@ public class SingleTabSectionHandler : IConfigurationSectionHandler
 
 #endif // SECOND_PASS
 
-}; // class SingleTabSectionHandler
+}; // class SingleTagSectionHandler
 
 #endif // !ECMA_COMPAT
 

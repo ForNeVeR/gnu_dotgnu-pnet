@@ -608,7 +608,9 @@ static char **BuildCscCommandLine(CSAntCompileArgs *args)
 
 	/* Set the target and output file */
 	AddValueArg(&argv, &argc, "/target:", (char *)(args->target));
-	AddValueArg(&argv, &argc, "/out:", (char *)(args->output));
+	temp = CSAntDirCombineWin32(args->output, 0, 0);
+	AddValueArg(&argv, &argc, "/out:", temp);
+	ILFree(temp);
 
 	/* Enable debugging if necessary */
 	if(args->debug == COMP_FLAG_TRUE)

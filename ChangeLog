@@ -29,6 +29,9 @@ engine/cvm_conv.c: implement the "box" instruction.
 * engine/cvm_conv.c, engine/cvm_compare.c: move "LCmp", "LUCmp", and
 "FCmp" from "cvm_conv.c" to "cvm_compare", where they belong.
 
+* engine/cvmc_ptr.c: account for the true size of "native int" when
+getting the length of an array.
+
 2001-10-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_html.c, csdoc/doc_texi.c: fixed a bug in the handling

@@ -623,6 +623,7 @@ static void CVMCoder_PtrPrefix(ILCoder *coder, int alignment)
 static void CVMCoder_ArrayLength(ILCoder *coder)
 {
 	CVM_BYTE(COP_ARRAY_LEN);
+	CVM_ADJUST(CVM_WORDS_PER_NATIVE_INT - 1);
 }
 
 /*

@@ -6,6 +6,8 @@
 
 	* NEWS, configure.in: update version for the "0.4.8" release.
 
+	* configure.in: update working version to "0.4.9".
+
 2002-11-23  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Uri.cs: Fix some minor bugs in System.Uri

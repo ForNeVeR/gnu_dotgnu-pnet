@@ -1808,8 +1808,8 @@ EnumeratorListNoComma
 	;
 
 Enumerator
-	: IDENTIFIER							{}
-	| IDENTIFIER '=' ConstantExpression		{}
+	: IDENTIFIER							{ /* TODO */ }
+	| IDENTIFIER '=' ConstantExpression		{ /* TODO */ }
 	;
 
 CSharpSpecifier
@@ -2448,6 +2448,13 @@ FunctionDefinition
 				CDeclSpec spec;
 				ILMethod *method;
 
+				/* Flush the code for any pending initializers */
+				if(initializers != 0)
+				{
+					CFunctionFlushInits(&CCCodeGen, initializers);
+					initializers = 0;
+				}
+
 				/* The default return type in this case is "int" */
 				CDeclSpecSetType(spec, ILType_Int32);
 
@@ -2493,6 +2500,13 @@ FunctionDefinition
 	  		}
 	| DeclarationSpecifiers Declarator OptParamDeclarationList '{'	{
 				ILMethod *method;
+
+				/* Flush the code for any pending initializers */
+				if(initializers != 0)
+				{
+					CFunctionFlushInits(&CCCodeGen, initializers);
+					initializers = 0;
+				}
 
 				/* Create the method block from the function header */
 				method = CFunctionCreate

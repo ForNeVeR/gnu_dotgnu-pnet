@@ -32,6 +32,8 @@
 	ildd/Makefile.am, ildd/ildd.1, ildd/ildd.c: add the "ildd" program
 	to the stack, which prints assembly and PInvoke dependencies.
 
+	* README: change the reference to "gunzip" to "zcat".
+
 2002-07-02  Gopal.V  <gopalv82@symonds.net>
 
 	* doc/Doxyfile: Add Doxygen configuration file (contributed

@@ -15,7 +15,7 @@ from the following Web site:
 When you have downloaded a version of the product, it can be unpacked
 and built in the usual manner:
 
-    $ gunzip pnet-VERSION.tar.gz | tar xvf -
+    $ zcat pnet-VERSION.tar.gz | tar xvf -
     $ cd pnet-VERSION
     $ ./configure
     $ make

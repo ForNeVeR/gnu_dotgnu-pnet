@@ -63,7 +63,7 @@ public class XmlTextWriter : XmlWriter
 	public XmlTextWriter(String filename, Encoding encoding)
 			{
 				writer = new StreamWriter
-					(new FileStream(filename, FileMode.Open, FileAccess.Read),
+					(new FileStream(filename, FileMode.Open, FileAccess.Write),
 					 ((encoding != null) ? encoding : Encoding.UTF8));
 				Initialize();
 			}

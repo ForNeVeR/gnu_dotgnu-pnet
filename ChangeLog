@@ -1,3 +1,7 @@
+2003-03-05  Adam Ballai <minddog@cannibutter.com>
+
+	* System.Xml/XmlTextWriter.cs: filestream in 
+	read mode instead of write.
 
 2003-03-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 

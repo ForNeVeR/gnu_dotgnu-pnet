@@ -1,3 +1,8 @@
+2004-06-22  Klaus Treichel  <ktreichel@web.de>
+
+	* class/System.Data.OracleClient/System.Data.OracleClient.build: add reference
+	to System.Drawing.dll because of added DesignerAttribute.
+
 2004-06-13  Klaus Treichel  <ktreichel@webllde>
 
 	* class/Mono.Security/Mono.Security.build: remove excludes from build file

@@ -2173,11 +2173,11 @@ public sealed class Convert
 			}
 
 	// Characters to use to encode 6-bit values in base64.
-	private const String base64Chars =
+	internal const String base64Chars =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 	// Map bytes in base64 to 6-bit values.
-	private static readonly sbyte[] base64Values = {
+	internal static readonly sbyte[] base64Values = {
 		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // 00
 		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // 10
 		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, 62, -1, -1, 63, // 20

@@ -12,6 +12,11 @@
 	runtime/System/Security/Cryptography/RSAPKCS1SignatureFormatter.cs:
 	implement encrypt, decrypt, sign, and verify operations for RSA.
 
+	* runtime/System/Convert.cs,
+	runtime/System/Security/Cryptography/FromBase64Transform.cs,
+	runtime/System/Security/Cryptography/ToBase64Transform.cs:
+	implement base64 converters for the cryptography namespace.
+
 2002-07-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/String.cs: replace the "EqualRange" internalcall

@@ -533,16 +533,12 @@ public abstract class Type : MemberInfo
 			}
 
 	// Get the runtime type handle associated with an object.
-	public static RuntimeTypeHandle GetTypeHandle(Object obj)
-			{
-				return RuntimeType.InternalGetTypeHandleFromObject(obj);
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static RuntimeTypeHandle GetTypeHandle(Object obj);
 
 	// Get a type from a runtime type handle.
-	public static Type GetTypeFromHandle(RuntimeTypeHandle handle)
-			{
-				return RuntimeType.GetTypeFromHandleImpl(handle);
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Type GetTypeFromHandle(RuntimeTypeHandle handle);
 
 	// Implementation of the "HasElementType" property.
 	protected abstract bool HasElementTypeImpl();

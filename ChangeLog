@@ -9,6 +9,23 @@ runtime/System/Reflection/RuntimeHelpers.cs,
 runtime/System/Reflection/RuntimeMethodInfo.cs,
 runtime/System/Reflection/RuntimePropertyInfo.cs: remove obsolete types.
 
+* runtime/System/Array.cs,
+runtime/System/Attribute.cs,
+runtime/System/Makefile.am,
+runtime/System/RuntimeTypeHandle.cs,
+runtime/System/Type.cs,
+runtime/System/Reflection/Assembly.cs,
+runtime/System/Reflection/ClrConstructor.cs,
+runtime/System/Reflection/ClrEvent.cs,
+runtime/System/Reflection/ClrField.cs,
+runtime/System/Reflection/ClrHelpers.cs,
+runtime/System/Reflection/ClrMethod.cs,
+runtime/System/Reflection/ClrProperty.cs,
+runtime/System/Reflection/ClrType.cs,
+runtime/System/Reflection/ClrTypeCategory.cs,
+runtime/System/Reflection/IClrProgramItem.cs: modify the reflection
+interface to the runtime engine.
+
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/Platform/Errno.cs: list of Unix-style errno codes for interfacing

@@ -94,7 +94,6 @@ CSSRC = Activator.cs \
 		RuntimeArgumentHandle.cs \
 		RuntimeFieldHandle.cs \
 		RuntimeMethodHandle.cs \
-		RuntimeType.cs \
 		RuntimeTypeHandle.cs \
 		SByte.cs \
 		SerializableAttribute.cs \
@@ -170,11 +169,20 @@ CSSRC = Activator.cs \
 		Reflection/BindingFlags.cs \
 		Reflection/CallingConventions.cs \
 		Reflection/ConstructorInfo.cs \
+		Reflection/ClrConstructor.cs \
+		Reflection/ClrEvent.cs \
+		Reflection/ClrField.cs \
+		Reflection/ClrHelpers.cs \
+		Reflection/ClrMethod.cs \
+		Reflection/ClrProperty.cs \
+		Reflection/ClrType.cs \
+		Reflection/ClrTypeCategory.cs \
 		Reflection/DefaultMemberAttribute.cs \
 		Reflection/EventAttributes.cs \
 		Reflection/EventInfo.cs \
 		Reflection/FieldAttributes.cs \
 		Reflection/FieldInfo.cs \
+		Reflection/IClrProgramItem.cs \
 		Reflection/IReflect.cs \
 		Reflection/MemberInfo.cs \
 		Reflection/MemberTypes.cs \
@@ -192,12 +200,6 @@ CSSRC = Activator.cs \
 		Reflection/PropertyInfo.cs \
 		Reflection/ResourceAttributes.cs \
 		Reflection/ResourceLocation.cs \
-		Reflection/RuntimeConstructorInfo.cs \
-		Reflection/RuntimeEventInfo.cs \
-		Reflection/RuntimeFieldInfo.cs \
-		Reflection/RuntimeHelpers.cs \
-		Reflection/RuntimeMethodInfo.cs \
-		Reflection/RuntimePropertyInfo.cs \
 		Reflection/TargetException.cs \
 		Reflection/TargetInvocationException.cs \
 		Reflection/TargetParameterCountException.cs \

@@ -26,7 +26,7 @@ using System.IO;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-public class Assembly
+public class Assembly : IClrProgramItem
 {
 
 	// Built-in handle for the assembly.  This must be the first field.
@@ -34,6 +34,15 @@ public class Assembly
 
 	// Private constructor.  Normally called by the runtime engine only.
 	internal Assembly() {}
+
+	// Implement the IClrProgramItem interface.
+	public IntPtr ClrHandle
+			{
+				get
+				{
+					return privateData;
+				}
+			}
 
 	// Create an instance of a specific type within this assembly.
 	public Object CreateInstance(String typeName)
@@ -79,19 +88,17 @@ public class Assembly
 	// Get the custom attributes associated with this assembly.
 	public virtual Object[] GetCustomAttributes(bool inherit)
 			{
-				return RuntimeHelpers.GetCustomAttributes
-							(privateData, (IntPtr)0, inherit);
+				return ClrHelpers.GetCustomAttributes(this, inherit);
 			}
 	public virtual Object[] GetCustomAttributes(Type type, bool inherit)
 			{
-				return RuntimeHelpers.GetCustomAttributes
-							(privateData, type, inherit);
+				return ClrHelpers.GetCustomAttributes(this, type, inherit);
 			}
 
 	// Determine if custom attributes are associated with this assembly.
 	public virtual bool IsDefined(Type type, bool inherit)
 			{
-				return RuntimeHelpers.IsDefined(privateData, type, inherit);
+				return ClrHelpers.IsDefined(this, type, inherit);
 			}
 
 	// Get the assembly that contained the program entry point.

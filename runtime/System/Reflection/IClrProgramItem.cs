@@ -1,5 +1,6 @@
 /*
- * RuntimeTypeHandle.cs - Implementation of "System.RuntimeTypeHandle".
+ * IClrProgramItem.cs - Implementation of the
+ *		"System.Reflection.IClrProgramItem" interface.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,29 +19,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Reflection
 {
 
-public struct RuntimeTypeHandle
+using System;
+
+internal interface IClrProgramItem
 {
-	// Internal state.
-	private IntPtr value__;
+	IntPtr ClrHandle { get; }
 
-	// Constructor.
-	internal RuntimeTypeHandle(IntPtr value)
-			{
-				value__ = value;
-			}
+}; // interface IClrProgramItem
 
-	// Properties.
-	public IntPtr Value
-			{
-				get
-				{
-					return value__;
-				}
-			}
-
-}; // class RuntimeTypeHandle
-
-}; // namespace System
+}; // namespace System.Reflection

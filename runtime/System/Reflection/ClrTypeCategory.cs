@@ -1,5 +1,6 @@
 /*
- * RuntimeTypeHandle.cs - Implementation of "System.RuntimeTypeHandle".
+ * ClrTypeCategory.cs - Implementation of the
+ *		"System.Reflection.ClrTypeCategory" enumeration.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,29 +19,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Reflection
 {
 
-public struct RuntimeTypeHandle
+// This must be kept in sync with the definitions in "lib_type.c"
+// within the Portable.NET engine source code.
+
+internal enum ClrTypeCategory
 {
-	// Internal state.
-	private IntPtr value__;
 
-	// Constructor.
-	internal RuntimeTypeHandle(IntPtr value)
-			{
-				value__ = value;
-			}
+	Primitive		= 0,
+	Class			= 1,
+	ValueType		= 2,
+	Enum			= 3,
+	Array			= 4,
+	ByRef			= 5,
+	Pointer			= 6,
+	Method			= 7,
+	COMObject		= 8,
+	Other			= 9
 
-	// Properties.
-	public IntPtr Value
-			{
-				get
-				{
-					return value__;
-				}
-			}
+}; // class ClrTypeCategory
 
-}; // class RuntimeTypeHandle
-
-}; // namespace System
+}; // namespace System.Reflection

@@ -35,8 +35,8 @@ public abstract class Attribute
 	// Determine if two attributes are equal.
 	public override bool Equals(Object value)
 			{
-				RuntimeType type1;
-				RuntimeType type2;
+				Type type1;
+				Type type2;
 
 				// The value must not be null.
 				if(value == null)
@@ -45,8 +45,8 @@ public abstract class Attribute
 				}
 
 				// The types must be equal.
-				type1 = (RuntimeType)(GetType());
-				type2 = (RuntimeType)(value.GetType());
+				type1 = GetType();
+				type2 = value.GetType();
 				if(type1 != type2)
 				{
 					return false;

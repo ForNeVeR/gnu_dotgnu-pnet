@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Collections;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 public abstract class Array : ICloneable, ICollection, IEnumerable, IList
@@ -234,49 +235,33 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 
 	// Internal versions of "CreateInstance".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Array InternalCreate(RuntimeType elementType,
+	extern private static Array InternalCreate(IntPtr elementType,
 											   int rank, int length1,
 											   int length2, int length3);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Array InternalCreateEx(RuntimeType elementType,
+	extern private static Array InternalCreateEx(IntPtr elementType,
 											     int[] lengths,
 												 int[] lowerBounds);
 
 	// Create a single-dimensional array instance.
 	public static Array CreateInstance(Type elementType, int length)
 	{
-		RuntimeType runtimeType;
-		if(elementType == null)
-		{
-			throw new ArgumentNullException("elementType");
-		}
-		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
-		if(runtimeType == null)
-		{
-			throw new ArgumentException(_("Arg_MustBeType"));
-		}
+		IntPtr typeHandle;
+		typeHandle = ClrHelpers.TypeToClrHandle(elementType, "elementType");
 		if(length < 0)
 		{
 			throw new ArgumentOutOfRangeException
 				("length", _("ArgRange_NonNegative"));
 		}
-		return InternalCreate(runtimeType, 1, length, 0, 0);
+		return InternalCreate(typeHandle, 1, length, 0, 0);
 	}
 
 	// Create a double-dimensional array instance.
 	public static Array CreateInstance(Type elementType,
 									   int length1, int length2)
 	{
-		RuntimeType runtimeType;
-		if(elementType == null)
-		{
-			throw new ArgumentNullException("elementType");
-		}
-		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
-		if(runtimeType == null)
-		{
-			throw new ArgumentException(_("Arg_MustBeType"));
-		}
+		IntPtr typeHandle;
+		typeHandle = ClrHelpers.TypeToClrHandle(elementType, "elementType");
 		if(length1 < 0)
 		{
 			throw new ArgumentOutOfRangeException
@@ -287,23 +272,15 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new ArgumentOutOfRangeException
 				("length2", _("ArgRange_NonNegative"));
 		}
-		return InternalCreate(runtimeType, 2, length1, length2, 0);
+		return InternalCreate(typeHandle, 2, length1, length2, 0);
 	}
 
 	// Create a triple-dimensional array instance.
 	public static Array CreateInstance(Type elementType, int length1,
 									   int length2, int length3)
 	{
-		RuntimeType runtimeType;
-		if(elementType == null)
-		{
-			throw new ArgumentNullException("elementType");
-		}
-		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
-		if(runtimeType == null)
-		{
-			throw new ArgumentException(_("Arg_MustBeType"));
-		}
+		IntPtr typeHandle;
+		typeHandle = ClrHelpers.TypeToClrHandle(elementType, "elementType");
 		if(length1 < 0)
 		{
 			throw new ArgumentOutOfRangeException
@@ -319,26 +296,18 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new ArgumentOutOfRangeException
 				("length3", _("ArgRange_NonNegative"));
 		}
-		return InternalCreate(runtimeType, 3, length1, length2, length3);
+		return InternalCreate(typeHandle, 3, length1, length2, length3);
 	}
 
 	// Create an array instance from an array of length values.
 	public static Array CreateInstance(Type elementType, int[] lengths)
 	{
-		RuntimeType runtimeType;
 		int index;
-		if(elementType == null)
-		{
-			throw new ArgumentNullException("elementType");
-		}
+		IntPtr typeHandle;
+		typeHandle = ClrHelpers.TypeToClrHandle(elementType, "elementType");
 		if(lengths == null)
 		{
 			throw new ArgumentNullException("lengths");
-		}
-		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
-		if(runtimeType == null)
-		{
-			throw new ArgumentException(_("Arg_MustBeType"));
 		}
 		if(lengths.Length < 1)
 		{
@@ -353,7 +322,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 					 _("ArgRange_NonNegative"));
 			}
 		}
-		return InternalCreateEx(runtimeType, lengths, null);
+		return InternalCreateEx(typeHandle, lengths, null);
 	}
 
 	// Create an array instance from an array of length values,
@@ -361,12 +330,9 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	public static Array CreateInstance(Type elementType, int[] lengths,
 									   int[] lowerBounds)
 	{
-		RuntimeType runtimeType;
 		int index;
-		if(elementType == null)
-		{
-			throw new ArgumentNullException("elementType");
-		}
+		IntPtr typeHandle;
+		typeHandle = ClrHelpers.TypeToClrHandle(elementType, "elementType");
 		if(lengths == null)
 		{
 			throw new ArgumentNullException("lengths");
@@ -379,11 +345,6 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentException(_("Arg_MustBeSameSize"));
 		}
-		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
-		if(runtimeType == null)
-		{
-			throw new ArgumentException(_("Arg_MustBeType"));
-		}
 		if(lengths.Length < 1)
 		{
 			throw new ArgumentException(_("Arg_MustHaveOneElement"));
@@ -397,7 +358,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 					 _("ArgRange_NonNegative"));
 			}
 		}
-		return InternalCreateEx(runtimeType, lengths, lowerBounds);
+		return InternalCreateEx(typeHandle, lengths, lowerBounds);
 	}
 
 	// Implement the IEnumerable interface.

@@ -1,3 +1,12 @@
+2002-03-10  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Moved some const Strings here, fixed
+	Fragment{get;} code, added a few more implementations. Next up is
+	the final answer on internal calls! Also fixed my email address.
+
+	* System/UriBuilder.cs: Cleaned up the code a little, more
+	efficient, barely began offsetting the work to Uri.cs.
+
 2002-03-10  Peter Minten  <silvernerd@users.sf.net>
 	* System/Net/Sockets/NetworkStream.cs,
 	System/Net/Sockets/Socket.cs: Started with some simple methods.

@@ -42,13 +42,16 @@ The reason this.path can be String.Empty, not per spec, is so that ToString() wi
 know if the user doesn't really want the path to be "/".
 */
 
+namespace System
+{
+
+// StringBuilders are cool
+using System.Text;
+
 public class UriBuilder
 {
-	// because you can't append to a char :)
-	// maybe move these to Uri, make internal, change accessors
-	private static String slash = "/";
-	private static String questionmark = "?";
-	private static String hash = "#";
+	// questionmark and hash are now not necessary
+	private static const String SLASH = "/";
 
 	// State.
 
@@ -77,7 +80,8 @@ public class UriBuilder
 	public UriBuilder()
 	{
 		this.fragment = String.Empty;
-		this.host = "loopback";
+		// localhost, not loopback!
+		this.host = Uri.LOCALHOST;
 		this.password = String.Empty;
 		this.path = String.Empty;
 		this.port = -1;
@@ -89,13 +93,6 @@ public class UriBuilder
 	{
 		if (uri == null) throw new ArgumentNullException("uri");
 		ParseString(uri, false);
-	}
-
-	// TODO: declare package visibility for this method! used by Uri
-	UriBuilder(String uri, boolean escaped)
-	{
-		if (uri == null) throw new ArgumentNullException("uri");
-		ParseString(uri, escaped);
 	}
 
 	[TODO]
@@ -244,7 +241,7 @@ public class UriBuilder
 			this.path = ValidatePath(instr.Substring(curpos,
 				eoAuthority - curpos), escaped);
 		else
-			this.path = UriBuilder.slash;
+			this.path = UriBuilder.SLASH;
 
 		if (eoAuthority < eoSect)
 			this.query = ValidateQuery(instr.Substring(eoAuthority + 1,
@@ -304,7 +301,8 @@ public class UriBuilder
 			if (this.fragment == String.Empty)
 				return this.fragment;
 			else
-				return UriBuilder.hash + this.query;
+				// whoops...return frag, not query!
+				return new StringBuilder(this.fragment.Length+1).Append('#').Append(this.fragment).ToString();
 
 		}
 		set
@@ -346,7 +344,7 @@ public class UriBuilder
 		get
 		{
 			if (this.path == String.Empty)
-				return UriBuilder.slash;
+				return UriBuilder.SLASH;
 			else
 				return this.path;
 		}
@@ -379,7 +377,7 @@ public class UriBuilder
 			if (this.query == String.Empty)
 				return this.query;
 			else
-				return UriBuilder.questionmark + this.query;
+				return new StringBuilder(this.query.Length+1).Append('?').Append(this.query).ToString();
 		}
 		set
 		{

@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002 Free Software Foundation, Inc.
  *
- * Contributed by Stephen Compall <rushing@earthling.net>
+ * Contributed by Stephen Compall <rushing@sigecom.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,11 @@ using System.Text;
 
 public class Uri : MarshalByRefObject
 {
+
+	internal static const String LOCALHOST = "localhost";
+	private static const String LOCALHOSTIP = "127.0.0.1";
+	private static const String HEXCHARS = "0123456789ABCDEFabcdef";
+	private static const String VALIDSCHEMECHARS = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm0123456789.+-";
 
 	// magic strings...
 	public static readonly String SchemeDelimiter = "://";
@@ -102,14 +107,23 @@ public class Uri : MarshalByRefObject
 	{
 	}
 
-	[TODO]
 	public static bool CheckSchemeName(String schemeName)
 	{
+		if (schemeName == null || schemeName.Length == 0)
+			return false;
+		int charloc = Uri.VALIDSCHEMECHARS.IndexOf(schemeName[0]);
+		if (charloc < 0 || charloc > 52) return false;
+		for (int i = 1; ++i < schemeName.Length;)
+		{
+			if (Uri.VALIDSCHEMECHARS.IndexOf(schemeName[i]) == -1)
+				return false;
+		}
+		return true;
 	}
 
-	[TODO]
 	protected virtual void CheckSecurity()
 	{
+		// do nothing in base class
 	}
 
 	[TODO]
@@ -134,7 +148,7 @@ public class Uri : MarshalByRefObject
 			{
 				return this.ToStringNoFragQuery.Equals(Uri.ToStringNoFragQuery((String) comparand));
 			}
-			catch (InvalidCastException ice)
+			catch (InvalidCastException nice)
 			{
 				return false;
 			}
@@ -151,10 +165,9 @@ public class Uri : MarshalByRefObject
 	{
 	}
 
-	private static const String hexchars = "0123456789ABCDEFabcdef";
 	public static int FromHex(char digit)
 	{
-		int placement = hexchars.IndexOf(digit);
+		int placement = HEXCHARS.IndexOf(digit);
 		if (placement == -1) throw new ArgumentException(_("Exception_Argument_HexDigit"), "digit");
 		else if (placement <= 15) return placement;
 		else return placement - 6;
@@ -179,11 +192,10 @@ public class Uri : MarshalByRefObject
 	{
 		if (character > 255)
 			throw new ArgumentOutOfRangeException("character");
-		char first = Uri.hexchars[character >> 4];
+		char first = Uri.HEXCHARS[character >> 4];
 		// 0b00001111 == 0x0F == 15
-		char second = Uri.hexchars[character & 15];
-		StringBuilder retval = new StringBuilder(3);
-		return retval.Append('%').Append(first).Append(second).ToString();
+		char second = Uri.HEXCHARS[character & 15];
+		return new StringBuilder(3).Append('%').Append(first).Append(second).ToString();
 	}
 
 	[TODO]
@@ -269,7 +281,7 @@ public class Uri : MarshalByRefObject
 			if (this.fragment == String.Empty)
 				return this.fragment;
 			else
-				return UriBuilder.hash + this.query;
+				return new StringBuilder(this.fragment.Length+1).Append('#').Append(this.fragment).ToString();
 		}
 	}
 
@@ -316,8 +328,8 @@ public class Uri : MarshalByRefObject
 	{
 		get
 		{
-			return (String.Equals(this.host, "localhost") ||
-				String.Equals(this.host, "127.0.0.1"));
+			return (String.Equals(this.host, Uri.LOCALHOST) ||
+				String.Equals(this.host, Uri.LOCALHOSTIP));
 		}
 	}
 
@@ -371,7 +383,7 @@ public class Uri : MarshalByRefObject
 			if (this.query == String.Empty)
 				return this.query;
 			else
-				return UriBuilder.questionmark + this.query;
+				return new StringBuilder(this.query.Length+1).Append('?').Append(this.query).ToString();
 		}
 	}
 

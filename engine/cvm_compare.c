@@ -94,7 +94,7 @@ static IL_INLINE ILInt32 FCmp(CVMWord *a, CVMWord *b, ILInt32 nanResult)
 #elif defined(IL_CVM_PREFIX)
 
 /**
- * <opcode name="icmp">
+ * <opcode name="icmp" group="Comparison operators">
  *   <operation>Compare <code>int32</code></operation>
  *
  *   <format>prefix<fsep/>icmp</format>
@@ -137,7 +137,7 @@ case COP_PREFIX_ICMP:
 break;
 
 /**
- * <opcode name="icmp_un">
+ * <opcode name="icmp_un" group="Comparison operators">
  *   <operation>Compare <code>uint32</code></operation>
  *
  *   <format>prefix<fsep/>icmp_un</format>
@@ -180,7 +180,7 @@ case COP_PREFIX_ICMP_UN:
 break;
 
 /**
- * <opcode name="lcmp">
+ * <opcode name="lcmp" group="Comparison operators">
  *   <operation>Compare <code>int64</code></operation>
  *
  *   <format>prefix<fsep/>lcmp</format>
@@ -214,7 +214,7 @@ case COP_PREFIX_LCMP:
 break;
 
 /**
- * <opcode name="lcmp_un">
+ * <opcode name="lcmp_un" group="Comparison operators">
  *   <operation>Compare <code>uint64</code></operation>
  *
  *   <format>prefix<fsep/>lcmp_un</format>
@@ -248,7 +248,7 @@ case COP_PREFIX_LCMP_UN:
 break;
 
 /**
- * <opcode name="fcmpl">
+ * <opcode name="fcmpl" group="Comparison operators">
  *   <operation>Compare <code>native float</code> with lower result</operation>
  *
  *   <format>prefix<fsep/>fcmpl</format>
@@ -285,7 +285,7 @@ case COP_PREFIX_FCMPL:
 break;
 
 /**
- * <opcode name="fcmpg">
+ * <opcode name="fcmpg" group="Comparison operators">
  *   <operation>Compare <code>native float</code> with
  *              greater result</operation>
  *
@@ -323,7 +323,7 @@ case COP_PREFIX_FCMPG:
 break;
 
 /**
- * <opcode name="pcmp">
+ * <opcode name="pcmp" group="Comparison operators">
  *   <operation>Compare <code>ptr</code></operation>
  *
  *   <format>prefix<fsep/>pcmp</format>
@@ -366,7 +366,7 @@ case COP_PREFIX_PCMP:
 break;
 
 /**
- * <opcode name="seteq">
+ * <opcode name="seteq" group="Comparison operators">
  *   <operation>Set if equal to zero</operation>
  *
  *   <format>prefix<fsep/>seteq</format>
@@ -397,7 +397,7 @@ case COP_PREFIX_SETEQ:
 break;
 
 /**
- * <opcode name="setne">
+ * <opcode name="setne" group="Comparison operators">
  *   <operation>Set if not equal to zero</operation>
  *
  *   <format>prefix<fsep/>setne</format>
@@ -428,7 +428,7 @@ case COP_PREFIX_SETNE:
 break;
 
 /**
- * <opcode name="setlt">
+ * <opcode name="setlt" group="Comparison operators">
  *   <operation>Set if less than zero</operation>
  *
  *   <format>prefix<fsep/>setlt</format>
@@ -459,7 +459,7 @@ case COP_PREFIX_SETLT:
 break;
 
 /**
- * <opcode name="setle">
+ * <opcode name="setle" group="Comparison operators">
  *   <operation>Set if less than or equal to zero</operation>
  *
  *   <format>prefix<fsep/>setlt</format>
@@ -490,7 +490,7 @@ case COP_PREFIX_SETLE:
 break;
 
 /**
- * <opcode name="setgt">
+ * <opcode name="setgt" group="Comparison operators">
  *   <operation>Set if greater than zero</operation>
  *
  *   <format>prefix<fsep/>setgt</format>
@@ -521,7 +521,7 @@ case COP_PREFIX_SETGT:
 break;
 
 /**
- * <opcode name="setge">
+ * <opcode name="setge" group="Comparison operators">
  *   <operation>Set if greater than or equal to zero</operation>
  *
  *   <format>prefix<fsep/>setge</format>

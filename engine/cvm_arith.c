@@ -348,7 +348,7 @@ static IL_INLINE ILNativeFloat FRem(ILNativeFloat a, ILNativeFloat b)
 #elif defined(IL_CVM_MAIN)
 
 /**
- * <opcode name="iadd">
+ * <opcode name="iadd" group="Arithmetic operators">
  *   <operation>Add <code>int32</code></operation>
  *
  *   <format>iadd</format>
@@ -382,7 +382,7 @@ case COP_IADD:
 break;
 
 /**
- * <opcode name="iadd_ovf">
+ * <opcode name="iadd_ovf" group="Arithmetic operators">
  *   <operation>Add <code>int32</code> with overflow detection</operation>
  *
  *   <format>iadd_ovf</format>
@@ -425,7 +425,7 @@ case COP_IADD_OVF:
 break;
 
 /**
- * <opcode name="iadd_ovf_un">
+ * <opcode name="iadd_ovf_un" group="Arithmetic operators">
  *   <operation>Add <code>uint32</code> with overflow detection</operation>
  *
  *   <format>iadd_ovf_un</format>
@@ -468,7 +468,7 @@ case COP_IADD_OVF_UN:
 break;
 
 /**
- * <opcode name="isub">
+ * <opcode name="isub" group="Arithmetic operators">
  *   <operation>Subtract <code>int32</code></operation>
  *
  *   <format>isub</format>
@@ -502,7 +502,7 @@ case COP_ISUB:
 break;
 
 /**
- * <opcode name="isub_ovf">
+ * <opcode name="isub_ovf" group="Arithmetic operators">
  *   <operation>Subtract <code>int32</code> with overflow detection</operation>
  *
  *   <format>isub_ovf</format>
@@ -545,7 +545,7 @@ case COP_ISUB_OVF:
 break;
 
 /**
- * <opcode name="isub_ovf_un">
+ * <opcode name="isub_ovf_un" group="Arithmetic operators">
  *   <operation>Subtract <code>uint32</code> with overflow detection</operation>
  *
  *   <format>isub_ovf_un</format>
@@ -588,7 +588,7 @@ case COP_ISUB_OVF_UN:
 break;
 
 /**
- * <opcode name="imul">
+ * <opcode name="imul" group="Arithmetic operators">
  *   <operation>Multiply <code>int32</code></operation>
  *
  *   <format>imul</format>
@@ -622,7 +622,7 @@ case COP_IMUL:
 break;
 
 /**
- * <opcode name="imul_ovf">
+ * <opcode name="imul_ovf" group="Arithmetic operators">
  *   <operation>Multiply <code>int32</code> with overflow detection</operation>
  *
  *   <format>imul_ovf</format>
@@ -665,7 +665,7 @@ case COP_IMUL_OVF:
 break;
 
 /**
- * <opcode name="imul_ovf_un">
+ * <opcode name="imul_ovf_un" group="Arithmetic operators">
  *   <operation>Multiply <code>uint32</code> with overflow detection</operation>
  *
  *   <format>imul_ovf_un</format>
@@ -708,7 +708,7 @@ case COP_IMUL_OVF_UN:
 break;
 
 /**
- * <opcode name="idiv">
+ * <opcode name="idiv" group="Arithmetic operators">
  *   <operation>Divide <code>int32</code></operation>
  *
  *   <format>idiv</format>
@@ -755,7 +755,7 @@ case COP_IDIV:
 break;
 
 /**
- * <opcode name="idiv_un">
+ * <opcode name="idiv_un" group="Arithmetic operators">
  *   <operation>Divide <code>uint32</code></operation>
  *
  *   <format>idiv_un</format>
@@ -792,7 +792,7 @@ case COP_IDIV_UN:
 break;
 
 /**
- * <opcode name="irem">
+ * <opcode name="irem" group="Arithmetic operators">
  *   <operation>Remainder <code>int32</code></operation>
  *
  *   <format>irem</format>
@@ -839,7 +839,7 @@ case COP_IREM:
 break;
 
 /**
- * <opcode name="irem_un">
+ * <opcode name="irem_un" group="Arithmetic operators">
  *   <operation>Remainder <code>uint32</code></operation>
  *
  *   <format>irem_un</format>
@@ -876,7 +876,7 @@ case COP_IREM_UN:
 break;
 
 /**
- * <opcode name="ineg">
+ * <opcode name="ineg" group="Arithmetic operators">
  *   <operation>Negate <code>int32</code></operation>
  *
  *   <format>ineg</format>
@@ -905,7 +905,7 @@ case COP_INEG:
 break;
 
 /**
- * <opcode name="ladd">
+ * <opcode name="ladd" group="Arithmetic operators">
  *   <operation>Add <code>int64</code></operation>
  *
  *   <format>ladd</format>
@@ -948,7 +948,7 @@ case COP_LADD:
 break;
 
 /**
- * <opcode name="ladd_ovf">
+ * <opcode name="ladd_ovf" group="Arithmetic operators">
  *   <operation>Add <code>int64</code> with overflow detection</operation>
  *
  *   <format>ladd_ovf</format>
@@ -991,7 +991,7 @@ case COP_LADD_OVF:
 break;
 
 /**
- * <opcode name="ladd_ovf_un">
+ * <opcode name="ladd_ovf_un" group="Arithmetic operators">
  *   <operation>Add <code>uint64</code> with overflow detection</operation>
  *
  *   <format>ladd_ovf_un</format>
@@ -1034,7 +1034,7 @@ case COP_LADD_OVF_UN:
 break;
 
 /**
- * <opcode name="lsub">
+ * <opcode name="lsub" group="Arithmetic operators">
  *   <operation>Subtract <code>int64</code></operation>
  *
  *   <format>lsub</format>
@@ -1070,7 +1070,7 @@ case COP_LSUB:
 break;
 
 /**
- * <opcode name="lsub_ovf">
+ * <opcode name="lsub_ovf" group="Arithmetic operators">
  *   <operation>Subtract <code>int64</code> with overflow detection</operation>
  *
  *   <format>lsub_ovf</format>
@@ -1113,7 +1113,7 @@ case COP_LSUB_OVF:
 break;
 
 /**
- * <opcode name="lsub_ovf_un">
+ * <opcode name="lsub_ovf_un" group="Arithmetic operators">
  *   <operation>Subtract <code>uint64</code> with overflow detection</operation>
  *
  *   <format>lsub_ovf_un</format>
@@ -1156,7 +1156,7 @@ case COP_LSUB_OVF_UN:
 break;
 
 /**
- * <opcode name="lmul">
+ * <opcode name="lmul" group="Arithmetic operators">
  *   <operation>Multiply <code>int64</code></operation>
  *
  *   <format>lmul</format>
@@ -1192,7 +1192,7 @@ case COP_LMUL:
 break;
 
 /**
- * <opcode name="lmul_ovf">
+ * <opcode name="lmul_ovf" group="Arithmetic operators">
  *   <operation>Multiply <code>int64</code> with overflow detection</operation>
  *
  *   <format>lmul_ovf</format>
@@ -1235,7 +1235,7 @@ case COP_LMUL_OVF:
 break;
 
 /**
- * <opcode name="lmul_ovf_un">
+ * <opcode name="lmul_ovf_un" group="Arithmetic operators">
  *   <operation>Multiply <code>uint64</code> with overflow detection</operation>
  *
  *   <format>lmul_ovf_un</format>
@@ -1278,7 +1278,7 @@ case COP_LMUL_OVF_UN:
 break;
 
 /**
- * <opcode name="ldiv">
+ * <opcode name="ldiv" group="Arithmetic operators">
  *   <operation>Divide <code>int64</code></operation>
  *
  *   <format>ldiv</format>
@@ -1323,7 +1323,7 @@ case COP_LDIV:
 break;
 
 /**
- * <opcode name="ldiv_un">
+ * <opcode name="ldiv_un" group="Arithmetic operators">
  *   <operation>Divide <code>uint64</code></operation>
  *
  *   <format>ldiv_un</format>
@@ -1360,7 +1360,7 @@ case COP_LDIV_UN:
 break;
 
 /**
- * <opcode name="lrem">
+ * <opcode name="lrem" group="Arithmetic operators">
  *   <operation>Remainder <code>int64</code></operation>
  *
  *   <format>lrem</format>
@@ -1405,7 +1405,7 @@ case COP_LREM:
 break;
 
 /**
- * <opcode name="lrem_un">
+ * <opcode name="lrem_un" group="Arithmetic operators">
  *   <operation>Remainder <code>uint64</code></operation>
  *
  *   <format>lrem_un</format>
@@ -1442,7 +1442,7 @@ case COP_LREM_UN:
 break;
 
 /**
- * <opcode name="lneg">
+ * <opcode name="lneg" group="Arithmetic operators">
  *   <operation>Negate <code>int64</code></operation>
  *
  *   <format>lneg</format>
@@ -1482,7 +1482,7 @@ case COP_##name: \
 break
 
 /**
- * <opcode name="fadd">
+ * <opcode name="fadd" group="Arithmetic operators">
  *   <operation>Add <code>native float</code></operation>
  *
  *   <format>fadd</format>
@@ -1513,7 +1513,7 @@ break
 COP_FLOAT_OP(FADD, +);
 
 /**
- * <opcode name="fsub">
+ * <opcode name="fsub" group="Arithmetic operators">
  *   <operation>Subtract <code>native float</code></operation>
  *
  *   <format>fsub</format>
@@ -1532,7 +1532,7 @@ COP_FLOAT_OP(FADD, +);
 COP_FLOAT_OP(FSUB, -);
 
 /**
- * <opcode name="fmul">
+ * <opcode name="fmul" group="Arithmetic operators">
  *   <operation>Multiply <code>native float</code></operation>
  *
  *   <format>fmul</format>
@@ -1551,7 +1551,7 @@ COP_FLOAT_OP(FSUB, -);
 COP_FLOAT_OP(FMUL, *);
 
 /**
- * <opcode name="fdiv">
+ * <opcode name="fdiv" group="Arithmetic operators">
  *   <operation>Divide <code>native float</code></operation>
  *
  *   <format>fdiv</format>
@@ -1570,7 +1570,7 @@ COP_FLOAT_OP(FMUL, *);
 COP_FLOAT_OP(FDIV, /);
 
 /**
- * <opcode name="frem">
+ * <opcode name="frem" group="Arithmetic operators">
  *   <operation>Remainder <code>native float</code></operation>
  *
  *   <format>frem</format>
@@ -1601,7 +1601,7 @@ case COP_FREM:
 break;
 
 /**
- * <opcode name="fneg">
+ * <opcode name="fneg" group="Arithmetic operators">
  *   <operation>Negate <code>native float</code></operation>
  *
  *   <format>fneg</format>
@@ -1627,7 +1627,7 @@ case COP_FNEG:
 break;
 
 /**
- * <opcode name="iand">
+ * <opcode name="iand" group="Bitwise operators">
  *   <operation>Bitwise AND <code>int32</code></operation>
  *
  *   <format>iand</format>
@@ -1655,7 +1655,7 @@ case COP_IAND:
 break;
 
 /**
- * <opcode name="ior">
+ * <opcode name="ior" group="Bitwise operators">
  *   <operation>Bitwise OR <code>int32</code></operation>
  *
  *   <format>ior</format>
@@ -1683,7 +1683,7 @@ case COP_IOR:
 break;
 
 /**
- * <opcode name="ixor">
+ * <opcode name="ixor" group="Bitwise operators">
  *   <operation>Bitwise XOR <code>int32</code></operation>
  *
  *   <format>ixor</format>
@@ -1711,7 +1711,7 @@ case COP_IXOR:
 break;
 
 /**
- * <opcode name="inot">
+ * <opcode name="inot" group="Bitwise operators">
  *   <operation>Bitwise NOT <code>int32</code></operation>
  *
  *   <format>inot</format>
@@ -1739,7 +1739,7 @@ case COP_INOT:
 break;
 
 /**
- * <opcode name="ishl">
+ * <opcode name="ishl" group="Bitwise operators">
  *   <operation>Left shift <code>int32</code></operation>
  *
  *   <format>ishl</format>
@@ -1769,7 +1769,7 @@ case COP_ISHL:
 break;
 
 /**
- * <opcode name="ishr">
+ * <opcode name="ishr" group="Bitwise operators">
  *   <operation>Right arithmetic shift <code>int32</code></operation>
  *
  *   <format>ishr</format>
@@ -1797,7 +1797,7 @@ case COP_ISHR:
 break;
 
 /**
- * <opcode name="ishr_un">
+ * <opcode name="ishr_un" group="Bitwise operators">
  *   <operation>Right unsigned shift <code>uint32</code></operation>
  *
  *   <format>ishr_un</format>
@@ -1824,7 +1824,7 @@ case COP_ISHR_UN:
 break;
 
 /**
- * <opcode name="land">
+ * <opcode name="land" group="Bitwise operators">
  *   <operation>Bitwise AND <code>int64</code></operation>
  *
  *   <format>land</format>
@@ -1854,7 +1854,7 @@ case COP_LAND:
 break;
 
 /**
- * <opcode name="lor">
+ * <opcode name="lor" group="Bitwise operators">
  *   <operation>Bitwise OR <code>int64</code></operation>
  *
  *   <format>lor</format>
@@ -1884,7 +1884,7 @@ case COP_LOR:
 break;
 
 /**
- * <opcode name="lxor">
+ * <opcode name="lxor" group="Bitwise operators">
  *   <operation>Bitwise XOR <code>int64</code></operation>
  *
  *   <format>lxor</format>
@@ -1914,7 +1914,7 @@ case COP_LXOR:
 break;
 
 /**
- * <opcode name="lnot">
+ * <opcode name="lnot" group="Bitwise operators">
  *   <operation>Bitwise NOT <code>int64</code></operation>
  *
  *   <format>lnot</format>
@@ -1943,7 +1943,7 @@ case COP_LNOT:
 break;
 
 /**
- * <opcode name="lshl">
+ * <opcode name="lshl" group="Bitwise operators">
  *   <operation>Left shift <code>int64</code></operation>
  *
  *   <format>lshl</format>
@@ -1975,7 +1975,7 @@ case COP_LSHL:
 break;
 
 /**
- * <opcode name="lshr">
+ * <opcode name="lshr" group="Bitwise operators">
  *   <operation>Right arithmetic shift <code>int64</code></operation>
  *
  *   <format>lshr</format>
@@ -2005,7 +2005,7 @@ case COP_LSHR:
 break;
 
 /**
- * <opcode name="lshr_un">
+ * <opcode name="lshr_un" group="Bitwise operators">
  *   <operation>Right unsigned shift <code>uint64</code></operation>
  *
  *   <format>lshr_un</format>
@@ -2036,7 +2036,7 @@ break;
 #elif defined(IL_CVM_PREFIX)
 
 /**
- * <opcode name="ckfinite">
+ * <opcode name="ckfinite" group="Arithmetic operators">
  *   <operation>Check <code>native float</code> for finite</operation>
  *
  *   <format>prefix<fsep/>ckfinite</format>

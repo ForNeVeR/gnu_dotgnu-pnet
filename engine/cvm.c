@@ -399,7 +399,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 		switch(pc[0])
 		{
 			/**
-			 * <opcode name="nop">
+			 * <opcode name="nop" group="Miscellaneous instructions">
 			 *   <operation>Do nothing</operation>
 			 *
 			 *   <format>nop</format>
@@ -432,7 +432,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			#undef IL_CVM_MAIN
 
 			/**
-			 * <opcode name="wide">
+			 * <opcode name="wide" group="Miscellaneous instructions">
 			 *   <operation>Modify an instruction to its wide form</operation>
 			 *
 			 *   <format>wide<fsep/>opcode<fsep/>...</format>
@@ -477,7 +477,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			break;
 
 			/**
-			 * <opcode name="prefix">
+			 * <opcode name="prefix" group="Miscellaneous instructions">
 			 *   <operation>Prefix an alternative instruction</operation>
 			 *
 			 *   <format>prefix<fsep/>opcode<fsep/>...</format>

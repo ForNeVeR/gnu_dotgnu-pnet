@@ -74,7 +74,7 @@ ILUInt32 tempSize;
 #elif defined(IL_CVM_MAIN)
 
 /**
- * <opcode name="bread">
+ * <opcode name="bread" group="Pointer handling">
  *   <operation>Read <code>int8</code> from pointer</operation>
  *
  *   <format>bread</format>
@@ -99,7 +99,7 @@ case COP_BREAD:
 break;
 
 /**
- * <opcode name="ubread">
+ * <opcode name="ubread" group="Pointer handling">
  *   <operation>Read <code>uint8</code> from pointer</operation>
  *
  *   <format>ubread</format>
@@ -124,7 +124,7 @@ case COP_UBREAD:
 break;
 
 /**
- * <opcode name="sread">
+ * <opcode name="sread" group="Pointer handling">
  *   <operation>Read <code>int16</code> from pointer</operation>
  *
  *   <format>sread</format>
@@ -149,7 +149,7 @@ case COP_SREAD:
 break;
 
 /**
- * <opcode name="usread">
+ * <opcode name="usread" group="Pointer handling">
  *   <operation>Read <code>uint16</code> from pointer</operation>
  *
  *   <format>usread</format>
@@ -174,7 +174,7 @@ case COP_USREAD:
 break;
 
 /**
- * <opcode name="iread">
+ * <opcode name="iread" group="Pointer handling">
  *   <operation>Read <code>int32</code> from pointer</operation>
  *
  *   <format>iread</format>
@@ -201,7 +201,7 @@ case COP_IREAD:
 break;
 
 /**
- * <opcode name="fread">
+ * <opcode name="fread" group="Pointer handling">
  *   <operation>Read <code>float32</code> from pointer</operation>
  *
  *   <format>fread</format>
@@ -228,7 +228,7 @@ case COP_FREAD:
 break;
 
 /**
- * <opcode name="dread">
+ * <opcode name="dread" group="Pointer handling">
  *   <operation>Read <code>float64</code> from pointer</operation>
  *
  *   <format>dread</format>
@@ -255,7 +255,7 @@ case COP_DREAD:
 break;
 
 /**
- * <opcode name="pread">
+ * <opcode name="pread" group="Pointer handling">
  *   <operation>Read <code>ptr</code> from pointer</operation>
  *
  *   <format>pread</format>
@@ -284,7 +284,7 @@ case COP_PREAD:
 break;
 
 /**
- * <opcode name="mread">
+ * <opcode name="mread" group="Pointer handling">
  *   <operation>Read multiple bytes from pointer</operation>
  *
  *   <format>mread<fsep/>N[1]</format>
@@ -315,7 +315,7 @@ case COP_MREAD:
 break;
 
 /**
- * <opcode name="bwrite">
+ * <opcode name="bwrite" group="Pointer handling">
  *   <operation>Write <code>int8</code> to pointer</operation>
  *
  *   <format>bwrite</format>
@@ -343,7 +343,7 @@ case COP_BWRITE:
 break;
 
 /**
- * <opcode name="swrite">
+ * <opcode name="swrite" group="Pointer handling">
  *   <operation>Write <code>int16</code> to pointer</operation>
  *
  *   <format>swrite</format>
@@ -371,7 +371,7 @@ case COP_SWRITE:
 break;
 
 /**
- * <opcode name="iwrite">
+ * <opcode name="iwrite" group="Pointer handling">
  *   <operation>Write <code>int32</code> to pointer</operation>
  *
  *   <format>iwrite</format>
@@ -398,7 +398,7 @@ case COP_IWRITE:
 break;
 
 /**
- * <opcode name="fwrite">
+ * <opcode name="fwrite" group="Pointer handling">
  *   <operation>Write <code>float32</code> to pointer</operation>
  *
  *   <format>fwrite</format>
@@ -424,7 +424,7 @@ case COP_FWRITE:
 break;
 
 /**
- * <opcode name="dwrite">
+ * <opcode name="dwrite" group="Pointer handling">
  *   <operation>Write <code>float64</code> to pointer</operation>
  *
  *   <format>dwrite</format>
@@ -452,7 +452,7 @@ case COP_DWRITE:
 break;
 
 /**
- * <opcode name="pwrite">
+ * <opcode name="pwrite" group="Pointer handling">
  *   <operation>Write <code>ptr</code> to pointer</operation>
  *
  *   <format>pwrite</format>
@@ -481,7 +481,7 @@ case COP_PWRITE:
 break;
 
 /**
- * <opcode name="mwrite">
+ * <opcode name="mwrite" group="Pointer handling">
  *   <operation>Write multiple bytes to pointer</operation>
  *
  *   <format>mwrite<fsep/>N[1]</format>
@@ -509,7 +509,7 @@ case COP_MWRITE:
 break;
 
 /**
- * <opcode name="bwrite_r">
+ * <opcode name="bwrite_r" group="Pointer handling">
  *   <operation>Write <code>int8</code> to pointer with reversed
  *				arguments</operation>
  *
@@ -538,7 +538,7 @@ case COP_BWRITE_R:
 break;
 
 /**
- * <opcode name="swrite_r">
+ * <opcode name="swrite_r" group="Pointer handling">
  *   <operation>Write <code>int16</code> to pointer with reversed
  *				arguments</operation>
  *
@@ -567,7 +567,7 @@ case COP_SWRITE_R:
 break;
 
 /**
- * <opcode name="iwrite_r">
+ * <opcode name="iwrite_r" group="Pointer handling">
  *   <operation>Write <code>int32</code> to pointer with reversed
  *				arguments</operation>
  *
@@ -595,7 +595,7 @@ case COP_IWRITE_R:
 break;
 
 /**
- * <opcode name="fwrite_r">
+ * <opcode name="fwrite_r" group="Pointer handling">
  *   <operation>Write <code>float32</code> to pointer with reversed
  *				arguments</operation>
  *
@@ -623,7 +623,7 @@ case COP_FWRITE_R:
 break;
 
 /**
- * <opcode name="dwrite_r">
+ * <opcode name="dwrite_r" group="Pointer handling">
  *   <operation>Write <code>float64</code> to pointer with reversed
  *				arguments</operation>
  *
@@ -652,7 +652,7 @@ case COP_DWRITE_R:
 break;
 
 /**
- * <opcode name="pwrite_r">
+ * <opcode name="pwrite_r" group="Pointer handling">
  *   <operation>Write <code>ptr</code> to pointer with reversed
  *				arguments</operation>
  *
@@ -682,7 +682,7 @@ case COP_PWRITE_R:
 break;
 
 /**
- * <opcode name="mwrite_r">
+ * <opcode name="mwrite_r" group="Pointer handling">
  *   <operation>Write multiple bytes to pointer with reversed
  *				arguments</operation>
  *
@@ -712,7 +712,7 @@ case COP_MWRITE_R:
 break;
 
 /**
- * <opcode name="padd_offset">
+ * <opcode name="padd_offset" group="Pointer handling">
  *   <operation>Add a literal byte offset to a pointer</operation>
  *
  *   <format>padd_offset<fsep/>N[1]</format>
@@ -739,7 +739,7 @@ case COP_PADD_OFFSET:
 break;
 
 /**
- * <opcode name="padd_offset_n">
+ * <opcode name="padd_offset_n" group="Pointer handling">
  *   <operation>Add a literal byte offset to a pointer that is
  *              several words down the stack</operation>
  *
@@ -773,7 +773,7 @@ case COP_PADD_OFFSET_N:
 break;
 
 /**
- * <opcode name="padd_i4">
+ * <opcode name="padd_i4" group="Pointer handling">
  *   <operation>Add <code>int32</code> value to pointer</operation>
  *
  *   <format>padd_i4</format>
@@ -803,7 +803,7 @@ case COP_PADD_I4:
 break;
 
 /**
- * <opcode name="padd_i4_r">
+ * <opcode name="padd_i4_r" group="Pointer handling">
  *   <operation>Add <code>int32</code> value to pointer with
  *				reversed arguments</operation>
  *
@@ -831,7 +831,7 @@ case COP_PADD_I4_R:
 break;
 
 /**
- * <opcode name="padd_i8">
+ * <opcode name="padd_i8" group="Pointer handling">
  *   <operation>Add <code>int64</code> value to pointer</operation>
  *
  *   <format>padd_i8</format>
@@ -871,7 +871,7 @@ case COP_PADD_I8:
 break;
 
 /**
- * <opcode name="padd_i8_r">
+ * <opcode name="padd_i8_r" group="Pointer handling">
  *   <operation>Add <code>int64</code> value to pointer with
  *				reversed arguments</operation>
  *
@@ -910,7 +910,7 @@ case COP_PADD_I8_R:
 break;
 
 /**
- * <opcode name="psub">
+ * <opcode name="psub" group="Pointer handling">
  *   <operation>Subtract pointer values</operation>
  *
  *   <format>psub</format>
@@ -944,7 +944,7 @@ case COP_PSUB:
 break;
 
 /**
- * <opcode name="psub_i4">
+ * <opcode name="psub_i4" group="Pointer handling">
  *   <operation>Subtract <code>int32</code> from pointer</operation>
  *
  *   <format>psub_i4</format>
@@ -971,7 +971,7 @@ case COP_PSUB_I4:
 break;
 
 /**
- * <opcode name="psub_i8">
+ * <opcode name="psub_i8" group="Pointer handling">
  *   <operation>Subtract <code>int64</code> from pointer</operation>
  *
  *   <format>psub_i8</format>
@@ -1011,7 +1011,7 @@ case COP_PSUB_I8:
 break;
 
 /**
- * <opcode name="cknull">
+ * <opcode name="cknull" group="Object handling">
  *   <operation>Check pointer for <code>null</code></operation>
  *
  *   <format>cknull</format>
@@ -1041,7 +1041,7 @@ case COP_CKNULL:
 break;
 
 /**
- * <opcode name="cknull_n">
+ * <opcode name="cknull_n" group="Object handling">
  *   <operation>Check pointer down the stack for <code>null</code></operation>
  *
  *   <format>cknull_n<fsep/>N[1]</format>
@@ -1111,7 +1111,7 @@ case name: \
 break
 
 /**
- * <opcode name="bread_elem">
+ * <opcode name="bread_elem" group="Array handling">
  *   <operation>Read <code>int8</code> value from array</operation>
  *
  *   <format>bread_elem</format>
@@ -1138,7 +1138,7 @@ break
 SIMPLE_READ_ELEM(COP_BREAD_ELEM,  ILInt8);
 
 /**
- * <opcode name="ubread_elem">
+ * <opcode name="ubread_elem" group="Array handling">
  *   <operation>Read <code>uint8</code> value from array</operation>
  *
  *   <format>ubread_elem</format>
@@ -1165,7 +1165,7 @@ SIMPLE_READ_ELEM(COP_BREAD_ELEM,  ILInt8);
 SIMPLE_READ_ELEM(COP_UBREAD_ELEM, ILUInt8);
 
 /**
- * <opcode name="sread_elem">
+ * <opcode name="sread_elem" group="Array handling">
  *   <operation>Read <code>int16</code> value from array</operation>
  *
  *   <format>sread_elem</format>
@@ -1192,7 +1192,7 @@ SIMPLE_READ_ELEM(COP_UBREAD_ELEM, ILUInt8);
 SIMPLE_READ_ELEM(COP_SREAD_ELEM,  ILInt16);
 
 /**
- * <opcode name="usread_elem">
+ * <opcode name="usread_elem" group="Array handling">
  *   <operation>Read <code>uint16</code> value from array</operation>
  *
  *   <format>usread_elem</format>
@@ -1219,7 +1219,7 @@ SIMPLE_READ_ELEM(COP_SREAD_ELEM,  ILInt16);
 SIMPLE_READ_ELEM(COP_USREAD_ELEM, ILUInt16);
 
 /**
- * <opcode name="iread_elem">
+ * <opcode name="iread_elem" group="Array handling">
  *   <operation>Read <code>int32</code> value from array</operation>
  *
  *   <format>iread_elem</format>
@@ -1248,7 +1248,7 @@ SIMPLE_READ_ELEM(COP_USREAD_ELEM, ILUInt16);
 SIMPLE_READ_ELEM(COP_IREAD_ELEM,  ILInt32);
 
 /**
- * <opcode name="pread_elem">
+ * <opcode name="pread_elem" group="Array handling">
  *   <operation>Read <code>ptr</code> value from array</operation>
  *
  *   <format>pread_elem</format>
@@ -1326,7 +1326,7 @@ case name: \
 break
 
 /**
- * <opcode name="bwrite_elem">
+ * <opcode name="bwrite_elem" group="Array handling">
  *   <operation>Write <code>int8</code> value to array</operation>
  *
  *   <format>bwrite_elem</format>
@@ -1353,7 +1353,7 @@ break
 SIMPLE_WRITE_ELEM(COP_BWRITE_ELEM, ILInt8);
 
 /**
- * <opcode name="swrite_elem">
+ * <opcode name="swrite_elem" group="Array handling">
  *   <operation>Write <code>int16</code> value to array</operation>
  *
  *   <format>swrite_elem</format>
@@ -1380,7 +1380,7 @@ SIMPLE_WRITE_ELEM(COP_BWRITE_ELEM, ILInt8);
 SIMPLE_WRITE_ELEM(COP_SWRITE_ELEM, ILInt16);
 
 /**
- * <opcode name="iwrite_elem">
+ * <opcode name="iwrite_elem" group="Array handling">
  *   <operation>Write <code>int32</code> value to array</operation>
  *
  *   <format>iwrite_elem</format>
@@ -1407,7 +1407,7 @@ SIMPLE_WRITE_ELEM(COP_SWRITE_ELEM, ILInt16);
 SIMPLE_WRITE_ELEM(COP_IWRITE_ELEM, ILInt32);
 
 /**
- * <opcode name="pwrite_elem">
+ * <opcode name="pwrite_elem" group="Array handling">
  *   <operation>Write <code>ptr</code> value to array</operation>
  *
  *   <format>pwrite_elem</format>
@@ -1461,7 +1461,7 @@ case COP_PWRITE_ELEM:
 break;
 
 /**
- * <opcode name="ckarray_load_i4">
+ * <opcode name="ckarray_load_i4" group="Array handling">
  *   <operation>Check an array load with an <code>int32</code>
  *				index</operation>
  *
@@ -1521,7 +1521,7 @@ case COP_CKARRAY_LOAD_I4:
 break;
 
 /**
- * <opcode name="ckarray_load_i8">
+ * <opcode name="ckarray_load_i8" group="Array handling">
  *   <operation>Check an array load with an <code>int64</code>
  *				index</operation>
  *
@@ -1581,7 +1581,7 @@ case COP_CKARRAY_LOAD_I8:
 break;
 
 /**
- * <opcode name="ckarray_store_i8">
+ * <opcode name="ckarray_store_i8" group="Array handling">
  *   <operation>Check an array store that uses an <code>int64</code>
  *				index</operation>
  *
@@ -1639,7 +1639,7 @@ case COP_CKARRAY_STORE_I8:
 break;
 
 /**
- * <opcode name="array_len">
+ * <opcode name="array_len" group="Array handling">
  *   <operation>Get the length of an array</operation>
  *
  *   <format>array_len</format>
@@ -1688,7 +1688,7 @@ break;
 				(ILUInt32)(pc[1]))))
 
 /**
- * <opcode name="bread_field">
+ * <opcode name="bread_field" group="Object handling">
  *   <operation>Read <code>int8</code> field</operation>
  *
  *   <format>bread_field<fsep/>N[1]</format>
@@ -1727,7 +1727,7 @@ case COP_BREAD_FIELD:
 break;
 
 /**
- * <opcode name="ubread_field">
+ * <opcode name="ubread_field" group="Object handling">
  *   <operation>Read <code>uint8</code> field</operation>
  *
  *   <format>ubread_field<fsep/>N[1]</format>
@@ -1766,7 +1766,7 @@ case COP_UBREAD_FIELD:
 break;
 
 /**
- * <opcode name="sread_field">
+ * <opcode name="sread_field" group="Object handling">
  *   <operation>Read <code>int16</code> field</operation>
  *
  *   <format>sread_field<fsep/>N[1]</format>
@@ -1805,7 +1805,7 @@ case COP_SREAD_FIELD:
 break;
 
 /**
- * <opcode name="usread_field">
+ * <opcode name="usread_field" group="Object handling">
  *   <operation>Read <code>uint16</code> field</operation>
  *
  *   <format>usread_field<fsep/>N[1]</format>
@@ -1844,7 +1844,7 @@ case COP_USREAD_FIELD:
 break;
 
 /**
- * <opcode name="iread_field">
+ * <opcode name="iread_field" group="Object handling">
  *   <operation>Read <code>int32</code> field</operation>
  *
  *   <format>iread_field<fsep/>N[1]</format>
@@ -1883,7 +1883,7 @@ case COP_IREAD_FIELD:
 break;
 
 /**
- * <opcode name="pread_field">
+ * <opcode name="pread_field" group="Object handling">
  *   <operation>Read <code>ptr</code> field</operation>
  *
  *   <format>pread_field<fsep/>N[1]</format>
@@ -1927,7 +1927,7 @@ case COP_PREAD_FIELD:
 break;
 
 /**
- * <opcode name="bwrite_field">
+ * <opcode name="bwrite_field" group="Object handling">
  *   <operation>Write <code>int8</code> field</operation>
  *
  *   <format>bwrite_field<fsep/>N[1]</format>
@@ -1970,7 +1970,7 @@ case COP_BWRITE_FIELD:
 break;
 
 /**
- * <opcode name="swrite_field">
+ * <opcode name="swrite_field" group="Object handling">
  *   <operation>Write <code>int16</code> field</operation>
  *
  *   <format>pwrite_field<fsep/>N[1]</format>
@@ -2013,7 +2013,7 @@ case COP_SWRITE_FIELD:
 break;
 
 /**
- * <opcode name="iwrite_field">
+ * <opcode name="iwrite_field" group="Object handling">
  *   <operation>Write <code>int32</code> field</operation>
  *
  *   <format>iwrite_field<fsep/>N[1]</format>
@@ -2055,7 +2055,7 @@ case COP_IWRITE_FIELD:
 break;
 
 /**
- * <opcode name="pwrite_field">
+ * <opcode name="pwrite_field" group="Object handling">
  *   <operation>Write <code>int32</code> field</operation>
  *
  *   <format>pwrite_field<fsep/>N[1]</format>
@@ -2099,7 +2099,7 @@ case COP_PWRITE_FIELD:
 break;
 
 /**
- * <opcode name="castclass">
+ * <opcode name="castclass" group="Object handling">
  *   <operation>Cast an object to a new class</operation>
  *
  *   <format>castclass<fsep/>class</format>
@@ -2144,7 +2144,7 @@ case COP_CASTCLASS:
 break;
 
 /**
- * <opcode name="isinst">
+ * <opcode name="isinst" group="Object handling">
  *   <operation>Determine if an object is an instance of a class</operation>
  *
  *   <format>isinst<fsep/>class</format>
@@ -2182,7 +2182,7 @@ case COP_ISINST:
 break;
 
 /**
- * <opcode name="castinterface">
+ * <opcode name="castinterface" group="Object handling">
  *   <operation>Cast an object to a new interface</operation>
  *
  *   <format>castinterface<fsep/>interface</format>
@@ -2227,7 +2227,7 @@ case COP_CASTINTERFACE:
 break;
 
 /**
- * <opcode name="isinterface">
+ * <opcode name="isinterface" group="Object handling">
  *   <operation>Determine if an object is an instance of
  *              an interface</operation>
  *
@@ -2266,7 +2266,7 @@ case COP_ISINTERFACE:
 break;
 
 /**
- * <opcode name="get_static">
+ * <opcode name="get_static" group="Object handling">
  *   <operation>Get a pointer to the static data area of a class</operation>
  *
  *   <format>get_static<fsep/>class</format>
@@ -2318,7 +2318,7 @@ case COP_GET_STATIC:
 break;
 
 /**
- * <opcode name="new">
+ * <opcode name="new" group="Object handling">
  *   <operation>Allocate an instance of the current class</operation>
  *
  *   <format>new</format>
@@ -2365,7 +2365,7 @@ case COP_NEW:
 break;
 
 /**
- * <opcode name="new_value">
+ * <opcode name="new_value" group="Object handling">
  *   <operation>Allocate a new value type instance and push it down</operation>
  *
  *   <format>new_value<fsep/>N[1]<fsep/>M[1]</format>
@@ -2401,7 +2401,7 @@ case COP_NEW_VALUE:
 break;
 
 /**
- * <opcode name="ldstr">
+ * <opcode name="ldstr" group="Constant loading">
  *   <operation>Load a string constant onto the stack</operation>
  *
  *   <format>ldstr<fsep/>token[4]</format>
@@ -2434,7 +2434,7 @@ case COP_LDSTR:
 break;
 
 /**
- * <opcode name="ldtoken">
+ * <opcode name="ldtoken" group="Miscellaneous instructions">
  *   <operation>Load a token pointer onto the stack</operation>
  *
  *   <format>ldstr<fsep/>pointer</format>
@@ -2463,7 +2463,7 @@ case COP_LDTOKEN:
 break;
 
 /**
- * <opcode name="box">
+ * <opcode name="box" group="Object handling">
  *   <operation>Box a value type instance</operation>
  *
  *   <format>box<fsep/>N[1]<fsep/>class</format>
@@ -2507,7 +2507,7 @@ case COP_BOX:
 break;
 
 /**
- * <opcode name="box_ptr">
+ * <opcode name="box_ptr" group="Object handling">
  *   <operation>Box a value type instance at a pointer</operation>
  *
  *   <format>box_ptr<fsep/>N[1]<fsep/>class</format>
@@ -2546,7 +2546,7 @@ case COP_BOX_PTR:
 break;
 
 /**
- * <opcode name="memcpy">
+ * <opcode name="memcpy" group="Miscellaneous instructions">
  *   <operation>Copy a fixed-size block of non-overlapping memory</operation>
  *
  *   <format>memcpy<fsep/>N[1]</format>
@@ -2580,7 +2580,7 @@ case COP_MEMCPY:
 break;
 
 /**
- * <opcode name="memmove">
+ * <opcode name="memmove" group="Miscellaneous instructions">
  *   <operation>Move a block of memory</operation>
  *
  *   <format>memmove</format>
@@ -2609,7 +2609,7 @@ case COP_MEMMOVE:
 break;
 
 /**
- * <opcode name="memzero">
+ * <opcode name="memzero" group="Miscellaneous instructions">
  *   <operation>Fill a fixed-size block of memory with zeroes</operation>
  *
  *   <format>memzero<fsep/>N[1]</format>
@@ -2640,7 +2640,7 @@ case COP_MEMZERO:
 break;
 
 /**
- * <opcode name="memset">
+ * <opcode name="memset" group="Miscellaneous instructions">
  *   <operation>Fill a block of memory with a byte value</operation>
  *
  *   <format>memset</format>
@@ -2811,7 +2811,7 @@ case name: \
 break
 
 /**
- * <opcode name="lread_elem">
+ * <opcode name="lread_elem" group="Array handling">
  *   <operation>Read <code>int64</code> value from array</operation>
  *
  *   <format>prefix<fsep/>lread_elem</format>
@@ -2841,7 +2841,7 @@ LARGE_READ_ELEM(COP_PREFIX_LREAD_ELEM, ILInt64, CVM_WORDS_PER_LONG,
 				ReadLong, WriteLong);
 
 /**
- * <opcode name="fread_elem">
+ * <opcode name="fread_elem" group="Array handling">
  *   <operation>Read <code>float32</code> value from array</operation>
  *
  *   <format>prefix<fsep/>fread_elem</format>
@@ -2869,7 +2869,7 @@ LARGE_READ_ELEM(COP_PREFIX_FREAD_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
 				(ILNativeFloat)*(ILFloat *), WriteFloat);
 
 /**
- * <opcode name="dread_elem">
+ * <opcode name="dread_elem" group="Array handling">
  *   <operation>Read <code>float64</code> value from array</operation>
  *
  *   <format>prefix<fsep/>dread_elem</format>
@@ -2923,7 +2923,7 @@ case name: \
 break
 
 /**
- * <opcode name="lwrite_elem">
+ * <opcode name="lwrite_elem" group="Array handling">
  *   <operation>Write <code>int64</code> value to array</operation>
  *
  *   <format>prefix<fsep/>lwrite_elem</format>
@@ -2954,7 +2954,7 @@ LARGE_WRITE_ELEM(COP_PREFIX_LWRITE_ELEM, ILInt64, CVM_WORDS_PER_LONG,
 				 ReadLong, WriteHardLong);
 
 /**
- * <opcode name="fwrite_elem">
+ * <opcode name="fwrite_elem" group="Array handling">
  *   <operation>Write <code>float32</code> value to array</operation>
  *
  *   <format>prefix<fsep/>fwrite_elem</format>
@@ -2982,7 +2982,7 @@ LARGE_WRITE_ELEM(COP_PREFIX_FWRITE_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
 				 ReadFloat, WriteFloat32);
 
 /**
- * <opcode name="dwrite_elem">
+ * <opcode name="dwrite_elem" group="Array handling">
  *   <operation>Write <code>float64</code> value to array</operation>
  *
  *   <format>prefix<fsep/>dwrite_elem</format>
@@ -3010,7 +3010,7 @@ LARGE_WRITE_ELEM(COP_PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 				 ReadFloat, WriteDouble);
 
 /**
- * <opcode name="mkrefany">
+ * <opcode name="mkrefany" group="Object handling">
  *   <operation>Make a <code>typedref</code></operation>
  *
  *   <format>prefix<fsep/>mkrefany<fsep/>class</format>
@@ -3039,7 +3039,7 @@ case COP_PREFIX_MKREFANY:
 break;
 
 /**
- * <opcode name="refanyval">
+ * <opcode name="refanyval" group="Object handling">
  *   <operation>Extract the value from a <code>typedref</code></operation>
  *
  *   <format>prefix<fsep/>refanyval<fsep/>class</format>
@@ -3084,7 +3084,7 @@ case COP_PREFIX_REFANYVAL:
 break;
 
 /**
- * <opcode name="refanytype">
+ * <opcode name="refanytype" group="Object handling">
  *   <operation>Extract the type from a <code>typedref</code></operation>
  *
  *   <format>prefix<fsep/>refanytype</format>

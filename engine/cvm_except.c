@@ -58,7 +58,7 @@ static void *SystemException(ILExecThread *thread, const char *className)
 #elif defined(IL_CVM_MAIN)
 
 /**
- * <opcode name="jsr">
+ * <opcode name="jsr" group="Exception handling instructions">
  *   <operation>Jump to local subroutine</operation>
  *
  *   <format>jsr<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
@@ -88,7 +88,7 @@ case COP_JSR:
 break;
 
 /**
- * <opcode name="ret_jsr">
+ * <opcode name="ret_jsr" group="Exception handling instructions">
  *   <operation>Return from local subroutine</operation>
  *
  *   <format>ret_jsr</format>
@@ -116,7 +116,7 @@ break;
 #elif defined(IL_CVM_PREFIX)
 
 /**
- * <opcode name="enter_try">
+ * <opcode name="enter_try" group="Exception handling instructions">
  *   <operation>Enter <code>try</code> context for the
  *				current method</operation>
  *
@@ -152,7 +152,7 @@ throwException:
 /* Fall through */
 
 /**
- * <opcode name="throw">
+ * <opcode name="throw" group="Exception handling instructions">
  *   <operation>Throw an exception</operation>
  *
  *   <format>prefix<fsep/>throw</format>
@@ -196,7 +196,7 @@ searchForHandler:
 break;
 
 /**
- * <opcode name="throw_caller">
+ * <opcode name="throw_caller" group="Exception handling instructions">
  *   <operation>Throw an exception to the caller of this method</operation>
  *
  *   <format>prefix<fsep/>throw_caller</format>

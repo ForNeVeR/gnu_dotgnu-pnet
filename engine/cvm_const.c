@@ -29,7 +29,7 @@
 #elif defined(IL_CVM_MAIN)
 
 /**
- * <opcode name="ldnull">
+ * <opcode name="ldnull" group="Constant loading">
  *   <operation>Load <code>null</code> onto the stack</operation>
  *
  *   <format>ldnull</format>
@@ -65,7 +65,7 @@ case COP_LDC_I4_##name: \
 break \
 
 /**
- * <opcode name="ldc_i4_&lt;n&gt;">
+ * <opcode name="ldc_i4_&lt;n&gt;" group="Constant loading">
  *   <operation>Load <i>n</i> onto the stack</operation>
  *
  *   <format>ldc_i4_&lt;n&gt;</format>
@@ -104,7 +104,7 @@ COP_LDC_I4_VALUE(7, 7);
 COP_LDC_I4_VALUE(8, 8);
 
 /**
- * <opcode name="ldc_i4_s">
+ * <opcode name="ldc_i4_s" group="Constant loading">
  *   <operation>Load small <code>int32</code> constant
  *				onto the stack</operation>
  *
@@ -131,7 +131,7 @@ case COP_LDC_I4_S:
 break;
 
 /**
- * <opcode name="ldc_i4">
+ * <opcode name="ldc_i4" group="Constant loading">
  *   <operation>Load <code>int32</code> constant onto the stack</operation>
  *
  *   <format>ldc_i4<fsep/>n[4]</format>
@@ -157,7 +157,7 @@ case COP_LDC_I4:
 break;
 
 /**
- * <opcode name="ldc_i8">
+ * <opcode name="ldc_i8" group="Constant loading">
  *   <operation>Load <code>int64</code> constant onto the stack</operation>
  *
  *   <format>ldc_i8<fsep/>n[8]</format>
@@ -183,7 +183,7 @@ case COP_LDC_I8:
 break;
 
 /**
- * <opcode name="ldc_r4">
+ * <opcode name="ldc_r4" group="Constant loading">
  *   <operation>Load 32-bit floating point constant onto the stack</operation>
  *
  *   <format>ldc_r4<fsep/>n[4]</format>
@@ -208,7 +208,7 @@ case COP_LDC_R4:
 break;
 
 /**
- * <opcode name="ldc_r8">
+ * <opcode name="ldc_r8" group="Constant loading">
  *   <operation>Load 64-bit floating point constant onto the stack</operation>
  *
  *   <format>ldc_r8<fsep/>n[8]</format>

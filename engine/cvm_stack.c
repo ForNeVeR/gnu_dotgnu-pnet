@@ -29,7 +29,7 @@
 #elif defined(IL_CVM_MAIN)
 
 /**
- * <opcode name="dup">
+ * <opcode name="dup" group="Stack manipulation">
  *   <operation>Duplicate the top of stack</operation>
  *
  *   <format>dup</format>
@@ -52,7 +52,7 @@ case COP_DUP:
 break;
 
 /**
- * <opcode name="dup2">
+ * <opcode name="dup2" group="Stack manipulation">
  *   <operation>Duplicate the top two stack words</operation>
  *
  *   <format>dup2</format>
@@ -76,7 +76,7 @@ case COP_DUP2:
 break;
 
 /**
- * <opcode name="dup_n">
+ * <opcode name="dup_n" group="Stack manipulation">
  *   <operation>Duplicate the top <i>N</i> stack words</operation>
  *
  *   <format>dup_n<fsep/>N[1]</format>
@@ -105,7 +105,7 @@ case COP_DUP_N:
 break;
 
 /**
- * <opcode name="dup_word_n">
+ * <opcode name="dup_word_n" group="Stack manipulation">
  *   <operation>Duplicate a stack word that is <i>N</i> words
  *				down the stack</operation>
  *
@@ -130,7 +130,7 @@ case COP_DUP_WORD_N:
 break;
 
 /**
- * <opcode name="pop">
+ * <opcode name="pop" group="Stack manipulation">
  *   <operation>Pop the top-most word from the stack</operation>
  *
  *   <format>pop</format>
@@ -152,7 +152,7 @@ case COP_POP:
 break;
 
 /**
- * <opcode name="pop2">
+ * <opcode name="pop2" group="Stack manipulation">
  *   <operation>Pop the top two words from the stack</operation>
  *
  *   <format>pop2</format>
@@ -174,7 +174,7 @@ case COP_POP2:
 break;
 
 /**
- * <opcode name="pop_n">
+ * <opcode name="pop_n" group="Stack manipulation">
  *   <operation>Pop the top <i>N</i> words from the stack</operation>
  *
  *   <format>pop_n<fsep/>N[1]</format>
@@ -198,7 +198,7 @@ case COP_POP_N:
 break;
 
 /**
- * <opcode name="squash">
+ * <opcode name="squash" group="Stack manipulation">
  *   <operation>Squash a number of words out of the stack</operation>
  *
  *   <format>squash<fsep/>N[1]<fsep/>M[1]</format>
@@ -225,7 +225,7 @@ case COP_SQUASH:
 break;
 
 /**
- * <opcode name="ckheight">
+ * <opcode name="ckheight" group="Stack manipulation">
  *   <operation>Check the height of the stack</operation>
  *
  *   <format>ckheight<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
@@ -267,7 +267,7 @@ case COP_CKHEIGHT:
 break;
 
 /**
- * <opcode name="ckheight_n">
+ * <opcode name="ckheight_n" group="Stack manipulation">
  *   <operation>Check the height of the stack for <i>N</i>
  *              words of available space</operation>
  *
@@ -304,7 +304,7 @@ case COP_CKHEIGHT_N:
 break;
 
 /**
- * <opcode name="set_num_args">
+ * <opcode name="set_num_args" group="Call management instructions">
  *   <operation>Set the number of arguments for the current method</operation>
  *
  *   <format>set_num_args<fsep/>N[1]</format>

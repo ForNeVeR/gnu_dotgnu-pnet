@@ -18,7 +18,7 @@ CVM_INPUTS = $(top_srcdir)/engine/cvm.c \
              $(top_srcdir)/engine/cvm_stack.c \
              $(top_srcdir)/engine/cvm_var.c
 
-cvmdoc/index.html: $(CVM_INPUTS)
+cvmdoc/index.html: $(CVM_INPUTS) cvmdoc.py
 	$(SHELL) "$(srcdir)/mkcvmdoc.sh" "$(top_srcdir)" "$(top_builddir)"
 
 clean-local:

@@ -99,7 +99,7 @@ ILCallFrame *callFrame;
 #elif defined(IL_CVM_MAIN)
 
 /**
- * <opcode name="call">
+ * <opcode name="call" group="Call management instructions">
  *   <operation>Call a method which is internal to the CVM
  *              method cache</operation>
  *
@@ -144,7 +144,7 @@ case COP_CALL:
 break;
 
 /**
- * <opcode name="call_extern">
+ * <opcode name="call_extern" group="Call management instructions">
  *   <operation>Call a method which may be external to the
  *              CVM method cache</operation>
  *
@@ -218,7 +218,7 @@ case COP_CALL_EXTERN:
 break;
 
 /**
- * <opcode name="call_ctor">
+ * <opcode name="call_ctor" group="Call management instructions">
  *   <operation>Call a constructor</operation>
  *
  *   <format>call_ctor<fsep/>mptr</format>
@@ -279,7 +279,7 @@ case COP_CALL_CTOR:
 break;
 
 /**
- * <opcode name="call_native">
+ * <opcode name="call_native" group="Call management instructions">
  *   <operation>Call a native function that has a return value</operation>
  *
  *   <format>call_native<fsep/>function<fsep/>cif</format>
@@ -322,7 +322,7 @@ case COP_CALL_NATIVE:
 break;
 
 /**
- * <opcode name="call_native_void">
+ * <opcode name="call_native_void" group="Call management instructions">
  *   <operation>Call a native function with no return value</operation>
  *
  *   <format>call_native_void<fsep/>function<fsep/>cif</format>
@@ -347,7 +347,7 @@ case COP_CALL_NATIVE_VOID:
 break;
 
 /**
- * <opcode name="call_virtual">
+ * <opcode name="call_virtual" group="Call management instructions">
  *   <operation>Call a virtual method</operation>
  *
  *   <format>call_virtual<fsep/>N[1]<fsep/>M[1]</format>
@@ -416,7 +416,7 @@ case COP_CALL_VIRTUAL:
 break;
 
 /**
- * <opcode name="call_interface">
+ * <opcode name="call_interface" group="Call management instructions">
  *   <operation>Call an interface method</operation>
  *
  *   <format>call_interface<fsep/>N[1]<fsep/>M[1]<fsep/>cptr</format>
@@ -494,7 +494,7 @@ case COP_CALL_INTERFACE:
 break;
 
 /**
- * <opcode name="cctor_once">
+ * <opcode name="cctor_once" group="Call management instructions">
  *   <operation>Block the current method from being executed
  *              more than once</operation>
  *
@@ -529,7 +529,7 @@ case COP_CCTOR_ONCE:
 /* Fall through to the next case */
 
 /**
- * <opcode name="return">
+ * <opcode name="return" group="Call management instructions">
  *   <operation>Return from the current method with no return value</operation>
  *
  *   <format>return</format>
@@ -582,7 +582,7 @@ popFrame:
 break;
 
 /**
- * <opcode name="return_1">
+ * <opcode name="return_1" group="Call management instructions">
  *   <operation>Return from the current method with a single stack
  *              word as a return value</operation>
  *
@@ -619,7 +619,7 @@ case COP_RETURN_1:
 /* Not reached */
 
 /**
- * <opcode name="return_2">
+ * <opcode name="return_2" group="Call management instructions">
  *   <operation>Return from the current method with two stack
  *              words as the return value</operation>
  *
@@ -657,7 +657,7 @@ case COP_RETURN_2:
 /* Not reached */
 
 /**
- * <opcode name="return_n">
+ * <opcode name="return_n" group="Call management instructions">
  *   <operation>Return from the current method with <i>n</i> stack
  *              words as the return value</operation>
  *
@@ -695,7 +695,7 @@ case COP_RETURN_N:
 /* Not reached */
 
 /**
- * <opcode name="push_thread">
+ * <opcode name="push_thread" group="Call management instructions">
  *   <operation>Push the thread identifier onto the native
  *              argument stack</operation>
  *
@@ -718,7 +718,7 @@ case COP_PUSH_THREAD:
 break;
 
 /**
- * <opcode name="pushdown">
+ * <opcode name="pushdown" group="Call management instructions">
  *   <operation>Push the <code>ptr</code> value at the top of
  *              stack down and duplicate it twice</operation>
  *
@@ -773,7 +773,7 @@ case COP_WADDR_NATIVE_##name: \
 break
 
 /**
- * <opcode name="waddr_native_&lt;n&gt;">
+ * <opcode name="waddr_native_&lt;n&gt;" group="Call management instructions">
  *   <operation>Set position <i>n</i> of the native argument buffer
  *              to the address of a local variable</operation>
  *
@@ -935,7 +935,7 @@ COP_WADDR_NATIVE_WIDE(7, 7);
 #elif defined(IL_CVM_PREFIX)
 
 /**
- * <opcode name="tail">
+ * <opcode name="tail" group="Call management instructions">
  *   <operation>Modify the next call instruction to make
  *				it a tail call</operation>
  *
@@ -957,7 +957,7 @@ case COP_PREFIX_TAIL:
 break;
 
 /**
- * <opcode name="ldftn">
+ * <opcode name="ldftn" group="Call management instructions">
  *   <operation>Load the address of a function method onto the stack</operation>
  *
  *   <format>prefix<fsep/>ldftn<fsep/>method</format>
@@ -983,7 +983,7 @@ case COP_PREFIX_LDFTN:
 break;
 
 /**
- * <opcode name="ldvirtftn">
+ * <opcode name="ldvirtftn" group="Call management instructions">
  *   <operation>Load the address of a virtual function method
  *				onto the stack</operation>
  *
@@ -1019,7 +1019,7 @@ case COP_PREFIX_LDVIRTFTN:
 break;
 
 /**
- * <opcode name="ldinterfftn">
+ * <opcode name="ldinterfftn" group="Call management instructions">
  *   <operation>Load the address of an interface function method
  *				onto the stack</operation>
  *

@@ -189,7 +189,7 @@ ILInt32 position;
 #elif defined(IL_CVM_MAIN)
 
 /**
- * <opcode name="i2b">
+ * <opcode name="i2b" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>int8</code></operation>
  *
  *   <format>i2b</format>
@@ -215,7 +215,7 @@ case COP_I2B:
 break;
 
 /**
- * <opcode name="i2ub">
+ * <opcode name="i2ub" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>uint8</code></operation>
  *
  *   <format>i2ub</format>
@@ -241,7 +241,7 @@ case COP_I2UB:
 break;
 
 /**
- * <opcode name="i2s">
+ * <opcode name="i2s" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>int16</code></operation>
  *
  *   <format>i2s</format>
@@ -267,7 +267,7 @@ case COP_I2S:
 break;
 
 /**
- * <opcode name="i2us">
+ * <opcode name="i2us" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>uint16</code></operation>
  *
  *   <format>i2us</format>
@@ -293,7 +293,7 @@ case COP_I2US:
 break;
 
 /**
- * <opcode name="i2l">
+ * <opcode name="i2l" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>int64</code></operation>
  *
  *   <format>i2l</format>
@@ -318,7 +318,7 @@ case COP_I2L:
 break;
 
 /**
- * <opcode name="iu2l">
+ * <opcode name="iu2l" group="Conversion operators">
  *   <operation>Convert <code>uint32</code> to <code>int64</code></operation>
  *
  *   <format>iu2l</format>
@@ -343,7 +343,7 @@ case COP_IU2L:
 break;
 
 /**
- * <opcode name="i2f">
+ * <opcode name="i2f" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to
  *				<code>native float</code></operation>
  *
@@ -368,7 +368,7 @@ case COP_I2F:
 break;
 
 /**
- * <opcode name="iu2f">
+ * <opcode name="iu2f" group="Conversion operators">
  *   <operation>Convert <code>uint32</code> to
  *				<code>native float</code></operation>
  *
@@ -393,7 +393,7 @@ case COP_IU2F:
 break;
 
 /**
- * <opcode name="l2i">
+ * <opcode name="l2i" group="Conversion operators">
  *   <operation>Convert <code>int64</code> to <code>int32</code></operation>
  *
  *   <format>l2i</format>
@@ -419,7 +419,7 @@ case COP_L2I:
 break;
 
 /**
- * <opcode name="l2f">
+ * <opcode name="l2f" group="Conversion operators">
  *   <operation>Convert <code>int64</code> to
  *				<code>native float</code></operation>
  *
@@ -452,7 +452,7 @@ case COP_L2F:
 break;
 
 /**
- * <opcode name="lu2f">
+ * <opcode name="lu2f" group="Conversion operators">
  *   <operation>Convert <code>uint64</code> to
  *				<code>native float</code></operation>
  *
@@ -485,7 +485,7 @@ case COP_LU2F:
 break;
 
 /**
- * <opcode name="f2i">
+ * <opcode name="f2i" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to
  *				<code>int32</code></operation>
  *
@@ -511,7 +511,7 @@ case COP_F2I:
 break;
 
 /**
- * <opcode name="f2iu">
+ * <opcode name="f2iu" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to
  *				<code>uint32</code></operation>
  *
@@ -537,7 +537,7 @@ case COP_F2IU:
 break;
 
 /**
- * <opcode name="f2l">
+ * <opcode name="f2l" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to
  *				<code>int64</code></operation>
  *
@@ -564,7 +564,7 @@ case COP_F2L:
 break;
 
 /**
- * <opcode name="f2lu">
+ * <opcode name="f2lu" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to
  *				<code>uint64</code></operation>
  *
@@ -591,7 +591,7 @@ case COP_F2LU:
 break;
 
 /**
- * <opcode name="f2f">
+ * <opcode name="f2f" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to
  *				<code>float32</code></operation>
  *
@@ -619,7 +619,7 @@ case COP_F2F:
 break;
 
 /**
- * <opcode name="f2d">
+ * <opcode name="f2d" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to
  *				<code>float64</code></operation>
  *
@@ -647,7 +647,7 @@ case COP_F2D:
 break;
 
 /**
- * <opcode name="i2p_lower">
+ * <opcode name="i2p_lower" group="Conversion operators">
  *   <operation>Convert <code>uint32</code> to <code>ptr</code>
  *				at some point lower down on the stack</operation>
  *
@@ -679,7 +679,7 @@ case COP_I2P_LOWER:
 break;
 
 /**
- * <opcode name="fix_i4_i">
+ * <opcode name="fix_i4_i" group="Conversion operators">
  *   <operation>Convert a <code>int32</code>/<code>native int</code> pair
  *   of values into <code>native int</code>/<code>native int</code></operation>
  *
@@ -723,7 +723,7 @@ case COP_FIX_I4_I:
 break;
 
 /**
- * <opcode name="fix_i4_u">
+ * <opcode name="fix_i4_u" group="Conversion operators">
  *   <operation>Convert a <code>uint32</code>/<code>native uint</code> pair of
  *   values into <code>native uint</code>/<code>native uint</code></operation>
  *
@@ -781,7 +781,7 @@ break;
 #elif defined(IL_CVM_PREFIX)
 
 /**
- * <opcode name="i2b_ovf">
+ * <opcode name="i2b_ovf" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>int8</code>
  *              with overflow detection</operation>
  *
@@ -821,7 +821,7 @@ case COP_PREFIX_I2B_OVF:
 break;
 
 /**
- * <opcode name="i2ub_ovf">
+ * <opcode name="i2ub_ovf" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>uint8</code>
  *              with overflow detection</operation>
  *
@@ -861,7 +861,7 @@ case COP_PREFIX_I2UB_OVF:
 break;
 
 /**
- * <opcode name="iu2b_ovf">
+ * <opcode name="iu2b_ovf" group="Conversion operators">
  *   <operation>Convert <code>uint32</code> to <code>int8</code>
  *              with overflow detection</operation>
  *
@@ -899,7 +899,7 @@ case COP_PREFIX_IU2B_OVF:
 break;
 
 /**
- * <opcode name="iu2ub_ovf">
+ * <opcode name="iu2ub_ovf" group="Conversion operators">
  *   <operation>Convert <code>uint32</code> to <code>uint8</code>
  *              with overflow detection</operation>
  *
@@ -937,7 +937,7 @@ case COP_PREFIX_IU2UB_OVF:
 break;
 
 /**
- * <opcode name="i2s_ovf">
+ * <opcode name="i2s_ovf" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>int16</code>
  *              with overflow detection</operation>
  *
@@ -977,7 +977,7 @@ case COP_PREFIX_I2S_OVF:
 break;
 
 /**
- * <opcode name="i2us_ovf">
+ * <opcode name="i2us_ovf" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>uint16</code>
  *              with overflow detection</operation>
  *
@@ -1017,7 +1017,7 @@ case COP_PREFIX_I2US_OVF:
 break;
 
 /**
- * <opcode name="iu2s_ovf">
+ * <opcode name="iu2s_ovf" group="Conversion operators">
  *   <operation>Convert <code>uint32</code> to <code>int16</code>
  *              with overflow detection</operation>
  *
@@ -1055,7 +1055,7 @@ case COP_PREFIX_IU2S_OVF:
 break;
 
 /**
- * <opcode name="iu2us_ovf">
+ * <opcode name="iu2us_ovf" group="Conversion operators">
  *   <operation>Convert <code>uint32</code> to <code>uint16</code>
  *              with overflow detection</operation>
  *
@@ -1093,7 +1093,7 @@ case COP_PREFIX_IU2US_OVF:
 break;
 
 /**
- * <opcode name="i2iu_ovf">
+ * <opcode name="i2iu_ovf" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>uint32</code>
  *              with overflow detection</operation>
  *
@@ -1131,7 +1131,7 @@ case COP_PREFIX_I2IU_OVF:
 break;
 
 /**
- * <opcode name="iu2i_ovf">
+ * <opcode name="iu2i_ovf" group="Conversion operators">
  *   <operation>Convert <code>uint32</code> to <code>int32</code>
  *              with overflow detection</operation>
  *
@@ -1169,7 +1169,7 @@ case COP_PREFIX_IU2I_OVF:
 break;
 
 /**
- * <opcode name="i2ul_ovf">
+ * <opcode name="i2ul_ovf" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>uint64</code>
  *              with overflow detection</operation>
  *
@@ -1208,7 +1208,7 @@ case COP_PREFIX_I2UL_OVF:
 break;
 
 /**
- * <opcode name="l2i_ovf">
+ * <opcode name="l2i_ovf" group="Conversion operators">
  *   <operation>Convert <code>int64</code> to <code>int32</code>
  *              with overflow detection</operation>
  *
@@ -1246,7 +1246,7 @@ case COP_PREFIX_L2I_OVF:
 break;
 
 /**
- * <opcode name="l2ui_ovf">
+ * <opcode name="l2ui_ovf" group="Conversion operators">
  *   <operation>Convert <code>int64</code> to <code>uint32</code>
  *              with overflow detection</operation>
  *
@@ -1284,7 +1284,7 @@ case COP_PREFIX_L2UI_OVF:
 break;
 
 /**
- * <opcode name="lu2i_ovf">
+ * <opcode name="lu2i_ovf" group="Conversion operators">
  *   <operation>Convert <code>uint64</code> to <code>int32</code>
  *              with overflow detection</operation>
  *
@@ -1322,7 +1322,7 @@ case COP_PREFIX_LU2I_OVF:
 break;
 
 /**
- * <opcode name="lu2iu_ovf">
+ * <opcode name="lu2iu_ovf" group="Conversion operators">
  *   <operation>Convert <code>uint64</code> to <code>uint32</code>
  *              with overflow detection</operation>
  *
@@ -1360,7 +1360,7 @@ case COP_PREFIX_LU2IU_OVF:
 break;
 
 /**
- * <opcode name="l2ul_ovf">
+ * <opcode name="l2ul_ovf" group="Conversion operators">
  *   <operation>Convert <code>int64</code> to <code>uint64</code>
  *              with overflow detection</operation>
  *
@@ -1398,7 +1398,7 @@ case COP_PREFIX_L2UL_OVF:
 break;
 
 /**
- * <opcode name="lu2l_ovf">
+ * <opcode name="lu2l_ovf" group="Conversion operators">
  *   <operation>Convert <code>uint64</code> to <code>int64</code>
  *              with overflow detection</operation>
  *
@@ -1436,7 +1436,7 @@ case COP_PREFIX_LU2L_OVF:
 break;
 
 /**
- * <opcode name="f2i_ovf">
+ * <opcode name="f2i_ovf" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to <code>int32</code>
  *              with overflow detection</operation>
  *
@@ -1475,7 +1475,7 @@ case COP_PREFIX_F2I_OVF:
 break;
 
 /**
- * <opcode name="f2iu_ovf">
+ * <opcode name="f2iu_ovf" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to <code>uint32</code>
  *              with overflow detection</operation>
  *
@@ -1514,7 +1514,7 @@ case COP_PREFIX_F2IU_OVF:
 break;
 
 /**
- * <opcode name="f2l_ovf">
+ * <opcode name="f2l_ovf" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to <code>int64</code>
  *              with overflow detection</operation>
  *
@@ -1553,7 +1553,7 @@ case COP_PREFIX_F2L_OVF:
 break;
 
 /**
- * <opcode name="f2lu_ovf">
+ * <opcode name="f2lu_ovf" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to <code>uint64</code>
  *              with overflow detection</operation>
  *
@@ -1592,7 +1592,7 @@ case COP_PREFIX_F2LU_OVF:
 break;
 
 /**
- * <opcode name="i2b_aligned">
+ * <opcode name="i2b_aligned" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>int8</code>, aligned
  *              on a stack word boundary</operation>
  *
@@ -1622,7 +1622,7 @@ case COP_PREFIX_I2B_ALIGNED:
 break;
 
 /**
- * <opcode name="i2s_aligned">
+ * <opcode name="i2s_aligned" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>int16</code>, aligned
  *              on a stack word boundary</operation>
  *
@@ -1652,7 +1652,7 @@ case COP_PREFIX_I2S_ALIGNED:
 break;
 
 /**
- * <opcode name="f2f_aligned">
+ * <opcode name="f2f_aligned" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to <code>float32</code>,
  *              aligned on a stack word boundary</operation>
  *
@@ -1687,7 +1687,7 @@ case COP_PREFIX_F2F_ALIGNED:
 break;
 
 /**
- * <opcode name="f2d_aligned">
+ * <opcode name="f2d_aligned" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to <code>float64</code>,
  *              aligned on a stack word boundary</operation>
  *
@@ -1722,7 +1722,7 @@ case COP_PREFIX_F2D_ALIGNED:
 break;
 
 /**
- * <opcode name="str2ansi">
+ * <opcode name="str2ansi" group="Conversion operators">
  *   <operation>Convert <code>string</code> to <code>ansi char *</code>
  *              </operation>
  *
@@ -1758,7 +1758,7 @@ case COP_PREFIX_STR2ANSI:
 break;
 
 /**
- * <opcode name="str2utf8">
+ * <opcode name="str2utf8" group="Conversion operators">
  *   <operation>Convert <code>string</code> to <code>utf8 char *</code>
  *              </operation>
  *

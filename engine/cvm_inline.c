@@ -57,7 +57,7 @@ static IL_INLINE int StringEquals(System_String *str1,
 #elif defined(IL_CVM_PREFIX)
 
 /**
- * <opcode name="string_concat_2">
+ * <opcode name="string_concat_2" group="Inline methods">
  *   <operation>Concatenate two strings</operation>
  *
  *   <format>prefix<fsep/>string_concat_2</format>
@@ -91,7 +91,7 @@ case COP_PREFIX_STRING_CONCAT_2:
 break;
 
 /**
- * <opcode name="string_concat_3">
+ * <opcode name="string_concat_3" group="Inline methods">
  *   <operation>Concatenate three strings</operation>
  *
  *   <format>prefix<fsep/>string_concat_3</format>
@@ -126,7 +126,7 @@ case COP_PREFIX_STRING_CONCAT_3:
 break;
 
 /**
- * <opcode name="string_concat_4">
+ * <opcode name="string_concat_4" group="Inline methods">
  *   <operation>Concatenate four strings</operation>
  *
  *   <format>prefix<fsep/>string_concat_4</format>
@@ -162,7 +162,7 @@ case COP_PREFIX_STRING_CONCAT_4:
 break;
 
 /**
- * <opcode name="string_eq">
+ * <opcode name="string_eq" group="Inline methods">
  *   <operation>Test two strings for equality</operation>
  *
  *   <format>prefix<fsep/>string_eq</format>
@@ -194,7 +194,7 @@ case COP_PREFIX_STRING_EQ:
 break;
 
 /**
- * <opcode name="string_ne">
+ * <opcode name="string_ne" group="Inline methods">
  *   <operation>Test two strings for inequality</operation>
  *
  *   <format>prefix<fsep/>string_ne</format>
@@ -226,7 +226,7 @@ case COP_PREFIX_STRING_NE:
 break;
 
 /**
- * <opcode name="string_get_char">
+ * <opcode name="string_get_char" group="Inline methods">
  *   <operation>Get a particular character from a string</operation>
  *
  *   <format>prefix<fsep/>string_get_char</format>

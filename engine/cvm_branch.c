@@ -29,7 +29,7 @@
 #elif defined(IL_CVM_MAIN)
 
 /**
- * <opcode name="br">
+ * <opcode name="br" group="Branch instructions">
  *   <operation>Branch unconditionally</operation>
  *
  *   <format>br<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
@@ -68,7 +68,7 @@ case COP_BR:
 break;
 
 /**
- * <opcode name="beq">
+ * <opcode name="beq" group="Branch instructions">
  *   <operation>Branch conditionally if <code>int32</code> values
  *   are equal</operation>
  *
@@ -108,7 +108,7 @@ case COP_BEQ:
 break;
 
 /**
- * <opcode name="bne">
+ * <opcode name="bne" group="Branch instructions">
  *   <operation>Branch conditionally if <code>int32</code> values
  *   are not equal</operation>
  *
@@ -148,7 +148,7 @@ case COP_BNE:
 break;
 
 /**
- * <opcode name="blt">
+ * <opcode name="blt" group="Branch instructions">
  *   <operation>Branch conditionally if <code>int32</code> values
  *   are less than</operation>
  *
@@ -183,7 +183,7 @@ case COP_BLT:
 break;
 
 /**
- * <opcode name="blt_un">
+ * <opcode name="blt_un" group="Branch instructions">
  *   <operation>Branch conditionally if <code>uint32</code> values
  *   are less than</operation>
  *
@@ -218,7 +218,7 @@ case COP_BLT_UN:
 break;
 
 /**
- * <opcode name="ble">
+ * <opcode name="ble" group="Branch instructions">
  *   <operation>Branch conditionally if <code>int32</code> values
  *   are less than or equal</operation>
  *
@@ -254,7 +254,7 @@ case COP_BLE:
 break;
 
 /**
- * <opcode name="ble_un">
+ * <opcode name="ble_un" group="Branch instructions">
  *   <operation>Branch conditionally if <code>uint32</code> values
  *   are less than or equal</operation>
  *
@@ -291,7 +291,7 @@ case COP_BLE_UN:
 break;
 
 /**
- * <opcode name="bgt">
+ * <opcode name="bgt" group="Branch instructions">
  *   <operation>Branch conditionally if <code>int32</code> values
  *   are greater than</operation>
  *
@@ -326,7 +326,7 @@ case COP_BGT:
 break;
 
 /**
- * <opcode name="bgt_un">
+ * <opcode name="bgt_un" group="Branch instructions">
  *   <operation>Branch conditionally if <code>uint32</code> values
  *   are greater than</operation>
  *
@@ -361,7 +361,7 @@ case COP_BGT_UN:
 break;
 
 /**
- * <opcode name="bge">
+ * <opcode name="bge" group="Branch instructions">
  *   <operation>Branch conditionally if <code>int32</code> values
  *   are greater than or equal</operation>
  *
@@ -397,7 +397,7 @@ case COP_BGE:
 break;
 
 /**
- * <opcode name="bge_un">
+ * <opcode name="bge_un" group="Branch instructions">
  *   <operation>Branch conditionally if <code>uint32</code> values
  *   are greater than or equal</operation>
  *
@@ -434,7 +434,7 @@ case COP_BGE_UN:
 break;
 
 /**
- * <opcode name="brtrue">
+ * <opcode name="brtrue" group="Branch instructions">
  *   <operation>Branch conditionally if <code>int32</code> value
  *   is non-zero</operation>
  *
@@ -474,7 +474,7 @@ case COP_BRTRUE:
 break;
 
 /**
- * <opcode name="brfalse">
+ * <opcode name="brfalse" group="Branch instructions">
  *   <operation>Branch conditionally if <code>int32</code> value
  *   is zero</operation>
  *
@@ -514,7 +514,7 @@ case COP_BRFALSE:
 break;
 
 /**
- * <opcode name="brnull">
+ * <opcode name="brnull" group="Branch instructions">
  *   <operation>Branch conditionally if <code>ptr</code> value
  *   is <code>null</code></operation>
  *
@@ -554,7 +554,7 @@ case COP_BRNULL:
 break;
 
 /**
- * <opcode name="brnonnull">
+ * <opcode name="brnonnull" group="Branch instructions">
  *   <operation>Branch conditionally if <code>ptr</code> value
  *   is not <code>null</code></operation>
  *
@@ -594,7 +594,7 @@ case COP_BRNONNULL:
 break;
 
 /**
- * <opcode name="br_peq">
+ * <opcode name="br_peq" group="Branch instructions">
  *   <operation>Branch conditionally if <code>ptr</code> values
  *   are equal</operation>
  *
@@ -634,7 +634,7 @@ case COP_BR_PEQ:
 break;
 
 /**
- * <opcode name="br_pne">
+ * <opcode name="br_pne" group="Branch instructions">
  *   <operation>Branch conditionally if <code>ptr</code> values
  *   are not equal</operation>
  *
@@ -674,7 +674,7 @@ case COP_BR_PNE:
 break;
 
 /**
- * <opcode name="br_long">
+ * <opcode name="br_long" group="Branch instructions">
  *   <operation>Modify a branch instruction to its long form</operation>
  *
  *   <format>br_long<fsep/>opcode<fsep/>...</format>
@@ -960,7 +960,7 @@ case COP_BR_LONG:
 break;
 
 /**
- * <opcode name="switch">
+ * <opcode name="switch" group="Branch instructions">
  *   <operation>Switch on <code>uint32</code> value</operation>
  *
  *   <format>switch<fsep/>max<fsep/>defoffset<fsep/>...</format>

@@ -18,6 +18,13 @@
 
 	* config.guess, config.sub: updated files from Autoconf 2.53.
 
+	* doc/Makefile.am, engine/cvm.c, engine/cvm_arith.c,
+	engine/cvm_branch.c, engine/cvm_call.c, engine/cvm_compare.c,
+	engine/cvm_const.c, engine/cvm_conv.c, engine/cvm_except.c,
+	engine/cvm_inline.c, engine/cvm_ptr.c, engine/cvm_stack.c,
+	engine/cvm_var.c, engine/cvm_doc.txt: add group information
+	to the opcodes.
+
 2002-04-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_branch.c, engine/cvm_except.c, engine/cvm_inline.c,

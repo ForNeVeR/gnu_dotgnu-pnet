@@ -43,7 +43,7 @@ case COP_PLOAD_##n: \
 break
 
 /**
- * <opcode name="iload_&lt;n&gt;">
+ * <opcode name="iload_&lt;n&gt;" group="Local variable handling">
  *   <operation>Load <code>int32</code> variable <i>n</i>
  *              onto the stack</operation>
  *
@@ -66,7 +66,7 @@ break
  * </opcode>
  */
 /**
- * <opcode name="pload_&lt;n&gt;">
+ * <opcode name="pload_&lt;n&gt;" group="Local variable handling">
  *   <operation>Load <code>ptr</code> variable <i>n</i>
  *              onto the stack</operation>
  *
@@ -98,7 +98,7 @@ COP_LOAD_N(2);
 COP_LOAD_N(3);
 
 /**
- * <opcode name="iload">
+ * <opcode name="iload" group="Local variable handling">
  *   <operation>Load <code>int32</code> variable
  *              onto the stack</operation>
  *
@@ -127,7 +127,7 @@ case COP_ILOAD:
 break;
 
 /**
- * <opcode name="pload">
+ * <opcode name="pload" group="Local variable handling">
  *   <operation>Load <code>ptr</code> variable
  *              onto the stack</operation>
  *
@@ -172,7 +172,7 @@ case COP_PSTORE_##n: \
 break
 
 /**
- * <opcode name="istore_&lt;n&gt;">
+ * <opcode name="istore_&lt;n&gt;" group="Local variable handling">
  *   <operation>Store the top of stack into <code>int32</code>
  *              variable <i>n</i></operation>
  *
@@ -195,7 +195,7 @@ break
  * </opcode>
  */
 /**
- * <opcode name="pstore_&lt;n&gt;">
+ * <opcode name="pstore_&lt;n&gt;" group="Local variable handling">
  *   <operation>Store the top of stack into <code>ptr</code>
  *              variable <i>n</i></operation>
  *
@@ -227,7 +227,7 @@ COP_STORE_N(2);
 COP_STORE_N(3);
 
 /**
- * <opcode name="istore">
+ * <opcode name="istore" group="Local variable handling">
  *   <operation>Store the top of stack into <code>int32</code>
  *              variable</operation>
  *
@@ -256,7 +256,7 @@ case COP_ISTORE:
 break;
 
 /**
- * <opcode name="pstore">
+ * <opcode name="pstore" group="Local variable handling">
  *   <operation>Store the top of stack into <code>ptr</code>
  *              variable</operation>
  *
@@ -287,7 +287,7 @@ case COP_PSTORE:
 break;
 
 /**
- * <opcode name="mload">
+ * <opcode name="mload" group="Local variable handling">
  *   <operation>Load multiple stack words from a variable
  *              onto the stack</operation>
  *
@@ -314,7 +314,7 @@ case COP_MLOAD:
 break;
 
 /**
- * <opcode name="mstore">
+ * <opcode name="mstore" group="Local variable handling">
  *   <operation>Store multiple stack words from the stack
  *              to a variable</operation>
  *
@@ -341,7 +341,7 @@ case COP_MSTORE:
 break;
 
 /**
- * <opcode name="waddr">
+ * <opcode name="waddr" group="Local variable handling">
  *   <operation>Load the address of a variable onto the stack</operation>
  *
  *   <format>waddr<fsep/>N[1]</format>
@@ -366,7 +366,7 @@ case COP_WADDR:
 break;
 
 /**
- * <opcode name="maddr">
+ * <opcode name="maddr" group="Local variable handling">
  *   <operation>Load the address of a stack word onto the stack</operation>
  *
  *   <format>maddr<fsep/>N[1]</format>
@@ -397,7 +397,7 @@ case COP_MADDR:
 break;
 
 /**
- * <opcode name="bfixup">
+ * <opcode name="bfixup" group="Local variable handling">
  *   <operation>Fix up <code>int8</code> variable</operation>
  *
  *   <format>bfixup<fsep/>N[1]</format>
@@ -440,7 +440,7 @@ case COP_BFIXUP:
 break;
 
 /**
- * <opcode name="sfixup">
+ * <opcode name="sfixup" group="Local variable handling">
  *   <operation>Fix up <code>int16</code> variable</operation>
  *
  *   <format>sfixup<fsep/>N[1]</format>
@@ -479,7 +479,7 @@ case COP_SFIXUP:
 break;
 
 /**
- * <opcode name="ffixup">
+ * <opcode name="ffixup" group="Local variable handling">
  *   <operation>Fix up <code>float32</code> variable</operation>
  *
  *   <format>ffixup<fsep/>N[1]</format>
@@ -518,7 +518,7 @@ case COP_FFIXUP:
 break;
 
 /**
- * <opcode name="dfixup">
+ * <opcode name="dfixup" group="Local variable handling">
  *   <operation>Fix up <code>float64</code> variable</operation>
  *
  *   <format>dfixup<fsep/>N[1]</format>
@@ -557,7 +557,7 @@ case COP_DFIXUP:
 break;
 
 /**
- * <opcode name="mk_local_1">
+ * <opcode name="mk_local_1" group="Local variable handling">
  *   <operation>Make one local variable slot</operation>
  *
  *   <format>mk_local_1</format>
@@ -586,7 +586,7 @@ case COP_MK_LOCAL_1:
 break;
 
 /**
- * <opcode name="mk_local_2">
+ * <opcode name="mk_local_2" group="Local variable handling">
  *   <operation>Make two local variable slots</operation>
  *
  *   <format>mk_local_2</format>
@@ -616,7 +616,7 @@ case COP_MK_LOCAL_2:
 break;
 
 /**
- * <opcode name="mk_local_3">
+ * <opcode name="mk_local_3" group="Local variable handling">
  *   <operation>Make three local variable slots</operation>
  *
  *   <format>mk_local_3</format>
@@ -647,7 +647,7 @@ case COP_MK_LOCAL_3:
 break;
 
 /**
- * <opcode name="mk_local_n">
+ * <opcode name="mk_local_n" group="Local variable handling">
  *   <operation>Make <i>N</i> local variable slots</operation>
  *
  *   <format>mk_local_n<fsep/>N[1]</format>

@@ -8,6 +8,9 @@ Tag: opcode
     Attribute: name
     Meaning: Name of the opcode.
 
+    Attribute: group
+    Meaning: Group that the opcode belongs to.
+
 Tag: operation
     Parent: opcode
     Meaning: Short description of the opcode for a heading

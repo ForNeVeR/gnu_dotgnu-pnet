@@ -1,3 +1,14 @@
+2004-08-24  Thong Nguyen  <tum@veridicus.com>
+
+	* engine/lib_defs.h: Changed System_Thread start field
+	from type (ILObject *) to (System_Delegate *).
+	
+	* engine/lib_thread.c: Made new thread invoke ThreadStart
+	by invoking the target method of the delegate directly rather
+	than by invoking the ThreadStart.Invoke method. This is faster
+	and prevents the ThreadStart.Invoke method from appearing in
+	stack traces.
+	
 2004-08-23  Thong Nguyen  <tum@veridicus.com>
 
 	* include/il_errno.h: Added IL_ERRNO_ENOFILE (mapped to

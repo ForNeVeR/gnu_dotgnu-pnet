@@ -210,17 +210,22 @@ ILObject *_IL_Interlocked_CompareExchange_RObjectObjectObject
  */
 static void __PrivateThreadStart(void *objectArg)
 {
-	ILMethod *method;
 	ILExecValue result;
 	ILExecThread *thread;
 
 	thread = ILExecThreadCurrent();
 
-	/* Get the ThreadStart.Invoke method */
-	method = ILExecThreadLookupMethod(thread, "System.Threading.ThreadStart", "Invoke", "(T)V");
-
-	/* Invoke the ThreadStart delegate */
-	ILExecThreadCall(thread, method, &result, ((System_Thread *)thread->clrThread)->start);
+	_ILCallMethod
+		(
+			thread,
+			((System_Thread *)thread->clrThread)->start->methodInfo,
+			_ILCallUnpackDirectResult,
+			&result,
+			0,
+			((System_Thread *)thread->clrThread)->start->target,
+			_ILCallPackVParams,
+			0
+		);
 
 	/* Print out any uncaught exceptions */
 	if (ILExecThreadHasException(thread)

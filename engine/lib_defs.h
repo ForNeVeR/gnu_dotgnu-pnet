@@ -308,19 +308,6 @@ ILObject *_ILGetTypeFromImage(ILExecThread *thread,
 							  ILBool ignoreCase);
 
 /*
- * Internal structure of "System.Threading.Thread".
- */
-typedef struct
-{
-	ILThread   *privateData;
-	ILBool		createdFromManagedCode;
-	ILObject   *stateInfo;
-	ILObject   *start;
-	ILString   *name;
-
-} System_Thread;
-
-/*
  * Internal structure of a delegate.  Must match the "System.MulticastDelegate"
  * definition in the C# class library.
  */
@@ -332,6 +319,19 @@ typedef struct
 	ILObject   *prev;
 
 } System_Delegate;
+
+/*
+ * Internal structure of "System.Threading.Thread".
+ */
+typedef struct
+{
+	ILThread   *privateData;
+	ILBool		createdFromManagedCode;
+	ILObject   *stateInfo;
+	System_Delegate *start;
+	ILString   *name;
+
+} System_Thread;
 
 /*
  * Structure of the "System.Diagnostics.PackedStackFrame" class.

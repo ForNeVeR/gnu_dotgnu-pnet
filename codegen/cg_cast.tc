@@ -325,11 +325,11 @@ ILGenCast(ILMachineType_Char, ILMachineType_UInt8)
 {
 	if(info->overflowInsns)
 	{
-		ILGenSimple(info, IL_OP_CONV_OVF_I1_UN);
+		ILGenSimple(info, IL_OP_CONV_OVF_U1_UN);
 	}
 	else
 	{
-		ILGenSimple(info, IL_OP_CONV_I1);
+		ILGenSimple(info, IL_OP_CONV_U1);
 	}
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_UInt8)

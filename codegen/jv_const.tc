@@ -371,6 +371,11 @@ JavaGenElse(ILNode_Decimal)
 JavaGenValue(ILNode_String)
 {
 	JavaGenStringConst(info, node->str, node->len);
+	if(!(info->useJavaLib))
+	{
+		JavaGenCallByName(info, "System/String", "__FromJavaString",
+						  "(Ljava/lang/String;)LSystem/String;");
+	}
 	JavaGenAdjust(info, 1);
 	return ILMachineType_String;
 }

@@ -4,8 +4,11 @@
 	* cscc/cs_cast.tc (CSTypeToName): implement conversions for
 	custom modifiers and method types.
 
-	* cscc/cs_misc.tc (ILNode_TypeOf): implement the Java code generator
+	* cscc/cs_misc.tc (ILNode_TypeOf): implement the JVM code generator
 	for the "typeof" operator.
+
+	* codegen/jv_const.tc, cscc/cs_misc.tc: convert JVM string constants
+	into C# string objects where necessary.
 
 2001-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 

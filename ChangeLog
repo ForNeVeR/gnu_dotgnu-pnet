@@ -1,3 +1,8 @@
+2005-04-03  Erich Kitzmuller  <ammoq@ammoq.com>
+
+	* Sytem.Windows.Forms/CobmoBox.cs: Handle LostFocus event. (patch
+	#3870 applied by drobosson)
+
 2005-03-28  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Xml/XmlNode.cs: Return null instead of causing an exception

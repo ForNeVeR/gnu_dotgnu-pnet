@@ -76,6 +76,7 @@ namespace System.Windows.Forms
 			SetStyle(ControlStyles.ResizeRedraw, true);
 			textEntry.BorderStyle = BorderStyle.None;
 			textEntry.TabStop = false;
+			textEntry.LostFocus += new EventHandler(textentry_LostFocus);
 			this.Controls.Add(textEntry);
 		
 			popup = new PopupControl();
@@ -951,6 +952,11 @@ namespace System.Windows.Forms
 						break;
 				}
 			}
+		}
+
+		private void textentry_LostFocus(object sender, EventArgs e)
+		{
+			OnLostFocus(e);
 		}
 		
 		private void scrollbar_ValueChanged(object sender, EventArgs e)

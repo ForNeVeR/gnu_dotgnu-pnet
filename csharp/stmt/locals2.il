@@ -11,10 +11,10 @@
 {
 .method private static hidebysig int32 'm2'() cil managed 
 {
-	.locals init	(int32, int32)
+	.locals init	(int32)
 	ldc.i4.s	20
-	stloc.1
-	ldloc.1
+	stloc.0
+	ldloc.0
 	ret
 	.maxstack 1
 } // method m2

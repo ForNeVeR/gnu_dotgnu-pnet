@@ -1,4 +1,9 @@
 
+2003-05-24  Gopal.V <gopalv82@symonds.net>
+	
+	* csharp/stmt/locals2.il, csharp/stmt/locals2.jl: Modify output
+	files to reflect changes in the compiler.
+
 2003-05-10  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/expr/Makefile.am, csharp/class/Makefile.am: Add the cast8

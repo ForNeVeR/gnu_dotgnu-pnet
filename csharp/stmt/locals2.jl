@@ -12,10 +12,10 @@
 .method private static hidebysig int32 'm2'() cil managed java 
 {
 	bipush	20
-	istore_1
-	iload_1
+	istore_0
+	iload_0
 	ireturn
-	.locals 2
+	.locals 1
 	.maxstack 1
 } // method m2
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 

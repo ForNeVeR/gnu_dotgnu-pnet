@@ -146,6 +146,8 @@ ILDeclSecurity *ILProgramItemToDeclSecurity(ILProgramItem *item);
 ILFileDecl *ILProgramItemToFileDecl(ILProgramItem *item);
 ILManifestRes *ILProgramItemToManifestRes(ILProgramItem *item);
 ILExportedType *ILProgramItemToExportedType(ILProgramItem *item);
+ILGenericPar *ILProgramItemToGenericPar(ILProgramItem *item);
+ILMethodSpec *ILProgramItemToMethodSpec(ILProgramItem *item);
 
 /*
  * Helper macros for querying information about a program item.

@@ -851,6 +851,38 @@ ILExportedType *ILProgramItemToExportedType(ILProgramItem *item)
 	}
 }
 
+ILGenericPar *ILProgramItemToGenericPar(ILProgramItem *item)
+{
+	if(!item)
+	{
+		return 0;
+	}
+	else if((item->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_GENERIC_PAR)
+	{
+		return (ILGenericPar *)item;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+ILMethodSpec *ILProgramItemToMethodSpec(ILProgramItem *item)
+{
+	if(!item)
+	{
+		return 0;
+	}
+	else if((item->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_SPEC)
+	{
+		return (ILMethodSpec *)item;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

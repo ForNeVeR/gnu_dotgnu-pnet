@@ -153,4 +153,148 @@
 	.locals 1
 	.maxstack 1
 } // method .ctor
+.method private static hidebysig specialname rtspecialname void '.cctor'() cil managed java 
+{
+	iconst_0
+	invokestatic	"System/Decimal" "op_Implicit__iV" "(I)LSystem/Decimal;"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc1'
+	iconst_m1
+	invokestatic	"System/Decimal" "op_Implicit__iV" "(I)LSystem/Decimal;"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc2'
+	new	"System/Decimal"
+	dup
+	ldc	int32(-402653184)
+	ldc	int32(731512480)
+	ldc	int32(6692563)
+	iconst_0
+	iconst_0
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc3'
+	new	"System/Decimal"
+	dup
+	ldc	int32(-402653184)
+	ldc	int32(731512480)
+	ldc	int32(6692563)
+	iconst_0
+	iconst_0
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc4'
+	new	"System/Decimal"
+	dup
+	ldc	int32(123456)
+	iconst_0
+	iconst_0
+	iconst_0
+	bipush	25
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc5'
+	new	"System/Decimal"
+	dup
+	bipush	123
+	iconst_0
+	iconst_0
+	iconst_0
+	iconst_3
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc6'
+	new	"System/Decimal"
+	dup
+	ldc	int32(-1733296128)
+	ldc	int32(-926269490)
+	sipush	666
+	iconst_0
+	iconst_0
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc7'
+	new	"System/Decimal"
+	dup
+	ldc	int32(1870659584)
+	ldc	int32(1443446532)
+	ldc	int32(666784)
+	iconst_0
+	iconst_0
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc8'
+	new	"System/Decimal"
+	dup
+	ldc	int32(1870659584)
+	ldc	int32(1443446532)
+	ldc	int32(666784)
+	iconst_0
+	iconst_0
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc9'
+	new	"System/Decimal"
+	dup
+	bipush	123
+	iconst_0
+	iconst_0
+	iconst_0
+	bipush	23
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc10'
+	bipush	123
+	invokestatic	"System/Decimal" "op_Implicit__iV" "(I)LSystem/Decimal;"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc11'
+	new	"System/Decimal"
+	dup
+	iconst_m1
+	iconst_m1
+	iconst_m1
+	iconst_0
+	iconst_0
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc12'
+	new	"System/Decimal"
+	dup
+	iconst_m1
+	iconst_m1
+	iconst_m1
+	iconst_1
+	iconst_0
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc13'
+	new	"System/Decimal"
+	dup
+	iconst_m1
+	iconst_m1
+	iconst_m1
+	iconst_1
+	bipush	20
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc14'
+	new	"System/Decimal"
+	dup
+	iconst_m1
+	iconst_m1
+	iconst_m1
+	iconst_1
+	bipush	28
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc15'
+	new	"System/Decimal"
+	dup
+	ldc	int32(-1717986918)
+	ldc	int32(-1717986919)
+	ldc	int32(429496729)
+	iconst_1
+	bipush	28
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc16'
+	new	"System/Decimal"
+	dup
+	iconst_1
+	iconst_0
+	iconst_0
+	iconst_0
+	bipush	28
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc17'
+	iconst_0
+	invokestatic	"System/Decimal" "op_Implicit__iV" "(I)LSystem/Decimal;"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc18'
+	return
+	.locals 0
+	.maxstack 7
+} // method .cctor
 } // class Test

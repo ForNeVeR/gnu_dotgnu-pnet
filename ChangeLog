@@ -1,4 +1,10 @@
 
+2002-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/ainit1.cs,
+	csharp/class/ainit1.il, csharp/class/ainit1.jl: test valid
+	cases of array initializers for fields and variables.
+
 2002-03-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/lexer/ident2.err, csharp/lexer/ident2.jerr,
@@ -7,6 +13,10 @@
 	csharp/parser/error3.err, csharp/parser/error3.jerr,
 	csharp/stmt/return1.err, csharp/stmt/return1.jerr: modified
 	error output files for new parse errors.
+
+	* csharp/lexer/literal1.il, csharp/lexer/literal1.jl:
+	csharp/class/const2.il, csharp/class/const2.jl: compute decimal
+	literals in static constructors at runtime.
 
 2002-01-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 

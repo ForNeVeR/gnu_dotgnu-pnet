@@ -163,4 +163,28 @@
 	.locals 1
 	.maxstack 1
 } // method .ctor
+.method private static hidebysig specialname rtspecialname void '.cctor'() cil managed java 
+{
+	new	"System/Decimal"
+	dup
+	iconst_m1
+	iconst_m1
+	iconst_m1
+	iconst_0
+	iconst_0
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc1'
+	new	"System/Decimal"
+	dup
+	ldc	int32(-1851785216)
+	ldc	int32(-897791284)
+	ldc	int32(669223)
+	iconst_1
+	iconst_0
+	invokespecial	"System/Decimal" "<init>__iiiB" "(IIIZI)"
+	putstatic	valuetype ['.library']'System'.'Decimal' 'Test'::'dc2'
+	return
+	.locals 0
+	.maxstack 7
+} // method .cctor
 } // class Test

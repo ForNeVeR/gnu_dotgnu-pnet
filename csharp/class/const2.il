@@ -140,4 +140,23 @@
 	ret
 	.maxstack 1
 } // method .ctor
+.method private static hidebysig specialname rtspecialname void '.cctor'() cil managed 
+{
+	ldc.i4.m1
+	ldc.i4.m1
+	ldc.i4.m1
+	ldc.i4.0
+	ldc.i4.0
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc1'
+	ldc.i4	2443182080
+	ldc.i4	3397176012
+	ldc.i4	669223
+	ldc.i4.1
+	ldc.i4.0
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc2'
+	ret
+	.maxstack 5
+} // method .cctor
 } // class Test

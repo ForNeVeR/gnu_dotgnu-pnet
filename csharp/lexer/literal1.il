@@ -152,4 +152,119 @@
 	ret
 	.maxstack 1
 } // method .ctor
+.method private static hidebysig specialname rtspecialname void '.cctor'() cil managed 
+{
+	ldc.i4.0
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc1'
+	ldc.i4.m1
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc2'
+	ldc.i4	3892314112
+	ldc.i4	731512480
+	ldc.i4	6692563
+	ldc.i4.0
+	ldc.i4.0
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc3'
+	ldc.i4	3892314112
+	ldc.i4	731512480
+	ldc.i4	6692563
+	ldc.i4.0
+	ldc.i4.0
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc4'
+	ldc.i4	123456
+	ldc.i4.0
+	ldc.i4.0
+	ldc.i4.0
+	ldc.i4.s	25
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc5'
+	ldc.i4.s	123
+	ldc.i4.0
+	ldc.i4.0
+	ldc.i4.0
+	ldc.i4.3
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc6'
+	ldc.i4	2561671168
+	ldc.i4	3368697806
+	ldc.i4	666
+	ldc.i4.0
+	ldc.i4.0
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc7'
+	ldc.i4	1870659584
+	ldc.i4	1443446532
+	ldc.i4	666784
+	ldc.i4.0
+	ldc.i4.0
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc8'
+	ldc.i4	1870659584
+	ldc.i4	1443446532
+	ldc.i4	666784
+	ldc.i4.0
+	ldc.i4.0
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc9'
+	ldc.i4.s	123
+	ldc.i4.0
+	ldc.i4.0
+	ldc.i4.0
+	ldc.i4.s	23
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc10'
+	ldc.i4.s	123
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc11'
+	ldc.i4.m1
+	ldc.i4.m1
+	ldc.i4.m1
+	ldc.i4.0
+	ldc.i4.0
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc12'
+	ldc.i4.m1
+	ldc.i4.m1
+	ldc.i4.m1
+	ldc.i4.1
+	ldc.i4.0
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc13'
+	ldc.i4.m1
+	ldc.i4.m1
+	ldc.i4.m1
+	ldc.i4.1
+	ldc.i4.s	20
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc14'
+	ldc.i4.m1
+	ldc.i4.m1
+	ldc.i4.m1
+	ldc.i4.1
+	ldc.i4.s	28
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc15'
+	ldc.i4	2576980378
+	ldc.i4	2576980377
+	ldc.i4	429496729
+	ldc.i4.1
+	ldc.i4.s	28
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc16'
+	ldc.i4.1
+	ldc.i4.0
+	ldc.i4.0
+	ldc.i4.0
+	ldc.i4.s	28
+	newobj	instance void [.library]System.Decimal::.ctor(int32, int32, int32, bool, unsigned int8)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc17'
+	ldc.i4.0
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
+	stsfld	valuetype ['.library']'System'.'Decimal' 'Test'::'dc18'
+	ret
+	.maxstack 5
+} // method .cctor
 } // class Test

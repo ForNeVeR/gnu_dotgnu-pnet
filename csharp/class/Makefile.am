@@ -1,5 +1,6 @@
 
-TESTS = const1.cs \
+TESTS = ainit1.cs \
+		const1.cs \
 		const2.cs \
 		constructor1.cs \
 		constructor2.cs \

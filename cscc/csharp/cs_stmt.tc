@@ -1757,7 +1757,7 @@ ILNode_SemAnalysis(ILNode_FixExpr)
 	yysetlinenum(expr, yygetlinenum(node->expr));
 
 	/* If the expression is an array, then turn it into a pointer */
-	if(CSSemIsRValue(value) && ILType_IsSimpleArray(CSSemGetType(value)))
+	if(CSSemIsValue(value) && ILType_IsSimpleArray(CSSemGetType(value)))
 	{
 		expr = ILNode_ArrayAccess_create(expr, ILNode_Int32_create(0, 0, 1));
 		yysetfilename(expr, yygetfilename(node->expr));

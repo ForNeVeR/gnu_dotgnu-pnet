@@ -134,57 +134,165 @@ static int MutexCloseNamed(ILWaitMutexNamed *mutex)
 	return IL_WAITCLOSE_FREE;
 }
 
+/*
+ * Set of prime numbers used for hashtable allocation.
+ */
+static int __PrimeNumbers[] =
+{
+	13, 29, 61, 127, 257, 521
+};
+
+static int __numberOfPrimes = sizeof(__PrimeNumbers) / sizeof(int);
+
 static void AddMutexToWakeup(ILWaitMutex *mutex, _ILWakeup *wakeup)
 {
-	ILList *list;
-	void **item;
-	
-	/* Add the mutex to the list of owned mutexes */
+	int i, x;
+	ILWaitMutex **ownedMutexes;
 
-	list = wakeup->ownedMutexes;
-
-	if (list == 0)
+	if (wakeup->ownedMutexes == 0)
 	{
-		/* Create a new ArrayList and append */
-		list = wakeup->ownedMutexes = ILArrayListCreate(16);
-
-		ILListAppend(list, mutex);
+		/* Allocate owned mutexes hashtable */
+		ownedMutexes = wakeup->ownedMutexes = ILCalloc(__PrimeNumbers[0], sizeof(ILWaitMutex *));
+		wakeup->ownedMutexesCapacity = __PrimeNumbers[0];
 	}
 	else
-	{			
-		item = ILListReverseFind(list, 0);
+	{
+		ownedMutexes = wakeup->ownedMutexes;
+	}
+	
+	/* Check if the hashtable is large enough */
+	if (wakeup->ownedMutexesCount >= wakeup->ownedMutexesCapacity)
+	{
+		int newCapacity;
+		ILWaitMutex **newArray;
 
-		if (item != 0)
+		/* Grow the new hashtable */
+		
+		if (wakeup->ownedMutexesCapacity >= (IL_MAX_NATIVE_INT) / 2)
 		{
-			*item = mutex;
+			return;
 		}
-		else
+
+		/* Find a nice efficient prime sized hashtable.  If it gets too large
+		   then forget about using a prime */
+
+		newCapacity = wakeup->ownedMutexesCapacity * 2;
+
+		for (i = __numberOfPrimes - 1; i >= 0; i--)
 		{
-			/* No empty spot found so just append */
-			ILListAppend(list, mutex);
+			if (__PrimeNumbers[i] < newCapacity)
+			{
+				if (i == __numberOfPrimes - 1)
+				{
+					break;					
+				}
+				else
+				{
+					newCapacity = __PrimeNumbers[i + 1];
+				}
+			}
 		}
+
+		newArray = ILCalloc(newCapacity, sizeof(ILWaitMutex *));
+
+		if (!newArray)
+		{
+			return;
+		}
+
+		/* Rehash all the existing mutexes into the new table */
+
+		for (i = 0; i < wakeup->ownedMutexesCapacity; i++)
+		{
+			if (ownedMutexes[i] == 0)
+			{
+				/* This bucket doesn't have an entry */
+
+				continue;
+			}
+		
+			/* Find the new available bucket in the new hashtable */
+
+			#if SIZEOF_INT <= 4
+				x = (((int)ownedMutexes[i]) >> 2) % newCapacity;
+			#else
+				x = (((int)ownedMutexes[i]) >> 3) % newCapacity;
+			#endif
+			
+			for (;;)
+			{
+				if (newArray[x] == 0)
+				{
+					newArray[x] = mutex;
+
+					break;
+				}
+
+				x++;
+				x %= newCapacity;
+			}
+			
+		}
+
+		ownedMutexes = wakeup->ownedMutexes = newArray;
+		wakeup->ownedMutexesCapacity = newCapacity;
+	}
+
+	/* Get the initial bucket to try putting the mutex in */
+	
+	#if SIZEOF_INT <= 4
+		i = (((int)mutex) >> 2) % wakeup->ownedMutexesCapacity;
+	#else
+		i = (((int)mutex) >> 3) % wakeup->ownedMutexesCapacity;
+	#endif
+
+	/* Scan the hashtable and find an empty bucket for the mutex */
+
+	for (;;)
+	{
+		if (ownedMutexes[i] == 0)
+		{
+			ownedMutexes[i] = mutex;
+			wakeup->ownedMutexesCount++;
+
+			break;
+		}
+
+		i++;
+		i %= wakeup->ownedMutexesCapacity;
 	}
 }
 
 static void RemoveMutexFromWakeup(ILWaitMutex *mutex, _ILWakeup *wakeup)
 {
-	ILList *list;
-	void **item;
+	int i, j;
+	ILWaitMutex **ownedMutexes;
 
-	/* Add the mutex to the list of owned mutexes */
+	ownedMutexes = wakeup->ownedMutexes;
 
-	list = wakeup->ownedMutexes;
-
-	if (list == 0)
+	if (ownedMutexes == 0)
 	{
 		return;
 	}
 
-	item = ILListReverseFind(list, mutex);
+	/* Get the initial (and correct right) bucket */
 
-	if (item)
+	#if SIZEOF_INT <= 4
+		i = (((int)mutex) >> 2) % wakeup->ownedMutexesCapacity;
+	#else
+		i = (((int)mutex) >> 3) % wakeup->ownedMutexesCapacity;
+	#endif
+
+	/* Scan the hashtable and clear the entry for the mutex (if found) */
+
+	for (j = 0; j < wakeup->ownedMutexesCount; i++, j++)
 	{
-		*item = 0;
+		if (ownedMutexes[i] == mutex)
+		{
+			ownedMutexes[i] = 0;
+
+			break;
+		}
 	}
 }
 
@@ -309,12 +417,8 @@ ILWaitHandle *ILWaitMutexCreate(int initiallyOwned)
 	if(initiallyOwned)
 	{
 		mutex->owner = &((ILThreadSelf())->wakeup);
-		mutex->count = 1;
-		mutex->owner->ownedMutexes = ILSinglelyLinkedListCreate();
-		if (mutex->owner->ownedMutexes != 0)
-		{
-			ILListAppend(mutex->owner->ownedMutexes, mutex);
-		}
+		mutex->count = 1;		
+		AddMutexToWakeup(mutex, mutex->owner);
 	}
 	else
 	{
@@ -376,6 +480,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 			if(initiallyOwned)
 			{
 				owned = (ILWaitOne(&(mutex->parent.parent), 0) == 0);
+				AddMutexToWakeup(&(mutex->parent), &(ILThreadSelf()->wakeup));
 			}
 			else
 			{
@@ -419,6 +524,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 	{
 		mutex->parent.owner = &((ILThreadSelf())->wakeup);
 		mutex->parent.count = 1;
+		AddMutexToWakeup(&(mutex->parent), mutex->parent.owner);
 	}
 	else
 	{

@@ -1,5 +1,18 @@
 2004-06-18  Thong Nguyen  <tum@veridicus.com>
 
+	* configure.in: Added check for sys/sysinfo.h and sys/sysctl.h.
+	
+	* support/time.h: Added implementation of ILGetSinceRebootTime
+	for Linux.
+	
+	* support/thr_defs.h, support/wakeup.c: Made wakeups to use
+	hashtables instead of lists to store currently owned mutexes.
+	
+	* support/wait_mutex.c: Added fast hashtable support code
+	for wakeup owned mutexes.
+	
+2004-06-18  Thong Nguyen  <tum@veridicus.com>
+
 	* include/il_thread.h: Changed Interrupt handling functions to
 	be more generic.  Added 2 more interrupt types (divide by zero
 	and overflow).

@@ -48,6 +48,8 @@
 extern	"C" {
 #endif
 
+typedef struct __tagILWaitMutex ILWaitMutex;
+
 /*
  * Internal structure of a wakeup object.
  */
@@ -59,7 +61,9 @@ typedef struct _tagILWakeup
 	ILUInt32	volatile	limit;
 	int			volatile	interrupted;
 	void *      volatile    object;
-	ILList					*ownedMutexes;
+	int						ownedMutexesCount;
+	int						ownedMutexesCapacity;
+	ILWaitMutex				**ownedMutexes;
 } _ILWakeup;
 
 /*
@@ -208,7 +212,7 @@ typedef struct
 /*
  * Internal structure of a wait mutex handle.
  */
-typedef struct
+struct __tagILWaitMutex
 {
 	ILWaitHandle			parent;
 	_ILWakeup *   volatile	owner;
@@ -216,7 +220,7 @@ typedef struct
 	unsigned int volatile	options;
 	_ILWakeupQueue			queue;
 
-} ILWaitMutex;
+};
 
 /*
  * Internal structure of a named wait mutex handle.

@@ -4,6 +4,9 @@
 	* runtime/System/Double.cs: Make ECMA compatible by adding some 
 	hacks for supporting NaN conditions.
 
+	* runtime/System/Private/NumberFormat/HexadecimalFormatter.cs: Fix
+	formatting of negative numbers. (bug #3050).
+
 2003-07-20  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: change how

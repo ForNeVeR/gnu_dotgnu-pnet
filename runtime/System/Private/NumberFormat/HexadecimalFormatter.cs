@@ -35,6 +35,7 @@ internal class HexadecimalFormatter : Formatter
 
 	//  Return values.
 	private char[] digits;
+	private int minPrecision;
 
 	public HexadecimalFormatter(int precision, char format)
 	{
@@ -58,9 +59,13 @@ internal class HexadecimalFormatter : Formatter
 
 		if (value >= 0) return s.ToString();
 
-		while (s[0] == digits[15]) s.Remove(0,1);
-
-		return s.ToString().PadLeft(precision, digits[15]);
+		while (s.Length!=0 && s[0] == digits[15]) s.Remove(0,1);
+		
+		// Hex needs a minimum precision ie (-1).ToString("X")
+		// becomes FFFFFFFF instead of being just F
+		return s.ToString().PadLeft(
+				precision > minPrecision ? precision : minPrecision , 
+				digits[15]);
 	}
 
 	private string Format(ulong value)
@@ -76,10 +81,20 @@ internal class HexadecimalFormatter : Formatter
 
 		return buf.ToString().PadLeft(precision, '0');
 	}
+	
+	private static int PrecisionOf(Object o) 
+	{
+		if (o is Int16 || o is UInt16) return 4;
+		if (o is Int32 || o is UInt32) return 8;
+		if (o is Int64 || o is UInt64) return 16;
+		if (o is Byte || o is SByte) return 2;
+		throw new FormatException(_("Format_TypeException"));
+	}
 
 	public override string Format(Object o, IFormatProvider provider)
 	{
 		long value;
+		minPrecision=PrecisionOf(o);
 
 		//  Type validation
 		if (IsSignedInt(o))

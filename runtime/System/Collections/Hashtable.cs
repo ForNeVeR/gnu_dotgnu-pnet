@@ -661,17 +661,17 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				int count = capacity;
 				while(count > 0)
 				{
-					if(table[hash].key == null || table[hash].key == removed)
+					if( table[hash].key == null ) break; // reached end of table
+					if(table[hash].key != removed)
 					{
-						break;
-					}
-					else if(KeyEquals(table[hash].key, key))
-					{
-						table[hash].key = removed;
-						table[hash].value = null;
-						--num;
-						++generation;
-						break;
+						if(KeyEquals(table[hash].key, key))
+						{
+							table[hash].key = removed;
+							table[hash].value = null;
+							--num;
+							++generation;
+							break;
+						}
 					}
 					hash = (hash + 1) % capacity;
 					--count;

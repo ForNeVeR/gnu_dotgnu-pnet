@@ -1,3 +1,7 @@
+2005-03-03 Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Collections/Hashtable.cs: Fixes removing objects and
+	optmizes. (patch #3783, fixes bug #12189 applied by drobosson)
 
 2005-02-28  Klaus Treichel  <ktreichel@web.de>
 

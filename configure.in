@@ -12,6 +12,7 @@ AM_MAINTAINER_MODE
 dnl Checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
@@ -379,6 +380,7 @@ ildb/Makefile
 csdoc/Makefile
 csant/Makefile
 clrwrap/Makefile
+coremul/Makefile
 samples/Makefile
 doc/Makefile
 tests/Makefile

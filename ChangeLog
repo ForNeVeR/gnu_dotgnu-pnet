@@ -1,4 +1,12 @@
 
+2003-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, coremul/.cvsignore, coremul/Makefile.am,
+	coremul/README, coremul/cocreate.cpp, coremul/cor.h,
+	coremul/corhdr.h, coremul/corole2.h, coremul/corwin32.h,
+	coremul/corwinerror.h, coremul/guid.cpp, coremul/shim.c:
+	begin implementation of the mscoree.dll emulation routines.
+
 2003-02-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/pecoff_writer.c: fall back to the original back-patch

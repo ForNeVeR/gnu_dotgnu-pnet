@@ -15,6 +15,8 @@ variables, plus a minor bug in "ILNode_Compound_CreateFrom".
 * codegen/cg_decls.tc: change VarDeclarator to FieldDeclarator, rearrange
 method code generator, output local variables.
 
+* codegen/jv_decls.tc: change VarDeclarator to FieldDeclarator.
+
 2001-08-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc, codegen/cg_misc.tc, codegen/jv_misc.tc: add the

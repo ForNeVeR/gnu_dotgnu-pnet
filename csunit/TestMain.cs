@@ -122,10 +122,33 @@ public sealed class TestMain
 				// Load the test assembly.  This will throw an
 				// exception if something went wrong, which will
 				// cause the program to exit with an explaination.
-				assembly = Assembly.Load("file://" + filename);
+				// Use "Assembly.LoadFrom" if present (it may not
+				// be present if mscorilb.dll is ECMA-compatible,
+				// so we have to be careful how we invoke it).
+				MethodInfo loadFrom =
+					typeof(Assembly).GetMethod
+						("LoadFrom",
+						 BindingFlags.Static | BindingFlags.Public);
+				if(loadFrom != null)
+				{
+					Object[] args = new Object [1];
+					args[0] = filename;
+					assembly = (Assembly)(loadFrom.Invoke(null, args));
+				}
+				else
+				{
+					assembly = Assembly.Load("file://" + filename);
+				}
 
 				// Look for the test type within the assembly.
-				type = assembly.GetType(typeName, false);
+				try
+				{
+					type = assembly.GetType(typeName);
+				}
+				catch(TypeLoadException)
+				{
+					type = null;
+				}
 				if(type == null)
 				{
 					Console.Error.WriteLine

@@ -48,7 +48,7 @@ fi
 
 # Print the footer.
 echo '};'
-echo 'int ILCppNumUndefines = (sizeof(ILCppNumUndefines) / sizeof(char *));'
+echo 'int ILCppNumUndefines = (sizeof(ILCppUndefines) / sizeof(char *));'
 
 # Finished.
 exit 0

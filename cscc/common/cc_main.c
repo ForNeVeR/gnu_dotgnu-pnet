@@ -793,8 +793,23 @@ static void ParseFile(const char *filename, int is_stdin)
 		}
 		for(posn = 0; posn < ILCppNumUndefines; ++posn)
 		{
-			CCStringListAdd(&argv, &argc, "-U");
-			CCStringListAdd(&argv, &argc, ILCppUndefines[posn]);
+			/* Turn off a system cpp macro if we don't have it ourselves */
+			if(!CCStringListContains(pre_defined_symbols,
+									 num_pre_defined_symbols,
+									 ILCppUndefines[posn]) &&
+			   !CCStringListGetValue(pre_defined_symbols,
+									 num_pre_defined_symbols,
+									 ILCppUndefines[posn]) &&
+			   !CCStringListContains(user_defined_symbols,
+									 num_user_defined_symbols,
+									 ILCppUndefines[posn]) &&
+			   !CCStringListGetValue(user_defined_symbols,
+									 num_user_defined_symbols,
+									 ILCppUndefines[posn]))
+			{
+				CCStringListAdd(&argv, &argc, "-U");
+				CCStringListAdd(&argv, &argc, ILCppUndefines[posn]);
+			}
 		}
 		for(posn = 0; posn < num_pre_defined_symbols; ++posn)
 		{

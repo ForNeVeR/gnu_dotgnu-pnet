@@ -80,6 +80,7 @@ typedef struct _tagILWriter ILWriter;
 #define	IL_WRITEFLAG_32BIT_ONLY		1	/* Execute on 32-bit systems only */
 #define	IL_WRITEFLAG_SUBSYS_CUI		0	/* Command-line subsystem */
 #define	IL_WRITEFLAG_SUBSYS_GUI		2	/* GUI subsystem */
+#define	IL_WRITEFLAG_JVM_MODE		4	/* Java image output */
 
 /*
  * Create an image writer and attach it to a file stream.
@@ -161,6 +162,42 @@ unsigned long ILWriterDebugString(ILWriter *writer, const char *str);
  */
 void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
 					  const void *info, unsigned long len);
+
+/*
+ * Initialize the constant pool attached to the given class and
+ * adds the first entry
+ */
+void ILJavaInitPool(ILWriter *writer, ILClass *info);
+
+/*
+ * Appends code to the code buffer of the given class and method.
+ * The code buffer of a method is in a linked list inside the first
+ * constant pool entry of the class.
+ */
+void ILJavaAppendCode(ILWriter *writer, ILClass *info, ILMethod *method, const void *buffer,
+					  unsigned long size);
+
+
+/*
+ * Sets a float value in a Java constant pool entry.
+ */
+ILUInt32 ILJavaSetUTF8String(ILWriter *writer, ILClass *info, 
+							 const char *value, ILUInt32 len);
+
+ILUInt32 ILJavaSetSignature(ILWriter *writer, ILClass *info, ILType *sig);
+ILUInt32 ILJavaSetClass(ILWriter *writer, ILClass *info, ILClass *class);
+ILUInt32 ILJavaSetClassFromType(ILWriter *writer, ILClass *info, ILType *type);
+ILUInt32 ILJavaSetNameAndType(ILWriter *writer, ILClass *info, char *name, ILType *sig);
+ILUInt32 ILJavaSetref(ILWriter *writer, ILClass *info, int type, ILClass *owner, char *name,
+					  ILType *sig);
+
+#define	ILJAVA_SET_PROTO(name, typeName, fieldName, constName)                  \
+int ILJavaSet##name(ILWriter *writer, ILClass *info, typeName value);
+
+ILJAVA_SET_PROTO(Integer, ILInt32,  intValue,    INTEGER)
+ILJAVA_SET_PROTO(Long,    ILInt64,  longValue,   LONG)
+ILJAVA_SET_PROTO(Float,   ILFloat,  floatValue,  FLOAT)
+ILJAVA_SET_PROTO(Double,  ILDouble, doubleValue, DOUBLE)
 
 #ifdef	__cplusplus
 };

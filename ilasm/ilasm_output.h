@@ -157,6 +157,11 @@ void ILAsmOutSSAEnd(void);
 void ILAsmOutMaxStack(ILUInt32 maxStack);
 
 /*
+ * Set the maximum number of locals for the current method.
+ */
+void ILAsmOutMaxLocals(ILUInt32 maxLocals);
+
+/*
  * Set the initialization flag for the local variables.
  */
 void ILAsmOutZeroInit(void);
@@ -216,6 +221,126 @@ void ILAsmOutAddTryBlock(char *blockStart, char *blockEnd,
  * Finalize processing for a method.
  */
 void ILAsmOutFinalizeMethod(ILMethod *method);
+
+/*
+ * Initialize the constant pool attached to the current class
+ */
+void ILJavaAsmInitPool();
+
+/*
+ * Output a simple java instruction that has no arguments.
+ */
+void ILJavaAsmOutSimple(ILInt32 opcode);
+
+/*
+ * Output a java instruction that references a variable.
+ */
+void ILJavaAsmOutVar(ILInt32 opcode, ILInt64 num) ;
+
+/*
+ * Output a java instruction that increments a local variable argument.
+ */
+void ILJavaAsmOutInc(ILInt32 opcode, ILInt64 index, ILInt64 val) ;
+
+/*
+ * Output a java instruction that takes an integer argument.
+ */
+void ILJavaAsmOutInt(ILInt32 opcode, ILInt64 value);
+
+/*
+ * Output a java instruction that push an integer constant.
+ */
+void ILJavaAsmOutConstInt32(ILInt32 opcode, ILInt64 value);
+
+/*
+ * Output a java instruction that push an integer constant.
+ */
+void ILJavaAsmOutConstInt64(ILInt32 opcode, ILInt64 value);
+
+/*
+ * Output a java instruction that push a floating point constant.
+ */
+void ILJavaAsmOutConstFloat32(ILInt32 opcode, ILUInt8 *value);
+
+/*
+ * Output a java instruction that push a floating point constant.
+ */
+void ILJavaAsmOutConstFloat64(ILInt32 opcode, ILUInt8 *value);
+
+/*
+ * Output a java instruction that push an integer constant.
+ */
+void ILJavaAsmOutString(ILIntString interned);
+
+/*
+ * Output a java instruction that takes an argument specified by a IL token.
+ */
+void ILJavaAsmOutToken(ILInt32 opcode, ILUInt32 token);
+
+/*
+ * Output a java instruction that takes a constant pool method argument.
+ */
+void ILJavaAsmOutMethod(ILInt32 opcode, char *className, char *mehodName, char *sigName);
+
+/*
+ * Output a java instruction that takes a constant pool field argument.
+ */
+void ILJavaAsmOutField(ILInt32 opcode, char *className, char *mehodName, char *sigName);
+
+/*
+ * Output a java instruction that takes a constant pool type argument.
+ */
+void ILJavaAsmOutType(ILInt32 opcode, char *className);
+
+/*
+ * Output a newarray java instruction.
+ */
+void ILJavaAsmOutNewarray(ILInt32 opcode, ILInt64 type);
+
+/*
+ * Output a multinewarray java instruction.
+ */
+void ILJavaAsmOutMultinewarray(ILInt32 opcode, ILType *type, ILInt64 dim);
+
+/*
+ * Start output of a java table switch statement.
+ */
+void ILJavaAsmOutTableSwitchStart(ILInt64 low);
+
+/*
+ * Output an integer java table switch label reference within the current method.
+ */
+void ILJavaAsmOutTableSwitchRefInt(ILInt64 addr);
+
+/*
+ * Output a java table switch label reference within the current method.
+ */
+void ILJavaAsmOutTableSwitchRef(char *label);
+
+/*
+ * End output of a java table switch statement.
+ */
+void ILJavaAsmOutTableSwitchEnd(ILUInt64 low);
+
+/*
+ * Start output of a java lookup switch statement.
+ */
+void ILJavaAsmOutLookupSwitchStart(void);
+
+/*
+ * Output an integer java lookup switch label reference within the current method.
+ */
+void ILJavaAsmOutLookupSwitchRefInt(ILInt64 match, ILInt64 addr);
+
+/*
+ * Output a java lookup switch label reference within the current method.
+ */
+void ILJavaAsmOutLookupSwitchRef(ILInt64 match, char *label);
+
+/*
+ * End output of a java lookup switch statement.
+ */
+void ILJavaAsmOutLookupSwitchEnd(void);
 
 #ifdef	__cplusplus
 };

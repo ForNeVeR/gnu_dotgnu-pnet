@@ -230,6 +230,7 @@ int main(int argc, char *argv[])
 			case 'J':
 			{
 				jvmMode = 1;
+				flags |= IL_WRITEFLAG_JVM_MODE;
 			}
 			break;
 
@@ -280,6 +281,7 @@ int main(int argc, char *argv[])
 				else if(!strcmp(param, "jvm"))
 				{
 					jvmMode = 1;
+					flags |= IL_WRITEFLAG_JVM_MODE;
 				}
 				else
 				{

@@ -540,7 +540,7 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 /*
  * Bailout routines for various kinds of verification failure.
  */
-/*#define	IL_VERIFY_DEBUG*/
+#define	IL_VERIFY_DEBUG
 #ifdef IL_VERIFY_DEBUG
 #define	VERIFY_REPORT()	\
 			do { \

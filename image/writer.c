@@ -132,7 +132,14 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 	writer->lastFixup = 0;
 
 	/* Write the headers to the output stream */
-	_ILWriteHeaders(writer);
+	if(flags & IL_WRITEFLAG_JVM_MODE)
+	{
+		_ILWriteJavaHeaders(writer);
+	}
+	else
+	{
+		_ILWriteHeaders(writer);
+	}
 
 	/* Ready to go now */
 	return writer;
@@ -274,6 +281,53 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 	unsigned usOffset;
 	unsigned blobOffset;
 	unsigned guidOffset;
+
+	if (writer->flags & IL_WRITEFLAG_JVM_MODE)
+	{
+		unsigned long numTokens;
+		unsigned long numClasses;
+		unsigned long token;
+		ILClass *class;
+
+		numTokens = ILImageNumTokens(image, IL_META_TOKEN_TYPE_DEF);
+
+		/* count the number of classes */
+		numClasses = 0;
+		for(token = 1; token <= numTokens; ++token)
+		{
+			class = (ILClass*)ILImageTokenInfo(image, IL_META_TOKEN_TYPE_DEF | token);
+
+			if(!strcmp(ILClass_Name(class), "<Module>") ||
+			   (!ILClass_IsPublic(class) && !ILClass_IsPrivate(class)) ||
+			   !class->ext || !class->ext->constPool) 
+			{
+				continue;
+			}
+			numClasses++;
+		}
+		
+		if(numClasses > 1)
+		{
+			fprintf(stdout, "write failed: Multiple class output not yet supported\n");
+			writer->writeFailed = 1;
+			return;
+		}
+
+		for(token = 1; token <= numTokens; ++token)
+		{
+			class = (ILClass*)ILImageTokenInfo(image, IL_META_TOKEN_TYPE_DEF | token);
+
+			if(!strcmp(ILClass_Name(class), "<Module>") ||
+			   (!ILClass_IsPublic(class) && !ILClass_IsPrivate(class)) ||
+			   !class->ext || !class->ext->constPool) 
+			{
+				continue;
+			}
+			WriteJavaClass(writer, class);
+		}
+	}
+	else
+	{
 
 	/* Sort the FieldDef, MethodDef, and ParamDef tables to put all
 	   of the class members into their final order */
@@ -475,6 +529,7 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 	/* Update the IL runtime header with the metadata section's position */
 	ILWriterUpdateHeader(writer, IL_IMAGEENTRY_METADATA,
 						 start, ILWriterGetTextRVA(writer) - start);
+	}
 }
 
 int ILWriterDestroy(ILWriter *writer)
@@ -482,14 +537,21 @@ int ILWriterDestroy(ILWriter *writer)
 	int retval;
 	ILWSection *section, *nextSection;
 
-	/* Write the debug information */
-	if(writer->debugTokens)
+	if (writer->flags & IL_WRITEFLAG_JVM_MODE)
 	{
-		_ILWriteDebug(writer);
-	}
 
-	/* Finalize the PE/COFF output */
-	_ILWriteFinal(writer);
+	}
+	else
+	{
+		/* Write the debug information */
+		if(writer->debugTokens)
+		{
+			_ILWriteDebug(writer);
+		}
+		
+		/* Finalize the PE/COFF output */
+		_ILWriteFinal(writer);
+	}
 
 	/* Free the section table */
 	section = writer->sections;

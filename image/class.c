@@ -144,6 +144,7 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 	info->programItem.image = image;
 	info->parent = parent;
 	info->scope = scope;
+	info->ext = 0;
 
 	/* Create a nesting relationship with the scope if necessary */
 	if(ILClassIsNestingScope(scope))

@@ -235,45 +235,6 @@ typedef struct
 			} while (0)
 
 /*
- * Structure of a constant pool entry.
- */
-struct _tagJavaConstEntry
-{
-	ILUInt16		type;
-	ILUInt16		length;
-	union
-	{
-		char	   *utf8String;
-		ILInt32		intValue;
-		ILInt64		longValue;
-		ILFloat		floatValue;
-		ILDouble	doubleValue;
-		ILUInt32	strValue;
-		struct
-		{
-			ILUInt32 nameIndex;
-			ILClass *classInfo;
-
-		} classValue;
-		struct
-		{
-			ILUInt16 classIndex;
-			ILUInt16 nameAndType;
-			ILProgramItem *item;
-
-		} refValue;
-		struct
-		{
-			ILUInt32 name;
-			ILUInt32 type;
-
-		} nameAndType;
-
-	} un;
-
-};
-
-/*
  * Convert a Java-style slashed name into an IL-style
  * name and namespace.  Returns zero if out of memory.
  */

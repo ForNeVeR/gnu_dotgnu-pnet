@@ -4,6 +4,11 @@
 	* cscc/csharp/cs_stmt.tc (ILNode_Foreach): use the correct types
 	when creating the "doCast" node.
 
+	* ilasm/ilasm_grammar.y, ilasm/ilasm_main.c, ilasm/ilasm_output.c,
+	ilasm/ilasm_output.h, image/Makefile.am, image/class.c,
+	image/image.h, image/java_loader.c, image/program.h, image/writer.c,
+	include/il_writer.h: apply the Java assembler patches from Sylvain.
+
 2002-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_arith.tc, codegen/cg_library.c, codegen/cg_relop.tc,

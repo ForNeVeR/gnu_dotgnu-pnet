@@ -497,6 +497,16 @@ void _ILWriteFieldRVAFixups(ILWriter *writer, unsigned long dataSection,
 							unsigned long tlsSection);
 
 /*
+ * Write java image header
+ */
+void _ILWriteJavaHeaders(ILWriter *writer);
+
+/*
+ * Write a java class
+ */
+void WriteJavaClass(ILWriter *writer, ILClass *class);
+
+/*
  * Recommended number of token columns for use with "ILImageRawTokenData".
  */
 #define	IL_IMAGE_TOKEN_COLUMNS		16

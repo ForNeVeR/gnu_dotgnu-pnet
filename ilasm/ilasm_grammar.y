@@ -853,7 +853,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %type <integer>		ComTypeAttributes ComTypeAttributeList
 %type <integer>		ComTypeAttributeName ManifestResAttributes
 %type <integer>		ManifestResAttributeList ManifestResAttributeName
-%type <integer>     LayoutOption AtOption
+%type <integer>     LayoutOption AtOption JavaArrayType
 %type <fieldAttrs>	FieldAttributes FieldAttributeList FieldAttributeName
 %type <methodAttrs>	MethodAttributes MethodAttributeList MethodAttributeName
 %type <opcode>		I_NONE I_VAR I_BRANCH I_METHOD I_FIELD I_TYPE
@@ -911,6 +911,7 @@ Declaration
 	| MethodHeading '{' MethodDeclarations '}'
 	| MethodHeading K_JAVA '{'		{
 				ILAsmParseJava = 1;
+				ILJavaAsmInitPool();
 			}
 		JavaMethodDeclarations '}'	{
 				ILAsmParseJava = 0;
@@ -1234,6 +1235,7 @@ ClassDeclaration
 	: MethodHeading '{' MethodDeclarations '}'
 	| MethodHeading K_JAVA '{'	{
 				ILAsmParseJava = 1;
+				ILJavaAsmInitPool();
 			}
 	  JavaMethodDeclarations '}'	{
 	  			ILAsmParseJava = 0;
@@ -1997,13 +1999,13 @@ JavaMethodDeclarationList
 	;
 
 JavaMethodDeclaration
-	: D_MAXSTACK Integer32
-	| D_LOCALS Integer32
+	: D_MAXSTACK Integer32	 { ILAsmOutMaxStack((ILUInt32)($2));  }
+	| D_LOCALS Integer32	 { ILAsmOutMaxLocals((ILUInt32)($2)); }
 	| JavaInstruction
 	| JavaExceptionBlock
 	| JavaScopeBlock				{ /* nothing to do here */ }
-	| Identifier ':'				{}
-	| Integer32 ':'					{}
+	| Identifier ':'				{ ILAsmOutLabel($1.string); }
+	| Integer32 ':'					{ ILAsmOutIntLabel($1); }
 	| SecurityDeclaration
 	| ExternalSourceSpecification
 	| CustomAttributeDeclaration
@@ -3696,41 +3698,78 @@ SwitchLabel
 	;
 
 JavaInstruction
-	: I_NONE				{}
-	| I_VAR Integer32		{}
-	| I_IINC Integer32 Integer32		{}
-	| I_INT Integer64		{}
-	| I_CONST K_INT32 '(' Integer32 ')'		{}
-	| I_CONST K_INT64 '(' Integer64 ')'		{}
-	| I_CONST K_FLOAT32 '(' InstructionFloat ')'		{}
-	| I_CONST K_FLOAT64 '(' InstructionFloat ')'		{}
-	| I_CONST ComposedString	{}
-	| I_BRANCH Integer32	{}
-	| I_BRANCH Identifier	{}
-	| I_METHOD MethodReference		{}
-	| I_METHOD ComposedString ComposedString ComposedString	{}
-	| I_FIELD Type TypeSpecification COLON_COLON Identifier	{}
-	| I_FIELD ComposedString ComposedString ComposedString	{}
-	| I_TYPE TypeSpecification	{}
-	| I_TYPE ComposedString	{}
-	| I_IMETHOD MethodReference Integer32		{}
-	| I_IMETHOD ComposedString ComposedString ComposedString Integer32	{}
-	| I_NEWARRAY JavaArrayType	{}
-	| I_MULTINEWARRAY TypeSpecification Integer32	{}
-	| I_MULTINEWARRAY ComposedString Integer32	{}
-	| I_SWITCH TableSwitchLabel '(' Integer32 ':' TableSwitchLabels ')'	{}
-	| I_LSWITCH TableSwitchLabel '(' LookupSwitchLabels ')'		{}
+	: I_NONE				{ ILJavaAsmOutSimple($1); }
+	| I_VAR Integer32		{ ILJavaAsmOutVar($1, $2); }
+	| I_IINC Integer32 Integer32 { ILJavaAsmOutInc($1, $2, $3); }
+	| I_INT Integer64		{ ILJavaAsmOutInt($1, $2);	  }
+	| I_CONST K_INT32 '(' Integer32 ')'		{ ILJavaAsmOutConstInt32($1, $4); }
+	| I_CONST K_INT64 '(' Integer64 ')'		{ ILJavaAsmOutConstInt64($1, $4);}
+	| I_CONST K_FLOAT32 '(' InstructionFloat ')'   { 
+			ILJavaAsmOutConstFloat32($1, $4.fbytes);
+		}
+	| I_CONST K_FLOAT64 '(' InstructionFloat ')' { 
+			ILJavaAsmOutConstFloat64($1, $4.dbytes);
+		}
+	| I_CONST ComposedString	{ ILJavaAsmOutString($2); }
+	| I_BRANCH Integer32		{ ILAsmOutBranchInt($1, $2); }
+	| I_BRANCH Identifier		{ ILAsmOutBranch($1, $2.string); }
+	| I_METHOD MethodReference		{ ILJavaAsmOutToken($1, $2); }
+	| I_METHOD ComposedString ComposedString ComposedString	{
+			ILJavaAsmOutMethod($1, $2.string, $3.string, $4.string);
+		}
+	| I_FIELD Type TypeSpecification COLON_COLON Identifier	{
+			/* Refer to a field in some other class */
+			ILToken token = ILAsmResolveMember($3.item, $5.string, $2,
+												   IL_META_MEMBERKIND_FIELD);
+			ILJavaAsmOutToken($1, token);
+		}
+	| I_FIELD ComposedString ComposedString ComposedString	{
+			// XXX factorisation method ...
+			ILJavaAsmOutField($1, $2.string, $3.string, $4.string);
+		}
+	| I_TYPE TypeSpecification	{
+			if($2.item != 0)
+			{
+				ILJavaAsmOutToken($1, ILProgramItem_Token($2.item));
+			}
+			else
+			{
+				ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+								  "no token for type specification");
+				ILAsmErrors = 1;
+			}
+		}
+	| I_TYPE ComposedString	{ ILJavaAsmOutType($1, $2.string); }
+	| I_IMETHOD MethodReference Integer32		{ /* ?? */}
+	| I_IMETHOD ComposedString ComposedString ComposedString Integer32	{ /* ?? */}
+	| I_NEWARRAY JavaArrayType	{ ILJavaAsmOutNewarray($1, $2); }
+	| I_MULTINEWARRAY TypeSpecification Integer32	{
+			ILJavaAsmOutMultinewarray($1, $2.type, $3);
+		}
+	| I_MULTINEWARRAY ComposedString Integer32	{ /* TODO */}
+	| I_SWITCH TableSwitchDefaultLabel '(' Integer32 ':' {
+			ILJavaAsmOutTableSwitchStart($4);
+		} 
+	  TableSwitchLabels ')'	{
+			ILJavaAsmOutTableSwitchEnd($4);
+		}
+	| I_LSWITCH LookupSwitchDefaultLabel '(' { 
+			ILJavaAsmOutLookupSwitchStart();
+		}
+	  LookupSwitchLabels ')' {
+			ILJavaAsmOutLookupSwitchEnd();
+		}
 	;
 
 JavaArrayType
-	: K_BOOL
-	| K_CHAR
-	| K_FLOAT32
-	| K_FLOAT64
-	| K_INT8
-	| K_INT16
-	| K_INT32
-	| K_INT64
+	: K_BOOL	  { $$ = 4; }
+	| K_CHAR	  { $$ = 5; }
+	| K_FLOAT32	  { $$ = 6; }
+	| K_FLOAT64	  { $$ = 7; }
+	| K_INT8	  { $$ = 8; }
+	| K_INT16	  { $$ = 9; }
+	| K_INT32	  { $$ = 10; }
+	| K_INT64	  { $$ = 11; }
 	;
 
 TableSwitchLabels
@@ -3743,9 +3782,14 @@ TableSwitchLabelList
 	| TableSwitchLabelList ',' TableSwitchLabel
 	;
 
+TableSwitchDefaultLabel
+	: Identifier	{ /* TODO */ }
+	| Integer32		{ /* TODO */ }
+	;
+
 TableSwitchLabel
-	: Identifier		{}
-	| Integer32			{}
+	: Identifier	{ ILJavaAsmOutTableSwitchRef($1.string); }
+	| Integer32		{ ILJavaAsmOutTableSwitchRefInt($1); }
 	;
 
 LookupSwitchLabels
@@ -3758,7 +3802,12 @@ LookupSwitchLabelList
 	| LookupSwitchLabelList ',' LookupSwitchLabel
 	;
 
+LookupSwitchDefaultLabel
+	: Identifier	{ /* TODO */ }
+	| Integer32		{ /* TODO */ }
+	;
+
 LookupSwitchLabel
-	: Integer32 ':' Identifier		{}
-	| Integer32 ':' Integer32		{}
+	: Integer32 ':' Identifier	{ ILJavaAsmOutLookupSwitchRef($1, $3.string); }
+	| Integer32 ':' Integer32	{ ILJavaAsmOutLookupSwitchRefInt($1, $3); }
 	;

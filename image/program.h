@@ -166,6 +166,58 @@ struct _tagILClassExt
 	JavaConstEntry *constPool;			/* Constant pool entries */
 };
 
+/* 
+ * list of java method code 
+ */
+typedef struct _tagILJavaCodeList JavaCodeList;
+struct _tagILJavaCodeList
+{
+	ILMethod       *method;
+	void           *code;
+	ILUInt32        length;
+	JavaCodeList   *next;
+};
+
+/*
+ * Structure of a constant pool entry.
+ */
+struct _tagJavaConstEntry
+{
+	ILUInt16		type;
+	ILUInt16		length;
+	union
+	{
+		JavaCodeList   *codeList;
+		char	   *utf8String;
+		ILInt32		intValue;
+		ILInt64		longValue;
+		ILFloat		floatValue;
+		ILDouble	doubleValue;
+		ILUInt32	strValue;
+		struct
+		{
+			ILUInt32 nameIndex;
+			ILClass *classInfo;
+
+		} classValue;
+		struct
+		{
+			ILUInt16 classIndex;
+			ILUInt16 nameAndType;
+			ILProgramItem *item;
+
+		} refValue;
+		struct
+		{
+			ILUInt32 name;
+			ILUInt32 type;
+
+		} nameAndType;
+
+	} un;
+
+};
+
 /*
  * Information about a class.
  */

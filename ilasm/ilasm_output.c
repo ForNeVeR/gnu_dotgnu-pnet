@@ -24,6 +24,7 @@
 #include "ilasm_build.h"
 #include "ilasm_output.h"
 #include "il_opcodes.h"
+#include "il_jopcodes.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -33,6 +34,7 @@ extern int   ILAsmShortInsns;	/* ilasm_main.c */
 extern char *ILAsmFilename;		/* ilasm_scanner.l */
 extern long  ILAsmLineNum;		/* ilasm_scanner.l */
 extern int   ILAsmErrors;		/* ilasm_scanner.l */
+extern int   ILAsmParseJava;		/* ilasm_scanner.l */
 
 ILWriter *ILAsmWriter;
 
@@ -730,8 +732,17 @@ static void Branch(ILInt32 opcode, char *name)
 	ref->next = labelInfo->refs;
 	labelInfo->refs = ref;
 
-	/* Is the label defined? */
-	if(labelInfo->defined)
+
+	if(ILAsmParseJava) 
+	{
+		ref->squashed = 1; /* java labels don't need squashing */
+		ref->offset = 1;
+		OUT_BYTE(opcode);
+		OUT_BYTE(0);
+		OUT_BYTE(0);
+		ref->addrLen = 2;
+	} 
+	else if(labelInfo->defined) 	/* Is the label defined? */
 	{
 		/* Yes, so generate the final instruction now */
 		delta = (long)(labelInfo->address - (offset + 2));
@@ -1137,6 +1148,10 @@ void ILAsmOutLabel(char *label)
 					ref->squashed = 1;
 				}
 			}
+			else if(ref->addrLen == 2) 
+			{
+				/* java labels: nothing to do */
+			}
 			else
 			{
 				delta = (long)(offset - (ref->posn + ref->offset + 1));
@@ -1242,6 +1257,11 @@ void ILAsmOutSSAEnd(void)
 void ILAsmOutMaxStack(ILUInt32 _maxStack)
 {
 	maxStack = _maxStack;
+}
+
+void ILAsmOutMaxLocals(ILUInt32 _maxLocals)
+{
+	initLocals = _maxLocals;
 }
 
 void ILAsmOutZeroInit(void)
@@ -1494,7 +1514,35 @@ static int FinishLabels(void)
 			ref = label->refs;
 			while(ref != 0)
 			{
-				if(ref->isSwitchRef)
+				if(ILAsmParseJava)
+				{
+					if(ref->isSwitchRef)
+					{
+						/* Find the start of the "switch" instruction */
+						delta = (long)(ref->switchStart);
+
+						/* Compute the delta and write it to the "switch" */
+						delta = (long)(label->address - (ILUInt32)delta);
+
+						buffer[ref->posn + ref->offset] =
+							(unsigned char)(delta >> 24); 
+						buffer[ref->posn + ref->offset + 1] =
+							(unsigned char)(delta >> 16);
+						buffer[ref->posn + ref->offset + 2] =
+							(unsigned char)(delta >> 8);
+						buffer[ref->posn + ref->offset + 3] =
+							(unsigned char)delta;
+					}
+					else if(ref->addrLen == 2) /* java labels */
+					{
+						delta = (long)(label->address - ref->posn);
+						buffer[ref->posn + ref->offset] =
+							(unsigned char)(delta >> 8);
+						buffer[ref->posn + ref->offset + 1] =
+							(unsigned char)delta;
+					}
+				}
+				else if(ref->isSwitchRef)
 				{
 					/* Find the end of the "switch" instruction */
 					delta = (long)(ref->switchStart + 4 *
@@ -1612,6 +1660,68 @@ void ILAsmOutFinalizeMethod(ILMethod *method)
 	unsigned long temp;
 	unsigned long startRVA;
 	LabelInfo *label;
+
+	/* check if parsing java method */
+	if(ILAsmParseJava) 
+	{
+		int attrLen;
+		int codeLen;
+		int index;
+		int exceptLen;
+		int attrCount;
+
+		/* Finish the label processing for the method */
+		fatExceptions = FinishLabels();
+
+		index = ILJavaSetUTF8String(ILAsmWriter, ILMethod_Owner(method), "Code", 4);
+		if(!index) 
+		{
+			ILAsmOutOfMemory();
+			goto cleanup;
+		}
+
+		header[0] = (unsigned char)(index >> 8);
+		header[1] = (unsigned char)index ;
+
+		attrLen = offset + 12; /* "hack offset" before exceptions done */
+		header[2] = (unsigned char)(attrLen >> 24);
+		header[3] = (unsigned char)(attrLen >> 16);
+		header[4] = (unsigned char)(attrLen >> 8);
+		header[5] = (unsigned char)attrLen;
+
+		header[6] = (unsigned char)(maxStack >> 8);
+		header[7] = (unsigned char)maxStack;
+
+		header[8] = (unsigned char)(initLocals >> 8);
+		header[9] = (unsigned char)initLocals;
+		
+		codeLen = offset; 
+		header[10] = (unsigned char)(codeLen >> 24);
+		header[11] = (unsigned char)(codeLen >> 16);
+		header[12] = (unsigned char)(codeLen >> 8);
+		header[13] = (unsigned char)codeLen;
+
+		ILJavaAppendCode(ILAsmWriter, ILMethod_Owner(method), method, header, 14);
+
+		/* Output the method code */
+		ILJavaAppendCode(ILAsmWriter, ILMethod_Owner(method), method, buffer, offset);
+
+		/* exceptions */
+		exceptLen = 0; /* TODO */
+		header[0] = (unsigned char)(exceptLen >> 8);
+		header[1] = (unsigned char)exceptLen;
+
+		ILJavaAppendCode(ILAsmWriter, ILMethod_Owner(method), method, header, 2);
+
+		/* attributes */
+		attrCount = 0; /* TODO */
+		header[0] = (unsigned char)(attrCount >> 8);
+		header[1] = (unsigned char)attrCount;
+
+		ILJavaAppendCode(ILAsmWriter, ILMethod_Owner(method), method, header, 2);
+	} 
+	else
+	{
 
 	/* Finish the label processing for the method */
 	fatExceptions = FinishLabels();
@@ -1829,6 +1939,8 @@ void ILAsmOutFinalizeMethod(ILMethod *method)
 		label = label->next;
 	}
 
+	}
+
 	/* Clean up all data used to represent the method */
 cleanup:
 	offset = 0;
@@ -1861,6 +1973,329 @@ cleanup:
 	}
 	labels = 0;
 	haveDebug = 0;
+}
+
+void ILJavaAsmInitPool()
+{
+	ILJavaInitPool(ILAsmWriter, ILAsmClass);
+}
+
+void ILJavaAsmOutSimple(ILInt32 opcode)
+{
+	OUT_BYTE(opcode);
+}
+
+void ILJavaAsmOutVar(ILInt32 opcode, ILInt64 num) 
+{
+	if(num <= 3)
+	{
+		/* TODO: use short version */
+	}
+	OUT_BYTE(opcode);
+	OUT_BYTE(num);
+}
+
+void ILJavaAsmOutInc(ILInt32 opcode, ILInt64 index, ILInt64 val) 
+{
+	OUT_BYTE(opcode);
+	OUT_BYTE(index);
+	OUT_BYTE(val);
+}
+
+void ILJavaAsmOutInt(ILInt32 opcode, ILInt64 value)
+{
+	if(opcode == JAVA_OP_BIPUSH)
+	{
+		OUT_BYTE(opcode);
+		OUT_BYTE(value);
+	}
+	else if(opcode == JAVA_OP_SIPUSH)
+	{
+		OUT_BYTE(opcode);
+		OUT_BYTE(value >> 8);
+		OUT_BYTE(value);
+	}
+}
+
+void ILJavaAsmOutConstInt32(ILInt32 opcode, ILInt64 value)
+{
+	int index = ILJavaSetInteger(ILAsmWriter, ILAsmClass, (ILInt32)value);
+	
+	if(index < 256)
+	{
+		OUT_BYTE(JAVA_OP_LDC);
+		OUT_BYTE(index);
+	}
+	else
+	{
+		OUT_BYTE(JAVA_OP_LDC_W);
+		OUT_BYTE(index >> 8);
+		OUT_BYTE(index);
+	}
+}
+
+void ILJavaAsmOutConstInt64(ILInt32 opcode, ILInt64 value)
+{
+	int index = ILJavaSetLong(ILAsmWriter, ILAsmClass, value);
+
+	OUT_BYTE(JAVA_OP_LDC2_W);
+	OUT_BYTE(index >> 8);
+	OUT_BYTE(index);
+}
+
+void ILJavaAsmOutConstFloat32(ILInt32 opcode, ILUInt8 *value)
+{
+	int index = ILJavaSetFloat(ILAsmWriter, ILAsmClass, IL_READ_FLOAT(value));
+	
+	if(index < 256)
+	{
+		OUT_BYTE(JAVA_OP_LDC);
+		OUT_BYTE(index);
+	}
+	else
+	{
+		OUT_BYTE(JAVA_OP_LDC_W);
+		OUT_BYTE(index >> 8);
+		OUT_BYTE(index);
+	}
+}
+
+void ILJavaAsmOutConstFloat64(ILInt32 opcode, ILUInt8 *value)
+{
+	int index = ILJavaSetDouble(ILAsmWriter, ILAsmClass, IL_READ_DOUBLE(value));
+
+	OUT_BYTE(JAVA_OP_LDC2_W);
+	OUT_BYTE(index >> 8);
+	OUT_BYTE(index);
+}
+
+void ILJavaAsmOutString(ILIntString interned) 
+{
+	int index = ILJavaSetUTF8String(ILAsmWriter, ILAsmClass, interned.string, 
+									interned.len);
+	OUT_BYTE(index >> 8);
+	OUT_BYTE(index);
+}
+
+void ILJavaAsmOutToken(ILInt32 opcode, ILUInt32 token)
+{
+	ILMember *member;
+	ILClass *class;
+	ILUInt32 index = 0;
+	int refType;
+
+	switch(token & IL_META_TOKEN_MASK)
+	{
+	case IL_META_TOKEN_TYPE_REF:
+	case IL_META_TOKEN_TYPE_DEF:
+	{
+		class = ILClass_FromToken(ILAsmImage, token);
+		index = ILJavaSetClass(ILAsmWriter, ILAsmClass, class);
+	}
+	break;
+
+	case IL_META_TOKEN_FIELD_DEF:
+	{
+		refType = JAVA_CONST_FIELDREF;
+		goto setRef; 
+	}
+	break;
+
+	case IL_META_TOKEN_MEMBER_REF:
+	case IL_META_TOKEN_METHOD_DEF:
+	{
+		refType = JAVA_CONST_METHODREF;
+	setRef:
+		member = ILMember_FromToken(ILAsmImage, token);
+		index = ILJavaSetref(ILAsmWriter, ILAsmClass, refType, ILMember_Owner(member), 
+							 (char*)ILMember_Name(member), ILMember_Signature(member));
+	}
+	break;
+
+	case IL_META_TOKEN_TYPE_SPEC:
+	{
+		/* TODO */
+	} 
+	break;
+	}
+
+	OUT_BYTE(opcode);
+	OUT_BYTE(index >> 8);
+	OUT_BYTE(index);
+}
+
+void ILJavaAsmOutMethod(ILInt32 opcode, char *className, char *mehodName, char *sigName)
+{
+	/* TODO */
+}
+
+void ILJavaAsmOutField(ILInt32 opcode, char *className, char *mehodName, char *sigName)
+{
+	/* TODO */
+}
+
+void ILJavaAsmOutType(ILInt32 opcode, char *className)
+{
+	/* TODO: insert type  access in metadata */
+}
+
+void ILJavaAsmOutNewarray(ILInt32 opcode, ILInt64 type)
+{
+	OUT_BYTE(opcode);
+	OUT_BYTE(type);
+}
+
+void ILJavaAsmOutMultinewarray(ILInt32 opcode, ILType *type, ILInt64 dim)
+{
+	int index = ILJavaSetClassFromType(ILAsmWriter, ILAsmClass, type);
+
+	OUT_BYTE(opcode);
+	OUT_BYTE(index >> 8);
+	OUT_BYTE(index);
+	OUT_BYTE(dim);
+}
+
+static ILUInt32 switchStartOffset = 0;
+static ILUInt32 switchHighOffset = 0;
+static ILUInt32 switchNPairsOffset = 0;
+
+/*
+ * Output a switch label reference in java.
+ */
+static void JavaSwitchRef(char *name)
+{
+	LabelInfo *labelInfo;
+	LabelRef *ref;
+
+	/* Find the label information block */
+	labelInfo = GetLabel(name);
+
+	/* Add a reference for this switch case so that
+	   we can fix it up again later when other branches
+	   are squashed to remove redundant space */
+	ref = ILMemPoolAlloc(&labelRefPool, LabelRef);
+	if(!ref)
+	{
+		ILAsmOutOfMemory();
+	}
+	ref->posn = offset;
+	ref->offset = 0;
+	ref->addrLen = 4;
+	ref->squashed = 1;
+	ref->isSwitchRef = 1;
+	ref->switchStart = switchStartOffset;
+	ref->filename = ILAsmFilename;
+	ref->linenum = ILAsmLineNum;
+	ref->next = labelInfo->refs;
+	labelInfo->refs = ref;
+
+	/* Output a place-holder for the switch case */
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+}
+
+void ILJavaAsmOutTableSwitchStart(ILInt64 low)
+{
+	switchStartOffset = offset;
+	OUT_BYTE(JAVA_OP_TABLESWITCH);
+
+	/* some padding to a 4 bytes boundary */
+	while(((offset) & 3) != 0)
+	{
+		OUT_BYTE(0);
+	}
+
+	/* default offset */
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+
+	/* low */
+	OUT_BYTE(low >> 24);
+	OUT_BYTE(low >> 16);
+	OUT_BYTE(low >> 8);
+	OUT_BYTE(low);
+	switchHighOffset = offset;
+
+	/* high */
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+}
+
+void ILJavaAsmOutTableSwitchRefInt(ILInt64 addr)
+{
+	JavaSwitchRef(ILAsmOutIntToName(addr));
+}
+
+void ILJavaAsmOutTableSwitchRef(char *label)
+{
+	JavaSwitchRef(label);
+}
+
+void ILJavaAsmOutTableSwitchEnd(ILUInt64 low)
+{
+	ILUInt32 high;
+	ILUInt32 count = ((offset - switchHighOffset) / 4) - 2;
+	high = count + low;
+	
+	buffer[switchHighOffset] = (unsigned char)(high >> 24);
+	buffer[switchHighOffset + 1] = (unsigned char)(high >> 16);
+	buffer[switchHighOffset + 2] = (unsigned char)(high >> 8);
+	buffer[switchHighOffset + 3] = (unsigned char)high;
+}
+
+void ILJavaAsmOutLookupSwitchStart(void)
+{
+	switchStartOffset = offset;
+	OUT_BYTE(JAVA_OP_LOOKUPSWITCH);
+
+	/* some padding to a 4 bytes boundary */
+	while(((offset) & 3) != 0)
+	{
+		OUT_BYTE(0);
+	}
+
+	/* default offset */
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	switchNPairsOffset = offset;
+
+	/* npairs */
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+	OUT_BYTE(0);
+}
+
+void ILJavaAsmOutLookupSwitchRefInt(ILInt64 match, ILInt64 addr)
+{
+	ILJavaAsmOutLookupSwitchRef(match, ILAsmOutIntToName(addr));
+}
+
+void ILJavaAsmOutLookupSwitchRef(ILInt64 match, char *label)
+{
+	OUT_BYTE(match >> 24);
+	OUT_BYTE(match >> 16);
+	OUT_BYTE(match >> 8);
+	OUT_BYTE(match);
+	JavaSwitchRef(label);
+}
+
+void ILJavaAsmOutLookupSwitchEnd(void)
+{
+	ILUInt32 nPairs = (((offset - switchNPairsOffset) / 4) - 1) / 2;
+
+	buffer[switchNPairsOffset] = (unsigned char)(nPairs >> 24);
+	buffer[switchNPairsOffset + 1] = (unsigned char)(nPairs >> 16);
+	buffer[switchNPairsOffset + 2] = (unsigned char)(nPairs >> 8);
+	buffer[switchNPairsOffset + 3] = (unsigned char)nPairs;
 }
 
 #ifdef	__cplusplus

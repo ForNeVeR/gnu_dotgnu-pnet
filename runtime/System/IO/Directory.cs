@@ -519,7 +519,30 @@ public sealed class Directory
 	public static DirectoryInfo CreateDirectory(String path)
 			{
 				ValidatePath(path);
-				HandleErrorsDir(DirMethods.CreateDirectory(path));
+				Errno error = DirMethods.CreateDirectory(path);
+				if(error != Errno.Success)
+				{
+					// The path may already exist.
+					if(Exists(path))
+					{
+						return new DirectoryInfo(path);
+					}
+
+					// Attempt to create the parent directory.
+					String parent = Path.GetDirectoryName(path);
+					if(parent == null)
+					{
+						HandleErrorsDir(error);
+					}
+					CreateDirectory(parent);
+
+					// Now try creating the child directory again.
+					error = DirMethods.CreateDirectory(path);
+					if(error != Errno.Success)
+					{
+						HandleErrorsDir(error);
+					}
+				}
 				return new DirectoryInfo(path);
 			}
 

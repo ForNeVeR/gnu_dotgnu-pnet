@@ -65,6 +65,8 @@
 	are stubbed with TODO and nothing else, because it gives a false
 	impression as to what is working and what isn't.
 
+	* runtime/System/IO/Directory.cs: handle recursive directory creation.
+
 2003-08-05  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/Path.cs: fix to GetFullPath for handling ".".

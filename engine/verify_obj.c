@@ -930,6 +930,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF:
 		ILCoderSizeOf(coder, ILType_FromValueType(classInfo));
 		stack[stackSize].engineType = ILEngineType_I4;
 		stack[stackSize].typeInfo = 0;
+		++stackSize;
 	}
 	else
 	{

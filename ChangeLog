@@ -1,4 +1,9 @@
 
+2002-10-19  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/System/Collections/ArrayList.cs: Fix MoveNext() in the
+	ArrayList enumerator.
+
 2002-10-14  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Attribute.cs : Fix count bug in System.Attribute

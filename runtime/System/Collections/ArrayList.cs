@@ -865,7 +865,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 							(_("Invalid_CollectionModified"));
 					}
 					++position;
-					return (position <= finish);
+					return (position < finish);
 				}
 
 		public void Reset()

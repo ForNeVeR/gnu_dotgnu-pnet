@@ -333,6 +333,10 @@ public sealed class Thread
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static bool CanStartThreads();
 
+	// Get the identifier for the current thread.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static int InternalGetThreadId();
+
 }; // class Thread
 
 }; // namespace System.Threading

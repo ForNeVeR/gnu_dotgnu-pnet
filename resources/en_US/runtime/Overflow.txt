@@ -29,3 +29,4 @@ Overflow_Char=Valid Char values are between 0 and 65535, inclusive
 Overflow_Decimal=Valid Decimal values are between -79228162514264337593543950335 and 79228162514264337593543950335, inclusive
 Overflow_NegateTwosCompNum=Attempt to negate the largest negative integer.
 Overflow_Pointer=Pointer value is out of range for the requested operation
+Overflow_Currency=OA currency value overflowed

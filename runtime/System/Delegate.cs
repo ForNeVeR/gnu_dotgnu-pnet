@@ -160,8 +160,8 @@ public abstract class Delegate : ICloneable
 	}
 
 	// Create a delegate for an instance method.
-	public static Delegate CreateDelegate
-				(Type type, Object target, String method)
+	private static Delegate CreateDelegate
+				(Type type, Object target, String method, BindingFlags flags)
 			{
 				MethodInfo methodInfo;
 
@@ -185,11 +185,9 @@ public abstract class Delegate : ICloneable
 
 				// Look up the method.
 				methodInfo = (target.GetType()).GetMethod
-								(method, BindingFlags.Public |
-										 BindingFlags.NonPublic |
-										 BindingFlags.Instance,
-										 null, CallingConventions.Any,
-								     	 GetDelegateParams(type),null);
+								(method, flags,
+								 null, CallingConventions.Any,
+						     	 GetDelegateParams(type), null);
 				if(methodInfo == null)
 				{
 					throw new ArgumentException(_("Arg_DelegateMethod"));
@@ -208,6 +206,34 @@ public abstract class Delegate : ICloneable
 				d.closure = IntPtr.Zero;
 				return d;
 			}
+	public static Delegate CreateDelegate
+				(Type type, Object target, String method)
+			{
+				return CreateDelegate
+					(type, target, method,
+					 BindingFlags.Public | BindingFlags.NonPublic |
+					 BindingFlags.Instance);
+			}
+#if !ECMA_COMPAT
+	public static Delegate CreateDelegate
+				(Type type, Object target, String method, bool ignoreCase)
+			{
+				if(ignoreCase)
+				{
+					return CreateDelegate
+						(type, target, method,
+						 BindingFlags.Public | BindingFlags.NonPublic |
+						 BindingFlags.Instance | BindingFlags.IgnoreCase);
+				}
+				else
+				{
+					return CreateDelegate
+						(type, target, method,
+						 BindingFlags.Public | BindingFlags.NonPublic |
+						 BindingFlags.Instance);
+				}
+			}
+#endif // !ECMA_COMPAT
 
 	// Create a delegate for a named static method.
 	public static Delegate CreateDelegate
@@ -469,7 +495,7 @@ public abstract class Delegate : ICloneable
 	// Implementation of delegate "all" removal.  The real work
 	// is done in the MulticastDelegate class.  This handles
 	// the unicast delegate case only.
-	protected virtual Delegate RemoveAllImpl(Delegate d)
+	internal virtual Delegate RemoveAllImpl(Delegate d)
 			{
 				return RemoveImpl(d);
 			}
@@ -484,6 +510,7 @@ public abstract class Delegate : ICloneable
 
 #if !ECMA_COMPAT
 	// Get the serialization data for this object.
+	[TODO]
 	public virtual void GetObjectData(SerializationInfo info,
 									  StreamingContext context)
 			{

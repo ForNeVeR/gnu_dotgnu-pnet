@@ -61,6 +61,15 @@ public class ArgumentException : SystemException
 					return paramName;
 				}
 			}
+#if !ECMA_COMPAT
+	public override String Message
+			{
+				get
+				{
+					return base.Message;
+				}
+			}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

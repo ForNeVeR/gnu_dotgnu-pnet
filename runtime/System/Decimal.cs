@@ -1,7 +1,7 @@
 /*
  * Decimal.cs - Implementation of the "System.Decimal" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -464,6 +464,7 @@ public struct Decimal : IComparable, IFormattable
 					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
+	[CLSCompliant(false)]
 	public static sbyte ToSByte(decimal value)
 			{
 				if(value >= -128.0m && value <= 127.0m)
@@ -486,6 +487,7 @@ public struct Decimal : IComparable, IFormattable
 					throw new OverflowException(_("Overflow_Int16"));
 				}
 			}
+	[CLSCompliant(false)]
 	public static ushort ToUInt16(decimal value)
 			{
 				if(value >= 0.0m && value <= 65535.0m)
@@ -508,6 +510,7 @@ public struct Decimal : IComparable, IFormattable
 					throw new OverflowException(_("Overflow_Int32"));
 				}
 			}
+	[CLSCompliant(false)]
 	public static uint ToUInt32(decimal value)
 			{
 				if(value >= 0.0m && value <= 4294967295.0m)
@@ -542,6 +545,7 @@ public struct Decimal : IComparable, IFormattable
 					throw new OverflowException(_("Overflow_Int64"));
 				}
 			}
+	[CLSCompliant(false)]
 	public static ulong ToUInt64(decimal value)
 			{
 				if(value >= 0.0m && value <= 18446744073709551615.0m)
@@ -705,6 +709,32 @@ public struct Decimal : IComparable, IFormattable
 				throw new ArgumentOutOfRangeException
 					(_("ArgRange_DecimalScale"));
 			}
+
+#if !ECMA_COMPAT
+
+	// Convert an OA currency value into a Decimal value.
+	// An OA currency value is a 64-bit fixed-point value with
+	// four places after the decimal point.
+	public static Decimal FromOACurrency(long cy)
+			{
+				return ((Decimal)cy) / 10000.0m;
+			}
+
+	// Convert a Decimal value into an OA currency value.
+	public static long ToOACurrency(Decimal value)
+			{
+				try
+				{
+					return (long)(value * 10000.0m);
+				}
+				catch(OverflowException)
+				{
+					// Change the message string in the overflow exception.
+					throw new OverflowException(_("Overflow_Currency"));
+				}
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class Decimal
 

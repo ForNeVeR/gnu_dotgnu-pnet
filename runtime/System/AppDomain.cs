@@ -28,12 +28,22 @@ using System.Reflection;
 using System.Globalization;
 using System.Reflection.Emit;
 using System.Runtime.Remoting;
+using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Security.Principal;
+using System.Configuration.Assemblies;
+using System.Threading;
 
 #if CONFIG_RUNTIME_INFRA
 
-public sealed class AppDomain : MarshalByRefObject, _AppDomain
+#if !ECMA_COMPAT
+[ClassInterface(ClassInterfaceType.None)]
+#endif
+public sealed class AppDomain
+	: MarshalByRefObject, _AppDomain
+#if !ECMA_COMPAT
+	, IEvidenceFactory
+#endif
 {
 	// Internal state.
 	private String friendlyName;
@@ -241,6 +251,21 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 				setup.ShadowCopyDirectories = String.Empty;
 			}
 
+	// Create a COM object instance using the local activator logic.
+	public ObjectHandle CreateComInstanceFrom
+				(String assemblyName, String typeName)
+			{
+				return Activator.CreateComInstanceFrom
+					(assemblyName, typeName);
+			}
+	public ObjectHandle CreateComInstanceFrom
+				(String assemblyName, String typeName,
+				 byte[] hashValue, AssemblyHashAlgorithm hashAlgorithm)
+			{
+				return Activator.CreateComInstanceFrom
+					(assemblyName, typeName, hashValue, hashAlgorithm);
+			}
+
 #endif // !ECMA_COMPAT
 
 #if CONFIG_REMOTING
@@ -326,6 +351,34 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 									  bindingAttr, binder, args, culture,
 									  activationAttributes,
 									  securityAttributes);
+			}
+
+	// Create a remote instance of a type and unwrap it.
+	public Object CreateInstanceFromAndUnwrap(String assemblyName,
+											  String typeName)
+			{
+				return CreateInstanceFrom(assemblyName, typeName).Unwrap();
+			}
+	public Object CreateInstanceFromAndUnwrap(String assemblyName,
+								     		  String typeName,
+						    	     		  Object[] activationAttributes)
+			{
+				return CreateInstanceFrom(assemblyName, typeName,
+									      activationAttributes).Unwrap();
+			}
+	public Object CreateInstanceFromAndUnwrap(String assemblyName,
+										      String typeName,
+								    	      bool ignoreCase,
+										      BindingFlags bindingAttr,
+								    	      Binder binder, Object[] args,
+								    	      CultureInfo culture,
+								    	      Object[] activationAttributes,
+								    	      Evidence securityAttributes)
+			{
+				return CreateInstanceFrom(assemblyName, typeName, ignoreCase,
+									      bindingAttr, binder, args, culture,
+									      activationAttributes,
+									      securityAttributes).Unwrap();
 			}
 
 	// Execute a delegate in a foreign application domain.
@@ -448,15 +501,24 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 	// Execute a particular assembly within this application domain.
 	public int ExecuteAssembly(String assemblyFile)
 			{
-				return ExecuteAssembly(assemblyFile, null, null);
+				return ExecuteAssembly(assemblyFile, null, null,
+									   null, AssemblyHashAlgorithm.None);
 			}
 	public int ExecuteAssembly(String assemblyFile, Evidence assemblySecurity)
 			{
-				return ExecuteAssembly(assemblyFile, assemblySecurity, null);
+				return ExecuteAssembly(assemblyFile, assemblySecurity, null,
+									   null, AssemblyHashAlgorithm.None);
+			}
+	public int ExecuteAssembly(String assemblyFile, Evidence assemblySecurity,
+							   String[] args)
+			{
+				return ExecuteAssembly(assemblyFile, assemblySecurity,
+									   args, null, AssemblyHashAlgorithm.None);
 			}
 	[TODO]
 	public int ExecuteAssembly(String assemblyFile, Evidence assemblySecurity,
-							   String[] args)
+							   String[] args, byte[] hashValue,
+							   AssemblyHashAlgorithm hashAlgorithm)
 			{
 				if(assemblyFile == null)
 				{
@@ -474,10 +536,28 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 				return new Assembly [0];
 			}
 
+	// Get the current thread identifier.
+	public static int GetCurrentThreadId()
+			{
+				return Thread.InternalGetThreadId();
+			}
+
 	// Fetch the object associated with a particular data name.
 	public Object GetData(String name)
 			{
 				return items[name];
+			}
+
+	// Get the type of this instance.
+	public new Type GetType()
+			{
+				return base.GetType();
+			}
+
+	// Determine if this domain is running finalizers prior to unload.
+	public bool IsFinalizingForUnload()
+			{
+				return false;
 			}
 
 	// Load an assembly into this application domain by name.
@@ -569,10 +649,22 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 				items[name] = data;
 			}
 
+	// Set the dynamic base path.
+	public void SetDynamicBase(String path)
+			{
+				setup.DynamicBase = path;
+			}
+
 	// Set the policy for principals.
 	public void SetPrincipalPolicy(PrincipalPolicy policy)
 			{
 				// Nothing to do here: we don't use such policies.
+			}
+
+	// Turn on shadow copying.
+	public void SetShadowCopyFiles()
+			{
+				setup.ShadowCopyFiles = "true";
 			}
 
 	// Set the location of the shadow copy directory.

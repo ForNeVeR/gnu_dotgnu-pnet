@@ -69,12 +69,6 @@ public struct Int32 : IComparable, IFormattable
 				return 
 					Formatter.CreateFormatter(format).Format(this, provider);
 			}
-#if !ECMA_COMPAT
-	public static String ToString(Int32 number)
-			{
-				return number.ToString();
-			}
-#endif
 
 	// Parsing methods.
 	public static int Parse(String s, NumberStyles style,

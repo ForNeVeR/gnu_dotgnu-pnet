@@ -41,6 +41,8 @@ public sealed class AppDomainSetup : IAppDomainSetup
 	private String shadowCopyDirectories;
 	private String shadowCopyFiles;
 	private bool disallowPublisherPolicy;
+	private bool disallowBindingRedirects;
+	private bool disallowCodeDownload;
 	private LoaderOptimization loaderOptimization;
 
 	// Constructor.
@@ -162,6 +164,28 @@ public sealed class AppDomainSetup : IAppDomainSetup
 			}
 
 	// Other properties.
+	public bool DisallowBindingRedirects
+			{
+				get
+				{
+					return disallowBindingRedirects;
+				}
+				set
+				{
+					disallowBindingRedirects = value;
+				}
+			}
+	public bool DisallowCodeDownload
+			{
+				get
+				{
+					return disallowCodeDownload;
+				}
+				set
+				{
+					disallowCodeDownload = value;
+				}
+			}
 	public bool DisallowPublisherPolicy
 			{
 				get

@@ -23,6 +23,7 @@ namespace System
 
 using System.Collections;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
 public abstract class Array : ICloneable, ICollection, IEnumerable, IList
@@ -1398,6 +1399,9 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			return GetLength();
 		}
 	}
+#if !ECMA_COMPAT
+	[ComVisible(false)]
+#endif
 	public long LongLength
 	{
 		get
@@ -1423,6 +1427,154 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			return GetRank();
 		}
 	}
+
+#if !ECMA_COMPAT
+
+	// Downgrade a 64-bit index to 32-bit.
+	private static int DowngradeIndex(String name, long index)
+	{
+		if(index < (long)(Int32.MinValue) || index > (long)(Int32.MaxValue))
+		{
+			throw new ArgumentOutOfRangeException
+				("name", _("ArgRange_Array"));
+		}
+		return unchecked((int)index);
+	}
+	private static int DowngradeIndex2(String name, long index)
+	{
+		if(index < (long)(Int32.MinValue) || index > (long)(Int32.MaxValue))
+		{
+			throw new IndexOutOfRangeException(_("Arg_InvalidArrayIndex"));
+		}
+		return unchecked((int)index);
+	}
+
+	// Downgrade a 64-bit length to 32-bit.
+	private static int DowngradeLength(String name, long length)
+	{
+		if(length < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				(name, _("ArgRange_NonNegative"));
+		}
+		else if(length > (long)(Int32.MaxValue))
+		{
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
+		}
+		return unchecked((int)length);
+	}
+
+	// 64-bit versions of the array manipulation methods,
+	// implemented in terms of their 32-bit counterparts.
+	public static void Copy(Array sourceArray, Array destinationArray,
+							long length)
+	{
+		Copy(sourceArray, destinationArray, DowngradeLength("length", length));
+	}
+	public static void Copy(Array sourceArray, long sourceIndex,
+							Array destinationArray, long destinationIndex,
+							long length)
+	{
+		Copy(sourceArray,
+		     DowngradeIndex("sourceIndex", sourceIndex),
+			 destinationArray,
+			 DowngradeIndex("destinationIndex", destinationIndex),
+			 DowngradeLength("length", length));
+	}
+	[ComVisible(false)]
+	public virtual void CopyTo(Array array, long index)
+	{
+		CopyTo(array, DowngradeIndex("index", index));
+	}
+	public static Array CreateInstance(Type elementType, long[] lengths)
+	{
+		if(lengths == null)
+		{
+			throw new ArgumentNullException("lengths");
+		}
+		int[] ilengths = new int [lengths.Length];
+		int posn;
+		for(posn = 0; posn < lengths.Length; ++posn)
+		{
+			ilengths[posn] = DowngradeLength("lengths", lengths[posn]);
+		}
+		return CreateInstance(elementType, ilengths);
+	}
+	[ComVisible(false)]
+	public long GetLongLength(int dimension)
+	{
+		return GetLength(dimension);
+	}
+	[ComVisible(false)]
+	public Object GetValue(long index)
+	{
+		return GetValue(DowngradeIndex2("index", index));
+	}
+	[ComVisible(false)]
+	public Object GetValue(long index1, long index2)
+	{
+		return GetValue(DowngradeIndex2("index1", index1),
+						DowngradeIndex2("index2", index2));
+	}
+	[ComVisible(false)]
+	public Object GetValue(long index1, long index2, long index3)
+	{
+		return GetValue(DowngradeIndex2("index1", index1),
+						DowngradeIndex2("index2", index2),
+						DowngradeIndex2("index3", index3));
+	}
+	[ComVisible(false)]
+	public Object GetValue(long[] indices)
+	{
+		if(indices == null)
+		{
+			throw new ArgumentNullException("indices");
+		}
+		int[] iindices = new int [indices.Length];
+		int posn;
+		for(posn = 0; posn < indices.Length; ++posn)
+		{
+			iindices[posn] = DowngradeIndex2("indices", indices[posn]);
+		}
+		return GetValue(iindices);
+	}
+	[ComVisible(false)]
+	public void SetValue(Object value, long index)
+	{
+		SetValue(value, DowngradeIndex2("index", index));
+	}
+	[ComVisible(false)]
+	public void SetValue(Object value, long index1, long index2)
+	{
+		SetValue(value,
+		         DowngradeIndex2("index1", index1),
+				 DowngradeIndex2("index2", index2));
+	}
+	[ComVisible(false)]
+	public void SetValue(Object value, long index1, long index2, long index3)
+	{
+		SetValue(value,
+				 DowngradeIndex2("index1", index1),
+				 DowngradeIndex2("index2", index2),
+				 DowngradeIndex2("index3", index3));
+	}
+	[ComVisible(false)]
+	public void SetValue(Object value, long[] indices)
+	{
+		if(indices == null)
+		{
+			throw new ArgumentNullException("indices");
+		}
+		int[] iindices = new int [indices.Length];
+		int posn;
+		for(posn = 0; posn < indices.Length; ++posn)
+		{
+			iindices[posn] = DowngradeIndex2("indices", indices[posn]);
+		}
+		SetValue(value, iindices);
+	}
+
+#endif // !ECMA_COMPAT
 
 }; // class Array
 

@@ -1,7 +1,7 @@
 /*
  * Activator.cs - Implementation of the "System.Activator" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ using System.Reflection;
 using System.Runtime.Remoting;
 using System.Globalization;
 using System.Security.Policy;
+using System.Configuration.Assemblies;
 
 #if ECMA_COMPAT
 internal
@@ -56,6 +57,12 @@ sealed class Activator
 					(_("Exception_ComTypeLoad"),
 	 			     (assemblyName == null ? "current" : assemblyName),
 					 typeName));
+	}
+	public static ObjectHandle CreateComInstanceFrom
+			(String assemblyName, String typeName,
+			 byte[] hashValue, AssemblyHashAlgorithm hashAlgorithm)
+	{
+		return CreateComInstanceFrom(assemblyName, typeName);
 	}
 
 #endif // CONFIG_REMOTING
@@ -117,6 +124,27 @@ sealed class Activator
 								 BindingFlags.CreateInstance | bindingAttr,
 								 binder, null, args, null, culture, null);
 	}
+
+#if !ECMA_COMPAT
+	// Alternative way to create an instance with implicitly-specified
+	// binding flag values.
+	public static Object CreateInstance(Type type, bool nonPublic)
+	{
+		if(nonPublic)
+		{
+			return CreateInstance
+				(type, BindingFlags.Public | BindingFlags.NonPublic |
+					   BindingFlags.Instance,
+				 null, null, null, null);
+		}
+		else
+		{
+			return CreateInstance
+				(type, BindingFlags.Public | BindingFlags.Instance,
+				 null, null, null, null);
+		}
+	}
+#endif
 
 #if CONFIG_REMOTING
 
@@ -203,6 +231,28 @@ sealed class Activator
 		return new ObjectHandle
 			(CreateInstance(type, bindingAttr, binder, args,
 							culture, activationAttributes));
+	}
+
+	// Get a proxy for a remote well-known object.
+	public static Object GetObject(Type type, String url)
+	{
+		return GetObject(type, url, null);
+	}
+	[TODO]
+	public static Object GetObject(Type type, String url, Object state)
+	{
+		// Validate the parameters.
+		if(type == null)
+		{
+			throw new ArgumentNullException("type");
+		}
+		if(url == null)
+		{
+			throw new ArgumentNullException("url");
+		}
+
+		// We don't support remoting operations yet.
+		throw new RemotingException();
 	}
 
 #endif // CONFIG_REMOTING

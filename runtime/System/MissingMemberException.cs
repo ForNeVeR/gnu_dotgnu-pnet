@@ -63,6 +63,17 @@ public class MissingMemberException : MemberAccessException
 			}
 #endif
 
+#if !ECMA_COMPAT
+	// Get the message string for this exception.
+	public override String Message
+			{
+				get
+				{
+					return base.Message;
+				}
+			}
+#endif
+
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault
 			{

@@ -32,7 +32,7 @@ public abstract class MarshalByRefObject
 #if CONFIG_REMOTING
 
 	// Create a marshalable reference for this object.
-	public virtual ObjRef CreateObjRef()
+	public virtual ObjRef CreateObjRef(Type requestedType)
 			{
 				// Remoting is not yet supported by this class library.
 				throw new RemotingException(_("NotSupp_Remoting"));

@@ -154,6 +154,25 @@ public struct Double : IComparable, IFormattable
 				return Parse(s, style, null);
 			}
 
+#if !ECMA_COMPAT
+	// Try to parse, and return a boolean on failure.
+	public static bool TryParse(String s, NumberStyles style,
+								IFormatProvider provider,
+								out double result)
+			{
+				try
+				{
+					result = Parse(s, style, provider);
+					return true;
+				}
+				catch(Exception)
+				{
+					result = 0.0;
+					return false;
+				}
+			}
+#endif
+
 	// Implementation of the IComparable interface.
 	public int CompareTo(Object value)
 			{

@@ -26,6 +26,7 @@ namespace System
 
 using System;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 public abstract class MulticastDelegate : Delegate
 {
@@ -241,7 +242,7 @@ public abstract class MulticastDelegate : Delegate
 			}
 
 	// Implementation of delegate "all" removal.
-	protected override Delegate RemoveAllImpl(Delegate d)
+	internal override Delegate RemoveAllImpl(Delegate d)
 			{
 				MulticastDelegate current, list;
 				MulticastDelegate dmulti = (MulticastDelegate)d;
@@ -298,6 +299,18 @@ public abstract class MulticastDelegate : Delegate
 				}
 				return list;
 			}
+
+#if !ECMA_COMPAT
+
+	// Get serialization data for this delegate.
+	[TODO]
+	public override void GetObjectData
+				(SerializationInfo info, StreamingContext context)
+			{
+				// TODO
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class MulticastDelegate
 

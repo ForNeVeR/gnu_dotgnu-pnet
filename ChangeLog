@@ -1,5 +1,11 @@
 
-2002-06-13	Gopal.V  <gopalv82@symonds.net>
+2002-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/field5.cs,
+	csharp/class/field5.il, csharp/class/field5.jl:
+	test forward referencing of field constants.
+
+2002-06-13  Gopal.V  <gopalv82@symonds.net>
 
 	* csharp/stmt/Makefile.am, csharp/stmt/foreach4.cs, 
 	csharp/stmt/foreach4.il, csharp/stmt/foreach4.jl : test 

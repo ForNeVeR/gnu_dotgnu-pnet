@@ -65,7 +65,7 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 /*
  *	Unregisters an ILThread that no longer needs to execute managed code.
  */
-ILExecThread *ILThreadUnregisterForManagedExecution(ILThread *thread);
+void ILThreadUnregisterForManagedExecution(ILThread *thread);
 
 /*
  * Determine if the system has thread support.  This can

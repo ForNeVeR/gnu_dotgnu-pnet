@@ -90,7 +90,7 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 /*
  *	Unregisters a thread for managed execution.
  */
-ILExecThread *ILThreadUnregisterForManagedExecution(ILThread *thread)
+void ILThreadUnregisterForManagedExecution(ILThread *thread)
 {
 	ILExecThread *execThread;
 

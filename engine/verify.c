@@ -479,7 +479,15 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	ILUInt32 offset;
 	ILEngineStackItem *stack;
 	ILUInt32 stackSize;
+#ifdef IL_VERIFY_DEBUG
 	const ILOpcodeInfo *insn;
+	#define	MAIN_OPCODE_TABLE	ILMainOpcodeTable
+	#define	PREFIX_OPCODE_TABLE	ILPrefixOpcodeTable
+#else
+	const ILOpcodeSmallInfo *insn;
+	#define	MAIN_OPCODE_TABLE	ILMainOpcodeSmallTable
+	#define	PREFIX_OPCODE_TABLE	ILPrefixOpcodeSmallTable
+#endif
 	ILType *signature;
 	ILType *type;
 	ILUInt32 numArgs;
@@ -555,12 +563,12 @@ restart:
 		if(opcode != IL_OP_PREFIX)
 		{
 			/* Regular opcode */
-			insnSize = (ILUInt32)(ILMainOpcodeTable[opcode].size);
+			insnSize = (ILUInt32)(MAIN_OPCODE_TABLE[opcode].size);
 			if(len < insnSize)
 			{
 				VERIFY_TRUNCATED();
 			}
-			insnType = ILMainOpcodeTable[opcode].args;
+			insnType = MAIN_OPCODE_TABLE[opcode].args;
 		}
 		else
 		{
@@ -570,12 +578,12 @@ restart:
 				VERIFY_TRUNCATED();
 			}
 			opcode = (unsigned)(pc[1]);
-			insnSize = (ILUInt32)(ILPrefixOpcodeTable[opcode].size);
+			insnSize = (ILUInt32)(PREFIX_OPCODE_TABLE[opcode].size);
 			if(len < insnSize)
 			{
 				VERIFY_TRUNCATED();
 			}
-			insnType = ILPrefixOpcodeTable[opcode].args;
+			insnType = PREFIX_OPCODE_TABLE[opcode].args;
 			if(opcode == IL_PREFIX_OP_RETHROW)
 			{
 				hasRethrow = 1;
@@ -864,12 +872,12 @@ restart:
 		opcode = pc[0];
 		if(opcode != IL_OP_PREFIX)
 		{
-			insn = &(ILMainOpcodeTable[opcode]);
+			insn = &(MAIN_OPCODE_TABLE[opcode]);
 		}
 		else
 		{
 			opcode = pc[1];
-			insn = &(ILPrefixOpcodeTable[opcode]);
+			insn = &(PREFIX_OPCODE_TABLE[opcode]);
 			opcode += IL_OP_PREFIX;
 		}
 		insnSize = (ILUInt32)(insn->size);

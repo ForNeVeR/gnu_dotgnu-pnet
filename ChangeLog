@@ -42,6 +42,12 @@
 
 	* engine/lib_helpers.c: bug fix - #endif in the wrong place.
 
+	* engine/verify.c, image/Makefile.am, image/opcodes.c,
+	image/opcodes_small.c, image/opdef.c, include/il_opcodes.h:
+	create a "small" set of opcode tables for use when the opcode
+	name is not required and memory is tight; modify the verifier
+	to use the small opcode table.
+
 2002-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_engine.h, engine/thread.c: add "ILExecThreadCurrent",

@@ -353,6 +353,18 @@ typedef struct
 } ILOpcodeInfo;
 
 /*
+ * Small information about an opcode.
+ */
+typedef struct
+{
+	char		popped;			/* Number of values popped from the stack */
+	char		pushed;			/* Number of values pushed on the stack */
+	char		args;			/* Type of arguments to the opcode */
+	char		size;			/* Size of the instruction */
+
+} ILOpcodeSmallInfo;
+
+/*
  * Opcode argument types for "ILOpcodeInfo::args".
  */
 #define	IL_OPCODE_ARGS_INVALID		0
@@ -390,5 +402,7 @@ typedef struct
  */
 extern ILOpcodeInfo const ILMainOpcodeTable[];
 extern ILOpcodeInfo const ILPrefixOpcodeTable[];
+extern ILOpcodeSmallInfo const ILMainOpcodeSmallTable[];
+extern ILOpcodeSmallInfo const ILPrefixOpcodeSmallTable[];
 
 #endif	/* _IL_OPCODES_H */

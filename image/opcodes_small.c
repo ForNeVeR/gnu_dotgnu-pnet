@@ -1,7 +1,7 @@
 /*
- * opcodes.c - Opcode information tables.
+ * opcodes_small.c - Small opcode information tables.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,15 +25,15 @@ extern	"C" {
 #endif
 
 #define	OPDEF(name,popped,pushed,args,size)	\
-			{name, popped, pushed, args, size},
+			{popped, pushed, args, size},
 
-ILOpcodeInfo const ILMainOpcodeTable[256] = {
+ILOpcodeSmallInfo const ILMainOpcodeSmallTable[256] = {
 #define IL_MAIN_OPDEF
 #include "opdef.c"
 #undef IL_MAIN_OPDEF
 };
 
-ILOpcodeInfo const ILPrefixOpcodeTable[256] = {
+ILOpcodeSmallInfo const ILPrefixOpcodeSmallTable[256] = {
 #define IL_PREFIX_OPDEF
 #include "opdef.c"
 #undef IL_PREFIX_OPDEF

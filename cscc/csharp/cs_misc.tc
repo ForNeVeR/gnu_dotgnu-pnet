@@ -26,7 +26,7 @@ ILNode_SemAnalysis(ILNode_TypeOf)
 	CSSemValue value;
 
 	/* Get the semantic value for the sub-expression */
-	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+	value = ILNode_SemAnalysisType(node->expr, info, &(node->expr));
 
 	/* Check that the argument is of the correct kind */
 	if(CSSemIsType(value))

@@ -9,6 +9,9 @@
 	cscc/csharp/cs_stmt.tc: implement Using(...) {} statement
 	for the IL codegen.
 
+	* cscc/csharp/cs_misc.tc: Use ILNode_SemAnalysisType for 
+	typeof arguments.
+
 2002-12-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_defs.tc, cscc/c/c_grammar.y, cscc/c/c_oper.tc,

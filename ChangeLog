@@ -13,6 +13,10 @@
 	* runtime/System/Enum.cs: rationalise parameter naming for
 	"Enum.GetEnumValueFromName".
 
+	* runtime/System/TypedReference.cs: alter the implementation of
+	"TypedReference.SetTypedReference" so that most of the casting
+	work happens in the C# part of the code.
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/NotImplementedException.cs: add the exception

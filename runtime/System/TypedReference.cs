@@ -97,8 +97,28 @@ struct TypedReference
 				(Object target, FieldInfo[] flds);
 
 	// Set the value within a typed reference.
+	public static void SetTypedReference(TypedReference target, Object value)
+			{
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+			#if !ECMA_COMPAT
+				value = Convert.ChangeType(value, GetTargetType(target));
+			#endif
+				if(!ClrSetTypedReference(target, value))
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     value.GetType().FullName,
+							 GetTargetType(target).FullName));
+				}
+			}
+
+	// Internal version of "SetTypedReference".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void SetTypedReference
+	extern public static bool ClrSetTypedReference
 				(TypedReference target, Object value);
 
 	// Get the type handle within a typed reference.

@@ -340,7 +340,7 @@ static void Dump_ExportedType(ILImage *image, FILE *outstream, int flags,
 	}
 
 	/* Dump the class identifier in the foreign scope */
-	fprintf(outstream, "\t.class 0x%08lu\n",
+	fprintf(outstream, "\t.class 0x%08lx\n",
 			(unsigned long)(ILExportedType_Id(type)));
 
 	/* Dump any custom attributes associated with the exported type */

@@ -73,7 +73,7 @@ public sealed class BitArray : ICollection, IEnumerable, ICloneable
 				int posn;
 				for(posn = 0; posn < values.Length; ++posn)
 				{
-					bitArray[posn >> 7] |= (values[posn] << (8 * (posn & 3)));
+					bitArray[posn >> 2] |= (values[posn] << (8 * (posn & 3)));
 				}
 				generation = 0;
 			}

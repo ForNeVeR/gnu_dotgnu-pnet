@@ -10,6 +10,9 @@
 	* runtime/System/Collections/SortedList.cs: Fix ContainsElement to
 	search in the "values" array rather than "keys" array.
 
+	* runtime/System/Collections/BitArray.cs: Fix byte[] constructor to
+	generate the right bitset pattern.
+
 2004-06-02  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/Threading/Monitor.cs: Changed TryEnter()

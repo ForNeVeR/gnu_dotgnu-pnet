@@ -70,6 +70,9 @@
 	resources/en_US/System/Exception.txt: implement missing classes in
 	the "System.ComponentModel.Design" namespace.
 
+	* System/Security/Cryptography/X509Certificates/X509CertificateCollection.cs:
+	implement the missing "X509CertificateCollection" class.
+
 2003-05-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Platform/RegexpMethods.cs, System/Private/Regex.cs

@@ -17,6 +17,8 @@
 	* cscc/csharp/cs_gather.c: normalise all delegate declarations
 	to "native int", not "native unsigned int".
 
+	* engine/verify_obj.c (IL_OP_LDFLDA): verifier bug fix.
+
 2002-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/Makefile.am, image/ser_writer.c, include/il_serialize.h:

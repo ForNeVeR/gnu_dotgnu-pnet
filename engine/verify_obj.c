@@ -482,8 +482,7 @@ case IL_OP_LDFLDA:
 		{
 			/* Accessing a field within a pointer to a managed value */
 			if(IsSubClass(stack[stackSize - 1].typeInfo,
-						  ILField_Owner(fieldInfo)) &&
-			   ILTypeIdentical(stack[stackSize - 1].typeInfo, classType))
+						  ILField_Owner(fieldInfo)))
 			{
 				if(!ILField_IsStatic(fieldInfo))
 				{

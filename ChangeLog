@@ -1,3 +1,8 @@
+2004-07-05  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Globalization/CultureInfo.cs: fix problem with
+	DateTimeFormat and NumberFormat in Clone
+
 2004-07-01  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/IO/Directory.cs: allow directories with path delimiter at

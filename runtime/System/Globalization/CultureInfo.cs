@@ -714,8 +714,9 @@ public class CultureInfo : ICloneable, IFormatProvider
 			#if !ECMA_COMPAT
 				CultureInfo culture = (CultureInfo)(MemberwiseClone());
 				culture.readOnly = false;
-				culture.DateTimeFormat = (DateTimeFormatInfo)dateTimeFormat.Clone();
-				culture.NumberFormat = (NumberFormatInfo)numberFormat.Clone();
+				// force DateTimeFormat and NumberFormat to be recreated on first access
+				culture.dateTimeFormat = null;
+				culture.numberFormat = null;
 				return culture;
 			#else
 				return MemberwiseClone();

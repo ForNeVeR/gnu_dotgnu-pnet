@@ -20,6 +20,9 @@ runtime/System/Reflection/Assembly.cs,
 runtime/System/Reflection/ClrType.cs: improve the "internalcall" interface
 for assemblies and types.
 
+* runtime/System/Reflection/ClrType.cs: modify the code slightly to
+temporarily work around a bug in cscc's parser.
+
 2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/RuntimeType.cs,

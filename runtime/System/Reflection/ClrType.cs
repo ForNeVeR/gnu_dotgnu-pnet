@@ -129,7 +129,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 								       ParameterModifier[] modifiers)
 			{
 				return (ConstructorInfo)GetMemberImpl
-							(name, MemberTypes.Constructor,
+							(".ctor", MemberTypes.Constructor,
 							 bindingAttr, binder, callingConventions,
 							 types, modifiers);
 			}
@@ -137,9 +137,12 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all constructors for this type.
 	public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
 			{
-				return (ConstructorInfo[])GetMembersImpl
+				// Note: "as" is used instead of a cast because of
+				// a parse bug in cscc which we haven't fixed yet.
+				return GetMembersImpl
 							(MemberTypes.Constructor, bindingAttr,
-							 typeof(ConstructorInfo[]));
+							 typeof(ConstructorInfo[]))
+						as ConstructorInfo[];
 			}
 
 	// Get an event from this type.
@@ -154,9 +157,10 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all events from this type.
 	public override EventInfo[] GetEvents(BindingFlags bindingAttr)
 			{
-				return (EventInfo[])GetMembersImpl
+				return GetMembersImpl
 							(MemberTypes.Event, bindingAttr,
-							 typeof(EventInfo[]));
+							 typeof(EventInfo[]))
+						as EventInfo[];
 			}
 
 	// Get a field from this type.
@@ -171,9 +175,10 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all fields from this type.
 	public override FieldInfo[] GetFields(BindingFlags bindingAttr)
 			{
-				return (FieldInfo[])GetMembersImpl
+				return GetMembersImpl
 							(MemberTypes.Field, bindingAttr,
-							 typeof(FieldInfo[]));
+							 typeof(FieldInfo[]))
+						as FieldInfo[];
 			}
 
 	// Get a member from this type.
@@ -188,8 +193,9 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all members from this type.
 	public override MemberInfo[] GetMembers(BindingFlags bindingAttr)
 			{
-				return (MemberInfo[])GetMembersImpl
-					(MemberTypes.All, bindingAttr, typeof(MemberInfo[]));
+				return GetMembersImpl
+					(MemberTypes.All, bindingAttr, typeof(MemberInfo[]))
+						as MemberInfo[];
 			}
 
 	// Implementation of "GetMethod" provided by subclasses.
@@ -209,9 +215,10 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all methods from this type.
 	public override MethodInfo[] GetMethods(BindingFlags bindingAttr)
 			{
-				return (MethodInfo[])GetMembersImpl
+				return GetMembersImpl
 							(MemberTypes.Method, bindingAttr,
-							 typeof(MethodInfo[]));
+							 typeof(MethodInfo[]))
+						as MethodInfo[];
 			}
 
 	// Get a nested type from this type.
@@ -226,9 +233,10 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all nested types from this type.
 	public override Type[] GetNestedTypes(BindingFlags bindingAttr)
 			{
-				return (Type[])GetMembersImpl
+				return GetMembersImpl
 							(MemberTypes.NestedType, bindingAttr,
-							 typeof(Type[]));
+							 typeof(Type[]))
+						as Type[];
 			}
 
 	// Implementation of "GetProperty" provided by subclasses.
@@ -247,9 +255,10 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get all properties from this type.
 	public override PropertyInfo[] GetProperties(BindingFlags bindingAttr)
 			{
-				return (PropertyInfo[])GetMembersImpl
+				return GetMembersImpl
 							(MemberTypes.Property, bindingAttr,
-							 typeof(PropertyInfo[]));
+							 typeof(PropertyInfo[]))
+						as PropertyInfo[];
 			}
 
 	// Implementation of the "HasElementType" property.

@@ -137,6 +137,9 @@ namespace System.IO
 			
 			switch(err) 
 			{
+				case Errno.Success:
+					/* Nothing */
+					break;
 				case Errno.EIO:
 					throw new IOException(_("IO_Error"));
 				case Errno.ENOENT:

@@ -375,27 +375,25 @@ public class DrawingToolkit : IToolkit
 	public Object RegisterTimer
 				(Object owner, int interval, EventHandler expire)
 	{
-		timers.Add(new Timer(owner, interval, expire));
-		Win32.Api.SetTimer( drawingRootTopLevelWindow.hwnd, (uint)timers.Count - 1, (uint)interval, IntPtr.Zero );
-		return (uint)timers.Count - 1;
+		Timer timer = new Timer(owner, expire);
+		timers.Add(timer);
+		timer.cookie = Win32.Api.SetTimer( IntPtr.Zero, 0, (uint)interval, new Win32.Api.TimerProc(timer.TimerHandler) );
+		return timer.cookie;
 	}
 
 	// Unregister a timer.
 	public void UnregisterTimer(Object cookie)
 	{
-		Win32.Api.KillTimer( drawingRootTopLevelWindow.hwnd, (uint)cookie );
-		timers[(int)(uint)cookie] = null;
-		bool empty = true;
+		Win32.Api.KillTimer( IntPtr.Zero, (uint)cookie );
 		for( int i = 0; i < timers.Count;  i++ )
 		{
-			if ( timers[i] == null )
+			Timer timer = timers[i] as Timer;
+			if ( timer.cookie == (uint)cookie )
 			{
-				empty = false;
+				timers.RemoveAt(i);
 				break;
 			}
 		}
-		if (empty)
-			timers = new ArrayList();
 	}
 
 	// Convert a client point for a window into a screen point.
@@ -418,25 +416,24 @@ public class DrawingToolkit : IToolkit
 		return new Point( p.x, p.y );
 	}
 
-	//Occurs when main window receives WM_TIMER message
-	internal void InvokeTimer(int wParam)
-	{
-		Timer timer = (Timer)timers[wParam];
-		timer.expire( timer.owner, EventArgs.Empty );
-	}
-
 	//An instance is created for each timer registered
 	private class Timer
 	{
 		internal Object owner;
-		internal int interval;
 		internal EventHandler expire;
-		public Timer( Object owner, int interval, EventHandler expire )
+		internal uint cookie;
+		
+		public Timer( Object owner, EventHandler expire )
 		{
 			this.owner = owner;
-			this.interval = interval;
 			this.expire = expire;
 		}
+
+		public void TimerHandler(IntPtr hwnd, uint msg,  uint idEvent, uint dwTime)
+		{
+			expire( owner, EventArgs.Empty );
+		}
+
 	}
 
 }; // class DrawingToolkit

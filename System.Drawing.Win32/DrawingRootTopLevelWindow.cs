@@ -28,14 +28,6 @@ namespace System.Drawing.Toolkit
 		public DrawingRootTopLevelWindow(IToolkit toolkit, String name,
 			int width, int height) : base (toolkit, name, width, height) {}
 
-		protected override void Destroyed()
-		{
-			base.Destroyed ();
-			//Exit the message loop when the last window is destroyed
-			(toolkit as DrawingToolkit).Quit();
-		}
-
-
 		//TODO
 		/*wParam 
 	When the system sends this message as a result of a SystemParametersInfo call, wParam is a flag that indicates the system parameter that was changed. For a list of values, see SystemParametersInfo. 

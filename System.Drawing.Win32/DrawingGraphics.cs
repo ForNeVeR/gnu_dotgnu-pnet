@@ -94,8 +94,28 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Fill a polygon using the current brush.
 	public override void FillPolygon( System.Drawing.Point[] points, FillMode fillMode )
 			{
+				//TODO: This is a hack. should use regions rather because Poly doesnt use the brush for the border
+				ExpandFilledObject(ref points);
 				Win32.Api.SetPolyFillMode(hdc, (int)fillMode);
 				Polygon( points, selectedBrush.hBrush, Win32.Api.GetStockObject(Win32.Api.StockObjectType.NULL_PEN) );
+			}
+
+	// Expand the outside away from the first point of a filled object by 1
+	private void ExpandFilledObject( ref System.Drawing.Point[] points)
+			{
+				Point first = points[0];
+				for(int posn = 0; posn < points.Length; posn++)
+				{
+					int x = points[posn].X;
+					int y = points[posn].Y;
+					//Move the points 1 away from the first point
+					if (x!=first.X)
+						x += x > first.X ? 1 : -1;
+					if (y!=first.Y)
+						y += y > first.Y ? 1 : -1;
+
+					points[posn] = new Point(x, y);
+				}
 			}
 
 	private void Polygon( System.Drawing.Point[] points, IntPtr hBrush, IntPtr hPen )
@@ -129,7 +149,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Fill a pie slice within a rectangle defined by four points.
 	public override void FillPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
-				Pie( rect, startAngle, sweepAngle, selectedBrush.hBrush, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN) );
+				Pie( rect, startAngle, sweepAngle, selectedBrush.hBrush, /*Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN)*/IntPtr.Zero );
 			}
 
 	private void Pie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle, IntPtr hBrush, IntPtr hPen )
@@ -201,7 +221,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				linesFilled = 0;
 				if(!ascentOnly)
 				{
-					return new Size(size.cx, size.cy); /*ascent + descent*/
+					return new Size(size.cx, size.cy - 1); /*ascent + descent*/
 				}
 				else
 				{
@@ -263,10 +283,9 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Get the line spacing for the font selected into this graphics object.
 	public override int GetLineSpacing()
 			{
-				/*FontExtents extents = graphics.GetFontExtents(font);
-				return extents.Ascent + extents.Descent;*/
-		return 0;
-	
+				Win32.Api.TEXTMETRIC lptm;
+				Win32.Api.GetTextMetrics(hdc, out lptm);
+				return lptm.tmHeight;
 			}
 
 	public static int ColorToWin32( Color color) 

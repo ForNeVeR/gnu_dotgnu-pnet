@@ -407,7 +407,14 @@ internal class Api
 		public int left; 
 		public int top; 
 		public int right; 
-		public int bottom; 
+		public int bottom;
+		public RECT ( int left, int top, int right, int bottom )
+		{
+			this.left = left;
+			this.top = top;
+			this.right = right;
+			this.bottom = bottom;
+		}
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -601,6 +608,8 @@ internal class Api
 		public int cy;
 		public uint flags;
 	}
+
+	public delegate void TimerProc(IntPtr hwnd, uint uMsg, uint idEvent, uint dwTime);
 
 	[DllImport("user32")] //ANSI
 	public static extern int RegisterClassA(ref WNDCLASS wc);
@@ -809,7 +818,7 @@ internal class Api
 	public static extern IntPtr CreateFontIndirectA(ref LOGFONT lf);
 
 	[DllImport("user32")]
-	public static extern IntPtr SetTimer(IntPtr hwnd, uint nIDEvent, uint uElapse, IntPtr lpTimerFunc);
+	public static extern uint SetTimer(IntPtr hwnd, uint nIDEvent, uint uElapse, TimerProc lpTimerFunc);
 
 	[DllImport("user32")]
 	public static extern bool KillTimer(IntPtr hwnd, uint uIDEvent);
@@ -822,6 +831,9 @@ internal class Api
 
 	[DllImport("user32")]
 	public static extern IntPtr SetParent( IntPtr hWndChild, IntPtr hWndNewParent );
+
+	[DllImport("user32")]
+	public static extern IntPtr SetFocus( IntPtr hWnd );
 
 }//Api
 

@@ -134,6 +134,29 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 		return new Rectangle( rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top );
 	}
 
+	protected override void SetFocus()
+	{
+		if (sink != null)
+			sink.ToolkitPrimaryFocusEnter();
+		d.WriteLine( "DrawingTopLevelWindow.GotFocus hwnd="+hwnd );
+	}
+
+	protected override void KillFocus()
+	{
+		if (sink != null)
+			sink.ToolkitPrimaryFocusLeave();
+		d.WriteLine( "DrawingTopLevelWindow.LostFocus hwnd="+hwnd ) ;
+	}
+
+	protected override void Close()
+	{
+		if(sink != null)
+		{
+			sink.ToolkitClose();
+		}
+	}
+
+
 	//Create the invisible control
 	protected void CreateWindow() 
 	{

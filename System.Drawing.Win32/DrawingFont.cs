@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 internal class DrawingFont : IToolkitFont
 {
 	// Internal state.
-	private System.Drawing.Font properties;
+	internal System.Drawing.Font properties;
 	private IToolkit toolkit;
 	internal IntPtr hFont;
 	

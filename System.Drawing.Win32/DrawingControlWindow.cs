@@ -47,7 +47,7 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 		}
 		createCount++;
 		//Set default windows settings
-		style = Win32.Api.WindowStyle.WS_CHILD;
+		style = Win32.Api.WindowStyle.WS_CHILD | Win32.Api.WindowStyle.WS_TABSTOP;
 		extendedStyle = 0;
 		CreateWindow();
 	}
@@ -73,7 +73,7 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 	
 	protected void CreateWindow()
 	{
-		hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, string.Empty, style, dimensions.X, dimensions.Y, dimensions.Width - 1, dimensions.Height - 1, parentHwnd, IntPtr.Zero,Win32.Api.GetModuleHandleA(null),IntPtr.Zero );
+		hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, string.Empty, style, dimensions.X, dimensions.Y, dimensions.Width, dimensions.Height, parentHwnd, IntPtr.Zero,Win32.Api.GetModuleHandleA(null),IntPtr.Zero );
 		//setVisible();
 		d.WriteLine("DrawingControlWindow.CreateWindow hwnd="+hwnd + ",parent hwnd="+parentHwnd+",["+dimensions.X+","+dimensions.Y+","+dimensions.Width+","+dimensions.Height+"]");
 		if (hwnd==IntPtr.Zero) 

@@ -145,6 +145,12 @@ internal abstract class DrawingWindow : IToolkitWindow
 		}
 	}
 
+	//Set the focus to this window
+	void IToolkitWindow.Focus()
+	{
+		Win32.Api.SetFocus(hwnd);
+	}
+
 	//Destroy window
 	public virtual void Destroy()
 	{
@@ -303,6 +309,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 		{
 			Win32.Api.RECT clientRectangle;
 			Win32.Api.GetClientRect(hwnd, out clientRectangle);
+			clientRectangle = new System.Drawing.Win32.Api.RECT(clientRectangle.left, clientRectangle.top, clientRectangle.right, clientRectangle.bottom);
 			Win32.Api.FillRect(hdc, ref clientRectangle,backgroundBrush);
 		}
 	}
@@ -322,8 +329,8 @@ internal abstract class DrawingWindow : IToolkitWindow
 			sink.ToolkitMouseEnter();
 		}
 
-		sink.ToolkitMouseMove(ToolkitMouseButtons.None, MapMouseToToolkitKeys(wParam),0 ,MouseX(lParam) , MouseY(lParam), 0);
-		d.WriteLine("DrawingWindow.MouseMove [" + (MouseX(lParam)) + "," + (MouseY(lParam)) + "], key:" + MapMouseToToolkitKeys(wParam));
+		sink.ToolkitMouseMove(MapToToolkitMouseButtons(wParam), MapMouseToToolkitKeys(wParam),0 ,MouseX(lParam) , MouseY(lParam), 0);
+		//d.WriteLine("DrawingWindow.MouseMove [" + (MouseX(lParam)) + "," + (MouseY(lParam)) + "], key:" + MapMouseToToolkitKeys(wParam));
 	}
 
 	//Called when windows receives WM_MOUSEWHEEL
@@ -392,7 +399,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 		{
 			DrawingGraphics g = new DrawingGraphics( toolkit, hdc );
 			System.Drawing.Graphics gr = ToolkitManager.CreateGraphics( g );
-			g.SetClipRect( myPS.rcPaint.left, myPS.rcPaint.top, myPS.rcPaint.right - myPS.rcPaint.left, myPS.rcPaint.bottom - myPS.rcPaint.top );
+			gr.SetClip(new Rectangle( myPS.rcPaint.left, myPS.rcPaint.top, myPS.rcPaint.right - myPS.rcPaint.left, myPS.rcPaint.bottom - myPS.rcPaint.top ));
 			sink.ToolkitExpose( gr );
 			gr.Dispose();
 		}
@@ -402,7 +409,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	}
 
 	//WM_SETFOCUS occurs when either mouse or keyboard sets focus
-	protected void SetFocus()
+	protected virtual void SetFocus()
 	{
 		if (sink != null)
 			sink.ToolkitFocusEnter();
@@ -410,10 +417,10 @@ internal abstract class DrawingWindow : IToolkitWindow
 	}
 
 	//WM_KILLFOCUS occurs when either mouse or keyboard causes focus to be lost (or windows does)
-	protected void KillFocus()
+	protected virtual void KillFocus()
 	{
 		if (sink != null)
-			sink.ToolkitFocusEnter();
+			sink.ToolkitFocusLeave();
 		d.WriteLine( "DrawingWindow.LostFocus hwnd="+hwnd ) ;
 	}
 
@@ -456,6 +463,10 @@ internal abstract class DrawingWindow : IToolkitWindow
 	{
 	}
 
+	protected virtual void Close()
+	{
+	}
+
 	//The main windows loop. Messages are handed off
 	protected int WindowsLoop(IntPtr hwnd, int msg, int wParam, int lParam)  
 	{
@@ -491,7 +502,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 						break;
 					case(Win32.Api.SystemCommand.SC_CLOSE):
 						//TODO
-						retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
+						Close();
 						break;
 					default:
 						retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
@@ -509,6 +520,12 @@ internal abstract class DrawingWindow : IToolkitWindow
 			case Win32.Api.WindowsMessages.WM_ERASEBKGND:
 				EraseBackground( (IntPtr)wParam );
 				retval=1;
+				break;
+
+			case Win32.Api.WindowsMessages.WM_SETCURSOR:
+				//TEMP
+				Win32.Api.SetCursor(Win32.Api.LoadCursorA(IntPtr.Zero, Win32.Api.CursorName.IDC_ARROW));
+				retval =1;
 				break;
 
 			case Win32.Api.WindowsMessages.WM_MOUSEMOVE:
@@ -567,9 +584,6 @@ internal abstract class DrawingWindow : IToolkitWindow
 				KeyUp( wParam, lParam );
 				break;
 
-			case Win32.Api.WindowsMessages.WM_TIMER:
-				(toolkit as DrawingToolkit).InvokeTimer( wParam );
-				break;
 			case Win32.Api.WindowsMessages.WM_SETTINGCHANGE:
 				SettingsChange( wParam );
 				break;

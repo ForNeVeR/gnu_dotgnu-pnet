@@ -7,6 +7,9 @@ that uses structures instead of varargs.
 * engine/internal.c, engine/lib_defs.h, engine/lib_thread.c: implement
 more of the thread-related "internalcall" methods.
 
+* samples/mscorlib.dll: new version of "mscorlib" that contains the
+new resource and thread classes.
+
 2001-11-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/layout.c: compute the interface lookup tables for the class.

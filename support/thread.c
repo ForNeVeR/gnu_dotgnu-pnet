@@ -211,7 +211,7 @@ int ILThreadStart(ILThread *thread)
 				threads won't unset the foregroundThreadsFinished event without ever 
 				setting it again (which normally happens at the end of _ILThreadRun) */
 
-			if (((thread->state & IL_TS_BACKGROUND) != 0))
+			if (((thread->state & IL_TS_BACKGROUND) == 0))
 			{
 				ILWaitEventReset(foregroundThreadsFinished);
 			}

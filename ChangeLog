@@ -14,6 +14,10 @@
 	delegate combination and removal operators; implement the missing
 	"+=" operator for strings.
 
+	* codegen/cg_library.c, codegen/cg_resolve.c: add builtin operators
+	for "Delegate" and "MulticastDelegate"; fix operator matching rules
+	in "ResolveMethod".
+
 2002-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/configure, libffi/configure.in: add host detection

@@ -94,7 +94,7 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 				argType = ILTypeGetParam(signature, arg);
 				if(!ILTypeIdentical(argType, args[arg - 1]))
 				{
-					if(!ILCanCoerce(info, argType, args[arg - 1]))
+					if(!ILCanCoerce(info, args[arg - 1], argType))
 					{
 						break;
 					}
@@ -118,7 +118,7 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 				/* We have an exact match, so return that */
 				return method;
 			}
-			else if(closestMatch)
+			else if(!closestMatch)
 			{
 				/* This match is close, but try to find a better one */
 				closestMatch = method;

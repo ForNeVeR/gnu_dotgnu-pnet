@@ -40,8 +40,8 @@ extern	"C" {
  * Add an ordinary method to a class.
  */
 static ILMethod *AddMethod(ILClass *classInfo, const char *name,
-					       ILType *returnType, ILType *argType,
-						   ILUInt32 attrs)
+					       ILType *returnType, ILType *argType1,
+						   ILType *argType2, ILUInt32 attrs)
 {
 	ILMethod *method;
 	ILType *signature;
@@ -57,10 +57,20 @@ static ILMethod *AddMethod(ILClass *classInfo, const char *name,
 	{
 		return 0;
 	}
-	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
-	if(argType != ILType_Void)
+	if((attrs & IL_META_METHODDEF_STATIC) == 0)
 	{
-		if(!ILTypeAddParam(ILClassToContext(classInfo), signature, argType))
+		ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
+	}
+	if(argType1 != ILType_Void)
+	{
+		if(!ILTypeAddParam(ILClassToContext(classInfo), signature, argType1))
+		{
+			return 0;
+		}
+	}
+	if(argType2 != ILType_Void)
+	{
+		if(!ILTypeAddParam(ILClassToContext(classInfo), signature, argType2))
 		{
 			return 0;
 		}
@@ -87,7 +97,7 @@ static void MakeValueType(ILGenInfo *info, ILImage *image,
 				    IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
 	if(!AddMethod(newClass, "ToString",
-				  ILType_FromClass(stringClass), ILType_Void,
+				  ILType_FromClass(stringClass), ILType_Void, ILType_Void,
 				  IL_META_METHODDEF_VIRTUAL))
 	{
 		ILGenOutOfMemory(info);
@@ -264,13 +274,14 @@ void ILGenMakeLibrary(ILGenInfo *info)
 
 	/* Add the "ToString" and "GetType" methods to the "System.Object" class */
 	if(!AddMethod(objectClass, "ToString",
-				  ILType_FromClass(stringClass), ILType_Void,
+				  ILType_FromClass(stringClass), ILType_Void, ILType_Void,
 				  IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_NEW_SLOT))
 	{
 		ILGenOutOfMemory(info);
 	}
 	if(!AddMethod(objectClass, "GetType",
-				  ILType_FromClass(typeClass), ILType_Void, 0))
+				  ILType_FromClass(typeClass),
+				  ILType_Void, ILType_Void, 0))
 	{
 		ILGenOutOfMemory(info);
 	}
@@ -471,6 +482,20 @@ void ILGenMakeLibrary(ILGenInfo *info)
 				    IL_META_TYPEDEF_SERIALIZABLE |
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_ABSTRACT);
+	if(!AddMethod(delegateClass, "op_Equality", ILType_Boolean,
+				  ILType_FromClass(delegateClass),
+				  ILType_FromClass(delegateClass),
+				  IL_META_METHODDEF_SPECIAL_NAME | IL_META_METHODDEF_STATIC))
+	{
+		ILGenOutOfMemory(info);
+	}
+	if(!AddMethod(delegateClass, "op_Inequality", ILType_Boolean,
+				  ILType_FromClass(delegateClass),
+				  ILType_FromClass(delegateClass),
+				  IL_META_METHODDEF_SPECIAL_NAME | IL_META_METHODDEF_STATIC))
+	{
+		ILGenOutOfMemory(info);
+	}
 
 	/* Create the "System.MulticastDelegate" class */
 	ABORT_IF(multicastDelegateClass,
@@ -481,6 +506,20 @@ void ILGenMakeLibrary(ILGenInfo *info)
 				    IL_META_TYPEDEF_SERIALIZABLE |
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_ABSTRACT);
+	if(!AddMethod(multicastDelegateClass, "op_Equality", ILType_Boolean,
+				  ILType_FromClass(multicastDelegateClass),
+				  ILType_FromClass(multicastDelegateClass),
+				  IL_META_METHODDEF_SPECIAL_NAME | IL_META_METHODDEF_STATIC))
+	{
+		ILGenOutOfMemory(info);
+	}
+	if(!AddMethod(multicastDelegateClass, "op_Inequality", ILType_Boolean,
+				  ILType_FromClass(multicastDelegateClass),
+				  ILType_FromClass(multicastDelegateClass),
+				  IL_META_METHODDEF_SPECIAL_NAME | IL_META_METHODDEF_STATIC))
+	{
+		ILGenOutOfMemory(info);
+	}
 }
 
 #ifdef	__cplusplus

@@ -532,6 +532,21 @@ extern	"C" {
 #define	IL_META_EXCEPTION_FAULT					0x0004
 
 /*
+ * Marshal conversion types that are used internally.
+ */
+#define	IL_META_MARSHAL_TYPE_MASK				0x0FFF
+#define	IL_META_MARSHAL_DIRECT					0x0000
+#define	IL_META_MARSHAL_STRING					0x0001
+#define	IL_META_MARSHAL_STRING_OUT				0x0002
+#define	IL_META_MARSHAL_STRING_REF				0x0003
+#define	IL_META_MARSHAL_I4_TO_I8				0x0004
+#define	IL_META_MARSHAL_U4_TO_U8				0x0005
+#define	IL_META_MARSHAL_I8_TO_I4				0x0006
+#define	IL_META_MARSHAL_CHAR_SET_MASK			0xF000
+#define	IL_META_MARSHAL_CHAR_SET_ANSI			0x0000
+#define	IL_META_MARSHAL_CHAR_SET_UTF8			0x1000
+
+/*
  * Control data structure for reading from the metadata section.
  */
 typedef struct _tagILMetaDataRead

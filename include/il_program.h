@@ -1403,6 +1403,12 @@ const char *ILPInvokeGetAlias(ILPInvoke *pinvoke);
 ILPInvoke *ILPInvokeFind(ILMethod *method);
 
 /*
+ * Get the marshal conversion type for a method parameter.
+ * If "param" is 0, then report about the return type.
+ */
+ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, unsigned long param);
+
+/*
  * Helper macros for querying information about a PInvoke.
  */
 #define	ILPInvoke_FromToken(image,token)	\

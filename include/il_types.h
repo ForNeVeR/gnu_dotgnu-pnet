@@ -349,6 +349,11 @@ unsigned long ILTypeToFieldSig(ILImage *image, ILType *type);
  */
 unsigned long ILTypeToOtherSig(ILImage *image, ILType *type);
 
+/*
+ * Determine if a type is "System.String".
+ */
+int ILTypeIsStringClass(ILType *type);
+
 #ifdef	__cplusplus
 };
 #endif

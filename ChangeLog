@@ -1,4 +1,11 @@
 
+2002-08-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* c/decl/Makefile.am, c/decl/cdtor1.3il, c/decl/cdtor1.c,
+	c/decl/cdtor1.il, c/decl/cdtor2.3err, c/decl/cdtor2.c,
+	c/decl/cdtor2.err, c/decl/typeof1.3il, c/decl/typeof1.il:
+	test cases for constructors and destructors.
+
 2002-08-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/decl/Makefile.am, c/decl/type3.3il, c/decl/type3.il,

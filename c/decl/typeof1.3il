@@ -16,7 +16,7 @@
 	ret
 	.maxstack 1
 } // method func2
-.field public static int32 *(int32) 'func4-alias'
+.field public static specialname int32 *(int32) 'func4-alias'
 .method public static int32 'func4'(int32) cil managed
 {
 .custom instance void OpenSystem.C.WeakAliasForAttribute::.ctor(class [.library]System.String) = (01 00 05 66 75 6E 63 32 00 00)

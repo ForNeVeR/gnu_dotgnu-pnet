@@ -257,6 +257,7 @@ static int ConvertCode(ILLinker *linker, ILMethod *method,
 		switch(insn->args)
 		{
 			case IL_OPCODE_ARGS_TOKEN:
+			case IL_OPCODE_ARGS_LDTOKEN:
 			case IL_OPCODE_ARGS_CALL:
 			case IL_OPCODE_ARGS_CALLI:
 			case IL_OPCODE_ARGS_CALLVIRT:

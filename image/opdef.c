@@ -258,7 +258,7 @@ OPDEF("ann.def",			0, 0, IL_OPCODE_ARGS_NONE, 1)
 OPDEF("ann.ref.s",			0, 0, IL_OPCODE_ARGS_ANN_REF, 2)
 OPDEF("ann.phi",			0, 0, IL_OPCODE_ARGS_ANN_PHI, 0)
 
-OPDEF("ldtoken",			0, 1, IL_OPCODE_ARGS_TOKEN, 5)
+OPDEF("ldtoken",			0, 1, IL_OPCODE_ARGS_LDTOKEN, 5)
 
 OPDEF("conv.u2",			1, 1, IL_OPCODE_ARGS_NONE, 1)
 OPDEF("conv.u1",			1, 1, IL_OPCODE_ARGS_NONE, 1)

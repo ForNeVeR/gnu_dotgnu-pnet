@@ -96,7 +96,8 @@ static unsigned long GetSpecialSize(unsigned char *temp, unsigned long tsize)
  * Dump a token.
  */
 static void DumpToken(ILImage *image, FILE *outstream,
-					  int flags, unsigned long token)
+					  int flags, unsigned long token,
+					  int prefixWithKind)
 {
 	ILClass *info;
 	ILField *field;
@@ -143,6 +144,10 @@ static void DumpToken(ILImage *image, FILE *outstream,
 			if(field)
 			{
 			dumpField:
+				if(prefixWithKind)
+				{
+					fputs("field ", outstream);
+				}
 				ILDumpType(outstream, image, ILField_Type(field), flags);
 				putc(' ', outstream);
 				info = ILField_Owner(field);
@@ -171,6 +176,10 @@ static void DumpToken(ILImage *image, FILE *outstream,
 			method = ILMethod_FromToken(image, token);
 			if(method)
 			{
+				if(prefixWithKind)
+				{
+					fputs("method ", outstream);
+				}
 				ILDumpMethodType(outstream, image,
 								 ILMethod_Signature(method), flags,
 								 ILMethod_Owner(method),
@@ -197,6 +206,10 @@ static void DumpToken(ILImage *image, FILE *outstream,
 					/* Use the signature from the original member,
 					   because this may be a "vararg" call that has
 					   type information supplied in the call site */
+					if(prefixWithKind)
+					{
+						fputs("method ", outstream);
+					}
 					method = (ILMethod *)member;
 					ILDumpMethodType(outstream, image,
 									 ILMember_Signature(origMember), flags,
@@ -609,7 +622,14 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 			case IL_OPCODE_ARGS_NEW:
 			{
 				DumpToken(image, outstream, flags,
-					      (unsigned long)(IL_READ_UINT32(temp + args)));
+					      (unsigned long)(IL_READ_UINT32(temp + args)), 0);
+			}
+			break;
+
+			case IL_OPCODE_ARGS_LDTOKEN:
+			{
+				DumpToken(image, outstream, flags,
+					      (unsigned long)(IL_READ_UINT32(temp + args)), 1);
 			}
 			break;
 
@@ -650,21 +670,21 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 			case IL_OPCODE_ARGS_CALL:
 			{
 				DumpToken(image, outstream, flags,
-					      (unsigned long)(IL_READ_UINT32(temp + args)));
+					      (unsigned long)(IL_READ_UINT32(temp + args)), 0);
 			}
 			break;
 
 			case IL_OPCODE_ARGS_CALLI:
 			{
 				DumpToken(image, outstream, flags,
-					      (unsigned long)(IL_READ_UINT32(temp + args)));
+					      (unsigned long)(IL_READ_UINT32(temp + args)), 0);
 			}
 			break;
 
 			case IL_OPCODE_ARGS_CALLVIRT:
 			{
 				DumpToken(image, outstream, flags,
-					      (unsigned long)(IL_READ_UINT32(temp + args)));
+					      (unsigned long)(IL_READ_UINT32(temp + args)), 0);
 			}
 			break;
 
@@ -901,7 +921,7 @@ void ILDAsmDumpMethod(ILImage *image, FILE *outstream,
 			/* Catch clause */
 			fputs(" catch ", outstream);
 			DumpToken(image, outstream, flags | ILDASM_SUPPRESS_PREFIX,
-					  tempClause->extraArg);
+					  tempClause->extraArg, 0);
 		}
 		fprintf(outstream, " handler ?L%lx to ?L%lx\n",
 				tempClause->handlerOffset + addr,

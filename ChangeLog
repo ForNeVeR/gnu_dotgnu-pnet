@@ -31,6 +31,8 @@ representations of floating point values to a buffer.
 * ilasm/ilasm_grammar.y, codegen/cg_output.c, codegen/jv_output.c:
 use the new float writing routines.
 
+* include/il_dumpasm.h, dumpasm/dump_const.c (ILDumpConstant): new function.
+
 2001-09-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h: field for the kind of a type (class, struct, etc);

@@ -107,6 +107,12 @@ void ILDumpString(FILE *stream, const char *str);
 void ILDumpStringLen(FILE *stream, const char *str, int len);
 
 /*
+ * Dump a Unicode string blob value.
+ */
+void ILDumpUnicodeString(FILE *stream, const char *str,
+						 unsigned long numChars);
+
+/*
  * Dump a GUID to an output stream.
  */
 void ILDumpGUID(FILE *stream, const unsigned char *guid);
@@ -128,6 +134,11 @@ void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
  * Dump a native type to an output stream.
  */
 void ILDumpNativeType(FILE *stream, const void *type, unsigned long len);
+
+/*
+ * Dump the constant value associated with a program item.
+ */
+void ILDumpConstant(FILE *stream, ILProgramItem *item);
 
 #ifdef	__cplusplus
 };

@@ -31,6 +31,15 @@ extern	"C" {
 #endif
 
 /*
+ * Determine if this compiler supports inline functions.
+ */
+#ifdef __GNUC__
+	#define	IL_INLINE	__inline__
+#else
+	#define	IL_INLINE
+#endif
+
+/*
  * Default values.
  */
 #ifndef	IL_ENGINE_STACK_SIZE

@@ -1,5 +1,5 @@
 /*
- * CP10010.cs - MAC - Romania code page.
+ * CP10010.cs - Romania (Mac) code page.
  *
  * Copyright (c) 2002  Southern Storm Software, Pty Ltd
  *
@@ -29,7 +29,7 @@ using I18N.Common;
 public class CP10010 : ByteEncoding
 {
 	public CP10010()
-		: base(10010, ToChars, "MAC - Romania",
+		: base(10010, ToChars, "Romania (Mac)",
 		       "windows-10010", "windows-10010", "windows-10010",
 		       false, false, false, false, 1250)
 	{}

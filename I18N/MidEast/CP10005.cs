@@ -1,5 +1,5 @@
 /*
- * CP10005.cs - MAC - Hebrew code page.
+ * CP10005.cs - Hebrew (Mac) code page.
  *
  * Copyright (c) 2002  Southern Storm Software, Pty Ltd
  *
@@ -29,7 +29,7 @@ using I18N.Common;
 public class CP10005 : ByteEncoding
 {
 	public CP10005()
-		: base(10005, ToChars, "MAC - Hebrew",
+		: base(10005, ToChars, "Hebrew (Mac)",
 		       "windows-10005", "windows-10005", "windows-10005",
 		       false, false, false, false, 1255)
 	{}

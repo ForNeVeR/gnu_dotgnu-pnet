@@ -1,5 +1,5 @@
 /*
- * CP10004.cs - MAC - Arabic code page.
+ * CP10004.cs - Arabic (Mac) code page.
  *
  * Copyright (c) 2002  Southern Storm Software, Pty Ltd
  *
@@ -29,7 +29,7 @@ using I18N.Common;
 public class CP10004 : ByteEncoding
 {
 	public CP10004()
-		: base(10004, ToChars, "MAC - Arabic",
+		: base(10004, ToChars, "Arabic (Mac)",
 		       "windows-10004", "windows-10004", "windows-10004",
 		       false, false, false, false, 1256)
 	{}

@@ -314,35 +314,35 @@ ${UCM2CP} --region West --page 10000 --wpage 1252 \
 	--no-mailnews-save West/ibm-1275.ucm >West/CP10000.cs
 
 ${UCM2CP} --region MidEast --page 10004 --wpage 1256 \
-	--name 'MAC - Arabic' \
+	--name 'Arabic (Mac)' \
 	--webname windows-10004 --bodyname windows-10004 \
 	--headername windows-10004 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save MidEast/mac-10004.ucm >MidEast/CP10004.cs
 
 ${UCM2CP} --region MidEast --page 10005 --wpage 1255 \
-	--name 'MAC - Hebrew' \
+	--name 'Hebrew (Mac)' \
 	--webname windows-10005 --bodyname windows-10005 \
 	--headername windows-10005 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save MidEast/mac-10005.ucm >MidEast/CP10005.cs
 
 ${UCM2CP} --region West --page 10006 --wpage 1253 \
-	--name 'MAC - Greek I' \
+	--name 'Greek (Mac)' \
 	--webname windows-10006 --bodyname windows-10006 \
 	--headername windows-10006 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save West/mac-10006.ucm >West/CP10006.cs
 
 ${UCM2CP} --region Other --page 10007 --wpage 1251 \
-	--name 'MAC - Cyrillic' \
+	--name 'Cyrillic (Mac)' \
 	--webname windows-10007 --bodyname windows-10007 \
 	--headername windows-10007 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save Other/mac-10007.ucm >Other/CP10007.cs
 
 ${UCM2CP} --region West --page 10010 --wpage 1250 \
-	--name 'MAC - Romania' \
+	--name 'Romania (Mac)' \
 	--webname windows-10010 --bodyname windows-10010 \
 	--headername windows-10010 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
@@ -350,21 +350,21 @@ ${UCM2CP} --region West --page 10010 --wpage 1250 \
 
 # 10017 has the same mappings as 10007
 ${UCM2CP} --region Other --page 10017 --wpage 1251 \
-	--name 'MAC - Ukraine' \
+	--name 'Ukraine (Mac)' \
 	--webname windows-10017 --bodyname windows-10017 \
 	--headername windows-10017 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save Other/mac-10007.ucm >Other/CP10017.cs
 
 ${UCM2CP} --region Other --page 10021 --wpage 874 \
-	--name 'MAC - Thai' \
+	--name 'Thai (Mac)' \
 	--webname windows-10021 --bodyname windows-10021 \
 	--headername windows-10021 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save Other/mac-10021.ucm >Other/CP10021.cs
 
 ${UCM2CP} --region West --page 10029 --wpage 1250 \
-	--name 'MAC - Latin II' \
+	--name 'Latin II (Mac)' \
 	--webname windows-10029 --bodyname windows-10029 \
 	--headername windows-10029 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
@@ -375,17 +375,17 @@ ${UCM2CP} --region West --page 10079 --wpage 1252 \
 	--webname x-mac-icelandic --bodyname x-mac-icelandic \
 	--headername x-mac-icelandic --no-browser-display \
 	--no-browser-save --no-mailnews-display \
-	--no-mailnews-save West/mac-is.ucm >West/CP10079.cs
+	--no-mailnews-save West/mac-10079.ucm >West/CP10079.cs
 
 ${UCM2CP} --region MidEast --page 10081 --wpage 1254 \
-	--name 'MAC - Turkish' \
+	--name 'Turkish (Mac)' \
 	--webname windows-10081 --bodyname windows-10005 \
 	--headername windows-10081 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save MidEast/mac-10081.ucm >MidEast/CP10081.cs
 
 ${UCM2CP} --region West --page 10082 --wpage 1252 \
-	--name 'MAC - Croatia' \
+	--name 'Croatia (Mac)' \
 	--webname windows-10082 --bodyname windows-10082 \
 	--headername windows-10082 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
@@ -562,8 +562,6 @@ exit 0
 #  10002 MAC - Traditional Chinese (Big5)
 #  10003 MAC - Korean
 #  10008 MAC - Simplified Chinese (GB 2312)
-#  12000 Unicode UCS-4 Little-Endian
-#  12001 Unicode UCS-4 Big-Endian
 #  20000 CNS - Taiwan
 #  20001 TCA - Taiwan
 #  20002 Eten - Taiwan

@@ -1,5 +1,5 @@
 /*
- * CP10082.cs - MAC - Croatia code page.
+ * CP10082.cs - Croatia (Mac) code page.
  *
  * Copyright (c) 2002  Southern Storm Software, Pty Ltd
  *
@@ -29,7 +29,7 @@ using I18N.Common;
 public class CP10082 : ByteEncoding
 {
 	public CP10082()
-		: base(10082, ToChars, "MAC - Croatia",
+		: base(10082, ToChars, "Croatia (Mac)",
 		       "windows-10082", "windows-10082", "windows-10082",
 		       false, false, false, false, 1252)
 	{}

@@ -1,5 +1,5 @@
 /*
- * CP10006.cs - MAC - Greek I code page.
+ * CP10006.cs - Greek (Mac) code page.
  *
  * Copyright (c) 2002  Southern Storm Software, Pty Ltd
  *
@@ -29,7 +29,7 @@ using I18N.Common;
 public class CP10006 : ByteEncoding
 {
 	public CP10006()
-		: base(10006, ToChars, "MAC - Greek I",
+		: base(10006, ToChars, "Greek (Mac)",
 		       "windows-10006", "windows-10006", "windows-10006",
 		       false, false, false, false, 1253)
 	{}
@@ -61,10 +61,10 @@ public class CP10006 : ByteEncoding
 		'\u00E4', '\u0384', '\u00A8', '\u00E7', '\u00E9', '\u00E8', 
 		'\u00EA', '\u00EB', '\u00A3', '\u2122', '\u00EE', '\u00EF', 
 		'\u2022', '\u00BD', '\u2030', '\u00F4', '\u00F6', '\u00A6', 
-		'\u20AC', '\u00F9', '\u00FB', '\u00FC', '\u2020', '\u0393', 
+		'\u00AD', '\u00F9', '\u00FB', '\u00FC', '\u2020', '\u0393', 
 		'\u0394', '\u0398', '\u039B', '\u039E', '\u03A0', '\u00DF', 
 		'\u00AE', '\u00A9', '\u03A3', '\u03AA', '\u00A7', '\u2260', 
-		'\u00B0', '\u00B7', '\u0391', '\u00B1', '\u2264', '\u2265', 
+		'\u00B0', '\u0387', '\u0391', '\u00B1', '\u2264', '\u2265', 
 		'\u00A5', '\u0392', '\u0395', '\u0396', '\u0397', '\u0399', 
 		'\u039A', '\u039C', '\u03A6', '\u03AB', '\u03A8', '\u03A9', 
 		'\u03AC', '\u039D', '\u00AC', '\u039F', '\u03A1', '\u2248', 
@@ -77,7 +77,7 @@ public class CP10006 : ByteEncoding
 		'\u03BE', '\u03BA', '\u03BB', '\u03BC', '\u03BD', '\u03BF', 
 		'\u03C0', '\u03CE', '\u03C1', '\u03C3', '\u03C4', '\u03B8', 
 		'\u03C9', '\u03C2', '\u03C7', '\u03C5', '\u03B6', '\u03CA', 
-		'\u03CB', '\u0390', '\u03B0', '\u00AD', 
+		'\u03CB', '\u0390', '\u03B0', '\u00FF', 
 	};
 
 	protected override void ToBytes(char[] chars, int charIndex, int charCount,
@@ -87,105 +87,11 @@ public class CP10006 : ByteEncoding
 		while(charCount > 0)
 		{
 			ch = (int)(chars[charIndex++]);
-			if(ch >= 0) switch(ch)
+			if(ch >= 128) switch(ch)
 			{
-				case 0x0020:
-				case 0x0021:
-				case 0x0022:
-				case 0x0023:
-				case 0x0024:
-				case 0x0025:
-				case 0x0026:
-				case 0x0027:
-				case 0x0028:
-				case 0x0029:
-				case 0x002A:
-				case 0x002B:
-				case 0x002C:
-				case 0x002D:
-				case 0x002E:
-				case 0x002F:
-				case 0x0030:
-				case 0x0031:
-				case 0x0032:
-				case 0x0033:
-				case 0x0034:
-				case 0x0035:
-				case 0x0036:
-				case 0x0037:
-				case 0x0038:
-				case 0x0039:
-				case 0x003A:
-				case 0x003B:
-				case 0x003C:
-				case 0x003D:
-				case 0x003E:
-				case 0x003F:
-				case 0x0040:
-				case 0x0041:
-				case 0x0042:
-				case 0x0043:
-				case 0x0044:
-				case 0x0045:
-				case 0x0046:
-				case 0x0047:
-				case 0x0048:
-				case 0x0049:
-				case 0x004A:
-				case 0x004B:
-				case 0x004C:
-				case 0x004D:
-				case 0x004E:
-				case 0x004F:
-				case 0x0050:
-				case 0x0051:
-				case 0x0052:
-				case 0x0053:
-				case 0x0054:
-				case 0x0055:
-				case 0x0056:
-				case 0x0057:
-				case 0x0058:
-				case 0x0059:
-				case 0x005A:
-				case 0x005B:
-				case 0x005C:
-				case 0x005D:
-				case 0x005E:
-				case 0x005F:
-				case 0x0060:
-				case 0x0061:
-				case 0x0062:
-				case 0x0063:
-				case 0x0064:
-				case 0x0065:
-				case 0x0066:
-				case 0x0067:
-				case 0x0068:
-				case 0x0069:
-				case 0x006A:
-				case 0x006B:
-				case 0x006C:
-				case 0x006D:
-				case 0x006E:
-				case 0x006F:
-				case 0x0070:
-				case 0x0071:
-				case 0x0072:
-				case 0x0073:
-				case 0x0074:
-				case 0x0075:
-				case 0x0076:
-				case 0x0077:
-				case 0x0078:
-				case 0x0079:
-				case 0x007A:
-				case 0x007B:
-				case 0x007C:
-				case 0x007D:
-				case 0x007E:
 				case 0x00A9:
 				case 0x00B1:
+				case 0x00FF:
 					break;
 				case 0x00A0: ch = 0xCA; break;
 				case 0x00A3: ch = 0x92; break;
@@ -195,12 +101,11 @@ public class CP10006 : ByteEncoding
 				case 0x00A8: ch = 0x8C; break;
 				case 0x00AB: ch = 0xC7; break;
 				case 0x00AC: ch = 0xC2; break;
-				case 0x00AD: ch = 0xFF; break;
+				case 0x00AD: ch = 0x9C; break;
 				case 0x00AE: ch = 0xA8; break;
 				case 0x00B0: ch = 0xAE; break;
 				case 0x00B2: ch = 0x82; break;
 				case 0x00B3: ch = 0x84; break;
-				case 0x00B7: ch = 0xAF; break;
 				case 0x00B9: ch = 0x81; break;
 				case 0x00BB: ch = 0xC8; break;
 				case 0x00BD: ch = 0x97; break;
@@ -229,6 +134,7 @@ public class CP10006 : ByteEncoding
 				case 0x0384: ch = 0x8B; break;
 				case 0x0385: ch = 0x87; break;
 				case 0x0386: ch = 0xCD; break;
+				case 0x0387: ch = 0xAF; break;
 				case 0x0388: ch = 0xCE; break;
 				case 0x0389: ch = 0xD7; break;
 				case 0x038A: ch = 0xD8; break;
@@ -309,7 +215,6 @@ public class CP10006 : ByteEncoding
 				case 0x2022: ch = 0x96; break;
 				case 0x2026: ch = 0xC9; break;
 				case 0x2030: ch = 0x98; break;
-				case 0x20AC: ch = 0x9C; break;
 				case 0x2122: ch = 0x93; break;
 				case 0x2248: ch = 0xC5; break;
 				case 0x2260: ch = 0xAD; break;
@@ -329,105 +234,11 @@ public class CP10006 : ByteEncoding
 		while(charCount > 0)
 		{
 			ch = (int)(s[charIndex++]);
-			if(ch >= 0) switch(ch)
+			if(ch >= 128) switch(ch)
 			{
-				case 0x0020:
-				case 0x0021:
-				case 0x0022:
-				case 0x0023:
-				case 0x0024:
-				case 0x0025:
-				case 0x0026:
-				case 0x0027:
-				case 0x0028:
-				case 0x0029:
-				case 0x002A:
-				case 0x002B:
-				case 0x002C:
-				case 0x002D:
-				case 0x002E:
-				case 0x002F:
-				case 0x0030:
-				case 0x0031:
-				case 0x0032:
-				case 0x0033:
-				case 0x0034:
-				case 0x0035:
-				case 0x0036:
-				case 0x0037:
-				case 0x0038:
-				case 0x0039:
-				case 0x003A:
-				case 0x003B:
-				case 0x003C:
-				case 0x003D:
-				case 0x003E:
-				case 0x003F:
-				case 0x0040:
-				case 0x0041:
-				case 0x0042:
-				case 0x0043:
-				case 0x0044:
-				case 0x0045:
-				case 0x0046:
-				case 0x0047:
-				case 0x0048:
-				case 0x0049:
-				case 0x004A:
-				case 0x004B:
-				case 0x004C:
-				case 0x004D:
-				case 0x004E:
-				case 0x004F:
-				case 0x0050:
-				case 0x0051:
-				case 0x0052:
-				case 0x0053:
-				case 0x0054:
-				case 0x0055:
-				case 0x0056:
-				case 0x0057:
-				case 0x0058:
-				case 0x0059:
-				case 0x005A:
-				case 0x005B:
-				case 0x005C:
-				case 0x005D:
-				case 0x005E:
-				case 0x005F:
-				case 0x0060:
-				case 0x0061:
-				case 0x0062:
-				case 0x0063:
-				case 0x0064:
-				case 0x0065:
-				case 0x0066:
-				case 0x0067:
-				case 0x0068:
-				case 0x0069:
-				case 0x006A:
-				case 0x006B:
-				case 0x006C:
-				case 0x006D:
-				case 0x006E:
-				case 0x006F:
-				case 0x0070:
-				case 0x0071:
-				case 0x0072:
-				case 0x0073:
-				case 0x0074:
-				case 0x0075:
-				case 0x0076:
-				case 0x0077:
-				case 0x0078:
-				case 0x0079:
-				case 0x007A:
-				case 0x007B:
-				case 0x007C:
-				case 0x007D:
-				case 0x007E:
 				case 0x00A9:
 				case 0x00B1:
+				case 0x00FF:
 					break;
 				case 0x00A0: ch = 0xCA; break;
 				case 0x00A3: ch = 0x92; break;
@@ -437,12 +248,11 @@ public class CP10006 : ByteEncoding
 				case 0x00A8: ch = 0x8C; break;
 				case 0x00AB: ch = 0xC7; break;
 				case 0x00AC: ch = 0xC2; break;
-				case 0x00AD: ch = 0xFF; break;
+				case 0x00AD: ch = 0x9C; break;
 				case 0x00AE: ch = 0xA8; break;
 				case 0x00B0: ch = 0xAE; break;
 				case 0x00B2: ch = 0x82; break;
 				case 0x00B3: ch = 0x84; break;
-				case 0x00B7: ch = 0xAF; break;
 				case 0x00B9: ch = 0x81; break;
 				case 0x00BB: ch = 0xC8; break;
 				case 0x00BD: ch = 0x97; break;
@@ -471,6 +281,7 @@ public class CP10006 : ByteEncoding
 				case 0x0384: ch = 0x8B; break;
 				case 0x0385: ch = 0x87; break;
 				case 0x0386: ch = 0xCD; break;
+				case 0x0387: ch = 0xAF; break;
 				case 0x0388: ch = 0xCE; break;
 				case 0x0389: ch = 0xD7; break;
 				case 0x038A: ch = 0xD8; break;
@@ -551,7 +362,6 @@ public class CP10006 : ByteEncoding
 				case 0x2022: ch = 0x96; break;
 				case 0x2026: ch = 0xC9; break;
 				case 0x2030: ch = 0x98; break;
-				case 0x20AC: ch = 0x9C; break;
 				case 0x2122: ch = 0x93; break;
 				case 0x2248: ch = 0xC5; break;
 				case 0x2260: ch = 0xAD; break;

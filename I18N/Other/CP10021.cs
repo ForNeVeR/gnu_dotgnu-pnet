@@ -1,5 +1,5 @@
 /*
- * CP10021.cs - MAC - Thai code page.
+ * CP10021.cs - Thai (Mac) code page.
  *
  * Copyright (c) 2002  Southern Storm Software, Pty Ltd
  *
@@ -29,7 +29,7 @@ using I18N.Common;
 public class CP10021 : ByteEncoding
 {
 	public CP10021()
-		: base(10021, ToChars, "MAC - Thai",
+		: base(10021, ToChars, "Thai (Mac)",
 		       "windows-10021", "windows-10021", "windows-10021",
 		       false, false, false, false, 874)
 	{}

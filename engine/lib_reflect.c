@@ -2784,6 +2784,7 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 					return 0;
 				}
 
+				objectType = 0;
 				args[argNum].objValue = 0;
 			}
 

@@ -2,7 +2,7 @@
  * Crt0.cs - Program startup support definitions.
  *
  * This file is part of the Portable.NET "C language support" library.
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,9 +41,9 @@ using System.Reflection;
 //				int argc;
 //				IntPtr argv;
 //				IntPtr envp;
-//				argv = Crt0.GetArgV(args, sizeof(void *), out argc);
+//				argv = Crt0.GetArgV(args, out argc);
 //				envp = Crt0.GetEnvironment();
-//				Crt0.Startup("libcNN");
+//				Crt0.Startup();
 //				Crt0.Shutdown(main(argc, argv, envp));
 //			}
 //			catch(OutOfMemoryException)
@@ -72,7 +72,6 @@ using System.Reflection;
 public unsafe sealed class Crt0
 {
 	// Internal state.
-	private static int pointerSize;
 	private static IntPtr argV;
 	private static int argC;
 	private static IntPtr environ;
@@ -81,9 +80,7 @@ public unsafe sealed class Crt0
 
 	// Get the "argv" and "argc" values for the running task.
 	// "mainArgs" is the value passed to the program's entry point.
-	// "ptrSize" is the size of pointers in the app's memory model.
-	public static IntPtr GetArgV(String[] mainArgs, int ptrSize,
-								 out int argc)
+	public static IntPtr GetArgV(String[] mainArgs, out int argc)
 			{
 				lock(typeof(Crt0))
 				{
@@ -93,9 +90,6 @@ public unsafe sealed class Crt0
 						argc = argC;
 						return argV;
 					}
-
-					// Record the pointer size for later.
-					pointerSize = ptrSize;
 
 					// Get the actual command-line arguments, including
 					// the application name.  The application name isn't
@@ -129,27 +123,9 @@ public unsafe sealed class Crt0
 						args[0] = "cliapp.exe";
 					}
 
-					// Check that the pointer size is in range for the
-					// actual platform that we are running on.  If not,
-					// then it is unlikely that the application will work.
-					if(ptrSize < sizeof(IntPtr))
-					{
-					#if CONFIG_SMALL_CONSOLE
-						Console.Write(args[0]);
-						Console.WriteLine
-						  (": application is {0}-bit, but platform is {1}-bit",
-						   (Object)(ptrSize * 8), (Object)(sizeof(IntPtr) * 8));
-					#else
-						Console.Error.Write(args[0]);
-						Console.Error.WriteLine
-						  (": application is {0}-bit, but platform is {1}-bit",
-						   (Object)(ptrSize * 8), (Object)(sizeof(IntPtr) * 8));
-					#endif
-						Environment.Exit(1);
-					}
-
 					// Convert "args" into an array of native strings,
 					// terminated by a NULL pointer.
+					int ptrSize = (int)(sizeof(void *));
 					argV = Marshal.AllocHGlobal
 						(new IntPtr(ptrSize * (args.Length + 1)));
 					if(argV == IntPtr.Zero)
@@ -212,6 +188,7 @@ public unsafe sealed class Crt0
 					}
 
 					// Allocate an array to hold the converted values.
+					int pointerSize = (int)(sizeof(void *));
 					environ = Marshal.AllocHGlobal
 						(new IntPtr(pointerSize * (count + 1)));
 
@@ -236,10 +213,7 @@ public unsafe sealed class Crt0
 
 	// Perform system library startup tasks.  This is normally
 	// called just before invoking the program's "main" function.
-	// "libcName" is the name of the C system library assembly,
-	// which is normally "libc32" or "libc64", depending upon
-	// the application's memory model.
-	public static void Startup(String libcName)
+	public static void Startup()
 			{
 				Module mainModule;
 				Assembly assembly;
@@ -278,8 +252,8 @@ public unsafe sealed class Crt0
 				libcModule = null;
 				try
 				{
-					assembly = Assembly.Load(libcName);
-					type = assembly.GetType("$Module$");
+					assembly = Assembly.Load("libc");
+					type = assembly.GetType("libc");
 					if(type != null)
 					{
 						libcModule = type.Module;
@@ -367,16 +341,6 @@ public unsafe sealed class Crt0
 				return e;
 			}
 
-	// Get the pointer size in the application's memory model.
-	// Will be 4 for 32-bit memory models, and 8 for 64-bit models.
-	public static int PointerSize
-			{
-				get
-				{
-					return pointerSize;
-				}
-			}
-
 	// Get the module that contains "libc".  Returns "null" if unknown.
 	public static Module LibC
 			{
@@ -396,6 +360,154 @@ public unsafe sealed class Crt0
 				}
 				dest[index] = '\0';
 			}
+
+	// Alignment flags.  Keep in sync with "c_types.h" in the pnet C compiler.
+	private const uint C_ALIGN_BYTE			= 0x0001;
+	private const uint C_ALIGN_2			= 0x0002;
+	private const uint C_ALIGN_4			= 0x0004;
+	private const uint C_ALIGN_8			= 0x0008;
+	private const uint C_ALIGN_16			= 0x0010;
+	private const uint C_ALIGN_SHORT		= 0x0020;
+	private const uint C_ALIGN_INT			= 0x0040;
+	private const uint C_ALIGN_LONG			= 0x0080;
+	private const uint C_ALIGN_FLOAT		= 0x0100;
+	private const uint C_ALIGN_DOUBLE		= 0x0200;
+	private const uint C_ALIGN_POINTER		= 0x0400;
+	private const uint C_ALIGN_UNKNOWN		= 0x0800;
+
+	// Align a size value according to a set of flags.  Used by the
+	// compiler to help compute the size of complicated types.
+	public unsafe static uint Align(uint size, uint flags)
+			{
+				uint align;
+				uint temp;
+
+				// Get the basic alignment value.
+				align = 1;
+				if((flags & C_ALIGN_2) != 0)
+				{
+					align = 2;
+				}
+				if((flags & C_ALIGN_4) != 0)
+				{
+					align = 4;
+				}
+				if((flags & C_ALIGN_8) != 0)
+				{
+					align = 8;
+				}
+				if((flags & C_ALIGN_16) != 0)
+				{
+					align = 16;
+				}
+
+				// Adjust for specific types that appear.
+				if((flags & C_ALIGN_SHORT) != 0)
+				{
+					temp = (uint)(int)(IntPtr)(void *)
+						(&(((align_short *)(void *)(IntPtr.Zero))->value));
+					if(temp > align)
+					{
+						align = temp;
+					}
+				}
+				if((flags & C_ALIGN_INT) != 0)
+				{
+					temp = (uint)(int)(IntPtr)(void *)
+						(&(((align_int *)(void *)(IntPtr.Zero))->value));
+					if(temp > align)
+					{
+						align = temp;
+					}
+				}
+				if((flags & C_ALIGN_LONG) != 0)
+				{
+					temp = (uint)(int)(IntPtr)(void *)
+						(&(((align_long *)(void *)(IntPtr.Zero))->value));
+					if(temp > align)
+					{
+						align = temp;
+					}
+				}
+				if((flags & C_ALIGN_FLOAT) != 0)
+				{
+					temp = (uint)(int)(IntPtr)(void *)
+						(&(((align_float *)(void *)(IntPtr.Zero))->value));
+					if(temp > align)
+					{
+						align = temp;
+					}
+				}
+				if((flags & C_ALIGN_DOUBLE) != 0)
+				{
+					temp = (uint)(int)(IntPtr)(void *)
+						(&(((align_double *)(void *)(IntPtr.Zero))->value));
+					if(temp > align)
+					{
+						align = temp;
+					}
+				}
+				if((flags & C_ALIGN_POINTER) != 0)
+				{
+					temp = (uint)(int)(IntPtr)(void *)
+						(&(((align_pointer *)(void *)(IntPtr.Zero))->value));
+					if(temp > align)
+					{
+						align = temp;
+					}
+				}
+
+				// Align the final size value and return it.
+				if((size % align) != 0)
+				{
+					size += align - (size % align);
+				}
+				return size;
+			}
+
+	// Types that are used to aid with alignment computations.
+	[StructLayout(LayoutKind.Sequential)]
+	private struct align_short
+	{
+		public byte pad;
+		public short value;
+
+	}; // struct align_short
+	[StructLayout(LayoutKind.Sequential)]
+	private struct align_int
+	{
+		public byte pad;
+		public int value;
+
+	}; // struct align_int
+	[StructLayout(LayoutKind.Sequential)]
+	private struct align_long
+	{
+		public byte pad;
+		public long value;
+
+	}; // struct align_long
+	[StructLayout(LayoutKind.Sequential)]
+	private struct align_float
+	{
+		public byte pad;
+		public float value;
+
+	}; // struct align_float
+	[StructLayout(LayoutKind.Sequential)]
+	private struct align_double
+	{
+		public byte pad;
+		public double value;
+
+	}; // struct align_double
+	[StructLayout(LayoutKind.Sequential)]
+	private unsafe struct align_pointer
+	{
+		public byte pad;
+		public void *value;
+
+	}; // struct align_pointer
 
 #if CONFIG_SMALL_CONSOLE
 

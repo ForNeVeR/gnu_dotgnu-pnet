@@ -36,6 +36,9 @@ public sealed class IsManaged {}
 // A modifier class that is used to mark an unmanaged type.
 public sealed class IsUnmanaged {}
 
+// A modifier class that is used to mark a decayed pointer to a complex type.
+public sealed class IsComplexPointer {}
+
 // An attribute class that is used to declare bit fields.
 [AttributeUsage(AttributeTargets.Struct, AllowMultiple=true)]
 public sealed class BitFieldAttribute : Attribute

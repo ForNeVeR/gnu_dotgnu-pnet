@@ -1,4 +1,9 @@
 
+2004-03-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csupport/Crt0.cs, csupport/Markers.cs: alterations to the
+	"OpenSystem.C" assembly to support the new C compiler ABI.
+
 2004-03-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csupport/Markers.cs: add the "IsManaged" and "IsUnmanaged"

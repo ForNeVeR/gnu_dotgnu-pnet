@@ -1,3 +1,8 @@
+2005-03-17  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Globalization/NumberFormatInfo.cs,
+	runtime/System/Private/NumberParser.cs: Fix for bugs #11332, and
+	#12341. (patch #3833 applied by drobosson)
 
 2005-03-10  Klaus Treichel  <ktreichel@web.de>
 

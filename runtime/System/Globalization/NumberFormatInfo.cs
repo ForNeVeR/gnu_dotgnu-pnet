@@ -75,7 +75,8 @@ public sealed class NumberFormatInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					return CultureInfo.CurrentCulture.NumberFormat;
+					// return CultureInfo.CurrentCulture.NumberFormat;
+					return System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat;
 				}
 			}
 	public int CurrencyDecimalDigits

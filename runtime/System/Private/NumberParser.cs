@@ -344,9 +344,11 @@ internal sealed class NumberParser
 		String posSign = nfi.PositiveSign;
 		String negSign = nfi.NegativeSign;
 		String currency = nfi.CurrencySymbol;
-		String thousandsSep1 = nfi.CurrencyGroupSeparator;
-		String thousandsSep2 = nfi.NumberGroupSeparator;
-
+		
+		String thousandsSep;
+		if( (style & NumberStyles.Float) != 0 ) thousandsSep = nfi.NumberGroupSeparator;
+		else                                    thousandsSep = nfi.CurrencyGroupSeparator;
+		
 		// Skip leading white space.
 		posn = 0;
 		len = s.Length;
@@ -396,8 +398,7 @@ internal sealed class NumberParser
 				++posn;
 			}
 			else if((style & NumberStyles.AllowThousands) != 0 &&
-					(ch == thousandsSep1[0] ||
-					 ch == thousandsSep2[0]))
+					 ch == thousandsSep[0] )
 			{
 				++posn;
 			}
@@ -447,8 +448,7 @@ internal sealed class NumberParser
 					digit = (uint)(ch - 'a' + 10);
 				}
 				else if((style & NumberStyles.AllowThousands) != 0 &&
-						(ch == thousandsSep1[0] ||
-						 ch == thousandsSep2[0]))
+						ch == thousandsSep[0] )
 				{
 					// Ignore thousands separators in the string.
 					++posn;
@@ -504,8 +504,7 @@ internal sealed class NumberParser
 					digit = (uint)(ch - '0');
 				}
 				else if((style & NumberStyles.AllowThousands) != 0 &&
-						(ch == thousandsSep1[0] ||
-						 ch == thousandsSep2[0]))
+						ch == thousandsSep[0])
 				{
 					// Ignore thousands separators in the string.
 					++posn;
@@ -1210,14 +1209,23 @@ internal sealed class NumberParser
 				// check for groupseparator
 				if((style & NumberStyles.AllowThousands) != 0)
 				{
-					if(!CheckString(ref sb, nfi.NumberGroupSeparator,
-									ref start, end))
-					{
-						if(!CheckString(ref sb, nfi.CurrencyGroupSeparator,
-										ref start, end))
+					if( (style & NumberStyles.Float) != 0 ) {
+						
+						if(!CheckString(ref sb, nfi.NumberGroupSeparator,
+								ref start, end))
 						{
 							break;
 						}
+						
+					}
+					else {
+					
+						if(!CheckString(ref sb, nfi.CurrencyGroupSeparator,
+								ref start, end))
+						{
+							break;
+						}
+					
 					}
 				}
 				else

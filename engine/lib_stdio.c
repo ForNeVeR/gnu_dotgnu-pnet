@@ -33,6 +33,7 @@ be useful for debugging in embedded environments.
 
 #include "engine.h"
 #include "lib_defs.h"
+#include "il_utils.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -169,18 +170,14 @@ void _IL_Stdio_StdWrite_iString(ILExecThread *thread, ILInt32 fd,
  */
 ILInt32 _IL_Stdio_StdRead_i(ILExecThread *thread, ILInt32 fd)
 {
-#ifndef REDUCED_STDIO
 	if(fd == 0)
 	{
-		return (ILInt32)(getc(stdin));
+		return (ILInt32)ILInputGetChar();
 	}
 	else
 	{
 		return -1;
 	}
-#else
-	return -1;
-#endif
 }
 
 /*
@@ -190,7 +187,6 @@ ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
 								System_Array *value, ILInt32 index,
 								ILInt32 count)
 {
-#ifndef REDUCED_STDIO
 	ILUInt16 *buf = ((ILUInt16 *)(ArrayToBuffer(value))) + index;
 	ILInt32 result = 0;
 	int ch;
@@ -200,8 +196,8 @@ ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
 	}
 	while(count > 0)
 	{
-		ch = getc(stdin);
-		if(ch == EOF)
+		ch = ILInputGetChar();
+		if(ch == -1)
 		{
 			break;
 		}
@@ -209,9 +205,6 @@ ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
 		--count;
 	}
 	return result;
-#else
-	return -1;
-#endif
 }
 
 /*
@@ -221,16 +214,12 @@ ILInt32 _IL_Stdio_StdRead_iaBii(ILExecThread *thread, ILInt32 fd,
 								System_Array *value, ILInt32 index,
 								ILInt32 count)
 {
-#ifndef REDUCED_STDIO
 	if(fd != 0)
 	{
 		return -1;
 	}
-	return (ILInt32)(fread(((ILUInt8 *)ArrayToBuffer(value)) + index,
-						   1, count, stdin));
-#else
-	return -1;
-#endif
+	return (ILInt32)ILInputRead
+		(((ILUInt8 *)ArrayToBuffer(value)) + index, (int)count);
 }
 
 /*
@@ -238,13 +227,12 @@ ILInt32 _IL_Stdio_StdRead_iaBii(ILExecThread *thread, ILInt32 fd,
  */
 ILInt32 _IL_Stdio_StdPeek(ILExecThread *thread, ILInt32 fd)
 {
-#ifndef REDUCED_STDIO
 	if(fd == 0)
 	{
-		int ch = getc(stdin);
+		int ch = ILInputGetChar();
 		if(ch != -1)
 		{
-			ungetc(ch, stdin);
+			ILInputUngetChar(ch);
 		}
 		return (ILInt32)ch;
 	}
@@ -252,9 +240,6 @@ ILInt32 _IL_Stdio_StdPeek(ILExecThread *thread, ILInt32 fd)
 	{
 		return -1;
 	}
-#else
-	return -1;
-#endif
 }
 
 #ifdef	__cplusplus

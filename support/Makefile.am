@@ -23,6 +23,7 @@ libILSupport_a_SOURCES = aes.c \
 						 hash.c \
 						 hashtab.c \
 						 hb_gc.c \
+						 input.c \
 						 intern.c \
 						 locale.c \
 						 md5.c \

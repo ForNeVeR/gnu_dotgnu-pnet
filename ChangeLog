@@ -20,6 +20,10 @@
 	* engine/lookup.c: slight bug in signature example - object refs
 	use 'o', not 'O'.
 
+	* engine/lib_stdio.c, include/il_utils.h, support/Makefile.am,
+	support/input.c: move the console input code to "support" so that
+	it is easier to redirect.
+
 2003-07-23  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/process.c:  Unregister the main thread when a process

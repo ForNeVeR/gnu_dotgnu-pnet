@@ -278,7 +278,7 @@ OPDEF("endfinally",			0, 0, IL_OPCODE_ARGS_NONE, 1)
 OPDEF("leave",				0, 0, IL_OPCODE_ARGS_LONG_JUMP, 5)
 OPDEF("leave.s",			0, 0, IL_OPCODE_ARGS_SHORT_JUMP, 2)
 
-OPDEF("stdind.i",			2, 0, IL_OPCODE_ARGS_NONE, 1)
+OPDEF("stind.i",			2, 0, IL_OPCODE_ARGS_NONE, 1)
 
 OPDEF("conv.u",				1, 1, IL_OPCODE_ARGS_NONE, 1)
 

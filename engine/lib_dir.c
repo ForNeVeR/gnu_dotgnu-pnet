@@ -22,6 +22,7 @@
 #include "lib_defs.h"
 #include "il_utils.h"
 #include "il_errno.h"
+#include "il_sysio.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -39,6 +40,12 @@ typedef struct
 	ILObject   *invalidPathChars;
 
 } Platform_PathInfo;
+
+typedef struct
+{
+  ILString *fileName;
+  ILInt32 fileType;
+} Platform_FileInfo;
 
 /*
  * public static PathInfo GetPathInfo();
@@ -151,15 +158,89 @@ ILString *_IL_DirMethods_GetCurrentDirectory(ILExecThread *_thread)
 }
 
 /*
- * public static Errno GetFilesInDirectory(String path, out String files);
+ * public static Errno GetFilesInDirectory(String path, out 
+ * 											Platform.FileInfo files);
  */
+extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread,ILString * path, System_Array * * files)
+{
+	ILDir *dirStream; /* follow a single std of naming */
+	ILDirEnt *dirEntry;
+	ILInt32 arraySize = 0;
+	Platform_FileInfo **buffer=NULL; /*coz _ptr is for fools who forget :-) */
+	ILInt32 i;  /*  How surprising, an index var named 'i' */
+
+#ifdef HAVE_DIRENT_H /* the dirent-> is included only if HAVE_DIRENT_H */
+	dirStream = ILOpenDir(ILStringToAnsi(_thread, path));
+	if(!dirStream)
+	{
+		goto cleanup;
+	}
+	while(ILReadDir(dirStream))arraySize++;
+	if(!ILCloseDir(dirStream))
+	{
+		goto cleanup;
+	}
+	*files = (System_Array*) ILExecThreadNew(_thread,
+						"[oPlatform.FileInfo;","(Ti)V",(ILVaInt)(arraySize));
+	if(!(*files))
+	{
+		ILExecThreadThrowOutOfMemory(_thread);
+		return IL_ERRNO_EPERM;
+	}
+	buffer = (Platform_FileInfo **)(ArrayToBuffer(*files));
+	dirStream = ILOpenDir(ILStringToAnsi(_thread, path));
+	for(i=0;i<arraySize;i++)
+	{
+		*buffer= (Platform_FileInfo*) ILExecThreadNew(_thread,
+						"Platform.FileInfo","(T)V");
+		dirEntry= ILReadDir(dirStream);
+		if(!dirEntry)break;
+		(*buffer)->fileName = ILStringCreate(_thread, dirEntry->d_name);
+		switch (dirEntry->d_type)
+		{
+			case DT_REG:
+					(*buffer)->fileType = ILFT_REG_FILE;
+					break;
+			case DT_DIR:
+					(*buffer)->fileType = ILFT_DIRECTORY;
+					break;
+			case DT_FIFO:
+					(*buffer)->fileType = ILFT_FIFO_SPEC;
+					break;
+			case DT_SOCK:
+					(*buffer)->fileType = ILFT_SOCKET;
+					break;
+			case DT_CHR:
+					(*buffer)->fileType = ILFT_CHAR_SPEC;
+					break;
+			case DT_BLK:
+					(*buffer)->fileType = ILFT_BLOCK_SPEC;
+					break;
+			default:
+	  				(*buffer)->fileType = ILFT_UNKNOWN;
+					break;
+		}
+		++buffer;
+	}
+	ILCloseDir(dirStream);
+ 	return ILSysIOConvertErrno(errno);
+cleanup:
+	*files = (System_Array*) ILExecThreadNew(_thread,
+				"[oPlatform.FileInfo;","(Ti)V",(ILVaInt)(0));
+	return IL_ERRNO_EPERM;
+#else
+	return IL_ERRNO_EPERM;
+#endif
+}
+#if 0
 ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread *_thread,
 										   ILString *path,
-										   ILString **files)
+										   System_Array **files)
 {
 	/* TODO */
 	return IL_ERRNO_EPERM;
 }
+#endif
 
 #ifdef	__cplusplus
 };

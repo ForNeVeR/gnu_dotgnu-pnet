@@ -1,4 +1,11 @@
 
+2002-10-21  Gopal.V  <gopalv82@symonds.net>
+
+	* configure.in,include/il_config.h.in,support/dir.c,
+	include/il_sysio.h,engine/lib_dir.c,support/Makefile.am:
+	Commit Charles Schuller's patches for 
+	DirMethods.GetFilesInDirectory()
+
 2002-10-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/Makefile.am, codegen/cg_all.tc, codegen/pm_arith.tc,

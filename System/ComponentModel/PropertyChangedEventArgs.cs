@@ -27,18 +27,18 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 	public class PropertyChangedEventArgs: EventArgs
 	{
-		[TODO]
+		private string name;
+	
 		public PropertyChangedEventArgs(String name)
 		{
-			throw new NotImplementedException(".ctor");
+			this.name = name;
 		}
 
-		[TODO]
 		public virtual String PropertyName 
 		{
 			get
 			{
-				throw new NotImplementedException("PropertyName");
+				return name;
 			}
 		}
 

@@ -31,28 +31,28 @@ namespace System.ComponentModel
 
 	public class CancelEventArgs: EventArgs
 	{
-		[TODO]
+	
+		private bool cancel;
+	
 		public CancelEventArgs()
 		{
-			throw new NotImplementedException(".ctor");
+			cancel = false;
 		}
 
-		[TODO]
 		public CancelEventArgs(bool cancel)
 		{
-			throw new NotImplementedException(".ctor");
+			this.cancel = cancel;
 		}
 		
-		[TODO]
 		public bool Cancel 
 		{
 			get
 			{
-				throw new NotImplementedException("Cancel");
+				return cancel;
 			}
 			set
 			{
-				throw new NotImplementedException("Cancel");
+				cancel = value;
 			}
 		}
 

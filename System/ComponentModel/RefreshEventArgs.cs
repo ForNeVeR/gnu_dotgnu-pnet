@@ -27,23 +27,24 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 	public class RefreshEventArgs: EventArgs
 	{
-		[TODO]
+		private Object componentChanged;
+		private Type typeChanged;
+
 		public RefreshEventArgs(Object componentChanged)
 		{
-			throw new NotImplementedException(".ctor");
+			this.componentChanged = componentChanged;
 		}
 
-		[TODO]
 		public RefreshEventArgs(Type typeChanged)
 		{
-			throw new NotImplementedException(".ctor");
+			this.typeChanged = typeChanged;
 		}
 
 		public Object ComponentChanged 
 		{
 			get
 			{
-				throw new NotImplementedException("ComponentChanged");
+				return componentChanged;
 			}
 		}
 
@@ -51,7 +52,7 @@ namespace System.ComponentModel
 		{
 			get
 			{
-				throw new NotImplementedException("TypeChanged");
+				return typeChanged;
 			}
 		}
 

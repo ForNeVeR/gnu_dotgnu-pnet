@@ -29,28 +29,29 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 	public class CollectionChangeEventArgs: EventArgs
 	{
-		[TODO]
+		private CollectionChangeAction action;
+		private Object element;
+	
 		public CollectionChangeEventArgs(CollectionChangeAction action, 
 						Object element)
 		{
-			throw new NotImplementedException(".ctor");
+			this.action = action;
+			this.element = element;
 		}
 
-		[TODO]
 		public virtual CollectionChangeAction Action 
 		{
 			get
 			{
-				throw new NotImplementedException("Action");
+				return action;
 			}
 		}
 
-		[TODO]
-		public virtual System.Object Element 
+		public virtual Object Element 
 		{
 			get
 			{
-				throw new NotImplementedException("Element");
+				return element;
 			}
 		}
 

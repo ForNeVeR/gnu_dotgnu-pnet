@@ -1,4 +1,13 @@
 
+2003-01-01  Ian Fung  <if26@cornell.edu>
+
+	* System/ComponentModel/CancelEventArgs.cs,
+	System/ComponentModel/CollectionChangeEventArgs.cs,
+	System/ComponentModel/ListChangedEventArgs.cs,
+	System/ComponentModel/PropertyChangedEventArgs.cs,
+	System/ComponentModel/RefreshEventArgs.cs: Implement these 
+	5 classes for compatibility. (Patch #904, Gopal)
+	
 2002-12-31  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlWriter.cs, System.Xml/XmlTextWriter.cs, 

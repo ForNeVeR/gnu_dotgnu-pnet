@@ -27,32 +27,38 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 	public class ListChangedEventArgs: EventArgs
 	{
-		[TODO]
+		private ListChangedType listChangedType;
+		private int newIndex;
+		private int oldIndex;
+	
 		public ListChangedEventArgs(ListChangedType listChangedType, 
 										int newIndex)
 		{
-			throw new NotImplementedException(".ctor");
+			this.listChangedType = listChangedType;
+			this.newIndex = newIndex;
 		}
 
 		[TODO]
 		public ListChangedEventArgs(ListChangedType listChangedType, 
 											PropertyDescriptor propDesc)
 		{
-			throw new NotImplementedException(".ctor");
+			//this.listChangedType = listChangedType;
+			throw new NotImplementedException("ListChangedEventArgs");
 		}
 
-		[TODO]
 		public ListChangedEventArgs(ListChangedType listChangedType, 
 											int newIndex, int oldIndex)
 		{
-			throw new NotImplementedException(".ctor");
+			this.listChangedType = listChangedType;
+			this.newIndex = newIndex;
+			this.oldIndex = oldIndex;
 		}
 
 		public ListChangedType ListChangedType  
 		{
 			get
 			{
-				throw new NotImplementedException("ListChangedType");
+				return listChangedType;
 			}
 		}
 
@@ -60,7 +66,7 @@ namespace System.ComponentModel
 		{
 			get
 			{
-				throw new NotImplementedException("NewIndex");
+				return newIndex;
 			}
 		}
 
@@ -68,7 +74,7 @@ namespace System.ComponentModel
 		{
 			get
 			{
-				throw new NotImplementedException("OldIndex");
+				return oldIndex;
 			}
 		}
 

@@ -193,8 +193,8 @@ static int Coder_Restart(ILCoder *coder)
 static void Coder_Label(ILCoder *coder, ILUInt32 offset)
 {
 }
-static void Coder_StackItem(ILCoder *coder, ILEngineType engineType,
-							ILType *type)
+static void Coder_StackRefresh(ILCoder *coder, ILEngineStackItem *stack,
+							   ILUInt32 stackSize)
 {
 }
 static void Coder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
@@ -363,6 +363,38 @@ static void Coder_SizeOf(ILCoder *coder, ILType *type)
 static void Coder_ArgList(ILCoder *coder)
 {
 }
+static void Coder_UpConvertArg(ILCoder *coder, ILEngineStackItem *args,
+						       ILUInt32 numArgs, ILUInt32 param,
+						       ILType *paramType)
+{
+}
+static void Coder_DownConvertArg(ILCoder *coder, ILEngineStackItem *args,
+						         ILUInt32 numArgs, ILUInt32 param,
+						         ILType *paramType)
+{
+}
+static void Coder_NewObj(ILCoder *coder, ILClass *classInfo)
+{
+}
+static void Coder_CtorArgs(ILCoder *coder, ILEngineStackItem *args,
+					 	   ILUInt32 numArgs)
+{
+}
+static void Coder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
+					   		 ILUInt32 numArgs, ILMethod *methodInfo)
+{
+}
+static void Coder_CallVirtual(ILCoder *coder, ILEngineStackItem *args,
+					    	  ILUInt32 numArgs, ILMethod *methodInfo)
+{
+}
+static void Coder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
+					      		ILUInt32 numArgs, ILMethod *methodInfo)
+{
+}
+static void Coder_JumpMethod(ILCoder *coder, ILMethod *methodInfo)
+{
+}
 
 /*
  * Default coder class and instance.
@@ -374,7 +406,7 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_Finish,
 	Coder_Restart,
 	Coder_Label,
-	Coder_StackItem,
+	Coder_StackRefresh,
 	Coder_Constant,
 	Coder_Binary,
 	Coder_BinaryPtr,
@@ -421,6 +453,14 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_PushToken,
 	Coder_SizeOf,
 	Coder_ArgList,
+	Coder_UpConvertArg,
+	Coder_DownConvertArg,
+	Coder_NewObj,
+	Coder_CtorArgs,
+	Coder_CallMethod,
+	Coder_CallVirtual,
+	Coder_CallInterface,
+	Coder_JumpMethod,
 };
 static ILCoder DefaultCoder = {&DefaultCoderClass};
 

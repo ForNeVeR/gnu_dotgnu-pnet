@@ -10,6 +10,8 @@
 includes for correct definition order; add 2 extra "slop" items to the
 verification stack to accomodate constructor requirements.
 
+* engine/ilverify.c: stubs for new coder API's.
+
 2001-10-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_obj.c: verification for the remainder of the object-related

@@ -18,6 +18,17 @@
 	* System/Net/Sockets/TcpClient.cs, System/Net/Sockets/UdpClient.cs,
 	resources/en_US/System/Invalid.txt: add the "UdpClient" class.
 
+	* resources/en_US/runtime/Arg.txt, resources/en_US/runtime/IO.txt,
+	resources/en_US/runtime/Invalid.txt,
+	runtime/Microsoft/Win32/IRegistryKeyProvider.cs,
+	runtime/Microsoft/Win32/MemoryKeyProvider.cs,
+	runtime/Microsoft/Win32/Registry.cs,
+	runtime/Microsoft/Win32/RegistryHive.cs,
+	runtime/Microsoft/Win32/RegistryKey.cs,
+	runtime/Microsoft/Win32/Win32KeyProvider.cs: emulate the Win32
+	registry classes using an in-memory database that is discarded
+	when the program exits.
+
 2003-04-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Threading/AutoResetEvent.cs,

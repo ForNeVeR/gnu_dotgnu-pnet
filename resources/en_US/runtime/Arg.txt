@@ -127,6 +127,7 @@ Arg_PermissionsLocalIntranet=Allow access to the local intranet
 Arg_PermissionsNothing=Deny all permissions
 Arg_PermissionsSkipVerification=Allow the program to skip verification
 Arg_InvalidAsync=Invalid object supplied for async read/write operation
+Arg_InvalidHive=Invalid registry hive
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

@@ -1,4 +1,9 @@
 
+2002-12-11  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_oper.tc: Implement AddressOf operator to generate
+	references from expressions.
+
 2002-12-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_stmt.tc: remove a warning.

@@ -1851,10 +1851,19 @@ ILNode_SemAnalysis(ILNode_Deref)
  */
 ILNode_SemAnalysis(ILNode_AddressOf)
 {
-	/* TODO */
 	CSSemValue value;
 	CCUnsafeMessage(info, (ILNode *)node, "unsafe address operator");
-	CSSemSetRValue(value, ILType_Int32);
+	value=ILNode_SemAnalysis(node->expr,info,&(node->expr));
+	if(!CSSemIsValue(value))
+	{
+		CCErrorOnLine(yygetfilename(node->expr),yygetlinenum(node->expr),
+				"invalid argument for address operator");
+		CSSemSetRValue(value,ILType_Int32);
+		return value;
+	}
+	CSSemSetRValue(value,ILTypeCreateRef(info->context,
+							IL_TYPE_COMPLEX_PTR,
+							CSSemGetType(value)));
 	return value;
 }
 

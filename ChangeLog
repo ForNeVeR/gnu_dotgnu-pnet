@@ -1,4 +1,13 @@
 
+2004-10-20  Deryk Robosson <deryk@0x0a.com>	
+
+	* Xsharp/TopLevelWindow.cs: Add skip pager state to work with
+	skip taskbar WM state.
+
+	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs: Correct bit wise
+	compare for ShowInTaskBar property.
+	(patch #3460, Bug #10715, Gopal)
+
 2004-10-20  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XPath/Private/XPathTokenizer.cs: fix compilation in ECMA

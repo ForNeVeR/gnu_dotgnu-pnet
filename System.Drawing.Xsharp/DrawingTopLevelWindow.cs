@@ -380,7 +380,7 @@ internal sealed class DrawingTopLevelWindow
 				{
 					otherHints |= OtherHints.Dialog;
 				}
-				if((flags & ToolkitWindowFlags.ShowInTaskbar) == 0)
+				if((flags & ToolkitWindowFlags.ShowInTaskbar) != 0)
 				{
 					otherHints |= OtherHints.HideFromTaskBar;
 				}

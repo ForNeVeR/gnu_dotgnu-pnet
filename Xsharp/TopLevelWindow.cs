@@ -403,6 +403,11 @@ public class TopLevelWindow : InputOutputWidget
 						(Xlib.Xlong)Xlib.XInternAtom
 							(display, "_NET_WM_STATE_SKIP_TASKBAR",
 							 XBool.False);
+
+					atoms[numAtoms++] =
+						(Xlib.Xlong)Xlib.XInternAtom
+							(display, "_NET_WM_STATE_SKIP_PAGER",
+							 XBool.False);
 				}
 
 				// Determine if the window should be made top-most on-screen.

@@ -62,6 +62,9 @@
 	System.Windows.Forms/Themes/DefaultThemePainter.cs:
 	use a glyph-based drawing approach for radio buttons.
 
+	* System.Windows.Forms/Themes/RadioButton.cs: fix some drawing/logic
+	bugs in "RadioButton".
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

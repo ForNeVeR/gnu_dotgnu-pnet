@@ -384,18 +384,22 @@ public class RadioButton : ButtonBase
 	// Raises the AppearanceChanged event.
 	protected virtual void OnAppearanceChanged(EventArgs e)
 			{
-				if (AppearanceChanged != null)
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.AppearanceChanged));
+				if(handler != null)
 				{
-					AppearanceChanged(this, e);
+					handler(this, e);
 				}
 			}
 
 	// Raises the CheckedChanged event.
 	protected virtual void OnCheckedChanged(EventArgs e)
 			{
-				if (CheckedChanged != null)
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.CheckedChanged));
+				if(handler != null)
 				{
-					CheckedChanged(this, e);
+					handler(this, e);
 				}
 			}
 
@@ -452,8 +456,12 @@ public class RadioButton : ButtonBase
 	// Raises the MouseUp event.
 	protected override void OnMouseUp(MouseEventArgs e)
 			{
+				bool clicked = (entered && pressed);
 				pressed = false;
-				OnClick(EventArgs.Empty);
+				if(clicked)
+				{
+					OnClick(EventArgs.Empty);
+				}
 				base.OnMouseUp(e);
 			}
 
@@ -476,17 +484,31 @@ public class RadioButton : ButtonBase
 				return GetType().FullName.ToString() + ", Checked: " + Checked.ToString();
 			}
 
-
-
-
-
-
-
 	// Occurs when the value of the Appearance property changes.
-	public event EventHandler AppearanceChanged;
+	public event EventHandler AppearanceChanged
+			{
+				add
+				{
+					AddHandler(EventId.AppearanceChanged, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.AppearanceChanged, value);
+				}
+			}
 
 	// Occurs when the value of the Checked property changes.
-	public event EventHandler CheckedChanged;
+	public event EventHandler CheckedChanged
+			{
+				add
+				{
+					AddHandler(EventId.CheckedChanged, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.CheckedChanged, value);
+				}
+			}
 
 }; // class RadioButton
 

@@ -44,6 +44,27 @@ static IL_INLINE int CkArrayStoreI8(CVMWord *posn, void *tempptr,
 	}
 }
 
+
+int _ILSystemObjectSetField(ILExecThread *thread, ILObject* obj,
+							const char *fieldName, const char *signature,
+							ILObject *value)
+{
+	ILField *field;
+	ILClass *classInfo = GetObjectClass(obj);
+
+	field = ILExecThreadLookupFieldInClass(thread, classInfo, fieldName, signature);
+
+	if (field == 0)
+	{
+		return -1;
+	}
+
+	*(((ILObject **)(((char *)obj) + field->offset))) = value;
+
+	return 0;
+}
+
+
 #ifdef IL_CONFIG_FP_SUPPORTED
 
 /*

@@ -643,6 +643,13 @@ ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame);
 ILCallFrame *_ILAllocCallFrame(ILExecThread *thread);
 
 /*
+ * Set a reference type field of a an object instance.
+ */
+int _ILSystemObjectSetField(ILExecThread *thread, ILObject* obj,
+							   const char *fieldName, const char *signature,
+							   ILObject *value);
+
+/*
  * Create a system exception object of a particular class.
  * We do this very carefully, to avoid re-entering the engine.
  * We cannot call the exception's constructor, so we do the
@@ -751,13 +758,25 @@ typedef struct __tagILThreadExecContext
 }
 ILThreadExecContext;
 
+/*
+ * Sets and saves the current execution context for the given ILThread.
+ */
 void _ILThreadSetExecContext(ILThread *thread, ILThreadExecContext *context,
 			ILThreadExecContext *saveContext);
 
+/*
+ * Sets and saves the current execution context for the given ILThread.
+ */
 void _ILThreadSaveExecContext(ILThread *thread, ILThreadExecContext *saveContext);
 
+/*
+ * Restores the execution context for the given ILThread.
+ */
 void _ILThreadRestoreExecContext(ILThread *thread, ILThreadExecContext *context);
 
+/*
+ * Clears the execution context for the given ILThread.
+ */
 void _ILThreadClearExecContext(ILThread *thread);
 
 /*

@@ -5,6 +5,17 @@
 	
 	* support/interlocked_x86.h: Added improved ILInterruptMemoryBarrier
 	implementation for X86 systems.
+	
+	* engine/convert.c: Added support for returning the dll name when
+	a p/invoked DLL isn't found.
+	
+	* engine/engine.h, engine/cvm_ptr.c: Added _ILSystemObjectSetField
+	function.
+	
+	* engine/lib_monitor.c: Fixed spelling mistakes in comments.
+	
+	* include/il_engine.h, engine/lookup.c: Added 
+	ILExecThreadLookupFieldFromClasss function.
 
 2004-06-18  Gopal V  <gopalv82@yahoo.com>
 

@@ -109,7 +109,7 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name,
  * exception to throw, but does not throw it.
  */
 static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
-								    int *errorCode)
+								    int *errorCode, const char **errorInfo)
 {
 	ILMethodCode code;
 	ILPInvoke *pinv;
@@ -224,6 +224,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				{
 					METADATA_UNLOCK(thread);
 					*errorCode = IL_CONVERT_DLL_NOT_FOUND;
+					*errorInfo = name;
 					return 0;
 				}
 
@@ -416,8 +417,10 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 
 unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 {
+	ILObject *obj;
+	const char *errorInfo = 0;
 	int errorCode = IL_CONVERT_VERIFY_FAILED;
-	unsigned char *start = ConvertMethod(thread, method, &errorCode);
+	unsigned char *start = ConvertMethod(thread, method, &errorCode, &errorInfo);
 	if(start)
 	{
 		return start;
@@ -466,9 +469,16 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 
 			case IL_CONVERT_DLL_NOT_FOUND:
 			{
-				ILExecThreadSetException
-					(thread, _ILSystemException(thread, 
-						"System.DllNotFoundException"));
+				obj = _ILSystemException(thread, "System.DllNotFoundException");
+
+				if (errorInfo)
+				{
+					_ILSystemObjectSetField(thread, obj, "dllName",
+						"oSystem.String;",
+						ILStringCreate(thread, errorInfo));
+				}
+
+				ILExecThreadSetException(thread, obj);				
 			}
 			break;
 		}

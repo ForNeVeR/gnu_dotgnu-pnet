@@ -421,6 +421,15 @@ ILField *ILExecThreadLookupField(ILExecThread *thread,
 								 const char *signature);
 
 /*
+ * Look up a field in a  particular class.  Returns NULL if
+ * the field could not be found.
+ */
+ILField *ILExecThreadLookupFieldInClass(ILExecThread *thread,
+								 ILClass *classInfo,
+								 const char *fieldName,
+								 const char *signature);
+
+/*
  * Call a particular method within a thread's context.
  * Returns non-zero if an exception was thrown during
  * the processing of the method.  Zero otherwise.

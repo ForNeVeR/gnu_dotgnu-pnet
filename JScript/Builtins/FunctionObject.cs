@@ -48,7 +48,8 @@ public sealed class FunctionObject : ScriptFunction
 			}
 
 	// Perform a call on this object.
-	internal override Object Call(Object thisob, Object[] args)
+	internal override Object Call
+				(VsaEngine engine, Object thisob, Object[] args)
 			{
 				// Create a new scope object and initialize the parameters.
 				ScriptObject scope;

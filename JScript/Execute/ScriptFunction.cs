@@ -24,6 +24,7 @@ namespace Microsoft.JScript
 using System;
 using System.Reflection;
 using System.Globalization;
+using Microsoft.JScript.Vsa;
 
 public abstract class ScriptFunction : JSObject
 {
@@ -75,7 +76,7 @@ public abstract class ScriptFunction : JSObject
 	[JSFunction(JSFunctionAttributeEnum.HasVarArgs)]
 	public Object CreateInstance(params Object[] args)
 			{
-				return Construct(args);
+				return Construct(engine, args);
 			}
 
 	// Get the prototype for a constructed function object.
@@ -89,7 +90,7 @@ public abstract class ScriptFunction : JSObject
 				JSFunctionAttributeEnum.HasVarArgs)]
 	public Object Invoke(Object thisob, params Object[] args)
 			{
-				return Call(thisob, args);
+				return Call(engine, thisob, args);
 			}
 
 	// Invoke a member object.
@@ -144,13 +145,14 @@ public abstract class ScriptFunction : JSObject
 			}
 
 	// Perform a call on this object.
-	internal abstract Object Call(Object thisob, Object[] args);
+	internal abstract Object Call
+				(VsaEngine engine, Object thisob, Object[] args);
 
 	// Perform a constructor call on this object.
-	internal virtual Object Construct(Object[] args)
+	internal virtual Object Construct(VsaEngine engine, Object[] args)
 			{
 				JSObject obj = new JSObject(GetPrototypeForConstructedObject());
-				Object result = Call(obj, args);
+				Object result = Call(engine, obj, args);
 				if(result is ScriptObject)
 				{
 					return result;

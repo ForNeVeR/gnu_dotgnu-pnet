@@ -641,7 +641,7 @@ Eval(JNew)
 	}
 
 	// Call the constructor.
-	return ((ScriptFunction)constructor).Construct(args);
+	return ((ScriptFunction)constructor).Construct(engine, args);
 }
 
 // Evaluate an array access expression.
@@ -845,7 +845,7 @@ Eval(JCall)
 	}
 
 	// Call the function.
-	return ((ScriptFunction)func).Call(thisob, args);
+	return ((ScriptFunction)func).Call(engine, thisob, args);
 }
 
 // Evaluate an argument list expression.

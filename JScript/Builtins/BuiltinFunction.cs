@@ -24,6 +24,7 @@ namespace Microsoft.JScript
 using System;
 using System.Reflection;
 using System.Globalization;
+using Microsoft.JScript.Vsa;
 
 internal sealed class BuiltinFunction : ScriptFunction
 {
@@ -66,7 +67,8 @@ internal sealed class BuiltinFunction : ScriptFunction
 			}
 
 	// Perform a call on this object.
-	internal override Object Call(Object thisob, Object[] args)
+	internal override Object Call
+					(VsaEngine engine, Object thisob, Object[] args)
 			{
 				// Invoke the builtin method using reflection.
 				if((flags & (JSFunctionAttributeEnum.HasThisObject |

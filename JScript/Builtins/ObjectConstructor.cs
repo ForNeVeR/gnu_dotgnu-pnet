@@ -50,60 +50,62 @@ public sealed class ObjectConstructor : ScriptFunction
 			}
 
 	// Construct a new "Object" instance.
+	private static JSObject ConstructNewObject(VsaEngine engine)
+			{
+				return new JSObject
+					(EngineInstance.GetEngineInstance(engine)
+						.GetObjectPrototype());
+			}
 	public JSObject ConstructObject()
 			{
-				ScriptObject prototype =
-					EngineInstance.GetEngineInstance(engine)
-						.GetObjectPrototype();
-				return new JSObject(prototype);
+				return ConstructNewObject(engine);
 			}
 	[JSFunction(JSFunctionAttributeEnum.HasVarArgs)]
 	public new Object CreateInstance(params Object[] args)
 			{
-				if(args.Length == 0)
-				{
-					return ConstructObject();
-				}
-				else if(args[0] == null || args[0] == DBNull.Value)
-				{
-					return ConstructObject();
-				}
-				else
-				{
-					// TODO
-					return args[0];
-				}
+				return Construct(engine, args);
 			}
 
 	// Invoke this constructor.
 	[JSFunction(JSFunctionAttributeEnum.HasVarArgs)]
 	public Object Invoke(params Object[] args)
 			{
-				return Call(null, args);
+				return Call(engine, null, args);
 			}
 
 	// Perform a call on this object.
-	internal override Object Call(Object thisob, Object[] args)
+	internal override Object Call
+				(VsaEngine engine, Object thisob, Object[] args)
 			{
 				if(args.Length == 0)
 				{
-					return ConstructObject();
+					return ConstructNewObject(engine);
 				}
 				else if(args[0] == null || args[0] == DBNull.Value)
 				{
-					return CreateInstance(args);
+					return ConstructNewObject(engine);
 				}
 				else
 				{
-					// TODO
-					return this;
+					return Convert.ToObject(args[0], engine);
 				}
 			}
 
 	// Perform a constructor call on this object.
-	internal override Object CallConstructor(Object[] args)
+	internal override Object Construct(VsaEngine engine, Object[] args)
 			{
-				return CreateInstance(args);
+				if(args.Length == 0)
+				{
+					return ConstructNewObject(engine);
+				}
+				else if(args[0] == null || args[0] == DBNull.Value)
+				{
+					return ConstructNewObject(engine);
+				}
+				else
+				{
+					return Convert.ToObject(args[0], engine);
+				}
 			}
 
 }; // class ObjectConstructor

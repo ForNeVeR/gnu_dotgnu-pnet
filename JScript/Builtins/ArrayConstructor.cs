@@ -63,13 +63,14 @@ public sealed class ArrayConstructor : ScriptFunction
 			}
 
 	// Perform a call on this object.
-	internal override Object Call(Object thisob, Object[] args)
+	internal override Object Call
+				(VsaEngine engine, Object thisob, Object[] args)
 			{
 				return Invoke(args);
 			}
 
 	// Perform a constructor call on this object.
-	internal override Object CallConstructor(Object[] args)
+	internal override Object Construct(VsaEngine engine, Object[] args)
 			{
 				return CreateInstance(args);
 			}

@@ -90,9 +90,10 @@ public class FunctionPrototype : ScriptFunction
 			}
 
 	// Perform a call on this object.
-	internal override Object Call(Object thisob, Object[] args)
+	internal override Object Call
+				(VsaEngine engine, Object thisob, Object[] args)
 			{
-				// TODO
+				// Not used on function prototypes.
 				return null;
 			}
 

@@ -1818,6 +1818,39 @@ public class JSParser
 				}
 			}
 
+	// Parse the input source to get a function definition.
+	internal JFunction ParseFunctionSource()
+			{
+				JNode function;
+				Context start = context.MakeCopy();
+				try
+				{
+					// Pre-fetch the first token.
+					if(token == JSToken.None)
+					{
+						NextToken();
+					}
+
+					// Parse the function definition.
+					function = Function(false);
+
+					// We need to be at EOF now.
+					Expect(JSToken.EndOfFile, "end of file expected");
+				}
+				catch(JSScanner.ScannerFailure e)
+				{
+					// The scanner detected an error in the input stream.
+					throw new JScriptException(JSError.SyntaxError,
+											   tokenInfo.MakeCopy());
+				}
+				catch(ErrorRecovery er)
+				{
+					// No error recovery done, so re-throw the syntax error.
+					throw er.error;
+				}
+				return (JFunction)function;
+			}
+
 	// Exception that is used to handle error recovery in the parser.
 	private sealed class ErrorRecovery : Exception
 	{

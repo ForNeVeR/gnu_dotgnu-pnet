@@ -6,6 +6,16 @@
 	tests/JScript/TestJScript.cs: implementation and test cases for
 	the functions in the JScript global object.
 
+	* JScript/Builtins/ArrayConstructor.cs,
+	JScript/Builtins/BuiltinFunction.cs,
+	JScript/Builtins/FunctionConstructor.cs,
+	JScript/Builtins/FunctionObject.cs,
+	JScript/Builtins/FunctionPrototype.cs,
+	JScript/Builtins/ObjectConstructor.cs,
+	JScript/Execute/ScriptFunction.cs, JScript/Jsc/Globals.cs,
+	JScript/Nodes/JExpr.tc, JScript/Parser/JSParser.cs: implement
+	builtin function invocation support; make Call/Construct re-entrant.
+
 2003-03-06  Michael Moore <mtmoore@uga.edu>
 
 	* runtime/System/Private/DateTimeFormat/ParsedDateTime.cs: ECMA update 

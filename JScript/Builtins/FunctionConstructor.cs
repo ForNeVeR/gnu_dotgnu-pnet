@@ -52,27 +52,66 @@ public sealed class FunctionConstructor : ScriptFunction
 	[JSFunction(JSFunctionAttributeEnum.HasVarArgs)]
 	public new ScriptFunction CreateInstance(params Object[] args)
 			{
-				// TODO
-				return null;
+				return (ScriptFunction)Construct(engine, args);
 			}
 
 	// Invoke this constructor.
 	[JSFunction(JSFunctionAttributeEnum.HasVarArgs)]
 	public ScriptFunction Invoke(params Object[] args)
 			{
-				return CreateInstance(args);
+				return (ScriptFunction)Construct(engine, args);
 			}
 
 	// Perform a call on this object.
-	internal override Object Call(Object thisob, Object[] args)
+	internal override Object Call
+				(VsaEngine engine, Object thisob, Object[] args)
 			{
-				return CreateInstance(args);
+				return Construct(engine, args);
 			}
 
 	// Perform a constructor call on this object.
-	internal override Object CallConstructor(Object[] args)
+	internal override Object Construct(VsaEngine engine, Object[] args)
 			{
-				return CreateInstance(args);
+				String parameters;
+				String body;
+				String defn;
+				int index;
+				JSParser parser;
+				JFunction func;
+
+				// Collect up the parameters and body.
+				if(args.Length == 0)
+				{
+					parameters = String.Empty;
+					body = String.Empty;
+				}
+				else if(args.Length == 1)
+				{
+					parameters = String.Empty;
+					body = Convert.ToString(args[0]);
+				}
+				else
+				{
+					parameters = Convert.ToString(args[0]);
+					for(index = 1; index < (args.Length - 1); ++index)
+					{
+						parameters =
+							String.Concat(parameters, ",",
+										  Convert.ToString(args[index]));
+					}
+					body = Convert.ToString(args[args.Length - 1]);
+				}
+
+				// Build a complete function definition and parse it.
+				defn = "function (" + parameters + ") { " + body + " }";
+				parser = new JSParser(new Context(defn));
+				func = parser.ParseFunctionSource();
+
+				// Build the function object and return it.
+				return new FunctionObject
+					(EngineInstance.GetEngineInstance(engine)
+						.GetFunctionPrototype(), func,
+					 engine.GetMainScope());
 			}
 
 }; // class FunctionConstructor

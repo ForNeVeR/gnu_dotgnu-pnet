@@ -1,4 +1,10 @@
 
+2002-10-20  Gopal.V <gopalv82@symonds.net>
+
+	* csharp/class/enum5.cs,csharp/class/enum5.il,csharp/class/enum5.jl,
+	Makefile.am: add tests for << and >> operators on enum members inside
+	the declaring enum
+
 2002-10-18  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/class/field3.err,csharp/class/field3.jerr,

@@ -253,6 +253,56 @@ static void FindMembers(ILClass *info, const char *name,
 }
 
 /*
+ * Determine if "info1" is a base type for "info2".
+ */
+static int IsBaseTypeFor(ILClass *info1, ILClass *info2)
+{
+	if(ILClassResolve(info1) == ILClassResolve(info2))
+	{
+		return 0;
+	}
+	if(ILClassInheritsFrom(info2, info1))
+	{
+		return 1;
+	}
+	if(ILClassImplements(info2, info1))
+	{
+		return 1;
+	}
+	return 0;
+}
+
+/*
+ * Determine if two method signatures have identical parameters.
+ * Ignore the return type and the static vs instance property.
+ */
+static int SignatureIdentical(ILType *sig1, ILType *sig2)
+{
+	unsigned long numParams;
+	unsigned long paramNum;
+
+	/* Check the number of parameters */
+	numParams = ILTypeNumParams(sig1);
+	if(numParams != ILTypeNumParams(sig2))
+	{
+		return 0;
+	}
+
+	/* Check each parameter for identity */
+	for(paramNum = 1; paramNum <= numParams; ++paramNum)
+	{
+		if(!ILTypeIdentical(ILTypeGetParam(sig1, paramNum),
+							ILTypeGetParam(sig2, paramNum)))
+		{
+			return 0;
+		}
+	}
+
+	/* The signatures are identical */
+	return 1;
+}
+
+/*
  * Perform a member lookup on a type.
  */
 static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
@@ -262,6 +312,8 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 	CSMemberLookupIter iter;
 	CSMemberInfo *firstMember;
 	CSMemberInfo *member;
+	CSMemberInfo *testMember;
+	CSMemberInfo *tempMember;
 
 	/* Initialize the results */
 	InitMembers(results);
@@ -294,6 +346,61 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 		}
 
 		/* Filter the remaining methods by signature */
+		MemberIterInit(&iter, results);
+		while((member = MemberIterNext(&iter)) != 0)
+		{
+			testMember = member->next;
+			while(testMember != 0)
+			{
+				if(IsBaseTypeFor(ILMethod_Owner(testMember->member),
+								 ILMethod_Owner(member->member)))
+				{
+					/* "testMember" is in a base type of "member"'s type */
+					if(SignatureIdentical
+							(ILMethod_Signature(testMember->member),
+						     ILMethod_Signature(member->member)))
+					{
+						/* Remove "testMember" from the method group */
+						tempMember = testMember->next;
+						ILFree(testMember);
+						testMember = tempMember;
+						--(results->num);
+						continue;
+					}
+				}
+				else if(IsBaseTypeFor(ILMethod_Owner(member->member),
+								 	  ILMethod_Owner(testMember->member)))
+				{
+					/* "member" is in a base type of "testMember"'s type */
+					if(SignatureIdentical
+							(ILMethod_Signature(testMember->member),
+						     ILMethod_Signature(member->member)))
+					{
+						/* Remove "member" from the method group */
+						MemberIterRemove(&iter);
+						break;
+					}
+				}
+				else if(testMember->member == member->member)
+				{
+					/* We picked up two copies of the same method,
+					   which can happen when scanning base interfaces
+					   along multiple inheritance paths */
+					if(SignatureIdentical
+							(ILMethod_Signature(testMember->member),
+						     ILMethod_Signature(member->member)))
+					{
+						/* Remove "member" from the method group */
+						MemberIterRemove(&iter);
+						break;
+					}
+				}
+				testMember = testMember->next;
+			}
+		}
+
+		/* The previous "first member" may have been removed, so reacqurie */
+		firstMember = results->members;
 	}
 	else
 	{

@@ -25,13 +25,14 @@ using System;
 using System.IO;
 using System.Globalization;
 using System.Security;
+using System.Security.Policy;
 using System.Runtime.CompilerServices;
 
 public class Assembly : IClrProgramItem, ICustomAttributeProvider
 {
 
 	// Built-in handle for the assembly.  This must be the first field.
-	private IntPtr privateData;
+	internal IntPtr privateData;
 
 	// Private constructor.  Normally called by the runtime engine only.
 	internal Assembly() {}
@@ -365,6 +366,60 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 
 #if !ECMA_COMPAT
 
+	// Get the code base associated with this assembly.
+	[TODO]
+	public virtual String CodeBase
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+	
+	// Get the entry point for this assembly.
+	public virtual MethodInfo EntryPoint
+			{
+				get
+				{
+					return (MethodInfo)(MethodBase.GetMethodFromHandle
+								(GetEntryPoint()));
+				}
+			}
+
+	// Get the security evidence for this assembly.
+	[TODO]
+	public virtual Evidence Evidence
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+
+	// Determine if this assembly was loaded from the global assembly cache.
+	public bool GlobalAssemblyCache
+			{
+				get
+				{
+					// We don't use a GAC in this implementation, or if
+					// we do then we leave it up to the engine to decide.
+					return false;
+				}
+			}
+
+	// Get the location where this assembly was loaded from.
+	[TODO]
+	public virtual String Location
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+
 	// Get the assembly that a particular type resides in.
 	public static Assembly GetAssembly(Type type)
 			{
@@ -374,6 +429,10 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 				}
 				return type.Assembly;
 			}
+
+	// Get the entry point method for this assembly.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private RuntimeMethodHandle GetEntryPoint();
 
 #endif // !ECMA_COMPAT
 

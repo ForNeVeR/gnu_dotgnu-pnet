@@ -32,6 +32,12 @@ public struct TypeToken
 	// Internal state.
 	private int token;
 
+	// Constructor.
+	internal TypeToken(int token)
+			{
+				this.token = token;
+			}
+
 	// Get the token code.
 	public int Token
 			{

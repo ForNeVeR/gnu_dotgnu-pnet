@@ -1,8 +1,8 @@
 /*
- * EventToken.cs - Implementation of the
- *			"System.Reflection.Emit.EventToken" class.
+ * FieldBuilder.cs - Implementation of the
+ *		"System.Reflection.Emit.FieldBuilder" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,49 +24,18 @@ namespace System.Reflection.Emit
 
 #if !ECMA_COMPAT
 
-public struct EventToken
+using System;
+using System.Reflection;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+
+[TODO]
+public sealed class FieldBuilder
 {
-	// The empty token.
-	public static readonly EventToken Empty;
 
-	// Internal state.
-	private int token;
+	// TODO
 
-	// Constructor.
-	internal EventToken(int token)
-			{
-				this.token = token;
-			}
-
-	// Get the token code.
-	public int Token
-			{
-				get
-				{
-					return token;
-				}
-			}
-
-	// Determine if this token is identical to another.
-	public override bool Equals(Object obj)
-			{
-				if(obj is EventToken)
-				{
-					return (token == ((EventToken)obj).token);
-				}
-				else
-				{
-					return false;
-				}
-			}
-
-	// Get a hash code for this token.
-	public override int GetHashCode()
-			{
-				return token;
-			}
-
-}; // struct EventToken
+}; // class FieldBuilder
 
 #endif // !ECMA_COMPAT
 

@@ -750,6 +750,20 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					return GetClrModule();
 				}
 			}
+	public override MemberTypes MemberType
+			{
+				get
+				{
+					if(IsClrNestedType())
+					{
+						return MemberTypes.NestedType;
+					}
+					else
+					{
+						return MemberTypes.TypeInfo;
+					}
+				}
+			}
 	public override String Name
 			{
 				get
@@ -782,20 +796,6 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					else
 					{
 						return null;
-					}
-				}
-			}
-	public override MemberTypes MemberType
-			{
-				get
-				{
-					if(IsClrNestedType())
-					{
-						return MemberTypes.NestedType;
-					}
-					else
-					{
-						return MemberTypes.TypeInfo;
 					}
 				}
 			}

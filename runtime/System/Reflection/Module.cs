@@ -28,7 +28,7 @@ using System.Runtime.CompilerServices;
 public class Module : IClrProgramItem, ICustomAttributeProvider
 {
 	// Internal state.
-	private IntPtr privateData;
+	internal IntPtr privateData;
 
 	// Constructor.
 	internal Module() {}

@@ -29,6 +29,12 @@ public struct StringToken
 	// Internal state.
 	private int token;
 
+	// Constructor.
+	internal StringToken(int token)
+			{
+				this.token = token;
+			}
+
 	// Get the token code.
 	public int Token
 			{

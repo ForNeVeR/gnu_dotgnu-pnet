@@ -32,6 +32,12 @@ public struct PropertyToken
 	// Internal state.
 	private int token;
 
+	// Constructor.
+	internal PropertyToken(int token)
+			{
+				this.token = token;
+			}
+
 	// Get the token code.
 	public int Token
 			{

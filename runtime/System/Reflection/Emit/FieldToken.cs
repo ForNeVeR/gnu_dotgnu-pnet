@@ -32,6 +32,12 @@ public struct FieldToken
 	// Internal state.
 	private int token;
 
+	// Constructor.
+	internal FieldToken(int token)
+			{
+				this.token = token;
+			}
+
 	// Get the token code.
 	public int Token
 			{

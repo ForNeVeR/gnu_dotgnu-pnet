@@ -214,6 +214,16 @@ public abstract class Type : MemberInfo
 	// Get all interfaces that this type implements.
 	public abstract Type[] GetInterfaces();
 
+#if !ECMA_COMPAT
+
+	// Get an interface mapping for a specific interface type.
+	public virtual InterfaceMapping GetInterfaceMap(Type interfaceType)
+			{
+				return new InterfaceMapping();
+			}
+
+#endif
+
 	// Get a member from this type.
 	public virtual MemberInfo[] GetMember
 				(String name, BindingFlags bindingAttr)
@@ -926,6 +936,15 @@ public abstract class Type : MemberInfo
 					return ((GetAttributeFlagsImpl() &
 							 TypeAttributes.StringFormatMask) ==
 							 	TypeAttributes.UnicodeClass);
+				}
+			}
+
+	// Get the type of this member.
+	public override MemberTypes MemberType
+			{
+				get
+				{
+					return MemberTypes.TypeInfo;
 				}
 			}
 

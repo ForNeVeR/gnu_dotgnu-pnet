@@ -32,6 +32,12 @@ public struct SignatureToken
 	// Internal state.
 	private int token;
 
+	// Constructor.
+	internal SignatureToken(int token)
+			{
+				this.token = token;
+			}
+
 	// Get the token code.
 	public int Token
 			{

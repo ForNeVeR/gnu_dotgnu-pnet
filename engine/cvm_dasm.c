@@ -53,6 +53,8 @@ extern	"C" {
 #define	CVM_OPER_WIDE				22
 #define	CVM_OPER_PREFIX				23
 #define	CVM_OPER_ENTER_TRY			24
+#define	CVM_OPER_METHOD				25
+#define	CVM_OPER_LD_INTERFACE		26
 
 /*
  * Table of CVM opcodes.  This must be kept in sync with "cvm.h".
@@ -350,12 +352,8 @@ static CVMOpcode const opcodes[256] = {
 	{"push_thread",		CVM_OPER_NONE},
 	{"pushdown",		CVM_OPER_UINT32},
 	{"cctor_once",		CVM_OPER_NONE},
-
-	/*
-	 * Reserved opcodes.
-	 */
-	{"reserved_de",		CVM_OPER_NONE},
-	{"reserved_df",		CVM_OPER_NONE},
+	{"calli",			CVM_OPER_NONE},
+	{"jmpi",			CVM_OPER_NONE},
 
 	/*
 	 * Class-related opcodes.
@@ -452,6 +450,15 @@ static CVMOpcode const prefixOpcodes[64] = {
 	 * Prefixed call management opcodes.
 	 */
 	{"tail",			CVM_OPER_NONE},
+	{"ldftn",			CVM_OPER_METHOD},
+	{"ldvirtftn",		CVM_OPER_UINT32},
+	{"ldinterfftn",		CVM_OPER_LD_INTERFACE},
+
+	/*
+	 * Reserved opcodes.
+	 */
+	{"preserved_1a",	CVM_OPER_NONE},
+	{"preserved_1b",	CVM_OPER_NONE},
 
 	/*
 	 * Prefixed exception handling opcodes.
@@ -465,14 +472,6 @@ static CVMOpcode const prefixOpcodes[64] = {
 	 */
 	{"mkrefany",		CVM_OPER_CLASS},
 	{"refanyval",		CVM_OPER_CLASS},
-
-	/*
-	 * Reserved opcodes.
-	 */
-	{"preserved_1c",	CVM_OPER_NONE},
-	{"preserved_1d",	CVM_OPER_NONE},
-	{"preserved_1e",	CVM_OPER_NONE},
-	{"preserved_1f",	CVM_OPER_NONE},
 
 	/*
 	 * Prefixed conversion opcodes.
@@ -511,7 +510,6 @@ static CVMOpcode const prefixOpcodes[64] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_3a",	CVM_OPER_NONE},
 	{"preserved_3b",	CVM_OPER_NONE},
 	{"preserved_3c",	CVM_OPER_NONE},
 	{"preserved_3d",	CVM_OPER_NONE},
@@ -879,6 +877,36 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 					ILDumpClassName(stream, ILProgramItem_Image(currMethod),
 									classInfo, 0);
 					size = 2 + sizeof(void *);
+				}
+				break;
+
+				case CVM_OPER_UINT32:
+				{
+					fprintf(stream, "%lu",
+							(unsigned long)(IL_READ_UINT32(pc + 2)));
+					size = 6;
+				}
+				break;
+
+				case CVM_OPER_METHOD:
+				{
+					method = (ILMethod *)CVMReadPointer(pc + 2);
+					ILDumpMethodType(stream, ILProgramItem_Image(currMethod),
+									 ILMethod_Signature(method), 0,
+									 ILMethod_Owner(method),
+									 ILMethod_Name(method), method);
+					size = 2 + sizeof(void *);
+				}
+				break;
+
+				case CVM_OPER_LD_INTERFACE:
+				{
+					classInfo = (ILClass *)CVMReadPointer(pc + 6);
+					ILDumpClassName(stream, ILProgramItem_Image(currMethod),
+									classInfo, 0);
+					fprintf(stream, ", %lu",
+							(unsigned long)(IL_READ_UINT32(pc + 2)));
+					size = 6 + sizeof(void *);
 				}
 				break;
 

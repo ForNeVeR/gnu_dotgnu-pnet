@@ -488,6 +488,22 @@ case COP_CALL_INTERFACE:
 }
 break;
 
+case COP_CALLI:
+{
+	/* Call a method by pointer */
+	/* TODO */
+	MODIFY_PC_AND_STACK(1, 0);
+}
+break;
+
+case COP_JMPI:
+{
+	/* Jump to a method by pointer */
+	/* TODO */
+	MODIFY_PC_AND_STACK(1, 0);
+}
+break;
+
 #elif defined(IL_CVM_PREFIX)
 
 case COP_PREFIX_TAIL:
@@ -495,6 +511,51 @@ case COP_PREFIX_TAIL:
 	/* Perform a tail call to another method */
 	/* TODO */
 	MODIFY_PC_AND_STACK(2, 0);
+}
+break;
+
+case COP_PREFIX_LDFTN:
+{
+	/* Load the address of a function onto the stack */
+	stacktop[0].ptrValue = ReadPointer(pc + 2);
+	MODIFY_PC_AND_STACK(2 + sizeof(void *), 1);
+}
+break;
+
+case COP_PREFIX_LDVIRTFTN:
+{
+	/* Load the address of a virtual function onto the stack */
+	tempptr = stacktop[-1].ptrValue;
+	if(tempptr)
+	{
+		stacktop[-1].ptrValue =
+			((ILClassPrivate *)(GetObjectClass(tempptr)->userData))
+					->vtable[IL_READ_UINT32(pc + 2)];
+		MODIFY_PC_AND_STACK(6, 0);
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
+}
+break;
+
+case COP_PREFIX_LDINTERFFTN:
+{
+	/* Load the address of an interface function onto the stack */
+	tempptr = stacktop[-1].ptrValue;
+	if(tempptr)
+	{
+		stacktop[-1].ptrValue =
+			_ILLookupInterfaceMethod(GetObjectClass(tempptr),
+									 (ILClass *)ReadPointer(pc + 6),
+									 IL_READ_UINT32(pc + 2));
+		MODIFY_PC_AND_STACK(6 + sizeof(void *), 0);
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 

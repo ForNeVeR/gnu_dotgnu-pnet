@@ -215,17 +215,25 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 
 static void CVMCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
 {
-	/* TODO */
+	CVM_BYTE(COP_PREFIX);
+	CVM_BYTE(COP_PREFIX_LDFTN);
+	CVM_PTR(methodInfo);
+	CVM_ADJUST(1);
 }
 
 static void CVMCoder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 {
-	/* TODO */
+	CVM_BYTE(COP_PREFIX);
+	CVM_BYTE(COP_PREFIX_LDVIRTFTN);
+	CVM_WORD(methodInfo->index);
 }
 
 static void CVMCoder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 {
-	/* TODO */
+	CVM_BYTE(COP_PREFIX);
+	CVM_BYTE(COP_PREFIX_LDINTERFFTN);
+	CVM_WORD(methodInfo->index);
+	CVM_PTR(methodInfo->member.owner);
 }
 
 #endif	/* IL_CVMC_CODE */

@@ -16,6 +16,9 @@ engine/cvmc.c, engine/cvmc_call.c: verification for "ldftn" and "ldvirtfn".
 * engine/verify.c: modify some comments.  The latest ECMA spec does
 allow verifiable method pointers after all.
 
+* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_call.c, engine/cvmc_call.c:
+implement the CVM parts of "ldftn", "ldvirtfn", and "ldinterfftn".
+
 2001-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ChangeLog, doc/ChangeLog-1: move the contents of "ChangeLog" to

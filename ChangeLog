@@ -1,4 +1,9 @@
 
+2004-10-06  Gopal V  <gopalv82@yahoo.com>
+
+	* DotGNU.Images/PngReader.cs: Fix up decoder for Adam7 interlaced PNGs
+	(bug #10445).
+
 2004-10-05  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/Control.cs: Fix IsTopLevel to check for 

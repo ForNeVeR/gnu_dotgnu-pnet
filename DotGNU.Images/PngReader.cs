@@ -43,10 +43,11 @@ internal sealed class PngReader
 				0, 0, 8, 8,
 				4, 0, 8, 8,
 				0, 4, 4, 8,
-				2, 4, 4, 4,
+				2, 0, 4, 4,
 				0, 2, 2, 4,
 				1, 0, 2, 2,
 				0, 1, 1, 2,
+				0, 0, 1, 1
 			};
 
 	// Load a PNG image from the specified stream.  The first 4 bytes
@@ -330,13 +331,20 @@ internal sealed class PngReader
 							for(pass = 0; pass < 7; ++pass)
 							{
 								// Calculate the width and height of the pass.
-								passWidth = width - adam7Rules[pass * 4];
+								// Please refer "PNG - The Definitive Guide"
+								// for a totally misleading and incompatible
+								// description of the following code - Gopal
+
+								passWidth = width + 
+											adam7Rules[(pass+1) * 4 + 2] - 1;
 								passWidth /= adam7Rules[pass * 4 + 2];
 								if(passWidth <= 0)
 								{
 									continue;
 								}
-								passHeight = height - adam7Rules[pass * 4 + 1];
+								
+								passHeight = height + 
+											adam7Rules[(pass+1) * 4 + 3 ] - 1;
 								passHeight /= adam7Rules[pass * 4 + 3];
 								if(passHeight <= 0)
 								{

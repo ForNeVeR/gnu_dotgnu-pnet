@@ -68,6 +68,11 @@ ILType *CTypeCreateOpenArray(ILGenInfo *info, ILType *elemType);
 ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType);
 
 /*
+ * Create a C by-ref type.
+ */
+ILType *CTypeCreateByRef(ILGenInfo *info, ILType *refType);
+
+/*
  * Create a C type reference for "builtin_va_list".
  */
 ILType *CTypeCreateVaList(ILGenInfo *info);
@@ -244,6 +249,11 @@ int CTypeIsOpenArray(ILType *type);
 int CTypeIsPointer(ILType *type);
 
 /*
+ * Determine if a C type is a by-ref type.
+ */
+int CTypeIsByRef(ILType *type);
+
+/*
  * Determine if a C type is a function pointer type.
  */
 int CTypeIsFunctionPtr(ILType *type);
@@ -284,6 +294,11 @@ ILUInt32 CTypeGetNumFields(ILType *type);
  * Get the type that is referenced by a pointer type.
  */
 ILType *CTypeGetPtrRef(ILType *type);
+
+/*
+ * Get the type that is referenced by a by-ref type.
+ */
+ILType *CTypeGetByRef(ILType *type);
 
 /*
  * Decay array types into their corresponding pointer types.

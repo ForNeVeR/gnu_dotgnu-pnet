@@ -984,6 +984,37 @@ ILNode_CGenAddress(ILNode_CArgumentVar)
 }
 
 /*
+ * Perform semantic analysis for a C by-ref argument variable reference.
+ */
+ILNode_CSemAnalysis(ILNode_RefArgumentVar)
+{
+	CSemValue value;
+	if(CTypeIsConst(node->type))
+	{
+		/* The reference points to a "const" value, which makes it read-only */
+		CSemSetRValue(value, node->type);
+	}
+	else
+	{
+		CSemSetLValue(value, node->type);
+	}
+	return value;
+}
+
+/*
+ * Generate the address of a by-ref argument reference.
+ */
+ILNode_CGenAddress(ILNode_RefArgumentVar)
+{
+	CAddress addr;
+	ILGenLoadArg(info, node->index);
+	ILGenAdjust(info, 1);
+	addr.ptrOnStack = 1;
+	addr.offset = 0;
+	return addr;
+}
+
+/*
  * Perform semantic analysis for a C global variable reference.
  */
 ILNode_CSemAnalysis(ILNode_CGlobalVar)

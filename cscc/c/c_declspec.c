@@ -971,6 +971,52 @@ CDeclarator CDeclCreatePointer(ILGenInfo *info, int qualifiers,
 	return result;
 }
 
+CDeclarator CDeclCreateByRef(ILGenInfo *info, int qualifiers,
+							 CDeclarator *refType)
+{
+	CDeclarator result;
+	ILType *type;
+
+	/* Create the actual reference type */
+	if(refType)
+	{
+		type = CTypeCreateByRef(info, refType->type);
+		result.typeHole = refType->typeHole;
+	}
+	else
+	{
+		type = CTypeCreateByRef(info, ILType_Invalid);
+		result.typeHole = &(ILType_Ref(type));
+	}
+
+	/* Wrap the reference type in the "const" and "volatile" qualifiers */
+	if((qualifiers & C_SPEC_CONST) != 0)
+	{
+		type = CTypeAddConst(info, type);
+	}
+	if((qualifiers & C_SPEC_VOLATILE) != 0)
+	{
+		type = CTypeAddVolatile(info, type);
+	}
+
+	/* Construct the return value (the type hole was set above) */
+	result.name = 0;
+	result.node = 0;
+	result.type = type;
+	result.isKR = 0;
+	if(refType)
+	{
+		result.params = refType->params;
+		result.attrs = refType->attrs;
+	}
+	else
+	{
+		result.params = 0;
+		result.attrs = 0;
+	}
+	return result;
+}
+
 /*
  * Print an error that warns about parameter redeclaration.
  */

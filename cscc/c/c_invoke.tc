@@ -175,8 +175,63 @@ static void CoerceArgs(ILGenInfo *info, ILNode_CInvocationExpression *node,
 	for(paramNum = 0; paramNum < numParams; ++paramNum)
 	{
 		type = ILTypeGetParamWithPrefixes(signature, paramNum + 1);
-		if(!CCanCoerceValue(args[paramNum].value, type))
+		if(CTypeIsByRef(type))
 		{
+			/* This argument is passed by reference (i.e. 'type & name') */
+			type = CTypeGetByRef(type);
+			if(!CSemIsLValue(args[paramNum].value))
+			{
+				if(node->name)
+				{
+					CCErrorOnLine
+						(yygetfilename(node), yygetlinenum(node),
+						 _("l-value expected for argument %lu of `%s'"),
+						 (unsigned long)(paramNum + 1), node->name);
+				}
+				else
+				{
+					CCErrorOnLine
+						(yygetfilename(node), yygetlinenum(node),
+						 _("l-value expected for argument %lu"),
+						 (unsigned long)(paramNum + 1));
+				}
+			}
+			else if(!CTypeIsIdentical(type, CSemGetType(args[paramNum].value)))
+			{
+				/* The type must match exactly in reference parameters */
+				goto incompat;
+			}
+			else
+			{
+				if(CTypeIsConst(CSemGetType(args[paramNum].value)) &&
+				   !CTypeIsConst(type))
+				{
+					/* Trying to pass a const value via a non-const argument */
+					if(node->name)
+					{
+						CCErrorOnLine
+							(yygetfilename(node), yygetlinenum(node),
+							 _("discarding const from argument %lu of `%s'"),
+							 (unsigned long)(paramNum + 1), node->name);
+					}
+					else
+					{
+						CCErrorOnLine
+							(yygetfilename(node), yygetlinenum(node),
+							 _("discarding const from argument %lu"),
+							 (unsigned long)(paramNum + 1));
+					}
+				}
+
+				/* Wrap the l-value in an address-of node to pass by-ref */
+				*(args[paramNum].parent) = ILNode_AddressOf_create
+						(args[paramNum].node);
+				CGenCloneLine(*(args[paramNum].parent), args[paramNum].node);
+			}
+		}
+		else if(!CCanCoerceValue(args[paramNum].value, type))
+		{
+		incompat:
 			if(node->name)
 			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),

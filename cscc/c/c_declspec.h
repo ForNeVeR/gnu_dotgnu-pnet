@@ -178,10 +178,17 @@ CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem, ILUInt32 size);
 
 /*
  * Create a pointer declarator.  "refType" will be non-NULL when
- * creating a pointer to another pointer type.
+ * creating a pointer to another pointer/reference type.
  */
 CDeclarator CDeclCreatePointer(ILGenInfo *info, int qualifiers,
 							   CDeclarator *refType);
+
+/*
+ * Create a by-ref '&' declarator.  "refType" will be non-NULL when
+ * creating a reference to another pointer/reference type.
+ */
+CDeclarator CDeclCreateByRef(ILGenInfo *info, int qualifiers,
+							 CDeclarator *refType);
 
 /*
  * Create a function prototype declarator.

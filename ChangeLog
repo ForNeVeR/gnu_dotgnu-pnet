@@ -12,6 +12,12 @@
 
 	* image/sig_parse.c: allow custom modifiers within a byref type.
 
+	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_grammar.y,
+	cscc/c/c_invoke.tc, cscc/c/c_lvalue.tc, cscc/c/c_stubs.tc,
+	cscc/c/c_types.c, cscc/c/c_types.h: add by-reference parameters
+	to the C compiler, for interacting with C# methods that have
+	"ref" and "out" parameters.
+
 2004-02-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_scope.c, codegen/cg_scope.h, cscc/c/c_grammar.y,

@@ -1238,9 +1238,19 @@ PrimaryExpression
 						{
 							/* Create a parameter variable reference */
 							type = CScopeGetType(data);
-							$$ = ILNode_CArgumentVar_create
-								(CScopeGetIndex(data),
-								 ILTypeToMachineType(type), type);
+							if(!CTypeIsByRef(type))
+							{
+								$$ = ILNode_CArgumentVar_create
+									(CScopeGetIndex(data),
+									 ILTypeToMachineType(type), type);
+							}
+							else
+							{
+								type = CTypeGetByRef(type);
+								$$ = ILNode_RefArgumentVar_create
+									(CScopeGetIndex(data),
+									 ILTypeToMachineType(type), type);
+							}
 						}
 						break;
 
@@ -2356,6 +2366,18 @@ Pointer
 			}
 	| '*' TypeQualifierList Pointer		{
 				$$ = CDeclCreatePointer(&CCCodeGen, $2, &($3));
+			}
+	| '&'						{
+				$$ = CDeclCreateByRef(&CCCodeGen, 0, 0);
+			}
+	| '&' TypeQualifierList		{
+				$$ = CDeclCreateByRef(&CCCodeGen, $2, 0);
+			}
+	| '&' Pointer				{
+				$$ = CDeclCreateByRef(&CCCodeGen, 0, &($2));
+			}
+	| '&' TypeQualifierList Pointer		{
+				$$ = CDeclCreateByRef(&CCCodeGen, $2, &($3));
 			}
 	;
 

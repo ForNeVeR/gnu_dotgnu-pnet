@@ -330,6 +330,17 @@ ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType)
 	return type;
 }
 
+ILType *CTypeCreateByRef(ILGenInfo *info, ILType *refType)
+{
+	ILType *type = ILTypeCreateRef
+		(info->context, IL_TYPE_COMPLEX_BYREF, refType);
+	if(!type)
+	{
+		ILGenOutOfMemory(info);
+	}
+	return type;
+}
+
 ILType *CTypeCreateVaList(ILGenInfo *info)
 {
 	/* The base class library's "System.ArgIterator" class is the
@@ -1923,6 +1934,20 @@ int CTypeIsPointer(ILType *type)
 	}
 }
 
+int CTypeIsByRef(ILType *type)
+{
+	type = ILTypeStripPrefixes(type);
+	if(type != 0 && ILType_IsComplex(type) &&
+	   ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 int CTypeIsFunctionPtr(ILType *type)
 {
 	if(!CheckForModifier(type, "IsFunctionPointer", "OpenSystem.C"))
@@ -2135,6 +2160,20 @@ ILType *CTypeGetPtrRef(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(type != 0 && ILType_IsComplex(type) &&
 	   ILType_Kind(type) == IL_TYPE_COMPLEX_PTR)
+	{
+		return ILType_Ref(type);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+ILType *CTypeGetByRef(ILType *type)
+{
+	type = ILTypeStripPrefixes(type);
+	if(type != 0 && ILType_IsComplex(type) &&
+	   ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF)
 	{
 		return ILType_Ref(type);
 	}

@@ -307,6 +307,8 @@ namespace FormsTest
 		{
 			ClientSize = new Size(500, 650);
 			Text = "System.Windows.Forms Tests";
+			HelpButton = true;
+			HelpRequested += new HelpEventHandler(ShowHelp);
 			
 			SuspendLayout();
 			tabControl1 = new TabControl();
@@ -3496,5 +3498,11 @@ namespace FormsTest
 			imageList1.ColorDepth = (ColorDepth)int.Parse(textBoxImageListColorDepth.Text);
 			Invalidate(true);
 		}
+
+		private void ShowHelp(object sender, HelpEventArgs e)
+		{
+			MessageBox.Show(this, "This is a help message.", "Help");
+		}
+
 	}
 }

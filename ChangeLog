@@ -22,6 +22,8 @@
 
 	* NEWS, configure.in: update version for the "0.4.6" release.
 
+	* configure.in: update working version to "0.4.7".
+
 2002-11-03  Richard Baumann <biochem333@nyc.rr.com>
 	
 	* support/numformat.c, support/Makefile.am, include/il_utils.h: Add an

@@ -50,6 +50,10 @@ AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 ## autoconf-using cross-compiler systems into using "cscc" to compile
 ## C code into IL.  It isn't a real gcc implementation, of course.
 
+install-data-local:
+	@$(NORMALL_INSTALL)
+	$(LN_S) cscc.1.gz $(DESTDIR)$(man1dir)/cli-unknown-gcc.1.gz
+
 install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/plugins
@@ -80,3 +84,4 @@ uninstall-local:
 	rm -f $(DESTDIR)$(bindir)/cscc$(EXEEXT)
 	rm -f $(DESTDIR)$(bindir)/csdoc$(EXEEXT)
 	rm -f $(DESTDIR)$(bindir)/cli-unknown-gcc$(EXEEXT)
+	rm -f $(DESTDIR)$(man1dir)/cli-unknown-gcc.1.gz

@@ -1,4 +1,20 @@
 
+2004-09-07  Russell Stuart <russell-savannah@stuart.id.au>
+
+	* build-debian-packages.conf,
+	  build-debian-packages.sh,
+	  cscc/Makefile.am,
+	  cscc/cpp/Makefile.am,
+	  debian/README.Debian,
+	  debian/changelog,
+	  debian/pnet-compiler.postinst,
+	  debian/rules,
+	  ilasm/Makefile.am,
+	  ilranlib/Makefile.am,
+	  ilstrip/Makefile.am,
+	  pnet.spec.in:
+	  Clean up Debian packaging.
+
 2004-09-05  Robin KAY  <komadori@gekkou.co.uk>
 
 	* configure.in, support/pt_defs.h, support/thr_choose.h:

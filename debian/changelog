@@ -1,3 +1,9 @@
+pnet (0.6.8-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Russell Stuart <russell-debian@stuart.id.au>  Tue, 24 Aug 2004 16:25:32 +1000
+
 pnet (0.5.2) unstable; urgency=low
 
   * New upstream release

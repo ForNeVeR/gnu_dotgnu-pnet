@@ -7,6 +7,10 @@ ilsize_LDADD   = ../dumpasm/libILDumpAsm.a \
 
 AM_CFLAGS = -I$(top_srcdir)/include
 
+install-data-local:
+	@$(NORMALL_INSTALL)
+	$(LN_S) ilsize.1.gz $(DESTDIR)$(mandir)/man1/cli-unknown-size.1.gz
+
 install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -15,4 +19,5 @@ install-exec-local:
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
+	rm -f $(DESTDIR)$(mandir)/man1/cli-unknown-size.1.gz
 	rm -f $(DESTDIR)$(bindir)/cli-unknown-size$(EXEEXT)

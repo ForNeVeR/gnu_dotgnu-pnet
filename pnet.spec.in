@@ -23,38 +23,40 @@ runtime engine capable of executing multiple stack-based bytecode
 formats.
 
 %package interpreter
-Summary: The DotGNU Portable .NET runtime engine
+Summary: Runtime engine for DotGNU Portable .NET
 Group: System/Emulators
 %description interpreter
-The Converted Virtual Machine supports executing multiple kinds of
-portable executables, including IL (".NET") and JavaTM classes.
+The DotGNU Portable .NET interpreter.  It executes multiple kinds
+of portable executables, including IL (".NET"), JavaTM classes
+and Parrot assemblies.
 
 %package compiler
-Summary: The Portable .NET compiler collection
+Summary: Compilers for DotGNU Portable .NET
 Group: System/Compilers
 %description compiler
-The cscc compiler collection allows multiple input languages and
-multiple output bytecodes, much like GCC.  Current languages include
-C\# and C; current output formats include IL assembly (".NET"), JavaTM
-assembly, and imcc (Parrot (Perl6) high-level assembly).
+The DotGNU Portable. NET compiler suite.  This collection allows
+multiple input languages and multiple output bytecodes, much like
+GCC.  Current languages include C# and C; current output formats
+include IL assembly (".NET"), JavaTM assembly, and imcc (Parrot
+(Perl6) high-level assembly).
 
 %package tools
-Summary: Miscellaneous tools for DotGNU Portable .NET
+Summary: Binutils for DotGNU Portable .NET  
 Group: System/Tools
 %description tools
-The general toolkit provided along with the pnet compiler and runtime
-engines.  This includes csant, a replacement for make, and various
+A toolkit for the Portable .NET compiler and interpreter.
+This includes csant, a replacement for make, and various
 tools to deal with IL binaries.
 
 %package embed
-Summary: Shared garbage collector built with Portable .NET
+Summary: Shared garbage collector for DotGNU Portable .NET
 Group: Development/Languages
 %description embed
 Portable .NET builds and installs a shared garbage-collection library,
 intended for use with embedded CLR.
 
 %package embed-devel
-Summary: Static libraries and headers for embedding Portable .NET
+Summary: Static libraries and headers for embedding DotGNU Portable .NET
 Group: Development/Libraries
 Requires: pnet-embed
 %description embed-devel
@@ -87,13 +89,14 @@ sleep 1
 
 %files interpreter
 %defattr(-,root,root,-)
-%doc AUTHORS COPYING ChangeLog INSTALL NEWS README
+%doc AUTHORS COPYING ChangeLog NEWS README
 %{_bindir}/ilrun
 %{_mandir}/man1/ilrun.1*
 
 %files compiler
 %defattr(-,root,root,-)
-%doc AUTHORS COPYING ChangeLog INSTALL NEWS README
+%doc AUTHORS COPYING ChangeLog NEWS README
+%{_bindir}/al
 %{_bindir}/cli-unknown-ar
 %{_bindir}/cli-unknown-cpp
 %{_bindir}/cli-unknown-gcc
@@ -108,7 +111,13 @@ sleep 1
 %{_bindir}/ilranlib
 %{_bindir}/ilstrip
 %{_bindir}/resgen
-%{_libdir}/cscc/plugins
+%{_libdir}/cscc/plugins/*
+%{_mandir}/man1/al.1*
+%{_mandir}/man1/cli-unknown-ar.1*
+%{_mandir}/man1/cli-unknown-cpp.1*
+%{_mandir}/man1/cli-unknown-gcc.1*
+%{_mandir}/man1/cli-unknown-ranlib.1*
+%{_mandir}/man1/cli-unknown-strip.1*
 %{_mandir}/man1/clrwrap.1*
 %{_mandir}/man1/csant.1*
 %{_mandir}/man1/cscc.1*
@@ -120,7 +129,7 @@ sleep 1
 %{_mandir}/man1/resgen.1*
 
 %files tools
-%doc AUTHORS COPYING ChangeLog INSTALL NEWS README
+%doc AUTHORS COPYING ChangeLog NEWS README
 %{_bindir}/cli-unknown-size
 %{_bindir}/ildasm
 %{_bindir}/ildd
@@ -136,6 +145,7 @@ sleep 1
 %{_bindir}/csdoc2texi
 %{_bindir}/cssrc2html
 %{_infodir}/pnettools.info*
+%{_mandir}/man1/cli-unknown-size.1*
 %{_mandir}/man1/csdoc.1*
 %{_mandir}/man1/csdoc2hier.1*
 %{_mandir}/man1/csdoc2html.1*
@@ -152,19 +162,17 @@ sleep 1
 
 %files embed
 %defattr(-,root,root,-)
-%dir %{_libdir}/pnet
 %{_libdir}/pnet/libgc.so
 %{_libdir}/pnet/libgc.so.*
 
 %files embed-devel
 %defattr(-,root,root,-)
 %{_libdir}/libIL*.a
-%dir %{_libdir}/pnet
 %{_libdir}/pnet/libffi.la
 %{_libdir}/pnet/libffi.a
 %{_libdir}/pnet/libgc.la
 %{_libdir}/pnet/libgc.a
-%{_includedir}/pnet
+%{_includedir}/pnet/*
 
 %changelog
 * Thu Mar 10 2004 Russell Stuart <russell-rpm@stuart.id.au> 0.6.3

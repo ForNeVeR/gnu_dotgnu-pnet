@@ -59,6 +59,10 @@ AM_CFLAGS = -I. -I$(srcdir) -I$(top_srcdir)/include \
 
 ## Link "cli-unknown-cpp" to "cscc-cpp" for cross-compile environments.
 
+install-data-local:
+	@$(NORMALL_INSTALL)
+	$(LN_S) cscc-cpp.1.gz $(DESTDIR)$(man1dir)/cli-unknown-cpp.1.gz
+
 install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -68,3 +72,4 @@ install-exec-local:
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
 	rm -f $(DESTDIR)$(bindir)/cli-unknown-cpp$(EXEEXT)
+	rm -f $(DESTDIR)$(man1dir)/cli-unknown-cpp.1.gz

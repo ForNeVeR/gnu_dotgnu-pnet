@@ -6,6 +6,10 @@ ilstrip_LDADD   = ../support/libILSupport.a
 
 AM_CFLAGS = -I$(top_srcdir)/include
 
+install-data-local:
+	@$(NORMALL_INSTALL)
+	$(LN_S) ilstrip.1.gz $(DESTDIR)$(man1dir)/cli-unknown-strip.1.gz
+
 install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -15,3 +19,4 @@ install-exec-local:
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
 	rm -f $(DESTDIR)$(bindir)/cli-unknown-strip$(EXEEXT)
+	rm -f $(DESTDIR)$(man1dir)/cli-unknown-strip.1.gz

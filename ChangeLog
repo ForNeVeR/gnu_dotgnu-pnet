@@ -1,4 +1,10 @@
 
+2004-10-25  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/TextBox.cs: Fix Lines[] to return the proper
+	count of lines for single lines and multiple blank lines. (bug #10772,
+	an improved version of the patch attached)
+
 2004-10-20  Deryk Robosson <deryk@0x0a.com>	
 
 	* Xsharp/TopLevelWindow.cs: Add skip pager state to work with

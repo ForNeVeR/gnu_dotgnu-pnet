@@ -419,18 +419,36 @@ public class TextBox : TextBoxBase
 					y = currentY;
 				}
 			}
+			if(Text.Length != 0 && line == 0)
+			{
+				line++; // At least one line
+			}
 			string[] lines = new string[line];
 			int start = 0;
+			int i = 0;
 			line = 0;
 			// Break into strings
-			for (int i = 0; i < Text.Length; i++)
+			while(i < Text.Length)
 			{
 				if (Text[i] == '\r' && i < Text.Length - 1 && Text[i+1] == '\n') // Look for CRLF
 				{
 					lines[line++] = Text.Substring(start, i - start);
-					i+=2;
+					i+=2; 
 					start = i;
 				}
+				else
+				{
+					i+=1;
+				}
+			}
+
+			if(start < Text.Length)
+			{
+				lines[line++] = Text.Substring(start);
+			}
+			else if(start != 0 && start == Text.Length)
+			{
+				//FIXME: blank lines at end of text should be ""
 			}
 			
 			return lines;

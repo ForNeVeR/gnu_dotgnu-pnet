@@ -459,6 +459,105 @@ static void GetTopTwoWordRegisters(X86Unroll *unroll, int *reg1, int *reg2)
 }
 
 /*
+ * Get the three top-most word values on the stack into registers.
+ * "reg1" will be the lowest of the three.
+ */
+static void GetTopThreeWordRegisters(X86Unroll *unroll,
+									 int *reg1, int *reg2, int *reg3)
+{
+	/* Clear the cached local information */
+	unroll->cachedLocal = -1;
+	unroll->cachedReg = -1;
+
+	/* See if we already have three word registers in play */
+	if(unroll->pseudoStackSize > 2)
+	{
+		*reg1 = unroll->pseudoStack[unroll->pseudoStackSize - 3];
+		if(*reg1 != REG_FPU)
+		{
+			*reg2 = unroll->pseudoStack[unroll->pseudoStackSize - 2];
+			if(*reg2 != REG_FPU)
+			{
+				*reg3 = unroll->pseudoStack[unroll->pseudoStackSize - 1];
+				if(*reg3 != REG_FPU)
+				{
+					return;
+				}
+				return;
+			}
+		}
+	}
+
+	/* See if we have two word registers in play */
+	if(unroll->pseudoStackSize == 2)
+	{
+		*reg2 = unroll->pseudoStack[0];
+		*reg3 = unroll->pseudoStack[1];
+		if(*reg2 != REG_FPU && *reg3 != REG_FPU)
+		{
+			/* Allocate another word register */
+			*reg1 = GetWordRegister(unroll);
+
+			/* Swap the register stack positions */
+			unroll->pseudoStack[0] = *reg1;
+			unroll->pseudoStack[1] = *reg2;
+			unroll->pseudoStack[2] = *reg3;
+
+			/* Load the top of the CVM stack into reg1 */
+			unroll->stackHeight -= 4;
+			x86_mov_reg_membase(unroll->out, *reg1, REG_STACK,
+								unroll->stackHeight, 4);
+			return;
+		}
+	}
+
+	/* See if we have one word register in play */
+	if(unroll->pseudoStackSize == 1)
+	{
+		*reg3 = unroll->pseudoStack[0];
+		if(*reg3 != REG_FPU)
+		{
+			/* Allocate two other word registers */
+			*reg1 = GetWordRegister(unroll);
+			*reg2 = GetWordRegister(unroll);
+
+			/* Swap the register stack positions */
+			unroll->pseudoStack[0] = *reg1;
+			unroll->pseudoStack[1] = *reg2;
+			unroll->pseudoStack[2] = *reg3;
+
+			/* Load the top of the CVM stack into reg1 and reg2 */
+			unroll->stackHeight -= 8;
+			x86_mov_reg_membase(unroll->out, *reg1, REG_STACK,
+								unroll->stackHeight, 4);
+			x86_mov_reg_membase(unroll->out, *reg2, REG_STACK,
+								unroll->stackHeight + 4, 4);
+			return;
+		}
+	}
+
+	/* We may have an FPU register in play, so flush it */
+	FlushRegisterStack(unroll);
+
+	/* Load the top of the CVM stack into EAX, ECX, and EDX */
+	unroll->regsUsed |= REG_EAX_MASK | REG_ECX_MASK | REG_EDX_MASK;
+	unroll->pseudoStack[0] = X86_EAX;
+	unroll->pseudoStack[1] = X86_ECX;
+	unroll->pseudoStack[2] = X86_EDX;
+	unroll->pseudoStackSize = 3;
+	unroll->stackHeight -= 12;
+	x86_mov_reg_membase(unroll->out, X86_EAX, REG_STACK,
+						unroll->stackHeight, 4);
+	x86_mov_reg_membase(unroll->out, X86_ECX, REG_STACK,
+						unroll->stackHeight + 4, 4);
+	x86_mov_reg_membase(unroll->out, X86_EDX, REG_STACK,
+						unroll->stackHeight + 8, 4);
+	*reg1 = X86_EAX;
+	*reg2 = X86_ECX;
+	*reg3 = X86_EDX;
+}
+
+/*
  * Get the top-most stack value into ST(0).
  */
 static void GetTopFPRegister(X86Unroll *unroll)
@@ -906,7 +1005,7 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	int opcode;
 	unsigned char *overwritePC;
 	unsigned char *unrollStart;
-	int reg, reg2;
+	int reg, reg2, reg3;
 	ILCachePosn posn;
 
 	/* Find some room in the cache */

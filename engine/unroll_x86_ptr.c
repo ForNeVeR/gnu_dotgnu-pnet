@@ -50,6 +50,33 @@ static void CheckForNull(X86Unroll *unroll, int reg, unsigned char *pc,
 	x86_patch(patch, unroll->out);
 }
 
+/*
+ * Check an array access operation for exception conditions.
+ */
+static void CheckArrayAccess(X86Unroll *unroll, int reg, int reg2,
+							 unsigned char *pc, unsigned char *label)
+{
+	unsigned char *patch1;
+	unsigned char *patch2;
+
+	/* Check the array reference against NULL */
+	x86_alu_reg_reg(unroll->out, X86_OR, reg, reg);
+	patch1 = unroll->out;
+	x86_branch8(unroll->out, X86_CC_EQ, 0, 0);
+
+	/* Check the array bounds */
+	x86_alu_reg_membase(unroll->out, X86_CMP, reg2, reg, 0);
+	patch2 = unroll->out;
+	x86_branch32(unroll->out, X86_CC_LT, 0, 0);
+
+	/* Re-execute the current instruction in the interpreter */
+	x86_patch(patch1, unroll->out);
+	ReExecute(unroll, pc, label);
+
+	/* Continue with real execution here */
+	x86_patch(patch2, unroll->out);
+}
+
 #elif defined(IL_UNROLL_CASES)
 
 case COP_BREAD:
@@ -291,6 +318,121 @@ case COP_PSUB_I4:
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
 	x86_alu_reg_reg(unroll.out, X86_SUB, reg, reg2);
 	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_BREAD_ELEM:
+{
+	/* Read a byte from an array */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	x86_widen_memindex(unroll.out, reg, reg, 4, reg2, 0, 1, 0);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_UBREAD_ELEM:
+{
+	/* Read an unsigned byte from an array */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	x86_widen_memindex(unroll.out, reg, reg, 4, reg2, 0, 0, 0);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_SREAD_ELEM:
+{
+	/* Read a short from an array */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	x86_widen_memindex(unroll.out, reg, reg, 4, reg2, 1, 1, 1);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_USREAD_ELEM:
+{
+	/* Read an unsigned short from an array */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	x86_widen_memindex(unroll.out, reg, reg, 4, reg2, 1, 0, 1);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IREAD_ELEM:
+case COP_PREAD_ELEM:
+{
+	/* Read a word from an array */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	x86_mov_reg_memindex(unroll.out, reg, reg, 4, reg2, 2, 4);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_BWRITE_ELEM:
+{
+	/* Write a byte to an array */
+	UNROLL_START();
+	GetTopThreeWordRegisters(&unroll, &reg, &reg2, &reg3);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	x86_mov_memindex_reg(unroll.out, reg, 4, reg2, 0, reg3, 1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_SWRITE_ELEM:
+{
+	/* Write a short to an array */
+	UNROLL_START();
+	GetTopThreeWordRegisters(&unroll, &reg, &reg2, &reg3);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	x86_mov_memindex_reg(unroll.out, reg, 4, reg2, 1, reg3, 2);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IWRITE_ELEM:
+case COP_PWRITE_ELEM:
+{
+	/* Write a word to an array */
+	UNROLL_START();
+	GetTopThreeWordRegisters(&unroll, &reg, &reg2, &reg3);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	x86_mov_memindex_reg(unroll.out, reg, 4, reg2, 2, reg3, 4);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_ARRAY_LEN:
+{
+	/* Get the length of an array */
+	UNROLL_START();
+	reg = GetTopWordRegister(&unroll);
+	CheckForNull(&unroll, reg, pc, (unsigned char *)inst, 0);
+	x86_mov_reg_membase(unroll.out, reg, reg, 0, 4);
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;

@@ -28,45 +28,66 @@ namespace System.ComponentModel
 #if !ECMA_COMPAT
 	public class EnumConverter: TypeConverter
 	{
-		[TODO]
+		private Type type;
+
 		public EnumConverter(Type type)
 		{
-			throw new NotImplementedException(".ctor");
+			this.type = type;
 		}
 
-		[TODO]
 		public override bool CanConvertFrom(ITypeDescriptorContext context, 
 											Type sourceType)
 		{
-			throw new NotImplementedException("CanConvertFrom");
+			if (sourceType == typeof(string))
+				return true;
+			/* TODO: Find a better way ? */
+			return base.CanConvertFrom(context, sourceType);
 		}
 
-		[TODO]
 		public override bool CanConvertTo(ITypeDescriptorContext context, 
 										Type destinationType)
 		{
-			throw new NotImplementedException("CanConvertTo");
+			/* TODO: Find a better way ? */
+			return base.CanConvertTo(context, destinationType);
 		}
 
 		[TODO]
 		public override Object ConvertFrom(ITypeDescriptorContext context, 
 											CultureInfo culture, Object value)
 		{
-			throw new NotImplementedException("ConvertFrom");
-		}
+			/* TODO: Find a better way ? */
+			string val = value as string;
+			if (val == null)
+				return base.ConvertFrom(context, culture, value);
+			string[] values = val.Split(new char[] {','});
+			int j;
+			IList vals = (IList) Enum.GetValues(this.type);
 
-		[TODO]
+			foreach (string s in values)
+			{
+				for (j=0; j<vals.Count; j++)
+				{
+					if (s == vals[j].ToString())
+						return Enum.ToObject(type, j);
+				}
+			}
+			return Enum.ToObject(type, -1);  // not a valid enum string, throw an exception? which one?
+		}
+		
+		
 		public override Object ConvertTo(ITypeDescriptorContext context, 
 				CultureInfo culture, Object value, Type destinationType)
 		{
-			throw new NotImplementedException("ConvertTo");
+			/* TODO: Find a better way ? */
+			if (destinationType == typeof(string))
+				return value.ToString();
+			return base.ConvertTo(context, culture, value, destinationType);
 		}
 
-		[TODO]
 		public override bool IsValid(ITypeDescriptorContext context, 
 									Object value)
 		{
-			throw new NotImplementedException("IsValid");
+			return Enum.IsDefined(type, value);
 		}
 
 	}

@@ -1,4 +1,10 @@
 
+2003-01-01  Jeff Post  <j_post@pacbell.net>
+
+	* System/ComponentModel/EnumConverter.cs: Add code for
+	CanConvertTo, CanConvertFrom, ConvertTo, ConvertFrom and IsValid.
+	(Patch #905,Gopal)
+
 2003-01-01  Jonathan Springer <jonathan.sprinver@verizon.net>
 
 	* resources/en_US/runtime/Format.txt, 

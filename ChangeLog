@@ -1,4 +1,8 @@
 
+2003-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_type.c (InternalGetSerializableMembers): misplaced "++".
+
 2003-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_oper.tc: improve the handling of boolean constant

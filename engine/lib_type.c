@@ -2564,7 +2564,7 @@ System_Array *_IL_FormatterServices_InternalGetSerializableMembers
 		{
 			if(!ILField_IsStatic(field) && !ILField_IsNotSerialized(field))
 			{
-				buf[++size] = ItemToClrObject
+				buf[size++] = ItemToClrObject
 					(_thread, &(field->member.programItem));
 			}
 		}

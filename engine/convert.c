@@ -475,7 +475,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				{
 					_ILSystemObjectSetField(thread, obj, "dllName",
 						"oSystem.String;",
-						ILStringCreate(thread, errorInfo));
+						(ILObject *)ILStringCreate(thread, errorInfo));
 				}
 
 				ILExecThreadSetException(thread, obj);				

@@ -857,6 +857,21 @@ done_compat:
 		pre_defined_symbols = 0;
 		num_pre_defined_symbols = 0;
 	}
+
+	/* Force "-fstdlib-name=corlib" if compiling "corlib.dll" or if
+	   "-lcorlib" is supplied on the command-line.  Needed for
+	   interoperability with Mono build scripts */
+	if(output_filename != 0 && strlen(output_filename) >= 10 &&
+	   !ILStrICmp(output_filename + strlen(output_filename) - 10, "corlib.dll"))
+	{
+		AddString(&extension_flags, &num_extension_flags,
+				  "stdlib-name=corlib");
+	}
+	else if(CCStringListContains(libraries, num_libraries, "corlib"))
+	{
+		AddString(&extension_flags, &num_extension_flags,
+				  "stdlib-name=corlib");
+	}
 }
 
 /*

@@ -36,6 +36,10 @@
 	image/class.c, include/il_program.h: fix bug #2439 - pending
 	implementation of interfaces.
 
+	* cscc/common/cc_options.c: force the use of "corlib" for the
+	standard library when certain combinations of options are
+	supplied on the cscc command-line.
+
 2003-02-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (Load_MemberRef): report "unresolved external

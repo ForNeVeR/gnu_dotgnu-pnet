@@ -288,7 +288,7 @@ namespace FormsTest
 		private float transformScaleY = 1F;
 		private float transformScaleYOffset = 0.03F;
 
-		private PropertyGrid propertyGrid;
+		//private PropertyGrid propertyGrid;
 
 		private Button messageBox1;
 		private Button messageBox2;

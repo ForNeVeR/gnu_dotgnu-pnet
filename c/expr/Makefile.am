@@ -1,5 +1,6 @@
 
-TESTS = assign1.c \
+TESTS = arrayptr1.c \
+		assign1.c \
 		binary1.c \
 		funcptr1.c \
 	    funcptr2.c \

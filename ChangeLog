@@ -4,6 +4,9 @@
 	* csharp/stmt/return1.cs: add "public" to an "abstract" method
 	to prevent an unnecessary error.
 
+	* c/expr/Makefile.am, c/expr/arrayptr1.3il, c/expr/arrayptr1.c,
+	c/expr/arrayptr1.il: test for array pointer usages.
+
 2002-11-01  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/stmt/foreach1.jl, csharp/stmt/foreach3.il: minor update

@@ -75,15 +75,9 @@ static ILType *ParseArrayShape(ILContext *context,
 		ILTypeSetSize(array, dim, (ILInt32)value);
 	}
 
-	/* If the size count was zero, then we are done */
-	if(!numSizes)
-	{
-		return array;
-	}
-
 	/* Parse the number of specified low bounds */
 	numLowBounds = ILMetaUncompressData(reader);
-	if(numLowBounds > numSizes)
+	if(numLowBounds > rank)
 	{
 		/* Invalid low bounds value */
 		return ILType_Invalid;

@@ -243,6 +243,8 @@ public class MessageBox
 
 				// Make the borders suitable for a dialog box.
 				FormBorderStyle = FormBorderStyle.FixedDialog;
+				MinimizeBox = false;
+				ShowInTaskbar = false;
 
 				// Create the layout areas.
 				vbox = new VBoxLayout();

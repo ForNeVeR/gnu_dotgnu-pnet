@@ -21,6 +21,8 @@
 	samples/mscorlib.dll: rationalise parameter naming for
 	"Enum.GetEnumValueFromName".
 
+	* engine/lib_misc.c: implement "ClrMakeTypedReference" internalcall.
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/convert.c, engine/cvm_arith.c, engine/cvm_var.c,

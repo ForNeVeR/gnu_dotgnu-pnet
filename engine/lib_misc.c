@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "engine.h"
+#include "engine_private.h"
 #include "lib_defs.h"
 #include "il_utils.h"
 
@@ -343,10 +343,48 @@ ILTypedRef _IL_TypedReference_ClrMakeTypedReference(ILExecThread *_thread,
 													ILObject *target,
 													System_Array *flds)
 {
-	/* TODO */
+	ILClass *classInfo;
+	ILInt32 index;
+	ILUInt32 offset;
 	ILTypedRef ref;
-	ref.type = 0;
-	ref.value = 0;
+	ILField *field;
+
+	/* Get the initial class and offset */
+	classInfo = GetObjectClass(target);
+	offset = 0;
+
+	/* Resolve the fields within the object, level by level */
+	for(index = 0; index < flds->length; ++index)
+	{
+		field = *((ILField **)(((ILObject **)(ArrayToBuffer(flds)))[index]));
+		if(!field)
+		{
+			ILExecThreadThrowSystem
+				(_thread, "System.ArgumentException",
+				 "Arg_MakeTypedRefFields");
+			ref.type = 0;
+			ref.value = 0;
+			return ref;
+		}
+		offset += field->offset;
+		classInfo = ILClassFromType
+			(ILContextNextImage(_thread->process->context, 0),
+			 0, ILField_Type(field), 0);
+		if(!classInfo ||
+		   (index < (flds->length - 1) && !ILClassIsValueType(classInfo)))
+		{
+			ILExecThreadThrowSystem
+				(_thread, "System.ArgumentException",
+				 "Arg_MakeTypedRefFields");
+			ref.type = 0;
+			ref.value = 0;
+			return ref;
+		}
+	}
+
+	/* Populate the typed reference */
+	ref.type = (void *)classInfo;
+	ref.value = (void *)(((unsigned char *)target) + offset);
 	return ref;
 }
 

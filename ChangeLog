@@ -1,4 +1,9 @@
 
+2003-10-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_stdio.c (StdRead): increment number of bytes
+	read for current return value (Stephen Compall).
+
 2003-10-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll.c: fix the VMA when dumping unrolled code

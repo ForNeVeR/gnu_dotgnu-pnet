@@ -202,6 +202,7 @@ ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
 			break;
 		}
 		*buf++ = (ILUInt16)(ch & 0xFF);
+		++result;
 		--count;
 	}
 	return result;

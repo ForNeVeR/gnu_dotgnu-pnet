@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
 	ILExecProcess *process;
 	ILMethod *method;
 	int error;
+	ILInt32 retval;
 
 	/* Parse the command-line arguments */
 	state = 0;
@@ -111,10 +112,15 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	/* Call the entry point */
+	retval = 0;
+	ILExecThreadCall(ILExecProcessGetMain(process), method,
+					 &retval, (void *)0);
+
 	/* Clean up the process and exit */
 	error = ILExecProcessGetStatus(process);
 	ILExecProcessDestroy(process);
-	return 0;
+	return (int)retval;
 }
 
 static void usage(const char *progname)

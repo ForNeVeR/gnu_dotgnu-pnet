@@ -86,6 +86,8 @@ allocate space for zero local variables.
 
 * engine/call.c: handle return values and IL->CVM code conversion.
 
+* engine/ilrun.c: call the main entry point for a program.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

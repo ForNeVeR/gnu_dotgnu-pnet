@@ -28,6 +28,12 @@ constant coercions
 assignment, coercions, and casts; use ILCanCoerceNode instead of ILCanCoerce
 so that constant coercions work;
 
+* cscc/cs_grammar.y: fix a bug in the use of the MakeSystemType macro;
+negate decimal constants in-place.
+
+* auto_gen.sh: new file, which runs automake and autoconf on a fresh
+CVS check-out to make the necessary build files.
+
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition

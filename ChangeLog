@@ -1,4 +1,11 @@
 
+2002-10-29  Gopal.V  <gopalv82@symonds.net>
+
+	* System/Net/HttpWebRequest.cs, runtime/Platform/Errno.cs,
+	runtime/System/IO/FileShare.cs, runtime/System/IO/FileAccess.cs,
+	runtime/System/IO/FileStream.cs: fixup pnetlib so that it compiles
+	with pnetlib
+	
 2002-10-27  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/Directory.cs, runtime/System/IO/File.cs: added

@@ -114,7 +114,7 @@ public class FileStream : Stream
 					throw new ArgumentOutOfRangeException
 						("share", _("IO_FileShare"));
 				}
-				if(!Security.SecurityManager.CanOpenFile
+				if(!Platform.Security.SecurityManager.CanOpenFile
 						(path, mode, access, share))
 				{
 					throw new SecurityException
@@ -194,7 +194,7 @@ public class FileStream : Stream
 					throw new ArgumentOutOfRangeException
 						("access", _("IO_FileAccess"));
 				}
-				if(!Security.SecurityManager.CanUseFileHandle(handle))
+				if(!Platform.Security.SecurityManager.CanUseFileHandle(handle))
 				{
 					throw new SecurityException(_("IO_HandleSecurity"));
 				}

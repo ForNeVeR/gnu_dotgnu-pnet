@@ -70,7 +70,7 @@ public enum Errno
 	ENOSYS			=	38,	/* Function not implemented */
 	ENOTEMPTY		=	39,	/* Directory not empty */
 	ELOOP			=	40,	/* Too many symbolic links encountered */
-	EWOULDBLOCK		=   EAGAIN, /* Operation would block */
+	EWOULDBLOCK		=   11, /* Operation would block FIXME: old value EAGAIN*/
 	ENOMSG			=	42,	/* No message of desired type */
 	EIDRM			=	43,	/* Identifier removed */
 	ECHRNG			=	44,	/* Channel number out of range */
@@ -87,7 +87,7 @@ public enum Errno
 	ENOANO			=	55,	/* No anode */
 	EBADRQC			=	56,	/* Invalid request code */
 	EBADSLT			=	57,	/* Invalid slot */
-	EDEADLOCK		=	EDEADLK,
+	EDEADLOCK		=	35, /* FIXME : old value EDEADLK */
 	EBFONT			=	59,	/* Bad font file format */
 	ENOSTR			=	60,	/* Device not a stream */
 	ENODATA			=	61,	/* No data available */

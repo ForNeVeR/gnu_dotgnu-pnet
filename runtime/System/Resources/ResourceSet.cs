@@ -206,7 +206,7 @@ public class ResourceSet : IDisposable
 					{
 						return (String)value;
 					}
-					catch
+					catch(InvalidCastException)
 					{
 						throw new InvalidOperationException
 							(_("Invalid_ResourceNotString"));
@@ -225,7 +225,7 @@ public class ResourceSet : IDisposable
 					TextInfo info = CultureInfo.InvariantCulture.TextInfo;
 					return (String)(ignoreCaseTable[info.ToLower(name)]);
 				}
-				catch
+				catch(InvalidCastException)
 				{
 					throw new InvalidOperationException
 						(_("Invalid_ResourceNotString"));

@@ -90,7 +90,6 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	const char *name;
 	const char *namespace;
 	const char *baseName;
-	int namelen;
 	int numBases;
 	ILClass **baseList;
 	int base;
@@ -226,19 +225,6 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 			/* This is not a valid base class specification */
 			CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
 						  "invalid base type");
-		}
-		if(baseList[base] && ILTypeIdentical(ILType_FromClass(baseList[base]),
-								ILFindSystemType(info,"Attribute")))
-		{
-				
-			namelen=strlen(name);
-			if(namelen < 9 || strcmp(name + namelen - 9, "Attribute") != 0)
-			{
-				defn->name = ILInternAppendedString
-								(ILInternString(defn->name, namelen),
-								 ILInternString("Attribute", 9)).string;
-				name=defn->name;
-			}
 		}
 	}
 

@@ -1,4 +1,10 @@
 
+2003-01-13  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_gather.c: remove the "fix" for classes ending
+	in "Attribute" because it breaks attribute classes that do not
+	end in "Attribute".
+
 2003-01-12  Gopal.V  <gopalv82@symonds.net>
 
 	* ilasm/ilasm_grammar.y: force all constructor references to be 

@@ -244,6 +244,20 @@ static int parseBinaryResources(const char *filename, unsigned char *data,
 		--tempNum;
 	}
 
+	/* Align on an 8-byte boundary */
+	offset = fullSize - size;
+	if((offset % 8) != 0)
+	{
+		offset = 8 - (offset % 8);
+		if(offset > size)
+		{
+			fprintf(stderr,"%s: truncated resource data\n", filename);
+			return 1;
+		}
+		data += offset;
+		size -= offset;
+	}
+
 	/* Skip the name hash and name position tables */
 	if(numStrings > (size / 8))
 	{
@@ -646,6 +660,12 @@ void ILResWriteBinary(FILE *stream)
 	writeWord(stream, (unsigned long)numStrings);
 	writeWord(stream, (unsigned long)1);			/* Number of types */
 	writeString(stream, className2, strlen(className2));
+
+	/* Align on an 8-byte boundary */
+	while((ftell(stream) % 8) != 0)
+	{
+		putc(0, stream);
+	}
 
 	/* Write out the name hash table */
 	for(index = 0; index < numStrings; ++index)

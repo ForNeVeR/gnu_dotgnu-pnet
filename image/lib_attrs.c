@@ -691,6 +691,26 @@ static int MarshalAsAttribute(ILProgramItem *item, ILSerializeReader *reader)
 }
 
 /*
+ * Process a "ComImport" attribute, which sets the "import" flag on the type.
+ */
+static int ComImportAttribute(ILProgramItem *item, ILSerializeReader *reader)
+{
+	ILClass *classInfo;
+
+	/* We must use this on a class */
+	classInfo = ILProgramItemToClass(item);
+	if(!classInfo)
+	{
+		return 0;
+	}
+
+	/* Mark the class as serialized */
+	ILClassSetAttrs(classInfo, IL_META_TYPEDEF_IMPORT,
+							   IL_META_TYPEDEF_IMPORT);
+	return 1;
+}
+
+/*
  * Process a method implementation attribute.
  */
 static int MethodImplAttribute(ILProgramItem *item, ILSerializeReader *reader)
@@ -755,6 +775,7 @@ static AttrConvertInfo const interopAttrs[] = {
 	{"OutAttribute", OutAttribute},
 	{"StructLayoutAttribute", StructLayoutAttribute},
 	{"MarshalAsAttribute", MarshalAsAttribute},
+	{"ComImportAttribute", ComImportAttribute},
 	{0, 0}
 };
 static AttrConvertInfo const compilerAttrs[] = {

@@ -2162,6 +2162,10 @@ MethodDeclaration
 				ILAsmOutZeroInit();
 				ILAsmOutAddLocals($4.paramFirst);
 			}
+	| D_LOCALS '<' Identifier '=' Integer32 '>'	{
+				/* Extension for use with "cscc": declare a variable name */
+				ILAsmOutDeclareVarName($3.string, (ILUInt32)($5));
+			}
 	| D_ENTRYPOINT			{ ILWriterSetEntryPoint
 									(ILAsmWriter, (ILMethod *)ILAsmCurrScope); }
 	| D_ZEROINIT			{ ILAsmOutZeroInit(); }
@@ -2271,11 +2275,13 @@ ScopeBlock
 	: '{' 	{
 				/* Record the start of the block */
 				$<scope>$.start = ILAsmOutUniqueLabel();
+				ILAsmOutPushVarScope($<scope>$.start);
 			}
 	  ScopeDeclarations '}'	{
 	  			/* Record the end of the block */
 				$$.start = $<scope>2.start;
 				$$.end = ILAsmOutUniqueLabel();
+				ILAsmOutPopVarScope($$.end);
 	  		}
 	;
 

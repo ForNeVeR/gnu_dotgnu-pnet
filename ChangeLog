@@ -7,6 +7,10 @@
 	make "-fno-generics" the default, requiring "-fgenerics" to compile
 	C# code that uses generics.
 
+	* ilasm/ilasm_grammar.y, ilasm/ilasm_output.c, ilasm/ilasm_output.h:
+	modify the assembler so that it can output debug information
+	for local variable names and their scopes.
+
 2003-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/unrolling.txt, engine/md_arm.h, engine/md_x86.h,

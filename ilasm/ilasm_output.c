@@ -57,14 +57,25 @@ static ILType        *localVars = 0;
 static ILUInt32		  maxStack = 8;
 static int			  initLocals = 0;
 static ILUInt32		  localIndex = 0;
+typedef struct _tagLocalBlock
+{
+	char *blockStart;
+	char *blockEnd;
+	struct _tagLocalBlock *outer;
+	struct _tagLocalBlock *next;
+
+} LocalBlock;
 typedef struct _tagLocalInfo
 {
+	LocalBlock *block;
 	char *name;
 	ILUInt32 index;
 	struct _tagLocalInfo *next;
 
 } LocalInfo;
 static LocalInfo	 *localNames = 0;
+static LocalBlock	 *localBlocks = 0;
+static LocalBlock	 *localCurrentBlock = 0;
 static ILAsmOutException *exceptionList = 0;
 static ILAsmOutException *lastException = 0;
 static unsigned long  numExceptions = 0;
@@ -253,6 +264,7 @@ static void OutShortVar(ILInt32 lopcode, ILInt32 sopcode,
 void ILAsmOutReset(void)
 {
 	LocalInfo *local, *nextLocal;
+	LocalBlock *block, *nextBlock;
 	ILAsmOutException *exception, *nextException;
 
 	/* Destroy allocated data structures */
@@ -270,6 +282,13 @@ void ILAsmOutReset(void)
 		nextLocal = local->next;
 		ILFree(local);
 		local = nextLocal;
+	}
+	block = localBlocks;
+	while(block != 0)
+	{
+		nextBlock = block->next;
+		ILFree(block);
+		block = nextBlock;
 	}
 	exception = exceptionList;
 	while(exception != 0)
@@ -293,6 +312,7 @@ void ILAsmOutReset(void)
 	initLocals = 0;
 	localIndex = 0;
 	localNames = 0;
+	localBlocks = 0;
 	exceptionList = 0;
 	lastException = 0;
 	numExceptions = 0;
@@ -1347,6 +1367,7 @@ static void AddLocalName(char *name, ILUInt32 index)
 	{
 		ILAsmOutOfMemory();
 	}
+	local->block = localCurrentBlock;
 	local->name = name;
 	local->index = index;
 	local->next = localNames;
@@ -1674,7 +1695,12 @@ static void OutputDebugInfo(ILMethod *method)
 	char *prevFilename = 0;
 	LabelInfo *label = labels;
 	unsigned long len = 0;
-	int type = IL_DEBUGTYPE_LINE_OFFSETS;
+	int type;
+	LocalInfo *local;
+	LocalBlock *lastBlock;
+
+	/* Output the line number information for the method */
+	type = IL_DEBUGTYPE_LINE_OFFSETS;
 	if(haveColumnInfo)
 	{
 		type = IL_DEBUGTYPE_LINE_COL_OFFSETS;
@@ -1721,6 +1747,52 @@ static void OutputDebugInfo(ILMethod *method)
 		/* Flush the remainder of the debug information */
 		ILWriterDebugAdd(ILAsmWriter, (ILProgramItem *)method,
 						 type, buf, len);
+		len = 0;
+	}
+
+	/* Output the local variable name information for the method */
+	local = localNames;
+	lastBlock = (LocalBlock *)(ILNativeInt)(-1);
+	type = IL_DEBUGTYPE_VARS;
+	while(local != 0)
+	{
+		if(!len || len >= (sizeof(buf) - IL_META_COMPRESS_MAX_SIZE * 4) ||
+		   local->block != lastBlock)
+		{
+			/* We've encountered a change in local variable scope,
+			   or the buffer is almost full */
+			if(len > 0)
+			{
+				ILWriterDebugAdd(ILAsmWriter, (ILProgramItem *)method,
+								 type, buf, len);
+				len = 0;
+			}
+			lastBlock = local->block;
+			if(!lastBlock)
+			{
+				/* Outermost local variable scope for the method */
+				type = IL_DEBUGTYPE_VARS;
+			}
+			else
+			{
+				/* Inner local variable scope for the method */
+				type = IL_DEBUGTYPE_VARS_OFFSETS;
+				label = GetLabel(lastBlock->blockStart);
+				len += ILMetaCompressData(buf + len, label->address);
+				label = GetLabel(lastBlock->blockEnd);
+				len += ILMetaCompressData(buf + len, label->address);
+			}
+		}
+		len += ILMetaCompressData
+			(buf + len, ILWriterDebugString(ILAsmWriter, local->name));
+		len += ILMetaCompressData(buf + len, local->index);
+		local = local->next;
+	}
+	if(len > 0)
+	{
+		/* Flush the remainder of the debug information */
+		ILWriterDebugAdd(ILAsmWriter, (ILProgramItem *)method,
+						 type, buf, len);
 	}
 }
 
@@ -1731,6 +1803,8 @@ void ILAsmOutFinalizeMethod(ILMethod *method)
 	ILToken token;
 	LocalInfo *local;
 	LocalInfo *nextLocal;
+	LocalBlock *block;
+	LocalBlock *nextBlock;
 	ILAsmOutException *exception;
 	ILAsmOutException *nextException;
 	int fatExceptions;
@@ -2061,6 +2135,14 @@ cleanup:
 		local = nextLocal;
 	}
 	localNames = 0;
+	block = localBlocks;
+	while(block != 0)
+	{
+		nextBlock = block->next;
+		ILFree(block);
+		block = nextBlock;
+	}
+	localBlocks = 0;
 	exception = exceptionList;
 	while(exception != 0)
 	{
@@ -2129,6 +2211,35 @@ void ILAsmOutAddResource(const char *name, FILE *stream)
 	if(!res)
 	{
 		ILAsmOutOfMemory();
+	}
+}
+
+void ILAsmOutDeclareVarName(char *name, ILUInt32 index)
+{
+	AddLocalName(name, index);
+}
+
+void ILAsmOutPushVarScope(char *name)
+{
+	LocalBlock *block = (LocalBlock *)ILMalloc(sizeof(LocalBlock));
+	if(!block)
+	{
+		ILAsmOutOfMemory();
+	}
+	block->blockStart = name;
+	block->blockEnd = 0;
+	block->outer = localCurrentBlock;
+	block->next = localBlocks;
+	localBlocks = block;
+	localCurrentBlock = block;
+}
+
+void ILAsmOutPopVarScope(char *name)
+{
+	if(localCurrentBlock)
+	{
+		localCurrentBlock->blockEnd = name;
+		localCurrentBlock = localCurrentBlock->outer;
 	}
 }
 

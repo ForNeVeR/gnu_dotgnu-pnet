@@ -233,6 +233,21 @@ void ILAsmOutFinalizeMethod(ILMethod *method);
 void ILAsmOutAddResource(const char *name, FILE *stream);
 
 /*
+ * Declare a local variable name for debug symbol information.
+ */
+void ILAsmOutDeclareVarName(char *name, ILUInt32 index);
+
+/*
+ * Push into a nested local variable scope.
+ */
+void ILAsmOutPushVarScope(char *name);
+
+/*
+ * Pop out of a nested local variable scope.
+ */
+void ILAsmOutPopVarScope(char *name);
+
+/*
  * Initialize the constant pool attached to the current class
  */
 void ILJavaAsmInitPool();

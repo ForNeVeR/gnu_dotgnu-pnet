@@ -48,6 +48,8 @@
 	* engine/lib_reflect.c (CreateResourceStream): misspelled
 	"System.Reflection.ClrResourceStream".
 
+	* samples/mscorlib.dll: new version with CP932 (Shift-JIS) support.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

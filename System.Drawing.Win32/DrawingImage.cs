@@ -20,289 +20,290 @@
 
 namespace System.Drawing.Toolkit
 {
-	using System;
-	using System.Runtime.InteropServices;
-	using DotGNU.Images;
-	public class DrawingImage : ToolkitImageBase
+using System;
+using System.Runtime.InteropServices;
+using DotGNU.Images;
+
+public class DrawingImage : ToolkitImageBase
+{
+	internal Frame imageFrame;
+	internal /*Win32.Api.BITMAPINFO*/ byte[] bitmapInfo;
+	internal IntPtr hMaskRegion = IntPtr.Zero;
+
+	public DrawingImage(Image image, int frame) : base(image, frame)
 	{
-		internal Frame imageFrame;
-		internal /*Win32.Api.BITMAPINFO*/ byte[] bitmapInfo;
-		internal IntPtr hMaskRegion = IntPtr.Zero;
+		ImageChanged();
+	}
 
-		public DrawingImage(Image image, int frame) : base(image, frame)
+	public override void ImageChanged()
+	{
+		Win32.Api.DeleteObject(hMaskRegion);
+		hMaskRegion = IntPtr.Zero;
+		if (image == null)
+			return;
+		imageFrame = image.GetFrame(frame);
+
+		bitmapInfo = GetBitmapInfo(imageFrame.PixelFormat, imageFrame.Width, imageFrame.Height, imageFrame.Palette);
+		hMaskRegion = MaskToRegion(imageFrame.Width, imageFrame.Height, imageFrame.MaskStride, imageFrame.Mask);
+	}
+
+	// Create a the BITMAPINFO header for a bitmap.
+	public static byte[] GetBitmapInfo(PixelFormat format, int width, int height, int[] palette)
+	{
+		// Set the size of the structure
+		int size = 40;
+		if (format == PixelFormat.Format16bppRgb565)
+			size += 3 * 4;
+		else if (format == PixelFormat.Format8bppIndexed)
+			size += 256 * 4;
+		else if (format == PixelFormat.Format4bppIndexed)
+			size += 40 + 16 * 4;
+		else if (format == PixelFormat.Format1bppIndexed)
+			size += 40 + 2 * 4;
+		byte[] bitmapInfo = new byte[size];
+		WriteInt32(bitmapInfo, 0, 40); //biSize
+		WriteInt32(bitmapInfo, 4, width); //biWidth
+		WriteInt32(bitmapInfo, 8, -height); //biHeight
+		WriteInt32(bitmapInfo, 12, 1); //biPlanes
+		WriteInt32(bitmapInfo, 14, FormatToBitCount(format)); //biBitCount
+		if (format == PixelFormat.Format16bppRgb565)
 		{
-			ImageChanged();
+			WriteInt32(bitmapInfo, 16, (int)Win32.Api.BitMapInfoCompressionType.BI_BITFIELDS);
+			// Setup the masks for 565
+			WriteInt32(bitmapInfo, 40, 0xF800); // R Mask
+			WriteInt32(bitmapInfo, 44, 0x07E0); // G Mask
+			WriteInt32(bitmapInfo, 48, 0x001F); // B Mask
 		}
+		else
+			WriteInt32(bitmapInfo, 16, (int)Win32.Api.BitMapInfoCompressionType.BI_RGB); // biCompression
 
-		public override void ImageChanged()
+		WriteInt32(bitmapInfo, 20, 0); // biSizeImage
+		WriteInt32(bitmapInfo, 24, 0); // biXPelsPerMeter
+		WriteInt32(bitmapInfo, 28, 0); // biYPelsPerMeter
+		WriteInt32(bitmapInfo, 32, 0); // biClrUsed
+		WriteInt32(bitmapInfo, 36, 0); // biClrImportant
+		//Setup palette
+		if (palette != null)
 		{
-			Win32.Api.DeleteObject(hMaskRegion);
-			hMaskRegion = IntPtr.Zero;
-			if (image == null)
-				return;
-			imageFrame = image.GetFrame(frame);
-
-			bitmapInfo = GetBitmapInfo(imageFrame.PixelFormat, imageFrame.Width, imageFrame.Height, imageFrame.Palette);
-			hMaskRegion = MaskToRegion(imageFrame.Width, imageFrame.Height, imageFrame.MaskStride, imageFrame.Mask);
+			// Write in RGBQUADS
+			for (int i = 0; i < palette.Length; i++)
+				WriteBGR(bitmapInfo, 40 + i * 4, palette[i]);
 		}
+		return bitmapInfo;
+	}
 
-		// Create a the BITMAPINFO header for a bitmap.
-		public static byte[] GetBitmapInfo(PixelFormat format, int width, int height, int[] palette)
+
+	// Convert the mask bits in the frame into a Win32 region.
+	// Optimize this by adding the maximum number of rectangles at once and
+	// by combining strips on the x axis into one rectangle.
+
+	public static IntPtr MaskToRegion (int width, int height, int stride, byte[] mask)
+	{
+		if (mask == null)
+			return IntPtr.Zero;
+		
+		// This is the maximum rectangles we should add at once because
+		// Win98 only allows 4000. So we break this into steps
+		// No point in being more than the number of pixels
+		int initialCount = width * height;
+		if (initialCount > 3900)
+			initialCount = 3900;
+
+		// TODO: Check if we should add the rectangles each time
+		// For now just do 10 rectangles at a time.
+		initialCount = 10;
+		
+		uint count = 0;
+		// Set the initial quantity of the rectangles.
+		// Header is 32 bytes, 16 bytes per rect.
+		Byte[] RGNData = new byte[32 + 16 * initialCount];
+		// Setup RGNData header size
+		RGNData[0] = 32;
+		// Set type to RDH_RECTANGLES
+		RGNData[4] = 1;
+		// Start of array of "RECT"
+		uint ptr = 32;
+
+		bool writeRect = false;
+		bool addToRegion = false;
+
+		IntPtr hMaskRegion = IntPtr.Zero;
+
+		// Scan top to bottom
+		for (int y = 0; y < height; y++)
 		{
-			// Set the size of the structure
-			int size = 40;
-			if (format == PixelFormat.Format16bppRgb565)
-				size += 3 * 4;
-			else if (format == PixelFormat.Format8bppIndexed)
-				size += 256 * 4;
-			else if (format == PixelFormat.Format4bppIndexed)
-				size += 40 + 16 * 4;
-			else if (format == PixelFormat.Format1bppIndexed)
-				size += 40 + 2 * 4;
-			byte[] bitmapInfo = new byte[size];
-			WriteInt32(bitmapInfo, 0, 40); //biSize
-			WriteInt32(bitmapInfo, 4, width); //biWidth
-			WriteInt32(bitmapInfo, 8, -height); //biHeight
-			WriteInt32(bitmapInfo, 12, 1); //biPlanes
-			WriteInt32(bitmapInfo, 14, FormatToBitCount(format)); //biBitCount
-			if (format == PixelFormat.Format16bppRgb565)
+			int xBlockStart = 0;
+			bool prevMaskBit = false;
+			byte currentByte = 0;
+
+			for(int x = 0; x < width; x++)
 			{
-				WriteInt32(bitmapInfo, 16, (int)Win32.Api.BitMapInfoCompressionType.BI_BITFIELDS);
-				// Setup the masks for 565
-				WriteInt32(bitmapInfo, 40, 0xF800); // R Mask
-				WriteInt32(bitmapInfo, 44, 0x07E0); // G Mask
-				WriteInt32(bitmapInfo, 48, 0x001F); // B Mask
-			}
-			else
-				WriteInt32(bitmapInfo, 16, (int)Win32.Api.BitMapInfoCompressionType.BI_RGB); // biCompression
+				int bitPos = 7 - x & 0x07;
+				if (bitPos == 7)
+					currentByte = mask[y * stride + (int)(x / 8)];
 
-			WriteInt32(bitmapInfo, 20, 0); // biSizeImage
-			WriteInt32(bitmapInfo, 24, 0); // biXPelsPerMeter
-			WriteInt32(bitmapInfo, 28, 0); // biYPelsPerMeter
-			WriteInt32(bitmapInfo, 32, 0); // biClrUsed
-			WriteInt32(bitmapInfo, 36, 0); // biClrImportant
-			//Setup palette
-			if (palette != null)
-			{
-				// Write in RGBQUADS
-				for (int i = 0; i < palette.Length; i++)
-					WriteBGR(bitmapInfo, 40 + i * 4, palette[i]);
-			}
-			return bitmapInfo;
-		}
+				bool bit = (currentByte & 1<<bitPos)==0;
 
-
-		// Convert the mask bits in the frame into a Win32 region.
-		// Optimize this by adding the maximum number of rectangles at once and
-		// by combining strips on the x axis into one rectangle.
-
-		public static IntPtr MaskToRegion (int width, int height, int stride, byte[] mask)
-		{
-			if (mask == null)
-				return IntPtr.Zero;
-			
-			// This is the maximum rectangles we should add at once because
-			// Win98 only allows 4000. So we break this into steps
-			// No point in being more than the number of pixels
-			int initialCount = width * height;
-			if (initialCount > 3900)
-				initialCount = 3900;
-
-			// TODO: Check if we should add the rectangles each time
-			// For now just do 10 rectangles at a time.
-			initialCount = 10;
-			
-			uint count = 0;
-			// Set the initial quantity of the rectangles.
-			// Header is 32 bytes, 16 bytes per rect.
-			Byte[] RGNData = new byte[32 + 16 * initialCount];
-			// Setup RGNData header size
-			RGNData[0] = 32;
-			// Set type to RDH_RECTANGLES
-			RGNData[4] = 1;
-			// Start of array of "RECT"
-			uint ptr = 32;
-
-			bool writeRect = false;
-			bool addToRegion = false;
-
-			IntPtr hMaskRegion = IntPtr.Zero;
-
-			// Scan top to bottom
-			for (int y = 0; y < height; y++)
-			{
-				int xBlockStart = 0;
-				bool prevMaskBit = false;
-				byte currentByte = 0;
-
-				for(int x = 0; x < width; x++)
+				if (bit)
 				{
-					int bitPos = 7 - x & 0x07;
-					if (bitPos == 7)
-						currentByte = mask[y * stride + (int)(x / 8)];
+					if (!prevMaskBit)
+					{
+						xBlockStart = x;
+						prevMaskBit = true;
+					}
+						
+				}
+				// The current bit requires writing.
+				else if (prevMaskBit)
+						writeRect = true;
 
-					bool bit = (currentByte & 1<<bitPos)==0;
-
+				// Are we at the end of the line?
+				if (x == width - 1)
+				{
+					// Move past the last region.
 					if (bit)
 					{
-						if (!prevMaskBit)
-						{
-							xBlockStart = x;
-							prevMaskBit = true;
-						}
-							
+						x++;
+						writeRect = true;
 					}
-					// The current bit requires writing.
-					else if (prevMaskBit)
-							writeRect = true;
-
-					// Are we at the end of the line?
-					if (x == width - 1)
-					{
-						// Move past the last region.
-						if (bit)
-						{
-							x++;
-							writeRect = true;
-						}
-						// End of data so we must always write.
-						if (y == height - 1 && (count > 0 || writeRect))
-							addToRegion = true;
-						
-					}
+					// End of data so we must always write.
+					if (y == height - 1 && (count > 0 || writeRect))
+						addToRegion = true;
 					
-					if (writeRect)
-					{
-						count++;
-						WriteRect(RGNData, ref ptr, new Rectangle(xBlockStart, y, x - xBlockStart, 1));
-								
-						if (count == initialCount)
-							addToRegion = true;
-						writeRect = false;
-						prevMaskBit = false;
-					}
-
-					if (addToRegion)
-					{
-						// Set the rectangle count in RGNHeader
-						RGNData[8] = (byte)count;
-						RGNData[9] = (byte)(count >> 8);
-						RGNData[10] = (byte)(count >> 16);
-						RGNData[11] = (byte)(count >> 24);
+				}
+				
+				if (writeRect)
+				{
+					count++;
+					WriteRect(RGNData, ref ptr, new Rectangle(xBlockStart, y, x - xBlockStart, 1));
 							
-						// Create the new region.
-						IntPtr hTemp = Win32.Api.ExtCreateRegion(IntPtr.Zero, 32 + 16 * count, ref RGNData[0]);
-						if (hMaskRegion == IntPtr.Zero)
-							hMaskRegion = hTemp;
-						else
-						{
-							// OR the new region with the current one.
-							Win32.Api.CombineRgn(hMaskRegion, hTemp, hMaskRegion, Win32.Api.RegionCombineMode.RGN_OR);
-							Win32.Api.DeleteObject(hTemp);
-						}
-						count = 0;
-						ptr = 32;
-						addToRegion = false;
+					if (count == initialCount)
+						addToRegion = true;
+					writeRect = false;
+					prevMaskBit = false;
+				}
+
+				if (addToRegion)
+				{
+					// Set the rectangle count in RGNHeader
+					RGNData[8] = (byte)count;
+					RGNData[9] = (byte)(count >> 8);
+					RGNData[10] = (byte)(count >> 16);
+					RGNData[11] = (byte)(count >> 24);
+						
+					// Create the new region.
+					IntPtr hTemp = Win32.Api.ExtCreateRegion(IntPtr.Zero, 32 + 16 * count, ref RGNData[0]);
+					if (hMaskRegion == IntPtr.Zero)
+						hMaskRegion = hTemp;
+					else
+					{
+						// OR the new region with the current one.
+						Win32.Api.CombineRgn(hMaskRegion, hTemp, hMaskRegion, Win32.Api.RegionCombineMode.RGN_OR);
+						Win32.Api.DeleteObject(hTemp);
 					}
+					count = 0;
+					ptr = 32;
+					addToRegion = false;
 				}
 			}
-			
-			return hMaskRegion;
 		}
-
-		// Write a RECT structure at ptr in the array of bytes
-		private static void WriteRect( byte[] RGNData, ref uint ptr, Rectangle r)
-		{
-			RGNData[ptr] = (byte)r.X;
-			RGNData[ptr+1] = (byte)(r.X >> 8);
-			RGNData[ptr+2] = (byte)(r.X >> 16);
-			RGNData[ptr+3] = (byte)(r.X >> 24);
-			RGNData[ptr+4] = (byte)r.Y;
-			RGNData[ptr+5] = (byte)(r.Y >> 8);
-			RGNData[ptr+6] = (byte)(r.Y >> 16);
-			RGNData[ptr+7] = (byte)(r.Y >> 24);
-			RGNData[ptr+8] = (byte)r.Right;
-			RGNData[ptr+9] = (byte)(r.Right >> 8);
-			RGNData[ptr+10] = (byte)(r.Right >> 16);
-			RGNData[ptr+11] = (byte)(r.Right >> 24);
-			RGNData[ptr+12] = (byte)r.Bottom;
-			RGNData[ptr+13] = (byte)(r.Bottom >> 8);
-			RGNData[ptr+14] = (byte)(r.Bottom >> 16);
-			RGNData[ptr+15] = (byte)(r.Bottom >> 24);
-			ptr += 16;
-		}
-
-		// Convert a pixel format into a bit count value.
-		private static short FormatToBitCount(PixelFormat pixelFormat)
-		{
-			switch(pixelFormat)
-			{
-				case PixelFormat.Format1bppIndexed:
-					return 1;
-
-				case PixelFormat.Format4bppIndexed:
-					return 4;
-
-				case PixelFormat.Format8bppIndexed:
-					return 8;
-
-				case PixelFormat.Format16bppRgb555:
-				case PixelFormat.Format16bppRgb565:
-				case PixelFormat.Format16bppArgb1555:
-				case PixelFormat.Format16bppGrayScale:
-					return 16;
-
-				case PixelFormat.Format24bppRgb:
-					return 24;
-
-				case PixelFormat.Format32bppRgb:
-				case PixelFormat.Format32bppPArgb:
-				case PixelFormat.Format32bppArgb:
-					return 32;
-
-				case PixelFormat.Format48bppRgb:
-					return 48;
-
-				case PixelFormat.Format64bppPArgb:
-				case PixelFormat.Format64bppArgb:
-					return 64;
-
-				default:
-					return 32;
-			}
-		}
-
-		// Write a BGR value to a buffer as an RGBQUAD.
-		private static void WriteBGR(byte[] buffer, int offset, int value)
-		{
-			buffer[offset] = (byte)value;
-			buffer[offset + 1] = (byte)(value >> 8);
-			buffer[offset + 2] = (byte)(value >> 16);
-			buffer[offset + 3] = (byte)0;
-		}
-
-			// Write a little-endian 16-bit integer value to a buffer.
-		private static void WriteUInt16(byte[] buffer, int offset, int value)
-		{
-			buffer[offset] = (byte)value;
-			buffer[offset + 1] = (byte)(value >> 8);
-		}
-
-		// Write a little-endian 32-bit integer value to a buffer.
-		private static void WriteInt32(byte[] buffer, int offset, int value)
-		{
-			buffer[offset] = (byte)value;
-			buffer[offset + 1] = (byte)(value >> 8);
-			buffer[offset + 2] = (byte)(value >> 16);
-			buffer[offset + 3] = (byte)(value >> 24);
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			// Doesnt hurt calling this, even if its already been disposed.
-			Win32.Api.DeleteObject(hMaskRegion);
-			hMaskRegion = IntPtr.Zero;
-		}
-
+		
+		return hMaskRegion;
 	}
+
+	// Write a RECT structure at ptr in the array of bytes
+	private static void WriteRect( byte[] RGNData, ref uint ptr, Rectangle r)
+	{
+		RGNData[ptr] = (byte)r.X;
+		RGNData[ptr+1] = (byte)(r.X >> 8);
+		RGNData[ptr+2] = (byte)(r.X >> 16);
+		RGNData[ptr+3] = (byte)(r.X >> 24);
+		RGNData[ptr+4] = (byte)r.Y;
+		RGNData[ptr+5] = (byte)(r.Y >> 8);
+		RGNData[ptr+6] = (byte)(r.Y >> 16);
+		RGNData[ptr+7] = (byte)(r.Y >> 24);
+		RGNData[ptr+8] = (byte)r.Right;
+		RGNData[ptr+9] = (byte)(r.Right >> 8);
+		RGNData[ptr+10] = (byte)(r.Right >> 16);
+		RGNData[ptr+11] = (byte)(r.Right >> 24);
+		RGNData[ptr+12] = (byte)r.Bottom;
+		RGNData[ptr+13] = (byte)(r.Bottom >> 8);
+		RGNData[ptr+14] = (byte)(r.Bottom >> 16);
+		RGNData[ptr+15] = (byte)(r.Bottom >> 24);
+		ptr += 16;
+	}
+
+	// Convert a pixel format into a bit count value.
+	private static short FormatToBitCount(PixelFormat pixelFormat)
+	{
+		switch(pixelFormat)
+		{
+			case PixelFormat.Format1bppIndexed:
+				return 1;
+
+			case PixelFormat.Format4bppIndexed:
+				return 4;
+
+			case PixelFormat.Format8bppIndexed:
+				return 8;
+
+			case PixelFormat.Format16bppRgb555:
+			case PixelFormat.Format16bppRgb565:
+			case PixelFormat.Format16bppArgb1555:
+			case PixelFormat.Format16bppGrayScale:
+				return 16;
+
+			case PixelFormat.Format24bppRgb:
+				return 24;
+
+			case PixelFormat.Format32bppRgb:
+			case PixelFormat.Format32bppPArgb:
+			case PixelFormat.Format32bppArgb:
+				return 32;
+
+			case PixelFormat.Format48bppRgb:
+				return 48;
+
+			case PixelFormat.Format64bppPArgb:
+			case PixelFormat.Format64bppArgb:
+				return 64;
+
+			default:
+				return 32;
+		}
+	}
+
+	// Write a BGR value to a buffer as an RGBQUAD.
+	private static void WriteBGR(byte[] buffer, int offset, int value)
+	{
+		buffer[offset] = (byte)value;
+		buffer[offset + 1] = (byte)(value >> 8);
+		buffer[offset + 2] = (byte)(value >> 16);
+		buffer[offset + 3] = (byte)0;
+	}
+
+		// Write a little-endian 16-bit integer value to a buffer.
+	private static void WriteUInt16(byte[] buffer, int offset, int value)
+	{
+		buffer[offset] = (byte)value;
+		buffer[offset + 1] = (byte)(value >> 8);
+	}
+
+	// Write a little-endian 32-bit integer value to a buffer.
+	private static void WriteInt32(byte[] buffer, int offset, int value)
+	{
+		buffer[offset] = (byte)value;
+		buffer[offset + 1] = (byte)(value >> 8);
+		buffer[offset + 2] = (byte)(value >> 16);
+		buffer[offset + 3] = (byte)(value >> 24);
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		// Doesnt hurt calling this, even if its already been disposed.
+		Win32.Api.DeleteObject(hMaskRegion);
+		hMaskRegion = IntPtr.Zero;
+	}
+
+}
 }

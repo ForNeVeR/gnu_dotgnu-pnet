@@ -61,8 +61,8 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 				IsMapped = false;
 			bool parented = this.parent != null && this.parent.hwnd != IntPtr.Zero;
 
-			// Adjust the heirararchy of parents and top of heirarchy
-			AdjustWindows(parent as DrawingWindow);
+			// Adjust the heirararchy of parents and top of hierarchy
+			Reparent(parent as DrawingWindow);
 			
 			suspendExternalMoveResizeNotify = true;
 			Win32.Api.SetParent( hwnd, parentHwnd);
@@ -86,7 +86,12 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 		}
 		sink.ToolkitExternalMove( dimensions.X, dimensions.Y );
 		sink.ToolkitExternalResize( dimensions.Width, dimensions.Height );
-		AdjustWindows(parent);
+
+		// Set the top of hierarchy
+		if (parent == null)
+			topOfhierarchy = this;
+		else
+			topOfhierarchy = (parent as DrawingWindow).topOfhierarchy;
 	}
 
 	protected IntPtr parentHwnd 

@@ -30,8 +30,8 @@ internal abstract class DrawingWindow : IToolkitWindow
 	protected internal IntPtr hwnd;
 	protected IntPtr hdc;
 	protected internal DrawingWindow parent;
-	// The window at the top of the heirarchy
-	protected internal DrawingWindow topOfHeirarchy;
+	// The window at the top of the hierarchy
+	protected internal DrawingWindow topOfhierarchy;
 	private Color background;
 	//cached when we create the window
 	private IntPtr backgroundBrush = IntPtr.Zero;
@@ -237,9 +237,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	{
 		get
 		{
-			if (hwnd == IntPtr.Zero)
-				throw new ApplicationException("can not get visible state, control is not created yet");
-			return Win32.Api.IsWindowVisible(hwnd);
+			return visible;
 		}
 		set
 		{
@@ -294,7 +292,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	{
 		get
 		{
-			return (IToolkitWindow)parent;
+			return parent as IToolkitWindow;
 		}
 	}
 
@@ -324,6 +322,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	{
 		if (hwnd != IntPtr.Zero)
 			Win32.Api.InvalidateRect(hwnd, IntPtr.Zero, true);
+		//Console.WriteLine("DrawingWindow.Invalidate, "+sink);
 	}
 
 	// This occurs when a top level window (form) receives focus)
@@ -337,7 +336,6 @@ internal abstract class DrawingWindow : IToolkitWindow
 		}
 		// We must handle this ourselves
 		//Win32.Api.SetCursor(Win32.Api.LoadCursorA(IntPtr.Zero, Win32.Api.CursorName.IDC_ARROW));
-		//CaptureTopLevel = this;
 		return 0;
 	}
 
@@ -349,6 +347,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 		return (int)Win32.Api.WM_MOUSEACTIVATEReturn.MA_ACTIVATE;
 	}
 
+	// Set the capture to the top most parent of a window, or release the capture.
 	private void CaptureTopLevel(DrawingWindow window)
 	{
 			if (window == null)
@@ -360,12 +359,12 @@ internal abstract class DrawingWindow : IToolkitWindow
 					toolkit.capturedTopWindow = null;
 				}
 			}
-			else if (toolkit.capturedTopWindow != window.topOfHeirarchy)
+			else if (toolkit.capturedTopWindow != window.topOfhierarchy)
 			{
 				Win32.Api.ReleaseCapture();
-				Win32.Api.SetCapture(window.topOfHeirarchy.hwnd);
-				//Console.WriteLine("CaptureTopLevel, Switching " + toolkit.capturedTopWindow + " to " + window.topOfHeirarchy);
-				toolkit.capturedTopWindow = window.topOfHeirarchy;
+				Win32.Api.SetCapture(window.topOfhierarchy.hwnd);
+				//Console.WriteLine("CaptureTopLevel, Switching " + toolkit.capturedTopWindow + " to " + window.topOfhierarchy);
+				toolkit.capturedTopWindow = window.topOfhierarchy;
 			}
 	}
 
@@ -418,38 +417,42 @@ internal abstract class DrawingWindow : IToolkitWindow
 		mouse.y = MouseY(lParam) + DimensionsScreen.Y;
 		DrawingWindow actualWindow = toolkit.DrawingWindow(Win32.Api.WindowFromPoint(mouse));
 
-		if (actualWindow != null && actualWindow.topOfHeirarchy == toolkit.capturedTopWindow)
+		if (actualWindow != null && actualWindow.topOfhierarchy == toolkit.capturedTopWindow)
 		{
 			// On the window decorations.
 			if (found == null)
 				CaptureTopLevel(null);
 			else
 				// Send the message to the client window
-				found.sink.ToolkitMouseMove(buttons, keys,0 ,x ,y, 0);
+				found.sink.ToolkitMouseMove(buttons, keys, 0 ,x ,y, 0);
 			//Console.WriteLine("DrawingWindow.MouseMove, " + (actual==null?"null":actual.sink.ToString()) +", (" + x +", " + y +"), " + buttons +"," + keys );
 		}
 		else
 		{
-			CaptureTopLevel(null);
+			if (toolkit.capturedWindow == null)
+				CaptureTopLevel(null);
+			else
+				found.sink.ToolkitMouseMove(buttons, keys,0 ,x ,y, 0);
 			// ?Send the last mouse move beyond the window (Win NT+ behaviour)
-			//found.sink.ToolkitMouseMove(buttons, keys,0 ,x ,y, 0);
-			/*if (actualWindow != null)
-			{
-				MouseMove(msg, wParam, lParam);
-			}*/
-			// We should replay this mouse move
-			/*
-			// Convert this windows coordinates to the new top windows coordinates.
-			int x1 = MouseX(lParam) + DimensionsScreen.X - top.dimensions.X;
-			int y1 = MouseY(lParam) + DimensionsScreen.Y - top.dimensions.Y;
-			// Now repost this message to the top level window
-			lParam = x1 | y1 << 16;
-
-			// Send the message to the client window
-			Win32.Api.PostMessageA(hwnd, (Win32.Api.WindowsMessages)msg, wParam, lParam);
-			return;
-			*/
 		}
+	}
+
+	// Need to look at z-order so we can't do this ourselves yet..
+	private DrawingWindow WindowFromPoint(int x, int y)
+	{
+		for (int i = toolkit.windowCount - 1; i >= 0; i--)
+		{
+			DrawingWindow w = toolkit.windows[i];
+			DrawingTopLevelWindow top = w as DrawingTopLevelWindow;
+			if (top != null)
+			{
+				if (top.outsideDimensions.Contains(x,y))
+					return w;
+			}
+			else if (w.DimensionsScreen.Contains(x, y))
+				return w;
+		}
+		return null;
 	}
 	
 	// Returns the dimensions relative to the screen.
@@ -517,7 +520,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 		}
 	}
 
-	// Returns the bottom child window that is underneath x, y and has a top level window of capturedTopWindow or capturedWindow (if some window has captured the most). The window must be visible and toplevelwindows decorations are excluded. Returns x and y relative to the found windows coordinates.
+	// Returns the bottom child window that is underneath x, y and that has a top level window of capturedTopWindow or capturedWindow (if some window has captured the mouse). The window must be visible and toplevelwindows decorations are excluded. Returns x and y relative to the found windows coordinates.
 	private DrawingWindow FindDeepestChild(int lParam, out int x, out int y, out DrawingWindow actualFound)
 	{
 		// Convert the mouse to screen coordinates
@@ -527,25 +530,36 @@ internal abstract class DrawingWindow : IToolkitWindow
 
 		DrawingWindow found = null;
 
-		// Child windows lower down the heirachy will always be last in the windows list
-		for (int i = 0; i < toolkit.windows.Count; i++)
+		// Child windows lower down the hierarchy will always be last in the windows list
+		for (int i = toolkit.windowCount - 1; i >= 0; i--)
 		{
-			DrawingWindow w = toolkit.windows[i] as DrawingWindow;
-			if (toolkit.capturedWindow != null)
+			DrawingWindow w = toolkit.windows[i];
+			if (!w.visible || !w.Visible)
+				continue;
+			if (toolkit.capturedWindow == null)
 			{
-				if (w.Visible && toolkit.capturedWindow.IsParentOf(w) && w.DimensionsScreen.Contains(x,y))
-					found = w;
-			}
-			else if (w.Visible && toolkit.capturedTopWindow == w.topOfHeirarchy)
-			{
-				// This will occur when the mouse is over the titlebar of a toplevel window.
-				if (w is DrawingTopLevelWindow && w.outsideDimensions.Contains(x,y) && !w.dimensions.Contains(x, y))
+				if (toolkit.capturedTopWindow == w.topOfhierarchy)
 				{
-					actualFound = null;
-					return null;
+					// This will occur when the mouse is over the titlebar of a toplevel window.
+					if (w.DimensionsScreen.Contains(x, y))
+					{
+						found = w;
+						break;
+					}
+					else if (w is DrawingTopLevelWindow && w.outsideDimensions.Contains(x,y))
+					{
+						actualFound = null;
+						return null;
+					}
 				}
-				else if (w.DimensionsScreen.Contains(x, y))
+			}
+			else
+			{
+				if (toolkit.capturedWindow.IsParentOf(w) && w.DimensionsScreen.Contains(x,y))
+				{
 					found = w;
+					break;
+				}
 			}
 		}
 
@@ -557,17 +571,10 @@ internal abstract class DrawingWindow : IToolkitWindow
 		if (found != null)
 		{
 			// Adjust the coordinates relative to the "found" window.
-			Rectangle child;
-			//if (toolkit.capturedWindow == null)
-				child = found.DimensionsScreen;
-			//else
-			//	child = toolkit.capturedWindow.DimensionsScreen;
+			Rectangle child = found.DimensionsScreen;
 			x -= child.X;
 			y -= child.Y;
 		}
-		//if (found != null)
-		//	Console.WriteLine(found.sink);
-
 		return found;
 	}
 
@@ -661,7 +668,28 @@ internal abstract class DrawingWindow : IToolkitWindow
 			{
 				int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
 				Toolkit.GetWindowAdjust(out leftAdjust, out topAdjust, out rightAdjust, out bottomAdjust, flags);
-				sink.ToolkitExternalResize( pos.cx - leftAdjust - rightAdjust, pos.cy - topAdjust - bottomAdjust );
+				int width = pos.cx;
+				int height = pos.cy;
+				DrawingTopLevelWindow form = this as DrawingTopLevelWindow;
+				// Restrict the size if necessary.
+				if (form != null)
+				{
+					if (form.minimumSize != Size.Empty)
+					{
+						if (width < form.minimumSize.Width)
+							width = form.minimumSize.Width;
+						if (height < form.minimumSize.Height)
+							height = form.minimumSize.Height;
+					}
+					if (form.maximumSize != Size.Empty)
+					{
+						if (width > form.maximumSize.Width)
+							width = form.maximumSize.Width;
+						if (height > form.maximumSize.Height)
+							height = form.maximumSize.Height;
+					}
+				}
+				sink.ToolkitExternalResize( width - leftAdjust - rightAdjust, height - topAdjust - bottomAdjust );
 			}
 
 			// Now prevent windows from changing the position or size, System.Windows.Control will do that
@@ -759,25 +787,50 @@ internal abstract class DrawingWindow : IToolkitWindow
 
 	abstract internal void CreateWindow();
 
-	// Make sure the parent window is before the child in the heirarchy
-	protected void AdjustWindows(DrawingWindow parent)
+	// Make sure the parent window is before the child in the hierarchy
+	protected void Reparent(DrawingWindow parent)
 	{
-		// Find all children windows and set their new top of heirarchy
-		DrawingWindow newTopOfHeirarchy = parent == null ? this : (parent as DrawingWindow).topOfHeirarchy;
-		foreach(DrawingWindow w in toolkit.windows)
+		// Find all children windows and set their new top of hierarchy
+		DrawingWindow newTopOfhierarchy = parent == null ? this : (parent as DrawingWindow).topOfhierarchy;
+		for (int i = 0; i < toolkit.windowCount; i++)
+		{
+			DrawingWindow w = toolkit.windows[i];
 			if (this.IsParentOf(w))
-				w.topOfHeirarchy = newTopOfHeirarchy;
+				w.topOfhierarchy = newTopOfhierarchy;
+		}
 		this.parent = parent as DrawingWindow;
-		// Make sure the parent window is before the child in the heirarchy
-		ArrayList windows = toolkit.windows;
-		int iChild = windows.IndexOf(this);
+
+		// Make sure the parent window is before the child in the hierarchy
+		// Find the position of the current control
+		int childPos = -1;
+		for (int i = 0; i < toolkit.windowCount; i++)
+		{
+			if (toolkit.windows[i] == this)
+			{
+				childPos = i;
+				break;
+			}
+		}
+		
+		// Make sure each parent is before the child.
 		for(DrawingWindow w = parent; w != null; w = w.parent)
 		{
-			int pos = windows.IndexOf(w);
-			if (pos > iChild)
+			int pos = -1;
+			// Find the position of the parent
+			for (int i = childPos + 1; i < toolkit.windowCount; i++)
 			{
-				windows.Remove(w);
-				windows.Insert(iChild,w);
+				if (toolkit.windows[i] == w)
+				{
+					pos = i;
+					break;
+				}
+			}
+
+			if (pos != -1)
+			{
+				// Move the parent to the position before the child.
+				Array.Copy(toolkit.windows, childPos, toolkit.windows, childPos + 1, pos - childPos);
+				toolkit.windows[childPos] = w;
 			}
 			else
 				break;

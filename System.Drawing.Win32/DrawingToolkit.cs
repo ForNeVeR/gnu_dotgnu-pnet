@@ -32,7 +32,8 @@ using DotGNU.Images;
 public class DrawingToolkit : IToolkit
 {
 	private static ArrayList timers = new ArrayList();
-	internal ArrayList windows = new ArrayList();
+	internal DrawingWindow[] windows = new DrawingWindow[64];
+	internal int windowCount = 0;
 	// The child window or control that has captured or null for none
 	internal DrawingWindow capturedWindow;
 	// The top level window that has the capture.
@@ -43,11 +44,11 @@ public class DrawingToolkit : IToolkit
 	private DrawingHiddenWindow hiddenWindow;
 
 	public DrawingToolkit()
-			{
-				hiddenWindow = new DrawingHiddenWindow(this, "DrawingHiddenWindow",0,0,null);
-				windows.Add(hiddenWindow);
-				hiddenWindow.CreateWindow();
-			}
+	{
+		hiddenWindow = new DrawingHiddenWindow(this, "DrawingHiddenWindow",0,0,null);
+		AddWindow(hiddenWindow);
+		hiddenWindow.CreateWindow();
+	}
 
 	// Process events in the event queue.  If "waitForEvent" is true,
 	// then wait for the next event and return "false" if "Quit" was
@@ -55,325 +56,325 @@ public class DrawingToolkit : IToolkit
 	// queue and return "true".  If "waitForEvent" is false and there
 	// are no events in the queue, then return "false".
 	public bool ProcessEvents(bool waitForEvent)
-			{
-				Win32.Api.MSG message;
-				if (!waitForEvent)
-				{
-					// return false if there is no message or the quit message
-					if (!Win32.Api.PeekMessageA(out message, IntPtr.Zero, 0, 0, Win32.Api.PeekMessageType.PM_NOREMOVE)
-						|| message.message==Win32.Api.WindowsMessages.WM_QUIT)
-						return false;
-				}
-				// process the message
-				if (Win32.Api.GetMessageA(out message, IntPtr.Zero,0,0)==0)
-					return false; //occurs on WM_QUIT
-				Win32.Api.TranslateMessage(ref message);
-				Win32.Api.DispatchMessageA(ref message);	
-				return true;
-			}
+	{
+		Win32.Api.MSG message;
+		if (!waitForEvent)
+		{
+			// return false if there is no message or the quit message
+			if (!Win32.Api.PeekMessageA(out message, IntPtr.Zero, 0, 0, Win32.Api.PeekMessageType.PM_NOREMOVE)
+				|| message.message==Win32.Api.WindowsMessages.WM_QUIT)
+				return false;
+		}
+		// process the message
+		if (Win32.Api.GetMessageA(out message, IntPtr.Zero,0,0)==0)
+			return false; //occurs on WM_QUIT
+		Win32.Api.TranslateMessage(ref message);
+		Win32.Api.DispatchMessageA(ref message);	
+		return true;
+	}
 
 	// Send a quit message to the toolkit, which should cause
 	// it to exit from the "Run" method.
 	public void Quit()
-			{
-				Win32.Api.PostQuitMessage(0);
-			}
+	{
+		Win32.Api.PostQuitMessage(0);
+	}
 
 	// Send a wakeup message to a thread's message queue to cause
 	// it to return back from "ProcessEvents".
 	public void Wakeup(Thread thread)
-			{
-				// TODO
-			}
+	{
+		Win32.Api.PostMessageA(hiddenWindow.hwnd,Win32.Api.WindowsMessages.WM_NULL, 0, 0);
+	}
 
 	// Resolve a system color to an RGB value.  Returns -1 if the
 	// system does not support the color and a default should be used.
 	// TODO
 	public int ResolveSystemColor(KnownColor color)
-			{
-				return -1;
-			/*ActiveBorder			= 1,
-	ActiveCaption			= 2,
-	ActiveCaptionText		= 3,
-	AppWorkspace			= 4,
-	Control					= 5,
-	ControlDark				= 6,
-	ControlDarkDark			= 7,
-	ControlLight			= 8,
-	ControlLightLight		= 9,
-	ControlText				= 10,
-	Desktop					= 11,
-	GrayText				= 12,
-	Highlight				= 13,
-	HighlightText			= 14,
-	HotTrack				= 15,
-	InactiveBorder			= 16,
-	InactiveCaption			= 17,
-	InactiveCaptionText		= 18,
-	Info					= 19,
-	InfoText				= 20,
-	Menu					= 21,
-	MenuText				= 22,
-	ScrollBar				= 23,
-	Window					= 24,
-	WindowFrame				= 25,
-	WindowText				= 26,*/
-			}
+	{
+		return -1;
+		/*ActiveBorder			= 1,
+ActiveCaption			= 2,
+ActiveCaptionText		= 3,
+AppWorkspace			= 4,
+Control					= 5,
+ControlDark				= 6,
+ControlDarkDark			= 7,
+ControlLight			= 8,
+ControlLightLight		= 9,
+ControlText				= 10,
+Desktop					= 11,
+GrayText				= 12,
+Highlight				= 13,
+HighlightText			= 14,
+HotTrack				= 15,
+InactiveBorder			= 16,
+InactiveCaption			= 17,
+InactiveCaptionText		= 18,
+Info					= 19,
+InfoText				= 20,
+Menu					= 21,
+MenuText				= 22,
+ScrollBar				= 23,
+Window					= 24,
+WindowFrame				= 25,
+WindowText				= 26,*/
+	}
 
 	// Create an IToolkitGraphics object from a HDC.
 	//TODO
 	public IToolkitGraphics CreateFromHdc(IntPtr hdc, IntPtr hdevice)
-			{
-				// This is tricky - maybe we have to keep track of which hdc's we create?
-				return null;
-			}
+	{
+		// This is tricky - maybe we have to keep track of which hdc's we create?
+		return null;
+	}
 
 	// Create an IToolkitGraphics object from a HWND.
 	//TODO
 	public IToolkitGraphics CreateFromHwnd(IntPtr hwnd)
-			{
-				return null;
-			}
+	{
+		return null;
+	}
 
 	public IToolkitGraphics CreateFromImage(IToolkitImage image)
-			{
-				return new DrawingGraphicsImage(this, image);
-			}
+	{
+		return new DrawingGraphicsImage(this, image);
+	}
 
 	// Create a solid toolkit brush.
 	public IToolkitBrush CreateSolidBrush(System.Drawing.Color color)
-			{
-				return new DrawingSolidBrush(this, color);
-			}
+	{
+		return new DrawingSolidBrush(this, color);
+	}
 
 	// Create a hatched toolkit brush.
 	public IToolkitBrush CreateHatchBrush
-					(HatchStyle style, System.Drawing.Color foreColor,
-					 System.Drawing.Color backColor)
-			{
-				return new DrawingHatchBrush(this, style, foreColor, backColor);
-			}
+		(HatchStyle style, System.Drawing.Color foreColor,
+		System.Drawing.Color backColor)
+	{
+		return new DrawingHatchBrush(this, style, foreColor, backColor);
+	}
 
 	// Create a linear gradient brush.
 	//TODO
 	public IToolkitBrush CreateLinearGradientBrush
-				(RectangleF rect, System.Drawing.Color color1,
-				 System.Drawing.Color color2,
-				 LinearGradientMode mode)
-			{
-				return null;
-			}
+		(RectangleF rect, System.Drawing.Color color1,
+		System.Drawing.Color color2,
+		LinearGradientMode mode)
+	{
+		return null;
+	}
 
 	//TODO
 	public IToolkitBrush CreateLinearGradientBrush
-				(RectangleF rect, System.Drawing.Color color1,
-				 System.Drawing.Color color2, float angle,
-				 bool isAngleScaleable)
-			{
-				return null;
-			}
+		(RectangleF rect, System.Drawing.Color color1,
+		System.Drawing.Color color2, float angle,
+		bool isAngleScaleable)
+	{
+		return null;
+	}
 
 	// Create a texture brush.
 	public IToolkitBrush CreateTextureBrush
-				(TextureBrush properties, IToolkitImage image,
-				 RectangleF dstRect, ImageAttributes imageAttr)
-			{
-				return new DrawingTextureBrush
-					(this, properties, image, dstRect, imageAttr);
-			}
+		(TextureBrush properties, IToolkitImage image,
+		RectangleF dstRect, ImageAttributes imageAttr)
+	{
+		return new DrawingTextureBrush
+			(this, properties, image, dstRect, imageAttr);
+	}
 
 	// Create a toolkit pen from pen properties.
 	// If the toolkit does not support the precise combination of pen
 	// properties, it will return the closest matching pen.
 	public IToolkitPen CreatePen(Pen pen)
-			{
-				return new DrawingPen(this, pen);
-			}
+	{
+		return new DrawingPen(this, pen);
+	}
 
 	// Create a toolkit font from the properties in the specified object.
 	public IToolkitFont CreateFont(System.Drawing.Font font, float dpi)
-			{
-				return new DrawingFont(this, font, dpi);
-			}
+	{
+		return new DrawingFont(this, font, dpi);
+	}
 
 	// Create the default system font on this platform.
 	public System.Drawing.Font CreateDefaultFont()
-			{
-				// Default is "Microsoft Sans Serif, 9".
-				return new System.Drawing.Font
-					(new FontFamily(GenericFontFamilies.SansSerif), 9.0f);
-			}
+	{
+		// Default is "Microsoft Sans Serif, 9".
+		return new System.Drawing.Font
+			(new FontFamily(GenericFontFamilies.SansSerif), 9.0f);
+	}
 
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.
 	//TODO
 	public IntPtr GetHalftonePalette()
-			{
-				return IntPtr.Zero;
-			}
+	{
+		return IntPtr.Zero;
+	}
 
 	// Create a form.
 	public IToolkitTopLevelWindow CreateTopLevelWindow(int width, int height, IToolkitEventSink sink)
-			{
-				DrawingTopLevelWindow window = new DrawingTopLevelWindow(this, string.Empty, width, height, sink);
-				windows.Add(window);
-				window.CreateWindow();
-				return window;
-			}
+	{
+		DrawingTopLevelWindow window = new DrawingTopLevelWindow(this, string.Empty, width, height, sink);
+		AddWindow(window);
+		window.CreateWindow();
+		return window;
+	}
 
 	// Create a top-level dialog shell.
 	//TODO
 	public IToolkitWindow CreateTopLevelDialog
-				(int width, int height, bool modal, bool resizable,
-				 IToolkitWindow dialogParent, IToolkitEventSink sink)
+		(int width, int height, bool modal, bool resizable,
+		IToolkitWindow dialogParent, IToolkitEventSink sink)
+	{
+		DrawingTopLevelWindow window;
+		window = new DrawingTopLevelWindow
+			(this, String.Empty, width, height, sink);
+		/*if(dialogParent is TopLevelWindow)
 			{
-				DrawingTopLevelWindow window;
-				window = new DrawingTopLevelWindow
-					(this, String.Empty, width, height, sink);
-				/*if(dialogParent is TopLevelWindow)
-				{
-					window.TransientFor = (TopLevelWindow)dialogParent;
-				}
-				if(modal)
-				{
-					window.InputType = MotifInputType.ApplicationModal;
-				}
-				else
-				{
-					window.InputType = MotifInputType.Modeless;
-				}
-				if(!resizable)
-				{
-					window.Decorations = MotifDecorations.Border |
-										 MotifDecorations.Title |
-										 MotifDecorations.Menu;
-					window.Functions = MotifFunctions.Move |
-									   MotifFunctions.Close;
-				}*/
-				windows.Add(window);
-				window.CreateWindow();
-				return window;
+				window.TransientFor = (TopLevelWindow)dialogParent;
 			}
+			if(modal)
+			{
+				window.InputType = MotifInputType.ApplicationModal;
+			}
+			else
+			{
+				window.InputType = MotifInputType.Modeless;
+			}
+			if(!resizable)
+			{
+				window.Decorations = MotifDecorations.Border |
+										MotifDecorations.Title |
+										MotifDecorations.Menu;
+				window.Functions = MotifFunctions.Move |
+									MotifFunctions.Close;
+			}*/
+		AddWindow(window);
+		window.CreateWindow();
+		return window;
+	}
 
 	// Create a top-level popup window.  Popup windows do not have
 	// any borders and grab the mouse and keyboard when they are mapped
 	// to the screen.  They are used for menus, drop-down lists, etc.
 	public IToolkitWindow CreatePopupWindow
-				(int x, int y, int width, int height, IToolkitEventSink sink)
-			{
-				DrawingWindow window = new DrawingPopupWindow(this, x, y, width, height, sink);
-				windows.Add(window);
-				window.CreateWindow();
-				return window;
-			}
+		(int x, int y, int width, int height, IToolkitEventSink sink)
+	{
+		DrawingWindow window = new DrawingPopupWindow(this, x, y, width, height, sink);
+		AddWindow(window);
+		window.CreateWindow();
+		return window;
+	}
 
 
 	// Create a child window.  If "parent" is null, then the child
 	// does not yet have a "real" parent - it will be reparented later.
 	public IToolkitWindow CreateChildWindow
-				(IToolkitWindow parent, int x, int y, int width, int height,
-				 IToolkitEventSink sink)
-			{
-				DrawingWindow dparent;
-				if(parent is DrawingWindow)
-				{
-					dparent = ((DrawingWindow)parent);
-				}
-				else
-				{
-					dparent = null;
-				}
-				DrawingWindow window = new DrawingControlWindow(this, "", dparent, x, y, width, height, sink);
-				windows.Add(window);
-				window.CreateWindow();
-				return window;
-			}
+		(IToolkitWindow parent, int x, int y, int width, int height,
+		IToolkitEventSink sink)
+	{
+		DrawingWindow dparent;
+		if(parent is DrawingWindow)
+		{
+			dparent = ((DrawingWindow)parent);
+		}
+		else
+		{
+			dparent = null;
+		}
+		DrawingWindow window = new DrawingControlWindow(this, "", dparent, x, y, width, height, sink);
+		AddWindow(window);
+		window.CreateWindow();
+		return window;
+	}
 
 	// Get a list of all font families on this system, or all font
 	// families that are compatible with a particular IToolkitGraphics.
 	//TODO
 	public FontFamily[] GetFontFamilies(IToolkitGraphics graphics)
-			{
-				// We only support three font families.  Extend later.
-				return new FontFamily [] {
-					new FontFamily("Arial"),
-					new FontFamily("Times New Roman"),
-					new FontFamily("Courier New"),
-				};
-			}
+	{
+		// We only support three font families.  Extend later.
+		return new FontFamily [] {
+										new FontFamily("Arial"),
+										new FontFamily("Times New Roman"),
+										new FontFamily("Courier New"),
+		};
+	}
 
 	// Get font family metric information.
 	public void GetFontFamilyMetrics(GenericFontFamilies genericFamily,
-							  		 String name,
-									 System.Drawing.FontStyle style,
-							  		 out int ascent, out int descent,
-							  		 out int emHeight, out int lineSpacing)
+		String name,
+		System.Drawing.FontStyle style,
+		out int ascent, out int descent,
+		out int emHeight, out int lineSpacing)
+	{
+		//TODO
+		switch(genericFamily)
+		{
+			case GenericFontFamilies.SansSerif:
+			default:
 			{
-				//TODO
-				switch(genericFamily)
-				{
-					case GenericFontFamilies.SansSerif:
-					default:
-					{
-						// Metrics for "Arial".
-						ascent = 1854;
-						descent = 434;
-						emHeight = 2048;
-						lineSpacing = 2355;
-					}
-					break;
-
-					case GenericFontFamilies.Serif:
-					{
-						// Metrics for "Times New Roman".
-						ascent = 1825;
-						descent = 443;
-						emHeight = 2048;
-						lineSpacing = 2355;
-					}
-					break;
-
-					case GenericFontFamilies.Monospace:
-					{
-						// Metrics for "Courier New".
-						ascent = 1705;
-						descent = 615;
-						emHeight = 2048;
-						lineSpacing = 2320;
-					}
-					break;
-				}
+				// Metrics for "Arial".
+				ascent = 1854;
+				descent = 434;
+				emHeight = 2048;
+				lineSpacing = 2355;
 			}
+				break;
+
+			case GenericFontFamilies.Serif:
+			{
+				// Metrics for "Times New Roman".
+				ascent = 1825;
+				descent = 443;
+				emHeight = 2048;
+				lineSpacing = 2355;
+			}
+				break;
+
+			case GenericFontFamilies.Monospace:
+			{
+				// Metrics for "Courier New".
+				ascent = 1705;
+				descent = 615;
+				emHeight = 2048;
+				lineSpacing = 2320;
+			}
+				break;
+		}
+	}
 
 	// Get the IToolkitFont that corresponds to a hdc's current font.
 	// Returns null if there is no way to obtain the information.
 	//TODO
 	public IToolkitFont GetFontFromHdc(IntPtr hdc)
-			{
-				return null;
-			}
+	{
+		return null;
+	}
 
 	// Get the IToolkitFont that corresponds to a native font object.
 	// Returns null if there is no way to obtain the information.
 	//TODO
 	public IToolkitFont GetFontFromHfont(IntPtr hfont)
-			{
-				return null;
-			}
+	{
+		return null;
+	}
 
 	// Get the IToolkitFont that corresponds to LOGFONT information.
 	// Returns null if there is no way to obtain the information.
 	//TODO
 	public IToolkitFont GetFontFromLogFont(Object lf, IntPtr hdc)
-			{
-				return null;
-			}
+	{
+		return null;
+	}
 
 	// Get the default IToolkitGraphics object to measure screen sizes.
 	public IToolkitGraphics GetDefaultGraphics()
-			{
-				//Console.WriteLine("DrawingToolkit.GetDefaultGraphics");
-				return new DrawingGraphics(this, Win32.Api.GetDC(Win32.Api.GetDesktopWindow()));
-			}
+	{
+		//Console.WriteLine("DrawingToolkit.GetDefaultGraphics");
+		return new DrawingGraphics(this, Win32.Api.GetDC(Win32.Api.GetDesktopWindow()));
+	}
 
 	// Get the screen size, in pixels.
 	public Size GetScreenSize()
@@ -396,8 +397,8 @@ public class DrawingToolkit : IToolkit
 	// be >= 0 and indicate the number of pixels to subtract from the
 	// windows bounds to get the client bounds.
 	public void GetWindowAdjust(out int leftAdjust, out int topAdjust,
-						        out int rightAdjust, out int bottomAdjust,
-								ToolkitWindowFlags flags)
+		out int rightAdjust, out int bottomAdjust,
+		ToolkitWindowFlags flags)
 	{
 		Win32.Api.WindowStyle style;
 		Win32.Api.WindowsExtendedStyle extendedStyle;
@@ -415,10 +416,10 @@ public class DrawingToolkit : IToolkit
 	{
 		style = Win32.Api.WindowStyle.WS_POPUP | Win32.Api.WindowStyle.WS_CLIPCHILDREN;
 		extendedStyle = 0;
-		
+	
 		//to remove the popup style
 		Win32.Api.WindowStyle overlapped = ~Win32.Api.WindowStyle.WS_POPUP;
-				
+			
 		if((flags & ToolkitWindowFlags.Close) > 0)
 			style |= Win32.Api.WindowStyle.WS_SYSMENU;
 
@@ -451,7 +452,7 @@ public class DrawingToolkit : IToolkit
 
 		//TODO: Need a hidden window
 		//if((flags & ToolkitWindowFlags.ShowInTaskBar)>0)
-		
+	
 		if((flags & ToolkitWindowFlags.TopMost)>0)
 			extendedStyle |= Win32.Api.WindowsExtendedStyle.WS_EX_TOPMOST;
 
@@ -463,7 +464,7 @@ public class DrawingToolkit : IToolkit
 	// Register a timer that should fire every "interval" milliseconds.
 	// Returns a cookie that can be used to identify the timer.
 	public Object RegisterTimer
-				(Object owner, int interval, EventHandler expire)
+		(Object owner, int interval, EventHandler expire)
 	{
 		uint cookie;
 		if (timers.Count == 0)
@@ -490,14 +491,14 @@ public class DrawingToolkit : IToolkit
 		}
 	}
 
-	
+
 	//An instance is created for each timer registered
 	private class Timer
 	{
 		private Object owner;
 		private EventHandler expire;
 		internal uint cookie;
-		
+	
 		public Timer( Object owner, uint cookie, EventHandler expire )
 		{
 			this.owner = owner;
@@ -647,7 +648,7 @@ public class DrawingToolkit : IToolkit
 			case Win32.Api.WindowsMessages.WM_XBUTTONDBLCLK:
 				DrawingWindow(hwnd).DoubleClick( msg, wParam, lParam );
 				break;
-			
+		
 			case Win32.Api.WindowsMessages.WM_KEYDOWN:
 			case Win32.Api.WindowsMessages.WM_SYSKEYDOWN:
 				DrawingWindow(hwnd).KeyDown( wParam, lParam );
@@ -680,9 +681,9 @@ public class DrawingToolkit : IToolkit
 
 	internal DrawingWindow DrawingWindow(IntPtr hwnd)
 	{
-		for(int i = 0; i < windows.Count; i++)
+		for(int i = 0; i < windowCount; i++)
 		{
-			DrawingWindow window = (DrawingWindow)windows[i];
+			DrawingWindow window = windows[i];
 			if (window.hwnd == hwnd)
 				return window;
 		}
@@ -692,6 +693,18 @@ public class DrawingToolkit : IToolkit
 	public IToolkitImage CreateImage(DotGNU.Images.Image image, int frame)
 	{
 		return new DrawingImage(image, frame);
+	}
+
+	// Add a new DrawingWindow and make room if necessary
+	internal void AddWindow(DrawingWindow window)
+	{
+		if (windows.Length == windowCount)
+		{
+			DrawingWindow[] newWindows = new DrawingWindow[windows.Length * 2];
+			windows.CopyTo(newWindows, 0);
+			windows = newWindows;
+		}
+		windows[windowCount++] = window;
 	}
 
 

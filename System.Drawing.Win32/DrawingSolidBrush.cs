@@ -25,18 +25,18 @@ using System;
 internal class DrawingSolidBrush : DrawingBrush, IToolkitBrush
 {
 	public DrawingSolidBrush(IToolkit toolkit, System.Drawing.Color color) : base(toolkit, color)
-			{
-				hBrush = CreateSolidBrush(color);
-			}
+	{
+		hBrush = CreateSolidBrush(color);
+	}
 
 	public static IntPtr CreateSolidBrush(Color color)
-			{
-				Win32.Api.LOGBRUSH lb; 
-				lb.lbStyle = (Win32.Api.LogBrushStyles)Win32.Api.LogBrushStyles.BS_SOLID;
-				lb.lbColor = DrawingGraphics.ColorToWin32(color); 
-				lb.lbHatch = 0;
-				return Win32.Api.CreateBrushIndirect(ref lb);
-			}
+	{
+		Win32.Api.LOGBRUSH lb; 
+		lb.lbStyle = (Win32.Api.LogBrushStyles)Win32.Api.LogBrushStyles.BS_SOLID;
+		lb.lbColor = DrawingGraphics.ColorToWin32(color); 
+		lb.lbHatch = 0;
+		return Win32.Api.CreateBrushIndirect(ref lb);
+	}
 
 }; // class DrawingSolidBrush
 

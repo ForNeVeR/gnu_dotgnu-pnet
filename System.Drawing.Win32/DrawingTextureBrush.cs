@@ -35,14 +35,14 @@ internal class DrawingTextureBrush : DrawingBrush, IToolkitBrush
 
 	// Constructor.
 	public DrawingTextureBrush(IToolkit toolkit, TextureBrush properties,
-							   IToolkitImage image, RectangleF dstRect,
-							   ImageAttributes imageAttr) : base(toolkit, Color.Black)
-			{
-				this.properties = properties;
-				this.image = image as DrawingImage;
-				this.dstRect = dstRect;
-				this.imageAttr = imageAttr;
-			}
+		IToolkitImage image, RectangleF dstRect,
+		ImageAttributes imageAttr) : base(toolkit, Color.Black)
+	{
+		this.properties = properties;
+		this.image = image as DrawingImage;
+		this.dstRect = dstRect;
+		this.imageAttr = imageAttr;
+	}
 
 	public override void Select(IToolkitGraphics graphics)
 	{

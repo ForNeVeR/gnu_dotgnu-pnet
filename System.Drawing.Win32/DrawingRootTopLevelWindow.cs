@@ -20,26 +20,26 @@
 namespace System.Drawing.Toolkit
 {
 
-	using System;
+using System;
 
-	internal class DrawingRootTopLevelWindow : DrawingTopLevelWindow
+internal class DrawingRootTopLevelWindow : DrawingTopLevelWindow
+{
+	public DrawingRootTopLevelWindow(DrawingToolkit toolkit, String name,
+		int width, int height, IToolkitEventSink sink) : base (toolkit, name, width, height, sink) {}
+
+	//TODO
+	/*wParam 
+When the system sends this message as a result of a SystemParametersInfo call, wParam is a flag that indicates the system parameter that was changed. For a list of values, see SystemParametersInfo. 
+When the system sends this message as a result of a change in policy settings, this parameter indicates the type of policy that was applied. This value is 1 if computer policy was applied or zero if user policy was applied.
+
+When the system sends this message as a result of a change in locale settings, this parameter is zero.
+
+When an application sends this message, this parameter must be NULL.
+*/
+	//TODO
+	internal override void SettingsChange(int wParam)
 	{
-		public DrawingRootTopLevelWindow(DrawingToolkit toolkit, String name,
-			int width, int height, IToolkitEventSink sink) : base (toolkit, name, width, height, sink) {}
-
-		//TODO
-		/*wParam 
-	When the system sends this message as a result of a SystemParametersInfo call, wParam is a flag that indicates the system parameter that was changed. For a list of values, see SystemParametersInfo. 
-	When the system sends this message as a result of a change in policy settings, this parameter indicates the type of policy that was applied. This value is 1 if computer policy was applied or zero if user policy was applied.
-
-	When the system sends this message as a result of a change in locale settings, this parameter is zero.
-
-	When an application sends this message, this parameter must be NULL.
-	*/
-		//TODO
-		internal override void SettingsChange(int wParam)
-		{
-			
-		}
+		
 	}
+}
 }

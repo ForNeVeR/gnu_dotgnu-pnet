@@ -20,70 +20,70 @@
 
 namespace System.Drawing.Toolkit
 {
-	using System;
+using System;
 
-	internal class DrawingPopupWindow : DrawingWindow, IToolkitWindow
+internal class DrawingPopupWindow : DrawingWindow, IToolkitWindow
+{
+	protected static uint createCount;
+
+	public DrawingPopupWindow(DrawingToolkit toolkit, int x, int y, int width, int height,
+		IToolkitEventSink sink) : base ( toolkit )
 	{
-		protected static uint createCount;
+		//Console.WriteLine("DrawingPopupWindow");
+		this.sink = sink;
+		dimensions = new Rectangle(x, y, width, height);
 
-		public DrawingPopupWindow(DrawingToolkit toolkit, int x, int y, int width, int height,
-								  IToolkitEventSink sink) : base ( toolkit )
-			{
-				//Console.WriteLine("DrawingPopupWindow");
-				this.sink = sink;
-				dimensions = new Rectangle(x, y, width, height);
+		// At the moment we create a unique class name for EVERY window. SWF does it for each unique window class
+		className = "DrawingPopupWindow" + createCount++;
 
-				// At the moment we create a unique class name for EVERY window. SWF does it for each unique window class
-				className = "DrawingPopupWindow" + createCount++;
-
-				// Register the windows class
-				windowsClass = new Win32.Api.WNDCLASS();
-				windowsClass.style = Win32.Api.WindowClassStyle.CS_DBLCLKS;
-				windowsClass.lpfnWndProc = new Win32.Api.WNDPROC(toolkit.WindowsLoop);
-				// We will draw
-				windowsClass.hbrBackground = IntPtr.Zero;
-				windowsClass.lpszClassName = className ;
-				if (Win32.Api.RegisterClassA( ref windowsClass)==0) 
-				{
-					throw new Exception("Failed to register Windows class " + className);
-				}
-				
-				// Set default window characteristics
-				style = Win32.Api.WindowStyle.WS_POPUP;
-				menu = false;
-				extendedStyle = Win32.Api.WindowsExtendedStyle.WS_EX_TOOLWINDOW;
-				// We capture the mouse, and we want the client windows to be notified
-				topOfHeirarchy = this;
-			}
-
-		internal override void CreateWindow()
+		// Register the windows class
+		windowsClass = new Win32.Api.WNDCLASS();
+		windowsClass.style = Win32.Api.WindowClassStyle.CS_DBLCLKS;
+		windowsClass.lpfnWndProc = new Win32.Api.WNDPROC(toolkit.WindowsLoop);
+		// We will draw
+		windowsClass.hbrBackground = IntPtr.Zero;
+		windowsClass.lpszClassName = className ;
+		if (Win32.Api.RegisterClassA( ref windowsClass)==0) 
 		{
-			hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, string.Empty, style, dimensions.X, dimensions.Y, dimensions.Width, dimensions.Height, IntPtr.Zero, IntPtr.Zero,Win32.Api.GetModuleHandleA(null),IntPtr.Zero );
-			//Console.WriteLine("DrawingPopupWindow.CreateWindow hwnd="+hwnd + ",["+dimensions.X+","+dimensions.Y+","+dimensions.Width+","+dimensions.Height+"]");
-			if (hwnd==IntPtr.Zero) 
-			{
-				throw new Exception("Failed to create new Window");
-			}
-			sink.ToolkitExternalMove( dimensions.X, dimensions.Y );
-			sink.ToolkitExternalResize( dimensions.Width, dimensions.Height );
+			throw new Exception("Failed to register Windows class " + className);
 		}
+			
+		// Set default window characteristics
+		style = Win32.Api.WindowStyle.WS_POPUP;
+		menu = false;
+		extendedStyle = Win32.Api.WindowsExtendedStyle.WS_EX_TOOLWINDOW;
+		// We capture the mouse, and we want the client windows to be notified
+		topOfhierarchy = this;
+	}
 
-		internal override int MouseActivate(DrawingWindow activateWindow)
+	internal override void CreateWindow()
+	{
+		hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, string.Empty, style, dimensions.X, dimensions.Y, dimensions.Width, dimensions.Height, IntPtr.Zero, IntPtr.Zero,Win32.Api.GetModuleHandleA(null),IntPtr.Zero );
+		//Console.WriteLine("DrawingPopupWindow.CreateWindow hwnd="+hwnd + ",["+dimensions.X+","+dimensions.Y+","+dimensions.Width+","+dimensions.Height+"]");
+		if (hwnd==IntPtr.Zero) 
 		{
-			return (int)Win32.Api.WM_MOUSEACTIVATEReturn.MA_NOACTIVATE;
+			throw new Exception("Failed to create new Window");
 		}
+		sink.ToolkitExternalMove( dimensions.X, dimensions.Y );
+		sink.ToolkitExternalResize( dimensions.Width, dimensions.Height );
+	}
 
-		public override bool IsMapped
+	internal override int MouseActivate(DrawingWindow activateWindow)
+	{
+		return (int)Win32.Api.WM_MOUSEACTIVATEReturn.MA_NOACTIVATE;
+	}
+
+	public override bool IsMapped
+	{
+		get
 		{
-			get
-			{
-				return base.IsMapped;
-			}
-			set
-			{
-				base.IsMapped = value;
-				(this as IToolkitWindow).Capture = value;
-			}
+			return base.IsMapped;
+		}
+		set
+		{
+			base.IsMapped = value;
+			(this as IToolkitWindow).Capture = value;
 		}
 	}
+}
 }

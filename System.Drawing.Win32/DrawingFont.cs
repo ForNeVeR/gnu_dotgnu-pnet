@@ -30,57 +30,57 @@ internal class DrawingFont : IToolkitFont
 	private float dpi;
 	private IToolkit toolkit;
 	internal IntPtr hFont;
-	
+
 	public DrawingFont(IToolkit toolkit, System.Drawing.Font properties, float dpi)
-			{
-				this.toolkit = toolkit;
-				this.properties = properties;
-				this.dpi = dpi;
-				CreateFont();
-			}
+	{
+		this.toolkit = toolkit;
+		this.properties = properties;
+		this.dpi = dpi;
+		CreateFont();
+	}
 
 	// Select this font into a graphics object.
 	public void Select(IToolkitGraphics graphics)
-			{
-				if ((graphics as DrawingGraphics).Font == this)
-					return;
-				Win32.Api.SelectObject((graphics as DrawingGraphics).hdc, hFont);
-				(graphics as DrawingGraphics).Font = this;
-				Win32.Api.SetBkMode((graphics as DrawingGraphics).hdc,Win32.Api.BackGroundModeType.TRANSPARENT);
-				
-			}
+	{
+		if ((graphics as DrawingGraphics).Font == this)
+			return;
+		Win32.Api.SelectObject((graphics as DrawingGraphics).hdc, hFont);
+		(graphics as DrawingGraphics).Font = this;
+		Win32.Api.SetBkMode((graphics as DrawingGraphics).hdc,Win32.Api.BackGroundModeType.TRANSPARENT);
+			
+	}
 
 	protected virtual void Dispose(bool disposing)
-			{
-				Win32.Api.DeleteObject(hFont);
-				hFont = IntPtr.Zero;
-			}
+	{
+		Win32.Api.DeleteObject(hFont);
+		hFont = IntPtr.Zero;
+	}
 
 	// Dispose of this font.
 	public void Dispose()
-			{
-				Dispose(true);
-				GC.SuppressFinalize(this);
-			}
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
 	~DrawingFont()
-			{
-				Dispose(false);
-			}
+	{
+		Dispose(false);
+	}
 
 	// Get the raw HFONT for this toolkit font.  IntPtr.Zero if none.
 	public IntPtr GetHfont()
-			{
-				return hFont;
-			}
+	{
+		return hFont;
+	}
 
 	// Get the LOGFONT information for this toolkit font.
 	public void ToLogFont(Object lf, IToolkitGraphics graphics)
-			{
-				Win32.Api.LOGFONT logFont;
-				Win32.Api.GetObject( hFont, Marshal.SizeOf(typeof(Win32.Api.LOGFONT)), out logFont);
-				lf = logFont;
-			}
+	{
+		Win32.Api.LOGFONT logFont;
+		Win32.Api.GetObject( hFont, Marshal.SizeOf(typeof(Win32.Api.LOGFONT)), out logFont);
+		lf = logFont;
+	}
 
 	private void CreateFont()
 	{
@@ -103,7 +103,7 @@ internal class DrawingFont : IToolkitFont
 				lf.lfUnderline = 1;
 				break;
 		}
-			
+		
 		lf.lfQuality = Win32.Api.FontQuality.CLEARTYPE_QUALITY;
 		hFont = Win32.Api.CreateFontIndirectA(ref lf);
 	}

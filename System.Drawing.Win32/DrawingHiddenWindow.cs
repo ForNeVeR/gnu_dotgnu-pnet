@@ -19,40 +19,40 @@
 namespace System.Drawing.Toolkit
 {
 using System;
-	internal class DrawingHiddenWindow : DrawingWindow
+internal class DrawingHiddenWindow : DrawingWindow
+{
+	public DrawingHiddenWindow(DrawingToolkit toolkit, String name,
+		int width, int height, IToolkitEventSink sink) : base ( toolkit )
 	{
-		public DrawingHiddenWindow(DrawingToolkit toolkit, String name,
-			int width, int height, IToolkitEventSink sink) : base ( toolkit )
+		className = "DrawingHiddenWindow";
+		// Register the windows class
+		windowsClass = new Win32.Api.WNDCLASS();
+		windowsClass.style = Win32.Api.WindowClassStyle.CS_DBLCLKS;
+		windowsClass.lpfnWndProc = new Win32.Api.WNDPROC(toolkit.WindowsLoop);
+		// We will draw
+		windowsClass.hbrBackground = IntPtr.Zero;
+		windowsClass.lpszClassName = className ;
+		if (Win32.Api.RegisterClassA( ref windowsClass)==0) 
 		{
-			className = "DrawingHiddenWindow";
-			// Register the windows class
-			windowsClass = new Win32.Api.WNDCLASS();
-			windowsClass.style = Win32.Api.WindowClassStyle.CS_DBLCLKS;
-			windowsClass.lpfnWndProc = new Win32.Api.WNDPROC(toolkit.WindowsLoop);
-			// We will draw
-			windowsClass.hbrBackground = IntPtr.Zero;
-			windowsClass.lpszClassName = className ;
-			if (Win32.Api.RegisterClassA( ref windowsClass)==0) 
-			{
-				throw new Exception("Failed to register Windows class " + className);
-			}
-				
-			// Set default window characteristics
-			style = Win32.Api.WindowStyle.WS_OVERLAPPEDWINDOW;
-			extendedStyle = 0;
-			topOfHeirarchy = this;
+			throw new Exception("Failed to register Windows class " + className);
 		}
-
-		//Create the invisible control
-		internal override void CreateWindow() 
-		{
-			hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, "", style, Win32.Api.CW_USEDEFAULT, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, Win32.Api.GetModuleHandleA(null), IntPtr.Zero );
-			if (hwnd==IntPtr.Zero) 
-			{
-				throw new Exception("OS reported failure to create new Window");
-			}
-			//Console.WriteLine( "DrawingHiddenWindow.CreateWindow, "+sink );
-		}
+			
+		// Set default window characteristics
+		style = Win32.Api.WindowStyle.WS_OVERLAPPEDWINDOW;
+		extendedStyle = 0;
+		topOfhierarchy = this;
 	}
+
+	//Create the invisible control
+	internal override void CreateWindow() 
+	{
+		hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, "", style, Win32.Api.CW_USEDEFAULT, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, Win32.Api.GetModuleHandleA(null), IntPtr.Zero );
+		if (hwnd==IntPtr.Zero) 
+		{
+			throw new Exception("OS reported failure to create new Window");
+		}
+		//Console.WriteLine( "DrawingHiddenWindow.CreateWindow, "+sink );
+	}
+}
 
 }

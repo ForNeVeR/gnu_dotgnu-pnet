@@ -46,6 +46,7 @@ internal class Api
 
 	public enum WindowsMessages : int 
 		{
+			WM_NULL = 0x0,
 			WM_CREATE = 0x1,
 			WM_DESTROY = 0x2,
 			WM_ACTIVATE = 0x6,
@@ -59,6 +60,7 @@ internal class Api
 			WM_SETCURSOR = 0x20,
 			WM_MOUSEACTIVATE = 0x21,
 			WM_WINDOWPOSCHANGING = 0x46,
+			WM_SETICON = 0x80,
 			WM_NCCALCSIZE = 0x83,
 			WM_NCHITTEST = 0x84,
 			WM_NCPAINT = 0x0085,
@@ -226,7 +228,8 @@ internal class Api
 		SW_MAXIMIZE = 3,
 		SW_SHOW = 5,
 		SW_MINIMIZE = 6,
-		SW_SHOWNA = 8 //Visible but no activate
+		SW_SHOWNA = 8, //Visible but no activate
+		SW_RESTORE = 9
 	}
 
 	public enum SystemCommand
@@ -705,6 +708,16 @@ internal class Api
 		public uint biClrImportant; 
 	}
 
+	[StructLayout(LayoutKind.Sequential)]
+	public struct ICONINFO
+	{
+		public bool fIcon;
+		public uint xHotspot;
+		public uint yHotspot;
+		public IntPtr hbmMask;
+		public IntPtr hbmColor;
+	}
+
 	public delegate void TimerProc(IntPtr hwnd, uint uMsg, uint idEvent, uint dwTime);
 
 	[DllImport("user32")] //ANSI
@@ -803,6 +816,9 @@ internal class Api
 	[DllImport("user32")] //ANSI
 	public static extern bool PostMessageA(IntPtr hwnd, WindowsMessages Msg, int wParam, int lParam);
 
+	[DllImport("user32")] //ANSI
+	public static extern int SendMessageA( IntPtr hWnd, WindowsMessages Msg, int wParam, IntPtr lParam);
+
 	[DllImport("user32")]
 	public static extern int GetSystemMetrics (SystemMetricsType nIndex);
 
@@ -891,6 +907,9 @@ internal class Api
 
 	[DllImport("gdi32")]
 	public static extern IntPtr CreateBitmap( int nWidth, int nHeight, uint cPlanes, uint cBitsPerPel, byte[] lpvBits);
+
+	[DllImport("gdi32")]
+	public static extern IntPtr CreateDIBitmap( IntPtr hdc, byte[] lpbmih, uint fdwInit, byte[] lpbInit, byte[] lpbmi, uint fuUsage);
 
 	[DllImport("user32")]
 	public static extern int SetWindowLongA( IntPtr hWnd, SetWindowLongType nIndex, WindowStyle dwNewLong);
@@ -1000,6 +1019,11 @@ internal class Api
 	[DllImport("gdi32")]
 	public static extern uint GetRegionData( IntPtr hRgn, uint dwCount, ref byte lpRgnData);
 
+	[DllImport("user32")]
+	public static extern IntPtr CreateIcon( IntPtr hInstance, int nWidth, int nHeight, byte cPlanes, byte cBitsPixel, ref byte lpbANDbits, ref byte lpbXORbits);
+
+	[DllImport("user32")]
+	public static extern IntPtr CreateIconIndirect(ref ICONINFO piconinfo);
 
 }//Api
 

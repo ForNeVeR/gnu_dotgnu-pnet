@@ -20,46 +20,45 @@
 namespace System.Drawing.Toolkit
 {
 
-	using System;
-	using System.Drawing;
-	using System.Drawing.Drawing2D;
-	using DotGNU.Images;
+using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using DotGNU.Images;
 
-	internal class DrawingGraphicsImage : ToolkitGraphicsImageBase, IDisposable
+internal class DrawingGraphicsImage : ToolkitGraphicsImageBase, IDisposable
+{
+
+	public DrawingGraphicsImage(IToolkit toolkit, IToolkitImage image)
+		: base(toolkit, image) {}
+
+	// Draw a string using the current font and brush.
+	public override void DrawString
+		(String s, int x, int y, StringFormat format)
 	{
+		// TODO
+	}
 
-		public DrawingGraphicsImage(IToolkit toolkit, IToolkitImage image)
-			: base(toolkit, image) {}
+	protected override void Dispose(bool Disposing)
+	{
+		// Nothing to do.
+	}
 
-		// Draw a string using the current font and brush.
-		public override void DrawString
-			(String s, int x, int y, StringFormat format)
-		{
-			// TODO
-		}
+	// Measure a string using the current font and a given layout rectangle.
+	public override Size MeasureString( String s, System.Drawing.Point[] layoutRectangle, StringFormat format, out int charactersFitted, out int linesFilled, bool ascentOnly )
+	{
+		// TODO
+		charactersFitted = 0;
+		linesFilled = 0;
+		return new Size(0,0);
+	}
 
-		protected override void Dispose(bool Disposing)
-		{
-			// Nothing to do.
-		}
+	// Get the line spacing for the font selected into this graphics object.
+	public override int GetLineSpacing()
+	{
+		// TODO
+		return 0;
+	}
 
-		// Measure a string using the current font and a given layout rectangle.
-		public override Size MeasureString( String s, System.Drawing.Point[] layoutRectangle, StringFormat format, out int charactersFitted, out int linesFilled, bool ascentOnly )
-		{
-			// TODO
-			charactersFitted = 0;
-			linesFilled = 0;
-			return new Size(0,0);
-		}
-
-		// Get the line spacing for the font selected into this graphics object.
-		public override int GetLineSpacing()
-		{
-			// TODO
-			return 0;
-		}
-
-	}; // class DrawingGraphicsImage
-
+}; // class DrawingGraphicsImage
 
 }; // namespace System.Drawing.Toolkit

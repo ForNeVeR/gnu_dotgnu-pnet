@@ -12,6 +12,8 @@
 	* samples/mscorlib.dll: new version with "[TODO]" attributes
 	tagging everything that is incomplete.
 
+	* csdoc/status.dtd: document the "summary" element.
+
 2001-12-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c (CallMethod, CallMethodV): throw a "missing method"

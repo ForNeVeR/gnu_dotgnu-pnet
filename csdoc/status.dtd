@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -->
 <!DOCTYPE class_status [
-	<!ELEMENT class_status (class)*>
+	<!ELEMENT class_status (class | summary)*>
 
 	<!-- Status indicators -->
 
@@ -108,5 +108,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 	<!ELEMENT attribute (%status;)*>
 	<!ATTLIST attribute
 	          name        CDATA #REQUIRED>
+
+	<!-- Summary information -->
+
+	<!ELEMENT summary EMPTY>
+	<!ATTLIST summary
+	          types       CDATA #IMPLIED
+	          validated   CDATA #IMPLIED
+	          extra       CDATA #IMPLIED>
 
 ]>

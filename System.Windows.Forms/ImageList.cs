@@ -256,11 +256,13 @@ public sealed class ImageList
 		private int AddImage(Image image)
 		{
 			PixelFormat format = FormatFromDepth(owner.ColorDepth);
+			Image newImage;
 			// Create the image we will write to.
-			Image newImage = new Bitmap(owner.ImageSize.Width, owner.ImageSize.Height, format);
-			// Write the old image to the new image.
-			using (Graphics g = Graphics.FromImage(newImage))
-				g.DrawImage(image, 0, 0, newImage.Width, newImage.Height);
+			using (Image tempNewImage = image.Reformat(format))
+			{
+				Size size = owner.imageSize;
+				newImage = tempNewImage.Resize(size.Width, size.Height);
+			}
 			return images.Add(newImage);
 		}
 

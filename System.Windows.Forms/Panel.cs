@@ -2,9 +2,8 @@
  * Panel.cs - Implementation of "System.Windows.Forms.Panel" class
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  * 
- * Contributed by Gopal.V 
- *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -25,26 +24,26 @@ using System.Drawing;
 
 namespace System.Windows.Forms
 {
-	[TODO]
 	public class Panel: ScrollableControl
 	{
 		BorderStyle border=BorderStyle.None;
 
-		[TODO]
-		public Panel()
+		public Panel() : base()
 		{
+			TabStop = false;
+			SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.Selectable, false);
+			SetStyle(ControlStyles.SupportsTransparentBackColor, true);
 		}
 
-		[TODO]
 		public BorderStyle BorderStyle 
 		{
  			get
 			{
-				return border;
+				return BorderStyleInternal;
 			}
  			set
 			{
-				border=value;
+				BorderStyleInternal = value;
 			}
  		}
 
@@ -52,9 +51,15 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return new Size(200,150);
+				return new Size(200,100);
 			}
 
  		}
+
+		public override string ToString()
+		{
+			return base.ToString() + ", BorderStyle: "+ BorderStyleInternal.ToString();
+		}
+
 	}
 }//namespace

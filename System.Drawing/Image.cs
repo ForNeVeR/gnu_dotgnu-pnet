@@ -495,9 +495,22 @@ public abstract class Image
 					(dgImage.PixelFormat);
 			}
 
+	// This is an internal member and should not be used.
+	// Returns a bitmap which is the reformatted (to newFormat) of the image.
 	public Image Reformat(System.Drawing.Imaging.PixelFormat newFormat)
 			{
 				return new Bitmap(dgImage.Reformat((DotGNU.Images.PixelFormat)newFormat));
+			}
+
+	// This is an internal member and should not be used.
+	// Returns a bitmap which is the resized (to newWidth and newHeight) of the first frame.
+	public Image Resize(int newWidth, int newHeight)
+			{
+				Frame frame = dgImage.GetFrame(0);
+				Frame newFrame = frame.AdjustImage(0, 0, width, 0, 0, height, 0, 0, newWidth, 0, 0, newHeight);
+				DotGNU.Images.Image newImage = new DotGNU.Images.Image(newWidth, newHeight, newFrame.PixelFormat);
+				newImage.AddFrame(newFrame);
+				return new Bitmap(newImage);
 			}
 
 }; // class Image

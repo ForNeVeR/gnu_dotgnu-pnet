@@ -83,6 +83,8 @@ public class Control : IWin32Window, IDisposable
 	// The thread that was used to create the control.
 	private Thread createThread;
 	private Cursor cursor;
+	private bool notifyClick = false;
+	private bool notifyDoubleClick = false;
 
 	// Constructors.
 	public Control()
@@ -165,13 +167,12 @@ public class Control : IWin32Window, IDisposable
 					
 				if(parent != null)
 				{
-					// Use the parent's toolkit to create.
-					if (Parent is Form)
-						return parent.Toolkit.CreateChildWindow
-							(parent, x, y, width, height, this);
-					else
+					// Offset the co-ordinates to the client origin.
+					// the toolkit co-ordinates must be relative to the draw origin.
+					x += Parent.ClientOrigin.X - Parent.ToolkitDrawOrigin.X;
+					y += Parent.ClientOrigin.Y - Parent.ToolkitDrawOrigin.Y; 
 					return parent.Toolkit.CreateChildWindow
-						(parent, x + Parent.ClientOrigin.X, y +  Parent.ClientOrigin.Y, width, height, this);
+							(parent, x, y, width, height, this);
 				}
 				else
 				{
@@ -990,6 +991,9 @@ public class Control : IWin32Window, IDisposable
 					{
 						OnBindingContextChanged(EventArgs.Empty);
 					}
+
+					// Initialize layout for calculating the anchor.
+					InitLayout();
 				}
 			}
 #if !ECMA_COMPAT
@@ -1392,6 +1396,10 @@ public class Control : IWin32Window, IDisposable
 					control = control.parent;
 				}
 				control.CreateControlInner();
+				// If one of the parents of this control is not visible then the control
+				// will not be created. We must ensure that the control is created, even if
+				// its parent isnt.
+				CreateHandle();
 			}
 	private void CreateControlInner()
 			{
@@ -1455,6 +1463,8 @@ public class Control : IWin32Window, IDisposable
 				if(parent != null)
 				{
 					toolkitWindow = CreateToolkitWindow(parent.toolkitWindow);
+					// Initialize layout for calculating the anchor.
+					InitLayout();
 				}
 				else
 				{
@@ -2588,23 +2598,29 @@ public class Control : IWin32Window, IDisposable
 				// Move and resize the toolkit version of the control.
 				if(toolkitWindow != null && modified)
 				{
-					// Convert from outside to toolkit coordinates
-					int xT = x + ToolkitDrawOrigin.X;
-					int yT = y + ToolkitDrawOrigin.Y;
-					int widthT = width - ToolkitDrawSize.Width;
-					int heightT = height - ToolkitDrawSize.Height;
-					if (Parent != null)
-					{
-						xT += Parent.ClientOrigin.X - Parent.ToolkitDrawOrigin.X;
-						yT += Parent.ClientOrigin.Y - Parent.ToolkitDrawOrigin.Y;
-					}
-					// Controls are located in the client area
-					toolkitWindow.MoveResize( xT, yT, widthT, heightT);
+					SetBoundsToolkit(x, y, width, height);
 				}
 
 				// Update the bounds and emit the necessary events.
 				UpdateBounds(x, y, width, height);
 
+			}
+
+	// Adjust the actual position of the control depending on windows decorations (Draw Origin) or non client areas (client origin) like menus.
+	private void SetBoundsToolkit(int x, int y, int width, int height)
+			{
+				// Convert from outside to toolkit coordinates
+				int xT = x + ToolkitDrawOrigin.X;
+				int yT = y + ToolkitDrawOrigin.Y;
+				int widthT = width - ToolkitDrawSize.Width;
+				int heightT = height - ToolkitDrawSize.Height;
+				if (Parent != null)
+				{
+					xT += Parent.ClientOrigin.X - Parent.ToolkitDrawOrigin.X;
+					yT += Parent.ClientOrigin.Y - Parent.ToolkitDrawOrigin.Y;
+				}
+				// Controls are located in the client area
+				toolkitWindow.MoveResize( xT, yT, widthT, heightT);
 			}
 
 	// Inner core of setting the client size.
@@ -3888,10 +3904,6 @@ public class Control : IWin32Window, IDisposable
 				{
 					handler(this, e);
 				}
-				if (e.Button == MouseButtons.Right && contextMenu != null)
-				{
-					contextMenu.Show(this, new Point(e.X, e.Y));
-				}
 			}
 	internal void OnMouseDownInternal(MouseEventArgs e)
 			{
@@ -4614,7 +4626,7 @@ public class Control : IWin32Window, IDisposable
 					owner.SuspendLayout();
 					try
 					{
-						for(int posn = controls.Length - 1; posn >= 0; posn--)
+						for(int posn = 0; posn < controls.Length; posn++)
 						{
 							Add(controls[posn]);
 						}
@@ -4842,12 +4854,26 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 				if (canFocus)
+				{
 					Focus();
+				}
 				if (Enabled)
+				{
 					OnMouseDown(new MouseEventArgs
 						((MouseButtons)buttons, clicks, x, y, delta));
-				if (GetStyle(ControlStyles.StandardDoubleClick) && clicks == 2)
-					OnDoubleClick(EventArgs.Empty);
+				}
+				// We fire the OnDoubleClick and OnClick events when the mouse button is up/
+				if (GetStyle(ControlStyles.StandardClick))
+				{
+					if (clicks == 2 && GetStyle(ControlStyles.StandardDoubleClick))
+					{
+						notifyDoubleClick = true;
+					}
+					else
+					{
+						notifyClick = true;
+					}
+				}
 			}
 
 	// Toolkit event that is emitted for a mouse up event.
@@ -4859,10 +4885,24 @@ public class Control : IWin32Window, IDisposable
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
 				mouseButtons = (MouseButtons)buttons;
-					
 				currentModifiers = (Keys)modifiers;
+				if (notifyDoubleClick)
+				{
+					OnDoubleClick(EventArgs.Empty);
+					notifyDoubleClick = false;
+				}
+				else if (notifyClick)
+				{
+					OnClick(EventArgs.Empty);
+					notifyClick = false;
+				}
 				OnMouseUp(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
+				// See if we need to display the context menu.
+				if (mouseButtons == MouseButtons.Right && contextMenu != null)
+				{
+					contextMenu.Show(this, new Point(x, y));
+				}
 			}
 
 	// Toolkit event that is emitted for a mouse hover event.
@@ -4913,8 +4953,15 @@ public class Control : IWin32Window, IDisposable
 				// Convert to outside top left
 				x -= ToolkitDrawOrigin.X;
 				y -= ToolkitDrawOrigin.Y;
+				if (parent != null)
+				{
+					x -= parent.ClientOrigin.X - parent.ToolkitDrawOrigin.X;
+					y -= parent.ClientOrigin.Y - parent.ToolkitDrawOrigin.Y;
+				}
 				if(x != left || y != top)
+				{
 					Location = new Point(x , y);
+				}
 			}
 
 	// Toolkit event that is emitted when the window is resized by

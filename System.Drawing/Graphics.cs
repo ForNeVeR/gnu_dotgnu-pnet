@@ -524,9 +524,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Clear the entire drawing surface.
 	public void Clear(Color color)
 			{
-				lock(this)
+				using (Brush brush = new SolidBrush(color))
 				{
-					ToolkitGraphics.Clear(color);
+					FillRectangle(brush, ClipBounds);
 				}
 			}
 

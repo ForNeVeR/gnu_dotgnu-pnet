@@ -1,3 +1,14 @@
+2004-01-05  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Windows.Forms/Control.cs, System.Windows.Forms/Panel.cs,
+	System.Windows.Forms/ImageList.cs, System.Drawing/Graphics.cs,
+	System.Drawing.Image: finish off panel control. Add support for
+	Control.OnClick and OnDoubleClick. Fix toolkit offsets - fixes a
+	number of bugs. InitLayout added in a few places to fix anchoring
+	bugs. AddRange in a different order. Context Menu on mouse up. Add
+	resize to Image and fix ImageList to use GNUImages rather than the
+	old portable but inflexible way. Implement Graphics.Clear.
+
 2004-01-04  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.SSL/GNUTLS.cs,

@@ -1,3 +1,9 @@
+2003-08-27  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ScrollBar.cs: apply patch #1826,
+	"Updates to System.Windows.Forms/ScrollBar.cs", from Jeff Post, after
+	some cleanup and fixes.
+
 2003-08-26  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/ScrollBar.cs:

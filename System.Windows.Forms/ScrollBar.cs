@@ -43,8 +43,13 @@ public abstract class ScrollBar : Control
 	private int barDown = -1;
 	private bool keyDown = false;
 	private Timer timer;
+	private int delay = startDelay;
+	private int mouseX; // TODO: use Control::Cursor
+	private int mouseY; // TODO: use Control::Cursor
 	private Timer keyTimer;
 	internal bool vertical;
+
+	private const int startDelay = 3;
 
 
 
@@ -98,10 +103,12 @@ public abstract class ScrollBar : Control
 			if (value)
 			{
 				timer.Tick += new EventHandler(Decrement);
+				delay = startDelay;
 				timer.Start();
 			}
 			else
 			{
+				delay = 0;
 				timer.Stop();
 				timer.Tick -= new EventHandler(Decrement);
 			}
@@ -146,10 +153,12 @@ public abstract class ScrollBar : Control
 			if (value)
 			{
 				timer.Tick += new EventHandler(Increment);
+				delay = startDelay;
 				timer.Start();
 			}
 			else
 			{
+				delay = 0;
 				timer.Stop();
 				timer.Tick -= new EventHandler(Increment);
 			}
@@ -241,6 +250,16 @@ public abstract class ScrollBar : Control
 	// Methods
 	private void Decrement(Object sender, EventArgs e)
 	{
+		if (delay > 0)
+		{
+			--delay;
+			if (delay > 0)
+			{
+				Redraw(false);
+				return;
+			}
+		}
+
 		int tmp = (value-smallChange);
 		tmp = tmp > minimum ?
 		      tmp : minimum;
@@ -255,10 +274,39 @@ public abstract class ScrollBar : Control
 
 	private void DecrementBig(Object sender, EventArgs e)
 	{
+		if (delay > 0)
+		{
+			--delay;
+			if (delay > 0)
+			{
+				Redraw(false);
+				return;
+			}
+		}
+
 		int tmp = (value-largeChange);
 		tmp = tmp > minimum ?
 		      tmp : minimum;
 		if (value == tmp) { return; }
+		if (trackDown)
+		{
+			if (vertical)
+			{
+				if (mouseY > bar.Y)
+				{
+					TrackPressed(false,false);
+					return;
+				}
+			}
+			else
+			{
+				if (mouseX > bar.X)
+				{
+					TrackPressed(false,false);
+					return;
+				}
+			}
+		}
 		Value = tmp;
 		OnScroll(new ScrollEventArgs(this,ScrollEventType.LargeDecrement,value));
 		SetPositionByValue();
@@ -295,15 +343,25 @@ public abstract class ScrollBar : Control
 			                                       bounds,
 			                                       ForeColor,BackColor,
 			                                       bgBrush,
-				                               vertical,Enabled,
+			                                       vertical,Enabled,
 			                                       bar, track,
 			                                       decrement,decDown,
-				                               increment,incDown);
+			                                       increment,incDown);
 		}
 	}
 
 	private void Increment(Object sender, EventArgs e)
 	{
+		if (delay > 0)
+		{
+			--delay;
+			if (delay > 0)
+			{
+				Redraw(false);
+				return;
+			}
+		}
+
 		int tmp = (value+smallChange);
 		int tmp2 = (maximum-largeChange+1);
 		tmp = tmp < tmp2 ?
@@ -319,59 +377,45 @@ public abstract class ScrollBar : Control
 
 	private void IncrementBig(Object sender, EventArgs e)
 	{
+		if (delay > 0)
+		{
+			--delay;
+			if (delay > 0)
+			{
+				Redraw(false);
+				return;
+			}
+		}
+
 		int tmp = (value+largeChange);
 		int tmp2 = (maximum-largeChange+1);
 		tmp = tmp < tmp2 ?
 		      tmp : tmp2;
 		if (value == tmp) { return; }
+		if (trackDown)
+		{
+			if (vertical)
+			{
+				if (mouseY-bar.Height < bar.Y)
+				{
+					TrackPressed(false,false);
+					return;
+				}
+			}
+			else
+			{
+				if (mouseX-bar.Width < bar.X)
+				{
+					TrackPressed(false,false);
+					return;
+				}
+			}
+			
+		}
 		Value = tmp;
 		OnScroll(new ScrollEventArgs(this,ScrollEventType.LargeIncrement,value));
 		SetPositionByValue();
 		Redraw(false);
-	}
-
-	private void ScrollKeyPressed(bool pressed, int amount)
-	{
-		if (pressed == keyDown) { return; }
-		keyDown = pressed;
-		if (pressed)
-		{
-			switch (amount)
-			{
-				case 2:
-				{
-					timer.Tick += new EventHandler(IncrementBig);
-				}
-				break;
-
-				case -2:
-				{
-					timer.Tick += new EventHandler(DecrementBig);
-				}
-				break;
-
-				case 1:
-				{
-					timer.Tick += new EventHandler(Increment);
-				}
-				break;
-
-				case -1:
-				{
-					timer.Tick += new EventHandler(Decrement);
-				}
-				break;
-			}
-			timer.Start();
-		}
-		else
-		{
-			timer.Stop();
-			timer.Tick -= new EventHandler(IncrementBig);
-			timer.Tick -= new EventHandler(DecrementBig);
-			timer.Tick -= new EventHandler(Increment);
-			timer.Tick -= new EventHandler(Decrement);
-		}
 	}
 
 	// Sets up the layout rectangles for a HScrollBar's elements
@@ -445,29 +489,81 @@ public abstract class ScrollBar : Control
 		{
 			case Keys.PageUp:
 			{
-				IncrementBig(null,null);
-				ScrollKeyPressed(true,2);
+				if (vertical)
+				{
+					DecrementBig(null,null);
+					ScrollKeyPressed(true,-2);
+				}
 			}
 			break;
 
 			case Keys.PageDown:
 			{
-				DecrementBig(null,null);
-				ScrollKeyPressed(true,-2);
+				if (vertical)
+				{
+					IncrementBig(null,null);
+					ScrollKeyPressed(true,2);
+				}
+			}
+			break;
+
+			case Keys.Home:
+			{
+				if (!vertical)
+				{
+					DecrementBig(null,null);
+					ScrollKeyPressed(true,-2);
+				}
+			}
+			break;
+
+			case Keys.End:
+			{
+				if (!vertical)
+				{
+					IncrementBig(null,null);
+					ScrollKeyPressed(true,2);
+				}
 			}
 			break;
 
 			case Keys.Up:
 			{
-				Increment(null,null);
-				ScrollKeyPressed(true,1);
+				if (vertical)
+				{
+					Decrement(null,null);
+					ScrollKeyPressed(true,-1);
+				}
 			}
 			break;
 
 			case Keys.Down:
 			{
-				Decrement(null,null);
-				ScrollKeyPressed(true,-1);
+				if (vertical)
+				{
+					Increment(null,null);
+					ScrollKeyPressed(true,1);
+				}
+			}
+			break;
+
+			case Keys.Left:
+			{
+				if (!vertical)
+				{
+					Decrement(null,null);
+					ScrollKeyPressed(true,-1);
+				}
+			}
+			break;
+
+			case Keys.Right:
+			{
+				if (!vertical)
+				{
+					Increment(null,null);
+					ScrollKeyPressed(true,1);
+				}
 			}
 			break;
 		}
@@ -477,27 +573,33 @@ public abstract class ScrollBar : Control
 	{
 		if (!keyDown) { return; }
 
+		barDown = -1;
+
 		switch (e.KeyCode)
 		{
 			case Keys.PageUp:
+			case Keys.Home:
 			{
 				ScrollKeyPressed(false,2);
 			}
 			break;
 
 			case Keys.PageDown:
+			case Keys.End:
 			{
 				ScrollKeyPressed(false,-2);
 			}
 			break;
 
 			case Keys.Up:
+			case Keys.Left:
 			{
 				ScrollKeyPressed(false,1);
 			}
 			break;
 
 			case Keys.Down:
+			case Keys.Right:
 			{
 				ScrollKeyPressed(false,-1);
 			}
@@ -509,6 +611,10 @@ public abstract class ScrollBar : Control
 	{
 		int x = e.X;
 		int y = e.Y;
+
+		mouseX = x;
+		mouseY = y;
+
 		if (increment.Contains(x,y))
 		{
 			Increment(null,null);
@@ -582,6 +688,10 @@ public abstract class ScrollBar : Control
 	{
 		int x = e.X;
 		int y = e.Y;
+
+		mouseX = x;
+		mouseY = y;
+
 		if (incDown)
 		{
 			IncrementDown = increment.Contains(x,y);
@@ -666,6 +776,9 @@ public abstract class ScrollBar : Control
 
 	protected override void OnMouseUp(MouseEventArgs e)
 	{
+		mouseX = e.X;
+		mouseY = e.Y;
+
 		bool redraw = (incDown || decDown);
 		if (incDown)
 		{
@@ -755,6 +868,52 @@ public abstract class ScrollBar : Control
 		}
 	}
 
+	private void ScrollKeyPressed(bool pressed, int amount)
+	{
+		if (pressed == keyDown) { return; }
+		keyDown = pressed;
+		if (pressed)
+		{
+			switch (amount)
+			{
+				case 2:
+				{
+					timer.Tick += new EventHandler(IncrementBig);
+				}
+				break;
+
+				case -2:
+				{
+					timer.Tick += new EventHandler(DecrementBig);
+				}
+				break;
+
+				case 1:
+				{
+					timer.Tick += new EventHandler(Increment);
+				}
+				break;
+
+				case -1:
+				{
+					timer.Tick += new EventHandler(Decrement);
+				}
+				break;
+			}
+			delay = startDelay;
+			timer.Start();
+		}
+		else
+		{
+			delay = 0;
+			timer.Stop();
+			timer.Tick -= new EventHandler(IncrementBig);
+			timer.Tick -= new EventHandler(DecrementBig);
+			timer.Tick -= new EventHandler(Increment);
+			timer.Tick -= new EventHandler(Decrement);
+		}
+	}
+
 	private void SetPositionByValue()
 	{
 		int guiMax = (1+maximum-largeChange-minimum);
@@ -836,10 +995,12 @@ public abstract class ScrollBar : Control
 			{
 				timer.Tick += new EventHandler(DecrementBig);
 			}
+			delay = startDelay;
 			timer.Start();
 		}
 		else
 		{
+			delay = 0;
 			timer.Stop();
 			timer.Tick -= new EventHandler(IncrementBig);
 			timer.Tick -= new EventHandler(DecrementBig);

@@ -22,22 +22,41 @@ namespace System.Xml
 {
 
 using System;
+using System.IO;
 using System.Net;
 
 public abstract class XmlResolver
 {
+	// Schemes supported by the Uri class.
+	private static readonly String[] schemes = new String[]
+	{
+		"file://",
+		"ftp://",
+		"gopher://",
+		"http://",
+		"https://",
+		"mailto://",
+		"news://",
+		"nntp://"
+	};
+
 
 	// Constructor.
 	protected XmlResolver() {}
 
+
+	// Set the credentials to use to resolve Web requests.
+	public abstract ICredentials Credentials { set; }
+
+
 	// Map a URI to the entity it represents.
-	public abstract Object GetEntity(Uri absoluteUri, String role,
-									 Type ofObjectToReturn);
+	public abstract Object GetEntity
+				(Uri absoluteUri, String role, Type ofObjectToReturn);
 
 	// Resolve a relative URI.
 	public virtual Uri ResolveUri(Uri baseUri, String relativeUri)
 			{
-				if(baseUri == null && relativeUri == null)
+				if(baseUri == null && ((Object)relativeUri) == null)
 				{
 					throw new ArgumentNullException(S._("Xml_UnspecifiedUri"));
 				}
@@ -46,7 +65,14 @@ public abstract class XmlResolver
 				{
 					if(baseUri == null)
 					{
-						return new Uri(relativeUri);
+						for(int i = 0; i < schemes.Length; ++i)
+						{
+							if(relativeUri.StartsWith(schemes[i]))
+							{
+								return new Uri(relativeUri);
+							}
+						}
+						return new Uri(Path.GetFullPath(relativeUri));
 					}
 					else if(relativeUri == null)
 					{
@@ -62,9 +88,6 @@ public abstract class XmlResolver
 					return null;
 				}
 			}
-
-	// Set the credentials to use to resolve Web requests.
-	public abstract ICredentials Credentials { set; }
 
 }; // class XmlResolver
 

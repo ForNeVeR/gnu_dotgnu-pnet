@@ -32,11 +32,20 @@ public class XmlUrlResolver : XmlResolver
 	// Internal state.
 	private ICredentials credentials;
 
+
 	// Constructor.
 	public XmlUrlResolver()
 			{
 				credentials = null;
 			}
+
+
+	// Set the credentials to use to resolve Web requests.
+	public override ICredentials Credentials
+			{
+				set { credentials = value; }
+			}
+
 
 	// Map a URI to the entity it represents.
 	[TODO]
@@ -49,7 +58,7 @@ public class XmlUrlResolver : XmlResolver
 					throw new ArgumentNullException("absoluteUri");
 				}
 				else if(ofObjectToReturn != null &&
-						ofObjectToReturn != typeof(Stream))
+				        ofObjectToReturn != typeof(Stream))
 				{
 					throw new XmlException(S._("Xml_MustBeStream"));
 				}
@@ -60,66 +69,21 @@ public class XmlUrlResolver : XmlResolver
 					return null;
 				}
 
-				if(absoluteUri.IsFile == false) {
+				if(absoluteUri.IsFile == false)
+				{
 					WebClient client = new WebClient();
 					client.Credentials = credentials;
 					return client.OpenRead(absoluteUri.ToString());
 				}
-				else if(absoluteUri.IsFile == true ||
-					absoluteUri.IsUnc == true) {
-					return new FileStream(absoluteUri.LocalPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+				else if(absoluteUri.IsFile == true || absoluteUri.IsUnc == true)
+				{
+					return new FileStream
+						(absoluteUri.LocalPath, FileMode.Open, FileAccess.Read,
+						 FileShare.Read);
 				}
 				return null;
 			}
 
-	// Resolve a relative URI.
-	public override Uri ResolveUri(Uri baseUri, String relativeUri)
-			{
-				try
-				{
-					if(baseUri == null && relativeUri == null)
-					{
-						throw new XmlException(S._("Xml_UnspecifiedUri"));
-					}
-					else if(baseUri == null)
-					{
-						// bug #11326 - Expand the relative Uri to a absolute
-						// Uri before calling the ctor.  As we have no base
-						// Uri to work with, I belive it's safe to assume
-						// we're looking for a file on the local filesystem.
-						//  - "ptah"
-						return new Uri(Path.Combine(
-							Directory.GetCurrentDirectory(),
-							relativeUri
-						));
-					}
-					else if(relativeUri == null)
-					{
-						return null;
-					}
-					else
-					{
-						return new Uri(baseUri, relativeUri);
-					}
-				}
-				catch(ArgumentNullException)
-				{
-					return null;
-				}
-				catch(UriFormatException)
-				{
-					return null;
-				}
-			}
-
-	// Set the credentials to use to resolve Web requests.
-	public override ICredentials Credentials
-			{
-				set
-				{
-					credentials = value;
-				}
-			}
 }; // class XmlUrlResolver
 
 }; // namespace System.Xml

@@ -30,6 +30,7 @@ public class XmlTextWriter : XmlWriter
 {
 	// Internal state.
 	private bool                namespaces;
+	private bool                needPrefixDecl;
 	private int                 indentation;
 	private int                 indentLevel;
 	private char                indentChar;
@@ -86,6 +87,7 @@ public class XmlTextWriter : XmlWriter
 	private void Initialize()
 			{
 				namespaces = true;
+				needPrefixDecl = false;
 				indentation = 2;
 				indentLevel = 0;
 				indentChar = ' ';
@@ -272,6 +274,14 @@ public class XmlTextWriter : XmlWriter
 						// Add the mapping to the namespace manager.
 						namespaceManager.AddNamespace(nsPrefix, value);
 
+						// Check for match to required prefix declaration.
+						if(needPrefixDecl && nsPrefix == scope.prefix &&
+						   value == scope.xmlns)
+						{
+							// Flag that required prefix declaration is present.
+							needPrefixDecl = false;
+						}
+
 						// Reset the namespace prefix.
 						nsPrefix = null;
 					}
@@ -289,24 +299,45 @@ public class XmlTextWriter : XmlWriter
 			}
 
 	// Handle the start of a special attribute.
-	private void SpecialAttributeStart(bool space)
+	private void SpecialAttributeStart
+				(String prefix, String localName, Special type)
 			{
 				// Set the type of the special attribute.
-				special = (space ? Special.Space : Special.Lang);
+				special = type;
+
+				// Write the attribute prefix, if needed.
+				if(((Object)prefix) == null)
+				{
+					// Write the name.
+					writer.Write("xmlns");
+
+					// Set the local name.
+					localName = String.Empty;
+				}
+				else
+				{
+					// Write the prefixed attribute name.
+					writer.Write(prefix);
+					writer.Write(':');
+					writer.Write(localName);
+				}
+
+				// Set the namespace prefix, if needed.
+				if(special == Special.Namespace)
+				{
+					// Set the namespace prefix.
+					nsPrefix = localName;
+				}
+
+				// Output the start of the attribute value.
+				writer.Write('=');
+				writer.Write(quoteChar);
 
 				// Set the writer.
 				writer = specialWriter;
-			}
-	private void SpecialAttributeStart(String prefix)
-			{
-				// Set the namespace prefix.
-				nsPrefix = prefix;
 
-				// Set the type of the special attribute.
-				special = Special.Namespace;
-
-				// Set the writer.
-				writer = specialWriter;
+				// We are now in the attribute state.
+				writeState = System.Xml.WriteState.Attribute;
 			}
 
 	// Synchronize the output with a particular document area.
@@ -323,7 +354,10 @@ public class XmlTextWriter : XmlWriter
 					{
 						if((flags & WriteStateFlag.ContentFlag) != 0)
 						{
-							writer.Write(">");
+							// Terminate the element.
+							TerminateElement(false);
+
+							// Switch to contents.
 							writeState = System.Xml.WriteState.Content;
 						}
 						else
@@ -342,9 +376,13 @@ public class XmlTextWriter : XmlWriter
 						}
 						else if((flags & WriteStateFlag.ContentFlag) != 0)
 						{
-							// Terminate the attribute and switch to contents.
-							writer.Write(quoteChar);
-							writer.Write(">");
+							// Terminate the attribute.
+							TerminateAttribute();
+
+							// Terminate the element.
+							TerminateElement(false);
+
+							// Switch to contents.
 							writeState = System.Xml.WriteState.Content;
 						}
 						else
@@ -424,11 +462,47 @@ public class XmlTextWriter : XmlWriter
 				}
 			}
 
+	// Terminate an attribute.
+	private void TerminateAttribute()
+			{
+				// Handle the end of a special attribute, if needed.
+				if(special != Special.None) { SpecialAttributeEnd(); }
+
+				// Terminate the attribute.
+				writer.Write(quoteChar);
+			}
+
+	// Terminate a start element.
+	private void TerminateElement(bool empty)
+			{
+				// Write the prefix declaration, if needed.
+				if(needPrefixDecl)
+				{
+					writer.Write("xmlns:");
+					writer.Write(scope.prefix);
+					writer.Write('=');
+					writer.Write(quoteChar);
+					WriteQuotedString(scope.xmlns);
+					writer.Write(quoteChar);
+				}
+
+				// Terminate the element.
+				if(empty)
+				{
+					// Terminate the empty element.
+					writer.Write(" />");
+				}
+				else
+				{
+					// Terminate the start element.
+					writer.Write('>');
+				}
+			}
 
 	private void WriteRawData(String value)
-	{
-		writer.Write(value);
-	}
+			{
+				writer.Write(value);
+			}
 
 	// Write an xml declaration.
 	private void WriteXmlDeclaration(String text)
@@ -887,11 +961,8 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidWriteState"));
 				}
 
-				// Handle the end of a special attribute, if needed.
-				if(special != Special.None) { SpecialAttributeEnd(); }
-
 				// Terminate the attribute and return to the element state.
-				writer.Write(quoteChar);
+				TerminateAttribute();
 				writeState = System.Xml.WriteState.Element;
 			}
 
@@ -938,8 +1009,8 @@ public class XmlTextWriter : XmlWriter
 				// We must be in the Element or Content state.
 				if(writeState == System.Xml.WriteState.Element)
 				{
-					// Terminate the element with " />".
-					writer.Write(" />");
+					// Terminate the empty element.
+					TerminateElement(true);
 				}
 				else if(writeState == System.Xml.WriteState.Content)
 				{
@@ -988,7 +1059,7 @@ public class XmlTextWriter : XmlWriter
 				if(writeState == System.Xml.WriteState.Element)
 				{
 					// Terminate the start element.
-					writer.Write('>');
+					TerminateElement(false);
 				}
 				if(writeState == System.Xml.WriteState.Element ||
 				   writeState == System.Xml.WriteState.Content)
@@ -1254,11 +1325,8 @@ public class XmlTextWriter : XmlWriter
 				// Check the state and output delimiters.
 				if(writeState == System.Xml.WriteState.Attribute)
 				{
-					// Handle the end of a special attribute, if needed.
-					if(special != Special.None) { SpecialAttributeEnd(); }
-
-					// Write the closing quote character for the attribute.
-					writer.Write(quoteChar);
+					// Terminate the attribute.
+					TerminateAttribute();
 
 					// Write a space before the start of the attribute.
 					writer.Write(' ');
@@ -1300,7 +1368,11 @@ public class XmlTextWriter : XmlWriter
 						}
 
 						// Handle the start of the special attribute.
-						SpecialAttributeStart(localName);
+						SpecialAttributeStart
+							(prefix, localName, Special.Namespace);
+
+						// We're done here.
+						return;
 					}
 					else if(prefixLen == 3 && prefix == "xml")
 					{
@@ -1320,12 +1392,20 @@ public class XmlTextWriter : XmlWriter
 						if(nameLen == 4 && localName == "lang")
 						{
 							// Handle the start of the special attribute.
-							SpecialAttributeStart(false);
+							SpecialAttributeStart
+								(prefix, localName, Special.Lang);
+
+							// We're done here.
+							return;
 						}
 						else if(nameLen == 5 && localName == "space")
 						{
 							// Handle the start of the special attribute.
-							SpecialAttributeStart(true);
+							SpecialAttributeStart
+								(prefix, localName, Special.Space);
+
+							// We're done here.
+							return;
 						}
 					}
 					else if(nsLen != 0)
@@ -1377,7 +1457,10 @@ public class XmlTextWriter : XmlWriter
 						}
 
 						// Handle the start of the special attribute.
-						SpecialAttributeStart(String.Empty);
+						SpecialAttributeStart(null, null, Special.Namespace);
+
+						// We're done here.
+						return;
 					}
 					else if(nsLen == 29 &&
 					        ns == "http://www.w3.org/2000/xmlns/")
@@ -1522,12 +1605,7 @@ public class XmlTextWriter : XmlWriter
 						writer.Write(':');
 						writer.Write(localName);
 						writer.Write(' ');
-						writer.Write("xmlns:");
-						writer.Write(prefix);
-						writer.Write('=');
-						writer.Write(quoteChar);
-						WriteQuotedString(ns);
-						writer.Write(quoteChar);
+						needPrefixDecl = true;
 						scopeShown = true;
 					}
 				}

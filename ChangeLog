@@ -1,3 +1,11 @@
+2004-12-24  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/XmlResolver.cs, System.Xml/XmlUrlResolver.cs: remove uri
+	resolution override from XmlUrlResolver and fix XmlResolver
+	resolution for signature and behavior compatibility.
+
+	* System.Xml/XmlTextWriter.cs: fix a duplicate prefix writing bug
+	(bug #10719).
 
 2004-12-22  Gopal V  <gopalv82@yahoo.com>
 
@@ -50,6 +58,7 @@
 	Implement SystemIcons.
 
 2004-12-16  Deryk Robosson  <deryk@0x0a.com>
+
 	* System.Windows.Forms/NotifyIcon.cs: Add stub.
 
 2004-12-16  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>

@@ -1744,6 +1744,9 @@ void ILAsmOutFinalizeMethod(ILMethod *method)
 					header[21] = (unsigned char)(temp >> 8);
 					header[22] = (unsigned char)(temp >> 16);
 					header[23] = (unsigned char)(temp >> 24);
+					ILWriterSetFixup(ILAsmWriter,
+						ILWriterGetTextRVA(ILAsmWriter) + 20,
+						ILToProgramItem(exception->classToCatch));
 				}
 				else
 				{
@@ -1790,6 +1793,9 @@ void ILAsmOutFinalizeMethod(ILMethod *method)
 					header[9]  = (unsigned char)(temp >> 8);
 					header[10] = (unsigned char)(temp >> 16);
 					header[11] = (unsigned char)(temp >> 24);
+					ILWriterSetFixup(ILAsmWriter,
+						ILWriterGetTextRVA(ILAsmWriter) + 8,
+						ILToProgramItem(exception->classToCatch));
 				}
 				else
 				{

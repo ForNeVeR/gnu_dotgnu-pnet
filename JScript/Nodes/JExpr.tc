@@ -49,7 +49,7 @@ Eval(JArrayLiteral)
 	int index = 0;
 	while(elem != null)
 	{
-		value[index] = elem.expr.Eval(engine);
+		value[index++] = elem.expr.Eval(engine);
 		elem = elem.next;
 	}
 
@@ -468,7 +468,7 @@ Eval(JAdd)
 										DefaultValueHint.None);
 	if(value1 is String || value2 is String)
 	{
-		return ((String)value1) + ((String)value2);
+		return value1.ToString() + value2.ToString();
 	}
 	else
 	{

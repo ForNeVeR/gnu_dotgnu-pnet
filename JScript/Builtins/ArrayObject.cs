@@ -151,7 +151,30 @@ public class ArrayObject : JSObject
 	// Put a property to this object by numeric index.
 	internal override void PutIndex(int index, Object value)
 			{
-				// TODO
+				if (index < 0)
+				{
+					throw new ArgumentException();
+				}
+				uint newlen = (uint)(index + 1);
+				if (array == null)
+				{
+					array = new Object[newlen];
+				}
+				if (newlen > arrayLen)
+				{
+					arrayLen = newlen;
+				}
+				if (array.Length <= index)
+				{
+					Object[] a2 = new Object[newlen];
+					array.CopyTo(a2, 0);
+					array = a2;
+					array.SetValue(value, index);
+				}
+				else
+				{
+					array.SetValue(value, index);
+				}
 			}
 
 	// Determine if this object has a specific property.

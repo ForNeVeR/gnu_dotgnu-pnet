@@ -381,36 +381,29 @@ void ILScopeImport(ILScope *scope, ILImage *image)
 	}
 }
 
-int ILScopeUsing(ILScope *scope, const char *identifier, const char *alias)
+int ILScopeUsing(ILScope *scope, const char *identifier)
 {
 	ILScope *namespaceScope = FindNamespaceScope(scope, identifier);
+	ILScopeUsingInfo *using;
 	if(!namespaceScope)
 	{
 		return 0;
 	}
-	if(alias)
+	/* Add the "using" declaration to the scope as an attribute.
+	   We allocate from the data pool, because it isn't worth
+	   creating a special pool just for "using" declarations */
+	using = ILMemPoolAlloc(&(scope->info->scopeDataPool), ILScopeUsingInfo);
+	if(!using)
 	{
-		/* Create a sub-scope that links across to the "using" namespace */
-		AddToScope(scope, alias, IL_SCOPE_SUBSCOPE, 0, namespaceScope, 0);
+		ILGenOutOfMemory(scope->info);
 	}
-	else
-	{
-		/* Add the "using" declaration to the scope as an attribute.
-		   We allocate from the data pool, because it isn't worth
-		   creating a special pool just for "using" declarations */
-		ILScopeUsingInfo *using;
-		using = ILMemPoolAlloc(&(scope->info->scopeDataPool), ILScopeUsingInfo);
-		if(!using)
-		{
-			ILGenOutOfMemory(scope->info);
-		}
-		using->refScope = namespaceScope;
-		using->next = scope->using;
-		scope->using = using;
+	using->refScope = namespaceScope;
+	using->next = scope->using;
+	scope->using = using;
+	
+	/* Change the lookup function to one which handles "using" clauses */
+	scope->lookup = UsingScope_Lookup;
 
-		/* Change the lookup function to one which handles "using" clauses */
-		scope->lookup = UsingScope_Lookup;
-	}
 	return 1;
 }
 

@@ -155,6 +155,7 @@
 	char *name;
 	ILNode_Namespace *enclosing;
 	%nocreate ILNode_UsingNamespace *using = {0};
+	%nocreate ILScope *localScope={0};
 }
 %node ILNode_UsingAlias ILNode_DummySem =
 {

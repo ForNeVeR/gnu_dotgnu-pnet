@@ -77,7 +77,7 @@ void ILScopeImport(ILScope *scope, ILImage *image);
  * if there is something already declared at the identifier which
  * is not a namespace.
  */
-int ILScopeUsing(ILScope *scope, const char *identifier, const char *alias);
+int ILScopeUsing(ILScope *scope, const char *identifier);
 
 /*
  * Clear the "using" declarations from a specific scope.

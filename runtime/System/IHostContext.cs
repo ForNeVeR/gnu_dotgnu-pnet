@@ -21,9 +21,8 @@
 namespace System
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
-// Framework 1.2
 public interface IHostContext
 {
 	// Determine if the launching code can assume trust in the application.
@@ -43,6 +42,6 @@ public interface IHostContext
 
 }; // interface IHostContext
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System

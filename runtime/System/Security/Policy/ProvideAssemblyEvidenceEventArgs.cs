@@ -22,11 +22,10 @@
 namespace System.Security.Policy
 {
 
-#if CONFIG_POLICY_OBJECTS
+#if CONFIG_POLICY_OBJECTS && CONFIG_FRAMEWORK_1_2
 
 using System.Reflection;
 
-// Framework 1.2
 public class ProvideAssemblyEvidenceEventArgs : EventArgs
 {
 	// Internal state.
@@ -58,6 +57,6 @@ public class ProvideAssemblyEvidenceEventArgs : EventArgs
 
 }; // class ProvideAssemblyEvidenceEventArgs
 
-#endif // CONFIG_POLICY_OBJECTS
+#endif // CONFIG_POLICY_OBJECTS && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Security.Policy

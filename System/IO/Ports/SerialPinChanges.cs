@@ -24,7 +24,6 @@ namespace System.IO.Ports
 
 #if CONFIG_SERIAL_PORTS
 
-// Framework 1.2
 public enum SerialPinChanges
 {
 	CtsChanged		= 0,

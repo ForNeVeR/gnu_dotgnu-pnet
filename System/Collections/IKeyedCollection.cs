@@ -22,9 +22,8 @@
 namespace System.Collections
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
-// Framework 1.2
 public interface IKeyedCollection
 {
 	// Add an item to this keyed collection.
@@ -52,6 +51,6 @@ public interface IKeyedCollection
 
 }; // interface IKeyedCollection
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Collections

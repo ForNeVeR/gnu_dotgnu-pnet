@@ -22,11 +22,10 @@
 namespace System.Collections
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 using System.Globalization;
 
-// Framework 1.2
 public sealed class KeyComparer : IKeyComparer
 {
 	// Internal state.
@@ -191,6 +190,6 @@ public sealed class KeyComparer : IKeyComparer
 
 }; // class KeyComparer
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Collections

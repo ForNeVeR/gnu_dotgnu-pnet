@@ -16,6 +16,36 @@
 	version information configurable from the profile (needs a new
 	version of csant).
 
+	* System/Collections/IKeyedCollection.cs,
+	System/Collections/KeyedCollection.cs,
+	System/Collections/KeyedCollectionBase.cs,
+	System/Collections/KeyedCollectionNotificationDetails.cs,
+	System/Collections/Specialized/IOrderedDictionary.cs,
+	System/IO/Ports/Handshake.cs,
+	System/IO/Ports/Parity.cs,
+	System/IO/Ports/SerialErrorEventArgs.cs,
+	System/IO/Ports/SerialErrorEventHandler.cs,
+	System/IO/Ports/SerialErrors.cs,
+	System/IO/Ports/SerialPinChangedEventArgs.cs,
+	System/IO/Ports/SerialPinChangedEventHandler.cs,
+	System/IO/Ports/SerialPinChanges.cs,
+	System/IO/Ports/SerialPort.cs,
+	System/IO/Ports/SerialReceived.cs,
+	System/IO/Ports/SerialReceivedEventArgs.cs,
+	System/IO/Ports/SerialReceivedEventHandler.cs,
+	System/IO/Ports/StopBits.cs,
+	runtime/System/ApplicationId.cs,
+	runtime/System/IApplicationDescription.cs,
+	runtime/System/IHostContext.cs,
+	runtime/System/ProvideAssemblyEvidenceEventHandler.cs,
+	runtime/System/StringComparison.cs,
+	runtime/System/__ComObject.cs,
+	runtime/System/Collections/ComparisonType.cs,
+	runtime/System/Collections/IKeyComparer.cs,
+	runtime/System/Collections/KeyComparer.cs,
+	runtime/System/Security/Policy/ProvideAssemblyEvidenceEventArgs.cs:
+	mark up 1.2 features properly in the code.
+
 2003-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, DotGNU.Terminal/.cvsignore,

@@ -28,7 +28,6 @@ using System.Security;
 using System.Text;
 using Platform;
 
-// Framework 1.2
 public class SerialPort
 #if CONFIG_COMPONENT_MODEL
 	: Component

@@ -21,11 +21,10 @@
 namespace System
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 using System.Text;
 
-// Framework 1.2
 public sealed class ApplicationId
 {
 	// Internal state.
@@ -183,6 +182,6 @@ public sealed class ApplicationId
 
 }; // class ApplicationId
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System

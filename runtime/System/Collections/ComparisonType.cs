@@ -22,9 +22,8 @@
 namespace System.Collections
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
-// Framework 1.2
 public enum ComparisonType
 {
 	CurrentCulture				= 0,
@@ -35,6 +34,6 @@ public enum ComparisonType
 
 }; // enum ComparisonType
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Collections

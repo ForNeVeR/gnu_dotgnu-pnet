@@ -22,9 +22,8 @@
 namespace System.Collections
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
-// Framework 1.2
 public abstract class KeyedCollectionBase
 	: ICollection, IEnumerable, IKeyedCollection, IList
 {
@@ -469,6 +468,6 @@ public abstract class KeyedCollectionBase
 
 }; // class KeyedCollectionBase
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Collections

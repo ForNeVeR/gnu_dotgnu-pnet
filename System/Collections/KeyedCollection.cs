@@ -21,9 +21,8 @@
 namespace System.Collections
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
-// Framework 1.2
 public class KeyedCollection : KeyedCollectionBase, ICloneable
 {
 	// Constructors.
@@ -186,6 +185,6 @@ public class KeyedCollection : KeyedCollectionBase, ICloneable
 
 }; // class KeyedCollection
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Collections

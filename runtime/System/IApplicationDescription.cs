@@ -22,9 +22,8 @@
 namespace System
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
-// Framework 1.2
 public interface IApplicationDescription
 {
 	// Get the URL that identifies the application code base.
@@ -47,6 +46,6 @@ public interface IApplicationDescription
 
 }; // interface IApplicationDescription
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System

@@ -22,9 +22,8 @@
 namespace System.Collections.Specialized
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
-// Framework 1.2
 public interface IOrderedDictionary
 {
 	int Insert(int index, Object key, Object value);
@@ -33,6 +32,6 @@ public interface IOrderedDictionary
 
 }; // interface IOrderedDictionary
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Collections.Specialized

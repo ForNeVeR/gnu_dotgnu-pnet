@@ -22,14 +22,13 @@
 namespace System
 {
 
-#if CONFIG_POLICY_OBJECTS
+#if CONFIG_POLICY_OBJECTS && CONFIG_FRAMEWORK_1_2
 
 using System.Security.Policy;
 
-// Framework 1.2
 public delegate void ProvideAssemblyEvidenceEventHandler
 		(Object sender, ProvideAssemblyEvidenceEventArgs e);
 
-#endif // CONFIG_POLICY_OBJECTS
+#endif // CONFIG_POLICY_OBJECTS && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System

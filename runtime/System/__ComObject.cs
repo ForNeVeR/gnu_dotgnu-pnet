@@ -21,9 +21,8 @@
 namespace System
 {
 
-#if CONFIG_COM_INTEROP
+#if CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2
 
-// Framework 1.2
 public class __ComObject : MarshalByRefObject
 {
 	// Constructor.
@@ -31,6 +30,6 @@ public class __ComObject : MarshalByRefObject
 
 }; // class __ComObject
 
-#endif // CONFIG_COM_INTEROP
+#endif // CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System

@@ -24,7 +24,6 @@ namespace System.IO.Ports
 
 #if CONFIG_SERIAL_PORTS
 
-// Framework 1.2
 public class SerialErrorEventArgs : EventArgs
 {
 	// Internal state.

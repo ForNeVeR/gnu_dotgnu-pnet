@@ -21,9 +21,8 @@
 namespace System
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
-// Framework 1.2
 public enum StringComparison
 {
 	CurrentCulture				= 0,
@@ -35,6 +34,6 @@ public enum StringComparison
 
 }; // enum StringComparison
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System

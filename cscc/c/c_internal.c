@@ -192,7 +192,7 @@ void CGenSizeOf(ILGenInfo *info, ILType *type)
 			/* We need to use a special value type to measure
 			   native floats, because the CLS doesn't have an
 			   appropriate type that we can measure directly */
-			type = ILFindNonSystemType(info, "NativeFloat", "OpenSystem.C");
+			type = ILFindNonSystemType(info, "LongDouble", "OpenSystem.C");
 			ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
 							ILTypeToClass(info, type));
 		}

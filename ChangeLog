@@ -26,6 +26,9 @@
 	cscc/c/c_types.c, cscc/c/c_types.h: add support for wide character
 	and wide string constants.
 
+	* cscc/c/c_internal.c (CGenSizeOf): the boxed form of "long double"
+	is "OpenSystem.C.LongDouble", not "OpenSystem.C.NativeFloat".
+
 2003-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c, cscc/csharp/cs_internal.h,

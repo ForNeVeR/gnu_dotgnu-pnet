@@ -27,6 +27,8 @@
 	include/il_coder.h: begin implementing support for indirect
 	method calls.
 
+	* engine/Makefile.am: add ilrun.1 to the build process.
+
 2002-05-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/locale.c: #ifdef for CODESET because it isn't defined

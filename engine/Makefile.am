@@ -1,5 +1,6 @@
 bin_PROGRAMS = ilrun ilverify
 lib_LIBRARIES = libILEngine.a
+man_MANS = ilrun.1
 
 libILEngine_a_SOURCES = cvm.c \
 						box.c \

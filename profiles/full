@@ -20,6 +20,9 @@
 <!-- Include .NET Framework 1.2 features -->
 <define name="CONFIG_FRAMEWORK_1_2" value="true"/>
 
+<!-- Include .NET Framework 2.0 features -->
+<define name="CONFIG_FRAMEWORK_2_0" value="true"/>
+
 <!-- Use reflection facilities -->
 <define name="CONFIG_REFLECTION" value="true"/>
 

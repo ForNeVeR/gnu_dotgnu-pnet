@@ -4,6 +4,14 @@
 	* Basic/Interaction.cs, Basic/S.cs, resources/en_US/Basic/Basic.txt:
 	implement the VB "InputBox" function.
 
+	* System/ComponentModel/AsyncCompletedEventArgs.cs,
+	System/ComponentModel/AsyncCompletedEventHandler.cs,
+	System/ComponentModel/ProgressChangedEventArgs.cs,
+	System/ComponentModel/ProgressChangedEventHandler.cs,
+	runtime/System/ActivationContext.cs, profiles/full:
+	add the "CONFIG_FRAMEWORK_2_0" define and a small number of
+	.NET 2.0 support classes.
+
 2004-07-19  Neil Cawse  <neilcawse@geotab.com>
 
         * DotGNU.Images/BmpReformatter.cs,

@@ -1,4 +1,9 @@
 
+2003-10-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_task.c: pass environment variables from the "Process"
+	class to the child process (Unix systems).
+
 2003-10-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_stdio.c (StdRead): increment number of bytes

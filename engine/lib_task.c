@@ -570,6 +570,8 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 
 	const char *fname;
 	char **args;
+	char **newEnviron = 0;
+	int varNum = 0;
 	int stdinFds[2] = {-1, -1};
 	int stdoutFds[2] = {-1, -1};
 	int stderrFds[2] = {-1, -1};
@@ -577,6 +579,19 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	int pid;
 	ILInt32 argc;
 	const char *ansi;
+#define	FreeStringList(list,size)	\
+		do { \
+			if((list)) \
+			{ \
+				int __posn = (int)(size); \
+				while(__posn > 0) \
+				{ \
+					--__posn; \
+					ILFree((list)[__posn]); \
+				} \
+				ILFree((list)); \
+			} \
+		} while (0)
 
 	/* Convert the parameters into something that the OS can understand */
 	fname = ILStringToAnsi(_thread, filename);
@@ -597,23 +612,13 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 			(_thread, ((ILString **)ArrayToBuffer(argv))[argc]);
 		if(!ansi)
 		{
-			while(argc > 0)
-			{
-				--argc;
-				ILFree(args[argc]);
-			}
-			ILFree(args);
+			FreeStringList(args, argc);
 			return 0;
 		}
 		args[argc] = (char *)ILMalloc(strlen(ansi) + 1);
 		if(!(args[argc]))
 		{
-			while(argc > 0)
-			{
-				--argc;
-				ILFree(args[argc]);
-			}
-			ILFree(args);
+			FreeStringList(args, argc);
 			return 0;
 		}
 		strcpy(args[argc], ansi);
@@ -621,7 +626,38 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	}
 	args[argc] = 0;
 
-	/* TODO: convert the environment */
+	/* Convert the environment */
+	if(envVars)
+	{
+		newEnviron = (char **)ILCalloc(envVars->length + 1, sizeof(char *));
+		if(!newEnviron)
+		{
+			ILExecThreadThrowOutOfMemory(_thread);
+			FreeStringList(args, argc);
+			return 0;
+		}
+		while(varNum < (int)(envVars->length))
+		{
+			ansi = ILStringToAnsi
+				(_thread, ((ILString **)ArrayToBuffer(envVars))[varNum]);
+			if(!ansi)
+			{
+				FreeStringList(args, argc);
+				FreeStringList(newEnviron, varNum);
+				return 0;
+			}
+			newEnviron[varNum] = (char *)ILMalloc(strlen(ansi) + 1);
+			if(!(newEnviron[varNum]))
+			{
+				FreeStringList(args, argc);
+				FreeStringList(newEnviron, varNum);
+				return 0;
+			}
+			strcpy(newEnviron[varNum], ansi);
+			++varNum;
+		}
+		newEnviron[varNum] = 0;
+	}
 
 	/* Redirect stdin, stdout, and stderr as necessary */
 	*stdinHandle = (ILNativeInt)(ILSysIOHandle_Invalid);
@@ -698,6 +734,11 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 			dup2(stderrFds[1], 2);
 			close(stderrFds[1]);
 		}
+		if(newEnviron)
+		{
+			extern char **environ;
+			environ = newEnviron;
+		}
 		execvp(fname, args);
 		exit(1);
 	}
@@ -740,12 +781,8 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	}
 
 	/* Clean up and exit */
-	while(argc > 0)
-	{
-		--argc;
-		ILFree(args[argc]);
-	}
-	ILFree(args);
+	FreeStringList(args, argc);
+	FreeStringList(newEnviron, varNum);
 	return result;
 
 #else

@@ -85,7 +85,7 @@ public class CompareInfo : IDeserializationCallback
 				{
 					throw new ArgumentNullException("culture");
 				}
-				return GetCompareInfo(CultureInfo.MapNameToID(culture));
+				return GetCompareInfo(CultureInfo.MapNameToID(culture, true));
 			}
 	public static CompareInfo GetCompareInfo(int culture, Assembly assembly)
 			{

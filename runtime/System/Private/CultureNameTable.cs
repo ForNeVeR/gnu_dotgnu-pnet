@@ -689,7 +689,7 @@ internal sealed class CultureNameTable
 			}
 
 	// Get the name information for a specific culture, by name.
-	public static CultureName GetNameInfoByName(String name)
+	public static CultureName GetNameInfoByName(String name, bool throwOnError)
 			{
 				// Create the culture name table.
 				CreateNameTable();
@@ -706,11 +706,15 @@ internal sealed class CultureNameTable
 				}
 
 				// Could not find the culture.
-				throw new ArgumentException(_("Arg_InvalidCulture"));
+				if(throwOnError)
+				{
+					throw new ArgumentException(_("Arg_InvalidCulture"));
+				}
+				return null;
 			}
 
 	// Get the name information for a specific culture, by identifier.
-	public static CultureName GetNameInfoByID(int cultureID)
+	public static CultureName GetNameInfoByID(int cultureID, bool throwOnError)
 			{
 				// Create the culture name table.
 				CreateNameTable();
@@ -727,7 +731,11 @@ internal sealed class CultureNameTable
 				}
 
 				// Could not find the culture.
-				throw new ArgumentException(_("Arg_InvalidCulture"));
+				if(throwOnError)
+				{
+					throw new ArgumentException(_("Arg_InvalidCulture"));
+				}
+				return null;
 			}
 
 }; // class CultureNameTable

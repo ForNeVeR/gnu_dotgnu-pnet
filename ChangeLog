@@ -26,6 +26,11 @@
 	cultures using either ID or name, because different engines may
 	have different requirements.
 
+	* runtime/System/Globalization/CompareInfo.cs,
+	runtime/System/Globalization/CultureInfo.cs,
+	runtime/System/Private/CultureNameTable.cs: resolve some circularity
+	problems with the initialization of "CurrentCulture".
+
 2002-11-14  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Array.cs: Fix minor bug in ArrayEnumerator1

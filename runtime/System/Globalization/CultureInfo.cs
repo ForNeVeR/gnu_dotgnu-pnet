@@ -32,6 +32,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 	// Cached culture objects.
 	private static CultureInfo invariantCulture;
 	private static CultureInfo currentCulture;
+	private static bool gettingCurrent;
 
 	// Internal state.
 	private int         cultureID;
@@ -70,7 +71,9 @@ public class CultureInfo : ICloneable, IFormatProvider
 				if(culture == TraditionalSpanish)
 				{
 					cultureID   = culture;
-					cultureName = CultureNameTable.GetNameInfoByID(0x0C0A);
+					cultureName = CultureNameTable.GetNameInfoByID
+						(0x0C0A, true);
+					handler = _I18NCultureHandler.GetCultureHandler(cultureID);
 				}
 				else if(culture == 0x007F)
 				{
@@ -84,10 +87,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 				else
 				{
 					cultureID   = culture;
-					cultureName = CultureNameTable.GetNameInfoByID(culture);
+					cultureName = CultureNameTable.GetNameInfoByID
+						(culture, true);
+					handler = _I18NCultureHandler.GetCultureHandler(cultureID);
 				}
 				userOverride = useUserOverride;
-				handler = _I18NCultureHandler.GetCultureHandler(cultureID);
 			}
 	public CultureInfo(String name, bool useUserOverride)
 			{
@@ -95,7 +99,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 				{
 					throw new ArgumentNullException("name");
 				}
-				cultureName = CultureNameTable.GetNameInfoByName(name);
+				cultureName = CultureNameTable.GetNameInfoByName(name, true);
 				cultureID   = cultureName.cultureID;
 				userOverride = useUserOverride;
 				handler = _I18NCultureHandler.GetCultureHandler(cultureID);
@@ -137,20 +141,20 @@ public class CultureInfo : ICloneable, IFormatProvider
 						{
 							return currentCulture;
 						}
+						if(gettingCurrent)
+						{
+							// We were recursively called during initialization,
+							// so return the invariant culture for now.
+							return InvariantCulture;
+						}
+						gettingCurrent = true;
 						int id = InternalCultureID();
 						if(id <= 0)
 						{
 							// Try getting the name instead, in case this
 							// engine doesn't know about culture ID's.
 							String name = InternalCultureName();
-							try
-							{
-								id = MapNameToID(name);
-							}
-							catch(ArgumentException)
-							{
-								id = -1;
-							}
+							id = MapNameToID(name, false);
 						}
 						if(id <= 0 ||
 						   _I18NCultureHandler.GetCultureHandler(id) == null)
@@ -162,6 +166,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 							currentCulture = new CultureInfo(id);
 							currentCulture.readOnly = true;
 						}
+						gettingCurrent = false;
 						return currentCulture;
 					}
 				}
@@ -577,11 +582,18 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Map a culture name to an identifier.
-	internal static int MapNameToID(String name)
+	internal static int MapNameToID(String name, bool throwOnError)
 			{
 				CultureName cultureName =
-					CultureNameTable.GetNameInfoByName(name);
-				return cultureName.cultureID;
+					CultureNameTable.GetNameInfoByName(name, throwOnError);
+				if(cultureName != null)
+				{
+					return cultureName.cultureID;
+				}
+				else
+				{
+					return 0;
+				}
 			}
 
 }; // class CultureInfo

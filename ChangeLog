@@ -9,6 +9,8 @@ csant/csant_task.c: implement "<compile>" and related elements.
 
 * csant/csant_fileset.c: introduce some robustness into the fileset API's.
 
+* csant/csant_fileset.c: fix the regular expression handling for filesets.
+
 2001-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/l10n.html: check in a proposal for a new resource system for C#.

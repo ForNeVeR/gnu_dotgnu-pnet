@@ -107,7 +107,7 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 	subNode = node->taskChildren;
 	while(subNode != 0)
 	{
-		if(!strcmp(subNode->name, "name") &&
+		if(!strcmp(subNode->name, name) &&
 		   (arg = CSAntTaskParam(subNode, "name")) != 0)
 		{
 			if(haveCase)
@@ -126,11 +126,29 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 				{
 					/* Recursive regular expression definition */
 					recursive = 1;
-					REGEX_CHAR('.');
-					REGEX_CHAR('*');
-					++arg;
+					if(arg[1] == '/' || arg[1] == '\\')
+					{
+						REGEX_CHAR('(');
+						REGEX_CHAR('.');
+						REGEX_CHAR('*');
+					#ifdef IL_NATIVE_WIN32
+						REGEX_CHAR('\\');
+						REGEX_CHAR('\\');
+					#else
+						REGEX_CHAR('/');
+					#endif
+						REGEX_CHAR('|');
+						REGEX_CHAR(')');
+						arg += 2;
+					}
+					else
+					{
+						REGEX_CHAR('.');
+						REGEX_CHAR('*');
+						++arg;
+					}
 				}
-				else if(*arg == '*')
+				else if(ch == '*')
 				{
 					/* Match anything that doesn't involve a separator */
 					REGEX_CHAR('[');
@@ -144,12 +162,12 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 					REGEX_CHAR(']');
 					REGEX_CHAR('*');
 				}
-				else if(*arg == '?')
+				else if(ch == '?')
 				{
 					/* Match a single character */
 					REGEX_CHAR('.');
 				}
-				else if(*arg == '/' || *arg == '\\')
+				else if(ch == '/' || ch == '\\')
 				{
 					/* Match a directory separator */
 					recursive = 1;
@@ -430,7 +448,7 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name)
 	{
 		if(!MatchInclude(fileset->files[posn] + strlen(baseDir), &state))
 		{
-			fileset->files[outposn] = fileset->files[posn];
+			fileset->files[outposn++] = fileset->files[posn];
 		}
 		else
 		{

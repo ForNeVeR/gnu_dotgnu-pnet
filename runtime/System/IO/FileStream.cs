@@ -128,7 +128,7 @@ public class FileStream : Stream
 						// ECMA requires DirectoryNotFountException
 						// in that case.
 						//
-						String dirname = System.IO.Path.GetDirectoryName(path);
+						String dirname = System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path));
 						if (!System.IO.Directory.Exists(dirname))
 							throw new DirectoryNotFoundException();
 						throw new FileNotFoundException(null, path);

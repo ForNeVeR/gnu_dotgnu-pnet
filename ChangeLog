@@ -1,4 +1,12 @@
+2004-08-24  Thong Nguyen  <tum@veridicus.com>
 
+	* runtime/System/IO/Directory.cs: Changed Directory.Exists so
+	that it returns false if the path is invalid (to match MS).
+	
+	* runtime/System/IO/FileStream.cs: Changed so that it gets the
+	parent directory of the given path even if the path is a relative
+	path.
+	
 2004-08-19  Russell Stuart <russell-savannah@stuart.id.au>
 
 	* tests/runtime/System/Threading/TestTimer.cs: Now skips tests

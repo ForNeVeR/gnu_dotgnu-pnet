@@ -113,9 +113,17 @@ public class TestXmlTextReader : TestCase
 				xmlReader = new XmlTextReader(stringReader);
 			}
 
+	// Test the constructors
+	public void TestXmlTextReaderCtor()
+			{
+				// TODO: Test each constructor
+			}
+
+
 	// Test OuterXml.
 	public void TestXmlTextReaderReadOuterXml()
-			{					
+			{		
+				Reset();
 				xmlReader.Read();
 				Check("ReadOuterXml (1)", xml[0], ReturnType.OuterXml);
 			

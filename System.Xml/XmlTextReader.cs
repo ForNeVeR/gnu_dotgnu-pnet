@@ -134,7 +134,7 @@ public class XmlTextReader : XmlReader
 				{
 					baseURI = String.Empty;
 				}
-				StreamReader sr = new StreamReader(input, true);
+				XmlStreamReader sr = new XmlStreamReader(input, true);
 				encoding = sr.CurrentEncoding;
 				reader = sr;
 			}
@@ -167,10 +167,9 @@ public class XmlTextReader : XmlReader
 				reader = input;
 				if(input is StreamReader)
 				{
-					encoding = ((StreamReader)input).CurrentEncoding;
+					encoding = ((XmlStreamReader)input).CurrentEncoding;
 				}
 			}
-	[TODO]
 	public XmlTextReader(Stream xmlFragment, XmlNodeType fragType,
 						 XmlParserContext context)
 			: this((context != null ? context.NameTable : new NameTable()))
@@ -189,14 +188,8 @@ public class XmlTextReader : XmlReader
 				if(context == null)
 				{
 					baseURI = String.Empty;
-					// TODO: find byte order mark 
-					// // EF BB BF = utf8
-					// // FE FF = utf16/ucs-2 little endian
-					// // FF FE = utf16/ucs-2, big endian
-					// // FF FE 00 00 = UTF-32/ucs-4, little endian
-					// // 00 00 FE FF = UTC-32/UCS-4, big endian
-					// else ...
-					// encoding = System.Text.UT8Encoding(true);
+					XmlStreamReader sr = new XmlStreamReader(xmlFragment, true);
+					encoding = sr.CurrentEncoding;
 				}
 				else
 				{
@@ -209,7 +202,6 @@ public class XmlTextReader : XmlReader
 				namespaces = false;
 				
 			}
-	[TODO]
 	public XmlTextReader(String xmlFragment, XmlNodeType fragType,
 						 XmlParserContext context)
 			: this((context != null ? context.NameTable : new NameTable()))
@@ -228,22 +220,25 @@ public class XmlTextReader : XmlReader
 				if(context == null)
 				{
 					baseURI = String.Empty;
-					// TODO: find byte order mark
-					// else ...
-					// encoding = System.Text.UT8Encoding(true);
-					StringReader sr = new StringReader(xmlFragment);
-					encoding = Encoding.ASCII;
+					XmlStreamReader sr = new XmlStreamReader(xmlFragment);
+					encoding = sr.CurrentEncoding;
 					reader = sr;
 				}
 				else
 				{
 					baseURI = context.BaseURI;
-					encoding = context.Encoding;
 					xmlLang = context.XmlLang;
 					xmlSpace = context.XmlSpace;
 					contextSupport = true;
-					// TODO: figure out how Encoding works for this thing.
-					StringReader sr = new StringReader(xmlFragment);
+					XmlStreamReader sr = new XmlStreamReader(xmlFragment);
+					if(context.Encoding == null)
+					{
+						encoding = sr.CurrentEncoding;
+					}
+					else
+					{
+						encoding = context.Encoding;
+					}
 					reader = sr;
 				}
 
@@ -271,7 +266,7 @@ public class XmlTextReader : XmlReader
 				{
 					baseURI = String.Empty;
 				}
-				StreamReader sr = new StreamReader(url, true);
+				XmlStreamReader sr = new XmlStreamReader(url, true);
 				encoding = sr.CurrentEncoding;
 				reader = sr;
 			}
@@ -342,7 +337,6 @@ public class XmlTextReader : XmlReader
 	public TextReader GetRemainder()
 			{
 				String tmp = reader.ReadToEnd();
-				Console.WriteLine(tmp);
 				StringReader s = new StringReader(tmp);
 				Close();
 				readState = ReadState.EndOfFile;

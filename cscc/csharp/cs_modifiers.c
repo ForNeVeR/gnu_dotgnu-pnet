@@ -806,6 +806,39 @@ ILUInt32 CSModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers)
 	return attrs;
 }
 
+ILUInt32 CSModifiersToDestructorAttrs(ILNode *node, ILUInt32 modifiers)
+{
+	ILUInt32 attrs=0;
+	
+	BadModifiers(node,
+					modifiers & ~(CS_MODIFIER_EXTERN |
+							      CS_MODIFIER_UNSAFE));
+
+	/* Process the "unsafe" modifier */
+	if(modifiers == CS_MODIFIER_UNSAFE)
+	{
+		attrs = CS_SPECIALATTR_UNSAFE;
+	}
+	else if(modifiers == CS_MODIFIER_EXTERN)
+	{
+		attrs = CS_SPECIALATTR_EXTERN;
+	}
+	else if((modifiers & (CS_SPECIALATTR_EXTERN | CS_SPECIALATTR_EXTERN))!=0)
+	{
+		CCWarningOnLine(yygetfilename(node),yygetlinenum(node),
+							"'extern' and 'unsafe' modifiers used together");
+	}
+
+	/* Add the "hidebysig" and "*specialname" attributes always */
+	attrs |= IL_META_METHODDEF_FAMILY |
+			 IL_META_METHODDEF_HIDE_BY_SIG |
+			 IL_META_METHODDEF_VIRTUAL |
+			 CS_SPECIALATTR_OVERRIDE;
+
+	/* Done */
+	return attrs;
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -3454,17 +3454,17 @@ ConstructorInitializer
 	;
 
 DestructorDeclaration
-	: OptAttributes '~' QualifiedIdentifierPart '(' ')' Block		{
+	: OptAttributes OptModifiers '~' QualifiedIdentifierPart '(' ')' Block		{
 				ILUInt32 attrs;
 				ILNode *dtorName;
 				ILNode *name;
 				ILNode *body;
 
 				/* Destructors cannot have type parameters */
-				dtorName = $3;
+				dtorName = $4;
 				if(yyisa(dtorName, ILNode_GenericReference))
 				{
-					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
+					CCErrorOnLine(yygetfilename($4), yygetlinenum($4),
 						"destructors cannot have type parameters");
 					dtorName = ((ILNode_GenericReference *)dtorName)->type;
 				}
@@ -3472,15 +3472,12 @@ DestructorDeclaration
 				/* Validate the destructor name */
 				if(!ClassNameSame(dtorName))
 				{
-					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
+					CCErrorOnLine(yygetfilename($4), yygetlinenum($4),
 						"destructor name does not match class name");
 				}
 
 				/* Build the list of attributes needed on "Finalize" */
-				attrs = IL_META_METHODDEF_FAMILY |
-						IL_META_METHODDEF_HIDE_BY_SIG |
-						IL_META_METHODDEF_VIRTUAL |
-						CS_SPECIALATTR_OVERRIDE;
+				attrs = CSModifiersToDestructorAttrs($4,$2);
 
 				/* Build the name of the "Finalize" method */
 				name = ILQualIdentSimple(ILInternString("Finalize", -1).string);
@@ -3495,7 +3492,7 @@ DestructorDeclaration
 							ILNode_InvocationExpression_create
 							(ILNode_BaseAccess_create(name), 0));
 				body = ILNode_Try_create
-							($6, 0, ILNode_FinallyClause_create(body));
+							($7, 0, ILNode_FinallyClause_create(body));
 
 				/* Construct the finalizer declaration */
 				$$ = ILNode_MethodDeclaration_create
@@ -3503,7 +3500,7 @@ DestructorDeclaration
 							 ILQualIdentSimple
 							 	(ILInternString("Finalize", -1).string),
 							 0, body);
-				CloneLine($$, $3);
+				CloneLine($$, $4);
 			}
 	;
 

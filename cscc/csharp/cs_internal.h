@@ -113,6 +113,7 @@ ILUInt32 CSModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers);
 ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers);
 ILUInt32 CSModifiersToOperatorAttrs(ILNode *node, ILUInt32 modifiers);
 ILUInt32 CSModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers);
+ILUInt32 CSModifiersToDestructorAttrs(ILNode *node, ILUInt32 modifiers);
 
 /*
  * Convert a built-in constant name into a constant node.

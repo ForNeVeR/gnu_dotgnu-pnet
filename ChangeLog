@@ -1,4 +1,10 @@
 
+2003-06-14  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_internal.h,
+	cscc/csharp/cs_modifiers.c: Allow "unsafe" destructors and pull up 
+	error reporting a level for destructors with modifiers.
+	
 2003-06-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_call.c: verifier bug with rectangular arrays

@@ -77,7 +77,7 @@ ILNativeFloat _ILReadDouble(const unsigned char *buf)
 		convert.bytes[6] = buf[6];
 		convert.bytes[7] = buf[7];
 	}
-	else
+	else if(convert.bytes[3] != 0x3F)
 	{
 		/* Big-endian host CPU, so flip the bytes */
 		convert.bytes[7] = buf[0];
@@ -88,6 +88,18 @@ ILNativeFloat _ILReadDouble(const unsigned char *buf)
 		convert.bytes[2] = buf[5];
 		convert.bytes[1] = buf[6];
 		convert.bytes[0] = buf[7];
+	}
+	else
+	{
+		/* Mixed-endian host CPU (e.g. ARM) */
+		convert.bytes[4] = buf[0];
+		convert.bytes[5] = buf[1];
+		convert.bytes[6] = buf[2];
+		convert.bytes[7] = buf[3];
+		convert.bytes[0] = buf[4];
+		convert.bytes[1] = buf[5];
+		convert.bytes[2] = buf[6];
+		convert.bytes[3] = buf[7];
 	}
 	return (ILNativeFloat)(convert.value);
 }

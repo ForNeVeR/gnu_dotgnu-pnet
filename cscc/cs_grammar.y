@@ -291,6 +291,106 @@ static int ClassNameSame(ILNode *name)
 	   			== 0);
 }
 
+/*
+ * Adjust the name of a property to include a "get_" or "set_" prefix.
+ */
+static ILNode *AdjustPropertyName(ILNode *name, char *prefix)
+{
+	ILNode *node;
+	if(yykind(name) == yykindof(ILNode_Identifier))
+	{
+		/* Simple name: just add the prefix */
+		node = ILQualIdentSimple
+					(ILInternAppendedString
+						(ILInternString(prefix, 4),
+						 ILInternString(ILQualIdentName(name, 0), -1)).string);
+		yysetfilename(node, yygetfilename(name));
+		yysetlinenum(node, yygetlinenum(name));
+		return node;
+	}
+	else if(yykind(name) == yykindof(ILNode_QualIdent))
+	{
+		/* Qualified name: add the prefix to the second component */
+		node = ILNode_QualIdent_create(((ILNode_QualIdent *)name)->left,
+			AdjustPropertyName(((ILNode_QualIdent *)name)->right, prefix));
+		yysetfilename(node, yygetfilename(name));
+		yysetlinenum(node, yygetlinenum(name));
+		return node;
+	}
+	else
+	{
+		/* Shouldn't happen */
+		return name;
+	}
+}
+
+/*
+ * Create the methods needed by a property definition.
+ */
+static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
+{
+	ILNode_MethodDeclaration *decl;
+	ILNode *name;
+	ILNode *params;
+	ILNode_ListIter iter;
+	ILNode *temp;
+
+	/* Create the "get" method */
+	if((property->getsetFlags & 1) != 0)
+	{
+		name = AdjustPropertyName(property->name, "get_");
+		decl = (ILNode_MethodDeclaration *)(property->getAccessor);
+		if(!decl)
+		{
+			/* Abstract interface definition */
+			decl = (ILNode_MethodDeclaration *)
+				ILNode_MethodDeclaration_create
+						(0, property->modifiers, property->type,
+						 name, property->params, 0);
+		}
+		else
+		{
+			/* Regular class definition */
+			decl->modifiers = property->modifiers;
+			decl->type = property->type;
+			decl->name = name;
+			decl->params = property->params;
+		}
+	}
+
+	/* Create the "set" method */
+	if((property->getsetFlags & 2) != 0)
+	{
+		name = AdjustPropertyName(property->name, "set_");
+		params = ILNode_List_create();
+		ILNode_ListIter_Init(&iter, property->params);
+		while((temp = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILNode_List_Add(params, temp);
+		}
+		ILNode_List_Add(params,
+			ILNode_FormalParameter_create(0, ILParamMod_empty, property->type,
+					ILQualIdentSimple(ILInternString("value", 5).string)));
+		decl = (ILNode_MethodDeclaration *)(property->setAccessor);
+		if(!decl)
+		{
+			/* Abstract interface definition */
+			decl = (ILNode_MethodDeclaration *)
+				ILNode_MethodDeclaration_create
+						(0, property->modifiers, property->type,
+						 name, params, 0);
+		}
+		else
+		{
+			/* Regular class definition */
+			decl->modifiers = property->modifiers;
+			decl->type = property->type;
+			decl->name = name;
+			decl->params = params;
+		}
+	}
+}
+
 %}
 
 /*
@@ -2076,11 +2176,17 @@ ParameterModifier
 PropertyDeclaration
 	: OptAttributes OptModifiers Type QualifiedIdentifier
 			StartAccessorBlock AccessorBlock	{
-				ILUInt32 attrs = CSModifiersToPropertyAttrs($2);
+				ILUInt32 attrs;
+
+				/* Create the property declaration */
+				attrs = CSModifiersToPropertyAttrs($2);
 				$$ = ILNode_PropertyDeclaration_create($1,
 								   attrs, $3, $4, 0, $6.item1, $6.item2,
 								   (($6.item1 ? 1 : 0) |
 								    ($6.item2 ? 2 : 0)));
+
+				/* Create the property method declarations */
+				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
 			}
 	;
 
@@ -2121,7 +2227,8 @@ OptGetAccessorDeclaration
 
 GetAccessorDeclaration
 	: OptAttributes GET TurnOffGetSet AccessorBody TurnOnGetSet		{
-				MakeBinary(AccessorDeclaration, $1, $4);
+				$$ = ILNode_MethodDeclaration_create
+						($1, 0, 0, 0, 0, $4);
 			}
 	;
 
@@ -2132,7 +2239,8 @@ OptSetAccessorDeclaration
 
 SetAccessorDeclaration
 	: OptAttributes SET TurnOffGetSet AccessorBody TurnOnGetSet		{
-				MakeBinary(AccessorDeclaration, $1, $4);
+				$$ = ILNode_MethodDeclaration_create
+						($1, 0, 0, 0, 0, $4);
 			}
 	;
 
@@ -2235,6 +2343,9 @@ IndexerDeclaration
 								   $5.item1, $5.item2,
 								   (($5.item1 ? 1 : 0) |
 								    ($5.item2 ? 2 : 0)));
+
+				/* Create the property method declarations */
+				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
 			}
 	;
 
@@ -2685,6 +2796,9 @@ InterfacePropertyDeclaration
 								 IL_META_METHODDEF_HIDE_BY_SIG;
 				$$ = ILNode_PropertyDeclaration_create
 								($1, attrs, $3, 0, $4, 0, 0, $6);
+
+				/* Create the property method declarations */
+				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
 			}
 	;
 
@@ -2738,6 +2852,9 @@ InterfaceIndexerDeclaration
 									(ILInternString("Item", 4).string);
 				$$ = ILNode_PropertyDeclaration_create
 								($1, attrs, $3, name, $5, 0, 0, $7);
+
+				/* Create the property method declarations */
+				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
 			}
 	;
 

@@ -634,6 +634,9 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 {
 	CSSemValue value;
 	ILEvalValue evalValue;
+	ILNode *savedMethod;
+
+	savedMethod=info->currentMethod;
 
 	/* Determine if we have already visited this node */
 	if(node->visited == ILVisitMode_Processing)
@@ -664,6 +667,8 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	{
 		goto done;
 	}
+	
+	info->currentMethod=NULL;
 
 	/* Non-static fields are initialized differently */
 	if(node->owner && (node->owner->modifiers & IL_META_FIELDDEF_STATIC) == 0)
@@ -743,6 +748,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 
 done:
 	/* Mark the node as done and return */
+	info->currentMethod=savedMethod;
 	node->visited = ILVisitMode_Done;
 	return CSSemValueDefault;
 }

@@ -1,4 +1,8 @@
 
+2003-01-19  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_decls.tc: Fix an order bug in resolving const fields.
+
 2003-01-15  Gopal.V  <gopalv82@symonds.net>
 	
 	* image/link.c: fix minor bug when the PInvoke shared objects are missing.

@@ -2191,6 +2191,26 @@ IL_METHOD_END
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_SppS(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILUInt16 (*)(void *, void *, ILUInt16))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILUInt16 *)(avalue[2])));
+}
+
+#endif
+
+#ifndef _IL_TextInfo_suppressed
+
+IL_METHOD_BEGIN(TextInfo_Methods)
+	IL_METHOD("ToLower", "(Tc)c", _IL_TextInfo_ToLower_c, marshal_SppS)
+	IL_METHOD("ToUpper", "(Tc)c", _IL_TextInfo_ToUpper_c, marshal_SppS)
+	IL_METHOD("ToLower", "(ToSystem.String;)oSystem.String;", _IL_TextInfo_ToLower_String, marshal_pppp)
+	IL_METHOD("ToUpper", "(ToSystem.String;)oSystem.String;", _IL_TextInfo_ToUpper_String, marshal_pppp)
+IL_METHOD_END
+
+#endif
+
 #ifndef _IL_CultureInfo_suppressed
 
 IL_METHOD_BEGIN(CultureInfo_Methods)
@@ -3027,6 +3047,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_TaskMethods_suppressed
 	{"TaskMethods", "Platform", TaskMethods_Methods},
+#endif
+#ifndef _IL_TextInfo_suppressed
+	{"TextInfo", "System.Globalization", TextInfo_Methods},
 #endif
 #ifndef _IL_Thread_suppressed
 	{"Thread", "System.Threading", Thread_Methods},

@@ -213,39 +213,6 @@ unsigned ILUnicodeCharToLower(unsigned ch)
 #endif
 }
 
-unsigned ILUnicodeCharToTitle(unsigned ch)
-{
-#ifdef SMALL_UNICODE_TABLE
-	if(ch < 0x0100)
-	{
-		return unicodeToTitle[ch];
-	}
-	else
-	{
-		return ch;
-	}
-#else
-	if(ch <= UNICASE_RANGE1_UPPER)
-	{
-		return unicodeToTitle[ch];
-	}
-	else if(ch >= UNICASE_RANGE2_LOWER && ch <= UNICASE_RANGE2_UPPER)
-	{
-		return unicodeToTitle
-			[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
-	}
-	else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
-	{
-		return unicodeToTitle
-			[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
-	}
-	else
-	{
-		return ch;
-	}
-#endif
-}
-
 void ILUnicodeStringToUpper(unsigned short *dest, const unsigned short *src,
 					 		unsigned long len)
 {
@@ -304,39 +271,6 @@ void ILUnicodeStringToLower(unsigned short *dest, const unsigned short *src,
 		else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
 		{
 			ch = unicodeToLower
-				[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
-		}
-#endif
-		*dest++ = (ILUInt16)ch;
-		--len;
-	}
-}
-
-void ILUnicodeStringToTitle(unsigned short *dest, const unsigned short *src,
-					 		unsigned long len)
-{
-	unsigned ch;
-	while(len > 0)
-	{
-		ch = *src++;
-#ifdef SMALL_UNICODE_TABLE
-		if(ch < 0x0100)
-		{
-			ch = unicodeToTitle[ch];
-		}
-#else
-		if(ch <= UNICASE_RANGE1_UPPER)
-		{
-			ch = unicodeToTitle[ch];
-		}
-		else if(ch >= UNICASE_RANGE2_LOWER && ch <= UNICASE_RANGE2_UPPER)
-		{
-			ch = unicodeToTitle
-				[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
-		}
-		else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
-		{
-			ch = unicodeToTitle
 				[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
 		}
 #endif

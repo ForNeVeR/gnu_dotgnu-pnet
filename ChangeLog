@@ -9,6 +9,12 @@
 	implement the "String.CompareInternal" internalcall in terms
 	of the Unicode comparison support routines.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_string.c,
+	include/il_utils.h, support/mkcase.c, support/unicase.c,
+	support/unicode.c: internalcalls for TextInfo; remove the
+	title case conversion table and functions because they are
+	not required.
+
 2003-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, image/link.c, image/pecoff_loader.c,

@@ -305,20 +305,17 @@ double ILGetUnicodeValue(unsigned ch);
 int ILIsWhitespaceUnicode(unsigned ch);
 
 /*
- * Convert a unicode character into upper, lower, or title case.
+ * Convert a unicode character into upper or lower case.
  */
 unsigned ILUnicodeCharToUpper(unsigned ch);
 unsigned ILUnicodeCharToLower(unsigned ch);
-unsigned ILUnicodeCharToTitle(unsigned ch);
 
 /*
- * Convert a unicode string into upper, lower, or title case.
+ * Convert a unicode string into upper or lower case.
  */
 void ILUnicodeStringToUpper(unsigned short *dest, const unsigned short *src,
 					 		unsigned long len);
 void ILUnicodeStringToLower(unsigned short *dest, const unsigned short *src,
-					 		unsigned long len);
-void ILUnicodeStringToTitle(unsigned short *dest, const unsigned short *src,
 					 		unsigned long len);
 
 /*

@@ -457,6 +457,11 @@ extern ILInt32 _IL_ParameterBuilder_ClrParameterGetPosition(ILExecThread * _thre
 extern ILInt32 _IL_ParameterBuilder_ClrParameterGetAttrs(ILExecThread * _thread, ILNativeInt _p1);
 extern ILString * _IL_ParameterBuilder_ClrParameterGetName(ILExecThread * _thread, ILNativeInt _p1);
 
+extern ILUInt16 _IL_TextInfo_ToLower_c(ILExecThread * _thread, ILObject * _this, ILUInt16 _p1);
+extern ILUInt16 _IL_TextInfo_ToUpper_c(ILExecThread * _thread, ILObject * _this, ILUInt16 _p1);
+extern ILString * _IL_TextInfo_ToLower_String(ILExecThread * _thread, ILObject * _this, ILString * _p1);
+extern ILString * _IL_TextInfo_ToUpper_String(ILExecThread * _thread, ILObject * _this, ILString * _p1);
+
 extern ILInt32 _IL_CultureInfo_InternalCultureID(ILExecThread * _thread);
 extern ILString * _IL_CultureInfo_InternalCultureName(ILExecThread * _thread);
 

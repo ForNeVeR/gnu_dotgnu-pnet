@@ -1,7 +1,7 @@
 /*
  * lib_string.c - Internalcall methods for "System.String".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2007,6 +2007,96 @@ char *ILStringToAnsi(ILExecThread *thread, ILString *str)
 	{
 		return 0;
 	}
+}
+
+/*
+ * public virtual char ToLower(char c);
+ */
+ILUInt16 _IL_TextInfo_ToLower_c(ILExecThread *_thread, ILObject *_this,
+								ILUInt16 c)
+{
+	if(c >= 'A' && c <= 'Z')
+	{
+		return (ILUInt16)(c - 'A' + 'a');
+	}
+	else if(c < 0x0080)
+	{
+		return c;
+	}
+	else
+	{
+		return ILUnicodeCharToLower(c);
+	}
+}
+
+/*
+ * public virtual char ToUpper(char c);
+ */
+ILUInt16 _IL_TextInfo_ToUpper_c(ILExecThread *_thread, ILObject *_this,
+								ILUInt16 c)
+{
+	if(c >= 'a' && c <= 'z')
+	{
+		return (ILUInt16)(c - 'a' + 'A');
+	}
+	else if(c < 0x0080)
+	{
+		return c;
+	}
+	else
+	{
+		return ILUnicodeCharToUpper(c);
+	}
+}
+
+/*
+ * public virtual String ToLower(String str);
+ */
+ILString *_IL_TextInfo_ToLower_String(ILExecThread *_thread, ILObject *_this,
+									  ILString *str)
+{
+	System_String *newStr;
+	ILInt32 len;
+	if(!str)
+	{
+		ILExecThreadThrowArgNull(_thread, "str");
+		return 0;
+	}
+	len = ((System_String *)str)->length;
+	newStr = AllocString(_thread, len);
+	if(!newStr)
+	{
+		return 0;
+	}
+	ILUnicodeStringToLower(StringToBuffer(newStr),
+						   StringToBuffer(str),
+						   (unsigned long)(long)len);
+	return (ILString *)newStr;
+}
+
+/*
+ * public virtual String ToUpper(String str);
+ */
+ILString * _IL_TextInfo_ToUpper_String(ILExecThread *_thread, ILObject *_this,
+									   ILString *str)
+{
+	System_String *newStr;
+	ILInt32 len;
+	if(!str)
+	{
+		ILExecThreadThrowArgNull(_thread, "str");
+		return 0;
+	}
+	len = ((System_String *)str)->length;
+	newStr = AllocString(_thread, len);
+	if(!newStr)
+	{
+		return 0;
+	}
+	ILUnicodeStringToUpper(StringToBuffer(newStr),
+						   StringToBuffer(str),
+						   (unsigned long)(long)len);
+	return (ILString *)newStr;
 }
 
 #ifdef	__cplusplus

@@ -308,7 +308,9 @@ int main(int argc, char *argv[])
 		   (RANGE2_UPPER - RANGE2_LOWER + 1));
 	writeTable("unicodeToUpper", upper);
 	writeTable("unicodeToLower", lower);
+#if 0
 	writeTable("unicodeToTitle", title);
+#endif
 
 	/* Done */
 	return 0;

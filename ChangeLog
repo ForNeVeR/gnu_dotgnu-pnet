@@ -31,6 +31,10 @@ runtime/System/Threading/WaitHandle.cs: replace all references to
 "System.Runtime.CompilerServices.MethodImplAttribute", to be
 consistent with the latest ECMA specification.
 
+* runtime/System/Runtime/InteropServices/MethodImplAttribute.cs,
+runtime/System/Runtime/InteropServices/MethodImplOptions.cs: remove
+obsolete classes.
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/String.cs: implement string comparison methods.

@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "cs_internal.h"
+#include "csharp/cs_internal.h"
 
 #ifdef	__cplusplus
 extern	"C" {

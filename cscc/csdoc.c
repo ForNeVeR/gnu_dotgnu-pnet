@@ -33,7 +33,7 @@ special flags:
 
 */
 
-#include "cs_internal.h"
+#include "csharp/cs_internal.h"
 #include "il_dumpasm.h"
 
 #ifdef	__cplusplus

@@ -33,6 +33,26 @@
 	cscc/common/cc_preproc.h: move the "compiler common" library
 	into the "cscc/common" subdirectory.
 
+	* configure.in, cscc/.cvsignore, cscc/Makefile.am, cscc/cs_cast.tc,
+	cscc/cs_const.tc, cscc/cs_decls.tc, cscc/cs_defs.tc, cscc/cs_gather.c,
+	cscc/cs_grammar.y, cscc/cs_internal.h, cscc/cs_invoke.tc,
+	cscc/cs_lookup.c, cscc/cs_lvalue.tc, cscc/cs_main.c, cscc/cs_misc.tc,
+	cscc/cs_modifiers.c, cscc/cs_oper.tc, cscc/cs_rename.h,
+	cscc/cs_scanner.l, cscc/cs_semantics.tc, cscc/cs_stmt.tc,
+	cscc/cs_types.tc, cscc/cs_valdoc.c, cscc/csdoc.c,
+	cscc/csharp/.cvsignore, cscc/csharp/Makefile.am,
+	cscc/csharp/cs_cast.tc, cscc/csharp/cs_const.tc,
+	cscc/csharp/cs_decls.tc, cscc/csharp/cs_defs.tc,
+	cscc/csharp/cs_gather.c, cscc/csharp/cs_grammar.y,
+	cscc/csharp/cs_internal.h, cscc/csharp/cs_invoke.tc,
+	cscc/csharp/cs_lookup.c, cscc/csharp/cs_lvalue.tc,
+	cscc/csharp/cs_misc.tc, cscc/csharp/cs_modifiers.c,
+	cscc/csharp/cs_oper.tc, cscc/csharp/cs_rename.h,
+	cscc/csharp/cs_scanner.l, cscc/csharp/cs_semantics.tc,
+	cscc/csharp/cs_stmt.tc, cscc/csharp/cs_types.tc,
+	cscc/csharp/cs_valdoc.c: move the bulk of the C# compiler plugin
+	out of "cscc" and into "cscc/csharp".
+
 2002-03-07 Gopal.V <gopalv82@yahoo.com>
 
 	* ildiff/ildiff.c fixed ILtype bug by replacing ILTypeIdentical

@@ -21,7 +21,7 @@
 /*
  * Inherit the common definitions.
  */
-%include %readonly "../codegen/cg_all.tc"
+%include %readonly "../../codegen/cg_all.tc"
 
 /*
  * Set a new header for definitions that follow.
@@ -33,12 +33,12 @@
  */
 %decls %{
 
-#include "../codegen/cg_nodes.h"
-#include "../codegen/cg_coerce.h"
-#include "../codegen/cg_resolve.h"
-#include "../codegen/cg_scope.h"
-#include "common/cc_preproc.h"
-#include "common/cc_options.h"
+#include "../../codegen/cg_nodes.h"
+#include "../../codegen/cg_coerce.h"
+#include "../../codegen/cg_resolve.h"
+#include "../../codegen/cg_scope.h"
+#include "../common/cc_preproc.h"
+#include "../common/cc_options.h"
 
 /*
  * Define the semantic analysis return type.

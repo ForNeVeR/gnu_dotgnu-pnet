@@ -38,6 +38,9 @@
 	* runtime/System/Globalization/TextInfo.cs: add internalcalls
 	for the ToLower/ToUpper methods in TextInfo.
 
+	* runtime/System/Globalization/CompareInfo.cs: implement the
+	"CompareInfo.GetSortKey" method for the invariant culture.
+
 2003-08-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/Image.cs, System.Drawing/Bitmap.cs,

@@ -22,6 +22,7 @@
 namespace System.Globalization
 {
 
+using System.Text;
 using System.Reflection;
 using System.Runtime.Serialization;
 
@@ -293,7 +294,6 @@ public class CompareInfo : IDeserializationCallback
 			{
 				return GetSortKey(source, CompareOptions.None);
 			}
-	[TODO]
 	public virtual SortKey GetSortKey(String source, CompareOptions options)
 			{
 				if(source == null)
@@ -309,8 +309,18 @@ public class CompareInfo : IDeserializationCallback
 				else
 				{
 					// Return the invariant sort key information.
-					// TODO
-					return null;
+					if((options & CompareOptions.IgnoreCase) != 0)
+					{
+						return new SortKey
+							(Encoding.UTF8.GetBytes
+								(CultureInfo.InvariantCulture.TextInfo
+									.ToLower(source)), source);
+					}
+					else
+					{
+						return new SortKey
+							(Encoding.UTF8.GetBytes(source), source);
+					}
 				}
 			}
 

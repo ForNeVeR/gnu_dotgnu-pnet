@@ -12,7 +12,7 @@
 	* cscc/csharp/cs_semvalue.h: remove a second #define of
 	CS_SEMKIND_TYPE_NODE.
 
-	* codegen/cg_assign.tc, codegen/cg_nodes.tc, cscc/cshar/cs_oper.tc:
+	* codegen/cg_assign.tc, codegen/cg_nodes.tc, cscc/csharp/cs_oper.tc:
 	re-engineer portions of assignment expressions (e.g. +=) to work on
 	integers smaller than 32 bits w/o crashing the code generator.
 

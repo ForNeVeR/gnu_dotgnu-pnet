@@ -9,6 +9,9 @@
 	* cscc/cs_invoke.tc (ILNode_BaseInit): report an error if there
 	are no accessible base class constructors.
 
+	* cscc/cs_grammar.y (ClassDeclaration): default constructors should
+	be "protected" if the class is "abstract".
+
 2001-01-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_cast.tc (CSTypeToName): implement conversions for

@@ -2442,14 +2442,16 @@ ClassDeclaration
 				/* Determine if we need to add a default constructor */
 				if(!ClassNameIsCtorDefined())
 				{
+					ILUInt32 ctorMods =
+						(((attrs & IL_META_TYPEDEF_ABSTRACT) != 0)
+							? CS_MODIFIER_PROTECTED : CS_MODIFIER_PUBLIC);
 					ILNode *cname = ILQualIdentSimple
 							(ILInternString(".ctor", 5).string);
 					ILNode *body = ILNode_NewScope_create
 							(ILNode_InvocationExpression_create
 								(ILNode_BaseInit_create(), 0));
 					ILNode *ctor = ILNode_MethodDeclaration_create
-						  ($1, CSModifiersToConstructorAttrs
-						  			(cname, CS_MODIFIER_PUBLIC),
+						  ($1, CSModifiersToConstructorAttrs(cname, ctorMods),
 						   0 /* "void" */, cname,
 						   ILNode_Empty_create(), body);
 					if(!classBody)

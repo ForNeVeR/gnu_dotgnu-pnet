@@ -26,7 +26,7 @@ using System;
 using System.Net;
 using System.Collections;
 
-//TODO: Create EndPoint class
+[TODO]
 public class Socket : IDisposable
 {
 	//TODO: The security system should check for caller permissions
@@ -43,6 +43,7 @@ public class Socket : IDisposable
 	private SocketType mysockettype;
 	private EndPoint mylocalendpoint = null;
 	private EndPoint myremoteendpoint = null;
+	private bool listening = false;
 	private bool connected = false;
 	private bool blocking = true; //This class standard blocks
 	//The handle of this socket
@@ -212,7 +213,12 @@ public class Socket : IDisposable
 				//Change when SocketMethods supports more than IPv4					
 				if (!(SocketMethods.Connect(myhandle, (int)(ipend.AddressFamily), ipend.Address.Address, ipend.Port)))
 					throw new SocketException(SocketMethods.GetErrno(), "Connect");		
-														
+
+				//The specs for property LocalEndPoint say Connect sets
+				//LocalEndPoint if not previously set
+				//Let's set it to the 'any' setting
+				mylocalendpoint = new IPEndPoint(IPAddress.Any, 0);				
+																					
 				myremoteendpoint = remoteEP;				
 			}
 	
@@ -293,9 +299,13 @@ public class Socket : IDisposable
 				return 0;
 			}
 	
-	[TODO]
 	public void Listen(int backlog)
-			{
+			{	
+				if (listening)
+					return;
+					
+				listening = true;
+				
 				if (disposed == 0)			
 					throw new ObjectDisposedException(S._("Exception_Disposed"));				
 				
@@ -362,16 +372,16 @@ public class Socket : IDisposable
 				if (((int)socketFlags > 0x3) || ((int)socketFlags < 0x0))
 					throw new SocketException();
 					
-				if ((socketFlags & SocketFlags.OutOfBand) != 0 &&
+				if ((socketFlags && SocketFlags.OutOfBand) != 0 &&
 					(mysockettype != SocketType.Stream))
 				{
 					throw new SocketException();
 				}
 				
-				if ((socketFlags & SocketFlags.Partial) != 0)
+				if ((socketFlags && SocketFlags.Partial) != 0)
 					throw new SocketException();
 				
-				if ((socketFlags & SocketFlags.DontRoute) != 0)
+				if ((socketFlags && SocketFlags.DontRoute) != 0)
 					throw new SocketException(); 
 
 				if (mylocalendpoint == null)
@@ -389,7 +399,7 @@ public class Socket : IDisposable
 
 			}
 			
-	[TODO] //TODO: Change intercall call
+	//TODO: Improve intercall
 	public int ReceiveFrom(byte[] buffer, int offset, int size, SocketFlags socketFlags, ref EndPoint remoteEP)
 			{
 				int sizevalue;
@@ -415,28 +425,29 @@ public class Socket : IDisposable
 				if (((int)socketFlags > 0x3) || ((int)socketFlags < 0x0))
 					throw new SocketException();
 					
-				if ((socketFlags & SocketFlags.OutOfBand) != 0 &&
+				if ((socketFlags && SocketFlags.OutOfBand) != 0 &&
 				    (mysockettype != SocketType.Stream))
 					throw new SocketException();
 				
-				if ((socketFlags & SocketFlags.Partial) != 0)
+				if ((socketFlags && SocketFlags.Partial) != 0)
 					throw new SocketException();
 				
-				if ((socketFlags & SocketFlags.DontRoute) != 0)
+				if ((socketFlags && SocketFlags.DontRoute) != 0)
 					throw new SocketException(); 
 
 				if (mylocalendpoint == null)
 					throw new SocketException();
 					
-				/* TODO: change security - this is wrong
+				/* TODO: change security - this is wrong, use socketpermission
 				if (!Security.CanUseFilemyhandle(myhandle))
 					throw new SecurityException("myhandle", S._("Exception_SecurityNotGranted"));					
 				*/
 
-				// TODO: return the final address to the caller
-				long address;
-				int port;
-				if ((sizevalue = SocketMethods.ReceiveFrom(myhandle, buffer, offset, size, (int)socketFlags, out address, out port)) == -1)
+				// TODO: allow for more than IPv4
+				IPEndPoint ipend;
+				remoteEP = ipend;
+				
+				if ((sizevalue = SocketMethods.ReceiveFrom(myhandle, buffer, offset, size, (int)socketFlags, out ipend.Address, out ipend.Port)) == -1)
 					throw new SocketException(SocketMethods.GetErrno(), "ReceiveFrom");
 				
 				return sizevalue;																						
@@ -548,8 +559,8 @@ public class Socket : IDisposable
 				if (pending != 0) //This function blocks
 					throw new InvalidOperationException(S._("Invalid_AsyncAndBlocking"));
 					
-				if ( (socketFlags & SocketFlags.Peek) != 0 ||
-				     (socketFlags & SocketFlags.Partial) != 0)
+				if ( (socketFlags && SocketFlags.Peek) != 0 ||
+				     (socketFlags && SocketFlags.Partial) != 0)
 				{
 					throw new SocketException();				
 				}
@@ -560,7 +571,7 @@ public class Socket : IDisposable
 				return sizevalue;							
 				
 			}
-			
+	
 	public int SendTo(byte[] buffer, int offset, int size, SocketFlags socketFlags, EndPoint remoteEP)
 			{
 				if (disposed == 0)			
@@ -581,19 +592,33 @@ public class Socket : IDisposable
 				if (pending != 0) //This function blocks
 					throw new InvalidOperationException(S._("Invalid_AsyncAndBlocking"));
 					
-				if ( (socketFlags & SocketFlags.Peek) != 0 ||
-				     (socketFlags & SocketFlags.Partial) != 0)
+				if ( (socketFlags && SocketFlags.Peek) != 0 ||
+				     (socketFlags && SocketFlags.Partial) != 0)
 				{
 					throw new SocketException();				
 				}
 
-				// TODO: extract the address and port from remoteEP.
-				long address = 0;
-				int port = 0;
+				//TODO: Change this into something better when more than
+				//IPv4 gets supported
+				if (remoteEP is IPEndPoint)
+				{
+					address = remoteEP.Address;
+					port = remoteEP.Port;
+				}				
+				else
+				{
+					//TODO: translate the string
+					throw new NotSupportedException("Something else than IPv4 is not yet supported");				
+				}
 
 				int sizevalue;
 				if ((sizevalue = SocketMethods.SendTo(myhandle, buffer, offset, size, (int)socketFlags, address, port)) == -1)
 					throw new SocketException(SocketMethods.GetErrno(), "SendTo");
+
+				//The specs for property LocalEndPoint say SendTo sets
+				//LocalEndPoint if not previously set
+				//Let's set it to the 'any' setting
+				mylocalendpoint = new IPEndPoint(IPAddress.Any, 0);	
 				
 				return sizevalue;		
 

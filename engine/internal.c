@@ -43,7 +43,13 @@ extern ILMethodTableEntry const _ILSystemThreadingInterlockedMethods;
 extern ILMethodTableEntry const _ILSystemThreadingThreadMethods;
 extern ILMethodTableEntry const _ILReflectionClrTypeMethods;
 extern ILMethodTableEntry const _ILReflectionClrHelpersMethods;
+extern ILMethodTableEntry const _ILReflectionClrParameterMethods;
+extern ILMethodTableEntry const _ILReflectionClrPropertyMethods;
+extern ILMethodTableEntry const _ILReflectionClrConstructorMethods;
+extern ILMethodTableEntry const _ILReflectionClrMethodMethods;
 extern ILMethodTableEntry const _ILReflectionAssemblyMethods;
+extern ILMethodTableEntry const _ILReflectionFieldInfoMethods;
+extern ILMethodTableEntry const _ILReflectionMethodBaseMethods;
 extern ILMethodTableEntry const _ILPlatformStdioMethods;
 extern ILMethodTableEntry const _ILPlatformSysCharInfoMethods;
 extern ILMethodTableEntry const _ILPlatformTimeMethods;
@@ -67,14 +73,20 @@ static InternalClassInfo const internalClassTable[] = {
 	{"Assembly",	"System.Reflection", &_ILReflectionAssemblyMethods},
 	{"BitConverter", "System",		&_ILSystemBitConverterMethods},
 	{"Buffer",		"System",		&_ILSystemBufferMethods},
+	{"ClrConstructor","System.Reflection", &_ILReflectionClrConstructorMethods},
 	{"ClrHelpers",	"System.Reflection", &_ILReflectionClrHelpersMethods},
+	{"ClrMethod",   "System.Reflection", &_ILReflectionClrMethodMethods},
+	{"ClrParameter","System.Reflection", &_ILReflectionClrParameterMethods},
+	{"ClrProperty", "System.Reflection", &_ILReflectionClrPropertyMethods},
 	{"ClrType",		"System.Reflection", &_ILReflectionClrTypeMethods},
 	{"Debugger",	"System.Diagnostics", &_ILDiagnosticsDebuggerMethods},
 	{"Decimal",		"System",		&_ILSystemDecimalMethods},
 	{"Double",		"System",		&_ILSystemDoubleMethods},
+	{"FieldInfo",	"System.Reflection", &_ILReflectionFieldInfoMethods},
 	{"Guid",		"System",		&_ILSystemGuidMethods},
 	{"Interlocked",	"System.Threading", &_ILSystemThreadingInterlockedMethods},
 	{"Math",		"System",		&_ILSystemMathMethods},
+	{"MethodBase",	"System.Reflection", &_ILReflectionMethodBaseMethods},
 	{"Monitor",		"System.Threading", &_ILSystemThreadingMonitorMethods},
 	{"Object",		"System",		&_ILSystemObjectMethods},
 	{"RuntimeHelpers", "System.Runtime.CompilerServices",

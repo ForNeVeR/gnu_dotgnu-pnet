@@ -262,6 +262,180 @@ static ILString *ClrHelpers_GetName(ILExecThread *thread,
 }
 
 /*
+ * public static IntPtr GetParameter(IntPtr itemPrivate, int num);
+ */
+static ILNativeInt ClrHelpers_GetParameter(ILExecThread *thread,
+										   ILNativeInt itemPrivate,
+										   ILInt32 num)
+{
+	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
+	if(method)
+	{
+		ILParameter *param = 0;
+		while((param = ILMethodNextParam(method, param)) != 0)
+		{
+			if(ILParameter_Num(param) == (ILUInt32)num)
+			{
+				return (ILNativeInt)param;
+			}
+		}
+	}
+	return 0;
+}
+
+/*
+ * public static Type GetParameterType(IntPtr itemPrivate, int num);
+ */
+static ILObject *ClrHelpers_GetParameterType(ILExecThread *thread,
+										     ILNativeInt itemPrivate,
+										     ILInt32 num)
+{
+	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
+	if(method)
+	{
+		ILType *type = ILTypeGetParam(ILMethod_Signature(method),
+									  (unsigned long)num);
+		if(type != ILType_Invalid)
+		{
+			return _ILGetClrTypeForILType(thread, type);
+		}
+	}
+	return 0;
+}
+
+/*
+ * public static int GetNumParameters(IntPtr itemPrivate);
+ */
+static ILInt32 ClrHelpers_GetNumParameters(ILExecThread *thread,
+										   ILNativeInt itemPrivate)
+{
+	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
+	if(method)
+	{
+		return (ILInt32)(ILMethod_Signature(method)->num);
+	}
+	return 0;
+}
+
+/*
+ * public static int GetMemberAttrs(IntPtr itemPrivate);
+ */
+static ILInt32 ClrHelpers_GetMemberAttrs(ILExecThread *thread,
+										 ILNativeInt itemPrivate)
+{
+	ILMember *member = ILProgramItemToMember((ILProgramItem *)itemPrivate);
+	if(member)
+	{
+		return (ILInt32)(ILMember_Attrs(member));
+	}
+	return 0;
+}
+
+/*
+ * public static CallingConventions GetCallConv(IntPtr itemPrivate);
+ */
+static ILInt32 ClrHelpers_GetCallConv(ILExecThread *thread,
+								      ILNativeInt itemPrivate)
+{
+	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
+	if(method)
+	{
+		return (ILInt32)(ILMethod_CallConv(method));
+	}
+	return 0;
+}
+
+/*
+ * public static MethodImplAttributes GetImplAttrs(IntPtr itemPrivate);
+ */
+static ILInt32 ClrHelpers_GetImplAttrs(ILExecThread *thread,
+								       ILNativeInt itemPrivate)
+{
+	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
+	if(method)
+	{
+		return (ILInt32)(ILMethod_ImplAttrs(method));
+	}
+	return 0;
+}
+
+/*
+ * public static MethodInfo GetSemantics(IntPtr itemPrivate,
+ *										 MethodSemanticsAttributes type,
+ *										 bool nonPublic);
+ */
+static ILObject *ClrHelpers_GetSemantics(ILExecThread *thread,
+								         ILNativeInt itemPrivate,
+										 ILInt32 type, ILBool nonPublic)
+{
+	ILMember *member = ILProgramItemToMember((ILProgramItem *)itemPrivate);
+	ILMethod *method;
+	if(member)
+	{
+		method = ILMethodSemGetByType(ILToProgramItem(member), type);
+		if(!nonPublic && method && !ILMethod_IsPublic(method))
+		{
+			method = 0;
+		}
+		if(method && _ILClrCheckAccess(thread, 0, (ILMember *)method))
+		{
+			return _ILClrToObject(thread, (void *)method,
+								  "System.Reflection.ClrMethod");
+		}
+	}
+	return 0;
+}
+
+/*
+ * public static bool HasSemantics(IntPtr itemPrivate,
+ *								   MethodSemanticsAttributes type,
+ *								   bool nonPublic);
+ */
+static ILBool ClrHelpers_HasSemantics(ILExecThread *thread,
+								      ILNativeInt itemPrivate,
+									  ILInt32 type, ILBool nonPublic)
+{
+	ILMember *member = ILProgramItemToMember((ILProgramItem *)itemPrivate);
+	ILMethod *method;
+	if(member)
+	{
+		method = ILMethodSemGetByType(ILToProgramItem(member), type);
+		if(!nonPublic && method && !ILMethod_IsPublic(method))
+		{
+			method = 0;
+		}
+		if(method && _ILClrCheckAccess(thread, 0, (ILMember *)method))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/*
+ * public static bool CanAccess(IntPtr itemPrivate)
+ */
+static ILBool ClrHelpers_CanAccess(ILExecThread *thread,
+								   ILNativeInt itemPrivate)
+{
+	ILProgramItem *item = (ILProgramItem *)itemPrivate;
+	ILClass *classInfo = ILProgramItemToClass(item);
+	ILMember *member = ILProgramItemToMember(item);
+	if(classInfo)
+	{
+		return _ILClrCheckAccess(thread, classInfo, 0);
+	}
+	else if(member)
+	{
+		return _ILClrCheckAccess(thread, 0, member);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * Method table for the "System.Reflection.ClrHelpers" class.
  */
 IL_METHOD_BEGIN(_ILReflectionClrHelpersMethods)
@@ -273,6 +447,29 @@ IL_METHOD_BEGIN(_ILReflectionClrHelpersMethods)
 					ClrHelpers_GetDeclaringType)
 	IL_METHOD("GetName",				"(j)oSystem.String;",
 					ClrHelpers_GetName)
+	IL_METHOD("GetParameter",			"(ji)j",
+					ClrHelpers_GetParameter)
+	IL_METHOD("GetParameterType",		"(ji)oSystem.Type;",
+					ClrHelpers_GetParameterType)
+	IL_METHOD("GetNumParameters",		"(j)i",
+					ClrHelpers_GetNumParameters)
+	IL_METHOD("GetMemberAttrs",			"(j)i",
+					ClrHelpers_GetMemberAttrs)
+	IL_METHOD("GetCallConv",
+					"(j)vSystem.Reflection.CallingConventions;",
+					ClrHelpers_GetCallConv)
+	IL_METHOD("GetImplAttrs",
+					"(j)vSystem.Reflection.MemberImplAttributes;",
+					ClrHelpers_GetImplAttrs)
+	IL_METHOD("GetSemantics",
+					"(jvSystem.Reflection.MemberSemanticsAttributes;Z)"
+							"oSystem.Reflection.MethodInfo;",
+					ClrHelpers_GetSemantics)
+	IL_METHOD("HasSemantics",
+					"(jvSystem.Reflection.MemberSemanticsAttributes;Z)Z",
+					ClrHelpers_HasSemantics)
+	IL_METHOD("CanAccess",				"(j)Z",
+					ClrHelpers_CanAccess)
 IL_METHOD_END
 
 /*
@@ -454,6 +651,447 @@ IL_METHOD_BEGIN(_ILReflectionAssemblyMethods)
 					Assembly_LoadFromFile)
 	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;",
 					Assembly_GetType)
+IL_METHOD_END
+
+/*
+ * private static ParameterAttributes GetParamAttrs(IntPtr itemPrivate);
+ */
+static ILInt32 ClrParameter_GetParamAttrs(ILExecThread *thread,
+									      ILNativeInt itemPrivate)
+{
+	ILParameter *param;
+	param = ILProgramItemToParameter((ILProgramItem *)itemPrivate);
+	if(param)
+	{
+		return ILParameter_Attrs(param);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private static String GetParamName(IntPtr itemPrivate);
+ */
+static ILString *ClrParameter_GetParamName(ILExecThread *thread,
+									       ILNativeInt itemPrivate)
+{
+	ILParameter *param;
+	param = ILProgramItemToParameter((ILProgramItem *)itemPrivate);
+	if(param)
+	{
+		return ILStringCreate(thread, ILParameter_Name(param));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private static Object GetDefault(IntPtr itemPrivate);
+ */
+static ILObject *ClrParameter_GetDefault(ILExecThread *thread,
+									     ILNativeInt itemPrivate)
+{
+	ILParameter *param;
+	param = ILProgramItemToParameter((ILProgramItem *)itemPrivate);
+	if(param)
+	{
+		/* TODO */
+		return 0;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Method table for the "System.Reflection.ClrParameter" class.
+ */
+IL_METHOD_BEGIN(_ILReflectionClrParameterMethods)
+	IL_METHOD("GetParamAttrs",
+					"(j)vSystem.Reflection.ParameterAttributes;",
+					ClrParameter_GetParamAttrs)
+	IL_METHOD("GetParamName",		"(j)oSystem.String;",
+					ClrParameter_GetParamName)
+	IL_METHOD("GetDefault",			"(j)oSystem.Object;",
+					ClrParameter_GetDefault)
+IL_METHOD_END
+
+/*
+ * private static Type GetPropertyType(IntPtr itemPrivate);
+ */
+static ILObject *ClrProperty_GetPropertyType(ILExecThread *thread,
+									         ILNativeInt itemPrivate)
+{
+	ILProperty *property;
+	property = ILProgramItemToProperty((ILProgramItem *)itemPrivate);
+	if(property)
+	{
+		return _ILGetClrTypeForILType
+			(thread, ILProperty_Signature(property)->un.method.retType);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Method table for the "System.Reflection.ClrProperty" class.
+ */
+IL_METHOD_BEGIN(_ILReflectionClrPropertyMethods)
+	IL_METHOD("GetPropertyType",	"(j)oSystem.Type;",
+					ClrProperty_GetPropertyType)
+IL_METHOD_END
+
+/*
+ * public static FieldInfo GetFieldFromHandle(RuntimeFieldHandle handle);
+ */
+static ILObject *FieldInfo_GetFieldFromHandle(ILExecThread *thread,
+									          void *handle)
+{
+	ILField *field;
+	field = ILProgramItemToField((ILProgramItem *)(*((void **)handle)));
+	if(field)
+	{
+		return _ILClrToObject(thread, field, "System.Reflection.ClrField");
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Method table for the "System.Reflection.FieldInfo" class.
+ */
+IL_METHOD_BEGIN(_ILReflectionFieldInfoMethods)
+	IL_METHOD("GetFieldFromHandle",
+				"(vSystem.RuntimeFieldHandle;)oSystem.Reflection.FieldInfo;",
+				FieldInfo_GetFieldFromHandle)
+IL_METHOD_END
+
+/*
+ * public static MethodBase GetMethodFromHandle(RuntimeMethodHandle handle);
+ */
+static ILObject *MethodBase_GetMethodFromHandle(ILExecThread *thread,
+									            void *handle)
+{
+	ILMethod *method;
+	method = ILProgramItemToMethod((ILProgramItem *)(*((void **)handle)));
+	if(method)
+	{
+		if(ILMethod_IsConstructor(method) ||
+		   ILMethod_IsStaticConstructor(method))
+		{
+			return _ILClrToObject
+				(thread, method, "System.Reflection.ClrConstructor");
+		}
+		else
+		{
+			return _ILClrToObject
+				(thread, method, "System.Reflection.ClrMethod");
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * public static MethodBase CurrentMethod();
+ */
+static ILObject *MethodBase_CurrentMethod(ILExecThread *thread)
+{
+	ILCallFrame *frame = _ILGetCallFrame(thread, 0);
+	ILMethod *method = (frame ? frame->method : 0);
+	if(method)
+	{
+		if(ILMethod_IsConstructor(method) ||
+		   ILMethod_IsStaticConstructor(method))
+		{
+			return _ILClrToObject
+				(thread, method, "System.Reflection.ClrConstructor");
+		}
+		else
+		{
+			return _ILClrToObject
+				(thread, method, "System.Reflection.ClrMethod");
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Method table for the "System.Reflection.MethodBase" class.
+ */
+IL_METHOD_BEGIN(_ILReflectionMethodBaseMethods)
+	IL_METHOD("GetMethodFromHandle",
+				"(vSystem.RuntimeMethodHandle;)oSystem.Reflection.MethodBase;",
+				MethodBase_GetMethodFromHandle)
+	IL_METHOD("CurrentMethod",
+				"()oSystem.Reflection.MethodBase;",
+				MethodBase_CurrentMethod)
+IL_METHOD_END
+
+/*
+ * Invoke a method via reflection.
+ */
+static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
+							  ILType *signature, ILObject *_this,
+							  System_Array *parameters, int isCtor)
+{
+	ILExecValue *args;
+	/*ILExecValue result;*/
+
+	/* Check that the number of parameters is correct */
+	if(signature->num == 0)
+	{
+		if(parameters && parameters->length != 0)
+		{
+			ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
+			return 0;
+		}
+	}
+	else
+	{
+		if(!parameters || parameters->length != signature->num)
+		{
+			ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
+			return 0;
+		}
+	}
+
+	/* Allocate an argument array for the invocation */
+	if(signature->num != 0 || _this != 0)
+	{
+		args = (ILExecValue *)ILGCAlloc(sizeof(ILExecValue) *
+									    ((ILUInt32)(signature->num)) +
+									    (_this ? 1 : 0));
+		if(!args)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+	}
+	else
+	{
+		args = 0;
+	}
+
+	/* Copy the parameter values into the array, and check their types */
+
+	/* Allocate a boxing object for the result if it is a value type */
+
+	/* Invoke the method */
+
+	/* Box the return value and exit */
+	return 0;
+}
+
+/*
+ * public override Object Invoke(BindingFlags invokeAttr, Binder binder,
+ *								 Object[] parameters, CultureInfo culture);
+ */
+static ILObject *ClrConstructor_Invoke(ILExecThread *thread,
+									   ILObject *_this,
+									   ILInt32 invokeAttr,
+									   ILObject *binder,
+									   System_Array *parameters,
+									   ILObject *culture)
+{
+	ILMethod *method;
+	ILType *signature;
+
+	/* Extract the method item from the "this" object */
+	method = ILProgramItemToMethod(_ILClrFromObject(thread, _this));
+	if(!method)
+	{
+		/* Something is wrong with the object */
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException", 0);
+		return 0;
+	}
+
+	/* Check that we have sufficient access credentials for the method */
+	if(!_ILClrCheckAccess(thread, 0, (ILMember *)method))
+	{
+		ILExecThreadThrowSystem
+			(thread, "System.Security.SecurityException", 0);
+		return 0;
+	}
+
+	/* We cannot use this on static constructors */
+	if(ILMethod_IsStaticConstructor(method))
+	{
+		ILExecThreadThrowSystem(thread, "System.MemberAccessException", 0);
+		return 0;
+	}
+
+	/* Get the constructor's signature */
+	signature = ILMethod_Signature(method);
+
+	/* Invoke the constructor method */
+	return InvokeMethod(thread, method, signature, 0, parameters, 1);
+}
+
+/*
+ * Method table for the "System.Reflection.ClrConstructor" class.
+ */
+IL_METHOD_BEGIN(_ILReflectionClrConstructorMethods)
+	IL_METHOD("Invoke",
+				"(TvSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;"
+					"[oSystem.Object;oSystem.Globalization.CultureInfo;)"
+						"oSystem.Object;",
+				ClrConstructor_Invoke)
+IL_METHOD_END
+
+/*
+ * Throw a target exception.
+ */
+static void ThrowTargetException(ILExecThread *thread)
+{
+	ILExecThreadThrowSystem(thread, "System.Reflection.TargetException", 0);
+}
+
+/*
+ * public override Object Invoke(Object obj, BindingFlags invokeAttr,
+ *								 Binder binder, Object[] parameters,
+ *								 CultureInfo culture);
+ */
+static ILObject *ClrMethod_Invoke(ILExecThread *thread,
+							      ILObject *_this,
+								  ILObject *obj,
+							      ILInt32 invokeAttr,
+							      ILObject *binder,
+							      System_Array *parameters,
+							      ILObject *culture)
+{
+	ILMethod *method;
+	ILType *signature;
+	ILClass *classInfo;
+	ILClass *targetClass;
+
+	/* Extract the method item from the "this" object */
+	method = ILProgramItemToMethod(_ILClrFromObject(thread, _this));
+	if(!method)
+	{
+		/* Something is wrong with the object */
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException", 0);
+		return 0;
+	}
+
+	/* Check that we have sufficient access credentials for the method */
+	if(!_ILClrCheckAccess(thread, 0, (ILMember *)method))
+	{
+		ILExecThreadThrowSystem
+			(thread, "System.Security.SecurityException", 0);
+		return 0;
+	}
+
+	/* Resolve the method relative to the target */
+	signature = ILMethod_Signature(method);
+	classInfo = ILMethod_Owner(method);
+	if(ILMethod_IsVirtual(method))
+	{
+		/* We must have a target object */
+		if(!obj)
+		{
+			ThrowTargetException(thread);
+			return 0;
+		}
+
+		/* Resolve interface and virtual references to the actual method */
+		targetClass = GetObjectClass(obj);
+		if(ILClass_IsInterface(classInfo))
+		{
+			if(!ILClassImplements(targetClass, classInfo))
+			{
+				ThrowTargetException(thread);
+				return 0;
+			}
+			method = _ILLookupInterfaceMethod(targetClass, classInfo,
+											  method->index);
+		}
+		else
+		{
+			if(!ILClassInheritsFrom(targetClass, classInfo))
+			{
+				ThrowTargetException(thread);
+				return 0;
+			}
+			method = ((ILClassPrivate *)(targetClass->userData))->
+							vtable[method->index];
+		}
+
+		/* If we don't have a resolved method, then we cannot invoke */
+		if(!method)
+		{
+			ILExecThreadThrowSystem(thread, "System.MissingMethodException", 0);
+			return 0;
+		}
+	}
+	else if(ILType_HasThis(signature))
+	{
+		/* We must have a target object */
+		if(!obj)
+		{
+			ThrowTargetException(thread);
+			return 0;
+		}
+
+		/* The target class must inherit from the owner class */
+		targetClass = GetObjectClass(obj);
+		if(ILClass_IsInterface(classInfo))
+		{
+			/* This will only happen if an instance method is defined
+			   in an interface.  Since C# disallows this, it will be rare.
+			   However, CLI does not disallow it, so we must handle it */
+			if(!ILClassImplements(targetClass, classInfo))
+			{
+				ThrowTargetException(thread);
+				return 0;
+			}
+		}
+		else
+		{
+			if(!ILClassInheritsFrom(targetClass, classInfo))
+			{
+				ThrowTargetException(thread);
+				return 0;
+			}
+		}
+	}
+	else
+	{
+		/* Static method: we must not have a target object */
+		if(obj)
+		{
+			ThrowTargetException(thread);
+			return 0;
+		}
+	}
+
+	/* Invoke the method */
+	return InvokeMethod(thread, method, signature, obj, parameters, 0);
+}
+
+/*
+ * Method table for the "System.Reflection.ClrMethod" class.
+ */
+IL_METHOD_BEGIN(_ILReflectionClrMethodMethods)
+	IL_METHOD("Invoke",
+				"(ToSystem.Object;vSystem.Reflection.BindingFlags;"
+					"oSystem.Reflection.Binder;[oSystem.Object;"
+					"oSystem.Globalization.CultureInfo;)oSystem.Object;",
+				ClrMethod_Invoke)
 IL_METHOD_END
 
 #ifdef	__cplusplus

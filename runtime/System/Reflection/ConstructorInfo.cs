@@ -64,6 +64,16 @@ public abstract class ConstructorInfo : MethodBase
 								  Binder binder, Object[] parameters,
 								  CultureInfo culture);
 
+	internal Object InvokeOnEmpty(Object obj, Object[] parameters)
+			{
+				return InvokeOnEmpty(obj, BindingFlags.Default, null, 
+									 parameters, null);
+			}
+	
+	internal abstract Object InvokeOnEmpty(Object obj, 
+								  BindingFlags invokeAttr,
+								  Binder binder, Object[] parameters,
+								  CultureInfo culture);
 }; // class ConstructorInfo
 
 #endif // CONFIG_REFLECTION

@@ -1,3 +1,12 @@
+
+2004-05-15  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Reflection/ClrConstructor.cs, 
+	runtime/System/Reflection/ConstructorInfo.cs,
+	runtime/System/Reflection/Emit/ConstructorBuilder.cs: Add
+	the InvokeOnEmpty() method to enable constructors to be
+	called after allocation.
+
 2004-05-15  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/runtime/System/TestDelegate.cs, tests/runtime/System/

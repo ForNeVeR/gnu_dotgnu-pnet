@@ -211,6 +211,14 @@ public sealed class ConstructorBuilder
 			{
 				throw new NotSupportedException(_("NotSupp_Builder"));
 			}
+	
+	internal override Object InvokeOnEmpty(Object obj, 
+								  BindingFlags invokeAttr,
+								  Binder binder, Object[] parameters,
+								  CultureInfo culture)
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
 	// Determine if an attribute is defined on this constructor.
 	public override bool IsDefined(Type attribute_type, bool inherit)

@@ -133,7 +133,14 @@ internal sealed class ClrConstructor : ConstructorInfo, IClrProgramItem
 	extern public override Object Invoke
 				(BindingFlags invokeAttr, Binder binder,
 				 Object[] parameters, CultureInfo culture);
-
+	
+	// Invoke this constructor.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal override Object InvokeOnEmpty(Object obj, 
+								  BindingFlags invokeAttr,
+								  Binder binder, Object[] parameters,
+								  CultureInfo culture);
+								  
 	// Get the runtime method handle associated with this method.
 #if ECMA_COMPAT
 	internal

@@ -41,7 +41,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 	internal int x, y;
 	internal int layer;
 	internal bool mapped;
-	private bool autoMapChildren;
+	internal bool autoMapChildren;
 	private bool sensitive;
 	private bool ancestorSensitive;
 	private CursorType cursor;
@@ -414,7 +414,14 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 			{
 				get
 				{
-					return parent;
+					if(parent is PlaceholderWindow)
+					{
+						return null;
+					}
+					else
+					{
+						return parent;
+					}
 				}
 			}
 
@@ -460,7 +467,14 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 			{
 				get
 				{
-					return nextAbove;
+					if(parent is PlaceholderWindow)
+					{
+						return null;
+					}
+					else
+					{
+						return nextAbove;
+					}
 				}
 			}
 
@@ -483,7 +497,14 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 			{
 				get
 				{
-					return nextBelow;
+					if(parent is PlaceholderWindow)
+					{
+						return null;
+					}
+					else
+					{
+						return nextBelow;
+					}
 				}
 			}
 
@@ -928,6 +949,143 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					child.ThemeChange();
 					child = child.nextBelow;
 				}
+			}
+
+	/// <summary>
+	/// <para>Reparent this widget underneath a new parent.</para>
+	/// </summary>
+	///
+	/// <param name="newParent">
+	/// <para>The new parent widget.  This should be the placeholder widget
+	/// for the screen if you wish to give this widget "no parent".</para>
+	/// </param>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the new top-left widget corner.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the new top-left widget corner.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="newParent"/> is
+	/// <see langword="null"/>.</para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>Raised if <paramref name="x"/> or <paramref name="y"/>
+	/// is out of range.</para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XInvalidOperationException">
+	/// <para>Raised if <paramref name="newParent"/> is a descendent
+	/// of this widget, which would create a circularity.</para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XInvalidOperationException">
+	/// <para>Raised if <paramref name="newParent"/> is on a different
+	/// screen from this widget.</para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XInvalidOperationException">
+	/// <para>Raised if <paramref name="newParent"/> is an input only
+	/// widget, but this widget is input-output.</para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XInvalidOperationException">
+	/// <para>Raised if an attempt is made to reparent the root window
+	/// or a top-level window.</para>
+	/// </exception>
+	public virtual void Reparent(Widget newParent, int x, int y)
+			{
+				// Validate the parameters.
+				if(newParent == null)
+				{
+					throw new ArgumentNullException("newParent");
+				}
+				if(x < -32768 || x > 32767 ||
+				   y < -32768 || y > 32767)
+				{
+					throw new XException(S._("X_InvalidPosition"));
+				}
+				Widget temp = newParent;
+				while(temp != null && temp != this)
+				{
+					temp = temp.parent;
+				}
+				if(temp != null)
+				{
+					throw new XInvalidOperationException 
+						(S._("X_InvalidReparent"));
+				}
+				if(screen != newParent.screen)
+				{
+					throw new XInvalidOperationException 
+						(S._("X_InvalidReparent"));
+				}
+				if(!(newParent is InputOutputWidget) &&
+				   this is InputOutputWidget)
+				{
+					throw new XInvalidOperationException 
+						(S._("X_InvalidReparent"));
+				}
+
+				// If the new parent is the same as the old, then simply
+				// move and raise the widget, but do nothing else.
+				if(newParent == parent)
+				{
+					Move(x, y);
+					Raise();
+					return;
+				}
+
+				// Detach the widget from its current parent.
+				if(nextBelow != null)
+				{
+					nextBelow.nextAbove = nextAbove;
+				}
+				if(nextAbove != null)
+				{
+					nextAbove.nextBelow = nextBelow;
+				}
+				else if(parent != null)
+				{
+					parent.topChild = nextBelow;
+				}
+
+				// Attach the widget to its new parent as the top-most child.
+				nextBelow = newParent.topChild;
+				nextAbove = null;
+				if(newParent.topChild != null)
+				{
+					newParent.topChild.nextAbove = this;
+				}
+				newParent.topChild = this;
+				parent = newParent;
+
+				// Temporarily put the widget in the top-most layer.
+				int saveLayer = layer;
+				layer = 0x7FFFFFFF;
+
+				// Perform the actual reparent operation.  This will
+				// put the window at the top of the stacking order.
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.Window widget = GetWidgetHandle();
+					Xlib.Window pwidget = newParent.GetWidgetHandle();
+					Xlib.XReparentWindow(display, widget, pwidget, x, y);
+					this.x = x;
+					this.y = y;
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+
+				// Push the widget down to its original layer position.
+				Layer = saveLayer;
 			}
 
 	// Update the sensitivity on this widget and all of its children.

@@ -35,6 +35,7 @@ public sealed class Screen
 	private int number;
 	internal IntPtr screen;
 	private Xsharp.RootWindow rootWindow;
+	private Widget placeholder;
 	private IntPtr visual;
 	private Colormap defaultColormap;
 	private IntPtr[] defaultGCs;
@@ -69,6 +70,9 @@ public sealed class Screen
 
 				// Initialize the standard colors.
 				InitStandardColors();
+
+				// Create the placeholder window for parent-less widgets.
+				placeholder = new PlaceholderWindow(rootWindow);
 			}
 
 	/// <summary>
@@ -199,6 +203,33 @@ public sealed class Screen
 					{
 						dpy.Unlock();
 					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Get the placeholder widget for this screen.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The placeholder widget.</para>
+	/// </value>
+	///
+	/// <remarks>
+	/// <para>All widgets in X11 must have a parent, but sometimes
+	/// upper layers want to create widgets independently of their final
+	/// position and then reparent them into place afterwards.  The
+	/// placeholder widget can be used to hold a widget while it is
+	/// in the "parent-less" state.</para>
+	///
+	/// <para>When a widget is a child of the placeholder, its
+	/// <c>Parent</c>, <c>NextAbove</c>, and <c>NextBelow</c> properties
+	/// will all return <see langword="null"/>.</para>
+	/// </remarks>
+	public Widget Placeholder
+			{
+				get
+				{
+					return placeholder;
 				}
 			}
 

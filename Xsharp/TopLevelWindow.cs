@@ -164,7 +164,7 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	// Helper method to get the root window of a specified screen.
-	private static Widget GetRoot(Screen screen)
+	internal static Widget GetRoot(Screen screen)
 			{
 				if(screen == null)
 				{
@@ -222,6 +222,15 @@ public class TopLevelWindow : InputOutputWidget
 				{
 					dpy.Unlock();
 				}
+			}
+
+	/// <summary>
+	/// <para>Reparenting is not supported for top-level windows.</para>
+	/// </summary>
+	public override void Reparent(Widget newParent, int x, int y)
+			{
+				throw new XInvalidOperationException
+					(S._("X_NonTopLevelOperation"));
 			}
 
 	/// <summary>

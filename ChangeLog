@@ -1,4 +1,12 @@
 
+2003-06-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/PlaceholderWindow.cs, Xsharp/RootWindow.cs,
+	Xsharp/Screen.cs, Xsharp/TopLevelWindow.cs, Xsharp/Widget.cs,
+	Xsharp/Xlib.cs.in, resources/en_US/Xsharp/Xsharp.txt:
+	implement "parent-less" widgets using a placeholder window;
+	add support for widget reparenting.
+
 2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Application.cs, Xsharp/Graphics.cs, Xsharp/Xlib.cs.in:

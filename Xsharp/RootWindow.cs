@@ -49,7 +49,7 @@ public sealed class RootWindow : Widget
 				width = (int)(Xlib.XWidthOfScreen(screen.screen));
 				height = (int)(Xlib.XHeightOfScreen(screen.screen));
 				mapped = true;
-				AutoMapChildren = false;
+				autoMapChildren = false;
 			}
 
 	/// <summary>
@@ -123,6 +123,15 @@ public sealed class RootWindow : Widget
 	/// <para>Unmap this widget from the screen.</para>
 	/// </summary>
 	public override void Unmap()
+			{
+				throw new XInvalidOperationException
+					(S._("X_NonRootOperation"));
+			}
+
+	/// <summary>
+	/// <para>Reparenting is disabled for the root window.</para>
+	/// </summary>
+	public override void Reparent(Widget newParent, int x, int y)
 			{
 				throw new XInvalidOperationException
 					(S._("X_NonRootOperation"));

@@ -175,6 +175,10 @@ internal sealed class Xlib
 			(IntPtr display, Window w, @X_int@ screen_number);
 
 	[DllImport("X11")]
+	extern public static @X_int@ XReparentWindow
+			(IntPtr display, Window w, Window parent, @X_int@ x, @X_int@ y);
+
+	[DllImport("X11")]
 	extern public static Cursor XCreateFontCursor
 			(IntPtr display, @X_uint@ shape);
 

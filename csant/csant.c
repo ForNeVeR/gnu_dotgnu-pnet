@@ -22,7 +22,7 @@
 
 This program is similar in behaviour to "NAnt" (nant.sourceforge.net),
 except that it is written in C instead of C#.  This makes it a little
-less flexible.
+less flexible in some ways.
 
 A core tenet of the Portable.NET design philosophy is that it must
 be self-bootstrapping.  That is, the build must not rely upon any
@@ -75,10 +75,10 @@ static ILCmdLineOption const options[] = {
 		"--silent         or -s",
 		"Do not print the names of commands as they are executed."},
 	{"--quiet", 's', 0, 0, 0},
-	{"-M", 'M', 0, 0, 0},
-	{"--with-mstools", 'M', 0,
-		"--with-mstools   or -M",
-		"Assume that we are using Microsoft compilation tools."},
+	{"-C", 'C', 1, 0, 0},
+	{"--compiler", 'C', 1,
+		"--compiler name  or -C name",
+		"Specify which compiler to use [`cscc' (default), `csc', or `msc']."},
 	{"-v", 'v', 0, 0, 0},
 	{"--version", 'v', 0,
 		"--version        or -v",
@@ -159,9 +159,9 @@ int main(int argc, char *argv[])
 			}
 			break;
 
-			case 'M':
+			case 'C':
 			{
-				CSAntWithMSTools = 1;
+				CSAntCompiler = param;
 			}
 			break;
 
@@ -208,6 +208,16 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "%s: could not locate a default build file\n",
 					progname);
 			return 1;
+		}
+	}
+
+	/* Get the default compiler from the environment if necessary */
+	if(!CSAntCompiler)
+	{
+		CSAntCompiler = getenv("CSANT_COMPILER");
+		if(!CSAntCompiler)
+		{
+			CSAntCompiler = "cscc";
 		}
 	}
 

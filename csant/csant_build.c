@@ -27,7 +27,7 @@ extern	"C" {
 int   CSAntJustPrint   = 0;
 int   CSAntKeepGoing   = 0;
 int   CSAntSilent      = 0;
-int   CSAntWithMSTools = 0;
+char *CSAntCompiler    = 0;
 
 /*
  * List of non-global targets that are registered to be built.
@@ -76,6 +76,7 @@ static void StdProps(const char *buildFilename)
 		CSAntDefineProperty("csant.default.name", -1,
 							CSAntDefaultTarget, 0);
 	}
+	CSAntDefineProperty("csant.compiler", -1, CSAntCompiler, 0);
 
 	/* Copy the contents of the environment to the property list */
 	temp = environ;

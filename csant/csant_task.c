@@ -82,6 +82,7 @@ static int Task_CSAnt(CSAntTask *task)
 	char *baseDir;
 	const char *buildFile;
 	const char *target;
+	const char *compiler;
 	char *argv[20];
 	int argc, posn;
 	int result;
@@ -92,6 +93,9 @@ static int Task_CSAnt(CSAntTask *task)
 	/* Locate the new build file and target */
 	buildFile = CSAntTaskParam(task, "buildfile");
 	target = CSAntTaskParam(task, "target");
+
+	/* Locate the compiler, which may have been overridden by properties */
+	compiler = CSAntGetProperty("csant.compiler", -1);
 
 	/* Construct the command-line to be spawned */
 	argv[0] = CSAntGetProgramName();
@@ -118,10 +122,8 @@ static int Task_CSAnt(CSAntTask *task)
 	{
 		argv[argc++] = "-s";
 	}
-	if(CSAntWithMSTools)
-	{
-		argv[argc++] = "-M";
-	}
+	argv[argc++] = "-C";
+	argv[argc++] = (char *)compiler;
 	if(target)
 	{
 		argv[argc++] = (char *)target;
@@ -151,16 +153,14 @@ static int Task_CSAnt(CSAntTask *task)
 }
 
 CSAntTaskInfo const CSAntTasks[] = {
-	/* Standard task names */
+	{"compile",			CSAntTask_Compile},
 	{"cscc",			CSAntTask_Cscc},
 	{"csc",				CSAntTask_Csc},
+	{"mcs",				CSAntTask_Mcs},
 	{"property",		Task_Property},
 	{"echo",			Task_Echo},
 	{"fail",			Task_Fail},
 	{"csant",			Task_CSAnt},
-
-	/* Compatibility with NAnt */
-	{"nant",			Task_CSAnt},
 };
 int const CSAntNumTasks = (sizeof(CSAntTasks) / sizeof(CSAntTaskInfo));
 

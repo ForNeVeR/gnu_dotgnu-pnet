@@ -37,7 +37,7 @@ extern	"C" {
 extern int   CSAntJustPrint;
 extern int   CSAntKeepGoing;
 extern int   CSAntSilent;
-extern int   CSAntWithMSTools;
+extern char *CSAntCompiler;
 extern char *CSAntBaseDir;
 extern char *CSAntProjectName;
 extern char *CSAntDefaultTarget;
@@ -152,6 +152,16 @@ int CSAntTask_Cscc(CSAntTask *task);
  * Handle a "csc" task, which invokes the Microsoft C# compiler.
  */
 int CSAntTask_Csc(CSAntTask *task);
+
+/*
+ * Handle a "mcs" task, which invokes the Mono C# compiler.
+ */
+int CSAntTask_Mcs(CSAntTask *task);
+
+/*
+ * Handle a "compile" task, which invokes the configured C# compiler.
+ */
+int CSAntTask_Compile(CSAntTask *task);
 
 #ifdef	__cplusplus
 };

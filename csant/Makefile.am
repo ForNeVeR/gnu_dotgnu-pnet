@@ -5,6 +5,7 @@ csant_SOURCES  = csant.c \
 				 csant_build.c \
 				 csant_cscc.c \
 				 csant_dir.c \
+				 csant_fileset.c \
 				 csant_parse.c \
 				 csant_prop.c \
 				 csant_task.c

@@ -46,7 +46,7 @@ namespace System.Private.DateTimeFormat
 
 			for( int i = 0; i < fsl; i++ )
 				patterns[i] = 
-					DateTimeFormatter.StandardFormatSpecifier(formatSpecifiers[i]);
+					StandardFormatSpecifier(formatSpecifiers[i]);
 
 			for( int i = fsl; i < fsl+ipl; i++ )
 				patterns[i] = infoPatterns[i-fsl];
@@ -111,7 +111,7 @@ namespace System.Private.DateTimeFormat
 				 	DateTimeFormatInfo info, DateTimeStyles style)
 		{
 			if( (format.Length) == 1 )
-				format=DateTimeFormatter.StandardFormatSpecifier(format);
+				format=StandardFormatSpecifier(format);
 	
 			Queue q=new Queue();
 			if(info==null) 
@@ -312,6 +312,66 @@ namespace System.Private.DateTimeFormat
 	
 			DateTime stored = d.storeInDateTime(style);
 			return stored;
+		}
+
+		internal static String StandardFormatSpecifier(String format)
+		{
+			switch(format)
+			{		
+				case "d":
+				{
+					return "MM/dd/yyyy";
+				}
+				case "D":
+				{
+					return "dddd, MMMM dd, yyyy";
+				}
+				case "f":
+				{
+					return "dddd, MMMM dd, yyyy HH:mm";
+				}
+				case "F":
+				{
+					return "dddd, MMMM dd, yyyy HH:mm:ss";
+				}
+				case "g":
+				{
+					return "MM/dd/yyyy HH:mm";
+				}
+				case "G":
+				{
+					return "MM/dd/yyyy HH:mm:ss";
+				}
+				case "m":
+				{
+					return "MMMM dd";
+				}
+				case "M":
+				{
+					return "MMMM dd";
+				}
+				case "t":
+				{
+					return "HH:mm";
+				}
+				case "T":
+				{
+					return "HH:mm:ss";
+				}
+				case "U":
+				{
+					return "dddd, MMMM dd, yyyy HH:mm:ss";
+				}
+				case "y":
+				{
+					return "yyyy MMMM";
+				}
+				case "Y":
+				{
+					return "yyyy MMMM";
+				}
+			}
+			return null;
 		}
 	}
 }

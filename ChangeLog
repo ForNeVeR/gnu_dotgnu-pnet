@@ -15,6 +15,12 @@
 	runtime/System/Resources/ResourceManager.cs: remove the culture
 	name table from "mscorlib" because it is now in "I18N".
 
+	* runtime/System/DateTime.cs,
+	runtime/System/Private/DateTimeFormat/DateTimeFormatter.cs,
+	runtime/System/Private/DateTimeFormat/DateTimeParser.cs:
+	rewrite the DateTimeFormatter to be culture-sensitive and
+	more efficient.
+
 2003-05-31  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebRequest.cs, System/Net/HttpWebRequest.cs,

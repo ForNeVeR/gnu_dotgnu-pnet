@@ -1,10 +1,8 @@
 /*
- * DateTimeFormatter.cs - Implementation of the 
- *			"System.Private.DateTimeFormat.DateTimeFormatter" class.
+ * DateTimeFormatter.cs - Implementation of the
+ *		"System.Private.DateTimeFormat.DateTimeFormatter" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- *
- * Contributions from Michael Moore <mtmoore@uga.edu>
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,280 +17,490 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */	
+ */
 
 namespace System.Private.DateTimeFormat
 {
 
-	using System;
-	using System.Collections;
-	using System.Globalization;
-	using System.Text;
-	internal class DateTimeFormatter
-	{ 
-		public static String Format(DateTime date,
-							String format, DateTimeFormatInfo info)
-		{
-			if(format.Length==1) 
-			{
-				format=StandardFormatSpecifier(format);
-				if(format==null)
-				{
-					throw new FormatException(_("Format_StringException"));
-				}
-			}
-			
-			StringBuilder builder=new StringBuilder(format.Length);
-			Queue q=new Queue();
-			
-			if(info==null) 
-				info=DateTimeFormatInfo.InvariantInfo;
+using System.Globalization;
+using System.Text;
 
-			FormatTemplate current=null;
-			current=new ExplicitString(); // marker for the start
-			bool literal=false;
-	
-			foreach(char c in format)
+internal sealed class DateTimeFormatter
+{
+	// Format a date value as a string.
+	public static String Format(DateTime date, String format,
+							    IFormatProvider provider)
 			{
-				if(literal) 
+				DateTimeFormatInfo info;
+
+				// Get the date/time formatting information to use.
+				info = DateTimeFormatInfo.GetInstance(provider);
+
+				// Validate the format string.
+				if(format == null || format == String.Empty)
 				{
-				
-					if(!(current is ExplicitString))
-					{
-						q.Enqueue(current);
-						current=new ExplicitString();
-					}
-					(current as ExplicitString).Text+=c;
-					literal=false;
-					continue;
+					format = "G";
 				}
-			
-				switch(c)
+				if(format.Length == 1)
 				{
-					case 'd':
+					// Resolve the format code to a custom format string.
+					switch(format)
 					{
-						if(!(current is DayFormatter))
+						case "d":	format = info.ShortDatePattern; break;
+						case "D":	format = info.LongDatePattern; break;
+						case "f":
+							format = info.LongDatePattern + " " +
+									 info.ShortTimePattern;
+							break;
+						case "F":	format = info.FullDateTimePattern; break;
+						case "g":
+							format = info.ShortDatePattern + " " +
+									 info.ShortTimePattern;
+							break;
+						case "G":
+							format = info.ShortDatePattern + " " +
+									 info.LongTimePattern;
+							break;
+						case "m": case "M":
+							format = info.MonthDayPattern; break;
+						case "r": case "R":
+							format = info.RFC1123Pattern; break;
+						case "s":
+							format = info.SortableDateTimePattern; break;
+						case "t":
+							format = info.ShortTimePattern; break;
+						case "T":
+							format = info.LongTimePattern; break;
+						case "u":
+							format = info.UniversalSortableDateTimePattern;
+							break;
+						case "U":
+							date = date.ToUniversalTime();
+							format = info.FullDateTimePattern;
+							break;
+						case "y": case "Y":
+							format = info.YearMonthPattern; break;
+
+						default:
 						{
-							q.Enqueue(current); //save the last node
-							current=new DayFormatter();
+							throw new FormatException
+								(_("Format_FormatString"));
 						}
-						(current as DayFormatter).Count++;
-						break;
-					}
-					case 'f':
-					{
-						if(!(current is FractionalSecondFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new FractionalSecondFormatter();
-						}
-						(current as FractionalSecondFormatter).Count++;
-						break;
-					}
-					case 'g':
-					{
-						if(!(current is EraFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new EraFormatter();
-						}
-						(current as EraFormatter).Count++;
-						break;
-					}
-					case 'h':
-					{
-						if(!(current is TwelveHourFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new TwelveHourFormatter();
-						}
-						(current as TwelveHourFormatter).Count++;
-						break;
-					}
-					case 'H':
-						{
-						if(!(current is TwentyFourHourFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new TwentyFourHourFormatter();
-						}
-						(current as TwentyFourHourFormatter).Count++;
-						break;
-					}
-					case 'm':
-					{
-						if(!(current is MinuteFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new MinuteFormatter();
-						}
-						(current as MinuteFormatter).Count++;
-						break;
-					}
-					case 'M':
-					{
-						if(!(current is MonthFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new MonthFormatter();
-						}
-						(current as MonthFormatter).Count++;
-						break;
-					}
-					case 's':
-					{
-						if(!(current is SecondFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new SecondFormatter();
-						}
-						(current as SecondFormatter).Count++;
-						break;
-					}
-					case 't':
-					{
-						if(!(current is AMPMFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new AMPMFormatter();
-						}
-						(current as AMPMFormatter).Count++;
-						break;
-					}
-					case 'y':
-					{
-						if(!(current is YearFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new YearFormatter();
-						}
-						(current as YearFormatter).Count++;
-						break;
-					}
-					case 'z':
-					{
-						if(!(current is UTCFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new UTCFormatter();
-						}
-						(current as UTCFormatter).Count++;
-						break;
-					}
-					case '/':
-					{
-						if(!(current is DateSeparatorFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new DateSeparatorFormatter();
-						}
-						(current as DateSeparatorFormatter).Count++;
-						break;
-					}
-					case ':':
-					{
-						if(!(current is TimeSeparatorFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new TimeSeparatorFormatter();
-						}
-						(current as TimeSeparatorFormatter).Count++;
-						break;
-					}
-					case '%':
-					{
-						//% is just a place holder so a single char
-						// can be a custom formatter
-						break;
-					}
-					case '\\':
-					{
-						literal=true;
-						break;
-					}
-					default:
-					{
-						if(!(current is ExplicitString))
-						{
-							q.Enqueue(current);
-							current=new ExplicitString();
-						}
-						(current as ExplicitString).Text+=c;
-						break;
+						// Not reached.
 					}
 				}
+
+				// Format the date/time value.
+				StringBuilder builder = new StringBuilder();
+				int posn = 0;
+				char ch;
+				int count, value;
+				while(posn < format.Length)
+				{
+					// Extract the next format character plus its count.
+					ch = format[posn++];
+					count = 1;
+					switch(ch)
+					{
+						case 'd': case 'm': case 'M': case 'y':
+						case 'g': case 'h': case 'H': case 's':
+						case 'f': case 't': case 'z':
+						{
+							while(posn < format.Length &&
+								  format[posn] == ch)
+							{
+								++posn;
+								++count;
+							}
+						}
+						break;
+
+						case ':':
+						{
+							builder.Append(info.TimeSeparator);
+							continue;
+						}
+						// Not reached.
+
+						case '/':
+						{
+							builder.Append(info.DateSeparator);
+							continue;
+						}
+						// Not reached.
+
+						case '%':
+						{
+							// Used to escape custom patterns that would
+							// otherwise look like single-letter formats.
+							continue;
+						}
+						// Not reached.
+
+						case '\\':
+						{
+							// Escape the next character.
+							if(posn < format.Length)
+							{
+								builder.Append(format[posn++]);
+							}
+							continue;
+						}
+						// Not reached.
+
+						case '\'':
+						{
+							// Quoted text.
+							while(posn < format.Length)
+							{
+								ch = format[posn++];
+								if(ch == '\'')
+								{
+									break;
+								}
+								builder.Append(ch);
+							}
+							continue;
+						}
+						// Not reached.
+
+						default:
+						{
+							// Literal character.
+							builder.Append(ch);
+							continue;
+						}
+						// Not reached.
+					}
+
+					// Process the format character.
+					switch(ch)
+					{
+						case 'd':
+						{
+							// Output the day or weekday.
+							if(count == 1)
+							{
+								value = date.Day;
+								if(value < 10)
+								{
+									builder.Append((char)('0' + value));
+								}
+								else
+								{
+									builder.Append((char)('0' + (value / 10)));
+									builder.Append((char)('0' + (value % 10)));
+								}
+							}
+							else if(count == 2)
+							{
+								value = date.Day;
+								builder.Append((char)('0' + (value / 10)));
+								builder.Append((char)('0' + (value % 10)));
+							}
+							else if(count == 3)
+							{
+								builder.Append
+									(info.AbbreviatedDayNames
+										[(int)(date.DayOfWeek)]);
+							}
+							else
+							{
+								builder.Append
+									(info.DayNames[(int)(date.DayOfWeek)]);
+							}
+						}
+						break;
+
+						case 'M':
+						{
+							// Output the month.
+							value = date.Month;
+							if(count == 1)
+							{
+								if(value < 10)
+								{
+									builder.Append((char)('0' + value));
+								}
+								else
+								{
+									builder.Append((char)('0' + (value / 10)));
+									builder.Append((char)('0' + (value % 10)));
+								}
+							}
+							else if(count == 2)
+							{
+								builder.Append((char)('0' + (value / 10)));
+								builder.Append((char)('0' + (value % 10)));
+							}
+							else if(count == 3)
+							{
+								builder.Append
+									(info.AbbreviatedMonthNames[value - 1]);
+							}
+							else
+							{
+								builder.Append(info.MonthNames[value - 1]);
+							}
+						}
+						break;
+
+						case 'y':
+						{
+							// Output the year.
+							value = date.Year;
+							if(count == 1)
+							{
+								value %= 100;
+								if(value < 10)
+								{
+									builder.Append((char)('0' + value));
+								}
+								else
+								{
+									builder.Append((char)('0' + (value / 10)));
+									builder.Append((char)('0' + (value % 10)));
+								}
+							}
+							else if(count == 2)
+							{
+								value %= 100;
+								builder.Append((char)('0' + (value / 10)));
+								builder.Append((char)('0' + (value % 10)));
+							}
+							else
+							{
+								builder.Append((char)('0' + (value / 1000)));
+								builder.Append
+									((char)('0' + ((value / 100 % 10))));
+								builder.Append
+									((char)('0' + ((value / 10 % 10))));
+								builder.Append((char)('0' + (value % 10)));
+							}
+						}
+						break;
+
+						case 'g':
+						{
+							// Output the era name.
+							try
+							{
+								int era = info.Calendar.GetEra(date);
+								builder.Append(info.GetEraName(era));
+							}
+							catch(ArgumentException)
+							{
+								// The date does not have an era.
+							}
+						}
+						break;
+
+						case 'h':
+						{
+							// Output the hour in 12-hour format.
+							value = date.Hour;
+							if(value == 0)
+							{
+								value = 12;
+							}
+							else if(value > 12)
+							{
+								value -= 12;
+							}
+							if(count == 1)
+							{
+								if(value < 10)
+								{
+									builder.Append((char)('0' + value));
+								}
+								else
+								{
+									builder.Append((char)('0' + (value / 10)));
+									builder.Append((char)('0' + (value % 10)));
+								}
+							}
+							else
+							{
+								builder.Append((char)('0' + (value / 10)));
+								builder.Append((char)('0' + (value % 10)));
+							}
+						}
+						break;
+
+						case 'H':
+						{
+							// Output the hour in 24-hour format.
+							value = date.Hour;
+							if(count == 1)
+							{
+								if(value < 10)
+								{
+									builder.Append((char)('0' + value));
+								}
+								else
+								{
+									builder.Append((char)('0' + (value / 10)));
+									builder.Append((char)('0' + (value % 10)));
+								}
+							}
+							else
+							{
+								builder.Append((char)('0' + (value / 10)));
+								builder.Append((char)('0' + (value % 10)));
+							}
+						}
+						break;
+
+						case 'm':
+						{
+							// Output the minute.
+							value = date.Minute;
+							if(count == 1)
+							{
+								if(value < 10)
+								{
+									builder.Append((char)('0' + value));
+								}
+								else
+								{
+									builder.Append((char)('0' + (value / 10)));
+									builder.Append((char)('0' + (value % 10)));
+								}
+							}
+							else
+							{
+								builder.Append((char)('0' + (value / 10)));
+								builder.Append((char)('0' + (value % 10)));
+							}
+						}
+						break;
+
+						case 's':
+						{
+							// Output the second.
+							value = date.Second;
+							if(count == 1)
+							{
+								if(value < 10)
+								{
+									builder.Append((char)('0' + value));
+								}
+								else
+								{
+									builder.Append((char)('0' + (value / 10)));
+									builder.Append((char)('0' + (value % 10)));
+								}
+							}
+							else
+							{
+								builder.Append((char)('0' + (value / 10)));
+								builder.Append((char)('0' + (value % 10)));
+							}
+						}
+						break;
+
+						case 'f':
+						{
+							// Output fractions of a second.
+							if(count > 7)
+							{
+								count = 7;
+							}
+							long frac = date.Ticks;
+							long divisor = TimeSpan.TicksPerSecond;
+							while(count > 0)
+							{
+								divisor /= 10;
+								value = (int)(frac / divisor);
+								builder.Append((char)('0' + value));
+								frac %= divisor;
+								--count;
+							}
+						}
+						break;
+
+						case 't':
+						{
+							value = date.Hour;
+							if(count == 1)
+							{
+								if(value < 12)
+								{
+									builder.Append(info.AMDesignator[0]);
+								}
+								else
+								{
+									builder.Append(info.PMDesignator[0]);
+								}
+							}
+							else
+							{
+								if(value < 12)
+								{
+									builder.Append(info.AMDesignator);
+								}
+								else
+								{
+									builder.Append(info.PMDesignator);
+								}
+							}
+						}
+						break;
+
+					#if !ECMA_COMPAT
+						case 'z':
+						{
+							long offset =
+								TimeZone.CurrentTimeZone
+									.GetUtcOffset(date).Ticks;
+							int hour, min;
+							if(offset >= 0)
+							{
+								builder.Append('+');
+							}
+							else
+							{
+								builder.Append('-');
+								offset = -offset;
+							}
+							hour = (int)(offset / TimeSpan.TicksPerHour);
+							offset %= TimeSpan.TicksPerHour;
+							min = (int)(offset / TimeSpan.TicksPerMinute);
+							if(count == 1)
+							{
+								if(hour < 10)
+								{
+									builder.Append((char)('0' + hour));
+								}
+								else
+								{
+									builder.Append((char)('0' + (hour / 10)));
+									builder.Append((char)('0' + (hour % 10)));
+								}
+							}
+							else if(count == 2)
+							{
+								builder.Append((char)('0' + (hour / 10)));
+								builder.Append((char)('0' + (hour % 10)));
+							}
+							else
+							{
+								builder.Append((char)('0' + (hour / 10)));
+								builder.Append((char)('0' + (hour % 10)));
+								builder.Append(':');
+								builder.Append((char)('0' + (min / 10)));
+								builder.Append((char)('0' + (min % 10)));
+							}
+						}
+						break;
+					#endif
+					}
+				}
+
+				// Return the formatted string to the caller.
+				return builder.ToString();
 			}
-			
-			q.Enqueue(current);
-			
-			foreach(Object x in q)
-			{
-				builder.Append((x as FormatTemplate).GetString(date,info));
-				/* traverse the list and add the stuff */
-			}
-			return builder.ToString();
-		}
-	
-		internal static String StandardFormatSpecifier(String format)
-		{
-			switch(format)
-			{		
-				case "d":
-				{
-					return "MM/dd/yyyy";
-				}
-				case "D":
-				{
-					return "dddd, MMMM dd, yyyy";
-				}
-				case "f":
-				{
-					return "dddd, MMMM dd, yyyy HH:mm";
-				}
-				case "F":
-				{
-					return "dddd, MMMM dd, yyyy HH:mm:ss";
-				}
-				case "g":
-				{
-					return "MM/dd/yyyy HH:mm";
-				}
-				case "G":
-				{
-					return "MM/dd/yyyy HH:mm:ss";
-				}
-				case "m":
-				{
-					return "MMMM dd";
-				}
-				case "M":
-				{
-					return "MMMM dd";
-				}
-				case "t":
-				{
-					return "HH:mm";
-				}
-				case "T":
-				{
-					return "HH:mm:ss";
-				}
-				case "U":
-				{
-					return "dddd, MMMM dd, yyyy HH:mm:ss";
-				}
-				case "y":
-				{
-					return "yyyy MMMM";
-				}
-				case "Y":
-				{
-					return "yyyy MMMM";
-				}
-			}
-			return null;
-		}
-	}
-}
-	
-	
+
+}; // class DateTimeFormatter
+
+}; // namespace System.Private.DateTimeFormat

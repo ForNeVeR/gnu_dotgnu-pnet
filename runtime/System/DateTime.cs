@@ -342,21 +342,19 @@ public struct DateTime : IComparable, IFormattable
 	// String conversion.
 	public override String ToString()
 			{
-				return ToString("G", null);
+				return DateTimeFormatter.Format(this, "G", null);
 			}
 	public String ToString(String format)
 			{
-				return ToString(format, 
-					DateTimeFormatInfo.GetInstance(null));
+				return DateTimeFormatter.Format(this, format, null);
 			}
 	public String ToString(IFormatProvider provider)
 			{
-				return ToString("G", provider);
+				return DateTimeFormatter.Format(this, "G", provider);
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
-				return DateTimeFormatter.Format(this,format,
-					DateTimeFormatInfo.GetInstance(provider));
+				return DateTimeFormatter.Format(this, format, provider);
 			}
 
 	// Parsing methods.

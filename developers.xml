@@ -1,0 +1,18 @@
+<developers>
+	<developer name="Rhys Weatherly" nick="rhysw" 
+	commit="ok" email="rweather@southern-storm.com.au"/>
+
+	<developer name="Abhaya Agarwal" nick="abhay" 
+	commit="ok" email="abhayag@cse.iitk.ac.in"/>
+	
+	<developer name="Stephen Compall" nick="S11001001" 
+	commit="ok"	email="rushing@sigecom.net"/>
+
+	<developer name="Peter Minten" nick="Silvernerd" 
+	commit="ok" email="silvernerd@users.sf.net"/>
+	
+	<developer name="Charlie Carnow" nick="carnow"
+	commit="ok"	email="carnow@gmx.net"/>
+<!--fill in patch submitters please-->
+
+</developers>

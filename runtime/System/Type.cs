@@ -523,6 +523,11 @@ public abstract class Type : MemberInfo
 			}
 
 #if !ECMA_COMPAT
+
+	public static TypeCode GetTypeCode(Type type)
+			{
+				throw new NotImplementedException("GetTypeCode");
+			}
 	// Get a type from a class identifier.
 	//
 	// This functionality is not supported, as it is

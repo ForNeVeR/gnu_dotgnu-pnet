@@ -15,6 +15,8 @@
 
 	* runtime/System/Reflection/Emit/OpCodes.cs: correct case of the
 	opcode names.
+	
+	* runtime/System/Type.cs: Add stub for non-ECMA GetTypeCode() method.
 
 2003-02-07  Michael Moore <mtmoore@uga.edu>
 

@@ -4,6 +4,9 @@
 	* support/interlocked_x86.h: Fix SSE2 checks to use __SSE2__ instead
 	of CONFIG_X86_SSE2.
 
+	* configure.in, engine/Makefile.am: Add checks for interrupt.h and 
+	add ../support to the include paths for no-tools build.
+
 2004-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/pnet_faq.html: update the FAQ.

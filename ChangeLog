@@ -1,3 +1,7 @@
+2004-06-25  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/XmlElement.cs: implement the InnerXml property's setter.
+
 2004-06-24  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Drawing.Win32/Win32.cs: optimization of SwapRGB from Neil Cawse

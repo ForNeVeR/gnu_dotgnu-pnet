@@ -101,16 +101,53 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Get the markup that represents the children of this node.
-	[TODO]
 	public override String InnerXml
 			{
-				get
-				{
-					return base.InnerXml;
-				}
+				get { return base.InnerXml; }
 				set
 				{
-					// TODO
+					// remove the children from this element
+					RemoveContents();
+
+					// get the owner document
+					XmlDocument doc = FindOwnerQuick();
+
+					// get the name table
+					XmlNameTable nt = doc.NameTable;
+
+					// declare the lang and space
+					String lang; XmlSpace space;
+
+					// create the namespace manager
+					XmlNamespaceManager nm = new XmlNamespaceManager(nt);
+
+					// collect all the ancestor information needed for parsing
+					CollectAncestorInformation(ref nm, out lang, out space);
+
+					// create the parser context
+					XmlParserContext context = new XmlParserContext
+						(nt, nm, lang, space);
+
+					// set the base uri in the parser context
+					context.BaseURI = BaseURI;
+
+					// create the reader
+					XmlTextReader r = new XmlTextReader
+						(value, XmlNodeType.Element, context);
+
+					// add the child nodes
+					do
+					{
+						// read the next child node
+						XmlNode child = doc.ReadNode(r);
+
+						// return if there are no more children
+						if(child == null) { return; }
+
+						// append the new child node
+						AppendChild(child);
+					}
+					while(true);
 				}
 			}
 

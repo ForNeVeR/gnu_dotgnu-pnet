@@ -8,6 +8,9 @@
 	the CVS server that cause problems with different versions
 	of automake/autoconf.
 
+	* engine/lib_string.c: bug in string construction and CharFill
+	that caused it to use the wrong pointer in "char[]" arrays.
+
 2002-12-01  Stephen Compall  <rushing@sigecom.net>
 
 	* pnet.spec.in: Fixed man page filespecs to support multiple

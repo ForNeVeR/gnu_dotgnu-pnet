@@ -88,7 +88,8 @@ System_String *_IL_String_ctor_acii(ILExecThread *thread,
 	/* Copy the contents of the character array into the string */
 	if(length > 0)
 	{
-		ILMemCpy(StringToBuffer(_this), ArrayToBuffer(value) + startIndex,
+		ILMemCpy(StringToBuffer(_this),
+				 ((ILUInt16 *)(ArrayToBuffer(value))) + startIndex,
 				 sizeof(ILUInt16) * length);
 	}
 
@@ -1188,7 +1189,7 @@ void _IL_String_CharFill_Stringiacii(ILExecThread *thread,
 								   	 ILInt32 index,
 								   	 ILInt32 count)
 {
-	ILUInt16 *src = ArrayToBuffer(chars) + index;
+	ILUInt16 *src = ((ILUInt16 *)(ArrayToBuffer(chars))) + index;
 	ILUInt16 *dest = StringToBuffer(str) + start;
 	while(count > 0)
 	{

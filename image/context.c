@@ -136,6 +136,18 @@ ILImage *ILContextGetAssembly(ILContext *context, const char *name)
 						  IL_OFFSET_ASSEMBLY_NAME);
 }
 
+ILImage *ILContextNextImage(ILContext *context, ILImage *image)
+{
+	if(image)
+	{
+		return image->nextImage;
+	}
+	else
+	{
+		return context->firstImage;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

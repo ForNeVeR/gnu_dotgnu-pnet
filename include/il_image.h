@@ -113,6 +113,11 @@ ILImage *ILContextGetModule(ILContext *context, const char *name);
 ILImage *ILContextGetAssembly(ILContext *context, const char *name);
 
 /*
+ * Iterate through the images that are associated with a context.
+ */
+ILImage *ILContextNextImage(ILContext *context, ILImage *image);
+
+/*
  * Create an IL image.  This is typically used by compilers
  * when building an image in-memory in preparation for writing
  * it to an object file or executable.  Loaders should use

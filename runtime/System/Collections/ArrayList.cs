@@ -662,8 +662,26 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				Object valuej;
 				if(lower < upper)
 				{
-					// Partition the array.
+					// If this[lower] > this[upper], then swap.  This
+					// helps to make the loops below terminate predictably.
 					testKey = this[upper];
+					valuei = this[lower];
+					if(comparer != null)
+					{
+						cmp = comparer.Compare(valuei, testKey);
+					}
+					else
+					{
+						cmp = ((IComparable)valuei).CompareTo(testKey);
+					}
+					if(cmp > 0)
+					{
+						this[upper] = valuei;
+						this[lower] = testKey;
+						testKey = valuei;
+					}
+
+					// Partition the array.
 					i = lower - 1;
 					j = upper;
 					for(;;)

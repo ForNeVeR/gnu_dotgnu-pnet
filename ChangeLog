@@ -1,4 +1,10 @@
 
+2002-12-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Array.cs, runtime/System/Collections/ArrayList.cs,
+	tests/runtime/System/Collections/TestArrayList.cs: fix the pivot
+	values in the quicksort implementations within Array and ArrayList.
+
 2002-12-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/ElementList.cs, System.Xml/XmlElement.cs,

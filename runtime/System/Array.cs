@@ -1036,8 +1036,33 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		Object valuej;
 		if(lower < upper)
 		{
-			// Partition the array.
+			// If this[lower] > this[upper], then swap.  This
+			// helps to make the loops below terminate predictably.
 			testKey = keys.GetValue(upper);
+			valuei = keys.GetValue(lower);
+			if(comparer != null)
+			{
+				cmp = comparer.Compare(valuei, testKey);
+			}
+			else
+			{
+				cmp = ((IComparable)valuei).CompareTo(testKey);
+			}
+			if(cmp > 0)
+			{
+				keys.SetValue(valuei, upper);
+				keys.SetValue(testKey, lower);
+				testKey = valuei;
+				if(items != null)
+				{
+					valuei = items.GetValue(lower);
+					valuej = items.GetValue(upper);
+					items.SetValue(valuej, lower);
+					items.SetValue(valuei, upper);
+				}
+			}
+
+			// Partition the array.
 			i = lower - 1;
 			j = upper;
 			for(;;)

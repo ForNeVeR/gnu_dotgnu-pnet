@@ -114,4 +114,24 @@ public class TestArrayList : TestCase
 				}
 			}
 
+	// Test sorting an array list.
+	public void TestArrayListSort()
+			{
+				ArrayList list = new ArrayList();
+				list.Add(98);
+				list.Add(45);
+				list.Sort();
+				AssertEquals("Sort (1)", 45, list[0]);
+				AssertEquals("Sort (2)", 98, list[1]);
+
+				list = new ArrayList();
+				list.Add(98);
+				list.Add(0);
+				list.Add(45);
+				list.Sort();
+				AssertEquals("Sort (3)",  0, list[0]);
+				AssertEquals("Sort (4)", 45, list[1]);
+				AssertEquals("Sort (5)", 98, list[2]);
+			}
+
 }; // class TestArrayList

@@ -104,6 +104,9 @@ struct _tagILExecProcess
 	/* The object to throw when the system runs out of memory */
 	ILObject	   *outOfMemoryObject;
 
+	/* The command-line argument values */
+	ILObject       *commandLineObject;
+
 	/* The time when the engine was started */
 	ILCurrTime		startTime;
 

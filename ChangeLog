@@ -16,6 +16,11 @@
 	split "lib_platform.c" into multiple files, one per class, which
 	should make it easier to cut down the engine on embedded platforms.
 
+	* engine/engine.h, engine/ilrun.c, engine/lib_task.c,
+	engine/process.c, include/il_engine.h: save the command-line
+	argument array so that it can be returned to the application
+	via the "Platform.TaskMethods" class.
+
 2002-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c, codegen/cg_resolve.h: add "ILResolveProperty"

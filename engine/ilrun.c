@@ -333,6 +333,7 @@ int main(int argc, char *argv[])
 	sawException = 0;
 	if(!ILExecThreadHasException(thread))
 	{
+		ILExecProcessSetCommandLine(process, args);
 		retval = 0;
 		if(ILExecThreadCall(thread, method, &retval, args))
 		{

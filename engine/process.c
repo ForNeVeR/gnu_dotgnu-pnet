@@ -60,6 +60,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	process->exceptionClass = 0;
 	process->clrTypeClass = 0;
 	process->outOfMemoryObject = 0;
+	process->commandLineObject = 0;
 	ILGetCurrTime(&(process->startTime));
 	process->internHash = 0;
 	process->reflectionHash = 0;
@@ -372,6 +373,11 @@ long ILExecProcessGetParam(ILExecProcess *process, int type)
 		/* Not reached */
 	}
 	return -1;
+}
+
+void ILExecProcessSetCommandLine(ILExecProcess *process, ILObject *cmdline)
+{
+	process->commandLineObject = cmdline;
 }
 
 #ifdef	__cplusplus

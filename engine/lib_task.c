@@ -47,8 +47,7 @@ void _IL_TaskMethods_SetExitCode(ILExecThread *thread, ILInt32 exitCode)
  */
 System_Array *_IL_TaskMethods_GetCommandLineArgs(ILExecThread *thread)
 {
-	/* TODO */
-	return 0;
+	return (System_Array *)(thread->process->commandLineObject);
 }
 
 /*

@@ -48,20 +48,22 @@ libILEngine_a_SOURCES = cvm.c \
 libILEngineOpt_a_SOURCES = cvm_opt.s \
 						   $(COMMON_ENGINE_SOURCES)
 
+PACKAGE_LIBS = ../libffi/.libs/libffi.a ../libgc/.libs/libgc.a
+
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
-			  ../libffi/libffi.a ../libgc/.libs/libgc.a
+			  $(PACKAGE_LIBS)
 
 ilrun_opt_SOURCES = ilrun.c
 ilrun_opt_LDADD = libILEngineOpt.a ../dumpasm/libILDumpAsm.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
- 			  ../libffi/libffi.a ../libgc/.libs/libgc.a
+			  $(PACKAGE_LIBS)
 
 ilverify_SOURCES = ilverify.c
 ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			     ../image/libILImage.a ../support/libILSupport.a \
-			     ../libffi/libffi.a ../libgc/.libs/libgc.a
+			  	 $(PACKAGE_LIBS)
 
 if USINGGCC
 INCLUDES = -Wall -I../libffi/include

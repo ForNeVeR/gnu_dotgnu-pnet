@@ -20,7 +20,6 @@
 
 #include "engine.h"
 #include "ffi.h"
-#include "ffi_private.h"
 
 /*
  * The hard work is done using "libffi", which is a generic library

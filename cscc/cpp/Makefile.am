@@ -33,6 +33,7 @@ cscc_cpp_SOURCES = \
 	mbchar.h \
 	mkdeps.c \
 	mkdeps.h \
+	obstack.c \
 	obstack.h \
 	prefix.c \
 	prefix.h \

@@ -1,4 +1,29 @@
 
+0.1.2 (7 January 2001)
+
+	* File handle operations in "Platform".
+	* A new system for handling default messages in exception classes.
+	* "System.IO.*", "System.Guid", "System.Version", "System.Resources.*",
+	  "System.Reflection.Emit.*", "System.Collections.*", "System.Security.*".
+	* Change the resource system to use the "_(tag)" convention.
+	* Heavy modifications to the reflection interface.
+	* Use "#if !ECMA_COMPAT" to mark definitions that are not compatible
+	  with the ECMA specification.
+	* Implement the "csunit" program, which is the beginnings of a unit
+	  test framework for pnetlib.
+	* Fill in many of the missing gaps in the "System" namespace.
+	* Implement unicast and multicast delegates.
+	* Update the documentation for the native method interface, and fine-tune
+	  the pnetlib source code as we do so.
+    * General improvements for ECMA compatibility.
+	* Date and calendar functions.
+	* More culture-related classes in "System.Globalization.*".
+	* Move "internal" classes to "System.Private" to avoid pollution of
+	  the standardised parts of the library.
+	* Mark up the source tree with "TODO" attributes to assist with the
+	  generation of class status information.
+	* Added the "HACKING" file to describe how people can contribute.
+
 0.1.0 (27 November 2001)
 
 	* Continue documentation of native methods.

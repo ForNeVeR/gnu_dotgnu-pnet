@@ -11,6 +11,8 @@ contributors at the HACKING file instead of "contrib.txt".
 * runtime/System/IO/Path.cs: new class contributed by Charlie Carnow
 <carnow@gmx.net>.
 
+* configure.in, NEWS: update for the 0.1.2 release.
+
 2001-12-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/TODOAttribute.cs: add the internal "TODO" attribute class

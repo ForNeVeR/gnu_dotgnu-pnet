@@ -360,9 +360,8 @@ public abstract class FileDialog : CommonDialog
 		// Internal state.
 		private FileDialog fileDialogParent;
 		private VBoxLayout vbox;
-		private HBoxLayout hbox1;
-		private HBoxLayout hbox2;
-		private HBoxLayout hbox3;
+		private HBoxLayout hbox;
+		private GridLayout grid;
 		private ListBox listBox;
 		private ComboBox directory;
 		private Button upButton;
@@ -385,14 +384,13 @@ public abstract class FileDialog : CommonDialog
 					// Construct the layout boxes for the file dialog.
 					vbox = new VBoxLayout();
 					vbox.Dock = DockStyle.Fill;
-					hbox1 = new HBoxLayout();
+					hbox = new HBoxLayout();
 					listBox = new ListBox();
-					hbox2 = new HBoxLayout();
-					hbox3 = new HBoxLayout();
-					vbox.Controls.Add(hbox1);
+					grid = new GridLayout(3, 2);
+					grid.StretchColumn = 1;
+					vbox.Controls.Add(hbox);
 					vbox.Controls.Add(listBox);
-					vbox.Controls.Add(hbox2);
-					vbox.Controls.Add(hbox3);
+					vbox.Controls.Add(grid);
 					vbox.StretchControl = listBox;
 
 					// Add the top line (directory name and up button).
@@ -400,33 +398,31 @@ public abstract class FileDialog : CommonDialog
 					upButton = new Button();
 					upButton.FlatStyle = FlatStyle.Popup;
 					upButton.Text = "Up";	// TODO: change to an image.
-					hbox1.StretchControl = directory;
-					hbox1.Controls.Add(directory);
-					hbox1.Controls.Add(upButton);
+					hbox.StretchControl = directory;
+					hbox.Controls.Add(directory);
+					hbox.Controls.Add(upButton);
 
 					// The second line is "listBox", already created above.
 
-					// Add the third line (file name fields).
+					// Add the third line (file name entry fields).
 					nameLabel = new Label();
 					nameLabel.Text = "File name:";	// TODO: translate.
 					name = new TextBox();
 					okButton = new Button();
 					okButton.Text = fileDialogParent.OkButtonName;
-					hbox2.StretchControl = name;
-					hbox2.Controls.Add(nameLabel);
-					hbox2.Controls.Add(name);
-					hbox2.Controls.Add(okButton);
+					grid.SetControl(0, 0, nameLabel);
+					grid.SetControl(1, 0, name);
+					grid.SetControl(2, 0, okButton);
 
-					// Add the fourth line (file type fields).
+					// Add the fourth line (file type entry fields).
 					typeLabel = new Label();
 					typeLabel.Text = "Files of type:";	// TODO: translate.
 					type = new ComboBox();
 					cancelButton = new Button();
 					cancelButton.Text = S._("SWF_MessageBox_Cancel", "Cancel");
-					hbox3.StretchControl = type;
-					hbox3.Controls.Add(typeLabel);
-					hbox3.Controls.Add(type);
-					hbox3.Controls.Add(cancelButton);
+					grid.SetControl(0, 1, typeLabel);
+					grid.SetControl(1, 1, type);
+					grid.SetControl(2, 1, cancelButton);
 
 					// Add the top-level vbox to the dialog and set the size.
 					Controls.Add(vbox);

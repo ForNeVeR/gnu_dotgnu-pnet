@@ -38,6 +38,12 @@
 	class as a variant of "HBoxLayout" - it correctly lays out buttons
 	at the bottom of a "MessageBox" dialog.
 
+	* System.Windows.Forms/FileDialog.cs,
+	System.Windows.Forms/GridLayout.cs, System.Windows.Forms/HBoxLayout.cs,
+	System.Windows.Forms/IRecommendedSize.cs,
+	System.Windows.Forms/VBoxLayout.cs: add a "GridLayout" control
+	to better lay out the bottom part of the file dialog.
+
 2003-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

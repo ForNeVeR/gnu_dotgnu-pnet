@@ -27,7 +27,7 @@ using System.Drawing;
 // This is a special-purpose control that lays out its children horizontally.
 // It is intended for use inside dialog box controls like "MessageBox".
 
-internal class HBoxLayout : Control
+internal class HBoxLayout : Control, IRecommendedSize
 {
 	// Internal state.
 	private bool uniformSize;
@@ -99,13 +99,9 @@ internal class HBoxLayout : Control
 	// Get the recommended size for a control.
 	internal static Size GetRecommendedSize(Control control)
 			{
-				if(control is HBoxLayout)
+				if(control is IRecommendedSize)
 				{
-					return ((HBoxLayout)control).RecommendedSize;
-				}
-				else if(control is VBoxLayout)
-				{
-					return ((VBoxLayout)control).RecommendedSize;
+					return ((IRecommendedSize)control).RecommendedSize;
 				}
 				else if(control is Label)
 				{

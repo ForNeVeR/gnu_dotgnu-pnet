@@ -27,7 +27,7 @@ using System.Drawing;
 // This is a special-purpose control that lays out its children vertically.
 // It is intended for use inside dialog box controls like "MessageBox".
 
-internal class VBoxLayout : Control
+internal class VBoxLayout : Control, IRecommendedSize
 {
 	// Internal state.
 	private bool uniformSize;

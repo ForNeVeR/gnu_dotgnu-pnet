@@ -655,35 +655,33 @@ internal abstract class DrawingWindow : IToolkitWindow
 		//because sink==null, its size and position will be set
 		if (sink != null)
 		{
-		#if !__CSCC__	// cscc has probs with pointers - to be fixed soon -- Rhys
-			unsafe
+			//TODO Pointers are not available yet
+			//Win32.Api.WINDOWPOS *pos = (Win32.Api.WINDOWPOS*)lParam;
+			Win32.Api.WINDOWPOS pos = (Win32.Api.WINDOWPOS)Marshal.PtrToStructure(new IntPtr(lParam), typeof(Win32.Api.WINDOWPOS));
+			if (suspendExternalMoveResizeNotify == true)
+				return;
+			// If moving
+			if (((Win32.Api.SetWindowsPosFlags)pos.flags & Win32.Api.SetWindowsPosFlags.SWP_NOMOVE) == 0)
 			{
-				Win32.Api.WINDOWPOS *pos = (Win32.Api.WINDOWPOS*)lParam;
-				if (suspendExternalMoveResizeNotify == true)
-					return;
-				// If minimizing then dont need to know
-				//if ((*pos).x == -32000)
-				//	return;
-				// If moving
-				if (((Win32.Api.SetWindowsPosFlags)(*pos).flags & Win32.Api.SetWindowsPosFlags.SWP_NOMOVE) == 0)
-				{
-					int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
-					Toolkit.GetWindowAdjust(out leftAdjust, out topAdjust, out rightAdjust, out bottomAdjust, flags);
-					sink.ToolkitExternalMove( (*pos).x + leftAdjust, (*pos).y + topAdjust );
-				}
-
-				// If sizing
-				if (((Win32.Api.SetWindowsPosFlags)(*pos).flags & Win32.Api.SetWindowsPosFlags.SWP_NOSIZE) ==0)
-				{
-					int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
-					Toolkit.GetWindowAdjust(out leftAdjust, out topAdjust, out rightAdjust, out bottomAdjust, flags);
-					sink.ToolkitExternalResize( (*pos).cx - leftAdjust - rightAdjust, (*pos).cy - topAdjust - bottomAdjust );
-				}
-
-				// Now prevent windows from changing the position or size, System.Windows.Control will do that
-				(*pos).flags |= (uint)0x3;
+				int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
+				Toolkit.GetWindowAdjust(out leftAdjust, out topAdjust, out rightAdjust, out bottomAdjust, flags);
+				sink.ToolkitExternalMove(pos.x + leftAdjust, pos.y + topAdjust );
 			}
-		#endif
+
+			// If sizing
+			if (((Win32.Api.SetWindowsPosFlags)pos.flags & Win32.Api.SetWindowsPosFlags.SWP_NOSIZE) ==0)
+			{
+				int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
+				Toolkit.GetWindowAdjust(out leftAdjust, out topAdjust, out rightAdjust, out bottomAdjust, flags);
+				sink.ToolkitExternalResize( pos.cx - leftAdjust - rightAdjust, pos.cy - topAdjust - bottomAdjust );
+			}
+
+			// Now prevent windows from changing the position or size, System.Windows.Control will do that
+			
+			//TODO Pointers are not available yet
+			//pos.flags |= (uint)0x3;
+			Marshal.WriteInt32(new IntPtr(lParam), 24, (int)pos.flags | 0x3);
+
 		}
 	}
 

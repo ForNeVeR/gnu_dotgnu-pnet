@@ -901,8 +901,7 @@ public class Font
 
 					// Create the raw X font set structure.
 					fontSet = Xlib.XSharpCreateFontXft
-						(display, family,
-						 NormalizePointSize(pointSize), (int)style);
+						(display, family, pointSize, (int)style);
 
 					// Get the extent information for the font.
 					Xlib.XSharpFontExtentsXft

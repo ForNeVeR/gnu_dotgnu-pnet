@@ -244,26 +244,44 @@ public class MemoryStream : Stream
 
 			forcePositionSet(l+offset);
 			break;
-		
+
 		default:
 			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}
 		return Position;
 	}
 
-	[TODO]
+	// remember that all resizable MemoryStreams have bottomLimit=0
 	public override void SetLength(long value)
 	{
+		if (!resizable)
+			throw new NotSupportedException(_("IO_NotSupp_SetLength"));
+		if (!CanWrite)
+			throw new NotSupportedException(_("IO_NotSupp_Write"));
+		if (value < 1 || value > Int32.MaxValue)
+			throw new ArgumentOutOfRangeException("value");
+
+		int newLength = (int)value;
+		int oldLength = topLimit;
+		growStream(newLength);
+		if (newLength < position)
+			position = newLength;
+		if (newLength > oldLength)
+		{
+			for (int i = oldLength; i < newLength; ++i)
+				impl_buffer[i] = 0;
+		}
 	}
 
+	// ignore the normal limits this time, because it works when the stream
+	// is closed, but there's no way to get the capacity/length publicly
+	// in that case
 	public virtual byte[] ToArray()
 	{
-		byte[] public_buffer = forceGetBuffer();
-		if (Capacity == public_buffer.Length) // can just clone
-			return (byte[])public_buffer.Clone();
-		else // don't know limits of subclass's buffer, must use own
+		if (topLimit-bottomLimit == impl_buffer.Length) // can just clone
+			return (byte[])impl_buffer.Clone();
+		else
 		{
-			public_buffer = null; // for possible gc (hey, it's possible)
 			byte[] retarray = new byte[topLimit-bottomLimit];
 			Array.Copy(impl_buffer, bottomLimit, retarray,
 				0, topLimit-bottomLimit);
@@ -321,6 +339,8 @@ public class MemoryStream : Stream
 		{
 			if (streamclosed)
 				return 0;
+			else if (resizable)
+				return impl_buffer.Length;
 			else
 				return topLimit - bottomLimit;
 		}
@@ -331,12 +351,11 @@ public class MemoryStream : Stream
 
 			// just ignore if smaller
 			int old_capacity = Capacity;
-			if (resizable && value > old_capacity) // bottom is always 0
+			if (value > old_capacity) // bottom is always 0
 			{
-				byte[] new_impl_buffer = new byte[value];
-				Array.Copy(forceGetBuffer(), new_impl_buffer, topLimit);
-				impl_buffer = new_impl_buffer;
-				topLimit = value;
+				if (!resizable)
+					throw new NotSupportedException(_("IO_NotSupp_SetLength"));
+				growStream(value);
 			}
 		}
 	}
@@ -412,6 +431,21 @@ public class MemoryStream : Stream
 		{
 			return this.impl_buffer;
 		}
+	}
+
+	// grow the stream efficiently, setting topLimit
+	private void growStream(long minNewLength)
+	{
+		if (minNewLength > impl_buffer.Length)
+		{
+			long realNewLength = Length;
+			while (minNewLength > realNewLength) // x1.5 until ready
+				realNewLength += ((int)realNewLength) >> 1;
+			byte[] new_buffer = new byte[(int)realNewLength];
+			Array.Copy(impl_buffer, new_buffer, topLimit);
+			impl_buffer = new_buffer;
+		}
+		topLimit = (int)minNewLength;
 	}
 
 } // class MemoryStream

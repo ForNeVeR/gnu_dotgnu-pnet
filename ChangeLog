@@ -1,3 +1,8 @@
+2002-05-26 Stephen Compall  <rushing@sigecom.net>
+
+	* runtime/System/IO/MemoryStream.cs: Implemented SetLength(long)
+	and fixed Capacity{set;}.
+
 2002-05-25  Peter Minten  <silvernerd@users.sf.net>
         * System/Net/Sockets/Socket.cs: Replaced AND operators build up of only one & by &&.
                 Made Connect and SendTo set LocalEndPoint, fixed SendTo for IPv4 operation.

@@ -411,13 +411,12 @@ internal sealed class DrawingMdiClient : MdiClientWidget, IToolkitMdiClient
 			{
 				if(sink != null)
 				{
+					System.Drawing.Region clip = DrawingWindow.RegionToDrawingRegion
+							(graphics.ExposeRegion);
 					DrawingGraphics g = new DrawingGraphics(toolkit, graphics);
 					using(System.Drawing.Graphics gr =
-								ToolkitManager.CreateGraphics(g))
+								ToolkitManager.CreateGraphics(g, clip))
 					{
-						gr.SetClip(DrawingWindow.RegionToDrawingRegion
-										(graphics.ExposeRegion),
-								   CombineMode.Replace);
 						sink.ToolkitExpose(gr);
 					}
 				}

@@ -585,12 +585,11 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 			{
 				if(sink != null)
 				{
+					System.Drawing.Region clip = RegionToDrawingRegion(graphics.ExposeRegion);
 					DrawingGraphics g = new DrawingGraphics(toolkit, graphics);
 					using(System.Drawing.Graphics gr =
-								ToolkitManager.CreateGraphics(g))
+								ToolkitManager.CreateGraphics(g, clip))
 					{
-						gr.SetClip(RegionToDrawingRegion(graphics.ExposeRegion),
-								   CombineMode.Replace);
 						sink.ToolkitExpose(gr);
 					}
 				}

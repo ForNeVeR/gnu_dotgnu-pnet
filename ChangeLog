@@ -1,3 +1,9 @@
+2002-04-25  Stephen Compall  <rushing@sigecom.net>
+
+	* runtime/System/IO/MemoryStream.cs: More implementation, including all
+	constructors, properties, and Read stuff.. Am bringing up ECMA
+	ambiguities left and right. Doesn't compile yet.
+
 2002-04-23  Gopal.V <gopalv82@symonds.net>
 
 	* tests/System/TestString.cs : added a lot of 

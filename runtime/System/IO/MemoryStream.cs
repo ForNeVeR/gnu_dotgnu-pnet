@@ -18,6 +18,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+// TODO:
+// some longs returned by posn, length, etc. will have to be cast
+
 namespace System.IO
 {
 
@@ -30,56 +33,101 @@ public class MemoryStream : Stream
 
 	private bool streamclosed = false;
 	private byte[] impl_buffer;
-	private bool readable, seekable, writable, visibleBuffer;
+
+	// these are used because if indices and a publicly visible buffer are
+	// provided, it must not move outside these limits
+	private int bottomLimit, topLimit;
+	// readable and seekable are always true
+	private bool writable, resizable, visibleBuffer;
+
+	private int position = 0;
+	// a capacity variable is unnecessary
 
 	// from StringBuilder
 	private const int defaultCapacity = 16;
 
 	// constructors.
+	// ECMA doesn't specify what the starting position should be, so I
+	// assume it's 0
+	// TODO: check this assumption against another MemoryStream
 
-	[TODO]
-	public MemoryStream()
+	public MemoryStream() : this(defaultCapacity)
 	{
-		impl_buffer = new char[defaultCapacity];
-		readable = seekable = writable = visibleBuffer = true;
-		// TODO: set up position vars
 	}
 
-	[TODO]
 	public MemoryStream(int capacity)
 	{
+		if (capacity < defaultCapacity)
+			capacity = defaultCapacity;
+
+		impl_buffer = new char[capacity];
+		writable = resizable = visibleBuffer = true;
 	}
 
-	[TODO]
-	public MemoryStream(byte[] buffer)
+	public MemoryStream(byte[] buffer) : this(buffer, true)
 	{
 	}
 
-	[TODO]
 	public MemoryStream(byte[] buffer, bool writable)
 	{
+		if (buffer == null)
+			throw new ArgumentNullException("buffer");
+
+		impl_buffer = (byte[]) buffer.Clone(); // protect from intruders
+		writable = true;
+		resizable = visibleBuffer = false;
+		bottomLimit = 0;
+		topLimit = buffer.Length;
 	}
 
-	[TODO]
 	public MemoryStream(byte[] buffer, int index, int count)
+		: this(buffer, index, count, true, false)
 	{
 	}
 
-	[TODO]
 	public MemoryStream(byte[] buffer, int index, int count, bool writable)
+		: this(buffer, index, count, writable, false)
 	{
 	}
 
-	[TODO]
 	public MemoryStream(byte[] buffer, int index, int count, bool writable, bool publiclyVisible)
 	{
+		if (buffer == null)
+			throw new ArgumentNullException("buffer");
+		if (index < 0)
+			throw new ArgumentOutOfRangeException("index", _("Arg_InvalidArrayIndex"));
+		if (count < 0)
+			throw new ArgumentOutOfRangeException("count", _("Arg_InvalidArrayIndex"));
+		if (count > buffer.Length - index)
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
+
+		if (publiclyVisible) // can use buffer passed as internal buffer
+		{
+			impl_buffer = buffer;
+			bottomLimit = position = index;
+			topLimit = index + count;
+		}
+		else // must hide
+		{
+			impl_buffer = new byte[count];
+			Array.Copy(buffer, index, impl_buffer, 0, count);
+			bottomLimit = 0;
+			topLimit = count;
+		}
+		visibleBuffer = publiclyVisible;
+		this.writable = writable; // scoping
+		resizable = false;
 	}
 
 	// methods.
 
-	[TODO]
 	public override void Close()
 	{
+		// effectively call Flush()
+		this.Flush();
+		impl_buffer = null; // release resources per ECMA Stream
+		streamclosed = true;
+		base.Close();
 	}
 
 	public override void Flush()
@@ -87,27 +135,64 @@ public class MemoryStream : Stream
 		// do nothing
 	}
 
-	[TODO]
 	public virtual byte[] GetBuffer()
 	{
-		return null;
+		if (!visibleBuffer)
+			throw new UnauthorizedAccessException();
+		return impl_buffer;
 	}
 
-	[TODO]
 	public override int Read(byte[] buffer, int offset, int count)
 	{
-		return -1;
+		if (streamclosed)
+			throw new ObjectDisposedException(null, _("IO_StreamClosed"));
+		// all other exceptions handled by Copy
+
+		// MemoryStream doesn't say what to do when can't read,
+		// but Stream says use NotSupportedException.
+		// however, it should say throw InvalidOperationException
+		// so I am just returning 0, because 0 chars were read :)
+		// TODO: is this behavior correct?
+		if (!CanRead)
+			return 0;
+
+		byte[] src_buffer = forceGetBuffer();
+
+		if (count > topLimit - Position) // Copy will throw
+			count = topLimit - Position; // fixed
+
+		Array.Copy(impl_buffer, Position, buffer, offset, count);
+		forcePositionChange(count);
+		return count;
 	}
 
-	[TODO]
 	public override int ReadByte()
 	{
-		return -1;
+		if (streamclosed)
+			throw new ObjectDisposedException(null, _("IO_StreamClosed"));
+
+		if (!CanRead || topLimit == Position)
+			return -1;
+		else
+		{
+			int retval = forceGetBuffer()[Position];
+			forcePositionChange(1);
+			return retval;
+		}
 	}
 
 	[TODO]
 	public override long Seek(long offset, SeekOrigin loc)
 	{
+		switch (loc)
+		{
+		case SeekOrigin.Begin:
+			break;
+		case SeekOrigin.Current:
+			break;
+		case SeekOrigin.End:
+			break;
+		}
 		return -1;
 	}
 
@@ -138,12 +223,14 @@ public class MemoryStream : Stream
 	}
 
 	// properties. beware, all can be overridden, so use whenever possible
+	// assuming that closed stream means all Can* are false, but no throw
 
 	public override bool CanRead
 	{
 		get
 		{
-			return readable;
+			// never changes
+			return !streamclosed;
 		}
 	}
 
@@ -151,7 +238,8 @@ public class MemoryStream : Stream
 	{
 		get
 		{
-			return seekable;
+			// never changes
+			return !streamclosed;
 		}
 	}
 
@@ -159,31 +247,42 @@ public class MemoryStream : Stream
 	{
 		get
 		{
-			return writable;
+			return writable && !streamclosed;
 		}
 	}
 
-	[TODO]
 	public virtual int Capacity
 	{
 		get
 		{
-			return impl_buffer.Length;
+			if (streamclosed)
+				return 0;
+			else
+				return topLimit - bottomLimit;
 		}
 		set
 		{
-			if (value > impl_buffer.Length)
-				;// TODO: resize
-			// else, ignore
+			if (streamclosed)
+				throw new NotSupportedException(_("IO_StreamClosed"));
+
+			// just ignore if smaller
+			if (resizable && value > topLimit) // bottom is always 0
+			{
+				byte[] new_impl_buffer = new byte[value];
+				Array.Copy(impl_buffer, new_impl_buffer, topLimit);
+				impl_buffer = new_impl_buffer;
+				topLimit = value;
+			}
 		}
 	}
 
-	[TODO]
 	public override long Length
 	{
 		get
 		{
-			return -1;
+			if (streamclosed)
+				throw new ObjectDisposedException(null, _("IO_StreamClosed"));
+			return topLimit - bottomLimit;
 		}
 	}
 
@@ -196,9 +295,41 @@ public class MemoryStream : Stream
 		}
 		set
 		{
+			// ECMA behavior when CanSeek==false is undefined,
+			// but Stream says it should do NotSupportedException.
+			// If you change it, fix
+			// forcePositionChange(int) to comply
+			if (streamclosed)
+				throw new ObjectDisposedException(null, _("IO_StreamClosed"));
+			if (!CanSeek)
+				return;
+			if (value > topLimit || value < bottomLimit)
+				throw new ArgumentOutOfRangeException("value", _("Arg_InvalidArrayIndex"));
+
+			position = value;
 		}
 	}
 
+	// private methods
+
+	// force position to change, either by virtual property or internally
+	// specify increment to posn
+	private void forcePositionChange(int increment)
+	{
+		int posn = Position + increment;
+		Position = posn;
+		if (Position != posn) // weird but quite possible
+			position = posn;
+	}
+
+	// use this in case a child has its own buffer
+	private byte[] forceGetBuffer()
+	{
+		try // for derived classes with their own buffers
+			return GetBuffer();
+		catch (UnauthorizedAccessException) // they can override themselves
+			return this.impl_buffer;
+	}
 
 } // class MemoryStream
 

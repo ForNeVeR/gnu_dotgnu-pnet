@@ -38,9 +38,10 @@ typedef struct _tagILExecProcess ILExecProcess;
 typedef struct _tagILExecThread ILExecThread;
 
 /*
- * Object handle.
+ * Object and string handles.
  */
 typedef struct _tagILObject ILObject;
+typedef struct _tagILString ILString;
 
 /*
  * Types that are useful for passing values through va lists.
@@ -194,6 +195,13 @@ int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 						         void *result, ...);
 
 /*
+ * Create a new object instance of a class and call its constructor.
+ * Returns NULL if an exception occurred.
+ */
+ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
+						  const char *signature, ...);
+
+/*
  * Determine if there is a last-occuring exception
  * for a thread.  Returns non-zero if so.
  */
@@ -216,6 +224,93 @@ void ILExecThreadSetException(ILExecThread *thread, ILObject *obj);
  * current method.
  */
 void ILExecThreadClearException(ILExecThread *thread);
+
+/*
+ * Throw a system exception with a particular type and
+ * resource name.
+ */
+void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
+							 const char *resourceName);
+
+/*
+ * Throw an "ArgumentOutOfRangeException" for a particular
+ * parameter and resource name.
+ */
+void ILExecThreadThrowArgRange(ILExecThread *thread, const char *paramName,
+							   const char *resourceName);
+
+/*
+ * Throw an "ArgumentNullException" for a particular
+ * parameter name.
+ */
+void ILExecThreadThrowArgNull(ILExecThread *thread, const char *paramName);
+
+/*
+ * Throw an "OutOfMemoryException".
+ */
+void ILExecThreadThrowOutOfMemory(ILExecThread *thread);
+
+/*
+ * Create a string from a NUL-terminated C string.  Returns
+ * NULL if out of memory, with the thread's current exception
+ * set to an "OutOfMemoryException" instance.
+ */
+ILString *ILStringCreate(ILExecThread *thread, const char *str);
+
+/*
+ * Create a string from a length-delimited C string.
+ */
+ILString *ILStringCreateLen(ILExecThread *thread, const char *str, int len);
+
+/*
+ * Create a string from a zero-terminated wide character string.
+ */
+ILString *ILStringWCreate(ILExecThread *thread, const ILUInt16 *str);
+
+/*
+ * Create a string from a length-delimited wide character string.
+ */
+ILString *ILStringWCreateLen(ILExecThread *thread,
+							 const ILUInt16 *str, int len);
+
+/*
+ * Compare two strings, returning -1, 0, or 1, depending
+ * upon the relationship between the values.
+ */
+int ILStringCompare(ILExecThread *thread, ILString *strA, ILString *strB);
+
+/*
+ * Compare two strings, while ignoring case.
+ */
+int ILStringCompareIgnoreCase(ILExecThread *thread, ILString *strA,
+							  ILString *strB);
+
+/*
+ * Compare the ordinal values of two strings.
+ */
+int ILStringCompareOrdinal(ILExecThread *thread, ILString *strA,
+						   ILString *strB);
+
+/*
+ * Determine if two strings are equal.
+ */
+int ILStringEquals(ILExecThread *thread, ILString *strA, ILString *strB);
+
+/*
+ * Concatenate two strings.
+ */
+ILString *ILStringConcat(ILExecThread *thread, ILString *strA, ILString *strB);
+
+/*
+ * Convert an object into a string, using "ToString".
+ * NULL is returned if "object" is NULL.
+ */
+ILString *ILObjectToString(ILExecThread *thread, ILObject *object);
+
+/*
+ * Internalize a string.
+ */
+ILString *ILStringIntern(ILExecThread *thread, ILString *str);
 
 #ifdef	__cplusplus
 };

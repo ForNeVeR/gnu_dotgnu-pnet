@@ -542,7 +542,7 @@ static int ResolveTypeRefs(ILImage *image, int loadFlags)
 				{
 					/* The nesting parent is marked for redo,
 					   so mark the child for redo also */
-					if(!AddToRedoList(image->context, scope))
+					if(!AddToRedoList(image->context, &(info->programItem)))
 					{
 						return IL_LOADERR_MEMORY;
 					}
@@ -553,10 +553,13 @@ static int ResolveTypeRefs(ILImage *image, int loadFlags)
 
 			case IL_META_TOKEN_MODULE_REF:
 			{
-				/* Module reference imports are not currently
-				   supported.  Types should be imported from
-				   assemblies, not modules.  Module references
-				   should only be used for PInvoke imports */
+				/* Type is imported from a foreign module */
+				importImage = ILModuleToImage((ILModule *)scope);
+				if(importImage)
+				{
+					goto moduleImport;
+				}
+				/* TODO: dynamically load the specified module */
 			}
 			break;
 
@@ -566,6 +569,7 @@ static int ResolveTypeRefs(ILImage *image, int loadFlags)
 				importImage = ILAssemblyToImage((ILAssembly *)scope);
 				if(importImage)
 				{
+				moduleImport:
 					if(importImage == image || !(importImage->loading))
 					{
 						importScope = ILClassGlobalScope(importImage);
@@ -3171,6 +3175,12 @@ static int Load_ExportedType(ILImage *image, ILUInt32 *values,
 		ILExportedTypeSetScopeType(type, expType);
 	}
 
+	/* Add the exported type to the "redo" list */
+	if(!AddToRedoList(image->context, &(type->classItem.programItem)))
+	{
+		return IL_LOADERR_MEMORY;
+	}
+
 	/* Done */
 	return 0;
 }
@@ -3626,6 +3636,7 @@ static int RedoTypeRef(ILImage *image, ILClass *classInfo)
 	switch(ILProgramItem_Token(scope) & IL_META_TOKEN_MASK)
 	{
 		case IL_META_TOKEN_TYPE_REF:
+		case IL_META_TOKEN_EXPORTED_TYPE:
 		{
 			/* Nested type within a foreign assembly */
 			importScope = _ILProgramItemLinkedTo(scope);
@@ -3809,6 +3820,7 @@ int _ILImageRedoReferences(ILContext *context)
 		switch(item->token & IL_META_TOKEN_MASK)
 		{
 			case IL_META_TOKEN_TYPE_REF:
+			case IL_META_TOKEN_EXPORTED_TYPE:
 			{
 				error2 = RedoTypeRef(item->image, (ILClass *)item);
 				if(!error)

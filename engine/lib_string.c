@@ -624,7 +624,8 @@ ILBool _IL_String_Equals(ILExecThread *thread,
 	else
 	{
 		return !ILMemCmp(StringToBuffer(strA),
-						 StringToBuffer(strB), strA->length);
+						 StringToBuffer(strB),
+						 strA->length * sizeof(ILUInt16));
 	}
 }
 

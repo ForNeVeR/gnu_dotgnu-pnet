@@ -24,6 +24,9 @@
 
 	* engine/verify_ptr.c: remove obsolete comment.
 
+	* engine/lib_string.c (_IL_String_Equals): fix the length that
+	is passed to ILMemCmp.
+
 2002-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am: add mising .h files to the install.

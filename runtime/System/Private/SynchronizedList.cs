@@ -1,6 +1,6 @@
 /*
  * SynchronizedList.cs - Implementation of the
- *			"System.Collections.SynchronizedList" class.
+ *			"System.Private.SynchronizedList" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,12 +19,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Collections
+namespace System.Private
 {
 
 #if !ECMA_COMPAT
 
 using System;
+using System.Collections;
 
 // This is a helper class for wrapping up lists to make them
 // synchronized.  We synchronize all operations because it
@@ -177,4 +178,4 @@ internal class SynchronizedList : IList
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.Collections
+}; // namespace System.Private

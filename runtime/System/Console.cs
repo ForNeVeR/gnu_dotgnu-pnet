@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.IO;
+using System.Private;
 using Platform;
 
 public sealed class Console

@@ -1,6 +1,6 @@
 /*
  * CultureNameTable.cs - Implementation of the
- *		"System.Globalization.CultureNameTable" class.
+ *		"System.Private.CultureNameTable" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,8 +19,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Globalization
+namespace System.Private
 {
+
+using System;
+using System.Globalization;
 
 internal sealed class CultureNameTable
 {
@@ -729,4 +732,4 @@ internal sealed class CultureNameTable
 
 }; // class CultureNameTable
 
-}; // namespace System.Globalization
+}; // namespace System.Private

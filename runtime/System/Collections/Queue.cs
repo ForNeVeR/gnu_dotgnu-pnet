@@ -24,6 +24,7 @@ namespace System.Collections
 #if !ECMA_COMPAT
 
 using System;
+using System.Private;
 
 public class Queue : ICollection, IEnumerable, ICloneable
 {

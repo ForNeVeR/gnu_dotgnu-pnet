@@ -8,6 +8,37 @@ runtime/System/Globalization/NumberFormatInfo.cs,
 runtime/System/Private/NumberFormatter.cs: update "NumberFormatInfo" and
 "DateTimeFormatInfo".
 
+* runtime/System/Console.cs,
+runtime/System/DefaultBinder.cs,
+runtime/System/Empty.cs,
+runtime/System/Makefile.am,
+runtime/System/Type.cs,
+runtime/System/Collections/ArrayList.cs,
+runtime/System/Collections/Hashtable.cs,
+runtime/System/Collections/Queue.cs,
+runtime/System/Collections/SortedList.cs,
+runtime/System/Collections/Stack.cs,
+runtime/System/Collections/SynchronizedDictEnumerator.cs,
+runtime/System/Collections/SynchronizedEnumerator.cs,
+runtime/System/Collections/SynchronizedList.cs,
+runtime/System/Globalization/CultureInfo.cs,
+runtime/System/Globalization/CultureName.cs,
+runtime/System/Globalization/CultureNameTable.cs,
+runtime/System/IO/StdReader.cs,
+runtime/System/IO/StdWriter.cs,
+runtime/System/Private/CultureName.cs,
+runtime/System/Private/CultureNameTable.cs,
+runtime/System/Private/DefaultBinder.cs,
+runtime/System/Private/Empty.cs,
+runtime/System/Private/README,
+runtime/System/Private/StdReader.cs,
+runtime/System/Private/StdWriter.cs,
+runtime/System/Private/SynchronizedDictEnumerator.cs,
+runtime/System/Private/SynchronizedEnumerator.cs,
+runtime/System/Private/SynchronizedList.cs: move some "internal" classes
+out of the main namespaces into "System.Private", to avoid pollution
+of the standardised parts of the library.
+
 2001-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/Makefile.am, runtime/System/Collections/ArrayList.cs:

@@ -1,5 +1,6 @@
 /*
- * DefaultBinder.cs - Implementation of the "System.DefaultBinder" class.
+ * DefaultBinder.cs - Implementation of the
+ *		"System.Private.DefaultBinder" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,9 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Private
 {
 
+using System;
 using System.Reflection;
 using System.Globalization;
 
@@ -91,4 +93,4 @@ internal class DefaultBinder : Binder
 
 }; // class DefaultBinder
 
-}; // namespace System
+}; // namespace System.Private

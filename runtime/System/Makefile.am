@@ -37,12 +37,10 @@ CSSRC = Activator.cs \
 		DateTime.cs \
 		DayOfWeek.cs \
 		Decimal.cs \
-		DefaultBinder.cs \
 		Delegate.cs \
 		DivideByZeroException.cs \
 		Double.cs \
 		DuplicateWaitObjectException.cs \
-		Empty.cs \
 		EntryPointNotFoundException.cs \
 		Enum.cs \
 		Environment.cs \
@@ -142,9 +140,6 @@ CSSRC = Activator.cs \
 		Collections/ReadOnlyCollectionBase.cs \
 		Collections/SortedList.cs \
 		Collections/Stack.cs \
-		Collections/SynchronizedDictEnumerator.cs \
-		Collections/SynchronizedEnumerator.cs \
-		Collections/SynchronizedList.cs \
 		Configuration/Assemblies/AssemblyHash.cs \
 		Configuration/Assemblies/AssemblyHashAlgorithm.cs \
 		Configuration/Assemblies/AssemblyVersionCompatibility.cs \
@@ -161,8 +156,6 @@ CSSRC = Activator.cs \
 		Globalization/CompareInfo.cs \
 		Globalization/CompareOptions.cs \
 		Globalization/CultureInfo.cs \
-		Globalization/CultureName.cs \
-		Globalization/CultureNameTable.cs \
 		Globalization/CultureTypes.cs \
 		Globalization/DateTimeFormatInfo.cs \
 		Globalization/DateTimeStyles.cs \
@@ -186,16 +179,23 @@ CSSRC = Activator.cs \
 		IO/FileStream.cs \
 		IO/IOException.cs \
 		IO/PathTooLongException.cs \
-		IO/StdReader.cs \
-		IO/StdWriter.cs \
 		IO/SeekOrigin.cs \
 		IO/Stream.cs \
 		IO/StreamReader.cs \
 		IO/StreamWriter.cs \
 		IO/TextReader.cs \
 		IO/TextWriter.cs \
+		Private/CultureName.cs \
+		Private/CultureNameTable.cs \
+		Private/DefaultBinder.cs \
+		Private/Empty.cs \
 		Private/NumberFormatter.cs \
 		Private/NumberParser.cs \
+		Private/StdReader.cs \
+		Private/StdWriter.cs \
+		Private/SynchronizedDictEnumerator.cs \
+		Private/SynchronizedEnumerator.cs \
+		Private/SynchronizedList.cs \
 		Reflection/AmbiguousMatchException.cs \
 		Reflection/Assembly.cs \
 		Reflection/AssemblyName.cs \

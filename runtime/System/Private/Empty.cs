@@ -1,5 +1,5 @@
 /*
- * Empty.cs - Implementation of the "System.Empty" class.
+ * Empty.cs - Implementation of the "System.Private.Empty" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Private
 {
 
 // This class is used internally as a tag for null references.
@@ -39,4 +39,4 @@ internal sealed class Empty
 
 }; // class Empty
 
-}; // namespace System
+}; // namespace System.Private

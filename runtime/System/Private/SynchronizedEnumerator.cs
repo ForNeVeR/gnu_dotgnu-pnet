@@ -1,6 +1,6 @@
 /*
- * SynchronizedDictEnumerator.cs - Implementation of the
- *			"System.Collections.SynchronizedDictEnumerator" class.
+ * SynchronizedEnumerator.cs - Implementation of the
+ *			"System.Private.SynchronizedEnumerator" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,59 +19,57 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Collections
+namespace System.Private
 {
 
 using System;
+using System.Collections;
 
 // This is a helper class for wrapping up enumerators that
-// have been obtained from syncrhonized dictionaries so that
+// have been obtained from syncrhonized collections so that
 // the enumerator operations are also synchronized.  This
 // ensures correct behaviour in symmetric multi-processing
 // environments.
 
-internal class SynchronizedDictEnumerator : SynchronizedEnumerator,
-										    IDictionaryEnumerator
+internal class SynchronizedEnumerator : IEnumerator
 {
+	// Internal state.
+	protected Object      syncRoot;
+	protected IEnumerator enumerator;
+
 	// Constructor.
-	public SynchronizedDictEnumerator(Object syncRoot, IEnumerator enumerator)
-			: base(syncRoot, enumerator)
+	public SynchronizedEnumerator(Object syncRoot, IEnumerator enumerator)
 			{
-				// Nothing to do here
+				this.syncRoot = syncRoot;
+				this.enumerator = enumerator;
 			}
 
-	// Implement the IDictionaryEnumerator interface.
-	public DictionaryEntry Entry
+	// Implement the IEnumerator interface.
+	public bool MoveNext()
+			{
+				lock(syncRoot)
+				{
+					return enumerator.MoveNext();
+				}
+			}
+	public void Reset()
+			{
+				lock(syncRoot)
+				{
+					enumerator.Reset();
+				}
+			}
+	public Object Current
 			{
 				get
 				{
 					lock(syncRoot)
 					{
-						return ((IDictionaryEnumerator)enumerator).Entry;
-					}
-				}
-			}
-	public Object Key
-			{
-				get
-				{
-					lock(syncRoot)
-					{
-						return ((IDictionaryEnumerator)enumerator).Key;
-					}
-				}
-			}
-	public Object Value
-			{
-				get
-				{
-					lock(syncRoot)
-					{
-						return ((IDictionaryEnumerator)enumerator).Value;
+						return enumerator.Current;
 					}
 				}
 			}
 
-}; // class SynchronizedDictEnumerator
+}; // class SynchronizedEnumerator
 
-}; // namespace System.Collections
+}; // namespace System.Private

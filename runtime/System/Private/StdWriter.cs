@@ -1,5 +1,5 @@
 /*
- * StdWriter.cs - Implementation of the "System.IO.StdWriter" class.
+ * StdWriter.cs - Implementation of the "System.Private.StdWriter" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,10 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.IO
+namespace System.Private
 {
 
 using System;
+using System.IO;
 using System.Globalization;
 using System.Text;
 using Platform;
@@ -115,4 +116,4 @@ internal sealed class StdWriter : TextWriter
 
 }; // class StdWriter
 
-}; // namespace System.IO
+}; // namespace System.Private

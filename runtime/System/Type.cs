@@ -21,6 +21,7 @@
 namespace System
 {
 
+using System.Private;
 using System.Reflection;
 using System.Globalization;
 using System.Runtime.CompilerServices;

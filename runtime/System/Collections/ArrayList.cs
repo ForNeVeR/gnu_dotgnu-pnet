@@ -22,6 +22,7 @@ namespace System.Collections
 {
 
 using System;
+using System.Private;
 
 public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 {

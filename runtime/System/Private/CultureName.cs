@@ -1,6 +1,6 @@
 /*
  * CultureName.cs - Implementation of the
- *		"System.Globalization.CultureName" class.
+ *		"System.Private.CultureName" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Globalization
+namespace System.Private
 {
 
 using System;
@@ -53,4 +53,4 @@ internal sealed class CultureName
 
 }; // class CultureName
 
-}; // namespace System.Globalization
+}; // namespace System.Private

@@ -1,5 +1,5 @@
 /*
- * StdReader.cs - Implementation of the "System.IO.StdReader" class.
+ * StdReader.cs - Implementation of the "System.Private.StdReader" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,10 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.IO
+namespace System.Private
 {
 
 using System;
+using System.IO;
 using System.Globalization;
 using System.Text;
 using Platform;
@@ -116,4 +117,4 @@ internal sealed class StdReader : TextReader
 
 }; // class StdReader
 
-}; // namespace System.IO
+}; // namespace System.Private

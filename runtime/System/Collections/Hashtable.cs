@@ -23,6 +23,7 @@ namespace System.Collections
 {
 
 using System;
+using System.Private;
 using System.Runtime.CompilerServices;
 
 public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable

@@ -21,6 +21,9 @@
 namespace System.Globalization
 {
 
+using System;
+using System.Private;
+
 public class CultureInfo : ICloneable, IFormatProvider
 {
 

@@ -3,6 +3,8 @@
 
 * engine/engine_private.h: new file for isolating access to "image".
 
+* engine/thread.c: change includes to use "engine_private.h".
+
 2001-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: add support for .jar files to the loader.

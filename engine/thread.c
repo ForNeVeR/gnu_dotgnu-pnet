@@ -18,13 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "engine.h"
-
-/*
- * Warning: "program.h" allows for illegal access to the internal
- * workings of the "image" library.  We use this for speed.
- */
-#include "../image/program.h"
+#include "engine_private.h"
 
 #ifdef	__cplusplus
 extern	"C" {

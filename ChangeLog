@@ -8,6 +8,13 @@
 	addition to "/nostdlib" to csc, because "/nostdlib" only turns
 	off mscorlib.dll, and not all standard libraries.
 
+	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,
+	samples/I18N.Other.dll, samples/I18N.Rare.dll,
+	samples/I18N.West.dll, samples/I18N.dll,
+	samples/Makefile.am, samples/System.Xml.dll,
+	samples/System.dll, samples/mscorlib.dll: new versions after
+	fixing build problems with System and System.Xml.
+
 2002-04-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ChangeLog, doc/ChangeLog-2: move the contents of "ChangeLog" to

@@ -46,6 +46,7 @@ public sealed class AssemblyBuilder : Assembly
 	private IntPtr writer;
 	private ModuleBuilder module;
 	private ArrayList detachList;
+	private PEFileKinds fileKind;
 
 	// Constructor.  Called from AppDomain.DefineDynamicAssembly.
 	internal AssemblyBuilder(AssemblyName name, AssemblyBuilderAccess access,
@@ -57,6 +58,7 @@ public sealed class AssemblyBuilder : Assembly
 				this.saved = false;
 				this.entryPoint = null;
 				this.detachList = new ArrayList();
+				fileKind = PEFileKinds.Dll;
 				Version version = name.Version;
 				lock(typeof(AssemblyBuilder))
 				{
@@ -320,6 +322,19 @@ public sealed class AssemblyBuilder : Assembly
 	[TODO]
 	public void Save(String assemblyFileName)
 			{
+				if (assemblyFileName == null)
+				{
+					throw new ArgumentNullException(/* TODO */);
+				}
+				if (assemblyFileName.Length == 0)
+				{
+					throw new ArgumentException(/* TODO */);
+				}
+				if (saved || (access & AssemblyBuilderAccess.Save) == 0)
+				{
+					throw new InvalidOperationException(/* TODO */);
+				}
+				/* TODO: the rest of the exception throwing checks */
 		 		throw new NotImplementedException("Save");
 			}
 
@@ -375,14 +390,8 @@ public sealed class AssemblyBuilder : Assembly
 					throw new InvalidOperationException
 						(_("Invalid_EntryNotInAssembly"));
 				}
-				lock(typeof(AssemblyBuilder))
-				{
-				/*	TODO
-					ClrSetEntryPoint(((MethodBuilder)entryMethod).ClrHandle,
-								 fileKind);
-				*/
-				}
 				entryPoint = entryMethod;
+				this.fileKind = fileKind;
 			}
 
 	// Set custom attributes on a program item in this assembly.
@@ -438,10 +447,11 @@ public sealed class AssemblyBuilder : Assembly
 			(String name, int v1, int v2, int v3, int v4,
 			 AssemblyBuilderAccess access, out IntPtr writer);
 
-	// Internal version of "SetEntryPoint".
+	// Save the assembly to a file.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private void ClrSetEntryPoint(IntPtr clrMethod,
-										 PEFileKinds fileKind);
+	extern private static bool ClrSave(IntPtr assembly, IntPtr writer,
+	                                   String path, IntPtr entryMethod,
+	                                   PEFileKinds fileKind /*, TODO */);
 
 	// Get the token associated with a particular program item.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -1,3 +1,7 @@
+2003-07-20  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: change how
+	SetEntryPoint is handled and add some argument checks to Save.
 
 2003-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -1,4 +1,9 @@
 
+2002-12-06  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_lvalue.tc: consider 'null' as an object for 
+	member access.
+
 2002-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_lvalue.tc (ILNode_MemberProperty): use the correct

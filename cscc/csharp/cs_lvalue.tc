@@ -1030,7 +1030,14 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 		if(ILNode_EvalConst(node->expr1,info,&evalue))
 		{
 			/* Set the RValue to the type .. to handle Boxing later on*/
-			CSSemSetRValue(value,CSSemGetType(value));
+			if(CSSemGetType(value)==ILType_Null)
+			{
+				CSSemSetRValue(value,ILValueTypeToType(info,evalue.valueType));
+			}
+			else
+			{
+				CSSemSetRValue(value,CSSemGetType(value));
+			}
 		}
 	}
 

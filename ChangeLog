@@ -1,4 +1,20 @@
 
+2003-07-02  Gopal.V  <gopalv82@symonds.net>
+	
+	* System.Windows.Forms/Screen.cs: Stub out the GetBounds() static
+	methods.
+
+2003-07-02  Cecilio Pardo  <cpardo@imayhem.com>
+
+	* System.Windows.Forms/Binding.cs, 
+	System.Windows.Forms/BindingManagerBase.cs,	
+	System.Windows.Forms/BindingsCollection.cs
+	System.Windows.Forms/CurrencyManager.cs
+	System.Windows.Forms/ListControl.cs: Stub Binding, BindingManagerBase, 
+	BindingCollection, CurrencyManager and ListControl classes of the 
+	System.Windows.Forms namespace.
+	(PAtch #1657, Gopal)
+
 2003-07-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, Xsharp/Makefile.am: remove "-lX11" from the link

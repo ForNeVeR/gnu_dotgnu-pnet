@@ -147,6 +147,23 @@ public class Screen
 			{
 				return FromRectangle(rect).WorkingArea;
 			}
+	
+	public static Rectangle GetBounds(Control ctl)
+			{
+				return GetBounds(ctl.Bounds);	
+			}
+
+	[TODO]
+	public static Rectangle GetBounds(Point pt)
+			{
+				return new Rectangle(pt.X, pt.Y,0,0);
+			}
+
+	[TODO]
+	public static Rectangle GetBounds(Rectangle rect)
+			{
+				return rect;
+			}
 
 	// Convert this object into a string.
 	public override String ToString()

@@ -25,7 +25,7 @@ using System;
 using System.Xml;
 using System.Collections;
 
-internal sealed class Attributes
+internal sealed class Attributes : XmlErrorProcessor
 {
 	// Internal state.
 	private int count;
@@ -37,7 +37,8 @@ internal sealed class Attributes
 
 
 	// Constructor.
-	public Attributes()
+	public Attributes(ErrorHandler error)
+			: base(error)
 			{
 				count = 0;
 				defaultNS = null;
@@ -73,7 +74,7 @@ internal sealed class Attributes
 	public int Find(String localName, String namespaceURI)
 			{
 				// create the search key
-				Key key = new Key(localName, namespaceURI);
+				Key key = new Key(nt.Get(localName), nt.Get(namespaceURI));
 
 				// perform the lookup and return the results
 				Object val = names[key];
@@ -86,7 +87,7 @@ internal sealed class Attributes
 				Key key;
 				if(nm == null)
 				{
-					key = new Key(name);
+					key = new Key(nt.Get(name));
 				}
 				else
 				{
@@ -122,12 +123,14 @@ internal sealed class Attributes
 			}
 
 	// Update the search information, returning false on error.
-	public bool UpdateInfo
+	public void UpdateInfo
 				(XmlNameTable nt)
 			{
 				this.nt = nt;
 				this.nm = null;
 				this.defaultNS = null;
+				names.Clear();
+
 				for(int i = 0; i < count; ++i)
 				{
 					// get the attribute name information
@@ -138,23 +141,24 @@ internal sealed class Attributes
 					Key key = new Key(name);
 
 					// check for duplicate
-					if(names.ContainsKey(key)) { return false; }
+					if(names.ContainsKey(key))
+					{
+						Error(/* TODO */);
+					}
 
 					// add the key and index to the hash table
 					names.Add(key, i);
 				}
-
-				// all information was ok so return true
-				return true;
 			}
 
 	// Update the search and namespace information, returning false on error.
-	public bool UpdateInfo
+	public void UpdateInfo
 				(XmlNameTable nt, XmlNamespaceManager nm, String defaultNS)
 			{
 				this.nt = nt;
 				this.nm = nm;
 				this.defaultNS = defaultNS;
+				names.Clear();
 
 				for(int i = 0; i < count; ++i)
 				{
@@ -170,8 +174,11 @@ internal sealed class Attributes
 					// find the namespace separator
 					int index = name.LastIndexOf(':');
 
-					// signal an error if there's no name before the separator
-					if(index == 0) { return false; }
+					// give an error if there's no name before the separator
+					if(index == 0)
+					{
+						Error(/* TODO */);
+					}
 
 					// set the namespace information
 					if(index > 0)
@@ -181,7 +188,10 @@ internal sealed class Attributes
 						localName = nt.Add(name.Substring(index + 1));
 
 						// check for a valid prefix
-						if(prefix.IndexOf(':') != -1) { return false; }
+						if(prefix.IndexOf(':') != -1)
+						{
+							Error(/* TODO */);
+						}
 
 						// set the namespace uri based on the prefix
 						namespaceURI = nm.LookupNamespace(prefix);
@@ -191,7 +201,10 @@ internal sealed class Attributes
 					Key key = new Key(localName, namespaceURI);
 
 					// check for duplicate
-					if(names.ContainsKey(key)) { return false; }
+					if(names.ContainsKey(key))
+					{
+						Error(/* TODO */);
+					}
 
 					// add the key and index to the hash table
 					names.Add(key, i);
@@ -199,9 +212,6 @@ internal sealed class Attributes
 					// update the current attribute's namespace information
 					info.UpdateNamespaceInfo(localName, namespaceURI, prefix);
 				}
-
-				// all information was ok so return true
-				return true;
 			}
 
 

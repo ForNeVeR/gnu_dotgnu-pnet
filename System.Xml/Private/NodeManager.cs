@@ -30,15 +30,17 @@ internal sealed class NodeManager
 	// Internal state.
 	private int current;
 	private Attributes attributes;
+	private ErrorHandler error;
 	private NodeInfo[] nodes;
 	private String xml;
 
 
 	// Constructor.
-	public NodeManager(XmlNameTable nt)
+	public NodeManager(XmlNameTable nt, ErrorHandler eh)
 			{
 				current = (int)Type.None;
 				attributes = null;
+				error = eh;
 				nodes = new NodeInfo[11];
 				nodes[current] = new DefaultNodeInfo();
 				xml = nt.Add("xml");
@@ -66,7 +68,7 @@ internal sealed class NodeManager
 				{
 					if(attributes == null)
 					{
-						attributes = new Attributes();
+						attributes = new Attributes(error);
 					}
 					return attributes;
 				}

@@ -86,7 +86,7 @@ public class XmlTextReader : XmlReader
 				incDepth = false;
 				elementNames = new Stack();
 				dtdReader = new XmlDTDReader(context);
-				nodes = new NodeManager(nt);
+				nodes = new NodeManager(nt, new ErrorHandler(Error));
 				input = new XmlParserInput
 					(null, nt, new EOFHandler(HandleEOF), new ErrorHandler(Error));
 				context = new XmlParserContext
@@ -1839,6 +1839,15 @@ public class XmlTextReader : XmlReader
 				{
 					incDepth = true;
 					elementNames.Push(name);
+				}
+
+				// push the "xml:" scope
+				context.PushScope();
+
+				// push the "xmlns" scope
+				if(namespaces)
+				{
+					context.NamespaceManager.PushScope();
 				}
 
 				// process the attribute information

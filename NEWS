@@ -1,4 +1,24 @@
 
+0.1.8 (20 April 2002)
+
+	* Bug fixes to System.Net (Peter Minten, Gopal V.).
+	* Bug fixes to System.Uri* (Stephen Compall).
+	* Complete String.Format.
+	* Binary access to stdio streams.
+	* Bug fixes to System.IO.
+	* Bug fixes to System.Reflection.
+	* New assembly System.Xml added (Peter Minten).
+	* Stack trace fixes for exceptions.
+	* Continue System.Resources implementation.
+	* Tweaks to socket API's.
+	* Howto on writing unit tests for csunit (Gopal V.).
+	* Continue implementation of encoding classes.
+	* Implemented a large number of Windows-like code page encodings,
+	  mostly among the 8-bit character sets.
+	* Split internationalization support into a separate "I18N" library,
+	  which is dynamically loaded by "mscorlib" as needed.
+	* Updates to System.Convert and dependencies.
+
 0.1.6 (27 March 2002)
 
 	* System.Net (Peter Minten, Gerard Toonstra, Gopal V).

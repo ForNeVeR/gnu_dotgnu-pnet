@@ -317,8 +317,19 @@ public class Assembly : IClrProgramItem
 				   String.Compare(assemblyString, 0, "file://", 0, 7, true)
 				   		== 0)
 				{
-					assembly = LoadFromFile(assemblyString.Substring(7),
-											out error, caller);
+					if(assemblyString.Length >= 10 &&
+					   assemblyString[7] == '/' &&
+					   assemblyString[9] == ':')
+					{
+						// Specification of the form "file:///X:...".
+						assemblyString = assemblyString.Substring(8);
+					}
+					else
+					{
+						// Some other type of file specification.
+						assemblyString = assemblyString.Substring(7);
+					}
+					assembly = LoadFromFile(assemblyString, out error, caller);
 				}
 				else
 				{
@@ -483,35 +494,35 @@ public class Assembly : IClrProgramItem
 			}
 
 	// Get the full name associated with this assembly.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private String GetFullName();
+
+	// Get the full name associated with this assembly.
 	public virtual String FullName
 			{
 				get
 				{
-					return ClrHelpers.GetName(privateData);
+					return GetFullName();
 				}
 			}
 
 #if !ECMA_COMPAT
 
 	// Get the code base associated with this assembly.
-	[TODO]
 	public virtual String CodeBase
 			{
 				get
 				{
-					// TODO
-					return null;
+					return GetName().CodeBase;
 				}
 			}
 	
 	// Get the escaped code base associated with this assembly.
-	[TODO]
 	public virtual String EscapedCodeBase
 			{
 				get
 				{
-					// TODO
-					return null;
+					return GetName().EscapedCodeBase;
 				}
 			}
 	
@@ -526,13 +537,13 @@ public class Assembly : IClrProgramItem
 			}
 
 	// Get the security evidence for this assembly.
-	[TODO]
 	public virtual Evidence Evidence
 			{
 				get
 				{
-					// TODO
-					return null;
+					// We don't use evidence objects in this implementation
+					// at the moment, so return a dummy evidence object.
+					return new Evidence();
 				}
 			}
 
@@ -652,14 +663,30 @@ public class Assembly : IClrProgramItem
 				return new Module [0];
 			}
 
+	// Fill in an assembly name block with a loaded assembly's information.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private void FillAssemblyName(AssemblyName nameInfo);
+
 	// Get the name of this assembly.
-	[TODO]
 	public virtual AssemblyName GetName()
 			{
-				AssemblyName name = new AssemblyName();
-				name.Name = FullName;
-				name.Version = new Version(0, 0, 0, 0);	// TODO
-				return name;
+				AssemblyName nameInfo = new AssemblyName();
+				String filename = GetLocation();
+				if(filename != null && filename.Length > 0)
+				{
+					if(filename[0] == '/' || filename[0] == '\\')
+					{
+						nameInfo.CodeBase = "file://" +
+							filename.Replace('\\', '/');
+					}
+					else
+					{
+						nameInfo.CodeBase = "file:///" +
+							filename.Replace('\\', '/');
+					}
+				}
+				FillAssemblyName(nameInfo);
+				return nameInfo;
 			}
 	public virtual AssemblyName GetName(bool copiedName)
 			{

@@ -25,10 +25,13 @@ namespace System.Reflection
 #if !ECMA_COMPAT
 
 using System;
+using System.IO;
+using System.Text;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Configuration.Assemblies;
+using System.Security.Cryptography;
 
 public sealed class AssemblyName
 	: ICloneable
@@ -47,24 +50,69 @@ public sealed class AssemblyName
 	private AssemblyVersionCompatibility versionCompat;
 	private byte[] publicKey;
 	private byte[] publicKeyToken;
-
-	// Constructor.
-	public AssemblyName() {}
 #if CONFIG_SERIALIZATION
-	[TODO]
-	internal AssemblyName(SerializationInfo info,
-						  StreamingContext context)
-			{
-				// TODO
-			}
+	private SerializationInfo info;
 #endif
 
+	// Constructor.
+	public AssemblyName()
+			{
+				versionCompat = AssemblyVersionCompatibility.SameMachine;
+			}
+#if CONFIG_SERIALIZATION
+	internal AssemblyName(SerializationInfo info, StreamingContext context)
+			{
+				this.info = info;
+			}
+#endif
+	private AssemblyName(AssemblyName other)
+			{
+				codeBase = other.codeBase;
+				culture = other.culture;
+				flags = other.flags;
+				name = other.name;
+				hashAlg = other.hashAlg;
+				keyPair = other.keyPair;
+				version = (version == null
+					? null : (Version)(other.version.Clone()));
+				versionCompat = other.versionCompat;
+				publicKey = (other.publicKey == null
+					? null : (byte[])(other.publicKey.Clone()));
+				publicKeyToken = (other.publicKeyToken == null
+					? null : (byte[])(other.publicKeyToken.Clone()));
+			}
+
+	// Fill assembly name information from a file.  Returns a load error code.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int FillAssemblyNameFromFile
+				(AssemblyName nameInfo, String assemblyFile, Assembly caller);
+
 	// Get the assembly name for a specific file.
-	[TODO]
 	public static AssemblyName GetAssemblyName(String assemblyFile)
 			{
-				// TODO
-				return null;
+				if(assemblyFile == null)
+				{
+					throw new ArgumentNullException("assemblyFile");
+				}
+				assemblyFile = Path.GetFullPath(assemblyFile);
+				AssemblyName nameInfo = new AssemblyName();
+				if(assemblyFile[0] == '/' || assemblyFile[0] == '\\')
+				{
+					nameInfo.CodeBase = "file://" +
+						assemblyFile.Replace('\\', '/');
+				}
+				else
+				{
+					nameInfo.CodeBase = "file:///" +
+						assemblyFile.Replace('\\', '/');
+				}
+				int error = FillAssemblyNameFromFile
+					(nameInfo, assemblyFile, Assembly.GetCallingAssembly());
+				if(error != Assembly.LoadError_OK)
+				{
+					Assembly.ThrowLoadError(assemblyFile, error);
+				}
+				return nameInfo;
 			}
 
 	// Get or set the code base for the assembly name.
@@ -94,13 +142,27 @@ public sealed class AssemblyName
 			}
 
 	// Get the escaped code base for the assembly name.
-	[TODO]
 	public String EscapedCodeBase
 			{
 				get
 				{
-					// TODO
-					return codeBase;
+					if(codeBase == null)
+					{
+						return null;
+					}
+					StringBuilder builder = new StringBuilder();
+					foreach(char ch in codeBase)
+					{
+						if(ch == ' ' || ch == '%')
+						{
+							builder.Append(String.Format("%{0:x2}", (int)ch));
+						}
+						else
+						{
+							builder.Append(ch);
+						}
+					}
+					return builder.ToString();
 				}
 			}
 
@@ -118,13 +180,48 @@ public sealed class AssemblyName
 			}
 
 	// Get the full name of the assembly.
-	[TODO]
 	public String FullName
 			{
 				get
 				{
-					// TODO
-					return name;
+					if(name == null)
+					{
+						return null;
+					}
+					StringBuilder builder = new StringBuilder();
+					builder.Append(name);
+					builder.Append(", Version=");
+					if(version != null)
+					{
+						builder.Append(version.ToString());
+					}
+					else
+					{
+						builder.Append("0.0.0.0");
+					}
+					builder.Append(", Culture=");
+					if(culture != null && culture.LCID != 0x007F)
+					{
+						builder.Append(culture.Name);
+					}
+					else
+					{
+						builder.Append("neutral");
+					}
+					byte[] token = GetPublicKeyToken();
+					builder.Append(", PublicKeyToken=");
+					if(token != null)
+					{
+						foreach(byte b in token)
+						{
+							builder.Append(String.Format("{0:x2}", (int)b));
+						}
+					}
+					else
+					{
+						builder.Append("null");
+					}
+					return builder.ToString();
 				}
 			}
 
@@ -196,7 +293,7 @@ public sealed class AssemblyName
 	// Clone this object.
 	public Object Clone()
 			{
-				return MemberwiseClone();
+				return new AssemblyName(this);
 			}
 
 	// Get the public key for the assembly's originator.
@@ -209,11 +306,29 @@ public sealed class AssemblyName
 	public void SetPublicKey(byte[] publicKey)
 			{
 				this.publicKey = publicKey;
+				this.flags |= AssemblyNameFlags.PublicKey;
 			}
 
 	// Get the public key token for the assembly's originator.
 	public byte[] GetPublicKeyToken()
 			{
+			#if CONFIG_CRYPTO
+				if(publicKeyToken == null && publicKey != null)
+				{
+					// The public key token is the reverse of the last
+					// eight bytes of the SHA1 hash of the public key.
+					SHA1CryptoServiceProvider sha1;
+					sha1 = new SHA1CryptoServiceProvider();
+					byte[] hash = sha1.ComputeHash(publicKey);
+					((IDisposable)sha1).Dispose();
+					publicKeyToken = new byte [8];
+					int posn;
+					for(posn = 0; posn < 8; ++posn)
+					{
+						publicKeyToken[posn] = hash[hash.Length - 1 - posn];
+					}
+				}
+			#endif
 				return publicKeyToken;
 			}
 
@@ -226,26 +341,105 @@ public sealed class AssemblyName
 	// Convert this assembly name into a string.
 	public override String ToString()
 			{
-				return FullName;
+				String name = FullName;
+				if(name != null)
+				{
+					return name;
+				}
+				return base.ToString();
+			}
+
+	// Set the culture by name.
+	internal void SetCultureByName(String name)
+			{
+				if(name == null || name.Length == 0 || name == "iv")
+				{
+					culture = null;
+				}
+				else
+				{
+					try
+					{
+						culture = new CultureInfo(name);
+					}
+					catch(Exception)
+					{
+						// The culture name was probably not understood.
+						culture = null;
+					}
+				}
+			}
+
+	// Set the version information by number.
+	internal void SetVersion(int major, int minor, int build, int revision)
+			{
+				version = new Version(major, minor, build, revision);
 			}
 
 #if CONFIG_SERIALIZATION
 
 	// Get the serialization data for this object.
-	[TODO]
 	public void GetObjectData(SerializationInfo info, StreamingContext context)
 			{
 				if(info == null)
 				{
 					throw new ArgumentNullException("info");
 				}
-				// TODO
+				info.AddValue("_Name", name);
+				info.AddValue("_PublicKey", publicKey, typeof(byte[]));
+				info.AddValue("_PublicKeyToken", publicKeyToken,
+							  typeof(byte[]));
+				if(culture == null)
+				{
+					info.AddValue("_CultureInfo", -1);
+				}
+				else
+				{
+					info.AddValue("_CultureInfo", culture.LCID);
+				}
+				info.AddValue("_CodeBase", codeBase);
+				info.AddValue("_Version", version, typeof(Version));
+				info.AddValue("_HashAlgorithm", hashAlg,
+							  typeof(AssemblyHashAlgorithm));
+				info.AddValue("_StrongNameKeyPair", keyPair,
+							  typeof(StrongNameKeyPair));
+				info.AddValue("_VersionCompatibility", versionCompat,
+							  typeof(AssemblyVersionCompatibility));
+				info.AddValue("_Flags", flags, typeof(AssemblyNameFlags));
 			}
 
 	// Handle a deserialization callback on this object.
 	public void OnDeserialization(Object sender)
 			{
-				// Nothing to do here.
+				if(info == null)
+				{
+					return;
+				}
+				name = info.GetString("_Name");
+				publicKey = (byte[])(info.GetValue
+					("_PublicKey", typeof(byte[])));
+				publicKeyToken = (byte[])(info.GetValue
+					("_PublicKeyToken", typeof(byte[])));
+				int cultureID = info.GetInt32("_CultureInfo");
+				if(cultureID != -1)
+				{
+					culture = new CultureInfo(cultureID);
+				}
+				else
+				{
+					culture = null;
+				}
+				codeBase = info.GetString("_CodeBase");
+				version = (Version)(info.GetValue("_Version", typeof(Version)));
+				hashAlg = (AssemblyHashAlgorithm)(info.GetValue
+					("_HashAlgorithm", typeof(AssemblyHashAlgorithm)));
+				keyPair = (StrongNameKeyPair)(info.GetValue
+					("_StrongNameKeyPair", typeof(StrongNameKeyPair)));
+				versionCompat = (AssemblyVersionCompatibility)(info.GetValue
+					("_VersionCompatibility",
+					 typeof(AssemblyVersionCompatibility)));
+				flags = (AssemblyNameFlags)(info.GetValue
+					("_Flags", typeof(AssemblyNameFlags)));
 			}
 
 #endif // CONFIG_SERIALIZATION

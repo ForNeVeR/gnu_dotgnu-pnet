@@ -14,6 +14,12 @@
 	* runtime/System/Collections/Hashtable.cs: implement serialization
 	for hash tables.
 
+	* runtime/System/Reflection/Assembly.cs,
+	runtime/System/Reflection/AssemblyName.cs: implement the
+	"AssemblyName" class; change the implementation of "Assembly.FullName"
+	to return the fully-qualified name including version, culture,
+	and public key token.
+
 2003-08-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/IO.txt, runtime/System/IO/MemoryStream.cs:

@@ -522,9 +522,13 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 					{
 						foreach(char ch in str)
 						{
-							if(sink.ToolkitKeyChar(ch))
+							// Clean old ASCII DEL (0x7F)
+							if(ch != (char)0x7F)
 							{
-								processed = true;
+								if(sink.ToolkitKeyChar(ch))
+								{
+									processed = true;
+								}
 							}
 						}
 					}

@@ -61,10 +61,15 @@ public abstract class Image
 				SetDGImage(dgImage);
 			}
 #if CONFIG_SERIALIZATION
-	[TODO]
 	internal Image(SerializationInfo info, StreamingContext context)
 			{
-				// TODO
+				// Do we need to Handle PixelFormats ?.
+				byte[] data = null;
+				data = (byte[])info.GetValue("Data", typeof(byte[]));
+				MemoryStream stream = new MemoryStream(data,false);
+				DotGNU.Images.Image dgImage = new DotGNU.Images.Image();
+				dgImage.Load(stream);
+				SetDGImage(dgImage);
 			}
 #endif
 

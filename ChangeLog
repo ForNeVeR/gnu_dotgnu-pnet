@@ -1,3 +1,8 @@
+
+2004-05-25  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Drawing/Image.cs: implement DeSerialization of Images.
+
 2004-05-25  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlTextReader.cs, System.Xml/Private/Attributes.cs: fix

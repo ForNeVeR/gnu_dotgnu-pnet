@@ -1,3 +1,13 @@
+2004-06-13  Thong Nguyen  <tum@veridicus.com>
+
+	* support/thread.c: Added supporting for threads that need to
+	destroy themselves when they exit (The public ILThreadDestroy
+	API still doesn't allow threads to destroy themselves).
+	Allow ILThreadSuspend to be aborted.
+	Made ILThreadAbort resume the thread if has suspended.
+	Made _ILThreadSuspendRequest flag itself as IL_TS_SUSPENDED_SELF
+	so that it will be correctly woken up when it is resumed.
+
 2004-06-12  Thong Nguyen  <tum@veridicus.com>
 
 	* include/il_gc.h, support/def_gc.c, support/hb_gc.c: Added timeout

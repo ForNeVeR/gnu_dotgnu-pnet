@@ -110,7 +110,7 @@ static void _ILThreadDeinit(void)
 	if(noFgThreadsEvent != 0)
 	{
 		ILWaitHandleClose(noFgThreadsEvent);
-	}
+	}	
 }
 
 /*
@@ -164,6 +164,70 @@ static void _ILThreadRunAndFreeCleanups(ILThread *thread)
 
 		entry = next;
 	}
+
+	thread->firstCleanupEntry = 0;
+}
+
+static void _ILPrivateThreadDestroy(ILThread *thread, int allowSelf)
+{
+	/* Bail out if this is the current thread or main thread */
+	if((thread == _ILThreadGetSelf() && !allowSelf) || thread == &mainThread)
+	{
+		return;
+	}
+
+	/* Lock down the thread object */
+	_ILMutexLock(&(thread->lock));
+
+	/* Don't terminate the thread or adjust counts if it has already been stopped */
+	if((thread->state & IL_TS_STOPPED) == 0)
+	{
+		thread->state |= IL_TS_STOPPED;
+
+		/* Only terminate the system thread if one was created */
+		if((thread->state & IL_TS_UNSTARTED) == 0)
+		{
+			/* Terminating the thread is unsafe so just don't
+			   destroy now and tell the thread to destroy itself
+			   on exit */
+
+			thread->destroyOnExit = 1;
+
+			_ILMutexUnlock(&thread->lock);
+			
+			ILThreadAbort(thread);
+
+			return;
+		}
+
+		_ILMutexUnlock(&thread->lock);
+
+		/* Run and free the cleanup handlers */
+		_ILThreadRunAndFreeCleanups(thread);
+	}
+	else
+	{
+		/* Unlock the thread object and free it */
+		_ILMutexUnlock(&(thread->lock));
+	}
+
+	/* Only destroy the system thread if one was created */
+	if((thread->state & IL_TS_UNSTARTED) == 0)
+	{
+		_ILThreadDestroy(thread);
+	}
+
+	_ILMutexDestroy(&(thread->lock));
+	_ILSemaphoreDestroy(&(thread->suspendAck));
+	_ILSemaphoreDestroy(&(thread->resumeAck));
+	_ILWakeupDestroy(&(thread->wakeup));
+	_ILWakeupQueueDestroy(&(thread->joinQueue));
+	ILFree(thread);
+}
+
+void ILThreadDestroy(ILThread *thread)
+{
+	_ILPrivateThreadDestroy(thread, 0);
 }
 
 void _ILThreadRun(ILThread *thread)
@@ -184,7 +248,7 @@ void _ILThreadRun(ILThread *thread)
 	{
 		/* Mark the thread as stopped */
 		thread->state |= IL_TS_STOPPED;	
-		/* Change the thread count */
+		/* Change the thread count */		
 		_ILThreadAdjustCount(-1, ((thread->state & IL_TS_BACKGROUND) != 0) ? -1 : 0);
 	}
 	_ILMutexUnlock(&(thread->lock));
@@ -201,7 +265,7 @@ void _ILThreadRun(ILThread *thread)
 
 	if (thread->destroyOnExit)
 	{
-		ILThreadDestroy(thread);
+		_ILPrivateThreadDestroy(thread, 1);
 	}
 }
 
@@ -284,62 +348,6 @@ int ILThreadStart(ILThread *thread)
 	return result;
 }
 
-void ILThreadDestroy(ILThread *thread)
-{
-	/* Bail out if this is the current thread or main thread */
-	if(thread == _ILThreadGetSelf() || thread == &mainThread)
-	{
-		return;
-	}
-
-	/* Lock down the thread object */
-	_ILMutexLock(&(thread->lock));
-	
-	/* Don't terminate the thread or adjust counts if it has already been stopped */
-	if((thread->state & IL_TS_STOPPED) == 0)
-	{
-		thread->state |= IL_TS_STOPPED;
-
-		/* Only terminate the system thread if one was created */
-		if((thread->state & IL_TS_UNSTARTED) == 0)
-		{
-			/* Terminating the thread is unsafe so just don't
-			   destroy now and tell the thread to destroy itself
-			   on exit */
-
-			thread->destroyOnExit = 1;
-			ILThreadAbort(thread);
-
-			_ILMutexUnlock(&thread->lock);
-
-			return;
-		}
-
-		_ILMutexUnlock(&thread->lock);
-		
-		/* Run and free the cleanup handlers */
-		_ILThreadRunAndFreeCleanups(thread);
-	}
-	else
-	{
-		/* Unlock the thread object and free it */
-		_ILMutexUnlock(&(thread->lock));
-	}
-
-	/* Only destroy the system thread if one was created */
-	if((thread->state & IL_TS_UNSTARTED) == 0)
-	{
-		_ILThreadDestroy(thread);
-	}
-
-	_ILMutexDestroy(&(thread->lock));
-	_ILSemaphoreDestroy(&(thread->suspendAck));
-	_ILSemaphoreDestroy(&(thread->resumeAck));
-	_ILWakeupDestroy(&(thread->wakeup));
-	_ILWakeupQueueDestroy(&(thread->joinQueue));
-	ILFree(thread);
-}
-
 ILThread *ILThreadSelf(void)
 {
 #ifdef IL_NO_THREADS
@@ -369,7 +377,11 @@ int ILThreadSuspend(ILThread *thread)
 
 	/* Determine what to do based on the thread's state */
 	state = thread->state;
-	if((state & IL_TS_SUSPENDED) != 0)
+	if ((state & (IL_TS_ABORT_REQUESTED)) != 0)
+	{
+		return IL_WAIT_ABORTED;
+	}
+	else if((state & IL_TS_SUSPENDED) != 0)
 	{
 		/* Nothing to do here - it is already suspended */
 	}
@@ -459,7 +471,7 @@ void ILThreadResume(ILThread *thread)
 		{
 			/* Someone else suspended the thread */
 			thread->state &= ~IL_TS_SUSPENDED;
-			thread->state |= IL_TS_RUNNING;
+			thread->state |= IL_TS_RUNNING;			
 			_ILThreadResumeOther(thread);
 		}
 	}
@@ -554,6 +566,14 @@ int ILThreadAbort(ILThread *thread)
 
 			_ILMutexUnlock(&(thread->lock));
 						
+			return 0;
+		}
+		else if (((thread->state & (IL_TS_SUSPENDED_SELF | IL_TS_SUSPENDED))) != 0)
+		{
+			_ILMutexUnlock(&(thread->lock));
+
+			ILThreadResume(thread);
+
 			return 0;
 		}
 
@@ -906,7 +926,7 @@ int ILThreadSleep(ILUInt32 ms)
 		thread->state &= ~IL_TS_SUSPEND_REQUESTED;
 		thread->state |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
 		thread->resumeRequested = 0;
-		
+
 		/* Unlock the thread object prior to suspending */
 		_ILMutexUnlock(&(thread->lock));
 
@@ -1067,12 +1087,17 @@ int ILThreadGetPriority(ILThread *thread)
 
 void _ILThreadSuspendRequest(ILThread *thread)
 {
+	_ILMutexLock(&(thread->lock));
+
 	/* Clear the "suspendRequested" and "resumeRequested" flags */
+	thread->state |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
 	thread->suspendRequested = 0;
 	thread->resumeRequested = 0;
 
 	/* Signal the thread that wanted to make us suspend that we are */
 	_ILSemaphorePost(&(thread->suspendAck));
+
+	_ILMutexUnlock(&(thread->lock));
 
 	/* Suspend the current thread until we receive a resume signal */
 	_ILThreadSuspendSelf(thread);

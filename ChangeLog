@@ -5,6 +5,12 @@
 	of system types, including basic types like char, int, etc,
 	and defined types like size_t, time_t, etc.
 
+	* Makefile.am, configure.in, OpenSystem.Platform/.cvsignore,
+	OpenSystem.Platform/Makefile.am, OpenSystem.Platform/Types.cs.in,
+	OpenSystem.Platform/OpenSystem.Platform.build: add the
+	"OpenSystem.Platform" assembly, which contains system dependent
+	type sizes matching those of the underlying operating system.
+
 2004-02-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/Font.cs: Add the style to the output of

@@ -442,6 +442,7 @@ AC_COMPILE_CHECK_SIZEOF(nlink_t, 4)
 AC_COMPILE_CHAR_UNSIGNED
 
 dnl Determine the C# definitions of various types on this platform.
+AC_SUBST(X_char)
 AC_SUBST(X_schar)
 AC_SUBST(X_uchar)
 AC_SUBST(X_short)
@@ -525,6 +526,8 @@ System.EnterpriseServices/Makefile
 System.Windows.Forms/Makefile
 System.Design/Makefile
 DotGNU.Terminal/Makefile
+OpenSystem.Platform/Makefile
+OpenSystem.Platform/Types.cs
 tests/Makefile
 tests/System/Makefile
 tests/System.Xml/Makefile

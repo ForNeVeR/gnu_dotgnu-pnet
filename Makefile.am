@@ -1,6 +1,7 @@
 if HAS_REFLECTION
 if HAS_EXTENDED_NUMERICS
-SUBDIRS = tools config resources runtime I18N DotGNU.SSL System System.Xml . \
+SUBDIRS = tools config resources runtime I18N OpenSystem.Platform \
+		  DotGNU.SSL System System.Xml . \
 		  System.Net.IrDA csunit csupport compat ISymWrapper \
 		  SharpZipLib System.Configuration.Install JScript Basic \
 		  DotGNU.Images Xsharp System.Drawing System.Drawing.Xsharp \
@@ -8,15 +9,16 @@ SUBDIRS = tools config resources runtime I18N DotGNU.SSL System System.Xml . \
 		  System.EnterpriseServices System.Windows.Forms \
 		  System.Design DotGNU.Terminal tests samples
 else
-SUBDIRS = tools config resources runtime I18N DotGNU.SSL System System.Xml . \
+SUBDIRS = tools config resources runtime I18N OpenSystem.Platform \
+		  DotGNU.SSL System System.Xml . \
 		  System.Net.IrDA csunit csupport compat ISymWrapper \
 		  SharpZipLib System.Configuration.Install Basic \
 		  DotGNU.Images Xsharp System.EnterpriseServices \
 		  DotGNU.Terminal tests samples
 endif
 else
-SUBDIRS = tools resources runtime DotGNU.SSL System System.Xml . \
-		  System.Net.IrDA samples
+SUBDIRS = tools resources runtime OpenSystem.Platform \
+		  DotGNU.SSL System System.Xml . System.Net.IrDA samples
 endif
 
 ## System.dll is built in two phases, because it depends recursively

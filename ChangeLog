@@ -7,6 +7,8 @@
 
 	* samples/System.dll: add extra collection classes.
 
+	* samples/mscorlib.dll: add a number of non-ECMA reflection attributes.
+
 2002-11-06  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_gc.c: Allow inherited methods to invoke GC.SuppressFinalize

@@ -1175,14 +1175,15 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	{
 		AddArgument(&cmdline, &cmdline_size, "-g");
 	}
-	if(CSStringListContains(extension_flags, num_extension_flags,
-							"no-short-insns"))
+	for(posn = 0; posn < num_extension_flags; ++posn)
 	{
-		AddArgument(&cmdline, &cmdline_size, "-l");
+		AddArgument(&cmdline, &cmdline_size, "-f");
+		AddArgument(&cmdline, &cmdline_size, extension_flags[posn]);
 	}
-	if(CSStringListContains(machine_flags, num_machine_flags, "jvm"))
+	for(posn = 0; posn < num_machine_flags; ++posn)
 	{
-		AddArgument(&cmdline, &cmdline_size, "-J");
+		AddArgument(&cmdline, &cmdline_size, "-m");
+		AddArgument(&cmdline, &cmdline_size, machine_flags[posn]);
 	}
 	AddArgument(&cmdline, &cmdline_size, asm_output);
 	AddArgument(&cmdline, &cmdline_size, 0);

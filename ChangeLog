@@ -17,6 +17,8 @@ of the handler table for methods with try blocks.
 * engine/lib_string.c, engine/lib_defs.h: implement the "internalcall"
 methods that are needed to support "System.Text.StringBuilder".
 
+* samples/mscorlib.dll: new version with "System.Text.StringBuilder".
+
 2001-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * samples/mscorlib.dll: new version with "UtcNow" fix.

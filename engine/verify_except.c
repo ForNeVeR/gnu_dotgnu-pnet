@@ -226,34 +226,26 @@ break;
 case IL_OP_PREFIX + IL_PREFIX_OP_RETHROW:
 {
 	/* Re-throw the current exception */
-	if(stackSize == 0)
+	exception = exceptions;
+	while(exception != 0)
 	{
-		/* Find the "catch" handler for this region of code */
-		exception = exceptions;
-		while(exception != 0)
+		if((exception->flags & (IL_META_EXCEPTION_FINALLY |
+								IL_META_EXCEPTION_FAULT |
+								IL_META_EXCEPTION_FILTER)) == 0 &&
+		   InsideExceptionHandler(exception, offset))
 		{
-			if((exception->flags & (IL_META_EXCEPTION_FINALLY |
-									IL_META_EXCEPTION_FAULT |
-									IL_META_EXCEPTION_FILTER)) == 0 &&
-			   InsideExceptionHandler(exception, offset))
-			{
-				break;
-			}
-			exception = exception->next;
+			break;
 		}
-		if(exception != 0)
-		{
-			ILCoderRethrow(coder, exception);
-			lastWasJump = 1;
-		}
-		else
-		{
-			VERIFY_INSN_ERROR();
-		}
+		exception = exception->next;
+	}
+	if(exception != 0)
+	{
+		ILCoderRethrow(coder, exception);
+		lastWasJump = 1;
 	}
 	else
 	{
-		VERIFY_STACK_ERROR();
+		VERIFY_INSN_ERROR();
 	}
 }
 break;

@@ -190,6 +190,9 @@
 	runtime/runtime.build: suppress debug line information in the
 	"compact" and "kernel" profiles, to save memory on embedded systems.
 
+	* Makefile.am, configure.in: don't build certain directories in
+	the "kernel" profile, because it doesn't support reflection.
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/ArgIterator.cs: make "ArgIterator.GetHashCode"

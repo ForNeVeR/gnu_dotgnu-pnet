@@ -239,55 +239,6 @@ static void DumpToken(ILImage *image, FILE *outstream,
 	}
 }
 
-void ILDAsmDumpString(FILE *outstream, const char *str, unsigned long len)
-{
-	ILUInt16 ch;
-	putc('"', outstream);
-	while(len > 0)
-	{
-		ch = IL_READ_UINT16(str);
-		if(ch < 32)
-		{
-			if(ch == (ILUInt32)'\n')
-			{
-				fputs("\\n", outstream);
-			}
-			else if(ch == (ILUInt32)'\r')
-			{
-				fputs("\\r", outstream);
-			}
-			else if(ch == (ILUInt32)'\t')
-			{
-				fputs("\\t", outstream);
-			}
-			else
-			{
-				fprintf(outstream, "\\x%02X", (int)ch);
-			}
-		}
-		else if(ch == '"' || ch == '\\')
-		{
-			putc('\\', outstream);
-			putc((int)ch, outstream);
-		}
-		else if(ch < 0x80)
-		{
-			putc((int)ch, outstream);
-		}
-		else if(ch < 0x100)
-		{
-			fprintf(outstream, "\\x%02X", (int)ch);
-		}
-		else
-		{
-			fprintf(outstream, "\\u%04X", (int)ch);
-		}
-		str += 2;
-		--len;
-	}
-	putc('"', outstream);
-}
-
 /*
  * Dump all IL instructions in a given buffer.  Returns zero
  * if there is something wrong with the buffer's format.
@@ -693,7 +644,7 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 					str = ILImageGetUserString(image, dest, &strLen);
 					if(str)
 					{
-						ILDAsmDumpString(outstream, str, strLen);
+						ILDumpUnicodeString(outstream, str, strLen);
 					}
 					else
 					{

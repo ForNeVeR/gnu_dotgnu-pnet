@@ -205,6 +205,33 @@ static ILType *GetAttrFieldType(ILProgramItem *item)
 }
 
 /*
+ * Check if there are any circular semantic analysis cases .
+ * The attribute target might not be distinct from the attribute
+ * itself , like being a nested class or a member of the attribute.
+ */
+static int IsAttributeTargetDistinct(ILGenInfo *info, ILProgramItem *item,
+					ILClass *classInfo)
+{
+	ILClass *target;
+	if(ILToProgramItem(classInfo)==item)return 0;
+	target= ILProgramItemToClass(item);
+	if(target==NULL)
+	{
+		ILMember *member=ILProgramItemToMember(item);
+		target=ILMember_Owner(member);
+	}
+	while(target!=NULL)
+	{
+		if(ILToProgramItem(classInfo)==ILToProgramItem(target))
+		{
+			return 0;
+		}
+		target=ILClass_NestedParent(target);
+	}
+	return 1;
+}
+
+/*
  * Process a single attribute in a section.
  */
 static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
@@ -315,7 +342,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	{
 		/* Perform semantic analysis on the attribute type, but only
 		   if we aren't trying to apply the attribute to itself */
-		if(ILToProgramItem(classInfo) != item)
+		if(IsAttributeTargetDistinct(info,item,classInfo))
 		{
 			CSSemProgramItem(info, ILToProgramItem(classInfo));
 		}

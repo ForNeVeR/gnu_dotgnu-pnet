@@ -1,4 +1,9 @@
 
+2003-03-11  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_attr.c: Fix circularity bug when encountering 
+	attribute usage inside the attribute class itself.
+
 2003-03-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilasm/ilasm_build.c, ilasm/ilasm_build.h, ilasm/ilasm_grammar.y,

@@ -53,8 +53,7 @@
 				 optimize="true"
 				 debug="${CONFIG_DEBUG_LINES}">
 
-			<!-- temporarily removed until recursion works -->
-			<!-- <define name="SECOND_PASS" value="true"/> -->
+			<define name="SECOND_PASS" value="true"/>
 
 			<sources>
 				<includes name="**/*.cs"/>
@@ -63,9 +62,8 @@
 			</sources>
 
 			<references>
-				<!-- temporarily removed until recursion works -->
-				<!-- <file name="../System.Xml/System.Xml.dll"/> -->
-				<!-- <file name="first/System.dll"/> -->
+				<file name="../System.Xml/System.Xml.dll"/>
+				<file name="first/System.dll"/>
 				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>

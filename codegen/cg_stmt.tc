@@ -381,7 +381,7 @@ ILNode_EndsInReturnImpl(ILNode_List)
 			/* The last statement was not emtpy */
 			flags1 = 0;
 		}
-		else
+		else if(flags1 != 0)
 		{
 			flags1 |= 2;
 		}
@@ -1418,17 +1418,25 @@ static void TrimGotoList(ILGenInfo *info, int tryScope)
  */
 ILNode_GenDiscard(ILNode_NewScope)
 {
-	/* Enter a new scope */
-	++(info->scopeLevel);
+	if(info->hasGotoScopes)
+	{
+		/* Enter a new scope */
+		++(info->scopeLevel);
 
-	/* Generate the code within the scope */
-	ILNode_GenDiscard(node->stmt, info);
+		/* Generate the code within the scope */
+		ILNode_GenDiscard(node->stmt, info);
 
-	/* Exit from the scope */
-	--(info->scopeLevel);
+		/* Exit from the scope */
+		--(info->scopeLevel);
 
-	/* Trim goto labels that were defined within the scope */
-	TrimGotoList(info, 0);
+		/* Trim goto labels that were defined within the scope */
+		TrimGotoList(info, 0);
+	}
+	else
+	{
+		/* Generate the code within the scope */
+		ILNode_GenDiscard(node->stmt, info);
+	}
 }
 
 /*

@@ -9,6 +9,10 @@
 	cscc/c/c_stubs.tc, cscc/c/c_types.c, cscc/c/c_types.h: implement
 	semantic analysis and code generation for bit fields.
 
+	* codegen/cg_gen.c, codegen/cg_gen.h, codegen/cg_stmt.tc,
+	cscc/c/c_function.c, cscc/c/c_internal.c, cscc/c/c_stmt.tc:
+	implement semantic analysis and code generation for "goto".
+
 2002-08-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_coerce.c, cscc/c/c_grammar.y, cscc/c/c_scanner.l,

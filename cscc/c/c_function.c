@@ -390,6 +390,7 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 	{
 		ILNode_CSemAnalysis(body, info, &body, 1);
 	}
+	CGenGotoDestroy();
 	info->currentScope = CGlobalScope;
 
 	/* Bail out if we don't have an assembly stream or we had errors */

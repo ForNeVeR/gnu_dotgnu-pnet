@@ -348,12 +348,97 @@ ILNode_CSemAnalysis(ILNode_ReturnExpr)
 	return CSemValueDefault;
 }
 
+%decls %{
+
+/*
+ * Destroy the "goto" label list for the current function.
+ */
+void CGenGotoDestroy(void);
+
+%}
+
+%{
+
+/*
+ * Storage for the "goto" label list.
+ */
+typedef struct _tagCGenGoto CGenGoto;
+struct _tagCGenGoto
+{
+	CGenGoto   *next;
+	char	   *name;
+	ILNode     *node;
+	int			defined : 1;
+	int			used : 1;
+};
+static CGenGoto *gotoList = 0;
+
+void CGenGotoDestroy(void)
+{
+	CGenGoto *label, *nextLabel;
+	label = gotoList;
+	while(label != 0)
+	{
+		nextLabel = label->next;
+		if(!(label->defined))
+		{
+			CCErrorOnLine(yygetfilename(label->node),
+						  yygetlinenum(label->node),
+						  _("label `%s' used but not defined"), label->name);
+		}
+		else if(!(label->used))
+		{
+			CCWarningOnLine(yygetfilename(label->node),
+							yygetlinenum(label->node),
+						    _("label `%s' defined but not used"), label->name);
+		}
+		ILFree(label);
+		label = nextLabel;
+	}
+	gotoList = 0;
+}
+
+%}
+
 /*
  * Perform semantic analysis for "goto" statements.
  */
 ILNode_CSemAnalysis(ILNode_Goto)
 {
-	/* TODO */
+	CGenGoto *label;
+
+	/* We must use "goto" at the statement level */
+	if(!stmtLevel)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("`goto' used within expression statement"));
+		return CSemValueDefault;
+	}
+
+	/* Record this label in the function's "goto" label list */
+	label = gotoList;
+	while(label != 0 && label->name != node->name)
+	{
+		label = label->next;
+	}
+	if(!label)
+	{
+		label = (CGenGoto *)ILMalloc(sizeof(CGenGoto));
+		if(!label)
+		{
+			CCOutOfMemory();
+		}
+		label->next = gotoList;
+		gotoList = label;
+		label->name = node->name;
+		label->node = (ILNode *)node;
+		label->defined = 0;
+		label->used = 1;
+	}
+	else
+	{
+		label->used = 1;
+	}
 	return CSemValueDefault;
 }
 
@@ -362,7 +447,46 @@ ILNode_CSemAnalysis(ILNode_Goto)
  */
 ILNode_CSemAnalysis(ILNode_GotoLabel)
 {
-	/* TODO */
+	CGenGoto *label;
+
+	/* We must use goto labels at the statement level */
+	if(!stmtLevel)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("label used within expression statement"));
+		return CSemValueDefault;
+	}
+
+	/* Record this label in the function's "goto" label list */
+	label = gotoList;
+	while(label != 0 && label->name != node->name)
+	{
+		label = label->next;
+	}
+	if(!label)
+	{
+		label = (CGenGoto *)ILMalloc(sizeof(CGenGoto));
+		if(!label)
+		{
+			CCOutOfMemory();
+		}
+		label->next = gotoList;
+		gotoList = label;
+		label->name = node->name;
+		label->node = (ILNode *)node;
+		label->defined = 1;
+		label->used = 0;
+	}
+	else if(!(label->defined))
+	{
+		label->node = (ILNode *)node;
+		label->defined = 1;
+	}
+	else
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("duplicate label `%s'"), node->name);
+	}
 	return CSemValueDefault;
 }
 

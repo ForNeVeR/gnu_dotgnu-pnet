@@ -106,6 +106,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->debugFlag = 0;
 	info->hasUnsafe = 0;
 	info->needSwitchPop = 0;
+	info->hasGotoScopes = 1;
 	info->decimalRoundMode = IL_DECIMAL_ROUND_HALF_EVEN;
 	info->stackHeight = 0;
 	info->maxStackHeight = 0;

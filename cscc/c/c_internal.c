@@ -89,6 +89,9 @@ void CGenBeginCode(ILGenInfo *info)
 		CGenRegisterLibrary(info);
 	}
 
+	/* C doesn't have goto label scopes */
+	info->hasGotoScopes = 0;
+
 	/* Tag the module with the memory model, which tells the linker
 	   that this is a C module requiring special treatment */
 	if(info->asmOutput)

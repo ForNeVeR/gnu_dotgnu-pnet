@@ -1480,11 +1480,13 @@ callNonvirtualFromVirtual:
 						if (tryInlineType == V_INLINE_CONST_LOAD)
 						{
 							if(numParams > 0 && !ILMethod_IsStatic(methodInfo) &&
-								(stack + stackSize - numParams)->engineType
-									== ILEngineType_O)
+								stack[stackSize - numParams].engineType	== ILEngineType_O)
 							{
 								/* Check the first parameter against "null" */
 								ILCoderCheckCallNull(coder, &callInfo);
+								/* Now pop the this parameter as this a constant load */
+								ILCoderPop(coder, ILEngineType_O, 
+									stack[stackSize - numParams].typeInfo);
 							}
 
 							switch (tryInlineOpcode)

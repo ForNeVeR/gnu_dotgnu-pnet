@@ -4,6 +4,9 @@
 	* cscc/csharp/cs_lvalue.tc: Use CSSemSetConstant instead of CSSemSetRValue
 	for local consts. (fix bug #9273)
 
+	* engine/verify_call.c: Pop the this parameter if the inlined method
+	does a constant store.
+
 2004-06-09  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/verify_call.c: Load the user strings from the image of

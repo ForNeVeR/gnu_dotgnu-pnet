@@ -211,7 +211,8 @@ public sealed class AppDomain
 						{
 						#if !ECMA_COMPAT
 							currentDomain = new AppDomain
-								("current", null, CreateCurrentSetup());
+								("current", new Evidence(), 
+											CreateCurrentSetup());
 						#else
 							currentDomain = new AppDomain("current");
 						#endif
@@ -355,14 +356,18 @@ public sealed class AppDomain
 	public ObjectHandle CreateInstance(String assemblyName, String typeName)
 			{
 				return CreateInstance(assemblyName, typeName, false,
-									  BindingFlags.Default, null,
+									  BindingFlags.CreateInstance | 
+									  BindingFlags.Public |
+									  BindingFlags.Instance, null,
 									  null, null, null, null);
 			}
 	public ObjectHandle CreateInstance(String assemblyName, String typeName,
 								       Object[] activationAttributes)
 			{
 				return CreateInstance(assemblyName, typeName, false,
-									  BindingFlags.Default, null,
+									  BindingFlags.CreateInstance | 
+									  BindingFlags.Public |
+									  BindingFlags.Instance, null,
 									  null, null, activationAttributes, null);
 			}
 	[TODO]
@@ -374,8 +379,16 @@ public sealed class AppDomain
 								       Object[] activationAttributes,
 								       Evidence securityAttributes)
 			{
-				// TODO
-				return null;
+				// TODO ?
+				return Activator.CreateInstance(assemblyName,
+												typeName,
+												ignoreCase,
+												bindingAttr,
+												binder,
+												args,
+												culture,
+												activationAttributes,
+												securityAttributes);
 			}
 
 	// Create a remote instance of a type within this application domain.

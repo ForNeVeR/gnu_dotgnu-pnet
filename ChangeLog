@@ -1,4 +1,9 @@
 
+2004-05-22  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/AppDomain.cs: Fake implementations of CreateInstance
+	and use non-null evidence for the default appdomain.
+
 2004-05-21  Gopal V  <gopalv82@yahoo.com>
 
 	* Xsharp/Widget.cs: Checks for CaptionWidget are more proper

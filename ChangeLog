@@ -13,6 +13,8 @@
 	* engine/cvm.h: fix the padding of "CVMWord" so that it will always
 	be 4 on all i386 platforms, regardless of the compiler and platform.
 
+	* ilalink/link_main.c: turn on the linking of "libc" for C apps.
+
 2002-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c, ilalink/link_library.c,

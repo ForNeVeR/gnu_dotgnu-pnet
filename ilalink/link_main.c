@@ -912,9 +912,7 @@ static int processImage(ILLinker *linker, const char *filename,
 {
 	int errors = 0;
 	int model, alignFlags;
-#if 0
 	char libcName[64];
-#endif
 
 	/* Add the image to the linker context */
 	model = ILLinkerCMemoryModel(image, &alignFlags);
@@ -931,7 +929,6 @@ static int processImage(ILLinker *linker, const char *filename,
 			}
 
 			/* Make sure that we have the "libc" library */
-		#if 0	/* TODO: Temporarily disabled until we have a libc */
 			if(useStdlib)
 			{
 				if(!stdCLibrary)
@@ -944,7 +941,6 @@ static int processImage(ILLinker *linker, const char *filename,
 					errors |= addLibrary(linker, stdCLibrary);
 				}
 			}
-		#endif
 		}
 
 		/* Add the C object file to the linker */

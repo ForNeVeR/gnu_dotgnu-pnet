@@ -69,6 +69,44 @@ void CLexLineDirective(const char *text)
 	CCPreProcessorStream.lineNumber = linenum;
 }
 
+void CLexUsingDirective(const char *text)
+{
+	int endquote, len;
+	char *filename;
+	while(*text != '\0' && *text != '"' && *text != '<')
+	{
+		++text;
+	}
+	if(*text == '"')
+	{
+		endquote = '"';
+	}
+	else if(*text == '<')
+	{
+		endquote = '>';
+	}
+	else
+	{
+		return;
+	}
+	++text;
+	len = 0;
+	while(text[len] != '\0' && text[len] != endquote)
+	{
+		++len;
+	}
+	filename = ILDupNString(text, len);
+	if(!filename)
+	{
+		CCOutOfMemory();
+	}
+	if(!CCLoadLibrary(filename))
+	{
+		CCError(_("could not load the assembly `%s'"), filename);
+	}
+	ILFree(filename);
+}
+
 static void InferIntType(const char *text, CLexIntConst *value)
 {
 	int numl, numu;

@@ -78,6 +78,7 @@ WHITE			[ \t\v\r\f]
 		}
 ^{WHITE}*"#pragma"[^\n]*\n		{ /* Ignore pragma directives */ }
 ^{WHITE}*"#ident"[^\n]*\n		{ /* Ignore ident directives */ }
+^{WHITE}*"#using"[^\n]*\n		{ CLexUsingDirective(yytext); }
 ^{WHITE}*"#"{IDALPHA}({DIGIT}|{IDALPHA})*[^\n]*\n	{
 			yytext[strlen(yytext) - 1] = '\0';
 			CCWarningOnLine(yycurrfilename(), yycurrlinenum(),

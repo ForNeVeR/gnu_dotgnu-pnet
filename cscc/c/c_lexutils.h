@@ -54,6 +54,11 @@ typedef struct _tagCLexFloatConst
 void CLexLineDirective(const char *text);
 
 /*
+ * Process a "#using" directive in the input.
+ */
+void CLexUsingDirective(const char *text);
+
+/*
  * Parse an integer constant and determine its most natural
  * value type.  This can handle decimal, octal, and hexadecimal
  * constants, with or without type suffixes.

@@ -190,7 +190,7 @@ public class Exception
 		{
 			get
 			{
-				return stackTrace.ToString();
+				return (new StackTrace(this)).ToString();
 			}
 		}
 	public virtual MethodBase TargetSite

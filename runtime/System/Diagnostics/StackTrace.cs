@@ -158,13 +158,15 @@ public class StackTrace
 				String nmspace;
 				ParameterInfo[] paramList;
 				int param;
+				String filename;
+				int line, col;
 
 				for(posn = 0; posn < numFrames; ++posn)
 				{
 					method = frames[posn].GetMethod();
-					result = result + "\tat ";
 					if(method != null)
 					{
+						result = result + "\tat ";
 						type = method.DeclaringType;
 						if(type != null)
 						{
@@ -188,9 +190,31 @@ public class StackTrace
 						}
 						result = result + ")";
 					}
+					else if(posn < (numFrames - 1))
+					{
+						result = result + "\tat <unknown method>";
+					}
 					else
 					{
-						result = result + "<unknown method>";
+						// This frame is probably the top-most native
+						// function frame for the thread, which is not
+						// normally interesting for a stack trace report.
+						continue;
+					}
+					filename = frames[posn].GetFileName();
+					if(filename != null)
+					{
+						result = result + " in " + filename;
+						line = frames[posn].GetFileLineNumber();
+						col = frames[posn].GetFileColumnNumber();
+						if(line != -1)
+						{
+							result = result + ":" + line.ToString();
+							if(col != -1)
+							{
+								result = result + ":" + col.ToString();
+							}
+						}
 					}
 					result = result + Environment.NewLine;
 				}

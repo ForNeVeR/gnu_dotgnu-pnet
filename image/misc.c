@@ -80,7 +80,7 @@ ILClass *ILTypeSpecGetClass(ILTypeSpec *spec)
 ILClass *ILTypeSpecGetClassRef(ILTypeSpec *spec)
 {
 	ILClass *info = ILTypeSpecGetClass(spec);
-	if(info->programItem.image == spec->programItem.image)
+	if(!info || info->programItem.image == spec->programItem.image)
 	{
 		return info;
 	}

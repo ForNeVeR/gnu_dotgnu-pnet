@@ -4,6 +4,8 @@
 * image/sig_writer.c (WriteType): modify the representation of multi-
 dimensional arrays to match the recent change to "sig_parse.c".
 
+* image/misc.c: check for null in "ILTypeSpecGetClassRef".
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_var.c, engine/verify_call.c: handle value type "this"

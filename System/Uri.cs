@@ -60,7 +60,6 @@ public class Uri : MarshalByRefObject
 	// here's some of chiraz's extras
 	// note that I did not make them capitalised; I do not want namespace conflict
 	// use this.path instead of absolutePath
-	private String          absolutePathEscaped; // the unescaped version of the absolute path.
 	private String          absoluteUri;  // the absolute uri to the resource as originally passed to the constructor (don't use)
 	// is true if the user had already escaped the URL before it was passed
 	// into the constructor. (escaped was true).
@@ -78,8 +77,7 @@ public class Uri : MarshalByRefObject
 	private String userinfo;
 	// host does not contain the port
 	private String host;
-	// if this is -1, then use default port for scheme, and don't output :NN (port#)
-	// in .ToString() and alumni
+	// if IsDefaultPort, don't need to print! -1 for none
 	private int port;
 
 	// technically optional, but they want a path :)
@@ -120,7 +118,6 @@ public class Uri : MarshalByRefObject
 	}
 
 	public Uri(Uri baseUri, String relativeUri, bool dontEscape)
-	// improve efficiency of this code (EndsWith, StartsWith to IndexOf)
 	{
 	if (baseUri== null)
 		throw new ArgumentNullException("baseUri");
@@ -159,7 +156,7 @@ public class Uri : MarshalByRefObject
 			// TODO: convert file to platform based file reference
 		}
 
-		this.absolutePath = this.absolutePath.Replace('\', '/').Replace("//", "/")
+		this.path = this.absolutePath.Replace('\\', '/').Replace("//", "/")
 			.Replace("/../", "/").Replace("/./", "/");
 	}
 
@@ -234,7 +231,7 @@ public class Uri : MarshalByRefObject
 
 	protected static String EscapeString(String str)
 	{
-		if (this.abspath == null || str.Length == 0)
+		if (str == null || str.Length == 0)
 			return "";
 
 		// assume that all characters are OK for escaping
@@ -401,7 +398,7 @@ public class Uri : MarshalByRefObject
 				if (String.Compare(thisUri[currentItem], otherUri[currentItem) == 0)
 				{
 					myStringBuilder.Append(otherUri[currentItem]);
-					myStringBuilder.Append("/");
+					myStringBuilder.Append('/');
 				}
 				++currentItem;
 			}
@@ -430,14 +427,11 @@ public class Uri : MarshalByRefObject
 	protected virtual void Parse()
 	// TODO: fix for current private property behavior
 	{
-		int curpos = absoluteUri.IndexOf(":");
+		int curpos = absoluteUri.IndexOf(':');
 		int nextpos = 0;
-		int interimpos1 = 0;
-		int interimpos2 = 0;
 
 		// Set all to nothing just in case info was left behind somewhere somehow...
 		path = "";
-		absolutePathEscaped = "";
 		fragment = "";
 		host = "";
 		port = -1;
@@ -445,74 +439,76 @@ public class Uri : MarshalByRefObject
 		scheme = "";
 		userinfo = "";
 
-		this.scheme = absoluteUri.Substring(0, curpos).ToLower();
 
-		if (!CheckSchemeName(this.scheme))
+		if (curpos > 0)
 		{
-			if (this.scheme.Length == 0)
+			this.scheme = absoluteUri.Substring(0, curpos).ToLower();
+
+			if (!CheckSchemeName(this.scheme))
+				throw new UriFormatException(_("Arg_UriScheme"));
+
+			// some Uris don't use the // after scheme:
+			if (String.Compare(AbsoluteUri, curpos, SchemeDelimiter, 0, 3) == 0)
+				curpos += 3;
+			else
+				++curpos;
+		}
+		else
+		{
+			this.scheme = "http";
+			this.port = 80;
+		}
+		// end of scheme parsing
+		// curpos is now at the authority
+
+		// put nextpos post-authority
+		nextpos = absoluteUri.IndexOfAny(new char[]{'/', '?', '#'}, curpos);
+		if (nextpos < 0)
+			nextpos = absoluteUri.Length;
+
+		this.ParseAuthority(absoluteUri.Substring(curpos, nextpos - curpos));
+		curpos = nextpos;
+
+		if (nextpos < absoluteUri.Length)
+		{
+			nextpos = absoluteUri.IndexOf('?', curpos);
+			if (nextpos > 0)
 			{
-				this.scheme = "http";
-				curpos = 0;
+				// there is query
+				query = absoluteUri.Substring(nextpos + 1);
+				curpos = nextpos + 1;
 			}
 			else
-				throw new UriFormatException(_("Arg_UriScheme"));
-		}
+			{
+				nextpos = absoluteUri.IndexOf('#', curpos);
+				if (nextpos > 0)
+					// there is fragment
+					fragment = absoluteUri.Substring(nextpos + 1);
+			}
+			if (nextpos == 0)
+				path = absoluteUri.Substring(curpos);
+			else
+				path = absoluteUri.Substring(curpos, nextpos);
 
-		if ((absoluteUri.Length - 1) < (curpos + 3))
-		{
-			return;
-		}
+			if (!userEscaped)
+			{
+				if (needsEscaping(path))
+					// Escape() only affects path
+					this.Escape();
+				if (needsEscaping(query))
+					query = EscapeString(query);
+				if (needsEscaping(fragment))
+					fragment = EscapeString(fragment)
+			}
 
-		if (String.Compare(AbsoluteUri, curpos, SchemeDelimiter, 0, 3) == 0)
-		{
-			curpos = curpos + 3;
-		}
-		else
-		{
-			curpos = curpos + 1;
-		}
-
-		// TODO: array literal OK?
-		nextpos = absoluteUri.IndexOfAny(['/', '?', '#'], curpos);
-		if (nextpos < 0)
-			nextpos = AbsoluteUri.Length;
-
-		this.ParseAuthority(absoluteUri.Substring(curpos, nextpos - curpos - 1));
-		curpos = nextpos + 1;
-
-		if (nextpos < AbsoluteUri.Length)
-		{
-			nextpos = AbsoluteUri.IndexOf('?', curpos);
-		}
-		else
-		{
-			return;
-		}
-
-		if (nextpos > 0)
-		{
-			AbsolutePath = AbsoluteUri.Substring(curpos, nextpos - curpos - 1);
-			curpos = nextpos + 1;
-		}
-		else
-		{
-			nextpos = AbsoluteUri.IndexOf('#', curpos);
-		}
-
-		if (nextpos > 0)
-		{
-			Fragment = AbsoluteUri.Substring(nextpos + 1);
-		}
-		else
-		{
-			return;
+			// now, do verification of fields
 		}
 	}
 
 	// help for Parse()!
 	private void ParseAuthority(String authority)
 	{
-		int interimpos1, interimpos2;
+		int interimpos1=0, interimpos2=0;
 
 		interimpos1 = authority.IndexOf('@');
 		if (interimpos1 > 0)
@@ -521,12 +517,13 @@ public class Uri : MarshalByRefObject
 			interimpos2 = interimpos1 + 1;
 		}
 
-		interimpos1 = authority.IndexOf(':');
+		interimpos1 = authority.IndexOf(':', interimpos2);
 		if (interimpos1 > 0)
 		{
-			this.host = Authority.Substring(interimpos2, interimpos1 - interimpos2 - 1);
+			this.host = Authority.Substring(interimpos2, interimpos1 - interimpos2);
 			try
 			{
+				// technically, ports are 16 bit, but...
 				this.port = Int32.Parse(Authority.Substring(interimpos1 + 1));
 			}
 			catch (FormatException fe) { this.Port = -1; }
@@ -537,6 +534,18 @@ public class Uri : MarshalByRefObject
 		}
 		else
 			host = authority.Substring(interimpos2);
+	}
+
+	private static bool needsEscaping(String instr)
+	{
+		char c;
+		for (int i = 0; ++i < instr.Length;)
+		{
+			c = instr[i];
+			if (IsExcludedCharacter(c) || IsReservedCharacter(c))
+				return true;
+		}
+		return false;
 	}
 
 	[TODO]

@@ -1,4 +1,90 @@
 
+0.4.2 (25 July 2002)
+
+	Runtime engine:
+
+	* Marshal "ref String[]" parameters, to support Gtk#.
+	* Internalcalls for "Marshal", "CryptoMethods", "Thread".
+	* Fix verification of "ldobj" when native int types are used.
+	* Replace the internalcall for "String.EqualRange" with
+	  "String.FindInRange" (based on a suggestion by Gopal V).
+
+	C# Compiler:
+
+	* Delegate creation expressions and "+="/"-=" operators.
+	* Semantic analysis and code generator for events.
+	* Add the "-gtk" and "-gnome" options to the compiler, to pre-select
+	  all of the libraries necessary for Gtk# and Gnome#.
+	* Code generation for casting pointer values.
+	* Integrate the linker directly into the compiler so that it isn't
+	  necessary to call out to a separate process to do the link.
+	* Handle "-E" properly.
+	* Fix level detection for delegates, so that nested delegate types
+	  are declared correctly.
+	* Quick and dirty support for the "DllImport" attribute.
+	* Fix code generation for the "ldelema" instruction, which should
+	  have a type argument.
+	* Jump to the type when doing forward-declaration of enumerated fields,
+	  so that default field values are processed in the correct order.
+	* Stack clobbering bug in "foreach" compilation fixed.
+
+	Documentation and Samples:
+
+	* Doxygen configuration file (C H Gowri Kumar).
+	* gtk-sharp.HOWTO file, which describes using Portable.NET with Gtk#.
+	* Table generation bugs in csdoc2html and csdoc2texi (Gopal V).
+
+	Assembler:
+
+	* Allow assembly references to be specified implicity to better handle
+	  transitive assembly dependencies.
+
+	Linker:
+
+	* Fixed a bug in the handling of assembly names that contained ".",
+	  but did not end in ".dll".  e.g. "System.Xml".
+	* Set the permissions on executable files to "+x".
+	* Memory corruption bug in the conversion of method signatures with
+	  more than 3 parameters.
+
+	Loader and Metadata:
+
+	* Prepend "lib" to the name of a shared object if it isn't present.
+	* Modify the assembly resolution algorithm so that it can tolerate
+	  Mono assemblies on the path and select the Portable.NET versions.
+	* Minor bug in "ILDebugIterInit" that caused debug loading to lock up.
+
+	Csant:
+
+	* Add the "csdoc" task to generate XML-ized documentation with csdoc.
+	* Separate source and build directories to support out of tree builds.
+	* Implement property substitution in task parameters.
+	* Off by 1 bug in the processing of the "excludes" list.
+	* Add the "basedir" attribute to "file", to override the default.
+	* Add the "sanewarnings" attribute, to turn off annoying compiler
+	  warning messages that don't mean anything.
+
+	Platform Support:
+
+	* Small fixes to various files for 64-bit platform support.
+	* Host detection for GNU/Hurd (Andrew Mitchell).
+	* Cryptographic algorithms: SHA-256, SHA-384, SHA-512, AES, RC2,
+	  DES, and Triple-DES.
+	* Big number arithmetic routines, to support RSA and DSA.
+	* Remove "test -ot" from build scripts, because older versions of
+	  Solaris do not understand it.
+
+	Other:
+
+	* Make the assembly search patch logic consistent across all tools.
+	* Support for out of tree builds (Stephen Compall).
+	* Added the "ildd" program, which prints assembly and PInvoke
+	  dependencies.
+	* Change instances of the word "namespace" to "nspace" in the headers,
+	  to make it easier to use the libraries from C++ code.
+	* Copy "csunit" from pnetlib to pnet and make it more automake-friendly.
+	* New debian packaging scripts (Andrew Mitchell).
+
 0.4.0 (27 June 2002)
 
 	Runtime engine:

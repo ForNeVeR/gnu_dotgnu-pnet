@@ -1410,10 +1410,9 @@ ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
  */
 ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
 {
-	/* TODO */
 	ILNode_ListIter iterator;
 	ILNode_FieldDeclarator *decl;
-	// since Rhys said that this was a reuse of FieldDecl
+	/* since Rhys said that this was a reuse of FieldDecl */
 	CSSemValue value;
 	ILEvalValue evalValue;
 	ILType *type = CSSemType(node->type, info, &(node->type));

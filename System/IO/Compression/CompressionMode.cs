@@ -22,7 +22,7 @@
 namespace System.IO.Compression
 {
 
-#if CONFIG_FRAMEWORK_2_0
+#if CONFIG_COMPRESSION
 
 public enum CompressionMode
 {
@@ -31,6 +31,6 @@ public enum CompressionMode
 
 }; // enum CompressionMode
 
-#endif // CONFIG_FRAMEWORK_2_0
+#endif // CONFIG_COMPRESSION
 
 }; // namespace System.IO.Compression

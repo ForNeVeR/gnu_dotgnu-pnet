@@ -35,7 +35,7 @@
 // obligated to do so.  If you do not wish to do so, delete this
 // exception statement from your version.
 
-#if CONFIG_FRAMEWORK_2_0
+#if CONFIG_COMPRESSION
 
 namespace ICSharpCode.SharpZipLib.Checksums 
 {
@@ -94,4 +94,4 @@ namespace ICSharpCode.SharpZipLib.Checksums
 	}
 }
 
-#endif // CONFIG_FRAMEWORK_2_0
+#endif // CONFIG_COMPRESSION

@@ -89,4 +89,7 @@
 <!-- Use serial port classes -->
 <define name="CONFIG_SERIAL_PORTS" value="true"/>
 
+<!-- Use System.IO.Compression classes -->
+<define name="CONFIG_COMPRESSION" value="true"/>
+
 </profile>

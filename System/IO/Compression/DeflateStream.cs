@@ -22,7 +22,7 @@
 namespace System.IO.Compression
 {
 
-#if CONFIG_FRAMEWORK_2_0
+#if CONFIG_COMPRESSION
 
 using System;
 using System.IO;
@@ -345,6 +345,6 @@ public class DeflateStream : Stream
 
 }; // class DeflateStream
 
-#endif // CONFIG_FRAMEWORK_2_0
+#endif // CONFIG_COMPRESSION
 
 }; // namespace System.IO.Compression

@@ -24,6 +24,9 @@
 	namespace from .NET SDK 2.0, using an "internal" copy of SharpZipLib
 	to provide the core implementation.
 
+	* System/IO/Compression/*.cs, profiles/*: use "CONFIG_COMPRESSION"
+	instead of "CONFIG_FRAMEWORK_2_0" to mark the compression classes.
+
 2004-07-20  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/Serialization/ChangeLog, System.Xml/Serialization/*.cs:

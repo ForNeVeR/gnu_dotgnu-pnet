@@ -968,7 +968,7 @@ WHITE			[ \t\r\f\v\032]
 
 \n					;
 
-"///"[^\n]*\n		{ yylval.string = ILInternString(yytext, -1);
+"///"[^\n]*\n		{ yylval.string = ILInternString(yytext + 3, -1);
 					  RETURNTOK(DOC_COMMENT); }
 
 .					{ RETURNTOK(((int)(yytext[0])) & 0xFF); }

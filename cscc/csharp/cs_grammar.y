@@ -1041,6 +1041,7 @@ QualifiedIdentifier
 NamespaceDeclaration
 	: OptAttributes NAMESPACE NamespaceIdentifier {
 				int posn, len;
+				ILScope *oldLocalScope;
 				posn = 0;
 				while(posn < $3.len)
 				{
@@ -1073,9 +1074,17 @@ NamespaceDeclaration
 
 					/* Create the namespace node */
 					InitGlobalNamespace();
+					
+					oldLocalScope=LocalScope();
+					
 					CurrNamespaceNode = (ILNode_Namespace *)
 						ILNode_Namespace_create(CurrNamespace.string,
 												CurrNamespaceNode);
+
+					/* Preserve compilation unit specific local scopes 
+					 * or maybe I need to create a new scope as child of
+					 * this scope (fix when I find a test case) */
+					CurrNamespaceNode->localScope=oldLocalScope;
 
 					/* Declare the namespace within the global scope */
 					ILScopeDeclareNamespace(GlobalScope(),

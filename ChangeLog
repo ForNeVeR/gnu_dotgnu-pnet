@@ -22,6 +22,9 @@
 	
 	* codegen/cg_coerce.c: Allow indirect coercions only when we are checking
 	for user defined operators.
+
+	* cscc/csharp/cs_grammar.y: Inherit the local scope to namespaces declared
+	inside a compilation unit.
 	
 2002-11-15  Gopal.V  <gopalv82@symonds.net>
 

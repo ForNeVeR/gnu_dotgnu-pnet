@@ -83,10 +83,11 @@ Now that you can build pnetlib, you will need some other information to
 contribute to its development.  First, you need a copy of the ECMA
 class specification:
 
-    http://cedar.intel.com/media/xml/AllTypes.xml
+	ftp://ftp.ecma.ch/ecma-st/Ecma-335-xml.zip
 
-Run this XML file through Portable.NET's "csdoc2html" program to get a
-version that you can read in a regular Web browser.
+Run the "All.xml" file within this zip archive through Portable.NET's
+"csdoc2html" program to get a version that you can read in a regular
+Web browser.
 
 Second, you need to check out the pnetlib class status page at:
 

@@ -100,7 +100,7 @@ public class NetworkStream : Stream
 			}
 	
 	[TODO]
-	protected virtual void Dispose(bool disposing)
+	protected override void Dispose(bool disposing)
 			{
 			
 			}

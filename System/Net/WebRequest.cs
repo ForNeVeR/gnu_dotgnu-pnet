@@ -1,4 +1,3 @@
-
 /*
  * WebRequest.cs - Implementation of the "System.Net.WebRequest" class.
  *
@@ -23,43 +22,40 @@ namespace System.Net
 {
 
 using System;
+using System.IO;
+using System.Collections;
 
 public class WebRequest : MarshalByRefObject
 {
-	private String              ConnectionGroupName;
-	private Int64               ContentLength;
-	private String              ContentType;
-	private ICredentials        Credentials;
-	private WebHeaderCollection Headers;
-	private String              Method;
-	private Boolean             PreAuthenticate;
-	private IWebProxy           Proxy;
-	private Uri                 RequestUri;
-	private Int32               Timeout;
-	private static Hashtable    Prefixes;
+	private String              connectionGroupName;
+	private Int64               contentLength;
+	private String              contentType;
+	private ICredentials        credentials;
+	private WebHeaderCollection headers;
+	private String              method;
+	private Boolean             preAuthenticate;
+	private IWebProxy           proxy;
+	private Uri                 requestUri;
+	private Int32               timeout;
+	private static Hashtable    prefixes;
 
 	protected WebRequest()
 	{
-		ConnectionGroupName = "";
-		ContentLength = 0;
-		ContentType = "";
-		Credentials = null;
-		Method = "";
-		PreAuthenticate = false;
-		Proxy = null;
-		RequestUri = "";
-		Timeout = 0;
-		Prefixes.Clear();
+		connectionGroupName = "";
+		contentLength = 0;
+		contentType = "";
+		credentials = null;
+		method = "";
+		preAuthenticate = false;
+		proxy = null;
+		requestUri = "";
+		timeout = 0;
+		prefixes.Clear();
 	}
 
 	public virtual void Abort()
 	{
 		throw new NotSupportedException("Abort", _("Exception_NotSupported"));
-	}
-
-	public virtual IAsyncResult BeginGetRequestStream(AsyncCallback callback, object state)
-	{
-		throw new NotSupportedException("BeginGetRequestStream", _("Exception_NotSupported"));
 	}
 
 	public virtual IAsyncResult BeginGetRequestStream(AsyncCallback callback, object state)

@@ -153,28 +153,56 @@ using System.Drawing;
 		// Calculates the position of each MenuItem.
 		private void MeasureItemBounds(Graphics g)
 		{
-			itemBounds = new Rectangle[MenuItems.Count];
-			int x = MenuPaddingOrigin.X;
-			Rectangle menuBounds = new Rectangle(MenuPaddingOrigin.X, MenuPaddingOrigin.Y, ownerForm.Width - MenuPaddingSize.Width, ownerForm.Height - MenuPaddingSize.Height);
-			for (int i = 0; i < MenuItems.Count; i++)
+			// get the menu items
+			MenuItemCollection menuItems = MenuItems;
+
+			// get the padding origin
+			Point padOrigin = MenuPaddingOrigin;
+
+			// get the padding size
+			Size padSize = MenuPaddingSize;
+
+			// get the x coordinate from the padding origin
+			int x = padOrigin.X;
+
+			// get the bounds of the menu
+			Rectangle menuBounds = new Rectangle
+				(x, padOrigin.Y,
+				 ownerForm.Width - padSize.Width,
+				 ownerForm.Height - padSize.Height);
+
+			// create the item bounds array
+			itemBounds = new Rectangle[menuItems.Count];
+
+			// get system menu information
+			int sysMenuHeight = SystemInformation.MenuHeight;
+			Font sysMenuFont = SystemInformation.MenuFont;
+
+			// get the item padding width
+			int itemPadWidth = ItemPaddingSize.Width;
+
+			// calculate the bounds for each menu item
+			int i = 0;
+			foreach(MenuItem item in menuItems)
 			{
-				MenuItem item = MenuItems[i];
 				int width;
 				if (item.OwnerDraw)
 				{
-					MeasureItemEventArgs measureItem = new MeasureItemEventArgs(g, i, SystemInformation.MenuHeight);
+					MeasureItemEventArgs measureItem = new MeasureItemEventArgs
+						(g, i, sysMenuHeight);
 					item.OnMeasureItem(measureItem);
 					width = measureItem.ItemWidth;
 				}
 				else
 				{
 					// Do the default handling
-					SizeF size = g.MeasureString(item.Text, SystemInformation.MenuFont);
+					SizeF size = g.MeasureString(item.Text, sysMenuFont);
 					width = Size.Truncate(size).Width;
 				}
-				Rectangle bounds =  new Rectangle(x, 0, width + ItemPaddingSize.Width, SystemInformation.MenuHeight);
+				Rectangle bounds =  new Rectangle
+					(x, 0, width + itemPadWidth, sysMenuHeight);
 				bounds.IntersectsWith(menuBounds);
-				itemBounds[i] = bounds;
+				itemBounds[i++] = bounds;
 				x += bounds.Width;
 			}
 		}

@@ -1,3 +1,13 @@
+2004-05-21  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/XmlTextReader.cs: fix a bug in whitespace handling.
+
+	* System.Windows.Forms/TreeView.cs: fix a bug when drawing an empty
+	tree view. (leppie)
+
+	* System.Windows.Forms/MainMenu.cs, System.Windows.Forms/Control.cs,
+	System.Windows.Forms/ContextMenu.cs: some performance and
+	readability improvements.
 
 2004-05-20  Gopal V  <gopalv82@yahoo.com>
 

@@ -42,6 +42,7 @@ public class XmlTextReader : XmlReader
 	private bool xmlPopScope;
 	private bool xmlnsPopScope;
 	private int depth;
+	private int sawPreserve;
 	private NodeManager nodes;
 	private ReadState readState;
 	private Stack elementNames;
@@ -102,6 +103,7 @@ public class XmlTextReader : XmlReader
 				incDepth = false;
 				xmlPopScope = false;
 				xmlnsPopScope = false;
+				sawPreserve = -1;
 				state = State.XmlDeclaration;
 				elementNames = new Stack();
 				nodes = new NodeManager(nt, new ErrorHandler(Error));
@@ -946,6 +948,10 @@ public class XmlTextReader : XmlReader
 						else if(tmpValue == "preserve")
 						{
 							context.XmlSpace = XmlSpace.Preserve;
+							if(sawPreserve == -1)
+							{
+								sawPreserve = elementNames.Count;
+							}
 						}
 						else
 						{
@@ -1371,6 +1377,10 @@ public class XmlTextReader : XmlReader
 				{
 					context.PopScope();
 					xmlPopScope = false;
+					if(sawPreserve == elementNames.Count)
+					{
+						sawPreserve = -1;
+					}
 				}
 
 				// pop the namespace scope if we last read an element end tag
@@ -1439,7 +1449,7 @@ public class XmlTextReader : XmlReader
 						}
 						if(whitespace == WhitespaceHandling.Significant)
 						{
-							if(elementNames.Count == 0)
+							if(sawPreserve != -1)
 							{
 								input.SkipWhitespace();
 								return ReadDocument();
@@ -2072,7 +2082,7 @@ public class XmlTextReader : XmlReader
 				CheckState(State.Misc);
 
 				// set the significant whitespace flag
-				bool significant = (elementNames.Count > 0);
+				bool significant = (sawPreserve != -1);
 
 				// create our log and push it onto the logger's log stack
 				StringBuilder log = new StringBuilder();

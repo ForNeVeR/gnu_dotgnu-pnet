@@ -2193,26 +2193,22 @@ public class Control : IWin32Window, IDisposable
 	public Point PointToClient(Point p)
 			{
 				Point client = ClientOrigin;
-				if (parent != null)
+				if(parent != null)
 				{
-					Point pt = parent.PointToClient(p);
-					return new Point(pt.X - left - client.X, pt.Y - top- client.Y);
+					p = parent.PointToClient(p);
 				}
-				else
-					return new Point(p.X - left - client.X, p.Y - top - client.Y);
+				return new Point(p.X - left - client.X, p.Y - top - client.Y);
 			}
 
 	// Convert a client point into screen co-ordinates.
 	public Point PointToScreen(Point p)
 			{
 				Point client = ClientOrigin;
-				if (parent != null)
+				if(parent != null)
 				{
-					Point pt = parent.PointToScreen(p); 
-					return new Point(pt.X + left + ClientOrigin.X, pt.Y + top + ClientOrigin.Y);
+					p = parent.PointToScreen(p);
 				}
-				else
-					return new Point(p.X + left + client.X, p.Y + top + client.Y);
+				return new Point(p.X + left + client.X, p.Y + top + client.Y);
 			}
 
 	// Process a command key.
@@ -2659,7 +2655,6 @@ public class Control : IWin32Window, IDisposable
 
 				// Update the bounds and emit the necessary events.
 				UpdateBounds(x, y, width, height);
-
 			}
 
 	// Adjust the actual position of the control depending on windows decorations (Draw Origin) or non client areas (client origin) like menus.

@@ -381,7 +381,7 @@ namespace System.Windows.Forms
 			// The maximum width of a displayed node.
 			int maxWidth = 0;
 			StringFormat format = new StringFormat(StringFormatFlags.NoWrap);
-			if (topNode == null)
+			if (topNode == null && this.nodes.Count > 0)
 			{
 				topNode = this.nodes[0];
 			}

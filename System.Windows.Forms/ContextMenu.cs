@@ -128,7 +128,8 @@ public class ContextMenu : Menu
 			SystemColors.Menu, false);
 
 		// Draw the menu items.
-		for (int i = 0; i < MenuItems.Count; i++)
+		int count = MenuItems.Count;
+		for (int i = 0; i < count; i++)
 		{
 			DrawMenuItem(g, i, false);
 		}

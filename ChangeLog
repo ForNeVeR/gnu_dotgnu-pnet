@@ -4,6 +4,9 @@
 	* cscc/csdoc.c (DumpClassNameSP): increment "namespace" when
 	outputting underscores to replace dots in namespace names.
 
+	* cscc/csharp/cs_grammar.y: #ifdef around YYEOF because some
+	versions of yacc don't have it.
+
 2002-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c, codegen/cg_resolve.h: add "ILResolveProperty"

@@ -909,7 +909,11 @@ OuterDeclaration
 					}
 					yychar = YYLEX;
 				}
+			#ifdef YYEOF
 				if(yychar != YYEOF)
+			#else
+				if(yychar >= 0)
+			#endif
 				{
 					yyerrok;
 				}

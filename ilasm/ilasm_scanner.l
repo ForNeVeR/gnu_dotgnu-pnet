@@ -265,6 +265,7 @@ SIGN			[+-]
 ".hash"					{ return D_HASH; }
 ".imagebase"			{ return D_IMAGEBASE; }
 ".implicitcom"			{ return D_IMPLICITCOM; }
+".library"				{ return D_LIBRARY; }
 ".line"					{ return D_LINE; }
 "#line"					{ return D_LINE; }
 ".locale"				{ return D_LOCALE; }

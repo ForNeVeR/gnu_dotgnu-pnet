@@ -661,6 +661,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %token D_HASH				"`.hash'"
 %token D_IMAGEBASE			"`.imagebase'"
 %token D_IMPLICITCOM		"`.implicitcom'"
+%token D_LIBRARY			"`.library'"
 %token D_LINE				"`.line'"
 %token D_LOCALE				"`.locale'"
 %token D_LOCALS				"`.locals'"
@@ -890,7 +891,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %type <integer>		INTEGER_CONSTANT HEX_BYTE
 %type <strValue>	SQUOTE_STRING DQUOTE_STRING ComposedString NativeType
 %type <strValue>	QualifiedName Identifier MethodName IDENTIFIER Bytes
-%type <strValue>	SlashedName DOT_IDENTIFIER
+%type <strValue>	SlashedName DOT_IDENTIFIER AssemblyName
 %type <real>		FLOAT_CONSTANT
 %type <integer>		CallingConventions Integer32 Integer64
 %type <integer>		ParameterAttributes ParameterAttributeList
@@ -2401,10 +2402,42 @@ ClassName
 				ILAssembly *assem;
 
 				/* Get the assembly reference: NULL if current assembly */
-				assem = ILAsmFindAssemblyRef($2.string);
+				if(!strcmp($2.string, ".library"))
+				{
+					assem = ILAsmFindAssemblyRef(ILAsmLibraryName);
+				}
+				else
+				{
+					assem = ILAsmFindAssemblyRef($2.string);
+				}
 
 				/* Look up the class, or create a TypeRef */
-				$$ = ILAsmClassLookup($4.string, (ILProgramItem *)assem);
+				if(assem)
+				{
+					$$ = ILAsmClassLookup($4.string, (ILProgramItem *)assem);
+				}
+				else
+				{
+					$$ = ILAsmClassLookup($4.string,
+										  (ILProgramItem *)ILAsmModule);
+				}
+			}
+	| '[' D_LIBRARY ']' SlashedName	{
+				ILAssembly *assem;
+
+				/* Find the library: NULL if it is the current assembly */
+				assem = ILAsmFindAssemblyRef(ILAsmLibraryName);
+
+				/* Look up the class, or create a TypeRef */
+				if(assem)
+				{
+					$$ = ILAsmClassLookup($4.string, (ILProgramItem *)assem);
+				}
+				else
+				{
+					$$ = ILAsmClassLookup($4.string,
+										  (ILProgramItem *)ILAsmModule);
+				}
 			}
 	| '[' D_MODULE QualifiedName ']' SlashedName	{
 				ILModule *module;
@@ -2881,7 +2914,7 @@ ExeLocationDeclaration
  */
 
 AssemblyHeading
-	: D_ASSEMBLY AssemblyAttributes QualifiedName AltName	{
+	: D_ASSEMBLY AssemblyAttributes AssemblyName AltName	{
 				ILAssemblySetAttrs(ILAsmAssembly, ~0, (ILUInt32)($2));
 				if(!ILAssemblySetName(ILAsmAssembly, $3.string))
 				{
@@ -2889,6 +2922,22 @@ AssemblyHeading
 				}
 				ILAsmBuildPushScope(ILAsmAssembly);
 				ILAsmCurrAssemblyRef = 0;
+			}
+	;
+
+AssemblyName
+	: QualifiedName		{
+				if(!strcmp($1.string, ".library"))
+				{
+					$$ = ILInternString(ILAsmLibraryName, -1);
+				}
+				else
+				{
+					$$ = $1;
+				}
+			}
+	| D_LIBRARY			{
+				$$ = ILInternString(ILAsmLibraryName, -1);
 			}
 	;
 
@@ -3041,7 +3090,7 @@ AsmOrRefDeclaration
 	;
 
 AssemblyRefHeading
-	: D_ASSEMBLY K_EXTERN AssemblyRefAttributes QualifiedName
+	: D_ASSEMBLY K_EXTERN AssemblyRefAttributes AssemblyName
 			K_AS ComposedString	{
 				ILAssembly *assem;
 				assem = ILAssemblyCreate(ILAsmImage, 0, $4.string, 1);
@@ -3053,7 +3102,7 @@ AssemblyRefHeading
 				ILAsmBuildPushScope(assem);
 				ILAsmCurrAssemblyRef = assem;
 			}
-	| D_ASSEMBLY K_EXTERN AssemblyRefAttributes QualifiedName	{
+	| D_ASSEMBLY K_EXTERN AssemblyRefAttributes AssemblyName	{
 				ILAssembly *assem;
 				assem = ILAssemblyCreate(ILAsmImage, 0, $4.string, 1);
 				if(!assem)

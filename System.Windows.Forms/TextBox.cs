@@ -189,7 +189,10 @@ public class TextBox : TextBoxBase
 			oldLayout = (LayoutInfo)layout.Clone();
 		string oldText = base.Text;
 		base.Text = text;
-		LayoutFromText(CreateGraphics());
+		using (Graphics g = CreateGraphics())
+		{
+			LayoutFromText(g);
+		}
 		if (prevLayout)
 		{
 			Region invalid = new Region();
@@ -491,11 +494,17 @@ public class TextBox : TextBoxBase
 		{
 			Region invalidRegion = newRegion.Clone();
 			invalidRegion.Xor(selectedRegion);
-			RectangleF b1 = invalidRegion.GetBounds( CreateGraphics());
+			using (Graphics g = CreateGraphics())
+			{
+				invalidRegion.GetBounds(g);
+			}
 			Invalidate(invalidRegion);				
 		}
 		selectedRegion = newRegion;
-		RectangleF b = selectedRegion.GetBounds( CreateGraphics());
+		using (Graphics g = CreateGraphics())
+		{
+			selectedRegion.GetBounds(g);
+		}
 	}
 
 	// Get the length of the selection.

@@ -9,6 +9,10 @@
 	* System.Drawing.Xsharp/DrawingWindow.cs: map X11 key codes to
 	System.Drawing key codes.
 
+	* System.Windows.Forms/TextBox.cs: make sure that the graphics
+	objects returned by "CreateGraphics" are properly disposed of,
+	because letting the finalizer do it causes dead-locks under Xsharp.
+
 2003-07-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Xml/XmlTextWriter.cs: Fix indentation problem with textwriter

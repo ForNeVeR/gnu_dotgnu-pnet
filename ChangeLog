@@ -9,6 +9,16 @@
 	scroll bars, regardless of the foreground and background colors,
 	to match MS behaviour.
 
+	* System.Drawing/TextureBrush.cs,
+	System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing.Postscript/PostscriptToolkit.cs,
+	System.Drawing.Win32/DrawingTextureBrush.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingTextureBrush.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs: implement texture
+	brushes in "System.Drawing.Xsharp".
+
 2003-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:

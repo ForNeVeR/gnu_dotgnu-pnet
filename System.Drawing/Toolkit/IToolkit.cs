@@ -76,8 +76,8 @@ public interface IToolkit
 
 	// Create a texture brush.
 	IToolkitBrush CreateTextureBrush
-				(TextureBrush properties, RectangleF dstRect,
-				 ImageAttributes imageAttr);
+				(TextureBrush properties, IToolkitImage image,
+				 RectangleF dstRect, ImageAttributes imageAttr);
 
 	// Create a toolkit pen from the properties in the specified object.
 	// If the toolkit does not support the precise combination of pen

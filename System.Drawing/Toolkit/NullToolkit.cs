@@ -110,8 +110,8 @@ public class NullToolkit : IToolkit
 
 	// Create a texture brush.
 	public virtual IToolkitBrush CreateTextureBrush
-				(TextureBrush properties, RectangleF dstRect,
-				 ImageAttributes imageAttr)
+				(TextureBrush properties, IToolkitImage image,
+				 RectangleF dstRect, ImageAttributes imageAttr)
 			{
 				return null;
 			}

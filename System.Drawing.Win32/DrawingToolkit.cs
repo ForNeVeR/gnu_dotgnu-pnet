@@ -175,10 +175,11 @@ public class DrawingToolkit : IToolkit
 
 	// Create a texture brush.
 	public IToolkitBrush CreateTextureBrush
-				(TextureBrush properties, RectangleF dstRect,
-				 ImageAttributes imageAttr)
+				(TextureBrush properties, IToolkitImage image,
+				 RectangleF dstRect, ImageAttributes imageAttr)
 			{
-				return new DrawingTextureBrush(this, properties, dstRect, imageAttr);
+				return new DrawingTextureBrush
+					(this, properties, image, dstRect, imageAttr);
 			}
 
 	// Create a toolkit pen from pen properties.

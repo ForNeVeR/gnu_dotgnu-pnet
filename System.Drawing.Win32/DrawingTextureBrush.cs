@@ -27,15 +27,17 @@ internal class DrawingTextureBrush : DrawingBrush, IToolkitBrush
 {
 	// Internal state.
 	private TextureBrush properties;
+	private IToolkitImage image;
 	private RectangleF dstRect;
 	private ImageAttributes imageAttr;
 
 	// Constructor.
 	public DrawingTextureBrush(IToolkit toolkit, TextureBrush properties,
-							   RectangleF dstRect,
+							   IToolkitImage image, RectangleF dstRect,
 							   ImageAttributes imageAttr) : base(toolkit, Color.Black)
 			{
 				this.properties = properties;
+				this.image = image;
 				this.dstRect = dstRect;
 				this.imageAttr = imageAttr;
 				//TODO

@@ -261,10 +261,11 @@ public sealed class DrawingToolkit : IToolkit
 
 	// Create a texture brush.
 	public IToolkitBrush CreateTextureBrush
-				(TextureBrush properties, RectangleF dstRect,
-				 ImageAttributes imageAttr)
+				(TextureBrush properties, IToolkitImage image,
+				 RectangleF dstRect, ImageAttributes imageAttr)
 			{
-				return new DrawingTextureBrush(properties, dstRect, imageAttr);
+				return new DrawingTextureBrush
+					(properties, image as DrawingImage, dstRect, imageAttr);
 			}
 
 	// Create a toolkit pen from the properties in the specified object.

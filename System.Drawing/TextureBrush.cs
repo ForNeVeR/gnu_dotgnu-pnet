@@ -274,7 +274,12 @@ public sealed class TextureBrush : Brush
 	// Create this brush for a specific toolkit.  Inner part of "GetBrush()".
 	internal override IToolkitBrush CreateBrush(IToolkit toolkit)
 			{
-				return toolkit.CreateTextureBrush(this, dstRect, imageAttr);
+				if(image.toolkitImage == null)
+				{
+					image.toolkitImage = toolkit.CreateImage(image.dgImage, 0);
+				}
+				return toolkit.CreateTextureBrush(this, image.toolkitImage,
+												  dstRect, imageAttr);
 			}
 
 }; // class TextureBrush

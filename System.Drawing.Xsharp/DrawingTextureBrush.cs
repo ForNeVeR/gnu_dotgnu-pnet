@@ -32,15 +32,18 @@ internal sealed class DrawingTextureBrush : IToolkitBrush
 {
 	// Internal state.
 	private TextureBrush properties;
+	private DrawingImage image;
 	private RectangleF dstRect;
 	private ImageAttributes imageAttr;
 
 	// Constructor.
 	public DrawingTextureBrush(TextureBrush properties,
+							   DrawingImage image,
 							   RectangleF dstRect,
 							   ImageAttributes imageAttr)
 			{
 				this.properties = properties;
+				this.image = image;
 				this.dstRect = dstRect;
 				this.imageAttr = imageAttr;
 			}
@@ -49,16 +52,23 @@ internal sealed class DrawingTextureBrush : IToolkitBrush
 	public void Select(IToolkitGraphics _graphics)
 			{
 				DrawingGraphics graphics = (_graphics as DrawingGraphics);
-				if(graphics != null)
+				if(graphics != null && image != null)
 				{
-					// TODO
+					Xsharp.Graphics g = graphics.graphics;
+					Xsharp.Image nativeImage = image.GetNativeImage();
+					g.SetFillTiled(nativeImage.Pixmap,
+								   (int)(dstRect.X), (int)(dstRect.Y));
 				}
 			}
 
 	// Dispose of this brush.
 	public void Dispose()
 			{
-				// Nothing to do here in this implementation.
+				if(image != null)
+				{
+					image.Dispose();
+					image = null;
+				}
 			}
 
 }; // class DrawingTextureBrush

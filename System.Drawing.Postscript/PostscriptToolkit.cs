@@ -59,8 +59,8 @@ internal sealed class PostscriptToolkit : NullToolkit
 
 	// Create a texture brush.
 	public override IToolkitBrush CreateTextureBrush
-				(TextureBrush properties, RectangleF dstRect,
-				 ImageAttributes imageAttr)
+				(TextureBrush properties, IToolkitImage image,
+				 RectangleF dstRect, ImageAttributes imageAttr)
 			{
 				return null;
 			}

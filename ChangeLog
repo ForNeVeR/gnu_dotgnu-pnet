@@ -10,6 +10,10 @@
 	* cscc/c/c_defs.tc, cscc/c/c_lvalue.tc, cscc/c/c_oper.tc:
 	fix the use of "&" on arrays.
 
+	* engine/ilrun.c: report a better message than "virtual memory
+	exhausted" when an exception occurs that cannot be converted
+	into a string for some reason.
+
 2002-11-05  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: Fix the indexername returned , using

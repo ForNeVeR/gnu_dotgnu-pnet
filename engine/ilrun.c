@@ -347,6 +347,11 @@ int main(int argc, char *argv[])
 			fputs(param, stderr);
 			putc('\n', stderr);
 		}
+		else if(exception)
+		{
+			fputs("An exception occurred which could not be converted "
+			      "into a string\n", stderr);
+		}
 		else
 		{
 			fputs("virtual memory exhausted\n", stderr);

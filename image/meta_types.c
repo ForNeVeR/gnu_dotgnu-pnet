@@ -955,7 +955,8 @@ int ILTypeIsObjectClass(ILType *type)
 	return 0;
 }
 
-int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest)
+static int TypeAssignCompatible(ILImage *image, ILType *src,
+								ILType *dest, int allowBoxing)
 {
 	ILClass *classInfo;
 	ILClass *classInfo2;
@@ -966,7 +967,7 @@ int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest)
 	dest = ILTypeGetEnumType(ILTypeStripPrefixes(dest));
 
 	/* Determine how to compare the types based on their kind */
-	if(ILType_IsPrimitive(src))
+	if(ILType_IsPrimitive(src) && !allowBoxing)
 	{
 		/* Primitive type assignments must be identical */
 		return (src == dest);
@@ -989,6 +990,7 @@ int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest)
 			/* Both types must be object references */
 			return 0;
 		}
+	boxCheck:
 		classInfo = ILClassFromType(image, 0, dest, 0);
 		classInfo2 = ILClassFromType(image, 0, src, 0);
 		if(classInfo && classInfo2)
@@ -1026,11 +1028,26 @@ int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest)
 			return 0;
 		}
 	}
+	else if(allowBoxing && ILTypeIsReference(dest))
+	{
+		/* Check for boxing conversions */
+		goto boxCheck;
+	}
 	else
 	{
 		/* Everything else must have type identity to be assignable */
 		return ILTypeIdentical(src, dest);
 	}
+}
+
+int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest)
+{
+	return TypeAssignCompatible(image, src, dest, 1);
+}
+
+int ILTypeAssignCompatibleNonBoxing(ILImage *image, ILType *src, ILType *dest)
+{
+	return TypeAssignCompatible(image, src, dest, 0);
 }
 
 int ILTypeHasModifier(ILType *type, ILClass *classInfo)

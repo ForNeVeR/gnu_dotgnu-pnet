@@ -523,6 +523,12 @@ int ILTypeIsObjectClass(ILType *type);
 int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest);
 
 /*
+ * Determine if two types are assignment-compatible without
+ * performing boxing conversions.
+ */
+int ILTypeAssignCompatibleNonBoxing(ILImage *image, ILType *src, ILType *dest);
+
+/*
  * Determine if a type contains a particular system modifier.
  */
 int ILTypeHasModifier(ILType *type, ILClass *classInfo);

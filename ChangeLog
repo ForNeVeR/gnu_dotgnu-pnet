@@ -24,6 +24,9 @@
 	correct bounds values in the array type for multi-dimensional
 	arrays with specified lower bounds.
 
+	* engine/cvm_ptr.c, image/meta_types.c, include/il_types.h:
+	support boxing conversions in ILTypeAssignCompatible.
+
 2003-04-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_call.c (MatchSignature): pass the correct

@@ -81,7 +81,7 @@ static int CanCastClass(ILImage *image, ILClass *fromClass, ILClass *toClass)
 		if(ILType_IsArray(fromType) && ILType_IsArray(toType) &&
 		   ILTypeGetRank(fromType) == ILTypeGetRank(toType))
 		{
-			return ILTypeAssignCompatible
+			return ILTypeAssignCompatibleNonBoxing
 			  (image, ILTypeGetElemType(fromType), ILTypeGetElemType(toType));
 		}
 		else

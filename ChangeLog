@@ -1,4 +1,8 @@
 
+2003-03-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/pecoff_loader.c: recognise ".data" as a data section.
+
 2003-03-06  Aditya P. Bansod  <abansod@fullenergy.com>
 
 	* image/dynlib.c: add support for Win32 dynamic libraries.

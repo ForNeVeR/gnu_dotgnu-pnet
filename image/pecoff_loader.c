@@ -342,7 +342,12 @@ int ILImageLoad(FILE *file, const char *filename,
 			debugRVA = newMap->virtAddr;
 			debugSize = newMap->virtSize;
 		}
-		else if(!ILMemCmp(buffer, ".sdata\0\0", 8))
+		else if(!ILMemCmp(buffer, ".sdata\0\0", 8) && !dataRVA)
+		{
+			dataRVA = newMap->virtAddr;
+			dataSize = newMap->virtSize;
+		}
+		else if(!ILMemCmp(buffer, ".data\0\0\0", 8) && !dataRVA)
 		{
 			dataRVA = newMap->virtAddr;
 			dataSize = newMap->virtSize;

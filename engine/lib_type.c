@@ -1733,10 +1733,10 @@ static ILObject *ClrType_GetMemberImpl(ILExecThread *thread,
 	}
 
 	/* Scan the class hierarchy looking for a member match */
+	foundItem = 0;
 	do
 	{
 		member = classInfo->firstMember;
-		foundItem = 0;
 		while(member != 0)
 		{
 			/* Check for a name match first */

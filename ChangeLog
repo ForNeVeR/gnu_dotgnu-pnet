@@ -24,6 +24,10 @@
 
 	* engine/lib_type.c: incorrect signature for "ClrType.GetMemberImpl".
 
+	* engine/lib_type.c (ClrType_GetMemberImpl): move the initialization
+	of "foundItem" outside the outer loop so that it isn't accidentally
+	reset when traversing ancestor classes.
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/internal.c, engine/lib_reflect.c: continue implementing

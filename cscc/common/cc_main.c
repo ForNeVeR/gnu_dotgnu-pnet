@@ -522,7 +522,7 @@ static int InitCodeGen(void)
 	}
 
 	/* Load the "mscorlib" library, to get the standard library */
-	if(!nostdlib_flag || CCPluginForceStdlib)
+	if(!nostdlib_flag || (CCPluginForceStdlib && !useBuiltinLibrary))
 	{
 		char *name = CCStringListGetValue(extension_flags, num_extension_flags,
 										  "stdlib-name");

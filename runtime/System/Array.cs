@@ -1030,143 +1030,79 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		Set(value, index1, index2, index3);
 	}
 
-	// Inner version of "Sort".  Based on the Quicksort implementation
-	// described in R. Sedgewick, "Algorithms in C++", Addison-Wesley, 1992.
-	public static void InnerSort(Array keys, Array items,
-						         int lower, int upper,
-						         IComparer comparer)
+	// Inner version of "Sort".
+	private static void InnerSort(Array keys, Array items,
+						          int lower, int upper,
+						          IComparer comparer)
 	{
-		// Temporary hack - use a dumb sort until I can figure
-		// out what is wrong with the Quicksort code -- Rhys.
-		int i, j, cmp;
-		Object valuei;
-		Object valuej;
-		for(i = lower; i < upper; ++i)
+		int i, j;
+		Object pivot, temp;
+		if((upper - lower) < 1)
 		{
-			for(j = i + 1; j <= upper; ++j)
-			{
-				valuei = keys.GetValue(i);
-				valuej = keys.GetValue(j);
-				if(comparer != null)
-				{
-					cmp = comparer.Compare(valuei, valuej);
-				}
-				else
-				{
-					cmp = ((IComparable)valuei).CompareTo(valuej);
-				}
-				if(cmp > 0)
-				{
-					keys.SetValue(valuej, i);
-					keys.SetValue(valuei, j);
-					if(items != null)
-					{
-						valuei = items.GetValue(i);
-						valuej = items.GetValue(j);
-						items.SetValue(valuej, i);
-						items.SetValue(valuei, j);
-					}
-				}
-			}
+			// Zero or one elements - this partition is already sorted.
+			return;
 		}
-
-#if false
-		int i, j, cmp;
-		Object testKey;
-		Object valuei;
-		Object valuej;
-		if(lower < upper)
+		do
 		{
-			// If this[lower] > this[upper], then swap.  This
-			// helps to make the loops below terminate predictably.
-			testKey = keys.GetValue(upper);
-			valuei = keys.GetValue(lower);
-			if(comparer != null)
-			{
-				cmp = comparer.Compare(valuei, testKey);
-			}
-			else
-			{
-				cmp = ((IComparable)valuei).CompareTo(testKey);
-			}
-			if(cmp > 0)
-			{
-				keys.SetValue(valuei, upper);
-				keys.SetValue(testKey, lower);
-				testKey = valuei;
-				if(items != null)
-				{
-					valuei = items.GetValue(lower);
-					valuej = items.GetValue(upper);
-					items.SetValue(valuej, lower);
-					items.SetValue(valuei, upper);
-				}
-			}
-
-			// Partition the array.
-			i = lower - 1;
+			// Pick the middle of the range as the pivot value.
+			i = lower;
 			j = upper;
-			for(;;)
+			pivot = keys.GetValue(i + ((j - i) / 2));
+
+			// Partition the range.
+			do
 			{
-				do
+				// Find two values to be swapped.
+				while(comparer.Compare(keys.GetValue(i), pivot) < 0)
 				{
 					++i;
-					valuei = keys.GetValue(i);
-					if(comparer != null)
-					{
-						cmp = comparer.Compare(valuei, testKey);
-					}
-					else
-					{
-						cmp = ((IComparable)valuei).CompareTo(testKey);
-					}
 				}
-				while(cmp < 0);
-				do
+				while(comparer.Compare(keys.GetValue(j), pivot) > 0)
 				{
 					--j;
-					valuej = keys.GetValue(j);
-					if(comparer != null)
-					{
-						cmp = comparer.Compare(valuej, testKey);
-					}
-					else
-					{
-						cmp = ((IComparable)valuej).CompareTo(testKey);
-					}
 				}
-				while(cmp > 0);
-				if(i >= j)
+				if(i > j)
 				{
 					break;
 				}
-				keys.SetValue(valuej, i);
-				keys.SetValue(valuei, j);
-				if(items != null)
-				{
-					valuei = items.GetValue(i);
-					valuej = items.GetValue(j);
-					items.SetValue(valuej, i);
-					items.SetValue(valuei, j);
-				}
-			}
-			valuei = keys.GetValue(i);
-			valuej = keys.GetValue(upper);
-			keys.SetValue(valuej, i);
-			keys.SetValue(valuei, upper);
-			if(items != null)
-			{
-				valuei = items.GetValue(i);
-				valuej = items.GetValue(upper);
-				items.SetValue(valuej, i);
-				items.SetValue(valuei, upper);
-			}
 
-			// Sort the sub-partitions.
-			InnerSort(keys, items, lower, i - 1, comparer);
-			InnerSort(keys, items, i + 1, upper, comparer);
+				// Swap the values.
+				if(i < j)
+				{
+					temp = keys.GetValue(i);
+					keys.SetValue(keys.GetValue(j), i);
+					keys.SetValue(temp, j);
+					if(items != null)
+					{
+						temp = items.GetValue(i);
+						items.SetValue(items.GetValue(j), i);
+						items.SetValue(temp, j);
+					}
+				}
+				++i;
+				--j;
+			}
+			while(i <= j);
+
+			// Sort the partitions.
+			if((j - lower) <= (upper - i))
+			{
+				if(lower < j)
+				{
+					InnerSort(keys, items, lower, j, comparer);
+				}
+				lower = i;
+			}
+			else
+			{
+				if(i < upper)
+				{
+					InnerSort(keys, items, i, upper, comparer);
+				}
+				upper = j;
+			}
 		}
-#endif
+		while(lower < upper);
 	}
 
 	// Sort an array of keys.
@@ -1185,6 +1121,10 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		if(array.Rank != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
+		}
+		if(comparer == null)
+		{
+			comparer = Comparer.Default;
 		}
 		InnerSort(array, null, array.GetLowerBound(0),
 				  array.GetUpperBound(0), comparer);
@@ -1222,6 +1162,10 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 				throw new ArgumentException(_("Arg_ShortItemsArray"));
 			}
 		}
+		if(comparer == null)
+		{
+			comparer = Comparer.Default;
+		}
 		InnerSort(keys, items, keys.GetLowerBound(0),
 				  keys.GetUpperBound(0), comparer);
 	}
@@ -1258,6 +1202,10 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		   length > (array.GetUpperBound(0) - index + 1))
 		{
 			throw new ArgumentException(_("Arg_InvalidArrayRange"));
+		}
+		if(comparer == null)
+		{
+			comparer = Comparer.Default;
 		}
 		InnerSort(array, null, index, index + length - 1, comparer);
 	}
@@ -1312,6 +1260,10 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			{
 				throw new ArgumentException(_("Arg_InvalidArrayRange"));
 			}
+		}
+		if(comparer == null)
+		{
+			comparer = Comparer.Default;
 		}
 		InnerSort(keys, items, index, index + length - 1, comparer);
 	}

@@ -657,127 +657,84 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				++generation;
 			}
 
-	// Inner version of "Sort".  Based on the Quicksort implementation
-	// described in R. Sedgewick, "Algorithms in C++", Addison-Wesley, 1992.
+	// Inner version of "Sort".
 	public void InnerSort(int lower, int upper, IComparer comparer)
 			{
-				// Temporary hack - use a dumb sort until I can figure
-				// out what is wrong with the Quicksort code -- Rhys.
-				int i, j, cmp;
-				Object valuei;
-				Object valuej;
-				for(i = lower; i < upper; ++i)
+				int i, j;
+				Object pivot, temp;
+				if((upper - lower) < 1)
 				{
-					for(j = i + 1; j <= upper; ++j)
-					{
-						valuei = this[i];
-						valuej = this[j];
-						if(comparer != null)
-						{
-							cmp = comparer.Compare(valuei, valuej);
-						}
-						else
-						{
-							cmp = ((IComparable)valuei).CompareTo(valuej);
-						}
-						if(cmp > 0)
-						{
-							this[i] = valuej;
-							this[j] = valuei;
-						}
-					}
+					// Zero or one elements - this partition is already sorted.
+					return;
 				}
-#if false
-				int i, j, cmp;
-				Object testKey;
-				Object valuei;
-				Object valuej;
-				if(lower < upper)
+				do
 				{
-					// If this[lower] > this[upper], then swap.  This
-					// helps to make the loops below terminate predictably.
-					testKey = this[upper];
-					valuei = this[lower];
-					if(comparer != null)
-					{
-						cmp = comparer.Compare(valuei, testKey);
-					}
-					else
-					{
-						cmp = ((IComparable)valuei).CompareTo(testKey);
-					}
-					if(cmp > 0)
-					{
-						this[upper] = valuei;
-						this[lower] = testKey;
-						testKey = valuei;
-					}
-
-					// Partition the array.
-					i = lower - 1;
+					// Pick the middle of the range as the pivot value.
+					i = lower;
 					j = upper;
-					for(;;)
+					pivot = this[i + ((j - i) / 2)];
+		
+					// Partition the range.
+					do
 					{
-						for(;;)
+						// Find two values to be swapped.
+						while(comparer.Compare(this[i], pivot) < 0)
 						{
 							++i;
-							valuei = this[i];
-							if(comparer != null)
-							{
-								cmp = comparer.Compare(valuei, testKey);
-							}
-							else
-							{
-								cmp = ((IComparable)valuei).CompareTo(testKey);
-							}
-							if(cmp >= 0 || i == upper)
-							{
-								break;
-							}
 						}
-						for(;;)
+						while(comparer.Compare(this[j], pivot) > 0)
 						{
 							--j;
-							valuej = this[j];
-							if(comparer != null)
-							{
-								cmp = comparer.Compare(valuej, testKey);
-							}
-							else
-							{
-								cmp = ((IComparable)valuej).CompareTo(testKey);
-							}
-							if(cmp <= 0 || j == lower)
-							{
-								break;
-							}
 						}
-						if(i >= j)
+						if(i > j)
 						{
 							break;
 						}
-						this[i] = valuej;
-						this[j] = valuei;
-					}
-					valuei = this[i];
-					valuej = this[upper];
-					this[i] = valuej;
-					this[upper] = valuej;
 		
-					// Sort the sub-partitions.
-					InnerSort(lower, i - 1, comparer);
-					InnerSort(i + 1, upper, comparer);
+						// Swap the values.
+						if(i < j)
+						{
+							temp = this[i];
+							this[i] = this[j];
+							this[j] = temp;
+						}
+						++i;
+						--j;
+					}
+					while(i <= j);
+		
+					// Sort the partitions.
+					if((j - lower) <= (upper - i))
+					{
+						if(lower < j)
+						{
+							InnerSort(lower, j, comparer);
+						}
+						lower = i;
+					}
+					else
+					{
+						if(i < upper)
+						{
+							InnerSort(i, upper, comparer);
+						}
+						upper = j;
+					}
 				}
-#endif
+				while(lower < upper);
 			}
 
 	// Sort the contents of this array list.
 	public virtual void Sort()
 			{
-				InnerSort(0, Count - 1, null);
+				InnerSort(0, Count - 1, Comparer.Default);
 			}
 	public virtual void Sort(IComparer comparer)
 			{
+				if(comparer == null)
+				{
+					comparer = Comparer.Default;
+				}
 				InnerSort(0, Count - 1, comparer);
 			}
 	public virtual void Sort(int index, int count, IComparer comparer)
@@ -795,6 +752,10 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				if((Count - index) < count)
 				{
 					throw new ArgumentException(_("Arg_InvalidArrayRange"));
+				}
+				if(comparer == null)
+				{
+					comparer = Comparer.Default;
 				}
 				InnerSort(index, index + count - 1, comparer);
 			}

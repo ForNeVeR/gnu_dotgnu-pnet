@@ -160,4 +160,25 @@ public class TestArray : TestCase
 							 Array.BinarySearch(array, 4));
 			}
 
+	// Test sorting an array.
+	public void TestArraySort()
+			{
+				int[] list = new int [] {98, 45};
+				Array.Sort(list);
+				AssertEquals("Sort (1)", 45, list[0]);
+				AssertEquals("Sort (2)", 98, list[1]);
+
+				list = new int[] {98, 0, 45};
+				Array.Sort(list);
+				AssertEquals("Sort (3)",  0, list[0]);
+				AssertEquals("Sort (4)", 45, list[1]);
+				AssertEquals("Sort (5)", 98, list[2]);
+
+				list = new int[] {97, 104, 98};
+				Array.Sort(list);
+				AssertEquals("Sort (6)", 97, list[0]);
+				AssertEquals("Sort (7)", 98, list[1]);
+				AssertEquals("Sort (8)", 104, list[2]);
+			}
+
 }; // class TestArray

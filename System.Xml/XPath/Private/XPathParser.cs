@@ -38,6 +38,63 @@ namespace System.Xml.XPath.Private
 			XPathTokenizer tokenizer = new XPathTokenizer(path);
 			return (XPathExpression) yyparse(tokenizer);
 		}
+	
+		private static void ThrowSyntaxException(Expression expr, 
+													String message)
+		{
+			// TODO: I18n and column numbers for expression
+			throw new XPathException(message, null);
+		}
+
+		private static void CheckArguments(FunctionCallExpression expr,
+										   ArgumentList list, 
+										   int minCount,
+										   int maxCount)
+		{
+			bool valid = true;
+			int count = 0;
+			
+			if(maxCount == 0)
+			{
+				valid = (list == null);
+			}
+			else
+			{
+				for(ArgumentList entry = list; entry != null; entry = entry.next)
+				{
+					count++;
+				}
+				valid = (count >= minCount) && (count <= maxCount);
+			}
+
+			if(!valid)
+			{
+				String errorMsg;
+				if(maxCount == minCount)
+				{
+					errorMsg = 	String.Format(
+						"{0} expects exactly {1} arguments, got {2} argument",
+						expr.name, 
+						maxCount,
+						count);
+				}
+				else
+				{
+					errorMsg = 	String.Format(
+						"{0} expects {1}-{2} arguments, got {3} argument",
+						expr.name, 
+						minCount,
+						maxCount,
+						count);
+				}
+				
+				ThrowSyntaxException(expr, errorMsg); 
+			}
+			else
+			{
+				expr.argCount = count;
+			}
+		}
 #line default
 
   /** error output stream.
@@ -340,25 +397,25 @@ namespace System.Xml.XPath.Private
         yyVal = yyDefault(yyV > yyTop ? null : yyVals[yyV]);
         switch (yyN) {
 case 3:
-#line 92 "XPathParser.jay"
+#line 149 "XPathParser.jay"
   {
 		yyVal = new RootPathExpression();
 	}
   break;
 case 4:
-#line 96 "XPathParser.jay"
+#line 153 "XPathParser.jay"
   {
 		yyVal = new SlashExpression(new RootPathExpression(), (Expression) yyVals[0+yyTop]);
 	}
   break;
 case 7:
-#line 106 "XPathParser.jay"
+#line 163 "XPathParser.jay"
   {
 		yyVal = new SlashExpression((Expression)yyVals[-2+yyTop] , (Expression)yyVals[0+yyTop]);
 	}
   break;
 case 9:
-#line 115 "XPathParser.jay"
+#line 172 "XPathParser.jay"
   {
 		if(yyVals[0+yyTop] != null)
 		{
@@ -371,28 +428,28 @@ case 9:
 	}
   break;
 case 11:
-#line 132 "XPathParser.jay"
+#line 189 "XPathParser.jay"
   {
 		yyVal = new NodeTest((XPathAxis)yyVals[-1+yyTop], 
 						 	XPathNodeType.All, (XmlQualifiedName)yyVals[0+yyTop]);
 	}
   break;
 case 12:
-#line 137 "XPathParser.jay"
+#line 194 "XPathParser.jay"
   {
 		yyVal = new NodeTest((XPathAxis)yyVals[-1+yyTop], 
 						 	XPathNodeType.All, null);
 	}
   break;
 case 13:
-#line 142 "XPathParser.jay"
+#line 199 "XPathParser.jay"
   {
 		yyVal = new NodeTest((XPathAxis)yyVals[-1+yyTop], 
 						 	XPathNodeType.All, (XmlQualifiedName)yyVals[0+yyTop]);
 	}
   break;
 case 14:
-#line 147 "XPathParser.jay"
+#line 204 "XPathParser.jay"
   {
 		XmlQualifiedName nodeName = null;
 		if(yyVals[-1+yyTop] != null)
@@ -409,289 +466,313 @@ case 14:
 	}
   break;
 case 15:
-#line 166 "XPathParser.jay"
+#line 223 "XPathParser.jay"
   {
 		yyVal = null;
 	}
   break;
 case 16:
-#line 170 "XPathParser.jay"
+#line 227 "XPathParser.jay"
   {
 		/* TODO predicate list */
 		yyVal = yyVals[-1+yyTop];
 	}
   break;
 case 17:
-#line 179 "XPathParser.jay"
+#line 236 "XPathParser.jay"
   {
 		yyVal = yyVals[0+yyTop];
 	}
   break;
 case 19:
-#line 187 "XPathParser.jay"
+#line 244 "XPathParser.jay"
   {
 		yyVal = null;
 	}
   break;
 case 21:
-#line 196 "XPathParser.jay"
+#line 253 "XPathParser.jay"
   {
 		yyVal = yyVals[-1+yyTop];
 	}
   break;
 case 22:
-#line 204 "XPathParser.jay"
+#line 261 "XPathParser.jay"
   {
 		yyVal = new RecursiveDescentPathExpression(new RootPathExpression(), 
 												(Expression)yyVals[0+yyTop]); 
 	}
   break;
 case 23:
-#line 213 "XPathParser.jay"
+#line 270 "XPathParser.jay"
   {
 		yyVal = new RecursiveDescentPathExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop]); 
 	}
   break;
 case 24:
-#line 221 "XPathParser.jay"
+#line 278 "XPathParser.jay"
   {
 		yyVal = new NodeTest(XPathAxis.Self, XPathNodeType.All, null);
 	}
   break;
 case 25:
-#line 225 "XPathParser.jay"
+#line 282 "XPathParser.jay"
   {
 		yyVal = new NodeTest(XPathAxis.Parent, XPathNodeType.All, null);
 	}
   break;
 case 26:
-#line 233 "XPathParser.jay"
+#line 290 "XPathParser.jay"
   {
 		yyVal = XPathAxis.Child;
 	}
   break;
 case 27:
-#line 237 "XPathParser.jay"
+#line 294 "XPathParser.jay"
   {
 		yyVal = XPathAxis.Attribute;
 	}
   break;
-case 29:
-#line 249 "XPathParser.jay"
-  { yyVal = null; }
-  break;
 case 30:
-#line 250 "XPathParser.jay"
-  { yyVal = null; }
+#line 307 "XPathParser.jay"
+  { yyVal = yyVals[-1+yyTop]; }
   break;
 case 31:
-#line 251 "XPathParser.jay"
+#line 308 "XPathParser.jay"
   { yyVal = new LiteralExpression((String)yyVals[0+yyTop]); }
   break;
 case 32:
-#line 252 "XPathParser.jay"
+#line 309 "XPathParser.jay"
   { yyVal = new NumberExpression((Double)yyVals[0+yyTop]); }
   break;
-case 33:
-#line 253 "XPathParser.jay"
-  { yyVal = yyVals[0+yyTop]; }
-  break;
 case 34:
-#line 258 "XPathParser.jay"
+#line 315 "XPathParser.jay"
   {
 		/* TODO: neede for XSL */
 		yyVal = null;
 	}
   break;
 case 35:
-#line 267 "XPathParser.jay"
+#line 324 "XPathParser.jay"
   {
 		String name = (String)yyVals[-3+yyTop];
+		FunctionCallExpression expr = null;
+		ArgumentList args = (ArgumentList)yyVals[-1+yyTop];
+		
 		switch(name)
 		{
 			case "count":
 			{
-				yyVal = new XPathCountFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathCountFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "id":
 			{
-				yyVal = new XPathIdFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathIdFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "last":
 			{
-				yyVal = new XPathLastFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathLastFunction(name, args);
+				CheckArguments(expr, args, 0, 0);
 			}
 			break;
 			
 			case "local-name":
 			{
-				yyVal = new XPathLocalNameFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathLocalNameFunction(name, args);
+				CheckArguments(expr, args, 0, 1);
 			}
 			break;
 			
 			case "name":
 			{
-				yyVal = new XPathNameFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathNameFunction(name, args);
+				CheckArguments(expr, args, 0, 1);
 			}
 			break;
 			
 			case "namespace-uri":
 			{
-				yyVal = new XPathNamespaceUriFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathNamespaceUriFunction(name, args);
+				CheckArguments(expr, args, 0, 1);
 			}
 			break;
 			
 			case "position":
 			{
-				yyVal = new XPathPositionFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathPositionFunction(name, args);
+				CheckArguments(expr, args, 0, 0);
 			}
 			break;
 			
 			case "concat":
 			{
-				yyVal = new XPathConcatFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathConcatFunction(name, args);
+				CheckArguments(expr, args, 1, Int32.MaxValue);
 			}
 			break;
 			
 			case "contains":
 			{
-				yyVal = new XPathContainsFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathContainsFunction(name, args);
+				CheckArguments(expr, args, 2, 2);
 			}
 			break;
 			
 			case "normalize-space":
 			{
-				yyVal = new XPathNormalizeFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathNormalizeFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "starts-with":
 			{
-				yyVal = new XPathStartsWithFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathStartsWithFunction(name, args);
+				CheckArguments(expr, args, 2, 2);
 			}
 			break;
 			
 			case "string":
 			{
-				yyVal = new XPathStringFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathStringFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "string-length":
 			{
-				yyVal = new XPathStringLengthFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathStringLengthFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "substring":
 			{
-				yyVal = new XPathSubstringFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathSubstringFunction(name, args);
+				CheckArguments(expr, args, 2, 2);
 			}
 			break;
 			
 			case "substring-after":
 			{
-				yyVal = new XPathSubstringAfterFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathSubstringAfterFunction(name, args);
+				CheckArguments(expr, args, 2, 2);
 			}
 			break;
 			
 			case "substring-before":
 			{
-				yyVal = new XPathSubstringBeforeFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathSubstringBeforeFunction(name, args);
+				CheckArguments(expr, args, 2, 2);
 			}
 			break;
 			
 			case "translate":
 			{
-				yyVal = new XPathTranslateFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathTranslateFunction(name, args);
+				CheckArguments(expr, args, 3, 3);
 			}
 			break;
 			
 			case "ceiling":
 			{
-				yyVal = new XPathCeilingFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathCeilingFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "floor":
 			{
-				yyVal = new XPathFloorFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathFloorFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "number":
 			{
-				yyVal = new XPathNumberFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathNumberFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "round":
 			{
-				yyVal = new XPathRoundFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathRoundFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "sum":
 			{
-				yyVal = new XPathSumFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathSumFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "boolean":
 			{
-				yyVal = new XPathBooleanFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathBooleanFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "false":
 			{
-				yyVal = new XPathFalseFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathFalseFunction(name, args);
+				CheckArguments(expr, args, 0, 0);
 			}
 			break;
 			
 			case "lang":
 			{
-				yyVal = new XPathLangFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathLangFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "not":
 			{
-				yyVal = new XPathNotFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathNotFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "true":
 			{
-				yyVal = new XPathTrueFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathTrueFunction(name, args);
+				CheckArguments(expr, args, 0, 0);
 			}
 			break;
 			default:
 			{
-				yyVal = new XPathExternalFunction(name, (ArgumentList)yyVals[-1+yyTop]);
+				expr = new XPathExternalFunction(name, args);
 			}
 			break;
 		}
+
+		yyVal = expr;
 	}
   break;
 case 36:
-#line 443 "XPathParser.jay"
+#line 532 "XPathParser.jay"
   {
 		yyVal = null;
 	}
   break;
 case 38:
-#line 452 "XPathParser.jay"
+#line 541 "XPathParser.jay"
   {
 		yyVal = new ArgumentList((Expression)yyVals[0+yyTop]);
 	}
   break;
 case 39:
-#line 456 "XPathParser.jay"
+#line 545 "XPathParser.jay"
   {
 		ArgumentList list = new ArgumentList((Expression)yyVals[-2+yyTop]);
 		list.next = (ArgumentList)yyVals[0+yyTop];
@@ -699,43 +780,43 @@ case 39:
 	}
   break;
 case 42:
-#line 472 "XPathParser.jay"
+#line 561 "XPathParser.jay"
   {
 		yyVal = new UnionExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop]);
 	}
   break;
 case 45:
-#line 482 "XPathParser.jay"
+#line 571 "XPathParser.jay"
   {
 		yyVal = new SlashExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[-1+yyTop]);
 	}
   break;
 case 46:
-#line 486 "XPathParser.jay"
+#line 575 "XPathParser.jay"
   {
 		yyVal = null; /* TODO */
 	}
   break;
 case 48:
-#line 495 "XPathParser.jay"
+#line 584 "XPathParser.jay"
   {
 		yyVal = new FilterExpression((Expression)yyVals[-1+yyTop], (Expression)yyVals[0+yyTop]);
 	}
   break;
 case 52:
-#line 510 "XPathParser.jay"
+#line 599 "XPathParser.jay"
   {
 		yyVal = new AndExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop]);
 	}
   break;
 case 54:
-#line 519 "XPathParser.jay"
+#line 608 "XPathParser.jay"
   {
 		yyVal = new EqualityExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop], false); 
 	}
   break;
 case 55:
-#line 523 "XPathParser.jay"
+#line 612 "XPathParser.jay"
   {
 		yyVal = new EqualityExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop], true);
 	}
@@ -1004,7 +1085,7 @@ case 55:
   296,
   };
 
-#line 559 "XPathParser.jay"
+#line 648 "XPathParser.jay"
 }
 #line default
 namespace yydebug {

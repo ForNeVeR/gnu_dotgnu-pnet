@@ -27,12 +27,32 @@ namespace System.Xml.XPath.Private
 {
 	internal abstract class XPathBaseIterator : XPathNodeIterator
 	{
+		private int count = -1;
 		public XPathBaseIterator (XPathBaseIterator parent)
 		{
 		}
 		
 		public XPathBaseIterator (XmlNamespaceManager nsmanager)
 		{
+		}
+
+		public override int Count
+		{
+			get
+			{
+				lock(this)
+				{
+					if(count == -1)
+					{
+						count = 0;
+						while(MoveNext())
+						{
+							count++;
+						}
+					}
+				}
+				return count;
+			}
 		}
 
 	}

@@ -80,28 +80,33 @@ Compile(FunctionCallExpression)
 /* Nodeset Functions */
 Compile(XPathCountFunction)
 {
-	return XPathResultType.Any; /* TODO */
+	return XPathResultType.Number;
 }
+
 Compile(XPathIdFunction)
 {
 	return XPathResultType.Any; /* TODO */
 }
+
 Compile(XPathLastFunction)
 {
-	return XPathResultType.Any; /* TODO */
+	return XPathResultType.Number;
 }
+
 Compile(XPathLocalNameFunction)
 {
-	return XPathResultType.Any; /* TODO */
+	return XPathResultType.String;
 }
+
 Compile(XPathNameFunction)
 {
-	return XPathResultType.Any; /* TODO */
+	return XPathResultType.String;
 }
 Compile(XPathNamespaceUriFunction)
 {
-	return XPathResultType.Any; /* TODO */
+	return XPathResultType.String;
 }
+
 Compile(XPathPositionFunction)
 {
 	return XPathResultType.Number; /* TODO */
@@ -110,23 +115,24 @@ Compile(XPathPositionFunction)
 /* Boolean functions */
 Compile(XPathBooleanFunction)
 {
-	return XPathResultType.Boolean; /* TODO */
+	return XPathResultType.Boolean;
 }
 Compile(XPathTrueFunction)
 {
-	return XPathResultType.Boolean; /* TODO */
+	return XPathResultType.Boolean; 
 }
 Compile(XPathFalseFunction)
 {
-	return XPathResultType.Boolean; /* TODO */
+	return XPathResultType.Boolean;
 }
+
 Compile(XPathLangFunction)
 {
 	return XPathResultType.Boolean; /* TODO */
 }
 Compile(XPathNotFunction)
 {
-	return XPathResultType.Boolean; /* TODO */
+	return XPathResultType.Boolean; 
 }
 
 /* Number functions */
@@ -155,7 +161,7 @@ Compile(XPathSumFunction)
 /* String functions */
 Compile(XPathConcatFunction)
 {
-	return XPathResultType.Any; /* TODO */
+	return XPathResultType.String; /* TODO */
 }
 Compile(XPathContainsFunction)
 {

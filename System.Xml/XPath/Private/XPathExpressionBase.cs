@@ -55,12 +55,23 @@ internal abstract class XPathExpressionBase : XPathExpression
 	{
 		get
 		{
-			if(resultType == XPathResultType.Error)
+			try
 			{
-				if(this is Expression)
+				if(resultType == XPathResultType.Error)
 				{
-					return (this as Expression).Compile();
+					if(this is Expression)
+					{
+						return (this as Expression).Compile();
+					}
 				}
+			}
+			catch(XPathException)
+			{
+				throw;
+			}
+			catch(Exception e)
+			{
+				throw new XPathException("Error during compile", e);
 			}
 			return resultType;
 		}
@@ -174,7 +185,7 @@ internal abstract class XPathExpressionBase : XPathExpression
 					break;
 					case XPathResultType.String:
 					{
-						// TODO: 1.0 vs 1
+						return val.ToString();
 					}
 					break;
 				}

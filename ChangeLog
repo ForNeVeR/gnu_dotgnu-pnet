@@ -1,4 +1,16 @@
 
+2004-12-10  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XPath/Private/XPathCompile.tc
+	System.Xml/XPath/Private/XPathEvaluate.tc,
+	System.Xml/XPath/Private/XPathExpressionBase.cs,
+	System.Xml/XPath/Private/XPathIterators.cs,
+	System.Xml/XPath/Private/XPathNodes.tc,
+	System.Xml/XPath/Private/XPathParser.cs,
+	System.Xml/XPath/Private/XPathParser.jay: Rework XPath
+	functions and move argument checking into the parser and
+	implement a few of the more useful functions.
+
 2004-12-09  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XPath/Private/.cvsignore: Add generated files to 

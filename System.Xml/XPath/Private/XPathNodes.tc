@@ -134,6 +134,7 @@ using System.Collections;
 {
 	String name;
 	ArgumentList args;
+	%nocreate int argCount = {0};
 }
 
 %node XPathBuiltinFunction FunctionCallExpression %abstract

@@ -259,7 +259,16 @@ EvaluateInternal(FunctionCallExpression)
 /* Nodeset Functions */
 EvaluateInternal(XPathCountFunction)
 {
-	return null; /* TODO */
+	XPathNodeIterator argIter = (XPathNodeIterator)node.args.expr.EvaluateAs(
+												iterator, 
+												XPathResultType.NodeSet);
+	
+	if(argIter != null)
+	{
+		return (double) argIter.Count;
+	}
+	
+	return 0.0;
 }
 EvaluateInternal(XPathIdFunction)
 {
@@ -267,25 +276,53 @@ EvaluateInternal(XPathIdFunction)
 }
 EvaluateInternal(XPathLastFunction)
 {
-	return null; /* TODO */
+	return (double)iterator.Count;
 }
 EvaluateInternal(XPathLocalNameFunction)
 {
-	return null; /* TODO */
+	if(node.args == null)
+	{
+		return iterator.Current.LocalName;
+	}
+
+	XPathNodeIterator argIter = (XPathNodeIterator)node.args.expr.EvaluateAs(
+												iterator, 
+												XPathResultType.NodeSet);
+	
+	if(argIter != null && argIter.MoveNext())
+	{
+		return argIter.Current.LocalName; 
+	}
+
+	return String.Empty;
 }
+
 EvaluateInternal(XPathNameFunction)
 {
-	return null; /* TODO */
+	if(node.args == null)
+	{
+		return iterator.Current.Name;
+	}
+
+	XPathNodeIterator argIter = (XPathNodeIterator)node.args.expr.EvaluateAs(
+												iterator, 
+												XPathResultType.NodeSet);
+	
+	if(argIter != null && argIter.MoveNext())
+	{
+		return argIter.Current.Name; 
+	}
+
+	return String.Empty;
 }
+
 EvaluateInternal(XPathNamespaceUriFunction)
 {
 	return null; /* TODO */
 }
 EvaluateInternal(XPathPositionFunction)
 {
-	/* compile() this node if not done already */
-	XPathResultType result = node.ReturnType; 
-	return (double)iterator.CurrentPosition; /* TODO */
+	return (double)iterator.CurrentPosition;
 }
 
 /* Boolean functions */
@@ -307,7 +344,9 @@ EvaluateInternal(XPathLangFunction)
 }
 EvaluateInternal(XPathNotFunction)
 {
-	return null; /* TODO */
+	bool value = (bool)node.args.expr.EvaluateAs(iterator, 
+												 XPathResultType.Boolean);
+	return !(value); /* TODO */
 }
 
 /* Number functions */
@@ -336,7 +375,18 @@ EvaluateInternal(XPathSumFunction)
 /* String functions */
 EvaluateInternal(XPathConcatFunction)
 {
-	return null; /* TODO */
+	String [] parts = new String[node.argCount];
+	
+	ArgumentList args = node.args;
+	
+	for(int i = 0; i < parts.Length ; i++)
+	{
+		parts[i] = (String) (args.expr.EvaluateAs(iterator,
+													XPathResultType.String));
+		args = args.next;
+	}
+
+	return String.Concat(parts);
 }
 EvaluateInternal(XPathContainsFunction)
 {
@@ -352,11 +402,16 @@ EvaluateInternal(XPathStartsWithFunction)
 }
 EvaluateInternal(XPathStringFunction)
 {
-	return null; /* TODO */
+	String retval = (String) (args.expr.EvaluateAs(iterator,
+											XPathResultType.String));
+	return (retval == null) ? String.Empty : retval;
 }
 EvaluateInternal(XPathStringLengthFunction)
 {
-	return null; /* TODO */
+	String retval = (String) (args.expr.EvaluateAs(iterator,
+											XPathResultType.String));
+
+	return (double) ((retval == null) ? 0 : retval.Length);
 }
 EvaluateInternal(XPathSubstringFunction)
 {

@@ -36,6 +36,63 @@ namespace System.Xml.XPath.Private
 			XPathTokenizer tokenizer = new XPathTokenizer(path);
 			return (XPathExpression) yyparse(tokenizer);
 		}
+	
+		private static void ThrowSyntaxException(Expression expr, 
+													String message)
+		{
+			// TODO: I18n and column numbers for expression
+			throw new XPathException(message, null);
+		}
+
+		private static void CheckArguments(FunctionCallExpression expr,
+										   ArgumentList list, 
+										   int minCount,
+										   int maxCount)
+		{
+			bool valid = true;
+			int count = 0;
+			
+			if(maxCount == 0)
+			{
+				valid = (list == null);
+			}
+			else
+			{
+				for(ArgumentList entry = list; entry != null; entry = entry.next)
+				{
+					count++;
+				}
+				valid = (count >= minCount) && (count <= maxCount);
+			}
+
+			if(!valid)
+			{
+				String errorMsg;
+				if(maxCount == minCount)
+				{
+					errorMsg = 	String.Format(
+						"{0} expects exactly {1} arguments, got {2} argument",
+						expr.name, 
+						maxCount,
+						count);
+				}
+				else
+				{
+					errorMsg = 	String.Format(
+						"{0} expects {1}-{2} arguments, got {3} argument",
+						expr.name, 
+						minCount,
+						maxCount,
+						count);
+				}
+				
+				ThrowSyntaxException(expr, errorMsg); 
+			}
+			else
+			{
+				expr.argCount = count;
+			}
+		}
 %}
 
 %token ERROR
@@ -246,11 +303,11 @@ Expr
 
 /* [15] */
 PrimaryExpr
-	: VariableReference		{ $$ = null; }
-	| '(' Expr ')'			{ $$ = null; } 
+	: VariableReference
+	| '(' Expr ')'			{ $$ = $2; } 
 	| LITERAL 				{ $$ = new LiteralExpression((String)$1); }
 	| NUMBER				{ $$ = new NumberExpression((Double)$1); }
-	| FunctionCall			{ $$ = $1; }
+	| FunctionCall
 	;
 
 VariableReference
@@ -266,175 +323,207 @@ FunctionCall
 	: FUNCTIONNAME '(' OptArgumentList ')'
 	{
 		String name = (String)$1;
+		FunctionCallExpression expr = null;
+		ArgumentList args = (ArgumentList)$3;
+		
 		switch(name)
 		{
 			case "count":
 			{
-				$$ = new XPathCountFunction(name, (ArgumentList)$3);
+				expr = new XPathCountFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "id":
 			{
-				$$ = new XPathIdFunction(name, (ArgumentList)$3);
+				expr = new XPathIdFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "last":
 			{
-				$$ = new XPathLastFunction(name, (ArgumentList)$3);
+				expr = new XPathLastFunction(name, args);
+				CheckArguments(expr, args, 0, 0);
 			}
 			break;
 			
 			case "local-name":
 			{
-				$$ = new XPathLocalNameFunction(name, (ArgumentList)$3);
+				expr = new XPathLocalNameFunction(name, args);
+				CheckArguments(expr, args, 0, 1);
 			}
 			break;
 			
 			case "name":
 			{
-				$$ = new XPathNameFunction(name, (ArgumentList)$3);
+				expr = new XPathNameFunction(name, args);
+				CheckArguments(expr, args, 0, 1);
 			}
 			break;
 			
 			case "namespace-uri":
 			{
-				$$ = new XPathNamespaceUriFunction(name, (ArgumentList)$3);
+				expr = new XPathNamespaceUriFunction(name, args);
+				CheckArguments(expr, args, 0, 1);
 			}
 			break;
 			
 			case "position":
 			{
-				$$ = new XPathPositionFunction(name, (ArgumentList)$3);
+				expr = new XPathPositionFunction(name, args);
+				CheckArguments(expr, args, 0, 0);
 			}
 			break;
 			
 			case "concat":
 			{
-				$$ = new XPathConcatFunction(name, (ArgumentList)$3);
+				expr = new XPathConcatFunction(name, args);
+				CheckArguments(expr, args, 1, Int32.MaxValue);
 			}
 			break;
 			
 			case "contains":
 			{
-				$$ = new XPathContainsFunction(name, (ArgumentList)$3);
+				expr = new XPathContainsFunction(name, args);
+				CheckArguments(expr, args, 2, 2);
 			}
 			break;
 			
 			case "normalize-space":
 			{
-				$$ = new XPathNormalizeFunction(name, (ArgumentList)$3);
+				expr = new XPathNormalizeFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "starts-with":
 			{
-				$$ = new XPathStartsWithFunction(name, (ArgumentList)$3);
+				expr = new XPathStartsWithFunction(name, args);
+				CheckArguments(expr, args, 2, 2);
 			}
 			break;
 			
 			case "string":
 			{
-				$$ = new XPathStringFunction(name, (ArgumentList)$3);
+				expr = new XPathStringFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "string-length":
 			{
-				$$ = new XPathStringLengthFunction(name, (ArgumentList)$3);
+				expr = new XPathStringLengthFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "substring":
 			{
-				$$ = new XPathSubstringFunction(name, (ArgumentList)$3);
+				expr = new XPathSubstringFunction(name, args);
+				CheckArguments(expr, args, 2, 2);
 			}
 			break;
 			
 			case "substring-after":
 			{
-				$$ = new XPathSubstringAfterFunction(name, (ArgumentList)$3);
+				expr = new XPathSubstringAfterFunction(name, args);
+				CheckArguments(expr, args, 2, 2);
 			}
 			break;
 			
 			case "substring-before":
 			{
-				$$ = new XPathSubstringBeforeFunction(name, (ArgumentList)$3);
+				expr = new XPathSubstringBeforeFunction(name, args);
+				CheckArguments(expr, args, 2, 2);
 			}
 			break;
 			
 			case "translate":
 			{
-				$$ = new XPathTranslateFunction(name, (ArgumentList)$3);
+				expr = new XPathTranslateFunction(name, args);
+				CheckArguments(expr, args, 3, 3);
 			}
 			break;
 			
 			case "ceiling":
 			{
-				$$ = new XPathCeilingFunction(name, (ArgumentList)$3);
+				expr = new XPathCeilingFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "floor":
 			{
-				$$ = new XPathFloorFunction(name, (ArgumentList)$3);
+				expr = new XPathFloorFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "number":
 			{
-				$$ = new XPathNumberFunction(name, (ArgumentList)$3);
+				expr = new XPathNumberFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "round":
 			{
-				$$ = new XPathRoundFunction(name, (ArgumentList)$3);
+				expr = new XPathRoundFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "sum":
 			{
-				$$ = new XPathSumFunction(name, (ArgumentList)$3);
+				expr = new XPathSumFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "boolean":
 			{
-				$$ = new XPathBooleanFunction(name, (ArgumentList)$3);
+				expr = new XPathBooleanFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "false":
 			{
-				$$ = new XPathFalseFunction(name, (ArgumentList)$3);
+				expr = new XPathFalseFunction(name, args);
+				CheckArguments(expr, args, 0, 0);
 			}
 			break;
 			
 			case "lang":
 			{
-				$$ = new XPathLangFunction(name, (ArgumentList)$3);
+				expr = new XPathLangFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "not":
 			{
-				$$ = new XPathNotFunction(name, (ArgumentList)$3);
+				expr = new XPathNotFunction(name, args);
+				CheckArguments(expr, args, 1, 1);
 			}
 			break;
 			
 			case "true":
 			{
-				$$ = new XPathTrueFunction(name, (ArgumentList)$3);
+				expr = new XPathTrueFunction(name, args);
+				CheckArguments(expr, args, 0, 0);
 			}
 			break;
 			default:
 			{
-				$$ = new XPathExternalFunction(name, (ArgumentList)$3);
+				expr = new XPathExternalFunction(name, args);
 			}
 			break;
 		}
+
+		$$ = expr;
 	}
 	;
 

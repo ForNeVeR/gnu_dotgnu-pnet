@@ -1,2 +1,2 @@
 
-SUBDIRS = jay class nunit20 tools
+SUBDIRS = jay class tools

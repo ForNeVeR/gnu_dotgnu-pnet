@@ -1,3 +1,28 @@
+2004-06-09  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: add creation of class/System.Runtime.Remoting/Makefile
+
+	* Makefile.am: remove directory nunit20 from SUBDIRS because nunit does not
+	build everywhere
+ 
+	* class/Makefile.am: add System.Runtime.Remoting to SUBDIRS
+
+	* class/Mono.Cairo/Mono.Cairo.build: exclude directory Samples from
+	build
+
+	* class/Mono.Security/Mono.Security.build, class/Mono.Security/Makefile.am:
+	remove creation of testcase
+
+	* class/System.Runtime.Serialization.Formatters.Soap/
+	System.Runtime.Serialization.Formatters.Soap.build: added definition of
+	NET_1_1 (for System.Runtime.Remoting).	 
+
+	* class/System.Runtime.Remoting/Makefile.am,
+	class/System.Runtime.Remoting/System.Runtime.Remoting.build,
+	class/System.Runtime.Remoting/.cvsignore: added 
+
+	* tools/run_test.sh.in: update script to run testcases with nunit
+
 2004-06-06  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: add ILRUN and ML_PNET_PATH vars and creation of 

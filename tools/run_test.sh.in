@@ -45,7 +45,12 @@ exec "$ILRUN" -L"$PNETLIB_PATH"/runtime \
 	-L"$TOP_BUILDDIR"/nunit20/framework \
 	-L"$TOP_BUILDDIR"/nunit20/core \
 	-L"$TOP_BUILDDIR"/nunit20/util \
+	-L"$TOP_BUILDDIR"/class/System.Runtime.Serialization.Formatters.Soap \
 	-L"$TOP_BUILDDIR"/class/System.Security \
 	-L"$TOP_BUILDDIR"/class/Mono.Security \
+	-L"$TOP_BUILDDIR"/class/Mono.Data.Tds \
+	-L"$TOP_BUILDDIR"/class/System.Data \
+	-L"$TOP_BUILDDIR"/class/Mono.Directory.LDAP \
+	-L. \
 	"$TOP_BUILDDIR/nunit20/nunit-console/nunit-console.exe" $* \
-	/nologo /xmlConsole /transform="$MONO_SOURCE_PATH"/nunit20/core/Summary.xslt >TestResult.xml
+	/nologo /xmlConsole /transform="$MONO_SOURCE_PATH"/nunit20/core/Summary.xslt

@@ -12,6 +12,7 @@
 			<sources basedir="${mono.sources}/class/Mono.Cairo">
 				<includes name="**/*.cs"/> 
 				<excludes name="Test/**"/>
+				<excludes name="Samples/**"/>
 			</sources>
 
 			<references>

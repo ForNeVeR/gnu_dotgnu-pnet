@@ -18,6 +18,7 @@ SUBDIRS = Custommarshalers \
 		  System.Data.OracleClient \
 		  System.Web \
 		  System.Web.Services\
+		  System.Runtime.Remoting \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
 		  Mono.Posix \

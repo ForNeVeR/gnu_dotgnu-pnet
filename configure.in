@@ -295,6 +295,7 @@ class/Novell.Directory.Ldap/Makefile
 class/System.DirectoryServices/Makefile
 class/System.Web/Makefile
 class/System.Web.Services/Makefile
+class/System.Runtime.Remoting/Makefile
 class/Mono.Security/Makefile
 class/Mono.Security.Win32/Makefile
 class/System.Security/Makefile

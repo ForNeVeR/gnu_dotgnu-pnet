@@ -62,6 +62,13 @@ typedef enum
 	PPC_R29  = 29,
 	PPC_R30  = 30,
 	PPC_R31  = 31,
+	
+	/* PPC Special registers */
+	PPC_XER  = 32,  
+	PPC_LR   = 256,
+	PPC_CTR  = 288,
+
+	/* redefinitions */
 	PPC_SP   = PPC_R1,
 	PPC_WORK = PPC_R12,
 
@@ -114,6 +121,7 @@ typedef enum
 {
 	PPC_CC_BRFALSE	= (4 << 5),				/* Branch if condition false */
 	PPC_CC_BRTRUE	= (12 << 5),			/* Branch if condition true */
+	PPC_CC_ALWAYS   = (20 << 5),			/* Uncontional Branch */
 	PPC_CC_EQ		= PPC_CC_BRTRUE | 2,	/* Equal */
 	PPC_CC_NE		= PPC_CC_BRFALSE | 2,	/* Not equal */
 	PPC_CC_LT		= PPC_CC_BRTRUE | 0,	/* Less than */
@@ -159,6 +167,18 @@ typedef enum
  * Type for instruction pointers (word-based, not byte-based).
  */
 typedef unsigned int *ppc_inst_ptr;
+
+/* 
+ * Trap TODO code while executing
+ */
+#define TODO_trap(inst) \
+	do {\
+		*(inst)++ = ((31 << 26)  \
+						| (31 << 21) \
+						| (0 << 16) \
+						| (0 << 11) \
+						| (4 << 1)) \
+	} while(0)
 
 /*
  * Perform an arithmetic or logical operation.
@@ -391,10 +411,34 @@ typedef unsigned int *ppc_inst_ptr;
 /*
  * Jump to a particular address.
  */
-#define	ppc_jump(inst,target)	\
+#define	ppc_jump(inst, target)	\
 			do { \
-				/* TODO */ \
+				int __ld_offset = (ppc_inst_ptr)(target) - ((inst) + 1);\
+				if(__ld_offset >= -0x8000 && __ld_offset <= 0xFFFF)\
+				{\
+					*(inst)++ = ((18 << 26) | \
+									(((unsigned int)__ld_offset) << 2));\
+				}\
+				else\
+				{\
+					TODO_trap(inst);\
+				}\
 			} while (0)
+
+/*
+ * Jump to address pointed by basereg
+ */
+#define ppc_jump_reg(inst, basereg) \
+			do { \
+					/* mtctr , bcctr */ \
+					*(inst)++ = ((31 << 26) \
+								| (((unsigned int)(basereg)) << 21)	\
+								| (((unsigned int)(PPC_CTR)) << 11) \
+								| (467 << 1)) ;\
+					*(inst)++ = ((19 << 26) \
+								| ((PPC_CC_ALWAYS) << 16)	\
+								| (528 << 1)) ;\
+			} while(0);
 
 /*
  * Jump to a particular address based on a condition.
@@ -405,10 +449,17 @@ typedef unsigned int *ppc_inst_ptr;
 			} while (0)
 
 /*
+ * Back-patch a branch instruction
+ */
+#define ppc_patch(patch, inst) \
+			do {\
+				/* TODO */\
+			} while(0);
+
+/*
  * Load various sized values from a memory location defined by a base
  * register and an offset.
  */
-extern ppc_inst_ptr _md_ppc_get_ea(ppc_inst_ptr inst, int basereg, int offset);
 #define	ppc_membase_common(inst,reg,basereg,offset,opc)	\
 			do { \
 				int __ld_offset = (int)(offset); \
@@ -421,7 +472,9 @@ extern ppc_inst_ptr _md_ppc_get_ea(ppc_inst_ptr inst, int basereg, int offset);
 				} \
 				else \
 				{ \
-					(inst) = _md_ppc_get_ea((inst), (basereg), __ld_offset); \
+					ppc_mov_reg_imm(inst, PPC_WORK, (__ld_offset));\
+					ppc_alu_reg_dss(inst, PPC_ADD, \
+									PPC_WORK, PPC_WORK, (basereg));\
 					*(inst)++ = (((opc) << 26) | \
 								 (((unsigned int)(reg)) << 21) | \
 								 (((unsigned int)PPC_WORK) << 16)); \

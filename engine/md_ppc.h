@@ -438,33 +438,16 @@ typedef ppc_inst_ptr	md_inst_ptr;
 #define	md_jump_to_cvm(inst,pc,label)	\
 			do { \
 				int offset; \
+				ppc_mov_reg_imm(inst, MD_REG_PC, (int)pc); \
 				if(!(label)) \
 				{ \
-					/* Jump to the contents of the specified PC */ \
-					arm_load_membase((inst), MD_REG_PC, ARM_PC, 0); \
-					arm_load_membase((inst), ARM_PC, MD_REG_PC, 0); \
-					*((inst)++) = (unsigned int)(pc); \
+					/* Jump to the contents of the specified PC */  \
+					ppc_load_membase(inst, PPC_WORK, MD_REG_PC, 0); \
+					ppc_jump_reg(inst, PPC_WORK); \
 				} \
 				else \
 				{ \
-					/* Load "pc" back into the CVM interpreter's frame */ \
-					/* and then jump directly to instruction handler at */ \
-					/* "label".  This avoids the need for an indirect */ \
-					/* jump instruction */ \
-					arm_load_membase(unroll->out, MD_REG_PC, ARM_PC, 0); \
-					offset = (int)(((unsigned char *)(label)) - \
-				       			  (((unsigned char *)(inst)) + 8)); \
-					if(offset >= -0x04000000 && offset < 0x04000000) \
-					{ \
-						arm_jump_imm((inst), offset); \
-						*((inst)++) = (unsigned int)(pc); \
-					} \
-					else \
-					{ \
-						arm_load_membase(unroll->out, ARM_PC, ARM_PC, 0); \
-						*((inst)++) = (unsigned int)(pc); \
-						*((inst)++) = (unsigned int)(label); \
-					} \
+					ppc_jump(inst, label);\
 				} \
 			} while (0)
 
@@ -473,9 +456,9 @@ typedef ppc_inst_ptr	md_inst_ptr;
  */
 #define	md_switch(inst,reg,table)	\
 			do { \
-				arm_load_membase((inst), ARM_WORK, ARM_PC, 4); \
-				arm_load_memindex((inst), MD_REG_PC, ARM_WORK, (reg)); \
-				arm_load_membase((inst), ARM_PC, MD_REG_PC, 0); \
+				ppc_load_membase((inst), PPC_WORK, PPC_PC, 4); \
+				ppc_load_memindex((inst), MD_REG_PC, PPC_WORK, (reg)); \
+				ppc_load_membase((inst), PPC_PC, MD_REG_PC, 0); \
 				*((inst)++) = (unsigned int)(table); \
 			} while (0)
 
@@ -631,7 +614,7 @@ extern md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg);
  * Back-patch a branch instruction at "patch" to branch to "inst".
  */
 #define	md_patch(patch,inst)	\
-			arm_patch((patch), (inst))
+			ppc_patch((patch), (inst))
 
 /*
  * Check an array bounds value.  "reg1" points to the array,
@@ -640,8 +623,8 @@ extern md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg);
  */
 #define	md_bounds_check(inst,reg1,reg2)	\
 			do { \
-				arm_load_advance((inst), ARM_WORK, (reg1)); \
-				arm_test_reg_reg((inst), ARM_CMP, (reg2), ARM_WORK); \
+				ppc_load_advance((inst), PPC_WORK, (reg1)); \
+				ppc_test_reg_reg((inst), PPC_CMP, (reg2), PPC_WORK); \
 			} while (0)
 
 /*
@@ -650,73 +633,73 @@ extern md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg);
  * "disp" if they advance the base pointer in "md_bounds_check".
  */
 #define	md_load_memindex_word_32(inst,reg,basereg,indexreg,disp)	\
-			arm_load_memindex((inst), (reg), (basereg), (indexreg))
+			ppc_load_memindex((inst), (reg), (basereg), (indexreg))
 
 /*
  * Load a native word value from an indexed array.
  */
 #define	md_load_memindex_word_native(inst,reg,basereg,indexreg,disp)	\
-			arm_load_memindex((inst), (reg), (basereg), (indexreg))
+			ppc_load_memindex((inst), (reg), (basereg), (indexreg))
 
 /*
  * Load a byte value from an indexed array.
  */
 #define	md_load_memindex_byte(inst,reg,basereg,indexreg,disp)	\
-			arm_load_memindex_byte((inst), (reg), (basereg), (indexreg))
+			ppc_load_memindex_byte((inst), (reg), (basereg), (indexreg))
 
 /*
  * Load a signed byte value from an indexed array.
  */
 #define	md_load_memindex_sbyte(inst,reg,basereg,indexreg,disp)	\
-			arm_load_memindex_sbyte((inst), (reg), (basereg), (indexreg))
+			ppc_load_memindex_sbyte((inst), (reg), (basereg), (indexreg))
 
 /*
  * Load a short value from an indexed array.
  */
 #define	md_load_memindex_short(inst,reg,basereg,indexreg,disp)	\
-			arm_load_memindex_short((inst), (reg), (basereg), (indexreg))
+			ppc_load_memindex_short((inst), (reg), (basereg), (indexreg))
 
 /*
  * Load an unsigned short value from an indexed array.
  */
 #define	md_load_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
-			arm_load_memindex_ushort((inst), (reg), (basereg), (indexreg))
+			ppc_load_memindex_ushort((inst), (reg), (basereg), (indexreg))
 
 /*
  * Store a 32-bit word value into an indexed array.
  */
 #define	md_store_memindex_word_32(inst,reg,basereg,indexreg,disp)	\
-			arm_store_memindex((inst), (reg), (basereg), (indexreg))
+			ppc_store_memindex((inst), (reg), (basereg), (indexreg))
 
 /*
  * Store a native word value into an indexed array.
  */
 #define	md_store_memindex_word_native(inst,reg,basereg,indexreg,disp)	\
-			arm_store_memindex((inst), (reg), (basereg), (indexreg))
+			ppc_store_memindex((inst), (reg), (basereg), (indexreg))
 
 /*
  * Store a byte value into an indexed array.
  */
 #define	md_store_memindex_byte(inst,reg,basereg,indexreg,disp)	\
-			arm_store_memindex_byte((inst), (reg), (basereg), (indexreg))
+			ppc_store_memindex_byte((inst), (reg), (basereg), (indexreg))
 
 /*
  * Store a signed byte value into an indexed array.
  */
 #define	md_store_memindex_sbyte(inst,reg,basereg,indexreg,disp)	\
-			arm_store_memindex_sbyte((inst), (reg), (basereg), (indexreg))
+			ppc_store_memindex_sbyte((inst), (reg), (basereg), (indexreg))
 
 /*
  * Store a short value into an indexed array.
  */
 #define	md_store_memindex_short(inst,reg,basereg,indexreg,disp)	\
-			arm_store_memindex_short((inst), (reg), (basereg), (indexreg))
+			ppc_store_memindex_short((inst), (reg), (basereg), (indexreg))
 
 /*
  * Store an unsigned short value into an indexed array.
  */
 #define	md_store_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
-			arm_store_memindex_ushort((inst), (reg), (basereg), (indexreg))
+			ppc_store_memindex_ushort((inst), (reg), (basereg), (indexreg))
 
 #ifdef	__cplusplus
 };

@@ -1,3 +1,9 @@
+
+2004-12-16  Gopal V  <gopalv82@yahoo.com>
+
+	* pnet/engine/md_ppc.h, pnet/engine/ppc_codegen.h: First cut
+	of the PPC codegen.
+
 2004-11-29  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* cscc/csharp/cs_gather.c: fix handling of methods, properties, and

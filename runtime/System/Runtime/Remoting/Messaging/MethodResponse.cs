@@ -403,7 +403,6 @@ public class MethodResponse : IMethodReturnMessage, ISerializable,
 						{
 							return ReturnValue;
 						}
-						break;
 					case "__OutArgs":			return OutArgs;
 					case "__CallContext":		return LogicalCallContext;
 				}

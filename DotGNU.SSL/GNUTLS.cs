@@ -336,7 +336,6 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 								cred.Dispose();
 								throw new NotSupportedException();
 							}
-							break;
 						}
 
 						// Set the local X.509 credentials if necessary.

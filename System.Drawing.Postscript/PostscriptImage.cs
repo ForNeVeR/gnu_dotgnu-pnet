@@ -77,7 +77,7 @@ public class PostscriptImage : ToolkitImageBase
 
 	public override void ImageChanged()
 			{
-				Frame f;
+				Frame f = null;
 				if(image == null || (f = image.GetFrame(frame)) == null)
 				{
 					imageDataDict = null;

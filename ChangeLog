@@ -1,4 +1,11 @@
 
+2001-01-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/method7.cs,
+	csharp/class/method7.err, csharp/class/method7.jerr:
+	add a test case to check for an error when instance members
+	are accessed from a static method.
+
 2001-01-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/constructor2.err,

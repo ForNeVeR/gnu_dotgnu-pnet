@@ -17,6 +17,7 @@ TESTS = const1.cs \
 		method4.cs \
 		method5.cs \
 		method6.cs \
+		method7.cs \
 		property1.cs \
 		property2.cs \
 		property3.cs

@@ -19,6 +19,7 @@
  */
 
 #include "linker.h"
+#include "../image/image.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -72,6 +73,24 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 }
 
 /*
+ * Determine if a class reference is "System.Array".
+ */
+static int IsSystemArray(ILClass *classInfo)
+{
+	const char *temp;
+	temp = ILClass_Namespace(classInfo);
+	if(!temp || strcmp(temp, "System") != 0)
+	{
+		return 0;
+	}
+	if(strcmp(ILClass_Name(classInfo), "Array") != 0)
+	{
+		return 0;
+	}
+	return (ILClass_NestedParent(classInfo) == 0);
+}
+
+/*
  * Report that a particular class is unresolved.
  */
 static void ReportUnresolvedClass(ILLinker *linker, ILClass *classInfo)
@@ -102,6 +121,12 @@ static void ReportUnresolved(ILLinker *linker)
 			continue;
 		}
 
+		/* Skip the reference if it is synthetic */
+		if(ILClassGetSynType(classInfo) != 0)
+		{
+			continue;
+		}
+
 		/* Make sure that all nested parents are references */
 		parent = classInfo;
 		reported = 0;
@@ -122,6 +147,14 @@ static void ReportUnresolved(ILLinker *linker)
 		/* If the reference is in a module scope, then it is dangling */
 		if(ILProgramItemToModule(ILClassGetScope(classInfo)) != 0)
 		{
+			/* Special case: "System.Array" may get linked in due to the
+			   use of synthetic array types, but we don't really need it */
+			if(IsSystemArray(classInfo))
+			{
+				linker->image->tokenData[IL_META_TOKEN_TYPE_REF >> 24]
+					[(ILClass_Token(classInfo) & 0x00FFFFFF) - 1] = 0;
+				continue;
+			}
 			ReportUnresolvedClass(linker, classInfo);
 		}
 	}

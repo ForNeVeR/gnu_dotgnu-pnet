@@ -1,4 +1,9 @@
 
+2002-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilalink/link_create.c: don't report "unresolved type reference"
+	for synthetic types and synthetic uses of "System.Array".
+
 2002-05-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libgc/misc.c: fix a Win32-ism that is affecting builds on

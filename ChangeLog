@@ -19,6 +19,9 @@
 	* engine/md_arm.h, engine/md_x86.h, engine/unroll.c,
 	engine/unroll_arith.c: unroll some 64-bit integer operations.
 
+	* engine/lib_emit.c: fixes for 64-bit platforms; use the correct
+	token value for the call to "ILClassCreate".
+
 2003-07-11  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeCreate

@@ -388,7 +388,7 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 	IL_METADATA_WRLOCK(_thread);
 
 	image = ((ILProgramItem *)module)->image;
-	token = (ILToken)parent;
+	token = *((ILToken *)parent);
 	if (!(scope = (ILProgramItem *)nestedParent) &&
 	    !(scope = ILClassGlobalScope(image)))
 	{
@@ -422,7 +422,7 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 		return 0;
 	}
 
-	if ((retval = ILClassCreate(scope, token, typeName, nameSpace, baseClass)))
+	if ((retval = ILClassCreate(scope, 0, typeName, nameSpace, baseClass)))
 	{
 		ILClassSetAttrs(retval, (ILUInt32)-1, (ILUInt32)attr);
 	}
@@ -612,8 +612,8 @@ void _IL_MethodBuilder_ClrMethodSetImplAttrs(ILExecThread *_thread,
 {
 	if(item)
 	{
-		ILMethodSetImplAttrs((ILMethod *)item, ~((unsigned long)0),
-							 (unsigned long)(long)attributes);
+		ILMethodSetImplAttrs((ILMethod *)item, ~((ILUInt32)0),
+							 (ILUInt32)attributes);
 	}
 }
 

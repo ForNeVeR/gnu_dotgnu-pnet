@@ -22,6 +22,9 @@ active thread state.
 * engine/process.c, engine/thread.c: new initialization code for processes
 and threads.
 
+* engine/lookup.c: implement type, method, and field name lookup functions
+that use a Java-style syntax for naming signatures.
+
 2001-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify.c: mark the stack as empty on entry to a try region.

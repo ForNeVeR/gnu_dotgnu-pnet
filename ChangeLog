@@ -9,6 +9,10 @@ runtime/System/UnhandledExceptionEventHandler.cs: new "System" classes.
 * runtime/System/DefaultBinder.cs: stub out abstract methods that
 are inherited from "Binder".
 
+* runtime/System/RuntimeType.cs: make "privateData" internal so that
+it can be accessed from the reflection classes; implement methods and
+properties that are inherited from "MemberInfo".
+
 2001-10-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/RuntimeType.cs: Use "InternalGetFullName" for the "ToString"

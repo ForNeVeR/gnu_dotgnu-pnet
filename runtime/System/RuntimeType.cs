@@ -28,7 +28,7 @@ using System.Runtime.InteropServices;
 internal class RuntimeType : Type, ICloneable
 {
 	// Internal state.
-	private IntPtr privateData;
+	internal IntPtr privateData;
 
 	// Constructor.
 	internal RuntimeType() : base() { privateData = (IntPtr)0; }
@@ -81,7 +81,22 @@ internal class RuntimeType : Type, ICloneable
 						(BindingFlags bindingAttr, bool verifyAccess);
 
 	// Get the custom attributes for this type.
-	// TODO
+	public override Object[] GetCustomAttributes(bool inherit)
+			{
+				return RuntimeHelpers.GetCustomAttributes
+							(privateData, (IntPtr)0, inherit);
+			}
+	public override Object[] GetCustomAttributes(Type type, bool inherit)
+			{
+				return RuntimeHelpers.GetCustomAttributes
+							(privateData, type, inherit);
+			}
+
+	// Determine if custom attributes are defined for this type.
+	public override bool IsDefined(Type type, bool inherit)
+			{
+				return RuntimeHelpers.IsDefined(privateData, type, inherit);
+			}
 
 	// Get the element type for this type.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -357,6 +372,20 @@ internal class RuntimeType : Type, ICloneable
 					else
 					{
 						return null;
+					}
+				}
+			}
+	public override MemberTypes MemberType
+			{
+				get
+				{
+					if(IsNestedTypeImpl())
+					{
+						return MemberTypes.NestedType;
+					}
+					else
+					{
+						return MemberTypes.TypeInfo;
 					}
 				}
 			}

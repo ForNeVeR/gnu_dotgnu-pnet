@@ -21,7 +21,7 @@ csdoc_LDADD   = csharp/libILCSharp.a common/libILCCommon.a \
 
 AM_CFLAGS = -DCSCC_LIB_PREFIX=\"$(libdir)/cscc\" \
 		    -DCSCC_BIN_PREFIX=\"$(bindir)\" \
-			-I$(top_srcdir) -I$(top_builddir)
+			-I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 
 install-exec-local:
 	@$(NORMALL_INSTALL)

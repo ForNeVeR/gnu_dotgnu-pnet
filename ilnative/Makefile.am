@@ -14,3 +14,5 @@ ilcheck_LDADD = ../engine/libILEngine.a ../dumpasm/libILDumpAsm.a \
 
 ilinternal_SOURCES = ilinternal.c
 ilinternal_LDADD   = ../image/libILImage.a ../support/libILSupport.a
+
+AM_CFLAGS = -I$(top_srcdir)/include

@@ -10,3 +10,5 @@ csant_SOURCES  = csant.c \
 				 csant_prop.c \
 				 csant_task.c
 csant_LDADD    = ../support/libILSupport.a $(REGEXLIBS)
+
+AM_CFLAGS = -I$(top_srcdir)/include

@@ -28,7 +28,7 @@ libILCSharp_a_SOURCES  = $(TREECC_SRCOUT) \
 
 YFLAGS = -d
 
-AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir)
+AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 
 STAMP = stamp-treecc
 
@@ -37,6 +37,6 @@ BUILT_SOURCES = $(STAMP)
 libILCSharp_a_DEPENDENCIES = $(STAMP)
 
 $(STAMP): $(TREECC_INPUTS) ../../codegen/$(STAMP)
-	$(TREECC) cs_defs.tc && touch $@
+	$(TREECC) $(srcdir)/cs_defs.tc && touch $@
 
 CLEANFILES = cs_grammar.c cs_scanner.c cs_grammar.h $(TREECC_OUTPUT) $(STAMP)

@@ -41,4 +41,5 @@ libILTestMacros_a_SOURCES = test_macros.c
 
 AM_CFLAGS = -DCSCC_LIB_DIR=\"$(libdir)\" \
 		    -DCSCC_HOST_TRIPLET=\"$(host_triplet)\" \
-		    -DCSCC_HOST_ALIAS=\"$(host_alias)\"
+		    -DCSCC_HOST_ALIAS=\"$(host_alias)\" \
+		    -I$(top_srcdir)/include

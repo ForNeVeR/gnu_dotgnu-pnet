@@ -6,4 +6,4 @@ libILCCommon_a_SOURCES = cc_errors.c \
 						 cc_options.c \
 						 cc_preproc.c
 
-AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir)
+AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include

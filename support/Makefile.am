@@ -51,9 +51,10 @@ mkcategory_SOURCES = mkcategory.c
 
 mknumber_SOURCES = mknumber.c
 
-AM_CFLAGS = -I../libgc/include
+AM_CFLAGS = -I$(top_srcdir)/libgc/include -I$(top_srcdir)/include
 
-CLEANFILES = errno_map.c
+CLEANFILES = $(srcdir)/errno_map.c
 
-errno_map.c: gen_errno.sh
-	$(SHELL) gen_errno.sh ${top_srcdir}/include/il_errno.h $(COMPILE) >errno_map.c
+$(srcdir)/errno_map.c: $(srcdir)/gen_errno.sh
+	$(SHELL) $(srcdir)/gen_errno.sh ${top_srcdir}/include/il_errno.h \
+		$(COMPILE) >$(srcdir)/errno_map.c

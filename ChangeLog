@@ -15,6 +15,15 @@
 	* doc/gtk-sharp.HOWTO: add some documentation for how to use
 	Gtk# with Portable.NET.
 
+	* clrwrap/Makefile.am, codegen/Makefile.am, csant/Makefile.am,
+	cscc/Makefile.am, cscc/common/Makefile.am, cscc/csharp/Makefile.am,
+	csdoc/Makefile.am, dumpasm/Makefile.am, engine/Makefile.am,
+	ilalink/Makefile.am, ilasm/Makefile.am, ildasm/Makefile.am,
+	ildb/Makefile.am, ildiff/Makefile.am, ilfind/Makefile.am,
+	ilnative/Makefile.am, ilsize/Makefile.am, image/Makefile.am,
+	resgen/Makefile.am, samples/Makefile.am, support/Makefile.am,
+	tests/Makefile.am: out of tree builds (Stephen Compall).
+
 2002-07-02  Gopal.V  <gopalv82@symonds.net>
 
 	* doc/Doxyfile: Add Doxygen configuration file (contributed

@@ -62,7 +62,7 @@ libILCodeGen_a_SOURCES = $(TREECC_SRCOUT) \
 						 cg_utils.c \
 						 jv_output.c
 
-AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir)
+AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 
 STAMP = stamp-treecc
 
@@ -71,6 +71,6 @@ BUILT_SOURCES = $(STAMP)
 libILCodeGen_a_DEPENDENCIES = $(STAMP)
 
 $(STAMP): $(TREECC_INPUTS)
-	$(TREECC) cg_all.tc && touch $@
+	$(TREECC) $(srcdir)/cg_all.tc && touch $@
 
 CLEANFILES = $(TREECC_OUTPUT) $(STAMP)

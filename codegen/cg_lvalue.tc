@@ -509,7 +509,7 @@ ILNode_Prepare(ILNode_ArrayAccess)
 	   (machineType == ILMachineType_Decimal ||
 	    machineType == ILMachineType_ManagedValue))
 	{
-		ILGenSimple(info, IL_OP_LDELEMA);
+		ILGenTypeToken(info, IL_OP_LDELEMA, node->elemType);
 		ILGenAdjust(info, -1);
 	}
 
@@ -798,7 +798,7 @@ ILNode_GetAndPrepare(ILNode_ArrayAccess)
 			if(isManagedValue)
 			{
 				/* When we do the store, we need an address on the stack */
-				ILGenSimple(info, IL_OP_LDELEMA);
+				ILGenTypeToken(info, IL_OP_LDELEMA, node->elemType);
 				ILGenAdjust(info, -1);
 			}
 			ILGenLoadLocal(info, tempValueVar);
@@ -815,7 +815,7 @@ ILNode_GetAndPrepare(ILNode_ArrayAccess)
 			/* Managed value stores use an address, not an object/index pair */
 			if(isManagedValue)
 			{
-				ILGenSimple(info, IL_OP_LDELEMA);
+				ILGenTypeToken(info, IL_OP_LDELEMA, node->elemType);
 				ILGenAdjust(info, -1);
 			}
 
@@ -1426,7 +1426,7 @@ ILNode_GenRef(ILNode_ArrayAccess)
 		/* We can use the "ldelema" instruction */
 		ILNode_GenValue(node->array, info);
 		ILNode_GenValue(node->indices, info);
-		ILGenSimple(info, IL_OP_LDELEMA);
+		ILGenTypeToken(info, IL_OP_LDELEMA, node->elemType);
 		ILGenAdjust(info, -1);
 	}
 	else

@@ -203,7 +203,7 @@ static void PopulateArrayLevel(ILGenInfo *info, ILNode *expr,
 			if(elemMachineType == ILMachineType_ManagedValue ||
 			   elemMachineType == ILMachineType_Decimal)
 			{
-				ILGenSimple(info, IL_OP_LDELEMA);
+				ILGenTypeToken(info, IL_OP_LDELEMA, elemType);
 				ILGenAdjust(info, -1);
 			}
 			ILGenCast(info, ILNode_GenValue(expr, info), elemMachineType);

@@ -1,4 +1,10 @@
 
+2002-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_ainit.tc, codegen/cg_lvalue.tc, codegen/cg_utils.c:
+	fix code generation for "ldelema", which should take a type
+	as an argument.
+
 2002-07-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/common/cc_options.c: remove "gtk-imaging-sharp" from the

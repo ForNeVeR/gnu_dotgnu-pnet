@@ -363,7 +363,7 @@ void ILGenLoadArray(ILGenInfo *info, ILMachineType elemMachineType,
 		case ILMachineType_Decimal:
 		case ILMachineType_ManagedValue:
 		{
-			ILGenSimple(info, IL_OP_LDELEMA);
+			ILGenTypeToken(info, IL_OP_LDELEMA, elemType);
 			ILGenTypeToken(info, IL_OP_LDOBJ, elemType);
 		}
 		break;
@@ -383,7 +383,7 @@ int ILGenStoreArrayPrepare(ILGenInfo *info, ILMachineType elemMachineType,
 	if(elemMachineType == ILMachineType_Decimal ||
 	   elemMachineType == ILMachineType_ManagedValue)
 	{
-		ILGenSimple(info, IL_OP_LDELEMA);
+		ILGenTypeToken(info, IL_OP_LDELEMA, elemType);
 		return 1;
 	}
 	else

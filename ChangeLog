@@ -15,6 +15,9 @@
 	support/serial.c: add the support routines for serial port I/O
 	and hook up the necessary internalcalls.
 
+	* doc/pnetimg.texi: remove pnetimg.texi because it is woefully
+	incomplete and out of date compared to the comments in il_program.h.
+
 2003-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_main.c: enable the "-fgenerics" option by default because

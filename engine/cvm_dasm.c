@@ -692,7 +692,8 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 			{
 				fprintf(stream, "%s.%s \"%s\"", str, methodEntry->methodName,
 						(methodEntry->signature ?
-							methodEntry->signature : "()V"));
+							methodEntry->signature :
+							methodEntry[-1].signature));
 			}
 			else
 			{

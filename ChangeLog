@@ -1,4 +1,9 @@
 
+2001-11-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/cvm_dasm.c: dump the correct signature for constructors when
+"call_native" is used.
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

@@ -70,7 +70,7 @@ public struct DateTime : IComparable, IFormattable
 			{
 				--year;
 				return (long)(year * 365 + year / 4 -
-							  year / 100 + year / 400);
+							  year / 100 + year / 400) * ticksPerDay;
 			}
 
 	// Convert a YMD date into a number of ticks.

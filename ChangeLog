@@ -1,4 +1,8 @@
 
+2002-10-27  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* runtime/System/DateTime.cs: fixed a bug in YearToTicks
+
 2002-10-26  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* resources/en_US/runtime/IO.txt, runtime/System/IO/File.cs: implemented

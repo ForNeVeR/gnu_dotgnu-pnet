@@ -1,12 +1,12 @@
 
-.PHONY: wdsl-pnet.exe
+.PHONY: wsdl-pnet.exe
 
-all-local: wdsl-pnet.exe
+all-local: wsdl-pnet.exe
 
-wdsl-pnet.exe:
+wsdl-pnet.exe:
 	"$(CSANT)" $(CSANT_FLAGS) -Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
-			-b "$(srcdir)" -B . -f wdsl.build all
+			-b "$(srcdir)" -B . -f wsdl.build all
 
 CLEANFILES = wdsl-pnet.exe
 
@@ -18,15 +18,15 @@ install-exec-local:
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
 			-f "$(srcdir)/wdsl.build" -i all
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	rm -f $(DESTDIR)$(bindir)/wdsl-pnet.exe
-	rm -f $(DESTDIR)$(bindir)/wdsl-pnet
-	$(LN_S) clrwrap $(DESTDIR)$(bindir)/wdsl-pnet
+	rm -f $(DESTDIR)$(bindir)/wsdl-pnet.exe
+	rm -f $(DESTDIR)$(bindir)/wsdl-pnet
+	$(LN_S) clrwrap $(DESTDIR)$(bindir)/wsdl-pnet
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
 	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
 			-Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
-			-f "$(srcdir)/wdsl.build" -u all
-	rm -f $(DESTDIR)$(bindir)/wdsl-pnet.exe
-	rm -f $(DESTDIR)$(bindir)/wdsl-pnet
+			-f "$(srcdir)/wsdl.build" -u all
+	rm -f $(DESTDIR)$(bindir)/wsdl-pnet.exe
+	rm -f $(DESTDIR)$(bindir)/wsdl-pnet

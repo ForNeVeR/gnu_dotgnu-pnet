@@ -3,7 +3,7 @@
 <project name="wdsl" default="all">
 	<target name="all">
 		<compile target="executable"
-				 output="wdsl-pnet.exe"
+				 output="wsdl-pnet.exe"
 				 debug="${debug.flag}"
 				 unsafe="false"
 				 install="true"
@@ -17,7 +17,7 @@
 				<file name="${pnet.libdir}/runtime/mscorlib.dll"/>
 				<file name="${pnet.libdir}/System/System.dll"/>
 				<file name="${pnet.libdir}/System.Xml/System.Xml.dll"/>
-				<file name="System.EnterpriseServices.dll"/>
+				<file name="${pnet.libdir}/System.EnterpriseServices/System.EnterpriseServices.dll"/>
 				<file name="../../class/Mono.Security/Mono.Security.dll"/>
 				<file name="../../class/Mono.Data.Tds/Mono.Data.Tds.dll"/>
 				<file name="../../class/System.Data/System.Data.dll"/>

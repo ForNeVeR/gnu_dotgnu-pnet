@@ -1,3 +1,15 @@
+2004-06-13  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: change tools/wdsl/Makefile to tools/wsdl/Makefile
+
+	* tools/Makefile.am: change wdsl in SUBDIRS to wsdl
+
+	* tools/wdsl/.cvsignore, tools/wdsl/Makefile.am, tools/wdsl/wdsl.build,
+	tools/wdsl/wdsl-run.sh: removed
+
+	* tools/wsdl/.cvsignore, tools/wsdl/Makefile.am, tools/wsdl/wsdl.build,
+	tools/wsdl/wsdl-run.sh: added
+
 2004-06-12  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: add creation of tools/wdsl/Makefile

@@ -279,9 +279,12 @@ case IL_OP_LEAVE_S:
 	dest = GET_SHORT_DEST();
 processLeave:
 	/* The stack must be empty when we leave the block */
-	if(stackSize != 0)
+	while(stackSize)
 	{
-		VERIFY_TYPE_ERROR();
+		/* Pop the current top of stack */
+		ILCoderPop(coder, stack[stackSize -1].engineType,
+			   stack[stackSize -1].typeInfo);
+		stackSize--;
 	}
 
 	/* Call any applicable "finally" handlers, but not "fault" handlers */

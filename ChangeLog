@@ -1,7 +1,14 @@
 
+2004-11-04  Simon Guindon  <simon@nureality.ca>
+
+	* System.Windows.Forms/StatusBar.cs: Fixes text rendering in multiple
+	StatusBarPanel's.  Rectangle calculations were being miscalculated
+	and being passed to DrawString. (patch #3578, applied by ptah).
+
 2004-12-16  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
-	* System.Xml/XmlUrlResolver.cs: Fixed bug #11326.
+	* System.Xml/XmlUrlResolver.cs: Relative filenames on the filesystem
+	wasn't resolved (bug #11326, reported by Marcus Urban).
 
 2004-12-11  Gopal V  <gopalv82@yahoo.com>
 

@@ -118,8 +118,8 @@ namespace System.Windows.Forms
 								case HorizontalAlignment.Right:
 									align = StringAlignment.Far;
 									break;
-							}
-							DrawSimpleText(e, left, 4, panels[i].Width, Height,  panels[i].Text, align);
+							}							
+							DrawSimpleText(e, left, 4, left + panels[i].Width, Height,  panels[i].Text, align);
 						}
 						else
 						{
@@ -157,9 +157,9 @@ namespace System.Windows.Forms
 			if(text != null && text != String.Empty)
 			{
 				if(Enabled)
-				{
-					Brush brush = new SolidBrush(ForeColor);
-					e.Graphics.DrawString(text, font, brush, layout, format);
+				{	
+					Brush brush = new SolidBrush(ForeColor);					
+					e.Graphics.DrawString(text, font, brush, layout, format);					
 					brush.Dispose();
 				}
 				else

@@ -31,7 +31,6 @@ public class Label : Control
 	private bool autoSize;
 	private bool useMnemonic;
 	private bool renderTransparent;
-	private BorderStyle borderStyle;
 	private FlatStyle flatStyle;
 	private ContentAlignment alignment;
 	private Image image;
@@ -70,14 +69,14 @@ public class Label : Control
 			{
 				get
 				{
-					return borderStyle;
+					return BorderStyleInternal;
 				}
 				set
 				{
-					if(borderStyle != value)
+					if(BorderStyleInternal != value)
 					{
-						borderStyle = value;
-						Invalidate();
+						BorderStyleInternal = value;
+						Redraw();
 					}
 				}
 			}
@@ -179,6 +178,7 @@ public class Label : Control
 				get
 				{
 					int height = FontHeight;
+
 					if(BorderStyle == BorderStyle.None)
 					{
 						return height + 3;
@@ -208,10 +208,10 @@ public class Label : Control
 					}
 
 					// Get a graphics object and measure the text.
-					Graphics graphics = CreateGraphics();
-					SizeF size = graphics.MeasureString
-						(text, Font, new SizeF(0.0f, 0.0f), GetStringFormat());
-					graphics.Dispose();
+					SizeF size;
+					using (Graphics graphics = CreateGraphics())
+						size = graphics.MeasureString
+							(text, Font, new SizeF(0.0f, 0.0f), GetStringFormat());
 
 					// Return the ceiling of the width.
 				#if CONFIG_EXTENDED_NUMERICS
@@ -221,7 +221,7 @@ public class Label : Control
 				#endif
 					if(BorderStyle != BorderStyle.None)
 					{
-						preferredWidth += 2;
+						preferredWidth += 4;
 					}
 					return preferredWidth;
 				}
@@ -237,7 +237,7 @@ public class Label : Control
 					if(renderTransparent != value)
 					{
 						renderTransparent = value;
-						Invalidate();
+						Redraw();
 					}
 				}
 			}
@@ -267,7 +267,7 @@ public class Label : Control
 					if(useMnemonic != value)
 					{
 						useMnemonic = value;
-						Invalidate();
+						Redraw();
 					}
 				}
 			}
@@ -404,8 +404,7 @@ public class Label : Control
 	// Raise the "AutoSizeChanged" event.
 	protected virtual void OnAutoSizeChanged(EventArgs e)
 			{
-				// Invalidate this control to repaint it.
-				Invalidate();
+				Redraw();
 
 				// Invoke the event handler.
 				EventHandler handler;
@@ -428,73 +427,48 @@ public class Label : Control
 	[TODO]
 	protected override void OnPaint(PaintEventArgs e)
 			{
-				Graphics graphics = e.Graphics;
-				Rectangle rect = ClientRectangle;
-				rect = new Rectangle(rect.Left, rect.Top, rect.Width-1, rect.Height-1);
-				int textOffset = 1;
+				Draw(e.Graphics);
+				base.OnPaint(e);
+			}
 
-				// Draw the border on the label.
-				switch(BorderStyle)
-				{
-					case BorderStyle.FixedSingle:
-					{
-						ControlPaint.DrawBorder
-							(graphics, rect, ForeColor,
-							 ButtonBorderStyle.Solid);
-						rect.X += 1;
-						rect.Width -= 2;
-						rect.Y += 1;
-						rect.Height -= 2;
-					}
-					break;
-
-					case BorderStyle.Fixed3D:
-					{
-						ControlPaint.DrawBorder3D
-							(graphics, rect, Border3DStyle.Sunken);
-						rect.X += 2;
-						rect.Width -= 4;
-						rect.Y += 2;
-						rect.Height -= 4;
-						textOffset++;
-					}
-					break;
-				}
-
+	private void Draw(Graphics g)
+			{
 				// Fill the background if we aren't transparent.
 				if(!RenderTransparent)
 				{
 					using( Brush brush = CreateBackgroundBrush())
 					{
-						graphics.FillRectangle(brush, rect);
+						g.FillRectangle(brush, ClientRectangle);
 					}
 				}
 
 				// Draw the text within the label.
-				String text = Text;
-				Font font = Font;
-				RectangleF layout = (RectangleF)rect;
+				RectangleF layout = (RectangleF)ClientRectangle;
 				StringFormat format = GetStringFormat();
 				if(text != null && text != String.Empty)
 				{
+					layout.X += 1;
 					if(Enabled)
 					{
 						Brush brush = new SolidBrush(ForeColor);
-						layout.Y -= textOffset;
-						graphics.DrawString(text, font, brush, layout, format);
+						g.DrawString(Text, Font, brush, layout, format);
 						brush.Dispose();
 					}
 					else
 					{
 						ControlPaint.DrawStringDisabled
-							(graphics, text, font, BackColor, layout, format);
+							(g, Text, Font, BackColor, layout, format);
 					}
 				}
 
 				// TODO: image labels
-				base.OnPaint(e);
 			}
 
+	private void Redraw()
+			{
+				using (Graphics g = CreateGraphics())
+					Draw(g);
+			}
 	// Override the "ParentChanged" event.
 	protected override void OnParentChanged(EventArgs e)
 			{
@@ -504,8 +478,7 @@ public class Label : Control
 	// Raise the "TextAlignChanged" event.
 	protected virtual void OnTextAlignChanged(EventArgs e)
 			{
-				// Invalidate this control to repaint it.
-				Invalidate();
+				Redraw();
 
 				// Invoke the event handler.
 				EventHandler handler;
@@ -668,8 +641,7 @@ public class Label : Control
 					Size = new Size(PreferredWidth, PreferredHeight);
 				}
 
-				// Force a repaint on the label.
-				Invalidate();
+				Redraw();
 			}
 
 }; // class Label

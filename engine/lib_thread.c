@@ -1,3 +1,4 @@
+
 /*
  * lib_thread.c - Internalcall methods for "System.Threading.*".
  *
@@ -28,7 +29,7 @@ extern	"C" {
 #endif
 
 /*
- *	Comments on terminology:
+ * Comments on terminology:
  *
  * Support Thread:	Refers to an ILThread instance.
  * Engine Thread:		Refers to an ILExecThread instance.
@@ -36,7 +37,7 @@ extern	"C" {
  */
 
 /*
- *	Timeout value the managed WaitHandle uses.
+ * Timeout value the managed WaitHandle uses.
  */
 #define WIN32_WAIT_TIMEOUT (258L)
 
@@ -64,7 +65,7 @@ void _IL_Monitor_Enter(ILExecThread *thread, ILObject *obj)
 }
 
 /*
- *	Spins until the object is unmarked and the current thread can mark it.
+ * Spins until the object is unmarked and the current thread can mark it.
  */
 static void _IL_ObjectLockword_WaitAndMark(ILExecThread *thread, volatile ILObject *obj)
 {
@@ -83,7 +84,7 @@ static void _IL_ObjectLockword_WaitAndMark(ILExecThread *thread, volatile ILObje
 }
 
 /*
- *	Unmarks an object's lockword.
+ * Unmarks an object's lockword.
  */
 static void _IL_ObjectLockword_Unmark(ILExecThread *thread, volatile ILObject *obj)
 {
@@ -95,20 +96,38 @@ static void _IL_ObjectLockword_Unmark(ILExecThread *thread, volatile ILObject *o
 }
 
 /*
- *	Checks if the monitor is longer being used and returns it to the free list and
- * zeros 
+ * Checks if the monitor is longer being used and returns it to the free list and
+ * zeros the object's lockword.
+ *
+ * This method is only safe to call if you have exclusive acess to the object's
+ * lockword.
  */
 static int _IL_Monitor_CheckAndReturnMonitorToFreeList(ILExecThread *thread, ILExecMonitor *monitor, volatile ILObject *obj)
 {	
-	if (monitor->waiters == 0 && ILWaitMonitorCanClose(monitor->supportMonitor))
+	if(monitor->waiters == 0 && ILWaitMonitorCanClose(monitor->supportMonitor))
 	{
+		ILLockWord current;
+
 		/* Remove the monitor from the object if the object hasn't been assigned
 		      a new monitor */
-		CompareAndExchangeObjectLockWord(thread, obj, 0, IL_LW_MARK(monitor));
-		
-		/* Return the monitor to the free list */
-		monitor->next = thread->freeMonitor;
-		thread->freeMonitor = monitor;
+		current = CompareAndExchangeObjectLockWord(thread, obj, 0, IL_LW_MARK(monitor));
+
+		if(current == IL_LW_MARK(monitor))
+		{
+			/* The object's monitor hasn't changed (or has changed and
+			   has become 'monitor' again) so no other thread claims
+			   this monitor as free */
+
+			/* Return the monitor to this thread's free list */
+
+			monitor->next = thread->freeMonitor;
+			thread->freeMonitor = monitor;
+		}
+		else
+		{
+			/* The object's monitor has changed which means 'monitor'
+			   has already been claimed as as free by another thread */
+		}
 
 		return 1;
 	}
@@ -177,27 +196,56 @@ retry:
 			(
 				thread,
 				obj,
-				monitor,
+				IL_LW_MARK(monitor),
 				lockword
 			) == lockword)
 		{
 			/* Succesfully installed the new monitor */
+
+			/* Let the support monitor know we've entered */
+			result = ILWaitMonitorEnter(monitor->supportMonitor);
+
+			if (result != 0)
+			{
+				/* Dissociate the monitor from the object */
+				/* No need to do extensive checks (i.e. call
+				   CheckAndReturnMonitorToFreeList) since it's
+				   impossible for other threads to have managed
+				   to call Enter on this monitor */
+
+				SetObjectLockWord(thread, obj, 0);
 			
+				/* If the monitor is new, add it to the free list */
+				if (monitor != thread->freeMonitor)
+				{
+					monitor->next = thread->freeMonitor;
+					thread->freeMonitor = monitor;
+				}				
+
+				HandleWaitResult(thread, result);
+
+				return 0;
+			}
+
 			/* Remove the monitor from the free list */
 
 			thread->freeMonitor = next;
 
-			/* Compete for the monitor */
+			/* Finally allow other threads to enter the monitor */
+			_IL_ObjectLockword_Unmark(thread, obj);
 
-			goto retry;
+			return 1;
 		}
 		else
 		{
-			/* A thread managed to install a monitor first.
-					Add the monitor to the free list and retry. */
+			/* Another thread managed to install a monitor first */
 
-			monitor->next = thread->freeMonitor;
-			thread->freeMonitor = monitor;
+			/* If the monitor is new, add it to the free list */
+			if (monitor != thread->freeMonitor)
+			{
+				monitor->next = thread->freeMonitor;
+				thread->freeMonitor = monitor;
+			}
 
 			goto retry;
 		}
@@ -208,6 +256,7 @@ retry:
 	if (IL_LW_MARKED(lockword))
 	{
 		/* Spin */
+
 		goto retry;
 	}
 
@@ -217,7 +266,7 @@ retry:
 	_IL_Interlocked_Increment_Ri(thread, (ILInt32 *)&monitor->waiters);
 
 	/* Now double check and see if another thread is trying to exit
-	       now that monitor->waiters has been incremented monitor */
+	       now that monitor->waiters has been incremented */
 	lockword = GetObjectLockWord(thread, obj);
 	
 	if (IL_LW_MARKED(lockword)
@@ -259,10 +308,10 @@ retry:
 
 		/* Unmark the object's lockword */
 		_IL_ObjectLockword_Unmark(thread, obj);
-	}
 
-	/* Handle ThreadAbort etc */	
-	HandleWaitResult(thread, result);
+		/* Handle ThreadAbort etc */	
+		HandleWaitResult(thread, result);
+	}
 
 	return result == 0;
 }
@@ -392,7 +441,9 @@ retry:
 	monitor = IL_LW_UNMARK(lockword);
 
 	_IL_Interlocked_Increment_Ri(thread, (ILInt32 *)&monitor->waiters);
-	
+
+	/* Now double check and see if another thread is trying to exit
+	       now that monitor->waiters has been incremented */	
 	lockword = GetObjectLockWord(thread, obj);
 
 	if (IL_LW_MARKED(lockword)

@@ -1,4 +1,9 @@
+2003-07-08  Thong Nguyen  <tum@veridicus.com>
 
+	* engine/lib_thread.c: Monitor speed improvements.  Prevent
+	multiple threads from claiming the same monitor into their
+	free lists.
+	
 2003-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/Makefile.am, image/image.h, image/pecoff_loader.c,

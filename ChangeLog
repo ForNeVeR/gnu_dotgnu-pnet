@@ -73,6 +73,21 @@
 	* System/Security/Cryptography/X509Certificates/X509CertificateCollection.cs:
 	implement the missing "X509CertificateCollection" class.
 
+	* System/IO/ErrorEventArgs.cs,
+	System/IO/ErrorEventHandler.cs,
+	System/IO/FileSystemEventArgs.cs,
+	System/IO/FileSystemEventHandler.cs,
+	System/IO/FileSystemWatcher.cs,
+	System/IO/IODescriptionAttribute.cs,
+	System/IO/InternalBufferOverflowException.cs,
+	System/IO/NotifyFilters.cs,
+	System/IO/RenamedEventArgs.cs,
+	System/IO/RenamedEventHandler.cs,
+	System/IO/WaitForChangedResult.cs,
+	System/IO/WatcherChangeTypes.cs,
+	resources/en_US/System/Exception.txt: implement missing classes from
+	the "System.IO" namespace in the "System" assembly.
+
 2003-05-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Platform/RegexpMethods.cs, System/Private/Regex.cs

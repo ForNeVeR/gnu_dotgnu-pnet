@@ -31,6 +31,8 @@
 	into a separate ILClassName record, so that we can eventually
 	load the names before loading the classes.
 
+	* cscc/common/cc_options.c: bug in the "corlib.dll" detection logic.
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial

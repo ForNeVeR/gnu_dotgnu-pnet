@@ -582,6 +582,7 @@ void CCParseCommandLine(int argc, char *argv[], int mode, char *versname)
 	int compat_mode = ((mode & CMDLINE_PARSE_COMPAT) != 0);
 	char *optname;
 	char *value;
+	int outlen;
 	mode &= ~(CMDLINE_PARSE_PLUGIN_NOSTDLIB | CMDLINE_PARSE_COMPAT);
 
 	/* Get the translated out of memory message */
@@ -861,8 +862,11 @@ done_compat:
 	/* Force "-fstdlib-name=corlib" if compiling "corlib.dll" or if
 	   "-lcorlib" is supplied on the command-line.  Needed for
 	   interoperability with Mono build scripts */
-	if(output_filename != 0 && strlen(output_filename) >= 10 &&
-	   !ILStrICmp(output_filename + strlen(output_filename) - 10, "corlib.dll"))
+	outlen = (output_filename ? strlen(output_filename) : 0);
+	if(output_filename != 0 && outlen >= 10 &&
+	   !ILStrICmp(output_filename + outlen - 10, "corlib.dll") &&
+	   (outlen == 10 || output_filename[outlen - 11] == '/' ||
+	    output_filename[outlen - 11] == '\\'))
 	{
 		AddString(&extension_flags, &num_extension_flags,
 				  "stdlib-name=corlib");

@@ -19,6 +19,13 @@
 	"GetFontExtents" into the "Xsharp.Font" class so that we can
 	subclass it for different font rendering systems.
 
+	* System.Drawing/FontFamily.cs, System.Drawing.Xsharp/DrawingFont.cs,
+	Xsharp/Font.cs: the default font is named "Microsoft Sans Serif",
+	not "Arial"; remove the dpi adjustments on "SizeInPoints" because
+	they weren't supposed to be there; normalize font sizes to the
+	nearest supported X size to prevent horrid looking stretched
+	bitmap fonts.
+
 2003-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/XsharpSupport.c: implement a special case for Latin1

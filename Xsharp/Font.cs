@@ -50,6 +50,11 @@ public class Font
 	/// <summary>
 	/// <para>The family name for the default sans-serif font.</para>
 	/// </summary>
+	public static readonly String DefaultSansSerif = "defaultsans";
+
+	/// <summary>
+	/// <para>The family name for the usual X sans-serif font.</para>
+	/// </summary>
 	public static readonly String SansSerif = "helvetica";
 
 	/// <summary>
@@ -62,24 +67,8 @@ public class Font
 	/// </summary>
 	public static readonly String Fixed = "courier";
 
-	/// <summary>
-	/// <para>Constructs a new instance of <see cref="T:Xsharp.Font"/>.
-	/// </para>
-	/// </summary>
-	///
-	/// <param name="family">
-	/// <para>The name of the font family, or <see langword="null"/> to
-	/// use the default sans-serif font.</para>
-	/// </param>
-	///
-	/// <param name="pointSize">
-	/// <para>The point size (120 is typically "normal height").</para>
-	/// </param>
-	///
-	/// <param name="style">
-	/// <para>Additional styles to apply to the font.</para>
-	/// </param>
-	public Font(String family, int pointSize, FontStyle style)
+	// Constructors.
+	private Font(String family, int pointSize, FontStyle style)
 			{
 				if(family != null)
 					this.family = family;
@@ -93,42 +82,6 @@ public class Font
 				this.xname = null;
 				this.infoList = null;
 			}
-
-	/// <summary>
-	/// <para>Constructs a new instance of <see cref="T:Xsharp.Font"/>
-	/// with a default point size and style.</para>
-	/// </summary>
-	///
-	/// <param name="family">
-	/// <para>The name of the font family, or <see langword="null"/> to
-	/// use the default sans-serif font.</para>
-	/// </param>
-	public Font(String family)
-			: this(family, 120, FontStyle.Normal)
-			{
-				// Nothing to do here.
-			}
-
-	/// <summary>
-	/// <para>Constructs a new instance of <see cref="T:Xsharp.Font"/>
-	/// with a default style.</para>
-	/// </summary>
-	///
-	/// <param name="family">
-	/// <para>The name of the font family, or <see langword="null"/> to
-	/// use the default sans-serif font.</para>
-	/// </param>
-	///
-	/// <param name="pointSize">
-	/// <para>The point size (120 is typically "normal height").</para>
-	/// </param>
-	public Font(String family, int pointSize)
-			: this(family, pointSize, FontStyle.Normal)
-			{
-				// Nothing to do here.
-			}
-
-	// Internal constructor that is called from "CreateFromXLFD".
 	private Font(String name, bool unused)
 			{
 				this.family = null;
@@ -250,6 +203,88 @@ public class Font
 			}
 
 	/// <summary>
+	/// <para>Constructs a new instance of <see cref="T:Xsharp.Font"/>.
+	/// </para>
+	/// </summary>
+	///
+	/// <param name="family">
+	/// <para>The name of the font family, or <see langword="null"/> to
+	/// use the default sans-serif font.</para>
+	/// </param>
+	///
+	/// <param name="pointSize">
+	/// <para>The point size (120 is typically "normal height").</para>
+	/// </param>
+	///
+	/// <param name="style">
+	/// <para>Additional styles to apply to the font.</para>
+	/// </param>
+	///
+	/// <para>The font object that corresponds to the given parameters.</para>
+	/// </returns>
+	public static Font CreateFont
+				(String family, int pointSize, FontStyle style)
+			{
+				if(family == DefaultSansSerif)
+				{
+					// TODO: we will need to map this differently in future.
+					family = SansSerif;
+				}
+				return new Font(family, pointSize, style);
+			}
+
+	/// <summary>
+	/// <para>Constructs a new instance of <see cref="T:Xsharp.Font"/>
+	/// with a default point size and style.</para>
+	/// </summary>
+	///
+	/// <param name="family">
+	/// <para>The name of the font family, or <see langword="null"/> to
+	/// use the default sans-serif font.</para>
+	/// </param>
+	public static Font CreateFont(String family)
+			{
+				return CreateFont(family, 120, FontStyle.Normal);
+			}
+
+	/// <summary>
+	/// <para>Constructs a new instance of <see cref="T:Xsharp.Font"/>
+	/// with a default style.</para>
+	/// </summary>
+	///
+	/// <param name="family">
+	/// <para>The name of the font family, or <see langword="null"/> to
+	/// use the default sans-serif font.</para>
+	/// </param>
+	///
+	/// <param name="pointSize">
+	/// <para>The point size (120 is typically "normal height").</para>
+	/// </param>
+	public static Font CreateFont(String family, int pointSize)
+			{
+				return CreateFont(family, pointSize, FontStyle.Normal);
+			}
+
+	/// <summary>
+	/// <para>Constructs a new instance of <see cref="T:Xsharp.Font"/>
+	/// with a default style.</para>
+	/// </summary>
+	///
+	/// <param name="family">
+	/// <para>The name of the font family, or <see langword="null"/> to
+	/// use the default sans-serif font.</para>
+	/// </param>
+	///
+	/// <param name="pointSize">
+	/// <para>The point size (120 is typically "normal height").</para>
+	/// </param>
+	public Font(String family, int pointSize)
+			: this(family, pointSize, FontStyle.Normal)
+			{
+				// Nothing to do here.
+			}
+
+	/// <summary>
 	/// <para>Construct a font from an XLFD name.</para>
 	/// </summary>
 	///
@@ -265,7 +300,7 @@ public class Font
 			{
 				if(name == null)
 				{
-					return new Font(null);
+					return CreateFont(null);
 				}
 				else
 				{
@@ -485,6 +520,40 @@ public class Font
 				return extents;
 			}
 
+	// Normalize a point size to make it match a nearby X font size so
+	// that we don't get unsightly stretching.
+	private static int NormalizePointSize(int pointSize)
+			{
+				if(pointSize < 90)
+				{
+					return 80;
+				}
+				else if(pointSize < 110)
+				{
+					return 100;
+				}
+				else if(pointSize < 130)
+				{
+					return 120;
+				}
+				else if(pointSize < 160)
+				{
+					return 140;
+				}
+				else if(pointSize < 210)
+				{
+					return 180;
+				}
+				else if(pointSize <= 240)
+				{
+					return 240;
+				}
+				else
+				{
+					return pointSize;
+				}
+			}
+
 	// Get the XFontSet structure for this font on a particular display.
 	internal IntPtr GetFontSet(Display dpy)
 			{
@@ -522,7 +591,8 @@ public class Font
 					{
 						IntPtr display = dpy.Lock();
 						fontSet = Xlib.XSharpCreateFont
-							(display, family, pointSize, (int)style);
+							(display, family,
+							 NormalizePointSize(pointSize), (int)style);
 						if(fontSet == IntPtr.Zero)
 						{
 							extents = null;

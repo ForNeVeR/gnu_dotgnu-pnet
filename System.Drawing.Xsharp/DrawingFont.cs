@@ -52,9 +52,9 @@ internal sealed class DrawingFont : IToolkitFont
 					{
 						if(xfont == null)
 						{
-							xfont = new Xsharp.Font
+							xfont = Xsharp.Font.CreateFont
 								(MapFamilyName(properties.Name),
-								 (int)(properties.SizeInPoints * 10.0f * dpi / 72f),
+								 (int)(properties.SizeInPoints * 10.0f),
 								 (Xsharp.FontStyle)(properties.Style));
 						}
 						graphics.Font = this;
@@ -89,10 +89,13 @@ internal sealed class DrawingFont : IToolkitFont
 				{
 					return Xsharp.Font.Serif;
 				}
+				else if(String.Compare
+							(name, "Microsoft Sans Serif", true) == 0)
+				{
+					return Xsharp.Font.DefaultSansSerif;
+				}
 				else if(String.Compare(name, "Helvetica", true) == 0 ||
 				        String.Compare(name, "Helv", true) == 0 ||
-				        String.Compare
-							(name, "Microsoft Sans Serif", true) == 0 ||
 				        String.Compare(name, "Arial", true) == 0 ||
 				        String.Compare(name, 0, "Arial ", 0, 6, true) == 0)
 				{

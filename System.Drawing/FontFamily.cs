@@ -53,7 +53,7 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
 
 					case GenericFontFamilies.SansSerif:
 					{
-						this.name = "Arial";
+						this.name = "Microsoft Sans Serif";
 					}
 					break;
 

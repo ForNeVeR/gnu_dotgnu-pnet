@@ -359,6 +359,10 @@ static int EndsInReturn(ILNode *stmt)
 	{
 		return 2;
 	}
+	else if(yykind(stmt) == yykindof(ILNode_LineInfo))
+	{
+		return EndsInReturn(((ILNode_LineInfo *)stmt)->stmt);
+	}
 	else
 	{
 		return 0;

@@ -4,6 +4,9 @@
 	* csdoc/doc_valil.c (AttributeToName): length-determination error
 	that caused SEGV's when converting attributes.
 
+	* codegen/cg_stmt.tc (EndsInReturn): recognise ILNode_LineInfo
+	nodes when checking for "return" statements.
+
 2002-05-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y (OuterDeclaration): don't call "yyerrok"

@@ -1,4 +1,9 @@
 
+2002-04-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/SocketMethods.cs: add some extra "using"
+	declarations to compile under MS'es compiler.
+
 2002-04-07  Gopal.V <gopalv82@yahoo.com>
 
 	* System/Net/HttpWebRequest.cs: Added property get,set methods

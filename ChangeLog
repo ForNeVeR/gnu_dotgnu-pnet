@@ -10,6 +10,9 @@
 	* System/System.build, runtime/runtime.build: add the correct
 	"resources" and "references" tags to the csant build scripts.
 
+	* System/System.build: temporarily comment out the reference
+	to mscorlib.dll because it interferes with cscc compiles.
+
 2002-03-22  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Began to integrate changes from chiraz's patch

@@ -53,7 +53,7 @@ public sealed class ImageList
 		images = new ImageCollection(this);
 	}
 #if !CONFIG_COMPACT_FORMS && CONFIG_COMPONENT_MODEL
-	public ImageList(IContainer container) : base() { container.Add(this); }
+	public ImageList(IContainer container) : this() { container.Add(this); }
 #endif
 
 	// Properties

@@ -58,6 +58,18 @@
 /* The number of bytes in a long long.  */
 #undef SIZEOF_LONG_LONG
 
+/* Define if you have the acos function.  */
+#undef HAVE_ACOS
+
+/* Define if you have the asin function.  */
+#undef HAVE_ASIN
+
+/* Define if you have the atan function.  */
+#undef HAVE_ATAN
+
+/* Define if you have the atan2 function.  */
+#undef HAVE_ATAN2
+
 /* Define if you have the bcmp function.  */
 #undef HAVE_BCMP
 
@@ -67,11 +79,26 @@
 /* Define if you have the bzero function.  */
 #undef HAVE_BZERO
 
+/* Define if you have the ceil function.  */
+#undef HAVE_CEIL
+
+/* Define if you have the cos function.  */
+#undef HAVE_COS
+
+/* Define if you have the cosh function.  */
+#undef HAVE_COSH
+
 /* Define if you have the execv function.  */
 #undef HAVE_EXECV
 
+/* Define if you have the exp function.  */
+#undef HAVE_EXP
+
 /* Define if you have the finite function.  */
 #undef HAVE_FINITE
+
+/* Define if you have the floor function.  */
+#undef HAVE_FLOOR
 
 /* Define if you have the fmod function.  */
 #undef HAVE_FMOD
@@ -103,6 +130,12 @@
 /* Define if you have the isnan function.  */
 #undef HAVE_ISNAN
 
+/* Define if you have the log function.  */
+#undef HAVE_LOG
+
+/* Define if you have the log10 function.  */
+#undef HAVE_LOG10
+
 /* Define if you have the memchr function.  */
 #undef HAVE_MEMCHR
 
@@ -127,6 +160,9 @@
 /* Define if you have the open function.  */
 #undef HAVE_OPEN
 
+/* Define if you have the pow function.  */
+#undef HAVE_POW
+
 /* Define if you have the qsort function.  */
 #undef HAVE_QSORT
 
@@ -136,14 +172,35 @@
 /* Define if you have the regcomp function.  */
 #undef HAVE_REGCOMP
 
+/* Define if you have the remainder function.  */
+#undef HAVE_REMAINDER
+
 /* Define if you have the remove function.  */
 #undef HAVE_REMOVE
+
+/* Define if you have the rint function.  */
+#undef HAVE_RINT
+
+/* Define if you have the sin function.  */
+#undef HAVE_SIN
+
+/* Define if you have the sinh function.  */
+#undef HAVE_SINH
+
+/* Define if you have the sqrt function.  */
+#undef HAVE_SQRT
 
 /* Define if you have the stat function.  */
 #undef HAVE_STAT
 
 /* Define if you have the strtod function.  */
 #undef HAVE_STRTOD
+
+/* Define if you have the tan function.  */
+#undef HAVE_TAN
+
+/* Define if you have the tanh function.  */
+#undef HAVE_TANH
 
 /* Define if you have the unlink function.  */
 #undef HAVE_UNLINK

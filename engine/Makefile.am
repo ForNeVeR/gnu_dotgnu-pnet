@@ -13,8 +13,10 @@ libILEngine_a_SOURCES = cvm.c \
 						internal.c \
 						layout.c \
 						lib_array.c \
+						lib_charinfo.c \
 						lib_decimal.c \
 						lib_diag.c \
+						lib_dir.c \
 						lib_emit.c \
 						lib_encoding.c \
 						lib_enum.c \
@@ -24,13 +26,14 @@ libILEngine_a_SOURCES = cvm.c \
 						lib_math.c \
 						lib_misc.c \
 						lib_object.c \
-						lib_platform.c \
 						lib_reflect.c \
 						lib_security.c \
 						lib_socket.c \
 						lib_stdio.c \
 						lib_string.c \
+						lib_task.c \
 						lib_thread.c \
+						lib_time.c \
 						lib_type.c \
 						lookup.c \
 						method_cache.c \

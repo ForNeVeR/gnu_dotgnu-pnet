@@ -11,6 +11,11 @@
 	add an automated build script to the system, to assist people who
 	want to do regular sanity-check builds.
 
+	* engine/Makefile.am, engine/lib_charinfo.c, engine/lib_dir.c,
+	engine/lib_platform.c, engine/lib_task.c, engine/lib_time.c:
+	split "lib_platform.c" into multiple files, one per class, which
+	should make it easier to cut down the engine on embedded platforms.
+
 2002-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c, codegen/cg_resolve.h: add "ILResolveProperty"

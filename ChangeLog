@@ -1,4 +1,9 @@
 
+2003-06-10  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/IO/MemoryStream.cs: Fix a minor bug in SetLength
+	exception cases.
+	
 2003-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/*, System.Xml/Xsl/XsltCompileException.cs,

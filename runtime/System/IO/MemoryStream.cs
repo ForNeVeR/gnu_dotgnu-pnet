@@ -254,11 +254,11 @@ public class MemoryStream : Stream
 	// remember that all resizable MemoryStreams have bottomLimit=0
 	public override void SetLength(long value)
 	{
-		if (!resizable)
+		if (!resizable && value > (topLimit-bottomLimit))
 			throw new NotSupportedException(_("IO_NotSupp_SetLength"));
 		if (!CanWrite)
 			throw new NotSupportedException(_("IO_NotSupp_Write"));
-		if (value < 1 || value > Int32.MaxValue)
+		if (value < 0 || value > Int32.MaxValue)
 			throw new ArgumentOutOfRangeException("value");
 
 		int newLength = (int)value;

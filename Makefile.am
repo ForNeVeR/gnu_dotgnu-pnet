@@ -1,1 +1,1 @@
-SUBDIRS = tools csharp java
+SUBDIRS = tools csharp c java

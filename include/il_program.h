@@ -445,7 +445,7 @@ const void *ILAssemblyGetHash(ILAssembly *assem, unsigned long *len);
 #define	ILAssembly_EnableJITTracking(assem)	\
 	((ILAssemblyGetAttrs((assem)) & IL_META_ASSEM_ENABLE_JIT_TRACKING) != 0)
 #define	ILAssembly_DisableJITOptimizer(assem)	\
-	((ILAssemblyGetAttrs((assem)) & IL_META_ASSEM_ENABLE_JIT_OPTIMIZER) != 0)
+	((ILAssemblyGetAttrs((assem)) & IL_META_ASSEM_DISABLE_JIT_OPTIMIZER) != 0)
 #define	ILAssembly_HasFullOriginator(assem)	\
 	((ILAssemblyGetRefAttrs((assem)) & IL_META_ASSEMREF_FULL_ORIGINATOR) != 0)
 

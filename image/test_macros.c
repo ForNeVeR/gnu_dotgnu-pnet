@@ -76,6 +76,8 @@ void TestAssemblyMacros(ILAssembly *assem)
 	IGNORE(ILAssembly_IsNotAppDomainCompatible(assem));
 	IGNORE(ILAssembly_IsNotProcessCompatible(assem));
 	IGNORE(ILAssembly_IsNotMachineCompatible(assem));
+	IGNORE(ILAssembly_EnableJITTracking(assem));
+	IGNORE(ILAssembly_DisableJITOptimizer(assem));
 	IGNORE(ILAssembly_HasFullOriginator(assem));
 }
 

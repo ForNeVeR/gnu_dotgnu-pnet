@@ -35,6 +35,9 @@ is obsolete.
 
 * ilalink/link_attrs.c: convert attributes and security declarations.
 
+* include/il_program.h, image/test_macros.c: fix the definition of
+"ILAssembly_DisableJITOptimizer" and test for it properly.
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

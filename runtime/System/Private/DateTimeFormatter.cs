@@ -36,32 +36,27 @@ internal class DateTimeFormatter
 		internal override String GetString(DateTime d,
 					DateTimeFormatInfo info)
 		{
+			/* LAMESPEC: ECMA says dddd* is equivalent to ddddd, dddddd,...
+					so 4 d's and greater are considered default case*/
 			switch(Count)
 			{
 				case 1:
 				{
 					return d.Day.ToString();
 				}
-				// Not reached
-
 				case 2:
 				{
 					if(d.Day<10) return "0"+d.Day.ToString();
 					else return d.Day.ToString();
 				}
-				// Not reached
-
 				case 3:
 				{
 					return info.GetAbbreviatedDayName((DayOfWeek)d.DayOfWeek);
 				}
-				// Not reached
-
-				case 4:
+				default:
 				{
 					return info.GetDayName((DayOfWeek)(d.DayOfWeek));
 				}
-				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -72,32 +67,27 @@ internal class DateTimeFormatter
 		internal override String GetString(DateTime d,
 					DateTimeFormatInfo info)
 		{
+			/* LAMESPEC: ECMA says MMMM* is equivalent to MMMMM, MMMMMM,...
+					so 4 M's and greater are considered default case*/
 			switch(Count)
 			{
 				case 1:
 				{
 					return d.Month.ToString();
 				}
-				// Not reached
-
 				case 2:
 				{
 					 if(d.Month<10) return "0"+d.Month.ToString();
 					else return d.Month.ToString();
 				}
-				// Not reached
-
 				case 3:
 				{
 					return info.GetAbbreviatedMonthName(d.Month);
 				}
-				// Not reached
-
-				case 4:
+				default:
 				{
 					return info.GetMonthName(d.Month);
 				}
-				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -113,7 +103,7 @@ internal class DateTimeFormatter
 			{
 				case 1:
 				{
-					int century=0;
+					int century;
 					for(int i = 0; 0 < d.Year - i; i=i+1000)
 					{
 						century=i;
@@ -122,11 +112,9 @@ internal class DateTimeFormatter
 					// return current year - century
 					return (d.Year-century).ToString();
 				}
-				// Not reached
-
 				case 2:
 				{
-					int century=0;
+					int century;
 					for(int i = 0; 0 < d.Year - i; i=i+1000)
 					{
 						century=i;
@@ -134,14 +122,65 @@ internal class DateTimeFormatter
 					if((d.Year-century)<10) return "0"+(d.Year-century).ToString();
 					return (d.Year-century).ToString();
 				}
-				// Not reached
-
 				case 4:
 				{
 					if(d.Year<10) return "00"+d.Year.ToString();
 					return (d.Year.ToString()).Substring(d.Year.ToString().Length-4);
 				}
-				// Not reached
+			}
+			throw new FormatException("Invalid format string");
+		}
+	}
+	private class FractionalSecondFormatter: FormatTemplate  //nested class
+	{
+		internal int Count=0; 
+		internal override String GetString(DateTime d,
+					DateTimeFormatInfo info)
+		{
+		
+			int fraction;
+			unchecked
+			{
+				fraction=(int)(((d.Ticks) % (TimeSpan.TicksPerSecond)) / 10000);
+			}
+			
+			switch(Count)
+			{
+				case 1:
+				{
+					return (fraction.ToString("d01")).Substring(0,1);
+				}
+				case 2:
+				{
+				
+					return (fraction.ToString("d02")).Substring(0,2);
+				}
+				case 3:
+				{
+				
+					return (fraction.ToString("d03")).Substring(0,3);
+				}
+				case 4:
+				{
+				
+					return (fraction.ToString("d04")).Substring(0,4);
+				}
+				case 5:
+				{
+					
+					return (fraction.ToString("d05")).Substring(0,5);
+				}
+				case 6:
+				{
+					
+					return (fraction.ToString("d06")).Substring(0,6);
+				}	
+				case 7:
+				{
+				
+					return (fraction.ToString("d07")).Substring(0,7);
+				}
+
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -152,20 +191,19 @@ internal class DateTimeFormatter
 		internal override String GetString(DateTime d,
 					DateTimeFormatInfo info)
 		{
+			/* LAMESPEC: ECMA says ss* is equivalent to sss, ssss,...
+					so 2 s's and greater are considered default case*/
 			switch(Count)
 			{
 				case 1:
 				{
 					return (d.Second).ToString();
 				}
-				// Not reached
-
-				case 2:
+				default:
 				{
 					if( d.Second<10) return "0"+d.Minute.ToString();
 					return d.Second.ToString();
 				}
-				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -176,20 +214,19 @@ internal class DateTimeFormatter
 		internal override String GetString(DateTime d,
 					DateTimeFormatInfo info)
 		{
+			/* LAMESPEC: ECMA says mm* is equivalent to mmm, mmmm,...
+					so 2 m's and greater are considered default case */
 			switch(Count)
 			{
 				case 1:
 				{
 					return (d.Minute).ToString();
 				}
-				// Not reached
-
-				case 2:
+				default:
 				{
 					if( d.Minute<10) return "0"+d.Minute.ToString();
 					return d.Minute.ToString();
 				}
-				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -200,21 +237,19 @@ internal class DateTimeFormatter
 		internal override String GetString(DateTime d,
 					DateTimeFormatInfo info)
 		{
+			/* LAMESPEC: ECMA says hh* is equivalent to hhh, hhhh,...
+					so 2 h's and greater are considered default case*/
 			switch(Count)
 			{
 				case 1:
 				{
 					return (d.Hour % 12).ToString();
 				}
-				// Not reached
-
-				case 2:
+				default:
 				{
 					int hr =  (d.Hour % 12);
-					if( hr<10) return "0"+hr.ToString();
-					return hr.ToString();
+					return hr.ToString("d02");
 				}
-				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -225,21 +260,20 @@ internal class DateTimeFormatter
 		internal override String GetString(DateTime d,
 					DateTimeFormatInfo info)
 		{
+			/* LAMESPEC: ECMA says HH* is equivalent to HHH, HHHH,...
+					so 2 H's and greater are considered default case*/
 			switch(Count)
 			{
 				case 1:
 				{
 					return (d.Hour).ToString();
 				}
-				// Not reached
-
-				case 2:
+				default:
 				{
 					int hr =  (d.Hour);
 					if( hr<10) return "0"+d.Hour.ToString();
 					return d.Hour.ToString();
 				}
-				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -250,6 +284,8 @@ internal class DateTimeFormatter
 		internal override String GetString(DateTime d,
 					DateTimeFormatInfo info)
 		{
+			/* LAMESPEC: ECMA says tt* is equivalent to ttt, tttt,...
+					so 2 t's and greater are considered default case*/
 			switch(Count)
 			{
 				case 1:
@@ -258,44 +294,50 @@ internal class DateTimeFormatter
 					return info.PMDesignator.Substring(0,1);
 
 				}
-				// Not reached
-
-				case 2:
+				default:
 				{
 					if( d.Hour < 12) return info.AMDesignator;
 					return info.PMDesignator;
 				}
-				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
 	}
-	[TODO]
 	private class UTCFormatter: FormatTemplate  //nested class
 	{
 		internal int Count=0; 
 		internal override String GetString(DateTime d,
 					DateTimeFormatInfo info)
 		{
+
+			DateTime newDate=d.ToUniversalTime();
+			string retval="";
+			if( d > newDate) retval+="+";
+			else retval+="-";
+			TimeSpan difference=(newDate - d);
+			int hours=(difference.Duration()).Hours;
+			int minutes=(difference.Duration()).Minutes;
+			/* LAMESPEC: ECMA says zzz* is equivalent to zzzz, zzzzz,...
+					so 3 z's and greater are considered default case*/
 			switch(Count)
 			{
 				case 1:
 				{
+					return retval+hours.ToString();
 				}
-				break;
 				case 2:
 				{
+					return retval+hours.ToString("d02");
 				}					
-				break;
-				case 3:
+				default:
 				{
+					return retval+hours.ToString("d02")+":"+minutes.ToString("d02");
 				}
-				break;
 			}
 			throw new FormatException("Invalid format string");
 		}
 	}
-	[TODO]
+	
 	private class EraFormatter: FormatTemplate  //nested class
 	{
 		internal int Count=0; 
@@ -303,13 +345,14 @@ internal class DateTimeFormatter
 					DateTimeFormatInfo info)
 		
 		{
+			/* LAMESPEC: ECMA says g* is equivalent to gg, ggg,...
+					so 1 g and greater are considered default case*/
 			switch(Count)
 			{
-				case 1:
+				default:
 				{
 					return info.GetEraName(d.Year);
 				}
-				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -326,7 +369,6 @@ internal class DateTimeFormatter
 				{
 					return info.DateSeparator;
 				}
-				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -343,17 +385,8 @@ internal class DateTimeFormatter
 				{
 					return info.TimeSeparator;
 				}
-				// Not reached
 			}
 			throw new FormatException("Invalid format string");
-		}
-	}
-	private class LiteralChar: FormatTemplate
-	{
-		internal String Text="";
-		internal override String GetString(DateTime d,DateTimeFormatInfo info)
-		{
-			return Text;
 		}
 	}
 	private class ExplicitString: FormatTemplate
@@ -366,104 +399,72 @@ internal class DateTimeFormatter
 	}
 	private static String StandardFormatSpecifier(String format)
 	{
-		Char c = format[0];
-		switch(c)
+		switch(format)
 		{		
-			case 'd':
+			case "d":
 			{
-				return "MM/dd/yyyy\n";
+				return "MM/dd/yyyy";
 			}
-			// Not reached
-
-			case 'D':
+			case "D":
 			{
-				return "dddd, MMMM dd, yyyy\n";
+				return "dddd, MMMM dd, yyyy";
 			}
-			// Not reached
-
-			case 'f':
+			case "f":
 			{
-				return "dddd, MMMM dd, yyyy HH:mm\n";
+				return "dddd, MMMM dd, yyyy HH:mm";
 			}
-			// Not reached
-
-			case 'F':
+			case "F":
 			{
-				return "dddd, MMMM dd, yyyy HH:mm:ss\n";
+				return "dddd, MMMM dd, yyyy HH:mm:ss";
 			}
-			// Not reached
-
-			case 'g':
+			case "g":
 			{
-				return "MM/dd/yyyy HH:mm\n";
+				return "MM/dd/yyyy HH:mm";
 			}
-			// Not reached
-
-			case 'G':
+			case "G":
 			{
-				return "MM/dd/yyyy HH:mm:ss\n";
+				return "MM/dd/yyyy HH:mm:ss";
 			}
-			// Not reached
-
-			case 'm':
+			case "m":
 			{
-				return "MMMM dd\n";
+				return "MMMM dd";
 			}
-			// Not reached
-
-			case 'M':
+			case "M":
 			{
-				return "MMMM dd\n";
+				return "MMMM dd";
 			}
-			// Not reached
-
-			case 't':
+			case "t":
 			{
-				return "HH:mm\n";
+				return "HH:mm";
 			}
-			// Not reached
-
-			case 'T':
+			case "T":
 			{
-				return "HH:mm:ss\n";
+				return "HH:mm:ss";
 			}
-			// Not reached
-
-			case 'U':
+			case "U":
 			{
-				return "dddd, MMMM dd, yyyy HH:mm:ss\n";
+				return "dddd, MMMM dd, yyyy HH:mm:ss";
 			}
-			// Not reached
-
-			case 'y':
+			case "y":
 			{
-				return "yyyy MMMM\n";
+				return "yyyy MMMM";
 			}
-			// Not reached
-
-			case 'Y':
+			case "Y":
 			{
-				return "yyyy MMMM\n";
+				return "yyyy MMMM";
 			}
-			// Not reached
-
 			default:
 			{
-				return "\n";
+				return format;
 			}
-			// Not reached
 		}
+		return format;
 	}
 	public static String Format(DateTime date,
 							String format, DateTimeFormatInfo info)
 	{
 		if(format.Length == 1) format=StandardFormatSpecifier(format);
-		else 
-		{	//manually append a newline string if not of length 1			
-			StringBuilder tempformat = new StringBuilder(format);
-			tempformat.Append("\n");
-			format=tempformat.ToString();
-		}
+		
 		StringBuilder builder=new StringBuilder(format.Length);
 		Queue q=new Queue();
 		
@@ -475,166 +476,176 @@ internal class DateTimeFormatter
 
 		foreach(char c in format)
 		{
-			if(literal) 
-			//if recieved / as last char just push char on queue
-			{
-				if(!(current is LiteralChar))
+			if(literal) {
+			
+				if(!(current is ExplicitString))
 				{
 					q.Enqueue(current);
-					current=new LiteralChar();
+					current=new ExplicitString();
 				}
-				(current as LiteralChar).Text+=c;
+				(current as ExplicitString).Text+=c;
 				literal=false;
+				continue;
 			}
-			else
+		
+			switch(c)
 			{
-				switch(c)
+				case 'd':
 				{
-					case 'd':
+					if(!(current is DayFormatter))
 					{
-						if(!(current is DayFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new DayFormatter();
-						}
-						(current as DayFormatter).Count++;
-						break;
+						q.Enqueue(current); //save the last node
+						current=new DayFormatter();
 					}
-					case 'g':
-					{
-						if(!(current is EraFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new EraFormatter();
-						}
-						(current as EraFormatter).Count++;
-						break;
-					}
-					case 'h':
-					{
-						if(!(current is TwelveHourFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new TwelveHourFormatter();
-						}
-						(current as TwelveHourFormatter).Count++;
-						break;
-					}
-					case 'H':
-						{
-						if(!(current is TwentyFourHourFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new TwentyFourHourFormatter();
-						}
-						(current as TwentyFourHourFormatter).Count++;
-						break;
-					}
-					case 'm':
-					{
-						if(!(current is MinuteFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new MinuteFormatter();
-						}
-						(current as MinuteFormatter).Count++;
-						break;
-					}
-					case 'M':
-					{
-						if(!(current is MonthFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new MonthFormatter();
-					}
-							(current as MonthFormatter).Count++;
+					(current as DayFormatter).Count++;
 					break;
-					}
-					case 's':
-					{
-						if(!(current is SecondFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new SecondFormatter();
-						}
-						(current as SecondFormatter).Count++;
-						break;
-					}
-					case 't':
-					{
-						if(!(current is AMPMFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new AMPMFormatter();
-						}
-						(current as AMPMFormatter).Count++;
-						break;
-					}
-					case 'y':
-					{
-						if(!(current is YearFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new YearFormatter();
-						}
-						(current as YearFormatter).Count++;
-						break;
-					}
-					case 'z':
-					{
-						if(!(current is UTCFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new UTCFormatter();
-						}
-						(current as UTCFormatter).Count++;
-						break;
-					}
-					case '/':
-					{
-						if(!(current is DateSeparatorFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new DateSeparatorFormatter();
-						}
-						(current as DateSeparatorFormatter).Count++;
-						break;
-					}
-					case ':':
-					{
-						if(!(current is TimeSeparatorFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new TimeSeparatorFormatter();
-						}
-						(current as TimeSeparatorFormatter).Count++;
-						break;
-					}
-					case '%':
-					{
-						//% is just a place holder so a single char
-						// can be a custom formatter
-						break;	
-					}
-					case '\\':
-					{
-						literal=true;
-						break;
-					}
-					default:
-					{
-						if(!(current is ExplicitString))
-						{
-							q.Enqueue(current);
-							current=new ExplicitString();
-						}
-						(current as ExplicitString).Text+=c;
-						break;
-					}
 				}
-			}	
+				case 'f':
+				{
+					if(!(current is FractionalSecondFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new FractionalSecondFormatter();
+					}
+					(current as FractionalSecondFormatter).Count++;
+					break;
+				}
+				case 'g':
+				{
+					if(!(current is EraFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new EraFormatter();
+					}
+					(current as EraFormatter).Count++;
+					break;
+				}
+				case 'h':
+				{
+					if(!(current is TwelveHourFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new TwelveHourFormatter();
+					}
+					(current as TwelveHourFormatter).Count++;
+					break;
+				}
+				case 'H':
+					{
+					if(!(current is TwentyFourHourFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new TwentyFourHourFormatter();
+					}
+					(current as TwentyFourHourFormatter).Count++;
+					break;
+				}
+				case 'm':
+				{
+					if(!(current is MinuteFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new MinuteFormatter();
+					}
+					(current as MinuteFormatter).Count++;
+					break;
+				}
+				case 'M':
+				{
+					if(!(current is MonthFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new MonthFormatter();
+					}
+					(current as MonthFormatter).Count++;
+					break;
+				}
+				case 's':
+				{
+					if(!(current is SecondFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new SecondFormatter();
+					}
+					(current as SecondFormatter).Count++;
+					break;
+				}
+				case 't':
+				{
+					if(!(current is AMPMFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new AMPMFormatter();
+					}
+					(current as AMPMFormatter).Count++;
+					break;
+				}
+				case 'y':
+				{
+					if(!(current is YearFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new YearFormatter();
+					}
+					(current as YearFormatter).Count++;
+					break;
+				}
+				case 'z':
+				{
+					if(!(current is UTCFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new UTCFormatter();
+					}
+					(current as UTCFormatter).Count++;
+					break;
+				}
+				case '/':
+				{
+					if(!(current is DateSeparatorFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new DateSeparatorFormatter();
+					}
+					(current as DateSeparatorFormatter).Count++;
+					break;
+				}
+				case ':':
+				{
+					if(!(current is TimeSeparatorFormatter))
+					{
+						q.Enqueue(current); //save the last node
+						current=new TimeSeparatorFormatter();
+					}
+					(current as TimeSeparatorFormatter).Count++;
+					break;
+				}
+				case '%':
+				{
+					//% is just a place holder so a single char
+					// can be a custom formatter
+					break;
+				}
+				case '\\':
+				{
+					literal=true;
+					break;
+				}
+				default:
+				{
+					if(!(current is ExplicitString))
+					{
+						q.Enqueue(current);
+						current=new ExplicitString();
+					}
+					(current as ExplicitString).Text+=c;
+					break;
+				}
+			}
 		}
-	
+		
+		q.Enqueue(current);
+		
 		foreach(Object x in q)
 		{
 			builder.Append((x as FormatTemplate).GetString(date,info));
@@ -642,13 +653,6 @@ internal class DateTimeFormatter
 		
 		}
 		return builder.ToString();
-	}
+	}	
 }
-
-
-
-
-
-
-
 

@@ -24,6 +24,7 @@ namespace System
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Platform;
+using Private;
 
 // ECMA requires that this have "auto" layout.
 [StructLayout(LayoutKind.Auto)]
@@ -327,21 +328,21 @@ public struct DateTime : IComparable, IFormattable
 	// String conversion.
 	public override String ToString()
 			{
-				return ToString(null, null);
+				return ToString("G", null);
 			}
 	public String ToString(String format)
 			{
-				return ToString(format, null);
+				return ToString(format, 
+					DateTimeFormatInfo.GetInstance(null));
 			}
 	public String ToString(IFormatProvider provider)
 			{
-				return ToString(null, provider);
+				return ToString("G", provider);
 			}
-	[TODO]
 	public String ToString(String format, IFormatProvider provider)
 			{
-				// TODO
-				return "";
+				return DateTimeFormatter.Format(this,format,
+					DateTimeFormatInfo.GetInstance(provider));
 			}
 
 	// Parsing methods.

@@ -1,11 +1,21 @@
 
+2002-12-01  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/System/DateTime.cs: Plug in the DateTimeFormatter into the
+	general DateTime.ToString() method.
+
+2002-11-30  Michael Moore <mtmoore@uga.edu>
+
+	* runtime/System/Private/DateTimeFormatter.cs:
+	code clean up and finish implementing all formatting options (Gopal)
+
 2002-11-29  Jeff Post <j_post@pacbell.net>
 
 	* System/Collections/Specialized/NameValueCollection.cs: fixed
 	bug that caused NullReferenceException if key is not in the collection.
 
 	* tests/System/TestWebHeaderCollection.cs, tests/System/TestSystem.cs: 
-	implement unit tests.
+	implement unit tests. (Gopal)
 
 2002-11-30  Gopal.V  <gopalv82@symonds.net>
 	

@@ -134,6 +134,60 @@ static int MutexCloseNamed(ILWaitMutexNamed *mutex)
 	return IL_WAITCLOSE_FREE;
 }
 
+static void AddMutexToWakeup(ILWaitMutex *mutex, _ILWakeup *wakeup)
+{
+	ILList *list;
+	void **item;
+	
+	/* Add the mutex to the list of owned mutexes */
+
+	list = wakeup->ownedMutexes;
+
+	if (list == 0)
+	{
+		/* Create a new ArrayList and append */
+		list = wakeup->ownedMutexes = ILArrayListCreate(16);
+
+		ILListAppend(list, mutex);
+	}
+	else
+	{			
+		item = ILListReverseFind(list, 0);
+
+		if (item != 0)
+		{
+			*item = mutex;
+		}
+		else
+		{
+			/* No empty spot found so just append */
+			ILListAppend(list, mutex);
+		}
+	}
+}
+
+static void RemoveMutexFromWakeup(ILWaitMutex *mutex, _ILWakeup *wakeup)
+{
+	ILList *list;
+	void **item;
+
+	/* Add the mutex to the list of owned mutexes */
+
+	list = wakeup->ownedMutexes;
+
+	if (list == 0)
+	{
+		return;
+	}
+
+	item = ILListReverseFind(list, mutex);
+
+	if (item)
+	{
+		*item = 0;
+	}
+}
+
 /*
  * Register a wakeup object with a wait mutex.
  */
@@ -150,7 +204,16 @@ static int MutexRegister(ILWaitMutex *mutex, _ILWakeup *wakeup)
 		/* No one owns the mutex, so grab it for ourselves */
 		mutex->owner = wakeup;
 		mutex->count = 1;
+
 		result = IL_WAITREG_ACQUIRED;
+
+		if (mutex->parent.kind == IL_WAIT_MUTEX
+			|| mutex->parent.kind == IL_WAIT_NAMED_MUTEX)
+		{
+			/* Newly aquired mutex so add it to the wakeup's owned mutex list */
+
+			AddMutexToWakeup(mutex, wakeup);
+		}
 	}
 	else if(mutex->owner == wakeup)
 	{
@@ -181,6 +244,9 @@ static int MutexRegister(ILWaitMutex *mutex, _ILWakeup *wakeup)
  */
 static void MutexUnregister(ILWaitMutex *mutex, _ILWakeup *wakeup, int release)
 {
+	void **item;
+	ILList *list;	
+
 	/* Lock down the mutex */
 	_ILMutexLock(&(mutex->parent.lock));
 
@@ -192,7 +258,27 @@ static void MutexUnregister(ILWaitMutex *mutex, _ILWakeup *wakeup, int release)
 	{
 		if(--(mutex->count) == 0)
 		{
-			mutex->owner = 0;
+			if (mutex->parent.kind == IL_WAIT_MUTEX
+				|| mutex->parent.kind == IL_WAIT_NAMED_MUTEX)
+			{
+				RemoveMutexFromWakeup(mutex, wakeup);
+			}
+
+			mutex->owner = _ILWakeupQueueWake(&(mutex->queue));
+
+			if(mutex->owner != 0)
+			{
+				mutex->count = 1;
+			}
+		}
+	}
+	else if (mutex->owner == wakeup && mutex->count == 1)
+	{
+		if (mutex->parent.kind == IL_WAIT_MUTEX
+			|| mutex->parent.kind == IL_WAIT_NAMED_MUTEX)
+		{
+			/* Newly aquired mutex so add it to the wakeup's owned mutex list */
+			AddMutexToWakeup(mutex, wakeup);		
 		}
 	}
 
@@ -227,6 +313,11 @@ ILWaitHandle *ILWaitMutexCreate(int initiallyOwned)
 	{
 		mutex->owner = &((ILThreadSelf())->wakeup);
 		mutex->count = 1;
+		mutex->owner->ownedMutexes = ILSinglelyLinkedListCreate();
+		if (mutex->owner->ownedMutexes != 0)
+		{
+			ILListAppend(mutex->owner->ownedMutexes, mutex);
+		}
 	}
 	else
 	{
@@ -357,11 +448,14 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 
 int ILWaitMutexRelease(ILWaitHandle *handle)
 {
+	_ILWakeup *wakeup;
 	ILWaitMutex *mutex = (ILWaitMutex *)handle;
 	int result;
 
 	/* Lock down the mutex */
 	_ILMutexLock(&(mutex->parent.lock));
+
+	wakeup = &ILThreadSelf()->wakeup;
 
 	/* Determine what to do based on the mutex's state */
 	if((mutex->parent.kind & IL_WAIT_MUTEX) == 0)
@@ -369,7 +463,7 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 		/* This isn't actually a mutex */
 		result = IL_WAITMUTEX_RELEASE_FAIL;
 	}
-	else if(mutex->owner != &((ILThreadSelf())->wakeup))
+	else if(mutex->owner != wakeup)
 	{
 		/* This thread doesn't currently own the mutex */
 		result = IL_WAITMUTEX_RELEASE_FAIL;
@@ -378,6 +472,12 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 	{
 		/* The count has returned to zero, so find something
 		   else to give the ownership of the mutex to */
+
+		if (mutex->parent.kind == IL_WAIT_MUTEX
+			|| mutex->parent.kind == IL_WAIT_NAMED_MUTEX)
+		{
+			RemoveMutexFromWakeup(mutex, wakeup);
+		}
 
 		mutex->owner = _ILWakeupQueueWake(&(mutex->queue));
 		if(mutex->owner != 0)

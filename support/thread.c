@@ -91,7 +91,9 @@ static void _ILThreadInit(void)
 	_ILSemaphoreCreate(&(mainThread.suspendAck));
 	mainThread.startFunc        = 0;
 	mainThread.objectArg        = 0;
+	mainThread.startArg			= 0;
 	mainThread.destroyOnExit	= 0;
+	mainThread.monitor = ILWaitMonitorCreate();
 	_ILWakeupCreate(&(mainThread.wakeup));
 	_ILWakeupQueueCreate(&(mainThread.joinQueue));
 
@@ -103,10 +105,14 @@ static void _ILThreadInit(void)
 	/* We have 1 foreground thread in the system at present */
 	numThreads = 1;
 	numBackgroundThreads = 0;
+
+	_ILInterruptInit();
 }
 
 static void _ILThreadDeinit(void)
 {
+	_ILInterruptDeinit();
+
 	if(noFgThreadsEvent != 0)
 	{
 		ILWaitHandleClose(noFgThreadsEvent);
@@ -145,6 +151,11 @@ void ILThreadInit(void)
 void ILThreadDeinit(void)
 {
 	_ILCallOnce(_ILThreadDeinit);
+}
+
+ILWaitHandle *ILThreadGetMonitor(ILThread *thread)
+{
+	return thread->monitor;
 }
 
 static void _ILThreadRunAndFreeCleanups(ILThread *thread)
@@ -217,10 +228,10 @@ static void _ILPrivateThreadDestroy(ILThread *thread, int allowSelf)
 		_ILThreadDestroy(thread);
 	}
 
+	ILWaitHandleClose(thread->monitor);
 	_ILMutexDestroy(&(thread->lock));
 	_ILSemaphoreDestroy(&(thread->suspendAck));
-	_ILSemaphoreDestroy(&(thread->resumeAck));
-	_ILWakeupDestroy(&(thread->wakeup));
+	_ILSemaphoreDestroy(&(thread->resumeAck));	
 	_ILWakeupQueueDestroy(&(thread->joinQueue));
 	ILFree(thread);
 }
@@ -241,7 +252,7 @@ void _ILThreadRun(ILThread *thread)
 	   was aborted before it even got going */
 	if(thread->startFunc)
 	{
-		(*(thread->startFunc))(thread->objectArg);
+		(*(thread->startFunc))(thread->startArg);
 	}
 
 	_ILMutexLock(&(thread->lock));
@@ -263,13 +274,17 @@ void _ILThreadRun(ILThread *thread)
 	}
 	_ILMutexUnlock(&(thread->lock));
 
+	/* The wakeup isn't needed anymore so destroy it now to allow
+	   held mutexes to be released */
+	_ILWakeupDestroy(&(thread->wakeup));
+
 	if (thread->destroyOnExit)
 	{
 		_ILPrivateThreadDestroy(thread, 1);
 	}
 }
 
-ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
+ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *startArg)
 {
 	ILThread *thread;
 
@@ -285,17 +300,19 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 		return 0;
 	}
 
-	_ILMutexCreate(&(thread->lock));
+	_ILMutexCreate(&(thread->lock));	
 	thread->state = IL_TS_UNSTARTED;
 	thread->resumeRequested = 0;
 	thread->suspendRequested = 0;
 	thread->numLocksHeld = 0;
 	thread->firstCleanupEntry = 0;
 	thread->lastCleanupEntry = 0;
+	thread->monitor = ILWaitMonitorCreate();
 	_ILSemaphoreCreate(&(thread->resumeAck));
 	_ILSemaphoreCreate(&(thread->suspendAck));
 	thread->startFunc = startFunc;
-	thread->objectArg = objectArg;
+	thread->objectArg = 0;
+	thread->startArg = startArg;
 	_ILWakeupCreate(&(thread->wakeup));
 	_ILWakeupQueueCreate(&(thread->joinQueue));
 	thread->handle = 0;

@@ -28,6 +28,7 @@
  * Choose which thread package we will be using.
  */
 #include "thr_choose.h"
+#include "il_utils.h"
 
 /*
  * Include the package-specific definitions.
@@ -52,12 +53,12 @@ extern	"C" {
 typedef struct _tagILWakeup
 {
 	_ILCondMutex			lock;
-	_ILCondVar				condition;
+	_ILCondVar				condition;	
 	ILUInt32	volatile	count;
 	ILUInt32	volatile	limit;
 	int			volatile	interrupted;
 	void *      volatile    object;
-
+	ILList					*ownedMutexes;
 } _ILWakeup;
 
 /*
@@ -110,12 +111,15 @@ struct _tagILThread
 	_ILSemaphore					resumeAck;
 	_ILSemaphore					suspendAck;
 	ILThreadStartFunc 	volatile	startFunc;
-	void *            	volatile	objectArg;
+	void *            	volatile	startArg;
+	void *				volatile	objectArg;
 	_ILWakeup						wakeup;
 	_ILWakeupQueue					joinQueue;
-	ILThreadCleanupEntry		*firstCleanupEntry;
-	ILThreadCleanupEntry		*lastCleanupEntry;
-	int							destroyOnExit;
+	ILThreadCleanupEntry			*firstCleanupEntry;
+	ILThreadCleanupEntry			*lastCleanupEntry;
+	int								destroyOnExit;
+	ILWaitHandle					*monitor;
+	ILIllegalMemoryAccessHandler	illegalMemoryAccessHandler;	
 };
 
 /*
@@ -128,10 +132,10 @@ struct _tagILThread
 /*
  * Wait handle kinds.
  */
+#define	IL_WAIT_EVENT			0x800
 #define	IL_WAIT_MUTEX			0x1000
 #define	IL_WAIT_NAMED_MUTEX		0x1001
 #define	IL_WAIT_MONITOR			0x1002
-#define	IL_WAIT_EVENT			0x1003
 
 /*
  * Close function for a wait handle.
@@ -312,6 +316,16 @@ typedef struct
  * thread handle and identifier for the main thread.
  */
 void _ILThreadInitSystem(ILThread *mainThread);
+
+/*
+ * Initialize the interrupt subsystem.
+ */
+void _ILInterruptInit();
+
+/*
+ * Deinitialize the interrupt subsystem.
+ */
+void _ILInterruptDeinit();
 
 /*
  * Function that is called to run a thread after system-specific

@@ -41,10 +41,27 @@ void _ILWakeupCreate(_ILWakeup *wakeup)
 	wakeup->limit = 0;
 	wakeup->interrupted = 0;
 	wakeup->object = 0;
+	wakeup->ownedMutexes = 0;
+}
+
+static int _ILWakeupFullyReleaseMutex(ILList *list, void **data, void *state)
+{
+	if (*data)
+	{
+		while (ILWaitMutexRelease((ILWaitHandle *)*data) == IL_WAITMUTEX_RELEASE_STILL_OWNS);
+	}
+
+	return 1;
 }
 
 void _ILWakeupDestroy(_ILWakeup *wakeup)
 {
+	if (wakeup->ownedMutexes != 0)
+	{
+		/* Fully release all wait mutexes still owned by wakeup */
+		ILListWalk(wakeup->ownedMutexes, _ILWakeupFullyReleaseMutex, 0);
+		ILListDestroy(wakeup->ownedMutexes);
+	}
 	_ILCondVarDestroy(&(wakeup->condition));
 	_ILCondMutexDestroy(&(wakeup->lock));
 }

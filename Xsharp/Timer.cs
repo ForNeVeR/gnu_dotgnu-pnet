@@ -206,7 +206,7 @@ public sealed class Timer : IDisposable
 				this.callback = callback;
 				this.state = state;
 				this.nextDue =
-					DateTime.Now + new TimeSpan
+					DateTime.UtcNow + new TimeSpan
 						(dueTime * TimeSpan.TicksPerMillisecond);
 				this.period = period;
 				this.stopped = false;
@@ -272,7 +272,7 @@ public sealed class Timer : IDisposable
 				this.callback = callback;
 				this.state = state;
 				this.nextDue =
-					DateTime.Now + new TimeSpan
+					DateTime.UtcNow + new TimeSpan
 						(dueTime * TimeSpan.TicksPerMillisecond);
 				this.period = period;
 				this.stopped = false;
@@ -324,7 +324,7 @@ public sealed class Timer : IDisposable
 				}
 				RemoveTimer();
 				this.nextDue =
-					DateTime.Now + new TimeSpan
+					DateTime.UtcNow + new TimeSpan
 						(dueTime * TimeSpan.TicksPerMillisecond);
 				this.period = period;
 				this.stopped = false;
@@ -410,18 +410,17 @@ public sealed class Timer : IDisposable
 			}
 
 	// Activate timers that have fired on a particular display.
+	// We assume that this is called with the display lock.
 	internal static bool ActivateTimers(Display dpy)
 			{
 				// Bail out early if there are no timers, to avoid
-				// calling "DateTime.Now" if we don't need to.
-				lock(dpy)
+				// calling "DateTime.UtcNow" if we don't need to.
+				if(dpy.timerQueue == null)
 				{
-					if(dpy.timerQueue == null)
-					{
-						return false;
-					}
+					return false;
 				}
-				DateTime now = DateTime.Now;
+
+				DateTime now = DateTime.UtcNow;
 				Timer timer;
 				DateTime next;
 				bool activated = false;
@@ -429,21 +428,18 @@ public sealed class Timer : IDisposable
 				{
 					// Remove the first timer from the queue if
 					// it has expired.  Bail out if it hasn't.
-					lock(dpy)
+					timer = dpy.timerQueue;
+					if(timer == null)
 					{
-						timer = dpy.timerQueue;
-						if(timer == null)
-						{
-							break;
-						}
-						else if(timer.nextDue <= now)
-						{
-							timer.RemoveTimer();
-						}
-						else
-						{
-							break;
-						}
+						break;
+					}
+					else if(timer.nextDue <= now)
+					{
+						timer.RemoveTimer();
+					}
+					else
+					{
+						break;
 					}
 
 					// Invoke the timer's callback delegate.
@@ -451,12 +447,28 @@ public sealed class Timer : IDisposable
 					if(timer.callback is TimerCallback)
 					{
 						TimerCallback cb1 = timer.callback as TimerCallback;
-						cb1(timer.state);
+						dpy.Unlock();
+						try
+						{
+							cb1(timer.state);
+						}
+						finally
+						{
+							dpy.Lock();
+						}
 					}
 					else
 					{
 						EventHandler cb2 = timer.callback as EventHandler;
-						cb2(timer.state, EventArgs.Empty);
+						dpy.Unlock();
+						try
+						{
+							cb2(timer.state, EventArgs.Empty);
+						}
+						finally
+						{
+							dpy.Lock();
+						}
 					}
 
 					// Add the timer back onto the queue if necessary.
@@ -494,7 +506,7 @@ public sealed class Timer : IDisposable
 					if(dpy.timerQueue != null)
 					{
 						DateTime fireAt = dpy.timerQueue.nextDue;
-						long diff = fireAt.Ticks - DateTime.Now.Ticks;
+						long diff = fireAt.Ticks - DateTime.UtcNow.Ticks;
 						if(diff <= 0)
 						{
 							// The timeout has already fired or is about to.

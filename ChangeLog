@@ -1,4 +1,9 @@
 
+2003-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Display.cs, Xsharp/Timer.cs: release the display lock
+	when events are dispatched.
+
 2003-07-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Xml/XPath/XmlSortOrder.cs: Fix visibility based on

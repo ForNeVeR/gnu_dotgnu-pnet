@@ -45,7 +45,6 @@ public sealed class Display : IDisposable
 	private bool quit;
 	private bool pendingExposes;
 	private InputOutputWidget exposeList;
-	private bool inMainLoop;
 	private Xlib.Cursor[] cursors;
 	internal Xlib.Time knownEventTime;
 	internal Hashtable handleMap;
@@ -484,9 +483,6 @@ public sealed class Display : IDisposable
 					XEvent xevent;
 					int timeout;
 
-					// We are now in the main loop processing events.
-					inMainLoop = true;
-
 					// Flush any requests that are in the outgoing queue.
 					Xlib.XFlush(dpy);
 	
@@ -512,7 +508,15 @@ public sealed class Display : IDisposable
 						{
 							// Read the next event and dispatch it.
 							Xlib.XNextEvent(dpy, out xevent);
-							DispatchEvent(ref xevent);
+							Unlock();
+							try
+							{
+								DispatchEvent(ref xevent);
+							}
+							finally
+							{
+								dpy = Lock();
+							}
 						}
 						else
 						{
@@ -522,7 +526,15 @@ public sealed class Display : IDisposable
 							{
 								widget = exposeList;
 								exposeList = exposeList.nextExpose;
-								widget.Expose();
+								Unlock();
+								try
+								{
+									widget.Expose();
+								}
+								finally
+								{
+									dpy = Lock();
+								}
 							}
 							pendingExposes = false;
 						}
@@ -542,7 +554,15 @@ public sealed class Display : IDisposable
 						if(timeout < 0)
 						{
 							Xlib.XNextEvent(dpy, out xevent);
-							DispatchEvent(ref xevent);
+							Unlock();
+							try
+							{
+								DispatchEvent(ref xevent);
+							}
+							finally
+							{
+								dpy = Lock();
+							}
 							return AppEvent.Regular;
 						}
 						else
@@ -550,7 +570,15 @@ public sealed class Display : IDisposable
 							if(Xlib.XNextEventWithTimeout
 								(dpy, out xevent, timeout) > 0)
 							{
-								DispatchEvent(ref xevent);
+								Unlock();
+								try
+								{
+									DispatchEvent(ref xevent);
+								}
+								finally
+								{
+									dpy = Lock();
+								}
 								return AppEvent.Regular;
 							}
 						}
@@ -558,7 +586,6 @@ public sealed class Display : IDisposable
 				}
 				finally
 				{
-					inMainLoop = false;
 					Unlock();
 				}
 

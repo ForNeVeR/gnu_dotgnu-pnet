@@ -41,6 +41,7 @@ typedef struct _tagILWriter ILWriter;
 #define	IL_IMAGESECT_DISCARDABLE	0x02000000
 #define	IL_IMAGESECT_EXECUTE		0x20000000
 #define	IL_IMAGESECT_READ			0x40000000
+#define	IL_IMAGESECT_WRITE			0x80000000
 
 /*
  * Predefined flag combinations for interesting sections.
@@ -56,6 +57,12 @@ typedef struct _tagILWriter ILWriter;
 #define	IL_IMAGESECT_DEBUG			(IL_IMAGESECT_INIT_DATA | \
 									 IL_IMAGESECT_DISCARDABLE | \
 									 IL_IMAGESECT_READ)
+#define	IL_IMAGESECT_SDATA			(IL_IMAGESECT_INIT_DATA | \
+									 IL_IMAGESECT_READ | \
+									 IL_IMAGESECT_WRITE)
+#define	IL_IMAGESECT_TLS			(IL_IMAGESECT_INIT_DATA | \
+									 IL_IMAGESECT_READ | \
+									 IL_IMAGESECT_WRITE)
 
 /*
  * Offset of entries within the IL runtime header.

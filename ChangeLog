@@ -6,6 +6,12 @@
 	use "RuntimeHelpers.InitializeArray" to set up arrays whose
 	members are numeric and constant.
 
+	* ilasm/Makefile.am, ilasm/ilasm_data.c, ilasm/ilasm_data.h,
+	ilasm/ilasm_grammar.y, image/image.h, image/meta_writer.c,
+	image/pecoff_writer.c, image/writer.c, include/il_writer.h:
+	implement the ".data" directive in the assembler and supporting
+	logic within the PE/COFF writing routines.
+
 2001-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/HACKING: add Gopal V.'s description of internal methods

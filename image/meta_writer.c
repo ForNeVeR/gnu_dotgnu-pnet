@@ -1247,6 +1247,35 @@ static ILSortFunc const SortFuncs[64] = {
 	0,
 };
 
+/*
+ * Add an RVA fixup for field references to data sections.
+ */
+static void AddRVAFixup(ILWriter *writer, unsigned long fixupRVA,
+						unsigned long valueRVA)
+{
+	ILFixup *fixup = ILMemPoolAlloc(&(writer->fixups), ILFixup);
+	if(fixup)
+	{
+		fixup->kind = IL_FIXUP_FIELD_RVA;
+		fixup->rva = fixupRVA;
+		fixup->un.value = valueRVA;
+		fixup->next = 0;
+		if(writer->lastFixup)
+		{
+			writer->lastFixup->next = fixup;
+		}
+		else
+		{
+			writer->firstFixup = fixup;
+		}
+		writer->lastFixup = fixup;
+	}
+	else
+	{
+		writer->outOfMemory = 1;
+	}
+}
+
 int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 {
 	unsigned char buffer[256];
@@ -1444,6 +1473,15 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 				{
 					(*func)(writer, image, values,
 							image->tokenData[tokenType][token]);
+					if(tokenKind == IL_META_TOKEN_FIELD_RVA)
+					{
+						/* We need to add an RVA fixup to reposition
+						   field RVA's once we know where the ".sdata"
+						   and ".tls" sections reside */
+						AddRVAFixup(writer, ILWriterGetTextRVA(writer) + posn,
+									((ILFieldRVA *)(image->tokenData
+										[tokenType][token]))->rva);
+					}
 				}
 				else
 				{

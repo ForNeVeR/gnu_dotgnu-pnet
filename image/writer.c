@@ -205,7 +205,7 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 	}
 
 	/* Apply token fixups to the code section */
-	_ILWriteTokenFixups(writer, image);
+	_ILWriteTokenFixups(writer);
 
 	/* Write all metadata structures to their respective buffers */
 	_ILWriteMetadataIndex(writer, image);

@@ -548,6 +548,8 @@ void _ILWriteFinal(ILWriter *writer)
 	unsigned long importHintTable;
 	unsigned long entryPoint;
 	unsigned char entry[20];
+	unsigned long dataSection;
+	unsigned long tlsSection;
 
 	/* Set the entry point token code */
 	if(writer->entryPoint)
@@ -742,8 +744,18 @@ void _ILWriteFinal(ILWriter *writer)
 	offset += realTextSize;
 	section = writer->sections;
 	numSections = 1;
+	dataSection = 0;
+	tlsSection = 0;
 	while(section != 0)
 	{
+		if(!strcmp(section->name, ".sdata"))
+		{
+			dataSection = imageSize;
+		}
+		else if(!strcmp(section->name, ".tls"))
+		{
+			tlsSection = imageSize;
+		}
 		WriteSection(writer, table, section->name,
 					 imageSize, offset, section->length, section->flags);
 		table += 40;
@@ -788,6 +800,9 @@ void _ILWriteFinal(ILWriter *writer)
 						 0x2000 + ((textLength + 8191) & ~8191));
 		WriteBackPatch32(writer, writer->optOffset + 140, 12);
 	}
+
+	/* Write the field RVA fixups, now that the data sections are in place */
+	_ILWriteFieldRVAFixups(writer, dataSection, tlsSection);
 
 	/* Flush the image to the output stream */
 	WriteFlush(writer);
@@ -856,8 +871,9 @@ void ILWriterSetFixup(ILWriter *writer, unsigned long rva,
 	ILFixup *fixup = ILMemPoolAlloc(&(writer->fixups), ILFixup);
 	if(fixup)
 	{
+		fixup->kind = IL_FIXUP_TOKEN;
 		fixup->rva = rva;
-		fixup->item = item;
+		fixup->un.item = item;
 		fixup->next = 0;
 		if(writer->lastFixup)
 		{
@@ -875,16 +891,47 @@ void ILWriterSetFixup(ILWriter *writer, unsigned long rva,
 	}
 }
 
-void _ILWriteTokenFixups(ILWriter *writer, ILImage *image)
+void _ILWriteTokenFixups(ILWriter *writer)
 {
 	ILFixup *fixup = writer->firstFixup;
 	unsigned long offset;
 	unsigned long token;
 	while(fixup != 0)
 	{
-		offset = fixup->rva + writer->firstSection - 0x2000;
-		token = fixup->item->token;
-		WriteBackPatch32(writer, offset, token);
+		if(fixup->kind == IL_FIXUP_TOKEN)
+		{
+			offset = fixup->rva + writer->firstSection - 0x2000;
+			token = fixup->un.item->token;
+			WriteBackPatch32(writer, offset, token);
+		}
+		fixup = fixup->next;
+	}
+}
+
+void _ILWriteFieldRVAFixups(ILWriter *writer, unsigned long dataSection,
+							unsigned long tlsSection)
+{
+	ILFixup *fixup = writer->firstFixup;
+	unsigned long offset;
+	unsigned long rva;
+	while(fixup != 0)
+	{
+		if(fixup->kind == IL_FIXUP_FIELD_RVA)
+		{
+			offset = fixup->rva + writer->firstSection - 0x2000;
+			rva = fixup->un.value;
+			if((rva & (ILUInt32)0x80000000) == 0)
+			{
+				/* The RVA is in the ".sdata" section */
+				rva += dataSection;
+			}
+			else
+			{
+				/* The RVA is in the ".tls" section */
+				rva = (rva & (ILUInt32)0x7FFFFFFF) + tlsSection;
+			}
+			WriteBackPatch32(writer, offset, rva);
+		}
 		fixup = fixup->next;
 	}
 }

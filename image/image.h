@@ -280,11 +280,18 @@ typedef struct _tagILDebugToken
 typedef struct _tagILFixup ILFixup;
 struct _tagILFixup
 {
-	unsigned long	rva;
-	ILProgramItem  *item;
+	int					kind;
+	unsigned long		rva;
+	union
+	{
+		ILProgramItem  *item;
+		unsigned long	value;
+	} un;
 	ILFixup        *next;
 
 };
+#define	IL_FIXUP_TOKEN		0
+#define	IL_FIXUP_FIELD_RVA	1
 
 /*
  * Internal structure used when writing IL binaries.
@@ -474,7 +481,13 @@ void _ILCompactReferences(ILImage *image);
 /*
  * Write token fixups to the ".text" section.
  */
-void _ILWriteTokenFixups(ILWriter *writer, ILImage *image);
+void _ILWriteTokenFixups(ILWriter *writer);
+
+/*
+ * Write field RVA fixups to the ".text" section.
+ */
+void _ILWriteFieldRVAFixups(ILWriter *writer, unsigned long dataSection,
+							unsigned long tlsSection);
 
 /*
  * Recommended number of token columns for use with "ILImageRawTokenData".

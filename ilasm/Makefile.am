@@ -2,6 +2,7 @@ bin_PROGRAMS  = ilasm
 man_MANS      = ilasm.1
 EXTRA_DIST    = $(man_MANS)
 ilasm_SOURCES = ilasm_build.c \
+				ilasm_data.c \
 				ilasm_grammar.y \
 				ilasm_main.c \
 				ilasm_output.c \

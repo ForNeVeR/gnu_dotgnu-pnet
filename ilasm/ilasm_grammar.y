@@ -3,7 +3,7 @@
  * ilasm_grammar.y - Input file for yacc that defines the syntax of
  *                   the ILASM language.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "il_utils.h"
 #include "ilasm_build.h"
 #include "ilasm_output.h"
+#include "ilasm_data.h"
 #ifdef HAVE_STDARG_H
 	#include <stdarg.h>
 #else
@@ -866,6 +867,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %type <exception>	ExceptionClause ExceptionClauses
 %type <exception>	JavaExceptionClause JavaExceptionClauses
 %type <token>		MethodReference
+%type <integer>		DataItemCount
 
 %expect 8
 
@@ -1440,7 +1442,9 @@ LayoutOption
 
 AtOption
 	: /* empty */			{ $$ = (ILInt64)0xFFFFFFFF; }
-	| K_AT Identifier		{ $$ = (ILInt64)0xFFFFFFFF; /* TODO */ }
+	| K_AT Identifier		{
+				$$ = (ILInt64)ILAsmDataResolveLabel($2.string);
+			}
 	| K_AT Integer32		{ $$ = $2; }
 	;
 
@@ -2324,13 +2328,16 @@ DataDeclaration
 	;
 
 DataHeading
-	: D_DATA DataTLS Identifier '='
-	| D_DATA DataTLS
+	: D_DATA DataTLS Identifier '='		{
+				/* Record the section offset with the label */
+				ILAsmDataSetLabel($3.string);
+			}
+	| D_DATA DataTLS					{ /* nothing to do here */ }
 	;
 
 DataTLS
-	: /* empty */
-	| K_TLS
+	: /* empty */			{ ILAsmDataSetNormal(); }
+	| K_TLS					{ ILAsmDataSetTLS(); }
 	;
 
 DataBody
@@ -2344,27 +2351,60 @@ DataItemList
 	;
 
 DataItemCount
-	: /* empty */
-	| '[' Integer32 ']'
+	: /* empty */			{ $$ = 1; }
+	| '[' Integer32 ']'		{ $$ = $2; }
 	;
 
 DataItem
-	: K_CHAR '*' '(' ComposedString ')'
-	| K_WCHAR '*' '(' ComposedString ')'
-	| '&' '(' Identifier ')'
-	| K_BYTEARRAY Bytes
-	| K_FLOAT32 '(' Float64 ')' DataItemCount
-	| K_FLOAT64 '(' Float64 ')' DataItemCount
-	| K_INT64 '(' Integer64 ')' DataItemCount
-	| K_INT32 '(' Integer32 ')' DataItemCount
-	| K_INT16 '(' Integer32 ')' DataItemCount
-	| K_INT8 '(' Integer32 ')' DataItemCount
-	| K_FLOAT32 DataItemCount
-	| K_FLOAT64 DataItemCount
-	| K_INT64 DataItemCount
-	| K_INT32 DataItemCount
-	| K_INT16 DataItemCount
-	| K_INT8 DataItemCount
+	: K_CHAR '*' '(' ComposedString ')'	{
+				ILAsmDataWriteBytes((ILUInt8 *)($4.string), $4.len);
+			}
+	| K_WCHAR '*' '(' ComposedString ')'	{
+				ILAsmDataWriteBytes((ILUInt8 *)($4.string), $4.len);
+			}
+	| '&' '(' Identifier ')'	{
+				/* Not supported */
+				ILAsmDataWriteInt32(0, 1);
+			}
+	| K_BYTEARRAY Bytes	{
+				ILAsmDataWriteBytes((ILUInt8 *)($2.string), $2.len);
+			}
+	| K_FLOAT32 '(' Float64 ')' DataItemCount	{
+				ILAsmDataWriteFloat32($3.fbytes, (ILUInt32)($5));
+			}
+	| K_FLOAT64 '(' Float64 ')' DataItemCount	{
+				ILAsmDataWriteFloat64($3.dbytes, (ILUInt32)($5));
+			}
+	| K_INT64 '(' Integer64 ')' DataItemCount	{
+				ILAsmDataWriteInt64($3, (ILUInt32)($5));
+			}
+	| K_INT32 '(' Integer32 ')' DataItemCount	{
+				ILAsmDataWriteInt32((ILInt32)($3), (ILUInt32)($5));
+			}
+	| K_INT16 '(' Integer32 ')' DataItemCount	{
+				ILAsmDataWriteInt16((ILInt32)($3), (ILUInt32)($5));
+			}
+	| K_INT8 '(' Integer32 ')' DataItemCount	{
+				ILAsmDataWriteInt8((ILInt32)($3), (ILUInt32)($5));
+			}
+	| K_FLOAT32 DataItemCount	{
+				ILAsmDataPad((ILUInt32)(4 * $2));
+			}
+	| K_FLOAT64 DataItemCount	{
+				ILAsmDataPad((ILUInt32)(8 * $2));
+			}
+	| K_INT64 DataItemCount		{
+				ILAsmDataPad((ILUInt32)(8 * $2));
+			}
+	| K_INT32 DataItemCount		{
+				ILAsmDataPad((ILUInt32)(4 * $2));
+			}
+	| K_INT16 DataItemCount		{
+				ILAsmDataPad((ILUInt32)(2 * $2));
+			}
+	| K_INT8 DataItemCount		{
+				ILAsmDataPad((ILUInt32)($2));
+			}
 	;
 
 /*

@@ -1,3 +1,15 @@
+
+2003-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/unroll_arm.c, engine/unroll_arm_arith.c,
+	engine/unroll_arm_branch.c, engine/unroll_arm_const.c,
+	engine/unroll_arm_conv.c, engine/unroll_arm_ptr.c,
+	engine/unroll_arm_var.c, engine/unroll_x86.c,
+	engine/unroll_x86_arith.c, engine/unroll_x86_branch.c,
+	engine/unroll_x86_const.c, engine/unroll_x86_conv.c,
+	engine/unroll_x86_ptr.c, engine/unroll_x86_var.c: remove the
+	old unroller code, since it is now obsolete.
+
 2003-07-20  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_emit.c: update for

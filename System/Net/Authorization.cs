@@ -17,33 +17,87 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 namespace System.Net
 {
 
+using System;
 
 public class Authorization
 {
-	[TODO]
-	public Authorization(string token) {}
+	private bool complete;
+	private String connectiongroupid;
+	private String message;
+	private String[] protectionrealm;
+
+	public Authorization(string token) 
+	{
+		if (token == null || token == "")
+			message = null;
+		
+		message = token;
+		complete = true;
+		connectiongroupid = null;
+	}
 	
-	[TODO]
-	public Authorization(string token, bool finished) {}
+	public Authorization(string token, bool finished) 
+	{
+		if (token == null || token == "")
+			message = null;
+		
+		message = token;
+		complete = finished;
+		connectiongroupid = null;	
+	}
 	
-	[TODO]
-	public Authorization(string token, bool finished, string connectionGroupId) {}
+	public Authorization(string token, bool finished, string connectionGroupId) 
+	{
+		if (token == null || token == "")
+			message = null;
+			
+		if (connectionGroupId == null || connectionGroupId == "")
+			connectiongroupid = null;
+		
+		message = token;
+		complete = finished;
+		connectiongroupid = connectionGroupId;	
+	}
 	
-	[TODO]
-	public bool Complete { get{ return false; } }
+	public bool Complete 
+	{ 
+		get
+		{ 
+			return complete;
+		} 
+	}
 	
-	[TODO]
-	public String ConnectionGroupId { get{ return null; } }
+	public String ConnectionGroupId 
+	{ 
+		get
+		{ 
+			return connectiongroupid; 
+		} 
+	}
 	
-	[TODO]
-	public String Message { get{ return null; } }
+	public String Message 
+	{ 
+		get
+		{ 
+			return message; 
+		} 
+	}
 	
-	[TODO]
-	public String[] ProtectionRealm { get{ return null; } set{} }
+	public String[] ProtectionRealm 
+	{ 
+		get
+		{ 
+			return protectionrealm; 
+		} 
+		set
+		{
+			protectionrealm = value;
+		} 
+	}
 	
 }; //class Authorization
 

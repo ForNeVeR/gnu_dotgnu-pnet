@@ -295,7 +295,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					try
 					{
 						IntPtr display = dpy.Lock();
-						if(cursor != value)
+						if(handle != Xlib.Drawable.Zero && cursor != value)
 						{
 							cursor = value;
 							if(value == null)

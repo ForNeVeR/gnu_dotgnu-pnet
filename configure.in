@@ -7,6 +7,7 @@ AC_SUBST(CSCC)
 AC_SUBST(CSCC_SYSTEM_FLAGS)
 AC_SUBST(CSCC_FLAGS)
 AC_SUBST(CSCC_COMPILE)
+AC_SUBST(CSCC_EXE_LIBS)
 AC_SUBST(RESGEN)
 AC_SUBST(RESGEN_FLAGS)
 
@@ -61,9 +62,12 @@ if test "$MSTOOLS" = "no"; then
 		fi
 		CSCC_COMPILE='@sh $(top_srcdir)/tools/mscsc.sh "$(CSCC)" $(CSCC_SYSTEM_FLAGS) $(CSCC_FLAGS)'
 		CSCC_SYSTEM_FLAGS="-fsyntax-check"
+		CSCC_EXE_LIBS=""
 	else
 		CSCC_SYSTEM_FLAGS=`sh "${srcdir}/tools/csccflags.sh" "$CSCC" "$PNET_PATH"`" -fsyntax-check"
 		CSCC_COMPILE='"$(CSCC)" $(CSCC_SYSTEM_FLAGS) $(CSCC_FLAGS)'
+		# Note: "-nostdlib" used temporarily until cscc is a real compiler.
+		CSCC_EXE_LIBS='-L$(top_srcdir)/runtime/System -nostdlib'
 	fi
 else
 	AC_PATH_PROG(CSCC, csc)
@@ -75,6 +79,7 @@ else
 	fi
 	CSCC_COMPILE='@sh $(top_srcdir)/tools/mscsc.sh "$(CSCC)" $(CSCC_SYSTEM_FLAGS) $(CSCC_FLAGS)'
 	CSCC_SYSTEM_FLAGS="-fsyntax-check"
+	CSCC_EXE_LIBS=""
 fi
 
 dnl Find the .NET resource generator to use.
@@ -111,4 +116,5 @@ runtime/Makefile
 runtime/System/Makefile
 resources/Makefile
 resources/en_US/Makefile
-resources/en_US/runtime/Makefile])
+resources/en_US/runtime/Makefile
+csunit/Makefile])

@@ -5,6 +5,13 @@
 resources/en_US/runtime/Arg.txt: new classes "System.BitConverter" and
 "System.Buffer".
 
+* Makefile.am, configure.in, csunit/.cvsignore, csunit/Makefile.am,
+csunit/README, csunit/Test.cs, csunit/TestArray.cs, csunit/TestAssertFailed.cs,
+csunit/TestCase.cs, csunit/TestException.cs, csunit/TestFailure.cs,
+csunit/TestMain.cs, csunit/TestResult.cs, csunit/TestStop.cs,
+csunit/TestSuite.cs, csunit/TestWriterResult.cs: implement the "csunit"
+program, for performing unit tests on the library.
+
 2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/RuntimeType.cs,

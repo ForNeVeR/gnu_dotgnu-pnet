@@ -298,9 +298,54 @@ static void DumpClassNameSP(FILE *stream, ILClass *classInfo)
  */
 static void DumpDocComments(FILE *stream, ILNode *attrs, int indent)
 {
-	/* TODO */
-	Indent(stream, indent);
-	fputs("<Docs/>\n", stream);
+	ILNode_ListIter iter;
+	ILNode *node;
+	char *str;
+	int len;
+	int sawComment = 0;
+	ILNode_ListIter_Init(&iter, attrs);
+	while((node = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if(yyisa(node, ILNode_DocComment))
+		{
+			if(!sawComment)
+			{
+				Indent(stream, indent);
+				fputs("<Docs>", stream);
+				sawComment = 1;
+			}
+			else
+			{
+				putc('\n', stream);
+			}
+			str = ((ILNode_DocComment *)node)->str;
+			len = ((ILNode_DocComment *)node)->len;
+			if(len > 0 && str[0] == ' ')
+			{
+				/* Strip a leading space, to normalize the line */
+				++str;
+				--len;
+			}
+			if(len > 0 && str[len - 1] == '\n')
+			{
+				/* Strip the newline */
+				--len;
+			}
+			if(len > 0)
+			{
+				fwrite(str, 1, len, stream);
+			}
+		}
+	}
+	if(sawComment)
+	{
+		fputs("</Docs>\n", stream);
+	}
+	else
+	{
+		Indent(stream, indent);
+		fputs("<Docs/>\n", stream);
+	}
 }
 
 /*
@@ -747,6 +792,7 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 			fputs(CSTypeToName(ILTypeGetParam(signature, param)), stream);
 			fputs("\"/>\n", stream);
 		}
+		Indent(stream, indent + 2);
 		fputs("</Parameters>\n", stream);
 	}
 	else
@@ -957,6 +1003,7 @@ static void GenerateDocsForProperty(FILE *stream,
 			fputs(CSTypeToName(ILTypeGetParam(signature, param)), stream);
 			fputs("\"/>\n", stream);
 		}
+		Indent(stream, indent + 2);
 		fputs("</Parameters>\n", stream);
 	}
 	else

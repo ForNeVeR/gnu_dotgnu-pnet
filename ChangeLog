@@ -10,6 +10,9 @@ comment nodes from the C# parser.
 
 * cscc/cs_scanner.l: don't include "///" in the value of DOC_COMMENT tokens.
 
+* cscc/csdoc.c: implement DumpDocComments and fix a bug with the indentation
+of parameter lists.
+
 2001-09-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, Makefile.am, ildb/: add the source code for the

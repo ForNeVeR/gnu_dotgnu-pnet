@@ -189,9 +189,9 @@ ILInt32 _IL_SocketMethods_Select(ILExecThread *_thread,
 								 System_Array *errorarray,
 								 ILInt64 timeout)
 {
-	/* TODO */
-	ILSysIOSetErrno(IL_ERRNO_EPERM);
-	return 0;
+  return ILSysIOSocketSelect((ILInt32 *) ArrayToBuffer(readarray), 
+			     (ILInt32 *) ArrayToBuffer(writearray),
+			     (ILInt32 *) ArrayToBuffer(errorarray), timeout);
 }
 
 /*
@@ -217,3 +217,12 @@ ILString *_IL_SocketMethods_GetErrnoMessage(ILExecThread *thread, ILInt32 error)
 		return 0;
 	}
 }
+
+
+
+
+
+
+
+
+

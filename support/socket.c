@@ -25,6 +25,9 @@
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
@@ -137,7 +140,68 @@ int ILSysIOSocketClose(ILSysIOHandle sockfd)
 	return (close((int)sockfd) == 0);
 }
 
+ILInt32 ILSysIOSocketSelect(ILInt32 *readfds, ILInt32 *writefds, 
+			ILInt32 *exceptfds, ILInt64 timeout)
+{
+  fd_set *read, *write, *except;
+  int highest = 0;
+  int fd = 0; /* Current File Descriptor */
+  struct timeval time;  
+  time.tv_usec = timeout;
+  while(readfds != NULL) 
+    {
+      fd = (int) *readfds;
+      if (FD_ISSET(fd, read) || fd == NULL) /* Can't Happen */
+	{
+	  continue;
+	}
+      FD_SET(fd, read);
+      if (fd > highest) 
+	{
+	  highest = fd;
+	}
+      readfds++;
+    }
+  fd = 0; /* Set back */
+  while(writefds != NULL) 
+    {
+      fd = (int) *writefds;
+      if (FD_ISSET(fd, write) || fd == NULL) /* Can't Happen */
+	{
+	  continue;
+	}
+      FD_SET(fd, write);
+      if (fd > highest) 
+	{
+	  highest = fd;
+	}
+      writefds++;
+    }
+  fd = 0;
+  while(exceptfds != NULL) 
+    {
+      fd = (int) *exceptfds;
+      if (FD_ISSET(fd, except) || fd == NULL) /* Can't Happen */
+	{
+	  continue;
+	}
+      FD_SET(fd, except);
+      if (fd > highest) 
+	{
+	  highest = fd;
+	}
+      exceptfds++;
+    }
+  return (ILInt32)select(highest+1, read, write, except, &time); 
+}
+
 int ILSysIOSocketShutdown(ILSysIOHandle sockfd, ILInt32 how)
 {
 	return (shutdown((int)sockfd, how) == 0);
 }
+
+
+
+
+
+

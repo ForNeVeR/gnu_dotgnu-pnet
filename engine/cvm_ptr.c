@@ -386,6 +386,15 @@ case COP_CKNULL_N:
 }
 break;
 
+case COP_LDRVA:
+{
+	/* Load a relative virtual address (RVA) onto the stack */
+	/* TODO */
+	stacktop[0].ptrValue = 0;
+	MODIFY_PC_AND_STACK(5, 1);
+}
+break;
+
 case COP_BREAD_ELEM:
 {
 	/* Read a byte value from an array element */

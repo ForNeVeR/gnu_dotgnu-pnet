@@ -126,6 +126,14 @@ case COP_WADDR:
 }
 break;
 
+case COP_MADDR:
+{
+	/* Get the address of a managed value N words down the stack */
+	stacktop[0].ptrValue = (void *)(stacktop - ((int)(pc[1])));
+	MODIFY_PC_AND_STACK(2, 1);
+}
+break;
+
 case COP_BFIXUP:
 {
 	/* Perform a byte fixup on a frame offset that corresponds
@@ -277,6 +285,14 @@ case COP_WADDR:
 {
 	/* Wide version of "waddr" */
 	stacktop[0].ptrValue = (void *)(&(frame[IL_READ_UINT32(pc + 2)]));
+	MODIFY_PC_AND_STACK(6, 1);
+}
+break;
+
+case COP_MADDR:
+{
+	/* Wide version of "maddr" */
+	stacktop[0].ptrValue = (void *)(stacktop - IL_READ_UINT32(pc + 2));
 	MODIFY_PC_AND_STACK(6, 1);
 }
 break;

@@ -210,6 +210,19 @@ case COP_CALL_INTERFACE:
 }
 break;
 
+case COP_CCTOR_ONCE:
+{
+	/* Execute the rest of this static constructor method once only */
+	if((method->member.owner->attributes & IL_META_TYPEDEF_CCTOR_ONCE) == 0)
+	{
+		/* We haven't executed this method yet, so mark and continue */
+		method->member.owner->attributes |= IL_META_TYPEDEF_CCTOR_ONCE;
+		MODIFY_PC_AND_STACK(1, 0);
+		break;
+	}
+}
+/* Fall through to the next case */
+
 case COP_RETURN:
 {
 	/* Return from a method with no return value */

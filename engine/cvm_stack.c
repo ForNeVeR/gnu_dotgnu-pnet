@@ -54,6 +54,14 @@ case COP_DUP_N:
 }
 break;
 
+case COP_DUP_WORD_N:
+{
+	/* Duplicate a word which is N words down the stack */
+	stacktop[0] = stacktop[-(((int)(pc[1])) + 1)];
+	MODIFY_PC_AND_STACK(2, 1);
+}
+break;
+
 case COP_POP:
 {
 	/* Pop the top-most word from the stack */
@@ -72,6 +80,17 @@ case COP_POP_N:
 {
 	/* Pop the top N words from the stack */
 	MODIFY_PC_AND_STACK(2, -((int)(pc[1])));
+}
+break;
+
+case COP_SQUASH:
+{
+	/* Squash N words out of the stack, M words down the stack */
+	IL_MEMMOVE(&(stacktop[-(((int)(pc[1])) + ((int)(pc[2])))]),
+			   &(stacktop[-((int)(pc[1]))]),
+			   sizeof(CVMWord *) * ((int)(pc[1])));
+	stacktop -= (int)(pc[2]);
+	pc += 3;
 }
 break;
 
@@ -127,10 +146,29 @@ case COP_DUP_N:
 }
 break;
 
+case COP_DUP_WORD_N:
+{
+	/* Wide version of "dup_word_n" */
+	stacktop[0] = stacktop[-(((int)IL_READ_UINT32(pc + 2)) + 1)];
+	MODIFY_PC_AND_STACK(6, 1);
+}
+break;
+
 case COP_POP_N:
 {
 	/* Wide version of "pop_n" */
 	MODIFY_PC_AND_STACK(6, -((int)IL_READ_UINT32(pc + 2)));
+}
+break;
+
+case COP_SQUASH:
+{
+	/* Wide version of "squash" */
+	tempNum = IL_READ_UINT32(pc + 2);
+	tempptr = stacktop - tempNum - IL_READ_UINT32(pc + 6);
+	IL_MEMMOVE(tempptr, stacktop - tempNum, sizeof(CVMWord *) * tempNum);
+	stacktop -= IL_READ_UINT32(pc + 6);
+	pc += 8;
 }
 break;
 

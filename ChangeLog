@@ -64,6 +64,8 @@ runtime/System/Runtime/InteropServices/GCHandle.cs: add #if code to only
 include ECMA-specified features when ECMA_COMPAT is defined; add the
 CLSCompliant attribute to methods that need it.
 
+* runtime/System/Currency.cs: remove obsolete file.
+
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/Platform/Errno.cs: list of Unix-style errno codes for interfacing

@@ -62,13 +62,8 @@ public unsafe class CP932 : Encoding
 				// Determine the length of the final output.
 				int length = 0;
 				int ch, value;
-#if __PNET__
 				byte *cjkToJis = convert.cjkToJis;
 				byte *extraToJis = convert.extraToJis;
-#else
-				byte[] cjkToJis = convert.cjkToJis;
-				byte[] extraToJis = convert.extraToJis;
-#endif
 				while(count > 0)
 				{
 					ch = chars[index++];
@@ -158,15 +153,9 @@ public unsafe class CP932 : Encoding
 				int posn = byteIndex;
 				int byteLength = bytes.Length;
 				int ch, value;
-#if __PNET__
 				byte *cjkToJis = convert.cjkToJis;
 				byte *greekToJis = convert.greekToJis;
 				byte *extraToJis = convert.extraToJis;
-#else
-				byte[] cjkToJis = convert.cjkToJis;
-				byte[] greekToJis = convert.greekToJis;
-				byte[] extraToJis = convert.extraToJis;
-#endif
 				while(charCount > 0)
 				{
 					ch = chars[charIndex++];
@@ -434,11 +423,7 @@ public unsafe class CP932 : Encoding
 				int posn = charIndex;
 				int length = 0;
 				int byteval, value;
-#if __PNET__
 				byte *table = convert.jisx0208ToUnicode;
-#else
-				byte[] table = convert.jisx0208ToUnicode;
-#endif
 				while(byteCount > 0)
 				{
 					byteval = bytes[byteIndex++];
@@ -738,11 +723,7 @@ public unsafe class CP932 : Encoding
 					int charLength = chars.Length;
 					int byteval, value;
 					int last = lastByte;
-#if __PNET__
 					byte *table = convert.jisx0208ToUnicode;
-#else
-					byte[] table = convert.jisx0208ToUnicode;
-#endif
 					while(byteCount > 0)
 					{
 						byteval = bytes[byteIndex++];

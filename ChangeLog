@@ -41,6 +41,10 @@
 	tests/runtime/System/Threading/TestThread.cs: changes for ECMA
 	compatibility.
 
+	* I18N/I18N.build, I18N/CJK/CP932.cs, I18N/CJK/CodeTable.cs,
+	I18N/CJK/JISConvert.cs: remove the "__PNET__" symbol from the
+	I18N code, because it is obsolete.
+
 2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, System.Configuration.Install/.cvsignore,

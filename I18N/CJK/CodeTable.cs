@@ -68,11 +68,7 @@ internal unsafe sealed class CodeTable : IDisposable
 	// Get the starting address for a particular section within
 	// the code table.  This address is guaranteed to persist
 	// after "Dispose" is called.
-#if __PNET__
 	public byte *GetSection(int num)
-#else
-	public byte[] GetSection(int num)
-#endif
 			{
 				// If the table has been disposed, then bail out.
 				if(stream == null)
@@ -107,16 +103,7 @@ internal unsafe sealed class CodeTable : IDisposable
 					// Is this the section we are looking for?
 					if(sectNum == num)
 					{
-#if __PNET__
 						return GetAddress(stream, posn + 8);
-#else
-						byte[] buf = new byte [sectLen];
-						if(stream.Read(buf, 0, sectLen) != sectLen)
-						{
-							break;
-						}
-						return buf;
-#endif
 					}
 
 					// Advance to the next section.
@@ -127,12 +114,10 @@ internal unsafe sealed class CodeTable : IDisposable
 				return null;
 			}
 
-#if __PNET__
 	// Back door access into the engine to get the address of
 	// an offset within a manifest resource stream.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static byte *GetAddress(Stream stream, long position);
-#endif
 
 }; // class CodeTable
 

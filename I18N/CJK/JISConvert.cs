@@ -38,19 +38,11 @@ internal unsafe sealed class JISConvert
 	private const int Extra_To_JIS        = 5;
 
 	// Public access to the conversion tables.
-#if __PNET__
 	public byte *jisx0208ToUnicode;
 	public byte *jisx0212ToUnicode;
 	public byte *cjkToJis;
 	public byte *greekToJis;
 	public byte *extraToJis;
-#else
-	public byte[] jisx0208ToUnicode;
-	public byte[] jisx0212ToUnicode;
-	public byte[] cjkToJis;
-	public byte[] greekToJis;
-	public byte[] extraToJis;
-#endif
 
 	// Constructor.
 	private JISConvert()

@@ -9,8 +9,6 @@
 				 nostdlib="true"
 				 optimize="true">
 
-			<define name="__PNET__" value="true"/>
-
 			<sources>
 				<includes name="Common/*.cs"/>
 			</sources>
@@ -38,8 +36,6 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true">
-
-			<define name="x_fixme__PNET__" value="true"/>
 
 			<sources>
 				<includes name="CJK/*.cs"/>
@@ -70,8 +66,6 @@
 				 nostdlib="true"
 				 optimize="true">
 
-			<define name="__PNET__" value="true"/>
-
 			<sources>
 				<includes name="MidEast/*.cs"/>
 			</sources>
@@ -96,8 +90,6 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true">
-
-			<define name="__PNET__" value="true"/>
 
 			<sources>
 				<includes name="Other/*.cs"/>
@@ -124,8 +116,6 @@
 				 nostdlib="true"
 				 optimize="true">
 
-			<define name="__PNET__" value="true"/>
-
 			<sources>
 				<includes name="Rare/*.cs"/>
 			</sources>
@@ -150,8 +140,6 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true">
-
-			<define name="__PNET__" value="true"/>
 
 			<sources>
 				<includes name="West/*.cs"/>

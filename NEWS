@@ -1,4 +1,8 @@
 
+0.5.4 (29 March 2003)
+
+	* Implement some of the ANSI C time routines.
+
 0.5.0 (11 January 2003)
 
 	* Bring the version number into sync with "pnet".

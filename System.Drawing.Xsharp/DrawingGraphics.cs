@@ -25,6 +25,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
+using System.Runtime.InteropServices;
 using Xsharp;
 
 internal sealed class DrawingGraphics : ToolkitGraphicsBase
@@ -209,17 +210,42 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				}
 			}
 
-	// Get the HDC associated with this graphics object.
+	/// Get the HDC associated with this graphics object.
+	/// The HDC is a GCHandle to the Xsharp.Graphics object.
+	/// To unwrap, just cast the IntPtr to a GCHandle and then
+	/// cast the Target of the GCHandle to Xsharp.Graphics.	
+	///
+	/// e.g.
+	///
+	/// GCHandle gcHandle;
+	///
+	/// // Convert the Hdc into a GCHandle.
+	/// gcHandle = (GCHandle)graphics.GetHdc();
+	///
+	/// // Convert the GCHandle into an Xsharp.Graphics object.
+	/// xsharpGraphics = (Xsharp.Graphics)(gcHandle.Target);
+	/// 
+	/// // Always release the Hdc after you've gotten the Xsharp.Graphics object.
+	/// // Make sure you release the gcHandle returned by the previous call
+	/// // to GetHdc().  Calling GetHdc again will return a completely different
+	/// // handle.
+	/// graphics.ReleaseHdc((IntPtr)gcHandle);
+	///
+	/// // Now you can use the Xsharp.Graphics object to do anything you like.
+	///
 	public override IntPtr GetHdc()
 			{
-				// We don't use HDC's in this implementation.
-				return IntPtr.Zero;
+				GCHandle handle = GCHandle.Alloc(graphics);
+				
+				return (IntPtr)handle;
 			}
 
 	// Release a HDC that was obtained using "GetHdc()".
 	public override void ReleaseHdc(IntPtr hdc)
 			{
-				// We don't use HDC's in this implementation.
+				GCHandle handle = (GCHandle)hdc;
+				
+				handle.Free();				
 			}
 
 	// Set the clipping region to empty.

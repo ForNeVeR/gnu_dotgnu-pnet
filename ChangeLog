@@ -1,4 +1,9 @@
+2004-06-06  Thong Nguyen  <tum@veridicus.com>
 
+	* System.Drawing.Xsharp/DrawingGraphics.cs: Added implementation
+	of GetHdc and ReleaseHdc using a GCHandle to the underlying
+	Xsharp Graphics object.
+	
 2004-06-05  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/ImageList.cs,

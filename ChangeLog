@@ -1,4 +1,8 @@
 
+2001-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* samples/mscorlib.dll: new version with the latest pnetlib changes.
+
 2001-12-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_type.c (ClrType_GetMembersImpl): implement the function.

@@ -4,6 +4,9 @@
 * resgen/resgen.c: update to understand Beta 2 resource formats, and
 add support for XML resources.
 
+* resgen/resgen.1, doc/pnettools.texi: update documentation to reflect
+the new support for XML resources in resgen.
+
 2001-09-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_xml.h, include/Makefile.am, support/xml.c, support/Makefile.am:

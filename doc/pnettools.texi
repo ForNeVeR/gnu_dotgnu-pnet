@@ -1719,7 +1719,6 @@ dynamic link libraries, or object files).
 @item -x
 @itemx --xml-input
 The input files are all assumed to be in XML resource format.
-This option is not supported yet.
 
 @cindex -T option (resgen)
 @cindex --text-output option (resgen)
@@ -1737,7 +1736,7 @@ The output format is set to binary resources.
 @cindex --xml-output option (resgen)
 @item -X
 @itemx --xml-output
-The output format is set to XML resources.  This option is not supported yet.
+The output format is set to XML resources.
 
 @cindex -s option (resgen)
 @cindex --sort-names option (resgen)

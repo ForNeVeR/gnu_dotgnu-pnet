@@ -1396,7 +1396,10 @@ int _ILImageSetToken(ILImage *image, ILProgramItem *item,
 	if(image->type != IL_IMAGETYPE_BUILDING)
 	{
 		/* We are loading an image, so use the supplied token */
-		item->token = (ILUInt32)token;
+		if(!(item->token))
+		{
+			item->token = (ILUInt32)token;
+		}
 		if(token < (unsigned long)0x40000000)
 		{
 			tokenId = (token & (unsigned long)0x00FFFFFF);

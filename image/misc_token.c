@@ -846,7 +846,12 @@ ILExportedType *ILExportedTypeCreate(ILImage *image, ILToken token,
 	type->classItem.programItem.image = image;
 	type->classItem.attributes = attributes | IL_META_TYPEDEF_REFERENCE;
 	type->classItem.className =
-		_ILClassNameCreate(image, token, name, namespace, 0);
+		_ILClassNameLookup(image, 0, 0, name, namespace);
+	if(!(type->classItem.className))
+	{
+		type->classItem.className =
+			_ILClassNameCreate(image, token, name, namespace, 0, 0);
+	}
 	if(!(type->classItem.className))
 	{
 		return 0;

@@ -226,14 +226,14 @@ struct _tagJavaConstEntry
 /*
  * Information about a class name.
  */
-typedef struct _tagILClassName ILClassName;
 struct _tagILClassName
 {
-	ILImage		   *image;				/* Image containing the class */
-	ILToken			token;				/* Token code for the class */
-	const char	   *name;				/* Name of the class */
-	const char	   *namespace;			/* Name of the class's namespace */
-	ILProgramItem  *scope;				/* Scope that the class is defined in */
+	ILImage		   *image;			/* Image containing the class */
+	ILToken			token;			/* Token code for the class */
+	const char	   *name;			/* Name of the class */
+	const char	   *namespace;		/* Name of the class's namespace */
+	ILProgramItem  *scope;			/* Scope that the class is defined in */
+	ILClassName	   *scopeName;		/* Name of the scope (nested classes) */
 };
 
 /*
@@ -241,7 +241,8 @@ struct _tagILClassName
  */
 ILClassName *_ILClassNameCreate(ILImage *image, ILToken token,
 								const char *name, const char *namespace,
-								ILProgramItem *scope);
+								ILProgramItem *scopeItem,
+								ILClassName *scopeName);
 
 /*
  * Update class name token information for a class.
@@ -253,6 +254,13 @@ void _ILClassNameUpdateToken(ILClass *info);
  * token lookup as necessary.
  */
 ILClass *_ILClassNameToClass(ILClassName *className);
+
+/*
+ * Look up a class name within a specific scope.
+ */
+ILClassName *_ILClassNameLookup(ILImage *image, ILProgramItem *scopeItem,
+								ILClassName *scopeName, const char *name,
+								const char *namespace);
 
 /*
  * Information about a class.

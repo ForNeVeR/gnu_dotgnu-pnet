@@ -94,13 +94,15 @@ struct _tagILContext
 /*
  * Key information to use when looking up an entry in the class hash.
  */
+typedef struct _tagILClassName ILClassName;
 typedef struct
 {
 	const char	   *name;
 	int				nameLen;
 	const char	   *namespace;
 	int				namespaceLen;
-	ILProgramItem  *scope;
+	ILProgramItem  *scopeItem;
+	ILClassName    *scopeName;
 	ILImage		   *image;
 	int				wantGlobal;
 	int				ignoreCase;

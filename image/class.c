@@ -26,7 +26,8 @@ extern	"C" {
 
 ILClassName *_ILClassNameCreate(ILImage *image, ILToken token,
 								const char *name, const char *namespace,
-								ILProgramItem *scope)
+								ILProgramItem *scopeItem,
+								ILClassName *scopeName)
 {
 	ILClassName *className;
 
@@ -53,7 +54,8 @@ ILClassName *_ILClassNameCreate(ILImage *image, ILToken token,
 			return 0;
 		}
 	}
-	className->scope = scope;
+	className->scope = scopeItem;
+	className->scopeName = scopeName;
 
 	/* Add the class name to the class name hash */
 	if(!ILHashAdd(image->context->classHash, className))
@@ -92,6 +94,30 @@ ILClass *_ILClassNameToClass(ILClassName *className)
 	{
 		return 0;
 	}
+}
+
+ILClassName *_ILClassNameLookup(ILImage *image, ILProgramItem *scopeItem,
+								ILClassName *scopeName, const char *name,
+								const char *namespace)
+{
+	ILClassKeyInfo key;
+	ILClassName *className;
+	key.name = name;
+	key.nameLen = strlen(name);
+	key.namespace = namespace;
+	key.namespaceLen = (namespace ? strlen(namespace) : 0);
+	key.scopeItem = scopeItem;
+	key.scopeName = scopeName;
+	key.image = 0;
+	key.wantGlobal = 0;
+	key.ignoreCase = 0;
+	className = ILHashFindType(image->context->classHash, &key, ILClassName);
+	if(className && !(className->scope) && scopeItem)
+	{
+		/* Update the scope item now that we know what it should be */
+		className->scope = scopeItem;
+	}
+	return className;
 }
 
 /*
@@ -202,6 +228,8 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 							ILProgramItem *scope)
 {
 	ILClass *info;
+	ILClassName *scopeName;
+	ILClass *scopeClass;
 
 	/* Allocate space for the class information block */
 	info = ILMemStackAlloc(&(image->memStack), ILClass);
@@ -215,11 +243,28 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 	info->parent = parent;
 	info->ext = 0;
 
+	/* Get the name of the scope if it is a nesting parent */
+	scopeClass = ILProgramItemToClass(scope);
+	if(scopeClass)
+	{
+		scopeName = scopeClass->className;
+	}
+	else
+	{
+		scopeName = 0;
+	}
+
 	/* Create the class name record */
-	info->className = _ILClassNameCreate(image, 0, name, namespace, scope);
+	info->className = _ILClassNameLookup
+			(image, scope, scopeName, name, namespace);
 	if(!(info->className))
 	{
-		return 0;
+		info->className = _ILClassNameCreate
+				(image, 0, name, namespace, scope, scopeName);
+		if(!(info->className))
+		{
+			return 0;
+		}
 	}
 
 	/* Create a nesting relationship with the scope if necessary */
@@ -420,7 +465,8 @@ ILClass *ILClassImport(ILImage *image, ILClass *info)
 	key.namespace = info->className->namespace;
 	key.namespaceLen = (info->className->namespace ?
 							strlen(info->className->namespace) : 0);
-	key.scope = scope;
+	key.scopeItem = scope;
+	key.scopeName = 0;
 	key.image = image;
 	key.wantGlobal = 0;
 	newName = ILHashFindType(image->context->classHash, &key, ILClassName);
@@ -586,7 +632,8 @@ ILClass *ILClassLookup(ILProgramItem *scope,
 	key.nameLen = strlen(name);
 	key.namespace = namespace;
 	key.namespaceLen = (namespace ? strlen(namespace) : 0);
-	key.scope = scope;
+	key.scopeItem = scope;
+	key.scopeName = 0;
 	key.image = 0;
 	key.wantGlobal = 0;
 	key.ignoreCase = 0;
@@ -603,7 +650,8 @@ ILClass *ILClassLookupLen(ILProgramItem *scope,
 	key.nameLen = nameLen;
 	key.namespace = namespace;
 	key.namespaceLen = namespaceLen;
-	key.scope = scope;
+	key.scopeItem = scope;
+	key.scopeName = 0;
 	key.image = 0;
 	key.wantGlobal = 0;
 	key.ignoreCase = 0;
@@ -724,7 +772,7 @@ static int UnicodeMatch(const ILClassName *classInfo,
 	}
 
 	/* Match the scope */
-	if(key->scope && key->scope != classInfo->scope)
+	if(key->scopeItem && key->scopeItem != classInfo->scope)
 	{
 		return 0;
 	}
@@ -759,7 +807,8 @@ ILClass *ILClassLookupUnicode(ILProgramItem *scope,
 	key.nameLen = nameLen;
 	key.namespace = (const char *)namespace;
 	key.namespaceLen = namespaceLen;
-	key.scope = scope;
+	key.scopeItem = scope;
+	key.scopeName = 0;
 	key.image = 0;
 	key.wantGlobal = 0;
 	key.ignoreCase = ignoreCase;
@@ -777,7 +826,8 @@ ILClass *ILClassLookupGlobal(ILContext *context,
 	key.nameLen = strlen(name);
 	key.namespace = namespace;
 	key.namespaceLen = (namespace ? strlen(namespace) : 0);
-	key.scope = 0;
+	key.scopeItem = 0;
+	key.scopeName = 0;
 	key.image = 0;
 	key.wantGlobal = 1;
 	key.ignoreCase = 0;
@@ -794,7 +844,8 @@ ILClass *ILClassLookupGlobalLen(ILContext *context,
 	key.nameLen = nameLen;
 	key.namespace = namespace;
 	key.namespaceLen = namespaceLen;
-	key.scope = 0;
+	key.scopeItem = 0;
+	key.scopeName = 0;
 	key.image = 0;
 	key.wantGlobal = 1;
 	key.ignoreCase = 0;
@@ -812,7 +863,8 @@ ILClass *ILClassLookupGlobalUnicode(ILContext *context,
 	key.nameLen = nameLen;
 	key.namespace = (const char *)namespace;
 	key.namespaceLen = namespaceLen;
-	key.scope = 0;
+	key.scopeItem = 0;
+	key.scopeName = 0;
 	key.image = 0;
 	key.wantGlobal = 1;
 	key.ignoreCase = ignoreCase;

@@ -27,3 +27,5 @@ Serialize_BadObjectID=Invalid object identifier
 Serialize_AlreadyRegistered=The specified object identifier has already been registered with a different object
 Serialize_MissingFixup=Missing fixup during deseralization process
 Serialize_BadFixup=Fixup could not be applied
+Serialize_StateMissing=Some of the required serialization state is missing
+Serialize_KeyValueMismatch=The key and value arrays for the hash table have different sizes

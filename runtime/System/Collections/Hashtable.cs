@@ -50,6 +50,9 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 	private float			  loadFactor;
 	private HashBucket[]	  table;
 	private int				  generation;
+#if CONFIG_SERIALIZATION
+	private SerializationInfo info;
+#endif
 
 	// Table of the first 400 prime numbers.
 	private static readonly int[] primes = {
@@ -390,10 +393,11 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 
 #if CONFIG_SERIALIZATION
 
-	[TODO]
 	protected Hashtable(SerializationInfo info, StreamingContext context)
 			{
-				// TODO
+				// Save the serialization information for the later call
+				// to "OnDeserializationCallback".
+				this.info = info;
 			}
 
 #endif // CONFIG_SERIALIZATION
@@ -847,18 +851,101 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 #if CONFIG_SERIALIZATION
 
 	// Get the serialization data for this object.
-	[TODO]
 	public virtual void GetObjectData(SerializationInfo info,
 									  StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				info.AddValue("LoadFactor", loadFactor);
+				info.AddValue("Version", generation);
+				info.AddValue("Comparer", comparer, typeof(IComparer));
+				info.AddValue("HashCodeProviderName", hcp,
+							  typeof(IHashCodeProvider));
+				info.AddValue("HashSize", (table == null ? 0 : table.Length));
+				Object[] temp = new Object [num];
+				Keys.CopyTo(temp, 0);
+				info.AddValue("Keys", temp, typeof(Object[]));
+				Values.CopyTo(temp, 0);
+				info.AddValue("Values", temp, typeof(Object[]));
 			}
 
 	// Process a deserialization callback.
-	[TODO]
 	public virtual void OnDeserialization(Object sender)
 			{
-				// TODO
+				// If the table is non-null, then we've been re-entered.
+				if(table != null)
+				{
+					return;
+				}
+
+				// Bail out if there is no de-serialization information.
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+
+				// De-serialize the main parameter values.
+				try
+				{
+					loadFactor = info.GetSingle("LoadFactor");
+					if(loadFactor < 0.1f)
+					{
+						loadFactor = 0.1f;
+					}
+					else if(loadFactor > 1.0f)
+					{
+						loadFactor = 1.0f;
+					}
+				}
+				catch(NotImplementedException)
+				{
+					// Floating point not supported by the runtime engine.
+				}
+				generation = info.GetInt32("Version");
+				comparer = (IComparer)(info.GetValue
+						("Comparer", typeof(IComparer)));
+				hcp = (IHashCodeProvider)(info.GetValue
+						("HashCodeProvider", typeof(IHashCodeProvider)));
+				int hashSize = info.GetInt32("HashSize");
+				if(hashSize > 0)
+				{
+					capacity = hashSize;
+					try
+					{
+						capacityLimit = (int)(hashSize * loadFactor);
+					}
+					catch(NotImplementedException)
+					{
+						// Floating point not supported by the runtime engine.
+						capacityLimit = capacity;
+					}
+					table = new HashBucket [hashSize];
+				}
+
+				// Get the key and value arrays from the serialization data.
+				Object[] keys = (Object[])(info.GetValue
+						("Keys", typeof(Object[])));
+				Object[] values = (Object[])(info.GetValue
+						("Values", typeof(Object[])));
+				if(keys == null || values == null)
+				{
+					throw new SerializationException
+						(_("Serialize_StateMissing"));
+				}
+				if(keys.Length != values.Length)
+				{
+					throw new SerializationException
+						(_("Serialize_KeyValueMismatch"));
+				}
+
+				// Add the (key, value) pairs to the hash table.
+				int posn;
+				for(posn = 0; posn < keys.Length; ++posn)
+				{
+					Add(keys[posn], values[posn]);
+				}
 			}
 
 #endif // CONFIG_SERIALIZATION
@@ -918,6 +1005,10 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					return hcp__;
 				}
+				set
+				{
+					hcp__ = value;
+				}
 			}
 
 	// Get the comparer that is being used by this instance.
@@ -952,12 +1043,17 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					this.table = table;
 				}
 #if CONFIG_SERIALIZATION
-		[TODO]
 		internal SynchronizedHashtable(SerializationInfo info,
 									   StreamingContext context)
 				: base(info, context)
 				{
-					// TODO
+					table = (Hashtable)
+						(info.GetValue("ParentTable", typeof(Hashtable)));
+					if(table == null)
+					{
+						throw new SerializationException
+							(_("Serialize_StateMissing"));
+					}
 				}
 #endif
 
@@ -1148,11 +1244,14 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 #if CONFIG_SERIALIZATION
 
 		// Get the serialization data for this object.
-		[TODO]
 		public override void GetObjectData(SerializationInfo info,
 										   StreamingContext context)
 				{
-					// TODO
+					if(info == null)
+					{
+						throw new ArgumentNullException("info");
+					}
+					info.AddValue("ParentTable", table, typeof(Hashtable));
 				}
 
 		// Process a deserialization callback.

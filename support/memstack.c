@@ -85,7 +85,7 @@ void *ILMemStackAllocItem(ILMemStack *stack, unsigned size)
 			/* We've reached the built-in limit for the stack */
 			return 0;
 		}
-		ptr = ILMalloc(size + IL_BEST_ALIGNMENT);
+		ptr = ILCalloc(size + IL_BEST_ALIGNMENT, 1);
 		if(!ptr)
 		{
 			/* The system itself is out of memory */

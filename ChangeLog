@@ -14,6 +14,9 @@
 	greater than 1k in a separate list, to allow for the allocation
 	of arbitrarily-sized objects on a memory stack.
 
+	* support/memstack.c: use "ILCalloc" instead of "ILMalloc",
+	because the return data is supposed to be all-zeroes.
+
 2001-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: add a "Standards" section with links to the ECMA

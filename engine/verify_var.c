@@ -25,13 +25,23 @@
  */
 static ILType *GetParamType(ILType *signature, ILMethod *method, ILUInt32 num)
 {
+	ILClass *owner;
 	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
 	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
 	{
 		/* This method has a "this" parameter */
 		if(!num)
 		{
-			return ILType_FromClass(ILMethod_Owner(method));
+			owner = ILMethod_Owner(method);
+			if(!ILMethod_IsVirtual(method) && ILClassIsValueType(owner))
+			{
+				/* The "this" parameter is a value type, which is
+				   being passed as a managed pointer.  Return
+				   ILType_Invalid to tell the caller that special
+				   handling is required */
+				return ILType_Invalid;
+			}
+			return ILType_FromClass(owner);
 		}
 		else
 		{
@@ -79,8 +89,15 @@ checkLDArg:
 		VERIFY_INSN_ERROR();
 	}
 	stack[stackSize].typeInfo = GetParamType(signature, method, argNum);
-	if((stack[stackSize].engineType =
-			TypeToEngineType(stack[stackSize].typeInfo)) == ILEngineType_M)
+	if(stack[stackSize].typeInfo == ILType_Invalid)
+	{
+		/* The "this" parameter is being passed as a managed pointer */
+		stack[stackSize].engineType = ILEngineType_M;
+		stack[stackSize].typeInfo =
+			ILType_FromValueType(ILMethod_Owner(method));
+	}
+	else if((stack[stackSize].engineType =
+				TypeToEngineType(stack[stackSize].typeInfo)) == ILEngineType_M)
 	{
 		/* Convert the type of a "BYREF" parameter */
 		stack[stackSize].typeInfo = stack[stackSize].typeInfo->un.refType;
@@ -108,7 +125,13 @@ checkSTArg:
 		VERIFY_INSN_ERROR();
 	}
 	type = GetParamType(signature, method, argNum);
-	if(!AssignCompatible(&(stack[stackSize - 1]), type))
+	if(type == ILType_Invalid)
+	{
+		/* Storing into the "this" argument of a value type method.
+		   This should be done using "stobj" instead */
+		VERIFY_TYPE_ERROR();
+	}
+	else if(!AssignCompatible(&(stack[stackSize - 1]), type))
 	{
 		VERIFY_TYPE_ERROR();
 	}
@@ -212,6 +235,12 @@ checkLDArgA:
 		VERIFY_INSN_ERROR();
 	}
 	stack[stackSize].typeInfo = GetParamType(signature, method, argNum);
+	if(stack[stackSize].typeInfo == ILType_Invalid)
+	{
+		/* Cannot take the address of the "this" parameter in
+		   a value type method: use "ldarg" instead */
+		VERIFY_TYPE_ERROR();
+	}
 	stack[stackSize].engineType = ILEngineType_T;
 	ILCoderAddrOfArg(coder, argNum);
 	++stackSize;

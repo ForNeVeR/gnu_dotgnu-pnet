@@ -1167,7 +1167,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	Indent(stream, indent);
 	fputs("<TypeSignature Language=\"C#\" Value=\"", stream);
 	ILDumpFlags(stream, defn->modifiers, CSharpTypeFlags, 0);
-	if(ILClass_IsValueType(classInfo))
+	if(ILClassIsValueType(classInfo))
 	{
 		if(parent && !strcmp(ILClass_Name(parent), "Enum") &&
 		   ILClass_Namespace(parent) != 0 &&

@@ -2339,7 +2339,7 @@ VtfixupAttributeName
 
 TypeSpecification
 	: ClassName			{
-				if(ILClass_IsValueType($1))
+				if(ILClassIsValueType($1))
 					$$.type = ILType_FromValueType($1);
 				else
 					$$.type = ILType_FromClass($1);

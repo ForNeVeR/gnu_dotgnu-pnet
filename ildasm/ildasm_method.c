@@ -115,7 +115,7 @@ static void DumpToken(ILImage *image, FILE *outstream,
 			{
 				if((flags & ILDASM_SUPPRESS_PREFIX) == 0)
 				{
-					if(ILClass_IsValueType(info))
+					if(ILClassIsValueType(info))
 					{
 						fputs("valuetype ", outstream);
 					}
@@ -143,7 +143,7 @@ static void DumpToken(ILImage *image, FILE *outstream,
 				ILDumpType(outstream, image, ILField_Type(field), flags);
 				putc(' ', outstream);
 				info = ILField_Owner(field);
-				if(ILClass_IsValueType(info))
+				if(ILClassIsValueType(info))
 				{
 					fputs("valuetype ", outstream);
 				}

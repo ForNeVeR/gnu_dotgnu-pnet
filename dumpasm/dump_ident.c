@@ -83,7 +83,7 @@ void ILDumpClassName(FILE *stream, ILImage *image, ILClass *info, int flags)
 	/* Do we need to add the "class" or "valuetype" prefix? */
 	if((flags & IL_DUMP_CLASS_PREFIX) != 0)
 	{
-		if(ILClass_IsValueType(info))
+		if(ILClassIsValueType(info))
 		{
 			fputs("valuetype ", stream);
 		}

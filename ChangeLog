@@ -38,6 +38,11 @@ now in "image"; re-implement "ILTypeToClass" in terms of "ILClassFromType";
 change "ILFindNonSystemType" to use "ILClassToTypeDirect" to fix up the
 value/class prefixes.
 
+* cscc/csdoc.c, dumpasm/dump_ident.c, ildasm/ildasm_method.c,
+ilasm/ilasm_grammar.y: use "ILClassIsValueType" instead of
+"ILClass_IsValueType", since the former is aware of value types
+that don't have the "value" attribute bit set.
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

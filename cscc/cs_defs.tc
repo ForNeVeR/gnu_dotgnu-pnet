@@ -91,8 +91,6 @@ extern CSSemValue CSSemValueDefault;
 {
 	ILNode *type;
 }
-%node ILNode_VoidPtrType ILNode_Dummy
-%node ILNode_VoidType ILNode_Dummy
 %node ILNode_PrimitiveType ILNode_Dummy =
 {
 	ILUInt32 elementType;
@@ -151,6 +149,10 @@ extern CSSemValue CSSemValueDefault;
 %node ILNode_Using ILNode_Statement =
 {
 	ILNode *resource;
+	ILNode *stmt;
+}
+%node ILNode_Unsafe ILNode_Statement =
+{
 	ILNode *stmt;
 }
 

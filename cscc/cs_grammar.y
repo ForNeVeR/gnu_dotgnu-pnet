@@ -516,7 +516,7 @@ static int ClassNameSame(ILNode *name)
 %type <node>		EventPropertyDeclaration 
 %type <pair>		EventAccessorBlock EventAccessorDeclarations
 
-%type <node>		ReturnType MethodDeclaration MethodBody
+%type <node>		MethodDeclaration MethodBody
 %type <node>		OptFormalParameterList FormalParameterList FormalParameter
 %type <pmod>		ParameterModifier
 %type <node>		PropertyDeclaration 
@@ -751,9 +751,6 @@ Type
 	| Type '*'			{
 				MakeUnary(PtrType, $1);
 			}
-	| VOID '*'			{
-				MakeSimple(VoidPtrType);
-			}
 	;
 
 NonExpressionType
@@ -770,9 +767,6 @@ NonExpressionType
 	| Expression '*'		{ 
 				MakeUnary(PtrType, $1);
 			}
-	| VOID '*'				{
-				MakeSimple(VoidPtrType);
-			}
 	;
 
 /*
@@ -786,9 +780,6 @@ LocalVariableType
 			}
 	| BuiltinType TypeSuffixes			{
 				MakeBinary(LocalVariableType, $1, $2);
-			}
-	| VOID TypeSuffixes					{
-				MakeBinary(LocalVariableType, ILNode_VoidType_create(), $2);
 			}
 	;
 
@@ -823,8 +814,15 @@ DimensionSeparatorList
 	| DimensionSeparatorList ','	{ $$ = $1 + 1; }
 	;
 
+/*
+ * The C# standard does not have "void" here.  It handles void
+ * type elsewhere in the grammar.  However, the grammar is a lot
+ * simpler if we make "void" a builtin type and then filter it
+ * out later in semantic analysis.
+ */
 BuiltinType
-	: BOOL			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_BOOLEAN); }
+	: VOID			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_VOID); }
+	| BOOL			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_BOOLEAN); }
 	| SBYTE			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I1); }
 	| BYTE			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_U1); }
 	| SHORT			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I2); }
@@ -874,7 +872,7 @@ PrimaryExpression
 	| NEW Type ArrayInitializer		{
 				$$ = ILNode_NewExpression_create($2, 0, 0, $3);
 			}
-	| TYPEOF '(' ReturnType ')'		{ MakeUnary(TypeOf, $3); }
+	| TYPEOF '(' Type ')'			{ MakeUnary(TypeOf, $3); }
 	| SIZEOF '(' Type ')'			{
 				/*
 				 * This is only safe if it is used on one of the following
@@ -1186,7 +1184,7 @@ LogicalOrExpression
 ConditionalExpression
 	: LogicalOrExpression			{ $$ = $1; }
 	| LogicalOrExpression '?' Expression ':' Expression	{
-				MakeTernary(Conditional, $1, $3, $5);
+				MakeTernary(Conditional, ILNode_ToBool_create($1), $3, $5);
 			}
 	;
 
@@ -1331,6 +1329,7 @@ EmbeddedStatement
 	| LockStatement					{ $$ = $1; }
 	| UsingStatement				{ $$ = $1; }
 	| FixedStatement				{ $$ = $1; }
+	| UNSAFE Block					{ MakeUnary(Unsafe, $2); }
 	| error ';'		{
 				/*
 				 * This production recovers from parse errors in statements,
@@ -1970,17 +1969,6 @@ MethodDeclaration
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3, $4, $6, 0, $8);
 			}
-	| OptAttributes OptModifiers VOID QualifiedIdentifier
-			'(' OptFormalParameterList ')' MethodBody	{
-				ILUInt32 attrs = CSModifiersToMethodAttrs($2);
-				$$ = ILNode_MethodDeclaration_create
-						($1, attrs, ILNode_VoidType_create(), $4, $6, 0, $8);
-			}
-	;
-
-ReturnType
-	: Type			{ $$ = $1; }
-	| VOID			{ MakeSimple(VoidType); }
 	;
 
 MethodBody
@@ -2391,7 +2379,7 @@ ConstructorDeclaration
 						"constructor name does not match class name");
 				}
 				$$ = ILNode_MethodDeclaration_create
-					  ($1, attrs, ILNode_VoidType_create(), cname, $5, $7, $8);
+					  ($1, attrs, 0 /* "void" */, cname, $5, $7, $8);
 			}
 	;
 
@@ -2437,7 +2425,7 @@ DestructorDeclaration
 
 				/* Construct the finalizer declaration */
 				$$ = ILNode_MethodDeclaration_create
-							($1, attrs, ILNode_VoidType_create(),
+							($1, attrs, 0 /* void */,
 							 ILQualIdentSimple
 							 	(ILInternString("Finalize", -1).string),
 							 0, 0, body);
@@ -2599,15 +2587,6 @@ InterfaceMethodDeclaration
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3, $4, $6, 0, 0);
 			}
-	| OptAttributes OptNew VOID Identifier '(' OptFormalParameterList ')' ';' {
-				ILUInt32 attrs = ($2 ? CS_SPECIALATTR_NEW : 0) |
-								 IL_META_METHODDEF_PUBLIC |
-								 IL_META_METHODDEF_VIRTUAL |
-								 IL_META_METHODDEF_ABSTRACT |
-								 IL_META_METHODDEF_HIDE_BY_SIG;
-				$$ = ILNode_MethodDeclaration_create($1, attrs,
-							ILNode_VoidType_create(), $4, $6, 0, 0);
-			}
 	;
 
 OptNew
@@ -2745,7 +2724,7 @@ EnumMemberDeclaration
  */
 
 DelegateDeclaration
-	: OptAttributes OptModifiers DELEGATE ReturnType Identifier
+	: OptAttributes OptModifiers DELEGATE Type Identifier
 				'(' OptFormalParameterList ')' ';'	{
 				ILUInt32 attrs =
 					CSModifiersToTypeAttrs($2, (NestingLevel > 0));

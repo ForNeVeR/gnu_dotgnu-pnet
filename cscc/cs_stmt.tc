@@ -457,6 +457,34 @@ JavaGenDiscard(ILNode_Using)
 }
 
 /*
+ * Perform semantic analysis for the "unsafe" statement.
+ */
+ILNode_SemAnalysis(ILNode_Unsafe)
+{
+	CSSemValue value;
+	CSUnsafeEnter(info, (ILNode *)node, "unsafe statement");
+	value = ILNode_SemAnalysis(node->stmt, info, &(node->stmt));
+	CSUnsafeLeave(info);
+	return value;
+}
+
+/*
+ * Generate discard code for the "unsafe" statement.
+ */
+ILNode_GenDiscard(ILNode_Unsafe)
+{
+	ILNode_GenDiscard(node->stmt, info);
+}
+
+/*
+ * Generate Java discard code for the "unsafe" statement.
+ */
+JavaGenDiscard(ILNode_Unsafe)
+{
+	JavaGenDiscard(node->stmt, info);
+}
+
+/*
  * Perform semantic analysis for the "fixed" statement.
  */
 ILNode_SemAnalysis(ILNode_Fixed)

@@ -30,8 +30,7 @@ int CSHasUnsafeType(ILNode *node)
 	{
 		return CSHasUnsafeType(((ILNode_ArrayType *)node)->type);
 	}
-	else if(yykind(node) == yykindof(ILNode_PtrType) ||
-	        yykind(node) == yykindof(ILNode_VoidPtrType))
+	else if(yykind(node) == yykindof(ILNode_PtrType))
 	{
 		return 1;
 	}
@@ -75,6 +74,7 @@ ILNode_SemAnalysis(ILNode_ArrayType)
 	ILNode *elemType;
 	ILNode **elemTypeParent;
 	ILType *arrayType;
+	ILType *type;
 
 	/* Find the element type at the end of the rank specifiers */
 	elemType = node->type;
@@ -86,18 +86,10 @@ ILNode_SemAnalysis(ILNode_ArrayType)
 	}
 
 	/* Perform semantic analysis on the element type */
-	value = ILNode_SemAnalysis(elemType, info, elemTypeParent);
-	if(value.kind != CS_SEMKIND_TYPE)
-	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "invalid array element type");
-		value.kind = CS_SEMKIND_TYPE;
-		value.type = ILType_Int32;
-	}
+	type = CSSemType(elemType, info, elemTypeParent);
 
 	/* Create the array type from the outermost rank inwards */
-	arrayType = ILTypeCreateArray(info->context, node->numDimensions,
-								  value.type);
+	arrayType = ILTypeCreateArray(info->context, node->numDimensions, type);
 	if(!arrayType)
 	{
 		CSOutOfMemory();
@@ -146,33 +138,6 @@ ILNode_SemAnalysis(ILNode_PtrType)
 	{
 		CSOutOfMemory();
 	}
-	return value;
-}
-
-/*
- * Perform semantic analysis for void pointer types.
- */
-ILNode_SemAnalysis(ILNode_VoidPtrType)
-{
-	CSSemValue value;
-	value.kind = CS_SEMKIND_TYPE;
-	value.type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR,
-								 ILType_Void);
-	if(!(value.type))
-	{
-		CSOutOfMemory();
-	}
-	return value;
-}
-
-/*
- * Perform semantic analysis for the "void" type.
- */
-ILNode_SemAnalysis(ILNode_VoidType)
-{
-	CSSemValue value;
-	value.kind = CS_SEMKIND_TYPE;
-	value.type = ILType_Void;
 	return value;
 }
 
@@ -288,18 +253,7 @@ ILNode_SemAnalysis(ILNode_LocalVariableType)
 	ILType *type;
 
 	/* Perform semantic analysis on the element type */
-	value = ILNode_SemAnalysis(node->type, info, &(node->type));
-	if(value.kind != CS_SEMKIND_TYPE)
-	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "invalid local variable type");
-		value.kind = CS_SEMKIND_TYPE;
-		type = ILType_Int32;
-	}
-	else
-	{
-		type = value.type;
-	}
+	type = CSSemTypeVoid(node->type, info, &(node->type));
 
 	/* If the element type is "void", then the first suffix
 	   must indicate a pointer type */

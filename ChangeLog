@@ -31,6 +31,9 @@ order problems when using "ffi_call" when return values.
 
 * include/il_program.h, image/member.c: implement "ILMemberResolve".
 
+* engine/verify_call.c, engine/verify_obj.c: use "ILMemberResolve" instead
+of "ILMemberResolveRef".
+
 2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods

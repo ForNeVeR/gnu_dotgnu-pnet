@@ -41,15 +41,11 @@ static ILMethod *GetMethodToken(ILMethod *method, unsigned char *pc)
 	/* Get the token and resolve it */
 	methodInfo = ILProgramItemToMethod((ILProgramItem *)
 						ILImageTokenInfo(ILProgramItem_Image(method), token));
-	while(methodInfo != 0 &&
-		  ILMemberGetKind((ILMember *)methodInfo) == IL_META_MEMBERKIND_REF)
-	{
-		methodInfo = (ILMethod *)ILMemberResolveRef((ILMember *)methodInfo);
-	}
 	if(!methodInfo)
 	{
 		return 0;
 	}
+	methodInfo = (ILMethod *)ILMemberResolve((ILMember *)methodInfo);
 
 	/* We have the requested method */
 	return methodInfo;

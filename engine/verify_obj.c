@@ -41,15 +41,11 @@ static ILField *GetFieldToken(ILMethod *method, unsigned char *pc)
 	/* Get the token and resolve it */
 	fieldInfo = ILProgramItemToField((ILProgramItem *)
 						ILImageTokenInfo(ILProgramItem_Image(method), token));
-	while(fieldInfo != 0 &&
-		  ILMemberGetKind((ILMember *)fieldInfo) == IL_META_MEMBERKIND_REF)
-	{
-		fieldInfo = (ILField *)ILMemberResolveRef((ILMember *)fieldInfo);
-	}
 	if(!fieldInfo)
 	{
 		return 0;
 	}
+	fieldInfo = (ILField *)ILMemberResolve((ILMember *)fieldInfo);
 
 	/* Check the accessibility of the field */
 	if(!ILMemberAccessible((ILMember *)fieldInfo, ILMethod_Owner(method)))

@@ -75,6 +75,10 @@ struct _tagILExecProcess
 	/* Exit status if the process executes something like "exit(N)" */
 	int 			exitStatus;
 
+	/* The coder in use by this process */
+	ILCoder		   *coder;
+	ILUInt32		coderGeneration;
+
 };
 
 /*
@@ -92,17 +96,6 @@ typedef struct _tagILCallFrame
 	ILUInt32		except;		/* PC to jump to on an exception */
 
 } ILCallFrame;
-
-/*
- * Information that is attached to a method to hold
- * runtime engine data.
- */
-typedef struct _tagILCallInfo
-{
-	ILUInt32		generation;	/* Code conversion generation count */
-	unsigned char  *pcstart;	/* Start of the method's code */
-
-} ILCallInfo;
 
 /*
  * Execution control context for a single thread.
@@ -152,6 +145,11 @@ struct _tagILClassPrivate
 };
 
 /*
+ * Class information for the CVM coder.
+ */
+extern ILCoderClass const _ILCVMCoderClass;
+
+/*
  * Execute the CVM interpreter on a thread.  Returns zero for
  * a regular return, or non-zero if an exception was thrown.
  */
@@ -176,8 +174,21 @@ int _ILSecurityCheck(ILExecThread *thread, ILProgramItem *info, int type);
 /*
  * Verify the contents of a method.
  */
-int _ILVerify(ILCoder *coder, ILMethod *method,
+int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 			  ILMethodCode *code, int unsafeAllowed);
+
+/*
+ * Construct the "ffi_cif" structure that is needed to
+ * call a PInvoke or "internalcall" method.  Returns NULL
+ * if insufficient memory for the structure.
+ */
+void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal);
+
+/*
+ * Convert a method into executable code.  Returns a pointer
+ * to the method entry point or NULL if something is wrong.
+ */
+unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method);
 
 #ifdef	__cplusplus
 };

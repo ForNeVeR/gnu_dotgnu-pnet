@@ -14,6 +14,8 @@
 
 	* configure.in, NEWS: update version for the "0.3.4" release.
 
+	* configure.in: update the working version to "0.3.5".
+
 2002-04-19  Gopal.V  <gopalv82@symonds.net>
 	
 	* csdoc/doc_stub.c : Implement the -fclass , -fnamespace

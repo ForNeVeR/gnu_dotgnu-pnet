@@ -719,6 +719,7 @@ class XmlDocument : XmlNode
 				XmlNode currentNode = null,
 				newNode = null,
 				resultNode = null;
+				bool isEmptyElement = false;
 				
 				int startDepth = reader.Depth;
 				
@@ -735,6 +736,9 @@ class XmlDocument : XmlNode
 								// set as root node
 							}
 
+							/* Grab Element Node State - isEmpty switches to true for <node/> */
+							isEmptyElement = reader.IsEmptyElement;
+							
 							if(reader.HasAttributes)
 							{
 								while(reader.MoveToNextAttribute())
@@ -748,7 +752,7 @@ class XmlDocument : XmlNode
 									newElementNode.SetAttributeNode(newAttributeNode);
 								}
 							}
-
+							
 							if(currentNode != null)
 							{
 								// append child
@@ -760,12 +764,14 @@ class XmlDocument : XmlNode
 							}
 							// update result
 							resultNode = currentNode;
-							// move child to currentNode
-							currentNode = newElementNode;
+							if( isEmptyElement == false )
+							{
+								// move child to currentNode
+								currentNode = newElementNode;
+							}
 							break;
 						case XmlNodeType.Attribute:
 							XmlAttribute newAttributeNode1 = CreateAttribute(reader.Name);
-										 
 							
 							if(reader.ReadAttributeValue())
 							{
@@ -783,8 +789,10 @@ class XmlDocument : XmlNode
 							// Append Comments to parent Node
 							break;
 						case XmlNodeType.EndElement:
-							if(currentNode.ParentNode != null)
+							if( currentNode.ParentNode != null )
+							{
 								currentNode = currentNode.ParentNode;
+							}
 							break;
 						case XmlNodeType.EndEntity:
 							// TODO: EndEntity

@@ -547,6 +547,7 @@ public class XmlTextReader : XmlReader
 					else if (Char.IsWhiteSpace((char)ch))
 					{
 						SkipWhite();
+						ch = reader.Peek();
 						// more error checking
 						if((char)ch != '>' && (char)ch != '/')
 						{

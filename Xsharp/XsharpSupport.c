@@ -222,7 +222,8 @@ void *XSharpCreateFontStruct(Display *dpy, const char *family,
  * Create an Xft font from a description.
  */
 void *XSharpCreateFontXft(Display *dpy, const char *family,
-					      int pointSize, int style)
+                          const char *fallbacks, int pointSize,
+                          int style)
 {
 #ifdef USE_XFT_EXTENSION
 
@@ -241,6 +242,14 @@ void *XSharpCreateFontXft(Display *dpy, const char *family,
 	{
 		XftPatternDestroy(pattern);
 		return 0;
+	}
+	if(fallbacks)
+	{
+		if(!XftPatternAddString(pattern, XFT_FAMILY, fallbacks))
+		{
+			XftPatternDestroy(pattern);
+			return 0;
+		}
 	}
 	if(!XftPatternAddDouble(pattern, XFT_SIZE, ((double)pointSize) / 10.0))
 	{

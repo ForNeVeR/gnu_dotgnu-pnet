@@ -634,7 +634,8 @@ internal sealed unsafe class Xlib
 
 	[DllImport("XsharpSupport")]
 	extern public static IntPtr XSharpCreateFontXft
-			(IntPtr display, String family, @X_int@ pointSize, @X_int@ style);
+			(IntPtr display, String family, String fallbacks,
+			 @X_int@ pointSize, @X_int@ style);
 
 	[DllImport("XsharpSupport")]
 	extern public static void XSharpFreeFontXft

@@ -908,6 +908,15 @@ public class Font
 	private static readonly String[] FixedFamilies =
 			{"courier", "lucida console", "lucidatypewriter", "luxi mono"};
 
+	// Comma-separated versions of the above fallbacks, for Xft.
+	private const String SansSerifFallbacks =
+			"helvetica,lucida,luxi sans";
+	private const String SerifFallbacks =
+			"times,luxi serif";
+	private const String FixedFallbacks =
+			"courier,lucida console,lucidatypewriter,luxi mono";
+
+
 	// Create a font set or font struct, with fallback names.
 	private static IntPtr CreateFontSetOrStruct
 				(IntPtr display, String[] families, int pointSize,
@@ -1045,6 +1054,31 @@ public class Font
 				else if(family == Fixed)
 				{
 					return FixedFamilies;
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Get fallback families for typical X families.
+	private static String GetFallbackFamiliesCSV(String family)
+			{
+				if(family == null)
+				{
+					return null;
+				}
+				else if(family == SansSerif || family == DefaultSansSerif)
+				{
+					return SansSerifFallbacks;
+				}
+				else if(family == Serif)
+				{
+					return SerifFallbacks;
+				}
+				else if(family == Fixed)
+				{
+					return FixedFallbacks;
 				}
 				else
 				{
@@ -1232,32 +1266,12 @@ public class Font
 					IntPtr fontSet;
 
 					// Check for fallback families.
-					String[] families = GetFallbackFamilies
+					String fallbacks = GetFallbackFamiliesCSV
 						(GetFallbackFamily(family));
-
-					// Create the family list.
-					String familyList = family;
-					if(families != null)
-					{
-						// Create the family list builder.
-						StringBuilder familyBuilder = new StringBuilder();
-
-						// Add the preferred family to the list.
-						familyBuilder.Append(family);
-
-						// Add the fallbacks to the list.
-						foreach(String fam in families)
-						{
-							familyBuilder.Append(",").Append(fam);
-						}
-
-						// Reset the family to the family list.
-						familyList = familyBuilder.ToString();
-					}
 
 					// Create the raw X font set structure.
 					fontSet = Xlib.XSharpCreateFontXft
-						(display, familyList, pointSize, (int)style);
+						(display, family, fallbacks, pointSize, (int)style);
 
 					// Get the extent information for the font.
 					Xlib.XSharpFontExtentsXft
@@ -1564,6 +1578,6 @@ public class Font
 
 	} // class PCFFont
 
-} // class Font
+}; // class Font
 
-} // namespace Xsharp
+}; // namespace Xsharp

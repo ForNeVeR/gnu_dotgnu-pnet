@@ -33,6 +33,36 @@ namespace System.Windows.Forms
 [TODO]
 public class ListBox : ListControl
 {
+	// Internal instance variables.
+	private VScrollBar vertScrollbar;
+	private HScrollBar horizScrollbar;
+	private ObjectCollection internalDataSource;
+	private SolidBrush backgroundBrush;
+	private SolidBrush disabledBrush;
+	private int focusedItem = 0;
+	internal bool suppressEvents = false;
+	private bool suppressDraw = false;
+	private ArrayList pendingDrawItems = new ArrayList();
+	private int paintDelayed = 0;
+
+	// Used for control-dragging in MultiExtended mode.
+	private SelectedIndexCollection prevSelectedIndices;
+	private int dragBeginInd = 0;
+
+	// Instance variables for properties.
+	private bool scrollAlwaysVisible = false;
+	private SelectionMode selectionMode = SelectionMode.One;
+	private int topIndex = 0;
+	internal SelectedIndexCollection selectedIndices;
+	private SelectedObjectCollection selectedItems;
+	private bool horizontalScrollbar = false;
+	private bool multiColumn = false;
+	private bool sorted = false;
+	private bool integralHeight = true;
+	private int columnWidth = 100;
+	private int itemHeight = 15;
+
+
 	// Helpers, to replace the missing "Math" class in some profiles.
 	private static int Math_Max(int a, int b)
 	{
@@ -746,13 +776,8 @@ public class ListBox : ListControl
 	[TODO]
 	public virtual int ItemHeight
 	{
-		get
-		{
-			return 15;
-		}
-		set
-		{	
-		}
+		get { return itemHeight; }
+		set { itemHeight = value; }
 	}
 
 	public ListBox.ObjectCollection Items
@@ -1202,33 +1227,6 @@ public class ListBox : ListControl
 
 #endif // !CONFIG_COMPACT_FORMS
 
-	// Internal instance variables.
-	private VScrollBar vertScrollbar;
-	private HScrollBar horizScrollbar;
-	private ObjectCollection internalDataSource;
-	private SolidBrush backgroundBrush;
-	private SolidBrush disabledBrush;
-	private int focusedItem = 0;
-	internal bool suppressEvents = false;
-	private bool suppressDraw = false;
-	private ArrayList pendingDrawItems = new ArrayList();
-	private int paintDelayed = 0;
-	
-	// Used for control-dragging in MultiExtended mode.
-	private SelectedIndexCollection prevSelectedIndices;
-	private int dragBeginInd = 0;
-
-	// Instance variables for properties.
-	private bool scrollAlwaysVisible = false;
-	private SelectionMode selectionMode = SelectionMode.One;
-	private int topIndex = 0;
-	internal SelectedIndexCollection selectedIndices;
-	private SelectedObjectCollection selectedItems;
-	private bool horizontalScrollbar = false;
-	private bool multiColumn = false;
-	private bool sorted = false;
-	private bool integralHeight = true;
-	private int columnWidth = 100;
 
 	// Constructor
 	public ListBox()

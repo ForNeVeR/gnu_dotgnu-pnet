@@ -1,3 +1,9 @@
+2004-10-18  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ListBox.cs: implement ItemHeight property.
+
+	* Xsharp/Font.cs, Xsharp/Xlib.cs.in, Xsharp/XsharpSupport.c: implement
+	a workaround for broken Xft pattern matching.
 
 2004-10-18  Gopal V  <gopalv82@yahoo.com>
 
@@ -400,7 +406,7 @@
 
 	* runtime/System/Threading/Thread.cs: Updated private
 	constructor to include thread privateData.
-	
+
 2004-09-09  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Drawing/Graphics.cs: fix vertical alignment problems for text

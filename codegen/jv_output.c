@@ -1132,11 +1132,22 @@ char *JavaStrAppend(ILGenInfo *info, char *str1, const char *str2)
 	}
 }
 
-void JavaGenSwitchStart(ILGenInfo *info, int opcode)
+void JavaGenSwitchStart(ILGenInfo *info, int opcode, 
+						ILLabel *label, ILUInt32 offset)
 {
+	if(*label == ILLabel_Undefined)
+	{
+		*label = (info->nextLabel)++;
+	}
 	if(info->asmOutput)
 	{
-		fprintf(info->asmOutput, "\t%s (\n", ILJavaOpcodeTable[opcode].name);
+		fprintf(info->asmOutput, "\t%s ?L%lu (", 
+				ILJavaOpcodeTable[opcode].name, *label);
+		if(opcode == JAVA_OP_TABLESWITCH)
+		{
+			fprintf(info->asmOutput, " %u :", offset);
+		}
+		putc('\n', info->asmOutput);
 	}
 }
 

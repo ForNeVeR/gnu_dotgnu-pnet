@@ -1281,14 +1281,8 @@ JavaGenDiscard(ILNode_Switch)
 			case ILSwitchTableType_Indexed:
 			{
 				/* Use an indexed lookup on an "int" value */
-				if(values[0].value.un.i4Value != 0)
-				{
-					/* Subtract the base value from the expression */
-					JavaGenInt32(info, values[0].value.un.i4Value);
-					JavaGenSimple(info, JAVA_OP_ISUB);
-					JavaGenExtend(info, 1);
-				}
-				JavaGenSwitchStart(info, JAVA_OP_TABLESWITCH);
+				JavaGenSwitchStart(info, JAVA_OP_TABLESWITCH, defaultLabel,
+								   values[0].value.un.i4Value);
 				while(numValues > 1)
 				{
 					section = (ILNode_SwitchSection *)(values->section);
@@ -1305,7 +1299,6 @@ JavaGenDiscard(ILNode_Switch)
 				section = (ILNode_SwitchSection *)(values->section);
 				JavaGenSwitchRef(info, &(section->label), 0);
 				JavaGenSwitchEnd(info);
-				JavaGenJump(info, JAVA_OP_GOTO, defaultLabel);
 				JavaGenAdjust(info, -size);
 			}
 			break;
@@ -1313,7 +1306,7 @@ JavaGenDiscard(ILNode_Switch)
 			case ILSwitchTableType_Lookup:
 			{
 				/* Use a tagged lookup on an "int" value */
-				JavaGenSwitchStart(info, JAVA_OP_LOOKUPSWITCH);
+				JavaGenSwitchStart(info, JAVA_OP_LOOKUPSWITCH, defaultLabel, 0);
 				while(numValues > 1)
 				{
 					section = (ILNode_SwitchSection *)(values->section);
@@ -1326,7 +1319,6 @@ JavaGenDiscard(ILNode_Switch)
 				JavaGenSwitchLookupRef
 					(info, values->value.un.i4Value, &(section->label), 0);
 				JavaGenSwitchEnd(info);
-				JavaGenJump(info, JAVA_OP_GOTO, defaultLabel);
 				JavaGenAdjust(info, -size);
 			}
 			break;

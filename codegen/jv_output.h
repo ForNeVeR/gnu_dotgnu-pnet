@@ -309,7 +309,8 @@ char *JavaStrAppend(ILGenInfo *info, char *str1, const char *str2);
 /*
  * Generate the start of a "switch" instruction.
  */
-void JavaGenSwitchStart(ILGenInfo *info, int opcode);
+void JavaGenSwitchStart(ILGenInfo *info, int opcode, 
+						ILLabel *label, ILUInt32 offset);
 
 /*
  * Generate a label reference for a "tableswitch" instruction.

@@ -1,4 +1,10 @@
 
+2002-10-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/jv_output.c, codegen/jv_output.h, codegen/jv_stmt.tc:
+	apply Sylvain's patches to generate the correct form of Java
+	"tableswitch" instructions.
+
 2002-10-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_stmt.tc (ILNode_Foreach): use the correct types

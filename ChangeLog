@@ -22,6 +22,9 @@
 	* engine/lib_string.c, engine/pinvoke.c: perform marshalling
 	conversions when a delegate closure is called by native code.
 
+	* engine/cvm_conv.c: convert delegates into function closures
+	when calling PInvoke methods.
+
 2002-06-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/cvm_call.c, engine/engine.h,

@@ -1880,10 +1880,8 @@ VMBREAK(COP_PREFIX_UTF82STR);
 VMCASE(COP_PREFIX_DELEGATE2FNPTR):
 {
 	/* Convert a delegate into a function pointer */
-	if(stacktop[-1].ptrValue)
-	{
-		/* TODO */
-	}
+	stacktop[-1].ptrValue = _ILDelegateGetClosure
+		((ILObject *)(stacktop[-1].ptrValue));
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_DELEGATE2FNPTR);

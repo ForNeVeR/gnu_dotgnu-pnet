@@ -130,6 +130,7 @@ struct _tagILGenInfo
 	int			   *contextStack;		/* Statement context stack */
 	long			contextStackSize;	/* Size of statement context stack */
 	long			contextStackMax;	/* Max size of context stack */
+	int				optimizeFlag ;		/* values of -O0, -O1, -O2, -O3 */
 	ILNode         *currentClass;		/* Current class being processed */
 	ILNode		   *currentMethod;		/* Current method being processed */
 	ILNode         *currentNamespace;	/* Current namespace being processed */

@@ -1,4 +1,10 @@
 
+2002-11-20  Gopal.V  <gopalv82@symonds.net>
+
+	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,
+	cscc/csharp/cs_oper.tc: Implement a simple optimization for reducing
+	multiply and divide operations with shift operations.
+
 2002-11-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_invoke.tc: improve the error message that results

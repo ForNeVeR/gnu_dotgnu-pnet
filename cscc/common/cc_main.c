@@ -160,6 +160,7 @@ int CCMain(int argc, char *argv[])
 
 	/* Perform semantic analysis */
 	CCCodeGen.semAnalysis = 1;
+	CCCodeGen.optimizeFlag= (0x03) & optimize_flag;
 	CCPluginSemAnalysis();
 	CCCodeGen.semAnalysis = 0;
 

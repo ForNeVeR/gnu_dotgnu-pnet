@@ -5,6 +5,9 @@
 runtime/System/Makefile.am, resources/en_US/runtime/Arg.txt: implement
 the "System.Text.StringBuilder" class.
 
+* runtime/System/String.cs: fix the names of the parameters for "InsertSpace"
+to match their actual usage.
+
 2001-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/DateTime.cs: bug in the "UtcNow" property - use the

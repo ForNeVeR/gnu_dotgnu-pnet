@@ -319,7 +319,8 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 
 	// Insert or remove space from a string that is being used as a builder.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static void InsertSpace(String str, int index, int length);
+	extern internal static void InsertSpace(String str, int srcPos,
+											int destPos);
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static void RemoveSpace(String str, int index, int length);
 

@@ -153,7 +153,7 @@ ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 	ILObject *obj;
 
 	/* Make sure that the class has been laid out */
-	if(_ILLayoutClass(classInfo))
+	if(!_ILLayoutClass(classInfo))
 	{
 		ThrowTypeLoad(thread, 0);
 		return 0;

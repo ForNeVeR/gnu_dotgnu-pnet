@@ -20,6 +20,8 @@
 	* engine/lib_type.c (_ILGetClrType): lay out the class before
 	converting it into an object.
 
+	* engine/lib_type.c (_ILGetClrType): bug fix - reversed test.
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/internal.c, engine/lib_reflect.c: continue implementing

@@ -81,6 +81,18 @@ typedef struct
 
 } System_RuntimeType;
 
+/*
+ * Internal structure of "System.Threading.Thread".
+ */
+typedef struct
+{
+	void	   *privateData;
+	ILObject   *stateInfo;
+	ILObject   *start;
+	ILString   *name;
+
+} System_Thread;
+
 #ifdef	__cplusplus
 };
 #endif

@@ -37,6 +37,8 @@ extern ILMethodTableEntry const _ILSystemRuntimeTypeMethods;
 extern ILMethodTableEntry const _ILSystemSingleMethods;
 extern ILMethodTableEntry const _ILSystemDoubleMethods;
 extern ILMethodTableEntry const _ILSystemThreadingMonitorMethods;
+extern ILMethodTableEntry const _ILSystemThreadingInterlockedMethods;
+extern ILMethodTableEntry const _ILSystemThreadingThreadMethods;
 extern ILMethodTableEntry const _ILPlatformStdioMethods;
 extern ILMethodTableEntry const _ILPlatformSysCharInfoMethods;
 extern ILMethodTableEntry const _ILPlatformPtrSizesMethods;
@@ -57,6 +59,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"Array",		"Array",		&_ILSystemArrayMethods},
 	{"Decimal",		"System",		&_ILSystemDecimalMethods},
 	{"Double",		"System",		&_ILSystemDoubleMethods},
+	{"Interlocked",	"System.Threading", &_ILSystemThreadingInterlockedMethods},
 	{"Math",		"System",		&_ILSystemMathMethods},
 	{"Monitor",		"System.Threading", &_ILSystemThreadingMonitorMethods},
 	{"Object",		"System",		&_ILSystemObjectMethods},
@@ -66,6 +69,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"Stdio",		"Platform",		&_ILPlatformStdioMethods},
 	{"String",		"System",		&_ILSystemStringMethods},
 	{"SysCharInfo",	"Platform",		&_ILPlatformSysCharInfoMethods},
+	{"Thread",		"System.Threading", &_ILSystemThreadingThreadMethods},
 	{"TimeMethods",	"Platform",		&_ILPlatformTimeMethods},
 	{"Type",		"System",		&_ILSystemTypeMethods},
 };

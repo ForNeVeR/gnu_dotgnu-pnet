@@ -19,6 +19,8 @@
 	of gcc's C pre-processor so that we can use it instead of the
 	system cpp, which is sometimes busted too much for us to use.
 
+	* cscc/common/cc_main.c: hook "cscc-cpp" into the "cscc" front end.
+
 2004-02-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_oper.tc (MulPtrSize): fix a bug where 1 * sizeof(type)

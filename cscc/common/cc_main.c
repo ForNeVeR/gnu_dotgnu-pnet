@@ -592,9 +592,76 @@ static void CloseCodeGen(void)
 /*
  * Find the C pre-processor along a reasonable search path.
  */
-static char *FindCpp(void)
+static char *FindCpp(int *ourCpp)
 {
 	char *newPath = 0;
+	char *value;
+	int len;
+
+	/* We are looking for our cpp implementation */
+	*ourCpp = 1;
+
+	/* Check the "-fcpp-path" command-line option first */
+	value = CCStringListGetValue
+		(extension_flags, num_extension_flags, "cpp-path");
+	if(value)
+	{
+		return value;
+	}
+
+	/* Try the "CSCC_CPP" environment variable */
+	value = getenv("CSCC_CPP");
+	if(value)
+	{
+		return value;
+	}
+
+	/* Look in the same directory as the "cscc" binary */
+	len = strlen(progname);
+	while(len > 0 && progname[len - 1] != '/' && progname[len - 1] != '\\')
+	{
+		--len;
+	}
+	if(len > 0)
+	{
+		value = (char *)ILMalloc(len + 15);
+		if(value)
+		{
+			strncpy(value, progname, len);
+			strcpy(value + len, "cscc-cpp");
+			if(ILFileExists(value, &newPath))
+			{
+				if(newPath)
+				{
+					ILFree(value);
+					return newPath;
+				}
+				else
+				{
+					return value;
+				}
+			}
+		}
+	}
+
+	/* Search the PATH for the "cscc-cpp" program */
+	value = ILSearchPath(0, "cscc-cpp", 1);
+	if(value)
+	{
+		return value;
+	}
+
+	/* We are looking for the system cpp implementation */
+	*ourCpp = 0;
+
+	/* Try the "CPP" environment variable for the system pre-processor */
+	value = getenv("CPP");
+	if(value)
+	{
+		return value;
+	}
+
+	/* Try looking for the system pre-processor if we couldn't find ours */
 	if(ILFileExists("/usr/bin/cpp3", &newPath))
 	{
 		if(newPath)
@@ -767,7 +834,7 @@ static void ParseFile(const char *filename, int is_stdin)
 	int posn;
 	int fileIsPipe = 0;
 	int pid = 0;
-	char *env;
+	int ourCpp;
 
 	/* Open the input */
 	if(CCPluginUsesPreproc == CC_PREPROC_C)
@@ -785,16 +852,8 @@ static void ParseFile(const char *filename, int is_stdin)
 		}
 
 		/* Build the command-line for the C pre-processor.  We assume that
-		   it is the GNU pre-processor.  If it isn't, then tough luck */
-		env = getenv("CPP");
-		if(env && *env != '\0')
-		{
-			CCStringListAdd(&argv, &argc, env);
-		}
-		else
-		{
-			CCStringListAdd(&argv, &argc, FindCpp());
-		}
+		   it is the cscc-cpp pre-processor.  If it isn't, then tough luck */
+		CCStringListAdd(&argv, &argc, FindCpp(&ourCpp));
 		if(preprocess_flag)
 		{
 			if(no_preproc_lines_flag)
@@ -814,16 +873,20 @@ static void ParseFile(const char *filename, int is_stdin)
 #ifdef __MACH__
 		/* Apple shipped a special "pre-compiled header" CPP with the
 		   Darwin OS.  That obviously won't do us much good here, so
-		   we need to set a flag to fall back on standard headers.
-
-			TODO:  Can this end be achieved dynamically?  */
-		CCStringListAdd(&argv, &argc, "-no-cpp-precomp");
+		   we need to set a flag to fall back on standard headers */
+		if(!ourCpp)
+		{
+			CCStringListAdd(&argv, &argc, "-no-cpp-precomp");
+		}
 #endif
 #endif
 		CCStringListAdd(&argv, &argc, "-w");
 		CCStringListAdd(&argv, &argc, "-nostdinc");
 		CCStringListAdd(&argv, &argc, "-nostdinc++");
-		CCStringListAdd(&argv, &argc, "-undef");
+		if(!ourCpp)
+		{
+			CCStringListAdd(&argv, &argc, "-undef");
+		}
 		if(dump_output_format == DUMP_MACROS_ONLY)
 		{
 			CCStringListAdd(&argv, &argc, "-dM");
@@ -845,7 +908,7 @@ static void ParseFile(const char *filename, int is_stdin)
 			CCStringListAdd(&argv, &argc, "-imacros");
 			CCStringListAdd(&argv, &argc, imacros_files[posn]);
 		}
-		for(posn = 0; posn < ILCppNumUndefines; ++posn)
+		for(posn = 0; !ourCpp && posn < ILCppNumUndefines; ++posn)
 		{
 			/* Turn off a system cpp macro if we don't have it ourselves */
 			if(!CCStringListContains(pre_defined_symbols,

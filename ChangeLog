@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update for "0.2.8" release.
 
+	* configure.in: update the working version to "0.2.9".
+
 2001-12-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_values.h: modify "_IL_READ_BYTE" and "_IL_READ_BYTE_SHIFT"

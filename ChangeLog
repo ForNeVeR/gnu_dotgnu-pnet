@@ -5,6 +5,11 @@
 	that use the underlying type for the constants, instead of the
 	type itself.
 
+	* ilalink/link_misc.c, ilasm/ilasm_grammar.y, image/meta_build.c,
+	image/writer.c: create the PropertyMap and EventMap tables very
+	late in the process to ensure that there is only one property or
+	event entry per class.
+
 2003-01-07  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_reflect.c: Check the constant unpacking code back in,

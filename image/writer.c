@@ -187,11 +187,15 @@ static void WriteImagePool(ILWriter *writer, char *pool,
 	}
 }
 
-static void AssignMemberTokens(ILClass *info, ILToken *nextField,
-							   ILToken *nextMethod, ILToken *nextParam)
+static void AssignMemberTokens(ILImage *image, ILClass *info,
+							   ILToken *nextField, ILToken *nextMethod,
+							   ILToken *nextParam, ILToken *nextProperty,
+							   ILToken *nextEvent)
 {
 	ILMember *member;
 	ILParameter *param;
+	ILToken firstProperty = *nextProperty;
+	ILToken firstEvent = *nextEvent;
 
 	/* Scan the members of this class */
 	member = info->firstMember;
@@ -230,7 +234,36 @@ static void AssignMemberTokens(ILClass *info, ILToken *nextField,
 				[(*nextField & ~IL_META_TOKEN_MASK) - 1] = (void *)member;
 			*nextField += 1;
 		}
+		else if(member->kind == IL_META_MEMBERKIND_PROPERTY)
+		{
+			member->programItem.token = *nextProperty;
+			member->programItem.image->tokenData
+				[IL_META_TOKEN_PROPERTY >> 24]
+				[(*nextProperty & ~IL_META_TOKEN_MASK) - 1] = (void *)member;
+			*nextProperty += 1;
+		}
+		else if(member->kind == IL_META_MEMBERKIND_EVENT)
+		{
+			member->programItem.token = *nextEvent;
+			member->programItem.image->tokenData
+				[IL_META_TOKEN_EVENT >> 24]
+				[(*nextEvent & ~IL_META_TOKEN_MASK) - 1] = (void *)member;
+			*nextEvent += 1;
+		}
 		member = member->nextMember;
+	}
+
+	/* Create PropertyMap and EventMap entries if necessary */
+	if(firstProperty < *nextProperty)
+	{
+		ILPropertyMapCreate(image, 0, info,
+							(ILProperty *)ILProperty_FromToken
+								(image, firstProperty));
+	}
+	if(firstEvent < *nextEvent)
+	{
+		ILEventMapCreate(image, 0, info,
+						 (ILEvent *)ILEvent_FromToken(image, firstEvent));
 	}
 }
 
@@ -246,19 +279,24 @@ static void SortClasses(ILImage *image)
 	ILToken nextField;
 	ILToken nextMethod;
 	ILToken nextParam;
+	ILToken nextProperty;
+	ILToken nextEvent;
 	ILClass *info;
 
 	/* Set up the initial field, method, and parameter indices */
 	nextField = IL_META_TOKEN_FIELD_DEF | 1;
 	nextMethod = IL_META_TOKEN_METHOD_DEF | 1;
 	nextParam = IL_META_TOKEN_PARAM_DEF | 1;
+	nextProperty = IL_META_TOKEN_PROPERTY | 1;
+	nextEvent = IL_META_TOKEN_EVENT | 1;
 
 	/* Assign token codes to all classes in the correct order */
 	info = 0;
 	while((info = (ILClass *)ILImageNextToken
 				(image, IL_META_TOKEN_TYPE_DEF, info)) != 0)
 	{
-		AssignMemberTokens(info, &nextField, &nextMethod, &nextParam);
+		AssignMemberTokens(image, info, &nextField, &nextMethod,
+						   &nextParam, &nextProperty, &nextEvent);
 	}
 }
 

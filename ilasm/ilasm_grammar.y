@@ -2175,10 +2175,6 @@ EventHeading
 				{
 					ILAsmOutOfMemory();
 				}
-				if(!ILEventMapCreate(ILAsmImage, 0, ILAsmClass, event))
-				{
-					ILAsmOutOfMemory();
-				}
 				ILAsmBuildPushScope(event);
 			}
 	| D_EVENT EventAttributes Identifier	{
@@ -2271,10 +2267,6 @@ PropertyHeading
 				property = ILPropertyCreate(ILAsmClass, 0, $5.string,
 											(ILUInt32)($2), sig);
 				if(!property)
-				{
-					ILAsmOutOfMemory();
-				}
-				if(!ILPropertyMapCreate(ILAsmImage, 0, ILAsmClass, property))
 				{
 					ILAsmOutOfMemory();
 				}

@@ -1461,7 +1461,6 @@ static int Load_EventAssociation(ILImage *image, ILUInt32 *values,
 	ILClass *info;
 	ILUInt32 num;
 	int error;
-	ILEventMap *map;
 
 	/* Find the type that owns the event */
 	info = ILClass_FromToken(image, values[IL_OFFSET_EVENTMAP_TYPE]);
@@ -1481,14 +1480,6 @@ static int Load_EventAssociation(ILImage *image, ILUInt32 *values,
 	EXIT_IF_ERROR(LoadTokenRange(image, IL_META_TOKEN_EVENT,
 								 values[IL_OFFSET_EVENTMAP_EVENT], num,
 								 Load_Event, info));
-
-	/* Create an EventMap item for the first event in the range */
-	map = ILEventMapCreate(image, token, info,
-			   ILEvent_FromToken(image, values[IL_OFFSET_EVENTMAP_EVENT]));
-	if(!map)
-	{
-		return IL_LOADERR_MEMORY;
-	}
 
 	/* Done */
 	return 0;
@@ -1543,7 +1534,6 @@ static int Load_PropertyAssociation(ILImage *image, ILUInt32 *values,
 	ILClass *info;
 	ILUInt32 num;
 	int error;
-	ILPropertyMap *map;
 
 	/* Find the type that owns the property */
 	info = ILClass_FromToken(image, values[IL_OFFSET_PROPMAP_TYPE]);
@@ -1563,14 +1553,6 @@ static int Load_PropertyAssociation(ILImage *image, ILUInt32 *values,
 	EXIT_IF_ERROR(LoadTokenRange(image, IL_META_TOKEN_PROPERTY,
 								 values[IL_OFFSET_PROPMAP_PROPERTY], num,
 								 Load_Property, info));
-
-	/* Create a PropertyMap item for the first property in the range */
-	map = ILPropertyMapCreate(image, token, info,
-			   ILProperty_FromToken(image, values[IL_OFFSET_PROPMAP_PROPERTY]));
-	if(!map)
-	{
-		return IL_LOADERR_MEMORY;
-	}
 
 	/* Done */
 	return 0;

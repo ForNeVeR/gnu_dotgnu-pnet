@@ -77,13 +77,6 @@ int _ILLinkerConvertProperty(ILLinker *linker, ILProperty *property,
 		return 0;
 	}
 
-	/* Assocate the property with its class */
-	if(!ILPropertyMapCreate(linker->image, 0, newClass, newProperty))
-	{
-		_ILLinkerOutOfMemory(linker);
-		return 0;
-	}
-
 	/* Convert the method semantics on the property */
 	if(!ConvertSemantics(linker, (ILProgramItem *)property,
 						 (ILProgramItem *)newProperty))
@@ -135,13 +128,6 @@ int _ILLinkerConvertEvent(ILLinker *linker, ILEvent *event,
 	newEvent = ILEventCreate(newClass, 0, ILEvent_Name(event),
 							 ILEvent_Attrs(event), classInfo);
 	if(!newEvent)
-	{
-		_ILLinkerOutOfMemory(linker);
-		return 0;
-	}
-
-	/* Assocate the event with its class */
-	if(!ILEventMapCreate(linker->image, 0, newClass, newEvent))
 	{
 		_ILLinkerOutOfMemory(linker);
 		return 0;

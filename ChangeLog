@@ -1,4 +1,9 @@
 
+2004-04-18  Gopal V <gopalv82@yahoo.com>
+
+	* cscc/csharp/cs_lvalue.tc: Call ILNode_SemanalysisType for 
+	resolving node->left for QualIdent and MemberAccess (bug #6999)
+	
 2004-04-01  Russell Stuart  <russell@stuart.id.au>
 
 	* csant/csant_task.c, include/il_sysio.h, support/dir.c:

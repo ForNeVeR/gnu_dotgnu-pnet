@@ -67,6 +67,8 @@
 	of the culture handling if reflection is disabled because there
 	is no way to load the I18N handlers if reflection is not present.
 
+	* I18N/*: change the license on the I18N code back to GPL+linking.
+
 2003-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Array.cs, runtime/System/Convert.cs,

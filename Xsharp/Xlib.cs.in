@@ -575,8 +575,7 @@ internal sealed unsafe class Xlib
 	extern public static void XSharpDrawStringSet
 			(IntPtr display, Drawable drawable, IntPtr gc,
 			 IntPtr fontSet, @X_int@ x, @X_int@ y,
-			 String str, @X_int@ style, IntPtr clipRegion,
-			 @X_ulong@ colorValue);
+			 String str, @X_int@ style);
 
 	[DllImport("XsharpSupport")]
 	extern public static void XSharpTextExtentsSet
@@ -602,12 +601,14 @@ internal sealed unsafe class Xlib
 	extern public static void XSharpDrawStringStruct
 			(IntPtr display, Drawable drawable, IntPtr gc,
 			 IntPtr fontSet, @X_int@ x, @X_int@ y,
-			 String str, @X_int@ style, IntPtr clipRegion,
-			 @X_ulong@ colorValue);
+			 [MarshalAs(UnmanagedType.Interface)] String str,
+			 @X_long@ offset, @X_long@ count, @X_int@ style);
 
 	[DllImport("XsharpSupport")]
 	extern public static void XSharpTextExtentsStruct
-			(IntPtr display, IntPtr fontSet, String str,
+			(IntPtr display, IntPtr fontSet,
+			 [MarshalAs(UnmanagedType.Interface)] String str,
+			 @X_long@ offset, @X_long@ count,
 			 out XRectangle overall_ink_return,
 			 out XRectangle overall_logical_return);
 

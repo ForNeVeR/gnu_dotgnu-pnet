@@ -514,8 +514,7 @@ public class Font
 					IntPtr display = graphics.dpy.Lock();
 					Xlib.XSharpDrawStringSet
 							(display, graphics.drawableHandle, graphics.gc,
-							 fontSet, x, y, str, (int)style,
-							 IntPtr.Zero, graphics.Foreground.value);
+							 fontSet, x, y, str, (int)style);
 				}
 				finally
 				{
@@ -782,17 +781,21 @@ public class Font
 					{
 						throw new ArgumentNullException("graphics");
 					}
-					if(str == null || count == 0)
+					if(str == null || count <= 0)
 					{
 						width = 0;
 						ascent = 0;
 						descent = 0;
 						return;
 					}
-
-					// Extract the substring to be measured.
-					// TODO: make this more efficient by avoiding the data copy.
-					str = str.Substring(index, count);
+					if(index < 0 || index >= str.Length ||
+					   count > (str.Length - index))
+					{
+						width = 0;
+						ascent = 0;
+						descent = 0;
+						return;
+					}
 
 					// Get the font set to use to measure the string.
 					IntPtr fontSet = GetFontSet(graphics.dpy);
@@ -811,7 +814,7 @@ public class Font
 					{
 						IntPtr display = graphics.dpy.Lock();
 						Xlib.XSharpTextExtentsStruct
-							(display, fontSet, str,
+							(display, fontSet, str, index, count,
 							 out overall_ink, out overall_logical);
 					}
 					finally
@@ -846,14 +849,15 @@ public class Font
 					{
 						throw new ArgumentNullException("graphics");
 					}
-					if(str == null || count == 0)
+					if(str == null || count <= 0)
 					{
 						return;
 					}
-
-					// Extract the substring to be measured.
-					// TODO: make this more efficient by avoiding the data copy.
-					str = str.Substring(index, count);
+					if(index < 0 || index >= str.Length ||
+					   count > (str.Length - index))
+					{
+						return;
+					}
 
 					// Get the font set to use for the font.
 					IntPtr fontSet = GetFontSet(graphics.dpy);
@@ -868,8 +872,8 @@ public class Font
 						IntPtr display = graphics.dpy.Lock();
 						Xlib.XSharpDrawStringStruct
 								(display, graphics.drawableHandle, graphics.gc,
-								 fontSet, x, y, str, (int)style,
-								 IntPtr.Zero, graphics.Foreground.value);
+								 fontSet, x, y, str, index, count,
+								 (int)style);
 					}
 					finally
 					{

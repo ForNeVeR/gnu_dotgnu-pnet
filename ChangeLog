@@ -37,6 +37,11 @@
 	Xsharp/XsharpSupport.c: rearrange Xsharp font handling into
 	three separate rendering systems: font set, font struct, and Xft.
 
+	* Xsharp/Font.cs, Xsharp/Xlib.cs.in, Xsharp/XsharpSupport.c:
+	modify the font struct based rendering system to directly access
+	the contents of a "System.String" value for measuring and drawing,
+	rather than requiring PInvoke to copy and convert the string.
+
 2003-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/XsharpSupport.c: implement a special case for Latin1

@@ -102,6 +102,36 @@ int XNextEventWithTimeout(Display *dpy, XEvent *event, int timeout)
 #define	FontStyle_FontStruct	0x80
 
 /*
+ * Structure of Portable.NET's "System.String" object for direct
+ * access to the Unicode contents, bypassing PInvoke string conversion.
+ *
+ * Use the "ILStringLength" and "ILStringToBuffer" macros, so that
+ * 32-bit vs 64-bit system differences are properly dealt with.
+ */
+typedef unsigned short ILChar;
+typedef struct _tagILString ILString;
+typedef struct
+{
+	int		capacity;
+	int		length;
+
+} System_String_int;
+typedef struct
+{
+	long	capacity;
+	long	length;
+
+} System_String_long;
+#define	ILStringLength(str)	\
+		(sizeof(int) == 4 \
+			? ((System_String_int *)(str))->length \
+			: ((System_String_long *)(str))->length)
+#define	ILStringToBuffer(str)	\
+		(sizeof(int) == 4 \
+			? (ILChar *)(((System_String_int *)(str)) + 1) \
+			: (ILChar *)(((System_String_long *)(str)) + 1))
+
+/*
  * Determine if we can use the Xft extension.
  */
 int XSharpUseXft()
@@ -348,8 +378,9 @@ void XSharpFreeFont(Display *dpy, void *fontSet)
 void XSharpTextExtentsSet(Display *dpy, void *fontSet, const char *str,
 					      XRectangle *overall_ink_return,
 					      XRectangle *overall_logical_return);
-void XSharpTextExtentsStruct(Display *dpy, void *fontSet, const char *str,
-					         XRectangle *overall_ink_return,
+void XSharpTextExtentsStruct(Display *dpy, void *fontSet,
+					         ILString *str, long offset, long count,
+							 XRectangle *overall_ink_return,
 					         XRectangle *overall_logical_return);
 void XSharpTextExtentsXft(Display *dpy, void *fontSet, const char *str,
 					      XRectangle *overall_ink_return,
@@ -360,8 +391,7 @@ void XSharpTextExtentsXft(Display *dpy, void *fontSet, const char *str,
  */
 void XSharpDrawStringSet(Display *dpy, Drawable drawable, GC gc,
 					     void *fontSet, int x, int y,
-					     const char *str, int style, Region clipRegion,
-					     unsigned long colorValue)
+					     const char *str, int style)
 {
 	XRectangle overall_ink_return;
 	XRectangle overall_logical_return;
@@ -417,22 +447,55 @@ void XSharpDrawStringSet(Display *dpy, Drawable drawable, GC gc,
 	}
 }
 
+#define	XSHARP_BUFSIZ	128
+
 /*
  * Draw a string using a font struct.
  */
 void XSharpDrawStringStruct(Display *dpy, Drawable drawable, GC gc,
-					        void *fontSet, int x, int y,
-					        const char *str, int style, Region clipRegion,
-					        unsigned long colorValue)
+					        void *fontSet, int x, int y, ILString *str,
+							long offset, long count, int style)
 {
+	XFontStruct *fs = (XFontStruct *)fontSet;
+	ILChar *buffer = ILStringToBuffer(str) + offset;
 	XRectangle overall_ink_return;
 	XRectangle overall_logical_return;
-	XFontStruct *fs = (XFontStruct *)fontSet;
 	int line1, line2;
+	ILChar ch;
+	long ct;
+	int posn;
+	char latinBuffer[XSHARP_BUFSIZ];
 
 	/* Draw the string using the core API */
 	XSetFont(dpy, gc, fs->fid);
-	XDrawString(dpy, drawable, gc, x, y, str, strlen(str));
+	ct = count;
+	while(ct > 0)
+	{
+		/* Convert a run of text into Latin1 */
+		posn = 0;
+		while(ct > 0 && posn < XSHARP_BUFSIZ)
+		{
+			ch = *buffer++;
+			--ct;
+			if(ch < 0x0100)
+			{
+				latinBuffer[posn++] = (char)ch;
+			}
+			else
+			{
+				latinBuffer[posn++] = (char)'?';
+			}
+		}
+
+		/* Draw the text run */
+		XDrawString(dpy, drawable, gc, x, y, latinBuffer, posn);
+
+		/* Advance past the text run so that we can draw the next one */
+		if(ct > 0)
+		{
+			x += XTextWidth(fs, latinBuffer, posn);
+		}
+	}
 
 	/* Calculate the positions of the underline and strike-out */
 	if((style & FontStyle_Underline) != 0)
@@ -455,8 +518,8 @@ void XSharpDrawStringStruct(Display *dpy, Drawable drawable, GC gc,
 	/* Draw the underline and strike-out */
 	if(line1 != y || line2 != y)
 	{
-		XSharpTextExtentsStruct(dpy, fontSet, str,
-				 	            &overall_ink_return, &overall_logical_return);
+		XSharpTextExtentsStruct(dpy, fontSet, str, offset, count,
+				 				&overall_ink_return, &overall_logical_return);
 		XSetLineAttributes(dpy, gc, 1, LineSolid, CapNotLast, JoinMiter);
 		if(line1 != y)
 		{
@@ -563,24 +626,158 @@ void XSharpTextExtentsSet(Display *dpy, void *fontSet, const char *str,
 }
 
 /*
- * Calculate the extent information for a string in a font struct.
+ * Some helper macros from the Xlib code.  Copyright by various authors
+ * and distributed under the MIT/X11 license.  See the Xlib source for
+ * further details (Xlibint.h and TextExt.c).
  */
-void XSharpTextExtentsStruct(Display *dpy, void *fontSet, const char *str,
-					         XRectangle *overall_ink_return,
+#define CI_NONEXISTCHAR(cs) (((cs)->width == 0) && \
+			     (((cs)->rbearing|(cs)->lbearing| \
+			       (cs)->ascent|(cs)->descent) == 0))
+#define CI_GET_CHAR_INFO_1D(fs,col,def,cs) \
+{ \
+    cs = def; \
+    if (col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[(col - fs->min_char_or_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = def; \
+	} \
+    } \
+}
+#define CI_GET_DEFAULT_INFO_1D(fs,cs) \
+  CI_GET_CHAR_INFO_1D (fs, fs->default_char, NULL, cs)
+#define CI_GET_CHAR_INFO_2D(fs,row,col,def,cs) \
+{ \
+    cs = def; \
+    if (row >= fs->min_byte1 && row <= fs->max_byte1 && \
+	col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[((row - fs->min_byte1) * \
+			        (fs->max_char_or_byte2 - \
+				 fs->min_char_or_byte2 + 1)) + \
+			       (col - fs->min_char_or_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = def; \
+        } \
+    } \
+}
+#define CI_GET_DEFAULT_INFO_2D(fs,cs) \
+{ \
+    unsigned int r = (fs->default_char >> 8); \
+    unsigned int c = (fs->default_char & 0xff); \
+    CI_GET_CHAR_INFO_2D (fs, r, c, NULL, cs); \
+}
+#define CI_GET_ROWZERO_CHAR_INFO_2D(fs,col,def,cs) \
+{ \
+    cs = def; \
+    if (fs->min_byte1 == 0 && \
+	col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[(col - fs->min_char_or_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = def; \
+	} \
+    } \
+}
+
+/*
+ * Calculate the extent information for a string in a font struct.
+ *
+ * This is based on the code for the "XTextExtents" function in Xlib.
+ * We expand it inline so that we can convert from Unicode to Latin1 on
+ * the fly, rather than having to convert into a separate buffer first.
+ */
+void XSharpTextExtentsStruct(Display *dpy, void *fontSet, ILString *str,
+					         long offset, long count,
+							 XRectangle *overall_ink_return,
 					         XRectangle *overall_logical_return)
 {
-	int direction, ascent, descent;
+	ILChar *buffer = ILStringToBuffer(str) + offset;
+	XFontStruct *fs = (XFontStruct *)fontSet;
+    int isSingleRow = (fs->max_byte1 == 0);
+	int first = 1;
+	XCharStruct *defaultSize;
+	XCharStruct *charSize;
 	XCharStruct overall;
-	XTextExtents((XFontStruct *)fontSet, str, strlen(str),
-				 &direction, &ascent, &descent, &overall);
+	unsigned ch;
+	int temp;
+
+	/* Get the metrics for the default character */
+    if(isSingleRow)
+	{
+		CI_GET_DEFAULT_INFO_1D(fs, defaultSize);
+    }
+	else
+	{
+		CI_GET_DEFAULT_INFO_2D(fs, defaultSize);
+    }
+
+	/* Iterate over the characters and measure them */
+	overall.width = 0;
+	overall.ascent = 0;
+	overall.descent = 0;
+	overall.lbearing = 0;
+	overall.rbearing = 0;
+	while(count-- > 0)
+	{
+		ch = (unsigned)(*buffer++);
+		if(ch >= 0x0100)
+		{
+			/* Convert non-Latin1 characters into '?' */
+			ch = '?';
+		}
+		if(isSingleRow)
+		{
+	    	CI_GET_CHAR_INFO_1D(fs, ch, defaultSize, charSize);
+		}
+		else
+		{
+	    	CI_GET_ROWZERO_CHAR_INFO_2D(fs, ch, defaultSize, charSize);
+		}
+		if(charSize)
+		{
+			if(first)
+			{
+				overall = *charSize;
+				first = 0;
+			}
+			else
+			{
+				if(charSize->ascent > overall.ascent)
+				{
+					overall.ascent = charSize->ascent;
+				}
+				if(charSize->descent > overall.descent)
+				{
+					overall.descent = charSize->descent;
+				}
+				temp = overall.width + charSize->lbearing;
+				if(temp < overall.lbearing)
+				{
+					overall.lbearing = temp;
+				}
+				temp = overall.width + charSize->rbearing;
+				if(temp > overall.rbearing)
+				{
+					overall.rbearing = temp;
+				}
+				overall.width += charSize->width;
+		    }
+		}
+    }
+
+	/* Convert the raw extent information into the desired return values */
 	overall_ink_return->x = overall.lbearing;
 	overall_ink_return->y = -(overall.ascent);
 	overall_ink_return->width = overall.rbearing - overall.lbearing;
 	overall_ink_return->height = overall.ascent + overall.descent;
 	overall_logical_return->x = 0;
-	overall_logical_return->y = -ascent;
+	overall_logical_return->y = -(fs->ascent);
 	overall_logical_return->width = overall.width;
-	overall_logical_return->height = ascent + descent;
+	overall_logical_return->height = fs->ascent + fs->descent;
 }
 
 /*
@@ -1508,8 +1705,7 @@ void XSharpFreeFontSet(void *dpy, void *fontSet)
 
 void XSharpDrawStringSet(void *dpy, unsigned long drawable, void *gc,
 					     void *fontSet, int x, int y,
-					     const char *str, int style, void *clipRegion,
-					     unsigned long colorValue)
+					     const char *str, int style)
 {
 	/* Nothing to do here */
 }
@@ -1542,13 +1738,13 @@ void XSharpFreeFontStruct(void *dpy, void *fontSet)
 
 void XSharpDrawStringStruct(void *dpy, unsigned long drawable, void *gc,
 					        void *fontSet, int x, int y,
-					        const char *str, int style, void *clipRegion,
-					        unsigned long colorValue)
+					        void *str, long offset, long count, int style)
 {
 	/* Nothing to do here */
 }
 
-void XSharpTextExtentsStruct(void *dpy, void *fontSet, const char *str,
+void XSharpTextExtentsStruct(void *dpy, void *fontSet,
+							 void *str, long offset, long count,
 					         void *overall_ink_return,
 					         void *overall_logical_return)
 {

@@ -1,4 +1,10 @@
 
+2004-08-14  David Logan  <djlogan2@comcast.net>
+
+	* runtime/System/Private/DateTimeFormat/DateTimeParser.cs: Fill in the 
+	month day and year if they are not present in the string. (patch #3275, 
+	Gopal)
+
 2004-08-14  Marcus Urban <mathpup@mylinuxisp.com>
 
 	* runtime/System/Reflection/Emit/UnmanagedMarshal.cs: Implement

@@ -94,7 +94,7 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 				argType = ILTypeGetParam(signature, arg);
 				if(!ILTypeIdentical(argType, args[arg - 1]))
 				{
-					if(!ILCanCoerce(info, args[arg - 1], argType))
+					if(!ILCanCoerce(info, args[arg - 1], argType,1))
 					{
 						break;
 					}

@@ -640,7 +640,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 
 		/* Make sure that the value is compatible with the field's type */
 		if(!ILCoerce(info, node->initializer, &(node->initializer),
-					 CSSemGetType(value), ILField_Type(node->fieldInfo)))
+					 CSSemGetType(value), ILField_Type(node->fieldInfo),1))
 		{
 			CCErrorOnLine(yygetfilename(node->initializer),
 						  yygetlinenum(node->initializer),

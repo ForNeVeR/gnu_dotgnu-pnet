@@ -16,6 +16,9 @@
 	cscc/csharp/cs_attrs.c,cscc/csharp/cs_cast.tc, cscc/csharp/cs_invoke.tc,
 	cscc/csharp/cs_lvalue.tc, cscc/csharp/cs_misc.tc, cscc/csharp/cs_stmt.tc:
 	Protect ILCoerce indirect mode from going into an infinite loop.
+
+	* codegen/cg_resolve.c, cscc/csharp/cs_oper.tc, cscc/csharp/cs_decls.tc:
+	Correct the remaining ILCoerce declarations as well.
 	
 	
 2002-11-15  Gopal.V  <gopalv82@symonds.net>

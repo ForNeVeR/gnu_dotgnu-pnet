@@ -177,8 +177,8 @@ public class TextBox : TextBoxBase
 				vScrollBar = new VScrollBar();
 				vScrollBar.backColor = SystemColors.ScrollBar;
 				vScrollBar.ValueChanged+=new EventHandler(vScrollBar_ValueChanged);
-				SetScrollBarPositions();
 				vScrollBar.Maximum = 0;
+				SetScrollBarPositions();
 				Controls.Add(vScrollBar);
 			}
 		}
@@ -196,8 +196,8 @@ public class TextBox : TextBoxBase
 				hScrollBar = new HScrollBar();
 				hScrollBar.backColor = SystemColors.ScrollBar;
 				hScrollBar.ValueChanged+=new EventHandler(hScrollBar_ValueChanged);
-				SetScrollBarPositions();
 				hScrollBar.Maximum = 0;
+				SetScrollBarPositions();
 				Controls.Add(hScrollBar);
 			}
 		}

@@ -1,10 +1,17 @@
+
+2004-06-10  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/TextBox.cs: Fix ScrollBar size problems
+	when creating a MultiLine textbox with large amount of text.
+
 2004-06-09  Klaus Treichel  <ktreichel@web.de>
 
 	* System/Text/RegularExpressions/CaptureCollection.cs,
 	System/Text/RegularExpressions/GroupCollection.cs,
-	System/Text/RegularExpressions/MatchCollection.cs: added from mono
+	System/Text/RegularExpressions/MatchCollection.cs: Imported from
+	original sources.
 
-	*System/Text/RegularExpressions/ChangeLog,
+	* System/Text/RegularExpressions/ChangeLog,
 	System/Text/RegularExpressions/RegexRunner.cs,
 	System/Text/RegularExpressions/RegexRunnerFactory.cs,
 	System/Text/RegularExpressions/arch.cs,
@@ -19,11 +26,13 @@
 	System/Text/RegularExpressions/quicksearch.cs,
 	System/Text/RegularExpressions/regex.cs,
 	System/Text/RegularExpressions/replace.cs,
-	System/Text/RegularExpressions/syntax.cs: updated from mono
+	System/Text/RegularExpressions/syntax.cs: Updated from original
+	sources
 
-	*System/Text/RegularExpressions/collections.cs: deleted
+	* System/Text/RegularExpressions/collections.cs: obsolete file 
+	deleted.
 	
-2004-06-09  Klaus Treichel  <ktreichel@web.de
+2004-06-09  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/DomainUpDown.cs: Fix call to abstract base
 	function in UpdateEditText.

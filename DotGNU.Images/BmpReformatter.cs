@@ -265,11 +265,18 @@ using System;
 
 		private static void Reformat16bppTo32bpp(Frame oldFrame, bool format555, Frame newFrame)
 				{
+					byte alphafiller = 0;
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
+
+					if(newFrame.PixelFormat == PixelFormat.Format32bppArgb)
+					{
+						alphafiller = 255; // full opacity
+					}
+					
 					for(int y = 0; y < oldFrame.height; y++)
 					{
 						ptrOld = y * oldFrame.stride;
@@ -296,8 +303,8 @@ using System;
 							b = (byte)((int)b * 255 / 31);
 							newData[ptrNew++] = b;
 							newData[ptrNew++] = g;
-							newData[ptrNew] = r;
-							ptrNew += 2;
+							newData[ptrNew++] = r;
+							newData[ptrNew++] = alphafiller;
 						}
 					}
 				}
@@ -334,11 +341,18 @@ using System;
 
 		private static void Reformat8bppTo32bpp(Frame oldFrame, Frame newFrame)
 				{
+					byte alphafiller = 0;
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
+					
+					if(newFrame.PixelFormat == PixelFormat.Format32bppArgb)
+					{
+						alphafiller = 255; // full opacity
+					}
+
 					for(int y = 0; y < oldFrame.height; y++)
 					{
 						ptrOld = y * oldFrame.stride;
@@ -349,19 +363,26 @@ using System;
 							int color = palette[oldData[ptrOld++]];
 							newData[ptrNew++] = (byte)color;
 							newData[ptrNew++] = (byte)(color>>8);
-							newData[ptrNew] = (byte)(color>>16);
-							ptrNew += 2;
+							newData[ptrNew++] = (byte)(color>>16);
+							newData[ptrNew++] = alphafiller;
 						}
 					}
 				}
 
 		private static void Reformat4bppTo32bpp(Frame oldFrame, Frame newFrame)
 				{
+					byte alphafiller = 0;
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 					int[] palette = oldFrame.Palette;
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
+					
+					if(newFrame.PixelFormat == PixelFormat.Format32bppArgb)
+					{
+						alphafiller = 255; // full opacity
+					}
+
 					for(int y = 0; y < oldFrame.height; y++)
 					{
 						ptrOld = y * oldFrame.stride;
@@ -385,14 +406,15 @@ using System;
 							firstNibble = !firstNibble;
 							newData[ptrNew++] = (byte)color;
 							newData[ptrNew++] = (byte)(color>>8);
-							newData[ptrNew] = (byte)(color>>16);
-							ptrNew += 2;
+							newData[ptrNew++] = (byte)(color>>16);
+							newData[ptrNew++] = alphafiller;
 						}
 					}
 				}
 
 		private static void Reformat1bppTo32bpp(Frame oldFrame, Frame newFrame)
 				{
+					byte alphafiller = 0;
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 					int colorBlack = oldFrame.Palette[0];
@@ -405,6 +427,12 @@ using System;
 					byte colorWhiteB = (byte)(colorWhite);
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
+
+					if(newFrame.PixelFormat == PixelFormat.Format32bppArgb)
+					{
+						alphafiller = 255; // full opacity
+					}
+
 					for(int y = 0; y < oldFrame.height; y++)
 					{
 						ptrOld = y * oldFrame.stride;
@@ -420,15 +448,16 @@ using System;
 							{
 								newData[ptrNew++] = colorWhiteB;
 								newData[ptrNew++] = colorWhiteG;
-								newData[ptrNew] = colorWhiteR;
+								newData[ptrNew++] = colorWhiteR;
+								newData[ptrNew++] = alphafiller;
 							}
 							else
 							{
 								newData[ptrNew++] = colorBlackB;
 								newData[ptrNew++] = colorBlackG;
-								newData[ptrNew] = colorBlackR;
+								newData[ptrNew++] = colorBlackR;
+								newData[ptrNew++] = alphafiller;
 							}
-							ptrNew += 2;
 							bit = bit>>1;
 							if (bit == 0 && ptrNew < newByteEnd)
 							{

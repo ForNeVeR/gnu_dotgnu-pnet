@@ -3,6 +3,9 @@
 
 	* DotGNU.Images/BmpReformatter.cs: Change alpha value to 255 for 
 	24bppRgb to 32bppArgb conversion.
+	
+	* DotGNU.Images/BmpReformatter.cs: Fix the alpha value bug for all
+	conversion to 32bppArgb.
 
 2004-09-18  Andre Seidelt <pnet-devel01@foobarquarium.de>
 

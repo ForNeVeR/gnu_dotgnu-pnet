@@ -21,6 +21,11 @@ of "%".
 * engine/internal.c, engine/cvm_dasm.c: dump the names of native
 methods when dumping "call_native" and "call_native_void".
 
+* engine/cvm_call.c: change the "call_ctor" instruction so that "pcstart"
+is recorded as the start of the non-allocation entry point to the method.
+This ensures that relative return addresses are correct when the constructor
+calls sub-methods.
+
 2001-10-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm_dasm.c, engine/cvmc_obj.c, engine/cvm_ptr.c,

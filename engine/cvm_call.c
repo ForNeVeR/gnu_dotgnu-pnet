@@ -139,18 +139,6 @@ case COP_CALL_CTOR:
 	{
 		MISSING_METHOD_EXCEPTION();
 	}
-	pcstart -= ILCoderCtorOffset(thread->process->coder);
-
-	/* Patch the instruction stream to call directly next time */
-	if(methodToCall->userData2 == method->userData2)
-	{
-		pc[0] = COP_CALL;
-		tempNum = (ILUInt32)(pcstart - pc);
-		pc[1] = (unsigned char)(tempNum);
-		pc[2] = (unsigned char)(tempNum >> 8);
-		pc[3] = (unsigned char)(tempNum >> 16);
-		pc[4] = (unsigned char)(tempNum >> 24);
-	}
 
 	/* Allocate a new call frame */
 	ALLOC_CALL_FRAME();
@@ -161,9 +149,12 @@ case COP_CALL_CTOR:
 	callFrame->frame = thread->frame;
 	callFrame->except = IL_MAX_UINT32;	/* Not an exception frame */
 
-	/* Restore the state information and jump to the new method */
+	/* Restore the state information and jump to the new method.
+	   Note: "pcstart" must point to the non-allocation start
+	   of the constructor method so that correct offsets are
+	   calculated when sub-methods return to the constructor */
 	RESTORE_STATE_FROM_THREAD();
-	pc = pcstart;
+	pc = pcstart - ILCoderCtorOffset(thread->process->coder);
 	method = methodToCall;
 }
 break;

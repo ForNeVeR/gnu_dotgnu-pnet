@@ -391,6 +391,16 @@ struct _tagILEvalValue
 {
 	%nocreate ILMachineType machineType = {ILMachineType_Void};
 }
+%node ILNode_StaticField ILNode_LValue =
+{
+	ILField *field;
+}
+%node ILNode_MemberField ILNode_LValue =
+{
+	ILNode  *expr;
+	ILField *field;
+	%nocreate ILUInt32 tempVar = {0};
+}
 
 %output "cg_stmt.c"
 

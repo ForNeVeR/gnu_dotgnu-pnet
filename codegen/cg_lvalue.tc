@@ -71,6 +71,15 @@ ILNode_GetType(ILNode_DerefField)
 }
 
 /*
+ * Get the type of a static or member field reference.
+ */
+ILNode_GetType(ILNode_StaticField),
+ILNode_GetType(ILNode_MemberField)
+{
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
  * Generate discard code for a local or argument variable.
  */
 ILNode_GenDiscard(ILNode_LocalVar),
@@ -103,6 +112,23 @@ ILNode_GenDiscard(ILNode_DerefField)
 {
 	/* Evaluate the object expression for its side-effects */
 	ILNode_GenDiscard(node->expr1, info);
+}
+
+/*
+ * Generate discard code for a static field reference.
+ */
+ILNode_GenDiscard(ILNode_StaticField)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Generate discard code for a member field reference.
+ */
+ILNode_GenDiscard(ILNode_MemberField)
+{
+	/* Evaluate the object expression for its side-effects only */
+	ILNode_GenDiscard(node->expr, info);
 }
 
 /*
@@ -162,6 +188,27 @@ ILNode_GenValue(ILNode_DerefField)
 }
 
 /*
+ * Generate value code for a static field reference.
+ */
+ILNode_GenValue(ILNode_StaticField)
+{
+	ILGenFieldRef(info, IL_OP_LDSFLD, node->field);
+	ILGenAdjust(info, 1);
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
+ * Generate value code for a member field reference.
+ */
+ILNode_GenValue(ILNode_MemberField)
+{
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
  * Prepare to store into a local or argument variable.
  */
 ILNode_Prepare(ILNode_LocalVar),
@@ -205,6 +252,26 @@ ILNode_Prepare(ILNode_DerefField)
 {
 	/* TODO */
 	return node->machineType;
+}
+
+/*
+ * Prepare to store into a static field reference.
+ */
+ILNode_Prepare(ILNode_StaticField)
+{
+	/* Nothing needs to be done here */
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
+ * Prepare to store into a member field reference.
+ */
+ILNode_Prepare(ILNode_MemberField)
+{
+	node->tempVar = IL_MAX_UINT32;
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+	return ILTypeToMachineType(ILField_Type(node->field));
 }
 
 /*
@@ -274,6 +341,62 @@ ILNode_GetAndPrepare(ILNode_DerefField)
 }
 
 /*
+ * Get and prepare to store into a static field reference.
+ */
+ILNode_GetAndPrepare(ILNode_StaticField)
+{
+	ILGenFieldRef(info, IL_OP_LDSFLD, node->field);
+	ILGenAdjust(info, 1);
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
+ * Get and prepare to store into a member field reference.
+ */
+ILNode_GetAndPrepare(ILNode_MemberField)
+{
+	if(leave)
+	{
+		/* Generate the object reference */
+		ILGenCast(info, ILNode_GenValue(node->expr, info),
+				  ILMachineType_ObjectRef);
+
+		/* Duplicate it and get the current value */
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+
+		/* Store the current value into a temporary local */
+		node->tempVar = ILGenTempTypedVar(info, ILField_Type(node->field));
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenStoreLocal(info, node->tempVar);
+		ILGenExtend(info, 1);
+	}
+	else
+	{
+		/* Generate the object reference */
+		ILGenCast(info, ILNode_GenValue(node->expr, info),
+				  ILMachineType_ObjectRef);
+
+		/* Duplicate it for the later store */
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+
+		/* Load the current value from the field */
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+
+		/* We don't need to reload a previous value in "Store" */
+		node->tempVar = IL_MAX_UINT32;
+	}
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
  * Store into a local variable.
  */
 ILNode_Store(ILNode_LocalVar)
@@ -331,6 +454,66 @@ ILNode_Store(ILNode_BaseElement)
 ILNode_Store(ILNode_DerefField)
 {
 	/* TODO */
+}
+
+/*
+ * Store into a static field reference.
+ */
+ILNode_Store(ILNode_StaticField)
+{
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	ILGenFieldRef(info, IL_OP_STSFLD, node->field);
+	ILGenAdjust(info, -1);
+}
+
+/*
+ * Store into a member field reference.
+ */
+ILNode_Store(ILNode_MemberField)
+{
+	if(leave)
+	{
+		/* Copy the result into a temporary local */
+		unsigned temp = ILGenTempTypedVar(info, ILField_Type(node->field));
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenStoreLocal(info, temp);
+		ILGenExtend(info, 1);
+
+		/* Store the value into the field */
+		ILGenFieldRef(info, IL_OP_STFLD, node->field);
+		ILGenAdjust(info, -2);
+
+		/* Do we need to restore a previous value to the stack top? */
+		if(node->tempVar != IL_MAX_UINT32)
+		{
+			ILGenLoadLocal(info, node->tempVar);
+			ILGenAdjust(info, 1);
+			ILGenReleaseTempVar(info, node->tempVar);
+		}
+
+		/* Reload the contents of the temporary local */
+		ILGenLoadLocal(info, temp);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, temp);
+	}
+	else
+	{
+		/* Store the value into the field */
+		ILGenFieldRef(info, IL_OP_STFLD, node->field);
+		ILGenAdjust(info, -2);
+
+		/* Do we need to restore a previous value to the stack top? */
+		if(node->tempVar != IL_MAX_UINT32)
+		{
+			ILGenLoadLocal(info, node->tempVar);
+			ILGenAdjust(info, 1);
+			ILGenReleaseTempVar(info, node->tempVar);
+		}
+	}
 }
 
 /*

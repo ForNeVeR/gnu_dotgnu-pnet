@@ -72,6 +72,23 @@ JavaGenDiscard(ILNode_DerefField)
 }
 
 /*
+ * Generate discard code for a static field reference.
+ */
+JavaGenDiscard(ILNode_StaticField)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Generate discard code for a member field reference.
+ */
+JavaGenDiscard(ILNode_MemberField)
+{
+	/* Evaluate the object expression for its side-effects only */
+	JavaGenDiscard(node->expr, info);
+}
+
+/*
  * Generate value code for a local variable.
  */
 JavaGenValue(ILNode_LocalVar)
@@ -123,6 +140,24 @@ JavaGenValue(ILNode_DerefField)
 {
 	/* TODO */
 	return node->machineType;
+}
+
+/*
+ * Generate value code for a static field reference.
+ */
+JavaGenValue(ILNode_StaticField)
+{
+	/* TODO */
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
+ * Generate value code for a member field reference.
+ */
+JavaGenValue(ILNode_MemberField)
+{
+	/* TODO */
+	return ILTypeToMachineType(ILField_Type(node->field));
 }
 
 /*
@@ -180,6 +215,24 @@ JavaPrepare(ILNode_DerefField)
 }
 
 /*
+ * Prepare to store into a static field reference.
+ */
+JavaPrepare(ILNode_StaticField)
+{
+	/* Nothing needs to be done here */
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
+ * Prepare to store into a member field reference.
+ */
+JavaPrepare(ILNode_MemberField)
+{
+	/* TODO */
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
  * Get and prepare to store into a local variable.
  */
 JavaGetAndPrepare(ILNode_LocalVar)
@@ -234,6 +287,24 @@ JavaGetAndPrepare(ILNode_DerefField)
 }
 
 /*
+ * Get and prepare to store into a static field reference.
+ */
+JavaGetAndPrepare(ILNode_StaticField)
+{
+	/* Nothing needs to be done here */
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
+ * Get and prepare to store into a member field reference.
+ */
+JavaGetAndPrepare(ILNode_MemberField)
+{
+	/* TODO */
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
  * Store into a local variable.
  */
 JavaStore(ILNode_LocalVar)
@@ -277,6 +348,22 @@ JavaStore(ILNode_BaseElement)
  * Store into a field dereference destination.
  */
 JavaStore(ILNode_DerefField)
+{
+	/* TODO */
+}
+
+/*
+ * Store into a static field reference.
+ */
+JavaStore(ILNode_StaticField)
+{
+	/* TODO */
+}
+
+/*
+ * Store into a member field reference.
+ */
+JavaStore(ILNode_MemberField)
 {
 	/* TODO */
 }

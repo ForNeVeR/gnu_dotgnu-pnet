@@ -37,7 +37,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Internal state.
 	private IToolkitGraphics graphics;
 	private Region clip;
-	private Matrix transform;
+	internal Matrix transform;
 	private float pageScale;
 	private GraphicsUnit pageUnit;
 	internal GraphicsContainer stackTop;
@@ -3900,7 +3900,15 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Update the clipping region within the IToolkitGraphics object.
 	private void UpdateClip()
 			{
-				RectangleF[] rectsF = clip.GetRegionScans(Transform);
+				RectangleF[] rectsF;
+				if (transform == null && pageScale == 1.0f && pageUnit == GraphicsUnit.World)
+				{
+					rectsF = clip.GetRegionScansIdentity();
+				}
+				else
+				{
+					rectsF = clip.GetRegionScans(Transform);
+				}
 				int left = int.MaxValue;
 				int top = int.MaxValue;
 				int right = int.MinValue;

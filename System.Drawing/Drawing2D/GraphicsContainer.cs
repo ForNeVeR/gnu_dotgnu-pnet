@@ -67,7 +67,14 @@ public sealed class GraphicsContainer : MarshalByRefObject
 				smoothingMode = graphics.SmoothingMode;
 				textContrast = graphics.TextContrast;
 				textRenderingHint = graphics.TextRenderingHint;
-				transform = Matrix.Clone(graphics.Transform);
+				if (graphics.transform == null)
+				{
+					transform = null;
+				}
+				else
+				{
+					transform = Matrix.Clone(graphics.transform);
+				}
 			}
 
 	// Restore a graphics object back to the state of this container.

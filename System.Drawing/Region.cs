@@ -344,6 +344,11 @@ public sealed class Region : MarshalByRefObject, IDisposable
 		return newRects;
 	}
 
+	internal RectangleF[] GetRegionScansIdentity()
+	{
+		return rects;
+	}
+
 	// Form the intersection of this region and another.
 	public void Intersect(GraphicsPath path)
 	{

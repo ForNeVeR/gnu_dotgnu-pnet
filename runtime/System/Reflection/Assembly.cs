@@ -350,7 +350,10 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	[TODO]
 	public virtual AssemblyName GetName()
 	{
-		throw new NotImplementedException("GetName");
+		AssemblyName name=new AssemblyName();
+		name.Name=ClrHelpers.GetName(privateData);
+		name.Version=new Version(0,0,0,0);
+		return name;
 	}
 
 	// Convert this assembly into a string.

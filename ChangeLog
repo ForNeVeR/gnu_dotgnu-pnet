@@ -1,3 +1,9 @@
+
+2003-01-16  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Reflection/Assembly.cs: partially implement GetName
+	to support some external libraries.
+
 2003-01-15  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextWriter.cs: WriteString and WriteRaw

@@ -644,10 +644,52 @@ class XmlDocument : XmlNode
 			}
 
 	// Load XML into this document from a string.
-	[TODO]
 	public virtual void LoadXml(String xml)
 			{
-				// TODO
+				if (xml == null || xml == String.Empty)
+				{
+					throw(new XmlException("no Xml to parse", null));
+					return;
+				}
+				
+				XmlTextReader reader = new XmlTextReader(xml, XmlNodeType.Element, null);
+				BuildStructure(reader);
+			}
+
+	// Used by Load/LoadXml methods to do the DOM structure
+	private bool BuildStructure(XmlTextReader reader)
+			{
+				XmlNode parent = this;
+				XmlNode current;
+
+				while (reader.Read())
+				{
+					if (reader.IsStartElement() == true)
+					{
+						XmlElement elem = this.CreateElement(reader.Name);
+						parent.AppendChild(elem);
+						parent = elem;
+						current = elem;
+					}
+					else
+					{
+						parent = parent.ParentNode;
+					}
+					if (reader.NodeType == XmlNodeType.Text)
+					{
+						// If node has body text
+						current.InnerText = reader.Value;
+					}
+				}
+				
+				if (this.ChildNodes.Count >0)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 	// Read a node into this document.

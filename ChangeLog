@@ -1,4 +1,9 @@
 
+2002-01-09  Adam Ballai <minddog@cannibutter.com>
+
+	* System.Xml/XmlDocument.cs, System.Xml/XmlTextReader.cs: XML
+	reader updates.
+
 2002-01-07  Rainer Groesslinger <rainer.groesslinger@gmx.net>
 
 	* resources/de_DE/I18N/I18NRes.txt, resources/de_DE/System/Arg.txt,

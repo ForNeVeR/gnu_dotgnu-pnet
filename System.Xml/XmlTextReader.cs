@@ -53,11 +53,14 @@ public class XmlTextReader : XmlReader
 	private String localName;
 	private String namespaceURI;
 	private String value;
+	internal XmlAttribute attr;
 	private XmlAttributeCollection attributes;
 	private int attributeIndex;
 	private int depth;
 	private bool isEmpty;
-
+	internal bool contextSupport;
+	internal StringBuilder builder;
+	internal String	name;
 	// Constructors.
 	protected XmlTextReader()
 			: this(new NameTable())
@@ -91,10 +94,13 @@ public class XmlTextReader : XmlReader
 				localName = String.Empty;
 				namespaceURI = String.Empty;
 				value = String.Empty;
-				attributes = null;
+				attr = null;
+				attributes = new XmlAttributeCollection(attr); 
 				attributeIndex = -1;
 				depth = 1;
 				isEmpty = false;
+				contextSupport = false;
+				name = String.Empty;
 			}
 	public XmlTextReader(Stream input)
 			: this(String.Empty, input, new NameTable())
@@ -177,7 +183,24 @@ public class XmlTextReader : XmlReader
 				{
 					throw new XmlException(S._("Xml_InvalidNodeType"));
 				}
-				// TODO
+				
+				if(context == null)
+				{
+					baseURI = String.Empty;
+					// TODO: find byte order mark
+					// else ...
+					// encoding = System.Text.UT8Encoding(true);
+				}
+				else
+				{
+					baseURI = context.BaseURI;
+					encoding = context.Encoding;
+					xmlLang = context.XmlLang;
+					xmlSpace = context.XmlSpace;
+					contextSupport = true;
+				}
+				namespaces = false;
+				
 			}
 	[TODO]
 	public XmlTextReader(String xmlFragment, XmlNodeType fragType,
@@ -194,7 +217,27 @@ public class XmlTextReader : XmlReader
 				{
 					throw new XmlException(S._("Xml_InvalidNodeType"));
 				}
-				// TODO
+			
+				if(context == null)
+				{
+					baseURI = String.Empty;
+					// TODO: find byte order mark
+					// else ...
+					// encoding = System.Text.UT8Encoding(true);
+					StringReader sr = new StringReader(xmlFragment);
+					encoding = Encoding.ASCII;
+					reader = sr;
+				}
+				else
+				{
+					baseURI = context.BaseURI;
+					encoding = context.Encoding;
+					xmlLang = context.XmlLang;
+					xmlSpace = context.XmlSpace;
+					contextSupport = true;
+				}
+
+				namespaces = false;	
 			}
 	public XmlTextReader(String url)
 			: this(url, new NameTable())
@@ -433,9 +476,43 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Read an identifier from the input stream.
-	private String ReadIdentifier()
+	private String ReadIdentifier(int ch)
 			{
-				// TODO
+				StringBuilder builder = new StringBuilder();
+
+				if(ch != -1)
+				{
+					builder.Append((char)ch);
+				}
+				
+				while((ch = ReadChar()) != -1)
+				{
+					builder.Append((char)ch);
+					linePosition++;
+					if((char)reader.Peek() == '>' )
+					{
+						nodeType = XmlNodeType.Element;
+						return builder.ToString();
+					}
+					else if((char)reader.Peek() == '/')
+					{
+						nodeType = XmlNodeType.EndElement;
+						isEmpty = true;
+						return builder.ToString();
+					}
+					else if((char)ch == '>')
+					{
+						nodeType = XmlNodeType.Element;
+						ungetch = ch;
+						return builder.ToString(0, builder.Length -1);
+					}
+					else if(Char.IsWhiteSpace((char)ch))
+					{
+						nodeType = XmlNodeType.Element;
+						return builder.ToString(0, builder.Length -1);
+					}
+
+				}
 				return null;
 			}
 
@@ -456,6 +533,7 @@ public class XmlTextReader : XmlReader
 				namespaceURI = String.Empty;
 			}
 
+	
 	// Skip white space characters.
 	private void SkipWhite()
 			{
@@ -467,6 +545,16 @@ public class XmlTextReader : XmlReader
 						ungetch = ch;
 						break;
 					}
+					if((char)ch == '\n')
+					{
+						lineNumber++;
+						linePosition = 0;
+					}
+					else if(Char.IsWhiteSpace((char)ch))
+					{
+						linePosition++;
+					}
+						
 				}
 			}
 
@@ -480,14 +568,238 @@ public class XmlTextReader : XmlReader
 				}
 			}
 
+	internal void AnalyzeChar(int ch, bool structFlag)
+			{
+			
+				if(ch == -1)
+				{
+					if(linePosition > 1)
+					{
+						--linePosition;
+					}
+					readState = ReadState.EndOfFile;
+					ClearNodeInfo();
+					return;
+				}
+				
+				
+				switch((char)ch)
+				{
+					case '<':
+						ch = ReadChar();
+						
+						// Set structFlag to true for specialchar
+						// start sequences
+						AnalyzeChar(ch, true);
+						break;
+					case '/':
+						// Check for correct structure 
+						if(structFlag != true)
+						{
+							throw new XmlException
+								(S._("Xml_Malformed"));
+						}
+						
+						// End element tag.
+						name = ReadIdentifier(-1);
+						SkipWhite();
+						Expect('>');
+						nodeType = XmlNodeType.EndElement;
+						SetName(name);
+						value = String.Empty;
+						attributes = null;
+						attributeIndex = -1;
+						isEmpty = false;
+						--depth;	
+						break;
+					case '?':
+						// TODO: Processing Instructions
+						if(structFlag != true)
+						{
+							throw new XmlException
+								(S._("Xml_Malformed"));
+						}
+
+						ch = ReadChar();
+						AnalyzeChar(ch, true);
+						break;
+					case '!':
+						// Check for correct structure 
+						if(structFlag != true)
+						{
+							throw new XmlException
+								(S._("Xml_Malformed"));
+						}
+
+
+						// Comment, CDATA, or document type information.
+						ch = ReadChar();
+						AnalyzeChar(ch, true);
+						break;
+					case '-':
+						// Parse the "<!--" comment start sequence.
+						if(structFlag != true)
+						{
+							throw new XmlException
+								(S._("Xml_Malformed"));
+						}
+
+						ch = ReadChar();
+						if((char)ch != '-')
+						{
+							UngetAndThrow(ch);
+						}
+
+						// Search for the "-->" comment end sequence.
+						int count = 0;
+						while((ch = ReadChar()) != -1)
+						{
+							builder.Append((char)ch);
+						
+							if((char)ch == '-')
+							{
+									++count;
+							}
+							else if((char)ch == '>')
+							{
+								if(count >= 2)
+								{
+									builder.Remove(builder.Length - 3, 3);
+									break;
+								}
+								count = 0;
+							}
+							else
+							{
+								count = 0;
+							}
+							if((char)ch == '\n')
+							{
+								++lineNumber;
+								linePosition = 0;
+							}
+						}
+						if((char)ch != '>')
+						{
+							UngetAndThrow(ch);
+						}
+
+						// Create a comment node and return.
+						ClearNodeInfo();
+						nodeType = XmlNodeType.Comment;
+						value = builder.ToString();
+						break;
+						
+					case '[':
+						if(structFlag != true)
+						{
+							throw new XmlException
+								(S._("Xml_Malformed"));
+						}
+
+						// TODO: CDATA node
+						break;
+							
+					case 'D':
+						if(structFlag != true)
+						{
+							throw new XmlException
+								(S._("Xml_Malformed"));
+						}
+						
+						// document type nodes
+						// clean the buffer
+						builder = new StringBuilder();
+						builder.Append((char)ch);
+						while ((ch = ReadChar()) != -1)
+						{
+							builder.Append((char)ch);
+							if(Char.IsWhiteSpace((char)reader.Peek()))
+							{
+								nodeType = XmlNodeType.DocumentType;
+								name = builder.ToString();
+								value = ReadIdentifier(-1);
+								
+								break;
+							}
+						}
+						break;
+					case '=':
+						// TODO: save attribute name
+						ClearNodeInfo();
+						name = builder.ToString();
+						SetName(name);
+						nodeType = XmlNodeType.Attribute;
+						// reset buffer
+						builder = new StringBuilder();
+						break;
+					case '"':
+						if(nodeType != XmlNodeType.Attribute)
+						{
+							throw new XmlException
+								(S._("Xml_WrongNode"));
+						}
+						// Get Text value of an Attribute	
+						while((ch = ReadChar()) != -1)
+						{
+							if((char)ch == '"')
+							{
+								value = builder.ToString();
+								nodeType = XmlNodeType.Text;
+
+								// go to next char
+								SkipWhite();
+								
+								// reset buffer
+								builder = new StringBuilder();
+								
+								if((char)reader.Peek() == '/')
+								{
+									ReadChar();
+									SkipWhite();
+									Expect('>');
+								}
+								else if ((char)reader.Peek() == '>')
+								{
+									ReadChar();
+								}
+								
+								break;
+							}
+							
+							builder.Append((char)ch);
+						}
+						break;
+					default:
+						// save any text
+						builder.Append((char)ch);
+						// if '<'
+						if(structFlag == true)
+						{
+							// move back one space
+							ClearNodeInfo();
+							name = ReadIdentifier(ch);
+							// checking for termination '/'
+							SetName(name);
+							// reset buffer
+							builder = new StringBuilder();
+							break;
+						}
+						
+						nodeType = XmlNodeType.Text;
+						ch = ReadChar();
+						AnalyzeChar(ch, false);
+						break;
+					
+				}// end switch(ch)
+			}// end AnalyzeChar
+		
+
 	// Read the next node in the input stream.
-	[TODO]
 	public override bool Read()
 			{
 				int ch;
-				StringBuilder builder;
-				String name;
-				int count;
+				builder = new StringBuilder();
 
 				// Validate the current state of the stream.
 				if(readState == ReadState.EndOfFile)
@@ -502,21 +814,13 @@ public class XmlTextReader : XmlReader
 				{
 					throw new XmlException(S._("Xml_ReaderError"));
 				}
-
+				
 				// Skip white space in the input stream.  TODO: collect
 				// up significant white space.
-				while((ch = ReadChar()) != -1)
-				{
-					if(!Char.IsWhiteSpace((char)ch))
-					{
-						break;
-					}
-					if(ch == '\n')
-					{
-						++lineNumber;
-						linePosition = 0;
-					}
-				}
+				SkipWhite();
+
+				ch = ReadChar();
+
 				if(ch == -1)
 				{
 					// We've reached the end of the stream.  Throw
@@ -529,122 +833,54 @@ public class XmlTextReader : XmlReader
 					ClearNodeInfo();
 					return false;
 				}
-
+				
+				readState = ReadState.Interactive;	
 				// Determine what to do based on the next character.
-				if(ch == '<')
+				
+			
+				
+				switch (nodeType)
 				{
-					// Some kind of tag.
-					ch = ReadChar();
-					if(ch == '/')
-					{
-						// End element tag.
-						name = ReadIdentifier();
-						SkipWhite();
-						Expect('>');
-						nodeType = XmlNodeType.Element;
-						SetName(name);
-						value = String.Empty;
-						attributes = null;
-						attributeIndex = -1;
-						isEmpty = false;
-						--depth;
-					}
-					else if(ch == '!')
-					{
-						// Comment, CDATA, or document type information.
-						ch = ReadChar();
-						if(ch == '-')
+					case XmlNodeType.Attribute:
+						// Set structFlag to true so quoteChar will
+						// know it is the first quote
+						AnalyzeChar(ch,true);
+						return true;
+						break;
+					default:
+						// Handling, set flag to true if first char is <
+						if ((char)ch == '<')
 						{
-							// Parse the "<!--" comment start sequence.
-							ch = ReadChar();
-							if(ch != '-')
-							{
-								UngetAndThrow(ch);
-							}
-
-							// Search for the "-->" comment end sequence.
-							builder = new StringBuilder();
-							count = 0;
-							while((ch = ReadChar()) != -1)
-							{
-								builder.Append((char)ch);
-								if(ch == '-')
-								{
-									++count;
-								}
-								else if(ch == '>')
-								{
-									if(count >= 2)
-									{
-										builder.Remove(builder.Length - 3, 3);
-										break;
-									}
-									count = 0;
-								}
-								else
-								{
-									count = 0;
-								}
-								if(ch == '\n')
-								{
-									++lineNumber;
-									linePosition = 0;
-								}
-							}
-							if(ch != '>')
-							{
-								UngetAndThrow(ch);
-							}
-
-							// Create a comment node and return.
-							ClearNodeInfo();
-							nodeType = XmlNodeType.Comment;
-							value = builder.ToString();
-							return true;
+							AnalyzeChar(ch, true);
 						}
-						else if(ch == '[')
+						else 
 						{
-							// TODO: CDATA nodes.
+							AnalyzeChar(ch, false);
 						}
-						else if(ch == 'D')
-						{
-							// TODO: document type nodes.
-						}
-						else
-						{
-							UngetAndThrow(ch);
-						}
-					}
-					else if(ch == '?')
-					{
-						// Processing instruction.
-						// TODO
-					}
-					else if(XmlConvert.IsNameStart((char)ch, true))
-					{
-						// Start element tag.
-						// TODO
-					}
-					else
-					{
-						UngetAndThrow(ch);
-					}
+						return true;
+						break;
 				}
-				else
-				{
-					// Text and entity references.
-					// TODO
-				}
-
+				
 				return false;
 			}
 
 	// Read the next attribute value in the input stream.
-	[TODO]
 	public override bool ReadAttributeValue()
 			{
-				// TODO
-				return false;
+				
+				if(readState !=  ReadState.Interactive)
+				{
+					throw new XmlException
+						(S._("Xml_WrongReadState"));
+				}
+				
+				
+				
+				if(nodeType != XmlNodeType.Attribute)
+					return false;		
+
+				Read();
+				return true;	
 			}
 
 	// Read base64 data from the current element.
@@ -664,19 +900,88 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Read character data from the current element.
-	[TODO]
-	public int ReadChars(byte[] array, int index, int count)
+	public int ReadChars(char[] buffer, int index, int count)
 			{
-				// TODO
+				if(count > buffer.Length - index)
+				{
+					throw new ArgumentException
+						(S._("ArgumentExceedsLength"), "count");
+				}
+				else if (buffer == null)
+				{
+					throw new ArgumentNullException
+						(S._("ArgumentIsNull"), "buffer");
+				}
+				else if ( index < 0 || count < 0 )
+				{
+					throw new ArgumentOutOfRangeException
+						(S._("ArgumentOutOfRange"));
+				}
+				else if (nodeType != XmlNodeType.Text && nodeType != XmlNodeType.Element)
+				{
+					throw new XmlException
+						(S._("Xml_WrongNodeType"));
+				}
+				
+				int length;
+				String output;
+				if(nodeType != XmlNodeType.Text)
+				{
+					// if we are not at a text node, move to current element's content
+					
+					MoveToContent();
+				}
+				
+				
+				Read();
+
+				length = value.IndexOf("<");
+
+				// go back to '<' position
+				linePosition -= value.Length - length;
+
+				output = value.Substring(0, length);
+				
+				// read text now 	
+				if( output.Length < count)
+				{
+					Array.Copy(output.ToCharArray(0, output.Length), 0, buffer, index, output.Length);
+				}
+				else
+				{
+					Array.Copy(output.ToCharArray(0, count), 0, buffer, index, count);
+				}
+			
 				return 0;
 			}
 
 	// Read the contents of the current node, including all markup.
-	[TODO]
 	public override String ReadInnerXml()
 			{
-				// TODO
-				return null;
+				if(nodeType != XmlNodeType.Element && nodeType != XmlNodeType.Attribute)
+				{
+					throw new XmlException
+						(S._("Xml_WrongNodeType"));
+				}
+				
+				int ch;
+				StringBuilder builder = new StringBuilder();
+				if(nodeType == XmlNodeType.Element)
+				{
+					MoveToContent();	
+					Read();
+					return value;
+				}
+				else if(nodeType == XmlNodeType.Attribute)
+				{
+					if(ReadAttributeValue() == true)
+					{
+						return value;
+					}
+				}
+			
+				return String.Empty;
+				
 			}
 
 	// Read the current node, including all markup.
@@ -688,18 +993,21 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Read the contents of an element or text node as a string.
-	[TODO]
 	public override String ReadString()
 			{
-				// TODO
-				return null;
+				return null;	
 			}
 
 	// Reset to the initial state.
-	[TODO]
 	public void ResetState()
 			{
-				// TODO
+				if(contextSupport != false)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_ContextNotNull"));
+				}
+				
+				readState = ReadState.Initial;
 			}
 
 	// Resolve an entity reference.

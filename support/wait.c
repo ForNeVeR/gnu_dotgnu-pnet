@@ -47,6 +47,14 @@ int ILWaitHandleClose(ILWaitHandle *handle)
  */
 static int EnterWait(ILThread *thread)
 {
+	_ILMutexLock(&(thread->lock));
+	if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	{
+		_ILMutexUnlock(&(thread->lock));
+		return IL_WAIT_ABORTED;
+	}
+	thread->state |= IL_TS_WAIT_SLEEP_JOIN;
+	_ILMutexUnlock(&(thread->lock));
 	return 0;
 }
 
@@ -55,6 +63,17 @@ static int EnterWait(ILThread *thread)
  */
 static int LeaveWait(ILThread *thread, int result)
 {
+	_ILMutexLock(&(thread->lock));
+	if((thread->state & IL_TS_INTERRUPTED) != 0)
+	{
+		result = IL_WAIT_INTERRUPTED;
+	}
+	else if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	{
+		result = IL_WAIT_ABORTED;
+	}
+	thread->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
+	_ILMutexUnlock(&(thread->lock));
 	return result;
 }
 

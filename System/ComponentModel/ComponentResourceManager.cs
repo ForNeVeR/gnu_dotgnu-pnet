@@ -25,6 +25,7 @@ namespace System.ComponentModel
 #if CONFIG_COMPONENT_MODEL
 
 using System.Resources;
+using System.Collections;
 using System.Globalization;
 
 public class ComponentResourceManager : ResourceManager
@@ -38,7 +39,6 @@ public class ComponentResourceManager : ResourceManager
 			{
 				ApplyResources(value, objectName, null);
 			}
-	[TODO]
 	public virtual void ApplyResources
 				(Object value, String objectName, CultureInfo culture)
 			{
@@ -58,8 +58,40 @@ public class ComponentResourceManager : ResourceManager
 					culture = CultureInfo.CurrentUICulture;
 				}
 
-				// Read the resources and apply them to the component.
-				// TODO
+				// Read the resources for the specified culture.
+				ResourceSet set = GetResourceSet(culture, true, true);
+				if(set == null)
+				{
+					return;
+				}
+
+				// Get the properties for the object.
+				PropertyDescriptorCollection props;
+				props = TypeDescriptor.GetProperties(value);
+
+				// Set the resources for the value.
+				IDictionaryEnumerator e = set.GetEnumerator();
+				while(e.MoveNext())
+				{
+					// Check that this key is appropriate to the object.
+					String key = (String)(e.Key);
+					if(objectName == null || key.StartsWith(objectName))
+					{
+						// Remove the object name prefix from the key.
+						if(objectName != null)
+						{
+							key = key.Substring(objectName.Length);
+						}
+
+						// Find the specified property and set it.
+						PropertyDescriptor prop;
+						prop = props[key];
+						if(prop != null && !prop.IsReadOnly)
+						{
+							prop.SetValue(value, e.Value);
+						}
+					}
+				}
 			}
 
 }; // class ComponentResourceManager

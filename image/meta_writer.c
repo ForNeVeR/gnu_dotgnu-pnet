@@ -1478,7 +1478,7 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 						/* We need to add an RVA fixup to reposition
 						   field RVA's once we know where the ".sdata"
 						   and ".tls" sections reside */
-						AddRVAFixup(writer, ILWriterGetTextRVA(writer) + posn,
+						AddRVAFixup(writer, writer->indexBlob.offset + posn,
 									((ILFieldRVA *)(image->tokenData
 										[tokenType][token]))->rva);
 					}

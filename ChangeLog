@@ -4,6 +4,9 @@
 	* cscc/csharp/cs_lookup.c (CSResolveMemberName): special hack
 	for enumerated types that have the same name as instance properties.
 
+	* image/image.h, image/meta_writer.c, image/pecoff_writer.c,
+	image/writer.c: fix the back-patching of field RVA's.
+
 2002-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/Makefile.am, codegen/cg_gen.c, codegen/cg_gen.h,

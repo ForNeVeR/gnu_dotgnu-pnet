@@ -107,6 +107,7 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 	writer->optOffset = 0;
 	writer->firstSection = 0;
 	writer->runtimeOffset = 0;
+	writer->indexRVA = 0;
 	writer->entryPoint = 0;
 	writer->sections = 0;
 	writer->stream = stream;
@@ -232,7 +233,7 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 	{
 		++numSections;
 	}
-	if(writer->guidBlob.firstBuffer)
+	if(writer->guidBlob.offset)
 	{
 		++numSections;
 	}
@@ -377,6 +378,7 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 	ILWriterTextWrite(writer, header, size);
 
 	/* Write the contents of the blobs */
+	writer->indexRVA = ILWriterGetTextRVA(writer);
 	WriteWBufferList(writer, &(writer->indexBlob));
 	ILWriterTextAlign(writer);
 	WriteImagePool(writer, image->stringPool,

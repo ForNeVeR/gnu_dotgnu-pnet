@@ -310,6 +310,7 @@ struct _tagILWriter
 	unsigned long	sectOffset;		/* Offset of the section table */
 	unsigned long	firstSection;	/* Offset of first section */
 	unsigned long	runtimeOffset;	/* Offset of the IL runtime header */
+	unsigned long	indexRVA;		/* RVA of the index blob */
 
 	/* Entry point token */
 	ILMethod	   *entryPoint;

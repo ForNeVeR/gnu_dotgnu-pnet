@@ -918,7 +918,8 @@ void _ILWriteFieldRVAFixups(ILWriter *writer, unsigned long dataSection,
 	{
 		if(fixup->kind == IL_FIXUP_FIELD_RVA)
 		{
-			offset = fixup->rva + writer->firstSection - 0x2000;
+			offset = (writer->indexRVA + fixup->rva) +
+					 (writer->firstSection - 0x2000);
 			rva = fixup->un.value;
 			if((rva & (ILUInt32)0x80000000) == 0)
 			{

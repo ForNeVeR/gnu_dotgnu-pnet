@@ -83,7 +83,6 @@ public class DoubleBuffer : Drawable
 						// Xdbe functions are not present in "Xext".
 						usesXdbe = false;
 					}
-						usesXdbe = false;
 
 					// Create the back buffer or pixmap, as appropriate.
 					if(usesXdbe)

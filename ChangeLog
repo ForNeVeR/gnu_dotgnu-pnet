@@ -1,4 +1,14 @@
 
+2002-12-08  Gopal.V  <gopalv82@symonds.net>
+
+	* codegen/cg_gen.h,cscc/common/cc_main.c: add noStdlibFlag and 
+	builtinLibFlag to ILGenInfo to ensure that the correct System classes 
+	are being used.
+
+	* cscc/csharp/cs_defs.tc, cscc/csharp/cs_grammar.y, 
+	cscc/csharp/cs_types.tc, cscc/csharp/cs_lvalue.tc,cscc/csharp/cs_gather.c
+	: Fix for Bug 1900 in savannah. To resolve System classes correctly.
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/internal.c,

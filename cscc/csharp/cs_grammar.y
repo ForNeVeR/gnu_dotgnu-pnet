@@ -205,7 +205,7 @@ static void yyerror(char *msg)
  * Make a system type name node.
  */
 #define	MakeSystemType(name)	\
-			(ILNode_GlobalNamespace_create(ILQualIdentTwo("System", #name)))
+			(ILNode_GlobalNamespace_create(ILNode_SystemType_create(name)))
 
 /*
  * Clone the filename/linenum information from one node to another.
@@ -1310,9 +1310,9 @@ BuiltinType
 	| FLOAT			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_R4); }
 	| DOUBLE		{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_R8); }
 	| LONG_DOUBLE	{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_R); }
-	| DECIMAL		{ MakeSimple(DecimalType); }
-	| OBJECT		{ MakeSimple(ObjectType); }
-	| STRING		{ MakeSimple(StringType); }
+	| DECIMAL		{ MakeUnary(SystemType,"Decimal"); }
+	| OBJECT		{ MakeUnary(SystemType,"Object"); }
+	| STRING		{ MakeUnary(SystemType,"String"); }
 	;
 
 /*
@@ -3312,7 +3312,7 @@ StructDeclaration
 				--NestingLevel;
 
 				/* Make sure that we have "ValueType" in the base list */
-				baseList = MakeSystemType(ValueType);
+				baseList = MakeSystemType("ValueType");
 				if($5 != 0)
 				{
 					baseList = ILNode_ArgList_create($5, baseList);
@@ -3572,7 +3572,7 @@ EnumDeclaration
 				--NestingLevel;
 
 				/* Make sure that we have "Enum" in the base list */
-				baseList = MakeSystemType(Enum);
+				baseList = MakeSystemType("Enum");
 
 				/* Add an instance field called "value__" to the body,
 				   which is used to hold the enumerated value */
@@ -3686,7 +3686,7 @@ DelegateDeclaration
 
 				/* Make sure that we have "MulticastDelegate"
 				   in the base list */
-				baseList = MakeSystemType(MulticastDelegate);
+				baseList = MakeSystemType("MulticastDelegate");
 
 				/* Construct the body of the delegate class */
 				bodyList = ILNode_List_create();

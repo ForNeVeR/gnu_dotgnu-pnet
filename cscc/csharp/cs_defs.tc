@@ -74,9 +74,10 @@
 {
 	ILUInt32 elementType;
 }
-%node ILNode_ObjectType ILNode_Dummy
-%node ILNode_StringType ILNode_Dummy
-%node ILNode_DecimalType ILNode_Dummy
+%node ILNode_SystemType ILNode_Dummy =
+{
+	char* className;
+}
 %node ILNode_TypeSuffix ILNode_Dummy =
 {
 	ILUInt32 count;		/* 0 for '*', 1 + for dimension separators */

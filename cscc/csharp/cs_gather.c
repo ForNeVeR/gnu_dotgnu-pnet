@@ -1931,7 +1931,7 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 	   base types are listed before types that inherit them */
 	tree = (ILNode *)list;
 	list = (ILNode_List *)ILNode_List_create();
-	systemObject = ILQualIdentTwo("System", "Object");
+	systemObject = ILNode_SystemType_create("Object");
 	ILNode_ListIter_Init(&iterator, tree);
 	while((child = ILNode_ListIter_Next(&iterator)) != 0)
 	{

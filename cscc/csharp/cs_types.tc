@@ -151,38 +151,18 @@ ILNode_SemAnalysis(ILNode_PrimitiveType)
 /*
  * Perform semantic analysis for the "object" type.
  */
-ILNode_SemAnalysis(ILNode_ObjectType)
+ILNode_SemAnalysis(ILNode_SystemType)
 {
 	CSSemValue value;
-	CSSemSetType(value, ILFindSystemType(info, "Object"));
-	if(!(CSSemGetType(value)))
+	if(info->noStdlibFlag || info->builtinLibFlag)
 	{
-		CCOutOfMemory();
+		value=ILNode_SemAnalysis(
+				ILQualIdentTwo("System",node->className),info,parent);
 	}
-	return value;
-}
-
-/*
- * Perform semantic analysis for the "string" type.
- */
-ILNode_SemAnalysis(ILNode_StringType)
-{
-	CSSemValue value;
-	CSSemSetType(value, ILFindSystemType(info, "String"));
-	if(!(CSSemGetType(value)))
+	else
 	{
-		CCOutOfMemory();
+		CSSemSetType(value, ILFindSystemType(info, node->className));
 	}
-	return value;
-}
-
-/*
- * Perform semantic analysis for the "decimal" type.
- */
-ILNode_SemAnalysis(ILNode_DecimalType)
-{
-	CSSemValue value;
-	CSSemSetType(value, ILFindSystemType(info, "Decimal"));
 	if(!(CSSemGetType(value)))
 	{
 		CCOutOfMemory();

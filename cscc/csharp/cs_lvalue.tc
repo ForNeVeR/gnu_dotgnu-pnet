@@ -1084,6 +1084,7 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 	 *  to locate a corresponding type.  */
 
 	/*  Manufacture a Semantic value for the "namespace"  */
+	/*
 	CSSemSetKind(nsvalue, 
 					CS_SEMKIND_NAMESPACE, ILMemberAccessName(node->expr1));
 
@@ -1093,7 +1094,7 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 		return SemToLRValue((ILNode *)node, info, parent, value2,
 						name, node->expr1, &value);
 	}
-
+*/
 	/*  PART IV - Punt.  */
 	if (!yyisa(*parent,ILNode_MemberAccess))
 	{

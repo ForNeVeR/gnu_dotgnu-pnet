@@ -1,3 +1,13 @@
+
+2003-10-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, System.Drawing/S.cs,
+	System.Drawing/System.Drawing.build, resources/en_US/Makefile.am,
+	resources/en_US/System.Drawing/.cvsignore,
+	resources/en_US/System.Drawing/Makefile.am,
+	resources/en_US/System.Drawing/System.Drawing.txt:
+	add the string resources for "System.Drawing".
+
 2003-10-12  Neil Cawse  <neilcawse@hotmail.com>
 
 	* System.Windows.Forms/TreeView.cs: fix paint crash when no nodes bug.

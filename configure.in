@@ -370,6 +370,7 @@ resources/en_US/System.Xml/Makefile
 resources/en_US/System.Net.IrDA/Makefile
 resources/en_US/Xsharp/Makefile
 resources/en_US/System.Configuration.Install/Makefile
+resources/en_US/System.Drawing/Makefile
 resources/de_DE/Makefile
 resources/de_DE/runtime/Makefile
 resources/de_DE/I18N/Makefile

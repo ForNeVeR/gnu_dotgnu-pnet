@@ -8,7 +8,7 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="true">
+				 debug="${CONFIG_DEBUG_LINES}">
 
 			<sources>
 				<file name="VisualC.cs"/>
@@ -33,7 +33,7 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="true">
+				 debug="${CONFIG_DEBUG_LINES}">
 
 			<sources>
 				<file name="CSharpCompiler.cs"/>
@@ -59,7 +59,7 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="true">
+				 debug="${CONFIG_DEBUG_LINES}">
 
 			<sources>
 				<file name="Vsa.cs"/>

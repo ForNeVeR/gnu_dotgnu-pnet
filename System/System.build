@@ -12,7 +12,7 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="true">
+				 debug="${CONFIG_DEBUG_LINES}">
 
 			<sources>
 				<includes name="**/*.cs"/>
@@ -47,7 +47,7 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="true">
+				 debug="${CONFIG_DEBUG_LINES}">
 
 			<!-- temporarily removed until recursion works -->
 			<!-- <define name="SECOND_PASS" value="true"/> -->

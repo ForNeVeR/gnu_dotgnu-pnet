@@ -8,7 +8,7 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="true">
+				 debug="${CONFIG_DEBUG_LINES}">
 
 			<sources>
 				<includes name="**/*.cs"/>

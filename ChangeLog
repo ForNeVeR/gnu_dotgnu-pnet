@@ -184,6 +184,12 @@
 	runtime/System/Text/Encoding.cs: mark up members of the
 	"Reflection" ECMA subset with CONFIG_REFLECTION.
 
+	* JScript/JScript.build, System/System.build, System.Xml/Xml.build,
+	compat/compat.build, csunit/csunit.build, csupport/csupport.build,
+	profiles/compact, profiles/ecma, profiles/full, profiles/kernel,
+	runtime/runtime.build: suppress debug line information in the
+	"compact" and "kernel" profiles, to save memory on embedded systems.
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/ArgIterator.cs: make "ArgIterator.GetHashCode"

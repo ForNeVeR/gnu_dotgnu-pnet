@@ -23,4 +23,7 @@
 <!-- Use file and directory facilities -->
 <define name="CONFIG_FILESYSTEM" value="true"/>
 
+<!-- Use line number debug information -->
+<define name="CONFIG_DEBUG_LINES" value="false"/>
+
 </profile>

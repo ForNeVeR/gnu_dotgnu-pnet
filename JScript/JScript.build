@@ -7,7 +7,7 @@
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
-				 debug="true"
+				 debug="${CONFIG_DEBUG_LINES}"
 				 optimize="true">
 
 			<sources>
@@ -42,7 +42,7 @@
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
-				 debug="true"
+				 debug="${CONFIG_DEBUG_LINES}"
 				 optimize="true">
 
 			<define name="TEST" value="true"/>
@@ -79,7 +79,7 @@
 				 target="exe"
 				 unsafe="true"
 				 nostdlib="true"
-				 debug="true"
+				 debug="${CONFIG_DEBUG_LINES}"
 				 optimize="true">
 
 			<sources>

@@ -1150,10 +1150,7 @@ static void JavaGenerateBinarySwitch(ILGenInfo *info,
 		   is faster to do it with direct "if" statements */
 		while(numValues > 0)
 		{
-			if(numValues > 1)
-			{
-				JavaGenDup(info, type);
-			}
+			JavaGenDup(info, type);
 			section = (ILNode_SwitchSection *)(values->section);
 			JavaCompareSwitchValue(info, &(values->value),
 							       JAVA_OP_IF_ICMPEQ, JAVA_OP_IFEQ,
@@ -1162,10 +1159,6 @@ static void JavaGenerateBinarySwitch(ILGenInfo *info,
 			--numValues;
 		}
 		JavaGenJump(info, JAVA_OP_GOTO, defaultLabel);
-
-		/* Fake out the caller into thinking that we still have
-		   a value on the stack, for the next group of cases */
-		JavaGenAdjust(info, JavaGenTypeSize(type));
 	}
 	else
 	{
@@ -1190,6 +1183,7 @@ static void JavaGenerateBinarySwitch(ILGenInfo *info,
 JavaGenDiscard(ILNode_Switch)
 {
 	ILLabel breakLabel = ILLabel_Undefined;
+	ILLabel defaultLabelValue = ILLabel_Undefined;
 	ILLabel *defaultLabel;
 	ILNode_ListIter iter;
 	ILNode_SwitchSection *section;
@@ -1199,6 +1193,7 @@ JavaGenDiscard(ILNode_Switch)
 	ILInt32 temp;
 	ILMachineType type;
 	int size;
+	int needPop = 0;
 
 	/* Compute the switch expression's value */
 	type = JavaGenValue(node->expr, info);
@@ -1212,7 +1207,7 @@ JavaGenDiscard(ILNode_Switch)
 	}
 	else
 	{
-		defaultLabel = &breakLabel;
+		defaultLabel = &defaultLabelValue;
 	}
 
 	/* Push the switch context information for "break" statements */
@@ -1261,10 +1256,7 @@ JavaGenDiscard(ILNode_Switch)
 				/* Use a simple set of "if" statements */
 				while(numValues > 0)
 				{
-					if(numValues > 1)
-					{
-						JavaGenDup(info, type);
-					}
+					JavaGenDup(info, type);
 					section = (ILNode_SwitchSection *)(values->section);
 					JavaCompareSwitchValue(info, &(values->value),
 									       JAVA_OP_IF_ICMPEQ, JAVA_OP_IFEQ,
@@ -1273,6 +1265,8 @@ JavaGenDiscard(ILNode_Switch)
 					--numValues;
 				}
 				JavaGenJump(info, JAVA_OP_GOTO, defaultLabel);
+				JavaGenAdjust(info, -size);
+				needPop = 1;
 			}
 			break;
 	
@@ -1335,6 +1329,7 @@ JavaGenDiscard(ILNode_Switch)
 				JavaGenerateBinarySwitch(info, values, numValues,
 										 defaultLabel, type);
 				JavaGenAdjust(info, -size);
+				needPop = 1;
 			}
 			break;
 		}
@@ -1361,12 +1356,40 @@ JavaGenDiscard(ILNode_Switch)
 		/* Output the section label */
 		JavaGenLabel(info, &(section->label));
 
+		/* Pop the extra value copy if we were using "if" statements */
+		if(needPop)
+		{
+			if(size == 1)
+			{
+				JavaGenSimple(info, JAVA_OP_POP);
+			}
+			else if(size == 2)
+			{
+				JavaGenSimple(info, JAVA_OP_POP2);
+			}
+		}
+
 		/* Output the code for the section */
 		JavaGenDiscard(section->stmt, info);
 	}
 
-	/* Pop from the switch context and set the break label */
+	/* Pop from the switch context and set the default and break labels */
 	PopLoop(info);
+	if(!(node->defaultSection))
+	{
+		JavaGenLabel(info, defaultLabel);
+		if(needPop)
+		{
+			if(size == 1)
+			{
+				JavaGenSimple(info, JAVA_OP_POP);
+			}
+			else if(size == 2)
+			{
+				JavaGenSimple(info, JAVA_OP_POP2);
+			}
+		}
+	}
 	JavaGenLabel(info, &breakLabel);
 }
 

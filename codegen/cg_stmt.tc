@@ -1527,11 +1527,8 @@ static void GenerateBinarySwitch(ILGenInfo *info,
 		   is faster to do it with direct "if" statements */
 		while(numValues > 0)
 		{
-			if(numValues > 1)
-			{
-				ILGenSimple(info, IL_OP_DUP);
-				ILGenAdjust(info, 1);
-			}
+			ILGenSimple(info, IL_OP_DUP);
+			ILGenAdjust(info, 1);
 			section = (ILNode_SwitchSection *)(values->section);
 			CompareSwitchValue(info, &(values->value),
 							   IL_OP_BEQ, IL_OP_BEQ,
@@ -1540,10 +1537,6 @@ static void GenerateBinarySwitch(ILGenInfo *info,
 			--numValues;
 		}
 		ILGenJump(info, IL_OP_BR, defaultLabel);
-
-		/* Fake out the caller into thinking that we still have
-		   a value on the stack, for the next group of cases */
-		ILGenAdjust(info, 1);
 	}
 	else
 	{
@@ -1569,12 +1562,14 @@ static void GenerateBinarySwitch(ILGenInfo *info,
 ILNode_GenDiscard(ILNode_Switch)
 {
 	ILLabel breakLabel = ILLabel_Undefined;
+	ILLabel defaultLabelValue = ILLabel_Undefined;
 	ILLabel *defaultLabel;
 	ILNode_ListIter iter;
 	ILNode_SwitchSection *section;
 	ILSwitchValue *values;
 	unsigned long numValues;
 	ILInt32 temp;
+	int needPop = 0;
 
 	/* Compute the switch expression's value */
 	ILNode_GenValue(node->expr, info);
@@ -1587,7 +1582,7 @@ ILNode_GenDiscard(ILNode_Switch)
 	}
 	else
 	{
-		defaultLabel = &breakLabel;
+		defaultLabel = &defaultLabelValue;
 	}
 
 	/* Push the switch context information for "break" statements */
@@ -1607,11 +1602,8 @@ ILNode_GenDiscard(ILNode_Switch)
 				/* Use a simple set of "if" statements */
 				while(numValues > 0)
 				{
-					if(numValues > 1)
-					{
-						ILGenSimple(info, IL_OP_DUP);
-						ILGenAdjust(info, 1);
-					}
+					ILGenSimple(info, IL_OP_DUP);
+					ILGenAdjust(info, 1);
 					section = (ILNode_SwitchSection *)(values->section);
 					CompareSwitchValue(info, &(values->value),
 									   IL_OP_BEQ, IL_OP_BEQ,
@@ -1620,6 +1612,8 @@ ILNode_GenDiscard(ILNode_Switch)
 					--numValues;
 				}
 				ILGenJump(info, IL_OP_BR, defaultLabel);
+				ILGenAdjust(info, -1);
+				needPop = 1;
 			}
 			break;
 	
@@ -1661,6 +1655,7 @@ ILNode_GenDiscard(ILNode_Switch)
 				/* Use a binary tree of "if" statements */
 				GenerateBinarySwitch(info, values, numValues, defaultLabel);
 				ILGenAdjust(info, -1);
+				needPop = 1;
 			}
 			break;
 		}
@@ -1680,12 +1675,26 @@ ILNode_GenDiscard(ILNode_Switch)
 		/* Output the section label */
 		ILGenLabel(info, &(section->label));
 
+		/* Pop the extra value copy if we were using "if" statements */
+		if(needPop)
+		{
+			ILGenSimple(info, IL_OP_POP);
+		}
+
 		/* Output the code for the section */
 		ILNode_GenDiscard(section->stmt, info);
 	}
 
-	/* Pop from the switch context and set the break label */
+	/* Pop from the switch context and set the default and break labels */
 	PopLoop(info);
+	if(!(node->defaultSection))
+	{
+		ILGenLabel(info, defaultLabel);
+		if(needPop)
+		{
+			ILGenSimple(info, IL_OP_POP);
+		}
+	}
 	ILGenLabel(info, &breakLabel);
 }
 

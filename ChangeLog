@@ -1,4 +1,10 @@
 
+2002-06-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_stmt.tc, codegen/jv_stmt.tc: make sure that the
+	extra value is popped from the stack when generating "switch"
+	statements using "if" tests rather than table lookups.
+
 2002-06-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/test_thread.c: simple tests for creating wait mutexes.

@@ -418,6 +418,15 @@ internal sealed class Xlib
 	extern public static Status XSetWMProtocols
 			(IntPtr display, Xlib.Window w, Atom[] protocols, @X_int@ count);
 
+	[DllImport("X11")]
+	extern public static @X_int@ XReconfigureWMWindow
+			(IntPtr display, Window w, @X_int@ screen_number,
+			 @X_uint@ value_mask, ref XWindowChanges changes);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XSetTransientForHint
+			(IntPtr display, Window w, Window prop_window);
+
 	// Declare color-related external functions.
 
 	[DllImport("X11")]
@@ -449,6 +458,24 @@ internal sealed class Xlib
 
 	[DllImport("X11")]
 	extern public static void XFreeFontSet(IntPtr display, IntPtr fontSet);
+
+	// Declare property-related external functions.
+
+	[DllImport("X11")]
+	extern public static @X_int@ XChangeProperty
+			(IntPtr display, Window w, Atom property,
+			 Atom type, @X_int@ format, @X_int@ mode,
+			 byte[] data, @X_int@ nelements);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XChangeProperty
+			(IntPtr display, Window w, Atom property,
+			 Atom type, @X_int@ format, @X_int@ mode,
+			 Xlong[] data, @X_int@ nelements);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XDeleteProperty
+			(IntPtr display, Window w, Atom property);
 
 } // class Xlib
 

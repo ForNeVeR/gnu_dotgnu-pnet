@@ -729,6 +729,54 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 			}
 
 	/// <summary>
+	/// <para>Raise this widget to the top of its layer.</para>
+	/// </summary>
+	public virtual void Raise()
+			{
+				Widget sibling = nextAbove;
+				Widget last = this;
+				while(sibling != null && sibling.layer == layer)
+				{
+					last = sibling;
+					sibling = sibling.nextAbove;
+				}
+				if(sibling != null)
+				{
+					MoveToBelow(sibling);
+					RepositionBelow(sibling);
+				}
+				else if(last != this)
+				{
+					MoveToAbove(last);
+					RepositionAbove(last);
+				}
+			}
+
+	/// <summary>
+	/// <para>Lower this widget to the bottom of its layer.</para>
+	/// </summary>
+	public virtual void Lower()
+			{
+				Widget sibling = nextBelow;
+				Widget last = this;
+				while(sibling != null && sibling.layer == layer)
+				{
+					last = sibling;
+					sibling = sibling.nextBelow;
+				}
+				if(sibling != null)
+				{
+					MoveToAbove(sibling);
+					RepositionAbove(sibling);
+				}
+				else if(last != this)
+				{
+					MoveToBelow(last);
+					RepositionBelow(last);
+				}
+			}
+
+	/// <summary>
 	/// <para>Move this widget to a new location relative to its parent.</para>
 	/// </summary>
 	///

@@ -14,6 +14,11 @@
 
 	* resources/en_US/Xsharp/Xsharp.txt: add a missing string resource.
 
+	* Xsharp/Display.cs, Xsharp/MotifDecorations.cs,
+	Xsharp/MotifFunctions.cs, Xsharp/MotifInputType.cs,
+	Xsharp/TopLevelWindow.cs, Xsharp/Widget.cs, Xsharp/Xlib.cs.in:
+	implement "Raise", "Lower", and Motif window manager hints.
+
 2003-06-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/Serialization/ObjectManager.cs,

@@ -39,6 +39,10 @@ public class TopLevelWindow : InputOutputWidget
 	private IntPtr keyBuffer;
 	private InputOnlyWidget focusWidget;
 	private InputOnlyWidget defaultFocus;
+	private MotifDecorations decorations;
+	private MotifFunctions functions;
+	private MotifInputType inputType;
+	private TopLevelWindow transientFor;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.TopLevelWindow"/>
@@ -114,6 +118,10 @@ public class TopLevelWindow : InputOutputWidget
 				this.keyBuffer = IntPtr.Zero;
 				this.focusWidget = this;
 				this.defaultFocus = null;
+				this.decorations = MotifDecorations.All;
+				this.functions = MotifFunctions.All;
+				this.inputType = MotifInputType.Normal;
+				this.transientFor = null;
 
 				// Set the initial WM properties.
 				try
@@ -363,6 +371,176 @@ public class TopLevelWindow : InputOutputWidget
 				}
 			}
 
+	// Update the Motif hint information in the X server.
+	private void UpdateMotifHints()
+			{
+				// Build the Motif hint structure.
+				Xlib.Xlong[] hint = new Xlib.Xlong [5];
+				int flags = 0;
+				if(functions != MotifFunctions.All)
+				{
+					hint[1] = (Xlib.Xlong)(int)functions;
+					flags |= 1;
+				}
+				else
+				{
+					hint[1] = (Xlib.Xlong)(-1);
+				}
+				if(decorations != MotifDecorations.All)
+				{
+					hint[2] = (Xlib.Xlong)(int)decorations;
+					flags |= 2;
+				}
+				else
+				{
+					hint[2] = (Xlib.Xlong)(-1);
+				}
+				if(inputType != MotifInputType.Normal)
+				{
+					hint[3] = (Xlib.Xlong)(int)inputType;
+					flags |= 4;
+				}
+				else
+				{
+					hint[3] = (Xlib.Xlong)(-1);
+				}
+				hint[4] = (Xlib.Xlong)(-1);
+				hint[0] = (Xlib.Xlong)flags;
+
+				// Set the Motif hint structure on the window.
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.Window handle = GetWidgetHandle();
+					Xlib.XChangeProperty
+						(display, handle, dpy.wmMwmHints, dpy.wmMwmHints,
+						 32, 0 /* PropModeReplace */, hint, 4);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Get or set the decorations to display on the window's
+	/// border.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The value of this property is the set of decorations
+	/// that the window desires from the window manager.  The window
+	/// manager might ignore this information.</para>
+	/// </value>
+	public MotifDecorations Decorations
+			{
+				get
+				{
+					return decorations;
+				}
+				set
+				{
+					if(decorations != value)
+					{
+						decorations = value;
+						UpdateMotifHints();
+					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Get or set the functions to display on the window's
+	/// context menu.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The value of this property is the set of functions
+	/// that the window desires from the window manager.  The window
+	/// manager might ignore this information.</para>
+	/// </value>
+	public MotifFunctions Functions
+			{
+				get
+				{
+					return functions;
+				}
+				set
+				{
+					if(functions != value)
+					{
+						functions = value;
+						UpdateMotifHints();
+					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Get or set the input type for the window.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The value of this property is the input type.  The window
+	/// manager might ignore this information.</para>
+	/// </value>
+	public MotifInputType InputType
+			{
+				get
+				{
+					return inputType;
+				}
+				set
+				{
+					if(inputType != value)
+					{
+						inputType = value;
+						UpdateMotifHints();
+					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Get or set the transient parent window.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The transient parent window, or <see langword="null"/>
+	/// if there is no transient parent.</para>
+	/// </value>
+	///
+	/// <remarks>
+	/// <para>Setting this property to <see langword="null"/> or the
+	/// current widget will have no effect.</para>
+	/// </remarks>
+	public TopLevelWindow TransientFor
+			{
+				get
+				{
+					return transientFor;
+				}
+				set
+				{
+					if(value != null && value != transientFor && value != this)
+					{
+						// Change the "transient for" hint information.
+						try
+						{
+							// Lock down the display and get the handles.
+							IntPtr display = dpy.Lock();
+							Xlib.Window handle = GetWidgetHandle();
+							Xlib.Window thandle =
+								transientFor.GetWidgetHandle();
+
+							// Set the "transient for" hint.
+							Xlib.XSetTransientForHint(display, handle, thandle);
+						}
+						finally
+						{
+							dpy.Unlock();
+						}
+					}
+				}
+			}
+
 	/// <summary>
 	/// <para>Get or set the child widget that gets the keyboard focus
 	/// by default when the top-level window receives the focus.</para>
@@ -422,6 +600,54 @@ public class TopLevelWindow : InputOutputWidget
 	protected virtual bool OnClose()
 			{
 				return true;
+			}
+
+	/// <summary>
+	/// <para>Raise this widget to the top of its layer.</para>
+	/// </summary>
+	public override void Raise()
+			{
+				try
+				{
+					// Send a message to the window manager to restack us.
+					IntPtr display = dpy.Lock();
+					Xlib.Window handle = GetWidgetHandle();
+					XWindowChanges changes = new XWindowChanges();
+					changes.stack_mode = 0;		/* Above */
+					Xlib.XReconfigureWMWindow
+							(display, GetWidgetHandle(),
+							 Screen.ScreenNumber,
+						     (uint)(ConfigureWindowMask.CWStackMode),
+							 ref changes);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Lower this widget to the bottom of its layer.</para>
+	/// </summary>
+	public override void Lower()
+			{
+				try
+				{
+					// Send a message to the window manager to restack us.
+					IntPtr display = dpy.Lock();
+					Xlib.Window handle = GetWidgetHandle();
+					XWindowChanges changes = new XWindowChanges();
+					changes.stack_mode = 1;		/* Below */
+					Xlib.XReconfigureWMWindow
+							(display, GetWidgetHandle(),
+							 Screen.ScreenNumber,
+						     (uint)(ConfigureWindowMask.CWStackMode),
+							 ref changes);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
 			}
 
 	// Detect that this top-level window has gained the primary focus.

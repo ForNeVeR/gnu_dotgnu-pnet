@@ -290,6 +290,7 @@ static void RemoveMutexFromWakeup(ILWaitMutex *mutex, _ILWakeup *wakeup)
 		if (ownedMutexes[i] == mutex)
 		{
 			ownedMutexes[i] = 0;
+			wakeup->ownedMutexesCount--;
 
 			break;
 		}

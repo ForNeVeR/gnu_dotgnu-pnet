@@ -27,6 +27,9 @@
 	* engine/cvm_ptr.c, image/meta_types.c, include/il_types.h:
 	support boxing conversions in ILTypeAssignCompatible.
 
+	* engine/heap.c (InitializeClass): disable finalizers while
+	laying out the class, to prevent recursive locks.
+
 2003-04-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_call.c (MatchSignature): pass the correct

@@ -35,12 +35,12 @@
  * for Linux, but we will extend it to other systems later.
  */
 #if !defined(IL_NO_THREADS)
-#if defined(linux) || defined(__linux) || defined(__linux__)
-#if defined(GC_LINUX_THREADS)
+#if defined(linux) || defined(__linux) || defined(__linux__) || defined(__FreeBSD__)
+#if defined(GC_LINUX_THREADS) || defined(GC_FREEBSD_THREADS)
 #define	IL_USE_PTHREADS
 #endif
 #endif
-#endif
+#endif 
 
 /*
  * Determine if we can use Win32 threads.

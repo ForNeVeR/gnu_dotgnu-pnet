@@ -14,3 +14,6 @@
 #undef PARALLEL_MARK
 #undef THREAD_LOCAL_ALLOC
 #undef _POSIX_C_SOURCE
+
+/* Define if you have support for computed gotos */
+#undef HAVE_COMPUTED_GOTO

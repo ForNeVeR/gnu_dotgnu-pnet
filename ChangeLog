@@ -12,6 +12,9 @@
 	modify the CVM interpreter so that it can use computed goto's
 	instead of "switch" on compilers that support it.
 
+	* acconfig.h, configure.in, include/il_config.h.in: detect
+	computed goto support during configuration.
+
 2002-05-11  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_stmt.tc, codegen/cg_scope.c,  codegen/cg_scope.h, 

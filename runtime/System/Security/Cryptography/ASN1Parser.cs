@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if CONFIG_CRYPTO
+#if CONFIG_CRYPTO || CONFIG_X509_CERTIFICATES
 
 using System;
 using System.Text;
@@ -537,6 +537,6 @@ internal sealed class ASN1Parser
 
 }; // class ASN1Parser
 
-#endif // CONFIG_CRYPTO
+#endif // CONFIG_CRYPTO || CONFIG_X509_CERTIFICATES
 
 }; // namespace System.Security.Cryptography

@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if CONFIG_CRYPTO
+#if CONFIG_CRYPTO || CONFIG_X509_CERTIFICATES
 
 using System;
 using System.Runtime.Serialization;
@@ -67,6 +67,6 @@ public class CryptographicException : SystemException
 
 }; // class CryptographicException
 
-#endif // CONFIG_CRYPTO
+#endif // CONFIG_CRYPTO || CONFIG_X509_CERTIFICATES
 
 }; // namespace System.Security.Cryptography

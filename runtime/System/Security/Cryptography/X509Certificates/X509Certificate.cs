@@ -102,11 +102,13 @@ public class X509Certificate
 				}
 				publicKey = keyInfo.GetBitString();
 
+#if CONFIG_CRYPTO
 				// Construct an MD5 hash of the certificate.  Is this correct?
 				MD5 md5 = new MD5CryptoServiceProvider();
 				md5.InternalHashCore(rawData, 0, rawData.Length);
 				hash = md5.InternalHashFinal();
 				md5.Initialize();
+#endif
 			}
 
 	// Parse an X.509-format name and convert it into a string.

@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if CONFIG_CRYPTO
+#if CONFIG_CRYPTO || CONFIG_X509_CERTIFICATES
 
 internal enum ASN1Type
 {
@@ -39,6 +39,6 @@ internal enum ASN1Type
 
 }; // enum ASN1Type
 
-#endif // CONFIG_CRYPTO
+#endif // CONFIG_CRYPTO || CONFIG_X509_CERTIFICATES
 
 }; // namespace System.Security.Cryptography

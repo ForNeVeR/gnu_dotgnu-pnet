@@ -435,6 +435,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	methodInfo = (ILMethod *)ILMemberImport
 						(info->image, (ILMember *)methodInfo);
 	node->methodInfo = methodInfo;
+	node->baseCall = CSSemIsBase(method);
 
 	/* Create a call site signature if we have vararg parameters */
 	if(numArgs > 0 && args[numArgs - 1].modifier == ILParamMod_arglist)

@@ -1596,7 +1596,7 @@ JavaGenValue(ILNode_InvocationExpression)
 	/* Invoke the method */
 	if(node->methodInfo)
 	{
- 		if(node->thisExpr && IsBaseAccess(node->thisExpr))
+ 		if(node->baseCall)
  		{
  			JavaGenCallSpecialByMethod(info,node->methodInfo);
  		}

@@ -486,6 +486,7 @@ struct _tagILSwitchValue
 	%nocreate ILNode   *thisExpr = {0};
 	%nocreate ILMethod *methodInfo = {0};
 	%nocreate ILType   *callSiteSig = {0};
+	%nocreate int       baseCall = {0};
 }
 %node ILNode_BaseInit ILNode_Expression
 %node ILNode_ThisInit ILNode_Expression

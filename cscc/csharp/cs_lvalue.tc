@@ -606,6 +606,12 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			}
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
+
+			/* Copy the "base" indication to the method group */
+			if(exprSem && CSSemIsBase(*exprSem))
+			{
+				CSSemSetBase(value);
+			}
 		}
 		break;
 
@@ -898,7 +904,13 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 ILNode_SemAnalysis(ILNode_BaseAccess)
 {
 	CSSemValue value;
+	CSSemValue value2;
 	ILNode_MethodDeclaration *caller;
+	ILClass *classInfo;
+	ILNode *thisExpr;
+	char *name;
+
+	/* Bail out if "base" is used within a static method */
 	caller = (ILNode_MethodDeclaration *)(info->currentMethod);
 	if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
 	{
@@ -907,9 +919,31 @@ ILNode_SemAnalysis(ILNode_BaseAccess)
 		CSSemSetType(value, ILType_Int32);
 		return value;
 	}
-	/*assume the class to be castable -- afterall it's the base class*/
- 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
-	return value;
+
+	/* Find the parent class to start searching from */
+	classInfo = ILClass_Parent(ILMethod_Owner(caller->methodInfo));
+	if(!classInfo)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "cannot use base reference in `System.Object'");
+		CSSemSetType(value, ILType_Int32);
+		return value;
+	}
+
+	/* Get the semantic value for the "base" part of the node */
+	CSSemSetRValue(value, ILClassToType(classInfo));
+	CSSemSetBase(value);
+
+	/* Construct a dummy "this" expression to represent the object */
+	thisExpr = ILNode_This_create();
+
+	/* Resolve the member */
+	name = ILQualIdentName(node->expr, 0);
+	value2 = CSResolveMemberName(info, (ILNode *)node, value, name);
+
+	/* Convert the result into an l-value or r-value and return it */
+	return SemToLRValue((ILNode *)node, info, parent, value2,
+						name, thisExpr, &value);
 }
 
 /*

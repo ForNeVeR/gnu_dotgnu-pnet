@@ -1248,7 +1248,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 	accessedFrom = ILClassResolve(CSGetAccessScope(genInfo, 1));
 
 	/* Determine how to resolve the member from its semantic kind */
-	switch(CSSemGetKind(value))
+	switch(CSSemGetKind(value) & ~CS_SEMKIND_BASE)
 	{
 		case CS_SEMKIND_NAMESPACE:
 		{

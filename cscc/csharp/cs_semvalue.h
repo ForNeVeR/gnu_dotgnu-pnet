@@ -63,6 +63,7 @@ extern CSSemValue CSSemValueError;
 #define	CS_SEMKIND_DYN_CONSTANT		(1<<14)
 #define	CS_SEMKIND_TYPE_NODE		(1<<15)
 #define	CS_SEMKIND_ERROR			(1<<16)
+#define	CS_SEMKIND_BASE				(1<<17)
 
 /*
  * Set a semantic value to "void".
@@ -227,6 +228,14 @@ extern CSSemValue CSSemValueError;
 			} while (0)
 
 /*
+ * Modify a semantic value to indicate "base" access.
+ */
+#define	CSSemSetBase(value)	\
+			do { \
+				(value).kind__ |= CS_SEMKIND_BASE; \
+			} while (0)
+
+/*
  * Determine if a semantic value has a specific kind.
  */
 #define	CSSemHasKind(value,kind)	(((value).kind__ & (kind)) != 0)
@@ -379,6 +388,11 @@ void _CSSemReplaceWithConstant(ILNode **parent, ILEvalValue *value);
  * Get the namespace associated with a semantic value.
  */
 #define	CSSemGetNamespace(value)	((char *)((value).extra__))
+
+/*
+ * Determine if a semantic value has the "base" flag.
+ */
+#define	CSSemIsBase(value)	(CSSemHasKind((value), CS_SEMKIND_BASE))
 
 #ifdef	__cplusplus
 };

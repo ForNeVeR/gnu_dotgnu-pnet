@@ -23,12 +23,6 @@
 
 #include <codegen/cg_nodes.h>
 
-/*
- * Determine if a statement node is of base access.
- */
-#define IsBaseAccess(node)	(!(node) || yykind((node)) == \
-			yykindof(ILNode_BaseAccess))
-
 %}
 
 /*
@@ -1272,15 +1266,12 @@ ILNode_GenValue(ILNode_InvocationExpression)
 		ILNode_GenValue(node->expr2, info);
 	}
 
-	/* Invoke the method 
-     * generate Call insn if the call is a baseAccess
-	 * otherwise generate a CallVirt
-	 */
+	/* Invoke the method */
 	if(node->methodInfo)
 	{
 		if(ILMethod_IsVirtual(node->methodInfo) &&
-		   !ILClassIsValueType(ILMethod_Owner(node->methodInfo)) 
-		   && ! ((node->thisExpr) && IsBaseAccess(node->thisExpr)))
+		   !ILClassIsValueType(ILMethod_Owner(node->methodInfo)) &&
+		   !(node->baseCall))
 		{
 			ILGenCallVirtByMethodSig(info, node->methodInfo, node->callSiteSig);
 		}

@@ -658,35 +658,6 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_SHORT, "short");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_NATIVE, "__native__");
 
-	/* Print pending errors that were detected by "CDeclSpecCombine" */
-	if((spec.dupSpecifiers & C_SPEC_MULTIPLE_BASES) != 0)
-	{
-		ReportError(node, name,
-					_("two or more data types in declaration of `%s'"),
-					_("two or more data types in declaration"));
-	}
-	if((spec.dupSpecifiers & C_SPEC_SIGN_AND_UNSIGN) != 0)
-	{
-		ReportError(node, name,
-					_("both signed and unsigned specified for `%s'"),
-					_("both signed and unsigned specified"));
-	}
-	if((spec.dupSpecifiers & C_SPEC_LONG_AND_SHORT) != 0)
-	{
-		ReportError(node, name,
-					_("both long and short specified for `%s'"),
-					_("both long and short specified"));
-	}
-	if((spec.dupSpecifiers & (C_SPEC_LONG_AND_SHORT |
-							  C_SPEC_SIGN_AND_UNSIGN |
-							  C_SPEC_INVALID_COMBO))
-			== C_SPEC_INVALID_COMBO)
-	{
-		ReportError(node, name,
-			_("long, short, signed, unsigned or __native__ invalid for `%s'"),
-			_("long, short, signed, unsigned or __native__ invalid here"));
-	}
-
 	/* Copy the common type qualifiers to "result.specifiers" */
 	result.specifiers |= (spec.specifiers & C_SPEC_TYPE_COMMON);
 
@@ -703,6 +674,10 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 			{
 				result.baseType = ILType_Int16;
 			}
+			if((spec.specifiers & C_SPEC_NATIVE) != 0)
+			{
+				spec.dupSpecifiers |= C_SPEC_INVALID_COMBO;
+			}
 		}
 		else if((spec.specifiers & C_SPEC_LONG_LONG) != 0 && gen_32bit_only)
 		{
@@ -713,6 +688,10 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 			else
 			{
 				result.baseType = ILType_Int64;
+			}
+			if((spec.specifiers & C_SPEC_NATIVE) != 0)
+			{
+				spec.dupSpecifiers |= C_SPEC_INVALID_COMBO;
 			}
 		}
 		else if((spec.specifiers & C_SPEC_LONG) != 0 && gen_32bit_only)
@@ -725,6 +704,10 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 			{
 				result.baseType = ILType_Int32;
 			}
+			if((spec.specifiers & C_SPEC_NATIVE) != 0)
+			{
+				spec.dupSpecifiers |= C_SPEC_INVALID_COMBO;
+			}
 		}
 		else if((spec.specifiers & (C_SPEC_LONG | C_SPEC_LONG_LONG)) != 0)
 		{
@@ -735,6 +718,10 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 			else
 			{
 				result.baseType = ILType_Int64;
+			}
+			if((spec.specifiers & C_SPEC_NATIVE) != 0)
+			{
+				spec.dupSpecifiers |= C_SPEC_INVALID_COMBO;
 			}
 		}
 		else if((spec.specifiers & C_SPEC_NATIVE) != 0)
@@ -767,6 +754,35 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 	else
 	{
 		result.baseType = spec.baseType;
+	}
+
+	/* Print pending errors that were detected by "CDeclSpecCombine" */
+	if((spec.dupSpecifiers & C_SPEC_MULTIPLE_BASES) != 0)
+	{
+		ReportError(node, name,
+					_("two or more data types in declaration of `%s'"),
+					_("two or more data types in declaration"));
+	}
+	if((spec.dupSpecifiers & C_SPEC_SIGN_AND_UNSIGN) != 0)
+	{
+		ReportError(node, name,
+					_("both signed and unsigned specified for `%s'"),
+					_("both signed and unsigned specified"));
+	}
+	if((spec.dupSpecifiers & C_SPEC_LONG_AND_SHORT) != 0)
+	{
+		ReportError(node, name,
+					_("both long and short specified for `%s'"),
+					_("both long and short specified"));
+	}
+	if((spec.dupSpecifiers & (C_SPEC_LONG_AND_SHORT |
+							  C_SPEC_SIGN_AND_UNSIGN |
+							  C_SPEC_INVALID_COMBO))
+			== C_SPEC_INVALID_COMBO)
+	{
+		ReportError(node, name,
+			_("long, short, signed, unsigned or __native__ invalid for `%s'"),
+			_("long, short, signed, unsigned or __native__ invalid here"));
 	}
 
 	/* Return the result to the caller */

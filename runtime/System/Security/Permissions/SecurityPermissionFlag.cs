@@ -1,6 +1,6 @@
 /*
- * CodeAccessSecurityAttribute.cs - Implementation of the
- *			"System.Security.Permissions.CodeAccessSecurityAttribute" class.
+ * SecurityPermissionFlag.cs - Implementation of the
+ *			"System.Security.Permissions.SecurityPermissionFlag" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -23,30 +23,29 @@ namespace System.Security.Permissions
 {
 
 using System;
-using System.Security;
 
-[AttributeUsage(AttributeTargets.Assembly |
-			 	AttributeTargets.Class |
-			 	AttributeTargets.Struct |
-			 	AttributeTargets.Constructor |
-			 	AttributeTargets.Method,
-			 	AllowMultiple=true, Inherited=false)]
-public abstract class CodeAccessSecurityAttribute : SecurityAttribute
+[Flags]
+public enum SecurityPermissionFlag
 {
-	// Constructors.
-#if ECMA_COMPAT
-	protected CodeAccessSecurityAttribute()
-			: base()
-			{
-				// Nothing to do here.
-			}
-#endif // ECMA_COMPAT
-	public CodeAccessSecurityAttribute(SecurityAction action)
-			: base(action)
-			{
-				// Nothing to do here.
-			}
 
-}; // class CodeAccessSecurityAttribute
+	NoFlags                = 0x0000,
+	Assertion              = 0x0001,
+	UnmanagedCode          = 0x0002,
+	SkipVerification       = 0x0004,
+	Execution              = 0x0008,
+	ControlThread          = 0x0010,
+#if !ECMA_COMPAT
+	ControlEvidence        = 0x0020,
+	ControlPolicy          = 0x0040,
+	SerializationFormatter = 0x0080,
+	ControlDomainPolicy    = 0x0100,
+	ControlPrincipal       = 0x0200,
+	ControlAppDomain       = 0x0400,
+	RemotingConfiguration  = 0x0800,
+	Infrastructure         = 0x1000,
+	AllFlags               = 0x1FFF
+#endif // !ECMA_COMPAT
+
+}; // enum SecurityPermissionFlag
 
 }; // namespace System.Security.Permissions

@@ -1,6 +1,6 @@
 /*
- * CodeAccessSecurityAttribute.cs - Implementation of the
- *			"System.Security.Permissions.CodeAccessSecurityAttribute" class.
+ * SecurityAttribute.cs - Implementation of the
+ *			"System.Security.Permissions.SecurityAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -31,22 +31,60 @@ using System.Security;
 			 	AttributeTargets.Constructor |
 			 	AttributeTargets.Method,
 			 	AllowMultiple=true, Inherited=false)]
-public abstract class CodeAccessSecurityAttribute : SecurityAttribute
+public abstract class SecurityAttribute : Attribute
 {
+	// Internal state.
+	private SecurityAction action;
+	private bool unrestricted;
+
 	// Constructors.
 #if ECMA_COMPAT
-	protected CodeAccessSecurityAttribute()
-			: base()
+	protected SecurityAttribute()
 			{
-				// Nothing to do here.
+				action = SecurityAction.Demand;
+				unrestricted = false;
 			}
 #endif // ECMA_COMPAT
-	public CodeAccessSecurityAttribute(SecurityAction action)
-			: base(action)
+	public SecurityAttribute(SecurityAction action)
 			{
-				// Nothing to do here.
+				this.action = action;
+				unrestricted = false;
 			}
 
-}; // class CodeAccessSecurityAttribute
+	// Create a permission object that corresponds to this attribute.
+	public abstract IPermission CreatePermission();
+
+	// Get or set the security action.
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	SecurityAction Action
+			{
+				get
+				{
+					return action;
+				}
+				set
+				{
+					action = value;
+				}
+			}
+
+	// Get or set the unrestricted state.
+	public bool Unrestricted
+			{
+				get
+				{
+					return unrestricted;
+				}
+				set
+				{
+					unrestricted = value;
+				}
+			}
+
+}; // class SecurityAttribute
 
 }; // namespace System.Security.Permissions

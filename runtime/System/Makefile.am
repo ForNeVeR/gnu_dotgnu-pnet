@@ -314,11 +314,21 @@ CSSRC = Activator.cs \
 		Runtime/Serialization/ISerializable.cs \
 		Runtime/Serialization/SerializationInfo.cs \
 		Runtime/Serialization/StreamingContext.cs \
+		Security/ClrSecurity.cs \
+		Security/CodeAccessPermission.cs \
+		Security/IPermission.cs \
+		Security/PermissionSet.cs \
+		Security/SecurityElement.cs \
 		Security/SecurityException.cs \
 		Security/UnverifiableCodeAttribute.cs \
+		Security/VerificationException.cs \
 		Security/Permissions/CodeAccessSecurityAttribute.cs \
+		Security/Permissions/PermissionState.cs \
 		Security/Permissions/SecurityAction.cs \
+		Security/Permissions/SecurityPermission.cs \
 		Security/Permissions/SecurityPermissionAttribute.cs \
+		Security/Permissions/SecurityPermissionFlag.cs \
+		Security/Permissions/SecurityAttribute.cs \
 		Security/Policy/Evidence.cs \
 		Text/ASCIIEncoding.cs \
 		Text/Decoder.cs \

@@ -22,26 +22,308 @@
 namespace System.Security.Permissions
 {
 
-public class SecurityPermissionAttribute
+// Note: this class is sometimes left out of the build because it
+// confuses the Microsoft C# compiler when building with "/nostdlib".
+
+#if __CSCC__
+
+[AttributeUsage(AttributeTargets.Assembly |
+			 	AttributeTargets.Class |
+			 	AttributeTargets.Struct |
+			 	AttributeTargets.Constructor |
+			 	AttributeTargets.Method,
+			 	AllowMultiple=true, Inherited=false)]
+public sealed class SecurityPermissionAttribute : CodeAccessSecurityAttribute
 {
+	// Internal state.
+	private SecurityPermissionFlag flags;
 
 	// Constructor.
 	public SecurityPermissionAttribute(SecurityAction action)
-	{
-	}
+			: base(action)
+			{
+				// Nothing to do here.
+			}
 
-	// Properties.
+	// Create a permission object that corresponds to this attribute.
+	public override IPermission CreatePermission()
+			{
+				return new SecurityPermission(flags);
+			}
+
+	// Get or set the security permission flags.
+	public SecurityPermissionFlag Flags
+			{
+				get
+				{
+					return flags;
+				}
+				set
+				{
+					flags = value;
+				}
+			}
+
+	// This property is not specified by ECMA, but it must be present
+	// or Microsoft's C# compiler throws an internal error.
 	public bool SkipVerification
-		{
-			get
 			{
-				return false;
+				get
+				{
+					return ((flags & SecurityPermissionFlag.SkipVerification)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.SkipVerification;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.SkipVerification;
+					}
+				}
 			}
-			set
+
+#if !ECMA_COMPAT
+
+	// Non-ECMA properties.
+	public bool Assertion
 			{
+				get
+				{
+					return ((flags & SecurityPermissionFlag.Assertion)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.Assertion;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.Assertion;
+					}
+				}
 			}
-		}
+	public bool ControlAppDomain
+			{
+				get
+				{
+					return ((flags & SecurityPermissionFlag.ControlAppDomain)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.ControlAppDomain;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.ControlAppDomain;
+					}
+				}
+			}
+	public bool ControlDomainPolicy
+			{
+				get
+				{
+					return ((flags & SecurityPermissionFlag.ControlDomainPolicy)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.ControlDomainPolicy;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.ControlDomainPolicy;
+					}
+				}
+			}
+	public bool ControlEvidence
+			{
+				get
+				{
+					return ((flags & SecurityPermissionFlag.ControlEvidence)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.ControlEvidence;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.ControlEvidence;
+					}
+				}
+			}
+	public bool ControlPolicy
+			{
+				get
+				{
+					return ((flags & SecurityPermissionFlag.ControlPolicy)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.ControlPolicy;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.ControlPolicy;
+					}
+				}
+			}
+	public bool ControlPrincipal
+			{
+				get
+				{
+					return ((flags & SecurityPermissionFlag.ControlPrincipal)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.ControlPrincipal;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.ControlPrincipal;
+					}
+				}
+			}
+	public bool ControlThread
+			{
+				get
+				{
+					return ((flags & SecurityPermissionFlag.ControlThread)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.ControlThread;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.ControlThread;
+					}
+				}
+			}
+	public bool Execution
+			{
+				get
+				{
+					return ((flags & SecurityPermissionFlag.Execution)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.Execution;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.Execution;
+					}
+				}
+			}
+	public bool Infrastructure
+			{
+				get
+				{
+					return ((flags & SecurityPermissionFlag.Infrastructure)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.Infrastructure;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.Infrastructure;
+					}
+				}
+			}
+	public bool RemotingConfiguration
+			{
+				get
+				{
+					return
+						((flags & SecurityPermissionFlag.RemotingConfiguration)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.RemotingConfiguration;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.RemotingConfiguration;
+					}
+				}
+			}
+	public bool SerializationFormatter
+			{
+				get
+				{
+					return
+						((flags & SecurityPermissionFlag.SerializationFormatter)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.SerializationFormatter;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.SerializationFormatter;
+					}
+				}
+			}
+	public bool UnmanagedCode
+			{
+				get
+				{
+					return ((flags & SecurityPermissionFlag.UnmanagedCode)
+								!= 0);
+				}
+				set
+				{
+					if(value)
+					{
+						flags |= SecurityPermissionFlag.UnmanagedCode;
+					}
+					else
+					{
+						flags &= ~SecurityPermissionFlag.UnmanagedCode;
+					}
+				}
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class SecurityPermissionAttribute
+
+#endif // __CSCC__
 
 }; // namespace System.Security.Permissions

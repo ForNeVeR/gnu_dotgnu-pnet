@@ -1,6 +1,6 @@
 /*
- * CodeAccessSecurityAttribute.cs - Implementation of the
- *			"System.Security.Permissions.CodeAccessSecurityAttribute" class.
+ * PermissionState.cs - Implementation of the
+ *		"System.Security.Permissions.PermissionState" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -22,31 +22,11 @@
 namespace System.Security.Permissions
 {
 
-using System;
-using System.Security;
-
-[AttributeUsage(AttributeTargets.Assembly |
-			 	AttributeTargets.Class |
-			 	AttributeTargets.Struct |
-			 	AttributeTargets.Constructor |
-			 	AttributeTargets.Method,
-			 	AllowMultiple=true, Inherited=false)]
-public abstract class CodeAccessSecurityAttribute : SecurityAttribute
+public enum PermissionState
 {
-	// Constructors.
-#if ECMA_COMPAT
-	protected CodeAccessSecurityAttribute()
-			: base()
-			{
-				// Nothing to do here.
-			}
-#endif // ECMA_COMPAT
-	public CodeAccessSecurityAttribute(SecurityAction action)
-			: base(action)
-			{
-				// Nothing to do here.
-			}
+	None         = 0,
+	Unrestricted = 1
 
-}; // class CodeAccessSecurityAttribute
+}; // enum PermissionState
 
 }; // namespace System.Security.Permissions

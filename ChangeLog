@@ -1,4 +1,23 @@
 
+2001-12-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* resources/en_US/runtime/Arg.txt,
+resources/en_US/runtime/Exception.txt,
+runtime/System/Makefile.am,
+runtime/System/Security/ClrSecurity.cs,
+runtime/System/Security/CodeAccessPermission.cs,
+runtime/System/Security/IPermission.cs,
+runtime/System/Security/PermissionSet.cs,
+runtime/System/Security/SecurityElement.cs,
+runtime/System/Security/VerificationException.cs,
+runtime/System/Security/Permissions/CodeAccessSecurityAttribute.cs,
+runtime/System/Security/Permissions/PermissionState.cs,
+runtime/System/Security/Permissions/SecurityAttribute.cs,
+runtime/System/Security/Permissions/SecurityPermission.cs,
+runtime/System/Security/Permissions/SecurityPermissionAttribute.cs,
+runtime/System/Security/Permissions/SecurityPermissionFlag.cs: implement
+a number of security-related classes.
+
 2001-12-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/Arg.txt,

@@ -1,6 +1,6 @@
 /*
- * CodeAccessSecurityAttribute.cs - Implementation of the
- *			"System.Security.Permissions.CodeAccessSecurityAttribute" class.
+ * VerificationException.cs - Implementation of the
+ *		"System.Security.VerificationException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,34 +19,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Security.Permissions
+namespace System.Security
 {
 
 using System;
-using System.Security;
 
-[AttributeUsage(AttributeTargets.Assembly |
-			 	AttributeTargets.Class |
-			 	AttributeTargets.Struct |
-			 	AttributeTargets.Constructor |
-			 	AttributeTargets.Method,
-			 	AllowMultiple=true, Inherited=false)]
-public abstract class CodeAccessSecurityAttribute : SecurityAttribute
+public class VerificationException : SystemException
 {
 	// Constructors.
-#if ECMA_COMPAT
-	protected CodeAccessSecurityAttribute()
-			: base()
+	public VerificationException()
+			: base(_("Exception_Verification")) {}
+	public VerificationException(String msg)
+			: base(msg) {}
+	public VerificationException(String msg, Exception inner)
+			: base(msg, inner) {}
+
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
 			{
-				// Nothing to do here.
-			}
-#endif // ECMA_COMPAT
-	public CodeAccessSecurityAttribute(SecurityAction action)
-			: base(action)
-			{
-				// Nothing to do here.
+				get
+				{
+					return _("Exception_Verification");
+				}
 			}
 
-}; // class CodeAccessSecurityAttribute
+}; // class VerificationException
 
-}; // namespace System.Security.Permissions
+}; // namespace System.Security

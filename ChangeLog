@@ -1,4 +1,4 @@
-2002-04-25  Stephen Compall  <rushing@sigecom.net>
+2002-04-26  Stephen Compall  <rushing@sigecom.net>
 
 	* runtime/System/IO/MemoryStream.cs: More implementation, including all
 	constructors, properties, and Read stuff.. Am bringing up ECMA

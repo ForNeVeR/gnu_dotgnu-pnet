@@ -31,12 +31,13 @@ extern	"C" {
 
 int ILExecInit(unsigned long maxSize)
 {
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	/* Create the global trace mutex */
 	if ((globalTraceMutex = ILMutexCreate()) == 0)
 	{
 		return IL_EXEC_INIT_OUTOFMEMORY;
 	}
-
+#endif
 	/* Initialize the thread routines */	
 	ILThreadInit();
 
@@ -54,8 +55,10 @@ void ILExecDeinit()
 	/* Deinitialize the thread routines */	
 	ILThreadDeinit();	
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	/* Destroy the global trace mutex */
 	ILMutexDestroy(globalTraceMutex);
+#endif
 }
 
 ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cachePageSize)

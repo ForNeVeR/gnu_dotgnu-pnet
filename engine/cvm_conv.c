@@ -760,7 +760,8 @@ VMCASE(COP_I2P_LOWER):
 	/* Convert an I4 value into a pointer value that
 	   is lower down on the stack */
 	position = -(((ILInt32)CVM_ARG_WIDE_SMALL) + 1);
-	stacktop[position].ptrValue = (void *)(stacktop[position].uintValue);
+	stacktop[position].ptrValue =
+		(void *)(ILNativeUInt)(stacktop[position].uintValue);
 	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 0);
 }
 VMBREAK(COP_I2P_LOWER);
@@ -772,7 +773,8 @@ case COP_I2P_LOWER:
 	/* Convert an I4 value into a pointer value that
 	   is lower down on the stack */
 	position = -(((ILInt32)CVM_ARG_WIDE_LARGE) + 1);
-	stacktop[position].ptrValue = (void *)(stacktop[position].uintValue);
+	stacktop[position].ptrValue =
+		(void *)(ILNativeUInt)(stacktop[position].uintValue);
 	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 0);
 }
 VMBREAKNOEND;

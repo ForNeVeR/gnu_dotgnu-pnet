@@ -16,6 +16,8 @@
 	* samples/System.dll: updated version with more System.ComponentModel
 	classes.
 
+	* engine/cvm_conv.c: insert extra casts for "I2P_LOWER".
+
 2002-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with delegate comparison fix.

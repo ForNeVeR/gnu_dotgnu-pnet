@@ -35,6 +35,7 @@ public class XmlTextReader : XmlReader
 	private bool normalize;
 	private XmlNameTable nameTable;
 	private XmlNamespaceManager namespaceManager;
+	private XmlDocument document;
 	private ReadState readState;
 	private WhitespaceHandling whitespace;
 	private String xmlLang;
@@ -46,6 +47,8 @@ public class XmlTextReader : XmlReader
 	private String baseURI;
 	private Encoding encoding;
 	private XmlNode currentNode;
+	private XmlNode contextNode;
+	private int ungetch;
 
 	// Constructors.
 	protected XmlTextReader()
@@ -60,9 +63,10 @@ public class XmlTextReader : XmlReader
 					throw new ArgumentNullException("nt");
 				}
 				namespaces = true;
+				normalize = false;
 				nameTable = nt;
 				namespaceManager = new XmlNamespaceManager(nt);
-				normalize = false;
+				document = new XmlDocument(nt);
 				readState = ReadState.Initial;
 				whitespace = WhitespaceHandling.All;
 				xmlLang = String.Empty;
@@ -73,6 +77,8 @@ public class XmlTextReader : XmlReader
 				baseURI = String.Empty;
 				encoding = null;
 				currentNode = null;
+				contextNode = document;
+				ungetch = -1;
 			}
 	public XmlTextReader(Stream input)
 			: this(String.Empty, input, new NameTable())
@@ -287,10 +293,21 @@ public class XmlTextReader : XmlReader
 				return namespaceManager.LookupNamespace(prefix);
 			}
 
+	// Synchronize on an element if the current is an attribute.
+	private void SyncOnElement()
+			{
+				XmlAttribute attr = (currentNode as XmlAttribute);
+				if(attr != null)
+				{
+					currentNode = attr.parent;
+				}
+			}
+
 	// Move the current position to a particular attribute.
 	public override void MoveToAttribute(int i)
 			{
 				XmlAttributeCollection attributes;
+				SyncOnElement();
 				if(currentNode == null)
 				{
 					attributes = null;
@@ -320,6 +337,7 @@ public class XmlTextReader : XmlReader
 				{
 					return false;
 				}
+				SyncOnElement();
 				attributes = currentNode.AttributesInternal;
 				if(attributes != null)
 				{
@@ -342,6 +360,7 @@ public class XmlTextReader : XmlReader
 				{
 					return false;
 				}
+				SyncOnElement();
 				attributes = currentNode.AttributesInternal;
 				if(attributes != null)
 				{
@@ -376,6 +395,7 @@ public class XmlTextReader : XmlReader
 				XmlAttributeCollection attributes;
 				if(currentNode != null)
 				{
+					SyncOnElement();
 					attributes = currentNode.AttributesInternal;
 					if(attributes != null && attributes.Count > 0)
 					{
@@ -390,13 +410,23 @@ public class XmlTextReader : XmlReader
 	public override bool MoveToNextAttribute()
 			{
 				XmlAttribute attr = (currentNode as XmlAttribute);
+				XmlAttributeCollection attributes;
+				int index;
 				if(attr != null)
 				{
-					attr = attr.next;
-					if(attr != null)
+					attributes = currentNode.ParentNode.AttributesInternal;
+					if(attributes != null)
 					{
-						currentNode = attr;
-						return true;
+						index = attributes.IndexOf(attr) + 1;
+						if(index <= 0 || index >= attributes.Count)
+						{
+							return false;
+						}
+						else
+						{
+							currentNode = attributes[index];
+							return true;
+						}
 					}
 					else
 					{
@@ -409,12 +439,202 @@ public class XmlTextReader : XmlReader
 				}
 			}
 
+	// Read the next character.
+	private int ReadChar()
+			{
+				if(ungetch != -1)
+				{
+					int ch = ungetch;
+					ungetch = -1;
+					return ch;
+				}
+				else
+				{
+					return reader.Read();
+				}
+			}
+
+	// Unget the last character to be read again next time.
+	private void UngetChar(int ch)
+			{
+				ungetch = ch;
+			}
+
 	// Read the next node in the input stream.
 	[TODO]
 	public override bool Read()
 			{
-				// TODO
+				int ch;
+				StringBuilder builder;
+				int count;
+
+				// Validate the current state of the stream.
+				if(readState == ReadState.EndOfFile)
+				{
+					return false;
+				}
+				else if(reader == null)
+				{
+					throw new XmlException(S._("Xml_ReaderClosed"));
+				}
+				else if(readState == ReadState.Error)
+				{
+					throw new XmlException(S._("Xml_ReaderError"));
+				}
+
+				// Skip white space in the input stream.  TODO: collect
+				// up significant white space.
+				++linePosition;
+				while((ch = ReadChar()) != -1)
+				{
+					if(!Char.IsWhiteSpace((char)ch))
+					{
+						break;
+					}
+					if(ch == '\n')
+					{
+						++lineNumber;
+						linePosition = 1;
+					}
+					else
+					{
+						++linePosition;
+					}
+				}
+				if(ch == -1)
+				{
+					// We've reached the end of the stream.  Throw
+					// an error if we haven't closed all elements.
+					// TODO: error handling
+					--linePosition;
+					readState = ReadState.EndOfFile;
+					currentNode = null;
+					return false;
+				}
+
+				// Determine what to do based on the next character.
+				if(ch == '<')
+				{
+					// Some kind of tag.
+					++linePosition;
+					ch = ReadChar();
+					if(ch == '/')
+					{
+						// End element tag.
+						// TODO
+					}
+					else if(ch == '!')
+					{
+						// Comment, CDATA, or document type information.
+						++linePosition;
+						ch = ReadChar();
+						if(ch == '-')
+						{
+							// Parse the "<!--" comment start sequence.
+							++linePosition;
+							ch = ReadChar();
+							if(ch != '-')
+							{
+								goto error;
+							}
+
+							// Search for the "-->" comment end sequence.
+							builder = new StringBuilder();
+							++linePosition;
+							count = 0;
+							while((ch = ReadChar()) != -1)
+							{
+								builder.Append((char)ch);
+								if(ch == '-')
+								{
+									++count;
+								}
+								else if(ch == '>')
+								{
+									if(count >= 2)
+									{
+										builder.Remove(builder.Length - 3, 3);
+										break;
+									}
+									count = 0;
+								}
+								else
+								{
+									count = 0;
+								}
+								if(ch == '\n')
+								{
+									++lineNumber;
+									linePosition = 1;
+								}
+								else
+								{
+									++linePosition;
+								}
+							}
+							if(ch != '>')
+							{
+								goto error;
+							}
+
+							// Create a comment node and return.
+							currentNode = document.CreateComment
+								(builder.ToString());
+							try
+							{
+								contextNode.AppendChild(currentNode);
+							}
+							catch(InvalidOperationException)
+							{
+								readState = ReadState.Error;
+								currentNode = null;
+								throw new XmlException(S._("Xml_ReaderError"));
+							}
+							return true;
+						}
+						else if(ch == '[')
+						{
+							// TODO: CDATA and document type nodes.
+						}
+						else
+						{
+							goto error;
+						}
+					}
+					else if(ch == '?')
+					{
+						// Processing instruction.
+						// TODO
+					}
+					else if(XmlConvert.IsNameStart((char)ch, true))
+					{
+						// Start element tag.
+						// TODO
+					}
+					else
+					{
+						goto error;
+					}
+				}
+				else
+				{
+					// Text and entity references.
+					// TODO
+				}
+
 				return false;
+
+				// We jump to here if some kind of parse error occurred
+				// on the last character that we read.
+			error:
+				--linePosition;
+				if(ch != -1)
+				{
+					UngetChar(ch);
+				}
+				readState = ReadState.Error;
+				currentNode = null;
+				throw new XmlException(S._("Xml_ReaderError"));
 			}
 
 	// Read the next attribute value in the input stream.
@@ -492,10 +712,23 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					XmlElement element = (currentNode as XmlElement);
-					if(element != null)
+					XmlAttributeCollection attributes;
+					XmlAttribute attr = (currentNode as XmlAttribute);
+					if(attr != null)
 					{
-						return element.Attributes.Count;
+						attributes = attr.ParentNode.AttributesInternal;
+					}
+					else if(currentNode != null)
+					{
+						attributes = currentNode.AttributesInternal;
+					}
+					else
+					{
+						return 0;
+					}
+					if(attributes != null)
+					{
+						return attributes.Count;
 					}
 					else
 					{
@@ -518,14 +751,15 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					if(currentNode != null)
+					XmlNode node = currentNode;
+					int depth = 0;
+					while(node != null && !(node is XmlDocument) &&
+					      !(node is XmlDocumentFragment))
 					{
-						return currentNode.depth;
+						++depth;
+						node = node.parent;
 					}
-					else
-					{
-						return 0;
-					}
+					return depth;
 				}
 			}
 

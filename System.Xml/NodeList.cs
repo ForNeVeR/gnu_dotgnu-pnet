@@ -28,12 +28,12 @@ using System.Runtime.CompilerServices;
 internal sealed class NodeList : XmlNodeList
 {
 	// Internal state.
-	private XmlNode first;
-	private XmlNode last;
-	private XmlNode nextSibling;
-	private XmlNode prevSibling;
-	private int count;
-	private int generation;
+	internal XmlNode first;
+	internal XmlNode last;
+	internal XmlNode nextSibling;
+	internal XmlNode prevSibling;
+	internal int count;
+	internal int generation;
 
 	// Create a new node list.
 	public NodeList()
@@ -140,6 +140,66 @@ internal sealed class NodeList : XmlNodeList
 				{
 					return null;
 				}
+			}
+
+	// Insert a child into a node list just after a given node.
+	public void InsertAfter(XmlNode newNode, XmlNode refNode)
+			{
+				if(refNode != null)
+				{
+					NodeList refList = GetList(refNode);
+					NodeList newList = GetList(newNode);
+					if(refList.nextSibling != null)
+					{
+						newList.nextSibling = refList.nextSibling;
+						newList.prevSibling = refNode;
+						refList.nextSibling = newNode;
+					}
+					else
+					{
+						refList.nextSibling = newNode;
+						newList.prevSibling = refNode;
+						last = newNode;
+					}
+				}
+				else if(first != null)
+				{
+					GetList(first).prevSibling = newNode;
+					GetList(newNode).nextSibling = first;
+				}
+				else
+				{
+					first = newNode;
+					last = newNode;
+				}
+				++count;
+				++generation;
+			}
+
+	// Remove a child from underneath its current parent.
+	public void RemoveChild(XmlNode node)
+			{
+				NodeList nodeList = GetList(node);
+				if(nodeList.nextSibling != null)
+				{
+					GetList(nodeList.nextSibling).prevSibling =
+							nodeList.prevSibling;
+				}
+				else
+				{
+					last = nodeList.prevSibling;
+				}
+				if(nodeList.prevSibling != null)
+				{
+					GetList(nodeList.prevSibling).nextSibling =
+							nodeList.nextSibling;
+				}
+				else
+				{
+					first = nodeList.nextSibling;
+				}
+				--count;
+				++generation;
 			}
 
 	// Implementation of the node list enumerator.

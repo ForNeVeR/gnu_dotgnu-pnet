@@ -81,8 +81,8 @@ class XmlAttributeCollection : XmlNamedNodeMap, ICollection
 				}
 			}
 
-	// Get the position of a reference node within this collection
-	private int GetItemPosition(XmlAttribute refNode)
+	// Get the index of a specific node within this collection.
+	internal int IndexOf(XmlAttribute refNode)
 			{
 				int count = Count;
 				int posn;
@@ -92,6 +92,17 @@ class XmlAttributeCollection : XmlNamedNodeMap, ICollection
 					{
 						return posn;
 					}
+				}
+				return -1;
+			}
+
+	// Get the position of a reference node within this collection.
+	private int GetItemPosition(XmlAttribute refNode)
+			{
+				int posn = IndexOf(refNode);
+				if(posn != -1)
+				{
+					return posn;
 				}
 				throw new ArgumentException
 					(S._("Xml_NotAttrCollectionMember"), "refNode");

@@ -38,6 +38,7 @@ class XmlDocumentType : XmlLinkedNode
 	private String internalSubset;
 	private XmlNamedNodeMap entities;
 	private XmlNamedNodeMap notations;
+	private XmlAttributeCollection attributes;
 
 	// Constructor.
 	internal XmlDocumentType(XmlNode parent, String name, String publicId,
@@ -56,6 +57,7 @@ class XmlDocumentType : XmlLinkedNode
 											  : String.Empty);
 				entities = new XmlNamedNodeMap(this);
 				notations = new XmlNamedNodeMap(this);
+				attributes = null;
 			}
 
 	// Get the entity list for this document type.
@@ -156,6 +158,57 @@ class XmlDocumentType : XmlLinkedNode
 	public override void WriteTo(XmlWriter w)
 			{
 				w.WriteDocType(name, publicId, systemId, internalSubset);
+			}
+
+	// Get and set special attributes on this node.
+	internal override String GetSpecialAttribute(String name)
+			{
+				if(name == "PUBLIC")
+				{
+					return PublicId;
+				}
+				else if(name == "SYSTEM")
+				{
+					return SystemId;
+				}
+				else
+				{
+					return String.Empty;
+				}
+			}
+	internal override void SetSpecialAttribute(String name, String value)
+			{
+				XmlNameTable nt = FindOwnerQuick().NameTable;
+				if(name == "PUBLIC")
+				{
+					publicId = ((value != null) ? nt.Add(value) : String.Empty);
+				}
+				else if(name == "SYSTEM")
+				{
+					systemId = ((value != null) ? nt.Add(value) : String.Empty);
+				}
+				else
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidSpecialAttribute"), "name");
+				}
+			}
+
+	// Get the internal attribute collection for this node.
+	internal override XmlAttributeCollection AttributesInternal
+			{
+				get
+				{
+					if(attributes == null)
+					{
+						attributes = new XmlAttributeCollection(this);
+						attributes.Append
+							(new XmlSpecialAttribute(this, "PUBLIC"));
+						attributes.Append
+							(new XmlSpecialAttribute(this, "SYSTEM"));
+					}
+					return attributes;
+				}
 			}
 
 }; // class XmlDocumentType

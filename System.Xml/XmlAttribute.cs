@@ -34,7 +34,6 @@ class XmlAttribute : XmlNode
 	// Internal state.
 	private NameCache.NameInfo name;
 	internal char quoteChar;
-	internal XmlAttribute next;
 
 	// Constructor.
 	internal XmlAttribute(XmlNode parent, NameCache.NameInfo name)
@@ -42,16 +41,6 @@ class XmlAttribute : XmlNode
 			{
 				this.name = name;
 				this.quoteChar = '"';
-				this.next = null;
-			}
-
-	// Get the attribute collection from the parent node.
-	internal override XmlAttributeCollection AttributesInternal
-			{
-				get
-				{
-					return ParentNode.AttributesInternal;
-				}
 			}
 
 	// Get the base URI for this document.
@@ -211,6 +200,14 @@ class XmlAttribute : XmlNode
 	public override void WriteTo(XmlWriter w)
 			{
 				// TODO
+			}
+
+	// Determine if a particular node type can be inserted as
+	// a child of the current node.
+	internal override bool CanInsert(XmlNodeType type)
+			{
+				return (type == XmlNodeType.Text ||
+						type == XmlNodeType.EntityReference);
 			}
 
 }; // class XmlAttribute

@@ -36,21 +36,12 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	// Internal state.
 	internal XmlNode  parent;
 	internal NodeList list;
-	internal int depth;
 
 	// Constructor.  Only accessible to internal subclasses.
 	protected internal XmlNode(XmlNode parent)
 			{
 				this.parent = parent;
 				this.list = null;		// Created on demand to save memory.
-				if(parent != null)
-				{
-					depth = parent.depth + 1;
-				}
-				else
-				{
-					depth = 1;
-				}
 			}
 
 	// Get a collection that contains all of the attributes for this node.
@@ -62,8 +53,9 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				}
 			}
 
-	// Get the attribute collection for node types that don't override
-	// "Attributes" according to the specification.
+	// Get an internal attribute collection.  This will also work on
+	// nodes such as "XmlDeclaration" that aren't normally specified
+	// to have an attribute collection like "XmlElement" nodes.
 	internal virtual XmlAttributeCollection AttributesInternal
 			{
 				get
@@ -85,15 +77,6 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 					{
 						return String.Empty;
 					}
-				}
-			}
-
-	// Determine if this node type can contain child nodes.
-	internal virtual bool CanHaveChildren
-			{
-				get
-				{
-					return false;
 				}
 			}
 
@@ -218,8 +201,9 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			{
 				get
 				{
-					// TODO
-					return null;
+					XmlFragmentTextWriter writer = new XmlFragmentTextWriter();
+					WriteContentTo(writer);
+					return writer.ToString();
 				}
 				set
 				{
@@ -332,8 +316,9 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			{
 				get
 				{
-					// TODO
-					return null;
+					XmlFragmentTextWriter writer = new XmlFragmentTextWriter();
+					WriteTo(writer);
+					return writer.ToString();
 				}
 			}
 
@@ -426,10 +411,13 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	public virtual XmlNode AppendChild(XmlNode newChild)
 			{
 				XmlDocument doc;
-				if(!CanHaveChildren)
+				XmlNode parentNode;
+
+				// Validate the parameters.
+				if(!CanInsertAfter(newChild.NodeType, LastChild))
 				{
 					throw new InvalidOperationException
-						(S._("Xml_CannotHaveChildren"));
+						(S._("Xml_CannotInsert"));
 				}
 				if(IsAncestorOf(newChild, this))
 				{
@@ -452,7 +440,43 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				{
 					throw new ArgumentException(S._("Xml_ReadOnly"));
 				}
-				// TODO: remove from original position and add to the new.
+
+				// Remove the child from underneath its current parent.
+				parentNode = newChild.ParentNode;
+				if(parentNode != null)
+				{
+					parentNode.RemoveChild(newChild);
+				}
+
+				// If the node is a document fragment, then add its
+				// children instead of the node itself.
+				if(newChild.NodeType == XmlNodeType.DocumentFragment)
+				{
+					XmlNode firstChild = NodeList.GetFirstChild(newChild);
+					XmlNode current, next;
+					current = firstChild;
+					while(current != null)
+					{
+						next = NodeList.GetNextSibling(current);
+						newChild.RemoveChild(current);
+						AppendChild(current);
+						current = next;
+					}
+					return firstChild;
+				}
+
+				// Notify the document that we are about to do an insert.
+				XmlNodeChangedEventArgs args;
+				args = EmitBefore(XmlNodeChangedAction.Insert,
+								  parentNode, this);
+
+				// Perform the insert.
+				NodeList.GetList(this).InsertAfter(newChild, LastChild);
+
+				// Notify the document after the insert.
+				EmitAfter(args);
+
+				// The child has been inserted into its new position.
 				return newChild;
 			}
 
@@ -472,6 +496,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	public abstract XmlNode CloneNode(bool deep);
 
 	// Implement the IXPathNavigator interface.
+	[TODO]
 	public XPathNavigator CreateNavigator()
 			{
 				// TODO
@@ -487,18 +512,124 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	// Get the namespace that corresponds to a particular prefix.
 	public virtual String GetNamespaceOfPrefix(String prefix)
 			{
-				// TODO
-				return null;
+				// Bail out if no prefix supplied.
+				if(prefix == null)
+				{
+					return String.Empty;
+				}
+
+				// Find the document that owns this node.
+				XmlDocument doc = FindOwnerQuick();
+				if(doc == null)
+				{
+					return String.Empty;
+				}
+
+				// Look up the prefix in the name table.  If it isn't
+				// present in the table, then it won't be present in
+				// the element node tree either.
+				prefix = doc.NameTable.Get(prefix);
+				if(prefix == null)
+				{
+					return String.Empty;
+				}
+
+				// Search for an element with this prefix.
+				XmlNode node = this;
+				XmlElement element;
+				XmlAttributeCollection attributes;
+				XmlAttribute attr;
+				int posn, count;
+				do
+				{
+					if(node.NodeType == XmlNodeType.Element)
+					{
+						// If the node's name includes the prefix,
+						// then return the namespace for the node.
+						if(((Object)(node.Prefix)) == (Object)prefix)
+						{
+							return node.NamespaceURI;
+						}
+
+						// Is there an explicit "xmlns:prefix" declaration?
+						element = (XmlElement)node;
+						attributes = element.Attributes;
+						count = attributes.Count;
+						for(posn = 0; posn < count; ++posn)
+						{
+							attr = attributes[posn];
+							if(((Object)(attr.LocalName)) == (Object)prefix &&
+							   attr.Prefix == "xmlns")
+							{
+								return attr.Value;
+							}
+						}
+					}
+					node = node.ParentNode;
+				}
+				while(node != null);
+				return String.Empty;
 			}
 
 	// Get the prefix that corresponds to a particular namespace.
-	public virtual String GetPrefixOfNamespace(String prefix)
+	public virtual String GetPrefixOfNamespace(String namespaceURI)
 			{
-				// TODO
-				return null;
+				// Find the document that owns this node.
+				XmlDocument doc = FindOwnerQuick();
+				if(doc == null)
+				{
+					return String.Empty;
+				}
+
+				// Handle the builtin "xmlns" namespace.
+				if(namespaceURI == XmlDocument.xmlns)
+				{
+					return "xmlns";
+				}
+
+				// Look up the namespace in the name table.
+				namespaceURI = doc.NameTable.Add(namespaceURI);
+
+				// Search for an element with this namespace.
+				XmlNode node = this;
+				XmlElement element;
+				XmlAttributeCollection attributes;
+				XmlAttribute attr;
+				int posn, count;
+				do
+				{
+					if(node.NodeType == XmlNodeType.Element)
+					{
+						// If the node's name includes the namespace,
+						// then return the prefix for the node.
+						if(((Object)(node.NamespaceURI)) ==
+								(Object)namespaceURI)
+						{
+							return node.Prefix;
+						}
+
+						// Is there an explicit "xmlns:prefix" declaration?
+						element = (XmlElement)node;
+						attributes = element.Attributes;
+						count = attributes.Count;
+						for(posn = 0; posn < count; ++posn)
+						{
+							attr = attributes[posn];
+							if(attr.Prefix == "xmlns" &&
+							   attr.Value == namespaceURI)
+							{
+								return attr.LocalName;
+							}
+						}
+					}
+					node = node.ParentNode;
+				}
+				while(node != null);
+				return String.Empty;
 			}
 
 	// Insert a new child under this node just after a reference child.
+	[TODO]
 	public virtual XmlNode InsertAfter(XmlNode newChild, XmlNode refChild)
 			{
 				// TODO
@@ -506,6 +637,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Insert a new child under this node just before a reference child.
+	[TODO]
 	public virtual XmlNode InsertBefore(XmlNode newChild, XmlNode refChild)
 			{
 				// TODO
@@ -513,6 +645,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Normalize the text nodes underneath this node.
+	[TODO]
 	public virtual void Normalize()
 			{
 				// TODO
@@ -521,24 +654,115 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	// Prepend a specific child at the start of this node's child list.
 	public virtual XmlNode PrependChild(XmlNode newChild)
 			{
-				// TODO
+				XmlDocument doc;
+				XmlNode parentNode;
+
+				// Validate the parameters.
+				if(!CanInsertBefore(newChild.NodeType, FirstChild))
+				{
+					throw new InvalidOperationException
+						(S._("Xml_CannotInsert"));
+				}
+				if(IsAncestorOf(newChild, this))
+				{
+					throw new InvalidOperationException(S._("Xml_IsAncestor"));
+				}
+				if(this is XmlDocument)
+				{
+					doc = (XmlDocument)this;
+				}
+				else
+				{
+					doc = OwnerDocument;
+				}
+				if(newChild.OwnerDocument != doc)
+				{
+					throw new ArgumentException
+						(S._("Xml_NotSameDocument"), "newChild");
+				}
+				if(IsReadOnly)
+				{
+					throw new ArgumentException(S._("Xml_ReadOnly"));
+				}
+
+				// Remove the child from underneath its current parent.
+				parentNode = newChild.ParentNode;
+				if(parentNode != null)
+				{
+					parentNode.RemoveChild(newChild);
+				}
+
+				// If the node is a document fragment, then add its
+				// children instead of the node itself.
+				if(newChild.NodeType == XmlNodeType.DocumentFragment)
+				{
+					XmlNode lastChild = NodeList.GetLastChild(newChild);
+					XmlNode current, next;
+					current = lastChild;
+					while(current != null)
+					{
+						next = NodeList.GetPreviousSibling(current);
+						newChild.RemoveChild(current);
+						PrependChild(current);
+						current = next;
+					}
+					return lastChild;
+				}
+
+				// Notify the document that we are about to do an insert.
+				XmlNodeChangedEventArgs args;
+				args = EmitBefore(XmlNodeChangedAction.Insert,
+								  parentNode, this);
+
+				// Perform the insert.
+				NodeList.GetList(this).InsertAfter(newChild, null);
+
+				// Notify the document after the insert.
+				EmitAfter(args);
+
+				// The child has been inserted into its new position.
 				return newChild;
 			}
 
 	// Remove all children and attributes from this node.
 	public virtual void RemoveAll()
 			{
-				// TODO
+				XmlNode current = FirstChild;
+				XmlNode next;
+				while(current != null)
+				{
+					next = NodeList.GetNextSibling(current);
+					RemoveChild(current);
+					current = next;
+				}
 			}
 
 	// Remove a child from this node.
 	public virtual XmlNode RemoveChild(XmlNode oldChild)
 			{
-				// TODO
+				// Validate the parameters.
+				if(oldChild.ParentNode != this)
+				{
+					throw new ArgumentException
+						(S._("Xml_CannotRemove"), "oldChild");
+				}
+
+				// Notify the document that we are about to do a remove.
+				XmlNodeChangedEventArgs args;
+				args = EmitBefore(XmlNodeChangedAction.Remove, this, null);
+
+				// Remove the child.
+				NodeList.GetList(this).RemoveChild(oldChild);
+
+				// Notify the document after the remove.
+				EmitAfter(args);
+
+				// Return the child that was removed.
 				return oldChild;
 			}
 
 	// Replace a child of this node.
+	[TODO]
 	public virtual XmlNode ReplaceChild(XmlNode newChild, XmlNode oldChild)
 			{
 				// TODO
@@ -546,6 +770,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Select a list of nodes matching a particular XPath expression.
+	[TODO]
 	public XmlNodeList SelectNodes(String xpath)
 			{
 				// TODO
@@ -553,6 +778,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Select a list of nodes matching a particular XPath expression.
+	[TODO]
 	public XmlNodeList SelectNodes(String xpath, XmlNamespaceManager nsmgr)
 			{
 				// TODO
@@ -560,6 +786,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Select a single node matching a particular XPath expression.
+	[TODO]
 	public XmlNode SelectSingleNode(String xpath)
 			{
 				// TODO
@@ -567,6 +794,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Select a single node matching a particular XPath expression.
+	[TODO]
 	public XmlNode SelectSingleNode(String xpath, XmlNamespaceManager nsmgr)
 			{
 				// TODO
@@ -594,6 +822,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	public abstract void WriteTo(XmlWriter w);
 
 	// Clone the children from another node into this node.
+	[TODO]
 	internal void CloneChildrenFrom(XmlNode other, bool deep)
 			{
 				// TODO
@@ -660,6 +889,38 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				{
 					FindOwnerQuick().EmitAfter(args);
 				}
+			}
+
+	// Get and set special attributes on this node.
+	internal virtual String GetSpecialAttribute(String name)
+			{
+				// Nothing to do here.
+				return String.Empty;
+			}
+	internal virtual void SetSpecialAttribute(String name, String value)
+			{
+				// Nothing to do here.
+			}
+
+	// Determine if a particular node type can be inserted as
+	// a child of the current node.
+	internal virtual bool CanInsert(XmlNodeType type)
+			{
+				return false;
+			}
+
+	// Determine if a particular node type can be inserted after another,
+	// which may be null if the list is currently empty.
+	internal virtual bool CanInsertAfter(XmlNodeType type, XmlNode refNode)
+			{
+				return CanInsert(type);
+			}
+
+	// Determine if a particular node type can be inserted before another,
+	// which may be null if the list is currently empty.
+	internal virtual bool CanInsertBefore(XmlNodeType type, XmlNode refNode)
+			{
+				return CanInsert(type);
 			}
 
 }; // class XmlNode

@@ -33,11 +33,9 @@ class XmlDocument : XmlNode
 	// Internal state.
 	private XmlImplementation implementation;
 	private String baseURI;
-	private XmlElement root;
-	private XmlDocumentType docType;
 	private bool preserveWhitespace;
 	private XmlResolver xmlResolver;
-	private NameCache nameCache;
+	internal NameCache nameCache;
 	internal XmlDocumentFragment placeholder;
 	internal static readonly String xmlns = "http://www.w3.org/2000/xmlns/";
 
@@ -76,8 +74,6 @@ class XmlDocument : XmlNode
 	private void Initialize()
 			{
 				baseURI = String.Empty;
-				root = null;
-				docType = null;
 				preserveWhitespace = false;
 				placeholder = new XmlDocumentFragment(this);
 				nameCache = new NameCache(implementation.nameTable);
@@ -92,12 +88,27 @@ class XmlDocument : XmlNode
 				}
 			}
 
+	// Get a document child by type.
+	private XmlNode GetChildByType(XmlNodeType type)
+			{
+				XmlNode child = NodeList.GetFirstChild(this);
+				while(child != null)
+				{
+					if(child.NodeType == type)
+					{
+						return child;
+					}
+					child = NodeList.GetNextSibling(child);
+				}
+				return null;
+			}
+
 	// Get the root element for the document.
 	public XmlElement DocumentElement
 			{
 				get
 				{
-					return root;
+					return (XmlElement)(GetChildByType(XmlNodeType.Element));
 				}
 			}
 
@@ -106,7 +117,8 @@ class XmlDocument : XmlNode
 			{
 				get
 				{
-					return docType;
+					return (XmlDocumentType)
+						(GetChildByType(XmlNodeType.DocumentType));
 				}
 			}
 
@@ -693,6 +705,153 @@ class XmlDocument : XmlNode
 					}
 					break;
 				}
+			}
+
+	// Determine if a particular node type can be inserted as
+	// a child of the current node.
+	internal override bool CanInsert(XmlNodeType type)
+			{
+				switch(type)
+				{
+					case XmlNodeType.Element:
+					case XmlNodeType.DocumentType:
+					case XmlNodeType.XmlDeclaration:
+					{
+						return (GetChildByType(type) == null);
+					}
+					// Not reached.
+
+					case XmlNodeType.ProcessingInstruction:
+					case XmlNodeType.Comment:
+					case XmlNodeType.Whitespace:
+					{
+						return true;
+					}
+					// Not reached.
+
+					default: break;
+				}
+				return false;
+			}
+
+	// Determine if a particular node type can be inserted after another,
+	// which may be null if the list is currently empty.
+	internal override bool CanInsertAfter(XmlNodeType type, XmlNode refNode)
+			{
+				// Filter out types that are definitely not allowed.
+				if(!CanInsert(type))
+				{
+					return false;
+				}
+
+				// If nothing in the list yet, then we can insert anything.
+				if(refNode == null)
+				{
+					return true;
+				}
+
+				// Handle special node categories.
+				switch(type)
+				{
+					case XmlNodeType.DocumentType:
+					{
+						// Must not have an element before this position.
+						while(refNode != null)
+						{
+							if(refNode.NodeType == XmlNodeType.Element)
+							{
+								return false;
+							}
+							refNode = NodeList.GetPreviousSibling(refNode);
+						}
+					}
+					break;
+
+					case XmlNodeType.Element:
+					{
+						// Must not have a document type after this position.
+						refNode = NodeList.GetNextSibling(refNode);
+						while(refNode != null)
+						{
+							if(refNode.NodeType == XmlNodeType.DocumentType)
+							{
+								return false;
+							}
+							refNode = NodeList.GetNextSibling(refNode);
+						}
+					}
+					break;
+
+					case XmlNodeType.XmlDeclaration:
+					{
+						// Xml declarations can never come after other nodes.
+						return false;
+					}
+					// Not reached.
+				}
+
+				// If we get here, then the node is allowed.
+				return true;
+			}
+
+	// Determine if a particular node type can be inserted before another,
+	// which may be null if the list is currently empty.
+	internal override bool CanInsertBefore(XmlNodeType type, XmlNode refNode)
+			{
+				// Filter out types that are definitely not allowed.
+				if(!CanInsert(type))
+				{
+					return false;
+				}
+
+				// If nothing in the list yet, then we can insert anything.
+				if(refNode == null)
+				{
+					return true;
+				}
+
+				// Handle special node categories.
+				switch(type)
+				{
+					case XmlNodeType.DocumentType:
+					{
+						// Must not have an element before this position.
+						refNode = NodeList.GetPreviousSibling(refNode);
+						while(refNode != null)
+						{
+							if(refNode.NodeType == XmlNodeType.Element)
+							{
+								return false;
+							}
+							refNode = NodeList.GetPreviousSibling(refNode);
+						}
+					}
+					break;
+
+					case XmlNodeType.Element:
+					{
+						// Must not have a document type after this position.
+						while(refNode != null)
+						{
+							if(refNode.NodeType == XmlNodeType.DocumentType)
+							{
+								return false;
+							}
+							refNode = NodeList.GetNextSibling(refNode);
+						}
+					}
+					break;
+
+					case XmlNodeType.XmlDeclaration:
+					{
+						// Xml declarations must come before everything else.
+						return (refNode == NodeList.GetFirstChild(this));
+					}
+					// Not reached.
+				}
+
+				// If we get here, then the node is allowed.
+				return true;
 			}
 
 }; // class XmlDocument

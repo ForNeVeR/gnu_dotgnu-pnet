@@ -36,6 +36,7 @@ class XmlDeclaration : XmlLinkedNode
 	private String encoding;
 	private String standalone;
 	private String version;
+	private XmlAttributeCollection attributes;
 
 	// Constructor.
 	internal XmlDeclaration(XmlNode parent, String version,
@@ -50,6 +51,7 @@ class XmlDeclaration : XmlLinkedNode
 						(S._("Xml_InvalidVersion"), "version");
 				}
 				this.version = version;
+				this.attributes = null;
 			}
 
 	// Get or set the document encoding.
@@ -184,6 +186,70 @@ class XmlDeclaration : XmlLinkedNode
 	public override void WriteTo(XmlWriter w)
 			{
 				w.WriteProcessingInstruction(Name, Value);
+			}
+
+	// Get and set special attributes on this node.
+	internal override String GetSpecialAttribute(String name)
+			{
+				if(name == "version")
+				{
+					return Version;
+				}
+				else if(name == "encoding")
+				{
+					return Encoding;
+				}
+				else if(name == "standalone")
+				{
+					return Standalone;
+				}
+				else
+				{
+					return String.Empty;
+				}
+			}
+	internal override void SetSpecialAttribute(String name, String value)
+			{
+				if(name == "version")
+				{
+					if(value != "1.0")
+					{
+						throw new ArgumentException
+							(S._("Xml_InvalidVersion"), "value");
+					}
+				}
+				else if(name == "encoding")
+				{
+					Encoding = value;
+				}
+				else if(name == "standalone")
+				{
+					Standalone = value;
+				}
+				else
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidSpecialAttribute"), "name");
+				}
+			}
+
+	// Get the internal attribute collection for this node.
+	internal override XmlAttributeCollection AttributesInternal
+			{
+				get
+				{
+					if(attributes == null)
+					{
+						attributes = new XmlAttributeCollection(this);
+						attributes.Append
+							(new XmlSpecialAttribute(this, "version"));
+						attributes.Append
+							(new XmlSpecialAttribute(this, "encoding"));
+						attributes.Append
+							(new XmlSpecialAttribute(this, "standalone"));
+					}
+					return attributes;
+				}
 			}
 
 }; // class XmlDeclaration

@@ -1,4 +1,15 @@
 
+2002-12-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/NodeList.cs, System.Xml/XmlAttribute.cs,
+	System.Xml/XmlAttributeCollection.cs, System.Xml/XmlDeclaration.cs,
+	System.Xml/XmlDocument.cs, System.Xml/XmlDocumentFragment.cs,
+	System.Xml/XmlDocumentType.cs, System.Xml/XmlElement.cs,
+	System.Xml/XmlEntityReference.cs, System.Xml/XmlFragmentTextWriter.cs,
+	System.Xml/XmlNode.cs, System.Xml/XmlSpecialAttribute.cs,
+	System.Xml/XmlTextReader.cs, resources/en_US/System.Xml/Xml.txt:
+	continue implementing the "System.Xml" namespace.
+
 2002-12-05  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Runtime/InteropServices/Marshal.cs: Implement the

@@ -120,6 +120,30 @@ class XmlEntityReference : XmlLinkedNode
 				w.WriteEntityRef(name);
 			}
 
-}; // class XmlElement
+	// Determine if a particular node type can be inserted as
+	// a child of the current node.
+	internal override bool CanInsert(XmlNodeType type)
+			{
+				switch(type)
+				{
+					case XmlNodeType.Element:
+					case XmlNodeType.Text:
+					case XmlNodeType.CDATA:
+					case XmlNodeType.EntityReference:
+					case XmlNodeType.ProcessingInstruction:
+					case XmlNodeType.Comment:
+					case XmlNodeType.Whitespace:
+					case XmlNodeType.SignificantWhitespace:
+					{
+						return true;
+					}
+					// Not reached.
+
+					default: break;
+				}
+				return false;
+			}
+
+}; // class XmlEntityReference
 
 }; // namespace System.Xml

@@ -32,7 +32,7 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 				m11 = 1.0f;
 				m12 = 0.0f;
 				m21 = 0.0f;
-				m22 = 0.1f;
+				m22 = 1.0f;
 				dx  = 0.0f;
 				dy  = 0.0f;
 			}

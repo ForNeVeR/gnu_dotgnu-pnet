@@ -29,7 +29,7 @@ Description: DotGNU Portable.NET C# compiler & tools
 
 Package: pnet-interpreter
 Architecture: any
-Depends: ${shlibs:Depends}, pnet-runtime (= ${Source-Version})
+Depends: ${shlibs:Depends}, pnet-runtime (>= 0.4.8) 
 Provides: cli-virtual-machine
 Conflicts: pnet (<< ${Source-Version})
 Replaces: pnet (<< ${Source-Version})

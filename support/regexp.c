@@ -55,7 +55,8 @@ ILRegexpHandle ILRegexpCompile(char* pattern,int flags,int *error)
 /*
  * Regexp execute mapping onto regexec
  */
-int ILRegexpExec(ILRegexpHandle handle,char* input,int flags)
+int ILRegexpExec(ILRegexpHandle handle,char* input,int flags,
+						ILRegexpMatch **match)
 {
 #ifdef HAVE_REGEXEC
 	size_t no_sub = ((regex_t*)handle)->re_nsub+1; /* groups */
@@ -65,7 +66,16 @@ int ILRegexpExec(ILRegexpHandle handle,char* input,int flags)
 	{
 		return -1;
 	}
+	if((*match = (ILRegexpMatch*)ILCalloc(no_sub,sizeof(ILRegexpMatch)))==0)
+	{
+		return -1;
+	}
 	retval=regexec((regex_t*)(handle),input,no_sub,result,0);
+	while(--no_sub)
+	{
+		(*match)[no_sub].start=result[no_sub].rm_so;
+		(*match)[no_sub].end=result[no_sub].rm_eo;
+	}
 	ILFree(result);
 	return retval;
 #else

@@ -61,13 +61,14 @@ ILInt32 _IL_RegexpMethods_ExecInternal(ILExecThread * _thread,
 						ILNativeInt compiled, ILString * input, ILInt32 flags)
 {
 	char *pat;
+	ILRegexpMatch *match;
 	pat= ILStringToAnsi(_thread,input);
 	if(!pat)
 	{
 		ILExecThreadThrowOutOfMemory(_thread);
 		return -1;
 	}
-	return ILRegexpExec((ILRegexpHandle)compiled,pat,flags);
+	return ILRegexpExec((ILRegexpHandle)compiled,pat,flags,&match);
 }
 
 void _IL_RegexpMethods_FreeInternal(ILExecThread * _thread, 

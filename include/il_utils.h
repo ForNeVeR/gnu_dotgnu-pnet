@@ -497,6 +497,16 @@ void *ILQueueRemove(ILQueueEntry **listRoot);
  */
 typedef void* ILRegexpHandle;
 
+/*
+ * Non-Opaque handle for regexp results
+ */
+struct _ILRegexpMatch
+{
+	int start;
+	int end;
+};
+typedef struct _ILRegexpMatch ILRegexpMatch;
+
 /* 
  * Regexp compile mapping on to regcomp 
  */
@@ -504,8 +514,10 @@ ILRegexpHandle ILRegexpCompile(char* pattern,int flags, int* error);
 
 /*
  * Regexp execute mapping onto regexec
+ * Note: match is allocated inside this function
  */
-int ILRegexpExec(ILRegexpHandle handle,char* input,int flags);
+int ILRegexpExec(ILRegexpHandle handle,char* input,int flags,
+										ILRegexpMatch** match);
 
 /*
  * Regexp error reporting function (auto alloc)

@@ -5,6 +5,9 @@
 	engine/Makefile.am, include/il_utils.h: Remove the redundant ILFormatReal
 	function from CVS.
 
+	* support/regexp.c, engine/lib_regexp.c, include/il_utils.h: Allow the
+	group matches to be returned for further use.
+
 2002-12-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/Makefile.am, cscc/cscc.c, ilasm/Makefile.am,

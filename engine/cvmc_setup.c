@@ -326,6 +326,50 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 }
 
 /*
+ * Determine if a type looks like "System.String".
+ */
+static int IsStringType(ILType *type)
+{
+	ILClass *classInfo;
+	const char *namespace;
+	ILImage *image;
+	ILImage *systemImage;
+	if(ILType_IsClass(type))
+	{
+		classInfo = ILClassResolve(ILType_ToClass(type));
+		if(!strcmp(ILClass_Name(classInfo), "String"))
+		{
+			namespace = ILClass_Namespace(classInfo);
+			if(namespace && !strcmp(namespace, "System"))
+			{
+				image = ILClassToImage(classInfo);
+				systemImage = ILContextGetSystem(ILImageToContext(image));
+				if(!systemImage || image == systemImage)
+				{
+					return 1;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+/*
+ * Determine if a type looks like a reference to "System.String".
+ */
+static int IsStringRefType(ILType *type)
+{
+	if(type != ILType_Invalid && ILType_IsComplex(type))
+	{
+		if(type->kind == IL_TYPE_COMPLEX_BYREF)
+		{
+			return IsStringType(type->un.refType);
+		}
+	}
+	return 0;
+}
+
+/*
  * Set up a CVM coder instance to process a specific external method.
  */
 static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
@@ -339,6 +383,9 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	ILUInt32 param;
 	ILUInt32 extraLocals;
 	int returnIsTop;
+	ILType *tempType;
+	ILPInvoke *pinv;
+	ILUInt32 pinvAttrs;
 
 	/* Output the entry point code */
 	returnType = ILTypeGetEnumType(returnType);
@@ -356,6 +403,69 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 						  ILMethod_IsConstructor(method), 1, 0))
 		{
 			return 0;
+		}
+	}
+
+	/* If this is a PInvoke call, then scan for string parameters
+	   and convert them into "char *" buffers of some description */
+	if(!isInternal)
+	{
+		pinv = ILPInvokeFind(method);
+		if(pinv)
+		{
+			pinvAttrs = ILPInvoke_Attrs(pinv);
+		}
+		else
+		{
+			pinvAttrs = 0;
+		}
+		for(param = 1; param <= signature->num; ++param)
+		{
+			if(ILType_HasThis(signature))
+			{
+				extraLocals = param;
+			}
+			else
+			{
+				extraLocals = param - 1;
+			}
+			tempType = ILTypeGetParam(signature, param);
+			if(IsStringType(tempType))
+			{
+				/* String value parameter: convert into a "const char *" */
+				CVM_WIDE(COP_PLOAD, coder->argOffsets[extraLocals]);
+				CVM_ADJUST(1);
+				switch(pinvAttrs & IL_META_PINVOKE_CHAR_SET_MASK)
+				{
+					case IL_META_PINVOKE_CHAR_SET_NOT_SPEC:
+					{
+						CVM_BYTE(COP_PREFIX);
+						CVM_BYTE(COP_PREFIX_STR2UTF8);
+					}
+					break;
+
+					case IL_META_PINVOKE_CHAR_SET_ANSI:
+					case IL_META_PINVOKE_CHAR_SET_AUTO:
+					{
+						CVM_BYTE(COP_PREFIX);
+						CVM_BYTE(COP_PREFIX_STR2ANSI);
+					}
+					break;
+
+					case IL_META_PINVOKE_CHAR_SET_UNICODE:
+					{
+						/* TODO: convert into a "const wchar_t *" value */
+					}
+					break;
+				}
+				CVM_WIDE(COP_PSTORE, coder->argOffsets[extraLocals]);
+				CVM_ADJUST(-1);
+			}
+			else if(IsStringRefType(tempType))
+			{
+				/* String reference parameter: convert into a blank buffer */
+				/* TODO */
+			}
 		}
 	}
 

@@ -443,6 +443,12 @@ extern	"C" {
 #define	COP_PREFIX_CKFINITE			0x3B
 
 /*
+ * String conversion opcodes.
+ */
+#define	COP_PREFIX_STR2ANSI			0x3C
+#define	COP_PREFIX_STR2UTF8			0x3D
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */

@@ -517,10 +517,14 @@ static CVMOpcode const prefixOpcodes[64] = {
 	{"ckfinite",		CVM_OPER_NONE},
 
 	/*
+	 * String conversion opcodes.
+	 */
+	{"str2ansi",		CVM_OPER_NONE},
+	{"str2utf8",		CVM_OPER_NONE},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_3c",	CVM_OPER_NONE},
-	{"preserved_3d",	CVM_OPER_NONE},
 	{"preserved_3e",	CVM_OPER_NONE},
 	{"preserved_3f",	CVM_OPER_NONE},
 };

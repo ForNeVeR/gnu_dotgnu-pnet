@@ -722,4 +722,32 @@ case COP_PREFIX_F2D_ALIGNED:
 }
 break;
 
+case COP_PREFIX_STR2ANSI:
+{
+	/* Convert a string object into an "ANSI" character buffer */
+	if(stacktop[-1].ptrValue)
+	{
+		COPY_STATE_TO_THREAD();
+		stacktop[-1].ptrValue =
+			(void *)ILStringToAnsi(thread, (ILString *)(stacktop[-1].ptrValue));
+		RESTORE_STATE_FROM_THREAD();
+	}
+	MODIFY_PC_AND_STACK(2, 0);
+}
+break;
+
+case COP_PREFIX_STR2UTF8:
+{
+	/* Convert a string object into a UTF-8 character buffer */
+	if(stacktop[-1].ptrValue)
+	{
+		COPY_STATE_TO_THREAD();
+		stacktop[-1].ptrValue =
+			(void *)ILStringToUTF8(thread, (ILString *)(stacktop[-1].ptrValue));
+		RESTORE_STATE_FROM_THREAD();
+	}
+	MODIFY_PC_AND_STACK(2, 0);
+}
+break;
+
 #endif /* IL_CVM_PREFIX */

@@ -647,38 +647,24 @@ public class XmlTextReader : XmlReader
 								(S._("Xml_Malformed"));
 						}
 						ClearNodeInfo();
-						ch = ReadChar();
-						if((char)ch != '>')
-						{
-							// get Processing Target 
-							AnalyzeChar(ch, true);
-						}
-						else
-						{
-							// end processing
-							break;
-						}
-						
-						if(name != "xml")
-						{
-							nodeType = XmlNodeType.ProcessingInstruction;
-						}
-						else
-						{
-							nodeType = XmlNodeType.XmlDeclaration;
-							while((ch = ReadChar()) != -1)
-							{
-								if((char)ch == '?' && (char)reader.Peek() == '>')
-								{
-									ReadChar();
-									break;
-								}
-							}
-							break;
-						}
-						
-						// clear buffer 
 						builder = new StringBuilder();
+						while((ch = ReadChar()) != -1)
+						{
+							builder.Append((char)ch);
+							if((char)ch == '?' && (char)reader.Peek() == '>' || Char.IsWhiteSpace((char)ch))
+							{
+								if(builder.ToString(0, builder.Length -1) == "xml")
+								{
+									nodeType = XmlNodeType.XmlDeclaration;
+								}
+								else
+								{
+									nodeType = XmlNodeType.ProcessingInstruction;
+								}
+								break;
+							}
+						}
+						
 						
 						while((ch = ReadChar()) != -1)
 						{
@@ -1103,12 +1089,7 @@ public class XmlTextReader : XmlReader
 						(S._("Xml_WrongReadState"));
 				}
 				
-				
-				
-				if(nodeType != XmlNodeType.Attribute)
-					return false;		
-
-				Read();
+				value = attributes[attributeIndex].Value;
 				return true;	
 			}
 

@@ -627,20 +627,23 @@ class XmlDocument : XmlNode
 			{
 				// TODO
 			}
-	[TODO]
 	public virtual void Load(String filename)
 			{
-				// TODO
+				Load(new XmlTextReader(filename));
 			}
 	[TODO]
 	public virtual void Load(TextReader txtReader)
 			{
 				// TODO
 			}
-	[TODO]
 	public virtual void Load(XmlReader reader)
 			{
-				// TODO
+				RemoveAll();
+				XmlNode node;
+				while((node = ReadNode(reader)) != null)
+				{
+					AppendChild(node);
+				}
 			}
 
 	// Load XML into this document from a string.
@@ -692,11 +695,112 @@ class XmlDocument : XmlNode
 			}
 
 	// Read a node into this document.
-	[TODO]
 	public virtual XmlNode ReadNode(XmlReader reader)
 			{
-				// TODO
-				return null;
+				XmlNode currentNode = null,
+					newNode = null,
+					resultNode = null;
+				
+				int startDepth = reader.Depth;
+				
+				while(reader.Read())
+				{
+					switch(reader.NodeType)
+					{
+						case XmlNodeType.Element:
+							XmlElement newElementNode = CreateElement(reader.Prefix, 
+										reader.LocalName,
+										reader.NamespaceURI);
+							if(startDepth == 0)
+							{
+								// set as root node
+							}
+
+							if(reader.HasAttributes)
+							{
+								while(reader.MoveToNextAttribute())
+								{
+									XmlAttribute newAttributeNode = CreateAttribute(reader.Name);
+									if(reader.ReadAttributeValue())
+									{
+										newAttributeNode.Value = reader.Value;
+									}
+										
+									newElementNode.SetAttributeNode(newAttributeNode);
+								}
+							}
+
+							if(currentNode != null)
+							{
+								// append child
+								currentNode.AppendChild(newElementNode);
+							}
+							else
+							{
+								currentNode = newElementNode;
+							}
+							// update result
+							resultNode = currentNode;
+							// move child to currentNode
+							currentNode = newElementNode;
+							break;
+						case XmlNodeType.Attribute:
+							XmlAttribute newAttributeNode = CreateAttribute(reader.Name);
+										 
+							
+							if(reader.ReadAttributeValue())
+							{
+								newAttributeNode.Value = reader.Value;
+							}
+								
+							currentNode.AppendChild(newAttributeNode);
+							break;
+						case XmlNodeType.CDATA:
+							XmlCDataSection newCDATANode = CreateCDataSection(reader.Value);
+							currentNode.AppendChild(newCDATANode);
+							break;
+						case XmlNodeType.Comment:
+							// TODO: Comment
+							// Append Comments to parent Node
+							break;
+						case XmlNodeType.EndElement:
+							if(currentNode.Name != reader.Name)
+							{
+								throw new XmlException
+									(S._("XmlException_WrongParent"));
+							}
+							if(currentNode.ParentNode != null)
+								currentNode = currentNode.ParentNode;
+							break;
+						case XmlNodeType.EndEntity:
+							// TODO: EndEntity
+							break;
+						case XmlNodeType.ProcessingInstruction:
+							// TODO: ProcessingInstruction
+							break;
+						case XmlNodeType.Text:
+							XmlText newTextNode = CreateTextNode(reader.Value);
+							currentNode.AppendChild(newTextNode);
+							break;
+						case XmlNodeType.XmlDeclaration:
+							// TODO: XmlDeclaration
+							break;
+						case XmlNodeType.DocumentType:
+							// TODO: DocumentType
+							break;
+						case XmlNodeType.SignificantWhitespace:
+							// TODO: SignificantWhitespace
+							break;
+						case XmlNodeType.Whitespace:
+							XmlWhitespace newWhitespaceNode = CreateWhitespace(reader.Value);
+							currentNode.AppendChild(newWhitespaceNode);
+							// TODO: Append Whitespace to parent node
+							break;
+					}
+					
+				}
+					
+				return currentNode;
 			}
 
 	// Save XML data from this document.

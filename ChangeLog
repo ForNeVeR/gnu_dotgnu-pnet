@@ -5,7 +5,7 @@
 
 2003-03-06  Aditya P. Bansod  <abansod@fullenergy.com>
 
-	* image/dynlib.c: add support for Win32 dynamic libraries.
+	* support/dynlib.c: add support for Win32 dynamic libraries.
 
 2003-03-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 

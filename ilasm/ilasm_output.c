@@ -70,6 +70,7 @@ typedef struct _tagLocalInfo
 	LocalBlock *block;
 	char *name;
 	ILUInt32 index;
+	int isParam;
 	struct _tagLocalInfo *next;
 
 } LocalInfo;
@@ -1360,7 +1361,7 @@ void ILAsmOutZeroInit(void)
 /*
  * Add a local variable name and index to the current method.
  */
-static void AddLocalName(char *name, ILUInt32 index)
+static void AddLocalName(char *name, ILUInt32 index, int isParam)
 {
 	LocalInfo *local = (LocalInfo *)ILMalloc(sizeof(LocalInfo));
 	if(!local)
@@ -1371,6 +1372,7 @@ static void AddLocalName(char *name, ILUInt32 index)
 	local->name = name;
 	local->index = index;
 	local->next = localNames;
+	local->isParam = isParam;
 	localNames = local;
 }
 
@@ -1393,7 +1395,7 @@ void ILAsmOutAddLocals(ILAsmParamInfo *vars)
 		}
 		if(vars->name)
 		{
-			AddLocalName(vars->name, localIndex);
+			AddLocalName(vars->name, localIndex, 0);
 		}
 		++localIndex;
 		nextVar = vars->next;
@@ -1418,7 +1420,7 @@ void ILAsmOutAddParams(ILAsmParamInfo *vars, ILUInt32 callConv)
 	{
 		if(vars->name)
 		{
-			AddLocalName(vars->name, paramIndex);
+			AddLocalName(vars->name, paramIndex, 1);
 		}
 		++paramIndex;
 		vars = vars->next;
@@ -1756,6 +1758,11 @@ static void OutputDebugInfo(ILMethod *method)
 	type = IL_DEBUGTYPE_VARS;
 	while(local != 0)
 	{
+		if(local->isParam)
+		{
+			local = local->next;
+			continue;
+		}
 		if(!len || len >= (sizeof(buf) - IL_META_COMPRESS_MAX_SIZE * 4) ||
 		   local->block != lastBlock)
 		{
@@ -2216,7 +2223,7 @@ void ILAsmOutAddResource(const char *name, FILE *stream)
 
 void ILAsmOutDeclareVarName(char *name, ILUInt32 index)
 {
-	AddLocalName(name, index);
+	AddLocalName(name, index, 0);
 }
 
 void ILAsmOutPushVarScope(char *name)

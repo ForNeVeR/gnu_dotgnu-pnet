@@ -5,6 +5,9 @@
 	include/il_system.h, support/Makefile.am, support/path.c:
 	add the "InfoMethods.GetPlatformName" internalcall to the engine.
 
+	* ilasm/ilasm_output.c: parameter information was being added to
+	the debug symbol table when it should not have been.
+
 2003-09-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/common/cc_compat.c: be careful not to treat absolute

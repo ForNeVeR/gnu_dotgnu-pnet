@@ -453,9 +453,9 @@ namespace System.Windows.Forms
 						// Find the width of a row
 						int rowWidth;
 						if (alignment == TabAlignment.Top || alignment == TabAlignment.Bottom)
-							rowWidth = Bounds.Width - indent * 2;
+							rowWidth = Width - indent * 2;
 						else
-							rowWidth = Bounds.Height - indent * 2;
+							rowWidth = Height - indent * 2;
 		
 						int maxRow = 0;
 						// Size the tabs based on the TabSizeMode
@@ -1033,6 +1033,8 @@ namespace System.Windows.Forms
 		{
 			get
 			{
+				if (toolkitWindow == null)
+					return ClientRectangle;
 				Rectangle rect = GetTabBaseBounds();
 				return new Rectangle( rect.Left + padding.X, rect.Top + padding.Y, rect.Width - 2* padding.X, rect.Height - 2 * padding.Y );
 			}
@@ -1056,13 +1058,13 @@ namespace System.Windows.Forms
 			switch( alignment )
 			{
 				case TabAlignment.Left:
-					return new Rectangle( offset, 0, Bounds.Width - offset, Bounds.Height );
+					return new Rectangle( offset, 0, Width - offset, Height );
 				case TabAlignment.Top:
-					return new Rectangle( 0, offset, Bounds.Width, Bounds.Height - offset );
+					return new Rectangle( 0, offset, Width, Height - offset );
 				case TabAlignment.Right:
-					return new Rectangle( 0, 0, Bounds.Width - offset, Bounds.Height );
+					return new Rectangle( 0, 0, Width - offset, Height );
 				case TabAlignment.Bottom:
-					return new Rectangle( 0, 0, Bounds.Width, Bounds.Height - offset );
+					return new Rectangle( 0, 0, Width, Height - offset );
 				default:
 					return Rectangle.Empty;
 			}
@@ -1086,13 +1088,13 @@ namespace System.Windows.Forms
 			switch( alignment )
 			{
 				case TabAlignment.Left:
-					return new Rectangle( 0, 0, offset, Bounds.Height );
+					return new Rectangle( 0, 0, offset, Height );
 				case TabAlignment.Top:
-					return new Rectangle( 0, 0, Bounds.Width, offset );
+					return new Rectangle( 0, 0, Width, offset );
 				case TabAlignment.Right:
-					return new Rectangle( Bounds.Width - offset, 0, offset, Bounds.Height );
+					return new Rectangle( Width - offset, 0, offset, Height );
 				case TabAlignment.Bottom:
-					return new Rectangle( 0, Bounds.Height - offset, Bounds.Width, offset );
+					return new Rectangle( 0, Height - offset, Width, offset );
 				default:
 					return Rectangle.Empty;
 			}

@@ -28,6 +28,7 @@ using System.Drawing;
 using System.Drawing.Toolkit;
 using System.Drawing.Text;
 using System.Collections;
+using System.Threading;
 
 #if CONFIG_COMPONENT_MODEL
 public class Control : Component, ISynchronizeInvoke, IWin32Window
@@ -78,6 +79,8 @@ public class Control : IWin32Window
 	private static Point mousePosition;
 	private static MouseButtons mouseButtons;
 	private int controlStyle;
+	// The thread that was used to create the control.
+	private Thread createThread;
 
 	// Constructors.
 	public Control()
@@ -201,13 +204,11 @@ public class Control : IWin32Window
 				// TODO
 				return null;
 			}
-	[TODO]
 	public bool InvokeRequired
 			{
 				get
 				{
-					// TODO
-					return false;
+					return (createThread != Thread.CurrentThread);
 				}
 			}
 
@@ -1390,7 +1391,7 @@ public class Control : IWin32Window
 				// already exists from some previous incarnation.
 				if(toolkitWindow != null)
 				{
-					if(parent != null && toolkitWindow.Parent == null)
+					if(parent != null && toolkitWindow.Parent != parent.toolkitWindow)
 					{
 						toolkitWindow.Reparent
 							(parent.toolkitWindow, left + ToolkitDrawOrigin.X,
@@ -1408,12 +1409,16 @@ public class Control : IWin32Window
 				{
 					toolkitWindow = CreateToolkitWindow(null);
 				}
-				toolkitWindow.Lower();
+
+				// Dont think we need this - Neil
+				//toolkitWindow.Lower();
 
 				// Copy color information into the toolkit window.
 				toolkitWindow.SetForeground(ForeColor);
 				toolkitWindow.SetBackground(BackColor);
 				// TODO: background images
+
+				createThread = Thread.CurrentThread;
 
 				// Notify subclasses that the handle has been created.
 				OnHandleCreated(EventArgs.Empty);
@@ -1709,12 +1714,14 @@ protected virtual void Dispose(bool disposing)
 	// Invalidate a region of the control and queue up a repaint request.
 	public void Invalidate()
 			{
-				Invalidate(new Region(ClientRectangle), false);
+				if (toolkitWindow != null || !Visible)
+					Invalidate(new Region(ClientRectangle), false);
 			}
 
 	public void Invalidate(bool invalidateChildren)
 			{
-				Invalidate(new Region(ClientRectangle), invalidateChildren);
+				if (toolkitWindow != null || !Visible)
+						Invalidate(new Region(ClientRectangle), invalidateChildren);
 			}
 
 	public void Invalidate(Rectangle rc)
@@ -1734,6 +1741,8 @@ protected virtual void Dispose(bool disposing)
 
 	public void Invalidate(Region region, bool invalidateChildren)
 			{
+				if (toolkitWindow == null || !Visible)
+					return;
 				Region region1 = region.Clone();
 				InvalidateInternal(region1, invalidateChildren);
 				using (Graphics g = CreateGraphics())
@@ -1745,8 +1754,6 @@ protected virtual void Dispose(bool disposing)
 
 	private void InvalidateInternal(Region region, bool invalidateChildren)
 			{
-				if(toolkitWindow == null || !Visible)
-					return;
 				if (invalidateChildren)
 				{
 					for(int i = 0; i < numChildren; i++)
@@ -2224,8 +2231,11 @@ protected virtual void Dispose(bool disposing)
 	// Force an immediate refresh on the control.
 	public virtual void Refresh()
 			{
-				Invalidate(true);
-				toolkitWindow.Update();
+				if (toolkitWindow != null)
+				{
+					Invalidate(true);
+					toolkitWindow.Update();
+				}
 			}
 
 	// Reset the background color to its default value.
@@ -2633,11 +2643,8 @@ protected virtual void Dispose(bool disposing)
 	// Apply the changed styles to the control.
 	protected void UpdateStyles()
 			{
-				if (IsHandleCreated)
-				{
-					currentParams = CreateParams;
-					Invalidate(true);
-				}
+				currentParams = CreateParams;
+				Invalidate(true);
 			}
 
 	// Update the Z-order of a control.
@@ -3419,10 +3426,9 @@ protected virtual void Dispose(bool disposing)
 				if(toolkitWindow != null)
 				{
 					toolkitWindow.SetBackground(backColor);
+					// Invalidate this control to repaint it.
+					Invalidate();
 				}
-
-				// Invalidate this control to repaint it.
-				Invalidate();
 
 				// Invoke the event handler.
 				EventHandler handler;
@@ -3654,10 +3660,9 @@ protected virtual void Dispose(bool disposing)
 				if(toolkitWindow != null)
 				{
 					toolkitWindow.SetForeground(foreColor);
+					// Invalidate this control to repaint it.
+					Invalidate();
 				}
-
-				// Invalidate this control to repaint it.
-				Invalidate();
 
 				// Invoke the event handler.
 				EventHandler handler;
@@ -4195,7 +4200,7 @@ protected virtual void Dispose(bool disposing)
 	// The control will end up at the bottom of the sibling stack.
 	private void Reparent(Control newParent)
 			{
-				if(toolkitWindow != null)
+				if(toolkitWindow != null && newParent.toolkitWindow != null)
 				{
 					if(newParent == null)
 					{

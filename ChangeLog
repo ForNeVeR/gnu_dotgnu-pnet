@@ -18,6 +18,9 @@
 	"cscc-cs" plugin and the "csdoc" program to use the
 	"compiler common" library.
 
+	* cscc/cs_errors.c, cscc/cs_options.c, cscc/cs_options.h,
+	cscc/cs_preproc.c, cscc/cs_preproc.h: remove obsolete files.
+
 2002-03-07 Gopal.V <gopalv82@yahoo.com>
 
 	* ildiff/ildiff.c fixed ILtype bug by replacing ILTypeIdentical

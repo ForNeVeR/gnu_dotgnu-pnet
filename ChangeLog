@@ -11,6 +11,9 @@
 	creation order in a seperate list in each parent class definition and
 	create members in the proper order.
 
+	* cscc/csharp/cs_cast.tc: Fix stupid typo where "69" is passed where
+	a "1" is expected.
+
 2004-06-07  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Fix type bug in constant field accesses 

@@ -1,4 +1,9 @@
 
+2004-08-08  Marcus Urban <mathpup@mylinuxisp.com>
+
+	* System/Collections/Specialized/StringDictionary.cs: All keys are 
+	converted to lowercase (patch #3229, Gopal).
+
 2004-08-08  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Reflection/Emit/UnmanagedMarshal.cs: Fix byte array

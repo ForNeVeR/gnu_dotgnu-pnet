@@ -26,6 +26,7 @@ namespace System.Collections.Specialized
 
 using System;
 using System.Collections;
+using System.Globalization;
 using System.ComponentModel.Design.Serialization;
 
 #if CONFIG_COMPONENT_MODEL_DESIGN
@@ -65,11 +66,11 @@ public class StringDictionary : IEnumerable
 			{
 				get
 				{
-					return (String)(hash[key]);
+					return (String)(hash[key.ToLower(CultureInfo.InvariantCulture)]);
 				}
 				set
 				{
-					hash[key] = value;
+					hash[key.ToLower(CultureInfo.InvariantCulture)] = value;
 				}
 			}
 
@@ -103,7 +104,7 @@ public class StringDictionary : IEnumerable
 	// Add an entry to this string dictionary.
 	public virtual void Add(String key, String value)
 			{
-				hash.Add(key, value);
+				hash.Add(key.ToLower(CultureInfo.InvariantCulture), value);
 			}
 
 	// Remove all entries from the string dictionary.
@@ -115,7 +116,7 @@ public class StringDictionary : IEnumerable
 	// Determine if this string dictionary contains a specific key.
 	public virtual bool ContainsKey(String key)
 			{
-				return hash.ContainsKey(key);
+				return hash.ContainsKey(key.ToLower(CultureInfo.InvariantCulture));
 			}
 
 	// Determine if this string dictionary contains a specific value.
@@ -139,7 +140,7 @@ public class StringDictionary : IEnumerable
 	// Remove a member with a specific key from this string dictionary.
 	public virtual void Remove(String key)
 			{
-				hash.Remove(key);
+				hash.Remove(key.ToLower(CultureInfo.InvariantCulture));
 			}
 
 }; // class StringDictionary

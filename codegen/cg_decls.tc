@@ -516,14 +516,6 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	if(ILMethod_HasPInvokeImpl(method))
 	{
 		pinvoke = ILPInvokeFind(method);
-		if(pinvoke)
-		{
-			/* Declare the external module containing the function */
-			fputs(".module extern ", outstream);
-			ILDumpIdentifier(outstream,
-					ILModule_Name(ILPInvoke_Module(pinvoke)), 0,
-					IL_DUMP_QUOTE_NAMES);
-		}
 	}
 	else
 	{

@@ -253,7 +253,14 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	/* TODO */
 
 	/* Perform semantic analysis on the positional attributes */
-	argList = ((ILNode_AttrArgs *)(attr->args))->positionalArgs;
+	if(attr->args)
+	{
+		argList = ((ILNode_AttrArgs *)(attr->args))->positionalArgs;
+	}
+	else
+	{
+		argList = 0;
+	}
 	numArgs = ILNode_List_Length(argList);
 	haveErrors = 0;
 	if(numArgs)

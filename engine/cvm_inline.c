@@ -447,4 +447,50 @@ VMCASE(COP_PREFIX_APPEND_CHAR):
 }
 VMBREAK(COP_PREFIX_APPEND_CHAR);
 
+/**
+ * <opcode name="is_white_space" group="Inline methods">
+ *   <operation>Determine if a character is white space</operation>
+ *
+ *   <format>prefix<fsep/>is_white_space</format>
+ *   <dformat>{is_white_space}</dformat>
+ *
+ *   <form name="is_white_space" code="COP_PREFIX_IS_WHITE_SPACE"/>
+ *
+ *   <before>..., ch</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>ch</i> is popped from the stack as the
+ *   type <code>int32</code>.  If it is a white space character,
+ *   then the <code>int32</code> <i>result</i> 1 is pushed onto
+ *   the stack; otherwise 0 is pushed.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>Char.IsWhiteSpace(char)</code> method, which is used
+ *   heavily in text processing code.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_IS_WHITE_SPACE):
+{
+	/* Determine if a character is white space */
+	position = stacktop[-1].intValue;
+	if(position == 0x0009 || position == 0x0020 || position == 0x000a ||
+	   position == 0x000b || position == 0x000c || position == 0x000d ||
+	   position == 0x0085 || position == 0x2028 || position == 0x2029)
+	{
+		stacktop[-1].intValue = 1;
+	}
+	else if(position < 0x0080)
+	{
+		stacktop[-1].intValue = 0;
+	}
+	else
+	{
+		stacktop[-1].intValue =
+			(ILGetUnicodeCategory((unsigned)position) ==
+					ILUnicode_SpaceSeparator);
+	}
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_IS_WHITE_SPACE);
+
 #endif /* IL_CVM_PREFIX */

@@ -859,6 +859,8 @@ static InlineMethodInfo const InlineMethods[] = {
 
 	{"StringBuilder", "System.Text", "Append",
 	 "(Tc)oSystem.Text.StringBuilder;", IL_INLINEMETHOD_BUILDER_APPEND_CHAR},
+
+	{"Char", "System", "IsWhiteSpace", "(c)Z", IL_INLINEMETHOD_IS_WHITE_SPACE},
 };
 #define	NumInlineMethods	(sizeof(InlineMethods) / sizeof(InlineMethodInfo))
 

@@ -483,27 +483,28 @@ extern	"C" {
 #define	COP_PREFIX_MONITOR_ENTER	0x4F
 #define	COP_PREFIX_MONITOR_EXIT		0x50
 #define	COP_PREFIX_APPEND_CHAR		0x51
+#define	COP_PREFIX_IS_WHITE_SPACE	0x52
 
 /*
  * Binary value fixups.
  */
-#define	COP_PREFIX_FIX_I4_I			0x52
-#define	COP_PREFIX_FIX_I4_U			0x53
+#define	COP_PREFIX_FIX_I4_I			0x53
+#define	COP_PREFIX_FIX_I4_U			0x54
 
 /*
  * Trigger method unrolling.
  */
-#define	COP_PREFIX_UNROLL_METHOD	0x54
+#define	COP_PREFIX_UNROLL_METHOD	0x55
 
 /*
  * Allocate local stack space.
  */
-#define	COP_PREFIX_LOCAL_ALLOC		0x55
+#define	COP_PREFIX_LOCAL_ALLOC		0x56
 
 /*
  * Method profiling.
  */
-#define COP_PREFIX_PROFILE_COUNT	0x56
+#define COP_PREFIX_PROFILE_COUNT	0x57
 
 /*
  * Definition of a CVM stack word which can hold

@@ -1527,7 +1527,7 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 	{
 		CCOutOfMemory();
 	}
-	if(!ILTypeAddParam(info->context, signature, ILType_UInt))
+	if(!ILTypeAddParam(info->context, signature, ILType_Int))
 	{
 		CCOutOfMemory();
 	}

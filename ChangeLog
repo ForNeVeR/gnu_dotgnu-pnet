@@ -14,6 +14,9 @@
 	* codegen/cg_lvalue.tc (ILNode_MemberField): bug fix to GenRef,
 	which caused it to drop "this" when accessing value type fields.
 
+	* cscc/csharp/cs_gather.c: normalise all delegate declarations
+	to "native int", not "native unsigned int".
+
 2002-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/Makefile.am, image/ser_writer.c, include/il_serialize.h:

@@ -11,6 +11,9 @@ array cloning properly in "Object.MemberwiseClone".
 
 * engine/box.c: add missing file.
 
+* csdoc/doc_destroy.c, csdoc/doc_load.c, csdoc/doc_html.c, csdoc/doc_tree.h:
+parse and format excluded base types in the ECMA's XML specification file.
+
 2001-12-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/internal.c, engine/lib_array.c, engine/lib_decimal.c,

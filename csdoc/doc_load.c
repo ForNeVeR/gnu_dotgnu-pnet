@@ -591,7 +591,7 @@ static int ParseTypeContents(ILDocTree *tree, ILDocType *type,
 				return 0;
 			}
 		}
-		else if(ILXMLIsStartTag(reader, "Base") && type->baseType == 0)
+		else if(ILXMLIsStartTag(reader, "Base"))
 		{
 			/* Parse the base type */
 			ILXMLReadNext(reader);
@@ -603,6 +603,17 @@ static int ParseTypeContents(ILDocTree *tree, ILDocType *type,
 				{
 					type->baseType = ILXMLGetContents(reader, 0);
 					if(!(type->baseType))
+					{
+						return 0;
+					}
+				}
+				else if(ILXMLIsStartTag(reader, "ExcludedBaseTypeName") &&
+						type->excludedBaseType == 0)
+				{
+					/* Some classes in the ECMA specification use this for
+					   a base type that is excluded in some profiles */
+					type->excludedBaseType = ILXMLGetContents(reader, 0);
+					if(!(type->excludedBaseType))
 					{
 						return 0;
 					}

@@ -106,6 +106,7 @@ struct _tagILDocType
 	char		   *ilasmSignature;	/* ILASM signature for the type */
 	char		   *csSignature;	/* C# signature for the type */
 	char		   *baseType;		/* Full name of the base type */
+	char		   *excludedBaseType; /* Full name of the excluded base type */
 	ILDocInterface *interfaces;		/* List of the type's interfaces */
 	ILDocAttribute *attributes;		/* Attributes attached to the type */
 	ILDocText      *doc;			/* Text of the type's documentation */

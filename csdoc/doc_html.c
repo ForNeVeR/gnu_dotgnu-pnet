@@ -1566,15 +1566,25 @@ static void PrintIndent(FILE *stream, int indent)
  * Print the inheritance tree for a type.
  */
 static int PrintInheritTree(FILE *stream, ILDocType *type,
-						    char *base, int indent)
+						    char *base, char *excluded, int indent)
 {
-	ILDocType *baseType = ILDocTypeFind(type->tree, base);
+	ILDocType *baseType;
+	if(excluded)
+	{
+		baseType = ILDocTypeFind(type->tree, excluded);
+	}
+	else
+	{
+		baseType = ILDocTypeFind(type->tree, base);
+	}
 	if(baseType)
 	{
 		if(baseType->baseType)
 		{
 			indent = PrintInheritTree(stream, type,
-									  baseType->baseType, indent);
+									  baseType->baseType,
+									  baseType->excludedBaseType,
+									  indent);
 		}
 		PrintIndent(stream, indent);
 		PrintTypeReference(stream, baseType, type, "contents");
@@ -1586,12 +1596,25 @@ static int PrintInheritTree(FILE *stream, ILDocType *type,
 		{
 			PrintString(stream, baseType->name);
 		}
-		fputs("</A><BR>\n", stream);
+		fputs("</A>", stream);
+		if(excluded)
+		{
+			PrintString(stream, " (excluded)");
+		}
+		fputs("<BR>\n", stream);
 	}
 	else
 	{
 		PrintIndent(stream, indent);
-		PrintString(stream, base);
+		if(excluded)
+		{
+			PrintString(stream, excluded);
+			PrintString(stream, " (excluded)");
+		}
+		else
+		{
+			PrintString(stream, base);
+		}
 		fputs("<BR>\n", stream);
 	}
 	return indent + 2;
@@ -1638,7 +1661,8 @@ static void ConvertType(FILE *stream, ILDocType *type,
 		fputs("<BLOCKQUOTE>\n", stream);
 		if(type->baseType)
 		{
-			indent = PrintInheritTree(stream, type, type->baseType, 0);
+			indent = PrintInheritTree(stream, type, type->baseType,
+									  type->excludedBaseType, 0);
 			PrintIndent(stream, indent);
 			if(type->fullyQualify)
 			{

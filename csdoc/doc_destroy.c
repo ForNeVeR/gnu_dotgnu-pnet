@@ -144,6 +144,10 @@ static void DestroyType(ILDocType *type)
 	{
 		ILFree(type->baseType);
 	}
+	if(type->excludedBaseType)
+	{
+		ILFree(type->excludedBaseType);
+	}
 	DESTROY_LIST(ILDocInterface, type->interfaces, DestroyInterface);
 	DESTROY_LIST(ILDocAttribute, type->attributes, DestroyAttribute);
 	DESTROY_LIST(ILDocText, type->doc, DestroyDoc);

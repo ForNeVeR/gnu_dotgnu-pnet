@@ -1,4 +1,19 @@
 
+2005-02-28  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/AccessViolationException.cs,
+	runtime/System/ActivationArguments: Add initial implementations.
+
+	* runtime/System/ActivationContext.cs,
+	runtime/System/ApplicationIdentity.cs: Stubb out  missing methods and
+	properties.
+
+	* tests/runtime/System/TestActivationArguments.cs,
+	tests/runtime/System/TestActivationContext.cs,
+	tests/runtime/System/TestApplicationIdentity.cs: Add initial testcases.
+
+	* tests/runtime/System/SuiteSystem.cs: Add tests above to testsuite.
+
 2005-02-26  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Drawing/Design/IToolboxService.cs,

@@ -26,13 +26,70 @@ namespace System
 [TODO]
 public sealed class ActivationContext
 {
+	public enum ContextForm
+	{
+		Loose			= 1,
+		Storebounded	= 2
+	}
+
 	// TODO
+
+	private ContextForm contextForm;
 
 	internal Object componentManifest;
 	internal Object deploymentManifest;
 
 	internal void PrepareForExecution() {}
 
+	[TODO]
+	private ActivationContext()
+	{
+		contextForm = ContextForm.Loose;
+	}
+
+	[TODO]
+	public static ActivationContext CreatePartialActivationContext(
+						ApplicationIdentity identity)
+	{
+		if(identity == null)
+		{
+			throw new ArgumentNullException("identity");
+		}
+		return new ActivationContext();
+	}
+
+	[TODO]
+	public static ActivationContext CreatePartialActivationContext(
+						ApplicationIdentity identity, String[] manifestPaths)
+	{
+		if(identity == null)
+		{
+			throw new ArgumentNullException("identity");
+		}
+		return new ActivationContext();
+	}
+
+	public ContextForm Form
+	{
+		get
+		{
+			return contextForm;
+		}
+	}
+
+	[TODO]
+	public ApplicationIdentity Identity
+	{
+		get
+		{
+			return null;
+		}
+	}
+
+	[TODO]
+	public void Dispose()
+	{
+	}
 }; // class ActivationContext
 
 #endif // CONFIG_FRAMEWORK_2_0

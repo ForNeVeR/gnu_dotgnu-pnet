@@ -27,6 +27,11 @@ public class SuiteSystem
 	public static TestSuite Suite()
 			{
 				TestSuite suite = new TestSuite("Core Class Tests");
+#if CONFIG_FRAMEWORK_2_0	
+				suite.AddTests(typeof(TestActivationArguments));
+				suite.AddTests(typeof(TestActivationContext));
+				suite.AddTests(typeof(TestApplicationIdentity));
+#endif
 				suite.AddTests(typeof(TestArgIterator));
 				suite.AddTests(typeof(TestArray));
 				suite.AddTests(typeof(TestBoolean));

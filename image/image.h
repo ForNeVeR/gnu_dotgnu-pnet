@@ -75,6 +75,9 @@ struct _tagILContext
 	ILImage		   *systemImage;
 	ILImage		   *syntheticImage;
 
+	/* Hash table that holds the synthetic type definitions */
+	ILHashTable	   *syntheticHash;
+
 	/* Memory pool that holds ILType records */
 	ILMemPool		typePool;
 
@@ -454,10 +457,10 @@ int _ILWBufferListAdd(ILWBufferList *list, const void *buffer, unsigned size);
 void _ILClassRemoveAllFromHash(ILImage *image);
 
 /*
- * Convert a type into a synthetic class that represents it.
+ * Convert an array type into a synthetic class that represents it.
  * Returns NULL if not possible, or out of memory.
  */
-ILClass *_ILTypeToSyntheticClass(ILImage *image, ILType *type);
+ILClass *_ILTypeToSyntheticArray(ILImage *image, ILType *type, int singleDim);
 
 /*
  * Compact all type and member references in an image to

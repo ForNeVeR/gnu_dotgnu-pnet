@@ -210,6 +210,7 @@ case IL_OP_LDIND_##name: \
 		ILCoderToPointer(coder, STK_UNARY, (ILEngineStackItem *)0); \
 		ILCoderPtrAccess(coder, opcode); \
 		STK_UNARY = (engineType); \
+		STK_UNARY_TYPEINFO = 0; \
 	} \
 	else \
 	{ \
@@ -261,6 +262,7 @@ case IL_OP_LDELEM_##name: \
 		{ \
 			ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType); \
 			STK_BINARY_1 = (engineType); \
+			STK_TYPEINFO_1 = 0; \
 			--stackSize; \
 		} \
 		else \

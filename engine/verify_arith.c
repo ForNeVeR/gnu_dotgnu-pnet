@@ -141,9 +141,12 @@ static char const notMatrix[ILEngineType_ValidTypes] =
  * Helper macros for getting the types of the top two
  * stack elements for binary and unary operators.
  */
-#define	STK_BINARY_1	(stack[stackSize - 2].engineType)
-#define	STK_BINARY_2	(stack[stackSize - 1].engineType)
-#define	STK_UNARY		(stack[stackSize - 1].engineType)
+#define	STK_BINARY_1		(stack[stackSize - 2].engineType)
+#define	STK_TYPEINFO_1		(stack[stackSize - 2].typeInfo)
+#define	STK_BINARY_2		(stack[stackSize - 1].engineType)
+#define	STK_TYPEINFO_2		(stack[stackSize - 1].typeInfo)
+#define	STK_UNARY			(stack[stackSize - 1].engineType)
+#define	STK_UNARY_TYPEINFO	(stack[stackSize - 1].typeInfo)
 
 #elif defined(IL_VERIFY_LOCALS)
 
@@ -174,12 +177,14 @@ case IL_OP_ADD_OVF_UN:
 	{
 		ILCoderBinaryPtr(coder, opcode, STK_BINARY_1, STK_BINARY_2);
 		STK_BINARY_1 = commonType;
+		STK_TYPEINFO_1 = 0;
 		--stackSize;
 	}
 	else if(commonType != ILEngineType_Invalid)
 	{
 		ILCoderBinary(coder, opcode, STK_BINARY_1, STK_BINARY_2);
 		STK_BINARY_1 = commonType;
+		STK_TYPEINFO_1 = 0;
 		--stackSize;
 	}
 	else
@@ -212,12 +217,14 @@ case IL_OP_SUB_OVF_UN:
 	{
 		ILCoderBinaryPtr(coder, opcode, STK_BINARY_1, STK_BINARY_2);
 		STK_BINARY_1 = commonType;
+		STK_TYPEINFO_1 = 0;
 		--stackSize;
 	}
 	else if(commonType != ILEngineType_Invalid)
 	{
 		ILCoderBinary(coder, opcode, STK_BINARY_1, STK_BINARY_2);
 		STK_BINARY_1 = commonType;
+		STK_TYPEINFO_1 = 0;
 		--stackSize;
 	}
 	else
@@ -237,6 +244,7 @@ case IL_OP_REM:
 	{
 		ILCoderBinary(coder, opcode, STK_BINARY_1, STK_BINARY_2);
 		STK_BINARY_1 = commonType;
+		STK_TYPEINFO_1 = 0;
 		--stackSize;
 	}
 	else
@@ -262,6 +270,7 @@ case IL_OP_XOR:
 	{
 		ILCoderBinary(coder, opcode, STK_BINARY_1, STK_BINARY_2);
 		STK_BINARY_1 = commonType;
+		STK_TYPEINFO_1 = 0;
 		--stackSize;
 	}
 	else
@@ -281,6 +290,7 @@ case IL_OP_SHR_UN:
 	{
 		ILCoderShift(coder, opcode, STK_BINARY_1, STK_BINARY_2);
 		STK_BINARY_1 = commonType;
+		STK_TYPEINFO_1 = 0;
 		--stackSize;
 	}
 	else
@@ -298,6 +308,7 @@ case IL_OP_NEG:
 	{
 		ILCoderUnary(coder, opcode, STK_UNARY);
 		STK_UNARY = commonType;
+		STK_UNARY_TYPEINFO = 0;
 	}
 	else
 	{
@@ -314,6 +325,7 @@ case IL_OP_NOT:
 	{
 		ILCoderUnary(coder, opcode, STK_UNARY);
 		STK_UNARY = commonType;
+		STK_UNARY_TYPEINFO = 0;
 	}
 	else
 	{

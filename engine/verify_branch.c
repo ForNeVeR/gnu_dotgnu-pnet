@@ -578,6 +578,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_CEQ:
 	{
 		ILCoderCompare(coder, opcode, STK_BINARY_1, STK_BINARY_2, 0);
 		STK_BINARY_1 = ILEngineType_I4;
+		STK_TYPEINFO_1 = 0;
 		--stackSize;
 	}
 	else
@@ -628,6 +629,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_CLT_UN:
 			ILCoderCompare(coder, opcode, STK_BINARY_1, STK_BINARY_2, 0);
 		}
 		STK_BINARY_1 = ILEngineType_I4;
+		STK_TYPEINFO_1 = 0;
 		--stackSize;
 	}
 	else

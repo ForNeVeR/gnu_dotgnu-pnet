@@ -272,7 +272,7 @@ ILNode_GenValue(ILNode_AssignExpression)
 	}
 
 	/* Store the value into the destination */
-	ILNode_Store(node->lvalue, info, 0, data1, data2);
+	ILNode_Store(node->lvalue, info, 1, data1, data2);
 
 	/* Return the final type to the caller */
 	return finalType;

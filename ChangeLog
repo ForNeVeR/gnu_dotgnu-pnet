@@ -1,3 +1,7 @@
+2003-09-25  Adam Ballai  <Adam@thefrontnetworks.net>
+	
+	* engine/ilrun.c: add necessary code for compact profile
+	to build correctly.
 
 2003-09-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 

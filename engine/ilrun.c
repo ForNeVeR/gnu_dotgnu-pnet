@@ -301,11 +301,14 @@ int main(int argc, char *argv[])
 		return _ILUnregisterFromKernel();
 	}
 
+#ifndef IL_CONFIG_REDUCE_CODE
+
 	if(dumpConfig!=0)
 	{
 		_ILDumpConfig(stdout,dumpConfig);
 		return 0;
 	}
+#endif 
 
 	/* We need at least one input file argument */
 	if(argc <= 1)

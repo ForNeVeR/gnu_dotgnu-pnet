@@ -221,7 +221,8 @@ case COP_MK_LOCAL_N:
 {
 	/* Make an arbitrary number of local variable slots */
 	IL_MEMZERO(&(stacktop[0]), sizeof(CVMWord) * ((unsigned)(pc[1])));
-	MODIFY_PC_AND_STACK(2, ((unsigned)(pc[1])));
+	stacktop += ((unsigned)(pc[1]));
+	pc += 2;
 }
 break;
 

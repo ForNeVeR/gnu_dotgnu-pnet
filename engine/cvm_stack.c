@@ -50,7 +50,8 @@ case COP_DUP_N:
 	/* Duplicate the top N words on the stack */
 	IL_MEMCPY(&(stacktop[0]), &(stacktop[-((int)(pc[1]))]),
 			  sizeof(CVMWord) * ((unsigned)(pc[1])));
-	MODIFY_PC_AND_STACK(2, (unsigned)(pc[1]));
+	stacktop += (unsigned)(pc[1]);
+	pc += 2;
 }
 break;
 
@@ -79,7 +80,8 @@ break;
 case COP_POP_N:
 {
 	/* Pop the top N words from the stack */
-	MODIFY_PC_AND_STACK(2, -((int)(pc[1])));
+	stacktop -= (unsigned)(pc[1]);
+	pc += 2;
 }
 break;
 
@@ -157,7 +159,8 @@ break;
 case COP_POP_N:
 {
 	/* Wide version of "pop_n" */
-	MODIFY_PC_AND_STACK(6, -((int)IL_READ_UINT32(pc + 2)));
+	stacktop -= IL_READ_UINT32(pc + 2);
+	pc += 6;
 }
 break;
 

@@ -15,6 +15,12 @@ not to create a real AssemblyRef for "$Synthetic" when images are built.
 
 * engine/cvmc_stack.c: adjust the stack height properly for "dup" and "pop".
 
+* engine/cvm_stack.c, engine/cvm_var.c: fix a bug in the usage of
+"MODIFY_PC_AND_STACK" where the stack is being adjusted by a value
+read from the instruction's arguments.  Previously, the program counter
+was being incremented before fetching the argument, when it should
+have been incremented *after* fetching the argument.
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_var.c, engine/verify_call.c: handle value type "this"

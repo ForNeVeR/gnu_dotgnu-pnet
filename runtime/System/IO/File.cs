@@ -251,7 +251,6 @@ namespace System.IO
 					      FileAccess.Write, FileShare.None);
 		}
 		
-		[TODO]	
 		public static void SetCreationTime(string path, DateTime creationTime) 
 		{
 			Exception e = ValidatePath(path, "path");

@@ -309,7 +309,6 @@ namespace System.IO
 			if(e != null) throw e;
 		}
 
-		[TODO]
 		public static void SetCreationTime(string path, DateTime creationTime)
 		{
 			File.SetCreationTime(path, creationTime);

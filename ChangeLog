@@ -22,6 +22,10 @@
 	* runtime/System/AppDomain.cs, runtime/System/Threading/Thread.cs:
 	implement missing ECMA TODO's in "System.Threading.Thread".
 
+	* runtime/System/IO/File.cs, runtime/System/IO/Directory.cs:
+	remove "TODO" from the "SetCreationTime" methods because they
+	are actually implemented.
+
 2003-03-31  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs,

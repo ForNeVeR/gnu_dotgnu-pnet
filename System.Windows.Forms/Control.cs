@@ -75,6 +75,7 @@ public class Control : IWin32Window
 	private static Keys currentModifiers;
 	private BorderStyle borderStyle;
 	private static Point mousePosition;
+	private int controlStyle;
 
 	// Constructors.
 	public Control()
@@ -461,12 +462,15 @@ public class Control : IWin32Window
 					return null;
 				}
 			}
-	[TODO]
 	public bool ContainsFocus
 			{
 				get
 				{
-					// TODO
+					if (Focused)
+						return true;
+					for (int i = 0; i < children.Length; i++)
+						if (children[i].Focused)
+							return true;
 					return false;
 				}
 			}
@@ -1577,7 +1581,7 @@ protected virtual void Dispose(bool disposing)
 	// Get a particular style flag.
 	protected bool GetStyle(ControlStyles flag)
 			{
-				return ((currentParams.Style & (int)flag) != 0);
+				return ((controlStyle & (int)flag) != 0);
 			}
 
 	// Determine if this is a top-level control.
@@ -1608,25 +1612,22 @@ protected virtual void Dispose(bool disposing)
 	// Invalidate a region of the control and queue up a repaint request.
 	public void Invalidate()
 			{
-				Invalidate(false);
+				Invalidate(new Region(ClientRectangle), false);
 			}
 
 	public void Invalidate(bool invalidateChildren)
 			{
-				InvalidateInternal(invalidateChildren);
-				OnInvalidated(new InvalidateEventArgs(ClientRectangle));
+				Invalidate(new Region(ClientRectangle), invalidateChildren);
 			}
 
 	public void Invalidate(Rectangle rc)
 			{
-				Invalidate(rc, false);
+				Invalidate(new Region(rc), false);
 			}
 
 	public void Invalidate(Rectangle rc, bool invalidateChildren)
 			{
-				rc.Offset(PointToScreen(new Point(0,0)));
-				InvalidateInternal(rc, invalidateChildren);
-				OnInvalidated(new InvalidateEventArgs(rc));
+				Invalidate(new Region(rc), invalidateChildren);
 			}
 
 	public void Invalidate(Region region)
@@ -1636,11 +1637,7 @@ protected virtual void Dispose(bool disposing)
 
 	public void Invalidate(Region region, bool invalidateChildren)
 			{
-				// Find region1 which is the area to be invalidated relative
-				// to the screen.
 				Region region1 = region.Clone();
-				Point offset = PointToScreen(new Point(0,0));
-				region1.Translate(offset.X, offset.Y);
 				InvalidateInternal(region1, invalidateChildren);
 				using (Graphics g = CreateGraphics())
 				{
@@ -1651,54 +1648,45 @@ protected virtual void Dispose(bool disposing)
 
 	private void InvalidateInternal(Region region, bool invalidateChildren)
 			{
+				if(toolkitWindow == null || !Visible)
+					return;
 				if (invalidateChildren)
 				{
 					for(int i = 0; i < numChildren; i++)
-						children[i].InvalidateInternal(region, invalidateChildren);
-				}
-				if(toolkitWindow != null && Visible)
-				{
-					// TODO Inefficient
-					RectangleF[] rs = region.GetRegionScans(new Drawing.Drawing2D.Matrix());
-					for (int i = 0; i < rs.Length; i++)
 					{
-						Rectangle b = Rectangle.Truncate(rs[i]);
-						// Get in local coordinates.
-						b = new Rectangle(PointToClient(b.Location), b.Size);
-						b.Intersect(new Rectangle(ClientOrigin, ClientSize));
-						if (!b.IsEmpty)
-							toolkitWindow.Invalidate(b.X, b.Y, b.Width, b.Height);
+						Control child = children[i];
+						if (child.Visible)
+						{
+							Region region1 = (Region)region.Clone();
+							region1.Intersect(child.Bounds);
+							region1.Translate(-child.Left, - child.Top);
+							child.InvalidateInternal(region1, true);
+						}
 					}
 				}
-			}
 
-	private void InvalidateInternal(Rectangle rc, bool invalidateChildren)
-			{
-				if (invalidateChildren)
+				// Exclude the children from the invalidate
+				for(int i = 0; i < numChildren; i++)
 				{
-					for(int i = 0; i < numChildren; i++)
-						children[i].InvalidateInternal(rc, invalidateChildren);
+					Control child = children[i];
+					if (child.Visible)
+						region.Exclude(children[i].Bounds);
 				}
-				if(toolkitWindow != null && Visible)
+
+				// TODO Inefficient
+				int xOrigin = ClientOrigin.X;
+				int yOrigin = ClientOrigin.Y;
+				// The rectangle relative to the toolkit that is the bounds for this control.
+				Rectangle parentInvalidateBounds = new Rectangle(xOrigin, yOrigin, ClientSize.Width, ClientSize.Height);
+				RectangleF[] rs = region.GetRegionScans(new Drawing.Drawing2D.Matrix());
+				for (int i = 0; i < rs.Length; i++)
 				{
+					Rectangle b = Rectangle.Truncate(rs[i]);
 					// Get in local coordinates.
-					Rectangle i = new Rectangle(PointToClient(rc.Location), rc.Size);
-					i.Intersect(new Rectangle(ClientOrigin, ClientSize));
-					if (!i.IsEmpty)
-						toolkitWindow.Invalidate(i.X, i.Y, i.Width, i.Height);
-				}
-			}
-
-	private void InvalidateInternal(bool invalidateChildren)
-			{
-				if (invalidateChildren)
-				{
-					for(int i = 0; i < numChildren; i++)
-						children[i].InvalidateInternal(true);
-				}
-				if(toolkitWindow != null && Visible)
-				{
-					toolkitWindow.Invalidate();
+					b.Offset(xOrigin, yOrigin);
+					b.Intersect(parentInvalidateBounds);
+					if (!b.IsEmpty)
+						toolkitWindow.Invalidate(b.X, b.Y, b.Width - 1, b.Height - 1);
 				}
 			}
 
@@ -1834,8 +1822,8 @@ protected virtual void Dispose(bool disposing)
 				top = rect.Top;
 				bottom = rect.Bottom;
 
-				// Lay out the docked controls, from last to first.
-				for(posn = numChildren - 1; posn >= 0; --posn)
+				// Lay out the docked controls, from first to last.
+				for(posn = 0; posn < numChildren; posn++)
 				{
 					child = children[posn];
 					if(!(child.visible))
@@ -2139,10 +2127,10 @@ protected virtual void Dispose(bool disposing)
 			}
 
 	// Force an immediate refresh on the control.
-	[TODO]
 	public virtual void Refresh()
 			{
-				// TODO
+				Invalidate(true);
+				toolkitWindow.Update();
 			}
 
 	// Reset the background color to its default value.
@@ -2426,11 +2414,11 @@ protected virtual void Dispose(bool disposing)
 			{
 				if(value)
 				{
-					currentParams.Style |= (int)flag;
+					controlStyle |= (int)flag;
 				}
 				else
 				{
-					currentParams.Style &= ~(int)flag;
+					controlStyle &= ~(int)flag;
 				}
 			}
 
@@ -3754,6 +3742,10 @@ protected virtual void Dispose(bool disposing)
 					handler(this, e);
 				}
 			}
+	internal void OnMouseUpInternal(MouseEventArgs e)
+	{
+		OnMouseUp(e);
+	}
 	protected virtual void OnMouseWheel(MouseEventArgs e)
 			{
 				MouseEventHandler handler;
@@ -4497,6 +4489,14 @@ protected virtual void Dispose(bool disposing)
 				// Graphics and bounds
 				// Use CreateNonClientGraphics for access to the whole
 				// control including border and menus.
+
+				// Check to see if we must erase the background.
+				bool doubleBuffer = GetStyle(ControlStyles.DoubleBuffer) && GetStyle(ControlStyles.AllPaintingInWmPaint);
+				if (!GetStyle(ControlStyles.Opaque) & !doubleBuffer)
+				{
+					using (Brush brush = new SolidBrush(BackColor))
+						graphics.FillRectangle(brush, 0, 0, width, height);
+				}
 
 				// Draw border if needed
 				switch (borderStyle)

@@ -1,4 +1,8 @@
 
+2004-10-12  Deryk Robosson <deryk@0x0a.com>
+	* System.Windows.Forms/ButtonBase.cs: Allow for mnemonic rendering for
+	text. (patch #3431, ptha)
+
 2004-10-12  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Drawing/Graphics.cs: Fix bug #10644 - mnemonic rendering for

@@ -53,6 +53,7 @@ public abstract class ButtonBase : Control
 				textAlign = ContentAlignment.MiddleCenter;
 				prevState = (ButtonState)(-1);
 				format = new StringFormat();
+				format.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.Show;
 				SetStringFormat();
 				SetStyle(ControlStyles.ResizeRedraw, true);
 			}

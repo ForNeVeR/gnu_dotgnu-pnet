@@ -586,7 +586,7 @@ ILString *_IL_Enum_FormatEnumWithFlags(ILExecThread *thread,
 	mask = GetEnumMaskValue(ILType_FromValueType(classInfo));
 
 	/* Convert the value from object form into raw form */
-	enumValue = GetRawEnumValue(thread, value) & mask;
+	enumValue = GetRawEnumValue(thread, value);
 	leftOver = enumValue;
 	
 	/* Find all fields that overlap with the incoming value */

@@ -342,8 +342,14 @@ public class Socket : IDisposable
 			
 	public int Receive(byte[] buffer, int size, SocketFlags socketFlags)
 			{
+				return Receive(buffer, 0, size, socketFlags);
+			}
+
+	public int Receive(byte[] buffer, SocketFlags socketFlags)
+			{
 				return Receive(buffer, 0, buffer.Length, socketFlags);
 			}
+			
 			
 	public int Receive(byte[] buffer)
 			{

@@ -1,4 +1,9 @@
 
+2004-01-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing.Xsharp/DrawingFont.cs: use the actual family
+	name if the font isn't one of the recognised substitutions.
+
 2004-01-09  Simon Guindon <simon@nureality.ca>
 
 	* System.Windows.Forms/DragEventArgs.cs,

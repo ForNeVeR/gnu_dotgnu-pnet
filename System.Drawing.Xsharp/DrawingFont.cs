@@ -103,7 +103,8 @@ internal sealed class DrawingFont : IToolkitFont
 				else if(String.Compare(name, "Helvetica", true) == 0 ||
 				        String.Compare(name, "Helv", true) == 0 ||
 				        String.Compare(name, "Arial", true) == 0 ||
-				        String.Compare(name, 0, "Arial ", 0, 6, true) == 0)
+						(name.Length >= 6 &&
+				        	String.Compare(name, 0, "Arial ", 0, 6, true) == 0))
 				{
 					return Xsharp.Font.SansSerif;
 				}
@@ -114,7 +115,7 @@ internal sealed class DrawingFont : IToolkitFont
 				}
 				else
 				{
-					return Xsharp.Font.Serif;
+					return name;
 				}
 			}
 

@@ -1,4 +1,9 @@
 
+2002-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/spawn.c (ILSpawnProcess): pass the first few options
+	directly on the command-line instead of in the response file.
+
 2002-04-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ChangeLog, doc/ChangeLog-2: move the contents of "ChangeLog" to

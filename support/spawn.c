@@ -55,18 +55,21 @@ int ILSpawnProcess(char *argv[])
 {
 	int arg;
 	int len;
-	char *newargv[3];
+	char **newargv = 0;
 	char *tempfile = 0;
 	int status;
 	char temppath[MAX_PATH];
 	char tempname[MAX_PATH + 3];
 	FILE *file;
+	int useResponseFile;
+	int responsePosn;
 
 	/* Scan the command-line to see if it may be too big to
 	   fit in the system's command-line buffer.  If so, we
 	   must write the options to a temporary file instead */
 	arg = 1;
 	len = 0;
+	useResponseFile = 0;
 	while(argv[arg] != 0)
 	{
 		if(strchr(argv[arg], ' ') != 0)
@@ -74,30 +77,31 @@ int ILSpawnProcess(char *argv[])
 			/* We must quote this argument: always put it in the option file,
 			   so that the options don't get messed up by Microsoft's version
 			   of "spawn*", which doesn't quote arguments with spaces */
-			len = 200;
+			useResponseFile = 1;
 			break;
 		}
 		else if(argv[arg][0] == '\0' || argv[arg][0] == '@')
 		{
 			/* Quote arguments that are empty or start with '@' */
-			len = 200;
+			useResponseFile = 1;
 			break;
 		}
 		else
 		{
-			/* This argument doesn't need quoting */
+			/* This argument doesn't need quoting, but may cause overflow */
 			len += strlen(argv[arg]);
+			if(len >= 64)
+			{
+				useResponseFile = 1;
+				break;
+			}
 		}
 		++len;
 		++arg;
 	}
 
-	/* Is the command-line too big?  Theoretically, modern versions
-	   of Windows can handle command-lines of 1024 characters.
-	   However, older versions could only handle 128.  So, we will
-	   be paranoid and use the lower limit instead, and also leave
-	   a few extra characters spare just in case */
-	if(len >= 120)
+	/* Does the command-line need quoting? */
+	if(useResponseFile)
 	{
 		/* Create the temporary option file */
 		if(!GetTempPath(sizeof(temppath), temppath))
@@ -117,7 +121,7 @@ int ILSpawnProcess(char *argv[])
 		{
 			return -1;
 		}
-		arg = 1;
+		responsePosn = arg;
 		while(argv[arg] != 0)
 		{
 			if(argv[arg][0] == '\0' || argv[arg][0] == '@' ||
@@ -137,9 +141,18 @@ int ILSpawnProcess(char *argv[])
 		fclose(file);
 
 		/* Set up a new argument array */
-		newargv[0] = argv[0];
-		newargv[1] = tempname;
-		newargv[2] = 0;
+		newargv = (char **)ILMalloc((responsePosn + 2) * sizeof(char *));
+		if(!newargv)
+		{
+			DeleteFile(tempfile);
+			return -1;
+		}
+		for(arg = 0; arg < responsePosn; ++arg)
+		{
+			newargv[arg] = argv[arg];
+		}
+		newargv[responsePosn] = tempname;
+		newargv[responsePosn + 1] = 0;
 		argv = newargv;
 	}
 
@@ -150,6 +163,12 @@ int ILSpawnProcess(char *argv[])
 	if(tempfile)
 	{
 		DeleteFile(tempfile);
+	}
+
+	/* Clean up the copied argument array */
+	if(newargv)
+	{
+		ILFree(newargv);
 	}
 
 	/* Done */

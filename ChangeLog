@@ -31,6 +31,10 @@
 	* csunit/TestMain.cs, csunit/TestResult.cs, csunit/TestWriterResult.cs:
 	force "make check" to stop when a failure is detected.
 
+	* tests/System.Xml/TestXmlNamespaceManager.cs: convert a
+	string-based switch statement into a set of nested if's because
+	csc generates unverifiable code for the switch.
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, csunit/Makefile.am,

@@ -157,41 +157,31 @@ public class TestXmlNamespaceManager : TestCase
 				foreach(String name in ns)
 				{
 					++count;
-					switch(name)
+					if(name == "xml")
 					{
-						case "xml":
-						{
-							AssertEquals
-								("Enum (1)",
-								 "http://www.w3.org/XML/1998/namespace",
-								 ns.LookupNamespace(name));
-						}
-						break;
-
-						case "xmlns":
-						{
-							AssertEquals
-								("Enum (2)",
-								 "http://www.w3.org/2000/xmlns/",
-								 ns.LookupNamespace(name));
-						}
-						break;
-
-						case "foo":
-						{
-							AssertEquals
-								("Enum (3)", fooValue,
-								 ns.LookupNamespace(name));
-						}
-						break;
-
-						case "":
-						{
-							AssertEquals
-								("Enum (4)", "",
-								 ns.LookupNamespace(name));
-						}
-						break;
+						AssertEquals
+							("Enum (1)",
+							 "http://www.w3.org/XML/1998/namespace",
+							 ns.LookupNamespace(name));
+					}	
+					else if(name == "xmlns")
+					{
+						AssertEquals
+							("Enum (2)",
+							 "http://www.w3.org/2000/xmlns/",
+							 ns.LookupNamespace(name));
+					}
+					else if(name == "foo")
+					{
+						AssertEquals
+							("Enum (3)", fooValue,
+							 ns.LookupNamespace(name));
+					}
+					else if(name == "")
+					{
+						AssertEquals
+							("Enum (4)", "",
+							 ns.LookupNamespace(name));
 					}
 				}
 				AssertEquals("Enum (5)", 4, count);

@@ -5,6 +5,8 @@
 engine/lib_math.c, engine/lib_platform.c, engine/lib_string.c: modify the
 names of internalcall methods to match the latest pnetlib requirements.
 
+* samples/mscorlib.dll: new version with all of the latest pnetlib changes.
+
 2001-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/lib_misc.c, engine/lib_array.c, engine/internal.c: implement the

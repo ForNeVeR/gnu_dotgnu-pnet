@@ -1,4 +1,9 @@
 
+2003-07-20  Gopal.V  <gopalv82@symonds.net>
+	
+	* csharp/expr/relop1.il: modify output files to reflect changes
+	in the relop constructs for floating point (JVM is suspect too).
+
 2003-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/expr/assign1.3il, c/expr/assign1.il: modify some C output

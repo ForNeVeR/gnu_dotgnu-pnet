@@ -52,8 +52,9 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 			}
 
 	// Clear the entire drawing surface.
-	public override void Clear()
+	public override void Clear(System.Drawing.Color color)
 			{
+				// TODO
 				graphics.Clear();
 			}
 

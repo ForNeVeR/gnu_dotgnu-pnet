@@ -21,6 +21,7 @@ namespace System.Drawing.Toolkit
 {
 
 using System;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 
 internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
@@ -46,7 +47,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 			}
 
 	// Clear the entire drawing surface.
-	public override void Clear()
+	public override void Clear(Color color)
 			{
 				//graphics.Clear();
 			}

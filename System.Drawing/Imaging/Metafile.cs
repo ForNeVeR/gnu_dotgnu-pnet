@@ -210,7 +210,7 @@ public sealed class Metafile : Image
 
 	// Get the Windows enhanced metafile pointer.
 	[TODO]
-	public IntPtr Gethenhmetafile()
+	public IntPtr GetHenhmetafile()
 			{
 				// TODO
 				return IntPtr.Zero;

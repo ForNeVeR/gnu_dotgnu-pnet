@@ -1,3 +1,22 @@
+2003-07-05  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System/Net/WebProxy.cs, System.Drawing/ColorBlend.cs,
+	System.Drawing/Drawing2D/Blend.cs,
+	System.Drawing/Drawing2D/PathGradientBrush.cs,
+	System.Windows.Forms/ComboBox.cs, System.Windows.Forms/CommonDialog.cs,
+	System.Windows.Forms/FileDialog.cs,
+	System.Windows.Forms/OpenFileDialog.cs,
+	System.Windows.Forms/PictureBox.cs: Add stubs.
+
+	* System.Drawing/Graphics.cs, System.Drawing/Imaging/Metafile.cs,
+	System.Drawing/Toolkit/IToolkitGraphics.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingGraphics.cs: Fix some typos in method
+	signatures.
+
+	* System.Drawing/Drawing2D/LinearGradientBrush.cs,
+	System.Drawing/Imaging/ImageAttributes.cs: Stub some missing methods.
 
 2003-07-03  Gopal.V  <gopalv82@symonds.net>
 	

@@ -22,6 +22,7 @@
 namespace System.Drawing.Toolkit
 {
 
+using System.Drawing;
 using System.Drawing.Text;
 using System.Drawing.Drawing2D;
 
@@ -42,7 +43,7 @@ public interface IToolkitGraphics : IDisposable
 	RectangleF VisibleClipBounds { get; }
 
 	// Clear the entire drawing surface.
-	void Clear();
+	void Clear(Color color);
 
 	// Draw a line between two points using the current pen.
 	void DrawLine(int x1, int y1, int x2, int y2);

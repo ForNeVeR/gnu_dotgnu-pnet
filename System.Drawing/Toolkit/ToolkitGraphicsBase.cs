@@ -22,6 +22,7 @@
 namespace System.Drawing.Toolkit
 {
 
+using System.Drawing;
 using System.Drawing.Text;
 using System.Drawing.Drawing2D;
 
@@ -253,7 +254,7 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 			}
 
 	// Clear the entire drawing surface.
-	public abstract void Clear();
+	public abstract void Clear(Color color);
 
 	// Draw a line between two points using the current pen.
 	public abstract void DrawLine(int x1, int y1, int x2, int y2);

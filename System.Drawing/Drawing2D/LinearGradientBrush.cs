@@ -128,6 +128,94 @@ public sealed class LinearGradientBrush : Brush
 
 	// TODO: properties and transform methods
 
+	// Properties
+	[TODO]
+	public Blend Blend
+			{
+				get
+				{
+					throw new NotImplementedException("Blend");
+				}
+				set
+				{
+					throw new NotImplementedException("Blend");
+				}
+			}
+
+	[TODO]
+	public bool GammaCorrection
+			{
+				get
+				{
+					throw new NotImplementedException("GammaCorrection");
+				}
+				set
+				{
+					throw new NotImplementedException("GammaCorrection");
+				}
+			}
+
+	[TODO]
+	public ColorBlend InterpolationColors
+			{
+				get
+				{
+					throw new NotImplementedException("InterpolationColors");
+				}
+				set
+				{
+					throw new NotImplementedException("InterpolationColors");
+				}
+			}
+
+	[TODO]
+	public Color[] LinearColors
+			{
+				get
+				{
+					throw new NotImplementedException("LinearColors");
+				}
+				set
+				{
+					throw new NotImplementedException("LinearColors");
+				}
+			}
+
+	[TODO]
+	public RectangleF Rectangle
+			{
+				get
+				{
+					throw new NotImplementedException("Rectangle");
+				}
+			}
+
+	[TODO]
+	public Matrix Transform
+			{
+				get
+				{
+					throw new NotImplementedException("Transform");
+				}
+				set
+				{
+					throw new NotImplementedException("Transform");
+				}
+			}
+
+	[TODO]
+	public WrapMode WrapMode
+			{
+				get
+				{
+					throw new NotImplementedException("WrapMode");
+				}
+				set
+				{
+					throw new NotImplementedException("WrapMode");
+				}
+			}
+
 	// Clone this brush.
 	public override Object Clone()
 			{
@@ -164,6 +252,84 @@ public sealed class LinearGradientBrush : Brush
 					brush = toolkit.CreateSolidBrush(color1);
 				}
 				return brush;
+			}
+
+	[TODO]
+	public void MultiplyTransform(Matrix matrix)
+			{
+				throw new NotImplementedException("MultiplyTransform");
+			}
+
+	[TODO]
+	public void MultiplyTransform(Matrix matrix, MatrixOrder order)
+			{
+				throw new NotImplementedException("MultiplyTransform");
+			}
+
+	[TODO]
+	public void ResetTransform()
+			{
+				throw new NotImplementedException("ResetTransform");
+			}
+
+	[TODO]
+	public void RotateTransform(float angle)
+			{
+				throw new NotImplementedException("RotateTransform");
+			}
+
+	[TODO]
+	public void RotateTransform(float angle, MatrixOrder order)
+			{
+				throw new NotImplementedException("RotateTransform");
+			}
+
+	[TODO]
+	public void ScaleTransform(float sx, float sy)
+			{
+				throw new NotImplementedException("ScaleTransform");
+			}
+
+	[TODO]
+	public void ScaleTransform(float sx, float sy, MatrixOrder order)
+			{
+				throw new NotImplementedException("ScaleTransform");
+			}
+
+	[TODO]
+	public void SetBlendTriangularShape(float focus)
+			{
+				throw new NotImplementedException("SetBlendTriangularShape");
+			}
+
+	[TODO]
+	public void SetBlendTriangularShape(float focus, float scale)
+			{
+				throw new NotImplementedException("SetBlendTriangularShape");
+			}
+
+	[TODO]
+	public void SetSigmaBellShape(float focus)
+			{
+				throw new NotImplementedException("SetSigmaBellShape");
+			}
+
+	[TODO]
+	public void SetSigmaBellShape(float focus, float scale)
+			{
+				throw new NotImplementedException("SetSigmaBellShape");
+			}
+
+	[TODO]
+	public void TranslateTransform(float dx, float dy)
+			{
+				throw new NotImplementedException("TranslateTransform");
+			}
+
+	[TODO]
+	public void TranslateTransform(float dx, float dy, MatrixOrder order)
+			{
+				throw new NotImplementedException("TranslateTransform");
 			}
 
 }; // class LinearGradientBrush

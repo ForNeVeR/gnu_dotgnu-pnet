@@ -477,11 +477,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 
 	// Clear the entire drawing surface.
-	public void Clear()
+	public void Clear(Color color)
 			{
 				lock(this)
 				{
-					ToolkitGraphics.Clear();
+					ToolkitGraphics.Clear(color);
 				}
 			}
 
@@ -897,7 +897,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				// TODO
 			}
 	[TODO]
-	public void DrawImage(Image image, RectangleF destRect,
+	public void DrawImage(Image image, Rectangle destRect,
 						  float srcX, float srcY,
 						  float srcWidth, float srcHeight,
 						  GraphicsUnit srcUnit)
@@ -912,7 +912,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				// TODO
 			}
 	[TODO]
-	public void DrawImage(Image image, RectangleF destRect,
+	public void DrawImage(Image image, Rectangle destRect,
 						  float srcX, float srcY,
 						  float srcWidth, float srcHeight,
 						  GraphicsUnit srcUnit, ImageAttributes imageAttr)
@@ -928,7 +928,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				// TODO
 			}
 	[TODO]
-	public void DrawImage(Image image, RectangleF destRect,
+	public void DrawImage(Image image, Rectangle destRect,
 						  float srcX, float srcY,
 						  float srcWidth, float srcHeight,
 						  GraphicsUnit srcUnit, ImageAttributes imageAttr,
@@ -945,7 +945,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				// TODO
 			}
 	[TODO]
-	public void DrawImage(Image image, RectangleF destRect,
+	public void DrawImage(Image image, Rectangle destRect,
 						  float srcX, float srcY,
 						  float srcWidth, float srcHeight,
 						  GraphicsUnit srcUnit, ImageAttributes imageAttr,

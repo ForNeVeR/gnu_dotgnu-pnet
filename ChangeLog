@@ -4,6 +4,9 @@
 	* image/link.c: error in the handling of module names that already
 	include a ".so" suffix.
 
+	* ilalink/link_main.c: chmod the .exe file to +x at the end of
+	the link process.
+
 2002-07-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/int_proto.h, engine/int_table.c,

@@ -25,6 +25,12 @@
 #include "il_writer.h"
 #include "il_linker.h"
 #include "il_utils.h"
+#if HAVE_SYS_TYPES_H
+	#include <sys/types.h>
+#endif
+#if HAVE_SYS_STAT_H
+	#include <sys/stat.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -701,6 +707,14 @@ int ILLinkerMain(int argc, char *argv[])
 		ILDeleteFile(outputFile);
 		outOfMemory();
 	}
+#if !(defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__))
+	else if(format == IL_IMAGETYPE_EXE)
+	{
+		int mask = umask(0);
+		umask(mask);
+		chmod(outputFile, 0777 & ~mask);
+	}
+#endif
 
 	/* Done */
 	return errors;

@@ -650,6 +650,13 @@ public class Form : ContainerControl
 	// Create the toolkit window underlying this control.
 	internal override IToolkitWindow CreateToolkitWindow(IToolkitWindow parent)
 			{
+				// When a Form is reparented to a normal container control 
+				// which does work on Win32 unfortunately.
+				if(mdiParent == null && (!TopLevel))
+				{
+					return base.CreateToolkitWindow(parent);
+				}
+				
 				CreateParams cp = CreateParams;
 
 				// Create the window and set its initial caption.
@@ -712,7 +719,7 @@ public class Form : ContainerControl
 			{
 				get
 				{
-					return (mdiParent == null);
+					return ((mdiParent == null) && TopLevel);
 				}
 			}
 

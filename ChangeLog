@@ -1,4 +1,9 @@
 
+2004-10-05  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/Control.cs: Fix IsTopLevel to check for 
+	reparenting a Form into another Container without MDI. (bug #10396)
+
 2004-10-05  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs,

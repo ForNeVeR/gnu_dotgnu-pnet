@@ -35,18 +35,19 @@ public sealed class ProjectData
 	~ProjectData() {}
 
 	// Clear the project error.
-	[TODO]
 	public static void ClearProjectError()
 			{
-				// TODO
+				Information.Err().Clear();
 			}
 
 	// Create a new project error.
-	[TODO]
 	public static Exception CreateProjectError(int hr)
 			{
-				// TODO
-				return null;
+				ClearProjectError();
+				hr = ErrObject.HResultToNumber(hr);
+				Exception e = ErrObject.CreateExceptionFromNumber(hr, null);
+				Information.Err().Number = hr;
+				return e;
 			}
 
 	// End the application.
@@ -57,15 +58,13 @@ public sealed class ProjectData
 			}
 
 	// Set the project error.
-	[TODO]
 	public static void SetProjectError(Exception ex)
 			{
-				// TODO
+				Information.Err().SetException(ex);
 			}
-	[TODO]
 	public static void SetProjectError(Exception ex, int lErl)
 			{
-				// TODO
+				Information.Err().SetException(ex, lErl);
 			}
 
 }; // class ProjectData

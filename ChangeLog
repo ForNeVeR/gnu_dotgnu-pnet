@@ -18,6 +18,19 @@
 	Basic/CompilerServices/Utils.cs: implement missing TODO's in the
 	VB support library, primarily in the CompilerServices namespace.
 
+	* Basic/DefaultValueAttribute.cs, Basic/ErrObject.cs,
+	Basic/CompilerServices/ByteType.cs,
+	Basic/CompilerServices/DecimalType.cs,
+	Basic/CompilerServices/DoubleType.cs,
+	Basic/CompilerServices/FlowControl.cs,
+	Basic/CompilerServices/IntegerType.cs,
+	Basic/CompilerServices/LongType.cs,
+	Basic/CompilerServices/ObjectType.cs,
+	Basic/CompilerServices/ProjectData.cs,
+	Basic/CompilerServices/ShortType.cs,
+	Basic/CompilerServices/SingleType.cs: continue implementing the
+	VB support library's compiler services.
+
 2003-05-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Private/Regex.cs: Fix wildcard searches to match

@@ -69,6 +69,56 @@ public sealed class LongType
 				}
 			}
 
+	// Try to convert a value using hex or octal forms into "long".
+	internal static bool TryConvertHexOct(String str, out long value)
+			{
+				int len = str.Length;
+				int posn = 0;
+				char ch;
+				while(posn < len)
+				{
+					ch = str[posn];
+					if(ch == '&')
+					{
+						break;
+					}
+					else if(ch == ' ' || ch == '\u3000')
+					{
+						++posn;
+					}
+					else
+					{
+						value = 0;
+						return false;
+					}
+				}
+				++posn;
+				if(posn >= len)
+				{
+					value = 0;
+					return false;
+				}
+				str = Utils.FixDigits(str);
+				ch = str[posn];
+				if(ch == 'h' || ch == 'H')
+				{
+					// Recognize a hexadecimal value.
+					value = Convert.ToInt64(str.Substring(posn + 1), 16);
+					return true;
+				}
+				else if(ch == 'o' || ch == 'O')
+				{
+					// Recognize an octal value.
+					value = Convert.ToInt64(str.Substring(posn + 1), 8);
+					return true;
+				}
+				else
+				{
+					// Not a legitimate number format.
+					throw new FormatException(S._("VB_InvalidHexOrOct"));
+				}
+			}
+
 	// Convert a string into a long value.
 	public static long FromString(String Value)
 			{
@@ -76,6 +126,11 @@ public sealed class LongType
 				{
 					try
 					{
+						long lvalue;
+						if(TryConvertHexOct(Value, out lvalue))
+						{
+							return lvalue;
+						}
 						return Convert.ToInt64
 							(Math.Round(DoubleType.Parse(Value)));
 					}

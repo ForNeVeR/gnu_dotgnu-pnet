@@ -76,6 +76,11 @@ public sealed class ShortType
 				{
 					try
 					{
+						long lvalue;
+						if(LongType.TryConvertHexOct(Value, out lvalue))
+						{
+							return checked((short)lvalue);
+						}
 						return Convert.ToInt16
 							(Math.Round(DoubleType.Parse(Value)));
 					}

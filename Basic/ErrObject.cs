@@ -63,6 +63,17 @@ public sealed class ErrObject
 				return exception;
 			}
 
+	// Set the exception within this error object.
+	internal void SetException(Exception e)
+			{
+				exception = e;
+			}
+	internal void SetException(Exception e, int erl)
+			{
+				exception = e;
+				this.erl = erl;
+			}
+
 	// Raise a particular error.
 	public void Raise(int Number,
 					  [Optional] [DefaultValue(null)] Object Source,
@@ -313,6 +324,13 @@ public sealed class ErrObject
 				}
 			}
 
+	// Convert a HRESULT value into an error number.
+	[TODO]
+	internal static int HResultToNumber(int hr)
+			{
+				// TODO
+				return hr;
+			}
 
 	// Get or set the error's number.
 	public int Number

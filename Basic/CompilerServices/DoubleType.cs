@@ -80,12 +80,29 @@ public sealed class DoubleType
 			{
 				return FromString(Value, null);
 			}
-	[TODO]
 	public static double FromString
 				(String Value, NumberFormatInfo NumberFormat)
 			{
-				// TODO
-				return 0.0;
+				if(Value == null)
+				{
+					return 0.0;
+				}
+				try
+				{
+					long lvalue;
+					if(LongType.TryConvertHexOct(Value, out lvalue))
+					{
+						return (double)lvalue;
+					}
+					return Parse(Value, NumberFormat);
+				}
+				catch(FormatException)
+				{
+					throw new InvalidCastException
+						(String.Format
+							(S._("VB_InvalidCast"),
+							 "System.String", "System.Decimal"));
+				}
 			}
 
 	// Parse a string into a double value.
@@ -93,11 +110,10 @@ public sealed class DoubleType
 			{
 				return Parse(Value, null);
 			}
-	[TODO]
 	public static double Parse(String Value, NumberFormatInfo NumberFormat)
 			{
-				// TODO
-				return 0.0;
+				return Double.Parse(Utils.FixDigits(Value),
+									NumberStyles.Any, NumberFormat);
 			}
 
 }; // class DoubleType

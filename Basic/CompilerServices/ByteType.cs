@@ -76,6 +76,11 @@ public sealed class ByteType
 				{
 					try
 					{
+						long lvalue;
+						if(LongType.TryConvertHexOct(Value, out lvalue))
+						{
+							return checked((byte)lvalue);
+						}
 						return Convert.ToByte
 							(Math.Round(DoubleType.Parse(Value)));
 					}

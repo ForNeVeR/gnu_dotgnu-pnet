@@ -80,12 +80,10 @@ public sealed class SingleType
 			{
 				return FromString(Value, null);
 			}
-	[TODO]
 	public static float FromString
 				(String Value, NumberFormatInfo NumberFormat)
 			{
-				// TODO
-				return 0.0f;
+				return (float)(DoubleType.FromString(Value, NumberFormat));
 			}
 
 }; // class SingleType

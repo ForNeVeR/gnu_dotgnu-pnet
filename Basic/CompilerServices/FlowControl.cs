@@ -49,11 +49,22 @@ public sealed class FlowControl
 			}
 
 	// Get the enumerator for an object.
-	[TODO]
 	public static IEnumerator ForEachInObj(Object obj)
 			{
-				// TODO
-				return null;
+				if(obj == null)
+				{
+					Utils.ThrowException(91);	// NullReferenceException.
+				}
+				else if(obj is IEnumerable)
+				{
+					IEnumerator e = ((IEnumerable)obj).GetEnumerator();
+					if(e != null)
+					{
+						return e;
+					}
+				}
+				Utils.ThrowException(100);	// InvalidOperationException.
+				return null;	// Not reached - keep the compiler happy.
 			}
 
 	// Get the next object in an enumeration sequence.
@@ -71,15 +82,122 @@ public sealed class FlowControl
 				}
 			}
 
+	// Cast an object to a new type.
+	private static Object CastToType(Object obj, TypeCode type)
+			{
+				switch(type)
+				{
+					case TypeCode.Boolean:
+						return ((IConvertible)obj).ToBoolean(null);
+
+					case TypeCode.Byte:
+						return ((IConvertible)obj).ToByte(null);
+
+					case TypeCode.Int16:
+						return ((IConvertible)obj).ToInt16(null);
+
+					case TypeCode.Int32:
+						return ((IConvertible)obj).ToInt32(null);
+
+					case TypeCode.Int64:
+						return ((IConvertible)obj).ToInt64(null);
+
+					case TypeCode.Single:
+						return ((IConvertible)obj).ToSingle(null);
+
+					case TypeCode.Double:
+						return ((IConvertible)obj).ToDouble(null);
+
+					case TypeCode.Decimal:
+						return ((IConvertible)obj).ToDecimal(null);
+				}
+				return obj;
+			}
+
+	// Determine if a value is negative.
+	private static bool ValueIsNegative(Object value, TypeCode type)
+			{
+				switch(type)
+				{
+					case TypeCode.Boolean:
+						return ((bool)value);	// True == -1 in VB.
+
+					case TypeCode.Int16:
+						return (((short)value) < 0);
+
+					case TypeCode.Int32:
+						return (((int)value) < 0);
+
+					case TypeCode.Int64:
+						return (((long)value) < 0);
+
+					case TypeCode.Single:
+						return (((float)value) < 0.0f);
+
+					case TypeCode.Double:
+						return (((double)value) < 0.0);
+
+					case TypeCode.Decimal:
+						return (((decimal)value) < 0.0m);
+				}
+				return false;
+			}
+
 	// Initialize a "for" loop.
-	[TODO]
 	public static bool ForLoopInitObj
 				(Object Counter, Object Start, Object Limit,
 				 Object StepValue, ref Object LoopForResult,
 				 ref Object CounterResult)
 			{
-				// TODO
-				return false;
+				// Validate the parameters.
+				if(Start == null)
+				{
+					throw new ArgumentException
+						(S._("VB_ValueIsNull"), "Start");
+				}
+				if(Limit == null)
+				{
+					throw new ArgumentException
+						(S._("VB_ValueIsNull"), "Limit");
+				}
+				if(StepValue == null)
+				{
+					throw new ArgumentException
+						(S._("VB_ValueIsNull"), "StepValue");
+				}
+
+				// Find a common numeric type between the three arguments.
+				Type enumType;
+				TypeCode type =
+					ObjectType.CommonType(Start, Limit, out enumType);
+				type = ObjectType.CommonType(StepValue, null, type, false);
+				if(type == TypeCode.Empty)
+				{
+					throw new ArgumentException(S._("VB_CommonForType"));
+				}
+
+				// Create the "for" control object.
+				ForInfo info = new ForInfo();
+				LoopForResult = info;
+				info.counter = CastToType(Start, type);
+				info.limit = CastToType(Limit, type);
+				info.stepValue = CastToType(StepValue, type);
+				info.type = type;
+				info.enumType = enumType;
+				info.stepIsNegative = ValueIsNegative(info.stepValue, type);
+
+				// Return the initial counter value.
+				if(enumType == null)
+				{
+					CounterResult = info.counter;
+				}
+				else
+				{
+					CounterResult = Enum.ToObject(enumType, info.counter);
+				}
+
+				// Determine if we've already exceeded the limit.
+				return CheckObjForLimit(info);
 			}
 
 	// Check for the end of a "decimal" iteration.
@@ -96,13 +214,47 @@ public sealed class FlowControl
 				}
 			}
 
+	// Check the limit of an object-based "for" loop.
+	private static bool CheckObjForLimit(ForInfo info)
+			{
+				if(!(info.stepIsNegative))
+				{
+					return (ObjectType.ObjTst(info.counter, info.limit, false)
+								<= 0);
+				}
+				else
+				{
+					return (ObjectType.ObjTst(info.counter, info.limit, false)
+								>= 0);
+				}
+			}
+
 	// Check for the end of an object iteration.
-	[TODO]
 	public static bool ForNextCheckObj
 				(Object Counter, Object LoopObj, ref Object CounterResult)
 			{
-				// TODO
-				return false;
+				if(!(LoopObj is ForInfo))
+				{
+					Utils.ThrowException(100);	// InvalidOperationException.
+				}
+				else if(Counter == null)
+				{
+					throw new ArgumentException
+						(S._("VB_LoopCounterIsNull"), "Counter");
+				}
+				ForInfo info = (ForInfo)LoopObj;
+				info.counter =
+					CastToType(ObjectType.AddObj(Counter, info.stepValue),
+							   info.type);
+				if(info.enumType == null)
+				{
+					CounterResult = info.counter;
+				}
+				else
+				{
+					CounterResult = Enum.ToObject(info.enumType, info.counter);
+				}
+				return CheckObjForLimit(info);
 			}
 
 	// Check for the end of a "float" iteration.
@@ -132,6 +284,18 @@ public sealed class FlowControl
 					return (count >= limit);
 				}
 			}
+
+	// Storage for an object-based "for" loop.
+	private sealed class ForInfo
+	{
+		public Object counter;
+		public Object limit;
+		public Object stepValue;
+		public TypeCode type;
+		public Type enumType;
+		public bool stepIsNegative;
+
+	}; // class ForInfo
 
 }; // class FlowControl
 

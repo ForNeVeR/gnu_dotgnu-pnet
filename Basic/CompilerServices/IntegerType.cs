@@ -76,6 +76,11 @@ public sealed class IntegerType
 				{
 					try
 					{
+						long lvalue;
+						if(LongType.TryConvertHexOct(Value, out lvalue))
+						{
+							return checked((int)lvalue);
+						}
 						return Convert.ToInt32
 							(Math.Round(DoubleType.Parse(Value)));
 					}

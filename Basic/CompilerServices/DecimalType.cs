@@ -80,20 +80,36 @@ public sealed class DecimalType
 			{
 				return FromString(Value, null);
 			}
-	[TODO]
 	public static Decimal FromString
 				(String Value, NumberFormatInfo NumberFormat)
 			{
-				// TODO
-				return 0.0m;
+				if(Value == null)
+				{
+					return 0.0m;
+				}
+				try
+				{
+					long lvalue;
+					if(LongType.TryConvertHexOct(Value, out lvalue))
+					{
+						return (decimal)lvalue;
+					}
+					return Parse(Value, NumberFormat);
+				}
+				catch(FormatException)
+				{
+					throw new InvalidCastException
+						(String.Format
+							(S._("VB_InvalidCast"),
+							 "System.String", "System.Decimal"));
+				}
 			}
 
 	// Parse a string into a decimal value.
-	[TODO]
 	public static Decimal Parse(String Value, NumberFormatInfo NumberFormat)
 			{
-				// TODO
-				return 0.0m;
+				return Decimal.Parse(Utils.FixDigits(Value),
+									 NumberStyles.Any, NumberFormat);
 			}
 
 }; // class DecimalType

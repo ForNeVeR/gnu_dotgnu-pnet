@@ -74,6 +74,12 @@ public class NullToolkit : IToolkit
 				return null;
 			}
 
+	// Create an IToolkitGraphics object from an image.
+	public virtual IToolkitGraphics CreateFromImage(IToolkitImage image)
+			{
+				return null;
+			}
+
 	// Create a solid toolkit brush.
 	public virtual IToolkitBrush CreateSolidBrush(Color color)
 			{

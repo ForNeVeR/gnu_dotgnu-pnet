@@ -1,8 +1,9 @@
 /*
- * IToolkitImage.cs - Implementation of the
- *			"System.Drawing.Toolkit.IToolkitImage" class.
+ * ToolkitGraphicsImageBase.cs - Implementation of the
+ *			"System.Drawing.Toolkit.ToolkitImageBase" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +22,23 @@
 
 namespace System.Drawing.Toolkit
 {
+	using DotGNU.Images;
 
-using DotGNU.Images;
+	[NonStandardExtra]
+	public abstract class ToolkitImageBase : IToolkitImage
+	{
+		protected internal DotGNU.Images.Image image;
+		protected internal int frame;
 
-[NonStandardExtra]
-public interface IToolkitImage : IDisposable
-{
+		public ToolkitImageBase(Image image, int frame)
+				{
+					this.image = image;
+					this.frame = frame;
+				}
+
+		public abstract void Dispose();
+
+		public abstract void ImageChanged();
+
+	}
 }
-
-}// namespace System.Drawing.Toolkit

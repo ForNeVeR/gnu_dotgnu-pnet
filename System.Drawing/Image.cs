@@ -369,13 +369,12 @@ public abstract class Image
 	// Save this image to a file.
 	public void Save(String filename)
 			{
-				// TODO
+				dgImage.Save(filename);
 			}
 #if !ECMA_COMPAT
-	[TODO]
 	public void Save(String filename, ImageFormat format)
 			{
-				// TODO
+				dgImage.Save(filename, ImageFormatToDG(format));
 			}
 	[TODO]
 	public void Save(String filename, ImageCodecInfo encoder,
@@ -385,11 +384,29 @@ public abstract class Image
 			}
 
 	// Save this image to a stream.
-	[TODO]
 	public void Save(Stream stream, ImageFormat format)
 			{
-				// TODO
+				dgImage.Save(stream, ImageFormatToDG(format));
 			}
+
+	private string ImageFormatToDG(ImageFormat format)
+			{
+				if (format ==ImageFormat.Bmp)
+					return "bmp";
+				if (format ==ImageFormat.Gif)
+					return "gif";
+				if (format ==ImageFormat.Icon)
+					return "icon";
+				if (format ==ImageFormat.Jpeg)
+					return "jpeg";
+				if (format ==ImageFormat.Png)
+					return "png";
+				if (format ==ImageFormat.Tiff)
+					return "tiff";
+				else
+					throw new NotSupportedException(format.ToString());
+			}
+
 	[TODO]
 	public void Save(Stream stream, ImageCodecInfo encoder,
 					 EncoderParameters encoderParameters)
@@ -452,8 +469,18 @@ public abstract class Image
 				frameDimensionsList = new Guid [0];
 			#endif
 				this.dgImage = dgImage;
-				width = dgImage.Width;
-				height = dgImage.Height;
+				// If we are loading an icon, set the size of the image
+				// to the size of the first icon
+				if (rawFormat == ImageFormat.Icon)
+				{
+					width = dgImage.GetFrame(0).Width;
+					height = dgImage.GetFrame(0).Height;
+				}
+				else
+				{
+					width = dgImage.Width;
+					height = dgImage.Height;
+				}
 				horizontalResolution = Graphics.DefaultScreenDpi;
 				verticalResolution = Graphics.DefaultScreenDpi;
 				pixelFormat = (System.Drawing.Imaging.PixelFormat)

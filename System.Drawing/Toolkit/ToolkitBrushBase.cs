@@ -1,8 +1,9 @@
 /*
- * IToolkitImage.cs - Implementation of the
- *			"System.Drawing.Toolkit.IToolkitImage" class.
+ * ToolkitBrushBase.cs - Implementation of the
+ *			"System.Drawing.Toolkit.ToolkitBrushBase" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +22,26 @@
 
 namespace System.Drawing.Toolkit
 {
+	using DotGNU.Images;
 
-using DotGNU.Images;
+	[NonStandardExtra]
+	public abstract class ToolkitBrushBase : IToolkitBrush
+	{
+		private Color color;
 
-[NonStandardExtra]
-public interface IToolkitImage : IDisposable
-{
+		public ToolkitBrushBase(Color color)
+			{
+				this.color = color;
+			}
+		public abstract void Dispose();
+		public abstract void Select(IToolkitGraphics graphics);
+
+		public Color Color
+			{
+				get
+				{
+					return color;
+				}
+			}
+	}
 }
-
-}// namespace System.Drawing.Toolkit

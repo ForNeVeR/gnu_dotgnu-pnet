@@ -129,6 +129,11 @@ public interface IToolkitGraphics : IDisposable
 	// Draw the image at point x, y.
 	void DrawImage(IToolkitImage image, int x, int y);
 
+	// Draw the source parallelogram of an image into the parallelogram
+	// defined by dest. Point[] has 3 Points, Top-Left, Top-Right and Bottom-Left.
+	// The remaining point is inferred.
+	void DrawImage(IToolkitImage image,Point[] src, Point[] dest);
+
 }; // interface IToolkitGraphics
 
 }; // namespace System.Drawing.Toolkit

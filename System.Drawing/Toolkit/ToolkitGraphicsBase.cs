@@ -25,6 +25,7 @@ namespace System.Drawing.Toolkit
 using System.Drawing;
 using System.Drawing.Text;
 using System.Drawing.Drawing2D;
+using DotGNU.Images;
 
 // This base class provides some common functionality which should
 // help to make it easier to write "IToolkitGraphics" handlers.
@@ -60,6 +61,9 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 	protected int textContrast;
 	protected TextRenderingHint textRenderingHint;
 	protected DirtyFlags dirtyFlags;
+	protected IToolkitPen pen;
+	protected IToolkitBrush brush;
+	protected IToolkitFont font;
 
 	// Constructor.
 	protected ToolkitGraphicsBase(IToolkit toolkit)
@@ -260,14 +264,92 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 	// Draw a line between two points using the current pen.
 	public abstract void DrawLine(int x1, int y1, int x2, int y2);
 
-	// Draw a set of connected line seguments using the current pen.
-	public abstract void DrawLines(Point[] points);
-
 	// Draw a polygon using the current pen.
 	public abstract void DrawPolygon(Point[] points);
 
 	// Fill a polygon using the current brush.
 	public abstract void FillPolygon(Point[] points, FillMode fillMode);
+
+	// Draw a set of connected line segments using the current pen.
+	public virtual void DrawLines(Point[] points)
+			{
+				for ( int i = 1;i < points.Length; i++ )
+				{
+					if (points[i-1] != points[i])
+						DrawLine( points[i-1].X,points[i-1].Y,points[i].X,points[i].Y );
+				}
+			}
+
+	// Select a font
+	public IToolkitFont Font
+			{
+				set
+				{
+					font = value;
+				}
+				get
+				{
+					return font;
+				}
+			}
+
+	// Select a pen
+	public IToolkitPen Pen
+			{
+				set
+				{
+					pen = value;
+				}
+				get
+				{
+					return pen;
+				}
+			}
+
+	// Select a brush
+	public IToolkitBrush Brush
+			{
+				set
+				{
+					brush = value;
+				}
+				get
+				{
+					return brush;
+				}
+			}
+
+	// Draw the source parallelogram of an image into the parallelogram
+	// defined by dest. Point[] has 3 Points, Top-Left, Top-Right and Bottom-Left.
+	// The remaining point is inferred.
+	public void DrawImage(IToolkitImage image, Point[] src, Point[] dest)
+			{
+				int originX = dest[0].X;
+				int originY = dest[0].Y;
+				for (int i = 1; i < 3; i++)
+				{
+					if (originX > dest[i].X)
+						originX = dest[i].X;
+					if (originY > dest[i].Y)
+						originY = dest[i].Y;
+				}
+
+				DotGNU.Images.Image gnuImage = (image as ToolkitImageBase).image;
+				// Currently we only draw the first frame.
+				Frame frame = gnuImage.GetFrame(0);
+				frame = frame.AdjustImage(src[0].X, src[0].Y, src[1].X, src[1].Y,
+					src[2].X, src[2].Y, dest[0].X - originX, dest[0].Y - originY,
+					dest[1].X - originX, dest[1].Y - originY, dest[2].X - originX,
+					dest[2].Y - originY);
+				// Setup the new image and draw it.
+				using (DotGNU.Images.Image newGnuImage = new DotGNU.Images.Image(gnuImage.Width,
+					gnuImage.Height, gnuImage.PixelFormat))
+				{
+					newGnuImage.AddFrame(frame);
+					IToolkitImage newImage = Toolkit.CreateImage(newGnuImage, 0);
+					DrawImage( newImage, originX, originY);
+				}
+			}
 
 #if CONFIG_EXTENDED_NUMERICS
 

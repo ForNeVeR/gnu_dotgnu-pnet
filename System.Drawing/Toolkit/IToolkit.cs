@@ -55,6 +55,9 @@ public interface IToolkit
 	// Create an IToolkitGraphics object from a HWND.
 	IToolkitGraphics CreateFromHwnd(IntPtr hwnd);
 
+	// Create an IToolkitGraphics object from an image.
+	IToolkitGraphics CreateFromImage(IToolkitImage image);
+
 	// Create a solid toolkit brush.
 	IToolkitBrush CreateSolidBrush(Color color);
 
@@ -84,8 +87,8 @@ public interface IToolkit
 	// Create a toolkit font from the properties in the specified object.
 	IToolkitFont CreateFont(Font font, float dpi);
 
-	// Creat a toolkit image
-	IToolkitImage CreateImage(Image image, int frame);
+	// Create a toolkit image
+	IToolkitImage CreateImage(DotGNU.Images.Image image, int frame);
 
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.
 	IntPtr GetHalftonePalette();

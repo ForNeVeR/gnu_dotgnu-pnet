@@ -1,8 +1,9 @@
 /*
- * IToolkitImage.cs - Implementation of the
- *			"System.Drawing.Toolkit.IToolkitImage" class.
+ * ToolkitPenBase.cs - Implementation of the
+ *			"System.Drawing.Toolkit.ToolkitPenBase" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +22,30 @@
 
 namespace System.Drawing.Toolkit
 {
+	using DotGNU.Images;
 
-using DotGNU.Images;
+	[NonStandardExtra]
+	public abstract class ToolkitPenBase : IToolkitPen
+	{
+		private Color color;
+		protected internal int width;
 
-[NonStandardExtra]
-public interface IToolkitImage : IDisposable
-{
+		public ToolkitPenBase(Color color, int width)
+				{
+					this.color = color;
+					this.width = width;
+				}
+
+		public abstract void Dispose();
+		public abstract void Select(IToolkitGraphics graphics);
+		public abstract void Select(IToolkitGraphics graphics, IToolkitBrush brush);
+
+		public Color Color
+			{
+				get
+				{
+					return color;
+				}
+			}
+	}
 }
-
-}// namespace System.Drawing.Toolkit

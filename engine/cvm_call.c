@@ -322,6 +322,12 @@ popFrame:
 		COPY_STATE_TO_THREAD();
 		return 0;
 	}
+
+#ifdef IL_DUMP_CVM
+	/* Dump the name of the method we are returning to */
+	printf("Returning to %s::%s\n", method->member.owner->name,
+		   method->member.name);
+#endif
 }
 break;
 

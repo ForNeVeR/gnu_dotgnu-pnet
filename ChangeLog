@@ -43,6 +43,9 @@ which caused the disassembler to report the wrong instruction sometimes.
 * engine/layout.c: make sure that we resolve value type references
 in "LayoutType" before re-entering "LayoutClass".
 
+* engine/cvm_call.c: if we are dumping CVM instructions, then also
+dump the method we are returning to for a "return" instruction.
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

@@ -1211,7 +1211,7 @@ void ILConsoleSetPosition(ILInt32 x, ILInt32 y)
 	#ifdef IL_USE_TERMCAP
 		str = tgoto(str, x, y);
 	#else
-		str = tparm(str, y, x);
+		str = tparm(str, y, x, 0, 0, 0, 0, 0, 0, 0);
 	#endif
 		if(str)
 		{

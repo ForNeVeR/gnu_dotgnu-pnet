@@ -1,4 +1,9 @@
 
+2004-11-22  Gopal V  <gopalv82@yahoo.com>
+
+	* support/console.c: Use a portable invocation of tparm() with
+	10 parameters to match Susv3 specifications.
+
 2004-11-02  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/common/cc_compat.c: Allow /debug:full and /debug:pdbonly flags

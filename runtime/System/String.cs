@@ -89,7 +89,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 	// Internal version of "Compare", with all parameters.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static int InternalCompare
+	extern internal static int InternalCompare
 				(String strA, int indexA, int lengthA,
 				 String strB, int indexB, int lengthB,
 				 bool ignoreCase, CultureInfo culture);

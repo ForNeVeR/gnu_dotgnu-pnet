@@ -105,6 +105,7 @@ Arg_SecurityAction=Invalid security action value
 Arg_PermissionVersion=Incorrect version for permission object
 Arg_InvalidUTF8=Invalid UTF8 byte sequence
 Arg_WeakRefCollected=Weak reference has already been garbage collected
+Arg_MustBeCoreLib=The specified assembly must be the core library
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

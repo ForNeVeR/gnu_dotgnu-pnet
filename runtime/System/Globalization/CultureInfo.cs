@@ -242,13 +242,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the comparison rules that are used by the culture.
-	[TODO]
 	public virtual CompareInfo CompareInfo
 			{
 				get
 				{
-					// TODO
-					return null;
+					return CompareInfo.GetCompareInfo(cultureID);
 				}
 			}
 
@@ -490,6 +488,14 @@ public class CultureInfo : ICloneable, IFormatProvider
 				{
 					return null;
 				}
+			}
+
+	// Map a culture name to an identifier.
+	[TODO]
+	internal static int MapNameToID(String name)
+			{
+				// TODO
+				return 0x007F;
 			}
 
 }; // class CultureInfo

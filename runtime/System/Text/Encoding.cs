@@ -235,7 +235,7 @@ public abstract class Encoding
 
 	// Invoke a specific method on the "I18N" manager object.
 	// Returns NULL if the method failed.
-	private static Object InvokeI18N(String name, params Object[] args)
+	internal static Object InvokeI18N(String name, params Object[] args)
 			{
 				lock(typeof(Encoding))
 				{

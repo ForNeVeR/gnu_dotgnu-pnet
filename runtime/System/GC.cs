@@ -1,7 +1,7 @@
 /*
  * GC.cs - Implementation of the "System.GC" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,58 @@ public sealed class GC
 	// Wait for all pending finalizers to be run.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void WaitForPendingFinalizers();
+
+#if !ECMA_COMPAT
+
+	// Get the maximum generation currently in use.
+	public static int MaxGeneration
+			{
+				get
+				{
+					// We don't currently support generational collection.
+					return 0;
+				}
+			}
+
+	// Perform a full garbage collection.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void Collect();
+
+	// Perform garbage collection on a range of generations.
+	public static void Collect(int generation)
+			{
+				if(generation != 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("generation", _("ArgRange_GCGeneration"));
+				}
+				Collect();
+			}
+
+	// Get the generation of a specified object.
+	public static int GetGeneration(Object obj)
+			{
+				// We don't currently support generational collection.
+				return 0;
+			}
+
+	// Get the generation of a weak reference.
+	public static int GetGeneration(WeakReference wo)
+			{
+				Object target = wo.Target;
+				if(target == null)
+				{
+					throw new ArgumentException
+						(_("Arg_WeakRefCollected"), "wo");
+				}
+				return GetGeneration(target);
+			}
+
+	// Get the total amount of memory in use by the heap.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static long GetTotalMemory(bool forceFullCollection);
+
+#endif // !ECMA_COMPAT
 
 }; // class GC
 

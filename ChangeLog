@@ -1,4 +1,10 @@
 
+2002-06-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Arg.txt, runtime/System/GC.cs,
+	runtime/System/WeakReference.cs: implement non-ECMA garbage collection
+	functionality.
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/NotImplementedException.cs: add the exception

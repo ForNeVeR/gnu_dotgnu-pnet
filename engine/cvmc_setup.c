@@ -78,6 +78,9 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	ILType *type;
 	unsigned long pushDown;
 
+	/* Set the current method */
+	coder->currentMethod = method;
+
 	/* Clear the label pool */
 	ILMemPoolClear(&(coder->labelPool));
 	coder->labelList = 0;
@@ -144,13 +147,21 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		}
 		else
 		{
-			offset += GetTypeSize(coder->coder.thread, type);
+			offset += GetTypeSize(type);
 		}
 	}
 	maxArgOffset = offset;
 
 	/* Set the number of arguments, which initialize's the method's frame */
 	CVM_WIDE(COP_SET_NUM_ARGS, offset);
+
+	/* Is this a static constructor? */
+	if(ILMethod_IsStaticConstructor(method))
+	{
+		/* Output a "cctor_once" instruction to ensure that this
+		   method's body can only be executed once */
+		CVM_BYTE(COP_CCTOR_ONCE);
+	}
 
 	/* If this is a constructor, then back-patch the push down size,
 	   which is one less than the number of argument words */
@@ -226,7 +237,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		{
 			type = ILTypeGetLocal(signature, current);
 			coder->localOffsets[current] = offset;
-			offset += GetTypeSize(coder->coder.thread, type);
+			offset += GetTypeSize(type);
 		}
 	}
 	else if(returnType)
@@ -234,7 +245,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		/* We need a temporary local for the return value */
 		ALLOC_LOCALS(1);
 		coder->localOffsets[0] = offset;
-		offset += GetTypeSize(coder->coder.thread, returnType);
+		offset += GetTypeSize(returnType);
 	}
 
 	/* Output the stack height check instruction, which is fixed
@@ -459,7 +470,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 
 			default:
 			{
-				param = GetTypeSize(coder->coder.thread, returnType);
+				param = GetTypeSize(returnType);
 				CVM_RETURN(param);
 			}
 			break;

@@ -4,6 +4,9 @@
 	* cscc/cs_scanner.l: remove one of the floating-point recognition
 	rules because it was messing up on expressions like "6.ToString()".
 
+	* cscc/cs_invoke.tc (CSItemToName): add "[]" to the type for a
+	method candidate error when a "params" type is encountered.
+
 2001-03-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/member.c: decode Java exception blocks from method code.

@@ -1355,6 +1355,10 @@ const char *CSItemToName(ILProgramItem *item)
 		}
 		str = ILInternAppendedString
 				(str, ILInternString((char *)CSTypeToName(type), -1));
+		if(paramMod == ILParamMod_params)
+		{
+			str = ILInternAppendedString(str, ILInternString("[]", 2));
+		}
 	}
 	if(kind == IL_META_MEMBERKIND_PROPERTY)
 	{

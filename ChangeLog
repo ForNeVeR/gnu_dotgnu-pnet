@@ -1,4 +1,10 @@
 
+2003-12-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, support/regex.c: add <inttypes.h> to configure.in
+	so that regex routines get the correct definition of "uintptr_t"
+	(thanks to Miroslaw Dobrzanski-Neumann for identifying the issue).
+
 2003-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_file.c:

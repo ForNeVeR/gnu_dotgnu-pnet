@@ -50,6 +50,9 @@
 /* We need this for `regex.h', and perhaps for the Emacs include files.  */
 #  include <sys/types.h>
 # endif
+# if defined HAVE_INTTYPES_H
+#  include <inttypes.h>
+# endif
 
 # define WIDE_CHAR_SUPPORT (HAVE_WCTYPE_H && HAVE_WCHAR_H && HAVE_BTOWC)
 
@@ -299,7 +302,7 @@ init_syntax_once ()
 # endif /* emacs */
 
 /* Integer type for pointers.  */
-# if !defined _LIBC && !defined HAVE_UINTPTR_T
+# if !defined _LIBC && !defined HAVE_UINTPTR_T && !defined HAVE_INTTYPES_H
 typedef unsigned long int uintptr_t;
 # endif
 

@@ -418,18 +418,6 @@ typedef union
 #endif
 #define	CVM_WORDS_PER_TYPED_REF		2
 
-/*
- * Call frame information.
- */
-typedef struct _tagCVMCallFrame CVMCallFrame;
-struct _tagCVMCallFrame
-{
-	ILMethod   *method;
-	ILUInt32	pc;
-	ILUInt32	frame;
-
-};
-
 #ifdef	__cplusplus
 };
 #endif

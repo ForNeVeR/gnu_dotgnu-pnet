@@ -21,6 +21,9 @@
 	* engine/lib_type.c: changes to "GetMemberImpl" to handle type
 	matching based on "assignment compatible" as well as "identical".
 
+	* doc/pnettools.texi, ilfind/ilfind.1, ilfind/ilfind.c:
+	add the "--public-only" option to "ilfind".
+
 2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with UTF-7 encoding and

@@ -61,6 +61,10 @@ static ILCmdLineOption const options[] = {
 		"--ignore-case  or -i",
 		"Ignore case when matching."},
 	{"-i", 'i', 0, 0, 0},
+	{"--public-only", 'i', 0,
+		"--public-only  or -p",
+		"Search only the classes that are publicly accessible."},
+	{"-p", 'p', 0, 0, 0},
 	{"--version", 'v', 0,
 		"--version      or -v",
 		"Print the version of the program."},
@@ -74,7 +78,7 @@ static ILCmdLineOption const options[] = {
 static void usage(const char *progname);
 static void version(void);
 static int searchFile(const char *filename, ILContext *context,
-					  int reportFilenames);
+					  int reportFilenames, int publicOnly);
 static void CompileRegex(char *searchString, int wholeString,
 						 int regexMatching, int ignoreCase,
 						 int fileRegex);
@@ -87,6 +91,7 @@ int main(int argc, char *argv[])
 	int regexMatching = 1;
 	int ignoreCase = 0;
 	int fileRegex = 1;
+	int publicOnly = 0;
 	char *searchString;
 	int reportFilenames;
 	int sawStdin;
@@ -141,6 +146,12 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+			case 'p':
+			{
+				publicOnly = 1;
+			}
+			break;
+
 			case 'v':
 			{
 				version();
@@ -190,14 +201,14 @@ int main(int argc, char *argv[])
 			/* Dump the contents of stdin, but only once */
 			if(!sawStdin)
 			{
-				errors |= searchFile("-", context, reportFilenames);
+				errors |= searchFile("-", context, reportFilenames, publicOnly);
 				sawStdin = 1;
 			}
 		}
 		else
 		{
 			/* Dump the contents of a regular file */
-			errors |= searchFile(argv[1], context, reportFilenames);
+			errors |= searchFile(argv[1], context, reportFilenames, publicOnly);
 		}
 		++argv;
 		--argc;
@@ -287,7 +298,7 @@ struct _tagNamespaceEntry
  * Load an IL image from an input stream and search it.
  */
 static int searchFile(const char *filename, ILContext *context,
-					  int reportFilenames)
+					  int reportFilenames, int publicOnly)
 {
 	ILImage *image;
 	unsigned long numTokens;
@@ -338,6 +349,10 @@ static int searchFile(const char *filename, ILContext *context,
 						(image, token | IL_META_TOKEN_TYPE_DEF));
 		if(info)
 		{
+			if(publicOnly && !ILClass_IsPublic(info))
+			{
+				continue;
+			}
 			namespace = ILClass_Namespace(info);
 			if(MatchRegex(ILClass_Name(info)))
 			{

@@ -2580,6 +2580,12 @@ identity check against names (@code{-w}) or a simple sub-string check
 @itemx --ignore-case
 Ignore case when matching names against the pattern.
 
+@cindex -p option (ilfind)
+@cindex --public-only option (ilfind)
+@item -p
+@itemx --public-only
+Search only the classes that are publicly accessible.
+
 @cindex --help option (ilfind)
 @item --help
 Print a usage message for the ilfind program.

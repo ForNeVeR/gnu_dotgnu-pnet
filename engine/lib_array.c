@@ -2959,7 +2959,7 @@ ILObject *_IL_Array_Get_iii(ILExecThread *thread, ILObject *thisObj,
 										"Arg_InvalidArrayIndex");
 				return 0;
 			}
-			offset = index * marray->bounds[1].multiplier;
+			offset += index * marray->bounds[1].multiplier;
 			index = index3 - marray->bounds[2].lower;
 			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[2].size)))
 			{
@@ -3031,6 +3031,7 @@ ILObject *_IL_Array_Get_ai(ILExecThread *thread, ILObject *thisObj,
 		}
 		offset += (ILUInt32)(index * marray->bounds[dim].multiplier);
 	}
+						
 	ptr = ((unsigned char *)(marray->data)) + offset * elemSize;
 
 	/* Box and return the array element */
@@ -3175,7 +3176,7 @@ void _IL_Array_Set_Objectiii(ILExecThread *thread, ILObject *thisObj,
 										"Arg_InvalidArrayIndex");
 				return;
 			}
-			offset = index * marray->bounds[1].multiplier;
+			offset += index * marray->bounds[1].multiplier;
 			index = index3 - marray->bounds[2].lower;
 			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[2].size)))
 			{

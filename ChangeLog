@@ -3,6 +3,9 @@
 	
 	* engine/lib_type.c: Fix minor bug in Type.ToString() for arrays
 
+	* engine/lib_array.c: Fix bug in MArray set_iii and get_iii to 
+	compute the right offset.
+
 2003-07-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_array.c, engine/lookup.c, engine/verify_ptr.c,

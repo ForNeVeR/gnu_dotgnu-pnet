@@ -451,7 +451,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						{
 							transform = new Matrix();
 						}
-						return transform;
+						// return a copy instead of the original
+						return new Matrix(transform);
 					}
 				}
 				set
@@ -464,7 +465,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						}
 						else
 						{
-							transform = value;
+							// Copy the given Matric, do not work on it directly
+							transform = new Matrix(value);
 						}
 					}
 				}
@@ -3185,7 +3187,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Multiply the transformation matrix by a specific amount.
 	public void MultiplyTransform(Matrix matrix)
 			{
-				Transform.Multiply(matrix);
+                                // Do not use the property Transform directly, because Transform should return a Copy
+                                transform = new Matrix(Transform);
+				transform.Multiply(matrix);
 				if(transform.IsIdentity)
 				{
 					transform = null;
@@ -3193,7 +3197,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void MultiplyTransform(Matrix matrix, MatrixOrder order)
 			{
-				Transform.Multiply(matrix, order);
+                                // Do not use the property Transform directly, because Transform should return a Copy
+                                transform = new Matrix(Transform);
+				transform.Multiply(matrix, order);
 				if(transform.IsIdentity)
 				{
 					transform = null;
@@ -3245,7 +3251,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Apply a rotation to the transformation matrix.
 	public void RotateTransform(float angle)
 			{
-				Transform.Rotate(angle);
+                                // Do not use the property Transform directly, because Transform should return a Copy
+                                transform = new Matrix(Transform);
+				transform.Rotate(angle);
 				if(transform.IsIdentity)
 				{
 					transform = null;
@@ -3253,7 +3261,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void RotateTransform(float angle, MatrixOrder order)
 			{
-				Transform.Rotate(angle, order);
+                                // Do not use the property Transform directly, because Transform should return a Copy
+                                transform = new Matrix(Transform);
+				transform.Rotate(angle, order);
 				if(transform.IsIdentity)
 				{
 					transform = null;
@@ -3272,7 +3282,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Apply a scaling factor to the transformation matrix.
 	public void ScaleTransform(float sx, float sy)
 			{
-				Transform.Scale(sx, sy);
+                                // Do not use the property Transform directly, because Transform should return a Copy
+                                transform = new Matrix(Transform);
+				transform.Scale(sx, sy);
 				if(transform.IsIdentity)
 				{
 					transform = null;
@@ -3280,7 +3292,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void ScaleTransform(float sx, float sy, MatrixOrder order)
 			{
-				Transform.Scale(sx, sy, order);
+                                // Do not use the property Transform directly, because Transform should return a Copy
+                                transform = new Matrix(Transform);
+				transform.Scale(sx, sy, order);
 				if(transform.IsIdentity)
 				{
 					transform = null;
@@ -3872,7 +3886,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Apply a translation to the transformation matrix.
 	public void TranslateTransform(float dx, float dy)
 			{
-				Transform.Translate(dx, dy);
+                                // Do not use the property Transform directly, because Transform should return a Copy
+                                transform = new Matrix(Transform);
+				transform.Translate(dx, dy);
 				if(transform.IsIdentity)
 				{
 					transform = null;
@@ -3880,7 +3896,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void TranslateTransform(float dx, float dy, MatrixOrder order)
 			{
-				Transform.Translate(dx, dy, order);
+                                // Do not use the property Transform directly, because Transform should return a Copy
+                                transform = new Matrix(Transform);
+				transform.Translate(dx, dy, order);
 				if(transform.IsIdentity)
 				{
 					transform = null;

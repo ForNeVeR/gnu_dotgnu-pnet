@@ -488,7 +488,7 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 	public static DateTime operator-(DateTime d, TimeSpan t)
 			{ return new DateTime(d.value__ - t.value__); }
 	public static TimeSpan operator-(DateTime d1, DateTime d2)
-			{ return new TimeSpan(d1.value__ + d2.value__); }
+			{ return new TimeSpan(d1.value__ - d2.value__); }
 
 	// Named operators.
 	public DateTime Add(TimeSpan t)

@@ -1,3 +1,17 @@
+
+2003-06-22  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/System.build, System.Xml/Xml.build, compat/compat.build
+	csunit/csunit.build, csupport/csupport.build, runtime/runtime.build
+	samples/samples.build, JScript/JScript.build, Basic/Basic.build,
+	System.Net.IrDA/IrDA.build, DotGNU.SSL/SSL.build, 
+	System.Drawing/System.Drawing.build, 
+	System.Drawing.Xsharp/System.Drawing.Xsharp.build,
+	System.Windows.Forms/Forms.build,
+	System.Drawing.Win32/System.Drawing.Win32.build: Add the 
+	"-flatin1-charset" parameter to speed up compilation of ASCII encoded
+	source files.
+
 2003-06-21  Neil Cawse  <neilc@geotab.ca>
 
 	* System.Drawing.Win32/DrawingBrush.cs,

@@ -828,6 +828,21 @@ VMCASE(COP_CALL_INTERFACE):
 	if(tempptr)
 	{
 		/* Locate the method to be called */
+	#ifdef IL_USE_IMTS
+		methodToCall = GetObjectClassPrivate(tempptr)
+			->imt[CVM_ARG_DWIDE2_SMALL];
+		if(!methodToCall)
+		{
+			methodToCall = CVM_ARG_DWIDE_PTR_SMALL(ILMethod *);
+			methodToCall = _ILLookupInterfaceMethod
+				(GetObjectClassPrivate(tempptr),
+				 methodToCall->member.owner, methodToCall->index);
+			if(!methodToCall)
+			{
+				MISSING_METHOD_EXCEPTION();
+			}
+		}
+	#else
 		methodToCall = _ILLookupInterfaceMethod
 			(GetObjectClassPrivate(tempptr), CVM_ARG_DWIDE_PTR_SMALL(ILClass *),
 			 CVM_ARG_DWIDE2_SMALL);
@@ -835,6 +850,7 @@ VMCASE(COP_CALL_INTERFACE):
 		{
 			MISSING_METHOD_EXCEPTION();
 		}
+	#endif
 
 		/* Has the method already been converted? */
 		if(methodToCall->userData)
@@ -1353,6 +1369,21 @@ case COP_CALL_INTERFACE:
 	if(tempptr)
 	{
 		/* Locate the method to be called */
+	#ifdef IL_USE_IMTS
+		methodToCall = GetObjectClassPrivate(tempptr)
+			->imt[CVM_ARG_DWIDE2_LARGE];
+		if(!methodToCall)
+		{
+			methodToCall = CVM_ARG_DWIDE_PTR_LARGE(ILMethod *);
+			methodToCall = _ILLookupInterfaceMethod
+				(GetObjectClassPrivate(tempptr),
+				 methodToCall->member.owner, methodToCall->index);
+			if(!methodToCall)
+			{
+				MISSING_METHOD_EXCEPTION();
+			}
+		}
+	#else
 		methodToCall = _ILLookupInterfaceMethod
 			(GetObjectClassPrivate(tempptr), CVM_ARG_DWIDE_PTR_LARGE(ILClass *),
 			 CVM_ARG_DWIDE2_LARGE);
@@ -1360,6 +1391,7 @@ case COP_CALL_INTERFACE:
 		{
 			MISSING_METHOD_EXCEPTION();
 		}
+	#endif
 
 		/* Copy the state back into the thread object */
 		COPY_STATE_TO_THREAD();
@@ -1547,6 +1579,20 @@ VMCASE(COP_PREFIX_TAIL_CALLINTF):
 	if(tempptr)
 	{
 		/* Locate the method to be called */
+	#ifdef IL_USE_IMTS
+		methodToCall = GetObjectClassPrivate(tempptr)->imt[CVMP_ARG_WORD2];
+		if(!methodToCall)
+		{
+			methodToCall = CVMP_ARG_WORD2_PTR(ILMethod *);
+			methodToCall = _ILLookupInterfaceMethod
+				(GetObjectClassPrivate(tempptr),
+				 methodToCall->member.owner, methodToCall->index);
+			if(!methodToCall)
+			{
+				MISSING_METHOD_EXCEPTION();
+			}
+		}
+	#else
 		methodToCall = _ILLookupInterfaceMethod
 			(GetObjectClassPrivate(tempptr), CVMP_ARG_WORD2_PTR(ILClass *),
 			 CVMP_ARG_WORD2);
@@ -1554,6 +1600,7 @@ VMCASE(COP_PREFIX_TAIL_CALLINTF):
 		{
 			MISSING_METHOD_EXCEPTION();
 		}
+	#endif
 		goto performTailCall;
 	}
 	else

@@ -202,21 +202,47 @@ static void CVMCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 								   ILEngineStackItem *returnItem,
 								   ILMethod *methodInfo)
 {
-	void *ptr = ILMethod_Owner(methodInfo);
 	ILUInt32 argSize = ComputeStackSize(coder, info->args, info->numBaseArgs);
 	if(info->hasParamArray)
 	{
 		++argSize;
 	}
-	if(info->tailCall)
+#ifdef IL_USE_IMTS
 	{
-		CVMP_OUT_WORD2_PTR(COP_PREFIX_TAIL_CALLINTF, argSize,
-						   methodInfo->index, ptr);
+		ILUInt32 index = methodInfo->index;
+		ILClassPrivate *classPrivate;
+		classPrivate = (ILClassPrivate *)(methodInfo->member.owner->userData);
+		if(classPrivate)
+		{
+			index += classPrivate->imtBase;
+		}
+		index %= IL_IMT_SIZE;
+		if(info->tailCall)
+		{
+			CVMP_OUT_WORD2_PTR(COP_PREFIX_TAIL_CALLINTF, argSize,
+							   index, methodInfo);
+		}
+		else
+		{
+			CVM_OUT_DWIDE_PTR(COP_CALL_INTERFACE, argSize,
+							  index, methodInfo);
+		}
 	}
-	else
+#else
 	{
-		CVM_OUT_DWIDE_PTR(COP_CALL_INTERFACE, argSize, methodInfo->index, ptr);
+		void *ptr = ILMethod_Owner(methodInfo);
+		if(info->tailCall)
+		{
+			CVMP_OUT_WORD2_PTR(COP_PREFIX_TAIL_CALLINTF, argSize,
+							   methodInfo->index, ptr);
+		}
+		else
+		{
+			CVM_OUT_DWIDE_PTR(COP_CALL_INTERFACE, argSize,
+							  methodInfo->index, ptr);
+		}
 	}
+#endif
 	AdjustForCall(coder, info, returnItem);
 }
 

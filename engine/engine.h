@@ -53,6 +53,13 @@ extern	"C" {
 #endif
 
 /*
+ * Determine if we should use interface method tables.
+ */
+#ifndef IL_CONFIG_REDUCE_CODE
+	#define	IL_USE_IMTS	1
+#endif
+
+/*
  * Structure that keeps track of a loaded external module.
  */
 typedef struct _tagILLoadedModule ILLoadedModule;
@@ -165,6 +172,13 @@ struct _tagILExecProcess
 	/* Size of the global thread-static allocation */
 	ILUInt32			numThreadStaticSlots;
 
+#ifdef IL_USE_IMTS
+
+	/* Last-allocated base identifier for interface method tables */
+	ILUInt32			imtBase;
+
+#endif
+
 };
 
 /*
@@ -250,6 +264,13 @@ struct _tagILImplPrivate
 #define	ILImplPrivate_Table(priv)	((ILUInt16 *)((priv) + 1))
 
 /*
+ * Define the size of the interface method table.
+ */
+#ifdef	IL_USE_IMTS
+#define	IL_IMT_SIZE		32
+#endif
+
+/*
  * Private information that is associated with a class.
  */
 typedef struct _tagILClassPrivate ILClassPrivate;
@@ -270,6 +291,10 @@ struct _tagILClassPrivate
 	ILObject       *clrType;			/* Associated CLR type object */
 	ILObject       *staticData;			/* Static data area object */
 	ILImplPrivate  *implements;			/* Interface implementation records */
+#ifdef IL_USE_IMTS
+	ILUInt32		imtBase;			/* Base for IMT identifiers */
+	ILMethod	   *imt[IL_IMT_SIZE];	/* Interface method table */
+#endif
 
 };
 

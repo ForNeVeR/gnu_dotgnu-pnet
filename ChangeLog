@@ -10,6 +10,11 @@
 	* engine/cvm.c, engine/cvm_config.h: perform manual register
 	assignment for PPC (doubles the PNetMark).
 
+	* engine/cvm_call.c, engine/cvm_dasm.c, engine/cvmc_call.c,
+	engine/engine.h, engine/layout.c, engine/process.c: change the
+	interface dispatch logic to use IMT's like IBM's RVM, instead
+	of the itable's approach we used to have.
+
 2003-07-12  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeAddInterface,

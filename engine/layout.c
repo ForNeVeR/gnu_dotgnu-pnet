@@ -425,6 +425,122 @@ static int ComputeInterfaceTable(ILClass *info, ILClass *interface)
 	return 1;
 }
 
+#ifdef IL_USE_IMTS
+
+/*
+ * Build an "Interface Method Table" (IMT) for a particular class, from
+ * the interface information in that class.  The mechanism is described
+ * in the following paper by IBM:
+ *
+ * "Efficient Implementation of Java Interfaces: Invokeinterface Considered
+ * Harmless", Bowen Alpern, Anthony Cocchi, Stephen Fink, David Grove,
+ * and Derek Lieber.  ACM Conference on Object-Oriented Programming, Systems,
+ * Languages, and Applications (OOPSLA), Tampa, FL, USA, Oct 14-18, 2001.
+ *
+ * http://www.research.ibm.com/people/d/dgrove/papers/oopsla01.pdf
+ *
+ * Each interface method in the system is assigned a unique identifier.
+ * The identifier is used to hash into a fixed-sized table of method entry
+ * points, similar to a vtable.  In most cases, the hashed position will
+ * be the right position.
+ *
+ * We modify the IMT conflict resolution mechanism slightly.  IBM's RVM
+ * system generates special conflict resolution stubs for interface methods
+ * that hash to the same IMT position.  We store NULL at any position where
+ * there is a conflict and bail out to the traditional lookup algorithm.
+ * This is necessary because we convert methods one at a time, instead of
+ * class at a time like RVM does.
+ */
+static void BuildIMT(ILClass *info, ILClassPrivate *classPrivate)
+{
+	ILExecThread *thread;
+	ILExecProcess *process;
+	ILImplPrivate *impl;
+	ILClassPrivate *implPrivate;
+	ILUInt32 posn, size;
+	ILUInt32 vtableIndex;
+	ILUInt32 imtIndex;
+
+	/* Find the process that owns the class */
+	thread = ILExecThreadCurrent();
+	if(!thread)
+	{
+		return;
+	}
+	process = thread->process;
+
+	/* Is this class itself an interface? */
+	if(ILClass_IsInterface(info))
+	{
+		/* Allocate the base identifier for the interface.  We must do
+		   this here in case an interface is referenced by a "callvirt"
+		   instruction before any of the classes that implement it are
+		   laid out */
+		if(!(classPrivate->imtBase))
+		{
+			size = (ILUInt32)(classPrivate->vtableSize);
+			classPrivate->imtBase = process->imtBase;
+			process->imtBase += size;
+		}
+		return;
+	}
+
+	/* Process the implementation records that are attached to this class */
+	impl = classPrivate->implements;
+	while(impl != 0)
+	{
+		implPrivate = (ILClassPrivate *)(impl->interface->userData);
+		if(implPrivate)
+		{
+			/* Allocate a base identifer for the interface if necessary.
+			   This will probably never be used because interfaces are
+			   typically laid out before their implementing classes, and
+			   the allocation above will catch us.  But let's be paranoid
+			   and allocate the base identifier here anyway, just in case */
+			size = (ILUInt32)(implPrivate->vtableSize);
+			if(!(implPrivate->imtBase))
+			{
+				implPrivate->imtBase = process->imtBase;
+				process->imtBase += size;
+			}
+
+			/* Process the members of this interface */
+			for(posn = 0; posn < size; ++posn)
+			{
+				imtIndex = (implPrivate->imtBase + posn) % IL_IMT_SIZE;
+				vtableIndex = (ILImplPrivate_Table(impl))[posn];
+				if(vtableIndex != (ILUInt32)(ILUInt16)0xFFFF)
+				{
+					if(!(classPrivate->imt[imtIndex]))
+					{
+						/* No conflict at this table position */
+						classPrivate->imt[imtIndex] =
+							classPrivate->vtable[vtableIndex];
+					}
+					else
+					{
+						/* We have encountered a conflict in the table */
+						classPrivate->imt[imtIndex] =
+							(ILMethod *)(ILNativeInt)(-1);
+					}
+				}
+			}
+		}
+		impl = impl->next;
+	}
+
+	/* Clear positions in the table that indicate conflicts */
+	for(posn = 0; posn < IL_IMT_SIZE; ++posn)
+	{
+		if(classPrivate->imt[posn] == (ILMethod *)(ILNativeInt)(-1))
+		{
+			classPrivate->imt[posn] = 0;
+		}
+	}
+}
+
+#endif /* IL_USE_IMTS */
+
 /*
  * Lay out a particular class.  Returns zero if there
  * is something wrong with the class definition.
@@ -871,6 +987,11 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	classPrivate->managedInstance = layout->managedInstance;
 	classPrivate->managedStatic = layout->managedStatic;
 	layout->vtable = vtable;
+
+#ifdef IL_USE_IMTS
+	/* Build the interface method table for this class */
+	BuildIMT(info, classPrivate);
+#endif
 
 	/* Done */
 	return 1;

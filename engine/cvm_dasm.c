@@ -21,7 +21,7 @@
 #ifndef IL_WITHOUT_TOOLS
 
 #include "il_dumpasm.h"
-#include "engine.h"
+#include "engine_private.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -776,10 +776,17 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 
 		case CVM_OPER_CALL_INTERFACE:
 		{
+		#ifdef IL_USE_IMTS
+			method = (ILMethod *)CVMReadPointer(pc + 3);
+			ILDumpClassName(stream, ILProgramItem_Image(currMethod),
+							ILMethod_Owner(method), 0);
+			fprintf(stream, ", %d, %d", (int)(pc[1]), method->index);
+		#else
 			classInfo = (ILClass *)CVMReadPointer(pc + 3);
 			ILDumpClassName(stream, ILProgramItem_Image(currMethod),
 							classInfo, 0);
 			fprintf(stream, ", %d, %d", (int)(pc[1]), (int)(pc[2]));
+		#endif
 			size = 3 + sizeof(void *);
 		}
 		break;
@@ -870,12 +877,21 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 
 				case CVM_OPER_CALL_INTERFACE:
 				{
+				#ifdef IL_USE_IMTS
+					method = (ILMethod *)CVMReadPointer(pc + 10);
+					ILDumpClassName(stream, ILProgramItem_Image(currMethod),
+									ILMethod_Owner(method), 0);
+					fprintf(stream, ", %lu, %lu",
+							(unsigned long)IL_READ_UINT32(pc + 2),
+							(unsigned long)(method->index));
+				#else
 					classInfo = (ILClass *)CVMReadPointer(pc + 10);
 					ILDumpClassName(stream, ILProgramItem_Image(currMethod),
 									classInfo, 0);
 					fprintf(stream, ", %lu, %lu",
 							(unsigned long)IL_READ_UINT32(pc + 2),
 							(unsigned long)IL_READ_UINT32(pc + 6));
+				#endif
 					size = 10 + sizeof(void *);
 				}
 				break;
@@ -993,12 +1009,21 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 
 				case CVM_OPER_TAIL_INTERFACE:
 				{
+				#ifdef IL_USE_IMTS
+					method = (ILMethod *)CVMReadPointer(pc + 10);
+					fprintf(stream, "%lu, %lu, ",
+							(unsigned long)(IL_READ_UINT32(pc + 2)),
+							(unsigned long)(method->index));
+					ILDumpClassName(stream, ILProgramItem_Image(currMethod),
+									ILMethod_Owner(method), 0);
+				#else
 					classInfo = (ILClass *)CVMReadPointer(pc + 10);
 					fprintf(stream, "%lu, %lu, ",
 							(unsigned long)(IL_READ_UINT32(pc + 2)),
 							(unsigned long)(IL_READ_UINT32(pc + 6)));
 					ILDumpClassName(stream, ILProgramItem_Image(currMethod),
 									classInfo, 0);
+				#endif
 					size = 10 + sizeof(void *);
 				}
 				break;

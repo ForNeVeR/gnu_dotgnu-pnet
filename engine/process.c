@@ -83,6 +83,9 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->randomLastTime = 0;
 	process->randomCount = 0;
 	process->numThreadStaticSlots = 0;
+#ifdef IL_USE_IMTS
+	process->imtBase = 1;
+#endif
 
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)

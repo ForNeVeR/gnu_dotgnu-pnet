@@ -14,6 +14,9 @@
 	ilnative/Makefile.am, tests/Makefile.am: modify sources and link
 	lines where necessary to accomodate the new libffi.
 
+	* Makefile.am: make sure that libffi and libgc are cleaned up
+	correctly when "make clean" and "make distclean" are used.
+
 2002-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c: don't report "unresolved type reference"

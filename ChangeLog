@@ -15,6 +15,10 @@
 	implement Gregorian variant calendars such as Japanese, Korean, etc;
 	stub out the Hijri calendar implementation.
 
+	* runtime/System/Globalization/StringInfo.cs,
+	runtime/System/Globalization/TextElementEnumerator.cs:
+	add "StringInfo" and "TextElementEnumerator".
+
 2003-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

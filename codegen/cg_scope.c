@@ -526,16 +526,21 @@ int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 	/* Create a new scope to hold the "using" context for the type.
 	   We must do this because the global "using" context will be
 	   cleared at the end of the parse, but we need the information
-	   it contains after the parse */
-	usingScope = ILScopeCreate(scope->info, scope);
+	   it contains after the parse . The attachScope contains the
+	   alias information to which the namespaceref scopes are attached
+	   by the following code.*/
+	if(attachScope)
+	{
+		usingScope=attachScope; /* reuse the attachScope for ->using */
+		usingScope->parent=scope; /* attatch the attatchScope under scope */
+	}
+	else
+	{
+		usingScope = ILScopeCreate(scope->info, scope);
+	}
 	usingScope->using = scope->using;
 	usingScope->lookup = UsingScope_Lookup;
 	
-	if(attachScope)
-	{
-		attachScope->parent=usingScope;
-		usingScope=attachScope; /* insert the scope under usingScope */
-	}
 
 	/* Create a scope to hold the type itself */
 	typeScope = ILScopeCreate(scope->info, usingScope);

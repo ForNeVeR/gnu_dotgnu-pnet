@@ -26,6 +26,9 @@
 	* cscc/csharp/cs_grammar.y: Inherit the local scope to namespaces declared
 	inside a compilation unit.
 	
+	* codegen/cg_scope.c: Fix circularity bug in resolving namespaces by
+	merging the using namespace and using alias scopes into a single scope.
+	
 2002-11-15  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_lvalue.tc, codegen/cg_scope.c, codegen/cg_scope.h,

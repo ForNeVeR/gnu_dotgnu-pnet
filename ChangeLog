@@ -1,5 +1,10 @@
 2004-06-04  Klaus Treichel  <ktreichel@web.de>
 
+	* nunit20/util/nunit.util.build: move reference to nunit.framework.dll
+	to the top due to compiling problems in some cases.
+	
+2004-06-04  Klaus Treichel  <ktreichel@web.de>
+
 	* class/System.Messaging/System.Messaging.build: add reference to
 	System.Windows.Forms.dll needed for System.Messaging.Design.
 

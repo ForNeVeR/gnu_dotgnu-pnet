@@ -20,10 +20,10 @@
 			</resources>
 
 			<references>
+				<file name="../framework/nunit.framework.dll"/>
 				<file name="System.dll"/>
 				<file name="System.Drawing.dll"/>
 				<file name="System.Windows.Forms.dll"/>
-				<file name="../framework/nunit.framework.dll"/>
 				<file name="../core/nunit.core.dll"/>
 			</references>
 

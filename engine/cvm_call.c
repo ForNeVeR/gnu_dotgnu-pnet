@@ -1434,6 +1434,7 @@ VMCASE(COP_PREFIX_TAIL_CALL):
 	/* Retrieve the target method */
 	methodToCall = CVM_ARG_TAIL_METHOD;
 
+performTailCall:
 	/* Convert the method if necessary */
 	if(methodToCall->userData)
 	{
@@ -1464,6 +1465,103 @@ VMCASE(COP_PREFIX_TAIL_CALL):
 	method = methodToCall;
 }
 VMBREAK(COP_PREFIX_TAIL_CALL);
+
+/**
+ * <opcode name="tail_calli" group="Call management instructions">
+ *   <operation>Call a method using indirect tail call semantics</operation>
+ *
+ *   <format>prefix<fsep/>tail_calli</format>
+ *   <dformat>{tail_calli}</dformat>
+ *
+ *   <form name="tail_calli" code="COP_PREFIX_TAIL_CALLI"/>
+ *
+ *   <description>This instruction is identical to <i>calli</i>, except
+ *   that it performs a tail-optimized call.</description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_TAIL_CALLI):
+{
+	/* Retrieve the target method */
+	methodToCall = (ILMethod *)(stacktop[-1].ptrValue);
+	--stacktop;
+	if(methodToCall)
+	{
+		goto performTailCall;
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
+}
+VMBREAK(COP_PREFIX_TAIL_CALLI);
+
+/**
+ * <opcode name="tail_callvirt" group="Call management instructions">
+ *   <operation>Call a virtual method using tail call semantics</operation>
+ *
+ *   <format>prefix<fsep/>tail_callvirt<fsep/>N[1]<fsep/>M[1]</format>
+ *   <dformat>{tail_callvirt}<fsep/>N<fsep/>M</dformat>
+ *
+ *   <form name="tail_callvirt" code="COP_PREFIX_TAIL_CALLVIRT"/>
+ *
+ *   <description>The <i>tail_callvirt</i> instruction is identical
+ *   to <i>call_virtual</i>, except that it uses tail call semantics.
+ *   </description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_TAIL_CALLVIRT):
+{
+	/* Call a virtual method */
+	tempptr = stacktop[-((ILInt32)CVMP_ARG_WORD)].ptrValue;
+	if(tempptr)
+	{
+		/* Locate the method to be called */
+		methodToCall = (GetObjectClassPrivate(tempptr))->vtable[CVMP_ARG_WORD2];
+		goto performTailCall;
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
+}
+VMBREAK(COP_PREFIX_TAIL_CALLVIRT);
+
+/**
+ * <opcode name="tail_callintf" group="Call management instructions">
+ *   <operation>Call an interface method using tail call semantics</operation>
+ *
+ *   <format>prefix<fsep/>tail_callintf<fsep/>N[1]<fsep/>M[1]<fsep/>cptr</format>
+ *   <dformat>{tail_callintf}<fsep/>N<fsep/>M<fsep/>cptr</dformat>
+ *
+ *   <form name="tail_callintf" code="COP_PREFIX_TAIL_CALLINTF"/>
+ *
+ *   <description>The <i>tail_callintf</i> instruction is identical
+ *   to <i>call_interface</i>, except that it uses tail call semantics.
+ *   </description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_TAIL_CALLINTF):
+{
+	/* Call an interface method */
+	tempptr = stacktop[-((ILInt32)CVMP_ARG_WORD)].ptrValue;
+	if(tempptr)
+	{
+		/* Locate the method to be called */
+		methodToCall = _ILLookupInterfaceMethod
+			(GetObjectClassPrivate(tempptr), CVMP_ARG_WORD2_PTR(ILClass *),
+			 CVMP_ARG_WORD2);
+		if(!methodToCall)
+		{
+			MISSING_METHOD_EXCEPTION();
+		}
+		goto performTailCall;
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
+}
+VMBREAK(COP_PREFIX_TAIL_CALLINTF);
 
 /**
  * <opcode name="ldftn" group="Call management instructions">

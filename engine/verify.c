@@ -637,6 +637,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	ILException *exceptions;
 	ILException *exception;
 	int hasRethrow;
+	int tailCall = 0;
 #ifdef IL_CONFIG_DEBUG_LINES
 	int haveDebug = ILDebugPresent(ILProgramItem_Image(method));
 #else

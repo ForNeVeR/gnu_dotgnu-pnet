@@ -173,7 +173,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 						      ILUInt32 stackSize, ILType *signature,
 						      ILMethod *method, int unsafeAllowed,
 							  int suppressThis, int indirectCall,
-							  ILCoderMethodInfo *callInfo)
+							  ILCoderMethodInfo *callInfo, int tailCall)
 {
 	ILClass *owner = (method ? ILMethod_Owner(method) : 0);
 	ILUInt32 numParams;
@@ -569,6 +569,11 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 				{
 					return -1;
 				}
+				if(tailCall && !unsafeAllowed)
+				{
+					/* Cannot use managed pointers in tail calls */
+					return -1;
+				}
 			}
 			break;
 
@@ -618,6 +623,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 	callInfo->numBaseArgs = numParams;
 	callInfo->numVarArgs = totalParams - numParams;
 	callInfo->hasParamArray = 0;
+	callInfo->tailCall = tailCall;
 
 #ifdef IL_CONFIG_VARARGS
 	/* Convert the vararg parameters into an "Object[]" array */
@@ -1041,7 +1047,9 @@ case IL_OP_CALL:
 		{
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
-									   unsafeAllowed, 0, 0, &callInfo);
+									   unsafeAllowed, 0, 0,
+									   &callInfo, tailCall);
+			tailCall = 0;
 			if(numParams >= 0)
 			{
 				returnType = ILTypeGetReturn(methodSignature);
@@ -1135,7 +1143,8 @@ case IL_OP_CALLI:
 		numParams = MatchSignature(coder, stack, stackSize,
 								   methodSignature, 0,
 								   unsafeAllowed, 0, 1,
-								   &callInfo);
+								   &callInfo, tailCall);
+		tailCall = 0;
 		if(numParams >= 0)
 		{
 			returnType = ILTypeGetReturn(methodSignature);
@@ -1217,7 +1226,8 @@ case IL_OP_CALLVIRT:
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 0, 0,
-									   &callInfo);
+									   &callInfo, tailCall);
+			tailCall = 0;
 			if(numParams >= 0)
 			{
 				returnType = ILTypeGetReturn(methodSignature);
@@ -1326,7 +1336,8 @@ case IL_OP_NEWOBJ:
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 1, 0,
-									   &callInfo);
+									   &callInfo, tailCall);
+			tailCall = 0;
 			if(numParams < 0)
 			{
 				VERIFY_TYPE_ERROR();
@@ -1366,7 +1377,8 @@ case IL_OP_NEWOBJ:
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 0, 0,
-									   &callInfo);
+									   &callInfo, tailCall);
+			tailCall = 0;
 			if(numParams < 0)
 			{
 				VERIFY_TYPE_ERROR();
@@ -1487,87 +1499,27 @@ break;
 
 case IL_OP_PREFIX + IL_PREFIX_OP_TAIL:
 {
-	/* Missing: (?)
-	 *
-	 * Correct CIL must not branch to the call instruction, but it is
-	 * permitted to branch to ret.
-	 *
-	 * The tail.call (or calli or callvirt) instruction cannot be used
-	 * to transfer control out of a try, filter, catch, or finally block.
-	 */
-
-	/* Confirm that the .tail precedes a call */
-	if ((pc[2] == IL_OP_CALL || pc[2] == IL_OP_CALLI || 
-		 pc[2] == IL_OP_CALLVIRT) && pc[7] == IL_OP_RET)
+	/* Need at least 8 bytes to make up the full tail call sequence */
+	if(len < 8)
 	{
-		/*  Initialization */
-		methodInfo = 0;
-		methodSignature = 0;
-		numParams = 0;
+		VERIFY_TRUNCATED();
+	}
 
-		/*  Get called method information as appropriate. */
-		switch(pc[2]) 
-		{
-		case IL_OP_CALL:
-			/* Test that only the target method's arguments are on the stack */
-			methodInfo = GetMethodToken(method, &pc[2], &methodSignature);
-			numParams = MatchSignature(coder, stack, stackSize,
-								   methodSignature, methodInfo,
-								   unsafeAllowed, 0, 0,
-								   &callInfo);
+	/* Check that the instruction after the tail call is not a branch target */
+	if(IsJumpTarget(jumpMask, offset + 2))
+	{
+		VERIFY_BRANCH_ERROR();
+	}
 
-		case IL_OP_CALLI:
-		case IL_OP_CALLVIRT:
-			/*  TODO - Implement CALLI and CALLVIRT tails */
-			break;
-		}
-
-		/*  A method exists and it's not synchronized? */
-		if (methodInfo && !ILMethod_IsSynchronized(methodInfo)) 
-		{
-			/*  Test that the stack contents are sane */
-			if (stackSize == numParams) 
-			{
-				if (unsafeAllowed) 
-				{
-					/*  Don't bother checking for pointers */
-					ILCoderTailCall(coder, method);
-				} 
-				else 
-				{
-					/*  Test for managed pointers on the stack - a no-no */
-					int i, mPtrFlag;
-					mPtrFlag = 0;
-					for (i=0; i<numParams; i++)
-					{
-						if (stack[i].engineType == ILEngineType_M ||
-								stack[i].engineType == ILEngineType_T)
-						{
-							mPtrFlag = 1;
-							break;
-						}
-					}
-
-					if (mPtrFlag) 
-					{
-						VERIFY_TYPE_ERROR();
-					} 
-					else 
-					{
-						ILCoderTailCall(coder, method);
-					}
-				}
-			}
-			else
-			{
-				VERIFY_STACK_ERROR();
-			}
-		}
-	} 
-	else 
+	/* Check that the instruction sequence is as expected */
+	if((pc[2] != IL_OP_CALL && pc[2] == IL_OP_CALLI &&
+	    pc[2] != IL_OP_CALLVIRT) || pc[7] != IL_OP_RET)
 	{
 		VERIFY_INSN_ERROR();
 	}
+
+	/* Set the tail call flag and then advance to the next instruction */
+	tailCall = 1;
 }
 break;
 

@@ -77,7 +77,6 @@ struct _tagILCVMCoder
 	int				labelOutOfMemory;
 	unsigned char  *switchStart;
 	ILMethod	   *currentMethod;
-	int				tailCallFlag;
 	int				debugEnabled;
 	int				flags;
 };
@@ -160,7 +159,6 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	coder->labelOutOfMemory = 0;
 	coder->switchStart = 0;
 	coder->currentMethod = 0;
-	coder->tailCallFlag = 0;
 	coder->debugEnabled = 0;
 	coder->flags = 0;
 	/* Call the interpreter to export the label tables for
@@ -425,7 +423,6 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_LoadFuncAddr,
 	CVMCoder_LoadVirtualAddr,
 	CVMCoder_LoadInterfaceAddr,
-	CVMCoder_TailCall,
 	CVMCoder_SetupExceptions,
 	CVMCoder_Throw,
 	CVMCoder_SetStackTrace,

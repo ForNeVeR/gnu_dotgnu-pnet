@@ -59,6 +59,7 @@ extern	"C" {
 #define	CVM_OPER_PACK_VARARGS		26
 #define	CVM_OPER_CUSTOM				27
 #define	CVM_OPER_TWO_UINT32			28
+#define	CVM_OPER_TAIL_INTERFACE		29
 
 /*
  * Table of CVM opcodes.  This must be kept in sync with "cvm.h".
@@ -459,6 +460,9 @@ static CVMOpcode const prefixOpcodes[96] = {
 	 * Prefixed call management opcodes.
 	 */
 	{"tail_call",		CVM_OPER_TAIL_CALL},
+	{"tail_calli",		CVM_OPER_NONE},
+	{"tail_callvirt",	CVM_OPER_TWO_UINT32},
+	{"tail_callintf",	CVM_OPER_TAIL_INTERFACE},
 	{"ldftn",			CVM_OPER_METHOD},
 	{"ldvirtftn",		CVM_OPER_UINT32},
 	{"ldinterfftn",		CVM_OPER_LD_INTERFACE},
@@ -580,9 +584,6 @@ static CVMOpcode const prefixOpcodes[96] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_5C",	CVM_OPER_NONE},
-	{"preserved_5D",	CVM_OPER_NONE},
-	{"preserved_5E",	CVM_OPER_NONE},
 	{"preserved_5F",	CVM_OPER_NONE},
 };
 
@@ -987,6 +988,18 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 							(unsigned long)(IL_READ_UINT32(pc + 2)),
 							(unsigned long)(IL_READ_UINT32(pc + 6)));
 					pc += 10;
+				}
+				break;
+
+				case CVM_OPER_TAIL_INTERFACE:
+				{
+					classInfo = (ILClass *)CVMReadPointer(pc + 10);
+					fprintf(stream, "%lu, %lu, ",
+							(unsigned long)(IL_READ_UINT32(pc + 2)),
+							(unsigned long)(IL_READ_UINT32(pc + 6)));
+					ILDumpClassName(stream, ILProgramItem_Image(currMethod),
+									classInfo, 0);
+					size = 10 + sizeof(void *);
 				}
 				break;
 

@@ -3,6 +3,12 @@
 
 	* engine/verify.c: enable the verifier's debug mode by default.
 
+	* engine/cvm.h, engine/cvm_call.c, engine/cvm_dasm.c,
+	engine/cvm_lengths.c, engine/cvmc.c, engine/cvmc_call.c,
+	engine/null_coder.c, engine/verify.c, engine/verify_call.c,
+	include/il_coder.h: re-implement tail calls in the verifier,
+	coder, and interpreter.
+
 2003-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/dynlib.c: put the MacOS X version of dynamic loading

@@ -414,6 +414,9 @@ unsigned char const _ILCVMLengths[512] = {
 	 * Prefixed call management opcodes.
 	 */
 	/* tail_call */			CVMP_LEN_PTR,
+	/* tail_calli */		CVMP_LEN_NONE,
+	/* tail_callvirt */		CVMP_LEN_WORD2,
+	/* tail_callintf */		CVMP_LEN_WORD2_PTR,
 	/* ldftn */				CVMP_LEN_PTR,
 	/* ldvirtftn */			CVMP_LEN_WORD,
 	/* ldinterfftn */		CVMP_LEN_WORD_PTR,
@@ -528,12 +531,13 @@ unsigned char const _ILCVMLengths[512] = {
 	/* thread_static */		CVMP_LEN_WORD,
 	
 	/*
+	 * Argument packing for native calls.
+	 */
+	/* waddr_native_n */	CVMP_LEN_WORD2,
+
+	/*
 	 * Reserved opcodes.
 	 */
-	/* preserved_5b */		CVMP_LEN_NONE,
-	/* preserved_5c */		CVMP_LEN_NONE,
-	/* preserved_5d */		CVMP_LEN_NONE,
-	/* preserved_5e */		CVMP_LEN_NONE,
 	/* preserved_5f */		CVMP_LEN_NONE,
 
 	/* preserved_60 */		CVMP_LEN_NONE,

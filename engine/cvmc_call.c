@@ -143,7 +143,7 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 								ILMethod *methodInfo)
 {
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 0);
-	if(((ILCVMCoder *)coder)->tailCallFlag)
+	if(info->tailCall)
 	{
 		CVMP_OUT_PTR(COP_PREFIX_TAIL_CALL, methodInfo);
 	}
@@ -152,16 +152,21 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		CVM_OUT_PTR(COP_CALL, methodInfo);
 	}
 	AdjustForCall(coder, info, returnItem);
-	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
 static void CVMCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 								  ILEngineStackItem *returnItem)
 {
-	CVM_OUT_NONE(COP_CALLI);
+	if(info->tailCall)
+	{
+		CVMP_OUT_NONE(COP_PREFIX_TAIL_CALLI);
+	}
+	else
+	{
+		CVM_OUT_NONE(COP_CALLI);
+	}
 	CVM_ADJUST(-1);	/* The function pointer was popped */
 	AdjustForCall(coder, info, returnItem);
-	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
 static void CVMCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
@@ -171,7 +176,6 @@ static void CVMCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	CVM_OUT_PTR(COP_CALL_CTOR, methodInfo);
 	AdjustForCall(coder, info, 0);
 	CVM_ADJUST(1);
-	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
 static void CVMCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
@@ -183,9 +187,15 @@ static void CVMCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		++argSize;
 	}
-	CVM_OUT_DWIDE(COP_CALL_VIRTUAL, argSize, methodInfo->index);
+	if(info->tailCall)
+	{
+		CVMP_OUT_WORD2(COP_PREFIX_TAIL_CALLVIRT, argSize, methodInfo->index);
+	}
+	else
+	{
+		CVM_OUT_DWIDE(COP_CALL_VIRTUAL, argSize, methodInfo->index);
+	}
 	AdjustForCall(coder, info, returnItem);
-	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
 static void CVMCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
@@ -198,17 +208,21 @@ static void CVMCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		++argSize;
 	}
-	CVM_OUT_DWIDE_PTR(COP_CALL_INTERFACE, argSize, methodInfo->index, ptr);
+	if(info->tailCall)
+	{
+		CVMP_OUT_WORD2_PTR(COP_PREFIX_TAIL_CALLINTF, argSize,
+						   methodInfo->index, ptr);
+	}
+	else
+	{
+		CVM_OUT_DWIDE_PTR(COP_CALL_INTERFACE, argSize, methodInfo->index, ptr);
+	}
 	AdjustForCall(coder, info, returnItem);
-	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
 static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType,
 								   ILMethod *methodInfo)
 {
-	/* Inline methods cannot be tail calls */
-	((ILCVMCoder *)coder)->tailCallFlag = 0;
-
 	/* Determine what to do for the inlineable method type */
 	switch(inlineType)
 	{
@@ -463,11 +477,6 @@ static void CVMCoder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 {
 	CVMP_OUT_WORD_PTR(COP_PREFIX_LDINTERFFTN, methodInfo->index,
 					  methodInfo->member.owner);
-}
-
-static void CVMCoder_TailCall(ILCoder *coder, ILMethod *methodInfo)
-{
-	((ILCVMCoder *)coder)->tailCallFlag = 1;
 }
 
 #endif	/* IL_CVMC_CODE */

@@ -38,6 +38,7 @@ namespace FormsTest
 		private TabPage tabPage23;
 		private TabPage tabPage24;
 		private TabPage tabPage25;
+		private TabPage tabPage26;
 		
 		// Tab1 Labels Test
 		private Label label;
@@ -219,7 +220,7 @@ namespace FormsTest
 		private ComboBox comboBox1, comboBox2, comboBox3, comboBox4, comboBox5, comboBox6, comboBox7;
 
 		private TreeView treeView1;
-		//private Label tv
+		private ImageList treeImageList;
 
 		private ListBox listBox1, listBox2;
 
@@ -287,7 +288,13 @@ namespace FormsTest
 		private float transformScaleY = 1F;
 		private float transformScaleYOffset = 0.03F;
 
-		//private PropertyGrid propertyGrid;
+		private PropertyGrid propertyGrid;
+
+		private Button messageBox1;
+		private Button messageBox2;
+		private Button messageBox3;
+		private Button messageBox4;
+
 		#endregion
 		
 		public static void Main(String[] args)
@@ -306,7 +313,14 @@ namespace FormsTest
 			tabControl1.Dock = DockStyle.Fill;
 			tabControl1.Multiline = true;
 			tabControl1.SizeMode = TabSizeMode.FillToRight;
+			tabControl1.Name = "Main Tab";
 			
+			tabPage19 = new TabPage();
+			tabPage19.Text = "PropertyGrid";
+			tabControl1.Controls.Add(tabPage19);
+			tabPage26 = new TabPage();
+			tabPage26.Text = "MessageBox";
+			tabControl1.Controls.Add(tabPage26);
 			tabPage17 = new TabPage();
 			tabPage17.Text = "DrawString";
 			tabControl1.Controls.Add(tabPage17);
@@ -337,9 +351,6 @@ namespace FormsTest
 			tabPage3 = new TabPage();
 			tabPage3.Text = "TextBox";
 			tabControl1.Controls.Add(tabPage3);
-			tabPage19 = new TabPage();
-			tabPage19.Text = "PropertyGrid";
-			tabControl1.Controls.Add(tabPage19);
 			tabPage18 = new TabPage();
 			tabPage18.Text = "Scrollbar";
 			tabControl1.Controls.Add(tabPage18);
@@ -413,6 +424,7 @@ namespace FormsTest
 			AddControlPaintTest2(tabPage23);
 			AddResXTest(tabPage24);
 			AddImageListTest(tabPage25);
+			AddMessageBoxTest(tabPage26);
 
 			ResumeLayout(false);
 		}
@@ -790,27 +802,27 @@ namespace FormsTest
 	
 		private void AddTextBoxTest(Control control)
 		{
-			textBox19 = new TextBox();
-			textBox3 = new TextBox();
-			textBox20 = new TextBox();
-			textBox18 = new TextBox();
-			textBox2 = new TextBox();
+			textBox = new TextBox();
 			textBox1 = new TextBox();
-			textBox6 = new TextBox();
-			textBox7 = new TextBox();
+			textBox2 = new TextBox();
+			textBox3 = new TextBox();
 			textBox4 = new TextBox();
 			textBox5 = new TextBox();
-			textBox10 = new TextBox();
+			textBox6 = new TextBox();
+			textBox7 = new TextBox();
 			textBox8 = new TextBox();
 			textBox9 = new TextBox();
-			textBox13 = new TextBox();
-			textBox12 = new TextBox();
+			textBox10 = new TextBox();
 			textBox11 = new TextBox();
-			textBox = new TextBox();
-			textBox17 = new TextBox();
-			textBox16 = new TextBox();
-			textBox15 = new TextBox();
+			textBox12 = new TextBox();
+			textBox13 = new TextBox();
 			textBox14 = new TextBox();
+			textBox15 = new TextBox();
+			textBox16 = new TextBox();
+			textBox17 = new TextBox();
+			textBox18 = new TextBox();
+			textBox19 = new TextBox();
+			textBox20 = new TextBox();
 			textBoxLinesButton = new Button();
 			textBoxTextButton = new Button();
 			textBoxSelectedTextButton = new Button();
@@ -819,55 +831,48 @@ namespace FormsTest
 			textBox19.Location = new Point(8, 0);
 			textBox19.Name = "textBox19";
 			textBox19.Size = new Size(450, 20);
-			textBox19.TabIndex = 19;
+			textBox19.TabIndex = 0;
 			textBox19.Text = "A normal textbox - MS Sans Serif : Dock=Top";
+
+			textBox.Location = new Point(8, 25);
+			textBox.Name = "textBox";
+			textBox.Size = new Size(450, 20);
+			textBox.TabIndex = 1;
+			textBox.Text = "A normal textbox - MS Sans Serif";
+
+			textBox1.Location = new Point(8, 45);
+			textBox1.Name = "textBox1";
+			textBox1.Size = new Size(450, 20);
+			textBox1.TabIndex = 2;
+			textBox1.Text = "A normal textbox - MS Sans Serif : TextAlign=Right";
+			textBox1.TextAlign = HorizontalAlignment.Right;
+
+			
+			textBox2.Location = new Point(8, 70);
+			textBox2.Name = "textBox2";
+			textBox2.Size = new Size(450, 20);
+			textBox2.TabIndex = 3;
+			textBox2.Text = "A normal textbox - MS Sans Serif : TextAlign=Center";
+			textBox2.TextAlign = HorizontalAlignment.Center;
 
 			textBox3.BorderStyle = BorderStyle.FixedSingle;
 			textBox3.Location = new Point(8, 95);
 			textBox3.Name = "textBox3";
 			textBox3.Size = new Size(450, 20);
-			textBox3.TabIndex = 3;
+			textBox3.TabIndex = 4;
 			textBox3.Text = "A normal textbox - MS Sans Serif : BorderStyle=FixedSingle";
-
-			textBox20.Enabled = false;
-			textBox20.Location = new Point(8, 390);
-			textBox20.Name = "textBox20";
-			textBox20.Size = new Size(450, 20);
-			textBox20.TabIndex = 20;
-			textBox20.Text = "A normal textbox - MS Sans Serif : Enabled=false";
-
-			textBox18.Dock = DockStyle.Bottom;
-			textBox18.Location = new Point(8, 518);
-			textBox18.Name = "textBox18";
-			textBox18.Size = new Size(450, 20);
-			textBox18.TabIndex = 18;
-			textBox18.Text = "A normal textbox - MS Sans Serif : Dock=Bottom";
-
-			textBox2.Location = new Point(8, 70);
-			textBox2.Name = "textBox2";
-			textBox2.Size = new Size(450, 20);
-			textBox2.TabIndex = 2;
-			textBox2.Text = "A normal textbox - MS Sans Serif : TextAlign=Center";
-			textBox2.TextAlign = HorizontalAlignment.Center;
-
-			textBox1.Location = new Point(8, 45);
-			textBox1.Name = "textBox1";
-			textBox1.Size = new Size(450, 20);
-			textBox1.TabIndex = 0;
-			textBox1.Text = "A normal textbox - MS Sans Serif : TextAlign=Right";
-			textBox1.TextAlign = HorizontalAlignment.Right;
 
 			textBox4.Location = new Point(8, 120);
 			textBox4.Multiline = true;
 			textBox4.Name = "textBox4";
 			textBox4.Size = new Size(450, 40);
-			textBox4.TabIndex = 4;
+			textBox4.TabIndex = 5;
 			textBox4.Text = "Multiline = true:\nOh give me a home\nWhere the buffalo roam\nAnd the deer and 45 (forty-five) antelope play\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day.\nHome, Home on the Range\nWhere the deer and the antelope play.\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day....";
 
 			textBox5.Location = new Point(8, 165);
 			textBox5.Name = "textBox5";
 			textBox5.Size = new Size(450, 21);
-			textBox5.TabIndex = 5;
+			textBox5.TabIndex = 6;
 			textBox5.Multiline = true;
 			textBox5.ScrollBars = ScrollBars.Both;
 			textBox5.WordWrap = false;
@@ -876,7 +881,7 @@ namespace FormsTest
 			textBox6.Location = new Point(8, 190);
 			textBox6.Name = "textBox6";
 			textBox6.Size = new Size(450, 40);
-			textBox6.TabIndex = 5;
+			textBox6.TabIndex = 7;
 			textBox6.Multiline = true;
 			textBox6.ScrollBars = ScrollBars.Both;
 			textBox6.WordWrap = false;
@@ -899,7 +904,7 @@ namespace FormsTest
 			textBox10.Location = new Point(8, 290);
 			textBox10.Name = "textBox10";
 			textBox10.Size = new Size(450, 20);
-			textBox10.TabIndex = 5;
+			textBox10.TabIndex = 10;
 			textBox10.Multiline = true;
 			textBox10.ScrollBars = ScrollBars.Both;
 			textBox10.WordWrap = false;
@@ -913,14 +918,6 @@ namespace FormsTest
 			textBox11.TabIndex = 11;
 			textBox11.Text = "ScrollBars=Vertical:";
 
-			textBox13.Font = new Font("Microsoft Sans Serif", 8.25F);
-			textBox13.Location = new Point(8, 365);
-			textBox13.Name = "textBox13";
-			textBox13.ReadOnly = true;
-			textBox13.Size = new Size(450, 20);
-			textBox13.TabIndex = 13;
-			textBox13.Text = "A normal textbox - MS Sans Serif : ReadOnly=true";
-
 			textBox12.Font = new Font("Microsoft Sans Serif", 8.25F);
 			textBox12.Location = new Point(8, 340);
 			textBox12.Name = "textBox12";
@@ -929,20 +926,35 @@ namespace FormsTest
 			textBox12.TabIndex = 12;
 			textBox12.Text = "A normal textbox - MS Sans Serif : PasswordChar=*";
 
+			textBox13.Font = new Font("Microsoft Sans Serif", 8.25F);
+			textBox13.Location = new Point(8, 365);
+			textBox13.Name = "textBox13";
+			textBox13.ReadOnly = true;
+			textBox13.Size = new Size(450, 20);
+			textBox13.TabIndex = 13;
+			textBox13.Text = "A normal textbox - MS Sans Serif : ReadOnly=true";
+
+			textBox20.Enabled = false;
+			textBox20.Location = new Point(8, 390);
+			textBox20.Name = "textBox20";
+			textBox20.Size = new Size(450, 20);
+			textBox20.TabIndex = 14;
+			textBox20.Text = "A normal textbox - MS Sans Serif : Enabled=false";
+
+			textBox14.Font = new Font("Microsoft Sans Serif", 8.25F);
+			textBox14.Location = new Point(8, 415);
+			textBox14.MaxLength = 50;
+			textBox14.Name = "textBox14";
+			textBox14.Size = new Size(450, 20);
+			textBox14.TabIndex = 15;
+			textBox14.Text = "A normal textbox - MS Sans Serif : MaxLength=50";
 			
-
-			textBox.Location = new Point(8, 25);
-			textBox.Name = "textBox";
-			textBox.Size = new Size(450, 20);
-			textBox.TabIndex = 1;
-			textBox.Text = "A normal textbox - MS Sans Serif";
-
-			textBox17.AcceptsTab = true;
-			textBox17.Location = new Point(8, 490);
-			textBox17.Name = "textBox17";
-			textBox17.Size = new Size(450, 20);
-			textBox17.TabIndex = 17;
-			textBox17.Text = "A normal textbox - MS Sans Serif : AllowTab=true";
+			textBox15.BackColor = Color.Red;
+			textBox15.Location = new Point(8, 440);
+			textBox15.Name = "textBox15";
+			textBox15.Size = new Size(450, 20);
+			textBox15.TabIndex = 16;
+			textBox15.Text = "A normal textbox - MS Sans Serif : BackColor=Red";
 
 			textBox16.Anchor = ((AnchorStyles)((((AnchorStyles.Top | AnchorStyles.Bottom)
 				| AnchorStyles.Left)
@@ -950,24 +962,23 @@ namespace FormsTest
 			textBox16.Location = new Point(8, 465);
 			textBox16.Name = "textBox16";
 			textBox16.Size = new Size(450, 20);
-			textBox16.TabIndex = 16;
+			textBox16.TabIndex = 17;
 			textBox16.Text = "A normal textbox - MS Sans Serif : Anchor=All";
 
-			textBox15.BackColor = Color.Red;
-			textBox15.Location = new Point(8, 440);
-			textBox15.Name = "textBox15";
-			textBox15.Size = new Size(450, 20);
-			textBox15.TabIndex = 15;
-			textBox15.Text = "A normal textbox - MS Sans Serif : BackColor=Red";
+			textBox17.AcceptsTab = true;
+			textBox17.Location = new Point(8, 490);
+			textBox17.Name = "textBox17";
+			textBox17.Size = new Size(450, 20);
+			textBox17.TabIndex = 18;
+			textBox17.Text = "A normal textbox - MS Sans Serif : AllowTab=true";
 
-			textBox14.Font = new Font("Microsoft Sans Serif", 8.25F);
-			textBox14.Location = new Point(8, 415);
-			textBox14.MaxLength = 50;
-			textBox14.Name = "textBox14";
-			textBox14.Size = new Size(450, 20);
-			textBox14.TabIndex = 14;
-			textBox14.Text = "A normal textbox - MS Sans Serif : MaxLength=50";
-
+			textBox18.Dock = DockStyle.Bottom;
+			textBox18.Location = new Point(8, 518);
+			textBox18.Name = "textBox18";
+			textBox18.Size = new Size(450, 20);
+			textBox18.TabIndex = 19;
+			textBox18.Text = "A normal textbox - MS Sans Serif : Dock=Bottom";
+			
 			textBoxLinesButton.Bounds = new Rectangle( 8, 510, 150, 30);
 			textBoxLinesButton.Text = "Lines[] for Multiline";
 			textBoxLinesButton.Click+=new EventHandler(textBoxLinesButton_Click);
@@ -2196,7 +2207,7 @@ namespace FormsTest
 			using (Pen bp = new Pen(Color.Black), rp = new Pen(Color.Red), gp = new Pen(Color.Green))
 			{
 				
-				string s = "Hello 1234 1&2345& 1&&23456 123 12 123&45";
+				string s = "Hello\r\n1234 1&2345& 1&&23456 123 12 123&45";
 				string s1 = s + s + s + s + s;
 				StringFormat sf = new StringFormat();
 				Font f = new Font("Arial", 6);
@@ -2325,6 +2336,13 @@ namespace FormsTest
 				g.DrawString(s1, f, rb, b, sf);
 				using (Pen p = new Pen(Color.Green))
 					g.DrawRectangle(p, b.X, b.Y, size.Width, size.Height);
+
+				sf = new StringFormat();
+				b = NextBounds(g, "Measure and Layout");
+				s1 = "Hello";
+				SizeF size1 = g.MeasureString(s1, f);
+				b.Size = new Size((int)size1.Width+1, (int)size1.Height+1);
+				g.DrawString(s1, f, rb, b, sf);
 			}
 		}
 
@@ -2457,7 +2475,7 @@ namespace FormsTest
 			textBoxImageFileName.Text = "new";
 			textBoxImageFileName.Bounds = r;
 			c.Paint += new PaintEventHandler(Image_Paint);
-			c.Controls.AddRange(new Control[] {buttonImageLoad24bpp, buttonImageLoad16bpp, buttonImageLoad8bpp, buttonImageLoad4bpp, buttonImageLoad1bpp, buttonImageConvert24bpp, buttonImageConvert16bpp, buttonImageConvert8bpp, buttonImageConvert4bpp, buttonImageConvert1bpp, labelImageWidth, labelImageHeight, textBoxImageWidth, textBoxImageHeight, labelImageFileName, textBoxImageFileName, buttonImageSave, buttonImageConvert15bpp, buttonImageLoad15bpp, buttonImageLoad32bppIcon});
+			c.Controls.AddRange(new Control[] {buttonImageLoad24bpp, buttonImageLoad16bpp, buttonImageLoad15bpp, buttonImageLoad8bpp, buttonImageLoad4bpp, buttonImageLoad1bpp, buttonImageConvert24bpp, buttonImageConvert16bpp, buttonImageConvert15bpp, buttonImageConvert8bpp, buttonImageConvert4bpp, buttonImageConvert1bpp, buttonImageSave, buttonImageLoad32bppIcon, labelImageWidth, textBoxImageWidth, labelImageHeight,  textBoxImageHeight, labelImageFileName, textBoxImageFileName});
 		}
 
 		
@@ -2536,7 +2554,7 @@ namespace FormsTest
 			r.MakeEmpty();
 			if (imageOld != null)
 				r = new Region(new Rectangle(10, 25, imageOld.Width, imageOld.Height));
-			imageOld = Image.FromFile(file);
+			imageOld = new Bitmap(this.GetType(), file);//Image.FromFile(file);
 			r.Union(new Rectangle(10, 25, imageOld.Width, imageOld.Height));
 			r.Union(new Rectangle(0,0, 400, 25));
 			textBoxImageWidth.Text = imageOld.Width.ToString();
@@ -2704,8 +2722,15 @@ namespace FormsTest
 
 		private void AddTreeViewTest(Control c)
 		{
+			treeImageList = new ImageList();
+			treeImageList.ColorDepth = ColorDepth.Depth24Bit;
+			treeImageList.Images.Add(new Icon(this.GetType(), "small_folder.ico"));
+			treeImageList.Images.Add(new Icon(this.GetType(), "small_text.ico"));
 			treeView1 = new TreeView();
 			treeView1.BeginUpdate();
+			treeView1.ImageList = treeImageList;
+			treeView1.ImageIndex = 0;
+			treeView1.SelectedImageIndex = 1;
 			treeView1.Nodes.Add("Node1");
 			treeView1.Nodes[0].Nodes.Add("Node11");
 			treeView1.Nodes[0].Nodes[0].Nodes.Add("Node111");
@@ -3019,7 +3044,6 @@ namespace FormsTest
 			
 		}
 
-
 		private void AddPropertyGridTest(Control c)
 		{
 			/*propertyGrid = new PropertyGrid();
@@ -3039,7 +3063,7 @@ namespace FormsTest
 			pictureBox1 = new PictureBox();
 			pictureBox1.BorderStyle = BorderStyle.Fixed3D;
 			pictureBox1.Bounds = new Rectangle(10,10,100,100);
-			pictureBox1.Image = Image.FromFile("test.bmp");
+			pictureBox1.Image = new Bitmap(this.GetType(),"test.bmp");
 			c.Controls.Add(pictureBox1);
 			pictureBox2 = new PictureBox();
 			pictureBox2.BorderStyle = BorderStyle.FixedSingle;
@@ -3175,6 +3199,7 @@ namespace FormsTest
 
 		}
 
+
 		private void AddControlPaintTest2(Control c)
 		{
 			c.Paint+=new PaintEventHandler(ControlPaintTest2_Paint);
@@ -3198,11 +3223,11 @@ namespace FormsTest
 
 				b = NextBoundsPaint(g, "DGrid - (1,1)");
 				ControlPaint.DrawGrid(g, b, new Size(2, 2), Color.Green);
-				b = NextBoundsPaint(g, "- (2,2)");
+				b = NextBoundsPaint(g, "- (10,10)");
 				ControlPaint.DrawGrid(g, b, new Size(10, 10), Color.Green);
 
 				b = NextBoundsPaint(g, "DImageDisabled");
-				ControlPaint.DrawImageDisabled(g, Image.FromFile("test.bmp"), b.X, b.Y, Color.Blue);
+				ControlPaint.DrawImageDisabled(g, new Bitmap(this.GetType(),"test.bmp"), b.X, b.Y, Color.Blue);
 
 				b = NextBoundsPaint(g, "DLockedFrame");
 				ControlPaint.DrawLockedFrame(g, b, true);
@@ -3312,6 +3337,49 @@ namespace FormsTest
 			return r;
 		}
 
+		private void AddMessageBoxTest(Control c)
+		{
+			messageBox1 = new Button();
+			messageBox2 = new Button();
+			messageBox3 = new Button();
+			messageBox4 = new Button();
+			messageBox1.SetBounds(10, 10, 120, 20);
+			messageBox1.Text = "Hello";
+			messageBox1.Click+=new EventHandler(messageBox1_Click);
+			messageBox2.SetBounds(10, 50, 120, 20);
+			messageBox2.Text = "OKCancelQuestion";
+			messageBox2.Click+=new EventHandler(messageBox2_Click);
+			messageBox3.SetBounds(10, 90, 120, 20);
+			messageBox3.Text = "YesNoCancel";
+			messageBox3.Click+=new EventHandler(messageBox3_Click);
+			messageBox4.SetBounds(10, 130, 120, 20);
+			messageBox4.Text = "OKInfo";
+			messageBox4.Click+=new EventHandler(messageBox4_Click);
+
+			c.Controls.AddRange(new Control[] {messageBox1, messageBox2, messageBox3, messageBox4});
+		}
+
+		private void messageBox1_Click(object sender, EventArgs e)
+		{
+			MessageBox.Show("Hello");
+		}
+
+		private void messageBox2_Click(object sender, EventArgs e)
+		{
+			MessageBox.Show("Hello","Caption", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, MessageBoxOptions.RightAlign);
+
+		}
+
+		private void messageBox3_Click(object sender, EventArgs e)
+		{
+			MessageBox.Show("Hello loooooooooooooooooooooooooooooooooooooooooong","Caption", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Error, MessageBoxDefaultButton.Button2);
+		}
+
+		private void messageBox4_Click(object sender, EventArgs e)
+		{
+			MessageBox.Show("Hello","Caption looooooooooooooooooooooooooooooooooooong", MessageBoxButtons.OK, MessageBoxIcon.Information);
+		}
+
 		private void AddResXTest(Control c)
 		{
 			int height = 400;
@@ -3402,10 +3470,7 @@ namespace FormsTest
 
 		private void buttonImageListWrite_Click(object sender, EventArgs e)
 		{
-			//imageList1.Images.Add(new Bitmap("test 1bpp.bmp"));
-			//imageList1.Images.Add(new Bitmap("test 4bpp.bmp"));
-			//imageList1.Images.Add(new Bitmap("test 8bpp.bmp"));
-			imageList1.Images.Add(new Bitmap("test.bmp"));
+			imageList1.Images.Add(new Bitmap(this.GetType(),"test.bmp"));
 			Invalidate(true);
 		}
 		private void buttonImageListRead_Click(object sender, EventArgs e)

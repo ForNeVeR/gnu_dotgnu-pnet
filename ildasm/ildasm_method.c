@@ -471,7 +471,7 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 		}
 
 		/* Dump the instruction based on its argument type */
-		argType = (info->args & ~IL_OPCODE_ARGS_UNSAFE);
+		argType = info->args;
 		putc('\t', outstream);
 		putc('\t', outstream);
 		fputs(info->name, outstream);
@@ -725,10 +725,6 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 			break;
 
 			default:	break;
-		}
-		if((info->args & IL_OPCODE_ARGS_UNSAFE) != 0)
-		{
-			fputs("\t\t// unsafe", outstream);
 		}
 		putc('\n', outstream);
 

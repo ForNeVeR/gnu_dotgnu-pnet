@@ -384,7 +384,6 @@ typedef struct
 #define	IL_OPCODE_ARGS_ANN_PHI		26
 #define	IL_OPCODE_ARGS_ANN_LIVE		27
 #define	IL_OPCODE_ARGS_ANN_ARG		28
-#define	IL_OPCODE_ARGS_UNSAFE		64
 
 /*
  * The opcode information tables.

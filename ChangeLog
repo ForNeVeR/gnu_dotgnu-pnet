@@ -13,6 +13,10 @@
 	include/il_types.h: add the "ILMethodResolveCallSite" function
 	and related support code.
 
+	* ildasm/ildasm_java.c, ildasm/ildasm_method.c, image/opcodes.c,
+	include/il_opcodes.h: remove the "IL_OPCODE_ARGS_UNSAFE" value,
+	because it is not strictly accurate.
+
 2002-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_except.c, engine/engine.h:

@@ -326,7 +326,7 @@ static int DumpJavaInstructions(ILImage *image, ILClass *classInfo,
 		}
 
 		/* Dump the instruction based on its argument type */
-		argType = (info->args & ~IL_OPCODE_ARGS_UNSAFE);
+		argType = info->args;
 		putc('\t', outstream);
 		putc('\t', outstream);
 		fputs(info->name, outstream);

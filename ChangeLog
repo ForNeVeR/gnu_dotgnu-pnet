@@ -1,3 +1,845 @@
+2002-05-04  Peter Minten  <silvernerd@users.sf.net>
+	* System.Xml/XmlWriter.cs: Created but not completed.
+
+2002-05-02  Charlie Carnow   <carnow@gmx.net>
+
+	* runtime/System/IO/Directory.cs: new class contributed by Abhaya Agarwal <abhayag@iitk.ac.in>
+		
+2002-05-02  Stephen Compall  <rushing@sigecom.net>
+
+      * System/Uri.cs: Completed IPv6 support, LocalPath property, GetLeftPart
+	method. Not sure on status of MakeRelative.
+
+	* resources/en_US/System/Arg.txt: new "Arg_UriPartial".
+
+2002-04-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/Other/CP57002.cs (GetChars): should add "shift", not subtract.
+
+	* runtime/System/IO/MemoryStream.cs, System/Uri.cs: fix semantic
+	errors.
+
+2002-04-29  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Net/IPAddress.cs: small syntax change for new arrays.
+
+	* System/Uri.cs: Canonicalize(), and CheckHostName(String) works except
+	for IPv6. Minor fix to ToString().
+
+	* resources/en_US/System/Arg.txt: "Arg_UriPathAbs".
+
+2002-04-28  Stephen Compall  <rushing@sigecom.net>
+
+	* runtime/System/IO/MemoryStream.cs: Fixes for ECMA compliance,
+	whatever that means.
+
+	* resources/en_US/runtime/Exception.txt: new "Exception_HiddenBuffer".
+
+2002-04-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	*  System/Net/Sockets/Socket.cs: reversed order of parameters to
+	"SocketMethods.Create"; semantic errors in "Socket.Select".
+
+	* runtime/System/IO/MemoryStream.cs: fix semantic errors.
+
+2002-04-26  Stephen Compall  <rushing@sigecom.net>
+
+	* runtime/System/IO/MemoryStream.cs: More implementation, including all
+	constructors, properties, and Read stuff.. Am bringing up ECMA
+	ambiguities left and right. Doesn't compile yet.
+
+2002-04-23  Gopal.V <gopalv82@symonds.net>
+
+	* tests/System/TestString.cs : added a lot of 
+	tests to make it useful to some extent. Still
+	some TODO left for anyone to pick up. 
+	
+2002-04-21  Stephen Compall  <rushing@sigecom.net>
+
+	* runtime/System/IO/StringReader.cs: added implementation.
+
+	* runtime/System/IO/MemoryStream.cs: added beginnings of
+	implementation.
+
+	* maintain.xml: added myself as worker of MemoryStream.
+
+2002-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/SocketMethods.cs: remove "using" declarations
+	for "System.Net*" because they cause compile problems with
+	"csc /noconfig".
+
+	* System/S.cs, System/Uri.cs, System/UriBuilder.cs,
+	System/UriFormatException.cs,
+	System/Collections/Specialized/NameValueCollection.cs,
+	System/Net/Authorization.cs, System/Net/Dns.cs,
+	System/Net/EndPoint.cs, System/Net/HttpVersion.cs,
+	System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs,
+	System/Net/IPAddress.cs, System/Net/IPEndPoint.cs,
+	System/Net/IPHostEntry.cs, System/Net/NetworkCredential.cs,
+	System/Net/ServicePoint.cs, System/Net/SocketAddress.cs,
+	System/Net/WebException.cs, System/Net/WebExceptionStatus.cs,
+	System/Net/WebHeaderCollection.cs, System/Net/WebRequest.cs,
+	System/Net/WebResponse.cs, System/Net/Sockets/MulticastOption.cs,
+	System/Net/Sockets/NetworkStream.cs, System/Net/Sockets/Socket.cs,
+	System/Net/Sockets/SocketException.cs, resources/en_US/System/Arg.txt:
+	lots of small changes here and there to make "System" compile
+	using csc.
+
+	* System.Xml/.cvsignore, System.Xml/Makefile.am,
+	System.Xml/NameTable.cs, System.Xml/S.cs,
+	System.Xml/TODOAttribute.cs, System.Xml/XmlException.cs,
+	System.Xml/XmlNameTable.cs, System.Xml/XmlNamespaceManager.cs,
+	System.Xml/XmlParserContext.cs, System.Xml/XmlReader.cs,
+	resources/en_US/System.Xml/.cvsignore: lots of small changes here
+	and there to make "System.Xml" compile using csc.
+
+2002-04-20  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Compile fixes.
+
+	* runtime/System/IO/StringWriter.cs: Changed exceptions to display
+	IO_StreamClosed.
+
+2002-04-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Format.txt, runtime/System/Boolean.cs,
+	runtime/System/Byte.cs, runtime/System/Char.cs,
+	runtime/System/Convert.cs, runtime/System/DBNull.cs,
+	runtime/System/DateTime.cs, runtime/System/Decimal.cs,
+	runtime/System/Double.cs, runtime/System/Enum.cs,
+	runtime/System/Int16.cs, runtime/System/Int32.cs,
+	runtime/System/Int64.cs, runtime/System/SByte.cs,
+	runtime/System/Single.cs, runtime/System/String.cs,
+	runtime/System/UInt16.cs, runtime/System/UInt32.cs,
+	runtime/System/UInt64.cs: fine-tune the "ToType" conversion methods.
+
+	* resources/en_US/runtime/Format.txt, runtime/System/Array.cs,
+	runtime/System/Convert.cs: complete the implementation of
+	"System.Convert"; implement "Array.Copy" in terms of facilities
+	in "System.Convert".
+
+	* configure.in, aclocal.m4: enable maintainer mode support in the
+	autoconf system.
+
+	* configure.in, NEWS: update version for the "0.1.8" release.
+
+	* configure.in: update the working version to "0.1.9".
+
+2002-04-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/IO/Makefile, runtime/System/IO/StreamReader.cs,
+	runtime/System/IO/TextReader.cs: implement the reading methods
+	in "StreamReader" properly; change ReadLine/ReadToEnd to use
+	StringBuilder.
+
+	* resources/en_US/runtime/Arg.txt, runtime/System/Array.cs:
+	re-implement the "Array.Copy" method, with only the simple cases
+	handled in the engine.
+
+	* runtime/System/IO/IOException.cs (GetErrnoMessage): don't bother
+	with string resources - go direct to the underlying platform.
+
+	* runtime/System/Reflection/Assembly.cs: pass the calling assembly
+	to "LoadFromName" and "LoadFromFile" to establish the correct search
+	and security contexts.
+
+	* runtime/System/Text/*: remove obselete files that have since
+	been moved to the I18N directory.
+
+	* runtime/System/Reflection/ClrType.cs (InvokeMember): collect up
+	the types of the arguments to method and property invocations to
+	assist in locating the correct override.
+
+	* runtime/System/IO/FileStream.cs, runtime/System/IO/StreamReader.cs:
+	bugs in stream buffer processing.
+
+	* runtime/runtime.build: remove "jis.table" from the assembly
+	manifest for "mscorlib.dll"; it is now in "I18N.CJK.dll".
+
+	* I18N/Common/Manager.cs: bugs in the handler-location code.
+
+	* runtime/System/Text/README: remove obsolete text now that the
+	encoding routines are in "I18N".
+
+	* I18N/CJK/CP932.cs: declare "ENCshift_jis" as public.
+
+	* I18N/mklist.sh: pass the "--public-only" option to "ilfind".
+
+2002-04-19  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Implemented quite complex Unescape(String).
+
+2002-04-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/*, resources/en_US/I18N/*: move all of the code page support
+	into the "I18N" directory, as the first stage in making the i18n
+	routines in "runtime" dynamically loadable.
+
+2002-04-18  Stephen Compall <rushing@sigecom.net>
+
+	* System/Uri.cs: Wiped out some TODOs, including Parse().
+
+	* resources/en_US/System/Arg.txt: new string.
+
+	* tests/System/TestSystem.cs, tests/System/TestString.cs: added a new
+	String test to deal with a ECMA idiosyncracy I am relying on.
+
+	* tests/System/Makefile.am: added TestUri and TestString to the build.
+
+2002-04-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/UTF7Encoding.cs: implement the UTF-7 encoding.
+
+	* runtime/System/Text/ucm2cp.c, runtime/System/Text/CP*.cs:
+	optimise the common conversion cases of ASCII and full-width Latin1.
+
+2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/*.cs: activate the rare code page handlers.
+
+	* runtime/System/Text/CP21866.cs,
+	runtime/System/Text/cvt.sh,
+	runtime/System/Text/koi8-u.ucm: add the 21866 (KOI8-U) code page.
+
+	* runtime/System/Text/.cvsignore, runtime/System/Text/CP932.cs,
+	runtime/System/Text/jis.table, runtime/System/Text/uni2tab.c,
+	runtime/runtime.build: add the JIS conversion table to "mscorlib.dll".
+
+	* runtime/System/Reflection/ClrResourceStream.cs: reversed test
+	in "ClrResourceStream.Read".
+
+2002-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/NotSupp.txt,
+	runtime/System/Reflection/ClrResourceStream.cs,
+	runtime/System/Text/CP932.cs,
+	runtime/System/Text/CodeTable.cs,
+	runtime/System/Text/JISConvert.cs: add support for code page 932,
+	Japanese (Shift-JIS); conversion tables are still to be done.
+
+	* runtime/System/Text/CP57002.cs: add ISCII code pages 57002-57011.
+
+	* runtime/System/Text/cvt.sh: remove ISCII pages from the list of
+	unimplemented code pages.
+
+	* runtime/System/Text/README: document the newer classes.
+
+	* runtime/System/Text/UnicodeEncoding.cs: bug fix - the preamble
+	for "UnicodeEncoding" should be zero if byte order marks are disabled.
+
+	* runtime/System/Reflection/ClrType.cs (InvokeMember): add the
+	"DeclaredOnly" flag to constructor lookups to prevent it finding
+	constructors in parent classes.
+
+2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/.cvsignore, runtime/System/Text/ByteEncoding.cs,
+	runtime/System/Text/CP10000.cs, runtime/System/Text/CP1250.cs,
+	runtime/System/Text/CP1251.cs, runtime/System/Text/CP1252.cs,
+	runtime/System/Text/CP1253.cs, runtime/System/Text/CP1254.cs,
+	runtime/System/Text/CP1255.cs, runtime/System/Text/CP1256.cs,
+	runtime/System/Text/CP1257.cs, runtime/System/Text/CP1258.cs,
+	runtime/System/Text/CP20866.cs, runtime/System/Text/CP28592.cs,
+	runtime/System/Text/CP28605.cs, runtime/System/Text/CP37.cs,
+	runtime/System/Text/CP437.cs, runtime/System/Text/CP500.cs,
+	runtime/System/Text/CP850.cs, runtime/System/Text/CP860.cs,
+	runtime/System/Text/CP861.cs, runtime/System/Text/CP863.cs,
+	runtime/System/Text/CP865.cs, runtime/System/Text/CP874.cs,
+	runtime/System/Text/Encoding.cs, runtime/System/Text/Latin1Encoding.cs,
+	runtime/System/Text/README, runtime/System/Text/cvt.sh,
+	runtime/System/Text/ibm-1275.ucm, runtime/System/Text/ibm-37.ucm,
+	runtime/System/Text/ibm-437.ucm, runtime/System/Text/ibm-500.ucm,
+	runtime/System/Text/ibm-5346.ucm, runtime/System/Text/ibm-5347.ucm,
+	runtime/System/Text/ibm-5348.ucm, runtime/System/Text/ibm-5349.ucm,
+	runtime/System/Text/ibm-5350.ucm, runtime/System/Text/ibm-5351.ucm,
+	runtime/System/Text/ibm-5352.ucm, runtime/System/Text/ibm-5353.ucm,
+	runtime/System/Text/ibm-5354.ucm, runtime/System/Text/ibm-850.ucm,
+	runtime/System/Text/ibm-860.ucm, runtime/System/Text/ibm-861.ucm,
+	runtime/System/Text/ibm-863.ucm, runtime/System/Text/ibm-865.ucm,
+	runtime/System/Text/ibm-874.ucm, runtime/System/Text/ibm-878.ucm,
+	runtime/System/Text/ibm-912.ucm, runtime/System/Text/ibm-923.ucm,
+	runtime/System/Text/ucm2cp.c: implement code page converters for
+	a large number of single-byte Windows code pages, based on the
+	conversion data from IBM's ICU package.
+
+	* runtime/System/Text/CP10079.cs, runtime/System/Text/cvt.sh,
+	runtime/System/Text/mac-is.ucm: add code page support for the
+	"Icelandic (Mac)" code page, 10079.
+
+	* runtime/System/Text/CP1026.cs, runtime/System/Text/CP1047.cs,
+	runtime/System/Text/CP1140.cs, runtime/System/Text/CP1141.cs,
+	runtime/System/Text/CP1142.cs, runtime/System/Text/CP1143.cs,
+	runtime/System/Text/CP1144.cs, runtime/System/Text/CP1145.cs,
+	runtime/System/Text/CP1146.cs, runtime/System/Text/CP1147.cs,
+	runtime/System/Text/CP1148.cs, runtime/System/Text/CP1149.cs,
+	runtime/System/Text/CP20273.cs, runtime/System/Text/CP20277.cs,
+	runtime/System/Text/CP20278.cs, runtime/System/Text/CP20280.cs,
+	runtime/System/Text/CP20284.cs, runtime/System/Text/CP20285.cs,
+	runtime/System/Text/CP20290.cs, runtime/System/Text/CP20297.cs,
+	runtime/System/Text/CP20420.cs, runtime/System/Text/CP20424.cs,
+	runtime/System/Text/CP20871.cs, runtime/System/Text/CP21025.cs,
+	runtime/System/Text/CP28593.cs, runtime/System/Text/CP28594.cs,
+	runtime/System/Text/CP28595.cs, runtime/System/Text/CP28596.cs,
+	runtime/System/Text/CP28597.cs, runtime/System/Text/CP28598.cs,
+	runtime/System/Text/CP28599.cs, runtime/System/Text/CP38598.cs,
+	runtime/System/Text/CP708.cs, runtime/System/Text/CP852.cs,
+	runtime/System/Text/CP855.cs, runtime/System/Text/CP857.cs,
+	runtime/System/Text/CP858.cs, runtime/System/Text/CP862.cs,
+	runtime/System/Text/CP864.cs, runtime/System/Text/CP866.cs,
+	runtime/System/Text/CP869.cs, runtime/System/Text/CP870.cs,
+	runtime/System/Text/CP875.cs, runtime/System/Text/cvt.sh,
+	runtime/System/Text/ibm-1025.ucm, runtime/System/Text/ibm-1026.ucm,
+	runtime/System/Text/ibm-1047.ucm, runtime/System/Text/ibm-1089.ucm,
+	runtime/System/Text/ibm-1140.ucm, runtime/System/Text/ibm-1141.ucm,
+	runtime/System/Text/ibm-1142.ucm, runtime/System/Text/ibm-1143.ucm,
+	runtime/System/Text/ibm-1144.ucm, runtime/System/Text/ibm-1145.ucm,
+	runtime/System/Text/ibm-1146.ucm, runtime/System/Text/ibm-1147.ucm,
+	runtime/System/Text/ibm-1148.ucm, runtime/System/Text/ibm-1149.ucm,
+	runtime/System/Text/ibm-273.ucm, runtime/System/Text/ibm-277.ucm,
+	runtime/System/Text/ibm-278.ucm, runtime/System/Text/ibm-280.ucm,
+	runtime/System/Text/ibm-284.ucm, runtime/System/Text/ibm-285.ucm,
+	runtime/System/Text/ibm-290.ucm, runtime/System/Text/ibm-297.ucm,
+	runtime/System/Text/ibm-420.ucm, runtime/System/Text/ibm-424.ucm,
+	runtime/System/Text/ibm-4909.ucm, runtime/System/Text/ibm-852.ucm,
+	runtime/System/Text/ibm-855.ucm, runtime/System/Text/ibm-857.ucm,
+	runtime/System/Text/ibm-858.ucm, runtime/System/Text/ibm-862.ucm,
+	runtime/System/Text/ibm-864.ucm, runtime/System/Text/ibm-866.ucm,
+	runtime/System/Text/ibm-869.ucm, runtime/System/Text/ibm-870.ucm,
+	runtime/System/Text/ibm-871.ucm, runtime/System/Text/ibm-875.ucm,
+	runtime/System/Text/ibm-913.ucm, runtime/System/Text/ibm-914.ucm,
+	runtime/System/Text/ibm-915.ucm, runtime/System/Text/ibm-916.ucm,
+	runtime/System/Text/ibm-920.ucm, runtime/System/Text/ucm2cp.c:
+	continue adding support for 8-bit code pages.
+
+	* runtime/System/Text/Latin1Encoding.cs: convert full-width versions
+	of ASCII as well as the regular Latin-1 characters.
+
+2002-04-14  Stephen Compall  <rushing@sigecom.net>
+
+	* tests/System/TestUri.cs, tests/System/TestSystem.cs: added a
+	partial test suite for System.Uri (so I can clean it up!)
+
+	* System/Uri.cs: minor syntax fixes.
+
+2002-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Text/Encoding.cs,
+	runtime/System/Text/UTF8Encoding.cs,
+	runtime/System/Text/UnicodeEncoding.cs: complete the implementations
+	of "UTF8Encoding" and "UnicodeEncoding".
+
+	* resources/en_US/runtime/NotSupp.txt,
+	runtime/System/Text/ASCIIEncoding.cs,
+	runtime/System/Text/DefaultEncoding.cs,
+	runtime/System/Text/Encoding.cs,
+	runtime/System/Text/Latin1Encoding.cs,
+	runtime/System/Text/Makefile,
+	runtime/System/Text/README,
+	runtime/System/Text/UTF7Encoding.cs,
+	runtime/System/Text/UTF8Encoding.cs,
+	runtime/System/Text/UnicodeEncoding.cs: add non-ECMA encoding
+	functionality and improve the code page support.
+
+2002-04-13  Gopal.V  <gopalv82@yahoo.com>
+
+	* doc/csunit_howto.html : added a doc on how to write tests
+	using csunit
+
+2002-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/SocketMethods.cs: tweaks to the socket API's.
+
+2002-04-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/IO.txt,
+	runtime/System/IO/FileStream.cs,
+	runtime/System/Reflection/ClrResourceStream.cs: implement the
+	ClrResourceStream class and its dependencies.
+
+	* runtime/Platform/SocketMethods.cs: declare Close as internalcall;
+	modify the signature of Select to better match Posix behaviour.
+
+	* runtime/System/Reflection/ClrResourceStream.cs: add an extra
+	"start" parameter to the constructor and adjust all resource
+	reads by that amount.
+
+	* runtime/System/Reflection/Assembly.cs: mark "GetFiles" as internal.
+
+	* runtime/System/IO/FileStream.cs,
+	runtime/System/Reflection/Assembly.cs,
+	runtime/System/Reflection/ClrResourceStream.cs,
+	runtime/System/Reflection/ManifestResourceInfo.cs: add the proper
+	manifest resource stream support (it isn't a FileStream after all).
+
+	* System/Resources/BuiltinResourceSet.cs,
+	System/Resources/ResourceManager.cs,
+	System/Resources/ResourceReader.cs,
+	System/Resources/ResourceSet.cs,
+	System/Resources/ResourceWriter.cs: continue implementation of
+	the resource-related classes.
+
+	* System/Resources/ResourceSet.cs: missing exception in "catch"
+	blocks.
+
+2002-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Resources/IResourceReader.cs,
+	runtime/System/Resources/IResourceWriter.cs,
+	runtime/System/Resources/README.ECMA,
+	runtime/System/Resources/ResourceReader.cs: continue the
+	implementation of resource-related classes.
+
+2002-04-11  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Fixed character literals, cleaned up Parse()
+	*alot*.
+
+2002-04-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/SocketMethods.cs: add some extra "using"
+	declarations to compile under MS'es compiler.
+
+	* runtime/System/Exception.cs,
+	runtime/System/Diagnostics/StackTrace.cs: print the correct stack
+	trace for exceptions.
+
+	* runtime/runtime.build: minor fix to cause the build script to
+	pass the correct resource information to csc.
+
+	* System/System.build, System.Xml/Xml.build: use the correct names
+	for the ECMA-compatible output assemblies.
+
+2002-04-13  Peter Minten  <silvernerd@users.sf.net>
+
+	* System.Xml/XmlNamespaceManager.cs: Worked on add and remove things.
+
+	* System.Xml/XmlReader.cs: Worked on checking methods.
+
+2002-04-07  Gopal.V <gopalv82@yahoo.com>
+
+	* System/Net/HttpWebRequest.cs: Added property get,set methods
+	  and a connect method to connect to an HTTP server
+	  
+2002-04-07  Peter Minten  <silvernerd@users.sf.net>
+
+	* System/Net/IPEndPoint.cs: Created but not completed
+
+	* System/Net/WebRequest.cs: Changed variable names and added using
+	directive to fix bugs.
+
+	* System/Net/WebHeaderCollection.cs, System/Net/WebResponse.cs,
+	System/Net/Authorization.cs, System/Net/ServicePoint.cs,
+	System/Net/NetworkCredential.cs: Added fake (no implementation yet) classes.
+
+	* System/Net/WebExceptionStatus.cs: Fixed my own namespace bug.
+
+	* System/Net/HttpContinueDelegate, System/UriHostNameType.cs,
+	System.UriPartial.cs: Created
+
+	* System/Net/SocketAddress.cs,
+	System/Net/Sockets/NetworkStream.cs: Made some modifications.
+
+2002-04-06  Peter Minten  <silvernerd@users.sf.net>
+
+	* resources/en_US/System/Makefile.am: Added all resource text files to the resource file (some weren't in it yet).
+
+	* configure.in, Makefile.am: Modified to account for the new System.Xml assembly.
+
+	* System.Xml/Makefile.am, System.Xml/Xml.Build: Created for the new System.Xml assembly.
+
+	* resources/en_US/Makefile.am: Changed to account for the new System.Xml resource file.
+
+	* resource/en_US/System.Xml/Makefile.am: Created for the new Xml resource directory
+
+	* System.Xml/Xml.build, System.Xml/Makefile.am: Created for the new Xml assembly
+
+	* System.Xml/Formatting.cs, System.Xml/ReadState.cs,
+	System.Xml/WhitespaceHandling.cs, System.Xml/WriteState.cs,
+	System.Xml/XmlNodeType.cs, System.Xml/XmlSpace.cs,
+	System.Xml/XmlNameTable.cs, System.Xml/NameTable.cs,
+	System.Xml/XmlParserContext.cs: Created and completed
+
+	* System.Xml/XmlException.cs, XmlNamespaceManager.cs,
+	System.Xml/XmlReader.cs: Created but not completed.
+
+	* System.Xml/XmlNode.cs: Created internal class.
+
+	* System/Net/Sockets/Socket.cs: Changed SocketMethod calls and SocketException calls.
+	* System/Net/Sockets/SocketException.cs: Uncommented
+
+	* runtime/Platform/SocketMethods.cs: Moved into Platform and made public and changed declarations a bit
+	* runtime/Platform/Errno.cs: Made public
+
+2002-04-04  Stephen Compall  <rushing@sigecom.net>
+
+	* System/UriBuilder: little patching of constructors.
+
+2002-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* doc/native.html: wrong method name in documentation file.
+
+	* resources/en_US/runtime/Format.txt, runtime/System/String.cs:
+	implement "String.Format", "String.ToUpper", "String.ToLower".
+
+	* runtime/Platform/Stdio.cs, runtime/System/Private/StdStream.cs,
+	runtime/System/Console.cs: implement binary access to stdio streams.
+
+	* runtime/System/IO/TextWriter.cs: bug fix to "Write(Object)".
+
+	* runtime/System/RuntimeMethodHandle.cs: "GetFunctionPointer"
+	is not ECMA-compatible.
+
+	* runtime/System/String.cs, runtime/System/Private/StdStream.cs:
+	minor bugs turned up by MS's compiler.
+
+	* runtime/System/IO/File.cs: remove unnecessary break following throw.
+
+2002-03-30  Peter Minten  <silvernerd@users.sf.net>
+
+	* System/Net/Sockets/Socket.cs, System/Net/Sockets/NetworkStream.cs,
+	System/Net/Sockets/SocketException.cs: Fixed bugs
+
+	* System/Net/EndPoint.cs, System/Net/SocketAddress.cs:
+	Added but not completed.
+
+2002-03-28  Stephen Compall  <rushing@sigecom.net>
+
+	* resources/en_US/System/Arg.txt,
+	resources/en_US/System/Exception.txt: Moved some exceptions, added a
+	new one.
+
+	* System/Net/HttpWebRequest.cs: Added a missing using declaration.
+
+	* System/Uri.cs: Spliced more of chiraz's code into this file, hence
+	almost finishing it.
+
+2002-03-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* HACKING, System/System.build, tools/csccwrap.sh.in: change
+	pnetlib to use a metadata-only compile.
+
+	* AUTHORS: add Gerard Toonstra to the AUTHORS file.
+
+	* NEWS, configure.in: update version for the "0.1.6" release.
+
+	* configure.in: update working version to "0.1.7".
+
+2002-03-25  Stephen Compall  <rushing@sigecom.net>
+
+	* System/UriBuilder.cs: Fixed compiler error as reported by
+	Mr. Weatherley.
+
+	* maintain.xml: Added information about my current work on
+	pnetlib.
+
+2002-03-23  Peter Minten  <silvernerd@users.sf.net>
+
+	* System/Net/Sockets/Socket.cs: Added methods.
+
+	* System/Net/Sockets/SocketException.cs: Changed to
+	use Errno's and custom messages.
+
+	* System/Net/Sockets/NetworkStream.cs: Implemented Read(), Write()
+	and DataAvaliable().
+
+	* resources/en_US/System/IO.txt: Added socket exception strings to new file.
+
+	* runtime/Platform/SocketMethods.cs: Placed file (made by Sidney Richards)
+	in cvs.
+
+2002-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/HttpWebRequest.cs: remove a stray ';'.
+
+	* System/TODOAttribute.cs: add the pseudo TODO attribute to
+	the "System" assembly, because the version in "runtime" is
+	inaccessible due to being "internal".
+
+	* System/System.build, runtime/runtime.build: add the correct
+	"resources" and "references" tags to the csant build scripts.
+
+	* System/System.build: temporarily comment out the reference
+	to mscorlib.dll because it interferes with cscc compiles.
+
+2002-03-22  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Began to integrate changes from chiraz's patch
+	and the original implementation into one *working*
+	implementation. Also, fixed syntax errors.
+
+	* System/UriBuilder.cs: Got rid of last `static const' string in
+	favor of the efficient ilrun persistent-string system. Also, fixed
+	syntax errors.
+
+	* System/Net/IPAddress.cs: Made syntax fixes and other minor
+	changes.
+
+	* resources/en_US/runtime/Format.txt: Added new string,
+	"Format_IP", from chiraz's patch.
+
+2002-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/String.cs, runtime/System/TimeSpan.cs,
+	runtime/System/Version.cs, runtime/System/Threading/Timer.cs:
+	build problems with MS'es compiler.
+
+	* resources/en_US/runtime/Format.txt: new string "Format_Version".
+
+	* runtime/System/Globalization/CharacterInfo.cs,
+	runtime/System/IO/File.cs: build problems with MS'es compiler.
+
+	* HACKING, Makefile.am, configure.in, runtime/System/.cvsignore,
+	runtime/System/Makefile, runtime/System/Makefile.am, tools/.cvsignore,
+	tools/csccwrap.sh.in: modify the pnetlib build process to use csant.
+
+	* tools/mscsc.sh, tools/csccflags.sh: remove obsolete files.
+
+	* tools/csccwrap.sh.in: fix various shell variable expansion bugs.
+
+	* Makefile.am, configure.in, System/.cvsignore, System/Makefile.am,
+	System/System.build: integrate the "System" directory into the build.
+
+2002-03-20 Gerard Toonstra <toonstra@ntlworld.com>
+
+	* System/Net/IPAddress.cs: First class contributed! Mostly
+	finished implementation of System.Net.IPAddress.
+
+2002-03-20 Gopal.V <gopalv82@yahoo.com>
+	* System/net/HttpWebRequest.cs: added a partial implementation
+	of HttWebRequest with most of the methods [TODO]
+
+2002-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* HACKING: document the location of the daily CVS snapshots.
+
+2002-03-16  Peter Minten  <silvernerd@users.sf.net>
+
+	* resources/en_US/System/Exception.txt: Added Exception_Disposed string.
+
+	* resources/en_US/System/Invalid.txt: Added file and
+	Invalid_AsyncAndBlocking string.
+
+	* resources/en_US/System/Arg.txt: Added file and Arg_SocketCreating string.
+
+2002-03-13  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Added more high-level properties and methods,
+	including AbsolutePath, Authority, and Escape-ing stuff. Plus,
+	more intelligent interpretation of hidden data methods.
+
+	* System/UriBuilder.cs: Fixed namespace problem, changed Path to
+	match Uri.AbsolutePath changes.
+
+2002-03-12  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Made the code less kludgy with Strings, added a
+	few simple static methods.
+
+2002-03-12  Abhaya Agarwal  <abhayag@cse.iitk.ac.in>
+
+	* runtime/System/Makefile.am, runtime/System/Threading/Timer.cs,
+	runtime/System/Threading/TimerCallback.cs: new timer classes.
+
+	* runtime/System/String.cs: begin implementing "String.Format".
+
+2002-03-10  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Moved some const Strings here, fixed
+	Fragment{get;} code, added a few more implementations. Next up is
+	the final answer on internal calls! Also fixed my email address.
+
+	* System/UriBuilder.cs: Cleaned up the code a little, more
+	efficient, barely began offsetting the work to Uri.cs.
+
+2002-03-10  Peter Minten  <silvernerd@users.sf.net>
+
+	* System/Net/Sockets/NetworkStream.cs,
+	System/Net/Sockets/Socket.cs: Started with some simple methods.
+
+2002-03-05  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Added a few of the basic methods. Eventually,
+	much of the details in UriBuilder will be moved to Uri, to make
+	UriBuilder depend on Uri, but not vice versa.
+
+	* System/UriBuilder.cs: Made a few changes to reflect the updated
+	design, described above. Also a fix or two.
+
+	* resources/en_US/System/Exception.txt: Added some useful
+	exceptions for hexadecimal and URIs.
+
+2002-03-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* AUTHORS: update the "AUTHORS" file with a list of all
+	significant contributors to date.
+
+2002-03-03  Peter Minten  <silvernerd@users.sf.net>
+
+	* System/Net/HttpStatusCode.cs, System/Net/HttpVersion.cs,
+	System/Net/IAuthenticationModule.cs, System/Net/ICredentials.cs,
+	System/Net/IPAddress.cs, System/Net/IWebProxy.cs,
+	System/Net/IWebRequestCreate.cs, System/Net/NetworkAccess.cs,
+	System/Net/TransportType.cs, System/Net/WebException.cs,
+	System/Net/WebExceptionStatus.cs, System/Net/WebRequest.cs,
+	System/Net/Sockets/AddressFamily.cs,
+	System/Net/Sockets/LingerOption.cs,
+	System/Net/Sockets/MulticastOption.cs,
+	System/Net/Sockets/ProtocolType.cs,
+	System/Net/Sockets/SelectMode.cs,
+	System/Net/Sockets/SocketException.cs,
+	System/Net/Sockets/SocketFlags.cs,
+	System/Net/Sockets/SocketOptionLevel.cs,
+	System/Net/Sockets/SocketOptionName.cs,
+	System/Net/Sockets/SocketShutdown.cs,
+	System/Net/Sockets/SocketType.cs,
+	resources/en_US/System/Exception.txt: the simple stuff in
+	the System.Net and System.Net.Sockets namespaces.
+
+2002-02-23  Peter Minten  <silvernerd@users.sf.net>
+
+	* runtime/System/Version.cs: Added constructor
+	System.Version.Version(String).
+
+	* runtime/System/TimeSpan.cs: Added method
+	System.TimeSpan.Parse(String).
+
+2002-03-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, resources/en_US/Makefile.am,
+	resources/en_US/System/.cvsignore,
+	resources/en_US/System/Exception.txt,
+	resources/en_US/System/Makefile.am: add build logic for the
+	"System" resource library.
+
+2002-01-31  Stephen Compall  <rushing@sigecom.net>
+
+	* System/UriBuilder.cs: partial implementation of
+	"System.UriBuilder". Some work is definitely still needed, and I
+	hope to get to that soon.
+
+	* System/UriFormatException.cs: added implementation of
+	"System.UriFormatException".
+
+	* resources/en_US/System/Exception.txt: added US string default
+	for System.UriFormatException.
+
+2002-02-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, NEWS: update for version "0.1.4" release.
+
+	* configure.in: update the working version to "0.1.5".
+
+2002-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* HACKING: update URL for ECMA class specification.
+
+	* runtime/System/Int16.cs, runtime/System/Int32.cs,
+	runtime/System/SByte.cs: cast negated values to "uint" before
+	casting up to "ulong", to prevent sign-extension.
+
+	* runtime/System/Security/Permissions/SecurityPermissionAttribute.cs:
+	modify "SecurityPermissionAttribute" so that it gets added when
+	compiling with Microsoft's C# compiler, even though it compiles
+	it wrong.
+
+2002-01-27  Charlie Carnow <carnow@gmx.net>
+
+	* runtime/System/IO/File.cs: Implemented GetAccessTime, and other
+	methods to better fit DirMethods. Fixed syntax errors found by cscc.
+				
+2002-01-26  Abhaya Agarwal  <abhayag@cse.iitk.ac.in>
+
+	* runtime/System/DateTime.cs: implementation of "DateTime.Compare".
+
+2002-01-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/DirMethods.cs: misspelled "InternalCall" in
+	previous version.
+
+	* runtime/System/String.cs: bug fixes to "IndexOf" and "LastIndexOf",
+	when searching for a string.
+
+	* runtime/System/Globalization/NumberFormatInfo.cs: adjust the
+	invariant number formatting information to match the ECMA spec.
+
+2002-01-23  Charlie Carnow <carnow@gmx.net> 
+
+	* runtime/Platform/DirMethods.cs: Added internal methods for
+	copying, renaming, etc.
+
+	* doc/native.html: Changed to fit DirMethods.cs
+
+	* runtime/System/IO/File.cs: Implemented Copy method to use 
+	DirMethods.Copy
+
+	* resources/en_US/runtime/IO.txt: Added new error messages used
+	in System.IO.File
+	
+2002-01-22  Charlie Carnow <carnow@gmx.net>
+
+	* runtime/System/IO/File.cs: Partial Implementation of System.IO.File
+
+2002-01-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Private/NumberFormatter.cs: disable decimal digit
+	display so that integers aren't formatted as "N.00".
+
+2002-01-19 Charlie Carnow <carnow@gmx.net>
+
+	* runtime/System/IO/Path.cs: fixed some more errors reported
+	by C# Compiler
+
+2002-01-16 Charlie Carnow <carnow@gmx.net>
+
+	* runtime/System/IO/Path.cs: fix some errors in Path reported
+	by the C# Compiler
+
+2001-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Makefile.am: add "System.IO.StringWriter" to
+	the build.
+
+2001-01-16  Stephen Compall  <rushing@earthling.net>
+
+	* runtime/System/IO/StringWriter.cs: fixes for compile errors.
+
+2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/IO/Path.cs: remove "System." from the start
+	of the class name, because it confuses the compiler.
+
+2001-01-14  Stephen Compall  <rushing@earthling.net>
+
+	* runtime/System/IO/StringWriter.cs: added implementation.
+
+	* runtime/System/Text/StringBuilder.cs: changed some of the logic
+	in Append(String, int, int) and Append(char[], int, int)
+
+2001-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/IO/TextWriter.cs: "TextWriter.Write(char)" is
+	not supposed to be implemented.
+
+2001-01-09  Charlie Carnow  <carnow@gmx.net>
+
+	* runtime/System/IO/Path.cs: added Partial Implementations of
+	ChangeExtension, GetFileNameWithoutExtension, HasExtension.
+
+	* runtime/System/IO/Path.cs: added Implentations of Combine and
+	GetTempFilename.
+
+2001-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* doc/ChangeLog-1: move the contents of ChangeLog into the "doc"
+	directory because it was getting quite large.
+
+	* HACKING: update the HACKING file to contain information on how
+	to submit bug reports and patches.
+
+	* make_patch.sh: add a script that assists with making patch
+	files for users.
 
 2002-05-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
@@ -873,3 +1715,4 @@
 
 	* make_patch.sh: add a script that assists with making patch
 	files for users.
+

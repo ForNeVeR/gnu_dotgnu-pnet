@@ -5,6 +5,9 @@
 	error messages for 'private' modifiers in explicit interface
 	implementations.
 
+	* cscc/csharp/cs_oper.tc: Check for event types before performing
+	add/remove operations.
+
 2004-07-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_main.c, cscc/cscc.1, cscc/csharp/cs_gather.c,

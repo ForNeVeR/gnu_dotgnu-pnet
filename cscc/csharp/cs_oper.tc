@@ -1063,6 +1063,27 @@ static CSSemValue AssignSem(ILGenInfo *info,
 			method = ILEvent_RemoveOn(CSSemGetEvent(value1));
 		}
 
+		resultType = ILTypeGetParam(ILMethod_Signature(method), 1); 
+		
+		if(!ILTypeAssignCompatible(info->image, resultType, CSSemGetType(value2)))
+		{
+			if(yyisa(node, ILNode_Add))
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					_("incompatible types in event addition: "
+						"'%s' to '%s'"), 
+					CSTypeToName(CSSemGetType(value2)), CSTypeToName(resultType));
+			}
+			else 
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					_("incompatible types in event removal: "
+						"'%s' from '%s'"), 
+					CSTypeToName(CSSemGetType(value2)), CSTypeToName(resultType));
+			}
+			return CSSemValueDefault;
+		}
+
 		/* Create the new node and replace "assignParent" with it */
 		if(ILMethod_IsStatic(method))
 		{

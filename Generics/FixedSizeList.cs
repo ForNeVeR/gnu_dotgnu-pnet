@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public class FixedSizeList<T> : FixedSizeCollection<T>, IList<T>
+public class FixedSizeList<T> : FixedSizeCollection<T>, IList<T>, IRandomAccess
 {
 	// Internal state.
 	protected IList<T> list;
@@ -88,6 +88,13 @@ public class FixedSizeList<T> : FixedSizeCollection<T>, IList<T>
 				get
 				{
 					return list.IsReadOnly;
+				}
+			}
+	public bool IsRandomAccess
+			{
+				get
+				{
+					return list.IsRandomAccess;
 				}
 			}
 	public T this[int index]

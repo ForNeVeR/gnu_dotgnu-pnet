@@ -526,6 +526,13 @@ public class LinkedList<T>
 					return false;
 				}
 			}
+	public virtual bool IsRandomAccess
+			{
+				get
+				{
+					return false;
+				}
+			}
 	public virtual T this[int index]
 			{
 				get

@@ -85,6 +85,13 @@ public class ReadOnlyList<T> : ReadOnlyCollection<T>, IList<T>
 					return true;
 				}
 			}
+	public bool IsRandomAccess
+			{
+				get
+				{
+					return list.IsRandomAccess;
+				}
+			}
 	public T this[int index]
 			{
 				get

@@ -77,6 +77,10 @@
 	their respective collection classes and make them nested,
 	because they are only used from those collection classes.
 
+	* Generics/ArrayList.cs, Generics/FixedSizeList.cs, Generics/IList.cs,
+	Generics/LinkedList.cs, Generics/ListWrapper.cs,
+	Generics/ReadOnlyList.cs: add "IsRandomAccess" to "IList<T>".
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's

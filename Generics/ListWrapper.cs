@@ -90,6 +90,14 @@ public sealed class ListWrapper<T> : IList<T>, ICollection<T>
 					return list.IsReadOnly;
 				}
 			}
+	public bool IsRandomAccess
+			{
+				get
+				{
+					// Recognise ArrayList specially as random-access.
+					return (list is System.Collections.ArrayList);
+				}
+			}
 	public T this[int index]
 			{
 				get

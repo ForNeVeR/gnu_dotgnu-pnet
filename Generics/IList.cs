@@ -40,6 +40,7 @@ public interface IList<T> : ICollection<T>
 	void RemoveAt(int index);
 	bool IsFixedSize { get; }
 	bool IsReadOnly { get; }
+	bool IsRandomAccess { get; }
 	T this[int index] { get; set; }
 
 }; // interface IList<T>

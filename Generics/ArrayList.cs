@@ -219,6 +219,13 @@ public class ArrayList<T> : ICollection<T>, IList<T>, ICloneable
 					return false;
 				}
 			}
+	public virtual bool IsRandomAccess
+			{
+				get
+				{
+					return true;
+				}
+			}
 	public virtual T this[int index]
 			{
 				get

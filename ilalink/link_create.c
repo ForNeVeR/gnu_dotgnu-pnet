@@ -92,6 +92,14 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	{
 		linker->moduleName = IL_LINKER_EXE_MODULE_NAME;
 	}
+	linker->moduleName = ILDupString(linker->moduleName);
+	if(!(linker->moduleName))
+	{
+		ILWriterDestroy(linker->writer);
+		ILContextDestroy(linker->context);
+		ILFree(linker);
+		return 0;
+	}
 	linker->moduleClass = 0;
 	linker->initTempFile = 0;
 
@@ -343,6 +351,7 @@ int ILLinkerDestroy(ILLinker *linker)
 	ILContextDestroy(linker->context);
 
 	/* Free the linker context */
+	ILFree(linker->moduleName);
 	ILFree(linker);
 
 	/* Done */
@@ -419,6 +428,7 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 	ILAssembly *assembly;
 	unsigned char *bytes;
 	int lenBytes;
+	char *name;
 
 	/* Create the module */
 	module = ILModuleCreate(linker->image, 0, moduleName, 0);
@@ -469,6 +479,32 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 	{
 		_ILLinkerOutOfMemory(linker);
 		return 0;
+	}
+
+	/* Set the C module name for library assemblies.  The module name
+	   is the name of the assembly, with "64" or "32" stripped off */
+	if(!strcmp(linker->moduleName, IL_LINKER_DLL_MODULE_NAME))
+	{
+		lenBytes = strlen(assemblyName);
+		name = (char *)malloc(lenBytes + 1);
+		if(!name)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		strcpy(name, assemblyName);
+		if(lenBytes > 2 && assemblyName[lenBytes - 2] == '6' &&
+		   assemblyName[lenBytes - 1] == '4')
+		{
+			name[lenBytes - 2] = '\0';
+		}
+		else if(lenBytes > 2 && assemblyName[lenBytes - 2] == '3' &&
+		        assemblyName[lenBytes - 1] == '2')
+		{
+			name[lenBytes - 2] = '\0';
+		}
+		ILFree(linker->moduleName);
+		linker->moduleName = name;
 	}
 
 	/* Ready to go */

@@ -441,7 +441,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 							& C_SPEC_LONG_LONG) != 0)
 					{
 						/* "long long float" == "long double" */
-						result.baseType = ILType_Float;
+						result.baseType = ILType_Float64;
 						okSpecifiers = C_SPEC_LONG | C_SPEC_LONG_LONG;
 					}
 					else if(((spec1.specifiers | spec2.specifiers)
@@ -460,7 +460,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 					if(((spec1.specifiers | spec2.specifiers)
 							& (C_SPEC_LONG | C_SPEC_LONG_LONG)) != 0)
 					{
-						result.baseType = ILType_Float;
+						result.baseType = ILType_Float64;
 						okSpecifiers = C_SPEC_LONG | C_SPEC_LONG_LONG;
 					}
 				}
@@ -473,7 +473,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 							& (C_SPEC_LONG | C_SPEC_LONG_LONG)) != 0)
 					{
 						/* "long long double" == "long double" */
-						result.baseType = ILType_Float;
+						result.baseType = ILType_Float64;
 						okSpecifiers = C_SPEC_LONG | C_SPEC_LONG_LONG;
 					}
 				}

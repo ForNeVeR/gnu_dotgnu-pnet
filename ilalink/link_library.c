@@ -1,7 +1,7 @@
 /*
  * link_library.c - Process libraries within a linker context.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -174,6 +174,7 @@ static void LibraryDestroy(ILLibrary *library)
 		next = library->altNames;
 		ILFree(library->name);
 		ILFree(library->filename);
+		ILFree(library->moduleName);
 		if(library->publicKey)
 		{
 			ILFree(library->publicKey);
@@ -325,6 +326,16 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 			LibraryDestroy(library);
 			return 0;
 		}
+		nextLibrary->moduleName = ILDupString(IL_LINKER_DLL_MODULE_NAME);
+		if(!(nextLibrary->moduleName))
+		{
+			ILFree(nextLibrary->filename);
+			ILFree(nextLibrary->name);
+			ILFree(nextLibrary);
+			_ILLinkerOutOfMemory(linker);
+			LibraryDestroy(library);
+			return 0;
+		}
 		ILMemCpy(nextLibrary->version, ILAssemblyGetVersion(assem),
 				 4 * sizeof(ILUInt16));
 		nextLibrary->altNames = 0;
@@ -361,6 +372,7 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 				{
 					ILFree(nextLibrary->publicKey);
 				}
+				ILFree(nextLibrary->moduleName);
 				ILFree(nextLibrary->filename);
 				ILFree(nextLibrary->name);
 				ILFree(nextLibrary);
@@ -379,6 +391,7 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 				{
 					ILFree(nextLibrary->publicKey);
 				}
+				ILFree(nextLibrary->moduleName);
 				ILFree(nextLibrary->filename);
 				ILFree(nextLibrary->name);
 				ILFree(nextLibrary);
@@ -623,21 +636,30 @@ static int WalkTypeDefs(ILLinker *linker, ILImage *image, ILLibrary *library)
 			}
 
 			/* If this is the "<Module>" type, then walk the global symbols */
-			if((!strcmp(ILClass_Name(classInfo), IL_LINKER_EXE_MODULE_NAME) ||
-			    !strcmp(ILClass_Name(classInfo), IL_LINKER_DLL_MODULE_NAME)) &&
-			   ILClass_Namespace(classInfo) == 0)
+			if(_ILLinkerIsModule(classInfo))
 			{
+				if(library)
+				{
+					/* Set the module name for the library */
+					char *name = ILDupString(ILClass_Name(classInfo));
+					if(!name)
+					{
+						_ILLinkerOutOfMemory(linker);
+						return 0;
+					}
+					ILFree(library->moduleName);
+					library->moduleName = name;
+				}
 				if(!WalkGlobals(linker, image, library, classInfo))
 				{
 					return 0;
 				}
+				continue;
 			}
 
 			/* If this type is marked with "OpenSystem.C.GlobalScope", then
 			   it should also be inspected for global symbol definitions */
-			if(ILLinkerFindAttribute(ILToProgramItem(classInfo),
-									 "GlobalScopeAttribute",
-									 "OpenSystem.C", 0, 0))
+			if(_ILLinkerIsGlobalScope(classInfo))
 			{
 				if(!WalkGlobals(linker, image, library, classInfo))
 				{
@@ -1103,7 +1125,7 @@ static ILMember *CreateSymbolRef(ILLinker *linker, ILLibrary *library,
 	{
 		find.linker = linker;
 		find.library = library;
-		libClass.name = IL_LINKER_DLL_MODULE_NAME;
+		libClass.name = library->moduleName;
 		libClass.namespace = 0;
 		libClass.parent = 0;
 		classInfo = MakeTypeRef(&find, &libClass, linker->image);
@@ -1265,23 +1287,30 @@ int _ILLinkerCreateSymbolHash(ILLinker *linker)
 
 void _ILLinkerAddSymbols(ILLinker *linker, ILImage *image)
 {
-	ILClass *classInfo;
-
-	/* Look for the "<Module>" type within the image */
-	classInfo = ILClassLookup(ILClassGlobalScope(image),
-							  IL_LINKER_EXE_MODULE_NAME, 0);
-	if(!classInfo)
+	ILClass *classInfo = 0;
+	while((classInfo = (ILClass *)ILImageNextToken
+				(image, IL_META_TOKEN_TYPE_DEF, (void *)classInfo)) != 0)
 	{
-		classInfo = ILClassLookup(ILClassGlobalScope(image),
-								  IL_LINKER_DLL_MODULE_NAME, 0);
-		if(!classInfo)
+		/* If this is the "<Module>" type, then walk the global symbols */
+		if(_ILLinkerIsModule(classInfo))
 		{
-			return;
+			if(!WalkGlobals(linker, image, 0, classInfo))
+			{
+				return;
+			}
+			continue;
+		}
+
+		/* If this type is marked with "OpenSystem.C.GlobalScope", then
+		   it should also be inspected for global symbol definitions */
+		if(_ILLinkerIsGlobalScope(classInfo))
+		{
+			if(!WalkGlobals(linker, image, 0, classInfo))
+			{
+				return;
+			}
 		}
 	}
-
-	/* Walk the symbol definitions in the "<Module>" type */
-	WalkGlobals(linker, image, 0, classInfo);
 }
 
 #ifdef	__cplusplus

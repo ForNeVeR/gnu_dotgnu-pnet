@@ -1,4 +1,14 @@
 
+2004-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_declspec.c, cscc/c/c_oper.tc, doc/c_language_abi.html,
+	doc/c_users_guide.html, ilalink/link_create.c, ilalink/link_field.c,
+	ilalink/link_init.c, ilalink/link_library.c, ilalink/link_method.c,
+	ilalink/link_module.c, ilalink/linker.h: convert "long double"
+	into "double" because "native float" doesn't work properly with
+	Microsoft's CLR; use ordinary names like "libc" instead of
+	"$Module$" so that non-pnet C# compilers can import C libraries.
+
 2004-02-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_grammar.y (ParameterDeclaration): support parameters

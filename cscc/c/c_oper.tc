@@ -2131,7 +2131,7 @@ ILNode_GenValue(ILNode_CToCSharpString)
 	ILNode_GenValue(node->expr, info);
 
 	/* Use "Marshal.PtrToStringAnsi" to convert the string */
-	ILGenCallByName(info, "instance [.library]System.String "
+	ILGenCallByName(info, "class [.library]System.String "
 						  "[.library]System.Runtime.InteropServices.Marshal::"
 						  "PtrToStringAnsi(native int)");
 
@@ -2477,7 +2477,14 @@ ILNode_CSemAnalysis(ILNode_SizeOfExpr)
 		CSemSetDynConstant(value, ILType_UInt32);
 		return value;
 	}
-	node->type = CSemGetType(value);
+	if(CSemIsDecayed(value))
+	{
+		node->type = CSemGetDecayedType(value);
+	}
+	else
+	{
+		node->type = CSemGetType(value);
+	}
 
 	/* Determine the size based on the type */
 	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);

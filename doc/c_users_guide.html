@@ -6,7 +6,7 @@
 <h1>Using Portable.NET's C Compiler</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2004/02/17 06:37:58 $<p>
+Last Modified: $Date: 2004/02/25 10:32:45 $<p>
 
 Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -163,8 +163,8 @@ The following primitive types are provided by the C compiler:<p>
 	<td>8</td>
 	<td>64-bit IEEE 754 floating-point</td></tr>
 <tr><td><code>long double</code></td>
-	<td>? <sup>3</sup></td>
-	<td>Native floating-point</td></tr>
+	<td>8</td>
+	<td>Same as "<code>double</code>"</td></tr>
 <tr><td><code>type *</code></td>
 	<td>4/8 <sup>2</sup></td>
 	<td>Pointer to "<code>type</code>"</td></tr>
@@ -304,7 +304,10 @@ The following attributes may be present:<p>
 All of these attributes can also be specified with leading and trailing
 underscores; e.g. "<code>__pinvoke__</code>".<p>
 
-<h3>3.5. Calling C# code</h3>
+<h3>3.5. Calling C# code from C</h3>
+
+TODO: this section refers to functionality that isn't completely
+implemented yet.<p>
 
 Any C# type can be imported into C using the syntax
 "<code>__csharp__ (<i>type</i>)</code>", where "<code><i>type</i></code>"
@@ -316,10 +319,11 @@ The "<code>__csharp__</code>" keyword can be combined with the
 "<code>::</code>" operator to call methods in the C# code:<p>
 
 <blockquote><pre>typedef __csharp__(System.Console) Console;
+typedef __csharp__(System.String) String;
 
 int main()
 {
-    (void)Console::WriteLine("Hello World");
+    (void)Console::WriteLine((String)"Hello World");
     return 0;
 }</pre></blockquote><p>
 
@@ -365,10 +369,6 @@ public class MyClass
 
 The "<code>cs_func</code>" method will be visible to the C code as a
 regular C function.<p>
-
-TODO: deprecate "<code>__module</code>" and replace with
-"<code>System.Runtime.CompilerServices.CompilerGlobalScopeAttribute</code>",
-which is more correct standards-wise.<p>
 
 The value zero (0) can be used in any context where a C# reference
 value is expected to represent the C# "<code>null</code>" value.
@@ -432,10 +432,26 @@ The following table lists all of the C operators and the corresponding
 <tr><td>Check False</td><td><code>op_False</code></td></tr>
 </table></blockquote><p>
 
-<h3>3.6. Calling C code</h3>
+<h3>3.6. Calling C code from C#</h3>
 
-To call C code from C#, you must declare the the C function in your
-C# application:<p>
+If the C function is in a library assembly, then you can access it as
+though it was a regular C# method.  For example, the following program
+will sleep for five seconds:
+
+<blockquote><pre>public class Sleeper
+{
+    public static void Main()
+    {
+        libc.sleep(5);
+    }
+}</pre></blockquote><p>
+
+It is compiled as follows:<p>
+
+<blockquote><pre>$ cscc -o sleep.exe sleep.cs -llibc64</pre></blockquote><p>
+
+To call C code from C# in the same program, you must declare the the
+C function in your C# application as follows:<p>
 
 <blockquote><pre>__module
 {
@@ -444,7 +460,15 @@ C# application:<p>
 }</pre></blockquote><p>
 
 where "<code>c_func</code>" is a function declared in your C code.
-Use "<code>__module.c_func()</code>" to call the function from C#.<p>
+Use "<code>__module.c_func()</code>" to call the function from C#.
+The "<code>__module</code>" keyword is needed because the name of the
+type containing the C function is unknown until the program is linked.<p>
+
+It is recommended that you place your C and C# code in separate assemblies
+so that you don't need to use the "<code>__module</code>" keyword.  That
+way, you can use any C# compiler you wish to build the C# parts of your
+application (you will still need to use Portable.NET's C compiler for
+the C parts of course).<p>
 
 <h3>3.7. Weak and strong aliases</h3>
 

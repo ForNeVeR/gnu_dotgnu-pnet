@@ -86,6 +86,7 @@ struct _tagILLibrary
 {
 	char		   *name;			/* Name of the library's assembly */
 	char           *filename;		/* Filename for the library's assembly */
+	char		   *moduleName;		/* Name of the library's main module */
 	ILUInt16		version[4];		/* Version of the library's assembly */
 	ILLibrary	   *altNames;		/* Alternative names for the library */
 	unsigned char  *publicKey;		/* Public key value for the library */
@@ -141,7 +142,7 @@ struct _tagILLinker
 	int				modelFlags;		/* Alignment flags for the memory model */
 	ILHashTable    *symbolHash;		/* Hash table for global symbol lookup */
 	ILMemPool		pool;			/* Memory pool for symbol allocation */
-	const char     *moduleName;		/* Name of the "<Module>" class */
+	char     	   *moduleName;		/* Name of the "<Module>" class */
 	ILClass        *moduleClass;	/* Reference to the "<Module>" class */
 	char		   *initTempFile;	/* Temporary object file for init/fini */
 
@@ -341,6 +342,11 @@ ILClass *_ILLinkerModuleClass(ILLinker *linker);
 int _ILLinkerIsModule(ILClass *classInfo);
 
 /*
+ * Determine if a class is marked with "OpenSystem.C.GlobalScope".
+ */
+int _ILLinkerIsGlobalScope(ILClass *classInfo);
+
+/*
  * Get a new name for a private class, that must be renamed
  * to prevent clashes with similar classes in other modules.
  */
@@ -366,6 +372,14 @@ int _ILLinkerLibraryReplacement(ILLinker *linker, ILLibraryFind *find,
  * the application does not need initializers or finalizers.
  */
 ILImage *_ILLinkerCreateInitFini(ILLinker *linker);
+
+/*
+ * Create an attribute on a particular program item.
+ */
+void _ILLinkerCreateAttribute(ILLinker *linker, ILProgramItem *item,
+							  const char *name, const char *namespace,
+							  ILType *arg1Type, ILType *arg2Type,
+							  void *data, int len);
 
 #ifdef	__cplusplus
 };

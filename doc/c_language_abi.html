@@ -6,7 +6,7 @@
 <h1>Application Binary Interface for C within CLI</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2003/06/27 04:42:23 $<p>
+Last Modified: $Date: 2004/02/25 10:32:44 $<p>
 
 Copyright &copy; 2002, 2003 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -157,15 +157,15 @@ system.  These modifiers are as follows:<p>
 	<dd>64-bit <code>double</code> values are aligned on 4-byte boundaries,
 		rather than 8-byte boundaries.</dd>
 <dt><code>0x00000800</code></dt>
-	<dd><code>long double</code> values are aligned on 1-byte boundaries.</dd>
+	<dd><code>native float</code> values are aligned on 1-byte boundaries.</dd>
 <dt><code>0x00001000</code></dt>
-	<dd><code>long double</code> values are aligned on 2-byte boundaries.</dd>
+	<dd><code>native float</code> values are aligned on 2-byte boundaries.</dd>
 <dt><code>0x00002000</code></dt>
-	<dd><code>long double</code> values are aligned on 4-byte boundaries.</dd>
+	<dd><code>native float</code> values are aligned on 4-byte boundaries.</dd>
 <dt><code>0x00004000</code></dt>
-	<dd><code>long double</code> values are aligned on 8-byte boundaries.</dd>
+	<dd><code>native float</code> values are aligned on 8-byte boundaries.</dd>
 <dt><code>0x00008000</code></dt>
-	<dd><code>long double</code> values are aligned on 16-byte boundaries.</dd>
+	<dd><code>native float</code> values are aligned on 16-byte boundaries.</dd>
 <dt><code>0x00010000</code></dt>
 	<dd>Pointer values are aligned on 1-byte boundaries.</dd>
 <dt><code>0x00020000</code></dt>
@@ -253,23 +253,20 @@ in the "<code>OpenSystem.C</code>" namespace:<p>
 <dt><code>Crt0</code></dt>
 	<dd>A class that provides utility methods to manage the startup and
 		shutdown of C applications.</dd>
-<dt><code>LongDouble</code></dt>
-	<dd>A value type class that wraps up the runtime engine's
-		"<code>native float</code>" type.  The standard C# base
-		class library lacks a suitable class.  This class has
-		a constructor that takes a single "<code>native float</code>"
-		argument, and an "<code>Unpack</code>" method that returns
-		a "<code>native float</code>" when applied to an instance.</dd>
-<dt><code>FloatComplex</code>, <code>DoubleComplex</code>,
-    <code>LongDoubleComplex</code></dt>
+<dt><code>FloatComplex</code>, <code>DoubleComplex</code></dt>
 	<dd>Value types that correspond to the ISO C complex number types.</dd>
-<dt><code>FloatImaginary</code>, <code>DoubleImaginary</code>,
-    <code>LongDoubleImaginary</code></dt>
+<dt><code>FloatImaginary</code>, <code>DoubleImaginary</code></dt>
 	<dd>Value types that correspond to the ISO C imaginary number types.</dd>
 <dt><code>CNameAttribute</code></dt>
 	<dd>An attribute that specifies the C name of a value type defined
 	    in C# code.  e.g. "<code>FloatComplex</code>" is marked as
 		"<code>float _Complex</code>".</dd>
+<dt><code>GlobalScopeAttribute</code></dt>
+	<dd>Used in C# code to mark a class whose definitions should be
+		treated as part of the global C scope during linking.</dd>
+<dt><code>ModuleScopeAttribute</code></dt>
+	<dd>Used by linkers to mark the type within a library assembly that
+		is standing in for the global "&lt;Module&gt;" type.</dd>
 </dl>
 
 The meaning of these classes will become clearer in later sections.
@@ -356,6 +353,10 @@ The size and alignment of the primitive types in "Model 64" and
 	<td>8/8</td>
 	<td>8/8</td>
 	<td>64-bit IEEE 754 floating-point</td></tr>
+<tr><td><code>long double</code></td>
+	<td>8/8</td>
+	<td>8/8</td>
+	<td>Same as <code>double</code></td></tr>
 <tr><td><code>type *</code></td>
 	<td>8/8</td>
 	<td>4/4</td>
@@ -368,6 +369,10 @@ The size and alignment of the primitive types in "Model 64" and
 	<td>16/8</td>
 	<td>16/8</td>
 	<td>Complex number type based on <code>double</code></td></tr>
+<tr><td><code>long double _Complex</code></td>
+	<td>16/8</td>
+	<td>16/8</td>
+	<td>Same as <code>double _Complex</code></td></tr>
 <tr><td><code>float _Imaginary</code></td>
 	<td>4/4</td>
 	<td>4/4</td>
@@ -376,6 +381,10 @@ The size and alignment of the primitive types in "Model 64" and
 	<td>8/8</td>
 	<td>8/8</td>
 	<td>Imaginary number type based on <code>double</code></td></tr>
+<tr><td><code>long double _Imaginary</code></td>
+	<td>8/8</td>
+	<td>8/8</td>
+	<td>Same as <code>double _Imaginary</code></td></tr>
 </table><p>
 
 <font size="-1">Note 1. These size and alignment values refer to the
@@ -389,6 +398,14 @@ on an 8-byte boundary, even on platforms that only support 32-bit pointers.
 The expression "<code>sizeof(void *)</code>" will always return 8.
 This behaviour is necessary to provide a consistent "<code>struct</code>"
 layout on all CLI implementations, as we will see in the following sections.<p>
+
+The CLI specifications describe a primitive "<code>native float</code>" type
+which would be the ideal representation for "<code>long double</code>".
+However, early versions of Microsoft's commercial and Rotor CLR
+implementations contained a bug that prevented "<code>native float</code>"
+from being used in field or method signatures.  For interoperability with
+these early CLR's, we have chosen to use "<code>long double</code>"
+as a synonym for "<code>double</code>".<p>
 
 <h3>4.2. Type qualifiers</h3>
 
@@ -739,12 +756,6 @@ absolutely essential to interoperate with other system components:<p>
 	<td>Signed native integer (C# "<code>IntPtr</code>")</td></tr>
 <tr><td><code>unsigned __native__ int</code></td>
 	<td>Unsigned native integer (C# "<code>UIntPtr</code>")</td></tr>
-<tr><td><code>long double</code></td>
-	<td>Native floating-point</td></tr>
-<tr><td><code>long double _Complex</code></td>
-	<td>Complex number type based on <code>long double</code></td></tr>
-<tr><td><code>long double _Imaginary</code></td>
-	<td>Imaginary number type based on <code>long double</code></td></tr>
 </table><p>
 
 The native integer types are "<code>__native__ int</code>" and
@@ -752,10 +763,6 @@ The native integer types are "<code>__native__ int</code>" and
 size, depending upon the underlying platform.  The expressions
 "<code>sizeof(__native__ int)</code>" and
 "<code>sizeof(unsigned __native__ int)</code>" are evaluated at run time.<p>
-
-The native floating point type is "<code>long double</code>", and
-is guaranteed to have precision greater than or equal to "<code>double</code>".
-The expression "<code>sizeof(long double)</code>" is computed at runtime.<p>
 
 Structures can be specified to have native layout at declaration time:<p>
 
@@ -888,8 +895,6 @@ converted into their "natural passing type" first:<p>
 	<td><code>double</code></td></tr>
 <tr><td><code>double</code></td>
 	<td><code>double</code></td></tr>
-<tr><td><code>long double</code></td>
-	<td><code>OpenSystem.C.LongDouble</code></td></tr>
 <tr><td><code>type *</code></td>
 	<td><code>long</code></td></tr>
 <tr><td><code>struct</code> and <code>union</code></td>
@@ -919,21 +924,48 @@ deal with.<p>
 
 <h3>5.1. Interoperability considerations</h3>
 
+Ideally, we would like to use the global "<code>&lt;Module&gt;</code>"
+type in all assemblies to store global definitions.  However,
 Microsoft's CLR does not allow references to the "<code>&lt;Module&gt;</code>"
 type within a foreign assembly.  This appears to be a hard-wired constraint.
 Other CLR's (e.g. Portable.NET) make no distinction between the module type
 and all other types.<p>
 
-To achieve interoperability with Microsoft's CLR, library assemblies must
-use the "<code>$Module$</code>" type for their global field and method
-definitions instead of "<code>&lt;Module&gt;</code>".  The
-"<code>$Module$</code>" type must have the "<code>public</code>" and
-"<code>sealed</code>" flags.<p>
+In addition, we want C# compilers to be able to link against a C library
+assembly and import the definitions into a C# program.  There is no way
+to refer to an obscure type name like "<code>&lt;Module&gt;</code>"
+from within C# code (Portable.NET's C# compiler did have a
+"<code>__module</code>" keyword for this purpose, but it is
+deprecated).<p>
+
+The C linker must choose an ordinary C# identifier to name the global
+module within a library assembly.  We recommend using the assembly
+name, minus any model qualifiers.  For example, all global C definitions
+in "<code>libc64.dll</code>" will be found in a type called
+"<code>libc</code>", with no namespace.<p>
+
+Global module types of this form must be marked with the
+"<code>OpenSystem.C.ModuleScope</code>" attribute and have the
+"<code>public</code>" and "<code>sealed</code>" flags.<p>
 
 Executables still use the "<code>&lt;Module&gt;</code>" type, as it appears
 to work in all CLR's that have been tested so far.  The
 "<code>&lt;Module&gt;</code>" type should have the "<code>public</code>"
 and "<code>abstract</code>" flags.<p>
+
+In C# code, the attribute "<code>OpenSystem.C.GlobalScope</code>" can
+be used to mark a class whose definitions are visible as part of the
+global C scope.  This allows C# libraries to export functionality to
+C programs in a form that looks like a regular C function.  The linker
+is responsible for noticing this attribute and performing the necessary
+fixups.<p>
+
+Note: "<code>GlobalScope</code> and "<code>ModuleScope</code>" are
+similar in that they both export definitions into the global C scope.
+"<code>ModuleScope</code>" also marks the type as the main module type,
+which is expected to have special methods called "<code>.init</code>"
+and "<code>.fini</code>".  Marking a regular C# class with
+"<code>ModuleScope</code>" is likely to confuse the linker.<p>
 
 <h3>5.2. Dangling references</h3>
 
@@ -962,7 +994,7 @@ When the linker loads this object file, it will resolve references to
 "<code>&lt;ModuleExtern&gt;</code>" by looking for a matching definition
 and changing the type reference appropriately.  The new reference
 may be to the linked executable's "<code>&lt;Module&gt;</code>" type,
-or to a foreign library's "<code>$Module$</code>" type.<p>
+or to a foreign library's global module type.<p>
 
 The "<code>&lt;ModuleExtern&gt;</code>" type will itself be dangling.
 The exact means by which this is accomplished is compiler-dependent, as the
@@ -1316,7 +1348,7 @@ to be recompiled.<p>
 
 runinit:
     // Run the initializers for the libraries.
-    call void [libc64]'&lt;Module&gt;'::'.init'()
+    call void [libc64]'libc'::'.init'()
 
     // Run the local initializers.
     call void '&lt;Module&gt;'::'.init-1'()
@@ -1369,7 +1401,7 @@ runfini:
     call void '&lt;Module&gt;'::'.fini-N'()
 
     // Run the finalizers for the libraries.
-    call void [libc64]'&lt;Module&gt;'::'.fini'()
+    call void [libc64]'libc'::'.fini'()
 
 exit:
     // Finalization has finished.

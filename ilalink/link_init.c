@@ -267,7 +267,7 @@ static void CallLibraryInit(FILE *stream, ILLibrary *library)
 		if(library->memoryModel)
 		{
 			fprintf(stream, "\tcall void [%s]'%s'::'.init'()\n",
-					library->name, IL_LINKER_DLL_MODULE_NAME);
+					library->name, library->moduleName);
 		}
 		library = library->next;
 	}
@@ -285,8 +285,8 @@ static void CallLibraryFini(FILE *stream, ILLibrary *library)
 	CallLibraryFini(stream, library->next);
 	if(library->memoryModel)
 	{
-		fprintf(stream, "\tcall void [%s]'$Module$'::'.fini'()\n",
-				library->name);
+		fprintf(stream, "\tcall void [%s]'%s'::'.fini'()\n",
+				library->name, library->moduleName);
 	}
 }
 
@@ -393,7 +393,7 @@ ILImage *_ILLinkerCreateInitFini(ILLinker *linker)
 		  stream);
 	fputs("{\n", stream);
 	fputs("\t.maxstack 3\n", stream);
-	fputs("\t.locals (class [.library]System.Type)\n", stream);
+	fputs("\t.locals init (class [.library]System.Type)\n", stream);
 	fputs("\tldtoken 'init-count'\n", stream);
 	fputs("\tcall class [.library]System.Type [.library]System.Type::"
 		  "GetTypeFromHandle(valuetype [.library]System.RuntimeTypeHandle)\n",
@@ -430,7 +430,7 @@ ILImage *_ILLinkerCreateInitFini(ILLinker *linker)
 		  stream);
 	fputs("{\n", stream);
 	fputs("\t.maxstack 3\n", stream);
-	fputs("\t.locals (class [.library]System.Type)\n", stream);
+	fputs("\t.locals init (class [.library]System.Type)\n", stream);
 	fputs("\tldtoken 'init-count'\n", stream);
 	fputs("\tcall class [.library]System.Type [.library]System.Type::"
 		  "GetTypeFromHandle(valuetype [.library]System.RuntimeTypeHandle)\n",
@@ -472,7 +472,7 @@ ILImage *_ILLinkerCreateInitFini(ILLinker *linker)
 				"void .cctor() cil managed\n", stream);
 	fputs("\t{\n", stream);
 	fputs("\t\t.maxstack 2\n", stream);
-	fputs("\t\t.locals (class [.library]System.Type)\n", stream);
+	fputs("\t\t.locals init (class [.library]System.Type)\n", stream);
 	fputs("\t\tldtoken 'init-count'\n", stream);
 	fputs("\t\tcall class [.library]System.Type [.library]System.Type::"
 		  "GetTypeFromHandle(valuetype [.library]System.RuntimeTypeHandle)\n",

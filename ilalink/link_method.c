@@ -690,7 +690,8 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	}
 
 	/* Update the symbol definition if this is in the global module */
-	if(_ILLinkerIsModule(ILMember_Owner(newMethod)))
+	if(_ILLinkerIsModule(ILMember_Owner(newMethod)) ||
+	   _ILLinkerIsGlobalScope(ILMember_Owner(newMethod)))
 	{
 		_ILLinkerUpdateSymbol(linker, ILMember_Name(newMethod),
 							  (ILMember *)newMethod);

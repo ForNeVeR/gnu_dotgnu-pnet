@@ -117,7 +117,8 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 	}
 
 	/* Update the symbol definition if this is in the global module */
-	if(_ILLinkerIsModule(ILMember_Owner(newField)))
+	if(_ILLinkerIsModule(ILMember_Owner(newField)) ||
+	   _ILLinkerIsGlobalScope(ILMember_Owner(newField)))
 	{
 		_ILLinkerUpdateSymbol(linker, ILMember_Name(newField),
 							  (ILMember *)newField);

@@ -98,6 +98,79 @@ ILAttribute *ILLinkerFindAttribute(ILProgramItem *item,
 	return 0;
 }
 
+void _ILLinkerCreateAttribute(ILLinker *linker, ILProgramItem *item,
+							  const char *name, const char *namespace,
+							  ILType *arg1Type, ILType *arg2Type,
+							  void *data, int len)
+{
+	ILClass *attrClass;
+	ILType *signature;
+	ILMethod *method;
+	ILAttribute *attr;
+
+	/* Import the attribute class from the library that it lives in */
+	attrClass = _ILLinkerFindByName(linker, name, namespace);
+	if(!attrClass)
+	{
+		return;
+	}
+
+	/* Create the constructor signature that we are interested in */
+	signature = ILTypeCreateMethod(linker->context, ILType_Void);
+	if(!signature)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return;
+	}
+	if(arg1Type)
+	{
+		if(!ILTypeAddParam(linker->context, signature, arg1Type))
+		{
+			_ILLinkerOutOfMemory(linker);
+			return;
+		}
+	}
+	if(arg2Type)
+	{
+		if(!ILTypeAddParam(linker->context, signature, arg2Type))
+		{
+			_ILLinkerOutOfMemory(linker);
+			return;
+		}
+	}
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
+
+	/* Search for the constructor or create a new reference */
+	if((method = (ILMethod *)ILClassNextMemberMatch
+			(attrClass, (ILMember *)0,
+			 IL_META_MEMBERKIND_METHOD, ".ctor", signature)) == 0)
+	{
+		method = ILMethodCreate(attrClass, (ILToken)IL_MAX_UINT32, ".ctor", 0);
+		if(!method)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return;
+		}
+		ILMemberSetSignature((ILMember *)method, signature);
+		ILMethodSetCallConv(method, IL_META_CALLCONV_HASTHIS);
+	}
+
+	/* Create and add the attribute */
+	attr = ILAttributeCreate(linker->image, 0);
+	if(!attr)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return;
+	}
+	ILProgramItemAddAttribute(item, attr);
+	ILAttributeSetType(attr, (ILProgramItem *)method);
+	if(!ILAttributeSetValue(attr, data, (unsigned)len))
+	{
+		_ILLinkerOutOfMemory(linker);
+		return;
+	}
+}
+
 ILSerializeReader *ILLinkerReadAttribute(ILAttribute *attr)
 {
 	const void *blob;
@@ -226,6 +299,13 @@ void ILLinkerModuleCreate(ILLinker *linker)
 			ILClassSetAttrs(linker->moduleClass, ~((ILUInt32)0),
 							IL_META_TYPEDEF_PUBLIC |
 							IL_META_TYPEDEF_SEALED);
+
+			/* Add the "OpenSystem.C.ModuleScope" attribute to the
+			   class to indicate that it is a C module */
+			_ILLinkerCreateAttribute
+				(linker, ILToProgramItem(linker->moduleClass),
+				 "ModuleScopeAttribute", "OpenSystem.C",
+				 0, 0, "\1\0\0\0", 4);
 		}
 	}
 }
@@ -242,7 +322,16 @@ int _ILLinkerIsModule(ILClass *classInfo)
 			return 1;
 		}
 	}
-	return 0;
+	return (ILLinkerFindAttribute(ILToProgramItem(classInfo),
+							 	  "ModuleScopeAttribute",
+							 	  "OpenSystem.C", 0, 0) != 0);
+}
+
+int _ILLinkerIsGlobalScope(ILClass *classInfo)
+{
+	return (ILLinkerFindAttribute(ILToProgramItem(classInfo),
+							 	  "GlobalScopeAttribute",
+							 	  "OpenSystem.C", 0, 0) != 0);
 }
 
 #ifdef	__cplusplus

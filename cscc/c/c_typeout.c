@@ -59,10 +59,10 @@ void CTypeMarkForOutput(ILGenInfo *info, ILType *type)
 	{
 		classInfo = ILType_ToValueType(type);
 		name = ILClass_Name(classInfo);
-		if(!strncmp(name, "struct ", 7) ||
-		   !strncmp(name, "union ", 6) ||
-		   !strncmp(name, "enum ", 5) ||
-		   !strncmp(name, "array ", 6))
+		if(!strncmp(name, "struct_", 7) ||
+		   !strncmp(name, "union_", 6) ||
+		   !strncmp(name, "enum_", 5) ||
+		   !strncmp(name, "array_", 6))
 		{
 			/* Scan up to find the outermost nesting level */
 			while(ILClass_NestedParent(classInfo) != 0)

@@ -44,12 +44,12 @@ ILType *CTypeCreateStructOrUnion(ILGenInfo *info, const char *name,
 	/* Determine which prefix to use */
 	if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
 	{
-		prefix = "struct ";
+		prefix = "struct_";
 		prefixLen = 7;
 	}
 	else
 	{
-		prefix = "union ";
+		prefix = "union_";
 		prefixLen = 6;
 	}
 
@@ -115,13 +115,13 @@ ILType *CTypeCreateEnum(ILGenInfo *info, const char *name,
 		funcNameLen = strlen(funcName) + 1;
 	}
 
-	/* Create a new name by prepending "enum " to the name */
+	/* Create a new name by prepending "enum_" to the name */
 	newName = (char *)ILMalloc(strlen(name) + funcNameLen + 6);
 	if(!newName)
 	{
 		ILGenOutOfMemory(info);
 	}
-	strcpy(newName, "enum ");
+	strcpy(newName, "enum_");
 	if(funcNameLen > 0)
 	{
 		strcpy(newName + 5, funcName);
@@ -212,7 +212,7 @@ static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
 	ILField *field;
 
 	/* Format the name of the array type */
-	name = AppendThree(info, "array ",
+	name = AppendThree(info, "array_",
 				FormatArrayName(info, elemType, size, isOpen), 0);
 
 	/* See if we already have a type with this name */
@@ -572,7 +572,7 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 	/* Format the name of the type */
 	if(funcName && *funcName != '\0')
 	{
-		/* Format the name as "struct func(N)" */
+		/* Format the name as "struct_func(N)" */
 		sprintf(name, "(%ld)", number);
 		newName = ILDupString(funcName);
 		if(!newName)
@@ -581,23 +581,23 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 		}
 		if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
 		{
-			newName = AppendThree(info, "struct ", newName, name);
+			newName = AppendThree(info, "struct_", newName, name);
 		}
 		else
 		{
-			newName = AppendThree(info, "union ", newName, name);
+			newName = AppendThree(info, "union_", newName, name);
 		}
 	}
 	else
 	{
-		/* Format the name as "struct (N)" */
+		/* Format the name as "struct_(N)" */
 		if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
 		{
-			sprintf(name, "struct (%ld)", number);
+			sprintf(name, "struct_(%ld)", number);
 		}
 		else
 		{
-			sprintf(name, "union (%ld)", number);
+			sprintf(name, "union_(%ld)", number);
 		}
 		newName = ILDupString(name);
 		if(!newName)
@@ -690,13 +690,13 @@ ILType *CTypeDefineAnonEnum(ILGenInfo *info, const char *funcName)
 	number = (long)(ILImageNumTokens(info->image, IL_META_TOKEN_TYPE_DEF) + 1);
 	sprintf(name, "(%ld)", number);
 
-	/* Create a new name by prepending "enum " to the name */
+	/* Create a new name by prepending "enum_" to the name */
 	newName = (char *)ILMalloc(strlen(name) + funcNameLen + 6);
 	if(!newName)
 	{
 		ILGenOutOfMemory(info);
 	}
-	strcpy(newName, "enum ");
+	strcpy(newName, "enum_");
 	if(funcNameLen > 0)
 	{
 		strcpy(newName + 5, funcName);
@@ -753,7 +753,7 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	ILClassLayout *layout = ILClassLayoutGetFromOwner(classInfo);
 	ILUInt32 size, align;
 	ILUInt32 classSize, offset;
-	int isUnion = (strncmp(ILClass_Name(classInfo), "union ", 6) == 0);
+	int isUnion = (strncmp(ILClass_Name(classInfo), "union_", 6) == 0);
 	ILField *field;
 
 	/* Convert open arrays into zero-length arrays, so that
@@ -1333,12 +1333,12 @@ static char *CreateNewAnonName(ILGenInfo *info, ILType *type,
 	structKind = CTypeGetStructKind(type);
 	if(structKind == C_STKIND_STRUCT || structKind == C_STKIND_STRUCT_NATIVE)
 	{
-		strcpy(name, "struct (");
+		strcpy(name, "struct_(");
 		posn = 8;
 	}
 	else
 	{
-		strcpy(name, "union (");
+		strcpy(name, "union_(");
 		posn = 7;
 	}
 	value = 0;
@@ -1779,7 +1779,7 @@ int CTypeIsStruct(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "struct ", 7))
+		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "struct_", 7))
 		{
 			return 1;
 		}
@@ -1792,7 +1792,7 @@ int CTypeIsUnion(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "union ", 6))
+		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "union_", 6))
 		{
 			return 1;
 		}
@@ -1805,7 +1805,7 @@ int CTypeGetStructKind(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "struct ", 7))
+		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "struct_", 7))
 		{
 			if(ILClass_IsExplicitLayout(ILType_ToValueType(type)))
 			{
@@ -1816,7 +1816,7 @@ int CTypeGetStructKind(ILType *type)
 				return C_STKIND_STRUCT_NATIVE;
 			}
 		}
-		else if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "union ", 6))
+		else if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "union_", 6))
 		{
 			if(ILClassLayoutGetFromOwner(ILType_ToValueType(type)) != 0)
 			{
@@ -1836,7 +1836,7 @@ int CTypeIsEnum(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "enum ", 5))
+		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "enum_", 5))
 		{
 			return 1;
 		}
@@ -1849,7 +1849,7 @@ int CTypeIsAnonEnum(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "enum (", 6))
+		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "enum_(", 6))
 		{
 			return 1;
 		}
@@ -1862,7 +1862,7 @@ int CTypeIsArray(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "array ", 6))
+		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "array_", 6))
 		{
 			return 1;
 		}
@@ -1893,7 +1893,7 @@ int CTypeIsOpenArray(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "array ", 6))
+		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "array_", 6))
 		{
 			field = FindArrayElemField(ILType_ToValueType(type));
 			if(field)
@@ -1950,10 +1950,10 @@ int CTypeIsForeign(ILType *type)
 	if(ILType_IsValueType(type))
 	{
 		name = ILClass_Name(ILType_ToValueType(type));
-		if(!strncmp(name, "struct ", 7) ||
-		   !strncmp(name, "union ", 6) ||
-		   !strncmp(name, "enum ", 5) ||
-		   !strncmp(name, "array ", 6))
+		if(!strncmp(name, "struct_", 7) ||
+		   !strncmp(name, "union_", 6) ||
+		   !strncmp(name, "enum_", 5) ||
+		   !strncmp(name, "array_", 6))
 		{
 			/* This is a specially-constructed value type of our own */
 			return 0;
@@ -2279,7 +2279,7 @@ ILUInt32 CTypeSizeAndAlign(ILType *_type, ILUInt32 *align)
 		}
 
 		/* If the type is an open-ended array, then it is unknown */
-		if(!strncmp(ILClass_Name(classInfo), "array ", 6))
+		if(!strncmp(ILClass_Name(classInfo), "array_", 6))
 		{
 			if(CTypeIsOpenArray(type))
 			{
@@ -2424,9 +2424,9 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 	{
 		/* Recognise C value types */
 		cname = ILClass_Name(ILType_ToValueType(type));
-		if(!strncmp(cname, "struct ", 7) ||
-		   !strncmp(cname, "union ", 6) ||
-		   !strncmp(cname, "enum ", 5))
+		if(!strncmp(cname, "struct_", 7) ||
+		   !strncmp(cname, "union_", 6) ||
+		   !strncmp(cname, "enum_", 5))
 		{
 			name = ILDupString(cname);
 			if(!name)
@@ -2435,7 +2435,7 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 			}
 			return name;
 		}
-		else if(!strncmp(cname, "array ", 6))
+		else if(!strncmp(cname, "array_", 6))
 		{
 			if(CTypeIsOpenArray(type))
 			{

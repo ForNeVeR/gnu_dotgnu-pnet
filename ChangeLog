@@ -1,4 +1,10 @@
 
+2004-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_typeout.c, cscc/c/c_types.c, doc/c_language_abi.html:
+	use prefixes such as "struct_" instead of "struct ", so that
+	the resultant C types are visible to C# programs.
+
 2004-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_declspec.c, cscc/c/c_oper.tc, doc/c_language_abi.html,

@@ -23,6 +23,9 @@
 	System.Windows.Forms/RadioButton.cs: attempt to reduce button
 	flicker by only redrawing when a real state change occurs.
 
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: draw the
+	drop shadow portion of disabled glyphs.
+
 2003-11-20  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Win32/DrawingGraphics.cs,

@@ -910,6 +910,8 @@ internal class DefaultThemePainter : IThemePainter
 				(Graphics graphics, int x, int y, int width, int height,
 				 CaptionButton button, ButtonState state)
 			{
+				Color color;
+
 				// Draw the border on the button.
 				DrawButton(graphics, x, y, width, height, state,
 						   SystemColors.ControlText, SystemColors.Control,
@@ -922,8 +924,60 @@ internal class DefaultThemePainter : IThemePainter
 					++y;
 				}
 
+				// Draw the inactive drop shadow glyph on the button.
+				if((state & ButtonState.Inactive) != 0)
+				{
+					color = SystemColors.ControlLightLight;
+					switch(button)
+					{
+						case CaptionButton.Close:
+						{
+							DrawGlyph(graphics, x + 1, y + 1, width, height,
+									  Glyphs.close_button_bits,
+									  Glyphs.close_button_width,
+									  Glyphs.close_button_height, color);
+						}
+						break;
+
+						case CaptionButton.Minimize:
+						{
+							DrawGlyph(graphics, x + 1, y + 1, width, height,
+									  Glyphs.minimize_button_bits,
+									  Glyphs.minimize_button_width,
+									  Glyphs.minimize_button_height, color);
+						}
+						break;
+
+						case CaptionButton.Maximize:
+						{
+							DrawGlyph(graphics, x + 1, y + 1, width, height,
+									  Glyphs.maximize_button_bits,
+									  Glyphs.maximize_button_width,
+									  Glyphs.maximize_button_height, color);
+						}
+						break;
+
+						case CaptionButton.Restore:
+						{
+							DrawGlyph(graphics, x + 1, y + 1, width, height,
+									  Glyphs.restore_button_bits,
+									  Glyphs.restore_button_width,
+									  Glyphs.restore_button_height, color);
+						}
+						break;
+
+						case CaptionButton.Help:
+						{
+							DrawGlyph(graphics, x + 1, y + 1, width, height,
+									  Glyphs.help_button_bits,
+									  Glyphs.help_button_width,
+									  Glyphs.help_button_height, color);
+						}
+						break;
+					}
+				}
+
 				// Determine the color to use for the glyph.
-				Color color;
 				if((state & ButtonState.Inactive) != 0)
 				{
 					color = SystemColors.ControlDark;
@@ -1155,6 +1209,11 @@ internal class DefaultThemePainter : IThemePainter
 				else if((state & ButtonState.Inactive) != 0)
 				{
 					color = SystemColors.ControlDark;
+					DrawGlyph(graphics, x + 1, y + 1, width, height,
+							  Glyphs.drop_down_arrow_bits,
+							  Glyphs.drop_down_arrow_width,
+							  Glyphs.drop_down_arrow_height,
+							  SystemColors.ControlLightLight);
 				}
 				else
 				{
@@ -1553,12 +1612,12 @@ internal class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw a three-state check box control.
-	[TODO]
 	public virtual void DrawMixedCheckBox
 				(Graphics graphics, int x, int y, int width,
 				 int height, ButtonState state)
 			{
-				// TODO
+				DrawCheckBox(graphics, x, y, width, height,
+							 state | (ButtonState)0x10000);
 			}
 
 	// Draw a radio button control.
@@ -1836,6 +1895,7 @@ internal class DefaultThemePainter : IThemePainter
 
 				// Get the drawing color and adjust for the pressed state.
 				Color color;
+				Color inactiveColor = ControlPaint.LightLight(backColor);
 				if((state & ButtonState.Pushed) != 0)
 				{
 					color = foreColor;
@@ -1844,11 +1904,54 @@ internal class DefaultThemePainter : IThemePainter
 				}
 				else if((state & ButtonState.Inactive) != 0)
 				{
-					color = ControlPaint.LightLight(foreColor);
+					color = ControlPaint.Dark(backColor);
 				}
 				else
 				{
 					color = foreColor;
+				}
+
+				// Draw the inactive drop-down glyph for the button.
+				if((state & ButtonState.Inactive) != 0)
+				{
+					switch (button)
+					{
+						case ScrollButton.Up:
+						{
+							DrawGlyph(graphics, x + 1, y + 1, width, height,
+									  Glyphs.up_arrow_bits,
+									  Glyphs.up_arrow_width,
+									  Glyphs.up_arrow_height, inactiveColor);
+						}
+						break;
+	
+						case ScrollButton.Down:
+						{
+							DrawGlyph(graphics, x + 1, y + 1, width, height,
+									  Glyphs.down_arrow_bits,
+									  Glyphs.down_arrow_width,
+									  Glyphs.down_arrow_height, inactiveColor);
+						}
+						break;
+	
+						case ScrollButton.Left:
+						{
+							DrawGlyph(graphics, x + 1, y + 1, width, height,
+									  Glyphs.left_arrow_bits,
+									  Glyphs.left_arrow_width,
+									  Glyphs.left_arrow_height, inactiveColor);
+						}
+						break;
+	
+						case ScrollButton.Right:
+						{
+							DrawGlyph(graphics, x + 1, y + 1, width, height,
+									  Glyphs.right_arrow_bits,
+									  Glyphs.right_arrow_width,
+									  Glyphs.right_arrow_height, inactiveColor);
+						}
+						break;
+					}
 				}
 
 				// Draw the glyph for the button.

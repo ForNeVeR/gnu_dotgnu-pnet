@@ -46,16 +46,20 @@ int ILNativeFloatIsNaN(ILNativeFloat value)
 
 int ILNativeFloatIsFinite(ILNativeFloat value)
 {
+#ifdef hpux
+	return isfinite(value);
+#else /* !hpux */
 #ifdef HAVE_FINITE
 	return finite(value);
-#else
+#else /* !HAVE_FINITE */
 #if defined(HAVE_ISNAN) && defined(HAVE_ISINF)
 	return (!isnan(value) && isinf(value) == 0);
 #else
 	#error "Don't know how to determine if floating point numbers are finite"
 	return 1;
 #endif
-#endif
+#endif /* !HAVE_FINITE */
+#endif /* !hpux */
 }
 
 #ifdef	__cplusplus

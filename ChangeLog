@@ -10,6 +10,9 @@
 	to prevent problems with Mono installing its own "ilasm" over
 	the top of ours.
 
+	* image/sig_writer.c (WriteType): fix the writing of multi-dimensional
+	array types (Bug #1961).
+
 2002-12-11  Dawkins, David  <david.dawkins@brooks-pri.com>
 
 	* make_patch.sh: warn the user if updates occurred during the

@@ -360,6 +360,7 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				/* Other types of arrays */
 				unsigned long rank;
 				unsigned long sizes;
+				unsigned long num;
 				int needSizes;
 				ILType *elemType;
 
@@ -416,7 +417,8 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				if(needSizes)
 				{
 					elemType = type;
-					while(ILType_IsComplex(elemType) &&
+					num = sizes;
+					while(num > 0 && ILType_IsComplex(elemType) &&
 					      (elemType->kind__ == IL_TYPE_COMPLEX_ARRAY ||
 						   elemType->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 					{
@@ -425,6 +427,7 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 							return 0;
 						}
 						elemType = elemType->un.array__.elemType__;
+						--num;
 					}
 				}
 				if(!WriteValue(buffer, rank))
@@ -432,7 +435,8 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 					return 0;
 				}
 				elemType = type;
-				while(ILType_IsComplex(elemType) &&
+				num = rank;
+				while(num > 0 && ILType_IsComplex(elemType) &&
 				      (elemType->kind__ == IL_TYPE_COMPLEX_ARRAY ||
 					   elemType->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 				{
@@ -442,6 +446,7 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 						return 0;
 					}
 					elemType = elemType->un.array__.elemType__;
+					--num;
 				}
 			}
 			break;

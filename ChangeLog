@@ -10,6 +10,9 @@
 	* ilasm/ilasm_grammar.y: approve & commit Sasa Jovanic's (sasa_j@mail.ru)
 	patch for Bison 1.5 errors.
 
+	* cscc/csharp/cs_gather.c: convert the Errors in ReportDuplicates into
+	Warnings. Similarly for the 'override' warnings.
+
 2002-10-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify.c: turn off verify debug mode, accidentally

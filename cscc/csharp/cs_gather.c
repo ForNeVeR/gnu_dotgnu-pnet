@@ -498,7 +498,7 @@ static void ReportDuplicates(ILNode *node, ILMember *newMember,
 	else if((modifiers & CS_SPECIALATTR_NEW) == 0)
 	{
 		/* The duplicate is in a parent class, and "new" wasn't specified */
-		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
 		  "declaration of `%s' hides an inherited member, "
 		  "and `new' was not present", name);
 	}
@@ -987,7 +987,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 				/* Check for the correct form of virtual method overrides */
 				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
 				{
-					CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+					CCWarningOnLine(yygetfilename(method), yygetlinenum(method),
 			  			"declaration of `%s' overrides an inherited member, "
 						"and `override' was not present", name);
 				}

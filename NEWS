@@ -1,4 +1,13 @@
 
+0.6.6 (29 May 2004)
+
+	* Use dependency tracking in Makefile's because cscc supports it.
+	* Make word sizes dynamic, and remove __WORDSIZE.
+	* Implement "fcntl".
+	* Implement the basic infrastructure for socket and netdb functions.
+	* Import inet* routines from glibc.
+	* Mismatched definitions for __pt_thread_run and __syscall_seek (Gopal V).
+
 0.6.4 (13 March 2004)
 
 	* Time functions.

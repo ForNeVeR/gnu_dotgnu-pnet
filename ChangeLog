@@ -41,6 +41,9 @@
 	and warning messages so we don't get "error: error" and
 	"warning: warning".
 
+	* doc/pnettools.texi: document differences in behaviour between what
+	cscc accepts and what the C# standard defines.
+
 2001-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_cast.tc, cscc/cs_lvalue.tc, cscc/cs_oper.tc,

@@ -107,6 +107,7 @@ curve for new users.
 * Other Options::           Other options supported by cscc
 * Language Plugins::        Adding other languages to cscc
 * Compiling to the JVM::    Compiling source to JVM bytecode
+* Differences::             Differences between cscc and standard C#
 @end menu
 
 @c -----------------------------------------------------------------------
@@ -972,7 +973,7 @@ to standard error.
 
 @c -----------------------------------------------------------------------
 
-@node Compiling to the JVM, Documentation, Language Plugins, C# Compiler
+@node Compiling to the JVM, Differences, Language Plugins, C# Compiler
 @section Compiling to the JVM
 @cindex Compiling to the JVM
 
@@ -1098,7 +1099,172 @@ compiler or runtime engine.
 
 @c -----------------------------------------------------------------------
 
-@node Documentation, Documentation Sections, Compiling to the JVM, Top
+@node Differences, Special Keywords, Compiling to the JVM, C# Compiler
+@section Differences between cscc and standard C#
+@cindex C# Differences
+
+This section describes the differences between the C# syntax supported
+by cscc, and that described in the ECMA specification.
+
+@menu
+* Special Keywords::        Special cscc keywords
+* Pre-defined Macros::      Macros that are pre-defined by cscc
+* Pre-processor Syntax::    Differences in the pre-processor syntax
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Special Keywords, Pre-defined Macros, Differences, Differences
+@section Special cscc keywords
+@cindex Special Keywords
+
+The C# standard reserves identifiers that begin with @code{__} for
+use by the language implementation.  We provide one such extension:
+@code{__builtin_constant}.
+
+The @code{__builtin_constant} keyword can be used to insert special
+constants into the input stream that may otherwise be difficult to
+represent accurately with regular C# language features.
+
+@table @code
+@cindex float_min builtin constant
+@item __builtin_constant("float_min")
+The minimum value of type @code{float} that can be represented.
+This is approximately -3.40282346638528859e38f.
+
+@cindex float_max builtin constant
+@item __builtin_constant("float_max")
+The maximum value of type @code{float} that can be represented.
+This is approximately 3.40282346638528859e38f.
+
+@cindex float_epsilon builtin constant
+@item __builtin_constant("float_epsilon")
+The smallest positive non-zero value that can be represented by the
+@code{float} type.  This is approximately 1.4e-45f.
+
+@cindex double_min builtin constant
+@item __builtin_constant("double_min")
+The minimum value of type @code{double} that can be represented.
+This is approximately -1.7976931348623157e+308.
+
+@cindex double_max builtin constant
+@item __builtin_constant("double_max")
+The maximum value of type @code{double} that can be represented.
+This is approximately 1.7976931348623157e+308.
+
+@cindex double_epsilon builtin constant
+@item __builtin_constant("double_epsilon")
+The smallest positive non-zero value that can be represented by the
+@code{double} type.  This is approximately 4.94065645841247e-324.
+@end table
+
+The programmer will not normally use these constructs.  Instead,
+they should use the corresponding constants in the @code{System.Single}
+and @code{System.Double} classes.  The @code{__builtin_constant} keyword
+is intended solely for use in implementing the C# library.
+
+@c -----------------------------------------------------------------------
+
+@node Pre-defined Macros, Pre-processor Syntax, Special Keywords, Differences
+@section Pre-defined pre-procesor macros
+@cindex Pre-defined macros
+
+The @code{cscc} compiler defines a number of pre-processor macros prior
+to processing source files.
+
+@table @code
+@cindex __CSCC__ macro
+@item __CSCC__
+This macro is defined by the compiler to let the source know that
+@code{cscc} is being used to process the source.
+
+@cindex __JVM__ macro
+@item __JVM__
+This macro is defined by the compiler to let the source know that
+the output bytecode format is JVM instead of IL.
+
+@cindex DEBUG macro
+@item DEBUG
+This macro is defined if the @code{-g} command-line option is
+present.
+
+@cindex RELEASE macro
+@item RELEASE
+This macro is defined if the @code{-g} command-line option is
+not present.
+@end table
+
+The programmer can disable all pre-defined macros using the @code{-undef}
+command-line option.
+
+@c -----------------------------------------------------------------------
+
+@node Pre-processor Syntax, Documentation, Pre-defined Macros, Differences
+@section Pre-processor syntax
+@cindex Pre-processor syntax
+
+Slight implementation differences between @code{cscc} and other
+C# compilers result in the following issues when using pre-processing
+features:
+
+@itemize @bullet
+@item
+Multi-line comments using @code{/*} and @code{*/} do not have to end
+on the same line.  The C# standard disallows the following:
+
+@example
+#if DEBUG /* multi-line comment on
+multiple lines */
+    ...
+#endif
+@end example
+
+Early C# compilers from other vendors did not allow @code{/*} style
+comments on pre-processor lines at all, so programmers who are writing
+portable code should always use @code{//} style comments on pre-processor
+lines.
+
+@item
+@code{#define} and @code{#undef} directives can appear anywhere in
+the input source.  The C# standard disallows these directives after
+the first line of real code.  e.g.
+
+@example
+#define A
+namespace N
+@{
+    #define B
+    #if B
+    class Class1 @{@}
+    #endif
+@}
+@end example
+
+The @code{cscc} compiler will accept this input.
+
+@item
+In the C# standard, comments within excluded blocks are not processed.
+The following will be parsed correctly if @code{DEBUG} is defined:
+
+@example
+#if DEBUG
+    CheckConsistency();
+#else
+    /* Do something else
+#endif
+@end example
+
+The @code{cscc} compiler will report an error because the @code{#if}
+does not have a matching @code{#endif}.
+
+@item
+@code{#region} and @code{#endregion} directives are ignored.  Unmatched
+region directives will not cause an error.
+@end itemize
+
+@c -----------------------------------------------------------------------
+
+@node Documentation, Documentation Sections, Pre-processor Syntax, Top
 @chapter Documentation tools
 @cindex Documentation
 

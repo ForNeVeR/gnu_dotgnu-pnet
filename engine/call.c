@@ -91,9 +91,10 @@ extern	"C" {
  */
 #define	CHECK_SPACE(nwords)	\
 			do { \
-				if((stacktop + (nwords) ) > stacklimit) \
+				if((stacktop + (nwords)) > stacklimit) \
 				{ \
-		                        thread->thrownException = _ILSystemException(thread, "System.StackOverflowException"); \
+					thread->thrownException = _ILSystemException \
+						(thread, "System.StackOverflowException"); \
 					return 1; \
 				} \
 			} while (0)
@@ -267,12 +268,16 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	/* Create a call frame for the method */
 	if(thread->numFrames >= thread->maxFrames)
 	{
-	    if (!(frame = _ILAllocCallFrame(thread))) {
-		  thread->thrownException = _ILSystemException(thread, "System.StackOverflowException");
-		  return 1;
+	    if((frame = _ILAllocCallFrame(thread)) == 0)
+		{
+			thread->thrownException = _ILSystemException
+				(thread, "System.StackOverflowException");
+			return 1;
 	    }
-	} else {
-	    frame = &(thread->frameStack[(thread->numFrames)++]);
+	}
+	else
+	{
+		frame = &(thread->frameStack[(thread->numFrames)++]);
 	}
 	savePC = thread->pc;
 	frame->method = thread->method;
@@ -603,17 +608,17 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	/* Create a call frame for the method */
 	if(thread->numFrames >= thread->maxFrames)
 	{
-	    if (!(frame = _ILAllocCallFrame(thread))) {
-		  thread->thrownException = 
-			_ILSystemException(thread, 
-			      "System.StackOverflowException");
-		  return 1;
+	    if((frame = _ILAllocCallFrame(thread)) == 0)
+		{
+			thread->thrownException = _ILSystemException
+				(thread, "System.StackOverflowException");
+			return 1;
 	    }
-	} else {
-	    frame = &(thread->frameStack[(thread->numFrames)++]);
 	}
-
-	frame = &(thread->frameStack[(thread->numFrames)++]);
+	else
+	{
+		frame = &(thread->frameStack[(thread->numFrames)++]);
+	}
 	savePC = thread->pc;
 	frame->method = thread->method;
 	frame->pc = IL_INVALID_PC;

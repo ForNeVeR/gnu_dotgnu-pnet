@@ -25,22 +25,28 @@
  */
 ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 {
-   ILUInt32 newsize;
-   ILCallFrame *newframe;
+	ILUInt32 newsize;
+	ILCallFrame *newframe;
 
-   /*  Calculate target frame size */
-   newsize = thread->maxFrames * 2;
+	/* Calculate target frame size */
+	newsize = thread->maxFrames * 2;
 
-   if (!(newframe = (ILCallFrame *)ILGCAllocPersistent(sizeof(ILCallFrame) * newsize)))
-      return 0;
+	/* Allocate the new frame and copy the old contents into it */
+	if((newframe = (ILCallFrame *)ILGCAllocPersistent
+				(sizeof(ILCallFrame) * newsize)) == 0)
+	{
+		return 0;
+	}
+	ILMemCpy(newframe, thread->frameStack,
+			 sizeof(ILCallFrame) * thread->maxFrames);
 
-   ILMemCpy(newframe, thread->frameStack, sizeof(ILCallFrame) * thread->maxFrames);
-   ILGCFreePersistent(thread->frameStack);
-   
-   thread->frameStack = newframe;
-   thread->maxFrames = newsize;
+	/* Free the old frame stack and copy the new one into place */
+	ILGCFreePersistent(thread->frameStack);
+	thread->frameStack = newframe;
+	thread->maxFrames = newsize;
 
-   return &thread->frameStack[thread->numFrames++];
+	/* Return the new frame to the caller */
+	return &(thread->frameStack[(thread->numFrames)++]);
 }
 
 #ifdef IL_DUMP_CVM

@@ -13,7 +13,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH ilrun 1 "31 March 2002" "Southern Storm Software" "Portable.NET Development Tools"
+.TH ilrun 1 "5 May 2002" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 ilrun \- the Portable.NET runtime engine
 .SH SYNOPSIS
@@ -59,6 +59,10 @@ is the directory where you installed Portable.NET (e.g. "\fC/usr/local\fR").
 .B \-\-heap\-size \fInum\fR, \-H \fInum\fR
 Set the size of the heap to \fInum\fR kilobytes.  By default, the
 heap is unlimited in size.
+.TP
+.B \-\-stack\-size \fInum\fR, \-S \fInum\fR
+Set the size of the operation stack to \fInum\fR kilobytes.  By default, the
+stack is 8k in size.
 .TP
 .B \-\-library\-dir \fIdir\fR, \-L \fIdir\fR
 Add \fIdir\fR to the list of directories to be searched for libraries

@@ -345,10 +345,8 @@ ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n);
 ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame);
 
 /*
- * Reallocate the call frames for a given thread in order to provide more space.
- *
- * This simply allocates twice what was already there.  
- * It could be more clever, but why?
+ * Reallocate the call frames for a given thread in order
+ * to provide more space.  Returns NULL if out of memory.
  */
 ILCallFrame *_ILAllocCallFrame(ILExecThread *thread);
 

@@ -52,11 +52,15 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process);
 static ILCmdLineOption const options[] = {
 	{"-H", 'H', 1, 0, 0},
 	{"--heap-size", 'H', 1,
-		"--heap-size value  or -H value",
+		"--heap-size value       or -H value",
 		"Set the maximum size of the heap to `value' kilobytes."},
+	{"-S", 'S', 1, 0, 0},
+	{"--stack-size", 'S', 1, 
+	        "--stack-size value  or -S value",
+	        "Set the operation stack size to `value' kilobytes."},
 	{"-L", 'L', 1, 0, 0},
 	{"--library-dir", 'L', 1,
-		"--library-dir dir  or -L dir",
+		"--library-dir dir       or -L dir",
 		"Specify a directory to search for libraries."},
 #if defined(linux) || defined(__linux) || defined(__linux__)
 	{"--register", 'r', 0,
@@ -68,7 +72,7 @@ static ILCmdLineOption const options[] = {
 #endif
 	{"-v", 'v', 0, 0, 0},
 	{"--version", 'v', 0,
-		"--version          or -v",
+		"--version               or -v",
 		"Print the version of the program"},
 	{"--help", 'h', 0,
 		"--help",
@@ -82,11 +86,6 @@ static ILCmdLineOption const options[] = {
 	{"--insn-profile", 'I', 0, 0, 0},
 	{"-M", 'M', 0, 0, 0},
 	{"--method-profile", 'M', 0, 0, 0},
-
-	{"-S", 'S', 1, 0, 0},
-	{"--stack-size", 'S', 1, 
-	        "--stack-size value or -S value",
-	        "Set the operation stack size to 'value'."},
 
 	{0, 0, 0, 0, 0}
 };
@@ -132,12 +131,13 @@ int main(int argc, char *argv[])
 		{
 			case 'S':
 			{
-			        stackSize = 0;
+				stackSize = 0;
 				while(*param >= '0' && *param <= '9')
-			        {
-				        stackSize = stackSize * 10 + (unsigned long)(*param - '0');
+				{
+					stackSize = stackSize * 10 + (unsigned long)(*param - '0');
 					++param;
-			        }
+				}
+				stackSize *= 1024;
 			}
 			break;
 

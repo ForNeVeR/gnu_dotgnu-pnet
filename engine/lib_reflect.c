@@ -897,7 +897,7 @@ System_Array *_IL_Assembly_GetExportedTypes(ILExecThread *_thread,
 	if(item && _ILClrCheckItemAccess(_thread, item)) 
 	{
 		num = ILImageNumTokens (image, IL_META_TOKEN_TYPE_DEF);
-		array = (System_Array *)ILExecThreadNew(_thread, "[oSystem.Object;",
+		array = (System_Array *)ILExecThreadNew(_thread, "[oSystem.Type;",
 												"(Ti)V", (ILVaInt)num);
 		if(!array)
 		{
@@ -921,7 +921,7 @@ System_Array *_IL_Assembly_GetExportedTypes(ILExecThread *_thread,
 	}
 	/* Invalid item, or insufficient access: return a zero-element array */
 	return (System_Array *)ILExecThreadNew
-				(_thread, "[oSystem.Object;", "(Ti)V", (ILVaInt)0);
+				(_thread, "[oSystem.Type;", "(Ti)V", (ILVaInt)0);
 }
 
 /*
@@ -1353,7 +1353,7 @@ System_Array *_IL_Assembly_GetTypes(ILExecThread *_thread, ILObject *_this)
 	if(item && _ILClrCheckItemAccess(_thread, item)) 
 	{
 		num = ILImageNumTokens (image, IL_META_TOKEN_TYPE_DEF);
-		array = (System_Array *)ILExecThreadNew(_thread, "[oSystem.Object;",
+		array = (System_Array *)ILExecThreadNew(_thread, "[oSystem.Type;",
 												"(Ti)V", (ILVaInt)num);
 		if(!array)
 		{
@@ -1377,7 +1377,7 @@ System_Array *_IL_Assembly_GetTypes(ILExecThread *_thread, ILObject *_this)
 	}
 	/* Invalid item, or insufficient access: return a zero-element array */
 	return (System_Array *)ILExecThreadNew
-				(_thread, "[oSystem.Object;", "(Ti)V", (ILVaInt)0);
+				(_thread, "[oSystem.Type;", "(Ti)V", (ILVaInt)0);
 }
 
 /*
@@ -3261,7 +3261,7 @@ System_Array *_IL_Module_GetTypes(ILExecThread *_thread, ILObject *_this)
 	{
 		ILImage *image = ILProgramItem_Image(module);
 		num = ILImageNumTokens (image, IL_META_TOKEN_TYPE_DEF);
-		array = (System_Array *)ILExecThreadNew(_thread, "[oSystem.Object;",
+		array = (System_Array *)ILExecThreadNew(_thread, "[oSystem.Type;",
 												"(Ti)V", (ILVaInt)num);
 		if(!array)
 		{

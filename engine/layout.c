@@ -447,8 +447,8 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 
 	/* Allocate the vtable and copy the parent's vtable into it */
 	if((vtable = (ILMethod **)
-			_ILHeapCalloc(&(thread->process->heap),
-						  layout->vtableSize * sizeof(ILMethod *))) == 0)
+			ILMemStackAllocItem(&(info->programItem.image->memStack),
+						        layout->vtableSize * sizeof(ILMethod *))) == 0)
 	{
 		info->userData = 0;
 		return 0;
@@ -465,7 +465,7 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 	{
 		if((method->member.attributes & IL_META_METHODDEF_VIRTUAL) != 0)
 		{
-			classPrivate->vtable[method->index] = method;
+			vtable[method->index] = method;
 		}
 	}
 
@@ -491,6 +491,7 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 	classPrivate->alignment = layout->alignment;
 	classPrivate->vtableSize = layout->vtableSize;
 	classPrivate->vtable = vtable;
+	classPrivate->inLayout = 0;
 	layout->vtable = vtable;
 
 	/* Done */

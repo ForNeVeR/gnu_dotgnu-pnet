@@ -12,6 +12,10 @@
 	* engine/method_cache.c: work around compilers that don't allow
 	arithmetic on void * pointers.
 
+	* support/thr_choose.h: make sure that CreateThread is redirected
+	to GC_CreateThread under all Win32 environments, because the
+	static library won't properly attach otherwise.
+
 2003-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in: add "mingw" to the set of detected platforms

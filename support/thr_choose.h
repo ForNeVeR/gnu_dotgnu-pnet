@@ -71,6 +71,11 @@
    to ensure that the GC is notified of thread creation */
 #include <gc.h>
 
+/* Make sure that CreateThread is redirected under all Win32 environments */
+#if defined(IL_USE_WIN32_THREADS)
+#define CreateThread GC_CreateThread
+#endif
+
 #else	/* !HAVE_LIBGC */
 
 /* We don't have libgc, so include the system headers directly */

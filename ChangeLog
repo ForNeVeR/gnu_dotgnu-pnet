@@ -1,4 +1,9 @@
 
+2003-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_gather.c: report duplicates for "override"
+	methods correctly (bug #4861).
+
 2003-09-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/vb/vb_scanner.l: '$' is not valid in VB identifiers except

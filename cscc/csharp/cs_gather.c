@@ -1243,6 +1243,12 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 						ILClass_Name(class2),
 						name);
 				}
+				if(ILMember_Owner(member) == classInfo)
+				{
+					ReportDuplicates(method->name, (ILMember *)methodInfo,
+									 member, classInfo,
+									 method->modifiers, name);
+				}
 			}
 			else if(ILMember_Owner(member) == classInfo ||
 			        (!ILMethodIsConstructor(methodInfo) &&

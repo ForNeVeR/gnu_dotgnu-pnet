@@ -2,6 +2,10 @@
 2004-03-27  Gopal V <gopalv82@symonds.net>
 
 	* runtime/System/TimeSpan.cs: Fix minor bug #8291
+	
+	* System.Xml/Private/XmlStreamReader.cs,
+	runtime/System/IO/StreamReader.cs: Length of data is total minus
+	the encoding prefix.
 
 2004-03-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 

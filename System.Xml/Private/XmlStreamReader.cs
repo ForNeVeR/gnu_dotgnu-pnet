@@ -431,9 +431,9 @@ internal class XmlStreamReader : TextReader
 					// Determine the maximum number of bytes that
 					// we can afford to convert into characters.
 					len = encoding.GetMaxByteCount(bufferSize);
-					if(len > inBufferLen)
+					if(len > (inBufferLen-inBufferPosn))
 					{
-						len = inBufferLen;
+						len = inBufferLen-inBufferPosn;
 					}
 
 					// Convert the bytes into characters.

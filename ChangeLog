@@ -7,6 +7,9 @@
 	* image/opcodes.c: adjust the stack behaviour of "newobj" to
 	prevent bytecode verification errors.
 
+	* engine/verify.c: add filename and line number to verification
+	debug messages to assist in finding verification failures.
+
 2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with UTF-7 encoding and

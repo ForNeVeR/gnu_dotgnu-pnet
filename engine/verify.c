@@ -424,12 +424,12 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 #ifdef IL_VERIFY_DEBUG
 #define	VERIFY_REPORT()	\
 			do { \
-				fprintf(stderr, "%s::%s [%lX] - %s\n", \
+				fprintf(stderr, "%s::%s [%lX] - %s at %s:%d\n", \
 						ILClass_Name(ILMethod_Owner(method)), \
 						ILMethod_Name(method), \
 						(unsigned long)(offset + ILMethod_RVA(method) + \
 										code->headerSize), \
-						insn->name); \
+						insn->name, __FILE__, __LINE__); \
 			} while (0)
 #else
 #define	VERIFY_REPORT()	do {} while (0)

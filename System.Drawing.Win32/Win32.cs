@@ -25,6 +25,21 @@ using System.Runtime.InteropServices;
 
 internal class Api
 {
+	// Utility function for swapping colors - BGR to RGB and vice versa
+	public static int SwapRGB(int color)
+	{
+		string zeropad = "000000";
+		string hexcolor = color.ToString("X6");
+
+		hexcolor = zeropad.Substring(0, 6 - (hexcolor.Length)) + hexcolor;
+
+		int b = Convert.ToByte(Convert.ToInt32(hexcolor.Substring(0, 2), 16));
+		int g = Convert.ToByte(Convert.ToInt32(hexcolor.Substring(2, 2), 16));
+		int r = Convert.ToByte(Convert.ToInt32(hexcolor.Substring(4, 2), 16));
+
+		return ((r * 256) + g) * 256 + b;
+	}
+
 	public delegate int WNDPROC( IntPtr hwnd, int msg, int wParam, int lParam);
 
 	public enum WindowClassStyle :uint
@@ -274,6 +289,72 @@ internal class Api
 		BS_DIBPATTERN8X8 = 8,
 		BS_MONOPATTERN = 9
 	}
+
+	// Color types - winuser.h
+	private enum WinUserColor : int
+	{
+		COLOR_SCROLLBAR = 0,
+		COLOR_BACKGROUND = 1,
+		COLOR_ACTIVECAPTION = 2,
+		COLOR_INACTIVECAPTION = 3,
+		COLOR_MENU = 4,
+		COLOR_WINDOW = 5,
+		COLOR_WINDOWFRAME = 6,
+		COLOR_MENUTEXT = 7,
+		COLOR_WINDOWTEXT = 8,
+		COLOR_CAPTIONTEXT = 9,
+		COLOR_ACTIVEBORDER = 10,
+		COLOR_INACTIVEBORDER = 11,
+		COLOR_APPWORKSPACE = 12,
+		COLOR_HIGHLIGHT = 13,
+		COLOR_HIGHLIGHTTEXT = 14,
+		COLOR_BTNFACE = 15,
+		COLOR_BTNSHADOW = 16,
+		COLOR_GRAYTEXT = 17,
+		COLOR_BTNTEXT = 18,
+		COLOR_INACTIVECAPTIONTEXT = 19,
+		COLOR_BTNHIGHLIGHT = 20,
+		COLOR_3DDKSHADOW = 21,
+		COLOR_3DLIGHT = 22,
+		COLOR_INFOTEXT = 23,
+		COLOR_INFOBK = 24,
+		COLOR_HOTLIGHT = 26,
+		COLOR_GRADIENTACTIVECAPTION = 27,
+		COLOR_GRADIENTINACTIVECAPTION = 28,
+		COLOR_MENUHILIGHT = 29,
+		COLOR_MENUBAR = 30
+	}
+
+	// Utility array for mapping KnownColor to WinUserColor
+	public static readonly int[] KnownColorWindowsMap = {
+		0x00000000,
+		(int)WinUserColor.COLOR_ACTIVEBORDER,			// ActiveBorder
+		(int)WinUserColor.COLOR_ACTIVECAPTION,			// ActiveCaption
+		(int)WinUserColor.COLOR_CAPTIONTEXT,			// ActiveCaptionText
+		(int)WinUserColor.COLOR_APPWORKSPACE,			// AppWorkspace
+		(int)WinUserColor.COLOR_BTNFACE,				// Control
+		(int)WinUserColor.COLOR_BTNSHADOW,				// ControlDark
+		(int)WinUserColor.COLOR_3DDKSHADOW,				// ControlDarkDark
+		(int)WinUserColor.COLOR_3DLIGHT,				// ControlLight
+		(int)WinUserColor.COLOR_BTNHIGHLIGHT,			// ControlLightLight
+		(int)WinUserColor.COLOR_BTNTEXT,				// ControlText
+		(int)WinUserColor.COLOR_BACKGROUND,				// Desktop
+		(int)WinUserColor.COLOR_GRAYTEXT,				// GrayText
+		(int)WinUserColor.COLOR_HIGHLIGHT,				// Highlight
+		(int)WinUserColor.COLOR_HIGHLIGHTTEXT,			// HighlightText
+		(int)WinUserColor.COLOR_HOTLIGHT,				// HotTrack
+		(int)WinUserColor.COLOR_INACTIVEBORDER,			// InactiveBorder
+		(int)WinUserColor.COLOR_INACTIVECAPTION,		// InactiveCaption
+		(int)WinUserColor.COLOR_INACTIVECAPTIONTEXT,	// InactiveCaptionText
+		(int)WinUserColor.COLOR_INFOBK,					// Info
+		(int)WinUserColor.COLOR_INFOTEXT,				// InfoText
+		(int)WinUserColor.COLOR_MENUBAR,				// Menu
+		(int)WinUserColor.COLOR_MENU,					// MenuText
+		(int)WinUserColor.COLOR_BTNFACE,				// ScrollBar
+		(int)WinUserColor.COLOR_WINDOW,					// Window
+		(int)WinUserColor.COLOR_WINDOWFRAME,			// WindowFrame
+		(int)WinUserColor.COLOR_WINDOWTEXT				// WindowText
+	};
 
 	public enum FontQuality : byte 
 	{
@@ -893,6 +974,9 @@ internal class Api
 	[DllImport("user32")]
 	public static extern bool CloseWindow(IntPtr hWnd);
 
+	[DllImport("user32")]
+	public extern static int GetSysColor(int nIndex);
+
 	[DllImport("gdi32")]
 	public static extern bool Arc( IntPtr hdc, int nLeftRect,int nTopRect, int nRightRect, int nBottomRect, int nXStartArc, int nYStartArc, int nXEndArc, int nYEndArc );
 
@@ -1037,6 +1121,11 @@ internal class Api
 	[DllImport("gdi32")]
 	public static extern bool DeleteDC(IntPtr hdc);
 
+	// Retrieves Windows version
+	// To obtain e.g. the major version:
+	// windowsMajorVer = GetVersion() & 0xFF;
+	[DllImport("kernel32.dll")]
+	public extern static uint GetVersion();
 }//Api
 
 }

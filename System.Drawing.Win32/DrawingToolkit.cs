@@ -93,36 +93,22 @@ public class DrawingToolkit : IToolkit
 
 	// Resolve a system color to an RGB value.  Returns -1 if the
 	// system does not support the color and a default should be used.
-	// TODO
 	public int ResolveSystemColor(KnownColor color)
 	{
-		return -1;
-		/*ActiveBorder			= 1,
-ActiveCaption			= 2,
-ActiveCaptionText		= 3,
-AppWorkspace			= 4,
-Control					= 5,
-ControlDark				= 6,
-ControlDarkDark			= 7,
-ControlLight			= 8,
-ControlLightLight		= 9,
-ControlText				= 10,
-Desktop					= 11,
-GrayText				= 12,
-Highlight				= 13,
-HighlightText			= 14,
-HotTrack				= 15,
-InactiveBorder			= 16,
-InactiveCaption			= 17,
-InactiveCaptionText		= 18,
-Info					= 19,
-InfoText				= 20,
-Menu					= 21,
-MenuText				= 22,
-ScrollBar				= 23,
-Window					= 24,
-WindowFrame				= 25,
-WindowText				= 26,*/
+		// array out of bounds
+		if ((int)color >= Win32.Api.KnownColorWindowsMap.Length)
+			return -1;
+
+		// map KnownColor to Windows color type
+		int syscolortype = Win32.Api.KnownColorWindowsMap[(int)color];
+			
+		// get BGR value of system color
+		int colorbgr = Win32.Api.GetSysColor(syscolortype);
+
+		// convert the BGR value to RGB
+		int colorrgb = Win32.Api.SwapRGB(colorbgr);
+
+		return colorrgb;
 	}
 
 	// Create an IToolkitGraphics object from a HDC.

@@ -1,3 +1,10 @@
+2004-06-24  Maciek Plewa  <milsim@mil-sim.net>
+
+	* System.Drawing.Win32/DrawingToolkit.cs: implemented system color scheme
+	resolution.
+
+	* System.Drawing.Win32/Win32.cs: added utility color enums
+	(patch #3158, Klaus)
 
 2004-06-23  Gopal V  <gopalv82@yahoo.com>
 

@@ -396,10 +396,10 @@ public class Uri : MarshalByRefObject
 	[TODO]
 	public String MakeRelative(Uri toUri)
 	{
-		if (String.Equals(toUri.Host, this.Host))
+		if (String.Equals(toUri.host, this.host))
 		{
-			String thisUri[] = this.AbsolutePath.Split('/');
-			String otherUri[] = toUri.AbsolutePath.Split('/');
+			String thisUri[] = this.path.Split('/');
+			String otherUri[] = toUri.path.Split('/');
 			int currentItem = 0;
 			StringBuilder myStringBuilder = new StringBuilder();
 
@@ -600,24 +600,84 @@ public class Uri : MarshalByRefObject
 		return Unescape(myStringBuilder.ToString());
 	}
 
-	[TODO]
 	protected virtual String Unescape(String path) // beware, explicitly do this.path
 	{
 		StringBuilder retStr = new StringBuilder(path.Length);
-		StringBuilder tryutf8;
+		int afterPrevPcntSignIndex = 0;
 
 		for (int lastPcntSignIndex = path.IndexOf('%'); lastPcntSignIndex >= 0;
 			// String.IndexOf allows up to String.Length to be the startIndex
 			// so if this throws, it is an error
-			lastPcntSignIndex = path.IndexOf('%', lastPcntSignIndex+1))
+			lastPcntSignIndex = path.IndexOf('%', lastPcntSignIndex))
 		{
-			// TODO: try StringUnescape, and test w/ IsReservedCharacter()
-			// if not, and valid UTF8, push on tryutf8
-			// if neither, don't unescape it
-			// recycle the utf8 holder, BTW
+			// append string up to % sign
+			retStr.Append(path, afterPrevPcntSignIndex, lastPcntSignIndex-afterPrevPcntSignIndex);
+
+			if (IsHexEncoding(path, lastPcntSignIndex))
+			{
+				char c1 = HexUnescape(path, lastPcntSignIndex); // changes lastPcntSignIndex
+
+				switch (c1)
+				{
+				case 2:
+					if (path.Length - lastPcntSignIndex >= 3 && IsHexEncoding(path, lastPcntSignIndex)) // 2nd byte is Hex encoding
+					{
+						int lpsiCopy = lastPcntSignIndex; // save in case not 2-byte UTF8
+						char c2 = HexUnescape(path, lpsiCopy);
+						if ((c2 & 0xC0) == 0x80) // is UTF8 2-byte?
+						{
+							retStr.Append(((c1 & 0x1F) << 6) | (c2 & 0x3F)); // build
+							lastPcntSignIndex = lpsiCopy;
+							break;
+						}
+						else
+							goto default;
+					}
+					else
+						goto default;
+				case 3:
+					if (path.Length - lastPcntSignIndex >= 6 && IsHexEncoding(path, lastPcntSignIndex)
+						&& IsHexEncoding(path, lastPcntSignIndex+3)) // 2nd and 3rd bytes are hex encoded
+					{
+						int lpsiCopy = lastPcntSignIndex; // save again
+						// lpsiCopy will change to compensate
+						char c2 = HexUnescape(path, lpsiCopy), c3 = HexUnescape(path, lpsiCopy);
+						if ((c2 & 0xC0) == 0x80 && (c3 & 0xC0) == 0x80) // is UTF8 3-byte?
+						{
+							retStr.Append(((c1 & 0x0F) << 12) | ((c2 & 0x3F) << 6)
+								| (c3 & 0x3F); // build
+							lastPcntSignIndex = lpsiCopy;
+							break;
+						}
+						else
+							goto default;
+					}
+					else
+						goto default;
+				default:
+					retStr.Append(c1);
+					break;
+				} // switch
+			}
+			else // following % sign is not hex
+				++lastPcntSignIndex; // don't catch the last-found % sign
+			afterPrevPcntSignIndex = lastPcntSignIndex;
 		}
 		// then push on the rest of the string
+		return retStr.Append(path, lastPcntSignIndex).ToString();
 		// and return it
+	}
+
+	private int UTF8SizeFor1stByte(char c)
+	{
+		if ((c & 0x80) == 0)
+			return 1;
+		else if ((c & 0xE0) == 0xC0)
+			return 2;
+		else if ((c & 0xF0) == 0xE0)
+			return 3;
+		else
+			return 0;
 	}
 
 	// properties

@@ -1,3 +1,6 @@
+2002-04-19  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Implemented quite complex Unescape(String).
 
 2002-04-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 

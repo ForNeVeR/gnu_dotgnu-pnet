@@ -336,7 +336,7 @@ public class MessageBox
 						button2 = new Button();
 						button1.Text = S._("SWF_MessageBox_Yes", "&Yes");
 						button2.Text = S._("SWF_MessageBox_No", "&No");
-						button3.Text = null;
+						button3 = null;
 						hasCancel = false;
 					}
 					break;
@@ -347,7 +347,7 @@ public class MessageBox
 						button2 = new Button();
 						button1.Text = S._("SWF_MessageBox_Retry", "&Retry");
 						button2.Text = S._("SWF_MessageBox_Cancel", "Cancel");
-						button3.Text = null;
+						button3 = null;
 						hasCancel = true;
 					}
 					break;

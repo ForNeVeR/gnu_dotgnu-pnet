@@ -1,4 +1,9 @@
 
+2004-04-29  Gopal V <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/MessageBox.cs: Fix NullReference exception
+	for YesNo and RetryCancel message boxes.
+
 2004-04-28  Gopal V <gopalv82@yahoo.com>
 
 	* System.Xml/XmlDocument.cs: Add CreateNavigator protected method to

@@ -34,18 +34,21 @@ class XmlAttribute : XmlNode
 {
 	// Internal state.
 	private NameCache.NameInfo name;
+	internal bool isDefault;
 
 	// Constructors.
 	internal XmlAttribute(XmlNode parent, NameCache.NameInfo name)
 			: base(parent)
 			{
 				this.name = name;
+				this.isDefault = false;
 			}
 	protected internal XmlAttribute(String prefix, String localName,
 									String namespaceURI, XmlDocument doc)
 			: base(doc)
 			{
 				this.name = doc.nameCache.Add(localName, prefix, namespaceURI);
+				this.isDefault = false;
 			}
 
 	// Get the base URI for this document.
@@ -80,7 +83,40 @@ class XmlAttribute : XmlNode
 				}
 				set
 				{
-					// TODO
+					// TODO: if this attribute is a special attribute
+					//       (xmlns/xmlns:/xml:) then the new value
+					//       needs to be reflected in the rest of the
+					//       document tree
+
+					// get the owner document
+					XmlDocument doc = FindOwnerQuick();
+					if(doc == null)
+					{
+						// TODO: figure out what to do here
+						throw new InvalidOperationException();
+					}
+
+					// remove all the old children before continuing
+					RemoveAll();
+
+					// create the namespace manager
+					XmlNamespaceManager ns = new XmlNamespaceManager
+						(doc.NameTable);
+
+					// get the ancestor information
+					String lang; XmlSpace space;
+					CollectAncestorInformation(ref ns, out lang, out space);
+
+					// create the parser context
+					XmlParserContext context = new XmlParserContext
+						(doc.NameTable, ns, lang, space);
+
+					// create the parser
+					XmlTextReader r = new XmlTextReader
+						(value, XmlNodeType.Attribute, context);
+
+					// read the new children into this attribute
+					doc.ReadChildren(r, this);
 				}
 			}
 
@@ -166,10 +202,7 @@ class XmlAttribute : XmlNode
 	// Determine if the attribute value was explictly specified.
 	public virtual bool Specified
 			{
-				get
-				{
-					return true;
-				}
+				get { return isDefault; }
 			}
 
 	// Get or set the value associated with this node.

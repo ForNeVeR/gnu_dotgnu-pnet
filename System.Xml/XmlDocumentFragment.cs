@@ -35,7 +35,7 @@ class XmlDocumentFragment : XmlNode
 	private XmlDocument document;
 
 	// Constructors.
-	internal XmlDocumentFragment(XmlDocument doc) : base(doc)
+	protected internal XmlDocumentFragment(XmlDocument doc) : base(doc)
 			{
 				document = doc;
 			}

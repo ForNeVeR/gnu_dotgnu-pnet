@@ -35,7 +35,33 @@ public abstract class XmlResolver
 									 Type ofObjectToReturn);
 
 	// Resolve a relative URI.
-	public abstract Uri ResolveUri(Uri baseUri, String relativeUri);
+	public virtual Uri ResolveUri(Uri baseUri, String relativeUri)
+			{
+				if(baseUri == null && relativeUri == null)
+				{
+					throw new ArgumentNullException(S._("Xml_UnspecifiedUri"));
+				}
+
+				try
+				{
+					if(baseUri == null)
+					{
+						return new Uri(relativeUri);
+					}
+					else if(relativeUri == null)
+					{
+						return baseUri;
+					}
+					else
+					{
+						return new Uri(baseUri, relativeUri);
+					}
+				}
+				catch(UriFormatException)
+				{
+					return null;
+				}
+			}
 
 	// Set the credentials to use to resolve Web requests.
 	public abstract ICredentials Credentials { set; }

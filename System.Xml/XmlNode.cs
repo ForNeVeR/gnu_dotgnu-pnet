@@ -499,7 +499,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 
 	// Implement the IXPathNavigator interface.
 	[TODO]
-	public XPathNavigator CreateNavigator()
+	public virtual XPathNavigator CreateNavigator()
 			{
 				// TODO
 				return null;
@@ -1098,6 +1098,88 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 					node = node.parent;
 				}
 				return null;
+			}
+
+	// Quickly collect namespace, xml:lang, and xml:space information.
+	internal void CollectAncestorInformation
+				(ref XmlNamespaceManager ns, out String lang,
+				 out XmlSpace space)
+			{
+				// get the first element up the chain
+				XmlElement elem;
+				XmlNodeType ntype = NodeType;
+				if(ntype == XmlNodeType.Attribute)
+				{
+					elem = ((XmlAttribute)this).OwnerElement;
+				}
+				else if(ntype == XmlNodeType.Element)
+				{
+					elem = (XmlElement)this;
+				}
+				else
+				{
+					elem = (XmlElement)ParentNode;
+				}
+
+				// set up for reading the attributes
+				lang = null;
+				space = XmlSpace.None;
+				bool sawLang = false;
+				bool sawSpace = false;
+				Object langQuick = ns.NameTable.Add("lang");
+				Object spaceQuick = ns.NameTable.Add("space");
+				Object xmlQuick = ns.NameTable.Add("xml");
+				Object xmlnsQuick = ns.NameTable.Add("xmlns");
+
+				// read elements and their attributes until we hit the top
+				for(; elem != null; elem = (elem.parent as XmlElement))
+				{
+					foreach(XmlAttribute att in elem.Attributes)
+					{
+						if(((Object)att.Name) == xmlnsQuick)
+						{
+							if(ns.LookupNamespace(String.Empty) == null)
+							{
+								ns.AddNamespace(String.Empty, att.Value);
+							}
+						}
+						else if(((Object)att.Prefix) == xmlnsQuick)
+						{
+							if(ns.LookupNamespace(att.LocalName) == null)
+							{
+								ns.AddNamespace(att.LocalName, att.Value);
+							}
+						}
+						else if(((Object)att.Prefix) == xmlQuick)
+						{
+							if(!sawLang)
+							{
+								if(((Object)att.LocalName) == langQuick)
+								{
+									lang = att.Value;
+									sawLang = true;
+									continue;
+								}
+							}
+							if(!sawSpace)
+							{
+								if(((Object)att.LocalName) == spaceQuick)
+								{
+									if(att.Value == "preserve")
+									{
+										space = XmlSpace.Preserve;
+									}
+									else
+									{
+										space = XmlSpace.Default;
+									}
+									sawSpace = true;
+									continue;
+								}
+							}
+						}
+					}
+				}
 			}
 
 	// Emit an event just before a change.  Returns an argument

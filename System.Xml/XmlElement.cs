@@ -65,7 +65,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Determine if this element node has attributes.
-	public bool HasAttributes
+	public virtual bool HasAttributes
 			{
 				get
 				{
@@ -405,8 +405,8 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Set an attribute to a specific value.
-	public virtual void SetAttribute(String localName, String namespaceURI,
-									 String value)
+	public virtual String SetAttribute
+				(String localName, String namespaceURI, String value)
 			{
 				XmlAttribute attr = GetAttributeNode(localName, namespaceURI);
 				if(attr != null)
@@ -420,6 +420,7 @@ class XmlElement : XmlLinkedNode
 					attr.Value = value;
 					Attributes.Append(attr);
 				}
+				return attr.Value;
 			}
 
 	// Set an attribute by node.

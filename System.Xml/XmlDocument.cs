@@ -217,7 +217,7 @@ class XmlDocument : XmlNode
 			}
 
 	// Set the resolver to use for external resources.
-	public XmlResolver XmlResolver
+	public virtual XmlResolver XmlResolver
 			{
 				set
 				{
@@ -300,6 +300,16 @@ class XmlDocument : XmlNode
 				return new XmlComment(placeholder, text);
 			}
 
+	// Create a default attribute and associate it with this document.
+	protected internal virtual XmlAttribute CreateDefaultAttribute
+				(String prefix, String localName, String namespaceURI)
+			{
+				XmlAttribute att = CreateAttribute
+					(prefix, localName, namespaceURI);
+				att.isDefault = true;
+				return att;
+			}
+
 	// Create a document fragment that is attached to this node.
 	public virtual XmlDocumentFragment CreateDocumentFragment()
 			{
@@ -316,7 +326,7 @@ class XmlDocument : XmlNode
 			}
 
 	// Create an element that is attached to this node.
-	public virtual XmlElement CreateElement(String name)
+	public XmlElement CreateElement(String name)
 			{
 				int colon = name.LastIndexOf(':');
 				if(colon == -1)
@@ -337,8 +347,7 @@ class XmlDocument : XmlNode
 					}
 				}
 			}
-	public virtual XmlElement CreateElement(String qualifiedName,
-											String namespaceURI)
+	public XmlElement CreateElement(String qualifiedName, String namespaceURI)
 			{
 				int colon = qualifiedName.LastIndexOf(':');
 				if(colon == -1)
@@ -592,7 +601,7 @@ class XmlDocument : XmlNode
 			}
 	
 	// Because ml-pnet's System.Data needs it
-	protected virtual XPathNavigator CreateNavigator (XmlNode node)
+	protected internal virtual XPathNavigator CreateNavigator(XmlNode node)
 			{
 				return node.CreateNavigator();
 			}
@@ -684,7 +693,7 @@ class XmlDocument : XmlNode
 			}
 
 	// Read the children of a node.
-	private void ReadChildren(XmlReader r, XmlNode parent)
+	internal void ReadChildren(XmlReader r, XmlNode parent)
 			{
 				if(parent is XmlAttribute)
 				{

@@ -1,3 +1,10 @@
+2004-05-06  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/XmlAttribute.cs, System.Xml/XmlDeclaration.cs,
+	System.Xml/XmlDocument.cs, System.Xml/XmlDocumentFragment.cs,
+	System.Xml/XmlElement.cs, System.Xml/XmlNamespaceManager.cs,
+	System.Xml/XmlNode.cs, System.Xml/XmlResolver.cs: implement a few
+	TODO items and fix several minor mistakes listed on pnetlib-status.
 
 2004-05-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 

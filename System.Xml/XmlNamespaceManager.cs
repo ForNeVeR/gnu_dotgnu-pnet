@@ -333,7 +333,7 @@ public class XmlNamespaceManager : IEnumerable
 			}
 
 	// Get the name table that is used by this namespace manager.
-	public virtual XmlNameTable NameTable
+	public XmlNameTable NameTable
 			{
 				get
 				{

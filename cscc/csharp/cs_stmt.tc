@@ -193,9 +193,25 @@ ILNode_SemAnalysis(ILNode_List)
  */
 ILNode_SemAnalysis(ILNode_If)
 {
+	ILEvalValue evalValue;
 	ILNode_SemAnalysis(node->expr, info, &(node->expr));
 	StmtSem(node->thenClause, info, &(node->thenClause));
 	StmtSem(node->elseClause, info, &(node->elseClause));
+	
+	/* the compiler does do the same optimisation lower down
+	   the codegenerator , but that is not used for return 
+	   value tracking */
+	if(ILNode_EvalConst(node->expr, info, &evalValue))
+	{
+		if(evalValue.un.i4Value)
+		{
+			*parent = node->thenClause;
+		}
+		else
+		{
+			*parent = node->elseClause;
+		}
+	}
 	return CSSemValueDefault;
 }
 

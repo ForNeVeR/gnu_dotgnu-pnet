@@ -4,6 +4,9 @@
 	* cscc/csharp/cs_oper.tc: Handle AssignAdd operations between Objects and
 	Strings as Concats.
 
+	* cscc/csharp/cs_stmt.tc: Reduce if over a constant expression before 
+	doing the flow analysis. (fix bug #9291)
+
 2004-06-10  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Use CSSemSetConstant instead of CSSemSetRValue

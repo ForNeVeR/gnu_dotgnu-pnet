@@ -192,10 +192,12 @@ case IL_OP_LDIND_##name: \
 { \
 	if(STK_UNARY == ILEngineType_M || STK_UNARY == ILEngineType_T) \
 	{ \
-		if(PtrCompatible(stack[stackSize - 1].typeInfo, (type))) \
+		if(unsafeAllowed || \
+		   PtrCompatible(stack[stackSize - 1].typeInfo, (type))) \
 		{ \
 			ILCoderPtrAccess(coder, opcode); \
 			STK_UNARY = (engineType); \
+			STK_UNARY_TYPEINFO = 0; \
 		} \
 		else \
 		{ \
@@ -222,8 +224,9 @@ case IL_OP_STIND_##name: \
 { \
 	if(STK_BINARY_1 == ILEngineType_M || STK_BINARY_1 == ILEngineType_T) \
 	{ \
-		if(STK_BINARY_2 == (engineType) && \
-		   PtrCompatible(stack[stackSize - 2].typeInfo, (type))) \
+		if(unsafeAllowed || \
+		   (STK_BINARY_2 == (engineType) && \
+		    PtrCompatible(stack[stackSize - 2].typeInfo, (type)))) \
 		{ \
 			ILCoderPtrAccess(coder, opcode); \
 			stackSize -= 2; \

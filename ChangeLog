@@ -1,4 +1,9 @@
 
+2002-12-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/verify_ptr.c: allow M and T references to be used as
+	pointers in unsafe mode.
+
 2002-12-28  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_decls.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

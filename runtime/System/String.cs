@@ -502,6 +502,10 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	public void CopyTo(int sourceIndex, char[] destination,
 					   int destinationIndex, int count)
 			{
+				if(destination == null)
+				{
+					throw new ArgumentNullException("destination");
+				}
 				if(sourceIndex < 0 || sourceIndex > length)
 				{
 					throw new ArgumentOutOfRangeException
@@ -572,16 +576,12 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 #endif // !ECMA_COMPAT
 
-	// Format a single-argument string.
+	// Format a single-argument string.  According to the ECMA spec
+	// and the MS documentation, this should throw an exception
+	// if "arg0" is null.  However, this is inconsistent with the
+	// behaviour of all other implementations, which don't throw null.
 	public static String Format(String format, Object arg0)
 			{
-				// This check is peculiar to this method.  Ask ECMA.  Really.
-				if (arg0 == null)
-				{
-					throw new ArgumentNullException("arg0");
-				}
-
-				// Now that the paperwork's done, hand the request along.
 				return Format((IFormatProvider)null, format, arg0);
 			}
 

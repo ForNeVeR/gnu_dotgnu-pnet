@@ -197,7 +197,7 @@ public class TestString : TestCase
 			str1.CopyTo(0,(char[])null,0,0);
 			Fail("str1.CopyTo(0,(char[])null,0,0) should have throws a ArgumentNullException");
 		}
-		catch(NullReferenceException err)
+		catch(ArgumentNullException err)
 		{
 			//worked !
 		}
@@ -282,11 +282,11 @@ public class TestString : TestCase
 		try
 		{
 			String.Format("Er..",null);
-			Fail("String.Format(\"Er...\",null) should throw an ArgumentNullException");
+			// all's well 
 		}
 		catch(ArgumentNullException err)
 		{
-			// all's well 
+			Fail("String.Format(\"Er...\",null) should not throw an ArgumentNullException");
 		}
 
 		try

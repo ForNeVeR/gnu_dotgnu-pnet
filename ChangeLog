@@ -14,6 +14,9 @@
 	runtime/System/Reflection/Emit/TypeBuilder.cs: continue implementation
 	of the Reflection.Emit API.
 
+	* runtime/System/String.cs, tests/runtime/System/TestString.cs:
+	minor compatibility fixes in System.String.
+
 2003-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs,

@@ -1321,6 +1321,7 @@ PrimaryExpression
 			}
 	| '(' Expression ')'		{ $$ = $2; }
 	| '(' CompoundStatement ')'	{ $$ = $2; }
+	| '(' error ')'				{ $$ = ILNode_Error_create(); }
 	;
 
 StringLiteral
@@ -2020,6 +2021,7 @@ EnumSpecifier
 EnumeratorList
 	: EnumeratorListNoComma
 	| EnumeratorListNoComma ','
+	| error
 	;
 
 EnumeratorListNoComma
@@ -2555,6 +2557,7 @@ Statement2
 	| IterationStatement
 	| JumpStatement
 	| AsmStatement
+	| error ';'			{ $$ = ILNode_Empty_create(); }
 	;
 
 LabeledStatement
@@ -2744,6 +2747,9 @@ ExternalDefinition
 				yynodepush();
 			}
 	| Declaration			{ /* Nothing to do here */ }
+	| error ';'
+	| error '}'
+	| ';'
 	;
 
 FunctionDefinition

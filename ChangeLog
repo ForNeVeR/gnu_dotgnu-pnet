@@ -7,6 +7,9 @@
 	support code in place for writing win32 resources and icons
 	(not complete yet).
 
+	* cscc/c/c_grammar.y: add some "error" declarations to the
+	C grammar to improve error handling in the parser.
+
 2003-07-08  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/test_thread.c: Made the test GC aware because

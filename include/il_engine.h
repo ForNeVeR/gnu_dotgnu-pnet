@@ -107,7 +107,7 @@ typedef struct _tagILEngineInternalClassInfo ILEngineInternalClassInfo;
 struct _tagILEngineInternalClassInfo
 {
 	char *name;
-	char *namespace;
+	char *nspace;
 	ILMethodTableEntry *entry;
 };
 

@@ -186,7 +186,7 @@ int _ILFindInternalCall(ILExecProcess *process,ILMethod *method,
 			if(!cmp)
 			{
 				if(!strcmp(namespace, 
-								internalClassList->list[middle].namespace))
+								internalClassList->list[middle].nspace))
 				{
 					/* Search for the method within the class's table */
 					entry = internalClassList->list[middle].entry;

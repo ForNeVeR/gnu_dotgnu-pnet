@@ -54,19 +54,24 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 	extern public String(char c, int count);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern unsafe public String(char *value, int startIndex, int length);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern unsafe public String(char *value);
 
-	//[MethodImpl(MethodImplOptions.InternalCall)]
-	//extern unsafe public String(sbyte *value, int startIndex,
-	//					          int length, Encoding enc);
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
+	extern unsafe public String(sbyte *value, int startIndex,
+					            int length, Encoding enc);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern unsafe public String(sbyte *value, int startIndex, int length);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern unsafe public String(sbyte *value);
 
 	// Implement the ICloneable interface.
@@ -591,9 +596,39 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 			}
 	public int IndexOf(String value, int startIndex, int count)
 			{
-				// TODO.
+				int valueLen;
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				if(startIndex < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex",
+						 Environment.GetResourceString("ArgRange_StringIndex"));
+				}
+				if(count < 0 || (length - startIndex) < count)
+				{
+					throw new ArgumentOutOfRangeException
+						("count",
+						 Environment.GetResourceString("ArgRange_StringRange"));
+				}
+				valueLen = value.length;
+				while((startIndex + valueLen) <= (startIndex + count))
+				{
+					if(EqualRange(startIndex, valueLen, value, 0))
+					{
+						return startIndex;
+					}
+					++startIndex;
+				}
 				return -1;
 			}
+
+	// Internal helper for string index testing.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private bool EqualRange(int srcIndex, int count,
+								   String dest, int destIndex);
 
 	// Get the index of any character within an array.
 	public int IndexOfAny(char[] anyOf)
@@ -728,11 +763,11 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 	// Get the last index of a specific character within the string.
 	public int LastIndexOf(char value)
 			{
-				return LastIndexOf(value, length, length);
+				return LastIndexOf(value, length - 1, length);
 			}
 	public int LastIndexOf(char value, int startIndex)
 			{
-				return LastIndexOf(value, startIndex, startIndex);
+				return LastIndexOf(value, startIndex, startIndex + 1);
 			}
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public int LastIndexOf(char value, int startIndex, int count);
@@ -740,26 +775,52 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 	// Get the last index of a specific sub-string within the string.
 	public int LastIndexOf(String value)
 			{
-				return LastIndexOf(value, length, length);
+				return LastIndexOf(value, length - 1, length);
 			}
 	public int LastIndexOf(String value, int startIndex)
 			{
-				return LastIndexOf(value, startIndex, startIndex);
+				return LastIndexOf(value, startIndex, startIndex + 1);
 			}
 	public int LastIndexOf(String value, int startIndex, int count)
 			{
-				// TODO.
+				int valueLen;
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				if(startIndex < 0 || startIndex >= length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex",
+						 Environment.GetResourceString("ArgRange_StringIndex"));
+				}
+				if(count < 0 || (startIndex - count) < -1)
+				{
+					throw new ArgumentOutOfRangeException
+						("count",
+						 Environment.GetResourceString("ArgRange_StringRange"));
+				}
+				valueLen = value.length;
+				while((startIndex - valueLen + 1) >= (startIndex - count + 1))
+				{
+					if(EqualRange(startIndex - valueLen + 1,
+								  valueLen, value, 0))
+					{
+						return startIndex;
+					}
+					--startIndex;
+				}
 				return -1;
 			}
 
 	// Get the last index of any character within an array.
 	public int LastIndexOfAny(char[] anyOf)
 			{
-				return LastIndexOfAny(anyOf, length, length);
+				return LastIndexOfAny(anyOf, length - 1, length);
 			}
 	public int LastIndexOfAny(char[] anyOf, int startIndex)
 			{
-				return LastIndexOfAny(anyOf, startIndex, startIndex);
+				return LastIndexOfAny(anyOf, startIndex, startIndex + 1);
 			}
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public int LastIndexOfAny(char[] anyOf, int startIndex, int count);
@@ -866,8 +927,82 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 			{
 				return Split(separator, Int32.MaxValue);
 			}
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public String[] Split(char[] separator, int count);
+	public String[] Split(char[] separator, int count)
+			{
+				int numStrings;
+				int posn, len;
+				String[] array;
+				int arrayPosn;
+				int start;
+
+				// Validate the parameters.
+				if(count < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("count",
+						 Environment.GetResourceString("ArgRange_NonNegative"));
+				}
+				else if(count == 0)
+				{
+					// Return the entire string in a single-element array.
+					array = new String [1];
+					array[0] = this;
+					return array;
+				}
+
+				// Count the number of sub-strings.
+				if(separator == null || separator.Length == 0)
+				{
+					separator = WhitespaceChars;
+				}
+				numStrings = 1;
+				len = Length;
+				posn = 0;
+				while(posn < len)
+				{
+					posn = IndexOfAny(separator, posn, len - posn);
+					if(posn != -1)
+					{
+						++numStrings;
+						++posn;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				// Allocate the final array.
+				if(numStrings > count)
+				{
+					array = new String [count];
+				}
+				else
+				{
+					array = new String [numStrings];
+				}
+
+				// Construct the elements for the array.
+				arrayPosn = 0;
+				len = Length;
+				start = 0;
+				posn = 0;
+				while(posn < len)
+				{
+					posn = IndexOfAny(separator, posn, len - posn);
+					if(posn == -1)
+					{
+						break;
+					}
+					array[arrayPosn] = Substring(start, posn - start);
+					++arrayPosn;
+					start = posn + 1;
+				}
+				array[arrayPosn] = Substring(start);
+
+				// Return the final array to the caller.
+				return array;
+			}
 
 	// Determine if this string starts with a particular string.
 	public bool StartsWith(String value)
@@ -992,19 +1127,40 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 	// Trim specific characters from the front and end of a string.
 	public String Trim(params char[] trimChars)
 			{
-				return TrimHelper(trimChars, TrimBoth);
+				if(trimChars != null)
+				{
+					return TrimHelper(trimChars, TrimBoth);
+				}
+				else
+				{
+					return TrimHelper(WhitespaceChars, TrimBoth);
+				}
 			}
 
 	// Trim specific characters from the end of a string.
 	public String TrimEnd(params char[] trimChars)
 			{
-				return TrimHelper(trimChars, TrimTail);
+				if(trimChars != null)
+				{
+					return TrimHelper(trimChars, TrimTail);
+				}
+				else
+				{
+					return TrimHelper(WhitespaceChars, TrimTail);
+				}
 			}
 
 	// Trim specific characters from the start of a string.
 	public String TrimStart(params char[] trimChars)
 			{
-				return TrimHelper(trimChars, TrimHead);
+				if(trimChars != null)
+				{
+					return TrimHelper(trimChars, TrimHead);
+				}
+				else
+				{
+					return TrimHelper(WhitespaceChars, TrimHead);
+				}
 			}
 
 	// Operators.

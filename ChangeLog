@@ -5,6 +5,11 @@
 caused it to call "Platform.Stdio" directly, rather than go through the
 "System.IO.TextWriter" class.
 
+* runtime/System/String.cs: mark some of the constructors as non-CLS;
+uncomment the "sbyte*" constructor since "Encoding" now exists; fix
+the indexing for "IndexOf", "LastIndexOf"; implement "EqualRange",
+"Split", and "Trim".
+
 2001-10-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/Reflection/*.cs: many new reflection classes.

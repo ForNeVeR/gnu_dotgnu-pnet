@@ -79,10 +79,29 @@ public class FormsHello : Form
 		toolbar.BorderStyle = BorderStyle.FixedSingle;
 		Controls.Add(toolbar);
 
+		// Create another toolbar.
+		// This reveals some layout bugs, so
+		// the Controls.Add is commented out
+		// to keep the sample looking good
+		toolbar = new ToolBar();
+		toolbar.Buttons.Add("This one's");
+		tbb = new ToolBarButton();
+		tbb.Style = ToolBarButtonStyle.Separator;
+		toolbar.Buttons.Add(tbb);
+		tbb = new ToolBarButton("left docked.");
+		tbb.Style = ToolBarButtonStyle.DropDownButton;
+		toolbar.Buttons.Add(tbb);
+		toolbar.BorderStyle = BorderStyle.Fixed3D;
+		toolbar.Dock = DockStyle.Left;
+		//toolbar.DropDownArrows = false;
+		//Controls.Add(toolbar);
+
 		// Create a scrollbar control.
 		scrollbar = new HScrollBar();
+		scrollbar.Dock = DockStyle.Bottom;
 		Controls.Add(scrollbar);
 		scrollbar = new VScrollBar();
+		scrollbar.Dock = DockStyle.Right;
 		Controls.Add(scrollbar);
 
 		checkbox=new CheckBox();

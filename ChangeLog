@@ -1,3 +1,8 @@
+2003-07-11  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* sample/FormsHello.cs: Re-insert the explicit Dock settings for
+	the scrollbar examples, and add a second toolbar (not shown by default)
+	which reveals some layout bugs.
 
 2003-07-11  Gopal.V  <gopalv82@symonds.net>
 	

@@ -1,4 +1,9 @@
 
+2004-10-11  Gopal V  <gopalv82@yahoo.com>
+	
+	* libffi/src/x86/ffi64.c: All stack params should be 8 aligned for amd64.
+	(picked off gcc-3.4-rhl branch of libffi)
+
 2004-10-08  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* support/time.c: Fixed UTC offset for DST (Win32). Please review

@@ -1,4 +1,35 @@
 
+0.1.4 (21 August 2001)
+
+	* Converted ChangeLog into the GNU format and moved the previous
+	  ChangeLog into NEWS.
+	* Convert tool documentation into texinfo format: "pnettools.texi".
+	* Fixed various manpage bugs, and moved some information to texinfo.
+	* pnet.spec file contributed by "mdaniel".
+	* Output basic module, assembly, and class information from the
+	  C# compiler to the assembly code stream.
+	* Remove some obsolete source and documentation files.
+	* Applied a patch from Norman Stevens that adds most of the remaining
+	  node creation functionality to the C# compiler.
+	* Implement a Java .class and .jar file loader that converts Java
+	  binaries into IL metadata on the fly.
+	* Undo the hack that was added to "ilnative" in 0.1.0 because it is
+	  no longer required.
+	* Suppress the "class" prefix when dumping class names in catch clauses
+	  within the disassembler.  Found by Gary L. Sun, <gsun@inetnow.net>.
+	* Fix a bug in the disassembler that caused multiple "class" prefixes
+	  to be added to nested class names.  Found by Gary L. Sun.
+	* Remove the '[' form of floating point constants from the assembler,
+	  because the ECMA-compliant '(' form will do the right thing now.
+	  Requested by Gary L. Sun.
+	* Avoid following cross-image links when dumping parent names in
+	  the C# compiler.
+	* Change all references to the obsolete ".io" file format to ".obj".
+	* Implement and document new name mangling rules for C# -> JVM.
+	* Remove all code pertaining to Beta 1 support because it is obsolete.
+	* Implement class layout of fields and methods in the runtime engine.
+	* Fix the "libffi" make so that it will always build the static library.
+
 Versions 0.0.1 to 0.1.2 used a non-GNU ChangeLog format for reporting
 changes.  The change information has been copied below.
 

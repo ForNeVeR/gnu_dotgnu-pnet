@@ -142,16 +142,6 @@ ILInt32 _IL_DirMethods_GetCreationTime(ILExecThread *_thread,
 }
 
 /*
- * public static Errno Copy(String src, String dest);
- */
-ILInt32 _IL_DirMethods_Copy(ILExecThread *_thread,
-							ILString *src, ILString *dest)
-{
-	/* TODO */
-	return IL_ERRNO_EPERM;
-}
-
-/*
  * public static Errno CreateDirectory(String path);
  */
 ILInt32 _IL_DirMethods_CreateDirectory(ILExecThread *_thread, ILString *path)

@@ -11,6 +11,9 @@
 
 	* engine/ilrun.c, engine/cvmc_setup.c: remove unnecessary TODO markers.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_dir.c:
+	remove "DirMethods.Copy" which is no longer used.
+
 2003-07-20  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_relop.tc: Special handling for float types to correctly

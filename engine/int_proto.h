@@ -463,7 +463,6 @@ extern ILInt32 _IL_DirMethods_ChangeDirectory(ILExecThread * _thread, ILString *
 extern ILInt32 _IL_DirMethods_Rename(ILExecThread * _thread, ILString * _p1, ILString * _p2);
 extern ILInt32 _IL_DirMethods_CreateDirectory(ILExecThread * _thread, ILString * _p1);
 extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread, ILString * _p1, System_Array * * files);
-extern ILInt32 _IL_DirMethods_Copy(ILExecThread * _thread, ILString * _p1, ILString * _p2);
 
 extern void _IL_Stdio_StdClose(ILExecThread * _thread, ILInt32 _p1);
 extern ILInt32 _IL_Stdio_StdPeek(ILExecThread * _thread, ILInt32 _p1);

@@ -2206,7 +2206,6 @@ IL_METHOD_BEGIN(DirMethods_Methods)
 	IL_METHOD("Rename", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Rename, marshal_ippp)
 	IL_METHOD("CreateDirectory", "(oSystem.String;)vPlatform.Errno;", _IL_DirMethods_CreateDirectory, marshal_ipp)
 	IL_METHOD("GetFilesInDirectory", "(oSystem.String;&[vPlatform.InternalFileInfo;)vPlatform.Errno;", _IL_DirMethods_GetFilesInDirectory, marshal_ippp)
-	IL_METHOD("Copy", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Copy, marshal_ippp)
 IL_METHOD_END
 
 #endif

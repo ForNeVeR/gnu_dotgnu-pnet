@@ -126,11 +126,11 @@ class XmlQualifiedName
 	// Determine if two qualified names are equal.
 	public static bool operator==(XmlQualifiedName a, XmlQualifiedName b)
 			{
-				if(a == null)
+				if(ReferenceEquals(a,null))	
 				{
-					return (b == null);
+					return (ReferenceEquals(b,null));
 				}
-				else if(b == null)
+				else if (ReferenceEquals(b,null))
 				{
 					return false;
 				}
@@ -143,11 +143,11 @@ class XmlQualifiedName
 	// Determine if two qualified names are not equal.
 	public static bool operator!=(XmlQualifiedName a, XmlQualifiedName b)
 			{
-				if(a == null)
+				if(ReferenceEquals(a,null))
 				{
-					return (b != null);
+					return (!ReferenceEquals(b,null));
 				}
-				else if(b == null)
+				else if(ReferenceEquals(b,null))
 				{
 					return true;
 				}

@@ -13,6 +13,9 @@
 	* runtime/System/Resources/ResourceManager.cs: harden "AttemptLoad"
 	against the runtime engine missing reflection support.
 
+	* runtime/System/NotImplementedException.cs: add the exception
+	class "NotImplementedException".
+
 2002-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/SocketAddress.cs: fix semantic compile errors.

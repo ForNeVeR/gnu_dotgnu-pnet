@@ -1097,8 +1097,8 @@ VMBREAK(COP_LSUB);
 VMCASE(COP_LSUB_OVF):
 {
 	/* Long subtract with overflow detection */
-	if(!LSubOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
-		        &(stacktop[-CVM_WORDS_PER_LONG])))
+	if(LSubOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
+		       &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
@@ -1141,8 +1141,8 @@ VMBREAK(COP_LSUB_OVF);
 VMCASE(COP_LSUB_OVF_UN):
 {
 	/* Unsigned long subtract with overflow detection */
-	if(!LUSubOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
-		         &(stacktop[-CVM_WORDS_PER_LONG])))
+	if(LUSubOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
+		        &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
@@ -1222,8 +1222,8 @@ VMBREAK(COP_LMUL);
 VMCASE(COP_LMUL_OVF):
 {
 	/* Long multiply with overflow detection */
-	if(!LMulOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
-		        &(stacktop[-CVM_WORDS_PER_LONG])))
+	if(LMulOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
+		       &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
@@ -1266,8 +1266,8 @@ VMBREAK(COP_LMUL_OVF);
 VMCASE(COP_LMUL_OVF_UN):
 {
 	/* Unsigned long multiply with overflow detection */
-	if(!LUMulOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
-		         &(stacktop[-CVM_WORDS_PER_LONG])))
+	if(LUMulOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
+		        &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}

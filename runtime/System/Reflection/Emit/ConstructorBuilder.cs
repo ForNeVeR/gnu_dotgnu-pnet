@@ -50,6 +50,26 @@ public sealed class ConstructorBuilder
 				 				CallingConventions callingConvention,
 				 				Type[] parameterTypes)
 			{
+				// Validate the parameters.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(name == String.Empty)
+				{
+					throw new ArgumentException(_("Emit_NameEmpty"));
+				}
+				if((attributes & MethodAttributes.Static) == 0)
+				{
+					callingConvention |= CallingConventions.HasThis;
+				}
+				if((attributes & MethodAttributes.Virtual) != 0)
+				{
+					throw new ArgumentException(/* TODO */);
+				}
+				attributes |= MethodAttributes.SpecialName;
+				attributes |= MethodAttributes.RTSpecialName;
+
 				// Set the internal state.
 				this.type = type;
 				this.numParams = (parameterTypes != null

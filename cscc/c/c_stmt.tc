@@ -281,11 +281,20 @@ ILNode_CSemAnalysis(ILNode_ReturnExpr)
 		   be an error, but we copy what gcc does for compatibility */
 		CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
 			  "`return' with a value, in function returning void");
+
+		/* Replace the current node with a value-less return so that
+		   the code generator outputs the correct return code */
+		*parent = ILNode_Return_create();
+		CGenCloneLine(*parent, (ILNode *)node);
 	}
 	else
 	{
-		/* Coerce to the return type.  TODO: use C coercion rules */
-		if(0)
+		/* Coerce the value to the return type */
+		if(CCanCoerceValue(value, returnType))
+		{
+			CCoerceNode(info, node->expr, &(node->expr), value, returnType);
+		}
+		else
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  		  "incompatible types in return: "

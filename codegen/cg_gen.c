@@ -291,7 +291,7 @@ ILMachineType ILTypeToMachineType(ILType *type)
 	const char *namespace;
 
 	/* Convert enumerated types into their underlying type */
-	type = ILTypeGetEnumType(type);
+	type = ILTypeGetEnumType(ILTypeStripPrefixes(type));
 
 	if(ILType_IsPrimitive(type))
 	{
@@ -361,11 +361,18 @@ ILMachineType ILTypeToMachineType(ILType *type)
 		/* Invalid types are treated as "void" */
 		return ILMachineType_Void;
 	}
-	else
+	else if(type != 0 && ILType_IsComplex(type))
 	{
-		/* Everything else is treated as a managed pointer for now */
-		return ILMachineType_ManagedPtr;
+		/* Check for pointer types */
+		if(ILType_Kind(type) == IL_TYPE_COMPLEX_PTR ||
+		   (ILType_Kind(type) & IL_TYPE_COMPLEX_METHOD) != 0)
+		{
+			return ILMachineType_UnmanagedPtr;
+		}
 	}
+
+	/* Everything else is treated as a managed pointer for now */
+	return ILMachineType_ManagedPtr;
 }
 
 ILType *ILValueTypeToType(ILGenInfo *info, ILMachineType valueType)

@@ -46,6 +46,11 @@ extern int gen_32bit_only;
 void *CSemDupExtra(const void *buf, unsigned int len);
 
 /*
+ * Clone the line number information from "oldNode" onto "newNode".
+ */
+void CGenCloneLine(ILNode *newNode, ILNode *oldNode);
+
+/*
  * Generate "crt0" glue logic if the current module has "main".
  */
 void CGenCrt0(ILGenInfo *info, FILE *stream);
@@ -69,6 +74,30 @@ void CGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item);
  * Register the builtin "clang" library so the compiler can use it.
  */
 void CGenRegisterLibrary(ILGenInfo *info);
+
+/*
+ * Determine if it is possible to coerce "fromType" to "toType".
+ */
+int CCanCoerce(ILType *fromType, ILType *toType);
+
+/*
+ * Determine if it is possible to coerce the value "fromValue" to "toType".
+ */
+int CCanCoerceValue(CSemValue fromValue, ILType *toType);
+
+/*
+ * Coerce a node from the type represented by "fromValue" to "toType".
+ * Returns a new semantic value that describes the coerced value.
+ */
+CSemValue CCoerceNode(ILGenInfo *info, ILNode *node, ILNode **parent,
+				      CSemValue fromValue, ILType *toType);
+
+/*
+ * Cast a node from the type represented by "fromValue" to "toType".
+ * Returns a new semantic value that describes the coerced value.
+ */
+CSemValue CCastNode(ILGenInfo *info, ILNode *node, ILNode **parent,
+			        CSemValue fromValue, ILType *toType);
 
 #ifdef	__cplusplus
 };

@@ -409,7 +409,9 @@ UnaryExpression
 			}
 	| '+' CastExpression		{ $$ = ILNode_UnaryPlus_create($2); }
 	| '~' CastExpression		{ $$ = ILNode_Not_create($2); }
-	| '!' CastExpression		{ $$ = ILNode_LogicalNot_create($2); }
+	| '!' CastExpression		{
+			$$ = ILNode_LogicalNot_create(ILNode_ToBool_create($2));
+		}
 	| '&' CastExpression		{ $$ = ILNode_AddressOf_create($2); }
 	| '*' CastExpression		{ $$ = ILNode_Deref_create($2); }
 	| K_SIZEOF UnaryExpression	{ $$ = ILNode_SizeOfExpr_create($2); }
@@ -506,21 +508,24 @@ OrExpression
 LogicalAndExpression
 	: OrExpression
 	| LogicalAndExpression AND_OP OrExpression	{
-				$$ = ILNode_LogicalAnd_create($1, $3);
+				$$ = ILNode_LogicalAnd_create(ILNode_ToBool_create($1),
+											  ILNode_ToBool_create($3));
 			}
 	;
 
 LogicalOrExpression
 	: LogicalAndExpression
 	| LogicalOrExpression OR_OP LogicalAndExpression	{
-				$$ = ILNode_LogicalOr_create($1, $3);
+				$$ = ILNode_LogicalOr_create(ILNode_ToBool_create($1),
+											 ILNode_ToBool_create($3));
 			}
 	;
 
 ConditionalExpression
 	: LogicalOrExpression
 	| LogicalOrExpression '?' LogicalOrExpression ':' ConditionalExpression	{
-				$$ = ILNode_Conditional_create($1, $3, $5);
+				$$ = ILNode_Conditional_create
+						(ILNode_ToBool_create($1), $3, $5);
 			}
 	| LogicalOrExpression '?' ':' ConditionalExpression	{
 				$$ = ILNode_TwoConditional_create($1, $4);

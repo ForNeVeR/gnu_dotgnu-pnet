@@ -14,6 +14,7 @@ TREECC_SRCOUT = c_nodes.c c_semantics.c
 TREECC_OUTPUT = $(TREECC_SRCOUT) c_defs.h
 
 libILCLang_a_SOURCES = $(TREECC_SRCOUT) \
+					   c_coerce.c \
 					   c_crt0.c \
 					   c_declspec.c \
 					   c_function.c \

@@ -800,6 +800,12 @@ int CTypeIsVolatile(ILType *type)
 							"System.Runtime.CompilerServices");
 }
 
+int CTypeIsPrimitive(ILType *type)
+{
+	type = ILTypeStripPrefixes(type);
+	return ILType_IsPrimitive(type);
+}
+
 int CTypeIsStruct(ILType *type)
 {
 	type = ILTypeStripPrefixes(type);
@@ -900,6 +906,12 @@ int CTypeIsPointer(ILType *type)
 int CTypeIsNativePointer(ILType *type)
 {
 	return CheckForModifier(type, "IsNativePointer", "OpenSystem.C");
+}
+
+int CTypeIsMethod(ILType *type)
+{
+	type = ILTypeStripPrefixes(type);
+	return ILType_IsMethod(type);
 }
 
 int CTypeIsForeign(ILType *type)
@@ -1110,6 +1122,12 @@ ILType *CTypeDecay(ILGenInfo *info, ILType *type)
 
 	/* Return the decayed type to the caller */
 	return ptrType;
+}
+
+int CTypeIsIdentical(ILType *type1, ILType *type2)
+{
+	/* TODO: handle qualifiers */
+	return ILTypeIdentical(type1, type2);
 }
 
 /*

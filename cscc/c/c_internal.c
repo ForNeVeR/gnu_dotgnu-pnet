@@ -38,6 +38,12 @@ void *CSemDupExtra(const void *buf, unsigned int len)
 	return temp;
 }
 
+void CGenCloneLine(ILNode *newNode, ILNode *oldNode)
+{
+	yysetfilename(newNode, yygetfilename(oldNode));
+	yysetlinenum(newNode, yygetlinenum(oldNode));
+}
+
 CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope)
 {
 	ILScope *currentScope = info->currentScope;

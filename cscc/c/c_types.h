@@ -152,6 +152,11 @@ int CTypeIsConst(ILType *type);
 int CTypeIsVolatile(ILType *type);
 
 /*
+ * Determine if a C type is primitive.
+ */
+int CTypeIsPrimitive(ILType *type);
+
+/*
  * Determine if a C type is a structure.
  */
 int CTypeIsStruct(ILType *type);
@@ -187,6 +192,11 @@ int CTypeIsPointer(ILType *type);
 int CTypeIsNativePointer(ILType *type);
 
 /*
+ * Determine if a C type is a method type.
+ */
+int CTypeIsMethod(ILType *type);
+
+/*
  * Determine if a C type is not a C type at all, but is
  * actually a managed type imported from some other language
  * such as C#.
@@ -212,6 +222,11 @@ ILType *CTypeGetPtrRef(ILType *type);
  * Decay array types into their corresponding pointer types.
  */
 ILType *CTypeDecay(ILGenInfo *info, ILType *type);
+
+/*
+ * Determine if two C types are identical, including qualifiers.
+ */
+int CTypeIsIdentical(ILType *type1, ILType *type2);
 
 /*
  * Special value that is used to indicate that the size of

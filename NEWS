@@ -1,4 +1,20 @@
 
+0.1.4 (11 February 2001)
+
+	* Add the "make_patch.sh" script to help with patch management.
+	* "System.IO.Path", "System.IO.File", and "Platform.DirMethods"
+	  submissions from Charlie Carnow <carnow@gmx.net>.
+	* Fix the definition of "TextWriter.Write(char)", which is not supposed
+	  to be implemented in the base class.
+	* "System.IO.StringWriter" submissions from Stephen Compall
+	  <rushing@earthling.net>.
+	* Temporarily disable decimal digit handling in "NumberFormatter",
+	  so that integers don't get displayed as "N.00".
+	* Bug fixes to "String.IndexOf" and "String.LastIndexOf".
+	* Adjust the invariant number formatting information to match ECMA.
+	* "DateTime.Compare" from Abhaya Agarwal <abhayag@cse.iitk.ac.in>.
+	* Number formatting fixes for negative integers.
+
 0.1.2 (7 January 2001)
 
 	* File handle operations in "Platform".

@@ -97,20 +97,26 @@ public sealed class AppDomain
 	// Create a new application domain with a specified name.
 	public static AppDomain CreateDomain(String friendlyName)
 			{
-				return new AppDomain(friendlyName);
+				// we have only one app domain , fake creation for now
+				return CurrentDomain;
+				// return new AppDomain(friendlyName);
 			}
 #if !ECMA_COMPAT
 	public static AppDomain CreateDomain(String friendlyName,
 										 Evidence securityInfo)
 			{
-				return new AppDomain(friendlyName, securityInfo,
-									 new AppDomainSetup());
+				// we have only one app domain , fake creation for now
+				return CurrentDomain;
+				/* return new AppDomain(friendlyName, securityInfo,
+									 new AppDomainSetup()); */
 			}
 	public static AppDomain CreateDomain(String friendlyName,
 										 Evidence securityInfo,
 										 AppDomainSetup info)
 			{
-				return new AppDomain(friendlyName, securityInfo, info);
+				// we have only one app domain , fake creation for now
+				return CurrentDomain;
+				// return new AppDomain(friendlyName, securityInfo, info);
 			}
 	public static AppDomain CreateDomain(String friendlyName,
 										 Evidence securityInfo,
@@ -118,11 +124,14 @@ public sealed class AppDomain
 										 String appRelativeSearchPath,
 										 bool shadowCopyFiles)
 			{
+				// we have only one app domain , fake creation for now
+				return CurrentDomain;
+				/*
 				AppDomainSetup setup = new AppDomainSetup();
 				setup.ApplicationBase = appBasePath;
 				setup.PrivateBinPath = appRelativeSearchPath;
 				setup.ShadowCopyFiles = shadowCopyFiles.ToString();
-				return new AppDomain(friendlyName, securityInfo, setup);
+				return new AppDomain(friendlyName, securityInfo, setup);*/
 			}
 #endif
 
@@ -452,6 +461,8 @@ public sealed class AppDomain
 	public void DoCallBack(CrossAppDomainDelegate theDelegate)
 			{
 				// TODO
+				// for now just call it directly
+				theDelegate();
 			}
 
 	// Give the application domain an infinite lifetime service.

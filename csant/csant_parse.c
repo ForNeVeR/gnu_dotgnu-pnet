@@ -31,6 +31,7 @@ char *CSAntDefaultTarget = 0;
 
 CSAntTarget *CSAntTargetList = 0;
 char **CSAntProfileDefines = 0;
+char **CSAntProfileValues = 0;
 int CSAntNumProfileDefines = 0;
 
 /*
@@ -386,19 +387,19 @@ CSAntTarget *CSAntFindTarget(const char *target)
 	return 0;
 }
 
-const char* CSAntGetProfileValue(const char* name,int len)
+const char *CSAntGetProfileValue(const char *name, int len)
 {
-	int i=0;
-	if(!name)return 0;
-	if(!CSAntProfileDefines || !CSAntNumProfileDefines)
+	int index;
+	if(!name)
 	{
 		return 0;
 	}
-	for(i=0;i<CSAntNumProfileDefines;i++)
+	for(index = 0; index < CSAntNumProfileDefines; index++)
 	{
-		if(!strncmp(name,CSAntProfileDefines[i],len))
+		if(!strncmp(name, CSAntProfileDefines[index], len) &&
+		   CSAntProfileDefines[index][len] == '\0')
 		{
-			return "true"; 
+			return CSAntProfileValues[index];
 		}
 	}
 	return 0;
@@ -502,6 +503,7 @@ int CSAntParseProfileFile(ILXMLReader *reader, const char *filename)
 	const char *name;
 	const char *value;
 	char **newDefines;
+	char **newValues;
 
 	/* Read the first item, which should be the top-level "profile" tag */
 	item = ILXMLReadNext(reader);
@@ -523,7 +525,7 @@ int CSAntParseProfileFile(ILXMLReader *reader, const char *filename)
 				/* Process a "define" tag */
 				name = ILXMLGetParam(reader, "name");
 				value = ILXMLGetParam(reader, "value");
-				if(name && value && !ILStrICmp(value, "true"))
+				if(name && value)
 				{
 					newDefines = (char **)ILRealloc
 						(CSAntProfileDefines,
@@ -538,6 +540,19 @@ int CSAntParseProfileFile(ILXMLReader *reader, const char *filename)
 						CSAntOutOfMemory();
 					}
 					CSAntProfileDefines = newDefines;
+					newValues = (char **)ILRealloc
+						(CSAntProfileValues,
+						 (CSAntNumProfileDefines + 1) * sizeof(char *));
+					if(!newValues)
+					{
+						CSAntOutOfMemory();
+					}
+					if((newValues[CSAntNumProfileDefines] =
+							ILDupString(value)) == 0)
+					{
+						CSAntOutOfMemory();
+					}
+					CSAntProfileValues = newValues;
 					++CSAntNumProfileDefines;
 				}
 			}

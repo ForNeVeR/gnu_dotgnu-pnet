@@ -86,6 +86,7 @@ extern CSAntTarget *CSAntTargetList;
  * List of all profile definitions.
  */
 extern char **CSAntProfileDefines;
+extern char **CSAntProfileValues;
 extern int CSAntNumProfileDefines;
 
 /*

@@ -454,9 +454,12 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	/* Add definitions from the profile */
 	for(index = 0; index < CSAntNumProfileDefines; ++index)
 	{
-		AddUnique(&(args->defines), &(args->numDefines),
-				  CSAntProfileDefines[index],
-				  strlen(CSAntProfileDefines[index]));
+		if(!ILStrICmp(CSAntProfileValues[index], "true"))
+		{
+			AddUnique(&(args->defines), &(args->numDefines),
+					  CSAntProfileDefines[index],
+					  strlen(CSAntProfileDefines[index]));
+		}
 	}
 
 	/* Define "DEBUG" and "TRACE" if debugging is enabled */

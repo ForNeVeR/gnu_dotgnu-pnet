@@ -445,6 +445,15 @@ static void Coder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 static void Coder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 {
 }
+static void Coder_Throw(ILCoder *coder)
+{
+}
+static void Coder_Jsr(ILCoder *coder, ILUInt32 dest)
+{
+}
+static void Coder_RetFromJsr(ILCoder *coder)
+{
+}
 
 /*
  * Default coder class and instance.
@@ -522,6 +531,9 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_LoadFuncAddr,
 	Coder_LoadVirtualAddr,
 	Coder_LoadInterfaceAddr,
+	Coder_Throw,
+	Coder_Jsr,
+	Coder_RetFromJsr,
 };
 static ILCoder DefaultCoder = {&DefaultCoderClass};
 

@@ -3,6 +3,9 @@
 
 * samples/mscorlib.dll: new version with "UtcNow" fix.
 
+* include/il_coder.h, engine/cvmc.c, engine/cvmc_branch.c, engine/ilverify.c:
+implement the "Throw", "Jsr", and "RetFromJsr" coder API's.
+
 2001-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c: allow the CVM

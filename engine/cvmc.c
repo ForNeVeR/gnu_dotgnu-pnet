@@ -434,6 +434,9 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_LoadFuncAddr,
 	CVMCoder_LoadVirtualAddr,
 	CVMCoder_LoadInterfaceAddr,
+	CVMCoder_Throw,
+	CVMCoder_Jsr,
+	CVMCoder_RetFromJsr,
 };
 
 #ifdef	__cplusplus

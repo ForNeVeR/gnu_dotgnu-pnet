@@ -534,6 +534,21 @@ struct _tagILCoderClass
 	 */
 	void (*loadInterfaceAddr)(ILCoder *coder, ILMethod *methodInfo);
 
+	/*
+	 * Throw an exception.
+	 */
+	void (*throwException)(ILCoder *coder);
+
+	/*
+	 * Jump to a "finally" or "fault" sub-routine.
+	 */
+	void (*jsr)(ILCoder *coder, ILUInt32 dest);
+
+	/*
+	 * Return from a "finally" or "fault" sub-routine.
+	 */
+	void (*retFromJsr)(ILCoder *coder);
+
 };
 
 /*
@@ -726,6 +741,12 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->loadVirtualAddr))((coder), (methodInfo)))
 #define	ILCoderLoadInterfaceAddr(coder,methodInfo) \
 			((*((coder)->classInfo->loadInterfaceAddr))((coder), (methodInfo)))
+#define	ILCoderThrow(coder) \
+			((*((coder)->classInfo->throwException))((coder)))
+#define	ILCoderJsr(coder,dest) \
+			((*((coder)->classInfo->jsr))((coder), (dest)))
+#define	ILCoderRetFromJsr(coder) \
+			((*((coder)->classInfo->retFromJsr))((coder)))
 
 #ifdef	__cplusplus
 };

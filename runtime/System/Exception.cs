@@ -276,11 +276,13 @@ public class Exception
 			}
 		}
 	
+#if !ECMA_COMPAT
 	[TODO]
 	public virtual void GetObjectData (SerializationInfo info, 
 										StreamingContext context)
 	{
 	}
+#endif
 
 }; // class Exception
 

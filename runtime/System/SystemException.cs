@@ -34,11 +34,13 @@ public class SystemException : Exception
 	public SystemException(String msg, Exception inner)
 		: base(msg, inner) {}
 	
+#if !ECMA_COMPAT
 	[TODO]
 	public SystemException (SerializationInfo info, 
 							StreamingContext ctxt)
 		{
 		}
+#endif
 
 	// Internal constructor that is called by classes that
 	// do not want a stack trace to be allocated.

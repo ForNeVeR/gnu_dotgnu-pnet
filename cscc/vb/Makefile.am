@@ -11,4 +11,6 @@ AM_YFLAGS = -d
 
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 
+vb_scanner.l: vb_grammar.c
+
 CLEANFILES = vb_grammar.c vb_scanner.c vb_grammar.h

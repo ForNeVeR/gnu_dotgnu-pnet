@@ -40,4 +40,6 @@ libILCSharp_a_DEPENDENCIES = $(STAMP)
 $(STAMP): $(TREECC_INPUTS) ../../codegen/$(STAMP)
 	$(TREECC) $(srcdir)/cs_defs.tc && touch $@
 
+cs_scanner.l: cs_grammar.c
+
 CLEANFILES = cs_grammar.c cs_scanner.c cs_grammar.h $(TREECC_OUTPUT) $(STAMP)

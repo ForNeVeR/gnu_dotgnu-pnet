@@ -13,6 +13,8 @@ libILAsm_a_SOURCES = ilasm_build.c \
 ilasm_SOURCES = ilasm.c
 ilasm_LDADD   = libILAsm.a ../image/libILImage.a ../support/libILSupport.a $(GCLIBS)
 
+ilasm_scanner.l: ilasm_grammar.c
+
 AM_YFLAGS = -d
 CLEANFILES = ilasm_grammar.c ilasm_scanner.c ilasm_grammar.h
 

@@ -26,4 +26,6 @@ libILBf_a_DEPENDENCIES = $(STAMP)
 $(STAMP): $(TREECC_INPUTS) ../../codegen/$(STAMP)
 	$(TREECC) $(srcdir)/bf_defs.tc && touch $@
 
+bf_scanner.l: bf_grammar.c
+
 CLEANFILES = bf_grammar.c bf_scanner.c bf_grammar.h $(TREECC_OUTPUT) $(STAMP)

@@ -43,4 +43,6 @@ libILCLang_a_DEPENDENCIES = $(STAMP)
 $(STAMP): $(TREECC_INPUTS) ../../codegen/$(STAMP)
 	$(TREECC) $(srcdir)/c_defs.tc && touch $@
 
+c_scanner.l: c_grammar.c
+
 CLEANFILES = c_grammar.c c_scanner.c c_grammar.h $(TREECC_OUTPUT) $(STAMP)

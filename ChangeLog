@@ -1,4 +1,11 @@
 
+2004-07-30  Gopal V  <gopalv82@yahoo.com>
+
+	* ilasm/Makefile.am, cscc/bf/Makefile.am, cscc/c/Makefile.am, 
+	cscc/csharp/Makefile.am, cscc/java/Makefile.am, cscc/vb/Makefile.am:
+	Mark grammar.c files as dependencies for the scanner.l files to 
+	allow proper parallel builds.
+
 2004-07-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_dasm.c: add missing opcode names.

@@ -38,4 +38,6 @@ libILJava_a_DEPENDENCIES = $(STAMP)
 $(STAMP): $(TREECC_INPUTS) ../../codegen/$(STAMP)
 	$(TREECC) $(srcdir)/java_defs.tc && touch $@
 
+java_scanner.l: java_grammar.c
+
 CLEANFILES = java_grammar.c java_scanner.c java_grammar.h $(TREECC_OUTPUT) $(STAMP)

@@ -108,6 +108,11 @@ int CScopeGetKind(void *data);
  */
 ILType *CScopeGetType(void *data);
 
+/*
+ * Get the node information associated with a scope data item.
+ */
+ILNode *CScopeGetNode(void *data);
+
 #ifdef	__cplusplus
 };
 #endif

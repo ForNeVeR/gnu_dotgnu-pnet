@@ -16,6 +16,11 @@
 	cscc/c/c_typeout.c, cscc/c/c_types.c: output required type definitions
 	at the end of the C compile process.
 
+	* cscc/c_main.c, cscc/c/Makefile.am, cscc/c/c_crt0.c,
+	cscc/c/c_internal.c, cscc/c/c_internal.h, cscc/c/c_scope.c,
+	cscc/c/c_scope.h: output "crt0" code if the current module
+	has a "main" function defined.
+
 2002-07-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, cscc/Makefile.am, cscc/c_main.c, cscc/c/.cvsignore,

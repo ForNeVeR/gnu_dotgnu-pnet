@@ -118,14 +118,7 @@ void CCPluginSemAnalysis(void)
 
 void CCPluginPostCodeGen(void)
 {
-	/* Output pending class definitions */
-	if(CCCodeGen.asmOutput != 0)
-	{
-		CTypeOutputPending(&CCCodeGen, CCCodeGen.asmOutput);
-	}
-
-	/* Output the string constant pool */
-	CGenStringPool(&CCCodeGen);
+	CGenEndCode(&CCCodeGen);
 }
 
 int main(int argc, char *argv[])

@@ -48,6 +48,26 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope)
 	return result;
 }
 
+void CGenEndCode(ILGenInfo *info)
+{
+	FILE *stream = info->asmOutput;
+
+	/* Output pending class definitions */
+	if(stream != 0)
+	{
+		CTypeOutputPending(info, stream);
+	}
+
+	/* Output the string constant pool */
+	CGenStringPool(info);
+
+	/* Output the "crt0" code if this module has a "main" function */
+	if(stream != 0)
+	{
+		CGenCrt0(info, stream);
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

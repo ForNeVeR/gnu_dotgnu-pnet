@@ -135,6 +135,11 @@ ILType *CScopeGetType(void *data)
 	return (ILType *)(ILScopeDataGetData2((ILScopeData *)data));
 }
 
+ILNode *CScopeGetNode(void *data)
+{
+	return ILScopeDataGetNode((ILScopeData *)data);
+}
+
 #ifdef	__cplusplus
 };
 #endif

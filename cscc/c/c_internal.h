@@ -44,6 +44,16 @@ extern int gen_32bit_only;
  */
 void *CSemDupExtra(const void *buf, unsigned int len);
 
+/*
+ * Generate "crt0" glue logic if the current module has "main".
+ */
+void CGenCrt0(ILGenInfo *info, FILE *stream);
+
+/*
+ * End the code generation process, flushing remaining definitions.
+ */
+void CGenEndCode(ILGenInfo *info);
+
 #ifdef	__cplusplus
 };
 #endif

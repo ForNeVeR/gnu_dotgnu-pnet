@@ -4,6 +4,8 @@
 	* engine/cvmc.c (_ILDumpMethodProfile): dump the entire method
 	signature in the method profile output.
 
+	* ildb/Makefile.am: add "libILDumpAsm.a" to the build for ildb.
+
 2003-02-22  CH Gowri Kumar  <gkumar@csa.iisc.ernet.in>
 
 	* engine/cvm.h, engine/cvm_call.c, engine/cvm_dasm.c,

@@ -26,6 +26,7 @@ namespace System.Runtime.Remoting.Messaging
 
 using System;
 using System.Threading;
+using System.Runtime.CompilerServices;
 
 // This class is not ECMA-compatible, strictly speaking.  But it
 // is required to implement asynchronous delegates.
@@ -36,7 +37,7 @@ public class AsyncResult : IAsyncResult
 #endif
 {
 	// Internal state.
-	private Object del;
+	private Delegate del;
 	private Object[] args;
 	private AsyncCallback callback;
 	private Object state;
@@ -45,10 +46,14 @@ public class AsyncResult : IAsyncResult
 	private bool synchronous;
 	private bool completed;
 	private bool endInvokeCalled;
+	private ManualResetEvent waitHandle;
+#if CONFIG_REMOTING
+	private IMessage replyMessage;
+	private IMessageCtrl messageControl;
+#endif
 
 	// Construct a new asynchronous result object and begin invocation.
-	[TODO]
-	internal AsyncResult(Object del, Object[] args,
+	internal AsyncResult(Delegate del, Object[] args,
 						 AsyncCallback callback, Object state)
 			{
 				// Initialize the fields within this class.
@@ -62,13 +67,20 @@ public class AsyncResult : IAsyncResult
 				this.completed = false;
 				this.endInvokeCalled = false;
 
-				// TODO: create a new thread to perform the async call.
+				// If we have threads, then queue the delegate to run
+				// on the thread pool's completion worker thread.
+				if(Thread.CanStartThreads())
+				{
+					ThreadPool.QueueCompletionItem
+						(new WaitCallback(Run), null);
+					return;
+				}
 
 				// We don't have threads, so call the delegate synchronously.
 				this.synchronous = true;
 				try
 				{
-					this.result = ((Delegate)del).DynamicInvoke(args);
+					this.result = del.DynamicInvoke(args);
 				}
 				catch(Exception e)
 				{
@@ -101,13 +113,18 @@ public class AsyncResult : IAsyncResult
 
 	// Get a wait handle that can be used to wait for the
 	// asynchronous delegate call to complete.
-	[TODO]
 	public virtual WaitHandle AsyncWaitHandle
 			{
 				get
 				{
-					// TODO
-					return null;
+					lock(this)
+					{
+						if(waitHandle == null)
+						{
+							waitHandle = new ManualResetEvent(false);
+						}
+						return waitHandle;
+					}
 				}
 			}
 
@@ -136,7 +153,10 @@ public class AsyncResult : IAsyncResult
 				}
 				set
 				{
-					// Not implemented - use "EndInvoke" instead.
+					lock(this)
+					{
+						endInvokeCalled = value;
+					}
 				}
 			}
 
@@ -152,10 +172,34 @@ public class AsyncResult : IAsyncResult
 				}
 			}
 
-	// End invocation on the delegate in this object.
-	[TODO]
-	internal Object EndInvoke()
+	// Run the delegate on the completion worker thread.
+	private void Run(Object state)
 			{
+				try
+				{
+					result = del.DynamicInvoke(args);
+				}
+				catch(Exception e)
+				{
+					resultException = e;
+				}
+				completed = true;
+				((ISignal)AsyncWaitHandle).Signal();
+				if(callback != null)
+				{
+					callback(this);
+				}
+			}
+
+	// Set the output parameters for an "EndInvoke" request.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void SetOutParams
+				(Delegate del, Object[] args, Object[] outParams);
+
+	// End invocation on the delegate in this object.
+	internal Object EndInvoke(Object[] outParams)
+			{
+				// Check for synchronous returns first.
 				lock(this)
 				{
 					if(synchronous)
@@ -167,32 +211,27 @@ public class AsyncResult : IAsyncResult
 						}
 						else
 						{
+							SetOutParams(del, args, outParams);
 							return result;
 						}
 					}
+				}
+
+				// Wait for the worker thread to signal us.
+				AsyncWaitHandle.WaitOne();
+
+				// Process the return values.
+				lock(this)
+				{
+					endInvokeCalled = true;
+					if(resultException != null)
+					{
+						throw resultException;
+					}
 					else
 					{
-						if(endInvokeCalled)
-						{
-							if(resultException != null)
-							{
-								throw resultException;
-							}
-							else
-							{
-								return result;
-							}
-						}
-						// TODO: wait for the async call to complete.
-						endInvokeCalled = true;
-						if(resultException != null)
-						{
-							throw resultException;
-						}
-						else
-						{
-							return result;
-						}
+						SetOutParams(del, args, outParams);
+						return result;
 					}
 				}
 			}
@@ -200,42 +239,57 @@ public class AsyncResult : IAsyncResult
 #if CONFIG_REMOTING
 
 	// Implement the IMessageSink interface.
-	[TODO]
 	public IMessageSink NextSink
 			{
 				get
 				{
-					// TODO
 					return null;
 				}
 			}
-	[TODO]
 	public virtual IMessageCtrl AsyncProcessMessage
 				(IMessage msg, IMessageSink replySink)
 			{
-				// TODO
-				return null;
+				throw new NotSupportedException
+					(_("NotSupp_DelAsyncProcMsg"));
 			}
-	[TODO]
 	public virtual IMessage SyncProcessMessage(IMessage msg)
 			{
-				// TODO
+				if(msg != null)
+				{
+					if(msg is IMethodReturnMessage)
+					{
+						replyMessage = msg;
+					}
+					else
+					{
+						replyMessage = new ReturnMessage
+							(new RemotingException(), new NullMessage());
+					}
+				}
+				else
+				{
+					replyMessage = new ReturnMessage
+						(new RemotingException(), new NullMessage());
+				}
+				completed = true;
+				((ISignal)AsyncWaitHandle).Signal();
+				if(callback != null)
+				{
+					callback(this);
+				}
 				return null;
 			}
 
 	// Get the reply message.
-	[TODO]
 	public virtual IMessage GetReplyMessage()
 			{
-				// TODO
-				return null;
+				return replyMessage;
 			}
 
 	// Set the message control information for this result.
-	[TODO]
 	public virtual void SetMessageCtrl(IMessageCtrl mc)
 			{
-				// TODO
+				messageControl = mc;
 			}
 
 #endif // CONFIG_REMOTING

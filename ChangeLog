@@ -1,4 +1,11 @@
 
+2003-09-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/NotSupp.txt,
+	runtime/System/Runtime/Remoting/Messaging/AsyncResult.cs,
+	runtime/System/Runtime/Remoting/Messaging/NullMessage.cs:
+	finish off the "AsyncResult" implementation.
+
 2003-09-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/ClrType.cs: redesign the "TrimMembers"

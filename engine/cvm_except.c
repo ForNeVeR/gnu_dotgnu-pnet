@@ -23,8 +23,6 @@
 void *_ILSystemException(ILExecThread *thread, const char *className)
 {
 	ILObject *object;
-	ILObject *trace;
-	ILCallFrame *callFrame;
 	ILClass *classInfo = ILExecThreadLookupClass(thread, className);
 	if(!classInfo)
 	{
@@ -36,8 +34,13 @@ void *_ILSystemException(ILExecThread *thread, const char *className)
 	object = _ILEngineAllocObject(thread, classInfo);
 	if(object)
 	{
+	#if defined(IL_CONFIG_REFLECTION) && defined(IL_CONFIG_DEBUG_LINES)
+		ILObject *trace;
+		ILCallFrame *callFrame;
+		ILField *field;
+
 		/* Find the "stackTrace" field within the "Exception" class */
-		ILField *field = ILExecThreadLookupField
+		field = ILExecThreadLookupField
 				(thread, "System.Exception", "stackTrace",
 				 "[vSystem.Diagnostics.PackedStackFrame;");
 		if(field)
@@ -75,6 +78,7 @@ void *_ILSystemException(ILExecThread *thread, const char *className)
 			*((ILObject **)(((unsigned char *)object) + field->offset))
 					= trace;
 		}
+	#endif /* IL_CONFIG_REFLECTION && IL_CONFIG_DEBUG_LINES */
 	}
 	else
 	{

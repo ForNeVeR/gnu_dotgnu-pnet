@@ -22,6 +22,9 @@
 	function, which builds and throws exceptions for certain kinds of
 	verification failure.
 
+	* engine/cvm_except.c: do not fetch the stack trace if reflection
+	or debug line information has been disabled.
+
 2002-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_engine.h, engine/thread.c: add "ILExecThreadCurrent",

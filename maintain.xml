@@ -8,12 +8,12 @@
 	<namespace name="System">
 		<class name="Uri">
 			<maintainers>
-				<maintainer name="Stephen Compall" status="working"/>
+				<maintainer name="Stephen Compall" status="frozen"/>
 			</maintainers>
 		</class>
 		<class name="UriBuilder">
 			<maintainers>
-				<maintainer name="Stephen Compall" status="working"/>
+				<maintainer name="Stephen Compall" status="finished"/>
 			</maintainers>
 		</class>
 	</namespace>
@@ -24,13 +24,13 @@
 				<maintainer name="Gopal.V" status="working"/>
 			</maintainers>
 		</class>
-		
+
 		<class name="HttpWebResponse">
 			<maintainers>
 				<maintainer name="Gopal.V" status="taking up"/>
 			</maintainers>
 		</class>
-		
+
 		<class name="WebResponse">
 			<maintainers>
 				<maintainer name="Gopal.V" status="taking up"/>
@@ -46,11 +46,21 @@
 		</class>
 		<class name="MemoryStream">
 			<maintainers>
-				<maintainer name="Stephen Compall" status="working"/>
+				<maintainer name="Stephen Compall" status="finished"/>
+			</maintainers>
+		</class>
+		<class name="StringWriter">
+			<maintainers>
+				<maintainer name="Stephen Compall" status="finished"/>
+			</maintainers>
+		</class>
+		<class name="StringReader">
+			<maintainers>
+				<maintainer name="Stephen Compall" status="finished"/>
 			</maintainers>
 		</class>
 	</namespace>
-	
+
 	<namespace name="System.Net.Sockets">
 		<class name="*">
 			<maintainers>

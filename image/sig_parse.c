@@ -234,8 +234,7 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 			if(depth > 0 && (categories & CATEGORY_BYREF) != 0)
 			{
 				type = ParseElemType(context, image, reader, depth - 1,
-									 categories & ~(CATEGORY_CMOD |
-									 				CATEGORY_BYREF));
+									 categories & ~(CATEGORY_BYREF));
 				if(type != ILType_Invalid)
 				{
 					type = ILTypeCreateRef(context, IL_TYPE_COMPLEX_BYREF,

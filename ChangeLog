@@ -10,6 +10,8 @@
 	add the "__box" keyword for Managed C++ compatibility;
 	remove the "__long_long__" keyword and replace it with "__int64".
 
+	* image/sig_parse.c: allow custom modifiers within a byref type.
+
 2004-02-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_scope.c, codegen/cg_scope.h, cscc/c/c_grammar.y,

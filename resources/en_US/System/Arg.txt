@@ -19,6 +19,7 @@
 #
 Arg_SocketCreating=An error occured while creating a new socket;
 Exception_UriFormat=The supplied URI did not have the correct format
+Arg_UriPartial=That is not a valid UriPartial value
 Arg_HexDigit=That is not a valid hexadecimal digit
 Arg_UriScheme=The scheme supplied with the URI was not valid
 Arg_UriPort=The port specified with the URI was nonexistent

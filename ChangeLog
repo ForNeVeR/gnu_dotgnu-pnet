@@ -1,3 +1,10 @@
+2002-05-02  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Completed IPv6 support, LocalPath property, GetLeftPart
+	method. Not sure on status of MakeRelative.
+
+	* resources/en_US/System/Arg.txt: new "Arg_UriPartial".
+
 2002-04-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Other/CP57002.cs (GetChars): should add "shift", not subtract.

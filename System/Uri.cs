@@ -162,7 +162,7 @@ public class Uri : MarshalByRefObject
 
 	// The following takes . or .. directories out of an absolute path.
 	// Throws UriFormatException if the ..s try to extend beyond the root dir.
-	private String StripMetaDirectories(String oldpath)
+	private static String StripMetaDirectories(String oldpath)
 	{
 		int toBeRemoved = 0;
 		String[] dirs = oldpath.Split('/'); // in abspath, dirs[0] is ""
@@ -193,7 +193,6 @@ public class Uri : MarshalByRefObject
 		return newpath.ToString();
 	}
 
-	[TODO]
 	public static UriHostNameType CheckHostName(String name)
 	{
 		if (name == null || name.Length == 0)
@@ -222,7 +221,55 @@ public class Uri : MarshalByRefObject
 		{
 			// not IPv4
 		}
-		// TODO: IPv6
+
+		// IPv6, see http://search.ietf.org/internet-drafts/draft-ietf-ipngwg-addr-arch-v3-07.txt
+		// section 2.2, page 4, for my source in implementation
+		try
+		{
+			String[] parts = name.Split(':');
+			int dex;
+			if (parts.Length <= 8) // 128-bit, maybe IPv4 last 2 wds
+				dex = parts.Length;
+			else
+				throw new FormatException();
+
+			bool usingIPv4maybe = false;
+			if (parts[parts.Length - 1].IndexOf('.') >= 0) // 2wds?
+			{
+				--dex;
+				usingIPv4maybe = true;
+			}
+
+			bool usedZeroCompress = false;
+			while (--dex >= 0) // check all hexes
+			{
+				int pos = 0;
+				if (parts[dex].Length == 0) // zero compress?
+				{
+					if (usedZeroCompress)
+						throw new FormatException();
+					else
+						usedZeroCompress = true;
+				}
+				parseHexWord(parts[dex], pos);
+				if (pos != parts[dex].Length) // some bad chars in seg
+					throw new FormatException();
+			}
+			if (!usedZeroCompress &&
+				((usingIPv4maybe && parts.Length < 7) ||
+				(!usingIPv4maybe && parts.Length < 8))
+			   ) // not enough items
+				throw new FormatException();
+			if (usingIPv4maybe)
+				// will throw FormatException if bad
+				System.Net.IPAddress.Parse(parts[parts.Length - 1]);
+			return UriHostNameType.IPv6;
+		}
+		catch (FormatException)
+		{
+			// not IPv6
+		}
+
 		return UriHostNameType.Unknown;
 	}
 
@@ -237,6 +284,24 @@ public class Uri : MarshalByRefObject
 				return false;
 		}
 		return true;
+	}
+
+	// Takes a location in a string, and returns a ushort if it can be
+	// hex-parsed into a, well, ushort. Throws FormatException if index
+	// doesn't point to a hex char (will fix index).
+	private static ushort parseHexWord(String src, ref int index)
+	{
+		int buildretval = 0;
+		for (int stop = index + 4; index < stop; ++indexcpy)
+		{
+			if (!IsHexDigit(src[index]))
+				break;
+			buildretval <<= 4;
+			buildretval |= FromHex(src[index]);
+		}
+		if (stop == index + 4)
+			throw new FormatException(S._("Arg_HexDigit"));
+		return buildretval;
 	}
 
 	public static bool CheckSchemeName(String schemeName)
@@ -344,16 +409,17 @@ public class Uri : MarshalByRefObject
 
 	public String GetLeftPart(UriPartial part)
 	{
-		if (part == UriPartial.Path)
+		switch (part)
+		{
+		case UriPartial.Path:
 			return this.ToStringNoFragQuery();
-
-		else if (part == UriPartial.Authority)
+		case UriPartial.Authority:
 			return String.Concat(this.scheme, this.schemeDelim(), this.Authority);
-
-		else if (part == UriPartial.Scheme)
+		case UriPartial.Scheme:
 			return String.Concat(this.scheme, this.schemeDelim());
-		else
-			return null;	// TODO
+		default:
+			throw new ArgumentException(S._("Arg_UriPartial"));
+		}
 	}
 
 	// gets proper delimiter for current scheme
@@ -478,6 +544,7 @@ public class Uri : MarshalByRefObject
 		return IsReserved(character);
 	}
 
+	// needs debugging. Also, figure out exactly how it works.
 	[TODO]
 	public String MakeRelative(Uri toUri)
 	{
@@ -744,8 +811,7 @@ public class Uri : MarshalByRefObject
 		}
 		else // following % sign is not hex
 		{
-			++pcntSignIndex; // don't reread the character
-			return path[pcntSignIndex];
+			return path[pcntSignIndex++]; // don't reread char, return % (or whatever)
 		}
 	}
 
@@ -853,19 +919,15 @@ public class Uri : MarshalByRefObject
 		}
 	}
 
-	[TODO]
 	public String LocalPath
 	{
 		get
 		{
-			if (String.Equals(this.scheme, Uri.UriSchemeFile))
-			{
-				// aieee! platform-dependent. Internal?
-				// TODO
-				return null;
-			}
+			if (String.Equals(this.scheme, Uri.UriSchemeFile) &&
+			    Path.DirectorySeparatorChar != '/')
+				return this.path.Replace('/', Path.DirectorySeparatorChar);
 			else
-				return this.AbsolutePath;
+				return this.path;
 		}
 	}
 

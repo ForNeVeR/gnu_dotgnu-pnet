@@ -107,7 +107,7 @@ public sealed class ImageList
 #if CONFIG_COMPONENT_MODEL
 	protected override void Dispose(bool disposing)
 #else
-	protected virtual void Dispose(bool disposing)
+	public void Dispose(bool disposing)
 #endif
 	{
 		/* TODO */

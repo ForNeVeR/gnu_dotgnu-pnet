@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<project name="System.Runtime.Serialization.Formatters.Soap" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="System.Runtime.Serialization.Formatters.Soap.dll"
+				 debug="${debug.flag}"
+				 unsafe="true">
+
+			<sources basedir="${mono.sources}/class/System.Runtime.Serialization.Formatters.Soap">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+
+				<!-- SoapServices is not supposed to be in this assembly -->
+				<excludes name="System.Runtime.Serialization.Formatters.Soap/SoapServices.cs"/>
+			</sources>
+
+			<references>
+				<file name="System.Xml.dll"/>
+			</references>
+
+		</compile>
+	</target>
+</project>

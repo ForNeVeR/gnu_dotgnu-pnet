@@ -1,0 +1,146 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(class/Accessibility/Accessibility.build)
+AM_INIT_AUTOMAKE(ml-pnet, 0.0.1)
+AM_MAINTAINER_MODE
+
+dnl Extra substitution variables.
+AC_SUBST(CSANT)
+AC_SUBST(CSANT_FLAGS)
+AC_SUBST(CSHARP_COMPILER)
+AC_SUBST(CSHARP_COMPILER_CYGWIN)
+AC_SUBST(CSHARP_PLUGIN)
+AC_SUBST(CSCC_FLAGS)
+AC_SUBST(PNET_PATH)
+AC_SUBST(MONO_SOURCE_PATH)
+AC_SUBST(DEBUG_FLAG)
+
+dnl Checks for programs.
+AC_PROG_AWK
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PATH_PROG(CYGPATH, cygpath)
+
+dnl The --with-pnet option can be used to specify the location of
+dnl Portable.NET, so that we know where to get the C# compiler, etc.
+dnl The default location is assumed to be "../pnet".
+AC_ARG_WITH(pnet,
+[  --with-pnet=DIR         specify the location of Portable.NET],
+[
+	if test -n "$withval"; then
+		case "$withval" in
+		  ../*) PNET_PATH="`pwd`/$withval" ;;
+		     *) PNET_PATH="$withval" ;;
+		esac
+	else
+		PNET_PATH="`pwd`/../pnet"
+	fi
+],
+[
+	PNET_PATH="`pwd`/../pnet"
+])
+
+dnl The --with-mono-sources option is used to specify the location
+dnl of the Mono source tree.
+AC_MSG_CHECKING(for mono source tree)
+MONO_SOURCE_PATH=""
+AC_ARG_WITH(mono-sources,
+[  --with-mono-sources=DIR specify the location of the Mono source tree],
+[
+	if test -n "$withval"; then
+		case "$withval" in
+		  ../*) MONO_SOURCE_PATH="`pwd`/$withval" ;;
+		     *) MONO_SOURCE_PATH="$withval" ;;
+		esac
+	fi
+])
+if test "x$MONO_SOURCE_PATH" = "x" ; then
+	# Try looking in some likely default locations.
+	if test -f "../mono/mcs/class/library.make" ; then
+		MONO_SOURCE_PATH="`pwd`/../mono/mcs"
+	else
+		if test -f "../mcs/class/library.make" ; then
+			MONO_SOURCE_PATH="`pwd`/../mcs"
+		else
+			AC_MSG_WARN(not found)
+			echo '****************************************************'
+			echo "Supply the --with-mono-sources option to specify the"
+			echo "location of the Mono library sources."
+			echo '****************************************************'
+			exit 1
+		fi
+	fi
+else
+	# Add an extra "mcs" if the user omitted it.
+	if test -f "$MONO_SOURCE_PATH/mcs/class/library.make" ; then
+		MONO_SOURCE_PATH="$MONO_SOURCE_PATH/mcs"
+	fi
+fi
+if test ! -f "$MONO_SOURCE_PATH/class/library.make" ; then
+	AC_MSG_WARN(not found)
+	echo '*****************************************************************'
+	echo "Could not find the Mono library source in the specified location."
+	echo '*****************************************************************'
+	exit 1
+fi
+AC_MSG_RESULT($MONO_SOURCE_PATH)
+
+dnl Option to disable debug line number information.
+AC_ARG_ENABLE(debug,
+[  --disable-debug         disable debug line number information],
+[case "${enableval}" in
+  yes) DEBUG_FLAG=true ;;
+  no)  DEBUG_FLAG=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-debug) ;;
+esac],[DEBUG_FLAG=true])
+
+dnl Find the Portable.NET "csant" program.
+AC_PATH_PROG(CSANT, csant,, $PNET_PATH/csant:${prefix}/bin:$PATH)
+if test "$CSANT" = "" ; then
+	echo '**************************************************************'
+	echo "Portable.NET's csant tool is required to build the system."
+	echo "Use the --with-pnet option to specify Portable.NET's location."
+	echo '**************************************************************'
+	exit 1
+fi
+
+dnl Find the C# compiler to use.
+AC_PATH_PROG(CSHARP_COMPILER, cscc,, $PNET_PATH/cscc:${prefix}/bin:$PATH)
+if test "$CSHARP_COMPILER" = "" ; then
+	echo '**************************************************'
+	echo "Portable.NET's cscc is required to build.  Use the"
+	echo "--with-pnet option to specify the location of the"
+	echo "Portable.NET source tree."
+	echo '**************************************************'
+	exit 1
+else
+	AC_PATH_PROG(CSHARP_PLUGIN, cscc-cs,, $PNET_PATH/cscc:${prefix}/lib/cscc/plugins:${prefix}/bin:$PATH)
+	if test "x$CYGPATH" = "x" ; then
+		CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
+	else
+		# Convert the cscc and cscc-cs paths into their Windows
+		# forms, to ensure that spawns from csant work correctly.
+		CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
+		CSHARP_COMPILER=`"$CYGPATH" -w "$CSHARP_COMPILER"`
+		CSHARP_PLUGIN=`"$CYGPATH" -w "$CSHARP_PLUGIN"`
+	fi
+	CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" -Ddebug.flag="$(DEBUG_FLAG)"'
+fi
+
+AC_OUTPUT([
+Makefile
+class/Makefile
+class/Accessibility/Makefile
+class/Custommarshalers/Makefile
+class/System.EnterpriseServices/Makefile
+class/System.Configuration.Install/Makefile
+class/System.Management/Makefile
+class/System.ServiceProcess/Makefile
+class/System.Runtime.Serialization.Formatters.Soap/Makefile
+class/PEAPI/Makefile
+class/ICSharpCode.SharpZipLib/Makefile
+class/Mono.Data.Tds/Makefile
+class/Mono.Directory.LDAP/Makefile
+class/Mono.GetOptions/Makefile
+class/Mono.Posix/Makefile
+])

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<project name="System.EnterpriseServices" default="all">
+
+	<target name="all">
+		<compile target="library"
+				 output="System.EnterpriseServices.dll"
+				 unsafe="true"
+				 debug="${debug.flag}">
+
+			<sources basedir="${mono.sources}/class/System.EnterpriseServices">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+			</sources>
+
+		</compile>
+	</target>
+
+</project>

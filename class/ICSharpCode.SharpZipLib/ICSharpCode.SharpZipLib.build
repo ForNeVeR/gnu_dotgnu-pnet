@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<project name="ICSharpCode.SharpZipLib" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="ICSharpCode.SharpZipLib.dll"
+				 debug="${debug.flag}"
+				 unsafe="true">
+
+			<sources basedir="${mono.sources}/class/ICSharpCode.SharpZipLib">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+			</sources>
+
+		</compile>
+	</target>
+</project>

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<project name="Custommarshalers" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="Custommarshalers.dll"
+				 debug="${debug.flag}"
+				 unsafe="true">
+
+			<sources basedir="${mono.sources}/class/Custommarshalers">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+
+				<!-- Missing a declaration of MonoTODOAttribute -->
+				<file name="../corlib/System/TODOAttribute.cs"/>
+			</sources>
+
+		</compile>
+	</target>
+</project>

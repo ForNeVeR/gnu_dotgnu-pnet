@@ -1108,12 +1108,26 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void DrawRectangle(Pen pen, int x, int y, int width, int height)
 			{
-				DrawPolygon(pen, ConvertRectangle(x, y, width, height));
+				if (width>0 && height>0)
+				{
+					lock(this)
+					{
+						SelectPen(pen);
+						ToolkitGraphics.DrawPolygon(ConvertRectangle(x, y, width, height));
+					}
+				}
 			}
 	public void DrawRectangle(Pen pen, float x, float y,
 							  float width, float height)
 			{
-				DrawPolygon(pen, ConvertRectangle(x, y, width, height));
+				if (width>0 && height>0)
+				{
+					lock(this)
+					{
+						SelectPen(pen);
+						ToolkitGraphics.DrawPolygon(ConvertRectangle(x, y, width, height));
+					}
+				}
 			}
 
 	// Draw a series of rectangles.
@@ -1684,12 +1698,20 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void FillRectangle(Brush brush, int x, int y, int width, int height)
 			{
-				FillPolygon(brush, ConvertRectangle(x, y, width, height));
+				lock(this)
+				{
+					SelectBrush(brush);
+					ToolkitGraphics.FillPolygon(ConvertRectangle(x, y, width, height), FillMode.Alternate);
+				}
 			}
 	public void FillRectangle(Brush brush, float x, float y,
 							  float width, float height)
 			{
-				FillPolygon(brush, ConvertRectangle(x, y, width, height));
+				lock(this)
+				{
+					SelectBrush(brush);
+					ToolkitGraphics.FillPolygon(ConvertRectangle(x, y, width, height), FillMode.Alternate);
+				}
 			}
 
 	// Fill a series of rectangles.
@@ -1721,10 +1743,14 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 
 	// Fill a region.
-	[TODO]
 	public void FillRegion(Brush brush, Region region)
 			{
-				// TODO
+				RectangleF[] rs = region.GetRegionScans(new Drawing.Drawing2D.Matrix());
+				for (int i = 0; i < rs.Length; i++)
+				{
+					Rectangle b = Rectangle.Truncate(rs[i]);
+					FillRectangle(brush, rs[i]);
+				}
 			}
 
 	// Flush graphics operations to the display device.
@@ -1868,13 +1894,119 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 
 	// Measure the character ranges for a string.
-	[TODO]
-	public Region[] MeasureCharacterRanges
-				(String text, Font font, RectangleF layoutRect,
-				 StringFormat stringFormat)
+	// TODO not complete
+	public Region[] MeasureCharacterRanges(String text,
+		Font font, RectangleF layoutRect, StringFormat stringFormat)
 			{
-				// TODO
-				return null;
+				RectangleF[] bounds = new RectangleF[text.Length];
+				float xMax = 0;
+				float yMax = 0;
+				float fontHeight = font.GetHeight(this) - 1;
+				bool vertical = (stringFormat.FormatFlags & StringFormatFlags.DirectionVertical) != 0;
+				if (vertical)
+				{
+					xMax = layoutRect.Height - 1;
+					yMax = layoutRect.Width - 1;
+				}
+				else
+				{
+					xMax = layoutRect.Width - 1;
+					yMax = layoutRect.Height - 1;
+				}
+				bool noWrap = (stringFormat.FormatFlags & StringFormatFlags.NoWrap) != 0;
+				//TODO stringFormat.LineAlignment;
+				int[] lines = new int[20];
+				float lineSizeRemaining = yMax;
+				int currentLine = 0;
+				// First line starts at 0
+				lines[currentLine++] = 0;
+				int currentPos = 0;
+				do
+				{
+					MeasureLine (ref bounds, ref currentPos, ref text, xMax, this, font, vertical, noWrap);
+					lines[currentLine++] = currentPos;
+					if (currentPos < text.Length && text[currentPos] == (char)10)
+						currentPos++;
+					lineSizeRemaining -= fontHeight;
+					if (currentPos >= text.Length || lineSizeRemaining < 0)
+						break;
+				} while (true);
+				
+				int nextLine = 0;
+				float xOffset = 0;
+				for (int i = 0; i < text.Length; i++)
+				{
+					if (lines[nextLine] == i)
+					{
+						xOffset = 0;
+						nextLine++;
+						if (stringFormat.Alignment == StringAlignment.Far)
+							xOffset = xMax + 1 - bounds[lines[nextLine] - 1].Right;
+						else if (stringFormat.Alignment == StringAlignment.Center)
+						{
+							for (int j = i; j < lines[nextLine]; j++)
+								xOffset += bounds[j].Width;
+							xOffset = (xMax + 1 - xOffset)/2;
+						}
+					}
+					if (bounds[i] != Rectangle.Empty)
+					{
+						RectangleF rect = bounds[i];
+						bounds[i] = new RectangleF( rect.Left + xOffset + layoutRect.Left, rect.Top + (nextLine - 1) * fontHeight + layoutRect.Top, rect.Width, rect.Height);
+					}
+				}
+
+				// Now consolidate positions based on character ranges
+				Region[] regions = new Region[stringFormat.ranges.Length];
+				for (int i = 0; i < stringFormat.ranges.Length; i++)
+				{
+					CharacterRange range = stringFormat.ranges[i];
+					Region region = new Region(RectangleF.Empty);
+					for (int j = range.First; j < range.First + range.Length; j++)
+						region.Union(bounds[j]);
+					regions[i] = region;
+				}
+				return regions;
+			}
+
+	// Measures one full line. Updates the positions of the characters in that line relative to 0,0
+	private void MeasureLine(ref RectangleF[] bounds, ref int currentPos,
+		ref string text, float maxX, Graphics g, Font f, bool vertical, bool noWrap)
+			{
+				int x = 0;
+				int y = 0;
+				do
+				{
+					char c = text[currentPos];
+					if (c == (char)10)
+						return;
+					// Ignore char 13
+					if (c!= (char)13)
+					{
+						//TODO use Platform specific measure function & take into account kerning
+						Size s = g.MeasureString( c.ToString(), f).ToSize();
+						int newX = x;
+						int newY = y;
+						if (vertical)
+							newX += s.Height;
+						else
+							newX += s.Width;
+						if (newX > maxX)
+						{
+							if (!noWrap)
+								return;
+						}
+						else
+						{
+							if (vertical)
+								bounds[currentPos] = new RectangleF( y, x, s.Height, s.Width );
+							else
+								bounds[currentPos] = new RectangleF( x, y, s.Width, s.Height );
+						}
+						x = newX;
+					}
+					currentPos++;
+				} while (currentPos < text.Length);
 			}
 
 	// Measure the size of a string.
@@ -2536,11 +2668,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						(String.Format
 							(S._("Arg_NeedsAtLeastNPoints"), minPoints));
 				}
-
+		
 				// If we are using the identity transformation,
 				// then bail out early using the "points" array.
 				if((pageUnit == GraphicsUnit.World && transform == null) ||
-				   pageUnit == GraphicsUnit.Pixel)
+					pageUnit == GraphicsUnit.Pixel)
 				{
 					if(pageScale == 1.0f)
 					{
@@ -2581,7 +2713,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				int posn;
 				for(posn = 0; posn < points.Length; ++posn)
 				{
-					ConvertPoint(points[posn].X, points[posn].Y, out x, out y);
+					ConvertPoint(points[posn].X, points[posn].Y, out x, out y);	
 					newPoints[posn] = new Point(x, y);
 				}
 				return newPoints;

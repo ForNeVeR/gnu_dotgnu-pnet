@@ -26,6 +26,8 @@ correctly during member resolution.
 
 * ilalink/link_method.c: use "ILTypeSpecGetClassRef" to import TypeSpec's.
 
+* ilalink/link_field.c: implement field and marshalling conversions.
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

@@ -1412,7 +1412,7 @@ void ILAsmOutAddTryBlock(char *blockStart, char *blockEnd,
 	{
 		exceptionList = handlers;
 	}
-	lastException = handlers;
+	lastException = last;
 }
 
 /*

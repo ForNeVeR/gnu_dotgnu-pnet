@@ -7,6 +7,9 @@
 	samples/System.Xml.dll, samples/System.dll, samples/mscorlib.dll:
 	update the assemblies and re-generate the internalcall tables.
 
+	* ilasm/ilasm_output.c (ILAsmOutAddTryBlock): set "lastException"
+	to the correct value when there are multiple handlers for a block.
+
 2002-10-23  Gopal.V  <gopalv82@symonds.net>
 
 	* support/dir.c,include/il_sysio.h,engine/lib_dir.c,

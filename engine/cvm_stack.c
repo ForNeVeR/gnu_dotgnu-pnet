@@ -28,6 +28,21 @@
 
 #elif defined(IL_CVM_MAIN)
 
+/**
+ * <opcode name="dup">
+ *   <operation>Duplicate the top of stack</operation>
+ *
+ *   <format>dup</format>
+ *
+ *   <form name="dup" code="COP_DUP"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., value, value</after>
+ *
+ *   <description>Pop the single-word <i>value</i> from
+ *   the stack, and then push it twice.</description>
+ * </opcode>
+ */
 case COP_DUP:
 {
 	/* Duplicate the top-most word on the stack */
@@ -36,6 +51,21 @@ case COP_DUP:
 }
 break;
 
+/**
+ * <opcode name="dup2">
+ *   <operation>Duplicate the top two stack words</operation>
+ *
+ *   <format>dup2</format>
+ *
+ *   <form name="dup2" code="COP_DUP2"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., value1, value2, value1, value2</after>
+ *
+ *   <description>Pop the words <i>value1</i> and <i>value2</i> from
+ *   the stack and then push them twice.</description>
+ * </opcode>
+ */
 case COP_DUP2:
 {
 	/* Duplicate the top two words on the stack */
@@ -45,6 +75,25 @@ case COP_DUP2:
 }
 break;
 
+/**
+ * <opcode name="dup_n">
+ *   <operation>Duplicate the top <i>N</i> stack words</operation>
+ *
+ *   <format>dup_n<fsep/>N[1]</format>
+ *   <format>wide<fsep/>dup_n<fsep/>N[4]</format>
+ *
+ *   <form name="dup_n" code="COP_DUP_N"/>
+ *
+ *   <before>..., value1, ..., valueN</before>
+ *   <after>..., value1, ..., valueN, value1, ..., valueN</after>
+ *
+ *   <description>Pop the top <i>N</i> words from the stack and then
+ *   push them twice.</description>
+ *
+ *   <notes>This is typically used for value type instances that are larger
+ *   than 2 words in size.</notes>
+ * </opcode>
+ */
 case COP_DUP_N:
 {
 	/* Duplicate the top N words on the stack */
@@ -55,6 +104,23 @@ case COP_DUP_N:
 }
 break;
 
+/**
+ * <opcode name="dup_word_n">
+ *   <operation>Duplicate a stack word that is <i>N</i> words
+ *				down the stack</operation>
+ *
+ *   <format>dup_word_n<fsep/>N[1]</format>
+ *   <format>wide<fsep/>dup_word_n<fsep/>N[4]</format>
+ *
+ *   <form name="dup_word_n" code="COP_DUP_WORD_N"/>
+ *
+ *   <before>..., value, word1, ..., wordN</before>
+ *   <after>..., value, word1, ..., wordN, value</after>
+ *
+ *   <description>Retrieve the <i>value</i> that is <i>N</i> words
+ *   down the stack and push it onto the top of the stack.</description>
+ * </opcode>
+ */
 case COP_DUP_WORD_N:
 {
 	/* Duplicate a word which is N words down the stack */
@@ -63,6 +129,21 @@ case COP_DUP_WORD_N:
 }
 break;
 
+/**
+ * <opcode name="pop">
+ *   <operation>Pop the top-most word from the stack</operation>
+ *
+ *   <format>pop</format>
+ *
+ *   <form name="pop" code="COP_POP"/>
+ *
+ *   <before>..., value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop the single-word <i>value</i> from
+ *   the stack.</description>
+ * </opcode>
+ */
 case COP_POP:
 {
 	/* Pop the top-most word from the stack */
@@ -70,6 +151,21 @@ case COP_POP:
 }
 break;
 
+/**
+ * <opcode name="pop2">
+ *   <operation>Pop the top two words from the stack</operation>
+ *
+ *   <format>pop2</format>
+ *
+ *   <form name="pop2" code="COP_POP2"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop the two stack words <i>value1</i> and <i>value2</i>
+ *   from the stack.</description>
+ * </opcode>
+ */
 case COP_POP2:
 {
 	/* Pop the top two words from the stack */
@@ -77,6 +173,22 @@ case COP_POP2:
 }
 break;
 
+/**
+ * <opcode name="pop_n">
+ *   <operation>Pop the top <i>N</i> words from the stack</operation>
+ *
+ *   <format>pop_n<fsep/>N[1]</format>
+ *   <format>wide<fsep/>pop_n<fsep/>N[4]</format>
+ *
+ *   <form name="pop_n" code="COP_POP_N"/>
+ *
+ *   <before>..., value1, ..., valueN</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop the top <i>N</i> stack words
+ *   from the stack.</description>
+ * </opcode>
+ */
 case COP_POP_N:
 {
 	/* Pop the top N words from the stack */
@@ -85,6 +197,22 @@ case COP_POP_N:
 }
 break;
 
+/**
+ * <opcode name="squash">
+ *   <operation>Squash a number of words out of the stack</operation>
+ *
+ *   <format>squash<fsep/>N[1]<fsep/>M[1]</format>
+ *   <format>wide<fsep/>squash<fsep/>N[4]<fsep/>M[4]</format>
+ *
+ *   <form name="squash" code="COP_SQUASH"/>
+ *
+ *   <before>..., word1, ..., wordM, value1, ..., valueN</before>
+ *   <after>..., value1, ..., valueN</after>
+ *
+ *   <description>Remove the <i>M</i> words from the stack,
+ *   <i>N</i> words down the stack.</description>
+ * </opcode>
+ */
 case COP_SQUASH:
 {
 	/* Squash N words out of the stack, M words down the stack */
@@ -96,6 +224,31 @@ case COP_SQUASH:
 }
 break;
 
+/**
+ * <opcode name="ckheight">
+ *   <operation>Check the height of the stack</operation>
+ *
+ *   <format>ckheight<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *
+ *   <form name="ckheight" code="COP_CKHEIGHT"/>
+ *
+ *   <description>Check that the stack has at least 8 words of
+ *   space available for pushing values.</description>
+ *
+ *   <notes>This instruction is used at the start of a method to
+ *   check that that there is sufficient stack space to hold the
+ *   local variables and temporary stack values used by the method.<p/>
+ *
+ *   The opcode is followed by 4 zero bytes so that this instruction
+ *   has the same length as <i>ckheight_n</i>.  This makes it easier
+ *   to back-patch the height after translating the method.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.StackOverflowException">Raised if
+ *     there is insufficient space available on the stack.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_CKHEIGHT:
 {
 	/* Check the height of the stack to ensure that we have
@@ -113,6 +266,28 @@ case COP_CKHEIGHT:
 }
 break;
 
+/**
+ * <opcode name="ckheight_n">
+ *   <operation>Check the height of the stack for <i>N</i>
+ *              words of available space</operation>
+ *
+ *   <format>ckheight_n<fsep/>N[4]</format>
+ *
+ *   <form name="ckheight_n" code="COP_CKHEIGHT_N"/>
+ *
+ *   <description>Check that the stack has at least <i>N</i> words of
+ *   space available for pushing values.</description>
+ *
+ *   <notes>This instruction is used at the start of a method to
+ *   check that that there is sufficient stack space to hold the
+ *   local variables and temporary stack values used by the method.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.StackOverflowException">Raised if
+ *     there is insufficient space available on the stack.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_CKHEIGHT_N:
 {
 	/* Check the height of the stack to ensure that we have
@@ -128,6 +303,22 @@ case COP_CKHEIGHT_N:
 }
 break;
 
+/**
+ * <opcode name="set_num_args">
+ *   <operation>Set the number of arguments for the current method</operation>
+ *
+ *   <format>set_num_args<fsep/>N[1]</format>
+ *   <format>wide<fsep/>set_num_args<fsep/>N[4]</format>
+ *
+ *   <form name="set_num_args" code="COP_SET_NUM_ARGS"/>
+ *
+ *   <description>Set the frame pointer for the current method to
+ *   the address of the <i>N</i>'th word down the stack.</description>
+ *
+ *   <notes>This is typically the first instruction in a method, which
+ *   sets up the local variable frame.</notes>
+ * </opcode>
+ */
 case COP_SET_NUM_ARGS:
 {
 	/* Set the number of argument stack slots */
@@ -171,7 +362,7 @@ case COP_SQUASH:
 	tempptr = stacktop - tempNum - IL_READ_UINT32(pc + 6);
 	IL_MEMMOVE(tempptr, stacktop - tempNum, sizeof(CVMWord *) * tempNum);
 	stacktop -= IL_READ_UINT32(pc + 6);
-	pc += 8;
+	pc += 10;
 }
 break;
 

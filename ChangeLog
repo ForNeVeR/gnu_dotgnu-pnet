@@ -2,7 +2,8 @@
 2002-04-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_branch.c, engine/cvm_except.c, engine/cvm_inline.c,
-	engine/cvm_ptr.c: continue documenting the CVM instruction set.
+	engine/cvm_ptr.c, engine/cvm_stack.c, engine/cvm_var.c: continue
+	documenting the CVM instruction set.
 
 2002-04-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 

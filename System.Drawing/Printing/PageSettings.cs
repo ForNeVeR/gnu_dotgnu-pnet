@@ -32,7 +32,6 @@ public class PageSettings : ICloneable
 {
 	// Internal state.
 	private PrinterSettings printerSettings;
-	private Rectangle bounds;
 	private bool color;
 	private bool colorSet;
 	private bool landscape;

@@ -1,4 +1,31 @@
 
+2002-10-01  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* make_patch.sh : Adjust script to include .build files.
+
+	* configure.in : Add Makefiles for new test assemblies.
+
+	* tests/Makefile.am :  Added new sub-directories "System.Xml" and
+	"runtime."
+
+	* tests/runtime/System/TestBoolean.cs, tests/runtime/System/TestString.cs :
+	Moved tests from test/System to test/runtime/System.  See next...
+
+	* tests/runtime/Makefile.am, tests/runtime/Testruntime.cs,
+	tests/runtime/Testruntime.build :  Added runtime assembly test dll.
+
+	* tests/runtime/System/TestSByte.cs,
+	tests/runtime/System/Collections/TestArrayList.cs : New tests for runtime
+	assembly.  (It doesn't do too well at the moment :-).
+
+	* tests/System.Xml/Makefile.am, tests/System.Xml/TestXml.cs,
+	tests/System.Xml/TestXml.build, tests/System.Xml/TestXmlConvert.cs,
+	tests/System.Xml/TestXmlException.cs : New tests for System.Xml assembly.
+	It, too, does not do too well.
+
+	* tests/System/TestSystem.cs : Remove the tests that were moved to
+	"tests/runtime" assembly test.
+
 2002-10-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* tests/System/TestIPAddress.cs ,tests/System/Net/TestIPAddress.cs : 

@@ -112,7 +112,7 @@ comment_changed()
 {
 	case "$1" in
 		\?) case "$2" in
-			  *.c|*.cc|*.h|*.cs|*.tc|*.y|*.yy|*.l|*.ll|*.sh|*.am|*.html|*.texi|*.in)
+			  *.c|*.cc|*.h|*.cs|*.tc|*.y|*.yy|*.l|*.ll|*.sh|*.am|*.html|*.texi|*.in|*.build)
 			  		echo "MP:    $2" >>${COMMENTS} ;;
 			  *) ;;
 		    esac ;;

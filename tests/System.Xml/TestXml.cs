@@ -1,5 +1,5 @@
 /*
- * TestSystem.cs - Tests for the "System" namespace.
+ * TestSystemXml.cs - Tests for the "System" namespace.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,16 @@
  */
 
 using CSUnit;
-using System;
+using System.Xml;
 
-public class TestSystem
+public class TestXml
 {
 
 	public static TestSuite Suite()
 			{
-				TestSuite suite = new TestSuite("System Tests");
-				suite.AddTests(typeof(TestUri));
-				suite.AddTests(typeof(TestIPAddress));
+				TestSuite suite = new TestSuite("SystemXml Tests");
+				suite.AddTests(typeof(TestXmlException));
+				suite.AddTests(typeof(TestXmlConvert));
 				return suite;
 			}
 

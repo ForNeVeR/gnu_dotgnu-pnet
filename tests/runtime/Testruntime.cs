@@ -1,5 +1,5 @@
 /*
- * TestSystem.cs - Tests for the "System" namespace.
+ * Testruntime.cs - Tests for the "System" namespace.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,15 +21,16 @@
 using CSUnit;
 using System;
 
-public class TestSystem
+public class Testruntime
 {
 
 	public static TestSuite Suite()
 			{
-				TestSuite suite = new TestSuite("System Tests");
-				suite.AddTests(typeof(TestUri));
-				suite.AddTests(typeof(TestIPAddress));
+				TestSuite suite = new TestSuite("Basic Runtime Tests");
+				suite.AddTests(typeof(TestBoolean));
+				suite.AddTests(typeof(TestString));
 				return suite;
 			}
 
-}; // class TestSystem
+}; // class Testruntime
+

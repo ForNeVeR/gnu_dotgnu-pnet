@@ -1,5 +1,5 @@
 /*
- * TestSystem.cs - Tests for the "System" namespace.
+ * TestArrayList.cs - Tests for the "Boolean" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -20,16 +20,38 @@
 
 using CSUnit;
 using System;
+using System.Collections;
 
-public class TestSystem
+public class TestArrayList : TestCase
 {
-
-	public static TestSuite Suite()
+	// Constructor.
+	public TestArrayList(String name)
+			: base(name)
 			{
-				TestSuite suite = new TestSuite("System Tests");
-				suite.AddTests(typeof(TestUri));
-				suite.AddTests(typeof(TestIPAddress));
-				return suite;
+				// Nothing to do here.
 			}
 
-}; // class TestSystem
+	// Set up for the tests.
+	protected override void Setup()
+			{
+				// Nothing to do here.
+			}
+
+	// Clean up after the tests.
+	protected override void Cleanup()
+			{
+				// Nothing to do here.
+			}
+
+	// Test running a foreach loop across a simple String array
+	public void TestIterator()
+	{
+		int i;
+		ArrayList l = new ArrayList();
+
+		for (i=0;i<100;i++)
+		{
+			l.Insert(i,i.ToString());
+		}
+	}
+}; // class TestArrayList

@@ -275,6 +275,63 @@ void ILRWLockWriteLock(ILRWLock *rwlock);
  */
 void ILRWLockUnlock(ILRWLock *rwlock);
 
+/*
+ * Close a wait handle.  Returns zero if the handle is
+ * currently owned by a thread.
+ */
+int ILWaitHandleClose(ILWaitHandle *handle);
+
+/*
+ * Special timeout values.
+ */
+#define	IL_WAIT_INFINITE		((ILUInt32)IL_MAX_UINT32)
+
+/*
+ * Return values for "ILWaitOne", "ILWaitAny", and "ILWaitAll".
+ */
+#define	IL_WAIT_TIMEOUT			-1
+#define	IL_WAIT_FAILED			-2
+#define	IL_WAIT_INTERRUPTED		-3
+#define	IL_WAIT_ABORTED			-4
+
+/*
+ * Wait for one wait handle to become available.  Returns
+ * zero if the wait handle was acquired.
+ */
+int ILWaitOne(ILWaitHandle *handle, ILUInt32 timeout);
+
+/*
+ * Wait for any wait handle in a set to become available.
+ * Returns the index of the handle that was acquired.
+ */
+int ILWaitAny(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout);
+
+/*
+ * Wait for all handles in a set to become available.
+ * Returns zero if all wait handles were acquired.
+ */
+int ILWaitAll(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout);
+
+/*
+ * Create a wait mutex, which differs from a regular
+ * mutex in that it can be used from C# code, and can
+ * be held for long periods of time.
+ */
+ILWaitHandle *ILWaitMutexCreate(int initiallyOwned);
+
+/*
+ * Create a named wait mutex, or return an existing named
+ * mutex with the same name.
+ */
+ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
+									 int *gotOwnership);
+
+/*
+ * Release a wait mutex that is currently held by the
+ * current thread.  Returns zero if not held.
+ */
+int ILWaitMutexRelease(ILWaitHandle *handle);
+
 #ifdef	__cplusplus 
 };
 #endif

@@ -112,6 +112,93 @@ struct _tagILThread
 #define	IL_TS_INTERRUPTED		0x0400
 
 /*
+ * Wait handle kinds.
+ */
+#define	IL_WAIT_MUTEX			0x1000
+#define	IL_WAIT_NAMED_MUTEX		0x1001
+#define	IL_WAIT_MONITOR			0x1002
+
+/*
+ * Close function for a wait handle.
+ */
+typedef int (*ILWaitCloseFunc)(ILWaitHandle *handle);
+
+/*
+ * Return values for "ILWaitCloseFunc".
+ */
+#define	IL_WAITCLOSE_OWNED		0
+#define	IL_WAITCLOSE_FREE		1
+#define	IL_WAITCLOSE_DONT_FREE	2
+
+/*
+ * Register a wakeup object with a wait handle, so it can be
+ * woken at some future point.
+ */
+typedef int (*ILWaitRegisterFunc)(ILWaitHandle *handle, _ILWakeup *wakeup);
+
+/*
+ * Return values for "ILWaitRegisterFunc".
+ */
+#define	IL_WAITREG_FAILED		0
+#define	IL_WAITREG_OK			1
+#define	IL_WAITREG_ACQUIRED		2
+
+/*
+ * Unregister a wakeup object from a wait handle.  If "release"
+ * is non-zero, then release the handle if the thread acquired it.
+ * This may be called even if the wakeup object is not registered.
+ * In that case, do a release only.
+ */
+typedef void (*ILWaitUnregisterFunc)(ILWaitHandle *handle, _ILWakeup *wakeup,
+									 int release);
+
+/*
+ * Internal structure of a wait handle.
+ */
+struct _tagILWaitHandle
+{
+	_ILMutex				      lock;
+	int					 volatile kind;
+	ILWaitCloseFunc		 volatile closeFunc;
+	ILWaitRegisterFunc	 volatile registerFunc;
+	ILWaitUnregisterFunc volatile unregisterFunc;
+
+};
+
+/*
+ * Internal structure of a wait mutex handle.
+ */
+typedef struct
+{
+	ILWaitHandle			parent;
+	_ILWakeup *   volatile	owner;
+	unsigned long volatile	count;
+	_ILWakeupQueue			queue;
+
+} ILWaitMutex;
+
+/*
+ * Internal structure of a named wait mutex handle.
+ */
+typedef struct
+{
+	ILWaitMutex				parent;
+	unsigned long volatile	numUsers;
+
+} ILWaitMutexNamed;
+
+/*
+ * Internal structure of a monitor, which extends a wait
+ * mutex with Wait/Pulse/PulseAll semantics.
+ */
+typedef struct
+{
+	ILWaitMutex				parent;
+	_ILWakeupQueue          signalQueue;
+
+} ILMonitor;
+
+/*
  * Safe mutex lock and unlock operations that will prevent the
  * thread from being suspended while it holds a lock.
  */
@@ -221,13 +308,24 @@ void _ILWakeupCreate(_ILWakeup *wakeup);
 void _ILWakeupDestroy(_ILWakeup *wakeup);
 
 /*
- * Wait for a thread wakeup object to become available.  The "limit"
- * value indicates how many signals are expected.  Returns 1 if the
- * required number of signals arrived, 0 on timeout, or -1 if the
- * wakeup was interrupted.
+ * Set the limit for a "wait" operation.  The operation will
+ * be performed when the thread calls "_ILWakeupWait".  The
+ * "limit" value indicates how many signals are expected.
+ * Returns zero if the thread is already interrupted.
  */
-int _ILWakeupWait(_ILWakeup *wakeup, ILUInt32 ms,
-				  ILUInt32 limit, void **object);
+int _ILWakeupSetLimit(_ILWakeup *wakeup, ILUInt32 limit);
+
+/*
+ * Adjust the limit for a "wait" operation downwards.
+ */
+void _ILWakeupAdjustLimit(_ILWakeup *wakeup, ILUInt32 limit);
+
+/*
+ * Wait for a thread wakeup object to become available.  Returns 1
+ * if the required number of signals arrived, 0 on timeout, or -1
+ * if the wakeup was interrupted.
+ */
+int _ILWakeupWait(_ILWakeup *wakeup, ILUInt32 ms, void **object);
 
 /*
  * Signal a thread wakeup object.  Returns zero if the wakeup
@@ -268,9 +366,10 @@ void _ILWakeupQueueRemove(_ILWakeupQueue *queue, _ILWakeup *wakeup);
 
 /*
  * Wake the first non-interrupted wakeup object on a queue.
- * Returns zero if none of the objects can be woken.
+ * Returns NULL if none of the objects can be woken, or the
+ * specific wakeup object otherwise.
  */
-int _ILWakeupQueueWake(_ILWakeupQueue *queue);
+_ILWakeup *_ILWakeupQueueWake(_ILWakeupQueue *queue);
 
 /*
  * Wake all non-interrupted wakeup objects on a queue.

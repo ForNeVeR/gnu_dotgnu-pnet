@@ -47,8 +47,41 @@ void _ILWakeupDestroy(_ILWakeup *wakeup)
 	_ILCondMutexDestroy(&(wakeup->lock));
 }
 
-int _ILWakeupWait(_ILWakeup *wakeup, ILUInt32 ms,
-				  ILUInt32 limit, void **object)
+int _ILWakeupSetLimit(_ILWakeup *wakeup, ILUInt32 limit)
+{
+	int result;
+
+	/* Lock down the wakeup object.  We use an "unsafe" mutex
+	   because we will be in the "wait/sleep/join" state */
+	_ILCondMutexLockUnsafe(&(wakeup->lock));
+
+	/* Is there a pending interrupt? */
+	if(!(wakeup->interrupted))
+	{
+		wakeup->count = 0;
+		wakeup->limit = limit;
+		wakeup->object = 0;
+		result = 1;
+	}
+	else
+	{
+		wakeup->interrupted = 0;
+		result = 0;
+	}
+
+	/* Unlock the wakeup object and return */
+	_ILCondMutexUnlockUnsafe(&(wakeup->lock));
+	return result;
+}
+
+void _ILWakeupAdjustLimit(_ILWakeup *wakeup, ILUInt32 limit)
+{
+	_ILCondMutexLockUnsafe(&(wakeup->lock));
+	wakeup->limit = limit;
+	_ILCondMutexUnlockUnsafe(&(wakeup->lock));
+}
+
+int _ILWakeupWait(_ILWakeup *wakeup, ILUInt32 ms, void **object)
 {
 	int result;
 
@@ -61,11 +94,6 @@ int _ILWakeupWait(_ILWakeup *wakeup, ILUInt32 ms,
 	/* Is there a pending interrupt? */
 	if(!(wakeup->interrupted))
 	{
-		/* Reset the control variables */
-		wakeup->count = 0;
-		wakeup->limit = limit;
-		wakeup->object = 0;
-
 		/* Give up the lock and wait for someone to signal us */
 		if(_ILCondVarTimedWait(&(wakeup->condition), &(wakeup->lock), ms))
 		{
@@ -262,17 +290,17 @@ void _ILWakeupQueueRemove(_ILWakeupQueue *queue, _ILWakeup *wakeup)
 	}
 }
 
-int _ILWakeupQueueWake(_ILWakeupQueue *queue)
+_ILWakeup *_ILWakeupQueueWake(_ILWakeupQueue *queue)
 {
 	_ILWakeupItem *item, *next;
-	int woken = 0;
+	_ILWakeup *woken = 0;
 	item = queue->first;
 	while(item != 0 && !woken)
 	{
 		next = item->next;
 		if(_ILWakeupSignal(item->wakeup, item->object))
 		{
-			woken = 1;
+			woken = item->wakeup;
 		}
 		if(item != &(queue->space))
 		{

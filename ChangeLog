@@ -1,4 +1,10 @@
 
+2002-06-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/il_thread.h, support/Makefile.am, support/thr_defs.h,
+	support/thread.c, support/wait.c, support/wait_mutex.c,
+	support/wakeup.c: begin implementing support for wait handles.
+
 2002-06-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/box.c, engine/call.c, engine/convert.c, engine/cvm_call.c,

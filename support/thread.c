@@ -560,7 +560,14 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 			_ILMutexUnlock(&(self->lock));
 
 			/* Wait until we are woken or a timeout occurs */
-			result = _ILWakeupWait(&(self->wakeup), ms, 1, (void **)0);
+			if(_ILWakeupSetLimit(&(self->wakeup), 1))
+			{
+				result = _ILWakeupWait(&(self->wakeup), ms, (void **)0);
+			}
+			else
+			{
+				result = -1;
+			}
 			if(result < 0)
 			{
 				/* The wakeup was interrupted.  It may be either an
@@ -717,7 +724,14 @@ int ILThreadSleep(ILUInt32 ms)
 
 	/* Wait on the thread's wakeup object, which will never be signalled,
 	   but which may be interrupted or aborted by some other thread */
-	result = (_ILWakeupWait(&(thread->wakeup), ms, 1, (void **)0) >= 0);
+	if(_ILWakeupSetLimit(&(thread->wakeup), 1))
+	{
+		result = (_ILWakeupWait(&(thread->wakeup), ms, (void **)0) >= 0);
+	}
+	else
+	{
+		result = -1;
+	}
 
 	/* Lock down the thread again */
 	_ILMutexLock(&(thread->lock));

@@ -16,6 +16,9 @@
 	conditional to the CONFIG_SSL profile option.
 	
 	* System/Net/HttpWebRequest.cs: Re-adjust SSL negotiation procedures.
+	
+	* resources/en_US/System/NotSupp.txt: Add the exception string for
+	NotSupp_SSL. 
 
 2003-05-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 

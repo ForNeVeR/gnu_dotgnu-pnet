@@ -19,6 +19,9 @@
 	remove the obsolete "IL_META_TYPEDEF_VALUE_TYPE" flag from struct
 	types in the compiler.
 
+	* cscc/csharp/cs_gather.c: interface overrides must be "final"
+	if they aren't "virtual".
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,

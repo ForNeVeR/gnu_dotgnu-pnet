@@ -768,7 +768,16 @@ static ILMember *FindInterfaceDecl(ILNode *node, ILClass *classInfo,
 		}
 
 		/* Make sure that the final method is virtual */
-		newAttrs |= IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_NEW_SLOT;
+		if((newAttrs & IL_META_METHODDEF_VIRTUAL) != 0)
+		{
+			newAttrs |= IL_META_METHODDEF_NEW_SLOT;
+		}
+		else
+		{
+			newAttrs |= IL_META_METHODDEF_VIRTUAL |
+						IL_META_METHODDEF_NEW_SLOT |
+						IL_META_METHODDEF_FINAL;
+		}
 	}
 
 	/* Search for a match amongst the class's interfaces */

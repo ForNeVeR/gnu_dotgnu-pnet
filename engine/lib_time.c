@@ -78,24 +78,25 @@ ILInt32 _IL_TimeMethods_GetUpTime(ILExecThread *thread)
 	if(!ILGetSinceRebootTime(&timeValue))
 	{
 		ILGetCurrTime(&timeValue);
+		
 		if(timeValue.nsecs < thread->process->startTime.nsecs)
 		{
 			timeValue.nsecs =
-				timeValue.nsecs - thread->process->startTime.nsecs +
-								1000000000;
+				timeValue.nsecs - thread->process->startTime.nsecs 
+				+ 1000000000;
 			timeValue.secs =
-				timeValue.secs - thread->process->startTime.secs + 1;
+				timeValue.secs - thread->process->startTime.secs;
 		}
 		else
 		{
 			timeValue.nsecs =
-				timeValue.nsecs - thread->process->startTime.nsecs;
+				timeValue.nsecs - thread->process->startTime.nsecs;			
 			timeValue.secs =
 				timeValue.secs - thread->process->startTime.secs;
 		}
 	}
-	return (ILInt32)((timeValue.secs * (ILInt64)1000) +
-				(ILInt64)(timeValue.nsecs / (ILUInt32)1000));
+	return (ILInt32)(((timeValue.secs * (ILInt64)1000) +
+				(ILInt64)(timeValue.nsecs / (ILUInt32)1000000)) % IL_MAX_INT32);
 }
 
 /*

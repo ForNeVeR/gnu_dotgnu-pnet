@@ -94,7 +94,18 @@ void ILGetCurrTime(ILCurrTime *timeValue)
 
 int ILGetSinceRebootTime(ILCurrTime *timeValue)
 {
+#ifdef IL_WIN32_PLATFORM
+	DWORD tick;
+	
+	tick = GetTickCount();
+
+	timeValue->secs = tick / 1000;
+	timeValue->nsecs = (tick % 1000) * 1000000;
+
+	return 1;
+#else
 	return 0;
+#endif
 }
 
 ILInt32 ILGetTimeZoneAdjust(void)

@@ -1,3 +1,13 @@
+2004-05-28  Thong Nguyen <tim@veridicus.com>
+
+	* engine/lib_time.c: Fixed overflow/underflow by 1000 bug in
+	GetUpTime.  Made sure that calculated 64-bit value can't be 
+	over IL_MAX_INT32 to prevent negative values when casting 
+	back to ILInt32.
+	
+	* support/time.c: Implemented ILGetSinceRebootTime for windows
+	systems.
+	
 2004-05-28  Thong Nguyen <tum@veridicus.com>
 
 	* include/engine.h: Changed ILExecInit to return an error code

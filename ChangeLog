@@ -1,4 +1,49 @@
 
+2002-12-26  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/ComponentModel/BaseNumberConverter.cs,
+	System/ComponentModel/CancelEventArgs.cs,
+	System/ComponentModel/CancelEventHandler.cs,
+	System/ComponentModel/CollectionChangeEventArgs.cs,
+	System/ComponentModel/CollectionChangeEventHandler.cs,
+	System/ComponentModel/Component.cs,
+	System/ComponentModel/Container.cs,
+	System/ComponentModel/DesignOnlyAttribute.cs,
+	System/ComponentModel/DesignTimeVisibleAttribute.cs,
+	System/ComponentModel/DesignerSerializationVisibilityAttribute.cs,
+	System/ComponentModel/EditorAttribute.cs,
+	System/ComponentModel/EditorBrowsableAttribute.cs,
+	System/ComponentModel/EnumConverter.cs,
+	System/ComponentModel/ExpandableObjectConverter.cs,
+	System/ComponentModel/ICustomTypeDescriptor.cs,
+	System/ComponentModel/IDataErrorInfo.cs,
+	System/ComponentModel/IEditableObject.cs,
+	System/ComponentModel/IExtenderProvider.cs,
+	System/ComponentModel/IListSource.cs,
+	System/ComponentModel/ISupportInitialize.cs,
+	System/ComponentModel/ISynchronizeInvoke.cs,
+	System/ComponentModel/ITypedList.cs,
+	System/ComponentModel/Int32Converter.cs,
+	System/ComponentModel/InvalidEnumArgumentException.cs,
+	System/ComponentModel/ListBindableAttribute.cs,
+	System/ComponentModel/ListChangedEventArgs.cs,
+	System/ComponentModel/ListChangedEventHandler.cs,
+	System/ComponentModel/LocalizableAttribute.cs,
+	System/ComponentModel/NotifyParentPropertyAttribute.cs,
+	System/ComponentModel/PropertyChangedEventArgs.cs,
+	System/ComponentModel/PropertyChangedEventHandler.cs,
+	System/ComponentModel/ReadOnlyAttribute.cs,
+	System/ComponentModel/RecommendedAsConfigurableAttribute.cs,
+	System/ComponentModel/RefreshEventArgs.cs,
+	System/ComponentModel/RefreshEventHandler.cs,
+	System/ComponentModel/RefreshPropertiesAttribute.cs,
+	System/ComponentModel/StringConverter.cs,
+	System/ComponentModel/ToolboxItemAttribute.cs,
+	System/ComponentModel/TypeDescriptor.cs,
+	System/ComponentModel/WarningException.cs,
+	System/ComponentModel/Win32Exception.cs: Stubs of the ComponentModel
+	namespace.
+
 2002-12-25  Gopal.V  <gopalv82@symonds.net>
 	
 	* resources/en_US/runtime/IO.txt,  resources/de_DE/runtime/IO.txt:

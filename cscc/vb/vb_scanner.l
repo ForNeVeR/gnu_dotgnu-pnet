@@ -377,7 +377,7 @@ static void VBParseChar(char *text)
 %option caseless
 
 DIGIT			[0-9]
-IDALPHA			[a-zA-Z_$]
+IDALPHA			[a-zA-Z_]
 HEX				[a-fA-F0-9]
 OCTAL			[0-7]
 EXPONENT		[Ee][+-]?{DIGIT}+

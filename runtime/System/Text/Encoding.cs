@@ -229,10 +229,12 @@ public abstract class Encoding
 				return new ForwardingEncoder(this);
 			}
 
+#if CONFIG_REFLECTION
 	// Loaded copy of the "I18N" assembly.  We need to move
 	// this into a class in "System.Private" eventually.
 	private static Assembly i18nAssembly;
 	private static bool i18nDisabled;
+#endif
 
 	// Invoke a specific method on the "I18N" manager object.
 	// Returns NULL if the method failed.

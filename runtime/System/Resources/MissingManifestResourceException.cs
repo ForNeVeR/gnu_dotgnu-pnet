@@ -22,6 +22,8 @@
 namespace System.Resources
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 using System.Runtime.Serialization;
 
@@ -65,5 +67,7 @@ class MissingManifestResourceException : Exception
 			}
 
 }; // class MissingManifestResourceException
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Resources

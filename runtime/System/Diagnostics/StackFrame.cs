@@ -129,11 +129,20 @@ class StackFrame
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static int InternalGetTotalFrames();
 
+#if CONFIG_RUNTIME_INFRA
 	// Get the method that is executing "skipFrames" frames up the stack,
 	// where 0 indicates the method that called "InternalGetMethod".
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static RuntimeMethodHandle
 				InternalGetMethod(int skipFrames);
+
+	// Get the filename, line number, and column number associated
+	// with a particular method and IL offset.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static String InternalGetDebugInfo
+				(RuntimeMethodHandle method, int offset,
+				 out int line, out int column);
+#endif
 
 	// Get the IL offset of the method that is executing "skipFrames"
 	// frames up the stack.
@@ -144,13 +153,6 @@ class StackFrame
 	// frames up the stack.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static int InternalGetNativeOffset(int skipFrames);
-
-	// Get the filename, line number, and column number associated
-	// with a particular method and IL offset.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static String InternalGetDebugInfo
-				(RuntimeMethodHandle method, int offset,
-				 out int line, out int column);
 
 	// Get the column number where the stack frame was created.
 	public virtual int GetFileColumnNumber()

@@ -22,6 +22,8 @@
 namespace System.Resources
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 
 [AttributeUsage(AttributeTargets.Assembly)]
@@ -52,5 +54,7 @@ sealed class SatelliteContractVersionAttribute : Attribute
 			}
 
 }; // class SatelliteContractVersionAttribute
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Resources

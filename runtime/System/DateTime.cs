@@ -27,7 +27,9 @@ using Platform;
 using System.Private.DateTimeFormat;
 
 // ECMA requires that this have "auto" layout.
+#if CONFIG_RUNTIME_INFRA
 [StructLayout(LayoutKind.Auto)]
+#endif
 public struct DateTime : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible

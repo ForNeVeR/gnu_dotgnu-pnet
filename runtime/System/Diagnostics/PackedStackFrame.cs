@@ -27,7 +27,11 @@ using System.Reflection;
 internal struct PackedStackFrame
 {
 
+#if CONFIG_RUNTIME_INFRA
 	public RuntimeMethodHandle	method;
+#else
+	public IntPtr				method;
+#endif
 	public int					offset;
 	public int					nativeOffset;
 

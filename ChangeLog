@@ -14,6 +14,29 @@
 	the "ClrResourceStream" class, even if reflection is turned off,
 	so that we can load string resources.
 
+	* System/S.cs, System.Xml/S.cs, runtime/System/AttributeTargets.cs,
+	runtime/System/DateTime.cs, runtime/System/Delegate.cs,
+	runtime/System/Object.cs, runtime/System/RuntimeFieldHandle.cs,
+	runtime/System/RuntimeTypeHandle.cs, runtime/System/Type.cs,
+	runtime/System/_AppDomain.cs,
+	runtime/System/Diagnostics/PackedStackFrame.cs,
+	runtime/System/Diagnostics/StackFrame.cs,
+	runtime/System/Reflection/ClrHelpers.cs,
+	runtime/System/Reflection/ClrType.cs,
+	runtime/System/Resources/BuiltinResourceSet.cs,
+	runtime/System/Resources/ECMAResourceManager.cs,
+	runtime/System/Resources/IResourceReader.cs,
+	runtime/System/Resources/IResourceWriter.cs,
+	runtime/System/Resources/MissingManifestResourceException.cs,
+	runtime/System/Resources/NeutralResourcesLanguageAttribute.cs,
+	runtime/System/Resources/ResourceManager.cs,
+	runtime/System/Resources/ResourceReader.cs,
+	runtime/System/Resources/ResourceSet.cs,
+	runtime/System/Resources/ResourceWriter.cs,
+	runtime/System/Resources/SatelliteContractVersionAttribute.cs,
+	runtime/System/Text/Encoding.cs: modifications to allow the library
+	to be built with the "RuntimeInfrastructure" subset turned off.
+
 2003-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Array.cs, runtime/System/Convert.cs,

@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Globalization;
@@ -217,5 +219,7 @@ interface _AppDomain
 #endif // !ECMA_COMPAT
 
 }; // interface _AppDomain
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

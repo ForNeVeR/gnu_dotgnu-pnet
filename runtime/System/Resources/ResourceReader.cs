@@ -22,6 +22,8 @@
 namespace System.Resources
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 using System.Collections;
 using System.IO;
@@ -508,5 +510,7 @@ sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 	}; // class ResourceEnumerator
 
 }; // class ResourceReader
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Resources

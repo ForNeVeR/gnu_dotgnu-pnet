@@ -127,9 +127,11 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				return GetClrFullName();
 			}
 
+#if CONFIG_RUNTIME_INFRA
 	// Internal methods for supporting the properties.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private System.Reflection.Assembly GetClrAssembly();
+#endif
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private Type GetClrBaseType();

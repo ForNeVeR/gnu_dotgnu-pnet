@@ -22,6 +22,8 @@
 namespace System.Resources
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 using System.IO;
 using System.Reflection;
@@ -584,5 +586,7 @@ class ResourceManager
 			}
 
 }; // class ResourceManager
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Resources

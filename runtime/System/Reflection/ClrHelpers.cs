@@ -60,12 +60,14 @@ internal sealed class ClrHelpers
 								 inherit);
 			}
 
+#if CONFIG_RUNTIME_INFRA
 	// Get the declaring type for a program item.
 	public static Type GetDeclaringType(IClrProgramItem item)
 			{
 				return Type.GetTypeFromHandle
 					(new RuntimeTypeHandle(GetDeclaringType(item.ClrHandle)));
 			}
+#endif
 
 	// Get the name that is associated with a program item.
 	public static String GetName(IClrProgramItem item)

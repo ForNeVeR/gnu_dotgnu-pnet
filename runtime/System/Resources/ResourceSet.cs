@@ -22,6 +22,8 @@
 namespace System.Resources
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 using System.IO;
 using System.Collections;
@@ -248,5 +250,7 @@ class ResourceSet : IDisposable
 			}
 
 }; // class ResourceSet
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Resources

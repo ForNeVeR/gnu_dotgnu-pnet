@@ -34,7 +34,11 @@ public abstract class Delegate : ICloneable
 	// and in this order so that the runtime engine can create
 	// delegates from function pointers correctly.
 	internal Object     			target;
+#if CONFIG_RUNTIME_INFRA
 	internal RuntimeMethodHandle	method;
+#else
+	internal IntPtr					method;
+#endif
 	internal IntPtr					closure;
 
 #if CONFIG_REFLECTION
@@ -302,8 +306,13 @@ public abstract class Delegate : ICloneable
 				Delegate d = (obj as Delegate);
 				if(((Object)d) != null && GetType() == d.GetType())
 				{
+				#if CONFIG_RUNTIME_INFRA
 					return (target == d.target &&
 							method.Value == d.method.Value);
+				#else
+					return (target == d.target &&
+							method == d.method);
+				#endif
 				}
 				else
 				{
@@ -439,7 +448,11 @@ public abstract class Delegate : ICloneable
 	// the unicast delegate case only.
 	protected virtual Delegate RemoveImpl(Delegate d)
 			{
+			#if CONFIG_RUNTIME_INFRA
 				if(target == d.target && method.Value == d.method.Value)
+			#else
+				if(target == d.target && method == d.method)
+			#endif
 				{
 					return null;
 				}

@@ -234,15 +234,15 @@ public abstract class Type
 	internal bool IsPrimitive { get { return IsPrimitiveImpl(); } }
 #endif
 
+	// Get a type from a runtime type handle.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Type GetTypeFromHandle(RuntimeTypeHandle handle);
+
 #if CONFIG_RUNTIME_INFRA
 
 	// Get the runtime type handle associated with an object.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static RuntimeTypeHandle GetTypeHandle(Object obj);
-
-	// Get a type from a runtime type handle.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static Type GetTypeFromHandle(RuntimeTypeHandle handle);
 
 	// Infrastructure properties.
 	public abstract System.Reflection.Assembly Assembly { get; }

@@ -22,6 +22,8 @@
 namespace System.Resources
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 
 #if ECMA_COMPAT
@@ -39,5 +41,7 @@ interface IResourceWriter : IDisposable
 	void Generate();
 
 }; // interface IResourceWriter
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Resources

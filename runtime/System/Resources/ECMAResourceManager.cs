@@ -22,7 +22,7 @@
 namespace System.Resources
 {
 
-#if ECMA_COMPAT
+#if ECMA_COMPAT && CONFIG_RUNTIME_INFRA
 
 using System;
 using System.Globalization;

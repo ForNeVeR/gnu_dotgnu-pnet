@@ -74,6 +74,8 @@ public class Object
 				return (objA == objB);
 			}
 
+#if CONFIG_RUNTIME_INFRA
+
 	// Cached copy of the resources for this assembly.
 	private static ResourceManager resources = null;
 	private static bool reflectionMissing = false;
@@ -107,6 +109,16 @@ public class Object
 					}
 				}
 			}
+
+#else // !CONFIG_RUNTIME_INFRA
+
+	// We don't have sufficient runtime support for loading resources.
+	internal static String _(String tag)
+			{
+				return tag;
+			}
+
+#endif // !CONFIG_RUNTIME_INFRA
 
 }; // class Object
 

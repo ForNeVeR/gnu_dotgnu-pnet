@@ -22,6 +22,8 @@
 namespace System.Resources
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 using System.Collections;
 
@@ -37,5 +39,7 @@ interface IResourceReader : IEnumerable, IDisposable
 	new IDictionaryEnumerator GetEnumerator();
 
 }; // interface IResourceReader
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Resources

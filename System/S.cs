@@ -30,6 +30,9 @@ using System.Resources;
 
 internal sealed class S
 {
+
+#if CONFIG_RUNTIME_INFRA
+
 	// Cached copy of the resources for this assembly and mscorlib.
 #if ECMA_COMPAT
 	private static ECMAResourceManager systemResources = null;
@@ -77,6 +80,16 @@ internal sealed class S
 					return runtimeResources.GetString(tag, null);
 				}
 			}
+
+#else // !CONFIG_RUNTIME_INFRA
+
+	// We don't have sufficient runtime infrastructure to load resources.
+	public static String _(String tag)
+			{
+				return tag;
+			}
+
+#endif // !CONFIG_RUNTIME_INFRA
 
 }; // class S
 

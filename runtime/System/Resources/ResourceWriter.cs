@@ -22,6 +22,8 @@
 namespace System.Resources
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 using System.IO;
 using System.Collections;
@@ -167,5 +169,7 @@ sealed class ResourceWriter : IDisposable, IResourceWriter
 			}
 
 }; // class ResourceWriter
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Resources

@@ -22,6 +22,8 @@
 namespace System.Resources
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 using System.IO;
 using System.Collections;
@@ -190,5 +192,7 @@ internal sealed class BuiltinResourceSet : ResourceSet
 			}
 
 }; // class BuiltinResourceSet
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Resources

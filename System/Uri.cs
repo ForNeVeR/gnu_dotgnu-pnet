@@ -173,7 +173,7 @@ public class Uri : MarshalByRefObject
 			if (dirs[curDir] == "..")
 			{
 				++toBeRemoved;
-				dirs[curdir] = ""; // always removed w/o affecting toBeRemoved
+				dirs[curDir] = ""; // always removed w/o affecting toBeRemoved
 			}
 			else if (dirs[curDir] == ".")
 				dirs[curDir] = ""; // doesn't affect anything
@@ -227,7 +227,7 @@ public class Uri : MarshalByRefObject
 	}
 
 	// check if characters in a String in a given range are alphanumeric or -.
-	private bool CharsAreAlnumDash(String checkthis, int first, int last)
+	private static bool CharsAreAlnumDash(String checkthis, int first, int last)
 	{
 		char check;
 		for (; first <= last; ++first)

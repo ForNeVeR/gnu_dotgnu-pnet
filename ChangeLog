@@ -2,6 +2,9 @@
 
 	* I18N/Other/CP57002.cs (GetChars): should add "shift", not subtract.
 
+	* runtime/System/IO/MemoryStream.cs, System/Uri.cs: fix semantic
+	errors.
+
 2002-04-29  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Net/IPAddress.cs: small syntax change for new arrays.

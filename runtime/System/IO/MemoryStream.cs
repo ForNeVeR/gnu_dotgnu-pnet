@@ -199,7 +199,7 @@ public class MemoryStream : Stream
 		case SeekOrigin.End:
 			break;
 		default:
-			throw new ObjectDisposedException(/* TODO */);
+			throw new ObjectDisposedException(_("IO_StreamClosed"));
 		}
 		return -1;
 	}
@@ -331,7 +331,7 @@ public class MemoryStream : Stream
 		}
 		catch (NotSupportedException)
 		{
-			position = posn + increment;
+			position = (int)(posn + increment);
 		}
 		catch (ArgumentOutOfRangeException)
 		{

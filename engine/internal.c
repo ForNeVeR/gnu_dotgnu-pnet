@@ -54,7 +54,7 @@ static InternalClassInfo const internalClassTable[] = {
 							 sizeof(InternalClassInfo))
 
 /* Import from "lib_array.c" */
-void *_ILGetInternalMArray(ILMethod *method, int *isCtor);
+void *_ILGetInternalArray(ILMethod *method, int *isCtor);
 
 void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 {
@@ -121,13 +121,13 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 		}
 	}
 
-	/* Perhaps this is a "runtime" method for a multi-dimensional array? */
-	func = _ILGetInternalMArray(method, &isCtor);
+	/* Perhaps this is a "runtime" method for an array? */
+	func = _ILGetInternalArray(method, &isCtor);
 	if(func)
 	{
 		if(isCtor)
 		{
-			/* Multi-dimensional arrays only have allocation constructors */
+			/* Arrays only have allocation constructors */
 			if(ctorAlloc)
 			{
 				return func;

@@ -26,6 +26,9 @@ engine/verify_ptr.c, engine/verify_var.c: add a "method" parameter
 to "AssignCompatible" so that "ILClassFromType" can be used to
 check assignment-compatibility of object references.
 
+* engine/lib_array.c, engine/internal.c: implement a "runtime"
+constructor for single-dimensional arrays.
+
 2001-10-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/engine.h: remove the thread argument

@@ -61,6 +61,39 @@ typedef struct
 			((args)->posn += (nwords))
 
 /*
+ * Allocation constructor for single-dimensional arrays.
+ *
+ * public T[](uint size);
+ */
+static System_Array *System_SArray_ctor(ILExecThread *thread,
+										ILUInt32 length)
+{
+	ILClass *classInfo;
+	ILType *type;
+	ILUInt32 elemSize;
+	ILUInt64 totalSize;
+
+	/* Get the synthetic class and type for the array */
+	classInfo = ILMethod_Owner(thread->method);
+	type = ILClassGetSynType(classInfo);
+
+	/* Compute the element size */
+	elemSize = ILSizeOfType(type->un.array.elemType);
+
+	/* Determine the total size of the array in bytes */
+	totalSize = ((ILUInt64)elemSize) * ((ILUInt64)length);
+	if(totalSize > (ILUInt64)IL_MAX_INT32)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+
+	/* Allocate the array and return it */
+	return (System_Array *)_ILEngineAlloc
+			(thread, classInfo, sizeof(System_Array) + (ILUInt32)totalSize);
+}
+
+/*
  * Construct the header part of a multi-dimensional array.
  */
 static System_MArray *ConstructMArrayHeader(ILExecThread *thread,
@@ -295,15 +328,14 @@ static void SetElement(ILExecThread *thread, System_MArray *_this,
  *
  * public T[,,,](int size1, int size2, ..., int sizeN)
  */
-static System_MArray *System_MArray_ctor_1(ILExecThread *thread,
-										   ILClass *classInfo)
+static System_MArray *System_MArray_ctor_1(ILExecThread *thread)
 {
 	System_MArray *_this;
 	ILInt32 dim;
 	ArgWalker args;
 
 	/* Construct the header part of the array */
-	_this = ConstructMArrayHeader(thread, classInfo);
+	_this = ConstructMArrayHeader(thread, ILMethod_Owner(thread->method));
 	if(!_this)
 	{
 		return 0;
@@ -326,15 +358,14 @@ static System_MArray *System_MArray_ctor_1(ILExecThread *thread,
  *
  * public T[,,,](int low1, int size1, ..., int lowN, int sizeN)
  */
-static System_MArray *System_MArray_ctor_2(ILExecThread *thread,
-										   ILClass *classInfo)
+static System_MArray *System_MArray_ctor_2(ILExecThread *thread)
 {
 	System_MArray *_this;
 	ILInt32 dim;
 	ArgWalker args;
 
 	/* Construct the header part of the array */
-	_this = ConstructMArrayHeader(thread, classInfo);
+	_this = ConstructMArrayHeader(thread, ILMethod_Owner(thread->method));
 	if(!_this)
 	{
 		return 0;
@@ -848,9 +879,9 @@ static ILType *GetElementType(ILType *array)
 }
 
 /*
- * Get the internal version of a synthetic "MArray" method.
+ * Get the internal version of a synthetic "SArray" or "MArray" method.
  */
-void *_ILGetInternalMArray(ILMethod *method, int *isCtor)
+void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 {
 	ILClass *classInfo;
 	const char *name;
@@ -865,6 +896,20 @@ void *_ILGetInternalMArray(ILMethod *method, int *isCtor)
 	if(!type)
 	{
 		return 0;
+	}
+	if(type->kind == IL_TYPE_COMPLEX_ARRAY &&
+	   type->un.array.lowBound == 0)
+	{
+		/* Single-dimensional arrays have a simple constructor only */
+		if(!strcmp(name, ".ctor"))
+		{
+			*isCtor = 1;
+			return (void *)System_SArray_ctor;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 	if(!strcmp(name, ".ctor"))
 	{

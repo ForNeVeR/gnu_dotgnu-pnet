@@ -21,6 +21,7 @@
 #include "doc_tree.h"
 #include "il_system.h"
 #include "il_utils.h"
+#include "il_dumpasm.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -186,6 +187,59 @@ static int ParseDocs(ILDocText **doc, ILXMLReader *reader)
 }
 
 /*
+ * Parse a set of metadata flags for a program item.
+ */
+static unsigned long ParseMetadataFlags(const char *value,
+										const ILFlagInfo *flags)
+{
+	unsigned long attrs = 0;
+	const ILFlagInfo *temp;
+	int len;
+
+	/* Sanity-check the string */
+	if(!value)
+	{
+		return ILDocInvalidAttrs;
+	}
+
+	/* Parse the value, one word at a time */
+	while(*value != '\0')
+	{
+		/* Skip white space */
+		if(*value == ' ')
+		{
+			++value;
+			continue;
+		}
+
+		/* Extract the word */
+		len = 1;
+		while(value[len] != '\0' && value[len] != ' ')
+		{
+			++len;
+		}
+
+		/* Search for the word in the flag table */
+		temp = flags;
+		while(temp->name != 0)
+		{
+			if(!strncmp(temp->name, value, len) && temp->name[len] == '\0')
+			{
+				attrs |= temp->flag;
+				break;
+			}
+			++temp;
+		}
+
+		/* Advance to the next word */
+		value += len;
+	}
+
+	/* Return the final set of attribute flags to the caller */
+	return attrs;
+}
+
+/*
  * Parse a list of interfaces.  The XML stream is positioned
  * on the first item within the "Interfaces" element.
  */
@@ -333,6 +387,7 @@ static int ParseMember(ILDocTree *tree, ILDocType *type,
 	member->ilasmSignature = 0;
 	member->csSignature = 0;
 	member->returnType = 0;
+	member->memberAttrs = ILDocInvalidAttrs;
 	member->parameters = 0;
 	member->attributes = 0;
 	member->index = 0;
@@ -414,22 +469,37 @@ static int ParseMember(ILDocTree *tree, ILDocType *type,
 			if(!ILStrICmp(contents, "Field"))
 			{
 				member->memberType = ILDocMemberType_Field;
+				member->memberAttrs =
+					ParseMetadataFlags(member->ilasmSignature,
+									   ILFieldDefinitionFlags);
 			}
 			else if(!ILStrICmp(contents, "Method"))
 			{
 				member->memberType = ILDocMemberType_Method;
+				member->memberAttrs =
+					ParseMetadataFlags(member->ilasmSignature,
+									   ILMethodDefinitionFlags);
 			}
 			else if(!ILStrICmp(contents, "Constructor"))
 			{
 				member->memberType = ILDocMemberType_Constructor;
+				member->memberAttrs =
+					ParseMetadataFlags(member->ilasmSignature,
+									   ILMethodDefinitionFlags);
 			}
 			else if(!ILStrICmp(contents, "Property"))
 			{
 				member->memberType = ILDocMemberType_Property;
+				member->memberAttrs =
+					ParseMetadataFlags(member->ilasmSignature,
+									   ILMethodDefinitionFlags);
 			}
 			else if(!ILStrICmp(contents, "Event"))
 			{
 				member->memberType = ILDocMemberType_Event;
+				member->memberAttrs =
+					ParseMetadataFlags(member->ilasmSignature,
+									   ILMethodDefinitionFlags);
 			}
 			else
 			{
@@ -568,6 +638,8 @@ static int ParseTypeContents(ILDocTree *tree, ILDocType *type,
 						return 0;
 					}
 				}
+				type->typeAttrs =
+					ParseMetadataFlags(value, ILTypeDefinitionFlags);
 			}
 			else if(lang && !ILStrICmp(lang, "C#"))
 			{
@@ -779,6 +851,8 @@ static int ParseTypes(ILDocTree *tree, ILDocLibrary *library,
 			type->ilasmSignature = 0;
 			type->csSignature = 0;
 			type->baseType = 0;
+			type->excludedBaseType = 0;
+			type->typeAttrs = ILDocInvalidAttrs;
 			type->interfaces = 0;
 			type->attributes = 0;
 			type->doc = 0;

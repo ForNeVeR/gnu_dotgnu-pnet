@@ -7,14 +7,17 @@ CSDOC_COMMON       = doc_destroy.c \
 					 doc_main.c \
 					 doc_sort.c
 
+CSDOC_LIBS         = ../dumpasm/libILDumpAsm.a ../image/libILImage.a \
+					 ../support/libILSupport.a
+
 csdoc2texi_SOURCES = doc_texi.c $(CSDOC_COMMON)
-csdoc2texi_LDADD   = ../support/libILSupport.a
+csdoc2texi_LDADD   = $(CSDOC_LIBS)
 
 csdoc2html_SOURCES = doc_html.c $(CSDOC_COMMON)
-csdoc2html_LDADD   = ../support/libILSupport.a
+csdoc2html_LDADD   = $(CSDOC_LIBS)
 
 csdocvalil_SOURCES = doc_valil.c $(CSDOC_COMMON)
-csdocvalil_LDADD   = ../image/libILImage.a ../support/libILSupport.a
+csdocvalil_LDADD   = $(CSDOC_LIBS)
 
 if USINGGCC
 INCLUDES = -Wall

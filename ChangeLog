@@ -1,4 +1,10 @@
 
+2001-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* csdoc/Makefile.am, csdoc/doc_load.c, csdoc/doc_tree.h, csdoc/doc_valil.c:
+implement ECMA validation for fields, methods, constructors, properties,
+and events.
+
 2001-12-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/Makefile.am, engine/lib_array.c, engine/lib_defs.h,

@@ -91,6 +91,11 @@ typedef enum
 } ILDocTypeKind;
 
 /*
+ * Invalid value for "typeAttrs" and "memberAttrs".
+ */
+#define	ILDocInvalidAttrs	(~((unsigned long)0))
+
+/*
  * Information that is stored about a type.
  */
 struct _tagILDocType
@@ -107,6 +112,7 @@ struct _tagILDocType
 	char		   *csSignature;	/* C# signature for the type */
 	char		   *baseType;		/* Full name of the base type */
 	char		   *excludedBaseType; /* Full name of the excluded base type */
+	unsigned long	typeAttrs;		/* Metadata attribute flags */
 	ILDocInterface *interfaces;		/* List of the type's interfaces */
 	ILDocAttribute *attributes;		/* Attributes attached to the type */
 	ILDocText      *doc;			/* Text of the type's documentation */
@@ -164,6 +170,7 @@ struct _tagILDocMember
 	char		   *ilasmSignature;	/* ILASM signature for the type */
 	char		   *csSignature;	/* C# signature for the type */
 	char		   *returnType;		/* Return type (NULL for "void") */
+	unsigned long	memberAttrs;	/* Metadata attribute flags */
 	ILDocParameter *parameters;		/* List of member parameters */
 	ILDocAttribute *attributes;		/* Attributes attached to the type */
 	int				index;			/* Index value for conversion routines */

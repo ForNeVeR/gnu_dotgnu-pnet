@@ -29,6 +29,9 @@
 	to perform semantic analysis on a member, as the state at the
 	jump point may not match the required state at the destination.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_task.c:
+	add the "TaskMethods.GetRuntimeVerison" internalcall.
+
 2002-11-27  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_varusage.h , codegen/cg_varusage.c, codegen/cg_gen.h,

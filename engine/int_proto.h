@@ -63,6 +63,7 @@ extern void _IL_Decimal_Subtract(ILExecThread * _thread, ILDecimal * _result, IL
 
 extern System_String * _IL_String_Concat_StringString(ILExecThread * _thread, System_String * str1, System_String * str2);
 extern System_String * _IL_String_ctor_ci(ILExecThread * _thread, ILUInt16 c, ILInt32 count);
+extern System_String * _IL_String_ctor_ac(ILExecThread * _thread, System_Array * value);
 extern ILBool _IL_String_Equals(ILExecThread * _thread, System_String * a, System_String * b);
 extern ILUInt16 _IL_String_GetChar(ILExecThread * _thread, System_String * _this, ILInt32 posn);
 extern System_String * _IL_String_NewString(ILExecThread * _thread, ILInt32 length);
@@ -70,7 +71,6 @@ extern void _IL_String_Copy_StringiStringii(ILExecThread * _thread, System_Strin
 extern ILInt32 _IL_String_InternalCompare(ILExecThread * _thread, System_String * strA, ILInt32 indexA, ILInt32 lengthA, System_String * strB, ILInt32 indexB, ILInt32 lengthB, ILBool ignoreCase, ILObject * culture);
 extern System_String * _IL_String_Trim(ILExecThread * _thread, System_String * _this, System_Array * trimChars, ILInt32 trimFlags);
 extern System_String * _IL_String_ctor_acii(ILExecThread * _thread, System_Array * value, ILInt32 startIndex, ILInt32 length);
-extern System_String * _IL_String_ctor_ac(ILExecThread * _thread, System_Array * value);
 extern System_String * _IL_String_ctor_pcii(ILExecThread * _thread, ILUInt16 * value, ILInt32 startIndex, ILInt32 length);
 extern System_String * _IL_String_ctor_pc(ILExecThread * _thread, ILUInt16 * value);
 extern System_String * _IL_String_ctor_pbiiEncoding(ILExecThread * _thread, ILInt8 * value, ILInt32 startIndex, ILInt32 length, ILObject * enc);
@@ -84,10 +84,10 @@ extern void _IL_String_InsertSpace(ILExecThread * _thread, System_String * str, 
 extern void _IL_String_RemoveSpace(ILExecThread * _thread, System_String * str, ILInt32 index, ILInt32 length);
 extern System_String * _IL_String_Concat_StringStringString(ILExecThread * _thread, System_String * str1, System_String * str2, System_String * str3);
 extern void _IL_String_CopyToChecked(ILExecThread * _thread, System_String * _this, ILInt32 sourceIndex, System_Array * destination, ILInt32 destinationIndex, ILInt32 count);
+extern ILInt32 _IL_String_IndexOfAny(ILExecThread * _thread, System_String * _this, System_Array * anyOf, ILInt32 startIndex, ILInt32 count);
 extern ILInt32 _IL_String_IndexOf(ILExecThread * _thread, System_String * _this, ILUInt16 value, ILInt32 startIndex, ILInt32 count);
 extern ILInt32 _IL_String_GetHashCode(ILExecThread * _thread, System_String * _this);
 extern ILInt32 _IL_String_FindInRange(ILExecThread * _thread, System_String * _this, ILInt32 srcFirst, ILInt32 srcLast, ILInt32 step, System_String * dest);
-extern ILInt32 _IL_String_IndexOfAny(ILExecThread * _thread, System_String * _this, System_Array * anyOf, ILInt32 startIndex, ILInt32 count);
 extern System_String * _IL_String_Intern(ILExecThread * _thread, System_String * str);
 extern System_String * _IL_String_IsInterned(ILExecThread * _thread, System_String * str);
 extern ILInt32 _IL_String_LastIndexOf(ILExecThread * _thread, System_String * _this, ILUInt16 value, ILInt32 startIndex, ILInt32 count);
@@ -357,8 +357,6 @@ extern void _IL_AssemblyBuilder_ClrSetEntryPoint(ILExecThread * _thread, ILObjec
 
 extern ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread * _thread, ILNativeInt assembly, ILString * name);
 
-extern ILString * _IL_NumberFormatter_FormatReal(ILExecThread * _thread, ILDouble d, ILString * format, ILInt32 buflen);
-
 extern ILInt32 _IL_CultureInfo_InternalCultureID(ILExecThread * _thread);
 extern ILString * _IL_CultureInfo_InternalCultureName(ILExecThread * _thread);
 
@@ -403,6 +401,7 @@ extern ILString * _IL_SysCharInfo_GetNewLine(ILExecThread * _thread);
 
 extern void _IL_TaskMethods_Exit(ILExecThread * _thread, ILInt32 exitCode);
 extern void _IL_TaskMethods_SetExitCode(ILExecThread * _thread, ILInt32 exitCode);
+extern ILString * _IL_TaskMethods_GetRuntimeVersion(ILExecThread * _thread);
 extern System_Array * _IL_TaskMethods_GetCommandLineArgs(ILExecThread * _thread);
 extern ILString * _IL_TaskMethods_GetEnvironmentVariable(ILExecThread * _thread, ILString * variable);
 extern ILInt32 _IL_TaskMethods_GetEnvironmentCount(ILExecThread * _thread);
@@ -435,14 +434,18 @@ extern ILBool _IL_RuntimeSecurityManager_CanOpenFile(ILExecThread * _thread, ILO
 extern ILObject * _IL_Security_GetSecurityManager(ILExecThread * _thread);
 extern void _IL_Security_SetSecurityManager(ILExecThread * _thread, ILObject * mgr);
 
+extern ILNativeInt _IL_RegexpMethods_CompileInternal(ILExecThread * _thread, ILString * pattern, ILInt32 flags);
+extern ILInt32 _IL_RegexpMethods_ExecInternal(ILExecThread * _thread, ILNativeInt compiled, ILString * input, ILInt32 flags);
+extern void _IL_RegexpMethods_FreeInternal(ILExecThread * _thread, ILNativeInt compiled);
+
 extern ILBool _IL_CryptoMethods_IsSemiWeakKey(ILExecThread * _thread, System_Array * key, ILInt32 offset);
 extern ILBool _IL_CryptoMethods_IsWeakKey(ILExecThread * _thread, System_Array * key, ILInt32 offset);
 extern ILNativeInt _IL_CryptoMethods_EncryptCreate(ILExecThread * _thread, ILInt32 algorithm, System_Array * key);
 extern ILNativeInt _IL_CryptoMethods_DecryptCreate(ILExecThread * _thread, ILInt32 algorithm, System_Array * key);
 extern void _IL_CryptoMethods_SymmetricFree(ILExecThread * _thread, ILNativeInt state);
 extern ILNativeInt _IL_CryptoMethods_HashNew(ILExecThread * _thread, ILInt32 algorithm);
-extern void _IL_CryptoMethods_HashFree(ILExecThread * _thread, ILNativeInt state);
 extern void _IL_CryptoMethods_HashReset(ILExecThread * _thread, ILNativeInt state);
+extern void _IL_CryptoMethods_HashFree(ILExecThread * _thread, ILNativeInt state);
 extern void _IL_CryptoMethods_HashUpdate(ILExecThread * _thread, ILNativeInt state, System_Array * buffer, ILInt32 offset, ILInt32 count);
 extern void _IL_CryptoMethods_HashFinal(ILExecThread * _thread, ILNativeInt state, System_Array * hash);
 extern ILBool _IL_CryptoMethods_AlgorithmSupported(ILExecThread * _thread, ILInt32 algorithm);
@@ -460,16 +463,6 @@ extern System_Array * _IL_CryptoMethods_NumSub(ILExecThread * _thread, System_Ar
 extern void _IL_CryptoMethods_Decrypt(ILExecThread * _thread, ILNativeInt state, System_Array * inBuffer, ILInt32 inOffset, System_Array * outBuffer, ILInt32 outOffset);
 extern void _IL_CryptoMethods_Encrypt(ILExecThread * _thread, ILNativeInt state, System_Array * inBuffer, ILInt32 inOffset, System_Array * outBuffer, ILInt32 outOffset);
 extern void _IL_CryptoMethods_StoreKey(ILExecThread * _thread, ILInt32 algorithm, ILString * name, System_Array * key);
-
-
-extern ILNativeInt _IL_RegexpMethods_CompileInternal(ILExecThread * _thread, 
-										ILString * pattern, ILInt32 flags);
-
-extern ILInt32 _IL_RegexpMethods_ExecInternal(ILExecThread * _thread,
-						ILNativeInt compiled, ILString * input, ILInt32 flags);
-
-void _IL_RegexpMethods_FreeInternal(ILExecThread * _thread, 
-											ILNativeInt compiled);
 
 extern ILBool _IL_SocketMethods_Create(ILExecThread * _thread, ILInt32 af, ILInt32 st, ILInt32 pt, ILNativeInt * handle);
 extern ILBool _IL_SocketMethods_Bind(ILExecThread * _thread, ILNativeInt handle, ILInt32 af, ILInt64 address, ILInt32 port);
@@ -493,6 +486,6 @@ extern ILInt64 _IL_IPAddress_NetworkToHostOrder_l(ILExecThread * _thread, ILInt6
 extern ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread * _thread, ILInt32 network);
 extern ILInt16 _IL_IPAddress_NetworkToHostOrder_s(ILExecThread * _thread, ILInt16 network);
 
-extern ILBool _IL_Dns_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 address, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
 extern ILBool _IL_Dns_InternalGetHostByName(ILExecThread * _thread, ILString * host, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
+extern ILBool _IL_Dns_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 address, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
 

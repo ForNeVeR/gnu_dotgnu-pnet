@@ -142,6 +142,14 @@ ILString *_IL_TaskMethods_GetEnvironmentValue(ILExecThread *thread,
 	}
 }
 
+/*
+ * public static String GetRuntimeVersion();
+ */
+ILString *_IL_TaskMethods_GetRuntimeVersion(ILExecThread *thread)
+{
+	return ILStringCreate(thread, VERSION);
+}
+
 #ifdef	__cplusplus
 };
 #endif

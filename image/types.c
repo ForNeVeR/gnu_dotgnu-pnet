@@ -347,11 +347,18 @@ int ILTypeIdentical(ILType *type1, ILType *type2)
 	}
 
 	/* Primitive, class, and value types can be checked easily */
-	if(ILType_IsPrimitive(type1) ||
-	   ILType_IsClass(type1) ||
-	   ILType_IsValueType(type1))
+	if(ILType_IsPrimitive(type1))
 	{
 		return (type1 == type2);
+	}
+	else if(ILType_IsClass(type1) || ILType_IsValueType(type1))
+	{
+		if(type1 == type2)
+		{
+			return 1;
+		}
+		return (ILClassResolve(ILType_ToClass(type1)) ==
+				ILClassResolve(ILType_ToClass(type2)));
 	}
 
 	/* Determine how to perform the test based on the complex type kind */

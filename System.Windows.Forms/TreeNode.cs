@@ -27,7 +27,10 @@ namespace System.Windows.Forms
 	using System.Globalization;
 	using System.Runtime.Serialization;
 
-	public class TreeNode : /*MarshalByRefObject,*/ ICloneable, ISerializable
+	public class TreeNode : /*MarshalByRefObject,*/ ICloneable
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 	{
 		internal Color backColor;
 		internal int childCount = 0;
@@ -378,6 +381,8 @@ namespace System.Windows.Forms
 			return count;
 		}
 
+#if CONFIG_SERIALIZATION
+
 		void System.Runtime.Serialization.ISerializable.GetObjectData(SerializationInfo si, StreamingContext context)
 		{
 			si.AddValue("Text", text);
@@ -397,6 +402,8 @@ namespace System.Windows.Forms
 				si.AddValue("UserData", tag, tag.GetType());
 			}
 		}
+
+#endif // CONFIG_SERIALIZATION
 
 		// This is not used in this implementation.
 		public IntPtr Handle

@@ -620,7 +620,7 @@ internal unsafe sealed class JpegLib
 						fill_input_buffer(ref cinfo);
 					}
 					src->next_input_byte =
-						(IntPtr)(((long)(src->next_input_byte)) + num);
+						new IntPtr((src->next_input_byte.ToInt64()) + num);
 					src->bytes_in_buffer =
 						(size_t)(((int)(src->bytes_in_buffer)) - num);
 				}

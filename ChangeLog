@@ -4,6 +4,15 @@
 	* System.Design/Design.build: add the correct dependencies for
 	building without a previous version installed in ${prefix}/lib.
 
+	* Makefile.am, configure.in, DotGNU.Images/JpegLib.cs.in,
+	System.Drawing.Postscript/PostscriptToolkit.cs,
+	System.Windows.Forms/Control.cs,
+	System.Windows.Forms/OwnerDrawPropertyBag.cs,
+	System.Windows.Forms/TreeNode.cs, profiles/compact, profiles/compact-fp,
+	profiles/ecma, profiles/kernel, profiles/kernel-fp,
+	profiles/tiny, profiles/tiny-fp, samples/Makefile.am,
+	tests/Makefile.am: profile-related and warning fixes.
+
 2003-12-28  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* Xsharp/XsharpPCF.c: fix build on systems without X.

@@ -33,7 +33,7 @@ using System.Threading;
 #if CONFIG_COMPONENT_MODEL
 public class Control : Component, ISynchronizeInvoke, IWin32Window
 #else
-public class Control : IWin32Window
+public class Control : IWin32Window, IDisposable
 #endif
 		, IToolkitEventSink
 {
@@ -1532,17 +1532,23 @@ public class Control : IWin32Window
 
 	// Dispose of this control.
 #if CONFIG_COMPACT_FORMS
-public new void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+	public new void Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+#elif !CONFIG_COMPONENT_MODEL
+	public void Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
 #endif
 	[TODO]
 #if CONFIG_COMPONENT_MODEL
 	protected override void Dispose(bool disposing)
 #else
-protected virtual void Dispose(bool disposing)
+	protected virtual void Dispose(bool disposing)
 #endif
 			{
 				DestroyHandle();
@@ -1691,7 +1697,11 @@ protected virtual void Dispose(bool disposing)
 				if (!forward)
 				{
 					// Find the container because there was no control found.
+				#if CONFIG_COMPONENT_MODEL
 					while (ctl.numChildren > 0 && (ctl ==this || !(ctl is IContainer) || !ctl.GetStyle(ControlStyles.ContainerControl)))
+				#else
+					while (ctl.numChildren > 0 && (ctl ==this || !ctl.GetStyle(ControlStyles.ContainerControl)))
+				#endif
 					{
 						Control found = ctl.children[ctl.numChildren - 1];
 						for (int i = ctl.numChildren - 2; i >= 0; i--)

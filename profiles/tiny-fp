@@ -15,7 +15,7 @@
 <define name="ECMA_COMPAT" value="true"/>
 
 <!-- Include .NET Framework 1.2 features -->
-<define name="CONFIG_FRAMEWORK_1_2" value="true"/>
+<define name="CONFIG_FRAMEWORK_1_2" value="false"/>
 
 <!-- Use reflection facilities -->
 <define name="CONFIG_REFLECTION" value="false"/>

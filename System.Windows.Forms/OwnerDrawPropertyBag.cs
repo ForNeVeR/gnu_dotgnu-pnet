@@ -30,7 +30,10 @@ namespace System.Windows.Forms
 #if !ECMA_COMPAT
 	[Serializable]
 #endif
-	public class OwnerDrawPropertyBag : MarshalByRefObject, ISerializable
+	public class OwnerDrawPropertyBag : MarshalByRefObject
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 	{
 		private Font font;
 		private Color foreColor = Color.Empty;
@@ -75,6 +78,8 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_SERIALIZATION
+
 		internal OwnerDrawPropertyBag(SerializationInfo info, StreamingContext context)
 		{
 			foreach (SerializationEntry entry in info)
@@ -93,6 +98,8 @@ namespace System.Windows.Forms
 				}
 			}
 		}
+
+#endif // CONFIG_SERIALIZATION
 
 		internal OwnerDrawPropertyBag()
 		{
@@ -125,12 +132,17 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_SERIALIZATION
+
 		void ISerializable.GetObjectData(SerializationInfo si, StreamingContext context)
 		{
 			si.AddValue("BackColor", BackColor);
 			si.AddValue("ForeColor", ForeColor);
 			si.AddValue("Font", Font);
 		}
+
+#endif // CONFIG_SERIALIZATION
+
 	}
 
 }

@@ -1,4 +1,5 @@
 if HAS_REFLECTION
+if HAS_EXTENDED_NUMERICS
 SUBDIRS = tools config resources runtime I18N DotGNU.SSL System System.Xml . \
 		  System.Net.IrDA csunit csupport compat ISymWrapper \
 		  SharpZipLib System.Configuration.Install JScript Basic \
@@ -6,6 +7,13 @@ SUBDIRS = tools config resources runtime I18N DotGNU.SSL System System.Xml . \
 		  System.Drawing.Win32 System.Drawing.Postscript \
 		  System.EnterpriseServices System.Windows.Forms \
 		  System.Design DotGNU.Terminal tests samples
+else
+SUBDIRS = tools config resources runtime I18N DotGNU.SSL System System.Xml . \
+		  System.Net.IrDA csunit csupport compat ISymWrapper \
+		  SharpZipLib System.Configuration.Install Basic \
+		  DotGNU.Images Xsharp System.EnterpriseServices \
+		  DotGNU.Terminal tests samples
+endif
 else
 SUBDIRS = tools resources runtime DotGNU.SSL System System.Xml . \
 		  System.Net.IrDA samples

@@ -80,7 +80,8 @@ internal sealed class PostscriptToolkit : NullToolkit
 			}
 
 	// Create a toolkit image from the properties in the specified object.
-	IToolkitImage CreateImage(DotGNU.Images.Image image, int frame)
+	public override IToolkitImage CreateImage
+				(DotGNU.Images.Image image, int frame)
 			{
 				return new PostscriptImage(image, frame);
 			}

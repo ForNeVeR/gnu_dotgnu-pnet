@@ -14,13 +14,11 @@
 			<sources basedir="${mono.sources}/class/System.Security">
 				<includes name="**/*.cs"/> 
 				<excludes name="Test/**"/>
-				<!-- TODO -->
-				<excludes name="System.Security.Cryptography.X509Certificates/*.cs"/>
-				<excludes name="System.Security.Cryptography.Pkcs/*.cs"/>
+				<excludes name="System.Security.Cryptography.Pkcs/**"/>
+				<excludes name="System.Security.Cryptography.X509Certificates/**"/>
 			</sources>
 
 			<references>
-				<file name="../Mono.Security/Mono.Security.dll"/>
 				<file name="System.Xml.dll"/>
 				<file name="System.dll"/>
 			</references>

@@ -1,4 +1,30 @@
 
+2004-04-30  Klaus Treichel  <ktreichel@web.de>
+
+	* class/Makefile.am: Reorder directories to reflect dependencies
+
+	* class/Mono.Data.DB2Client/Mono.Data.DB2Client.build,
+	class/Mono.Data.MySql/Mono.Data.MySql.build,
+	class/Mono.Data.PostgreSqlClient/Mono.Data.PostgreSqlClient.build,
+	class/Mono.Data.SqliteClient/Mono.Data.SqliteClient.build,
+	class/Mono.Data.SybaseClient/Mono.Data.SybaseClient.build,
+	class/Mono.Data.TdsClient/Mono.Data.TdsClient.build,
+	class/System.Data.OracleClient/System.Data.OracleClient.build,
+	tools/SqlSharp/SqlSharp.build: add missing reference to Mono.Security
+
+	* class/Mono.Data.Tds/Mono.Data.Tds.build: added missing reference 
+	to System.Xml and Mono.Security
+	
+	* class/Mono.Security/Mono.Security.build,
+	class/System.Data/System.Data.build: set framework version back 
+	to 1.1 because of missing sources for 1.2 , add flag ONLY_1_1
+	add missing reference to Mono.Security.
+
+	* class/System.Data.Objectspaces/System.Data.Objectspaces.build,
+	class/System.Data.SqlXml/System.Data.SqlXml.build: set framework 
+	version back to 1.1 because of dependencies , add missing reference
+	to Mono.Security. (patch #2935, Gopal)
+
 2004-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.2" release.

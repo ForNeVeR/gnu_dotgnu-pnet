@@ -16,6 +16,7 @@
 			<references>
 				<file name="System.dll"/>
 				<file name="System.Xml.dll"/>
+				<file name="../../class/Mono.Security/Mono.Security.dll"/>
 				<file name="../../class/System.Data/System.Data.dll"/>
 				<file name="../../class/Mono.Data.Tds/Mono.Data.Tds.dll"/>
 				<file name="../../class/System.EnterpriseServices/System.EnterpriseServices.dll"/>

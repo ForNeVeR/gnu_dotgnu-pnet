@@ -5,6 +5,8 @@ SUBDIRS = Custommarshalers \
 		  System.ServiceProcess \
 		  System.Runtime.Serialization.Formatters.Soap \
 		  PEAPI \
+		  System.Security \
+		  Mono.Security \
 		  Mono.Data.Tds \
 		  System.Data \
 		  Mono.Data.PostgreSqlClient \
@@ -22,8 +24,5 @@ SUBDIRS = Custommarshalers \
 		  System.Data.ObjectSpaces \
 		  Novell.Directory.Ldap \
 		  System.DirectoryServices \
-		  Mono.Security \
-		  Mono.Security.Win32 \
-		  System.Security
-
+		  Mono.Security.Win32
 ##		  Npgsql

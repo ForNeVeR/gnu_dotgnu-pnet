@@ -16,6 +16,8 @@
 
 			<references>
 				<file name="System.dll"/>
+				<file name="System.Xml.dll"/>
+				<file name="../Mono.Security/Mono.Security.dll"/>
 			</references>
 
 		</compile>

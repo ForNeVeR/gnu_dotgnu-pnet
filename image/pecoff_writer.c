@@ -1071,6 +1071,19 @@ void _ILWriteFieldRVAFixups(ILWriter *writer, unsigned long dataSection,
 	}
 }
 
+void ILWriterSetStream(ILWriter *writer, FILE *stream, int seekable)
+{
+	if (!(writer->stream) && stream)
+	{
+		writer->stream = stream;
+		if (seekable)
+		{
+			WriteFlush(writer);
+		}
+		writer->seekable = seekable;
+	}
+}
+
 int ILWriterResetTypeAndFlags(ILWriter *writer, int type, int flags)
 {
 	if (type != IL_IMAGETYPE_DLL &&

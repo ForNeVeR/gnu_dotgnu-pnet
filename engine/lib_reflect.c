@@ -1054,13 +1054,112 @@ ILObject *_IL_Assembly_GetManifestResourceInfo(ILExecThread *thread,
 }
 
 /*
+ * Walk through all resources available, assemlbing their names
+ * into the passed array.  Return the number of resources found.
+ */
+static ILInt32 WalkResourceNames(ILExecThread *thread, ILImage *image, ILString** buf)
+{
+	ILInt32 count = 0;
+	ILManifestRes *res = 0;
+	ILFileDecl *file;
+
+	res = 0;
+	while((res = (ILManifestRes *)ILImageNextToken
+			(image, IL_META_TOKEN_MANIFEST_RESOURCE, (void *)res)) != 0)
+	{
+		/* TODO: handle resources in external assemblies */
+		if(ILManifestRes_OwnerAssembly(res))
+		{
+			continue;
+		}
+
+		/* If the resource is private, and the caller is not
+			the same image, then skip it */
+		if(!ILManifestRes_IsPublic(res) && _ILClrCallerImage(thread) != image)
+		{
+			continue;
+		}
+
+		/* Handle resources in external files */
+		if((file = ILManifestRes_OwnerFile(res)) != 0)
+		{
+			/* If the calling image is not secure, then skip it.
+				Otherwise, applications may be able to force
+				the engine to read arbitrary files from the
+				same directory as a library assembly */
+			if(!ILImageIsSecure(_ILClrCallerImage(thread)))
+			{
+				continue;
+			}
+
+			/* The file must not have metadata and it must
+				start at offset 0 to be a valid file resource */
+			if(ILFileDecl_HasMetaData(file) ||
+				ILManifestRes_Offset(res) != 0)
+			{
+				continue;
+			}
+		}
+
+		/* Record the name in the return buffer */
+		if(buf != 0)
+		{
+			buf[count] = ILStringCreate(thread, ILManifestRes_Name(res));
+			if(!(buf[count]))
+			{
+				/* Out of memory exception thrown */
+				return -1;
+			}
+		}
+		++count;
+	}
+
+	return count;
+}
+
+/*
  * public virtual String[] GetManifestResourceNames();
  */
 System_Array *_IL_Assembly_GetManifestResourceNames(ILExecThread *thread,
 													ILObject *_this)
 {
-	/* TODO */
-	return 0;
+	ILInt32 arraySize;
+	ILString** buf;
+	System_Array *files;
+	ILImage *image;
+	ILProgramItem *item;
+
+	/* Get the image that corresponds to the assembly */
+	item = (ILProgramItem *)_ILClrFromObject(thread, _this);
+	if(!item)
+	{
+	  	return 0;
+	}
+	image = ILProgramItem_Image(item);
+	if(!image)
+	{
+		return 0;
+	}
+
+	/* Get the number of array elements required */
+	arraySize = WalkResourceNames(thread, image, 0);
+	if(arraySize < 0)
+	{
+		return 0;
+	}
+
+	/* Create the object we will return */
+	files = (System_Array*) ILExecThreadNew
+		(thread, "[oSystem.String;", "(Ti)V",(ILVaInt)arraySize);
+	if(!files)
+	{
+		return 0;
+	}
+	buf = (ILString**)(ArrayToBuffer(files));
+
+	/* Gather up the file names */
+	WalkResourceNames(thread, image, buf);
+	return files;
 }
 
 /*

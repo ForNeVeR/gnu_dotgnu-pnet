@@ -19,6 +19,9 @@ module name when dumping class names.
 "ILDumpMethodType", "ILDumpType", and "ILDumpClassName", to ensure
 that the correct module/assembly qualifications are output.
 
+* cscc/cs_invoke.tc: slight bug with non-"params" favouring code - it didn't
+work if the first candidate was "params".
+
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c: load library images into the C# compiler to assist

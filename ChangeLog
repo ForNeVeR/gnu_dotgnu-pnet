@@ -1,4 +1,9 @@
 
+2003-07-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/ButtonBase.cs: make "Draw" "internal virtual"
+	so that it can be overridden in subclasses.
+
 2003-07-07  Gopal.V  <gopalv82@symonds.net>
 
 	* System.Windows.Forms/Themes/DefaultThemePainter.cs: Clear up the

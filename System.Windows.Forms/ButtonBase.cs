@@ -323,7 +323,7 @@ public abstract class ButtonBase : Control
 			}
 
 	// Draw the button in its current state on a Graphics surface.
-	private void Draw(Graphics graphics)
+	internal virtual void Draw(Graphics graphics)
 			{
 				ButtonState state = CalculateState();
 				Size clientSize = ClientSize;

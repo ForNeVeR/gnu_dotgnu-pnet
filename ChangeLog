@@ -46,7 +46,8 @@
 	System.Drawing.Xsharp/DrawingHatchBrush.cs,
 	System.Drawing.Xsharp/DrawingImage.cs,
 	System.Drawing.Xsharp/DrawingPen.cs,
-	System.Drawing.Xsharp/DrawingSolidBrush.cs: fix IDispose pattern.
+	System.Drawing.Xsharp/DrawingSolidBrush.cs
+	System.Drawing/Region.cs: fix IDispose pattern.
 
 2003-11-14  Adam Ballai <adam@thefrontnetworks.net>
 

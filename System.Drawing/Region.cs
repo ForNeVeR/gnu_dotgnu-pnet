@@ -238,7 +238,18 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	// Dispose of this region.
 	public void Dispose()
 	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	private void Dispose(bool disposing)
+	{
 		// Nothing to do in this implementation.
+	}
+
+	~Region()
+	{
+		Dispose(false);
 	}
 
 	// Determine if two regions are equal after applying a transformation.

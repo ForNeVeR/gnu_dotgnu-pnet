@@ -24,6 +24,30 @@ namespace System
 using System.Reflection;
 using System.Diagnostics;
 
+/*
+
+Note on Exception messages:
+--------------------------
+
+This class library takes a slightly different approach for determining
+what the default message text should be for internal exceptions.  Other
+implementations override "Message" and "ToString()", and then back-patch
+the "message" field in the base class if it is null.  This is a pain to
+implement, especially for "ToString()" which must include the stack trace
+in the result, amongst other things.
+
+Instead, we provide two "protected internal" properties that only classes
+in this library can access.  "MessageDefault" provides a default message
+if "message" is null.  "MessageExtra" provides extra information to be
+inserted into the "ToString()" result just after the message and before
+the stack trace.
+
+This design is cleaner to implement throughout the library.  Because the
+extra properties are "protected internal", they will not pollute the
+name space of applications that didn't expect them to be present.
+
+*/
+
 public class Exception
 {
 
@@ -90,7 +114,8 @@ public class Exception
 		{
 			String className = GetType().ToString();
 			String result;
-			String trace;
+			String temp;
+			String message = Message;
 			if(message != null && message.Length > 0)
 			{
 				result = className + ": " + message;
@@ -99,14 +124,19 @@ public class Exception
 			{
 				result = className;
 			}
+			temp = MessageExtra;
+			if(temp != null)
+			{
+				result = result + Environment.NewLine + temp;
+			}
 			if(innerException != null)
 			{
 				result = result + " ---> " + innerException.ToString();
 			}
-			trace = StackTrace;
-			if(trace != null)
+			temp = StackTrace;
+			if(temp != null)
 			{
-				result = result + Environment.NewLine + trace;
+				result = result + Environment.NewLine + temp;
 			}
 			return result;
 		}
@@ -131,6 +161,10 @@ public class Exception
 			get
 			{
 				if(message != null)
+				{
+					return message;
+				}
+				else if((message = MessageDefault) != null)
 				{
 					return message;
 				}
@@ -181,6 +215,24 @@ public class Exception
 		{
 			// TODO
 			return null;
+		}
+
+	// Get the extra data to be inserted into the "ToString" representation.
+	protected internal virtual String MessageExtra
+		{
+			get
+			{
+				return null;
+			}
+		}
+
+	// Get the default message to use if "message" was initialized to null.
+	protected internal virtual String MessageDefault
+		{
+			get
+			{
+				return null;
+			}
 		}
 
 }; // class Exception

@@ -13,6 +13,10 @@ runtime/Platform/RuntimeSecurityManager.cs,
 runtime/Platform/Security.cs: implement a Java-like security manager
 system for handling the security of sensitive platform operations.
 
+* runtime/System/Exception.cs: implement a new system for handling default
+messages and extra data in the "ToString()" output, because the ECMA version
+is a pain to implement across dozens of exception classes.
+
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for the "0.1.0" release.

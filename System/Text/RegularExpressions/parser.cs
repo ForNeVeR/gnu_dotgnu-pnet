@@ -128,14 +128,19 @@ namespace System.Text.RegularExpressions.Syntax {
 
 		public IDictionary GetMapping () {
 			Hashtable mapping = new Hashtable ();
+			Hashtable numbers = new Hashtable ();
 			int end = caps.Count;
 			mapping.Add ("0", 0);
-			for (int i = 0; i < end;) {
+			for (int i = 0; i < end; i++) {
 				CapturingGroup group = (CapturingGroup) caps [i];
-				i++;
-				if (group.Name != null && !mapping.Contains (group.Name))
+				if (group.Name != null && !mapping.Contains (group.Name)) {
 					mapping.Add (group.Name, group.Number);
-				else
+					numbers.Add (group.Number, group.Number);
+				}
+			}
+
+			for (int i = 1; i < end; i++) {
+				if (numbers [i] == null)
 					mapping.Add (i.ToString (), i);
 			}
 
@@ -446,8 +451,14 @@ namespace System.Text.RegularExpressions.Syntax {
 					++ ptr;
 					BalancingGroup bal = new BalancingGroup ();
 					bal.Name = name;
-					caps.Add (bal);
+					
+					if(bal.IsNamed) {
+						caps.Add (bal);
+					}
+
 					refs.Add (bal, balance_name);
+
+					ParseGroup (bal, options, null);
 
 					return bal;
 				}
@@ -712,11 +723,14 @@ namespace System.Text.RegularExpressions.Syntax {
 			/* check syntax */
 
 			ConsumeWhitespace (IsIgnorePatternWhitespace (options));
-			n = ParseNumber (10, 1, 0);
-			if (n < 0)
-				throw NewParseException ("Illegal {x,y} - bad value of x.");
-
-			ConsumeWhitespace (IsIgnorePatternWhitespace (options));
+		    
+			if (pattern[ptr] == ',') {
+                                n = -1;
+			} else {
+                                n = ParseNumber (10, 1, 0);
+                                ConsumeWhitespace (IsIgnorePatternWhitespace (options));
+			}
+			
 			switch (pattern[ptr ++]) {
 			case '}':
 				m = n;
@@ -894,7 +908,13 @@ namespace System.Text.RegularExpressions.Syntax {
 
 			// character codes
 
-			case '0': return ParseOctal (pattern, ref ptr);
+			case '0':
+				int prevptr = ptr;
+				int result = ParseOctal (pattern, ref ptr);
+				if (result == -1 && prevptr == ptr)
+					return 0;
+
+				return result;
 
 			case 'x':
 				c = ParseHex (pattern, ref ptr, 2);
@@ -913,10 +933,8 @@ namespace System.Text.RegularExpressions.Syntax {
 			// control characters
 
 			case 'c':
-				c = pattern[p ++];
-				if (c >= 'A' && c <= 'Z')
-					return c - 'A';
-				else if (c >= '@' && c <= '_')
+				c = pattern[ptr ++];
+				if (c >= '@' && c <= '_')
 					return c - '@';
 				else
 					throw NewParseException ("Unrecognized control character.");
@@ -1011,10 +1029,16 @@ namespace System.Text.RegularExpressions.Syntax {
 
 			string result = "";
 			while (ptr < pattern.Length) {
-				int c = pattern[ptr];
-				if (c == '\\')
+				int c = pattern[ptr ++];
+				if (c == '\\') {
 					c = ParseEscape ();
-				ptr ++;	
+
+					if(c < 0) {
+						c = pattern[ptr ++];
+						if(c == 'b')
+							c = '\b';
+					}
+				}
 				result += (char)c;
 			}
 

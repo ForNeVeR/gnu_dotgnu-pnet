@@ -1,5 +1,30 @@
 2004-06-09  Klaus Treichel  <ktreichel@web.de>
 
+	* System/Text/RegularExpressions/CaptureCollection.cs,
+	System/Text/RegularExpressions/GroupCollection.cs,
+	System/Text/RegularExpressions/MatchCollection.cs: added from mono
+
+	*System/Text/RegularExpressions/ChangeLog,
+	System/Text/RegularExpressions/RegexRunner.cs,
+	System/Text/RegularExpressions/RegexRunnerFactory.cs,
+	System/Text/RegularExpressions/arch.cs,
+	System/Text/RegularExpressions/cache.cs,
+	System/Text/RegularExpressions/category.cs,
+	System/Text/RegularExpressions/compiler.cs,
+	System/Text/RegularExpressions/debug.cs,
+	System/Text/RegularExpressions/interpreter.cs,
+	System/Text/RegularExpressions/interval.cs,
+	System/Text/RegularExpressions/match.cs,
+	System/Text/RegularExpressions/parser.cs,
+	System/Text/RegularExpressions/quicksearch.cs,
+	System/Text/RegularExpressions/regex.cs,
+	System/Text/RegularExpressions/replace.cs,
+	System/Text/RegularExpressions/syntax.cs: updated from mono
+
+	*System/Text/RegularExpressions/collections.cs: deleted
+	
+2004-06-09  Klaus Treichel  <ktreichel@web.de
+
 	* System.Windows.Forms/DomainUpDown.cs: Fix call to abstract base
 	function in UpdateEditText.
 

@@ -7,6 +7,9 @@
 	* include/il_bignum.h, support/bignum.c, tests/test_crypt.c:
 	test cases and bug fixes for "ILBigNumInv".
 
+	* support/bignum.c, tests/test_crypt.c: regression tests and
+	bug fixes for "ILBigNumPow".
+
 2002-07-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/des.c: fix bugs in the structure of Triple-DES.

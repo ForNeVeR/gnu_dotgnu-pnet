@@ -1036,6 +1036,26 @@ static BigNumTestInfo bignum_inv_2 = {
 };
 
 /*
+ * Test vectors for "ILBigNumPow".
+ */
+static BigNumTestInfo bignum_pow_1 = {
+	ILBigNumPow,
+	"34", "23", 0, "167500108222301408246337399112597504"
+};
+static BigNumTestInfo bignum_pow_2 = {
+	ILBigNumPow,
+	"34", "23", "67", "48"
+};
+static BigNumTestInfo bignum_pow_3 = {
+	ILBigNumPow,
+	"34", "0", 0, "1"
+};
+static BigNumTestInfo bignum_pow_4 = {
+	ILBigNumPow,
+	"34", "1", 0, "34"
+};
+
+/*
  * Test big number operations.
  */
 static void test_bignum_oper(BigNumTestInfo *arg)
@@ -1242,6 +1262,11 @@ void ILUnitRegisterTests(void)
 
 	RegisterCrypt(test_bignum_oper, bignum_inv_1);
 	RegisterCrypt(test_bignum_oper, bignum_inv_2);
+
+	RegisterCrypt(test_bignum_oper, bignum_pow_1);
+	RegisterCrypt(test_bignum_oper, bignum_pow_2);
+	RegisterCrypt(test_bignum_oper, bignum_pow_3);
+	RegisterCrypt(test_bignum_oper, bignum_pow_4);
 }
 
 #ifdef	__cplusplus

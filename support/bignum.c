@@ -1132,10 +1132,10 @@ ILBigNum *ILBigNumPow(ILBigNum *numx, ILBigNum *numy, ILBigNum *modulus)
 	/* Compute the result using the binary method */
 	for(posn = 0; posn < numy->size; ++posn)
 	{
-		for(bit = 0, mask = (ILUInt32)0x80000000; bit < 32; ++bit, mask >>= 1)
+		for(bit = 0, mask = (ILUInt32)0x00000001; bit < 32; ++bit, mask <<= 1)
 		{
 			/* Multiply "result" by "power" if the bit is 1 */
-			if((numy->words[posn] & bit) != 0)
+			if((numy->words[posn] & mask) != 0)
 			{
 				temp = ILBigNumMul(result, power, modulus);
 				ILBigNumFree(result);
@@ -1145,6 +1145,15 @@ ILBigNum *ILBigNumPow(ILBigNum *numx, ILBigNum *numy, ILBigNum *modulus)
 					return 0;
 				}
 				result = temp;
+			}
+
+			/* Bail out if we've reached the top-most bit.  This prevents
+			   the "power" value from unnecessarily continuing to double
+			   in size when "numy" is small */
+			if(posn == (numy->size - 1) &&
+			   (numy->words[posn] & (mask - 1)) == numy->words[posn])
+			{
+				break;
 			}
 
 			/* Square the "power" value */

@@ -1513,7 +1513,7 @@ internal class DefaultThemePainter : IThemePainter
 				                       ButtonState.Inactive;
 
 				// draw the scroll bar
-				if (bar.IntersectsWith(drawBounds))
+				if (track.Height > 0 && bar.IntersectsWith(drawBounds))
 					DrawButton(graphics,
 				           bar.X, bar.Y,
 				           bar.Width, bar.Height,

@@ -891,7 +891,7 @@ static ILIntString ParseLitString(char *text)
 	posn = 0;
 
 	/* Skip the leading '@"' */
-	++text;
+	text += 2;
 
 	/* Read characters from the string and encode them in UTF-8 */
 	while(*text != '"' || text[1] == '"')
@@ -910,53 +910,7 @@ static ILIntString ParseLitString(char *text)
 		}
 
 		/* Encode it in UTF-8 */
-		if(!ch)
-		{
-			/* Encode embedded NUL's using 2 bytes to protect
-			   them from higher-level code that may try to use
-			   the string as a normal C string */
-			buffer[posn++] = (char)0xC0;
-			buffer[posn++] = (char)0x80;
-		}
-		else if(ch < 0x80)
-		{
-			buffer[posn++] = (char)ch;
-		}
-		else if(ch < (1 << 11))
-		{
-			buffer[posn++] = (char)((ch >> 6) | 0xC0);
-			buffer[posn++] = (char)((ch & 0x3F) | 0x80);
-		}
-		else if(ch < (1 << 16))
-		{
-			buffer[posn++] = (char)((ch >> 12) | 0xE0);
-			buffer[posn++] = (char)(((ch >> 6) & 0x3F) | 0x80);
-			buffer[posn++] = (char)((ch & 0x3F) | 0x80);
-		}
-		else if(ch < (1 << 21))
-		{
-			buffer[posn++] = (char)((ch >> 18) | 0xF0);
-			buffer[posn++] = (char)(((ch >> 12) & 0x3F) | 0x80);
-			buffer[posn++] = (char)(((ch >> 6) & 0x3F) | 0x80);
-			buffer[posn++] = (char)((ch & 0x3F) | 0x80);
-		}
-		else if(ch < (1 << 26))
-		{
-			buffer[posn++] = (char)((ch >> 24) | 0xF8);
-			buffer[posn++] = (char)(((ch >> 18) & 0x3F) | 0x80);
-			buffer[posn++] = (char)(((ch >> 12) & 0x3F) | 0x80);
-			buffer[posn++] = (char)(((ch >> 6) & 0x3F) | 0x80);
-			buffer[posn++] = (char)((ch & 0x3F) | 0x80);
-		}
-		else
-		{
-			buffer[posn++] = (char)((ch >> 30) | 0xFC);
-			buffer[posn++] = (char)(((ch >> 24) & 0x3F) | 0x80);
-			buffer[posn++] = (char)(((ch >> 18) & 0x3F) | 0x80);
-			buffer[posn++] = (char)(((ch >> 12) & 0x3F) | 0x80);
-			buffer[posn++] = (char)(((ch >> 6) & 0x3F) | 0x80);
-			buffer[posn++] = (char)((ch & 0x3F) | 0x80);
-		}
+		posn += ILUTF8WriteChar(buffer + posn, ch);
 
 		/* Flush the buffer into "intern" if it is nearly full */
 		if(posn >= 120)
@@ -1157,7 +1111,7 @@ WHITE			[ \t\r\f\v\032]
 
 \"(\\.|[^\\"])*\"			{ yylval.string = ParseString(yytext + 1);
 							  RETURNTOK(STRING_LITERAL); }
-"@"\"("@".|[^@"])*\"		{ yylval.string = ParseLitString(yytext);
+"@"\"(\"\"|[^"])*\"			{ yylval.string = ParseLitString(yytext);
 							  RETURNTOK(STRING_LITERAL); }
 
 {WHITE}+			;

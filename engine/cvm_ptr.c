@@ -69,6 +69,32 @@ static void WriteHardLong(CVMWord *ptr, ILInt64 value)
 #endif
 }
 
+/*
+ * Perform a class cast, taking arrays into account.
+ */
+static int CanCastClass(ILImage *image, ILClass *fromClass, ILClass *toClass)
+{
+	ILType *fromType = ILClassGetSynType(fromClass);
+	ILType *toType = ILClassGetSynType(toClass);
+	if(fromType && toType)
+	{
+		if(ILType_IsArray(fromType) && ILType_IsArray(toType) &&
+		   ILTypeGetRank(fromType) == ILTypeGetRank(toType))
+		{
+			return ILTypeAssignCompatible
+			  (image, ILTypeGetElemType(fromType), ILTypeGetElemType(toType));
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+	   	return ILClassInheritsFrom(fromClass, toClass);
+	}
+}
+
 #elif defined(IL_CVM_LOCALS)
 
 void *tempptr;
@@ -2290,7 +2316,8 @@ VMCASE(COP_CASTCLASS):
 	/* Cast the object on the stack top to a new class */
 	classInfo = CVM_ARG_PTR(ILClass *);
 	if(!stacktop[-1].ptrValue ||
-	   ILClassInheritsFrom(GetObjectClass(stacktop[-1].ptrValue), classInfo))
+	   CanCastClass(ILProgramItem_Image(method),
+	   			    GetObjectClass(stacktop[-1].ptrValue), classInfo))
 	{
 		MODIFY_PC_AND_STACK(CVM_LEN_PTR, 0);
 	}

@@ -3,6 +3,8 @@
 
 	* NEWS, configure.in: update version for the "0.6.12" release.
 
+	* configure.in: update working version to "0.6.13".
+
 2005-01-15  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/Test.build: exclude dir DataProviderTests from tests for the

@@ -1,4 +1,9 @@
 
+2002-07-02  Gopal.V  <gopalv82@symonds.net>
+
+	* doc/Doxyfile: Add Doxygen configuration file (contributed
+	by C H Gowri Kumar (gkumar@csa.iisc.ernet.in)
+
 2002-07-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/common/cc_options.c: add the "-gtk" and "-gnome" options

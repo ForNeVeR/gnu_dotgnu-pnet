@@ -30,6 +30,9 @@ correctly during member resolution.
 
 * ilalink/link_misc.c: implement conversions for properties and events.
 
+* include/il_program.h: remove the declaration of "ILArgument", which
+is obsolete.
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

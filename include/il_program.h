@@ -40,7 +40,6 @@ typedef struct _tagILImplements		ILImplements;
 typedef struct _tagILMember			ILMember;
 typedef struct _tagILMethod			ILMethod;
 typedef struct _tagILParameter		ILParameter;
-typedef struct _tagILArgument		ILArgument;
 typedef struct _tagILField			ILField;
 typedef struct _tagILEvent			ILEvent;
 typedef struct _tagILProperty		ILProperty;

@@ -351,16 +351,24 @@ int main(int argc, char *argv[])
 	}
 
 	/* Link the final executable */
-	if(status == 0 && executable_flag)
+	if(!CSStringListContains(extension_flags, num_extension_flags,
+							 "syntax-check") &&
+	   !CSStringListContains(extension_flags, num_extension_flags,
+							 "semantic-check"))
 	{
-		status = LinkExecutable();
-		for(len = 0; len < num_files_to_link; ++len)
+		if(status == 0 && executable_flag)
 		{
-			if(files_to_link_temp[len])
-			{
-				/* Delete this temporary object file */
-				ILDeleteFile(files_to_link[len]);
-			}
+			status = LinkExecutable();
+		}
+	}
+
+	/* Delete temporary files that were created prior to the link */
+	for(len = 0; len < num_files_to_link; ++len)
+	{
+		if(files_to_link_temp[len])
+		{
+			/* Delete this temporary object file */
+			ILDeleteFile(files_to_link[len]);
 		}
 	}
 

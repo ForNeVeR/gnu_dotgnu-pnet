@@ -66,6 +66,7 @@ struct _tagILCVMCoder
 	ILCVMLabel     *labelList;
 	int				labelOutOfMemory;
 	unsigned long	switchStart;
+	ILMethod	   *currentMethod;
 
 };
 
@@ -193,16 +194,33 @@ struct _tagILCVMCoder
 /*
  * Get the size of a type in stack words.
  */
-static ILUInt32 GetTypeSize(ILExecThread *thread, ILType *type)
+static ILUInt32 GetTypeSize(ILType *type)
 {
-	ILUInt32 size = ILSizeOfType(thread, type);
+	ILUInt32 size = ILSizeOfType(type);
+	return (size + sizeof(CVMWord) - 1) / sizeof(CVMWord);
+}
+
+/*
+ * Get the size of a type in stack words, taking float expansion into account.
+ */
+static ILUInt32 GetStackTypeSize(ILType *type)
+{
+	ILUInt32 size;
+	if(type == ILType_Float32 || type == ILType_Float64)
+	{
+		return CVM_WORDS_PER_NATIVE_FLOAT;
+	}
+	else
+	{
+		size = ILSizeOfType(type);
+	}
 	return (size + sizeof(CVMWord) - 1) / sizeof(CVMWord);
 }
 
 /*
  * Create a new CVM coder instance.
  */
-static ILCoder *CVMCoder_Create(ILExecThread *thread, ILUInt32 size)
+static ILCoder *CVMCoder_Create(ILUInt32 size)
 {
 	ILCVMCoder *coder;
 	if((coder = (ILCVMCoder *)ILMalloc(sizeof(ILCVMCoder))) == 0)
@@ -210,7 +228,6 @@ static ILCoder *CVMCoder_Create(ILExecThread *thread, ILUInt32 size)
 		return 0;
 	}
 	coder->coder.classInfo = &_ILCVMCoderClass;
-	coder->coder.thread = thread;
 	coder->buffer = (unsigned char *)ILMalloc(size);
 	if(!(coder->buffer))
 	{
@@ -232,6 +249,7 @@ static ILCoder *CVMCoder_Create(ILExecThread *thread, ILUInt32 size)
 	ILMemPoolInit(&(coder->labelPool), sizeof(ILCVMLabel), 8);
 	coder->labelList = 0;
 	coder->labelOutOfMemory = 0;
+	coder->currentMethod = 0;
 	return &(coder->coder);
 }
 

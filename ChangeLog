@@ -1,4 +1,9 @@
+2004-01-08  Adam Ballai  <adam@thefrontnetworks.net>
 
+	* System.Xml/XmlTextReader.c, XmlParserContext.cs,
+	  tests/System.Xml/TestXmlTextReader.cs:  Add new
+	  xml parser written by Richard Baumann.
+	
 2004-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Display.cs: process pending invalidates before the XFlush.

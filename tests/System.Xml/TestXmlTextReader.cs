@@ -149,6 +149,7 @@ public class TestXmlTextReader : TestCase
 				ret = xmlReader.Read();
 				AssertEquals("Read (4)", true, ret);
 			
+				ret = xmlReader.Read();
 				Check("Read (5)", "size", ReturnType.Name);
 				Check("Read (6)", "size", ReturnType.LocalName);
 

@@ -127,8 +127,7 @@ public class XmlParserContext
 				if (internalSubset != null)
 				{
 					XmlTextReader reader = new XmlTextReader(internalSubset, XmlNodeType.Document, null);
-					while( reader.ReadDeclaration() );
-					
+					/* TODO: Read Declaration */	
 					namecollection = reader.ParserContext.NameCollection;
 				}
 #endif

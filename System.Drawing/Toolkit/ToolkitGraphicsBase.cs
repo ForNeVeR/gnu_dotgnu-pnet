@@ -274,62 +274,114 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 										int x2, int y2,
 										int x3, int y3,
 										int x4, int y4)
-		{
-			float px=0;
-			float py=0;
-			float blend;
-			float u2=(1.0f-u);
+			{
+				float px=0;
+				float py=0;
+				float blend;
+				float u2=(1.0f-u);
 
-			// Point 0
-			blend = u2*u2*u2;
-			px += blend * x1;
-			py += blend * y1;
+				// Point 0
+				blend = u2*u2*u2;
+				px += blend * x1;
+				py += blend * y1;
 
-			// Point 1
-			blend = 3 * u * u2 * u2;
-			px += blend * x2;
-			py += blend * y2;
+				// Point 1
+				blend = 3 * u * u2 * u2;
+				px += blend * x2;
+				py += blend * y2;
 
-			// Point 2
-			blend = 3 * u * u * u2;
-			px += blend * x3;
-			py += blend * y3;
+				// Point 2
+				blend = 3 * u * u * u2;
+				px += blend * x3;
+				py += blend * y3;
 
-			// Point 3
-			blend = u * u * u;
-			px += blend * x4;
-			py += blend * y4;
+				// Point 3
+				blend = u * u * u;
+				px += blend * x4;
+				py += blend * y4;
 
-			return new Point((int)Math.Round(px),(int)Math.Round(py));
-		}
+				return new Point((int)Math.Round(px),(int)Math.Round(py));
+			}
 
 	private int ComputeSteps(int x1, int y1, int x2, int y2, int x3,
 								int y3, int x4, int y4)
-		{
-			double length=0L;
-			
-			length+=Math.Sqrt((x1-x2)*(x1-x2) + (y1-y2) * (y1-y2));
-			length+=Math.Sqrt((x2-x3)*(x2-x3) + (y2-y3) * (y2-y3));
-			length+=Math.Sqrt((x3-x4)*(x3-x3) + (y3-y3) * (y3-y3));
+			{
+				double length=0L;
+				
+				length+=Math.Sqrt((x1-x2)*(x1-x2) + (y1-y2) * (y1-y2));
+				length+=Math.Sqrt((x2-x3)*(x2-x3) + (y2-y3) * (y2-y3));
+				length+=Math.Sqrt((x3-x4)*(x3-x3) + (y3-y3) * (y3-y3));
 
-			return (int)Math.Ceiling(length);	
-		}
-	
-	// Draw a bezier curve using the current pen.
-	public virtual void DrawBezier(int x1, int y1, int x2, int y2,
-								   int x3, int y3, int x4, int y4)
+				return (int)Math.Ceiling(length);	
+			}
+
+	private Point[] ComputeBezier(int x1, int y1, int x2, int y2,		
+						   int x3, int y3, int x4, int y4)
 			{
 				int steps=ComputeSteps(x1,y1,x2,y2,x3,y3,x4,y4);
 				Point [] points=new Point[steps];
 				for(int i=0;i<steps;i++)
 				{
 					float coeff=((float)i+1)/steps;
-					points[i]=ComputePoint(coeff , x1, y1, x2,y2,
-											x3,y3,x4,y4);
-				}
+					points[i]=ComputePoint(coeff ,x1,y1,x2,y2,x3,y3,x4,y4);
+				}                	
+				return points;
+			}
+
+	private Point[] ComputeSplineSegment(Point p0,Point p1,Point T1, Point T2 )
+			{                           
+				int steps=ComputeSteps(p0.X,p0.Y,T1.X,T1.Y,T2.X,T2.Y,p1.X,p1.Y);			
+							Point[] points = new Point[steps+1];
+				for(int i=0;i<=steps;i++)
+				{
+					float s=((float)i)/steps;
+					float s2=s*s;
+					float s3=s2*s;
+	  				float h1 =  2*s3 - 3*s2 + 1;
+  					float h2 = -2*s3 + 3*s2;
+  					float h3 =    s3 - 2*s2 + s;
+  					float h4 =    s3 -   s2;   
+					points[i].X=(int)(h1*p0.X+h2*p1.X+h3*T1.X+h4*T2.X);
+					points[i].Y=(int)(h1*p0.Y+h2*p1.Y+h3*T1.Y+h4*T2.Y);
+				}                	
+				return points;
+			}
+               
+	private Point[] ComputeTangent(Point[] points, float tension, bool closed, int numberOfSegments)
+			{
+				Point p0,p1;
+				if (numberOfSegments<3) return null;
+				Point[] tan=new Point[numberOfSegments];	
+				for(int i=0;i<numberOfSegments;i++)
+				{                       
+					if(i==0) 
+					{
+										if(closed)
+							p0 = points[numberOfSegments-1];
+						else
+							p0 = points[0];
+					} else p0 = points[i-1];
+					if(i==numberOfSegments-1)
+					{
+						if(closed)
+							p1 = points[0];
+						else
+							p1 = points[i];
+					} else p1 = points[i+1];
+
+					tan[i].X = (int)(tension*(p1.X - p0.X));
+					tan[i].Y = (int)(tension*(p1.Y - p0.Y));			
+				}			
+				return tan;
+			}
+
+	// Draw a bezier curve using the current pen.
+	public virtual void DrawBezier(int x1, int y1, int x2, int y2,
+								   int x3, int y3, int x4, int y4)
+			{
 				// TODO: Optimize this to plot points without 
 				// involving line-drawing operations
-				DrawLines(points);
+				DrawLines(ComputeBezier(x1,y1,x2,y2,x3,y3,x4,y4));
 			}
 
 	// Draw an arc within a rectangle defined by four points.
@@ -345,30 +397,67 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 			(Point[] rect, float startAngle, float sweepAngle);
 
 	// Draw a closed cardinal curve using the current pen.
-	[TODO]
 	public virtual void DrawClosedCurve(Point[] points, float tension)
-			{
-				// TODO: implement a default curve drawing algorithm
-				// for systems that don't have their own.
+			{			
+				Point [] tangent=ComputeTangent(points,tension,true,points.Length);
+				if (tangent == null)
+				{
+					DrawLines(points);
+					return;
+				}
+				for(int i=0;i<points.Length-1;i++)
+					DrawLines(ComputeSplineSegment(points[i],points[i+1],tangent[i],tangent[i+1]));
+				DrawLines(ComputeSplineSegment(points[points.Length-1],points[0],tangent[points.Length-1],tangent[0]));
 			}
 
+
 	// Fill a closed cardinal curve using the current brush.
-	[TODO]
 	public virtual void FillClosedCurve
 				(Point[] points, float tension, FillMode fillMode)
 			{
-				// TODO: implement a default curve drawing algorithm
-				// for systems that don't have their own.
+							
+				Point [] tangent=ComputeTangent(points,tension,true,points.Length);
+				if (tangent == null)
+ 				{
+					DrawLines(points);
+					return;
+ 				}
+				Point[][] fpoints = new Point[points.Length][];
+				int size=0;
+				for(int i=0;i<points.Length-1;i++)
+				{
+					fpoints[i]=ComputeSplineSegment(points[i],points[i+1],tangent[i],tangent[i+1]);
+					DrawLines(fpoints[i]);
+					size+=fpoints[i].Length;				
+				}
+
+				fpoints[points.Length-1]= 
+                        		ComputeSplineSegment(points[points.Length-1],points[0],tangent[points.Length-1],tangent[0]);
+				size+=fpoints[points.Length-1].Length;
+
+				Point[] poly= new Point[size];
+				int z=0;
+				for(int i=0;i<fpoints.Length;i++) 			
+					for(int j=0;j<fpoints[i].Length;j++)
+						poly[z++]=fpoints[i][j];
+				FillPolygon(poly,fillMode);
 			}
 
+
 	// Draw a cardinal curve using the current pen.
-	[TODO]
 	public virtual void DrawCurve(Point[] points, int offset,
 				   				  int numberOfSegments, float tension)
 			{
-				// TODO: implement a default curve drawing algorithm
-				// for systems that don't have their own.
+				Point [] tangent=ComputeTangent(points,tension,false,numberOfSegments+1);
+				if (tangent == null)
+				{
+					DrawLines(points);
+					return;
+				}
+				for(int i=0;i<numberOfSegments;i++)
+					DrawLines(ComputeSplineSegment(points[i],points[i+1],tangent[i],tangent[i+1]));
 			}
+
 
 	// Draw a string using the current font and brush.
 	public abstract void DrawString

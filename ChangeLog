@@ -6,6 +6,12 @@
 	include/il_image.h: implement linker functionality for ".sdata"
 	and ".tls" sections.
 
+	* ilalink/link_class.c, ilasm/ilasm_build.c, image/class.c,
+	image/writer.c, include/il_program.h: sort the field, method, and
+	parameter tables at the end of the assemble/link instead of after
+	each top-level class.  This allows us to mix global fields and
+	methods with ordinary classes more easily.
+
 2002-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, cscc/csharp/cs_attrs.c: begin to put the

@@ -340,12 +340,6 @@ void ILAsmBuildPopClass(void)
 	/* Mark the class as complete */
 	ILClassMarkComplete(ILAsmClass);
 
-	/* If this is a class at the outermost level, then sort its members */
-	if(classStackSize <= 1)
-	{
-		ILClassSortMembers(ILAsmClass);
-	}
-
 	/* Return to the previous level */
 	ILAsmClass = classStack[--classStackSize];
 }

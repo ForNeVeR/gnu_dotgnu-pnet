@@ -240,12 +240,7 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		}
 	}
 
-	/* If this is a top-level class that isn't "<Module>", then sort
-	   the members of the class and all of its nested classes */
-	if(!nestedParent && !isModule)
-	{
-		ILClassSortMembers(newClass);
-	}
+	/* Done */
 	return 1;
 }
 

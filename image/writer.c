@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "image.h"
+#include "program.h"
 #include <time.h>
 
 #ifdef	__cplusplus
@@ -180,6 +180,93 @@ static void WriteImagePool(ILWriter *writer, char *pool,
 	}
 }
 
+static void AssignMemberTokens(ILClass *info, ILToken *nextField,
+							   ILToken *nextMethod, ILToken *nextParam)
+{
+	ILMember *member;
+	ILNestedInfo *nested;
+	ILParameter *param;
+
+	/* Scan the members of this class */
+	member = info->firstMember;
+	while(member != 0)
+	{
+		if((member->programItem.token & IL_META_TOKEN_MASK) ==
+					IL_META_TOKEN_MEMBER_REF)
+		{
+			/* Ignore MemberRef's, as they are probably vararg signatures */
+			member = member->nextMember;
+			continue;
+		}
+		if(member->kind == IL_META_MEMBERKIND_METHOD)
+		{
+			member->programItem.token = *nextMethod;
+			member->programItem.image->tokenData
+				[IL_META_TOKEN_METHOD_DEF >> 24]
+				[(*nextMethod & ~IL_META_TOKEN_MASK) - 1] = (void *)member;
+			*nextMethod += 1;
+			param = ((ILMethod *)member)->parameters;
+			while(param != 0)
+			{
+				param->programItem.token = *nextParam;
+				member->programItem.image->tokenData
+					[IL_META_TOKEN_PARAM_DEF >> 24]
+					[(*nextParam & ~IL_META_TOKEN_MASK) - 1] = (void *)param;
+				*nextParam += 1;
+				param = param->next;
+			}
+		}
+		else if(member->kind == IL_META_MEMBERKIND_FIELD)
+		{
+			member->programItem.token = *nextField;
+			member->programItem.image->tokenData
+				[IL_META_TOKEN_FIELD_DEF >> 24]
+				[(*nextField & ~IL_META_TOKEN_MASK) - 1] = (void *)member;
+			*nextField += 1;
+		}
+		member = member->nextMember;
+	}
+
+	/* Scan the nested classes for token codes */
+	nested = info->nestedChildren;
+	while(nested != 0)
+	{
+		AssignMemberTokens(nested->child, nextField, nextMethod, nextParam);
+		nested = nested->next;
+	}
+}
+
+/*
+ * Sort the field and method members of all classes in
+ * an image so that token codes for nested classes come
+ * after those for their nesting parents.  This will
+ * also make the tokens for fields and methods in each
+ * class contiguous within the metadata index.
+ */
+static void SortClasses(ILImage *image)
+{
+	ILToken nextField;
+	ILToken nextMethod;
+	ILToken nextParam;
+	ILClass *info;
+
+	/* Set up the initial field, method, and parameter indices */
+	nextField = IL_META_TOKEN_FIELD_DEF | 1;
+	nextMethod = IL_META_TOKEN_METHOD_DEF | 1;
+	nextParam = IL_META_TOKEN_PARAM_DEF | 1;
+
+	/* Assign token codes to all top-level classes in the correct order */
+	info = 0;
+	while((info = (ILClass *)ILImageNextToken
+				(image, IL_META_TOKEN_TYPE_DEF, info)) != 0)
+	{
+		if(ILClass_NestedParent(info) == 0)
+		{
+			AssignMemberTokens(info, &nextField, &nextMethod, &nextParam);
+		}
+	}
+}
+
 /*
  * Version data to embed in the metadata header.
  * Must be padded to a multiple of 4 in size.
@@ -199,6 +286,10 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 	unsigned usOffset;
 	unsigned blobOffset;
 	unsigned guidOffset;
+
+	/* Sort the FieldDef, MethodDef, and ParamDef tables to put all
+	   of the class members into their final order */
+	SortClasses(image);
 
 	/* Compact the TypeRef and MethodRef tables */
 	if(!(writer->outOfMemory) && !(writer->writeFailed))

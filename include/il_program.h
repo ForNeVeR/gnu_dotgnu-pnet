@@ -703,14 +703,6 @@ void ILClassMarkComplete(ILClass *info);
 int ILClassIsComplete(ILClass *info);
 
 /*
- * Sort the field and method members of a class so that
- * token codes for nested classes come after those for
- * their nesting parents.  The members for a class and all
- * of its nested children are assumed to be contiguous.
- */
-void ILClassSortMembers(ILClass *info);
-
-/*
  * Determine if a class information is a value type.
  */
 int ILClassIsValueType(ILClass *info);

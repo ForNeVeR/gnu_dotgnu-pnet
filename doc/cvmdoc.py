@@ -94,7 +94,7 @@ class opcode:
 			text=""
 			for each2 in each.childNodes:
 				text=text+each2.toxml()
-			self.exceptions.append(each.getAttribute("name"),text)
+			self.exceptions.append((each.getAttribute("name"),text))
 	
 ###########THE HTML WRITE FUNCTION############
 	def write(self,fp,codes):

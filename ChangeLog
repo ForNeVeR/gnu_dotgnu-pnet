@@ -1,4 +1,8 @@
 
+2003-06-14  Gopal.V  <gopalv82@symonds.net>
+	
+	* samples/samples.build: Add Accessibility.dll to the forms apps
+
 2003-06-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/ColorTranslator.cs, System.Drawing/Font.cs,

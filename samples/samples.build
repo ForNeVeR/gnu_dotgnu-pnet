@@ -215,6 +215,7 @@
 
 			<references>
 				<includes if="${CONFIG_REFLECTION}" name="../System.Windows.Forms/System.Windows.Forms.dll"/>
+				<includes if="${CONFIG_REFLECTION}" name="../compat/Accessibility.dll"/>
 				<includes if="${CONFIG_REFLECTION}" name="../System.Drawing/System.Drawing.dll"/>
 				<includes if="${CONFIG_REFLECTION}" name="../System/System.dll"/>
 				<includes if="${CONFIG_REFLECTION}" name="../DotGNU.SSL/DotGNU.SSL.dll"/>
@@ -243,6 +244,7 @@
 
 			<references>
 				<includes if="${CONFIG_REFLECTION}" name="../System.Windows.Forms/System.Windows.Forms.dll"/>
+				<includes if="${CONFIG_REFLECTION}" name="../compat/Accessibility.dll"/>
 				<includes if="${CONFIG_REFLECTION}" name="../System.Drawing/System.Drawing.dll"/>
 				<includes if="${CONFIG_REFLECTION}" name="../System/System.dll"/>
 				<includes if="${CONFIG_REFLECTION}" name="../DotGNU.SSL/DotGNU.SSL.dll"/>

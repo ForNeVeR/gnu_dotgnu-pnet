@@ -807,23 +807,21 @@ static CSSemValue LookupToSem(ILNode *node, const char *name,
 	if(kind == CS_SEMKIND_METHOD_GROUP)
 	{
 		/* This is a method group.  Fix later: this will leak memory! */
-		value.kind = kind;
-		value.type = (ILType *)(results->members);
+		CSSemSetMethodGroup(value, results->members);
 		return value;
 	}
 	else if(kind == CS_SEMKIND_TYPE)
 	{
 		/* This is a type */
-		value.kind = kind;
-		value.type = ILClassToType((ILClass *)(results->members->member));
+		CSSemSetType
+			(value, ILClassToType((ILClass *)(results->members->member)));
 		FreeMembers(results);
 		return value;
 	}
 	else if(kind != CS_SEMKIND_AMBIGUOUS)
 	{
 		/* Type node, field, property, or event */
-		value.kind = kind;
-		value.type = (ILType *)(results->members->member);
+		CSSemSetKind(value, kind, results->members->member);
 		FreeMembers(results);
 		return value;
 	}
@@ -969,8 +967,7 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 			if(child)
 			{
 				CSSemValue value;
-				value.kind = CS_SEMKIND_TYPE_NODE;
-				value.type = (ILType *)child;
+				CSSemSetTypeNode(value, child);
 				return value;
 			}
 			nestedParent = nestedParent->nestedParent;
@@ -1022,13 +1019,11 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 			{
 				if(alias->classInfo)
 				{
-					value.kind = CS_SEMKIND_TYPE;
-					value.type = ILClassToType(alias->classInfo);
+					CSSemSetType(value, ILClassToType(alias->classInfo));
 				}
 				else
 				{
-					value.kind = CS_SEMKIND_NAMESPACE;
-					value.type = (ILType *)(alias->ref);
+					CSSemSetNamespace(value, alias->ref);
 				}
 				return value;
 			}
@@ -1253,13 +1248,13 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 	accessedFrom = ILClassResolve(CSGetAccessScope(genInfo, 1));
 
 	/* Determine how to resolve the member from its semantic kind */
-	switch(value.kind)
+	switch(CSSemGetKind(value))
 	{
 		case CS_SEMKIND_NAMESPACE:
 		{
 			/* Look for a type or sub-namespace with the given name
 			   within the namespace */
-			fullName = (char *)(value.type);
+			fullName = CSSemGetNamespace(value);
 			InitMembers(&results);
 			result = FindTypeInNamespace(genInfo, name, fullName,
 										 accessedFrom, &results);
@@ -1278,7 +1273,8 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 		case CS_SEMKIND_TYPE:
 		{
 			/* Convert the type into a class and perform a lookup */
-			result = MemberLookup(genInfo, ILTypeToClass(genInfo, value.type),
+			result = MemberLookup(genInfo, ILTypeToClass
+										(genInfo, CSSemGetType(value)),
 								  name, accessedFrom, &results, 1);
 			if(result != CS_SEMKIND_VOID)
 			{
@@ -1291,7 +1287,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			}
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not a member of the type `%s'",
-						  name, CSTypeToName(value.type));
+						  name, CSTypeToName(CSSemGetType(value)));
 		}
 		break;
 
@@ -1299,7 +1295,8 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 		case CS_SEMKIND_RVALUE:
 		{
 			/* Perform a member lookup based on the expression's type */
-			result = MemberLookup(genInfo, ILTypeToClass(genInfo, value.type),
+			result = MemberLookup(genInfo, ILTypeToClass
+												(genInfo, CSSemGetType(value)),
 								  name, accessedFrom, &results, 1);
 			if(result != CS_SEMKIND_VOID)
 			{
@@ -1307,7 +1304,8 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 				   Sometimes there can be a property with the same
 				   name as an enumerated type, and we pick up the
 				   property when we are really looking for a constant */
-				if(!ILTypeIsEnum(value.type) || !strcmp(name, "value__"))
+				if(!ILTypeIsEnum(CSSemGetType(value)) ||
+				   !strcmp(name, "value__"))
 				{
 					/* Filter the result to remove static definitions */
 					result = FilterNonStatic(&results, result);
@@ -1319,7 +1317,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			}
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not an instance member of the type `%s'",
-						  name, CSTypeToName(value.type));
+						  name, CSTypeToName(CSSemGetType(value)));
 		}
 		break;
 
@@ -1361,8 +1359,7 @@ CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
 	}
 
 	/* There are no applicable constructors */
-	value.kind = CS_SEMKIND_VOID;
-	value.type = ILType_Invalid;
+	CSSemSetValueKind(value, CS_SEMKIND_VOID, ILType_Invalid);
 	return value;
 }
 
@@ -1381,14 +1378,12 @@ CSSemValue CSResolveIndexers(ILGenInfo *genInfo, ILNode *node,
 	result = IndexerLookup(genInfo, classInfo, accessedFrom, &results);
 	if(result != CS_SEMKIND_VOID)
 	{
-		value.kind = result;
-		value.type = (ILType *)(results.members);
+		CSSemSetKind(value, result, results.members);
 		return value;
 	}
 
 	/* There are no applicable indexers */
-	value.kind = CS_SEMKIND_VOID;
-	value.type = ILType_Invalid;
+	CSSemSetValueKind(value, CS_SEMKIND_VOID, ILType_Invalid);
 	return value;
 }
 

@@ -108,8 +108,7 @@ ILNode_SemAnalysis(ILNode_ArrayType)
 	}
 
 	/* Return the final array type */
-	value.kind = CS_SEMKIND_TYPE;
-	value.type = arrayType;
+	CSSemSetType(value, arrayType);
 	return value;
 }
 
@@ -122,19 +121,17 @@ ILNode_SemAnalysis(ILNode_PtrType)
 
 	/* Perform semantic analysis on the element type */
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
-	if(value.kind != CS_SEMKIND_TYPE)
+	if(!CSSemIsType(value))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid pointer element type");
-		value.kind = CS_SEMKIND_TYPE;
-		value.type = ILType_Int32;
+		CSSemSetType(value, ILType_Int32);
 	}
 
 	/* Create the pointer type */
-	value.kind = CS_SEMKIND_TYPE;
-	value.type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR,
-								 value.type);
-	if(!(value.type))
+	CSSemSetType(value, ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR,
+								 		CSSemGetType(value)));
+	if(!(CSSemGetType(value)))
 	{
 		CCOutOfMemory();
 	}
@@ -147,8 +144,7 @@ ILNode_SemAnalysis(ILNode_PtrType)
 ILNode_SemAnalysis(ILNode_PrimitiveType)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_TYPE;
-	value.type = ILType_FromElement(node->elementType);
+	CSSemSetType(value, ILType_FromElement(node->elementType));
 	return value;
 }
 
@@ -158,9 +154,8 @@ ILNode_SemAnalysis(ILNode_PrimitiveType)
 ILNode_SemAnalysis(ILNode_ObjectType)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_TYPE;
-	value.type = ILFindSystemType(info, "Object");
-	if(!(value.type))
+	CSSemSetType(value, ILFindSystemType(info, "Object"));
+	if(!(CSSemGetType(value)))
 	{
 		CCOutOfMemory();
 	}
@@ -173,9 +168,8 @@ ILNode_SemAnalysis(ILNode_ObjectType)
 ILNode_SemAnalysis(ILNode_StringType)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_TYPE;
-	value.type = ILFindSystemType(info, "String");
-	if(!(value.type))
+	CSSemSetType(value, ILFindSystemType(info, "String"));
+	if(!(CSSemGetType(value)))
 	{
 		CCOutOfMemory();
 	}
@@ -188,9 +182,8 @@ ILNode_SemAnalysis(ILNode_StringType)
 ILNode_SemAnalysis(ILNode_DecimalType)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_TYPE;
-	value.type = ILFindSystemType(info, "Decimal");
-	if(!(value.type))
+	CSSemSetType(value, ILFindSystemType(info, "Decimal"));
+	if(!(CSSemGetType(value)))
 	{
 		CCOutOfMemory();
 	}
@@ -264,8 +257,7 @@ ILNode_SemAnalysis(ILNode_LocalVariableType)
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`void' not permitted as a local variable type");
-			value.kind = CS_SEMKIND_TYPE;
-			value.type = ILType_Int32;
+			CSSemSetType(value, ILType_Int32);
 			return value;
 		}
 	}
@@ -318,8 +310,7 @@ ILNode_SemAnalysis(ILNode_LocalVariableType)
 			++posn;
 		}
 	}
-	value.kind = CS_SEMKIND_TYPE;
-	value.type = type;
+	CSSemSetType(value, type);
 	return value;
 }
 

@@ -394,7 +394,7 @@ cleanup:
 			while((arg = ILNode_ListIter_Next(&iter3)) != 0)
 			{
 				if(CSSemExpectValue(arg, info, &arg, &value) &&
-				   ILTypeIsStringClass(value.type))
+				   ILTypeIsStringClass(CSSemGetType(value)))
 				{
 					if(ILNode_EvalConst(arg, info, &evalValue) &&
 					   evalValue.valueType == ILMachineType_String)

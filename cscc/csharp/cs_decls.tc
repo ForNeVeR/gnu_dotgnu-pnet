@@ -144,8 +144,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	}
 	else
 	{
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILType_Int32;
+		CSSemSetRValue(value, ILType_Int32);
 	}
 	if(node->classInfo && !ILClass_IsInterface(node->classInfo))
 	{
@@ -185,8 +184,7 @@ ILNode_SemAnalysis(ILNode_ScopeChange)
 	}
 	else
 	{
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILType_Int32;
+		CSSemSetRValue(value, ILType_Int32);
 	}
 	return value;
 }
@@ -601,7 +599,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 		/* Perform semantic analysis on the initializer value */
 		value = ILNode_SemAnalysis(node->initializer, info,
 								   &(node->initializer));
-		if(!CSIsSemValue(value.kind))
+		if(!CSSemIsValue(value))
 		{
 			CCErrorOnLine(yygetfilename(node->initializer),
 						  yygetlinenum(node->initializer),
@@ -611,13 +609,13 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 
 		/* Make sure that the value is compatible with the field's type */
 		if(!ILCoerce(info, node->initializer, &(node->initializer),
-					 value.type, ILField_Type(node->fieldInfo)))
+					 CSSemGetType(value), ILField_Type(node->fieldInfo)))
 		{
 			CCErrorOnLine(yygetfilename(node->initializer),
 						  yygetlinenum(node->initializer),
 			  			  "incompatible types in initialization: "
 			  					"no conversion from `%s' to `%s'",
-			  			  CSTypeToName(value.type),
+			  			  CSTypeToName(CSSemGetType(value)),
 						  CSTypeToName(ILField_Type(node->fieldInfo)));
 			goto done;
 		}
@@ -986,7 +984,7 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 	{
 		/* An enumerated value has been supplied */
 		value = ILNode_SemAnalysis(node->value, info, &(node->value));
-		if(!CSIsSemValue(value.kind))
+		if(!CSSemIsValue(value))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "invalid enumerated value");

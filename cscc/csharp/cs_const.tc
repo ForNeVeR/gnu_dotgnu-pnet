@@ -24,8 +24,7 @@
 ILNode_SemAnalysis(ILNode_Null)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Null;
+	CSSemSetRValue(value, ILType_Null);
 	return value;
 }
 
@@ -36,8 +35,7 @@ ILNode_SemAnalysis(ILNode_NullPtr)
 {
 	/* Will never be encountered in C# code, so do the same as "null" */
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Null;
+	CSSemSetRValue(value, ILType_Null);
 	return value;
 }
 
@@ -48,8 +46,7 @@ ILNode_SemAnalysis(ILNode_True),
 ILNode_SemAnalysis(ILNode_False)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Boolean;
+	CSSemSetRValue(value, ILType_Boolean);
 	return value;
 }
 
@@ -59,92 +56,81 @@ ILNode_SemAnalysis(ILNode_False)
 ILNode_SemAnalysis(ILNode_Int8)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int8;
+	CSSemSetRValue(value, ILType_Int8);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_UInt8)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_UInt8;
+	CSSemSetRValue(value, ILType_UInt8);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Int16)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int16;
+	CSSemSetRValue(value, ILType_Int16);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_UInt16)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_UInt16;
+	CSSemSetRValue(value, ILType_UInt16);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Char)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Char;
+	CSSemSetRValue(value, ILType_Char);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Int32)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	CSSemSetRValue(value, ILType_Int32);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_UInt32)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_UInt32;
+	CSSemSetRValue(value, ILType_UInt32);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Int)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
 	if(ILNode_GetType(node, info) == ILMachineType_Int64)
 	{
-		value.type = ILType_Int64;
+		CSSemSetRValue(value, ILType_Int64);
 	}
 	else
 	{
-		value.type = ILType_Int;
+		CSSemSetRValue(value, ILType_Int);
 	}
 	return value;
 }
 ILNode_SemAnalysis(ILNode_UInt)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
 	if(ILNode_GetType(node, info) == ILMachineType_UInt64)
 	{
-		value.type = ILType_UInt64;
+		CSSemSetRValue(value, ILType_UInt64);
 	}
 	else
 	{
-		value.type = ILType_UInt;
+		CSSemSetRValue(value, ILType_UInt);
 	}
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Int64)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int64;
+	CSSemSetRValue(value, ILType_Int64);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_UInt64)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_UInt64;
+	CSSemSetRValue(value, ILType_UInt64);
 	return value;
 }
 
@@ -154,22 +140,19 @@ ILNode_SemAnalysis(ILNode_UInt64)
 ILNode_SemAnalysis(ILNode_Float32)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Float32;
+	CSSemSetRValue(value, ILType_Float32);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Float64)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Float64;
+	CSSemSetRValue(value, ILType_Float64);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Float)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Float;
+	CSSemSetRValue(value, ILType_Float);
 	return value;
 }
 
@@ -179,8 +162,7 @@ ILNode_SemAnalysis(ILNode_Float)
 ILNode_SemAnalysis(ILNode_Decimal)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILFindSystemType(info, "Decimal");
+	CSSemSetRValue(value, ILFindSystemType(info, "Decimal"));
 	return value;
 }
 
@@ -190,8 +172,7 @@ ILNode_SemAnalysis(ILNode_Decimal)
 ILNode_SemAnalysis(ILNode_String)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILFindSystemType(info, "String");
+	CSSemSetRValue(value, ILFindSystemType(info, "String"));
 	return value;
 }
 

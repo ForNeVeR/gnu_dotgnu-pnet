@@ -91,11 +91,6 @@ void CSSemProgramItem(ILGenInfo *info, ILProgramItem *item);
 
 #include <codegen/cg_nodemap.h>
 
-/*
- * Default value that is returned from "ILNode_SemAnalysis".
- */
-CSSemValue CSSemValueDefault = {CS_SEMKIND_VOID, 0};
-
 %}
 
 %end %{
@@ -122,15 +117,18 @@ ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
 		info->inSemType = info->typeGather;
 		value = ILNode_SemAnalysis(type, info, parent);
 		info->inSemType = save;
-		if(value.kind != CS_SEMKIND_TYPE)
+		if(!CSSemIsType(value))
 		{
-			CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
-						  "invalid type specification");
+			if(!CSSemIsError(value))
+			{
+				CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
+							  "invalid type specification");
+			}
 			return ILType_Int32;
 		}
 		else
 		{
-			return value.type;
+			return CSSemGetType(value);
 		}
 	}
 	else
@@ -148,15 +146,15 @@ int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,
 	info->inSemType = info->typeGather;
 	value = ILNode_SemAnalysis(type, info, parent);
 	info->inSemType = save;
-	if(value.kind == CS_SEMKIND_TYPE)
+	if(CSSemIsType(value))
 	{
 		*baseNode = 0;
-		*baseClass = ILTypeToClass(info, value.type);
+		*baseClass = ILTypeToClass(info, CSSemGetType(value));
 		return (*baseClass != 0);
 	}
-	else if(value.kind == CS_SEMKIND_TYPE_NODE)
+	else if(CSSemIsTypeNode(value))
 	{
-		*baseNode = (ILNode *)(value.type);
+		*baseNode = CSSemGetTypeNode(value);
 		*baseClass = 0;
 		return 1;
 	}
@@ -170,8 +168,7 @@ int CSSemExpectValue(ILNode *node, ILGenInfo *info,
 					 ILNode **parent, CSSemValue *value)
 {
 	*value = ILNode_SemAnalysis(node, info, parent);
-	return (value->kind == CS_SEMKIND_RVALUE ||
-			value->kind == CS_SEMKIND_LVALUE);
+	return CSSemIsValue(*value);
 }
 
 void CSSemProgramItem(ILGenInfo *info, ILProgramItem *item)

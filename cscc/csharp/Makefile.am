@@ -24,6 +24,7 @@ libILCSharp_a_SOURCES  = $(TREECC_SRCOUT) \
 				         cs_lookup.c \
 				         cs_modifiers.c \
 				         cs_scanner.l \
+						 cs_semvalue.c \
 				         cs_valdoc.c
 
 YFLAGS = -d

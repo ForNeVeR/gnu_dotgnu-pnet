@@ -3,3 +3,15 @@
 
 	* ChangeLog, doc/ChangeLog-3: move the contents of "ChangeLog" to
 	"doc/ChangeLog-3", because it was starting to get too big to manage.
+
+	* cscc/csharp/Makefile.am, cscc/csharp/cs_attrs.c,
+	cscc/csharp/cs_cast.tc, cscc/csharp/cs_const.tc,
+	cscc/csharp/cs_decls.tc, cscc/csharp/cs_defs.tc,
+	cscc/csharp/cs_invoke.tc, cscc/csharp/cs_lookup.c,
+	cscc/csharp/cs_lvalue.tc, cscc/csharp/cs_misc.tc,
+	cscc/csharp/cs_oper.tc, cscc/csharp/cs_semantics.tc,
+	cscc/csharp/cs_semvalue.c, cscc/csharp/cs_semvalue.h,
+	cscc/csharp/cs_stmt.tc, cscc/csharp/cs_types.tc: change the
+	usage of the "CSSemValue" type so that it is accessed via macros
+	instead of direct fields; this will make it easier to change the
+	representation in the future.

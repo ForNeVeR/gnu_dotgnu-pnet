@@ -45,9 +45,7 @@ static void StmtSem(ILNode *node, ILGenInfo *info, ILNode **parent)
 	if(node)
 	{
 		value = ILNode_SemAnalysis(node, info, parent);
-		if(value.kind != CS_SEMKIND_VOID &&
-		   value.kind != CS_SEMKIND_LVALUE &&
-		   value.kind != CS_SEMKIND_RVALUE)
+		if(!CSSemIsVoid(value) && !CSSemIsValue(value))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "invalid statement");
@@ -134,10 +132,7 @@ static int StmtContextOK(ILGenInfo *info, int context, int stopContext)
  */
 ILNode_SemAnalysis(ILNode_Empty)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -149,7 +144,6 @@ ILNode_SemAnalysis(ILNode_List)
 	ILNode_ListIter iter;
 	ILNode *child;
 	ILNode *replace;
-	CSSemValue value;
 	ILNode_ListIter_Init(&iter, node);
 	while((child = ILNode_ListIter_Next(&iter)) != 0)
 	{
@@ -160,9 +154,7 @@ ILNode_SemAnalysis(ILNode_List)
 			*(iter.last) = replace;
 		}
 	}
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -174,13 +166,10 @@ ILNode_SemAnalysis(ILNode_List)
  */
 ILNode_SemAnalysis(ILNode_If)
 {
-	CSSemValue value;
 	ILNode_SemAnalysis(node->expr, info, &(node->expr));
 	StmtSem(node->thenClause, info, &(node->thenClause));
 	StmtSem(node->elseClause, info, &(node->elseClause));
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -192,14 +181,11 @@ ILNode_SemAnalysis(ILNode_If)
  */
 ILNode_SemAnalysis(ILNode_While)
 {
-	CSSemValue value;
 	ILNode_SemAnalysis(node->cond, info, &(node->cond));
 	PushStmtContext(info, CS_STMT_LOOP);
 	StmtSem(node->stmt, info, &(node->stmt));
 	PopStmtContext(info);
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -211,14 +197,11 @@ ILNode_SemAnalysis(ILNode_While)
  */
 ILNode_SemAnalysis(ILNode_Do)
 {
-	CSSemValue value;
 	PushStmtContext(info, CS_STMT_LOOP);
 	StmtSem(node->stmt, info, &(node->stmt));
 	PopStmtContext(info);
 	ILNode_SemAnalysis(node->cond, info, &(node->cond));
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -230,16 +213,13 @@ ILNode_SemAnalysis(ILNode_Do)
  */
 ILNode_SemAnalysis(ILNode_For)
 {
-	CSSemValue value;
 	StmtSem(node->init, info, &(node->init));
 	ILNode_SemAnalysis(node->cond, info, &(node->cond));
 	StmtSem(node->incr, info, &(node->incr));
 	PushStmtContext(info, CS_STMT_LOOP);
 	StmtSem(node->stmt, info, &(node->stmt));
 	PopStmtContext(info);
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -306,7 +286,7 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	}
 	else
 	{
-		node->arrayType = value.type;
+		node->arrayType = CSSemGetType(value);
 	}
 
 	/* Perform semantic analysis on the body of the "foreach" statement */
@@ -450,10 +430,7 @@ ILNode_SemAnalysis(ILNode_ForeachCollection)
 {
 	/* We don't need to do anything here, as this node type is
 	   synthesized by the "ILNode_Foreach" processing */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 %{
@@ -685,12 +662,12 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 
 				/* Coerce the case expression to the governing type */
 				if(!ILCoerce(info, caseLabel->expr, &(caseLabel->expr),
-							 value.type, switchType))
+							 CSSemGetType(value), switchType))
 				{
 					CCErrorOnLine(yygetfilename(caseLabel->expr),
 								  yygetlinenum(caseLabel->expr),
 								  "no conversion from `%s' to `%s'",
-								  CSTypeToName(value.type),
+								  CSTypeToName(CSSemGetType(value)),
 								  CSTypeToName(switchType));
 					continue;
 				}
@@ -864,7 +841,7 @@ ILNode_SemAnalysis(ILNode_Switch)
 	}
 	else
 	{
-		actualType = value.type;
+		actualType = CSSemGetType(value);
 	}
 
 	/* Determine the governing type for the switch */
@@ -942,9 +919,7 @@ ILNode_SemAnalysis(ILNode_Switch)
 	PopStmtContext(info);
 
 	/* Done */
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -966,10 +941,7 @@ ILNode_SemAnalysis(ILNode_DefaultLabel)
 ILNode_SemAnalysis(ILNode_Goto)
 {
 	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -978,10 +950,7 @@ ILNode_SemAnalysis(ILNode_Goto)
 ILNode_SemAnalysis(ILNode_GotoLabel)
 {
 	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -990,10 +959,7 @@ ILNode_SemAnalysis(ILNode_GotoLabel)
 ILNode_SemAnalysis(ILNode_GotoCase)
 {
 	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1002,10 +968,7 @@ ILNode_SemAnalysis(ILNode_GotoCase)
 ILNode_SemAnalysis(ILNode_GotoDefault)
 {
 	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1014,7 +977,6 @@ ILNode_SemAnalysis(ILNode_GotoDefault)
 ILNode_SemAnalysis(ILNode_Break),
 ILNode_SemAnalysis(ILNode_LabelledBreak)	/* TODO */
 {
-	CSSemValue value;
 	PushStmtContext(info, CS_STMT_SWITCH);
 
 	if(!StmtContextOK(info, CS_STMT_LOOP | CS_STMT_SWITCH, CS_STMT_FINALLY))
@@ -1030,9 +992,7 @@ ILNode_SemAnalysis(ILNode_LabelledBreak)	/* TODO */
 						  "`break' used outside loop or switch");
 		}
 	}
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1041,7 +1001,6 @@ ILNode_SemAnalysis(ILNode_LabelledBreak)	/* TODO */
 ILNode_SemAnalysis(ILNode_Continue),
 ILNode_SemAnalysis(ILNode_LabelledContinue)	/* TODO */
 {
-	CSSemValue value;
 	if(!StmtContextOK(info, CS_STMT_LOOP, CS_STMT_FINALLY))
 	{
 		if(StmtContextOK(info, CS_STMT_FINALLY, 0))
@@ -1055,9 +1014,7 @@ ILNode_SemAnalysis(ILNode_LabelledContinue)	/* TODO */
 						  "`continue' used outside loop");
 		}
 	}
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1108,12 +1065,14 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
 	else
 	{
 		/* Coerce to the return type */
-		if(!ILCoerce(info, node->expr, &(node->expr), value.type, returnType))
+		if(!ILCoerce(info, node->expr, &(node->expr),
+					 CSSemGetType(value), returnType))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  		  "incompatible types in return: "
 						  		"no conversion from `%s' to `%s'",
-						  CSTypeToName(value.type), CSTypeToName(returnType));
+						  CSTypeToName(CSSemGetType(value)),
+						  			   CSTypeToName(returnType));
 		}
 	}
 
@@ -1133,15 +1092,12 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
  */
 ILNode_SemAnalysis(ILNode_Throw)
 {
-	CSSemValue value;
 	if(!StmtContextOK(info, CS_STMT_CATCH, CS_STMT_FINALLY | CS_STMT_TRY))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 	  		  "`throw' with no value must be used inside a `catch' clause");
 	}
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1157,23 +1113,22 @@ ILNode_SemAnalysis(ILNode_ThrowExpr)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 	  		  		  "invalid throw expression");
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILType_Null;
+		CSSemSetRValue(value, ILType_Null);
 	}
 
 	/* Attempt to coerce the value to "System.Exception" */
 	exceptionClass = ILFindSystemType(info, "Exception");
-	if(!ILCoerce(info, node->expr, &(node->expr), value.type, exceptionClass))
+	if(!ILCoerce(info, node->expr, &(node->expr),
+				 CSSemGetType(value), exceptionClass))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 	  		  		  "no conversion from `%s' to `%s'",
-					  CSTypeToName(value.type), CSTypeToName(exceptionClass));
+					  CSTypeToName(CSSemGetType(value)),
+					  CSTypeToName(exceptionClass));
 	}
 
 	/* Done */
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1181,8 +1136,6 @@ ILNode_SemAnalysis(ILNode_ThrowExpr)
  */
 ILNode_SemAnalysis(ILNode_Try)
 {
-	CSSemValue value;
-
 	/* Enter a "try" context */
 	PushStmtContext(info, CS_STMT_TRY);
 
@@ -1199,9 +1152,7 @@ ILNode_SemAnalysis(ILNode_Try)
 	PopStmtContext(info);
 
 	/* Done */
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1209,7 +1160,6 @@ ILNode_SemAnalysis(ILNode_Try)
  */
 ILNode_SemAnalysis(ILNode_CatchClause)
 {
-	CSSemValue value;
 	ILType *exceptionType = ILFindSystemType(info, "Exception");
 	ILType *thrownType;
 	ILScope *newScope;
@@ -1276,9 +1226,7 @@ ILNode_SemAnalysis(ILNode_CatchClause)
 	PopStmtContext(info);
 
 	/* Done */
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1286,8 +1234,6 @@ ILNode_SemAnalysis(ILNode_CatchClause)
  */
 ILNode_SemAnalysis(ILNode_FinallyClause)
 {
-	CSSemValue value;
-
 	/* Enter a "finally" context */
 	PushStmtContext(info, CS_STMT_FINALLY);
 
@@ -1298,9 +1244,7 @@ ILNode_SemAnalysis(ILNode_FinallyClause)
 	PopStmtContext(info);
 
 	/* Done */
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1316,16 +1260,17 @@ ILNode_SemAnalysis(ILNode_Lock)
 	{
 		CCErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
 					  "invalid lock expression");
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = objectType;
+		CSSemSetRValue(value, objectType);
 	}
 
 	/* Coerce the lock expression to "System.Object" */
-	if(!ILCoerce(info, node->expr, &(node->expr), value.type, objectType))
+	if(!ILCoerce(info, node->expr, &(node->expr),
+				 CSSemGetType(value), objectType))
 	{
 		CCErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
 					  "no conversion from `%s' to `%s'",
-					  CSTypeToName(value.type), CSTypeToName(objectType));
+					  CSTypeToName(CSSemGetType(value)),
+					  CSTypeToName(objectType));
 	}
 
 	/* Enter a "try" context */
@@ -1338,9 +1283,7 @@ ILNode_SemAnalysis(ILNode_Lock)
 	PopStmtContext(info);
 
 	/* Done */
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1349,10 +1292,7 @@ ILNode_SemAnalysis(ILNode_Lock)
 ILNode_SemAnalysis(ILNode_Using)
 {
 	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1384,13 +1324,10 @@ ILNode_EndsInReturnImpl(ILNode_Using)
  */
 ILNode_SemAnalysis(ILNode_Unsafe)
 {
-	CSSemValue value;
 	CCUnsafeEnter(info, (ILNode *)node, "unsafe statement");
 	StmtSem(node->stmt, info, &(node->stmt));
 	CCUnsafeLeave(info);
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1423,16 +1360,13 @@ ILNode_EndsInReturnImpl(ILNode_Unsafe)
 ILNode_SemAnalysis(ILNode_Fixed)
 {
 	/* TODO */
-	CSSemValue value;
 	CCUnsafeMessage(info, (ILNode *)node, "unsafe `fixed' statement");
 	if(info->outputIsJava)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`fixed' disallowed when compiling to Java bytecode");
 	}
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1464,11 +1398,7 @@ ILNode_EndsInReturnImpl(ILNode_Fixed)
  */
 ILNode_SemAnalysis(ILNode_FixedDeclList)
 {
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1477,10 +1407,7 @@ ILNode_SemAnalysis(ILNode_FixedDeclList)
 ILNode_SemAnalysis(ILNode_FixAddress)
 {
 	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1489,10 +1416,7 @@ ILNode_SemAnalysis(ILNode_FixAddress)
 ILNode_SemAnalysis(ILNode_FixExpr)
 {
 	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1597,7 +1521,7 @@ ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
 		/* Perform semantic analysis on the initializer value */
 		value = ILNode_SemAnalysis(decl->initializer, info,
 								   &(decl->initializer));
-		if(!CSIsSemValue(value.kind))
+		if(!CSSemIsValue(value))
 		{
 			CCErrorOnLine(yygetfilename(decl->initializer),
 						  yygetlinenum(decl->initializer),
@@ -1607,13 +1531,13 @@ ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
 
 		/* Make sure that the value is compatible with the field's type */
 		if(!ILCoerce(info, decl->initializer, &(decl->initializer),
-					 value.type,type))
+					 CSSemGetType(value), type))
 		{
 			CCErrorOnLine(yygetfilename(decl->initializer),
 						  yygetlinenum(decl->initializer),
 			  			  "incompatible types in initialization: "
 			  					"no conversion from `%s' to `%s'",
-			  			  CSTypeToName(value.type),
+			  			  CSTypeToName(CSSemGetType(value)),
 						  CSTypeToName(type));
 			continue;
 		}

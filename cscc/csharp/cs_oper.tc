@@ -77,30 +77,31 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 
 	/* The two arguments must be values */
-	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	if(!CSSemIsValue(value1) || !CSSemIsValue(value2))
 	{
 		goto error;
 	}
 
 	/* Look for a builtin operator */
-	oper = ILFindBinaryOperator(table, value1.type, value2.type, &resultType);
+	oper = ILFindBinaryOperator(table, CSSemGetType(value1),
+								CSSemGetType(value2), &resultType);
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
-		value1.kind = CS_SEMKIND_RVALUE;
 		if(resultType)
 		{
-			value1.type = resultType;
+			CSSemSetRValue(value1, resultType);
 		}
 		else
 		{
-			value1.type = ILFindSystemType(info, "Decimal");
+			CSSemSetRValue(value1, ILFindSystemType(info, "Decimal"));
 		}
 		return value1;
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserBinaryOperator(info, name, value1.type, value2.type);
+	method = FindUserBinaryOperator(info, name, CSSemGetType(value1),
+									CSSemGetType(value2));
 	if(method)
 	{
 		method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
@@ -114,8 +115,7 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 						 ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = returnType;
+		CSSemSetRValue(value1, returnType);
 		return value1;
 	}
 
@@ -123,8 +123,7 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `%s'", errorName);
-	value1.kind = CS_SEMKIND_RVALUE;
-	value1.type = ILType_Int32;
+	CSSemSetRValue(value1, ILType_Int32);
 	return value1;
 }
 
@@ -167,30 +166,29 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 
 	/* The argument must be a value */
-	if(!CSIsSemValue(value.kind))
+	if(!CSSemIsValue(value))
 	{
 		goto error;
 	}
 
 	/* Look for a builtin operator */
-	oper = ILFindUnaryOperator(table, value.type, &resultType);
+	oper = ILFindUnaryOperator(table, CSSemGetType(value), &resultType);
 	if(oper)
 	{
 		ILApplyUnaryOperator(info, (ILNode *)node, parent, oper);
-		value.kind = CS_SEMKIND_RVALUE;
 		if(resultType)
 		{
-			value.type = resultType;
+			CSSemSetRValue(value, resultType);
 		}
 		else
 		{
-			value.type = ILFindSystemType(info, "Decimal");
+			CSSemSetRValue(value, ILFindSystemType(info, "Decimal"));
 		}
 		return value;
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserUnaryOperator(info, name, value.type);
+	method = FindUserUnaryOperator(info, name, CSSemGetType(value));
 	if(method)
 	{
 		method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
@@ -203,8 +201,7 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 						(node->expr, ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = returnType;
+		CSSemSetRValue(value, returnType);
 		return value;
 	}
 
@@ -212,8 +209,7 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to unary `%s'", errorName);
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	CSSemSetRValue(value, ILType_Int32);
 	return value;
 }
 
@@ -236,32 +232,33 @@ ILNode_SemAnalysis(ILNode_Add)
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 
 	/* The two arguments must be values */
-	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	if(!CSSemIsValue(value1) || !CSSemIsValue(value2))
 	{
 		goto error;
 	}
 
 	/* Look for a builtin operator */
 	oper = ILFindBinaryOperator
-				(ILOp_Add, value1.type, value2.type, &resultType);
+				(ILOp_Add, CSSemGetType(value1),
+				 CSSemGetType(value2), &resultType);
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
-		value1.kind = CS_SEMKIND_RVALUE;
 		if(resultType)
 		{
-			value1.type = resultType;
+			CSSemSetRValue(value1, resultType);
 		}
 		else
 		{
-			value1.type = ILFindSystemType(info, "Decimal");
+			CSSemSetRValue(value1, ILFindSystemType(info, "Decimal"));
 		}
 		return value1;
 	}
 
 	/* Look for a user-specified operator */
 	method = FindUserBinaryOperator(info, "op_Addition",
-									value1.type, value2.type);
+									CSSemGetType(value1),
+									CSSemGetType(value2));
 	if(method)
 	{
 		returnType = ILTypeGetReturn(ILMethod_Signature(method));
@@ -270,41 +267,41 @@ ILNode_SemAnalysis(ILNode_Add)
 						 ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = returnType;
+		CSSemSetRValue(value1, returnType);
 		return value1;
 	}
 
 	/* If one of the arguments is a string, then perform concatenation */
-	if(ILTypeIsStringClass(value1.type) || ILTypeIsStringClass(value2.type))
+	if(ILTypeIsStringClass(CSSemGetType(value1)) ||
+	   ILTypeIsStringClass(CSSemGetType(value2)))
 	{
-		if(!ILTypeIsStringClass(value1.type))
+		if(!ILTypeIsStringClass(CSSemGetType(value1)))
 		{
 			/* Convert the first argument into "ObjectRef" */
-			ILCast(info, node->expr1, &(node->expr1), value1.type,
+			ILCast(info, node->expr1, &(node->expr1), CSSemGetType(value1),
 				   ILFindSystemType(info, "Object"));
 		}
-		if(!ILTypeIsStringClass(value2.type))
+		if(!ILTypeIsStringClass(CSSemGetType(value2)))
 		{
 			/* Convert the second argument into "ObjectRef" */
-			ILCast(info, node->expr2, &(node->expr2), value2.type,
+			ILCast(info, node->expr2, &(node->expr2), CSSemGetType(value2),
 				   ILFindSystemType(info, "Object"));
 		}
 		*parent = ILNode_Concat_create(node->expr1, node->expr2);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = ILFindSystemType(info, "String");
+		CSSemSetRValue(value1, ILFindSystemType(info, "String"));
 		return value1;
 	}
 
 	/* If both arguments are delegates of the same type,
 	   then perform delegate combination */
-	if(ILTypeIsDelegate(value1.type) && ILTypeIsDelegate(value2.type) &&
-	   ILTypeIdentical(value1.type, value2.type))
+	if(ILTypeIsDelegate(CSSemGetType(value1)) &&
+       ILTypeIsDelegate(CSSemGetType(value2)) &&
+	   ILTypeIdentical(CSSemGetType(value1), CSSemGetType(value2)))
 	{
 		*parent = ILNode_DelegateAdd_create
-			(node->expr1, node->expr2, ILType_ToClass(value1.type));
+			(node->expr1, node->expr2, ILType_ToClass(CSSemGetType(value1)));
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 		return value1;
@@ -314,8 +311,7 @@ ILNode_SemAnalysis(ILNode_Add)
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `+'");
-	value1.kind = CS_SEMKIND_RVALUE;
-	value1.type = ILType_Int32;
+	CSSemSetRValue(value1, ILType_Int32);
 	return value1;
 }
 
@@ -336,32 +332,33 @@ ILNode_SemAnalysis(ILNode_Sub)
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 
 	/* The two arguments must be values */
-	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	if(!CSSemIsValue(value1) || !CSSemIsValue(value2))
 	{
 		goto error;
 	}
 
 	/* Look for a builtin operator */
 	oper = ILFindBinaryOperator
-				(ILOp_Sub, value1.type, value2.type, &resultType);
+				(ILOp_Sub, CSSemGetType(value1),
+				 CSSemGetType(value2), &resultType);
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
-		value1.kind = CS_SEMKIND_RVALUE;
 		if(resultType)
 		{
-			value1.type = resultType;
+			CSSemSetRValue(value1, resultType);
 		}
 		else
 		{
-			value1.type = ILFindSystemType(info, "Decimal");
+			CSSemSetRValue(value1, ILFindSystemType(info, "Decimal"));
 		}
 		return value1;
 	}
 
 	/* Look for a user-specified operator */
 	method = FindUserBinaryOperator(info, "op_Subtraction",
-									value1.type, value2.type);
+									CSSemGetType(value1),
+									CSSemGetType(value2));
 	if(method)
 	{
 		returnType = ILTypeGetReturn(ILMethod_Signature(method));
@@ -370,18 +367,18 @@ ILNode_SemAnalysis(ILNode_Sub)
 						 ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = returnType;
+		CSSemSetRValue(value1, returnType);
 		return value1;
 	}
 
 	/* If both arguments are delegates of the same type,
 	   then perform delegate removal */
-	if(ILTypeIsDelegate(value1.type) && ILTypeIsDelegate(value2.type) &&
-	   ILTypeIdentical(value1.type, value2.type))
+	if(ILTypeIsDelegate(CSSemGetType(value1)) &&
+	   ILTypeIsDelegate(CSSemGetType(value2)) &&
+	   ILTypeIdentical(CSSemGetType(value1), CSSemGetType(value2)))
 	{
 		*parent = ILNode_DelegateSub_create
-			(node->expr1, node->expr2, ILType_ToClass(value1.type));
+			(node->expr1, node->expr2, ILType_ToClass(CSSemGetType(value1)));
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 		return value1;
@@ -391,8 +388,7 @@ ILNode_SemAnalysis(ILNode_Sub)
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `-'");
-	value1.kind = CS_SEMKIND_RVALUE;
-	value1.type = ILType_Int32;
+	CSSemSetRValue(value1, ILType_Int32);
 	return value1;
 }
 
@@ -535,16 +531,16 @@ static void CoerceArrayInit(ILGenInfo *info, ILNode *expr,
 			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
 						  _("invalid array initializer element"));
 		}
-		else if(!ILCanCoerceNode(info, expr, value.type, type))
+		else if(!ILCanCoerceNode(info, expr, CSSemGetType(value), type))
 		{
 			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
 			  _("incompatible types in initializer: no conversion "
 			  		"from `%s' to `%s'"),
-			  CSTypeToName(value.type), CSTypeToName(type));
+			  CSTypeToName(CSSemGetType(value)), CSTypeToName(type));
 		}
 		else
 		{
-			ILCoerce(info, expr, parent, value.type, type);
+			ILCoerce(info, expr, parent, CSSemGetType(value), type);
 		}
 	}
 }
@@ -561,15 +557,13 @@ ILNode_SemAnalysis(ILNode_Assign)
 
 	/* Perform semantic analysis on the lvalue */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
-	if(value1.kind != CS_SEMKIND_LVALUE &&
-	   value1.kind != CS_SEMKIND_SVALUE)
+	if(!CSSemIsLValue(value1) && !CSSemIsSValue(value1))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid lvalue in assignment");
-		if(value1.kind != CS_SEMKIND_RVALUE)
+		if(!CSSemIsRValue(value1))
 		{
-			value1.kind = CS_SEMKIND_RVALUE;
-			value1.type = ILType_Int32;
+			CSSemSetRValue(value1, ILType_Int32);
 		}
 		return value1;
 	}
@@ -578,46 +572,49 @@ ILNode_SemAnalysis(ILNode_Assign)
 	if(yyisa(node->expr2, ILNode_ArrayInit))
 	{
 		/* Make sure that the destination type is an array */
-		if(!ILType_IsArray(value1.type))
+		if(!ILType_IsArray(CSSemGetType(value1)))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "array initializer assigned to non-array destination");
-			value1.kind = CS_SEMKIND_RVALUE;
+			CSSemSetRValue(value1, CSSemGetType(value1));
 			return value1;
 		}
 
 		/* Check the shape of the array initializer */
-		if(!ILArrayInitShapeOK(info, node->expr2, value1.type))
+		if(!ILArrayInitShapeOK(info, node->expr2, CSSemGetType(value1)))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "incorrect pattern of elements in array initializer");
-			value1.kind = CS_SEMKIND_RVALUE;
+			CSSemSetRValue(value1, CSSemGetType(value1));
 			return value1;
 		}
 
 		/* Coerce all initializer members to the element type */
 		CoerceArrayInit(info, node->expr2, &(node->expr2),
-					    ILTypeGetElemType(value1.type));
-		value1.kind = CS_SEMKIND_RVALUE;
+					    ILTypeGetElemType(CSSemGetType(value1)));
+		CSSemSetRValue(value1, CSSemGetType(value1));
 		return value1;
 	}
 
 	/* Perform semantic analysis and coercion on the rvalue */
 	if(!CSSemExpectValue(node->expr2, info, &(node->expr2), &value2) ||
-	   !ILCanCoerceNode(info, node->expr2, value2.type, value1.type))
+	   !ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),
+	   					CSSemGetType(value1)))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  "incompatible types in assignment: no conversion from `%s' to `%s'",
-		  CSTypeToName(value2.type), CSTypeToName(value1.type));
-		value1.kind = CS_SEMKIND_RVALUE;
+		  CSTypeToName(CSSemGetType(value2)),
+		  CSTypeToName(CSSemGetType(value1)));
+		CSSemSetRValue(value1, CSSemGetType(value1));
 		return value1;
 	}
 
 	/* Insert coercion nodes to convert the rvalue appropriately */
-	ILCoerce(info, node->expr2, &(node->expr2), value2.type, value1.type);
+	ILCoerce(info, node->expr2, &(node->expr2),
+			 CSSemGetType(value2), CSSemGetType(value1));
 
 	/* Convert value1 into an rvalue and return its type */
-	value1.kind = CS_SEMKIND_RVALUE;
+	CSSemSetRValue(value1, CSSemGetType(value1));
 	return value1;
 }
 
@@ -643,17 +640,17 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 
 	/* The first argument must be an event or an lvalue */
-	if(value1.kind == CS_SEMKIND_EVENT &&
+	if(CSSemIsEvent(value1) &&
 	   (yyisa(node, ILNode_Add) || yyisa(node, ILNode_Sub)))
 	{
 		/* Extract the add or remove method from the event */
 		if(yyisa(node, ILNode_Add))
 		{
-			method = ILEvent_AddOn((ILEvent *)(value1.type));
+			method = ILEvent_AddOn(CSSemGetEvent(value1));
 		}
 		else
 		{
-			method = ILEvent_RemoveOn((ILEvent *)(value1.type));
+			method = ILEvent_RemoveOn(CSSemGetEvent(value1));
 		}
 
 		/* Create the new node and replace "assignParent" with it */
@@ -672,43 +669,43 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		   is treated as a statement rather than an expression */
 		return CSSemValueDefault;
 	}
-	else if(value1.kind != CS_SEMKIND_LVALUE)
+	else if(!CSSemIsLValue(value1))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid lvalue in assignment");
-		if(value1.kind != CS_SEMKIND_RVALUE)
+		if(!CSSemIsRValue(value1))
 		{
-			value1.kind = CS_SEMKIND_RVALUE;
-			value1.type = ILType_Int32;
+			CSSemSetRValue(value1, ILType_Int32);
 		}
 		return value1;
 	}
 
 	/* The second argument must be a value */
-	if(!CSIsSemValue(value2.kind))
+	if(!CSSemIsValue(value2))
 	{
 		goto error;
 	}
 
 	/* Look for a builtin operator */
-	oper = ILFindBinaryOperator(table, value1.type, value2.type, &resultType);
+	oper = ILFindBinaryOperator(table, CSSemGetType(value1),
+								CSSemGetType(value2), &resultType);
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
-		value1.kind = CS_SEMKIND_RVALUE;
 		if(resultType)
 		{
-			value1.type = resultType;
+			CSSemSetRValue(value1, resultType);
 		}
 		else
 		{
-			value1.type = ILFindSystemType(info, "Decimal");
+			CSSemSetRValue(value1, ILFindSystemType(info, "Decimal"));
 		}
 		return value1;
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserBinaryOperator(info, name, value1.type, value2.type);
+	method = FindUserBinaryOperator(info, name, CSSemGetType(value1),
+									CSSemGetType(value2));
 	if(method)
 	{
 		returnType = ILTypeGetReturn(ILMethod_Signature(method));
@@ -717,45 +714,49 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 						 ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = returnType;
+		CSSemSetRValue(value1, returnType);
 		return value1;
 	}
 
 	/* Should we be performing string concatenation? */
-	if(ILTypeIsStringClass(value1.type) && yyisa(node, ILNode_Add))
+	if(ILTypeIsStringClass(CSSemGetType(value1)) && yyisa(node, ILNode_Add))
 	{
-		if(!ILTypeIsStringClass(value2.type))
+		if(!ILTypeIsStringClass(CSSemGetType(value2)))
 		{
 			/* Convert the second argument into "ObjectRef" */
-			ILCast(info, node->expr2, &(node->expr2), value2.type,
+			ILCast(info, node->expr2, &(node->expr2), CSSemGetType(value2),
 				   ILFindSystemType(info, "Object"));
 		}
 		*parent = ILNode_Concat_create(node->expr1, node->expr2);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
+		CSSemSetRValue(value1, CSSemGetType(value1));
 		return value1;
 	}
 
-	/* Should be be performing delegate combination or removal? */
-	if(ILTypeIsDelegate(value1.type))
+	/* Should we be performing delegate combination or removal? */
+	if(ILTypeIsDelegate(CSSemGetType(value1)))
 	{
 		if(yyisa(node, ILNode_Add) &&
-		   ILTypeIdentical(value1.type, value2.type))
+		   ILTypeIdentical(CSSemGetType(value1), CSSemGetType(value2)))
 		{
 			*parent = ILNode_DelegateAdd_create
-				(node->expr1, node->expr2, ILType_ToClass(value1.type));
+				(node->expr1, node->expr2,
+				 ILType_ToClass(CSSemGetType(value1)));
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
+			CSSemSetRValue(value1, CSSemGetType(value1));
 			return value1;
 		}
 		else if(yyisa(node, ILNode_Sub) &&
-		        ILTypeIdentical(value1.type, value2.type))
+		        ILTypeIdentical(CSSemGetType(value1), CSSemGetType(value2)))
 		{
 			*parent = ILNode_DelegateSub_create
-				(node->expr1, node->expr2, ILType_ToClass(value1.type));
+				(node->expr1, node->expr2,
+				 ILType_ToClass(CSSemGetType(value1)));
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
+			CSSemSetRValue(value1, CSSemGetType(value1));
 			return value1;
 		}
 	}
@@ -764,14 +765,13 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `%s'", errorName);
-	if(value1.kind == CS_SEMKIND_LVALUE)
+	if(CSSemIsLValue(value1))
 	{
-		value1.kind = CS_SEMKIND_RVALUE;
+		CSSemSetRValue(value1, CSSemGetType(value1));
 	}
 	else
 	{
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = ILType_Int32;
+		CSSemSetRValue(value1, ILType_Int32);
 	}
 	return value1;
 }
@@ -896,23 +896,22 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 
 	/* Perform semantic analysis on the argument, which must be an lvalue */
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
-	if(value.kind != CS_SEMKIND_LVALUE)
+	if(!CSSemIsLValue(value))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid lvalue in increment");
-		if(value.kind != CS_SEMKIND_RVALUE)
+		if(!CSSemIsRValue(value))
 		{
-			value.kind = CS_SEMKIND_RVALUE;
-			value.type = ILType_Int32;
+			CSSemSetRValue(value, ILType_Int32);
 		}
 		return value;
 	}
 
 	/* The final result will be an rvalue */
-	value.kind = CS_SEMKIND_RVALUE;
+	CSSemSetRValue(value, CSSemGetType(value));
 
 	/* Can we use the builtin version of the operator? */
-	machineType = ILTypeToMachineType(value.type);
+	machineType = ILTypeToMachineType(CSSemGetType(value));
 	switch(machineType)
 	{
 		case ILMachineType_Int8:
@@ -938,7 +937,7 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	}
 
 	/* Look for an appropriate operator */
-	method = FindUserUnaryOperator(info, opName, value.type);
+	method = FindUserUnaryOperator(info, opName, CSSemGetType(value));
 	if(!method)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -1006,25 +1005,24 @@ ILNode_SemAnalysis(ILNode_ToBool)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid boolean expression");
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILType_Boolean;
+		CSSemSetRValue(value, ILType_Boolean);
 		return value;
 	}
 
 	/* If the type is boolean, then we are done */
-	if(value.type == ILType_Boolean)
+	if(CSSemGetType(value) == ILType_Boolean)
 	{
 		return value;
 	}
 
 	/* We need a class or a value type if not boolean */
-	if(!ILType_IsValueType(value.type) && !ILType_IsClass(value.type))
+	if(!ILType_IsValueType(CSSemGetType(value)) &&
+	   !ILType_IsClass(CSSemGetType(value)))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "no conversion from `%s' to `bool'",
-					  CSTypeToName(value.type));
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILType_Boolean;
+					  CSTypeToName(CSSemGetType(value)));
+		CSSemSetRValue(value, ILType_Boolean);
 		return value;
 	}
 
@@ -1033,18 +1031,19 @@ ILNode_SemAnalysis(ILNode_ToBool)
 	   class, but we are a little more forgiving than that: if
 	   only one of the operators is present, we can synthesise
 	   the other one */
-	classInfo = ILType_ToClass(value.type);
+	classInfo = ILType_ToClass(CSSemGetType(value));
 	trueMethod = ILResolveConversionOperator
-					(info, classInfo, "op_True", value.type, ILType_Boolean);
+					(info, classInfo, "op_True", CSSemGetType(value),
+					 ILType_Boolean);
 	falseMethod = ILResolveConversionOperator
-					(info, classInfo, "op_False", value.type, ILType_Boolean);
+					(info, classInfo, "op_False", CSSemGetType(value),
+					 ILType_Boolean);
 	if(!trueMethod && !falseMethod)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "no conversion from `%s' to `bool'",
-					  CSTypeToName(value.type));
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILType_Boolean;
+					  CSTypeToName(CSSemGetType(value)));
+		CSSemSetRValue(value, ILType_Boolean);
 		return value;
 	}
 
@@ -1073,8 +1072,7 @@ ILNode_SemAnalysis(ILNode_ToBool)
 	node->falseMethod = falseMethod;
 
 	/* Return the final value to the caller */
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Boolean;
+	CSSemSetRValue(value, ILType_Boolean);
 	return value;
 }
 
@@ -1090,19 +1088,20 @@ ILNode_SemAnalysis(ILNode_ToConst)
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 
 	/* Determine if the sub-expression evaluates to a constant */
-	if(!CSIsSemValue(value.kind) ||
+	if(!CSSemIsValue(value) ||
 	   !ILNode_EvalConst(node->expr, info, &evalue))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "constant value required");
-		if(!CSIsSemValue(value.kind))
+		if(!CSSemIsValue(value))
 		{
-			value.type = ILType_Int32;
+			CSSemSetRValue(value, ILType_Int32);
+			return value;
 		}
 	}
 
 	/* Return the semantic information to the caller */
-	value.kind = CS_SEMKIND_RVALUE;
+	CSSemSetRValue(value, CSSemGetType(value));
 	return value;
 }
 
@@ -1121,15 +1120,15 @@ ILNode_SemAnalysis(ILNode_LogicalNot)
 	error:
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid operand to unary `!'");
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILType_Boolean;
+		CSSemSetRValue(value, ILType_Boolean);
 		return value;
 	}
 
 	/* If the type is not boolean, we need to look for an operator */
-	if(value.type != ILType_Boolean)
+	if(CSSemGetType(value) != ILType_Boolean)
 	{
-		method = FindUserUnaryOperator(info, "op_LogicalNot", value.type);
+		method = FindUserUnaryOperator(info, "op_LogicalNot",
+									   CSSemGetType(value));
 		if(method)
 		{
 			returnType = ILTypeGetReturn(ILMethod_Signature(method));
@@ -1137,8 +1136,7 @@ ILNode_SemAnalysis(ILNode_LogicalNot)
 						(node->expr, ILTypeToMachineType(returnType), method);
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
-			value.kind = CS_SEMKIND_RVALUE;
-			value.type = returnType;
+			CSSemSetRValue(value, returnType);
 			return value;
 		}
 		else
@@ -1148,8 +1146,7 @@ ILNode_SemAnalysis(ILNode_LogicalNot)
 	}
 
 	/* Builtin "!" operator: the result is always boolean */
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Boolean;
+	CSSemSetRValue(value, ILType_Boolean);
 	return value;
 }
 
@@ -1172,17 +1169,19 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 	}
 
 	/* Find a user-defined operator, if any */
-	if(value1.type == value2.type &&
-	   (ILType_IsValueType(value1.type) || ILType_IsClass(value1.type)))
+	if(CSSemGetType(value1) == CSSemGetType(value2) &&
+	   (ILType_IsValueType(CSSemGetType(value1)) ||
+	    ILType_IsClass(CSSemGetType(value1))))
 	{
 		method1 = FindUserBinaryOperator
-					(info, "op_BitwiseAnd", value1.type, value1.type);
+					(info, "op_BitwiseAnd", CSSemGetType(value1),
+					 CSSemGetType(value1));
 		method2 = ILResolveConversionOperator
-					(info, ILType_ToClass(value1.type), "op_True", value1.type,
-					 ILType_Boolean);
+					(info, ILType_ToClass(CSSemGetType(value1)), "op_True",
+					 CSSemGetType(value1), ILType_Boolean);
 		method3 = ILResolveConversionOperator
-					(info, ILType_ToClass(value1.type), "op_False", value1.type,
-					 ILType_Boolean);
+					(info, ILType_ToClass(CSSemGetType(value1)), "op_False",
+					 CSSemGetType(value1), ILType_Boolean);
 		if(method1 && (method2 || method3))
 		{
 			method1 = (ILMethod *)ILMemberImport
@@ -1213,34 +1212,35 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 						(node->expr1, node->expr2, method1, method2, method3);
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
-			value1.kind = CS_SEMKIND_RVALUE;
-			value1.type = ILType_Boolean;
+			CSSemSetRValue(value1, ILType_Boolean);
 			return value1;
 		}
 	}
 
 	/* We must have boolean arguments at this point */
-	if(!ILCanCoerceNode(info, node->expr1, value1.type, ILType_Boolean) ||
-	   !ILCanCoerceNode(info, node->expr2, value2.type, ILType_Boolean))
+	if(!ILCanCoerceNode(info, node->expr1, CSSemGetType(value1),
+						ILType_Boolean) ||
+	   !ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),
+	   					ILType_Boolean))
 	{
 		goto error;
 	}
 
 	/* Coerce the two arguments to `bool' */
-	ILCoerce(info, node->expr1, &(node->expr1), value1.type, ILType_Boolean);
-	ILCoerce(info, node->expr2, &(node->expr2), value2.type, ILType_Boolean);
+	ILCoerce(info, node->expr1, &(node->expr1),
+			 CSSemGetType(value1), ILType_Boolean);
+	ILCoerce(info, node->expr2, &(node->expr2),
+			 CSSemGetType(value2), ILType_Boolean);
 
 	/* The result is boolean */
-	value1.kind = CS_SEMKIND_RVALUE;
-	value1.type = ILType_Boolean;
+	CSSemSetRValue(value1, ILType_Boolean);
 	return value1;
 
 	/* Report an argument error */
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `&&'");
-	value1.kind = CS_SEMKIND_RVALUE;
-	value1.type = ILType_Boolean;
+	CSSemSetRValue(value1, ILType_Boolean);
 	return value1;
 }
 
@@ -1263,17 +1263,19 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 	}
 
 	/* Find a user-defined operator, if any */
-	if(value1.type == value2.type &&
-	   (ILType_IsValueType(value1.type) || ILType_IsClass(value1.type)))
+	if(CSSemGetType(value1) == CSSemGetType(value2) &&
+	   (ILType_IsValueType(CSSemGetType(value1)) ||
+	    ILType_IsClass(CSSemGetType(value1))))
 	{
 		method1 = FindUserBinaryOperator
-					(info, "op_BitwiseOr", value1.type, value1.type);
+					(info, "op_BitwiseOr", CSSemGetType(value1),
+					 CSSemGetType(value1));
 		method2 = ILResolveConversionOperator
-					(info, ILType_ToClass(value1.type), "op_True", value1.type,
-					 ILType_Boolean);
+					(info, ILType_ToClass(CSSemGetType(value1)), "op_True",
+					 CSSemGetType(value1), ILType_Boolean);
 		method3 = ILResolveConversionOperator
-					(info, ILType_ToClass(value1.type), "op_False", value1.type,
-					 ILType_Boolean);
+					(info, ILType_ToClass(CSSemGetType(value1)), "op_False",
+					 CSSemGetType(value1), ILType_Boolean);
 		if(method1 && (method2 || method3))
 		{
 			method1 = (ILMethod *)ILMemberImport
@@ -1304,34 +1306,35 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 						(node->expr1, node->expr2, method1, method2, method3);
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
-			value1.kind = CS_SEMKIND_RVALUE;
-			value1.type = ILType_Boolean;
+			CSSemSetRValue(value1, ILType_Boolean);
 			return value1;
 		}
 	}
 
 	/* We must have boolean arguments at this point */
-	if(!ILCanCoerceNode(info, node->expr1, value1.type, ILType_Boolean) ||
-	   !ILCanCoerceNode(info, node->expr2, value2.type, ILType_Boolean))
+	if(!ILCanCoerceNode(info, node->expr1, CSSemGetType(value1),
+						ILType_Boolean) ||
+	   !ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),
+	   					ILType_Boolean))
 	{
 		goto error;
 	}
 
 	/* Coerce the two arguments to `bool' */
-	ILCoerce(info, node->expr1, &(node->expr1), value1.type, ILType_Boolean);
-	ILCoerce(info, node->expr2, &(node->expr2), value2.type, ILType_Boolean);
+	ILCoerce(info, node->expr1, &(node->expr1),
+			 CSSemGetType(value1), ILType_Boolean);
+	ILCoerce(info, node->expr2, &(node->expr2),
+			 CSSemGetType(value2), ILType_Boolean);
 
 	/* The result is boolean */
-	value1.kind = CS_SEMKIND_RVALUE;
-	value1.type = ILType_Boolean;
+	CSSemSetRValue(value1, ILType_Boolean);
 	return value1;
 
 	/* Report an argument error */
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `||'");
-	value1.kind = CS_SEMKIND_RVALUE;
-	value1.type = ILType_Boolean;
+	CSSemSetRValue(value1, ILType_Boolean);
 	return value1;
 }
 
@@ -1356,33 +1359,32 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 
 	/* The two arguments must be values */
-	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	if(!CSSemIsValue(value1) || !CSSemIsValue(value2))
 	{
 		goto error;
 	}
 
 	/* Look for a builtin operator */
-	oper = ILFindBinaryOperator(table, value1.type, value2.type, &resultType);
+	oper = ILFindBinaryOperator(table, CSSemGetType(value1),
+								CSSemGetType(value2), &resultType);
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = ILType_Boolean;
+		CSSemSetRValue(value1, ILType_Boolean);
 		return value1;
 	}
 
 	/* If both of the arguments are strings, or one is a string
 	   and the other is null, then the code generator knows how
 	   to handle the operation */
-	if(ILTypeIsStringClass(value1.type))
+	if(ILTypeIsStringClass(CSSemGetType(value1)))
 	{
-		if(ILTypeIsStringClass(value2.type))
+		if(ILTypeIsStringClass(CSSemGetType(value2)))
 		{
-			value1.kind = CS_SEMKIND_RVALUE;
-			value1.type = ILType_Boolean;
+			CSSemSetRValue(value1, ILType_Boolean);
 			return value1;
 		}
-		else if(value2.type == ILType_Null)
+		else if(CSSemGetType(value2) == ILType_Null)
 		{
 			if(table == ILOp_Eq)
 			{
@@ -1394,12 +1396,12 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 			}
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
-			value1.kind = CS_SEMKIND_RVALUE;
-			value1.type = ILType_Boolean;
+			CSSemSetRValue(value1, ILType_Boolean);
 			return value1;
 		}
 	}
-	else if(value1.type == ILType_Null && ILTypeIsStringClass(value2.type))
+	else if(CSSemGetType(value1) == ILType_Null &&
+			ILTypeIsStringClass(CSSemGetType(value2)))
 	{
 		if(table == ILOp_Eq)
 		{
@@ -1411,13 +1413,13 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		}
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = ILType_Boolean;
+		CSSemSetRValue(value1, ILType_Boolean);
 		return value1;
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserBinaryOperator(info, name, value1.type, value2.type);
+	method = FindUserBinaryOperator(info, name, CSSemGetType(value1),
+									CSSemGetType(value2));
 	if(method)
 	{
 		returnType = ILTypeGetReturn(ILMethod_Signature(method));
@@ -1426,16 +1428,16 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 						 ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = returnType;
+		CSSemSetRValue(value1, returnType);
 		return value1;
 	}
 
 	/* If both arguments are object references, then we can compare them
 	   using the built-in code generator logic */
-	if(value1.type != ILType_Null && ILTypeIsReference(value1.type))
+	if(CSSemGetType(value1) != ILType_Null &&
+	   ILTypeIsReference(CSSemGetType(value1)))
 	{
-		if(value2.type == ILType_Null)
+		if(CSSemGetType(value2) == ILType_Null)
 		{
 			if(table == ILOp_Eq)
 			{
@@ -1447,22 +1449,23 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 			}
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
-			value1.kind = CS_SEMKIND_RVALUE;
-			value1.type = ILType_Boolean;
+			CSSemSetRValue(value1, ILType_Boolean);
 			return value1;
 		}
-		else if(ILTypeIsReference(value2.type))
+		else if(ILTypeIsReference(CSSemGetType(value2)))
 		{
-			if(ILCanCoerceNode(info, node->expr1, value1.type, value2.type) ||
-			   ILCanCoerceNode(info, node->expr2, value2.type, value1.type))
+			if(ILCanCoerceNode(info, node->expr1, CSSemGetType(value1),
+							   CSSemGetType(value2)) ||
+			   ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),
+			   				   CSSemGetType(value1)))
 			{
-				value1.kind = CS_SEMKIND_RVALUE;
-				value1.type = ILType_Boolean;
+				CSSemSetRValue(value1, ILType_Boolean);
 				return value1;
 			}
 		}
 	}
-	else if(value1.type == ILType_Null && ILTypeIsReference(value2.type))
+	else if(CSSemGetType(value1) == ILType_Null &&
+			ILTypeIsReference(CSSemGetType(value2)))
 	{
 		if(table == ILOp_Eq)
 		{
@@ -1474,8 +1477,7 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		}
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = ILType_Boolean;
+		CSSemSetRValue(value1, ILType_Boolean);
 		return value1;
 	}
 
@@ -1483,8 +1485,7 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `%s'", errorName);
-	value1.kind = CS_SEMKIND_RVALUE;
-	value1.type = ILType_Int32;
+	CSSemSetRValue(value1, ILType_Int32);
 	return value1;
 }
 
@@ -1552,8 +1553,7 @@ ILNode_SemAnalysis(ILNode_Deref)
 	CSSemValue value;
 	CCUnsafeMessage(info, (ILNode *)node, "unsafe pointer dereference");
 	/* TODO */
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	CSSemSetRValue(value, ILType_Int32);
 	return value;
 }
 
@@ -1565,8 +1565,7 @@ ILNode_SemAnalysis(ILNode_AddressOf)
 	/* TODO */
 	CSSemValue value;
 	CCUnsafeMessage(info, (ILNode *)node, "unsafe address operator");
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	CSSemSetRValue(value, ILType_Int32);
 	return value;
 }
 
@@ -1593,25 +1592,31 @@ ILNode_SemAnalysis(ILNode_Conditional)
 	}
 
 	/* If the types are the same, then we are done */
-	if(ILTypeIdentical(value1.type, value2.type))
+	if(ILTypeIdentical(CSSemGetType(value1), CSSemGetType(value2)))
 	{
-		value1.kind = CS_SEMKIND_RVALUE;
+		CSSemSetRValue(value1, CSSemGetType(value1));
 		return value1;
 	}
 
 	/* Determine which of the types is the result type */
-	if(ILCanCoerceNode(info, node->expr1, value1.type, value2.type) &&
-	   !ILCanCoerceNode(info, node->expr2, value2.type, value1.type))
+	if(ILCanCoerceNode(info, node->expr1, CSSemGetType(value1),
+					   CSSemGetType(value2)) &&
+	   !ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),
+	   					CSSemGetType(value1)))
 	{
-		ILCoerce(info, node->expr2, &(node->expr2), value1.type, value2.type);
-		value2.kind = CS_SEMKIND_RVALUE;
+		ILCoerce(info, node->expr2, &(node->expr2), CSSemGetType(value1),
+				 CSSemGetType(value2));
+		CSSemSetRValue(value2, CSSemGetType(value2));
 		return value2;
 	}
-	else if(ILCanCoerceNode(info, node->expr1, value2.type, value1.type) &&
-	        !ILCanCoerceNode(info, node->expr2, value1.type, value2.type))
+	else if(ILCanCoerceNode(info, node->expr1, CSSemGetType(value2),
+							CSSemGetType(value1)) &&
+	        !ILCanCoerceNode(info, node->expr2, CSSemGetType(value1),
+							 CSSemGetType(value2)))
 	{
-		ILCoerce(info, node->expr3, &(node->expr3), value2.type, value1.type);
-		value1.kind = CS_SEMKIND_RVALUE;
+		ILCoerce(info, node->expr3, &(node->expr3), CSSemGetType(value2),
+				 CSSemGetType(value1));
+		CSSemSetRValue(value1, CSSemGetType(value1));
 		return value1;
 	}
 
@@ -1619,8 +1624,7 @@ ILNode_SemAnalysis(ILNode_Conditional)
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to ternary `?:'");
-	value1.kind = CS_SEMKIND_RVALUE;
-	value1.type = ILType_Int32;
+	CSSemSetRValue(value1, ILType_Int32);
 	return value1;
 }
 
@@ -1659,7 +1663,7 @@ ILNode_SemAnalysis(ILNode_Comma)
 	CSSemValue value2;
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
-	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	if(!CSSemIsValue(value1) || !CSSemIsValue(value2))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid operands to binary `,'");
@@ -1682,8 +1686,7 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid operands to binary `as'");
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILFindSystemType(info, "Object");
+		CSSemSetRValue(value, ILFindSystemType(info, "Object"));
 	}
 	type = CSSemType(node->expr2, info, &(node->expr2));
 
@@ -1696,11 +1699,11 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	}
 
 	/* Create the result semantic value */
-	result.kind = CS_SEMKIND_RVALUE;
-	result.type = type;
+	CSSemSetRValue(result, type);
 
 	/* Determine if there is an implicit reference or boxing coercion */
-	if(ILCoerceKind(info, node->expr1, &(node->expr1), value.type, type,
+	if(ILCoerceKind(info, node->expr1, &(node->expr1),
+					CSSemGetType(value), type,
 					IL_CONVERT_REFERENCE | IL_CONVERT_BOXING))
 	{
 		*parent = node->expr1;
@@ -1708,7 +1711,7 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	}
 
 	/* Determine if there is an explicit reference conversion */
-	classInfo = ILGetExplicitConv(info, value.type, type,
+	classInfo = ILGetExplicitConv(info, CSSemGetType(value), type,
 								  IL_CONVERT_REFERENCE);
 	if(classInfo != 0)
 	{
@@ -1719,7 +1722,7 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	/* Report an error for the conversion */
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  		  "no conversion from `%s' to `%s'",
-		  		  CSTypeToName(value.type), CSTypeToName(type));
+		  		  CSTypeToName(CSSemGetType(value)), CSTypeToName(type));
 	return result;
 }
 
@@ -1738,20 +1741,18 @@ ILNode_SemAnalysis(ILNode_IsUntyped)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid operands to binary `is'");
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILFindSystemType(info, "Object");
+		CSSemSetRValue(value, ILFindSystemType(info, "Object"));
 	}
 	type = CSSemType(node->expr2, info, &(node->expr2));
 
 	/* Create the result semantic value */
-	result.kind = CS_SEMKIND_RVALUE;
-	result.type = ILType_Boolean;
+	CSSemSetRValue(result, ILType_Boolean);
 
 	/* Determine if there is an implicit reference or boxing coercion */
-	if(ILCanCoerceKind(info, value.type, type,
+	if(ILCanCoerceKind(info, CSSemGetType(value), type,
 					   IL_CONVERT_REFERENCE | IL_CONVERT_BOXING))
 	{
-		if(ILTypeIsReference(value.type))
+		if(ILTypeIsReference(CSSemGetType(value)))
 		{
 			/* Reference types: test the expression against null */
 			CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
@@ -1770,7 +1771,7 @@ ILNode_SemAnalysis(ILNode_IsUntyped)
 	}
 
 	/* Determine if there is an explicit reference or unboxing conversion */
-	classInfo = ILGetExplicitConv(info, value.type, type,
+	classInfo = ILGetExplicitConv(info, CSSemGetType(value), type,
 								  IL_CONVERT_REFERENCE | IL_CONVERT_UNBOXING);
 	if(classInfo != 0)
 	{
@@ -1791,10 +1792,7 @@ ILNode_SemAnalysis(ILNode_IsUntyped)
  */
 ILNode_SemAnalysis(ILNode_Error)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return CSSemValueError;
 }
 
 /*

@@ -29,15 +29,16 @@ ILNode_SemAnalysis(ILNode_TypeOf)
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 
 	/* Check that the argument is of the correct kind */
-	if(value.kind == CS_SEMKIND_TYPE)
+	if(CSSemIsType(value))
 	{
-		if(ILType_IsPrimitive(value.type))
+		if(ILType_IsPrimitive(CSSemGetType(value)))
 		{
-			node->type = ILType_FromClass(ILTypeToClass(info, value.type));
+			node->type = ILType_FromClass
+				(ILTypeToClass(info, CSSemGetType(value)));
 		}
 		else
 		{
-			node->type = value.type;
+			node->type = CSSemGetType(value);
 		}
 	}
 	else
@@ -48,8 +49,7 @@ ILNode_SemAnalysis(ILNode_TypeOf)
 	}
 
 	/* The type of the expression is "System.Type" */
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILFindSystemType(info, "Type");
+	CSSemSetRValue(value, ILFindSystemType(info, "Type"));
 	return value;
 }
 
@@ -165,39 +165,39 @@ ILNode_SemAnalysis(ILNode_SizeOf)
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 
 	/* Convert native types into their value type forms */
-	if(value.kind == CS_SEMKIND_TYPE)
+	if(CSSemIsType(value))
 	{
-		if(value.type == ILType_Int)
+		if(CSSemGetType(value) == ILType_Int)
 		{
-			value.type = ILFindSystemType(info, "IntPtr");
+			CSSemSetType(value, ILFindSystemType(info, "IntPtr"));
 		}
-		else if(value.type == ILType_UInt)
+		else if(CSSemGetType(value) == ILType_UInt)
 		{
-			value.type = ILFindSystemType(info, "UIntPtr");
+			CSSemSetType(value, ILFindSystemType(info, "UIntPtr"));
 		}
 	}
 
 	/* Check the semantic value */
-	if(value.kind != CS_SEMKIND_TYPE)
+	if(!CSSemIsType(value))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid argument to `sizeof' operator");
 		node->type = ILType_Int32;
 	}
-	else if(!ILType_IsPrimitive(value.type) &&
-			!ILType_IsValueType(value.type))
+	else if(!ILType_IsPrimitive(CSSemGetType(value)) &&
+			!ILType_IsValueType(CSSemGetType(value)))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "cannot take the size of a managed type");
 		node->type = ILType_Int32;
 	}
-	else if(!ILType_IsPrimitive(value.type) && info->outputIsJava)
+	else if(!ILType_IsPrimitive(CSSemGetType(value)) && info->outputIsJava)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`sizeof' disallowed when compiling to Java bytecode");
 		node->type = ILType_Int32;
 	}
-	else if(value.type == ILType_Void)
+	else if(CSSemGetType(value) == ILType_Void)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`void' type is not allowed in this context");
@@ -205,7 +205,7 @@ ILNode_SemAnalysis(ILNode_SizeOf)
 	}
 	else
 	{
-		node->type = value.type;
+		node->type = CSSemGetType(value);
 	}
 
 	/* Pre-compute the size if this is a primitive type */
@@ -234,8 +234,7 @@ ILNode_SemAnalysis(ILNode_SizeOf)
 	}
 
 	/* Return the type information to the caller */
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	CSSemSetRValue(value, ILType_Int32);
 	return value;
 }
 
@@ -288,7 +287,7 @@ ILNode_SemAnalysis(ILNode_StackAlloc)
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 
 	/* The first must be a value type */
-	if(value1.kind != CS_SEMKIND_TYPE)
+	if(!CSSemIsType(value1))
 	{
 		/* TODO */
 	}
@@ -297,8 +296,7 @@ ILNode_SemAnalysis(ILNode_StackAlloc)
 	/* TODO */
 
 	/* The result has the type "pointer to value1.type" */
-	value1.kind = CS_SEMKIND_RVALUE;
-	value1.type = ILType_Int32;			/* TODO */
+	CSSemSetRValue(value1, ILType_Int32);	/* TODO */
 	return value1;
 }
 
@@ -348,20 +346,20 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 			if(CSSemExpectValue(expr, info, parentNode, &value))
 			{
 				if(!ILCoerce(info, *parentNode, parentNode,
-							 value.type, ILType_Int32) &&
+							 CSSemGetType(value), ILType_Int32) &&
 				   !ILCoerce(info, *parentNode, parentNode,
-							 value.type, ILType_UInt32) &&
+							 CSSemGetType(value), ILType_UInt32) &&
 				   !ILCoerce(info, *parentNode, parentNode,
-							 value.type, ILType_Int64) &&
+							 CSSemGetType(value), ILType_Int64) &&
 				   !ILCoerce(info, *parentNode, parentNode,
-							 value.type, ILType_UInt64))
+							 CSSemGetType(value), ILType_UInt64))
 				{
 					CCErrorOnLine
 						(yygetfilename(expr), yygetlinenum(expr),
 			  			 "incompatible types in dimension specifier: "
 						 	"no conversion from `%s' to `int', `uint', "
 							"`long', or `ulong'",
-					     CSTypeToName(value.type));
+					     CSTypeToName(CSSemGetType(value)));
 				}
 			}
 			else
@@ -378,20 +376,20 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 		if(CSSemExpectValue(expr, info, parentNode, &value))
 		{
 			if(!ILCoerce(info, *parentNode, parentNode,
-						 value.type, ILType_Int32) &&
+						 CSSemGetType(value), ILType_Int32) &&
 			   !ILCoerce(info, *parentNode, parentNode,
-						 value.type, ILType_UInt32) &&
+						 CSSemGetType(value), ILType_UInt32) &&
 			   !ILCoerce(info, *parentNode, parentNode,
-						 value.type, ILType_Int64) &&
+						 CSSemGetType(value), ILType_Int64) &&
 			   !ILCoerce(info, *parentNode, parentNode,
-						 value.type, ILType_UInt64))
+						 CSSemGetType(value), ILType_UInt64))
 			{
 				CCErrorOnLine
 					(yygetfilename(expr), yygetlinenum(expr),
 		  			 "incompatible types in dimension specifier: "
 					 	"no conversion from `%s' to `int', `uint', "
 						"`long', or `ulong'",
-				     CSTypeToName(value.type));
+				     CSTypeToName(CSSemGetType(value)));
 			}
 		}
 		else
@@ -411,8 +409,7 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 		{
 			CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
 						  "array initializer used with non-array type");
-			value.kind = CS_SEMKIND_RVALUE;
-			value.type = node->arrayType;
+			CSSemSetRValue(value, node->arrayType);
 			return value;
 		}
 	}
@@ -480,8 +477,7 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 	}
 
 	/* Done */
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = node->arrayType;
+	CSSemSetRValue(value, node->arrayType);
 	return value;
 }
 
@@ -506,8 +502,7 @@ ILNode_SemAnalysis(ILNode_ArrayInit)
 	{
 		/* We've already visited this node, so return its type */
 		CSSemValue value;
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = node->arrayType;
+		CSSemSetRValue(value, node->arrayType);
 		return value;
 	}
 	else
@@ -541,7 +536,7 @@ ILNode_SemAnalysis(ILNode_MakeRefAny)
 	   because we have no way of knowing if some future
 	   code may try to read the value via the typedref */
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
-	if(value.kind != CS_SEMKIND_LVALUE ||
+	if(!CSSemIsLValue(value) ||
 	   yyisa(node->expr, ILNode_LValueNoRef))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -550,12 +545,11 @@ ILNode_SemAnalysis(ILNode_MakeRefAny)
 	}
 	else
 	{
-		node->type = value.type;
+		node->type = CSSemGetType(value);
 	}
 
 	/* The type of "__makeref" expressions is always ILType_TypedRef */
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_TypedRef;
+	CSSemSetRValue(value, ILType_TypedRef);
 	return value;
 }
 
@@ -576,15 +570,14 @@ ILNode_SemAnalysis(ILNode_RefType)
 	/* Perform semantic analysis on the sub-expression, which
 	   must be ILType_TypedRef */
 	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value) ||
-	   value.type != ILType_TypedRef)
+	   CSSemGetType(value) != ILType_TypedRef)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  	  "invalid argument to `__reftype'");
 	}
 
 	/* The result is "System.Type" */
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILFindSystemType(info, "Type");
+	CSSemSetRValue(value, ILFindSystemType(info, "Type"));
 	return value;
 }
 
@@ -605,7 +598,7 @@ ILNode_SemAnalysis(ILNode_RefValue)
 	/* Perform semantic analysis on the first sub-expression,
 	   which must be ILType_TypedRef */
 	if(!CSSemExpectValue(node->expr1, info, &(node->expr1), &value) ||
-	   value.type != ILType_TypedRef)
+	   CSSemGetType(value) != ILType_TypedRef)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  	  "invalid first argument to `__refvalue'");
@@ -616,7 +609,6 @@ ILNode_SemAnalysis(ILNode_RefValue)
 	node->type = CSSemType(node->expr2, info, &(node->expr2));
 
 	/* The result is an r-value of the supplied type */
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = node->type;
+	CSSemSetRValue(value, node->type);
 	return value;
 }

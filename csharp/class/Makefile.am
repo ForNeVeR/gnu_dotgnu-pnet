@@ -50,7 +50,8 @@ TESTS = abstract1.cs \
 		property4.cs \
 		property5.cs \
 		property6.cs \
-		type1.cs
+		type1.cs \
+		type2.cs
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tools/run_test.sh
 

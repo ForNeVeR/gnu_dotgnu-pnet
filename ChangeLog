@@ -1,4 +1,9 @@
 
+2003-05-10  Gopal.V <gopalv82@symonds.net>
+	
+	* csharp/expr/Makefile.am, csharp/class/Makefile.am: Add the cast8
+	and type2 tests into the tests list.
+
 2003-05-09  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/expr/cast8.cs , csharp/expr/cast8.il, csharp/expr/cast8.jl:

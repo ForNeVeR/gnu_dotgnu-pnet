@@ -19,6 +19,7 @@ TESTS = arglist1.cs \
 		cast5.cs \
 		cast6.cs \
 		cast7.cs \
+		cast8.cs \
 		const1.cs \
 		delegate1.cs \
 		delegate2.cs \

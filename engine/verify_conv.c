@@ -36,6 +36,7 @@
 				{ \
 					ILCoderConv(coder, opcode, STK_UNARY); \
 					STK_UNARY = resultType; \
+					STK_UNARY_TYPEINFO = 0; \
 				} \
 				else \
 				{ \

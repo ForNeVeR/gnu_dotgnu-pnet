@@ -1631,7 +1631,7 @@ internal class DefaultThemePainter : IThemePainter
 				Color color = foreColor;
 				if ((state & ButtonState.Inactive) != 0)
 				{
-					color = ControlPaint.Light(foreColor);
+					color = ControlPaint.LightLight(foreColor);
 				}
 				using (Brush brush = new SolidBrush(color))
 				{

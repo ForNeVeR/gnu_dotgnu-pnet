@@ -319,6 +319,24 @@ static IL_INLINE int LURem(CVMWord *a, CVMWord *b)
 	}
 }
 
+static void LShiftLeft(CVMWord *a, ILUInt32 shiftBy)
+{
+	ILInt64 tempa = ReadLong(a);
+	WriteLong(a, tempa << shiftBy);
+}
+
+static void LShiftRight(CVMWord *a, ILUInt32 shiftBy)
+{
+	ILInt64 tempa = ReadLong(a);
+	WriteLong(a, tempa >> shiftBy);
+}
+
+static void LUShiftRight(CVMWord *a, ILUInt32 shiftBy)
+{
+	ILUInt64 tempa = ReadULong(a);
+	WriteULong(a, tempa >> shiftBy);
+}
+
 #elif defined(IL_CVM_LOCALS)
 
 /* No locals required */
@@ -2035,9 +2053,8 @@ VMBREAK(COP_LNOT);
 VMCASE(COP_LSHL):
 {
 	/* Long shift left */
-	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
-		ReadLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)])) <<
-	    (stacktop[-1].uintValue & 0x3F));
+	LShiftLeft(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]) ,
+				(stacktop[-1].uintValue & 0x3F));
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_LSHL);
@@ -2066,8 +2083,7 @@ VMBREAK(COP_LSHL);
 VMCASE(COP_LSHR):
 {
 	/* Long shift right */
-	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
-		ReadLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)])) >>
+	LShiftRight(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]) ,
 	    (stacktop[-1].uintValue & 0x3F));
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
@@ -2096,8 +2112,7 @@ VMBREAK(COP_LSHR);
 VMCASE(COP_LSHR_UN):
 {
 	/* Unsigned long shift right */
-	WriteULong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
-		ReadULong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)])) >>
+	LUShiftRight(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
 	    (stacktop[-1].uintValue & 0x3F));
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }

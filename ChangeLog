@@ -1,4 +1,10 @@
 
+2003-06-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm_arith.c: move some long shift's out of line to
+	prevent register spills on some i386 variants (apply patch
+	from Gopal).
+
 2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c (_ILLookupInterfaceMethod): fix a segv when

@@ -22,6 +22,9 @@ runtime/System/Runtime/Remoting/ObjRef.cs,
 runtime/System/Runtime/Remoting/RemotingException.cs: fill in some of
 the missing gaps in the "System" namespace.
 
+* resources/en_US/runtime/Format.txt, runtime/System/Enum.cs: complete
+the implementation of "System.Enum".
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Reflection;
+using System.Private;
 using System.Runtime.CompilerServices;
 
 public abstract class Enum : ValueType, IComparable, IFormattable
@@ -73,8 +74,69 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 	// Format an enumerated value.
 	public static String Format(Type enumType, Object value, String format)
 			{
-				// TODO
-				return "";
+				Type type;
+				String result;
+
+				// Validate the parameters.
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				if(format == null)
+				{
+					throw new ArgumentNullException("format");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				type = value.GetType();
+				if(type == enumType)
+				{
+					value = ((Enum)value).GetEnumValue();
+				}
+				else if(type != GetUnderlyingType(enumType))
+				{
+					throw new ArgumentException(_("Arg_InvalidEnumValue"));
+				}
+
+				// Determine what to do based on the format.
+				if(format == "G" || format == "g")
+				{
+					if(Attribute.IsDefined(enumType, typeof(FlagsAttribute)))
+					{
+						return FormatEnumWithFlags(enumType, value);
+					}
+					else
+					{
+						result = GetEnumName(enumType, value);
+						if(result != null)
+						{
+							return result;
+						}
+						return value.ToString();
+					}
+				}
+				else if(format == "F" || format == "f")
+				{
+					return FormatEnumWithFlags(enumType, value);
+				}
+				else if(format == "X" || format == "x")
+				{
+					return ((IFormattable)value).ToString("X", null);
+				}
+				else if(format == "D" || format == "d")
+				{
+					return value.ToString();
+				}
+				else
+				{
+					throw new FormatException(_("Format_Enum"));
+				}
 			}
 
 	// Get the hash code for this enumerated value.
@@ -361,52 +423,148 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 	// Convert a constant into an enumerated value object.
 	public static Object ToObject(Type enumType, Object value)
 			{
-				// TODO
-				return null;
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				Type type = value.GetType();
+				if(type == typeof(System.Int32))
+				{
+					// This is the most common case, so we get it first.
+					return ToObject(enumType, (int)value);
+				}
+				else if(type == typeof(System.SByte))
+				{
+					return ToObject(enumType, (sbyte)value);
+				}
+				else if(type == typeof(System.Byte))
+				{
+					return ToObject(enumType, (byte)value);
+				}
+				else if(type == typeof(System.Int16))
+				{
+					return ToObject(enumType, (short)value);
+				}
+				else if(type == typeof(System.UInt16))
+				{
+					return ToObject(enumType, (ushort)value);
+				}
+				else if(type == typeof(System.UInt32))
+				{
+					return ToObject(enumType, (uint)value);
+				}
+				else if(type == typeof(System.Int64))
+				{
+					return ToObject(enumType, (long)value);
+				}
+				else if(type == typeof(System.UInt64))
+				{
+					return ToObject(enumType, (ulong)value);
+				}
+				else
+				{
+					throw new ArgumentException(_("Arg_InvalidEnumValue"));
+				}
 			}
 	[CLSCompliant(false)]
 	public static Object ToObject(Type enumType, sbyte value)
 			{
-				// TODO
-				return null;
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				return EnumIntToObject(enumType, value);
 			}
 	public static Object ToObject(Type enumType, byte value)
 			{
-				// TODO
-				return null;
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				return EnumIntToObject(enumType, value);
 			}
 	public static Object ToObject(Type enumType, short value)
 			{
-				// TODO
-				return null;
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				return EnumIntToObject(enumType, value);
 			}
 	[CLSCompliant(false)]
 	public static Object ToObject(Type enumType, ushort value)
 			{
-				// TODO
-				return null;
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				return EnumIntToObject(enumType, value);
 			}
 	public static Object ToObject(Type enumType, int value)
 			{
-				// TODO
-				return null;
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				return EnumIntToObject(enumType, value);
 			}
 	[CLSCompliant(false)]
 	public static Object ToObject(Type enumType, uint value)
 			{
-				// TODO
-				return null;
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				return EnumIntToObject(enumType, unchecked((int)value));
 			}
 	public static Object ToObject(Type enumType, long value)
 			{
-				// TODO
-				return null;
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				return EnumLongToObject(enumType, value);
 			}
 	[CLSCompliant(false)]
 	public static Object ToObject(Type enumType, ulong value)
 			{
-				// TODO
-				return null;
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				return EnumLongToObject(enumType, unchecked((long)value));
 			}
 
 	// String conversion.
@@ -424,7 +582,14 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 			}
 	public virtual String ToString(String format, IFormatProvider provider)
 			{
-				return Format(GetType(), this, format);
+				if(format == null)
+				{
+					return Format(GetType(), this, "G");
+				}
+				else
+				{
+					return Format(GetType(), this, format);
+				}
 			}
 
 #if !ECMA_COMPAT
@@ -560,6 +725,19 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 	// Or two enumerated values together to form a new value.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static Object EnumValueOr(Object value1, Object value2);
+
+	// Convert an integer value into an enumerated value in a specific type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static Object EnumIntToObject(Type enumType, int value);
+
+	// Convert a long value into an enumerated value in a specific type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static Object EnumLongToObject(Type enumType, long value);
+
+	// Format an enumerated value when flags are involved.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static String FormatEnumWithFlags
+				(Type enumType, Object value);
 
 }; // class Enum
 

@@ -23,6 +23,7 @@
 } // class ColorSmall
 .class public sequential sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
 {
+.size 1
 .method public static hidebysig specialname valuetype 'X' 'op_Increment'(valuetype 'X' 'x') cil managed java 
 {
 	aload_0

@@ -102,6 +102,7 @@
 } // class TestEnumerator
 .class private sequential sealed serializable ansi 'TestEnumerable' extends ['.library']'System'.'ValueType' implements 'System.Collections'.'IEnumerable'
 {
+.size 1
 .method private final virtual hidebysig newslot instance class 'System.Collections'.'IEnumerator' 'System.Collections.IEnumerable.GetEnumerator'() cil managed java 
 {
 	.override	'System.Collections'.'IEnumerable'::'GetEnumerator'

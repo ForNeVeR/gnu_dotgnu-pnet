@@ -1,4 +1,10 @@
 
+2002-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/expr/incdec1.il, csharp/expr/incdec1.jl,
+	csharp/stmt/foreach5.il, csharp/stmt/foreach5.jl:
+	new output files for ".size 1" change to structures.
+
 2002-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/parser/Makefile.am, csharp/parser/error4.cs,

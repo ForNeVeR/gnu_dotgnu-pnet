@@ -183,7 +183,7 @@ public class TopLevelWindow : InputOutputWidget
 						// that we want to be brought to the top.
 						Xlib.XMapRaised(display, GetWidgetHandle());
 						mapped = true;
-						MapStateChanged();
+						OnMapStateChanged();
 					}
 				}
 				finally
@@ -207,7 +207,7 @@ public class TopLevelWindow : InputOutputWidget
 						Xlib.XWithdrawWindow
 							(display, GetWidgetHandle(), screen.ScreenNumber);
 						mapped = false;
-						MapStateChanged();
+						OnMapStateChanged();
 					}
 				}
 				finally
@@ -231,10 +231,7 @@ public class TopLevelWindow : InputOutputWidget
 						Xlib.XIconifyWindow
 							(display, GetWidgetHandle(), screen.ScreenNumber);
 						iconic = true;
-						if(IconicState != null)
-						{
-							IconicState(this, true);
-						}
+						OnIconicStateChanged(true);
 					}
 				}
 				finally
@@ -257,15 +254,12 @@ public class TopLevelWindow : InputOutputWidget
 						// that we want to be de-iconified.
 						Xlib.XMapRaised(display, GetWidgetHandle());
 						iconic = false;
-						if(IconicState != null)
-						{
-							IconicState(this, false);
-						}
+						OnIconicStateChanged(false);
 						if(!mapped)
 						{
 							// We are mapped now as well.
 							mapped = true;
-							MapStateChanged();
+							OnMapStateChanged();
 						}
 					}
 				}
@@ -283,7 +277,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// <returns>
 	/// <para>Returns <see langword="true"/> if the window was destroyed,
 	/// or <see langword="false"/> if the window is still active
-	/// because one of the close event handlers reported
+	/// because the <c>OnClose</c> method returned
 	/// <see langword="false"/>.</para>
 	/// </returns>
 	public bool Close()
@@ -294,28 +288,10 @@ public class TopLevelWindow : InputOutputWidget
 					return true;
 				}
 
-				// Call each of the "Closed" event handlers in turn,
-				// until one returns false or the window is destroyed.
-				if(Closed != null)
+				// Ask the "OnClose" method if we can close or not.
+				if(!OnClose())
 				{
-					Delegate[] list = Closed.GetInvocationList();
-					int index;
-					ClosedEventHandler handler;
-					for(index = 0; index < list.Length; ++index)
-					{
-						handler = (ClosedEventHandler)(list[index]);
-						if(!handler(this))
-						{
-							// This handler wanted us to bail out.
-							return (handle == Xlib.Drawable.Zero);
-						}
-						else if(handle == Xlib.Drawable.Zero)
-						{
-							// The handler destroyed the window: we assume
-							// that it didn't want the standard quit logic.
-							return true;
-						}
-					}
+					return false;
 				}
 
 				// Destroy the window.
@@ -426,36 +402,27 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when the window's iconic state
+	/// <para>Method that is called when the window's iconic state
 	/// changes.</para>
 	/// </summary>
-	public event IconicStateEventHandler IconicState;
+	protected virtual void OnIconicStateChanged(bool iconfiy)
+			{
+				// Nothing to do in this base class.
+			}
 
 	/// <summary>
-	/// <para>Event that is raised when the window's close box is
+	/// <para>Method that is called when the window's close box is
 	/// clicked by the user.</para>
 	/// </summary>
 	///
-	/// <remarks>
-	/// <para>The system will call each close handler in turn.  If one
-	/// of them returns <see langword="false"/>, the process stops
-	/// and no further actions are taken.</para>
-	///
-	/// <para>If all handlers return <see langword="true"/>, or there
-	/// are no handlers registered, then <c>Destroy</c> will be called
-	/// to destroy the window.  If this was the last mapped top-level
-	/// window attached to the screen, then <c>Display.Quit</c> will
-	/// then be called to quit the application.</para>
-	///
-	/// <para>If an event handler wants to remove the window from the
-	/// screen without destroying it or quitting, it should call
-	/// <c>Unmap</c> and then return <see langword="false"/>.</para>
-	///
-	/// <para>If an event handler wants to destroy a window without
-	/// quitting, it should call <c>Destroy</c> and then return
-	/// <see langword="false"/>.</para>
-	/// </remarks>
-	public event ClosedEventHandler Closed;
+	/// <returns>
+	/// <value>Returns <see langword="true"/> to destroy the window,
+	/// or <see langword="false"/> to ignore the close message.
+	/// </returns>
+	protected virtual bool OnClose()
+			{
+				return true;
+			}
 
 	// Detect that this top-level window has gained the primary focus.
 	private void PrimaryFocusIn()

@@ -34,8 +34,9 @@ using Xsharp.Events;
 public class InputOnlyWidget : Widget
 {
 	// Internal state.
-	private InputEventHandlers handlers;
 	private bool focusable;
+	public Xlib.Time lastClickTime;
+	public ButtonName lastClickButton;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.InputOnlyWidget"/>
@@ -132,6 +133,13 @@ public class InputOnlyWidget : Widget
 					layer = 0x7FFFFFFF;
 					Layer = 0;
 					ok = true;
+
+					// Select for mouse events.
+					SelectInput(EventMask.ButtonPressMask |
+								EventMask.ButtonReleaseMask |
+								EventMask.EnterWindowMask |
+								EventMask.LeaveWindowMask |
+								EventMask.PointerMotionMask);
 				}
 				finally
 				{
@@ -213,6 +221,13 @@ public class InputOnlyWidget : Widget
 					layer = 0x7FFFFFFF;
 					Layer = 0;
 					ok = true;
+
+					// Select for mouse events.
+					SelectInput(EventMask.ButtonPressMask |
+								EventMask.ButtonReleaseMask |
+								EventMask.EnterWindowMask |
+								EventMask.LeaveWindowMask |
+								EventMask.PointerMotionMask);
 				}
 				finally
 				{
@@ -305,441 +320,247 @@ public class InputOnlyWidget : Widget
 				}
 			}
 
-	// Get the input handler list.
-	private InputEventHandlers GetHandlers()
-			{
-				if(handlers == null)
-				{
-					handlers = new InputEventHandlers();
-				}
-				return handlers;
-			}
-
 	/// <summary>
-	/// <para>Event that is raised when any mouse button is pressed
+	/// <para>Method that is called when any mouse button is pressed
 	/// while the pointer is inside this widget.</para>
 	/// </summary>
-	public event ButtonPressEventHandler ButtonPress
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="button">
+	/// <para>The button that was pressed.</para>
+	/// </param>
+	///
+	/// <param name="modifiers">
+	/// <para>Other button and shift flags that were active.</para>
+	/// </param>
+	protected virtual void OnButtonPress(int x, int y, ButtonName button,
+									     ModifierMask modifiers)
 			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.ButtonPressMask);
-						handlers.press += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.press -= value;
-							handlers.DeselectButtonPress(this);
-						}
-					}
-				}
+				// Nothing to do in this class.
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when any mouse button is released
+	/// <para>Method that is called when any mouse button is released
 	/// while the pointer is inside this widget.</para>
 	/// </summary>
-	public event ButtonReleaseEventHandler ButtonRelease
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="button">
+	/// <para>The button that was released.</para>
+	/// </param>
+	///
+	/// <param name="modifiers">
+	/// <para>Other button and shift flags that were active.</para>
+	/// </param>
+	protected virtual void OnButtonRelease(int x, int y, ButtonName button,
+									  	   ModifierMask modifiers)
 			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.ButtonReleaseMask);
-						handlers.release += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.release -= value;
-							handlers.DeselectButtonRelease(this);
-						}
-					}
-				}
+				// Nothing to do in this class.
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when any mouse button is double-clicked
+	/// <para>Method that is called when any mouse button is double-clicked
 	/// while the pointer is inside this widget.</para>
 	/// </summary>
-	public event ButtonPressEventHandler ButtonDoubleClick
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="button">
+	/// <para>The button that was pressed.</para>
+	/// </param>
+	///
+	/// <param name="modifiers">
+	/// <para>Other button and shift flags that were active.</para>
+	/// </param>
+	protected virtual void OnButtonDoubleClick
+				(int x, int y, ButtonName button, ModifierMask modifiers)
 			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.ButtonPressMask);
-						handlers.doubleClick += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.doubleClick -= value;
-							handlers.DeselectButtonPress(this);
-						}
-					}
-				}
+				// Nothing to do in this class.
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when the "Select" mouse button is pressed
-	/// while the pointer is inside this widget.  Usually this is the
-	/// "Left" mouse button.</para>
+	/// <para>Method that is called when the mouse pointer is moved inside
+	/// this widget.</para>
 	/// </summary>
-	public event ButtonPressEventHandler SelectPress
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="modifiers">
+	/// <para>Other button and shift flags that were active.</para>
+	/// </param>
+	protected virtual void OnPointerMotion
+				(int x, int y, ModifierMask modifiers)
 			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.ButtonPressMask);
-						handlers.selectPress += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.selectPress -= value;
-							handlers.DeselectButtonPress(this);
-						}
-					}
-				}
+				// Nothing to do in this class.
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when the "Select" mouse button is released
-	/// while the pointer is inside this widget.  Usually this is the
-	/// "Left" mouse button.</para>
-	/// </summary>
-	public event ButtonReleaseEventHandler SelectRelease
-			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.ButtonReleaseMask);
-						handlers.selectRelease += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.selectRelease -= value;
-							handlers.DeselectButtonRelease(this);
-						}
-					}
-				}
-			}
-
-	/// <summary>
-	/// <para>Event that is raised when the "Select" mouse button is
-	/// double-clicked while the pointer is inside this widget.</para>
-	/// </summary>
-	public event ButtonPressEventHandler SelectDoubleClick
-			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.ButtonPressMask);
-						handlers.selectDoubleClick += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.selectDoubleClick -= value;
-							handlers.DeselectButtonPress(this);
-						}
-					}
-				}
-			}
-
-	/// <summary>
-	/// <para>Event that is raised when the "Menu" mouse button is pressed
-	/// while the pointer is inside this widget.  Usually this is the
-	/// "Right" mouse button.</para>
-	/// </summary>
-	public event ButtonPressEventHandler MenuPress
-			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.ButtonPressMask);
-						handlers.menuPress += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.menuPress -= value;
-							handlers.DeselectButtonPress(this);
-						}
-					}
-				}
-			}
-
-	/// <summary>
-	/// <para>Event that is raised when the "Menu" mouse button is released
-	/// while the pointer is inside this widget.  Usually this is the
-	/// "Right" mouse button.</para>
-	/// </summary>
-	public event ButtonReleaseEventHandler MenuRelease
-			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.ButtonReleaseMask);
-						handlers.menuRelease += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.menuRelease -= value;
-							handlers.DeselectButtonRelease(this);
-						}
-					}
-				}
-			}
-
-	/// <summary>
-	/// <para>Event that is raised when the "Menu" mouse button is
-	/// double-clicked while the pointer is inside this widget.</para>
-	/// </summary>
-	public event ButtonPressEventHandler MenuDoubleClick
-			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.ButtonPressMask);
-						handlers.menuDoubleClick += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.menuDoubleClick -= value;
-							handlers.DeselectButtonPress(this);
-						}
-					}
-				}
-			}
-
-	/// <summary>
-	/// <para>Event that is raised when the mouse pointer is moved
-	/// inside this widget.</para>
-	/// </summary>
-	public event PointerMotionEventHandler PointerMotion
-			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.PointerMotionMask);
-						handlers.motion += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.motion -= value;
-							if(handlers.motion == null)
-							{
-								DeselectInput(EventMask.PointerMotionMask);
-							}
-						}
-					}
-				}
-			}
-
-	/// <summary>
-	/// <para>Event that is raised if a key is pressed when this
+	/// <para>Method that is called if a key is pressed when this
 	/// widget has the focus.</para>
 	/// </summary>
-	public event KeyPressEventHandler KeyPress
+	///
+	/// <param name="key">
+	/// <para>The key code.</para>
+	/// </param>
+	///
+	/// <param name="modifiers">
+	/// <para>Other button and shift flags that were active.</para>
+	/// </param>
+	///
+	/// <param name="str">
+	/// <para>The translated string that corresponds to the key, or
+	/// <see langword="null"/> if the key does not have a translation.</para>
+	/// </param>
+	///
+	/// <returns>
+	/// <para>Returns <see langword="true"/> if the key has been processed
+	/// and it should not be passed further up the focus tree.  Returns
+	/// <see langword="false"/> if the key should be passed further up
+	/// the focus tree.</para>
+	/// </returns>
+	///
+	/// <remarks>The <paramref name="key"/> parameter indicates the X11
+	/// symbol that corresponds to the key, which allows cursor control
+	/// and function keys to be easily distinguished.  The
+	/// <paramref name="str"/> is primarily of use to text
+	/// input widgets.</remarks>
+	protected virtual bool OnKeyPress(KeyName key,
+									  ModifierMask modifiers, String str)
 			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						handlers.keyPress += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.keyPress -= value;
-						}
-					}
-				}
+				// Nothing to do in this class.
+				return false;
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when the mouse pointer enters
+	/// <para>Method that is called when the mouse pointer enters
 	/// this widget.</para>
 	/// </summary>
-	public event CrossingEventHandler Enter
+	///
+	/// <param name="child">
+	/// <para>The child widget that contained the previous or final
+	/// position, or <see langword="null"/> if no applicable child
+	/// widget.</para>
+	/// </param>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="modifiers">
+	/// <para>Button and shift flags that were active.</para>
+	/// </param>
+	///
+	/// <param name="mode">
+	/// <para>The notification mode value from the event.</para>
+	/// </param>
+	///
+	/// <param name="detail">
+	/// <para>The notification detail value from the event.</para>
+	/// </param>
+	protected virtual void OnEnter(Widget child, int x, int y,
+								   ModifierMask modifiers,
+								   CrossingMode mode,
+								   CrossingDetail detail)
 			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.EnterWindowMask);
-						handlers.enter += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.enter -= value;
-							if(handlers.enter == null)
-							{
-								DeselectInput(EventMask.EnterWindowMask);
-							}
-						}
-					}
-				}
+				// Nothing to do in this class.
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when the mouse pointer leaves
+	/// <para>Method that is called when the mouse pointer leaves
 	/// this widget.</para>
 	/// </summary>
-	public event CrossingEventHandler Leave
+	///
+	/// <param name="child">
+	/// <para>The child widget that contained the previous or final
+	/// position, or <see langword="null"/> if no applicable child
+	/// widget.</para>
+	/// </param>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="modifiers">
+	/// <para>Button and shift flags that were active.</para>
+	/// </param>
+	///
+	/// <param name="mode">
+	/// <para>The notification mode value from the event.</para>
+	/// </param>
+	///
+	/// <param name="detail">
+	/// <para>The notification detail value from the event.</para>
+	/// </param>
+	protected virtual void OnLeave(Widget child, int x, int y,
+								   ModifierMask modifiers,
+								   CrossingMode mode,
+								   CrossingDetail detail)
 			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						SelectInput(EventMask.LeaveWindowMask);
-						handlers.leave += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.leave -= value;
-							if(handlers.leave == null)
-							{
-								DeselectInput(EventMask.LeaveWindowMask);
-							}
-						}
-					}
-				}
+				// Nothing to do in this class.
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when the keyboard focus enters
+	/// <para>Method that is called when the keyboard focus enters
 	/// this widget.</para>
 	/// </summary>
-	public event FocusChangeEventHandler FocusIn
+	///
+	/// <param name="other">
+	/// <para>The previous widget within the same top-level window that had
+	/// the focus, or <see langword="null"/> if the focus is entering the
+	/// top-level window from outside.</para>
+	/// </param>
+	protected virtual void OnFocusIn(Widget other)
 			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						handlers.focusIn += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.focusIn -= value;
-						}
-					}
-				}
+				// Nothing to do in this class.
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when the keyboard focus leaves
+	/// <para>Method that is called when the keyboard focus leaves
 	/// this widget.</para>
 	/// </summary>
-	public event FocusChangeEventHandler FocusOut
+	///
+	/// <param name="other">
+	/// <para>The new widget within the same top-level window that will receive
+	/// the focus, or <see langword="null"/> if the focus is leaving the
+	/// top-level window.</para>
+	/// </param>
+	protected virtual void OnFocusOut(Widget other)
 			{
-				add
-				{
-					lock(this)
-					{
-						InputEventHandlers handlers = GetHandlers();
-						handlers.focusOut += value;
-					}
-				}
-				remove
-				{
-					lock(this)
-					{
-						if(handlers != null)
-						{
-							handlers.focusOut -= value;
-						}
-					}
-				}
+				// Nothing to do in this class.
 			}
 
 	/// <summary>
@@ -770,12 +591,82 @@ public class InputOnlyWidget : Widget
 	// Dispatch an event to this widget.
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
-				lock(this)
+				ButtonName button;
+				Xlib.Time time;
+	
+				switch(xevent.type)
 				{
-					if(handlers != null)
+					case EventType.ButtonPress:
 					{
-						handlers.DispatchEvent(this, ref xevent);
+						// Process button events.
+						button = xevent.xbutton.button;
+						time = xevent.xbutton.time;
+						if(lastClickButton == button &&
+						   lastClickTime != Xlib.Time.CurrentTime &&
+						   (time - lastClickTime) < 500)
+						{
+							OnButtonDoubleClick(xevent.xbutton.x,
+								        		xevent.xbutton.y, button,
+								        		xevent.xbutton.state);
+							time = Xlib.Time.CurrentTime;
+						}
+						else
+						{
+							OnButtonPress(xevent.xbutton.x,
+								  		  xevent.xbutton.y, button,
+								  		  xevent.xbutton.state);
+						}
+						lastClickTime = time;
+						lastClickButton = button;
 					}
+					break;
+
+					case EventType.ButtonRelease:
+					{
+						// Dispatch a button release event.
+						button = xevent.xbutton.button;
+						OnButtonRelease(xevent.xbutton.x,
+										xevent.xbutton.y, button,
+										xevent.xbutton.state);
+					}
+					break;
+
+					case EventType.MotionNotify:
+					{
+						// Dispatch a pointer motion event.
+						OnPointerMotion(xevent.xmotion.x,
+								   	    xevent.xmotion.y,
+								   	    xevent.xmotion.state);
+					}
+					break;
+
+					case EventType.EnterNotify:
+					{
+						// Dispatch a widget enter event.
+						Widget child = (Widget)(dpy.handleMap
+							[(int)(xevent.xcrossing.subwindow)]);
+						OnEnter(child,
+							    xevent.xcrossing.x,
+							    xevent.xcrossing.y,
+							    xevent.xcrossing.state,
+							    xevent.xcrossing.mode,
+							    xevent.xcrossing.detail);
+					}
+					break;
+
+					case EventType.LeaveNotify:
+					{
+						// Dispatch a widget leave event.
+						Widget child = (Widget)(dpy.handleMap
+							[(int)(xevent.xcrossing.subwindow)]);
+						OnLeave(child,
+							    xevent.xcrossing.x,
+							    xevent.xcrossing.y,
+							    xevent.xcrossing.state,
+							    xevent.xcrossing.mode,
+							    xevent.xcrossing.detail);
+					}
+					break;
 				}
 			}
 
@@ -783,16 +674,12 @@ public class InputOnlyWidget : Widget
 	internal bool DispatchKeyEvent(KeyName key, ModifierMask modifiers,
 								   String str)
 			{
-				lock(this)
+				if(FullSensitive)
 				{
-					if(FullSensitive && handlers != null &&
-					   handlers.keyPress != null)
-					{
-						if(handlers.keyPress(this, key, modifiers, str))
-						{
-							return true;
-						}
-					}
+					return OnKeyPress(key, modifiers, str);
+				}
+				else
+				{
 					return false;
 				}
 			}
@@ -800,225 +687,14 @@ public class InputOnlyWidget : Widget
 	// Dispatch a focus in event to this widget from the top-level window.
 	internal void DispatchFocusIn(Widget oldWidget)
 			{
-				lock(this)
-				{
-					if(handlers != null && handlers.focusIn != null)
-					{
-						handlers.focusIn(this, oldWidget);
-					}
-				}
+				OnFocusIn(oldWidget);
 			}
 
 	// Dispatch a focus out event to this widget from the top-level window.
-	internal void DispatchFocusOut(Widget oldWidget)
+	internal void DispatchFocusOut(Widget newWidget)
 			{
-				lock(this)
-				{
-					if(handlers != null && handlers.focusOut != null)
-					{
-						handlers.focusOut(this, oldWidget);
-					}
-				}
+				OnFocusOut(newWidget);
 			}
-
-	// Input event handling class.  This is created only if the
-	// user selects for input events, to avoid wasting memory if
-	// no button/key events are desired on a particular widget.
-	private class InputEventHandlers
-	{
-		public ButtonPressEventHandler press;
-		public ButtonReleaseEventHandler release;
-		public ButtonPressEventHandler doubleClick;
-		public ButtonPressEventHandler selectPress;
-		public ButtonReleaseEventHandler selectRelease;
-		public ButtonPressEventHandler selectDoubleClick;
-		public ButtonPressEventHandler menuPress;
-		public ButtonReleaseEventHandler menuRelease;
-		public ButtonPressEventHandler menuDoubleClick;
-		public PointerMotionEventHandler motion;
-		public Xlib.Time lastClickTime;
-		public ButtonName lastClickButton;
-		public KeyPressEventHandler keyPress;
-		public CrossingEventHandler enter;
-		public CrossingEventHandler leave;
-		public FocusChangeEventHandler focusIn;
-		public FocusChangeEventHandler focusOut;
-
-		// Dispatch an event to the widget that owns this handler list.
-		public void DispatchEvent(Widget widget, ref XEvent xevent)
-				{
-					ButtonName button;
-					Xlib.Time time;
-	
-					switch(xevent.type)
-					{
-						case EventType.ButtonPress:
-						{
-							// Process generic button events.
-							button = xevent.xbutton.button;
-							time = xevent.xbutton.time;
-							if(doubleClick != null &&
-							   lastClickButton == button &&
-							   lastClickTime != Xlib.Time.CurrentTime &&
-							   (time - lastClickTime) < 500)
-							{
-								doubleClick(widget, xevent.xbutton.x,
-									        xevent.xbutton.y, button,
-									        xevent.xbutton.state);
-								time = Xlib.Time.CurrentTime;
-							}
-							else if(press != null)
-							{
-								press(widget, xevent.xbutton.x,
-									  xevent.xbutton.y, button,
-									  xevent.xbutton.state);
-							}
-	
-							// Process button events for specific buttons.
-							if(button == widget.dpy.selectButton)
-							{
-								if(selectDoubleClick != null &&
-								   lastClickButton == button &&
-								   lastClickTime != Xlib.Time.CurrentTime &&
-								   (time - lastClickTime) < 500)
-								{
-									selectDoubleClick(widget, xevent.xbutton.x,
-										        	  xevent.xbutton.y, button,
-										        	  xevent.xbutton.state);
-									time = Xlib.Time.CurrentTime;
-								}
-								else if(selectPress != null)
-								{
-									selectPress(widget, xevent.xbutton.x,
-										  	    xevent.xbutton.y, button,
-										  	    xevent.xbutton.state);
-								}
-							}
-							else if(button == widget.dpy.menuButton)
-							{
-								if(menuDoubleClick != null &&
-								   lastClickButton == button &&
-								   lastClickTime != Xlib.Time.CurrentTime &&
-								   (time - lastClickTime) < 500)
-								{
-									menuDoubleClick(widget, xevent.xbutton.x,
-										        	xevent.xbutton.y, button,
-										        	xevent.xbutton.state);
-									time = Xlib.Time.CurrentTime;
-								}
-								else if(menuPress != null)
-								{
-									menuPress(widget, xevent.xbutton.x,
-										  	  xevent.xbutton.y, button,
-										  	  xevent.xbutton.state);
-								}
-							}
-							lastClickTime = time;
-							lastClickButton = button;
-						}
-						break;
-	
-						case EventType.ButtonRelease:
-						{
-							// Dispatch a button release event.
-							button = xevent.xbutton.button;
-							if(release != null)
-							{
-								release(widget, xevent.xbutton.x,
-										xevent.xbutton.y, button,
-										xevent.xbutton.state);
-							}
-							if(button == widget.dpy.selectButton &&
-							   selectRelease != null)
-							{
-								selectRelease(widget, xevent.xbutton.x,
-									  	      xevent.xbutton.y, button,
-									  	      xevent.xbutton.state);
-							}
-							else if(button == widget.dpy.menuButton &&
-									menuRelease != null)
-							{
-								menuRelease(widget, xevent.xbutton.x,
-									  	    xevent.xbutton.y, button,
-									  	    xevent.xbutton.state);
-							}
-						}
-						break;
-
-						case EventType.MotionNotify:
-						{
-							// Dispatch a pointer motion event.
-							if(motion != null)
-							{
-								motion(widget, xevent.xmotion.x,
-									   xevent.xmotion.y,
-									   xevent.xmotion.state);
-							}
-						}
-						break;
-
-						case EventType.EnterNotify:
-						{
-							// Dispatch a widget enter event.
-							if(enter != null)
-							{
-								Widget child = (Widget)(widget.dpy.handleMap
-									[(int)(xevent.xcrossing.subwindow)]);
-								enter(widget, child,
-									  xevent.xcrossing.x,
-									  xevent.xcrossing.y,
-									  xevent.xcrossing.state,
-									  xevent.xcrossing.mode,
-									  xevent.xcrossing.detail);
-							}
-						}
-						break;
-
-						case EventType.LeaveNotify:
-						{
-							// Dispatch a widget leave event.
-							if(leave != null)
-							{
-								Widget child = (Widget)(widget.dpy.handleMap
-									[(int)(xevent.xcrossing.subwindow)]);
-								leave(widget, child,
-									  xevent.xcrossing.x,
-									  xevent.xcrossing.y,
-									  xevent.xcrossing.state,
-									  xevent.xcrossing.mode,
-									  xevent.xcrossing.detail);
-							}
-						}
-						break;
-					}
-				}
-
-		// Deselect ButtonPress events if nothing else is interested in them.
-		public void DeselectButtonPress(Widget widget)
-				{
-					if(((Object)press) == null &&
-					   ((Object)doubleClick) == null &&
-					   ((Object)selectPress) == null &&
-					   ((Object)selectDoubleClick) == null &&
-					   ((Object)menuPress) == null &&
-					   ((Object)menuDoubleClick) == null)
-					{
-						widget.DeselectInput(EventMask.ButtonPressMask);
-					}
-				}
-
-		// Deselect ButtonRelease events if nothing else is interested in them.
-		public void DeselectButtonRelease(Widget widget)
-				{
-					if(((Object)release) == null &&
-					   ((Object)selectRelease) == null &&
-					   ((Object)menuRelease) == null)
-					{
-						widget.DeselectInput(EventMask.ButtonReleaseMask);
-					}
-				}
-
-	} // class InputEventHandlers
 
 } // class InputOnlyWidget
 

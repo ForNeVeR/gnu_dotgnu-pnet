@@ -5,6 +5,13 @@
 	add some more drawing primitives to Xsharp.Graphics; use the
 	correct parameters for "LastIndexOf" in the "Appliction" constructor.
 
+	* Xsharp/EventHandlers.cs, Xsharp/InputOnlyWidget.cs,
+	Xsharp/InputOutputWidget.cs, Xsharp/TopLevelWindow.cs,
+	Xsharp/Widget.cs, samples/XHello.cs, samples/ilrun.sh.in:
+	change event handlers into protected virtual methods in Xsharp,
+	to make it easier to use as the base of larger widget frameworks
+	(the framework can map the virtuals to events if necessary).
+
 2003-06-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/Serialization/ObjectManager.cs,

@@ -753,10 +753,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					{
 						AdjustPositionAndSize(display, x, y,
 											  this.width, this.height);
-						if(Moved != null)
-						{
-							Moved(this, x, y);
-						}
+						OnMove(x, y);
 					}
 				}
 				finally
@@ -795,10 +792,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					{
 						AdjustPositionAndSize(display, this.x, this.y,
 											  width, height);
-						if(Resized != null)
-						{
-							Resized(this, width, height);
-						}
+						OnResize(width, height);
 					}
 				}
 				finally
@@ -845,10 +839,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					{
 						Xlib.XMapWindow(display, GetWidgetHandle());
 						mapped = true;
-						if(MapState != null)
-						{
-							MapState(this, true);
-						}
+						OnMapStateChanged();
 					}
 				}
 				finally
@@ -869,24 +860,12 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					{
 						Xlib.XUnmapWindow(display, GetWidgetHandle());
 						mapped = false;
-						if(MapState != null)
-						{
-							MapState(this, false);
-						}
+						OnMapStateChanged();
 					}
 				}
 				finally
 				{
 					dpy.Unlock();
-				}
-			}
-
-	// Record a change in map state from a subclass.
-	internal void MapStateChanged()
-			{
-				if(MapState != null)
-				{
-					MapState(this, mapped);
 				}
 			}
 
@@ -907,10 +886,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 	private void UpdateSensitivity()
 			{
 				// Notify everyone who is interested in our sensitivity change.
-				if(SensitivityChanged != null)
-				{
-					SensitivityChanged(this);
-				}
+				OnSensitivityChanged();
 
 				// Modify the ancestor sensitivity of the child widgets.
 				Widget child = topChild;
@@ -1193,26 +1169,56 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when the widget is moved to a
+	/// <para>Method that is called when the widget is moved to a
 	/// new position.</para>
 	/// </summary>
-	public event MovedEventHandler Moved;
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the new top-left widget corner.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the new top-left widget corner.</para>
+	/// </param>
+	protected virtual void OnMove(int x, int y)
+			{
+				// Nothing to do in the base class.
+			}
 
 	/// <summary>
-	/// <para>Event that is raised when the widget is resized to
-	/// a new size.</para>
+	/// <para>Method that is called when the widget is resized to a
+	/// new size.</para>
 	/// </summary>
-	public event ResizedEventHandler Resized;
+	///
+	/// <param name="width">
+	/// <para>The new width for the widget.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The new width for the widget.</para>
+	/// </param>
+	protected virtual void OnResize(int width, int height)
+			{
+				// Nothing to do in the base class.
+			}
 
 	/// <summary>
-	/// <para>Event that is raised when the widget's map state changes.</para>
+	/// <para>Method that is called when the widget is mapped or
+	/// unmapped.</para>
 	/// </summary>
-	public event MapStateEventHandler MapState;
+	protected virtual void OnMapStateChanged()
+			{
+				// Nothing to do in the base class.
+			}
 
 	/// <summary>
-	/// <para>Event that is raised when the widget's sensitivity changes.</para>
+	/// <para>Method that is called when the widget's sensitivity
+	/// changes.</para>
 	/// </summary>
-	public event SensitivityChangedEventHandler SensitivityChanged;
+	protected virtual void OnSensitivityChanged()
+			{
+				// Nothing to do in the base class.
+			}
 
 } // class Widget
 

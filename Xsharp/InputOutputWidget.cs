@@ -36,7 +36,6 @@ public class InputOutputWidget : InputOnlyWidget
 	private Color foreground;
 	private Color background;
 	private Pixmap backgroundPixmap;
-	private PaintEventHandler paint;
 	private Region exposeRegion;
 	internal InputOutputWidget nextExpose;
 
@@ -89,6 +88,7 @@ public class InputOutputWidget : InputOnlyWidget
 			{
 				foreground = new Color(StandardColor.Foreground);
 				background = new Color(StandardColor.Inherit);
+				SelectInput(EventMask.ExposureMask);
 			}
 
 	/// <summary>
@@ -149,6 +149,7 @@ public class InputOutputWidget : InputOnlyWidget
 			{
 				this.foreground = foreground;
 				this.background = background;
+				SelectInput(EventMask.ExposureMask);
 			}
 
 	// Internal constructor that is used by "TopLevelWindow" and
@@ -162,6 +163,7 @@ public class InputOutputWidget : InputOnlyWidget
 			{
 				this.foreground = foreground;
 				this.background = background;
+				SelectInput(EventMask.ExposureMask);
 			}
 
 	/// <summary>
@@ -360,32 +362,19 @@ public class InputOutputWidget : InputOnlyWidget
 			}
 
 	/// <summary>
-	/// <para>Event that is raised when the widget needs to be
+	/// <para>Method that is raised when the widget needs to be
 	/// painted in reponse to an <c>Expose</c> event.</para>
 	/// </summary>
-	public event PaintEventHandler Paint
+	///
+	/// <param name="graphics">
+	/// <para>The graphics object to use to repaint the widget.  This
+	/// graphics object will have been initialised with the widgets foreground
+	/// and background colors, and with the clipping region set to the area
+	/// that needs to be repainted.</para>
+	/// </param>
+	protected virtual void OnPaint(Graphics graphics)
 			{
-				add
-				{
-					// Add ExposureMask to the widget's select mask if this
-					// is the first delegate that was added to the event.
-					if(paint == null)
-					{
-						SelectInput(EventMask.ExposureMask);
-					}
-					paint += value;
-				}
-				remove
-				{
-					// Remove ExposureMask from the widget's select mask if
-					// this was the last delegate to be removed from the event.
-					paint -= value;
-					if(paint == null)
-					{
-						DeselectInput(EventMask.ExposureMask);
-						RemovePendingExpose();
-					}
-				}
+				// Nothing to do in this class.
 			}
 
 	// Dispatch an event to this widget.
@@ -396,33 +385,29 @@ public class InputOutputWidget : InputOnlyWidget
 					case EventType.Expose:
 					case EventType.GraphicsExpose:
 					{
-						// Process exposures, and call "Paint" when ready.
-						if(paint != null)
+						// Add the area to the expose region.
+						if(exposeRegion == null)
 						{
-							// Add the area to the expose region.
-							if(exposeRegion == null)
-							{
-								// This is the first rectangle in an expose.
-								exposeRegion = new Region
-									(xevent.xexpose.x,
-									 xevent.xexpose.y,
-									 xevent.xexpose.width,
-									 xevent.xexpose.height);
+							// This is the first rectangle in an expose.
+							exposeRegion = new Region
+								(xevent.xexpose.x,
+								 xevent.xexpose.y,
+								 xevent.xexpose.width,
+								 xevent.xexpose.height);
 
-								// Queue this widget for later repainting.
-								// We don't do it now or the system will be
-								// very slow during opaque window drags.
-								dpy.AddPendingExpose(this);
-							}
-							else
-							{
-								// This is an extra rectangle in an expose.
-								exposeRegion.Union
-									(xevent.xexpose.x,
-									 xevent.xexpose.y,
-									 xevent.xexpose.width,
-									 xevent.xexpose.height);
-							}
+							// Queue this widget for later repainting.
+							// We don't do it now or the system will be
+							// very slow during opaque window drags.
+							dpy.AddPendingExpose(this);
+						}
+						else
+						{
+							// This is an extra rectangle in an expose.
+							exposeRegion.Union
+								(xevent.xexpose.x,
+								 xevent.xexpose.y,
+								 xevent.xexpose.width,
+								 xevent.xexpose.height);
 						}
 					}
 					break;
@@ -448,18 +433,11 @@ public class InputOutputWidget : InputOnlyWidget
 				if(region != null)
 				{
 					exposeRegion = null;
-					if(paint != null)
-					{
-						Graphics graphics = new Graphics(this);
-						graphics.SetClipRegion(region);
-						region.Dispose();
-						paint(this, graphics);
-						graphics.Dispose();
-					}
-					else
-					{
-						region.Dispose();
-					}
+					Graphics graphics = new Graphics(this);
+					graphics.SetClipRegion(region);
+					region.Dispose();
+					OnPaint(graphics);
+					graphics.Dispose();
 				}
 			}
 

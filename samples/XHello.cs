@@ -18,37 +18,44 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#if CONFIG_REFLECTION
+
 using System;
 using Xsharp;
 
-public class XHello
+public class XHello : TopLevelWindow
 {
-
-#if CONFIG_REFLECTION
-
 	// Main entry point.
 	public static void Main(String[] args)
 	{
 		Application app = new Application("XHello", args);
-		TopLevelWindow topLevel = new TopLevelWindow("Hello World!", 200, 100);
-		topLevel.Paint += new PaintEventHandler(PaintHello);
+		XHello topLevel = new XHello("Hello World!", 200, 100);
 		topLevel.Map();
 		app.Run();
 		app.Close();
 	}
 
-	// Paint the top-level window.
-	public static void PaintHello(Widget widget, Graphics graphics)
+	// Constructor.
+	public XHello(String title, int width, int height)
+		: base(title, width, height) {}
+
+	// Handle paint requests.
+	protected override void OnPaint(Graphics graphics)
 	{
-		graphics.DrawLine(0, 0, widget.Width, widget.Height);
-		graphics.DrawLine(0, widget.Height, widget.Width, 0);
+		graphics.DrawLine(0, 0, Width, Height);
+		graphics.DrawLine(0, Height, Width, 0);
 	}
 
+}; // class XHello
+
 #else
+
+public class XHello
+{
 
 	// Stubbed out on platforms without Xsharp.
 	public static void Main(String[] args) {}
 
-#endif
+}; // class XHello
 
-} // class XHello
+#endif

@@ -82,8 +82,7 @@ public abstract class WebRequest : MarshalByRefObject
 	{
 		if (requestUriString == null)
 		{
-			throw new ArgumentNullException("requestUriString",
-											S._("Arg_NotNull"));
+			throw new ArgumentNullException("requestUriString");
 		}
 
 		Uri requestUri = new Uri(requestUriString);		
@@ -228,7 +227,8 @@ public abstract class WebRequest : MarshalByRefObject
 	{
 
 	internal WebRequestCreator()
-		{}
+	{
+	}
 	
 	public WebRequest Create(Uri uri)
 		{
@@ -242,13 +242,13 @@ public abstract class WebRequest : MarshalByRefObject
 	{ 
 		get
 		{
-			throw new NotSupportedException("ConnectionGroupName ");
+			throw new NotSupportedException("ConnectionGroupName");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("ConnectionGroupName ");
-		} 
+			throw new NotSupportedException("ConnectionGroupName");
+		}
 	}
 
 	public virtual long ContentLength

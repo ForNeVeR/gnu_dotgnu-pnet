@@ -1,4 +1,16 @@
 
+2002-12-17  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/IO/File.cs: Change some of the formatting of earlier
+	code to be compatible with pnetlib standards.
+
+	* System/Net/WebRequest.cs: Some cosmetic changes here as well.
+
+2002-12-20  Aditya P. Bansod <abansod@fullenergy.com>
+
+	* runtime/System/IO/File.cs: Throw the correct exceptions and general
+	cleanup of System.IO.File class. (Patch #871, Gopal)
+	
 2002-12-20  Jason Lee <jason.lee@mac.com>
 
 	* System/Net/WebRequest.cs: Bring up the WebRequest to spec, Mainly the 

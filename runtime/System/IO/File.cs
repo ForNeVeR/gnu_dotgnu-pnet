@@ -43,26 +43,28 @@ namespace System.IO
 			Copy(source, dest, false);
 		}
 
-				
-			
-			
-		
-			
-	
-		
+
 		public static void Copy(string source, string dest, bool overwrite) 
 		{
 			
-			if (source == null || dest == null) 
+			if (source == null) 
 			{
-				throw new ArgumentNullException();
+				throw new ArgumentNullException("source");
+			}
+			if (dest == null)
+			{
+				throw new ArgumentNullException("dest");
 			}
 			
-			if (!FileMethods.ValidatePathname(source) || !FileMethods.ValidatePathname(dest)) 
+			if (!FileMethods.ValidatePathname(source)) 
 			{
-				throw new ArgumentException();
+				throw new ArgumentException(_("IO_InvalidPathname"), "source");
 			}
 
+			if (!FileMethods.ValidatePathname(dest)) 
+			{
+				throw new ArgumentException(_("IO_InvalidPathname"), "dest");
+			}
 
 			Errno err = DirMethods.Copy(source, dest);
 			
@@ -106,8 +108,8 @@ namespace System.IO
 				// (Suggestions would be welcome)
 				default:
 					throw new ArgumentException();	
+			}
 		}
-}
 	
 		public static FileStream Create(string path) 
 		{
@@ -129,12 +131,12 @@ namespace System.IO
 		{
 			if (path == null) 
 			{
-				throw new ArgumentNullException();
+				throw new ArgumentNullException("path");
 			}
 		
 			if (!FileMethods.ValidatePathname(path)) 
 			{
-				throw new ArgumentException();
+				throw new ArgumentException(_("IO_InvalidPathname"), "path");
 			}
 		
 			Errno err = DirMethods.Delete(path);
@@ -164,8 +166,8 @@ namespace System.IO
 				default:
 					throw new ArgumentException();
 				
-	}
-}
+			}
+		}
 
 		public static bool Exists(string path) 
 		{

@@ -1494,10 +1494,10 @@ PrimaryExpression
 	| MODULE			{ $$ = ILQualIdentSimple("<Module>"); }
 	| DELEGATE AnonymousMethod				{ $$ = $2; }
 	| PrimaryExpression '.' DEFAULT			{
-				$$ = ILNode_DefaultConstructor_create($1, 0);
+				$$ = ILNode_DefaultConstructor_create($1, 0, 0);
 			}
 	| BuiltinType '.' DEFAULT			{
-				$$ = ILNode_DefaultConstructor_create($1, 0);
+				$$ = ILNode_DefaultConstructor_create($1, 0, 0);
 			}
 	;
 

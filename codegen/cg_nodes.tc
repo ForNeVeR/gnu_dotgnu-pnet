@@ -486,6 +486,7 @@ struct _tagILSwitchValue
 {
 	ILNode	   *expr;
 	ILType     *type;
+	int			useCtorMethod;
 }
 
 /*

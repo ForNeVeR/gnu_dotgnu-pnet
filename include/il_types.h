@@ -241,6 +241,20 @@ struct _tagILType
 				 ILType_Kind((type)) == IL_TYPE_COMPLEX_PTR)
 
 /*
+ * Determine if a type is a generic type parameter.
+ */
+#define	ILType_IsTypeParameter(type)	\
+				((type) != 0 && ILType_IsComplex((type)) && \
+				 ((type)->kind__ & 0xFF) == IL_TYPE_COMPLEX_VAR)
+
+/*
+ * Determine if a type is a generic method parameter.
+ */
+#define	ILType_IsMethodParameter(type)	\
+				((type) != 0 && ILType_IsComplex((type)) && \
+				 ((type)->kind__ & 0xFF) == IL_TYPE_COMPLEX_MVAR)
+
+/*
  * Get the kind that is associated with a complex type.
  */
 #define	ILType_Kind(type)		((type)->kind__ & 0xFF)

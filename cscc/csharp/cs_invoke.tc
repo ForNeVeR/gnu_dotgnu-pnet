@@ -674,6 +674,7 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 	ILProgramItem *itemInfo;
 	ILMethod *methodInfo;
 	ILType *objectType;
+	ILType *mainType;
 	ILClass *objectClass;
 	CSEvalArg *args;
 	int numArgs;
@@ -685,6 +686,16 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 
 	/* Set up the default return value */
 	CSSemSetRValue(value, objectType);
+
+	/* Get the main type, after stripping "with" parameters */
+	if(ILType_IsWith(objectType))
+	{
+		mainType = ILTypeGetWithMain(objectType);
+	}
+	else
+	{
+		mainType = objectType;
+	}
 
 	/* The type must be a delegate, a non-abstract class, or a value type */
 	if(ILTypeIsDelegate(objectType))
@@ -711,9 +722,9 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 		return DelegateCreationSem(info, (ILNode *)node, objectType,
 								   node->argList, parent);
 	}
-	else if(ILType_IsClass(objectType))
+	else if(ILType_IsClass(mainType))
 	{
-		objectClass = ILClassResolve(ILType_ToClass(objectType));
+		objectClass = ILClassResolve(ILType_ToClass(mainType));
 		if(ILClass_IsInterface(objectClass))
 		{
 			CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
@@ -729,17 +740,33 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 			return value;
 		}
 	}
-	else if(ILTypeIsValue(objectType))
+	else if(ILTypeIsValue(mainType))
 	{
 		/* Check for the default constructor case */
 		if(!(node->argList))
 		{
 			/* Replace this node with a default constructor call */
-			*parent = ILNode_DefaultConstructor_create(0, objectType);
+			*parent = ILNode_DefaultConstructor_create(0, objectType, 0);
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
 			return value;
 		}
+	}
+	else if(ILType_IsTypeParameter(objectType) ||
+			ILType_IsMethodParameter(objectType))
+	{
+		/* Can only use zero-argument constructors with generic parameters */
+		if(node->argList)
+		{
+			CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+				  		  "`%s' cannot be constructed with arguments",
+						  CSTypeToName(objectType));
+			return value;
+		}
+		*parent = ILNode_DefaultConstructor_create(0, objectType, 1);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		return value;
 	}
 	else
 	{

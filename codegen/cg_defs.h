@@ -27,6 +27,7 @@
 #include "il_program.h"
 #include "il_opcodes.h"
 #include "il_system.h"
+#include "il_dumpasm.h"
 #include <stdio.h>
 
 #ifdef	__cplusplus

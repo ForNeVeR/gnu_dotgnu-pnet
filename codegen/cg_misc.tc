@@ -1217,10 +1217,30 @@ ILNode_GenValue(ILNode_DefaultConstructor)
 		break;
 
 		case ILMachineType_String:
-		case ILMachineType_ObjectRef:
 		{
 			ILGenSimple(info, IL_OP_LDNULL);
 			ILGenAdjust(info, 1);
+		}
+		break;
+
+		case ILMachineType_ObjectRef:
+		{
+			if(node->useCtorMethod)
+			{
+				if(info->asmOutput)
+				{
+					fputs("\tnewobj instance void ", info->asmOutput);
+					ILDumpType(info->asmOutput, info->image, node->type,
+							   IL_DUMP_QUOTE_NAMES);
+					fputs("::.ctor()\n", info->asmOutput);
+				}
+				ILGenAdjust(info, 1);
+			}
+			else
+			{
+				ILGenSimple(info, IL_OP_LDNULL);
+				ILGenAdjust(info, 1);
+			}
 		}
 		break;
 

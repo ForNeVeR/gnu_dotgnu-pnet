@@ -1,1 +1,201 @@
-See the README and ChangeLog files for any relevant news.
+
+Versions 0.0.1 to 0.1.2 used a non-GNU ChangeLog format for reporting
+changes.  The change information has been copied below.
+
+0.1.2 (13 August 2001)
+
+	* Began building the linker library, for use by "ilalink" and "cscc".
+	* Fixed the handling of "MarshalledType" in the assembler so that
+	  the correct parameter records are created.
+	* Implement ".override" and ".param" in the assembler.
+	* Updated attribute names in the assembler to ECMA compliance.
+	* Added the "ILMethodGetCode", "ILMethodGetExceptions", and
+	  "ILMethodFreeExceptions" functions to "il_program.h", to handle
+	  pulling apart a method's code area.  Updated "ildasm" to use
+	  these functions instead of its own.
+	* Added support for integer label names in the assembler.
+	* Exception blocks in the assembler.
+	* Wrote the "debug.html" document, to describe a proposed mechanism
+	  for representing debug information in IL image files.
+	* Added debug section support to the "image" routines.
+	* Events and properties in the assembler.
+	* Rearrange the assembler grammar to centralise the handling
+	  of method references, and to remove shift/reduce conflicts.
+	* Dump the calling conventions of a property from its get or set
+	  method, because property signatures do not include the conventions.
+	* Fixed a nasty memory corruption bug in "image/create.c" due to
+	  a reversed test.
+	* Handle TypeDef parents that are later in the table than their children.
+	* Implement call stack frame handling in the runtime engine.
+	* Integrated some more C# compiler patches and Makefile.am modifications
+	  from Norman Stevens <norman@arcady.u-net.com>.
+	* Implement TypeRef and MemberRef compaction in "image/compact.c".
+	* Add token fixup support to the assembler and image routines, to
+	  fix up token references after compaction.
+	* Fix the class scope handling.
+	* Make the assembler less sensitive to changes in token codes that
+	  result from sorting and compacting metadata tables.
+	* Fix configure.in so that it looks in "$PREFIX/bin" for "treecc"
+	  prior to searching the path.
+	* Sort metadata tables that require it (constant, custom attr, etc).
+
+0.1.1 (27 July 2001)
+
+    * Create metadata structures within the assembler.
+	* Get the assembler to the point of processing simple examples.
+	* Minor changes to the metadata reading API and the disassembler
+	  to address issues exposed by the assembler implementation.
+	* Completed the first pass implementation of the image writing routines.
+	* Added a 15 July 2001 snapshot of libffi to the tree.  The code was
+	  obtained from the CVS server at "http://sources.redhat.com/libffi".
+	* Wrote "doc/pinvoke.html" to describe possible PInvoke mechanisms
+	  for Unix.  Working with the Mono group to create a common standard.
+	* Implemented type and signature encoding.
+	* Dynamic linking support in the "image/link.c" file.
+	* Added an extra parameter to "ILImageLoad" to assist with dynamic linking.
+	* Fixes for various Beta2-related bugs found in "ildasm" by Volker Hahn.
+	* Output method code from the assembler to a final image file.
+	* Recognize and dump the entry point method in the disassembler.
+	* Dump token codes in "ildasm" for instructions that take a token.
+	* Proper dumping of import scopes within "ildasm", including nesting.
+	* Add all of the weird Microsoft-specific sections that make it
+	  possible for valid IL binaries to run under Windows.
+	* Change from /dev/random to /dev/urandom in the GUID generation code
+	  because /dev/random can block while collecting entropy.  We apply
+	  extra randomisation to the output of /dev/urandom to compensate.
+	* Fix the code section determination logic in "_ILImageGetSection"
+	  because Microsoft has re-ordered the IL sections in such a way
+	  that it broke my previous code.
+	* Map all PE/COFF sections into memory, even if they don't contain
+	  IL-related information.  We need to do this because it is
+	  indeterminate where Microsoft's compilers will put the IL code.
+	* Add the "ILImageMapRVA" function to locate method code.
+	* Fix the dumping of CMOD_OPT and CMOD_REQD types in "dump_type.c".
+	  The wrong union field was being used to dump the modified type.
+	* Added support to the C# pre-processor, scanner, and grammer to
+	  parse doc comments in the input.
+	* Continuation of the metadata API documentation in "pnetimg.texi".
+	* Changed "pinvokeimpl(?)" to "pinvokeimpl()" in the disassembler
+	  as there are some cases where PInvoke can be specified without
+	  explicit linkage information.
+	* Integrated some C# compiler patches from Norman Stevens
+	  <norman@arcady.u-net.com> related to constant declarations.
+
+0.1.0 (16 July 2001)
+
+    * Improved the metadata API routines in "image" considerably.
+    * Types such as ILModule/ILModuleRef, ILAssembly/ILAssemblyRef, etc
+      have been collapsed into common types that work for both local and
+      referenced tokens.
+    * Moved most of the memory management for an image from ILContext
+      to ILImage so that all token structures can be discarded when
+      an image is unloaded from the system.
+    * Support for the ECMA/Beta2 metadata formats.
+    * Changed constant names in "il_meta.h" to match the ECMA specs.
+    * New flags in the assembler to match ECMA metadata additions.
+    * Changes to the opcode list to match the ECMA specification.
+    * Cleaned out some old documentation and README material that
+      was no longer relevant.
+    * Metadata index writing support in "image".
+    * Implemented the "ilrun" program, to act as the core of the
+      future runtime engine.
+    * "ilnative" now recognises methods with no IL code as "internalcall"
+      even if that flag has not been specified.  This is a temporary work
+      around for a weird compile issue in "pnetlib" when Microsoft's "csc"
+      is used to compile "internalcall" methods.  Will fix later.
+    * Implemented parse code for the remaining metadata token types in "image".
+    * Completed the implementation of "ildasm".
+    * Modified "ilasm_grammar.y" and "cs_grammar.y" for byacc-compatibility.
+    * Implemented synthetic classes in "image".  These are classes that
+      correspond to types such as "array of X", "pointer to X", etc.
+
+0.0.6 (11 July 2001)
+
+    * Scope handling in the C# compiler.
+    * Patched "include/il_values.h" to eliminate an annoying warning
+      on Mac OS X related to the "long double" type, which PPC doesn't
+      really have.  Thanks to Jason Titus <jazzmantitus@yahoo.com>
+      for finding this.
+    * Improved type gathering in the C# compiler.
+    * Metadata writing support in "image/*".
+    * Did some work on making the code compile under Visual Studio 6.0.
+      This is still a work in progress.
+    * Implemented the "ilfind" utility.
+    * Move file mapping functions from "image/pecoff_loader.c" to
+      "support/filemap.c".
+    * Use Windows-specific API's to perform file mapping under Windows,
+      because they work better than Cygwin's mmap implementation.
+    * Changed the representation of the "decimal" type to more closely
+      match that used by the "System.Decimal" class in the C# library.
+    * Created an "ILSpawnProcess" function in "support/spawn.c" to
+      isolate the code for spawning child processes from the compiler.
+    * Fixed the values of some of the IL_META_VARIANTTYPE_* constants.
+    * Re-write of "codegen" and "cscc" to use the "treecc" utility
+      for the compiler core.
+    * Added Java bytecode generation routines to the compiler, so that
+      C# code can eventually be compiled to run on the JVM.
+
+0.0.5 (9 April 2001)
+
+    * Build the metadata structures within the assembler.
+    * Implement some Unicode support routines in "support".
+    * Move the C# library into a separate "pnetlib" tree.
+    * Implement the "resgen" resource generation utility.
+    * Convert the command-line parser in the various programs
+      into a common library in "support".
+    * Fixed many bugs in the C# compiler to turn it into
+      a pretty good C# syntax checker.
+    * Changed the way semantic analysis is carried out in
+      the compiler.
+    * Implemented a new plugin mechanism for "cscc" which works
+      better for languages like C# which need to compile many
+      source files at once to get all of the program definitions.
+    * Expanded the man page for cscc(1).
+
+0.0.4 (26 March 2001)
+
+    * The "doc/metadata.html" file has been fleshed out with lots of
+      information that has been discovered about the metadata section.
+    * Implemented memory pool and memory stack allocators to improve the
+      performance of code that allocate lots of small structures, such
+      as the compiler and the program loader.
+    * Define and implement the core types in "image" that represent
+      classes, methods, fields, etc.
+    * Metadata index parsing.
+    * Write the "ilnative" utility which dumps the native methods
+      that are used in an IL binary.
+    * The disassembler now basically works, with only a few gaps to fill.
+
+0.0.3   Limited release (12 March 2001)
+        First freshmeat.net release (14 March 2001)
+
+    * Build the parse tree for C# programs.
+    * Build a table of builtin types and operators in the C# compiler.
+    * Write man pages for ilasm, ildasm, and cscc.
+    * The disassembler can dump the contents of methods, but because
+      we still don't know the format of metadata, we can't yet display
+      which methods correspond to which contents.
+    * PE/COFF writing code in "image/writer.c".
+    * GUID generation code in "support/guid.c".
+    * Implemented the "ilsize" utility.
+    * Some code generation logic in "ilasm".
+    * Converted "doc/metadata.txt" into "doc/metadata.html".
+    * Added some scripts to the "tools" directory to make releases smoother.
+
+0.0.2   Limited release (4 March 2001)
+
+    * Massive overhaul of the weak typing system based around "ILValue".
+      Operations on "ILValue" have been centralised into "support" so
+      that both the runtime and compiler can use the same value system.
+    * Implementation of support routines for the "decimal" type.
+    * Implemented a handful of "System" classes.
+    * Compiler front-end, lexical analyser, and syntactic analysis.
+    * Support for compiler plug-ins for other languages.
+    * Make the lexical analyser Unicode and UTF-8 aware.
+
+0.0.1   Limited release (21 February 2001)
+
+    * Disassembler can dump IL binaries in hex.
+    * Assembler can understand the syntax, but cannot convert into code yet.
+    * IL binary loading working, except for metadata-related parts.
+    * Fragments of runtime, compiler, and other tools.

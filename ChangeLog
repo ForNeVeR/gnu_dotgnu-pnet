@@ -24,6 +24,8 @@
 	so that we can build profiles with object serialization support,
 	but not remoting support.
 
+	* samples/samples.build: add a link dependency for "DotGNU.Images".
+
 2003-08-04  Neil Cawse   <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: Small changes to match ms behaviour.

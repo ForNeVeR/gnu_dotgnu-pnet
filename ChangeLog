@@ -12,6 +12,9 @@
 	cscc/csharp/cs_grammar.y, cscc/csharp/cs_invoke.tc, include/il_types.h:
 	add some semantic analysis for "new X<T>(...)" expression forms.
 
+	* image/link.c (ILPInvokeResolveModule): allow relative paths
+	of the form "X/Y/Z" to be used for PInvoke module names (bug #5413).
+
 2003-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/console.c: add extra keycodes to the function/arrow key

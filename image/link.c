@@ -972,14 +972,15 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 		name = remapName;
 	}
 
-	/* If the name already includes a directory specification,
+	/* If the name already includes a root directory specification,
 	   then assume that this is the path we are looking for */
-	for(posn = 0; posn < namelen; ++posn)
+	if(namelen > 0 && (name[0] == '/' || name[0] == '\\'))
 	{
-		if(name[posn] == '/' || name[posn] == '\\')
-		{
-			return ILDupNString(name, namelen);
-		}
+		return ILDupNString(name, namelen);
+	}
+	else if(namelen > 1 && name[1] == ':')
+	{
+		return ILDupNString(name, namelen);
 	}
 
 	/* Determine the platform-specific prefix and suffix to add */

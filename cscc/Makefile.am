@@ -29,7 +29,8 @@ cscc_cs_SOURCES = $(TREECC_SRCOUT) \
 				  cs_modifiers.c \
 			      cs_options.c \
 				  cs_preproc.c \
-				  cs_scanner.l
+				  cs_scanner.l \
+				  cs_valdoc.c
 cscc_cs_LDADD   = ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
 				  ../image/libILImage.a ../support/libILSupport.a
 
@@ -41,7 +42,8 @@ csdoc_SOURCES = $(TREECC_SRCOUT) \
 				cs_modifiers.c \
 			    cs_options.c \
 				cs_preproc.c \
-				cs_scanner.l
+				cs_scanner.l \
+				cs_valdoc.c
 csdoc_LDADD   = ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
 				../image/libILImage.a ../support/libILSupport.a
 

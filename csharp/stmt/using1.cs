@@ -26,7 +26,7 @@ using i32 = Int32;
 public class Foo 
 {
 	public static int c; // overrides using c = Bar;
-	static Child child = new Child();
+	public static f2 child = new Child(); // check type usage as well
 	public static void Override1() 
 	{
 		c=12;

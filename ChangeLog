@@ -5,6 +5,9 @@
 	System.Drawing.Xsharp/DrawingWindow.cs: copy the OnPaint clip logic
 	to "DrawingTopLevelWindow"; make the coding styles consistent.
 
+	* System.Xml/Serialization/IXmlSerializable.cs: add a missing interface
+	that is used by Mono's "System.Data".
+
 2003-07-25  Neil Cawse   <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: implement UpdateClip to support clipping

@@ -4,6 +4,9 @@
 	* engine/cvm_branch.c, engine/cvmc_branch.c: bugs in the encoding
 	and operation of the CVM "switch" instruction.
 
+	* samples/mscorlib.dll: updated version with file, string, and
+	number format information fixes.
+
 2001-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_method.c (_ILLinkerConvertMemberRef): convert the

@@ -234,9 +234,17 @@ public sealed class Bitmap : System.Drawing.Image
 					Frame frame = dgImage.GetFrame(0);
 					if(frame != null)
 					{
+						if (format != this.PixelFormat)
+						{
+							frame = frame.Reformat((DotGNU.Images.PixelFormat) format);
+						}
 						bitmapData.Stride = frame.Stride;
 						byte[] data = frame.Data;
+						bitmapData.dataHandle = GCHandle.Alloc(data);
+
 						int offset = rect.X * GetPixelFormatSize(format) / 8;
+						// TODO: will GCHandle.AddrOfPinnedObject work more 
+						//       portably across GCs ?
 						fixed (byte *pixel = &(data[rect.Y * frame.Stride]))
 						{
 							bitmapData.Scan0 = (IntPtr)(void *)(pixel + offset);
@@ -298,6 +306,7 @@ public sealed class Bitmap : System.Drawing.Image
 	public void UnlockBits(BitmapData bitmapData)
 			{
 				// Nothing to do in this implementation.
+				bitmapData.dataHandle.Free();
 			}
 
 }; // class Bitmap

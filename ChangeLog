@@ -1,4 +1,10 @@
 
+2004-09-18  Ovidu Sabou  <ovidiu.sabou@gmail.com>
+
+	* System.Drawing/Bitmap.cs, System.Drawing/Imaging/BitmapData.cs:
+	Implement format conversions inside LockBits() and keep a handle to
+	frame data inside BitmapData to prevent GC.
+
 2004-09-18  Gopal V  <gopalv82@yahoo.com>
 
 	* DotGNU.Images/BmpReformatter.cs: Change alpha value to 255 for 

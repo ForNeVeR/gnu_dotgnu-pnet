@@ -22,6 +22,9 @@
 namespace System.Drawing.Imaging
 {
 
+using System;
+using System.Runtime.InteropServices;
+
 public sealed class BitmapData
 {
 	// Internal state.
@@ -31,6 +34,7 @@ public sealed class BitmapData
 	private IntPtr scan0;
 	private int stride;
 	private int width;
+	internal GCHandle dataHandle;
 
 	// Constructor.
 	public BitmapData() {}

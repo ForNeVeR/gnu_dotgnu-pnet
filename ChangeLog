@@ -7,6 +7,9 @@
 	* support/serial.c: work around missing termio symbols under
 	FreeBSD and OpenBSD.
 
+	* resgen/resgen.c: perform the check for "/compile" and "-compile"
+	in a different manner, to deal with "@name" option file references.
+
 2003-11-13  Miroslaw Dobrzanski-Neumann  <mne@mosaic-ag.com>
 
 	* configure.in: detect cc options such as "-fno-gcse" with a

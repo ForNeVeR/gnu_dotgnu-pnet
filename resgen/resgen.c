@@ -83,6 +83,7 @@ static ILCmdLineOption const options[] = {
 	{"--help", 'h', 0,
 		"--help",
 		"Print this help message."},
+	{"-c", 'c', 1, 0, 0},
 	{0, 0, 0, 0, 0}
 };
 
@@ -118,15 +119,6 @@ int main(int argc, char *argv[])
 	int errors;
 	ILContext *context;
 
-	/* Skip a "/compile" or "-compile" option, if present, for backwards
-	   compatibility with tools from other CLI vendors */
-	if(argc >= 2 &&
-	   (!ILStrICmp(argv[1], "/compile") || !ILStrICmp(argv[1], "-compile")))
-	{
-		++argv;
-		--argc;
-	}
-
 	/* Parse the command-line arguments */
 	state = 0;
 	while((opt = ILCmdLineNextOption(&argc, &argv, &state,
@@ -134,6 +126,12 @@ int main(int argc, char *argv[])
 	{
 		switch(opt)
 		{
+			case 'c':
+			{
+				/* Probably "-compile", which we ignore */
+			}
+			break;
+
 			case 't':
 			{
 				inputFormat = FORMAT_TEXT;
@@ -214,6 +212,14 @@ int main(int argc, char *argv[])
 			}
 			/* Not reached */
 		}
+	}
+
+	/* Skip a "/compile" option, if present, for backwards
+	   compatibility with tools from other CLI vendors */
+	if(argc >= 2 && !ILStrICmp(argv[1], "/compile"))
+	{
+		++argv;
+		--argc;
 	}
 
 	/* We need at least one input file and one output file argument */

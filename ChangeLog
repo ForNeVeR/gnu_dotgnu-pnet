@@ -9,6 +9,11 @@
 	* runtime/System/Threading/Timer.cs: timer threads should
 	be background threads.
 
+	* runtime/System/Threading/Thread.cs,
+	runtime/System/Threading/Timer.cs: add a new internallcall,
+	"CanStartThreads", for detecting whether the runtime engine
+	can really start threads or not.
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

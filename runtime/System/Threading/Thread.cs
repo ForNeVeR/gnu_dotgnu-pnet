@@ -316,6 +316,11 @@ public sealed class Thread
 				return null;
 			}
 
+	// Determine if the runtime engine can start threads.
+	// Returns false on a single-threaded system.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static bool CanStartThreads();
+
 }; // class Thread
 
 }; // namespace System.Threading

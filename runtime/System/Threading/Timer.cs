@@ -77,9 +77,19 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 				this.shutdown = false;
 
 				// Start the timer thread.
-				timerThread = new Thread(new ThreadStart(Run));
-				timerThread.IsBackground = true;
-				timerThread.Start();
+				if(Thread.CanStartThreads())
+				{
+					timerThread = new Thread(new ThreadStart(Run));
+					timerThread.IsBackground = true;
+					timerThread.Start();
+				}
+				else
+				{
+					// The system does not support threading, so there
+					// is no way to run the timer in another thread.
+					// So act as though the timeout will never be fired.
+					timerThread = null;
+				}
 			}
 	public Timer(TimerCallback callback, Object state,
 				 TimeSpan dueTime, TimeSpan period)

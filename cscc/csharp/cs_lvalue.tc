@@ -793,10 +793,12 @@ ILNode_SemAnalysis(ILNode_Identifier)
 			}
 			else if(paramMod == ILParamMod_out)
 			{
-				/* Handle output-only parameters */
+				/* Handle output-only parameters.  Technically, this should
+				   probably be an s-value, not an l-value, but other C#
+				   compilers allow "out" parameters to be read */
 				*parent = ILNode_RefArgumentVar_create
 					(index, ILTypeToMachineType(type), type);
-				CSSemSetSValue(value, type);
+				CSSemSetLValue(value, type);
 				return value;
 			}
 			else

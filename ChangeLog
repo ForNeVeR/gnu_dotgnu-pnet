@@ -1,4 +1,9 @@
 
+2002-09-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_lvalue.tc: convert "out" parameters into
+	l-values, not s-values, to be consistent with other C# compilers.
+
 2002-09-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_attrs.c: implement named attribute arguments.

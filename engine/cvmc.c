@@ -22,6 +22,7 @@
 #include "il_coder.h"
 #include "il_opcodes.h"
 #include "il_utils.h"
+#include "il_dumpasm.h"
 #include "cvm.h"
 #include "lib_defs.h"
 #include "method_cache.h"
@@ -271,10 +272,7 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 	ILMethod **list;
 	ILMethod **temp;
 	ILMethod *method;
-	ILClass *owner;
-	const char *name;
 	int haveCounts;
-	int len;
 
 	/* Get the list of all translated methods from the cache */
 	list = (ILMethod **)ILCacheGetMethodList(cache);
@@ -311,29 +309,11 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 		{
 			continue;
 		}
-		owner = ILMethod_Owner(method);
-		name = ILClass_Namespace(owner);
-		len = 0;
-		if(name)
-		{
-			fputs(name, stream);
-			putc('.', stream);
-			len += strlen(name) + 1;
-		}
-		name = ILClass_Name(owner);
-		fputs(name, stream);
-		fputs("::", stream);
-		len += strlen(name) + 2;
-		name = ILMethod_Name(method);
-		fputs(name, stream);
-		putc(' ', stream);
-		len += strlen(name) + 1;
-		while(len < 40)
-		{
-			putc(' ', stream);
-			++len;
-		}
-		printf("%lu\n", (unsigned long)(method->count));
+		printf("%8lu    ", (unsigned long)(method->count));
+		ILDumpMethodType(stdout, ILProgramItem_Image(method),
+						 ILMethod_Signature(method), 0,
+						 ILMethod_Owner(method), ILMethod_Name(method), 0);
+		putc('\n', stdout);
 		haveCounts = 1;
 	}
 

@@ -182,7 +182,7 @@ case COP_BSTORE:
 	unsigned temp = CVM_ARG_BYTE;
 	UNROLL_START();
 	reg = GetTopWordRegister(&unroll);
-	x86_mov_membase_reg(unroll.out, REG_FRAME, temp * 4, reg, 1);
+	MovMembaseRegByte(&unroll, REG_FRAME, temp * 4, reg);
 	FreeTopRegister(&unroll, temp);
 	MODIFY_UNROLL_PC(CVM_LEN_BYTE);
 }

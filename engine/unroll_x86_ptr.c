@@ -169,7 +169,7 @@ case COP_BWRITE:
 	/* Write a byte value to a pointer */
 	UNROLL_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
-	x86_mov_membase_reg(unroll.out, reg, 0, reg2, 1);
+	MovMembaseRegByte(&unroll, reg, 0, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
@@ -230,7 +230,7 @@ case COP_BWRITE_R:
 	/* Write a byte value to a pointer with reversed arguments */
 	UNROLL_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
-	x86_mov_membase_reg(unroll.out, reg2, 0, reg, 1);
+	MovMembaseRegByte(&unroll, reg2, 0, reg);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
@@ -389,7 +389,7 @@ case COP_BWRITE_ELEM:
 	UNROLL_START();
 	GetTopThreeWordRegisters(&unroll, &reg, &reg2, &reg3);
 	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
-	x86_mov_memindex_reg(unroll.out, reg, 4, reg2, 0, reg3, 1);
+	MovMemindexRegByte(&unroll, reg, 4, reg2, 0, reg3);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
@@ -505,7 +505,7 @@ case COP_BWRITE_FIELD:
 	UNROLL_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
 	CheckForNull(&unroll, reg, pc, (unsigned char *)inst, 0);
-	x86_mov_membase_reg(unroll.out, reg, (int)temp, reg2, 1);
+	MovMembaseRegByte(&unroll, reg, (int)temp, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
 	MODIFY_UNROLL_PC(CVM_LEN_BYTE);

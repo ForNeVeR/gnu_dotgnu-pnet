@@ -803,6 +803,82 @@ static void PushRegister(X86Unroll *unroll, int reg)
 }
 
 /*
+ * Special version of "x86_mov_membase_reg" which makes sure
+ * that the source is a byte register.
+ */
+static void MovMembaseRegByte(X86Unroll *unroll, int basereg,
+							  unsigned offset, int srcreg)
+{
+	if(srcreg == X86_EAX || srcreg == X86_ECX || srcreg == X86_EDX)
+	{
+		x86_mov_membase_reg(unroll->out, basereg, offset, srcreg, 1);
+	}
+	else if((unroll->regsUsed & REG_EAX_MASK) == 0)
+	{
+		x86_mov_reg_reg(unroll->out, X86_EAX, srcreg, 4);
+		x86_mov_membase_reg(unroll->out, basereg, offset, X86_EAX, 1);
+	}
+	else if((unroll->regsUsed & REG_ECX_MASK) == 0)
+	{
+		x86_mov_reg_reg(unroll->out, X86_ECX, srcreg, 4);
+		x86_mov_membase_reg(unroll->out, basereg, offset, X86_ECX, 1);
+	}
+	else if((unroll->regsUsed & REG_EDX_MASK) == 0)
+	{
+		x86_mov_reg_reg(unroll->out, X86_EDX, srcreg, 4);
+		x86_mov_membase_reg(unroll->out, basereg, offset, X86_EDX, 1);
+	}
+	else
+	{
+		x86_push_reg(unroll->out, X86_EAX);
+		x86_mov_reg_reg(unroll->out, X86_EAX, srcreg, 4);
+		x86_mov_membase_reg(unroll->out, basereg, offset, X86_EAX, 1);
+		x86_pop_reg(unroll->out, X86_EAX);
+	}
+}
+
+/*
+ * Special version of "x86_mov_memindex_reg" which makes sure
+ * that the source is a byte register.
+ */
+static void MovMemindexRegByte(X86Unroll *unroll, int basereg,
+							   unsigned offset, int indexreg,
+							   int shift, int srcreg)
+{
+	if(srcreg == X86_EAX || srcreg == X86_ECX || srcreg == X86_EDX)
+	{
+		x86_mov_memindex_reg(unroll->out, basereg, offset, indexreg,
+							 shift, srcreg, 1);
+	}
+	else if((unroll->regsUsed & REG_EAX_MASK) == 0)
+	{
+		x86_mov_reg_reg(unroll->out, X86_EAX, srcreg, 4);
+		x86_mov_memindex_reg(unroll->out, basereg, offset, indexreg,
+							 shift, X86_EAX, 1);
+	}
+	else if((unroll->regsUsed & REG_ECX_MASK) == 0)
+	{
+		x86_mov_reg_reg(unroll->out, X86_ECX, srcreg, 4);
+		x86_mov_memindex_reg(unroll->out, basereg, offset, indexreg,
+							 shift, X86_ECX, 1);
+	}
+	else if((unroll->regsUsed & REG_EDX_MASK) == 0)
+	{
+		x86_mov_reg_reg(unroll->out, X86_EDX, srcreg, 4);
+		x86_mov_memindex_reg(unroll->out, basereg, offset, indexreg,
+							 shift, X86_EDX, 1);
+	}
+	else
+	{
+		x86_push_reg(unroll->out, X86_EAX);
+		x86_mov_reg_reg(unroll->out, X86_EAX, srcreg, 4);
+		x86_mov_memindex_reg(unroll->out, basereg, offset, indexreg,
+							 shift, X86_EAX, 1);
+		x86_pop_reg(unroll->out, X86_EAX);
+	}
+}
+
+/*
  * Start an unrolled code section if necessary.
  */
 #define	UNROLL_START()	\

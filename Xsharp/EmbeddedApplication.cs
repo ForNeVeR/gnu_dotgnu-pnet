@@ -783,7 +783,15 @@ public class EmbeddedApplication : InputOutputWidget
 					if(Xlib.XGetTransientForHint(dpy, window, out transientFor)
 							!= Xlib.Status.Zero)
 					{
-						return false;
+						// KDE apps that act like a top-level dialog
+						// (kcalc, kfind, etc) specific the root window
+						// as their parent.  We assume that such windows
+						// are actually the main window of the app.
+						if(transientFor !=
+								Xlib.XRootWindowOfScreen(screen.screen))
+						{
+							return false;
+						}
 					}
 
 					// We want this widget.

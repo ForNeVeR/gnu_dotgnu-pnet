@@ -1,4 +1,9 @@
 
+2003-12-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* class/System.DirectoryServices/System.DirectoryServices.build:
+	add back some classes that were previously broken but work now.
+
 2003-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, copy-mcs.sh, class/Makefile.am,

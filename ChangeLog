@@ -21,6 +21,9 @@
 
 	* samples/mscorlib.dll: new version with fixes to "ClrType".
 
+	* samples/codepage.cs, samples/Makefile.am, samples/.cvsignore:
+	new sample for testing code page support in pnetlib.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

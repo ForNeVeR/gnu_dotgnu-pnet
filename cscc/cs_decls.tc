@@ -26,21 +26,17 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	CSSemValue value;
 	ILNode *savedClass;
 	ILNode *savedNamespace;
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeEnter(info, (ILNode *)node, "unsafe class declaration");
+	}
 	if(node->body)
 	{
 		savedClass = info->currentClass;
 		savedNamespace = info->currentNamespace;
 		info->currentClass = (ILNode *)node;
 		info->currentNamespace = node->namespaceNode;
-		if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
-		{
-			CSUnsafeEnter(info, (ILNode *)node, "unsafe class declaration");
-		}
 		value = ILNode_SemAnalysis(node->body, info, &(node->body));
-		if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
-		{
-			CSUnsafeLeave(info);
-		}
 		info->currentClass = savedClass;
 		info->currentNamespace = savedNamespace;
 		return value;
@@ -49,8 +45,12 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	{
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = ILType_Int32;
-		return value;
 	}
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeLeave(info);
+	}
+	return value;
 }
 
 /*

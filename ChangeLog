@@ -27,6 +27,9 @@
 	* cscc/c/c_ainit.tc, cscc/c/c_builtin.tc, cscc/c/c_defs.tc:
 	initialization of arrays containing strings (e.g. char[] x = "abc").
 
+	* cscc/c/c_ainit.tc: finish the implementation of array and
+	structure initializers.
+
 2003-06-27  Thong Nguyen <tum@veridicus.com>
 
 	* support/wait_mutex.c: Fix recursive entry/leave bug in

@@ -208,6 +208,20 @@ if test x$GCC = xyes ; then
 	CFLAGS="$CFLAGS -Wall"
 fi
 
+dnl Check to see whether cc accepts "-no-cpp-precomp" or not.
+AC_CACHE_CHECK(whether ${CC-cc} accepts -no-cpp-precomp, ac_cv_prog_cc_precomp,
+[echo 'void f(){}' > conftest.c
+if test -z "`${CC-cc} -no-cpp-precomp -c conftest.c 2>&1`"; then
+  ac_cv_prog_cc_precomp=yes
+else
+  ac_cv_prog_cc_precomp=no
+fi
+rm -f conftest*
+])
+if test $ac_cv_prog_cc_precomp = yes ; then
+	CFLAGS="$CFLAGS -no-cpp-precomp"
+fi
+
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(memset memcmp memchr memcpy memmove bcopy bzero bcmp)

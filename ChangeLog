@@ -27,6 +27,10 @@
 	* cscc/csharp/cs_grammar.y, ilasm/ilasm_grammar.y: add an ugly
 	hack to work around missing "-lfl" on MacOSX.
 
+	* configure.in: add the "-no-cpp-precomp" flag to CFLAGS if
+	the compiler supports it, because we don't want "smart"
+	preprocessing on MacOSX.
+
 2002-05-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc,codegen/cg_lvalue.tc,codegen/cg_misc.tc

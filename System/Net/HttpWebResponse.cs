@@ -220,12 +220,21 @@ public class HttpWebResponse : WebResponse
 		}
 	}
 
-	/* TODO : clarify how redirects work */
 	public override Uri ResponseUri 
 	{ 
 		get
 		{
-			return req.Address;
+			if(code==HttpStatusCode.Redirect || 
+			   code==HttpStatusCode.MovedPermanently ||
+			   code==HttpStatusCode.Moved ||
+			   code==HttpStatusCode.MultipleChoices ||
+			   code==HttpStatusCode.Found ||
+			   code==HttpStatusCode.SeeOther ||
+			   code==HttpStatusCode.TemporaryRedirect)
+			{
+				return new Uri(this.Headers["Location"]);
+			}
+			return null;
 		}
 	}
 

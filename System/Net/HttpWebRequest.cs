@@ -74,13 +74,19 @@ public class HttpWebRequest : WebRequest
 
 	internal HttpWebRequest(Uri uri)
 	{
-		this.address=uri;
 		this.originalUri=uri;
-		this.isSecured=String.Equals(uri.Scheme,Uri.UriSchemeHttps);
 		this.method="GET";
+		this.headers.SetInternal ("User-Agent","DotGNU Portable.net");
+		SetAddress(uri);
+	}
+
+	internal void SetAddress(Uri uri)
+	{
+		CheckHeadersSent(); /* I know this never gets called , but better safe than sorry */
+		this.address=uri;
+		this.isSecured=String.Equals(uri.Scheme,Uri.UriSchemeHttps);
 		this.headers.SetInternal ("Host", uri.Authority);
 		this.headers.SetInternal ("Date", DateTime.Now.ToUniversalTime().ToString(format));
-		this.headers.SetInternal ("User-Agent","DotGNU Portable.net");
 	}
 
 	[TODO]
@@ -987,6 +993,7 @@ public class HttpWebRequest : WebRequest
 		
 		private HttpAuthState proxy;
 		private HttpAuthState http;
+		private int redirections;
 
 		public HttpController(HttpWebRequest request)
 		{
@@ -999,6 +1006,7 @@ public class HttpWebRequest : WebRequest
 				this.http=HttpAuthState.NoAuth;
 			}
 			this.proxy=HttpAuthState.NoAuth;
+			redirections=0;
 		}
 		/* returns this WebRequest or a new one.
 		 * If nothing can be done, it will return the same 'ol 
@@ -1066,8 +1074,24 @@ public class HttpWebRequest : WebRequest
 				break;
 
 				case HttpStatusCode.Redirect:
+				case HttpStatusCode.Moved :
+				case HttpStatusCode.MultipleChoices :
+				case HttpStatusCode.SeeOther :
+				case HttpStatusCode.TemporaryRedirect:
+				/* case HttpStatusCode.Found : // Duplicate */
+				/* case HttpStatusCode.MovedPermanently : // Duplicate */
 				{
-						/* TODO */
+						Uri newUri=response.ResponseUri;
+						if(request.allowAutoRedirect &&	newUri!=null &&
+							redirections<request.MaximumAutomaticRedirections &&
+							(request.Method=="GET" || request.Method=="HEAD"))
+						{
+							/* ok redirect it */
+							request.ResetRequest();
+							request.SetAddress(newUri);
+							redirections++;
+						}
+						return request;
 				}
 				break;
 

@@ -1,4 +1,9 @@
 
+2003-11-20  Gopal.V  <gopalv82@symonds.net>
+
+	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:
+	add support for HTTP redirects.
+
 2003-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/TypeDescriptor.cs: fix a bug in

@@ -58,6 +58,10 @@
 	System.Windows.Forms/Themes/Glyphs.cs: draw caption buttons
 	using the appropriate glyphs.
 
+	* System.Windows.Forms/Themes/Glyphs.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs:
+	use a glyph-based drawing approach for radio buttons.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

@@ -1560,20 +1560,72 @@ internal class DefaultThemePainter : IThemePainter
 				 ButtonState state, Color foreColor, Color backColor,
 				 Brush backgroundBrush)
 			{
-				// fill in the background
+				// Fill in the background.
 				graphics.FillRectangle(backgroundBrush, x, y, width, height);
 
+				// Collect up the colors that we need to draw the button.
 				Color lightlight = ControlPaint.LightLight(backColor);
 				Color darkdark = ControlPaint.DarkDark(backColor);
 				Color light = ControlPaint.Light(backColor);
 				Color dark = ControlPaint.Dark(backColor);
-
-				Color fillColor = lightlight;
-				if ((state & ButtonState.Inactive) != 0)
+				Color fillColor;
+				Color bulletColor;
+				if((state & ButtonState.Inactive) != 0)
 				{
 					fillColor = light;
+					bulletColor = dark;
+				}
+				else if((state & ButtonState.Pushed) != 0)
+				{
+					fillColor = light;
+					bulletColor = foreColor;
+				}
+				else
+				{
+					fillColor = lightlight;
+					bulletColor = foreColor;
 				}
 
+				// Draw the glyphs that make up the components.
+				int radio_width = Glyphs.radio_width;
+				int radio_height = Glyphs.radio_height;
+				if((state & ButtonState.Flat) == 0)
+				{
+					DrawGlyph(graphics, x, y, width, height,
+							  Glyphs.radio1_bits,
+							  radio_width, radio_height, dark);
+					DrawGlyph(graphics, x, y, width, height,
+							  Glyphs.radio2_bits,
+							  radio_width, radio_height, darkdark);
+					DrawGlyph(graphics, x, y, width, height,
+							  Glyphs.radio3_bits,
+							  radio_width, radio_height, lightlight);
+					DrawGlyph(graphics, x, y, width, height,
+							  Glyphs.radio4_bits,
+							  radio_width, radio_height, light);
+					DrawGlyph(graphics, x, y, width, height,
+							  Glyphs.radio5_bits,
+							  radio_width, radio_height, fillColor);
+				}
+				else
+				{
+					DrawGlyph(graphics, x, y, width, height,
+							  Glyphs.rflat1_bits,
+							  radio_width, radio_height, bulletColor);
+					DrawGlyph(graphics, x, y, width, height,
+							  Glyphs.rflat2_bits,
+							  radio_width, radio_height, fillColor);
+				}
+
+				// Draw the glyph for the checked state.
+				if((state & ButtonState.Checked) != 0)
+				{
+					DrawGlyph(graphics, x, y, width, height,
+							  Glyphs.radio_bullet_bits,
+							  radio_width, radio_height, bulletColor);
+				}
+
+#if false	// May need later for non-standard glyph sizes.
 				// fill in center area
 				using (Brush b = new SolidBrush(fillColor))
 				{
@@ -1632,6 +1684,7 @@ internal class DefaultThemePainter : IThemePainter
 						}
 					}
 				}
+#endif
 			}
 
 	// Draw a reversible frame.

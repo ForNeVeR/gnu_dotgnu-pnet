@@ -101,14 +101,17 @@ void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 	info->throwVariable = -1;
 	info->gotoList = 0;
 	info->scopeLevel = 0;
-	info->localVars = 0;
-	info->numLocalVars = 0;
-	info->maxLocalVars = 0;
+	info->tempVars = 0;
+	info->numTempVars = 0;
+	info->maxTempVars = 0;
+	info->tempLocalBase = 0;
 	info->currentScope = 0;
 	info->javaInfo = 0;
 	info->numLoops = 0;
 	info->numSwitches = 0;
 	info->unsafeLevel = 0;
+	info->currentClass = 0;
+	info->currentMethod = 0;
 	ILGenMakeLibrary(info);
 }
 
@@ -142,10 +145,10 @@ void ILGenInfoDestroy(ILGenInfo *info)
 		gotoEntry = nextGoto;
 	}
 
-	/* Free the local variable array */
-	if(info->localVars)
+	/* Free the tempoary variable array */
+	if(info->tempVars)
 	{
-		ILFree(info->localVars);
+		ILFree(info->tempVars);
 	}
 
 	/* Destroy Java-specific information */
@@ -518,56 +521,57 @@ unsigned ILGenTempTypedVar(ILGenInfo *info, ILType *type)
 	unsigned varNum;
 
 	/* See if we can re-use a free temporary variable */
-	for(varNum = 0; varNum < info->numLocalVars; ++varNum)
+	for(varNum = 0; varNum < info->numTempVars; ++varNum)
 	{
-		if(!(info->localVars[varNum].allocated) &&
-		   ILTypeIdentical(info->localVars[varNum].type, type))
+		if(!(info->tempVars[varNum].allocated) &&
+		   ILTypeIdentical(info->tempVars[varNum].type, type))
 		{
-			info->localVars[varNum].allocated = 1;
-			return varNum;
+			info->tempVars[varNum].allocated = 1;
+			return varNum + info->tempLocalBase;
 		}
 	}
 
-	/* Abort if too many local variables */
-	if(info->numLocalVars == (unsigned)0xFFFF)
+	/* Abort if too many temporary variables */
+	if((info->numTempVars + info->tempLocalBase) == (unsigned)0xFFFF)
 	{
 		fprintf(stderr, "%s: too many local variables - aborting\n",
 				info->progname);
 		exit(1);
 	}
 
-	/* Add a new local variable to the current method */
-	if(info->numLocalVars >= info->maxLocalVars)
+	/* Add a new temporary variable to the current method */
+	if(info->numTempVars >= info->maxTempVars)
 	{
 		ILLocalVar *newvars;
-		newvars = (ILLocalVar *)ILRealloc(info->localVars,
+		newvars = (ILLocalVar *)ILRealloc(info->tempVars,
 										  sizeof(ILLocalVar) *
-										  		(info->maxLocalVars + 16));
+										  		(info->maxTempVars + 16));
 		if(!newvars)
 		{
 			ILGenOutOfMemory(info);
 		}
-		info->localVars = newvars;
-		info->maxLocalVars += 16;
+		info->tempVars = newvars;
+		info->maxTempVars += 16;
 	}
-	info->localVars[info->numLocalVars].name = 0;
-	info->localVars[info->numLocalVars].scopeLevel = -1;
-	info->localVars[info->numLocalVars].type = type;
-	info->localVars[info->numLocalVars].allocated = 1;
+	info->tempVars[info->numTempVars].name = 0;
+	info->tempVars[info->numTempVars].scopeLevel = -1;
+	info->tempVars[info->numTempVars].type = type;
+	info->tempVars[info->numTempVars].allocated = 1;
 
 	/* Generate assembly code to allocate the local */
 	ILGenAllocLocal(info, type, (const char *)0);
 
 	/* Return the new variable index to the caller */
-	return (info->numLocalVars)++;
+	return (info->tempLocalBase + (info->numTempVars)++);
 }
 
 void ILGenReleaseTempVar(ILGenInfo *info, unsigned localNum)
 {
-	if(localNum < info->numLocalVars &&
-	   info->localVars[localNum].scopeLevel == -1)
+	if(localNum >= info->tempLocalBase &&
+	   localNum < (info->tempLocalBase + info->numTempVars) &&
+	   info->tempVars[localNum - info->tempLocalBase].scopeLevel == -1)
 	{
-		info->localVars[localNum].allocated = 0;
+		info->tempVars[localNum - info->tempLocalBase].allocated = 0;
 	}
 }
 

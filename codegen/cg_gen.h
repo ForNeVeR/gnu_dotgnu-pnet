@@ -102,14 +102,17 @@ struct _tagILGenInfo
 	long			throwVariable;		/* Variable containing thrown value */
 	ILGotoEntry    *gotoList;			/* List of goto entries */
 	long			scopeLevel;			/* Current scope level */
-	ILLocalVar	   *localVars;			/* Local variables in the method */
-	unsigned		numLocalVars;		/* Number of active variables */
-	unsigned		maxLocalVars;		/* Maximum variables in "localVars" */
+	ILLocalVar	   *tempVars;			/* Temporary variables in the method */
+	unsigned		numTempVars;		/* Number of active variables */
+	unsigned		maxTempVars;		/* Maximum variables in "localVars" */
+	unsigned        tempLocalBase;		/* Base for temporary local variables */
 	ILScope		   *currentScope;		/* Current scope for declarations */
 	ILJavaGenInfo  *javaInfo;			/* Java-specific information */
 	long			numLoops;			/* Number of loops in force */
 	long			numSwitches;		/* Number of switches in force */
 	long			unsafeLevel;		/* Number of unsafe contexts */
+	ILNode         *currentClass;		/* Current class being processed */
+	ILNode		   *currentMethod;		/* Current method being processed */
 
 };
 

@@ -1,4 +1,9 @@
 
+2002-04-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* doc/cvmdoc.py: check in Gopal's new CVM conversion script,
+	plus some minor formatting changes from Rhys.
+
 2002-04-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_dasm.c, engine/cvmc_call.c,

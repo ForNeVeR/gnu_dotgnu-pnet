@@ -1,10 +1,17 @@
-#!/usr/bin/env python
+#!/usr/bin/env python1.5
+##############################################
+# This is released under the GNU GPL license #
+# Copyright (c) FSF India                    #
+# Author        Gopal.V                      #
+##############################################
 import xml.dom.minidom
 import string
 import sys
 import cgi
 import regex
 import regex_syntax
+cvm_doc="""
+"""
 
 # check if it has a child with that name
 def _haschild(node,name):
@@ -14,6 +21,7 @@ class opcode:
 	def __init__(self,opcode):
 		self.node=opcode
 		self.name=opcode.getAttribute("name")
+		self.group=self.node.getAttribute("group")
 	def read(self):
 		if(_haschild(self.node,"operation")):
 			self.read_operation()
@@ -31,6 +39,7 @@ class opcode:
 			self.read_notes()
 		if(_haschild(self.node,"exceptions")):
 			self.read_exceptions()
+		#print "read "+self.name
 	def read_operation(self):
 		operation=self.node.getElementsByTagName("operation")[0];	
 		self.operation=""
@@ -167,13 +176,13 @@ class opcode:
 	def write_description(self,fp):
 		fp.write( """<tr border="0"><td border="0" valign="top">&nbsp;
 		&nbsp;&middot;&nbsp;<b>Description </b></td><td border="0">""")
-		fp.write( self.description)
+		fp.write( string.replace(self.description, "<p/>", "<p>"))
 		fp.write( "</td></tr>")
 		
 	def write_notes(self,fp):
 		fp.write( """<tr border="0"><td border="0" valign="top">&nbsp;
 		&nbsp;&middot;&nbsp;<b>Notes </b></td><td border="0">""")
-		fp.write( ""+self.notes+"")
+		fp.write( string.replace(self.notes, "<p/>", "<p>"))
 		fp.write( "</td></tr>")
 	
 	def write_exceptions(self,fp):
@@ -184,7 +193,7 @@ class opcode:
 			fp.write( "<code>"+each[0]+"</code>  -- "+each[1]+"</font><br>")
 		fp.write( "</td></tr>")
 
-def print_header(fp,heading,alphindex,contents):
+def print_header(fp,heading):
 	fp.write("""
 	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 	<html>
@@ -193,75 +202,117 @@ def print_header(fp,heading,alphindex,contents):
 	</head>
 	<body BGCOLOR="#DbDbDb" text="#000000" LINK="#0C0C0C" VLINK="#070707" ALINK="#007007">
 	""")
-	fp.write("""<h1 align="center"> %s </h1>""" % string.upper(heading))
-	if(contents=="index"):
-		return 
-	fp.write("""<hr>
-	<table align="center" width="80%"  bordercolor="#cdcdcd" 
-	cellspacing="0" cellpadding="5"><tr border="2" >
-	</td><td align="left">""")
+	#fp.write("""<h1 align="center"> %s </h1>""" % string.upper(heading))
+	fp.write("""<h1 align="center"> %s </h1>""" % heading)
+	fp.write("<br>")
+	
+		
 
-	fp.write("""<a href="index.html">
-	Contents</a>""")
-	for each in alphindex:
-		fp.write("&nbsp;&middot;&nbsp;")
-		if(each==contents):
-			fp.write("<b>("+string.upper(each)+")</b>")
-		else:
-			fp.write("""<a href="%s.html">
-			%s
-			</a>""" % (each,string.upper(each)))
-	fp.write("</font>")
-	fp.write("</td></tr></table>")
-	fp.write("<hr><br>")
 def print_footer(fp):
 	fp.write("""<p align="center"> <font size="-2">Copyright &copy; Southern 
 	Storm Software Pty Ltd 2002 <br> Licensed under GNU FDL </font></p>""")
 	fp.write("</body></html>")
 
-def print_index(fp,namelist,alphindex):
-	print_header(fp,"Converted Virtual Machine Instruction Set",alphindex,"index")
+def print_index(fp,grouplist):
+	print_header(fp,"Converted Virtual Machine Instruction Set")
+	#fp.write("""
+	#	<table border="0" align="center" width="90%" cellpadding="10" >
+	#	<tr><td>
+	#	<!--LEFT BLOCK-->
+	#		""")
 	fp.write("""
-	<table bordercolor="#CDCDCD" border="0" align="center" width="90%"> 
-	""")
-	
+			<center><table border="0" bordercolor="#CDCDCD" width="70%"
+			cellspacing="3" cellpadding="5" cols="2">
+			<tr><td>
+			""")
 	i=0
-	for each in namelist:
-		if((i!=0 and i%4==0) or i==len(namelist)):
-			fp.write("</tr>")
-		if(i%4==0):
-			fp.write("<tr border=\"2\">")
-		fp.write("""<td border="1">""")
-		fp.write("<a href=\""+each[0]+".html#"+cgi.escape(each,1)+"\"><b>"+cgi.escape(each)+"</b></a>")
-		fp.write("""</td>""")
-		
+	for each in grouplist:
+		fp.write("""&nbsp;&nbsp;&middot;&nbsp;
+		<a href="%s.html"><b>%s</b></a>""" %
+		(string.replace(each,' ',''),each))
 		i=i+1
-#	print "</p>"
-	while(i%4!=0):
-		fp.write("<td>&nbsp;</td>")
-		i=i+1
-	fp.write("</tr>")
-	fp.write("</table>")
-	fp.write("<br><br>")
+		if i==1:
+			fp.write("</td><td>")
+		else:
+			fp.write("</td></tr><tr><td>")
+			i=0
+
+	fp.write("</td></tr></table><center>");
+
+	#fp.write("""</td><td align="center" valign="top"><!--CENTER--BLOCK-->""")
+	#begin center block
+	#fp.write(cvm_doc)
+	#fp.write("</td></tr></table>")
 	print_footer(fp)
+
+def print_tables(fp,name,list):
+	fp.write("""<hr><p>
+		<table border="0" align="center" width="80%">
+		<tr><td>
+		<!--LEFT BLOCK-->
+			""")
+	fp.write("""
+			<table border="0" bordercolor="#CDCDCD" align="left" 
+			cellspacing="3" cellpadding="5" cols="4">
+			<tr>
+			""")
+
+	sorted={}
+	for each in list:
+		sorted[each.name]=each
+	sortednames=sorted.keys()
+	sortednames.sort()
+
+	i=0
+	for each in sortednames:
+			op=sorted[each]
+			fp.write("""<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href="#%s"><b>%s</b></a></td>""" %
+			(cgi.escape(op.name, 1),cgi.escape(op.name)))
+			i=i+1
+			if i==4:
+				fp.write("</tr><tr>")
+				i=0
+	if i>0:
+		while i<4:
+			fp.write("<td>&nbsp;</td>");
+			i=i+1
+
+	fp.write("</tr></table>");
+
+	#fp.write("""</td><td valign="top"><br><br><br><br><!--CENTER--BLOCK-->""")
+	#begin center block
+	#fp.write("We have %s instructions in this category" % `len(list)`)
+	fp.write("</td></tr></table><p><hr><p>")
 	
 if __name__=="__main__":
-	#src=xml.dom.minidom.parse("cvm.xml")
 	src=xml.dom.minidom.parse(sys.stdin)
 	src.normalize()
 	list={}
+	groups={}
+	filenames={}
+	
 	for each in src.getElementsByTagName("opcode"):
 		op=opcode(each)
 		op.read()
 		list[op.name]=op
+		if(not groups.has_key(op.group)):
+			groups[op.group]=[]
+		groups[op.group].append(op)
+	
 	namelist=list.keys()
 	namelist.sort()
-	filenames={}
-	for each in namelist:
-		if(not filenames.has_key(each[0])):
-			fp=open(sys.argv[1]+"/"+each[0]+".html","w")
-			filenames[each[0]]=fp
-	
+
+	grouplist=groups.keys()
+	grouplist.sort()
+
+	for each in grouplist:  
+		if(not filenames.has_key(each)):
+			fp=open(sys.argv[1]+"/"+string.replace(each,' ','')+".html","w")
+			filenames[each]=fp
+
+			
+#RHYS PART of the puzzle starts
 	codes={}
 	codefile=open(sys.argv[2], 'r')
 	syntax=regex.set_syntax(regex_syntax.RE_SYNTAX_GREP)
@@ -275,19 +326,22 @@ if __name__=="__main__":
 		if prog.search(line) >= 0:
 			fields=string.split(line)
 			codes[fields[1]]=fields[2]
+#end Regexp Magic
 
-	alphindex=filenames.keys()
-	alphindex.sort()
 	index=open(sys.argv[1]+"/index.html","w")
-	print_index(index,namelist,alphindex)
+	print_index(index,grouplist)
 	index.close()
-	for each in alphindex:
+
+	for each in grouplist:
 		fp=filenames[each]
-		print_header(fp,each,alphindex,each)
+		print_header(fp,each)
+		print_tables(fp,each,groups[each])
 
 	for each in namelist:
-		fp=filenames[each[0]]
-		list[each].write(fp,codes)
+		op=list[each]
+		fp=filenames[op.group]
+		op.write(fp,codes)
+
 	for each in filenames.values():
 		print_footer(each)
 		each.close()

@@ -70,6 +70,10 @@ internal class ScientificFormatter : Formatter
 		{
 			ret.Append(NumberFormatInfo(provider).NumberDecimalSeparator)
 				.Append(rawnumber.Substring(rawnumber.IndexOf('.')+1));
+			if (rawnumber.EndsWith("."))
+			{
+				ret.Append("0");
+			}
 		}
 
 		if (isNegative)

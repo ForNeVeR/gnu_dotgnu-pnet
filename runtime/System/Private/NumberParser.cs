@@ -23,6 +23,7 @@ namespace System.Private
 
 using System;
 using System.Globalization;
+using System.Text;
 
 internal sealed class NumberParser
 {
@@ -688,22 +689,472 @@ internal sealed class NumberParser
 		throw new OverflowException(_("Overflow_UInt64"));
 	}
 
+	private static string RawHandleWhite(String s,
+							NumberStyles style, NumberFormatInfo nfi)
+	{
+		String ret;
+		if ((style & NumberStyles.AllowLeadingWhite) != 0 &&
+			(style & NumberStyles.AllowTrailingWhite) != 0)
+		{
+			ret = s.Trim();
+		}
+		else if ((style & NumberStyles.AllowLeadingWhite) != 0)
+		{
+			ret = s.TrimStart(null);
+			if (ret.Length > s.TrimEnd(null).Length)
+				throw new FormatException(_("Format_UnallowedTrailingWhite"));
+		}
+		else if ((style & NumberStyles.AllowTrailingWhite) != 0)
+		{
+			ret = s.TrimEnd(null);
+			if (ret.Length > s.TrimStart(null).Length)
+				throw new FormatException(_("Format_UnallowedLeadingWhite"));
+		}
+		else
+		{
+			ret = s;
+			if (ret.Length > s.TrimStart(null).Length)
+				throw new FormatException(_("Format_UnallowedLeadingWhite"));
+			if (ret.Length > s.TrimEnd(null).Length)
+				throw new FormatException(_("Format_UnallowedTrailingWhite"));
+		}
+		return ret;
+	}
+
+	private static void RawHandleSign(StringBuilder sb,
+							NumberStyles style, NumberFormatInfo nfi)
+	{
+		bool leadingsign, trailingsign;
+
+		if (sb.ToString().StartsWith(nfi.PositiveSign) ||
+				sb.ToString().StartsWith(nfi.NegativeSign))
+		{
+			leadingsign = true;
+			if ((style & NumberStyles.AllowLeadingSign) == 0)
+				throw new FormatException(_("Format_UnallowedLeadingSign"));
+		}
+	
+		if (sb.ToString().EndsWith(nfi.PositiveSign) ||
+				sb.ToString().EndsWith(nfi.NegativeSign))
+		{
+			trailingsign = true;
+			if ((style & NumberStyles.AllowTrailingSign) == 0)
+				throw new FormatException(_("Format_UnallowedTrailingSign"));
+		}
+
+		if (leadingsign && trailingsign)
+		{
+			throw new FormatException(_("Format_TwoSigns"));
+		}
+	}
+
+	private static void RawHandleCurrencySymbol(StringBuilder sb,
+							NumberStyles style, NumberFormatInfo nfi)
+	{
+		int symbolPos = sb.ToString().IndexOf(nfi.CurrencySymbol);
+
+		//  Nothing to be done
+		if (symbolPos == -1) return;
+
+		if ((style & NumberStyles.AllowCurrencySymbol) != 0)
+		{
+			//  Remove the currency symbol
+			sb.Remove(symbolPos,nfi.CurrencySymbol.Length);
+		}
+		else
+		{
+			//  Throw a format exception
+			throw new FormatException(_("Format_UnallowedCurrencySymbol"));
+		}
+	}
+
+	private static void RawHandleDecimalPoint(StringBuilder sb,
+								NumberStyles style, NumberFormatInfo nfi)
+	{
+		//  There are three different possible decimal points,
+		//  of which only one should be present.
+
+		//  Change all possible decimal points into one.
+		sb.Replace(nfi.CurrencyDecimalSeparator, nfi.NumberDecimalSeparator);
+		sb.Replace(nfi.PercentDecimalSeparator, nfi.NumberDecimalSeparator);
+
+		int decimalPos = sb.ToString().IndexOf(nfi.NumberDecimalSeparator);
+
+		if ((style & NumberStyles.AllowDecimalPoint) != 0)
+		{
+			//  Test for multiple decimal points
+			if (decimalPos 
+				!= sb.ToString().LastIndexOf(nfi.NumberDecimalSeparator))
+			{
+				throw
+					new FormatException(_("Format_MultipleDecimalSeparators"));
+			}
+		}
+		else if (decimalPos > -1)
+		{
+			throw new FormatException(_("Format_UnallowedDecimalPoint"));
+		}
+	}
+
+	private static readonly char [] Ee = {'e', 'E'};
+
+	private static void RawHandleExponent(StringBuilder sb,
+							NumberStyles style, NumberFormatInfo nfi)
+	{
+		string s = sb.ToString();
+		int ePos = s.IndexOfAny(Ee);
+		int decimalPos = s.IndexOf(nfi.NumberDecimalSeparator);
+		int i;
+
+		//  Bail out if this doesn't look like an exponential number
+		if (ePos != s.LastIndexOfAny(Ee)) return;
+		if (decimalPos >= ePos) return;
+
+		//  Exponent is a leading sign plus at least one digit
+		if (ePos+1 >= s.Length) return;
+		if (s[ePos+1] != '+' && s[ePos+1] != '-') return;
+
+		if (ePos + 3 >= s.Length) return;  // Have to have at least one digit
+		for (i = ePos + 2; i < s.Length; i++)
+		{
+			if (s[i] < '0' || s[i] > '9') return;
+		}
+
+		for (i = ePos - 1; 
+				i >= decimalPos + nfi.NumberDecimalSeparator.Length; 
+				i--)
+		{
+			if (s[i] < '0' || s[i] > '9') return;
+		}
+
+		for (i = decimalPos-1;
+				i <= '-' && i >= 0;
+				i--)
+		{
+			if (s[i] < '0' || s[i] > '9') return;
+		}
+
+		if (i >= nfi.NegativeSign.Length) 
+		{
+			return;
+		}
+		else if (i >= 0 && !s.StartsWith(nfi.NegativeSign)) 
+		{
+			return;
+		}
+
+		//  Okay, this is an exponent.  Is it allowable?
+		if ((style & NumberStyles.AllowExponent) == 0)
+		{
+			throw new FormatException(_("Format_UnallowedExponent"));
+		}
+	}
+
+	private static void RawHandleParentheses(StringBuilder sb,
+							NumberStyles style, NumberFormatInfo nfi)
+	{
+		int startPos = sb.ToString().IndexOf('(');
+		int endPos = sb.ToString().IndexOf(')');
+
+		//  Move along... Nothing to see here...
+		if (startPos == -1 && endPos == -1) return;
+
+		if (startPos == -1 || endPos == -1 || startPos > endPos)
+			throw new FormatException(_("Format_UnbalancedParentheses"));
+
+		if ((style & NumberStyles.AllowParentheses) != 0)
+		{
+			//  Replace parentheses with a leading NumberNegativeSign
+			sb.Remove(startPos,1);
+			sb.Remove(endPos,1);
+			sb.Insert(0, nfi.NegativeSign);
+
+			//  Test for additional parentheses... Bad!
+			if (sb.ToString().IndexOf('(') != -1 ||
+					sb.ToString().IndexOf(')') != -1)
+			{
+				throw new FormatException(_("Format_ExtraParentheses"));
+			}
+		}
+		else
+		{
+			throw new FormatException(_("Format_UnallowedParentheses"));
+		}
+	}
+
+	private static bool RawHandleThousandsTry(StringBuilder sb, 
+			NumberFormatInfo nfi, string sep, int [] sizes)
+	{
+		int i, idx;
+
+		i = 0;
+		idx = sb.ToString().IndexOf(nfi.NumberDecimalSeparator);
+		idx -= sep.Length;
+		idx -= sizes[i];
+
+		while (idx > 0)
+		{
+			if (sb.ToString(idx, sep.Length) != sep) return false;
+
+			sb.Remove(idx, sep.Length);
+
+			if (i < sizes.Length - 1) i++;
+			idx -= sizes[i];
+		}
+	
+		return true;
+	}
+
+	private static string RawHandleThousands(StringBuilder sb, 
+			NumberStyles style, NumberFormatInfo nfi)
+	{
+		//  Once again, the specification has three possible sets of
+		//  group separators that could be used here.  This routine 
+		//  tries each in turn until one works, then decides what to
+		//  do about it.
+		
+		bool ok;
+		StringBuilder hold;
+
+		hold = new StringBuilder(sb.ToString());
+		ok = RawHandleThousandsTry(hold, nfi,
+				nfi.NumberGroupSeparator, nfi.NumberGroupSizes);
+
+		if (!ok)
+		{
+			hold = new StringBuilder(sb.ToString());
+			ok = RawHandleThousandsTry(hold, nfi,
+					nfi.CurrencyGroupSeparator, nfi.CurrencyGroupSizes);
+		}
+
+		if (!ok)
+		{
+			hold = new StringBuilder(sb.ToString());
+			ok = RawHandleThousandsTry(hold, nfi,
+					nfi.PercentGroupSeparator, nfi.PercentGroupSizes);
+		}
+
+		if (!ok) return sb.ToString();
+
+		//  At this point, we know we CAN separate the groups.  Now the
+		//  question is, "Should we?"
+		if ((style & NumberStyles.AllowThousands) != 0)
+		{
+			return hold.ToString();
+		}
+		else
+		{
+			throw new FormatException("Format_UnallowedThousands");
+		}
+	}
+
+	private static string RawString(String s, NumberStyles style,
+									NumberFormatInfo nfi)
+	{
+		//  Bail out and let the parser cope -- poor parser...
+		if ((style & NumberStyles.AllowHexSpecifier) != 0) return s;
+
+		//  These routines hold a significant amount of subjective
+		//  format validation.  They also cleanse out information
+		//  unneeded by the parser itself (e.g. whitespace, group).
+		StringBuilder sb = 
+			new StringBuilder(RawHandleWhite(s, style, nfi));
+		RawHandleSign(sb, style, nfi);
+		RawHandleCurrencySymbol(sb, style, nfi);
+		RawHandleDecimalPoint(sb, style, nfi);
+		RawHandleExponent(sb, style, nfi);
+		RawHandleParentheses(sb, style, nfi);
+
+		//  Leave this for last, because it needs a fairly
+		//  well-formatted input
+		return RawHandleThousands(sb, style, nfi);
+	}
+
+	private static bool StripSign(StringBuilder sb, NumberFormatInfo nfi)
+	{
+		bool isNeg;
+
+		if (sb.ToString().StartsWith(nfi.NegativeSign))
+		{
+			isNeg = true;
+			sb.Remove(0, nfi.NegativeSign.Length);
+		}
+		else if (sb.ToString().EndsWith(nfi.NegativeSign))
+		{
+			isNeg = true;
+			sb.Remove(sb.Length = nfi.NegativeSign.length, 
+					nfi.NegativeSign.length);
+		}
+		else if (sb.ToString().StartsWith(nfi.PositiveSign))
+		{
+			isNeg = false;
+			sb.Remove(0, nfi.PositiveSign.Length);
+		}
+		else if (sb.ToString().EndsWith(nfi.PositiveSign))
+		{
+			isNeg = false;
+			sb.Remove(sb.Length = nfi.PositiveSign.length, 
+					nfi.PositiveSign.length);
+		}
+		else
+		{
+			isNeg = false;
+		}
+		return isNeg;
+	}
+
+	private static uint EatDigits(StringBuilder sb)
+	{
+		uint work = 0;
+
+		while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
+		{
+			work *= 10;
+			work += (uint)(sb[0] - '0');
+			sb.Remove(0, 1);
+		}
+		return work;
+	}
+
 	public static Decimal ParseDecimal(String s, NumberStyles style,
 								       NumberFormatInfo nfi)
 	{
-		return 0.0m;
+		//  Double does not parse floating point numbers
+		if ((style & NumberStyles.AllowHexSpecifier) != 0)
+			throw new FormatException(_("Format_HexNotSupported"));
+
+		StringBuilder sb = new StringBuilder(RawString(s, style, nfi));
+
+		bool negative = StripSign(sb, nfi);
+
+		//  Parse up to the decimal
+		decimal work = (decimal)EatDigits(sb);
+
+		//  Parse after the decimal
+		if (sb.Length > 0 
+				&& sb.ToString().StartsWith(nfi.NumberDecimalSeparator))
+		{
+			uint fracDigits;
+			sb.Remove(0, nfi.NumberDecimalSeparator.Length);
+			fracDigits = EatDigits(sb);
+			if (fracDigits != 0) 
+			{
+				int i;
+				int exp = (int)(-Math.Log10(fracDigits))-1;
+				if (exp < 0) for (i=0; i<-exp; i++) work /= 10;
+				if (exp > 0) for (i=0; i<exp; i++) work *= 10;
+			}	
+		}
+
+		//  Parse after the exponent
+		if (sb.Length > 0 && (sb[0] == 'e' || sb[0] == 'E') ) 
+		{
+			uint exp;
+			bool negExponent;
+			sb.Remove(0, 1);
+			if (sb.ToString().StartsWith(nfi.PositiveSign)) 
+			{
+				sb.Remove(0, nfi.PositiveSign.Length);
+			} 
+			else if (sb.ToString().StartsWith(nfi.NegativeSign)) 
+			{
+				sb.Remove(0, nfi.NegativeSign.Length);
+			} 
+			else 
+			{
+				//  Darn it, we're supposed to have a sign.
+				throw new FormatException(_("Format_ExponentRequiresSign"));
+			}
+			exp= EatDigits(sb);
+			if (exp!= 0) 
+			{
+				int i;
+				if (exp< 0) for (i=0; i<-exp; i++) work /= 10;
+				if (exp> 0) for (i=0; i>exp; i++) work *= 10;
+			}
+		}
+
+		if (sb.Length > 0)
+		{
+			//  Oops.  Throw a "junk found" exception.
+			throw new FormatException();
+		}
+
+		if (negative) work *= -1;
+
+		return work;
 	}
 
 	public static float ParseSingle(String s, NumberStyles style,
 								    NumberFormatInfo nfi)
 	{
-		return 0.0f;
+		// We'll let cast-checking handle overflow exceptions
+		return (float)ParseDouble(s, style, nfi);
 	}
 
 	public static double ParseDouble(String s, NumberStyles style,
 								     NumberFormatInfo nfi)
 	{
-		return 0.0d;
+		//  Double does not parse floating point numbers
+		if ((style & NumberStyles.AllowHexSpecifier) != 0)
+			throw new FormatException(_("Format_HexNotSupported"));
+
+		StringBuilder sb = new StringBuilder(RawString(s, style, nfi));
+
+		bool negative = StripSign(sb, nfi);
+
+		//  Parse up to the decimal
+		double work = (double)EatDigits(sb);
+
+		//  Parse after the decimal
+		if (sb.Length > 0 
+				&& sb.ToString().StartsWith(nfi.NumberDecimalSeparator))
+		{
+			uint fracDigits;
+			sb.Remove(0, nfi.NumberDecimalSeparator.Length);
+			fracDigits = EatDigits(sb);
+			if (fracDigits != 0) 
+			{
+				work += (double)fracDigits * 
+						Math.Pow(10, -Math.Floor(Math.Log10(fracDigits)) -1) ;
+			}	
+		}
+
+		//  Parse after the exponent
+		if (sb.Length > 0 && (sb[0] == 'e' || sb[0] == 'E') ) 
+		{
+			uint exponent;
+			bool negExponent;
+			sb.Remove(0, 1);
+			if (sb.ToString().StartsWith(nfi.PositiveSign)) 
+			{
+				sb.Remove(0, nfi.PositiveSign.Length);
+			} 
+			else if (sb.ToString().StartsWith(nfi.NegativeSign)) 
+			{
+				sb.Remove(0, nfi.NegativeSign.Length);
+			} 
+			else 
+			{
+				//  Darn it, we're supposed to have a sign.
+				throw new FormatException(_("Format_ExponentRequiresSign"));
+			}
+			exponent = EatDigits(sb);
+			if (exponent != 0) 
+			{
+				work *= Math.Pow(10, exponent * (negExponent ? -1 : 1));
+			}
+		}
+
+		if (sb.Length > 0)
+		{
+			//  Oops.  Throw a "junk found" exception.
+			throw new FormatException();
+		}
+
+		if (negative) work *= -1.0d;
+
+		return work;
 	}
 
 }; // class NumberParser

@@ -1,4 +1,15 @@
 
+2003-01-01  Jonathan Springer <jonathan.sprinver@verizon.net>
+
+	* resources/en_US/runtime/Format.txt, 
+	runtime/System/Private/NumberParser.cs:  Added support for parsing of
+	floating-point and decimal types.
+
+	* tests/runtime/System/SuiteSystem.cs, tests/runtime/System/TestDouble.cs:
+	Rudimentary tests for floating-point formatting.
+
+	* runtime/System/NumberFormat/ScientificFormatter.cs: Cosmetic fix.
+
 2003-01-01  Ian Fung  <if26@cornell.edu>
 
 	* System/ComponentModel/CancelEventArgs.cs,

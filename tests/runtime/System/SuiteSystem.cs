@@ -28,6 +28,7 @@ public class SuiteSystem
 			{
 				TestSuite suite = new TestSuite("Core Class Tests");
 				suite.AddTests(typeof(TestBoolean));
+				suite.AddTests(typeof(TestDouble));
 				suite.AddTests(typeof(TestSByte));
 				suite.AddTests(typeof(TestString));
 			#if !ECMA_COMPAT

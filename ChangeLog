@@ -8,7 +8,7 @@ implement many tests for arithmetic, conversion, branch, constant,
 and comparison instructions in the verifier; rearrange the test code
 a little to make it easier to maintain.
 
-* engine/verify_branch.c: validate the target stack as empty just after
+* engine/verify.c: validate the target stack as empty just after
 an unconditional jump, even if the location does not have a label.
 
 * engine/verify_arith.c: set the correct result type for "add" and "sub"

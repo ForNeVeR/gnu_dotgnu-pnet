@@ -122,28 +122,10 @@ void ILGenLoadFloat32(ILGenInfo *info, ILFloat value)
 {
 	if(info->asmOutput)
 	{
-		union
-		{
-			unsigned char bytes[4];
-			ILFloat		  value;
-		} convert;
-		convert.value = (ILFloat)1.0;
-		if(convert.bytes[3] == (unsigned char)0x3F)
-		{
-			/* Little-endian host CPU */
-			convert.value = value;
-			fprintf(info->asmOutput, "\tldc.r4\tfloat32(0x%02X%02X%02X%02X)\n",
-					convert.bytes[0], convert.bytes[1],
-					convert.bytes[2], convert.bytes[3]);
-		}
-		else
-		{
-			/* Big-endian host CPU */
-			convert.value = value;
-			fprintf(info->asmOutput, "\tldc.r4\tfloat32(0x%02X%02X%02X%02X)\n",
-					convert.bytes[3], convert.bytes[2],
-					convert.bytes[1], convert.bytes[0]);
-		}
+		unsigned char bytes[4];
+		IL_WRITE_FLOAT(bytes, value);
+		fprintf(info->asmOutput, "\tldc.r4\tfloat32(0x%02X%02X%02X%02X)\n",
+				bytes[0], bytes[1], bytes[2], bytes[3]);
 	}
 }
 
@@ -151,37 +133,12 @@ void ILGenLoadFloat64(ILGenInfo *info, ILDouble value)
 {
 	if(info->asmOutput)
 	{
-		union
-		{
-			unsigned char bytes[8];
-			struct {
-				unsigned long first, second;
-			} words;
-			ILDouble	  value;
-		} convert;
-		convert.value = (ILDouble)1.0;
-		if(convert.words.first == 0 && convert.words.second == 0x3FF00000)
-		{
-			/* Little-endian host CPU */
-			convert.value = value;
-			fprintf(info->asmOutput,
-					"\tldc.r8\tfloat64(0x%02X%02X%02X%02X%02X%02X%02X%02X)\n",
-					convert.bytes[0], convert.bytes[1],
-					convert.bytes[2], convert.bytes[3],
-					convert.bytes[4], convert.bytes[5],
-					convert.bytes[6], convert.bytes[7]);
-		}
-		else
-		{
-			/* Big-endian host CPU */
-			convert.value = value;
-			fprintf(info->asmOutput,
-					"\tldc.r8\tfloat64(0x%02X%02X%02X%02X%02X%02X%02X%02X)\n",
-					convert.bytes[7], convert.bytes[6],
-					convert.bytes[5], convert.bytes[4],
-					convert.bytes[3], convert.bytes[2],
-					convert.bytes[1], convert.bytes[0]);
-		}
+		unsigned char bytes[8];
+		IL_WRITE_DOUBLE(bytes, value);
+		fprintf(info->asmOutput,
+				"\tldc.r8\tfloat64(0x%02X%02X%02X%02X%02X%02X%02X%02X)\n",
+				bytes[0], bytes[1], bytes[2], bytes[3],
+				bytes[4], bytes[5], bytes[6], bytes[7]);
 	}
 }
 

@@ -224,28 +224,7 @@ static ILIntString PackUnicodeString(ILIntString str)
  */
 static void SetFloat(unsigned char *fbytes, ILFloat value)
 {
-	union
-	{
-		unsigned char bytes[4];
-		ILFloat		  value;
-	} convert;
-	convert.value = (ILFloat)1.0;
-	if(convert.bytes[3] == (unsigned char)0x3F)
-	{
-		/* Little endian host */
-		fbytes[0] = convert.bytes[0];
-		fbytes[1] = convert.bytes[1];
-		fbytes[2] = convert.bytes[2];
-		fbytes[3] = convert.bytes[3];
-	}
-	else
-	{
-		/* Big endian host */
-		fbytes[3] = convert.bytes[0];
-		fbytes[2] = convert.bytes[1];
-		fbytes[1] = convert.bytes[2];
-		fbytes[0] = convert.bytes[3];
-	}
+	IL_WRITE_FLOAT(fbytes, value);
 }
 
 /*
@@ -253,40 +232,7 @@ static void SetFloat(unsigned char *fbytes, ILFloat value)
  */
 static void SetDouble(unsigned char *dbytes, ILDouble value)
 {
-	union
-	{
-		unsigned char bytes[8];
-		ILDouble	  value;
-		struct {
-			ILUInt32  first;
-			ILUInt32  second;
-		} words;
-	} convert;
-	convert.value = (ILDouble)1.0;
-	if(convert.words.first == 0 && convert.words.second == 0x3FF00000)
-	{
-		/* Little endian host */
-		dbytes[0] = convert.bytes[0];
-		dbytes[1] = convert.bytes[1];
-		dbytes[2] = convert.bytes[2];
-		dbytes[3] = convert.bytes[3];
-		dbytes[4] = convert.bytes[4];
-		dbytes[5] = convert.bytes[5];
-		dbytes[6] = convert.bytes[6];
-		dbytes[7] = convert.bytes[7];
-	}
-	else
-	{
-		/* Big endian host */
-		dbytes[7] = convert.bytes[0];
-		dbytes[6] = convert.bytes[1];
-		dbytes[5] = convert.bytes[2];
-		dbytes[4] = convert.bytes[3];
-		dbytes[3] = convert.bytes[4];
-		dbytes[2] = convert.bytes[5];
-		dbytes[1] = convert.bytes[6];
-		dbytes[0] = convert.bytes[7];
-	}
+	IL_WRITE_DOUBLE(dbytes, value);
 }
 
 /*

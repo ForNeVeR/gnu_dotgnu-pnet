@@ -38,6 +38,8 @@ include/il_writer.h: remove obsolete code related to Beta 1 support.
 
 * libffi: update makefiles and configuration to build "libffi.a".
 
+* engine/Makefile.am: add "layout.c" and "libffi.a" to the build.
+
 2001-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: add support for .jar files to the loader.

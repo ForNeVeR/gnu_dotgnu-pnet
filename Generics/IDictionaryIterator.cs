@@ -27,7 +27,8 @@ namespace Generics
 
 using System;
 
-public interface IDictionaryIterator<KeyT, ValueT> : IIterator<ValueT>
+public interface IDictionaryIterator<KeyT, ValueT>
+	: IIterator< DictionaryEntry<KeyT, ValueT> >
 {
 
 	DictionaryEntry<KeyT, ValueT> Entry { get; }

@@ -27,7 +27,8 @@ namespace Generics
 
 using System;
 
-public interface IDictionary<KeyT, ValueT> : ICollection<ValueT>
+public interface IDictionary<KeyT, ValueT>
+	: ICollection< DictionaryEntry<KeyT, ValueT> >
 {
 
 	void Add(KeyT key, ValueT value);

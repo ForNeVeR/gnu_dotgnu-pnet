@@ -188,7 +188,7 @@ public sealed class DictionaryAdapter<KeyT, ValueT>
 				IDictionaryIterator<KeyT, ValueT> iterator = dict.GetIterator();
 				while(iterator.MoveNext())
 				{
-					array.SetValue(iterator.Value, index++);
+					array.SetValue(iterator.Current, index++);
 				}
 			}
 	public int Count
@@ -214,11 +214,11 @@ public sealed class DictionaryAdapter<KeyT, ValueT>
 			}
 
 	// Implement the non-generic IEnumerable interface.
-	public System.Collections.IEnumerator
+	System.Collections.IEnumerator
 				System.Collections.IEnumerable.GetEnumerator()
 			{
-				return new EnumeratorAdapter<ValueT>
-					(((ICollection<ValueT>)dict).GetIterator());
+				return new EnumeratorAdapter< DictionaryEntry<KeyT, ValueT> >
+					(dict.GetIterator());
 			}
 
 }; // class DictionaryAdapter<KeyT, ValueT>

@@ -27,8 +27,7 @@ namespace Generics
 
 using System;
 
-public class Hashtable<KeyT, ValueT>
-	: IDictionary<KeyT, ValueT>, ICollection<ValueT>, ICloneable
+public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 {
 	// Contents of a hash bucket.
 	private struct HashBucket<KeyT, ValueT>
@@ -496,8 +495,9 @@ public class Hashtable<KeyT, ValueT>
 				return hashtab;
 			}
 
-	// Implement the ICollection<ValueT> interface.
-	public virtual void CopyTo(ValueT[] array, int index)
+	// Implement the ICollection< DictionaryEntry<KeyT, ValueT> > interface.
+	public virtual void CopyTo
+				(DictionaryEntry<KeyT, ValueT>[] array, int index)
 			{
 				if(array == null)
 				{
@@ -514,13 +514,11 @@ public class Hashtable<KeyT, ValueT>
 				}
 				else
 				{
-					int posn;
-					for(posn = 0; posn < num; ++posn)
+					IDictionaryIterator<KeyT, ValueT> iterator;
+					iterator = GetIterator();
+					while(iterator.MoveNext())
 					{
-						if(table[posn].key != null)
-						{
-							array.SetValue(table[posn].value, index++);
-						}
+						array[index++] = iterator.Entry;
 					}
 				}
 			}
@@ -752,10 +750,10 @@ public class Hashtable<KeyT, ValueT>
 				}
 			}
 
-	// Implement the IIterable<ValueT> interface.
-	IIterator IIterable<ValueT>.GetIterator()
+	// Implement the IIterable< DictionaryEntry<KeyT, ValueT> > interface.
+	IIterator IIterable< DictionaryEntry<KeyT, ValueT> >.GetIterator()
 			{
-				return new HashtableIterator<KeyT, ValueT>(this);
+				return GetIterator();
 			}
 
 	// Determine if this hash table contains a specific key.
@@ -903,7 +901,8 @@ public class Hashtable<KeyT, ValueT>
 				}
 
 		// Implement the ICollection interface.
-		public override void CopyTo(ValueT[] array, int index)
+		public override void CopyTo
+					(DictionaryEntry<KeyT, ValueT>[] array, int index)
 				{
 					lock(SyncRoot)
 					{
@@ -1030,17 +1029,6 @@ public class Hashtable<KeyT, ValueT>
 					}
 				}
 	
-		// Implement the IIterable<ValueT> interface.
-		IIterator IIterable<ValueT>.GetIterator()
-				{
-					lock(SyncRoot)
-					{
-						return new SynchronizedIterator<ValueT>
-							(SyncRoot, ((IIterable<ValueT>)table)
-											.GetIterator());
-					}
-				}
-
 		// Determine if this hash table contains a specific key.
 		public override bool ContainsKey(KeyT key)
 				{
@@ -1146,11 +1134,11 @@ public class Hashtable<KeyT, ValueT>
 					table.table[posn].hasEntry = false;
 					--(table.num);
 				}
-		public ValueT Current
+		public DictionaryEntry<KeyT, ValueT> Current
 				{
 					get
 					{
-						return Value;
+						return Entry;
 					}
 				}
 

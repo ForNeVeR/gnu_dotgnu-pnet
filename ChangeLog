@@ -31,6 +31,12 @@
 	Generics/SynchronizedListIterator.cs: remove the dichotomy between
 	enumerators and iterators and replace it with just iterators.
 
+	* Generics/DictionaryAdapter.cs, Generics/DictionaryWrapper.cs,
+	Generics/Hashtable.cs, Generics/IDictionary.cs,
+	Generics/IDictionaryIterator.cs, Generics/SynchronizedDictIterator.cs:
+	fix the inheritance of dictionaries so that they are collections
+	of entries, not values.
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's

@@ -104,8 +104,8 @@ public sealed class DictionaryWrapper<KeyT, ValueT> : IDictionary<KeyT, ValueT>
 				}
 			}
 
-	// Implement the ICollection<ValueT> interface.
-	public void CopyTo(ValueT[] array, int index)
+	// Implement the ICollection<DictionaryEntry<KeyT, ValueT>> interface.
+	public void CopyTo(DictionaryEntry<KeyT, ValueT>[] array, int index)
 			{
 				dict.CopyTo(array, index);
 			}
@@ -131,11 +131,12 @@ public sealed class DictionaryWrapper<KeyT, ValueT> : IDictionary<KeyT, ValueT>
 				}
 			}
 
-	// Implement the IIterable<ValueT> interface.
-	public IIterator<ValueT> IIterable<ValueT>.GetEnumerator()
+	// Implement the IIterable<DictionaryEntry<KeyT, ValueT>> interface.
+	IIterator< DictionaryEntry<KeyT, ValueT> >
+				IIterable< DictionaryEntry<KeyT, ValueT> >.GetIterator()
 			{
-				return new EnumeratorWrapper
-					(((IIterable<ValueT>)dict).GetIterator());
+				return new EnumeratorWrapper< DictionaryEntry<KeyT, ValueT> >
+					(dict.GetEnumerator());
 			}
 
 }; // class DictionaryWrapper<KeyT, ValueT>

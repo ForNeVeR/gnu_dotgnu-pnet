@@ -60,13 +60,13 @@ internal sealed class SynchronizedDictIterator<KeyT, ValueT>
 					iterator.Remove();
 				}
 			}
-	ValueT IIterator<ValueT>.Current
+	public DictionaryEntry<KeyT, ValueT> Current
 			{
 				get
 				{
 					lock(syncRoot)
 					{
-						return ((IIterator<ValueT>)iterator).Current;
+						return iterator.Current;
 					}
 				}
 			}

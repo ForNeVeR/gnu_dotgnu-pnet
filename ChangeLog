@@ -1,13 +1,11 @@
+
 2004-05-08  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* codegen/cg_stmt.tc: make "goto case" emit a leave when
-	  in a try block.
-	  https://savannah.gnu.org/bugs/index.php?func=detailitem&item_id=8834
-
-2004-05-08  Russell Stuart  <russell-savannah@stuart.id.au>
+	in a try block. (bug #8834)
 
 	* cscc/common/cc_preproc.c: ignore ';' after #endregion.
-	  https://savannah.gnu.org/bugs/index.php?func=detailitem&item_id=8208
+	(bug #8208)
 
 2004-05-04  Gopal V  <gopalv82@yahoo.com>
 

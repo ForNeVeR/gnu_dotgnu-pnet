@@ -84,5 +84,6 @@ codegen/Makefile
 cscc/Makefile
 resgen/Makefile
 ildb/Makefile
+csdoc/Makefile
 samples/Makefile
 doc/Makefile])

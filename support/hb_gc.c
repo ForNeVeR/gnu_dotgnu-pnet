@@ -101,7 +101,7 @@ static int PrivateGCNotifyFinalize(void)
 	{
 		GC_invoke_finalizers();
 
-		return;
+		return 0;
 	}
 
 	if(!FinalizersDisabled)

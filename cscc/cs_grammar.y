@@ -657,6 +657,7 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 %token USING				"`using'"
 %token VIRTUAL				"`virtual'"
 %token VOID					"`void'"
+%token VOLATILE				"`volatile'"
 %token WHILE				"`while'"
 
 /*
@@ -2270,6 +2271,7 @@ Modifier
 	| OVERRIDE		{ $$ = CS_MODIFIER_OVERRIDE; }
 	| EXTERN		{ $$ = CS_MODIFIER_EXTERN; }
 	| UNSAFE		{ $$ = CS_MODIFIER_UNSAFE; }
+	| VOLATILE		{ $$ = CS_MODIFIER_VOLATILE; }
 	;
 
 /*

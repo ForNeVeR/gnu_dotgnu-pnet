@@ -47,6 +47,7 @@ extern	"C" {
 #define	CS_MODIFIER_OVERRIDE		(1<<10)
 #define	CS_MODIFIER_EXTERN			(1<<11)
 #define	CS_MODIFIER_UNSAFE			(1<<12)
+#define	CS_MODIFIER_VOLATILE		(1<<13)
 
 /*
  * Special attribute flags.
@@ -55,6 +56,7 @@ extern	"C" {
 #define	CS_SPECIALATTR_UNSAFE		0x04000000
 #define	CS_SPECIALATTR_EXTERN		0x02000000
 #define	CS_SPECIALATTR_OVERRIDE		0x01000000
+#define	CS_SPECIALATTR_VOLATILE		0x00800000
 
 /*
  * Flag bit that is used to distinguish args from locals.

@@ -82,6 +82,10 @@ static void ModifierError(char *filename, long linenum,
 	{
 		CSErrorOnLine(filename, linenum, msg, "unsafe");
 	}
+	if((modifiers & CS_MODIFIER_VOLATILE) != 0)
+	{
+		CSErrorOnLine(filename, linenum, msg, "volatile");
+	}
 }
 
 /*
@@ -245,7 +249,7 @@ ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 	BadModifiers(node,
 				 modifiers & (CS_MODIFIER_STATIC | CS_MODIFIER_READONLY |
 							  CS_MODIFIER_VIRTUAL | CS_MODIFIER_OVERRIDE |
-							  CS_MODIFIER_EXTERN));
+							  CS_MODIFIER_EXTERN | CS_MODIFIER_VOLATILE));
 
 	/* We have the attributes we wanted now */
 	return attrs;
@@ -331,7 +335,8 @@ ILUInt32 CSModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers)
 				 modifiers & (CS_MODIFIER_ABSTRACT | CS_MODIFIER_SEALED |
 							  CS_MODIFIER_STATIC | CS_MODIFIER_READONLY |
 							  CS_MODIFIER_VIRTUAL | CS_MODIFIER_OVERRIDE |
-							  CS_MODIFIER_EXTERN | CS_MODIFIER_UNSAFE));
+							  CS_MODIFIER_EXTERN | CS_MODIFIER_UNSAFE |
+							  CS_MODIFIER_VOLATILE));
 
 	/* Done */
 	return attrs;
@@ -360,6 +365,10 @@ ILUInt32 CSModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers)
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		attrs |= CS_SPECIALATTR_UNSAFE;
+	}
+	if((modifiers & CS_MODIFIER_VOLATILE) != 0)
+	{
+		attrs |= CS_SPECIALATTR_VOLATILE;
 	}
 
 	/* Report errors for the remaining modifiers */
@@ -426,6 +435,9 @@ ILUInt32 CSModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers)
 	/* Add the "hidebysig" attribute always */
 	attrs |= IL_META_METHODDEF_HIDE_BY_SIG;
 
+	/* Report errors for the remaining modifiers */
+	BadModifiers(node, modifiers & CS_MODIFIER_VOLATILE);
+
 	/* Done */
 	return attrs;
 }
@@ -482,7 +494,7 @@ ILUInt32 CSModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers)
 	}
 
 	/* Report errors for the remaining modifiers */
-	BadModifiers(node, modifiers & CS_MODIFIER_EXTERN);
+	BadModifiers(node, modifiers & (CS_MODIFIER_EXTERN | CS_MODIFIER_VOLATILE));
 
 	/* Done */
 	return attrs;
@@ -536,7 +548,7 @@ ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
 	}
 
 	/* Report errors for the remaining modifiers */
-	BadModifiers(node, modifiers & CS_MODIFIER_EXTERN);
+	BadModifiers(node, modifiers & (CS_MODIFIER_EXTERN | CS_MODIFIER_VOLATILE));
 
 	/* Done */
 	return attrs;
@@ -561,7 +573,7 @@ ILUInt32 CSModifiersToOperatorAttrs(ILNode *node, ILUInt32 modifiers)
 	}
 	BadModifiers(node,
 				 modifiers & ~(CS_MODIFIER_PUBLIC | CS_MODIFIER_STATIC |
-							   CS_MODIFIER_UNSAFE));
+							   CS_MODIFIER_UNSAFE | CS_MODIFIER_VOLATILE));
 	return (attrs | IL_META_METHODDEF_PUBLIC | IL_META_METHODDEF_STATIC |
 			IL_META_METHODDEF_SPECIAL_NAME | IL_META_METHODDEF_HIDE_BY_SIG);
 }

@@ -118,6 +118,7 @@ CSSRC = Activator.cs \
 		UnhandledExceptionEventHandler.cs \
 		ValueType.cs \
 		Variant.cs \
+		Version.cs \
 		Void.cs \
 		Collections/Comparer.cs \
 		Collections/DictionaryEntry.cs \
@@ -203,6 +204,8 @@ CSSRC = Activator.cs \
 		Resources/IResourceWriter.cs \
 		Resources/MissingManifestResourceException.cs \
 		Resources/NeutralResourcesLanguageAttribute.cs \
+		Resources/ResourceManager.cs \
+		Resources/ResourceSet.cs \
 		Resources/SatelliteContractVersionAttribute.cs \
 		Runtime/CompilerServices/AccessedThroughPropertyAttribute.cs \
 		Runtime/CompilerServices/CallConvCdecl.cs \

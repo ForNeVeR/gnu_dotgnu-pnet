@@ -105,6 +105,10 @@ runtime/System/Resources/ResourceSet.cs: implement two more classes in
 * resources/en_US/runtime/Arg.txt: resources related to the "System.Resources"
 and "System.Version" classes.
 
+* runtime/System/Object.cs, runtime/System/Makefile.am: implement the
+internal "_" method as a future replacement for the painful
+"Environment.GetResourceString" method.
+
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for the "0.1.0" release.

@@ -22,8 +22,8 @@ namespace System
 {
 
 using System.Reflection;
-using System.Runtime.Remoting;
 using System.Runtime.CompilerServices;
+using System.Resources;
 
 public class Object
 {
@@ -57,16 +57,22 @@ public class Object
 				return (objA == objB);
 			}
 
-	// Helper methods that are used in runtime engine callbacks.
-	private void FieldSetter(FieldInfo field, Object obj)
-	{
-		Message.CoerceArg(obj, field.FieldType);
-		field.SetValue(this, obj);
-	}
-	private void FieldGetter(FieldInfo field, ref Object obj)
-	{
-		obj = field.GetValue(this);
-	}
+	// Cached copy of the resources for this assembly.
+	private static ResourceManager resources = null;
+
+	// Helper for obtaining string resources for this assembly.
+	internal static String _(String tag)
+			{
+				lock(typeof(Object))
+				{
+					if(resources == null)
+					{
+						resources = new ResourceManager
+							("runtime", Assembly.GetExecutingAssembly());
+					}
+					return resources.GetString(tag, null);
+				}
+			}
 
 }; // class Object
 

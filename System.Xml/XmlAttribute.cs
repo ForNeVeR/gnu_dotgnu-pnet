@@ -177,7 +177,7 @@ class XmlAttribute : XmlNode
 					}
 					else
 					{
-						return (XmlElement)parent;
+						return (parent as XmlElement);
 					}
 				}
 			}

@@ -1,4 +1,9 @@
 
+2004-05-17  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XmlAttribute.cs: Return null for OwnerElement if the
+	owner is not an XmlElement .
+
 2004-05-16  Gopal V  <gopalv82@yahoo.com>
 
 	* config/machine.default: fix all the xml errors in machine.default

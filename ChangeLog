@@ -1,5 +1,10 @@
 2004-07-05  Klaus Treichel  <ktreichel@web.de>
 
+	* runtime/System/Globalization/CultureInfo.cs: clone DateTimeFormat and
+	NumberFormat if available.
+
+2004-07-05  Klaus Treichel  <ktreichel@web.de>
+
 	* runtime/System/Globalization/CultureInfo.cs: fix problem with
 	DateTimeFormat and NumberFormat in Clone
 

@@ -24,6 +24,9 @@ begin writing a test harness for the bytecode verifier.
 * engine/verify_var.c: fix the code that fetches 16-bit variable numbers
 in some of the prefixed opcodes.
 
+* engine/verify_arith.c: use "subUnsafeMatrix" instead of "addUnsafeMatrix"
+for verifying "sub" and "sub.ovf.un".
+
 2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/call.c, engine/engine.h, engine/cvm.c, engine/cvm_call.c,

@@ -200,7 +200,7 @@ case IL_OP_SUB_OVF_UN:
 	/* Subtraction operators that may involve pointers */
 	if(unsafeAllowed)
 	{
-		commonType = addUnsafeMatrix[STK_BINARY_1][STK_BINARY_2];
+		commonType = subUnsafeMatrix[STK_BINARY_1][STK_BINARY_2];
 	}
 	else
 	{

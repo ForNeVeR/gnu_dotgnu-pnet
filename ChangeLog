@@ -14,6 +14,9 @@
 	add the Jalaali calendar; fix some bugs in the Julian and
 	Hebrew calendars; add the 1.2 MinValue and MaxValue properties.
 
+	* runtime/System/Globalization/UmAlQuraCalendar.cs:
+	add the "UmAlQura" calendar class, as a wrapper around "HijriCalendar".
+
 2003-11-12  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs: add some proxy support to

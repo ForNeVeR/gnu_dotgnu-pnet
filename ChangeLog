@@ -7,6 +7,9 @@ all JVM opcodes.
 * codegen/jv_output.h, codegen/jv_output.c: change the JVM output
 routines to output JL assembly code instead of JVM bytecode.
 
+* codegen/jv_cast.tc, codegen/jv_misc.tc, codegen/jv_const.tc: rearrange
+object construction code to conform better with JVM requirements.
+
 2001-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions

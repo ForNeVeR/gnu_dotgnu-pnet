@@ -468,7 +468,12 @@ JavaGenValue(ILNode_Box)
 		{
 			if(info->useJavaLib)
 			{
-				JavaGenNewObj(info, "java/lang/Boolean", "<init>", "(Z)V");
+				JavaGenNewObj(info, "java/lang/Boolean");
+				JavaGenSimple(info, JAVA_OP_DUP_X1);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_SWAP);
+				JavaGenCallCtor(info, "java/lang/Boolean", "<init>", "(Z)V");
+				JavaGenAdjust(info, -2);
 			}
 			else
 			{
@@ -493,7 +498,12 @@ JavaGenValue(ILNode_Box)
 			}
 			else if(info->useJavaLib)
 			{
-				JavaGenNewObj(info, "java/lang/Byte", "<init>", "(B)V");
+				JavaGenNewObj(info, "java/lang/Byte");
+				JavaGenSimple(info, JAVA_OP_DUP_X1);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_SWAP);
+				JavaGenCallCtor(info, "java/lang/Byte", "<init>", "(B)V");
+				JavaGenAdjust(info, -2);
 			}
 			else
 			{
@@ -518,7 +528,12 @@ JavaGenValue(ILNode_Box)
 			}
 			else if(info->useJavaLib)
 			{
-				JavaGenNewIntrinsic(info, "UByte", "<init>", "(I)V");
+				JavaGenNewIntrinsic(info, "UByte");
+				JavaGenSimple(info, JAVA_OP_DUP_X1);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_SWAP);
+				JavaGenCallCtorIntrinsic(info, "UByte", "<init>", "(I)V");
+				JavaGenAdjust(info, -2);
 			}
 			else
 			{
@@ -543,7 +558,12 @@ JavaGenValue(ILNode_Box)
 			}
 			else if(info->useJavaLib)
 			{
-				JavaGenNewObj(info, "java/lang/Short", "<init>", "(S)V");
+				JavaGenNewObj(info, "java/lang/Short");
+				JavaGenSimple(info, JAVA_OP_DUP_X1);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_SWAP);
+				JavaGenCallCtor(info, "java/lang/Short", "<init>", "(S)V");
+				JavaGenAdjust(info, -2);
 			}
 			else
 			{
@@ -568,7 +588,12 @@ JavaGenValue(ILNode_Box)
 			}
 			else if(info->useJavaLib)
 			{
-				JavaGenNewIntrinsic(info, "UShort", "<init>", "(I)V");
+				JavaGenNewIntrinsic(info, "UShort");
+				JavaGenSimple(info, JAVA_OP_DUP_X1);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_SWAP);
+				JavaGenCallCtorIntrinsic(info, "UShort", "<init>", "(I)V");
+				JavaGenAdjust(info, -2);
 			}
 			else
 			{
@@ -582,7 +607,12 @@ JavaGenValue(ILNode_Box)
 		{
 			if(info->useJavaLib)
 			{
-				JavaGenNewObj(info, "java/lang/Character", "<init>", "(C)V");
+				JavaGenNewObj(info, "java/lang/Character");
+				JavaGenSimple(info, JAVA_OP_DUP_X1);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_SWAP);
+				JavaGenCallCtor(info, "java/lang/Character", "<init>", "(C)V");
+				JavaGenAdjust(info, -2);
 			}
 			else
 			{
@@ -608,7 +638,12 @@ JavaGenValue(ILNode_Box)
 			}
 			else if(info->useJavaLib)
 			{
-				JavaGenNewObj(info, "java/lang/Integer", "<init>", "(I)V");
+				JavaGenNewObj(info, "java/lang/Integer");
+				JavaGenSimple(info, JAVA_OP_DUP_X1);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_SWAP);
+				JavaGenCallCtor(info, "java/lang/Integer", "<init>", "(I)V");
+				JavaGenAdjust(info, -2);
 			}
 			else
 			{
@@ -634,7 +669,12 @@ JavaGenValue(ILNode_Box)
 			}
 			else if(info->useJavaLib)
 			{
-				JavaGenNewIntrinsic(info, "UInteger", "<init>", "(I)V");
+				JavaGenNewIntrinsic(info, "UInteger");
+				JavaGenSimple(info, JAVA_OP_DUP_X1);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_SWAP);
+				JavaGenCallCtorIntrinsic(info, "UInteger", "<init>", "(I)V");
+				JavaGenAdjust(info, -2);
 			}
 			else
 			{
@@ -660,8 +700,15 @@ JavaGenValue(ILNode_Box)
 			}
 			else if(info->useJavaLib)
 			{
-				JavaGenNewObj(info, "java/lang/Long", "<init>", "(J)V");
-				JavaGenAdjust(info, -1);
+				JavaGenNewObj(info, "java/lang/Long");
+				JavaGenSimple(info, JAVA_OP_DUP_X2);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_DUP_X2);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_POP2);
+				JavaGenAdjust(info, -2);
+				JavaGenCallCtor(info, "java/lang/Long", "<init>", "(J)V");
+				JavaGenAdjust(info, -3);
 			}
 			else
 			{
@@ -688,8 +735,15 @@ JavaGenValue(ILNode_Box)
 			}
 			else if(info->useJavaLib)
 			{
-				JavaGenNewIntrinsic(info, "ULong", "<init>", "(J)V");
-				JavaGenAdjust(info, -1);
+				JavaGenNewIntrinsic(info, "ULong");
+				JavaGenSimple(info, JAVA_OP_DUP_X2);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_DUP_X2);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_POP2);
+				JavaGenAdjust(info, -2);
+				JavaGenCallCtorIntrinsic(info, "ULong", "<init>", "(J)V");
+				JavaGenAdjust(info, -3);
 			}
 			else
 			{
@@ -704,7 +758,12 @@ JavaGenValue(ILNode_Box)
 		{
 			if(info->useJavaLib)
 			{
-				JavaGenNewObj(info, "java/lang/Float", "<init>", "(F)V");
+				JavaGenNewObj(info, "java/lang/Float");
+				JavaGenSimple(info, JAVA_OP_DUP_X1);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_SWAP);
+				JavaGenCallCtor(info, "java/lang/Float", "<init>", "(F)V");
+				JavaGenAdjust(info, -2);
 			}
 			else
 			{
@@ -719,8 +778,15 @@ JavaGenValue(ILNode_Box)
 		{
 			if(info->useJavaLib)
 			{
-				JavaGenNewObj(info, "java/lang/Double", "<init>", "(D)V");
-				JavaGenAdjust(info, -1);
+				JavaGenNewObj(info, "java/lang/Double");
+				JavaGenSimple(info, JAVA_OP_DUP_X2);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_DUP_X2);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_POP2);
+				JavaGenAdjust(info, -2);
+				JavaGenCallCtor(info, "java/lang/Double", "<init>", "(D)V");
+				JavaGenAdjust(info, -3);
 			}
 			else
 			{

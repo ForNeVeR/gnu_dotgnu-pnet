@@ -1269,14 +1269,17 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_UInt64)
 		   so we need to do this in a more round-about fashion.
 		   We subtract 0x8000000000000000, convert to int64, and
 		   then add 0x8000000000000000 to the result */
+		JavaGenNewObj(info, "System/Decimal");
+		JavaGenSimple(info, JAVA_OP_DUP);
+		JavaGenAdjust(info, 2);
 		JavaGenSimple(info, JAVA_OP_ICONST_0);		/* low */
 		JavaGenInt32(info, (ILInt32)0x80000000);	/* mid */
 		JavaGenSimple(info, JAVA_OP_ICONST_0);		/* high */
 		JavaGenSimple(info, JAVA_OP_ICONST_0);		/* isNegative */
 		JavaGenSimple(info, JAVA_OP_ICONST_0);		/* scale */
 		JavaGenAdjust(info, 5);
-		JavaGenNewObj(info, "System/Decimal", "<init>__iiiB", "(IIIZI)V");
-		JavaGenAdjust(info, -4);
+		JavaGenCallCtor(info, "System/Decimal", "<init>__iiiB", "(IIIZI)V");
+		JavaGenAdjust(info, -6);
 		JavaGenCallByName(info, "System/Decimal", "op_Subtraction__VVV",
 						  "(LSystem/Decimal;LSystem/Decimal;)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
@@ -1705,14 +1708,17 @@ JavaGenCast(ILMachineType_UInt64, ILMachineType_Decimal)
 		JavaGenCallByName(info, "System/Decimal", "op_Implicit__lV",
 						  "(J)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
+		JavaGenNewObj(info, "System/Decimal");
+		JavaGenSimple(info, JAVA_OP_DUP);
+		JavaGenAdjust(info, 2);
 		JavaGenSimple(info, JAVA_OP_ICONST_0);		/* low */
 		JavaGenInt32(info, (ILInt32)0x80000000);	/* mid */
 		JavaGenSimple(info, JAVA_OP_ICONST_0);		/* high */
 		JavaGenSimple(info, JAVA_OP_ICONST_0);		/* isNegative */
 		JavaGenSimple(info, JAVA_OP_ICONST_0);		/* scale */
 		JavaGenAdjust(info, 5);
-		JavaGenNewObj(info, "System/Decimal", "<init>__iiiB", "(IIIZI)V");
-		JavaGenAdjust(info, -4);
+		JavaGenCallCtor(info, "System/Decimal", "<init>__iiiB", "(IIIZI)V");
+		JavaGenAdjust(info, -6);
 		JavaGenCallByName(info, "System/Decimal", "op_Addition__VVV",
 						  "(LSystem/Decimal;LSystem/Decimal;)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
@@ -1730,8 +1736,15 @@ JavaGenCast(ILMachineType_Float32, ILMachineType_Decimal)
 	{
 		JavaGenSimple(info, JAVA_OP_F2D);
 		JavaGenAdjust(info, 1);
-		JavaGenNewObj(info, "java/math/BigDecimal", "<init>", "(D)V");
+		JavaGenNewObj(info, "java/math/BigDecimal");
+		JavaGenSimple(info, JAVA_OP_DUP_X2);
+		JavaGenAdjust(info, 2);
+		JavaGenSimple(info, JAVA_OP_DUP_X2);
+		JavaGenAdjust(info, 1);
+		JavaGenSimple(info, JAVA_OP_POP);
 		JavaGenAdjust(info, -1);
+		JavaGenCallCtor(info, "java/math/BigDecimal", "<init>", "(D)V");
+		JavaGenAdjust(info, -3);
 	}
 	else
 	{
@@ -1744,8 +1757,15 @@ JavaGenCast(ILMachineType_NativeFloat, ILMachineType_Decimal)
 {
 	if(info->useJavaLib)
 	{
-		JavaGenNewObj(info, "java/math/BigDecimal", "<init>", "(D)V");
+		JavaGenNewObj(info, "java/math/BigDecimal");
+		JavaGenSimple(info, JAVA_OP_DUP_X2);
+		JavaGenAdjust(info, 2);
+		JavaGenSimple(info, JAVA_OP_DUP_X2);
+		JavaGenAdjust(info, 1);
+		JavaGenSimple(info, JAVA_OP_POP);
 		JavaGenAdjust(info, -1);
+		JavaGenCallCtor(info, "java/math/BigDecimal", "<init>", "(D)V");
+		JavaGenAdjust(info, -3);
 	}
 	else
 	{
@@ -1761,8 +1781,13 @@ JavaGenCast(ILMachineType_String, ILMachineType_Decimal)
 {
 	if(info->useJavaLib)
 	{
-		JavaGenNewObj(info, "java/math/BigDecimal", "<init>",
-					  "(Ljava/lang/String;)V");
+		JavaGenNewObj(info, "java/math/BigDecimal");
+		JavaGenSimple(info, JAVA_OP_DUP_X1);
+		JavaGenAdjust(info, 2);
+		JavaGenSimple(info, JAVA_OP_SWAP);
+		JavaGenCallCtor(info, "java/math/BigDecimal", "<init>",
+					    "(Ljava/lang/String;)V");
+		JavaGenAdjust(info, -2);
 	}
 	else
 	{
@@ -1793,7 +1818,12 @@ JavaGenCast(ILMachineType_Boolean, ILMachineType_String)
 {
 	if(info->useJavaLib)
 	{
-		JavaGenNewObj(info, "java/lang/Boolean", "<init>", "(Z)V");
+		JavaGenNewObj(info, "java/lang/Boolean");
+		JavaGenSimple(info, JAVA_OP_DUP_X1);
+		JavaGenAdjust(info, 2);
+		JavaGenSimple(info, JAVA_OP_SWAP);
+		JavaGenCallCtor(info, "java/lang/Boolean", "<init>", "(Z)V");
+		JavaGenAdjust(info, -2);
 		JavaGenCallVirtual(info, "java/lang/Boolean", "toString",
 						   "()Ljava/lang/String;");
 	}

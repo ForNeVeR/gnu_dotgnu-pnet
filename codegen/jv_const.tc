@@ -292,11 +292,15 @@ JavaGenValue(ILNode_Decimal)
 		{
 			/* We must up-convert from the string form of the value */
 			char buffer[64];
+			JavaGenNewObj(info, "java/math/BigDecimal");
+			JavaGenSimple(info, JAVA_OP_DUP);
+			JavaGenAdjust(info, 2);
 			ILDecimalFormat(buffer, &(node->value), 0);
 			JavaGenStringConst(info, buffer, strlen(buffer));
-			JavaGenNewObj(info, "java/math/BigDecimal", "<init>",
-						  "(Ljava/lang/String;)V");
 			JavaGenAdjust(info, 1);
+			JavaGenCallCtor(info, "java/math/BigDecimal", "<init>",
+						    "(Ljava/lang/String;)V");
+			JavaGenAdjust(info, -2);
 		}
 	}
 	else if(ILDecimalToInt64(&(node->value), &intValue))
@@ -331,6 +335,9 @@ JavaGenValue(ILNode_Decimal)
 	else
 	{
 		/* We need to call the "Decimal" constructor to get the value */
+		JavaGenNewObj(info, "System/Decimal");
+		JavaGenSimple(info, JAVA_OP_DUP);
+		JavaGenAdjust(info, 2);
 		JavaGenUInt32(info, node->value.low);
 		JavaGenUInt32(info, node->value.middle);
 		JavaGenUInt32(info, node->value.high);
@@ -338,8 +345,8 @@ JavaGenValue(ILNode_Decimal)
 				((node->value.flags & (ILUInt32)0x80000000) != 0 ? 1 : 0));
 		JavaGenUInt32(info, ((node->value.flags >> 16) & 0xFF));
 		JavaGenAdjust(info, 5);
-		JavaGenNewObj(info, "System/Decimal", "<init>__iiiB", "(IIIZI)");
-		JavaGenAdjust(info, -4);
+		JavaGenCallCtor(info, "System/Decimal", "<init>__iiiB", "(IIIZI)");
+		JavaGenAdjust(info, -6);
 	}
 	return ILMachineType_Decimal;
 }

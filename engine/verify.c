@@ -616,9 +616,9 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 #include "verify_conv.c"
 #include "verify_stack.c"
 #include "verify_ptr.c"
-#include "verify_call.c"
 #include "verify_obj.c"
 #include "verify_branch.c"
+#include "verify_call.c"
 #include "verify_except.c"
 #include "verify_ann.c"
 #undef IL_VERIFY_GLOBALS
@@ -657,6 +657,10 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	ILException *exception, *currentException;
 	int hasRethrow;
 	int tailCall = 0;
+	int tryInlineType;
+	int coderFlags;
+	unsigned int tryInlineOpcode;
+	unsigned char *tryInlinePc;
 #ifdef IL_CONFIG_DEBUG_LINES
 	int haveDebug = ILDebugPresent(ILProgramItem_Image(method));
 #else
@@ -671,8 +675,8 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 #include "verify_conv.c"
 #include "verify_stack.c"
 #include "verify_ptr.c"
-#include "verify_call.c"
 #include "verify_obj.c"
+#include "verify_call.c"
 #include "verify_branch.c"
 #include "verify_except.c"
 #include "verify_ann.c"
@@ -684,6 +688,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 		return 0;
 	}
 
+	coderFlags = ILCoderGetFlags(coder);
 	isStatic = ILMethod_IsStatic(method);
 	isSynchronized = ILMethod_IsSynchronized(method);
 		
@@ -1107,9 +1112,9 @@ restart:
 #include "verify_conv.c"
 #include "verify_stack.c"
 #include "verify_ptr.c"
-#include "verify_call.c"
 #include "verify_obj.c"
 #include "verify_branch.c"
+#include "verify_call.c"
 #include "verify_except.c"
 #include "verify_ann.c"
 #undef IL_VERIFY_CODE

@@ -246,6 +246,23 @@ static void CVMCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	AdjustForCall(coder, info, returnItem);
 }
 
+/*
+ * Macros inlining simple methods that don't change the stack height.
+ */
+#define CASE_INLINEMETHOD(x) \
+	case IL_INLINEMETHOD_##x: \
+		CVMP_OUT_NONE(COP_PREFIX_##x);\
+		return 1;
+
+/*
+ * Macros inlining simple methods that change the stack height by 1.
+ */
+#define CASE_INLINEMETHOD_1(x) \
+	case IL_INLINEMETHOD_##x: \
+		CVMP_OUT_NONE(COP_PREFIX_##x);\
+		CVM_ADJUST(-1); \
+		return 1;
+
 static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType,
 								   ILMethod *methodInfo)
 {
@@ -327,6 +344,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType,
 			CVM_ADJUST(-1);
 			return 1;
 		}
+		
 		/* Not reached */
 
 		case IL_INLINEMETHOD_STRING_NOT_EQUALS:
@@ -405,7 +423,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType,
 
 		case IL_INLINEMETHOD_BUILDER_APPEND_CHAR:
 		{
-			/* Concatenate four string objects */
+			/* Concatenate a char */
 			CVMP_OUT_PTR(COP_PREFIX_APPEND_CHAR, methodInfo);
 			CVM_ADJUST(-1);
 			return 1;
@@ -419,6 +437,40 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType,
 			return 1;
 		}
 		/* Not reached */
+		
+		/*
+		 * Cases for Math class inlines.
+		 */
+		CASE_INLINEMETHOD(ABS_I4);
+		CASE_INLINEMETHOD(ABS_R4);
+		CASE_INLINEMETHOD(ABS_R8);
+		CASE_INLINEMETHOD(ASIN);
+		CASE_INLINEMETHOD(ATAN);
+		CASE_INLINEMETHOD_1(ATAN2);
+		CASE_INLINEMETHOD(CEILING);
+		CASE_INLINEMETHOD(COS);
+		CASE_INLINEMETHOD(COSH);
+		CASE_INLINEMETHOD(EXP);
+		CASE_INLINEMETHOD(FLOOR);
+		CASE_INLINEMETHOD_1(IEEEREMAINDER);
+		CASE_INLINEMETHOD(LOG);
+		CASE_INLINEMETHOD(LOG10);
+		CASE_INLINEMETHOD_1(MAX_I4);
+		CASE_INLINEMETHOD_1(MIN_I4);
+		CASE_INLINEMETHOD_1(MAX_R4);
+		CASE_INLINEMETHOD_1(MIN_R4);
+		CASE_INLINEMETHOD_1(MAX_R8);
+		CASE_INLINEMETHOD_1(MIN_R8);
+		CASE_INLINEMETHOD_1(POW);
+		CASE_INLINEMETHOD(ROUND);
+		CASE_INLINEMETHOD(SIN);
+		CASE_INLINEMETHOD(SIGN_I4);
+		CASE_INLINEMETHOD(SIGN_R4);
+		CASE_INLINEMETHOD(SIGN_R8);
+		CASE_INLINEMETHOD(SINH);
+		CASE_INLINEMETHOD(SQRT);
+		CASE_INLINEMETHOD(TAN);
+		CASE_INLINEMETHOD(TANH);
 	}
 
 	/* If we get here, then we don't know how to inline the method */

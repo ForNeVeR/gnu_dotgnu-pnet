@@ -1495,6 +1495,12 @@ static void CVMCoder_SetFlags(ILCoder *_coder,int flags)
 	coder->flags = flags;
 }
 
+static int CVMCoder_GetFlags(ILCoder *_coder)
+{
+	ILCVMCoder *coder = (ILCVMCoder*)_coder;
+	return coder->flags;
+}
+
 /*
  * Mark the end of a method's bytecode, just prior to the exception tables.
  */

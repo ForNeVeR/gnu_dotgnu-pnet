@@ -103,7 +103,7 @@ typedef struct
 #define	IL_INLINEMETHOD_STRING_CONCAT_2		3
 #define	IL_INLINEMETHOD_STRING_CONCAT_3		4
 #define	IL_INLINEMETHOD_STRING_CONCAT_4		5
-#define	IL_INLINEMETHOD_STRING_EQUALS		6
+#define IL_INLINEMETHOD_STRING_EQUALS		6
 #define	IL_INLINEMETHOD_STRING_NOT_EQUALS	7
 #define	IL_INLINEMETHOD_STRING_GET_CHAR		8
 #define	IL_INLINEMETHOD_TYPE_FROM_HANDLE	9
@@ -114,8 +114,38 @@ typedef struct
 #define	IL_INLINEMETHOD_SET2D_OBJECT		14
 #define	IL_INLINEMETHOD_SET2D_DOUBLE		15
 #define	IL_INLINEMETHOD_BUILDER_APPEND_CHAR	16
-#define	IL_INLINEMETHOD_IS_WHITE_SPACE		17
-
+#define	IL_INLINEMETHOD_BUILDER_APPEND_SPACE 17
+#define	IL_INLINEMETHOD_IS_WHITE_SPACE		18
+#define	IL_INLINEMETHOD_ASIN				19
+#define	IL_INLINEMETHOD_ATAN				20
+#define	IL_INLINEMETHOD_ATAN2				21
+#define	IL_INLINEMETHOD_CEILING				22
+#define	IL_INLINEMETHOD_COS					23
+#define	IL_INLINEMETHOD_COSH				24
+#define	IL_INLINEMETHOD_EXP					25
+#define	IL_INLINEMETHOD_FLOOR				26
+#define	IL_INLINEMETHOD_IEEEREMAINDER		27
+#define	IL_INLINEMETHOD_LOG					28
+#define	IL_INLINEMETHOD_LOG10				29
+#define	IL_INLINEMETHOD_MIN_I4				30
+#define	IL_INLINEMETHOD_MAX_I4				31
+#define	IL_INLINEMETHOD_MIN_R4				32
+#define	IL_INLINEMETHOD_MAX_R4				33
+#define	IL_INLINEMETHOD_MIN_R8				34
+#define	IL_INLINEMETHOD_MAX_R8				35
+#define	IL_INLINEMETHOD_POW					36
+#define	IL_INLINEMETHOD_ROUND				37
+#define	IL_INLINEMETHOD_SIGN_I4				38
+#define	IL_INLINEMETHOD_SIGN_R4				39
+#define	IL_INLINEMETHOD_SIGN_R8				40
+#define	IL_INLINEMETHOD_SIN					41
+#define	IL_INLINEMETHOD_SINH				42
+#define	IL_INLINEMETHOD_SQRT				43
+#define	IL_INLINEMETHOD_TAN					44
+#define	IL_INLINEMETHOD_TANH				45
+#define	IL_INLINEMETHOD_ABS_I4				46
+#define	IL_INLINEMETHOD_ABS_R4				47
+#define	IL_INLINEMETHOD_ABS_R8				48
 /*
  * Return values for "ILCoderFinish".
  */
@@ -130,6 +160,7 @@ typedef struct
 #define IL_CODER_FLAG_IR_DUMP 1
 #define IL_CODER_FLAG_METHOD_PROFILE 2
 #define IL_CODER_FLAG_METHOD_TRACE 4
+#define IL_CODER_FLAG_STATS 8
 /*
  * Coder class definition.
  */
@@ -719,6 +750,8 @@ struct _tagILCoderClass
 	 */
 	void (*setFlags)(ILCoder *coder, int flags);
 
+	int (*getFlags)(ILCoder *coder);
+
 	/*
 	 * Allocate an extra local variable in the current method frame.
 	 * Returns the local variable index.
@@ -1025,6 +1058,8 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->markBytecode))((coder), (offset)))
 #define ILCoderSetFlags(coder,flags) \
 			((*((coder)->classInfo->setFlags))((coder), (flags)))
+#define ILCoderGetFlags(coder) \
+			((*((coder)->classInfo->getFlags))((coder)))
 #define	ILCoderAllocExtraLocal(coder,type) \
 			((*((coder)->classInfo->allocExtraLocal))((coder), (type)))
 #define	ILCoderPushThread(coder,useRawCalls) \

@@ -1,4 +1,26 @@
+2004-06-09  Thong Nguyen <tum@veridicus.com>
 
+	* include/il_coder.h: Added GetFlags to ILCoder.
+	
+	* engine/cvm.h: Added new opcodes for inlining Math.* functions.
+	
+	* engine/cvm_inline.c: Added implementation of inlined Math functions.
+	
+	* engine/cvmc.c, engine/null_coder.c: Added CVMCoder_GetFlags.
+	
+	* engine/cvmc_call.c: Added code generation for inlined Math
+	functions.
+	
+	* engine/cvmc_setup.c: Added CVM implementation of Coder_GetFlags.
+	
+	* engine/ilrun.c: Added "--stats"/"-Z" command line option.
+
+	* engine/verify.c: Added coderFlags cache variable.
+		
+	* engine/verify_call.c: Added support for inlining simple properties
+	and methods that return a field or constant value.  Added support
+	for inlining math functions.
+	
 2004-06-08  Gopal V  <gopalv82@yahoo.com>
 
 	* codegen/cg_coerce.c: Coerce the arguments to the conversion methods

@@ -378,6 +378,10 @@ static void Coder_MarkEnd(ILCoder *coder)
 static void Coder_SetFlags(ILCoder *coder, int flags)
 {
 }
+static int Coder_GetFlags(ILCoder *coder)
+{
+	return 0;
+}
 static ILUInt32 Coder_AllocExtraLocal(ILCoder *coder, ILType *type)
 {
 	return 0;
@@ -512,6 +516,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_MarkBytecode,
 	Coder_MarkEnd,
 	Coder_SetFlags,
+	Coder_GetFlags,
 	Coder_AllocExtraLocal,
 	Coder_PushThread,
 	Coder_LoadNativeArgAddr,

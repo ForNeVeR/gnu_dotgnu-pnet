@@ -536,6 +536,39 @@ extern	"C" {
 #define COP_PREFIX_START_FINALLY		0x63
 #define	COP_PREFIX_PROPAGATE_ABORT		0x64
 
+/*
+ * More inline method replacements.
+ */
+#define	COP_PREFIX_ASIN					0x70
+#define	COP_PREFIX_ATAN					0x71
+#define	COP_PREFIX_ATAN2				0x72
+#define	COP_PREFIX_CEILING				0x73
+#define	COP_PREFIX_COS					0x74
+#define	COP_PREFIX_COSH					0x75
+#define	COP_PREFIX_EXP					0x76
+#define	COP_PREFIX_FLOOR				0x77
+#define	COP_PREFIX_IEEEREMAINDER		0x78
+#define	COP_PREFIX_LOG					0x79
+#define	COP_PREFIX_LOG10				0x7A
+#define	COP_PREFIX_MIN_I4				0x7B
+#define	COP_PREFIX_MAX_I4				0x7C
+#define	COP_PREFIX_MIN_R4				0x7D
+#define	COP_PREFIX_MAX_R4				0x7E
+#define	COP_PREFIX_MIN_R8				0x7F
+#define	COP_PREFIX_MAX_R8				0x80
+#define	COP_PREFIX_POW					0x81
+#define	COP_PREFIX_ROUND				0x82
+#define	COP_PREFIX_SIGN_I4				0x83
+#define	COP_PREFIX_SIGN_R4				0x84
+#define	COP_PREFIX_SIGN_R8				0x85
+#define	COP_PREFIX_SIN					0x86
+#define	COP_PREFIX_SINH					0x87
+#define	COP_PREFIX_SQRT					0x88
+#define	COP_PREFIX_TAN					0x89
+#define	COP_PREFIX_TANH					0x90
+#define COP_PREFIX_ABS_I4				0x9A
+#define COP_PREFIX_ABS_R4				0x9B
+#define COP_PREFIX_ABS_R8				0x9C
 
 /*
  * Definition of a CVM stack word which can hold

@@ -20,6 +20,341 @@
 
 #if defined(IL_VERIFY_GLOBALS)
 
+#define ADVANCE() \
+	pc += insn->size;
+
+#define GET_NEXT_INSTRUCTION() \
+	opcode = pc[0]; \
+	if(opcode != IL_OP_PREFIX) \
+	{ \
+	    insn = &(ILMainOpcodeTable[opcode]); \
+	} \
+	else \
+	{ \
+		opcode = pc[1]; \
+		insn = &(ILPrefixOpcodeTable[opcode]); \
+	}
+
+#define V_INLINE_FIELD_LOAD (1)
+#define V_INLINE_FIELD_STORE (2)
+#define V_INLINE_CONST_LOAD  (3)
+
+static int TryInlineLoad(ILMethod *method, int numParams, 
+							   ILMethodCode *code, unsigned *inlineOpcode, 
+							   unsigned char **inlinePc, ILField **field)
+{
+	int retval = 0;
+	int loadedInst = 0;
+	int dest, offset;
+	unsigned char *pc;
+	unsigned opcode;
+	const ILOpcodeInfo *insn = 0;
+
+	pc = code->code;
+	
+	GET_NEXT_INSTRUCTION();
+
+	if (ILMethod_IsStatic(method))
+	{
+		if (numParams != 0)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		if (numParams != 1)
+		{
+			return 0;
+		}
+
+		/* ldarg.0 */
+		if (opcode == IL_OP_LDARG_0)
+		{
+			loadedInst = 1;
+
+			ADVANCE();
+			GET_NEXT_INSTRUCTION();
+		}
+	}
+
+	/* volatile */
+	if (opcode == IL_PREFIX_OP_VOLATILE)
+	{
+		ADVANCE();
+		GET_NEXT_INSTRUCTION();
+	}
+
+	if (((opcode >= IL_OP_LDNULL
+		&& opcode < IL_OP_LDC_R8) || (opcode == IL_OP_LDSTR)))
+	{
+		if (loadedInst)
+		{
+			return 0;
+		}
+
+		retval = V_INLINE_CONST_LOAD;
+	}
+	else
+	{		
+		if (ILMethod_IsStatic(method))
+		{
+			/* ldsfld */
+			if (opcode != IL_OP_LDSFLD)
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			if (loadedInst)
+			{
+				/* ldfld */
+				if (opcode != IL_OP_LDFLD)
+				{
+					return 0;
+				}
+			}
+			else
+			{
+				/* Instance method loading static field */
+
+				/* ldsfld */
+				if (opcode != IL_OP_LDSFLD)
+				{
+					return 0;
+				}
+			}
+		}
+	
+		retval = V_INLINE_FIELD_LOAD;
+		
+		*field = GetFieldToken(method, pc);
+
+		if (*field == 0)
+		{
+			return 0;
+		}
+	
+		/* Verify that the fields are accessible */
+		if (!ILMemberAccessible((ILMember *)(*field), ILMethod_Owner(method)))
+		{
+			return 0;
+		}
+	}
+	
+	*inlinePc = pc;
+	*inlineOpcode = opcode;	
+	
+	ADVANCE();
+	GET_NEXT_INSTRUCTION();
+
+	/* stdloc.0 */
+	if (opcode == IL_OP_STLOC_0)
+	{
+		/* Microsoft CSC generates an extra an store, branch and load */
+
+		ADVANCE();
+		GET_NEXT_INSTRUCTION();
+
+		if (opcode != IL_OP_BR_S)
+		{
+			return 0;
+		}
+
+		offset = (ILUInt32)(pc - (unsigned char *)(code->code));
+
+		dest = GET_SHORT_DEST();
+
+		ADVANCE();
+		GET_NEXT_INSTRUCTION();
+
+		offset = (ILUInt32)(pc - (unsigned char *)(code->code));
+
+		if (offset != dest)
+		{
+			return 0;
+		}
+
+		if (opcode != IL_OP_LDLOC_0)
+		{
+			return 0;
+		}
+
+		ADVANCE();
+		GET_NEXT_INSTRUCTION();
+	}
+
+	/* ret */
+	if (opcode != IL_OP_RET)
+	{
+		return 0;
+	}
+
+	ADVANCE();
+
+	/* Make sure that that was the last instruction */
+	if ((int)pc - (int)code->code != code->codeLen)
+	{
+		return 0;
+	}
+
+	return retval;
+}
+
+static int TryInlineStore(ILMethod *method, int numParams, 
+							   ILMethodCode *code, unsigned int *inlineOpcode, 
+							   unsigned char **inlinePc, ILField **field)
+{
+	int loadedInst;
+	unsigned char *pc;
+	unsigned opcode;
+	const ILOpcodeInfo *insn = 0;
+
+	pc = code->code;
+
+	GET_NEXT_INSTRUCTION();
+
+	/* ldarg.0 */
+	if (opcode == IL_OP_LDARG_0)
+	{
+		loadedInst = 1;
+
+		ADVANCE();
+		GET_NEXT_INSTRUCTION();		
+	}
+	else
+	{
+		loadedInst = 0;
+	}
+
+	if (ILMethod_IsStatic(method))
+	{
+		if (numParams != 1)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		if (numParams != 2)
+		{
+			return 0;
+		}
+
+		/* ldarg.1 */
+		if (opcode != IL_OP_LDARG_1)
+		{
+			return 0;
+		}
+
+		ADVANCE();
+		GET_NEXT_INSTRUCTION();
+	}
+
+	/* volatile */
+	if (opcode == IL_PREFIX_OP_VOLATILE)
+	{
+		ADVANCE();
+		GET_NEXT_INSTRUCTION();
+	}
+
+	if (ILMethod_IsStatic(method))
+	{
+		/* stsfld */
+		if (opcode != IL_OP_STSFLD)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		if (loadedInst)
+		{
+			/* stfld */
+			if (opcode != IL_OP_STFLD)
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			/* Instance method storing static field */
+
+			/* stsfld */
+			if (opcode != IL_OP_STSFLD)
+			{
+				return 0;
+			}
+		}
+	}
+
+	*inlinePc = pc;
+	*inlineOpcode = opcode;
+
+	*field = GetFieldToken(method, pc);
+
+	if (*field == 0)
+	{
+		return 0;
+	}
+
+	/* Verify that the fields are accessible */
+	if (!ILMemberAccessible((ILMember *)(*field), ILMethod_Owner(method)))
+	{
+		return 0;
+	}
+
+	ADVANCE();
+	GET_NEXT_INSTRUCTION();
+
+	/* ret */
+	if (opcode != IL_OP_RET)
+	{
+		return 0;
+	}
+
+	ADVANCE();
+
+	/* Make sure that the IL_OP_RET was the last instruction */
+	if ((int)pc - (int)code->code != code->codeLen)
+	{
+		return 0;
+	}
+
+	return V_INLINE_FIELD_STORE;
+}
+
+static int TryInlineMethod(ILMethod *method, 
+						   int numParams, unsigned int *inlineOpcode, 
+						   unsigned char **inlinePc, ILField **field)
+{
+	int retval;
+	ILMethodCode code;
+	
+	if (ILMethod_IsSynchronized(method))
+	{
+		return 0;
+	}
+	
+	if (ILMethodGetCode(method, &code) == 0)
+	{
+		return 0;
+	}
+
+	if ((retval = TryInlineLoad(method, numParams, &code, inlineOpcode, inlinePc, field)))
+	{
+		return retval;
+	}
+
+	if ((retval = TryInlineStore(method, numParams, &code, inlineOpcode, inlinePc, field)))
+	{
+		return retval;
+	}
+
+	return 0;
+}
+
 /*
  * Get a method token from within a method's code.  If "callSiteSig"
  * is not NULL, then write the call site signature to it.  If it is
@@ -853,27 +1188,35 @@ typedef struct
 } InlineMethodInfo;
 static InlineMethodInfo const InlineMethods[] = {
 	{"String", "System", "get_Length", "(T)i", IL_INLINEMETHOD_STRING_LENGTH},
+
 	{"String", "System", "Concat",
 	 "(oSystem.String;oSystem.String;)oSystem.String;",
 	 IL_INLINEMETHOD_STRING_CONCAT_2},
+
 	{"String", "System", "Concat",
 	 "(oSystem.String;oSystem.String;oSystem.String;)oSystem.String;",
 	 IL_INLINEMETHOD_STRING_CONCAT_3},
+	
 	{"String", "System", "Concat",
 	 "(oSystem.String;oSystem.String;oSystem.String;oSystem.String;)"
 	 		"oSystem.String;",
 	 IL_INLINEMETHOD_STRING_CONCAT_4},
+	
 	{"String", "System", "op_Equality", "(oSystem.String;oSystem.String;)Z",
 	 IL_INLINEMETHOD_STRING_EQUALS},
-	{"String", "System", "Equals", "(oSystem.String;oSystem.String;)Z",
+
+	 {"String", "System", "Equals", "(oSystem.String;oSystem.String;)Z",
 	 IL_INLINEMETHOD_STRING_EQUALS},
+	
 	{"String", "System", "op_Inequality", "(oSystem.String;oSystem.String;)Z",
 	 IL_INLINEMETHOD_STRING_NOT_EQUALS},
+	
 	{"String", "System", "get_Chars", "(Ti)c",
 	 IL_INLINEMETHOD_STRING_GET_CHAR},
 
 	{"Monitor", "System.Threading", "Enter", "(oSystem.Object;)V",
 	 IL_INLINEMETHOD_MONITOR_ENTER},
+	
 	{"Monitor", "System.Threading", "Exit", "(oSystem.Object;)V",
 	 IL_INLINEMETHOD_MONITOR_EXIT},
 
@@ -885,6 +1228,37 @@ static InlineMethodInfo const InlineMethods[] = {
 	 "(Tc)oSystem.Text.StringBuilder;", IL_INLINEMETHOD_BUILDER_APPEND_CHAR},
 
 	{"Char", "System", "IsWhiteSpace", "(c)Z", IL_INLINEMETHOD_IS_WHITE_SPACE},
+
+	{"Math", "System", "Abs", "(i)i", IL_INLINEMETHOD_ABS_I4},
+	{"Math", "System", "Abs", "(f)f", IL_INLINEMETHOD_ABS_R4},
+	{"Math", "System", "Abs", "(d)d", IL_INLINEMETHOD_ABS_R8},
+	{"Math", "System", "Asin", "(d)d", IL_INLINEMETHOD_ASIN},
+	{"Math", "System", "Atan", "(d)d", IL_INLINEMETHOD_ATAN},
+	{"Math", "System", "Atan2", "(dd)d", IL_INLINEMETHOD_ATAN2},
+	{"Math", "System", "Ceiling", "(d)d", IL_INLINEMETHOD_CEILING},
+	{"Math", "System", "Cos", "(d)d", IL_INLINEMETHOD_COS},
+	{"Math", "System", "Cosh", "(d)d", IL_INLINEMETHOD_COSH},
+	{"Math", "System", "Exp", "(d)d", IL_INLINEMETHOD_EXP},
+	{"Math", "System", "Floor", "(d)d", IL_INLINEMETHOD_FLOOR},
+	{"Math", "System", "IEEERemainder", "(dd)d", IL_INLINEMETHOD_IEEEREMAINDER},
+	{"Math", "System", "Log", "(d)d", IL_INLINEMETHOD_LOG},
+	{"Math", "System", "Log10", "(d)d", IL_INLINEMETHOD_LOG10},
+	{"Math", "System", "Max", "(ii)i", IL_INLINEMETHOD_MAX_I4},
+	{"Math", "System", "Min", "(ii)i", IL_INLINEMETHOD_MIN_I4},
+	{"Math", "System", "Max", "(ff)f", IL_INLINEMETHOD_MAX_R4},
+	{"Math", "System", "Min", "(ff)f", IL_INLINEMETHOD_MIN_R4},
+	{"Math", "System", "Max", "(dd)d", IL_INLINEMETHOD_MAX_R8},
+	{"Math", "System", "Min", "(dd)d", IL_INLINEMETHOD_MIN_R8},
+	{"Math", "System", "Pow", "(dd)d", IL_INLINEMETHOD_POW},
+	{"Math", "System", "Round", "(d)d", IL_INLINEMETHOD_ROUND},
+	{"Math", "System", "Sign", "(i)i", IL_INLINEMETHOD_SIGN_I4},
+	{"Math", "System", "Sign", "(f)i", IL_INLINEMETHOD_SIGN_R4},
+	{"Math", "System", "Sign", "(d)i", IL_INLINEMETHOD_SIGN_R8},
+	{"Math", "System", "Sin", "(d)d", IL_INLINEMETHOD_SIN},
+	{"Math", "System", "Sinh", "(d)d", IL_INLINEMETHOD_SINH},
+	{"Math", "System", "Sqrt", "(d)d", IL_INLINEMETHOD_SQRT},
+	{"Math", "System", "Tan", "(d)d", IL_INLINEMETHOD_TAN},
+	{"Math", "System", "Tanh", "(d)d", IL_INLINEMETHOD_TANH}
 };
 #define	NumInlineMethods	(sizeof(InlineMethods) / sizeof(InlineMethodInfo))
 
@@ -1062,12 +1436,374 @@ case IL_OP_CALL:
 				{
 					stack[stackSize].engineType = ILEngineType_Invalid;
 				}
-				inlineType = GetInlineMethodType(methodInfo);
-				if(inlineType == -1 ||
-				   !ILCoderCallInlineable(coder, inlineType, methodInfo))
-				{
-					ILCoderCallMethod(coder, &callInfo, &(stack[stackSize]),
+
+callNonvirtualFromVirtual:
+								
+				if((coderFlags & (IL_CODER_FLAG_IR_DUMP 
+									| IL_CODER_FLAG_METHOD_PROFILE 
+									| IL_CODER_FLAG_METHOD_TRACE)) == 0)
+				{	
+					inlineType = GetInlineMethodType(methodInfo);
+
+				 	if (inlineType != -1
+				 		&& ILCoderCallInlineable(coder, inlineType, methodInfo))
+				 	{
+						if (coderFlags & IL_CODER_FLAG_STATS)
+						{
+							ILMutexLock(globalTraceMutex);
+							fprintf(stdout,
+								"Inlining: %s.%s at %s.%s\n", 
+									ILClass_Name(ILMethod_Owner(methodInfo)),
+									ILMethod_Name(methodInfo),
+									ILClass_Name(ILMethod_Owner(method)),
+									ILMethod_Name(method));
+							ILMutexUnlock(globalTraceMutex);
+						}
+
+				 		/* Inlineable method code generated by ILCoderCallInlineable */
+				 	}
+				 	else if ((tryInlineType = TryInlineMethod(methodInfo, numParams,
+										&tryInlineOpcode, &tryInlinePc, &fieldInfo)) != 0)
+					{
+						if (coderFlags & IL_CODER_FLAG_STATS)
+						{
+							ILMutexLock(globalTraceMutex);
+							fprintf(stdout,
+								"Inlining: %s.%s at %s.%s\n", 
+									ILClass_Name(ILMethod_Owner(methodInfo)),
+									ILMethod_Name(methodInfo),
+									ILClass_Name(ILMethod_Owner(method)),
+									ILMethod_Name(method));
+							ILMutexUnlock(globalTraceMutex);
+						}
+
+						if (tryInlineType == V_INLINE_CONST_LOAD)
+						{
+							if(numParams > 0 && !ILMethod_IsStatic(methodInfo) &&
+								(stack + stackSize - numParams)->engineType
+									== ILEngineType_O)
+							{
+								/* Check the first parameter against "null" */
+								ILCoderCheckCallNull(coder, &callInfo);
+							}
+
+							switch (tryInlineOpcode)
+							{
+							case IL_OP_LDNULL:
+								/* Load the "null" constant onto the stack */
+								ILCoderConstant(coder, tryInlineOpcode, tryInlinePc + 1);
+								stack[stackSize].engineType = ILEngineType_O;
+								stack[stackSize].typeInfo = 0;
+								break;
+							case IL_OP_LDC_I4_M1:
+							case IL_OP_LDC_I4_0:
+							case IL_OP_LDC_I4_1:
+							case IL_OP_LDC_I4_2:
+							case IL_OP_LDC_I4_3:
+							case IL_OP_LDC_I4_4:
+							case IL_OP_LDC_I4_5:
+							case IL_OP_LDC_I4_6:
+							case IL_OP_LDC_I4_7:
+							case IL_OP_LDC_I4_8:
+							case IL_OP_LDC_I4_S:
+							case IL_OP_LDC_I4:
+								/* 32-bit integer constants */
+								ILCoderConstant(coder, tryInlineOpcode, tryInlinePc + 1);
+								stack[stackSize].engineType = ILEngineType_I4;
+								stack[stackSize].typeInfo = 0;
+								break;
+							case IL_OP_LDC_I8:
+								/* 64-bit integer constants */
+								ILCoderConstant(coder, tryInlineOpcode, tryInlinePc + 1);
+								stack[stackSize].engineType = ILEngineType_I8;
+								stack[stackSize].typeInfo = 0;
+								break;
+							case IL_OP_LDC_R4:
+								/* 32-bit floating point constants */
+								ILCoderConstant(coder, tryInlineOpcode, tryInlinePc + 1);
+								stack[stackSize].engineType = ILEngineType_F;
+								stack[stackSize].typeInfo = 0;
+								break;
+							case IL_OP_LDC_R8:
+								/* 64-bit floating point constants */
+								ILCoderConstant(coder, tryInlineOpcode, tryInlinePc + 1);
+								stack[stackSize].engineType = ILEngineType_F;
+								stack[stackSize].typeInfo = 0;
+								break;
+							case IL_OP_LDSTR:
+								/* String constants */
+								if(!stringClass)
+								{
+									stringClass = ILClassResolveSystem(ILProgramItem_Image(method), 0,
+																	"String", "System");
+									if(!stringClass)
+									{
+										goto cleanup;
+									}
+								}
+								argNum = IL_READ_UINT32(tryInlinePc + 1);
+								if((argNum & IL_META_TOKEN_MASK) != IL_META_TOKEN_STRING ||
+								!ILImageGetUserString(ILProgramItem_Image(method),
+	   													argNum & ~IL_META_TOKEN_MASK, &strLen))
+								{
+									VERIFY_INSN_ERROR();
+								}
+								if(thread)
+								{
+									ILCoderStringConstant(coder, (ILToken)argNum,
+											_ILStringInternFromImage(thread, ILProgramItem_Image(method),
+																	(ILToken)argNum));
+								}
+								else
+								{
+									ILCoderStringConstant(coder, (ILToken)argNum, 0);
+								}
+								stack[stackSize].engineType = ILEngineType_O;
+								stack[stackSize].typeInfo = ILType_FromClass(stringClass);
+								break;
+							default:
+								VERIFY_INSN_ERROR();
+							}
+						}
+						else if (tryInlineType == V_INLINE_FIELD_STORE)
+						{
+							if (ILMethod_IsStatic(methodInfo))
+							{
+								classType = ILField_Type(fieldInfo);
+								if(AssignCompatible(method, &(stack[stackSize - 1]),
+													classType, unsafeAllowed))
+								{
+									ILCoderStoreStaticField(coder, fieldInfo, classType, STK_UNARY);
+								}
+								else
+								{
+									VERIFY_TYPE_ERROR();
+								}
+							}
+							else
+							{
+								classType = ILField_Type(fieldInfo);
+								if(STK_BINARY_1 == ILEngineType_O)
+								{
+									/* Accessing a field within an object reference */
+									if(IsSubClass(stack[stackSize - 2].typeInfo,
+												ILField_Owner(fieldInfo)) &&
+									AssignCompatible(methodInfo, &(stack[stackSize - 1]),
+			   											classType, unsafeAllowed))
+									{
+										if(!ILField_IsStatic(fieldInfo))
+										{
+											ILCoderStoreField(coder, ILEngineType_O,
+															stack[stackSize - 2].typeInfo,
+															fieldInfo, classType,
+															STK_BINARY_2);
+										}
+										else
+										{
+											ILCoderStoreStaticField(coder, fieldInfo, classType,
+																	STK_BINARY_2);
+											ILCoderPop(coder, ILEngineType_O, ILType_Invalid);
+										}
+									}
+									else
+									{
+										VERIFY_TYPE_ERROR();
+									}
+								}
+								else if(!unsafeAllowed &&
+										(STK_BINARY_1 == ILEngineType_M ||
+										STK_BINARY_1 == ILEngineType_T))
+								{
+									/* Accessing a field within a pointer to a managed value */
+									if(IsSubClass(stack[stackSize - 2].typeInfo,
+												ILField_Owner(fieldInfo)) &&
+									AssignCompatible(methodInfo, &(stack[stackSize - 1]),
+			   											classType, unsafeAllowed))
+									{
+										if(!ILField_IsStatic(fieldInfo))
+										{
+											ILCoderStoreField(coder, STK_BINARY_1,
+															stack[stackSize - 2].typeInfo,
+															fieldInfo, classType, STK_BINARY_2);
+										}
+										else
+										{
+											ILCoderStoreStaticField(coder, fieldInfo, classType,
+																	STK_BINARY_2);
+											ILCoderPop(coder, STK_BINARY_2, ILType_Invalid);
+										}
+									}
+									else
+									{
+										VERIFY_TYPE_ERROR();
+									}
+								}
+								else if(unsafeAllowed &&
+										(STK_BINARY_1 == ILEngineType_I ||
+										STK_BINARY_1 == ILEngineType_I4 ||
+										STK_BINARY_1 == ILEngineType_M ||
+										STK_BINARY_1 == ILEngineType_T))
+								{
+									/* Accessing a field within an unmanaged pointer.
+									We assume that the types are consistent */
+									if(!ILField_IsStatic(fieldInfo))
+									{
+										ILCoderStoreField(coder, STK_BINARY_1,
+														stack[stackSize - 2].typeInfo,
+														fieldInfo, classType, STK_BINARY_2);
+									}
+									else
+									{
+										ILCoderStoreStaticField(coder, fieldInfo, classType,
+																STK_BINARY_2);
+										ILCoderPop(coder, STK_BINARY_1, ILType_Invalid);
+									}
+								}
+								else
+								{
+									VERIFY_TYPE_ERROR();
+								}
+							}
+						}
+						else if (tryInlineType == V_INLINE_FIELD_LOAD)
+						{						
+							if (ILMethod_IsStatic(methodInfo))
+							{
+								classType = ILField_Type(fieldInfo);
+								ILCoderLoadStaticField(coder, fieldInfo, classType);
+								stack[stackSize].engineType = TypeToEngineType(classType);
+								stack[stackSize].typeInfo = classType;
+							}
+							else
+							{
+								classType = ILField_Type(fieldInfo);
+								if(STK_UNARY == ILEngineType_O)
+								{
+									/* Accessing a field within an object reference */
+									if(IsSubClass(stack[stackSize - 1].typeInfo,
+												ILField_Owner(fieldInfo)))
+									{
+										if(!ILField_IsStatic(fieldInfo))
+										{
+											ILCoderLoadField(coder, ILEngineType_O,
+															stack[stackSize - 1].typeInfo,
+															fieldInfo, classType);
+										}
+										else
+										{
+											ILCoderPop(coder, ILEngineType_O, ILType_Invalid);
+											ILCoderLoadStaticField(coder, fieldInfo, classType);
+										}
+									}
+									else
+									{
+										VERIFY_TYPE_ERROR();
+									}
+								}
+								else if(!unsafeAllowed &&
+										(STK_UNARY == ILEngineType_M ||
+										STK_UNARY == ILEngineType_T))
+								{
+									/* Accessing a field within a pointer to a managed value */
+									if(IsSubClass(stack[stackSize - 1].typeInfo,
+												ILField_Owner(fieldInfo)))
+									{
+										if(!ILField_IsStatic(fieldInfo))
+										{
+											ILCoderLoadField(coder, STK_UNARY,
+															stack[stackSize - 1].typeInfo,
+															fieldInfo, classType);
+										}
+										else
+										{
+											ILCoderPop(coder, STK_UNARY, ILType_Invalid);
+											ILCoderLoadStaticField(coder, fieldInfo, classType);
+										}
+									}
+									else
+									{
+										VERIFY_TYPE_ERROR();
+									}
+								}
+								else if(STK_UNARY == ILEngineType_MV)
+								{
+									/* Accessing a field within a managed value */
+									if(IsSubClass(stack[stackSize - 1].typeInfo,
+												ILField_Owner(fieldInfo)))
+									{
+										if(!ILField_IsStatic(fieldInfo))
+										{
+											ILCoderLoadField(coder, ILEngineType_MV,
+															stack[stackSize - 1].typeInfo,
+															fieldInfo, classType);
+										}
+										else
+										{
+											ILCoderPop(coder, ILEngineType_MV,
+													stack[stackSize - 1].typeInfo);
+											ILCoderLoadStaticField(coder, fieldInfo, classType);
+										}
+									}
+									else
+									{
+										VERIFY_TYPE_ERROR();
+									}
+								}
+								else if(unsafeAllowed &&
+										(STK_UNARY == ILEngineType_I ||
+										STK_UNARY == ILEngineType_I4 ||
+										STK_UNARY == ILEngineType_M ||
+										STK_UNARY == ILEngineType_T))
+								{
+									/* Accessing a field within an unmanaged pointer.
+									We assume that the types are consistent */
+									if(!ILField_IsStatic(fieldInfo))
+									{
+										ILCoderLoadField(coder, STK_UNARY,
+														stack[stackSize - 1].typeInfo,
+														fieldInfo, classType);
+									}
+									else
+									{
+										ILCoderPop(coder, STK_UNARY, ILType_Invalid);
+										ILCoderLoadStaticField(coder, fieldInfo, classType);
+									}
+								}
+								else
+								{
+									VERIFY_TYPE_ERROR();
+								}
+								stack[stackSize - 1].engineType = TypeToEngineType(classType);
+								stack[stackSize - 1].typeInfo = classType;
+							}
+						}
+					}
+					else
+					{
+						if(numParams > 0 && !ILMethod_IsStatic(methodInfo) &&
+							(stack + stackSize - numParams)->engineType
+								== ILEngineType_O)
+						{
+							/* Check the first parameter against "null" */
+							ILCoderCheckCallNull(coder, &callInfo);
+						}
+						/* Not a simple inlinable method so just generate a standard method call */
+						ILCoderCallMethod(coder, &callInfo, &(stack[stackSize]),
 									  methodInfo);
+					}
+				}
+				else
+				{
+					if(numParams > 0 && !ILMethod_IsStatic(methodInfo) &&
+						(stack + stackSize - numParams)->engineType
+							== ILEngineType_O)
+					{
+						/* Check the first parameter against "null" */
+						ILCoderCheckCallNull(coder, &callInfo);
+					}
+					/* Not allowed to inline */
+					ILCoderCallMethod(coder, &callInfo, &(stack[stackSize]),
+							  methodInfo);
 				}
 				stackSize -= (ILUInt32)numParams;
 				if(returnType != ILType_Void)
@@ -1255,23 +1991,7 @@ case IL_OP_CALLVIRT:
 				}
 				if(!ILMethod_IsVirtual(methodInfo))
 				{
-					/* It is possible to use "callvirt" to call a
-					   non-virtual instance method, even though
-					   "call" is probably a better way to do it */
-					inlineType = GetInlineMethodType(methodInfo);
-					if(inlineType == -1 ||
-					   !ILCoderCallInlineable(coder, inlineType, methodInfo))
-					{
-						if(numParams > 0 && !ILMethod_IsStatic(methodInfo) &&
-						   (stack + stackSize - numParams)->engineType
-						   		== ILEngineType_O)
-						{
-							/* Check the first parameter against "null" */
-							ILCoderCheckCallNull(coder, &callInfo);
-						}
-						ILCoderCallMethod(coder, &callInfo,
-										  &(stack[stackSize]), methodInfo);
-					}
+					goto callNonvirtualFromVirtual;
 				}
 				else if(ILClass_IsInterface(ILMethod_Owner(methodInfo)))
 				{

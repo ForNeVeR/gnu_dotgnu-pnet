@@ -446,6 +446,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_MarkBytecode,
 	CVMCoder_MarkEnd,
 	CVMCoder_SetFlags,
+	CVMCoder_GetFlags,
 	CVMCoder_AllocExtraLocal,
 	CVMCoder_PushThread,
 	CVMCoder_LoadNativeArgAddr,

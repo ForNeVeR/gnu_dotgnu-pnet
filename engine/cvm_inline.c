@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
+ * Contributions: Thong Nguyen (tum@veridicus.com)
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -46,8 +48,26 @@ static IL_INLINE int StringEquals(System_String *str1,
 	}
 }
 
+#define COP_PREFIX_MATH_CASE(f1, f2) \
+VMCASE(COP_PREFIX_##f1): \
+{ \
+	WriteFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT], (ILNativeFloat)(_IL_Math_##f2(thread, (ILDouble)ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))); \
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0); \
+} \
+VMBREAK(COP_PREFIX_##f1)
+
+#define COP_PREFIX_MATH_CASE_2(f1, f2) \
+VMCASE(COP_PREFIX_##f1): \
+{ \
+	WriteFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)], (ILNativeFloat)(_IL_Math_##f2(thread, (ILDouble)ReadFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)]), (ILDouble)ReadFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT)])))); \
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -CVM_WORDS_PER_NATIVE_FLOAT); \
+} \
+VMBREAK(COP_PREFIX_##f1)
+
 #elif defined(IL_CVM_LOCALS)
 
+ILInt32 tempI4;
+ILDouble tempR8;
 System_Text_StringBuilder *builder;
 
 #elif defined(IL_CVM_MAIN)
@@ -266,7 +286,7 @@ VMCASE(COP_PREFIX_STRING_GET_CHAR):
 {
 	/* Get a character from a string */
 	tempptr = stacktop[-2].ptrValue;
-	if(tempptr != 0)
+	if (tempptr != 0)
 	{
 		tempNum = stacktop[-1].uintValue;
 		if(tempNum < ((System_String *)tempptr)->length)
@@ -351,9 +371,13 @@ VMCASE(COP_PREFIX_MONITOR_ENTER):
 	/* Enter a monitor on an object */
 	/* TODO: Actually make it fully inline :) */
 	
+	BEGIN_NATIVE_CALL();
+
 	COPY_STATE_TO_THREAD();
 	_IL_Monitor_Enter(thread, (ILObject *)stacktop[-1].ptrValue);	
 	RESTORE_STATE_FROM_THREAD();
+
+	END_NATIVE_CALL();
 
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
@@ -385,9 +409,13 @@ VMCASE(COP_PREFIX_MONITOR_EXIT):
 	/* Exit a monitor on an object */
 	/* TODO: Actually make it fully inline :) */
 	
+	BEGIN_NATIVE_CALL();
+
 	COPY_STATE_TO_THREAD();
 	_IL_Monitor_Exit(thread, (ILObject *)stacktop[-1].ptrValue);	
 	RESTORE_STATE_FROM_THREAD();
+
+	END_NATIVE_CALL();
 
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
@@ -426,7 +454,7 @@ VMBREAK(COP_PREFIX_MONITOR_EXIT);
 VMCASE(COP_PREFIX_APPEND_CHAR):
 {
 	/* Append a character to a string builder */
-	if(stacktop[-2].ptrValue)
+	if (stacktop[-2].ptrValue != 0)
 	{
 		builder = (System_Text_StringBuilder *)(stacktop[-2].ptrValue);
 		if(!(builder->needsCopy) &&
@@ -504,5 +532,372 @@ VMCASE(COP_PREFIX_IS_WHITE_SPACE):
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_IS_WHITE_SPACE);
+
+/**
+* <opcode name="*" group="Inline methods">
+ *   <operation>Compute a mathmatical function</operation>
+ *
+ *   <format>prefix<fsep/>*</format>
+ *   <dformat>{*}</dformat>
+ *
+ *   <form name="*" code="COP_PREFIX_*"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+
+COP_PREFIX_MATH_CASE(ASIN, Asin);
+COP_PREFIX_MATH_CASE(ATAN, Atan);
+COP_PREFIX_MATH_CASE_2(ATAN2, Atan2);
+COP_PREFIX_MATH_CASE(CEILING, Ceiling);
+COP_PREFIX_MATH_CASE(COS, Cos);
+COP_PREFIX_MATH_CASE(COSH, Cosh);
+COP_PREFIX_MATH_CASE(EXP, Exp);
+COP_PREFIX_MATH_CASE(FLOOR, Floor);
+COP_PREFIX_MATH_CASE_2(IEEEREMAINDER, IEEERemainder);
+COP_PREFIX_MATH_CASE(LOG, Log);
+COP_PREFIX_MATH_CASE(LOG10, Log10);
+COP_PREFIX_MATH_CASE_2(POW, Pow);
+COP_PREFIX_MATH_CASE(ROUND, Round);
+COP_PREFIX_MATH_CASE(SIN, Sin);
+COP_PREFIX_MATH_CASE(SINH, Sinh);
+COP_PREFIX_MATH_CASE(SQRT, Sqrt);
+COP_PREFIX_MATH_CASE(TAN, Tan);
+COP_PREFIX_MATH_CASE(TANH, Tanh);
+
+/**
+ * <opcode name="min_i4" group="Inline methods">
+ *   <operation>Compute the minimum of two numbers</operation>
+ *
+ *   <format>prefix<fsep/>min_i4</format>
+ *   <dformat>{min_i4}</dformat>
+ *
+ *   <form name="min_i4" code="COP_PREFIX_MIN_I4"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_MIN_I4):
+{
+	stacktop[-2].intValue =
+		stacktop[-1].intValue < stacktop[-2].intValue 
+			?	stacktop[-1].intValue 
+				: stacktop[-2].intValue;
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
+}
+VMBREAK(COP_PREFIX_MIN_I4);
+
+/**
+ * <opcode name="max_i4" group="Inline methods">
+ *   <operation>Compute the maximum of two numbers</operation>
+ *
+ *   <format>prefix<fsep/>max_i4</format>
+ *   <dformat>{min_i4}</dformat>
+ *
+ *   <form name="max_i4" code="COP_PREFIX_MAX_I4"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_MAX_I4):
+{
+	stacktop[-2].intValue = 
+		stacktop[-1].intValue > stacktop[-2].intValue 
+			?	stacktop[-1].intValue 
+				: stacktop[-2].intValue;
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
+}
+VMBREAK(COP_PREFIX_MAX_I4);
+
+/**
+ * <opcode name="min_r4" group="Inline methods">
+ *   <operation>Compute the minimum of two numbers</operation>
+ *
+ *   <format>prefix<fsep/>min_r4</format>
+ *   <dformat>{min_r4}</dformat>
+ *
+ *   <form name="min_r4" code="COP_PREFIX_MIN_R4"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_MIN_R4):
+{
+	WriteFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)], 
+			ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]) < ReadFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)])
+				?	ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]) 
+					: ReadFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)]));
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -CVM_WORDS_PER_NATIVE_FLOAT);
+}
+VMBREAK(COP_PREFIX_MIN_R4);
+
+/**
+ * <opcode name="max_r4" group="Inline methods">
+ *   <operation>Compute the maximum of two floats</operation>
+ *
+ *   <format>prefix<fsep/>max_r4</format>
+ *   <dformat>{max_r4}</dformat>
+ *
+ *   <form name="max_r4" code="COP_PREFIX_MAX_R4"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_MAX_R4):
+{
+	WriteFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)], 
+			ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]) > ReadFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)])
+				?	ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]) 
+					: ReadFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)]));
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -CVM_WORDS_PER_NATIVE_FLOAT);
+}
+VMBREAK(COP_PREFIX_MAX_R4);
+
+/**
+ * <opcode name="min_r8" group="Inline methods">
+ *   <operation>Compute the minimum of two doubles</operation>
+ *
+ *   <format>prefix<fsep/>min_r8</format>
+ *   <dformat>{min_r8}</dformat>
+ *
+ *   <form name="min_r8" code="COP_PREFIX_MIN_R8"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_MIN_R8):
+{
+	WriteFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)], 
+			ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]) < ReadFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)])
+				?	ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]) 
+					: ReadFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)]));
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -CVM_WORDS_PER_NATIVE_FLOAT);
+}
+VMBREAK(COP_PREFIX_MIN_R8);
+
+/**
+ * <opcode name="max_r8" group="Inline methods">
+ *   <operation>Compute the maximum of two doubles</operation>
+ *
+ *   <format>prefix<fsep/>max_r8</format>
+ *   <dformat>{max_r8}</dformat>
+ *
+ *   <form name="max_r8" code="COP_PREFIX_MAX_R8"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_MAX_R8):
+{
+	WriteFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)], 
+			ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]) > ReadFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)])
+				?	(ILNativeFloat)(ILDouble)ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]) 
+					: (ILNativeFloat)(ILDouble)ReadFloat(&stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT << 1)]));
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -CVM_WORDS_PER_NATIVE_FLOAT);
+}
+VMBREAK(COP_PREFIX_MAX_R8);
+
+/**
+ * <opcode name="sign_i4" group="Inline methods">
+ *   <operation>Compute the sign of an int</operation>
+ *
+ *   <format>prefix<fsep/>sign_i4</format>
+ *   <dformat>{sign_i4}</dformat>
+ *
+ *   <form name="sign_i4" code="COP_PREFIX_SIGN_I4"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_SIGN_I4):
+{
+	tempI4 = stacktop[-1].intValue;
+
+	if (tempI4 > 0)
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = 1;
+	}
+	else if (tempI4 < 0)
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = -1;
+	}
+	else
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = 0;
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_SIGN_I4);
+
+/**
+ * <opcode name="sign_r4" group="Inline methods">
+ *   <operation>Compute the sign of a float</operation>
+ *
+ *   <format>prefix<fsep/>sign_r4</format>
+ *   <dformat>{sign_r4}</dformat>
+ *
+ *   <form name="sign_r4" code="COP_PREFIX_SIGN_R4"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_SIGN_R4):
+{
+	tempR8 = ((ILDouble)ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]));
+
+	if (tempR8 > 0.0)
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = 1;
+	}
+	else if (tempR8 < 0.0)
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = -1;
+	}
+	else
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = 0;
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -CVM_WORDS_PER_NATIVE_FLOAT + 1);
+}
+VMBREAK(COP_PREFIX_SIGN_R4);
+
+/**
+ * <opcode name="sign_r8" group="Inline methods">
+ *   <operation>Compute the sign of a double</operation>
+ *
+ *   <format>prefix<fsep/>sign_r8</format>
+ *   <dformat>{sign_r8}</dformat>
+ *
+ *   <form name="sign_r8" code="COP_PREFIX_SIGN_R8"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_SIGN_R8):
+{
+	tempR8 = ((ILDouble)ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]));
+
+	if (tempR8 > 0.0)
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = 1;
+	}
+	else if (tempR8 < 0.0)
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = -1;
+	}
+	else
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = 0;
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -CVM_WORDS_PER_NATIVE_FLOAT + 1);
+}
+VMBREAK(COP_PREFIX_SIGN_R8);
+
+/**
+ * <opcode name="abs_i4" group="Inline methods">
+ *   <operation>Compute the absolute value of an int</operation>
+ *
+ *   <format>prefix<fsep/>abs_i4</format>
+ *   <dformat>{abs_i4}</dformat>
+ *
+ *   <form name="abs_i4" code="COP_PREFIX_ABS_I4"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_ABS_I4):
+{
+	tempI4 = stacktop[-1].intValue;
+	
+	if (tempI4 >= 0)
+	{
+		/* Value is ok */
+	}
+	else if (tempI4 != IL_MIN_INT32)
+	{
+		stacktop[-1].intValue = -tempI4;
+	}
+	else
+	{
+		COPY_STATE_TO_THREAD();
+		ILExecThreadThrowSystem(thread, "System.OverflowException", "Overflow_NegateTwosCompNum");
+		RESTORE_STATE_FROM_THREAD();
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_ABS_I4);
+
+/**
+ * <opcode name="abs_r4" group="Inline methods">
+ *   <operation>Compute the absolute value of a float</operation>
+ *
+ *   <format>prefix<fsep/>abs_r4</format>
+ *   <dformat>{abs_r4}</dformat>
+ *
+ *   <form name="abs_r4" code="COP_PREFIX_ABS_R4"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_ABS_R4):
+{
+	tempR8 = ((ILDouble)ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]));
+
+	if (tempR8 < 0.0)
+	{
+		WriteFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT], (ILNativeFloat)-tempR8);
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_ABS_R4);
+
+/**
+ * <opcode name="abs_r8" group="Inline methods">
+ *   <operation>Compute the absolute value of a double</operation>
+ *
+ *   <format>prefix<fsep/>abs_r8</format>
+ *   <dformat>{abs_r8}</dformat>
+ *
+ *   <form name="abs_r8" code="COP_PREFIX_ABS_R*"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_ABS_R8):
+{
+	tempR8 = ((ILDouble)ReadFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]));
+
+	if (tempR8 < 0.0)
+	{		
+		WriteFloat(&stacktop[-CVM_WORDS_PER_NATIVE_FLOAT], (ILNativeFloat)-tempR8);
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_ABS_R8);
 
 #endif /* IL_CVM_PREFIX */

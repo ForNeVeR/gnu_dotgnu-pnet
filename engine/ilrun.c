@@ -101,6 +101,10 @@ static ILCmdLineOption const options[] = {
 	{"--trace",	  'T', 0,
 		"--trace                 or -T",
 		"Trace every method call or return."},
+	{"-Z", 'Z', 0, 0, 0},
+	{"--stats",	  'Z', 0,
+		"--stats                 or -Z",
+		"Display statistics about the code generator."},
 	{"-D", 'D', 0, 0, 0},
 	{"--dump-config", 'D', 0,
 		"--dump-config           or -D",
@@ -255,6 +259,12 @@ int main(int argc, char *argv[])
 			{
 				flags |= IL_CODER_FLAG_METHOD_PROFILE;
 				dumpMethodProfile = 1;
+			}
+			break;
+
+			case 'Z':
+			{
+				flags |= IL_CODER_FLAG_STATS;				
 			}
 			break;
 
@@ -490,7 +500,7 @@ int main(int argc, char *argv[])
 	/* Print the top-level exception that occurred */
 	if(sawException && 
 		!ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
-	{
+	{		
 		ILExecThreadPrintException(thread);
 	}
 

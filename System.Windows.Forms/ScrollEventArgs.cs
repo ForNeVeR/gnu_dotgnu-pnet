@@ -32,10 +32,20 @@ public class ScrollEventArgs : EventArgs
 	// Internal state.
 	private ScrollEventType type;
 	private int newValue;
+	private ScrollBar owner = null;
 
 	// Constructor.
 	public ScrollEventArgs(ScrollEventType type, int newValue)
 			{
+				this.type = type;
+				this.newValue = newValue;
+			}
+
+	internal ScrollEventArgs(ScrollBar owner,
+	                         ScrollEventType type,
+	                         int newValue)
+			{
+				this.owner = owner;
 				this.type = type;
 				this.newValue = newValue;
 			}
@@ -46,6 +56,13 @@ public class ScrollEventArgs : EventArgs
 				get
 				{
 					return newValue;
+				}
+				set
+				{
+					if (value == newValue) { return; }
+					if (owner == null) { return; }
+					newValue = value;
+					owner.Value = newValue;
 				}
 			}
 	public ScrollEventType Type

@@ -29,6 +29,7 @@ public class FormsHello : Form
 	private ProgressBar progress;
 	private int msgNum;
 	private ToolBar toolbar;
+	private ScrollBar scrollbar;
 	
 	private FormsHello()
 	{
@@ -76,6 +77,12 @@ public class FormsHello : Form
 		toolbar.Appearance = ToolBarAppearance.Flat;
 		toolbar.BorderStyle = BorderStyle.FixedSingle;
 		Controls.Add(toolbar);
+
+		// Create a scrollbar control.
+		scrollbar = new HScrollBar();
+		Controls.Add(scrollbar);
+		scrollbar = new VScrollBar();
+		Controls.Add(scrollbar);
 	}
 
 	private void HandlePaint(Object sender, PaintEventArgs e)

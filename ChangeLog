@@ -1,3 +1,10 @@
+2003-07-10  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ScrollBar.cs,
+	System.Windows.Forms/HScrollBar.cs, System.Windows.Forms/VScrollBar.cs,
+	System.Windows.Forms/ScrollEventArgs.cs, samples/FormsHello.cs:
+	add and implement scrollbars, and add a sample HScrollBar and a sample
+	VScrollBar to FormsHello.
 
 2003-07-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -24,7 +24,11 @@
 extern	"C" {
 #endif
 
-int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename)
+/*
+ * Process a single image that is to be linked into the final binary.
+ */
+static int ProcessImage(ILLinker *linker, ILImage *image,
+					 	const char *filename)
 {
 	ILModule *thisModule;
 	ILAssembly *thisAssem;
@@ -168,9 +172,41 @@ int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename)
 	return 1;
 }
 
-int ILLinkerAddCObject(ILLinker *linker, ILImage *image,
-					   const char *filename, int memoryModel,
-					   int alignFlags)
+int ILLinkerAddImage(ILLinker *linker, ILContext *context,
+					 ILImage *image, const char *filename)
+{
+	ILLinkImage *linkImage;
+	linkImage = (ILLinkImage *)ILMalloc(sizeof(ILLinkImage));
+	if(!linkImage)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	linkImage->filename = ILDupString(filename);
+	if(!(linkImage->filename))
+	{
+		ILFree(linkImage);
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	linkImage->context = context;
+	linkImage->image = image;
+	linkImage->next = 0;
+	if(linker->images)
+	{
+		linker->lastImage->next = linkImage;
+	}
+	else
+	{
+		linker->images = linkImage;
+	}
+	linker->lastImage = linkImage;
+	return 1;
+}
+
+int ILLinkerAddCObject(ILLinker *linker, ILContext *context,
+					   ILImage *image, const char *filename,
+					   int memoryModel, int alignFlags)
 {
 	ILProgramItem *oldItem;
 	ILProgramItem *newItem;
@@ -204,7 +240,22 @@ int ILLinkerAddCObject(ILLinker *linker, ILImage *image,
 	}
 
 	/* Add the image to the linker */
-	return ILLinkerAddImage(linker, image, filename);
+	return ILLinkerAddImage(linker, context, image, filename);
+}
+
+int ILLinkerPerformLink(ILLinker *linker)
+{
+	ILLinkImage *image = linker->images;
+	int ok = 1;
+	while(image != 0)
+	{
+		if(!ProcessImage(linker, image->image, image->filename))
+		{
+			ok = 0;
+		}
+		image = image->next;
+	}
+	return ok;
 }
 
 #ifdef	__cplusplus

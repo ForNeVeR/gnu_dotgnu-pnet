@@ -67,6 +67,8 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	linker->outOfMemory = 0;
 	linker->error = 0;
 	linker->is32Bit = ((flags & IL_WRITEFLAG_32BIT_ONLY) != 0);
+	linker->images = 0;
+	linker->lastImage = 0;
 	linker->resourceRVA = 0;
 	linker->entryPoint = 0;
 	linker->dataLength = 0;
@@ -239,6 +241,7 @@ static void ReportUnresolved(ILLinker *linker)
 int ILLinkerDestroy(ILLinker *linker)
 {
 	int result, index;
+	ILLinkImage *image, *nextImage;
 
 	/* Report any remaining unresolved references */
 	ReportUnresolved(linker);
@@ -252,6 +255,17 @@ int ILLinkerDestroy(ILLinker *linker)
 	/* Destroy the global symbol pool for the linked image */
 	ILHashDestroy(linker->symbolHash);
 	ILMemPoolDestroy(&(linker->pool));
+
+	/* Destroy the images */
+	image = linker->images;
+	while(image != 0)
+	{
+		nextImage = image->next;
+		ILFree(image->filename);
+		ILContextDestroy(image->context);
+		ILFree(image);
+		image = nextImage;
+	}
 
 	/* Destroy the libraries */
 	_ILLinkerDestroyLibraries(linker);

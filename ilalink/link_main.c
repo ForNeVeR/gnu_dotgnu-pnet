@@ -647,6 +647,12 @@ int ILLinkerMain(int argc, char *argv[])
 		firstFile = 0;
 	}
 
+	/* Perform the main image linking process */
+	if(!ILLinkerPerformLink(linker))
+	{
+		errors = 1;
+	}
+
 	/* Add the explicit resource files to the linker context */
 	for(temp = 0; temp < numResources; ++temp)
 	{
@@ -849,8 +855,8 @@ static int addResource(ILLinker *linker, const char *filename,
  * Returns non-zero on error.
  */
 static int processImage(ILLinker *linker, const char *filename,
-						ILImage *image, const char *stdLibrary,
-						const char *stdCLibrary,
+						ILContext *context, ILImage *image,
+						const char *stdLibrary, const char *stdCLibrary,
 						int useStdlib, int isFirstFile)
 {
 	int errors = 0;
@@ -887,14 +893,15 @@ static int processImage(ILLinker *linker, const char *filename,
 		}
 
 		/* Add the C object file to the linker */
-		if(!ILLinkerAddCObject(linker, image, filename, model, alignFlags))
+		if(!ILLinkerAddCObject(linker, context, image,
+							   filename, model, alignFlags))
 		{
 			errors |= 1;
 		}
 	}
 	else 
 	{
-		if(!ILLinkerAddImage(linker, image, filename))
+		if(!ILLinkerAddImage(linker, context, image, filename))
 		{
 			errors = 1;
 		}
@@ -945,6 +952,7 @@ static int processFile(ILLinker *linker, const char *filename,
 	if(loadError == IL_LOADERR_ARCHIVE)
 	{
 		/* Process an "ar" file that may contain multiple images */
+		ILContextDestroy(context);
 		if(isStdin)
 		{
 			fprintf(stderr, "%s: cannot process `ar' archives from stdin\n",
@@ -990,6 +998,11 @@ static int processFile(ILLinker *linker, const char *filename,
 
 				/* Attempt to load a PE/COFF image from this
 				   position in the "ar" archive file */
+				context = ILContextCreate();
+				if(!context)
+				{
+					outOfMemory();
+				}
 				loadError = ILImageLoad(stream, arhdr.ar_name, context, &image,
 										IL_LOADFLAG_FORCE_32BIT |
 										IL_LOADFLAG_NO_RESOLVE |
@@ -999,21 +1012,14 @@ static int processFile(ILLinker *linker, const char *filename,
 					fprintf(stderr, "%s: %s\n", arhdr.ar_name,
 							ILImageLoadError(loadError));
 					errors = 1;
+					ILContextDestroy(context);
 				}
 				else
 				{
 					/* Process the loaded image */
-					errors |= processImage(linker, arhdr.ar_name,
+					errors |= processImage(linker, arhdr.ar_name, context,
 										   image, stdLibrary, stdCLibrary,
 							   			   useStdlib, isFirstFile);
-
-					/* Destroy the context and re-create for the next file */
-					ILContextDestroy(context);
-					context = ILContextCreate();
-					if(!context)
-					{
-						outOfMemory();
-					}
 				}
 
 				/* Skip to the next file in the "ar" archive */
@@ -1031,11 +1037,12 @@ static int processFile(ILLinker *linker, const char *filename,
 	{
 		fprintf(stderr, "%s: %s\n", filename, ILImageLoadError(loadError));
 		errors = 1;
+		ILContextDestroy(context);
 	}
 	else
 	{
 		/* Add the image to the linker context */
-		errors |= processImage(linker, filename, image, stdLibrary,
+		errors |= processImage(linker, filename, context, image, stdLibrary,
 							   stdCLibrary, useStdlib, isFirstFile);
 	}
 	if(!isStdin)
@@ -1044,7 +1051,6 @@ static int processFile(ILLinker *linker, const char *filename,
 	}
 
 	/* Clean up and exit */
-	ILContextDestroy(context);
 	return errors;
 }
 

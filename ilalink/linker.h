@@ -97,6 +97,18 @@ struct _tagILLibrary
 };
 
 /*
+ * Information that is stored for an image to be linked.
+ */
+typedef struct _tagILLinkImage ILLinkImage;
+struct _tagILLinkImage
+{
+	char		   *filename;		/* Name of the image file */
+	ILContext	   *context;		/* Context that contains the image */
+	ILImage		   *image;			/* The image itself */
+	ILLinkImage    *next;			/* Next image to be linked */
+};
+
+/*
  * Internal structure of the linker context.
  */
 struct _tagILLinker
@@ -111,6 +123,8 @@ struct _tagILLinker
 	int				outOfMemory;	/* Set to non-zero when out of memory */
 	int				error;			/* Some other error occurred */
 	int				is32Bit;		/* Non-zero if "-m32bit-only" supplied */
+	ILLinkImage    *images;			/* List of images to be linked */
+	ILLinkImage    *lastImage;		/* Last image on the "images" list */
 	unsigned long	resourceRVA;	/* RVA of resource section start */
 	ILMethod       *entryPoint;		/* Current entry point that is set */
 	ILUInt32		dataLength;		/* Length of ".sdata" section */

@@ -1,4 +1,10 @@
 
+2002-08-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilalink/link_create.c, ilalink/link_image.c, ilalink/link_main.c,
+	ilalink/linker.h, include/il_linker.h: add the link images to the
+	context in a single pass before processing their contents.
+
 2002-08-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_grammar.y, cscc/c/c_scope.c, cscc/c/c_scope.h,

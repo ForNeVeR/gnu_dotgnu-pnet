@@ -78,15 +78,16 @@ int ILLinkerAddLibrary(ILLinker *linker, const char *name);
  * Add an image to a linker context as one of the primary objects.
  * This must be done after all libraries have been added.
  */
-int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename);
+int ILLinkerAddImage(ILLinker *linker, ILContext *context,
+					 ILImage *image, const char *filename);
 
 /*
  * Add a C object file image to a linker context as one of the primary objects.
  * This must be done after all libraries have been added.
  */
-int ILLinkerAddCObject(ILLinker *linker, ILImage *image,
-					   const char *filename, int memoryModel,
-					   int alignFlags);
+int ILLinkerAddCObject(ILLinker *linker, ILContext *context,
+					   ILImage *image, const char *filename,
+					   int memoryModel, int alignFlags);
 
 /*
  * Add a binary resource to a linker context.  Returns zero
@@ -133,6 +134,11 @@ int ILLinkerCMemoryModel(ILImage *image, int *alignFlags);
  * Create the module class for a C application.
  */
 void ILLinkerModuleCreate(ILLinker *linker);
+
+/*
+ * Link the final binary.  Returns zero on error.
+ */
+int ILLinkerPerformLink(ILLinker *linker);
 
 /*
  * Call the linker as if it were an executable with command-line

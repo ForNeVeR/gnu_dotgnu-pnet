@@ -1,4 +1,9 @@
 
+2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/field2.cs, csharp/class.field2.il,
+	csharp/class/field2.jl: add tests for "volatile" fields.
+
 2001-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Initial check-in of the test suite.

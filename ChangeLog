@@ -8,3 +8,5 @@ part of the ECMA standard.
 
 * runtime/System/Math.cs, runtime/System/Random.cs, runtime/System/Makefile.am:
 re-implement "System.Math" and "System.Random".
+
+* runtime/System/Environment.cs: declare "TickCount" as "static".

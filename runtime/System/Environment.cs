@@ -156,7 +156,7 @@ public sealed class Environment
 			}
 
 	// Get the number of milliseconds since the last reboot.
-	public int TickCount
+	public static int TickCount
 			{
 				get
 				{

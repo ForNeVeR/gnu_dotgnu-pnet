@@ -326,6 +326,7 @@ struct _tagILExecMonitor
 	ILWaitHandle *supportMonitor;
 	volatile ILInt32 waiters;
 	ILExecMonitor *next;
+	ILExecThread *owner;
 };
 
 /*

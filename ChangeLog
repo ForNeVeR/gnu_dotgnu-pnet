@@ -1,4 +1,12 @@
+2004-04-26  Thong Nguyen <tum@veridicus.com>
 
+	* engine/engine.h: Added owner field to ILExecMonitor.
+	
+	* engine/lib_thread.c: Added checking to ensure the current thread
+	owns the monitor to Exit, Wait, Pulse and PulseAll.
+	Added valid monitor checking to Monitor.Wait (fixes a null 
+	derefernce when no monitor exists).
+	
 2004-04-24  Gopal V <gopalv82@yahoo.com>
 
 	* cscc/c/c_lvalue.tc: Allow array access to happen on Managed

@@ -199,6 +199,8 @@ retry:
 		{
 			/* Succesfully installed the new monitor */
 
+			monitor->owner = thread;
+			
 			/* Let the support monitor know we've entered */
 			result = ILWaitMonitorEnter(monitor->supportMonitor);
 
@@ -314,6 +316,7 @@ retry:
 	}
 	else
 	{
+		monitor->owner = thread;
 		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
 	}
 
@@ -349,7 +352,7 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 	monitor = IL_LW_UNMARK(lockword);
 
 	/* Make sure the monitor is valid */
-	if (monitor == 0)
+	if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
 	{
 		/* Hmm.  Can't call Monitor.Exit before Monitor.Enter */
 
@@ -436,7 +439,7 @@ retry:
 	/*
 	 * Problem:
 	 *
-	 *	A gets here.
+	 * A gets here.
 	 * B marks the lock word.
 	 * B notices there are no waiters.
 	 * B returns obj's monitor to the free list.
@@ -451,6 +454,19 @@ retry:
 
 	monitor = IL_LW_UNMARK(lockword);
 
+	if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
+	{
+		/* Object is not synchronized */				
+		ILExecThreadThrowSystem
+			(
+				thread,					
+				"System.Threading.SynchronizationLockException",
+				"Exception_ThreadNeedsLock"
+			);
+			
+		return 0;
+	}
+	
 	_IL_Interlocked_Increment_Ri(thread, (ILInt32 *)&monitor->waiters);
 
 	/* Now double check and see if another thread is trying to exit
@@ -502,7 +518,7 @@ retry:
 		/*
 		 * Problem:
 		 *
-		 *	A gets here (monitor->waiters = 1)
+		 * A gets here (monitor->waiters = 1)
 		 * B does speculative leave  (monitor->Waiters = 1)
 	 	 * A decrements monitor->waiters (monitor->waiters = 0).
 		 * B return monitor to free list.
@@ -537,7 +553,7 @@ retry:
 
 	monitor = IL_LW_UNMARK(lockword);
 
-	if (monitor == 0)
+	if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
 	{
 		/* Object doesn't even have a lock */
 
@@ -589,6 +605,8 @@ retry:
 
 		/* The current thread has exclusive access to the object's lockword */
 
+		monitor->owner = thread;
+		
 		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
 		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
 
@@ -648,9 +666,9 @@ void _IL_Monitor_Pulse(ILExecThread *thread, ILObject *obj)
 	{		
 		monitor = GetObjectMonitor(thread, obj);
 
-		if (monitor == 0)
+		if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
 		{
-			/* Object doesn't even have a lock */
+			/* Object needs to own lock */
 
 			ILExecThreadThrowSystem
 				(
@@ -680,7 +698,7 @@ void _IL_Monitor_Pulse(ILExecThread *thread, ILObject *obj)
 		case 1:
 
 			/* Successfully pulsed */
-
+			
 			return;
 
 		default:
@@ -710,9 +728,9 @@ void _IL_Monitor_PulseAll(ILExecThread *thread, ILObject *obj)
 	{		
 		monitor = GetObjectMonitor(thread, obj);
 
-		if (monitor == 0)
+		if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
 		{
-			/* Object doesn't even have a lock */
+			/* Object needs to own lock */
 
 			ILExecThreadThrowSystem
 				(

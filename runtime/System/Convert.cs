@@ -295,6 +295,10 @@ public sealed class Convert
 				return Byte.Parse(value, provider);
 			}
 #if !ECMA_COMPAT
+	public static byte ToByte(DateTime value)
+			{
+				return ((IConvertible)value).ToByte(null);
+			}
 	public static byte ToByte(Object value)
 			{
 				if(value != null)
@@ -536,6 +540,11 @@ public sealed class Convert
 			}
 #if !ECMA_COMPAT
 	[CLSCompliant(false)]
+	public static sbyte ToSByte(DateTime value)
+			{
+				return ((IConvertible)value).ToSByte(null);
+			}
+	[CLSCompliant(false)]
 	public static sbyte ToSByte(Object value)
 			{
 				if(value != null)
@@ -753,6 +762,10 @@ public sealed class Convert
 				return Int16.Parse(value, provider);
 			}
 #if !ECMA_COMPAT
+	public static short ToInt16(DateTime value)
+			{
+				return ((IConvertible)value).ToInt16(null);
+			}
 	public static short ToInt16(Object value)
 			{
 				if(value != null)
@@ -983,6 +996,11 @@ public sealed class Convert
 			}
 #if !ECMA_COMPAT
 	[CLSCompliant(false)]
+	public static ushort ToUInt16(DateTime value)
+			{
+				return ((IConvertible)value).ToUInt16(null);
+			}
+	[CLSCompliant(false)]
 	public static ushort ToUInt16(Object value)
 			{
 				if(value != null)
@@ -1190,6 +1208,10 @@ public sealed class Convert
 				return Int32.Parse(value, provider);
 			}
 #if !ECMA_COMPAT
+	public static int ToInt32(DateTime value)
+			{
+				return ((IConvertible)value).ToInt32(null);
+			}
 	public static int ToInt32(Object value)
 			{
 				if(value != null)
@@ -1420,6 +1442,11 @@ public sealed class Convert
 			}
 #if !ECMA_COMPAT
 	[CLSCompliant(false)]
+	public static uint ToUInt32(DateTime value)
+			{
+				return ((IConvertible)value).ToUInt32(null);
+			}
+	[CLSCompliant(false)]
 	public static uint ToUInt32(Object value)
 			{
 				if(value != null)
@@ -1612,6 +1639,10 @@ public sealed class Convert
 				return Int64.Parse(value, provider);
 			}
 #if !ECMA_COMPAT
+	public static long ToInt64(DateTime value)
+			{
+				return ((IConvertible)value).ToInt64(null);
+			}
 	public static long ToInt64(Object value)
 			{
 				if(value != null)
@@ -1834,6 +1865,11 @@ public sealed class Convert
 				return UInt64.Parse(value, provider);
 			}
 #if !ECMA_COMPAT
+	[CLSCompliant(false)]
+	public static ulong ToUInt64(DateTime value)
+			{
+				return ((IConvertible)value).ToUInt64(null);
+			}
 	[CLSCompliant(false)]
 	public static ulong ToUInt64(Object value)
 			{
@@ -2060,6 +2096,14 @@ public sealed class Convert
 				return ((IConvertible)value).ToChar(null);
 			}
 #endif
+	public static char ToChar(bool value)
+			{
+				return ((IConvertible)value).ToChar(null);
+			}
+	public static char ToChar(DateTime value)
+			{
+				return ((IConvertible)value).ToChar(null);
+			}
 	public static char ToChar(Object value)
 			{
 				if(value != null)
@@ -2246,6 +2290,10 @@ public sealed class Convert
 					return 0;
 				}
 			}
+	public static float ToSingle(DateTime value)
+			{
+				return ((IConvertible)value).ToSingle(null);
+			}
 #else // ECMA_COMPAT
 	internal static float ToSingle(Object value)
 			{
@@ -2401,6 +2449,10 @@ public sealed class Convert
 				{
 					return 0;
 				}
+			}
+	public static double ToDouble(DateTime value)
+			{
+				return ((IConvertible)value).ToDouble(null);
 			}
 #else // ECMA_COMPAT
 	internal static double ToDouble(Object value)
@@ -2598,6 +2650,13 @@ public sealed class Convert
 				return value;
 			}
 #if !ECMA_COMPAT
+	public static String ToString(String value, IFormatProvider provider)
+			{
+				return value;
+			}
+#endif
+
+#if !ECMA_COMPAT
 	// Format an integer in base 10.
 	private static String FormatBase10(ulong value, bool isneg)
 	{
@@ -2706,17 +2765,7 @@ public sealed class Convert
 			{
 				return FormatInBase((long)value, toBase, 8);
 			}
-	[CLSCompliant(false)]
-	public static String ToString(sbyte value, int toBase)
-			{
-				return FormatInBase((long)value, toBase, 8);
-			}
 	public static String ToString(short value, int toBase)
-			{
-				return FormatInBase((long)value, toBase, 16);
-			}
-	[CLSCompliant(false)]
-	public static String ToString(ushort value, int toBase)
 			{
 				return FormatInBase((long)value, toBase, 16);
 			}
@@ -2724,23 +2773,9 @@ public sealed class Convert
 			{
 				return FormatInBase((long)value, toBase, 32);
 			}
-	[CLSCompliant(false)]
-	public static String ToString(uint value, int toBase)
-			{
-				return FormatInBase((long)value, toBase, 32);
-			}
 	public static String ToString(long value, int toBase)
 			{
 				return FormatInBase((long)value, toBase, 64);
-			}
-	[CLSCompliant(false)]
-	public static String ToString(ulong value, int toBase)
-			{
-				if(toBase != 10)
-				{
-					return FormatInBase(unchecked((long)value), toBase, 64);
-				}
-				return FormatBase10(value, false);
 			}
 	public static String ToString(Object value)
 			{
@@ -2794,11 +2829,80 @@ public sealed class Convert
 				return DateTime.Parse(value, provider);
 			}
 #if !ECMA_COMPAT
+	public static DateTime ToDateTime(bool value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	public static DateTime ToDateTime(byte value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	[CLSCompliant(false)]
+	public static DateTime ToDateTime(sbyte value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	public static DateTime ToDateTime(short value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	[CLSCompliant(false)]
+	public static DateTime ToDateTime(ushort value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	public static DateTime ToDateTime(char value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	public static DateTime ToDateTime(int value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	[CLSCompliant(false)]
+	public static DateTime ToDateTime(uint value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	public static DateTime ToDateTime(long value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	[CLSCompliant(false)]
+	public static DateTime ToDateTime(ulong value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+#if CONFIG_EXTENDED_NUMERICS
+	public static DateTime ToDateTime(float value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	public static DateTime ToDateTime(double value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+	public static DateTime ToDateTime(Decimal value)
+			{
+				return ((IConvertible)value).ToDateTime(null);
+			}
+#endif
 	public static DateTime ToDateTime(Object value)
 			{
 				if(value != null)
 				{
 					return ((IConvertible)value).ToDateTime(null);
+				}
+				else
+				{
+					return DateTime.MinValue;
+				}
+			}
+	public static DateTime ToDateTime(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToDateTime(provider);
 				}
 				else
 				{
@@ -2882,6 +2986,21 @@ public sealed class Convert
 				{
 					return new Decimal(0);
 				}
+			}
+	public static Decimal ToDecimal(Object value, IFormatProvider provider)
+			{
+				if(value != null)
+				{
+					return ((IConvertible)value).ToDecimal(provider);
+				}
+				else
+				{
+					return new Decimal(0);
+				}
+			}
+	public static Decimal ToDecimal(DateTime value)
+			{
+				return ((IConvertible)value).ToDecimal(null);
 			}
 #else // ECMA_COMPAT
 	internal static Decimal ToDecimal(Object value)

@@ -6,6 +6,8 @@
 	zero-length array range in "GetString"; use '?' for high characters
 	in "ASCIIEncoding.GetChars".
 
+	* runtime/System/Convert.cs: signature-compatibility fixes.
+
 2003-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/BestFitMappingAttribute.cs,

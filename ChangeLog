@@ -1,3 +1,11 @@
+2002-06-01  Peter Minten  <silvernerd@users.sf.net>
+        * runtime/Platform/DnsMethods.cs: Created
+        * System.Xml/XmlReader.cs: got rid of useless internal methods
+        * System.Xml/XmlTextReader.cs: created and partly implemented parsing
+        * System.Xml/XmlResolver.cs: Created stub class for XmlTextReader
+        * System.Xml/XmlNode.cs: Modified for better operation with XmlTextReader
+        * System.Xml/xmlNamespaceEntry.cs: Created non-ecma class.
+
 2002-05-27 Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Some changes for compatibility with UriBuilder.

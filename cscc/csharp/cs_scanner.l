@@ -1049,6 +1049,7 @@ GENERICPREFIX	{WHITE}*{GTYPELIST}{WHITE}*("<"|">")
 "out"					{ RETURNTOK(OUT); }
 "override"				{ RETURNTOK(OVERRIDE); }
 "params"				{ RETURNTOK(PARAMS); }
+"partial"				{ RETURNTOK(PARTIAL); }
 "private"				{ RETURNTOK(PRIVATE); }
 "protected"				{ RETURNTOK(PROTECTED); }
 "public"				{ RETURNTOK(PUBLIC); }
@@ -1084,6 +1085,7 @@ GENERICPREFIX	{WHITE}*{GTYPELIST}{WHITE}*("<"|">")
 "volatile"				{ RETURNTOK(VOLATILE); }
 "where"					{ RETURNTOK(WHERE); }
 "while"					{ RETURNTOK(WHILE); }
+"yield"					{ RETURNTOK(YIELD); }
 
 {IDALPHA}({DIGIT}|{IDALPHA})*		{
 			yylval.name = (ParseIdentifier(yytext)).string;

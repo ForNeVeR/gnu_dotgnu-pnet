@@ -2,7 +2,7 @@
 /*
  * cs_grammar.y - Input file for yacc that defines the syntax of C#.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -733,6 +733,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 		ILNode		   *target;
 
 	} target;
+	int					partial;
 }
 
 /*
@@ -803,6 +804,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %token OUT					"`out'"
 %token OVERRIDE				"`override'"
 %token PARAMS				"`params'"
+%token PARTIAL				"`partial'"
 %token PRIVATE				"`private'"
 %token PROTECTED			"`protected'"
 %token PUBLIC				"`public'"
@@ -838,6 +840,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %token VOLATILE				"`volatile'"
 %token WHERE				"`where'"
 %token WHILE				"`while'"
+%token YIELD				"`yield'"
 
 /*
  * Operators.
@@ -876,6 +879,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <string>		STRING_LITERAL DOC_COMMENT NamespaceIdentifier
 %type <count>		DimensionSeparators DimensionSeparatorList
 %type <mask>		OptModifiers Modifiers Modifier
+%type <partial>		OptPartial
 
 %type <node>		Identifier QualifiedIdentifier BuiltinType
 %type <node>		QualifiedIdentifierPart
@@ -899,6 +903,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		InvocationExpression ExpressionList
 %type <node>		ObjectCreationExpression OptArgumentList ArgumentList
 %type <node>		Argument PrefixedUnaryExpression GenericReference
+%type <node>		AnonymousMethod
 
 %type <node>		Statement EmbeddedStatement Block OptStatementList
 %type <node>		StatementList ExpressionStatement SelectionStatement
@@ -913,6 +918,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		UsingStatement ResourceAcquisition FixedStatement
 %type <node>		FixedPointerDeclarators FixedPointerDeclarator
 %type <node>		InnerEmbeddedStatement InnerExpressionStatement
+%type <node>		YieldStatement
 
 %type <node>		ConstantDeclaration ConstantDeclarators ConstantDeclarator
 %type <node>		FieldDeclaration FieldDeclarators FieldDeclarator
@@ -964,7 +970,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 31
+%expect 33
 
 %start CompilationUnit
 %%
@@ -1105,6 +1111,8 @@ IDENTIFIER
 	| ADD					{ $$ = ILInternString("add", 3).string; }
 	| REMOVE				{ $$ = ILInternString("remove", 6).string; }
 	| WHERE					{ $$ = ILInternString("where", 5).string; }
+	| PARTIAL				{ $$ = ILInternString("partial", 7).string; }
+	| YIELD					{ $$ = ILInternString("yield", 5).string; }
 	;
 
 QualifiedIdentifier
@@ -1484,6 +1492,7 @@ PrimaryExpression
 	| REFTYPE '(' Expression ')'			{ MakeUnary(RefType, $3); }
 	| REFVALUE '(' Expression ',' Type ')'	{ MakeBinary(RefValue, $3, $5); }
 	| MODULE			{ $$ = ILQualIdentSimple("<Module>"); }
+	| DELEGATE AnonymousMethod				{ $$ = $2; }
 	;
 
 LiteralExpression
@@ -2001,6 +2010,7 @@ InnerEmbeddedStatement
 	| UsingStatement				{ $$ = $1; }
 	| FixedStatement				{ $$ = $1; }
 	| UNSAFE Block					{ MakeUnary(Unsafe, $2); }
+	| YieldStatement				{ $$ = $1; }
 	| error ';'		{
 				/*
 				 * This production recovers from parse errors in statements,
@@ -2479,6 +2489,17 @@ FixedPointerDeclarator
 			}
 	;
 
+YieldStatement
+	: YIELD RETURN Expression ';'		{
+				$$ = ILNode_Empty_create();
+				CCError(_("`yield return' is not yet supported"));
+			}
+	| YIELD BREAK ';'		{
+				$$ = ILNode_Empty_create();
+				CCError(_("`yield break' is not yet supported"));
+			}
+	;
+
 /*
  * Attributes.
  */
@@ -2650,20 +2671,20 @@ Modifier
  */
 
 ClassDeclaration
-	: OptAttributes OptModifiers CLASS Identifier TypeFormals
+	: OptAttributes OptModifiers OptPartial CLASS Identifier TypeFormals
 			ClassBase Constraints {
 				/* Enter a new nesting level */
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($4);
+				ClassNamePush($5);
 			}
 			ClassBody OptSemiColon	{
-				ILNode *classBody = ($9).body;
+				ILNode *classBody = ($10).body;
 
 				/* Validate the modifiers */
 				ILUInt32 attrs =
-					CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
+					CSModifiersToTypeAttrs($5, $2, (NestingLevel > 1));
 
 				/* Exit the current nesting level */
 				--NestingLevel;
@@ -2697,14 +2718,14 @@ ClassDeclaration
 				$$ = ILNode_ClassDefn_create
 							($1,					/* OptAttributes */
 							 attrs,					/* OptModifiers */
-							 ILQualIdentName($4, 0),/* Identifier */
+							 ILQualIdentName($5, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
-							 $5,					/* TypeFormals */
-							 $6,					/* ClassBase */
+							 $6,					/* TypeFormals */
+							 $7,					/* ClassBase */
 							 classBody,
-							 ($9).staticCtors);
-				CloneLine($$, $4);
+							 ($10).staticCtors);
+				CloneLine($$, $5);
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -2853,6 +2874,14 @@ ClassMemberDeclaration
 	| ConstructorDeclaration	{ $$ = $1; }
 	| DestructorDeclaration		{ $$.body = $1; $$.staticCtors = 0; }
 	| TypeDeclaration			{ $$.body = $1; $$.staticCtors = 0; }
+	;
+
+OptPartial
+	: /* empty */				{ $$ = 0; }
+	| PARTIAL					{
+				$$ = 1;
+				CCError(_("partial types are not yet supported"));
+			}
 	;
 
 /*
@@ -3517,20 +3546,20 @@ DestructorDeclaration
  */
 
 StructDeclaration
-	: OptAttributes OptModifiers STRUCT Identifier TypeFormals
+	: OptAttributes OptModifiers OptPartial STRUCT Identifier TypeFormals
 			StructInterfaces Constraints {
 				/* Enter a new nesting level */
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($4);
+				ClassNamePush($5);
 			}
 			StructBody OptSemiColon	{
 				ILNode *baseList;
 				ILUInt32 attrs;
 
 				/* Validate the modifiers */
-				attrs = CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
+				attrs = CSModifiersToTypeAttrs($5, $2, (NestingLevel > 1));
 
 				/* Add extra attributes that structs need */
 				attrs |= IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
@@ -3542,9 +3571,9 @@ StructDeclaration
 
 				/* Make sure that we have "ValueType" in the base list */
 				baseList = MakeSystemType("ValueType");
-				if($6 != 0)
+				if($7 != 0)
 				{
-					baseList = ILNode_ArgList_create($6, baseList);
+					baseList = ILNode_ArgList_create($7, baseList);
 				}
 
 				/* Create the class definition */
@@ -3552,14 +3581,14 @@ StructDeclaration
 				$$ = ILNode_ClassDefn_create
 							($1,					/* OptAttributes */
 							 attrs,					/* OptModifiers */
-							 ILQualIdentName($4, 0),/* Identifier */
+							 ILQualIdentName($5, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
-							 $5,					/* TypeFormals */
+							 $6,					/* TypeFormals */
 							 baseList,				/* ClassBase */
-							 ($9).body,				/* StructBody */
-							 ($9).staticCtors);		/* StaticCtors */
-				CloneLine($$, $4);
+							 ($10).body,				/* StructBody */
+							 ($10).staticCtors);		/* StaticCtors */
+				CloneLine($$, $5);
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -3591,18 +3620,18 @@ StructBody
  */
 
 InterfaceDeclaration
-	: OptAttributes OptModifiers INTERFACE Identifier TypeFormals
+	: OptAttributes OptModifiers OptPartial INTERFACE Identifier TypeFormals
 			InterfaceBase Constraints {
 				/* Increase the nesting level */
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($4);
+				ClassNamePush($5);
 			}
 			InterfaceBody OptSemiColon	{
 				/* Validate the modifiers */
 				ILUInt32 attrs =
-					CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
+					CSModifiersToTypeAttrs($5, $2, (NestingLevel > 1));
 
 				/* Add extra attributes that interfaces need */
 				attrs |= IL_META_TYPEDEF_INTERFACE |
@@ -3616,14 +3645,14 @@ InterfaceDeclaration
 				$$ = ILNode_ClassDefn_create
 							($1,					/* OptAttributes */
 							 attrs,					/* OptModifiers */
-							 ILQualIdentName($4, 0),/* Identifier */
+							 ILQualIdentName($5, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
-							 $5,					/* TypeFormals */
-							 $6,					/* ClassBase */
-							 $9,					/* InterfaceBody */
+							 $6,					/* TypeFormals */
+							 $7,					/* ClassBase */
+							 $10,					/* InterfaceBody */
 							 0);					/* StaticCtors */
-				CloneLine($$, $4);
+				CloneLine($$, $5);
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -3940,5 +3969,20 @@ DelegateDeclaration
 
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
+			}
+	;
+
+/*
+ * Anonymous method declarations.
+ */
+
+AnonymousMethod
+	: Block			{
+				$$ = ILNode_Null_create();
+				CCError(_("anonymous methods are not yet supported"));
+			}
+	| '(' OptFormalParameterList ')' Block	{
+				$$ = ILNode_Null_create();
+				CCError(_("anonymous methods are not yet supported"));
 			}
 	;

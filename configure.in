@@ -67,8 +67,8 @@ AC_CHECK_FUNCS(acos asin atan atan2 ceil cos cosh exp floor remainder)
 AC_CHECK_FUNCS(log log10 pow rint sin sinh sqrt tan tanh)
 AC_FUNC_ALLOCA
 
-dnl Configure libffi
-AC_CONFIG_SUBDIRS(libffi)
+dnl Configure libffi and libgc
+AC_CONFIG_SUBDIRS(libffi libgc)
 
 AC_OUTPUT([
 Makefile

@@ -940,7 +940,7 @@ public class XmlTextWriter : XmlWriter
 					 (standalone ? "yes" : "no"));
 			#else
 				writer.WriteLine
-					("<?xml version=\"1.0\" "standalone=\"{0}\"?>",
+					("<?xml version=\"1.0\" standalone=\"{0}\"?>",
 					 (standalone ? "yes" : "no"));
 			#endif
 				writeState = System.Xml.WriteState.Prolog;

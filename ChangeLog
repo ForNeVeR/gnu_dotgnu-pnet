@@ -36,6 +36,10 @@
 
 	* configure.in: look in ${prefix}/bin for important binaries.
 
+	* System.Xml/XmlTextWriter.cs, samples/codepage.cs,
+	runtime/System/Runtime/InteropServices/Marshal.cs: resolve some
+	issues with compiling in ECMA-compatible modes.
+
 2002-12-07  Nguyen, Thong  <tum@veridicus.com>
 
 	* runtime/System/Threading/WaitHandle.cs: Added WaitTimeout const.

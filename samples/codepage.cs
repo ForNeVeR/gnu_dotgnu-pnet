@@ -24,6 +24,7 @@ using System.Text;
 
 class CodePage
 {
+#if !ECMA_COMPAT
 	// Print information about an encoding.
 	private static void PrintEncoding(Encoding enc, bool verbose, bool isdef)
 	{
@@ -342,4 +343,10 @@ class CodePage
 			PrintAll(false);
 		}
 	}
+#else
+	public static void Main(String[] args)
+	{
+		Console.WriteLine("codepage.exe doesn't work in ECMA-compatible modes");
+	}
+#endif
 }

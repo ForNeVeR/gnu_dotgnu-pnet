@@ -66,7 +66,7 @@ void _IL_Monitor_Enter(ILExecThread *thread, ILObject *obj)
 /*
  *	Spins until the object is unmarked and the current thread can mark it.
  */
-static void _IL_ObjectLockword_WaitAndMark(ILExecThread *thread, ILObject *obj)
+static void _IL_ObjectLockword_WaitAndMark(ILExecThread *thread, volatile ILObject *obj)
 {
 	ILLockWord lockword;
 
@@ -85,7 +85,7 @@ static void _IL_ObjectLockword_WaitAndMark(ILExecThread *thread, ILObject *obj)
 /*
  *	Unmarks an object's lockword.
  */
-static void _IL_ObjectLockword_Unmark(ILExecThread *thread, ILObject *obj)
+static void _IL_ObjectLockword_Unmark(ILExecThread *thread, volatile ILObject *obj)
 {
 	ILLockWord lockword;
 
@@ -98,7 +98,7 @@ static void _IL_ObjectLockword_Unmark(ILExecThread *thread, ILObject *obj)
  *	Checks if the monitor is longer being used and returns it to the free list and
  * zeros 
  */
-static int _IL_Monitor_CheckAndReturnMonitorToFreeList(ILExecThread *thread, ILExecMonitor *monitor, ILObject *obj)
+static int _IL_Monitor_CheckAndReturnMonitorToFreeList(ILExecThread *thread, ILExecMonitor *monitor, volatile ILObject *obj)
 {	
 	if (monitor->waiters == 0 && ILWaitMonitorCanClose(monitor->supportMonitor))
 	{
@@ -120,11 +120,14 @@ static int _IL_Monitor_CheckAndReturnMonitorToFreeList(ILExecThread *thread, ILE
  * public static bool InternalTryEnter(Object obj, int timeout);
  */
 ILBool _IL_Monitor_InternalTryEnter(ILExecThread *thread,
-					   	    		ILObject *obj, ILInt32 timeout)
+		  	    		ILObject *objnv, ILInt32 timeout)
 {
 	int result;
 	ILLockWord lockword;
 	ILExecMonitor *monitor, *next;
+	volatile ILObject *obj;
+
+	obj = objnv;
 	
 	/* Make sure the object isn't null */
 	if (obj == 0)
@@ -213,11 +216,13 @@ retry:
 	/* Speculatively increment the number of waiters */
 	_IL_Interlocked_Increment_Ri(thread, (ILInt32 *)&monitor->waiters);
 
-	/* Now double check and see if another thread is trying to exit the 
+	/* Now double check and see if another thread is trying to exit
 	       now that monitor->waiters has been incremented monitor */
 	lockword = GetObjectLockWord(thread, obj);
 	
-	if (IL_LW_MARKED(lockword))
+	if (IL_LW_MARKED(lockword)
+		/* This doubles as a check for lockword == 0 */
+		|| IL_LW_UNMARK(lockword) != monitor)
 	{
 		/* Mark the object's lockword */
 		_IL_ObjectLockword_WaitAndMark(thread, obj);
@@ -265,10 +270,13 @@ retry:
 /*
  * public static void Exit(Object obj);
  */
-void _IL_Monitor_Exit(ILExecThread *thread, ILObject *obj)
+void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 {
 	ILLockWord lockword;
 	ILExecMonitor *monitor;
+	volatile ILObject *obj;
+
+	obj = objnv;
 	
 	/* Make sure obj isn't null */
 	if(obj == 0)
@@ -336,11 +344,14 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *obj)
  * public static bool InternalWait(Object obj, int timeout);
  */
 ILBool _IL_Monitor_InternalWait(ILExecThread *thread,
-							    ILObject *obj, ILInt32 timeout)
+				    ILObject *objnv, ILInt32 timeout)
 {
 	int result;
 	ILLockWord lockword;
 	ILExecMonitor *monitor;
+	volatile ILObject *obj;
+
+	obj = objnv;
 
 	/* Make sure obj isn't null */
 	if (obj == 0)
@@ -384,7 +395,9 @@ retry:
 	
 	lockword = GetObjectLockWord(thread, obj);
 
-	if (IL_LW_MARKED(lockword))
+	if (IL_LW_MARKED(lockword)
+		/* This doubles as a check for lockword == 0 */
+		|| IL_LW_UNMARK(lockword) != monitor)
 	{
 		/* 
 		 * Problem:

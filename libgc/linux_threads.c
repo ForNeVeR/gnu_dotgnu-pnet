@@ -1701,13 +1701,16 @@ WRAP_FUNC(pthread_create)(pthread_t *new_thread,
     /* This also ensures that we hold onto si until the child is done	*/
     /* with it.  Thus it doesn't matter whether it is otherwise		*/
     /* visible to the collector.					*/
+    if (result == 0) {
         while (0 != sem_wait(&(si -> registered))) {
 	    if (EINTR != errno) ABORT("sem_wait failed");
 	}
-        sem_destroy(&(si -> registered));
-	LOCK();
-	GC_INTERNAL_FREE(si);
-	UNLOCK();
+    }
+ 
+    sem_destroy(&(si -> registered));
+    LOCK();
+    GC_INTERNAL_FREE(si);
+    UNLOCK();
 
     return(result);
 }

@@ -1,3 +1,10 @@
+2003-07-06  Thong Nguyhen <tum@veridicus.com>
+
+	* engine/lib_thread.c: Fixed monitor locking mismatch bug under
+	Linux.
+	
+	* libgc/linux_threads.c: Fixed bug where pthread_create blocks
+	instead of returning when thread creation fails.
 
 2003-07-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 

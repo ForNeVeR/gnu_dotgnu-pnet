@@ -53,13 +53,8 @@ typedef unsigned int        uint_fast16_t;
 typedef unsigned int        uint_fast32_t;
 typedef unsigned long long  uint_fast64_t;
 
-#if __WORDSIZE == 64
-typedef long long           intptr_t;
-typedef unsigned long long  uintptr_t;
-#else
-typedef int                 intptr_t;
-typedef unsigned int        uintptr_t;
-#endif
+typedef long 				intptr_t;
+typedef unsigned long 		uintptr_t;
 
 typedef long long           intmax_t;
 typedef unsigned long long  uintmax_t;
@@ -105,27 +100,16 @@ typedef unsigned long long  uintmax_t;
 #define UINT_FAST32_MAX     (4294967295U)
 #define UINT_FAST64_MAX     (18446744073709551615ULL)
 
-#if __WORDSIZE == 64
-#define INTPTR_MIN          (-9223372036854775807LL-1)
-#define INTPTR_MAX          (9223372036854775807LL)
-#define UINTPTR_MAX         (18446744073709551615ULL)
-#else
-#define INTPTR_MIN          (-2147483647-1)
-#define INTPTR_MAX          (2147483647)
-#define UINTPTR_MAX         (4294967295U)
-#endif
+#define	INTPTR_MAX			((long)((~((unsigned long)0)) >> 1))
+#define	INTPTR_MIN			(-INTPTR_MAX - (long)1)
+#define	UINTPTR_MAX			(~((unsigned long)0))
 
 #define INTMAX_MIN          (-9223372036854775807LL-1)
 #define INTMAX_MAX          (9223372036854775807LL)
 #define UINTMAX_MAX         (18446744073709551615ULL)
 
-#if __WORDSIZE == 64
-#define PTRDIFF_MIN         (-9223372036854775807LL-1)
-#define PTRDIFF_MAX         (9223372036854775807LL)
-#else
-#define PTRDIFF_MIN         (-2147483647-1)
-#define PTRDIFF_MAX         (2147483647)
-#endif
+#define PTRDIFF_MIN         INTPTR_MIN
+#define PTRDIFF_MAX         INTPTR_MAX
 
 #define SIG_ATOMIC_MIN      (-2147483647-1)
 #define SIG_ATOMIC_MAX      (2147483647)

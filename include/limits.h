@@ -84,19 +84,11 @@
 #  define UINT_MAX	4294967295U
 
 /* Minimum and maximum values a `signed long int' can hold.  */
-#  if __WORDSIZE == 64
-#   define LONG_MAX	9223372036854775807L
-#  else
-#   define LONG_MAX	2147483647L
-#  endif
-#  define LONG_MIN	(-LONG_MAX - 1L)
+#  define LONG_MAX	((long)((~((unsigned long)0)) >> 1))
+#  define LONG_MIN	(-LONG_MAX - (long)1)
 
 /* Maximum value an `unsigned long int' can hold.  (Minimum is 0.)  */
-#  if __WORDSIZE == 64
-#   define ULONG_MAX	18446744073709551615UL
-#  else
-#   define ULONG_MAX	4294967295UL
-#  endif
+#  define ULONG_MAX	(~((unsigned long)0))
 
 #  ifdef __USE_ISOC99
 

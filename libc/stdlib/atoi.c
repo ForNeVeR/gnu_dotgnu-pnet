@@ -263,11 +263,10 @@ weak_alias (atoll, atoq)
 long
 strtol (const char *nptr, char **endptr, int base)
 {
-#if __WORDSIZE == 64
-  return (long)strtoll_internal (nptr, endptr, base, 0);
-#else
-  return (long)strtoll_internal (nptr, endptr, base, 1);
-#endif
+  if (sizeof(long) == 8)
+    return (long)strtoll_internal (nptr, endptr, base, 0);
+  else
+    return (long)strtoll_internal (nptr, endptr, base, 1);
 }
 
 long long
@@ -280,11 +279,10 @@ weak_alias (strtoll, strtoq)
 unsigned long
 strtoul (const char *nptr, char **endptr, int base)
 {
-#if __WORDSIZE == 64
-  return (unsigned long)strtoull_internal (nptr, endptr, base, 0);
-#else
-  return (unsigned long)strtoull_internal (nptr, endptr, base, 1);
-#endif
+  if (sizeof(long) == 8)
+    return (unsigned long)strtoull_internal (nptr, endptr, base, 0);
+  else
+    return (unsigned long)strtoull_internal (nptr, endptr, base, 1);
 }
 
 unsigned long long

@@ -1,4 +1,11 @@
 
+2004-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/inttypes.h, include/limits.h, include/stdint.h,
+	include/bits/wordsize.h, include/bits/xopen_lim.h,
+	libc/stdlib/atoi.c: fix references to word sizes, particularly
+	__WORDSIZE, so that they are dynamic.
+
 2004-03-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* */Makefile.am: remove the "no-dependencies" flag because

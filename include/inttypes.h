@@ -141,21 +141,12 @@ extern uintmax_t wcstoumax(const wchar_t * __restrict __nptr,
 #define	PRIXFAST32      "X"
 #define	PRIXFAST64      "llX"
 
-#if __WORDSIZE == 64
 #define PRIdPTR         "ld"
 #define PRIiPTR         "li"
 #define PRIoPTR         "lo"
 #define PRIuPTR         "lu"
 #define PRIxPTR         "lx"
 #define PRIXPTR         "lX"
-#else
-#define PRIdPTR         "d"
-#define PRIiPTR         "i"
-#define PRIoPTR         "o"
-#define PRIuPTR         "u"
-#define PRIxPTR         "x"
-#define PRIXPTR         "X"
-#endif
 
 __END_DECLS
 

@@ -9,6 +9,9 @@
 	interfaces nor have static fields are properly identified as
 	managed or unmanaged.  
 
+	* engine/method_cache.c: work around compilers that don't allow
+	arithmetic on void * pointers.
+
 2003-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in: add "mingw" to the set of detected platforms

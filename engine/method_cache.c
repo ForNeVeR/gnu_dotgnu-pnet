@@ -143,7 +143,7 @@ static void AllocCachePage(ILCache *cache)
 
 	/* Set up the working region within the new page */
 	cache->freeStart = ptr;
-	cache->freeEnd = ptr + (int)(cache->pageSize);
+	cache->freeEnd = (void *)(((char *)ptr) + (int)(cache->pageSize));
 }
 
 /*

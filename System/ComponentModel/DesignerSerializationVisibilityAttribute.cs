@@ -1,9 +1,8 @@
 /*
- * DesignerSerializationVisibilityAttribute.cs - Implementation of 
- *	"System.ComponentModel.DesignerSerializationVisibilityAttribute" 
+ * DesignerSerializationVisibilityAttribute.cs - Implementation of the
+ *	"System.ComponentModel.DesignerSerializationVisibilityAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,71 +19,75 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
-	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
-	public sealed class DesignerSerializationVisibilityAttribute: Attribute
-	{
-		private DesignerSerializationVisibility vis;
 
-		public DesignerSerializationVisibilityAttribute(
-							DesignerSerializationVisibility vis)
-		{
-			this.vis = vis;
-		}
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
+public sealed class DesignerSerializationVisibilityAttribute : Attribute
+{
+	// Internal state.
+	private DesignerSerializationVisibility vis;
 
-		public static readonly DesignerSerializationVisibilityAttribute 
-			Content = new DesignerSerializationVisibilityAttribute(
-								DesignerSerializationVisibility.Content);
+	// Pre-defined values.
+	public static readonly DesignerSerializationVisibilityAttribute Content =
+			new DesignerSerializationVisibilityAttribute
+				(DesignerSerializationVisibility.Content);
+	public static readonly DesignerSerializationVisibilityAttribute Hidden =
+			new DesignerSerializationVisibilityAttribute
+				(DesignerSerializationVisibility.Hidden);
+	public static readonly DesignerSerializationVisibilityAttribute Visible =
+			new DesignerSerializationVisibilityAttribute
+				(DesignerSerializationVisibility.Visible);
+	public static readonly DesignerSerializationVisibilityAttribute Default =
+			Visible;
 
-		public static readonly DesignerSerializationVisibilityAttribute 
-			Hidden = new DesignerSerializationVisibilityAttribute(
-								DesignerSerializationVisibility.Hidden);
-
-		public static readonly DesignerSerializationVisibilityAttribute 
-			Visible = new DesignerSerializationVisibilityAttribute(
-								DesignerSerializationVisibility.Visible);
-
-		public static readonly DesignerSerializationVisibilityAttribute 
-			Default = Visible;
- 
-		public DesignerSerializationVisibility Visibility 
-		{
-			get
+	// Constructor.
+	public DesignerSerializationVisibilityAttribute
+				(DesignerSerializationVisibility vis)
 			{
-				return vis;
+				this.vis = vis;
 			}
-		}
 
-		public override bool Equals(object obj)
- 		{
-			DesignerSerializationVisibilityAttribute temp;
-
-			temp = (obj as DesignerSerializationVisibilityAttribute);
-
-			if (temp != null)
+	// Get this attribute's value.
+	public DesignerSerializationVisibility Visibility 
 			{
-				return (temp.Visibility == this.vis);
+				get
+				{
+					return vis;
+				}
 			}
-			else
+
+	// Determine if two objects are equal.
+	public override bool Equals(object obj)
+ 			{
+				DesignerSerializationVisibilityAttribute other;
+				other = (obj as DesignerSerializationVisibilityAttribute);
+				if(other != null)
+				{
+					return (other.vis == vis);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get a hash code for this object.
+	public override int GetHashCode()
 			{
-				return false;
+				return vis.GetHashCode();
 			}
-		}
 
-		public override int GetHashCode()
-		{
-			return vis.GetHashCode();
-		}
+	// Determine if this attribute corresponds to the default value.
+	public override bool IsDefaultAttribute()
+			{
+				return (vis == DesignerSerializationVisibility.Visible);
+			}
 
-		public override bool IsDefaultAttribute()
-		{
-			return Equals(Default);
-		}
+}; // class DesignerSerializationVisibilityAttribute
 
-	}
-#endif	
-}//namespace
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

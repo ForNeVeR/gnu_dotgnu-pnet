@@ -1,9 +1,8 @@
 /*
- * ICustomTypeDescriptor.cs - Implementation of 
- *					"System.ComponentModel.ICustomTypeDescriptor" 
+ * ICustomTypeDescriptor.cs - Implementation of the
+ *			"System.ComponentModel.ICustomTypeDescriptor" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,37 +19,47 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
-	public interface ICustomTypeDescriptor
-	{
-		AttributeCollection GetAttributes();
 
-		String GetClassName();
+public interface ICustomTypeDescriptor
+{
+	// Return the attribute collection for this object.
+	AttributeCollection GetAttributes();
 
-		String GetComponentName();
+	// Get the class name for this object.
+	String GetClassName();
 
-		TypeConverter GetConverter();
+	// Get the component name for this object.
+	String GetComponentName();
 
-		EventDescriptor GetDefaultEvent();
+	// Get the type converter associated with this object.
+	TypeConverter GetConverter();
 
-		PropertyDescriptor GetDefaultProperty();
+	// Get the default event for this object.
+	EventDescriptor GetDefaultEvent();
 
-		Object GetEditor(System.Type editorBaseType);
+	// Get the default property for this object.
+	PropertyDescriptor GetDefaultProperty();
 
-		EventDescriptorCollection GetEvents();
-		
-		EventDescriptorCollection GetEvents(Attribute[] arr);
+	// Get an editor of the specified type for this object.
+	Object GetEditor(System.Type editorBaseType);
 
-		PropertyDescriptorCollection GetProperties();
-		
-		PropertyDescriptorCollection GetProperties(Attribute[] arr);
+	// Get the events for this object.
+	EventDescriptorCollection GetEvents();
+	EventDescriptorCollection GetEvents(Attribute[] arr);
 
-		Object GetPropertyOwner(PropertyDescriptor pd);
+	// Get the properties for this object.
+	PropertyDescriptorCollection GetProperties();
+	PropertyDescriptorCollection GetProperties(Attribute[] arr);
 
-	}
-#endif	
-}//namespace
+	// Get the object that owns a particular property.
+	Object GetPropertyOwner(PropertyDescriptor pd);
+
+}; // interface ICustomTypeDescriptor
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

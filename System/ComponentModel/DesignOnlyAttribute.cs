@@ -1,9 +1,8 @@
 /*
- * DesignOnlyAttribute.cs - Implementation of 
- * 			"System.ComponentModel.DesignOnlyAttribute" 
+ * DesignOnlyAttribute.cs - Implementation of the
+ *			"System.ComponentModel.DesignOnlyAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,60 +19,67 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
  
-using System;
-
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
-	[AttributeUsage(AttributeTargets.All)]
-	public sealed class DesignOnlyAttribute: Attribute
-	{
-		private bool designOnly;
-	
-		public DesignOnlyAttribute(bool designOnly)
-		{
-			this.designOnly = designOnly;
-		}
 
-		public static readonly DesignOnlyAttribute No = 
-								new DesignOnlyAttribute(false);
+[AttributeUsage(AttributeTargets.All)]
+public sealed class DesignOnlyAttribute : Attribute
+{
+	// Internal state.
+	private bool designOnly;
 
-		public static readonly DesignOnlyAttribute Yes =
-								new DesignOnlyAttribute(true);
+	// Pre-defined values.
+	public static readonly DesignOnlyAttribute No =
+			new DesignOnlyAttribute(false);
+	public static readonly DesignOnlyAttribute Yes =
+			new DesignOnlyAttribute(true);
+	public static readonly DesignOnlyAttribute Default = No;
 
-		public static readonly DesignOnlyAttribute Default = No;
-	
-		public bool IsDesignOnly 
-		{
-			get
+	// Constructor.
+	public DesignOnlyAttribute(bool designOnly)
 			{
-				return designOnly;
+				this.designOnly = designOnly;
 			}
-		}
 
-		public override bool Equals(object obj)
-		{
-	  		DesignOnlyAttribute temp = obj as DesignOnlyAttribute;
-
-			if (temp != null)
-	  		{
-				return (temp.IsDesignOnly == this.designOnly);
+	// Get this object's value.
+	public bool IsDesignOnly 
+			{
+				get
+				{
+					return designOnly;
+				}
 			}
-			else 
-	  		{
-				return false;
-	  		}
-		}
 
-		public override int GetHashCode()
-		{
-			return designOnly.GetHashCode();
-		}
+	// Determine if two objects are equal.
+	public override bool Equals(Object obj)
+			{
+  				DesignOnlyAttribute other = (obj as DesignOnlyAttribute);
+				if(other != null)
+  				{
+					return (other.designOnly == designOnly);
+				}
+				else 
+  				{
+					return false;
+  				}
+			}
 
-		public override bool IsDefaultAttribute()
-		{
-			return Equals(Default);
-		}
-	}
-#endif
-}//namespace
+	// Get the hash code for this object.
+	public override int GetHashCode()
+			{
+				return designOnly.GetHashCode();
+			}
+
+	// Determine if this attribute has the default value.
+	public override bool IsDefaultAttribute()
+			{
+				return !designOnly;
+			}
+
+}; // class DesignOnlyAttribute
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

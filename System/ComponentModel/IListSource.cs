@@ -1,8 +1,8 @@
 /*
- * IListSource.cs - Implementation of "System.ComponentModel.IListSource" 
+ * IListSource.cs - Implementation of the
+ *			"System.ComponentModel.IListSource" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,18 +19,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-using System.Collections;
-
 namespace System.ComponentModel
 {
-#if CONFIG_COMPONENT_MODEL
-	public interface IListSource
-	{
-		IList GetList();
-		
-		bool ContainsListCollection { get; }
 
-	}
-#endif	
-}//namespace
+#if CONFIG_COMPONENT_MODEL
+
+using System.Collections;
+
+public interface IListSource
+{
+	// Determine if this collection contains lists of its own.
+	bool ContainsListCollection { get; }
+
+	// Return a list that can be bound to a data source for this object.
+	IList GetList();
+	
+}; // interface IListSource
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

@@ -1,12 +1,9 @@
 /*
- * CancelEventArgs.cs - Implementation of 
- *						"System.ComponentModel.CancelEventArgs" class
+ * CancelEventArgs.cs - Implementation of the
+ *			"System.ComponentModel.CancelEventArgs" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation, Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  * 
- * Contributed by Gopal.V
- *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -22,42 +19,41 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
 
-// Replaces the missing "CancelEventArgs" class when no component model.
-
 #if !CONFIG_COMPONENT_MODEL
 
-	public class CancelEventArgs: EventArgs
-	{
-	
-		private bool cancel;
-	
-		public CancelEventArgs()
-		{
-			cancel = false;
-		}
+public class CancelEventArgs : EventArgs
+{
+	// Internal state.
+	private bool cancel;
 
-		public CancelEventArgs(bool cancel)
-		{
-			this.cancel = cancel;
-		}
-		
-		public bool Cancel 
-		{
-			get
+	// Constructors.
+	public CancelEventArgs()
 			{
-				return cancel;
+				cancel = false;
 			}
-			set
+	public CancelEventArgs(bool cancel)
 			{
-				cancel = value;
+				this.cancel = cancel;
 			}
-		}
+	
+	// Get or set the cancel state.
+	public bool Cancel 
+			{
+				get
+				{
+					return cancel;
+				}
+				set
+				{
+					cancel = value;
+				}
+			}
 
-	}
-#endif
-}//namespace
+}; // class CancelEventArgs
+
+#endif // !CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

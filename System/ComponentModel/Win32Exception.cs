@@ -1,8 +1,8 @@
 /*
- * Win32Exception.cs - Implementation of "System.ComponentModel.Win32Exception" 
+ * Win32Exception.cs - Implementation of the
+ *			"System.ComponentModel.Win32Exception" class.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,69 +19,77 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
+namespace System.ComponentModel
+{
+
+#if !ECMA_COMPAT
+
 using System.Security;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
-namespace System.ComponentModel
+[Serializable]
+[SuppressUnmanagedCodeSecurity]
+public class Win32Exception : ExternalException
 {
-#if !ECMA_COMPAT
-	[Serializable]
-	[SuppressUnmanagedCodeSecurity]
-	public class Win32Exception: ExternalException
-	{
-		private int nativeErrorCode;
+	// Internal state.
+	private int error;
 
-		public Win32Exception() : base()
-		{
-			HResult = unchecked((int)0x80004005);
-		}
-		public Win32Exception(int error) : base()
-		{
-			nativeErrorCode = error;
-			HResult = unchecked((int)0x80004005);
-		}
-		public Win32Exception(int error, String message) : base(message)
-		{
-			nativeErrorCode = error;
-			HResult = unchecked((int)0x80004005);
-		}
-		internal Win32Exception(String message) : base (message)
-		{
-			HResult = unchecked((int)0x80004005);
-		}
-		internal Win32Exception(String message,Exception inner) 
-			: base (message,inner)
-		{
-			HResult = unchecked((int)0x80004005);
-		}
-#if CONFIG_SERIALIZATION
-		protected Win32Exception(SerializationInfo info,
-								 StreamingContext context)
-			: base(info, context)
-		{
-			nativeErrorCode = info.GetInt32("NativeErrorCode");
-		}
-#endif
-
-		public int NativeErrorCode 
-		{
-			get
+	// Constructors.
+	public Win32Exception() : base()
 			{
-				return nativeErrorCode;
+				HResult = unchecked((int)0x80004005);
 			}
-		}
-
+	public Win32Exception(int error) : base()
+			{
+				this.error = error;
+				HResult = unchecked((int)0x80004005);
+			}
+	public Win32Exception(int error, String message) : base(message)
+			{
+				this.error = error;
+				HResult = unchecked((int)0x80004005);
+			}
+	internal Win32Exception(String message) : base(message)
+			{
+				HResult = unchecked((int)0x80004005);
+			}
+	internal Win32Exception(String message, Exception inner) 
+			: base(message,inner)
+			{
+				HResult = unchecked((int)0x80004005);
+			}
 #if CONFIG_SERIALIZATION
-		public override void GetObjectData(SerializationInfo info,
-										   StreamingContext context)
-		{
-			base.GetObjectData(info, context);
-			info.AddValue("NativeErrorCode", nativeErrorCode);
-		}
+	protected Win32Exception(SerializationInfo info, StreamingContext context)
+			: base(info, context)
+			{
+				error = info.GetInt32("NativeErrorCode");
+			}
 #endif
 
-	}
-#endif	
-}//namespace
+	// Get the native error code corresponding to this exception.
+	public int NativeErrorCode 
+			{
+				get
+				{
+					return error;
+				}
+			}
+
+#if CONFIG_SERIALIZATION
+
+	// Get serialization data for this object.
+	public override void GetObjectData
+				(SerializationInfo info, StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("NativeErrorCode", error);
+			}
+
+#endif
+
+}; // class Win32Exception
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel

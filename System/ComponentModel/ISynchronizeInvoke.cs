@@ -1,9 +1,8 @@
 /*
- * ISynchronizeInvoke.cs - Implementation of 
- *							"System.ComponentModel.ISynchronizeInvoke" 
+ * ISynchronizeInvoke.cs - Implementation of the
+ *			"System.ComponentModel.ISynchronizeInvoke" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,22 +19,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
-	public interface ISynchronizeInvoke
-	{
-		
-		IAsyncResult BeginInvoke(Delegate method, Object[] args);
-	
-		Object EndInvoke(IAsyncResult result);
-	
-		Object Invoke(Delegate method, Object[] args);
 
-		bool InvokeRequired { get; }
+public interface ISynchronizeInvoke
+{
+	// Determine if a caller should use "Invoke" on this object.
+	bool InvokeRequired { get; }
 
-	}
-#endif	
-}//namespace
+	// Invoke a delegate on the thread that this object belongs to.
+	IAsyncResult BeginInvoke(Delegate method, Object[] args);
+
+	// End a previous invocation and return the results.
+	Object EndInvoke(IAsyncResult result);
+
+	// Invoke a delegate on the thread that this object belongs to
+	// and wait for the method to complete.
+	Object Invoke(Delegate method, Object[] args);
+
+}; // interface ISynchronizeInvoke
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

@@ -1,9 +1,8 @@
 /*
- * CancelEventHandler.cs - Implementation of 
- *						"System.ComponentModel.CancelEventHandler" class
+ * CancelEventHandler.cs - Implementation of the
+ *			"System.ComponentModel.CancelEventHandler" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation, Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +19,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if !CONFIG_COMPONENT_MODEL
 
-#if !ECMA_COMPAT
-[Serializable]
-#endif
 public delegate void CancelEventHandler(Object sender, CancelEventArgs e);
 
-#endif
-}//namespace
+#endif // !CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

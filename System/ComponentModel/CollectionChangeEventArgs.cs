@@ -1,10 +1,8 @@
 /*
- * CollectionChangeEventArgs.cs - Implementation of 
- *					"System.ComponentModel.CollectionChangeEventArgs" class
+ * CollectionChangeEventArgs.cs - Implementation of the
+ *			"System.ComponentModel.CollectionChangeEventArgs" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation, Inc.
- * 
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,40 +19,43 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-
-using System;
-
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
-	public class CollectionChangeEventArgs: EventArgs
-	{
-		private CollectionChangeAction action;
-		private Object element;
-	
-		public CollectionChangeEventArgs(CollectionChangeAction action, 
-						Object element)
-		{
-			this.action = action;
-			this.element = element;
-		}
 
-		public virtual CollectionChangeAction Action 
-		{
-			get
+public class CollectionChangeEventArgs : EventArgs
+{
+	// Internal state.
+	private CollectionChangeAction action;
+	private Object element;
+
+	// Constructor.
+	public CollectionChangeEventArgs
+				(CollectionChangeAction action, Object element)
 			{
-				return action;
+				this.action = action;
+				this.element = element;
 			}
-		}
 
-		public virtual Object Element 
-		{
-			get
+	// Get this object's properties.
+	public virtual CollectionChangeAction Action 
 			{
-				return element;
+				get
+				{
+					return action;
+				}
 			}
-		}
+	public virtual Object Element 
+			{
+				get
+				{
+					return element;
+				}
+			}
 
-	}
-#endif
-}//namespace
+}; // class CollectionChangeEventArgs
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

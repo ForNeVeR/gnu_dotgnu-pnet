@@ -1,9 +1,8 @@
 /*
- * ISupportInitialize.cs - Implementation of 
- *							"System.ComponentModel.ISupportInitialize" 
+ * ISupportInitialize.cs - Implementation of the
+ *			"System.ComponentModel.ISupportInitialize" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +19,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
  
-using System;
-
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
-	public interface ISupportInitialize
-	{
-		void BeginInit();
-		void EndInit();
-	}
-#endif	
-}//namespace
+
+public interface ISupportInitialize
+{
+	// Signal the object that initialization is starting.
+	void BeginInit();
+
+	// Signal the object that initialization is ending.
+	void EndInit();
+
+}; // interface ISupportInitialize
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

@@ -1,9 +1,8 @@
 /*
- * PropertyChangedEventArgs.cs - Implementation of 
- *						"System.ComponentModel.PropertyChangedEventArgs" 
+ * PropertyChangedEventArgs.cs - Implementation of the
+ *			"System.ComponentModel.PropertyChangedEventArgs" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,28 +19,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
-	public class PropertyChangedEventArgs: EventArgs
-	{
-		private string name;
-	
-		public PropertyChangedEventArgs(String name)
-		{
-			this.name = name;
-		}
 
-		public virtual String PropertyName 
-		{
-			get
+public class PropertyChangedEventArgs : EventArgs
+{
+	// Internal state.
+	private String name;
+
+	// Constructor.
+	public PropertyChangedEventArgs(String name)
 			{
-				return name;
+				this.name = name;
 			}
-		}
 
-	}
-#endif	
-}//namespace
+	// Get this object's value.
+	public virtual String PropertyName 
+			{
+				get
+				{
+					return name;
+				}
+			}
+
+}; // class PropertyChangedEventArgs
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

@@ -1,9 +1,8 @@
 /*
- * DesignTimeVisibleAttribute.cs - Implementation of 
- *				"System.ComponentModel.DesignTimeVisibleAttribute" 
+ * DesignTimeVisibleAttribute.cs - Implementation of the
+ *			"System.ComponentModel.DesignTimeVisibleAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,70 +19,72 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
 
 #if CONFIG_COMPONENT_MODEL
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-	public sealed class DesignTimeVisibleAttribute: Attribute
-	{
-		
-		private bool visible;
 
-		public DesignTimeVisibleAttribute()
-		{
-			visible = true;
-		}
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
+public sealed class DesignTimeVisibleAttribute : Attribute
+{
+	// Internal state.
+	private bool visible;
 
-		public DesignTimeVisibleAttribute(bool visible)
-		{
-			this.visible = visible;
-		}
+	// Pre-defined values.
+	public static readonly DesignTimeVisibleAttribute No =
+			new DesignTimeVisibleAttribute(false);
+	public static readonly DesignTimeVisibleAttribute Yes =
+			new DesignTimeVisibleAttribute(true);
+	public static readonly DesignTimeVisibleAttribute Default = Yes;
 
-		public override bool Equals(Object value)
-		{
-			DesignTimeVisibleAttribute temp;
-			
-			temp = value as DesignTimeVisibleAttribute;
-
-			if (temp != null)
+	// Constructors.
+	public DesignTimeVisibleAttribute()
 			{
-				return (temp.Visible == this.visible);
+				visible = true;
 			}
-			else
+	public DesignTimeVisibleAttribute(bool visible)
 			{
-				return false;
+				this.visible = visible;
 			}
-		}
 
-		public override int GetHashCode()
-		{
-			return visible.GetHashCode();
-		}
+	// Get this attribute's value.
+	public bool Visible 
+			{
+				get
+				{
+					return visible;
+				}
+			}
 
-		public override bool IsDefaultAttribute()
-		{
-			return Equals(Default);
-		}
+	// Determine if two objects are equal.
+	public override bool Equals(Object value)
+			{
+				DesignTimeVisibleAttribute other;
+				other = (value as DesignTimeVisibleAttribute);
+				if(other != null)
+				{
+					return (other.visible == visible);
+				}
+				else
+				{
+					return false;
+				}
+			}
 
-		public static readonly DesignTimeVisibleAttribute Default = Yes;
+	// Get a hash code for this object.
+	public override int GetHashCode()
+			{
+				return visible.GetHashCode();
+			}
 
-		public static readonly DesignTimeVisibleAttribute No = 
-								new DesignTimeVisibleAttribute(false);
-
-		public static readonly DesignTimeVisibleAttribute Yes =
-								new DesignTimeVisibleAttribute(true);
-
-		public bool Visible 
-		{
-			get
+	// Determine if this attribute has the default value.
+	public override bool IsDefaultAttribute()
 			{
 				return visible;
 			}
-		}
 
-	}
-#endif
-}//namespace
+}; // class DesignTimeVisibleAttribute
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

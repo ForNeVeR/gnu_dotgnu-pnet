@@ -1,9 +1,8 @@
 /*
- * RefreshEventArgs.cs - Implementation of 
- *							"System.ComponentModel.RefreshEventArgs" 
+ * RefreshEventArgs.cs - Implementation of the
+ *			"System.ComponentModel.RefreshEventArgs" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,42 +19,45 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
-	public class RefreshEventArgs: EventArgs
-	{
-		private Object componentChanged;
-		private Type typeChanged;
 
-		public RefreshEventArgs(Object componentChanged)
-		{
-			this.componentChanged = componentChanged;
-		}
+public class RefreshEventArgs : EventArgs
+{
+	// Internal state.
+	private Object componentChanged;
+	private Type typeChanged;
 
-		public RefreshEventArgs(Type typeChanged)
-		{
-			this.typeChanged = typeChanged;
-		}
-
-		public Object ComponentChanged 
-		{
-			get
+	// Constructors.
+	public RefreshEventArgs(Object componentChanged)
 			{
-				return componentChanged;
+				this.componentChanged = componentChanged;
 			}
-		}
-
-		public Type TypeChanged 
-		{
-			get
+	public RefreshEventArgs(Type typeChanged)
 			{
-				return typeChanged;
+				this.typeChanged = typeChanged;
 			}
-		}
 
-	}
-#endif	
-}//namespace
+	// Get this object's properties.
+	public Object ComponentChanged 
+			{
+				get
+				{
+					return componentChanged;
+				}
+			}
+	public Type TypeChanged 
+			{
+				get
+				{
+					return typeChanged;
+				}
+			}
+
+}; // class RefreshEventArgs
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

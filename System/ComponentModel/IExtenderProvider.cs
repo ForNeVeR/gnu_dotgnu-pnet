@@ -1,9 +1,8 @@
 /*
- * IExtenderProvider.cs - Implementation of 
- *							"System.ComponentModel.IExtenderProvider" 
+ * IExtenderProvider.cs - Implementation of the
+ *			"System.ComponentModel.IExtenderProvider" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,14 +19,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
-	public interface IExtenderProvider
-	{
-		bool CanExtend(Object extendee);
-	}
-#endif	
-}//namespace
+
+public interface IExtenderProvider
+{
+	// Determine if this object can extend its properties to "extendee".
+	bool CanExtend(Object extendee);
+
+}; // interface IExtenderProvider
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

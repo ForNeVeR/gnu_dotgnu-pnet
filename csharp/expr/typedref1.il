@@ -52,9 +52,11 @@
 	mkrefany	int32
 	call	instance void 'Test'::'m1'(typedref)
 	ldarg.0
+	ldarg.0
 	ldflda	int32 'Test'::'fld'
 	mkrefany	int32
 	call	instance void 'Test'::'m1'(typedref)
+	ldarg.0
 	ldarg.0
 	ldflda	valuetype 'W' 'Test'::'fld2'
 	mkrefany	'W'

@@ -1149,7 +1149,10 @@ static void GenReturn(ILGenInfo *info)
 	{
 		/* Return from the method using a "ret" instruction */
 		ILGenSimple(info, IL_OP_RET);
-		ILGenAdjust(info, -1);
+		if(info->returnType != ILType_Void)
+		{
+			ILGenAdjust(info, -1);
+		}
 	}
 	else
 	{

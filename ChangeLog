@@ -1,4 +1,24 @@
 
+2002-03-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, resources/en_US/Makefile.am,
+	resources/en_US/System/.cvsignore,
+	resources/en_US/System/Exception.txt,
+	resources/en_US/System/Makefile.am: add build logic for the
+	"System" resource library.
+
+2002-01-31  Stephen Compall  <rushing@sigecom.net>
+
+	* System/UriBuilder.cs: partial implementation of
+	"System.UriBuilder". Some work is definitely still needed, and I
+	hope to get to that soon.
+
+	* System/UriFormatException.cs: added implementation of
+	"System.UriFormatException".
+
+	* resources/en_US/System/Exception.txt: added US string default
+	for System.UriFormatException.
+
 2002-02-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for version "0.1.4" release.

@@ -129,6 +129,7 @@ runtime/System/Makefile
 resources/Makefile
 resources/en_US/Makefile
 resources/en_US/runtime/Makefile
+resources/en_US/System/Makefile
 csunit/Makefile
 tests/Makefile
 tests/System/Makefile

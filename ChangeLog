@@ -4,9 +4,10 @@
 	* System.Xml/Xml.build, System.Xml/XmlNode.cs,
 	System.Xml/XmlTextReader.cs, System.Xml/XmlTextWriter.cs,
 	System.Xml/XmlValidatingReader.cs, resources/en_US/System.Xml/Xml.txt,
-	tests/System.Xml/TestXml.cs: some test cases for XmlTextWriter;
-	build the skeleton for XmlTextReader; implementing XmlValidatingReader
-	as a non-validating wrapper around XmlTextReader.
+	tests/System.Xml/TestXmlTextWriter.cs, tests/System.Xml/TestXml.cs:
+	some test cases for XmlTextWriter; build the skeleton for
+	XmlTextReader; implementing XmlValidatingReader as a non-validating
+	wrapper around XmlTextReader.
 
 2002-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 

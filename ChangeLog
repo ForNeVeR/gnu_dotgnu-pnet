@@ -3,6 +3,8 @@
 
 	* engine/cvmc_gen.h: add a missing semi-colon.
 
+	* engine/cvm_call.c: fix another reference to "_ILPackVarArgs".
+
 2004-10-20  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/cvm_call.c, engine/engine.h, engine/lib_delegate.c: Change 

@@ -46,6 +46,7 @@ namespace System.Windows.Forms
 			Dock = DockStyle.Bottom;
 			showPanels = false;
 			sizingGrip = true;
+			BackColor = SystemColors.Control;
 			panels = new StatusBarPanelCollection(this);
 		}
 

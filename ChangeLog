@@ -1,4 +1,9 @@
 
+2004-11-04  Simon Guindon  <simon@nureality.ca>
+
+	* System.Windows.Forms/StatusBar.cs: Fixed default StatusBar
+	BackColor (applied by ptha).
+
 2004-11-01  <langstefan@gmx.at>
 
 	* System.Windows.Forms/ListBox.cs: Raise SelectedValueChanged before

@@ -10,6 +10,14 @@
 	class/ByteFX.Data/ByteFX.Data.build: Add the managed Mysql provider
 	to the build.
 	
+	* ChangeLog, configure.in, class/Makefile.am, 
+	class/Mono.Data.DB2Client/Makefile.am, 
+	class/Mono.Data.DB2Client/Mono.Data.DB2Client.build, 
+	class/System.Data.OracleClient/Makefile.am, 
+	class/System.Data.OracleClient/System.Data.OracleClient.build: Add 
+	OracleClient and DB2Client to the build.
+
+	
 2003-05-30  Gopal.V  <gopalv82@symonds.net>
 	
 	* configure.in, class/Makefile.am, class/System.Data/Makefile.am,

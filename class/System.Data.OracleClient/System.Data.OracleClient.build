@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<project name="System.Data.OracleClient" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="System.Data.OracleClient.dll"
+				 debug="${debug.flag}"
+				 unsafe="false">
+
+			<sources basedir="${mono.sources}/class/System.Data.OracleClient/">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+			</sources>
+
+			<references>
+				<file name="System.dll"/>
+				<file name="System.Xml.dll"/>
+				<file name="../System.Data/System.Data.dll"/>
+			</references>
+
+		</compile>
+	</target>
+</project>

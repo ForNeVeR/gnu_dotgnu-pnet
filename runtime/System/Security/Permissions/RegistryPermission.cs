@@ -136,17 +136,20 @@ public sealed class RegistryPermission
 					if(readList != null)
 					{
 						element.AddAttribute
-							("Read", String.Join(";", readList));
+							("Read", SecurityElement.Escape
+								(String.Join(";", readList)));
 					}
 					if(writeList != null)
 					{
 						element.AddAttribute
-							("Write", String.Join(";", writeList));
+							("Write", SecurityElement.Escape
+								(String.Join(";", writeList)));
 					}
 					if(createList != null)
 					{
 						element.AddAttribute
-							("Create", String.Join(";", createList));
+							("Create", SecurityElement.Escape
+								(String.Join(";", createList)));
 					}
 				}
 				return element;

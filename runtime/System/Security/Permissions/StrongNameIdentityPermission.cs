@@ -106,7 +106,8 @@ public sealed class StrongNameIdentityPermission : CodeAccessPermission
 				}
 				if(name != null)
 				{
-					element.AddAttribute("Name", name);
+					element.AddAttribute
+						("Name", SecurityElement.Escape(name));
 				}
 				if(version != null)
 				{

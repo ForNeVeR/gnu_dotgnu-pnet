@@ -76,7 +76,8 @@ public sealed class UrlIdentityPermission : CodeAccessPermission
 				element.AddAttribute("version", "1");
 				if(url != null)
 				{
-					element.AddAttribute("Url", url);
+					element.AddAttribute
+						("Url", SecurityElement.Escape(url));
 				}
 				return element;
 			}

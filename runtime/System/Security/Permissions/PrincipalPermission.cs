@@ -61,11 +61,13 @@ public sealed class PrincipalPermission
 					SecurityElement elem = new SecurityElement("identity");
 					if(name != null)
 					{
-						elem.AddAttribute("ID", name);
+						elem.AddAttribute
+							("ID", SecurityElement.Escape(name));
 					}
 					if(role != null)
 					{
-						elem.AddAttribute("Role", role);
+						elem.AddAttribute
+							("Role", SecurityElement.Escape(role));
 					}
 					elem.AddAttribute
 						("Authenticated", isAuthenticated.ToString());

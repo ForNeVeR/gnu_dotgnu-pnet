@@ -364,7 +364,8 @@ public sealed class SocketPermission : CodeAccessPermission
 					{
 						child = new SecurityElement("ENDPOINT");
 						parent.AddChild(child);
-						child.AddAttribute("host", info.hostName);
+						child.AddAttribute
+							("host", SecurityElement.Escape(info.hostName));
 						child.AddAttribute
 							("transport", info.transport.ToString());
 						if(info.portNumber == AllPorts)

@@ -103,7 +103,8 @@ public sealed class SiteIdentityPermission : CodeAccessPermission
 				element.AddAttribute("version", "1");
 				if(sites != null)
 				{
-					element.AddAttribute("Site", Site);
+					element.AddAttribute
+						("Site", SecurityElement.Escape(Site));
 				}
 				return element;
 			}

@@ -161,22 +161,26 @@ public sealed class FileIOPermission
 					if(readList != null)
 					{
 						element.AddAttribute
-							("Read", String.Join(";", readList));
+							("Read", SecurityElement.Escape
+								(String.Join(";", readList)));
 					}
 					if(writeList != null)
 					{
 						element.AddAttribute
-							("Write", String.Join(";", writeList));
+							("Write", SecurityElement.Escape
+								(String.Join(";", writeList)));
 					}
 					if(appendList != null)
 					{
 						element.AddAttribute
-							("Append", String.Join(";", appendList));
+							("Append", SecurityElement.Escape
+								(String.Join(";", appendList)));
 					}
 					if(discoveryList != null)
 					{
 						element.AddAttribute
-							("PathDiscovery", String.Join(";", discoveryList));
+							("PathDiscovery", SecurityElement.Escape
+								(String.Join(";", discoveryList)));
 					}
 				}
 				return element;

@@ -243,12 +243,14 @@ public sealed class EnvironmentPermission
 					if(readList != null)
 					{
 						element.AddAttribute
-							("Read", String.Join(";", readList));
+							("Read", SecurityElement.Escape
+								(String.Join(";", readList)));
 					}
 					if(writeList != null)
 					{
 						element.AddAttribute
-							("Write", String.Join(";", writeList));
+							("Write", SecurityElement.Escape
+								(String.Join(";", writeList)));
 					}
 				}
 				return element;

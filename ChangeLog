@@ -34,6 +34,19 @@
 	* System/Net/DnsPermission.cs: implement the missing functionality
 	in "System.Net.DnsPermission".
 
+	* System/Net/SocketPermission.cs, runtime/System/Security/MiniXml.cs,
+	runtime/System/Security/SecurityElement.cs,
+	runtime/System/Security/Permissions/EnvironmentPermission.cs,
+	runtime/System/Security/Permissions/FileIOPermission.cs,
+	runtime/System/Security/Permissions/PrincipalPermission.cs,
+	runtime/System/Security/Permissions/RegistryPermission.cs,
+	runtime/System/Security/Permissions/SiteIdentityPermission.cs,
+	runtime/System/Security/Permissions/StrongNameIdentityPermission.cs,
+	runtime/System/Security/Permissions/UrlIdentityPermission.cs:
+	implement the mini XML parser for "SecurityElement"; make sure
+	that permission values are properly escaped when adding them
+	to "SecurityElement" objects.
+
 2003-03-31  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs,

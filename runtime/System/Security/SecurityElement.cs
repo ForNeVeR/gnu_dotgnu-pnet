@@ -2,7 +2,7 @@
  * SecurityElement.cs - Implementation of the
  *		"System.Security.SecurityElement" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ namespace System.Security
 {
 
 using System;
+using System.Text;
 using System.Collections;
 
 // Note: ECMA only specifies the "ToString()" method for this
@@ -92,7 +93,7 @@ public sealed class SecurityElement
 	// Escape invalid XML characters in a string.
 	public static String Escape(String str)
 			{
-				String newStr;
+				StringBuilder newStr;
 				int start;
 				int index;
 				char ch;
@@ -111,29 +112,29 @@ public sealed class SecurityElement
 				}
 
 				// Replace the invalid characters and build a new string.
-				newStr = str.Substring(0, index);
+				newStr = new StringBuilder(str.Substring(0, index));
 				for(;;)
 				{
 					ch = str[index++];
 					if(ch == '<')
 					{
-						newStr += "&lt;";
+						newStr.Append("&lt;");
 					}
 					else if(ch == '>')
 					{
-						newStr += "&gt;";
+						newStr.Append("&gt;");
 					}
 					else if(ch == '&')
 					{
-						newStr += "&amp;";
+						newStr.Append("&amp;");
 					}
 					else if(ch == '"')
 					{
-						newStr += "&quot;";
+						newStr.Append("&quot;");
 					}
 					else
 					{
-						newStr += "&apos;";
+						newStr.Append("&apos;");
 					}
 					start = index;
 					if(start >= str.Length)
@@ -144,17 +145,75 @@ public sealed class SecurityElement
 										   start, str.Length - start);
 					if(index == -1)
 					{
-						newStr += str.Substring(start);
+						newStr.Append(str.Substring(start));
 						break;
 					}
 					else if(index > start)
 					{
-						newStr += str.Substring(start, index - start);
+						newStr.Append(str.Substring(start, index - start));
 					}
 				}
 
 				// Return the escaped string to the caller.
-				return newStr;
+				return newStr.ToString();
+			}
+
+	// Unescape invalid XML characters in a string.
+	private static String Unescape(String str)
+			{
+				// Bail out early if there are no escapes in the string.
+				if(str == null || str.IndexOf('&') == -1)
+				{
+					return str;
+				}
+
+				// Construct a new string with the escapes removed.
+				StringBuilder newStr = new StringBuilder();
+				int posn = 0;
+				char ch;
+				String name;
+				while(posn < str.Length)
+				{
+					ch = str[posn++];
+					if(ch == '&')
+					{
+						name = String.Empty;
+						while(posn < str.Length && str[posn] != ';')
+						{
+							name += str[posn];
+							++posn;
+						}
+						if(posn < str.Length)
+						{
+							++posn;
+						}
+						if(name == "lt")
+						{
+							newStr.Append('<');
+						}
+						else if(name == "gt")
+						{
+							newStr.Append('>');
+						}
+						else if(name == "amp")
+						{
+							newStr.Append('&');
+						}
+						else if(name == "quot")
+						{
+							newStr.Append('"');
+						}
+						else if(name == "apos")
+						{
+							newStr.Append('\'');
+						}
+					}
+					else
+					{
+						newStr.Append(ch);
+					}
+				}
+				return newStr.ToString();
 			}
 
 	// Determine if a string is a valid attribute name.
@@ -405,7 +464,7 @@ public sealed class SecurityElement
 					nv = (AttrNameValue)(attributes[posn]);
 					if(name == nv.name)
 					{
-						return nv.value;
+						return Unescape(nv.value);
 					}
 				}
 				return null;
@@ -554,7 +613,7 @@ public sealed class SecurityElement
 					result += ">";
 					if(text != null)
 					{
-						result += text;
+						result += Escape(text);
 					}
 					if(children != null)
 					{
@@ -570,11 +629,10 @@ public sealed class SecurityElement
 			}
 
 	// Parse an XML string into a tree of "SecurityElement" values.
-	[TODO]
 	internal static SecurityElement Parse(String xmlString)
 			{
-				// TODO
-				return null;
+				MiniXml xml = new MiniXml(xmlString);
+				return xml.Parse();
 			}
 
 }; // class SecurityElement

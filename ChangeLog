@@ -10,6 +10,9 @@
 	"ILNode_EndsInReturnImpl" to make it easier to detect break,
 	continue, etc.
 
+	* codegen/cg_stmt.tc (ILNode_EndsInReturnImpl): implement for
+	"while", "do", and "for".
+
 2002-09-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_attrs.c: implement named attribute arguments.

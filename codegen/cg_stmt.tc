@@ -541,6 +541,41 @@ ILNode_GenDiscard(ILNode_While)
 }
 
 /*
+ * Determine if a loop statement ends in a return statement.
+ */
+ILNode_EndsInReturnImpl(ILNode_While),
+ILNode_EndsInReturnImpl(ILNode_Do),
+ILNode_EndsInReturnImpl(ILNode_For)
+{
+	int flags;
+	if(!(node->cond) || yyisa(node->cond, ILNode_True))
+	{
+		/* This may be an infinite loop: check for a contained "break" */
+		if(node->stmt)
+		{
+			flags = ILNode_EndsInReturnImpl(node->stmt);
+			if((flags & IL_ENDS_IN_CONTAINED_BREAK) != 0)
+			{
+				return 0;
+			}
+			else
+			{
+				return IL_ENDS_IN_RETURN;
+			}
+		}
+		else
+		{
+			return IL_ENDS_IN_RETURN;
+		}
+	}
+	else
+	{
+		/* This loop will probably exit at some point */
+		return 0;
+	}
+}
+
+/*
  * Generate discard code for "do" statements.
  */
 ILNode_GenDiscard(ILNode_Do)

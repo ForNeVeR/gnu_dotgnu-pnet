@@ -1,4 +1,13 @@
 
+2003-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Configuration/ConfigurationSettings.cs,
+	System/Configuration/Provider/IProvider.cs,
+	System/Configuration/Provider/Makefile,
+	System/Configuration/Provider/NotSupportedByProviderException.cs,
+	System/Configuration/Provider/ProviderCollection.cs: add 1.2
+	features to "System.Configuration" and "System.Configuration.Provider".
+
 2003-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, JScript/JScript.build, JScript/Makefile.am,

@@ -148,6 +148,28 @@ public sealed class ConfigurationSettings
 				}
 			}
 
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get the connection string settings.
+	public static NameValueCollection ConnectionStrings
+			{
+				get
+				{
+					ReadOnlyNameValueCollection settings;
+					settings = (ReadOnlyNameValueCollection)
+							(GetConfig("connectionStrings",
+									   new NameValueFileSectionHandler()));
+					if(settings == null)
+					{
+						settings = new ReadOnlyNameValueCollection();
+						settings.MakeReadOnly();
+					}
+					return settings;
+				}
+			}
+
+#endif // CONFIG_FRAMEWORK_1_2
+
 	// The builtin configuration system handler.
 	private class BuiltinConfigurationSystem : IConfigurationSystem
 	{

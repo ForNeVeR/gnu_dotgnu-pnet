@@ -216,7 +216,7 @@ namespace FormsTest
 		private Image imageOld;
 		private Image imageNew;
 
-		private ComboBox comboBox1, comboBox2;
+		private ComboBox comboBox1, comboBox2, comboBox3, comboBox4, comboBox5, comboBox6, comboBox7;
 
 		private TreeView treeView1;
 		//private Label tv
@@ -295,6 +295,9 @@ namespace FormsTest
 			tabControl1.Multiline = true;
 			tabControl1.SizeMode = TabSizeMode.FillToRight;
 			
+			tabPage11 = new TabPage();
+			tabPage11.Text = "ComboBox";
+			tabControl1.Controls.Add(tabPage11);
 			tabPage10 = new TabPage();
 			tabPage10.Text = "Image";
 			tabControl1.Controls.Add(tabPage10);
@@ -334,9 +337,6 @@ namespace FormsTest
 			tabPage12 = new TabPage();
 			tabPage12.Text = "TreeView";
 			tabControl1.Controls.Add(tabPage12);
-			tabPage11 = new TabPage();
-			tabPage11.Text = "ComboBox";
-			tabControl1.Controls.Add(tabPage11);
 			tabPage1 = new TabPage();
 			tabPage1.Text = "Label";
 			tabControl1.Controls.Add(tabPage1);
@@ -2532,28 +2532,93 @@ namespace FormsTest
 		{
 			comboBox1 = new ComboBox();
 			comboBox2 = new ComboBox();
+			comboBox3 = new ComboBox();
+			comboBox4 = new ComboBox();
+			comboBox5 = new ComboBox();
+			comboBox6 = new ComboBox();
+			comboBox7 = new ComboBox();
 			comboBox1.Location = new Point(10, 10);
-			comboBox1.Enabled = false;
-			comboBox1.Items.AddRange(new object[]
-			{
-				"Item 1",
-				"Item 2",
-				"Item 3",
-				"Item 4",
-				"Item 5"
-			});
+			comboBox2.Location = new Point(10, 40);
+			comboBox3.Location = new Point(10, 70);
+			comboBox4.Location = new Point(10, 100);
+			comboBox5.Location = new Point(10, 130);
+			comboBox6.Location = new Point(10, 160);
+			comboBox7.Location = new Point(10, 190);
 
-			comboBox2.Location = new Point(10, 50);
-			comboBox2.Items.AddRange(new object[]
+			comboBox1.Enabled = false;
+			comboBox1.Items.AddRange(new object[] { "Item", });
+
+			// Add test items
+			comboBox2.BeginUpdate();
+			comboBox3.BeginUpdate();
+			comboBox4.BeginUpdate();
+			comboBox5.BeginUpdate();
+			comboBox6.BeginUpdate();
+			comboBox7.BeginUpdate();
+			for (int i = 0; i < 100; i++)
 			{
-				"Item 1",
-				"Item 2",
-				"Item 3",
-				"Item 4",
-				"Item 5"
-			});
-			c.Controls.AddRange(new Control[] {comboBox1, comboBox2});
-			comboBox1.Visible = true;
+				String s = "Item " + i.ToString();
+				if ((i & 4) == 0)
+					s += "wide wide wide wide";
+				comboBox2.Items.Add(s);
+				comboBox3.Items.Add(s);
+				comboBox4.Items.Add(s);
+				comboBox5.Items.Add(s);
+				comboBox6.Items.Add(s);
+				comboBox7.Items.Add(s);
+			}
+			comboBox2.EndUpdate();
+			comboBox3.EndUpdate();
+			comboBox4.EndUpdate();
+			comboBox5.EndUpdate();
+			comboBox6.EndUpdate();
+			comboBox7.EndUpdate();
+
+			comboBox3.BackColor = Color.Blue;
+			comboBox3.ForeColor = Color.White;
+			comboBox3.DropDownWidth = 200;
+			comboBox3.ItemHeight = 30;
+			comboBox3.MaxDropDownItems = 20;
+			comboBox3.MaxLength = 2;
+
+			comboBox4.DrawMode = DrawMode.OwnerDrawFixed;
+			comboBox4.MeasureItem+=new MeasureItemEventHandler(comboBoxMeasureItem);
+			comboBox4.DrawItem+=new DrawItemEventHandler(comboBoxDrawItem);
+			comboBox5.MeasureItem+=new MeasureItemEventHandler(comboBoxMeasureItem);
+			comboBox5.DrawItem+=new DrawItemEventHandler(comboBoxDrawItem);
+			comboBox5.DrawMode = DrawMode.OwnerDrawVariable;
+			comboBox6.DropDownStyle = ComboBoxStyle.DropDownList;
+			comboBox7.DropDownStyle = ComboBoxStyle.Simple;
+
+			c.Controls.AddRange(new Control[] {comboBox1, comboBox2, comboBox3, comboBox4, comboBox5, comboBox6, comboBox7});
+
+		}
+
+		private void comboBoxMeasureItem(object sender, MeasureItemEventArgs e)
+		{
+			e.ItemWidth = (e.Index * 10) % 100;
+			e.ItemHeight = (e.Index * 30 + 10) % 50;
+		}
+
+		private void comboBoxDrawItem(object sender, DrawItemEventArgs e)
+		{
+			if (e.Index % 5 == 0)
+			{
+				e.DrawBackground();
+			}
+			else
+			{
+				using (Brush b = new SolidBrush(Color.FromArgb((e.Index * 20 + 128) % 256, 160, 160)))
+					e.Graphics.FillRectangle(b, e.Bounds);
+			}
+			if (e.Index % 10 == 9)
+			{
+				e.DrawFocusRectangle();
+			}
+			String s = e.State.ToString() + " ";
+			using (Brush b = new SolidBrush(Color.FromArgb(128, (e.Index * 20) % 128, 128)))
+				e.Graphics.DrawString(s + s,e.Font, b, e.Bounds);
+			e.Graphics.DrawRectangle(SystemPens.ControlText, e.Bounds);
 		}
 
 		private void AddTreeViewTest(Control c)

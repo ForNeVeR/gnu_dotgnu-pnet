@@ -1,3 +1,8 @@
+
+2004-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, NEWS: update version and news for the 0.6.8 release.
+
 2004-08-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ImageList.cs: fix the constructor taking an

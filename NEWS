@@ -1,4 +1,124 @@
 
+0.6.8 (8 August 2004)
+
+	System.Windows.Forms & System.Drawing:
+
+	* Missing attributes and profile fixes (Klaus Treichel).
+	* BeginInvoke for WinForms (David Logan).
+	* Hotkey prefixes in DrawString (Thomas Fritzsche, Gopal V).
+	* ErrorProvider, HelpProvider (Gopal V).
+	* Image list deserialization (Gopal V).
+	* Bitmap cloning between different pixel formats (Gopal V).
+	* Scroll bar flickering in TextBox (Gopal V).
+	* Fixes to DomainUpDown (Klaus Treichel).
+	* ContextMenu and minimize/maximize fixes (Neil Cawse).
+	* Export the theme classes for external theme assemblies (Simon Guindon).
+	* IsTopLevel is not supposed to be true for MDI children (Gopal V).
+	* Set ActiveMdiChild properly (Gopal V).
+	* Data binding classes (Adam Ballai).
+	* New back end for TextBox (Richard Baumann).
+	* Stub Form.CenterToScreen (Gopal V).
+	* Image conversion and sizing (Neil Cawse).
+	* Draw tabs before tab pages (Neil Cawse).
+	* Transparency mask calculations for 32-bit images (Gopal V).
+	* Implement the properies in ToolTip (Deryk Robosson).
+	* MouseHover events (Deryk Robosson).
+	* Fix TreeView event handlers (Gopal V).
+	* Improvements to string drawing and measuring (Richard Baumann).
+	* Fixes to ImageList container constructor (Richard Baumann).
+
+	Xsharp:
+
+	* Now safe to acquire locks in finalizers (Thong Nguyen).
+	* GetHdc/ReleaseHdc for Xsharp (Thong Nguyen, Richard Baumann).
+	* Allow external access to X display and drawable (Simon Guindon).
+	* Adjustments to how fonts are created (Richard Baumann).
+	* Borderless windows (Richard Baumann, Deryk Robosson).
+	* Set the proper mask for window reconfiguration (Deryk Robosson).
+	* Width calculation for xft fonts (Richard Baumann).
+
+	Win32:
+
+	* System color resolution for System.Drawing (Maciek Plewa).
+	* Optimize SwapRGB (Neil Cawse).
+	* Theme engine for WinXP (Maciek Plewa).
+
+	System.Xml:
+
+	* BinHex support (Klaus Treichel).
+	* IsEmpty behaviour for non-empty elements (Richard Baumann).
+	* Property setter for InnerXml (Richard Baumann).
+	* GetEntity functionality (Deryk Robosson).
+	* Temporarily import Mono's XML serialization (Richard Baumann).
+	* Prefix and namespace handling in XML writers (Richard Baumann).
+	* Partial implementation of node importing (Gopal V).
+
+	Serialization and Remoting:
+
+	* Uri property in IMethodMessage and its derivatives (Gopal V).
+
+	Basic:
+
+	* Make optional an default parameters working correctly (Rhys Weatherley).
+	* Interaction, Conversion, ErrObject, Strings, Utils (Rhys Weatherley).
+	* Financial, DateAndTime, File, FileSystem (Rhys Weatherley).
+	* ECMA-compliant parsing of hex/octal integers (Rhys Weatherley).
+	* Various signature-compatibility fixes (Rhys Weatherley).
+
+	Networking:
+
+	* Dns fixes (Gopal V).
+	* Uncomment ServicePoint property (Klaus Treichel).
+
+	Threading:
+
+	* Fix default timeout for "TryEnter" (Thong Nguyen).
+	* Bugs in timer unit tests (Russell Stuart).
+	* Minimize the number of completion threads (David Logan).
+	* Mutex tests (Thong Nguyen).
+
+	Culture Handling:
+
+	* Cloning of DateTimeFormat/NumberFormat (Klaus Treichel).
+	* Use CurrentUICulture in resource managers (Richard Baumann).
+
+	.NET 2.0 Compatibility:
+
+	* Update profiles to 2.0 beta compatibility (Rhys Weatherley).
+	* System.ComponentModel (Rhys Weatherley).
+	* Add the "System.Deployment" assembly (Rhys Weatherley).
+	* System.IO.Compression (Rhys Weatherley).
+	* Updates to the extended console implementation (Rhys Weatherley).
+	* System.Runtime.CompilerServices (Rhys Weatherley).
+	* System.Runtime.ConstrainedExecution (Rhys Weatherley).
+	* System.Runtime.Reliability (Rhys Weatherley).
+	* System.Runtime.InteropServices (Rhys Weatherley).
+	* System.Reflection (Rhys Weatherley).
+	* System.Security.AccessControl (Rhys Weatherley).
+	* Microsoft.Win32.* namespaces (Rhys Weatherley).
+	* Implementation of the "sysglobl.dll" assembly (Rhys Weatherley).
+	* New Visual C++ marker classes (Rhys Weatherley).
+	* User-defined cultures and regions (Rhys Weatherley).
+
+	Other:
+
+	* Fake AppDomain creation for the time being (Gopal V).
+	* Fixes to System.Collections classes (Gopal V).
+	* Update System.Text.RegularExpressions from Mono (Klaus Treichel).
+	* Report dll name in "DllNotFoundException" messages (Thong Nguyen).
+	* Fix String.ToCharArray (Klaus Treichel).
+	* Give an error in the DCOP sample if KDE is not running (Gopal V).
+	* DateTime formatting problems (Heiko Weiss).
+	* Allow directories with trailing slashes to be created (Heiko Weiss).
+	* Allow GetField | GetProperty to be used in reflection (Rhys Weatherley).
+	* Update the HACKING file (Klaus Treichel).
+	* Number parsing (Klaus Treichel, Gopal V).
+	* Csc compile fixes (Chris Ferell, Neil Cawse).
+	* Remove version information from assembly names to get the name
+	  of a resource assembly (David Logan).
+	* Set the correct metadata version from the profiles (Rhys Weatherley).
+	* Small fix to FileSystemWatcher.Path property (Gopal V).
+
 0.6.6 (29 May 2004)
 
 	System.Windows.Forms & System.Drawing:

@@ -27,6 +27,16 @@
 	libc/socket/socket-glue.cs, libc/socket/socket.c:
 	add headers and scaffolding for the socket functions.
 
+	* include/arpa/Makefile.am, include/arpa/nameser.h,
+	libc/misc/Makefile.am, libc/misc/assert.c, libc/socket/Makefile.am,
+	libc/socket/inet_addr.c, libc/socket/inet_lnaof.c,
+	libc/socket/inet_mkadr.c, libc/socket/inet_net.c,
+	libc/socket/inet_net_ntop.c, libc/socket/inet_net_pton.c,
+	libc/socket/inet_neta.c, libc/socket/inet_netof.c,
+	libc/socket/inet_ntoa.c, libc/socket/inet_ntop.c,
+	libc/socket/inet_pton.c, libc/socket/nsap_addr.c:
+	import the "inet*" routines from glibc.
+
 2004-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/inttypes.h, include/limits.h, include/stdint.h,

@@ -99,40 +99,18 @@ ILNode_GenDiscard(ILNode_Assign)
 %{
 
 /*
- * Determine the common type for an assignment expression.
+ *  Common generation code for ILNode_AssignExpression
  */
-static ILMachineType AssignCommonType(ILGenInfo *info,
-									  ILMachineType type1,
-									  ILMachineType type2)
-{
-	if(type1 == ILMachineType_String || type2 == ILMachineType_String)
-	{
-		return ILMachineType_String;
-	}
-	else if(type1 == ILMachineType_ObjectRef ||
-			type2 == ILMachineType_ObjectRef)
-	{
-		return ILMachineType_ObjectRef;
-	}
-	else
-	{
-		return ILCommonType(info, type1, type2, 0);
-	}
-}
-
-%}
-
-/*
- * Generate discard code for an arithmetic assignment expression.
- */
-ILNode_GenDiscard(ILNode_AssignExpression)
+static ILMachineType AssignCommon(ILNode_AssignExpression *node, 
+								  ILGenInfo *info,
+						          int leave)
 {
 	ILMachineType finalType;
 	void *data1, *data2;
 	ILNode_BinaryExpression *bnode = (ILNode_BinaryExpression *)(node->assign);
 
 	/* Get and prepare the l-value for a later store operation */
-	finalType = ILNode_Prepare(node->lvalue, info, &data1, &data2);
+	finalType = ILNode_GetAndPrepare(node->lvalue, info, leave, &data1, &data2);
 
 	/* Perform the operation */
 	if(yyisa(bnode, ILNode_Concat))
@@ -140,6 +118,7 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 		if(finalType == ILMachineType_String &&
 		   ILNode_GetType(bnode->expr2, info) == ILMachineType_String)
 		{
+			ILGenCast(info, ILNode_GenValue(bnode->expr2, info), ILMachineType_String);
 			ILGenCallByName(info,
 			  "class [.library]System.String [.library]System.String::Concat"
 					"(class [.library]System.String, "
@@ -148,6 +127,7 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 		}
 		else
 		{
+			ILGenCast(info, ILNode_GenValue(bnode->expr2, info), ILMachineType_ObjectRef);
 			ILGenCallByName(info,
 			  "class [.library]System.String [.library]System.String::Concat"
 					"(class [.library]System.Object, "
@@ -158,6 +138,7 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 	}
 	else if(yyisa(bnode, ILNode_DelegateAdd))
 	{
+		ILGenCast(info, ILNode_GenValue(bnode->expr2, info), ILMachineType_ObjectRef);
 		ILGenCallByName(info,
 		  "class [.library]System.Delegate [.library]System.Delegate::Combine"
 				"(class [.library]System.Delegate, "
@@ -169,6 +150,7 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 	}
 	else if(yyisa(bnode, ILNode_DelegateSub))
 	{
+		ILGenCast(info, ILNode_GenValue(bnode->expr2, info), ILMachineType_ObjectRef);
 		ILGenCallByName(info,
 		  "class [.library]System.Delegate [.library]System.Delegate::Remove"
 				"(class [.library]System.Delegate, "
@@ -185,7 +167,18 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 	}
 
 	/* Store the value into the destination */
-	ILNode_Store(node->lvalue, info, 0, data1, data2);
+	ILNode_Store(node->lvalue, info, leave, data1, data2);
+	return finalType;
+}
+
+%}
+
+/*
+ * Generate discard code for an arithmetic assignment expression.
+ */
+ILNode_GenDiscard(ILNode_AssignExpression)
+{
+	AssignCommon(node, info, 0);
 }
 
 /*
@@ -214,68 +207,7 @@ ILNode_GenValue(ILNode_Assign)
  */
 ILNode_GenValue(ILNode_AssignExpression)
 {
-	ILMachineType finalType;
-	void *data1, *data2;
-	ILNode_BinaryExpression *bnode = (ILNode_BinaryExpression *)(node->assign);
-
-	/* Get and prepare the l-value for a later store operation */
-	finalType = ILNode_Prepare(node->lvalue, info, &data1, &data2);
-
-	/* Perform the operation */
-	if(yyisa(bnode, ILNode_Concat))
-	{
-		if(finalType == ILMachineType_String &&
-		   ILNode_GetType(bnode->expr2, info) == ILMachineType_String)
-		{
-			ILGenCallByName(info,
-			  "class [.library]System.String [.library]System.String::Concat"
-					"(class [.library]System.String, "
-					 "class [.library]System.String)");
-			ILGenAdjust(info, -1);
-		}
-		else
-		{
-			ILGenCallByName(info,
-			  "class [.library]System.String [.library]System.String::Concat"
-					"(class [.library]System.Object, "
-					 "class [.library]System.Object)");
-			ILGenAdjust(info, -1);
-		}
-		ILGenCast(info, ILMachineType_String, finalType);
-	}
-	else if(yyisa(bnode, ILNode_DelegateAdd))
-	{
-		ILGenCallByName(info,
-		  "class [.library]System.Delegate [.library]System.Delegate::Combine"
-				"(class [.library]System.Delegate, "
-				 "class [.library]System.Delegate)");
-		ILGenAdjust(info, -1);
-		ILGenClassToken(info, IL_OP_CASTCLASS,
-				((ILNode_DelegateAdd *)bnode)->delegateClass);
-		ILGenCast(info, ILMachineType_ObjectRef, finalType);
-	}
-	else if(yyisa(bnode, ILNode_DelegateSub))
-	{
-		ILGenCallByName(info,
-		  "class [.library]System.Delegate [.library]System.Delegate::Remove"
-				"(class [.library]System.Delegate, "
-				 "class [.library]System.Delegate)");
-		ILGenAdjust(info, -1);
-		ILGenClassToken(info, IL_OP_CASTCLASS,
-				((ILNode_DelegateSub *)bnode)->delegateClass);
-		ILGenCast(info, ILMachineType_ObjectRef, finalType);
-	}
-	else
-	{
-		/* Evaluate the second sub-expression and cast to the final type */
-		ILGenCast(info, ILNode_GenValue(node->assign, info), finalType);
-	}
-
-	/* Store the value into the destination */
-	ILNode_Store(node->lvalue, info, 1, data1, data2);
-
-	/* Return the final type to the caller */
-	return finalType;
+	return AssignCommon(node, info, 1);
 }
 
 /*

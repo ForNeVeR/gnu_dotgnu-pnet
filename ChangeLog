@@ -1,8 +1,8 @@
 
 2002-10-20  Jonathan Springer <jonathan.springer@verizon.net>
 
-	* cscc/codegen/cg_assign.tc:  Fix to leave variable in
-	GenDiscard(AssignExpression).
+	* codegen/cg_assign.tc, codegen/jv_assign.tc, cscc/csharp/cs_oper.tc:  
+	Restore function of += and -= operators for Events.
 
 2002-10-20  Gopal.V  <gopalv82@symonds.net>
 

@@ -195,6 +195,12 @@ int main(int argc, char *argv[])
 					language = "cs";
 					extension = "cs";
 				}
+				else if(CompareExtensions(filename + len, "vb"))
+				{
+					/* This is a VB source file */
+					language = "vb";
+					extension = "vb";
+				}
 				else
 				{
 					/* Use the extension as the language name */
@@ -516,6 +522,10 @@ static void ParseCommandLine(int argc, char *argv[])
 		else if(prog_language == PROG_LANG_C)
 		{
 			prog_language_name = "c";
+		}
+		else if(prog_language == PROG_LANG_VB)
+		{
+			prog_language_name = "vb";
 		}
 		else
 		{

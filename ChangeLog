@@ -1,4 +1,14 @@
 
+2003-05-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, cscc/Makefile.am, cscc/cscc.c, cscc/vb_main.c,
+	cscc/common/cc_options.c, cscc/common/cc_options.h, cscc/vb/.cvsignore,
+	cscc/vb/Makefile.am, cscc/vb/vb_date.c, cscc/vb/vb_grammar.y,
+	cscc/vb/vb_internal.h, cscc/vb/vb_modifiers.c, cscc/vb/vb_options.c,
+	cscc/vb/vb_rename.h, cscc/vb/vb_scanner.l: check in the start of
+	the VB front end for the compiler - basic parsing and scanning is
+	present, but semantic analysis uses the C# routines right now.
+
 2003-05-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/aes.c: make the AES code 16-bit friendly.

@@ -1,7 +1,7 @@
 /*
  * cc_options.h - Command-line option processing.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,8 @@ extern	"C" {
 #define	PROG_LANG_IL			2
 #define	PROG_LANG_JL			3
 #define	PROG_LANG_C				4
-#define	PROG_LANG_OTHER			5
+#define	PROG_LANG_VB			5
+#define	PROG_LANG_OTHER			6
 
 /*
  * Supported output/macro dump formats for "dump_output_format".

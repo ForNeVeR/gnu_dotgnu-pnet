@@ -1,0 +1,7 @@
+Makefile
+Makefile.in
+.deps
+stamp-treecc
+vb_grammar.c
+vb_grammar.h
+vb_scanner.c

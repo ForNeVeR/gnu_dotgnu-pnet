@@ -114,6 +114,17 @@ static int ClassHash_Match(const ILClassName *classInfo,
 	}
 
 	/* Match the scope */
+	if(key->scopeItem &&
+	   (key->scopeItem->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_MODULE)
+	{
+		/* Exported types in a file scope will also match module requests */
+		if(classInfo->scope &&
+	       (classInfo->scope->token & IL_META_TOKEN_MASK) ==
+		   			IL_META_TOKEN_FILE)
+		{
+			goto moduleScope;
+		}
+	}
 	if(key->scopeItem && key->scopeItem != classInfo->scope)
 	{
 		return 0;
@@ -122,6 +133,7 @@ static int ClassHash_Match(const ILClassName *classInfo,
 	{
 		return 0;
 	}
+moduleScope:
 
 	/* Match the image */
 	if(key->image && key->image != classInfo->image)

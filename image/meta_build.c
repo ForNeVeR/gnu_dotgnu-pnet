@@ -215,6 +215,7 @@ static void ReportResolveError(ILImage *image, ILToken token,
 		break;
 
 		case IL_META_TOKEN_TYPE_REF:
+		case IL_META_TOKEN_EXPORTED_TYPE:
 		{
 			/* The type was nested within another type */
 			ILClass *classInfo = ILClass_FromToken(image, token);
@@ -230,6 +231,21 @@ static void ReportResolveError(ILImage *image, ILToken token,
 						(importName2 ? importName2 : ""),
 						(importName2 ? "." : ""), importName,
 						(namespace ? namespace : ""),
+						(namespace ? "." : ""), name);
+				return;
+			}
+		}
+		break;
+
+		case IL_META_TOKEN_FILE:
+		{
+			/* The type was imported from a file scope */
+			ILFileDecl *file = ILFileDecl_FromToken(image, token);
+			if(file)
+			{
+				importName = ILFileDecl_Name(file);
+				fprintf(stderr, "unresolved type: [.file %s]%s%s%s\n",
+						importName, (namespace ? namespace : ""),
 						(namespace ? "." : ""), name);
 				return;
 			}
@@ -3156,14 +3172,18 @@ static int Load_ExportedType(ILImage *image, ILUInt32 *values,
 				   	 		 void *userData)
 {
 	ILExportedType *type;
+	const char *namespace;
 
 	/* Create the exported type record */
+	namespace = ILImageGetString(image, values[IL_OFFSET_EXPTYPE_NAMESPACE]);
+	if(namespace && *namespace == '\0')
+	{
+		namespace = 0;
+	}
 	type = ILExportedTypeCreate(image, token,
 				  	values[IL_OFFSET_EXPTYPE_ATTRS],
 				    ILImageGetString
-						(image, values[IL_OFFSET_EXPTYPE_NAME]),
-				    ILImageGetString
-						(image, values[IL_OFFSET_EXPTYPE_NAMESPACE]),
+						(image, values[IL_OFFSET_EXPTYPE_NAME]), namespace,
 					ILProgramItem_FromToken
 						(image, values[IL_OFFSET_EXPTYPE_FILE]));
 	if(!type)
@@ -3432,6 +3452,10 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_TYPE_DEF,
 							 Load_TypeDefName, 0));
 
+	/* Load exported type declarations */
+	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_EXPORTED_TYPE,
+							 Load_ExportedType, 0));
+
 	/* Load the assemblies that this image depends upon */
 	if((loadFlags & IL_LOADFLAG_NO_RESOLVE) == 0)
 	{
@@ -3493,10 +3517,6 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	/* Load generic type parameters */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_GENERIC_PAR,
 							 Load_GenericPar, 0));
-
-	/* Load exported type declarations */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_EXPORTED_TYPE,
-							 Load_ExportedType, 0));
 
 	/* Done */
 	return 0;

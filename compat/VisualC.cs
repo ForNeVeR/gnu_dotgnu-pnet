@@ -1,7 +1,7 @@
 /*
  * VisualC.cs - Marker classes for Microsoft Visual C++ interoperability.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,9 +35,11 @@ namespace Microsoft.VisualC
 using System;
 
 // Indicate that debug information is in a ".pdb" file, not metadata.
+[AttributeUsage(AttributeTargets.All)]
 public sealed class DebugInfoInPDBAttribute : Attribute {}
 
 // Indicate that a name is decorated.
+[AttributeUsage(AttributeTargets.All)]
 public sealed class DecoratedNameAttribute : Attribute
 {
 	public DecoratedNameAttribute() {}
@@ -60,6 +62,7 @@ public sealed class IsSignedModifier {}
 public sealed class IsVolatileModifier {}
 
 // Mark miscellaneous bit information.
+[AttributeUsage(AttributeTargets.All)]
 public sealed class MiscellaneousBitsAttribute : Attribute
 {
 	public int m_dwAttrs;
@@ -72,5 +75,43 @@ public sealed class NeedsCopyConstructorModifier {}
 // Modifier that is used to mark a "char" type with no explicit
 // "signed" or "unsigned" qualification.
 public sealed class NoSignSpecifiedModifier {}
+
+#if CONFIG_FRAMEWORK_1_2
+
+// Modifier that marks a UDT return style.
+public sealed class CxxUdtReturnStyleModifier {}
+
+// HFA marker attribute.
+[AttributeUsage(AttributeTargets.All)]
+public sealed class HFAAttribute : Attribute
+{
+	public int m_dwAttrs;
+	public HFAAttribute(int dwAttrs) { m_dwAttrs = dwAttrs; }
+}
+
+// Attribute that indicates that a value has copy semantics.
+[AttributeUsage(AttributeTargets.All)]
+public sealed class HasCopySemanticsAttribute : Attribute {}
+
+// Modifier that indicates a boxed type.
+public sealed class IsBoxedModifier {}
+
+// Modifier that indicates a C++ pointer type.
+public sealed class IsCXXPointerModifier {}
+
+// Modifier that indicates a copy constructor.
+public sealed class IsCopyCtorModifier {}
+
+// Modifier that indicates an intrinsic.
+public sealed class IsIntrinsicModifier {}
+
+// Modifier that indicates a marshal workaround.
+public sealed class IsMarshalWorkaround {}
+
+// Indicate that an enum is native.
+[AttributeUsage(AttributeTargets.All)]
+public sealed class NativeEnumAttribute : Attribute {}
+
+#endif // CONFIG_FRAMEWORK_1_2
 
 } // namespace Microsoft.VisualC

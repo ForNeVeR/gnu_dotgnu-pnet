@@ -50,6 +50,8 @@
 	* compat/compat.build, compat/sysglobl.cs: check in an implementation
 	of the "sysglobl.dll" assembly from .NET SDK 2.0.
 
+	* compat/VisualC.cs: new VC++ marker attributes and modifiers.
+
 2004-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt, runtime/Platform/Stdio.cs,

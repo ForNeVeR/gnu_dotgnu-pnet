@@ -1,3 +1,7 @@
+2005-01-15  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* configure.in: modify enable-xft option to default to true.
+
 2005-01-04  Marco Bosatta  <mboss@xp-obj.ch>
 
 	* System.Drawing/Drawing2D/Matrix.cs: Determinant and inversion

@@ -230,6 +230,11 @@ AC_CHECK_HEADERS(sys/socket.h netinet/in.h langinfo.h locale.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h netdb.h sys/cygwin.h dirent.h sys/utime.h utime.h)
 AC_CHECK_HEADERS(linux/irda.h)
 
+dnl Check for "sin6_scope_id".
+AC_TRY_COMPILE([#include "confdefs.h"
+#include <netinet/in.h>
+], [struct sockaddr_in6 addr; addr.sin6_scope_id = 0;], AC_DEFINE(HAVE_SIN6_SCOPE_ID, 1, [Define if you have the sin6_scope_id member in struct sockaddr_in6]))
+
 dnl A macro that helps detect the size of types in a cross-compile environment.
 AC_DEFUN([AC_COMPILE_CHECK_SIZEOF],
 [changequote(<<, >>)dnl

@@ -162,7 +162,9 @@ static int SerializedToCombined(unsigned char *buf, ILInt32 len,
 		         (((long)(buf[25])) << 16) |
 		         (((long)(buf[26])) << 8) |
 		          ((long)(buf[27])));
+#if HAVE_SIN6_SCOPE_ID
 		addr->ipv6_addr.sin6_scope_id = htonl((long)value);
+#endif
 		*addrlen = sizeof(struct sockaddr_in6);
 		return 1;
 	}
@@ -261,7 +263,11 @@ static int CombinedToSerialized(unsigned char *buf, ILInt32 len,
 		buf[6] = (unsigned char)(value >> 8);
 		buf[7] = (unsigned char)value;
 		ILMemCpy(buf + 8, &(addr->ipv6_addr.sin6_addr), 16);
+#if HAVE_SIN6_SCOPE_ID
 		value = (long)(ntohl(addr->ipv6_addr.sin6_scope_id));
+#else
+		value = 0;
+#endif
 		buf[24] = (unsigned char)(value >> 24);
 		buf[25] = (unsigned char)(value >> 16);
 		buf[26] = (unsigned char)(value >> 8);

@@ -42,7 +42,23 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	CSSemValue value;
 	ILNode *savedClass;
 	ILNode *savedNamespace;
-	int hadStaticCtorsBefore = (node->staticCtors != 0);
+	int hadStaticCtorsBefore;
+
+	/* Determine if we have already visited this node */
+	if(node->visited == ILVisitMode_Processing)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "circularity detected in class definition");
+		return CSSemValueDefault;
+	}
+	else if(node->visited == ILVisitMode_Done)
+	{
+		return CSSemValueDefault;
+	}
+	node->visited = ILVisitMode_Processing;
+
+	/* Perform semantic analysis on the node */
+	hadStaticCtorsBefore = (node->staticCtors != 0);
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
 		CCUnsafeEnter(info, (ILNode *)node, "unsafe class declaration");
@@ -123,7 +139,10 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		   flag to the set of modifiers */
 		node->modifiers |= IL_META_TYPEDEF_BEFORE_FIELD_INIT;
 	}
-	return value;
+
+	/* We have finished processing this node */
+	node->visited = ILVisitMode_Done;
+	return CSSemValueDefault;
 }
 
 /*
@@ -479,9 +498,7 @@ void CSAddInitCtor(ILGenInfo *info, ILNode *stmt)
 ILNode_SemAnalysis(ILNode_FieldDeclaration)
 {
 	ILNode_ListIter iterator;
-	ILNode_FieldDeclarator *decl;
-	CSSemValue value;
-	ILEvalValue evalValue;
+	ILNode *decl;
 
 	/* Enter an unsafe context for the field if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
@@ -504,91 +521,9 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 
 	/* Verify the initializers */
 	ILNode_ListIter_Init(&iterator, node->fieldDeclarators);
-	while((decl = (ILNode_FieldDeclarator *)
-						ILNode_ListIter_Next(&iterator)) != 0)
+	while((decl = ILNode_ListIter_Next(&iterator)) != 0)
 	{
-		/* Skip the field if no initializer or ILField block */
-		if(!(decl->initializer) || !(decl->fieldInfo))
-		{
-			continue;
-		}
-
-		/* Non-static fields are initialized differently */
-		if((node->modifiers & IL_META_FIELDDEF_STATIC) == 0)
-		{
-			CSAddInitCtor(info, ILNode_Assign_create
-							(decl->name, decl->initializer));
-			continue;
-		}
-
-		/* If this is a constant, then evaluate the value */
-		if((node->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
-		{
-			/* Perform semantic analysis on the initializer value */
-			value = ILNode_SemAnalysis(decl->initializer, info,
-									   &(decl->initializer));
-			if(!CSIsSemValue(value.kind))
-			{
-				CCErrorOnLine(yygetfilename(decl->initializer),
-							  yygetlinenum(decl->initializer),
-							  "initializer is not a value");
-				continue;
-			}
-
-			/* Make sure that the value is compatible with the field's type */
-			if(!ILCoerce(info, decl->initializer, &(decl->initializer),
-						 value.type, ILField_Type(decl->fieldInfo)))
-			{
-				CCErrorOnLine(yygetfilename(decl->initializer),
-							  yygetlinenum(decl->initializer),
-				  			  "incompatible types in initialization: "
-				  					"no conversion from `%s' to `%s'",
-				  			  CSTypeToName(value.type),
-							  CSTypeToName(ILField_Type(decl->fieldInfo)));
-				continue;
-			}
-
-			/* Check that the literal value is actually constant */
-			if(!ILNode_EvalConst(decl->initializer, info, &evalValue) ||
-			   !ILGenCastConst(info, &evalValue, evalValue.valueType,
-	                   ILTypeToMachineType(ILField_Type(decl->fieldInfo))))
-			{
-				CCErrorOnLine(yygetfilename(decl->initializer),
-							  yygetlinenum(decl->initializer),
-							  "initializer is not constant");
-				continue;
-			}
-
-			/* Decimal constants are stored in readonly fields
-			   which are computed at runtime.  We also add a
-			   "DecimalConstantAttribute" to tag the field so
-			   that the compiler can reload the value later */
-			if(evalValue.valueType == ILMachineType_Decimal)
-			{
-				node->modifiers &= ~IL_META_FIELDDEF_LITERAL;
-				node->modifiers |= IL_META_FIELDDEF_INIT_ONLY;
-				ILMemberSetAttrs((ILMember *)(decl->fieldInfo),
-								 IL_META_FIELDDEF_LITERAL |
-								 		IL_META_FIELDDEF_INIT_ONLY,
-						 		 IL_META_FIELDDEF_INIT_ONLY);
-				AddConstantValue(info, decl->fieldInfo, &evalValue);
-			}
-			else
-			{
-				/* Record the constant value so the compiler can pick
-				   it up when the binary form of the code is reloaded */
-				AddConstantValue(info, decl->fieldInfo, &evalValue);
-				continue;
-			}
-
-			/* Guard the initializer from further semantic analysis */
-			decl->initializer =
-				ILNode_SemGuard_create(decl->initializer, value);
-		}
-
-		/* Add a statement to the static constructor to initialize the field */
-		CSAddStaticCtor(info, ILNode_Assign_create
-			(decl->name, decl->initializer));
+		ILNode_SemAnalysis(decl, info, &decl);
 	}
 
 	/* Leave the unsafe context for the field */
@@ -603,7 +538,104 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 
 ILNode_SemAnalysis(ILNode_FieldDeclarator)
 {
-	/* Place-holder only: the real processing is done elsewhere */
+	CSSemValue value;
+	ILEvalValue evalValue;
+
+	/* Determine if we have already visited this node */
+	if(node->visited == ILVisitMode_Processing)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "circularity detected in field definition");
+		return CSSemValueDefault;
+	}
+	else if(node->visited == ILVisitMode_Done)
+	{
+		return CSSemValueDefault;
+	}
+	node->visited = ILVisitMode_Processing;
+
+	/* Skip the field if no initializer or ILField block */
+	if(!(node->initializer) || !(node->fieldInfo))
+	{
+		goto done;
+	}
+
+	/* Non-static fields are initialized differently */
+	if(node->owner && (node->owner->modifiers & IL_META_FIELDDEF_STATIC) == 0)
+	{
+		CSAddInitCtor(info, ILNode_Assign_create
+						(node->name, node->initializer));
+		goto done;
+	}
+
+	/* If this is a constant, then evaluate the value */
+	if(node->owner && (node->owner->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
+	{
+		/* Perform semantic analysis on the initializer value */
+		value = ILNode_SemAnalysis(node->initializer, info,
+								   &(node->initializer));
+		if(!CSIsSemValue(value.kind))
+		{
+			CCErrorOnLine(yygetfilename(node->initializer),
+						  yygetlinenum(node->initializer),
+						  "initializer is not a value");
+			goto done;
+		}
+
+		/* Make sure that the value is compatible with the field's type */
+		if(!ILCoerce(info, node->initializer, &(node->initializer),
+					 value.type, ILField_Type(node->fieldInfo)))
+		{
+			CCErrorOnLine(yygetfilename(node->initializer),
+						  yygetlinenum(node->initializer),
+			  			  "incompatible types in initialization: "
+			  					"no conversion from `%s' to `%s'",
+			  			  CSTypeToName(value.type),
+						  CSTypeToName(ILField_Type(node->fieldInfo)));
+			goto done;
+		}
+
+		/* Check that the literal value is actually constant */
+		if(!ILNode_EvalConst(node->initializer, info, &evalValue) ||
+		   !ILGenCastConst(info, &evalValue, evalValue.valueType,
+                   ILTypeToMachineType(ILField_Type(node->fieldInfo))))
+		{
+			CCErrorOnLine(yygetfilename(node->initializer),
+						  yygetlinenum(node->initializer),
+						  "initializer is not constant");
+			goto done;
+		}
+
+		/* Decimal constants are stored in readonly fields
+		   which are computed at runtime.  We also add a
+		   "DecimalConstantAttribute" to tag the field so
+		   that the compiler can reload the value later */
+		if(evalValue.valueType == ILMachineType_Decimal)
+		{
+			ILMemberSetAttrs((ILMember *)(node->fieldInfo),
+							 IL_META_FIELDDEF_LITERAL |
+							 		IL_META_FIELDDEF_INIT_ONLY,
+					 		 IL_META_FIELDDEF_INIT_ONLY);
+			AddConstantValue(info, node->fieldInfo, &evalValue);
+		}
+		else
+		{
+			/* Record the constant value so the compiler can pick
+			   it up when the binary form of the code is reloaded */
+			AddConstantValue(info, node->fieldInfo, &evalValue);
+			goto done;
+		}
+
+		/* Guard the initializer from further semantic analysis */
+		node->initializer = ILNode_SemGuard_create(node->initializer, value);
+	}
+
+	/* Add a statement to the static constructor to initialize the field */
+	CSAddStaticCtor(info, ILNode_Assign_create(node->name, node->initializer));
+
+done:
+	/* Mark the node as done and return */
+	node->visited = ILVisitMode_Done;
 	return CSSemValueDefault;
 }
 
@@ -670,6 +702,19 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	char *name;
 	ILNode *errorNode;
 	ILType *returnType;
+
+	/* Determine if we have already visited this node */
+	if(node->visited == ILVisitMode_Processing)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "circularity detected in method definition");
+		return CSSemValueDefault;
+	}
+	else if(node->visited == ILVisitMode_Done)
+	{
+		return CSSemValueDefault;
+	}
+	node->visited = ILVisitMode_Processing;
 
 	/* Record the current method that we are in */
 	savedMethod = info->currentMethod;
@@ -807,12 +852,28 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	/* Return to the previous method level */
 	info->currentMethod = savedMethod;
 
+	/* Finished visiting this node */
+	node->visited = ILVisitMode_Done;
+
 	/* Methods don't really have a semantic value, so return the default */
 	return CSSemValueDefault;
 }
 
 ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 {
+	/* Determine if we have already visited this node */
+	if(node->visited == ILVisitMode_Processing)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "circularity detected in property definition");
+		return CSSemValueDefault;
+	}
+	else if(node->visited == ILVisitMode_Done)
+	{
+		return CSSemValueDefault;
+	}
+	node->visited = ILVisitMode_Processing;
+
 	/* Enter an unsafe context for the property if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
@@ -841,6 +902,8 @@ ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 		CCUnsafeLeave(info);
 	}
 
+	/* Finished visiting this node */
+	node->visited = ILVisitMode_Done;
 	return CSSemValueDefault;
 }
 
@@ -851,6 +914,19 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 	ILType *type;
 	ILMachineType machineType;
 	ILNode_ClassDefn *defn = ((ILNode_ClassDefn *)(info->currentClass));
+
+	/* Determine if we have already visited this node */
+	if(node->visited == ILVisitMode_Processing)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "circularity detected in enumeration member definition");
+		return CSSemValueDefault;
+	}
+	else if(node->visited == ILVisitMode_Done)
+	{
+		return CSSemValueDefault;
+	}
+	node->visited = ILVisitMode_Processing;
 
 	/* Determine the type of the enumeration */
 	type = ILClassToType(defn->classInfo);
@@ -865,6 +941,7 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "invalid enumerated value");
+			node->visited = ILVisitMode_Done;
 			return CSSemValueDefault;
 		}
 		else
@@ -876,6 +953,7 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "enumerated value is not constant");
+				node->visited = ILVisitMode_Done;
 				return CSSemValueDefault;
 			}
 
@@ -947,6 +1025,9 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 		AddConstantValue(info, node->fieldInfo, &evalValue);
 		++(defn->nextEnum);
 	}
+
+	/* Finished visiting this node */
+	node->visited = ILVisitMode_Done;
 
 	return CSSemValueDefault;
 }

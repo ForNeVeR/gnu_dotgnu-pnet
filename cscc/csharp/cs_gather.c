@@ -546,6 +546,9 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 	while((decl = (ILNode_FieldDeclarator *)
 						ILNode_ListIter_Next(&iterator)) != 0)
 	{
+		/* Set the field's owner for later semantic analysis */
+		decl->owner = field;
+
 		/* Get the name of the field */
 		name = ILQualIdentName(decl->name, 0);
 

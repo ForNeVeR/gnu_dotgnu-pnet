@@ -89,6 +89,11 @@ ILNode_SemAnalysis(ILNode_NewScope)
 static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 {
 	ILConstant *constValue;
+
+	/* Make sure that semantic analysis has been performed on the item */
+	CSSemProgramItem(info, ILToProgramItem(field));
+
+	/* Get the constant value, if present */
 	if(ILField_IsLiteral(field))
 	{
 		if((constValue = ILConstantGetFromOwner(ILToProgramItem(field))) != 0)

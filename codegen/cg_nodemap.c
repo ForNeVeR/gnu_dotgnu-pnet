@@ -171,6 +171,8 @@ void ILSetProgramItemMapping(ILGenInfo *info, ILNode *node)
 	{
 		ILGenOutOfMemory(info);
 	}
+	elem->item = item;
+	elem->node = node;
 	if(!ILHashAdd(info->itemHash, elem))
 	{
 		ILGenOutOfMemory(info);

@@ -78,9 +78,18 @@ int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,
 int CSSemExpectValue(ILNode *node, ILGenInfo *info,
 					 ILNode **parent, CSSemValue *value);
 
+/*
+ * Perform semantic analysis on the node corresponding to a
+ * program item.  This is used to finialize semantic analysis
+ * on declarations that are forward-declared at the point of use.
+ */
+void CSSemProgramItem(ILGenInfo *info, ILProgramItem *item);
+
 %}
 
 %{
+
+#include <codegen/cg_nodemap.h>
 
 /*
  * Default value that is returned from "ILNode_SemAnalysis".
@@ -163,6 +172,18 @@ int CSSemExpectValue(ILNode *node, ILGenInfo *info,
 	*value = ILNode_SemAnalysis(node, info, parent);
 	return (value->kind == CS_SEMKIND_RVALUE ||
 			value->kind == CS_SEMKIND_LVALUE);
+}
+
+void CSSemProgramItem(ILGenInfo *info, ILProgramItem *item)
+{
+	ILGenItemContext context;
+	ILNode *node;
+	node = ILEnterProgramItemContext(info, item, CCGlobalScope, &context);
+	if(node)
+	{
+		ILNode_SemAnalysis(node, info, &node);
+		ILLeaveProgramItemContext(info, &context);
+	}
 }
 
 %}

@@ -9,6 +9,12 @@
 	* cscc/csharp/cs_gather.c: associate nodes with program items
 	during the type gathering process.
 
+	* codegen/cg_nodemap.c, codegen/cg_nodes.tc,
+	cscc/csharp/cs_decls.tc, cscc/csharp/cs_gather.c,
+	cscc/csharp/cs_lvalue.tc, cscc/csharp/cs_semantics.tc:
+	protect declaration nodes from double-evaluation during semantic
+	analysis; handle forward definitions of constants.
+
 2002-06-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/cvm_call.c, engine/engine.h,

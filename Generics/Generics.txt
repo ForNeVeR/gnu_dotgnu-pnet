@@ -23,8 +23,10 @@
 #
 Arg_ABMustBeComparable=a or b must implement IComparable<T>
 Arg_CannotReduceCapacity=Cannot reduce the capacity of an array list below its current length
+Arg_ExistingEntry=There is already an existing entry with the specified key
 Arg_InvalidArrayIndex=Array index is invalid
 Arg_InvalidArrayRange=Array range is invalid
+Arg_NotInDictionary=There is no entry with the specified key
 ArgRange_Array=Array position or length is out of range
 ArgRange_HashLoadFactor=Invalid hash table load factor
 ArgRange_NonNegative=Value must not be negative

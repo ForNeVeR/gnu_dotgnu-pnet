@@ -55,6 +55,10 @@
 	Generics/ICapacity.cs: remove utility routines from ArrayList;
 	add the ICapacity interface.
 
+	* Generics/Generics.txt, Generics/Hashtable.cs: remove utility
+	routines from Hashtable; make it sealed; fix "null" comparison
+	issues; implement the "Keys" and "Values" collections properly.
+
 2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlTextReader (ReadIdentifier): append the character

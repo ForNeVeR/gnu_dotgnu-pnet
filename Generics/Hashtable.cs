@@ -27,7 +27,8 @@ namespace Generics
 
 using System;
 
-public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
+public sealed class Hashtable<KeyT, ValueT>
+		: IDictionary<KeyT, ValueT>, ICapacity, ICloneable
 {
 	// Contents of a hash bucket.
 	private struct HashBucket<KeyT, ValueT>
@@ -39,12 +40,10 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 	}; // struct HashBucket
 
 	// Internal state.
-	private IHashCodeProvider<KeyT> hcp__;
-	private IComparer<ValueT> comparer__;
+	private IHashCodeProvider<KeyT> hcp;
+	private IComparer<ValueT> comparer;
 	private int capacity;
-	private int capacityLimit;
 	private int num;
-	private float loadFactor;
 	private HashBucket<KeyT, ValueT>[] table;
 
 	// Table of the first 400 prime numbers.
@@ -91,20 +90,10 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 	// Constructors.
 	public Hashtable()
 			{
-				hcp__ = null;
-				comparer__ = null;
+				hcp = null;
+				comparer = null;
 				capacity = 0;
-				capacityLimit = 0;
 				num = 0;
-				try
-				{
-					loadFactor = 1.0f;
-				}
-				catch(NotImplementedException)
-				{
-					// The runtime engine does not support floating point,
-					// but we still need hash tables when no FP.
-				}
 				table = null;
 			}
 	public Hashtable(int capacity)
@@ -114,20 +103,10 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 					throw new ArgumentOutOfRangeException
 						("capacity", S._("ArgRange_NonNegative"));
 				}
-				hcp__ = null;
-				comparer__ = null;
+				hcp = null;
+				comparer = null;
 				this.capacity = capacity;
-				capacityLimit = capacity;
 				num = 0;
-				try
-				{
-					loadFactor = 1.0f;
-				}
-				catch(NotImplementedException)
-				{
-					// The runtime engine does not support floating point,
-					// but we still need hash tables when no FP.
-				}
 				if(capacity != 0)
 				{
 					table = new HashBucket<KeyT, ValueT> [capacity];
@@ -139,20 +118,10 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 			}
 	public Hashtable(IHashCodeProvider<KeyT> hcp, IComparer<KeyT> comparer)
 			{
-				hcp__ = hcp;
-				comparer__ = comparer;
+				this.hcp = hcp;
+				this.comparer = comparer;
 				capacity = 0;
-				capacityLimit = 0;
 				num = 0;
-				try
-				{
-					loadFactor = 1.0f;
-				}
-				catch(NotImplementedException)
-				{
-					// The runtime engine does not support floating point,
-					// but we still need hash tables when no FP.
-				}
 				table = null;
 			}
 	public Hashtable(int capacity, IHashCodeProvider<KeyT> hcp,
@@ -163,20 +132,10 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 					throw new ArgumentOutOfRangeException
 						("capacity", S._("ArgRange_NonNegative"));
 				}
-				hcp__ = hcp;
-				comparer__ = comparer;
+				this.hcp = hcp;
+				this.comparer = comparer;
 				this.capacity = capacity;
-				capacityLimit = capacity;
 				num = 0;
-				try
-				{
-					loadFactor = 1.0f;
-				}
-				catch(NotImplementedException)
-				{
-					// The runtime engine does not support floating point,
-					// but we still need hash tables when no FP.
-				}
 				if(capacity != 0)
 				{
 					table = new HashBucket<KeyT, ValueT> [capacity];
@@ -184,199 +143,6 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 				else
 				{
 					table = null;
-				}
-			}
-	public Hashtable(IDictionary<KeyT, ValueT> d)
-			{
-				if(d == null)
-				{
-					throw new ArgumentNullException("d");
-				}
-				hcp__ = null;
-				comparer__ = null;
-				capacity = d.Count;
-				capacityLimit = capacity;
-				num = 0;
-				try
-				{
-					loadFactor = 1.0f;
-				}
-				catch(NotImplementedException)
-				{
-					// The runtime engine does not support floating point,
-					// but we still need hash tables when no FP.
-				}
-				if(capacity != 0)
-				{
-					table = new HashBucket<KeyT, ValueT> [capacity];
-				}
-				else
-				{
-					table = null;
-				}
-				AddDictionaryContents(d);
-			}
-	public Hashtable(IDictionary<KeyT, ValueT> d, IHashCodeProvider<KeyT> hcp,
-					 IComparer<KeyT> comparer)
-			{
-				if(d == null)
-				{
-					throw new ArgumentNullException("d");
-				}
-				hcp__ = hcp;
-				comparer__ = comparer;
-				capacity = d.Count;
-				capacityLimit = capacity;
-				num = 0;
-				try
-				{
-					loadFactor = 1.0f;
-				}
-				catch(NotImplementedException)
-				{
-					// The runtime engine does not support floating point,
-					// but we still need hash tables when no FP.
-				}
-				if(capacity != 0)
-				{
-					table = new HashBucket<KeyT, ValueT> [capacity];
-				}
-				else
-				{
-					table = null;
-				}
-				AddDictionaryContents(d);
-			}
-	public Hashtable(int capacity, float loadFactor)
-			{
-				if(capacity < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("capacity", S._("ArgRange_NonNegative"));
-				}
-				if(loadFactor >= 0.1f && loadFactor <= 1.0f)
-				{
-					hcp__ = null;
-					comparer__ = null;
-					this.capacity = capacity;
-					capacityLimit = (int)(capacity * loadFactor);
-					num = 0;
-					this.loadFactor = loadFactor;
-					if(capacity != 0)
-					{
-						table = new HashBucket<KeyT, ValueT> [capacity];
-					}
-					else
-					{
-						table = null;
-					}
-				}
-				else
-				{
-					throw new ArgumentOutOfRangeException
-						("loadFactor", S._("ArgRange_HashLoadFactor"));
-				}
-			}
-	public Hashtable(int capacity, float loadFactor,
-					 IHashCodeProvider<KeyT> hcp, IComparer<KeyT> comparer)
-			{
-				if(capacity < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("capacity", S._("ArgRange_NonNegative"));
-				}
-				if(loadFactor >= 0.1f && loadFactor <= 1.0f)
-				{
-					hcp__ = hcp;
-					comparer__ = comparer;
-					this.capacity = capacity;
-					capacityLimit = (int)(capacity * loadFactor);
-					num = 0;
-					this.loadFactor = loadFactor;
-					if(capacity != 0)
-					{
-						table = new HashBucket<KeyT, ValueT> [capacity];
-					}
-					else
-					{
-						table = null;
-					}
-				}
-				else
-				{
-					throw new ArgumentOutOfRangeException
-						("loadFactor", S._("ArgRange_HashLoadFactor"));
-				}
-			}
-	public Hashtable(IDictionary<KeyT, ValueT> d, float loadFactor)
-			{
-				if(d == null)
-				{
-					throw new ArgumentNullException("d");
-				}
-				if(loadFactor >= 0.1f && loadFactor <= 1.0f)
-				{
-					hcp__ = null;
-					comparer__ = null;
-					capacity = d.Count;
-					capacityLimit = (int)(capacity * loadFactor);
-					num = 0;
-					this.loadFactor = loadFactor;
-					if(capacity != 0)
-					{
-						table = new HashBucket<KeyT, ValueT> [capacity];
-					}
-					else
-					{
-						table = null;
-					}
-					AddDictionaryContents(d);
-				}
-				else
-				{
-					throw new ArgumentOutOfRangeException
-						("loadFactor", S._("ArgRange_HashLoadFactor"));
-				}
-			}
-	public Hashtable(IDictionary<KeyT, ValueT> d, float loadFactor,
-					 IHashCodeProvider<KeyT> hcp, IComparer<KeyT> comparer)
-			{
-				if(d == null)
-				{
-					throw new ArgumentNullException("d");
-				}
-				if(loadFactor >= 0.1f && loadFactor <= 1.0f)
-				{
-					hcp__ = hcp;
-					comparer__ = comparer;
-					capacity = d.Count;
-					capacityLimit = (int)(capacity * loadFactor);
-					num = 0;
-					this.loadFactor = loadFactor;
-					if(capacity != 0)
-					{
-						table = new HashBucket<KeyT, ValueT> [capacity];
-					}
-					else
-					{
-						table = null;
-					}
-					AddDictionaryContents(d);
-				}
-				else
-				{
-					throw new ArgumentOutOfRangeException
-						("loadFactor", S._("ArgRange_HashLoadFactor"));
-				}
-			}
-
-	// Add the contents of a dictionary to this hash table.
-	private void AddDictionaryContents(IDictionary<KeyT, ValueT> d)
-			{
-				IDictionaryIterator<KeyT, ValueT> iterator = d.GetIterator();
-				while(iterator.MoveNext())
-				{
-					Add(iterator.Key, iterator.Value);
 				}
 			}
 
@@ -391,6 +157,7 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 					if(!(table[hash].hasEntry))
 					{
 						// We've found an empty slot, so add the entry.
+						table[hash].hasEntry = true;
 						table[hash].key = key;
 						table[hash].value = value;
 						break;
@@ -456,23 +223,11 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 				capacity = newCapacity;
 				num = 0;
 
-				// Determine the new capacity limit.
-				try
-				{
-					capacityLimit = (int)(capacity * loadFactor);
-				}
-				catch(NotImplementedException)
-				{
-					// The runtime engine does not support floating point,
-					// so assume a load factor of 1.
-					capacityLimit = capacity;
-				}
-
 				// Copy the original entries to the new table.
 				while(origSize > 0)
 				{
 					--origSize;
-					if(orig[origSize].key != null)
+					if(orig[origSize].hasEntry)
 					{
 						AddDirect(orig[origSize].key, orig[origSize].value);
 					}
@@ -483,7 +238,7 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 			}
 
 	// Implement the ICloneable interface.
-	public virtual Object Clone()
+	public Object Clone()
 			{
 				Hashtable<KeyT, ValueT> hashtab =
 					(Hashtable<KeyT, ValueT>)(MemberwiseClone());
@@ -496,8 +251,7 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 			}
 
 	// Implement the ICollection< DictionaryEntry<KeyT, ValueT> > interface.
-	public virtual void CopyTo
-				(DictionaryEntry<KeyT, ValueT>[] array, int index)
+	public void CopyTo(DictionaryEntry<KeyT, ValueT>[] array, int index)
 			{
 				if(array == null)
 				{
@@ -518,39 +272,39 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 					iterator = GetIterator();
 					while(iterator.MoveNext())
 					{
-						array[index++] = iterator.Entry;
+						array[index++] = iterator.Current;
 					}
 				}
 			}
-	public virtual int Count
+	public int Count
 			{
 				get
 				{
 					return num;
 				}
 			}
-	public virtual bool IsFixedSize
+	public bool IsFixedSize
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual bool IsReadOnly
+	public bool IsReadOnly
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual bool IsSynchronized
+	public bool IsSynchronized
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual Object SyncRoot
+	public Object SyncRoot
 			{
 				get
 				{
@@ -559,49 +313,40 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 			}
 
 	// Implement the IDictionary<KeyT, ValueT> interface.
-	public virtual void Add(KeyT key, ValueT value)
+	public void Add(KeyT key, ValueT value)
 			{
 				// Find an empty slot to add the entry, or expand
 				// the table if there are no free slots.
-				int hash = GetHash(key);
 				if(capacity == 0)
 				{
 					ExpandAndAdd(key, value);
 					return;
 				}
+				int hash = GetHash(key);
 				hash = (int)(((uint)hash) % ((uint)capacity));
 				int count = capacity;
 				while(count > 0)
 				{
 					if(!(table[hash].hasEntry))
 					{
-						// We've found an empty slot.  Check the capacity.
-						if(num >= capacityLimit)
-						{
-							// We must increase the capacity before adding.
-							ExpandAndAdd(key, value);
-						}
-						else
-						{
-							// Add the entry to the empty slot.
-							table[hash].key = key;
-							table[hash].value = value;
-							++num;
-						}
+						// We've found an empty slot.
+						table[hash].hasEntry = true;
+						table[hash].key = key;
+						table[hash].value = value;
+						++num;
 						return;
 					}
 					else if(KeyEquals(table[hash].key, key))
 					{
 						// There is already an entry with the key.
-						throw new ArgumentException
-							(_("Arg_ExistingEntry"));
+						throw new ArgumentException(_("Arg_ExistingEntry"));
 					}
 					hash = (hash + 1) % capacity;
 					--count;
 				}
 				ExpandAndAdd(key, value);
 			}
-	public virtual void Clear()
+	public void Clear()
 			{
 				if(table != null)
 				{
@@ -609,21 +354,41 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 				}
 				num = 0;
 			}
-	public virtual bool Contains(KeyT key)
+	public bool Contains(KeyT key)
 			{
-				return ContainsKey(key);
+				if(capacity == 0)
+				{
+					return false;
+				}
+				int hash = GetHash(key);
+				hash = (int)(((uint)hash) % ((uint)capacity));
+				int count = capacity;
+				while(count > 0)
+				{
+					if(!(table[hash].hasEntry))
+					{
+						break;
+					}
+					else if(KeyEquals(table[hash].key, key))
+					{
+						return true;
+					}
+					hash = (hash + 1) % capacity;
+					--count;
+				}
+				return false;
 			}
-	public virtual IDictionaryIterator<KeyT, ValueT> GetIterator()
+	public IDictionaryIterator<KeyT, ValueT> GetIterator()
 			{
 				return new HashtableIterator<KeyT, ValueT>(this);
 			}
-	public virtual void Remove(KeyT key)
+	public void Remove(KeyT key)
 			{
-				int hash = GetHash(key);
 				if(capacity == 0)
 				{
 					return;
 				}
+				int hash = GetHash(key);
 				hash = (int)(((uint)hash) % ((uint)capacity));
 				int count = capacity;
 				while(count > 0)
@@ -642,17 +407,17 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 					--count;
 				}
 			}
-	[IndexerName("Item")]
-	public virtual ValueT this[KeyT key]
+	public ValueT this[KeyT key]
 			{
 				get
 				{
 					// Find an existing entry with the specified key.
-					int hash = GetHash(key);
 					if(capacity == 0)
 					{
-						return null;
+						throw new ArgumentException
+							(S._("Arg_NotInDictionary"));
 					}
+					int hash = GetHash(key);
 					hash = (int)(((uint)hash) % ((uint)capacity));
 					int count = capacity;
 					while(count > 0)
@@ -668,37 +433,29 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 						hash = (hash + 1) % capacity;
 						--count;
 					}
-					return null;
+					throw new ArgumentException(S._("Arg_NotInDictionary"));
 				}
 				set
 				{
 					// Find an existing entry and replace it, or
 					// add a new entry to the table if not found.
-					int hash = GetHash(key);
 					if(capacity == 0)
 					{
 						ExpandAndAdd(key, value);
 						return;
 					}
+					int hash = GetHash(key);
 					hash = (int)(((uint)hash) % ((uint)capacity));
 					int count = capacity;
 					while(count > 0)
 					{
 						if(!(table[hash].hasEntry))
 						{
-							// We've found an empty slot.  Check the capacity.
-							if(num >= capacityLimit)
-							{
-								// We must increase the capacity before adding.
-								ExpandAndAdd(key, value);
-							}
-							else
-							{
-								// Add the entry to the empty slot.
-								table[hash].key = key;
-								table[hash].value = value;
-								++num;
-							}
+							// We've found an empty slot.
+							table[hash].hasEntry = true;
+							table[hash].key = key;
+							table[hash].value = value;
+							++num;
 							return;
 						}
 						else if(KeyEquals(table[hash].key, key))
@@ -714,39 +471,18 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 					ExpandAndAdd(key, value);
 				}
 			}
-	public virtual ICollection<KeyT> Keys
+	public ICollection<KeyT> Keys
 			{
 				get
 				{
-					KeyT[] array = new KeyT [num];
-					int posn, index;
-					Object key;
-					index = 0;
-					for(posn = 0; posn < capacity; ++posn)
-					{
-						if(table[posn].hasEntry)
-						{
-							array[index++] = table[posn].key;
-						}
-					}
-					return array;
+					return new HashtableKeyCollection<KeyT, ValueT>(this);
 				}
 			}
-	public virtual ICollection<ValueT> Values
+	public ICollection<ValueT> Values
 			{
 				get
 				{
-					ValueT[] array = new ValueT [num];
-					int posn, index;
-					index = 0;
-					for(posn = 0; posn < capacity; ++posn)
-					{
-						if(table[posn].hasEntry)
-						{
-							array[index++] = table[posn].value;
-						}
-					}
-					return array;
+					return new HashtableValueCollection<KeyT, ValueT>(this);
 				}
 			}
 
@@ -756,53 +492,51 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 				return GetIterator();
 			}
 
-	// Determine if this hash table contains a specific key.
-	public virtual bool ContainsKey(KeyT key)
+	// Implement the ICapacity interface.
+	public int Capacity
 			{
-				int hash = GetHash(key);
-				if(capacity == 0)
+				get
 				{
-					return false;
+					return capacity;
 				}
-				hash = (int)(((uint)hash) % ((uint)capacity));
-				int count = capacity;
-				while(count > 0)
+				set
 				{
-					if(!(table[hash].hasEntry))
+					// Validate the argument.
+					if(value < 0)
 					{
-						break;
+						throw new ArgumentOutOfRangeException
+							(S._("ArgRange_NonNegative"));
 					}
-					else if(KeyEquals(table[hash].key, key))
+					if(value < num)
 					{
-						return true;
+						throw new ArgumentOutOfRangeException
+							("value", S._("Arg_CannotReduceCapacity"));
 					}
-					hash = (hash + 1) % capacity;
-					--count;
-				}
-				return false;
-			}
 
-	// Determine if this hash table contains a specific value.
-	public virtual bool ContainsValue(ValueT value)
-			{
-				int posn;
-				for(posn = capacity - 1; posn >= 0; --posn)
-				{
-					if(table[posn].hasEntry && table[posn].value == value)
+					// Copy the original table.
+					HashBucket[] orig = table;
+					int origSize = capacity;
+
+					// Create the new table.
+					table = new HashBucket<KeyT, ValueT> [value];
+					capacity = value;
+					num = 0;
+
+					// Copy the original entries to the new table.
+					while(origSize > 0)
 					{
-						return true;
+						--origSize;
+						if(orig[origSize].hasEntry)
+						{
+							AddDirect(orig[origSize].key, orig[origSize].value);
+						}
 					}
 				}
-				return false;
 			}
 
 	// Get the hash value for a key.
-	protected virtual int GetHash(KeyT key)
+	private int GetHash(KeyT key)
 			{
-				if(((Object)key) == null)
-				{
-					throw new ArgumentNullException("key");
-				}
 				IHashCodeProvider<KeyT> provider = hcp;
 				if(provider != null)
 				{
@@ -810,21 +544,21 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 				}
 				else
 				{
-					return key.GetHashCode();
+					Object k = (Object)key;
+					if(k != null)
+					{
+						return k.GetHashCode();
+					}
+					else
+					{
+						return 0;
+					}
 				}
 			}
 
 	// Determine if an item is equal to a key value.
-	protected virtual bool KeyEquals(KeyT item, KeyT key)
+	private bool KeyEquals(KeyT item, KeyT key)
 			{
-				if(((Object)item) == null)
-				{
-					throw new ArgumentNullException("item");
-				}
-				if(((Object)key) == null)
-				{
-					throw new ArgumentNullException("key");
-				}
 				IComparer<KeyT> cmp = comparer;
 				if(cmp != null)
 				{
@@ -832,31 +566,21 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 				}
 				else
 				{
-					return item.Equals(key);
-				}
-			}
-
-	// Get the hash code provider that is being used by this instance.
-	protected virtual IHashCodeProvider<KeyT> hcp
-			{
-				get
-				{
-					return hcp__;
-				}
-			}
-
-	// Get the comparer that is being used by this instance.
-	protected virtual IComparer<KeyT> comparer
-			{
-				get
-				{
-					return comparer__;
+					Object i = (Object)item;
+					if(i != null)
+					{
+						return i.Equals((Object)key);
+					}
+					else
+					{
+						return (((Object)key) == null);
+					}
 				}
 			}
 
 	// Hashtable collection and dictionary iterator.
 	private class HashtableIterator<KeyT, ValueT>
-		: IDictionaryIterator<KeyT, ValueT>
+			: IDictionaryIterator<KeyT, ValueT>
 	{
 		// Internal state.
 		protected Hashtable<KeyT, ValueT> table;
@@ -869,7 +593,7 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 					posn = -1;
 				}
 
-		// Implement the IIterator<ValueT> interface.
+		// Implement the IIterator<DictionaryEntry<KeyT, ValueT>> interface.
 		public bool MoveNext()
 				{
 					while(++posn < table.capacity)
@@ -951,7 +675,255 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 					}
 				}
 
-	}; // HashtableIterator<KeyT, ValueT>
+	}; // class HashtableIterator<KeyT, ValueT>
+
+	// Collection of hash table keys.
+	private sealed class HashtableKeyCollection<KeyT, ValueT>
+			: ICollection<KeyT>
+	{
+		// Internal state.
+		private Hashtable<KeyT, ValueT> table;
+
+		// Constructor.
+		public HashtableKeyCollection(Hashtable<KeyT, ValueT> table)
+				{
+					this.table = table;
+				}
+
+		// Implement the ICollection<KeyT> interface.
+		public void CopyTo(KeyT[] array, int index)
+				{
+					IIterator<KeyT> iterator = GetIterator();
+					while(iterator.MoveNext())
+					{
+						array[index++] = iterator.Current;
+					}
+				}
+		public int Count
+				{
+					get
+					{
+						return table.Count;
+					}
+				}
+		public bool IsFixedSize
+				{
+					get
+					{
+						return table.IsFixedSize;
+					}
+				}
+		public bool IsReadOnly
+				{
+					get
+					{
+						return table.IsReadOnly;
+					}
+				}
+		public bool IsSynchronized
+				{
+					get
+					{
+						return table.IsSynchronized;
+					}
+				}
+		public Object SyncRoot
+				{
+					get
+					{
+						return table.SyncRoot;
+					}
+				}
+
+		// Implement the IIterable<KeyT> interface.
+		public IIterator<KeyT> GetIterator()
+				{
+					return new HashtableKeyIterator<KeyT, ValueT>(table);
+				}
+
+	}; // class HashtableKeyCollection<KeyT, ValueT>
+
+	// Collection of hash table values.
+	private sealed class HashtableValueCollection<KeyT, ValueT>
+			: ICollection<ValueT>
+	{
+		// Internal state.
+		private Hashtable<KeyT, ValueT> table;
+
+		// Constructor.
+		public HashtableValueCollection(Hashtable<KeyT, ValueT> table)
+				{
+					this.table = table;
+				}
+
+		// Implement the ICollection<ValueT> interface.
+		public void CopyTo(ValueT[] array, int index)
+				{
+					IIterator<ValueT> iterator = GetIterator();
+					while(iterator.MoveNext())
+					{
+						array[index++] = iterator.Current;
+					}
+				}
+		public int Count
+				{
+					get
+					{
+						return table.Count;
+					}
+				}
+		public bool IsFixedSize
+				{
+					get
+					{
+						return table.IsFixedSize;
+					}
+				}
+		public bool IsReadOnly
+				{
+					get
+					{
+						return table.IsReadOnly;
+					}
+				}
+		public bool IsSynchronized
+				{
+					get
+					{
+						return table.IsSynchronized;
+					}
+				}
+		public Object SyncRoot
+				{
+					get
+					{
+						return table.SyncRoot;
+					}
+				}
+
+		// Implement the IIterable<KeyT> interface.
+		public IIterator<ValueT> GetIterator()
+				{
+					return new HashtableValueIterator<KeyT, ValueT>(table);
+				}
+
+	}; // class HashtableValueCollection<KeyT, ValueT>
+
+	// Hashtable key collection iterator.
+	private class HashtableKeyIterator<KeyT, ValueT> : IIterator<KeyT>
+	{
+		// Internal state.
+		protected Hashtable<KeyT, ValueT> table;
+		protected int posn;
+
+		// Constructor.
+		public HashtableKeyIterator(Hashtable<KeyT, ValueT> table)
+				{
+					this.table = table;
+					posn = -1;
+				}
+
+		// Implement the IIterator<KeyT> interface.
+		public bool MoveNext()
+				{
+					while(++posn < table.capacity)
+					{
+						if(table.table[posn].hasEntry)
+						{
+							return true;
+						}
+					}
+					posn = table.capacity;
+					return false;
+				}
+		public void Reset()
+				{
+					posn = -1;
+				}
+		public void Remove()
+				{
+					if(posn < 0 || posn >= table.capacity ||
+					   !(table.table[posn].hasEntry))
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_BadIteratorPosition"));
+					}
+					table.table[posn].hasEntry = false;
+					--(table.num);
+				}
+		public KeyT Current
+				{
+					get
+					{
+						if(posn < 0 || posn >= table.capacity ||
+					       !(table.table[posn].hasEntry))
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadIteratorPosition"));
+						}
+						return table.table[posn].key;
+					}
+				}
+
+	}; // class HashtableKeyIterator<KeyT, ValueT>
+
+	// Hashtable value collection iterator.
+	private class HashtableValueIterator<KeyT, ValueT> : IIterator<KeyT>
+	{
+		// Internal state.
+		protected Hashtable<KeyT, ValueT> table;
+		protected int posn;
+
+		// Constructor.
+		public HashtableValueIterator(Hashtable<KeyT, ValueT> table)
+				{
+					this.table = table;
+					posn = -1;
+				}
+
+		// Implement the IIterator<ValueT> interface.
+		public bool MoveNext()
+				{
+					while(++posn < table.capacity)
+					{
+						if(table.table[posn].hasEntry)
+						{
+							return true;
+						}
+					}
+					posn = table.capacity;
+					return false;
+				}
+		public void Reset()
+				{
+					posn = -1;
+				}
+		public void Remove()
+				{
+					if(posn < 0 || posn >= table.capacity ||
+					   !(table.table[posn].hasEntry))
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_BadIteratorPosition"));
+					}
+					table.table[posn].hasEntry = false;
+					--(table.num);
+				}
+		public ValueT Current
+				{
+					get
+					{
+						if(posn < 0 || posn >= table.capacity ||
+					       !(table.table[posn].hasEntry))
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadIteratorPosition"));
+						}
+						return table.table[posn].value;
+					}
+				}
+
+	}; // class HashtableValueIterator<KeyT, ValueT>
 
 }; // class Hashtable<KeyT, ValueT>
 

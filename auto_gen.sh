@@ -19,7 +19,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # Run aclocal to update the macros.
-aclocal
+aclocal -I ./
 
 # Get extra options to use depending upon the automake version.
 AM_VERSION=`automake --version`

@@ -24,7 +24,7 @@ namespace System.Drawing.Toolkit
 
 	internal class DrawingPopupWindow : DrawingWindow, IToolkitWindow
 	{
-		protected uint createCount;
+		protected static uint createCount;
 
 		public DrawingPopupWindow(DrawingToolkit toolkit, int x, int y, int width, int height,
 								  IToolkitEventSink sink) : base ( toolkit )

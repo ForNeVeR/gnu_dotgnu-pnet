@@ -10,6 +10,10 @@
 	tests/runtime/System/IO/TestPath.cs: "Path.GetExtension" should
 	return "." at the front of the extension.
 
+	* System.Drawing.Win32/DrawingPopupWindow.cs: make the "createCount"
+	field static so that popup windows will register different WNDCLASS'es
+	for each window.
+
 2003-10-08  Neil Cawse  <neilcawse@geotab.com>
 
 	* : many small fixes to compile with csc

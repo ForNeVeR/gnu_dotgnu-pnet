@@ -908,24 +908,23 @@ public sealed class FileSystem
 			}
 
 	// Lock a record within a file.
-	[TODO]
 	public static void Lock(int FileNumber, long Record)
 			{
-				// TODO
+				Lock(FileNumber, Record, Record);
 			}
 
 	// Lock the entire contents of a file.
-	[TODO]
 	public static void Lock(int FileNumber)
 			{
-				// TODO
+				Lock(FileNumber, 1, Int64.MaxValue);
 			}
 
 	// Lock a region within a file.
-	[TODO]
 	public static void Lock(int FileNumber, long FromRecord, long ToRecord)
 			{
-				// TODO
+				File file = File.GetFile
+					(FileNumber, Assembly.GetCallingAssembly());
+				file.Lock(FromRecord, ToRecord);
 			}
 
 #if !ECMA_COMPAT
@@ -1163,18 +1162,18 @@ public sealed class FileSystem
 			}
 
 	// Seek to a new file position.
-	[TODO]
 	public static void Seek(int FileNumber, long Position)
 			{
-				// TODO
+				File file = File.GetFile
+					(FileNumber, Assembly.GetCallingAssembly());
+				file.SetRecord(Position);
 			}
 
 	// Get the current seek position within a file.
-	[TODO]
 	public static long Seek(int FileNumber)
 			{
-				// TODO
-				return 0;
+				return File.GetFile
+					(FileNumber, Assembly.GetCallingAssembly()).Location;
 			}
 
 #if !ECMA_COMPAT
@@ -1206,24 +1205,23 @@ public sealed class FileSystem
 			}
 
 	// Unlock a record within a file.
-	[TODO]
 	public static void Unlock(int FileNumber, long Record)
 			{
-				// TODO
+				Unlock(FileNumber, Record, Record);
 			}
 
 	// Unlock the entire contents of a file.
-	[TODO]
 	public static void Unlock(int FileNumber)
 			{
-				// TODO
+				Unlock(FileNumber, 1, Int64.MaxValue);
 			}
 
 	// Unlock a region within a file.
-	[TODO]
 	public static void Unlock(int FileNumber, long FromRecord, long ToRecord)
 			{
-				// TODO
+				File file = File.GetFile
+					(FileNumber, Assembly.GetCallingAssembly());
+				file.Unlock(FromRecord, ToRecord);
 			}
 
 	// Write data to a file.

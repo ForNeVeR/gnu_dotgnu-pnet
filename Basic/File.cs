@@ -411,6 +411,20 @@ internal sealed class File
 				// TODO
 			}
 
+	// Lock a region of this file.
+	[TODO]
+	public void Lock(long fromRecord, long toRecord)
+			{
+				// TODO
+			}
+
+	// Unlock a region of this file.
+	[TODO]
+	public void Unlock(long fromRecord, long toRecord)
+			{
+				// TODO
+			}
+
 }; // class File
 
 }; // namespace Microsoft.VisualBasic

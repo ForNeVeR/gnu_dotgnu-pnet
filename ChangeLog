@@ -11,6 +11,10 @@ for "System.Diagnostics".
 
 * samples/mscorlib.dll: new version with "System.Diagnostics" support.
 
+* engine/Makefile.am, engine/asmfix.c: fix a bug in the pass-through
+code in "asmfix" that caused it to output the same assembly code twice;
+recognise another form of loop top that gcc sometimes uses.
+
 2001-11-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_invoke.tc, cscc/cs_internal.h, cscc/cs_lookup.c: add code to

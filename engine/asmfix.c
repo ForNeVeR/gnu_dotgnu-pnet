@@ -106,6 +106,7 @@ int main(int argc, char *argv[])
 		{
 			fputs(lines[line], stdout);
 		}
+		return 0;
 	}
 
 	/* Look for any labels that seem to be inlining candidates */
@@ -281,6 +282,30 @@ static int locateLoopTop(void)
 			}
 			topLabel[topLabelLen] = '\0';
 			tableLabel = ILDupString(lines[line + 4] + 6);
+			tableLabelLen = 2;
+			while(tableLabel[tableLabelLen] != '(')
+			{
+				++tableLabelLen;
+			}
+			tableLabel[tableLabelLen] = '\0';
+			return 1;
+		}
+		else if(lines[line][0] == '.' && lines[line][1] == 'L' &&
+		        !strcmp(lines[line + 1], "\txorl\t%eax, %eax\n") &&
+		        !strcmp(lines[line + 2], "\tmovb\t(%esi), %al\n") &&
+		        !strcmp(lines[line + 3], "\tcmpl\t$255, %eax\n") &&
+		        !strncmp(lines[line + 4], "\tja\t.L", 6) &&
+		        !strncmp(lines[line + 5], "\tjmp\t*.L", 8))
+		{
+			/* We've found the top of the loop */
+			topLabel = ILDupString(lines[line]);
+			topLabelLen = 2;
+			while(topLabel[topLabelLen] != ':')
+			{
+				++topLabelLen;
+			}
+			topLabel[topLabelLen] = '\0';
+			tableLabel = ILDupString(lines[line + 5] + 6);
 			tableLabelLen = 2;
 			while(tableLabel[tableLabelLen] != '(')
 			{

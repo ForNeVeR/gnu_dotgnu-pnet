@@ -24,6 +24,7 @@ namespace System.Net
 {
 
 using System;
+using System.IO;
 using System.Net.Sockets;
 
 public class HttpWebRequest : WebRequest
@@ -118,9 +119,9 @@ public class HttpWebRequest : WebRequest
 	public override WebResponse GetResponse()
 	{
 	}
-	
+
 	public string Accept {get; set;}
-	
+
 	public Uri Address {get; set;}
 
 	public bool AllowAutoRedirect {get; set;}

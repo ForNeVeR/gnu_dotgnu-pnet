@@ -17,8 +17,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-Exception_UriFormat=The supplied URI did not have the correct format
-Exception_Argument_HexDigit=That is not a valid hexadecimal digit
 Exception_Web=A failure occurred during an Internet related operation
 Exception_Protocol=Protocol error occurred
 Exception_Socket=A network error occurred

@@ -18,3 +18,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 Arg_SocketCreating=An error occured while creating a new socket;
+Exception_UriFormat=The supplied URI did not have the correct format
+Arg_HexDigit=That is not a valid hexadecimal digit
+Arg_UriScheme=The scheme supplied with the URI was not valid
+Arg_UriPort=The port specified with the URI was nonexistent

@@ -4,6 +4,7 @@
  * Copyright (C) 2002 Free Software Foundation, Inc.
  *
  * Contributed by Stephen Compall <rushing@sigecom.net>
+ * Contributions by Gerard Toonstra <toonstra@ntlworld.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,9 +59,9 @@ public class Uri : MarshalByRefObject
 
 	// here's some of chiraz's extras
 	// note that I did not make them capitalised; I do not want namespace conflict
-	private String          absolutePath; // the path to the resource on the host (/uri/blah)
+	// use this.path instead of absolutePath
 	private String          absolutePathEscaped; // the unescaped version of the absolute path.
-	private String          absoluteUri;  // the absolute uri to the resource (in it's entirety)
+	private String          absoluteUri;  // the absolute uri to the resource as originally passed to the constructor (don't use)
 	// is true if the user had already escaped the URL before it was passed
 	// into the constructor. (escaped was true).
 	// however, if the user did escape it, but didn't tell the constructor, it
@@ -77,6 +78,8 @@ public class Uri : MarshalByRefObject
 	private String userinfo;
 	// host does not contain the port
 	private String host;
+	// if this is -1, then use default port for scheme, and don't output :NN (port#)
+	// in .ToString() and alumni
 	private int port;
 
 	// technically optional, but they want a path :)
@@ -94,11 +97,11 @@ public class Uri : MarshalByRefObject
 	// end of state
 
 	// Constructors.
-	Uri(String uriString) : this(uriString, false)
+	public Uri(String uriString) : this(uriString, false)
 	{
 	}
 
-	Uri(String uriString, bool dontEscape)
+	public Uri(String uriString, bool dontEscape)
 	{
 		if (uriString == null)
 		{
@@ -112,11 +115,10 @@ public class Uri : MarshalByRefObject
 		this.Canonicalize();
 	}
 
-	Uri(Uri baseUri, String relativeUri) : this(baseUri, relativeUri, false)
+	public Uri(Uri baseUri, String relativeUri) : this(baseUri, relativeUri, false)
 	{
 	}
 
-	[TODO]
 	public Uri(Uri baseUri, String relativeUri, bool dontEscape)
 	// improve efficiency of this code (EndsWith, StartsWith to IndexOf)
 	{
@@ -130,33 +132,51 @@ public class Uri : MarshalByRefObject
 	String myBaseUri = Trim(baseUri.AbsoluteUri);
 	String myRelativeUri = Trim(relativeUri);
 	UserEscaped = dontEscape;
-	while (myBaseUri.EndsWith("/"))
-		myBaseUri = myBaseUri.Substring(0, myBaseUri.Length() - 2);
 
-	while (myRelativeUri.StartsWith("/"))
-		relativeUri = relativeUri.Substring( 1 );
+	int newlastchar;
+	for (newlastchar = myBaseUri.Length; myBaseUri[--newlastchar] == '/';)
+		; // empty body
+	myBaseUri = myBaseUri.Substring(0, newlastchar + 1);
 
-	this.absoluteUri = baseUri + "/" + relativeUri;
+	for (newlastchar = -1; myRelativeUri[++newlastchar] == '/')
+		; // empty body
+	myRelativeUri = myRelativeUri.Substring(newlastchar);
 
-	Parse();
-	Canonicalize();
+	this.AbsoluteUri = String.Concat(myBaseUri, "/", myRelativeUri);
+
+	this.Parse();
+	this.Canonicalize();
 	}
 
 	// methods
 	[TODO]
 	protected virtual void Canonicalize()
 	{
+		int pos = 0;
+
+		if (String.Equals(this.Scheme, "file"))
+		{
+			// TODO: convert file to platform based file reference
+		}
+
+		this.absolutePath = this.absolutePath.Replace('\', '/').Replace("//", "/")
+			.Replace("/../", "/").Replace("/./", "/");
 	}
 
 	[TODO]
 	public static UriHostNameType CheckHostName(String name)
 	{
+		if (schemeName == null || schemeName.Length == 0)
+			return UriHostTypeName.Unknown;
+
+		// TODO: more stuff here
 	}
 
 	public static bool CheckSchemeName(String schemeName)
 	{
 		if (schemeName == null || schemeName.Length == 0)
 			return false;
+
 		char charloc = schemeName[0];
 		if (charloc < 'a' && charloc > 'z' &&
 		    charloc < 'A' && charloc > 'Z')
@@ -188,44 +208,35 @@ public class Uri : MarshalByRefObject
 		// do nothing in base class
 	}
 
-	[TODO]
 	public override bool Equals(Object comparand)
-	// TODO on this method: account for escape/unescape in strings
 	{
-		if (comparand == null)
+		Uri rurib;
+		if (comparand == null || (comparand is not String && comparand is not Uri))
 			return false;
-		try
-		{
-			Uri rurib = (Uri) comparand;
-			// do not check query and fragment
-			// this makes the boolean
-			return (this.Host == rurib.Host &&
-			    this.Password == rurib.Password && this.Path == rurib.Path &&
-			    this.Scheme == rurib.Scheme &&
-			    this.Port == rurib.Port && this.UserName == rurib.UserName);
-		}
-		catch (InvalidCastException ice)
-		{
-			try
-			{
-				return this.ToStringNoFragQuery.Equals(Uri.ToStringNoFragQuery((String) comparand));
-			}
-			catch (InvalidCastException nice)
-			{
-				return false;
-			}
-		}
+		else if (comparand is String)
+			rurib = new Uri((String)comparand);
+		else if (comparand is Uri)
+			rurib = (Uri)comparand;
+		else
+			return false;
+
+		// do not check query and fragment
+		// this makes the boolean
+		return (String.Equals(this.Host, myUri.Host) &&
+			  String.Equals(this.AbsolutePath, myUri.AbsolutePath) &&
+			  String.Equals(this.Scheme, myUri.Scheme));
 	}
 
 	protected virtual void Escape()
 	{
-		this.abspath = EscapeString(this.abspath);
+		this.path = EscapeString(this.path);
 	}
 
 	protected static String EscapeString(String str)
 	{
 		if (this.abspath == null || str.Length == 0)
-			return String.Empty;
+			return "";
+
 		// assume that all characters are OK for escaping
 		// must change code for editable URI
 		// also, does not see if string already escaped
@@ -251,7 +262,7 @@ public class Uri : MarshalByRefObject
 		else if (digit >= 'a' && digit <= 'f')
 			return digit - 87;
 		else
-			throw new ArgumentException(_("Exception_Argument_HexDigit"), "digit");
+			throw new ArgumentException(_("Arg_HexDigit"), "digit");
 	}
 
 	public override int GetHashCode()
@@ -267,6 +278,10 @@ public class Uri : MarshalByRefObject
 	[TODO]
 	public String GetLeftPart(UriPartial part)
 	{
+		if (part == UriPartial.Path)
+			return this.ToStringNoFragQuery();
+
+		// TODO: other UriPartials
 	}
 
 	public static String HexEscape(char character)
@@ -290,10 +305,50 @@ public class Uri : MarshalByRefObject
 			return index + 55;
 	}
 
-	[TODO]
 	public static char HexUnescape(String pattern, ref int index)
-	// help me out on the meaning of ref here (boxing?)
 	{
+		char mychar;
+
+		if ((pattern.Length < (index + 3)) || (index < 0))
+		{
+			throw new ArgumentOutOfRangeException();
+		}
+		if (IsHexEncoding(pattern, index))
+		{
+			if (pattern[index+1] >= 0x41)
+			{
+				mychar = pattern[index+1] - 0x41 + 10;
+			}
+			else if (pattern[index+1] >= 0x61)
+			{
+				mychar = pattern[index+1] - 0x61 + 10;
+			}
+			else
+			{
+				mychar = pattern[index+1] - 0x30;
+			}
+
+			mychar = mychar << 4;
+
+			if (pattern[index+2] >= 0x41)
+			{
+				mychar = mychar +pattern[index+2] - 0x41 + 10;
+			}
+			else if (pattern[index+1] >= 0x61)
+			{
+				mychar = mychar + pattern[index+2] - 0x61 + 10;
+			}
+			else
+			{
+				mychar = mychar + pattern[index+2] - 0x30;
+			}
+
+			return mychar;
+		}
+		else
+		{
+			return pattern[index];
+		}
 	}
 
 	protected virtual bool IsBadFileSystemCharacter(char character)
@@ -318,9 +373,11 @@ public class Uri : MarshalByRefObject
 		);
 	}
 
-	[TODO]
 	public static bool IsHexEncoding(String pattern, int index)
 	{
+		return ((pattern[index] == '%') &&
+		    IsHexDigit(pattern[index+1]) &&
+		    IsHexDigit(pattern[index+2]));
 	}
 
 	protected virtual bool IsReservedCharacter(char character)
@@ -331,16 +388,201 @@ public class Uri : MarshalByRefObject
 	[TODO]
 	public String MakeRelative(Uri toUri)
 	{
+		if (String.Equals(toUri.Host, this.Host))
+		{
+			String thisUri[] = this.AbsolutePath.Split('/');
+			String otherUri[] = toUri.AbsolutePath.Split('/');
+			int currentItem = 0;
+			StringBuilder myStringBuilder = new StringBuilder();
+
+			while ((thisUri.Length >= currentItem) &&
+				 (otherUri.Length >= currentItem))
+			{
+				if (String.Compare(thisUri[currentItem], otherUri[currentItem) == 0)
+				{
+					myStringBuilder.Append(otherUri[currentItem]);
+					myStringBuilder.Append("/");
+				}
+				++currentItem;
+			}
+
+			if (currentItem == otherUri.Length)
+			{
+				myStringBuilder.Remove(myStringBuilder.Length - 1, 1);
+			}
+			else
+			{
+				for (int i = currentItem; i < otherUri.Length; i++)
+				{
+					myStringBuilder.Append(otherUri[i]);
+				}
+			}
+
+			return myStringBuilder.ToString();
+		}
+		else
+		{
+			return toUri.AbsoluteUri;
+		}
 	}
 
 	[TODO]
 	protected virtual void Parse()
+	// TODO: fix for current private property behavior
 	{
+		int curpos = absoluteUri.IndexOf(":");
+		int nextpos = 0;
+		int interimpos1 = 0;
+		int interimpos2 = 0;
+
+		// Set all to nothing just in case info was left behind somewhere somehow...
+		path = "";
+		absolutePathEscaped = "";
+		fragment = "";
+		host = "";
+		port = -1;
+		query = "";
+		scheme = "";
+		userinfo = "";
+
+		this.scheme = absoluteUri.Substring(0, curpos).ToLower();
+
+		if (!CheckSchemeName(this.scheme))
+		{
+			if (this.scheme.Length == 0)
+			{
+				this.scheme = "http";
+				curpos = 0;
+			}
+			else
+				throw new UriFormatException(_("Arg_UriScheme"));
+		}
+
+		if ((absoluteUri.Length - 1) < (curpos + 3))
+		{
+			return;
+		}
+
+		if (String.Compare(AbsoluteUri, curpos, SchemeDelimiter, 0, 3) == 0)
+		{
+			curpos = curpos + 3;
+		}
+		else
+		{
+			curpos = curpos + 1;
+		}
+
+		// TODO: array literal OK?
+		nextpos = absoluteUri.IndexOfAny(['/', '?', '#'], curpos);
+		if (nextpos < 0)
+			nextpos = AbsoluteUri.Length;
+
+		this.ParseAuthority(absoluteUri.Substring(curpos, nextpos - curpos - 1));
+		curpos = nextpos + 1;
+
+		if (nextpos < AbsoluteUri.Length)
+		{
+			nextpos = AbsoluteUri.IndexOf('?', curpos);
+		}
+		else
+		{
+			return;
+		}
+
+		if (nextpos > 0)
+		{
+			AbsolutePath = AbsoluteUri.Substring(curpos, nextpos - curpos - 1);
+			curpos = nextpos + 1;
+		}
+		else
+		{
+			nextpos = AbsoluteUri.IndexOf('#', curpos);
+		}
+
+		if (nextpos > 0)
+		{
+			Fragment = AbsoluteUri.Substring(nextpos + 1);
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	// help for Parse()!
+	private void ParseAuthority(String authority)
+	{
+		int interimpos1, interimpos2;
+
+		interimpos1 = authority.IndexOf('@');
+		if (interimpos1 > 0)
+		{
+			userinfo = authority.Substring(0, interimpos1 - 1);
+			interimpos2 = interimpos1 + 1;
+		}
+
+		interimpos1 = authority.IndexOf(':');
+		if (interimpos1 > 0)
+		{
+			this.host = Authority.Substring(interimpos2, interimpos1 - interimpos2 - 1);
+			try
+			{
+				this.port = Int32.Parse(Authority.Substring(interimpos1 + 1));
+			}
+			catch (FormatException fe) { this.Port = -1; }
+			catch (OverflowException oe)
+			{
+				throw new UriFormatException(_("Arg_UriPort"));
+			}
+		}
+		else
+			host = authority.Substring(interimpos2);
 	}
 
 	[TODO]
 	public override String ToString()
 	{
+		StringBuilder myStringBuilder = new StringBuilder();
+
+		myStringBuilder.Append(this.Scheme);
+		if (String.Compare(this.Scheme.UriSchemeMailto) != 0)
+		{
+			myStringBuilder.Append(this.SchemeDelimiter);
+		}
+		else
+		{
+			myStringBuilder.Append(':');
+		}
+
+		if (this.UserInfo.Length > 0)
+		{
+			myStringBuilder.Append(this.UserInfo);
+			myStringBuilder.Append('@');
+		}
+
+		myStringBuilder.Append(Host);
+
+		if (this.Port >= 0)
+		{
+			myStringBuilder.Append(':');
+			myStringBuilder.Append(this.UserInfo);
+		}
+
+		myStringBuilder.Append(AbsolutePath);
+
+		if (this.Query.Length > 0)
+		{
+			myStringBuilder.Append('?');
+			myStringBuilder.Append(this.Query);
+		}
+
+		if (this.Fragment.Length) > 0)
+		{
+			myStringBuilder.Append('#');
+			myStringBuilder.Append(this.Fragment);
+		}
+
+		return Unescape(myStringBuilder.ToString());
 	}
 
 	[TODO]
@@ -353,15 +595,18 @@ public class Uri : MarshalByRefObject
 	{
 		get
 		{
-			return this.path;
+			if (this.path[0] == '/')
+				return this.path;
+			else
+				return String.Concat("/", this.path);
 		}
 	}
 
-	[TODO]
 	public String AbsoluteUri
 	{
 		get
 		{
+			return this.absoluteUri;
 		}
 	}
 
@@ -383,7 +628,7 @@ public class Uri : MarshalByRefObject
 	{
 		get
 		{
-			if (this.fragment == String.Empty)
+			if (this.fragment == "")
 				return this.fragment;
 			else
 				return new StringBuilder(this.fragment.Length+1).Append('#').Append(this.fragment).ToString();
@@ -403,6 +648,7 @@ public class Uri : MarshalByRefObject
 	{
 		get
 		{
+			// decipher the information from this.host
 		}
 	}
 
@@ -458,9 +704,13 @@ public class Uri : MarshalByRefObject
 	{
 		get
 		{
-			String qpath = this.AbsolutePath;
-			String pquery = this.Query;
-			return new StringBuilder(qpath.Length+pquery.Length).Append(qpath).Append(pquery).ToString();
+			String abspath = this.AbsolutePath;
+			if (String.Equals(abspath, ""))
+				return this.Query;
+			else if (String.Equals(this.query, ""))
+				return abspath;
+			else
+				return String.Concat(this.path, "?", this.query);
 		}
 	}
 
@@ -478,6 +728,7 @@ public class Uri : MarshalByRefObject
 				}
 				catch (ArgumentException ae)
 				{
+					// also means don't know
 					return -1;
 				}
 			}
@@ -489,10 +740,10 @@ public class Uri : MarshalByRefObject
 		get
 		{
 			// gets with the ?
-			if (this.query == String.Empty)
+			if (this.query == "")
 				return this.query;
 			else
-				return new StringBuilder(this.query.Length+1).Append('?').Append(this.query).ToString();
+				return String.Concat("?", this.query);
 		}
 	}
 
@@ -504,11 +755,11 @@ public class Uri : MarshalByRefObject
 		}
 	}
 
-	[TODO]
 	public bool UserEscaped
 	{
 		get
 		{
+			return this.userEscaped;
 		}
 	}
 

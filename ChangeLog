@@ -28,6 +28,12 @@
 	csupport/README, csupport/csupport.build: move the "csupport"
 	directory from "pnet" to "pnetlib".
 
+	* Makefile.am, configure.in, samples/.cvsignore, samples/Makefile.am,
+	samples/README, samples/codepage.cs, samples/except.cs, samples/fib.cs,
+	samples/getenv.cs, samples/hello.cs, samples/httpsrv.cs,
+	samples/ilrun.sh.in, samples/samples.build: copy the C# samples from
+	pnet to pnetlib.
+
 2002-12-07  Nguyen, Thong  <tum@veridicus.com>
 
 	* runtime/System/Threading/WaitHandle.cs: Added WaitTimeout const.

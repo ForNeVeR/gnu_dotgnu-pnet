@@ -176,8 +176,11 @@ resources/en_US/runtime/Makefile
 resources/en_US/I18N/Makefile
 resources/en_US/System/Makefile
 resources/en_US/System.Xml/Makefile
+samples/Makefile
+samples/ilrun.sh
 tools/run_test.sh
 tools/csccwrap.sh
 pnetlib.spec])
 
 chmod +x "${srcdir}/tools/csccwrap.sh"
+chmod +x "${srcdir}/samples/ilrun.sh"

@@ -710,7 +710,14 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 	ILDumpFlags(stream, decl->modifiers, CSharpMethodFlags, 0);
 	fputs(CSTypeToName(ILTypeGetReturn(signature)), stream);
 	putc(' ', stream);
-	methodName = ConvertOperatorNames(method);
+	if(isConstructor)
+	{
+		methodName = ILClass_Name(ILMethod_Owner(method));
+	}
+	else
+	{
+		methodName = ConvertOperatorNames(method);
+	}
 	fputs(methodName, stream);
 	putc('(', stream);
 	num = ILTypeNumParams(signature);
@@ -1173,7 +1180,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	if(impl)
 	{
 		Indent(stream, indent);
-		fputs("<Interfaces/>\n", stream);
+		fputs("<Interfaces>\n", stream);
 		do
 		{
 			Indent(stream, indent + 2);
@@ -1181,7 +1188,6 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 			Indent(stream, indent + 4);
 			fputs("<InterfaceName>", stream);
 			DumpClassName(stream, ILImplementsGetInterface(impl));
-			Indent(stream, indent + 4);
 			fputs("</InterfaceName>\n", stream);
 			Indent(stream, indent + 4);
 			fputs("<Excluded>0</Excluded>\n", stream);

@@ -15,6 +15,9 @@
 	* cscc/csdoc.c, cscc/common/cc_main.c, cscc/common/cc_main.h:
 	turn on doc comments when compiling C# code with "csdoc".
 
+	* cscc/csdoc.c: bug fixes to XML output for interfaces and
+	constructors.
+
 2002-05-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libgc/misc.c: fix a Win32-ism that is affecting builds on

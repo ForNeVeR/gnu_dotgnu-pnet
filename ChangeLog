@@ -1,4 +1,10 @@
 
+2003-04-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_file.c,
+	engine/lib_helpers.c, engine/lib_object.c, engine/lib_thread.c,
+	include/il_sysio.h, support/dir.c: fixes to various internalcalls.
+
 2003-04-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: recognise the "where" keyword as

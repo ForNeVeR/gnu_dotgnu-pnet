@@ -51,14 +51,14 @@ ILBool _IL_FileMethods_ValidatePathname(ILExecThread *thread, ILString *path)
 }
 
 /*
- * public static bool Exists(String path);
+ * public static FileType GetFileType(String path);
  */
-ILBool _IL_FileMethods_Exists(ILExecThread * _thread, ILString * path)
+ILInt32 _IL_FileMethods_GetFileType(ILExecThread * _thread, ILString * path)
 {
 	const char *cpath = ILStringToAnsi(_thread,path);
 	if(cpath)
 	{
-		return ILFileExists(cpath,(char**)0);
+		return ILGetFileType(cpath);
 	}
 	else
 	{
@@ -255,4 +255,34 @@ ILInt32 _IL_FileMethods_SetCreationTime(ILExecThread *thread, ILString *path, IL
 	}
 
 	return ILSysIOSetCreationTime(path_ansi, ticks);
+}
+
+/*
+ * public static Errno GetAttributes(String path, out int attrs);
+ */
+ILInt32 _IL_FileMethods_GetAttributes(ILExecThread *_thread,
+									  ILString *path, ILInt32 *attrs)
+{
+	/* TODO */
+	return IL_ERRNO_EPERM;
+}
+
+/*
+ * public static Errno SetAttributes(String path, int attrs);
+ */
+ILInt32 _IL_FileMethods_SetAttributes(ILExecThread *_thread,
+									  ILString *path, ILInt32 attrs)
+{
+	/* TODO */
+	return IL_ERRNO_EPERM;
+}
+
+/*
+ * public static Errno GetLength(String path, out long length);
+ */
+ILInt32 _IL_FileMethods_GetLength(ILExecThread *_thread,
+								  ILString *path, ILInt64 *length)
+{
+	/* TODO */
+	return IL_ERRNO_EPERM;
 }

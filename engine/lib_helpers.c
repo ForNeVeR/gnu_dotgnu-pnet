@@ -307,6 +307,38 @@ ILObject *_IL_RuntimeHelpers_GetObjectValue(ILExecThread *_thread,
 	return obj;
 }
 
+/*
+ * public static bool Equals(Object o1, Object o2);
+ */
+ILBool _IL_RuntimeHelpers_Equals(ILExecThread *_thread,
+								 ILObject *o1, ILObject *o2)
+{
+	if(o1 == o2)
+	{
+		return 1;
+	}
+	else if(!o1 || !o2)
+	{
+		return 0;
+	}
+	else
+	{
+		return _IL_Object_Equals(_thread, o1, o2);
+	}
+}
+
+ILInt32 _IL_RuntimeHelpers_GetHashCode(ILExecThread *_thread, ILObject *o1)
+{
+	if(!o1)
+	{
+		return 0;
+	}
+	else
+	{
+		return _IL_Object_GetHashCode(_thread, o1);
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -59,7 +59,36 @@ ILInt32 _IL_Object_GetHashCode(ILExecThread *thread, ILObject *_this)
 
 ILBool _IL_Object_Equals(ILExecThread *thread, ILObject *_this, ILObject *obj)
 {
-	return (_this == obj);
+	ILClass *classInfo;
+	ILUInt32 size;
+
+	/* Handle the easy cases first */
+	if(_this == obj)
+	{
+		return 1;
+	}
+	else if(!obj)
+	{
+		return 0;
+	}
+
+	/* Check to see if both are value types with the same type */
+	classInfo = GetObjectClass(_this);
+	if(classInfo != GetObjectClass(obj) || !ILClassIsValueType(classInfo))
+	{
+		return 0;
+	}
+
+	/* Perform a bitwise comparison on the values */
+	size = ILSizeOfType(thread, ILClassToType(classInfo));
+	if(!size)
+	{
+		return 1;
+	}
+	else
+	{
+		return !ILMemCmp((void *)_this, (void *)obj, size);
+	}
 }
 
 ILObject *_IL_Object_MemberwiseClone(ILExecThread *thread, ILObject *_this)

@@ -683,6 +683,15 @@ void _IL_Thread_VolatileWrite_RObjectObject(ILExecThread *thread,
 }
 
 /*
+ * internal static int InternalGetThreadId();
+ */
+ILInt32 _IL_Thread_InternalGetThreadId(ILExecThread *_thread)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
  * private static void InternalClose(IntPtr privateData);
  */
 void _IL_WaitHandle_InternalClose(ILExecThread *_thread,

@@ -130,6 +130,61 @@ ILInt32 ILCreateDir(const char *path)
 
 #ifndef USE_WIN32_FIND
 
+int ILGetFileType(const char *path)
+{
+	struct stat st;
+#ifdef HAVE_LSTAT
+	if(lstat(path, &st) >= 0)
+#else
+	if(stat(path, &st) >= 0)
+#endif
+	{
+	#ifdef S_ISFIFO
+		if(S_ISFIFO(st.st_mode))
+		{
+			return ILFileType_FIFO;
+		}
+	#endif
+	#ifdef S_ISCHR
+		if(S_ISCHR(st.st_mode))
+		{
+			return ILFileType_CHR;
+		}
+	#endif
+	#ifdef S_ISDIR
+		if(S_ISDIR(st.st_mode))
+		{
+			return ILFileType_DIR;
+		}
+	#endif
+	#ifdef S_ISBLK
+		if(S_ISBLK(st.st_mode))
+		{
+			return ILFileType_BLK;
+		}
+	#endif
+	#ifdef S_ISREG
+		if(S_ISREG(st.st_mode))
+		{
+			return ILFileType_REG;
+		}
+	#endif
+	#ifdef S_ISLNK
+		if(S_ISLNK(st.st_mode))
+		{
+			return ILFileType_LNK;
+		}
+	#endif
+	#ifdef S_ISSOCK
+		if(S_ISSOCK(st.st_mode))
+		{
+			return ILFileType_SOCK;
+		}
+	#endif
+	}
+	return ILFileType_Unknown;
+}
+
 #ifdef HAVE_DIRENT_H
 
 /*
@@ -157,7 +212,6 @@ struct _tagILDirEnt
 static void GetDirEntryType(ILDir *dir, ILDirEnt *entry)
 {
 	char *fullName;
-	struct stat st;
 	entry->type = ILFileType_Unknown;
 	fullName = (char *)ILMalloc(strlen(dir->pathname) +
 								strlen(entry->dptr->d_name) + 2);
@@ -166,55 +220,7 @@ static void GetDirEntryType(ILDir *dir, ILDirEnt *entry)
 		strcpy(fullName, dir->pathname);
 		strcat(fullName, "/");
 		strcat(fullName, entry->dptr->d_name);
-	#ifdef HAVE_LSTAT
-		if(lstat(fullName, &st) >= 0)
-	#else
-		if(stat(fullName, &st) >= 0)
-	#endif
-		{
-		#ifdef S_ISFIFO
-			if(S_ISFIFO(st.st_mode))
-			{
-				entry->type = ILFileType_FIFO;
-			}
-		#endif
-		#ifdef S_ISCHR
-			if(S_ISCHR(st.st_mode))
-			{
-				entry->type = ILFileType_CHR;
-			}
-		#endif
-		#ifdef S_ISDIR
-			if(S_ISDIR(st.st_mode))
-			{
-				entry->type = ILFileType_DIR;
-			}
-		#endif
-		#ifdef S_ISBLK
-			if(S_ISBLK(st.st_mode))
-			{
-				entry->type = ILFileType_BLK;
-			}
-		#endif
-		#ifdef S_ISREG
-			if(S_ISREG(st.st_mode))
-			{
-				entry->type = ILFileType_REG;
-			}
-		#endif
-		#ifdef S_ISLNK
-			if(S_ISLNK(st.st_mode))
-			{
-				entry->type = ILFileType_LNK;
-			}
-		#endif
-		#ifdef S_ISSOCK
-			if(S_ISSOCK(st.st_mode))
-			{
-				entry->type = ILFileType_SOCK;
-			}
-		#endif
-		}
+		entry->type = ILGetFileType(fullName);
 		ILFree(fullName);
 	}
 }
@@ -341,6 +347,29 @@ int ILDirEntType(ILDirEnt *entry)
 }
 
 #else /* USE_WIN32_FIND */
+
+int ILGetFileType(const char *path)
+{
+	struct _finddata_t fileinfo;
+	long handle;
+	handle = _findfirst(path, &fileinfo);
+	if(handle >= 0)
+	{
+		_findclose(handle);
+		if((fileinfo.attrib & _A_SUBDIR) != 0)
+		{
+			return ILFileType_DIR;
+		}
+		else
+		{
+			return ILFileType_REG;
+		}
+	}
+	else
+	{
+		return ILFileType_Unknown;
+	}
+}
 
 /*
  * Define the ILDir type.

@@ -398,6 +398,12 @@ int ILDirEntType(ILDirEnt *entry);
  */
 ILInt32 ILChangeDir(const char *path);
 
+/*
+ * Get the type of file at a particular location.  Returns
+ * "ILFileType_Unknown" if the file does not exist.
+ */
+int ILGetFileType(const char *path);
+
 #ifdef	__cplusplus 
 };
 #endif

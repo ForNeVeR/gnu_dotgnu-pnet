@@ -1451,6 +1451,7 @@ JavaGenValue(ILNode_DefaultConstructor)
  */
 JavaGenValue(ILNode_InvocationExpression)
 {
+	ILMachineType thisType;
 	ILMachineType resultType;
 	long saveStack;
 
@@ -1461,8 +1462,17 @@ JavaGenValue(ILNode_InvocationExpression)
 	/* Push the "this" expression if necessary */
 	if(node->thisExpr)
 	{
-		JavaGenCast(info, JavaGenValue(node->thisExpr, info),
-					ILMachineType_ObjectRef);
+		thisType = ILNode_GetType(node->thisExpr, info);
+		if(thisType == ILMachineType_ManagedValue ||
+		   thisType == ILMachineType_ManagedPtr)
+		{
+			JavaGenValue(node->thisExpr, info);
+		}
+		else
+		{
+			JavaGenCast(info, JavaGenValue(node->thisExpr, info),
+						ILMachineType_ObjectRef);
+		}
 	}
 
 	/* Push the argument expressions */

@@ -1036,8 +1036,12 @@ ILNode_GenValue(ILNode_DefaultConstructor)
 
 ILNode_GenValue(ILNode_InvocationExpression)
 {
+	ILMachineType thisType;
 	ILMachineType resultType;
 	long saveStack;
+	ILType *type;
+	unsigned thisTemp = ~((unsigned)0);
+	int isValueType = 0;
 
 	/* Save the current stack height, so we know where to
 	   unwind to when popping the arguments */
@@ -1046,8 +1050,52 @@ ILNode_GenValue(ILNode_InvocationExpression)
 	/* Push the "this" expression if necessary */
 	if(node->thisExpr)
 	{
-		ILGenCast(info, ILNode_GenValue(node->thisExpr, info),
-				  ILMachineType_ObjectRef);
+		thisType = ILNode_GetType(node->thisExpr, info);
+		if((thisType >= ILMachineType_Boolean &&
+		    thisType <= ILMachineType_NativeFloat) ||
+		   thisType == ILMachineType_ManagedValue)
+		{
+			/* Turn the value into a managed pointer */
+			isValueType = 1;
+			if(yyisa(node->thisExpr, ILNode_LValue) &&
+			   !yyisa(node->thisExpr, ILNode_LValueNoRef))
+			{
+				/* Generate a reference for the supplied value instance */
+				ILNode_GenRef(node->thisExpr, info);
+			}
+			else
+			{
+				/* Store the managed value into a temporary variable */
+				if(node->methodInfo)
+				{
+					type = ILClassToType(ILMethod_Owner(node->methodInfo));
+				}
+				else
+				{
+					type = ILType_Int32;
+				}
+				thisTemp = ILGenTempTypedVar(info, type);
+				ILNode_GenValue(node->thisExpr, info);
+				ILGenStoreLocal(info, thisTemp);
+				ILGenAdjust(info, -1);
+
+				/* Push the address of the temporary variable */
+				ILGenLoadLocalAddr(info, thisTemp);
+				ILGenAdjust(info, 1);
+			}
+		}
+		else if(thisType == ILMachineType_ManagedPtr)
+		{
+			/* The "this" value is already a managed pointer */
+			isValueType = 1;
+			ILNode_GenValue(node->thisExpr, info);
+		}
+		else
+		{
+			/* Assume that everything else will be an object reference */
+			ILGenCast(info, ILNode_GenValue(node->thisExpr, info),
+					  ILMachineType_ObjectRef);
+		}
 	}
 
 	/* Push the argument expressions */
@@ -1059,7 +1107,7 @@ ILNode_GenValue(ILNode_InvocationExpression)
 	/* Invoke the method */
 	if(node->methodInfo)
 	{
-		if(ILMethod_IsVirtual(node->methodInfo))
+		if(ILMethod_IsVirtual(node->methodInfo) && !isValueType)
 		{
 			ILGenCallVirtByMethodSig(info, node->methodInfo, node->callSiteSig);
 		}
@@ -1087,6 +1135,12 @@ ILNode_GenValue(ILNode_InvocationExpression)
 		{
 			info->maxStackHeight = info->stackHeight;
 		}
+	}
+
+	/* Release the temporary local variable if necessary */
+	if(thisTemp != ~((unsigned)0))
+	{
+		ILGenReleaseTempVar(info, thisTemp);
 	}
 
 	/* Done */

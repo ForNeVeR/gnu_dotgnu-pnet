@@ -57,7 +57,7 @@ ILNode_SemAnalysis(ILNode_This)
 
 	/* Get the type from the method's class and return */
 	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_FromClass(ILMethod_Owner(method->methodInfo));
+	value.type = ILClassToType(ILMethod_Owner(method->methodInfo));
 	return value;
 }
 
@@ -528,9 +528,12 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 				if(CSIsSemValue(exprSem->kind) &&
 				   !ILTypeIsReference(exprSem->type))
 				{
-					/* Make sure that the object expression is an object */
-					if(!ILCoerce(info, expr, parent, exprSem->type,
-								 ILFindSystemType(info, "Object")))
+					if(ILTypeIsValue(exprSem->type))
+					{
+						*parent = expr;
+					}
+					else if(!ILCoerce(info, expr, parent, exprSem->type,
+								      ILFindSystemType(info, "Object")))
 					{
 						*parent = expr;
 					}

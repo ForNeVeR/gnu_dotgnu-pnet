@@ -27,6 +27,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
+using OpenSystem.Platform;
 
 // Secure session provider object that uses the GNUTLS library to
 // provide the underlying security functionality.
@@ -287,11 +288,13 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 						IntPtr session = IntPtr.Zero;
 						if(isClient)
 						{
-							gnutls_init(ref session, 2 /* GNUTLS_CLIENT */);
+							gnutls_init(ref session,
+										(Int)2 /* GNUTLS_CLIENT */);
 						}
 						else
 						{
-							gnutls_init(ref session, 1 /* GNUTLS_SERVER */);
+							gnutls_init(ref session,
+									    (Int)1 /* GNUTLS_SERVER */);
 						}
 						if(session == IntPtr.Zero)
 						{
@@ -303,7 +306,7 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 						// override for the protocol specifics.
 						gnutls_set_default_priority(session);
 						gnutls_certificate_type_set_priority
-							(session, new int [] {1, 2, 0});
+							(session, new Int [] {(Int)1, (Int)2, (Int)0});
 						switch(protocol)
 						{
 							case Protocol.AutoDetect:
@@ -318,14 +321,14 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 							case Protocol.SSLv3:
 							{
 								gnutls_protocol_set_priority
-									(session, new int [] {1, 0});
+									(session, new Int [] {(Int)1, (Int)0});
 							}
 							break;
 
 							case Protocol.TLSv1:
 							{
 								gnutls_protocol_set_priority
-									(session, new int [] {2, 0});
+									(session, new Int [] {(Int)2, (Int)0});
 							}
 							break;
 
@@ -340,23 +343,23 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 
 						// Set the local X.509 credentials if necessary.
 						gnutls_credentials_set
-							(session, cred.CredType, cred.Cred);
+							(session, (Int)(cred.CredType), cred.Cred);
 
 						// Associate the socket fd with the session.
 						gnutls_transport_set_ptr(session, new IntPtr(fd));
 
 						// Attempt to connect or accept.
-						int result = gnutls_handshake(session);
+						int result = (int)gnutls_handshake(session);
 						if(result < 0)
 						{
 							gnutls_deinit(session);
 							cred.Dispose();
 							throw new SecurityException
-								(gnutls_strerror(result));
+								(gnutls_strerror((Int)result));
 						}
 
 						// Get the remote certificate and record it.
-						uint size;
+						UInt size;
 						gnutls_datum *x509 = gnutls_certificate_get_peers
 							(session, out size); 
 						if(x509 != null)
@@ -444,13 +447,14 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 						}
 						if(offset == 0)
 						{
-							return gnutls_record_recv(session, buffer, count);
+							return (int)gnutls_record_recv
+								(session, buffer, (Int)count);
 						}
 						else
 						{
 							byte[] temp = new byte [count];
-							int result = gnutls_record_recv
-								(session, temp, count);
+							int result = (int)gnutls_record_recv
+								(session, temp, (Int)count);
 							if(result > 0)
 							{
 								Array.Copy(temp, 0, buffer, offset, result);
@@ -479,8 +483,8 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 					int result;
 					for(;;)
 					{
-						result = gnutls_record_send
-							(session, buffer, count);
+						result = (int)gnutls_record_send
+							(session, buffer, (Int)count);
 						if(result != -52 &&		// GNUTLS_E_INTERRUPTED
 						   result != -28)		// GNUTLS_E_AGAIN
 						{
@@ -567,92 +571,92 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 	// Import the functions we need from the GNUTLS library.
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_global_init();
+	extern private static Int gnutls_global_init();
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_certificate_allocate_credentials
+	extern private static Int gnutls_certificate_allocate_credentials
 			(out IntPtr sc);
 
 	[DllImport("gnutls")]
 	extern private static void gnutls_certificate_free_credentials(IntPtr sc);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_anon_allocate_client_credentials
+	extern private static Int gnutls_anon_allocate_client_credentials
 			(out IntPtr sc);
 
 	[DllImport("gnutls")]
 	extern private static void gnutls_anon_free_client_credentials(IntPtr sc);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_anon_allocate_server_credentials
+	extern private static Int gnutls_anon_allocate_server_credentials
 			(out IntPtr sc);
 
 	[DllImport("gnutls")]
 	extern private static void gnutls_anon_free_server_credentials(IntPtr sc);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_init(ref IntPtr session, int con_end);
+	extern private static Int gnutls_init(ref IntPtr session, Int con_end);
 
 	[DllImport("gnutls")]
 	extern private static void gnutls_deinit(IntPtr session);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_set_default_priority(IntPtr session);
+	extern private static Int gnutls_set_default_priority(IntPtr session);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_protocol_set_priority
-			(IntPtr session, int[] list);
+	extern private static Int gnutls_protocol_set_priority
+			(IntPtr session, Int[] list);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_certificate_type_set_priority
-			(IntPtr session, int[] list);
+	extern private static Int gnutls_certificate_type_set_priority
+			(IntPtr session, Int[] list);
 
 	[DllImport("gnutls")]
 	extern private static void gnutls_transport_set_ptr
 			(IntPtr session, IntPtr ptr);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_handshake(IntPtr session);
+	extern private static Int gnutls_handshake(IntPtr session);
 
 	[DllImport("gnutls")]
-	extern private static String gnutls_strerror(int error);
+	extern private static String gnutls_strerror(Int error);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_credentials_set
-			(IntPtr session, int type, IntPtr cred);
+	extern private static Int gnutls_credentials_set
+			(IntPtr session, Int type, IntPtr cred);
 
 	[DllImport("gnutls")]
 	extern private static gnutls_datum *gnutls_certificate_get_peers
-			(IntPtr session, out uint size);
+			(IntPtr session, out UInt size);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_bye(IntPtr session, int how);
+	extern private static Int gnutls_bye(IntPtr session, Int how);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_record_send
-			(IntPtr session, byte[] data, int size);
+	extern private static Int gnutls_record_send
+			(IntPtr session, byte[] data, Int size);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_record_recv
-			(IntPtr session, byte[] data, int size);
+	extern private static Int gnutls_record_recv
+			(IntPtr session, byte[] data, Int size);
 
 	[DllImport("gnutls")]
-	extern private static int gnutls_certificate_set_x509_key_mem
+	extern private static Int gnutls_certificate_set_x509_key_mem
 			(IntPtr cred, ref gnutls_datum cert,
-			 ref gnutls_datum key, int type);
+			 ref gnutls_datum key, Int type);
 
 	[StructLayout(LayoutKind.Sequential)]
 	private struct gnutls_datum
 	{
 		public IntPtr data;
-		public uint size;
+		public UInt size;
 
 		// Constructor.
 		public gnutls_datum(byte[] value)
 				{
 					data = Marshal.AllocHGlobal(value.Length);
 					Marshal.Copy(value, 0, data, value.Length);
-					size = (uint)(value.Length);
+					size = (UInt)(value.Length);
 				}
 
 		// Free the data in this object.
@@ -660,7 +664,7 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 				{
 					Marshal.FreeHGlobal(data);
 					data = IntPtr.Zero;
-					size = (uint)0;
+					size = (UInt)0;
 				}
 
 	}; // struct gnutls_datum

@@ -25,6 +25,7 @@
 				<file name="../DotGNU.Images/DotGNU.Images.dll"/>
 				<file name="../SharpZipLib/ICSharpCode.SharpZipLib.dll"/>
 				<file name="../compat/Accessibility.dll"/>
+				<file name="../OpenSystem.Platform/OpenSystem.Platform.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 

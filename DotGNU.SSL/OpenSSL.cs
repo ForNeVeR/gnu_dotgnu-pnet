@@ -27,6 +27,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
+using OpenSystem.Platform;
 
 // Secure session provider object that uses the OpenSSL library to
 // provide the underlying security functionality.
@@ -241,7 +242,7 @@ internal sealed class OpenSSL : ISecureSessionProvider
 							}
 							certificate = value;
 							if(SSL_CTX_use_certificate_ASN1
-									(ctx, value, value.Length) == 0)
+									(ctx, value, (Int)value.Length) == 0)
 							{
 								throw new ArgumentException();
 							}
@@ -272,7 +273,7 @@ internal sealed class OpenSSL : ISecureSessionProvider
 							}
 							privateKey = value;
 							if(SSL_CTX_use_RSAPrivateKey_ASN1
-									(ctx, value, value.Length) == 0)
+									(ctx, value, (Int)value.Length) == 0)
 							{
 								throw new ArgumentException();
 							}
@@ -317,7 +318,7 @@ internal sealed class OpenSSL : ISecureSessionProvider
 						}
 
 						// Create a socket BIO object and set it.
-						IntPtr bio = BIO_new_socket(fd, 0);
+						IntPtr bio = BIO_new_socket((Int)fd, (Int)0);
 						if(bio == IntPtr.Zero)
 						{
 							SSL_free(ssl);
@@ -329,11 +330,11 @@ internal sealed class OpenSSL : ISecureSessionProvider
 						int result;
 						if(isClient)
 						{
-							result = SSL_connect(ssl);
+							result = (int)SSL_connect(ssl);
 						}
 						else
 						{
-							result = SSL_accept(ssl);
+							result = (int)SSL_accept(ssl);
 						}
 						if(result != 1)
 						{
@@ -345,7 +346,7 @@ internal sealed class OpenSSL : ISecureSessionProvider
 						IntPtr x509 = SSL_get_peer_certificate(ssl); 
 						if(x509 != IntPtr.Zero)
 						{
-							int length = i2d_X509(x509, IntPtr.Zero);
+							int length = (int)i2d_X509(x509, IntPtr.Zero);
 							if(length > 0)
 							{
 								IntPtr data = Marshal.AllocHGlobal(length);
@@ -415,11 +416,11 @@ internal sealed class OpenSSL : ISecureSessionProvider
 					{
 						if(ssl != IntPtr.Zero)
 						{
-							int result = SSL_shutdown(ssl);
+							int result = (int)SSL_shutdown(ssl);
 							if(result == 0)
 							{
 								// Bi-directional shutdown is required.
-								result = SSL_shutdown(ssl);
+								result = (int)SSL_shutdown(ssl);
 							}
 							SSL_free(ssl);
 							ssl = IntPtr.Zero;
@@ -452,12 +453,12 @@ internal sealed class OpenSSL : ISecureSessionProvider
 						}
 						if(offset == 0)
 						{
-							return SSL_read(ssl, buffer, count);
+							return (int)SSL_read(ssl, buffer, (Int)count);
 						}
 						else
 						{
 							byte[] temp = new byte [count];
-							int result = SSL_read(ssl, temp, count);
+							int result = (int)SSL_read(ssl, temp, (Int)count);
 							if(result > 0)
 							{
 								Array.Copy(temp, 0, buffer, offset, result);
@@ -492,13 +493,13 @@ internal sealed class OpenSSL : ISecureSessionProvider
 						}
 						if(offset == 0)
 						{
-							SSL_write(ssl, buffer, count);
+							SSL_write(ssl, buffer, (Int)count);
 						}
 						else if(count > 0)
 						{
 							byte[] temp = new byte [count];
 							Array.Copy(buffer, offset, temp, 0, count);
-							SSL_write(ssl, temp, count);
+							SSL_write(ssl, temp, (Int)count);
 							Array.Clear(temp, 0, count);
 						}
 					}
@@ -558,7 +559,7 @@ internal sealed class OpenSSL : ISecureSessionProvider
 	// Import the functions we need from the OpenSSL library.
 
 	[DllImport("ssl")]
-	extern private static int SSL_library_init();
+	extern private static Int SSL_library_init();
 
 	[DllImport("ssl")]
 	extern private static void SSL_load_error_strings();
@@ -594,12 +595,12 @@ internal sealed class OpenSSL : ISecureSessionProvider
 	extern private static void SSL_CTX_free(IntPtr ctx);
 
 	[DllImport("ssl")]
-	extern private static int SSL_CTX_use_certificate_ASN1
-			(IntPtr ctx, byte[] d, int len);
+	extern private static Int SSL_CTX_use_certificate_ASN1
+			(IntPtr ctx, byte[] d, Int len);
 
 	[DllImport("ssl")]
-	extern private static int SSL_CTX_use_RSAPrivateKey_ASN1
-			(IntPtr ctx, byte[] d, int len);
+	extern private static Int SSL_CTX_use_RSAPrivateKey_ASN1
+			(IntPtr ctx, byte[] d, Int len);
 
 	[DllImport("ssl")]
 	extern private static IntPtr SSL_new(IntPtr ctx);
@@ -612,31 +613,31 @@ internal sealed class OpenSSL : ISecureSessionProvider
 				(IntPtr ssl, IntPtr rbio, IntPtr wbio);
 
 	[DllImport("ssl")]
-	extern private static int SSL_connect(IntPtr ssl);
+	extern private static Int SSL_connect(IntPtr ssl);
 
 	[DllImport("ssl")]
-	extern private static int SSL_accept(IntPtr ssl);
+	extern private static Int SSL_accept(IntPtr ssl);
 
 	[DllImport("ssl")]
-	extern private static int SSL_shutdown(IntPtr ssl);
+	extern private static Int SSL_shutdown(IntPtr ssl);
 
 	[DllImport("ssl")]
-	extern private static int SSL_read(IntPtr ssl, byte[] buf, int num);
+	extern private static Int SSL_read(IntPtr ssl, byte[] buf, Int num);
 
 	[DllImport("ssl")]
-	extern private static int SSL_write(IntPtr ssl, byte[] buf, int num);
+	extern private static Int SSL_write(IntPtr ssl, byte[] buf, Int num);
 
 	[DllImport("ssl")]
 	extern private static IntPtr SSL_get_peer_certificate(IntPtr ssl);
 
 	[DllImport("ssl")]
-	extern private static IntPtr BIO_new_socket(int sock, int close_flag);
+	extern private static IntPtr BIO_new_socket(Int sock, Int close_flag);
 
 	[DllImport("ssl")]
-	extern private static int i2d_X509(IntPtr x509, IntPtr buf);
+	extern private static Int i2d_X509(IntPtr x509, IntPtr buf);
 
 	[DllImport("ssl")]
-	extern private static int i2d_X509(IntPtr x509, ref IntPtr buf);
+	extern private static Int i2d_X509(IntPtr x509, ref IntPtr buf);
 
 	[DllImport("ssl")]
 	extern private static void X509_free(IntPtr x509);

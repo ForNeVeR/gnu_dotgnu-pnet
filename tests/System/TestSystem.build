@@ -17,6 +17,7 @@
 				<file name="../../csunit/cstest.dll"/>
 				<file name="../../System/first/System.dll"/>
 				<file name="../../DotGNU.SSL/DotGNU.SSL.dll"/>
+				<file name="../../OpenSystem.Platform/OpenSystem.Platform.dll"/>
 				<file name="../../runtime/mscorlib.dll"/>
 			</references>
 

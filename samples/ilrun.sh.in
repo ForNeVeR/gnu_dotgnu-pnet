@@ -31,4 +31,4 @@ if test -n "$SSH_CLIENT" ; then
 fi
 
 # Run the engine, with the assembly paths set correctly.
-exec "$ILRUN" -L${BASE}/../runtime -L${BASE}/../I18N -L${BASE}/../DotGNU.SSL -L${BASE}/../DotGNU.Images -L${BASE}/../System -L${BASE}/../System.Xml -L${BASE}/../Xsharp -L${BASE}/../Xsharp/.libs -L${BASE}/../System.Drawing -L${BASE}/../System.Drawing.Xsharp -L${BASE}/../System.Drawing.Postscript -L${BASE}/../System.Windows.Forms -L${BASE}/../JScript -L${BASE}/../Basic -L${BASE}/../compat -L${BASE}/../System.Net.IrDA -L${BASE}/../SharpZipLib $*
+exec "$ILRUN" -L${BASE}/../runtime -L${BASE}/../I18N -L${BASE}/../DotGNU.SSL -L${BASE}/../DotGNU.Images -L${BASE}/../System -L${BASE}/../System.Xml -L${BASE}/../Xsharp -L${BASE}/../Xsharp/.libs -L${BASE}/../System.Drawing -L${BASE}/../System.Drawing.Xsharp -L${BASE}/../System.Drawing.Postscript -L${BASE}/../System.Windows.Forms -L${BASE}/../JScript -L${BASE}/../Basic -L${BASE}/../compat -L${BASE}/../System.Net.IrDA -L${BASE}/../SharpZipLib -L${BASE}/../OpenSystem.Platform $*

@@ -11,6 +11,21 @@
 	"OpenSystem.Platform" assembly, which contains system dependent
 	type sizes matching those of the underlying operating system.
 
+	* Basic/Basic.build, DotGNU.SSL/GNUTLS.cs, DotGNU.SSL/OpenSSL.cs,
+	DotGNU.SSL/SSL.build, JScript/JScript.build, System/System.build,
+	System.Configuration.Install/System.Configuration.Install.build,
+	System.Design/Design.build, System.Drawing/System.Drawing.build,
+	System.Drawing.Postscript/System.Drawing.Postscript.build,
+	System.Drawing.Win32/System.Drawing.Win32.build,
+	System.Drawing.Xsharp/System.Drawing.Xsharp.build,
+	System.Net.IrDA/IrDA.build, System.Windows.Forms/Forms.build,
+	System.Xml/Xml.build, Xsharp/Xsharp.build, compat/compat.build,
+	samples/ilrun.sh.in, samples/forms/forms.build,
+	samples/simple/simple.build, samples/xsharp/xsharp.build,
+	tests/JScript/TestJScript.build, tests/System/TestSystem.build,
+	tests/System.Xml/TestXml.build: use "OpenSystem.Platform" to
+	provide platform-specific types for "DotGNU.SSL".
+
 2004-02-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/Font.cs: Add the style to the output of

@@ -21,6 +21,7 @@
 				<includes if="${CONFIG_REFLECTION}" name="../../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<includes if="${CONFIG_REFLECTION}" name="../../DotGNU.Images/DotGNU.Images.dll"/>
 				<includes if="${CONFIG_REFLECTION}" name="../../SharpZipLib/ICSharpCode.SharpZipLib.dll"/>
+				<includes if="${CONFIG_REFLECTION}" name="../../OpenSystem.Platform/OpenSystem.Platform.dll"/>
 				<file name="../../runtime/mscorlib.dll"/>
 			</references>
 
@@ -52,6 +53,7 @@
 				<includes if="${CONFIG_REFLECTION}" name="../../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<includes if="${CONFIG_REFLECTION}" name="../../DotGNU.Images/DotGNU.Images.dll"/>
 				<includes if="${CONFIG_REFLECTION}" name="../../SharpZipLib/ICSharpCode.SharpZipLib.dll"/>
+				<includes if="${CONFIG_REFLECTION}" name="../../OpenSystem.Platform/OpenSystem.Platform.dll"/>
 				<file name="../../runtime/mscorlib.dll"/>
 			</references>
 

@@ -32,7 +32,7 @@
 	"background" threads before the process is destroyed.
 	Move GC & thread deinitialization into ILExecDeinit.
 	
-	* engine/monitor.c: Fixed memory leak in ILThreadCreate
+	* engine/monitor.c: Fixed memory leak in ILMonitorCreate
 	that can occur if the system runs out of memory.
 	
 	* engine/throw.c: Added ILExecThreadThrowThreadAbortException.

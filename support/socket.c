@@ -55,45 +55,311 @@
 #ifdef IL_WIN32_NATIVE
 #include <winsock.h>
 #endif
+#if HAVE_LINUX_IRDA_H
+#include <linux/irda.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
 
 /*
-   Note: IP addresses are in network byte order.
-         Port numbers are in host byte order.
-*/
+ * See if the platform appears to have IPv6 and IrDA support.
+ * We assume that all platforms support IPv4.
+ */
+#ifdef IN6ADDR_ANY_INIT
+#define	IL_IPV6_PRESENT		1
+#endif
+#ifdef LSAP_ANY
+#define	IL_IRDA_PRESENT		1
+#endif
+
+/*
+ * Address families at the C# level, which may not be the same
+ * as those at the operating system level.
+ */
+#define	IL_AF_INET			2
+#define	IL_AF_INET6			23
+#define	IL_AF_IRDA			26
+
+/*
+ * Combined socket address structure.
+ */
+typedef union
+{
+	struct sockaddr			addr;
+	struct sockaddr_in		ipv4_addr;
+#ifdef IL_IPV6_PRESENT
+	struct sockaddr_in6		ipv6_addr;
+#endif
+#ifdef IL_IRDA_PRESENT
+	struct sockaddr_irda	irda_addr;
+#endif
+
+} CombinedSockAddr;
+
+/*
+ * Convert a serialized address buffer into a combined socket address.
+ * Returns zero if there is something wrong with the buffer.
+ *
+ * Note: the serialized format must match the one used in the IPEndPoint
+ * and IrDAEndPoint classes.
+ */
+static int SerializedToCombined(unsigned char *buf, ILInt32 len,
+								CombinedSockAddr *addr, int *addrlen)
+{
+	int af, port, value;
+
+	/* Clear the result */
+	ILMemZero(addr, sizeof(CombinedSockAddr));
+
+	/* Get the address family, which is stored in little-endian order */
+	if(len < 2)
+	{
+		return 0;
+	}
+	af = ((((int)(buf[1])) << 8) | ((int)(buf[0])));
+
+	/* Determine how to convert the buffer based on the address family */
+	if(af == IL_AF_INET)
+	{
+		if(len < 8)
+		{
+			return 0;
+		}
+		addr->ipv4_addr.sin_family = AF_INET;
+		port = ((((int)(buf[2])) << 8) | ((int)(buf[3])));
+		addr->ipv4_addr.sin_port = htons((unsigned short)port);
+		value = ((((long)(buf[4])) << 24) |
+		         (((long)(buf[5])) << 16) |
+		         (((long)(buf[6])) << 8) |
+		          ((long)(buf[7])));
+		addr->ipv4_addr.sin_addr.s_addr = htonl((long)value);
+		*addrlen = sizeof(struct sockaddr_in);
+		return 1;
+	}
+#ifdef IL_IPV6_PRESENT
+	else if(af == IL_AF_INET6)
+	{
+		if(len < 28)
+		{
+			return 0;
+		}
+		addr->ipv6_addr.sin6_family = AF_INET6;
+		port = ((((int)(buf[2])) << 8) | ((int)(buf[3])));
+		addr->ipv6_addr.sin6_port = htons((unsigned short)port);
+		value = ((((long)(buf[4])) << 24) |
+		         (((long)(buf[5])) << 16) |
+		         (((long)(buf[6])) << 8) |
+		          ((long)(buf[7])));
+		addr->ipv6_addr.sin6_flowinfo = htonl((long)value);
+		ILMemCpy(&(addr->ipv6_addr.sin6_addr), buf + 8, 16);
+		value = ((((long)(buf[24])) << 24) |
+		         (((long)(buf[25])) << 16) |
+		         (((long)(buf[26])) << 8) |
+		          ((long)(buf[27])));
+		addr->ipv6_addr.sin6_scope_id = htonl((long)value);
+		*addrlen = sizeof(struct sockaddr_in6);
+		return 1;
+	}
+#endif
+#ifdef IL_IRDA_PRESENT
+	else if(af == IL_AF_IRDA)
+	{
+		if(len < 32)
+		{
+			return 0;
+		}
+		addr->irda_addr.sir_family = AF_IRDA;
+		addr->irda_addr.sir_lsap_sel = LSAP_ANY;
+		value = ((((long)(buf[2])) << 24) |
+		         (((long)(buf[3])) << 16) |
+		         (((long)(buf[4])) << 8) |
+		          ((long)(buf[5])));
+		addr->irda_addr.sir_addr = htonl((long)value);
+		ILMemCpy(addr->irda_addr.sir_name, buf + 6, 24);
+		*addrlen = sizeof(struct sockaddr_irda);
+		return 1;
+	}
+#endif
+
+	/* If we get here, then the address cannot be converted */
+	return 0;
+}
+
+/*
+ * Convert a combined socket address into its serialized form.
+ * Returns zero if the buffer isn't big enough.
+ */
+static int CombinedToSerialized(unsigned char *buf, ILInt32 len,
+								CombinedSockAddr *addr)
+{
+	int af, port, value;
+
+	/* Clear the result */
+	ILMemZero(buf, len);
+
+	/* Map and store the address family, in little-endian order */
+	if(len < 2)
+	{
+		return 0;
+	}
+	af = addr->addr.sa_family;
+	if(af == AF_INET)
+	{
+		af = IL_AF_INET;
+	}
+#ifdef IL_IPV6_PRESENT
+	else if(af == AF_INET6)
+	{
+		af = IL_AF_INET6;
+	}
+#endif
+#ifdef IL_IRDA_PRESENT
+	else if(af == AF_IRDA)
+	{
+		af = IL_AF_IRDA;
+	}
+#endif
+	buf[0] = (unsigned char)af;
+	buf[1] = (unsigned char)(af >> 8);
+
+	/* Determine how to convert the address based on the address family */
+	if(af == IL_AF_INET)
+	{
+		if(len < 8)
+		{
+			return 0;
+		}
+		port = (int)(ntohs(addr->ipv4_addr.sin_port));
+		buf[2] = (unsigned char)(port >> 8);
+		buf[3] = (unsigned char)port;
+		value = (long)(ntohl(addr->ipv4_addr.sin_addr.s_addr));
+		buf[4] = (unsigned char)(value >> 24);
+		buf[5] = (unsigned char)(value >> 16);
+		buf[6] = (unsigned char)(value >> 8);
+		buf[7] = (unsigned char)value;
+		return 1;
+	}
+#ifdef IL_IPV6_PRESENT
+	else if(af == IL_AF_INET6)
+	{
+		if(len < 28)
+		{
+			return 0;
+		}
+		port = (int)(ntohs(addr->ipv6_addr.sin6_port));
+		buf[2] = (unsigned char)(port >> 8);
+		buf[3] = (unsigned char)port;
+		value = (long)(ntohl(addr->ipv6_addr.sin6_flowinfo));
+		buf[4] = (unsigned char)(value >> 24);
+		buf[5] = (unsigned char)(value >> 16);
+		buf[6] = (unsigned char)(value >> 8);
+		buf[7] = (unsigned char)value;
+		ILMemCpy(buf + 8, &(addr->ipv6_addr.sin6_addr), 16);
+		value = (long)(ntohl(addr->ipv6_addr.sin6_scope_id));
+		buf[24] = (unsigned char)(value >> 24);
+		buf[25] = (unsigned char)(value >> 16);
+		buf[26] = (unsigned char)(value >> 8);
+		buf[27] = (unsigned char)value;
+		return 1;
+	}
+#endif
+#ifdef IL_IRDA_PRESENT
+	else if(af == IL_AF_IRDA)
+	{
+		if(len < 32)
+		{
+			return 0;
+		}
+		value = (long)(ntohl(addr->irda_addr.sir_addr));
+		buf[2] = (unsigned char)(value >> 24);
+		buf[3] = (unsigned char)(value >> 16);
+		buf[4] = (unsigned char)(value >> 8);
+		buf[5] = (unsigned char)value;
+		ILMemCpy(buf + 6, addr->irda_addr.sir_name, 24);
+		return 1;
+	}
+#endif
+
+	/* If we get here, then the address cannot be converted */
+	return 0;
+}
+
+int ILSysIOAddressFamilySupported(ILInt32 af)
+{
+	if(af == IL_AF_INET)
+	{
+		return 1;
+	}
+#ifdef IL_IPV6_PRESENT
+	if(af == IL_AF_INET6)
+	{
+		return 1;
+	}
+#endif
+#ifdef IL_IRDA_PRESENT
+	if(af == IL_AF_IRDA)
+	{
+		return 1;
+	}
+#endif
+	return 0;
+}
 
 ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol)
 {
+	if(domain == IL_AF_INET)
+	{
+		domain = AF_INET;
+	}
+#ifdef IL_IPV6_PRESENT
+	else if(domain == IL_AF_INET6)
+	{
+		domain = AF_INET6;
+	}
+#endif
+#ifdef IL_IRDA_PRESENT
+	else if(domain == IL_AF_IRDA)
+	{
+		domain = AF_IRDA;
+	}
+#endif
 	return (ILSysIOHandle)(ILNativeInt)(socket(domain, type, protocol));
 }
 
-int ILSysIOSocketBind(ILSysIOHandle sockfd, ILSysIOSockAddr *local_addr)
+int ILSysIOSocketBind(ILSysIOHandle sockfd, unsigned char *addr,
+					  ILInt32 addrLen)
 {
-	struct sockaddr_in addr;
+	CombinedSockAddr sa_addr;
+	int sa_len;
 
-	ILMemZero(&addr, sizeof(addr));
-	addr.sin_port = htons(local_addr->port);
-	addr.sin_family = local_addr->family;
-	addr.sin_addr.s_addr = local_addr->addr;
+	/* Convert the socket address into its platform version */
+	if(!SerializedToCombined(addr, addrLen, &sa_addr, &sa_len))
+	{
+		ILSysIOSetErrno(IL_ERRNO_EINVAL);
+		return 0;
+	}
 
-	return (bind((int)(ILNativeInt)sockfd, (struct sockaddr *)&addr,
-				 sizeof(struct sockaddr_in)) == 0);
+	/* Perform the bind operation */
+	return (bind((int)(ILNativeInt)sockfd, &sa_addr.addr, sa_len) == 0);
 }
 
-int ILSysIOSocketConnect(ILSysIOHandle sockfd, ILSysIOSockAddr *serv_addr)
+int ILSysIOSocketConnect(ILSysIOHandle sockfd, unsigned char *addr,
+						 ILInt32 addrLen)
 {
-	struct sockaddr_in addr;
+	CombinedSockAddr sa_addr;
+	int sa_len;
 
-	ILMemZero(&addr, sizeof(addr));
-	addr.sin_port = htons(serv_addr->port);
-	addr.sin_family = serv_addr->family;
-	addr.sin_addr.s_addr = serv_addr->addr;
+	/* Convert the socket address into its platform version */
+	if(!SerializedToCombined(addr, addrLen, &sa_addr, &sa_len))
+	{
+		ILSysIOSetErrno(IL_ERRNO_EINVAL);
+		return 0;
+	}
 
-	return (connect((int)(ILNativeInt)sockfd, (struct sockaddr *)&addr,
-					sizeof(struct sockaddr_in)) == 0);
+	/* Perform the connect operation */
+	return (connect((int)(ILNativeInt)sockfd, &sa_addr.addr, sa_len) == 0);
 }
 
 int ILSysIOSocketListen(ILSysIOHandle sockfd, ILInt32 backlog)
@@ -101,20 +367,31 @@ int ILSysIOSocketListen(ILSysIOHandle sockfd, ILInt32 backlog)
 	return (listen((int)(ILNativeInt)sockfd, backlog) == 0);
 }
 
-ILSysIOHandle ILSysIOSocketAccept(ILSysIOHandle sockfd, ILSysIOSockAddr *out)
+ILSysIOHandle ILSysIOSocketAccept(ILSysIOHandle sockfd, unsigned char *addr,
+								  ILInt32 addrLen)
 {
-	int newfd, size;
-	struct sockaddr_in addr;
+	CombinedSockAddr sa_addr;
+	int sa_len;
+	int newfd;
 
-	size = sizeof(struct sockaddr_in);
-	ILMemZero(&addr, sizeof(addr));
-	
-	newfd = accept((int)(ILNativeInt)sockfd, (struct sockaddr *)&addr, &size);
+	/* Accept the incoming connection */
+	sa_len = sizeof(CombinedSockAddr);
+	ILMemZero(&sa_addr, sizeof(sa_addr));
+	newfd = accept((int)(ILNativeInt)sockfd, &sa_addr.addr, &sa_len);
+	if(newfd < 0)
+	{
+		return (ILSysIOHandle)(ILNativeInt)newfd;
+	}
+
+	/* Convert the platform address into its serialized form */
+	if(!CombinedToSerialized(addr, addrLen, &sa_addr))
+	{
+		close(newfd);
+		ILSysIOSetErrno(IL_ERRNO_EINVAL);
+		return (ILSysIOHandle)(ILNativeInt)(-1);
+	}
   
-	out->port = ntohs(addr.sin_port);
-	out->family = addr.sin_family;
-	out->addr = addr.sin_addr.s_addr;
-
+  	/* Return the file descriptor to the caller */
 	return (ILSysIOHandle)(ILNativeInt)newfd;
 }
 
@@ -132,36 +409,49 @@ ILInt32 ILSysIOSocketSend(ILSysIOHandle sockfd, const void *msg,
 
 ILInt32 ILSysIOSocketSendTo(ILSysIOHandle sockfd, const void *msg,
 					        ILInt32 len, ILInt32 flags,
-					        const ILSysIOSockAddr *to)
+							unsigned char *addr, ILInt32 addrLen)
 {
-	struct sockaddr_in addr;
+	CombinedSockAddr sa_addr;
+	int sa_len;
 
-	ILMemZero(&addr, sizeof(addr));
-	addr.sin_port = htons(to->port);
-	addr.sin_family = to->family;
-	addr.sin_addr.s_addr = to->addr;
+	/* Convert the socket address into its platform version */
+	if(!SerializedToCombined(addr, addrLen, &sa_addr, &sa_len))
+	{
+		ILSysIOSetErrno(IL_ERRNO_EINVAL);
+		return 0;
+	}
 
+	/* Perform the sendto operation */
 	return sendto((int)(ILNativeInt)sockfd, msg, len, flags,
-				  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+				  &sa_addr.addr, sa_len);
 }
 
 ILInt32 ILSysIOSocketRecvFrom(ILSysIOHandle sockfd, void *buf,
 							  ILInt32 len, ILInt32 flags,
-							  ILSysIOSockAddr *from)
+							  unsigned char *addr, ILInt32 addrLen)
 {
-	int fromlen, result;
-	struct sockaddr_in addr;
+	CombinedSockAddr sa_addr;
+	int sa_len;
+	int result;
 
-	ILMemZero(&addr, sizeof(addr));
-  	fromlen = sizeof(struct sockaddr_in);
-
+	/* Receive the incoming data */
+	sa_len = sizeof(CombinedSockAddr);
+	ILMemZero(&sa_addr, sizeof(sa_addr));
 	result = recvfrom((int)(ILNativeInt)sockfd, buf, len, flags,
-					  (struct sockaddr *)&addr, &fromlen);
+					  &sa_addr.addr, &sa_len);
+	if(result < 0)
+	{
+		return (ILInt32)result;
+	}
 
-	from->port = ntohs(addr.sin_port);
-	from->family = addr.sin_family;
-	from->addr = addr.sin_addr.s_addr;
-
+	/* Convert the platform address into its serialized form */
+	if(!CombinedToSerialized(addr, addrLen, &sa_addr))
+	{
+		ILSysIOSetErrno(IL_ERRNO_EINVAL);
+		return (ILInt32)(-1);
+	}
+  
+  	/* Return the receive result to the caller */
 	return (ILInt32)result;
 }
 
@@ -402,23 +692,27 @@ ILInt32 ILSysIOSocketGetAvailable(ILSysIOHandle sockfd)
 #endif
 }
 
-int ILSysIOSocketGetName(ILSysIOHandle sockfd, ILSysIOSockAddr *addr)
+int ILSysIOSocketGetName(ILSysIOHandle sockfd, unsigned char *addr,
+						 ILInt32 addrLen)
 {
-	struct sockaddr_in iaddr;
-	int size = sizeof(iaddr);
-	ILMemZero(&iaddr, sizeof(iaddr));
-	if(getsockname((int)(ILNativeInt)sockfd,
-				   (struct sockaddr *)&addr, &size) >= 0)
-	{
-		addr->family = (int)(iaddr.sin_family);
-		addr->addr = (unsigned long)(iaddr.sin_addr.s_addr);
-		addr->port = ntohs(iaddr.sin_port);
-		return 1;
-	}
-	else
+	CombinedSockAddr sa_addr;
+	int sa_len;
+
+	/* Accept the incoming connection */
+	sa_len = sizeof(CombinedSockAddr);
+	ILMemZero(&sa_addr, sizeof(sa_addr));
+	if(getsockname((int)(ILNativeInt)sockfd, &sa_addr.addr, &sa_len) < 0)
 	{
 		return 0;
 	}
+
+	/* Convert the platform address into its serialized form */
+	if(!CombinedToSerialized(addr, addrLen, &sa_addr))
+	{
+		ILSysIOSetErrno(IL_ERRNO_EINVAL);
+		return 0;
+	}
+	return 1;
 }
 
 int ILSysIOSocketSetOption(ILSysIOHandle sockfd, ILInt32 level,
@@ -482,18 +776,26 @@ int ILSysIOSocketGetLinger(ILSysIOHandle handle, int *enabled, int *seconds)
 #endif
 }
 
-int ILSysIOSocketSetMulticast(ILSysIOHandle handle, ILInt32 name,
-							  ILSysIOSockAddr *group,
-							  ILSysIOSockAddr *mcint)
+int ILSysIOSocketSetMulticast(ILSysIOHandle handle, ILInt32 af, ILInt32 name,
+							  unsigned char *group, ILInt32 groupLen,
+							  unsigned char *mcint, ILInt32 mcintLen)
 {
 	/* TODO */
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
 }
 
-int ILSysIOSocketGetMulticast(ILSysIOHandle handle, ILInt32 name,
-							  ILSysIOSockAddr *group,
-							  ILSysIOSockAddr *mcint)
+int ILSysIOSocketGetMulticast(ILSysIOHandle handle, ILInt32 af, ILInt32 name,
+							  unsigned char *group, ILInt32 groupLen,
+							  unsigned char *mcint, ILInt32 mcintLen)
+{
+	/* TODO */
+	ILSysIOSetErrno(IL_ERRNO_EINVAL);
+	return 0;
+}
+
+int ILSysIODiscoverIrDADevices(ILSysIOHandle handle, unsigned char *buf,
+							   ILInt32 bufLen)
 {
 	/* TODO */
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);

@@ -574,27 +574,29 @@ extern ILBool _IL_Process_WaitForExit(ILExecThread * _thread, ILNativeInt _p1, I
 extern ILBool _IL_Process_WaitForInputIdle(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3);
 
 extern ILNativeInt _IL_SocketMethods_GetInvalidHandle(ILExecThread * _thread);
+extern ILBool _IL_SocketMethods_AddressFamilySupported(ILExecThread * _thread, ILInt32 _p1);
 extern ILBool _IL_SocketMethods_Create(ILExecThread * _thread, ILInt32 _p1, ILInt32 _p2, ILInt32 _p3, ILNativeInt * handle);
-extern ILBool _IL_SocketMethods_Bind(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt64 _p3, ILInt32 _p4);
+extern ILBool _IL_SocketMethods_Bind(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2);
 extern ILBool _IL_SocketMethods_Shutdown(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 extern ILBool _IL_SocketMethods_Listen(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
-extern ILBool _IL_SocketMethods_Accept(ILExecThread * _thread, ILNativeInt _p1, ILInt64 * address, ILInt32 * port, ILNativeInt * newHandle);
-extern ILBool _IL_SocketMethods_Connect(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt64 _p3, ILInt32 _p4);
+extern ILBool _IL_SocketMethods_Accept(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILNativeInt * newHandle);
+extern ILBool _IL_SocketMethods_Connect(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2);
 extern ILInt32 _IL_SocketMethods_Receive(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5);
-extern ILInt32 _IL_SocketMethods_ReceiveFrom(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5, ILInt64 * address, ILInt32 * port);
+extern ILInt32 _IL_SocketMethods_ReceiveFrom(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5, System_Array * _p6);
 extern ILInt32 _IL_SocketMethods_Send(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5);
-extern ILInt32 _IL_SocketMethods_SendTo(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5, ILInt64 _p6, ILInt32 _p7);
+extern ILInt32 _IL_SocketMethods_SendTo(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5, System_Array * _p6);
 extern ILBool _IL_SocketMethods_Close(ILExecThread * _thread, ILNativeInt _p1);
 extern ILInt32 _IL_SocketMethods_Select(ILExecThread * _thread, System_Array * _p1, System_Array * _p2, System_Array * _p3, ILInt64 _p4);
 extern ILBool _IL_SocketMethods_SetBlocking(ILExecThread * _thread, ILNativeInt _p1, ILBool _p2);
 extern ILInt32 _IL_SocketMethods_GetAvailable(ILExecThread * _thread, ILNativeInt _p1);
-extern ILBool _IL_SocketMethods_GetSockName(ILExecThread * _thread, ILNativeInt _p1, ILInt64 * address, ILInt32 * port);
+extern ILBool _IL_SocketMethods_GetSockName(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2);
 extern ILBool _IL_SocketMethods_SetSocketOption(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4);
 extern ILBool _IL_SocketMethods_GetSocketOption(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 * value);
 extern ILBool _IL_SocketMethods_SetLingerOption(ILExecThread * _thread, ILNativeInt _p1, ILBool _p2, ILInt32 _p3);
 extern ILBool _IL_SocketMethods_GetLingerOption(ILExecThread * _thread, ILNativeInt _p1, ILBool * enabled, ILInt32 * seconds);
-extern ILBool _IL_SocketMethods_SetMulticastOption(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt64 _p3, ILInt64 _p4);
-extern ILBool _IL_SocketMethods_GetMulticastOption(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt64 * group, ILInt64 * mcint);
+extern ILBool _IL_SocketMethods_SetMulticastOption(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3, System_Array * _p4, System_Array * _p5);
+extern ILBool _IL_SocketMethods_GetMulticastOption(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3, System_Array * _p4, System_Array * _p5);
+extern ILBool _IL_SocketMethods_DiscoverIrDADevices(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2);
 extern ILInt32 _IL_SocketMethods_GetErrno(ILExecThread * _thread);
 extern ILString * _IL_SocketMethods_GetErrnoMessage(ILExecThread * _thread, ILInt32 _p1);
 extern ILBool _IL_SocketMethods_CanStartThreads(ILExecThread * _thread);
@@ -603,10 +605,10 @@ extern ILObject * _IL_SocketMethods_CreateManualResetEvent(ILExecThread * _threa
 extern void _IL_SocketMethods_WaitHandleSet(ILExecThread * _thread, ILObject * _p1);
 
 extern ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread * _thread, ILInt32 _p1);
+extern ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread * _thread, ILInt32 _p1);
 extern ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread * _thread, ILInt64 _p1);
 extern ILInt16 _IL_IPAddress_HostToNetworkOrder_s(ILExecThread * _thread, ILInt16 _p1);
 extern ILInt64 _IL_IPAddress_NetworkToHostOrder_l(ILExecThread * _thread, ILInt64 _p1);
-extern ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread * _thread, ILInt32 _p1);
 extern ILInt16 _IL_IPAddress_NetworkToHostOrder_s(ILExecThread * _thread, ILInt16 _p1);
 
 extern ILBool _IL_Dns_InternalGetHostByName(ILExecThread * _thread, ILString * _p1, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);

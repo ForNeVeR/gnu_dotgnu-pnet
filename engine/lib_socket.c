@@ -49,6 +49,15 @@ ILNativeInt _IL_SocketMethods_GetInvalidHandle(ILExecThread *_thread)
 }
 
 /*
+ * public static bool AddressFamilySupported(int af);
+ */
+ILBool _IL_SocketMethods_AddressFamilySupported(ILExecThread *_thread,
+												ILInt32 af)
+{
+	return (ILSysIOAddressFamilySupported(af) != 0);
+}
+
+/*
  * public static bool Create(int af, int st, int pt, out IntPtr handle);
  */
 ILBool _IL_SocketMethods_Create(ILExecThread *_thread, ILInt32 af,
@@ -60,18 +69,15 @@ ILBool _IL_SocketMethods_Create(ILExecThread *_thread, ILInt32 af,
 }
 
 /*
- * public static bool Bind(IntPtr handle, int af, long address, int port);
+ * public static bool Bind(IntPtr handle, byte[] addr);
  */
 ILBool _IL_SocketMethods_Bind(ILExecThread *_thread, ILNativeInt handle,
-							  ILInt32 af, ILInt64 address, ILInt32 port)
+							  System_Array *addr)
 {
-	ILSysIOSockAddr addr;
-
-	addr.family = (int)af;
-	addr.port = (unsigned short)port;
-	addr.addr = (unsigned long)address;
-
-	return (ILBool)(ILSysIOSocketBind((ILSysIOHandle)handle, &addr));
+	return (ILBool)(ILSysIOSocketBind
+				((ILSysIOHandle)handle,
+				 (unsigned char *)ArrayToBuffer(addr),
+				 addr->length));
 }
 
 /*
@@ -93,37 +99,31 @@ ILBool _IL_SocketMethods_Listen(ILExecThread *_thread,
 }
 
 /*
- * public static bool Accept(IntPtr handle, out long address, out int port,
+ * public static bool Accept(IntPtr handle, byte[] addrReturn,
  *                           out IntPtr newHandle);
  */
 ILBool _IL_SocketMethods_Accept(ILExecThread *_thread, ILNativeInt handle,
-								ILInt64 *address, ILInt32 *port,
+								System_Array *addrReturn,
 								ILNativeInt *newHandle)
 {
-	ILSysIOSockAddr addr;
-
 	*newHandle = (ILNativeInt)(ILSysIOSocketAccept
-					((ILSysIOHandle)handle, &addr));
-
-	*address = (ILInt64)(addr.addr);
-	*port = (ILInt32)(addr.port);
+					((ILSysIOHandle)handle,
+				     (unsigned char *)ArrayToBuffer(addrReturn),
+				     addrReturn->length));
 
 	return (*newHandle != (ILNativeInt)ILSysIOHandle_Invalid);
 }
 
 /*
- * public static bool Connect(IntPtr handle, int af, long address, int port);
+ * public static bool Connect(IntPtr handle, byte[] addr);
  */
 ILBool _IL_SocketMethods_Connect(ILExecThread *_thread, ILNativeInt handle,
-								 ILInt32 af, ILInt64 address, ILInt32 port)
+								 System_Array *addr)
 {
-	ILSysIOSockAddr addr;
-
-	addr.family = (int)af;
-	addr.addr = (unsigned long)address;
-	addr.port = (unsigned short)port;
-
-	return (ILBool)(ILSysIOSocketConnect((ILSysIOHandle)handle, &addr));
+	return (ILBool)(ILSysIOSocketConnect
+				((ILSysIOHandle)handle,
+				 (unsigned char *)ArrayToBuffer(addr),
+				 addr->length));
 }
 
 /*
@@ -142,27 +142,21 @@ ILInt32 _IL_SocketMethods_Receive(ILExecThread *_thread, ILNativeInt handle,
 /*
  * public static int ReceiveFrom(IntPtr handle, byte[] buffer,
  *								 int offset, int size, int flags,
- *								 out long address, out int port);
+ *								 byte[] addrReturn);
  */
 ILInt32 _IL_SocketMethods_ReceiveFrom(ILExecThread *_thread,
 									  ILNativeInt handle,
 									  System_Array *buffer,
 									  ILInt32 offset, ILInt32 size,
-									  ILInt32 flags, ILInt64 *address,
-									  ILInt32 *port)
+									  ILInt32 flags,
+									  System_Array *addrReturn)
 {
-	ILSysIOSockAddr addr;
-	ILInt32 result;
-
-	result = ILSysIOSocketRecvFrom
+	return ILSysIOSocketRecvFrom
 				((ILSysIOHandle)handle,
 			     ((ILUInt8 *)(ArrayToBuffer(buffer))) + offset,
-				 size, flags, &addr);
-
-	*address = (ILInt64)(addr.addr);
-	*port = (ILInt32)(addr.port);
-
-	return result;
+				 size, flags,
+				 (unsigned char *)ArrayToBuffer(addrReturn),
+				 addrReturn->length);
 }
 
 /*
@@ -181,22 +175,19 @@ ILInt32 _IL_SocketMethods_Send(ILExecThread *_thread, ILNativeInt handle,
 /*
  * public static int SendTo(IntPtr handle, byte[] buffer,
  *							int offset, int size, int flags,
- *							long address, int port);
+ *							byte[] addr)
  */
 ILInt32 _IL_SocketMethods_SendTo(ILExecThread *_thread, ILNativeInt handle,
 								 System_Array *buffer, ILInt32 offset,
 								 ILInt32 size, ILInt32 flags,
-								 ILInt64 address, ILInt32 port)
+								 System_Array *addr)
 {
-	ILSysIOSockAddr addr;
-
-	addr.addr = (unsigned long)address;
-	addr.port = (unsigned short)port;
-
 	return ILSysIOSocketSendTo
 				((ILSysIOHandle)handle,
 			     ((ILUInt8 *)(ArrayToBuffer(buffer))) + offset,
-				 size, flags, &addr);
+				 size, flags,
+				 (unsigned char *)ArrayToBuffer(addr),
+				 addr->length);
 }
 
 ILBool _IL_SocketMethods_Close(ILExecThread *_thread, ILNativeInt handle)
@@ -243,26 +234,16 @@ ILInt32 _IL_SocketMethods_GetAvailable(ILExecThread *_thread,
 }
 
 /*
- * public static bool GetSockName(IntPtr handle, out long address,
- *								  out int port);
+ * public static bool GetSockName(IntPtr handle, byte[] addrReturn);
  */
 ILBool _IL_SocketMethods_GetSockName(ILExecThread * _thread,
 									 ILNativeInt handle,
-									 ILInt64 *address, ILInt32 *port)
+									 System_Array *addrReturn)
 {
-	ILSysIOSockAddr addr;
-	if(ILSysIOSocketGetName((ILSysIOHandle)handle, &addr))
-	{
-		*address = (ILInt64)(addr.addr);
-		*port = (ILInt32)(addr.port);
-		return 1;
-	}
-	else
-	{
-		*address = 0;
-		*port = 0;
-		return 0;
-	}
+	return (ILBool)ILSysIOSocketGetName
+			((ILSysIOHandle)handle,
+			 (unsigned char *)ArrayToBuffer(addrReturn),
+			 addrReturn->length);
 }
 
 /*
@@ -332,51 +313,44 @@ extern ILBool _IL_SocketMethods_GetLingerOption(ILExecThread *_thread,
 }
 
 /*
- * public static bool SetMulticastOption(IntPtr handle, int name,
- *									     long group, long mcint);
+ * public static bool SetMulticastOption(IntPtr handle, int af, int name,
+ *									     byte[] group, byte[] mcint);
  */
 ILBool _IL_SocketMethods_SetMulticastOption(ILExecThread *_thread,
 											ILNativeInt handle,
-											ILInt32 name,
-											ILInt64 group,
-											ILInt64 mcint)
+											ILInt32 af, ILInt32 name,
+											System_Array *group,
+											System_Array *mcint)
 {
-	ILSysIOSockAddr g, m;
-	g.family = AF_INET;
-	g.addr = (unsigned long)group;
-	g.port = 0;
-	m.family = AF_INET;
-	m.addr = (unsigned long)mcint;
-	m.port = 0;
-	return (ILSysIOSocketSetMulticast((ILSysIOHandle)handle,
-									  name, &g, &m) != 0);
+	return (ILSysIOSocketSetMulticast
+				((ILSysIOHandle)handle, af, name,
+				 (unsigned char *)ArrayToBuffer(group), group->length,
+				 (unsigned char *)ArrayToBuffer(mcint), mcint->length) != 0);
 }
 
 /*
- * public static bool GetMulticastOption(IntPtr handle, int name,
- *									     out long group, out long mcint);
+ * public static bool GetMulticastOption(IntPtr handle, int af, int name,
+ *									     byte[] group, byte[] mcint);
  */
 ILBool _IL_SocketMethods_GetMulticastOption(ILExecThread *_thread,
 											ILNativeInt handle,
-											ILInt32 name,
-											ILInt64 *group,
-											ILInt64 *mcint)
+											ILInt32 af, ILInt32 name,
+											System_Array *group,
+											System_Array *mcint)
 {
-	ILSysIOSockAddr g, m;
-	ILMemZero(&g, sizeof(g));
-	ILMemZero(&m, sizeof(m));
-	if(ILSysIOSocketGetMulticast((ILSysIOHandle)handle, name, &g, &m))
-	{
-		*group = (ILInt64)(g.addr);
-		*mcint = (ILInt64)(m.addr);
-		return 1;
-	}
-	else
-	{
-		*group = 0;
-		*mcint = 0;
-		return 0;
-	}
+	return (ILSysIOSocketGetMulticast
+				((ILSysIOHandle)handle, af, name,
+				 (unsigned char *)ArrayToBuffer(group), group->length,
+				 (unsigned char *)ArrayToBuffer(mcint), mcint->length) != 0);
+}
+
+ILBool _IL_SocketMethods_DiscoverIrDADevices(ILExecThread *_thread,
+											 ILNativeInt handle,
+											 System_Array *buf)
+{
+	return (ILSysIODiscoverIrDADevices
+				((ILSysIOHandle)handle,
+				 (unsigned char *)ArrayToBuffer(buf), buf->length) != 0);
 }
 
 /*

@@ -177,15 +177,9 @@ ILInt32 ILCopyFile(const char * src, const char * dest);
 ILInt32 ILCreateDir(const char * path);
 
 /*
- * IPv4 Address placeholder for socket related functions.
+ * Determine if a socket address family is supported.
  */
-typedef struct _ILSysIOSockAddr
-{
-  int family;
-  unsigned short port;
-  unsigned long addr;
-
-} ILSysIOSockAddr;
+int ILSysIOAddressFamilySupported(ILInt32 af);
 
 /*
  * Create a new socket.  Returns ILSysIOHandle_Invalid on error.
@@ -195,12 +189,14 @@ ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol);
 /*
  * Bind a socket to an address.  Returns zero on error.
  */
-int ILSysIOSocketBind(ILSysIOHandle sockfd, ILSysIOSockAddr *local_addr);
+int ILSysIOSocketBind(ILSysIOHandle sockfd, unsigned char *addr,
+					  ILInt32 addrLen);
 
 /*
  * Connect to a remote socket address.  Returns zero on error.
  */
-int ILSysIOSocketConnect(ILSysIOHandle sockfd, ILSysIOSockAddr *serv_addr);
+int ILSysIOSocketConnect(ILSysIOHandle sockfd, unsigned char *addr,
+						 ILInt32 addrLen);
 
 /*
  * Set a socket to listen mode.  Returns zero on error.
@@ -210,7 +206,8 @@ int ILSysIOSocketListen(ILSysIOHandle sockfd, ILInt32 backlog);
 /*
  * Accept a connection from a remote address on a socket.
  */
-ILSysIOHandle ILSysIOSocketAccept(ILSysIOHandle sockfd, ILSysIOSockAddr *out);
+ILSysIOHandle ILSysIOSocketAccept(ILSysIOHandle sockfd,
+								  unsigned char *addr, ILInt32 addrLen);
 
 /*
  * Receive data on a socket.
@@ -228,13 +225,15 @@ ILInt32 ILSysIOSocketSend(ILSysIOHandle sockfd, const void *msg,
  * Send data on a socket to a specific address.
  */
 ILInt32 ILSysIOSocketSendTo(ILSysIOHandle sockfd, const void *msg, ILInt32 len,
-					        ILInt32 flags, const ILSysIOSockAddr *to);
+					        ILInt32 flags, unsigned char *addr,
+							ILInt32 addrLen);
 
 /*
  * Receive data on a socket from a specific address.
  */
 ILInt32 ILSysIOSocketRecvFrom(ILSysIOHandle sockfd, void *buf, ILInt32 len,
-							  ILInt32 flags, ILSysIOSockAddr *from);
+							  ILInt32 flags, unsigned char *addr,
+							  ILInt32 addrLen);
 
 /*
  * Close a socket.  Returns zero on error.
@@ -278,7 +277,8 @@ ILInt32 ILSysIOSocketGetAvailable(ILSysIOHandle sockfd);
 /*
  * Get the name of a local socket's end-point.  Returns zero on error.
  */
-int ILSysIOSocketGetName(ILSysIOHandle sockfd, ILSysIOSockAddr *addr);
+int ILSysIOSocketGetName(ILSysIOHandle sockfd, unsigned char *addr,
+						 ILInt32 addrLen);
 
 /*
  * Socket option levels.  Must match "System.Net.Sockets.SocketOptionLevel".
@@ -329,16 +329,23 @@ int ILSysIOSocketGetLinger(ILSysIOHandle handle, int *enabled, int *seconds);
 /*
  * Set a multicast option on a socket.  Returns zero on error.
  */
-int ILSysIOSocketSetMulticast(ILSysIOHandle handle, ILInt32 name,
-							  ILSysIOSockAddr *group,
-							  ILSysIOSockAddr *mcint);
+int ILSysIOSocketSetMulticast(ILSysIOHandle handle, ILInt32 af, ILInt32 name,
+							  unsigned char *group, ILInt32 groupLen,
+							  unsigned char *mcint, ILInt32 mcintLen);
 
 /*
  * Get a multicast option on a socket.  Returns zero on error.
  */
-int ILSysIOSocketGetMulticast(ILSysIOHandle handle, ILInt32 name,
-							  ILSysIOSockAddr *group,
-							  ILSysIOSockAddr *mcint);
+int ILSysIOSocketGetMulticast(ILSysIOHandle handle, ILInt32 af, ILInt32 name,
+							  unsigned char *group, ILInt32 groupLen,
+							  unsigned char *mcint, ILInt32 mcintLen);
+
+/*
+ * Discover the IrDA devices that are accesible via a socket.
+ * Returns zero on error.
+ */
+int ILSysIODiscoverIrDADevices(ILSysIOHandle handle, unsigned char *buf,
+							   ILInt32 bufLen);
 
 /* dns.c */
 struct hostent* ILGetHostByName(const char *name);

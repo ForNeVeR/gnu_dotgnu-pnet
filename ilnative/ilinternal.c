@@ -1247,6 +1247,31 @@ static ClassNameInfo *classTable = 0;
 static unsigned long classTableSize = 0;
 
 /*
+ * Determine if a class is already in the class table.
+ */
+static int classAlreadyPresent(const char *name, const char *nspace)
+{
+	unsigned long posn;
+	for(posn = 0; posn < classTableSize; ++posn)
+	{
+		if(strcmp(name, classTable[posn].name) != 0)
+		{
+			continue;
+		}
+		if(nspace && classTable[posn].namespace &&
+		   !strcmp(nspace, classTable[posn].namespace))
+		{
+			return 1;
+		}
+		else if(nspace == classTable[posn].namespace)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/*
  * Load an IL image and print stub information for internalcall methods.
  */
 static int processFile(const char *filename, ILContext *context,
@@ -1275,6 +1300,13 @@ static int processFile(const char *filename, ILContext *context,
 							(image, IL_META_TOKEN_TYPE_DEF | token);
 		if(classInfo)
 		{
+			/* If we already saw this class in another assembly, skip it */
+			if(classAlreadyPresent(ILClass_Name(classInfo),
+								   ILClass_Namespace(classInfo)))
+			{
+				continue;
+			}
+
 			/* Determine if this class has "internalcall" methods */
 			method = 0;
 			while((method = (ILMethod *)ILClassNextMemberByKind

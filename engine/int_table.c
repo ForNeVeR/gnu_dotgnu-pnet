@@ -2603,18 +2603,18 @@ static void marshal_bpiiip(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_bpjili(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_bpjp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt64, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt64 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])));
 }
 
 #endif
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_bpjppp(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_bpjpp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])));
 }
 
 #endif
@@ -2630,18 +2630,9 @@ static void marshal_ipjpiii(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_ipjpiiipp(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_ipjpiiip(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((void * *)(avalue[6])), *((void * *)(avalue[7])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ipjpiiili(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, ILInt32, ILInt64, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt64 *)(avalue[6])), *((ILInt32 *)(avalue[7])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((void * *)(avalue[6])));
 }
 
 #endif
@@ -2666,15 +2657,6 @@ static void marshal_bpjb(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_bpjpp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
 static void marshal_bpjiii(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
@@ -2693,18 +2675,9 @@ static void marshal_bpjbi(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_bpjill(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_bpjiipp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt64, ILInt64))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt64 *)(avalue[3])), *((ILInt64 *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bpjipp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((void * *)(avalue[5])));
 }
 
 #endif
@@ -2713,27 +2686,29 @@ static void marshal_bpjipp(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(SocketMethods_Methods)
 	IL_METHOD("GetInvalidHandle", "()j", _IL_SocketMethods_GetInvalidHandle, marshal_jp)
+	IL_METHOD("AddressFamilySupported", "(i)Z", _IL_SocketMethods_AddressFamilySupported, marshal_bpi)
 	IL_METHOD("Create", "(iii&j)Z", _IL_SocketMethods_Create, marshal_bpiiip)
-	IL_METHOD("Bind", "(jili)Z", _IL_SocketMethods_Bind, marshal_bpjili)
+	IL_METHOD("Bind", "(j[B)Z", _IL_SocketMethods_Bind, marshal_bpjp)
 	IL_METHOD("Shutdown", "(ji)Z", _IL_SocketMethods_Shutdown, marshal_bpji)
 	IL_METHOD("Listen", "(ji)Z", _IL_SocketMethods_Listen, marshal_bpji)
-	IL_METHOD("Accept", "(j&l&i&j)Z", _IL_SocketMethods_Accept, marshal_bpjppp)
-	IL_METHOD("Connect", "(jili)Z", _IL_SocketMethods_Connect, marshal_bpjili)
+	IL_METHOD("Accept", "(j[B&j)Z", _IL_SocketMethods_Accept, marshal_bpjpp)
+	IL_METHOD("Connect", "(j[B)Z", _IL_SocketMethods_Connect, marshal_bpjp)
 	IL_METHOD("Receive", "(j[Biii)i", _IL_SocketMethods_Receive, marshal_ipjpiii)
-	IL_METHOD("ReceiveFrom", "(j[Biii&l&i)i", _IL_SocketMethods_ReceiveFrom, marshal_ipjpiiipp)
+	IL_METHOD("ReceiveFrom", "(j[Biii[B)i", _IL_SocketMethods_ReceiveFrom, marshal_ipjpiiip)
 	IL_METHOD("Send", "(j[Biii)i", _IL_SocketMethods_Send, marshal_ipjpiii)
-	IL_METHOD("SendTo", "(j[Biiili)i", _IL_SocketMethods_SendTo, marshal_ipjpiiili)
+	IL_METHOD("SendTo", "(j[Biii[B)i", _IL_SocketMethods_SendTo, marshal_ipjpiiip)
 	IL_METHOD("Close", "(j)Z", _IL_SocketMethods_Close, marshal_bpj)
 	IL_METHOD("Select", "([j[j[jl)i", _IL_SocketMethods_Select, marshal_ippppl)
 	IL_METHOD("SetBlocking", "(jZ)Z", _IL_SocketMethods_SetBlocking, marshal_bpjb)
 	IL_METHOD("GetAvailable", "(j)i", _IL_SocketMethods_GetAvailable, marshal_ipj)
-	IL_METHOD("GetSockName", "(j&l&i)Z", _IL_SocketMethods_GetSockName, marshal_bpjpp)
+	IL_METHOD("GetSockName", "(j[B)Z", _IL_SocketMethods_GetSockName, marshal_bpjp)
 	IL_METHOD("SetSocketOption", "(jiii)Z", _IL_SocketMethods_SetSocketOption, marshal_bpjiii)
 	IL_METHOD("GetSocketOption", "(jii&i)Z", _IL_SocketMethods_GetSocketOption, marshal_bpjiip)
 	IL_METHOD("SetLingerOption", "(jZi)Z", _IL_SocketMethods_SetLingerOption, marshal_bpjbi)
 	IL_METHOD("GetLingerOption", "(j&Z&i)Z", _IL_SocketMethods_GetLingerOption, marshal_bpjpp)
-	IL_METHOD("SetMulticastOption", "(jill)Z", _IL_SocketMethods_SetMulticastOption, marshal_bpjill)
-	IL_METHOD("GetMulticastOption", "(ji&l&l)Z", _IL_SocketMethods_GetMulticastOption, marshal_bpjipp)
+	IL_METHOD("SetMulticastOption", "(jii[B[B)Z", _IL_SocketMethods_SetMulticastOption, marshal_bpjiipp)
+	IL_METHOD("GetMulticastOption", "(jii[B[B)Z", _IL_SocketMethods_GetMulticastOption, marshal_bpjiipp)
+	IL_METHOD("DiscoverIrDADevices", "(j[B)Z", _IL_SocketMethods_DiscoverIrDADevices, marshal_bpjp)
 	IL_METHOD("GetErrno", "()vPlatform.Errno;", _IL_SocketMethods_GetErrno, marshal_ip)
 	IL_METHOD("GetErrnoMessage", "(vPlatform.Errno;)oSystem.String;", _IL_SocketMethods_GetErrnoMessage, marshal_ppi)
 	IL_METHOD("CanStartThreads", "()Z", _IL_SocketMethods_CanStartThreads, marshal_bp)
@@ -2766,10 +2741,10 @@ static void marshal_sps(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(IPAddress_Methods)
 	IL_METHOD("HostToNetworkOrder", "(i)i", _IL_IPAddress_HostToNetworkOrder_i, marshal_ipi)
+	IL_METHOD("NetworkToHostOrder", "(i)i", _IL_IPAddress_NetworkToHostOrder_i, marshal_ipi)
 	IL_METHOD("HostToNetworkOrder", "(l)l", _IL_IPAddress_HostToNetworkOrder_l, marshal_lpl)
 	IL_METHOD("HostToNetworkOrder", "(s)s", _IL_IPAddress_HostToNetworkOrder_s, marshal_sps)
 	IL_METHOD("NetworkToHostOrder", "(l)l", _IL_IPAddress_NetworkToHostOrder_l, marshal_lpl)
-	IL_METHOD("NetworkToHostOrder", "(i)i", _IL_IPAddress_NetworkToHostOrder_i, marshal_ipi)
 	IL_METHOD("NetworkToHostOrder", "(s)s", _IL_IPAddress_NetworkToHostOrder_s, marshal_sps)
 IL_METHOD_END
 

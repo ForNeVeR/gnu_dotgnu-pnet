@@ -223,12 +223,19 @@ class ResourceManager
 				}
 				lock(this)
 				{
-					ResourceSet set = InternalGetResourceSet
-						(culture, true, true);
-					if(set != null)
+					do 
 					{
-						return set.GetObject(name);
-					}
+						ResourceSet set = InternalGetResourceSet
+											(culture, true, true);
+						if(set != null)
+						{
+							if(set.GetObject(name) != null)
+							{
+								return set.GetObject(name);
+							}
+						}
+						culture = culture.Parent;
+					} while(culture != null);
 				}
 				return null;
 			}
@@ -276,7 +283,10 @@ class ResourceManager
 							(culture, true, true);
 						if(set != null)
 						{
-							return set.GetString(name);
+							if(set.GetString(name) != null)
+							{
+								return set.GetString(name);
+							}
 						}
 						if(culture.Equals(CultureInfo.InvariantCulture))
 						{

@@ -1,4 +1,11 @@
 
+2004-05-19  Gopal V  <gopalv82@yahoo.com>
+
+	* System/Configuration/NameValueSectionHandler.cs,
+	System/Configuration/DictionarySectionHandler.cs : Ignore 
+	SignificantWhiteSpace as well as Comments and regular
+	WhiteSpace.
+
 2004-05-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* profiles/default1.1: add a profile variant of "framework1.1" which

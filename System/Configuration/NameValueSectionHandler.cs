@@ -130,7 +130,8 @@ public class NameValueSectionHandler : IConfigurationSectionHandler
 				{
 					// Ignore comments and white space.
 					if(node.NodeType == XmlNodeType.Comment ||
-					   node.NodeType == XmlNodeType.Whitespace)
+					   node.NodeType == XmlNodeType.Whitespace ||
+					   node.NodeType == XmlNodeType.SignificantWhitespace)
 					{
 						continue;
 					}

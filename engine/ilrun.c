@@ -51,6 +51,11 @@ int _ILDumpVarProfile(FILE *stream);
  */
 int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process);
 
+/*
+ * Imports from "dumpconfig.c"
+ */
+void _ILDumpConfig(FILE *stream,int level);
+
 #endif
 
 /*
@@ -104,6 +109,8 @@ static ILCmdLineOption const options[] = {
 	{"--var-profile", 'V', 0, 0, 0},
 	{"-P", 'P', 0, 0, 0},
 	{"--dump-params", 'P', 0, 0, 0},
+	{"-D", 'D', 0, 0, 0},
+	{"--dump-config", 'D', 0, 0, 0},
 #endif
 
 	{0, 0, 0, 0, 0}
@@ -160,6 +167,7 @@ int main(int argc, char *argv[])
 	int dumpVarProfile = 0;
 	int dumpMethodProfile = 0;
 	int dumpParams = 0;
+	int dumpConfig = 0;
 #endif
 
 	/* Initialize the locale routines */
@@ -252,6 +260,12 @@ int main(int argc, char *argv[])
 				dumpParams = 1;
 			}
 			break;
+
+			case 'D':
+			{
+				dumpConfig+=1;
+			}
+			break;
 		#endif
 
 			case 'v':
@@ -285,6 +299,12 @@ int main(int argc, char *argv[])
 	else if(registerMode == 'u')
 	{
 		return _ILUnregisterFromKernel();
+	}
+
+	if(dumpConfig!=0)
+	{
+		_ILDumpConfig(stdout,dumpConfig);
+		return 0;
 	}
 
 	/* We need at least one input file argument */

@@ -101,17 +101,20 @@ extern int _ILCVMInsnCount[];
 #ifdef HAVE_COMPUTED_GOTO
 	#ifdef IL_CVM_DIRECT_ALLOWED
 		#define	IL_CVM_DIRECT
+		#define	IL_CVM_FLAVOUR "Direct Threaded"
 		#if defined(PIC) && defined(HAVE_PIC_COMPUTED_GOTO)
 			#define	IL_CVM_PIC_DIRECT
 		#endif
 	#else
 		#define	IL_CVM_TOKEN
+		#define	IL_CVM_FLAVOUR "Token Threaded"
 		#if defined(PIC) && defined(HAVE_PIC_COMPUTED_GOTO)
 			#define	IL_CVM_PIC_TOKEN
 		#endif
 	#endif
 #else /* !HAVE_COMPUTED_GOTO */
 	#define	IL_CVM_SWITCH
+	#define	IL_CVM_FLAVOUR "Switch Loop"
 #endif /* !HAVE_COMPUTED_GOTO */
 
 /*
@@ -184,6 +187,7 @@ extern int _ILCVMInsnCount[];
 	defined(IL_CONFIG_UNROLL)
 #define	IL_CVM_DIRECT_UNROLLED_X86
 #define	IL_CVM_DIRECT_UNROLLED
+#define	IL_CVM_FLAVOUR "Direct Unrolled (x86)"
 #endif
 #if defined(IL_CVM_DIRECT) && defined(CVM_ARM) && \
 	defined(__GNUC__) && !defined(IL_NO_ASM) && \
@@ -192,6 +196,7 @@ extern int _ILCVMInsnCount[];
 	defined(IL_CONFIG_UNROLL)
 #define	IL_CVM_DIRECT_UNROLLED_ARM
 #define	IL_CVM_DIRECT_UNROLLED
+#define	IL_CVM_FLAVOUR "Direct Unrolled (ARM)"
 #endif
 
 /*

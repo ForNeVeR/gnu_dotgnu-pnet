@@ -1,4 +1,11 @@
 
+2003-07-22  Gopal.V  <gopalv82@symonds.net>
+
+	* configure.in, engine/dumpconfig.c, engine/Makefile.am,
+	engine/ilrun.c, engine/cvm_config.h: Add a "--dump-config"
+	option to list out the build options and multiple "-D" for
+	more verbose output.
+
 2003-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.c, include/il_system.h, support/Makefile.am,

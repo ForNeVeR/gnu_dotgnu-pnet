@@ -1,3 +1,9 @@
+
+2004-05-21  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/Schema/XmlSchema.cs: Change the default namespace to
+	be "http://www.w3.org/2001/XmlSchema" .
+
 2004-05-21  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* Generics/TreeBase.cs: fixes to RotateRight and RemoveNode.

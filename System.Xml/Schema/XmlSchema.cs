@@ -29,9 +29,8 @@ namespace System.Xml.Schema
 	public class XmlSchema: XmlSchemaObject
 	{
 	
-		public const String InstanceNamespace=null;
-		public const String Namespace=null;
-		
+		public const String InstanceNamespace="http://www.w3.org/2001/XMLSchema";
+		public const String Namespace="http://www.w3.org/2001/XMLSchema";
 		[TODO]
 		public XmlSchema()
 		{

@@ -503,7 +503,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	public virtual XPathNavigator CreateNavigator()
 			{
 				// TODO
-				return null;
+				return new XmlDocumentNavigator(this);
 			}
 
 	// Implement the IEnumerable interface,

@@ -314,7 +314,7 @@ public sealed class Directory
 					{
 						continue;
 					}
-					list.Add(filename);
+					list.Add(Path.Combine(path, filename));
 				}
 
 				// Dispose of the regular expression.
@@ -402,11 +402,12 @@ public sealed class Directory
 					}
 					if(type == FileType.directory)
 					{
-						list.Add(new DirectoryInfo(filename));
+						list.Add(new DirectoryInfo
+									(Path.Combine(path, filename)));
 					}
 					else
 					{
-						list.Add(new FileInfo(filename));
+						list.Add(new FileInfo(Path.Combine(path, filename)));
 					}
 				}
 

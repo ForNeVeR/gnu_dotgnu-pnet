@@ -7,6 +7,10 @@
 	tests/runtime/System/IO/TestPath.cs: rewrite the "System.IO.Path"
 	class and add a large number of test cases for it.
 
+	* runtime/System/IO/Directory.cs: return the combined path
+	for the results of "Directory.GetFiles" and "Directory.GetDirectories"
+	rather than just the relative path (bug #4644).
+
 2003-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Rare/CP20261.cs: add the T.61 encoding to the I18N routines.

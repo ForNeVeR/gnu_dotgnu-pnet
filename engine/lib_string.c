@@ -1301,7 +1301,7 @@ static IL_INLINE int IsCharMatch(System_Array *trimChars, ILUInt16 ch)
 	if(trimChars)
 	{
 		ILInt32 len = trimChars->length;
-		ILUInt16 *buf = StringToBuffer(trimChars);
+		ILUInt16 *buf = (ILUInt16 *)(ArrayToBuffer(trimChars));
 		while(len > 0)
 		{
 			if(*buf++ == ch)

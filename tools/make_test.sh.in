@@ -50,7 +50,7 @@ CTEST="no"
 case "$FILE" in
 	*.cs)	BASE=`dirname "$FILE"`/`basename "$FILE" .cs` ;;
 	*.java)	BASE=`dirname "$FILE"`/`basename "$FILE" .java` ;;
-	*.c)	BASE=`dirname "$FILE"`/`basename "$FILE" .java`
+	*.c)	BASE=`dirname "$FILE"`/`basename "$FILE" .c`
 			CTEST="yes" ;;
 	*)		echo "$1: Do not know how to test this type of file"
 			exit 1 ;;

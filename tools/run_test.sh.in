@@ -171,7 +171,7 @@ case "$1" in
 				STATUS=1
 			fi ;;
 	*.c)	if test -f "$1" ; then
-				BASE=`dirname "$1"`/`basename "$1" .cs`
+				BASE=`dirname "$1"`/`basename "$1" .c`
 				if process "$BASE" "$1" "yes" ; then
 					:
 				else

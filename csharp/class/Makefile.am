@@ -25,6 +25,7 @@ TESTS = abstract1.cs \
 		interface3.cs \
 		interface4.cs \
 		interface5.cs \
+		interface6.cs \
 		method1.cs \
 		method2.cs \
 		method3.cs \

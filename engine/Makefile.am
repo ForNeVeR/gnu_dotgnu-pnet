@@ -14,6 +14,7 @@ libILEngine_a_SOURCES = cvm.c \
 						layout.c \
 						lib_array.c \
 						lib_charinfo.c \
+						lib_crypt.c \
 						lib_decimal.c \
 						lib_delegate.c \
 						lib_diag.c \

@@ -370,6 +370,12 @@ extern ILInt32 _IL_StackFrame_InternalGetNativeOffset(ILExecThread * _thread, IL
 extern ILString * _IL_StackFrame_InternalGetDebugInfo(ILExecThread * _thread, void * method, ILInt32 offset, ILInt32 * line, ILInt32 * column);
 extern System_Array * _IL_StackFrame_GetExceptionStackTrace(ILExecThread * _thread);
 
+extern ILNativeInt _IL_CryptoMethods_HashNew(ILExecThread * _thread, ILInt32 algorithm);
+extern void _IL_CryptoMethods_HashReset(ILExecThread * _thread, ILNativeInt state);
+extern void _IL_CryptoMethods_HashUpdate(ILExecThread * _thread, ILNativeInt state, System_Array * buffer, ILInt32 offset, ILInt32 count);
+extern void _IL_CryptoMethods_HashFinal(ILExecThread * _thread, ILNativeInt state, System_Array * hash);
+extern void _IL_CryptoMethods_HashFree(ILExecThread * _thread, ILNativeInt state);
+
 extern void _IL_DirMethods_GetPathInfo(ILExecThread * _thread, void * _result);
 extern ILString * _IL_DirMethods_GetSystemDirectory(ILExecThread * _thread);
 extern ILInt32 _IL_DirMethods_GetLastAccess(ILExecThread * _thread, ILString * path, ILInt64 * lastac);

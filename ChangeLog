@@ -1,4 +1,10 @@
 
+2002-07-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/Makefile.am, engine/int_proto.h, engine/int_table.c,
+	engine/lib_crypt.c, samples/mscorlib.dll: implement internalcall's
+	for the "CryptoMethods" class (MD5 and SHA1 algorithms only).
+
 2002-07-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/Makefile.am, cscc/cscc.c, ilalink/Makefile.am,

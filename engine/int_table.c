@@ -1849,6 +1849,27 @@ IL_METHOD_END
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpjp(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])));
+}
+
+#endif
+
+#ifndef _IL_CryptoMethods_suppressed
+
+IL_METHOD_BEGIN(CryptoMethods_Methods)
+	IL_METHOD("HashNew", "(i)j", _IL_CryptoMethods_HashNew, marshal_jpi)
+	IL_METHOD("HashReset", "(j)V", _IL_CryptoMethods_HashReset, marshal_vpj)
+	IL_METHOD("HashUpdate", "(j[Bii)V", _IL_CryptoMethods_HashUpdate, marshal_vpjpii)
+	IL_METHOD("HashFinal", "(j[B)V", _IL_CryptoMethods_HashFinal, marshal_vpjp)
+	IL_METHOD("HashFree", "(j)V", _IL_CryptoMethods_HashFree, marshal_vpj)
+IL_METHOD_END
+
+#endif
+
 #ifndef _IL_DirMethods_suppressed
 
 IL_METHOD_BEGIN(DirMethods_Methods)
@@ -2264,6 +2285,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_CodeTable_suppressed
 	{"CodeTable", "I18N.CJK", CodeTable_Methods},
+#endif
+#ifndef _IL_CryptoMethods_suppressed
+	{"CryptoMethods", "Platform", CryptoMethods_Methods},
 #endif
 #ifndef _IL_Debugger_suppressed
 	{"Debugger", "System.Diagnostics", Debugger_Methods},

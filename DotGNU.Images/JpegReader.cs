@@ -24,6 +24,7 @@ namespace DotGNU.Images
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
 
 internal unsafe sealed class JpegReader
 {
@@ -49,7 +50,7 @@ internal unsafe sealed class JpegReader
 					(ref cinfo, stream, prime, primeLen);
 
 				// Read the JPEG header.
-				JpegLib.jpeg_read_header(ref cinfo, JpegLib.boolean.True);
+				JpegLib.jpeg_read_header(ref cinfo, (Int)1);
 
 				// Set the decompression parameters the way we want them.
 				cinfo.out_color_space = JpegLib.J_COLOR_SPACE.JCS_RGB;
@@ -84,7 +85,7 @@ internal unsafe sealed class JpegReader
 							((int)(cinfo.output_height)))
 				{
 					JpegLib.jpeg_read_scanlines
-						(ref cinfo, ref buf, (JpegLib.JDIMENSION)1);
+						(ref cinfo, ref buf, (UInt)1);
 					offset = (y++) * stride;
 					for(posn = 0; posn < twidth; posn += 3)
 					{

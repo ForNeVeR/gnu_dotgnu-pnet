@@ -24,6 +24,7 @@ namespace DotGNU.Images
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
 
 // This class imports definitions from "libjpeg" via PInvoke.  Eventually we
 // may want to replace this with a managed JPEG library by compiling "libjpeg"
@@ -42,22 +43,6 @@ internal unsafe sealed class JpegLib
 	public const int MAX_SAMP_FACTOR = 4;
 	public const int C_MAX_BLOCKS_IN_MCU = 10;
 	public const int D_MAX_BLOCKS_IN_MCU = 10;
-
-	public enum JSAMPLE : byte { Zero }
-	public enum JCOEF : short { Zero }
-	public enum INT8 : sbyte { Zero }
-	public enum UINT8 : byte { Zero }
-	public enum JOCTET : byte { Zero }
-	public enum INT16 : short { Zero }
-	public enum UINT16 : ushort { Zero }
-	public enum INT32 : @X_int@ { Zero }
-	public enum UINT32 : @X_uint@ { Zero }
-	public enum JDIMENSION : @X_uint@ { Zero }
-	public enum boolean : @X_int@ { False, True }
-	public enum INT : @X_int@ { Zero }
-	public enum UINT : @X_uint@ { Zero }
-	public enum LONG : @X_int@ { Zero }
-	public enum size_t : @X_uint@ { Zero }
 
 	public enum J_COLOR_SPACE
 	{
@@ -90,16 +75,16 @@ internal unsafe sealed class JpegLib
 		public void *mem;
 		public void *progress;
 		public IntPtr client_data;
-		public boolean is_decompressor;
-		public INT global_state;
+		public Int is_decompressor;
+		public Int global_state;
 		public jpeg_destination_mgr *dest;
-		public JDIMENSION image_width;
-		public JDIMENSION image_height;
-  		public INT input_components;
+		public UInt image_width;
+		public UInt image_height;
+  		public Int input_components;
   		public J_COLOR_SPACE in_color_space;
   		public double input_gamma;
-		public INT data_precision;
-  		public INT num_components;
+		public Int data_precision;
+  		public Int num_components;
 		public J_COLOR_SPACE jpeg_color_space;
 		public void *comp_info;
 		public void *quant_tbl_ptrs_0;
@@ -114,95 +99,95 @@ internal unsafe sealed class JpegLib
 		public void *ac_huff_tbl_ptrs_1;
 		public void *ac_huff_tbl_ptrs_2;
 		public void *ac_huff_tbl_ptrs_3;
-		public UINT8 arith_dc_L_0;
-		public UINT8 arith_dc_L_1;
-		public UINT8 arith_dc_L_2;
-		public UINT8 arith_dc_L_3;
-		public UINT8 arith_dc_L_4;
-		public UINT8 arith_dc_L_5;
-		public UINT8 arith_dc_L_6;
-		public UINT8 arith_dc_L_7;
-		public UINT8 arith_dc_L_8;
-		public UINT8 arith_dc_L_9;
-		public UINT8 arith_dc_L_10;
-		public UINT8 arith_dc_L_11;
-		public UINT8 arith_dc_L_12;
-		public UINT8 arith_dc_L_13;
-		public UINT8 arith_dc_L_14;
-		public UINT8 arith_dc_L_15;
-		public UINT8 arith_dc_U_0;
-		public UINT8 arith_dc_U_1;
-		public UINT8 arith_dc_U_2;
-		public UINT8 arith_dc_U_3;
-		public UINT8 arith_dc_U_4;
-		public UINT8 arith_dc_U_5;
-		public UINT8 arith_dc_U_6;
-		public UINT8 arith_dc_U_7;
-		public UINT8 arith_dc_U_8;
-		public UINT8 arith_dc_U_9;
-		public UINT8 arith_dc_U_10;
-		public UINT8 arith_dc_U_11;
-		public UINT8 arith_dc_U_12;
-		public UINT8 arith_dc_U_13;
-		public UINT8 arith_dc_U_14;
-		public UINT8 arith_dc_U_15;
-		public UINT8 arith_dc_K_0;
-		public UINT8 arith_dc_K_1;
-		public UINT8 arith_dc_K_2;
-		public UINT8 arith_dc_K_3;
-		public UINT8 arith_dc_K_4;
-		public UINT8 arith_dc_K_5;
-		public UINT8 arith_dc_K_6;
-		public UINT8 arith_dc_K_7;
-		public UINT8 arith_dc_K_8;
-		public UINT8 arith_dc_K_9;
-		public UINT8 arith_dc_K_10;
-		public UINT8 arith_dc_K_11;
-		public UINT8 arith_dc_K_12;
-		public UINT8 arith_dc_K_13;
-		public UINT8 arith_dc_K_14;
-		public UINT8 arith_dc_K_15;
-		public INT num_scans;
+		public UChar arith_dc_L_0;
+		public UChar arith_dc_L_1;
+		public UChar arith_dc_L_2;
+		public UChar arith_dc_L_3;
+		public UChar arith_dc_L_4;
+		public UChar arith_dc_L_5;
+		public UChar arith_dc_L_6;
+		public UChar arith_dc_L_7;
+		public UChar arith_dc_L_8;
+		public UChar arith_dc_L_9;
+		public UChar arith_dc_L_10;
+		public UChar arith_dc_L_11;
+		public UChar arith_dc_L_12;
+		public UChar arith_dc_L_13;
+		public UChar arith_dc_L_14;
+		public UChar arith_dc_L_15;
+		public UChar arith_dc_U_0;
+		public UChar arith_dc_U_1;
+		public UChar arith_dc_U_2;
+		public UChar arith_dc_U_3;
+		public UChar arith_dc_U_4;
+		public UChar arith_dc_U_5;
+		public UChar arith_dc_U_6;
+		public UChar arith_dc_U_7;
+		public UChar arith_dc_U_8;
+		public UChar arith_dc_U_9;
+		public UChar arith_dc_U_10;
+		public UChar arith_dc_U_11;
+		public UChar arith_dc_U_12;
+		public UChar arith_dc_U_13;
+		public UChar arith_dc_U_14;
+		public UChar arith_dc_U_15;
+		public UChar arith_dc_K_0;
+		public UChar arith_dc_K_1;
+		public UChar arith_dc_K_2;
+		public UChar arith_dc_K_3;
+		public UChar arith_dc_K_4;
+		public UChar arith_dc_K_5;
+		public UChar arith_dc_K_6;
+		public UChar arith_dc_K_7;
+		public UChar arith_dc_K_8;
+		public UChar arith_dc_K_9;
+		public UChar arith_dc_K_10;
+		public UChar arith_dc_K_11;
+		public UChar arith_dc_K_12;
+		public UChar arith_dc_K_13;
+		public UChar arith_dc_K_14;
+		public UChar arith_dc_K_15;
+		public Int num_scans;
   		public void *scan_info;
-  		public boolean raw_data_in;
-  		public boolean arith_code;
-  		public boolean optimize_coding;
-  		public boolean CCIR601_sampling;
-  		public INT smoothing_factor;
+  		public Int raw_data_in;
+  		public Int arith_code;
+  		public Int optimize_coding;
+  		public Int CCIR601_sampling;
+  		public Int smoothing_factor;
   		public J_DCT_METHOD dct_method;
-  		public UINT restart_interval;
-  		public INT restart_in_rows;
-  		public boolean write_JFIF_header;
-  		public UINT8 JFIF_major_version;
-  		public UINT8 JFIF_minor_version;
-  		public UINT8 density_unit;
-  		public UINT16 X_density;
-  		public UINT16 Y_density;
-  		public boolean write_Adobe_marker;
-  		public JDIMENSION next_scanline;
-  		public boolean progressive_mode;
-  		public INT max_h_samp_factor;
-  		public INT max_v_samp_factor;
-  		public JDIMENSION total_iMCU_rows;
-  		public INT comps_in_scan;
+  		public UInt restart_interval;
+  		public Int restart_in_rows;
+  		public Int write_JFIF_header;
+  		public UChar JFIF_major_version;
+  		public UChar JFIF_minor_version;
+  		public UChar density_unit;
+  		public UShort X_density;
+  		public UShort Y_density;
+  		public Int write_Adobe_marker;
+  		public UInt next_scanline;
+  		public Int progressive_mode;
+  		public Int max_h_samp_factor;
+  		public Int max_v_samp_factor;
+  		public UInt total_iMCU_rows;
+  		public Int comps_in_scan;
   		public void *cur_comp_info_0;
   		public void *cur_comp_info_1;
   		public void *cur_comp_info_2;
   		public void *cur_comp_info_3;
-  		public JDIMENSION MCUs_per_row;
-  		public JDIMENSION MCU_rows_in_scan;
-		public INT blocks_in_MCU;
-  		public INT MCU_membership_0;
-  		public INT MCU_membership_1;
-  		public INT MCU_membership_2;
-  		public INT MCU_membership_3;
-  		public INT MCU_membership_4;
-  		public INT MCU_membership_5;
-  		public INT MCU_membership_6;
-  		public INT MCU_membership_7;
-  		public INT MCU_membership_8;
-  		public INT MCU_membership_9;
-  		public INT Ss, Se, Ah, Al;
+  		public UInt MCUs_per_row;
+  		public UInt MCU_rows_in_scan;
+		public Int blocks_in_MCU;
+  		public Int MCU_membership_0;
+  		public Int MCU_membership_1;
+  		public Int MCU_membership_2;
+  		public Int MCU_membership_3;
+  		public Int MCU_membership_4;
+  		public Int MCU_membership_5;
+  		public Int MCU_membership_6;
+  		public Int MCU_membership_7;
+  		public Int MCU_membership_8;
+  		public Int MCU_membership_9;
+  		public Int Ss, Se, Ah, Al;
   		public void *master;
   		public void *main;
   		public void *prep;
@@ -213,7 +198,7 @@ internal unsafe sealed class JpegLib
   		public void *fdct;
   		public void *entropy;
   		public void *script_space;
-  		public INT script_space_size;
+  		public Int script_space_size;
 
 	}; // struct jpeg_compress_struct
 
@@ -224,40 +209,40 @@ internal unsafe sealed class JpegLib
 		public void *mem;
 		public void *progress;
 		public IntPtr client_data;
-		public boolean is_decompressor;
-		public INT global_state;
+		public Int is_decompressor;
+		public Int global_state;
   		public jpeg_source_mgr *src;
-  		public JDIMENSION image_width;
-  		public JDIMENSION image_height;
-  		public INT num_components;
+  		public UInt image_width;
+  		public UInt image_height;
+  		public Int num_components;
   		public J_COLOR_SPACE jpeg_color_space;
   		public J_COLOR_SPACE out_color_space;
-  		public UINT scale_num, scale_denom;
+  		public UInt scale_num, scale_denom;
   		public double output_gamma;
-  		public boolean buffered_image;
-  		public boolean raw_data_out;
+  		public Int buffered_image;
+  		public Int raw_data_out;
   		public J_DCT_METHOD dct_method;
-  		public boolean do_fancy_upsampling;
-  		public boolean do_block_smoothing;
-  		public boolean quantize_colors;
+  		public Int do_fancy_upsampling;
+  		public Int do_block_smoothing;
+  		public Int quantize_colors;
   		public J_DITHER_MODE dither_mode;
-  		public boolean two_pass_quantize;
-  		public INT desired_number_of_colors;
-  		public boolean enable_1pass_quant;
-  		public boolean enable_external_quant;
-  		public boolean enable_2pass_quant;
-  		public JDIMENSION output_width;
-  		public JDIMENSION output_height;
-  		public INT out_color_components;
-  		public INT output_components;
-  		public INT rec_outbuf_height;
-  		public INT actual_number_of_colors;
+  		public Int two_pass_quantize;
+  		public Int desired_number_of_colors;
+  		public Int enable_1pass_quant;
+  		public Int enable_external_quant;
+  		public Int enable_2pass_quant;
+  		public UInt output_width;
+  		public UInt output_height;
+  		public Int out_color_components;
+  		public Int output_components;
+  		public Int rec_outbuf_height;
+  		public Int actual_number_of_colors;
   		public void *colormap;
-  		public JDIMENSION output_scanline;
-  		public INT input_scan_number;
-  		public JDIMENSION input_iMCU_row;
-  		public INT output_scan_number;
-  		public JDIMENSION output_iMCU_row;
+  		public UInt output_scanline;
+  		public Int input_scan_number;
+  		public UInt input_iMCU_row;
+  		public Int output_scan_number;
+  		public UInt output_iMCU_row;
 		public void *coef_bits;
   		public void *quant_tbl_ptrs_0;
   		public void *quant_tbl_ptrs_1;
@@ -271,94 +256,94 @@ internal unsafe sealed class JpegLib
   		public void *ac_huff_tbl_ptrs_1;
   		public void *ac_huff_tbl_ptrs_2;
   		public void *ac_huff_tbl_ptrs_3;
-  		public INT data_precision;
+  		public Int data_precision;
   		public void *comp_info;
-  		public boolean progressive_mode;
-  		public boolean arith_code;
-		public UINT8 arith_dc_L_0;
-		public UINT8 arith_dc_L_1;
-		public UINT8 arith_dc_L_2;
-		public UINT8 arith_dc_L_3;
-		public UINT8 arith_dc_L_4;
-		public UINT8 arith_dc_L_5;
-		public UINT8 arith_dc_L_6;
-		public UINT8 arith_dc_L_7;
-		public UINT8 arith_dc_L_8;
-		public UINT8 arith_dc_L_9;
-		public UINT8 arith_dc_L_10;
-		public UINT8 arith_dc_L_11;
-		public UINT8 arith_dc_L_12;
-		public UINT8 arith_dc_L_13;
-		public UINT8 arith_dc_L_14;
-		public UINT8 arith_dc_L_15;
-		public UINT8 arith_dc_U_0;
-		public UINT8 arith_dc_U_1;
-		public UINT8 arith_dc_U_2;
-		public UINT8 arith_dc_U_3;
-		public UINT8 arith_dc_U_4;
-		public UINT8 arith_dc_U_5;
-		public UINT8 arith_dc_U_6;
-		public UINT8 arith_dc_U_7;
-		public UINT8 arith_dc_U_8;
-		public UINT8 arith_dc_U_9;
-		public UINT8 arith_dc_U_10;
-		public UINT8 arith_dc_U_11;
-		public UINT8 arith_dc_U_12;
-		public UINT8 arith_dc_U_13;
-		public UINT8 arith_dc_U_14;
-		public UINT8 arith_dc_U_15;
-		public UINT8 arith_dc_K_0;
-		public UINT8 arith_dc_K_1;
-		public UINT8 arith_dc_K_2;
-		public UINT8 arith_dc_K_3;
-		public UINT8 arith_dc_K_4;
-		public UINT8 arith_dc_K_5;
-		public UINT8 arith_dc_K_6;
-		public UINT8 arith_dc_K_7;
-		public UINT8 arith_dc_K_8;
-		public UINT8 arith_dc_K_9;
-		public UINT8 arith_dc_K_10;
-		public UINT8 arith_dc_K_11;
-		public UINT8 arith_dc_K_12;
-		public UINT8 arith_dc_K_13;
-		public UINT8 arith_dc_K_14;
-		public UINT8 arith_dc_K_15;
-  		public UINT restart_interval;
-  		public boolean saw_JFIF_marker;
-  		public UINT8 JFIF_major_version;
-  		public UINT8 JFIF_minor_version;
-  		public UINT8 density_unit;
-  		public UINT16 X_density;
-  		public UINT16 Y_density;
-  		public boolean saw_Adobe_marker;
-  		public UINT8 Adobe_transform;
-  		public boolean CCIR601_sampling;
+  		public Int progressive_mode;
+  		public Int arith_code;
+		public UChar arith_dc_L_0;
+		public UChar arith_dc_L_1;
+		public UChar arith_dc_L_2;
+		public UChar arith_dc_L_3;
+		public UChar arith_dc_L_4;
+		public UChar arith_dc_L_5;
+		public UChar arith_dc_L_6;
+		public UChar arith_dc_L_7;
+		public UChar arith_dc_L_8;
+		public UChar arith_dc_L_9;
+		public UChar arith_dc_L_10;
+		public UChar arith_dc_L_11;
+		public UChar arith_dc_L_12;
+		public UChar arith_dc_L_13;
+		public UChar arith_dc_L_14;
+		public UChar arith_dc_L_15;
+		public UChar arith_dc_U_0;
+		public UChar arith_dc_U_1;
+		public UChar arith_dc_U_2;
+		public UChar arith_dc_U_3;
+		public UChar arith_dc_U_4;
+		public UChar arith_dc_U_5;
+		public UChar arith_dc_U_6;
+		public UChar arith_dc_U_7;
+		public UChar arith_dc_U_8;
+		public UChar arith_dc_U_9;
+		public UChar arith_dc_U_10;
+		public UChar arith_dc_U_11;
+		public UChar arith_dc_U_12;
+		public UChar arith_dc_U_13;
+		public UChar arith_dc_U_14;
+		public UChar arith_dc_U_15;
+		public UChar arith_dc_K_0;
+		public UChar arith_dc_K_1;
+		public UChar arith_dc_K_2;
+		public UChar arith_dc_K_3;
+		public UChar arith_dc_K_4;
+		public UChar arith_dc_K_5;
+		public UChar arith_dc_K_6;
+		public UChar arith_dc_K_7;
+		public UChar arith_dc_K_8;
+		public UChar arith_dc_K_9;
+		public UChar arith_dc_K_10;
+		public UChar arith_dc_K_11;
+		public UChar arith_dc_K_12;
+		public UChar arith_dc_K_13;
+		public UChar arith_dc_K_14;
+		public UChar arith_dc_K_15;
+  		public UInt restart_interval;
+  		public Int saw_JFIF_marker;
+  		public UChar JFIF_major_version;
+  		public UChar JFIF_minor_version;
+  		public UChar density_unit;
+  		public UShort X_density;
+  		public UShort Y_density;
+  		public Int saw_Adobe_marker;
+  		public UChar Adobe_transform;
+  		public Int CCIR601_sampling;
   		public void *marker_list;
-  		public INT max_h_samp_factor;
-  		public INT max_v_samp_factor;
-  		public INT min_DCT_scaled_size;
-  		public JDIMENSION total_iMCU_rows;
+  		public Int max_h_samp_factor;
+  		public Int max_v_samp_factor;
+  		public Int min_DCT_scaled_size;
+  		public UInt total_iMCU_rows;
   		public void *sample_range_limit;
-  		public INT comps_in_scan;
+  		public Int comps_in_scan;
   		public void *cur_comp_info_0;
   		public void *cur_comp_info_1;
   		public void *cur_comp_info_2;
   		public void *cur_comp_info_3;
-  		public JDIMENSION MCUs_per_row;
-  		public JDIMENSION MCU_rows_in_scan;
-  		public INT blocks_in_MCU;
-  		public INT MCU_membership_0;
-  		public INT MCU_membership_1;
-  		public INT MCU_membership_2;
-  		public INT MCU_membership_3;
-  		public INT MCU_membership_4;
-  		public INT MCU_membership_5;
-  		public INT MCU_membership_6;
-  		public INT MCU_membership_7;
-  		public INT MCU_membership_8;
-  		public INT MCU_membership_9;
-  		public INT Ss, Se, Ah, Al;
-  		public INT unread_marker;
+  		public UInt MCUs_per_row;
+  		public UInt MCU_rows_in_scan;
+  		public Int blocks_in_MCU;
+  		public Int MCU_membership_0;
+  		public Int MCU_membership_1;
+  		public Int MCU_membership_2;
+  		public Int MCU_membership_3;
+  		public Int MCU_membership_4;
+  		public Int MCU_membership_5;
+  		public Int MCU_membership_6;
+  		public Int MCU_membership_7;
+  		public Int MCU_membership_8;
+  		public Int MCU_membership_9;
+  		public Int Ss, Se, Ah, Al;
+  		public Int unread_marker;
   		public void *master;
   		public void *main;
   		public void *coef;
@@ -375,12 +360,12 @@ internal unsafe sealed class JpegLib
 
 	public delegate void init_source_type
 			(ref jpeg_decompress_struct cinfo);
-	public delegate boolean fill_input_buffer_type
+	public delegate Int fill_input_buffer_type
 			(ref jpeg_decompress_struct cinfo);
 	public delegate void skip_input_data_type
-			(ref jpeg_decompress_struct cinfo, LONG num_bytes);
-	public delegate boolean resync_to_restart_type
-			(ref jpeg_decompress_struct cinfo, INT desired);
+			(ref jpeg_decompress_struct cinfo, Long num_bytes);
+	public delegate Int resync_to_restart_type
+			(ref jpeg_decompress_struct cinfo, Int desired);
 	public delegate void term_source_type
 			(ref jpeg_decompress_struct cinfo);
 
@@ -399,7 +384,7 @@ internal unsafe sealed class JpegLib
 
 	public delegate void init_destination_type
 			(ref jpeg_compress_struct cinfo);
-	public delegate boolean empty_output_buffer_type
+	public delegate Int empty_output_buffer_type
 			(ref jpeg_compress_struct cinfo);
 	public delegate void term_destination_type
 			(ref jpeg_compress_struct cinfo);
@@ -417,21 +402,21 @@ internal unsafe sealed class JpegLib
 
 	[DllImport("jpeg")]
 	extern public static void jpeg_CreateCompress
-			(ref jpeg_compress_struct cinfo, INT version, size_t structsize);
+			(ref jpeg_compress_struct cinfo, Int version, size_t structsize);
 
 	public static void jpeg_create_compress(ref jpeg_compress_struct cinfo)
 			{
-				jpeg_CreateCompress(ref cinfo, (INT)JPEG_LIB_VERSION,
+				jpeg_CreateCompress(ref cinfo, (Int)JPEG_LIB_VERSION,
 									(size_t)(sizeof(jpeg_compress_struct)));
 			}
 
 	[DllImport("jpeg")]
 	extern public static void jpeg_CreateDecompress
-			(ref jpeg_decompress_struct cinfo, INT version, size_t structsize);
+			(ref jpeg_decompress_struct cinfo, Int version, size_t structsize);
 
 	public static void jpeg_create_decompress(ref jpeg_decompress_struct cinfo)
 			{
-				jpeg_CreateDecompress(ref cinfo, (INT)JPEG_LIB_VERSION,
+				jpeg_CreateDecompress(ref cinfo, (Int)JPEG_LIB_VERSION,
 									  (size_t)(sizeof(jpeg_decompress_struct)));
 			}
 
@@ -457,21 +442,21 @@ internal unsafe sealed class JpegLib
 
 	[DllImport("jpeg")]
 	extern public static void jpeg_set_quality
-				(ref jpeg_compress_struct cinfo, INT quality,
-				 boolean force_baseline);
+				(ref jpeg_compress_struct cinfo, Int quality,
+				 Int force_baseline);
 
 	[DllImport("jpeg")]
 	extern public static void jpeg_set_linear_quality
-				(ref jpeg_compress_struct cinfo, INT scale_factor,
-				 boolean force_baseline);
+				(ref jpeg_compress_struct cinfo, Int scale_factor,
+				 Int force_baseline);
 
 	[DllImport("jpeg")]
 	extern public static void jpeg_add_quant_table
-				(ref jpeg_compress_struct cinfo, INT which_tbl,
-				 void *basic_table, INT scale_factor, boolean force_baseline);
+				(ref jpeg_compress_struct cinfo, Int which_tbl,
+				 void *basic_table, Int scale_factor, Int force_baseline);
 
 	[DllImport("jpeg")]
-	extern public static INT jpeg_quality_scaling(INT quality);
+	extern public static Int jpeg_quality_scaling(Int quality);
 
 	[DllImport("jpeg")]
 	extern public static void jpeg_simple_progression
@@ -479,7 +464,7 @@ internal unsafe sealed class JpegLib
 
 	[DllImport("jpeg")]
 	extern public static void jpeg_suppress_tables
-				(ref jpeg_compress_struct cinfo, boolean suppress);
+				(ref jpeg_compress_struct cinfo, Int suppress);
 
 	[DllImport("jpeg")]
 	extern public static void *jpeg_alloc_quant_table
@@ -499,13 +484,13 @@ internal unsafe sealed class JpegLib
 
 	[DllImport("jpeg")]
 	extern public static void jpeg_start_compress
-				(ref jpeg_compress_struct cinfo, boolean write_all_tables);
+				(ref jpeg_compress_struct cinfo, Int write_all_tables);
 
 	// Note: can only be used 1 scanline at a time.
 	[DllImport("jpeg")]
-	extern public static JDIMENSION jpeg_write_scanlines
+	extern public static UInt jpeg_write_scanlines
 				(ref jpeg_compress_struct cinfo,
-				 ref IntPtr scanline, JDIMENSION num_lines);
+				 ref IntPtr scanline, UInt num_lines);
 
 	[DllImport("jpeg")]
 	extern public static void jpeg_finish_compress
@@ -520,25 +505,25 @@ internal unsafe sealed class JpegLib
 				(ref jpeg_decompress_struct cinfo);
 
 	[DllImport("jpeg")]
-	extern public static INT jpeg_read_header
-				(ref jpeg_decompress_struct cinfo, boolean require_image);
+	extern public static Int jpeg_read_header
+				(ref jpeg_decompress_struct cinfo, Int require_image);
 
-	public const INT JPEG_SUSPENDED = (INT)0;
-	public const INT JPEG_HEADER_OK = (INT)1;
-	public const INT JPEG_HEADER_TABLES_ONLY = (INT)2;
+	public const Int JPEG_SUSPENDED = (Int)0;
+	public const Int JPEG_HEADER_OK = (Int)1;
+	public const Int JPEG_HEADER_TABLES_ONLY = (Int)2;
 
 	[DllImport("jpeg")]
-	extern public static boolean jpeg_start_decompress
+	extern public static Int jpeg_start_decompress
 				(ref jpeg_decompress_struct cinfo);
 
 	// Note: can only be used 1 scanline at a time.
 	[DllImport("jpeg")]
-	extern public static JDIMENSION jpeg_read_scanlines
+	extern public static UInt jpeg_read_scanlines
 				(ref jpeg_decompress_struct cinfo,
-				 ref IntPtr scanline, JDIMENSION max_lines);
+				 ref IntPtr scanline, UInt max_lines);
 
 	[DllImport("jpeg")]
-	extern public static boolean jpeg_finish_decompress
+	extern public static Int jpeg_finish_decompress
 				(ref jpeg_decompress_struct cinfo);
 
 	[DllImport("jpeg")]
@@ -550,8 +535,8 @@ internal unsafe sealed class JpegLib
 				(ref jpeg_decompress_struct cinfo);
 
 	[DllImport("jpeg")]
-	extern public static boolean jpeg_resync_to_restart
-				(ref jpeg_decompress_struct cinfo, INT desired);
+	extern public static Int jpeg_resync_to_restart
+				(ref jpeg_decompress_struct cinfo, Int desired);
 
 	[DllImport("jpeg")]
 	extern public static IntPtr jpeg_std_error(IntPtr err);
@@ -580,7 +565,7 @@ internal unsafe sealed class JpegLib
 			}
 
 	// Fill an input buffer from a stream.
-	private static boolean fill_input_buffer(ref jpeg_decompress_struct cinfo)
+	private static Int fill_input_buffer(ref jpeg_decompress_struct cinfo)
 			{
 				int len;
 				StreamState state = GetStreamState(ref cinfo);
@@ -593,7 +578,7 @@ internal unsafe sealed class JpegLib
 						Marshal.Copy(state.buffer, 0, state.buf, len);
 						cinfo.src->next_input_byte = state.buf;
 						cinfo.src->bytes_in_buffer = (size_t)len;
-						return boolean.True;
+						return (Int)1;
 					}
 					state.sawEOF = true;
 				}
@@ -603,12 +588,12 @@ internal unsafe sealed class JpegLib
 				Marshal.WriteByte(state.buf, 1, (byte)0xD9);
 				cinfo.src->next_input_byte = state.buf;
 				cinfo.src->bytes_in_buffer = (size_t)2;
-				return boolean.True;
+				return (Int)1;
 			}
 
 	// Skip data in an input stream.
 	private static void skip_input_data
-				(ref jpeg_decompress_struct cinfo, LONG num_bytes)
+				(ref jpeg_decompress_struct cinfo, Long num_bytes)
 			{
 #if __CSCC__
 				jpeg_source_mgr *src = cinfo.src;
@@ -708,7 +693,7 @@ internal unsafe sealed class JpegLib
 			}
 
 	// Empty an output buffer to a stream.
-	private static boolean empty_output_buffer(ref jpeg_compress_struct cinfo)
+	private static Int empty_output_buffer(ref jpeg_compress_struct cinfo)
 			{
 				int len;
 				StreamState state = GetStreamState(ref cinfo);
@@ -717,7 +702,7 @@ internal unsafe sealed class JpegLib
 				state.stream.Write(state.buffer, 0, len);
 				cinfo.dest->next_output_byte = state.buf;
 				cinfo.dest->free_in_buffer = (size_t)len;
-				return boolean.True;
+				return (Int)1;
 			}
 
 	// Terminate an output destination.

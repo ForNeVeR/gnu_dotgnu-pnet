@@ -515,7 +515,6 @@ System.Configuration.Install/Makefile
 JScript/Makefile
 Basic/Makefile
 DotGNU.Images/Makefile
-DotGNU.Images/JpegLib.cs
 Xsharp/Makefile
 Xsharp/Xlib.cs
 System.Drawing/Makefile

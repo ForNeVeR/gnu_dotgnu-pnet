@@ -24,6 +24,7 @@ namespace DotGNU.Images
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
 
 internal unsafe sealed class JpegWriter
 {
@@ -49,14 +50,14 @@ internal unsafe sealed class JpegWriter
 				Frame frame = image.GetFrame(0);
 
 				// Set the JPEG compression parameters.
-				cinfo.image_width = (JpegLib.JDIMENSION)(frame.Width);
-				cinfo.image_height = (JpegLib.JDIMENSION)(frame.Height);
-				cinfo.input_components = (JpegLib.INT)3;
+				cinfo.image_width = (UInt)(frame.Width);
+				cinfo.image_height = (UInt)(frame.Height);
+				cinfo.input_components = (Int)3;
 				cinfo.in_color_space = JpegLib.J_COLOR_SPACE.JCS_RGB;
 				JpegLib.jpeg_set_defaults(ref cinfo);
 
 				// Start the compression process.
-				JpegLib.jpeg_start_compress(ref cinfo, JpegLib.boolean.True);
+				JpegLib.jpeg_start_compress(ref cinfo, (Int)1);
 
 				// Write the scanlines to the image.
 				int posn, width, offset, stride;
@@ -140,7 +141,7 @@ internal unsafe sealed class JpegWriter
 
 					// Write the scanline to the buffer.
 					JpegLib.jpeg_write_scanlines
-						(ref cinfo, ref buf, (JpegLib.JDIMENSION)1);
+						(ref cinfo, ref buf, (UInt)1);
 				}
 				Marshal.FreeHGlobal(buf);
 

@@ -1,3 +1,73 @@
+2003-11-02  Neil Cawse  <neilcawse@geotab.com>
+
+	* DotGNU.Images/BmpReader.cs, DotGNU.Images/BmpReformatter.cs,
+	DotGNU.Images/BmpResizer.cs, DotGNU.Images/Frame.cs,
+	DotGNU.Images/IconReader.cs, DotGNU.Images/Image.cs,
+	DotGNU.Images/Utils.cs: loading of reverse order BMP's and 15/16
+	formats. Shrinking and expanding of all formats. Conversions between
+	many of the formats. GetPixel. SetPixel.
+
+	* System.Drawing/Graphics.cs, System.Drawing/Image.cs,
+	System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/IToolkitGraphics.cs,
+	System.Drawing/Toolkit/IToolkitImage.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing/Toolkit/ToolkitBrushBase.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs,
+	System.Drawing/Toolkit/ToolkitImageBase.cs,
+	System.Drawing/Toolkit/ToolkitPenBase.cs,
+	System.Drawing.Postscript/PostscriptGraphics.cs: implement many of the
+	DrawImage stubs. Fixes related to offsets and transforms. A Graphics
+	can now be created from images (DrawLine and DrawImage currently
+	implemented).
+
+	* System.Drawing.Win32/*: Support for Graphics from image. Improved
+	timers using hidden window. Images with palettes now dont require
+	marshalled structs - so now work. Popup window focus handling fix.
+	Popup window child control handling implemented. Draw background fix
+	thanks to H.Jones <inzanekaoz@yahoo.com>.
+
+	* System.Drawing.Xsharp/DrawingFont.cs,
+	System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingGraphicsImage.cs,
+	System.Drawing.Xsharp/DrawingHatchBrush.cs,
+	System.Drawing.Xsharp/DrawingImage.cs,
+	System.Drawing.Xsharp/DrawingPen.cs,
+	System.Drawing.Xsharp/DrawingSolidBrush.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs : support for Graphics from
+	image. Invalidate infinite window bug.
+
+	* System.Windows.Forms/ButtonBase.cs, System.Windows.Forms/ComboBox.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/EventId.cs,
+	System.Windows.Forms/HScrollBar.cs, System.Windows.Forms/ImageList.cs,
+	System.Windows.Forms/ImageListStreamer.cs,
+	System.Windows.Forms/Label.cs, System.Windows.Forms/ListBox.cs,
+	System.Windows.Forms/ListControl.cs, System.Windows.Forms/MainMenu.cs,
+	System.Windows.Forms/Menu.cs, System.Windows.Forms/PictureBox.cs,
+	System.Windows.Forms/PopupControl.cs,
+	System.Windows.Forms/ScrollBar.cs, System.Windows.Forms/TabControl.cs,
+	System.Windows.Forms/TextBox.cs, System.Windows.Forms/VScrollBar.cs,
+	System.Windows.Forms/Resources/ResXFileRef.cs,
+	System.Windows.Forms/Resources/ResXNullRef.cs
+	System.Windows.Forms/Resources/ResXResourceReader.cs,
+	System.Windows.Forms/Resources/ResXResourceWriter.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/IThemePainter.cs: borders drawn slightly
+	incorrectly. Sundry small fixes to controls. Large speed increase due
+	to optimized handling of controls before the handles are created.
+	Improved invalidate support, including children. Better focus handling
+	for popup's. More implementation of ImageList. Some changes to ListBox
+	from Brian Luft <brian@electroly.com>. Some implementation of
+	PictureBox from Simon Guindon <simon@nureality.ca>, finished off and
+	fixed. Stop flicker on TabControl. Implement ResX support.
+
+	* System.Xml/XmlTextWriter.cs : small FileMode.Open/Create bug.
+
+	* samples/FormsTest.cs, samples/test 15bpp.bmp, samples/test 16bpp.bmp
+	: PictureBox tests, ControlPaint tests, ResX tests, ImageList tests, 
+	DotGNU.Image test.
 
 2003-11-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 

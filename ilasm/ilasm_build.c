@@ -814,14 +814,20 @@ ILToken ILAsmResolveMember(ILProgramItem *scope, const char *name,
 		return ILMember_Token(member);
 	}
 
-	/* If the class is "complete", then we have already seen its
-	   definition and we cannot add anything else to it */
-	if(ILClassIsComplete(classInfo))
+	/* Ignore the "class complete" check if this is a vararg call site,
+	   because we can always add vararg calls to a complete class */
+	if(kind != IL_META_MEMBERKIND_METHOD ||
+	   (ILType_Kind(sig) & IL_TYPE_COMPLEX_METHOD_SENTINEL) == 0)
 	{
-		ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
-						  "cannot resolve member `%s'", name);
-		ILAsmErrors = 1;
-		return 0;
+		/* If the class is "complete", then we have already seen its
+		   definition and we cannot add anything else to it */
+		if(ILClassIsComplete(classInfo))
+		{
+			ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+							  "cannot resolve member `%s'", name);
+			ILAsmErrors = 1;
+			return 0;
+		}
 	}
 
 	/* Generate a MemberRef token within the class, which will hopefully

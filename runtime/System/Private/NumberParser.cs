@@ -1017,80 +1017,350 @@ internal sealed class NumberParser
 	}
 
 #if CONFIG_EXTENDED_NUMERICS
+
+	private const int numDoubleDigits = 16;
+
+	private static void CheckSign(ref char[] sb, NumberFormatInfo nfi,
+									ref int start, ref int end,
+									ref bool hasSign, ref bool isNeg)
+	{
+		int counter;
+		int current;
+		String sign = nfi.NegativeSign;
+		char signChar = sign[0];
+		int signLength = sign.Length;
+		char curChar = sb[start];
+
+		// check for negative sign at the beginning
+		if (curChar == signChar)
+		{
+			counter = 1;
+			current = start + 1;;
+
+			if(signLength > 1)
+			{
+				while(counter < signLength && current <= end)
+				{
+					if(sb[current] != sign[counter])
+						break;
+					current++;
+					counter++;
+				}
+			}
+			if(counter >= signLength)
+			{
+				hasSign = true;
+				isNeg = true;
+				start = current;
+				return;
+			}
+		}
+
+		// check for positive sign at the beginning
+		sign = nfi.PositiveSign;
+		signChar = sign[0];
+		signLength = sign.Length;
+		if (curChar == signChar)
+		{
+			counter = 1;
+			current = start + 1;
+
+			if(signLength > 1)
+			{
+				while(counter < signLength && current <= end)
+				{
+					if(sb[current] != sign[counter])
+						break;
+					current++;
+					counter++;
+				}
+			}
+			if(counter >= signLength)
+			{
+				hasSign = true;
+				start = current;
+			}
+		}
+	}
+
+	private static bool CheckString(ref char[] sb, String str, ref int start,
+									int end)
+	{
+		int strLength = str.Length;
+
+		if(strLength > 0)
+		{
+			char curChar = sb[start];
+			char strChar = str[0];
+
+			// check for first Character at the beginning
+			if (curChar == strChar)
+			{
+				int counter = 1;
+				int current = start + 1;
+				while(counter < strLength && current <= end)
+				{
+					if(sb[current] != str[counter])
+						break;
+					current++;
+					counter++;
+				}
+				if(counter >= strLength) // string found
+				{
+					// so update to new start position
+					start = current;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	// parse the number beginning at sb[start] up to maximal sb[end].
+	// passed parameters:
+	// sb character array containing the data to parse
+	// style and nfi are the formatspecs
+	// start and end are the indexes of the first and last character to parse
+	// maxDigits must not extend 18 else an overflow may occure
+	// numdigits must be 0
+	// on exit start points to the first character after the last parsed digit.
+	// end is unchanged. 
+	// numDigits is updated to the number of significant digits parsed.
+	// if numDigits > maxDigits the value has to be calculated 
+	// returnvalue * Math.Pof(10, (numDigits - maxDigits)).
+	private static ulong ParseNumber(ref char[] sb, NumberStyles style,
+									 NumberFormatInfo nfi, ref int start,
+									 ref int end, int maxDigits,
+									 ref int numDigits)
+	{
+		char curChar;
+		ulong ulwork = 0;
+
+		// now parse the real number
+		while(start <= end)
+		{
+			curChar = sb[start];
+			if(curChar >= '0' && curChar <= '9')
+			{
+				if(numDigits < maxDigits)
+				{
+					ulwork = ulwork * 10 + unchecked((uint)(curChar - '0'));
+				}
+				start++;
+				numDigits++;
+			}
+			else
+			{	
+				// check for groupseparator
+				if((style & NumberStyles.AllowThousands) != 0)
+				{
+					if(!CheckString(ref sb, nfi.NumberGroupSeparator,
+									ref start, end))
+					{
+						if(!CheckString(ref sb, nfi.CurrencyGroupSeparator,
+										ref start, end))
+						{
+							break;
+						}
+					}
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+		return ulwork;
+	}
+
+	// parse the string for the decimalplaces or the number part of the exponent
+	// stops at the end or at the first character < '0' or > '9'
+	// sets start = index of the first non numeric character
+	// numDigits = number of digits parsed but not greater then maxDigits
+	private static ulong ParseNumber(ref char[] sb, ref int start, int end,
+										int maxDigits, ref int numDigits)
+	{
+		char curChar;
+		ulong ulwork = 0;
+
+		// now parse the real number
+		while(start <= end)
+		{
+			curChar = sb[start];
+			if(curChar >= '0' && curChar <= '9')
+			{
+				if(numDigits < maxDigits)
+				{
+					ulwork = ulwork * 10 + unchecked((uint)(curChar - '0'));
+					numDigits++;
+				}
+				start++;
+			}
+			else
+			{	
+				break;
+			}
+		}
+		return ulwork;
+	}
+
+	// parse the string for the decimalplaces of the number part
+	// stops at the end or at the first character < '0' or > '9'
+	// sets numDigits to the number of digits parsed
+	// sets start = index of the first non numeric character
+	// numDigits = number of digits parsed
+	private static decimal ParseDecimal(ref char[] sb, ref int start, int end, ref int numDigits)
+	{
+		char curChar;
+		decimal work = 0.0m;
+
+		// now parse the real number
+		while(start <= end)
+		{
+			curChar = sb[start];
+			if(curChar >= '0' && curChar <= '9')
+			{
+				work = Decimal.Add(Decimal.Multiply(work, 10), (Decimal)(curChar - '0'));
+				numDigits++;
+				start++;
+			}
+			else
+			{
+				break;
+			}
+		}
+		return work;
+	}
+
 	public static Decimal ParseDecimal(String s, NumberStyles style,
 								       NumberFormatInfo nfi)
 	{
-		//  Decimal does not parse floating point numbers
+		//  Decimal does not parse hexnumbers
 		if ((style & NumberStyles.AllowHexSpecifier) != 0)
 			throw new FormatException(_("Format_HexNotSupported"));
 
-		StringBuilder sb = new StringBuilder(RawString(s, style, nfi));
-		bool negative = StripSign(sb, nfi);
+		bool hasSign =false;
+		bool hasCurrency = false;
+		bool negative = false;
 		decimal work = 0.0m;
 
-		string str = sb.ToString();
+		char[] str = s.ToCharArray();
 		int stridx = 0;
+		int end = str.Length - 1;
+
+		// skip whitespaces and handle currency symbol and parenthesis
+		SkipWhiteSpace(ref str, nfi.CurrencySymbol, style, ref stridx, ref end,
+						 ref hasSign, ref negative, ref hasCurrency);
+
+		// check for leading sign
+		if(!hasSign && (style & NumberStyles.AllowLeadingSign) != 0)
+		{
+			if(stridx <= end)
+				CheckSign(ref str, nfi, ref stridx, ref end, ref hasSign,
+							ref negative);
+		}
 
 		//  Parse up to the decimal
-		while (stridx < str.Length 
-				&& str[stridx] >= '0' && str[stridx] <= '9')
+		while (stridx <= end) 
 		{
-			work = 10 * work + (str[stridx++] - '0');
+			char curChar = str[stridx];
+
+			if(curChar >= '0' && curChar <= '9')
+			{
+				work = Decimal.Add(Decimal.Multiply(10m, work),
+									 (Decimal)(curChar - '0'));
+				stridx++;
+			}
+			else
+			{	
+				// check for groupseparator
+				if((style & NumberStyles.AllowThousands) != 0)
+				{
+					if(!CheckString(ref str, nfi.NumberGroupSeparator,
+									ref stridx, end))
+					{
+						if(!CheckString(ref str, nfi.CurrencyGroupSeparator,
+										ref stridx, end))
+						{
+							break;
+						}
+					}
+				}
+				else
+				{
+					break;
+				}
+			}
 		}
 
 		//  Parse after the decimal
-		if (stridx < str.Length && 
-				str.Substring(stridx).StartsWith(nfi.NumberDecimalSeparator))
+		if(stridx <= end)
 		{
-			stridx += nfi.NumberDecimalSeparator.Length;
-
-			decimal temp;
-			int i, j;
-			for (i = -1; 
-					stridx < str.Length && 
-					str[stridx] >= '0' && str[stridx] <= '9' ; 
-					i--)
+			// now check for the decimal point and the decimalplaces
+			if((style & NumberStyles.AllowDecimalPoint) != 0)
 			{
-				temp = (decimal)((uint)(str[stridx++] - '0'));
-				for (j = 0; j > i; j--) temp *= 0.1m;
-				work += temp;
-			}	
+				if(CheckString(ref str, nfi.NumberDecimalSeparator, ref stridx,
+								end))
+				{
+					decimal temp;
+					int decDigits = 0;
+					if(stridx <= end)
+					{
+						temp = ParseDecimal(ref str, ref stridx, end,
+											ref decDigits);
+						if(decDigits > 0)
+						{
+							decimal factor = 0.1m;
+							for(int i = 1; i < decDigits; i++)
+								factor = Decimal.Multiply(factor, 0.1m);
+							work += Decimal.Multiply(temp, factor);							
+						}
+					}
+				}
+			}
 		}
 
-		//  Parse after the exponent
-		if (stridx < str.Length 
-				&& (str[stridx] == 'e' || str[stridx] == 'E') ) 
+		//  Parse after the decimal point
+		if(stridx <= end)
 		{
-			uint exp = 0;
-			decimal mult;
+			if((style & NumberStyles.AllowExponent) != 0)
+			{
+				char curChar = str[stridx];
+				if(curChar == 'E' || curChar == 'e')
+				{
+					bool hasExpSign = false;
+					bool isExpNeg = false;
+					int expDigits = 0;
+					int expValue = 0;
 
-			stridx++;
+					stridx++;
+					if(stridx <= end)
+					{
+						// check for sign
+						CheckSign(ref str, nfi, ref stridx, ref end,
+									ref hasExpSign, ref isExpNeg);
 
-			if (str.Substring(stridx).StartsWith(nfi.PositiveSign)) 
-			{
-				mult = 10.0m;
-				stridx++;
-			} 
-			else if (str.Substring(stridx).StartsWith(nfi.NegativeSign)) 
-			{
-				mult = 0.1m;
-				stridx++;
-			} 
-			else
-			{
-				mult = 10.0m;
+						uint exp = 0;
+						decimal mult = isExpNeg ? 0.1m : 10.0m;
+
+						// get exponent
+						if(stridx <= end)
+						{
+							expValue = (int)ParseNumber(ref str, ref stridx, end,
+														 5, ref expDigits);
+						}
+						if(expDigits <= 0)
+						{
+							throw new FormatException();
+						}
+						for (int i=0; i<expValue; i++)
+							work = Decimal.Multiply(work, mult);
+					}				
+				}
 			}
-
-		    while (stridx < str.Length 
-					&& str[stridx] >= '0' && str[stridx] <= '9')
-			{
-				exp = 10 * exp + (uint)(str[stridx++] - '0');
-			}
-
-			for (int i=0; i<exp; i++) work *= mult;
 		}
 
-		if (stridx < str.Length)
+		if (stridx <= end)
 		{
 			//  Oops.  Throw a "junk found" exception.
 			throw new FormatException();
@@ -1141,85 +1411,246 @@ internal sealed class NumberParser
 	public static double ParseDouble(String s, NumberStyles style,
 								     NumberFormatInfo nfi)
 	{
+		int start = 0;
+		int end = 0;
+		bool hasSign =false;
+		bool isNeg = false;
+		bool hasCurrency = false;
+		bool hasDec = false;
+		char curChar;
+		ulong intValue = 0;
+		int intDigits = 0;
+		ulong decValue = 0;
+		int decDigits = 0;
+		bool hasExpSign = false;
+		bool isExpNeg = false;
+		int expDigits = 0;
+		ulong expValue = 0;
+		double result = 0;
+
 		//  Double does not parse hex numbers
 		if ((style & NumberStyles.AllowHexSpecifier) != 0)
 			throw new FormatException(_("Format_HexNotSupported"));
 
-		//  Strip out the silliness
-		StringBuilder sb = new StringBuilder(RawString(s, style, nfi));
-		bool negative = StripSign(sb, nfi);
+		char[] str = s.ToCharArray();
+		end = str.Length - 1;
 
-		//  Figure out what our exponent was, then ditch the decimal point
-		int exponent = sb.ToString().IndexOf('.')-1;
+		// skip whitespaces and handle currency symbol and parenthesis
+		SkipWhiteSpace(ref str, nfi.CurrencySymbol, style, ref start, ref end,
+						 ref hasSign, ref isNeg, ref hasCurrency);
 
-		if (exponent == -2)   // Not Found
+		// check for leading sign
+		if(!hasSign && (style & NumberStyles.AllowLeadingSign) != 0)
 		{
-			exponent = Math.Max(sb.ToString().IndexOf('e'), 
-								sb.ToString().IndexOf('E')) - 1;
-			if (exponent == -2)   // Not Found
-				exponent = sb.Length - 1;
-		}
-		else sb.Remove(exponent+1,1);
-
-		//  Remove leading zeroes that might gum up the works
-		while (sb.Length > 0 && sb[0] == '0') {
-			sb.Remove(0,1);
-			exponent--;
+			if(start <= end)
+				CheckSign(ref str, nfi, ref start, ref end, ref hasSign,
+							ref isNeg);
 		}
 
-		//  Guard case...
-		if (sb.Length == 0) return 0.0;
-		string str = sb.ToString();
+		// now parse the real number
+		intValue = ParseNumber(ref str, style, nfi, ref start, ref end,
+								numDoubleDigits, ref intDigits);
 
-		//  Parse up to the exponent
-		ulong ulwork = 0;
-		int i;
-
-		//  This loop tops out at 18 -- the most digits in a ulong
-		for (i = 0; 
-				i < str.Length && i < 18 && str[i] >= '0' && str[i] <= '9'; 
-				i++) 
+		if(start <= end)
 		{
-			ulwork = (ulwork * 10) + unchecked((uint)(str[i]-'0'));
-		}
-		double work = (double)ulwork * Pow10(exponent - i + 1);
-
-		//  Bleed off the over-precise numbers
-		while (i < str.Length && str[i] >= '0' && str[i] <= '9') i++;
-
-		//  Parse after the exponent
-		if (i < str.Length && (str[i] == 'e' || str[i] == 'E') ) 
-		{
-			exponent = 0;
-			bool negExponent = false;
-			i++;
-
-			if (str.Substring(i).StartsWith(nfi.PositiveSign)) 
+			// now check for the decimal point and the decimalplaces
+			if((style & NumberStyles.AllowDecimalPoint) != 0)
 			{
-				i++;
-			} 
-			else if (str.Substring(i).StartsWith(nfi.NegativeSign)) 
-			{
-				negExponent = true;
-				i++;
-			} 
-
-		    while (i < str.Length && str[i] >= '0' && str[i] <= '9')
-				exponent = (10*exponent) + (int)(str[i++] - '0');
-
-			if (negExponent) exponent *= -1;
-			work *= Pow10(exponent);
+				if(CheckString(ref str, nfi.NumberDecimalSeparator, ref start,
+								end))
+				{
+					hasDec = true;
+					if(start <= end)
+					{
+						decValue = ParseNumber(ref str, ref start, end,
+												numDoubleDigits - intDigits,
+												ref decDigits);
+					}
+				}
+			}
 		}
 
-		if (i < str.Length)
+		// now check for the exponent
+		if(start <= end)
 		{
-			//  Oops.  Throw a "junk found" exception.
+			if((style & NumberStyles.AllowExponent) != 0)
+			{
+				curChar = str[start];
+				if(curChar == 'E' || curChar == 'e')
+				{
+					start++;
+					if(start <= end)
+					{
+						// check for sign
+						CheckSign(ref str, nfi, ref start, ref end,
+									ref hasExpSign, ref isExpNeg);
+						// get exponent
+						if(start <= end)
+						{
+							expValue = ParseNumber(ref str, ref start, end, 5,
+													ref expDigits);
+						}
+						if(expDigits <= 0)
+						{
+							throw new FormatException();
+						}
+					}				
+				}
+			}
+		}
+
+		if(start <= end)
+		{
+			// check for the trailing sign
+			if(!hasSign && 
+				(style & NumberStyles.AllowTrailingSign) != 0)
+			{
+				CheckSign(ref str, nfi, ref start, ref end,
+							ref hasSign, ref isNeg);
+			}
+		}
+
+		if(start <= end) // characters left 
+		{
 			throw new FormatException();
 		}
 
-		if (negative) work *= -1.0d;
+		// now calculate the value
+		result = (double)intValue;
+		if(intDigits > numDoubleDigits)
+		{
+			result *= Math.Pow(10, (double)(intDigits - numDoubleDigits));
+		}
+		if(decDigits > 0)
+		{
+			result += (decValue * Math.Pow(10d, (double)(-decDigits)));
+		}
+		if(isNeg)
+		{
+			result *= -1;
+		}
+		//now the exponent
+		if(expDigits > 0)
+		{
+			if(isExpNeg)
+			{
+				result *= Math.Pow(10d, (double)expValue * -1);
+			}
+			else
+			{
+				result *= Math.Pow(10d, (double)expValue);
+			}
+		}
+		return result;
+	}
 
-		return work;
+	private static void SkipWhiteSpace(ref char[] str, String currencySymbol,
+										NumberStyles style, ref int start,
+										ref int end, ref bool hasSign,
+										ref bool isNeg, ref bool hasCurrency)
+	{
+		// skip leading whitespaces
+		if((style & NumberStyles.AllowLeadingWhite) != 0)
+		{
+			while(start <= end && char.IsWhiteSpace(str[start]))
+				start++;
+			if(start <= end)
+			{
+				if(!hasCurrency &&
+					(style & NumberStyles.AllowCurrencySymbol) != 0)
+				{
+					// check for currencysymbol
+					hasCurrency = CheckString(ref str, currencySymbol,
+												ref start, end);
+					if(hasCurrency)
+					{
+						while(start <= end && char.IsWhiteSpace(str[start]))
+						start++;
+					}
+				}
+			}
+		}
+
+		// remove trailing whitespaces
+		if(start <= end)
+		{
+			if((style & NumberStyles.AllowTrailingWhite) != 0)
+			{
+				while(start <= end && char.IsWhiteSpace(str[end]))
+					end--;
+			}
+			if(start <= end)
+			{
+				if(!hasCurrency &&
+					(style & NumberStyles.AllowCurrencySymbol) != 0)
+				{
+					int currencyStart = end - currencySymbol.Length + 1;
+					// check for currencysymbol
+					if(currencyStart <= end)
+					{
+						hasCurrency = CheckString(ref str, currencySymbol,
+													ref currencyStart, end);
+						if(hasCurrency)
+						{
+							end = end - currencySymbol.Length;
+							while(start <= end && char.IsWhiteSpace(str[end]))
+								end--;
+						}
+					}
+				}
+			}
+		}
+
+		if(!hasSign && start <= end)
+		{
+			if((style & NumberStyles.AllowParentheses) != 0)
+			{
+				// parenthesis are evaluated as a negative sign
+				if((str[start] == '(') && (str[end] == ')'))
+				{
+					hasSign = true;
+					isNeg = true;
+					start++;
+					end--;
+
+					if(start <= end)
+					{
+						if(!hasCurrency &&
+							(style & NumberStyles.AllowCurrencySymbol) != 0)
+						{
+							// check for currencysymbol
+							hasCurrency = CheckString(ref str, currencySymbol,
+														ref start, end);
+							if(hasCurrency)
+							{
+								while(start <= end &&
+										char.IsWhiteSpace(str[start]))
+									start++;
+							}
+							else
+							{
+								int currencyStart = end - currencySymbol.Length + 1;
+								// check for currencysymbol
+								if(currencyStart <= end)
+								{
+									hasCurrency = CheckString(ref str,
+																currencySymbol,
+																ref currencyStart,
+																end);
+									if(hasCurrency)
+									{
+										end = end - currencySymbol.Length;
+										while(start <= end &&
+												char.IsWhiteSpace(str[end]))
+											end--;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 #endif // CONFIG_EXTENDED_NUMERICS
 

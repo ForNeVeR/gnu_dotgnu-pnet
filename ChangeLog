@@ -1,3 +1,9 @@
+2004-07-17  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Private/NumberParser.cs: ParseDouble and ParseDecimal
+	reimplemented to fix bug #3087 and for performance.
+
+	* tests/runtime/System/TestDecimal.cs: fixed wrong tests
 
 2004-07-17  Gopal V  <gopalv82@yahoo.com>
 

@@ -23,6 +23,7 @@
 
 using CSUnit;
 using System;
+using System.Globalization;
 
 public class TestDecimal : TestCase
  {
@@ -51,8 +52,24 @@ public class TestDecimal : TestCase
 				1.0m, Decimal.Parse("1.0"));
 		AssertEquals("Decimal.Parse(\"-1.0\")",
 				-1.0m, Decimal.Parse("-1.0"));
-		AssertEquals("Decimal.Parse(\"1.0E+2\")",
+		try
+		{
+			AssertEquals("Decimal.Parse(\"1.0E+2\")",
 				100m, Decimal.Parse("1.0E+2"));
+			Fail("Decimal.Parse(\"1.0E+2\") should throw a FormatException");
+		}
+		catch(FormatException)
+		{
+		}
+		try
+		{
+			AssertEquals("Decimal.Parse(\"1.0E+2\", NumberStyles.Number | NumberStyles.AllowExponent, null)",
+				100m, Decimal.Parse("1.0E+2", NumberStyles.Number | NumberStyles.AllowExponent, null));
+		}
+		catch(FormatException)
+		{
+			Fail("Decimal.Parse(\"1.0E+2\") must not throw a FormatException");
+		}
 		AssertEquals("Decimal.Parse(\"0.0\")",
 				0.0m, Decimal.Parse("0.0"));
 		AssertEquals("Decimal.Parse(\"0.5\")",
@@ -63,12 +80,60 @@ public class TestDecimal : TestCase
 				1.13m, Decimal.Parse("1.13"));
 		AssertEquals("Decimal.Parse(\"1.130000000000000\")",
 				1.13m, Decimal.Parse("1.130000000000000"));
-		AssertEquals("Decimal.Parse(\"1e+2\")",
+		try
+		{
+			AssertEquals("Decimal.Parse(\"1e+2\")",
 				100m, Decimal.Parse("1e+2"));
-		AssertEquals("Decimal.Parse(\"1e-2\")",
+			Fail("Decimal.Parse(\"1e+2\") should throw a FormatException");
+		}
+		catch(FormatException)
+		{
+		}
+		try
+		{
+			AssertEquals("Decimal.Parse(\"1e+2\", NumberStyles.Number | NumberStyles.AllowExponent, null)",
+				100m, Decimal.Parse("1e+2", NumberStyles.Number | NumberStyles.AllowExponent, null));
+		}
+		catch(FormatException)
+		{
+			Fail("Decimal.Parse(\"1e+2\", NumberStyles.Number | NumberStyles.AllowExponent) must not throw a FormatException");
+		}
+		try
+		{
+			AssertEquals("Decimal.Parse(\"1e-2\")",
 				0.01m, Decimal.Parse("1e-2"));
-		AssertEquals("Decimal.Parse(\"1e2\")",
+			Fail("Decimal.Parse(\"1e-2\") should throw a FormatException");
+		}
+		catch(FormatException)
+		{
+		}
+		try
+		{
+			AssertEquals("Decimal.Parse(\"1e-2\", NumberStyles.Number | NumberStyles.AllowExponent, null)",
+				0.01m, Decimal.Parse("1e-2", NumberStyles.Number | NumberStyles.AllowExponent, null));
+		}
+		catch(FormatException)
+		{
+			Fail("Decimal.Parse(\"1e-2\", NumberStyles.Number | NumberStyles.AllowExponent) must not throw a FormatException");
+		}
+		try
+		{
+			AssertEquals("Decimal.Parse(\"1e2\")",
 				100m, Decimal.Parse("1e2"));
+			Fail("Decimal.Parse(\"1e2\") should throw a FormatException");
+		}
+		catch(FormatException)
+		{
+		}
+		try
+		{
+			AssertEquals("Decimal.Parse(\"1e2\", NumberStyles.Number | NumberStyles.AllowExponent, null)",
+				100m, Decimal.Parse("1e2", NumberStyles.Number | NumberStyles.AllowExponent, null));
+		}
+		catch(FormatException)
+		{
+			Fail("Decimal.Parse(\"1e2\", NumberStyles.Number | NumberStyles.AllowExponent) must not throw a FormatException");
+		}
 	}
 
 	public void TestDecimalToString()

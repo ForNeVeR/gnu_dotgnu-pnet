@@ -65,6 +65,7 @@ static int ConvertToken(ILLinker *linker, ILMethod *method,
 	ILType *type;
 	ILStandAloneSig *sig;
 	ILTypeSpec *spec;
+	ILMethodSpec *mspec;
 
 	if(!(*token))
 	{
@@ -106,7 +107,7 @@ static int ConvertToken(ILLinker *linker, ILMethod *method,
 			*token = ILMember_Token(member);
 			return 1;
 		}
-		break;
+		/* Not reached */
 
 		case IL_META_TOKEN_STAND_ALONE_SIG:
 		{
@@ -126,7 +127,7 @@ static int ConvertToken(ILLinker *linker, ILMethod *method,
 			*token = ILStandAloneSig_Token(sig);
 			return 1;
 		}
-		break;
+		/* Not reached */
 
 		case IL_META_TOKEN_TYPE_SPEC:
 		{
@@ -140,14 +141,33 @@ static int ConvertToken(ILLinker *linker, ILMethod *method,
 			*token = ILTypeSpec_Token(spec);
 			return 1;
 		}
-		break;
+		/* Not reached */
 
 		case IL_META_TOKEN_METHOD_SPEC:
 		{
 			/* Convert a generic method specification */
-			/* TODO */
+			member = ILMethodSpec_Method((ILMethodSpec *)item);
+			member = _ILLinkerConvertMemberRef(linker, member);
+			if(!member)
+			{
+				return -1;
+			}
+			type = ILMethodSpec_Type((ILMethodSpec *)item);
+			type = _ILLinkerConvertType(linker, type);
+			if(!type)
+			{
+				return -1;
+			}
+			mspec = ILMethodSpecCreate(linker->image, 0, member, type);
+			if(!mspec)
+			{
+				_ILLinkerOutOfMemory(linker);
+				return -1;
+			}
+			*token = ILMethodSpec_Token(mspec);
+			return 1;
 		}
-		break;
+		/* Not reached */
 
 		default:
 		{

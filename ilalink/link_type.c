@@ -329,12 +329,16 @@ ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type)
 			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
 			{
 				newType->num__ = 0;
-				newType->un.method__.retType__ =
-					_ILLinkerConvertType(linker, type->un.method__.retType__);
 				newType->un.method__.next__ = 0;
-				if(!(newType->un.method__.retType__))
+				if(type->un.method__.retType__)
 				{
-					return ILType_Invalid;
+					newType->un.method__.retType__ =
+						_ILLinkerConvertType
+							(linker, type->un.method__.retType__);
+					if(!(newType->un.method__.retType__))
+					{
+						return ILType_Invalid;
+					}
 				}
 				for(param = 1; param <= (ILUInt32)(type->num__); ++param)
 				{

@@ -84,7 +84,9 @@ namespace System.Windows.Forms
 		{
 			TreeView treeView = owner.TreeView;
 			if (treeView != null && treeView.Sorted)
+			{
 				owner.AddSorted(node);
+			}
 			owner.InsertNodeAt(index, node);
 		}
 
@@ -106,7 +108,9 @@ namespace System.Windows.Forms
 		public virtual int Add(TreeNode node)
 		{
 			if (node.treeView != null && node.treeView.Sorted)
+			{
 				return owner.AddSorted(node);
+			}
 			else
 			{
 				owner.SizeChildrenArray();
@@ -115,9 +119,11 @@ namespace System.Windows.Forms
 				int pos = owner.childCount++;
 				node.index = pos;
 				owner.children[node.index] = node;
-				// Redraw if required
-				if (node.treeView != null)
+				// Redraw if required.
+				if (node.treeView != null && node.treeView.IsHandleCreated)
+				{
 					node.treeView.Draw(owner);
+				}
 				return pos;
 			}
 		}
@@ -125,7 +131,9 @@ namespace System.Windows.Forms
 		public virtual void AddRange(TreeNode[] nodes)
 		{
 			for (int i = 0; i < nodes.Length; i++)
+			{
 				Add(nodes[i]);
+			}
 		}
 
 		public virtual TreeNode Add(string text)
@@ -185,7 +193,9 @@ namespace System.Windows.Forms
 				value.treeView = owner.treeView;
 				owner.children[index] = value;
 				if (owner.treeView != null)
+				{
 					owner.treeView.Draw(owner);
+				}
 			}
 		}
 
@@ -197,8 +207,12 @@ namespace System.Windows.Forms
 		public int IndexOf(TreeNode node)
 		{
 			for (int i = 0; i < Count; i++)
+			{
 				if (this[i] == node)
+				{
 					return i;
+				}
+			}
 			return -1;   
 		}
 
@@ -225,7 +239,9 @@ namespace System.Windows.Forms
 				get
 				{
 					if (current == -1)
+					{
 						return null;
+					}
 					return array[current];
 				}
 			}
@@ -238,7 +254,9 @@ namespace System.Windows.Forms
 					return true;
 				}
 				else
+				{
 					return false;
+				}
 			}
 
 			public void Reset()

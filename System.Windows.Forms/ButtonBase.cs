@@ -417,18 +417,11 @@ public abstract class ButtonBase : Control
 	// Redraw the button after a state change.
 	internal void Redraw()
 			{
-				// Bail out if the button is not currently visible.
-				if(!Visible || !IsHandleCreated)
-				{
-					return;
-				}
-
 				// Clear the previous state, for non-trivial draw detection.
 				prevState = (ButtonState)(-1);
 
 				// Redraw the button.
-				using(Graphics graphics = CreateGraphics())
-					Draw(graphics);
+				Invalidate();
 			}
 
 	// Redraw if a non-trivial state change has occurred.

@@ -403,6 +403,8 @@ public abstract class Image
 					return "png";
 				if (format ==ImageFormat.Tiff)
 					return "tiff";
+				if (format ==ImageFormat.Exif)
+					return "exif";
 				else
 					throw new NotSupportedException(format.ToString());
 			}
@@ -465,6 +467,8 @@ public abstract class Image
 						rawFormat = ImageFormat.Bmp; break;
 					case DotGNU.Images.Image.Icon:
 						rawFormat = ImageFormat.Icon; break;
+					case DotGNU.Images.Image.Exif:
+						rawFormat = ImageFormat.Exif; break;
 				}
 				frameDimensionsList = new Guid [0];
 				this.dgImage = dgImage;

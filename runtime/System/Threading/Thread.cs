@@ -486,7 +486,7 @@ public sealed class Thread
 				}
 				set
 				{
-					// Ignored - not used at present.
+					CultureInfo.SetCurrentCulture(value);
 				}
 			}
 
@@ -516,7 +516,7 @@ public sealed class Thread
 				}
 				set
 				{
-					// Ignored - not used at present.
+					CultureInfo.SetCurrentUICulture(value);
 				}
 			}
 

@@ -221,6 +221,13 @@ namespace FormsTest
 
 		private TreeView treeView1;
 		private ImageList treeImageList;
+		private Label treeLabelBoundsDescription;
+		private Label treeLabelBounds;
+		private Label treeLabelCheckBox;
+		private Label treeLabelRightClickDescription;
+		private Button treeButtonAddNodes;
+		private CheckBox treeCheckBox;
+		private ContextMenu treeMenu;
 
 		private ListBox listBox1, listBox2;
 
@@ -323,6 +330,9 @@ namespace FormsTest
 			tabControl1.SizeMode = TabSizeMode.FillToRight;
 			tabControl1.Name = "Main Tab";
 			
+			tabPage12 = new TabPage();
+			tabPage12.Text = "TreeView";
+			tabControl1.Controls.Add(tabPage12);
 			tabPage19 = new TabPage();
 			tabPage19.Text = "PropertyGrid";
 			tabControl1.Controls.Add(tabPage19);
@@ -368,9 +378,6 @@ namespace FormsTest
 			tabPage13 = new TabPage();
 			tabPage13.Text = "ListBox";
 			tabControl1.Controls.Add(tabPage13);
-			tabPage12 = new TabPage();
-			tabPage12.Text = "TreeView";
-			tabControl1.Controls.Add(tabPage12);
 			tabPage1 = new TabPage();
 			tabPage1.Text = "Label";
 			tabControl1.Controls.Add(tabPage1);
@@ -405,6 +412,7 @@ namespace FormsTest
 			
 			Controls.Add(tabControl1);
 
+			AddTreeViewTest(tabPage12);
 			AddLabelTest(tabPage1);
 			AddButtonTest(tabPage2);
 			AddTextBoxTest(tabPage3);
@@ -420,7 +428,6 @@ namespace FormsTest
 			AddContextTest(tabPage9);
 			AddImageTest(tabPage10);
 			AddComboTest(tabPage11);
-			AddTreeViewTest(tabPage12);
 			AddListBoxTest(tabPage13);
 			AddFormsTest(tabPage14);
 			//TransformsTest chews too much CPU - remove for now - Rhys.
@@ -2729,6 +2736,8 @@ namespace FormsTest
 			e.Graphics.DrawRectangle(SystemPens.ControlText, e.Bounds);
 		}
 
+		int pos = 0;
+
 		private void AddTreeViewTest(Control c)
 		{
 			treeImageList = new ImageList();
@@ -2738,26 +2747,114 @@ namespace FormsTest
 			treeView1 = new TreeView();
 			treeView1.BeginUpdate();
 			treeView1.ImageList = treeImageList;
-			treeView1.ImageIndex = 0;
+			treeView1.ImageIndex = -1;
 			treeView1.SelectedImageIndex = 1;
-			treeView1.Nodes.Add("Node1");
-			treeView1.Nodes[0].ImageIndex = 1;
-			treeView1.Nodes[0].Nodes.Add("Node11");
-			treeView1.Nodes[0].Nodes[0].Nodes.Add("Node111");
-			treeView1.Nodes[0].Nodes.Add("Node12");
-			treeView1.Nodes.Add("Node2");
-			treeView1.Nodes.Add("Node3");
-			treeView1.Nodes.Add("Node4");
-			treeView1.Nodes[3].Nodes.Add("Node41");
-			treeView1.Nodes[3].Nodes[0].Nodes.Add("Node411");
-			treeView1.Nodes[3].Nodes[0].Nodes.Add("Node412");
-			treeView1.Nodes[3].Nodes.Add("Node42");
-			treeView1.Nodes[3].Nodes.Add("Node43");
-			
+			AddTestNodes(ref pos);
 			treeView1.EndUpdate();
-			treeView1.Bounds = new Rectangle(10,10, 250, 500);
+
+			treeView1.Bounds = new Rectangle(10,10, 150, 400);
 			treeView1.LabelEdit = true;
-			c.Controls.Add(treeView1);
+			treeView1.AfterSelect+=new TreeViewEventHandler(treeView1_AfterSelect);
+			treeView1.MouseMove+=new MouseEventHandler(treeView1_MouseMove);
+
+			treeLabelBoundsDescription = new Label();
+			treeLabelBoundsDescription.Bounds = new Rectangle(treeView1.Right + 10, 10, 150, 20);
+			treeLabelBoundsDescription.Text = "SelectedNode.Bounds:";
+			treeLabelBounds = new Label();
+			treeLabelBounds.Bounds = new Rectangle(treeLabelBoundsDescription.Left + 5, treeLabelBoundsDescription.Bottom + 5, 200, 20);
+
+			treeLabelCheckBox = new Label();
+			treeLabelCheckBox.Text = "CheckBoxes:";
+			treeLabelCheckBox.Bounds = new Rectangle(treeLabelBoundsDescription.Left, treeLabelBounds.Bottom + 5, 80, 20);
+			treeCheckBox = new CheckBox();
+			treeCheckBox.Location = new Point(treeLabelCheckBox.Right, treeLabelCheckBox.Top);
+			treeCheckBox.CheckedChanged+=new EventHandler(treeCheckBox_CheckedChanged);
+
+			treeLabelRightClickDescription = new Label();
+			treeLabelRightClickDescription.Text = "Right Click nodes for menu..";
+			treeLabelRightClickDescription.Bounds = new Rectangle(treeLabelBoundsDescription.Left, treeLabelCheckBox.Bottom + 5, 200, 20);
+
+			treeButtonAddNodes = new Button();
+			treeButtonAddNodes.Text = "Add 1000 more Nodes!!";
+			treeButtonAddNodes.Bounds = new Rectangle(treeLabelBoundsDescription.Left, treeLabelRightClickDescription.Bottom + 5, 150, 20);
+			treeButtonAddNodes.Click+=new EventHandler(treeButtonAddNodes_Click);
+
+			MenuItem edit = new MenuItem("Edit", new EventHandler(treeEdit));
+			MenuItem add = new MenuItem("Add", new EventHandler(treeAdd));
+			MenuItem delete = new MenuItem("Delete", new EventHandler(treeDelete));
+			treeMenu = new ContextMenu(new MenuItem[] {edit, add, delete});
+			treeView1.ContextMenu = treeMenu;
+
+			c.Controls.AddRange(new Control[] {treeView1, treeLabelBounds, treeLabelBoundsDescription, treeLabelCheckBox, treeCheckBox, treeLabelRightClickDescription, treeButtonAddNodes});
+		}
+
+		private void treeEdit(Object sender, EventArgs e)
+		{
+			treeView1.SelectedNode.BeginEdit();
+		}
+
+		private void treeAdd(Object sender, EventArgs e)
+		{
+			TreeNode node = treeView1.SelectedNode.Nodes.Add("new node..");
+			treeView1.SelectedNode = node;
+		}
+
+		private void treeDelete(Object sender, EventArgs e)
+		{
+			treeView1.SelectedNode.Remove();
+		}
+
+		private void treeButtonAddNodes_Click(object sender, EventArgs e)
+		{
+			treeView1.BeginUpdate();
+			int endPos = pos + 1000;
+			while (pos < endPos)
+			{
+				AddTestNodes(ref pos);
+			}
+			treeView1.EndUpdate();
+		}
+
+		private void AddTestNodes(ref int pos)
+		{
+			pos++;
+			const String n = "Node";
+			TreeNode node1 = treeView1.Nodes.Add(n + pos++);
+			node1.ImageIndex = 1;
+			TreeNode node11 = node1.Nodes.Add(n + pos++);
+			TreeNode node111 = node11.Nodes.Add(n + pos++);
+			TreeNode node1111 = node111.Nodes.Add(n + pos++);
+			node1111.Nodes.Add(n + pos++);
+			node1.Nodes.Add(n + pos++);
+			treeView1.Nodes.Add(n + pos++);
+			treeView1.Nodes.Add(n + pos++);
+			TreeNode node4 = treeView1.Nodes.Add(n + pos++);
+			TreeNode node41 = node4.Nodes.Add(n + pos++);
+			node41.Nodes.Add(n + pos++);
+			node41.Nodes.Add(n + pos++);
+			node4.Nodes.Add(n + pos++);
+			node4.Nodes.Add(n + pos++);
+		}
+
+		private void treeCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			treeView1.CheckBoxes = treeCheckBox.Checked;
+			Console.WriteLine(treeView1.Nodes[3].Nodes[2].Bounds);
+
+		}
+
+		private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+		{
+			treeLabelBounds.Text = treeView1.SelectedNode.Bounds.ToString();
+		}
+
+		private void treeView1_MouseMove(object sender, MouseEventArgs e)
+		{
+			TreeNode node = treeView1.GetNodeAt(e.X, e.Y);
+			if (node == null)
+				treeLabelBounds.Text = String.Empty;
+			else
+				treeLabelBounds.Text = node.Text;
 		}
 
 		private void AddListBoxTest(Control c)
@@ -3567,6 +3664,5 @@ namespace FormsTest
 		{
 			MessageBox.Show(this, "This is a help message.", "Help");
 		}
-
 	}
 }

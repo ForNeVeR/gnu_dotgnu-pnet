@@ -69,11 +69,14 @@ namespace System.Windows.Forms
 		// The size of the tab page is set by the parent
 		protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified) 
 		{
-			if (base.Parent != null)
+			if (Parent != null)
 			{
-			
 				Rectangle fix = (base.Parent as TabControl).DisplayRectangle;
-				base.SetBoundsCore(fix.X, fix.Y, fix.Width, fix.Height, BoundsSpecified.All);
+				// Only change the size if we have to.
+				if (fix != Bounds)
+				{
+					base.SetBoundsCore(fix.X, fix.Y, fix.Width, fix.Height, BoundsSpecified.All);
+				}
 			}
 			else
 				base.SetBoundsCore(x, y, width, height, specified);
@@ -88,7 +91,7 @@ namespace System.Windows.Forms
 			{
 				imageIndex = value;
 				if (base.Parent != null)
-					(Parent as TabControl).DrawTabs();
+					(Parent as TabControl).InvalidateTabs();
 			}
 		}
 
@@ -102,7 +105,7 @@ namespace System.Windows.Forms
 			{
 				base.Text = value;
 				if (base.Parent != null)
-					(Parent as TabControl).DrawTabs();
+					(Parent as TabControl).InvalidateTabs();
 			}
 		}
 

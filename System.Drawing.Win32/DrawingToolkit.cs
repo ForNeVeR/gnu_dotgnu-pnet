@@ -42,11 +42,13 @@ public class DrawingToolkit : IToolkit
 	internal DrawingWindow enteredWindow;
 	// The window used as the parent when we want to hide the taskbar item and for processing the timers
 	private DrawingHiddenWindow hiddenWindow;
+	private IntPtr nullPenHandle;
+	private IntPtr hollowBrushHandle;
 
 	public DrawingToolkit()
 	{
 		hiddenWindow = new DrawingHiddenWindow(this, "DrawingHiddenWindow",0,0,null);
-		AddWindow(hiddenWindow);
+		AddWindow(hiddenWindow, null);
 		hiddenWindow.CreateWindow();
 	}
 
@@ -155,6 +157,12 @@ WindowText				= 26,*/
 		return new DrawingHatchBrush(this, style, foreColor, backColor);
 	}
 
+	// Create an XOR brush.
+	public IToolkitBrush CreateXorBrush(IToolkitBrush innerBrush)
+	{
+		return new DrawingXorBrush(this, innerBrush);
+	}
+
 	// Create a linear gradient brush.
 	//TODO
 	public IToolkitBrush CreateLinearGradientBrush
@@ -216,7 +224,7 @@ WindowText				= 26,*/
 	public IToolkitTopLevelWindow CreateTopLevelWindow(int width, int height, IToolkitEventSink sink)
 	{
 		DrawingTopLevelWindow window = new DrawingTopLevelWindow(this, string.Empty, width, height, sink);
-		AddWindow(window);
+		AddWindow(window, null);
 		window.CreateWindow();
 		return window;
 	}
@@ -250,7 +258,7 @@ WindowText				= 26,*/
 				window.Functions = MotifFunctions.Move |
 									MotifFunctions.Close;
 			}*/
-		AddWindow(window);
+		AddWindow(window, dialogParent as DrawingWindow);
 		window.CreateWindow();
 		return window;
 	}
@@ -262,7 +270,7 @@ WindowText				= 26,*/
 		(int x, int y, int width, int height, IToolkitEventSink sink)
 	{
 		DrawingWindow window = new DrawingPopupWindow(this, x, y, width, height, sink);
-		AddWindow(window);
+		AddWindow(window, null);
 		window.CreateWindow();
 		return window;
 	}
@@ -284,10 +292,19 @@ WindowText				= 26,*/
 			dparent = null;
 		}
 		DrawingWindow window = new DrawingControlWindow(this, "", dparent, x, y, width, height, sink);
-		AddWindow(window);
+		AddWindow(window, parent as DrawingWindow);
 		window.CreateWindow();
 		return window;
 	}
+
+	// Create an MDI client area.
+	public IToolkitMdiClient CreateMdiClient
+				(IToolkitWindow parent, int x, int y, int width, int height,
+				 IToolkitEventSink sink)
+			{
+				// TODO
+				return null;
+			}
 
 	// Get a list of all font families on this system, or all font
 	// families that are compatible with a particular IToolkitGraphics.
@@ -696,7 +713,7 @@ WindowText				= 26,*/
 	}
 
 	// Add a new DrawingWindow and make room if necessary
-	internal void AddWindow(DrawingWindow window)
+	internal void AddWindow(DrawingWindow window, DrawingWindow parent)
 	{
 		if (windows.Length == windowCount)
 		{
@@ -705,6 +722,33 @@ WindowText				= 26,*/
 			windows = newWindows;
 		}
 		windows[windowCount++] = window;
+	}
+
+	internal IntPtr HollowBrushHandle
+	{
+		get
+		{
+			if (hollowBrushHandle == IntPtr.Zero)
+				hollowBrushHandle = Win32.Api.GetStockObject(Win32.Api.StockObjectType.HOLLOW_BRUSH);
+			return hollowBrushHandle;
+		}
+	}
+
+	internal IntPtr NullPenHandle
+	{
+		get
+		{
+			if (nullPenHandle == IntPtr.Zero)
+				nullPenHandle = Win32.Api.GetStockObject(Win32.Api.StockObjectType.NULL_PEN);
+			return nullPenHandle;
+		}
+	}
+
+	// Get the clipboard handler for this toolkit, or null if no clipboard.
+	public IToolkitClipboard GetClipboard()
+	{
+		// TODO
+		return null;
 	}
 
 

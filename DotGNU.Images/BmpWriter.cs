@@ -42,7 +42,7 @@ internal sealed class BmpWriter
 				}
 
 				// Determine the size of the bitmap and the offset to it.
-				bitCount = Utils.FormatToBitCount(frame.PixelFormat);
+				bitCount = Utils.FormatToBitCount(frame.pixelFormat);
 				size = frame.Stride * frame.Height;
 				offset = 14 + 40;
 				if(bitCount <= 8)
@@ -62,7 +62,8 @@ internal sealed class BmpWriter
 				stream.Write(buffer, 0, 14);
 
 				// Build and write the BITMAPINFO details.
-				SaveBitmapInfo(stream, frame, bitCount, size, buffer);
+				SaveBitmapInfo(stream, frame, bitCount, size, buffer,
+							   frame.Height);
 
 				// Write the bitmap data in the frame to the stream.
 				SaveBitmapData(stream, frame, false, false);
@@ -71,12 +72,12 @@ internal sealed class BmpWriter
 	// Save a BITMAPINFO structure for a frame.
 	public static void SaveBitmapInfo
 				(Stream stream, Frame frame, int bitCount,
-				 int size, byte[] buffer)
+				 int size, byte[] buffer, int height)
 			{
 				// Build and write the BITMAPINFOHEADER structure.
 				Utils.WriteInt32(buffer, 0, 40);			// biSize
 				Utils.WriteInt32(buffer, 4, frame.Width);
-				Utils.WriteInt32(buffer, 8, frame.Height);
+				Utils.WriteInt32(buffer, 8, height);
 				Utils.WriteUInt16(buffer, 12, 1);			// biPlanes
 				Utils.WriteUInt16(buffer, 14, bitCount);
 				Utils.WriteInt32(buffer, 16, 0);			// biCompression

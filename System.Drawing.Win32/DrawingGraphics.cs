@@ -57,7 +57,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 		Win32.Api.MoveToEx( hdc, x1, y1,IntPtr.Zero );
 		Win32.Api.LineTo( hdc, x2, y2 );
 		//set last point
-		Win32.Api.SetPixel( hdc, x2, y2, ColorToWin32( (pen as DrawingPen).properties.Color ) );
+		Win32.Api.SetPixel( hdc, x2, y2,(pen as DrawingPen).win32Color);
 		Win32.Api.SelectObject( hdc, prevhPen );
 			
 	}
@@ -76,14 +76,14 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw a polygon using the current pen.
 	public override void DrawPolygon( System.Drawing.Point[] points )
 	{
-		Polygon( points, Win32.Api.GetStockObject(Win32.Api.StockObjectType.HOLLOW_BRUSH), (pen as DrawingPen).hPen);
+		Polygon( points, (toolkit as DrawingToolkit).HollowBrushHandle, (pen as DrawingPen).hPen);
 	}
 
 	// Fill a polygon using the current brush.
 	public override void FillPolygon( System.Drawing.Point[] points, FillMode fillMode )
 	{
 		Win32.Api.SetPolyFillMode(hdc, (int)fillMode);
-		Polygon( points, (brush as DrawingBrush).hBrush, Win32.Api.GetStockObject(Win32.Api.StockObjectType.NULL_PEN) );
+		Polygon( points, (brush as DrawingBrush).hBrush, (toolkit as DrawingToolkit).NullPenHandle);
 	}
 
 	private void Polygon( System.Drawing.Point[] points, IntPtr hBrush, IntPtr hPen )
@@ -107,7 +107,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 		IntPtr prevhPen = Win32.Api.SelectObject( hdc, (pen as DrawingPen).hPen );
 		if (sweepAngle == 360)
 		{
-			IntPtr prevBrush = Win32.Api.SelectObject(hdc, Win32.Api.GetStockObject( Win32.Api.StockObjectType.HOLLOW_BRUSH));
+			IntPtr prevBrush = Win32.Api.SelectObject(hdc, (toolkit as DrawingToolkit).HollowBrushHandle);
 			Win32.Api.Ellipse(hdc, rect[0].X, rect[0].Y, rect[2].X + 1, rect[2].Y + 1);
 			Win32.Api.SelectObject(hdc, prevBrush);
 		}
@@ -123,7 +123,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw a pie slice within a rectangle defined by four points.
 	public override void DrawPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 	{
-		Pie( rect, startAngle, sweepAngle, Win32.Api.GetStockObject( Win32.Api.StockObjectType.HOLLOW_BRUSH ), (pen as DrawingPen).hPen );
+		Pie( rect, startAngle, sweepAngle, (toolkit as DrawingToolkit).HollowBrushHandle, (pen as DrawingPen).hPen );
 	}
 
 	// Fill a pie slice within a rectangle defined by four points.
@@ -133,16 +133,16 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 		{
 			IntPtr prevBrush = Win32.Api.SelectObject( hdc, (brush as DrawingBrush).hBrush );
 			Win32.Api.SetBkMode(hdc, Win32.Api.BackGroundModeType.TRANSPARENT);
-			IntPtr prevPen = Win32.Api.SelectObject(hdc, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN));
+			IntPtr prevPen = Win32.Api.SelectObject(hdc, (toolkit as DrawingToolkit).NullPenHandle);
 			Win32.Api.Ellipse(hdc, rect[0].X, rect[0].Y, rect[2].X + 2, rect[2].Y +2);
 			Win32.Api.SelectObject( hdc, prevPen );
 			Win32.Api.SelectObject( hdc, prevBrush );
 		}
 		else
-			Pie( rect, startAngle, sweepAngle, (brush as DrawingBrush).hBrush, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN));
+			Pie( rect, startAngle, sweepAngle, (brush as DrawingBrush).hBrush, (toolkit as DrawingToolkit).NullPenHandle);
 	}
 
-	private void Pie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle, IntPtr hBrush, IntPtr hPen )
+	private void Pie( System.Drawing.Point[] rect, float startAngle, float sweepAngle, IntPtr hBrush, IntPtr hPen )
 	{
 		IntPtr prevBrush = Win32.Api.SelectObject( hdc, hBrush );
 		Win32.Api.SetBkMode(hdc, Win32.Api.BackGroundModeType.TRANSPARENT);
@@ -218,24 +218,10 @@ public override void FillPie ( System.Drawing.Point[] rect, float startAngle, fl
 		// TODO: line wrapping, etc
 		//Win32.Api.SelectObject(hdc, selectedFont.hFont);
 		Win32.Api.SIZE size;
-		size.cx = 0;
-		size.cy = 0;
-		Win32.Api.GetTextExtentPoint32A(hdc, s, s.Length, ref size);
-
-		Win32.Api.TEXTMETRIC tm;
-		Win32.Api.GetTextMetricsA(hdc, out tm);
-			
+		Win32.Api.GetTextExtentPoint32A(hdc, s, s.Length, out size);
 		charactersFitted = 0;
 		linesFilled = 0;
-		if(!ascentOnly)
-		{
-			return new Size(size.cx, size.cy); /*ascent + descent*/
-		}
-		else
-		{
-			return new Size(size.cx,tm.tmAscent);
-		}
-			
+		return new Size(size.cx, size.cy); /*ascent + descent*/
 	}
 
 	// Not implementing Flush

@@ -1,10 +1,3 @@
 
-.PHONY: samples
+SUBDIRS = simple xsharp forms
 
-all-local: samples
-
-samples:
-	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
-			-f "$(srcdir)/samples.build" all
-
-CLEANFILES = *.exe

@@ -25,6 +25,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
+using DotGNU.Images;
 using Xsharp;
 
 internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
@@ -204,13 +205,23 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 			{
 				DrawingToolkit.ValidateWindowPositionPaint(ref x, ref y);
 				DrawingToolkit.ValidateWindowSize(ref width, ref height);
-				Repaint(x, y, width, height);
+				Repaint(x, y, width + 1, height + 1);
 			}
 
 	// Force an update of all invalidated regions.
 	void IToolkitWindow.Update()
 			{
+				Update();
 				Display.Flush();
+			}
+
+	// Set the cursor.  The toolkit may ignore "frame" if it already
+	// has a system-defined association for "cursorType".  Setting
+	// "cursorType" to "ToolkitCursorType.InheritParent" will reset
+	// the cursor to be the same as the parent window's.
+	void IToolkitWindow.SetCursor(ToolkitCursorType cursorType, Frame frame)
+			{
+				ModifyCursor(this, cursorType, frame);
 			}
 
 	// Map an Xsharp key description into a "ToolkitKeys" value.
@@ -221,6 +232,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 					case KeyName.XK_BackSpace:		return ToolkitKeys.Back;
 					case KeyName.XK_Tab:			return ToolkitKeys.Tab;
 					case KeyName.XK_KP_Tab:			return ToolkitKeys.Tab;
+					case KeyName.XK_ISO_Left_Tab:	return ToolkitKeys.Tab;
 					case KeyName.XK_Linefeed:		return ToolkitKeys.LineFeed;
 					case KeyName.XK_Clear:			return ToolkitKeys.Clear;
 					case KeyName.XK_Return:			return ToolkitKeys.Enter;
@@ -597,6 +609,103 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 							(rect.x, rect.y, rect.width, rect.height));
 				}
 				return newRegion;
+			}
+
+	// Modify the cursor on a widget.
+	internal static void ModifyCursor
+				(Widget widget, ToolkitCursorType cursorType, Frame frame)
+			{
+				if(cursorType == ToolkitCursorType.InheritParent)
+				{
+					// Change the cursor back to the same value as the parent.
+					widget.Cursor = CursorType.XC_inherit_parent;
+				}
+				else if(cursorType == ToolkitCursorType.Default)
+				{
+					// Try to inherit the desktop's cursor for the default.
+					Widget parent = widget.Parent;
+					while(parent != null)
+					{
+						if(parent.Cursor != CursorType.XC_inherit_parent)
+						{
+							break;
+						}
+						parent = parent.Parent;
+					}
+					if(parent != null)
+					{
+						widget.Cursor = CursorType.XC_left_ptr;
+					}
+					else
+					{
+						widget.Cursor = CursorType.XC_inherit_parent;
+					}
+				}
+				else
+				{
+					// TODO: create a cursor based on the supplied image.
+
+					// Last ditch attempt - use the nearest X11 cursor.
+					switch(cursorType)
+					{
+						case ToolkitCursorType.AppStarting:
+							widget.Cursor = CursorType.XC_watch;
+							break;
+						case ToolkitCursorType.Arrow:
+						case ToolkitCursorType.Default:
+							widget.Cursor = CursorType.XC_left_ptr;
+							break;
+						case ToolkitCursorType.Cross:
+							widget.Cursor = CursorType.XC_crosshair;
+							break;
+						case ToolkitCursorType.IBeam:
+							widget.Cursor = CursorType.XC_xterm;
+							break;
+						case ToolkitCursorType.No:
+							widget.Cursor = CursorType.XC_X_cursor;
+							break;
+						case ToolkitCursorType.SizeAll:
+							widget.Cursor = CursorType.XC_fleur;
+							break;
+						case ToolkitCursorType.SizeNS:
+						case ToolkitCursorType.VSplit:
+							widget.Cursor = CursorType.XC_sb_v_double_arrow;
+							break;
+						case ToolkitCursorType.SizeWE:
+						case ToolkitCursorType.HSplit:
+							widget.Cursor = CursorType.XC_sb_h_double_arrow;
+							break;
+						case ToolkitCursorType.UpArrow:
+							widget.Cursor = CursorType.XC_sb_up_arrow;
+							break;
+						case ToolkitCursorType.WaitCursor:
+							widget.Cursor = CursorType.XC_watch;
+							break;
+						case ToolkitCursorType.Help:
+							widget.Cursor = CursorType.XC_question_arrow;
+							break;
+						case ToolkitCursorType.Hand:
+							widget.Cursor = CursorType.XC_hand2;
+							break;
+						case ToolkitCursorType.SizeNWSE:
+						case ToolkitCursorType.SizeNESW:
+						case ToolkitCursorType.NoMove2D:
+						case ToolkitCursorType.NoMoveHoriz:
+						case ToolkitCursorType.NoMoveVert:
+						case ToolkitCursorType.PanEast:
+						case ToolkitCursorType.PanNE:
+						case ToolkitCursorType.PanNorth:
+						case ToolkitCursorType.PanNW:
+						case ToolkitCursorType.PanSE:
+						case ToolkitCursorType.PanSouth:
+						case ToolkitCursorType.PanSW:
+						case ToolkitCursorType.PanWest:
+						case ToolkitCursorType.UserDefined:
+						default:
+							widget.Cursor = CursorType.XC_circle;
+							break;
+					}
+				}
 			}
 
 }; // class DrawingWindow

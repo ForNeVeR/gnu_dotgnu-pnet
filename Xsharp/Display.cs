@@ -45,6 +45,7 @@ public sealed class Display : IDisposable
 	private bool quit;
 	private bool pendingExposes;
 	private InputOutputWidget exposeList;
+	private InputOutputWidget invalidateList;
 	private Xlib.Cursor[] cursors;
 	internal Xlib.Time knownEventTime;
 	internal HandleMap handleMap;
@@ -535,6 +536,9 @@ public sealed class Display : IDisposable
 					{
 						return AppEvent.Quit;
 					}
+
+					// Processing any pending invalidates that we have.
+					ProcessPendingInvalidates();
 	
 					// Do we have pending expose events to process?
 					if(pendingExposes)
@@ -697,6 +701,9 @@ public sealed class Display : IDisposable
 	// have the display lock.
 	private void DispatchEvent(ref XEvent xevent)
 			{
+				// Find the widget that should process the event.
+				Widget widget = handleMap[xevent.xany.window];
+
 				// Record the time at which the event occurred.  We need
 				// this to process keyboard and pointer grabs correctly.
 				switch((EventType)(xevent.xany.type__))
@@ -705,6 +712,16 @@ public sealed class Display : IDisposable
 					case EventType.KeyRelease:
 					{
 						knownEventTime = xevent.xkey.time;
+						if(widget != null && !(widget.Parent is RootWindow))
+						{
+							// KeyPress/KeyRelease events must be dispatched
+							// via the top-level window, never via children.
+							while(widget.Parent != null &&
+							      !(widget.Parent is RootWindow))
+							{
+								widget = widget.Parent;
+							}
+						}
 					}
 					break;
 
@@ -759,9 +776,6 @@ public sealed class Display : IDisposable
 					}
 					break;
 				}
-
-				// Find the widget that should process the event.
-				Widget widget = handleMap[xevent.xany.window];
 
 				// Dispatch the event to the widget.
 				if(widget != null)
@@ -825,6 +839,51 @@ public sealed class Display : IDisposable
 					{
 						exposeList = current.nextExpose;
 					}
+				}
+			}
+
+	// Add an input/output widget to the pending invalidate list.
+	internal void AddPendingInvalidate(InputOutputWidget widget)
+			{
+				widget.nextInvalidate = invalidateList;
+				invalidateList = widget;
+			}
+
+	// Remove an input/output widget from the pending invalidate list.
+	internal void RemovePendingInvalidate(InputOutputWidget widget)
+			{
+				InputOutputWidget current, prev;
+				current = invalidateList;
+				prev = null;
+				while(current != null && current != widget)
+				{
+					prev = current;
+					current = current.nextInvalidate;
+				}
+				if(current != null)
+				{
+					if(prev != null)
+					{
+						prev.nextInvalidate = current.nextInvalidate;
+					}
+					else
+					{
+						invalidateList = current.nextInvalidate;
+					}
+				}
+			}
+
+	// Process pending invalidates.
+	private void ProcessPendingInvalidates()
+			{
+				InputOutputWidget current = invalidateList;
+				InputOutputWidget next;
+				invalidateList = null;
+				while(current != null)
+				{
+					next = current.nextInvalidate;
+					current.FlushInvalidates();
+					current = next;
 				}
 			}
 

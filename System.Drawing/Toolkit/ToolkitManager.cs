@@ -173,6 +173,14 @@ public sealed class ToolkitManager
 				}
 			}
 
+	// Convert a brush into an exclusive-OR brush which XOR's the brush
+	// against a drawing surface, and also includes inferior child
+	// windows in the draw operation.
+	public static Brush CreateXorBrush(Brush brush)
+			{
+				return new XorBrush(brush);
+			}
+
 	// Get the override toolkit name.
 	private static String GetToolkitOverride()
 			{

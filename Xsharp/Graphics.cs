@@ -364,6 +364,56 @@ public sealed class Graphics : IDisposable
 			}
 
 	/// <summary>
+	/// <para>Get or set the subwindow mode.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The <see cref="T:Xsharp.SubwindowMode"/> value
+	/// for the mode.</para>
+	/// </value>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>Raised if set to an invalid value.</para>
+	/// </exception>
+	public Xsharp.SubwindowMode SubwindowMode
+			{
+				get
+				{
+					try
+					{
+						IntPtr display = Lock();
+						XGCValues values;
+						Xlib.XGetGCValues(display, gc,
+										  (uint)(GCValueMask.GCSubwindowMode),
+										  out values);
+						return values.subwindow_mode;
+					}
+					finally
+					{
+						dpy.Unlock();
+					}
+				}
+				set
+				{
+					if(value < Xsharp.SubwindowMode.ClipByChildren ||
+					   value > Xsharp.SubwindowMode.IncludeInferiors)
+					{
+						throw new XException
+							(String.Format(S._("X_SubwindowMode"), (int)value));
+					}
+					try
+					{
+						IntPtr display = Lock();
+						Xlib.XSetSubwindowMode(display, gc, (int)value);
+					}
+					finally
+					{
+						dpy.Unlock();
+					}
+				}
+			}
+
+	/// <summary>
 	/// <para>Get or set the line width.</para>
 	/// </summary>
 	///
@@ -2405,6 +2455,32 @@ public sealed class Graphics : IDisposable
 				}
 			}
 
+	// Draw a simple bitmap.
+	internal void DrawBitmap(int x, int y, int width, int height,
+							 Xlib.Pixmap bitmap)
+			{
+				try
+				{
+					IntPtr display = Lock();
+					Xlib.XSetStipple(display, gc, bitmap);
+					Xlib.XSetTSOrigin(display, gc, x, y);
+					Xlib.XSetForeground(display, gc,
+						drawable.ToPixel
+							(new Color(StandardColor.Foreground)));
+					Xlib.XSetFillStyle
+						(display, gc, (int)(FillStyle.FillStippled));
+					Xlib.XFillRectangle(display, drawableHandle, gc,
+										x, y, width, height);
+					Xlib.XSetTSOrigin(display, gc, 0, 0);
+					Xlib.XSetFillStyle
+						(display, gc, (int)(FillStyle.FillSolid));
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
 	/// <summary>
 	/// <para>Draw a three-dimensional effect.</para>
 	/// </summary>
@@ -2451,6 +2527,7 @@ public sealed class Graphics : IDisposable
 					Xlib.Pixel topShadowEnhance;
 					Xlib.Pixel bottomShadow;
 					Xlib.Pixel bottomShadowEnhance;
+					Xlib.Pixel background;
 					Xlib.Pixel trim;
 					if((effect & Effect.ContentColors) != 0)
 					{
@@ -2462,6 +2539,8 @@ public sealed class Graphics : IDisposable
 							(new Color(StandardColor.ContentBottomShadow));
 						bottomShadowEnhance = drawable.ToPixel(new Color
 							(StandardColor.ContentBottomShadowEnhance));
+						background = drawable.ToPixel
+							(new Color(StandardColor.ContentBackground));
 						trim = drawable.ToPixel
 							(new Color(StandardColor.ContentTrim));
 					}
@@ -2475,6 +2554,8 @@ public sealed class Graphics : IDisposable
 							(new Color(StandardColor.BottomShadow));
 						bottomShadowEnhance = drawable.ToPixel
 							(new Color(StandardColor.BottomShadowEnhance));
+						background = drawable.ToPixel
+							(new Color(StandardColor.Background));
 						trim = drawable.ToPixel(new Color(StandardColor.Trim));
 					}
 
@@ -2498,12 +2579,14 @@ public sealed class Graphics : IDisposable
 					newValues.line_style = LineStyle.LineSolid;
 					newValues.join_style = JoinStyle.JoinMiter;
 					newValues.cap_style = CapStyle.CapProjecting;
+					newValues.fill_style = FillStyle.FillSolid;
 					Xlib.XChangeGC(display, gc,
 								   (uint)(GCValueMask.GCFunction |
 								  		  GCValueMask.GCLineWidth |
 										  GCValueMask.GCLineStyle |
 										  GCValueMask.GCJoinStyle |
-										  GCValueMask.GCCapStyle),
+										  GCValueMask.GCCapStyle |
+										  GCValueMask.GCFillStyle),
 								   ref newValues);
 
 					// Draw the effect.
@@ -2735,6 +2818,68 @@ public sealed class Graphics : IDisposable
 						case Effect.MenuSelectedDisabled:
 						{
 							// TODO
+						}
+						break;
+
+						case Effect.CaptionButtonRaised:
+						{
+							if(width >= 4 && height >= 4)
+							{
+								Xlib.XSetForeground(display, gc, topShadow);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x, y, x + width - 1, y);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x, y + 1, x, y + height - 2);
+								Xlib.XSetForeground(display, gc, bottomShadow);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x + 1, y + height - 2, x + width - 2,
+									y + height - 2);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x + width - 2, y + 1, x + width - 2,
+									y + height - 3);
+								Xlib.XSetForeground
+									(display, gc, bottomShadowEnhance);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x, y + height - 1, x + width - 1,
+									y + height - 1);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x + width - 1, y, x + width - 1,
+									y + height - 2);
+								Xlib.XSetForeground
+									(display, gc, background);
+								Xlib.XFillRectangle(display, drawableHandle, gc,
+									x + 1, y + 1, width - 3, height - 3);
+							}
+						}
+						break;
+
+						case Effect.CaptionButtonIndented:
+						{
+							if(width >= 4 && height >= 4)
+							{
+								Xlib.XSetForeground(display, gc, bottomShadow);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x, y, x + width - 2, y);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x, y + 1, x, y + height - 2);
+								Xlib.XSetForeground
+									(display, gc, bottomShadowEnhance);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x + 1, y + 1, x + width - 3, y + 1);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x + 1, y + 2, x + 1, y + height - 3);
+								Xlib.XSetForeground(display, gc, topShadow);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x, y + height - 1, x + width - 1,
+									y + height - 1);
+								Xlib.XDrawLine(display, drawableHandle, gc,
+									x + width - 1, y, x + width - 1,
+									y + height - 2);
+								Xlib.XSetForeground
+									(display, gc, background);
+								Xlib.XFillRectangle(display, drawableHandle, gc,
+									x + 2, y + 2, width - 3, height - 3);
+							}
 						}
 						break;
 					}

@@ -28,17 +28,24 @@ namespace System.Windows.Forms
 
 	public class TreeView : Control
 	{
-		private bool checkBoxes;
+		internal bool checkBoxes;
+		internal const int checkSize = 13;
 		internal TreeNode editNode;
 		private bool fullRowSelect;
 		private bool hideSelection;
 		private bool hotTracking;
+		private const int hScrollBarPixelsScrolled = 3;
 		internal int imageIndex = 0;
-		private ImageList imageList;
-		private int indent;
+		internal ImageList imageList;
+		// No of pixels on the right of an image.
+		internal const int imagePad = 5;
+		internal int indent;
 		private int itemHeight;
 		private bool labelEdit;
+		private Timer mouseClickTimer;
+		private const int mouseEditTimeout = 400;
 		internal TreeNodeCollection nodes;
+		private TreeNode nodeToEdit = null;
 		private string pathSeparator = @"\";
 		internal TreeNode root;
 		private bool scrollable;
@@ -48,191 +55,212 @@ namespace System.Windows.Forms
 		private bool showPlusMinus;
 		private bool showRootLines;
 		private bool sorted;
-		private Pen markerPen;
-		private TreeNode topNode;
 		private TextBox textBox;
-		private bool layoutSuspended;
-
-		// No of pixels on the left and right of an image.
-		private const int imagePad = 3;
+		// The node currently at the top of the control
+		internal TreeNode topNode;
+		private int updating;
+		private VScrollBar vScrollBar;
+		private HScrollBar hScrollBar;
+		// Offset of tree view by scrolling.
+		internal int xOffset = 0;
+		const int xPadding = 2;
  
-		public event TreeViewEventHandler AfterCheck;
-		public event TreeViewEventHandler AfterCollapse;
-		public event TreeViewEventHandler AfterExpand;
-		public event NodeLabelEditEventHandler AfterLabelEdit;
-		public event TreeViewEventHandler AfterSelect;
-		public event TreeViewCancelEventHandler BeforeCheck;
-		public event TreeViewCancelEventHandler BeforeCollapse;
-		public event TreeViewCancelEventHandler BeforeExpand;
-		public event NodeLabelEditEventHandler BeforeLabelEdit;
-		public event TreeViewCancelEventHandler BeforeSelect;
-		public event ItemDragEventHandler ItemDrag;
-		public TreeView() : base()
+		public event TreeViewEventHandler AfterCheck
 		{
-			hideSelection = true;
-			indent = 19;
-			itemHeight = -1;
-			scrollable = true;
-			BorderStyleInternal = BorderStyle.Fixed3D;
-			showLines = true;
-			showPlusMinus = true;
-			showRootLines = true;
-			root = new TreeNode(this);
-			root.Expand();
-			nodes = new TreeNodeCollection(root);
-			SetStyle(ControlStyles.StandardClick, false);
+			add
+			{
+				AddHandler(EventId.AfterCheck, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.AfterCheck, value);
+			}
 		}
+
+		public event TreeViewEventHandler AfterCollapse
+		{
+			add
+			{
+				AddHandler(EventId.AfterCollapse, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.AfterCollapse, value);
+			}
+		}
+
+		public event TreeViewEventHandler AfterExpand
+		{
+			add
+			{
+				AddHandler(EventId.AfterExpand, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.AfterExpand, value);
+			}
+		}
+
+		public event NodeLabelEditEventHandler AfterLabelEdit
+		{
+			add
+			{
+				AddHandler(EventId.AfterLabelEdit, value);
+			}
+			remove
+			{
+				AddHandler(EventId.AfterLabelEdit, value);
+			}
+		}
+
+		public event TreeViewEventHandler AfterSelect
+		{
+			add
+			{
+				AddHandler(EventId.AfterSelect, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.AfterSelect, value);
+			}
+		}
+
+		public override Color BackColor
+		{
+			get
+			{
+				return base.BackColor;
+			}
+			set
+			{
+				base.BackColor = value;
+			}
+		}
+
+		public override Image BackgroundImage
+		{
+			get
+			{
+				return base.BackgroundImage;
+			}
+			set
+			{
+				base.BackgroundImage = value;
+			}
+		}
+
+		public new event EventHandler BackgroundImageChanged
+		{
+			add
+			{
+				base.BackgroundImageChanged += value;
+			}
+			remove
+			{
+				base.BackgroundImageChanged -= value;
+			}
+		}
+
+		public event TreeViewCancelEventHandler BeforeCheck
+		{
+			add
+			{
+				AddHandler(EventId.BeforeCheck, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.BeforeCheck, value);
+			}
+		}
+
+		public event TreeViewCancelEventHandler BeforeCollapse
+		{
+			add
+			{
+				AddHandler(EventId.BeforeCollapse, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.BeforeCollapse, value);
+			}
+		}
+
+		public event TreeViewCancelEventHandler BeforeExpand
+		{
+			add
+			{
+				AddHandler(EventId.BeforeExpand, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.BeforeExpand, value);
+			}
+		}
+
+		public event NodeLabelEditEventHandler BeforeLabelEdit
+		{
+			add
+			{
+				AddHandler(EventId.BeforeLabelEdit, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.BeforeLabelEdit, value);
+			}
+		}
+
+		public event TreeViewCancelEventHandler BeforeSelect
+		{
+			add
+			{
+				AddHandler(EventId.BeforeSelect, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.BeforeSelect, value);
+			}
+		}
+
+		internal void BeginEdit(TreeNode node)
+		{
+			editNode = node;
+			if (textBox == null)
+			{
+				textBox = new TextBox();
+				textBox.BorderStyle = BorderStyle.FixedSingle;
+				textBox.Visible = false;
+				Controls.Add(textBox);
+				textBox.Leave +=new EventHandler(textBox_Leave);
+				textBox.KeyUp +=new KeyEventHandler(textBox_KeyUp);
+			}
+			textBox.Text = editNode.Text;
+			Rectangle nodeBounds = node.Bounds;
+			nodeBounds.Y -= 2;
+			int y = nodeBounds.Y + (nodeBounds.Height - textBox.Height) /2;
+			// Resize the text bounds to cover the area we want to clear.
+			nodeBounds.X -= 2;
+			nodeBounds.Height += 4;
+			nodeBounds.Width += 4;
+			// Clear out the area behind the textbox.
+			using (Graphics g = CreateGraphics())
+			{
+				using (Brush b = new SolidBrush(BackColor))
+				{
+					g.FillRectangle(b, nodeBounds);
+				}
+			}
+			int x = nodeBounds.X;
+			int width = GetTextBoxWidth(ref x);
+			// The height is fixed by the textbox.
+			textBox.SetBounds(x, y, width, 0);
+			textBox.Visible = true;
+			textBox.Focus();
+			textBox.SelectAll();
+		}
+
 		public void BeginUpdate()
 		{
-			layoutSuspended = true;
-		}
-		public void CollapseAll()
-		{
-			root.Collapse();
-		}
-		public void EndUpdate()
-		{
-			layoutSuspended = false;
-		}
-		public void ExpandAll()
-		{
-			root.ExpandAll();
-		}
-		[TODO]
-		public TreeNode GetNodeAt(int x, int y)
-		{
-			return null;
-		}
-		public TreeNode GetNodeAt(Point pt)
-		{
-			return GetNodeAt(pt.X, pt.Y);
-		}
-
-		public int GetNodeCount(bool includeSubTrees)
-		{
-			return root.GetNodeCount(includeSubTrees);
-		}
-
-		protected override bool IsInputKey(Keys keyData)
-		{
-			if (editNode != null && (keyData & Keys.Alt) == 0)
-			{
-				Keys key = keyData & Keys.KeyCode;
-				if (key == Keys.Return || key == Keys.Escape || key == Keys.Prior || key == Keys.Next || key == Keys.Home || key == Keys.End)
-					return true;
-			}
-			return base.IsInputKey(keyData);
-		}
-
-		protected override void OnKeyPress(KeyPressEventArgs e)
-		{
-			base.OnKeyPress(e);
-			// Swallow the space
-			if (!e.Handled && e.KeyChar == ' ')
-				e.Handled = true;
-		}
-
-		protected override void OnKeyDown(KeyEventArgs e)
-		{
-			base.OnKeyDown(e);
-			if (!e.Handled && checkBoxes && selectedNode != null && (e.KeyData & Keys.KeyCode) == Keys.Space)
-			{
-				TreeViewCancelEventArgs args = new TreeViewCancelEventArgs(selectedNode, false, TreeViewAction.ByKeyboard);
-				this.OnBeforeCheck(args);
-				if (!args.Cancel)
-				{
-					selectedNode.isChecked = !selectedNode.isChecked;
-					this.OnAfterCheck(new TreeViewEventArgs(selectedNode, TreeViewAction.ByKeyboard));
-				}
-				e.Handled = true;
-			}
-		}
-
-		protected override void OnKeyUp(KeyEventArgs e)
-		{
-			base.OnKeyUp (e);
-			// Swallow the space
-			if (!e.Handled && (e.KeyData & Keys.KeyCode) == Keys.Space)
-				e.Handled = true;
-		}
-
-		protected internal virtual void OnAfterCheck(TreeViewEventArgs e)
-		{
-			if (AfterCheck != null)
-				AfterCheck(this, e);
-		}
-
-		protected internal virtual void OnAfterCollapse(TreeViewEventArgs e)
-		{
-			if (AfterCollapse != null)
-				AfterCollapse(this, e);
-		}
-		
-		protected virtual void OnAfterExpand(TreeViewEventArgs e)
-		{
-			if (AfterExpand != null)
-				AfterExpand(this, e);
-		}
-
-		protected virtual void OnAfterLabelEdit(NodeLabelEditEventArgs e)
-		{
-			if (AfterLabelEdit != null)
-				AfterLabelEdit(this, e);
-		}
-
-		protected virtual void OnAfterSelect(TreeViewEventArgs e)
-		{
-			if (AfterSelect != null)
-				AfterSelect(this, e);
-		}
-
-		protected internal virtual void OnBeforeCheck(TreeViewCancelEventArgs e)
-		{
-			if (BeforeCheck != null)
-				BeforeCheck(this, e);
-		}
-
-		protected internal virtual void OnBeforeCollapse(TreeViewCancelEventArgs e)
-		{
-			if (BeforeCollapse != null)
-				BeforeCollapse(this, e);
-		}
-
-		protected virtual void OnBeforeExpand(TreeViewCancelEventArgs e)
-		{
-			if (BeforeExpand != null)
-				BeforeExpand(this, e);
-		}
-
-		protected virtual void OnBeforeLabelEdit(NodeLabelEditEventArgs e)
-		{
-			if (BeforeLabelEdit != null)
-				BeforeLabelEdit(this, e);
-		}
-
-		protected virtual void OnBeforeSelect(TreeViewCancelEventArgs e)
-		{
-			if (BeforeSelect != null)
-				BeforeSelect(this, e);
-		}
-
-		protected virtual void OnItemDrag(ItemDragEventArgs e)
-		{
-			if (ItemDrag != null)
-				ItemDrag(this, e);
-		}
-
-		public override string ToString()
-		{
-			string s = base.ToString();
-			if (Nodes != null)
-			{
-				s = s + ", Nodes.Count: " + Nodes.Count;
-				if (Nodes.Count > 0)
-					s = s + ", Nodes[0]: " + Nodes[0].ToString();
-			}
-			return s; 
-
+			updating++;
 		}
 
 		public BorderStyle BorderStyle 
@@ -244,7 +272,6 @@ namespace System.Windows.Forms
 			set
 			{
 				BorderStyleInternal = value;
-				ResetView();
 			}
 		}
 		public bool CheckBoxes
@@ -258,8 +285,26 @@ namespace System.Windows.Forms
 				if (checkBoxes != value)
 				{
 					checkBoxes = value;
-					ResetView();
+					Invalidate();
 				}
+			}
+		}
+
+		public void CollapseAll()
+		{
+			root.Collapse();
+		}
+
+		protected override void CreateHandle()
+		{
+			base.CreateHandle ();
+		}
+
+		protected override CreateParams CreateParams
+		{
+			get
+			{
+				return base.CreateParams;
 			}
 		}
 
@@ -271,17 +316,324 @@ namespace System.Windows.Forms
 			}
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose (disposing);
+		}
+
+		// Render the treeview starting from startingLine
+		internal void Draw(Graphics g, TreeNode startNode)
+		{
+			
+			if (updating > 0)
+				return;
+
+			Rectangle clientRectangle = ClientRectangle;
+			int drawableHeight = clientRectangle.Height;
+			int drawableWidth = clientRectangle.Width - xOffset;
+
+			// We count the visible rows to see if we need the v scrollbar but we wait before deciding if we need the h scroll bar.
+			bool needsHScrollBar = false;
+			bool needsVScrollBar = GetNeedVScrollBar() && scrollable;
+			bool createNewVScrollBar = false;
+			bool createNewHScrollBar = false;
+
+			if (needsVScrollBar)
+			{
+				// Don't allow drawing on the area that is going to be the scroll bar.
+				// Create the scroll bar so we can get its width.
+				if (vScrollBar == null)
+				{
+					vScrollBar = new VScrollBar();
+					createNewVScrollBar = true;
+				}
+				drawableWidth -= vScrollBar.Width;
+				Rectangle rect = new Rectangle(drawableWidth + xOffset, 0, vScrollBar.Width, clientRectangle.Height);
+				g.ExcludeClip(rect);
+			}
+			else
+			{
+				// Check to see if the top node is not the first node and we have room for the whole tree.
+				// If so, abandon the draw and redraw the whole tree from the top.
+				if (topNode != null && topNode != this.nodes[0])
+				{
+					topNode = null;
+					Invalidate();
+					return;
+				}
+				if (vScrollBar != null)
+				{
+					// We don't need the scroll bar anymore.
+					Controls.Remove(vScrollBar);
+					vScrollBar.Dispose();
+					vScrollBar = null;
+				}
+			}
+			// Is the node being processed on the screen.
+			bool drawing = false;
+			// Start counting from the top.
+			int nodeFromTop = -1;
+			// Number of nodes.
+			int nodeCount = 0;
+			// The maximum width of a displayed node.
+			int maxWidth = 0;
+			StringFormat format = new StringFormat(StringFormatFlags.NoWrap);
+			if (topNode == null)
+			{
+				topNode = this.nodes[0];
+			}
+			NodeEnumerator nodes = new NodeEnumerator(this.nodes);
+			using (Pen markerPen = new Pen(SystemColors.ControlLight))
+			{
+				markerPen.DashStyle = DashStyle.Dot;
+				while (nodes.MoveNext())
+				{
+					// If we havnt started drawing yet, then see if we need to and if so clear the background.
+					if (!drawing)
+					{
+						if (nodes.currentNode  == topNode)
+						{
+							// We are at the top node.
+							nodeFromTop = 0;
+						}
+					
+						// Check to see if we must start drawing. Clear the background.
+						if (nodeFromTop >= 0 && (nodes.currentNode == startNode || startNode == root))
+						{
+							// Clear background.
+							int y = ItemHeight * nodeFromTop;
+							using (SolidBrush b = new SolidBrush(BackColor))
+							{
+								g.FillRectangle(b, 0, y, ClientSize.Width, ClientSize.Height - y);
+							}
+							drawing = true;
+						}
+					}
+
+					// Draw the node if we still have space.
+					if (drawing && drawableHeight > 0)
+					{
+						Rectangle bounds;
+						// Draw the lines and the expander.
+						DrawExpanderMarker(g, markerPen, nodes.currentNode, nodeFromTop, nodes.level);
+						// Draw checkboxes.
+						if (checkBoxes)
+						{
+							bounds = GetCheckBounds(nodeFromTop, nodes.level);
+							ButtonState state;
+							if (nodes.currentNode.isChecked)
+							{
+								state = ButtonState.Checked;
+							}
+							else
+							{
+								state = ButtonState.Normal;
+							}
+							ControlPaint.DrawCheckBox(g, bounds, state);
+						}
+						// Draw the node image.
+						if (imageList != null)
+						{
+							bounds = GetImageBounds(nodeFromTop, nodes.level);
+							int index = GetDisplayIndex(nodes.currentNode );
+						
+							if (index < imageList.Images.Count)
+							{
+								Image image = imageList.Images[index];
+								g.DrawImage(image, bounds.X, bounds.Y);
+							
+							}
+						}
+						bounds = GetTextBounds(g, nodes.currentNode, nodeFromTop, nodes.level);
+						// Is the text too wide to fit in - if so we need an h scroll bar.
+						if (bounds.Right > drawableWidth && !needsHScrollBar && scrollable)
+						{
+							needsHScrollBar = true;
+							if (hScrollBar == null)
+							{
+								hScrollBar = new HScrollBar();
+								createNewHScrollBar = true;
+							}
+							drawableHeight -= hScrollBar.Height;
+							// Don't allow drawing on the area that is going to be the scroll bar.
+							Rectangle rect = new Rectangle(0, clientRectangle.Height - hScrollBar.Height, clientRectangle.Width, hScrollBar.Height);
+							g.ExcludeClip(rect);
+						}
+						if (bounds.Right > maxWidth)
+						{
+							maxWidth = bounds.Right;
+						}
+						// The height may be too small now.
+						if (drawableHeight > 0)
+						{
+							// Draw the node text.
+							if (nodes.currentNode  == selectedNode && (Focused || !hideSelection))
+							{
+								// TODO: FullRowSelect
+								g.FillRectangle(SystemBrushes.Highlight, bounds);
+								g.DrawString(nodes.currentNode.Text, Font, SystemBrushes.HighlightText, bounds, format);
+								// Draw the focus rectangle.
+								Rectangle r = new Rectangle(bounds.X - 1, bounds.Y - 1, bounds.Width + 1, bounds.Height + 1);
+								ControlPaint.DrawFocusRectangle(g, r);
+							}
+							else
+							{
+								g.DrawString(nodes.currentNode .Text, Font, SystemBrushes.ControlText, bounds,format);
+							}
+						}
+						drawableHeight -= ItemHeight;
+					}
+
+					if (nodeFromTop >= 0)
+					{
+						nodeFromTop++;
+					}
+					nodeCount++;
+				}
+			}
+			// If we need a v scroll bar, then set it up.
+			if (needsVScrollBar)
+			{
+				vScrollBar.Maximum = nodeCount;
+				vScrollBar.LargeChange = VisibleCount;
+				// Set the position of the V scroll bar but leave a hole if they are both visible.
+				int height = clientRectangle.Height;
+				if (needsHScrollBar)
+				{
+					height -= hScrollBar.Height;
+				}
+				vScrollBar.SetBounds(clientRectangle.Width - vScrollBar.Width, 0, vScrollBar.Width, height);
+				
+				if (createNewVScrollBar)
+				{
+					Controls.Add(vScrollBar);
+					vScrollBar.ValueChanged+=new EventHandler(vScrollBar_ValueChanged);
+				}
+			}
+			if (needsHScrollBar)
+			{
+				int width = clientRectangle.Width;
+				if (needsVScrollBar)
+				{
+					width -= vScrollBar.Width;
+				}
+				hScrollBar.Maximum = (maxWidth + xOffset) / hScrollBarPixelsScrolled;
+				hScrollBar.LargeChange = width / hScrollBarPixelsScrolled;
+				// Set the position of the H scroll bar but leave a hole if they are both visible.
+				hScrollBar.SetBounds(0, clientRectangle.Height - hScrollBar.Height, width, hScrollBar.Height);
+				// Force a redraw because if none of the hScrollBar values above change, we still want to make sure it is redrawn.
+				hScrollBar.Invalidate();
+				
+				if (createNewHScrollBar)
+				{
+					hScrollBar.ValueChanged +=new EventHandler(hScrollBar_ValueChanged);
+					Controls.Add(hScrollBar);
+				}
+
+				// Draw the gap between the two if needed.
+				if (needsVScrollBar)
+				{
+					Rectangle gap = new Rectangle(hScrollBar.Right, hScrollBar.Top, vScrollBar.Width, hScrollBar.Height);
+					g.FillRectangle(SystemBrushes.Control, gap);
+				}
+			}
+			else if (hScrollBar != null)
+			{
+				// We dont need the scroll bar.
+				Controls.Remove(hScrollBar);
+				hScrollBar.Dispose();
+				hScrollBar = null;
+			}
+		}
+
+		// Draw from startNode downwards
+		internal void Draw(TreeNode startNode)
+		{
+			if (!Created || !Visible)
+				return;
+			using (Graphics g = CreateGraphics())
+			{
+				Draw(g, startNode);
+			}
+		}
+
+		private void DrawExpanderMarker(Graphics g, Pen markerPen, TreeNode node, int nodeFromTop, int level)
+		{
+			Rectangle bounds = GetExpanderBounds(nodeFromTop, level);
+			int midX = bounds.X + 4;
+			int midY = bounds.Y + bounds.Height / 2;
+			int lineRightStart = midX;
+			int lineTopEnd = midY;
+			if (node.Nodes.Count > 0 && showPlusMinus)
+			{
+				GraphicsPath path = new GraphicsPath();
+				path.AddRectangle(new Rectangle(midX - 4, midY - 4, 8, 8));
+				path.AddLine(midX - 2, midY, midX + 2, midY);
+				if (!node.IsExpanded)
+					path.AddLine(midX, midY - 2, midX, midY + 2);
+				g.DrawPath(SystemPens.ControlText, path);
+				lineRightStart += 6;
+				lineTopEnd -= 6;
+			}
+			if (!showLines)
+			{
+				return;
+			}
+			// Draw the right lead line
+			if (bounds.Right > lineRightStart)
+				g.DrawLine(markerPen, lineRightStart, midY, bounds.Right, midY);
+			// Draw the top lead line
+			TreeNode lineNode = node.PrevNode;
+			if (lineNode == null)
+				lineNode = node.Parent;
+			if (lineNode != null)
+				g.DrawLine(markerPen, midX, lineNode.markerLineY, midX, lineTopEnd);
+			if (node.Nodes.Count > 0)
+				node.markerLineY = midY + 6;
+			else
+				node.markerLineY = midY;
+		}
+
+		internal void EndEdit(bool cancel)
+		{
+			if (!cancel)
+			{
+				editNode.Text = textBox.Text;
+			}
+			textBox.Visible = false;
+			editNode = null;
+		}
+
+		public void EndUpdate()
+		{
+			if (updating < 2)
+			{
+				updating = 0;
+				Invalidate();
+			}
+			else
+			{
+				updating--;
+			}
+		}
+
+		public void ExpandAll()
+		{
+			root.ExpandAll();
+		}
+
 		public override Color ForeColor
 		{
 			get
 			{
-				// TODO
 				return base.ForeColor;
 			}
 			set
 			{
+				base.ForeColor = value;
 			}
 		}
+
 		public bool FullRowSelect
 		{
 			get
@@ -293,374 +645,14 @@ namespace System.Windows.Forms
 				if (fullRowSelect != value)
 				{
 					fullRowSelect = value;
-					ResetView();
+					Invalidate();
 				}
 			}
 		}
-		public bool HideSelection
+		protected OwnerDrawPropertyBag GetItemRenderStyles(TreeNode node, int state)
 		{
-			get
-			{
-				return hideSelection;
-			}
-			set
-			{
-				if (hideSelection != value)
-				{
-					hideSelection = value;
-					ResetView();
-				}
-			}
-		}
-		public bool HotTracking
-		{
-			get
-			{
-				return hotTracking;
-			}
-			set
-			{
-				if (value != hotTracking)
-				{
-					hotTracking = value;
-				}
-			}
-		}
-		public int ImageIndex
-		{
-			get
-			{
-				return imageIndex;
-			}
-			set
-			{
-				if (value != imageIndex)
-				{
-					imageIndex = value;
-				}
-			}
-		}
-		public ImageList ImageList
-		{
-			get
-			{
-				return imageList;
-			}
-			set
-			{
-				if (value != imageList)
-				{
-					imageList = value;
-					ResetView();
-				}
-			}
-		}
-
-		public int Indent
-		{
-			get
-			{
-				return indent;
-			}
-			set
-			{
-				if (value != indent)
-				{
-					indent = value;
-					ResetView();
-				}
-			}
-		}
-
-		public int ItemHeight
-		{
-			get
-			{
-				if (itemHeight == -1)
-					return FontHeight + 3;
-				return itemHeight;
-			}
-			set
-			{
-				if (value != itemHeight)
-				{
-					itemHeight = value;
-					ResetView();
-				}
-			}
-		}
-
-		public bool LabelEdit
-		{
-			get
-			{
-				return labelEdit;
-			}
-			set
-			{
-				if (value != labelEdit)
-				{
-					labelEdit = value;
-				}
-			}
-		}
-		public TreeNodeCollection Nodes
-		{
-			get
-			{
-				return nodes;
-			}
-		}
-		public string PathSeparator
-		{
-			get
-			{
-				return pathSeparator;
-			}
-			set
-			{
-				pathSeparator = value;
-			}
-		}
-		public bool Scrollable
-		{
-			get
-			{
-				return scrollable;
-			}
-			set
-			{
-				if (value != scrollable)
-				{
-					scrollable = value;
-					ResetView();
-				}
-			}
-		}
-		public int SelectedImageIndex
-		{
-			get
-			{
-				return selectedImageIndex;
-			}
-			set
-			{
-				if (selectedImageIndex != value)
-				{
-					selectedImageIndex = value;
-					ResetView();
-				}
-			}
-		}
-		public TreeNode SelectedNode
-		{
-			get
-			{
-				return selectedNode;
-			}
-			set
-			{
-				if (value != selectedNode)
-				{
-					// Redraw the old item
-					if (selectedNode != null)
-					{
-						TreeNode oldNode = selectedNode;
-						selectedNode = value;
-						DrawLine(oldNode);
-					}
-					else
-						selectedNode = value;
-					DrawLine(selectedNode);
-				}
-			}
-		}
-		public bool ShowLines
-		{
-			get
-			{
-				return showLines;
-			}
-			set
-			{
-				if (value != showLines)
-				{
-					showLines = value;
-					ResetView();
-				}
-			}
-		}
-		public bool ShowPlusMinus
-		{
-			get
-			{
-				return showPlusMinus;
-			}
-			set
-			{
-				if (value != showPlusMinus)
-				{
-					showPlusMinus = value;
-					ResetView();
-				}
-			}
-		}
-		public bool ShowRootLines
-		{
-			get
-			{
-				return showRootLines;
-			}
-			set
-			{
-				if (value != showRootLines)
-				{
-					showRootLines = value;
-					ResetView();
-				}
-			}
-		}
-		public bool Sorted
-		{
-			get
-			{
-				return sorted;
-			}
-			set
-			{
-				if (value != sorted)
-				{
-					sorted = value;
-					// TODO could be done better!
-					TreeNode[] nodes = new TreeNode[Nodes.Count];
-					Nodes.CopyTo(nodes, 0);
-					Nodes.Clear();
-					Nodes.AddRange(nodes);
-				}
-			}
-		}
-		public TreeNode TopNode 
-		{
-			get
-			{
-				return topNode;
-			}
-		}
-		public int VisibleCount
-		{
-			get
-			{
-				int count = 0;
-				IEnumerator nodes = new NodeEnumerator(Nodes);
-				while (nodes.MoveNext())
-					if ((nodes.Current as TreeNode).bounds != Rectangle.Empty)
-						count++;
-				return count;
-			}
-		}
-
-		protected override void OnVisibleChanged(EventArgs e)
-		{
-			base.OnVisibleChanged (e);
-		}
-
-		protected override void OnPaint(PaintEventArgs e)
-		{
-			// Clear background
-			e.Graphics.FillRectangle(SystemBrushes.Window, ClientRectangle);
-			Draw(e.Graphics, root);
-			base.OnPaint (e);
-		}
-
-		// Offset of first node from client area
-		private Point Offset
-		{
-			get
-			{
-				return new Point(2, 2);
-			}
-		}
-
-
-		// Render the treeview starting from startingLine
-		internal void Draw(Graphics g, TreeNode startNode)
-		{
-			if (layoutSuspended)
-				return;
-			int x = Offset.X;
-			int y = Offset.Y;
-			int line = 0;
-			int prevLevel = 0;
-			// Are we drawing this node and subsequent nodes
-			bool drawing = false;
-			// If the topNode is not the first node, then some nodes are offscreen
-			bool inView = false;
-			StringFormat format = new StringFormat(StringFormatFlags.NoWrap);
-			NodeEnumerator nodes = new NodeEnumerator(Nodes);
-			while (nodes.MoveNext())
-			{
-				TreeNode node = nodes.Current as TreeNode;
-				if (topNode == null)
-					topNode = node;
-				if (!drawing)
-				{
-					if (node == startNode || startNode == root)
-					{
-						// Clear background
-						g.FillRectangle(SystemBrushes.Window, 0, y, ClientSize.Width, ClientSize.Height - y);
-						drawing = true;
-					}
-				}
-
-				if (node == topNode)
-					inView = true;
-
-				x += (nodes.level - prevLevel) * indent;
-				
-				if (drawing)
-				{
-					node.hierarchyMarkerBounds = new Rectangle(x, y , indent - 6, ItemHeight);
-					DrawHierarchyMarker(g, node);
-					int imageWidth = 0;
-					node.bounds.Location = new Point(x + indent, y + 1);
-					if (imageList != null)
-					{
-						int index = GetDisplayIndex(node);
-						
-						if (index < imageList.Images.Count)
-						{
-							Image image = imageList.Images[index];
-							g.DrawImage(image, node.bounds.X + imageWidth, node.bounds.Y);
-							// Padding and image size.
-							imageWidth += image.Width + imagePad;
-						}
-					}
-					Size textSize = g.MeasureString(node.Text, Font).ToSize();
-					node.bounds.Size = new Size(textSize.Width +imageWidth, textSize.Height);
-					Rectangle textBounds = new Rectangle(node.bounds.X + imageWidth, node.bounds.Y, textSize.Width, textSize.Height);
-					if (node == selectedNode && Focused)
-					{
-						g.FillRectangle(SystemBrushes.Highlight,textBounds);
-						g.DrawString(node.Text, Font, SystemBrushes.HighlightText, textBounds,format);
-						Rectangle r = textBounds;
-						r = new Rectangle(r.X - 1, r.Y - 1, r.Width + 1, r.Height + 1);
-						ControlPaint.DrawFocusRectangle(g, r);
-					}
-					else
-						g.DrawString(node.Text, Font, SystemBrushes.ControlText, textBounds,format);
-				}
-				if (!inView)
-				{
-					node.hierarchyMarkerBounds = Rectangle.Empty;
-					node.bounds = Rectangle.Empty;
-				}
-
-				prevLevel = nodes.level;
-				if (inView)
-					y += ItemHeight;
-				line++;
-			}
-			// Set node.bounds = Rectangle.Empty for all non displayed nodes
+			// TODO: Property Bag
+			return null;
 		}
 
 		// Get the node image index to display depending on what is set.
@@ -686,163 +678,971 @@ namespace System.Windows.Forms
 			return index;
 		}
 
-		protected override void OnMouseDown(MouseEventArgs e)
+		// Returns true if we dont have vertical space to draw all the items.
+		private bool GetNeedVScrollBar()
 		{
-			base.OnMouseDown (e);
-			ProcessMouse(e.X, e.Y);
+			int fullNodes = VisibleCount;
+			NodeEnumerator nodes = new NodeEnumerator(Nodes);
+			while (nodes.MoveNext())
+			{
+				if (--fullNodes == 0)
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
-		protected override void OnLostFocus(EventArgs e)
+		public TreeNode GetNodeAt(int x, int y)
 		{
-			base.OnLostFocus (e);
-			if (selectedNode != null)
-				DrawLine(selectedNode);
+			int height = ItemHeight;
+			int nodeFromTop = -1;
+			TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(this.nodes);
+			while (nodes.MoveNext())
+			{
+				if (nodes.currentNode == topNode)
+				{
+					// We are now at the top of the control.
+					nodeFromTop = 1;
+				}
+				if (nodeFromTop > -1)
+				{
+					if (y < height * nodeFromTop)
+					{
+						return nodes.currentNode;
+					}
+					nodeFromTop++;
+				}
+			}
+			return null;
+		}
+
+		public TreeNode GetNodeAt(Point pt)
+		{
+			return GetNodeAt(pt.X, pt.Y);
+		}
+
+		// Return the bounds of a check given the node from the top and an x level.
+		internal Rectangle GetCheckBounds(int nodeFromTop, int level)
+		{
+			if (!checkBoxes)
+				return Rectangle.Empty;
+			int height = ItemHeight;
+			int y = height * nodeFromTop + (height - checkSize) / 2;
+			int x = (level + 1) * indent - xOffset + xPadding;
+			return new Rectangle(x, y, checkSize, checkSize);
+		}
+
+		// Return the bounds of an expander given the node from the top and an x level.
+		internal Rectangle GetExpanderBounds(int nodeFromTop, int level)
+		{
+			int height = ItemHeight;
+			int y = height * nodeFromTop;
+			int x = level* indent - xOffset + xPadding;
+			return new Rectangle(x, y, indent, height);
+		}
+
+		// Return the bounds of an image given the node from the top and an x level.
+		internal Rectangle GetImageBounds(int nodeFromTop, int level)
+		{
+			int height = ItemHeight;
+			int y = height * nodeFromTop + (height - imageList.ImageSize.Height) / 2;
+			int x = (level + 1) * indent - xOffset + xPadding;
+			// Add on the width of the checkBoxes if applicable.
+			if (checkBoxes)
+			{
+				x += checkSize;
+			}
+			return new Rectangle(x, y, imageList.ImageSize.Width + imagePad, imageList.ImageSize.Height);
+		}
+
+		public Rectangle GetNodeBounds(TreeNode node)
+		{
+			if (node.parent != null)
+			{
+				int nodeFromTop = -1;
+				TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(this.nodes);
+				while (nodes.MoveNext())
+				{
+					if (nodes.currentNode == topNode)
+					{
+						// We are at the top of the control.
+						nodeFromTop = 0;
+					}
+					if (nodes.currentNode == node)
+					{
+						using(Graphics g = CreateGraphics())
+						{
+							return GetTextBounds(g, node, nodeFromTop, nodes.level);
+						}
+					}
+					if (nodeFromTop >= 0)
+					{
+						nodeFromTop++;
+					}
+				}
+			}
+			return Rectangle.Empty;
+		}
+
+		public int GetNodeCount(bool includeSubTrees)
+		{
+			return root.GetNodeCount(includeSubTrees);
+		}
+
+		// Get the bounds of a node. Supply a Graphics to measure the text, the node being measured, the number of the node being measured in the list of those being shown, the number of the node that is the first to be displayed (topNode) and the level of x indent.
+		internal Rectangle GetTextBounds(Graphics g, TreeNode node, int nodeFromTop, int level)
+		{
+			int height = ItemHeight;
+			int y = height * nodeFromTop;
+			// Calculate the basic offset from the level and the indent.
+			int x = (level + 1) * indent - xOffset;
+			// Add on the width of the image if applicable.
+			if (imageList != null)
+			{
+				x += imageList.ImageSize.Width + imagePad;
+			}
+			// Add on the width of the checkBoxes if applicable.
+			if (checkBoxes)
+			{
+				x += checkSize;
+			}
+
+			Font font;
+			if (node.nodeFont == null)
+			{
+				font = Font;
+			}
+			else
+			{
+				font = node.nodeFont;
+			}
+
+			int width = (int)g.MeasureString(node.text, font).Width;
+			if (width < 5)
+				width = 5;
+								
+			return new Rectangle(x, y, width, height);
+		}
+
+		public bool HideSelection
+		{
+			get
+			{
+				return hideSelection;
+			}
+			set
+			{
+				if (hideSelection != value)
+				{
+					hideSelection = value;
+					Invalidate();
+				}
+			}
+		}
+
+		public bool HotTracking
+		{
+			get
+			{
+				return hotTracking;
+			}
+			set
+			{
+				if (value != hotTracking)
+				{
+					hotTracking = value;
+				}
+			}
+		}
+
+		private void hScrollBar_ValueChanged(object sender, EventArgs e)
+		{
+			xOffset = hScrollBar.Value * hScrollBarPixelsScrolled;
+			Invalidate();
+		}
+
+		public int ImageIndex
+		{
+			get
+			{
+				return imageIndex;
+			}
+			set
+			{
+				if (value != imageIndex)
+				{
+					imageIndex = value;
+					Invalidate();
+				}
+			}
+		}
+		public ImageList ImageList
+		{
+			get
+			{
+				return imageList;
+			}
+			set
+			{
+				if (value != imageList)
+				{
+					imageList = value;
+					Invalidate();
+				}
+			}
+		}
+
+		public int Indent
+		{
+			get
+			{
+				return indent;
+			}
+			set
+			{
+				if (value != indent)
+				{
+					indent = value;
+					Invalidate();
+				}
+			}
+		}
+
+		// Invalidate from startNode down.
+		internal void InvalidateDown(TreeNode startNode)
+		{
+			if (this.nodes == null)
+			{
+				return;
+			}
+			// Find the position of startNode relative to the top node.
+			int nodeFromTop = -1;
+			TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(this.nodes);
+			while (nodes.MoveNext())
+			{
+				if (nodes.currentNode == topNode)
+				{
+					// We are at the top of the control.
+					nodeFromTop = 0;
+				}
+				if (nodes.currentNode == startNode)
+				{
+					break;
+				}
+				if (nodeFromTop >= 0)
+				{
+					nodeFromTop++;
+				}
+			}
+			// Calculate the y position of startNode.
+			int y = nodeFromTop * ItemHeight;
+			// Invalidate from this position down.
+			// Start one pixel higher to cover the focus rectangle.
+			Invalidate(new Rectangle(0, y - 1, ClientRectangle.Width, ClientRectangle.Height - y + 1));
+		}
+
+		protected override bool IsInputKey(Keys keyData)
+		{
+			if (editNode != null && (keyData & Keys.Alt) == 0)
+			{
+				Keys key = keyData & Keys.KeyCode;
+				if (key == Keys.Return || key == Keys.Escape || key == Keys.Prior || key == Keys.Next || key == Keys.Home || key == Keys.End)
+					return true;
+			}
+			return base.IsInputKey(keyData);
+		}
+
+		public event ItemDragEventHandler ItemDrag
+		{
+			add
+			{
+				AddHandler(EventId.ItemDrag, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.ItemDrag, value);
+			}
+		}
+
+		public int ItemHeight
+		{
+			get
+			{
+				if (itemHeight == -1)
+					return FontHeight + 3;
+				return itemHeight;
+			}
+			set
+			{
+				if (value != itemHeight)
+				{
+					itemHeight = value;
+					Invalidate();
+				}
+			}
+		}
+
+		public bool LabelEdit
+		{
+			get
+			{
+				return labelEdit;
+			}
+			set
+			{
+				if (value != labelEdit)
+				{
+					labelEdit = value;
+				}
+			}
+		}
+
+		// This handles the timeout on the click timer and begins an edit.
+		private void mouseClickTimer_Tick(object sender, EventArgs e)
+		{
+			mouseClickTimer.Stop();
+			if (nodeToEdit != null)
+			{
+				nodeToEdit.BeginEdit();
+				nodeToEdit = null;
+			}
+		}
+		
+		public TreeNodeCollection Nodes
+		{
+			get
+			{
+				return nodes;
+			}
+		}
+
+		protected internal virtual void OnAfterCheck(TreeViewEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.AfterCheck) as EventHandler;
+			if (handler != null)
+			{
+				handler(this,e);
+			}
+		}
+
+		protected internal virtual void OnAfterCollapse(TreeViewEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.AfterCollapse) as EventHandler;
+			if (handler != null)
+			{
+				handler(this,e);
+			}
+		}
+		
+		protected virtual void OnAfterExpand(TreeViewEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.AfterExpand) as EventHandler;
+			if (handler != null)
+			{
+				handler(this,e);
+			}
+		}
+
+		protected virtual void OnAfterLabelEdit(NodeLabelEditEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.AfterLabelEdit) as EventHandler;
+			if (handler != null)
+			{
+				handler(this,e);
+			}
+		}
+
+		protected virtual void OnAfterSelect(TreeViewEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.AfterSelect) as EventHandler;
+			if (handler != null)
+			{
+				handler(this,e);
+			}
+		}
+
+		protected internal virtual void OnBeforeCheck(TreeViewCancelEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.BeforeCheck) as EventHandler;
+			if (handler != null)
+			{
+				handler(this,e);
+			}
+		}
+
+		protected internal virtual void OnBeforeCollapse(TreeViewCancelEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.BeforeCollapse) as EventHandler;
+			if (handler != null)
+			{
+				handler(this,e);
+			}
+		}
+
+		protected virtual void OnBeforeExpand(TreeViewCancelEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.BeforeExpand) as EventHandler;
+			if (handler != null)
+			{
+				handler(this,e);
+			}
+		}
+
+		protected virtual void OnBeforeLabelEdit(NodeLabelEditEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.BeforeLabelEdit) as EventHandler;
+			if (handler != null)
+			{
+				handler(this,e);
+			}
+		}
+
+		protected virtual void OnBeforeSelect(TreeViewCancelEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.BeforeSelect) as EventHandler;
+			if (handler != null)
+			{
+				handler(this,e);
+			}
 		}
 
 		protected override void OnGotFocus(EventArgs e)
 		{
 			base.OnGotFocus (e);
 			if (selectedNode != null)
-				DrawLine(selectedNode);
+				selectedNode.Invalidate();
 		}
 
-
-		internal void ProcessMouse(int x, int y)
+		protected override void OnHandleCreated(EventArgs e)
 		{
-			IEnumerator nodes = new NodeEnumerator(Nodes);
-			while (nodes.MoveNext())
+			base.OnHandleCreated (e);
+		}
+
+		protected override void OnHandleDestroyed(EventArgs e)
+		{
+			base.OnHandleDestroyed (e);
+		}
+
+		protected virtual void OnItemDrag(ItemDragEventArgs e)
+		{
+			EventHandler handler = GetHandler(EventId.ItemDrag) as EventHandler;
+			if (handler != null)
 			{
-				TreeNode node = nodes.Current as TreeNode;
-				if (node.hierarchyMarkerBounds.Contains(x, y))
-					node.Toggle();
-				if (node.bounds.Contains(x, y))
+				handler(this,e);
+			}
+		}
+
+		protected override void OnKeyDown(KeyEventArgs e)
+		{
+			base.OnKeyDown(e);
+			if (!e.Handled && checkBoxes && selectedNode != null && (e.KeyData & Keys.KeyCode) == Keys.Space)
+			{
+				TreeViewCancelEventArgs args = new TreeViewCancelEventArgs(selectedNode, false, TreeViewAction.ByKeyboard);
+				this.OnBeforeCheck(args);
+				if (!args.Cancel)
 				{
-					if (SelectedNode == nodes.Current && labelEdit)
-						node.BeginEdit();
-					else
-						SelectedNode = node;
+					selectedNode.isChecked = !selectedNode.isChecked;
+					this.OnAfterCheck(new TreeViewEventArgs(selectedNode, TreeViewAction.ByKeyboard));
+				}
+				e.Handled = true;
+			}
+		}
+
+		protected override void OnKeyPress(KeyPressEventArgs e)
+		{
+			base.OnKeyPress(e);
+			// Swallow the space
+			if (e.KeyChar == ' ')
+			{
+				e.Handled = true;
+			}
+		}
+
+		protected override void OnKeyUp(KeyEventArgs e)
+		{
+			base.OnKeyUp (e);
+			// Swallow the space
+			if ((e.KeyData & Keys.KeyCode) == Keys.Space)
+			{
+				e.Handled = true;
+			}
+		}
+
+		// Non Microsoft member.
+		protected override void OnLostFocus(EventArgs e)
+		{
+			base.OnLostFocus (e);
+			if (selectedNode != null)
+			{
+				selectedNode.Invalidate();
+			}
+		}
+
+		// Non Microsoft member.
+		protected override void OnMouseDown(MouseEventArgs e)
+		{
+			if (e.Button == MouseButtons.Left)
+			{
+				int nodeFromTop = -1;
+				// Iterate through all the nodes, looking for the bounds that match.
+				TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(this.nodes);
+				while (nodes.MoveNext())
+				{
+					if (nodes.currentNode == topNode)
+					{
+						// We are now at the top of the control.
+						nodeFromTop = 0;
+					}
+					if (nodeFromTop > -1)
+					{
+						if (GetExpanderBounds(nodeFromTop, nodes.level).Contains(e.X, e.Y))
+						{
+							nodes.currentNode.Toggle();
+							break;
+						}
+						else if (GetCheckBounds(nodeFromTop, nodes.level).Contains(e.X, e.Y))
+						{
+							TreeViewCancelEventArgs args = new TreeViewCancelEventArgs(nodes.currentNode, false, TreeViewAction.ByMouse);
+							OnBeforeCheck(args);
+							if (!args.Cancel)
+							{
+								nodes.currentNode.isChecked = !nodes.currentNode.isChecked;
+								OnAfterCheck(new TreeViewEventArgs(nodes.currentNode, TreeViewAction.ByMouse));
+							}
+
+							Invalidate(GetCheckBounds(nodeFromTop, nodes.level));
+							break;
+			
+						}
+						nodeFromTop++;
+					}
+				}
+			}
+			else
+			{
+				ProcessClick(e.X, e.Y, true);
+			}
+			base.OnMouseDown (e);
+		}
+
+		// Non Microsoft member.
+		protected override void OnMouseMove(MouseEventArgs e)
+		{
+			//TODO: Hot tracking.
+			base.OnMouseMove (e);
+		}
+
+		// Non Microsoft member.
+		protected override void OnMouseLeave(EventArgs e)
+		{
+			//TODO: Hot tracking.
+			base.OnMouseLeave (e);
+		}
+
+		// Non Microsoft member.
+		protected override void OnMouseUp(MouseEventArgs e)
+		{
+			ProcessClick(e.X, e.Y, false);
+
+			base.OnMouseUp (e);
+		}
+
+		void ProcessClick(int x, int y, bool rightMouse)
+		{
+			int nodeFromTop = -1;
+			int height = ItemHeight;
+			using(Graphics g = CreateGraphics())
+			{
+				// Iterate through all the nodes, looking for the bounds that match.
+				TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(this.nodes);
+				while (nodes.MoveNext())
+				{
+					if (nodes.currentNode == topNode)
+					{
+						// We are now at the top of the control.
+						nodeFromTop = 0;
+					}
+					if (nodeFromTop > -1)
+					{
+						// Check if the y matches this node.
+						if (y < height * (nodeFromTop + 1))
+						{
+							bool allowEdit = false;
+							bool allowSelect = true;
+							// Clicking the image can be used to select.
+							if (!GetImageBounds(nodeFromTop, nodes.level).Contains(x, y))
+							{
+								// Clicking the text can be used to edit and select.
+								if (GetTextBounds(g, nodes.currentNode, nodeFromTop, nodes.level).Contains(x, y))
+								{
+									allowEdit = true;
+								}
+								else
+								{
+									allowSelect = false;
+								}
+							}
+							if (mouseClickTimer != null && mouseClickTimer.Enabled && (allowEdit || allowSelect))
+							{
+								mouseClickTimer.Stop();
+								nodes.currentNode.Toggle();
+								return;
+							}
+							if (allowSelect)
+							{
+								if (SelectedNode == nodes.Current)
+								{
+									if (labelEdit && allowEdit)
+									{
+										nodeToEdit = nodes.currentNode;
+									}
+								}
+								else
+								{
+									// Do the events.
+									TreeViewCancelEventArgs eventArgs = new TreeViewCancelEventArgs(nodes.currentNode, false, TreeViewAction.ByMouse);
+									OnBeforeSelect(eventArgs);
+									if (!eventArgs.Cancel)
+									{
+										SelectedNode = nodes.currentNode;
+										OnAfterSelect(new TreeViewEventArgs(nodes.currentNode));
+									}
+								}
+								if (mouseClickTimer == null)
+								{
+									mouseClickTimer = new Timer();
+									mouseClickTimer.Tick +=new EventHandler(mouseClickTimer_Tick);
+									mouseClickTimer.Interval = mouseEditTimeout;
+								}
+								mouseClickTimer.Start();
+								break;
+							}
+						}
+						nodeFromTop++;
+					}
 				}
 			}
 		}
 
-		internal void BeginEdit(TreeNode node)
+		// Non Microsoft member.
+		protected override void OnPaint(PaintEventArgs e)
 		{
-			editNode = node;
-			if (textBox == null)
+			Draw(e.Graphics, root);
+		}
+
+		public new event PaintEventHandler Paint
+		{
+			add
 			{
-				textBox = new TextBox();
-				textBox.BorderStyle = BorderStyle.FixedSingle;
-				textBox.Visible = false;
-				Controls.Add(textBox);
-				textBox.Leave +=new EventHandler(textBox_Leave);
+				base.Paint += value;
 			}
-			Point location = node.bounds.Location - new Size(2,2);
-			int index = GetDisplayIndex(node);
-			if (index < imageList.Images.Count)
-				location.X += imageList.Images[index].Width + imagePad;
-			textBox.Location = location;
-			textBox.Size = new Size(node.bounds.Width + 14, node.bounds.Height + 4);
-			textBox.Text = editNode.Text;
-			textBox.Visible = true;
-			textBox.Focus();
-			textBox.SelectAll();
-
-		}
-
-		
-		private void textBox_Leave(object sender, EventArgs e)
-		{	
-			EndEdit();
-			textBox.Visible = false;
-		}
-
-		internal void EndEdit()
-		{
-			editNode.Text = textBox.Text;
-			editNode = null;
-		}
-
-		private void DrawHierarchyMarker(Graphics g, TreeNode node)
-		{
-			int midX = node.hierarchyMarkerBounds.X + 4;
-			int midY = node.hierarchyMarkerBounds.Y + node.hierarchyMarkerBounds.Height / 2;
-			int lineRightStart = midX;
-			int lineTopEnd = midY;
-			if (node.Nodes.Count > 0)
+			remove
 			{
-				GraphicsPath path = new GraphicsPath();
-				path.AddRectangle(new Rectangle(midX - 4, midY - 4, 8, 8));
-				path.AddLine(midX - 2, midY, midX + 2, midY);
-				if (!node.IsExpanded)
-					path.AddLine(midX, midY - 2, midX, midY + 2);
-				g.DrawPath(SystemPens.ControlText, path);
-				lineRightStart += 6;
-				lineTopEnd -= 6;
+				base.Paint -= value;
 			}
-			// Draw the right lead line
-			if (node.hierarchyMarkerBounds.Right > lineRightStart)
-				g.DrawLine(MarkerPen, lineRightStart, midY, node.hierarchyMarkerBounds.Right, midY);
-			// Draw the top lead line
-			TreeNode lineNode = node.PrevNode;
-			if (lineNode == null)
-				lineNode = node.Parent;
-			if (lineNode != null)
-				g.DrawLine(MarkerPen, midX, lineNode.markerLineY, midX, lineTopEnd);
-			if (node.Nodes.Count > 0)
-				node.markerLineY = midY + 6;
-			else
-				node.markerLineY = midY;
 		}
 
-		// Cached pen used to draw lead lines for nodes
-		private Pen MarkerPen
+		public string PathSeparator
 		{
 			get
 			{
-				if (markerPen == null)
-				{
-					markerPen = new Pen(SystemColors.ControlLight);
-					markerPen.DashStyle = DashStyle.Dot;
-				}
-				return markerPen;
+				return pathSeparator;
 			}
-		}
-
-		// Draw from startNode downwards
-		internal void Draw(TreeNode startNode)
-		{
-			if (!Created || !Visible)
-				return;
-			using (Graphics g = CreateGraphics())
+			set
 			{
-				Draw(g, startNode);
+				pathSeparator = value;
 			}
 		}
-
-		// Just draw the line, only use if the text, checkbox or icon has changed
-		internal void DrawLine(TreeNode node)
-		{
-			if (!Created || !Visible)
-				return;
-			using (Graphics g = CreateGraphics())
-			{
-				// TODO
-				Draw(g, node);
-			}
-		}
-
+		// Emulate the Microsoft behaviour of resetting the control when they have to recreate the handle.
 		internal void ResetView()
 		{
 			topNode = null;
+			CollapseAll();
 			Draw(root);
 		}
 
-		// Private enumerator class for all expanded nodes.
-		private class NodeEnumerator : IEnumerator
+		public bool Scrollable
+		{
+			get
+			{
+				return scrollable;
+			}
+			set
+			{
+				if (value != scrollable)
+				{
+					scrollable = value;
+				}
+			}
+		}
+		public int SelectedImageIndex
+		{
+			get
+			{
+				if (imageList ==null)
+				{
+					return -1;
+				}
+				if (selectedImageIndex >= imageList.Images.Count)
+				{
+					if (selectedImageIndex == -1)
+					{
+						return 0;
+					}
+					return imageList.Images.Count - 1;
+				}
+				return selectedImageIndex;
+			}
+			set
+			{
+				if (selectedImageIndex != value)
+				{
+					selectedImageIndex = value;
+				}
+			}
+		}
+		public TreeNode SelectedNode
+		{
+			get
+			{
+				return selectedNode;
+			}
+			set
+			{
+				if (value != selectedNode)
+				{
+					// Redraw the old item
+					if (selectedNode != null)
+					{
+						TreeNode oldNode = selectedNode;
+						selectedNode = value;
+						oldNode.Invalidate();
+					}
+					else
+					{
+						selectedNode = value;
+					}
+					selectedNode.Invalidate();
+				}
+			}
+		}
+		
+		// Returns the width the text box should be based on the width of the text.
+		private int GetTextBoxWidth(ref int x)
+		{
+			const int minTextBoxWidth = 40;
+			const int extraSpacing = 10;
+			using (Graphics g = textBox.CreateGraphics())
+			{
+				SizeF size = g.MeasureString(textBox.Text, Font);
+				int width = (int)size.Width + extraSpacing;
+				if (width < minTextBoxWidth)
+				{
+					width = minTextBoxWidth;
+				}
+				int maxWidth = ClientRectangle.Width - x;
+				if (vScrollBar != null)
+				{
+					maxWidth -= vScrollBar.Width;
+				}
+				if (width > maxWidth)
+				{
+					width = maxWidth;
+					// Try and move the control over to allow more space for the textbox.
+					if (hScrollBar != null)
+					{
+						int offsetBefore = xOffset;
+						hScrollBar.Value = hScrollBar.Maximum - hScrollBar.LargeChange + 1;
+						int move = xOffset - offsetBefore;
+						width += move;
+						x -= move;
+					}
+				}
+				return width;
+			}
+		}
+		
+		public bool ShowLines
+		{
+			get
+			{
+				return showLines;
+			}
+			set
+			{
+				if (value != showLines)
+				{
+					showLines = value;
+				}
+			}
+		}
+
+		public bool ShowPlusMinus
+		{
+			get
+			{
+				return showPlusMinus;
+			}
+			set
+			{
+				if (value != showPlusMinus)
+				{
+					showPlusMinus = value;
+				}
+			}
+		}
+
+		public bool ShowRootLines
+		{
+			get
+			{
+				return showRootLines;
+			}
+			set
+			{
+				if (value != showRootLines)
+				{
+					showRootLines = value;
+				}
+			}
+		}
+
+		public bool Sorted
+		{
+			get
+			{
+				return sorted;
+			}
+			set
+			{
+				if (value != sorted)
+				{
+					sorted = value;
+					//TODO: could be done better!
+					TreeNode[] nodes = new TreeNode[Nodes.Count];
+					Nodes.CopyTo(nodes, 0);
+					Nodes.Clear();
+					Nodes.AddRange(nodes);
+				}
+			}
+		}
+
+		public override String Text
+		{
+			get
+			{
+				return base.Text;
+			}
+			set
+			{
+				base.Text = value;
+			}
+		}
+
+
+		private void textBox_KeyUp(Object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.Enter)
+			{
+				EndEdit(false);
+			}
+			else
+			{
+				int x = textBox.Left;
+				textBox.Width = GetTextBoxWidth(ref x);
+				textBox.Left = x;
+			}
+		}
+
+		private void textBox_Leave(object sender, EventArgs e)
+		{	
+			EndEdit(false);
+		}
+
+		public new event EventHandler TextChanged
+		{
+			add
+			{
+				base.TextChanged += value;
+			}
+			remove
+			{
+				base.TextChanged -= value;
+			}
+		}
+
+		public TreeView() : base()
+		{
+			hideSelection = true;
+			indent = 19;
+			itemHeight = -1;
+			scrollable = true;
+			BorderStyleInternal = BorderStyle.Fixed3D;
+			showLines = true;
+			showPlusMinus = true;
+			showRootLines = true;
+			root = new TreeNode(this);
+			root.Expand();
+			nodes = new TreeNodeCollection(root);
+			BackColor = SystemColors.Window;
+			ForeColor = SystemColors.WindowText;
+			SetStyle(ControlStyles.StandardClick, false);
+		}
+
+		public TreeNode TopNode 
+		{
+			get
+			{
+				return topNode;
+			}
+		}
+
+		public override string ToString()
+		{
+			string s = base.ToString();
+			if (Nodes != null)
+			{
+				s = s + ", Nodes.Count: " + Nodes.Count;
+				if (Nodes.Count > 0)
+				{
+					s = s + ", Nodes[0]: " + Nodes[0].ToString();
+				}
+			}
+			return s; 
+
+		}
+
+		public int VisibleCount
+		{
+			get
+			{
+				return ClientRectangle.Height / ItemHeight;
+			}
+		}
+
+		private void vScrollBar_ValueChanged(object sender, EventArgs e)
+		{
+			int nodeFromTop = 0;
+			TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(this.nodes);
+			while (nodes.MoveNext())
+			{
+				if (nodeFromTop == vScrollBar.Value)
+				{
+					topNode = nodes.currentNode;
+					Invalidate();
+					return;
+				}
+				nodeFromTop++;
+			}
+		}
+		
+		// Private enumerator class for all returning all expanded nodes.
+		internal class NodeEnumerator : IEnumerator
 		{
 			// Internal state.
 			private TreeNodeCollection nodes;
-			private TreeNode currentNode;
+			internal TreeNode currentNode;
 			private bool first;
 			// level of node
 			internal int level = 0;
@@ -860,16 +1660,20 @@ namespace System.Windows.Forms
 				if (first)
 				{
 					if (nodes.Count == 0)
+					{
 						return false;
+					}
 					currentNode = nodes[0];
 					first = false;
 					return true;
 				}
 				if (currentNode == null)
+				{
 					return false;
+				}
 				if (currentNode.Nodes.Count > 0 && currentNode.expanded)
 				{
-					// If expanded climb into hierarchy
+					// If expanded climb into hierarchy.
 					currentNode = currentNode.Nodes[0];
 					level++;
 				}
@@ -881,7 +1685,9 @@ namespace System.Windows.Forms
 						// We need to move back up.
 						// Are we back at the top?
 						if (currentNode.Parent == null)
+						{
 							return false;
+						}
 						else
 						{
 							currentNode = currentNode.Parent;
@@ -909,14 +1715,16 @@ namespace System.Windows.Forms
 				get
 				{
 					if(currentNode == null)
+					{
 						throw new InvalidOperationException();
+					}
 					else
+					{
 						return currentNode;
+					}
 				}
 			}
-
 		}
-
 	}
 
 }

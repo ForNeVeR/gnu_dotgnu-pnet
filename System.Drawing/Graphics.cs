@@ -2325,7 +2325,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						else  
 						{
 							// we have no whitespace in line -> append / wrap line
-							if (currSize + word.size.Width < lineSize)
+							if (currSize + word.size.Width < lineSize || currLine == 0)
 							{
 								word.line = currLine;
 								words[i] = word;
@@ -2396,13 +2396,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 		Graphics graphics;
 		String text;
 		Font font;
-		RectangleF layout;
+		Rectangle layout;
 		StringFormat format;
 		private int[] lines = new int[16];
 		private int count = 0;
 		private int currentLine = 0;
 
-		public StringMeasurePositionCalculator(Graphics graphics, String text, Font font, RectangleF layout, StringFormat format)
+		public StringMeasurePositionCalculator(Graphics graphics, String text, Font font, Rectangle layout, StringFormat format)
 				{
 					this.graphics = graphics;
 					this.text = text;
@@ -2413,10 +2413,31 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 
 		public Region[] GetRegions()
 				{
-					RectangleF[] bounds = new RectangleF[text.Length];
-					float xMax = 0;
-					float yMax = 0;
-					float fontHeight = font.GetHeight(graphics);
+					Rectangle[] bounds = GetCharBounds();
+					// Now consolidate positions based on character ranges
+					Region[] regions = new Region[format.ranges.Length];
+					for (int i = 0; i < format.ranges.Length; i++)
+					{
+						CharacterRange range = format.ranges[i];
+						Region region = null;
+						for (int j = range.First; j < range.First + range.Length; j++)
+						{
+							if (region == null)
+								region = new Region(bounds[j]);
+							else
+								region.Union(bounds[j]);
+						}
+						regions[i] = region;
+					}
+					return regions;
+				}
+
+		public Rectangle[] GetCharBounds()
+				{
+					Rectangle[] bounds = new Rectangle[text.Length];
+					int xMax = 0;
+					int yMax = 0;
+					int fontHeight = (int)font.GetHeight(graphics);
 					bool vertical = (format.FormatFlags & StringFormatFlags.DirectionVertical) != 0;
 					if (vertical)
 					{
@@ -2429,7 +2450,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						yMax = layout.Height - 1;
 					}
 					bool noWrap = (format.FormatFlags & StringFormatFlags.NoWrap) != 0;
-					float lineSizeRemaining = yMax;
+					int lineSizeRemaining = yMax;
 					// First line starts at 0
 					AddLine(0);
 					int currentPos = 0;
@@ -2441,12 +2462,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					}
 					while (currentPos < text.Length && lineSizeRemaining >= 0 && !noWrap);
 						
-					float yOffset = 0;
+					int yOffset = 0;
 					if (format.LineAlignment == StringAlignment.Center)
 						yOffset = lineSizeRemaining/2;
 					else if (format.LineAlignment == StringAlignment.Far)
 						yOffset = lineSizeRemaining;
-					float xOffset = 0;
+					int xOffset = 0;
 
 					for (int i = 0; i < text.Length;)
 					{
@@ -2479,28 +2500,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						{
 							if (bounds[i] != Rectangle.Empty)
 							{
-								RectangleF rect = bounds[i];
-								bounds[i] = new RectangleF( rect.Left + xOffset + layout.Left, rect.Top + (currentLine - 1) * fontHeight + layout.Top + 1, rect.Width, rect.Height);
+								Rectangle rect = bounds[i];
+								bounds[i] = new Rectangle( rect.Left + xOffset + layout.Left, rect.Top + (currentLine - 1) * fontHeight + layout.Top + 1, rect.Width, rect.Height);
 							}
 							i++;
 						}
 					}
-					// Now consolidate positions based on character ranges
-					Region[] regions = new Region[format.ranges.Length];
-					for (int i = 0; i < format.ranges.Length; i++)
-					{
-						CharacterRange range = format.ranges[i];
-						Region region = null;
-						for (int j = range.First; j < range.First + range.Length; j++)
-						{
-							if (region == null)
-								region = new Region(bounds[j]);
-							else
-								region.Union(bounds[j]);
-						}
-						regions[i] = region;
-					}
-					return regions;
+					return bounds;
 				}
 				
 		private void AddLine(int value)
@@ -2526,7 +2532,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				}
 
 		// Measures one full line. Updates the positions of the characters in that line relative to 0,0
-		private void MeasureLine(ref RectangleF[] bounds, ref int currentPos,
+		private void MeasureLine(ref Rectangle[] bounds, ref int currentPos,
 			ref string text, float maxX, Graphics g, Font f, bool vertical, bool noWrap)
 				{
 					int initialPos = currentPos;
@@ -2575,9 +2581,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							else
 							{
 								if (vertical)
-									bounds[currentPos] = new RectangleF( y, x, s.Height, s.Width - 1 );
+									bounds[currentPos] = new Rectangle( y, x, s.Height, s.Width - 1 );
 								else
-									bounds[currentPos] = new RectangleF( x, y, s.Width, s.Height - 1 );
+									bounds[currentPos] = new Rectangle( x, y, s.Width, s.Height - 1 );
 							}
 							x = newX;
 						}
@@ -2590,8 +2596,15 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Measure the character ranges for a string.
 	public Region[] MeasureCharacterRanges(String text, Font font, RectangleF layoutRect, StringFormat stringFormat)
 			{
-				StringMeasurePositionCalculator calculator = new StringMeasurePositionCalculator(this, text, font, layoutRect, stringFormat);		
+				StringMeasurePositionCalculator calculator = new StringMeasurePositionCalculator(this, text, font, Rectangle.Truncate(layoutRect), stringFormat);		
 				return calculator.GetRegions();
+			}
+
+	// Non Microsoft
+	public Rectangle[] MeasureCharacters(String text, Font font, RectangleF layoutRect, StringFormat stringFormat)
+			{
+				StringMeasurePositionCalculator calculator = new StringMeasurePositionCalculator(this, text, font, Rectangle.Truncate(layoutRect), stringFormat);		
+				return calculator.GetCharBounds();
 			}
 
 	// Measure the size of a string.
@@ -3831,8 +3844,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					if (bottom < r.Bottom)
 						bottom = r.Bottom;
 				}
-				if (rects.Length > 0)
-					graphics.SetClipRects(rects);
+				graphics.SetClipRects(rects);
 				deviceClipExtent = Rectangle.FromLTRB(left, top, right, bottom);
 
 			}

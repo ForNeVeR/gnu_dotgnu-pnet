@@ -38,6 +38,8 @@ public class InputOutputWidget : InputOnlyWidget
 	private Pixmap backgroundPixmap;
 	private Region exposeRegion;
 	internal InputOutputWidget nextExpose;
+	private Region invalidateRegion;
+	internal InputOutputWidget nextInvalidate;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.InputOutputWidget"/>
@@ -310,20 +312,7 @@ public class InputOutputWidget : InputOnlyWidget
 	/// </summary>
 	public void Repaint()
 			{
-				try
-				{
-					IntPtr display = dpy.Lock();
-					if(mapped && AncestorsMapped)
-					{
-						Xlib.XClearArea(display, GetWidgetHandle(),
-										0, 0, (uint)0, (uint)0,
-										Xlib.Bool.True);
-					}
-				}
-				finally
-				{
-					dpy.Unlock();
-				}
+				Repaint(0, 0, width, height);
 			}
 
 	/// <summary>
@@ -370,14 +359,127 @@ public class InputOutputWidget : InputOnlyWidget
 					IntPtr display = dpy.Lock();
 					if(mapped && AncestorsMapped)
 					{
-						Xlib.XClearArea(display, GetWidgetHandle(),
-										x, y, (uint)width, (uint)height,
-										Xlib.Bool.True);
+						if(invalidateRegion == null)
+						{
+							// Create a new invalidate region for this widget.
+							invalidateRegion = new Region(x, y, width, height);
+							dpy.AddPendingInvalidate(this);
+						}
+						else
+						{
+							// Add the rectangle to the invalidate region.
+							invalidateRegion.Union(x, y, width, height);
+						}
 					}
 				}
 				finally
 				{
 					dpy.Unlock();
+				}
+			}
+
+	// Clear a region to the background and optionally queue expose events.
+	private bool ClearRegion(Region region, Xlib.Bool exposures)
+			{
+				// Intersect the region with the widget boundaries.
+				region.Intersect(0, 0, width, height);
+
+				// Remove areas that are occupied by mapped child widgets.
+				Widget child = TopChild;
+				while(child != null)
+				{
+					if(child.mapped)
+					{
+						region.Subtract(child.x, child.y,
+										child.width, child.height);
+					}
+					child = child.NextBelow;
+				}
+
+				// Bail out if the region is now empty.
+				if(region.IsEmpty())
+				{
+					return false;
+				}
+
+				// Lock down the display and send the "XClearArea" requests.
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.Window handle = GetWidgetHandle();
+					IntPtr xregion = region.GetRegion();
+					XRectangle xrect;
+					int size, index;
+					size = Xlib.XSharpGetRegionSize(xregion);
+					for(index = 0; index < size; ++index)
+					{
+						Xlib.XSharpGetRegionRect(xregion, index, out xrect);
+						Xlib.XClearArea(display, handle, xrect.x, xrect.y,
+										xrect.width, xrect.height, exposures);
+					}
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+				return true;
+			}
+
+	/// <summary>
+	/// <para>Update this widget by immediately redrawing invalidated
+	/// regions.</para>
+	/// </summary>
+	public void Update()
+			{
+				Region region = invalidateRegion;
+				invalidateRegion = null;
+				if(region != null)
+				{
+					// Remove the region from the pending list.
+					dpy.RemovePendingInvalidate(this);
+
+					// No point redrawing if we are unmapped or the
+					// region to be drawn is empty.
+					if(mapped && AncestorsMapped &&
+					   ClearRegion(region, Xlib.Bool.False))
+					{
+						// Paint the region as if we got a regular expose.
+						Graphics graphics = new Graphics(this);
+						graphics.exposeRegion = region;
+						graphics.SetClipRegion(region);
+						try
+						{
+							OnPaint(graphics);
+						}
+						finally
+						{
+							graphics.Dispose();
+						}
+					}
+					else
+					{
+						// Dispose the region that we no longer require.
+						region.Dispose();
+					}
+				}
+			}
+
+	// Flush pending invalidates to the X server.
+	internal void FlushInvalidates()
+			{
+				Region region = invalidateRegion;
+				invalidateRegion = null;
+				nextInvalidate = null;
+				if(region != null)
+				{
+					// No point redrawing if we are unmapped.
+					if(mapped && AncestorsMapped)
+					{
+						ClearRegion(region, Xlib.Bool.True);
+					}
+
+					// Dispose the region that we no longer require.
+					region.Dispose();
 				}
 			}
 

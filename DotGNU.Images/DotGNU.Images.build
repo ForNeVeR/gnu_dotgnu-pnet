@@ -17,6 +17,7 @@
 			</sources>
 
 			<references>
+				<file name="../SharpZipLib/ICSharpCode.SharpZipLib.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 

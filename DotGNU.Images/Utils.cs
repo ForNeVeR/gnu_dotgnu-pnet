@@ -41,12 +41,35 @@ internal sealed class Utils
 						(buffer[offset + 3] << 24));
 			}
 
+	// Read a big-endian 16-bit integer value from a buffer.
+	public static int ReadUInt16B(byte[] buffer, int offset)
+			{
+				return ((buffer[offset + 1]) | (buffer[offset] << 8));
+			}
+
+	// Read a big-endian 32-bit integer value from a buffer.
+	public static int ReadInt32B(byte[] buffer, int offset)
+			{
+				return ((buffer[offset + 3]) |
+						(buffer[offset + 2] << 8) |
+						(buffer[offset + 1] << 16) |
+						(buffer[offset] << 24));
+			}
+
 	// Read a BGR value from a buffer.
 	public static int ReadBGR(byte[] buffer, int offset)
 			{
 				return ((buffer[offset]) |
 						(buffer[offset + 1] << 8) |
 						(buffer[offset + 2] << 16));
+			}
+
+	// Read an RGB value from a buffer.
+	public static int ReadRGB(byte[] buffer, int offset)
+			{
+				return ((buffer[offset + 2]) |
+						(buffer[offset + 1] << 8) |
+						(buffer[offset] << 16));
 			}
 
 	// Write a little-endian 16-bit integer value to a buffer.
@@ -65,6 +88,22 @@ internal sealed class Utils
 				buffer[offset + 3] = (byte)(value >> 24);
 			}
 
+	// Write a big-endian 16-bit integer value to a buffer.
+	public static void WriteUInt16B(byte[] buffer, int offset, int value)
+			{
+				buffer[offset + 1] = (byte)value;
+				buffer[offset] = (byte)(value >> 8);
+			}
+
+	// Write a big-endian 32-bit integer value to a buffer.
+	public static void WriteInt32B(byte[] buffer, int offset, int value)
+			{
+				buffer[offset + 3] = (byte)value;
+				buffer[offset + 2] = (byte)(value >> 8);
+				buffer[offset + 1] = (byte)(value >> 16);
+				buffer[offset] = (byte)(value >> 24);
+			}
+
 	// Write a BGR value to a buffer as an RGBQUAD.
 	public static void WriteBGR(byte[] buffer, int offset, int value)
 			{
@@ -72,6 +111,14 @@ internal sealed class Utils
 				buffer[offset + 1] = (byte)(value >> 8);
 				buffer[offset + 2] = (byte)(value >> 16);
 				buffer[offset + 3] = (byte)0;
+			}
+
+	// Write an RGB value to a buffer as a triple.
+	public static void WriteRGB(byte[] buffer, int offset, int value)
+			{
+				buffer[offset + 2] = (byte)value;
+				buffer[offset + 1] = (byte)(value >> 8);
+				buffer[offset] = (byte)(value >> 16);
 			}
 
 	// Perform a forward-seek on a stream, even on streams that

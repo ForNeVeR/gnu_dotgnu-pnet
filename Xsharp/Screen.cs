@@ -327,19 +327,23 @@ public sealed class Screen
 				standardColors[((int)StandardColor.Foreground) - 1]
 					= new Color(0x00, 0x00, 0x00);
 				standardColors[((int)StandardColor.Background) - 1]
-					= new Color(0xBF, 0xBF, 0xBF);
+					= new Color(0xD4, 0xD0, 0xC8);
+				standardColors[((int)StandardColor.EndBackground) - 1]
+					= new Color(0xC0, 0xC0, 0xC0);
 				standardColors[((int)StandardColor.HighlightForeground) - 1]
 					= new Color(0xFF, 0xFF, 0xFF);
 				standardColors[((int)StandardColor.HighlightBackground) - 1]
-					= new Color(0x00, 0x00, 0x80);
+					= new Color(0x0A, 0x24, 0x6A);
+				standardColors[((int)StandardColor.HighlightEndBackground) - 1]
+					= new Color(0xA6, 0xCA, 0xF0);
 				standardColors[((int)StandardColor.TopShadow) - 1]
 					= new Color(0xFF, 0xFF, 0xFF);
 				standardColors[((int)StandardColor.TopShadowEnhance) - 1]
-					= new Color(0xBF, 0xBF, 0xBF);
+					= new Color(0xD4, 0xD0, 0xC8);
 				standardColors[((int)StandardColor.BottomShadow) - 1]
 					= new Color(0x80, 0x80, 0x80);
 				standardColors[((int)StandardColor.BottomShadowEnhance) - 1]
-					= new Color(0x44, 0x44, 0x44);
+					= new Color(0x40, 0x40, 0x40);
 				standardColors[((int)StandardColor.Trim) - 1]
 					= new Color(0x00, 0x00, 0x00);
 
@@ -352,17 +356,17 @@ public sealed class Screen
 					= new Color(0xFF, 0xFF, 0xFF);
 				standardColors
 					[((int)StandardColor.ContentHighlightBackground) - 1]
-					= new Color(0x00, 0x00, 0x80);
+					= new Color(0x0A, 0x24, 0x6A);
 				standardColors[((int)StandardColor.ContentTopShadow) - 1]
 					= new Color(0xFF, 0xFF, 0xFF);
 				standardColors
 					[((int)StandardColor.ContentTopShadowEnhance) - 1]
-					= new Color(0xBF, 0xBF, 0xBF);
+					= new Color(0xD4, 0xD0, 0xC8);
 				standardColors[((int)StandardColor.ContentBottomShadow) - 1]
 					= new Color(0x80, 0x80, 0x80);
 				standardColors
 					[((int)StandardColor.ContentBottomShadowEnhance) - 1]
-					= new Color(0x44, 0x44, 0x44);
+					= new Color(0x40, 0x40, 0x40);
 				standardColors[((int)StandardColor.ContentTrim) - 1]
 					= new Color(0x00, 0x00, 0x00);
 

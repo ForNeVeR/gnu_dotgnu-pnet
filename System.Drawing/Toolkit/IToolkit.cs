@@ -65,6 +65,9 @@ public interface IToolkit
 	IToolkitBrush CreateHatchBrush(HatchStyle style, Color foreColor,
 								   Color backColor);
 
+	// Create an XOR brush.
+	IToolkitBrush CreateXorBrush(IToolkitBrush innerBrush);
+
 	// Create a linear gradient brush.  Returns null if the
 	// toolkit does not support linear gradient brushes.
 	IToolkitBrush CreateLinearGradientBrush
@@ -117,6 +120,11 @@ public interface IToolkit
 									 int x, int y, int width, int height,
 									 IToolkitEventSink sink);
 
+	// Create an MDI client area.
+	IToolkitMdiClient CreateMdiClient(IToolkitWindow parent,
+									  int x, int y, int width, int height,
+									  IToolkitEventSink sink);
+
 	// Get a list of all font families on this system, or all font
 	// families that are compatible with a particular IToolkitGraphics.
 	FontFamily[] GetFontFamilies(IToolkitGraphics graphics);
@@ -168,6 +176,9 @@ public interface IToolkit
 
 	// Convert a screen point for a window into a client point.
 	Point ScreenToClient(IToolkitWindow window, Point point);
+
+	// Get the clipboard handler for this toolkit, or null if no clipboard.
+	IToolkitClipboard GetClipboard();
 
 }; // interface IToolkit
 

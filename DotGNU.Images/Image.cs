@@ -29,7 +29,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	// Internal state.
 	private int width;
 	private int height;
-	private PixelFormat pixelFormat;
+	internal PixelFormat pixelFormat;
 	private int numFrames;
 	private Frame[] frames;
 	private String format;
@@ -44,7 +44,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	public const String Bmp = "bmp";
 	public const String Icon = "icon";
 	public const String Cursor = "cursor";
-	public const String ImageList = "imagelist";
+	public const String Exif = "exif";
 
 	// Constructors.
 	public Image()
@@ -289,17 +289,18 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	// Determine if it is possible to load a particular format.
 	public static bool CanLoadFormat(String format)
 			{
-				// TODO: other formats
 				return (format == Bmp || format == Icon ||
-				        format == Cursor);
+				        format == Cursor || format == Png ||
+						format == Gif || format == Jpeg ||
+						format == Exif);
 			}
 
 	// Determine if it is possible to save a particular format.
 	public static bool CanSaveFormat(String format)
 			{
-				// TODO: other formats
 				return (format == Bmp || format == Icon ||
-				        format == Cursor);
+				        format == Cursor || format == Png ||
+						format == Gif || format == Jpeg);
 			}
 
 	// Load an image from a stream into this object.  This will
@@ -341,15 +342,28 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					// Windows cursor image (same as icon, with hotspots).
 					IconReader.Load(stream, this, true);
 				}
-				/*else if(magic[0] ==77 && magic[1] == 83 &&
-						magic[2] == 70 && magic[3] == 116)
+				else if(magic[0] == 137 && magic[1] == 80 &&
+						magic[2] == 78 && magic[3] == 71)
 				{
-					// Windows Imagelist.
-					ImageListReader.Load(stream, this);
-				}*/
+					// PNG image.
+					PngReader.Load(stream, this);
+				}
+				else if(magic[0] == (byte)'G' && magic[1] == (byte)'I' &&
+						magic[2] == (byte)'F' && magic[3] == (byte)'8')
+				{
+					// GIF image.
+					GifReader.Load(stream, this);
+				}
+				else if(magic[0] == (byte)0xFF && magic[1] == (byte)0xD8)
+				{
+					// JPEG or EXIF image.
+					JpegReader.Load(stream, this, magic, 4);
+				}
 				else
-					// TODO: other formats
+				{
+					// Don't know how to load this kind of file.
 					throw new FormatException();
+				}
 			}
 
 	// Save this image to a stream, in a particular format.
@@ -392,7 +406,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				// Select a default format for the save.
 				if(format == null)
 				{
-					format = Bmp;
+					format = Png;
 				}
 
 				// Determine how to save the image.
@@ -411,12 +425,31 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					// Windows cursor image (same as icon, with hotspots).
 					IconWriter.Save(stream, this, true);
 				}
-				/*else if(format == ImageList)
+				else if(format == Png)
 				{
-					// Windows imageList format.
-					ImageListWriter.Save(stream, this);
-				}*/
-				// TODO: other image formats
+					// PNG image.
+					PngWriter.Save(stream, this);
+				}
+				else if(format == Gif)
+				{
+					// GIF image.  If the image is RGB, then we encode
+					// as a PNG instead and hope that the image viewer
+					// is smart enough to check the magic number before
+					// decoding the image.
+					if(GifWriter.IsGifEncodable(this))
+					{
+						GifWriter.Save(stream, this);
+					}
+					else
+					{
+						PngWriter.Save(stream, this);
+					}
+				}
+				else if(format == Jpeg)
+				{
+					// JPEG image.
+					JpegWriter.Save(stream, this);
+				}
 			}
 
 	// Stretch this image to a new size.

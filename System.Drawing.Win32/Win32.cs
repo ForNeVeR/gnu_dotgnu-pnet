@@ -840,7 +840,7 @@ internal class Api
 
 	//Measure size and width of text
 	[DllImport("gdi32")] //ANSI
-	public static extern int GetTextExtentPoint32A(IntPtr hdc, string str, int len, ref SIZE size);
+	public static extern int GetTextExtentPoint32A(IntPtr hdc, string str, int len, out SIZE size);
 	
 	[DllImport("gdi32")]
 	public static extern IntPtr GetStockObject( StockObjectType fnObject );

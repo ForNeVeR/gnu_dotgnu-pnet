@@ -93,6 +93,12 @@ public class NullToolkit : IToolkit
 				return null;
 			}
 
+	// Create an XOR brush.
+	public virtual IToolkitBrush CreateXorBrush(IToolkitBrush innerBrush)
+			{
+				return null;
+			}
+
 	// Create a linear gradient brush.  Returns null if the
 	// toolkit does not support linear gradient brushes.
 	public virtual IToolkitBrush CreateLinearGradientBrush
@@ -170,6 +176,14 @@ public class NullToolkit : IToolkit
 	// Create a child window.  If "parent" is null, then the child
 	// does not yet have a "real" parent - it will be reparented later.
 	public virtual IToolkitWindow CreateChildWindow
+				(IToolkitWindow parent, int x, int y, int width, int height,
+				 IToolkitEventSink sink)
+			{
+				return null;
+			}
+
+	// Create an MDI client area.
+	public virtual IToolkitMdiClient CreateMdiClient
 				(IToolkitWindow parent, int x, int y, int width, int height,
 				 IToolkitEventSink sink)
 			{
@@ -274,6 +288,12 @@ public class NullToolkit : IToolkit
 			}
 
 	public virtual IToolkitImage CreateImage( Image image, int frame )
+			{
+				return null;
+			}
+
+	// Get the clipboard handler for this toolkit, or null if no clipboard.
+	public virtual IToolkitClipboard GetClipboard()
 			{
 				return null;
 			}

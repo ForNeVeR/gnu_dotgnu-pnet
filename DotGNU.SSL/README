@@ -5,25 +5,22 @@ DotGNU Session Session Library
 Legal matters
 -------------
 
-The DotGNU.SSL library is distributed under the full terms of the
-GNU General Public License, with the following two exemptions:
+The DotGNU.SSL library is distributed under the terms of the GPL
+plus linking exception, like the rest of pnetlib, with the following
+additional exemption:
 
-	The library may be used within pnetlib to provide "https" functionality
-	via the "System.Net" namespace.  Such use does not create any
-	additional obligations on user applications than pnetlib's license does.
+	Compiling, linking, and/or using OpenSSL with DotGNU.SSL is permitted.
 
-	This library has the additional exemption that compiling, linking, and/or
-	using OpenSSL with it is permitted.
-
-In all other situations, the full GPL is in force.  In particular, if
-you use DotGNU.SSL directly in your own application (not via "System.Net"),
-then your application must be released under the GPL also.
+Note: older versions of GNUTLS were distributed under the full GPL and
+are incompatible with this library.  Newer versions of GNUTLS are distributed
+under the terms of the LGPL and are compatible.  Please enssure that you
+are using a recent version of GNUTLS.
 
 Quick start guide
 -----------------
 
 The DotGNU.SSL library hides the details of the underlying SSL
-implementation (e.g. OpenSSL) in such a way that it should be easy
+implementation (e.g. GNUTLS) in such a way that it should be easy
 to replace it with some other SSL implementation in the future.
 The library can also support multiple SSL providers.
 

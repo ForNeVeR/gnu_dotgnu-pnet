@@ -105,6 +105,10 @@ public interface IToolkitEventSink
 	// The argument is the "int" version of a "FormWindowState" value.
 	void ToolkitStateChanged(int state);
 
+	// Event that is emitted when the active MDI child window changes.
+	// The "child" parameter is null if a window has been deactivated.
+	void ToolkitMdiActivate(IToolkitWindow child);
+
 }; // interface IToolkitEventSink
 
 }; // namespace System.Drawing.Toolkit

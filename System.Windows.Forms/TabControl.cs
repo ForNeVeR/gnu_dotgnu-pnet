@@ -119,7 +119,10 @@ namespace System.Windows.Forms
 
 		protected virtual void OnSelectedIndexChanged(EventArgs e)
 		{
+			if (selectedIndex == -1 || selectedIndex >= TabCount)
+				return;
 			SuspendLayout();
+			positionInfo = null;
 			if (prevSelectedIndex > -1)
 			{
 				GetChildByIndex( prevSelectedIndex ).Visible = false;
@@ -129,6 +132,7 @@ namespace System.Windows.Forms
 			if (SelectedIndexChanged != null)
 				SelectedIndexChanged( this, EventArgs.Empty );
 			ResumeLayout();
+			InvalidateTabs();
 		}
 
 		protected void RemoveAll()
@@ -187,7 +191,7 @@ namespace System.Windows.Forms
 				{
 					hotTrackIndex = -1;
 					hotTrack = value;
-					DrawTabs();
+					InvalidateTabs();
 				}
 			}
 		}
@@ -201,7 +205,7 @@ namespace System.Windows.Forms
 			set
 			{
 				imageList = value;
-				DrawTabs();
+				InvalidateTabs();
 			}
 		}
 
@@ -337,27 +341,36 @@ namespace System.Windows.Forms
 
 		private void Draw(Graphics g)
 		{
-			Region clipMoveButtons = g.Clip.Clone();
+			// Exclude the moveButtons from the draw to prevent flicker.
 			if (moveButtonsShowing)
 			{
-				moveButtonLeftBounds = moveButtonRightBounds = new Rectangle( Width - moveButtonSize.Width *2, 1, moveButtonSize.Width, moveButtonSize.Height );
+				moveButtonLeftBounds = moveButtonRightBounds = new Rectangle( Width - moveButtonSize.Width *2, 1, moveButtonSize.Width, moveButtonSize.Height);
 				moveButtonRightBounds.Offset( moveButtonLeftBounds.Width, 0);
+				using (SolidBrush b = new SolidBrush( foreColor) )
+				{
+					ControlPaint.DrawButton(g, moveButtonLeftBounds, moveButtonLeftState);
+					// Left Arrow
+					g.FillPolygon(b, new Point[]
+					{
+						new Point(moveButtonLeftBounds.Left + 5, moveButtonLeftBounds.Top + 8),
+						new Point(moveButtonLeftBounds.Left + 8, moveButtonLeftBounds.Top + 5),
+						new Point(moveButtonLeftBounds.Left + 8, moveButtonLeftBounds.Top + 11)
+					});
+					ControlPaint.DrawButton(g, moveButtonRightBounds, moveButtonRightState);
+					// Right Arrow
+					g.FillPolygon(b, new Point[]
+					{
+						new Point(moveButtonRightBounds.Left + 11, moveButtonRightBounds.Top + 8),
+						new Point(moveButtonRightBounds.Left + 8, moveButtonRightBounds.Top + 5),
+						new Point(moveButtonRightBounds.Left + 8, moveButtonRightBounds.Top + 11)
+					});
+					
+				}
 				Region r = new Region(moveButtonLeftBounds);
 				r.Union(moveButtonRightBounds);
 				g.SetClip(r, Drawing.Drawing2D.CombineMode.Exclude);
 			}
-
 			Region clip = g.Clip.Clone();
-
-			using ( Brush background = new SolidBrush(BackColor) )
-			{
-				// Clear out the space behind the tabs
-				g.FillRectangle( background, GetTabsBounds());
-				// Clear the padding area around the tab page
-				Region paint = new Region(ClientRectangle);
-				paint.Exclude(DisplayRectangle);
-				g.FillRegion(background, paint);
-			}
 
 			Rectangle newClient = GetTabBaseBounds();
 			// Draw the tab edging
@@ -381,7 +394,7 @@ namespace System.Windows.Forms
 					}
 				}
 			}
-			if (selectedIndex > -1)
+			if (selectedIndex > -1 && selectedIndex < TabPages.Count)
 			{
 				Rectangle bounds = GetTabRect(selectedIndex);
 				g.SetClip(new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height), Drawing.Drawing2D.CombineMode.Intersect);
@@ -394,41 +407,13 @@ namespace System.Windows.Forms
 				OnDrawItem( new DrawItemEventArgs(g, Font, bounds, selectedIndex, state, ForeColor, BackColor));
 			}
 
-			// Draw the Tab move buttons if necessary
-			if (moveButtonsShowing)
-			{
-
-				using (SolidBrush b = new SolidBrush( foreColor) )
-				{
-					g.Clip = clipMoveButtons;
-					ControlPaint.DrawButton(g, moveButtonLeftBounds, moveButtonLeftState);
-					// Left Arrow
-					g.FillPolygon(b, new Point[]
-					{
-						new Point(moveButtonLeftBounds.Left + 5, moveButtonLeftBounds.Top + 8),
-						new Point(moveButtonLeftBounds.Left + 8, moveButtonLeftBounds.Top + 5),
-						new Point(moveButtonLeftBounds.Left + 8, moveButtonLeftBounds.Top + 11)
-					});
-					ControlPaint.DrawButton(g, moveButtonRightBounds, moveButtonRightState);
-					// Right Arrow
-					g.FillPolygon(b, new Point[]
-					{
-						new Point(moveButtonRightBounds.Left + 11, moveButtonRightBounds.Top + 8),
-						new Point(moveButtonRightBounds.Left + 8, moveButtonRightBounds.Top + 5),
-						new Point(moveButtonRightBounds.Left + 8, moveButtonRightBounds.Top + 11)
-					});
-					
-				}
-			}
 		}
 
 		public void DrawButton(int index)
 		{
-			using (Graphics g = CreateGraphics())
-			{
-				g.Clip = new Region( positionInfo.positions[selectedIndex].bounds );
-				Draw(g);
-			}
+			if (index == -1 || index >= TabPages.Count)
+				return;
+			Invalidate(new Region( positionInfo.positions[index].bounds ));
 		}
 
 		public Rectangle GetTabRect( int index )
@@ -469,7 +454,7 @@ namespace System.Windows.Forms
 								SizeTabsFillRight ( ref tabs, graphics, rowWidth, out maxRow );
 						}
 						// Do we need to move the row that was selected to the bottom of the tabs?
-						if (selectedIndex > -1)
+						if (selectedIndex > -1 && selectedIndex < TabCount)
 						{
 							// Check to see if we have selected a tab that isnt on the last row and move the tab row down
 							if (tabs[selectedIndex].row != maxRow)
@@ -793,6 +778,10 @@ namespace System.Windows.Forms
 			}
 			set
 			{
+				if (value == -1)
+				{
+					value = 0;
+				}
 				if (value != selectedIndex)
 				{
 					prevSelectedIndex = selectedIndex;
@@ -902,7 +891,7 @@ namespace System.Windows.Forms
 				{
 					moveButtonsTabOffset--;
 					positionInfo = null;
-					DrawTabs();
+					InvalidateTabs();
 				}
 			}
 			else if (moveButtonsShowing && moveButtonRightBounds.Contains(e.X, e.Y))
@@ -912,7 +901,7 @@ namespace System.Windows.Forms
 				{
 					moveButtonsTabOffset++;
 					positionInfo = null;
-					DrawTabs();
+					InvalidateTabs();
 				}
 			}
 			else
@@ -963,21 +952,12 @@ namespace System.Windows.Forms
 			if (moveButtonLeftState != ButtonState.Normal)
 			{
 				moveButtonLeftState = ButtonState.Normal;
-				using (Graphics g = CreateGraphics())
-				{
-					g.Clip = new Region(moveButtonLeftBounds);
-					Draw(g);
-				}
+				Invalidate(moveButtonLeftBounds);
 			}
 			if (moveButtonRightState != ButtonState.Normal)
 			{
 				moveButtonRightState = ButtonState.Normal;
-				using (Graphics g = CreateGraphics())
-				{
-					g.Clip = new Region(moveButtonRightBounds);
-					Draw(g);
-				}
-			
+				Invalidate(moveButtonRightBounds);
 			}
 			base.OnMouseUp (e);
 		}
@@ -994,20 +974,10 @@ namespace System.Windows.Forms
 					Region r = new Region(positionInfo.positions[hotTrackIndex].bounds);
 					if (prevHotTrackIndex > -1)
 						r.Union( positionInfo.positions[prevHotTrackIndex].bounds );
-					using (Graphics g = CreateGraphics())
-					{
-						g.Clip =r;
-						Draw(g);
-					}
+					Invalidate(r);
 				}
 				else if (hotTrackIndex == -1 && prevHotTrackIndex > -1)
-				{
-					using (Graphics g = CreateGraphics())
-					{
-						g.Clip = new Region( positionInfo.positions[prevHotTrackIndex].bounds );
-						Draw(g);
-					}
-				}
+					Invalidate(new Region( positionInfo.positions[prevHotTrackIndex].bounds ));
 
 			}
 			base.OnMouseMove (e);
@@ -1019,11 +989,7 @@ namespace System.Windows.Forms
 			{
 				int prevHotTrackIndex = hotTrackIndex;
 				hotTrackIndex = -1;
-				using (Graphics g = CreateGraphics())
-				{
-					g.Clip = new Region( positionInfo.positions[prevHotTrackIndex].bounds );
-					Draw(g);
-				}
+				Invalidate( new Region( positionInfo.positions[prevHotTrackIndex].bounds ));
 			}
 			base.OnMouseLeave (e);
 		}
@@ -1100,7 +1066,7 @@ namespace System.Windows.Forms
 			}
 		}
 
-		internal void DrawTabs()
+		internal void InvalidateTabs()
 		{
 			if (!IsHandleCreated)
 				return;
@@ -1121,33 +1087,52 @@ namespace System.Windows.Forms
 					bounds =  new Rectangle(bounds.Left, bounds.Top - 1, bounds.Width, bounds.Height + 1);
 					break;
 			}
-			using (Graphics g = CreateGraphics())
-			{
-				g.SetClip(bounds);
-				Draw(g);
-			}
-		}
-
-		//HACK: This is a bug in Contol.cs. Remove this when its fixed
-		// One way or the other, PerformLayout should be called when a control is created
-		protected override void OnCreateControl()
-		{
-			base.OnCreateControl ();
-			PerformLayout();
+			Invalidate(bounds);
 		}
 
 		// The event thats called when controls need to relayout their contents
 		protected override void OnLayout(LayoutEventArgs e)
 		{
 			base.OnLayout (e);
-			// Force the position info to update
-			positionInfo = null;
-			// This forces the correct Bounds for all TabPages and is automatically called whenever the bounds could change eg. adding new tab
+			SetTabPageBounds();
+		}
+
+		protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
+		{
+			base.SetBoundsCore (x, y, width, height, specified);
+			if (!IsHandleCreated)
+			{
+				return;
+			}
+			// Force the positions of the tabs to update if the size changes
+			if ((specified & BoundsSpecified.Size) != 0)
+			{
+				positionInfo = null;
+				SetTabPageBounds();
+				Invalidate(false);
+			}
+		}
+
+		protected override void OnCreateControl()
+		{
+			base.OnCreateControl();
+			if (selectedIndex == -1)
+			{
+				SelectedIndex = 0;
+			}
+			SetTabPageBounds();
+		}
+
+		// This causes the child tab pages to have their bounds set to DisplayRectangle.
+		private void SetTabPageBounds()
+		{
 			foreach( TabPage tabPage in tabPageCollection)
-				tabPage.Bounds = Rectangle.Empty;
-			// Redraw
-			using (Graphics g = CreateGraphics())
-				Draw(g);
+			{
+				if (tabPage.Visible)
+				{
+					tabPage.Bounds = Rectangle.Empty;
+				}
+			}
 		}
 
 	}

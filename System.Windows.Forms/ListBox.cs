@@ -689,7 +689,7 @@ public class ListBox : ListControl
 		set
 		{
 			this.columnWidth = value;
-			this.Redraw();
+			Invalidate();
 		}
 	}
 
@@ -773,7 +773,7 @@ public class ListBox : ListControl
 		set
 		{
 			this.multiColumn = value;
-			this.Redraw();
+			Invalidate();
 		}
 	}
 
@@ -957,7 +957,7 @@ public class ListBox : ListControl
 		set
 		{
 			this.integralHeight = value;
-			this.Redraw();
+			Invalidate();
 		}
 	}
 
@@ -1390,27 +1390,9 @@ public class ListBox : ListControl
 	// Handle "Paint" events for the list box.
 	protected override void OnPaint(PaintEventArgs e)
 	{
-		using (Graphics g = CreateGraphics())
-			Redraw(g);
-	}
-
-	private void Redraw()
-	{
-		if (!IsHandleCreated)
-			return;
-		using (Graphics g = CreateGraphics())
-			Redraw(g);
-	}
-
-	// Redraw the entire ListBox.
-	private void Redraw(Graphics g)
-	{
-		// Sanity check.
-		if(this.Parent == null)
-			return;
 	
 		ThemeManager.MainPainter.DrawListBox(
-			/*     Graphics */ g,
+			/*     Graphics */ e.Graphics,
 			/*            x */ 0,
 			/*            y */ 0,
 			/*        width */ this.Width,
@@ -1421,10 +1403,10 @@ public class ListBox : ListControl
 		
 		// Fill in the area beneath the control so that IntegralHeight
 		// looks good.
-		g.FillRectangle(new SolidBrush(this.Parent.BackColor), 0, this.DrawnHeight,
+		e.Graphics.FillRectangle(new SolidBrush(this.Parent.BackColor), 0, this.DrawnHeight,
 			this.Width, this.Height - this.DrawnHeight);
 		
-		this.RedrawList(g);
+		this.RedrawList(e.Graphics);
 	}
 	
 	private int LongestItemWidth
@@ -1502,7 +1484,7 @@ public class ListBox : ListControl
 	protected override void OnBorderStyleChanged(EventArgs e)
 	{
 		PositionControls();
-		Redraw();
+		Invalidate();
 		base.OnBorderStyleChanged(e);
 	}
 	

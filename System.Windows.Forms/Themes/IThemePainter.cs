@@ -118,13 +118,6 @@ internal interface IThemePainter
 				 ButtonState state, Color foreColor, Color backColor,
 				 Brush backgroundBrush);
 
-	// Draw a reversible frame.
-	void DrawReversibleFrame
-				(Rectangle rectangle, Color backColor, FrameStyle style);
-
-	// Draw a reversible line.
-	void DrawReversibleLine(Point start, Point end, Color backColor);
-
 	// Draw a scroll bar control.
 	void DrawScrollBar
 				(Graphics graphics, Rectangle bounds,
@@ -160,9 +153,6 @@ internal interface IThemePainter
 				(Graphics graphics, String s, Font font,
 			     Color color, RectangleF layoutRectangle,
 				 StringFormat format);
-
-	// Draw a filled reversible rectangle.
-	void FillReversibleRectangle(Rectangle rectangle, Color backColor);
 
 	// Draw a menu separator line.
 	void DrawSeparator(Graphics graphics, Rectangle rectangle);

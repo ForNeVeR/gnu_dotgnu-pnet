@@ -49,7 +49,9 @@ public enum Effect
 	MenuSelectedHighlighted		= (1<<14),
 	MenuSelectedDisabled		= (1<<15),
 	ContentColors				= (1<<16),
-	DefaultButton				= (1<<17)
+	DefaultButton				= (1<<17),
+	CaptionButtonRaised			= (1<<18),
+	CaptionButtonIndented		= (1<<19),
 
 } // enum Effect
 

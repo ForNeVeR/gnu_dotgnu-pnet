@@ -2,9 +2,7 @@
  * DataFormats.cs - Implementation of the
  *			"System.Windows.Forms.DataFormats" class.
  *
- * Copyright (C) 2003  Free Software Foundation, Inc.
- *
- * Contributions from Cecilio Pardo <cpardo@imayhem.com>
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +22,64 @@
 namespace System.Windows.Forms
 {
 
-using System.Collections;
+using System.Drawing.Toolkit;
 
-[TODO]
 public class DataFormats
 {
+	// Internal state.
+	private static Format formats = null;
+
+	// Cannot instantiate this class.
+	private DataFormats() {}
+
+	// Information about a registered clipboard format
+	public class Format
+	{
+		// Internal state.
+		private int id;
+		private String name;
+		private Format next;
+
+		// Constructor.
+		public Format(int id, String name, Format next)
+				{
+					this.id = id;
+					this.name = name;
+					this.next = next;
+				}
+		public Format(String name, Format next)
+				{
+					this.id = AllocID(name);
+					this.name = name;
+					this.next = next;
+				}
+
+		// Properties.
+		public int Id
+				{
+					get
+					{
+						return id;
+					}
+				}
+		public String Name
+				{
+					get
+					{
+						return name;
+					}
+				}
+		internal Format Next
+				{
+					get
+					{
+						return next;
+					}
+				}
+
+	}; // class Format
+
+	// Standard format names.
 	public static readonly String Bitmap = "Bitmap";
 	public static readonly String CommaSeparatedValue = "Csv";
 	public static readonly String Dib = "DeviceIndependentBitmap";
@@ -43,132 +94,137 @@ public class DataFormats
 	public static readonly String PenData = "PenData";
 	public static readonly String Riff = "RiffAudio";
 	public static readonly String Rtf = "Rich Text Format";
-	public static readonly String Serializable = "WindowsForms10PersistentObject";
-	public static readonly String StringFormat = "System.String";
+	public static readonly String Serializable
+			= "WindowsForms10PersistentObject";
+	public static readonly String StringFormat = typeof(String).FullName;
 	public static readonly String SymbolicLink = "SymbolicLink";
 	public static readonly String Text = "Text";
 	public static readonly String Tiff = "TaggedImageFileFormat";
 	public static readonly String UnicodeText = "UnicodeText";
 	public static readonly String WaveAudio = "WaveAudio";
 
-	private static ArrayList formats;
-
-	[TODO]
-	static DataFormats()
-	{
-		// TODO: On windows, load extra formats from the registry
-
-		formats = new ArrayList();
-
-		// Numbers taken from MinGW's winuser.h
-		formats.Add(new Format(Text, 1));
-		formats.Add(new Format(Bitmap, 2));
-		formats.Add(new Format(MetafilePict, 3));
-		formats.Add(new Format(SymbolicLink, 4));
-		formats.Add(new Format(Dif, 5));
-		formats.Add(new Format(Tiff, 6));
-		formats.Add(new Format(OemText, 7));
-		formats.Add(new Format(Dib, 8));
-		formats.Add(new Format(Palette, 9));
-		formats.Add(new Format(PenData, 10));
-		formats.Add(new Format(Riff, 11));
-		formats.Add(new Format(WaveAudio, 12));
-		formats.Add(new Format(UnicodeText, 13));
-		formats.Add(new Format(EnhancedMetafile, 14));
-		formats.Add(new Format(FileDrop, 15));
-		formats.Add(new Format(Locale, 16));
-
-		// TODO: These values are not predefined, so they need
-		//       to be registered with the system, and the id
-		//       values obtained upon registering them. Faked
-		//       id values are used for now.
-		formats.Add(new Format(StringFormat, 1001));
-		formats.Add(new Format(CommaSeparatedValue, 1002));
-		formats.Add(new Format(Html, 1003));
-		formats.Add(new Format(Rtf, 1004));
-		formats.Add(new Format(Serializable, 1005));
-	}
-
-	private static int GetNextID()
-	{
-		int maxid = 0;
-
-		foreach (Format f in formats)
-		{
-			if (f.Id > maxid)
+	// Load the standard formats into the list.
+	private static void LoadStandardFormats()
 			{
-				maxid = f.Id + 1;
+				// Standard formats with fixed identifiers.
+				formats = new Format(1, Text, formats);
+				formats = new Format(2, Bitmap, formats);
+				formats = new Format(3, MetafilePict, formats);
+				formats = new Format(4, SymbolicLink, formats);
+				formats = new Format(5, Dif, formats);
+				formats = new Format(6, Tiff, formats);
+				formats = new Format(7, OemText, formats);
+				formats = new Format(8, Dib, formats);
+				formats = new Format(9, Palette, formats);
+				formats = new Format(10, PenData, formats);
+				formats = new Format(11, Riff, formats);
+				formats = new Format(12, WaveAudio, formats);
+				formats = new Format(13, UnicodeText, formats);
+				formats = new Format(14, EnhancedMetafile, formats);
+				formats = new Format(15, FileDrop, formats);
+				formats = new Format(16, Locale, formats);
+
+				// Other formats that need identifiers allocated for them.
+				formats = new Format(CommaSeparatedValue, formats);
+				formats = new Format(Html, formats);
+				formats = new Format(Rtf, formats);
+				formats = new Format(Serializable, formats);
+				formats = new Format(StringFormat, formats);
 			}
-		}
 
-		return maxid;
-	}
+	// Get the name of an existing format identifier.
+	private static String GetFormatName(int id)
+			{
+				IToolkitClipboard clipboard =
+					ToolkitManager.Toolkit.GetClipboard();
+				if(clipboard != null)
+				{
+					String format = clipboard.GetFormat(id);
+					if(format != null)
+					{
+						return format;
+					}
+				}
+				return "Format" + id.ToString();
+			}
 
-	[TODO]
+	// Allocate a new format identifier.
+	private static int AllocID(String format)
+			{
+				IToolkitClipboard clipboard =
+					ToolkitManager.Toolkit.GetClipboard();
+				if(clipboard != null)
+				{
+					int id = clipboard.RegisterFormat(format);
+					if(id != -1)
+					{
+						return id;
+					}
+				}
+				Format info = formats;
+				int max = 0;
+				while(info != null)
+				{
+					if(info.Id > max)
+					{
+						max = info.Id;
+					}
+					info = info.Next;
+				}
+				return max + 1;
+			}
+
+	// Get or register format information for a Windows clipboard ID.
 	public static Format GetFormat(int id)
-	{
-		// TODO: On Windows, the registry should
-		//       be watched for new formats.
-		foreach (Format f in formats)
-		{
-			if (f.Id == id)
 			{
-				return f;
+				lock(typeof(DataFormats))
+				{
+					if(formats == null)
+					{
+						LoadStandardFormats();
+					}
+					Format info = formats;
+					while(info != null)
+					{
+						if(info.Id == id)
+						{
+							return info;
+						}
+						info = info.Next;
+					}
+					info = new Format(id, GetFormatName(id), formats);
+					formats = info;
+					return info;
+				}
 			}
-		}
-		return new Format("Format" + id.ToString(), id);
-	}
 
-	[TODO]
-	public static Format GetFormat(String name)
-	{
-		// TODO: Add the format to the registry.
-		//       The registry should also be
-		//       watched for new formats.
-		foreach (Format f in formats)
-		{
-			if (f.Name.Equals(name))
+	// Get or register format information for a Windows clipboard name.
+	public static Format GetFormat(String format)
 			{
-				return f;
+				if(format == null)
+				{
+					throw new ArgumentNullException("format");
+				}
+				lock(typeof(DataFormats))
+				{
+					if(formats == null)
+					{
+						LoadStandardFormats();
+					}
+					Format info = formats;
+					while(info != null)
+					{
+						if(info.Name == format)
+						{
+							return info;
+						}
+						info = info.Next;
+					}
+					info = new Format(AllocID(format), format, formats);
+					formats = info;
+					return info;
+				}
 			}
-		}
-		Format f1 = new Format(name, GetNextID());
-		formats.Add(f1);
-
-		return f1;
-	}
-
-
-
-
-
-
-
-
-
-
-
-	public class Format
-	{
-		private String name;
-		private int id;
-
-		public Format(String name, int id) : base()
-		{
-			this.id = id;
-			this.name = name;
-		}
-
-		public int Id
-		{
-			get { return id; }
-		}
-
-		public String Name
-		{
-			get { return name; }
-		}
-	}; // class Format
 
 }; // class DataFormats
 

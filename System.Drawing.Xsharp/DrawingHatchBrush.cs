@@ -57,6 +57,8 @@ internal sealed class DrawingHatchBrush : ToolkitBrushBase
 					{
 						bitmap = GetBitmap(style);
 					}
+					g.Function = Function.GXcopy;
+					g.SubwindowMode = SubwindowMode.ClipByChildren;
 					if(bitmap != null)
 					{
 						// Use an opaque stipple to fill the region.

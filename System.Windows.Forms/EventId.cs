@@ -155,6 +155,19 @@ internal enum EventId
 	PropertySortChanged,
 	SelectedObjectsChanged,
 
+	// "TreeView" events
+	AfterCheck,
+	AfterCollapse,
+	AfterExpand,
+	AfterLabelEdit,
+	AfterSelect,
+	BeforeCheck,
+	BeforeCollapse,
+	BeforeExpand,
+	BeforeLabelEdit,
+	BeforeSelect,
+	ItemDrag,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

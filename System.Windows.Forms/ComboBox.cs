@@ -102,15 +102,6 @@ namespace System.Windows.Forms
 			Draw(e.Graphics);
 		}
 
-		private void Draw()
-		{
-			if (IsHandleCreated)
-			{
-				using (Graphics g = CreateGraphics())
-					Draw(g);
-			}
-		}
-
 		private void Draw(Graphics g)
 		{
 			// TODO: fix this
@@ -161,7 +152,7 @@ namespace System.Windows.Forms
 			{
 				drawMode = value;
 				GetItemHeights();
-				Draw();
+				Invalidate();
 			}
 		}
 
@@ -175,7 +166,7 @@ namespace System.Windows.Forms
 			{
 				dropDownStyle = value;
 				textEntry.Visible = (dropDownStyle != ComboBoxStyle.DropDownList);
-				Draw();
+				Invalidate();
 				OnDropDownStyleChanged(EventArgs.Empty);
 			}
 		}
@@ -194,7 +185,7 @@ namespace System.Windows.Forms
 					dropDownWidth = Width;
 				else
 					dropDownWidth = value;
-				Draw();
+				Invalidate();
 			}
 		}
 
@@ -273,7 +264,7 @@ namespace System.Windows.Forms
 			set
 			{
 				integralHeight = value;
-				Draw();
+				Invalidate();
 			}
 		}
 
@@ -289,7 +280,7 @@ namespace System.Windows.Forms
 					return;
 				itemHeight = value;
 				GetItemHeights();
-				Draw();
+				Invalidate();
 			}
 		}
 
@@ -484,7 +475,7 @@ namespace System.Windows.Forms
 		{
 			updateCount--;
 			if (updateCount <= 0)
-				Draw();
+				Invalidate();
 		}
 
 		public int GetItemHeight(int index)
@@ -515,7 +506,7 @@ namespace System.Windows.Forms
 		{
 			base.OnEnter (e);
 			if (DropDownStyle == ComboBoxStyle.DropDownList)
-				Draw();
+				Invalidate();
 			else
 			{
 				textEntry.Focus();
@@ -527,7 +518,7 @@ namespace System.Windows.Forms
 		{
 			base.OnLeave (e);
 			if (DropDownStyle == ComboBoxStyle.DropDownList)
-				Draw();
+				Invalidate();
 		}
 
 
@@ -610,7 +601,7 @@ namespace System.Windows.Forms
 		protected override void OnBackColorChanged(EventArgs e)
 		{
 			base.OnBackColorChanged (e);
-			Draw();
+			Invalidate();
 		}
 
 		protected override void OnSelectedIndexChanged(EventArgs e)
@@ -653,7 +644,7 @@ namespace System.Windows.Forms
 		{
 			base.OnFontChanged (e);
 			GetItemHeights();
-			Draw();
+			Invalidate();
 		}
 
 		protected override void OnForeColorChanged(EventArgs e)
@@ -889,7 +880,7 @@ namespace System.Windows.Forms
 				SelectedIndex = ItemFromY(e.Y);
 				DroppedDown = false;
 				if (DropDownStyle == ComboBoxStyle.DropDownList)
-					Draw();
+					Invalidate();
 				else
 				{
 					textEntry.Focus();

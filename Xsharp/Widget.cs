@@ -85,7 +85,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 			}
 
 	// Detach this widget from its position in the widget tree.
-	internal void Detach()
+	internal void Detach(bool parentOnly)
 			{
 				// Detach ourselves from our siblings and parent.
 				if(nextBelow != null)
@@ -102,20 +102,23 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				}
 
 				// Detach ourselves from our children.
-				Widget current, next;
-				current = topChild;
-				while(current != null)
+				if(!parentOnly)
 				{
-					next = current.nextBelow;
-					current.parent = null;
-					current.nextAbove = null;
-					current.nextBelow = null;
-					current = next;
+					Widget current, next;
+					current = topChild;
+					while(current != null)
+					{
+						next = current.nextBelow;
+						current.parent = null;
+						current.nextAbove = null;
+						current.nextBelow = null;
+						current = next;
+					}
+					topChild = null;
 				}
 
 				// Clear all of our link fields.
 				parent = null;
-				topChild = null;
 				nextAbove = null;
 				nextBelow = null;
 			}
@@ -868,7 +871,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					{
 						AdjustPositionAndSize(display, x, y,
 											  this.width, this.height);
-						OnMove(x, y);
+						OnMoveResize(x, y, this.width, this.height);
 					}
 				}
 				finally
@@ -907,7 +910,59 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					{
 						AdjustPositionAndSize(display, this.x, this.y,
 											  width, height);
-						OnResize(width, height);
+						OnMoveResize(this.x, this.y, width, height);
+					}
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Move and resize this widget.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the new top-left widget corner.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the new top-left widget corner.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The new width for the widget.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The new width for the widget.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>Raised if <paramref name="width"/> or <paramref name="height"/>
+	/// is out of range.</para>
+	/// </exception>
+	public virtual void MoveResize(int x, int y, int width, int height)
+			{
+				if(width < 1 || height < 1 ||
+				   !ValidateSize(width, height))
+				{
+					throw new XException(S._("X_InvalidSize"));
+				}
+				try
+				{
+					IntPtr display = dpy.Lock();
+					bool moved = (x != this.x || y != this.y);
+					bool resized = (width != this.width ||
+									height != this.height);
+					if(moved || resized)
+					{
+						AdjustPositionAndSize(display, x, y, width, height);
+						if(moved || resized)
+						{
+							OnMoveResize(x, y, width, height);
+						}
 					}
 				}
 				finally
@@ -1422,7 +1477,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 
 	/// <summary>
 	/// <para>Method that is called when the widget is moved to a
-	/// new position.</para>
+	/// new position or given a new size.</para>
 	/// </summary>
 	///
 	/// <param name="x">
@@ -1432,15 +1487,6 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 	/// <param name="y">
 	/// <para>The Y co-ordinate of the new top-left widget corner.</para>
 	/// </param>
-	protected virtual void OnMove(int x, int y)
-			{
-				// Nothing to do in the base class.
-			}
-
-	/// <summary>
-	/// <para>Method that is called when the widget is resized to a
-	/// new size.</para>
-	/// </summary>
 	///
 	/// <param name="width">
 	/// <para>The new width for the widget.</para>
@@ -1449,7 +1495,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 	/// <param name="height">
 	/// <para>The new width for the widget.</para>
 	/// </param>
-	protected virtual void OnResize(int width, int height)
+	protected virtual void OnMoveResize(int x, int y, int width, int height)
 			{
 				// Nothing to do in the base class.
 			}

@@ -22,6 +22,7 @@ namespace System.Drawing.Toolkit
 using System;
 using System.Runtime.InteropServices;
 using System.Collections;
+using DotGNU.Images;
 
 internal abstract class DrawingWindow : IToolkitWindow
 {
@@ -60,40 +61,46 @@ internal abstract class DrawingWindow : IToolkitWindow
 		this.toolkit = toolkit;
 	}
 
+	// Move this window underneath the last window with the same parent.
 	void IToolkitWindow.Lower()
 	{
-		//if (hwnd == IntPtr.Zero)
-		//Console.WriteLine("DrawingWindow.Lower ERROR: Cant lower window. Hwnd not created yet");
+		// Find the last window with the same parent as this.
+		DrawingWindow toWindow = null;
+		for (int to = toolkit.windowCount - 1; to >= 0 ; to--)
 		{
-			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_BOTTOM, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE | Win32.Api.SetWindowsPosFlags.SWP_NOACTIVATE);
-			//Console.WriteLine("DrawingWindow.Lower, " + sink);
+			toWindow = toolkit.windows[to];
+			if (parent.IsParentOf(toWindow))
+				break;
 		}
+		(this as IToolkitWindow).MoveToBelow(toWindow as IToolkitWindow);
+		//Console.WriteLine("DrawingWindow.Lower, " + sink);
 	}
 
+	// Move this window to the topmost position amongst the children.
 	void IToolkitWindow.Raise()
 	{
-		if (hwnd == IntPtr.Zero)
-			throw new ApplicationException("DrawingWindow.Raise ERROR: Cant raise window. Hwnd not created yet");
-		
-		Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_TOP, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
+		MoveWindowTo(this, parent);
+		// Make the same changes to win32.
+		Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_TOP, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE | Win32.Api.SetWindowsPosFlags.SWP_NOACTIVATE);
 		//Console.WriteLine("DrawingWindow.Raise, " + sink);
 	}
 
 	// Move this window to below one of its siblings.
-	// Is this really useful?
 	void IToolkitWindow.MoveToBelow(IToolkitWindow sibling)
 	{
+		DrawingWindow toWindow = sibling as DrawingWindow;
+		MoveWindowTo(this, toWindow);
+		// Make the same changes in win32.
+		Win32.Api.SetWindowPos(hwnd, toWindow.hwnd, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE | Win32.Api.SetWindowsPosFlags.SWP_NOACTIVATE);
+		//Console.WriteLine("DrawingWindow.MoveToBelow, " + sink +", " + sibling);
 	}
 
 	// Move this window to above one of its siblings.
 	void IToolkitWindow.MoveToAbove(IToolkitWindow sibling)
 	{
-		if (hwnd == IntPtr.Zero)
-			throw new ApplicationException("DrawingWindow.MoveToAbove ERROR: Cant MoveToAbove. Hwnd not created yet");
-		Win32.Api.SetWindowPos(hwnd, (sibling as DrawingWindow).hwnd, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
+		throw new NotSupportedException();
 		//Console.WriteLine("DrawingWindow.MoveToAbove, "+sink);
 	}
-
 
 	void IToolkitWindow.Reparent(IToolkitWindow parent, int x, int y)
 	{
@@ -227,7 +234,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 			int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
 			Toolkit.GetWindowAdjust(out leftAdjust, out topAdjust, out rightAdjust, out bottomAdjust, flags);
 			outsideDimensions = new Rectangle( x - leftAdjust, y - topAdjust, width + leftAdjust + rightAdjust, height + topAdjust + bottomAdjust);
-			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_TOP, outsideDimensions.Left, outsideDimensions.Top, outsideDimensions.Width, outsideDimensions.Height, Win32.Api.SetWindowsPosFlags.SWP_NOSENDCHANGING | Win32.Api.SetWindowsPosFlags.SWP_NOACTIVATE);
+			Win32.Api.SetWindowPos(hwnd, 0, outsideDimensions.Left, outsideDimensions.Top, outsideDimensions.Width, outsideDimensions.Height, Win32.Api.SetWindowsPosFlags.SWP_NOSENDCHANGING | Win32.Api.SetWindowsPosFlags.SWP_NOACTIVATE | Win32.Api.SetWindowsPosFlags.SWP_NOZORDER);
 		}
 		//Console.WriteLine("DrawingWindow.MoveResize, " + sink +",["+x+","+y+","+width+","+height+"]");
 	}
@@ -301,6 +308,15 @@ internal abstract class DrawingWindow : IToolkitWindow
 		return hwnd;
 	}
 
+	// Set the cursor.  The toolkit may ignore "frame" if it already
+	// has a system-defined association for "cursorType".  Setting
+	// "cursorType" to "ToolkitCursorType.InheritParent" will reset
+	// the cursor to be the same as the parent window's.
+	void IToolkitWindow.SetCursor(ToolkitCursorType cursorType, Frame frame)
+	{
+		// TODO
+	}
+
 	// Invalidate a rectangle within this window.
 	public void Invalidate(int x, int y, int width, int height)
 	{
@@ -310,9 +326,8 @@ internal abstract class DrawingWindow : IToolkitWindow
 		Win32.Api.RECT r;
 		r.left = x;
 		r.top = y;
-		//TODO: Check if its +1
-		r.right = x + width + 1;
-		r.bottom = y + height + 1;
+		r.right = x + width;
+		r.bottom = y + height;
 		Win32.Api.InvalidateRect(hwnd, ref r, true);
 		//Console.WriteLine("DrawingWindow.Invalidate, "+sink + " ["+x+","+y+","+width+","+height+"]");
 	}
@@ -787,54 +802,94 @@ internal abstract class DrawingWindow : IToolkitWindow
 
 	abstract internal void CreateWindow();
 
-	// Make sure the parent window is before the child in the hierarchy
-	protected void Reparent(DrawingWindow parent)
+	// Set the child right next to the parent in the heirarchy sure the parent window is before the child.
+	// Set the correct TopOfHierarchy for all the childwindows.
+	protected internal void ReparentOwn(DrawingWindow parent)
+	{
+		SetTopOfHierarchy();
+		this.parent = parent;
+		if (parent != null)
+			MoveWindowTo(this, parent);
+	}
+
+	protected void SetTopOfHierarchy()
 	{
 		// Find all children windows and set their new top of hierarchy
-		DrawingWindow newTopOfhierarchy = parent == null ? this : (parent as DrawingWindow).topOfhierarchy;
+		DrawingWindow newTopOfhierarchy;
+		if (parent == null)
+			newTopOfhierarchy = this;
+		else
+			newTopOfhierarchy = (parent as DrawingWindow).topOfhierarchy;
 		for (int i = 0; i < toolkit.windowCount; i++)
 		{
 			DrawingWindow w = toolkit.windows[i];
 			if (this.IsParentOf(w))
 				w.topOfhierarchy = newTopOfhierarchy;
 		}
-		this.parent = parent as DrawingWindow;
+	}
 
-		// Make sure the parent window is before the child in the hierarchy
-		// Find the position of the current control
-		int childPos = -1;
-		for (int i = 0; i < toolkit.windowCount; i++)
+	// Move the window at position from to position to
+	// Also move all the children in the from windows hierarchy
+	protected void MoveWindowTo(DrawingWindow fromWindow, DrawingWindow toWindow)
+	{
+		// Find the from position.
+		int from;
+		for (from = 0; from < toolkit.windowCount; from++)
 		{
-			if (toolkit.windows[i] == this)
-			{
-				childPos = i;
+			if (toolkit.windows[from] == fromWindow)
 				break;
+		}
+		// Find the to position.
+		int to;
+		for (to = 0; to < toolkit.windowCount; to++)
+		{
+			if (toolkit.windows[to] == toWindow)
+				break;
+		}
+		if (from == to + 1 || from == to)
+			return;
+		DrawingWindow[] move = new DrawingWindow[16];
+		int nextMove = 0;
+		// Move all children of "win" into the move array.
+		// Mark the children with null if they have been moved.
+		for (int i = from; i < toolkit.windowCount; i++)
+		{
+			DrawingWindow current = toolkit.windows[i];
+			if (fromWindow.IsParentOf(current) || current == fromWindow)
+			{
+				if (nextMove == move.Length)
+				{
+					DrawingWindow[] newMove = new DrawingWindow[move.Length * 2];
+					move.CopyTo(newMove, 0);
+					move = newMove;
+				}
+				toolkit.windows[i] = null;
+				move[nextMove++] = current;
+				if (i <= to)
+					to--;
 			}
 		}
-		
-		// Make sure each parent is before the child.
-		for(DrawingWindow w = parent; w != null; w = w.parent)
+
+		// Fill in the null "holes".
+		int nonNullItem = from;
+		for(int i = from; i < toolkit.windowCount - nextMove; i++)
 		{
-			int pos = -1;
-			// Find the position of the parent
-			for (int i = childPos + 1; i < toolkit.windowCount; i++)
+			DrawingWindow window = toolkit.windows[i];
+			// Make sure we fill it with the next non null window.
+			for(;; nonNullItem++)
 			{
-				if (toolkit.windows[i] == w)
+				if (toolkit.windows[nonNullItem] != null)
 				{
-					pos = i;
+					toolkit.windows[i] = toolkit.windows[nonNullItem++];
 					break;
 				}
 			}
-
-			if (pos != -1)
-			{
-				// Move the parent to the position before the child.
-				Array.Copy(toolkit.windows, childPos, toolkit.windows, childPos + 1, pos - childPos);
-				toolkit.windows[childPos] = w;
-			}
-			else
-				break;
 		}
+
+		// Make room for the new windows.
+		Array.Copy(toolkit.windows,to + 1, toolkit.windows, to + 1 + nextMove, toolkit.windowCount - 1 - to - nextMove);
+		// Copy the move entries after the to location.
+		Array.Copy(move, 0, toolkit.windows , to + 1, nextMove);
 	}
 
 	// Returns whether a DrawingWindow is the parent of this window or is the window

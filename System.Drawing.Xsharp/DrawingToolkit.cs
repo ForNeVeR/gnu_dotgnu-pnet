@@ -274,6 +274,12 @@ public sealed class DrawingToolkit : IToolkit
 				return new DrawingHatchBrush(style, foreColor, backColor);
 			}
 
+	// Create an XOR brush.
+	public IToolkitBrush CreateXorBrush(IToolkitBrush innerBrush)
+			{
+				return new DrawingXorBrush(innerBrush);
+			}
+
 	// Create a linear gradient brush.  Returns null if the
 	// toolkit does not support linear gradient brushes.
 	public IToolkitBrush CreateLinearGradientBrush
@@ -465,6 +471,26 @@ public sealed class DrawingToolkit : IToolkit
 				return new DrawingWindow(this, wparent, x, y, width, height, sink);
 			}
 
+	// Create an MDI client area.
+	public IToolkitMdiClient CreateMdiClient
+				(IToolkitWindow parent, int x, int y, int width, int height,
+				 IToolkitEventSink sink)
+			{
+				Widget wparent;
+				if(parent is Widget)
+				{
+					wparent = ((Widget)parent);
+				}
+				else
+				{
+					wparent = placeholder;
+				}
+				ValidateWindowPosition(ref x, ref y);
+				ValidateWindowSize(ref width, ref height);
+				return new DrawingMdiClient
+					(this, wparent, x, y, width, height, sink);
+			}
+
 	// Map a System.Drawing color into an Xsharp color.
 	public static Xsharp.Color DrawingToXColor(System.Drawing.Color color)
 			{
@@ -642,6 +668,13 @@ public sealed class DrawingToolkit : IToolkit
 			{
 				return new DrawingImage
 					(app.Display.DefaultScreenOfDisplay, image, frame);
+			}
+
+	// Get the clipboard handler for this toolkit, or null if no clipboard.
+	public IToolkitClipboard GetClipboard()
+			{
+				// TODO
+				return null;
 			}
 
 }; // class DrawingToolkit

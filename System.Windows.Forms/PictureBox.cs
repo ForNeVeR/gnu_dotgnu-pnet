@@ -61,11 +61,7 @@ namespace System.Windows.Forms
 				if (value == BorderStyleInternal)
 					return;
 				BorderStyleInternal = value;
-				if (IsHandleCreated)
-				{
-					using(Graphics g = CreateGraphics())
-						Draw(g);
-				}
+				Invalidate();
 			}
 		}
 
@@ -140,11 +136,7 @@ namespace System.Windows.Forms
 				image = value;
 				if (sizeMode == PictureBoxSizeMode.AutoSize)
 					SetSize();
-				if (IsHandleCreated)
-				{
-					using(Graphics g = CreateGraphics())
-						Draw(g);
-				}
+				Invalidate();
 			}
 		}
 
@@ -189,11 +181,7 @@ namespace System.Windows.Forms
 				sizeMode = value;
 				if (sizeMode == PictureBoxSizeMode.AutoSize)
 					SetSize();
-				if (IsHandleCreated)
-				{
-					using(Graphics g= CreateGraphics())
-						Draw(g);
-				}
+				Invalidate();
 			}
 		}
 
@@ -284,8 +272,7 @@ namespace System.Windows.Forms
 			if (!IsHandleCreated)
 				return;
 			if (sizeMode == PictureBoxSizeMode.StretchImage || sizeMode == PictureBoxSizeMode.CenterImage)
-				using (Graphics g = CreateGraphics())
-					Draw(g);
+				Invalidate();
 		}
 
 		protected virtual void OnSizeModeChanged(EventArgs e)

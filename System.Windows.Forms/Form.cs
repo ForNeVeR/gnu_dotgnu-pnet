@@ -33,8 +33,6 @@ public class Form : ContainerControl
 	private IButtonControl acceptButton;
 	private IButtonControl cancelButton;
 	private bool autoScale;
-	private bool isMdiChild;
-	private bool isMdiContainer;
 	private bool keyPreview;
 	private bool topLevel;
 	internal bool dialogResultIsSet;
@@ -59,6 +57,7 @@ public class Form : ContainerControl
 	internal static Form activeForm;
 	private bool showInTaskbar;
 	private bool controlBox;
+	private MdiClient mdiClient;
 	
 	// Constructor.
 	public Form()
@@ -101,13 +100,18 @@ public class Form : ContainerControl
 					return activeForm;
 				}
 			}
-	[TODO]
 	public Form ActiveMdiChild
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(mdiClient != null)
+					{
+						return mdiClient.ActiveChild;
+					}
+					else
+					{
+						return null;
+					}
 				}
 			}
 	public bool AutoScale
@@ -271,20 +275,23 @@ public class Form : ContainerControl
 			{
 				get
 				{
-					return isMdiChild;
+					return (MdiParent != null);
 				}
 			}
-	[TODO]
 	public bool IsMdiContainer
 			{
 				get
 				{
-					return isMdiContainer;
+					return (mdiClient != null);
 				}
 				set
 				{
-					// TODO: switch the form into MDI mode
-					isMdiContainer = value;
+					if(value && mdiClient == null)
+					{
+						// Convert the form into MDI mode.
+						mdiClient = new MdiClient();
+						Controls.Add(mdiClient);
+					}
 				}
 			}
 	public bool KeyPreview
@@ -358,10 +365,16 @@ public class Form : ContainerControl
 			{
 				get
 				{
-					return mdiChildren;
+					if(mdiClient != null)
+					{
+						return mdiClient.MdiChildren;
+					}
+					else
+					{
+						return new Form [0];
+					}
 				}
 			}
-	[TODO]
 	public Form MdiParent
 			{
 				get
@@ -370,7 +383,14 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					// TODO: validate the parent
+					if(mdiParent != null || value == null || Created)
+					{
+						return;
+					}
+					if(value.mdiClient == null)
+					{
+						return;
+					}
 					mdiParent = value;
 				}
 			}
@@ -615,14 +635,27 @@ public class Form : ContainerControl
 	// Create the toolkit window underlying this control.
 	internal override IToolkitWindow CreateToolkitWindow(IToolkitWindow parent)
 			{
-				// TODO: dialog forms
 				CreateParams cp = CreateParams;
 
 				// Create the window and set its initial caption.
-				IToolkitTopLevelWindow window =
-					ToolkitManager.Toolkit.CreateTopLevelWindow
+				IToolkitTopLevelWindow window;
+				if(mdiParent == null)
+				{
+					window = ToolkitManager.Toolkit.CreateTopLevelWindow
 						(cp.Width - ToolkitDrawSize.Width,
 						 cp.Height - ToolkitDrawSize.Height, this);
+				}
+				else
+				{
+					mdiParent.mdiClient.CreateControl();
+					IToolkitMdiClient mdi =
+						(mdiParent.mdiClient.toolkitWindow as
+							IToolkitMdiClient);
+					window = mdi.CreateChildWindow
+						(cp.X, cp.Y,
+						 cp.Width - ToolkitDrawSize.Width,
+						 cp.Height - ToolkitDrawSize.Height, this);
+				}
 				window.SetTitle(cp.Caption);
 
 				// Adjust the window hints to match our requirements.
@@ -662,7 +695,6 @@ public class Form : ContainerControl
 			{
 				get
 				{
-					// TODO:
 					return true;
 				}
 			}
@@ -788,10 +820,12 @@ public class Form : ContainerControl
 			}
 
 	// Layout the MDI children of this form.
-	[TODO]
 	public void LayoutMdi(MdiLayout value)
 			{
-				// TODO
+				if(mdiClient != null)
+				{
+					mdiClient.LayoutMdi(value);
+				}
 			}
 
 	// Remove an owned form from this form.
@@ -1490,6 +1524,16 @@ public class Form : ContainerControl
 	internal override void WindowStateChanged(FormWindowState state)
 			{
 				windowState = state;
+			}
+
+	// Event that is called when an MDI child is activated or deactivated.
+	internal override void MdiActivate(IToolkitWindow child)
+			{
+				if(mdiClient != null)
+				{
+					mdiClient.Activate(child);
+				}
+				OnMdiChildActivate(EventArgs.Empty);
 			}
 
 #if !CONFIG_COMPACT_FORMS

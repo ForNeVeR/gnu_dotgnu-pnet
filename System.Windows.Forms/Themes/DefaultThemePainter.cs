@@ -1754,22 +1754,6 @@ internal class DefaultThemePainter : IThemePainter
 #endif
 			}
 
-	// Draw a reversible frame.
-	[TODO]
-	public virtual void DrawReversibleFrame
-				(Rectangle rectangle, Color backColor, FrameStyle style)
-			{
-				// TODO
-			}
-
-	// Draw a reversible line.
-	[TODO]
-	public virtual void DrawReversibleLine
-				(Point start, Point end, Color backColor)
-			{
-				// TODO
-			}
-
 	private Brush hatchBrush;
 	private Color hatchForeColor = Color.Empty;
 	private Color hatchBackColor = Color.Empty;
@@ -2147,14 +2131,6 @@ internal class DefaultThemePainter : IThemePainter
 				layoutRectangle.Offset(-1.0f, -1.0f);
 				graphics.DrawString(s, font, brush, layoutRectangle, format);
 				brush.Dispose();
-			}
-
-	// Draw a filled reversible rectangle.
-	[TODO]
-	public virtual void FillReversibleRectangle
-				(Rectangle rectangle, Color backColor)
-			{
-				// TODO
 			}
 
 	// Draw a menu separator line.

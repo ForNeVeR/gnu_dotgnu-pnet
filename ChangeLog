@@ -1,3 +1,328 @@
+
+2003-12-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* DotGNU.Images/Image.cs: remove mentions of the "ImageList"
+	format from "DotGNU.Images" because it will need to be handled
+	at a higher level in "System.Windows.Forms.ImageListStreamer".
+
+	* DotGNU.SSL/GNUTLS.cs, DotGNU.SSL/OpenSSL.cs, DotGNU.SSL/README,
+	DotGNU.SSL/SessionProviderFactory.cs: add GNUTLS support to the
+	DotGNU.SSL library.
+
+	* DotGNU.SSL/GNUTLS.cs: use the GNUTLS library directly rather
+	than via the OpenSSL emulation layer, because it will reduce
+	runtime memory requirements.
+
+	* configure.in, samples/*: rearrange the "samples" directory
+	so that it isn't quite so cluttered.
+
+	* DotGNU.Images/IconReader.cs: make some small improvements to
+	the icon reader.
+
+	* Xsharp/XsharpSupport.c (XSharpCreateImageFromDIB): fix a bug
+	that caused 1bpp images to only have every second pixel displayed.
+
+	* System.Windows.Forms/Cursors.cs,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.hsplit.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.nomove2d.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.nomovehoriz.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.nomovevert.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.paneast.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.panne.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.pannorth.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.pannw.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.panse.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.pansouth.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.pansw.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.panwest.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.vsplit.cur:
+	add the missing cursors to the System.Windows.Forms resources.
+
+	* DotGNU.Images/BmpWriter.cs, DotGNU.Images/IconWriter.cs:
+	fix the icon writer to match the icon reader's format.
+
+2003-12-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/I18N.build: enable debug symbols for the I18N libraries.
+
+	* I18N/Common/Manager.cs (Instantiate): handle recursive re-entry
+	where the reflection routines call back to get the current culture
+	and it is the same as the culture we were looking for previously.
+
+	* runtime/System/Globalization/CultureInfo.cs,
+	runtime/System/Threading/Thread.cs: implement culture setting
+	and thread-specific culture objects.
+
+	* configure.in, DotGNU.Images/.cvsignore, DotGNU.Images/Image.cs,
+	DotGNU.Images/JpegLib.cs.in, DotGNU.Images/JpegReader.cs,
+	DotGNU.Images/Makefile.am: add a JPEG reader to "DotGNU.Images",
+	based on PInvoke'ing "libjpeg".
+
+	* DotGNU.Images/Image.cs, DotGNU.Images/JpegLib.cs.in,
+	DotGNU.Images/JpegReader.cs: recognize EXIF files and process
+	them using the JPEG reader because they are essentially disguised
+	JPEG images.
+
+	* DotGNU.Images/Image.cs, System.Drawing/Image.cs: recognise
+	the "EXIF" format wherever it is needed.
+
+	* DotGNU.Images/Image.cs, DotGNU.Images/JpegLib.cs.in,
+	DotGNU.Images/JpegWriter.cs: add JPEG writing support.
+
+2003-12-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* DotGNU.Images/GifReader.cs: fix some bugs in the GIF decompressor.
+
+	* DotGNU.Images/Frame.cs, DotGNU.Images/GifReader.cs: add the
+	"OffsetX" and "OffsetY" properties so that we can record the
+	"left" and "top" properties of a GIF image frame.
+
+	* DotGNU.Images/GifWriter.cs, DotGNU.Images/Image.cs: implement
+	a GIF writer, using the "ungif" approach to compression.
+
+2003-12-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* DotGNU.Images/DotGNU.Images.build, DotGNU.Images/Image.cs
+	DotGNU.Images/PngReader.cs: implement image loading for "png" files.
+
+	* System.Drawing/System.Drawing.build,
+	System.Drawing.Postscript/System.Drawing.Postscript.build,
+	System.Drawing.Win32/System.Drawing.Win32.build,
+	System.Drawing.Xsharp/System.Drawing.Xsharp.build,
+	System.Windows.Forms/Forms.build, Xsharp/Xsharp.build,
+	samples/samples.build: modify the build scripts to add SharpZipLib
+	to all files that depend upon DotGNU.Images.
+
+	* DotGNU.Images/PngReader.cs, DotGNU.Images/PngWriter.cs:
+	implement the "png" file writing routines.
+
+	* DotGNU.Images/Image.cs: default save format is now "png".
+
+	* DotGNU.Images/PngReader.cs: properly handle 15-bit, 16-bit, 48-bit,
+	and 64-bit images.
+
+	* DotGNU.Images/GifReader.cs, DotGNU.Images/Image.cs:
+	implement a GIF image reader.
+
+2003-12-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* DotGNU.Images/Frame.cs: ignore the color value that is supplied
+	to "MakeTransparent" if the frame already has transparency information.
+
+2003-12-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* *.cs: remove ^M's from many source files because they interfere
+	with applying patches cleanly.
+
+	* System.Drawing.Xsharp/DrawingMdiClient.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs,
+	Xsharp/Display.cs, Xsharp/InputOutputWidget.cs: implement
+	Invalidate and Update for Xsharp.
+
+	* DotGNU.Images/Utils.cs: add some utility routines for handling
+	big-endian values in image files.
+
+2003-12-17  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Windows.Forms/ButtonBase.cs, System.Windows.Forms/GroupBox.cs,
+	System.Windows.Forms/ComboBox.cs, System.Windows.Forms/Label.cs,
+	System.Windows.Forms/ListBox.cs, System.Windows.Forms/PictureBox.cs,
+	System.Windows.Forms/ProgressBar.cs, System.Windows.Forms/ScrollBar.cs,
+	System.Windows.Forms/TabControl.cs, System.Windows.Forms/TabPage.cs:
+	use Invalidate() to redraw otherwise we get real world performance
+	problems because multiple property sets that cause redraws aren't
+	batched. Future controls should use Invalidate.
+
+	* System.Windows.Forms/Control.cs: removing Control from a parent
+	caused infinite loop. Only create inner controls if the control is
+	visible for performance -  good performance improvement. When
+	reparenting, take into account toolkit draw origin. Don't set
+	visible to false before destroying the handle. Only invalidate
+	if visible. Include invisible children when laying out so we don't
+	have to relayout when they are made visible. Perform layout must
+	happen after the control is created for the first time. When
+	reparenting, must Reparent with null even if there is no
+	toolkitwindow. Invalidate to redraw when changing the internal
+	border style.
+
+	* System.Windows.Forms/EventId, System.Windows.Forms/TreeView,
+	System.Windows.Forms/OwnerDrawPropertyBag.cs,
+	System.Windows.Forms/TreeNode.cs,
+	System.Windows.Forms/TreeNodeCollection.cs: finish off tree view
+	except for some minor properties.
+
+	* System.Windows.Forms/ScrollableControl.cs: implemented
+	ScrollableControl, with changes - thanks to Gopal.
+
+	* System.Windows.Forms/ScrollBar.cs: do not re-layout in SetBoundsCore
+	unless the position actually changes - stops flickering and jumping
+	when position keeps on being set, even if it hasn't changed.
+	Layout when creating.
+
+	* System.Windows.Forms/TabControl.cs, System.Windows.Forms/TabPage.cs:
+	when adding a tab, select the first tab if nothing is selected.
+	Optimize setting of bounds for speed in TabPage.
+
+	* System.Drawing/Graphics.cs, System.Windows.Forms/TextBox.cs:
+	some quick textbox speed optimization.
+
+	* System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs: Microsoft behavior is to
+	add new controls below old controls. Invalidate is one pixel too
+	short and narrow.
+
+	* System.Drawing.Win32/DrawingControlWindow.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingPen.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Win32/Win32.cs: child control window style
+	must be WS_CLIPSIBLINGS for correct z-order behavior. Optimize for
+	speed by minimizing interop. Implement MoveWindowTo for zorder
+	handling.
+
+	* System.Drawing.Graphics.cs: fix bug in DrawString that caused text
+	that did not fit on a line to move down a line. When updating a clip,
+	call the toolkit to update even if the rectangles are empty to set
+	to clip to nothing.
+
+	* DotGNU.Images/Frame.cs, DotGNU.Images/BmpReformatter.cs,
+	DotGNU.Images/BmpResizer.cs, DotGNU.Images/BmpWriter,
+	DotGNU.Images/IconReader, DotGNU.Images/IconWriter,
+	DotGNU.Images/Image: some speed optimization.
+
+	* samples/FormsTest.exe: more tests for treeview.
+
+	* Xsharp/Ice/IceClient.cs, Xsharp/TopLevelWindow.cs:
+	csc compile fixes.
+
+2003-12-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/ControlPaint.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/IThemePainter.cs: remove the
+	"reversible" line and rectangle routines because they work
+	in screen co-ordinates are therefore too dangerous.
+
+	* System.Drawing/XorBrush.cs, System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingXorBrush.cs,
+	System.Drawing.Xsharp/DrawingHatchBrush.cs,
+	System.Drawing.Xsharp/DrawingPen.cs,
+	System.Drawing.Xsharp/DrawingSolidBrush.cs,
+	System.Drawing.Xsharp/DrawingTextureBrush.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingXorBrush.cs,
+	Xsharp/Graphics.cs, Xsharp/Xlib.cs.in: add "XOR" brushes to the system.
+
+	* System.Drawing/Toolkit/IToolkitWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Xsharp/DrawingMdiClient.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/Cursor.cs,
+	System.Windows.Forms/Cursors.cs, System.Windows.Forms/Forms.build,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.appstarting.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.cross.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.hand.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.help.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.ibeam.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.no.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.normal.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.sizeall.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.sizenesw.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.sizens.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.sizenwse.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.sizewe.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.up.cur,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.wait.cur:
+	add cursor support to Winforms.
+
+2003-12-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing/Toolkit/ToolkitCursorType.cs,
+	System.Windows.Forms/Cursor.cs, System.Windows.Forms/Cursors.cs:
+	redesign and augment the cursor-handling code.
+
+	* doc/pcf-font-format.txt: add the PCF font documentation.
+
+2003-12-16  Gopal.V  <gopalv82@symonds.net>
+
+	* DotGNU.Images/Frame.cs, System.Drawing/Bitmap.cs: fix the
+	calculation of transparency masks from color values.
+
+2003-12-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/Clipboard.cs,
+	System.Windows.Forms/DataFormats.cs: rewrite the "Clipboard" and
+	"DataFormats" classes.
+
+	* System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/IToolkitClipboard.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Windows.Forms/Clipboard.cs,
+	System.Windows.Forms/DataFormats.cs: add the toolkit support
+	routines for clipboards.
+
+	* Xsharp/Clipboard.cs, Xsharp/Xlib.cs.in,
+	Xsharp/Events/XSelectionEvent.cs: put some support code in place
+	for selection-based X clipboards.
+
+	* System.Drawing.Xsharp/mssB08.pcf, System.Drawing.Xsharp/mssR08.pcf:
+	fix the font metrics on some of the PCF fonts.
+
+2003-12-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Dcop/DcopClient.cs, Xsharp/Dcop/DcopReply.cs,
+	Xsharp/Dcop/IQDataStreamable.cs, Xsharp/Dcop/Makefile,
+	Xsharp/Dcop/QDataStream.cs, Xsharp/Ice/ICE.cs,
+	Xsharp/Ice/IceAcceptStatus.cs, Xsharp/Ice/IceClient.cs,
+	Xsharp/Ice/IceCloseStatus.cs, Xsharp/Ice/IceConn.cs,
+	Xsharp/Ice/IceConnectStatus.cs, Xsharp/Ice/IceErrorHandler.cs,
+	Xsharp/Ice/IceHostBasedAuthProc.cs, Xsharp/Ice/IceIOErrorHandler.cs,
+	Xsharp/Ice/IceIOErrorProc.cs, Xsharp/Ice/IcePaAuthProc.cs,
+	Xsharp/Ice/IcePaAuthStatus.cs, Xsharp/Ice/IcePaProcessMsgProc.cs,
+	Xsharp/Ice/IcePaVersionRec.cs, Xsharp/Ice/IcePingReplyProc.cs,
+	Xsharp/Ice/IcePoAuthProc.cs, Xsharp/Ice/IcePoAuthStatus.cs,
+	Xsharp/Ice/IcePoProcessMsgProc.cs, Xsharp/Ice/IcePoVersionRec.cs,
+	Xsharp/Ice/IceProcessMessagesStatus.cs,
+	Xsharp/Ice/IceProtocolActivateProc.cs,
+	Xsharp/Ice/IceProtocolSetupProc.cs,
+	Xsharp/Ice/IceProtocolSetupStatus.cs, Xsharp/Ice/IceReplyWaitInfo.cs,
+	Xsharp/Ice/IceWatchProc.cs, Xsharp/Ice/Makefile:
+	add ICE and DCOP infrastructure to "Xsharp".
+
+2003-12-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/IToolkitEventSink.cs,
+	System.Drawing/Toolkit/IToolkitMdiClient.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingMdiClient.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs,
+	System.Windows.Forms/MdiClient.cs, Xsharp/BuiltinBitmaps.cs,
+	Xsharp/CaptionWidget.cs, Xsharp/Display.cs, Xsharp/Effect.cs,
+	Xsharp/EmbeddedApplication.cs, Xsharp/Graphics.cs,
+	Xsharp/Image.cs, Xsharp/InputOnlyWidget.cs, Xsharp/MdiClientWidget.cs,
+	Xsharp/RootWindow.cs, Xsharp/Screen.cs, Xsharp/StandardColor.cs,
+	Xsharp/TopLevelWindow.cs, Xsharp/Widget.cs, Xsharp/Xlib.cs.in,
+	samples/XClockEmbed.cs: add MDI support to Xsharp,
+	System.Drawing.Xsharp, and System.Windows.Forms.
+
+	* samples/FormsMdi.cs, samples/samples.build: add the "FormsMdi"
+	sample program to the tree.
+
 2003-12-03  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/Frame.cs, DotGNU.Images/Utils.cs: BitsPerPixel and

@@ -273,7 +273,7 @@ public sealed class Image : IDisposable
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.Image"/> instance
-	/// from a <see cref="T:DotGNU.Images.Frame"/> instance.
+	/// from a <see cref="T:DotGNU.Images.Frame"/> instance.</para>
 	/// </summary>
 	///
 	/// <param name="frame">
@@ -293,7 +293,7 @@ public sealed class Image : IDisposable
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.Image"/> instance
-	/// from a <see cref="T:DotGNU.Images.Frame"/> instance.
+	/// from a <see cref="T:DotGNU.Images.Frame"/> instance.</para>
 	/// </summary>
 	///
 	/// <param name="screen">

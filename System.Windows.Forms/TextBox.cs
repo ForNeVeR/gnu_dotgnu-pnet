@@ -276,7 +276,7 @@ public class TextBox : TextBoxBase
 		}
 
 
-		if (vScrollBar != null)
+		if (vScrollBar != null && vScrollBar.Visible)
 		{
 			vScrollBar.Bounds = new Rectangle(ClientRectangle.Width - vScrollBar.Width, 0, vScrollBar.Width, height);
 			
@@ -290,7 +290,7 @@ public class TextBox : TextBoxBase
 			vScrollBar.SmallChange = Font.Height;
 			vScrollBar.LargeChange = TextDrawArea.Height + 1;
 		}
-		if (hScrollBar != null)
+		if (hScrollBar != null && hScrollBar.Visible)
 		{
 			hScrollBar.Bounds = new Rectangle(0, ClientRectangle.Height - hScrollBar.Height, width, hScrollBar.Height);
 			int maximum = MaxTextDimensions.Width;
@@ -802,20 +802,13 @@ public class TextBox : TextBoxBase
 		else if (textAlign == HorizontalAlignment.Center)
 			format.Alignment = StringAlignment.Center;
 	
-		// To use MeasureCharacterRanges, we need to specify that we want to measure each character individually.
-		// This MS api isnt very clever!
-		CharacterRange[] range = new CharacterRange[measureText.Length];
-		for (int i = 0; i < measureText.Length; i++)
-			range[i] = new CharacterRange(i, 1);
-		format.SetMeasurableCharacterRanges(range);
-		
-		Region[] bounds;
+		Rectangle[] bounds;
 		if (measureText.Length == 0)
-			bounds = new Region[0];
+			bounds = new Rectangle[0];
 		else if (passwordChar == 0)
-			bounds = ControlGraphics.MeasureCharacterRanges(measureText, Font, measureBounds, format);
+			bounds = ControlGraphics.MeasureCharacters(measureText, Font, measureBounds, format);
 		else
-			bounds = ControlGraphics.MeasureCharacterRanges(new string(passwordChar, measureText.Length), Font, measureBounds, format);
+			bounds = ControlGraphics.MeasureCharacters(new string(passwordChar, measureText.Length), Font, measureBounds, format);
 		LayoutInfo.Item[] newItems = new LayoutInfo.Item[newText.Length];
 		// Copy in the previously measured items.
 		Array.Copy(layout.Items, 0, newItems, 0, posLine);
@@ -835,7 +828,7 @@ public class TextBox : TextBoxBase
 		{
 			LayoutInfo.Item item = new LayoutInfo.Item();
 			char c = newText[i];
-			Rectangle rect = Rectangle.Truncate(bounds[i - posLine].GetBounds( ControlGraphics));
+			Rectangle rect = bounds[i - posLine];
 			if (c == '\r')
 			{
 				item.type = LayoutInfo.Item.CharType.CR;
@@ -1255,18 +1248,19 @@ public class TextBox : TextBoxBase
 	private void DrawText(Graphics g, bool focused)
 	{
 		Font font = Font;
-		StringBuilder s = new StringBuilder();
+		int lineStart = 0;
 		Brush prevFore = null;
 		int x = -1;
 		int y = -1;
 		int textLength = 0;
 		if (text != null)
 			textLength = text.Length;
-		for (int i=0; i < textLength;i++) 
+		int i;
+		for (i=0; i < textLength;i++) 
 		{
 			LayoutInfo.Item item = layout.Items[i];
 			Rectangle bounds = item.bounds;
-			bounds.Offset(-XViewOffset, -YViewOffset);
+			bounds.Offset(-xViewOffset, -yViewOffset);
 			if (item.type == LayoutInfo.Item.CharType.VisibleChar)
 			{
 				Brush fore;
@@ -1274,39 +1268,39 @@ public class TextBox : TextBoxBase
 					fore = SelectedForeBrush;
 				else
 					fore = ForeBrush;
-				if (bounds.Top == y && prevFore == fore)
+				if (bounds.Top != y || prevFore != fore)
 				{
-					if (passwordChar != 0)
-						s.Append(passwordChar);
-					else
-						s.Append(text[i]);
-				}
-				else
-				{
-					if (s.Length > 0)
+					if (i - lineStart > 0 && y < Height)
 					{
-						if (Enabled )
-							g.DrawString(s.ToString(), font, prevFore, new Point (x, y));
+						String lineText;
+						if (passwordChar != 0)
+							lineText = new String(passwordChar, i - lineStart);
 						else
-							ControlPaint.DrawStringDisabled(g, s.ToString(), font, BackColor, new Rectangle(x, y, int.MaxValue, int.MaxValue), StringFormat.GenericDefault);
+							lineText = text.Substring(lineStart, i - lineStart);
+						if (Enabled)
+							g.DrawString(lineText, font, prevFore, new Point (x, y));
+						else
+							ControlPaint.DrawStringDisabled(g, lineText, font, BackColor, new Rectangle(x, y, int.MaxValue, int.MaxValue), StringFormat.GenericDefault);
 					}
-					s.Remove(0, s.Length);
-					if (passwordChar != 0)
-						s.Append(passwordChar);
-					else
-						s.Append(text[i]);
+					lineStart = i;
 					x = bounds.X;
 					y = bounds.Y;
 				}
 				prevFore = fore;
 			}
 		}
-		if (s.Length != 0)
+		if (i - lineStart > 0)
 		{
-			if (Enabled )
-				g.DrawString(s.ToString(), Font, prevFore, new Point (x, y));
+			String lineText;
+			if (passwordChar != 0)
+				lineText = new String(passwordChar, i - lineStart);
 			else
-				ControlPaint.DrawStringDisabled(g, s.ToString(), font, BackColor, new Rectangle(x, y, int.MaxValue, int.MaxValue), StringFormat.GenericDefault);
+				lineText = text.Substring(lineStart, i - lineStart);
+						
+			if (Enabled )
+				g.DrawString(lineText, Font, prevFore, new Point (x, y));
+			else
+				ControlPaint.DrawStringDisabled(g, lineText, font, BackColor, new Rectangle(x, y, int.MaxValue, int.MaxValue), StringFormat.GenericDefault);
 		}
 	}
 

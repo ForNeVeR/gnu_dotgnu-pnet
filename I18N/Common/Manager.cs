@@ -375,6 +375,7 @@ public class Manager
 			{
 			#if CONFIG_REFLECTION
 				Object handler;
+				Object handlerRenter;
 				String region;
 				Assembly assembly;
 				Type type;
@@ -450,6 +451,15 @@ public class Manager
 					{
 						// The constructor was inaccessible.
 						return null;
+					}
+
+					// Check the "active" list again, because we may
+					// have been recursively re-entered and already
+					// created the handler on the recursive call.
+					handlerRenter = active[name];
+					if(handlerRenter != null)
+					{
+						return handlerRenter;
 					}
 
 					// Add the handler to the active handlers cache.

@@ -225,10 +225,26 @@ internal sealed unsafe class Xlib
 			 Window confine_to, Cursor cursor, Time time);
 
 	[DllImport("X11")]
+	extern public static @X_int@ XGrabButton
+			(IntPtr display, @X_uint@ button, @X_uint@ modifiers,
+			 Window grab_window, Bool owner_events,
+			 @X_uint@ event_mask, @X_int@ pointer_mode, @X_int@ keyboard_mode,
+			 Window confine_to, Cursor cursor);
+
+	[DllImport("X11")]
 	extern public static @X_int@ XUngrabKeyboard(IntPtr display, Time time);
 
 	[DllImport("X11")]
 	extern public static @X_int@ XUngrabPointer(IntPtr display, Time time);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XUngrabButton
+			(IntPtr display, @X_uint@ button, @X_uint@ modifiers,
+			 Window grab_window);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XAllowEvents
+			(IntPtr display, @X_int@ event_mode, Time time);
 
 	// Declare pixmap-related external functions.
 
@@ -353,6 +369,10 @@ internal sealed unsafe class Xlib
 	[DllImport("X11")]
 	extern public static @X_int@ XSetFunction
 			(IntPtr display, IntPtr gc, @X_int@ function);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XSetSubwindowMode
+			(IntPtr display, IntPtr gc, @X_int@ subwindow_mode);
 
 	[DllImport("X11")]
 	extern public static @X_int@ XSetFillStyle
@@ -494,6 +514,21 @@ internal sealed unsafe class Xlib
 
 	[DllImport("X11")]
 	extern public static @X_int@ XKillClient(IntPtr display, XID resource);
+
+	// Declare selection-related external functions.
+
+	[DllImport("X11")]
+	extern public static Window XGetSelectionOwner
+			(IntPtr display, Atom selection);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XSetSelectionOwner
+			(IntPtr display, Atom selection, Window owner, Time time);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XConvertSelection
+			(IntPtr display, Atom selection, Atom target,
+			 Atom property, Window requestor, Time time);
 
 	// Declare color-related external functions.
 

@@ -30,8 +30,6 @@ internal sealed class IconWriter
 	// is "true", then the image is actually a Windows cursor with hotspots.
 	public static void Save(Stream stream, Image image, bool hotspots)
 			{
-				// TODO: This needs to be fixed and work the way IconReader does.
-				
 				byte[] buffer = new byte [1024];
 				int numImages = image.NumFrames;
 				int offset, index, size, bitCount;
@@ -54,13 +52,11 @@ internal sealed class IconWriter
 				for(index = 0; index < numImages; ++index)
 				{
 					frame = image.GetFrame(index);
-					size = 0;
-					if(!hotspots ||
-					   frame.PixelFormat != PixelFormat.Format1bppIndexed)
+					size = 40;
+					if((frame.pixelFormat & PixelFormat.Indexed) != 0)
 					{
-						size += 40;
 						size +=
-						  4 * (1 << Utils.FormatToBitCount(frame.PixelFormat));
+						  4 * (1 << Utils.FormatToBitCount(frame.pixelFormat));
 					}
 					size += frame.Height * (frame.Stride + frame.MaskStride);
 					offsetList[index] = offset;
@@ -72,7 +68,7 @@ internal sealed class IconWriter
 				for(index = 0; index < image.NumFrames; ++index)
 				{
 					frame = image.GetFrame(index);
-					bitCount = Utils.FormatToBitCount(frame.PixelFormat);
+					bitCount = Utils.FormatToBitCount(frame.pixelFormat);
 					buffer[0] = (byte)(frame.Width);
 					buffer[1] = (byte)(frame.Height);
 					buffer[2] = (byte)(1 << bitCount);
@@ -96,13 +92,11 @@ internal sealed class IconWriter
 				for(index = 0; index < image.NumFrames; ++index)
 				{
 					frame = image.GetFrame(index);
-					bitCount = Utils.FormatToBitCount(frame.PixelFormat);
-					if(!hotspots || bitCount != 1)
-					{
-						BmpWriter.SaveBitmapInfo
-							(stream, frame, bitCount,
-							 frame.Stride * frame.Height, buffer);
-					}
+					bitCount = Utils.FormatToBitCount(frame.pixelFormat);
+					BmpWriter.SaveBitmapInfo
+						(stream, frame, bitCount,
+						 (frame.Stride + frame.MaskStride) * frame.Height,
+						  buffer, frame.Height * 2);
 					BmpWriter.SaveBitmapData(stream, frame, false, false);
 					BmpWriter.SaveBitmapData(stream, frame, true, true);
 				}

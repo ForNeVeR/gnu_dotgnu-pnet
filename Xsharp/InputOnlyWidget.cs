@@ -35,8 +35,8 @@ public class InputOnlyWidget : Widget
 {
 	// Internal state.
 	private bool focusable;
-	private Xlib.Time lastClickTime;
-	private ButtonName lastClickButton;
+	internal Xlib.Time lastClickTime;
+	internal ButtonName lastClickButton;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.InputOnlyWidget"/>
@@ -122,6 +122,7 @@ public class InputOnlyWidget : Widget
 						if(parent.AutoMapChildren)
 						{
 							Xlib.XMapWindow(display, window);
+							mapped = true;
 						}
 					}
 					finally
@@ -147,7 +148,7 @@ public class InputOnlyWidget : Widget
 					{
 						// Creation failed, so detach ourselves from
 						// the parent's widget tree.
-						Detach();
+						Detach(false);
 					}
 				}
 			}
@@ -210,6 +211,7 @@ public class InputOnlyWidget : Widget
 						if(parent.AutoMapChildren)
 						{
 							Xlib.XMapWindow(display, window);
+							mapped = true;
 						}
 					}
 					finally
@@ -235,7 +237,7 @@ public class InputOnlyWidget : Widget
 					{
 						// Creation failed, so detach ourselves from
 						// the parent's widget tree.
-						Detach();
+						Detach(false);
 					}
 				}
 			}

@@ -395,6 +395,7 @@ System.Configuration.Install/Makefile
 JScript/Makefile
 Basic/Makefile
 DotGNU.Images/Makefile
+DotGNU.Images/JpegLib.cs
 Xsharp/Makefile
 Xsharp/Xlib.cs
 System.Drawing/Makefile
@@ -445,6 +446,9 @@ resources/ca_ES/Xsharp/Makefile
 resources/ca_ES/runtime/Makefile
 samples/Makefile
 samples/ilrun.sh
+samples/simple/Makefile
+samples/xsharp/Makefile
+samples/forms/Makefile
 tools/run_test.sh
 tools/link_res.sh
 tools/wrapper.sh

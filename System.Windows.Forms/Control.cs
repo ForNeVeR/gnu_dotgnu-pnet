@@ -81,6 +81,7 @@ public class Control : IWin32Window
 	private int controlStyle;
 	// The thread that was used to create the control.
 	private Thread createThread;
+	private Cursor cursor;
 
 	// Constructors.
 	public Control()
@@ -564,12 +565,38 @@ public class Control : IWin32Window
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(((Object)cursor) != null)
+					{
+						return cursor;
+					}
+					else if(parent != null)
+					{
+						return parent.Cursor;
+					}
+					else
+					{
+						return Cursors.Default;
+					}
 				}
 				set
 				{
-					// TODO
+					if(cursor != value)
+					{
+						cursor = value;
+						if(toolkitWindow != null)
+						{
+							if(value != null)
+							{
+								value.SetCursorOnWindow(toolkitWindow);
+							}
+							else
+							{
+								toolkitWindow.SetCursor
+									(ToolkitCursorType.InheritParent, null);
+							}
+						}
+						OnCursorChanged(EventArgs.Empty);
+					}
 				}
 			}
 	[TODO]
@@ -916,9 +943,11 @@ public class Control : IWin32Window
 								{
 									parent.children[posn] =
 										parent.children[posn + 1];
+									posn++;
 								}
 								break;
 							}
+							posn++;
 						}
 					}
 
@@ -1352,7 +1381,10 @@ public class Control : IWin32Window
 				int posn;
 				for(posn = 0; posn < numChildren; ++posn)
 				{
-					children[posn].CreateControlInner();
+					Control child = children[posn];
+					// We only need to create a control if its visible.
+					if (child.visible)
+						child.CreateControlInner();
 				}
 
 				// Map the control to the screen if it is visible.
@@ -1393,9 +1425,7 @@ public class Control : IWin32Window
 				{
 					if(parent != null && toolkitWindow.Parent != parent.toolkitWindow)
 					{
-						toolkitWindow.Reparent
-							(parent.toolkitWindow, left + ToolkitDrawOrigin.X,
-							top + ToolkitDrawOrigin.Y);
+						Reparent(parent);
 					}
 					return;
 				}
@@ -1417,6 +1447,12 @@ public class Control : IWin32Window
 				toolkitWindow.SetForeground(ForeColor);
 				toolkitWindow.SetBackground(BackColor);
 				// TODO: background images
+
+				// Set the initial cursor if we aren't inheriting our parent.
+				if(cursor != null)
+				{
+					cursor.SetCursorOnWindow(toolkitWindow);
+				}
 
 				createThread = Thread.CurrentThread;
 
@@ -1461,12 +1497,6 @@ public class Control : IWin32Window
 				if(toolkitWindow == null)
 				{
 					return;
-				}
-
-				// Remove the control from the screen if we are top-level.
-				if(Visible)
-				{
-					Visible = false;
 				}
 
 				// Destroy all of the child controls.
@@ -1714,13 +1744,13 @@ protected virtual void Dispose(bool disposing)
 	// Invalidate a region of the control and queue up a repaint request.
 	public void Invalidate()
 			{
-				if (toolkitWindow != null || !Visible)
+				if (toolkitWindow != null && Visible)
 					Invalidate(new Region(ClientRectangle), false);
 			}
 
 	public void Invalidate(bool invalidateChildren)
 			{
-				if (toolkitWindow != null || !Visible)
+				if (toolkitWindow != null && Visible)
 						Invalidate(new Region(ClientRectangle), invalidateChildren);
 			}
 
@@ -1790,7 +1820,7 @@ protected virtual void Dispose(bool disposing)
 					b.Offset(xOrigin, yOrigin);
 					b.Intersect(parentInvalidateBounds);
 					if (!b.IsEmpty)
-						toolkitWindow.Invalidate(b.X, b.Y, b.Width - 1, b.Height - 1);
+						toolkitWindow.Invalidate(b.X, b.Y, b.Width, b.Height);
 				}
 			}
 
@@ -1922,11 +1952,6 @@ protected virtual void Dispose(bool disposing)
 				for(posn = 0; posn < numChildren; posn++)
 				{
 					child = children[posn];
-					if(!(child.visible))
-					{
-						// This child is not visible, so skip it.
-						continue;
-					}
 					switch(child.Dock)
 					{
 						case DockStyle.None: break;
@@ -2252,10 +2277,9 @@ protected virtual void Dispose(bool disposing)
 			}
 
 	// Reset the cursor to its default value.
-	[TODO]
 	public virtual void ResetCursor()
 			{
-				// TODO
+				Cursor = null;
 			}
 
 	// Reset the foreground color to its default value.
@@ -3911,8 +3935,6 @@ protected virtual void Dispose(bool disposing)
 			}
 	protected virtual void OnPaint(PaintEventArgs e)
 			{
-				if (layoutSuspended > 0)
-					return;
 				PaintEventHandler handler;
 				handler = (PaintEventHandler)(GetHandler(EventId.Paint));
 				if(handler != null)
@@ -4152,11 +4174,12 @@ protected virtual void Dispose(bool disposing)
 				{
 					toolkitWindow.IsMapped = visible;
 				}
-				else if(Visible && !disposed && !(parent != null && !parent.IsHandleCreated) )
+				else if(visible && !disposed && (parent == null || parent.IsHandleCreated) )
 				{
 					// Create the toolkit window for the first time.
 					// This will also map the toolkit window to the screen.
 					CreateControl();
+					PerformLayout();
 				}
 
 				// Invoke the event handler.
@@ -4200,23 +4223,25 @@ protected virtual void Dispose(bool disposing)
 	// The control will end up at the bottom of the sibling stack.
 	private void Reparent(Control newParent)
 			{
-				if(toolkitWindow != null && newParent.toolkitWindow != null)
+				if(toolkitWindow == null)
 				{
-					if(newParent == null)
-					{
-						toolkitWindow.Reparent(null, left + ToolkitDrawOrigin.X,
-							top + ToolkitDrawOrigin.Y);
-					}
-					else
-					{
-						int xOffset = parent.ClientOrigin.X - parent.ToolkitDrawOrigin.X
-							+ ToolkitDrawOrigin.X;
-						int yOffset = parent.ClientOrigin.Y - parent.ToolkitDrawOrigin.Y
-							+ ToolkitDrawOrigin.Y;
-						toolkitWindow.Reparent
-							(newParent.toolkitWindow, left + xOffset,
-							top + yOffset);
-					}
+					return;
+				}
+
+				if(newParent == null)
+				{
+					toolkitWindow.Reparent(null, left + ToolkitDrawOrigin.X,
+						top + ToolkitDrawOrigin.Y);
+				}
+				else if (newParent.toolkitWindow != null)
+				{
+					int xOffset = parent.ClientOrigin.X - parent.ToolkitDrawOrigin.X
+						+ ToolkitDrawOrigin.X;
+					int yOffset = parent.ClientOrigin.Y - parent.ToolkitDrawOrigin.Y
+						+ ToolkitDrawOrigin.Y;
+					toolkitWindow.Reparent
+						(newParent.toolkitWindow, left + xOffset,
+						top + yOffset);
 					toolkitWindow.Lower();
 				}
 			}
@@ -4386,7 +4411,7 @@ protected virtual void Dispose(bool disposing)
 		public virtual void Add(Control value)
 				{
 					if(value != null)
-					{
+					{	
 						if(value.Parent == owner)
 						{
 							// We are already under this owner, so merely
@@ -4424,9 +4449,13 @@ protected virtual void Dispose(bool disposing)
 								owner.ResumeLayout(false);
 							}
 
-							// Now perform layout on the control.
-							if (owner.IsHandleCreated)
+							// Now perform layout on the control if necessary.
+							if (owner.IsHandleCreated && value.Visible)
+							{
+								// Make sure the control exists.
+								value.CreateControl();
 								owner.PerformLayout(value, "Parent");
+							}
 							// Notify the owner that the control was added.
 							owner.OnControlAdded
 								(new ControlEventArgs(value));
@@ -4882,9 +4911,17 @@ protected virtual void Dispose(bool disposing)
 				WindowStateChanged((FormWindowState)state);
 			}
 
-	// Close or state request received - processed by the "Form" class.
+	// Event that is emitted when the active MDI child window changes.
+	// The "child" parameter is null if a window has been deactivated.
+	void IToolkitEventSink.ToolkitMdiActivate(IToolkitWindow child)
+			{
+				MdiActivate(child);
+			}
+
+	// Messages that are processed by the "Form" class.
 	internal virtual void CloseRequest() {}
 	internal virtual void WindowStateChanged(FormWindowState state) {}
+	internal virtual void MdiActivate(IToolkitWindow child) {}
 
 	// Create a brush that can be used to fill with the background color/image.
 	internal Brush CreateBackgroundBrush()
@@ -5027,6 +5064,10 @@ protected virtual void Dispose(bool disposing)
 				set
 				{
 					borderStyle = value;
+					if (toolkitWindow != null)
+					{
+						toolkitWindow.Invalidate(0, 0, width, height);
+					}
 				}
 			}
 	[TODO]

@@ -41,7 +41,8 @@ internal struct XSelectionEvent
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
 	public Xlib.Window requestor
-			{ get { return common__.window; } }
+			{ get { return common__.window; }
+			  set { common__.window = requestor; } }
 
 	// Convert this object into a string.
 	public override String ToString()

@@ -436,16 +436,14 @@ public sealed class ControlPaint
 	public static void DrawReversibleFrame
 				(Rectangle rectangle, Color backColor, FrameStyle style)
 			{
-				ThemeManager.MainPainter.DrawReversibleFrame
-					(rectangle, backColor, style);
+				// This is too dangerous: not supported in this implementation.
 			}
 
 	// Draw a reversible line.
 	public static void DrawReversibleLine
 				(Point start, Point end, Color backColor)
 			{
-				ThemeManager.MainPainter.DrawReversibleLine
-					(start, end, backColor);
+				// This is too dangerous: not supported in this implementation.
 			}
 
 	// Draw a scroll button control.
@@ -511,8 +509,7 @@ public sealed class ControlPaint
 	public static void FillReversibleRectangle
 				(Rectangle rectangle, Color backColor)
 			{
-				ThemeManager.MainPainter.FillReversibleRectangle
-					(rectangle, backColor);
+				// This is too dangerous: not supported in this implementation.
 			}
 
 }; // class ControlPaint

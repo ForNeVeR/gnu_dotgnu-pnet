@@ -22,6 +22,8 @@
 namespace System.Drawing.Toolkit
 {
 
+using DotGNU.Images;
+
 // This interface provides a primitive windowing facility for
 // managing rectangular regions in a stack.  It can be used to
 // create owner-draw widgets and the like.
@@ -91,6 +93,12 @@ public interface IToolkitWindow : IDisposable
 
 	// Force an update of all invalidated regions.
 	void Update();
+
+	// Set the cursor.  The toolkit may ignore "frame" if it already
+	// has a system-defined association for "cursorType".  Setting
+	// "cursorType" to "ToolkitCursorType.InheritParent" will reset
+	// the cursor to be the same as the parent window's.
+	void SetCursor(ToolkitCursorType cursorType, Frame frame);
 
 }; // interface IToolkitWindow
 

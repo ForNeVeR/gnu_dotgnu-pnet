@@ -101,7 +101,7 @@ public class GroupBox : Control
 					#endif
 					}
 					flatStyle = value;
-					Redraw();
+					Invalidate();
 				}
 			}
 	public new bool TabStop
@@ -115,7 +115,7 @@ public class GroupBox : Control
 				set
 				{
 					base.Text = value;
-					Redraw();
+					Invalidate();
 				}
 			}
 
@@ -152,19 +152,19 @@ public class GroupBox : Control
 			}
 	protected override void OnFontChanged(EventArgs e)
 			{
-				Redraw();
+				Invalidate();
 				base.OnFontChanged(e);
 			}
 	protected override void OnMouseEnter(EventArgs e)
 			{
 				entered = true;
-				Redraw();
+				Invalidate();
 				base.OnMouseEnter(e);
 			}
 	protected override void OnMouseLeave(EventArgs e)
 			{
 				entered = false;
-				Redraw();
+				Invalidate();
 				base.OnMouseLeave(e);
 			}
 	protected override void OnPaint(PaintEventArgs e)
@@ -197,15 +197,6 @@ public class GroupBox : Control
 
 				// let the caller know that the mnemonic has been processed
 				return true;
-			}
-	private void Redraw()
-			{
-				if(!Visible || !IsHandleCreated) { return; }
-
-				using(Graphics graphics = CreateGraphics())
-				{
-					Draw(graphics);
-				}
 			}
 	public override String ToString()
 			{

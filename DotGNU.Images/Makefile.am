@@ -8,6 +8,7 @@ DotGNU.Images.dll:
 			-f "$(srcdir)/DotGNU.Images.build" all
 
 CLEANFILES = DotGNU.Images.dll
+DISTCLEANFILES = JpegLib.cs
 
 install-data-local:
 	@$(NORMAL_INSTALL)

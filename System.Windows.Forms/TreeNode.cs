@@ -21,423 +21,32 @@
 
 namespace System.Windows.Forms
 {
-
 	using System;
 	using System.Drawing;
 	using System.Text;
 	using System.Globalization;
+	using System.Runtime.Serialization;
 
-	public class TreeNode : ICloneable//, ISerializable
+	public class TreeNode : /*MarshalByRefObject,*/ ICloneable, ISerializable
 	{
-		internal int index;
+		internal Color backColor;
 		internal int childCount = 0;
 		internal TreeNode[] children;
-		internal TreeNode parent;
 		internal bool expanded;
-		internal Rectangle bounds;
-		internal Rectangle hierarchyMarkerBounds;
-		// The y coordinate of the marker line.
-		internal int markerLineY;
-		internal TreeView treeView;
-		private string text;
-		internal bool isChecked;
+		internal Color foreColor;
 		private int imageIndex;
-		private int selectedImageIndex;
+		internal int index;
+		internal bool isChecked;
+		internal Font nodeFont;
 		private TreeNodeCollection nodes;
+		internal TreeNode parent;
+		private int selectedImageIndex;
 		private object tag;
-		private Font nodeFont;
-		// Size of this text in pixels.
-		internal Size textSize = Size.Empty;
+		internal string text;
+		internal TreeView treeView;
 
-		public TreeNode()
-		{
-			imageIndex = -1;
-			selectedImageIndex = -1;
-		}
-
-		internal TreeNode(TreeView treeView) : this()
-		{
-			this.treeView = treeView;
-		}
-
-		public TreeNode(string text) : this()
-		{
-			this.text = text;
-		}
-
-		public TreeNode(string text, TreeNode[] children) : this()
-		{
-			this.text = text;
-			Nodes.AddRange(children);
-		}
-
-		public TreeNode(string text, int imageIndex, int selectedImageIndex) : this(text)
-		{
-			this.imageIndex = imageIndex;
-			this.selectedImageIndex = selectedImageIndex;
-		}
-
-		public TreeNode(string text, int imageIndex, int selectedImageIndex, TreeNode[] children) : this (text, imageIndex, selectedImageIndex)
-		{
-			Nodes.AddRange(children);
-		}
-
-		public virtual object Clone()
-		{
-			TreeNode node = new TreeNode(text, imageIndex, selectedImageIndex);
-			if (childCount > 0)
-			{
-				node.children = new TreeNode[childCount];
-				for (int i = 0; i < childCount; i++)
-					node.Nodes.Add(children[i].Clone() as TreeNode);
-			}
-			node.Checked = Checked;
-			node.Tag = Tag;
-			return node;
-		}
-
-		public override string ToString()
-		{
-			return "TreeNode: " + (text == null ? "" : text);
-		}
-
-		// TODO Property Bag
-		public Color BackColor
-		{
-			get
-			{
-				return Color.Empty;
-			}
-			set
-			{
-
-				// TODO
-				Color color = BackColor;
-				if (value.IsEmpty)
-				{
-					if (!color.IsEmpty)
-					{
-						value = color;
-						treeView.ResetView();
-					}
-					return;      
-				}
-				if (value != color)
-				{
-					treeView.ResetView();
-				}
-			}
-		}
-
-		public Rectangle Bounds
-		{
-			get
-			{
-				return bounds;
-			}
-		}
-
-		public bool Checked
-		{
-			get
-			{
-				return isChecked;
-			}
-		
-			set
-			{
-				TreeView treeView = TreeView;
-				if (treeView != null)
-				{
-					TreeViewCancelEventArgs e = new TreeViewCancelEventArgs(this, false, TreeViewAction.Unknown);
-					treeView.OnBeforeCheck(e);
-					if (e.Cancel)
-						return;
-					isChecked = value;
-					treeView.DrawLine(this);
-					treeView.OnAfterCheck(new TreeViewEventArgs(this, TreeViewAction.Unknown));
-				}
-				else
-					isChecked = value;
-			}
-		}
-
-		public TreeNode FirstNode
-		{
-			get
-			{
-				if (childCount == 0)
-					return null;
-				else
-					return children[0];   
-			}
-		}
-
-		private TreeNode FirstVisibleParent
-		{
-			get
-			{
-				TreeNode node = this;
-				while (node != null)
-				{
-					if (node.Bounds.IsEmpty)
-						node = node.Parent;
-					else
-						return node;
-				}
-					
-				return node;  
-			}
-		}
-
-		// TODO
-		public Color ForeColor
-		{
-			get
-			{
-				return Color.Empty;
-			}
-			set
-			{
-			}
-		}
-					
-		public string FullPath
-		{
-			get
-			{
-				StringBuilder s = new StringBuilder();
-				GetFullPath(s, TreeView.PathSeparator);
-				return s.ToString();
-			}
-		}
-
-		public IntPtr Handle
-		{
-			get
-			{
-				// This is not used in this implementation
-				return IntPtr.Zero;
-			}
-		}
-
-		public int ImageIndex
-		{
-			get
-			{
-				if (imageIndex == -1 && treeView != null)
-					return treeView.ImageIndex;
-				return imageIndex;
-			}
-			set
-			{
-				imageIndex = value;
-				treeView.DrawLine(this);
-			}
-		}
-
-		public int Index
-		{
-			get
-			{
-				return index;
-			}
-		}
-
-		public bool IsEditing
-		{
-			get
-			{
-				if (TreeView == null)
-					return false;
-				else
-					return TreeView.editNode == this;
-			}
-		}
-
-		public bool IsExpanded
-		{
-			get
-			{
-				return expanded;
-			}
-		}
-
-		public bool IsSelected
-		{
-			get
-			{
-				if (treeView == null)
-					return false;
-				return treeView.selectedNode == this;
-			}
-		}
-
-		public bool IsVisible
-		{
-			get
-			{
-				if (treeView == null || !treeView.Visible)
-					return false;
-				return bounds != Rectangle.Empty;
-			}
-		}
-
-		public TreeNode LastNode
-		{
-			get
-			{
-				if (childCount == 0)
-					return null;
-				else
-					return children[childCount - 1];
-			}
-		}
-
-		public TreeNode NextNode
-		{
-			get
-			{
-				if (index < parent.Nodes.Count - 1)
-					return parent.Nodes[index + 1];
-				else
-					return null;
-			}
-		}
-
-		public TreeNode NextVisibleNode
-		{
-			get
-			{
-				
-				TreeNode node = FirstVisibleParent;
-				if (node != null)
-				{
-					// TODO
-					return null;
-				}
-				else
-					return null;
-			}
-		}
-
-		// TODO
-		public Font NodeFont
-		{
-			get
-			{
-				return nodeFont;
-			}
-			set
-			{
-				if (value != nodeFont)
-				{
-					nodeFont = value;
-					textSize = Size.Empty;
-				}
-				if (treeView != null && bounds != Rectangle.Empty)
-					treeView.Draw(this);
-			}
-		}
-
-		public TreeNodeCollection Nodes
-		{
-			get
-			{
-				if (nodes == null)
-					nodes = new TreeNodeCollection(this);
-				return nodes;
-			}
-		}
-
-		public TreeNode Parent
-		{
-			get
-			{
-				if (TreeView != null && parent == TreeView.root)
-					return null;
-				return parent;
-			}
-		}
-
-		public TreeNode PrevNode
-		{
-			get
-			{
-				if (index > 0 && index <= parent.Nodes.Count)
-					return parent.Nodes[index - 1];
-				else
-					return null;
-			}
-		}
-
-		public TreeNode PrevVisibleNode
-		{
-			get
-			{
-				TreeNode node = FirstVisibleParent;
-				if (node != null)
-				{
-					// TODO
-					return null;
-				}
-				else
-					return null;
-			}
-		}
-
-		public int SelectedImageIndex
-		{
-			get
-			{
-				if (selectedImageIndex == -1 && treeView != null)
-					return treeView.SelectedImageIndex;
-				return selectedImageIndex;
-			}
-			set
-			{
-				selectedImageIndex = value;
-				treeView.DrawLine(this);
-			}
-		}
-
-		public object Tag
-		{
-			get
-			{
-				return tag;
-			}
-			set
-			{
-				tag = value;
-			}
-		}
-
-		public string Text
-		{
-			get
-			{
-				if (text == null)
-					return String.Empty;
-				else
-					return text;
-			}
-			set
-			{
-				text = value;
-				textSize = Size.Empty;
-				if (treeView != null && bounds != Rectangle.Empty)
-					treeView.DrawLine(this);
-			}
-		}
-
-		public TreeView TreeView
-		{
-			get
-			{
-				return treeView;
-			}
-		}
+		// Must GO:
+		internal int markerLineY;
 
 		internal int AddSorted(TreeNode node)
 		{
@@ -468,78 +77,115 @@ namespace System.Windows.Forms
 
 			node.SortChildren();
 			InsertNodeAt(pos, node);
-			if (TreeView != null && node == TreeView.selectedNode)
-				TreeView.SelectedNode = node;
+			if (treeView != null && node == treeView.selectedNode)
+			{
+				treeView.SelectedNode = node;
+			}
 			return pos;
 		}
 
-		// Not used in this implementation
-		public static TreeNode FromHandle(TreeView tree, IntPtr handle)
+		public Color BackColor
 		{
-			return null;
-		}
-
-		private void SortChildren()
-		{
-			if (childCount > 0)
+			get
 			{
-				TreeNode[] sort = new TreeNode[childCount];
-				CompareInfo compare = Application.CurrentCulture.CompareInfo;
-				for (int i = 0; i < childCount; i++)
+				// TODO:Property Bag
+				return backColor;
+			}
+			set
+			{
+				// TODO:Property Bag
+				if (value == backColor)
 				{
-
-					int pos = -1;
-					for (int j = 0; j < childCount; j++)
-					{
-						if (children[j] != null)
-						{
-							if (pos == -1)
-								pos = j;
-							else
-								if (compare.Compare(children[j].Text, children[pos].Text) < 0)
-									pos = j;
-						}
-					}
-					sort[i] = children[pos];
-					children[pos] = null;
-					sort[i].index = i;
-					sort[i].SortChildren();
+					return;
 				}
-				children = sort;
+				backColor = value;
+				Invalidate();
 			}
 		}
 
 		public void BeginEdit()
 		{
-			if (treeView != null)
+			if (treeView.toolkitWindow != null)
 			{
-				if (!TreeView.LabelEdit)
-					throw new Exception("LabelEdit is false");
-				if (!TreeView.Focused)
-					TreeView.Focus();
+				if (!treeView.LabelEdit)
+				{
+					throw new Exception(S._("SWF_TreeNodeLabelEditFalse"));
+				}
+				if (!treeView.Focused)
+				{
+					treeView.Focus();
+				}
 				treeView.BeginEdit(this);
+			}
+		}
+
+		public Rectangle Bounds
+		{
+			get
+			{
+				return treeView.GetNodeBounds(this);
+			}
+		}
+
+		public bool Checked
+		{
+			get
+			{
+				return isChecked;
+			}
+		
+			set
+			{
+				if (treeView != null)
+				{
+					TreeViewCancelEventArgs e = new TreeViewCancelEventArgs(this, false, TreeViewAction.Unknown);
+					treeView.OnBeforeCheck(e);
+					if (e.Cancel)
+					{
+						return;
+					}
+					isChecked = value;
+					Invalidate();
+					treeView.OnAfterCheck(new TreeViewEventArgs(this, TreeViewAction.Unknown));
+				}
+				else
+				{
+					isChecked = value;
+				}
 			}
 		}
 
 		internal void Clear()
 		{
-			while (childCount > 0)
-				children[(childCount - 1)].Remove();
 			children = null;
+			childCount = 0;
+		}
+
+		public virtual object Clone()
+		{
+			TreeNode node = new TreeNode(text, imageIndex, selectedImageIndex);
+			if (childCount > 0)
+			{
+				node.children = new TreeNode[childCount];
+				for (int i = 0; i < childCount; i++)
+					node.Nodes.Add(children[i].Clone() as TreeNode);
+			}
+			node.Checked = Checked;
+			node.Tag = Tag;
+			return node;
 		}
 
 		public void Collapse()
 		{
 			CollapseInternal();
-			treeView.Draw(this);
+			treeView.InvalidateDown(this);
 		}
 
-		public void CollapseInternal()
+		// Collapse the children recursively but don't redraw.
+		private void CollapseInternal()
 		{
-			if (!expanded)
-				return;
-			expanded = false;
 			bool selected = false;
+			// Recursively collapse, if a child was selected, mark to select the parent.
 			if (childCount > 0)
 			{
 				for (int i = 0; i < childCount; i++)
@@ -549,57 +195,162 @@ namespace System.Windows.Forms
 					children[i].CollapseInternal();
 				}
 			}
+			// Do the events.
 			TreeViewCancelEventArgs eventArgs = new TreeViewCancelEventArgs(this, false, TreeViewAction.Collapse);
 			treeView.OnBeforeCollapse(eventArgs);
 			if (!eventArgs.Cancel)
+			{
 				treeView.OnAfterCollapse(new TreeViewEventArgs(this));
+				// The node is now collapsed.
+				expanded = false;
+			}
 			if (selected)
+			{
 				treeView.SelectedNode = this;
+			}
 		}
 
 		public void EndEdit(bool cancel)
 		{
 			if (treeView != null)
-				treeView.EndEdit();
-		}
-
-		internal void SizeChildrenArray()
-		{
-			if (children == null)
-				children = new TreeNode[10];
-			else if (childCount == children.Length)
 			{
-				TreeNode[] copy = new TreeNode[childCount * 2];
-				Array.Copy(children, 0, copy, 0, childCount);
-				children = copy;
+				treeView.EndEdit(cancel);
 			}
 		}
 
 		public void EnsureVisible()
 		{
-			// TODO
+			Expand();
+			// Find "this" node number and position from the top control.
+			int nodeFromTop = -1;
+			int nodeNo = 0;
+			TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(this.nodes);
+			while (nodes.MoveNext())
+			{
+				if (nodes.currentNode == treeView.topNode)
+				{
+					// We are at the top of the control.
+					nodeFromTop = 0;
+				}
+				if (nodes.currentNode == this)
+				{
+					break;
+				}
+				if (nodeFromTop >= 0)
+				{
+					nodeFromTop++;
+				}
+				nodeNo++;
+			}
+
+			int visibleNodes = treeView.VisibleCount;
+			// See if its already visible.
+			if (nodeFromTop >= 0 && nodeFromTop <= visibleNodes)
+			{
+				return;
+			}
+
+			// Set the top node no we want to make this node 1 up from the bottom.
+			nodeFromTop = nodeNo - visibleNodes - 1;
+			if (nodeFromTop < 0)
+			{
+				nodeFromTop = 0;
+			}
+
+			// Find the node corresponding to this node no.
+			nodes.Reset();
+			nodeNo = 0;
+			while (nodes.MoveNext())
+			{
+				if (nodeFromTop == nodeNo)
+				{
+					treeView.topNode = nodes.currentNode;
+					treeView.Invalidate();
+					break;
+				}
+				nodeNo++;
+			}
 		}
 
 		public void Expand()
 		{
-			if (!expanded)
+			if (expanded)
 			{
-				TreeNode highestNode = null;
-				for (TreeNode node = this; node != null; node = node.Parent)
-				{
-					node.expanded = true;
-					highestNode = this;
-				}
-				// Draw from this node down
-				treeView.Draw(highestNode);
+				return;
 			}
+			TreeNode node = this;
+			node.expanded = true;
+			if (treeView == null)
+			{
+				return;
+			}
+
+			TreeNode highestNode = node;
+			for (; node != null; node = node.Parent)
+			{
+				node.expanded = true;
+				highestNode = node;
+			}
+			treeView.InvalidateDown(highestNode);
 		}
 
 		public void ExpandAll()
 		{
 			Expand();
 			for (int i = 0; i < childCount; i++)
+			{
 				children[i].ExpandAll();
+			}
+		}
+
+		public TreeNode FirstNode
+		{
+			get
+			{
+				if (childCount == 0)
+				{
+					return null;
+				}
+				else
+				{
+					return children[0];
+				}
+			}
+		}
+
+		public Color ForeColor
+		{
+			get
+			{
+				// TODO:Property Bag
+				return foreColor;
+			}
+			set
+			{
+				// TODO:Property Bag
+				if (value == foreColor)
+				{
+					return;
+				}
+				foreColor = value;
+				Invalidate();
+			}
+		}
+					
+		// Not used in this implementation
+		public static TreeNode FromHandle(TreeView tree, IntPtr handle)
+		{
+			return null;
+		}
+
+		public string FullPath
+		{
+			get
+			{
+				StringBuilder s = new StringBuilder();
+				GetFullPath(s, TreeView.PathSeparator);
+				return s.ToString();
+			}
 		}
 
 		private void GetFullPath(StringBuilder path, string pathSeparator)
@@ -608,7 +359,9 @@ namespace System.Windows.Forms
 				return;
 			parent.GetFullPath(path, pathSeparator);
 			if (parent.parent != null)
+			{
 				path.Append(pathSeparator);
+			}
 			path.Append(text);
 		}
 
@@ -616,35 +369,65 @@ namespace System.Windows.Forms
 		{
 			int count = childCount;
 			if (includeSubTrees)
+			{
 				for (int i = 0; i < childCount; i++)
+				{
 					count += children[i].GetNodeCount(true);
+				}
+			}
 			return count;
 		}
 
-		public void Remove()
+		void System.Runtime.Serialization.ISerializable.GetObjectData(SerializationInfo si, StreamingContext context)
 		{
-			for (int i = 0; i < childCount; i++)
-				children[i].Remove();
-			for (int i = index; i < parent.childCount - 1; i++)
+			si.AddValue("Text", text);
+			si.AddValue("IsChecked", isChecked);
+			si.AddValue("ImageIndex", imageIndex);
+			si.AddValue("SelectedImageIndex", selectedImageIndex);
+			si.AddValue("ChildCount", childCount);
+			if (childCount > 0)
 			{
-				TreeNode node = parent.children[i + 1];
-				parent.children[i] = parent.children[i + 1];
-				node.index = i;
+				for (int i = 0; i < childCount; i++)
+				{
+					si.AddValue("children"+ i, children[i], typeof(TreeNode));
+				}
 			}
-			parent.childCount--;
-			parent = null;
-			// If its visible, redraw
-			if (treeView != null && bounds != Rectangle.Empty)
-				treeView.Draw(this);
-			treeView = null;
+			if (tag != null && tag.GetType().IsSerializable)
+			{
+				si.AddValue("UserData", tag, tag.GetType());
+			}
 		}
 
-		public void Toggle()
+		// This is not used in this implementation.
+		public IntPtr Handle
 		{
-			if (expanded)
-				Collapse();
-			else
-				Expand();
+			get
+			{
+				return IntPtr.Zero;
+			}
+		}
+
+		public int ImageIndex
+		{
+			get
+			{
+				return imageIndex;
+			}
+			set
+			{
+				if (imageIndex == value)
+					return;
+				imageIndex = value;
+				Invalidate();
+			}
+		}
+
+		public int Index
+		{
+			get
+			{
+				return index;
+			}
 		}
 
 		internal void InsertNodeAt(int index, TreeNode node)
@@ -664,13 +447,382 @@ namespace System.Windows.Forms
 			if (treeView != null)
 			{
 				if (childCount == 1 && IsVisible)
-					treeView.DrawLine(this);
+				{
+					Invalidate();
+				}
 				else if (expanded && children[index - 1].IsVisible)
-					treeView.Draw(node);
+				{
+					treeView.InvalidateDown(node);
+				}
 			}
 		}
 
+		internal void Invalidate()
+		{
+			if (treeView == null || !treeView.IsHandleCreated)
+			{
+				return;
+			}
+			Rectangle bounds = Bounds;
+			if (bounds != Rectangle.Empty)
+			{
+				// Include the focus rectangle.
+				bounds = new Rectangle(0, bounds.Y - 1, bounds.Right + 2, bounds.Height + 2);
+				treeView.Invalidate(bounds);
+			}
+		}
 
+		public bool IsEditing
+		{
+			get
+			{
+				if (treeView == null)
+				{
+					return false;
+				}
+				else
+				{
+					return (treeView.editNode == this);
+				}
+			}
+		}
+
+		public bool IsExpanded
+		{
+			get
+			{
+				return expanded;
+			}
+		}
+
+		public bool IsSelected
+		{
+			get
+			{
+				if (treeView == null)
+					return false;
+				return treeView.selectedNode == this;
+			}
+		}
+
+		public bool IsVisible
+		{
+			get
+			{
+				if (treeView == null || !treeView.Visible)
+					return false;
+				Rectangle bounds = Bounds;
+				if (bounds == Rectangle.Empty)
+					return false;
+				return (treeView.ClientRectangle.IntersectsWith(bounds));
+			}
+		}
+
+		public TreeNode LastNode
+		{
+			get
+			{
+				if (childCount == 0)
+					return null;
+				else
+					return children[childCount - 1];
+			}
+		}
+
+		public TreeNode NextNode
+		{
+			get
+			{
+				if (index < parent.Nodes.Count - 1)
+					return parent.Nodes[index + 1];
+				else
+					return null;
+			}
+		}
+
+		public TreeNode NextVisibleNode
+		{
+			get
+			{
+				bool pastThis = false;
+				TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(treeView.nodes);
+				while (nodes.MoveNext())
+				{
+					if (pastThis)
+					{
+						if (nodes.currentNode.parent.expanded)
+						{
+							return nodes.currentNode;
+						}
+					}
+					else if (nodes.currentNode == this)
+					{
+						pastThis = true;
+					}
+				}
+				return null;
+			}
+		}
+
+		public Font NodeFont
+		{
+			get
+			{
+				// TODO:Property Bag
+				return nodeFont;
+			}
+			set
+			{
+				// TODO:Property Bag
+				if (value == nodeFont)
+				{
+					return;
+				}
+				nodeFont = value;
+				Invalidate();
+			}
+		}
+
+		public TreeNodeCollection Nodes
+		{
+			get
+			{
+				if (nodes == null)
+				{
+					nodes = new TreeNodeCollection(this);
+				}
+				return nodes;
+			}
+		}
+
+		public TreeNode Parent
+		{
+			get
+			{
+				if (treeView != null && parent == treeView.root)
+				{
+					return null;
+				}
+				return parent;
+			}
+		}
+
+		public TreeNode PrevNode
+		{
+			get
+			{
+				if (index > 0 && index <= parent.Nodes.Count)
+				{
+					return parent.Nodes[index - 1];
+				}
+				else
+				{
+					return null;
+				}
+			}
+		}
+
+		public TreeNode PrevVisibleNode
+		{
+			get
+			{
+				TreeNode visibleNode = FirstNode;
+				TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(treeView.nodes);
+				while (nodes.MoveNext())
+				{
+					if (nodes.currentNode == this)
+					{
+						break;
+					}
+					else if (nodes.currentNode.parent.expanded)
+					{
+						visibleNode = nodes.currentNode;
+					}
+				}
+				return visibleNode;
+			}
+		}
+
+		public void Remove()
+		{
+			// If we need to, redraw the parent.
+			if (treeView != null)
+			{
+				treeView.InvalidateDown(this);
+				treeView = null;
+			}
+			// Remove children.
+			for (int i = 0; i < childCount; i++)
+			{
+				children[i].Remove();
+			}
+			// Remove out of parent's children.
+			for (int i = index; i < parent.childCount - 1; i++)
+			{
+				TreeNode node = parent.children[i + 1];
+				node.index = i;
+				parent.children[i] = node;
+			}
+			parent.childCount--;
+			parent = null;
+		}
+
+		public int SelectedImageIndex
+		{
+			get
+			{
+				return selectedImageIndex;
+			}
+			set
+			{
+				selectedImageIndex = value;
+				Invalidate();
+			}
+		}
+
+		internal void SizeChildrenArray()
+		{
+			if (children == null)
+			{
+				children = new TreeNode[10];
+			}
+			else if (childCount == children.Length)
+			{
+				TreeNode[] copy = new TreeNode[childCount * 2];
+				Array.Copy(children, 0, copy, 0, childCount);
+				children = copy;
+			}
+		}
+
+		private void SortChildren()
+		{
+			if (childCount > 0)
+			{
+				TreeNode[] sort = new TreeNode[childCount];
+				CompareInfo compare = Application.CurrentCulture.CompareInfo;
+				for (int i = 0; i < childCount; i++)
+				{
+
+					int pos = -1;
+					for (int j = 0; j < childCount; j++)
+					{
+						if (children[j] != null)
+						{
+							if (pos == -1 || compare.Compare(children[j].Text, children[pos].Text) < 0)
+							{
+								pos = j;
+							}
+						}
+					}
+					sort[i] = children[pos];
+					children[pos] = null;
+					sort[i].index = i;
+					sort[i].SortChildren();
+				}
+				children = sort;
+			}
+		}
+
+		public object Tag
+		{
+			get
+			{
+				return tag;
+			}
+			set
+			{
+				tag = value;
+			}
+		}
+
+		public string Text
+		{
+			get
+			{
+				if (text == null)
+					return String.Empty;
+				else
+					return text;
+			}
+			set
+			{
+				text = value;
+				Invalidate();
+			}
+		}
+
+		public void Toggle()
+		{
+			if (expanded)
+			{
+				Collapse();
+			}
+			else
+			{
+				Expand();
+			}
+		}
+
+		public override string ToString()
+		{
+			String s = base.ToString();
+			if (nodes != null)
+			{
+				s += ", Nodes.Count: " + childCount;
+				if (childCount > 0)
+				{
+					s += ", Nodes[0]: " + nodes[0];
+				}
+			}
+			return s;
+		}
+
+		public TreeNode()
+		{
+			imageIndex = -1;
+			selectedImageIndex = -1;
+			backColor = Color.Empty;
+		}
+
+		internal TreeNode(TreeView treeView) : this()
+		{
+			this.treeView = treeView;
+		}
+
+		public TreeNode(string text) : this()
+		{
+			this.text = text;
+		}
+
+		public TreeNode(string text, TreeNode[] children) : this()
+		{
+			this.text = text;
+			Nodes.AddRange(children);
+		}
+
+		public TreeNode(string text, int imageIndex, int selectedImageIndex) : this()
+		{
+			this.text = text;
+			this.imageIndex = imageIndex;
+			this.selectedImageIndex = selectedImageIndex;
+		}
+
+		public TreeNode(string text, int imageIndex, int selectedImageIndex, TreeNode[] children) : this ()
+		{
+			this.text = text;
+			this.imageIndex = imageIndex;
+			this.selectedImageIndex = selectedImageIndex;
+			Nodes.AddRange(children);
+		}
+
+		public TreeView TreeView
+		{
+			get
+			{
+				return treeView;
+			}
+		}
+		
 }; // class TreeNode
 
 }; // namespace System.Windows.Forms

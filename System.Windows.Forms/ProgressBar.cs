@@ -65,20 +65,6 @@ namespace System.Windows.Forms
 				                                         value, this.Enabled);
 			}
 
-
-		private void Redraw()
-			{
-				if(!Visible || !IsHandleCreated)
-				{
-					return;
-				}
-
-				using(Graphics graphics = CreateGraphics())
-				{
-					Draw(graphics);
-				}
-			}
-
 		protected override void OnPaint(PaintEventArgs args)
 			{
 				Draw(args.Graphics);
@@ -88,13 +74,13 @@ namespace System.Windows.Forms
 		public void Increment(int value)
 			{
 				Value=this.value+value;
-				Redraw();
+				Invalidate();
 			}
 
 		public void PerformStep()
 			{
 				value=(value + (step - (value % step)));
-				Redraw();
+				Invalidate();
 			}
 
 		protected override Size DefaultSize 
@@ -120,7 +106,7 @@ namespace System.Windows.Forms
 					}
 					max=value;
 					range=max-min;
-					Redraw();
+					Invalidate();
 				}
 	 		}
 
@@ -139,7 +125,7 @@ namespace System.Windows.Forms
 					}
 					min=value;
 					range=max-min;
-					Redraw();
+					Invalidate();
 				}
 
  			}
@@ -158,7 +144,7 @@ namespace System.Windows.Forms
 						throw new ArgumentOutOfRangeException("Step");
 					}
 					step=value;
-					Redraw();
+					Invalidate();
 				}
 
  			}
@@ -177,7 +163,7 @@ namespace System.Windows.Forms
 						throw new ArgumentOutOfRangeException("Value");
 					}
 					this.value=value;
-					Redraw();
+					Invalidate();
 				}
 
 	 		}
@@ -185,8 +171,7 @@ namespace System.Windows.Forms
 		protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 			{
 				base.SetBoundsCore (x, y, width, height, specified);
-				using (Graphics g = CreateGraphics())
-					Draw(g);
+				Invalidate();
 			}
 	}
 }//namespace

@@ -33,8 +33,10 @@ public class CultureInfo : ICloneable, IFormatProvider
 
 	// Cached culture objects.
 	private static CultureInfo invariantCulture;
+	[ThreadStatic] private static CultureInfo currentCulture;
+	[ThreadStatic] private static CultureInfo currentUICulture;
 #if CONFIG_REFLECTION
-	private static CultureInfo currentCulture;
+	private static CultureInfo globalCulture;
 	private static bool gettingCurrent;
 #endif
 
@@ -152,16 +154,16 @@ public class CultureInfo : ICloneable, IFormatProvider
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static String InternalCultureName();
 
-	// Get the current culture object for the running thread.
-	public static CultureInfo CurrentCulture
+	// Get the global culture object for the running process.
+	private static CultureInfo GlobalCulture
 			{
 				get
 				{
 					lock(typeof(CultureInfo))
 					{
-						if(currentCulture != null)
+						if(globalCulture != null)
 						{
-							return currentCulture;
+							return globalCulture;
 						}
 						if(gettingCurrent)
 						{
@@ -197,22 +199,22 @@ public class CultureInfo : ICloneable, IFormatProvider
 						if(handler == null)
 						{
 							// Could not find a handler, so use invariant.
-							currentCulture = InvariantCulture;
+							globalCulture = InvariantCulture;
 							gettingCurrent = false;
-							return currentCulture;
+							return globalCulture;
 						}
-						currentCulture = new CultureInfo(handler, true);
-						currentCulture.readOnly = true;
+						globalCulture = new CultureInfo(handler, true);
+						globalCulture.readOnly = true;
 						gettingCurrent = false;
-						return currentCulture;
+						return globalCulture;
 					}
 				}
 			}
 
 #else // !CONFIG_REFLECTION
 
-	// Get the current culture object for the running thread.
-	public static CultureInfo CurrentCulture
+	// Get the global culture object for the running process.
+	private static CultureInfo GlobalCulture
 			{
 				get
 				{
@@ -223,15 +225,50 @@ public class CultureInfo : ICloneable, IFormatProvider
 
 #endif // !CONFIG_REFLECTION
 
+	// Get the current culture object for the running thread.
+	public static CultureInfo CurrentCulture
+			{
+				get
+				{
+					if(currentCulture == null)
+					{
+						currentCulture = GlobalCulture;
+					}
+					return currentCulture;
+				}
+			}
+
+	// Set the current culture.
+	internal static void SetCurrentCulture(CultureInfo value)
+			{
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				currentCulture = value;
+			}
+
 	// Get the current UI culture object for the running thread.
 	public static CultureInfo CurrentUICulture
 			{
 				get
 				{
-					// Just use the current culture, since most platforms
-					// do not distinguish between UI and non-UI cultures.
-					return CurrentCulture;
+					if(currentUICulture == null)
+					{
+						currentUICulture = GlobalCulture;
+					}
+					return currentUICulture;
 				}
+			}
+
+	// Set the current UI culture.
+	internal static void SetCurrentUICulture(CultureInfo value)
+			{
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				currentUICulture = value;
 			}
 
 	// Get the installed UI culture object for the system.
@@ -239,9 +276,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					// Just use the current culture, since most platforms
-					// do not distinguish between UI and non-UI cultures.
-					return CurrentCulture;
+					return GlobalCulture;
 				}
 			}
 

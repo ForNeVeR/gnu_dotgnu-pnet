@@ -3,6 +3,7 @@
  *			"System.Windows.Forms.Cursors" class.
  *
  * Copyright (C) 2003 Neil Cawse.
+ * Copyright (C) 2003 Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,8 @@
  */
 namespace System.Windows.Forms
 {
+	using System.Drawing.Toolkit;
+
 	public sealed class Cursors 
 	{
 		private static Cursor appStarting;
@@ -51,261 +54,455 @@ namespace System.Windows.Forms
 		private static Cursor panWest;
 		private static Cursor hand;
 
+		// Cannot instantiate this class.
+		private Cursors() {}
+
 		public static Cursor AppStarting
 		{
 			get
 			{
-				if (appStarting == null)
-					appStarting = new Cursor(Cursor.CursorType.AppStarting);
-				return appStarting;
+				lock(typeof(Cursors))
+				{
+					if(appStarting == null)
+					{
+						appStarting = new Cursor
+							(ToolkitCursorType.AppStarting,
+							 typeof(Cursors), "appstarting.cur");
+					}
+					return appStarting;
+				}
 			}
 		}
-
 		public static Cursor Arrow
 		{
 			get
 			{
-				if (arrow == null)
-					arrow = new Cursor(Cursor.CursorType.Arrow);
-				return arrow;
+				lock(typeof(Cursors))
+				{
+					if(arrow == null)
+					{
+						arrow = new Cursor
+							(ToolkitCursorType.Arrow,
+							 typeof(Cursors), "normal.cur");
+					}
+					return arrow;
+				}
 			}
 		}
-
 		public static Cursor Cross
 		{
 			get
 			{
-				if (cross == null)
-					cross = new Cursor(Cursor.CursorType.Cross);
-				return cross;
+				lock(typeof(Cursors))
+				{
+					if(cross == null)
+					{
+						cross = new Cursor
+							(ToolkitCursorType.Cross,
+							 typeof(Cursors), "cross.cur");
+					}
+					return cross;
+				}
 			}
 		}
-
 		public static Cursor Default
 		{
 			get
 			{
-				if (defaultCursor == null)
-					defaultCursor = new Cursor(Cursor.CursorType.Default);
-				return defaultCursor;
+				lock(typeof(Cursors))
+				{
+					if(defaultCursor == null)
+					{
+						defaultCursor = new Cursor
+							(ToolkitCursorType.Default,
+							 typeof(Cursors), "normal.cur");
+					}
+					return defaultCursor;
+				}
 			}
 		}
-
 		public static Cursor IBeam
 		{
 			get
 			{
-				if (iBeam == null)
-					iBeam = new Cursor(Cursor.CursorType.IBeam);
-				return iBeam;
+				lock(typeof(Cursors))
+				{
+					if(iBeam == null)
+					{
+						iBeam = new Cursor
+							(ToolkitCursorType.IBeam,
+							 typeof(Cursors), "ibeam.cur");
+					}
+					return iBeam;
+				}
 			}
 		}
-
 		public static Cursor No
 		{
 			get
 			{
-				if (no == null)
-					no = new Cursor(Cursor.CursorType.No);
-				return no;
+				lock(typeof(Cursors))
+				{
+					if(no == null)
+					{
+						no = new Cursor
+							(ToolkitCursorType.No,
+							 typeof(Cursors), "no.cur");
+					}
+					return no;
+				}
 			}
 		}
 		public static Cursor SizeAll
 		{
 			get
 			{
-				if (sizeAll == null)
-					sizeAll = new Cursor(Cursor.CursorType.SizeAll);
-				return sizeAll;
+				lock(typeof(Cursors))
+				{
+					if(sizeAll == null)
+					{
+						sizeAll = new Cursor
+							(ToolkitCursorType.SizeAll,
+							 typeof(Cursors), "sizeall.cur");
+					}
+					return sizeAll;
+				}
 			}
 		}
 		public static Cursor SizeNESW
 		{
 			get
 			{
-				if (sizeNESW == null)
-					sizeNESW = new Cursor(Cursor.CursorType.SizeNESW);
-				return sizeNESW;
+				lock(typeof(Cursors))
+				{
+					if(sizeNESW == null)
+					{
+						sizeNESW = new Cursor
+							(ToolkitCursorType.SizeNESW,
+							 typeof(Cursors), "sizenesw.cur");
+					}
+					return sizeNESW;
+				}
 			}
 		}
 		public static Cursor SizeNS
 		{
 			get
 			{
-				if (sizeNS == null)
-					sizeNS = new Cursor(Cursor.CursorType.SizeNS);
-				return sizeNS;
+				lock(typeof(Cursors))
+				{
+					if(sizeNS == null)
+					{
+						sizeNS = new Cursor
+							(ToolkitCursorType.SizeNS,
+							 typeof(Cursors), "sizens.cur");
+					}
+					return sizeNS;
+				}
 			}
 		}
 		public static Cursor SizeNWSE
 		{
 			get
 			{
-				if (sizeNWSE == null)
-					sizeNWSE = new Cursor(Cursor.CursorType.SizeNWSE);
-				return sizeNWSE;
+				lock(typeof(Cursors))
+				{
+					if(sizeNWSE == null)
+					{
+						sizeNWSE = new Cursor
+							(ToolkitCursorType.SizeNWSE,
+							 typeof(Cursors), "sizenwse.cur");
+					}
+					return sizeNWSE;
+				}
 			}
 		}	
 		public static Cursor SizeWE
 		{
 			get
 			{
-				if (sizeWE == null)
-					sizeWE = new Cursor(Cursor.CursorType.SizeWE);
-				return sizeWE;
+				lock(typeof(Cursors))
+				{
+					if(sizeWE == null)
+					{
+						sizeWE = new Cursor
+							(ToolkitCursorType.SizeWE,
+							 typeof(Cursors), "sizewe.cur");
+					}
+					return sizeWE;
+				}
 			}
 		}
 		public static Cursor UpArrow
 		{
 			get
 			{
-				if (upArrow == null)
-					upArrow = new Cursor(Cursor.CursorType.UpArrow);
-				return upArrow;
+				lock(typeof(Cursors))
+				{
+					if(upArrow == null)
+					{
+						upArrow = new Cursor
+							(ToolkitCursorType.UpArrow,
+							 typeof(Cursors), "up.cur");
+					}
+					return upArrow;
+				}
 			}
 		}
 		public static Cursor WaitCursor
 		{
 			get
 			{
-				if (waitCursor == null)
-					waitCursor = new Cursor(Cursor.CursorType.WaitCursor);
-				return waitCursor;
+				lock(typeof(Cursors))
+				{
+					if(waitCursor == null)
+					{
+						waitCursor = new Cursor
+							(ToolkitCursorType.WaitCursor,
+							 typeof(Cursors), "wait.cur");
+					}
+					return waitCursor;
+				}
 			}
 		}
 		public static Cursor Help
 		{
 			get
 			{
-				if (help == null)
-					help = new Cursor(Cursor.CursorType.Help);
-				return help;
+				lock(typeof(Cursors))
+				{
+					if(help == null)
+					{
+						help = new Cursor
+							(ToolkitCursorType.Help,
+							 typeof(Cursors), "help.cur");
+					}
+					return help;
+				}
 			}
 		}
 		public static Cursor HSplit
 		{
 			get
 			{
-				if (hSplit == null)
-					hSplit = new Cursor(Cursor.CursorType.HSplit);
-				return hSplit;
+				lock(typeof(Cursors))
+				{
+					if(hSplit == null)
+					{
+						hSplit = new Cursor
+							(ToolkitCursorType.HSplit,
+							 typeof(Cursors), "hsplit.cur");
+					}
+					return hSplit;
+				}
 			}
 		}
 		public static Cursor VSplit
 		{
 			get
 			{
-				if (vSplit == null)
-					vSplit = new Cursor(Cursor.CursorType.VSplit);
-				return vSplit;
+				lock(typeof(Cursors))
+				{
+					if(vSplit == null)
+					{
+						vSplit = new Cursor
+							(ToolkitCursorType.VSplit,
+							 typeof(Cursors), "vsplit.cur");
+					}
+					return vSplit;
+				}
 			}
 		}
 		public static Cursor NoMove2D
 		{
 			get
 			{
-				if (noMove2D == null)
-					noMove2D = new Cursor(Cursor.CursorType.NoMove2D);
-				return noMove2D;
+				lock(typeof(Cursors))
+				{
+					if(noMove2D == null)
+					{
+						noMove2D = new Cursor
+							(ToolkitCursorType.NoMove2D,
+							 typeof(Cursors), "nomove2d.cur");
+					}
+					return noMove2D;
+				}
 			}
 		}
 		public static Cursor NoMoveHoriz
 		{
 			get
 			{
-				if (noMoveHoriz == null)
-					noMoveHoriz = new Cursor(Cursor.CursorType.NoMoveHoriz);
-				return noMoveHoriz;
+				lock(typeof(Cursors))
+				{
+					if(noMoveHoriz == null)
+					{
+						noMoveHoriz = new Cursor
+							(ToolkitCursorType.NoMoveHoriz,
+							 typeof(Cursors), "nomovehoriz.cur");
+					}
+					return noMoveHoriz;
+				}
 			}
 		}
 		public static Cursor NoMoveVert
 		{
 			get
 			{
-				if (noMoveHoriz == null)
-					noMoveVert = new Cursor(Cursor.CursorType.NoMoveVert);
-				return noMoveVert;
+				lock(typeof(Cursors))
+				{
+					if(noMoveVert == null)
+					{
+						noMoveVert = new Cursor
+							(ToolkitCursorType.NoMoveVert,
+							 typeof(Cursors), "nomovevert.cur");
+					}
+					return noMoveVert;
+				}
 			}
 		}
 		public static Cursor PanEast
 		{
 			get
 			{
-				if (panEast == null)
-					panEast = new Cursor(Cursor.CursorType.PanEast);
-				return panEast;
+				lock(typeof(Cursors))
+				{
+					if(panEast == null)
+					{
+						panEast = new Cursor
+							(ToolkitCursorType.PanEast,
+							 typeof(Cursors), "paneast.cur");
+					}
+					return panEast;
+				}
 			}
 		}
 		public static Cursor PanNE
 		{
 			get
 			{
-				if (panNE == null)
-					panNE = new Cursor(Cursor.CursorType.PanNE);
-				return panNE;
+				lock(typeof(Cursors))
+				{
+					if(panNE == null)
+					{
+						panNE = new Cursor
+							(ToolkitCursorType.PanNE,
+							 typeof(Cursors), "panne.cur");
+					}
+					return panNE;
+				}
 			}
 		}
 		public static Cursor PanNorth
 		{
 			get
 			{
-				if (panNorth == null)
-					panNorth = new Cursor(Cursor.CursorType.PanNorth);
-				return panNorth;
+				lock(typeof(Cursors))
+				{
+					if(panNorth == null)
+					{
+						panNorth = new Cursor
+							(ToolkitCursorType.PanNorth,
+							 typeof(Cursors), "pannorth.cur");
+					}
+					return panNorth;
+				}
 			}
 		}
 		public static Cursor PanNW
 		{
 			get
 			{
-				if (panNW == null)
-					panNW = new Cursor(Cursor.CursorType.PanNW);
-				return panNW;
+				lock(typeof(Cursors))
+				{
+					if(panNW == null)
+					{
+						panNW = new Cursor
+							(ToolkitCursorType.PanNW,
+							 typeof(Cursors), "pannw.cur");
+					}
+					return panNW;
+				}
 			}
 		}
 		public static Cursor PanSE
 		{
 			get
 			{
-				if (panSE == null)
-					panSE = new Cursor(Cursor.CursorType.PanSE);
-				return panSE;
+				lock(typeof(Cursors))
+				{
+					if(panSE == null)
+					{
+						panSE = new Cursor
+							(ToolkitCursorType.PanSE,
+							 typeof(Cursors), "panse.cur");
+					}
+					return panSE;
+				}
 			}
 		}
 		public static Cursor PanSouth
 		{
 			get
 			{
-				if (panSouth == null)
-					panSouth = new Cursor(Cursor.CursorType.PanSouth);
-				return panSouth;
+				lock(typeof(Cursors))
+				{
+					if(panSouth == null)
+					{
+						panSouth = new Cursor
+							(ToolkitCursorType.PanSouth,
+							 typeof(Cursors), "pansouth.cur");
+					}
+					return panSouth;
+				}
 			}
 		}
 		public static Cursor PanSW
 		{
 			get
 			{
-				if (panSW == null)
-					panSW = new Cursor(Cursor.CursorType.PanSW);
-				return panSW;
+				lock(typeof(Cursors))
+				{
+					if(panSW == null)
+					{
+						panSW = new Cursor
+							(ToolkitCursorType.PanSW,
+							 typeof(Cursors), "pansw.cur");
+					}
+					return panSW;
+				}
 			}
 		}
-		public static Cursor West
+		public static Cursor PanWest
 		{
 			get
 			{
-				if (panWest == null)
-					panWest = new Cursor(Cursor.CursorType.PanWest);
-				return panWest;
+				lock(typeof(Cursors))
+				{
+					if(panWest == null)
+					{
+						panWest = new Cursor
+							(ToolkitCursorType.PanWest,
+							 typeof(Cursors), "panwest.cur");
+					}
+					return panWest;
+				}
 			}
 		}
 		public static Cursor Hand
 		{
 			get
 			{
-				if (hand == null)
-					hand = new Cursor(Cursor.CursorType.Hand);
-				return hand;
+				lock(typeof(Cursors))
+				{
+					if(hand == null)
+					{
+						hand = new Cursor
+							(ToolkitCursorType.Hand,
+							 typeof(Cursors), "hand.cur");
+					}
+					return hand;
+				}
 			}
 		}
 	}

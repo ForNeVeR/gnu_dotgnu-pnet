@@ -219,7 +219,13 @@ public sealed class Bitmap : System.Drawing.Image
 				for (int f = 0; f < dgImage.NumFrames; f++)
 				{
 					Frame frame = dgImage.GetFrame(f);
-					frame.MakeTransparent(transparentColor.ToArgb());
+					int color = transparentColor.ToArgb();
+					if(!Image.IsAlphaPixelFormat(PixelFormat))
+					{
+						// Remove the alpha component.
+						color = color & 0x00FFFFFF;
+					}
+					frame.MakeTransparent(color);
 				}
 			}
 

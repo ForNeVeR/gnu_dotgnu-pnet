@@ -26,7 +26,7 @@ using System;
 	{
 		public static Frame Reformat(Frame oldFrame, PixelFormat format)
 				{
-					if (oldFrame.PixelFormat == format)
+					if (oldFrame.pixelFormat == format)
 						return oldFrame.CloneFrame(null);
 					Frame newFrame = oldFrame.CloneFrameEmpty(oldFrame.Width, oldFrame.Height, format);
 					newFrame.data = new byte[newFrame.Height * newFrame.Stride];
@@ -34,7 +34,7 @@ using System;
 						newFrame.mask = (byte[])oldFrame.Mask.Clone();
 								
 					// 24 bpp Format.
-					if (oldFrame.PixelFormat == PixelFormat.Format24bppRgb)
+					if (oldFrame.pixelFormat == PixelFormat.Format24bppRgb)
 					{
 						switch(format)
 						{
@@ -51,12 +51,12 @@ using System;
 						}
 					}
 					// 16 bpp Format.
-					if (oldFrame.PixelFormat == PixelFormat.Format16bppRgb565 || oldFrame.PixelFormat == PixelFormat.Format16bppRgb555)
+					if (oldFrame.pixelFormat == PixelFormat.Format16bppRgb565 || oldFrame.pixelFormat == PixelFormat.Format16bppRgb555)
 					{
 						switch (format)
 						{
 							case(PixelFormat.Format24bppRgb):
-								return Reformat16bppTo24bpp(oldFrame, newFrame, oldFrame.PixelFormat == PixelFormat.Format16bppRgb555);
+								return Reformat16bppTo24bpp(oldFrame, newFrame, oldFrame.pixelFormat == PixelFormat.Format16bppRgb555);
 							case(PixelFormat.Format16bppRgb555):
 								return Reformat16bpp(oldFrame, newFrame, true);
 							case(PixelFormat.Format16bppRgb565):
@@ -66,7 +66,7 @@ using System;
 						}
 					}
 					// 8 bpp Format.
-					else if (oldFrame.PixelFormat == PixelFormat.Format8bppIndexed)
+					else if (oldFrame.pixelFormat == PixelFormat.Format8bppIndexed)
 					{
 						switch (format)
 						{
@@ -81,7 +81,7 @@ using System;
 						}
 					}
 					// 4 bpp Format.
-					else if (oldFrame.PixelFormat == PixelFormat.Format4bppIndexed)
+					else if (oldFrame.pixelFormat == PixelFormat.Format4bppIndexed)
 					{
 						switch (format)
 						{
@@ -98,7 +98,7 @@ using System;
 						}
 					}
 					// 1bpp Format.
-					else if (oldFrame.PixelFormat == PixelFormat.Format1bppIndexed)
+					else if (oldFrame.pixelFormat == PixelFormat.Format1bppIndexed)
 					{
 						switch (format)
 						{

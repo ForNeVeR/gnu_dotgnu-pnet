@@ -758,9 +758,17 @@ public class EmbeddedApplication : InputOutputWidget
 			}
 
 	/// <summary>
-	/// <para>Method that is called when the widget is resized to a
-	/// new size.</para>
+	/// <para>Method that is called when the widget is moved to a
+	/// new position or given a new size.</para>
 	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the new top-left widget corner.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the new top-left widget corner.</para>
+	/// </param>
 	///
 	/// <param name="width">
 	/// <para>The new width for the widget.</para>
@@ -769,7 +777,7 @@ public class EmbeddedApplication : InputOutputWidget
 	/// <param name="height">
 	/// <para>The new width for the widget.</para>
 	/// </param>
-	protected override void OnResize(int width, int height)
+	protected override void OnMoveResize(int x, int y, int width, int height)
 			{
 				if(child != Xlib.Window.Zero)
 				{

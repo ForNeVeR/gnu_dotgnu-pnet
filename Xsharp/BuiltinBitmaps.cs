@@ -66,6 +66,31 @@ internal sealed class BuiltinBitmaps
    		0xf0, 0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 	};
 
+	// Close caption button.
+	private static readonly byte[] close_button_bits =
+		{0x00, 0x00, 0x86, 0x01, 0xcc, 0x00, 0x78, 0x00, 0x30,
+		 0x00, 0x78, 0x00, 0xcc, 0x00, 0x86, 0x01, 0x00, 0x00};
+
+	// Minimize caption button.
+	private static readonly byte[] minimize_button_bits =
+		{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		 0x00, 0x00, 0x00, 0x00, 0x00, 0x7e, 0x00, 0x7e, 0x00};
+
+	// Maximize caption button.
+	private static readonly byte[] maximize_button_bits =
+		{0xff, 0x01, 0xff, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+		 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0xff, 0x01};
+
+	// Restore caption button.
+	private static readonly byte[] restore_button_bits =
+		{0xfc, 0x00, 0xfc, 0x00, 0x84, 0x00, 0xbf, 0x00, 0xbf,
+		 0x00, 0xe1, 0x00, 0x21, 0x00, 0x21, 0x00, 0x3f, 0x00};
+
+	// Help caption button.
+	private static readonly byte[] help_button_bits =
+		{0x78, 0x00, 0xcc, 0x00, 0xcc, 0x00, 0x60, 0x00, 0x30,
+		 0x00, 0x30, 0x00, 0x00, 0x00, 0x30, 0x00, 0x30, 0x00};
+
 	// Pre-loaded bitmaps for the current object's display.
 	public Xlib.Pixmap RadioBottom;
 	public Xlib.Pixmap RadioBottomEnhanced;
@@ -73,6 +98,11 @@ internal sealed class BuiltinBitmaps
 	public Xlib.Pixmap RadioTopEnhanced;
 	public Xlib.Pixmap RadioBackground;
 	public Xlib.Pixmap RadioForeground;
+	public Xlib.Pixmap Close;
+	public Xlib.Pixmap Minimize;
+	public Xlib.Pixmap Maximize;
+	public Xlib.Pixmap Restore;
+	public Xlib.Pixmap Help;
 
 	// Load builtin bitmaps for a particular display.
 	public BuiltinBitmaps(Display display)
@@ -91,6 +121,16 @@ internal sealed class BuiltinBitmaps
 					(dpy, drawable, radio_w_bits, (uint)12, (uint)12);
 				RadioForeground = Xlib.XCreateBitmapFromData
 					(dpy, drawable, radio_f_bits, (uint)12, (uint)12);
+				Close = Xlib.XCreateBitmapFromData
+					(dpy, drawable, close_button_bits, (uint)9, (uint)9);
+				Minimize = Xlib.XCreateBitmapFromData
+					(dpy, drawable, minimize_button_bits, (uint)9, (uint)9);
+				Maximize = Xlib.XCreateBitmapFromData
+					(dpy, drawable, maximize_button_bits, (uint)9, (uint)9);
+				Restore = Xlib.XCreateBitmapFromData
+					(dpy, drawable, restore_button_bits, (uint)9, (uint)9);
+				Help = Xlib.XCreateBitmapFromData
+					(dpy, drawable, help_button_bits, (uint)9, (uint)9);
 			}
 
 } // class BuiltinBitmaps

@@ -132,6 +132,36 @@ public sealed class RootWindow : Widget
 			}
 
 	/// <summary>
+	/// <para>Move and resize this widget.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the new top-left widget corner.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the new top-left widget corner.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The new width for the widget.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The new width for the widget.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>Raised if <paramref name="width"/> or <paramref name="height"/>
+	/// is out of range.</para>
+	/// </exception>
+	public override void MoveResize(int x, int y, int width, int height)
+			{
+				throw new XInvalidOperationException
+					(S._("X_NonRootOperation"));
+			}
+
+	/// <summary>
 	/// <para>Map this widget to the screen.</para>
 	/// </summary>
 	public override void Map()

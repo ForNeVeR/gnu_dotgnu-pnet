@@ -36,7 +36,7 @@ internal sealed class DrawingTopLevelWindow
 	private IToolkitEventSink sink;
 	private bool hasCapture;
 
-	// Constructor.
+	// Constructors.
 	public DrawingTopLevelWindow(IToolkit toolkit, String name,
 						 		 int width, int height, IToolkitEventSink sink)
 			: base(name, width, height)
@@ -44,6 +44,19 @@ internal sealed class DrawingTopLevelWindow
 				this.sink = sink;
 				this.toolkit = toolkit;
 				this.AutoMapChildren = false;
+			}
+	public DrawingTopLevelWindow(Widget parent, String name,
+						 		 int x, int y, int width, int height)
+			: base(parent, name, x, y, width, height)
+			{
+				this.toolkit = ((IToolkitWindow)(parent.Parent)).Toolkit;
+				this.AutoMapChildren = false;
+			}
+
+	// Set the sink.
+	public void SetSink(IToolkitEventSink sink)
+			{
+				this.sink = sink;
 			}
 
 	// Get the toolkit that owns this window.
@@ -211,7 +224,17 @@ internal sealed class DrawingTopLevelWindow
 	// Force an update of all invalidated regions.
 	void IToolkitWindow.Update()
 			{
+				Update();
 				Display.Flush();
+			}
+
+	// Set the cursor.  The toolkit may ignore "frame" if it already
+	// has a system-defined association for "cursorType".  Setting
+	// "cursorType" to "ToolkitCursorType.InheritParent" will reset
+	// the cursor to be the same as the parent window's.
+	void IToolkitWindow.SetCursor(ToolkitCursorType cursorType, Frame frame)
+			{
+				DrawingWindow.ModifyCursor(this, cursorType, frame);
 			}
 
 	// Iconify the window.
@@ -520,6 +543,7 @@ internal sealed class DrawingTopLevelWindow
 	// Override the primary focus enter event from Xsharp.
 	protected override void OnPrimaryFocusIn()
 			{
+				base.OnPrimaryFocusIn();
 				if(sink != null)
 				{
 					sink.ToolkitPrimaryFocusEnter();
@@ -529,6 +553,7 @@ internal sealed class DrawingTopLevelWindow
 	// Override the primary focus leave event from Xsharp.
 	protected override void OnPrimaryFocusOut()
 			{
+				base.OnPrimaryFocusOut();
 				if(sink != null)
 				{
 					sink.ToolkitPrimaryFocusLeave();
@@ -552,21 +577,13 @@ internal sealed class DrawingTopLevelWindow
 				}
 			}
 
-	// Override the move event from Xsharp.
-	protected override void OnMove(int x, int y)
+	// Override the resize event from Xsharp.
+	protected override void OnMoveResize(int x, int y, int width, int height)
 			{
+				base.OnMoveResize(x, y, width, height);
 				if(sink != null)
 				{
 					sink.ToolkitExternalMove(x, y);
-				}
-			}
-
-	// Override the resize event from Xsharp.
-	protected override void OnResize(int width, int height)
-			{
-				base.OnResize(width, height);
-				if(sink != null)
-				{
 					sink.ToolkitExternalResize(width, height);
 				}
 			}

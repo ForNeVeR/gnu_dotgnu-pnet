@@ -37,13 +37,13 @@ public class TopLevelWindow : InputOutputWidget
 {
 	// Internal state.
 	private String name;
-	private bool iconic;
-	private bool maximized;
-	private bool hasPrimaryFocus;
-	private bool reparented;
+	internal bool iconic;
+	internal bool maximized;
+	internal bool hasPrimaryFocus;
+	internal bool reparented;
 	private bool firstMapDone;
 	private IntPtr keyBuffer;
-	private InputOnlyWidget focusWidget;
+	internal InputOnlyWidget focusWidget;
 	private InputOnlyWidget defaultFocus;
 	private MotifDecorations decorations;
 	private MotifFunctions functions;
@@ -52,9 +52,10 @@ public class TopLevelWindow : InputOutputWidget
 	private TopLevelWindow transientFor;
 	private Timer resizeTimer;
 	private int expectedWidth, expectedHeight;
-	private int minWidth, minHeight;
-	private int maxWidth, maxHeight;
+	internal int minWidth, minHeight;
+	internal int maxWidth, maxHeight;
 	private Image icon;
+	internal MdiClientWidget mdiClient;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.TopLevelWindow"/>
@@ -86,7 +87,7 @@ public class TopLevelWindow : InputOutputWidget
 	public TopLevelWindow(String name, int width, int height)
 			: this(null, name, width, height)
 			{
-				// Nothing to do here: the next constructor does all the work.
+				// Nothing to do here.
 			}
 
 	/// <summary>
@@ -118,11 +119,26 @@ public class TopLevelWindow : InputOutputWidget
 	/// is out of range.</para>
 	/// </exception>
 	public TopLevelWindow(Screen screen, String name, int width, int height)
-			: base(GetRoot(screen), 0, 0, width, height,
+			: this(GetRoot(screen), name, 0, 0, width, height)
+			{
+				// Nothing to do here.
+			}
+
+	// Internal constructor, that can create a top-level window on either
+	// the root window or underneath an MDI client parent.
+	public TopLevelWindow(Widget parent, String name,
+						  int x, int y, int width, int height)
+			: base(parent, x, y, width, height,
 			       new Color(StandardColor.Foreground),
 			       new Color(StandardColor.Background),
 				   true, false)
 			{
+				// Check the parent.
+				if(!(parent is RootWindow) && !(parent is CaptionWidget))
+				{
+					throw new XInvalidOperationException();
+				}
+
 				// Initialize this object's state.
 				this.name = ((name != null) ? name : String.Empty);
 				this.iconic = false;
@@ -139,6 +155,19 @@ public class TopLevelWindow : InputOutputWidget
 				this.resizeTimer = null;
 				this.expectedWidth = -1;
 				this.expectedHeight = -1;
+
+				// Top-level widgets receive all key and focus events.
+				SelectInput(EventMask.KeyPressMask |
+							EventMask.KeyReleaseMask |
+							EventMask.FocusChangeMask |
+							EventMask.StructureNotifyMask |
+							EventMask.PropertyChangeMask);
+
+				// We don't use WM properties if the parent is a CaptionWidget.
+				if(parent is CaptionWidget)
+				{
+					return;
+				}
 
 				// Set the initial WM properties.
 				try
@@ -190,12 +219,13 @@ public class TopLevelWindow : InputOutputWidget
 					{
 						cultureName = cultureName.Replace("-", "_");
 					}
-					SetTextProperty(display, handle, "WM_LOCALE_NAME", cultureName);
-					cultureName = Application.Hostname;
-					if(cultureName != null)
+					SetTextProperty(display, handle, "WM_LOCALE_NAME",
+									cultureName);
+					String hostname = Application.Hostname;
+					if(hostname != null)
 					{
 						SetTextProperty(display, handle,
-										"WM_CLIENT_MACHINE", cultureName);
+										"WM_CLIENT_MACHINE", hostname);
 					}
 					if(isFirst)
 					{
@@ -229,13 +259,6 @@ public class TopLevelWindow : InputOutputWidget
 							 new Xlib.Xlong [] {(Xlib.Xlong)(pid)}, 1);
 					}
 				#endif
-
-					// Top-level widgets receive all key and focus events.
-					SelectInput(EventMask.KeyPressMask |
-								EventMask.KeyReleaseMask |
-								EventMask.FocusChangeMask |
-								EventMask.StructureNotifyMask |
-								EventMask.PropertyChangeMask);
 				}
 				finally
 				{
@@ -459,6 +482,16 @@ public class TopLevelWindow : InputOutputWidget
 				(IntPtr display, int newX, int newY,
 				 int newWidth, int newHeight)
 			{
+				// If our parent is a caption widget, then let it
+				// handle the move/resize operation so that the
+				// borders can be adjusted to match the request.
+				if(Parent is CaptionWidget)
+				{
+					((CaptionWidget)Parent).PerformChildResize
+						(newX, newY, newWidth, newHeight);
+					return;
+				}
+
 				Xlib.Window handle = GetWidgetHandle();
 				XWindowChanges changes = new XWindowChanges();
 				ConfigureWindowMask mask = (ConfigureWindowMask)0;
@@ -602,7 +635,12 @@ public class TopLevelWindow : InputOutputWidget
 					{
 						// Use "XMapRaised" to notify the window manager
 						// that we want to be brought to the top.
-						Xlib.XMapRaised(display, GetWidgetHandle());
+						if(Caption((firstMapDone
+										? CaptionWidget.Operation.Map
+										: CaptionWidget.Operation.FirstMap)))
+						{
+							Xlib.XMapRaised(display, GetWidgetHandle());
+						}
 						mapped = true;
 						firstMapDone = true;
 						OnMapStateChanged();
@@ -626,8 +664,12 @@ public class TopLevelWindow : InputOutputWidget
 					{
 						// Send a "withdraw" message to the window manager,
 						// which will take care of unmapping the window for us.
-						Xlib.XWithdrawWindow
-							(display, GetWidgetHandle(), screen.ScreenNumber);
+						if(Caption(CaptionWidget.Operation.Unmap))
+						{
+							Xlib.XWithdrawWindow
+								(display, GetWidgetHandle(),
+								 screen.ScreenNumber);
+						}
 						mapped = false;
 						OnMapStateChanged();
 					}
@@ -650,8 +692,13 @@ public class TopLevelWindow : InputOutputWidget
 	/// <summary>
 	/// <para>Iconify this window.</para>
 	/// </summary>
-	public void Iconify()
+	public virtual void Iconify()
 			{
+				if(!Caption(CaptionWidget.Operation.Iconify))
+				{
+					OnIconicStateChanged(iconic);
+					return;
+				}
 				try
 				{
 					IntPtr display = dpy.Lock();
@@ -686,8 +733,13 @@ public class TopLevelWindow : InputOutputWidget
 	/// <summary>
 	/// <para>De-iconify this window.</para>
 	/// </summary>
-	public void Deiconify()
+	public virtual void Deiconify()
 			{
+				if(!Caption(CaptionWidget.Operation.Deiconify))
+				{
+					OnIconicStateChanged(iconic);
+					return;
+				}
 				try
 				{
 					IntPtr display = dpy.Lock();
@@ -751,8 +803,13 @@ public class TopLevelWindow : InputOutputWidget
 	/// <summary>
 	/// <para>Maximize this window.</para>
 	/// </summary>
-	public void Maximize()
+	public virtual void Maximize()
 			{
+				if(!Caption(CaptionWidget.Operation.Maximize))
+				{
+					OnMaximizedStateChanged(maximized);
+					return;
+				}
 				try
 				{
 					IntPtr display = dpy.Lock();
@@ -787,8 +844,13 @@ public class TopLevelWindow : InputOutputWidget
 	/// <summary>
 	/// <para>Restore this window from the maximized state.</para>
 	/// </summary>
-	public void Restore()
+	public virtual void Restore()
 			{
+				if(!Caption(CaptionWidget.Operation.Restore))
+				{
+					OnMaximizedStateChanged(maximized);
+					return;
+				}
 				try
 				{
 					IntPtr display = dpy.Lock();
@@ -817,6 +879,25 @@ public class TopLevelWindow : InputOutputWidget
 				finally
 				{
 					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Activate the help feature on this window.</para>
+	/// </summary>
+	public virtual void Help()
+			{
+				OnHelp();
+			}
+
+	/// <summary>
+	/// <para>Destroy this widget if it is currently active.</para>
+	/// </summary>
+	public override void Destroy()
+			{
+				if(Caption(CaptionWidget.Operation.Destroy))
+				{
+					base.Destroy();
 				}
 			}
 
@@ -850,26 +931,29 @@ public class TopLevelWindow : InputOutputWidget
 
 				// If this was the last undestroyed top-level window
 				// that was still mapped, then quit the application.
-				Widget child = Parent.TopChild;
-				TopLevelWindow tchild;
-				bool sawActive = false;
-				while(child != null)
+				if(!(Parent is CaptionWidget))
 				{
-					tchild = (child as TopLevelWindow);
-					if(tchild != null)
+					Widget child = Parent.TopChild;
+					TopLevelWindow tchild;
+					bool sawActive = false;
+					while(child != null)
 					{
-						if(tchild.mapped &&
-						   tchild.handle != Xlib.Drawable.Zero)
+						tchild = (child as TopLevelWindow);
+						if(tchild != null)
 						{
-							sawActive = true;
-							break;
+							if(tchild.mapped &&
+							   tchild.handle != Xlib.Drawable.Zero)
+							{
+								sawActive = true;
+								break;
+							}
 						}
+						child = child.NextBelow;
 					}
-					child = child.NextBelow;
-				}
-				if(!sawActive)
-				{
-					dpy.Quit();
+					if(!sawActive)
+					{
+						dpy.Quit();
+					}
 				}
 
 				// The window no longer exists.
@@ -885,7 +969,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// the title bar.  If the value is set to <see langword="null"/>,
 	/// then the empty string will be used.</para>
 	/// </value>
-	public String Name
+	public virtual String Name
 			{
 				get
 				{
@@ -896,6 +980,10 @@ public class TopLevelWindow : InputOutputWidget
 					if(name != value)
 					{
 						name = ((value != null) ? value : String.Empty);
+						if(!Caption(CaptionWidget.Operation.Title))
+						{
+							return;
+						}
 						try
 						{
 							// Lock down the display and get the window handle.
@@ -916,6 +1004,12 @@ public class TopLevelWindow : InputOutputWidget
 	// Update the Motif hint information in the X server.
 	private void UpdateMotifHints()
 			{
+				// Bail out if the caption widget handled the decorations.
+				if(!Caption(CaptionWidget.Operation.Decorations))
+				{
+					return;
+				}
+
 				// Build the Motif hint structure.
 				Xlib.Xlong[] hint = new Xlib.Xlong [5];
 				int flags = 0;
@@ -974,7 +1068,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// that the window desires from the window manager.  The window
 	/// manager might ignore this information.</para>
 	/// </value>
-	public MotifDecorations Decorations
+	public virtual MotifDecorations Decorations
 			{
 				get
 				{
@@ -1000,7 +1094,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// that the window desires from the window manager.  The window
 	/// manager might ignore this information.</para>
 	/// </value>
-	public MotifFunctions Functions
+	public virtual MotifFunctions Functions
 			{
 				get
 				{
@@ -1024,7 +1118,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// <para>The value of this property is the input type.  The window
 	/// manager might ignore this information.</para>
 	/// </value>
-	public MotifInputType InputType
+	public virtual MotifInputType InputType
 			{
 				get
 				{
@@ -1048,7 +1142,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// <para>The value of this property is the hint flags.  The window
 	/// manager might ignore this information.</para>
 	/// </value>
-	public OtherHints OtherHints
+	public virtual OtherHints OtherHints
 			{
 				get
 				{
@@ -1060,6 +1154,10 @@ public class TopLevelWindow : InputOutputWidget
 					{
 						OtherHints prev = otherHints;
 						otherHints = value;
+						if(!Caption(CaptionWidget.Operation.Decorations))
+						{
+							return;
+						}
 						try
 						{
 							IntPtr display = dpy.Lock();
@@ -1135,7 +1233,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// no effect.  Setting this property to <see langword="null"/>
 	/// will make the window transient for the root window.</para>
 	/// </remarks>
-	public TopLevelWindow TransientFor
+	public virtual TopLevelWindow TransientFor
 			{
 				get
 				{
@@ -1143,6 +1241,11 @@ public class TopLevelWindow : InputOutputWidget
 				}
 				set
 				{
+					if(Parent is CaptionWidget)
+					{
+						// Cannot set transients for MDI children.
+						return;
+					}
 					if(value != this)
 					{
 						// Change the "transient for" hint information.
@@ -1187,8 +1290,13 @@ public class TopLevelWindow : InputOutputWidget
 	/// <para>Calling <c>RemoveTransientFor</c> removes the hint entirely,
 	/// resetting the window back to the normal "non-transient" mode.</para>
 	/// </remarks>
-	public void RemoveTransientFor()
+	public virtual void RemoveTransientFor()
 			{
+				if(Parent is CaptionWidget)
+				{
+					// Cannot set transients for MDI children.
+					return;
+				}
 				try
 				{
 					// Lock down the display and get the handle.
@@ -1223,7 +1331,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// <para>Raised if the widget is not a child of this top-level window.
 	/// </para>
 	/// </exception>
-	public Widget DefaultFocus
+	public virtual Widget DefaultFocus
 			{
 				get
 				{
@@ -1268,7 +1376,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// <para>Set both <paramref name="width"/> and <paramref name="height"/>
 	/// to disable the minimum size.</para>
 	/// </remarks>
-	public void SetMinimumSize(int width, int height)
+	public virtual void SetMinimumSize(int width, int height)
 			{
 				if(width < 0 || height < 0 || width > 32767 || height > 32767)
 				{
@@ -1283,8 +1391,11 @@ public class TopLevelWindow : InputOutputWidget
 						minWidth = width;
 						minHeight = height;
 					}
-					XSizeHints hints = BuildSizeHints();
-					Xlib.XSetWMNormalHints(display, handle, ref hints);
+					if(Caption(CaptionWidget.Operation.SetMinimumSize))
+					{
+						XSizeHints hints = BuildSizeHints();
+						Xlib.XSetWMNormalHints(display, handle, ref hints);
+					}
 				}
 				finally
 				{
@@ -1313,7 +1424,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// <para>Set both <paramref name="width"/> and <paramref name="height"/>
 	/// to disable the maximum size.</para>
 	/// </remarks>
-	public void SetMaximumSize(int width, int height)
+	public virtual void SetMaximumSize(int width, int height)
 			{
 				if(width < 0 || height < 0 || width > 32767 || height > 32767)
 				{
@@ -1328,8 +1439,11 @@ public class TopLevelWindow : InputOutputWidget
 						maxWidth = width;
 						maxHeight = height;
 					}
-					XSizeHints hints = BuildSizeHints();
-					Xlib.XSetWMNormalHints(display, handle, ref hints);
+					if(Caption(CaptionWidget.Operation.SetMaximumSize))
+					{
+						XSizeHints hints = BuildSizeHints();
+						Xlib.XSetWMNormalHints(display, handle, ref hints);
+					}
 				}
 				finally
 				{
@@ -1345,7 +1459,7 @@ public class TopLevelWindow : InputOutputWidget
 	/// <para>The icon image, or <see langword="null"/> if there is
 	/// no icon to be displayed.</para>
 	/// </value>
-	public Image Icon
+	public virtual Image Icon
 			{
 				get
 				{
@@ -1356,15 +1470,18 @@ public class TopLevelWindow : InputOutputWidget
 					if(icon != value)
 					{
 						icon = value;
-						try
+						if(Caption(CaptionWidget.Operation.SetIcon))
 						{
-							IntPtr display = dpy.Lock();
-							Xlib.Window handle = GetWidgetHandle();
-							SetWMHints(display, handle);
-						}
-						finally
-						{
-							dpy.Unlock();
+							try
+							{
+								IntPtr display = dpy.Lock();
+								Xlib.Window handle = GetWidgetHandle();
+								SetWMHints(display, handle);
+							}
+							finally
+							{
+								dpy.Unlock();
+							}
 						}
 					}
 				}
@@ -1395,7 +1512,7 @@ public class TopLevelWindow : InputOutputWidget
 	///
 	/// <returns>
 	/// <value>Returns <see langword="true"/> to destroy the window,
-	/// or <see langword="false"/> to ignore the close message.
+	/// or <see langword="false"/> to ignore the close message.</value>
 	/// </returns>
 	protected virtual bool OnClose()
 			{
@@ -1417,7 +1534,10 @@ public class TopLevelWindow : InputOutputWidget
 	/// </summary>
 	protected virtual void OnPrimaryFocusIn()
 			{
-				// Nothing to do here.
+				if(mdiClient != null)
+				{
+					mdiClient.ChangePrimaryFocus();
+				}
 			}
 
 	/// <summary>
@@ -1426,7 +1546,10 @@ public class TopLevelWindow : InputOutputWidget
 	/// </summary>
 	protected virtual void OnPrimaryFocusOut()
 			{
-				// Nothing to do here.
+				if(mdiClient != null)
+				{
+					mdiClient.ChangePrimaryFocus();
+				}
 			}
 
 	/// <summary>
@@ -1434,6 +1557,10 @@ public class TopLevelWindow : InputOutputWidget
 	/// </summary>
 	public override void Raise()
 			{
+				if(!Caption(CaptionWidget.Operation.Raise))
+				{
+					return;
+				}
 				try
 				{
 					// Send a message to the window manager to restack us.
@@ -1458,6 +1585,10 @@ public class TopLevelWindow : InputOutputWidget
 	/// </summary>
 	public override void Lower()
 			{
+				if(!Caption(CaptionWidget.Operation.Lower))
+				{
+					return;
+				}
 				try
 				{
 					// Send a message to the window manager to restack us.
@@ -1532,7 +1663,11 @@ public class TopLevelWindow : InputOutputWidget
 				}
 				expectedWidth = -1;
 				expectedHeight = -1;
-				OnResize(width, height);
+				if(mdiClient != null)
+				{
+					mdiClient.PositionControls();
+				}
+				OnMoveResize(x, y, width, height);
 			}
 
 	// Get the contents of a 32-bit window property.
@@ -1851,6 +1986,18 @@ public class TopLevelWindow : InputOutputWidget
 							break;
 						}
 
+						// If we have an MDI client, then give it a chance
+						// to process the keypress just in case it is
+						// something like Ctrl+F4 or Ctrl+Tab.
+						if(mdiClient != null)
+						{
+							if(mdiClient.DispatchKeyEvent
+								((KeyName)keysym, xevent.xkey.state, str))
+							{
+								break;
+							}
+						}
+
 						// Dispatch the event.
 						widget = focusWidget;
 						while(widget != null)
@@ -1915,6 +2062,11 @@ public class TopLevelWindow : InputOutputWidget
 							// SubstructureNotify - not interesting to us.
 							break;
 						}
+						if(Parent is CaptionWidget)
+						{
+							// Ignore configure events if we are an MDI child.
+							break;
+						}
 						if(xevent.xconfigure.width != width ||
 						   xevent.xconfigure.height != height ||
 						   expectedWidth != -1)
@@ -1950,7 +2102,7 @@ public class TopLevelWindow : InputOutputWidget
 							{
 								x = xevent.xconfigure.x;
 								y = xevent.xconfigure.y;
-								OnMove(x, y);
+								OnMoveResize(x, y, width, height);
 							}
 						}
 					}
@@ -1976,7 +2128,7 @@ public class TopLevelWindow : InputOutputWidget
 							reparented = false;
 							x = xevent.xreparent.x;
 							y = xevent.xreparent.y;
-							OnMove(x, y);
+							OnMoveResize(x, y, width, height);
 						}
 					}
 					break;
@@ -1984,6 +2136,10 @@ public class TopLevelWindow : InputOutputWidget
 					case EventType.MapNotify:
 					{
 						// The window manager mapped us to the screen.
+						if(Parent is CaptionWidget)
+						{
+							break;
+						}
 						if(iconic)
 						{
 							iconic = false;
@@ -2002,6 +2158,10 @@ public class TopLevelWindow : InputOutputWidget
 						// We were unmapped from the screen.  If "mapped"
 						// is true, then we are being iconified by the window
 						// manager.  Otherwise, we asked to be withdrawn.
+						if(Parent is CaptionWidget)
+						{
+							break;
+						}
 						if(!iconic && mapped)
 						{
 							iconic = true;
@@ -2011,6 +2171,48 @@ public class TopLevelWindow : InputOutputWidget
 					break;
 				}
 				base.DispatchEvent(ref xevent);
+			}
+
+	// Pass a caption operation up to the caption parent, if there is one.
+	// Returns true to perform the normal window manager processing.
+	private bool Caption(CaptionWidget.Operation operation)
+			{
+				Widget parent = Parent;
+				if(parent is CaptionWidget)
+				{
+					return ((CaptionWidget)parent).CaptionOperation(operation);
+				}
+				else
+				{
+					return true;
+				}
+			}
+
+	// Handle a change in the maximized state.
+	internal void MaximizeChanged()
+			{
+				OnMaximizedStateChanged(maximized);
+			}
+
+	// Handle a move/resize operation from "CaptionWidget".
+	internal void HandleMoveResize(int x, int y, int width, int height)
+			{
+				bool changed = (x != this.x || y != this.y ||
+				                width != this.width || height != this.height);
+				this.x = x;
+				this.y = y;
+				this.width = width;
+				this.height = height;
+				if(changed)
+				{
+					// Queue up the "OnMoveResize" for the next idle period.
+					if(resizeTimer == null)
+					{
+						resizeTimer = new Timer
+							(new TimerCallback(PerformResize), null,
+							 0, -1);
+					}
+				}
 			}
 
 } // class TopLevelWindow

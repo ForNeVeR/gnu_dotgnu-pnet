@@ -36,8 +36,10 @@ public enum StandardColor
 	// Color set for drawing widget controls (e.g. buttons, dialogs).
 	Foreground,
 	Background,
+	EndBackground,
 	HighlightForeground,
 	HighlightBackground,
+	HighlightEndBackground,
 	TopShadow,
 	TopShadowEnhance,
 	BottomShadow,

@@ -47,7 +47,7 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 			throw new Exception("Failed to register Windows class " + className);
 		}
 		//Set default windows settings
-		style = Win32.Api.WindowStyle.WS_CHILD | Win32.Api.WindowStyle.WS_TABSTOP;
+		style = Win32.Api.WindowStyle.WS_CHILD | Win32.Api.WindowStyle.WS_TABSTOP | Win32.Api.WindowStyle.WS_CLIPSIBLINGS;
 		extendedStyle = 0;
 	}
 
@@ -59,10 +59,10 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 			// window with no parent cant be visible
 			if (parent == null || (parent as DrawingWindow).hwnd == IntPtr.Zero)
 				IsMapped = false;
-			bool parented = this.parent != null && this.parent.hwnd != IntPtr.Zero;
+			bool parented = (this.parent != null && this.parent.hwnd != IntPtr.Zero);
 
 			// Adjust the heirararchy of parents and top of hierarchy
-			Reparent(parent as DrawingWindow);
+			ReparentOwn(parent as DrawingWindow);
 			
 			suspendExternalMoveResizeNotify = true;
 			Win32.Api.SetParent( hwnd, parentHwnd);
@@ -87,11 +87,7 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 		sink.ToolkitExternalMove( dimensions.X, dimensions.Y );
 		sink.ToolkitExternalResize( dimensions.Width, dimensions.Height );
 
-		// Set the top of hierarchy
-		if (parent == null)
-			topOfhierarchy = this;
-		else
-			topOfhierarchy = (parent as DrawingWindow).topOfhierarchy;
+		SetTopOfHierarchy();
 	}
 
 	protected IntPtr parentHwnd 

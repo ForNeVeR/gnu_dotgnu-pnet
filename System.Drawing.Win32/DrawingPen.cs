@@ -28,6 +28,7 @@ internal class DrawingPen : ToolkitPenBase
 	// Internal state.
 	internal Pen properties;
 	internal IntPtr hPen;
+	internal int win32Color;
 	private IToolkit toolkit;
 
 	// Constructor.
@@ -36,8 +37,8 @@ internal class DrawingPen : ToolkitPenBase
 				this.toolkit = toolkit;
 				this.properties = properties;
 				//TODO: Rest of the properties
-				int c = DrawingGraphics.ColorToWin32(properties.Color);
-				hPen = Win32.Api.CreatePen((int)properties.DashStyle, (int)properties.Width, c);
+				win32Color = DrawingGraphics.ColorToWin32(properties.Color);
+				hPen = Win32.Api.CreatePen((int)properties.DashStyle, (int)properties.Width, win32Color);
 			}
 
 	// Select this pen into a graphics object.

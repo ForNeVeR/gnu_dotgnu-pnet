@@ -49,7 +49,7 @@ internal sealed class OpenSSL : ISecureSessionProvider
 							SSL_load_error_strings();
 							SSL_library_init();
 						}
-						catch(NotImplementedException)
+						catch(Exception)
 						{
 							// Could not find the functions to execute,
 							// so we probably don't have OpenSSL on this

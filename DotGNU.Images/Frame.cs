@@ -33,13 +33,16 @@ public class Frame : MarshalByRefObject, IDisposable
 	private int height;
 	private int stride;
 	private int maskStride;
-	private PixelFormat pixelFormat;
+	internal PixelFormat pixelFormat;
 	private int[] palette;
 	private int transparentPixel;
 	private int hotspotX;
 	private int hotspotY;
+	private int offsetX;
+	private int offsetY;
 	internal byte[] data;
 	internal byte[] mask;
+	private bool generatedMask;
 
 	// Constructor.
 	internal Frame(Image image, int width, int height, PixelFormat pixelFormat)
@@ -54,8 +57,11 @@ public class Frame : MarshalByRefObject, IDisposable
 				this.transparentPixel = -1;
 				this.hotspotX = 0;
 				this.hotspotY = 0;
+				this.offsetX = 0;
+				this.offsetY = 0;
 				this.data = new byte [height * stride];
 				this.mask = null;
+				this.generatedMask = false;
 			}
 	private Frame(Image newImage, Frame frame, int newWidth, int newHeight, PixelFormat format, bool cloneData)
 			{
@@ -66,6 +72,7 @@ public class Frame : MarshalByRefObject, IDisposable
 				pixelFormat = format;
 				stride =Utils.FormatToStride(pixelFormat, width);
 				maskStride = (((width + 7) / 8) + 3) & ~3;
+				generatedMask = frame.generatedMask;
 				if(frame.palette != null)
 				{
 					if(newImage != null && frame.palette == frame.image.Palette)
@@ -82,6 +89,8 @@ public class Frame : MarshalByRefObject, IDisposable
 				transparentPixel = frame.transparentPixel;
 				hotspotX = frame.hotspotX;
 				hotspotY = frame.hotspotY;
+				offsetX = frame.offsetX;
+				offsetY = frame.offsetY;
 				if(cloneData & frame.data != null)
 				{
 					data = (byte[])(frame.data.Clone());
@@ -194,6 +203,28 @@ public class Frame : MarshalByRefObject, IDisposable
 				set
 				{
 					hotspotY = value;
+				}
+			}
+	public int OffsetX
+			{
+				get
+				{
+					return offsetX;
+				}
+				set
+				{
+					offsetX = value;
+				}
+			}
+	public int OffsetY
+			{
+				get
+				{
+					return offsetY;
+				}
+				set
+				{
+					offsetY = value;
 				}
 			}
 
@@ -576,8 +607,30 @@ public class Frame : MarshalByRefObject, IDisposable
 	// Add pixels of a specific color to the mask to make them transparent.
 	public void MakeTransparent(int color)
 			{
-				// TODO: This is slow.
-				// Make sure we have a mask.
+				// If we already have a mask, or transparent pixel, then
+				// we need to use that information rather than the color
+				// that we were supplied.  This is for icon files where it
+				// is highly unlikely that the supplied color will exactly
+				// match the real transparency pixel in the icon image.
+				if(mask != null && !generatedMask)
+				{
+					return;
+				}
+				if(transparentPixel >= 0 && palette != null &&
+				   transparentPixel < palette.Length)
+				{
+					color = palette[transparentPixel];
+					if((pixelFormat & PixelFormat.Alpha) == 0)
+					{
+						color &= 0x00FFFFFF;
+					}
+				}
+				else
+				{
+					generatedMask = true;
+				}
+
+				// Make sure we have a mask.  TODO: make this faster.
 				AddMask();
 				for (int y = 0; y < height; y++)
 				{
@@ -585,6 +638,8 @@ public class Frame : MarshalByRefObject, IDisposable
 					{
 						int pixel = GetPixel(x, y);
 						if (pixel == color)
+							SetMask(x, y, 0);
+						else 
 							SetMask(x, y, 1);
 					}
 				}

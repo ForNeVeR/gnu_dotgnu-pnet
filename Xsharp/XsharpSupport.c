@@ -1378,7 +1378,7 @@ XImage *XSharpCreateImageFromDIB(Screen *screen, int width, int height,
 			if(pixelFormat == PF_Format1bppIndexed)
 			{
 				/* Source image has one bit per pixel */
-				for(column = 0; column < width; column += 2)
+				for(column = 0; column < width; ++column)
 				{
 					if((temp1[column / 8] & (0x80 >> (column % 8))) != 0)
 					{

@@ -1,0 +1,798 @@
+/*
+ * JpegLib.cs - Implementation of the "DotGNU.Images.JpegLib" class.
+ *
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software, you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY, without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program, if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+namespace DotGNU.Images
+{
+
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+
+// This class imports definitions from "libjpeg" via PInvoke.  Eventually we
+// may want to replace this with a managed JPEG library by compiling "libjpeg"
+// directly with "pnetC".  But this should work for now, assuming that the
+// underlying OS does indeed have "libjpeg" available.
+
+internal unsafe sealed class JpegLib
+{
+	public const int JPEG_LIB_VERSION = 62;
+	public const int DCTSIZE = 8;
+	public const int DCTSIZE2 = 64;
+	public const int NUM_QUANT_TBLS = 4;
+	public const int NUM_HUFF_TBLS = 4;
+	public const int NUM_ARITH_TBLS = 16;
+	public const int MAX_COMPS_IN_SCAN = 4;
+	public const int MAX_SAMP_FACTOR = 4;
+	public const int C_MAX_BLOCKS_IN_MCU = 10;
+	public const int D_MAX_BLOCKS_IN_MCU = 10;
+
+	public enum JSAMPLE : byte { Zero }
+	public enum JCOEF : short { Zero }
+	public enum INT8 : sbyte { Zero }
+	public enum UINT8 : byte { Zero }
+	public enum JOCTET : byte { Zero }
+	public enum INT16 : short { Zero }
+	public enum UINT16 : ushort { Zero }
+	public enum INT32 : @X_int@ { Zero }
+	public enum UINT32 : @X_uint@ { Zero }
+	public enum JDIMENSION : @X_uint@ { Zero }
+	public enum boolean : @X_int@ { False, True }
+	public enum INT : @X_int@ { Zero }
+	public enum UINT : @X_uint@ { Zero }
+	public enum LONG : @X_int@ { Zero }
+	public enum size_t : @X_uint@ { Zero }
+
+	public enum J_COLOR_SPACE
+	{
+		JCS_UNKNOWN,
+		JCS_GRAYSCALE,
+		JCS_RGB,
+		JCS_YCbCr,
+		JCS_CMYK,
+		JCS_YCCK
+	};
+
+	public enum J_DCT_METHOD
+	{
+		JDCT_ISLOW,
+		JDCT_IFAST,
+		JDCT_FLOAT
+	};
+
+	public enum J_DITHER_MODE
+	{
+		JDITHER_NONE,
+		JDITHER_ORDERED,
+		JDITHER_FS
+	};
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct jpeg_compress_struct
+	{
+		public IntPtr err;
+		public void *mem;
+		public void *progress;
+		public IntPtr client_data;
+		public boolean is_decompressor;
+		public INT global_state;
+		public jpeg_destination_mgr *dest;
+		public JDIMENSION image_width;
+		public JDIMENSION image_height;
+  		public INT input_components;
+  		public J_COLOR_SPACE in_color_space;
+  		public double input_gamma;
+		public INT data_precision;
+  		public INT num_components;
+		public J_COLOR_SPACE jpeg_color_space;
+		public void *comp_info;
+		public void *quant_tbl_ptrs_0;
+		public void *quant_tbl_ptrs_1;
+		public void *quant_tbl_ptrs_2;
+		public void *quant_tbl_ptrs_3;
+		public void *dc_huff_tbl_ptrs_0;
+		public void *dc_huff_tbl_ptrs_1;
+		public void *dc_huff_tbl_ptrs_2;
+		public void *dc_huff_tbl_ptrs_3;
+		public void *ac_huff_tbl_ptrs_0;
+		public void *ac_huff_tbl_ptrs_1;
+		public void *ac_huff_tbl_ptrs_2;
+		public void *ac_huff_tbl_ptrs_3;
+		public UINT8 arith_dc_L_0;
+		public UINT8 arith_dc_L_1;
+		public UINT8 arith_dc_L_2;
+		public UINT8 arith_dc_L_3;
+		public UINT8 arith_dc_L_4;
+		public UINT8 arith_dc_L_5;
+		public UINT8 arith_dc_L_6;
+		public UINT8 arith_dc_L_7;
+		public UINT8 arith_dc_L_8;
+		public UINT8 arith_dc_L_9;
+		public UINT8 arith_dc_L_10;
+		public UINT8 arith_dc_L_11;
+		public UINT8 arith_dc_L_12;
+		public UINT8 arith_dc_L_13;
+		public UINT8 arith_dc_L_14;
+		public UINT8 arith_dc_L_15;
+		public UINT8 arith_dc_U_0;
+		public UINT8 arith_dc_U_1;
+		public UINT8 arith_dc_U_2;
+		public UINT8 arith_dc_U_3;
+		public UINT8 arith_dc_U_4;
+		public UINT8 arith_dc_U_5;
+		public UINT8 arith_dc_U_6;
+		public UINT8 arith_dc_U_7;
+		public UINT8 arith_dc_U_8;
+		public UINT8 arith_dc_U_9;
+		public UINT8 arith_dc_U_10;
+		public UINT8 arith_dc_U_11;
+		public UINT8 arith_dc_U_12;
+		public UINT8 arith_dc_U_13;
+		public UINT8 arith_dc_U_14;
+		public UINT8 arith_dc_U_15;
+		public UINT8 arith_dc_K_0;
+		public UINT8 arith_dc_K_1;
+		public UINT8 arith_dc_K_2;
+		public UINT8 arith_dc_K_3;
+		public UINT8 arith_dc_K_4;
+		public UINT8 arith_dc_K_5;
+		public UINT8 arith_dc_K_6;
+		public UINT8 arith_dc_K_7;
+		public UINT8 arith_dc_K_8;
+		public UINT8 arith_dc_K_9;
+		public UINT8 arith_dc_K_10;
+		public UINT8 arith_dc_K_11;
+		public UINT8 arith_dc_K_12;
+		public UINT8 arith_dc_K_13;
+		public UINT8 arith_dc_K_14;
+		public UINT8 arith_dc_K_15;
+		public INT num_scans;
+  		public void *scan_info;
+  		public boolean raw_data_in;
+  		public boolean arith_code;
+  		public boolean optimize_coding;
+  		public boolean CCIR601_sampling;
+  		public INT smoothing_factor;
+  		public J_DCT_METHOD dct_method;
+  		public UINT restart_interval;
+  		public INT restart_in_rows;
+  		public boolean write_JFIF_header;
+  		public UINT8 JFIF_major_version;
+  		public UINT8 JFIF_minor_version;
+  		public UINT8 density_unit;
+  		public UINT16 X_density;
+  		public UINT16 Y_density;
+  		public boolean write_Adobe_marker;
+  		public JDIMENSION next_scanline;
+  		public boolean progressive_mode;
+  		public INT max_h_samp_factor;
+  		public INT max_v_samp_factor;
+  		public JDIMENSION total_iMCU_rows;
+  		public INT comps_in_scan;
+  		public void *cur_comp_info_0;
+  		public void *cur_comp_info_1;
+  		public void *cur_comp_info_2;
+  		public void *cur_comp_info_3;
+  		public JDIMENSION MCUs_per_row;
+  		public JDIMENSION MCU_rows_in_scan;
+		public INT blocks_in_MCU;
+  		public INT MCU_membership_0;
+  		public INT MCU_membership_1;
+  		public INT MCU_membership_2;
+  		public INT MCU_membership_3;
+  		public INT MCU_membership_4;
+  		public INT MCU_membership_5;
+  		public INT MCU_membership_6;
+  		public INT MCU_membership_7;
+  		public INT MCU_membership_8;
+  		public INT MCU_membership_9;
+  		public INT Ss, Se, Ah, Al;
+  		public void *master;
+  		public void *main;
+  		public void *prep;
+  		public void *coef;
+  		public void *marker;
+  		public void *cconvert;
+  		public void *downsample;
+  		public void *fdct;
+  		public void *entropy;
+  		public void *script_space;
+  		public INT script_space_size;
+
+	}; // struct jpeg_compress_struct
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct jpeg_decompress_struct
+	{
+		public IntPtr err;
+		public void *mem;
+		public void *progress;
+		public IntPtr client_data;
+		public boolean is_decompressor;
+		public INT global_state;
+  		public jpeg_source_mgr *src;
+  		public JDIMENSION image_width;
+  		public JDIMENSION image_height;
+  		public INT num_components;
+  		public J_COLOR_SPACE jpeg_color_space;
+  		public J_COLOR_SPACE out_color_space;
+  		public UINT scale_num, scale_denom;
+  		public double output_gamma;
+  		public boolean buffered_image;
+  		public boolean raw_data_out;
+  		public J_DCT_METHOD dct_method;
+  		public boolean do_fancy_upsampling;
+  		public boolean do_block_smoothing;
+  		public boolean quantize_colors;
+  		public J_DITHER_MODE dither_mode;
+  		public boolean two_pass_quantize;
+  		public INT desired_number_of_colors;
+  		public boolean enable_1pass_quant;
+  		public boolean enable_external_quant;
+  		public boolean enable_2pass_quant;
+  		public JDIMENSION output_width;
+  		public JDIMENSION output_height;
+  		public INT out_color_components;
+  		public INT output_components;
+  		public INT rec_outbuf_height;
+  		public INT actual_number_of_colors;
+  		public void *colormap;
+  		public JDIMENSION output_scanline;
+  		public INT input_scan_number;
+  		public JDIMENSION input_iMCU_row;
+  		public INT output_scan_number;
+  		public JDIMENSION output_iMCU_row;
+		public void *coef_bits;
+  		public void *quant_tbl_ptrs_0;
+  		public void *quant_tbl_ptrs_1;
+  		public void *quant_tbl_ptrs_2;
+  		public void *quant_tbl_ptrs_3;
+  		public void *dc_huff_tbl_ptrs_0;
+  		public void *dc_huff_tbl_ptrs_1;
+  		public void *dc_huff_tbl_ptrs_2;
+  		public void *dc_huff_tbl_ptrs_3;
+  		public void *ac_huff_tbl_ptrs_0;
+  		public void *ac_huff_tbl_ptrs_1;
+  		public void *ac_huff_tbl_ptrs_2;
+  		public void *ac_huff_tbl_ptrs_3;
+  		public INT data_precision;
+  		public void *comp_info;
+  		public boolean progressive_mode;
+  		public boolean arith_code;
+		public UINT8 arith_dc_L_0;
+		public UINT8 arith_dc_L_1;
+		public UINT8 arith_dc_L_2;
+		public UINT8 arith_dc_L_3;
+		public UINT8 arith_dc_L_4;
+		public UINT8 arith_dc_L_5;
+		public UINT8 arith_dc_L_6;
+		public UINT8 arith_dc_L_7;
+		public UINT8 arith_dc_L_8;
+		public UINT8 arith_dc_L_9;
+		public UINT8 arith_dc_L_10;
+		public UINT8 arith_dc_L_11;
+		public UINT8 arith_dc_L_12;
+		public UINT8 arith_dc_L_13;
+		public UINT8 arith_dc_L_14;
+		public UINT8 arith_dc_L_15;
+		public UINT8 arith_dc_U_0;
+		public UINT8 arith_dc_U_1;
+		public UINT8 arith_dc_U_2;
+		public UINT8 arith_dc_U_3;
+		public UINT8 arith_dc_U_4;
+		public UINT8 arith_dc_U_5;
+		public UINT8 arith_dc_U_6;
+		public UINT8 arith_dc_U_7;
+		public UINT8 arith_dc_U_8;
+		public UINT8 arith_dc_U_9;
+		public UINT8 arith_dc_U_10;
+		public UINT8 arith_dc_U_11;
+		public UINT8 arith_dc_U_12;
+		public UINT8 arith_dc_U_13;
+		public UINT8 arith_dc_U_14;
+		public UINT8 arith_dc_U_15;
+		public UINT8 arith_dc_K_0;
+		public UINT8 arith_dc_K_1;
+		public UINT8 arith_dc_K_2;
+		public UINT8 arith_dc_K_3;
+		public UINT8 arith_dc_K_4;
+		public UINT8 arith_dc_K_5;
+		public UINT8 arith_dc_K_6;
+		public UINT8 arith_dc_K_7;
+		public UINT8 arith_dc_K_8;
+		public UINT8 arith_dc_K_9;
+		public UINT8 arith_dc_K_10;
+		public UINT8 arith_dc_K_11;
+		public UINT8 arith_dc_K_12;
+		public UINT8 arith_dc_K_13;
+		public UINT8 arith_dc_K_14;
+		public UINT8 arith_dc_K_15;
+  		public UINT restart_interval;
+  		public boolean saw_JFIF_marker;
+  		public UINT8 JFIF_major_version;
+  		public UINT8 JFIF_minor_version;
+  		public UINT8 density_unit;
+  		public UINT16 X_density;
+  		public UINT16 Y_density;
+  		public boolean saw_Adobe_marker;
+  		public UINT8 Adobe_transform;
+  		public boolean CCIR601_sampling;
+  		public void *marker_list;
+  		public INT max_h_samp_factor;
+  		public INT max_v_samp_factor;
+  		public INT min_DCT_scaled_size;
+  		public JDIMENSION total_iMCU_rows;
+  		public void *sample_range_limit;
+  		public INT comps_in_scan;
+  		public void *cur_comp_info_0;
+  		public void *cur_comp_info_1;
+  		public void *cur_comp_info_2;
+  		public void *cur_comp_info_3;
+  		public JDIMENSION MCUs_per_row;
+  		public JDIMENSION MCU_rows_in_scan;
+  		public INT blocks_in_MCU;
+  		public INT MCU_membership_0;
+  		public INT MCU_membership_1;
+  		public INT MCU_membership_2;
+  		public INT MCU_membership_3;
+  		public INT MCU_membership_4;
+  		public INT MCU_membership_5;
+  		public INT MCU_membership_6;
+  		public INT MCU_membership_7;
+  		public INT MCU_membership_8;
+  		public INT MCU_membership_9;
+  		public INT Ss, Se, Ah, Al;
+  		public INT unread_marker;
+  		public void *master;
+  		public void *main;
+  		public void *coef;
+  		public void *post;
+  		public void *inputctl;
+  		public void *marker;
+  		public void *entropy;
+  		public void *idct;
+  		public void *upsample;
+  		public void *cconvert;
+  		public void *cquantize;
+
+	}; // struct jpeg_decompress_struct
+
+	public delegate void init_source_type
+			(ref jpeg_decompress_struct cinfo);
+	public delegate boolean fill_input_buffer_type
+			(ref jpeg_decompress_struct cinfo);
+	public delegate void skip_input_data_type
+			(ref jpeg_decompress_struct cinfo, LONG num_bytes);
+	public delegate boolean resync_to_restart_type
+			(ref jpeg_decompress_struct cinfo, INT desired);
+	public delegate void term_source_type
+			(ref jpeg_decompress_struct cinfo);
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct jpeg_source_mgr
+	{
+		public IntPtr next_input_byte;
+		public size_t bytes_in_buffer;
+		public init_source_type init_source;
+		public fill_input_buffer_type fill_input_buffer;
+		public skip_input_data_type skip_input_data;
+		public resync_to_restart_type resync_to_restart;
+		public term_source_type term_source;
+
+	}; // struct jpeg_source_mgr
+
+	public delegate void init_destination_type
+			(ref jpeg_compress_struct cinfo);
+	public delegate boolean empty_output_buffer_type
+			(ref jpeg_compress_struct cinfo);
+	public delegate void term_destination_type
+			(ref jpeg_compress_struct cinfo);
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct jpeg_destination_mgr
+	{
+  		public IntPtr next_output_byte;
+  		public size_t free_in_buffer;
+		public init_destination_type init_destination;
+		public empty_output_buffer_type empty_output_buffer;
+		public term_destination_type term_destination;
+
+	}; // struct jpeg_destination_mgr
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_CreateCompress
+			(ref jpeg_compress_struct cinfo, INT version, size_t structsize);
+
+	public static void jpeg_create_compress(ref jpeg_compress_struct cinfo)
+			{
+				jpeg_CreateCompress(ref cinfo, (INT)JPEG_LIB_VERSION,
+									(size_t)(sizeof(jpeg_compress_struct)));
+			}
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_CreateDecompress
+			(ref jpeg_decompress_struct cinfo, INT version, size_t structsize);
+
+	public static void jpeg_create_decompress(ref jpeg_decompress_struct cinfo)
+			{
+				jpeg_CreateDecompress(ref cinfo, (INT)JPEG_LIB_VERSION,
+									  (size_t)(sizeof(jpeg_decompress_struct)));
+			}
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_destroy_compress
+				(ref jpeg_compress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_destroy_decompress
+				(ref jpeg_decompress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_set_defaults
+				(ref jpeg_compress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_set_colorspace
+				(ref jpeg_compress_struct cinfo, J_COLOR_SPACE colorspace);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_default_colorspace
+				(ref jpeg_compress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_set_quality
+				(ref jpeg_compress_struct cinfo, INT quality,
+				 boolean force_baseline);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_set_linear_quality
+				(ref jpeg_compress_struct cinfo, INT scale_factor,
+				 boolean force_baseline);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_add_quant_table
+				(ref jpeg_compress_struct cinfo, INT which_tbl,
+				 void *basic_table, INT scale_factor, boolean force_baseline);
+
+	[DllImport("jpeg")]
+	extern public static INT jpeg_quality_scaling(INT quality);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_simple_progression
+				(ref jpeg_compress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_suppress_tables
+				(ref jpeg_compress_struct cinfo, boolean suppress);
+
+	[DllImport("jpeg")]
+	extern public static void *jpeg_alloc_quant_table
+				(ref jpeg_compress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void *jpeg_alloc_quant_table
+				(ref jpeg_decompress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void *jpeg_alloc_huff_table
+				(ref jpeg_compress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void *jpeg_alloc_huff_table
+				(ref jpeg_decompress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_start_compress
+				(ref jpeg_compress_struct cinfo, boolean write_all_tables);
+
+	// Note: can only be used 1 scanline at a time.
+	[DllImport("jpeg")]
+	extern public static JDIMENSION jpeg_write_scanlines
+				(ref jpeg_compress_struct cinfo,
+				 ref IntPtr scanline, JDIMENSION num_lines);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_finish_compress
+				(ref jpeg_compress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_write_tables
+				(ref jpeg_compress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_calc_output_dimensions
+				(ref jpeg_decompress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static INT jpeg_read_header
+				(ref jpeg_decompress_struct cinfo, boolean require_image);
+
+	public const INT JPEG_SUSPENDED = (INT)0;
+	public const INT JPEG_HEADER_OK = (INT)1;
+	public const INT JPEG_HEADER_TABLES_ONLY = (INT)2;
+
+	[DllImport("jpeg")]
+	extern public static boolean jpeg_start_decompress
+				(ref jpeg_decompress_struct cinfo);
+
+	// Note: can only be used 1 scanline at a time.
+	[DllImport("jpeg")]
+	extern public static JDIMENSION jpeg_read_scanlines
+				(ref jpeg_decompress_struct cinfo,
+				 ref IntPtr scanline, JDIMENSION max_lines);
+
+	[DllImport("jpeg")]
+	extern public static boolean jpeg_finish_decompress
+				(ref jpeg_decompress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_abort_compress
+				(ref jpeg_compress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static void jpeg_abort_decompress
+				(ref jpeg_decompress_struct cinfo);
+
+	[DllImport("jpeg")]
+	extern public static boolean jpeg_resync_to_restart
+				(ref jpeg_decompress_struct cinfo, INT desired);
+
+	[DllImport("jpeg")]
+	extern public static IntPtr jpeg_std_error(IntPtr err);
+
+	// State data for stream processing.
+	private class StreamState
+	{
+		public IntPtr buf;
+		public byte[] buffer;
+		public Stream stream;
+		public bool sawEOF;
+
+	}; // class StreamState
+
+	// Get the stream state for a decompress structure.
+	private static StreamState GetStreamState(ref jpeg_decompress_struct cinfo)
+			{
+				GCHandle handle = (GCHandle)(cinfo.client_data);
+				return (StreamState)(handle.Target);
+			}
+
+	// Initialize a stream data source.
+	private static void init_source(ref jpeg_decompress_struct cinfo)
+			{
+				// Nothing to do here: already initialized.
+			}
+
+	// Fill an input buffer from a stream.
+	private static boolean fill_input_buffer(ref jpeg_decompress_struct cinfo)
+			{
+				int len;
+				StreamState state = GetStreamState(ref cinfo);
+				if(!(state.sawEOF))
+				{
+					len = state.stream.Read
+						(state.buffer, 0, state.buffer.Length);
+					if(len > 0)
+					{
+						Marshal.Copy(state.buffer, 0, state.buf, len);
+						cinfo.src->next_input_byte = state.buf;
+						cinfo.src->bytes_in_buffer = (size_t)len;
+						return boolean.True;
+					}
+					state.sawEOF = true;
+				}
+
+				// Insert an EOI marker to indicate end of stream to "libjpeg".
+				Marshal.WriteByte(state.buf, 0, (byte)0xFF);
+				Marshal.WriteByte(state.buf, 1, (byte)0xD9);
+				cinfo.src->next_input_byte = state.buf;
+				cinfo.src->bytes_in_buffer = (size_t)2;
+				return boolean.True;
+			}
+
+	// Skip data in an input stream.
+	private static void skip_input_data
+				(ref jpeg_decompress_struct cinfo, LONG num_bytes)
+			{
+				jpeg_source_mgr *src = cinfo.src;
+				int num = (int)num_bytes;
+				if(num > 0)
+				{
+					while(num > (int)(src->bytes_in_buffer))
+					{
+						num -= (int)(src->bytes_in_buffer);
+						fill_input_buffer(ref cinfo);
+					}
+					src->next_input_byte =
+						(IntPtr)(((long)(src->next_input_byte)) + num);
+					src->bytes_in_buffer =
+						(size_t)(((int)(src->bytes_in_buffer)) - num);
+				}
+			}
+
+	// Terminate an input source.
+	private static void term_source(ref jpeg_decompress_struct cinfo)
+			{
+				// Nothing to do here.
+			}
+
+	// Convert a stream into a source manager.
+	public static void StreamToSourceManager
+				(ref jpeg_decompress_struct cinfo, Stream stream,
+				 byte[] prime, int primeLen)
+			{
+				// Allocate a state structure and store it in "cinfo".
+				IntPtr buf = Marshal.AllocHGlobal(4096);
+				StreamState state = new StreamState();
+				state.buf = buf;
+				state.buffer = new byte [4096];
+				state.stream = stream;
+				cinfo.client_data = (IntPtr)(GCHandle.Alloc(state));
+
+				// We prime the input buffer with the JPEG magic number
+				// if some higher-level process has already read it.
+				int len;
+				if(prime != null)
+				{
+					len = primeLen;
+					Marshal.Copy(prime, 0, buf, len);
+				}
+				else
+				{
+					len = 0;
+				}
+
+				// Create the managed version of "jpeg_source_mgr".
+				jpeg_source_mgr mgr = new jpeg_source_mgr();
+				mgr.next_input_byte = buf;
+				mgr.bytes_in_buffer = (size_t)len;
+				mgr.init_source = new init_source_type(init_source);
+				mgr.fill_input_buffer =
+					new fill_input_buffer_type(fill_input_buffer);
+				mgr.skip_input_data =
+					new skip_input_data_type(skip_input_data);
+				mgr.resync_to_restart =
+					new resync_to_restart_type(jpeg_resync_to_restart);
+				mgr.term_source =
+					new term_source_type(term_source);
+
+				// Convert it into the unmanaged version and store it.
+				IntPtr umgr = Marshal.AllocHGlobal(sizeof(jpeg_source_mgr));
+				Marshal.StructureToPtr(mgr, umgr, false);
+				cinfo.src = (jpeg_source_mgr *)umgr;
+			}
+
+	// Free a source manager.
+	public static void FreeSourceManager(ref jpeg_decompress_struct cinfo)
+			{
+				GCHandle handle = (GCHandle)(cinfo.client_data);
+				StreamState state = (StreamState)(handle.Target);
+				Marshal.FreeHGlobal(state.buf);
+				handle.Free();
+				Marshal.FreeHGlobal((IntPtr)(cinfo.src));
+				cinfo.client_data = IntPtr.Zero;
+				cinfo.src = null;
+			}
+
+	// Get the stream state for a compress structure.
+	private static StreamState GetStreamState(ref jpeg_compress_struct cinfo)
+			{
+				GCHandle handle = (GCHandle)(cinfo.client_data);
+				return (StreamState)(handle.Target);
+			}
+
+	// Initialize a stream data destination.
+	private static void init_destination(ref jpeg_compress_struct cinfo)
+			{
+				// Nothing to do here: already initialized.
+			}
+
+	// Empty an output buffer to a stream.
+	private static boolean empty_output_buffer(ref jpeg_compress_struct cinfo)
+			{
+				int len;
+				StreamState state = GetStreamState(ref cinfo);
+				len = state.buffer.Length;
+				Marshal.Copy(state.buf, state.buffer, 0, len);
+				state.stream.Write(state.buffer, 0, len);
+				cinfo.dest->next_output_byte = state.buf;
+				cinfo.dest->free_in_buffer = (size_t)len;
+				return boolean.True;
+			}
+
+	// Terminate an output destination.
+	private static void term_destination(ref jpeg_compress_struct cinfo)
+			{
+				// Nothing to do here.
+			}
+
+	// Convert a stream into a destination manager.
+	public static void StreamToDestinationManager
+				(ref jpeg_compress_struct cinfo, Stream stream)
+			{
+				// Allocate a state structure and store it in "cinfo".
+				IntPtr buf = Marshal.AllocHGlobal(4096);
+				StreamState state = new StreamState();
+				state.buf = buf;
+				state.buffer = new byte [4096];
+				state.stream = stream;
+				cinfo.client_data = (IntPtr)(GCHandle.Alloc(state));
+
+				// Create the managed version of "jpeg_destination_mgr".
+				jpeg_destination_mgr mgr = new jpeg_destination_mgr();
+				mgr.next_output_byte = buf;
+				mgr.free_in_buffer = (size_t)4096;
+				mgr.init_destination =
+					new init_destination_type(init_destination);
+				mgr.empty_output_buffer =
+					new empty_output_buffer_type(empty_output_buffer);
+				mgr.term_destination =
+					new term_destination_type(term_destination);
+
+				// Convert it into the unmanaged version and store it.
+				IntPtr umgr = Marshal.AllocHGlobal
+					(sizeof(jpeg_destination_mgr));
+				Marshal.StructureToPtr(mgr, umgr, false);
+				cinfo.dest = (jpeg_destination_mgr *)umgr;
+			}
+
+	// Free a destination manager.
+	public static void FreeDestinationManager(ref jpeg_compress_struct cinfo)
+			{
+				GCHandle handle = (GCHandle)(cinfo.client_data);
+				StreamState state = (StreamState)(handle.Target);
+				Marshal.FreeHGlobal(state.buf);
+				handle.Free();
+				Marshal.FreeHGlobal((IntPtr)(cinfo.dest));
+				cinfo.client_data = IntPtr.Zero;
+				cinfo.dest = null;
+			}
+
+	// Create a standard error handler.
+	public static IntPtr CreateErrorHandler()
+			{
+				IntPtr err = Marshal.AllocHGlobal(512);
+				return jpeg_std_error(err);
+			}
+
+	// Free a standard error handler.
+	public static void FreeErrorHandler(IntPtr err)
+			{
+				Marshal.FreeHGlobal(err);
+			}
+
+	// Determine if the "libjpeg" library is present.
+	public static bool JpegLibraryPresent()
+			{
+				try
+				{
+					// Call an innocuous function, which will cause an
+					// exception throw if the library is not present.
+					jpeg_quality_scaling(0);
+					return true;
+				}
+				catch(Exception)
+				{
+					return false;
+				}
+			}
+
+}; // class JpegLib
+
+}; // namespace DotGNU.Images

@@ -26,7 +26,7 @@ namespace DotGNU.Images
 	{
 		public static Frame Resize(Frame originalFrame, int x, int y, int width, int height, int destWidth, int destHeight)
 				{
-					Frame newFrame = originalFrame.CloneFrameEmpty(destWidth, destHeight, originalFrame.PixelFormat);
+					Frame newFrame = originalFrame.CloneFrameEmpty(destWidth, destHeight, originalFrame.pixelFormat);
 					newFrame.data = new byte[newFrame.Height * newFrame.Stride];
 					if (originalFrame.Palette != null)
 						newFrame.Palette = (int[])originalFrame.Palette.Clone();
@@ -38,7 +38,7 @@ namespace DotGNU.Images
 					{
 						//TODO: Currently this is a two pass operation.
 						// A temporary frame to hold the partially resized data
-						Frame f = new Frame(null, destWidth, height, originalFrame.PixelFormat);
+						Frame f = new Frame(null, destWidth, height, originalFrame.pixelFormat);
 						ShrinkBmp(originalFrame, f, x, y, width, height);
 						ExpandBmp(f, newFrame, 0, 0, destWidth, height);
 					}
@@ -46,7 +46,7 @@ namespace DotGNU.Images
 					{
 						//TODO: currently this is a two pass operation.
 						// A temporary frame to hold the partially resized data
-						Frame f = new Frame(null, width, destHeight, originalFrame.PixelFormat);
+						Frame f = new Frame(null, width, destHeight, originalFrame.pixelFormat);
 						ShrinkBmp(originalFrame, f, x, y, width, height);
 						ExpandBmp(f, newFrame, 0, 0, width, destHeight);
 					}
@@ -63,16 +63,16 @@ namespace DotGNU.Images
 			int sumY = 0;
 			int lineStartNew = 0;
 
-			int bytesPerPixel = Utils.FormatToBitCount(oldFrame.PixelFormat) / 8;
+			int bytesPerPixel = Utils.FormatToBitCount(oldFrame.pixelFormat) / 8;
 			int lineStartBit = 0;
 			bool lineStartNibble = false;
 			int lineStartOld = 0;
-			if (oldFrame.PixelFormat == PixelFormat.Format1bppIndexed)
+			if (oldFrame.pixelFormat == PixelFormat.Format1bppIndexed)
 			{
 				lineStartOld = oldX / 8;
 				lineStartBit = 7 - (oldX & 0x07);
 			}
-			else if (oldFrame.PixelFormat == PixelFormat.Format4bppIndexed)
+			else if (oldFrame.pixelFormat == PixelFormat.Format4bppIndexed)
 			{
 				lineStartOld = oldX / 2;
 				lineStartNibble = ((oldX & 0x01) == 0);
@@ -102,7 +102,7 @@ namespace DotGNU.Images
 					sumX += oldWidth;
 					// Write the pixel.
 					// 1bpp format.
-					if (oldFrame.PixelFormat == PixelFormat.Format1bppIndexed)
+					if (oldFrame.pixelFormat == PixelFormat.Format1bppIndexed)
 					{
 						if (oldPixelByte == -1)
 							oldPixelByte = data[oldPixel];
@@ -132,7 +132,7 @@ namespace DotGNU.Images
 						}
 					}
 					// 4bpp format.
-					else if (oldFrame.PixelFormat == PixelFormat.Format4bppIndexed)
+					else if (oldFrame.pixelFormat == PixelFormat.Format4bppIndexed)
 					{
 						if (oldPixelByte == -1)
 							oldPixelByte = data[oldPixel];
@@ -173,9 +173,9 @@ namespace DotGNU.Images
 					}
 				}
 				// There maybe some bits left we need to write
-				if (oldFrame.PixelFormat == PixelFormat.Format1bppIndexed && newPixelBit != 7)
+				if (oldFrame.pixelFormat == PixelFormat.Format1bppIndexed && newPixelBit != 7)
 					dataOut[newPixel++] = (byte)(newPixelByte);
-				if (oldFrame.PixelFormat == PixelFormat.Format4bppIndexed && !newPixelNibble)
+				if (oldFrame.pixelFormat == PixelFormat.Format4bppIndexed && !newPixelNibble)
 					dataOut[newPixel++] = (byte)(newPixelByte);
 				sumY += oldHeight;
 				if(sumY >= newFrame.Height)
@@ -201,18 +201,18 @@ namespace DotGNU.Images
 			int lineStartBit = 0;
 			bool lineStartNibble = false;
 			// Calculate the right line start based on the oldX
-			if (oldFrame.PixelFormat == PixelFormat.Format1bppIndexed)
+			if (oldFrame.pixelFormat == PixelFormat.Format1bppIndexed)
 			{
 				lineStart = oldX / 8;
 				lineStartBit = 7 - (oldX & 0x07);
 			}
-			else if (oldFrame.PixelFormat == PixelFormat.Format4bppIndexed)
+			else if (oldFrame.pixelFormat == PixelFormat.Format4bppIndexed)
 			{
 				lineStart = oldX / 2;
 				lineStartNibble = ((oldX & 0x01) == 0);
 			}
 			else
-				lineStart =Utils.FormatToBitCount(oldFrame.PixelFormat) / 8 * oldX;
+				lineStart =Utils.FormatToBitCount(oldFrame.pixelFormat) / 8 * oldX;
 
 			int lineStartOut = 0;
 			int[] rowCoefficients = CreateCoefficients(oldWidth,  newFrame.Width);
@@ -224,15 +224,15 @@ namespace DotGNU.Images
 			// Index for 1bpp format.
 			int bit = lineStartBit;
 			// Preread the byte if we have to.
-			if (oldFrame.PixelFormat == PixelFormat.Format1bppIndexed && lineStartBit > 0)
+			if (oldFrame.pixelFormat == PixelFormat.Format1bppIndexed && lineStartBit > 0)
 				byteData = data[lineStart];
 			// Index for 4bpp format.
 			bool highNibble = lineStartNibble;
 			// Preread the byte if we have to.
-			if (oldFrame.PixelFormat == PixelFormat.Format4bppIndexed && !highNibble)
+			if (oldFrame.pixelFormat == PixelFormat.Format4bppIndexed && !highNibble)
 				byteData = data[lineStart];
 			int bufWidth = 3;
-			if (oldFrame.PixelFormat == PixelFormat.Format1bppIndexed)
+			if (oldFrame.pixelFormat == PixelFormat.Format1bppIndexed)
 				bufWidth = 1;
 			int bufLine = bufWidth * newFrame.Width * 4;
 			int bufNextLine =  bufWidth * newFrame.Width;
@@ -262,7 +262,7 @@ namespace DotGNU.Images
 					temp = (uint)(xCoefficient * yCoefficient);
 					// Read the color from the particular format.
 					// 1 bpp Format.
-					if (oldFrame.PixelFormat==PixelFormat.Format1bppIndexed)
+					if (oldFrame.pixelFormat==PixelFormat.Format1bppIndexed)
 					{
 						if (bit == 0)
 						{
@@ -279,14 +279,14 @@ namespace DotGNU.Images
 					else
 					{
 						// 24 bpp Format.
-						if (oldFrame.PixelFormat==PixelFormat.Format24bppRgb)
+						if (oldFrame.pixelFormat==PixelFormat.Format24bppRgb)
 						{
 							pixelByte1 = data[currentPixel++];
 							pixelByte2 = data[currentPixel++];
 							pixelByte3 = data[currentPixel++];
 						}
 						// 16 bpp 555 Format.
-						else if (oldFrame.PixelFormat==PixelFormat.Format16bppRgb555)
+						else if (oldFrame.pixelFormat==PixelFormat.Format16bppRgb555)
 						{
 							pixelByte1 = data[currentPixel++];
 							pixelByte2 = data[currentPixel++];
@@ -298,7 +298,7 @@ namespace DotGNU.Images
 							pixelByte3 = (byte)((int)pixelByte3 * 255 / 31);
 						}
 						// 16 bpp 565 Format.
-						else if (oldFrame.PixelFormat==PixelFormat.Format16bppRgb555)
+						else if (oldFrame.pixelFormat==PixelFormat.Format16bppRgb555)
 						{
 							pixelByte1 = data[currentPixel++];
 							pixelByte2 = data[currentPixel++];
@@ -310,7 +310,7 @@ namespace DotGNU.Images
 							pixelByte3 = (byte)((int)pixelByte3 * 255 / 31);
 						}
 						// 8 bpp Format.
-						else if (oldFrame.PixelFormat==PixelFormat.Format8bppIndexed)
+						else if (oldFrame.pixelFormat==PixelFormat.Format8bppIndexed)
 						{
 							int paletteColor = palette[data[currentPixel++]];
 							pixelByte1 = (byte)(paletteColor>>16);
@@ -318,7 +318,7 @@ namespace DotGNU.Images
 							pixelByte3 = (byte)paletteColor;
 						}
 						// 4 bpp Format.
-						else if (oldFrame.PixelFormat==PixelFormat.Format4bppIndexed)
+						else if (oldFrame.pixelFormat==PixelFormat.Format4bppIndexed)
 						{
 							int paletteColor;
 							if (highNibble)
@@ -342,7 +342,7 @@ namespace DotGNU.Images
 					if(crossColumn)
 					{
 						temp = (uint)(xCoefficient1 * yCoefficient);
-						if (oldFrame.PixelFormat==PixelFormat.Format1bppIndexed)
+						if (oldFrame.pixelFormat==PixelFormat.Format1bppIndexed)
 							buffer[bufCurrentPixel + 1] += temp * pixelByte1;
 						else
 						{
@@ -354,7 +354,7 @@ namespace DotGNU.Images
 					if(crossRow)
 					{
 						temp = (uint)(xCoefficient * yCoefficient1);
-						if (oldFrame.PixelFormat==PixelFormat.Format1bppIndexed)
+						if (oldFrame.pixelFormat==PixelFormat.Format1bppIndexed)
 								buffer[bufNextPixel] += temp * pixelByte1;
 						else
 						{
@@ -365,7 +365,7 @@ namespace DotGNU.Images
 						if(crossColumn)
 						{
 							temp = (uint)(xCoefficient1 * yCoefficient1);
-							if (oldFrame.PixelFormat==PixelFormat.Format1bppIndexed)
+							if (oldFrame.pixelFormat==PixelFormat.Format1bppIndexed)
 								buffer[bufNextPixel + 1] += temp * pixelByte1;
 							else
 							{
@@ -391,7 +391,7 @@ namespace DotGNU.Images
 					int endWriteBuffer = bufCurrentPixel + bufWidth * newFrame.Width;
 					// Write the buffer.
 					// 1 bpp format.
-					if (oldFrame.PixelFormat==PixelFormat.Format1bppIndexed)
+					if (oldFrame.pixelFormat==PixelFormat.Format1bppIndexed)
 					{
 						byte bit1 = 128;
 						byte dataByte1 = 0;
@@ -412,13 +412,13 @@ namespace DotGNU.Images
 							dataOut[currentPixel] = dataByte1;
 					}
 					// 24 bpp format.
-					else if (oldFrame.PixelFormat==PixelFormat.Format24bppRgb)
+					else if (oldFrame.pixelFormat==PixelFormat.Format24bppRgb)
 					{
 						for(; bufCurrentPixel < endWriteBuffer; bufCurrentPixel++)
 							dataOut[currentPixel++] = (byte)(buffer[bufCurrentPixel]>> 24);
 					}
 					// 16 bpp 555 format.
-					else if (oldFrame.PixelFormat==PixelFormat.Format16bppRgb555)
+					else if (oldFrame.pixelFormat==PixelFormat.Format16bppRgb555)
 					{
 						while( bufCurrentPixel < endWriteBuffer)
 						{
@@ -430,7 +430,7 @@ namespace DotGNU.Images
 						}
 					}
 					// 16 bpp 565 format.
-					else if (oldFrame.PixelFormat==PixelFormat.Format16bppRgb565)
+					else if (oldFrame.pixelFormat==PixelFormat.Format16bppRgb565)
 					{
 						while( bufCurrentPixel < endWriteBuffer)
 						{
@@ -442,7 +442,7 @@ namespace DotGNU.Images
 						}
 					}
 					// 8 bpp format.
-					else if (oldFrame.PixelFormat==PixelFormat.Format8bppIndexed)
+					else if (oldFrame.pixelFormat==PixelFormat.Format8bppIndexed)
 					{
 						while(bufCurrentPixel < endWriteBuffer)
 						{
@@ -453,7 +453,7 @@ namespace DotGNU.Images
 						}
 					}
 					// 4 bpp format.
-					else if (oldFrame.PixelFormat==PixelFormat.Format4bppIndexed)
+					else if (oldFrame.pixelFormat==PixelFormat.Format4bppIndexed)
 					{
 						bool highNibble1 = true;
 						int dataByte1 = 0;

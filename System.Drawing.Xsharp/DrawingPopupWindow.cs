@@ -25,6 +25,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
+using DotGNU.Images;
 using Xsharp;
 
 internal sealed class DrawingPopupWindow : PopupWindow, IToolkitWindow
@@ -210,7 +211,17 @@ internal sealed class DrawingPopupWindow : PopupWindow, IToolkitWindow
 	// Force an update of all invalidated regions.
 	void IToolkitWindow.Update()
 			{
+				Update();
 				Display.Flush();
+			}
+
+	// Set the cursor.  The toolkit may ignore "frame" if it already
+	// has a system-defined association for "cursorType".  Setting
+	// "cursorType" to "ToolkitCursorType.InheritParent" will reset
+	// the cursor to be the same as the parent window's.
+	void IToolkitWindow.SetCursor(ToolkitCursorType cursorType, Frame frame)
+			{
+				DrawingWindow.ModifyCursor(this, cursorType, frame);
 			}
 
 	// Override the button press event from Xsharp.

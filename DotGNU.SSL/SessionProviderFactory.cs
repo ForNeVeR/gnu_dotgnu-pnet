@@ -40,8 +40,8 @@ public sealed class SessionProviderFactory
 	///
 	/// <param name="name">
 	/// <para>The name of the provider to use, or <see langword="null"/>
-	/// to get the default provider.  An example of a name might be
-	/// <c>"OpenSSL"</c>.</para>
+	/// to get the default provider.  Examples of a name might be
+	/// <c>"GNUTLS"</c> or <c>"OpenSSL"</c>.</para>
 	/// </param>
 	///
 	/// <returns>
@@ -55,12 +55,27 @@ public sealed class SessionProviderFactory
 	public static ISecureSessionProvider GetProvider(String name)
 			{
 			#if CONFIG_RUNTIME_INFRA
-				if(name == null || name == "OpenSSL")
+				if(name == "GNUTLS")
 				{
-					// Note: the OpenSSL constructor may throw
-					// NotSupportedException if the OpenSSL library
-					// is not available on the underlying OS.
+					// The caller explicitly asked for "GNUTLS".
+					return new GNUTLS();
+				}
+				else if(name == "OpenSSL")
+				{
+					// The caller explicitly asked for "OpenSSL".
 					return new OpenSSL();
+				}
+				else if(name == null)
+				{
+					// Try GNUTLS first, and then fall back to OpenSSL.
+					try
+					{
+						return new GNUTLS();
+					}
+					catch(NotSupportedException)
+					{
+						return new OpenSSL();
+					}
 				}
 			#endif // CONFIG_RUNTIME_INFRA
 				throw new NotSupportedException();
@@ -95,7 +110,42 @@ public sealed class SessionProviderFactory
 	/// </returns>
 	public static String[] GetProviders()
 			{
-				return new String[] {"OpenSSL"};
+			#if CONFIG_RUNTIME_INFRA
+				// Probe the handlers to see which ones are available.
+				bool haveGNUTLS, haveOpenSSL;
+				ISecureSessionProvider provider;
+				try
+				{
+					provider = new GNUTLS();
+					haveGNUTLS = true;
+				}
+				catch(NotSupportedException)
+				{
+					haveGNUTLS = false;
+				}
+				try
+				{
+					provider = new OpenSSL();
+					haveOpenSSL = true;
+				}
+				catch(NotSupportedException)
+				{
+					haveOpenSSL = false;
+				}
+				if(haveGNUTLS && haveOpenSSL)
+				{
+					return new String[] {"GNUTLS", "OpenSSL"};
+				}
+				else if(haveGNUTLS)
+				{
+					return new String[] {"GNUTLS"};
+				}
+				else if(haveOpenSSL)
+				{
+					return new String[] {"OpenSSL"};
+				}
+			#endif
+				return new String [0];
 			}
 
 }; // class SessionProviderFactory

@@ -51,11 +51,13 @@ internal sealed class IconReader
 
 				// Read the resource directory.
 				int[] offsetList = new int [numImages];
-				int[,] hotspotList = null;
-				
-				if (hotspots)
-					hotspotList = new int[numImages, 2];
-
+				int[] hotspotX = null;
+				int[] hotspotY = null;
+				if(hotspots)
+				{
+					hotspotX = new int[numImages];
+					hotspotY = new int[numImages];
+				}
 				for(index = 0; index < numImages; ++index)
 				{
 					if(stream.Read(buffer, 0, 16) != 16)
@@ -63,11 +65,10 @@ internal sealed class IconReader
 						throw new FormatException();
 					}
 					offset += 16;
-					
 					if(hotspots)
 					{
-						hotspotList[index, 0] = Utils.ReadUInt16(buffer, 4);
-						hotspotList[index, 1] = Utils.ReadUInt16(buffer, 6);
+						hotspotX[index] = Utils.ReadUInt16(buffer, 4);
+						hotspotY[index] = Utils.ReadUInt16(buffer, 6);
 					}
 					offsetList[index] = Utils.ReadInt32(buffer, 12);
 				}
@@ -106,17 +107,31 @@ internal sealed class IconReader
 					// Create a new frame for this icon.
 					frame = new Frame(image, width, height, format);
 					image.AddFrame(frame);
-					if (hotspots)
+					if(hotspots)
 					{
-						frame.HotspotX = hotspotList[index, 0];
-						frame.HotspotY = hotspotList[index, 1];
+						frame.HotspotX = hotspotX[index];
+						frame.HotspotY = hotspotY[index];
+					}
+
+					// Copy some of the format information up to the image.
+					if(frame.Width > image.Width)
+					{
+						image.Width = frame.Width;
+					}
+					if(frame.Height > image.Height)
+					{
+						image.Height = frame.Height;
+					}
+					if(image.NumFrames == 1)
+					{
+						image.PixelFormat = format;
 					}
 
 					// If indexed, get the palette.
-					if((frame.PixelFormat & PixelFormat.Indexed) > 0)
+					if((frame.pixelFormat & PixelFormat.Indexed) != 0)
 					{
 						paletteCount =
-							(1 << Utils.FormatToBitCount(frame.PixelFormat));
+							(1 << Utils.FormatToBitCount(frame.pixelFormat));
 						if(stream.Read(buffer, 0, paletteCount * 4)
 								!= paletteCount * 4)
 						{
@@ -130,11 +145,8 @@ internal sealed class IconReader
 							palette[paletteIndex] = Utils.ReadBGR
 								(buffer, paletteIndex * 4);
 						}
+						frame.Palette = palette;
 					}
-					else
-						palette = null;
-					
-					frame.Palette = palette;
 
 					// Read the main part of the icon or cursor.
 					BmpReader.LoadBitmapData(stream, frame, false, true);
@@ -146,6 +158,15 @@ internal sealed class IconReader
 
 					// Invert the mask, because we want 1 to mean "active".
 					InvertMask(frame);
+				}
+
+				// Set the appropriate load format.
+				if(hotspots)
+				{
+					image.LoadFormat = Image.Cursor;
+				}
+				else
+				{
 					image.LoadFormat = Image.Icon;
 				}
 			}

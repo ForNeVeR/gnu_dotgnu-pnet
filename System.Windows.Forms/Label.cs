@@ -77,7 +77,7 @@ public class Label : Control
 					if(BorderStyleInternal != value)
 					{
 						BorderStyleInternal = value;
-						Redraw();
+						Invalidate();
 					}
 				}
 			}
@@ -245,7 +245,7 @@ public class Label : Control
 					if(renderTransparent != value)
 					{
 						renderTransparent = value;
-						Redraw();
+						Invalidate();
 					}
 				}
 			}
@@ -275,7 +275,7 @@ public class Label : Control
 					if(useMnemonic != value)
 					{
 						useMnemonic = value;
-						Redraw();
+						Invalidate();
 					}
 				}
 			}
@@ -412,7 +412,7 @@ public class Label : Control
 	// Raise the "AutoSizeChanged" event.
 	protected virtual void OnAutoSizeChanged(EventArgs e)
 			{
-				Redraw();
+				Invalidate();
 
 				// Invoke the event handler.
 				EventHandler handler;
@@ -472,12 +472,6 @@ public class Label : Control
 				// TODO: image labels
 			}
 
-	private void Redraw()
-			{
-				if (IsHandleCreated)
-					using (Graphics g = CreateGraphics())
-						Draw(g);
-			}
 	// Override the "ParentChanged" event.
 	protected override void OnParentChanged(EventArgs e)
 			{
@@ -487,7 +481,7 @@ public class Label : Control
 	// Raise the "TextAlignChanged" event.
 	protected virtual void OnTextAlignChanged(EventArgs e)
 			{
-				Redraw();
+				Invalidate();
 
 				// Invoke the event handler.
 				EventHandler handler;
@@ -650,7 +644,7 @@ public class Label : Control
 					Size = new Size(PreferredWidth, PreferredHeight);
 				}
 
-				Redraw();
+				Invalidate();
 			}
 
 }; // class Label

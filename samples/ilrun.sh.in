@@ -21,6 +21,9 @@
 # Get the incoming configuration variables.
 ILRUN="@ILRUN@"
 
+# Get the base to start looking for libraries from.
+BASE=`dirname $0`
+
 # Make sure that SSH_CLIENT is exported, because older versions of
 # bash do not properly export it.
 if test -n "$SSH_CLIENT" ; then
@@ -28,4 +31,4 @@ if test -n "$SSH_CLIENT" ; then
 fi
 
 # Run the engine, with the assembly paths set correctly.
-exec "$ILRUN" -L../runtime -L../I18N -L../DotGNU.SSL -L../DotGNU.Images -L../System -L../System.Xml -L../Xsharp -L../Xsharp/.libs -L../System.Drawing -L../System.Drawing.Xsharp -L../System.Drawing.Postscript -L../System.Windows.Forms -L../JScript -L../Basic -L../compat -L../System.Net.IrDA -L../SharpZipLib $*
+exec "$ILRUN" -L${BASE}/../runtime -L${BASE}/../I18N -L${BASE}/../DotGNU.SSL -L${BASE}/../DotGNU.Images -L${BASE}/../System -L${BASE}/../System.Xml -L${BASE}/../Xsharp -L${BASE}/../Xsharp/.libs -L${BASE}/../System.Drawing -L${BASE}/../System.Drawing.Xsharp -L${BASE}/../System.Drawing.Postscript -L${BASE}/../System.Windows.Forms -L${BASE}/../JScript -L${BASE}/../Basic -L${BASE}/../compat -L${BASE}/../System.Net.IrDA -L${BASE}/../SharpZipLib $*

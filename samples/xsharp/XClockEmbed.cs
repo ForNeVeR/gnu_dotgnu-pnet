@@ -47,7 +47,7 @@ public class XClockEmbed : TopLevelWindow
 	}
 
 	// Handle resizes of the main application window.
-	protected override void OnResize(int width, int height)
+	protected override void OnMoveResize(int x, int y, int width, int height)
 	{
 		embed.Resize(width, height);
 	}

@@ -67,6 +67,7 @@ public abstract class ScrollBar : Control
 		idleTimer = new Timer();
 		idleTimer.Tick += new EventHandler(idleTimer_Tick);
 		idleTimer.Interval = 1;
+		BackColor = SystemColors.ScrollBar;
 	}
 
 	// Properties
@@ -77,7 +78,7 @@ public abstract class ScrollBar : Control
 		{
 			if (value == base.backColor) { return; }
 			base.BackColor = value;
-			Draw();
+			Invalidate();
 		}
 	}
 
@@ -88,7 +89,7 @@ public abstract class ScrollBar : Control
 		{
 			if (value == base.BackgroundImage) { return; }
 			base.BackgroundImage = value;
-			Draw();
+			Invalidate();
 		}
 	}
 
@@ -105,8 +106,7 @@ public abstract class ScrollBar : Control
 		{
 			if (value == decDown) { return; }
 			decDown = value;
-			using (Graphics g = CreateGraphics())
-				Draw(g, decrement);
+			Invalidate(decrement);
 			if (value)
 			{
 				timer.Tick += new EventHandler(Decrement);
@@ -139,7 +139,7 @@ public abstract class ScrollBar : Control
 		{
 			if (value == base.foreColor) { return; }
 			base.ForeColor = value;
-			Draw();
+			Invalidate();
 		}
 	}
 
@@ -157,8 +157,7 @@ public abstract class ScrollBar : Control
 		{
 			if (value == incDown) { return; }
 			incDown = value;
-			using (Graphics g = CreateGraphics())
-				Draw(g, increment);
+			Invalidate(increment);
 			if (value)
 			{
 				timer.Tick += new EventHandler(Increment);
@@ -192,7 +191,7 @@ public abstract class ScrollBar : Control
 				largeChange = maximum - minimum + 1;
 			
 			LayoutScrollBar();
-			Draw();
+			Invalidate();
 		}
 	}
 
@@ -211,7 +210,7 @@ public abstract class ScrollBar : Control
 			if (value > maximum)
 				Value = maximum;
 			LayoutScrollBar();
-			Draw();
+			Invalidate();
 		}
 	}
 
@@ -230,7 +229,7 @@ public abstract class ScrollBar : Control
 			if (value < minimum)
 				Value = minimum;
 			LayoutScrollBar();
-			Draw();
+			Invalidate();
 		}
 	}
 
@@ -317,13 +316,6 @@ public abstract class ScrollBar : Control
 		Rectangle oldBounds = bar;
 		GenerateManualScrollEvents(newValue, ScrollEventType.LargeDecrement);
 		RedrawTrackBar(oldBounds);
-	}
-
-	// Create a graphics and redraw the entire scroll bar
-	private void Draw()
-	{
-		using (Graphics g = CreateGraphics())
-			Draw(g, ClientRectangle);
 	}
 
 	// Draw if visible and created
@@ -462,7 +454,7 @@ public abstract class ScrollBar : Control
 
 	protected override void OnEnabledChanged(EventArgs e)
 	{
-		Draw();
+		Invalidate();
 		base.OnEnabledChanged(e);
 	}
 
@@ -641,14 +633,12 @@ public abstract class ScrollBar : Control
 		if (incDown)
 		{
 			IncrementDown = false;
-			using(Graphics g = CreateGraphics())
-				Draw(g, increment);
+			Invalidate(increment);
 		}
 		else if (decDown)
 		{
 			DecrementDown = false;
-			using(Graphics g = CreateGraphics())
-				Draw(g, decrement);
+			Invalidate(decrement);
 		}
 		else if (trackDown)
 		{
@@ -749,16 +739,9 @@ public abstract class ScrollBar : Control
 	// When the trackbar moves, to prevent flickering, we only redraw what we have to
 	private void RedrawTrackBar( Rectangle oldBounds)
 	{
-		// Exclude any area in the oldPos that will be drawn by the newPos
-		Region old = new Region(oldBounds);
-		old.Exclude(bar);
-		using (Graphics g = CreateGraphics())
-		{
-			// Replace old
-			Draw(g, Rectangle.Truncate( old.GetBounds(g)));
-			// Draw new
-			Draw(g, bar);
-		}
+		Region region = new Region(oldBounds);
+		region.Union(bar);
+		Invalidate(region);
 	}
 
 	protected override void OnMouseUp(MouseEventArgs e)
@@ -801,13 +784,21 @@ public abstract class ScrollBar : Control
 
 	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 	{
+		bool modified = (x != Left || y != Top || width != Width || height != Height);
 		base.SetBoundsCore (x, y, width, height, specified);
-		if (IsHandleCreated)
+		if (modified && IsHandleCreated)
 		{
 			LayoutScrollBar();
-			Draw();
+			Invalidate();
 		}
 	}
+
+	protected override void OnCreateControl()
+	{
+		base.OnCreateControl ();
+		LayoutScrollBar();
+	}
+
 
 	protected override void OnVisibleChanged(EventArgs e)
 	{

@@ -54,18 +54,49 @@ typedef struct
 void _IL_DirMethods_GetPathInfo(ILExecThread *thread, void *result)
 {
 	Platform_PathInfo *info = (Platform_PathInfo *)result;
+	System_Array *charArray;
+	ILUInt16 *invalidPathCharsBuf;
+
+	/* Allocate the "invalidPathChars" array */
+#if defined(_WIN32) || defined(WIN32)
+	charArray = (System_Array *)ILExecThreadNew(thread, "[c", "(Ti)V", 
+													(ILVaInt)6);
+#else
+	charArray = (System_Array *)ILExecThreadNew(thread, "[c", "(Ti)V", 
+													(ILVaInt)2);
+#endif
+
+	if(!charArray)
+	{
+		/* Bail out if out of memory */
+		ILExecThreadThrowOutOfMemory(thread);
+		return;
+	}
+	info->invalidPathChars = (ILObject *)charArray;
+
+	/* Fill the "invalidPathChars" array with the invalid characters */
+	invalidPathCharsBuf = (ILUInt16 *)(ArrayToBuffer(charArray));
+
+#if defined(_WIN32) || defined(WIN32)
+	/* ... write the 16-bit characters to buf ... */
+	*(invalidPathCharsBuf++) = '\"';
+	*(invalidPathCharsBuf++) = '<';
+	*(invalidPathCharsBuf++) = '>';
+	*(invalidPathCharsBuf++) = '|';
+#endif
+	*(invalidPathCharsBuf++) = '\0';
+	*(invalidPathCharsBuf++) = '\n';
+
 #if defined(_WIN32) || defined(WIN32)
 	info->dirSeparator = '\\';
 	info->altDirSeparator = '/';
 	info->volumeSeparator = ':';
 	info->pathSeparator = ';';
-	info->invalidPathChars = 0;
 #else
 	info->dirSeparator = '/';
 	info->altDirSeparator = 0;
 	info->volumeSeparator = 0;
 	info->pathSeparator = ':';
-	info->invalidPathChars = 0;
 #endif
 }
 

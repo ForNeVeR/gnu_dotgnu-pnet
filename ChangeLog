@@ -17,6 +17,9 @@ runtime/System/Runtime/CompilerServices/DecimalConstantAttribute.cs,
 runtime/System/Text/StringBuilder.cs: add extra attributes that are
 required by the ECMA standard.
 
+* runtime/System/Type.cs: implement "IsAssignableFrom", "IsInstanceOfType",
+and "GetDefaultMembers".
+
 2001-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/AppDomain.cs,

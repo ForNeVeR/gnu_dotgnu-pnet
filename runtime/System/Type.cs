@@ -137,8 +137,17 @@ public abstract class Type : MemberInfo
 	// Get the default members within this type.
 	public virtual MemberInfo[] GetDefaultMembers()
 			{
-				// TODO
-				return null;
+				// Get the value of the "DefaultMember" attribute.
+				DefaultMemberAttribute attr = (DefaultMemberAttribute)
+					Attribute.GetCustomAttribute
+						(this, typeof(DefaultMemberAttribute));
+				if(attr == null)
+				{
+					return new MemberInfo [0];
+				}
+
+				// Find all members with the specified name.
+				return GetMember(attr.MemberName);
 			}
 
 	// Get the element type for this type.
@@ -582,11 +591,44 @@ public abstract class Type : MemberInfo
 	// Implementation of the "IsArray" property.
 	protected abstract bool IsArrayImpl();
 
+	// Determine if "this" implements the interface "c".
+	private bool IsImplementationOf(Type c)
+			{
+				Type[] interfaces = GetInterfaces();
+				int posn;
+				for(posn = 0; posn < interfaces.Length; ++posn)
+				{
+					if(c == interfaces[posn])
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+
 	// Determine if this type is assignable from another type.
 	public virtual bool IsAssignableFrom(Type c)
 			{
-				// TODO
-				return false;
+				if(c == null)
+				{
+					return false;
+				}
+				else if(c == this)
+				{
+					return true;
+				}
+				else if(c.IsSubclassOf(this))
+				{
+					return true;
+				}
+				else if(IsInterface)
+				{
+					return c.IsImplementationOf(this);
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 	// Implementation of the "IsByRef" property.
@@ -604,8 +646,14 @@ public abstract class Type : MemberInfo
 	// Determine if an object is an instance of this type.
 	public virtual bool IsInstanceOfType(Object obj)
 			{
-				// TODO
-				return false;
+				if(obj == null)
+				{
+					return false;
+				}
+				else
+				{
+					return IsAssignableFrom(obj.GetType());
+				}
 			}
 
 	// Implementation of the "IsMarshalByRef" property.

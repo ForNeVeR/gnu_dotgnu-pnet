@@ -1,3 +1,13 @@
+2003-07-25  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: modify method body
+	output methods to get method body output working.
+
+	* runtime/System/Reflection/Emit/ILGenerator.cs: get method body output
+	working.
+
+	* runtime/System/Reflection/Emit/SignatureHelper.cs: add methods to create,
+	and get the token of, a stand alone signature made from a signature.
 
 2003-07-25  Gopal.V  <gopalv82@symonds.net>
 	

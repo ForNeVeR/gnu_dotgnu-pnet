@@ -371,6 +371,16 @@ public sealed class SignatureHelper : IDetachItem
 				}
 			}
 
+	// Get a token for a stand alone signature made from this signature.
+	internal int StandAloneToken()
+			{
+				if (sig == IntPtr.Zero)
+				{
+					return 0;
+				}
+				return ClrStandAloneToken(mod.privateData, sig);
+			}
+
 	// Convert this signature into a string.
 	public override String ToString()
 			{
@@ -481,6 +491,10 @@ public sealed class SignatureHelper : IDetachItem
 	// Get the bytes of a signature from the blob.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static byte[] ClrSigGetBytes(IntPtr module, long offset);
+
+	// Create an ILStandAloneSig from the signature and return its token.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int ClrStandAloneToken(IntPtr module, IntPtr sig);
 
 }; // class SignatureHelper
 

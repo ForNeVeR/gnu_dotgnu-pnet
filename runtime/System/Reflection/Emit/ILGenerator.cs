@@ -91,7 +91,7 @@ public class ILGenerator : IDetachItem
 	private const int Except_Catch   = 0;
 	private const int Except_Filter  = 1;
 	private const int Except_Finally = 2;
-	private const int Except_Fault   = 3;
+	private const int Except_Fault   = 4;
 
 	// Information about an exception clause.
 	private class ExceptionClause
@@ -1243,12 +1243,361 @@ public class ILGenerator : IDetachItem
 				tokenFixups = null;
 			}
 
+	// Finish processing the labels.
+	// Returns true if we need fat exception blocks.
+	private bool FinishLabels()
+			{
+				bool fatExceptions = false;
+
+				// Do we need fat exception blocks?
+				ExceptionTry exception = exceptionList;
+				while (exception != null)
+				{
+					if (exception.beginTry > 0xFFFF ||
+					    exception.endTry > 0xFFFF ||
+					    exception.endTry - exception.beginTry > 0xFF ||
+					    exception.endCatch - exception.endTry > 0xFF)
+					{
+						fatExceptions = true;
+						break;
+					}
+					exception = exception.next;
+				}
+
+				for (int i = 0; i < numLabels; ++i)
+				{
+					// Write the final offsets into all branch instructions
+					LabelRef label = labels[i].refs;
+					while (label != null)
+					{
+						int delta;
+						if (label.switchEnd != -1)
+						{
+							delta = label.address - label.switchEnd;
+						}
+						else
+						{
+							delta = label.address - labels[i].offset + 4;
+						}
+						code[labels[i].offset] = (byte)delta;
+						code[labels[i].offset + 1] = (byte)(delta >> 8);
+						code[labels[i].offset + 2] = (byte)(delta >> 16);
+						code[labels[i].offset + 3] = (byte)(delta >> 24);
+						label = label.next;
+					}
+				}
+
+				return fatExceptions;
+			}
+
+	// Copy the fixup data to the given arrays.
+	private static void FixupsToArrays
+				(ref IntPtr[] ptrs, ref int[] offsets, TokenFixup fixups)
+			{
+				if (fixups == null) { return; }
+
+				System.Collections.ArrayList p = new System.Collections.ArrayList();
+				System.Collections.ArrayList o = new System.Collections.ArrayList();
+				while (fixups != null)
+				{
+					p.Add(fixups.clrHandle);
+					o.Add(fixups.offset);
+					fixups = fixups.next;
+				}
+				ptrs = (IntPtr[])p.ToArray(typeof(IntPtr));
+				offsets = (int[])o.ToArray(typeof(int));
+			}
+
+	// Build the method header.
+	private byte[] BuildHeader(bool initLocals)
+			{
+				byte[] header;
+
+				if (offset < 0x40 && locals == null &&
+				    exceptionList == null && maxHeight <= 2)
+				{
+					// Use the tiny format
+					header = new byte[1];
+					header[0] = ((byte)((offset << 2) | 0x02));
+				}
+				else
+				{
+					// Use the fat format
+					header = new byte[12];
+					header[0] = (byte)(initLocals ? 0x13 : 0x03);
+					if (exceptionList != null)
+					{
+						// There will be more sections following the method code
+						header[0] |= (byte)0x08;
+					}
+					header[1] = (byte)0x30;
+					header[2] = (byte)(maxHeight);
+					header[3] = (byte)(maxHeight >> 8);
+					header[4] = (byte)(offset);
+					header[5] = (byte)(offset >> 8);
+					header[6] = (byte)(offset >> 16);
+					header[7] = (byte)(offset >> 24);
+					if (locals != null)
+					{
+						int token = locals.StandAloneToken();
+						header[8]  = (byte)(token);
+						header[9]  = (byte)(token >> 8);
+						header[10] = (byte)(token >> 16);
+						header[11] = (byte)(token >> 24);
+					}
+					else
+					{
+						header[8]  = (byte)0x00;
+						header[9]  = (byte)0x00;
+						header[10] = (byte)0x00;
+						header[11] = (byte)0x00;
+					}
+				}
+
+				return header;
+			}
+
+	// Build the method's exception blocks.
+	private void BuildExceptionBlocks
+				(ref byte[][] e, ref TokenFixup fixups, bool fatExceptions)
+			{
+				if (exceptionList == null) { return; }
+
+				// Count the number of exception blocks
+				int numExceptions = 0;
+				ExceptionTry exception = exceptionList;
+				while (exception != null)
+				{
+					ExceptionClause clause = exception.clauses;
+					while (clause != null)
+					{
+						++numExceptions;
+						clause = clause.prev;
+					}
+					exception = exception.next;
+				}
+
+				// Switch formats if the section size is too big for tiny
+				if (!fatExceptions && ((numExceptions * 12) + 4) > 0xFF)
+				{
+					fatExceptions = true;
+				}
+
+				e = new byte[numExceptions+1][];
+				int index = 0;
+
+				// What type of exception header should we use?
+				if (fatExceptions)
+				{
+					// Use the fat format for the exception information
+					int tmp = (numExceptions * 24) + 4;
+					e[index] = new byte[4];
+					e[index][0] = (byte)0x41;
+					e[index][1] = (byte)(tmp);
+					e[index][2] = (byte)(tmp >> 8);
+					e[index][3] = (byte)(tmp >> 16);
+					++index;
+					exception = exceptionList;
+					while (exception != null)
+					{
+						ExceptionClause clause = exception.clauses;
+						while (clause != null)
+						{
+							int flags;
+							int tryOffset;
+							int tryLength;
+							int handlerOffset;
+							int handlerLength;
+
+							flags = clause.clauseType;
+							tryOffset = exception.beginTry;
+							tryLength = exception.endTry - tryOffset;
+							handlerOffset = clause.beginClause;
+							handlerLength = clause.endClause - handlerOffset;
+
+							e[index] = new byte[24];
+
+							e[index][0]  = (byte)(flags);
+							e[index][1]  = (byte)(flags >> 8);
+							e[index][2]  = (byte)(flags >> 16);
+							e[index][3]  = (byte)(flags >> 24);
+							e[index][4]  = (byte)(tryOffset);
+							e[index][5]  = (byte)(tryOffset >> 8);
+							e[index][6]  = (byte)(tryOffset >> 16);
+							e[index][7]  = (byte)(tryOffset >> 24);
+							e[index][8]  = (byte)(tryLength);
+							e[index][9]  = (byte)(tryLength >> 8);
+							e[index][10] = (byte)(tryLength >> 16);
+							e[index][11] = (byte)(tryLength >> 24);
+							e[index][12] = (byte)(handlerOffset);
+							e[index][13] = (byte)(handlerOffset >> 8);
+							e[index][14] = (byte)(handlerOffset >> 16);
+							e[index][15] = (byte)(handlerOffset >> 24);
+							e[index][16] = (byte)(handlerLength);
+							e[index][17] = (byte)(handlerLength >> 8);
+							e[index][18] = (byte)(handlerLength >> 16);
+							e[index][19] = (byte)(handlerLength >> 24);
+							if (flags == Except_Filter)
+							{
+								// ?? TODO ??
+								e[index][20] = (byte)(handlerOffset);
+								e[index][21] = (byte)(handlerOffset >> 8);
+								e[index][22] = (byte)(handlerOffset >> 16);
+								e[index][23] = (byte)(handlerOffset >> 24);
+							}
+							else if (clause.classInfo != null)
+							{
+								int token;
+								IntPtr handle;
+								IClrProgramItem item;
+
+								item = (IClrProgramItem)clause.classInfo;
+								handle = item.ClrHandle;
+								token = AssemblyBuilder.ClrGetItemToken(handle);
+
+								e[index][20] = (byte)(token);
+								e[index][21] = (byte)(token >> 8);
+								e[index][22] = (byte)(token >> 16);
+								e[index][23] = (byte)(token >> 24);
+
+								TokenFixup fixup = new TokenFixup();
+								fixup.next = fixups;
+								fixup.offset = index*24;
+								fixup.clrHandle = handle;
+								fixups = fixup;
+							}
+							else
+							{
+								e[index][20] = (byte)0x00;
+								e[index][21] = (byte)0x00;
+								e[index][22] = (byte)0x00;
+								e[index][23] = (byte)0x00;
+							}
+							clause = clause.prev;
+							++index;
+						}
+						exception = exception.next;
+					}
+				}
+				else
+				{
+					// Use the tiny format for the exception information
+					int tmp = (numExceptions * 12) + 4;
+					e[index] = new byte[4];
+					e[index][0] = (byte)0x01;
+					e[index][1] = (byte)tmp;
+					e[index][2] = (byte)0x00;
+					e[index][3] = (byte)0x00;
+					++index;
+					exception = exceptionList;
+					while(exception != null)
+					{
+						ExceptionClause clause = exception.clauses;
+						while (clause != null)
+						{
+							int flags;
+							int tryOffset;
+							int tryLength;
+							int handlerOffset;
+							int handlerLength;
+
+							flags = clause.clauseType;
+							tryOffset = exception.beginTry;
+							tryLength = exception.endTry - tryOffset;
+							handlerOffset = clause.beginClause;
+							handlerLength = clause.endClause - handlerOffset;
+
+							e[index] = new byte[12];
+
+							e[index][0] = (byte)(flags);
+							e[index][1] = (byte)(flags >> 8);
+							e[index][2] = (byte)(tryOffset);
+							e[index][3] = (byte)(tryOffset >> 8);
+							e[index][4] = (byte)(tryLength);
+							e[index][5] = (byte)(handlerOffset);
+							e[index][6] = (byte)(handlerOffset >> 8);
+							e[index][7] = (byte)(handlerLength);
+							if (flags == Except_Filter)
+							{
+								// ?? TODO ??
+								e[index][8]  = (byte)(handlerOffset);
+								e[index][9]  = (byte)(handlerOffset >> 8);
+								e[index][10] = (byte)(handlerOffset >> 16);
+								e[index][11] = (byte)(handlerOffset >> 24);
+							}
+							else if (clause.classInfo != null)
+							{
+								int token;
+								IntPtr handle;
+								IClrProgramItem item;
+
+								item = (IClrProgramItem)clause.classInfo;
+								handle = item.ClrHandle;
+								token = AssemblyBuilder.ClrGetItemToken(handle);
+
+								e[index][8]  = (byte)(token);
+								e[index][9]  = (byte)(token >> 8);
+								e[index][10] = (byte)(token >> 16);
+								e[index][11] = (byte)(token >> 24);
+
+								TokenFixup fixup = new TokenFixup();
+								fixup.next = fixups;
+								fixup.offset = index*12;
+								fixup.clrHandle = handle;
+								fixups = fixup;
+							}
+							else
+							{
+								e[index][8]  = (byte)0x00;
+								e[index][9]  = (byte)0x00;
+								e[index][10] = (byte)0x00;
+								e[index][11] = (byte)0x00;
+							}
+							clause = clause.prev;
+							++index;
+						}
+						exception = exception.next;
+					}
+				}
+			}
+
 	// Write the contents of this generator to the code section
 	// and return the RVA that corresponds to it.
 	internal int WriteCode(bool initLocals)
 			{
-				// TODO
-				return module.assembly.WriteMethod(code);
+				// Finish the label processing for the method
+				bool fatExceptions = FinishLabels();
+
+				// Create the method header
+				byte[] header = BuildHeader(initLocals);
+
+				// Output the exception information if necessary
+				byte[][] e = null;
+				TokenFixup eFixups = null;
+				BuildExceptionBlocks(ref e, ref eFixups, fatExceptions);
+
+				// Get the fixup data for the code section
+				IntPtr[] cFixupPtrs = null;
+				int[] cFixupOffsets = null;
+				FixupsToArrays(ref cFixupPtrs, ref cFixupOffsets, tokenFixups);
+
+				// Get the fixup data for the exception blocks
+				IntPtr[] eFixupPtrs = null;
+				int[] eFixupOffsets = null;
+				FixupsToArrays(ref eFixupPtrs, ref eFixupOffsets, eFixups);
+
+				// Get the trimmed down code array
+				byte[] c = new byte[offset];
+				Array.Copy(code, c, offset);
+
+				// Pass the rest of the work off to the assembly builder
+				return module.assembly.WriteMethod(header,
+				                                   c,
+				                                   cFixupPtrs,
+				                                   cFixupOffsets,
+				                                   e,
+				                                   eFixupPtrs,
+				                                   eFixupOffsets);
 			}
 
 	// Write an explicit method body to the code section and

@@ -452,9 +452,24 @@ public sealed class AssemblyBuilder : Assembly
 				}
 			}
 
-	internal int WriteMethod(byte[] code)
+	// Write the method IL to the output.
+	internal int WriteMethod(byte[] header,
+	                         byte[] code,
+	                         IntPtr[] codeFixupPtrs,
+	                         int[] codeFixupOffsets,
+	                         byte[][] exceptionBlocks,
+	                         IntPtr[] exceptionBlockFixupPtrs,
+	                         int[] exceptionBlockFixupOffsets)
 	{
-		return ClrWriteMethod(privateData, writer, code);
+		return ClrWriteMethod(privateData,
+		                      writer,
+		                      header,
+		                      code,
+		                      codeFixupPtrs,
+		                      codeFixupOffsets,
+		                      exceptionBlocks,
+		                      exceptionBlockFixupPtrs,
+		                      exceptionBlockFixupOffsets);
 	}
 
 	// Create a new assembly.
@@ -483,7 +498,13 @@ public sealed class AssemblyBuilder : Assembly
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static int ClrWriteMethod(IntPtr assembly,
 	                                         IntPtr writer,
-	                                         byte[] code);
+	                                         byte[] header,
+	                                         byte[] code,
+	                                         IntPtr[] codeFixupPtrs,
+	                                         int[] codeFixupOffsets,
+	                                         byte[][] exceptionBlocks,
+	                                         IntPtr[] exceptionBlockFixupPtrs,
+	                                         int[] exceptionBlockFixupOffsets);
 
 }; // class AssemblyBuilder
 

@@ -1,3 +1,9 @@
+
+2002-04-07  Gopal.V <gopalv82@yahoo.com>
+
+	* System/Net/HttpWebRequest.cs: Added property get,set methods
+	  and a connect method to connect to an HTTP server
+	  
 2002-04-07  Peter Minten  <silvernerd@users.sf.net>	
 
 	* System/Net/IPEndPoint.cs: Created but not completed

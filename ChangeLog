@@ -11,6 +11,10 @@ caused type mismatches.
 * ilalink/ilalink.c: improve the linker command-line syntax and pass
 extra library information down to the linker context.
 
+* ilalink/linker.h, ilalink/link_library.c, ilalink/link_create.c:
+implement "ILLinkerAddLibraryDir", "ILLinkerAddSystemDirs", and
+"ILLinkerResolveLibrary".
+
 2001-10-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/lib_array.c: bug fix - set the array length in a newly-allocated

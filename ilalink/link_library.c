@@ -19,6 +19,12 @@
  */
 
 #include "linker.h"
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -29,6 +35,220 @@ extern	"C" {
  * Must be a power of 2.
  */
 #define	IL_LINK_HASH_SIZE		512
+
+/*
+ * The default system library link path.
+ */
+#ifdef CSCC_LIB_PREFIX
+#define	LIB_PATH	\
+			CSCC_LIB_PREFIX "/lib:" \
+			"/usr/local/lib/cscc/lib:" \
+			"/usr/lib/cscc/lib"
+#else
+#define	LIB_PATH	\
+			"/usr/local/lib/cscc/lib:" \
+			"/usr/lib/cscc/lib"
+#endif
+
+/*
+ * Determine if a directory exists.
+ */
+static int DirExists(const char *pathname)
+{
+#ifdef HAVE_STAT
+	struct stat st;
+	return (stat(pathname, &st) >= 0);
+#else
+#ifdef HAVE_ACCESS
+	return (access(pathname, 0) >= 0);
+#else
+	return 1;
+#endif
+#endif
+}
+
+/*
+ * Add a library directory to a linker context.
+ */
+static void AddLibraryDir(ILLinker *linker, ILLibraryDir *libraryDir)
+{
+	ILLibraryDir *temp, *last;
+
+	/* Bail out if the directory doesn't exist, because there is
+	   no point adding it to the list if it won't contain anything */
+	if(!DirExists(libraryDir->name))
+	{
+		ILFree(libraryDir);
+		return;
+	}
+
+	/* Determine if the directory is already present.  There is
+	   no point searching the same directory twice */
+	last = 0;
+	temp = linker->libraryDirs;
+	while(temp != 0)
+	{
+		if(!strcmp(libraryDir->name, temp->name))
+		{
+			ILFree(libraryDir);
+			return;
+		}
+		last = temp;
+		temp = temp->next;
+	}
+
+	/* Add the directory to the list */
+	libraryDir->next = 0;
+	if(last)
+	{
+		last->next = libraryDir;
+	}
+	else
+	{
+		linker->libraryDirs = libraryDir;
+	}
+}
+
+int ILLinkerAddLibraryDir(ILLinker *linker, const char *pathname)
+{
+	ILLibraryDir *libraryDir;
+	libraryDir = (ILLibraryDir *)ILMalloc(sizeof(ILLibraryDir) +
+										  strlen(pathname));
+	if(!libraryDir)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	libraryDir->len = strlen(pathname);
+	strcpy(libraryDir->name, pathname);
+	AddLibraryDir(linker, libraryDir);
+	return 1;
+}
+
+int ILLinkerAddSystemDirs(ILLinker *linker)
+{
+	char *path;
+	int len;
+	ILLibraryDir *libraryDir;
+
+	/* Find the environment path to use for the system library directories */
+	path = getenv("CSCC_LIB_PATH");
+	if(!path || *path == '\0')
+	{
+		path = LIB_PATH;
+	}
+
+	/* Add all path elements to the list */
+	while(*path != '\0')
+	{
+		if(*path == ' ' || *path == ':')
+		{
+			++path;
+			continue;
+		}
+		len = 1;
+		while(path[len] != '\0' && path[len] != ':')
+		{
+			++len;
+		}
+		while(len > 0 && path[len - 1] == ' ')
+		{
+			--len;
+		}
+		libraryDir = (ILLibraryDir *)ILMalloc(sizeof(ILLibraryDir) + len);
+		if(!libraryDir)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		ILMemCpy(libraryDir->name, path, len);
+		libraryDir->len = len;
+		libraryDir->name[len] = '\0';
+		AddLibraryDir(linker, libraryDir);
+		path += len;
+	}
+
+	/* Done */
+	return 1;
+}
+
+char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
+{
+	int len;
+	int hasExt;
+	char *newName;
+	ILLibraryDir *libraryDir;
+
+	/* Does the filename contain a path specification? */
+	len = strlen(name);
+	hasExt = 0;
+	while(len > 0 && name[len - 1] != '/' && name[len - 1] != '\\')
+	{
+		--len;
+		if(name[len] == '.')
+		{
+			hasExt = 1;
+		}
+	}
+	if(len > 0)
+	{
+		/* Yes it does, so check for direct file existence */
+		if(!ILFileExists(name, (char **)0))
+		{
+			return 0;
+		}
+		newName = ILDupString(name);
+		if(!newName)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		return newName;
+	}
+
+	/* Search the library directories for the name */
+	libraryDir = linker->libraryDirs;
+	len = strlen(name);
+	while(libraryDir != 0)
+	{
+		if(hasExt)
+		{
+			/* The name probably already has the ".dll" extension */
+			newName = (char *)ILMalloc(libraryDir->len + len + 2);
+			if(!newName)
+			{
+				_ILLinkerOutOfMemory(linker);
+				return 0;
+			}
+			strcpy(newName, libraryDir->name);
+			newName[libraryDir->len] = '/';
+			strcpy(newName + libraryDir->len + 1, name);
+		}
+		else
+		{
+			/* Add the ".dll" extension when searching for the name */
+			newName = (char *)ILMalloc(libraryDir->len + len + 6);
+			if(!newName)
+			{
+				_ILLinkerOutOfMemory(linker);
+				return 0;
+			}
+			strcpy(newName, libraryDir->name);
+			newName[libraryDir->len] = '/';
+			strcpy(newName + libraryDir->len + 1, name);
+			strcpy(newName + libraryDir->len + 1 + len, ".dll");
+		}
+		if(ILFileExists(newName, (char **)0))
+		{
+			return newName;
+		}
+		ILFree(newName);
+		libraryDir = libraryDir->next;
+	}
+
+	/* We could not resolve the name */
+	return 0;
+}
 
 /*
  * Destroy a library context.

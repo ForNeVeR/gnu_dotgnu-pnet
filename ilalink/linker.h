@@ -61,6 +61,18 @@ struct _tagILLibrary
 };
 
 /*
+ * Information about a directory in the linker's search order.
+ */
+typedef struct _tagILLibraryDir ILLibraryDir;
+struct _tagILLibraryDir
+{
+	ILLibraryDir   *next;			/* Next in the path */
+	int				len;			/* Length of the name */
+	char			name[1];		/* Start of the name */
+
+};
+
+/*
  * Internal structure of the linker context.
  */
 struct _tagILLinker
@@ -70,6 +82,7 @@ struct _tagILLinker
 	ILWriter	   *writer;			/* Writer being used by the linker */
 	ILLibrary	   *libraries;		/* Libraries being used by the linker */
 	ILLibrary      *lastLibrary;	/* Last library being used by the linker */
+	ILLibraryDir   *libraryDirs;	/* List of library directories */
 	int				outOfMemory;	/* Set to non-zero when out of memory */
 	int				error;			/* Some other error occurred */
 

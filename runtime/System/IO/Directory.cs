@@ -539,6 +539,10 @@ public sealed class Directory
 	// Create a directory, including parent directories.
 	public static DirectoryInfo CreateDirectory(String path)
 			{
+				// Brubbel 2004-07-01: remove slashes and backslashes at end of path, if not you'll get an exception
+				while(path.EndsWith("/")) path = path.Remove(path.Length-1, 1);
+				while(path.EndsWith("\\")) path = path.Remove(path.Length-1, 1);
+				// Brubbel End.
 				ValidatePath(path);
 				Errno error = DirMethods.CreateDirectory(path);
 				if(error != Errno.Success)

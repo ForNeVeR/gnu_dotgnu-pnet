@@ -1,9 +1,14 @@
 2004-07-01  Klaus Treichel  <ktreichel@web.de>
 
+	* runtime/System/IO/Directory.cs: allow directories with path delimiter at
+	the end in CreateDirectory. (patch #3177 of Heiko Weiss) 
+
+2004-07-01  Klaus Treichel  <ktreichel@web.de>
+
 	* runtime/System/Globalization/CultureInfo.cs,
 	runtime/System/Globalization/NumberFormatInfo.cs,
-	runtime/System/Globalization/DateTimeFormatInfo.cs: make clone not readonly if
-	pnetlib is built !ECMA_COMPAT (extended Heiko Weiss's patch #3150)
+	runtime/System/Globalization/DateTimeFormatInfo.cs: make clone not readonly
+	if pnetlib is built !ECMA_COMPAT (extended Heiko Weiss's patch #3150)
 
 2004-06-30  Gopal V  <gopalv82@yahoo.com>
 

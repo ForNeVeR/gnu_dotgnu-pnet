@@ -7,6 +7,9 @@
 	* support/locale.c (ILGetCultureName): formatting error when
 	getting the name of the current culture from "LANG".
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c:
+	add the "Assembly.GetSatellitePath" internalcall.
+
 2002-12-11  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_oper.tc: Implement AddressOf operator to generate

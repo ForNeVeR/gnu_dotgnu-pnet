@@ -280,8 +280,9 @@ extern ILObject * _IL_RuntimeHelpers_GetObjectValue(ILExecThread * _thread, ILOb
 extern ILObject * _IL_Assembly_GetExecutingAssembly(ILExecThread * _thread);
 extern ILObject * _IL_Assembly_GetType(ILExecThread * _thread, ILObject * _this, ILString * typeName, ILBool throwOnError, ILBool ignoreCase);
 extern ILObject * _IL_Assembly_GetManifestResourceStream(ILExecThread * _thread, ILObject * _this, ILString * name);
-extern ILObject * _IL_Assembly_GetCallingAssembly(ILExecThread * _thread);
+extern ILString * _IL_Assembly_GetSatellitePath(ILExecThread * _thread, ILObject * _this, ILString * filename);
 extern ILObject * _IL_Assembly_LoadFromFile(ILExecThread * _thread, ILString * name, ILInt32 * error, ILObject * parent);
+extern ILObject * _IL_Assembly_GetCallingAssembly(ILExecThread * _thread);
 extern ILObject * _IL_Assembly_LoadFromName(ILExecThread * _thread, ILString * name, ILInt32 * error, ILObject * parent);
 extern ILObject * _IL_Assembly_GetEntryAssembly(ILExecThread * _thread);
 extern System_Array * _IL_Assembly_GetExportedTypes(ILExecThread * _thread, ILObject * _this);

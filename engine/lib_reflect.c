@@ -1092,8 +1092,8 @@ ILObject *_IL_Assembly_LoadFromName(ILExecThread *thread,
 }
 
 /*
- * private static Assembly LoadFromFile(String name, out int error,
- *										Assembly parent);
+ * internal static Assembly LoadFromFile(String name, out int error,
+ *										 Assembly parent);
  */
 ILObject *_IL_Assembly_LoadFromFile(ILExecThread *thread,
 									ILString *name,
@@ -1192,6 +1192,60 @@ void _IL_Assembly_GetEntryPoint(ILExecThread *thread,
 	else
 	{
 		*((void **)result) = 0;
+	}
+}
+
+ILString *_IL_Assembly_GetSatellitePath(ILExecThread *thread,
+										ILObject *_this,
+										ILString *filename)
+{
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	char *str = ILStringToAnsi(thread, filename);
+	char *fullname;
+	int len;
+	ILString *fullstr;
+
+	if(image && str)
+	{
+		/* Bail out if the image does not have a filename */
+		if(!(image->filename))
+		{
+			return 0;
+		}
+
+		/* Strip the base name off the image's filename */
+		len = strlen(image->filename);
+		while(len > 0 && image->filename[len - 1] != '/' &&
+		      image->filename[len - 1] != '\\')
+		{
+			--len;
+		}
+
+		/* Construct the full pathname */
+		fullname = (char *)ILMalloc(len + strlen(str) + 1);
+		if(!fullname)
+		{
+			return 0;
+		}
+		strncpy(fullname, image->filename, len);
+		strcpy(fullname + len, str);
+
+		/* Check that the file actually exists */
+		if(!ILFileExists(fullname, (char **)0))
+		{
+			ILFree(fullname);
+			return 0;
+		}
+
+		/* Return the filename to the caller */
+		fullstr = ILStringCreate(thread, fullname);
+		ILFree(fullname);
+		return fullstr;
+	}
+	else
+	{
+		return 0;
 	}
 }
 

@@ -1192,12 +1192,8 @@ unsigned ILGenPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
 					/* Generate a reference for the supplied value instance */
 					ILNode_GenRef(thisExpr, info);
 				}
-				else if(isFieldLoad)
-				{
-					/* Don't bother storing the value into a temporary
-					   because we can access the field directly */
-					ILNode_GenValue(thisExpr, info);
-				}
+				/* NOTE: We need to convert to managed address even if
+				   this is a single access*/
 				else
 				{
 					/* Store the managed value into a temporary variable */
@@ -1209,6 +1205,10 @@ unsigned ILGenPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
 					/* Push the address of the temporary variable */
 					ILGenLoadLocalAddr(info, tempVar);
 					ILGenAdjust(info, 1);
+					if(isFieldLoad)
+					{
+						ILGenReleaseTempVar(info,tempVar);
+					}
 				}
 			}
 			else
@@ -1474,7 +1474,6 @@ ILNode_GenValue(ILNode_Unbox)
 {
 	ILMachineType subExprType;
 	ILMachineType type;
-	unsigned tempVar;
 
 	/* Evaluate the sub-expression to get the object pointer */
 	subExprType = ILNode_GenValue(node->expr, info);
@@ -1503,171 +1502,123 @@ ILNode_GenValue(ILNode_Unbox)
 		case ILMachineType_Boolean:
 		case ILMachineType_Int8:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_I1);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_UInt8:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_U1);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_Int16:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_I2);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_UInt16:
 		case ILMachineType_Char:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_U2);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_Int32:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_I4);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_UInt32:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_I4);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_NativeInt:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_I);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_NativeUInt:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_I);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_Int64:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_I8);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_UInt64:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_I8);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_Float32:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_R4);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_Float64:
 		case ILMachineType_NativeFloat:
 		{
-			tempVar = ILGenTempVar(info,type);
 			if(subExprType == ILMachineType_ObjectRef)
 			{
 				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
 			}
 			ILGenSimple(info, IL_OP_LDIND_R8);
-			ILGenStoreLocal(info, tempVar);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 

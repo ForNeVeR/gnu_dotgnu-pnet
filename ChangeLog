@@ -16,6 +16,9 @@
 	* codegen/cg_misc.tc: Generate addresses instead of values while
 	unboxing basic valuetypes. (stloc.0,ldloca.s 0)
 
+	* codegen/cg_misc.tc: Rearrange code in previous commit from 
+	ILNode_Unbox to ILGenPrepareThisForAccess.
+
 2002-10-30  Robert Hwang <hwang_rob@yahoo.ca>
 
 	* cscc/cshar/cs_decls.tc: Fix enum bug by saving and restoring 

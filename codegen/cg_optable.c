@@ -27,60 +27,94 @@ extern	"C" {
 
 static ILBuiltinType const ILSystemBoolean =
 	{ILType_Boolean,
-	 ILMachineType_Boolean};
+	 ILMachineType_Boolean, 0};
 
 static ILBuiltinType const ILSystemDecimal =
 	{ILType_Invalid	/* Decimal is represented as a struct */,
-	 ILMachineType_Decimal};
+	 ILMachineType_Decimal, 0};
 
 static ILBuiltinType const ILSystemDouble =
 	{ILType_Float64,
-	 ILMachineType_Float64};
+	 ILMachineType_Float64, 0};
 
 static ILBuiltinType const ILSystemSingle =
 	{ILType_Float32,
-	 ILMachineType_Float32};
+	 ILMachineType_Float32, 0};
 
 static ILBuiltinType const ILSystemInt64 =
 	{ILType_Int64,
-	 ILMachineType_Int64};
+	 ILMachineType_Int64, 0};
 
 static ILBuiltinType const ILSystemUInt64 =
 	{ILType_UInt64,
-	 ILMachineType_UInt64};
+	 ILMachineType_UInt64, 0};
 
 static ILBuiltinType const ILSystemInt32 =
 	{ILType_Int32,
-	 ILMachineType_Int32};
+	 ILMachineType_Int32, 0};
 
 static ILBuiltinType const ILSystemUInt32 =
 	{ILType_UInt32,
-	 ILMachineType_UInt32};
+	 ILMachineType_UInt32, 0};
 
 static ILBuiltinType const ILSystemInt16 =
 	{ILType_Int16,
-	 ILMachineType_Int16};
+	 ILMachineType_Int16, 0};
 
 static ILBuiltinType const ILSystemUInt16 =
 	{ILType_UInt16,
-	 ILMachineType_UInt16};
+	 ILMachineType_UInt16, 0};
 
 static ILBuiltinType const ILSystemSByte =
 	{ILType_Int8,
-	 ILMachineType_Int8};
+	 ILMachineType_Int8, 0};
 
 static ILBuiltinType const ILSystemByte =
 	{ILType_UInt8,
-	 ILMachineType_UInt8};
+	 ILMachineType_UInt8, 0};
 
 static ILBuiltinType const ILSystemChar =
 	{ILType_Char,
-	 ILMachineType_Char};
+	 ILMachineType_Char, 0};
+
+static ILBuiltinType const ILEnumByte =
+	{ILType_UInt8,
+	 ILMachineType_UInt8, 1};
+
+static ILBuiltinType const ILEnumSByte =
+	{ILType_Int8,
+	 ILMachineType_Int8, 1};
+
+static ILBuiltinType const ILEnumInt16 =
+	{ILType_Int16,
+	 ILMachineType_Int16, 1};
+
+static ILBuiltinType const ILEnumUInt16 =
+	{ILType_UInt16,
+	 ILMachineType_UInt16, 1};
+
+static ILBuiltinType const ILEnumInt32 =
+	{ILType_Int32,
+	 ILMachineType_Int32, 1};
+
+static ILBuiltinType const ILEnumUInt32 =
+	{ILType_UInt32,
+	 ILMachineType_UInt32, 1};
+
+static ILBuiltinType const ILEnumInt64 =
+	{ILType_Int64,
+	 ILMachineType_Int64, 1};
+
+static ILBuiltinType const ILEnumUInt64 =
+	{ILType_UInt64,
+	 ILMachineType_UInt64, 1};
 
 #define	IL_BEGIN_OPERATOR_TABLE(op)	\
 	ILOperator const ILOp_##op[] = {
 #define	IL_UNARY_OPERATOR(outtype,intype)	\
 	{&ILSystem##outtype, &ILSystem##intype, 0},
+#define	IL_UNARY_ENUM_OPERATOR(outtype,intype)	\
+	{&ILEnum##outtype, &ILEnum##intype, 0},
 #define	IL_BINARY_OPERATOR(outtype,intype1,intype2)	\
 	{&ILSystem##outtype, &ILSystem##intype1, &ILSystem##intype2},
 #define	IL_END_OPERATOR_TABLE	\
@@ -151,6 +185,7 @@ int operator~(int x);
 uint operator~(uint x);
 long operator~(long x);
 ulong operator~(ulong x);
+E operator~(E x);
 
 */
 
@@ -159,6 +194,14 @@ IL_BEGIN_OPERATOR_TABLE(Not)
 	IL_UNARY_OPERATOR(UInt32, UInt32)
 	IL_UNARY_OPERATOR(Int64, Int64)
 	IL_UNARY_OPERATOR(UInt64, UInt64)
+	IL_UNARY_ENUM_OPERATOR(Byte, Byte)
+	IL_UNARY_ENUM_OPERATOR(SByte, SByte)
+	IL_UNARY_ENUM_OPERATOR(Int16, Int16)
+	IL_UNARY_ENUM_OPERATOR(UInt16, UInt16)
+	IL_UNARY_ENUM_OPERATOR(Int32, Int32)
+	IL_UNARY_ENUM_OPERATOR(UInt32, UInt32)
+	IL_UNARY_ENUM_OPERATOR(Int64, Int64)
+	IL_UNARY_ENUM_OPERATOR(UInt64, UInt64)
 IL_END_OPERATOR_TABLE
 
 /*
@@ -239,6 +282,8 @@ decimal operator+(decimal x, decimal y);
 string operator+(string x, string y);
 string operator+(string x, object y);
 string operator+(object x, string y);
+E operator+(E x, U y);
+E operator+(U x, E y);
 
 */
 
@@ -250,6 +295,22 @@ IL_BEGIN_OPERATOR_TABLE(Add)
 	IL_BINARY_OPERATOR(Single, Single, Single)
 	IL_BINARY_OPERATOR(Double, Double, Double)
 	IL_BINARY_OPERATOR(Decimal, Decimal, Decimal)
+	{&ILEnumByte, &ILEnumByte, &ILSystemByte},
+	{&ILEnumByte, &ILSystemByte, &ILEnumByte},
+	{&ILEnumSByte, &ILEnumSByte, &ILSystemSByte},
+	{&ILEnumSByte, &ILSystemSByte, &ILEnumSByte},
+	{&ILEnumInt16, &ILEnumInt16, &ILSystemInt16},
+	{&ILEnumInt16, &ILSystemInt16, &ILEnumInt16},
+	{&ILEnumUInt16, &ILEnumUInt16, &ILSystemUInt16},
+	{&ILEnumUInt16, &ILSystemUInt16, &ILEnumUInt16},
+	{&ILEnumInt32, &ILEnumInt32, &ILSystemInt32},
+	{&ILEnumInt32, &ILSystemInt32, &ILEnumInt32},
+	{&ILEnumUInt32, &ILEnumUInt32, &ILSystemUInt32},
+	{&ILEnumUInt32, &ILSystemUInt32, &ILEnumUInt32},
+	{&ILEnumInt64, &ILEnumInt64, &ILSystemInt64},
+	{&ILEnumInt64, &ILSystemInt64, &ILEnumInt64},
+	{&ILEnumUInt64, &ILEnumUInt64, &ILSystemUInt64},
+	{&ILEnumUInt64, &ILSystemUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -261,6 +322,8 @@ ulong operator-(ulong x, ulong y);
 float operator-(float x, float y);
 double operator-(double x, double y);
 decimal operator-(decimal x, decimal y);
+E operator-(E x, U y)
+U operator-(E x, E y)
 
 */
 
@@ -272,6 +335,22 @@ IL_BEGIN_OPERATOR_TABLE(Sub)
 	IL_BINARY_OPERATOR(Single, Single, Single)
 	IL_BINARY_OPERATOR(Double, Double, Double)
 	IL_BINARY_OPERATOR(Decimal, Decimal, Decimal)
+	{&ILEnumByte, &ILEnumByte, &ILSystemByte},
+	{&ILSystemByte, &ILEnumByte, &ILEnumByte},
+	{&ILEnumSByte, &ILEnumSByte, &ILSystemSByte},
+	{&ILSystemSByte, &ILEnumSByte, &ILEnumSByte},
+	{&ILEnumInt16, &ILEnumInt16, &ILSystemInt16},
+	{&ILSystemInt16, &ILEnumInt16, &ILEnumInt16},
+	{&ILEnumUInt16, &ILEnumUInt16, &ILSystemUInt16},
+	{&ILSystemUInt16, &ILEnumUInt16, &ILEnumUInt16},
+	{&ILEnumInt32, &ILEnumInt32, &ILSystemInt32},
+	{&ILSystemInt32, &ILEnumInt32, &ILEnumInt32},
+	{&ILEnumUInt32, &ILEnumUInt16, &ILSystemUInt16},
+	{&ILSystemUInt32, &ILEnumUInt32, &ILEnumUInt32},
+	{&ILEnumInt64, &ILEnumInt64, &ILSystemInt64},
+	{&ILSystemInt64, &ILEnumInt64, &ILEnumInt64},
+	{&ILEnumUInt64, &ILEnumUInt64, &ILSystemUInt64},
+	{&ILSystemUInt64, &ILEnumUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -318,6 +397,7 @@ bool operator==(decimal x, decimal y);
 bool operator==(bool x, bool y);
 bool operator==(object x, object y);
 bool operator==(string x, string y);
+bool operator==(E x, E y);
 
 */
 
@@ -330,6 +410,14 @@ IL_BEGIN_OPERATOR_TABLE(Eq)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
 	IL_BINARY_OPERATOR(Boolean, Boolean, Boolean)
+	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
+	{&ILSystemBoolean, &ILEnumSByte, &ILEnumSByte},
+	{&ILSystemBoolean, &ILEnumInt16, &ILEnumInt16},
+	{&ILSystemBoolean, &ILEnumUInt16, &ILEnumUInt16},
+	{&ILSystemBoolean, &ILEnumInt32, &ILEnumInt32},
+	{&ILSystemBoolean, &ILEnumUInt32, &ILEnumUInt32},
+	{&ILSystemBoolean, &ILEnumInt64, &ILEnumInt64},
+	{&ILSystemBoolean, &ILEnumUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -344,6 +432,7 @@ bool operator!=(decimal x, decimal y);
 bool operator!=(bool x, bool y);
 bool operator!=(object x, object y);
 bool operator!=(string x, string y);
+bool operator!=(E x, E y);
 
 */
 
@@ -356,6 +445,14 @@ IL_BEGIN_OPERATOR_TABLE(Ne)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
 	IL_BINARY_OPERATOR(Boolean, Boolean, Boolean)
+	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
+	{&ILSystemBoolean, &ILEnumSByte, &ILEnumSByte},
+	{&ILSystemBoolean, &ILEnumInt16, &ILEnumInt16},
+	{&ILSystemBoolean, &ILEnumUInt16, &ILEnumUInt16},
+	{&ILSystemBoolean, &ILEnumInt32, &ILEnumInt32},
+	{&ILSystemBoolean, &ILEnumUInt32, &ILEnumUInt32},
+	{&ILSystemBoolean, &ILEnumInt64, &ILEnumInt64},
+	{&ILSystemBoolean, &ILEnumUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -367,6 +464,7 @@ bool operator<(ulong x, ulong y);
 bool operator<(float x, float y);
 bool operator<(double x, double y);
 bool operator<(decimal x, decimal y);
+bool operator<(E x, E y);
 
 */
 
@@ -378,6 +476,14 @@ IL_BEGIN_OPERATOR_TABLE(Lt)
 	IL_BINARY_OPERATOR(Boolean, Single, Single)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
+	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
+	{&ILSystemBoolean, &ILEnumSByte, &ILEnumSByte},
+	{&ILSystemBoolean, &ILEnumInt16, &ILEnumInt16},
+	{&ILSystemBoolean, &ILEnumUInt16, &ILEnumUInt16},
+	{&ILSystemBoolean, &ILEnumInt32, &ILEnumInt32},
+	{&ILSystemBoolean, &ILEnumUInt32, &ILEnumUInt32},
+	{&ILSystemBoolean, &ILEnumInt64, &ILEnumInt64},
+	{&ILSystemBoolean, &ILEnumUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -389,6 +495,7 @@ bool operator>(ulong x, ulong y);
 bool operator>(float x, float y);
 bool operator>(double x, double y);
 bool operator>(decimal x, decimal y);
+bool operator>(E x, E y);
 
 */
 
@@ -400,6 +507,14 @@ IL_BEGIN_OPERATOR_TABLE(Gt)
 	IL_BINARY_OPERATOR(Boolean, Single, Single)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
+	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
+	{&ILSystemBoolean, &ILEnumSByte, &ILEnumSByte},
+	{&ILSystemBoolean, &ILEnumInt16, &ILEnumInt16},
+	{&ILSystemBoolean, &ILEnumUInt16, &ILEnumUInt16},
+	{&ILSystemBoolean, &ILEnumInt32, &ILEnumInt32},
+	{&ILSystemBoolean, &ILEnumUInt32, &ILEnumUInt32},
+	{&ILSystemBoolean, &ILEnumInt64, &ILEnumInt64},
+	{&ILSystemBoolean, &ILEnumUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -411,6 +526,7 @@ bool operator<=(ulong x, ulong y);
 bool operator<=(float x, float y);
 bool operator<=(double x, double y);
 bool operator<=(decimal x, decimal y);
+bool operator<=(E x, E y);
 
 */
 
@@ -422,6 +538,14 @@ IL_BEGIN_OPERATOR_TABLE(Le)
 	IL_BINARY_OPERATOR(Boolean, Single, Single)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
+	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
+	{&ILSystemBoolean, &ILEnumSByte, &ILEnumSByte},
+	{&ILSystemBoolean, &ILEnumInt16, &ILEnumInt16},
+	{&ILSystemBoolean, &ILEnumUInt16, &ILEnumUInt16},
+	{&ILSystemBoolean, &ILEnumInt32, &ILEnumInt32},
+	{&ILSystemBoolean, &ILEnumUInt32, &ILEnumUInt32},
+	{&ILSystemBoolean, &ILEnumInt64, &ILEnumInt64},
+	{&ILSystemBoolean, &ILEnumUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -433,6 +557,7 @@ bool operator>=(ulong x, ulong y);
 bool operator>=(float x, float y);
 bool operator>=(double x, double y);
 bool operator>=(decimal x, decimal y);
+bool operator>=(E x, E y);
 
 */
 
@@ -444,6 +569,14 @@ IL_BEGIN_OPERATOR_TABLE(Ge)
 	IL_BINARY_OPERATOR(Boolean, Single, Single)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
+	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
+	{&ILSystemBoolean, &ILEnumSByte, &ILEnumSByte},
+	{&ILSystemBoolean, &ILEnumInt16, &ILEnumInt16},
+	{&ILSystemBoolean, &ILEnumUInt16, &ILEnumUInt16},
+	{&ILSystemBoolean, &ILEnumInt32, &ILEnumInt32},
+	{&ILSystemBoolean, &ILEnumUInt32, &ILEnumUInt32},
+	{&ILSystemBoolean, &ILEnumInt64, &ILEnumInt64},
+	{&ILSystemBoolean, &ILEnumUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -453,6 +586,7 @@ int operator&(int x, int y);
 uint operator&(uint x, uint y);
 long operator&(long x, long y);
 ulong operator&(ulong x, ulong y);
+E operator&(E x, E y);
 
 */
 
@@ -462,6 +596,14 @@ IL_BEGIN_OPERATOR_TABLE(And)
 	IL_BINARY_OPERATOR(UInt32, UInt32, UInt32)
 	IL_BINARY_OPERATOR(Int64, Int64, Int64)
 	IL_BINARY_OPERATOR(UInt64, UInt64, UInt64)
+	{&ILEnumByte, &ILEnumByte, &ILEnumByte},
+	{&ILEnumSByte, &ILEnumSByte, &ILEnumSByte},
+	{&ILEnumInt16, &ILEnumInt16, &ILEnumInt16},
+	{&ILEnumUInt16, &ILEnumUInt16, &ILEnumUInt16},
+	{&ILEnumInt32, &ILEnumInt32, &ILEnumInt32},
+	{&ILEnumUInt32, &ILEnumUInt32, &ILEnumUInt32},
+	{&ILEnumInt64, &ILEnumInt64, &ILEnumInt64},
+	{&ILEnumUInt64, &ILEnumUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -471,6 +613,7 @@ int operator|(int x, int y);
 uint operator|(uint x, uint y);
 long operator|(long x, long y);
 ulong operator|(ulong x, ulong y);
+E operator|(E x, E y);
 
 */
 
@@ -480,6 +623,14 @@ IL_BEGIN_OPERATOR_TABLE(Or)
 	IL_BINARY_OPERATOR(UInt32, UInt32, UInt32)
 	IL_BINARY_OPERATOR(Int64, Int64, Int64)
 	IL_BINARY_OPERATOR(UInt64, UInt64, UInt64)
+	{&ILEnumByte, &ILEnumByte, &ILEnumByte},
+	{&ILEnumSByte, &ILEnumSByte, &ILEnumSByte},
+	{&ILEnumInt16, &ILEnumInt16, &ILEnumInt16},
+	{&ILEnumUInt16, &ILEnumUInt16, &ILEnumUInt16},
+	{&ILEnumInt32, &ILEnumInt32, &ILEnumInt32},
+	{&ILEnumUInt32, &ILEnumUInt32, &ILEnumUInt32},
+	{&ILEnumInt64, &ILEnumInt64, &ILEnumInt64},
+	{&ILEnumUInt64, &ILEnumUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -489,6 +640,7 @@ int operator^(int x, int y);
 uint operator^(uint x, uint y);
 long operator^(long x, long y);
 ulong operator^(ulong x, ulong y);
+E operator^(E x, E y);
 
 */
 
@@ -498,6 +650,14 @@ IL_BEGIN_OPERATOR_TABLE(Xor)
 	IL_BINARY_OPERATOR(UInt32, UInt32, UInt32)
 	IL_BINARY_OPERATOR(Int64, Int64, Int64)
 	IL_BINARY_OPERATOR(UInt64, UInt64, UInt64)
+	{&ILEnumByte, &ILEnumByte, &ILEnumByte},
+	{&ILEnumSByte, &ILEnumSByte, &ILEnumSByte},
+	{&ILEnumInt16, &ILEnumInt16, &ILEnumInt16},
+	{&ILEnumUInt16, &ILEnumUInt16, &ILEnumUInt16},
+	{&ILEnumInt32, &ILEnumInt32, &ILEnumInt32},
+	{&ILEnumUInt32, &ILEnumUInt32, &ILEnumUInt32},
+	{&ILEnumInt64, &ILEnumInt64, &ILEnumInt64},
+	{&ILEnumUInt64, &ILEnumUInt64, &ILEnumUInt64},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -907,9 +1067,11 @@ static struct
 /*
  * Convert an external type representation into a builtin type.
  */
-static const ILBuiltinType *GetBuiltinType(ILType *type)
+static const ILBuiltinType *GetBuiltinType(ILType *type, ILType *otherType)
 {
 	ILClass *info;
+	ILType *underlying;
+
 	if(type == ILType_Boolean)
 	{
 		return &ILSystemBoolean;
@@ -968,6 +1130,48 @@ static const ILBuiltinType *GetBuiltinType(ILType *type)
 		{
 			return &ILSystemDecimal;
 		}
+		if(ILTypeIsEnum(type))
+		{
+			if(otherType && ILTypeIsEnum(otherType) &&
+			   !ILTypeIdentical(type, otherType))
+			{
+				/* If both are enumerated, then they must be the same */
+				return 0;
+			}
+			underlying = ILTypeGetEnumType(type);
+			if(underlying == ILType_UInt8)
+			{
+				return &ILEnumByte;
+			}
+			else if(underlying == ILType_Int8)
+			{
+				return &ILEnumSByte;
+			}
+			else if(underlying == ILType_Int16)
+			{
+				return &ILEnumInt16;
+			}
+			else if(underlying == ILType_UInt16)
+			{
+				return &ILEnumUInt16;
+			}
+			else if(underlying == ILType_Int32)
+			{
+				return &ILEnumInt32;
+			}
+			else if(underlying == ILType_UInt32)
+			{
+				return &ILEnumUInt32;
+			}
+			else if(underlying == ILType_Int64)
+			{
+				return &ILEnumInt64;
+			}
+			else if(underlying == ILType_UInt64)
+			{
+				return &ILEnumUInt64;
+			}
+		}
 		return 0;
 	}
 	else
@@ -979,8 +1183,8 @@ static const ILBuiltinType *GetBuiltinType(ILType *type)
 const ILConversion *ILFindConversion(ILType *fromType, ILType *toType,
 								     int explicit)
 {
-	const ILBuiltinType *type1 = GetBuiltinType(fromType);
-	const ILBuiltinType *type2 = GetBuiltinType(toType);
+	const ILBuiltinType *type1 = GetBuiltinType(fromType, 0);
+	const ILBuiltinType *type2 = GetBuiltinType(toType, 0);
 	int posn;
 	const ILConversion *conv;
 	if(type1 && type2)
@@ -1035,25 +1239,28 @@ void ILApplyConversion(ILGenInfo *info, ILNode *node, ILNode **parent,
 }
 
 const ILOperator *ILFindUnaryOperator(const ILOperator *table,
-								 	  ILType *argType1)
+								 	  ILType *argType1, ILType **resultType)
 {
 	/* Convert the type into its builtin form */
-	const ILBuiltinType *type1 = GetBuiltinType(argType1);
+	const ILBuiltinType *type1 = GetBuiltinType(argType1, 0);
 	if(!type1)
 	{
 		return 0;
 	}
 
 	/* Apply numeric promotions to the type */
-	if(type1 == &ILSystemSByte || type1 == &ILSystemByte ||
-	   type1 == &ILSystemInt16 || type1 == &ILSystemUInt16 ||
-	   type1 == &ILSystemChar)
+	if(!(type1->isEnum))
 	{
-		type1 = &ILSystemInt32;
-	}
-	else if(type1 == &ILSystemUInt32 && table == ILOp_Neg)
-	{
-		type1 = &ILSystemInt64;
+		if(type1 == &ILSystemSByte || type1 == &ILSystemByte ||
+		   type1 == &ILSystemInt16 || type1 == &ILSystemUInt16 ||
+		   type1 == &ILSystemChar)
+		{
+			type1 = &ILSystemInt32;
+		}
+		else if(type1 == &ILSystemUInt32 && table == ILOp_Neg)
+		{
+			type1 = &ILSystemInt64;
+		}
 	}
 
 	/* Search for a matching operator */
@@ -1061,6 +1268,14 @@ const ILOperator *ILFindUnaryOperator(const ILOperator *table,
 	{
 		if(table->intype1 == type1)
 		{
+			if(table->outtype->isEnum)
+			{
+				*resultType = argType1;
+			}
+			else
+			{
+				*resultType = table->outtype->type;
+			}
 			return table;
 		}
 		++table;
@@ -1081,124 +1296,128 @@ void ILApplyUnaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
 }
 
 const ILOperator *ILFindBinaryOperator(const ILOperator *table,
-								 	   ILType *argType1, ILType *argType2)
+								 	   ILType *argType1, ILType *argType2,
+									   ILType **resultType)
 {
 	/* Convert the types into their builtin forms */
-	const ILBuiltinType *type1 = GetBuiltinType(argType1);
-	const ILBuiltinType *type2 = GetBuiltinType(argType2);
+	const ILBuiltinType *type1 = GetBuiltinType(argType1, argType2);
+	const ILBuiltinType *type2 = GetBuiltinType(argType2, argType1);
 	if(!type1 || !type2)
 	{
 		return 0;
 	}
 
 	/* Apply numeric promotions */
-	if(table != ILOp_Shl && table != ILOp_Shr)
+	if(!(type1->isEnum) && !(type2->isEnum))
 	{
-		/* Arithmetic or bitwise operator */
-		if(type1 == &ILSystemDecimal)
+		if(table != ILOp_Shl && table != ILOp_Shr)
 		{
-			if(type2 == &ILSystemSingle || type2 == &ILSystemDouble)
+			/* Arithmetic or bitwise operator */
+			if(type1 == &ILSystemDecimal)
 			{
-				return 0;
+				if(type2 == &ILSystemSingle || type2 == &ILSystemDouble)
+				{
+					return 0;
+				}
+				type2 = &ILSystemDecimal;
 			}
-			type2 = &ILSystemDecimal;
-		}
-		else if(type2 == &ILSystemDecimal)
-		{
-			if(type1 == &ILSystemSingle || type1 == &ILSystemDouble)
+			else if(type2 == &ILSystemDecimal)
 			{
-				return 0;
+				if(type1 == &ILSystemSingle || type1 == &ILSystemDouble)
+				{
+					return 0;
+				}
+				type1 = &ILSystemDecimal;
 			}
-			type1 = &ILSystemDecimal;
-		}
-		else if(type1 == &ILSystemDouble)
-		{
-			type2 = &ILSystemDouble;
-		}
-		else if(type2 == &ILSystemDouble)
-		{
-			type1 = &ILSystemDouble;
-		}
-		else if(type1 == &ILSystemSingle)
-		{
-			type2 = &ILSystemSingle;
-		}
-		else if(type2 == &ILSystemSingle)
-		{
-			type1 = &ILSystemSingle;
-		}
-		else if(type1 == &ILSystemUInt64)
-		{
-			if(type2 == &ILSystemSByte || type2 == &ILSystemInt16 ||
-			   type2 == &ILSystemInt32 || type2 == &ILSystemInt64)
+			else if(type1 == &ILSystemDouble)
 			{
-				return 0;
+				type2 = &ILSystemDouble;
 			}
-			type2 = &ILSystemUInt64;
-		}
-		else if(type2 == &ILSystemUInt64)
-		{
-			if(type1 == &ILSystemSByte || type1 == &ILSystemInt16 ||
-			   type1 == &ILSystemInt32 || type1 == &ILSystemInt64)
+			else if(type2 == &ILSystemDouble)
 			{
-				return 0;
+				type1 = &ILSystemDouble;
 			}
-			type1 = &ILSystemUInt64;
-		}
-		else if(type1 == &ILSystemInt64)
-		{
-			type2 = &ILSystemInt64;
-		}
-		else if(type2 == &ILSystemInt64)
-		{
-			type1 = &ILSystemInt64;
-		}
-		else if(type1 == &ILSystemUInt32)
-		{
-			if(type2 == &ILSystemSByte || type2 == &ILSystemInt16 ||
-			   type2 == &ILSystemInt32)
+			else if(type1 == &ILSystemSingle)
+			{
+				type2 = &ILSystemSingle;
+			}
+			else if(type2 == &ILSystemSingle)
+			{
+				type1 = &ILSystemSingle;
+			}
+			else if(type1 == &ILSystemUInt64)
+			{
+				if(type2 == &ILSystemSByte || type2 == &ILSystemInt16 ||
+				   type2 == &ILSystemInt32 || type2 == &ILSystemInt64)
+				{
+					return 0;
+				}
+				type2 = &ILSystemUInt64;
+			}
+			else if(type2 == &ILSystemUInt64)
+			{
+				if(type1 == &ILSystemSByte || type1 == &ILSystemInt16 ||
+				   type1 == &ILSystemInt32 || type1 == &ILSystemInt64)
+				{
+					return 0;
+				}
+				type1 = &ILSystemUInt64;
+			}
+			else if(type1 == &ILSystemInt64)
+			{
+				type2 = &ILSystemInt64;
+			}
+			else if(type2 == &ILSystemInt64)
 			{
 				type1 = &ILSystemInt64;
-				type2 = &ILSystemInt64;
+			}
+			else if(type1 == &ILSystemUInt32)
+			{
+				if(type2 == &ILSystemSByte || type2 == &ILSystemInt16 ||
+				   type2 == &ILSystemInt32)
+				{
+					type1 = &ILSystemInt64;
+					type2 = &ILSystemInt64;
+				}
+				else
+				{
+					type2 = &ILSystemUInt32;
+				}
+			}
+			else if(type2 == &ILSystemUInt32)
+			{
+				if(type1 == &ILSystemSByte || type1 == &ILSystemInt16 ||
+				   type1 == &ILSystemInt32)
+				{
+					type1 = &ILSystemInt64;
+					type2 = &ILSystemInt64;
+				}
+				else
+				{
+					type1 = &ILSystemUInt32;
+				}
 			}
 			else
 			{
-				type2 = &ILSystemUInt32;
-			}
-		}
-		else if(type2 == &ILSystemUInt32)
-		{
-			if(type1 == &ILSystemSByte || type1 == &ILSystemInt16 ||
-			   type1 == &ILSystemInt32)
-			{
-				type1 = &ILSystemInt64;
-				type2 = &ILSystemInt64;
-			}
-			else
-			{
-				type1 = &ILSystemUInt32;
+				type1 = &ILSystemInt32;
+				type2 = &ILSystemInt32;
 			}
 		}
 		else
 		{
-			type1 = &ILSystemInt32;
-			type2 = &ILSystemInt32;
-		}
-	}
-	else
-	{
-		/* Shift operator: promote the arguments separately */
-		if(type1 == &ILSystemSByte || type1 == &ILSystemByte ||
-		   type1 == &ILSystemInt16 || type1 == &ILSystemUInt16 ||
-		   type1 == &ILSystemChar)
-		{
-			type1 = &ILSystemInt32;
-		}
-		if(type2 == &ILSystemSByte || type2 == &ILSystemByte ||
-		   type2 == &ILSystemInt16 || type2 == &ILSystemUInt16 ||
-		   type2 == &ILSystemChar)
-		{
-			type2 = &ILSystemInt32;
+			/* Shift operator: promote the arguments separately */
+			if(type1 == &ILSystemSByte || type1 == &ILSystemByte ||
+			   type1 == &ILSystemInt16 || type1 == &ILSystemUInt16 ||
+			   type1 == &ILSystemChar)
+			{
+				type1 = &ILSystemInt32;
+			}
+			if(type2 == &ILSystemSByte || type2 == &ILSystemByte ||
+			   type2 == &ILSystemInt16 || type2 == &ILSystemUInt16 ||
+			   type2 == &ILSystemChar)
+			{
+				type2 = &ILSystemInt32;
+			}
 		}
 	}
 
@@ -1207,6 +1426,21 @@ const ILOperator *ILFindBinaryOperator(const ILOperator *table,
 	{
 		if(table->intype1 == type1 && table->intype2 == type2)
 		{
+			if(table->outtype->isEnum)
+			{
+				if(ILTypeIsEnum(argType1))
+				{
+					*resultType = argType1;
+				}
+				else
+				{
+					*resultType = argType2;
+				}
+			}
+			else
+			{
+				*resultType = table->outtype->type;
+			}
 			return table;
 		}
 		++table;
@@ -1230,7 +1464,8 @@ void ILApplyBinaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
 
 int ILIsBuiltinNumeric(ILType *type)
 {
-	return (GetBuiltinType(type) != 0 && type != ILType_Boolean);
+	return (GetBuiltinType(type, 0) != 0 && type != ILType_Boolean &&
+			!ILTypeIsEnum(type));
 }
 
 #ifdef	__cplusplus

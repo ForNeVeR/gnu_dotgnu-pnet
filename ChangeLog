@@ -26,6 +26,9 @@
 	* codegen/cg_coerce.h, codegen/cg_optable.c: remove unnecessary
 	fields from "ILBuiltinType".
 
+	* codegen/cg_coerce.h, codegen/cg_optable.c, cscc/csharp/cs_oper.tc:
+	implement builtin operators for enumerated types.
+
 2001-03-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c: handle interface overrides for properties.

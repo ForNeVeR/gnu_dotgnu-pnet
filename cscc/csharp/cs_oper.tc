@@ -86,6 +86,7 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	ILType *returnType;
 	CSSemValue value1;
 	CSSemValue value2;
+	ILType *resultType;
 
 	/* Perform semantic analysis on the arguments */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
@@ -98,14 +99,14 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	}
 
 	/* Look for a builtin operator */
-	oper = ILFindBinaryOperator(table, value1.type, value2.type);
+	oper = ILFindBinaryOperator(table, value1.type, value2.type, &resultType);
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
 		value1.kind = CS_SEMKIND_RVALUE;
-		if(oper->outtype->type)
+		if(resultType)
 		{
-			value1.type = oper->outtype->type;
+			value1.type = resultType;
 		}
 		else
 		{
@@ -185,6 +186,7 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	ILMethod *method;
 	ILType *returnType;
 	CSSemValue value;
+	ILType *resultType;
 
 	/* Perform semantic analysis on the argument */
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
@@ -196,14 +198,14 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	}
 
 	/* Look for a builtin operator */
-	oper = ILFindUnaryOperator(table, value.type);
+	oper = ILFindUnaryOperator(table, value.type, &resultType);
 	if(oper)
 	{
 		ILApplyUnaryOperator(info, (ILNode *)node, parent, oper);
 		value.kind = CS_SEMKIND_RVALUE;
-		if(oper->outtype->type)
+		if(resultType)
 		{
-			value.type = oper->outtype->type;
+			value.type = resultType;
 		}
 		else
 		{
@@ -252,6 +254,7 @@ ILNode_SemAnalysis(ILNode_Add)
 	ILType *returnType;
 	CSSemValue value1;
 	CSSemValue value2;
+	ILType *resultType;
 
 	/* Perform semantic analysis on the arguments */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
@@ -264,14 +267,15 @@ ILNode_SemAnalysis(ILNode_Add)
 	}
 
 	/* Look for a builtin operator */
-	oper = ILFindBinaryOperator(ILOp_Add, value1.type, value2.type);
+	oper = ILFindBinaryOperator
+				(ILOp_Add, value1.type, value2.type, &resultType);
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
 		value1.kind = CS_SEMKIND_RVALUE;
-		if(oper->outtype->type)
+		if(resultType)
 		{
-			value1.type = oper->outtype->type;
+			value1.type = resultType;
 		}
 		else
 		{
@@ -576,6 +580,7 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	ILType *returnType;
 	CSSemValue value1;
 	CSSemValue value2;
+	ILType *resultType;
 
 	/* Perform semantic analysis on the arguments */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
@@ -601,14 +606,14 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	}
 
 	/* Look for a builtin operator */
-	oper = ILFindBinaryOperator(table, value1.type, value2.type);
+	oper = ILFindBinaryOperator(table, value1.type, value2.type, &resultType);
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
 		value1.kind = CS_SEMKIND_RVALUE;
-		if(oper->outtype->type)
+		if(resultType)
 		{
-			value1.type = oper->outtype->type;
+			value1.type = resultType;
 		}
 		else
 		{
@@ -1221,6 +1226,7 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	ILType *returnType;
 	CSSemValue value1;
 	CSSemValue value2;
+	ILType *resultType;
 
 	/* Perform semantic analysis on the arguments */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
@@ -1233,7 +1239,7 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	}
 
 	/* Look for a builtin operator */
-	oper = ILFindBinaryOperator(table, value1.type, value2.type);
+	oper = ILFindBinaryOperator(table, value1.type, value2.type, &resultType);
 	if(oper)
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);

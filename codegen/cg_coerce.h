@@ -29,8 +29,9 @@ typedef struct _tagILBuiltinType ILBuiltinType;
 
 struct _tagILBuiltinType
 {
-	ILType		   *type;				/* Built-in element type */
-	ILMachineType	valueType;			/* Value type used by runtime */
+	ILType		   *type;			/* Built-in element type */
+	ILMachineType	valueType;		/* Value type used by runtime */
+	int				isEnum;			/* This is an enumerated builtin type */
 
 };
 
@@ -67,7 +68,7 @@ void ILApplyConversion(ILGenInfo *info, ILNode *node, ILNode **parent,
  * Find a standard unary operator for a particular type.
  */
 const ILOperator *ILFindUnaryOperator(const ILOperator *table,
-								 	  ILType *argType1);
+								 	  ILType *argType1, ILType **resultType);
 
 /*
  * Apply a standard unary operator to a node.
@@ -79,7 +80,8 @@ void ILApplyUnaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
  * Find a standard binary operator for a particular pair of types.
  */
 const ILOperator *ILFindBinaryOperator(const ILOperator *table,
-								 	   ILType *argType1, ILType *argType2);
+								 	   ILType *argType1, ILType *argType2,
+									   ILType **resultType);
 
 /*
  * Apply a standard binary operator to a node.

@@ -1,4 +1,10 @@
 
+2002-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_gc.c: remove all class checks from GC.SuppressFinalize
+	and GC.ReRegisterForFinalize, to be consistent with other CLR
+	implementations.
+
 2002-11-06  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_gc.c: Allow inherited methods to invoke GC.SuppressFinalize

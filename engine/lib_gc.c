@@ -44,24 +44,12 @@ void _IL_GC_ReRegisterForFinalize(ILExecThread *_thread, ILObject *obj)
 {
 	if(obj)
 	{
-		/* We can only register finalization if the current method
-		   has the same class as the object itself */
-		ILMethod *method = ILExecThreadStackMethod(_thread, 1);
-		if(method && ILMethod_Owner(method) == GetObjectClass(obj))
+   		if(((ILClassPrivate *)((GetObjectClass(obj))->userData))
+				->hasFinalizer)
 		{
-	   		if(((ILClassPrivate *)((GetObjectClass(obj))->userData))
-					->hasFinalizer)
-			{
-				ILGCRegisterFinalizer
-					((void *)(((unsigned char *)obj) - IL_BEST_ALIGNMENT),
-					 _ILFinalizeObject, (void *)0);
-			}
-		}
-		else
-		{
-			ILExecThreadThrowSystem
-				(_thread, "System.ExecutionEngineException",
-				 (const char *)0);
+			ILGCRegisterFinalizer
+				((void *)(((unsigned char *)obj) - IL_BEST_ALIGNMENT),
+				 _ILFinalizeObject, (void *)0);
 		}
 	}
 	else
@@ -77,22 +65,9 @@ void _IL_GC_SuppressFinalize(ILExecThread *_thread, ILObject *obj)
 {
 	if(obj)
 	{
-		/* We can only suppress finalization if the current method
-		   has the same class as the object itself */
-		ILMethod *method = ILExecThreadStackMethod(_thread, 1);
-		if(method && ILClassInheritsFrom(GetObjectClass(obj),
-								ILMethod_Owner(method)))
-		{
-			ILGCRegisterFinalizer
-				((void *)(((unsigned char *)obj) - IL_BEST_ALIGNMENT),
-				 (ILGCFinalizer)0, (void *)0);
-		}
-		else
-		{
-			ILExecThreadThrowSystem
-				(_thread, "System.InvalidOperationException",
-				 (const char *)0);
-		}
+		ILGCRegisterFinalizer
+			((void *)(((unsigned char *)obj) - IL_BEST_ALIGNMENT),
+			 (ILGCFinalizer)0, (void *)0);
 	}
 	else
 	{

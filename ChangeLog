@@ -15,6 +15,9 @@
 	tests/runtime/System/Runtime/CompilerServices/code-review.txt:
 	test cases for System.Runtime.CompilerServices.
 
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryFormatter.cs:
+	minor fix - call the correct version of "Serialize".
+
 2003-06-03  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/BufferedStream.cs: Fix a number of potential

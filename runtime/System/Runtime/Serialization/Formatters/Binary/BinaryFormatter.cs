@@ -106,7 +106,7 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 			}
 	public void Serialize(Stream serializationStream, Object graph)
 			{
-				Serialize(serializationStream, graph);
+				Serialize(serializationStream, graph, null);
 			}
 
 	// Formatter properties.

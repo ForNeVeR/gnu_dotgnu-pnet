@@ -581,109 +581,94 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 		}
 	}
 
-	/* Determine if we need to do a forward or reverse store */
-	if(offset < 256)
+	/* Check the pointer value for null */
+	CVM_WIDE(COP_CKNULL_N, valueSize);
+
+	/* Add the offset to the pointer value */
+	if(offset != 0)
 	{
-		/* Check the pointer value for null */
-		CVM_WIDE(COP_CKNULL_N, valueSize);
+		CVM_DWIDE(COP_PADD_OFFSET_N, valueSize, offset);
+	}
 
-		/* Add the offset to the pointer value */
-		if(offset != 0)
+	/* Perform the store */
+	if(ILType_IsPrimitive(fieldType))
+	{
+		/* Store a primitive value */
+		switch(ILType_ToElement(fieldType))
 		{
-			CVM_BYTE(COP_PADD_OFFSET_N);
-			CVM_BYTE(valueSize);
-		}
-
-		/* Perform a forward store */
-		if(ILType_IsPrimitive(fieldType))
-		{
-			/* Store a primitive value */
-			switch(ILType_ToElement(fieldType))
+			case IL_META_ELEMTYPE_BOOLEAN:
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:
 			{
-				case IL_META_ELEMTYPE_BOOLEAN:
-				case IL_META_ELEMTYPE_I1:
-				case IL_META_ELEMTYPE_U1:
-				{
-					CVM_BYTE(COP_BWRITE);
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I2:
-				case IL_META_ELEMTYPE_U2:
-				case IL_META_ELEMTYPE_CHAR:
-				{
-					CVM_BYTE(COP_SWRITE);
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I4:
-				case IL_META_ELEMTYPE_U4:
-			#ifdef IL_NATIVE_INT32
-				case IL_META_ELEMTYPE_I:
-				case IL_META_ELEMTYPE_U:
-			#endif
-				{
-					CVM_BYTE(COP_IWRITE);
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I8:
-				case IL_META_ELEMTYPE_U8:
-			#ifdef IL_NATIVE_INT64
-				case IL_META_ELEMTYPE_I:
-				case IL_META_ELEMTYPE_U:
-			#endif
-				{
-					CVM_WIDE(COP_MWRITE, sizeof(ILInt64));
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R4:
-				{
-					CVM_BYTE(COP_FWRITE);
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R8:
-				{
-					CVM_BYTE(COP_DWRITE);
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R:
-				{
-					CVM_WIDE(COP_MWRITE, sizeof(ILNativeFloat));
-				}
-				break;
-
-				case IL_META_ELEMTYPE_TYPEDBYREF:
-				{
-					CVM_WIDE(COP_MWRITE, sizeof(ILTypedRef));
-				}
-				break;
+				CVM_BYTE(COP_BWRITE);
 			}
+			break;
+
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:
+			case IL_META_ELEMTYPE_CHAR:
+			{
+				CVM_BYTE(COP_SWRITE);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+		#ifdef IL_NATIVE_INT32
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif
+			{
+				CVM_BYTE(COP_IWRITE);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+		#ifdef IL_NATIVE_INT64
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif
+			{
+				CVM_WIDE(COP_MWRITE, sizeof(ILInt64));
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R4:
+			{
+				CVM_BYTE(COP_FWRITE);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R8:
+			{
+				CVM_BYTE(COP_DWRITE);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R:
+			{
+				CVM_WIDE(COP_MWRITE, sizeof(ILNativeFloat));
+			}
+			break;
+
+			case IL_META_ELEMTYPE_TYPEDBYREF:
+			{
+				CVM_WIDE(COP_MWRITE, sizeof(ILTypedRef));
+			}
+			break;
 		}
-		else if(ILType_IsValueType(fieldType))
-		{
-			/* Store a managed value */
-			size = ILSizeOfType(fieldType);
-			CVM_WIDE(COP_MWRITE, size);
-		}
-		else
-		{
-			/* Store a reference value */
-			CVM_BYTE(COP_PWRITE);
-		}
+	}
+	else if(ILType_IsValueType(fieldType))
+	{
+		/* Store a managed value */
+		size = ILSizeOfType(fieldType);
+		CVM_WIDE(COP_MWRITE, size);
 	}
 	else
 	{
-		/* Bring the pointer to the top of the stack */
-		CVM_WIDE(COP_DUP_WORD_N, valueSize);
-		CVM_ADJUST(1);
-
-		/* Perform a reversed store */
-		CVMStoreFieldReverse(coder, field, fieldType, offset, 1);
-		CVM_ADJUST(-1);
+		/* Store a reference value */
+		CVM_BYTE(COP_PWRITE);
 	}
 }
 

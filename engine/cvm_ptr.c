@@ -292,10 +292,10 @@ case COP_PADD_OFFSET_N:
 {
 	/* Add an explicit byte offset to a pointer that is N
 	   values down the stack */
-	stacktop[-((ILInt32)(pc[1]))].ptrValue = (void *)
-		(((unsigned char *)(stacktop[-((ILInt32)(pc[1]))]
-				.ptrValue)) + IL_READ_UINT32(pc + 2));
-	MODIFY_PC_AND_STACK(6, 0);
+	stacktop[-(((ILInt32)(pc[1])) + 1)].ptrValue = (void *)
+		(((unsigned char *)(stacktop[-(((ILInt32)(pc[1])) + 1)]
+				.ptrValue)) + (ILUInt32)(pc[2]));
+	MODIFY_PC_AND_STACK(3, 0);
 }
 break;
 
@@ -1043,6 +1043,17 @@ case COP_CKNULL_N:
 	{
 		NULL_POINTER_EXCEPTION();
 	}
+}
+break;
+
+case COP_PADD_OFFSET_N:
+{
+	/* Wide version of "padd_offset_n" */
+	tempNum = IL_READ_UINT32(pc + 2);
+	stacktop[-((ILInt32)(tempNum + 1))].ptrValue = (void *)
+		(((unsigned char *)(stacktop[-((ILInt32)(tempNum + 1))]
+				.ptrValue)) + IL_READ_UINT32(pc + 6));
+	MODIFY_PC_AND_STACK(10, 0);
 }
 break;
 

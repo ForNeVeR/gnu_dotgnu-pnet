@@ -246,7 +246,7 @@ static CVMOpcode const opcodes[256] = {
 	 * Pointer arithmetic and manipulation.
 	 */
 	{"padd_offset",		CVM_OPER_UINT8},
-	{"padd_offset_n",	CVM_OPER_TWO_UINT8},
+	{"padd_offset_n",	CVM_OPER_WIDE_TWO_UINT},
 	{"padd_i4",			CVM_OPER_NONE},
 	{"padd_i4_r",		CVM_OPER_NONE},
 	{"padd_i8",			CVM_OPER_NONE},

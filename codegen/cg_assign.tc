@@ -159,16 +159,16 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 		{
 			ILGenCallByName(info,
 			  "class [.library]System.String [.library]System.String::Concat"
-					"(class [.library]String.Delegate, "
-					 "class [.library]String.Delegate)");
+					"(class [.library]System.String, "
+					 "class [.library]System.String)");
 			ILGenAdjust(info, -1);
 		}
 		else
 		{
 			ILGenCallByName(info,
 			  "class [.library]System.String [.library]System.String::Concat"
-					"(class [.library]String.Object, "
-					 "class [.library]String.Object)");
+					"(class [.library]System.Object, "
+					 "class [.library]System.Object)");
 			ILGenAdjust(info, -1);
 		}
 	}
@@ -265,16 +265,16 @@ ILNode_GenValue(ILNode_AssignExpression)
 		{
 			ILGenCallByName(info,
 			  "class [.library]System.String [.library]System.String::Concat"
-					"(class [.library]String.Delegate, "
-					 "class [.library]String.Delegate)");
+					"(class [.library]System.String, "
+					 "class [.library]System.String)");
 			ILGenAdjust(info, -1);
 		}
 		else
 		{
 			ILGenCallByName(info,
 			  "class [.library]System.String [.library]System.String::Concat"
-					"(class [.library]String.Object, "
-					 "class [.library]String.Object)");
+					"(class [.library]System.Object, "
+					 "class [.library]System.Object)");
 			ILGenAdjust(info, -1);
 		}
 	}

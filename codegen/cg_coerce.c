@@ -347,6 +347,22 @@ static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 		/* Otherwise can only cast implicitly to "void *" */
 		return (ILType_Ref(toType) == ILType_Void);
 	}
+	else if(ILType_IsPointer(toType) && fromType == ILType_Int)
+	{
+		/* Can cast explicitly from IntPtr to any pointer type */
+		if(explicit)
+		{
+			return 1;
+		}
+	}
+	else if(ILType_IsPointer(fromType) && toType == ILType_Int)
+	{
+		/* Can cast explicitly from any pointer type to IntPtr */
+		if(explicit)
+		{
+			return 1;
+		}
+	}
 
 	/* Can cast implicitly from "null" to any pointer type */
 	if(ILType_IsPointer(toType) && fromType == ILType_Null)

@@ -76,6 +76,12 @@ public class Exception
 				stackTrace = null;
 			}
 		}
+#if !ECMA_COMPAT
+	protected Exception(SerializationInfo info, StreamingContext context)
+		{
+			// TODO
+		}
+#endif
 
 	// Private constructor that is used for subclasses that
 	// don't want stack traces.  e.g. OutOfMemoryException.

@@ -40,13 +40,11 @@ public abstract class Type : MemberInfo
 	public static readonly Type[] EmptyTypes = new Type [0];
 
 #if !ECMA_COMPAT
+	// Pre-defined member filters.
 	public static readonly MemberFilter FilterName = 
 				new MemberFilter(FilterNameImpl);
-	
-	[TODO]
 	public static readonly MemberFilter FilterAttribute = 
 				new MemberFilter(FilterAttributeImpl);
-	
 	public static readonly MemberFilter FilterNameIgnoreCase = 
 				new MemberFilter(FilterNameIgnoreCaseImpl);
 #endif
@@ -246,43 +244,173 @@ public abstract class Type : MemberInfo
 				return retval;				
 			}
 	
-	private static bool FilterNameImpl(	MemberInfo m, 
-										Object filterCriteria)
-	{
-		String name= (String)filterCriteria;
-		if(name==null || name.IndexOf('*')==-1)
-		{
-			return String.Equals(name,m.Name);
-		}
-		else
-		{
-			// TODO : bit of regexp magic ?
-		}
-		return false;
-	}
+	// Filter a member based on its name.
+	private static bool FilterNameImpl(MemberInfo m, Object filterCriteria)
+			{
+				// Validate the filter critiera.
+				String filter = (filterCriteria as String);
+				if(filter == null)
+				{
+					throw new InvalidFilterCriteriaException
+						(_("Exception_FilterName"));
+				}
+				filter = filter.Trim();
 
+				// Get the member name.
+				String name = m.Name;
+				if(m is Type)
+				{
+					// Trim nested type names down to their last component.
+					int index = name.LastIndexOf('+');
+					if(index != -1)
+					{
+						name = name.Substring(index + 1);
+					}
+				}
+
+				// Check for prefix matches.
+				if(filter.EndsWith("*"))
+				{
+					return name.StartsWith
+						(filter.Substring(0, filter.Length - 1));
+				}
+
+				// Perform an ordinary match.
+				return (name == filter);
+			}
+
+	// Filter a member based on its name and ignore case.
 	private static bool FilterNameIgnoreCaseImpl(MemberInfo m, 
  												 Object filterCriteria)
-	{
-		String name= (String)filterCriteria;
-		if(name==null || name.IndexOf('*')==-1)
-		{
-			return (String.Compare(name,m.Name,true)==0);
-		}
-		else
-		{
-			// TODO : bit of regexp magic ?
-		}
-		return false;
-	}
+			{
+				// Validate the filter critiera.
+				String filter = (filterCriteria as String);
+				if(filter == null)
+				{
+					throw new InvalidFilterCriteriaException
+						(_("Exception_FilterName"));
+				}
+				filter = filter.Trim();
 
+				// Get the member name.
+				String name = m.Name;
+				if(m is Type)
+				{
+					// Trim nested type names down to their last component.
+					int index = name.LastIndexOf('+');
+					if(index != -1)
+					{
+						name = name.Substring(index + 1);
+					}
+				}
+
+				// Check for prefix matches.
+				if(filter.EndsWith("*"))
+				{
+					filter = filter.Substring(0, filter.Length - 1);
+					if(name.Length < filter.Length)
+					{
+						return false;
+					}
+					return (String.Compare(name, 0, filter, 0,
+										   filter.Length, true) == 0);
+				}
+
+				// Perform an ordinary match.
+				return (String.Compare(name, filter, true) == 0);
+			}
+
+	// Filter a member based on its attributes.
 	private static bool FilterAttributeImpl(MemberInfo m, 
 											Object filterCriteria)
-	{
-		throw new NotImplementedException("FilterAttributeImpl");
-	}
+			{
+				if(filterCriteria == null)
+				{
+					throw new InvalidFilterCriteriaException
+						(_("Exception_FilterAttribute"));
+				}
+				if(m is FieldInfo)
+				{
+					// Validate the field criteria.
+					FieldAttributes fattrs;
+					if(filterCriteria is int)
+					{
+						fattrs = (FieldAttributes)(int)filterCriteria;
+					}
+					else if(filterCriteria is FieldAttributes)
+					{
+						fattrs = (FieldAttributes)filterCriteria;
+					}
+					else
+					{
+						throw new InvalidFilterCriteriaException
+							(_("Exception_FilterAttribute"));
+					}
 
-#endif
+					// Check the specified conditions.
+					FieldAttributes fmattrs = ((FieldInfo)m).Attributes;
+					if((fattrs & FieldAttributes.FieldAccessMask) != 0)
+					{
+						if((fattrs & FieldAttributes.FieldAccessMask) !=
+								(fmattrs & FieldAttributes.FieldAccessMask))
+						{
+							return false;
+						}
+					}
+					fattrs &= (FieldAttributes.Static |
+							   FieldAttributes.InitOnly |
+							   FieldAttributes.Literal |
+							   FieldAttributes.NotSerialized |
+							   FieldAttributes.PinvokeImpl);
+					if((fattrs & fmattrs) != fattrs)
+					{
+						return false;
+					}
+					return true;
+				}
+				else if(m is MethodInfo || m is ConstructorInfo)
+				{
+					// Validate the method criteria.
+					MethodAttributes mattrs;
+					if(filterCriteria is int)
+					{
+						mattrs = (MethodAttributes)(int)filterCriteria;
+					}
+					else if(filterCriteria is MethodAttributes)
+					{
+						mattrs = (MethodAttributes)filterCriteria;
+					}
+					else
+					{
+						throw new InvalidFilterCriteriaException
+							(_("Exception_FilterAttribute"));
+					}
+
+					// Check the specified conditions.
+					MethodAttributes mmattrs = ((MethodBase)m).Attributes;
+					if((mattrs & MethodAttributes.MemberAccessMask) != 0)
+					{
+						if((mattrs & MethodAttributes.MemberAccessMask) !=
+								(mmattrs & MethodAttributes.MemberAccessMask))
+						{
+							return false;
+						}
+					}
+					mattrs &= (MethodAttributes.Static |
+							   MethodAttributes.Final |
+							   MethodAttributes.Virtual |
+							   MethodAttributes.Abstract |
+							   MethodAttributes.SpecialName);
+					if((mattrs & mmattrs) != mattrs)
+					{
+						return false;
+					}
+					return true;
+				}
+				return false;
+			}
+
+#endif // !ECMA_COMPAT
 
 	// Get the element type for this type.
 	public abstract Type GetElementType();

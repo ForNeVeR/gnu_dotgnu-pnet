@@ -18,11 +18,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System.Runtime.Serialization;
-
 namespace System
 {
 
+using System.Runtime.Serialization;
+
+[Serializable]
 public class SystemException : Exception
 {
 
@@ -33,13 +34,9 @@ public class SystemException : Exception
 		: base(msg) {}
 	public SystemException(String msg, Exception inner)
 		: base(msg, inner) {}
-	
 #if !ECMA_COMPAT
-	[TODO]
-	public SystemException (SerializationInfo info, 
-							StreamingContext ctxt)
-		{
-		}
+	protected SystemException(SerializationInfo info, StreamingContext ctxt)
+		: base(info, ctxt) {}
 #endif
 
 	// Internal constructor that is called by classes that

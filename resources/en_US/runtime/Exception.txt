@@ -92,3 +92,6 @@ Exception_MarshalDirective=Invalid marshalling directive encountered
 Exception_SafeArrayRank=Ranks of safe arrays do not match
 Exception_SafeArrayType=Types of safe arrays do not match
 Exception_SEH=Problem with structured exception handling
+Exception_Filter=Invalid filter criteria
+Exception_FilterAttribute=Invalid attribute filter criteria
+Exception_FilterName=Invalid name filter criteria

@@ -1,8 +1,8 @@
 /*
- * ApplicationException.cs - Implementation of the
- *			"System.ApplicationException" class.
+ * InvalidFilterCriteriaException.cs - Implementation of the
+ *			"System.Reflection.InvalidFilterCriteriaException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,37 +19,40 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Reflection
 {
 
+#if !ECMA_COMPAT
+
+using System;
 using System.Runtime.Serialization;
 
 [Serializable]
-public class ApplicationException : Exception
+public class InvalidFilterCriteriaException : ApplicationException
 {
 
 	// Constructors.
-	public ApplicationException()
-		: base(_("Exception_Application")) {}
-	public ApplicationException(String msg)
+	private InvalidFilterCriteriaException()
+		: base(_("Exception_Filter")) {}
+	public InvalidFilterCriteriaException(String msg)
 		: base(msg) {}
-	public ApplicationException(String msg, Exception inner)
+	public InvalidFilterCriteriaException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
-	protected ApplicationException(SerializationInfo info,
-								   StreamingContext context)
+	protected InvalidFilterCriteriaException(SerializationInfo info,
+											 StreamingContext context)
 		: base(info, context) {}
-#endif
 
 	// Get the default message to use for this exception type.
 	protected internal override String MessageDefault
 			{
 				get
 				{
-					return _("Exception_Application");
+					return _("Exception_Filter");
 				}
 			}
 
-}; // class ApplicationException
+}; // class InvalidFilterCriteriaException
 
-}; // namespace System
+#endif // !ECMA_COMPAT
+
+}; // namespace System.Reflection

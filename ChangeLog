@@ -1,4 +1,12 @@
 
+2003-04-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Exception.txt,
+	runtime/System/ApplicationException.cs, runtime/System/Exception.cs,
+	runtime/System/SystemException.cs, runtime/System/Type.cs,
+	runtime/System/Reflection/InvalidFilterCriteriaException.cs:
+	implement type filters.
+
 2003-04-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Microsoft/Win32/IRegistryKeyProvider.cs,

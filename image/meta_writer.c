@@ -655,7 +655,15 @@ static void Format_ExportedType(ILWriter *writer, ILImage *image,
 			GetPersistString(image, type->classItem.className->name);
 	values[IL_OFFSET_EXPTYPE_NAMESPACE] =
 			GetPersistString(image, type->classItem.className->namespace);
-	values[IL_OFFSET_EXPTYPE_FILE] = type->classItem.className->scope->token;
+	if(type->classItem.className->scope)
+	{
+		values[IL_OFFSET_EXPTYPE_FILE] =
+			type->classItem.className->scope->token;
+	}
+	else
+	{
+		values[IL_OFFSET_EXPTYPE_FILE] = 0;
+	}
 }
 
 /*

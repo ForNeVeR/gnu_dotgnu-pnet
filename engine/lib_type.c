@@ -1862,7 +1862,7 @@ static int ParameterTypeMatch(ILExecThread *thread, ILImage *image,
 		}
 		else
 		{
-			if(!ILTypeAssignCompatible(image, typeInfo,
+			if(!ILTypeAssignCompatibleNonBoxing(image, typeInfo,
 									   ILTypeGetParam(signature, paramNum + 1)))
 			{
 				return 0;
@@ -2086,6 +2086,7 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 			if(foundItem)
 			{
 				otherMember=ILProgramItemToMember(foundItem);
+					
 				if(ILMemberGetKind(member) == ILMemberGetKind(otherMember) &&
 				  (otherMember=CheckMemberOverride(otherMember, member))!=NULL)
 				{

@@ -128,6 +128,7 @@
 .method private hidebysig instance class ['.library']'System'.'String' 'm13'() cil managed java 
 {
 	ldc	""
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	areturn
 	.locals 1
 	.maxstack 1
@@ -135,6 +136,7 @@
 .method private hidebysig instance class ['.library']'System'.'String' 'm14'() cil managed java 
 {
 	ldc	"Hello World!"
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	areturn
 	.locals 1
 	.maxstack 1

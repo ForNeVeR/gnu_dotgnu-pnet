@@ -32,13 +32,16 @@
 .method private static hidebysig void 'm2'() cil managed java 
 {
 	ldc	"hello"
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	invokestatic	void 'Test'::'m1'(class ['.library']'System'.'String')
 	ldc	"hello"
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	iconst_1
 	anewarray class ['.library']'System'.'Object'
 	dup
 	iconst_0
 	ldc	"there"
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	aastore
 	invokestatic	void 'Test'::'m1'(class ['.library']'System'.'String', class ['.library']'System'.'Object'[])
 	return

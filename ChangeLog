@@ -3,6 +3,10 @@
 
 	* csharp/expr/typeof1.jl: new JVM output file for the "typeof1" test.
 
+	* csharp/class/const2.jl, csharp/class/method6.jl,
+	csharp/expr/const1.jl, csharp/expr/typeof1.jl: new JVM output
+	files that include conversions from JVM strings to C# strings.
+
 2001-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/cast4.cs, csharp/expr/cast4.il, csharp/expr/cast4.jl,

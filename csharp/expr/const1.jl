@@ -493,8 +493,10 @@
 	invokestatic	"System/Decimal" "op_Implicit__iV" "(I)LSystem/Decimal;"
 	astore	12
 	ldc	"Hello World!"
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	astore	13
 	ldc	""
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	astore	13
 	aconst_null
 	astore	13

@@ -12,15 +12,19 @@
 .method private hidebysig instance void 'm1'() cil managed java 
 {
 	ldc	"System.Int32"
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	invokestatic	"System/Type" "GetType" "(LSystem/String;)LSystem/Type;"
 	astore_1
 	ldc	"System.Void"
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	invokestatic	"System/Type" "GetType" "(LSystem/String;)LSystem/Type;"
 	astore_1
 	ldc	"int[]"
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	invokestatic	"System/Type" "GetType" "(LSystem/String;)LSystem/Type;"
 	astore_1
 	ldc	"Test[]"
+	invokestatic	"System/String" "__FromJavaString" "(Ljava/lang/String;)LSystem/String;"
 	invokestatic	"System/Type" "GetType" "(LSystem/String;)LSystem/Type;"
 	astore_1
 	return

@@ -290,8 +290,6 @@ static void ProcessBitField(CDeclSpec spec, CDeclarator decl, ILUInt32 size)
 	}
 }
 
-#if 0
-
 /*
  * Add a global initializer statement to the pending list.
  */
@@ -302,7 +300,15 @@ static void AddInitializer(char *name, ILNode *node, ILType *type, ILNode *init)
 	/* Build the initialization statement */
 	stmt = ILNode_CGlobalVar_create(name, type, CTypeDecay(&CCCodeGen, type));
 	CGenCloneLine(stmt, node);
-	stmt = ILNode_Assign_create(stmt, init);
+	if(CTypeIsArray(type))
+	{
+		stmt = ILNode_CAssignArray_create(stmt, init);
+	}
+	else
+	{
+		stmt = ILNode_Assign_create(stmt, init);
+	}
+	CGenCloneLine(stmt, init);
 
 	/* Add the statement to the pending list */
 	if(!initializers)
@@ -311,8 +317,6 @@ static void AddInitializer(char *name, ILNode *node, ILType *type, ILNode *init)
 	}
 	ILNode_List_Add(initializers, stmt);
 }
-
-#endif
 
 /*
  * Report a redeclaration error.
@@ -717,7 +721,11 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 			CScopeAddGlobal(decl.name, decl.node, type);
 		}
 
-		/* TODO: process initializers */
+		/* Process the initializer */
+		if(init)
+		{
+			AddInitializer(decl.name, decl.node, type, init);
+		}
 	}
 	else
 	{

@@ -47,7 +47,7 @@ public class DSACryptoServiceProvider : DSA
 	public DSACryptoServiceProvider()
 			: this(0, null) {}
 	public DSACryptoServiceProvider(CspParameters parameters)
-				: this(0, parameters) {}
+			: this(0, parameters) {}
 	public DSACryptoServiceProvider(int dwKeySize)
 			: this(dwKeySize, null) {}
 	public DSACryptoServiceProvider(int dwKeySize, CspParameters parameters)
@@ -78,7 +78,10 @@ public class DSACryptoServiceProvider : DSA
 											   out result);
 					if(key != null)
 					{
-						// TODO: Unpack the key
+						// The "ASN1ToPublic" method will determine if
+						// the key is X.509, bare public, or private.
+						dsaParams.ASN1ToPublic(key, 0, key.Length);
+						key.Initialize();
 						persistKey = true;
 					}
 					else if(result == CryptoMethods.UnknownKey)
@@ -224,10 +227,13 @@ public class DSACryptoServiceProvider : DSA
 				K.Initialize();
 
 				// Pack R and S into a signature blob and return it.
-				// TODO
+				ASN1Builder builder = new ASN1Builder();
+				builder.AddBigInt(R);
+				builder.AddBigInt(S);
+				byte[] sig = builder.ToByteArray();
 				R.Initialize();
 				S.Initialize();
-				return null;
+				return sig;
 			}
 
 	// Export the parameters for DSA signature generation.
@@ -252,9 +258,9 @@ public class DSACryptoServiceProvider : DSA
 	// Import the parameters for DSA signature generation.
 	public override void ImportParameters(DSAParameters parameters)
 			{
-				if(parameters.G != null || parameters.J != null ||
-				   parameters.P != null || parameters.Q != null ||
-				   parameters.Seed != null || parameters.Y != null ||
+				// We need at least P, Q, G, and Y for public key operations.
+				if(parameters.P == null || parameters.Q == null ||
+				   parameters.G == null || parameters.Y == null ||
 				   CryptoMethods.NumZero(parameters.P) ||
 				   CryptoMethods.NumZero(parameters.Q))
 				{
@@ -284,10 +290,12 @@ public class DSACryptoServiceProvider : DSA
 						(_("Crypto_DSAParamsNotSet"));
 				}
 
-				// Unpack the signature block to get R and S.
-				byte[] R = null;
-				byte[] S = null;
-				// TODO
+				// Unpack the signature blob to get R and S.
+				ASN1Parser parser;
+				parser = (new ASN1Parser(rgbSignature)).GetSequence();
+				byte[] R = parser.GetBigInt();
+				byte[] S = parser.GetBigInt();
+				parser.AtEnd();
 
 				// Compute W = (S^-1 mod Q)
 				byte[] W = CryptoMethods.NumInv(S, dsaParams.Q);

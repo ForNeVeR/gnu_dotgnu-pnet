@@ -59,6 +59,8 @@ public class CryptoConfig
 		"System.Security.Cryptography.RandomNumberGenerator";
 	internal const String DSADefault =
 			"System.Security.Cryptography.DSA";
+	internal const String RSADefault =
+			"System.Security.Cryptography.RSA";
 
 	// Table that maps algorithm names to implementations.
 	private static readonly Object[] algorithms = {
@@ -89,19 +91,20 @@ public class CryptoConfig
 			"System.Security.Cryptography.SHA512",
 								typeof(SHA512Managed),
 
-#if false
 			"RSA",				typeof(RSACryptoServiceProvider),
 			"System.Security.Cryptography.RSA",
 								typeof(RSACryptoServiceProvider),
 			"System.Security.Cryptography.AsymmetricAlgorithm",
 								typeof(RSACryptoServiceProvider),
+			"http://www.w3.org/2000/09/xmldsig#rsa-sha1",
+								typeof(RSACryptoServiceProvider),
+			"RSA-PKCS1-KeyEx",	typeof(RSACryptoServiceProvider),
 
 			"DSA",				typeof(DSACryptoServiceProvider),
 			"System.Security.Cryptography.DSA",
 								typeof(DSACryptoServiceProvider),
 			"http://www.w3.org/2000/09/xmldsig#dsa-sha1",
 								typeof(DSACryptoServiceProvider),
-#endif
 
 			"RandomNumberGenerator",
 								typeof(RNGCryptoServiceProvider),
@@ -153,6 +156,16 @@ public class CryptoConfig
 												 "1.2.840.113549.2.5",
 			"System.Security.Cryptography.MD5Managed",
 												 "1.2.840.113549.2.5",
+
+			"RSA",								 "1.2.840.113549.1.1.1",
+			"System.Security.Cryptography.RSA",	 "1.2.840.113549.1.1.1",
+			"System.Security.Cryptography.RSACryptoServiceProvider",
+												 "1.2.840.113549.1.1.1",
+
+			"DSA",								 "1.2.840.10040.4.1",
+			"System.Security.Cryptography.DSA",	 "1.2.840.10040.4.1",
+			"System.Security.Cryptography.DSACryptoServiceProvider",
+												 "1.2.840.10040.4.1",
 		};
 
 

@@ -11,6 +11,10 @@ and remove parameter information which is obsolete.
 so that parameter attributes can be placed properly; dump array types
 properly.
 
+* image/types.c: remove references to obsolete parameter information types;
+use "ARRAY_CONTINUE" to explicitly mark array ranks; handle synthesised
+array ranks properly.
+
 2001-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c: fix a bug that caused GetBuiltinType to treat

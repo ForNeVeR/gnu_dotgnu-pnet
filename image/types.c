@@ -49,7 +49,7 @@ ILType *ILTypeCreateArray(ILContext *context, unsigned long rank,
 		{
 			elem = type;
 			type = ILMemPoolCalloc(&(context->typePool), ILType);
-			type->kind = IL_TYPE_COMPLEX_ARRAY;
+			type->kind = IL_TYPE_COMPLEX_ARRAY_CONTINUE;
 			type->un.array.elemType = elem;
 			type->un.array.size = 0;
 			type->un.array.lowBound = 0;
@@ -314,18 +314,10 @@ ILType *ILTypeGetParam(ILType *method, unsigned long index)
 ILType *ILTypeStripPrefixes(ILType *type)
 {
 	while(type != 0 && ILType_IsComplex(type) &&
-	      (type->kind == IL_TYPE_COMPLEX_PARAM ||
-		   type->kind == IL_TYPE_COMPLEX_CMOD_REQD ||
+	      (type->kind == IL_TYPE_COMPLEX_CMOD_REQD ||
 		   type->kind == IL_TYPE_COMPLEX_CMOD_OPT))
 	{
-		if(type->kind == IL_TYPE_COMPLEX_PARAM)
-		{
-			type = type->un.paramInfo.type;
-		}
-		else
-		{
-			type = type->un.modifier.type;
-		}
+		type = type->un.modifier.type;
 	}
 	return type;
 }
@@ -379,6 +371,7 @@ int ILTypeIdentical(ILType *type1, ILType *type2)
 		/* Not reached */
 
 		case IL_TYPE_COMPLEX_ARRAY:
+		case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
 		{
 			if(!ILTypeIdentical(type1->un.array.elemType,
 								type2->un.array.elemType))
@@ -494,6 +487,7 @@ char *ILTypeToName(ILType *type)
 	int len;
 	const char *assemName;
 	char numbuf[80];
+	ILType *elemType;
 
 	/* Strip unnecessary prefixes from the type */
 	type = ILTypeStripPrefixes(type);
@@ -624,27 +618,62 @@ char *ILTypeToName(ILType *type)
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_ARRAY:
+			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
 			{
-				name = ILTypeToName(type->un.array.elemType);
-				if(!(type->un.array.size) && !(type->un.array.lowBound))
+				/* Find the element type */
+				elemType = type->un.array.elemType;
+				while(ILType_IsComplex(elemType) &&
+				      (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
+					   elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 				{
-					return AppendString(name, "[]");
+					elemType = elemType->un.array.elemType;
 				}
-				else if(!(type->un.array.size))
+
+				/* Convert the element type into a name */
+				name = AppendString(ILTypeToName(elemType), "[");
+
+				/* Add the rank specifiers */
+				while(type != elemType)
 				{
-					sprintf(numbuf, "[%ld...]", type->un.array.lowBound);
+					if(!(type->un.array.size) && type->un.array.lowBound)
+					{
+						sprintf(numbuf, "%ld...", type->un.array.lowBound);
+						name = AppendString(name, numbuf);
+					}
+					else if(!(type->un.array.lowBound) && type->un.array.size)
+					{
+						sprintf(numbuf, "%ld", type->un.array.size);
+						name = AppendString(name, numbuf);
+					}
+					else if(type->un.array.size && type->un.array.lowBound)
+					{
+						sprintf(numbuf, "%ld...%ld",
+								type->un.array.lowBound,
+								type->un.array.lowBound +
+									type->un.array.size - 1);
+						name = AppendString(name, numbuf);
+					}
+					if(type->kind == IL_TYPE_COMPLEX_ARRAY)
+					{
+						type = type->un.array.elemType;
+						if(type != elemType)
+						{
+							name = AppendString(name, "][");
+						}
+						else
+						{
+							name = AppendString(name, "]");
+						}
+					}
+					else
+					{
+						name = AppendString(name, ",");
+						type = type->un.array.elemType;
+					}
 				}
-				else if(!(type->un.array.lowBound))
-				{
-					sprintf(numbuf, "[%ld]", type->un.array.size);
-				}
-				else
-				{
-					sprintf(numbuf, "[%ld...%ld]",
-							type->un.array.lowBound,
-							type->un.array.size);
-				}
-				return AppendString(name, numbuf);
+
+				/* Return the final name to the caller */
+				return name;
 			}
 			/* Not reached */
 

@@ -182,6 +182,8 @@ WHITE			[ \t\v\r\f]
 "__true__"				{ RETURNTOK(K_TRUE); }
 "__false__"				{ RETURNTOK(K_FALSE); }
 "__lock__"				{ RETURNTOK(K_LOCK); }
+"__using__"				{ RETURNTOK(K_USING); }
+"__namespace__"			{ RETURNTOK(K_NAMESPACE); }
 
 "__typeof"				{ RETURNTOK(K_CS_TYPEOF); /* Managed C++ compat */ }
 "__int64"				{ RETURNTOK(K_LONG_LONG); }
@@ -217,6 +219,10 @@ l'(\\.|[^\\'])+'				{ CLexParseChar(yytext, &(yylval.integer));
 			if(CScopeIsTypedef(yylval.name))
 			{
 				RETURNTOK(TYPE_NAME);
+			}
+			else if(CScopeIsNamespace(yylval.name))
+			{
+				RETURNTOK(NAMESPACE_NAME);
 			}
 			else
 			{

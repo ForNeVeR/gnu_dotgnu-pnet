@@ -1,4 +1,12 @@
 
+2004-02-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_scope.c, codegen/cg_scope.h, cscc/c/c_grammar.y,
+	cscc/c/c_scanner.l, cscc/c/c_scope.c, cscc/c/c_scope.h:
+	add the "__using__" and "__namespace__" keywords to the C
+	compiler so that they can be used to resolve C# types using
+	the "Namespace::Type" syntax.
+
 2004-02-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_oper.tc (MulPtrSize): fix a bug where 1 * sizeof(type)

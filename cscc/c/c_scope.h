@@ -74,6 +74,11 @@ void *CScopeLookupCurrent(const char *name);
 int CScopeIsTypedef(const char *name);
 
 /*
+ * Determine if a name in the current scope is a namespace.
+ */
+int CScopeIsNamespace(const char *name);
+
+/*
  * Look up a struct or union name in the current scope.
  */
 void *CScopeLookupStructOrUnion(const char *name, int structKind);
@@ -170,6 +175,21 @@ void CScopeUpdateGlobal(void *data, int kind, ILNode *node, ILType *type);
  * was undeclared, but that we don't want to know about it again.
  */
 void CScopeAddUndeclared(const char *name);
+
+/*
+ * Add a namespace to the global scope for the purposes of "using".
+ */
+void CScopeUsingNamespace(const char *name);
+
+/*
+ * Push a namespace onto the lookup context.
+ */
+void CScopePushNamespace(char *name);
+
+/*
+ * Pop a namespace from the lookup context.
+ */
+void CScopePopNamespace(char *name);
 
 /*
  * Get the scope data kind.

@@ -117,6 +117,11 @@ void ILScopeDeclareItem(ILScope *scope, const char *name, int kind,
 void ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace);
 
 /*
+ * Find the scope associated with a namespace.
+ */
+ILScope *ILScopeFindNamespace(ILScope *globalScope, const char *namespace);
+
+/*
  * Declare a type within a particular scope.  If the name
  * already exists, then an "IL_SCOPE_ERROR_xxx" code is
  * returned.  If there is a declaration for the type already,

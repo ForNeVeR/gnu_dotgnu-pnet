@@ -485,6 +485,11 @@ void ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace)
 	FindNamespaceScope(globalScope, namespace);
 }
 
+ILScope *ILScopeFindNamespace(ILScope *globalScope, const char *namespace)
+{
+	return FindNamespaceScope(globalScope, namespace);
+}
+
 int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 					   const char *namespace, ILScope **resultScope,
 					   ILNode **origDefn, ILScope *attachScope)

@@ -26,6 +26,9 @@ extern	"C" {
 
 ILScope *CCurrentScope;
 ILScope *CGlobalScope;
+static ILIntString CurrNamespace = {"", 0};
+static char **usingScopes = 0;
+static int numUsingScopes = 0;
 
 /*
  * Make a scope name for a struct or union.
@@ -83,9 +86,74 @@ void CScopeGlobalInit(ILGenInfo *info)
 	CGlobalScope = CCurrentScope = ILScopeCreate(info, 0);
 }
 
+/*
+ * Find a type in a specific namespace, and then register a scope entry for it.
+ */
+static ILScopeData *FindInNamespace(ILScope *scope, const char *name,
+									const char *namespace)
+{
+	ILType *type;
+
+	/* Search for an actual type in the namespace */
+	type = ILFindNonSystemType(&CCCodeGen, name, namespace);
+	if(!type)
+	{
+		return 0;
+	}
+
+	/* Convert builtin classes to their primitive forms */
+	type = ILClassToType(ILTypeToClass(&CCCodeGen, type));
+	if(!type)
+	{
+		return 0;
+	}
+
+	/* Add an entry to the scope for next time */
+	ILScopeDeclareItem(scope, name, C_SCDATA_TYPEDEF, 0, 0, type);
+	return ILScopeLookup(scope, name, 0);
+}
+
 void *CScopeLookup(const char *name)
 {
-	return (void *)ILScopeLookup(CCurrentScope, name, 1);
+	ILScopeData *data;
+	int using;
+
+	/* If we are pushed into a namespace, then use that as the scope */
+	if(CurrNamespace.len > 0)
+	{
+		/* See if we already have an entry in this namespace */
+		data = ILScopeLookupInNamespace
+			(CGlobalScope, CurrNamespace.string, name);
+		if(data)
+		{
+			return (void *)data;
+		}
+
+		/* Find the type and add it */
+		return (void *)FindInNamespace
+			(ILScopeFindNamespace(CGlobalScope, CurrNamespace.string),
+			 name, CurrNamespace.string);
+	}
+
+	/* Use the normal lookup rules to find the name */
+	data = ILScopeLookup(CCurrentScope, name, 1);
+	if(data)
+	{
+		return (void *)data;
+	}
+
+	/* Look in the "using" namespaces for a type */
+	for(using = 0; using < numUsingScopes; ++using)
+	{
+		data = FindInNamespace(CGlobalScope, name, usingScopes[using]);
+		if(data)
+		{
+			return (void *)data;
+		}
+	}
+
+	/* We were unable to find the identifier */
+	return 0;
 }
 
 void *CScopeLookupCurrent(const char *name)
@@ -95,10 +163,23 @@ void *CScopeLookupCurrent(const char *name)
 
 int CScopeIsTypedef(const char *name)
 {
-	ILScopeData *data = ILScopeLookup(CCurrentScope, name, 1);
+	void *data = CScopeLookup(name);
 	if(data != 0)
 	{
-		return (ILScopeDataGetKind(data) == C_SCDATA_TYPEDEF);
+		return (CScopeGetKind(data) == C_SCDATA_TYPEDEF);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int CScopeIsNamespace(const char *name)
+{
+	void *data = CScopeLookup(name);
+	if(data != 0)
+	{
+		return (CScopeGetKind(data) == IL_SCOPE_SUBSCOPE);
 	}
 	else
 	{
@@ -108,8 +189,7 @@ int CScopeIsTypedef(const char *name)
 
 void *CScopeLookupStructOrUnion(const char *name, int structKind)
 {
-	return (void *)ILScopeLookup
-		(CCurrentScope, StructScopeName(name, structKind), 1);
+	return CScopeLookup(StructScopeName(name, structKind));
 }
 
 int CScopeHasStructOrUnion(const char *name, int structKind)
@@ -126,7 +206,7 @@ void CScopeAddStructOrUnion(const char *name, int structKind, ILType *type)
 
 void *CScopeLookupEnum(const char *name)
 {
-	return (void *)ILScopeLookup(CCurrentScope, EnumScopeName(name), 1);
+	return CScopeLookup(EnumScopeName(name));
 }
 
 int CScopeHasEnum(const char *name)
@@ -215,6 +295,55 @@ void CScopeUpdateGlobal(void *data, int kind, ILNode *node, ILType *type)
 void CScopeAddUndeclared(const char *name)
 {
 	ILScopeDeclareItem(CGlobalScope, name, C_SCDATA_UNDECLARED, 0, 0, 0);
+}
+
+void CScopeUsingNamespace(const char *name)
+{
+	char *interned = (ILInternString((char *)name, -1)).string;
+	int using;
+	ILScopeDeclareNamespace(CGlobalScope, interned);
+	for(using = 0; using < numUsingScopes; ++using)
+	{
+		if(usingScopes[using] == interned)
+		{
+			/* We already have this namespace */
+			return;
+		}
+	}
+	if((usingScopes = (char **)ILRealloc
+			(usingScopes, (numUsingScopes + 1) * sizeof(char *))) == 0)
+	{
+		CCOutOfMemory();
+	}
+	usingScopes[numUsingScopes++] = interned;
+}
+
+void CScopePushNamespace(char *name)
+{
+	if(CurrNamespace.len != 0)
+	{
+		CurrNamespace = ILInternAppendedString
+			(CurrNamespace,
+			 ILInternAppendedString
+			 	(ILInternString(".", 1), ILInternString(name, -1)));
+	}
+	else
+	{
+		CurrNamespace = ILInternString(name, -1);
+	}
+}
+
+void CScopePopNamespace(char *name)
+{
+	if(CurrNamespace.len == strlen(name))
+	{
+		CurrNamespace = ILInternString("", 0);
+	}
+	else
+	{
+		CurrNamespace = ILInternString
+			(CurrNamespace.string, CurrNamespace.len - strlen(name) - 1);
+	}
 }
 
 int CScopeGetKind(void *data)

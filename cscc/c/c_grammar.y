@@ -823,6 +823,39 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 }
 
 /*
+ * Process a C# type that is being imported into the global scope
+ * via a "using Type" declaration.
+ */
+static void ProcessUsingTypeDeclaration(ILType *type, ILNode *declNode)
+{
+	ILClass *classInfo;
+	char *name;
+	void *data;
+
+	/* Get the name of the type, without its namespace */
+	classInfo = ILTypeToClass(&CCCodeGen, type);
+	name = ILInternString((char *)ILClass_Name(classInfo), -1).string;
+
+	/* See if we already have a declaration for this name */
+	data = CScopeLookupCurrent(name);
+	if(data)
+	{
+		/* Don't report an error if the name is already defined
+		   with this type, just in case the user has declared the
+		   same "using Type" in multiple places (e.g. header files) */
+		if(CScopeGetKind(data) != C_SCDATA_TYPEDEF ||
+		   !CTypeIsIdentical(CScopeGetType(data), type))
+		{
+			ReportRedeclared(name, declNode, data);
+		}
+		return;
+	}
+
+	/* Add the name as a "typedef" to the scope */
+	CScopeAddTypedef(name, type, declNode);
+}
+
+/*
  * Evaluate a constant expression to an "unsigned int" value.
  * Used for array and bit field sizes.
  */
@@ -1002,6 +1035,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token WSTRING_LITERAL		"a wide string literal"
 %token CS_STRING_LITERAL	"a C# string literal"
 %token TYPE_NAME			"a type identifier"
+%token NAMESPACE_NAME		"a namespace identifier"
 
 /*
  * Operators.
@@ -1094,12 +1128,14 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_TRUE			"`__true__'"
 %token K_FALSE			"`__false__'"
 %token K_LOCK			"`__lock__'"
+%token K_USING			"`__using__'"
+%token K_NAMESPACE		"`__namespace__'"
 %token K_CS_TYPEOF		"`__typeof'"
 
 /*
  * Define the yylval types of the various non-terminals.
  */
-%type <name>		IDENTIFIER TYPE_NAME
+%type <name>		IDENTIFIER TYPE_NAME NAMESPACE_NAME
 %type <integer>		INTEGER_CONSTANT
 %type <real>		FLOAT_CONSTANT IMAG_CONSTANT
 %type <string>		STRING_LITERAL WSTRING_LITERAL StringLiteral
@@ -1139,12 +1175,13 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <catchInfo>	CatchNameInfo
 
 %type <type>		CSharpSpecifier CSharpType CSharpBuiltinType
-%type <node>		QualifiedIdentifier
+%type <node>		QualifiedIdentifier TypeOrNamespaceDesignator
 %type <kind>		DimensionSeparators DimensionSeparatorList
 
 %type <node>		FunctionBody Attributes AttributeList Attribute
 
 %type <type>		TypeName StructOrUnionSpecifier EnumSpecifier
+%type <type>		NamespaceQualifiedType NamespaceQualifiedRest
 
 %type <declSpec>	StorageClassSpecifier TypeSpecifier DeclarationSpecifiers
 %type <declSpec>	TypeSpecifierList
@@ -1162,6 +1199,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 AnyIdentifier
 	: IDENTIFIER
 	| TYPE_NAME
+	| NAMESPACE_NAME
 	;
 
 Identifier
@@ -1837,6 +1875,7 @@ TypeSpecifier
 				ILType *type = CScopeGetType(CScopeLookup($1));
 				CDeclSpecSetType($$, type);
 			}
+	| NamespaceQualifiedType		{ CDeclSpecSetType($$, $1); }
 	| CSharpSpecifier	{ CDeclSpecSetType($$, $1); }
 	;
 
@@ -2980,6 +3019,7 @@ ExternalDefinition
 				yynodepush();
 			}
 	| Declaration			{ /* Nothing to do here */ }
+	| UsingDeclaration
 	| error ';'
 	| error '}'
 	| ';'
@@ -3224,5 +3264,64 @@ FunctionBody
 				{
 					$$ = ILNode_Empty_create();
 				}
+			}
+	;
+
+UsingDeclaration
+	: K_USING K_NAMESPACE TypeOrNamespaceDesignator ';'		{
+				CScopeUsingNamespace(ILQualIdentName($3, 0));
+			}
+	| K_USING TypeOrNamespaceDesignator ';'		{
+				ILType *type = CTypeFromCSharp(&CCCodeGen, 0, $2);
+				if(type)
+				{
+					ProcessUsingTypeDeclaration(type, $2);
+				}
+				else
+				{
+					CCError(_("could not resolve `%s' as a C# type"),
+							ILQualIdentName($2, 0));
+				}
+			}
+	| K_USING '[' QualifiedIdentifier ']' TypeOrNamespaceDesignator ';'	{
+				ILType *type = CTypeFromCSharp
+					(&CCCodeGen, ILQualIdentName($3, 0), $5);
+				if(type)
+				{
+					ProcessUsingTypeDeclaration(type, $5);
+				}
+				else
+				{
+					CCError(_("could not resolve `[%s]%s' as a C# type"),
+							ILQualIdentName($3, 0), ILQualIdentName($5, 0));
+				}
+			}
+	;
+
+TypeOrNamespaceDesignator
+	: AnyIdentifier		{ $$ = ILQualIdentSimple($1); }
+	| TypeOrNamespaceDesignator COLON_COLON_OP AnyIdentifier	{
+				$$ = ILNode_QualIdent_create($1, ILQualIdentSimple($3));
+			}
+	;
+
+NamespaceQualifiedType
+	: NAMESPACE_NAME COLON_COLON_OP {
+				CScopePushNamespace($1);
+			} NamespaceQualifiedRest {
+				CScopePopNamespace($1);
+				$$ = $4;
+			}
+	;
+
+NamespaceQualifiedRest
+	: TYPE_NAME		{
+				$$ = CScopeGetType(CScopeLookup($1));
+			}
+	| NAMESPACE_NAME COLON_COLON_OP {
+				CScopePushNamespace($1);
+			} NamespaceQualifiedRest {
+				CScopePopNamespace($1);
+				$$ = $4;
 			}
 	;

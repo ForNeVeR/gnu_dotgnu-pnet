@@ -623,11 +623,17 @@ static ILMember *FindInterfaceMatchInParents(ILClass *classInfo,
 {
 	ILImplements *impl = 0;
 	ILMember *member;
+	ILClass *interface;
+
 	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 	{
-		member = FindInterfaceMatch
-			(ILClassResolve(ILImplementsGetInterface(impl)),
-			 name, signature, kind);
+		interface = ILClassResolve(ILImplementsGetInterface(impl));
+		member = FindInterfaceMatch(interface, name, signature, kind);
+		if(member)
+		{
+			return member;
+		}
+		member = FindInterfaceMatchInParents(interface, name, signature, kind);
 		if(member)
 		{
 			return member;

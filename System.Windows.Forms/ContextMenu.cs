@@ -23,6 +23,7 @@ namespace System.Windows.Forms
 {
 
 using System.Drawing;
+using System.Windows.Forms.Themes;
 
 public class ContextMenu : Menu
 {
@@ -114,7 +115,11 @@ public class ContextMenu : Menu
 	private void popupControl_Paint(Object sender, PaintEventArgs e)
 			{
 				Graphics g = e.Graphics;
-				g.DrawRectangle(BorderPen, 0, 0, popupControl.Width - 1, popupControl.Height - 1);
+				Rectangle rect = popupControl.ClientRectangle;
+				ThemeManager.MainPainter.DrawButton
+					(g, rect.X, rect.Y, rect.Width, rect.Height,
+					 ButtonState.Normal, SystemColors.MenuText,
+					 SystemColors.Menu, false);
 				// Draw the menu items
 				for (int i = 0; i < MenuItems.Count; i++)
 					DrawMenuItem(g, i, false);

@@ -1758,6 +1758,19 @@ internal class DefaultThemePainter : IThemePainter
 				// TODO
 			}
 
+	// Draw a menu separator line.
+	public virtual void DrawSeparator(Graphics graphics, Rectangle rectangle)
+			{
+				int x = rectangle.X + 2;
+				int width = rectangle.Width - 4;
+				int y = rectangle.Y + (rectangle.Height / 2);
+				graphics.DrawLine
+					(SystemPens.ControlDark, x, y, x + width - 1, y);
+				graphics.DrawLine
+					(SystemPens.ControlLightLight, x, y + 1,
+					 x + width - 1, y + 1);
+			}
+
 }; // class DefaultThemePainter
 
 }; // namespace System.Windows.Forms.Themes

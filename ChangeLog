@@ -1,4 +1,11 @@
 
+2003-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/ContextMenu.cs, System.Windows.Forms/Menu.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/IThemePainter.cs: improve the look
+	of menus and hide definitions that should not be in the public API.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

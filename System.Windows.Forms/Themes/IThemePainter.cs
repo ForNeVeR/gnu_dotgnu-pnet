@@ -164,6 +164,9 @@ internal interface IThemePainter
 	// Draw a filled reversible rectangle.
 	void FillReversibleRectangle(Rectangle rectangle, Color backColor);
 
+	// Draw a menu separator line.
+	void DrawSeparator(Graphics graphics, Rectangle rectangle);
+
 }; // class IThemePainter
 
 }; // namespace System.Windows.Forms.Themes

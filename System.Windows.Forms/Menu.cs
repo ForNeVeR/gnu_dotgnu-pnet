@@ -24,6 +24,7 @@ namespace System.Windows.Forms
 using System.ComponentModel;
 using System.Collections;
 using System.Drawing;
+using System.Windows.Forms.Themes;
 
 public abstract class Menu
 #if CONFIG_COMPONENT_MODEL
@@ -35,10 +36,7 @@ public abstract class Menu
 	internal MenuItem[] itemList;
 	private MenuItemCollection items;
 	private int suppressUpdates;
-	// The bounds of each item
 	protected Rectangle[] itemBounds;
-	private static Brush backBrush, foreBrush, highlightBrush, highlightTextBrush;
-	private static Pen seperatorPen, borderPen;
 	private StringFormat format;
 
 	// Constructor.
@@ -189,7 +187,7 @@ public abstract class Menu
 			}
 
 	// Offset from each item to the menu text.
-	protected virtual Point ItemPaddingOrigin
+	internal virtual Point ItemPaddingOrigin
 			{
 				get
 				{
@@ -198,7 +196,7 @@ public abstract class Menu
 			}
 
 	// How much bigger each item is than the text.
-	protected Size ItemPaddingSize
+	internal Size ItemPaddingSize
 			{
 				get
 				{
@@ -207,7 +205,7 @@ public abstract class Menu
 			}
 
 	// Padding offset from top left of menu.
-	protected virtual Point MenuPaddingOrigin
+	internal virtual Point MenuPaddingOrigin
 			{
 				get
 				{
@@ -216,7 +214,7 @@ public abstract class Menu
 			}
 
 	// How much bigger the menu is than the text.
-	protected Size MenuPaddingSize
+	internal Size MenuPaddingSize
 			{
 				get
 				{
@@ -224,7 +222,7 @@ public abstract class Menu
 				}
 			}
 
-	protected void DrawMenuItem(Graphics g, int item, bool highlighted)
+	internal void DrawMenuItem(Graphics g, int item, bool highlighted)
 			{
 				Rectangle bounds = itemBounds[item];
 						
@@ -237,8 +235,8 @@ public abstract class Menu
 				MenuItem menuItem = itemList[item];
 				if (menuItem.Text == "-")
 				{
-					g.FillRectangle(BackBrush, bounds);
-					g.DrawLine(SeperatorPen, bounds.X + 3, bounds.Y + 2, bounds.Right - 6, bounds.Y + 2);
+					g.FillRectangle(SystemBrushes.Menu, bounds);
+					ThemeManager.MainPainter.DrawSeparator(g, bounds);
 				}
 				else
 				{
@@ -249,12 +247,16 @@ public abstract class Menu
 					}
 					else
 					{
-						Brush fore = ForeBrush;
-						Brush back = BackBrush;
+						Brush fore, back;
 						if (highlighted)
 						{
-							fore = HighlightTextBrush;
-							back = HighlightBrush;
+							fore = SystemBrushes.HighlightText;
+							back = SystemBrushes.Highlight;
+						}
+						else
+						{
+							fore = SystemBrushes.MenuText;
+							back = SystemBrushes.Menu;
 						}
 						g.FillRectangle(back, bounds);
 						g.DrawString(menuItem.Text, SystemInformation.MenuFont, fore, textBounds, format);
@@ -269,7 +271,7 @@ public abstract class Menu
 				}
 			}
 
-	protected int ItemFromPoint(Point p)
+	internal int ItemFromPoint(Point p)
 			{
 				if (itemBounds == null)
 					return -1;
@@ -282,68 +284,6 @@ public abstract class Menu
 			}
 
 	
-	protected Brush BackBrush
-	{
-		get
-		{
-			if (backBrush == null)
-				backBrush = new SolidBrush(SystemColors.Menu);
-			return backBrush;
-		}
-	}
-	
-	protected Brush ForeBrush
-	{
-		get
-		{
-			if (foreBrush == null)
-				foreBrush = new SolidBrush(SystemColors.MenuText);
-			return foreBrush;
-		}
-	}
-
-	protected Pen SeperatorPen
-	{
-		get
-		{
-			if (seperatorPen == null)
-				// TODO: Which system color?
-				seperatorPen = new Pen(SystemColors.ControlLightLight);
-			return seperatorPen;
-		}
-	}
-
-	protected Pen BorderPen
-	{
-		get
-		{
-			if (borderPen == null)
-				// TODO: Which system color;
-				borderPen = new Pen(SystemColors.MenuText);
-			return borderPen;
-		}
-	}
-
-	protected Brush HighlightBrush
-	{
-		get
-		{
-			if (highlightBrush == null)
-				highlightBrush = new SolidBrush(SystemColors.Highlight);
-			return highlightBrush;
-		}
-	}
-
-	protected Brush HighlightTextBrush
-	{
-		get
-		{
-			if (highlightTextBrush == null)
-				highlightTextBrush = new SolidBrush(SystemColors.HighlightText);
-			return highlightTextBrush;
-		}
-	}
-
 	// Collection of menu items.
 	public class MenuItemCollection : IList
 	{

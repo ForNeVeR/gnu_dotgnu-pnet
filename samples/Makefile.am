@@ -1,7 +1,7 @@
 ## Build the example programs.
 
 noinst_DATA = evenodd.exe hello.exe fib.exe getenv.exe except.exe \
-			  codepage.exe
+			  codepage.exe httpsrv.exe
 
 evenodd.exe: evenodd.il
 	../ilasm/ilasm -o evenodd.exe evenodd.il
@@ -23,6 +23,11 @@ except.exe: except.cs
 	../cscc/cscc -fplugin-cs-path=../cscc/cscc-cs \
 		-filasm-path=../ilasm/ilasm -filalink-path=../ilalink/ilalink \
 		-g -o except.exe except.cs
+		
+httpsrv.exe: httpsrv.cs
+	../cscc/cscc -lSystem -fplugin-cs-path=../cscc/cscc-cs \
+		-filasm-path=../ilasm/ilasm -filalink-path=../ilalink/ilalink \
+		-o httpsrv.exe httpsrv.cs
 
 codepage.exe: codepage.cs
 	../cscc/cscc -fplugin-cs-path=../cscc/cscc-cs \

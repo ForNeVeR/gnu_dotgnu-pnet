@@ -3,6 +3,9 @@
 
 	* engine/lib_reflect.c: Internal call for Type[] Assembly.GetTypes(),
 	as a temporary solution until we support mutiple module assemblies.
+
+	* samples/httpsrv.cs, samples/Makefile.am : A sample of a network 
+	based app, a very minimal http server.
 	
 2002-06-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 

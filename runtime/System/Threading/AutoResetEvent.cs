@@ -24,10 +24,12 @@ namespace System.Threading
 {
 	using System.Runtime.CompilerServices;
 
+#if !ECMA_COMPAT
+
 	/// <summary>
 	/// See ECMA specs.
 	/// </summary>
-	public class AutoResetEvent
+	public sealed class AutoResetEvent
 		: WaitHandle
 	{
 		/// <summary>
@@ -58,4 +60,7 @@ namespace System.Threading
 			return WaitEvent.InternalResetEvent(Handle);
 		}
 	}
+
+#endif // !ECMA_COMPAT
+
 }

@@ -26,8 +26,12 @@ namespace System.Threading
 	/// <summary>
 	/// See ECMA specs.
 	/// </summary>
-	public class ManualResetEvent
-		: WaitHandle
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	sealed class ManualResetEvent : WaitHandle
 	{
 		/// <summary>
 		/// See ECMA specs.
@@ -57,4 +61,5 @@ namespace System.Threading
 			return WaitEvent.InternalResetEvent(Handle);
 		}
 	}
+
 }

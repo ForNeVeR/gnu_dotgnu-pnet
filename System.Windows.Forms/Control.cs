@@ -347,12 +347,12 @@ public class Control : IWin32Window
 			{
 				get
 				{
-					return new Rectangle(top, left, width, height);
+					return new Rectangle(left, top, width, height);
 				}
 				set
 				{
-					SetBoundsCore(top, left, width, height,
-								  BoundsSpecified.All);
+					SetBoundsCore(value.Left, value.Top, value.Width, 
+									value.Height, BoundsSpecified.All);
 				}
 			}
 	public bool CanFocus

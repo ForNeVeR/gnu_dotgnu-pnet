@@ -583,8 +583,10 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 				continue;
 			}
 			argType=ILTypeGetParam(signature,1);
-			if(ILCanCoerceKind(info,returnType,toType,kinds,0) && 
-				ILCanCoerceKind(info,fromType,argType,kinds,0))
+			if(((ILCanCoerceKind(info,returnType,toType,kinds,0) && 
+				ILCanCoerceKind(info,fromType,argType,kinds,0))) 
+				|| ((explicit && ILCanCastKind(info,returnType,toType,
+				kinds,0) && ILCanCastKind(info,fromType,argType,kinds,0))))
 			{
 				if(itype1)(*itype1)=argType;
 				if(itype2)(*itype2)=returnType;
@@ -624,8 +626,10 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 			}
 			argType=ILTypeGetParam(signature,1);
 
-			if(ILCanCoerceKind(info,returnType,toType,kinds,0) && 
-				ILCanCoerceKind(info,fromType,argType,kinds,0))
+			if(((ILCanCoerceKind(info,returnType,toType,kinds,0) && 
+				ILCanCoerceKind(info,fromType,argType,kinds,0))) 
+				|| ((explicit && ILCanCastKind(info,returnType,toType,
+				kinds,0) && ILCanCastKind(info,fromType,argType,kinds,0))))
 			{
 				if(itype1)(*itype1)=argType;
 				if(itype2)(*itype2)=returnType;
@@ -640,8 +644,10 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 	if(!explicit)return 0;
 	
 	/* start explicit checks */
+	
 	arg1Class = ILTypeToClass(info, fromType);
 	arg2Class = ILTypeToClass(info, toType);	
+
 	while(arg1Class != 0)
 	{
 		arg1Class= ILClassResolve(arg1Class);
@@ -676,8 +682,8 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 			{
 				if(itype1)(*itype1)=argType;
 				if(itype2)(*itype2)=returnType;
-				GetConvertRules(info,fromType,argType,0,kinds,rules1);
-				GetConvertRules(info,returnType,toType,0,kinds,rules2);
+				GetConvertRules(info,fromType,argType,1,kinds,rules1);
+				GetConvertRules(info,returnType,toType,1,kinds,rules2);
 				return 1;
 			}
 		}
@@ -718,7 +724,7 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 				if(itype1)(*itype1)=argType;
 				if(itype2)(*itype2)=returnType;
 				GetConvertRules(info,fromType,argType,0,kinds,rules1);
-				GetConvertRules(info,returnType,toType,0,kinds,rules2);
+				GetConvertRules(info,returnType,toType,1,kinds,rules2);
 				return 1;
 			}
 		}
@@ -1021,7 +1027,7 @@ int ILCoerceKind(ILGenInfo *info, ILNode *node, ILNode **parent,
 	{
 		ApplyRules(info, node, parent, &rules, t1);
 		ILCoerceKind(info,*parent,parent,t1,t2,kinds,0);
-		ApplyRules(info, *parent, parent, &rules, toType);
+		ApplyRules(info, *parent, parent, &rules2, toType);
 		return 1;
 	}
 	else
@@ -1074,11 +1080,11 @@ int ILCast(ILGenInfo *info, ILNode *node, ILNode **parent,
 		ApplyRules(info, node, parent, &rules, toType);
 		return 1;
 	}
-	else if(GetIndirectConvertRules(info,fromType,toType,1, 
+	else if(indirect && GetIndirectConvertRules(info,fromType,toType,1, 
 							IL_CONVERT_ALL,&rules,&rules2,&t1,&t2))
 	{
 		ApplyRules(info, node, parent, &rules, t1);
-		ILCast(info,*parent,parent,t1,t2,indirect);
+		ILCast(info,*parent,parent,t1,t2,0);
 		ApplyRules(info, *parent, parent, &rules2, toType);
 		return 1;
 	}
@@ -1105,7 +1111,7 @@ int ILCastKind(ILGenInfo *info, ILNode *node, ILNode **parent,
 	{
 		ApplyRules(info, node, parent, &rules, t1);
 		ILCastKind(info,*parent,parent,t1,t2,kinds,0);
-		ApplyRules(info, *parent, parent, &rules, toType);
+		ApplyRules(info, *parent, parent, &rules2, toType);
 		return 1;
 	}
 	else

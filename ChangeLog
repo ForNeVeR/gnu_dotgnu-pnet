@@ -10,6 +10,9 @@
 	* codegen/cg_coerce.c: Implement explicit multiple conversions using
 	GetIndirectConvertRules and remove explicit flag from sub-conversions.
 
+	* codegen/cg_coerce.c: Add extra cases of compatible conversions, with
+	explicit conversions .
+
 2002-11-18  Robert Hwang <hwang_rob@yahoo.ca>
 
 	* image/member.c, image/class.c, include/il_program.h: a patch to allow

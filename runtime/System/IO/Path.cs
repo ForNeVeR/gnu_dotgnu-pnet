@@ -36,8 +36,13 @@ namespace System.IO
 		public static readonly char DirectorySeparatorChar = p.dirSeparator;
 		public static readonly char AltDirectorySeparatorChar = p.altDirSeparator;
 		public static readonly char PathSeparator = p.pathSeparator;
+#if ECMA_COMPAT
+		internal static readonly char VolumeSeparatorChar = p.volumeSeparator;
+		internal static readonly char[] InvalidPathChars = p.invalidPathChars;
+#else
 		public static readonly char VolumeSeparatorChar = p.volumeSeparator;
 		public static readonly char[] InvalidPathChars = p.invalidPathChars;
+#endif
 
 		// entropy for GetTempFilename()
 		static Random r=new Random();

@@ -98,7 +98,7 @@ public class XmlConvert
 	};
 
 	// Constructor.
-	protected XmlConvert() {}
+	public XmlConvert() {}
 
 	// Determine if a character is hexadecimal.
 	private static bool IsHex(char ch)

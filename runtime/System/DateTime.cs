@@ -716,7 +716,12 @@ public struct DateTime : IComparable, IFormattable
 					}
 				}
 			}
-	public System.DayOfWeek DayOfWeek
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	System.DayOfWeek DayOfWeek
 			{
 				get
 				{
@@ -902,6 +907,8 @@ public struct DateTime : IComparable, IFormattable
 									hour, minute, second, fractions);
 			}
 
+#if !ECMA_COMPAT
+
 	// Get this DateTime value in a variety of formats.
 	[TODO]
 	public String[] GetDateTimeFormats()
@@ -927,6 +934,8 @@ public struct DateTime : IComparable, IFormattable
 				// TODO
 				return null;
 			}
+
+#endif // !ECMA_COMPAT
 
 	// Convert this DateTime value into local time.
 	public DateTime ToLocalTime()

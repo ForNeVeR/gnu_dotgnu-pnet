@@ -238,9 +238,7 @@ public class FileStream : Stream
 	// Destructor.
 	~FileStream()
 			{
-				// Nothing to do here: the parent class does
-				// the actual work.  However, we have to declare
-				// this destructor because ECMA requires it.
+				Dispose(false);
 			}
 
 	// Asynchronous operations - let the base class do the work.
@@ -332,37 +330,15 @@ public class FileStream : Stream
 				}
 			}
 
-#if ECMA_COMPAT
-	// Close the stream.
-	public override void Close()
-			{
-				lock(this)
-				{
-					if(handle != invalidHandle)
-					{
-						if(bufferOwnedByWrite)
-						{
-							FlushWriteBuffer();
-						}
-						if(ownsHandle)
-						{
-							FileMethods.Close(handle);
-						}
-						handle = invalidHandle;
-					}
-				}
-			}
-#else	// !ECMA_COMPAT
 	// Close the stream.
 	public override void Close()
 			{
 				Dispose(true);
+				GC.SuppressFinalize(this);
 			}
-#endif	// !ECMA_COMPAT
 
-#if !ECMA_COMPAT
 	// Dispose of this stream.
-	protected override void Dispose(bool disposing)
+	protected virtual void Dispose(bool disposing)
 			{
 				lock(this)
 				{
@@ -380,7 +356,6 @@ public class FileStream : Stream
 					}
 				}
 			}
-#endif
 
 	// Flush the pending contents in this stream.
 	public override void Flush()

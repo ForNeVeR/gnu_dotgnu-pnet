@@ -154,7 +154,7 @@ public class CryptoStream : Stream, IDisposable
 				Dispose(true);
 				GC.SuppressFinalize(this);
 			}
-	new protected virtual void Dispose(bool disposing)
+	protected virtual void Dispose(bool disposing)
 			{
 				if(inBuffer != null)
 				{

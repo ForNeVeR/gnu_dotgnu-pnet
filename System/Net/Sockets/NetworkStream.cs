@@ -110,14 +110,11 @@ public class NetworkStream : Stream
 	public override void Close()
 			{
 				Dispose(true);
+				GC.SuppressFinalize(this);
 			}
 
 	// Dispose of this stream.
-#if ECMA_COMPAT
 	protected virtual void Dispose(bool disposing)
-#else
-	protected override void Dispose(bool disposing)
-#endif
 			{
 				lock(this)
 				{

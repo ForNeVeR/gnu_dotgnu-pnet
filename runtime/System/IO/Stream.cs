@@ -32,16 +32,6 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 	// Constructor.
 	protected Stream() {}
 
-	// Destructor.
-	~Stream()
-			{
-			#if ECMA_COMPAT
-				Close();
-			#else
-				Dispose(false);
-			#endif
-			}
-
 	// Asynchronous read/write control class.
 	private sealed class AsyncControl : IAsyncResult
 	{
@@ -281,9 +271,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 	// Close the stream.
 	public virtual void Close()
 			{
-			#if !ECMA_COMPAT
-				Dispose(true);
-			#endif
+				// Nothing to do here.
 			}
 
 	// Create a wait handle for asynchronous operations.
@@ -291,14 +279,6 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 			{
 				return new ManualResetEvent(false);
 			}
-
-#if !ECMA_COMPAT
-	// Dispose of this stream.
-	protected virtual void Dispose(bool disposing)
-			{
-				// Nothing to do here: normally overridden.
-			}
-#endif
 
 	// Flush the pending contents in this stream.
 	public abstract void Flush();
@@ -329,11 +309,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 	// Implement the IDisposable interface.
 	void IDisposable.Dispose()
 			{
-			#if ECMA_COMPAT
 				Close();
-			#else
-				Dispose(true);
-			#endif
 			}
 
 	// Write a buffer of bytes to this stream.

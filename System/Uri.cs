@@ -604,8 +604,7 @@ public class Uri : MarshalByRefObject
 
 	protected virtual bool IsBadFileSystemCharacter(char character)
 	{
-		return (Array.IndexOf(Path.InvalidPathChars, character)
-			>= 0);
+		return ("\"<>|\r\n".IndexOf(character) != -1);
 	}
 
 	protected static bool IsExcludedCharacter(char character)

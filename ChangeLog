@@ -10,6 +10,16 @@
 	* runtime/*: minor tweaks to a lot of classes to make them more
 	signature compatible with .NET Framework SDK 1.1.
 
+	* System/Uri.cs, System/Net/Sockets/NetworkStream.cs,
+	System.Xml/XmlConvert.cs, runtime/System/ArgumentOutOfRangeException.cs,
+	runtime/System/Array.cs, runtime/System/DateTime.cs,
+	runtime/System/IO/FileStream.cs, runtime/System/IO/Path.cs,
+	runtime/System/IO/Stream.cs, runtime/System/IO/StreamReader.cs,
+	runtime/System/Reflection/ClrResourceStream.cs,
+	runtime/System/Reflection/MethodAttributes.cs,
+	runtime/System/Security/Cryptography/CryptoStream.cs:
+	ECMA-compatibility fixes.
+
 2003-04-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/IO.txt, runtime/System/IO/FileStream.cs,

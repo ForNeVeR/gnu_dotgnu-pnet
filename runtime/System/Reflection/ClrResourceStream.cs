@@ -78,7 +78,6 @@ internal sealed class ClrResourceStream : Stream
 				}
 			}
 
-#if ECMA_COMPAT
 	// Close the stream.
 	public override void Close()
 			{
@@ -87,30 +86,12 @@ internal sealed class ClrResourceStream : Stream
 					handle = IntPtr.Zero;
 				}
 			}
-#else	// !ECMA_COMPAT
-	// Close the stream.
-	public override void Close()
-			{
-				Dispose(true);
-			}
-#endif	// !ECMA_COMPAT
 
 	// Create a wait handle for asynchronous operations.
 	protected override WaitHandle CreateWaitHandle()
 			{
 				throw new NotSupportedException(_("IO_NotSupp_Async"));
 			}
-
-#if !ECMA_COMPAT
-	// Dispose of this stream.
-	protected override void Dispose(bool disposing)
-			{
-				lock(this)
-				{
-					handle = IntPtr.Zero;
-				}
-			}
-#endif
 
 	// Flush the pending contents in this stream.
 	public override void Flush()

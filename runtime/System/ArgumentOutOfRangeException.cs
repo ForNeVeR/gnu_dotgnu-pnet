@@ -62,6 +62,7 @@ public class ArgumentOutOfRangeException : ArgumentException
 					return actualValue;
 				}
 			}
+#if !ECMA_COMPAT
 	public override String Message
 			{
 				get
@@ -80,6 +81,7 @@ public class ArgumentOutOfRangeException : ArgumentException
 					}
 				}
 			}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

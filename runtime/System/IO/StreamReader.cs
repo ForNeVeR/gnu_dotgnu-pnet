@@ -175,12 +175,6 @@ public class StreamReader : TextReader
 				decoder = encoding.GetDecoder();
 			}
 
-	// Destructor.
-	~StreamReader()
-			{
-				Dispose(false);
-			}
-
 	// Detect the byte order by inspecting the first few bytes.
 	private void DetectByteOrder()
 			{

@@ -91,7 +91,7 @@ static ILCmdLineOption const options[] = {
 		"--csc-redirect         or -c",
 		"Treat <csc> tags as <compile> tags (for NAnt compatibility)."},
 	{"-m", 'm', 0, 0, 0},
-	{"--mono-corlib", 'c', 0,
+	{"--mono-corlib", 'm', 0,
 		"--mono-corlib          or -m",
 		"Use Mono's corlib instead of mscorlib during C# compiles."},
 	{"--quiet", 's', 0, 0, 0},

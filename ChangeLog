@@ -1,4 +1,8 @@
 
+2003-02-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csant/csant.c: wrong option flag for "--mono-corlib".
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial

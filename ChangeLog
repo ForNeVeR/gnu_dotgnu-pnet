@@ -1,4 +1,10 @@
 
+2002-10-23  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/Platform/DirMethods.cs, runtime/Platform/FileInfo.cs,
+	runtime/Platform/FileType.cs: integrate Charles Schuller's patches 
+	to GetFilesInDirectory
+
 2002-10-19  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Collections/ArrayList.cs: Fix MoveNext() in the

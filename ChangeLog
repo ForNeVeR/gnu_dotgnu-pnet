@@ -1,4 +1,9 @@
 
+2002-09-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_stmt.tc (ILNode_EndsInReturnImpl): flow control issue
+	with "if(x) ... else if(y) ..." statements.
+
 2002-09-26  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* engine/ilverify.c: add full method signatures to ilverify

@@ -486,6 +486,11 @@ ILNode_EndsInReturnImpl(ILNode_If)
 	{
 		return ((flags1 | flags2) & IL_ENDS_IN_CONTAINED_MASK);
 	}
+	else if((flags1 & ~IL_ENDS_IN_CONTAINED_MASK) == 0 ||
+	        (flags2 & ~IL_ENDS_IN_CONTAINED_MASK) == 0)
+	{
+		return ((flags1 | flags2) & IL_ENDS_IN_CONTAINED_MASK);
+	}
 	else
 	{
 		return (flags1 | flags2);

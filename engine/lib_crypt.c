@@ -55,6 +55,7 @@ extern	"C" {
 #define	IL_ALG_DSA_SIGN			9
 #define	IL_ALG_RSA_ENCRYPT		10
 #define	IL_ALG_RSA_SIGN			11
+#define	IL_ALG_RIPEMD160		12
 
 /*
  * Hash context header.
@@ -136,6 +137,16 @@ typedef struct
 } SHA512HashContext;
 
 /*
+ * Hash context for the RIPEMD-160 algorithm.
+ */
+typedef struct
+{
+	HashContext			hash;
+	ILRIPEMD160Context	ripemd160;
+
+} RIPEMD160HashContext;
+
+/*
  * Symmetric context for DES.
  */
 typedef struct
@@ -191,7 +202,8 @@ ILBool _IL_CryptoMethods_AlgorithmSupported(ILExecThread *_thread,
 		case IL_ALG_DES:
 		case IL_ALG_TRIPLE_DES:
 		case IL_ALG_RC2:
-		case IL_ALG_RIJNDAEL: return 1;
+		case IL_ALG_RIJNDAEL:
+		case IL_ALG_RIPEMD160: return 1;
 	}
 	return 0;
 }
@@ -285,6 +297,23 @@ ILNativeInt _IL_CryptoMethods_HashNew(ILExecThread *_thread, ILInt32 algorithm)
 			context->update = (HashUpdateFunc)ILSHA512Data;
 			context->final = (HashFinalFunc)ILSHA512Finalize;
 			ILSHA512Init(&(((SHA512HashContext *)context)->sha512));
+			return (ILNativeInt)context;
+		}
+		/* Not reached */
+
+		case IL_ALG_RIPEMD160:
+		{
+			/* Create and initialize an RIPEMD160 context */
+			context = (HashContext *)ILMalloc(sizeof(RIPEMD160HashContext));
+			if(!context)
+			{
+				ILExecThreadThrowOutOfMemory(_thread);
+				return 0;
+			}
+			context->reset = (HashResetFunc)ILRIPEMD160Init;
+			context->update = (HashUpdateFunc)ILRIPEMD160Data;
+			context->final = (HashFinalFunc)ILRIPEMD160Finalize;
+			ILRIPEMD160Init(&(((RIPEMD160HashContext *)context)->ripemd160));
 			return (ILNativeInt)context;
 		}
 		/* Not reached */

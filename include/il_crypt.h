@@ -184,6 +184,40 @@ void ILSHA384Finalize(ILSHA384Context *sha,
 					  unsigned char hash[IL_SHA384_HASH_SIZE]);
 
 /*
+ * The size of RIPEMD160 hash values.
+ */
+#define	IL_RIPEMD160_HASH_SIZE		20
+
+/*
+ * Context block for RIPEMD160.
+ */
+typedef struct _tagILRIPEMD160Context
+{
+	unsigned char	input[64];
+	ILUInt32		inputLen;
+	ILUInt32		A, B, C, D, E;
+	ILUInt64		totalLen;
+
+} ILRIPEMD160Context;
+
+/*
+ * Initialize a RIPEMD1601 context block.
+ */
+void ILRIPEMD160Init(ILRIPEMD160Context *ripem);
+
+/*
+ * Input more data into a RIPEMD1601 context block.
+ */
+void ILRIPEMD160Data(ILRIPEMD160Context *ripem,
+					 const void *buffer, unsigned long len);
+
+/*
+ * Finalize a RIPEMD1601 context block and output the hash.
+ */
+void ILRIPEMD160Finalize(ILRIPEMD160Context *ripem,
+						 unsigned char hash[IL_RIPEMD160_HASH_SIZE]);
+
+/*
  * Define the structure of a DES encryption context.
  */
 typedef struct _tagILDESContext

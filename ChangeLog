@@ -1,4 +1,23 @@
 
+2004-10-03  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/IO/Stream.cs: Fix ValidateBuffer so that the correct
+	exception is thrown if count > buffer.Length.
+
+	* runtime/System/IO/BufferedStream.cs: Fixed Length so that the buffer is
+	taken into account.
+
+	* runtime/System/IO/StreamWriter.cs: Added checks for stream == null to
+	throw the ObjectDisposedException.
+
+	* runtime/System/IO/BinaryWriter.cs: Added disposed flag and replaced check
+	for OutStream == null with a check of this flag. Moved OutStream.Close() to
+	Dispose so the stream gets closed anyway.
+
+	* runtime/System/IO/BinaryReader.cs: Added disposed flag and replaced check
+	for input == null to check of this flag. Added additional checks and
+	replaced Exceptions for compatibility reasons.
+
 2004-10-01  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/Private/XmlDocumentNavigator.cs, System.Xml/XmlNode.cs:

@@ -234,6 +234,10 @@ public class StreamWriter : TextWriter
 				int temp;
 				int index = 0;
 				int count = value.Length;
+				if(stream == null)
+				{
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
+				}
 				while(count > 0)
 				{
 					temp = bufferSize - inBufferLen;
@@ -260,6 +264,10 @@ public class StreamWriter : TextWriter
 	// Write a buffer of characters to this stream writer.
 	public override void Write(char[] buffer, int index, int count)
 			{
+				if(stream == null)
+				{
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
+				}
 				// Validate the parameters.
 				if(buffer == null)
 				{
@@ -302,6 +310,10 @@ public class StreamWriter : TextWriter
 				if(autoFlush)
 				{
 					Convert(false);
+					if(stream == null)
+					{
+						throw new ObjectDisposedException(_("IO_StreamClosed"));
+					}
 					stream.Flush();
 				}
 			}
@@ -317,6 +329,10 @@ public class StreamWriter : TextWriter
 	// Write a single character to this stream writer.
 	public override void Write(char value)
 			{
+				if(stream == null)
+				{
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
+				}
 				inBuffer[inBufferLen++] = value;
 				if(inBufferLen >= bufferSize)
 				{

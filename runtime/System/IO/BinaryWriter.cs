@@ -40,6 +40,7 @@ class BinaryWriter : IDisposable
 	private byte[]   smallBuffer;
 	private char[]   smallCharBuffer;
 	private byte[]   largeBuffer;
+	private bool	 disposed;
 
 	// Accessible internal state.
 	protected Stream OutStream;
@@ -74,6 +75,7 @@ class BinaryWriter : IDisposable
 				encoder = encoding.GetEncoder();
 				smallBuffer = new byte [16];
 				smallCharBuffer = new char [1];
+				disposed = false;
 			}
 
 	// Get the base stream that underlies this binary writer.
@@ -88,11 +90,14 @@ class BinaryWriter : IDisposable
 	// Close this stream.
 	public virtual void Close()
 			{
-				if(OutStream != null)
+				if(!disposed)
 				{
-					OutStream.Close();
+					Dispose(true);
 				}
-				Dispose(true);
+				else
+				{
+					throw new ObjectDisposedException("BinaryWriter");
+				}
 			}
 
 	// Implement the IDisposable interface.
@@ -104,21 +109,22 @@ class BinaryWriter : IDisposable
 	// Internal implementation of stream disposal.
 	protected virtual void Dispose(bool disposing)
 			{
-				if(OutStream != null)
+				if(disposing)
 				{
-					OutStream = null;
+					OutStream.Close();
 				}
 				encoding = null;
 				encoder = null;
 				smallBuffer = null;
 				smallCharBuffer = null;
 				largeBuffer = null;
+				disposed = true;
 			}
 
 	// Flush this writer.
 	public virtual void Flush()
 			{
-				if(OutStream != null)
+				if(!disposed)
 				{
 					OutStream.Flush();
 				}
@@ -127,9 +133,9 @@ class BinaryWriter : IDisposable
 	// Write the contents of the small buffer to the output stream.
 	private void WriteBuffer(int num)
 			{
-				if(OutStream == null)
+				if(disposed)
 				{
-					throw new IOException(_("IO_StreamClosed"));
+					throw new ObjectDisposedException("BinaryWriter");
 				}
 				OutStream.Write(smallBuffer, 0, num);
 			}
@@ -139,6 +145,10 @@ class BinaryWriter : IDisposable
 	// .NET Beta2 SDK defines this as "int".
 	public virtual long Seek(int offset, SeekOrigin origin)
 			{
+				if(disposed)
+				{
+					throw new ObjectDisposedException("BinaryWriter");
+				}
 				return OutStream.Seek(offset, origin);
 			}
 
@@ -295,21 +305,21 @@ class BinaryWriter : IDisposable
 	// Write an array of bytes to the output.
 	public virtual void Write(byte[] buffer)
 			{
+				if(disposed)
+				{
+					throw new ObjectDisposedException("BinaryWriter");
+				}
 				if(buffer == null)
 				{
 					throw new ArgumentNullException("buffer");
-				}
-				if(OutStream == null)
-				{
-					throw new IOException(_("IO_StreamClosed"));
 				}
 				OutStream.Write(buffer, 0, buffer.Length);
 			}
 	public virtual void Write(byte[] buffer, int index, int count)
 			{
-				if(OutStream == null)
+				if(disposed)
 				{
-					throw new IOException(_("IO_StreamClosed"));
+					throw new ObjectDisposedException("BinaryWriter");
 				}
 				OutStream.Write(buffer, index, count);
 			}
@@ -342,9 +352,9 @@ class BinaryWriter : IDisposable
 				}
 				else
 				{
-					if(OutStream == null)
+					if(disposed)
 					{
-						throw new IOException(_("IO_StreamClosed"));
+						throw new ObjectDisposedException("BinaryWriter");
 					}
 					if(largeBuffer == null || byteCount > largeBuffer.Length)
 					{
@@ -361,6 +371,10 @@ class BinaryWriter : IDisposable
 			{
 				char[] chars;
 				int byteCount;
+				if(disposed)
+				{
+					throw new ObjectDisposedException("BinaryWriter");
+				}
 				if(value == null)
 				{
 					throw new ArgumentNullException("value");

@@ -34,6 +34,7 @@ public class BinaryReader : IDisposable
 	private Decoder	 decoder;
 	private byte[]   smallBuffer;
 	private char[]	 smallCharBuffer;
+	private bool	 disposed;
 
 	// Constructors.
 	public BinaryReader(Stream input)
@@ -60,6 +61,7 @@ public class BinaryReader : IDisposable
 				decoder = encoding.GetDecoder();
 				smallBuffer = new byte [16];
 				smallCharBuffer = new char [1];
+				disposed = false;
 			}
 
 	// Get the base stream that underlies this binary reader.
@@ -74,10 +76,6 @@ public class BinaryReader : IDisposable
 	// Close this stream.
 	public virtual void Close()
 			{
-				if(input != null)
-				{
-					input.Close();
-				}
 				Dispose(true);
 			}
 
@@ -90,22 +88,27 @@ public class BinaryReader : IDisposable
 	// Internal implementation of stream disposal.
 	protected virtual void Dispose(bool disposing)
 			{
-				if(input != null)
+				if(!disposed)
 				{
+					if(disposing)
+					{
+						input.Close();
+					}
+					encoding = null;
+					decoder = null;
+					smallBuffer = null;
+					smallCharBuffer = null;
 					input = null;
+					disposed = true;
 				}
-				encoding = null;
-				decoder = null;
-				smallBuffer = null;
-				smallCharBuffer = null;
 			}
 
 	// Read a number of bytes into the small buffer.
 	protected virtual void FillBuffer(int num)
 			{
-				if(input == null)
+				if(disposed)
 				{
-					throw new IOException(_("IO_StreamClosed"));
+					throw new ObjectDisposedException("BinaryReader");
 				}
 				else if(input.Read(smallBuffer, 0, num) != num)
 				{
@@ -117,9 +120,9 @@ public class BinaryReader : IDisposable
 	public virtual int PeekChar()
 			{
 				// Bail out if the stream is invalid.
-				if(input == null)
+				if(disposed)
 				{
-					throw new IOException(_("IO_StreamClosed"));
+					throw new ObjectDisposedException("BinaryReader");
 				}
 
 				// If we cannot seek on the stream, then indicate EOF.
@@ -143,9 +146,9 @@ public class BinaryReader : IDisposable
 				byte[] newBuffer;
 
 				// Bail out if the stream is invalid.
-				if(input == null)
+				if(disposed)
 				{
-					throw new IOException(_("IO_StreamClosed"));
+					throw new ObjectDisposedException("BinaryReader");
 				}
 
 				// Keep reading bytes until we have enough for one character
@@ -187,9 +190,9 @@ public class BinaryReader : IDisposable
 	// Read a buffer of bytes.
 	public virtual int Read(byte[] buffer, int index, int count)
 			{
-				if(input == null)
+				if(disposed)
 				{
-					throw new IOException(_("IO_StreamClosed"));
+					throw new ObjectDisposedException("BinaryReader");
 				}
 				return input.Read(buffer, index, count);
 			}
@@ -203,11 +206,27 @@ public class BinaryReader : IDisposable
 				byte[] newBuffer;
 
 				// Bail out if the stream is invalid.
-				if(input == null)
+				if(disposed)
 				{
-					throw new IOException(_("IO_StreamClosed"));
+					throw new ObjectDisposedException("BinaryReader");
 				}
-
+				// Check args and bail out if they are invalid
+				if(buffer == null)
+				{
+					throw new ArgumentNullException("buffer");
+				}
+				if(index < 0)
+				{
+					throw new ArgumentOutOfRangeException("index", _("ArgRange_NonNegative"));
+				}
+				if(count < 0)
+				{
+					throw new ArgumentOutOfRangeException("count", _("ArgRange_Array"));
+				}
+				if((buffer.Length - index) < count)
+				{
+					throw new ArgumentException(_("Arg_InvalidArrayRange"));
+				}
 				// Keep reading bytes until EOF or we have enough characters
 				// to fill the buffer.
 				posn = 0;
@@ -427,7 +446,7 @@ public class BinaryReader : IDisposable
 						("count", _("ArgRange_NonNegative"));
 				}
 				buffer = ReadBytes(count);
-				if(buffer.Length <= 0 || buffer.Length!=count)
+				if(buffer.Length <= 0)
 				{
 					/* this exception fall through to the ReadString */
 					throw new EndOfStreamException(_("IO_ReadEndOfStream"));

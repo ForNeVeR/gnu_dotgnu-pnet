@@ -355,7 +355,20 @@ namespace System.IO
 		{
  			get
 			{
-				return stream.Length;
+				long streamLength = stream.Length;
+
+				if(readMode)
+				{
+					long inLength = (long)(inBufferPosn + inBufferLen);
+			
+					return inLength > streamLength ? inLength : streamLength;
+				}
+				else
+				{
+					long outLength = (long)(outBufferPosn + outBufferLen);
+
+					return outLength > streamLength ? outLength : streamLength;
+				}
 			}
  		}
 

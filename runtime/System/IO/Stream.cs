@@ -345,7 +345,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 				{
 					throw new ArgumentNullException("buffer");
 				}
-				else if(offset < 0 || offset > buffer.Length)
+				else if(offset < 0)
 				{
 					throw new ArgumentOutOfRangeException
 						("offset", _("ArgRange_Array"));
@@ -366,7 +366,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 				{
 					throw new ArgumentNullException("buffer");
 				}
-				else if(offset < 0 || offset > buffer.Length)
+				else if(offset < 0)
 				{
 					throw new ArgumentOutOfRangeException
 						("offset", _("ArgRange_Array"));

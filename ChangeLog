@@ -28,6 +28,9 @@
 	* csdoc/doc_valil.c: recognise the name forms of "AttributeTargets"
 	enum values to reduce the number of erroneous "AttributeUsage" reports.
 
+	* csdoc/doc_valil.c: handle references to attributes in foreign
+	assemblies.
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,

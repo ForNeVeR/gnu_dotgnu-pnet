@@ -1297,7 +1297,8 @@ static char *AttributeToName(ILAttribute *attr)
 	}
 
 	/* If the attribute is private, and not "TODO", then bail out */
-	if(ILClass_IsPrivate(ILMethod_Owner(method)) &&
+	if((ILClass_IsPrivate(ILMethod_Owner(method)) &&
+	    !ILClassIsRef(ILMethod_Owner(method))) &&
 	   strcmp(name, "TODOAttribute") != 0)
 	{
 		ILFree(name);

@@ -363,7 +363,7 @@ public class HttpWebResponse : WebResponse
 				int toRead = Math.Min(count, chunkSize);
 				int bytesRead = inputStream.Read ( buffer, offset, toRead );
 
-				chunkSize = chunkSize - toRead;
+				chunkSize = chunkSize - bytesRead;
 				
 				if(chunkSize == 0)
 				{

@@ -1,4 +1,9 @@
 
+2004-11-22  Erich Kitzmuller  <ammoq@ammoq.com>
+
+	* System/Net/HttpWebResponse.cs: Fix minor bug in Chunked support
+	(patch #3530, Gopal)
+	
 2004-11-22  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/String.cs, tests/runtime/System/TestString.cs: Fix

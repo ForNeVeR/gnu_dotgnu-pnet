@@ -377,7 +377,22 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 			if(!ILClass_IsInterface(classInfo))
 			{
 				/* Regular class: the value must inherit from the type */
-				return ILClassInheritsFrom(classInfo2, classInfo);
+				if(ILClassInheritsFrom(classInfo2, classInfo))
+				{
+					return 1;
+				}
+
+				/* If "classInfo2" is an interface, then the conversion
+				   is OK if "type" is "System.Object", because all
+				   interfaces inherit from "System.Object", even though
+				   the metadata doesn't explicitly say so */
+				if(ILClass_IsInterface(classInfo2))
+				{
+					return ILTypeIsObjectClass(type);
+				}
+
+				/* The conversion is not OK */
+				return 0;
 			}
 			else
 			{

@@ -355,6 +355,11 @@ unsigned long ILTypeToOtherSig(ILImage *image, ILType *type);
 int ILTypeIsStringClass(ILType *type);
 
 /*
+ * Determine if a type is "System.Object".
+ */
+int ILTypeIsObjectClass(ILType *type);
+
+/*
  * Determine if two types are assignment-compatible within
  * the context of a particular image when assigning a value
  * of type "src" to a location of type "dest".  If "src" is

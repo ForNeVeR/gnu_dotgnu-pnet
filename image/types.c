@@ -727,6 +727,31 @@ int ILTypeIsStringClass(ILType *type)
 	return 0;
 }
 
+int ILTypeIsObjectClass(ILType *type)
+{
+	ILClass *info;
+	ILImage *systemImage;
+	if(ILType_IsClass(type))
+	{
+		/* Check the name against "System.String" */
+		info = ILType_ToClass(type);
+		if(!strcmp(info->name, "Object") &&
+		   info->namespace && !strcmp(info->namespace, "System"))
+		{
+			/* Check that it is within the system image, to prevent
+			   applications from fooling us into believing that their
+			   own class is the system's string class */
+			info = ILClassResolve(info);
+			systemImage = info->programItem.image->context->systemImage;
+			if(!systemImage || systemImage == info->programItem.image)
+			{
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 /*
  * Determine if a type is represented as an object reference.
  */
@@ -795,7 +820,22 @@ int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest)
 			if(!ILClass_IsInterface(classInfo))
 			{
 				/* Regular class: the value must inherit from the type */
-				return ILClassInheritsFrom(classInfo2, classInfo);
+				if(ILClassInheritsFrom(classInfo2, classInfo))
+				{
+					return 1;
+				}
+
+				/* If "classInfo2" is an interface, then the conversion
+				   is OK if "dest" is "System.Object", because all
+				   interfaces inherit from "System.Object", even though
+				   the metadata doesn't explicitly say so */
+				if(ILClass_IsInterface(classInfo2))
+				{
+					return ILTypeIsObjectClass(dest);
+				}
+
+				/* The conversion is not OK */
+				return 0;
 			}
 			else
 			{

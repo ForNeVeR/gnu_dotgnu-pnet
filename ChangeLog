@@ -1,4 +1,9 @@
 
+2004-04-18  Gopal V <gopalv82@yahoo.com>
+
+	* runtime/System/Type.cs: Allow all interfaces to be assignable to
+	System.Object <russell@stuart.id.au> (patch #2889)
+
 2004-04-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* "Button.PerformClick" should only work when the control

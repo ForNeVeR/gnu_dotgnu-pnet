@@ -129,6 +129,10 @@ public abstract class Type
 				{
 					return c.IsImplementationOf(this);
 				}
+				else if(c.IsInterface)
+				{
+					return this == typeof(Object);
+				}
 				else
 				{
 					return false;

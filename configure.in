@@ -361,6 +361,16 @@ AC_FUNC_ALLOCA
 dnl Add the thread libraries to the end of the link line.
 LIBS="$LIBS $THREADLIBS"
 
+dnl Determine if we should compile in the tools.
+AC_ARG_ENABLE(tools,
+[  --disable-tools         Remove the developer tools from the build],
+[case "${enableval}" in
+  yes) tools=true ;;
+  no)  tools=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-tools) ;;
+esac],[tools=true])
+AM_CONDITIONAL(PNET_TOOLS, test x$tools = xtrue)
+
 dnl Set up libffi-related variables.
 AC_SUBST(FFILIBS)
 if test x$withffi = xyes ; then

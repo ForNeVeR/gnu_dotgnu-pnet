@@ -1,6 +1,16 @@
+
+if PNET_TOOLS
+
 SUBDIRS = . include support image dumpasm engine ilasm ildasm \
 		  ilalink ilsize ilnative ilheader ilfind ildiff ildd codegen cscc \
 		  resgen ildb csdoc csant clrwrap samples doc tests
+
+else
+
+## We only want to build the runtime engine.
+SUBDIRS = . include support image engine
+
+endif
 
 ## We build libffi and libgc carefully, because we need to be
 ## able to turn them off in "configure".

@@ -169,11 +169,17 @@ extern ILCoder _ILNullCoder;
  */
 static void printError(ILImage *image, ILMethod *method, const char *msg)
 {
+#ifndef IL_WITHOUT_TOOLS
 	ILDumpMethodType(stdout, image,
 					 ILMethod_Signature(method), 0,
 					 ILMethod_Owner(method),
 					 ILMethod_Name(method),
 					 method);
+#else
+	fputs(ILClass_Name(ILMethod_Owner(method)), stdout);
+	fputs(".", stdout);
+	fputs(ILMethod_Name(method), stdout);
+#endif
 	fputs(" - ", stdout);
 	fputs(msg, stdout);
 	putc('\n', stdout);

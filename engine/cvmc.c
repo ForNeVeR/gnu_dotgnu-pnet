@@ -261,7 +261,7 @@ int _ILCVMStartUnrollBlock(ILCoder *_coder, int align, ILCachePosn *posn)
 	return (ILCacheStartMethod(coder->cache, posn, align, 0) != 0);
 }
 
-#ifndef IL_CONFIG_REDUCE_CODE
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 
 /*
  * Dump method profile information.

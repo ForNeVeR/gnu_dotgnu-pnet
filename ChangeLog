@@ -16,6 +16,11 @@
 	support/test_float.c, support/time.c: port the rest of the "support"
 	layer to m68k-palmos.
 
+	* Makefile.am, configure.in, engine/Makefile.am, engine/cvmc.c,
+	engine/ilrun.c, engine/ilverify.c: add the "--disable-tools"
+	option to "configure" to enable building just the runtime engine
+	on platforms that cannot support the full developer toolchain.
+
 2003-05-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csdoc.c: avoid semantic analysis of method bodies with

@@ -9,7 +9,7 @@
 .module '<Module>'
 .class public auto sealed serializable ansi 'D1' extends ['.library']'System'.'MulticastDelegate'
 {
-.method public hidebysig specialname rtspecialname instance void '.ctor'(class ['.library']'System'.'Object' 'object', native unsigned int 'method') runtime managed {}
+.method public hidebysig specialname rtspecialname instance void '.ctor'(class ['.library']'System'.'Object' 'object', native int 'method') runtime managed {}
 .method public virtual hidebysig newslot instance class ['.library']'System'.'String' 'Invoke'(int32 'x') runtime managed {}
 } // class D1
 .class public auto ansi 'Test' extends ['.library']'System'.'Object'

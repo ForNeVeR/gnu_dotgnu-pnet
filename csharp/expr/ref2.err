@@ -1,5 +1,2 @@
-./ref2.cs:25: invalid operands to binary `+'
-./ref2.cs:26: invalid lvalue in assignment
-./ref2.cs:36: invalid lvalue in `ref' argument
 ./ref2.cs:41: no matching method for call to `m1(int)'
 ./ref2.cs:42: no matching method for call to `m2(int)'

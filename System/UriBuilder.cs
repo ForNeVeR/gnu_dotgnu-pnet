@@ -47,7 +47,7 @@ using System.Text;
 
 public class UriBuilder
 {
-	// State.
+	// State. After construction, these are never null!
 
 	// Holds the scheme information. (search 0->:)
 	private String scheme;
@@ -74,40 +74,39 @@ public class UriBuilder
 	// Constructors.
 	public UriBuilder()
 	{
-		this.fragment = String.Empty;
+		this.fragment = "";
 		// localhost, not loopback!
 		this.host = "localhost";
-		this.password = String.Empty;
-		this.path = String.Empty;
-		this.port = -1;
-		this.scheme = Uri.UriSchemeHttp;
-		this.username = String.Empty;
+		this.password = "";
+		this.path = "";
+		this.port = 80;
+		this.scheme = "http";
+		this.username = "";
 	}
 
-	public UriBuilder(String uri)
+	public UriBuilder(String uri) : this(new Uri(uri))
 	{
-		if (uri == null) throw new ArgumentNullException("uri");
-		ParseString(uri, false);
 	}
 
 	[TODO]
 	public UriBuilder(Uri uri)
 	{
+
 	}
 
 	public UriBuilder(String schemeName, String hostName) : this(schemeName,
-		hostName, -1, String.Empty, String.Empty)
+		hostName, 80, "", "")
 	{
 		// no implementation needed :)
 	}
 
 	public UriBuilder(String scheme, String host, int portNumber) :
-		this(scheme, host, portNumber, String.Empty, String.Empty)
+		this(scheme, host, portNumber, "", "")
 	{
 	}
 
 	public UriBuilder(String scheme, String host, int port, String pathValue) :
-		this(scheme, host, port, pathValue, String.Empty)
+		this(scheme, host, port, pathValue, "")
 	{
 	}
 
@@ -115,20 +114,21 @@ public class UriBuilder
 	public UriBuilder(String scheme, String host, int port, String path,
 		String extraValue)
 	{
-		this.scheme = ValidateScheme(scheme, false);
-		this.host = ValidateHost(host, false);
-		if (port < -1) throw new ArgumentOutOfRangeException("port");
+		// capitalised where using built-in validation
+		this.Scheme = scheme;
+		this.host = host;
+		if (port < 0) throw new ArgumentOutOfRangeException("port");
 		this.port = port;
 		this.path = path;
 		if (extraValue[0] == '?')
 			this.query = extraValue.Substring(1, extraValue.Length-1);
 		else if (extraValue[0] == '#')
 			this.fragment = extraValue.Substring(1, extraValue.Length-1);
-		else if (extraValue != null && extraValue != String.Empty)
+		else if (extraValue != null && extraValue.Length != 0)
 			throw new ArgumentException(_("Exception_Argument"),
 				"extraValue");
-		this.username = String.Empty;
-		this.password = String.Empty;
+		this.username = "";
+		this.password = "";
 	}
 
 	// Methods.
@@ -243,13 +243,13 @@ public class UriBuilder
 			this.query = ValidateQuery(instr.Substring(eoAuthority + 1,
 				eoSect - eoAuthority-1), escaped);
 		else
-			this.query = String.Empty;
+			this.query = "";
 
 		if (eoSect < instr.Length)
 			this.fragment = ValidateFragment(instr.Substring(eoSect+1,
 				instr.Length - eoSect-1), escaped);
 		else
-			this.fragment = String.Empty;
+			this.fragment = "";
 	}
 
 	private static String ValidateScheme(String scheme, bool escaped)
@@ -294,20 +294,20 @@ public class UriBuilder
 		get
 		{
 			// gets with the #
-			if (this.fragment == String.Empty)
+			if (this.fragment.Length != 0)
 				return this.fragment;
 			else
 				// whoops...return frag, not query!
-				return new StringBuilder(this.fragment.Length+1).Append('#').Append(this.fragment).ToString();
+				return String.Concat("#", this.fragment);
 
 		}
 		set
 		{
 			if (value == null)
-				this.fragment = String.Empty;
+				this.fragment = "";
 			else
 				this.fragment = value;
-			this.query = String.Empty;
+			this.query = "";
 		}
 	}
 
@@ -331,7 +331,10 @@ public class UriBuilder
 		}
 		set
 		{
-			this.password = value;
+			if (value == null)
+				this.password = "";
+			else
+				this.password = value;
 		}
 	}
 
@@ -348,7 +351,7 @@ public class UriBuilder
 			else if (value[0] == '/')
 				this.path = value;
 			else
-				this.path = new StringBuilder(value.Length+1).Append('/').Append(value).ToString();
+				this.path = String.Concat("/", value);
 		}
 	}
 
@@ -360,7 +363,7 @@ public class UriBuilder
 		}
 		set
 		{
-			if (value < 0 && this.scheme != Uri.UriSchemeFile)
+			if (value < 0 && !String.Equals(this.scheme, "file"))
 				throw new ArgumentOutOfRangeException("value");
 			else
 				this.port = value;
@@ -372,7 +375,7 @@ public class UriBuilder
 		get
 		{
 			// gets with the ?
-			if (this.query == String.Empty)
+			if (this.query == "")
 				return this.query;
 			else
 				return new StringBuilder(this.query.Length+1).Append('?').Append(this.query).ToString();
@@ -380,10 +383,10 @@ public class UriBuilder
 		set
 		{
 			if (value == null)
-				this.query = String.Empty;
+				this.query = "";
 			else
 				this.query = value;
-			this.fragment = String.Empty;
+			this.fragment = "";
 		}
 	}
 
@@ -396,7 +399,7 @@ public class UriBuilder
 		set
 		{
 			if (value == null)
-				this.scheme = String.Empty;
+				this.scheme = "";
 			else
 			{
 				int colon = value.IndexOf(':');

@@ -1,3 +1,6 @@
+2002-04-04  Stephen Compall  <rushing@sigecom.net>
+
+	* System/UriBuilder: little patching of constructors.
 
 2002-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -724,20 +724,20 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 /* Destroy an ILExecThread */
 void _ILExecThreadDestroy(ILExecThread *thread);
 
-/*
- * Associates a support thread with an engine thread and the engine
- * thread with the support thread.
- */
-void _ILThreadExecuteOn(ILThread *thread, ILExecThread *execThread);
+typedef struct __tagILThreadExecContext
+{
+	ILExecThread *execThread;
+}
+ILThreadExecContext;
 
-/*
- * Disassociates a support thread with an engine thread and the
- * engine thread with the support thread.
- * The support thread will no longer be able to execute managed
- * code and the engine thread will no longer be able to be used
- * to execute anything until it is reassociated using ILThreadExecuteOn.
- */
-void _ILThreadUnexecuteOn(ILThread *thread, ILExecThread *execThread);
+void _ILThreadSetExecContext(ILThread *thread, ILThreadExecContext *context,
+			ILThreadExecContext *saveContext);
+
+void _ILThreadSaveExecContext(ILThread *thread, ILThreadExecContext *saveContext);
+
+void _ILThreadRestoreExecContext(ILThread *thread, ILThreadExecContext *context);
+
+void _ILThreadClearExecContext(ILThread *thread);
 
 /*
  *	Constructs and returns a new ThreadAbortException for the given thread.

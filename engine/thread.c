@@ -81,32 +81,45 @@ ILObject *ILExecThreadCurrentClrThread()
 	return thread->clrThread;
 }
 
-/*
- * Associates a support thread with an engine thread and the engine
- * thread with the support thread.
- */
-void _ILThreadExecuteOn(ILThread *thread, ILExecThread *execThread)
+void _ILThreadSetExecContext(ILThread *thread, ILThreadExecContext *context, ILThreadExecContext *saveContext)
 {
-	ILThreadSetObject(thread, execThread);
-	execThread->supportThread = thread;
+	if (saveContext)
+	{
+		_ILThreadSaveExecContext(thread, saveContext);
+	}
+
+	ILThreadSetObject(thread, context->execThread);
+
+	context->execThread->supportThread = thread;
 }
 
-/*
- * Disassociates a support thread with an engine thread and the
- * engine thread with the support thread.
- * The support thread will no longer be able to execute managed
- * code and the engine thread will no longer be able to be used
- * to execute anything until it is reassociated using ILThreadExecuteOn.
- */
-void _ILThreadUnexecuteOn(ILThread *thread, ILExecThread *execThread)
+void _ILThreadSaveExecContext(ILThread *thread, ILThreadExecContext *saveContext)
 {
-	if (ILThreadGetObject(thread) != execThread)
+	saveContext->execThread = ILThreadGetObject(thread);
+}
+
+void _ILThreadRestoreExecContext(ILThread *thread, ILThreadExecContext *context)
+{
+	ILThreadSetObject(thread, context->execThread);
+
+	if (context->execThread)
 	{
-		return;
+		context->execThread->supportThread = thread;
+	}
+}
+
+void _ILThreadClearExecContext(ILThread *thread)
+{
+	ILExecThread *prev;
+
+	prev = ILThreadGetObject(thread);
+
+	if (prev)
+	{
+		prev->supportThread = 0;
 	}
 
 	ILThreadSetObject(thread, 0);
-	execThread->supportThread = 0;
 }
 
 /*
@@ -145,6 +158,7 @@ static void _ILIllegalMemoryAccessHandler(ILInterruptContext *context)
 ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread)
 {	
 	ILExecThread *execThread;
+	ILThreadExecContext context;
 
 	if (process->state & (_IL_PROCESS_STATE_UNLOADED | _IL_PROCESS_STATE_UNLOADING))
 	{
@@ -169,8 +183,9 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 
 	/* TODO: Notify the GC that we possibly have a new thread to be scanned */
 
-	/* Associate the new engine-level thread with the OS-level thread (and vice-versa) */
-	_ILThreadExecuteOn(thread, execThread);
+	context.execThread = execThread;
+
+	_ILThreadSetExecContext(thread, &context, 0);
 
 	/* Register a cleanup handler for the thread */
 	ILThreadRegisterCleanup(thread, ILExecThreadCleanup);
@@ -208,7 +223,7 @@ void ILThreadUnregisterForManagedExecution(ILThread *thread)
 	ILWaitMonitorEnter(monitor);
 	{
 		/* Disassociate the engine thread with the support thread */
-		_ILThreadUnexecuteOn(thread, execThread);
+		_ILThreadClearExecContext(thread);
 
 		/* Destroy the engine thread */
 		_ILExecThreadDestroy(execThread);
@@ -549,7 +564,7 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 	   haven't already been removed */
 	if (thread->supportThread)
 	{		
-		_ILThreadUnexecuteOn(thread->supportThread, thread);
+		_ILThreadClearExecContext(thread->supportThread);
 	}
 
 	/* Destroy the operand stack */

@@ -8,7 +8,22 @@
 	
 	* support/interrupt_win32.c, support/interrupt_posix.c: Tidied
 	up formatting, fixed signal() handling for posix.
+	
+	* support/thr_choose.h: Include system thread headers even if
+	boehm gc is used because it doesn't always include them.
+	
+	* support/w32_defs.c, support/w32_defs.h: Removed windows.h 
+	include because it can override boehms CreateThread macros.
 
+	* libgc/include/gc.h: Enabled GC_CreateThread prototype decl
+	on cygwin builds.
+
+	* engine/engine.h, engine/thread.c: Removed
+	_ILThreadExecuteOn/_ILThreadUnexecuteOn.  Added 
+	ILThreadExecContext struct and _ILThreadSetExecContext,
+	_ILThreadSaveExecContext, _ILThreadRestoreExecContext,
+	_ILThreadClearExecContext.
+	
 2004-06-14  Thong Nguyen  <tum@veridicus.com>
 
 	* support/hb_gc.c: Fix ILGCDisableFinalizers not atomically

@@ -107,8 +107,9 @@ void _ILFinalizeObject(void *block, void *data)
 	ILMethod *method;
 	ILThread *thread;
 	ILExecProcess *process;
-	ILExecThread *execThread;
+	ILExecThread *execThread;	
 	ILFinalizationContext *finalizationContext;
+	ILThreadExecContext newContext, saveContext;
 	
 	/* Get the finalization context */
 	finalizationContext = (ILFinalizationContext *)data;
@@ -131,7 +132,7 @@ void _ILFinalizeObject(void *block, void *data)
 
 	/* Get the finalizer thread instance */
 	thread = ILThreadSelf();
-
+	
 	if (execThread == 0)
 	{
 		/* Create a new engine thread for the finalizers of this process to run on */
@@ -146,12 +147,11 @@ void _ILFinalizeObject(void *block, void *data)
 		process->finalizerThread = execThread;
 	}
 
-	/* Make the finalizer thread execute in the context of the object's
-	   process's finalizer thread which could actually be the main thread
-	   Don't call ILThreadUnexecuteOn afterwards because single-threaded 
-	   systems share the main thread with the GC finalizer and we don't 
-	   want to make the ILExecThread for the main thread unusable */
-	_ILThreadExecuteOn(thread, execThread);
+	newContext.execThread = execThread;
+
+	/* Make the new thread execute on the finalizer ILExecThread
+	   (could be the main ILExecThread on single threaded systems) */
+	_ILThreadSetExecContext(thread, &newContext, &saveContext);
 
 	method = FindFinalizeMethod(GetObjectClassPrivate(object));
 
@@ -166,6 +166,13 @@ void _ILFinalizeObject(void *block, void *data)
 			ILExecThreadClearException(ILExecThreadCurrent());
 		}
 	}
+	
+	/* On multi-threaded systems, the finalizer ILExecThread and main
+	   ILExecThreads are distinct *but* it is possible for the main
+	   ILThread to execute finalizers (when synchronous finalization
+	   is used) so the ILThread needs to be reassociated with the
+	   original ILExecThread rather than the finalizer ILExecThread. */
+	_ILThreadRestoreExecContext(thread, &saveContext);
 }
 
 ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,

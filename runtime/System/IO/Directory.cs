@@ -265,9 +265,28 @@ namespace System.IO
 			return File.GetLastWriteTime(path);
 		}
 
-		[TODO]
 		public static void Move(string sourceDirName, string destDirName)
 		{
+			if(sourceDirName==null)
+			{
+				throw new ArgumentNullException("sourceDirName");
+			}
+			if(destDirName ==null)
+			{
+				throw new ArgumentNullException("destDirName");
+			}
+			if(sourceDirName.Length==0 || (sourceDirName.Trim()).Length==0 || 
+				sourceDirName.IndexOfAny(Path.InvalidPathChars)!= -1)
+			{
+				throw new ArgumentException("sourceDirName");
+			}
+			if(destDirName.Length==0 || (destDirName.Trim()).Length==0 || 
+				destDirName.IndexOfAny(Path.InvalidPathChars)!= -1)
+			{
+				throw new ArgumentException("destDirName");
+			}
+			Errno errno = DirMethods.Rename(sourceDirName, destDirName);
+			ThrowErrnoExceptions(errno, sourceDirName);
 		}
 
 		[TODO]

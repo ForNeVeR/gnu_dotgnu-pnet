@@ -280,6 +280,7 @@ int ILTypeAddSentinel(ILContext *context, ILType *method)
 	ILType *paramType = ILMemPoolCalloc(&(context->typePool), ILType);
 	if(paramType)
 	{
+		method->kind__ |= IL_TYPE_COMPLEX_METHOD_SENTINEL;
 		paramType->kind__ = IL_TYPE_COMPLEX_SENTINEL;
 		return ILTypeAddParam(context, method, paramType);
 	}

@@ -185,10 +185,15 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		{
 			case IL_META_MEMBERKIND_METHOD:
 			{
-				if(!_ILLinkerConvertMethod(linker, (ILMethod *)member,
-										   newClass))
+				/* Skip MemberRef tokens, which are vararg call sites */
+				if((ILMember_Token(member) & IL_META_TOKEN_MASK) !=
+						IL_META_TOKEN_MEMBER_REF)
 				{
-					return 0;
+					if(!_ILLinkerConvertMethod(linker, (ILMethod *)member,
+											   newClass))
+					{
+						return 0;
+					}
 				}
 			}
 			break;

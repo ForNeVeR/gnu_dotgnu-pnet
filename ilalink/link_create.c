@@ -109,6 +109,7 @@ static void ReportUnresolved(ILLinker *linker)
 	ILClass *parent;
 	ILMember *member;
 	int reported;
+	ILType *signature;
 
 	/* Scan the TypeRef table for unresolved types */
 	classInfo = 0;
@@ -164,6 +165,17 @@ static void ReportUnresolved(ILLinker *linker)
 	while((member = (ILMember *)ILImageNextToken
 				(linker->image, IL_META_TOKEN_MEMBER_REF, member)) != 0)
 	{
+		/* Skip method members that contain sentinels, as they
+		   correspond to vararg call sites, which are OK */
+		signature = ILMember_Signature(member);
+		if(signature != 0 && ILType_IsComplex(signature) &&
+		   ILType_Kind(signature) == (IL_TYPE_COMPLEX_METHOD |
+		   							  IL_TYPE_COMPLEX_METHOD_SENTINEL))
+		{
+			continue;
+		}
+
+		/* Perform the normal checks */
 		classInfo = ILMember_Owner(member);
 		if(!ILClassIsRef(classInfo) &&
 		   (ILMember_Token(member) & IL_META_TOKEN_MASK) ==

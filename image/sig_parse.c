@@ -447,7 +447,6 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 						return ILType_Invalid;
 					}
 					sawSentinel = 1;
-					type->kind__ |= IL_TYPE_COMPLEX_METHOD_SENTINEL;
 					--(reader->len);
 					++(reader->data);
 					if(!ILTypeAddSentinel(context, type))

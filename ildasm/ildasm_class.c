@@ -34,6 +34,13 @@ static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 	ILPInvoke *pinvoke;
 	ILOverride *over;
 
+	/* Skip the method if it is a reference (probably a vararg call site) */
+	if((ILMethod_Token(method) & IL_META_TOKEN_MASK) ==
+				IL_META_TOKEN_MEMBER_REF)
+	{
+		return;
+	}
+
 	/* Dump the header information for the method */
 	fputs("\t.method ", outstream);
 	if((flags & IL_DUMP_SHOW_TOKENS) != 0)

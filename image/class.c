@@ -1152,6 +1152,13 @@ static void FindLowestTokens(ILClass *info, ILToken *lowestField,
 	member = info->firstMember;
 	while(member != 0)
 	{
+		if((member->programItem.token & IL_META_TOKEN_MASK) ==
+					IL_META_TOKEN_MEMBER_REF)
+		{
+			/* Ignore MemberRef's, as they are probably vararg signatures */
+			member = member->nextMember;
+			continue;
+		}
 		if(member->kind == IL_META_MEMBERKIND_METHOD)
 		{
 			if(member->programItem.token < *lowestMethod)
@@ -1198,6 +1205,13 @@ static void AssignMemberTokens(ILClass *info, ILToken *nextField,
 	member = info->firstMember;
 	while(member != 0)
 	{
+		if((member->programItem.token & IL_META_TOKEN_MASK) ==
+					IL_META_TOKEN_MEMBER_REF)
+		{
+			/* Ignore MemberRef's, as they are probably vararg signatures */
+			member = member->nextMember;
+			continue;
+		}
 		if(member->kind == IL_META_MEMBERKIND_METHOD)
 		{
 			member->programItem.token = *nextMethod;

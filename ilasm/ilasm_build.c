@@ -287,6 +287,7 @@ void ILAsmBuildPopClass(void)
 	ILMember *member;
 	ILNestedInfo *nested;
 	ILClass *child;
+	ILType *signature;
 
 	/* Search for any methods or fields that are still MemberRef's,
 	   which means they were referenced, but not defined */
@@ -296,10 +297,18 @@ void ILAsmBuildPopClass(void)
 		if((ILMember_Token(member) & IL_META_TOKEN_MASK)
 				== IL_META_TOKEN_MEMBER_REF)
 		{
-			ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
-							  "referenced member `%s' is not defined",
-							  ILMember_Name(member));
-			ILAsmErrors = 1;
+			/* If the member includes a sentinel, then it is OK */
+			signature = ILMember_Signature(member);
+			if(signature == 0 || !ILType_IsComplex(signature) ||
+			   ILType_Kind(signature) !=
+			   		(IL_TYPE_COMPLEX_METHOD |
+					 IL_TYPE_COMPLEX_METHOD_SENTINEL))
+			{
+				ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+								  "referenced member `%s' is not defined",
+								  ILMember_Name(member));
+				ILAsmErrors = 1;
+			}
 		}
 	}
 

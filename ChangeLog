@@ -4,6 +4,11 @@
 	* cscc/cscc.c: "-fsave-asm" saves the assembly output even if
 	the assembler fails.
 
+	* ilalink/link_class.c, ilalink/link_create.c, ilasm/ilasm_build.c,
+	ildasm/ildasm_class.c, image/class.c, image/meta_build.c,
+	image/meta_types.c, image/sig_parse.c: fix the handling of vararg
+	call sites in the linker, assembler, disassembler, and image code.
+
 2002-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_except.c, engine/engine.h:

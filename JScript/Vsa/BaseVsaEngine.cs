@@ -53,9 +53,10 @@ public abstract class BaseVsaEngine : IVsaEngine
 	protected Type startupClass;
 	protected BaseVsaStartup startupInstance;
 	protected IVsaItems vsaItems;
+	protected static Hashtable nameTable = new Hashtable();
 
 	// Constructor.
-	public BaseVsaEngine(String language, String version, bool supportDebug)
+	internal BaseVsaEngine(String language, String version, bool supportDebug)
 			{
 				applicationPath = String.Empty;
 				assemblyVersion = version;

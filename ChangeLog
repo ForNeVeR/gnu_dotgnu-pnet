@@ -18,6 +18,9 @@
 	System.Drawing/Printing/PrintingPermissionAttribute.cs:
 	signature-compatibility fixes in "System.Drawing.Printing".
 
+	* JScript/Vsa/BaseVsaEngine.cs, compat/Vsa.cs:
+	signature-compatibility fixes in "Microsoft.Vsa".
+
 2003-09-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/BinaryWriter.cs,

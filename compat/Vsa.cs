@@ -1,7 +1,7 @@
 /*
  * Vsa.cs - Scripting engine interfaces.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@ using System.CodeDom;
 using System.Reflection;
 using System.Security.Policy;
 using System.Runtime.Serialization;
+using System.Runtime.InteropServices;
 
 // Script item flags.
 public enum VsaItemFlag
@@ -48,6 +49,10 @@ public enum VsaItemType
 }; // enum VsaItemType
 
 // Interface for querying error information.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("E0C0FFE4-7eea-4ee2-b7e4-0080c7eb0b74")]
+#endif
 public interface IVsaError
 {
 	String Description { get; }
@@ -63,6 +68,10 @@ public interface IVsaError
 }; // interface IVsaError
 
 // Interface to a script item.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("E0C0FFE5-7eea-4ee5-b7e4-0080c7eb0b74")]
+#endif
 public interface IVsaItem
 {
 	bool IsDirty { get; }
@@ -74,6 +83,10 @@ public interface IVsaItem
 }; // interface IVsaItem
 
 // Collection of script items.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("0AB1EB6A-12BD-44d0-B941-0580ADFC73DE")]
+#endif
 public interface IVsaItems : IEnumerable
 {
 	int Count { get; }
@@ -86,6 +99,10 @@ public interface IVsaItems : IEnumerable
 }; // interface IVsaItems
 
 // Interface to a script code item.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("E0C0FFE7-7eea-4ee5-b7e4-0080c7eb0b74")]
+#endif
 public interface IVsaCodeItem : IVsaItem
 {
 #if CONFIG_CODEDOM
@@ -99,6 +116,10 @@ public interface IVsaCodeItem : IVsaItem
 }; // interface IVsaCodeItem
 
 // Interface to a global script item.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("4E76D92E-E29D-46f3-AE22-0333158109F1")]
+#endif
 public interface IVsaGlobalItem : IVsaItem
 {
 	bool ExposeMembers { get; set; }
@@ -107,6 +128,10 @@ public interface IVsaGlobalItem : IVsaItem
 }; // interface IVsaGlobalItem
 
 // Interface to a reference script item.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("E0C0FFE6-7eea-4ee5-b7e4-0080c7eb0b74")]
+#endif
 public interface IVsaReferenceItem : IVsaItem
 {
 	String AssemblyName { get; set; }
@@ -114,6 +139,10 @@ public interface IVsaReferenceItem : IVsaItem
 }; // interface IVsaReferenceItem
 
 // Interface to a site that can be used to persist script source.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("E0C0FFE3-7eea-4ee2-b7e4-0080c7eb0b74")]
+#endif
 public interface IVsaPersistSite
 {
 	String LoadElement(String name);
@@ -122,6 +151,10 @@ public interface IVsaPersistSite
 }; // interface IVsaPersistSite
 
 // Interface to a site that is used to communicate with an engine.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("E0C0FFE2-7eea-4ee2-b7e4-0080c7eb0b74")]
+#endif
 public interface IVsaSite
 {
 	void GetCompiledState(out byte[] pe, out byte[] debugInfo);
@@ -133,6 +166,10 @@ public interface IVsaSite
 }; // interface IVsaSite
 
 // Interface to a scripting engine.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("E0C0FFE1-7eea-4ee2-b7e4-0080c7eb0b74")]
+#endif
 public interface IVsaEngine
 {
 	// Properties.
@@ -166,6 +203,71 @@ public interface IVsaEngine
 	void SetOption(String name, Object value);
 
 }; // interface IVsaEngine
+
+// DT code items.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("E0C0FFED-7eea-4ee5-b7e4-0080c7eb0b74")]
+#endif
+public interface IVsaDTCodeItem
+{
+	bool CanDelete { get; set; }
+	bool CanMove { get; set; }
+	bool CanRename { get; set; }
+	bool Hidden { get; set; }
+	bool ReadOnly { get; set; }
+
+}; // interface IVsaDTCodeItem
+
+// DT engine interface.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("E0C0FFEE-7eea-4ee5-b7e4-0080c7eb0b74")]
+#endif
+public interface IVsaDTEngine
+{
+	void AttachDebugger(bool isAttach);
+	IVsaIDE GetIDE();
+	void InitCompleted();
+	String TargetURL { get; set; }
+
+}; // interface IVsaDTEngine
+
+// IDE interface for VSA.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("78470A10-8153-407d-AB1B-05067C54C36B")]
+#endif
+public interface IVsaIDE
+{
+	void EnableMainWindow(bool isEnable);
+	void ShowIDE(bool showOrHide);
+	String DefaultSearchPath { get; set; }
+	Object ExtensibilityObject { get; }
+	VsaIDEMode IDEMode { get; }
+	IVsaIDESite Site { get; set; }
+
+}; // interface IVsaIDE
+
+// IDE site interface for VSA.
+#if CONFIG_COM_INTEROP
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[Guid("7BD84086-1FB5-4b5d-8E05-EAA2F17218E0")]
+#endif
+public interface IVsaIDESite
+{
+	void Notify(String notify, Object optional);
+
+}; // interface IVsaIDESite
+
+// VSA IDE mode values.
+public enum VsaIDEMode
+{
+	Break		= 0,
+	Design		= 1,
+	Run			= 2
+
+}; // enum VsaIDEMode
 
 // Scripting error codes.
 public enum VsaError
@@ -256,7 +358,7 @@ public enum VsaError
 #if !ECMA_COMPAT
 [Serializable]
 #endif
-public class VsaException : Exception
+public class VsaException : ExternalException
 {
 	// Internal state.
 	private VsaError error;
@@ -270,25 +372,44 @@ public class VsaException : Exception
 						Exception innerException)
 			: base(message, innerException)
 			{
-				// TODO: set Exception.HResult
 				this.error = error;
+			#if !ECMA_COMPAT
+				this.HResult = (int)error;
+			#endif
 			}
 
 	// Serialization support.
 #if CONFIG_SERIALIZATION
 	public VsaException(SerializationInfo info, StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				error = (VsaError)(info.GetInt32("VsaException_HResult"));
+			#if !ECMA_COMPAT
+				HResult = (int)error;
+				HelpLink = info.GetString("VsaException_HelpLink");
+				Source = info.GetString("VsaException_Source");
+			#endif
 			}
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				info.AddValue("VsaException_HResult", (int)error);
+			#if !ECMA_COMPAT
+				info.AddValue("VsaException_HelpLink", HelpLink);
+				info.AddValue("VsaException_Source", Source);
+			#endif
 			}
 #endif
 
 	// Get the error code.
-	public VsaError ErrorCode
+	public new VsaError ErrorCode
 			{
 				get
 				{
@@ -299,8 +420,8 @@ public class VsaException : Exception
 	// Convert this exception into a string.
 	public override String ToString()
 			{
-				// TODO
-				return base.ToString();
+				return base.ToString() + Environment.NewLine +
+					   "ErrorCode: " + error;
 			}
 
 }; // class VsaException
@@ -332,5 +453,206 @@ public class VsaModule : System.Attribute
 			}
 
 }; // class VsaModule
+
+// Vsa loader.  Not used in this implementation.
+public sealed class VsaLoader : IVsaEngine
+{
+	// Internal state.
+	private Assembly assembly;
+	private Evidence evidence;
+	private bool generateDebugInfo;
+	private bool isCompiled;
+	private bool isDirty;
+	private bool isRunning;
+	private IVsaItems items;
+	private String language;
+	private int lcid;
+	private String name;
+	private String rootMoniker;
+	private String rootNamespace;
+	private IVsaSite site;
+	private String version;
+
+	// Constructor.
+	public VsaLoader()
+			{
+				rootNamespace = String.Empty;
+			}
+
+	// Implement the IVsaEngine interface.
+	public Assembly Assembly
+			{
+				get
+				{
+					return assembly;
+				}
+			}
+	public Evidence Evidence
+			{
+				get
+				{
+					return evidence;
+				}
+				set
+				{
+					evidence = value;
+				}
+			}
+	public bool GenerateDebugInfo
+			{
+				get
+				{
+					return generateDebugInfo;
+				}
+				set
+				{
+					generateDebugInfo = value;
+				}
+			}
+	public bool IsCompiled
+			{
+				get
+				{
+					return isCompiled;
+				}
+			}
+	public bool IsDirty
+			{
+				get
+				{
+					return isDirty;
+				}
+			}
+	public bool IsRunning
+			{
+				get
+				{
+					return isRunning;
+				}
+			}
+	public IVsaItems Items
+			{
+				get
+				{
+					return items;
+				}
+			}
+	public String Language
+			{
+				get
+				{
+					return language;
+				}
+			}
+	public int LCID
+			{
+				get
+				{
+					return lcid;
+				}
+				set
+				{
+					lcid = value;
+				}
+			}
+	public String Name
+			{
+				get
+				{
+					return name;
+				}
+			}
+	public String RootMoniker
+			{
+				get
+				{
+					return rootMoniker;
+				}
+				set
+				{
+					rootMoniker = value;
+				}
+			}
+	public String RootNamespace
+			{
+				get
+				{
+					return rootNamespace;
+				}
+				set
+				{
+					rootNamespace = value;
+				}
+			}
+	public IVsaSite Site
+			{
+				get
+				{
+					return site;
+				}
+				set
+				{
+					site = value;
+				}
+			}
+	public String Version
+			{
+				get
+				{
+					return version;
+				}
+			}
+	public void Close()
+			{
+				site = null;
+				Reset();
+			}
+	public bool Compile()
+			{
+				throw new NotSupportedException();
+			}
+	public Object GetOption(String name)
+			{
+				// Nothing to do here.
+				return null;
+			}
+	public void InitNew()
+			{
+				// Nothing to do here.
+			}
+	public bool IsValidIdentifier(String identifier)
+			{
+				throw new NotSupportedException();
+			}
+	public void LoadSourceState(IVsaPersistSite site)
+			{
+				throw new NotSupportedException();
+			}
+	public void Reset()
+			{
+				// Nothing to do here.
+			}
+	public void RevokeCache()
+			{
+				// Nothing to do here.
+			}
+	public void Run()
+			{
+				// Nothing to do here.
+			}
+	public void SaveCompiledState(out byte[] pe, out byte[] pdb)
+			{
+				throw new NotSupportedException();
+			}
+	public void SaveSourceState(IVsaPersistSite site)
+			{
+				throw new NotSupportedException();
+			}
+	public void SetOption(String name, Object value)
+			{
+				// Nothing to do here.
+			}
+
+}; // class VsaLoader
 
 } // namespace Microsoft.Vsa

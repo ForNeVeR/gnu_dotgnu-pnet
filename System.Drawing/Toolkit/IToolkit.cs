@@ -25,6 +25,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Threading;
+using DotGNU.Images;
 
 public interface IToolkit
 {
@@ -81,6 +82,9 @@ public interface IToolkit
 
 	// Create a toolkit font from the properties in the specified object.
 	IToolkitFont CreateFont(Font font, float dpi);
+
+	// Creat a toolkit image
+	IToolkitImage CreateImage(Image image);
 
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.
 	IntPtr GetHalftonePalette();

@@ -17,6 +17,7 @@ namespace FormsTest
 		private TabPage tabPage7;
 		private TabPage tabPage8;
 		private TabPage tabPage9;
+		private TabPage tabPage10;
 		
 		// Tab1 Labels Test
 		private System.Windows.Forms.Label label;
@@ -193,6 +194,8 @@ namespace FormsTest
 		private MenuItem thisMenuItem, thatMenuItem, otherMenuItem, otherAMenuItem, otherBMenuItem, otherCMenuItem, cutMenuItem, copyMenuItem, pasteMenuItem, aboutMenuItem, seperatorMenuItem;
 		private ContextMenu contextMenu;
 
+		private Image image1;
+
 		#endregion
 		public FormsTest()
 		{
@@ -231,6 +234,10 @@ namespace FormsTest
 			tabPage9 = new TabPage();
 			tabPage9.Text = "ContextMenu";
 			tabControl1.Controls.Add(this.tabPage9);
+			tabPage10 = new TabPage();
+			tabPage10.Text = "Images";
+			tabControl1.Controls.Add(this.tabPage10);
+
 			Controls.Add(tabControl1);
 
 			AddLabelTest(tabPage1);
@@ -243,6 +250,7 @@ namespace FormsTest
 			AddMenuTest();
 			AddGraphicsTest();
 			AddContextTest();
+			AddImageTest();
 
 			ResumeLayout(false);
 
@@ -2097,6 +2105,12 @@ namespace FormsTest
 			contextMenu = new ContextMenu( new MenuItem[] { cutMenuItem, copyMenuItem, seperatorMenuItem, pasteMenuItem });
 			tabPage9.ContextMenu = contextMenu;
 		}
+
+		private void AddImageTest()
+		{
+			image1 = Image.FromFile("test.bmp");
+			tabPage10.Paint+=new PaintEventHandler(Image_Paint);
+		}
 		public static void Main(String[] args)
 		{
 			FormsTest form = new FormsTest();
@@ -2330,6 +2344,11 @@ namespace FormsTest
 		private void exitMenuItem_Click(object sender, EventArgs e)
 		{
 			Close();
+		}
+
+		private void Image_Paint(object sender, PaintEventArgs e)
+		{
+			e.Graphics.DrawImage(image1, 10, 10);
 		}
 	}
 }

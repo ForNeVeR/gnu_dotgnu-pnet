@@ -169,6 +169,10 @@ public struct Size
 			{
 				return new SizeF(size.width, size.height);
 			}
+	public static Size Ceiling(SizeF value)
+			{
+				return new Size((int)Math.Ceiling(value.Width), (int)Math.Ceiling(value.Height)); 
+			}
 
 }; // struct Size
 		

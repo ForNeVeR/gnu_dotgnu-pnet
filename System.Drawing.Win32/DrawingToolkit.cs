@@ -27,6 +27,7 @@ using System.Drawing.Text;
 using System.Drawing.Imaging;
 using System.Collections;
 using System.Threading;
+using DotGNU.Images;
 
 public class DrawingToolkit : IToolkit
 {
@@ -638,6 +639,12 @@ public class DrawingToolkit : IToolkit
 				return window;
 		return null;
 	}
+
+	public IToolkitImage CreateImage(DotGNU.Images.Image image)
+	{
+		return new DrawingImage(image);
+	}
+
 
 }; // class DrawingToolkit
 

@@ -110,6 +110,78 @@ public sealed class Image : IDisposable
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.Image"/> instance
+	/// that represents an off-screen image on a particular screen.</para>
+	/// </summary>
+	///
+	/// <param name="screen">
+	/// <para>The screen upon which to create the new pixmap.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The width of the new image.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The height of the new image.</para>
+	/// </param>
+	///
+	/// <param name="image">
+	/// <para>The bits that make up the image.</para>
+	/// </param>
+	///
+	/// <param name="mask">
+	/// <para>The bits that make up the mask.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>The <paramref name="width"/> or <paramref name="height"/>
+	/// values are out of range.</para>
+	/// </exception>
+	public Image(Screen screen, int width, int height, byte[] image, byte[] mask)
+			{
+				Display dpy;
+				if(screen != null)
+				{
+					dpy = screen.DisplayOfScreen;
+				}
+				else
+				{
+					dpy = Application.Primary.Display;
+					screen = dpy.DefaultScreenOfDisplay;
+				}
+				if(width < 1 || width > 32767 ||
+					height < 1 || height > 32767)
+				{
+					throw new XException(S._("X_InvalidBitmapSize"));
+				}
+				if(image == null)
+				{
+					throw new ArgumentNullException("bits");
+				}
+				if(((((width + 15) & ~15) * height) / 8) > image.Length)
+				{
+					throw new XException(S._("X_InvalidBitmapBits"));
+				}
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.Drawable drawable = (Xlib.Drawable)
+						Xlib.XRootWindowOfScreen(screen.screen);
+					Xlib.Pixmap pixmap = Xlib.XCreateBitmapFromData
+						(display, drawable, image, (uint)width, (uint)height);
+					this.pixmap = new Pixmap(dpy, screen, pixmap);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+				if (mask != null)
+					this.mask = new Bitmap(screen, width, height, mask);
+				
+			}
+
+	/// <summary>
+	/// <para>Constructs a new <see cref="T:Xsharp.Image"/> instance
 	/// that represents an off-screen image that was loaded
 	/// from a file.</para>
 	/// </summary>

@@ -125,6 +125,9 @@ public interface IToolkitGraphics : IDisposable
 	// Get the line spacing for the font selected into this graphics object.
 	int GetLineSpacing();
 
+	// Draw the image at point x, y.
+	void DrawImage(IToolkitImage image, int x, int y);
+
 }; // interface IToolkitGraphics
 
 }; // namespace System.Drawing.Toolkit

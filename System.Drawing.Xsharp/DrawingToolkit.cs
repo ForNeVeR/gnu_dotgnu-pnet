@@ -29,6 +29,7 @@ using System.Drawing.Text;
 using System.Drawing.Imaging;
 using System.Threading;
 using Xsharp;
+using DotGNU.Images;
 
 public sealed class DrawingToolkit : IToolkit
 {
@@ -562,6 +563,11 @@ public sealed class DrawingToolkit : IToolkit
 				{
 					return point;
 				}
+			}
+
+	public IToolkitImage CreateImage(DotGNU.Images.Image image)
+			{
+				return new DrawingImage(app.Display.DefaultScreenOfDisplay, image);
 			}
 
 }; // class DrawingToolkit

@@ -817,12 +817,14 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	[TODO]
 	public void DrawImage(Image image, int x, int y)
 			{
-				// TODO
+				if (image.toolkitImage == null)
+					image.toolkitImage = ToolkitGraphics.Toolkit.CreateImage(image.dgImage);
+				ToolkitGraphics.DrawImage(image.toolkitImage, x, y);
 			}
 	[TODO]
 	public void DrawImage(Image image, float x, float y)
 			{
-				// TODO
+				ToolkitGraphics.DrawImage(image.toolkitImage, (int)Math.Ceiling(x), (int)Math.Ceiling(y));
 			}
 	[TODO]
 	public void DrawImage(Image image, Point[] destPoints,

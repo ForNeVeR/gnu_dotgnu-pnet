@@ -28,6 +28,7 @@ using System.Drawing.Imaging;
 using System.Drawing.Design;
 using System.ComponentModel;
 using DotGNU.Images;
+using System.Drawing.Toolkit;
 
 #if !ECMA_COMPAT
 [Serializable]
@@ -39,36 +40,41 @@ using DotGNU.Images;
 #endif
 public sealed class Bitmap : System.Drawing.Image
 {
+	// Internal state
+	IToolkitImage nativeImage;
 	// Constructors.
 	[TODO]
 	public Bitmap(Image original)
 			{
-				// TODO
+				dgImage = (DotGNU.Images.Image)dgImage.Clone();
 			}
-	[TODO]
 	public Bitmap(Image original, Size newSize)
-			{
-				// TODO
-			}
+		: this (original, newSize.Width, newSize.Height)
+			{}
 	public Bitmap(Stream stream) : this(stream, false) {}
-	[TODO]
+	
 	public Bitmap(Stream stream, bool useIcm)
 			{
-				// TODO
+				// TODO Icm
+				dgImage = new DotGNU.Images.Image();
+				dgImage.Load(stream);
 			}
 	public Bitmap(String filename) : this(filename, false) {}
-	[TODO]
+	
 	public Bitmap(String filename, bool useIcm)
 			{
-				// TODO
+				// TODO Icm
+				dgImage = new DotGNU.Images.Image();
+				dgImage.Load(filename);
 			}
 	public Bitmap(int width, int height)
 			: this(width, height, Imaging.PixelFormat.Format32bppArgb) {}
-	[TODO]
+	
 	public Bitmap(int width, int height,
 				  System.Drawing.Imaging.PixelFormat format)
 			{
-				// TODO
+				dgImage = new DotGNU.Images.Image(width, height,
+					(DotGNU.Images.PixelFormat)format);
 			}
 	[TODO]
 	public Bitmap(int width, int height, Graphics g)

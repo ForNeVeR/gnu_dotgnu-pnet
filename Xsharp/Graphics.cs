@@ -2115,12 +2115,14 @@ public sealed class Graphics : IDisposable
 
 				// Set the context to "tiling" and fill the region.
 				SetFillTiled(image.Pixmap, x, y);
-				SetClipMask(image.Mask, x, y);
+				if (image.Mask != null)
+					SetClipMask(image.Mask, x, y);
 				FillRectangle(x, y, image.Pixmap.Width, image.Pixmap.Height);
 
 				// Revert the context to a sane fill mode.
 				SetFillSolid();
-				SetClipMask(null);
+				if (image.Mask != null)
+					SetClipMask(null);
 			}
 
 	/// <summary>

@@ -315,6 +315,10 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 		}
 	}
 
+	public override void DrawImage(IToolkitImage image, int x, int y)
+	{
+	}
+
 }; // class DrawingGraphics
 
 

@@ -300,8 +300,9 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					// Windows cursor image (same as icon, with hotspots).
 					IconReader.Load(stream, this, true);
 				}
-				// TODO: other formats
-				throw new FormatException();
+				else
+					// TODO: other formats
+					throw new FormatException();
 			}
 
 	// Save this image to a stream, in a particular format.

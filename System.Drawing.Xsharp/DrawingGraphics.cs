@@ -299,6 +299,11 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 		return value;
 	}
 
+	public override void DrawImage(IToolkitImage image, int x, int y)
+	{
+		graphics.DrawImage(x, y, (image as DrawingImage).GetNativeImage());
+	}
+
 }; // class DrawingGraphics
 
 }; // namespace System.Drawing.Toolkit

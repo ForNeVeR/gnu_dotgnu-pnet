@@ -1,3 +1,21 @@
+2003-08-28  Neil Cawse  <neilcawse@geotab.com>
+
+	* DotGNU.Images/Image.cs, System.Drawing/Bitmap.cs,
+	System.Drawing/Graphics.cs, System.Drawing/Image.cs,
+	System.Drawing/Size.cs, System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/IToolkitGraphics.cs,
+	System.Drawing/Toolkit/IToolkitImage.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs,
+	System.Drawing.Postscript/PostscriptGraphics.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingImage.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingImage.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	Xsharp/Graphics.cs, Xsharp/Image.cs, samples/FormsTest.cs, 
+	samples/test.bmp: more infrastructure for images.
 
 2003-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 

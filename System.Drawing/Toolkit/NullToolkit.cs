@@ -25,6 +25,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Threading;
+using DotGNU.Images;
 
 // This class is used to stub out toolkit support when a toolkit
 // cannot be found, and to also act as a base class for printer
@@ -256,6 +257,11 @@ public class NullToolkit : IToolkit
 	public virtual Point ScreenToClient(IToolkitWindow window, Point point)
 			{
 				return point;
+			}
+
+	public virtual IToolkitImage CreateImage( Image image)
+			{
+				return null;
 			}
 
 }; // class NullToolkit

@@ -199,6 +199,13 @@ internal class PostscriptGraphics : ToolkitGraphicsBase
 				return 0;
 			}
 
+	// Draw an image at the coordinates
+	public override void DrawImage(IToolkitImage image, int x, int y)
+			{
+				// TODO
+			}
+
+
 }; // class PostscriptGraphics
 
 }; // namespace System.Drawing.Toolkit

@@ -52,6 +52,7 @@ public abstract class Image
 	internal float verticalResolution;
 	internal int width;
 	internal DotGNU.Images.Image dgImage;
+	internal Toolkit.IToolkitImage toolkitImage;
 
 	// Constructors.
 	[TODO]
@@ -79,6 +80,7 @@ public abstract class Image
 						rawFormat = ImageFormat.Icon; break;
 				}
 			#endif
+				this.dgImage = dgImage;
 				width = dgImage.Width;
 				height = dgImage.Height;
 				horizontalResolution = Graphics.DefaultScreenDpi;

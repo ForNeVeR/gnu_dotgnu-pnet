@@ -438,6 +438,9 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 	// Get the line spacing for the font selected into this graphics object.
 	public abstract int GetLineSpacing();
 
+	// Draw an image at the coordinates
+	public abstract void DrawImage(IToolkitImage image, int x, int y);
+
 }; // class ToolkitGraphicsBase
 
 }; // namespace System.Drawing.Toolkit

@@ -173,7 +173,10 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 	/* Strip the outer prefixes from the types, as they apply to
 	   the l-value containing the type, not the type itself */
 	fromType = ILTypeGetEnumType(ILTypeStripPrefixes(fromType));
-	toType = ILTypeGetEnumType(ILTypeStripPrefixes(toType));
+	if(!CTypeIsFunctionPtr(toType))
+	{
+		toType = ILTypeGetEnumType(ILTypeStripPrefixes(toType));
+	}
 
 	/* Determine how to perform the coercion, starting at "fromType" */
 	if(ILType_IsPrimitive(fromType))

@@ -3,6 +3,9 @@
 
 * engine/verify_call: bytecode verification for call-related opcodes.
 
+* include/il_coder.h: define ILEngineStackItem to replace the local
+"StackItem" that used to be in "verify.c"; new coder API's for calls.
+
 2001-10-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_obj.c: verification for the remainder of the object-related

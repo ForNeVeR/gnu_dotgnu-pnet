@@ -63,6 +63,16 @@ typedef enum
 #define	ILEngineType_ValidTypes	8
 
 /*
+ * Type that is used for stack items during verfication.
+ */
+typedef struct
+{
+	ILEngineType engineType;
+	ILType      *typeInfo;
+
+} ILEngineStackItem;
+
+/*
  * Common parent fields that are shared by all coder instances.
  */
 struct _tagILCoder
@@ -112,11 +122,11 @@ struct _tagILCoderClass
 	void (*label)(ILCoder *coder, ILUInt32 offset);
 
 	/*
-	 * Record the height of a stack item.  This is called
-	 * just after a label is output to notify the coder as
-	 * to what values are on the stack at the label.
+	 * Refresh the coder's notion of the stack contents just
+	 * after a label has been output.
 	 */
-	void (*stackItem)(ILCoder *coder, ILEngineType engineType, ILType *type);
+	void (*stackRefresh)(ILCoder *coder, ILEngineStackItem *stack,
+						 ILUInt32 stackSize);
 
 	/*
 	 * Handle a constant value.
@@ -397,6 +407,60 @@ struct _tagILCoderClass
 	 */
 	void (*argList)(ILCoder *coder);
 
+	/*
+	 * Up-convert an argument that is of an integer size that
+	 * is too small for the formal parameter.  "param" is 1 for
+	 * the first argument.
+	 */
+	void (*upConvertArg)(ILCoder *coder, ILEngineStackItem *args,
+						 ILUInt32 numArgs, ILUInt32 param,
+						 ILType *paramType);
+
+	/*
+	 * Down-convert an argument that is of an integer size that
+	 * is too large for the formal parameter.  "param" is 1 for
+	 * the first argument.
+	 */
+	void (*downConvertArg)(ILCoder *coder, ILEngineStackItem *args,
+						   ILUInt32 numArgs, ILUInt32 param,
+						   ILType *paramType);
+
+	/*
+	 * Construct the memory for a new object and push a
+	 * reference onto the stack.
+	 */
+	void (*newObj)(ILCoder *coder, ILClass *classInfo);
+
+	/*
+	 * Rearrange the evaluation stack to insert an object
+	 * reference twice just before constructor arguments.
+	 */
+	void (*ctorArgs)(ILCoder *coder, ILEngineStackItem *args,
+					 ILUInt32 numArgs);
+
+	/*
+	 * Call a method directly.
+	 */
+	void (*callMethod)(ILCoder *coder, ILEngineStackItem *args,
+					   ILUInt32 numArgs, ILMethod *methodInfo);
+
+	/*
+	 * Call a virtual method.
+	 */
+	void (*callVirtual)(ILCoder *coder, ILEngineStackItem *args,
+					    ILUInt32 numArgs, ILMethod *methodInfo);
+
+	/*
+	 * Call an interface method.
+	 */
+	void (*callInterface)(ILCoder *coder, ILEngineStackItem *args,
+					      ILUInt32 numArgs, ILMethod *methodInfo);
+
+	/*
+	 * Jump to a method with the same signature as the current method.
+	 */
+	void (*jumpMethod)(ILCoder *coder, ILMethod *methodInfo);
+
 };
 
 /*
@@ -414,8 +478,9 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->restart))((coder)))
 #define	ILCoderLabel(coder,offset) \
 			((*((coder)->classInfo->label))((coder), (offset)))
-#define	ILCoderStackItem(coder,vtype,type) \
-			((*((coder)->classInfo->stackItem))((coder), (vtype), (type)))
+#define	ILCoderStackRefresh(coder,stack,stackSize) \
+			((*((coder)->classInfo->stackRefresh))((coder), (stack), \
+												   (stackSize)))
 #define	ILCoderConstant(coder,opcode,arg) \
 			((*((coder)->classInfo->constant))((coder), (opcode), (arg)))
 #define	ILCoderBinary(coder,opcode,type1,type2) \
@@ -535,6 +600,29 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->sizeOf))((coder), (_classInfo)))
 #define	ILCoderArgList(coder) \
 			((*((coder)->classInfo->argList))((coder)))
+#define	ILCoderUpConvertArg(coder,stack,numParams,param,paramType) \
+			((*((coder)->classInfo->upConvertArg))((coder), (stack), \
+												   (numParams), (param), \
+												   (paramType)))
+#define	ILCoderDownConvertArg(coder,stack,numParams,param,paramType) \
+			((*((coder)->classInfo->downConvertArg))((coder), (stack), \
+												     (numParams), (param), \
+												     (paramType)))
+#define	ILCoderNewObj(coder,_classInfo) \
+			((*((coder)->classInfo->newObj))((coder), (_classInfo)))
+#define	ILCoderCtorArgs(coder,args,numArgs) \
+			((*((coder)->classInfo->ctorArgs))((coder), (args), (numArgs)))
+#define	ILCoderCallMethod(coder,args,numArgs,methodInfo) \
+			((*((coder)->classInfo->callMethod))((coder), (args), \
+												 (numArgs), (methodInfo)))
+#define	ILCoderCallVirtual(coder,args,numArgs,methodInfo) \
+			((*((coder)->classInfo->callVirtual))((coder), (args), \
+												  (numArgs), (methodInfo)))
+#define	ILCoderCallInterface(coder,args,numArgs,methodInfo) \
+			((*((coder)->classInfo->callInterface))((coder), (args), \
+												    (numArgs), (methodInfo)))
+#define	ILCoderJumpMethod(coder,methodInfo) \
+			((*((coder)->classInfo->jumpMethod))((coder), (methodInfo)))
 
 #ifdef	__cplusplus
 };

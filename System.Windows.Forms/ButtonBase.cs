@@ -121,7 +121,7 @@ public abstract class ButtonBase : Control
 #if CONFIG_COMPONENT_MODEL
 	[Localizable(true)]
 #endif
-#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+#if (CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS) && CONFIG_COMPONENT_MODEL_DESIGN
 	[DefaultValue(-1)]
 	[Editor("System.Windows.Forms.Design.ImageIndexEditor, System.Design", typeof(UITypeEditor))]
 #endif

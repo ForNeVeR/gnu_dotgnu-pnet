@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  *
- * $Revision: 1.1 $  $Date: 2004/05/04 17:00:46 $
+ * $Revision: 1.2 $  $Date: 2004/10/06 16:44:50 $
  * 
  * --------------------------------------------------------------------------
  */
@@ -145,7 +145,6 @@ namespace DotGNU.XmlRpc
     private void WriteDateTime( DateTime v )
     {
       // ensure this is iso compliant
-      Console.Out.WriteLine( "Writing DateTime: " + v );
 
       // Why has MS got no clue about ISO 8601???  Horrid.  All
       // these newbies working on specs.  this is as close as it

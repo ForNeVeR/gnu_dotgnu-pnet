@@ -1,4 +1,15 @@
 
+2004-10-06  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/AnchorStyles.cs, System.Windows.Forms/ButtonBase.cs,
+	System.Windows.Forms/ComboBox.cs,
+	System.Windows.Forms/ListViewItemConverter.cs,
+	System.Windows.Forms/ListViewSubItemConverter.cs,
+	DotGNU.XmlRpc/Serialization/MethodResponseFormatter.cs,
+	DotGNU.XmlRpc/Serialization/MethodCallFormatter.cs,
+	DotGNU.XmlRpc/XmlRpcClientProtocol.cs, DotGNU.XmlRpc/XmlRpcWriter.cs: Fix
+	build of profile mscompact.
+
 2004-10-06  Gopal V  <gopalv82@yahoo.com>
 
 	* DotGNU.Images/PngReader.cs: Fix up decoder for Adam7 interlaced PNGs

@@ -21,7 +21,7 @@
 
 namespace System.Windows.Forms
 {
-#if CONFIG_COMPONENT_MODEL
+#if CONFIG_COMPONENT_MODEL && CONFIG_COMPONENT_MODEL_DESIGN
 
 using System;
 using System.Collections;

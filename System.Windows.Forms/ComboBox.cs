@@ -335,7 +335,7 @@ namespace System.Windows.Forms
 				itemHeights = null;
 		}
 
-#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+#if (CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS) && CONFIG_COMPONENT_MODEL_DESIGN
 		[Editor("System.Windows.Forms.Design.ListControlStringCollectionEditor, System.Design", typeof(UITypeEditor))]
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
 #endif

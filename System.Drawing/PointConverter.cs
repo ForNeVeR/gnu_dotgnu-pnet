@@ -111,7 +111,7 @@ public class PointConverter : TypeConverter
 				else if(destinationType == typeof(InstanceDescriptor))
 				{
 					ConstructorInfo constructorInfo = typeof(Point).GetConstructor(new Type[2] {typeof(int), typeof(int)});
-					return new InstanceDescriptor(constructorInfo, new Object[2] {point.X, point.Y}); 
+					return new InstanceDescriptor(constructorInfo, new Object[2] {point.X, point.Y} as ICollection); 
 				}
 			#endif
 				else

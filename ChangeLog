@@ -1,3 +1,9 @@
+
+2003-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/XsharpSupport.c: be a little more selective as to when
+	the direct 24-bit blit optimization should be used.
+
 2003-10-14  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs

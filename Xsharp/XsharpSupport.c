@@ -746,7 +746,8 @@ typedef void (*WriteFunc)(Display *dpy, Colormap colormap, XImage *image,
 static WriteFunc GetWriteFunc(XImage *image)
 {
 	if(image->depth == 24 && image->red_mask == 0x00FF0000 &&
-	   image->green_mask == 0x0000FF00 && image->blue_mask == 0x000000FF)
+	   image->green_mask == 0x0000FF00 && image->blue_mask == 0x000000FF &&
+	   image->byte_order == LSBFirst && image->bitmap_bit_order == LSBFirst)
 	{
 		return Write_Direct;
 	}

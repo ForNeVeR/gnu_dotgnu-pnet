@@ -98,7 +98,7 @@ public class XmlTextReader : XmlReader
 				attr = new XmlAttributeToken(nameTable,null,null);
 				attributes = new XmlAttributeCollection(attr); 
 				attributeIndex = -1;
-				depth = 1;
+				depth = 0;
 				isEmpty = false;
 				contextSupport = false;
 				name = String.Empty;
@@ -908,6 +908,7 @@ public class XmlTextReader : XmlReader
 							name = ReadIdentifier(ch);
 							// checking for termination '/'
 							SetName(name);
+							++depth;
 							// reset buffer
 							builder = new StringBuilder();
 							break;

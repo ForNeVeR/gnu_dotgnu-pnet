@@ -1,3 +1,6 @@
+2003-01-26  Adam Ballai  <minddog@cannibutter.com>
+	
+	* System.Xml/XmlTextReader.cs : BUG #2402 fix.
 
 2003-01-26  Gopal.V  <gopalv82@symonds.net>
 

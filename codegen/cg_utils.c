@@ -152,6 +152,46 @@ void ILGenLoadLocalAddr(ILGenInfo *info, unsigned num)
 	}
 }
 
+void ILGenLoadArg(ILGenInfo *info, unsigned num)
+{
+	if(num < 4)
+	{
+		ILGenSimple(info, IL_OP_LDARG_0 + num);
+	}
+	else if(num < 256)
+	{
+		ILGenByteInsn(info, IL_OP_LDARG_S, (int)num);
+	}
+	else
+	{
+		ILGenShortInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_LDARG, (ILUInt32)num);
+	}
+}
+
+void ILGenStoreArg(ILGenInfo *info, unsigned num)
+{
+	if(num < 256)
+	{
+		ILGenByteInsn(info, IL_OP_STARG_S, (int)num);
+	}
+	else
+	{
+		ILGenShortInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_STARG, (ILUInt32)num);
+	}
+}
+
+void ILGenLoadArgAddr(ILGenInfo *info, unsigned num)
+{
+	if(num < 256)
+	{
+		ILGenByteInsn(info, IL_OP_LDARGA_S, (int)num);
+	}
+	else
+	{
+		ILGenShortInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_LDARGA, (ILUInt32)num);
+	}
+}
+
 void ILGenConst(ILGenInfo *info, ILEvalValue *value)
 {
 	switch(value->valueType)

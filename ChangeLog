@@ -32,6 +32,9 @@ current class or method that is being processed.
 
 * cscc/cs_internal.h: add the "CS_LOCAL_IS_ARG" flag bit.
 
+* codegen/cg_utils.h, codegen/cg_utils.c: implement utility functions
+for accessing method arguments.
+
 2001-08-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc, codegen/cg_misc.tc, codegen/jv_misc.tc: add the

@@ -71,6 +71,21 @@ void ILGenStoreLocal(ILGenInfo *info, unsigned num);
 void ILGenLoadLocalAddr(ILGenInfo *info, unsigned num);
 
 /*
+ * Load a value from an argument variable onto the stack.
+ */
+void ILGenLoadArg(ILGenInfo *info, unsigned num);
+
+/*
+ * Store a value from the stack top to an argument variable.
+ */
+void ILGenStoreArg(ILGenInfo *info, unsigned num);
+
+/*
+ * Load the address of an argument variable onto the stack.
+ */
+void ILGenLoadArgAddr(ILGenInfo *info, unsigned num);
+
+/*
  * Generate code to output a constant value.
  */
 void ILGenConst(ILGenInfo *info, ILEvalValue *value);

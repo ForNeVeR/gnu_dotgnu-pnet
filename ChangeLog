@@ -19,6 +19,15 @@
 	runtime/System/Globalization/TextElementEnumerator.cs:
 	add "StringInfo" and "TextElementEnumerator".
 
+	* runtime/System/Security/Principal/GenericIdentity.cs,
+	runtime/System/Security/Principal/GenericPrincipal.cs,
+	runtime/System/Security/Principal/WindowsAccountType.cs,
+	runtime/System/Security/Principal/WindowsBuiltInRole.cs,
+	runtime/System/Security/Principal/WindowsIdentity.cs,
+	runtime/System/Security/Principal/WindowsImpersonationContext.cs,
+	runtime/System/Security/Principal/WindowsPrincipal.cs:
+	missing classes in "System.Security.Principal".
+
 2003-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

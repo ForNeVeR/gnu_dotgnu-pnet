@@ -5,6 +5,8 @@
 
 * NEWS: add news items for the 0.1.8 release.
 
+* configure.in: update version to 0.1.8.
+
 2001-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_invoke.tc: bug fix in "CSEvalArguments"; make sure "ref" and "out"

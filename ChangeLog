@@ -13,6 +13,9 @@ and "ILMethod_IsJava" helper macros.
 * ilasm/ilasm_grammar.y (Float64): remove the '[' form of floating
 point constants and alter the '(' form to be ECMA-compliant.
 
+* dumpasm/dump_ident.c (ILDumpClassName): don't add an extra class
+prefix when dumping the names of nested types.
+
 2001-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: implement a Java class file to IL converter.

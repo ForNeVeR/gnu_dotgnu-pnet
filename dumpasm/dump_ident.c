@@ -122,7 +122,8 @@ void ILDumpClassName(FILE *stream, ILImage *image, ILClass *info, int flags)
 	else if((importInfo = ILProgramItemToClass(scope)) != 0)
 	{
 		/* Nested within another class */
-		ILDumpClassName(stream, image, importInfo, flags);
+		ILDumpClassName(stream, image, importInfo,
+						flags & ~IL_DUMP_CLASS_PREFIX);
 		putc('/', stream);
 		ILDumpIdentifier(stream, ILClassGetName(info),
 						 ILClassGetNamespace(info), flags);

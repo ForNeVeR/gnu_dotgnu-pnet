@@ -1479,11 +1479,11 @@ static void marshal_pppb(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(Assembly_Methods)
 	IL_METHOD("GetExecutingAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetExecutingAssembly, marshal_pp)
+	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;", _IL_Assembly_GetType, marshal_ppppbb)
 	IL_METHOD("GetManifestResourceStream", "(ToSystem.String;)oSystem.IO.Stream;", _IL_Assembly_GetManifestResourceStream, marshal_pppp)
 	IL_METHOD("GetCallingAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetCallingAssembly, marshal_pp)
 	IL_METHOD("LoadFromFile", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromFile, marshal_ppppp)
 	IL_METHOD("LoadFromName", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromName, marshal_ppppp)
-	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;", _IL_Assembly_GetType, marshal_ppppbb)
 	IL_METHOD("GetEntryAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetEntryAssembly, marshal_pp)
 	IL_METHOD("GetExportedTypes", "(T)[oSystem.Type;", _IL_Assembly_GetExportedTypes, marshal_ppp)
 	IL_METHOD("GetFile", "(ToSystem.String;)oSystem.IO.FileStream;", _IL_Assembly_GetFile, marshal_pppp)
@@ -1862,6 +1862,7 @@ IL_METHOD_END
 
 IL_METHOD_BEGIN(DirMethods_Methods)
 	IL_METHOD("GetSystemDirectory", "()oSystem.String;", _IL_DirMethods_GetSystemDirectory, marshal_pp)
+	IL_METHOD("GetLogicalDrives", "()[oSystem.String;", _IL_DirMethods_GetLogicalDrives, marshal_pp)
 	IL_METHOD("GetPathInfo", "()vPlatform.PathInfo;", _IL_DirMethods_GetPathInfo, marshal_vpp)
 	IL_METHOD("GetCurrentDirectory", "()oSystem.String;", _IL_DirMethods_GetCurrentDirectory, marshal_pp)
 	IL_METHOD("Copy", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Copy, marshal_ippp)
@@ -1886,18 +1887,18 @@ static void marshal_ipipii(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_vpiS(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_vpipii(void (*fn)(), void *rvalue, void **avalue)
 {
-	(*(void (*)(void *, ILInt32, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILUInt16 *)(avalue[2])));
+	(*(void (*)(void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
 }
 
 #endif
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_vpipii(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_vpiS(void (*fn)(), void *rvalue, void **avalue)
 {
-	(*(void (*)(void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+	(*(void (*)(void *, ILInt32, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILUInt16 *)(avalue[2])));
 }
 
 #endif
@@ -1910,11 +1911,11 @@ IL_METHOD_BEGIN(Stdio_Methods)
 	IL_METHOD("StdRead", "(i)i", _IL_Stdio_StdRead_i, marshal_ipi)
 	IL_METHOD("StdRead", "(i[cii)i", _IL_Stdio_StdRead_iacii, marshal_ipipii)
 	IL_METHOD("StdFlush", "(i)V", _IL_Stdio_StdFlush, marshal_vpi)
+	IL_METHOD("StdRead", "(i[Bii)i", _IL_Stdio_StdRead_iaBii, marshal_ipipii)
+	IL_METHOD("StdWrite", "(i[Bii)V", _IL_Stdio_StdWrite_iaBii, marshal_vpipii)
 	IL_METHOD("StdWrite", "(ic)V", _IL_Stdio_StdWrite_ic, marshal_vpiS)
 	IL_METHOD("StdWrite", "(i[cii)V", _IL_Stdio_StdWrite_iacii, marshal_vpipii)
 	IL_METHOD("StdWrite", "(ioSystem.String;)V", _IL_Stdio_StdWrite_iString, marshal_vpip)
-	IL_METHOD("StdRead", "(i[Bii)i", _IL_Stdio_StdRead_iaBii, marshal_ipipii)
-	IL_METHOD("StdWrite", "(i[Bii)V", _IL_Stdio_StdWrite_iaBii, marshal_vpipii)
 IL_METHOD_END
 
 #endif
@@ -1952,7 +1953,6 @@ IL_METHOD_END
 IL_METHOD_BEGIN(TaskMethods_Methods)
 	IL_METHOD("Exit", "(i)V", _IL_TaskMethods_Exit, marshal_vpi)
 	IL_METHOD("SetExitCode", "(i)V", _IL_TaskMethods_SetExitCode, marshal_vpi)
-	IL_METHOD("GetRuntimeVersion", "()oSystem.String;", _IL_TaskMethods_GetRuntimeVersion, marshal_pp)
 	IL_METHOD("GetCommandLineArgs", "()[oSystem.String;", _IL_TaskMethods_GetCommandLineArgs, marshal_pp)
 	IL_METHOD("GetEnvironmentVariable", "(oSystem.String;)oSystem.String;", _IL_TaskMethods_GetEnvironmentVariable, marshal_ppp)
 	IL_METHOD("GetEnvironmentCount", "()i", _IL_TaskMethods_GetEnvironmentCount, marshal_ip)
@@ -2089,6 +2089,21 @@ IL_METHOD_END
 IL_METHOD_BEGIN(Security_Methods)
 	IL_METHOD("GetSecurityManager", "()oPlatform.ISecurityManager;", _IL_Security_GetSecurityManager, marshal_pp)
 	IL_METHOD("SetSecurityManager", "(oPlatform.ISecurityManager;)V", _IL_Security_SetSecurityManager, marshal_vpp)
+IL_METHOD_END
+
+#endif
+
+#ifndef _IL_InfoMethods_suppressed
+
+IL_METHOD_BEGIN(InfoMethods_Methods)
+	IL_METHOD("GetRuntimeVersion", "()oSystem.String;", _IL_InfoMethods_GetRuntimeVersion, marshal_pp)
+	IL_METHOD("GetNetBIOSMachineName", "()oSystem.String;", _IL_InfoMethods_GetNetBIOSMachineName, marshal_pp)
+	IL_METHOD("GetOSVersion", "()oSystem.OperatingSystem;", _IL_InfoMethods_GetOSVersion, marshal_pp)
+	IL_METHOD("GetUserDomainName", "()oSystem.String;", _IL_InfoMethods_GetUserDomainName, marshal_pp)
+	IL_METHOD("IsUserInteractive", "()Z", _IL_InfoMethods_IsUserInteractive, marshal_bp)
+	IL_METHOD("GetUserName", "()oSystem.String;", _IL_InfoMethods_GetUserName, marshal_pp)
+	IL_METHOD("GetWorkingSet", "()l", _IL_InfoMethods_GetWorkingSet, marshal_lp)
+	IL_METHOD("GetSpecialFolder", "(vSpecialFolder;)oSystem.String;", _IL_InfoMethods_GetSpecialFolder, marshal_ppi)
 IL_METHOD_END
 
 #endif
@@ -2434,6 +2449,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_IPAddress_suppressed
 	{"IPAddress", "System.Net", IPAddress_Methods},
+#endif
+#ifndef _IL_InfoMethods_suppressed
+	{"InfoMethods", "Platform", InfoMethods_Methods},
 #endif
 #ifndef _IL_Interlocked_suppressed
 	{"Interlocked", "System.Threading", Interlocked_Methods},

@@ -240,6 +240,17 @@ extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread,ILStrin
 
  	return ILSysIOConvertErrno(errno);
 }
+
+/*
+ * public static String[] GetLogicalDrives();
+ */
+System_Array *_IL_DirMethods_GetLogicalDrives(ILExecThread *thread)
+{
+	/* TODO: handle Windows drive lists */
+	return (System_Array *)ILExecThreadNew
+		(thread, "[oSystem.String;", "(Ti)V", (ILVaInt)0);
+}
+
 #ifdef	__cplusplus
 };
 #endif

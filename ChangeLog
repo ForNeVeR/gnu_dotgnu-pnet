@@ -1,4 +1,10 @@
 
+2002-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/Makefile.am, engine/int_proto.h, engine/int_table.c,
+	engine/lib_dir.c, engine/lib_info.c, engine/lib_task.c: introduce
+	the "Platform.InfoMethods" class for random environment information.
+
 2002-11-28  James McParlane  <james@massive.com.au>
 
 	* configure.in: add the "--disable-optimizations" flag to

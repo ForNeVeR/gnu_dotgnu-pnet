@@ -247,7 +247,7 @@ namespace System.Text.RegularExpressions.Syntax {
 					continue;
 				}
 
-				case '*': case '+': case '?': case '{': {
+				case '*': case '+': case '?': {
 					throw NewParseException ("Bad quantifier.");
 				}
 
@@ -1011,10 +1011,10 @@ namespace System.Text.RegularExpressions.Syntax {
 
 			string result = "";
 			while (ptr < pattern.Length) {
-				int c = pattern[ptr ++];
+				int c = pattern[ptr];
 				if (c == '\\')
 					c = ParseEscape ();
-				
+				ptr ++;	
 				result += (char)c;
 			}
 

@@ -30,7 +30,8 @@ namespace System.Text.RegularExpressions {
 		Singleline			= 0x010,
 		IgnorePatternWhitespace		= 0x020,
 		RightToLeft			= 0x040,
-		ECMAScript			= 0x100
+		ECMAScript			= 0x100,
+		CultureInvariant		= 0x200 
 	}
 	
 	[Serializable]
@@ -46,7 +47,6 @@ namespace System.Text.RegularExpressions {
 		}
 
 #if CONFIG_REFLECTION_EMIT
-
 		public static void CompileToAssembly
 			(RegexCompilationInfo[] regexes, AssemblyName aname,
 			 CustomAttributeBuilder[] attribs)
@@ -60,9 +60,8 @@ namespace System.Text.RegularExpressions {
 		{
 			throw new Exception ("Not implemented.");
 		}
+#endif
 		
-#endif // CONFIG_REFLECTION_EMIT
-
 		public static string Escape (string str) {
 			return Parser.Escape (str);
 		}
@@ -331,21 +330,26 @@ namespace System.Text.RegularExpressions {
 				count = Int32.MaxValue;
 
 			int ptr = startat;
-			while (count -- > 0) {
+			while (--count > 0) {
 				Match m = Match (input, ptr);
 				if (!m.Success)
 					break;
 			
 				splits.Add (input.Substring (ptr, m.Index - ptr));
+				int gcount = m.Groups.Count;
+				for (int gindex = 1; gindex < gcount; gindex++) {
+					Group grp = m.Groups [gindex];
+					splits.Add (input.Substring (grp.Index, grp.Length));
+				}
+
 				ptr = m.Index + m.Length;
 			}
 
-			if (count > 0)
+			if (ptr <= input.Length) {
 				splits.Add (input.Substring (ptr));
+			}
 
-			string[] result = new string[splits.Count];
-			splits.CopyTo (result);
-			return result;
+			return (string []) splits.ToArray (typeof (string));
 		}
 
 		// object methods

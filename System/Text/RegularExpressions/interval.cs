@@ -126,7 +126,7 @@ namespace System.Text.RegularExpressions {
 			return low - ((Interval)o).low;
 		}
 
-		public override string ToString () {
+		public new string ToString () {
 			if (IsEmpty)
 				return "(EMPTY)";
 			else if (!contiguous)

@@ -12,7 +12,7 @@ namespace System.Text.RegularExpressions {
 	
 	public abstract class RegexRunnerFactory {
 		protected RegexRunnerFactory () {
-			throw new NotImplementedException ("RegexRunnerFactory is not supported by this library.");
+			throw new NotImplementedException ("RegexRunnerFactory is not supported by Mono.");
 		}
 
 		protected internal abstract RegexRunner CreateInstance ();

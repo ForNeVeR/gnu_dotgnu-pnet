@@ -14,7 +14,7 @@ namespace System.Text.RegularExpressions {
 		// constructor
 	
 		protected internal RegexRunner () {
-			throw new NotImplementedException ("RegexRunner is not supported by this library");
+			throw new NotImplementedException ("RegexRunner is not supported by Mono.");
 		}
 
 		// protected abstract

@@ -4,6 +4,26 @@
 	* runtime/System/Text/StringBuilder.cs: wrong length returned
 	from "AppendSpace" when the maximum capacity is exceeded.
 
+	* System/Text/RegularExpressions/ChangeLog,
+	System/Text/RegularExpressions/RegexRunner.cs,
+	System/Text/RegularExpressions/RegexRunnerFactory.cs,
+	System/Text/RegularExpressions/arch.cs,
+	System/Text/RegularExpressions/cache.cs,
+	System/Text/RegularExpressions/category.cs,
+	System/Text/RegularExpressions/collections.cs,
+	System/Text/RegularExpressions/compiler.cs,
+	System/Text/RegularExpressions/debug.cs,
+	System/Text/RegularExpressions/interpreter.cs,
+	System/Text/RegularExpressions/interval.cs,
+	System/Text/RegularExpressions/match.cs,
+	System/Text/RegularExpressions/notes.txt,
+	System/Text/RegularExpressions/parser.cs,
+	System/Text/RegularExpressions/quicksearch.cs,
+	System/Text/RegularExpressions/regex.cs,
+	System/Text/RegularExpressions/replace.cs,
+	System/Text/RegularExpressions/syntax.cs: update the
+	System.Text.RegularExpressions code from the latest Mono snapshot.
+
 2004-01-19  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/StreamReader.cs, System.Xml/XmlStreamReader.cs,

@@ -408,6 +408,14 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 	else
 	{
 		isModule = 1;
+		if(ILClassNextMember(info, 0) != 0)
+		{
+			fputs("// .class ", outstream);
+			ILDumpFlags(outstream, ILClass_Attrs(info),
+						ILTypeDefinitionFlags, 0);
+			ILDumpClassName(outstream, image, info, flags);
+			fputs("\n// { \n", outstream);
+		}
 	}
 
 	/* Dump the nested classes */
@@ -474,6 +482,10 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 	if(!isModule)
 	{
 		fputs("}\n", outstream);
+	}
+	else if(ILClassNextMember(info, 0) != 0)
+	{
+		fputs("// }\n", outstream);
 	}
 }
 

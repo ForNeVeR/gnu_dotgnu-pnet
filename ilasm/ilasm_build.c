@@ -216,6 +216,16 @@ void ILAsmBuildNewClass(const char *name, ILClass *parent, ILUInt32 attrs)
 	static long nextUnique = 1;
 	char uniqueName[64];
 
+	/* Set the default parent to "System.Object" if necessary */
+	if(!parent &&
+	   (attrs & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK)
+				!= IL_META_TYPEDEF_INTERFACE &&
+	   (strcmp(name, "Object") != 0 ||
+	    strcmp(namespace.string, "System") != 0))
+	{
+		parent = ILAsmSystemClass("Object");
+	}
+
 	/* Do we already have a class with this name? */
 	if(classStackSize == 0)
 	{

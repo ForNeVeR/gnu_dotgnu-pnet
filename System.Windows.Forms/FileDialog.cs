@@ -1715,6 +1715,20 @@ public abstract class FileDialog : CommonDialog
 					if(filename.IndexOfAny(directorySeparators) != -1)
 					{
 						// Contains a directory specification.
+						if(filename.Length >= 2 &&
+						   filename[0] == '~' &&
+						   (filename[1] == '/' || filename[1] == '\\'))
+						{
+							// Filename of the form "~/xyzzy", which we
+							// convert into a user home directory reference.
+							String home = Environment.GetEnvironmentVariable
+								("HOME");
+							if(home != null && home.Length > 0)
+							{
+								filename = Path.Combine
+									(home, filename.Substring(2));
+							}
+						}
 						filename = Path.Combine(currentDirectory, filename);
 						if(filename == Path.GetPathRoot(filename))
 						{
@@ -1752,6 +1766,12 @@ public abstract class FileDialog : CommonDialog
 					{
 						// Reload the current level.
 						Reload();
+						name.Text = String.Empty;
+					}
+					else if(filename == "~")
+					{
+						// Go to the home directory.
+						Home();
 						name.Text = String.Empty;
 					}
 					else if(filename.Length > 0)

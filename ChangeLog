@@ -6,3 +6,6 @@
 
 	* HACKING: update the HACKING file to contain information on how
 	to submit bug reports and patches.
+
+	* make_patch.sh: add a script that assists with making patch
+	files for users.

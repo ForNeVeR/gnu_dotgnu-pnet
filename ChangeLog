@@ -1,4 +1,3 @@
-
 2002-09-15  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/Dns.cs : Implement all the synchronous
@@ -9,8 +8,14 @@
 
 2002-09-15  Stephen Compall  <rushing@sigecom.net>
 
-	* tests/System/Uri.cs: general code formatting cleanup.
-	(CheckHostName): IPng checks for aforementioned bug fixes.
+	* System/Uri.cs (StripMetaDirectories): Handling of the last
+	element being a slash.
+	(CheckHostName): IPng handling of missing last element because of
+	the previous element being missing also!
+	
+	* tests/System/TestUri.cs: general code formatting cleanup.
+	(TestCheckHostName): IPng checks for aforementioned bug fixes.
+	(TestCanonicalize): Checks for the missing ending / problem.
 
 2002-09-14  Stephen Compall  <rushing@sigecom.net>
 

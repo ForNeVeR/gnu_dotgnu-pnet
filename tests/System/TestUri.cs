@@ -33,7 +33,7 @@ complete.
 public class TestUri : TestCase
  {
 
-	Uri rmsUri;
+	Uri rmsUri, pathEnding, noPathEnding;
 
 	// Constructor.
 	public TestUri(String name)	: base(name)
@@ -63,6 +63,8 @@ public class TestUri : TestCase
 				try // good constructors
 				{
 					rmsUri = new Uri(lasturi = "ftp://rms@ftp.gnu.org:2538/pub/gnu/?freesoftware=good");
+					pathEnding = new Uri(lasturi = "http://www.gnu.org/software/../software/guile/");
+					noPathEnding = new Uri(lasturi = "http://www.gnu.org/software/../software/guile");
 				}
 				catch (Exception)
 				{
@@ -76,7 +78,16 @@ public class TestUri : TestCase
 		}
 	}
 
-	// Canonicalize N/A
+	public void TestCanonicalize()
+	{
+		AssertEquals("StripMetaDirectories should keep the ending slash when there is one",
+			     pathEnding.AbsolutePath,
+			     "/software/guile/");
+		AssertEquals("StripMetaDirectories shouldn't have an ending slash when there isn't one",
+			     pathEnding.AbsolutePath,
+			     "/software/guile/index.html");
+		
+	}
 
 	public void TestUriCheckHostName()
 	{
@@ -243,7 +254,7 @@ public class TestUri : TestCase
 	{
 	/*TODO*/
 	}
-
+
 	public void TestAbsolutePath()
 	{
 	/*TODO*/

@@ -229,7 +229,13 @@ public class Uri : MarshalByRefObject
 		foreach (String dir in dirs)
 			if (dir.Length > 0) // visible?
 				newpath.Append('/').Append(dir);
-		if (newpath.Length == 0)
+
+		// we always must have at least a slash
+		// special case: if the last one is "invisible", add
+		// a slash, because it is the directory mark of the
+		// previous item
+		if (newpath.Length == 0
+		    || dirs[dirs.Length-1].Length == 0)
 			newpath.Append('/');
 		return newpath.ToString();
 	}
@@ -276,7 +282,8 @@ public class Uri : MarshalByRefObject
 			// 128-bit. The spec allows the last two words
 			// to be specified by the old IPv4 method
 			// can't be more than 8 parts
-			if (parts.Length > 8)
+			// can't be less than 3 parts
+			if (parts.Length > 8 || parts.Length < 3)
 				throw new FormatException();
 
 			// presence of . in the last element means it
@@ -298,9 +305,14 @@ public class Uri : MarshalByRefObject
 				int pos = 0;
 				// handle special case to avoid parsing
 				// if we had a zerocompress in pos 1
-				if (dex == 0
-				    && parts[dex].Length == 0
-				    && parts[dex].Length == 0)
+				// or we have zerocompress in next-to-last
+				// then the last can be empty
+				if ((dex == 0
+				     && parts[0].Length == 0
+				     && parts[1].Length == 0)
+				    || (dex == parts.Length - 1
+					&& parts[dex].Length == 0
+					&& parts[dex-1].Length == 0))
 					continue;
 
 				// check for 0 compress
@@ -824,20 +836,20 @@ public class Uri : MarshalByRefObject
 		StringBuilder retStr = new StringBuilder(path.Length);
 		int afterPrevPcntSignIndex = 0;
 
-		for (int lastPcntSignIndex = path.IndexOf('%'); lastPcntSignIndex >= 0;
-			// String.IndexOf allows up to String.Length to be the startIndex
-			// so if this throws, it is an error
-			lastPcntSignIndex = path.IndexOf('%', lastPcntSignIndex))
+		for (int lastPcntSignIndex = path.IndexOf('%');
+		     lastPcntSignIndex >= 0;
+		     lastPcntSignIndex = path.IndexOf('%', lastPcntSignIndex))
 		{
 			// append string up to % sign
-			retStr.Append(path, afterPrevPcntSignIndex, lastPcntSignIndex-afterPrevPcntSignIndex);
+			retStr.Append(path, afterPrevPcntSignIndex,
+				      lastPcntSignIndex-afterPrevPcntSignIndex);
 			// get the hex character, or just %, and append
 			retStr.Append(HexUnescapeWithUTF8(path, ref lastPcntSignIndex));
 			afterPrevPcntSignIndex = lastPcntSignIndex;
 		}
 		// then push on the rest of the string
 		return retStr.Append(path, afterPrevPcntSignIndex,
-							 path.Length - afterPrevPcntSignIndex).ToString();
+				     path.Length - afterPrevPcntSignIndex).ToString();
 		// and return it
 	}
 

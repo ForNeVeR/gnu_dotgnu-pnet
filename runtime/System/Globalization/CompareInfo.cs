@@ -205,7 +205,7 @@ public class CompareInfo : IDeserializationCallback
 					throw new ArgumentOutOfRangeException
 						("length2", _("ArgRange_StringRange"));
 				}
-				if(string1 != null)
+				if(string1 != null && string1.Length != 0)
 				{
 					if(offset1 >= string1.Length)
 					{
@@ -231,7 +231,7 @@ public class CompareInfo : IDeserializationCallback
 							("length1", _("ArgRange_StringRange"));
 					}
 				}
-				if(string2 != null)
+				if(string2 != null && string2.Length != 0)
 				{
 					if(offset2 >= string2.Length)
 					{

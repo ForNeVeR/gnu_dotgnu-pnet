@@ -1,4 +1,10 @@
 
+2003-02-07  Marcus Urban  <mathpup@mylinuxisp.com>
+
+	* runtime/System/Globalization/CompareInfo.cs: Handle empty string 
+	in DefaultCompare() correctly. For bug #2492.
+	(Gopal,#1084)
+
 2003-02-07  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Private/DateTimeFormat/DateTimeFormatter.cs: fix

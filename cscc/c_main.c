@@ -44,24 +44,9 @@ int const CCPluginForceStdlib = 1;
 
 int CCPluginInit(void)
 {
-	/* Detect the default type sizes, based on the command-line options */
-	CTypeSizeDetect();
-
 	/* Initialize the C pre-processor with the standard macro definitions */
-	if(CTypePtrSize == 4)
-	{
-		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-						"__WORDSIZE=32");
-		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-						"__PTRDIFF_TYPE__=int");
-	}
-	else
-	{
-		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-						"__WORDSIZE=64");
-		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-						"__PTRDIFF_TYPE__=__int64");
-	}
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__PTRDIFF_TYPE__=long");
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__SIZE_TYPE__=__unsigned_int__");
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,

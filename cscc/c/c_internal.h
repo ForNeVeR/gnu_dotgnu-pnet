@@ -27,7 +27,6 @@
 #include <cscc/c/c_types.h>
 #include <cscc/c/c_declspec.h>
 #include <cscc/c/c_function.h>
-#include <cscc/c/c_typesize.h>
 #include <codegen/cg_scope.h>
 #include <cscc/c/c_scope.h>
 

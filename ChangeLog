@@ -1,4 +1,11 @@
 
+2004-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c_main.c, cscc/c/Makefile.am, cscc/c/c_internal.h,
+	cscc/c/c_oper.tc, cscc/c/c_types.c, cscc/c/c_typesize.c,
+	cscc/c/c_typesize.h: remove reference to the definitions in
+	"c_typesize.h" because it is now obsolete.
+
 2004-03-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.1, cscc/cscc.c, cscc/common/cc_main.c,

@@ -891,14 +891,7 @@ static ILUInt32 BitFieldLeftOver(ILGenInfo *info, ILClass *classInfo,
 	ILUInt32 fieldSize;
 
 	/* Initialize the "start" value */
-	if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
-	{
-		*start = maxBits;
-	}
-	else
-	{
-		*start = 0;
-	}
+	*start = 0;
 
 	/* Search all "BitFieldAttribute" values for "name" */
 	attr = 0;
@@ -966,31 +959,14 @@ static ILUInt32 BitFieldLeftOver(ILGenInfo *info, ILClass *classInfo,
 		ILSerializeReaderDestroy(reader);
 
 		/* Adjust "start" for the field position */
-		if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
+		if(*start < (fieldStart + fieldSize))
 		{
-			if(*start > fieldStart)
-			{
-				*start = fieldStart;
-			}
-		}
-		else
-		{
-			if(*start < (fieldStart + fieldSize))
-			{
-				*start = fieldStart + fieldSize;
-			}
+			*start = fieldStart + fieldSize;
 		}
 	}
 
 	/* Return the size of the left-over area to the caller */
-	if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
-	{
-		return *start;
-	}
-	else
-	{
-		return maxBits - *start;
-	}
+	return maxBits - *start;
 }
 
 /*

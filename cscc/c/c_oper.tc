@@ -770,20 +770,10 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 				CGenCloneLine(temp, node->expr2);
 				node->expr2 = temp;
 				*parent = DivPtrSize((ILNode *)node, elemType);
-				if(CTypePtrSize == 4)
-				{
-					*parent = ILNode_CastSimple_create
-						(*parent, ILMachineType_Int32);
-					CGenCloneLine(*parent, (ILNode *)node);
-					CSemSetRValue(value1, ILType_Int32);
-				}
-				else
-				{
-					*parent = ILNode_CastSimple_create
-						(*parent, ILMachineType_Int64);
-					CGenCloneLine(*parent, (ILNode *)node);
-					CSemSetRValue(value1, ILType_Int64);
-				}
+				*parent = ILNode_CastSimple_create
+					(*parent, ILMachineType_NativeInt);
+				CGenCloneLine(*parent, (ILNode *)node);
+				CSemSetRValue(value1, ILType_Int);
 				return value1;
 			}
 			else

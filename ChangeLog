@@ -1,4 +1,10 @@
 
+2002-03-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/method10.cs,
+	csharp/class/method10.err, csharp/class/method10.jerr:
+	test "extern" constructor declarations.
+
 2002-03-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/interface3.cs,

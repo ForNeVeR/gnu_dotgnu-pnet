@@ -151,6 +151,64 @@ static void ModifyAttrName(ILNode_Identifier *ident)
 }
 
 /*
+ * Look up a named field or property within an attribute type.
+ */
+static ILProgramItem *LookupAttrField(ILGenInfo *info, ILType *type,
+									  ILNode *nameNode)
+{
+	char *name = ILQualIdentName(nameNode, 0);
+	ILClass *classInfo = ILClassResolve(ILTypeToClass(info, type));
+	ILClass *scope = ILClassLookup(ILClassGlobalScope(info->image),
+							 	   "<Module>", (const char *)0);
+	ILMember *member;
+	ILMethod *setter;
+	while(classInfo != 0)
+	{
+		member = 0;
+		while((member = ILClassNextMember(classInfo, member)) != 0)
+		{
+			/* Skip members that aren't accessible to the module */
+			if(!ILMemberAccessible(member, scope))
+			{
+				continue;
+			}
+
+			/* Check the member name */
+			if(strcmp(ILMember_Name(member), name) != 0)
+			{
+				continue;
+			}
+
+			/* Return the field or property */
+			if(ILMember_IsField(member))
+			{
+				/* The field must not be static */
+				if(!ILField_IsStatic((ILField *)member))
+				{
+					return ILToProgramItem(member);
+				}
+			}
+			else if(ILMember_IsProperty(member))
+			{
+				/* The property must have a one-argument setter, and
+				   must not be static */
+				setter = ILProperty_Setter((ILProperty *)member);
+				if(setter && !ILMethod_IsStatic(setter) &&
+				   ILTypeNumParams(ILMethod_Signature(setter)) == 1)
+				{
+					return ILToProgramItem(member);
+				}
+			}
+
+			/* Method, event, or something else that is not usable */
+			return 0;
+		}
+		classInfo = ILClass_Parent(classInfo);
+	}
+	return 0;
+}
+
+/*
  * Process a single attribute in a section.
  */
 static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
@@ -159,11 +217,15 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	ILType *type;
 	ILClass *classInfo;
 	ILNode *argList;
-	int numArgs, argNum;
+	ILNode *namedArgList;
+	int numArgs, numNamedArgs, argNum;
 	ILNode_ListIter iter;
 	ILNode *arg;
 	CSEvalArg *evalArgs;
 	ILEvalValue *evalValues;
+	CSEvalArg *namedArgs;
+	ILEvalValue *namedValues;
+	ILProgramItem **namedFields;
 	CSSemValue value;
 	int haveErrors;
 	CSSemValue method;
@@ -313,7 +375,85 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	}
 
 	/* Perform semantic analysis on the named arguments */
-	/* TODO */
+	if(attr->args)
+	{
+		namedArgList = ((ILNode_AttrArgs *)(attr->args))->namedArgs;
+	}
+	else
+	{
+		namedArgList = 0;
+	}
+	numNamedArgs = ILNode_List_Length(namedArgList);
+	if(numNamedArgs)
+	{
+		namedArgs = (CSEvalArg *)ILMalloc(sizeof(CSEvalArg) * numNamedArgs);
+		if(!namedArgs)
+		{
+			CCOutOfMemory();
+		}
+		namedValues = (ILEvalValue *)ILMalloc
+			(sizeof(ILEvalValue) * numNamedArgs);
+		if(!namedValues)
+		{
+			CCOutOfMemory();
+		}
+		namedFields = (ILProgramItem **)ILMalloc
+			(sizeof(ILProgramItem *) * numNamedArgs);
+		if(!namedFields)
+		{
+			CCOutOfMemory();
+		}
+		ILNode_ListIter_Init(&iter, namedArgList);
+		argNum = 0;
+		while((arg = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			/* Convert the name into a field or property */
+			if((namedFields[argNum] = LookupAttrField
+					(info, type, ((ILNode_NamedArg *)arg)->name)) == 0)
+			{
+				CCErrorOnLine
+					(yygetfilename(arg), yygetlinenum(arg),
+				     "`%s' is not a valid named argument for `%s'",
+				     ILQualIdentName(((ILNode_NamedArg *)arg)->name, 0),
+				     CSTypeToName(type));
+				haveErrors = 1;
+			}
+
+			/* Perform semantic analysis on the argument to get the type.
+			   Because the argument is wrapped in "ToConst", we don't
+			   have to worry about reporting errors here */
+			if(!CSSemExpectValue(((ILNode_NamedArg *)arg)->value, info,
+								 &(((ILNode_NamedArg *)arg)->value), &value))
+			{
+				haveErrors = 1;
+				namedArgs[argNum].type = ILType_Int32;
+			}
+			else
+			{
+				namedArgs[argNum].type = CSSemGetType(value);
+			}
+			namedArgs[argNum].node = ((ILNode_NamedArg *)arg)->value;
+			namedArgs[argNum].parent = &(((ILNode_NamedArg *)arg)->value);
+			namedArgs[argNum].modifier = ILParamMod_empty;
+
+			/* Evaluate the constant value of the argument */
+			if(!haveErrors &&
+			   !ILNode_EvalConst(namedArgs[argNum].node, info,
+			   					 &(namedValues[argNum])))
+			{
+				haveErrors = 1;
+			}
+
+			/* Advance to the next argument */
+			++argNum;
+		}
+	}
+	else
+	{
+		namedArgs = 0;
+		namedValues = 0;
+		namedFields = 0;
+	}
 
 	/* Bail out if we had errors during analysis of the arguments */
 	if(haveErrors)
@@ -470,8 +610,73 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			break;
 		}
 	}
-	ILSerializeWriterSetNumExtra(writer, 0);
-	/* TODO: serialize named arguments */
+	ILSerializeWriterSetNumExtra(writer, numNamedArgs);
+	for(argNum = 0; argNum < numNamedArgs; ++argNum)
+	{
+		argValue = &(namedValues[argNum]);
+		paramType = ILValueTypeToType(info, argValue->valueType);
+		serialType = ILSerializeGetType(paramType);
+		if(ILMember_IsField(((ILMember *)(namedFields[argNum]))))
+		{
+			ILSerializeWriterSetField
+				(writer, ILMember_Name((ILMember *)(namedFields[argNum])),
+				 serialType);
+		}
+		else
+		{
+			ILSerializeWriterSetProperty
+				(writer, ILMember_Name((ILMember *)(namedFields[argNum])),
+				 serialType);
+		}
+		switch(serialType)
+		{
+			case IL_META_SERIALTYPE_BOOLEAN:
+			case IL_META_SERIALTYPE_I1:
+			case IL_META_SERIALTYPE_U1:
+			case IL_META_SERIALTYPE_I2:
+			case IL_META_SERIALTYPE_U2:
+			case IL_META_SERIALTYPE_CHAR:
+			case IL_META_SERIALTYPE_I4:
+			case IL_META_SERIALTYPE_U4:
+			{
+				ILSerializeWriterSetInt32(writer, argValue->un.i4Value,
+										  serialType);
+			}
+			break;
+
+			case IL_META_SERIALTYPE_I8:
+			case IL_META_SERIALTYPE_U8:
+			{
+				ILSerializeWriterSetInt64(writer, argValue->un.i8Value);
+			}
+			break;
+
+			case IL_META_SERIALTYPE_R4:
+			{
+				ILSerializeWriterSetFloat32(writer, argValue->un.r4Value);
+			}
+			break;
+
+			case IL_META_SERIALTYPE_R8:
+			{
+				ILSerializeWriterSetFloat64(writer, argValue->un.r8Value);
+			}
+			break;
+
+			case IL_META_SERIALTYPE_STRING:
+			{
+				ILSerializeWriterSetString(writer, argValue->un.strValue.str,
+										   argValue->un.strValue.len);
+			}
+			break;
+
+			default:
+			{
+				/* TODO: types and arrays */
+			}
+			break;
+		}
+	}
 	blob = ILSerializeWriterGetBlob(writer, &blobLen);
 	if(!blob)
 	{
@@ -499,6 +704,18 @@ cleanup:
 	if(evalValues)
 	{
 		ILFree(evalValues);
+	}
+	if(namedArgs)
+	{
+		ILFree(namedArgs);
+	}
+	if(namedValues)
+	{
+		ILFree(namedValues);
+	}
+	if(namedFields)
+	{
+		ILFree(namedFields);
 	}
 	if(writer)
 	{

@@ -9,6 +9,11 @@
 	csharp/stmt/switch2.err, csharp/stmt/switch2.jerr: implement test
 	cases for invalid uses of the "switch" statement.
 
+	* csharp/class/Makefile.am, csharp/class/enum3.cs,
+	csharp/class/enum3.il, csharp/class/enum3.jl: implement test
+	cases for enumerated types that include self-referencing constant
+	expressions.
+
 2001-01-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/const1.il, csharp/class/const1.jl,

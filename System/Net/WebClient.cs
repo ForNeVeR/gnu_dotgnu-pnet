@@ -22,6 +22,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.ComponentModel;
 using System.Collections.Specialized;
 
@@ -34,11 +35,15 @@ namespace System.Net
 		private WebResponse webresponse=null;
 		private String baseAddress=null;
 
+		const String defaultContentType = "application/octet-stream";
+		const String fileContentType = "multipart/form-data";
+		const String formContentType = "application/x-www-form-urlencoded";
+
 		private void CreateWebrequest(String str)
 		{
 			if(str == null)
 			{
-				throw new ArgumentNullException(str);
+				throw new ArgumentNullException("str");
 			}
 			if(webrequest!=null)
 			{
@@ -69,7 +74,7 @@ namespace System.Net
 				}
 			}
 		}
-		
+
 		public byte[] DownloadData(String address)
 		{
 			Stream stream = OpenRead(address);
@@ -114,13 +119,12 @@ namespace System.Net
 			return UploadData(address, "POST", data);
 		}
 
-		/* TODO : someday I'm going to implement Chunked data sends 
-				this way */
 		public byte[] UploadData(String address, String method, byte[] data)
 		{
 			CreateWebrequest(address);
 			webrequest.Method = method;
 			webrequest.ContentLength = data.Length;
+			webrequest.ContentType = defaultContentType;
 			Stream stream = webrequest.GetRequestStream();
 			stream.Write(data,0,data.Length);
 			webresponse = webrequest.GetResponse();
@@ -137,21 +141,45 @@ namespace System.Net
 		{
 			return UploadFile(address, "POST", fileName);
 		}
-
+		/* Note: refer rfc2068.txt for more info */
 		public byte[] UploadFile(String address, String method, String fileName)
 		{
+			String name=Path.GetFileName(fileName);
+			/* Some inane boundary not likely in a data stream generally */
+			String mimeBoundary = 
+							"--DotGNU--Portable--message--"+
+							DateTime.Now.Ticks.ToString("X");
+			byte [] boundary = 
+					Encoding.ASCII.GetBytes("\r\n--" + mimeBoundary + "\r\n");
+
+			String headerString = 
+			"--"+boundary + "\r\n" +
+			"Content-Disposition: form-data; name=\"file\";filename\""+name+"\""+"\r\n"
+			+ "\r\n";
+
+			byte [] header = Encoding.UTF8.GetBytes(headerString);
+
 			CreateWebrequest(address);
 			webrequest.Method = method;
+			webrequest.ContentType = fileContentType + "; " +
+												 "boundary="+mimeBoundary;
 			Stream file = File.OpenRead(fileName);
 			try
 			{
 				webrequest.ContentLength = file.Length;
+				webrequest.ContentLength += header.Length+boundary.Length; 
 			}
 			catch
 			{
 			}
 			Stream stream = webrequest.GetRequestStream();
-			WriteToStream(file,stream, -1);
+			
+			// Send in the mime header
+			stream.Write(header,0,header.Length);
+			WriteToStream(file,stream,-1);
+			// Send in the boundary
+			stream.Write(boundary,0,boundary.Length);
+			
 			webresponse = webrequest.GetResponse();
 			MemoryStream memory = new MemoryStream(1024);
 			WriteToStream(webresponse.GetResponseStream(),memory, 

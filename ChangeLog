@@ -1,4 +1,9 @@
 
+2003-05-26  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Net/WebClient.cs: Implement MIME based file uploads using
+	multipart/form-data and boundaries.
+
 2003-05-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Diagnostics/BooleanSwitch.cs,

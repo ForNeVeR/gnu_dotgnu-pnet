@@ -20,3 +20,10 @@
 Serialize_NoObjectID=No object identifier has been assigned
 Serialize_BadType=Bad type specified for SerializationInfo.AddValue
 Serialize_AlreadyPresent=The specified name is already present
+Serialize_NotField=Member descriptor is not a FieldInfo object
+Serialize_NotClrType=Specified type is not a runtime engine type
+Serialize_MemberDataMismatch=Member and data arrays have different lengths
+Serialize_BadObjectID=Invalid object identifier
+Serialize_AlreadyRegistered=The specified object identifier has already been registered with a different object
+Serialize_MissingFixup=Missing fixup during deseralization process
+Serialize_BadFixup=Fixup could not be applied

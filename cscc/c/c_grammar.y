@@ -1466,6 +1466,18 @@ PrimaryExpression
 					}
 					break;
 
+					case ILMachineType_NativeInt:
+					{
+						$$ = ILNode_Int_create($1.value, $1.isneg, 1);
+					}
+					break;
+
+					case ILMachineType_NativeUInt:
+					{
+						$$ = ILNode_UInt_create($1.value, $1.isneg, 1);
+					}
+					break;
+
 					default:
 					{
 						/* Shouldn't happen */

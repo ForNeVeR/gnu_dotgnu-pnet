@@ -1,3 +1,10 @@
+
+2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs: copy the OnPaint clip logic
+	to "DrawingTopLevelWindow"; make the coding styles consistent.
+
 2003-07-25  Neil Cawse   <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: implement UpdateClip to support clipping

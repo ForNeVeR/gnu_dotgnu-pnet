@@ -441,10 +441,14 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				if(sink != null)
 				{
 					DrawingGraphics g = new DrawingGraphics(toolkit, graphics);
-					System.Drawing.Graphics gr =
-						ToolkitManager.CreateGraphics(g);
-					sink.ToolkitExpose(gr);
-					gr.Dispose();
+					using(System.Drawing.Graphics gr =
+								ToolkitManager.CreateGraphics(g))
+					{
+						gr.SetClip(DrawingWindow.RegionToDrawingRegion
+										(graphics.ExposeRegion),
+								   CombineMode.Replace);
+						sink.ToolkitExpose(gr);
+					}
 				}
 			}
 

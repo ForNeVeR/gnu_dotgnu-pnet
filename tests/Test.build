@@ -24,7 +24,7 @@
 				<file name="${pnet.libdir}/runtime/mscorlib.dll"/>
 				<file name="${pnet.libdir}/System/System.dll"/>
 				<file name="${pnet.libdir}/System.Xml/System.Xml.dll"/>
-				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 		</compile>
 	</target>
@@ -47,7 +47,7 @@
 			<references>
 				<file name="${pnet.libdir}/runtime/mscorlib.dll"/>
 				<file name="${pnet.libdir}/System/System.dll"/>
-				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 
 		</compile>
@@ -75,7 +75,7 @@
 				<file name="${pnet.libdir}/runtime/mscorlib.dll"/>
 				<file name="${pnet.libdir}/System/System.dll"/>
 				<file name="${pnet.libdir}/System.Xml/System.Xml.dll"/>
-				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 
 		</compile>
@@ -99,7 +99,7 @@
 				<file name="${pnet.libdir}/System/System.dll"/>
 				<file name="${pnet.libdir}/System.Xml/System.Xml.dll"/>
 				<file name="../class/System.Runtime.Serialization.Formatters.Soap/System.Runtime.Serialization.Formatters.Soap.dll"/>
-				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 
 			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
@@ -127,7 +127,7 @@
 				<file name="${pnet.libdir}/System/System.dll"/>
 				<file name="${pnet.libdir}/System.Xml/System.Xml.dll"/>
 				<file name="../class/System.Security/System.Security.dll"/>
-				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 
 		</compile>
@@ -153,7 +153,7 @@
 				<file name="${pnet.libdir}/System.Xml/System.Xml.dll"/>
 				<file name="../class/System.Security/System.Security.dll"/>
 				<file name="../class/Mono.Security/Mono.Security.dll"/>
-				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 		</compile>
 	</target>
@@ -177,6 +177,7 @@
 				<excludes name="System.Xml/XmlDataDocumentTest2.cs"/>
 				<excludes name="System.Data.Common/**.cs"/>
 				<excludes name="System.Data.Odbc/**.cs"/>
+				<excludes name="System.Data.SqlClient/**.cs"/>
 				<excludes name="*.cs"/>
 			</sources>
 
@@ -189,7 +190,7 @@
 				<file name="../class/Mono.Security/Mono.Security.dll"/>
 				<file name="../class/System.Data/System.Data.dll"/>
 				<file name="../class/Mono.Data.PostgreSqlClient/Mono.Data.PostgreSqlClient.dll"/>
-				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 
 			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
@@ -223,7 +224,7 @@
 				<file name="../class/System.Data/System.Data.dll"/>
 				<file name="../class/System.Web/System.Web.dll"/>
 				<file name="../class/System.Web.Services/System.Web.Services.dll"/>
-				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 
 			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
@@ -258,7 +259,7 @@
 				<file name="../class/System.Web/System.Web.dll"/>
 				<file name="../class/System.Runtime.Serialization.Formatters.Soap/System.Runtime.Serialization.Formatters.Soap.dll"/>
 				<file name="../class/System.Runtime.Remoting/System.Runtime.Remoting.dll"/>
-				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 
 			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
@@ -284,7 +285,7 @@
 				<file name="${pnet.libdir}/System/System.dll"/>
 				<file name="${pnet.libdir}/System.Xml/System.Xml.dll"/>
 				<file name="../class/Mono.Directory.LDAP/Mono.Directory.LDAP.dll"/>
-				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 		</compile>
 	</target>

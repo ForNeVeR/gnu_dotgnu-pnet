@@ -15,6 +15,7 @@
 				<includes name="**/*.cs"/> 
 				<excludes name="Test/**"/>
 				<excludes name="System.Web.Util/ICalls.cs"/>
+				<excludes name="System.Web.UI.WebControls/Localize.cs"/>
 				<file basedir="." name="ICalls.cs"/>
 			</sources>
 

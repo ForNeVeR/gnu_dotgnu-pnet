@@ -13,8 +13,6 @@
 				<includes name="**/*.cs"/> 
 				<excludes name="Test/**"/>
 
-				<!-- Missing a declaration of MonoTODOAttribute -->
-				<file name="../corlib/System/TODOAttribute.cs"/>
 			</sources>
 
 			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>

@@ -1,3 +1,15 @@
+2004-09-12  Klaus Treichel  <ktreichel@web.de>
+
+	* class/Custommarshalers/Custommarshalers.build: remove obsolete reference
+	to the missing TODOAttribute
+
+	* class/System.Web/System.Web.build: exclude the file
+	System.Web.UI.WebControls/Localize.cs because of cscc problem with the
+	fileheader.
+ 
+	* tests/Test.build: fix reference to nunit.framework.dll and exclude
+	directory System.Data.SqlClient from System.Data test.
+
 2004-09-09  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* build-debian-packages.conf,

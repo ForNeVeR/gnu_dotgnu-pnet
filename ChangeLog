@@ -1,4 +1,10 @@
 
+2002-10-27  Richard Baumann <biochem333@nyc.rr.com>
+
+	* support/time.c: fixed a bug in ILGetTimeZoneAdjust. An
+	hour was being added to the west-of-gmt offset instead of
+	subtracted, when dst is in effect.
+
 2002-10-26  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/csharp/cs_internal.h,

@@ -79,7 +79,7 @@ ILInt32 ILGetTimeZoneAdjust(void)
 		isdst = tms->tm_isdst;
 		initialized = 1;
 	}
-	return (ILInt32)(timezone + (isdst ? 3600 : 0));
+	return (ILInt32)(timezone - (isdst ? 3600 : 0));
 }
 
 time_t ILCLIToUnixTime(ILInt64 time)

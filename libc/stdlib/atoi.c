@@ -25,38 +25,46 @@
 #include <errno.h>
 
 /*
- * Compute "a * 10 + b" while detecting 64-bit overflow.
+ * Compute "a * base + b" while detecting 64-bit overflow.
  */
 static unsigned long long
-long_mult10_add (unsigned long long a, int b, int *overflow)
+long_mult_add (unsigned long long a, int base, int b, int *overflow)
 {
+  unsigned long long result;
   unsigned long long temp;
-  temp = a + a;
-  if (temp < a)
+  if ((base & 1) != 0)
+    result = a;
+  else
+    result = 0;
+  base >>= 1;
+  while (base != 0)
     {
-      *overflow = 1;
-      return UINT64_MAX;
-    }
-  if (a & (((unsigned long long)7) << 61))
-    {
-      *overflow = 1;
-      return UINT64_MAX;
-    }
-  a <<= 3;
-  temp += a;
-  if (temp < a)
-    {
-      *overflow = 1;
-      return UINT64_MAX;
+      temp = a + a;
+      if (temp < a)
+	{
+	  *overflow = 1;
+	  return UINT64_MAX;
+	}
+      a = temp;
+      if ((base & 1) != 0)
+	{
+	  result += a;
+	  if (result < a)
+	    {
+	      *overflow = 1;
+	      return UINT64_MAX;
+	    }
+	}
+      base >>= 1;
     }
   a = (unsigned long long)(long long)b;
-  temp += a;
-  if (temp < a)
+  result += a;
+  if (result < a)
     {
       *overflow = 1;
       return UINT64_MAX;
     }
-  return temp;
+  return result;
 }
 
 /*
@@ -126,7 +134,7 @@ strtoul_inner (const char *nptr, char **endptr, int base,
         break;
       ++current;
       ++numdigits;
-      value = long_mult10_add (value, digit, overflow);
+      value = long_mult_add (value, base, digit, overflow);
     }
   if (!numdigits)
     return 0;

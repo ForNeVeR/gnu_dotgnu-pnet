@@ -4,6 +4,10 @@
 	* cscc/c/c_grammar.y (ParameterDeclaration): support parameters
 	declarations of the form "register <type>".
 
+	* cscc/c/c_stmt.tc (ILNode_NewScope): return the inner statement's
+	semantic value to the caller so that expression statements are
+	handled correctly.
+
 2004-02-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,

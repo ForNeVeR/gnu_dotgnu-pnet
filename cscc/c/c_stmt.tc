@@ -644,14 +644,15 @@ ILNode_CSemAnalysis(ILNode_CLabelRef)
 ILNode_CSemAnalysis(ILNode_NewScope)
 {
 	ILScope *savedScope = info->currentScope;
+	CSemValue value;
 	if(!(node->scope))
 	{
 		node->scope = ILScopeCreate(info, savedScope);
 	}
 	info->currentScope = node->scope;
-	StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
+	value = StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
 	info->currentScope = savedScope;
-	return CSemValueDefault;
+	return value;
 }
 
 /*

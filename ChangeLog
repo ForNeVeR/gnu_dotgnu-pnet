@@ -3,6 +3,9 @@
 	
 	* resources/en_US/runtime/IO.txt,  resources/de_DE/runtime/IO.txt:
 	Fix the formatting parameter of IO_CopyFileExists resource.
+
+	* runtime/System/Runtime/InteropServices/ExternalException.cs: Add
+	the new ExternalException class
 	
 2002-12-25  Aditya P. Bansod <abansod@fullenergy.com>
 	

@@ -14,6 +14,9 @@
 	* runtime/System/Reflection/AssemblyVersionAttribute.cs:
 	remove ECMA_COMPAT protection from AssemblyVersionAttribute.
 
+	* tools/link_res.sh.in: use the non-cygpath version of the
+	cscc pathname in "link_res.sh".
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* runtime/System/IO/Directory.cs: Support recursive directory deletion,

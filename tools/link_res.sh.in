@@ -21,7 +21,7 @@
 # Usage: link_res.sh output.dll input.resources language
 
 # Variables that are inserted by "configure".
-CSCC="@CSHARP_COMPILER@"
+CSCC="@CSHARP_COMPILER_CYGWIN@"
 ASSEMBLY_LINKER="@ASSEMBLY_LINKER@"
 
 # Are we using Portable.NET's or Microsoft's tools?

@@ -6,6 +6,9 @@
 	System.Windows.Forms/Themes/IThemePainter.cs: improve the look
 	of menus and hide definitions that should not be in the public API.
 
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: use
+	glyph-based drawing for scroll buttons and combo box drop down arrows.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

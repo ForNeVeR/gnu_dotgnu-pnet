@@ -997,11 +997,44 @@ internal class DefaultThemePainter : IThemePainter
 								        int width, int height,
 									    ButtonState state)
 			{
-				Border3DStyle style = (state == ButtonState.Pushed) ?
-					Border3DStyle.Sunken : Border3DStyle.Raised;
-				ControlPaint.DrawBorder3D(graphics, x, y, width, height, style, Border3DSide.All);				graphics.FillRectangle(SystemBrushes.Control, x + 2, y + 2, width - 4, height - 4);				x += width / 2 + 2;				y += height * 2 / 3 + 2;				Brush arrow = (state == ButtonState.Inactive) ?					SystemBrushes.ControlDark : SystemBrushes.ControlText;				graphics.FillPolygon(arrow, new PointF[]
-					{
-						new Point(x, y), new Point(x - 4, y - 4), new Point(x + 4, y - 4)					});			}
+				// Draw the border part of the button.
+				DrawButton(graphics, x, y, width, height, state,
+				           SystemColors.ControlText, SystemColors.Control,
+				           false);
+
+				// Get the drawing color and adjust for the pressed state.
+				Color color;
+				if((state & ButtonState.Pushed) != 0)
+				{
+					color = SystemColors.ControlText;
+					++x;
+					++y;
+				}
+				else if((state & ButtonState.Inactive) != 0)
+				{
+					color = SystemColors.ControlDark;
+				}
+				else
+				{
+					color = SystemColors.ControlText;
+				}
+
+				// Draw the glyph on the button.
+				DrawGlyph(graphics, x, y, width, height,
+						  Glyphs.drop_down_arrow_bits,
+						  Glyphs.drop_down_arrow_width,
+						  Glyphs.drop_down_arrow_height, color);
+
+#if false	// May need later for non-standard glyph sizes.
+				x += width / 2 + 2;
+				y += height * 2 / 3 + 2;
+				Brush arrow = (state == ButtonState.Inactive) ?
+					SystemBrushes.ControlDark : SystemBrushes.ControlText;
+				graphics.FillPolygon(arrow, new PointF[]
+						{new Point(x, y), new Point(x - 4, y - 4),
+						 new Point(x + 4, y - 4)});
+#endif
+			}
 
 	// Draw a container grab handle.
 	public virtual void DrawContainerGrabHandle
@@ -1597,6 +1630,65 @@ internal class DefaultThemePainter : IThemePainter
 				           state,
 				           foreColor, backColor,
 				           false);
+
+				// Get the drawing color and adjust for the pressed state.
+				Color color;
+				if((state & ButtonState.Pushed) != 0)
+				{
+					color = foreColor;
+					++x;
+					++y;
+				}
+				else if((state & ButtonState.Inactive) != 0)
+				{
+					color = ControlPaint.LightLight(foreColor);
+				}
+				else
+				{
+					color = foreColor;
+				}
+
+				// Draw the glyph for the button.
+				switch (button)
+				{
+					case ScrollButton.Up:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.up_arrow_bits,
+								  Glyphs.up_arrow_width,
+								  Glyphs.up_arrow_height, color);
+					}
+					break;
+
+					case ScrollButton.Down:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.down_arrow_bits,
+								  Glyphs.down_arrow_width,
+								  Glyphs.down_arrow_height, color);
+					}
+					break;
+
+					case ScrollButton.Left:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.left_arrow_bits,
+								  Glyphs.left_arrow_width,
+								  Glyphs.left_arrow_height, color);
+					}
+					break;
+
+					case ScrollButton.Right:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.right_arrow_bits,
+								  Glyphs.right_arrow_width,
+								  Glyphs.right_arrow_height, color);
+					}
+					break;
+				}
+
+#if false	// May need later for non-standard glyph sizes.
 				x += 2; // skip border
 				y += 2; // skip border
 				width -= 4; // skip border
@@ -1696,6 +1788,7 @@ internal class DefaultThemePainter : IThemePainter
 				{
 					graphics.DrawPolygon(pen,glyph);
 				}
+#endif
 			}
 
 	// Draw a selection frame.

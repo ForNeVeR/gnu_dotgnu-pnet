@@ -39,8 +39,8 @@ internal sealed class DrawingFont : IToolkitFont
 	// are consistant across different DPI settings while X
 	// treats point sizes, correctly, as dependent on DPI. The
 	// faked Windows point sizes appear to be the same as those
-	// of X on a 108 DPI setting with no conversions.
-	private const float PointSizeConversion = 108.0f;
+	// of X on a 96 DPI setting with no conversions.
+	private const float PointSizeConversion = 96.0f;
 
 	// Constructor.
 	public DrawingFont(System.Drawing.Font properties, float dpi)

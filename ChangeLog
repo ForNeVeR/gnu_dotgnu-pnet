@@ -14,6 +14,9 @@
 	Add unicode support using 32bit XFT functions (patch #3562, Gopal).
 
 	* Xsharp/Font.cs: Allow 96pt fonts and upto 843pt. (patch #3560, Gopal).
+
+	* System.Drawing.Xsharp/DrawingFont.cs: Change the pointsize conversion
+	factor to 96.0. (patch #3559, Gopal).
 	
 2004-12-08  Gopal V  <gopalv82@yahoo.com>
 

@@ -1,4 +1,8 @@
 
+2003-07-03  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Net/Sockets/Socket.cs: Implement the SupportsIPv6 property.
+
 2003-07-02  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/Screen.cs: Stub out the GetBounds() static

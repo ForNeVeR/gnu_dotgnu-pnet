@@ -1633,6 +1633,17 @@ public class Socket : IDisposable
 					}
 				}
 			}
+		
+#if !ECMA_COMPAT
+	public static bool SupportsIPv6
+			{
+				get
+				{
+					return SocketMethods.AddressFamilySupported(
+								(int)AddressFamily.InterNetworkV6);
+				}
+			}
+#endif
 
 	// Get the address family for this socket.
 	public AddressFamily AddressFamily

@@ -711,7 +711,7 @@ public class Form : ContainerControl
 							 (screenSize.Height - cp.Height) / 2,
 							 window.Dimensions.Width, window.Dimensions.Height);
 				}
-				else
+				else if(formStartPosition == FormStartPosition.Manual)
 				{
 					window.MoveResize
 						(

@@ -752,6 +752,696 @@ namespace System.Windows.Forms
 		{
 		}
 #endif
+
+		public class SelectedListViewItemCollection: IList
+		{
+			private ListView owner;
+
+			[TODO]
+			private ListViewItem[] SelectedItemArray
+			{
+				get
+				{
+					return null;
+				}
+			}
+
+			[TODO]
+			public virtual int Count
+			{
+				get
+				{
+					return 0;
+				}
+			}
+
+			[TODO]
+			public ListViewItem this[int index]
+			{
+				get
+				{
+					return null;
+				}
+			}
+
+			public virtual bool IsReadOnly
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			public SelectedListViewItemCollection(ListView owner)
+			{
+				this.owner = owner;
+			}
+
+			object IList.this[int index]
+			{
+				get
+				{
+					return this[index];
+				}
+				set
+				{
+					throw new NotSupportedException();
+				}
+			}
+
+			bool IList.IsFixedSize
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
+
+			bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+			int IList.Add(object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Insert(int index, object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.RemoveAt(int index)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Remove(object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			public virtual void Clear()
+			{
+				for (int i = 0; i < SelectedItemArray.Length; i++)
+					SelectedItemArray[i].Selected = false;
+			}
+
+			public bool Contains(ListViewItem item)
+			{
+				return IndexOf(item) != -1;
+			}
+
+			bool IList.Contains(object item)
+			{
+				if (item is ListViewItem)
+					return Contains(item as ListViewItem);
+				else
+					return false;
+			}
+
+			public virtual void CopyTo(Array dest, int index)
+			{
+				if (Count > 0)
+					Array.Copy(SelectedItemArray, 0, dest, index, Count);
+			}
+
+			public int IndexOf(ListViewItem item)
+			{
+				for (int i = 0; i < SelectedItemArray.Length; i++)
+				{
+					if (SelectedItemArray[i] == item)
+						return i;
+				}
+				return -1;
+			}
+
+			public virtual IEnumerator GetEnumerator()
+			{
+				if (SelectedItemArray != null)
+					return SelectedItemArray.GetEnumerator();
+				else
+					return new ListViewItem[0].GetEnumerator();
+			}
+
+			int IList.IndexOf(object item)
+			{
+				if (item is ListViewItem)
+					return IndexOf(item as ListViewItem);
+				else
+					return -1;
+			}
+		}
+
+		public class ListViewItemCollection: IList
+		{
+			private ListView owner;
+
+			public virtual int Count
+			{
+				get
+				{
+					return owner.itemCount;
+				}
+			}
+
+			public virtual bool IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+			public virtual ListViewItem this[int displayIndex]
+			{
+				get
+				{
+					return null;
+				}
+
+				set
+				{
+					RemoveAt(displayIndex);
+					Insert(displayIndex, value);
+				}
+			}
+
+			public ListViewItemCollection(ListView owner)
+			{
+				this.owner = owner;
+			}
+
+			object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
+
+			bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			bool IList.IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+			object IList.this[int index]
+			{
+				get
+				{
+					return this[index];
+				}
+				set
+				{
+					if (value is ListViewItem)
+					{
+						this[index] = value as ListViewItem;
+					}
+					else if (value != null)
+					{
+						this[index] = new ListViewItem(value.ToString(), -1);
+					}
+				}
+			}
+
+			public virtual ListViewItem Add(string text)
+			{
+				return Add(text, -1);
+			}
+
+			int IList.Add(object item)
+			{
+				if (item is ListViewItem)
+					return IndexOf(Add((ListViewItem)item));
+				if (item != null)
+					return IndexOf(Add(item.ToString()));
+				else
+					return -1;
+			}
+
+			public virtual ListViewItem Add(string text, int imageIndex)
+			{
+				ListViewItem listViewItem = new ListViewItem(text, imageIndex);
+				Add(listViewItem);
+				return listViewItem;
+			}
+
+			public virtual ListViewItem Add(ListViewItem value)
+			{
+				return value;
+			}
+
+			[TODO]
+			public void AddRange(ListViewItem[] values)
+			{
+
+			}
+
+			[TODO]
+			public virtual void Clear()
+			{
+				if (owner.itemCount > 0)
+				{
+					owner.itemCount = 0;
+					//TODO
+				}
+			}
+
+			public bool Contains(ListViewItem item)
+			{
+				return IndexOf(item) != -1;
+			}
+
+			bool IList.Contains(object item)
+			{
+				if (item is ListViewItem)
+					return Contains(item as ListViewItem);
+				else
+					return false;
+			}
+
+			public virtual void CopyTo(Array dest, int index)
+			{
+				if (owner.itemCount > 0)
+					for (int i = 0; i < Count; i++)
+						dest.SetValue(this[i], index++);
+			}
+
+			public virtual IEnumerator GetEnumerator()
+			{
+				ListViewItem[] listViewItems = new ListViewItem[Count];
+				CopyTo(listViewItems, 0);
+				return listViewItems.GetEnumerator();
+			}
+
+			public int IndexOf(ListViewItem item)
+			{
+				for (int i = 0; i < Count; i++)
+					if (this[i] == item)
+						return i;
+				return -1;
+			}
+
+			int IList.IndexOf(object item)
+			{
+				if (item is ListViewItem)
+					return IndexOf((ListViewItem)item);
+				else
+					return -1;
+			}
+
+			void IList.Insert(int index, object item)
+			{
+				if (item is ListViewItem)
+					Insert(index, (ListViewItem)item);
+				else if (item != null)
+					Insert(index, item.ToString());
+			}
+
+			[TODO]
+			public virtual void RemoveAt(int index)
+			{
+			}
+
+			public virtual void Remove(ListViewItem item)
+			{
+				if (item == null)
+					return;
+				int i = item.Index;
+				if (i >= 0)
+				{
+					RemoveAt(i);
+				}
+			}
+
+			void IList.Remove(object item)
+			{
+				if (item == null || !(item is ListViewItem))
+					return;
+				Remove(item as ListViewItem);
+			}
+			public ListViewItem Insert(int index, ListViewItem item)
+			{
+				return null;
+			}
+
+			public ListViewItem Insert(int index, string text)
+			{
+				return Insert(index, new ListViewItem(text));
+			}
+
+			public ListViewItem Insert(int index, string text, int imageIndex)
+			{
+				return Insert(index, new ListViewItem(text, imageIndex));
+			}
+		}
+
+		public class SelectedIndexCollection: IList
+		{
+			private ListView owner;
+
+			[TODO]
+			public virtual int Count
+			{
+				get
+				{
+					return 0;
+				}
+			}
+
+			[TODO]
+			public int this[int index]
+			{
+				get
+				{
+					return 0;
+				}
+			}
+
+			public virtual bool IsReadOnly
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			public SelectedIndexCollection(ListView owner)
+			{
+				this.owner = owner;
+			}
+
+			object IList.this[int index]
+			{
+				get
+				{
+					return this[index];
+				}
+				set
+				{
+					throw new NotSupportedException();
+				}
+			}
+
+			object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
+
+			bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+			bool IList.IsFixedSize
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			public bool Contains(int selectedIndex)
+			{
+				return owner.Items[selectedIndex].Selected;
+			}
+
+			bool IList.Contains(object selectedIndex)
+			{
+				if (selectedIndex is Int32)
+					return Contains((int)selectedIndex);
+				else
+					return false;
+			}
+
+			[TODO]
+			public int IndexOf(int selectedIndex)
+			{
+				return -1;
+			}
+
+			int IList.IndexOf(object selectedIndex)
+			{
+				if (selectedIndex is Int32)
+					return IndexOf((int)selectedIndex);
+				else
+					return -1;
+			}
+
+			int IList.Add(object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Clear()
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Insert(int index, object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.RemoveAt(int index)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Remove(object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			[TODO]
+			public virtual void CopyTo(Array dest, int index)
+			{
+			}
+
+			[TODO]
+			public virtual IEnumerator GetEnumerator()
+			{
+				return null;
+			}
+		}
+
+		public class ColumnHeaderCollection: IList
+		{
+			private ListView owner;
+
+			public virtual ColumnHeader this[int index]
+			{
+				get
+				{
+					return owner.columnHeaders[index];
+				}
+			}
+
+			public virtual int Count
+			{
+				get
+				{
+					if (owner.columnHeaders != null)
+						return owner.columnHeaders.Length;
+					else
+						return 0;
+				}
+			}
+
+			public virtual bool IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+			public ColumnHeaderCollection(ListView owner)
+			{
+				this.owner = owner;
+			}
+
+			object IList.this[int index]
+			{
+				get
+				{
+					return this[index];
+				}
+				set
+				{
+					throw new NotSupportedException();
+				}
+			}
+
+			object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
+
+			bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			bool IList.IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+			[TODO]
+			public virtual ColumnHeader Add(string str, int width, HorizontalAlignment textAlign)
+			{
+				ColumnHeader columnHeader = new ColumnHeader();
+				columnHeader.Text = str;
+				columnHeader.Width = width;
+				columnHeader.TextAlign = textAlign;
+				//TODO
+				return columnHeader;
+			}
+
+			[TODO]
+			public virtual int Add(ColumnHeader value)
+			{
+				//TODO;
+				return Count;
+			}
+
+			public virtual void AddRange(ColumnHeader[] values)
+			{
+				for (int i = 0; i < values.Length; i++)
+					Add(values[i]);
+			}
+
+			int IList.Add(object value)
+			{
+				return Add(value as ColumnHeader);
+			}
+
+			[TODO]
+			public virtual void Clear()
+			{
+				if (owner.columnHeaders != null)
+				{
+					owner.columnHeaders = null;
+					//TODO
+				}
+			}
+
+			void ICollection.CopyTo(Array dest, int index)
+			{
+				if (Count > 0)
+					Array.Copy(owner.columnHeaders, 0, dest, index, Count);
+			}
+
+			public int IndexOf(ColumnHeader value)
+			{
+				for (int i = 0; i < Count; i++)
+				{
+					if (this[i] == value)
+						return i;
+				}
+				return -1;
+			}
+
+			int IList.IndexOf(object value)
+			{
+				if (value is ColumnHeader)
+					return IndexOf(value as ColumnHeader);
+				else
+					return -1;
+			}
+
+			public bool Contains(ColumnHeader value)
+			{
+				return IndexOf(value) != -1;
+			}
+
+			bool IList.Contains(object value)
+			{
+				if (value is ColumnHeader)
+					return Contains(value as ColumnHeader);
+				else
+					return false;
+			}
+
+			[TODO]
+			public virtual void Remove(ColumnHeader column)
+			{
+				int i = IndexOf(column);
+				if (i != -1)
+					RemoveAt(i);
+			}
+
+			void IList.Remove(object value)
+			{
+				if (value is ColumnHeader)
+					Remove(value as ColumnHeader);
+			}
+
+			public virtual void RemoveAt(int index)
+			{
+			}
+
+			public virtual IEnumerator GetEnumerator()
+			{
+				if (owner.columnHeaders != null)
+					return owner.columnHeaders.GetEnumerator();
+				else
+					return new ColumnHeader[0].GetEnumerator();
+			}
+			[TODO]
+			public void Insert(int index, ColumnHeader value)
+			{
+			}
+
+			[TODO]
+			void IList.Insert(int index, object value)
+			{
+			}
+
+			[TODO]
+			public void Insert(int index, string str, int width, HorizontalAlignment textAlign)
+			{
+			}
+		}
 	}
 
 	public class CheckedIndexCollection: IList
@@ -1068,698 +1758,5 @@ namespace System.Windows.Forms
 			else
 				return new ListViewItem[0].GetEnumerator();
 		}
-	}
-
-	public class SelectedIndexCollection: IList
-	{
-		private ListView owner;
-
-		[TODO]
-		public virtual int Count
-		{
-			get
-			{
-				return 0;
-			}
-		}
-
-		[TODO]
-		public int this[int index]
-		{
-			get
-			{
-				return 0;
-			}
-		}
-
-		public virtual bool IsReadOnly
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		public SelectedIndexCollection(ListView owner)
-		{
-			this.owner = owner;
-		}
-
-		object IList.this[int index]
-		{
-			get
-			{
-				return this[index];
-			}
-			set
-			{
-				throw new NotSupportedException();
-			}
-		}
-
-		object ICollection.SyncRoot
-		{
-			get
-			{
-				return this;
-			}
-		}
-
-		bool ICollection.IsSynchronized
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		bool IList.IsFixedSize
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		public bool Contains(int selectedIndex)
-		{
-			return owner.Items[selectedIndex].Selected;
-		}
-
-		bool IList.Contains(object selectedIndex)
-		{
-			if (selectedIndex is Int32)
-				return Contains((int)selectedIndex);
-			else
-				return false;
-		}
-
-		[TODO]
-		public int IndexOf(int selectedIndex)
-		{
-			return -1;
-		}
-
-		int IList.IndexOf(object selectedIndex)
-		{
-			if (selectedIndex is Int32)
-				return IndexOf((int)selectedIndex);
-			else
-				return -1;
-		}
-
-		int IList.Add(object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.Clear()
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.Insert(int index, object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.RemoveAt(int index)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.Remove(object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		[TODO]
-		public virtual void CopyTo(Array dest, int index)
-		{
-		}
-
-		[TODO]
-		public virtual IEnumerator GetEnumerator()
-		{
-			return null;
-		}
-	}
-
-
-	public class SelectedListViewItemCollection: IList
-	{
-		private ListView owner;
-
-		[TODO]
-		private ListViewItem[] SelectedItemArray
-		{
-			get
-			{
-				return null;
-			}
-		}
-
-		[TODO]
-		public virtual int Count
-		{
-			get
-			{
-				return 0;
-			}
-		}
-
-		[TODO]
-		public ListViewItem this[int index]
-		{
-			get
-			{
-				return null;
-			}
-		}
-
-		public virtual bool IsReadOnly
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		public SelectedListViewItemCollection(ListView owner)
-		{
-			this.owner = owner;
-		}
-
-		object IList.this[int index]
-		{
-			get
-			{
-				return this[index];
-			}
-			set
-			{
-				throw new NotSupportedException();
-			}
-		}
-
-		bool IList.IsFixedSize
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		object ICollection.SyncRoot
-		{
-			get
-			{
-				return this;
-			}
-		}
-
-		bool ICollection.IsSynchronized
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		int IList.Add(object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.Insert(int index, object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.RemoveAt(int index)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.Remove(object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		public virtual void Clear()
-		{
-			for (int i = 0; i < SelectedItemArray.Length; i++)
-				SelectedItemArray[i].Selected = false;
-		}
-
-		public bool Contains(ListViewItem item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		bool IList.Contains(object item)
-		{
-			if (item is ListViewItem)
-				return Contains(item as ListViewItem);
-			else
-				return false;
-		}
-
-		public virtual void CopyTo(Array dest, int index)
-		{
-			if (Count > 0)
-				Array.Copy(SelectedItemArray, 0, dest, index, Count);
-		}
-
-		public int IndexOf(ListViewItem item)
-		{
-			for (int i = 0; i < SelectedItemArray.Length; i++)
-			{
-				if (SelectedItemArray[i] == item)
-					return i;
-			}
-			return -1;
-		}
-
-		public virtual IEnumerator GetEnumerator()
-		{
-			if (SelectedItemArray != null)
-				return SelectedItemArray.GetEnumerator();
-			else
-				return new ListViewItem[0].GetEnumerator();
-		}
-
-		int IList.IndexOf(object item)
-		{
-			if (item is ListViewItem)
-				return IndexOf(item as ListViewItem);
-			else
-				return -1;
-		}
-	}
-
-
-	public class ColumnHeaderCollection: IList
-	{
-		private ListView owner;
-
-		public virtual ColumnHeader this[int index]
-		{
-			get
-			{
-				return owner.columnHeaders[index];
-			}
-		}
-
-		public virtual int Count
-		{
-			get
-			{
-				if (owner.columnHeaders != null)
-					return owner.columnHeaders.Length;
-				else
-					return 0;
-			}
-		}
-
-		public virtual bool IsReadOnly
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		public ColumnHeaderCollection(ListView owner)
-		{
-			this.owner = owner;
-		}
-
-		object IList.this[int index]
-		{
-			get
-			{
-				return this[index];
-			}
-			set
-			{
-				throw new NotSupportedException();
-			}
-		}
-
-		object ICollection.SyncRoot
-		{
-			get
-			{
-				return this;
-			}
-		}
-
-		bool ICollection.IsSynchronized
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		bool IList.IsFixedSize
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		[TODO]
-		public virtual ColumnHeader Add(string str, int width, HorizontalAlignment textAlign)
-		{
-			ColumnHeader columnHeader = new ColumnHeader();
-			columnHeader.Text = str;
-			columnHeader.Width = width;
-			columnHeader.TextAlign = textAlign;
-			//TODO
-			return columnHeader;
-		}
-
-		[TODO]
-		public virtual int Add(ColumnHeader value)
-		{
-			//TODO;
-			return Count;
-		}
-
-		public virtual void AddRange(ColumnHeader[] values)
-		{
-			for (int i = 0; i < values.Length; i++)
-				Add(values[i]);
-		}
-
-		int IList.Add(object value)
-		{
-			return Add(value as ColumnHeader);
-		}
-
-		[TODO]
-		public virtual void Clear()
-		{
-			if (owner.columnHeaders != null)
-			{
-				owner.columnHeaders = null;
-				//TODO
-			}
-		}
-
-		void ICollection.CopyTo(Array dest, int index)
-		{
-			if (Count > 0)
-				Array.Copy(owner.columnHeaders, 0, dest, index, Count);
-		}
-
-		public int IndexOf(ColumnHeader value)
-		{
-			for (int i = 0; i < Count; i++)
-			{
-				if (this[i] == value)
-					return i;
-			}
-			return -1;
-		}
-
-		int IList.IndexOf(object value)
-		{
-			if (value is ColumnHeader)
-				return IndexOf(value as ColumnHeader);
-			else
-				return -1;
-		}
-
-		public bool Contains(ColumnHeader value)
-		{
-			return IndexOf(value) != -1;
-		}
-
-		bool IList.Contains(object value)
-		{
-			if (value is ColumnHeader)
-				return Contains(value as ColumnHeader);
-			else
-				return false;
-		}
-
-		[TODO]
-		public virtual void Remove(ColumnHeader column)
-		{
-			int i = IndexOf(column);
-			if (i != -1)
-				RemoveAt(i);
-		}
-
-		void IList.Remove(object value)
-		{
-			if (value is ColumnHeader)
-				Remove(value as ColumnHeader);
-		}
-
-		public virtual void RemoveAt(int index)
-		{
-		}
-
-		public virtual IEnumerator GetEnumerator()
-		{
-			if (owner.columnHeaders != null)
-				return owner.columnHeaders.GetEnumerator();
-			else
-				return new ColumnHeader[0].GetEnumerator();
-		}
-		[TODO]
-		public void Insert(int index, ColumnHeader value)
-		{
-		}
-
-		[TODO]
-		void IList.Insert(int index, object value)
-		{
-		}
-
-		[TODO]
-		public void Insert(int index, string str, int width, HorizontalAlignment textAlign)
-		{
-		}
-	}
-
-	public class ListViewItemCollection: IList
-	{
-		private ListView owner;
-
-		public virtual int Count
-		{
-			get
-			{
-				return owner.itemCount;
-			}
-		}
-
-		public virtual bool IsReadOnly
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		public virtual ListViewItem this[int displayIndex]
-		{
-			get
-			{
-				return null;
-			}
-
-			set
-			{
-				RemoveAt(displayIndex);
-				Insert(displayIndex, value);
-			}
-		}
-
-		public ListViewItemCollection(ListView owner)
-		{
-			this.owner = owner;
-		}
-
-		object ICollection.SyncRoot
-		{
-			get
-			{
-				return this;
-			}
-		}
-
-		bool ICollection.IsSynchronized
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		bool IList.IsFixedSize
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		object IList.this[int index]
-		{
-			get
-			{
-				return this[index];
-			}
-			set
-			{
-				if (value is ListViewItem)
-				{
-					this[index] = value as ListViewItem;
-				}
-				else if (value != null)
-				{
-					this[index] = new ListViewItem(value.ToString(), -1);
-				}
-			}
-		}
-
-		public virtual ListViewItem Add(string text)
-		{
-			return Add(text, -1);
-		}
-
-		int IList.Add(object item)
-		{
-			if (item is ListViewItem)
-				return IndexOf(Add((ListViewItem)item));
-			if (item != null)
-				return IndexOf(Add(item.ToString()));
-			else
-				return -1;
-		}
-
-		public virtual ListViewItem Add(string text, int imageIndex)
-		{
-			ListViewItem listViewItem = new ListViewItem(text, imageIndex);
-			Add(listViewItem);
-			return listViewItem;
-		}
-
-		public virtual ListViewItem Add(ListViewItem value)
-		{
-			return value;
-		}
-
-		[TODO]
-		public void AddRange(ListViewItem[] values)
-		{
-
-		}
-
-		[TODO]
-		public virtual void Clear()
-		{
-			if (owner.itemCount > 0)
-			{
-				owner.itemCount = 0;
-				//TODO
-			}
-		}
-
-		public bool Contains(ListViewItem item)
-		{
-			return IndexOf(item) != -1;
-		}
-
-		bool IList.Contains(object item)
-		{
-			if (item is ListViewItem)
-				return Contains(item as ListViewItem);
-			else
-				return false;
-		}
-
-		public virtual void CopyTo(Array dest, int index)
-		{
-			if (owner.itemCount > 0)
-				for (int i = 0; i < Count; i++)
-					dest.SetValue(this[i], index++);
-		}
-
-		public virtual IEnumerator GetEnumerator()
-		{
-			ListViewItem[] listViewItems = new ListViewItem[Count];
-			CopyTo(listViewItems, 0);
-			return listViewItems.GetEnumerator();
-		}
-
-		public int IndexOf(ListViewItem item)
-		{
-			for (int i = 0; i < Count; i++)
-				if (this[i] == item)
-					return i;
-			return -1;
-		}
-
-		int IList.IndexOf(object item)
-		{
-			if (item is ListViewItem)
-				return IndexOf((ListViewItem)item);
-			else
-				return -1;
-		}
-
-		void IList.Insert(int index, object item)
-		{
-			if (item is ListViewItem)
-				Insert(index, (ListViewItem)item);
-			else if (item != null)
-				Insert(index, item.ToString());
-		}
-
-		[TODO]
-		public virtual void RemoveAt(int index)
-		{
-		}
-
-		public virtual void Remove(ListViewItem item)
-		{
-			if (item == null)
-				return;
-			int i = item.Index;
-			if (i >= 0)
-			{
-				RemoveAt(i);
-			}
-		}
-
-		void IList.Remove(object item)
-		{
-			if (item == null || !(item is ListViewItem))
-				return;
-			Remove(item as ListViewItem);
-		}
-		public ListViewItem Insert(int index, ListViewItem item)
-		{
-			return null;
-		}
-
-		public ListViewItem Insert(int index, string text)
-		{
-			return Insert(index, new ListViewItem(text));
-		}
-
-		public ListViewItem Insert(int index, string text, int imageIndex)
-		{
-			return Insert(index, new ListViewItem(text, imageIndex));
-		}
-
 	}
 }

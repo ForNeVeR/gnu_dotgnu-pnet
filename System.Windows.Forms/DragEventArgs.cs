@@ -73,6 +73,10 @@ public class DragEventArgs : EventArgs
 				{
 					return effect;
 				}
+				set
+				{
+					effect = value;
+				}
 			}
 	public int KeyState
 			{

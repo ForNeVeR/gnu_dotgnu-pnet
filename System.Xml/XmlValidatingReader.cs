@@ -27,6 +27,7 @@ namespace System.Xml
 using System;
 using System.IO;
 using System.Text;
+using System.Xml.Schema;
 
 // Note: this class doesn't actually do any validation yet.  It acts as
 // a pass-through to "XmlTextReader" to fake out applications that ask
@@ -35,6 +36,8 @@ using System.Text;
 
 public class XmlValidatingReader : XmlReader, IXmlLineInfo
 {
+	public event ValidationEventHandler ValidationEventHandler;
+
 	// Internal state.
 	private XmlTextReader reader;
 	private EntityHandling entityHandling;
@@ -435,7 +438,6 @@ public class XmlValidatingReader : XmlReader, IXmlLineInfo
 				}
 			}
 
-#if false
 	// Get the schemas that are being used to validate.
 	[TODO]
 	public XmlSchemaCollection Schemas
@@ -446,7 +448,6 @@ public class XmlValidatingReader : XmlReader, IXmlLineInfo
 					return null;
 				}
 			}
-#endif
 
 	// Get the schema type for the current node.
 	[TODO]

@@ -1,3 +1,11 @@
+
+2004-01-09  Simon Guindon <simon@nureality.ca>
+
+	* System.Windows.Forms/DragEventArgs.cs,
+	System.Windows.Forms/ListView.cs,
+	System.Xml/XmlValidatingReader.cs: changes to get the
+	SharpDevelop code editor working.
+
 2004-01-08  Adam Ballai  <adam@thefrontnetworks.net>
 
 	* System.Xml/XmlTextReader.c, XmlParserContext.cs,

@@ -654,7 +654,7 @@ public sealed class StringBuilder
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
 				}
-				else if((buildString.length - startIndex) > length)
+				else if((buildString.length - startIndex) < length)
 				{
 					throw new ArgumentOutOfRangeException
 						("length", _("ArgRange_StringRange"));

@@ -43,7 +43,10 @@ public class TestXml
 
 			#if !ECMA_COMPAT
 				suite = new TestSuite("Node Tests");
+				suite.AddTests(typeof(TestXmlAttribute));
+				suite.AddTests(typeof(TestXmlCDataSection));
 				suite.AddTests(typeof(TestXmlDocument));
+				suite.AddTests(typeof(TestXmlText));
 				fullSuite.AddTest(suite);
 			#endif
 

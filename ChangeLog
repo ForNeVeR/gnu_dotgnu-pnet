@@ -1,4 +1,21 @@
 
+2002-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/NameCache.cs, System.Xml/NodeList.cs,
+	System.Xml/XmlAttribute.cs, System.Xml/XmlCharacterData.cs,
+	System.Xml/XmlDeclaration.cs, System.Xml/XmlDocument.cs,
+	System.Xml/XmlDocumentFragment.cs, System.Xml/XmlElement.cs,
+	System.Xml/XmlFragmentTextWriter.cs, System.Xml/XmlNode.cs,
+	System.Xml/XmlProcessingInstruction.cs, System.Xml/XmlText.cs,
+	System.Xml/XmlTextReader.cs, System.Xml/XmlTextWriter.cs,
+	resources/en_US/System.Xml/Xml.txt,
+	runtime/System/Text/StringBuilder.cs, tests/System.Xml/TestXml.cs,
+	tests/System.Xml/TestXmlAttribute.cs,
+	tests/System.Xml/TestXmlCDataSection.cs,
+	tests/System.Xml/TestXmlDocument.cs,
+	tests/System.Xml/TestXmlText.cs: test cases and bug fixes for
+	System.Xml.
+
 2002-12-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs, System.Xml/XmlAttribute.cs,

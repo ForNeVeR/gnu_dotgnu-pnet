@@ -62,7 +62,7 @@ internal sealed class NameCache : Hashtable
 				}
 				if(ns != null)
 				{
-					ns = nameTable.Add(prefix);
+					ns = nameTable.Add(ns);
 				}
 				else
 				{

@@ -194,6 +194,28 @@ abstract class XmlCharacterData : XmlLinkedNode
 	// Replace the data at a particular position within this node.
 	public virtual void ReplaceData(int offset, int count, String strData)
 			{
+				// Clamp the range to the actual data bounds.
+				int length = Length;
+				if(offset < 0)
+				{
+					count += offset;
+					offset = 0;
+				}
+				else if(offset >= length)
+				{
+					offset = length;
+					count = 0;
+				}
+				if((length - offset) < count)
+				{
+					count = length - offset;
+				}
+				if(count < 0)
+				{
+					count = 0;
+				}
+
+				// Replace the range with the supplied string.
 				XmlNodeChangedEventArgs args;
 				args = EmitBefore(XmlNodeChangedAction.Change);
 				GetBuilder().Remove(offset, count);

@@ -133,7 +133,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 					{
 						current.CollectInner(builder);
 					}
-					current = NodeList.GetNextSibling(this);
+					current = NodeList.GetNextSibling(current);
 				}
 			}
 
@@ -471,6 +471,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 								  parentNode, this);
 
 				// Perform the insert.
+				newChild.parent = this;
 				NodeList.GetList(this).InsertAfter(newChild, LastChild);
 
 				// Notify the document after the insert.
@@ -629,18 +630,181 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Insert a new child under this node just after a reference child.
-	[TODO]
 	public virtual XmlNode InsertAfter(XmlNode newChild, XmlNode refChild)
 			{
-				// TODO
+				XmlDocument doc;
+				XmlNode parentNode;
+
+				// Validate the parameters.
+				if(refChild == null)
+				{
+					return PrependChild(newChild);
+				}
+				if(IsAncestorOf(newChild, this))
+				{
+					throw new InvalidOperationException(S._("Xml_IsAncestor"));
+				}
+				if(refChild.ParentNode != this)
+				{
+					throw new ArgumentException
+						(S._("Xml_RefNotChild"), "refChild");
+				}
+				if(!CanInsertAfter(newChild.NodeType, refChild))
+				{
+					throw new InvalidOperationException
+						(S._("Xml_CannotInsert"));
+				}
+				if(this is XmlDocument)
+				{
+					doc = (XmlDocument)this;
+				}
+				else
+				{
+					doc = OwnerDocument;
+				}
+				if(newChild.OwnerDocument != doc)
+				{
+					throw new ArgumentException
+						(S._("Xml_NotSameDocument"), "newChild");
+				}
+				if(IsReadOnly)
+				{
+					throw new ArgumentException(S._("Xml_ReadOnly"));
+				}
+
+				// If the two nodes are identical, then bail out.
+				if(newChild == refChild)
+				{
+					return newChild;
+				}
+
+				// Remove the child from underneath its current parent.
+				parentNode = newChild.ParentNode;
+				if(parentNode != null)
+				{
+					parentNode.RemoveChild(newChild);
+				}
+
+				// If the node is a document fragment, then add its
+				// children instead of the node itself.
+				if(newChild.NodeType == XmlNodeType.DocumentFragment)
+				{
+					XmlNode firstChild = NodeList.GetFirstChild(newChild);
+					XmlNode current, next;
+					current = firstChild;
+					while(current != null)
+					{
+						next = NodeList.GetNextSibling(current);
+						newChild.RemoveChild(current);
+						refChild = InsertAfter(current, refChild);
+						current = next;
+					}
+					return firstChild;
+				}
+
+				// Notify the document that we are about to do an insert.
+				XmlNodeChangedEventArgs args;
+				args = EmitBefore(XmlNodeChangedAction.Insert,
+								  parentNode, this);
+
+				// Perform the insert.
+				newChild.parent = this;
+				NodeList.GetList(this).InsertAfter(newChild, refChild);
+
+				// Notify the document after the insert.
+				EmitAfter(args);
+
+				// The child has been inserted into its new position.
 				return newChild;
 			}
 
 	// Insert a new child under this node just before a reference child.
-	[TODO]
 	public virtual XmlNode InsertBefore(XmlNode newChild, XmlNode refChild)
 			{
-				// TODO
+				XmlDocument doc;
+				XmlNode parentNode;
+
+				// Validate the parameters.
+				if(refChild == null)
+				{
+					return AppendChild(newChild);
+				}
+				if(IsAncestorOf(newChild, this))
+				{
+					throw new InvalidOperationException(S._("Xml_IsAncestor"));
+				}
+				if(refChild.ParentNode != this)
+				{
+					throw new ArgumentException
+						(S._("Xml_RefNotChild"), "refChild");
+				}
+				if(!CanInsertBefore(newChild.NodeType, refChild))
+				{
+					throw new InvalidOperationException
+						(S._("Xml_CannotInsert"));
+				}
+				if(this is XmlDocument)
+				{
+					doc = (XmlDocument)this;
+				}
+				else
+				{
+					doc = OwnerDocument;
+				}
+				if(newChild.OwnerDocument != doc)
+				{
+					throw new ArgumentException
+						(S._("Xml_NotSameDocument"), "newChild");
+				}
+				if(IsReadOnly)
+				{
+					throw new ArgumentException(S._("Xml_ReadOnly"));
+				}
+
+				// If the two nodes are identical, then bail out.
+				if(newChild == refChild)
+				{
+					return newChild;
+				}
+
+				// Remove the child from underneath its current parent.
+				parentNode = newChild.ParentNode;
+				if(parentNode != null)
+				{
+					parentNode.RemoveChild(newChild);
+				}
+
+				// If the node is a document fragment, then add its
+				// children instead of the node itself.
+				if(newChild.NodeType == XmlNodeType.DocumentFragment)
+				{
+					XmlNode firstChild = NodeList.GetFirstChild(newChild);
+					XmlNode current, next;
+					current = firstChild;
+					while(current != null)
+					{
+						next = NodeList.GetNextSibling(current);
+						newChild.RemoveChild(current);
+						refChild = InsertBefore(current, refChild);
+						current = next;
+					}
+					return firstChild;
+				}
+
+				// Notify the document that we are about to do an insert.
+				XmlNodeChangedEventArgs args;
+				args = EmitBefore(XmlNodeChangedAction.Insert,
+								  parentNode, this);
+
+				// Perform the insert.
+				newChild.parent = this;
+				refChild = NodeList.GetPreviousSibling(refChild);
+				NodeList.GetList(this).InsertAfter(newChild, refChild);
+
+				// Notify the document after the insert.
+				EmitAfter(args);
+
+				// The child has been inserted into its new position.
 				return newChild;
 			}
 
@@ -715,6 +879,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 								  parentNode, this);
 
 				// Perform the insert.
+				newChild.parent = this;
 				NodeList.GetList(this).InsertAfter(newChild, null);
 
 				// Notify the document after the insert.
@@ -740,6 +905,8 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	// Remove a child from this node.
 	public virtual XmlNode RemoveChild(XmlNode oldChild)
 			{
+				XmlDocument doc;
+
 				// Validate the parameters.
 				if(oldChild.ParentNode != this)
 				{
@@ -751,7 +918,17 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				XmlNodeChangedEventArgs args;
 				args = EmitBefore(XmlNodeChangedAction.Remove, this, null);
 
-				// Remove the child.
+				// Remove the child from this node and re-associate
+				// it with the placeholder document fragment.
+				if(this is XmlDocument)
+				{
+					doc = (XmlDocument)this;
+				}
+				else
+				{
+					doc = OwnerDocument;
+				}
+				oldChild.parent = doc.Placeholder;
 				NodeList.GetList(this).RemoveChild(oldChild);
 
 				// Notify the document after the remove.
@@ -821,11 +998,26 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	// Write this node and all of its contents to a specified XmlWriter.
 	public abstract void WriteTo(XmlWriter w);
 
+	// Write the children of this node to a specified XmlWriter.
+	internal void WriteChildrenTo(XmlWriter w)
+			{
+				XmlNode child = NodeList.GetFirstChild(this);
+				while(child != null)
+				{
+					child.WriteTo(w);
+					child = NodeList.GetNextSibling(child);
+				}
+			}
+
 	// Clone the children from another node into this node.
-	[TODO]
 	internal void CloneChildrenFrom(XmlNode other, bool deep)
 			{
-				// TODO
+				XmlNode child = NodeList.GetFirstChild(other);
+				while(child != null)
+				{
+					AppendChild(child.CloneNode(deep));
+					child = NodeList.GetNextSibling(child);
+				}
 			}
 
 	// Determine if this node is a placeholder fragment for nodes that have
@@ -874,6 +1066,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				XmlDocument doc = FindOwnerQuick();
 				if(doc != null)
 				{
+					XmlNode parent = ParentNode;
 					return doc.EmitBefore(action, this, parent, parent);
 				}
 				else

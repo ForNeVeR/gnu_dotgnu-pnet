@@ -75,8 +75,6 @@ class XmlText : XmlCharacterData
 				set
 				{
 					Data = value;
-					// TODO: if the parent is an attribute, then
-					// set its "specified" property.
 				}
 			}
 

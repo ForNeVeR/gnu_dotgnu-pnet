@@ -75,6 +75,7 @@ class XmlDeclaration : XmlLinkedNode
 			}
 
 	// Get or set the inner text.
+	[TODO]
 	public override String InnerText
 			{
 				get
@@ -118,6 +119,15 @@ class XmlDeclaration : XmlLinkedNode
 				get
 				{
 					return "xml";
+				}
+			}
+
+	// Get the type that is associated with this node.
+	public override XmlNodeType NodeType
+			{
+				get
+				{
+					return XmlNodeType.XmlDeclaration;
 				}
 			}
 

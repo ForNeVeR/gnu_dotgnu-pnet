@@ -63,6 +63,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Get the inner text version of this node.
+	[TODO]
 	public override String InnerText
 			{
 				get
@@ -77,6 +78,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Get the markup that represents the children of this node.
+	[TODO]
 	public override String InnerXml
 			{
 				get
@@ -153,15 +155,7 @@ class XmlElement : XmlLinkedNode
 			{
 				get
 				{
-					XmlNode parent = ParentNode;
-					if(parent != null)
-					{
-						return parent.OwnerDocument;
-					}
-					else
-					{
-						return null;
-					}
+					return base.OwnerDocument;
 				}
 			}
 
@@ -184,6 +178,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Clone this node in either shallow or deep mode.
+	[TODO]
 	public override XmlNode CloneNode(bool deep)
 			{
 				// TODO
@@ -191,6 +186,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Get the value of an attribute with a specific name.
+	[TODO]
 	public virtual String GetAttribute(String name)
 			{
 				// TODO
@@ -198,6 +194,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Get the value of an attribute with a specific name and namespace.
+	[TODO]
 	public virtual String GetAttribute(String localName, String namespaceURI)
 			{
 				// TODO
@@ -205,6 +202,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Get the node of an attribute with a specific name.
+	[TODO]
 	public virtual XmlAttribute GetAttributeNode(String name)
 			{
 				// TODO
@@ -212,6 +210,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Get the node of an attribute with a specific name and namespace.
+	[TODO]
 	public virtual XmlAttribute GetAttributeNode
 				(String localName, String namespaceURI)
 			{
@@ -220,6 +219,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Get a list of all descendents that match a particular name.
+	[TODO]
 	public virtual XmlNodeList GetElementsByTagName(String name)
 			{
 				// TODO
@@ -227,6 +227,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Get a list of all descendents that match a particular name and namespace.
+	[TODO]
 	public virtual XmlNodeList GetElementsByTagName
 				(String localName, String namespaceURI)
 			{
@@ -235,6 +236,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Determine if this element has a particular attribute.
+	[TODO]
 	public virtual bool HasAttribute(String name)
 			{
 				// TODO
@@ -242,6 +244,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Determine if this element has a particular attribute.
+	[TODO]
 	public virtual bool HasAttribute(String localName, String namespaceURI)
 			{
 				// TODO
@@ -256,24 +259,28 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Remove all of the attributes from this node.
+	[TODO]
 	public virtual void RemoveAllAttributes()
 			{
 				// TODO
 			}
 
 	// Remove a specified attribute by name.
+	[TODO]
 	public virtual void RemoveAttribute(String name)
 			{
 				// TODO
 			}
 
 	// Remove a specified attribute by name and namespace.
+	[TODO]
 	public virtual void RemoveAttribute(String localName, String namespaceURI)
 			{
 				// TODO
 			}
 
 	// Remove a specified attribute by index.
+	[TODO]
 	public virtual XmlNode RemoveAttributeAt(int i)
 			{
 				// TODO
@@ -281,6 +288,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Remove a particular attribute node and return the node.
+	[TODO]
 	public virtual XmlAttribute RemoveAttributeNode(XmlAttribute oldAttr)
 			{
 				// TODO
@@ -288,6 +296,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Remove a particular attribute by name and return the node.
+	[TODO]
 	public virtual XmlAttribute RemoveAttributeNode
 				(String localName, String namespaceURI)
 			{
@@ -296,12 +305,14 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Set an attribute to a specific value.
+	[TODO]
 	public virtual void SetAttribute(String name, String value)
 			{
 				// TODO
 			}
 
 	// Set an attribute to a specific value.
+	[TODO]
 	public virtual void SetAttribute(String localName, String namespaceURI,
 									 String value)
 			{
@@ -309,6 +320,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Set an attribute by node.
+	[TODO]
 	public virtual XmlAttribute SetAttributeNode(XmlAttribute newAttr)
 			{
 				// TODO
@@ -316,6 +328,7 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Create a new attribute node and return it.
+	[TODO]
 	public virtual XmlAttribute SetAttributeNode
 				(String localName, String namespaceURI)
 			{
@@ -324,12 +337,14 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Writes the contents of this node to a specified XmlWriter.
+	[TODO]
 	public override void WriteContentTo(XmlWriter w)
 			{
 				// TODO
 			}
 
 	// Write this node and all of its contents to a specified XmlWriter.
+	[TODO]
 	public override void WriteTo(XmlWriter w)
 			{
 				// TODO

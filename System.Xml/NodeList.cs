@@ -198,6 +198,8 @@ internal sealed class NodeList : XmlNodeList
 				{
 					first = nodeList.nextSibling;
 				}
+				nodeList.nextSibling = null;
+				nodeList.prevSibling = null;
 				--count;
 				++generation;
 			}

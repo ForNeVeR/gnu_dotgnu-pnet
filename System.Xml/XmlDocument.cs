@@ -132,6 +132,7 @@ class XmlDocument : XmlNode
 			}
 
 	// Get the markup that represents the children of this node.
+	[TODO]
 	public override String InnerXml
 			{
 				get
@@ -504,14 +505,12 @@ class XmlDocument : XmlNode
 
 					case XmlNodeType.EntityReference:
 					{
-						// TODO
 						return CreateEntityReference(name);
 					}
 					// Not reached
 
 					case XmlNodeType.ProcessingInstruction:
 					{
-						// TODO
 						return CreateProcessingInstruction(name, String.Empty);
 					}
 					// Not reached
@@ -738,6 +737,8 @@ class XmlDocument : XmlNode
 	// which may be null if the list is currently empty.
 	internal override bool CanInsertAfter(XmlNodeType type, XmlNode refNode)
 			{
+				XmlNode temp;
+
 				// Filter out types that are definitely not allowed.
 				if(!CanInsert(type))
 				{
@@ -756,24 +757,38 @@ class XmlDocument : XmlNode
 					case XmlNodeType.DocumentType:
 					{
 						// Must not have an element before this position.
-						while(refNode != null)
+						temp = refNode;
+						while(temp != null)
 						{
-							if(refNode.NodeType == XmlNodeType.Element)
+							if(temp.NodeType == XmlNodeType.Element)
 							{
 								return false;
 							}
-							refNode = NodeList.GetPreviousSibling(refNode);
+							temp = NodeList.GetPreviousSibling(temp);
+						}
+
+						// Must not have an XmlDeclaration after this position.
+						refNode = NodeList.GetNextSibling(refNode);
+						while(refNode != null)
+						{
+							if(refNode.NodeType == XmlNodeType.XmlDeclaration)
+							{
+								return false;
+							}
+							refNode = NodeList.GetNextSibling(refNode);
 						}
 					}
 					break;
 
 					case XmlNodeType.Element:
 					{
-						// Must not have a document type after this position.
+						// Must not have a document type or XmlDeclaration
+						// after this position.
 						refNode = NodeList.GetNextSibling(refNode);
 						while(refNode != null)
 						{
-							if(refNode.NodeType == XmlNodeType.DocumentType)
+							if(refNode.NodeType == XmlNodeType.DocumentType ||
+							   refNode.NodeType == XmlNodeType.XmlDeclaration)
 							{
 								return false;
 							}
@@ -798,6 +813,8 @@ class XmlDocument : XmlNode
 	// which may be null if the list is currently empty.
 	internal override bool CanInsertBefore(XmlNodeType type, XmlNode refNode)
 			{
+				XmlNode temp;
+
 				// Filter out types that are definitely not allowed.
 				if(!CanInsert(type))
 				{
@@ -816,24 +833,36 @@ class XmlDocument : XmlNode
 					case XmlNodeType.DocumentType:
 					{
 						// Must not have an element before this position.
-						refNode = NodeList.GetPreviousSibling(refNode);
-						while(refNode != null)
+						temp = NodeList.GetPreviousSibling(refNode);
+						while(temp != null)
 						{
-							if(refNode.NodeType == XmlNodeType.Element)
+							if(temp.NodeType == XmlNodeType.Element)
 							{
 								return false;
 							}
-							refNode = NodeList.GetPreviousSibling(refNode);
+							temp = NodeList.GetPreviousSibling(temp);
+						}
+
+						// Must not have an XmlDeclaration after this position.
+						while(refNode != null)
+						{
+							if(refNode.NodeType == XmlNodeType.XmlDeclaration)
+							{
+								return false;
+							}
+							refNode = NodeList.GetNextSibling(refNode);
 						}
 					}
 					break;
 
 					case XmlNodeType.Element:
 					{
-						// Must not have a document type after this position.
+						// Must not have a document type or XmlDeclaration
+						// after this position.
 						while(refNode != null)
 						{
-							if(refNode.NodeType == XmlNodeType.DocumentType)
+							if(refNode.NodeType == XmlNodeType.DocumentType ||
+							   refNode.NodeType == XmlNodeType.XmlDeclaration)
 							{
 								return false;
 							}
@@ -852,6 +881,15 @@ class XmlDocument : XmlNode
 
 				// If we get here, then the node is allowed.
 				return true;
+			}
+
+	// Get the placeholder document fragment associated with a document.
+	internal XmlDocumentFragment Placeholder
+			{
+				get
+				{
+					return placeholder;
+				}
 			}
 
 }; // class XmlDocument

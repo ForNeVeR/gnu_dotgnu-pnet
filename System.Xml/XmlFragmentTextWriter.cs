@@ -39,7 +39,9 @@ internal class XmlFragmentTextWriter : XmlTextWriter
 	public XmlFragmentTextWriter()
 			: base(writer = new StringWriter())
 			{
-				// Nothing to do here.
+				// Make the writer automatically shift to the content
+				// area of the document if it is in the start state.
+				autoShiftToContent = true;
 			}
 
 	// Close the fragment and return the final string.

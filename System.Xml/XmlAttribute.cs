@@ -33,14 +33,12 @@ class XmlAttribute : XmlNode
 {
 	// Internal state.
 	private NameCache.NameInfo name;
-	internal char quoteChar;
 
 	// Constructor.
 	internal XmlAttribute(XmlNode parent, NameCache.NameInfo name)
 			: base(parent)
 			{
 				this.name = name;
-				this.quoteChar = '"';
 			}
 
 	// Get the base URI for this document.
@@ -53,7 +51,6 @@ class XmlAttribute : XmlNode
 			}
 
 	// Get the inner text version of this node.
-	[TODO]
 	public override String InnerText
 			{
 				get
@@ -62,7 +59,7 @@ class XmlAttribute : XmlNode
 				}
 				set
 				{
-					// TODO
+					base.InnerText = value;
 				}
 			}
 
@@ -121,15 +118,7 @@ class XmlAttribute : XmlNode
 			{
 				get
 				{
-					XmlElement owner = OwnerElement;
-					if(owner != null)
-					{
-						return owner.OwnerDocument;
-					}
-					else
-					{
-						return null;
-					}
+					return base.OwnerDocument;
 				}
 			}
 
@@ -138,7 +127,14 @@ class XmlAttribute : XmlNode
 			{
 				get
 				{
-					return (XmlElement)parent;
+					if(parent == null || parent.IsPlaceholder)
+					{
+						return null;
+					}
+					else
+					{
+						return (XmlElement)parent;
+					}
 				}
 			}
 
@@ -165,7 +161,6 @@ class XmlAttribute : XmlNode
 			{
 				get
 				{
-					// TODO
 					return true;
 				}
 			}
@@ -175,31 +170,35 @@ class XmlAttribute : XmlNode
 			{
 				get
 				{
-					return null;
+					return InnerText;
 				}
 				set
 				{
-					// TODO
+					InnerText = value;
 				}
 			}
 
 	// Clone this node in either shallow or deep mode.
 	public override XmlNode CloneNode(bool deep)
 			{
-				// TODO
-				return null;
+				XmlAttribute attr = OwnerDocument.CreateAttribute
+					(Prefix, LocalName, NamespaceURI);
+				attr.CloneChildrenFrom(this, true);
+				return attr;
 			}
 
 	// Writes the contents of this node to a specified XmlWriter.
 	public override void WriteContentTo(XmlWriter w)
 			{
-				// TODO
+				WriteChildrenTo(w);
 			}
 
 	// Write this node and all of its contents to a specified XmlWriter.
 	public override void WriteTo(XmlWriter w)
 			{
-				// TODO
+				w.WriteStartAttribute(Prefix, LocalName, NamespaceURI);
+				WriteContentTo(w);
+				w.WriteEndAttribute();
 			}
 
 	// Determine if a particular node type can be inserted as

@@ -33,6 +33,7 @@ public class XmlTextReader : XmlReader
 	// Internal state.
 	private bool namespaces;
 	private bool normalize;
+	private char quoteChar;
 	private XmlNameTable nameTable;
 	private XmlNamespaceManager namespaceManager;
 	private XmlDocument document;
@@ -64,6 +65,7 @@ public class XmlTextReader : XmlReader
 				}
 				namespaces = true;
 				normalize = false;
+				quoteChar = '"';
 				nameTable = nt;
 				namespaceManager = new XmlNamespaceManager(nt);
 				document = new XmlDocument(nt);
@@ -1028,15 +1030,7 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					XmlAttribute attr = (currentNode as XmlAttribute);
-					if(attr != null)
-					{
-						return attr.quoteChar;
-					}
-					else
-					{
-						return '"';
-					}
+					return quoteChar;
 				}
 			}
 

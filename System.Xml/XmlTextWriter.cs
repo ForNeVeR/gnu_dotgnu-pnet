@@ -44,6 +44,7 @@ public class XmlTextWriter : XmlWriter
 	private String xmlLang;
 	private int pseudoNSNumber;
 	private bool prevWasText;
+	internal bool autoShiftToContent;
 	private enum Special
 	{
 		None  = 0,
@@ -94,6 +95,7 @@ public class XmlTextWriter : XmlWriter
 				pseudoNSNumber = 1;
 				prevWasText = false;
 				special = Special.None;
+				autoShiftToContent = false;
 			}
 
 	// Push a new element scope.
@@ -224,6 +226,30 @@ public class XmlTextWriter : XmlWriter
 					break;
 
 					case WriteState.Start:
+					{
+						// Automatically shift to the content mode
+						// if we are outputting a document fragment
+						// from "XmlNode.InnerXml" or "XmlNode.OuterXml".
+						if(autoShiftToContent)
+						{
+							if((flags & WriteStateFlag.ContentFlag) == 0)
+							{
+								throw new InvalidOperationException
+									(S._("Xml_InvalidWriteState"));
+							}
+							writeState = WriteState.Content;
+						}
+						else
+						{
+							if(((1 << (int)writeState) & (int)flags) == 0)
+							{
+								throw new InvalidOperationException
+									(S._("Xml_InvalidWriteState"));
+							}
+						}
+					}
+					break;
+
 					case WriteState.Prolog:
 					case WriteState.Closed:
 					{
@@ -253,7 +279,10 @@ public class XmlTextWriter : XmlWriter
 						// Terminate the attribute and the element start.
 						writer.Write(quoteChar);
 						writer.Write(" />");
-						PopScope();
+						if(scope != null)
+						{
+							PopScope();
+						}
 						if(xmlSpace != System.Xml.XmlSpace.Preserve)
 						{
 							writer.WriteLine();
@@ -261,9 +290,14 @@ public class XmlTextWriter : XmlWriter
 					}
 					else if(writeState == System.Xml.WriteState.Element)
 					{
-						// Terminate the element start.
-						writer.Write(" />");
-						PopScope();
+						// Terminate the element start.  We may need
+						// to ignore this if writing in "auto-shift"
+						// mode as we may have written a bare attribute.
+						if(scope != null || !autoShiftToContent)
+						{
+							writer.Write(" />");
+							PopScope();
+						}
 					}
 					while(scope != null)
 					{
@@ -322,10 +356,12 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidXmlWritten"), "text");
 				}
 				Sync(WriteStateFlag.ContentFlag);
+				writer.Write("<![CDATA[");
 				if(text != null)
 				{
 					writer.Write(text);
 				}
+				writer.Write("]]>");
 			}
 
 	// Write a character entity.
@@ -757,20 +793,25 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_NamespacesNotSupported"));
 				}
 
-				// We need to be in the "Element" state.
+				// Check the state and output delimiters.
 				if(writeState == System.Xml.WriteState.Attribute)
 				{
 					writer.Write(quoteChar);
+					writer.Write(' ');
 				}
-				else if(writeState != System.Xml.WriteState.Element)
+				else if(writeState == System.Xml.WriteState.Element)
+				{
+					writer.Write(' ');
+				}
+				else if(writeState == System.Xml.WriteState.Closed)
 				{
 					throw new InvalidOperationException
 						(S._("Xml_InvalidWriteState"));
 				}
 
 				// Output the name of the attribute, with appropriate prefixes.
-				writer.Write(' ');
-				if(((Object)prefix) != null && ((Object)ns) != null)
+				if(((Object)prefix) != null && prefix != String.Empty &&
+				   ((Object)ns) != null && ns != String.Empty)
 				{
 					// We need to associate a prefix with a namespace.
 					String currMapping = LookupPrefix(ns);
@@ -798,7 +839,7 @@ public class XmlTextWriter : XmlWriter
 						writer.Write(':');
 					}
 				}
-				else if(((Object)prefix) != null)
+				else if(((Object)prefix) != null && prefix != String.Empty)
 				{
 					// We were only given a prefix, so output it directly.
 					if(prefix != scope.prefix)
@@ -807,7 +848,7 @@ public class XmlTextWriter : XmlWriter
 						writer.Write(':');
 					}
 				}
-				else if(((Object)ns) != null)
+				else if(((Object)ns) != null && ns != String.Empty)
 				{
 					// We were only given a namespace, so find the prefix.
 					prefix = LookupPrefix(ns);

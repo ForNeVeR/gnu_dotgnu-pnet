@@ -119,8 +119,7 @@ void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal)
 
 	/* Determine the number of argument blocks that we need */
 	numArgs = signature->num;
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	if(ILType_HasThis(signature))
 	{
 		++numArgs;
 	}
@@ -161,10 +160,62 @@ void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal)
 		/* Pointer argument for value type returns */
 		args[arg++] = &ffi_type_pointer;
 	}
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	if(ILType_HasThis(signature))
 	{
 		/* Pointer argument for "this" */
+		args[arg++] = &ffi_type_pointer;
+	}
+	for(param = 1; param <= signature->num; ++param)
+	{
+		args[arg++] = TypeToFFI(ILTypeGetEnumType
+									(ILTypeGetParam(signature, param)));
+	}
+
+	/* Prepare the "ffi_cif" structure for the call */
+	ffi_prep_cif(cif, FFI_DEFAULT_ABI, numArgs, rtype, args);
+
+	/* Ready to go */
+	return (void *)cif;
+}
+
+void *_ILMakeCifForConstructor(ILCoder *coder, ILMethod *method,
+							   int isInternal)
+{
+	ILType *signature = ILMethod_Signature(method);
+	ILUInt32 numArgs;
+	ffi_cif *cif;
+	ffi_type **args;
+	ffi_type *rtype;
+	ILUInt32 arg;
+	ILUInt32 param;
+
+	/* Determine the number of argument blocks that we need */
+	numArgs = signature->num;
+	if(isInternal)
+	{
+		/* This is an "internalcall" or "runtime" method
+		   which needs an extra argument for the thread */
+		++numArgs;
+	}
+
+	/* Allocate space for the cif within the coder's memory space */
+	cif = ILCoderAlloc(coder, sizeof(ffi_cif) +
+							  sizeof(ffi_type *) * numArgs);
+	if(!cif)
+	{
+		return 0;
+	}
+	args = ((ffi_type **)(cif + 1));
+
+	/* The return value is always a pointer, indicating the object
+	   that was just allocated by the constructor */
+	rtype = &ffi_type_pointer;
+
+	/* Convert the argument types */
+	arg = 0;
+	if(isInternal)
+	{
+		/* Pointer argument for the thread */
 		args[arg++] = &ffi_type_pointer;
 	}
 	for(param = 1; param <= signature->num; ++param)

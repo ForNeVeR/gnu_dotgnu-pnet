@@ -45,7 +45,7 @@ internal sealed class Attributes : XmlErrorProcessor
 				nt = null;
 				nm = null;
 				attributes = new ArrayList(8);
-				names = new Hashtable();
+				names = new Hashtable(new Key(null), new Key(null));
 			}
 
 

@@ -1,5 +1,7 @@
 2004-02-08  Richard Baumann  <biochem333@nyc.rr.com>
 
+	* System.Xml/Private/Attributes.cs: fix to duplicate attribute checking.
+
 	* System.Xml/XmlTextReader.cs, System.Xml/Private/Attributes.cs,
 	System.Xml/Private/NodeManager.cs: fix a bug in namespace support
 	and add support for better error messages for duplicate and malformed

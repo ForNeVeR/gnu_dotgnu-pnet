@@ -717,6 +717,60 @@ static void Write_Direct(Display *dpy, Colormap colormap, XImage *image,
 }
 
 /*
+ * Write RGB data directly to an XImage, and perform a RGB-BGR byteswap.
+ */
+static void Write_DirectSwap(Display *dpy, Colormap colormap, XImage *image,
+						     int line, unsigned long *input, int num)
+{
+	int column;
+	if(sizeof(unsigned int) == 4)
+	{
+		unsigned int *output = (unsigned int *)
+			(image->data + line * image->bytes_per_line);
+		for(column = 0; column < num; ++column)
+		{
+			unsigned int value = (unsigned int)(*input++);
+			value = ((value & 0x00FF0000) >> 16) |
+					 (value & 0x0000FF00) |
+					((value & 0x000000FF) << 16);
+			*output++ = value;
+		}
+	}
+	else
+	{
+		unsigned long *output = (unsigned long *)
+			(image->data + line * image->bytes_per_line);
+		for(column = 0; column < num; ++column)
+		{
+			unsigned int value = (unsigned int)(*input++);
+			value = ((value & 0x00FF0000) >> 16) |
+					 (value & 0x0000FF00) |
+					((value & 0x000000FF) << 16);
+			*output++ = (unsigned long)value;
+		}
+	}
+}
+
+/*
+ * Write RGB data to a 16 bits per pixel XImage structure.
+ */
+static void Write_16bpp(Display *dpy, Colormap colormap, XImage *image,
+					    int line, unsigned long *input, int num)
+{
+	int column;
+	unsigned short *output = (unsigned short *)
+		(image->data + line * image->bytes_per_line);
+	for(column = 0; column < num; ++column)
+	{
+		unsigned int value = (unsigned int)(*input++);
+		value = ((value & 0x00F80000) >> 8) |
+				((value & 0x0000FC00) >> 5) |
+				((value & 0x000000F8) >> 3);
+		*output++ = (unsigned short)value;
+	}
+}
+
+/*
  * Default writing routine, doing per-pixel color allocations.
  */
 static void Write_Default(Display *dpy, Colormap colormap, XImage *image,
@@ -746,12 +800,54 @@ typedef void (*WriteFunc)(Display *dpy, Colormap colormap, XImage *image,
 						  int len, unsigned long *input, int num);
 static WriteFunc GetWriteFunc(XImage *image)
 {
+	/* Determine if the client machine is little-endian or big-endian */
+	union
+	{
+		short volatile value;
+		unsigned char volatile buf[2];
+	} un;
+	int littleEndian;
+	un.value = 0x0102;
+	littleEndian = (un.buf[0] == 0x02);
+
+	/* Check for well-known special cases */
 	if(image->depth == 24 && image->red_mask == 0x00FF0000 &&
 	   image->green_mask == 0x0000FF00 && image->blue_mask == 0x000000FF &&
 	   image->byte_order == LSBFirst && image->bitmap_bit_order == LSBFirst)
 	{
-		return Write_Direct;
+		if(littleEndian)
+		{
+			return Write_Direct;
+		}
+		else
+		{
+			return Write_DirectSwap;
+		}
 	}
+	if(image->depth == 24 && image->red_mask == 0x00FF0000 &&
+	   image->green_mask == 0x0000FF00 && image->blue_mask == 0x000000FF &&
+	   image->byte_order == MSBFirst && image->bitmap_bit_order == MSBFirst)
+	{
+		if(littleEndian)
+		{
+			return Write_DirectSwap;
+		}
+		else
+		{
+			return Write_Direct;
+		}
+	}
+	if(image->depth == 16 && image->red_mask == 0x0000F800 &&
+	   image->green_mask == 0x000007E0 && image->blue_mask == 0x0000001F &&
+	   image->byte_order == LSBFirst && image->bitmap_bit_order == LSBFirst)
+	{
+		if(littleEndian)
+		{
+			return Write_16bpp;
+		}
+	}
+
+	/* Fall back to the generic writer, using XPutPixel */
 	return Write_Default;
 }
 

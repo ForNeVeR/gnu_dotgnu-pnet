@@ -1,4 +1,10 @@
 
+2003-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* profiles/*, resources/*, runtime/*: stub out a large number of
+	classes under the "System.Runtime.Remoting" namespace; add the
+	"CONFIG_REMOTING" define to selection compilation of remoting.
+
 2003-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Exception.cs: don't load the stack trace in

@@ -2,7 +2,7 @@
  * ObjRef.cs - Implementation of the
  *			"System.Runtime.Remoting.ObjRef" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,98 @@
 namespace System.Runtime.Remoting
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_REMOTING
 
-[TODO]
-public class ObjRef
+using System.Runtime.Serialization;
+
+[Serializable]
+public class ObjRef : IObjectReference, ISerializable
 {
+	// Internal state.
+	private IChannelInfo channelInfo;
+	private IEnvoyInfo envoyInfo;
+	private IRemotingTypeInfo typeInfo;
+	private String uri;
 
-	// TODO
+	// Constructors.
+	public ObjRef()
+			{
+				// TODO
+			}
+	public ObjRef(MarshalByRefObject o, Type requestedType)
+			{
+				// TODO
+			}
+	protected ObjRef(SerializationInfo info, StreamingContext context)
+			{
+				// TODO
+			}
+
+	// Implement the IObjectReference interface.
+	public virtual Object GetRealObject(StreamingContext context)
+			{
+				// TODO
+				return null;
+			}
+
+	// Implement the ISerializable interface.
+	public virtual void GetObjectData(SerializationInfo info,
+									  StreamingContext context)
+			{
+				// TODO
+			}
+
+	// Determine if the object reference is from this process.
+	public bool IsFromThisProcess()
+			{
+				// TODO
+				return false;
+			}
+
+	// Determine if the object reference is from this application domain.
+	public bool IsFromThisAppDomain()
+			{
+				// TODO
+				return false;
+			}
+
+	// Object reference properties.
+	public virtual IChannelInfo ChannelInfo
+			{
+				get
+				{
+					return channelInfo;
+				}
+				set
+				{
+					channelInfo = value;
+				}
+			}
+	public virtual IRemotingTypeInfo TypeInfo
+			{
+				get
+				{
+					return typeInfo;
+				}
+				set
+				{
+					typeInfo = value;
+				}
+			}
+	public virtual String URI
+			{
+				get
+				{
+					return uri;
+				}
+				set
+				{
+					uri = value;
+				}
+			}
 
 }; // class ObjRef
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REMOTING
 
 }; // namespace System.Runtime.Remoting

@@ -241,6 +241,10 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 				setup.ShadowCopyDirectories = String.Empty;
 			}
 
+#endif // !ECMA_COMPAT
+
+#if CONFIG_REMOTING
+
 	// Create an instance of an assembly and unwrap its handle.
 	public Object CreateInstanceAndUnwrap(String assemblyName, String typeName)
 			{
@@ -323,6 +327,24 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 									  activationAttributes,
 									  securityAttributes);
 			}
+
+	// Execute a delegate in a foreign application domain.
+	[TODO]
+	public void DoCallBack(CrossAppDomainDelegate theDelegate)
+			{
+				// TODO
+			}
+
+	// Give the application domain an infinite lifetime service.
+	public override Object InitializeLifetimeService()
+			{
+				// Always returns null.
+				return null;
+			}
+
+#endif // CONFIG_REMOTING
+
+#if !ECMA_COMPAT
 
 	// Define a dynamic assembly builder within this domain.
 	public AssemblyBuilder DefineDynamicAssembly
@@ -423,13 +445,6 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 				return new AssemblyBuilder(name, access, dir, isSynchronized);
 			}
 
-	// Execute a delegate in a foreign application domain.
-	[TODO]
-	public void DoCallBack(CrossAppDomainDelegate theDelegate)
-			{
-				// TODO
-			}
-
 	// Execute a particular assembly within this application domain.
 	public int ExecuteAssembly(String assemblyFile)
 			{
@@ -463,13 +478,6 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 	public Object GetData(String name)
 			{
 				return items[name];
-			}
-
-	// Give the application domain an infinite lifetime service.
-	public override Object InitializeLifetimeService()
-			{
-				// Always returns null.
-				return null;
 			}
 
 	// Load an assembly into this application domain by name.

@@ -22,11 +22,12 @@
 namespace System.Runtime.Remoting
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_REMOTING
 
 using System;
 using System.Runtime.Serialization;
 
+[Serializable]
 public class RemotingException : SystemException
 {
 
@@ -61,6 +62,6 @@ public class RemotingException : SystemException
 
 }; // class RemotingException
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REMOTING
 
 }; // namespace System.Runtime.Remoting

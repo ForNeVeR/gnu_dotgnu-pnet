@@ -29,7 +29,7 @@ public abstract class MarshalByRefObject
 	// Constructor.
 	protected MarshalByRefObject() : base() {}
 
-#if !ECMA_COMPAT
+#if CONFIG_REMOTING
 
 	// Create a marshalable reference for this object.
 	public virtual ObjRef CreateObjRef()
@@ -54,7 +54,7 @@ public abstract class MarshalByRefObject
 				return null;
 			}
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REMOTING
 
 }; // class MarshalByRefObject
 

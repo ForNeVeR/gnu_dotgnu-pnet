@@ -35,6 +35,9 @@ public
 #endif
 sealed class Activator
 {
+
+#if CONFIG_REMOTING
+
 	// Create a COM object instance.
 	public static ObjectHandle CreateComInstanceFrom
 			(String assemblyName, String typeName)
@@ -52,6 +55,8 @@ sealed class Activator
 	 			     (assemblyName == null ? "current" : assemblyName),
 					 typeName));
 	}
+
+#endif // CONFIG_REMOTING
 
 	// Create an object instance from a type using the default constructor.
 	public static Object CreateInstance(Type type)
@@ -110,6 +115,8 @@ sealed class Activator
 								 BindingFlags.CreateInstance | bindingAttr,
 								 binder, null, args, null, culture, null);
 	}
+
+#if CONFIG_REMOTING
 
 	// Create an object instance from a type in another assembly.
 	public static ObjectHandle CreateInstance
@@ -195,6 +202,8 @@ sealed class Activator
 			(CreateInstance(type, bindingAttr, binder, args,
 							culture, activationAttributes));
 	}
+
+#endif // CONFIG_REMOTING
 
 }; // class Activator
 

@@ -81,28 +81,6 @@ interface _AppDomain
 	// Clear the shadow copy path.
 	void ClearShadowCopyPath();
 
-	// Create an instance of a type within this application domain.
-	ObjectHandle CreateInstance(String assemblyName, String typeName);
-	ObjectHandle CreateInstance(String assemblyName, String typeName,
-								Object[] activationAttributes);
-	ObjectHandle CreateInstance(String assemblyName, String typeName,
-								bool ignoreCase, BindingFlags bindingAttr,
-								Binder binder, Object[] args,
-								CultureInfo culture,
-								Object[] activationAttributes,
-								Evidence securityAttributes);
-
-	// Create a remote instance of a type within this application domain.
-	ObjectHandle CreateInstanceFrom(String assemblyName, String typeName);
-	ObjectHandle CreateInstanceFrom(String assemblyName, String typeName,
-								    Object[] activationAttributes);
-	ObjectHandle CreateInstanceFrom(String assemblyName, String typeName,
-								    bool ignoreCase, BindingFlags bindingAttr,
-								    Binder binder, Object[] args,
-								    CultureInfo culture,
-								    Object[] activationAttributes,
-								    Evidence securityAttributes);
-
 	// Define a dynamic assembly within this application domain.
 	AssemblyBuilder DefineDynamicAssembly
 				(AssemblyName name, AssemblyBuilderAccess access);
@@ -144,9 +122,6 @@ interface _AppDomain
 				 PermissionSet refusedPersmissions,
 				 bool isSynchronized);
 
-	// Execute a delegate in a foreign application domain.
-	void DoCallBack(CrossAppDomainDelegate theDelegate);
-
 	// Execute a particular assembly within this application domain.
 	int ExecuteAssembly(String assemblyFile);
 	int ExecuteAssembly(String assemblyFile, Evidence assemblySecurity);
@@ -158,12 +133,6 @@ interface _AppDomain
 
 	// Fetch the object associated with a particular data name.
 	Object GetData(String name);
-
-	// Get an object for controlling the lifetime service.
-	Object GetLifetimeService();
-
-	// Give the application domain an infinite lifetime service.
-	Object InitializeLifetimeService();
 
 	// Load an assembly into this application domain by name.
 	Assembly Load(AssemblyName assemblyRef);
@@ -217,6 +186,41 @@ interface _AppDomain
 	event ResolveEventHandler TypeResolve;
 
 #endif // !ECMA_COMPAT
+
+#if CONFIG_REMOTING
+
+	// Create an instance of a type within this application domain.
+	ObjectHandle CreateInstance(String assemblyName, String typeName);
+	ObjectHandle CreateInstance(String assemblyName, String typeName,
+								Object[] activationAttributes);
+	ObjectHandle CreateInstance(String assemblyName, String typeName,
+								bool ignoreCase, BindingFlags bindingAttr,
+								Binder binder, Object[] args,
+								CultureInfo culture,
+								Object[] activationAttributes,
+								Evidence securityAttributes);
+
+	// Create a remote instance of a type within this application domain.
+	ObjectHandle CreateInstanceFrom(String assemblyName, String typeName);
+	ObjectHandle CreateInstanceFrom(String assemblyName, String typeName,
+								    Object[] activationAttributes);
+	ObjectHandle CreateInstanceFrom(String assemblyName, String typeName,
+								    bool ignoreCase, BindingFlags bindingAttr,
+								    Binder binder, Object[] args,
+								    CultureInfo culture,
+								    Object[] activationAttributes,
+								    Evidence securityAttributes);
+
+	// Execute a delegate in a foreign application domain.
+	void DoCallBack(CrossAppDomainDelegate theDelegate);
+
+	// Get an object for controlling the lifetime service.
+	Object GetLifetimeService();
+
+	// Give the application domain an infinite lifetime service.
+	Object InitializeLifetimeService();
+
+#endif // CONFIG_REMOTING
 
 }; // interface _AppDomain
 

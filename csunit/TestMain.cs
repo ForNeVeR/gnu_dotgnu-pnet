@@ -254,7 +254,7 @@ public sealed class TestMain
 				}
 
 				// Done.
-				return 0;
+				return (result.HadFailures ? 1 : 0);
 			}
 
 	// Show the version information for this program.

@@ -78,6 +78,15 @@ public class TestResult
 				// Nothing to do here.
 			}
 
+	// Determine if we had failures.
+	public virtual bool HadFailures
+			{
+				get
+				{
+					return false;
+				}
+			}
+
 }; // class TestResult
 
 }; // namespace CSUnit

@@ -150,6 +150,15 @@ public class TestWriterResult : TestResult
 				}
 			}
 
+	// Determine if we had failures.
+	public override bool HadFailures
+			{
+				get
+				{
+					return (numFailures > 0);
+				}
+			}
+
 }; // class TestWriterResult
 
 }; // namespace CSUnit

@@ -1,4 +1,36 @@
 
+0.1.8 (04 October 2001)
+
+	* Begin implementation of ildb, the IL debugger.  Not much working yet.
+	* Begin implementation of the bytecode verifier for the engine.
+	* Continue implementation of csdoc: mostly done now.
+	* Implement a shell for converting the csdoc XML format into
+	  a variety of other documentation formats.
+	* Implement "csdoc2texi" and "csdoc2html" using the above shell.
+	* New member lookup routines in the C# compiler that better
+	  match the requirements of the C# specification.
+	* Redesign the handling of namespaces in the C# compiler.
+	* Semantic analysis for fields within objects that are not "this".
+	* Static and instance properties.
+	* New semantic kind called CS_SEMKIND_SVALUE (set value), for
+      representing properties that only have a "set" method.
+	* Update the documentation and man pages to describe "csdoc",
+	  "csdoc2texi", "csdoc2html", and the XML documentation format.
+	* Parse class constants as a special case of fields.
+	* Dump the constant value of a field to the assembly stream.
+	* Invocation support for static, instance, and virtual methods that
+	  do not have overloaded variants.
+	* Base class initializers.
+	* Rearrange the code of "resgen" to make it easier to maintain.
+	* Add .po support to "resgen".
+	* Add "ildiff" to the tree.  Contributed by Gopal V <gopalv82@yahoo.com>.
+	* Method overload resolution code.
+	* Support for "ref", "out", and "params" arguments to methods.
+	* Code generation for taking the address of an item (ILNode_GenRef).
+	* Fix the importing of classes from the builtin system library.
+	* Namespaces with names "X.Y.Z" are expanded properly in the parser.
+	* Enumerated type declarations.
+
 0.1.6 (11 September 2001)
 
 	* Convert operator declarations into method nodes.

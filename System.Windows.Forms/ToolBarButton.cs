@@ -295,7 +295,14 @@ public class ToolBarButton
 				return 0;
 			}
 		}
-		return 0;
+		else if (viewRectangle.Contains(x,y))
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 	internal void Reset()
 	{

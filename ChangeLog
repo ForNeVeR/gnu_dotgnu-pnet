@@ -1,4 +1,8 @@
 2003-07-04  Richard Baumann  <biochem333@nyc.rr.com>
+	* System.Windows.Forms/ToolBar.cs: Layout and button drawing fixes.
+	* System.Windows.Forms/ToolBarButton.cs: Fix Contains method.
+
+2003-07-04  Richard Baumann  <biochem333@nyc.rr.com>
 	* System.Windows.Forms/ToolBar.cs: Added and mostly implemented.
 	* System.Windows.Forms/ToolBarButton.cs: Fully implemented.
 	* System.Windows.Forms/ImageList.cs: Fixes to properly deal with the

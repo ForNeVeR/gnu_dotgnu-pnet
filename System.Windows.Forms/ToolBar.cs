@@ -52,6 +52,8 @@ public class ToolBar : Control
 	private int mouseDownDrop = -1;
 	private int mouseHoverClick = -1;
 	private int mouseHoverDrop = -1;
+	private int limitWidth = -1;
+	private int limitHeight = -1;
 
 	// used in calculating button and toolbar sizes
 	private static readonly int separatorSize = 6; // just a guess
@@ -343,29 +345,35 @@ public class ToolBar : Control
 		{
 			if (!preferredSize.IsEmpty) { return preferredSize; }
 			DockStyle dock = Dock;
-			int parentWidth = Parent.Width;
-			int parentHeight = Parent.Height;
+			if (limitWidth == -1)
+			{
+				limitWidth = Parent.Width;
+			}
+			if (limitHeight == -1)
+			{
+				limitHeight = Parent.Height;
+			}
 			if (dock == DockStyle.Left || dock == DockStyle.Right)
 			{
-				preferredSize = CalculateSizeV(parentHeight);
+				preferredSize = CalculateSizeV(limitHeight);
 
-				if (preferredSize.Height < parentHeight)
+				if (preferredSize.Height < limitHeight)
 				{
-					preferredSize.Height = parentHeight;
+					preferredSize.Height = limitHeight;
 				}
 			}
 			else if (dock == DockStyle.Top || dock == DockStyle.Bottom)
 			{
-				preferredSize = CalculateSizeH(parentWidth);
+				preferredSize = CalculateSizeH(limitWidth);
 
-				if (preferredSize.Width < parentWidth)
+				if (preferredSize.Width < limitWidth)
 				{
-					preferredSize.Width = parentWidth;
+					preferredSize.Width = limitWidth;
 				}
 			}
 			else // dock == DockStyle.None
 			{
-				preferredSize = CalculateSizeH(parentWidth);
+				preferredSize = CalculateSizeH(limitWidth);
 			}
 			return preferredSize;
 		}
@@ -847,6 +855,12 @@ public class ToolBar : Control
 		bool partial = (b.Style == ToolBarButtonStyle.ToggleButton);
 		bool pushed = partial && b.Pushed;
 		partial &= b.PartialPush;
+
+		// if the button is a drop down button, but the drop down is
+		// triggered from the viewRectangle, instead of the
+		// dropRectangle, set viewClick to true for proper drawing
+		viewClick |= (dropClick && !drops);
+
 
 		ButtonState state = CalculateButtonState(flat,viewClick,viewHover,
 		                                         partial,pushed);
@@ -1390,8 +1404,17 @@ public class ToolBar : Control
 	                                      BoundsSpecified specified)
 	{
 		Size oldSize = Size;
+		if ((specified & BoundsSpecified.Width) != 0)
+		{
+			limitWidth = width;
+		}
+		if ((specified & BoundsSpecified.Height) != 0)
+		{
+			limitHeight = height;
+		}
 		if (autoSize)
 		{
+			preferredSize = Size.Empty;
 			Size size = PreferredSize;
 			width = size.Width;
 			height = size.Height;

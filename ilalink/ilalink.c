@@ -658,6 +658,35 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/* Set the default entry point, or report an error about
+	   incorrect entry point specifications */
+	if(entryPoint)
+	{
+		if(!ILLinkerSetEntryPoint(linker, entryPoint))
+		{
+			fprintf(stderr, "%s: could not locate the entry point `%s'",
+					outputFile, entryPoint);
+			errors = 1;
+		}
+	}
+	if(format == IL_IMAGETYPE_EXE)
+	{
+		if(!ILLinkerHasEntryPoint(linker))
+		{
+			fprintf(stderr, "%s: no entry point specified\n", outputFile);
+			errors = 1;
+		}
+	}
+	else if(format == IL_IMAGETYPE_DLL)
+	{
+		if(ILLinkerHasEntryPoint(linker))
+		{
+			fprintf(stderr, "%s: DLL's cannot have entry points\n",
+					outputFile);
+			errors = 1;
+		}
+	}
+
 	/* Destroy the linker context */
 	len = ILLinkerDestroy(linker);
 	fclose(outfile);

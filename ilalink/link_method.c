@@ -350,6 +350,95 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	}
 }
 
+int ILLinkerSetEntryPoint(ILLinker *linker, const char *name)
+{
+	int len, dot;
+	const char *methodName;
+	const char *className;
+	int classNameLen;
+	const char *namespace;
+	int namespaceLen;
+	ILClass *classInfo;
+	ILMethod *method;
+	int found;
+
+	/* Split the name into class and method */
+	len = strlen(name);
+	while(len > 0 && (name[len - 1] != ':' || name[len] != ':'))
+	{
+		--len;
+	}
+	if(len > 0)
+	{
+		methodName = name + len + 1;
+		--len;
+	}
+	else
+	{
+		methodName = "Main";
+		len = strlen(name);
+	}
+
+	/* Split the class name into its name and namespace components */
+	dot = len;
+	while(dot > 0 && name[dot - 1] != '.')
+	{
+		--dot;
+	}
+	if(dot > 0)
+	{
+		className = name + dot;
+		classNameLen = len - dot;
+		namespace = name;
+		namespaceLen = dot - 1;
+	}
+	else
+	{
+		className = name;
+		classNameLen = len;
+		namespace = 0;
+		namespaceLen = 0;
+	}
+
+	/* Look for the class within the image's global scope */
+	classInfo = ILClassLookup(ILClassGlobalScope(linker->image),
+							  name, namespace);
+	if(!classInfo)
+	{
+		return 0;
+	}
+
+	/* Look for the method within the class */
+	method = 0;
+	found = 0;
+	while((method = (ILMethod *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)method,
+				 IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		if(strcmp(ILMethod_Name(method), methodName) &&
+		   ILMethod_IsStatic(method))
+		{
+			/* If the method is different from the inferred entry point,
+			   then report an error */
+			if(linker->entryPoint != 0 && linker->entryPoint != method)
+			{
+				fputs("program has multiple entry points\n", stderr);
+			}
+			linker->entryPoint = method;
+			ILWriterSetEntryPoint(linker->writer, method);
+			found = 1;
+		}
+	}
+
+	/* Done */
+	return found;
+}
+
+int ILLinkerHasEntryPoint(ILLinker *linker)
+{
+	return (linker->entryPoint != 0);
+}
+
 #ifdef	__cplusplus
 };
 #endif

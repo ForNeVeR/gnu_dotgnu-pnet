@@ -92,6 +92,17 @@ int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename);
 int ILLinkerAddResource(ILLinker *linker, const char *name,
 						int isPrivate, FILE *stream);
 
+/*
+ * Set the entry point to a particular class or method name.
+ * Returns zero if the name could not be located.
+ */
+int ILLinkerSetEntryPoint(ILLinker *linker, const char *name);
+
+/*
+ * Determine if the final output image has an entry point.
+ */
+int ILLinkerHasEntryPoint(ILLinker *linker);
+
 #ifdef	__cplusplus
 };
 #endif

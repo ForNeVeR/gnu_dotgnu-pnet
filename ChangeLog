@@ -51,6 +51,10 @@ link resources against the final output image.
 * ilalink/linker.h, ilalink/link_create.c, ilalink/link_method.c:
 detect method entry points within the linker.
 
+* include/il_linker.h, ilalink/ilalink.c, ilalink/link_method.c:
+set the entry point from the command-line, and also check that
+entry points are used consistently with EXE's and DLL's.
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

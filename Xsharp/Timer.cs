@@ -39,7 +39,7 @@ public sealed class Timer : IDisposable
 {
 	// Internal state.
 	private Display dpy;
-	private TimerCallback callback;
+	private Delegate callback;
 	private Object state;
 	private DateTime nextDue;
 	private int period;
@@ -214,6 +214,72 @@ public sealed class Timer : IDisposable
 			}
 
 	/// <summary>
+	/// <para>Create a new timer.</para>
+	/// </summary>
+	///
+	/// <param name="dpy">
+	/// <para>The display to create the timer for, or <see langword="null"/>
+	/// to use the application's primary display.</para>
+	/// </param>
+	///
+	/// <param name="callback">
+	/// <para>The delegate to invoke when the timer expires.</para>
+	/// </param>
+	///
+	/// <param name="state">
+	/// <para>The state information to pass to the callback.</para>
+	/// </param>
+	///
+	/// <param name="dueTime">
+	/// <para>The number of milliseconds until the timer expires
+	/// for the first time.</para>
+	/// </param>
+	///
+	/// <param name="period">
+	/// <para>The number of milliseconds between timer expiries, or
+	/// -1 to only expire once at <paramref name="dueTime"/>.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>The <paramref name="callback"/> parameter is
+	/// <see langword="null"/>.</para>
+	/// </exception>
+	///
+	/// <exception cref="T:System.ArgumentOutOfRangeException">
+	/// <para>The <paramref name="dueTime"/> parameter is
+	/// less than zero.</para>
+	/// </exception>
+	public Timer(Display dpy, EventHandler callback,
+				 Object state, int dueTime, int period)
+			{
+				if(callback == null)
+				{
+					throw new ArgumentNullException("callback");
+				}
+				if(dpy == null)
+				{
+					this.dpy = Application.Primary.Display;
+				}
+				else
+				{
+					this.dpy = dpy;
+				}
+				if(dueTime < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("dueTime", S._("X_NonNegative"));
+				}
+				this.callback = callback;
+				this.state = state;
+				this.nextDue =
+					DateTime.Now + new TimeSpan
+						(dueTime * TimeSpan.TicksPerMillisecond);
+				this.period = period;
+				this.stopped = false;
+				AddTimer();
+			}
+
+	/// <summary>
 	/// <para>Change the parameters for this timer.</para>
 	/// </summary>
 	///
@@ -271,6 +337,7 @@ public sealed class Timer : IDisposable
 	public void Dispose()
 			{
 				Stop();
+				state = null;
 			}
 
 	/// <summary>
@@ -381,7 +448,16 @@ public sealed class Timer : IDisposable
 
 					// Invoke the timer's callback delegate.
 					activated = true;
-					timer.callback(timer.state);
+					if(timer.callback is TimerCallback)
+					{
+						TimerCallback cb1 = timer.callback as TimerCallback;
+						cb1(timer.state);
+					}
+					else
+					{
+						EventHandler cb2 = timer.callback as EventHandler;
+						cb2(timer.state, EventArgs.Empty);
+					}
 
 					// Add the timer back onto the queue if necessary.
 					if(!timer.stopped && !timer.onDisplayQueue)

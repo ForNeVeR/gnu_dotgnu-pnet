@@ -505,6 +505,21 @@ public sealed class DrawingToolkit : IToolkit
 				bottomAdjust = 0;
 			}
 
+	// Register a timer that should fire every "interval" milliseconds.
+	// Returns a cookie that can be used to identify the timer.
+	public Object RegisterTimer
+				(Object owner, int interval, EventHandler expire)
+			{
+				return new Xsharp.Timer
+					(app.Display, expire, owner, interval, interval);
+			}
+
+	// Unregister a timer.
+	public void UnregisterTimer(Object cookie)
+			{
+				((Xsharp.Timer)cookie).Dispose();
+			}
+
 }; // class DrawingToolkit
 
 }; // namespace System.Drawing.Toolkit

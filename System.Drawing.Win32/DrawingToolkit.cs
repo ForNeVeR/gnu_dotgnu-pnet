@@ -360,6 +360,21 @@ public class DrawingToolkit : IToolkit
 		bottomAdjust = 0;
 	}
 
+	// Register a timer that should fire every "interval" milliseconds.
+	// Returns a cookie that can be used to identify the timer.
+	public Object RegisterTimer
+				(Object owner, int interval, EventHandler expire)
+	{
+		// TODO
+		return null;
+	}
+
+	// Unregister a timer.
+	public void UnregisterTimer(Object cookie)
+	{
+		// TODO
+	}
+
 }; // class DrawingToolkit
 
 }; // namespace System.Drawing.Toolkit

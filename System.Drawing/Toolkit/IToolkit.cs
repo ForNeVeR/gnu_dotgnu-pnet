@@ -135,6 +135,13 @@ public interface IToolkit
 						 out int rightAdjust, out int bottomAdjust,
 						 ToolkitWindowFlags flags);
 
+	// Register a timer that should fire every "interval" milliseconds.
+	// Returns a cookie that can be used to identify the timer.
+	Object RegisterTimer(Object owner, int interval, EventHandler expire);
+
+	// Unregister a timer.
+	void UnregisterTimer(Object cookie);
+
 }; // interface IToolkit
 
 }; // namespace System.Drawing.Toolkit

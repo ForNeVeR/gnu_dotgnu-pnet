@@ -361,7 +361,7 @@ public class Control : IWin32Window, IDisposable
 
 				if(toolkitWindow == null)
 				{
-					CreateHandle();
+					CreateControl();
 				}
 
 				lock(this)	// this may not be necessary
@@ -2497,9 +2497,19 @@ public class Control : IWin32Window, IDisposable
 
 	public void Invalidate(Region region, bool invalidateChildren)
 			{
-				if (toolkitWindow == null || !Visible)
+				if (!Visible)
 				{
 					return;
+				}
+
+				if (toolkitWindow == null)
+				{
+					if ((parent == null) || (!parent.IsHandleCreated))
+					{
+						return;
+					}
+					
+					CreateControl ();
 				}
 
 				using (Region region1 = region.Clone())
@@ -2556,7 +2566,7 @@ public class Control : IWin32Window, IDisposable
 					{
 						if(toolkitWindow == null)
 						{
-							CreateHandle();
+							CreateControl();
 						}
 						toolkitWindow.Invalidate(b.X, b.Y, b.Width, b.Height);
 					}
@@ -5147,10 +5157,7 @@ public class Control : IWin32Window, IDisposable
 	protected virtual void OnParentVisibleChanged(EventArgs e)
 			{
 				bool parentVisible = parent.Visible;
-				if((!parentVisible && visible) != (parentVisible && visible))
-				{
-					OnVisibleChanged(e);
-				}
+				OnVisibleChanged(e);
 			}
 	internal virtual void OnPrimaryEnter(EventArgs e)
 			{

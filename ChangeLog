@@ -1,3 +1,14 @@
+2005-04-08  Marc Haisenko   <marc@darkdust.net>
+
+	* System.Windows.Forms/Control.cs:  Use CreateControl instead of CreateHandle
+	in BeginInvoke(Delegate,Object[]) and InvalidateInternal (CreateHandle should
+	only be called by CreateControl and CreateControlInner). Call CreateControl
+	in Invalidate(Region,bool) when necessary. These two fix visibility bugs
+	(where control should have been visible but weren't).
+
+	* System.Windows.Forms/Control.cs: Removed a check in OnParentVisibleChanged
+	because it was always true and thus unnecessary.
+
 2005-04-04  Marc Haisenko   <marc@darkdust.net>
 
 	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs: removed (unused)
@@ -9,7 +20,7 @@
 	
 2005-04-03  Erich Kitzmuller  <ammoq@ammoq.com>
 
-	* Sytem.Windows.Forms/CobmoBox.cs: Handle LostFocus event. (patch
+	* Sytem.Windows.Forms/ComboBox.cs: Handle LostFocus event. (patch
 	#3870 applied by drobosson)
 
 2005-03-28  Deryk Robosson  <deryk@0x0a.com>

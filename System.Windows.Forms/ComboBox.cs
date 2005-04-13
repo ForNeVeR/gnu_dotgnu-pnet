@@ -77,6 +77,7 @@ namespace System.Windows.Forms
 			textEntry.BorderStyle = BorderStyle.None;
 			textEntry.TabStop = false;
 			textEntry.LostFocus += new EventHandler(textentry_LostFocus);
+			textEntry.GotFocus += new EventHandler(textentry_GotFocus);
 			this.Controls.Add(textEntry);
 		
 			popup = new PopupControl();
@@ -592,11 +593,6 @@ namespace System.Windows.Forms
 			base.OnEnter (e);
 			if (DropDownStyle == ComboBoxStyle.DropDownList)
 				Invalidate();
-			else
-			{
-				textEntry.Focus();
-				textEntry.SelectAll();
-			}
 		}
 
 		protected override void OnLeave(EventArgs e)
@@ -958,7 +954,12 @@ namespace System.Windows.Forms
 		{
 			OnLostFocus(e);
 		}
-		
+
+		private void textentry_GotFocus(object sender, EventArgs e)
+		{
+			OnGotFocus(e);
+		}
+	
 		private void scrollbar_ValueChanged(object sender, EventArgs e)
 		{
 			using (Graphics g = popup.CreateGraphics())

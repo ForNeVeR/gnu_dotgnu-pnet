@@ -1,3 +1,9 @@
+2005-04-13  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/ComboBox.cs: Handle GotFocus event.  Remove
+	code causing double call which was causing double LostFocus/GotFocus
+	events to be raised.
+
 2005-04-08  Marc Haisenko   <marc@darkdust.net>
 
 	* System.Windows.Forms/Control.cs:  Use CreateControl instead of CreateHandle

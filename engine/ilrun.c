@@ -24,6 +24,7 @@
 #include "il_utils.h"
 #include "il_thread.h"
 #include "il_coder.h"
+#include "engine.h"
 
 #if defined(HAVE_UNISTD_H) && !defined(_MSC_VER)
 #include <unistd.h>
@@ -100,7 +101,15 @@ static ILCmdLineOption const options[] = {
 	{"-M", 'M', 0, 0, 0},
 	{"--method-profile", 'M', 0,
 		"--method-profile        or -M",
+#ifndef ENHANCED_PROFILER
 		"Display how many times each method was called on exit."},
+#else
+		"Simple method profiling (enabled at runtime or with -E)."},
+	{"-E", 'E', 0, 0, 0},
+	{"--enable-profile", 'E', 0,
+		"--enable-profile        or -E",
+		"Enable simple method profiling at program start."},
+#endif
 	{"-T", 'T', 0, 0, 0},
 	{"--trace",	  'T', 0,
 		"--trace                 or -T",
@@ -187,6 +196,9 @@ int main(int argc, char *argv[])
 	int dumpParams = 0;
 	int dumpConfig = 0;
 #endif
+#ifdef ENHANCED_PROFILER
+	int profilingEnabled = 0;
+#endif
 
 	/* Initialize the locale routines */
 	ILInitLocale();
@@ -272,7 +284,15 @@ int main(int argc, char *argv[])
 				dumpMethodProfile = 1;
 			}
 			break;
-
+			
+		#ifdef ENHANCED_PROFILER
+			case 'E':
+			{
+				profilingEnabled = 1;
+			}
+			break;
+		#endif
+			
 			case 'Z':
 			{
 				flags |= IL_CODER_FLAG_STATS;				
@@ -482,6 +502,10 @@ int main(int argc, char *argv[])
 	/* Convert the arguments into an array of strings */
 	thread = ILExecProcessGetMain(process);
 	args = ILExecProcessSetCommandLine(process, ilprogram, argv + 2);
+
+#ifdef ENHANCED_PROFILER
+	thread->profilingEnabled = profilingEnabled;
+#endif
 
 	/* Call the entry point */
 	sawException = 0;

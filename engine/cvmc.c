@@ -308,13 +308,21 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 	/* Print the method information */
 	haveCounts = 0;
 	temp = list;
+#ifdef ENHANCED_PROFILER
+	printf ("   Count    Total  Average\n             time     time\n");
+#endif
 	while((method = *temp++) != 0)
 	{
 		if(!(method->count))
 		{
 			continue;
 		}
-		printf("%8lu    ", (unsigned long)(method->count));
+#ifdef ENHANCED_PROFILER
+		printf("%8lu %8lu %8lu   ", (unsigned long)(method->count),
+			(unsigned long)(method->time), (unsigned long)(method->time) / (unsigned long)(method->count));
+#else
+ 		printf("%8lu    ", (unsigned long)(method->count));
+#endif
 		ILDumpMethodType(stdout, ILProgramItem_Image(method),
 						 ILMethod_Signature(method), 0,
 						 ILMethod_Owner(method), ILMethod_Name(method), 0);

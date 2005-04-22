@@ -30,6 +30,9 @@
 #include "il_utils.h"
 #include "cvm.h"
 #include "interrupt.h"
+#ifdef HAVE_GETTIMEOFDAY
+#include <sys/time.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -264,7 +267,9 @@ typedef struct _tagILCallFrame
 	CVMWord		   *frame;			/* Base of the local variable frame */
 	CVMWord		   *exceptHeight;	/* Height of the frame for exceptions */
 	void           *permissions;	/* Permissions for this stack frame */
-
+#ifdef ENHANCED_PROFILER
+	struct timeval	profileTime;
+#endif
 } ILCallFrame;
 #define	IL_INVALID_PC		((unsigned char *)(ILNativeInt)(-1))
 
@@ -341,6 +346,10 @@ struct _tagILExecThread
 
 	/* The frame where the ThreadAbortException was first noticed */
 	ILUInt32		abortHandlerFrame;
+
+#if defined(ENHANCED_PROFILER)
+	int		profilingEnabled;
+#endif
 
 #if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
 	/* Context for the current interrupt */

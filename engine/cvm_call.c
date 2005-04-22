@@ -59,6 +59,49 @@
 #define	FFI_RAW_CALL(cif,fn,rvalue,avalue)
 #endif
 
+
+#ifdef ENHANCED_PROFILER
+/* Macros for simple profiling support.
+ *
+ * These macros get called whenever a function gets called and when it is left,
+ * respectivly. They record the time a function needed to execute INCLUDING
+ * CHILD FUNCTIONS. It's very dump and simple but better than no time profiling
+ * at all ;-)
+ */
+#define DO_PROFILE_START(xyz) \
+	if ((thread->profilingEnabled) && (callFrame) && ((ILCoderGetFlags (thread->process->coder) & IL_CODER_FLAG_METHOD_PROFILE) != 0)) \
+	{ \
+		gettimeofday (&callFrame->profileTime, 0); \
+	}
+
+#define DO_PROFILE_STOP(xyz) \
+	if ((thread->profilingEnabled) && (callFrame) && ((ILCoderGetFlags (thread->process->coder) & IL_CODER_FLAG_METHOD_PROFILE) != 0)) \
+	{ \
+		struct timeval endTime; \
+		time_t seconds; \
+		suseconds_t micros; \
+		\
+		gettimeofday (&endTime, 0); \
+		\
+ 		if (endTime.tv_usec < callFrame->profileTime.tv_usec) \
+		{ \
+			seconds = endTime.tv_sec - callFrame->profileTime.tv_sec - 1; \
+			micros = (suseconds_t) ((1000000 + endTime.tv_usec) - callFrame->profileTime.tv_usec); \
+		} \
+		else \
+		{ \
+			seconds = endTime.tv_sec - callFrame->profileTime.tv_sec; \
+			micros = endTime.tv_usec - callFrame->profileTime.tv_usec; \
+		} \
+		\
+		method->time += micros + (seconds * 1000000); \
+	}
+#else /* ENHANCED_PROFILER */
+#define DO_PROFILE_START(xyz)
+#define DO_PROFILE_STOP(xyz)
+#endif /* ENHANCED_PROFILER */
+
+
 /*
  * Allocate a new call frame.
  */
@@ -612,6 +655,7 @@ VMCASE(COP_CALL):
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
+		DO_PROFILE_START();
 
 		/* Pass control to the new method */
 		pc = (unsigned char *)(methodToCall->userData);
@@ -645,6 +689,7 @@ VMCASE(COP_CALL):
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
+		DO_PROFILE_START();
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -702,6 +747,7 @@ VMCASE(COP_CALL_CTOR):
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
+		DO_PROFILE_START();
 
 		/* Pass control to the new method */
 		pc = ((unsigned char *)(methodToCall->userData)) - CVM_CTOR_OFFSET;
@@ -734,6 +780,7 @@ VMCASE(COP_CALL_CTOR):
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
+		DO_PROFILE_START();
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -946,6 +993,7 @@ VMCASE(COP_CALL_VIRTUAL):
 			callFrame->frame = frame;
 			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
+			DO_PROFILE_START();
 
 			/* Pass control to the new method */
 			pc = (unsigned char *)(methodToCall->userData);
@@ -979,6 +1027,7 @@ VMCASE(COP_CALL_VIRTUAL):
 			callFrame->frame = thread->frame;
 			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
+			DO_PROFILE_START();
 
 			/* Restore the state information and jump to the new method */
 			RESTORE_STATE_FROM_THREAD();
@@ -1066,6 +1115,7 @@ VMCASE(COP_CALL_INTERFACE):
 			callFrame->frame = frame;
 			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
+			DO_PROFILE_START();
 
 			/* Pass control to the new method */
 			pc = (unsigned char *)(methodToCall->userData);
@@ -1099,6 +1149,7 @@ VMCASE(COP_CALL_INTERFACE):
 			callFrame->frame = thread->frame;
 			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
+			DO_PROFILE_START();
 
 			/* Restore the state information and jump to the new method */
 			RESTORE_STATE_FROM_THREAD();
@@ -1179,6 +1230,8 @@ VMCASE(COP_RETURN):
 popFrame:
 
 	CHECK_MANAGED_BARRIER();
+	
+	DO_PROFILE_STOP();
 
 	callFrame = &(thread->frameStack[--(thread->numFrames)]);
 	methodToCall = callFrame->method;
@@ -1479,6 +1532,7 @@ VMCASE(COP_CALLI):
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
+		DO_PROFILE_START();
 
 		/* Pass control to the new method */
 		pc = (unsigned char *)(methodToCall->userData);
@@ -1512,6 +1566,7 @@ VMCASE(COP_CALLI):
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
+		DO_PROFILE_START();
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -1571,6 +1626,7 @@ case COP_CALL_VIRTUAL:
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
+		DO_PROFILE_START();
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -1638,6 +1694,7 @@ case COP_CALL_INTERFACE:
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
+		DO_PROFILE_START();
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();

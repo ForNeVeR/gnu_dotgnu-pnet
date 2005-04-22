@@ -34,6 +34,7 @@ libILEngine_a_SOURCES = cvm.c \
 						lib_misc.c \
 						lib_monitor.c \
 						lib_object.c \
+						lib_profiling.c \
 						lib_reflect.c \
 						lib_regexp.c \
 						lib_security.c \

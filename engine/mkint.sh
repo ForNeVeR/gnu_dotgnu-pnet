@@ -22,7 +22,7 @@ else
 fi
 
 # Convert the assemblies into the necessary internalcall tables.
-DLLS="$PNETLIB/runtime/mscorlib.dll $PNETLIB/System/System.dll $PNETLIB/I18N/I18N.CJK.dll"
+DLLS="$PNETLIB/runtime/mscorlib.dll $PNETLIB/System/System.dll $PNETLIB/I18N/I18N.CJK.dll $PNETLIB/DotGNU.Misc/DotGNU.Misc.dll"
 ../ilnative/ilinternal -p $DLLS >int_proto.h
 ../ilnative/ilinternal -t $DLLS >int_table.c
 exit 0

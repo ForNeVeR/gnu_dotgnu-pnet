@@ -1,3 +1,14 @@
+2005-04-22  Marc Haisenko   <marc@darkdust.net>
+
+	* configure.in, engine/Makefile.am, engine/cvm_call.c, engine/cvmc.c,
+	engine/engine.h, engine/ilrun.c, engine/int_proto.h,
+	egnine/int_table.c, engine/lib_profiling.c, engine/mkint.sh, 
+	image/program.h: Add enhanced profiler. This profiler must be enabled 
+	via ./configure --enable-enhanced-profiler. I'll write a README about
+	it on Monday. The code shouldn't interfere with anything, it's guarded
+	with #ifdef's and will only be active if enabled via configure and
+	when the -M (and new -E) commandline arguments are given.
+
 2005-04-06  Marc Haisenko   <marc@darkdust.net>
 
 	* configure.in, support/interrupt.h: Add --enable-interrupts for work

@@ -751,7 +751,7 @@ public class Form : ContainerControl
 				{
 					case FormBorderStyle.None:
 					{
-						flags = (ToolkitWindowFlags.ShowInTaskbar);
+						flags &= ~ToolkitWindowFlags.Default;
 					}
 					break;
 

@@ -1,3 +1,12 @@
+2005-04-22  Marc Haisenko   <marc@darkdust.net>
+
+	* System.Windows.Forms/Forms.cs: changed handling of 
+	FormBorderStyle.None in GetFullFlags(): it was just an assignment,
+	overwriting all other flags like TopMost. It's now ANDing with the
+	complement of ToolkitWindowFlags.Default.
+
+	* Xsharp/TopLevelWindow.cs: added support for TopMost in OtherHints.
+
 2005-04-13  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/ComboBox.cs: Handle GotFocus event.  Remove

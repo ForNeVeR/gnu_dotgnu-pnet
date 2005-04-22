@@ -1264,6 +1264,13 @@ public class TopLevelWindow : InputOutputWidget
 									 "_NET_WM_WINDOW_TYPE_SPLASH",
 									 XBool.False);
 							}
+							else if((value & OtherHints.TopMost) != 0)
+							{
+								type = Xlib.XInternAtom
+									(display,
+									 "_NET_WM_STATE_ABOVE",
+									 XBool.False);
+							}
 							else
 							{
 								type = Xlib.XInternAtom
@@ -1271,9 +1278,19 @@ public class TopLevelWindow : InputOutputWidget
 									 "_NET_WM_WINDOW_TYPE_NORMAL",
 									 XBool.False);
 							}
-							XAtom wmType = Xlib.XInternAtom
-								(display, "_NET_WM_WINDOW_TYPE",
-								 XBool.False);
+							XAtom wmType;
+							if ((value & OtherHints.TopMost) != 0)
+							{
+								wmType = Xlib.XInternAtom
+									(display, "_NET_WM_STATE",
+									XBool.False);
+							}
+							else
+							{
+								wmType = Xlib.XInternAtom
+									(display, "_NET_WM_WINDOW_TYPE",
+									XBool.False);
+							}
 							XAtom wmAtom = Xlib.XInternAtom
 								(display, "ATOM", XBool.False);
 							Xlib.Xlong[] data = new Xlib.Xlong [2];

@@ -1,5 +1,14 @@
 2005-04-22  Marc Haisenko   <marc@darkdust.net>
 
+	* DotGNU.Misc: added new namespace
+
+	* Makefile.am, DotGNU.Misc/Makefile.am, DotGNU.Misc/Misc.build,
+	DotGNU.Misc/Profiling.cs: added class with static members for
+	controling the enhanced profiler that I've just checked into pnet.
+	I'll add some comments on Monday.
+
+2005-04-22  Marc Haisenko   <marc@darkdust.net>
+
 	* System.Windows.Forms/Forms.cs: changed handling of 
 	FormBorderStyle.None in GetFullFlags(): it was just an assignment,
 	overwriting all other flags like TopMost. It's now ANDing with the

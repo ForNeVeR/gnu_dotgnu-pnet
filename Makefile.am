@@ -8,7 +8,7 @@ SUBDIRS = tools config resources runtime I18N OpenSystem.Platform \
 		  System.Drawing.Win32 System.Drawing.Postscript \
 		  System.EnterpriseServices System.Windows.Forms \
 		  System.Design Basic System.Deployment DotGNU.Terminal \
-		  DotGNU.XmlRpc Themes tests samples 
+		  DotGNU.XmlRpc Themes tests samples DotGNU.Misc
 else
 SUBDIRS = tools config resources runtime I18N OpenSystem.Platform \
 		  DotGNU.SSL System System.Xml . \
@@ -16,7 +16,7 @@ SUBDIRS = tools config resources runtime I18N OpenSystem.Platform \
 		  SharpZipLib System.Configuration.Install \
 		  DotGNU.Images Xsharp System.EnterpriseServices \
 		  Basic System.Deployment DotGNU.Terminal DotGNU.XmlRpc \
-		  tests samples
+		  tests samples DotGNU.Misc
 endif
 else
 SUBDIRS = tools resources runtime OpenSystem.Platform \

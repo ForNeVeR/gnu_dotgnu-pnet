@@ -2128,7 +2128,7 @@ public class DefaultThemePainter : IThemePainter
 				SolidBrush brush = new SolidBrush(ControlPaint.Light(color));
 				layoutRectangle.Offset(1.0f, 1.0f);
 				graphics.DrawString(s, font, brush, layoutRectangle, format);
-				brush.Color = ControlPaint.Dark(color);
+				brush.Color = ControlPaint.Dark(ControlPaint.Dark(ControlPaint.Dark(color)));
 				layoutRectangle.Offset(-1.0f, -1.0f);
 				graphics.DrawString(s, font, brush, layoutRectangle, format);
 				brush.Dispose();

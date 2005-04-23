@@ -1,3 +1,8 @@
+2005-04-23  Erich Kitzmüller  <ammoq@ammoq.com>
+
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: disabled text
+	more legible. (patch #3929 applied by drobosson)
+
 2005-04-22  Marc Haisenko   <marc@darkdust.net>
 
 	* DotGNU.Misc: added new namespace

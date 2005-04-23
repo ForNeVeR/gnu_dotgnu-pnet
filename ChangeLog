@@ -1,3 +1,8 @@
+2005-04-23  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_profiling.c: fix build problem if ENHANCED_PROFILER is not
+	defined.
+
 2005-04-22  Marc Haisenko   <marc@darkdust.net>
 
 	* configure.in, engine/Makefile.am, engine/cvm_call.c, engine/cvmc.c,

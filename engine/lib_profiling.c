@@ -41,7 +41,9 @@ extern	"C" {
  */
 void _IL_Profiling_StartProfiling(ILExecThread *thread)
 {
+#ifdef ENHANCED_PROFILER
 	thread->profilingEnabled = 1;
+#endif
 }
 
 /*
@@ -49,7 +51,9 @@ void _IL_Profiling_StartProfiling(ILExecThread *thread)
  */
 void _IL_Profiling_StopProfiling(ILExecThread *thread)
 {
+#ifdef ENHANCED_PROFILER
 	thread->profilingEnabled = 0;
+#endif
 }
 
 /*
@@ -57,7 +61,11 @@ void _IL_Profiling_StopProfiling(ILExecThread *thread)
  */
 ILBool _IL_Profiling_IsProfilingEnabled(ILExecThread *thread)
 {
+#ifdef ENHANCED_PROFILER
 	return (ILBool) thread->profilingEnabled;
+#else
+	return (ILBool) 0;
+#endif
 }
 
 /*

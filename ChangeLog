@@ -1,3 +1,7 @@
+2005-04-25  Marc Haisenko   <marc@darkdust.net>
+
+	* README.profiling: added README.profiling
+
 2005-04-23  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_profiling.c: fix build problem if ENHANCED_PROFILER is not

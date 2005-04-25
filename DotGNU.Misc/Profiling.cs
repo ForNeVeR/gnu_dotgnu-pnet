@@ -24,20 +24,37 @@ namespace DotGNU.Misc
 using System;
 using System.Runtime.CompilerServices;
 
+/// <summary>
+/// Methods for controlling the DotGNU enhanced profiler.
+/// </summary>
 public sealed class Profiling
 {
-	// This class cannot be instantiated.
+	/// <summary>
+	/// This class cannot be instantiated.
+	/// </summary>
 	private Profiling() {}
 
+	/// <summary>
+	/// Start collecting profiling data if profiling is supported.
+	/// </summary>
 	[MethodImpl(MethodImplOptions.InternalCall)]
         extern public static void StartProfiling();
 	
+	/// <summary>
+	/// Stop collecting profiling data if profiling is supported.
+	/// </summary>
 	[MethodImpl(MethodImplOptions.InternalCall)]
         extern public static void StopProfiling();
 	
+	/// <summary>
+	/// Returns whether the profiler is currently collecting data.
+	/// </summary>
 	[MethodImpl(MethodImplOptions.InternalCall)]
         extern public static bool IsProfilingEnabled();
 	
+	/// <summary>
+	/// Returns whether the enhanced profiler is supported.
+	/// </summary>
 	[MethodImpl(MethodImplOptions.InternalCall)]
         extern public static bool IsProfilingSupported();
 }; // class Profiling

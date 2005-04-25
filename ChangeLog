@@ -1,3 +1,7 @@
+2005-04-25  Marc Haisenko   <marc@darkdust.net>
+
+	* DotGNU.Misc/Profiling.cs: added comments
+
 2005-04-23  Erich Kitzmüller  <ammoq@ammoq.com>
 
 	* System.Windows.Forms/Themes/DefaultThemePainter.cs: disabled text

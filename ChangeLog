@@ -1,3 +1,7 @@
+2005-04-26  Marc Haisenko   <marc@darkdust.net>
+
+	* configure.in: forgot to commit addition of DotGNU.Misc/Makefile
+
 2005-04-25  Marc Haisenko   <marc@darkdust.net>
 
 	* DotGNU.Misc/Profiling.cs: added comments

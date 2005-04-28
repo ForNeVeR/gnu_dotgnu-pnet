@@ -361,7 +361,7 @@ public class Control : IWin32Window, IDisposable
 
 				if(toolkitWindow == null)
 				{
-					CreateControl();
+					CreateControlInner();
 				}
 
 				lock(this)	// this may not be necessary

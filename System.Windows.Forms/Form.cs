@@ -751,7 +751,10 @@ public class Form : ContainerControl
 				{
 					case FormBorderStyle.None:
 					{
-						flags &= ~ToolkitWindowFlags.Default;
+						bool topMost = ((flags & ToolkitWindowFlags.TopMost) != 0);
+						flags = ToolkitWindowFlags.ShowInTaskbar;
+						if (topMost)
+							flags |= ToolkitWindowFlags.TopMost;
 					}
 					break;
 

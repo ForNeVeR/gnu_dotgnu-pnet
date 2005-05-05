@@ -28,6 +28,13 @@
 extern	"C" {
 #endif
 
+#ifdef IL_CONFIG_APPDOMAINS
+/*
+ * structure that keeps track of the created processes
+ */  
+typedef struct __tagILExecEngine ILExecEngine;
+#endif
+
 /*
  *	Structure used by the EE for storing monitors.
  */
@@ -185,7 +192,11 @@ typedef int (*ILExecDebugHookFunc)(void *userData,
  *
  * Returns 0 if the engine was successfully initialized.
  */
+#ifdef IL_CONFIG_APPDOMAINS
+int ILExecInit(unsigned long maxSize, unsigned long frameStackSize);
+#else
 int ILExecInit(unsigned long maxSize);
+#endif
 
 /*
  *	Deinitialize the engine.
@@ -205,7 +216,11 @@ void ILThreadUnregisterForManagedExecution(ILThread *thread);
 /*
  * Create a new process, including the "main" thread.
  */
+#ifdef IL_CONFIG_APPDOMAINS
+ILExecProcess *ILExecProcessCreate(unsigned long cachePageSize);
+#else
 ILExecProcess *ILExecProcessCreate(unsigned long frameStackSize, unsigned long cachePageSize);
+#endif
 
 /*
  * Destroy a process and all threads associated with it.

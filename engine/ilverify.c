@@ -98,7 +98,11 @@ int main(int argc, char *argv[])
 	}
 
 	/* Initialize the engine, to ensure that the garbage collector is OK */
+#ifdef IL_CONFIG_APPDOMAINS
+	ILExecInit(0, 0);
+#else
 	ILExecInit(0);
+#endif
 
 	/* Create a context to use for image loading */
 	context = ILContextCreate();

@@ -409,7 +409,10 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	}
 
 	/* The method is converted now */
+	/* store the method pointer in a safe way so we can use a shortcut macro */
+	ILThreadAtomicStart();
 	method->userData = (void *)start;
+	ILThreadAtomicEnd();
 	METADATA_UNLOCK(thread);
 	*errorCode = IL_CONVERT_OK;
 	return start;

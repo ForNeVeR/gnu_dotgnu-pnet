@@ -1,3 +1,11 @@
+2005-05-05  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/convert.c, engine/engine.h, engine/ilrun.c, engine/ilverify.c,
+	engine/internal.c, engine/Makefile.am, engine/process.c, engine/thread.c,
+	include/il_engine.c: add support for multiple ILExecProcess instances.
+
+	* engine/engine.c: Add ILExecEngine functions.
+
 2005-04-25  Marc Haisenko   <marc@darkdust.net>
 
 	* README.profiling: added README.profiling

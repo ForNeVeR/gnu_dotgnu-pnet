@@ -557,16 +557,28 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 
 	/* Allocate space for the thread-specific value stack */
 	if((thread->stackBase = (CVMWord *)ILGCAllocPersistent
+#ifdef IL_CONFIG_APPDOMAINS
+					(sizeof(CVMWord) * process->engine->stackSize)) == 0)
+#else
 					(sizeof(CVMWord) * process->stackSize)) == 0)
+#endif
 	{
 		ILGCFreePersistent(thread);
 		return 0;
 	}
+#ifdef IL_CONFIG_APPDOMAINS
+	thread->stackLimit = thread->stackBase + process->engine->stackSize;
+#else
 	thread->stackLimit = thread->stackBase + process->stackSize;
+#endif
 
 	/* Allocate space for the initial frame stack */
 	if((thread->frameStack = (ILCallFrame *)ILGCAllocPersistent
+#ifdef IL_CONFIG_APPDOMAINS
+					(sizeof(ILCallFrame) * process->engine->frameStackSize))
+#else
 					(sizeof(ILCallFrame) * process->frameStackSize))
+#endif
 			== 0)
 	{
 		ILGCFreePersistent(thread->stackBase);
@@ -575,7 +587,11 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 	}
 
 	thread->numFrames = 0;
+#ifdef IL_CONFIG_APPDOMAINS
+	thread->maxFrames = process->engine->frameStackSize;
+#else
 	thread->maxFrames = process->frameStackSize;
+#endif
 
 	/* Initialize the thread state */
 	thread->supportThread = 0;

@@ -39,8 +39,10 @@ extern	"C" {
 #endif
 
 /* State of an ILExecProcess/AppDomain */
-#define _IL_PROCESS_STATE_UNLOADING (1)
-#define _IL_PROCESS_STATE_UNLOADED  (2)
+#define _IL_PROCESS_STATE_CREATED	(0)
+#define _IL_PROCESS_STATE_LOADED	(1)
+#define _IL_PROCESS_STATE_UNLOADING (2)
+#define _IL_PROCESS_STATE_UNLOADED  (4)
 
 /* Flags that represents various tasks that need to be performed
    at safe points */
@@ -118,6 +120,26 @@ struct _tagILLoadedModule
 
 };
 
+#ifdef IL_CONFIG_APPDOMAINS
+/*
+ * structure that keeps track of the created processes
+ */  
+struct __tagILExecEngine
+{
+	/* Default stack size for new threads */
+	ILUInt32	  	stackSize;
+	ILUInt32	  	frameStackSize;
+
+	/* lock to serialize access to application domains */
+	ILMutex        *processLock;
+	/* linked list of application domains */
+	ILExecProcess  *firstProcess;
+
+	/* default appdomain */
+	ILExecProcess  *defaultProcess;
+};
+#endif
+
 /*
  * Structure of a breakpoint watch registration.
  */
@@ -161,9 +183,11 @@ struct _tagILExecProcess
 	/* The finalizer thread for the process */
 	ILExecThread   *finalizerThread;
 
+#ifndef IL_CONFIG_APPDOMAINS
 	/* Default stack size for new threads */
 	ILUInt32	  	stackSize;
 	ILUInt32	  	frameStackSize;
+#endif
 
 	/* Context that holds all images that have been loaded by this process */
 	ILContext 	   *context;
@@ -252,6 +276,16 @@ struct _tagILExecProcess
 	ILUInt32			imtBase;
 
 #endif
+
+#ifdef IL_CONFIG_APPDOMAINS
+
+	/* sibling app domains */
+	ILExecProcess	*prevProcess;
+	ILExecProcess	*nextProcess;
+
+	ILExecEngine	*engine;
+
+#endif /* IL_CONFIG_APPDOMAINS */
 };
 
 /*
@@ -431,6 +465,22 @@ struct _tagObjectHeader
 	volatile ILLockWord lockWord;
 #endif
 };
+
+#ifdef IL_CONFIG_APPDOMAINS
+/* global accessor function to get the global engine object */
+ILExecEngine *ILExecEngineInstance();
+
+/*
+ * Destroy the engine.
+ */
+void ILExecEngineDestroy(ILExecEngine *engine);
+
+/*
+ * Create a new execution engine.
+ * Returns the ILExecEngine or 0 if the function fails.
+ */
+ILExecEngine *ILExecEngineCreate();
+#endif
 
 /*
  * Class information for the CVM coder.

@@ -374,7 +374,11 @@ int main(int argc, char *argv[])
 	}
 
 	/* Initialize the engine and set the maximum heap size */
+#ifdef IL_CONFIG_APPDOMAINS
+	if (ILExecInit(heapSize, stackSize) != IL_EXEC_INIT_OK)
+#else
 	if (ILExecInit(heapSize) != IL_EXEC_INIT_OK)
+#endif
 	{
 		#ifndef REDUCED_STDIO
 		fprintf(stderr, "%s: could not initialize engine\n", progname);
@@ -384,7 +388,11 @@ int main(int argc, char *argv[])
 	}
 
 	/* Create a process to load the program into */
+#ifdef IL_CONFIG_APPDOMAINS
+	process = ILExecProcessCreate(methodCachePageSize);
+#else
 	process = ILExecProcessCreate(stackSize, methodCachePageSize);
+#endif
 	if(!process)
 	{
 	#ifndef REDUCED_STDIO

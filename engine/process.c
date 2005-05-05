@@ -29,39 +29,79 @@
 extern	"C" {
 #endif
 
-int ILExecInit(unsigned long maxSize)
+#ifdef IL_CONFIG_APPDOMAINS
+/*
+ * Add an application domain to the list of application domains.
+ * param:	process = application domain to join to the linked list
+ *			(must be not null)
+ *			engine  = ILExecEngine to join.
+ * Returns: void
+ */
+static IL_INLINE void ILExecProcessJoinEngine(ILExecProcess *process,
+												ILExecEngine *engine)
 {
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-	/* Create the global trace mutex */
-	if ((globalTraceMutex = ILMutexCreate()) == 0)
+	ILMutexLock(engine->processLock);
+
+	process->engine = engine;
+	process->nextProcess = engine->firstProcess;
+	process->prevProcess = 0;
+	if(engine->firstProcess)
 	{
-		return IL_EXEC_INIT_OUTOFMEMORY;
+		engine->firstProcess->prevProcess = process;
 	}
-#endif
-	/* Initialize the thread routines */	
-	ILThreadInit();
+	engine->firstProcess = process;
 
-	/* Initialize the global garbage collector */	
-	ILGCInit(maxSize);
-
-	return IL_EXEC_INIT_OK;
+	if (!engine->defaultProcess)
+	{
+		engine->defaultProcess = process;
+	}
+	ILMutexUnlock(engine->processLock);
 }
 
-void ILExecDeinit()
-{	
-	/* Deinitialize the global garbage collector */	
-	ILGCDeinit();	
+/*
+ * Remove an application domain from the list of application domains.
+ * param:	process = application domain to remove from the linked list
+ *			(must be not null)
+ * Returns: void
+ */
+static IL_INLINE void ILExecProcessDetachFromEngine(ILExecProcess *process)
+{
+	ILExecEngine *engine = process->engine;
+	
+	ILMutexLock(engine->processLock);
 
-	/* Deinitialize the thread routines */	
-	ILThreadDeinit();	
+	/* Detach the application domain from its process */
+	if(process->nextProcess)
+	{
+		process->nextProcess->prevProcess = process->prevProcess;
+	}
+	if(process->prevProcess)
+	{
+		process->prevProcess->nextProcess = process->nextProcess;
+	}
+	else
+	{
+		engine->firstProcess = process->nextProcess;
+	}
 
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-	/* Destroy the global trace mutex */
-	ILMutexDestroy(globalTraceMutex);
-#endif
+	if (engine->defaultProcess == process)
+	{
+		engine->defaultProcess = 0;
+	}
+	ILMutexUnlock(engine->processLock);
+
+	/* reset the links */
+	process->engine = 0,
+	process->prevProcess = 0;
+	process->nextProcess = 0;
 }
+#endif
 
+#ifdef IL_CONFIG_APPDOMAINS
+ILExecProcess *ILExecProcessCreate(unsigned long cachePageSize)
+#else
 ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cachePageSize)
+#endif
 {
 	ILExecProcess *process;
 
@@ -73,13 +113,10 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	}
 	/* Initialize the fields */
 	process->lock = 0;
-	process->state = 0;
+	process->state = _IL_PROCESS_STATE_CREATED;
 	process->firstThread = 0;
 	process->mainThread = 0;
 	process->finalizerThread = 0;
-	process->stackSize = ((stackSize < IL_CONFIG_STACK_SIZE)
-							? IL_CONFIG_STACK_SIZE : stackSize);
-	process->frameStackSize = IL_CONFIG_FRAME_STACK_SIZE;
 	process->context = 0;
 	process->metadataLock = 0;
 	process->exitStatus = 0;
@@ -113,6 +150,14 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->imtBase = 1;
 #endif
 
+#ifdef IL_CONFIG_APPDOMAINS
+	process->engine = 0;
+	ILExecProcessJoinEngine(process, ILExecEngineInstance());
+#else
+	process->stackSize = ((stackSize < IL_CONFIG_STACK_SIZE)
+							? IL_CONFIG_STACK_SIZE : stackSize);
+	process->frameStackSize = IL_CONFIG_FRAME_STACK_SIZE;
+#endif
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)
 	{
@@ -261,8 +306,13 @@ void ILExecProcessDestroy(ILExecProcess *process)
 			/* If the main thread is the finalizer thread then
 			   we have to zero the memory of the CVM stack so that
 			   stray pointers are erased */
+#ifdef IL_CONFIG_APPDOMAINS
+			ILMemZero(process->mainThread->stackBase, process->engine->stackSize);
+			ILMemZero(process->mainThread->frameStack, process->engine->frameStackSize);
+#else
 			ILMemZero(process->mainThread->stackBase, process->stackSize);
 			ILMemZero(process->mainThread->frameStack, process->frameStackSize);
+#endif
 		}
 		else
 		{
@@ -478,6 +528,14 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		/* Destroy the object lock */
 		ILMutexDestroy(process->lock);
 	}
+
+#ifdef IL_CONFIG_APPDOMAINS
+
+	if (process->engine)
+	{
+		ILExecProcessDetachFromEngine(process);
+	}
+#endif
 
 	/* Free the process block itself */
 	ILGCFreePersistent(process);
@@ -785,6 +843,7 @@ ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
 	return mainArgs;
 }
 
+#ifndef IL_CONFIG_APPDOMAINS
 int ILExecProcessAddInternalCallTable(ILExecProcess* process, 
 					const ILEngineInternalClassInfo* internalClassTable,
 					int tableSize)
@@ -810,6 +869,7 @@ int ILExecProcessAddInternalCallTable(ILExecProcess* process,
 	tmp->next=NULL;
 	return 1;
 }
+#endif
 
 void ILExecProcessSetCoderFlags(ILExecProcess *process,int flags)
 {

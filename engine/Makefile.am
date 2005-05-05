@@ -11,6 +11,7 @@ libILEngine_a_SOURCES = cvm.c \
 						cvm_lengths.c \
 						cvmc.c \
 						dumpconfig.c \
+						engine.c \
 						gen_marshal.c \
 						heap.c \
 						internal.c \

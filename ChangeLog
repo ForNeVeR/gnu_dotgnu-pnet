@@ -1,3 +1,9 @@
+2005-05-06  Marc Haisenko   <marc@darkdust.net>
+
+	* Xsharp/Timer.cs: fix bug in Xsharp.Timer.GetNextTimeout that showed
+	when the system clock was turned back (either by setting the clock
+	manually or by NTP) which resulted in a GUI lockup.
+
 2005-04-28  Marc Haisenko   <marc@darkdust.net>
 
 	* System.Windows.Forms/Control.cs: call CreateControlInner instead of

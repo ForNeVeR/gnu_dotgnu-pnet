@@ -512,7 +512,17 @@ public sealed class Timer : IDisposable
 							// The timeout has already fired or is about to.
 							return 0;
 						}
-						else if(diff > (100 * TimeSpan.TicksPerSecond))
+						else if (diff > (dpy.timerQueue.period * TimeSpan.TicksPerMillisecond))
+						{
+							// The next due time is farther away than the time period we're
+							// supposed to wait. This propably means the system clock has
+							// been turned back (either manually or by NTP). In this case
+							// we must calculate a new due time and just return 0.
+							dpy.timerQueue.nextDue = DateTime.UtcNow + new TimeSpan
+								(dpy.timerQueue.period * TimeSpan.TicksPerMillisecond);
+							return 0;
+						}
+						else if (diff > (100 * TimeSpan.TicksPerSecond))
 						{
 							// Don't wait more than 100 seconds at a time.
 							return 100000;

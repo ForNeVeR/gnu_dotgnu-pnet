@@ -1,3 +1,9 @@
+2005-05-23  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Control.cs: Fix endless recursion in SetBoundsCore
+	if location or size is changed in overridden SetBoundsCore.
+	(patch #4037 applied by ktreichel)
+
 2005-05-06  Marc Haisenko   <marc@darkdust.net>
 
 	* Xsharp/Timer.cs: fix bug in Xsharp.Timer.GetNextTimeout that showed

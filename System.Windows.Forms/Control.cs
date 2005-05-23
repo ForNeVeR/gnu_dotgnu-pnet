@@ -1238,8 +1238,11 @@ public class Control : IWin32Window, IDisposable
 				}
 				set
 				{
-					SetBoundsCore(left, top, width, value,
-						BoundsSpecified.Height);
+					if (value != height)
+					{
+						SetBoundsCore(left, top, width, value,
+							BoundsSpecified.Height);
+					}
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -1338,8 +1341,11 @@ public class Control : IWin32Window, IDisposable
 				}
 				set
 				{
-					SetBoundsCore(value, top, width, height,
-						BoundsSpecified.X);
+					if(value != left)
+					{
+						SetBoundsCore(value, top, width, height,
+							BoundsSpecified.X);
+					}
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -1353,8 +1359,11 @@ public class Control : IWin32Window, IDisposable
 				}
 				set
 				{
-					SetBoundsCore(value.X, value.Y, width, height,
-						BoundsSpecified.Location);
+					if(value.X != left || value.Y != top)
+					{
+						SetBoundsCore(value.X, value.Y, width, height,
+							BoundsSpecified.Location);
+					}
 				}
 			}
 #if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
@@ -1664,8 +1673,11 @@ public class Control : IWin32Window, IDisposable
 				}
 				set
 				{
-					SetBoundsCore(left, top, value.Width, value.Height,
-						BoundsSpecified.Size);
+					if(value.Width != width || value.Height != height)
+					{
+						SetBoundsCore(left, top, value.Width, value.Height,
+							BoundsSpecified.Size);
+					}
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -1765,8 +1777,11 @@ public class Control : IWin32Window, IDisposable
 				}
 				set
 				{
-					SetBoundsCore(left, value, width, height,
-						BoundsSpecified.Y);
+					if(value != top)
+					{
+						SetBoundsCore(left, value, width, height,
+							BoundsSpecified.Y);
+					}
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -1830,8 +1845,11 @@ public class Control : IWin32Window, IDisposable
 				}
 				set
 				{
-					SetBoundsCore(left, top, value, height,
-						BoundsSpecified.Width);
+					if(value != width)
+					{
+						SetBoundsCore(left, top, value, height,
+							BoundsSpecified.Width);
+					}
 				}
 			}
 	internal virtual bool IsTopLevel

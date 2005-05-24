@@ -12,6 +12,11 @@
 			<sources basedir="${mono.sources}/class/System.Data/">
 				<includes name="**/*.cs"/> 
 				<excludes name="Mono.Data.SqlExpressions/Parser.cs"/>
+				<excludes name="System.Data/Res.cs"/>
+				<excludes name="System.Data.Common/DbConvert.cs"/>
+				<excludes name="System.Data.Common/ExceptionHelper.cs"/>
+				<excludes name="System.Data.ProviderBase/DbStringManager.cs"/>
+				<excludes name="System.Data.ProviderBase.jvm/**"/>
 				<excludes name="Test/**"/>
 				<file basedir="./" name="Parser.cs"/>
 				<excludes name="System.Data.OleDb/TestGDA.cs"/>

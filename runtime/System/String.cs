@@ -1591,7 +1591,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	// Trim specific characters from the end of a string.
 	public String TrimEnd(params char[] trimChars)
 			{
-				if(trimChars != null)
+				if((trimChars != null) && (trimChars.Length > 0))
 				{
 					return Trim(trimChars, TrimFlag_End);
 				}
@@ -1604,7 +1604,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	// Trim specific characters from the start of a string.
 	public String TrimStart(params char[] trimChars)
 			{
-				if(trimChars != null)
+				if((trimChars != null) && (trimChars.Length > 0))
 				{
 					return Trim(trimChars, TrimFlag_Front);
 				}

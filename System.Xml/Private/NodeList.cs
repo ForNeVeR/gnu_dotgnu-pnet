@@ -180,28 +180,40 @@ internal sealed class NodeList : XmlNodeList
 	public void RemoveChild(XmlNode node)
 			{
 				NodeList nodeList = GetList(node);
+				bool changed = false;
+				
 				if(nodeList.nextSibling != null)
 				{
 					GetList(nodeList.nextSibling).prevSibling =
 							nodeList.prevSibling;
+					changed = true;
 				}
-				else
+				else if(last == node)
 				{
 					last = nodeList.prevSibling;
+					changed = true;
 				}
+				
 				if(nodeList.prevSibling != null)
 				{
 					GetList(nodeList.prevSibling).nextSibling =
 							nodeList.nextSibling;
+					changed = true;
 				}
-				else
+				else if(first == node)
 				{
 					first = nodeList.nextSibling;
+					changed = true;
 				}
+
 				nodeList.nextSibling = null;
 				nodeList.prevSibling = null;
-				--count;
-				++generation;
+
+				if(changed)
+				{
+					--count;
+					++generation;
+				}
 			}
 
 	// Implementation of the node list enumerator.

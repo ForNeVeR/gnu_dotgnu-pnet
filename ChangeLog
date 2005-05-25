@@ -1,3 +1,9 @@
+2005-05-25  Marc Haisenko   <marc@darkdust.net>
+
+	* System.Xml/Private/NodeList.cs: Fixed bug in RemoveChild: if someone
+	called RemoveChild with a node that is not a child of the list, the
+	list lost some children or got screwed up.
+
 2005-05-23  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: Fix endless recursion in SetBoundsCore

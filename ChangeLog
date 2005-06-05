@@ -1,3 +1,10 @@
+2005-06-05  Klaus Treichel  <ktreichel@web.de>
+
+	* class/System.Data/System.Data.build: exclude directories
+	System.Data.OleDb.jvm, System.Data.SqlClient and System.Data.SqlTypes.jvm
+	from build and remove exclusions of System.Data.Common/ExceptionHelper.cs
+	and System.Data.ProviderBase/DbStringManager.cs.
+
 2005-05-24  Klaus Treichel  <ktreichel@web.de>
 
 	* class/Mono.GetOptions/Mono.GetOptions.build: add missing reference to

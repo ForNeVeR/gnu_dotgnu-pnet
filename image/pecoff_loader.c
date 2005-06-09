@@ -857,8 +857,8 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 			return IL_LOADERR_TRUNCATED;
 		}
 	}
-	if(IL_READ_UINT16(runtimeHdr + 4) != 2 ||
-	   IL_READ_UINT16(runtimeHdr + 6) != 0)
+	if(IL_READ_UINT16(runtimeHdr + 4) != 2) /* ||
+	   IL_READ_UINT16(runtimeHdr + 6) != 0)*/
 	{
 		_ILFreeSectionMap(map);
 		return IL_LOADERR_VERSION;

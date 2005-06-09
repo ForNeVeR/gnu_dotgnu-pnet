@@ -3243,8 +3243,11 @@ static int Load_GenericPar(ILImage *image, ILUInt32 *values,
 	{
 		return IL_LOADERR_MEMORY;
 	}
-	ILGenericParSetKind(genPar, ILProgramItem_FromToken
-			(image, values[IL_OFFSET_GENERICPAR_KIND]));
+	if(values[IL_OFFSET_GENERICPAR_KIND])
+	{
+		ILGenericParSetKind(genPar, ILProgramItem_FromToken
+				(image, values[IL_OFFSET_GENERICPAR_KIND]));
+	}
 
 	/* Note: in Gyro, the constraint is stored in the GenericPar
 	   table, but in the .NET Framework SDK 2.0 beta it is stored

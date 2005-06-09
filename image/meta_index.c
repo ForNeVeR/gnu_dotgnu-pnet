@@ -311,8 +311,8 @@ static const ILUInt32 * const Fields_NestedClass[] =
 
 static const ILUInt32 * const Fields_GenericPar[] =
 	{UINT16_FIELD, UINT16_FIELD, GenericParOwner_Desc, 
-	 STRREF_FIELD, TypeDefRefOrSpec_Desc,
-	 OPTGEN_FIELD, TypeDefRefOrSpec_Desc, END_FIELD};
+	 STRREF_FIELD/*, OPTGEN_FIELD, TypeDefRefOrSpec_Desc,
+	 OPTGEN_FIELD, TypeDefRefOrSpec_Desc*/, END_FIELD};
 
 static const ILUInt32 * const Fields_MethodSpec[] =
 	{MethodDefOrRef_Desc, BLOBREF_FIELD, END_FIELD};

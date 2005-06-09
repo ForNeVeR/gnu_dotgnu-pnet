@@ -1,3 +1,10 @@
+
+2005-06-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/meta_build.c, image/meta_index.c, image/pecoff_loader.c:
+	make the image loader a little more robust against 2.0 assemblies
+	that contain generics.
+
 2005-05-05  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/convert.c, engine/engine.h, engine/ilrun.c, engine/ilverify.c,

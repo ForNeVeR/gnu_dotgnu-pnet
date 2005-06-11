@@ -1,4 +1,38 @@
 
+0.7.0 (11 June 2005)
+
+	Runtime engine:
+
+	* Implement a PPC unroller (Gopal V).
+	* New internalcalls for StringBuilder class (Klaus Treichel).
+	* Fix isinst to act more like castclass, as per spec (Klaus Treichel).
+	* Internalcalls to get errno information for Process (Hermann Weiss).
+	* Fix a possible engine lockup in the thread code (Klaus Treichel).
+	* Optimize CVM converter to not be called unnecessarily (Klaus Treichel).
+	* Fix an x86 register usage problem with memmove in interpreter (Klaus T).
+	* Optimize FindInRange for IndexOf and LastIndexOf (Klaus Treichel).
+	* Enhanced profiling support for the engine (Marc Haisenko).
+	* Added support for multiple engine instances (Klaus Treichel).
+
+	C# Compiler:
+
+	* Overflow bug in switch code generation (Gopal V).
+
+	Documentation:
+
+	* Improve the documentation for csant build file syntax (Stephen Compall).
+
+	Platform Support:
+
+	* Disable SIGPIPE for socket operations (Klaus Treichel).
+	* UDP broadcast support (Doru Budai).
+	* Install problem for ilranlib on Cygwin (Klaus Treichel).
+	
+	Other:
+
+	* Debian packaging updates (Russell Stuart).
+	* Configure option "--enable-interrupts" (Marc Haisenko).
+
 0.6.12 (16 January 2005)
 
 	Runtime engine:

@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.7.0 release.
 
+	* configure.in: update working version to "0.7.1".
+
 2005-05-25  Marc Haisenko   <marc@darkdust.net>
 
 	* runtime/System/String.cs: fix TrimStart and TrimEnd to work correctly when

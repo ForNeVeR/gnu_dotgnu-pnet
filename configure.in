@@ -295,6 +295,7 @@ Makefile
 class/Makefile
 class/ByteFX.Data/Makefile
 class/Custommarshalers/Makefile
+class/IBM.Data.DB2/Makefile
 class/System.Management/Makefile
 class/System.Messaging/Makefile
 class/System.ServiceProcess/Makefile
@@ -303,19 +304,13 @@ class/PEAPI/Makefile
 class/Mono.Data.Tds/Makefile
 class/System.Data/Makefile
 class/Npgsql/Makefile
-class/Mono.Data.PostgreSqlClient/Makefile
-class/Mono.Data.MySql/Makefile
 class/Mono.Data.SqliteClient/Makefile
 class/Mono.Data.SybaseClient/Makefile
 class/Mono.Data.TdsClient/Makefile
 class/System.Data.OracleClient/Makefile
-class/Mono.Data.DB2Client/Makefile
-class/Mono.Directory.LDAP/Makefile
 class/Mono.GetOptions/Makefile
 class/Mono.Posix/Makefile
 class/Mono.Cairo/Makefile
-class/System.Data.SqlXml/Makefile
-class/System.Data.ObjectSpaces/Makefile
 class/Novell.Directory.Ldap/Makefile
 class/System.DirectoryServices/Makefile
 class/System.Web/Makefile

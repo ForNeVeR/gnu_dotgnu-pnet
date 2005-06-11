@@ -68,20 +68,15 @@ for dir in Custommarshalers \
 		  PEAPI \
 		  Mono.Data.Tds \
 		  System.Data \
-		  Mono.Data.PostgreSqlClient \
-		  Mono.Data.MySql \
 		  Mono.Data.SqliteClient \
 		  Mono.Data.SybaseClient \
 		  Mono.Data.TdsClient \
 		  ByteFX.Data \
+		  IBM.Data.DB2 \
 		  Npgsql \
-		  Mono.Data.DB2Client \
 		  System.Data.OracleClient \
-		  System.Data.SqlXml \
-		  System.Data.ObjectSpaces \
 		  System.Web \
 		  System.Web.Services \
-		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
 		  Mono.Posix \
 		  Mono.Cairo \

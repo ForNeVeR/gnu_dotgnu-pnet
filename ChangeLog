@@ -1,3 +1,19 @@
+2005-06-11  Klaus Treichel  <ktreichel@web.de>
+
+	* class/IBM.Data.DB2/IBM.Data..DB".build, class/IBM.Data.DB2/Makefile.am,
+	class/IBM.Data.DB2/.cvsignore: Add IBM.Data.DB2 to ml-pnet.
+
+	* configure.in, class/Makefile.am: Remove class/Mono.Data.DB2Client,
+	class/Mono.Data.MySql, class/Mono.Data.PostgreSqlClient,
+	class/Mono.Directory.LDAP, class/System.Data.ObjectSpaces and
+	class/System.Data.SqlXml from build and add IBM.Data.DB2.
+
+	* copy-mcs.sh: remove Mono.Data.DB2Client, Mono.Data.MySql,
+	Mono.Data.PostgreSqlClient, Mono.Directory.LDAP, System.Data.ObjectSpaces
+	and System.Data.SqlXml from copy list and add IBM.Data.DB2.
+
+	* tests/Makefile.am, tests/Test.build: remove test of
+	Mono.Directory.LDAP.
 
 2005-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 

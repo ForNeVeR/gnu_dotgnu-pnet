@@ -19,8 +19,7 @@ CLEANFILES = Testcorlib.System.dll Testcorlib.System.Collections.dll \
 		Testcorlib.System.Threading.dll TestSystem.dll TestSystem.Xml.dll \
 		TestSystem.Runtime.Serialization.Formatters.Soap.dll \
 		TestSystem.Security.dll TestMono.Security.dll TestSystem.Data.dll \
-		TestSystem.Web.Services.dll TestSystem.Runtime.Remoting.dll \
-		TestMono.Directory.LDAP.dll
+		TestSystem.Web.Services.dll TestSystem.Runtime.Remoting.dll
 
 TESTS = Testcorlib.System.dll Testcorlib.System.Collections.dll \
 		Testcorlib.System.Diagnostics.dll Testcorlib.System.Globalization.dll \
@@ -37,7 +36,6 @@ TESTS = Testcorlib.System.dll Testcorlib.System.Collections.dll \
 		Testcorlib.System.Threading.dll TestSystem.dll TestSystem.Xml.dll \
 		TestSystem.Runtime.Serialization.Formatters.Soap.dll \
 		TestSystem.Security.dll TestMono.Security.dll TestSystem.Data.dll \
-		TestSystem.Web.Services.dll TestSystem.Runtime.Remoting.dll \
-		TestMono.Directory.LDAP.dll
+		TestSystem.Web.Services.dll TestSystem.Runtime.Remoting.dll
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_builddir)/tools/run_test.sh $(top_builddir)

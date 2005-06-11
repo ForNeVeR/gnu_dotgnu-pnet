@@ -1207,6 +1207,7 @@ static ILObject *CreateResourceStream(ILExecThread *thread, ILImage *image,
 									  ILUInt32 posn)
 {
 	unsigned char *section;
+	unsigned char **sectionptr = &section;
 	unsigned long sectionLen;
 	unsigned long start;
 	unsigned long pad;
@@ -1214,7 +1215,7 @@ static ILObject *CreateResourceStream(ILExecThread *thread, ILImage *image,
 
 	/* Find the resource section within the image */
 	if(!ILImageGetSection(image, IL_SECTION_RESOURCES,
-						  (void **)&section, &sectionLen))
+						  (void **)sectionptr, &sectionLen))
 	{
 		return 0;
 	}
@@ -3541,9 +3542,10 @@ ILInt32 _IL_ClrResourceStream_ResourceRead(ILExecThread *_thread,
 {
 	ILImage *image = (ILImage *)handle;
 	unsigned char *section;
+	unsigned char **sectionptr = &section;
 	unsigned long sectionLen;
 	if(image && ILImageGetSection(image, IL_SECTION_RESOURCES,
-								  (void **)&section, &sectionLen))
+								  (void **)sectionptr, &sectionLen))
 	{
 		ILMemCpy(((unsigned char *)(ArrayToBuffer(buffer))) + offset,
 				 section + (ILNativeInt)position, count);
@@ -3564,9 +3566,10 @@ ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread *_thread,
 {
 	ILImage *image = (ILImage *)handle;
 	unsigned char *section;
+	unsigned char **sectionptr = &section;
 	unsigned long sectionLen;
 	if(image && ILImageGetSection(image, IL_SECTION_RESOURCES,
-								  (void **)&section, &sectionLen))
+								  (void **)sectionptr, &sectionLen))
 	{
 		return (ILInt32)(section[(ILNativeInt)position]);
 	}
@@ -3585,9 +3588,10 @@ ILUInt8 *_IL_ClrResourceStream_ResourceGetAddress(ILExecThread *_thread,
 {
 	ILImage *image = (ILImage *)handle;
 	unsigned char *section;
+	unsigned char **sectionptr = &section;
 	unsigned long sectionLen;
 	if(image && ILImageGetSection(image, IL_SECTION_RESOURCES,
-								  (void **)&section, &sectionLen))
+								  (void **)sectionptr, &sectionLen))
 	{
 		return (ILUInt8 *)(section + (ILNativeInt)position);
 	}

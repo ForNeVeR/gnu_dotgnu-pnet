@@ -91,7 +91,7 @@ namespace System.Windows.Forms
 		}
 
 		[TODO]
-		public bool Visable
+		public bool Visible
 		{
 			get
 			{

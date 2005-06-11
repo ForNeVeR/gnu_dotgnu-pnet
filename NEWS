@@ -1,4 +1,82 @@
 
+0.7.0 (11 June 2005)
+
+	System.Windows.Forms and System.Drawing: 
+
+	* Fix scrollbar layouts for textbox (Marc Haisenko).
+	* Wrapping for Graphics.DrawString (Marc Haisenko).
+	* Texbox background and caret drawing (Heiko Weiss).
+	* Store layout info of children in parent (Marc Haisenko).
+	* Reset view when resizing textbox  (Marc Haisenko).
+	* TreeView and TreeNode bug fixes (Deryk Robosson).
+	* Remove tabs in label text (Deryk Robosson).
+	* Redo Anchor layouting by using bounding box border sizes (Marc Haisenko).
+	* Stub out toolbox classes (Deryk Robosson).
+	* Compatibility fixes for scroll wheel scrolling (Marc Haisenko).
+	* Focus handling is now opt-out for output only control (Deryk Robosson).
+	* LostFocus event for ComboBox (Erich Kitzmuller).
+	* Fix exceptions in DrawLine for Images (Marc Haisenko).
+	* Use CreateControlInner instead of CreateHandle for BeginInvoke 
+	  and Invalidate (Marc Haisenko).
+	* Remove redundant check in OnParentVisibleChanged (Marc Haisenko).
+	* Avoid double call of LostFocus/GotFocus (Deryk Robosson).
+	* Make disabled text more legible (Erich Kitzmuller).
+	* Fix infinite recursion for SetBoundsCore (Heiko Weiss).
+
+	Xsharp: 
+
+	* Fix timer bug when RTC time is reset externally by user or 
+	  NTP (Marc Haisenko).
+	* Double buffering fixes for transparent bg color (Marc Haisenko).
+	* Scroll wheel button events for scrolling (Marc Haisenko).
+	* Extended window manager hints (Deryk Robosson).
+	* Add TopMost to window manager hints (Marc Haisenko).
+	* Use xft-config to lookup Xft paths (Gopal V).
+
+	Basic: 
+
+	* Fix allocations in StringBuilder and improve performance for 
+	  large strings (Klaus Treichel).
+	* StringBuilder speedups using internal calls (Klaus Treichel).
+	* Fixes for Hashtable removals (Heiko Weiss).
+	* Fix TrimStart and TrimEnd on String to work without args (Marc Haisenko).
+	* Compatibility fixes to ApplicationId (Klaus Treichel).
+	* Add some missing exceptions and context classes (Klaus Treichel).
+
+	Xml: 
+
+	* XPath fixes to match behavior (Gopal V).
+	* Fix bug in Skip() (Klaus Treichel).
+	* Return null instead of throwing exception for invalid index 
+	  (Deryk Robosson).
+	* Fix RemoveChild in NodeList to remove node only if it is a 
+	  child (Marc Haisenko).
+
+	Networking & IO: 
+
+	* Improve Buffered Stream performance (Andre Seidelt).
+	* Reset socket state on error (Richard Baumann).
+	* Enable Broadcast option (Doru Budai).
+	* Stub out configuration handlers for HTTP (Gopal V).
+
+	Tests: 
+
+	* New unit tests for Hashtable (Heiko Weiss).
+	* Tests for version and application id (Klaus Treichel).
+	* Update string replace tests (Klaus Treichel).
+
+	Other: 
+
+	* Fixes for mscompact profile builds (Rhys Weatherley).
+	* Add CONFIG_XPATH and CONFIG_XSL profile defines (Gopal V).
+	* Profiling support via DotGNU.Misc namespace (Marc Haisenko).
+	* throw exception when process does not start (Herman Weiss).
+	* Reduce new object creation and speedup simple array 
+	  deserialization (Andre Seidelt).
+	* NumberFormatInfo and NumberParser fixes (Heiko Weiss).
+	* Fix xft checks in configure (Richard Baumann).
+	* Updated build-debian-packages.sh (Russel Stuart).
+
 0.6.12 (16 January 2005)
 
 	System.Windows.Forms & System.Drawing:

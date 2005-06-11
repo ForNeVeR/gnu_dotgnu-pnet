@@ -1,4 +1,10 @@
 
+0.7.0 (11 June 2005)
+
+	* Updated debian files (Russell Stuart).
+	* System.ServiceProcess (Marc Haisenco)/
+	* Mono.GetOptions, System.Data (Klaus Treichel).
+
 0.6.12 (16 January 2005)
 
 	* Add references to Mono.Security where necessary (Klaus Treichel).

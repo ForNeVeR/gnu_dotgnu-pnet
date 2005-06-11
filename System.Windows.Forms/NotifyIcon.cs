@@ -33,6 +33,7 @@ namespace System.Windows.Forms
 		private Icon icon;
 		private string text;
 		private bool visable;
+		private IContainer container;
 
 		public event EventHandler Click;
 		public event EventHandler DoubleClick;
@@ -44,6 +45,11 @@ namespace System.Windows.Forms
 		{
 			text = String.Empty;
 			visable = false;
+		}
+
+		public NotifyIcon(IContainer container) : this()
+		{
+			container = container;
 		}
 
 		// Properties

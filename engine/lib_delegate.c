@@ -212,7 +212,6 @@ static int PackDelegateInvokeParams(ILExecThread *thread, ILMethod *method,
 	ILNativeFloat nativeFloat;
 	CVMWord *words;
 	ILUInt32 size;
-	CVMWord *ptr;
 
 	/* Push the "this" pointer if necessary */
 	if(ILType_HasThis(signature))
@@ -240,22 +239,24 @@ static int PackDelegateInvokeParams(ILExecThread *thread, ILMethod *method,
 	words = params->words;
 	for(paramNum = 1; paramNum <= numParams; ++paramNum)
 	{
+		void *ptr;
+
 		type = ILTypeGetParam(signature, paramNum);
 		if(type == ILType_Float32)
 		{
 			nativeFloat = (ILNativeFloat)(*((ILFloat *)words));
-			ptr = (CVMWord *)&nativeFloat;
+			ptr = (void *)&nativeFloat;
 			size = CVM_WORDS_PER_NATIVE_FLOAT;
 		}
 		else if(type == ILType_Float64)
 		{
 			nativeFloat = (ILNativeFloat)DelegateReadDouble(words);
-			ptr = (CVMWord *)&nativeFloat;
+			ptr = (void *)&nativeFloat;
 			size = CVM_WORDS_PER_NATIVE_FLOAT;
 		}
 		else
 		{
-			ptr = words;
+			ptr = (void *)words;
 			size = ((ILSizeOfType(thread, type) + sizeof(CVMWord) - 1)
 						/ sizeof(CVMWord));
 		}

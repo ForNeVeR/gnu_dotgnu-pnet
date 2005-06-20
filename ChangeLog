@@ -1,3 +1,6 @@
+2005-06-20  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_delegate.c: Fix type-punned aliasing warnings.
 
 2005-06-20  Gopal V  <gopalv82@yahoo.com>
 

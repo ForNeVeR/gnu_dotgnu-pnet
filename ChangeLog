@@ -1,4 +1,10 @@
 
+2005-06-20  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/cvm.c, engine/cvm_config.h, engine/mklabel.sh: define
+	CVM_X86_64. Do manual register allocation for pc, stack and frame.
+	Use assembly 'jmpq' instead of cgoto for performance.
+
 2005-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.7.0" release.

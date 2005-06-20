@@ -43,6 +43,20 @@ echo '#define VMNULLASM()'
 echo '#endif'
 echo ''
 
+# Allow specific platforms to override Computed GOTO realizations
+echo '#ifndef VM_CGOTO_SWITCH'
+echo '#define VM_CGOTO_SWITCH(val) goto **(void**)pc;'
+echo '#endif'
+echo '#ifndef VM_CGOTO_PREFIXSWITCH'
+echo '#define VM_CGOTO_PREFIXSWITCH(val) goto **(void**)pc;'
+echo '#endif'
+echo '#ifndef VM_CGOTO_BREAK'
+echo '#define VM_CGOTO_BREAK(val) goto **(void**)pc;'
+echo '#endif'
+echo '#ifndef VM_CGOTO_BREAKNOEND'
+echo '#define VM_CGOTO_BREAKNOEND(val) goto **(void**)pc;'
+echo '#endif'
+
 # Are we compiling an interpreter that uses PIC computed goto's?
 echo '#if defined(IL_CVM_PIC_TOKEN) || defined(IL_CVM_PIC_DIRECT)'
 echo ''
@@ -127,17 +141,17 @@ echo ''
 
 # Output the helper macros (PIC).
 echo '#ifdef IL_CVM_DIRECT'
-echo '#define VMSWITCH(val)       goto **((void **)pc);'
-echo '#define VMPREFIXSWITCH(val) goto **((void **)pc);'
+echo '#define VMSWITCH(val)       VM_CGOTO_SWITCH(val);'
+echo '#define VMPREFIXSWITCH(val) VM_CGOTO_PREFIXSWITCH(val);'
 echo '#define VMCASE(val)         val##_label'
 echo '#define VMDEFAULT           _DEFAULT_MAIN_label'
 echo '#define VMPREFIXDEFAULT     _DEFAULT_PREFIX_label'
 echo '#define VMBREAK(val)        \
             CVM_DUMP(); \
-            goto **((void **)pc)'
+            VM_CGOTO_BREAK(val)'
 echo '#define VMBREAKNOEND        \
             CVM_DUMP(); \
-            goto **((void **)pc)'
+            VM_CGOTO_BREAKNOEND(val)'
 echo '#define VMOUTERBREAK'
 echo '#else /* !IL_CVM_DIRECT */'
 echo '#define VMSWITCH(val)       goto *(&&COP_NOP_label + main_label_table[(val)]);'
@@ -239,17 +253,17 @@ echo ''
 
 # Output the helper macros (non-PIC).
 echo '#ifdef IL_CVM_DIRECT'
-echo '#define VMSWITCH(val)       goto **((void **)pc);'
-echo '#define VMPREFIXSWITCH(val) goto **((void **)pc);'
+echo '#define VMSWITCH(val)       VM_CGOTO_SWITCH(val);'
+echo '#define VMPREFIXSWITCH(val) VM_CGOTO_PREFIXSWITCH(val);'
 echo '#define VMCASE(val)         val##_label'
 echo '#define VMDEFAULT           _DEFAULT_MAIN_label'
 echo '#define VMPREFIXDEFAULT     _DEFAULT_PREFIX_label'
 echo '#define VMBREAK(val)        \
             CVM_DUMP(); \
-            goto **((void **)pc)'
+            VM_CGOTO_BREAK(val)'
 echo '#define VMBREAKNOEND        \
             CVM_DUMP(); \
-            goto **((void **)pc)'
+            VM_CGOTO_BREAKNOEND(val)'
 echo '#define VMOUTERBREAK'
 echo '#else /* !IL_CVM_DIRECT */'
 echo '#define VMSWITCH(val)       goto *main_label_table[(val)];'

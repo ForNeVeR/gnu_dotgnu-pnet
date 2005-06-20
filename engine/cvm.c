@@ -83,6 +83,25 @@ extern	"C" {
 	{
 		return ILMemCmp(dst, src, len);
 	}
+#elif defined(CVM_X86_64) && defined(__GNUC__) && !defined(IL_NO_ASM)
+	/* 16 registers - so we can avoid using esi, edi and ebx. */
+	#define REGISTER_ASM_PC(x)              register x asm("r12")
+	#define REGISTER_ASM_STACK(x)           register x asm("r14") 
+	#define REGISTER_ASM_FRAME(x)           register x asm("r15") 
+	#define	IL_MEMCPY(dst,src,len)			(ILMemCpy((dst), (src), (len)))
+	#define	IL_MEMMOVE(dst,src,len)			(ILMemMove((dst), (src), (len)))
+	#define	IL_MEMZERO(dst,len)				(ILMemZero((dst), (len)))
+	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
+	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
+
+	#define X86_64_CGOTO(pc) __asm__ __volatile__ (\
+								"jmpq *(%0)" \
+								:: "r" (pc) )
+	/* VM_CGOTO_SWITCH segfaults with just a jmpq */
+	#define VM_CGOTO_PREFIXSWITCH(val) X86_64_CGOTO(pc)
+	#define VM_CGOTO_BREAK(val) X86_64_CGOTO(pc)
+	#define VM_CGOTO_BREAKNOEND(val) X86_64_CGOTO(pc)
+	
 #elif defined(CVM_ARM) && defined(__GNUC__) && !defined(IL_NO_ASM)
     #define REGISTER_ASM_PC(x)              register x asm ("r4")
     #define REGISTER_ASM_STACK(x)           register x asm ("r5")

@@ -90,6 +90,11 @@ extern int _ILCVMInsnCount[];
 		defined(__powerpc) || defined(PPC)
 	#define	CVM_PPC
 #endif
+#if defined(__x86_64__) || defined(__x86_64) 
+	#define CVM_X86_64
+	#define CVM_LITTLE_ENDIAN
+	#define	CVM_LONGS_ALIGNED_WORD
+#endif
 #if defined(__ia64) || defined(__ia64__)
 	#define	CVM_IA64
 #endif

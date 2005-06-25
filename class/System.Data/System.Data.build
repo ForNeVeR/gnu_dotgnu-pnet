@@ -11,6 +11,8 @@
 
 			<sources basedir="${mono.sources}/class/System.Data/">
 				<includes name="**/*.cs"/> 
+				<includes name="../../build/common/Locale.cs"/>
+				<includes name="../../build/common/MonoTODOAttribute.cs"/> 
 				<excludes name="Mono.Data.SqlExpressions/Parser.cs"/>
 				<excludes name="System.Data/Res.cs"/>
 				<excludes name="System.Data.Common/DbConvert.cs"/>

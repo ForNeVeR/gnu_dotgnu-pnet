@@ -1,3 +1,27 @@
+2005-06-25  Klaus Treichel  <ktreichel@web.de>
+
+	* class/Custommarshalers/Custommarshalers.build,
+	class/Mono.Data.SybaseClient/Mono.Data.SybaseClient.build,
+	class/Mono.Data.Tds/Mono.Data.Tds.build,
+	class/Mono.Data.TdsClient/Mono.Data.TdsClient.build,
+	class/Mono.Security/Mono.Security.build,
+	class/System.Data/System.Data.build,
+	class/System.Data.OracleClient/System.Data.OracleClient.build,
+	class/System.DirectoryServices/System.DirectoryServices.build,
+	class/System.Management/System.Management.build,
+	class/System.Messaging/System.Messaging.build,
+	class/System.ServiceProcess/System.ServiceProcess.build,
+	class/System.Runtime.Serialization.Formatters.Soap/
+	System.Runtime.Serialization.Formatters.Soap.build,
+	class/System.Runtime.Remoting/System.Runtime.Remoting.build,
+	class/System.Security/System.Security.build,
+	class/System.Web/System.Web.build,
+	class/System.Web.Services/System.Web.Services.build: Add files
+	build/common/Locale.cs and build/common/MonoTODOAttribute.cs to build.
+
+	* tests/Test.build: Add reference to Mono.Security.dll and exclude file
+	System.Xml/XsdParticleValidationTests.cs from build of test for System.Xml.
+
 2005-06-11  Klaus Treichel  <ktreichel@web.de>
 
 	* class/IBM.Data.DB2/IBM.Data..DB".build, class/IBM.Data.DB2/Makefile.am,

@@ -11,6 +11,8 @@
 
 			<sources basedir="${mono.sources}/class/System.Web/">
 				<includes name="**/*.cs"/> 
+				<includes name="../../build/common/Locale.cs"/>
+				<includes name="../../build/common/MonoTODOAttribute.cs"/> 
 				<excludes name="Test/**"/>
 				<excludes name="System.Web.Util/ICalls.cs"/>
 				<file basedir="." name="ICalls.cs"/>

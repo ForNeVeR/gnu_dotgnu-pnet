@@ -11,8 +11,9 @@
 
 			<sources basedir="${mono.sources}/class/Custommarshalers">
 				<includes name="**/*.cs"/> 
+				<includes name="../../build/common/Locale.cs"/>
+				<includes name="../../build/common/MonoTODOAttribute.cs"/>
 				<excludes name="Test/**"/>
-
 			</sources>
 
 			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>

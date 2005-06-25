@@ -427,6 +427,7 @@
 			<references>
 				<file name="${pnet.libdir}/runtime/mscorlib.dll"/>
 				<file name="${pnet.libdir}/System/System.dll"/>
+				<file name="../class/Mono.Security/Mono.Security.dll"/>
 				<file name="../nunit20/framework/nunit.framework.dll"/>
 			</references>
 
@@ -446,6 +447,7 @@
 				<excludes name="System.Xml/XmlWriterTests.cs"/>
 				<excludes name="System.Xml/XmlAttributeTests.cs"/>
 				<excludes name="System.Xml/XmlSecureResolverTests.cs"/>
+				<excludes name="System.Xml/XsdParticleValidationTests.cs"/>
 				<excludes name="System.Xml/standalone_tests/**"/>
 				<excludes name="System.Xml.Xsl/standalone_tests/**"/>
 				<excludes name="System.Xml.Schema/standalone_tests/**"/>

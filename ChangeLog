@@ -1,3 +1,10 @@
+2005-06-26  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/runtime/System/TestAttribute.cs: Added testcase for bug #13433.
+
+	* tests/runtime/System/SuiteSystem.cs: Add test for System.Attribute to
+	testsuite.
+
 2005-06-11  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/NotifyIcon.cs: fix typo, thanks to Klaus' eyes,

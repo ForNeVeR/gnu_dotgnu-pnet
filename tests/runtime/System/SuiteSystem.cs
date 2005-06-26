@@ -35,6 +35,7 @@ public class SuiteSystem
 #endif
 				suite.AddTests(typeof(TestArgIterator));
 				suite.AddTests(typeof(TestArray));
+				suite.AddTests(typeof(TestAttribute));
 				suite.AddTests(typeof(TestBoolean));
 				suite.AddTests(typeof(TestConvert));
 				suite.AddTests(typeof(TestDecimal));

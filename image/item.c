@@ -100,27 +100,37 @@ void ILProgramItemAddAttribute(ILProgramItem *item, ILAttribute *attr)
 ILAttribute *ILProgramItemRemoveAttribute(ILProgramItem *item,
 										  ILAttribute *attr)
 {
-	ILAttribute **start;
 	ILAttribute *current;
 
 	/* Find the start of the attribute list */
 	if(item->linked)
 	{
-		start = &(((ILProgramItemLink *)(item->attrsOrLink))->customAttrs);
+		/* Check if first attribute is the one we are looking for */
+		if(((ILProgramItemLink *)(item->attrsOrLink))->customAttrs == attr)
+		{
+			/* Yes it is. So remove it from the list and return the next one. */
+			((ILProgramItemLink *)(item->attrsOrLink))->customAttrs = attr->next;
+			return attr->next;
+		}
+		/* Set the first attribute as staring point */
+		current = ((ILProgramItemLink *)(item->attrsOrLink))->customAttrs;
 	}
 	else
 	{
-		start = (ILAttribute **)(&(item->attrsOrLink));
+		/* Check if first attribute is the one we are looking for */
+		if(((ILAttribute *)(item->attrsOrLink)) == attr)
+		{
+			/* Yes it is. So remove it from the list and return the next one. */
+			item->attrsOrLink = ((void *)attr->next);
+			return attr->next;
+		}
+		/* Set the first attribute as staring point */
+		current = (ILAttribute *)(item->attrsOrLink);
 	}
 
 	/* Find the attribute and remove it from the list */
-	if(*start == attr)
+	if(current != 0)
 	{
-		*start = attr->next;
-	}
-	else if(*start != 0)
-	{
-		current = *start;
 		while(current->next != 0 && current->next != attr)
 		{
 			current = current->next;

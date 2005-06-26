@@ -88,7 +88,7 @@ static ILClass *LookupClass(ILExecThread *thread, const char *className,
 	/* Get the name of the global type */
 	len = 0;
 	dot = -1;
-	while(len < classNameLen && className[len] != '/')
+	while(len < classNameLen && className[len] != '/' && className[len] != '+')
 	{
 		if(className[len] == '.')
 		{
@@ -135,11 +135,11 @@ static ILClass *LookupClass(ILExecThread *thread, const char *className,
 	}
 
 	/* Resolve nested type names */
-	while(classInfo != 0 && len < classNameLen && className[len] == '/')
+	while(classInfo != 0 && len < classNameLen && (className[len] == '/' || className[len] == '+'))
 	{
 		++len;
 		dot = len;
-		while(len < classNameLen && className[len] != '/')
+		while(len < classNameLen && className[len] != '/' && className[len] != '+')
 		{
 			++len;
 		}

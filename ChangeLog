@@ -1,3 +1,10 @@
+2005-06-26  Klaus Treichel  <ktreichel@web.de>
+
+	* image/item.c: Fix type-punned aliasing warnings of gcc 4.1.
+
+	* engine/lookup.c: Handle names of nested classes in LookupClass (seperator
+	+ additional to / in typenames).
+
 2005-06-20  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_delegate.c: Fix type-punned aliasing warnings.

@@ -1,5 +1,10 @@
 2005-07-03  Klaus Treichel  <ktreichel@web.de>
 
+	* engine/lib_reflect.c: add deserilization support for arrays of
+	System.String and System.Type elements.
+	
+2005-07-03  Klaus Treichel  <ktreichel@web.de>
+
 	* engine/lib_reflect.c: fix deserializing of arrays that array elements are
 	deserialized to the correct array index.
 

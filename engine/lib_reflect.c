@@ -115,12 +115,9 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 	ILDouble doubleValue;
 	const char *strValue;
 	int strLen;
-	int arrayLen;
 	int boxedType;
-	System_Array * arrayVal;
 	ILObject ** buf;
 	ILType *typeAttr;
-	ILType *systemType=ILExecThreadLookupType(thread,"oSystem.Type;");
 	ILClass *classInfo;
 	char *copyStr;
 	
@@ -226,6 +223,8 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 						/* not reached */
 						case IL_META_SERIALTYPE_TYPE:
 						{
+							ILType *systemType=ILExecThreadLookupType(thread,"oSystem.Type;");
+
 							return DeserializeObject(thread,reader,
 									systemType, IL_META_SERIALTYPE_TYPE);
 						}
@@ -260,19 +259,44 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 			default:
 					if((serialType & IL_META_SERIALTYPE_ARRAYOF)!=0)
 					{
+						System_Array *arrayVal = 0;
+						int arrayLen = ILSerializeReaderGetArrayLen(reader);
 						int index = 0;
+						/* remove array prefix */
+						int elementType = (serialType & ~IL_META_SERIALTYPE_ARRAYOF);
 
-						arrayLen = ILSerializeReaderGetArrayLen(reader);
-						arrayVal = (System_Array *)ILExecThreadNew
-								(thread, "[oSystem.Object;", "(Ti)V", 
-							 (ILVaInt)arrayLen);
-						buf = (ILObject**)(ArrayToBuffer(arrayVal));
-						while(arrayLen--)
+						switch(elementType)
 						{
-							buf[index++]=DeserializeObject(thread,reader,
-										ILType_ElemType(type),
-								(serialType & ~IL_META_SERIALTYPE_ARRAYOF));
-							/* remove array prefix and reiterate */
+							case IL_META_SERIALTYPE_VARIANT:
+							{
+								arrayVal = (System_Array *)ILExecThreadNew
+									(thread, "[oSystem.Object;", "(Ti)V", 
+							 		(ILVaInt)arrayLen);
+									break;
+							}
+							case IL_META_SERIALTYPE_STRING:
+							{
+								arrayVal = (System_Array *)ILExecThreadNew
+									(thread, "[oSystem.String;", "(Ti)V", 
+							 		(ILVaInt)arrayLen);
+									break;
+							}
+							case IL_META_SERIALTYPE_TYPE:
+							{
+								arrayVal = (System_Array *)ILExecThreadNew
+									(thread, "[oSystem.Type;", "(Ti)V", 
+							 		(ILVaInt)arrayLen);
+									break;
+							}
+						}
+						if (arrayVal)
+						{
+							buf = (ILObject**)(ArrayToBuffer(arrayVal));
+							while(arrayLen--)
+							{
+								buf[index++]=DeserializeObject(thread,reader,
+											ILType_ElemType(type), elementType);
+							}
 						}
 						return (ILObject*)arrayVal;
 					}

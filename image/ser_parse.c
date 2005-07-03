@@ -112,6 +112,8 @@ int ILSerializeGetType(ILType *type)
 			case IL_META_ELEMTYPE_U8:		return IL_META_SERIALTYPE_U8;
 			case IL_META_ELEMTYPE_R4:		return IL_META_SERIALTYPE_R4;
 			case IL_META_ELEMTYPE_R8:		return IL_META_SERIALTYPE_R8;
+			/* this one is for deserializing array elements of type string */
+			case IL_META_ELEMTYPE_STRING:	return IL_META_SERIALTYPE_STRING;
 			default:						break;
 		}
 	}
@@ -285,6 +287,7 @@ static int HasSufficientSpace(ILSerializeReader *reader, int type)
 
 		case IL_META_SERIALTYPE_ARRAYOF | IL_META_SERIALTYPE_STRING:
 		case IL_META_SERIALTYPE_ARRAYOF | IL_META_SERIALTYPE_TYPE:
+		case IL_META_SERIALTYPE_ARRAYOF | IL_META_SERIALTYPE_VARIANT:
 		{
 			/* Assume that space is sufficient if we have a positive
 			   length value, and check for real later */

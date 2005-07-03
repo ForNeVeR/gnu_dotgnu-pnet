@@ -260,6 +260,8 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 			default:
 					if((serialType & IL_META_SERIALTYPE_ARRAYOF)!=0)
 					{
+						int index = 0;
+
 						arrayLen = ILSerializeReaderGetArrayLen(reader);
 						arrayVal = (System_Array *)ILExecThreadNew
 								(thread, "[oSystem.Object;", "(Ti)V", 
@@ -267,7 +269,7 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 						buf = (ILObject**)(ArrayToBuffer(arrayVal));
 						while(arrayLen--)
 						{
-							buf[arrayLen]=DeserializeObject(thread,reader,
+							buf[index++]=DeserializeObject(thread,reader,
 										ILType_ElemType(type),
 								(serialType & ~IL_META_SERIALTYPE_ARRAYOF));
 							/* remove array prefix and reiterate */

@@ -1,3 +1,11 @@
+2005-07-03  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_reflect.c: fix deserializing of arrays that array elements are
+	deserialized to the correct array index.
+
+	* image/ser_parse.c: fix deserialization of object arrays with string
+	elements. String arrays still bail out when the constructor is called.
+
 2005-06-26  Klaus Treichel  <ktreichel@web.de>
 
 	* image/item.c: Fix type-punned aliasing warnings of gcc 4.1.

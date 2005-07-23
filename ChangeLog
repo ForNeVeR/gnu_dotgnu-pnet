@@ -1,5 +1,10 @@
 2005-07-23  Klaus Treichel  <ktreichel@web.de>
 
+	* libgc/aclocal.m4, libgc/Makefile.in, libgc/configure,
+	libgc/doc/Makefile.in, libgc/include/Makefile.in: Update to 6.5.
+
+2005-07-23  Klaus Treichel  <ktreichel@web.de>
+
 	* libgc/win32_threads.c: Change max threads from 256 to 1024 and add
 	GC_CreateThread for cygwin systems to use win32 native threads.
 	Apply Tums changes to allocate thread_args and thread_start_info using

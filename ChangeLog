@@ -1,3 +1,27 @@
+2005-07-23  Klaus Treichel  <ktreichel@web.de>
+
+	* libgc/Makefile.am, libgc/Makefile.direct,
+	libgc/NT_STATIC_THREADS_MAKEFILE, libgc/allchblk.c, libgc/alloc.c,
+	libgc/alpha_mach_dep.S, libgc/backgraph.c, libgc/configure.in,
+	libgc/darwin_stop_world.c, libgc/dyn_load.c, libgc/finalize.c,
+	libgc/headers.c, libgc/mach_dep.c, libgc/mallocx.c, libgc/mark.c,
+	libgc/mark_rts.c, libgc/misc.c, libgc/mkinstalldirs, libgc/os_dep.c,
+	libgc/powerpc_darwin_mach_dep.s, libgc/pthread_stop_world.c,
+	libgc/pthread_support.c, libgc/reclaim.c, libgc/solaris_pthreads.c,
+	libgc/solaris_threads.c, libgc/specific.c, libgc/threadlibs.c,
+	libgc/version.h, libgc/win32_threads.c, libgc/cord/cordprnt.c,
+	libgc/cord/cordtest.c, libgc/doc/README, libgc/doc/README.changes,
+	libgc/doc/README.darwin, libgc/doc/README.environment,
+	libgc/doc/README.solaris2, libgc/include/gc.h, libgc/include/gc_allocator.h,
+	libgc/include/gc_config_macros.h, libgc/include/gc_cpp.h,
+	libgc/include/new_gc_alloc.h, libgc/include/private/gc_hdrs.h,
+	libgc/include/private/gc_locks.h, libgc/include/private/gc_priv.h,
+	libgc/include/private/gcconfig.h, libgc/include/private/pthread_support.h,
+	libgc/include/private/solaris_threads.h, libgc/tests/test.c: Updated to 6.5
+
+	* libgc/aix_irix_threads.c, libgc/irix_threads.c, libgc/linux_threads.c,
+	libgc/powerpc_macosx_mach_dep.s: removed in 6.5
+
 2005-07-03  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_reflect.c: add deserilization support for arrays of

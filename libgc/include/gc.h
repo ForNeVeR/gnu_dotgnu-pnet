@@ -32,7 +32,7 @@
 
 # include "gc_config_macros.h"
 
-# if defined(__STDC__) || defined(__cplusplus)
+# if defined(__STDC__) || defined(__cplusplus) || defined(_AIX)
 #   define GC_PROTO(args) args
     typedef void * GC_PTR;
 #   define GC_CONST const
@@ -191,7 +191,7 @@ GC_API GC_word GC_free_space_divisor;
 			/* least N/GC_free_space_divisor bytes between	*/
 			/* collections, where N is the heap size plus	*/
 			/* a rough estimate of the root set size.	*/
-			/* Initially, GC_free_space_divisor = 4.	*/
+			/* Initially, GC_free_space_divisor = 3.	*/
 			/* Increasing its value will use less space	*/
 			/* but more collection time.  Decreasing it	*/
 			/* will appreciably decrease collection time	*/
@@ -308,6 +308,9 @@ GC_API void GC_end_stubborn_change GC_PROTO((GC_PTR));
 /* the base of the user object.						*/
 /* Return 0 if displaced_pointer doesn't point to within a valid	*/
 /* object.								*/
+/* Note that a deallocated object in the garbage collected heap		*/
+/* may be considered valid, even if it has been deallocated with	*/
+/* GC_free.  								*/
 GC_API GC_PTR GC_base GC_PROTO((GC_PTR displaced_pointer));
 
 /* Given a pointer to the base of an object, return its size in bytes.	*/
@@ -475,9 +478,6 @@ GC_API GC_PTR GC_malloc_atomic_ignore_off_page GC_PROTO((size_t lb));
 # endif
 # if defined(__i386__) || defined(__x86_64__)
 #   define GC_CAN_SAVE_CALL_STACKS
-# endif
-# if defined(__UCLIBC__)
-#     undef GC_HAVE_BUILTIN_BACKTRACE
 # endif
 #endif
 
@@ -848,7 +848,7 @@ GC_API GC_PTR GC_is_valid_displacement GC_PROTO((GC_PTR	p));
 
 /* Safer assignment of a pointer to a nonstack location.	*/
 #ifdef GC_DEBUG
-# ifdef __STDC__
+# if defined(__STDC__) || defined(_AIX)
 #   define GC_PTR_STORE(p, q) \
 	(*(void **)GC_is_visible(p) = GC_is_valid_displacement(q))
 # else
@@ -896,12 +896,6 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
 #if defined(GC_WIN32_THREADS) && !defined(__CYGWIN32__) && !defined(__CYGWIN__)
 # include <windows.h>
 
-#if defined(__CYGWIN32__) || defined(__CYGWIN__)
-   GC_API HANDLE GC_CreateThread(
-      LPSECURITY_ATTRIBUTES lpThreadAttributes,
-      DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress,
-      LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId );
-#else
   /*
    * All threads must be created using GC_CreateThread, so that they will be
    * recorded in the thread table.  For backwards compatibility, this is not
@@ -913,7 +907,6 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
       LPSECURITY_ATTRIBUTES lpThreadAttributes,
       DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress,
       LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId );
-#endif
 
 # if defined(_WIN32_WCE)
   /*
@@ -940,7 +933,7 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
   * no-op and the collector self-initializes.  But a number of platforms
   * make that too hard.
   */
-#if defined(sparc) || defined(__sparc)
+#if (defined(sparc) || defined(__sparc)) && defined(sun)
     /*
      * If you are planning on putting
      * the collector in a SunOS 5 dynamic library, you need to call GC_INIT()
@@ -950,12 +943,32 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
 #   define GC_INIT() { extern end, etext; \
 		       GC_noop(&end, &etext); }
 #else
-# if defined(__CYGWIN32__) && defined(GC_DLL) || defined (_AIX)
+# if defined(__CYGWIN32__) || defined (_AIX)
     /*
      * Similarly gnu-win32 DLLs need explicit initialization from
      * the main program, as does AIX.
      */
-#   define GC_INIT() { GC_add_roots(DATASTART, DATAEND); }
+#   ifdef __CYGWIN32__
+      extern int _data_start__[];
+      extern int _data_end__[];
+      extern int _bss_start__[];
+      extern int _bss_end__[];
+#     define GC_MAX(x,y) ((x) > (y) ? (x) : (y))
+#     define GC_MIN(x,y) ((x) < (y) ? (x) : (y))
+#     define GC_DATASTART ((GC_PTR) GC_MIN(_data_start__, _bss_start__))
+#     define GC_DATAEND	 ((GC_PTR) GC_MAX(_data_end__, _bss_end__))
+#     ifdef GC_DLL
+#       define GC_INIT() { GC_add_roots(GC_DATASTART, GC_DATAEND); }
+#     else
+#       define GC_INIT()
+#     endif
+#   endif
+#   if defined(_AIX)
+      extern int _data[], _end[];
+#     define GC_DATASTART ((GC_PTR)((ulong)_data))
+#     define GC_DATAEND ((GC_PTR)((ulong)_end))
+#     define GC_INIT() { GC_add_roots(GC_DATASTART, GC_DATAEND); }
+#   endif
 # else
 #  if defined(__APPLE__) && defined(__MACH__) || defined(GC_WIN32_THREADS)
 #   define GC_INIT() { GC_init(); }

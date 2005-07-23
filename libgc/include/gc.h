@@ -893,7 +893,7 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
 
 #endif /* THREADS && !SRC_M3 */
 
-#if defined(GC_WIN32_THREADS) && !defined(__CYGWIN32__) && !defined(__CYGWIN__)
+#if defined(GC_WIN32_THREADS)
 # include <windows.h>
 
   /*
@@ -903,7 +903,11 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
    * and does then use DllMain to keep track of thread creations.  But new code
    * should be built to call GC_CreateThread.
    */
+#if defined(__CYGWIN32__) || defined(__CYGWIN__)
+   GC_API HANDLE GC_CreateThread(
+#else
    GC_API HANDLE WINAPI GC_CreateThread(
+#endif
       LPSECURITY_ATTRIBUTES lpThreadAttributes,
       DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress,
       LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId );

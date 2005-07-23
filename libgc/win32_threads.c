@@ -27,7 +27,7 @@
 typedef LONG * IE_t;
 
 #ifndef MAX_THREADS
-# define MAX_THREADS 256
+# define MAX_THREADS 1024
     /* FIXME:							*/
     /* Things may get quite slow for large numbers of threads,	*/
     /* since we look them up with sequential search.		*/
@@ -465,7 +465,9 @@ GC_API HANDLE WINAPI GC_CreateThread(
     if (!GC_is_initialized) GC_init();
     		/* make sure GC is initialized (i.e. main thread is attached) */
     
-    args = GC_malloc_uncollectable(sizeof(thread_args)); 
+	/* It appears to be unsafe to use the GC's allocator here */
+    args = malloc(sizeof(thread_args)); */
+
 	/* Handed off to and deallocated by child thread.	*/
     if (0 == args) {
 	SetLastError(ERROR_NOT_ENOUGH_MEMORY);
@@ -501,7 +503,7 @@ static DWORD WINAPI thread_start(LPVOID arg)
 #ifndef __GNUC__
     } __finally {
 #endif /* __GNUC__ */
-	GC_free(args);
+	free(args);
 	GC_delete_thread(GetCurrentThreadId());
 #ifndef __GNUC__
     }
@@ -612,6 +614,154 @@ int GC_pthread_join(pthread_t pthread_id, void **retval) {
     return result;
 }
 
+/*
+ * Some CYGWIN applications (like portable.net) use CreateThread.
+ * The wrappers for CreateThread for non-cgywin systems don't seem to
+ * be stable in so calls to CreateThread are redirected to through
+ * GC_pthread_create.
+ */
+
+/*
+ * Start information for CreateThread.
+ */
+struct createthread_startinfo
+{
+	HANDLE *handle_ptr;
+	DWORD *threadid_ptr;	
+	HANDLE waitHandle;
+	LPVOID parameter;
+	DWORD creationFlags;
+	LPTHREAD_START_ROUTINE startFunc;
+};
+
+/*
+ * pthread start function for redirected CreateThread calls.
+ */
+static void *main_thread_start(void *arg)
+{
+	struct createthread_startinfo startinfo;
+	struct createthread_startinfo *startinfo_ptr;
+
+	startinfo_ptr = (struct createthread_startinfo *)arg;
+	
+	/* Get and duplicate the handle to this thread and 
+	   return it through the startinfo_ptr */
+	if (!DuplicateHandle(GetCurrentProcess(),
+			GetCurrentThread(),
+			GetCurrentProcess(),
+			startinfo_ptr->handle_ptr,
+			0,
+			0,
+			DUPLICATE_SAME_ACCESS))
+	{
+		DWORD last_error = GetLastError();
+		GC_printf1("Last error code: %lx\n", last_error);
+		
+		ABORT("DuplicateHandle failed");
+	}
+
+	/* Return the ThreadID through the startinfo_ptr */
+	if (startinfo_ptr->threadid_ptr)
+	{
+		*startinfo_ptr->threadid_ptr = GetCurrentThreadId();
+	}
+	
+	/* Make a copy of the startinfo because it could be invalid
+	   any time after we signal startinfo.waitHandle */
+	startinfo = *startinfo_ptr;
+
+	/* Let the creater thread  know we have set the handle/threadid */
+	SetEvent(startinfo.waitHandle);
+
+	/* If CREATE_SUSPENDED is requested then suspend the thread */
+	if (startinfo.creationFlags & CREATE_SUSPENDED)
+	{
+		SuspendThread(GetCurrentThread());
+	}
+
+	/* Start the actual thread function */
+	return (void *)startinfo.startFunc(startinfo.parameter);
+}
+
+/*
+ * Wrapper for CreateThread.  This function is for CYGWIN systems and
+ * redirects CreateThread calls to GC_pthread_create.
+ */
+GC_API HANDLE GC_CreateThread(
+    LPSECURITY_ATTRIBUTES lpThreadAttributes, 
+    DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, 
+    LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId )
+{
+	HANDLE handle;
+	pthread_t new_thread;
+	pthread_attr_t attr;
+	struct createthread_startinfo startinfo;
+
+	/* Make sure GC is initialized (i.e. main thread is attached) */
+	if (!GC_is_initialized)
+	{
+		GC_init();
+	}
+	
+	/* This WaitHandle will be signalled once the new thread has filled in
+	   its handle/threadid information */
+	startinfo.waitHandle = CreateEvent(0, 1, 0, 0);
+
+	if (startinfo.waitHandle == NULL)
+	{
+		SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+	
+		return 0;
+	}
+
+	handle = 0;
+
+	/* Setup the CreateThread start information */
+	startinfo.handle_ptr = &handle;
+	startinfo.threadid_ptr = lpThreadId;
+	startinfo.parameter = lpParameter;
+	startinfo.startFunc = lpStartAddress;
+	startinfo.creationFlags = dwCreationFlags;
+
+	/* Initialize the pthread_attr_t with defaults */
+	if (pthread_attr_init(&attr) != 0)
+	{
+		SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+		CloseHandle(startinfo.waitHandle);
+		
+		return 0;
+	}
+	
+	if (dwStackSize != 0)
+	{
+		/* Set the stack size if specified */
+		pthread_attr_setstacksize(&attr, (size_t)dwStackSize);
+	}
+
+	/* Create a CYGWIN pthread */
+	if (GC_pthread_create(&new_thread, &attr, main_thread_start, &startinfo) == 0)
+	{
+		/* Wait for the handle/threadid to be filled in */
+		WaitForSingleObject(startinfo.waitHandle, INFINITE);
+	}
+	else
+	{
+		handle = 0;
+
+		if (lpThreadId)
+		{
+			*lpThreadId = 0;
+		}
+	}
+
+	/* Free the pthread_attr_t structure */
+	pthread_attr_destroy(&attr);
+	/* Free the wait event */
+	CloseHandle(startinfo.waitHandle);
+	
+	return handle;
+}
+
 /* Cygwin-pthreads calls CreateThread internally, but it's not
  * easily interceptible by us..
  *   so intercept pthread_create instead
@@ -628,7 +778,8 @@ GC_pthread_create(pthread_t *new_thread,
     
     /* This is otherwise saved only in an area mmapped by the thread */
     /* library, which isn't visible to the collector.		 */
-    si = GC_malloc_uncollectable(sizeof(struct start_info)); 
+	/* It appears to be unsafe to use the GC's allocator here */
+    si = malloc(sizeof(struct start_info));
     if (0 == si) return(EAGAIN);
 
     si -> start_routine = start_routine;
@@ -646,7 +797,7 @@ GC_pthread_create(pthread_t *new_thread,
     result = pthread_create(new_thread, attr, GC_start_routine, si); 
 
     if (result) { /* failure */
-      	GC_free(si);
+		free(si);
     } 
 
     return(result);
@@ -683,7 +834,7 @@ void * GC_start_routine(void * arg)
     if (si-> detached) me -> flags |= DETACHED;
     me -> pthread_id = pthread_id = pthread_self();
 
-    GC_free(si); /* was allocated uncollectable */
+    free(si); /* was allocated uncollectable */
 
     pthread_cleanup_push(GC_thread_exit_proc, (void *)me);
     result = (*start)(start_arg);

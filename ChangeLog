@@ -1,5 +1,14 @@
 2005-07-23  Klaus Treichel  <ktreichel@web.de>
 
+	* libgc/win32_threads.c: Change max threads from 256 to 1024 and add
+	GC_CreateThread for cygwin systems to use win32 native threads.
+	Apply Tums changes to allocate thread_args and thread_start_info using
+	malloc instead of GC_malloc_uncollectable.
+
+	* libgc/include/gc.h: Add prototype for GC_CreateThread on cygwin.
+
+2005-07-23  Klaus Treichel  <ktreichel@web.de>
+
 	* libgc/Makefile.am, libgc/Makefile.direct,
 	libgc/NT_STATIC_THREADS_MAKEFILE, libgc/allchblk.c, libgc/alloc.c,
 	libgc/alpha_mach_dep.S, libgc/backgraph.c, libgc/configure.in,

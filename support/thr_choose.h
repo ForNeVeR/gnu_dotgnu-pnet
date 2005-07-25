@@ -56,6 +56,17 @@
 #endif
 
 /*
+ * Determine if we can use BeOS threads.
+ */
+#if !defined(IL_NO_THREADS)
+#if defined(BEOS) || defined(_BEOS)
+#if defined(GC_BEOS_THREADS)
+#define IL_USE_BEOS_THREADS
+#endif
+#endif
+#endif
+
+/*
  * If we don't know what thread package to use, then turn them all off.
  */
 #if !defined(IL_USE_PTHREADS) && !defined(IL_USE_WIN32_THREADS)
@@ -71,6 +82,9 @@
 #include <signal.h>
 #elif defined(IL_USE_WIN32_THREADS)
 #include <windows.h>
+#elif defined(IL_USE_BEOS_THREADS)
+#include <OS.h>
+#include <TLS.h>
 #endif
 
 #ifdef HAVE_LIBGC
@@ -87,3 +101,4 @@
 #endif	/* !IL_NO_THREADS */
 
 #endif	/* _THR_CHOOSE_H */
+

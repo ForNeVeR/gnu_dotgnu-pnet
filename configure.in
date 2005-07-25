@@ -153,6 +153,9 @@ if test "$THREADS" = "no"; then
 			;;
 	*-freebsd*)
 			THREADS=posix
+			;;
+	*-*-beos*)
+			THREADS=beos
 			;;	
 	esac
 fi
@@ -234,6 +237,9 @@ case "$THREADS" in
     ;;
  decosf1 | irix | mach | os2 | solaris | dce | vxworks)
     AC_MSG_ERROR(thread package $THREADS not yet supported)
+    ;;
+ beos)
+    AC_DEFINE([HAVE_BEOS_THREADS],1,[Use BeOS TLC])
     ;;
  *)
     AC_MSG_ERROR($THREADS is an unknown thread package)

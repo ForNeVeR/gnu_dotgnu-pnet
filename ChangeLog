@@ -27,7 +27,7 @@
 	libffi/src/x86/sysv.S, libffi/src/x86/unix64.S, libffi/src/x86/win32.S:
 	update to current cvs MAIN branch in gcc repository.
 
-	* libffi/configure.ac, libffi/src/alpha/ffitarget.h,
+	* libffi/configure.ac, libffi/configure.host, libffi/src/alpha/ffitarget.h,
 	libffi/src/arm/ffitarget.h, libffi/src/cris/ffitarget.c,
 	libffi/src/frv/eabi.S, libffi/src/frv/ffi.c, libffi/src/frv/ffitarget.h,
 	libffi/src/ia64/ffitarget.h, libffi/src/m32r/ffi.c,

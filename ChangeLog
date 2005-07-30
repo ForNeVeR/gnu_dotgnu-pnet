@@ -1,4 +1,4 @@
-2005-07-31  Klaus Treichel  <ktreichel@web.de>
+2005-07-30  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: add --disable-dependency-tracking to configure of libffi.
 
@@ -8,7 +8,7 @@
 
 	* libffi/ChangeLog, libffi/ChangeLog.libgcj, libffi/LICENSE, libffi/README,
 	libffi/acinclude.m4, libffi/aclocal.m4, libffi/fficonfig.h.in,
-	libffi/include/Makefile.am, libffi/include/Makefile.in,
+	libffi/configure, libffi/include/Makefile.am, libffi/include/Makefile.in,
 	libffi/include/ffi.h.in, libffi/include/ffi_common.h, libffi/src/debug.c,
 	libffi/src/ffitest.c, libffi/src/java_raw_api.c, libffi/src/prep_cif.c,
 	libffi/src/raw_api.c, libffi/src/types.c, libffi/src/alpha/ffi.c,
@@ -38,8 +38,9 @@
 	libffi/src/powerpc/linux64_closure.S, libffi/src/s390/ffitarget.h,
 	libffi/src/sh/ffitarget.h, libffi/src/sh64/ffi.c,
 	libffi/src/sh64/ffitarget.h, libffi/src/sh64/sysv.S,
-	libffi/src/sparc/ffitarget.h, libffi/src/x86/ffitarget.h: added from
-	current cvs MAIN branch in gcc repository.
+	libffi/src/sparc/ffitarget.h, libffi/src/x86/ffitarget.h,
+	libffi/libtool-version: added from current cvs MAIN branch in gcc
+	repository.
 
 	* libffi/acconfig.h: removed.
 

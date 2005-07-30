@@ -68,13 +68,13 @@
  * CHILD FUNCTIONS. It's very dump and simple but better than no time profiling
  * at all ;-)
  */
-#define DO_PROFILE_START(xyz) \
+#define DO_PROFILE_START() \
 	if ((thread->profilingEnabled) && (callFrame) && ((ILCoderGetFlags (thread->process->coder) & IL_CODER_FLAG_METHOD_PROFILE) != 0)) \
 	{ \
 		gettimeofday (&callFrame->profileTime, 0); \
 	}
 
-#define DO_PROFILE_STOP(xyz) \
+#define DO_PROFILE_STOP() \
 	if ((thread->profilingEnabled) && (callFrame) && ((ILCoderGetFlags (thread->process->coder) & IL_CODER_FLAG_METHOD_PROFILE) != 0)) \
 	{ \
 		struct timeval endTime; \
@@ -97,8 +97,8 @@
 		method->time += micros + (seconds * 1000000); \
 	}
 #else /* ENHANCED_PROFILER */
-#define DO_PROFILE_START(xyz)
-#define DO_PROFILE_STOP(xyz)
+#define DO_PROFILE_START()
+#define DO_PROFILE_STOP()
 #endif /* ENHANCED_PROFILER */
 
 

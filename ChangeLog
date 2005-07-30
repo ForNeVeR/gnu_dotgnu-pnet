@@ -42,7 +42,7 @@
 	libffi/libtool-version: added from current cvs MAIN branch in gcc
 	repository.
 
-	* libffi/acconfig.h: removed.
+	* libffi/acconfig.h, libffi/include/ffi_mips.h: removed.
 
 2005-07-30  Deryk Robosson  <deryk@0x0a.com>
 

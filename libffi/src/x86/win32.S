@@ -27,11 +27,12 @@
    ----------------------------------------------------------------------- */
  
 #define LIBFFI_ASM
+#include <fficonfig.h>
 #include <ffi.h>
  
 .text
  
-.globl _ffi_prep_args
+.globl ffi_prep_args
  
         # This assumes we are using gas.
         .balign 16
@@ -61,9 +62,8 @@ _ffi_call_SYSV:
 	call  *28(%ebp)
  
         # Remove the space we pushed for the args
-	# Commented out by Rhys -- will cause problems with winapi calls
-        # movl  16(%ebp),%ecx
-        # addl  %ecx,%esp
+        movl  16(%ebp),%ecx
+        addl  %ecx,%esp
  
         # Load %ecx with the return type code
         movl  20(%ebp),%ecx
@@ -114,11 +114,27 @@ retlongdouble:
  
 retint64:
         cmpl  $FFI_TYPE_SINT64,%ecx
-        jne   retstruct
+        jne   retstruct1b
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         movl  %eax,0(%ecx)
         movl  %edx,4(%ecx)
+ 
+retstruct1b:
+        cmpl  $FFI_TYPE_SINT8,%ecx
+        jne   retstruct2b
+        # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        movb  %al,0(%ecx)
+        jmp   epilogue
+ 
+retstruct2b:
+        cmpl  $FFI_TYPE_SINT16,%ecx
+        jne   retstruct
+        # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        movw  %ax,0(%ecx)
+        jmp   epilogue
  
 retstruct:
         # Nothing to do!
@@ -209,11 +225,27 @@ sc_retlongdouble:
 
 sc_retint64:
         cmpl  $FFI_TYPE_SINT64,%ecx
-        jne   sc_retstruct
+        jne   sc_retstruct1b
         # Load %ecx with the pointer to storage for the return value
         movl  24(%ebp),%ecx
         movl  %eax,0(%ecx)
         movl  %edx,4(%ecx)
+
+sc_retstruct1b:
+        cmpl  $FFI_TYPE_SINT8,%ecx
+        jne   sc_retstruct2b
+        # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        movb  %al,0(%ecx)
+        jmp   sc_epilogue
+
+sc_retstruct2b:
+        cmpl  $FFI_TYPE_SINT16,%ecx
+        jne   sc_retstruct
+        # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        movw  %ax,0(%ecx)
+        jmp   sc_epilogue
 
 sc_retstruct:
         # Nothing to do!

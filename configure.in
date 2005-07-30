@@ -637,6 +637,7 @@ if test "x$no_recursion" != "xyes"; then
 		cd "libffi"
 		${CONFIG_SHELL-/bin/sh} ${ffisrcdir}/configure --disable-shared \
 			--enable-multilib=no \
+			--disable-dependency-tracking \
 			--host="${host}" --build="${build}" --target="${target}" \
 			--disable-fast-install --prefix="${prefix}" \
 			--exec-prefix="${exec_prefix}" --bindir="${bindir}" \

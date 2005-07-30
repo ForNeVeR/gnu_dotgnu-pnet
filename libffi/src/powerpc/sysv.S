@@ -1,9 +1,7 @@
 /* -----------------------------------------------------------------------
    sysv.h - Copyright (c) 1998 Geoffrey Keating
-   
-   PowerPC Assembly glue.
 
-   $Id: sysv.S,v 1.3 2003/02/13 05:41:38 rweather Exp $
+   PowerPC Assembly glue.
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -25,11 +23,13 @@
    OTHER DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
-#define LIBFFI_ASM	
+#define LIBFFI_ASM
+#include <fficonfig.h>
 #include <ffi.h>
 #include <powerpc/asm.h>
 
-	.globl ffi_prep_args
+#ifndef __powerpc64__
+	.globl ffi_prep_args_SYSV
 ENTRY(ffi_call_SYSV)
 .LFB1:
 	/* Save the old stack pointer as AP.  */
@@ -58,9 +58,9 @@ ENTRY(ffi_call_SYSV)
 	mr	%r28,%r8	/* our AP. */
 .LCFI6:
 
-	/* Call ffi_prep_args.  */
+	/* Call ffi_prep_args_SYSV.  */
 	mr	%r4,%r1
-	bl	JUMPTARGET(ffi_prep_args)
+	bl	ffi_prep_args_SYSV@local
 
 	/* Now do the call.  */
 	/* Set up cr1 with bits 4-7 of the flags.  */
@@ -99,6 +99,7 @@ ENTRY(ffi_call_SYSV)
 
 	/* Now, deal with the return value.  */
 	mtcrf	0x01,%r31
+	bt-	31,L(small_struct_return_value)
 	bt-	30,L(done_return_value)
 	bt-	29,L(fp_return_value)
 	stw	%r3,0(%r30)
@@ -124,50 +125,87 @@ L(fp_return_value):
 L(float_return_value):
 	stfs	%f1,0(%r30)
 	b	L(done_return_value)
+
+L(small_struct_return_value):
+	mtcrf	0x10,%r31	/* cr3  */
+	bt-	15,L(smst_one_register)
+	mtcrf	0x08,%r31	/* cr4  */
+	bt-	16,L(smst_two_register)
+	b       L(done_return_value)
+
+L(smst_one_register):
+	rlwinm  %r5,%r31,5+23,32-5,31 /* Extract the value to shift.  */
+	slw	%r3,%r3,%r5
+	stw	%r3,0(%r30)
+	b	L(done_return_value)
+L(smst_two_register):
+	rlwinm  %r5,%r31,5+23,32-5,31 /* Extract the value to shift.  */
+	bl	__ashldi3  /* libgcc function to shift r3/r4,
+			      shift value in r5.  */
+	stw	%r3,0(%r30)
+	stw	%r4,4(%r30)
+	b	L(done_return_value)
+
 .LFE1:
 END(ffi_call_SYSV)
 
-      .section  ".eh_frame","aw"
-__FRAME_BEGIN__:
+      .section	".eh_frame",EH_FRAME_FLAGS,@progbits
+.Lframe1:
       .4byte    .LECIE1-.LSCIE1  /*  Length of Common Information Entry */
 .LSCIE1:
       .4byte    0x0      /*  CIE Identifier Tag */
       .byte     0x1      /*  CIE Version */
-      .ascii "\0"        /*  CIE Augmentation */
-      .byte     0x1      /*  uleb128 0x1; CIE Code Alignment Factor */
-      .byte     0x7c     /*  sleb128 -4; CIE Data Alignment Factor */
+#if defined _RELOCATABLE || defined __PIC__
+      .ascii	"zR\0"   /*  CIE Augmentation */
+#else
+      .ascii	"\0"	 /*  CIE Augmentation */
+#endif
+      .uleb128  0x1      /*  CIE Code Alignment Factor */
+      .sleb128  -4	 /*  CIE Data Alignment Factor */
       .byte     0x41     /*  CIE RA Column */
+#if defined _RELOCATABLE || defined __PIC__
+      .uleb128  0x1      /*  Augmentation size */
+      .byte	0x1b	 /*  FDE Encoding (pcrel sdata4) */
+#endif
       .byte     0xc      /*  DW_CFA_def_cfa */
-      .byte     0x1      /*  uleb128 0x1 */
-      .byte     0x0      /*  uleb128 0x0 */
+      .uleb128  0x1
+      .uleb128  0x0
       .align 2
 .LECIE1:
 .LSFDE1:
       .4byte    .LEFDE1-.LASFDE1         /*  FDE Length */
 .LASFDE1:
-      .4byte    .LASFDE1-__FRAME_BEGIN__         /*  FDE CIE offset */
+      .4byte    .LASFDE1-.Lframe1         /*  FDE CIE offset */
+#if defined _RELOCATABLE || defined __PIC__
+      .4byte    .LFB1-.  /*  FDE initial location */
+#else
       .4byte    .LFB1    /*  FDE initial location */
+#endif
       .4byte    .LFE1-.LFB1      /*  FDE address range */
+#if defined _RELOCATABLE || defined __PIC__
+      .uleb128  0x0	 /*  Augmentation size */
+#endif
       .byte     0x4      /*  DW_CFA_advance_loc4 */
       .4byte    .LCFI0-.LFB1
       .byte     0xd      /*  DW_CFA_def_cfa_register */
-      .byte     0x08     /*  uleb128 0x08 */
+      .uleb128  0x08
       .byte     0x4      /*  DW_CFA_advance_loc4 */
       .4byte    .LCFI5-.LCFI0
       .byte     0x2f     /*  DW_CFA_GNU_negative_offset_extended */
-      .byte     0x41     /*  uleb128 0x41 */
-      .byte     0x1      /*  uleb128 0x1 */
+      .uleb128  0x41
+      .uleb128  0x1
       .byte     0x9f     /*  DW_CFA_offset, column 0x1f */
-      .byte     0x1      /*  uleb128 0x1 */
+      .uleb128  0x1
       .byte     0x9e     /*  DW_CFA_offset, column 0x1e */
-      .byte     0x2      /*  uleb128 0x2 */
+      .uleb128  0x2
       .byte     0x9d     /*  DW_CFA_offset, column 0x1d */
-      .byte     0x3      /*  uleb128 0x3 */
+      .uleb128  0x3
       .byte     0x9c     /*  DW_CFA_offset, column 0x1c */
-      .byte     0x4      /*  uleb128 0x4 */
+      .uleb128  0x4
       .byte     0x4      /*  DW_CFA_advance_loc4 */
       .4byte    .LCFI6-.LCFI5
       .byte     0xd      /*  DW_CFA_def_cfa_register */
-      .byte     0x1c     /*  uleb128 0x1c */
+      .uleb128  0x1c
       .align 2
 .LEFDE1:
+#endif

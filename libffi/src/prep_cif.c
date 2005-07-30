@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   prep_cif.c - Copyright (c) 1996, 1998  Cygnus Solutions
+   prep_cif.c - Copyright (c) 1996, 1998  Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -26,50 +26,12 @@
 #include <stdlib.h>
 
 
-/* Round up to SIZEOF_ARG. */
+/* Round up to FFI_SIZEOF_ARG. */
 
-#define STACK_ARG_SIZE(x) ALIGN(x, SIZEOF_ARG)
+#define STACK_ARG_SIZE(x) ALIGN(x, FFI_SIZEOF_ARG)
 
 /* Perform machine independent initialization of aggregate type
    specifications. */
-
-ffi_status initialize_aggregate_packed_params ( /*@out@ */ ffi_type * arg)
-{
-  ffi_type **ptr;
-
-  FFI_ASSERT (arg != NULL);
-
-  /*@-usedef@ */
-
-  FFI_ASSERT (arg->elements != NULL);
-  FFI_ASSERT (arg->size == 0);
-  FFI_ASSERT (arg->alignment == 0);
-
-  ptr = &(arg->elements[0]);
-
-  while ((*ptr) != NULL)    {
-      if (((*ptr)->size == 0)
-          && (initialize_aggregate_packed_params ((*ptr)) != FFI_OK))
-        return FFI_BAD_TYPEDEF;
-
-      /* Perform a sanity check on the argument type */
-      FFI_ASSERT (ffi_type_test ((*ptr)));
-
-      arg->size += (*ptr)->size;
-
-      arg->alignment = (arg->alignment > (*ptr)->alignment) ?
-        arg->alignment : (*ptr)->alignment;
-
-      ptr++;
-    }
-
-  if (arg->size == 0)
-    return FFI_BAD_TYPEDEF;
-  else
-    return FFI_OK;
-
-  /*@=usedef@ */
-}
 
 static ffi_status initialize_aggregate(/*@out@*/ ffi_type *arg)
 {
@@ -91,7 +53,7 @@ static ffi_status initialize_aggregate(/*@out@*/ ffi_type *arg)
 	return FFI_BAD_TYPEDEF;
       
       /* Perform a sanity check on the argument type */
-      FFI_ASSERT(ffi_type_test((*ptr)));
+      FFI_ASSERT_VALID_TYPE(*ptr);
 
       arg->size = ALIGN(arg->size, (*ptr)->alignment);
       arg->size += (*ptr)->size;
@@ -102,6 +64,15 @@ static ffi_status initialize_aggregate(/*@out@*/ ffi_type *arg)
       ptr++;
     }
 
+  /* Structure size includes tail padding.  This is important for
+     structures that fit in one register on ABIs like the PowerPC64
+     Linux ABI that right justify small structs in a register.
+     It's also needed for nested structure layout, for example
+     struct A { long a; char b; }; struct B { struct A x; char y; };
+     should find y at an offset of 2*sizeof(long) and result in a
+     total size of 3*sizeof(long).  */
+  arg->size = ALIGN (arg->size, arg->alignment);
+
   if (arg->size == 0)
     return FFI_BAD_TYPEDEF;
   else
@@ -109,6 +80,11 @@ static ffi_status initialize_aggregate(/*@out@*/ ffi_type *arg)
 
   /*@=usedef@*/
 }
+
+#ifndef __CRIS__
+/* The CRIS ABI specifies structure elements to have byte
+   alignment only, so it completely overrides this functions,
+   which assumes "natural" alignment and padding.  */
 
 /* Perform machine independent ffi_cif preparation, then call
    machine dependent routine. */
@@ -123,7 +99,7 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
   ffi_type **ptr;
 
   FFI_ASSERT(cif != NULL);
-  FFI_ASSERT((abi > FFI_FIRST_ABI) && (abi < FFI_LAST_ABI));
+  FFI_ASSERT((abi > FFI_FIRST_ABI) && (abi <= FFI_DEFAULT_ABI));
 
   cif->abi = abi;
   cif->arg_types = atypes;
@@ -139,10 +115,10 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
   /*@=usedef@*/
 
   /* Perform a sanity check on the return type */
-  FFI_ASSERT(ffi_type_test(cif->rtype));
+  FFI_ASSERT_VALID_TYPE(cif->rtype);
 
   /* x86-64 and s390 stack space allocation is handled in prep_machdep.  */
-#if !defined M68K && !defined __x86_64__ && !defined S390 && !defined CRIS
+#if !defined M68K && !defined __x86_64__ && !defined S390 && !defined PA
   /* Make space for the return structure pointer */
   if (cif->rtype->type == FFI_TYPE_STRUCT
 #ifdef SPARC
@@ -154,26 +130,16 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
 
   for (ptr = cif->arg_types, i = cif->nargs; i > 0; i--, ptr++)
     {
-      /* Perform a sanity check on the argument type */
-      FFI_ASSERT(ffi_type_test(*ptr));
 
       /* Initialize any uninitialized aggregate type definitions */
-#ifdef CRIS32
-      if ((*ptr)->type == FFI_TYPE_STRUCT)
-      {
-        if (((*ptr)->size == 0) && (initialize_aggregate_packed_params((*ptr)) != FFI_OK))
-           return FFI_BAD_TYPEDEF;
-      }
-      else
-      {
-#endif
       if (((*ptr)->size == 0) && (initialize_aggregate((*ptr)) != FFI_OK))
 	return FFI_BAD_TYPEDEF;
-#ifdef CRIS32
-      }
-#endif
 
-#if !defined __x86_64__ && !defined S390
+      /* Perform a sanity check on the argument type, do this 
+	 check after the initialization.  */
+      FFI_ASSERT_VALID_TYPE(*ptr);
+
+#if !defined __x86_64__ && !defined S390 && !defined PA
 #ifdef SPARC
       if (((*ptr)->type == FFI_TYPE_STRUCT
 	   && ((*ptr)->size > 16 || cif->abi != FFI_V9))
@@ -186,29 +152,8 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
 	  /* Add any padding if necessary */
 	  if (((*ptr)->alignment - 1) & bytes)
 	    bytes = ALIGN(bytes, (*ptr)->alignment);
-#ifdef CRIS32
-          if ((*ptr)->type == FFI_TYPE_STRUCT)
-          {
-           if ((*ptr)->size > 8)
-           {
-               bytes += (*ptr)->size;
-               bytes += sizeof (void *);
-           }
-           else
-           {
-               if ((*ptr)->size > 4)
-                   bytes += 8;
-               else
-                   bytes += 4;
-           }
-         }
-         else
-         {
-           bytes += STACK_ARG_SIZE((*ptr)->size);
-         }
-#else	  
+	  
 	  bytes += STACK_ARG_SIZE((*ptr)->size);
-#endif
 	}
 #endif
     }
@@ -218,3 +163,4 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
   /* Perform machine dependent cif processing */
   return ffi_prep_cif_machdep(cif);
 }
+#endif /* not __CRIS__ */

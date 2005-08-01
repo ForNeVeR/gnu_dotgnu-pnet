@@ -189,7 +189,7 @@ public abstract class ScrollBar : Control
 			
 			largeChange = value;
 			if (largeChange > maximum - minimum)
-				largeChange = maximum - minimum + 1;
+				largeChange = (maximum - minimum + 1);// /2
 			
 			LayoutScrollBar();
 			Invalidate();
@@ -397,37 +397,47 @@ public abstract class ScrollBar : Control
 		if (RightToLeft == RightToLeft.Yes)
 		{
 			int offset = bar.X - track.X;
-			int guiMax = track.Width - bar.Width;
+			int guiMax = track.Width - bar.Width*2/3;
 
 			bar.X = guiMax - offset;
+			
 		}
 	}
 
 	// Sets up the layout rectangles for a VScrollBar's elements
+	// Windows XP decrement and increment buttons width is just 2/3 of the initially used
+	// thus we fix this with a 2/3 coefficient and other experimentally found coefficients 
+	// -- the only reason of this hack is that it makes our bar look good
 	private void LayoutElementsV(Size s)
 	{
 		int trackHeight, thumbHeight, thumbPos, zeroMax, zeroVal;
 		double percentage;
 		
 		// Track
-		trackHeight = s.Height - 2 * s.Width;
+		trackHeight = s.Height - (s.Width * 4/3);
 		if (trackHeight < 0)
 			trackHeight = 0;
-		track  = new Rectangle(0, s.Width, s.Width, trackHeight);
 		
 		// Decrement and increment buttons
 		// Is there enough room to fit both buttons at their
 		// preferred size?
-		if(s.Height >= s.Width * 2)
+		
+		if(s.Height >= (s.Width * 5/3) + 2)   // 5/3 is just an experimental coefficient, no logical reason
 		{
-			decrement = new Rectangle(0, 0, s.Width, s.Width);
-			increment = new Rectangle(0, s.Width + trackHeight, s.Width, s.Width);
+	
+			
+			track  = new Rectangle(0, s.Width * 2/3 + 1, s.Width, s.Height - (s.Width * 4/3) - 1);
+		
+			decrement = new Rectangle(0, 0, s.Width, s.Width * 2/3 + 1);
+			increment = new Rectangle(0, s.Width * 2/3 + trackHeight, s.Width, s.Width * 2/3 );
 		}
 		else
 		{
 			// No.  Split what's left.
-			decrement = new Rectangle(0, 0, s.Width, s.Height / 2);
-			increment = new Rectangle(0, s.Height / 2, s.Width, s.Height / 2);
+		    	track  = new Rectangle(0, s.Height / 3 + 1, s.Width, s.Height / 3 - 1);
+
+			decrement = new Rectangle(0, 0, s.Width, s.Height / 3 );
+			increment = new Rectangle(0, s.Height * 2/3, s.Width, s.Height / 3);
 		}
 		
 		// Thumb.
@@ -443,14 +453,24 @@ public abstract class ScrollBar : Control
 		if (thumbHeight > trackHeight)
 			thumbHeight = trackHeight;
 		if (thumbHeight < minThumbSize)
-			thumbHeight = minThumbSize;
+			thumbHeight = minThumbSize - 2;
 		percentage = (double) zeroVal / zeroMax;
-		thumbPos = (int) (percentage * (trackHeight - thumbHeight));
-		if (thumbPos > trackHeight - thumbHeight)
-			thumbPos = trackHeight - thumbHeight;
-		if (thumbPos < 0)
-			thumbPos = 0;
-		bar = new Rectangle(0, s.Width + thumbPos, s.Width, thumbHeight);
+		thumbPos = (int)(percentage * (trackHeight - thumbHeight - 3));
+		if (thumbPos > (trackHeight - thumbHeight - 2))
+		{       thumbPos = (trackHeight - thumbHeight - 2);
+			
+			
+		}
+
+		// Out of range
+		if (thumbPos<=0)
+			thumbPos = -1;
+                
+		// Out of range. 3/4 is just an experimental coefficient that makes our bar look good		
+		if(s.Height  >= s.Width * 5/3 + 2)  // 5/3 is just an experimental coefficient, no logical reason		
+	     		bar = new Rectangle(0, s.Width * 3/4 + thumbPos, s.Width, thumbHeight + 1); 
+		else  bar = new Rectangle(0, 0, 0, 0);
+	
 	}
 
 	protected override void OnEnabledChanged(EventArgs e)

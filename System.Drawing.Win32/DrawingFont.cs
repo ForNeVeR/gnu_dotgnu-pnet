@@ -86,7 +86,7 @@ internal class DrawingFont : IToolkitFont
 	{
 		properties.FontFamily.GetEmHeight(properties.Style);
 		Win32.Api.LOGFONT lf = new Win32.Api.LOGFONT();
-		lf.lfHeight=(int)(-properties.SizeInPoints*dpi/72);
+		lf.lfHeight=(int)(-properties.SizeInPoints*dpi/75);
 		lf.lfFaceName=properties.FontFamily.Name;
 		switch (properties.Style)
 		{
@@ -103,8 +103,10 @@ internal class DrawingFont : IToolkitFont
 				lf.lfUnderline = 1;
 				break;
 		}
-		
-		lf.lfQuality = Win32.Api.FontQuality.CLEARTYPE_QUALITY;
+
+		// Don't know why but the next flag makes Windows text look ugly
+		// lf.lfQuality = Win32.Api.FontQuality.CLEARTYPE_QUALITY;
+
 		hFont = Win32.Api.CreateFontIndirectA(ref lf);
 	}
 

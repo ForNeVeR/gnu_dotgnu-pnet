@@ -1769,6 +1769,9 @@ public class DefaultThemePainter : IThemePainter
 				 Rectangle decrement, bool decDown,
 				 Rectangle increment, bool incDown)
 			{
+				
+				               
+	
 				// fill in the background
 				//graphics.FillRectangle(backgroundBrush, bounds);
 				if (hatchBrush != null && (foreColor != hatchForeColor ||
@@ -1854,7 +1857,7 @@ public class DefaultThemePainter : IThemePainter
 				ButtonState barState = enabled ?
 				                       ButtonState.Normal :
 				                       ButtonState.Inactive;
-
+				
 				// draw the scroll bar
 				if (track.Height > 0 && bar.IntersectsWith(drawBounds))
 					DrawButton(graphics,
@@ -1862,7 +1865,7 @@ public class DefaultThemePainter : IThemePainter
 				           bar.Width, bar.Height,
 				           barState,
 				           foreColor, backColor,
-				           false);
+				           false);   
 			}
 
 	// Draw a scroll button control.
@@ -1871,7 +1874,9 @@ public class DefaultThemePainter : IThemePainter
 				 ScrollButton button, ButtonState state,
 				 Color foreColor, Color backColor)
 			{
-				// draw the button border
+				
+			        // draw the button border
+				
 				DrawButton(graphics,
 				           x, y, width, height,
 				           state,
@@ -1897,28 +1902,59 @@ public class DefaultThemePainter : IThemePainter
 				}
 
 				// Draw the inactive drop-down glyph for the button.
+				
+				if(width==0)width=-1;
+				
 				if((state & ButtonState.Inactive) != 0)
 				{
+				
 					switch (button)
 					{
 						case ScrollButton.Up:
 						{
-							DrawGlyph(graphics, x + 1, y + 1, width, height,
+							if(width<=20) // if there is not enough space we only draw a point
+							{
+								DrawGlyph(graphics, x + 1, y + 1, width - 3, height,
+								 	Glyphs.up_arrow_bits,
+								  	Glyphs.up_arrow_width / 2,
+								  	Glyphs.up_arrow_height / 2, inactiveColor);
+						
+							}
+
+							else 
+							{ 
+						
+								DrawGlyph(graphics, x + 1, y + 1, width, height,
 									  Glyphs.up_arrow_bits,
 									  Glyphs.up_arrow_width,
 									  Glyphs.up_arrow_height, inactiveColor);
+							}
 						}
 						break;
 	
 						case ScrollButton.Down:
 						{
-							DrawGlyph(graphics, x + 1, y + 1, width, height,
+							if(width<=20)  // if there is not enough space we only draw a point 
+							{
+								DrawGlyph(graphics, x + 1, y + 1, width - 3, height,
+									  Glyphs.up_arrow_bits,
+								  	  Glyphs.up_arrow_width / 2,
+								 	  Glyphs.up_arrow_height / 2, inactiveColor);
+						
+							}
+
+							else 
+							{ 
+						
+								DrawGlyph(graphics, x + 1, y + 1, width, height,
 									  Glyphs.down_arrow_bits,
 									  Glyphs.down_arrow_width,
 									  Glyphs.down_arrow_height, inactiveColor);
+						
+							}
 						}
 						break;
-	
+	                                        
 						case ScrollButton.Left:
 						{
 							DrawGlyph(graphics, x + 1, y + 1, width, height,
@@ -1943,33 +1979,61 @@ public class DefaultThemePainter : IThemePainter
 				switch (button)
 				{
 					case ScrollButton.Up:
-					{
-						DrawGlyph(graphics, x, y, width, height,
+					{      
+						if(width<=20)  // if there is not enough space we draw a point
+						{
+							DrawGlyph(graphics, x, y, width - 3, height,
+								  Glyphs.up_arrow_bits,
+								  Glyphs.up_arrow_width / 2,
+								  Glyphs.up_arrow_height / 2, color);
+						
+						}
+
+						else 
+						{ 
+							DrawGlyph(graphics, x, y, width, height,
 								  Glyphs.up_arrow_bits,
 								  Glyphs.up_arrow_width,
 								  Glyphs.up_arrow_height, color);
+						}
+						
 					}
 					break;
-
+					 
 					case ScrollButton.Down:
-					{
-						DrawGlyph(graphics, x, y, width, height,
+					{       
+						if(width<=20) // if there is not enough space we draw a point 
+						{
+							DrawGlyph(graphics, x, y, width - 3, height,
+								  Glyphs.up_arrow_bits,
+								  Glyphs.up_arrow_width / 2,
+								  Glyphs.up_arrow_height / 2, color);
+						
+						}
+						else
+						{
+							DrawGlyph(graphics, x, y, width, height,
 								  Glyphs.down_arrow_bits,
 								  Glyphs.down_arrow_width,
 								  Glyphs.down_arrow_height, color);
+						}
 					}
 					break;
 
 					case ScrollButton.Left:
 					{
+					
+					     
+					   							
 						DrawGlyph(graphics, x, y, width, height,
 								  Glyphs.left_arrow_bits,
 								  Glyphs.left_arrow_width,
-								  Glyphs.left_arrow_height, color);
+					     			  Glyphs.left_arrow_height, color);
+					        							
 					}
 					break;
 
-					case ScrollButton.Right:
+					case ScrollButton.Right:                                                
 					{
 						DrawGlyph(graphics, x, y, width, height,
 								  Glyphs.right_arrow_bits,

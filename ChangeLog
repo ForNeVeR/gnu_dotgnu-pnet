@@ -3,6 +3,17 @@
 	* Basic/Strings.cs: Implement Split and Replace methods. (patch #4236
 	applied by drobosson)
 
+2005-07-26  Kirill Kononenko  <krokas@aport.ru>
+
+	* System.Drawing.Win32/DrawingFont.cs: fix Windows fonts look, text
+	doesn't look in Windows ugly anymore.
+
+	* System.Windows.Forms/ScrollBar.cs: Vertical scrollbar look-and-feel
+	closer to the one in Windows XP.
+
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: if there is not
+	enough space instead of a glyph we draw a point.
+
 2005-06-26  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/runtime/System/TestAttribute.cs: Added testcase for bug #13433.

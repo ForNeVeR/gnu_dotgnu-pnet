@@ -1,3 +1,7 @@
+2005-08-01  Klaus Treichel  <ktreichel@web.de>
+
+	* libgc/win32_threads.c: remove left over closing comment.
+
 2005-07-30  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: add --disable-dependency-tracking to configure of libffi.

@@ -466,7 +466,7 @@ GC_API HANDLE WINAPI GC_CreateThread(
     		/* make sure GC is initialized (i.e. main thread is attached) */
     
 	/* It appears to be unsafe to use the GC's allocator here */
-    args = malloc(sizeof(thread_args)); */
+    args = malloc(sizeof(thread_args));
 
 	/* Handed off to and deallocated by child thread.	*/
     if (0 == args) {

@@ -806,7 +806,6 @@ public sealed class Strings
 			}
 
 	// Perform string replacement.
-	[TODO]
 	public static String Replace
 				(String Expression, String Find, String Replacement,
 				 [Optional][DefaultValue(1)] int Start,
@@ -814,8 +813,23 @@ public sealed class Strings
 				 [Optional][DefaultValue(CompareMethod.Binary)]
 				 		CompareMethod Compare)
 			{
-				// TODO
-				return Expression;
+				if(Start>1)
+				{
+					Expression = Expression.Substring(Start-1);
+				}
+				string[] lst;
+				lst = Split(Expression,Find,Count,Compare);
+				string res = "";
+				int bcl = lst.Length;
+				for(int y = 0; y < bcl; y++)
+				{
+					res += lst[y];
+					if(y + 1 != bcl)
+					{
+						res += Replacement;
+					}
+				}
+				return res;
 			}
 
 	// Create a string with "Number" spaces in it.
@@ -833,7 +847,6 @@ public sealed class Strings
 			}
 
 	// Split a string using a particular delimiter.
-	[TODO]
 	public static String[] Split
 				(String Expression,
 				 [Optional][DefaultValue(" ")] String Delimiter,
@@ -841,9 +854,102 @@ public sealed class Strings
 				 [Optional][DefaultValue(CompareMethod.Binary)]
 				 		CompareMethod Compare)
 			{
-				// TODO
-				return null;
+				if(Expression == null)
+				{
+					return null;
+				}
+
+				try {
+					if(Delimiter == null)
+					{
+						Delimiter = " ";
+					}
+					if((Limit==-1) || (Limit==0))
+					{
+						Limit = Int32.MaxValue; // 0x7fffffff
+					}
+					if(Limit <- 1)
+					{
+						throw new ArgumentException(S._("VB_InvalidArgument1"), "Limit");// from Strings.StrComp
+					}
+					if((Compare != CompareMethod.Binary) && (Compare != CompareMethod.Text))
+					{
+						throw new ArgumentException(S._("VB_InvalidCompareMethod"), "Compare");// from Strings.StrComp
+					}
+				}
+				catch(Exception e)
+				{
+					throw e;
+				}
+				return SplitHelper(Expression,Delimiter,Limit,(int)Compare);
 			}
+
+
+	private static string[] SplitHelper
+			(string sSrc,
+			string sFind,
+			int cMaxSubStrings,
+			int Compare)
+		{
+			int[] cnt= new int[1];
+			int nxt = 1;
+			int theEnd = sSrc.Length;
+			cnt[0] = -1;
+			int val = 0;
+			string modSrc ;
+			if(Compare == 0)//binary
+			{
+				modSrc = sSrc;
+			}
+			else // Text ( <>0 and <>1 -> throw exception in Split
+			{
+				modSrc = sSrc.ToLower();
+				sFind = sFind.ToLower();
+			}
+
+			while(val>-1)
+			{
+				val = modSrc.IndexOf(sFind,cnt[nxt - 1] + 1);
+				int[] tmp = new int[cnt.Length + 1];
+				Array.Copy(cnt, 0, tmp, 0, cnt.Length);
+				cnt = tmp;
+				if(val >= 0)
+				{
+					cnt[cnt.Length - 1] = val + (sFind.Length - 1);
+				}
+				else
+				{
+					cnt[cnt.Length - 1] = theEnd;
+				}
+				nxt++;
+			}
+
+			string[] res;
+			int bcl = 0;
+
+			if(cMaxSubStrings < cnt.Length - 1)
+			{
+				res = new string[cMaxSubStrings];
+				bcl = cMaxSubStrings;
+			}
+			else
+			{
+				res = new string[cnt.Length - 1];
+				bcl = cnt.Length - 1;
+			}
+
+			for(int i = 0; i < bcl; i++)
+			{
+				if((i == bcl-1) && (bcl != cnt.Length))
+				{
+					res[i] = sSrc.Substring(cnt[i] + 1); // the rest!
+					break;// stop when Max Substring is reached
+				}
+				res[i] = sSrc.Substring((cnt[i] + 1),(cnt[i + 1]-cnt[i] - 1) -(sFind.Length - 1) );
+			}
+			return res;
+		}
+
 
 	// Compare two strings.
 	public static int StrComp

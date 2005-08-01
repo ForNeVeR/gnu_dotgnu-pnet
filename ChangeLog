@@ -1,3 +1,7 @@
+2005-08-01  Rainer Groesslinger <scandium>
+
+	* doc/pnetasm.texi: remove incorrect @. (applied by Klaus Treichel)
+
 2005-08-01  Klaus Treichel  <ktreichel@web.de>
 
 	* libgc/win32_threads.c: remove left over closing comment.

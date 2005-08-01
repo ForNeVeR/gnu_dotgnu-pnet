@@ -995,7 +995,7 @@ MethodDeclaration => @strong{.method} @{ MethodAttribute @}
                      MarshalledType MethodName
                      '(' [ SignatureArguments ] ')'
                      @{ ImplementationAttribute @}
-                     '@{' @{ MethodMember @} '@}@'
+                     '@{' @{ MethodMember @} '@}'
 MethodName => @strong{.ctor}
             | @strong{.cctor}
             | QualifiedName

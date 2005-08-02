@@ -1,4 +1,4 @@
-/*
+//*
  * link_main.c - Link IL images together to form an assembly.
  *
  * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
@@ -946,7 +946,7 @@ int ILLinkerMain(int argc, char *argv[])
 		{
 			if(!ILLinkerSetEntryPoint(linker, entryPoint))
 			{
-				fprintf(stderr, "%s: could not locate the entry point `%s'",
+				fprintf(stderr, "%s: could not locate the entry point `%s'\n",
 						outputFile, entryPoint);
 				errors = 1;
 			}

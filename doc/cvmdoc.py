@@ -8,7 +8,7 @@ import xml.dom.minidom
 import string
 import sys
 import cgi
-import regex
+import re
 import regex_syntax
 cvm_doc="""
 """
@@ -339,11 +339,7 @@ if __name__=="__main__":
 #RHYS PART of the puzzle starts
 	codes={}
 	codefile=open(sys.argv[2], 'r')
-	syntax=regex.set_syntax(regex_syntax.RE_SYNTAX_GREP)
-	try:
-		prog=regex.compile("^#define[ \t]*COP_")
-	finally:
-		syntax=regex.set_syntax(syntax)
+	prog=re.compile("^#define[ \t]*COP_", regex_syntax.RE_SYNTAX_GREP)
 	while 1:
 		line = codefile.readline()
 		if not line: break

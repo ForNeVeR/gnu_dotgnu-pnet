@@ -1,8 +1,12 @@
+2005-08-02  Rainer Größlinger  <rainer.groesslinger@gmx.net>
+
+	* doc/cvmdoc.py: replace module regex by re. (applied by Klaus Treichel)
+
 2005-08-02  Deryk Robosson  <deryk@0x0a.com>
 
 	* ilalink/link_main.c: Add missing newline to error message.
 
-2005-08-01  Rainer Groesslinger <scandium>
+2005-08-01  Rainer Größlinger <rainer.groesslinger@gmx.net>
 
 	* doc/pnetasm.texi: remove incorrect @. (applied by Klaus Treichel)
 

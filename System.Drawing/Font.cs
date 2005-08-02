@@ -239,7 +239,7 @@ public sealed class Font
 						case GraphicsUnit.Pixel:
 						default:
 						{
-							adjust = 72.0f / toolkit.GetDefaultGraphics().DpiY;
+							adjust = 72.0f / ToolkitManager.Toolkit.GetDefaultGraphics().DpiY;
 						}
 						break;
 

@@ -1,3 +1,8 @@
+2005-08-02  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Drawing/Font.cs: Use ToolkitManager.Toolkit instead of
+	toolkit in bug #11074. 
+
 2005-08-01  Robert Lascelle  <rlvladbob@yahoo.com>
 
 	* Basic/Strings.cs: Implement Split and Replace methods. (patch #4236

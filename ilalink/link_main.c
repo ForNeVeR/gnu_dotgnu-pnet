@@ -1,4 +1,4 @@
-//*
+/*
  * link_main.c - Link IL images together to form an assembly.
  *
  * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.

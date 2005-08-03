@@ -1,3 +1,8 @@
+2005-08-03  Rainer Größlinger  <rainer.groesslinger@gmx.net>
+
+	* libffi/include/Makefile.am, libffi/include/Makefile.in: ffitarget.h is
+	installed in $(includedir)/pnet now. (applied by Klaus Treichel)
+
 2005-08-02  Rainer Größlinger  <rainer.groesslinger@gmx.net>
 
 	* doc/cvmdoc.py: replace module regex by re. (applied by Klaus Treichel)

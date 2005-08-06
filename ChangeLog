@@ -3,7 +3,12 @@
 	* System/Net/HttpWebResponse.cs: Remove extraneous /*TODO*/'s
 
 	* System.Drawing/SystemIcons.cs: Remove TODO attributes for already
-	implemented properties.
+	implemented properties
+
+	* resources/en_US/System.Drawing/Makefile.am,
+	SystemIcons.error.ico, SystemIcons.information.ico,
+	SystemIcons.warning.ico, SystemIcons.windowslogo.ico,
+	SystemIcons.application.ico: Add icons
 
 2005-08-06  Robert Lascelle  <rlvladbob@yahoo.com>
 

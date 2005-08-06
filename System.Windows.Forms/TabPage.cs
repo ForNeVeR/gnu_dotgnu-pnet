@@ -60,7 +60,7 @@ namespace System.Windows.Forms
 			return;
 		}
 
-		//TODO:
+		[TODO]
 		public static TabPage GetTabPageOfComponent(object comp)
 		{
 			return null;

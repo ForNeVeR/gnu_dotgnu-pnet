@@ -1,3 +1,7 @@
+2005-08-06  Deryk Robosson  <deryk@0x0a.com>
+
+	* System/Net/HttpWebResponse.cs: Remove extraneous /*TODO*/'s
+
 2005-08-06  Robert Lascelle  <rlvladbob@yahoo.com>
 
 	* System.Drawing/ColorTranslator.cs: Implement ToHtml and FromHtml

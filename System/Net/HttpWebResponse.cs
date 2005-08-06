@@ -123,14 +123,12 @@ public class HttpWebResponse : WebResponse
 	[TODO]
 	protected virtual void Dispose(bool disposing)
 	{
-	/*TODO*/
 		throw new NotImplementedException();
 	}
 
 	[TODO]
 	public override int GetHashCode()
 	{
-	/*TODO*/
 		throw new NotImplementedException();
 	}
 

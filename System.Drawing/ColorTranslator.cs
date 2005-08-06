@@ -68,11 +68,75 @@ public sealed class ColorTranslator
 	private ColorTranslator() {}
 
 	// Transform a HTML color name into a "Color" value.
-	[TODO]
 	public static Color FromHtml(String htmlColor)
 			{
-				// TODO
-				return Color.Empty;
+				// 1: is "#numeric" or "textual"
+				// 1a: if numeric then remove #
+				//		convert hex(char) to dec(int)
+				//		Feed Color.FromArgb()
+				// 1b: if textual then lookup the Enum to find (no case)
+				//			the exact value
+				//		take the "KnownValue" field
+				//		Feed Color.FromKnownValue() (then force a resolve if needed)
+
+				Color ret = Color.Empty; // default.
+
+				if(htmlColor == null)
+				{
+					// throw exception?
+					// No: For compatibility
+					return Color.Empty;
+				}
+				if(htmlColor=="")
+				{
+					// throw exception?
+					// No: For compatibility
+					return Color.Empty;
+				}
+				if(htmlColor.Substring(0,1) == "#")
+				{
+					/// If color is #123, the result is #112233 (4 bit to 8 bit channel)
+					/// If color is #1 or #12 or #1234 or #12345
+					///		the result is #000001 or #000012 or #001234 or #012345 (prepend "0")
+					/// If color is a KnownColor (doesn't start with "#"), get Color.FromName.
+					int res=0; // res = result from #RGB
+					if(htmlColor.Length == 4) // #123
+					{
+						res = Int32.Parse(htmlColor.Substring(1), System.Globalization.NumberStyles.AllowHexSpecifier);
+						res = (((res & 0xF00)<<8) * 0x11) + (((res & 0x0F0)<<4) * 0x11) + ((res & 0x00F) * 0x11);
+						// Explanation:
+						// #123
+						// (res & 0xF00) ->       0x100
+						// ((0x100) << 8) ->    0x10000
+						// (0x10000) * 0x11 -> 0x110000+
+						// (res & 0x0F0) ->       0x020
+						// ((0x20) << 4) ->      0x0200
+						// (0x0200) * 0x11 ->    0x2200+
+						// (res & 0x00F) ->         0x3
+						// (0x3) * 0x11) ->        0x33=
+						// ============ ->     0x112233
+					}
+					else if(htmlColor.Length != 7)
+					{
+						// throw BadLength exception?
+						// No: For compatibility
+						// Add Leading 0...
+						string tmp = "0000000";
+						tmp = tmp.Substring(htmlColor.Length);
+						htmlColor = "#" + tmp + htmlColor.Substring(1);
+						res = Int32.Parse(htmlColor.Substring(1), System.Globalization.NumberStyles.AllowHexSpecifier);
+					}
+					ret = Color.FromArgb(((res & 0x00FF0000)>>16),((res & 0x0000FF00)>>8),((res & 0x000000FF)));
+				}
+				else
+				{
+					// Is a KnownColor...
+					ret = Color.FromName(htmlColor);
+					// If it's not a KnownColor (bleu instead of blue)
+					//		ret become Color.Empty.
+				}
+
+				return ret;
 			}
 
 	// Transform an OLE color value into a "Color" value.
@@ -89,8 +153,8 @@ public sealed class ColorTranslator
 						!= unchecked((int)0x80000000))
 				{
 					return Color.FromArgb(win32Color & 0xFF,
-									      (win32Color >> 8) & 0xFF,
-									      (win32Color >> 16) & 0xFF);
+								(win32Color >> 8) & 0xFF,
+								(win32Color >> 16) & 0xFF);
 				}
 				else
 				{
@@ -107,11 +171,66 @@ public sealed class ColorTranslator
 			}
 
 	// Convert a "Color" value into a HTML color name.
-	[TODO]
 	public static String ToHtml(Color color)
 			{
-				// TODO
-				return null;
+				String ret = "";
+				int value = (int)(color.ToKnownColor());
+				if(color.IsKnownColor)//(value>=1) && (value<=167))
+				{
+					//int value = (int)(color.ToKnownColor());
+					if(value >= 1 && value <= oleSystemColors.Length)
+					{
+						switch(value)
+						{
+							case (int)KnownColor.ActiveCaptionText:
+								ret = "captiontext";
+								break;
+							case (int)KnownColor.Control:
+								ret = "buttonface";
+								break;
+							case (int)KnownColor.ControlDark:
+								ret = "buttonshadow";
+								break;
+							case (int)KnownColor.ControlDarkDark:
+								ret = "threeddarkshadow";
+								break;
+							case (int)KnownColor.ControlLight:
+								ret = "buttonface";
+								break;
+							case (int)KnownColor.ControlLightLight:
+								ret = "buttonhighlight";
+								break;
+							case (int)KnownColor.ControlText:
+								ret = "buttontext";
+								break;
+							case (int)KnownColor.Desktop:
+								ret = "background";
+								break;
+							case (int)KnownColor.HotTrack:
+								ret = "highlight";
+								break;
+							case (int)KnownColor.Info:
+								ret = "infobackground";
+								break;
+							//case (int)KnownColor.LightGray: ret = "LightGrey";break; // -> MS BUG.
+							// This last case cause a compare error but the good result is
+							// LightGray. So, never replace LightGray by LightGrey.
+							default:
+								ret = color.Name.ToLower();
+								break;
+						}
+					}
+					else
+					{
+						ret = color.Name;
+					}
+				}
+				else if(color.Name != "0")
+				{
+					ret = "#" + color.Name.Substring(2).ToUpper();
+					/// GET R,G,B -> Format to hexa RRGGBB prepend '#'
+				}
+				return ret;
 			}
 
 	// Convert a "Color" value into an OLE color value.
@@ -138,3 +257,4 @@ public sealed class ColorTranslator
 }; // class ColorTranslator
 
 }; // namespace System.Drawing
+

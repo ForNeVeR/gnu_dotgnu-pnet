@@ -1,3 +1,8 @@
+2005-08-06  Klaus Treichel  <ktreichel@web.de>
+
+	* tools/Makefile.am: Fix make install bug on MinGW when creating link to
+	pinvoke.map.
+
 2005-08-04  Deryk Robosson  <deryk@0x0a.com>
 
 	* samples/developers/Developer_newl.jpg: Initial import.

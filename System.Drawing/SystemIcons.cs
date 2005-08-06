@@ -47,124 +47,106 @@ using System.Windows.Forms.Themes;
 		private static Icon warningIcon;
 		private static Icon windowsLogoIcon;
 
-		[TODO]
 		public static Icon Application
 		{
 			get
 			{
 				if (applicationIcon == null)
-					//TODO
 					applicationIcon = LoadIcon(IconType.Application);
 				return applicationIcon;
 			}
 		}
 
-		[TODO]
 		public static Icon Asterisk
 		{
 			get
 			{
 				if (asteriskIcon == null)
 				{
-					//TODO
 					asteriskIcon = LoadIcon(IconType.Asterisk);
 				}
 				return asteriskIcon;
 			}
 		}
 
-		[TODO]
 		public static Icon Error
 		{
 			get
 			{
 				if (errorIcon == null)
 				{
-					//TODO
 					errorIcon = LoadIcon(IconType.Error);
 				}
 				return errorIcon;
 			}
 		}
 
-		[TODO]
 		public static Icon Exclamation
 		{
 			get
 			{
 				if (exclamationIcon == null)
 				{
-					//TODO
 					exclamationIcon = LoadIcon(IconType.Exclamation);
 				}
 				return exclamationIcon;
 			}
 		}
 
-		[TODO]
 		public static Icon Hand
 		{
 			get
 			{
 				if (handIcon == null)
 				{
-					//TODO
 					handIcon = LoadIcon(IconType.Hand);
 				}
 				return handIcon;
 			}
 		}
 
-		[TODO]
 		public static Icon Information
 		{
 			get
 			{
 				if (informationIcon == null)
 				{
-					//TODO
 					informationIcon = LoadIcon(IconType.Information);
 				}
 				return informationIcon;
 			}
 		}
 
-		[TODO]
 		public static Icon Question
 		{
 			get
 			{
 				if (questionIcon == null)
 				{
-					//TODO
 					questionIcon = LoadIcon(IconType.Question);
 				}
 				return questionIcon;
 			}
 		}
 
-		[TODO]
 		public static Icon Warning
 		{
 			get
 			{
 				if (warningIcon == null)
 				{
-					//TODO
 					warningIcon = LoadIcon(IconType.Warning);
 				}
 				return warningIcon;
 			}
 		}
 
-		[TODO]
 		public static Icon WinLogo
 		{
 			get
 			{
 				if (windowsLogoIcon == null)
 				{
-					//TODO
 					windowsLogoIcon = LoadIcon(IconType.WinLogo);
 				}
 				return windowsLogoIcon;

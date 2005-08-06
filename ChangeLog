@@ -2,6 +2,9 @@
 
 	* System/Net/HttpWebResponse.cs: Remove extraneous /*TODO*/'s
 
+	* System.Drawing/SystemIcons.cs: Remove TODO attributes for already
+	implemented properties.
+
 2005-08-06  Robert Lascelle  <rlvladbob@yahoo.com>
 
 	* System.Drawing/ColorTranslator.cs: Implement ToHtml and FromHtml

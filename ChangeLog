@@ -8,7 +8,7 @@
 	* resources/en_US/System.Drawing/Makefile.am,
 	SystemIcons.error.ico, SystemIcons.information.ico,
 	SystemIcons.warning.ico, SystemIcons.windowslogo.ico,
-	SystemIcons.application.ico: Add iconis
+	SystemIcons.application.ico: Add icons
 
 	* System.Windows.Forms/TabPage.cs: Use correct TODO attribute
 

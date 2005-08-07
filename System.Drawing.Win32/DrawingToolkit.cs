@@ -111,16 +111,16 @@ public class DrawingToolkit : IToolkit
 		return colorrgb;
 	}
 
+	[TODO]
 	// Create an IToolkitGraphics object from a HDC.
-	//TODO
 	public IToolkitGraphics CreateFromHdc(IntPtr hdc, IntPtr hdevice)
 	{
 		// This is tricky - maybe we have to keep track of which hdc's we create?
 		return null;
 	}
 
+	[TODO]
 	// Create an IToolkitGraphics object from a HWND.
-	//TODO
 	public IToolkitGraphics CreateFromHwnd(IntPtr hwnd)
 	{
 		return null;
@@ -151,8 +151,8 @@ public class DrawingToolkit : IToolkit
 		return new DrawingXorBrush(this, innerBrush);
 	}
 
+	[TODO]
 	// Create a linear gradient brush.
-	//TODO
 	public IToolkitBrush CreateLinearGradientBrush
 		(RectangleF rect, System.Drawing.Color color1,
 		System.Drawing.Color color2,
@@ -161,7 +161,7 @@ public class DrawingToolkit : IToolkit
 		return null;
 	}
 
-	//TODO
+	[TODO]
 	public IToolkitBrush CreateLinearGradientBrush
 		(RectangleF rect, System.Drawing.Color color1,
 		System.Drawing.Color color2, float angle,
@@ -201,8 +201,8 @@ public class DrawingToolkit : IToolkit
 			(new FontFamily(GenericFontFamilies.SansSerif), 9.0f);
 	}
 
+	[TODO]
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.
-	//TODO
 	public IntPtr GetHalftonePalette()
 	{
 		return IntPtr.Zero;
@@ -217,8 +217,8 @@ public class DrawingToolkit : IToolkit
 		return window;
 	}
 
+	[TODO]
 	// Create a top-level dialog shell.
-	//TODO
 	public IToolkitWindow CreateTopLevelDialog
 		(int width, int height, bool modal, bool resizable,
 		IToolkitWindow dialogParent, IToolkitEventSink sink)
@@ -285,18 +285,18 @@ public class DrawingToolkit : IToolkit
 		return window;
 	}
 
+	[TODO]
 	// Create an MDI client area.
 	public IToolkitMdiClient CreateMdiClient
 				(IToolkitWindow parent, int x, int y, int width, int height,
 				 IToolkitEventSink sink)
 			{
-				// TODO
 				return null;
 			}
 
+	[TODO]
 	// Get a list of all font families on this system, or all font
 	// families that are compatible with a particular IToolkitGraphics.
-	//TODO
 	public FontFamily[] GetFontFamilies(IToolkitGraphics graphics)
 	{
 		// We only support three font families.  Extend later.
@@ -350,25 +350,25 @@ public class DrawingToolkit : IToolkit
 		}
 	}
 
+	[TODO]
 	// Get the IToolkitFont that corresponds to a hdc's current font.
 	// Returns null if there is no way to obtain the information.
-	//TODO
 	public IToolkitFont GetFontFromHdc(IntPtr hdc)
 	{
 		return null;
 	}
 
+	[TODO]
 	// Get the IToolkitFont that corresponds to a native font object.
 	// Returns null if there is no way to obtain the information.
-	//TODO
 	public IToolkitFont GetFontFromHfont(IntPtr hfont)
 	{
 		return null;
 	}
 
+	[TODO]
 	// Get the IToolkitFont that corresponds to LOGFONT information.
 	// Returns null if there is no way to obtain the information.
-	//TODO
 	public IToolkitFont GetFontFromLogFont(Object lf, IntPtr hdc)
 	{
 		return null;
@@ -746,10 +746,10 @@ public class DrawingToolkit : IToolkit
 		}
 	}
 
+	[TODO]
 	// Get the clipboard handler for this toolkit, or null if no clipboard.
 	public IToolkitClipboard GetClipboard()
 	{
-		// TODO
 		return null;
 	}
 

@@ -184,16 +184,18 @@ internal sealed class DrawingMdiClient : MdiClientWidget, IToolkitMdiClient
 				}
 			}
 
+	[TODO]
 	// Move this window to above one of its siblings.
 	void IToolkitWindow.MoveToAbove(IToolkitWindow sibling)
 			{
-				// TODO
+				return;
 			}
 
+	[TODO]
 	// Move this window to below one of its siblings.
 	void IToolkitWindow.MoveToBelow(IToolkitWindow sibling)
 			{
-				// TODO
+				return;
 			}
 
 	// Get the HWND for this window.  IntPtr.Zero if not supported.

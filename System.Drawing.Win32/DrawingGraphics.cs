@@ -177,24 +177,27 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 
 #else // !CONFIG_EXTENDED_NUMERICS
 
-// TODO: arc routines that don't need to use the "Math" class.
+	// TODO: arc routines that don't need to use the "Math" class.
 
-// Draw an arc within a rectangle defined by four points.
-public override void DrawArc( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
+	[TODO]
+	// Draw an arc within a rectangle defined by four points.
+	public override void DrawArc( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 		{
-			// TODO
+			return;
 		}
 
-// Draw a pie slice within a rectangle defined by four points.
-public override void DrawPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
+	[TODO]
+	// Draw a pie slice within a rectangle defined by four points.
+	public override void DrawPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 		{
-			// TODO
+			return;
 		}
 
-// Fill a pie slice within a rectangle defined by four points.
-public override void FillPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
+	[TODO]
+	// Fill a pie slice within a rectangle defined by four points.
+	public override void FillPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 		{
-			// TODO
+			return;
 		}
 
 #endif // CONFIG_EXTENDED_NUMERICS
@@ -281,8 +284,8 @@ public override void FillPie ( System.Drawing.Point[] rect, float startAngle, fl
 		Win32.Api.DeleteObject( region);
 	}
 
+	[TODO]
 	// Set the clipping region to a complex mask.
-	//TODO
 	public override void SetClipMask(Object mask, int topx, int topy)
 	{
 	}

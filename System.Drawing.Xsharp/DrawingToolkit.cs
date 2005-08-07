@@ -189,25 +189,28 @@ public sealed class DrawingToolkit : IToolkit
 				app.Display.DefaultScreenOfDisplay.Wakeup();
 			}
 
+	[TODO]
 	// Get lighter or darker versions of a color.
 	private static int Light(int color)
 			{
-				// TODO
 				return -1;
 			}
+
+	[TODO]
 	private static int LightLight(int color)
 			{
-				// TODO
 				return -1;
 			}
+
+	[TODO]
 	private static int Dark(int color)
 			{
-				// TODO
 				return -1;
 			}
+
+	[TODO]
 	private static int DarkDark(int color)
 			{
-				// TODO
 				return -1;
 			}
 
@@ -733,10 +736,10 @@ public sealed class DrawingToolkit : IToolkit
 					(app.Display.DefaultScreenOfDisplay, image, frame);
 			}
 
+	[TODO]
 	// Get the clipboard handler for this toolkit, or null if no clipboard.
 	public IToolkitClipboard GetClipboard()
 			{
-				// TODO
 				return null;
 			}
 

@@ -23,7 +23,8 @@
 	System.Windows.Forms/DataObject.cs, System.Windows.Forms/Menu.cs,
 	System.Windows.Forms/ColumnHeader.cs,
 	System.Windows.Forms/DataGridColumnStyle.cs,
-	System.Windows.Forms/MenuItem.cs:
+	System.Windows.Forms/MenuItem.cs,
+	System.Windows.Forms/InputLanguage.cs:
 	Use correct TODO attributes where required.
 
 2005-08-06  Deryk Robosson  <deryk@0x0a.com>

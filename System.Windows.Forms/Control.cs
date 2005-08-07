@@ -529,6 +529,7 @@ public class Control : IWin32Window, IDisposable
 #if !ECMA_COMPAT
 	[DispId(-501)]
 #endif
+	[TODO]
 	public virtual Color BackColor
 			{
 				get
@@ -553,7 +554,7 @@ public class Control : IWin32Window, IDisposable
 						if(value.A < 255 &&
 						   !GetStyle(ControlStyles.SupportsTransparentBackColor))
 						{
-							throw new ArgumentException("value"); // TODO: msg
+							throw new ArgumentException("value"); // Fill in with appropriate message
 						}
 						backColor = value;
 						OnBackColorChanged(EventArgs.Empty);
@@ -1543,12 +1544,12 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					// TODO
+					// Fill in here
 					return null;
 				}
 				set
 				{
-					// TODO
+					// Fill in here
 				}
 			}
 	protected bool ResizeRedraw
@@ -1872,6 +1873,7 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 
+	[TODO]
 	// Get the global state of the mouse buttons.
 	// TODO: This only works when the mouse is within the bounds of a form
 	public static MouseButtons MouseButtons
@@ -1882,6 +1884,7 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 
+	[TODO]
 	// Get the current screen position of the mouse.
 	// TODO: This only works when the mouse is within the bounds of a form
 	public static Point MousePosition
@@ -2191,7 +2194,7 @@ public class Control : IWin32Window, IDisposable
 	public DragDropEffects DoDragDrop
 		(Object data, DragDropEffects allowedEffects)
 			{
-				// TODO
+				// Fill in
 				return allowedEffects;
 			}
 
@@ -2281,7 +2284,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	public static Control FromChildHandle(IntPtr handle)
 			{
-				// TODO
+				// Fill in
 				return FromHandle(handle);
 			}
 
@@ -2292,7 +2295,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	public static Control FromHandle(IntPtr handle)
 		{
-			// TODO
+			// Fill in
 			return null;
 		}
 
@@ -2595,7 +2598,7 @@ public class Control : IWin32Window, IDisposable
 	[TODO]
 	public Object Invoke(Delegate method)
 			{
-				// TODO
+				// Fill in
 				return null;
 			}
 
@@ -3016,7 +3019,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected void RecreateHandle()
 			{
-				// TODO
+				// Finish
 				if (toolkitWindow == null)
 				{
 					return;
@@ -3072,7 +3075,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	public void ResetBindings()
 			{
-				// TODO
+				return;
 			}
 
 	// Reset the cursor to its default value.
@@ -3468,7 +3471,7 @@ public class Control : IWin32Window, IDisposable
 	[TODO]
 	protected void SetTopLevel(bool value)
 			{
-				// TODO
+				return;
 			}
 
 	// Inner core of setting the visibility state.
@@ -6405,7 +6408,6 @@ public class Control : IWin32Window, IDisposable
 	[TODO]
 	internal Control GetFocusedChild()
 			{
-				// TODO
 				return null;
 			}
 
@@ -6413,7 +6415,6 @@ public class Control : IWin32Window, IDisposable
 	[TODO]
 	internal Control GetSelectedChild()
 			{
-				// TODO
 				return null;
 			}
 

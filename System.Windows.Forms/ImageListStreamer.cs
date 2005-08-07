@@ -36,12 +36,14 @@ public class ImageListStreamer : ISerializable
 											/*  M      S      F      t */
 	private static byte[] magicBytes = new byte[] { 0x4d , 0x53 , 0x46 , 0x74 };
 	internal Image[] images = null;
-	// TODO
 
+	[TODO]
 	internal ImageListStreamer(ImageList imageList)
 	{
-		// TODO
+		return;
 	}
+
+	[TODO]
 	private ImageListStreamer(SerializationInfo info, StreamingContext context)
 	{
 		byte [] data = (byte[])info.GetValue("Data", typeof(byte[]));
@@ -50,7 +52,7 @@ public class ImageListStreamer : ISerializable
 		{
 			if(ms.ReadByte() != b)
 			{
-				// TODO : I18n
+				// Handle I18n
 				throw new FormatException("invalid signature"); 
 			}
 		}
@@ -108,9 +110,10 @@ public class ImageListStreamer : ISerializable
 		}
 	}
 
+	[TODO]
 	public virtual void GetObjectData(SerializationInfo si, StreamingContext context)
 	{
-		// TODO
+		return;
 	}
 
 	internal Image[] Images
@@ -121,7 +124,8 @@ public class ImageListStreamer : ISerializable
 		}
 	}
 
-	// TODO: move into DotGNU.Images
+	[TODO]
+	// Move into DotGNU.Images
 	private sealed class RunLengthEncodedStream : Stream
 	{
 		// Constructor.
@@ -147,6 +151,8 @@ public class ImageListStreamer : ISerializable
 				underlying.Flush();
 			}
 		}
+
+		[TODO]
 		public override int Read(byte[] buffer, int offset, int count)
 		{
 			int len = 0;
@@ -166,7 +172,7 @@ public class ImageListStreamer : ISerializable
 			}
 			else if((buffer.Length - offset) < count)
 			{
-				// TODO : I18n
+				// Handle I18n
 				throw new ArgumentException("Invalid array range");
 			}
 

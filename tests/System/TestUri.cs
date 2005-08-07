@@ -137,52 +137,52 @@ public class TestUri : TestCase
 
 	// TestUriCheckSecurity() is not necessary
 
-	[TODO]
+	// TODO
 	public void TestUriEquals()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriEscape()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriEscapeString()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriFromHex()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriGetHashCode()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriGetLeftPart()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriHexEscape()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriHexUnescape()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriIsBadFileSystemCharacter()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriIsExcludedCharacter()
 	{
 	}
@@ -212,7 +212,7 @@ public class TestUri : TestCase
 		Assert("\"%af\", position 100, is not hex encoding", !Uri.IsHexEncoding("%af", 100));
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriIsReservedCharacter()
 	{
 	}
@@ -257,17 +257,17 @@ public class TestUri : TestCase
 					uri.ToString());
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriUnescape()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriAbsolutePath()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriAbsoluteUri()
 	{
 	}
@@ -277,7 +277,7 @@ public class TestUri : TestCase
 		AssertEquals("rmsUri: Authority built correctly", rmsUri.Authority, "rms@ftp.gnu.org:2538");
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriFragment()
 	{
 	}
@@ -295,22 +295,22 @@ public class TestUri : TestCase
 		Assert("rmsUri: 2538 is not default for ftp", !rmsUri.IsDefaultPort);
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriIsFile()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriIsLoopback()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriLocalPath()
 	{
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriPathAndQuery()
 	{
 
@@ -328,7 +328,7 @@ public class TestUri : TestCase
 		AssertEquals("rmsUri: Scheme parsed", rmsUri.Scheme, "ftp");
 	}
 
-	[TODO]
+	// TODO
 	public void TestUriUserEscaped()
 	{
 	}

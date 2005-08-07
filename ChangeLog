@@ -31,7 +31,7 @@
 	System.Windows.Forms/BindingManagerBase.cs,
 	System.Windows.Forms/ImageList.cs,
 	System.Windows.Forms/TextBoxBase.cs,
-	System.Windows.Forms/TabControl.cs, tests/System/TestUri.cs:
+	System.Windows.Forms/TabControl.cs:
 	Use correct TODO attributes where required.
 
 2005-08-06  Deryk Robosson  <deryk@0x0a.com>

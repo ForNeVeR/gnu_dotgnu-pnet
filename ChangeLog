@@ -3,7 +3,8 @@
 	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs,
 	System.Drawing.Postscript/PostscriptGraphics.cs,
 	System.Drawing.Postscript/PostscriptPrintSession.cs,
-	System.Drawing.Postscript/PostscriptDriver.cs: Use correct TODO
+	System.Drawing.Postscript/PostscriptDriver.cs,
+	System.Drawing.Win32/DrawingToolkit.cs: Use correct TODO
 	attributes where required.
 
 2005-08-06  Deryk Robosson  <deryk@0x0a.com>

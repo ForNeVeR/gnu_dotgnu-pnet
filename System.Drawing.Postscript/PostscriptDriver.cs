@@ -27,11 +27,11 @@ using System.Drawing.Toolkit;
 
 public sealed class PostscriptDriver
 {
+	[TODO]
 	// Create a graphics object for performing text measurement.
 	public static IToolkitGraphics CreateMeasurementGraphics
 				(String printerName)
 			{
-				// TODO
 				return null;
 			}
 

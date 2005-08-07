@@ -97,7 +97,6 @@ using System.Collections;
 				if (activation != value)
 				{
 					activation = value;
-					//TODO
 				}
 			}
 		}
@@ -115,7 +114,6 @@ using System.Collections;
 				if (alignStyle != value)
 				{
 					alignStyle = value;
-					//TODO
 				}
 			}
 		}
@@ -133,7 +131,6 @@ using System.Collections;
 				if (allowColumnReorder != value)
 				{
 					allowColumnReorder = value;
-					//TODO
 				}
 			}
 		}
@@ -151,7 +148,6 @@ using System.Collections;
 				if (value != autoArrange)
 				{
 					autoArrange = value;
-					//TODO
 				}
 			}
 		}
@@ -167,7 +163,6 @@ using System.Collections;
 			set
 			{
 				base.BackColor = value;
-				//TODO
 			}
 		}
 
@@ -201,7 +196,6 @@ using System.Collections;
 				if (borderStyle != value)
 				{
 					borderStyle = value;
-					//TODO
 				}
 			}
 		}
@@ -219,7 +213,6 @@ using System.Collections;
 				if (checkBoxes != value)
 				{
 					checkBoxes = value;
-					//TODO
 				}
 			}
 		}
@@ -301,7 +294,6 @@ using System.Collections;
 			set
 			{
 				base.ForeColor = value;
-				//TODO
 			}
 		}
 
@@ -318,7 +310,6 @@ using System.Collections;
 				if (fullRowSelect != value)
 				{
 					fullRowSelect = value;
-					//TODO
 				}
 			}
 		}
@@ -336,7 +327,6 @@ using System.Collections;
 				if (headerStyle != value)
 				{
 					headerStyle = value;
-					//TODO
 				}
 			}
 		}
@@ -354,7 +344,6 @@ using System.Collections;
 				if (gridLines != value)
 				{
 					gridLines = value;
-					//TODO
 				}
 			}
 		}
@@ -372,7 +361,6 @@ using System.Collections;
 				if (value != hideSelection)
 				{
 					hideSelection = value;
-					//TODO
 				}
 			}
 		}
@@ -424,7 +412,6 @@ using System.Collections;
 				if (value != labelWrap)
 				{
 					labelWrap = value;
-					//TODO
 				}
 			}
 		}
@@ -446,7 +433,6 @@ using System.Collections;
 						largeImageList.Dispose();
 					}
 					largeImageList = value;
-					// TODO
 				}
 		}
 		}
@@ -506,7 +492,6 @@ using System.Collections;
 				if (value != scrollable)
 				{
 					scrollable = value;
-					//TODO
 				}
 			}
 		}
@@ -552,7 +537,6 @@ using System.Collections;
 						smallImageList.Dispose();
 					}
 					smallImageList = value;
-					//TODO
 				}
 			}
 		}
@@ -570,7 +554,6 @@ using System.Collections;
 				if (sorting != value)
 				{
 					sorting = value;
-					//TODO
 				}
 			}
 		}
@@ -633,7 +616,6 @@ using System.Collections;
 				if (viewStyle != value)
 				{
 					viewStyle = value;
-					//TODO
 				}
 			}
 		}
@@ -654,7 +636,6 @@ using System.Collections;
 			{
 				Sort();
 			}
-			//TODO:
 		}
 
 		public void ArrangeIcons()
@@ -1669,6 +1650,7 @@ using System.Collections;
 				}
 			}
 
+			[TODO]
 			public virtual ListViewItem this[int displayIndex]
 			{
 				get
@@ -1679,7 +1661,6 @@ using System.Collections;
 				set
 				{
 					owner.listItems[displayIndex] = value;
-					//TODO
 				}
 			}
 
@@ -1756,27 +1737,27 @@ using System.Collections;
 				return listViewItem;
 			}
 
+			[TODO]
 			public virtual ListViewItem Add(ListViewItem value)
 			{
 				owner.listItems.Add(value);
 				owner.Sort();
-				//TODO
 				return value;
 			}
 
+			[TODO]
 			public void AddRange(ListViewItem[] values)
 			{
 				owner.listItems.AddRange(values);
 				owner.Sort();
-				//TODO
 			}
 
+			[TODO]
 			public virtual void Clear()
 			{
 				if (owner.listItems.Count > 0)
 				{
 					owner.listItems.Clear();
-					//TODO
 				}
 			}
 
@@ -1850,16 +1831,16 @@ using System.Collections;
 				}
 			}
 
+			[TODO]
 			public virtual void RemoveAt(int index)
 			{
 				owner.listItems.RemoveAt(index);
-				//TODO
 			}
 
+			[TODO]
 			public virtual void Remove(ListViewItem item)
 			{
 				Remove(item);
-				//TODO
 			}
 
 			void IList.Remove(object item)
@@ -1870,10 +1851,11 @@ using System.Collections;
 				}
 				Remove(item as ListViewItem);
 			}
+
+			[TODO]
 			public ListViewItem Insert(int index, ListViewItem item)
 			{
 				owner.listItems.Insert(index, item);
-				//TODO
 				return item;
 			}
 
@@ -1977,7 +1959,6 @@ using System.Collections;
 			[TODO]
 			public virtual int Add(ColumnHeader value)
 			{
-				//TODO;
 				return Count;
 			}
 
@@ -1998,7 +1979,6 @@ using System.Collections;
 				if (owner.columnHeaders != null)
 				{
 					owner.columnHeaders = null;
-					//TODO
 				}
 			}
 

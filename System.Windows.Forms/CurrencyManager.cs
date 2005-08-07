@@ -179,7 +179,7 @@ public class CurrencyManager : BindingManagerBase
 	[TODO]
 	public void Refresh()
 			{
-				// TODO
+				return;
 			}
 
 	// Remove an entry at a specific index.
@@ -192,14 +192,14 @@ public class CurrencyManager : BindingManagerBase
 	[TODO]
 	public override void ResumeBinding()
 			{
-				// TODO
+				return;
 			}
 
 	// Suspend data binding.
 	[TODO]
 	public override void SuspendBinding()
 			{
-				// TODO
+				return;
 			}
 
 	// Check if the list is empty.
@@ -227,11 +227,11 @@ public class CurrencyManager : BindingManagerBase
 				return String.Empty;
 			}
 
-	// Update the binding.
 	[TODO]
+	// Update the binding.
 	protected override void UpdateIsBinding()
 			{
-				// TODO
+				return;
 			}
 
 	// Raise the "CurrentChanged" event.
@@ -260,11 +260,10 @@ public class CurrencyManager : BindingManagerBase
 
 #if CONFIG_COMPONENT_MODEL
 
-	// Get the property descriptors for the binding.
 	[TODO]
+	// Get the property descriptors for the binding.
 	public override PropertyDescriptorCollection GetItemProperties()
 			{
-				// TODO
 				return null;
 			}
 

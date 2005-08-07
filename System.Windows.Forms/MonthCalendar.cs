@@ -89,9 +89,10 @@ public class MonthCalendar : Control
 		this.ResumeLayout();
 	}
 
+	[TODO]
 	public void SetCalendarDimensions(int x, int y)
 	{
-		// TODO: try to maintain x:y ratio
+		// Fix: try to maintain x:y ratio
 		if(x*y > 12)
 		{
 			x=3;
@@ -107,6 +108,7 @@ public class MonthCalendar : Control
 		SetSelectionInternal(date, date, -1, false);
 	}
 
+	[TODO]
 	internal void SetSelectionInternal(DateTime start, DateTime end, int index, bool all)
 	{	
 		bool changed = (selectionStart != start || selectionEnd != end);
@@ -114,7 +116,7 @@ public class MonthCalendar : Control
 		selectionStart=start;
 		selectionEnd=end;
 
-		//TODO: implement proper invalidate for modified cals only
+		// Fix: implement proper invalidate for modified cals only
 		if(changed && (all || index==-1))
 		{
 			foreach(Control c in Controls)
@@ -399,7 +401,8 @@ public class MonthCalendar : Control
 			return false;
 		}
 
-		//TODO: move this into theming API
+		[TODO]
+		// Fix: move this into theming API
 		private void DrawMonth(Graphics g, DateTime monthDate, CalendarFlags flags)
 		{
 			UpdateRects(new Point(0,0), monthDate);
@@ -622,6 +625,7 @@ public class MonthCalendar : Control
 			return result;
 		}
 
+		[TODO]
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
 			Point p = new Point(e.X, e.Y);
@@ -629,7 +633,7 @@ public class MonthCalendar : Control
 			Size parentDims = parent.calendarDims;
 			int nextPage = parentDims.Width*parentDims.Height;
 
-			// TODO : Handle long clicks with a timer like ScrollBar does	
+			// Fix: Handle long clicks with a timer like ScrollBar does	
 			if(prevBtnRect.Contains(p))
 			{
 				parent.SetDate(GetNewMonthView(parent.selectionStart,-nextPage));

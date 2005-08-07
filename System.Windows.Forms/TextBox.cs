@@ -78,7 +78,8 @@ public class TextBox : TextBoxBase
 	// Variables to work around scrollbar visibility problem
 	private bool showVScrollBar;
 	private bool showHScrollBar;
-	
+
+	[TODO]
 	public TextBox()
 	{
 		// Trap interesting events.  We do it this way rather
@@ -102,7 +103,7 @@ public class TextBox : TextBoxBase
 		BackColor = SystemColors.Window;
 		ForeColor = SystemColors.WindowText;
 
-		// TODO Get this value from SystemInformation
+		// Fix: Get this value from SystemInformation
 		CaretSetPosition(0);
 
 		// Cache the Pen - check what color this should be
@@ -130,7 +131,8 @@ public class TextBox : TextBoxBase
 		}
 	}
 
-	// TODO Handle this
+	[TODO]
+	// Handle this
 	// Gets or sets whether the TextBox control modifies the case of characters as they are typed.
 	public CharacterCasing CharacterCasing
 	{
@@ -144,7 +146,8 @@ public class TextBox : TextBoxBase
 		}
 	}
 
-	// TODO Handle this
+	[TODO]
+	// Handle this
 	protected override ImeMode DefaultImeMode
 	{
 		get
@@ -172,7 +175,8 @@ public class TextBox : TextBoxBase
 		}
 	}
 
-	// TODO Handle this
+	[TODO]
+	// Handle this
 	public ScrollBars ScrollBars
 	{
 		get
@@ -313,11 +317,12 @@ public class TextBox : TextBoxBase
 		}
 	}
 
+	[TODO]
 	private Size MaxTextDimensions
 	{
 		get
 		{
-			// TODO handle case right to left
+			// Fix: handle case right to left
 			int x = 0;
 			int y = 0;
 			if (Text.Length > 0)
@@ -759,6 +764,7 @@ public class TextBox : TextBoxBase
 	}
 
 #if CONFIG_COMPONENT_MODEL	
+	[TODO]
 	private void HandleDataBindingCollectionChanged(object sender, CollectionChangeEventArgs E)
 	{
 		Binding binding = (Binding)E.Element;
@@ -770,10 +776,10 @@ public class TextBox : TextBoxBase
 				binding.PushData();
 				break;
 			case CollectionChangeAction.Refresh:
-				/* TODO: What do we do here? */
+				// Fix: What do we do here?
 				break;
 			case CollectionChangeAction.Remove:
-				/* TODO: Not sure here either? */
+				// Fix: Not sure here either?
 				break;
 		}	
 	}
@@ -1158,9 +1164,10 @@ public class TextBox : TextBoxBase
 		CaretSetPosition(GetSelectionStart() + GetSelectionLength());
 	}
 
+	[TODO]
 	internal override void OnToggleInsertMode()
 	{
-		// TODO: change caret appearance
+		// Fix: change caret appearance
 	}
 	
 	// Caret navigation

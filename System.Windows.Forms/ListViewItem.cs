@@ -161,6 +161,7 @@ using System.Runtime.Serialization;
 			}
 		}
 
+		[TODO]
 		public int ImageIndex
 		{
 			get
@@ -177,7 +178,7 @@ using System.Runtime.Serialization;
 				imageIndex = value;
 				if (listView.IsHandleCreated)
 				{
-					//TODO:
+					// Fill in here
 				}
 			}
 		}
@@ -221,6 +222,7 @@ using System.Runtime.Serialization;
 			}
 		}
 
+		[TODO]
 		public bool Selected
 		{
 			get
@@ -235,10 +237,11 @@ using System.Runtime.Serialization;
 					return;
 				}
 				selected = value;
-				//TODO:
+				// Fill in here
 			}
 		}
 
+		[TODO]
 		public int StateImageIndex
 		{
 			get
@@ -256,7 +259,7 @@ using System.Runtime.Serialization;
 				{
 					throw new ArgumentOutOfRangeException();
 				}
-				//TODO:
+				// Fill in here
 			}
 		}
 
@@ -639,6 +642,7 @@ using System.Runtime.Serialization;
 				}
 			}
 
+			[TODO]
 			public string Text
 			{
 				get
@@ -658,7 +662,7 @@ using System.Runtime.Serialization;
 					text = value;
 					if (owner != null)
 					{
-						//TODO:
+						// Fill in here
 					}
 				}
 			}
@@ -721,6 +725,7 @@ using System.Runtime.Serialization;
 				}
 			}
 
+			[TODO]
 			public ListViewSubItem this[int index]
 			{
 				get
@@ -731,7 +736,7 @@ using System.Runtime.Serialization;
 				set
 				{
 					owner.subItems[index] = value;
-					//TODO:
+					// Fill in here
 				}
 			}
 

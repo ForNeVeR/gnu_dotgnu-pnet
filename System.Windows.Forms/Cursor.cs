@@ -78,7 +78,7 @@ public class Cursor : IDisposable
 	[TODO]
 	internal Cursor(SerializationInfo info, StreamingContext context)
 			{
-				// TODO
+				return;
 			}
 #endif
 
@@ -105,7 +105,7 @@ public class Cursor : IDisposable
 	void ISerializable.GetObjectData(SerializationInfo info,
 									 StreamingContext context)
 			{
-				// TODO
+				return;
 			}
 
 #endif

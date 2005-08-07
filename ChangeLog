@@ -11,7 +11,8 @@
 	System.Drawing.Xsharp/DrawingToolkit.cs,
 	System.Drawing.Xsharp/DrawingGraphicsImage.cs,
 	System.Drawing.Xsharp/DrawingPopupWindow.cs,
-	System.Drawing.Xsharp/DrawingGraphics.cs: Use correct TODO
+	System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Windows.Forms/MainMenu.cs: Use correct TODO
 	attributes where required.
 
 2005-08-06  Deryk Robosson  <deryk@0x0a.com>

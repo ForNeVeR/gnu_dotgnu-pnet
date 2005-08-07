@@ -74,11 +74,10 @@ using System.Drawing;
 			}
 		}
 
-		// Clone this main menu.
 		[TODO]
+		// Clone this main menu.
 		public virtual MainMenu CloneMenu()
 		{
-			// TODO
 			return this;
 		}
 

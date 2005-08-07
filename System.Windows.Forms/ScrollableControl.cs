@@ -317,19 +317,17 @@ public class ScrollableControl : Control
 				ScrollByOffset(new Size(xOffset,yOffset));
 			}
 
-	// Handle a mouse wheel event.
 	[TODO]
+	// Handle a mouse wheel event.
 	protected override void OnMouseWheel(MouseEventArgs e)
 			{
-				// TODO
 				base.OnMouseWheel(e);
 			}
 
-	// Inner core of "Scale".
 	[TODO]
+	// Inner core of "Scale".
 	protected override void ScaleCore(float dx, float dy)
 			{
-				// TODO
 				base.ScaleCore(dx, dy);
 			}
 
@@ -421,7 +419,7 @@ public class ScrollableControl : Control
 	[TODO]
 	public void ScrollControlIntoView(Control activeControl)
 	{
-		// TODO
+		return;
 	}
 
 	/// <summary>

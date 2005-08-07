@@ -5,7 +5,9 @@
 	System.Drawing.Postscript/PostscriptPrintSession.cs,
 	System.Drawing.Postscript/PostscriptDriver.cs,
 	System.Drawing.Win32/DrawingToolkit.cs,
-	System.Drawing.Win32/DrawingGraphicsImage.cs: Use correct TODO
+	System.Drawing.Win32/DrawingGraphicsImage.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingMdiClient.cs: Use correct TODO
 	attributes where required.
 
 2005-08-06  Deryk Robosson  <deryk@0x0a.com>

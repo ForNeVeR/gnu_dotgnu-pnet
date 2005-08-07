@@ -1,6 +1,7 @@
 2005-08-07  Deryk Robosson  <deryk@0x0a.com>
 
-	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs: Use correct TODO
+	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs,
+	System.Drawing.Postscript/PostscriptGraphics.cs: Use correct TODO
 	attributes where required.
 
 2005-08-06  Deryk Robosson  <deryk@0x0a.com>

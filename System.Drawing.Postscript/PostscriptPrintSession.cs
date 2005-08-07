@@ -263,9 +263,9 @@ internal sealed class PostscriptPrintSession : IToolkitPrintSession
 				writer.Write(' ');
 			}
 
+	[TODO]
 	// The PostScript prolog to add to every output stream.
 	private static readonly String[] prolog = {
-		// TODO
 	};
 
 }; // class PostscriptPrintSession

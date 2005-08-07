@@ -19,7 +19,8 @@
 	System.Windows.Forms/Cursor.cs, System.Windows.Forms/ListViewItem.cs,
 	System.Windows.Forms/ImageListStreamer.cs,
 	System.Windows.Forms/Control.cs, System.Windows.Forms/TextBox.cs,
-	System.Windows.Forms/MonthCalendar.cs:
+	System.Windows.Forms/MonthCalendar.cs,
+	System.Windows.Forms/DataObject.cs:
 	Use correct TODO attributes where required.
 
 2005-08-06  Deryk Robosson  <deryk@0x0a.com>

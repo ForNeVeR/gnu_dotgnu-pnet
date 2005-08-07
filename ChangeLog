@@ -16,7 +16,8 @@
 	System.Windows.Forms/CurrencyManager.cs,
 	System.Windows.Forms/ListView.cs,
 	System.Windows.Forms/ScrollableControl.cs,
-	System.Windows.Forms/Cursor.cs, System.Windows.Forms/ListViewItem.cs:
+	System.Windows.Forms/Cursor.cs, System.Windows.Forms/ListViewItem.cs,
+	System.Windows.Forms/ImageListStreamer.cs:
 	Use correct TODO attributes where required.
 
 2005-08-06  Deryk Robosson  <deryk@0x0a.com>

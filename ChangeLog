@@ -1,3 +1,8 @@
+2005-08-07  Klaus Treichel  <ktreichel@web.de>
+
+	* csant/csant_dir.c: Prevent prepending of pathname if filename starts with
+	a drive specification on windows in CSAntDirCombine.
+
 2005-08-03  Rainer Größlinger  <rainer.groesslinger@gmx.net>
 
 	* libffi/include/Makefile.am, libffi/include/Makefile.in: ffitarget.h is

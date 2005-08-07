@@ -209,7 +209,13 @@ char *CSAntDirCombine(const char *pathname, const char *filename)
 {
 	char *name;
 	char *temp;
+	#ifdef IL_WIN32_NATIVE
+	if(filename && ((filename[0] == '/') ||
+		(strlen(filename) >= 2 && ((filename[0] >= 'a' && filename[0] <= 'z') ||
+		(filename[0] >= 'A' && filename[0] <= 'Z')) && filename[1] == ':')))
+	#else
 	if(filename && filename[0] == '/')
+	#endif
 	{
 		name = ILDupString(filename);
 		if(!name)

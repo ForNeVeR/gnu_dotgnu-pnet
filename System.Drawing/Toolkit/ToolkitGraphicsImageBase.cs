@@ -45,10 +45,11 @@ namespace System.Drawing.Toolkit
 		}
 
 
+		[TODO]
 		// Clear the entire drawing surface.
 		public override void Clear(Color color)
 				{
-					// TODO
+					return;
 				}
 	
 		// Draw a line between two points using the current pen.
@@ -140,22 +141,24 @@ namespace System.Drawing.Toolkit
 					}
 				}
 
+		[TODO]
 		// Draw a polygon using the current pen.
 		public override void DrawPolygon(Point[] points)
 				{
-					// TODO
+					return;
 				}
 
+		[TODO]
 		// Fill a polygon using the current brush.
 		public override void FillPolygon(Point[] points, FillMode fillMode)
 				{
-					// TODO
+					return;
 				}
 
+		[TODO]
 		// Draw an arc within a rectangle defined by four points.
 		public override void DrawArc (Point[] rect, float startAngle, float sweepAngle)
 				{
-					// TODO
 					// f(x,y) = Ax^2 + Bxy + Cy^2 + Dx + Ey + F
 					// Ellipse B^2 - 4AC<0, circle if A=C and B=0
 						/*final static int OCTANTS = 0x12650374;
@@ -263,46 +266,53 @@ namespace System.Drawing.Toolkit
 					} while (true);*/
 				}
 
+		[TODO]
 		// Draw a pie slice within a rectangle defined by four points.
-		public override void DrawPie 	(Point[] rect, float startAngle, float sweepAngle)
+		public override void DrawPie (Point[] rect, float startAngle, float sweepAngle)
 				{
-					// TODO
+					return;
 				}
 
+		[TODO]
 		// Fill a pie slice within a rectangle defined by four points.
 		public override void FillPie (Point[] rect, float startAngle, float sweepAngle)
 				{
-					// TODO
+					return;
 				}
 
+		[TODO]
 		// Set the clipping region to empty.
 		public override void SetClipEmpty()
 				{
-					// TODO
+					return;
 				}
 
+		[TODO]
 		// Set the clipping region to infinite (i.e. disable clipping).
 		public override void SetClipInfinite()
 				{
-					// TODO
+					return;
 				}
 
+		[TODO]
 		// Set the clipping region to a single rectangle.
 		public override void SetClipRect(int x, int y, int width, int height)
 				{
-					// TODO
+					return;
 				}
 
+		[TODO]
 		// Set the clipping region to a list of rectangles.
 		public override void SetClipRects(Rectangle[] rects)
 				{
-					// TODO
+					return;
 				}
 
+		[TODO]
 		// Set the clipping region to a complex mask.
 		public override void SetClipMask(Object mask, int topx, int topy)
 				{
-					// TODO
+					return;
 				}
 
 		// Copy image into this.image at x, y
@@ -318,13 +328,14 @@ namespace System.Drawing.Toolkit
 					this.image.ImageChanged();
 				}
 
+		[TODO]
 		// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
 		// in the form of an xbm bitmap.
 		public override void DrawGlyph
 					(int x, int y,
 					 byte[] bits, int bitsWidth, int bitsHeight, Color color)
 				{
-					// TODO
+					return;
 				}
 
 	}

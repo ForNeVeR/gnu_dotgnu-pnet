@@ -67,10 +67,10 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				}
 			}
 
+	[TODO]
 	// Clear the entire drawing surface.
 	public override void Clear(System.Drawing.Color color)
 			{
-				// TODO
 				graphics.Clear();
 			}
 
@@ -312,10 +312,11 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				}
 			}
 
+	[TODO]
 	// Set the clipping region to a complex mask.
 	public override void SetClipMask(Object mask, int topx, int topy)
 			{
-				// TODO
+				return;
 			}
 
 	// Get the line spacing for the font selected into this graphics object.

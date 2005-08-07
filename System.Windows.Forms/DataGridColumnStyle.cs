@@ -25,7 +25,7 @@ namespace System.Windows.Forms
 [TODO]
 public abstract class DataGridColumnStyle
 {
-	// TODO
+	// Complete class here
 
 }; // class DataGridColumnStyle
 

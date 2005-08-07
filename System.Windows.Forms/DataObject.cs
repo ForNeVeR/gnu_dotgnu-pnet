@@ -57,7 +57,7 @@ public class DataObject : IDataObject
 	}
 
 	[TODO]
-	// TODO: Format conversion
+	// Handle: Format conversion
 	public virtual Object GetData(String s, bool b)
 	{
 		if (s == null)
@@ -83,7 +83,7 @@ public class DataObject : IDataObject
 	}
 
 	[TODO]
-	// TODO: Check if some other format is convertible
+	// Handle: Check if some other format is convertible
 	public virtual bool GetDataPresent(String s, bool b)
 	{
 		return objects.ContainsKey(s);
@@ -95,7 +95,7 @@ public class DataObject : IDataObject
 	}
 
 	[TODO]
-	// TODO: Implement format convertibility
+	// Handle: Implement format convertibility
 	public virtual String[] GetFormats(bool b)
 	{
 		String[] s;
@@ -109,7 +109,7 @@ public class DataObject : IDataObject
 	}
 
 	[TODO]
-	// TODO: This method has to find the format from the class
+	// Handle: This method has to find the format from the class
 	public virtual void SetData(Object o)
 	{
 		SetData(DataFormats.StringFormat, o.ToString()); 

@@ -93,7 +93,7 @@ public class MenuItem : Menu
 	[TODO]
 	private void UpdateMenuItem()
 			{
-				// TODO
+				return;
 			}
 
 	// Get the value of a menu item flag.
@@ -350,6 +350,7 @@ public class MenuItem : Menu
 				}
 			}
 
+	[TODO]
 	// Create a copy of the current menu item.
 	public virtual MenuItem CloneMenu()
 			{
@@ -360,24 +361,28 @@ public class MenuItem : Menu
 				clone.mergeType = this.mergeType;
 				clone.shortcut = this.shortcut;
 
-				// TODO: Clone all other stuff to be cloned.
+				// Fix: Clone all other stuff to be cloned.
 
 				return clone;				
 			}
+
+	[TODO]
 	protected void CloneMenu(MenuItem itemSrc)
 			{
-				// TODO
+				return;
 			}
 
+	[TODO]
 	// Merge this menu item with another.
 	public virtual MenuItem MergeMenu()
 			{
-				// TODO
 				return this;
 			}
+
+	[TODO]
 	public void MergeMenu(MenuItem itemSrc)
 			{
-				// TODO
+				return;
 			}
 
 	// Generate a "Click" event from this menu item.

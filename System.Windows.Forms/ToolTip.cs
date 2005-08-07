@@ -133,13 +133,11 @@ public sealed class ToolTip
 	[TODO]
 	public String GetToolTip(Control control)
 			{
-				// TODO
 				return String.Empty;
 			}
 	[TODO]
 	public bool CanExtend(Object target)
 			{
-				// TODO
 				return false;
 			}
 
@@ -150,19 +148,19 @@ public sealed class ToolTip
 	protected virtual void Dispose(bool disposing)
 #endif
 			{
-				// TODO
+				return;
 			}
 
 	[TODO]
 	public void RemoveAll()
 			{
-				// TODO
+				return;
 			}
 
 	[TODO]
 	public void SetToolTip(Control control, String caption)
 			{
-				// TODO
+				return;
 			}
 
 	[TODO]

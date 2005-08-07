@@ -25,7 +25,7 @@ namespace System.Windows.Forms
 [TODO]
 public sealed class InputLanguage
 {
-	// TODO
+	// Implement class here
 
 }; // class InputLanguage
 

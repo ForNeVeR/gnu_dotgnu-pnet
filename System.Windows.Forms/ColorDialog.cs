@@ -214,11 +214,12 @@ public class ColorDialog : CommonDialog
 		// Internal state.
 		private ColorDialog dialog;
 
+		[TODO]
 		// Constructor.
 		public ColorDialogForm(ColorDialog dialog)
 				{
 					this.dialog = dialog;
-					// TODO: create the form
+					// create the form
 				}
 
 		// Dispose of this dialog.
@@ -227,10 +228,11 @@ public class ColorDialog : CommonDialog
 					Dispose(true);
 				}
 
+		[TODO]
 		// Change the color that is displayed in the dialog.
 		public void ChangeColor()
 				{
-					// TODO
+					return;
 				}
 
 	}; // class ColorDialogForm

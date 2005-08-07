@@ -82,7 +82,7 @@ public abstract class Menu
 				--suppressUpdates;
 				if(suppressUpdates == 0)
 				{
-					// TODO: force a repaint/recalc of the menu
+					// Fix: force a repaint/recalc of the menu
 				}
 			}
 
@@ -178,7 +178,7 @@ public abstract class Menu
 	[TODO]
 	public virtual void MergeMenu(Menu menuSrc)
 			{
-				// TODO
+				return;
 			}
 
 	// Convert this object into a string.
@@ -191,7 +191,7 @@ public abstract class Menu
 	[TODO]
 	protected void CloneMenu(Menu menuSrc)
 			{
-				// TODO
+				return;
 			}
 
 	// Offset from each item to the menu text.
@@ -321,9 +321,9 @@ public abstract class Menu
 				itemSelectTimer.Stop();
 			}
 
+	[TODO]
 	internal protected bool ProcessCmdKey(ref Message msg, Keys keyData)
 			{
-				// TODO
 				return false;
 			} 
 

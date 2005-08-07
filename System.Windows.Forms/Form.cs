@@ -122,12 +122,12 @@ public class Form : ContainerControl
 			{
 				get
 				{
-					// TODO
+					// Implement
 					return false;
 				}
 				set
 				{
-					// TODO
+					// Implement
 				}
 			}
 	public bool AutoScale
@@ -339,12 +339,12 @@ public class Form : ContainerControl
 			{
 				get
 				{
-					// TODO
+					// Implement
 					return Rectangle.Empty;
 				}
 				set
 				{
-					// TODO
+					// Implement
 				}
 			}
 	public Size MaximumSize
@@ -534,7 +534,7 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					// TODO: update the owned child list
+					// Fix: update the owned child list
 					owner = value;
 				}
 			}
@@ -853,7 +853,6 @@ public class Form : ContainerControl
 	[TODO]
 	public static SizeF GetAutoScaleSize(Font font)
 			{
-				// TODO
 				return SizeF.Empty;
 			}
 
@@ -1463,7 +1462,6 @@ public class Form : ContainerControl
 	[TODO]
 	protected override void ScaleCore(float dx, float dy)
 			{
-				// TODO
 				base.ScaleCore(dx, dy);
 			}
 
@@ -1657,13 +1655,11 @@ public class Form : ContainerControl
 		[TODO]
 		public override void Add(Control control)
 				{
-					// TODO
 					base.Add(control);
 				}
 		[TODO]
 		public override void Remove(Control control)
 				{
-					// TODO
 					base.Remove(control);
 				}
 
@@ -1698,6 +1694,7 @@ public class Form : ContainerControl
 				base.OnMouseMove (e);
 			}
 
+	[TODO]
 	public bool ControlBox
 			{
 				get
@@ -1709,7 +1706,7 @@ public class Form : ContainerControl
 					if (value != controlBox)
 					{
 						controlBox = value;
-						//TODO
+						// Implement
 					}
 				}
 			}

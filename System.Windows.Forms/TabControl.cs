@@ -365,7 +365,6 @@ namespace System.Windows.Forms
 			[TODO]
 			public override void Remove(Control control)
 			{
-				// TODO
 				base.Remove(control);
 			}
 
@@ -391,7 +390,7 @@ namespace System.Windows.Forms
 				}
 				set
 				{
-					// TODO
+					// Handle
 				}
 			}
 
@@ -1017,13 +1016,14 @@ namespace System.Windows.Forms
 			}
 		}
 
+		[TODO]
 		// This occurs for each tab needing to be drawn
 		protected virtual void OnDrawItem( DrawItemEventArgs e )
 		{
 			e.DrawBackground();
 			Rectangle borderBounds = new Rectangle(e.Bounds.Left, e.Bounds.Top, e.Bounds.Width, e.Bounds.Height+2);
 			
-			//TODO: If Appearance is tab then this ok, need to do for button & flat button
+			// Fix: If Appearance is tab then this ok, need to do for button & flat button
 			// Draw tab edging & clip a border edge above the bottom
 			
 			DrawTab( e.Graphics, borderBounds, alignment, PositionInfo.positions[e.Index].leftExposed );
@@ -1031,7 +1031,7 @@ namespace System.Windows.Forms
 			// Owner Draw does their own drawing
 			if (drawMode == TabDrawMode.Normal)
 			{
-				//TODO: If imageindex & imagelist then draw
+				// Fix: If imageindex & imagelist then draw
 				
 				Rectangle textBounds = new Rectangle(e.Bounds.Left + tabTextWidthMargin, e.Bounds.Top + tabTextHeightMargin, e.Bounds.Width - tabTextWidthMargin*2, e.Bounds.Height - tabTextHeightMargin * 2);
 				Rectangle focusBounds = textBounds;
@@ -1039,7 +1039,7 @@ namespace System.Windows.Forms
 
 				if ((e.State & DrawItemState.Focus)>0)
 					ControlPaint.DrawFocusRectangle(e.Graphics, focusBounds, ForeColor, BackColor);
-				//TODO: Draw disabled
+				// Fix: Draw disabled
 				DrawText( e.Graphics, tabPageCollection[e.Index].Text, textBounds, e.ForeColor, e.BackColor, hotTrack && e.Index == hotTrackIndex );
 				
 			}

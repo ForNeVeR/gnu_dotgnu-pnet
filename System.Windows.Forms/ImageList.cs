@@ -147,9 +147,11 @@ public sealed class ImageList
 			handler(this,EventArgs.Empty);
 		}
 	}
+
+	[TODO]
 	public override string ToString()
 	{
-		// TODO
+		// Handle
 		return base.ToString();
 	}
 

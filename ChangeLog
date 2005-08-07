@@ -26,7 +26,12 @@
 	System.Windows.Forms/MenuItem.cs,
 	System.Windows.Forms/InputLanguage.cs,
 	System.Windows.Forms/ColorDialog.cs, System.Windows.Forms/ToolTip.cs,
-	System.Windows.Forms/Form.cs:
+	System.Windows.Forms/Form.cs, System.Windows.Forms/Clipboard.cs,
+	System.Windows.Forms/ToolBarButton.cs,
+	System.Windows.Forms/BindingManagerBase.cs,
+	System.Windows.Forms/ImageList.cs,
+	System.Windows.Forms/TextBoxBase.cs,
+	System.Windows.Forms/TabControl.cs, tests/System/TestUri.cs:
 	Use correct TODO attributes where required.
 
 2005-08-06  Deryk Robosson  <deryk@0x0a.com>

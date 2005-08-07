@@ -137,54 +137,54 @@ public class TestUri : TestCase
 
 	// TestUriCheckSecurity() is not necessary
 
+	[TODO]
 	public void TestUriEquals()
 	{
-	/*TODO*/
 	}
 
+	[TODO]
 	public void TestUriEscape()
 	{
-	/*TODO*/
 	}
 
+	[TODO]
 	public void TestUriEscapeString()
 	{
-	/*TODO*/
 	}
 
+	[TODO]
 	public void TestUriFromHex()
 	{
-	/*TODO*/
 	}
 
+	[TODO]
 	public void TestUriGetHashCode()
 	{
-	/*TODO*/
 	}
 
+	[TODO]
 	public void TestUriGetLeftPart()
 	{
-	/*TODO*/
 	}
 
+	[TODO]
 	public void TestUriHexEscape()
 	{
-	/*TODO*/
 	}
 
+	[TODO]
 	public void TestUriHexUnescape()
 	{
-	/*TODO*/
 	}
 
+	[TODO]
 	public void TestUriIsBadFileSystemCharacter()
 	{
-	/*TODO*/
 	}
 
+	[TODO]
 	public void TestUriIsExcludedCharacter()
 	{
-	/*TODO*/
 	}
 
 	public void TestUriIsHexDigit()
@@ -212,9 +212,9 @@ public class TestUri : TestCase
 		Assert("\"%af\", position 100, is not hex encoding", !Uri.IsHexEncoding("%af", 100));
 	}
 
+	[TODO]
 	public void TestUriIsReservedCharacter()
 	{
-	/*TODO*/
 	}
 
 	public void TestUriMakeRelative()
@@ -257,26 +257,31 @@ public class TestUri : TestCase
 					uri.ToString());
 	}
 
+	[TODO]
 	public void TestUriUnescape()
 	{
-	/*TODO*/
 	}
+
+	[TODO]
 	public void TestUriAbsolutePath()
 	{
-	/*TODO*/
 	}
+
+	[TODO]
 	public void TestUriAbsoluteUri()
 	{
-	/*TODO*/
 	}
+
 	public void TestUriAuthority()
 	{
 		AssertEquals("rmsUri: Authority built correctly", rmsUri.Authority, "rms@ftp.gnu.org:2538");
 	}
+
+	[TODO]
 	public void TestUriFragment()
 	{
-	/*TODO*/
 	}
+
 	public void TestUriHost()
 	{
 		AssertEquals("rmsUri: Host parsed", rmsUri.Host, "ftp.gnu.org");
@@ -289,21 +294,26 @@ public class TestUri : TestCase
 	{
 		Assert("rmsUri: 2538 is not default for ftp", !rmsUri.IsDefaultPort);
 	}
+
+	[TODO]
 	public void TestUriIsFile()
 	{
-	/*TODO*/
 	}
+
+	[TODO]
 	public void TestUriIsLoopback()
 	{
-	/*TODO*/
 	}
+
+	[TODO]
 	public void TestUriLocalPath()
 	{
-	/*TODO*/
 	}
+
+	[TODO]
 	public void TestUriPathAndQuery()
 	{
-	/*TODO*/
+
 	}
 	public void TestUriPort()
 	{
@@ -317,10 +327,12 @@ public class TestUri : TestCase
 	{
 		AssertEquals("rmsUri: Scheme parsed", rmsUri.Scheme, "ftp");
 	}
+
+	[TODO]
 	public void TestUriUserEscaped()
 	{
-	/*TODO*/
 	}
+
 	public void TestUriUserInfo()
 	{
 		AssertEquals("rmsUri: User info parsed", rmsUri.UserInfo, "rms");

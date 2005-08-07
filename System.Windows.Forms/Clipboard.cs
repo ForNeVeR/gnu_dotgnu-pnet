@@ -32,11 +32,10 @@ public sealed class Clipboard
 	// Cannot instantiate this class.
 	private Clipboard() {}
 
-	// Get the current clipboard contents.
 	[TODO]
+	// Get the current clipboard contents.
 	public static IDataObject GetDataObject()
 			{
-				// TODO
 				return obj;
 			}
 
@@ -52,7 +51,7 @@ public sealed class Clipboard
 				{
 					throw new ArgumentNullException("data");
 				}
-				// TODO
+				// Fix
 				if(data is IDataObject)
 				{
 					obj = (IDataObject)data;

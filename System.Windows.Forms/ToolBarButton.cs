@@ -312,9 +312,11 @@ public class ToolBarButton
 		viewRectangle = Rectangle.Empty;
 		dropRectangle = Rectangle.Empty;
 	}
+
+	[TODO]
 	public override string ToString()
 	{
-		// TODO
+		// Fix
 		return base.ToString();
 	}
 

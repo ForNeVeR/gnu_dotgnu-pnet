@@ -152,7 +152,6 @@ public abstract class BindingManagerBase
 	protected internal virtual PropertyDescriptorCollection GetItemProperties
 				(ArrayList dataSources, ArrayList listAccessors)
 			{
-				// TODO
 				return null;
 			}
 	[TODO]
@@ -160,7 +159,6 @@ public abstract class BindingManagerBase
 				(Type listType, int offset,
 				 ArrayList dataSources, ArrayList listAccessors)
 			{
-				// TODO
 				return null;
 			}
 

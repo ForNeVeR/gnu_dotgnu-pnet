@@ -20,7 +20,8 @@
 	System.Windows.Forms/ImageListStreamer.cs,
 	System.Windows.Forms/Control.cs, System.Windows.Forms/TextBox.cs,
 	System.Windows.Forms/MonthCalendar.cs,
-	System.Windows.Forms/DataObject.cs, System.Windows.Forms/Menu.cs:
+	System.Windows.Forms/DataObject.cs, System.Windows.Forms/Menu.cs,
+	System.Windows.Forms/ColumnHeader.cs:
 	Use correct TODO attributes where required.
 
 2005-08-06  Deryk Robosson  <deryk@0x0a.com>

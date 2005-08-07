@@ -82,6 +82,7 @@ using System.ComponentModel;
 		[Localizable(true)]
 		[DefaultValue(HorizontalAlignment.Left)]
 #endif
+		[TODO]
 		public HorizontalAlignment TextAlign
 		{
 			get
@@ -106,7 +107,7 @@ using System.ComponentModel;
 
 				if (listView != null)
 				{
-					//TODO: Update ListView
+					// Fix: Update ListView
 				}
 			}
 		}
@@ -115,6 +116,7 @@ using System.ComponentModel;
 		[Localizable(true)]
 		[DefaultValue(60)]
 #endif
+		[TODO]
 		public int Width
 		{
 			get
@@ -131,8 +133,8 @@ using System.ComponentModel;
 				width = value;
 				if (listView != null)
 				{
-					//TODO: Set Column width
-					//TODO: Update ListView
+					// Fix: Set Column width
+					// Fix: Update ListView
 				}
 			}
 		}
@@ -167,6 +169,7 @@ using System.ComponentModel;
 #if CONFIG_COMPONENT_MODEL
 		[Localizable(true)]
 #endif
+		[TODO]
 		public string Text
 		{
 			get
@@ -197,7 +200,7 @@ using System.ComponentModel;
 				}
 				if (listView != null)
 				{
-					//TODO: Update ListView
+					// Fix: Update ListView
 				}
 			}
 		}

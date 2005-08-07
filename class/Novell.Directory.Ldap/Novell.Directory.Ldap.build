@@ -11,6 +11,7 @@
 
 			<sources basedir="${mono.sources}/class/Novell.Directory.Ldap">
 				<includes name="**/*.cs"/> 
+				<excludes name="Novell.Directory.Ldap.Security.jvm/**"/>
 				<excludes name="Test/**"/>
 			</sources>
 

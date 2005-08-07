@@ -13,6 +13,16 @@
 				<includes name="**/*.cs"/> 
 				<includes name="../../build/common/Locale.cs"/>
 				<includes name="../../build/common/MonoTODOAttribute.cs"/> 
+				<excludes name="System.Web.J2EE/**"/>
+				<excludes name="System.Web.Hosting/ServletWorkerRequest.jvm.cs"/>
+				<excludes name="System.Web.SessionState/HttpSessionState.jvm.cs"/>
+				<excludes name="System.Web.SessionState/SessionInProcHandler.jvm.cs"/>
+				<excludes name="System.Web.UI/ControlBuilder.jvm.cs"/>
+				<excludes name="System.Web.UI/ObjectTagBuilder.jvm.cs"/>
+				<excludes name="System.Web.UI/PageHandlerFactory.jvm.cs"/>
+				<excludes name="System.Web.UI/TemplateControl.jvm.cs"/>
+				<excludes name="System.Web.UI.WebControls/XmlBuilder.jvm.cs"/>
+				<excludes name="System.Web.Util/ICalls.jvm.cs"/>
 				<excludes name="Test/**"/>
 				<excludes name="System.Web.Util/ICalls.cs"/>
 				<file basedir="." name="ICalls.cs"/>

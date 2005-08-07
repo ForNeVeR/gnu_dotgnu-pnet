@@ -1,3 +1,9 @@
+2005-08-07  Klaus Treichel  <ktreichel@web.de>
+
+	* class/System.Web/System.Web.build,
+	class/Novell.Directory.Ldap/Novell.Directory.Ldap.build: exclude the jvm
+	directories and files from build.
+
 2005-06-25  Klaus Treichel  <ktreichel@web.de>
 
 	* class/Custommarshalers/Custommarshalers.build,

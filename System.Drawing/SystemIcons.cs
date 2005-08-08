@@ -171,7 +171,7 @@ using System.Windows.Forms.Themes;
 								applicationIcon = new Icon
 									(typeof(SystemIcons), "application.ico");
 							}
-							iconObject = handIcon;
+							iconObject = applicationIcon;
 						}
 						break;
 

@@ -1,3 +1,8 @@
+2005-08-08  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Drawing/SystemIcons.cs: iconObject for application in
+	LoadIcon method was incorrectly set to hand.
+
 2005-08-07  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs,

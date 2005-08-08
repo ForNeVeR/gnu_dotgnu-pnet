@@ -5091,7 +5091,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnParentBackColorChanged(EventArgs e)
 			{
-				if(backColor.IsEmpty && backgroundImage == null)
+				if((backColor.A < 255) && (backgroundImage == null))
 				{
 					OnBackColorChanged(e);
 				}
@@ -5101,7 +5101,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnParentBackgroundImageChanged(EventArgs e)
 			{
-				if(backColor.IsEmpty && backgroundImage == null)
+				if((backColor.A < 255) && (backgroundImage == null))
 				{
 					OnBackgroundImageChanged(e);
 				}

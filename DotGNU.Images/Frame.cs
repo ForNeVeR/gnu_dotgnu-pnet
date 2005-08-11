@@ -435,6 +435,9 @@ public class Frame : MarshalByRefObject, IDisposable
 	// Get a re-scaled version of this frame.
 	public Frame Scale(int newWidth, int newHeight)
 			{
+				if ((newWidth == width) && (newHeight == height))
+					return CloneFrame (image);
+
 				return BmpResizer.Resize(this, 0, 0, Width, Height, newWidth, newHeight);
 			}
 

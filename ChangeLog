@@ -1,3 +1,8 @@
+2005-08-11  Klaus Treichel  <ktreichel@web.de>
+
+	* support/expand.c: expand filenames starting with a drive specification
+	with the windows functions on cygwin.
+
 2005-08-07  Klaus Treichel  <ktreichel@web.de>
 
 	* csant/csant_dir.c: Prevent prepending of pathname if filename starts with

@@ -23,7 +23,7 @@
 #ifdef HAVE_UNISTD_H
 	#include <unistd.h>
 #endif
-#ifdef IL_WIN32_NATIVE
+#if defined(IL_WIN32_NATIVE) || defined(IL_WIN32_CYGWIN)
 	#include <windows.h>
 #endif
 
@@ -37,10 +37,13 @@ char *ILExpandFilename(const char *filename, char *searchPath)
 	char *path;
 	char *newPath;
 	int len;
-#ifdef IL_WIN32_NATIVE
+#if defined(IL_WIN32_NATIVE) || defined(IL_WIN32_CYGWIN)
 	char fullName[MAX_PATH];
 	LPSTR filePart;
 	DWORD pathLen;
+#ifdef IL_WIN32_CYGWIN
+	int len2;
+#endif
 #else
 	int len2;
 #endif
@@ -108,7 +111,36 @@ char *ILExpandFilename(const char *filename, char *searchPath)
 	}
 	else
 	{
+#ifdef IL_WIN32_CYGWIN
+		if((strlen(filename) > 1) && 
+			((filename[0] >= 'a' && filename[0] <= 'z') ||
+			(filename[0] >= 'A' && filename[0] <= 'Z')) &&
+			(filename[1] == ':'))
+		{
+			/* File starts with a drive spec. so expand the filename using Win32 functions */
+			filePart = 0;
+			pathLen = GetFullPathName(filename, sizeof(fullName), fullName, &filePart);
+			if(!pathLen)
+			{
+				/* Something is wrong with the filename, so just return it as-is */
+				return ILDupString(filename);
+			}
+			else if(pathLen < sizeof(fullName))
+			{
+				return ILDupString(fullName);
+			}
+			newPath = (char *)ILMalloc(pathLen + 1);
+			pathLen = GetFullPathName(filename, pathLen + 1, newPath, &filePart);
+			newPath[pathLen] = '\0';
+			return newPath;
+		}
+		else
+		{
+			path = ILGetCwd();
+		}
+#else		
 		path = ILGetCwd();
+#endif
 	}
 	if(!path)
 	{

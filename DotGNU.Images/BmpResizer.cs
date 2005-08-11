@@ -234,6 +234,7 @@ namespace DotGNU.Images
 					byte pixelByte1 = 0;
 					byte pixelByte2 = 0;
 					byte pixelByte3 = 0;
+					byte pixelAlpha = 255;
 					byte byteData = 0;
 					// Index for 1bpp format.
 					int bit = lineStartBit;
@@ -247,7 +248,7 @@ namespace DotGNU.Images
 					{
 						byteData = data[lineStart];
 					}
-					int bufWidth = 3;
+					int bufWidth = 4;
 					if (oldFrame.pixelFormat == PixelFormat.Format1bppIndexed)
 					{
 						bufWidth = 1;
@@ -300,8 +301,16 @@ namespace DotGNU.Images
 							}
 							else
 							{
+								// 32 bpp Format.
+								if (oldFrame.pixelFormat==PixelFormat.Format32bppArgb)
+								{
+									pixelByte1 = data[currentPixel++];
+									pixelByte2 = data[currentPixel++];
+									pixelByte3 = data[currentPixel++];
+									pixelAlpha = data[currentPixel++];
+								}
 								// 24 bpp Format.
-								if (oldFrame.pixelFormat==PixelFormat.Format24bppRgb)
+								else if (oldFrame.pixelFormat==PixelFormat.Format24bppRgb)
 								{
 									pixelByte1 = data[currentPixel++];
 									pixelByte2 = data[currentPixel++];
@@ -360,6 +369,7 @@ namespace DotGNU.Images
 								buffer[bufCurrentPixel] += temp * pixelByte1;
 								buffer[bufCurrentPixel+1] += temp * pixelByte2;
 								buffer[bufCurrentPixel+2] += temp * pixelByte3;
+								buffer[bufCurrentPixel+3] += temp * pixelAlpha;
 							}
 							int xCoefficient1 = rowCoefficients[currentXCoeff + 1];
 							bool crossColumn =  xCoefficient1> 0;
@@ -370,9 +380,10 @@ namespace DotGNU.Images
 									buffer[bufCurrentPixel + 1] += temp * pixelByte1;
 								else
 								{
-									buffer[bufCurrentPixel + 3] += temp * pixelByte1;
-									buffer[bufCurrentPixel + 4] += temp * pixelByte2;
-									buffer[bufCurrentPixel + 5] += temp * pixelByte3;
+									buffer[bufCurrentPixel + 4] += temp * pixelByte1;
+									buffer[bufCurrentPixel + 5] += temp * pixelByte2;
+									buffer[bufCurrentPixel + 6] += temp * pixelByte3;
+									buffer[bufCurrentPixel + 7] += temp * pixelAlpha;
 								}
 							}
 							if(crossRow)
@@ -385,6 +396,7 @@ namespace DotGNU.Images
 									buffer[bufNextPixel] += temp * pixelByte1;
 									buffer[bufNextPixel + 1] += temp * pixelByte2;
 									buffer[bufNextPixel + 2] += temp * pixelByte3;
+									buffer[bufNextPixel + 3] += temp * pixelAlpha;
 								}
 								if(crossColumn)
 								{
@@ -393,9 +405,10 @@ namespace DotGNU.Images
 										buffer[bufNextPixel + 1] += temp * pixelByte1;
 									else
 									{
-										buffer[bufNextPixel + 3] += temp * pixelByte1;
-										buffer[bufNextPixel + 4] += temp * pixelByte2;
-										buffer[bufNextPixel + 5] += temp * pixelByte3;
+										buffer[bufNextPixel + 4] += temp * pixelByte1;
+										buffer[bufNextPixel + 5] += temp * pixelByte2;
+										buffer[bufNextPixel + 6] += temp * pixelByte3;
+										buffer[bufNextPixel + 7] += temp * pixelAlpha;
 									}
 								}
 							}
@@ -439,12 +452,23 @@ namespace DotGNU.Images
 									dataOut[currentPixel] = dataByte1;
 								}
 							}
-							// 24 bpp format.
-							else if (oldFrame.pixelFormat==PixelFormat.Format24bppRgb)
+							// 32 bpp format.
+							else if (oldFrame.pixelFormat==PixelFormat.Format32bppArgb)
 							{
 								for(; bufCurrentPixel < endWriteBuffer; bufCurrentPixel++)
 								{
 									dataOut[currentPixel++] = (byte)(buffer[bufCurrentPixel]>> 24);
+								}
+							}
+							// 24 bpp format.
+							else if (oldFrame.pixelFormat==PixelFormat.Format24bppRgb)
+							{
+								while( bufCurrentPixel < endWriteBuffer)
+								{
+									dataOut[currentPixel++] = (byte)(buffer[bufCurrentPixel++]>> 24);
+									dataOut[currentPixel++] = (byte)(buffer[bufCurrentPixel++]>> 24);
+									dataOut[currentPixel++] = (byte)(buffer[bufCurrentPixel++]>> 24);
+									bufCurrentPixel++; // Skip alpha
 								}
 							}
 							// 16 bpp 555 format.
@@ -455,6 +479,7 @@ namespace DotGNU.Images
 									int r = (byte)(buffer[bufCurrentPixel++]>> 24);
 									int g = (byte)(buffer[bufCurrentPixel++]>> 24);
 									int b = (byte)(buffer[bufCurrentPixel++]>> 24);
+									bufCurrentPixel++; // Skip alpha
 									dataOut[currentPixel++] = (byte)((g<<2 & 0xE0) | (b>>3 & 0x1F));
 									dataOut[currentPixel++] = (byte)((r>>1 & 0x7C) | (g >>6 & 0x03));
 								}
@@ -467,6 +492,7 @@ namespace DotGNU.Images
 									int r = (byte)(buffer[bufCurrentPixel++]>> 24);
 									int g = (byte)(buffer[bufCurrentPixel++]>> 24);
 									int b = (byte)(buffer[bufCurrentPixel++]>> 24);
+									bufCurrentPixel++; // Skip alpha
 									dataOut[currentPixel++] = (byte)((g<<3 & 0xE0) | (b >> 3 & 0x1F)) ;
 									dataOut[currentPixel++] = (byte)((r & 0xF8) | (g >>5 & 0x07));
 								}
@@ -479,6 +505,7 @@ namespace DotGNU.Images
 									int r = (byte)(buffer[bufCurrentPixel++]>> 24);
 									int g = (byte)(buffer[bufCurrentPixel++]>> 24);
 									int b = (byte)(buffer[bufCurrentPixel++]>> 24);
+									bufCurrentPixel++; // Skip alpha
 									dataOut[currentPixel++] = (byte)Utils.BestPaletteColor(palette, r, g, b);
 								}
 							}
@@ -492,6 +519,7 @@ namespace DotGNU.Images
 									int r = (byte)(buffer[bufCurrentPixel++]>> 24);
 									int g = (byte)(buffer[bufCurrentPixel++]>> 24);
 									int b = (byte)(buffer[bufCurrentPixel++]>> 24);
+									bufCurrentPixel++; // Skip alpha
 									int palettePos = (byte)Utils.BestPaletteColor(palette, r, g, b);
 									if (highNibble1)
 									{

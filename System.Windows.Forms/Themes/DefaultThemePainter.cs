@@ -1044,8 +1044,7 @@ public class DefaultThemePainter : IThemePainter
 										int steps, int step,
 										int value, bool enabled)
 			{
-				// TODO : draw disabled mode progressbar
-				// TODO : handle large no of blocks ie merge cases
+				// TODO : handle large number of blocks ie merge cases
 				int blockWidth, blockHeight, xSpacing, ySpacing;
 				DrawBorder3D(graphics,x,y,width,height, 
 							 SystemColors.InactiveBorder,
@@ -1538,13 +1537,28 @@ public class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw an image in its disabled state.
-	[TODO]
 	public virtual void DrawImageDisabled
 				(Graphics graphics, Image image,
 				 int x, int y, Color background)
 			{
-				// TODO: create the greyed version of the image.
-				graphics.DrawImage(image, x, y);
+				Imaging.ColorMatrix colorMatrix = new Imaging.ColorMatrix(new float[][] { new float[]{ 0.5f,0.5f,0.5f,0,0 },
+											new float[]{ 0.5f,0.5f,0.5f,0,0 },
+											new float[]{ 0.5f,0.5f,0.5f,0,0 },
+											new float[]{ 0,0,0,1,0,0 },
+											new float[]{ 0,0,0,0,1,0 },
+											new float[]{ 0,0,0,0,0,1 }
+											}
+									);
+
+				Imaging.ImageAttributes imageAttributes = new Imaging.ImageAttributes();
+				imageAttributes.SetColorMatrix(colorMatrix);
+				graphics.DrawImage(image,
+						new Rectangle(0,0,image.Width,image.Height),
+						x, y,
+						image.Width,
+						image.Height,
+						GraphicsUnit.Pixel,
+						imageAttributes);
 			}
 
 	// Draw a locked selection frame.

@@ -4,6 +4,20 @@
 	ProgressBar disabled was already handled correctly.  Implement
 	incomplete DrawImageDisabled method.
 
+2005-08-11  Marc Haisenko <marc@darkdust.net>
+
+	* DotGNU.Images/Frames.cs: Don't try to resize an image in Frame.Scale
+	if the size is the same as the frame. Instead just clone the frame.
+
+	* DotGNU.Images/BmpResizer.cs: Implemented support for shrinking from/
+	to PixelFormat.Format32bppArgb in BmpResizer.ShrinkBmp.
+
+2005-08-08  Marc Haisenko <marc@darkdust.net>
+
+	* System.Windows.Forms/Control.cs: Fixed handling of non-opaque colors
+	in Control.OnParentBackColorChanged and
+	Control.OnParentBackgroundImageChanged.
+
 2005-08-08  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Drawing/SystemIcons.cs: iconObject for application in

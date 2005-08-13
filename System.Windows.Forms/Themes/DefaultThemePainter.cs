@@ -1553,8 +1553,8 @@ public class DefaultThemePainter : IThemePainter
 				Imaging.ImageAttributes imageAttributes = new Imaging.ImageAttributes();
 				imageAttributes.SetColorMatrix(colorMatrix);
 				graphics.DrawImage(image,
-						new Rectangle(0,0,image.Width,image.Height),
-						x, y,
+						new Rectangle(x, y, image.Width, image.Height),
+						0, 0,
 						image.Width,
 						image.Height,
 						GraphicsUnit.Pixel,
@@ -2170,12 +2170,58 @@ public class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw a size grip.
-	[TODO]
 	public virtual void DrawSizeGrip
-				(Graphics graphics, Color backColor,
-				 int x, int y, int width, int height)
+				(Graphics graphics, Color backColor, Rectangle drawBounds)
 			{
-				// TODO
+				Pen light = new Pen(Color.White, 1);
+				Pen dark = new Pen(Color.Black, 1);
+
+				// Backfill accordingly
+				graphics.FillRectangle(new SolidBrush(backColor),
+							drawBounds.X, drawBounds.Y,
+							drawBounds.Width, drawBounds.Height);
+
+				// Top most line
+				graphics.DrawLine(SystemPens.ControlDark,
+						drawBounds.Left + 1,
+						drawBounds.Height - 1,
+						drawBounds.Width - 1 ,
+						drawBounds.Top + 1
+					);
+				graphics.DrawLine(SystemPens.ControlLightLight,
+						drawBounds.Left,
+						drawBounds.Height - 1,
+						drawBounds.Width - 1,
+						drawBounds.Top
+					);
+
+				// Middle line
+				graphics.DrawLine(SystemPens.ControlDark,
+						drawBounds.Left + 5,
+						drawBounds.Height - 1,
+						drawBounds.Width - 1,
+						drawBounds.Top + 5
+					);
+				graphics.DrawLine(SystemPens.ControlLightLight,
+						drawBounds.Left + 4,
+						drawBounds.Height - 1,
+						drawBounds.Width - 1,
+						drawBounds.Top + 4
+					);
+
+				// Bottom line
+				graphics.DrawLine(SystemPens.ControlDark,
+						drawBounds.Left + 10,
+						drawBounds.Height - 1,
+						drawBounds.Width - 1,
+						drawBounds.Top + 10
+					);
+				graphics.DrawLine(SystemPens.ControlLightLight,
+						drawBounds.Left + 9,
+						drawBounds.Height - 1,
+						drawBounds.Width - 1,
+						drawBounds.Top  + 9
+					);
 			}
 
 	// Draw a list box

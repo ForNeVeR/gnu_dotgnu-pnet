@@ -134,7 +134,7 @@ namespace System.Windows.Forms
 
 			if (sizingGrip == true)
 			{
-				ControlPaint.DrawSizeGrip(e.Graphics, BackColor, Width - 15, Height - 13, 15, 13);
+				ControlPaint.DrawSizeGrip(e.Graphics, BackColor, new Rectangle(Width - 16, Height - 16, Width, Height));
 			}
 			base.OnPaint(e);
 		}

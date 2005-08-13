@@ -2,7 +2,19 @@
 
 	* System.Windows.Forms/Themes/DefaultThemePainter.cs: Drawing
 	ProgressBar disabled was already handled correctly.  Implement
-	incomplete DrawImageDisabled method.
+	incomplete DrawImageDisabled method.  Implement DrawSizeGrip method.
+
+	* System.Windows.Forms/ControlPaint.cs: Change the input
+	parameters to DrawSizeGrip.
+
+	* System.Windows.Forms/StatusBar.cs: Alter call to DrawSizeGrip
+	per above input changes.
+
+	* System.Windows.Forms/Themes/IThemePainter.cs: Set input for
+	interface as above.
+
+	* System.Drawing/Imaging/ImageAttributes.cs: Enable
+	SetColorMatrix() methods.
 
 2005-08-11  Marc Haisenko <marc@darkdust.net>
 

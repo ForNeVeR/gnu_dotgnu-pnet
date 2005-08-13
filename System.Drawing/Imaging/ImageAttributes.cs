@@ -256,23 +256,22 @@ public sealed class ImageAttributes : ICloneable, IDisposable
 				info.matrixFlags = flags;
 			}
 
-	[TODO]
 	public void SetColorMatrix(ColorMatrix newColorMatrix)
 			{
-				throw new NotImplementedException("SetColorMatrix");
+				SetColorMatrix(newColorMatrix, ColorMatrixFlag.Default);
 			}
 
-	[TODO]
 	public void SetColorMatrix(ColorMatrix newColorMatrix, ColorMatrixFlag flags)
 			{
-				throw new NotImplementedException("SetColorMatrix");
+				SetColorMatrix(newColorMatrix, flags, ColorAdjustType.Default);
 			}
 
-	[TODO]
 	public void SetColorMatrix(ColorMatrix newColorMatrix,
 	                           ColorMatrixFlag mode, ColorAdjustType type)
 			{
-				throw new NotImplementedException("SetColorMatrix");
+				AttributeInfo info = GetInfo(type);
+				info.colorMatrix = newColorMatrix;
+				info.matrixFlags = mode;
 			}
 
 	// Set a gamma setting.

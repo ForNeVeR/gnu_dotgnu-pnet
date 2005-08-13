@@ -140,8 +140,7 @@ public interface IThemePainter
 				 Rectangle insideRect, Color backColor);
 
 	// Draw a size grip.
-	void DrawSizeGrip(Graphics graphics, Color backColor,
-				 	  int x, int y, int width, int height);
+	void DrawSizeGrip(Graphics graphics, Color backColor, Rectangle drawBounds);
 
 	// Draw a list box.
 	void DrawListBox(Graphics graphics,

@@ -484,15 +484,14 @@ public sealed class ControlPaint
 	public static void DrawSizeGrip
 				(Graphics graphics, Color backColor, Rectangle rectangle)
 			{
-				DrawSizeGrip(graphics, backColor, rectangle.X, rectangle.Y,
-						   	 rectangle.Width, rectangle.Height);
+				ThemeManager.MainPainter.DrawSizeGrip(graphics, backColor, rectangle);
 			}
 	public static void DrawSizeGrip
 				(Graphics graphics, Color backColor,
 				 int x, int y, int width, int height)
 			{
 				ThemeManager.MainPainter.DrawSizeGrip
-					(graphics, backColor, x, y, width, height);
+					(graphics, backColor, new Rectangle(x, y, width, height));
 			}
 
 	// Draw a disabled string.

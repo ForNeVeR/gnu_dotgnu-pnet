@@ -5,7 +5,7 @@
 	* libgc/Makefile.am. libgc/Makefile.in: change mips_sgi_mach_dep.s to
 	mips_sgi_mach_dep.S to fix make dist error.
 
-	* libffi.Makefile.in: remove $(srcdir)/../depcomp from DIST_COMMON.
+	* libffi/Makefile.in: remove $(srcdir)/../depcomp from DIST_COMMON.
 
 2005-08-11  Klaus Treichel  <ktreichel@web.de>
 

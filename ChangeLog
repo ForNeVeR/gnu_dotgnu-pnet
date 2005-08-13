@@ -1,3 +1,12 @@
+2005-08-13  Klaus Treichel  <ktreichel@web.de>
+
+	* Makefile.am: change to run all targets on all subdirs.
+
+	* libgc/Makefile.am. libgc/Makefile.in: change mips_sgi_mach_dep.s to
+	mips_sgi_mach_dep.S to fix make dist error.
+
+	* libffi.Makefile.in: remove $(srcdir)/../depcomp from DIST_COMMON.
+
 2005-08-11  Klaus Treichel  <ktreichel@web.de>
 
 	* support/expand.c: expand filenames starting with a drive specification

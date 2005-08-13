@@ -68,7 +68,7 @@ libgccpp_la_SOURCES = gc_cpp.cc
 libgccpp_la_LIBADD = $(THREADDLLIBS) $(UNWINDLIBS)
 libgccpp_la_LDFLAGS = -version-info 1:2:0
 
-EXTRA_DIST += alpha_mach_dep.S mips_sgi_mach_dep.s sparc_mach_dep.S
+EXTRA_DIST += alpha_mach_dep.S mips_sgi_mach_dep.S sparc_mach_dep.S
 
 AM_CXXFLAGS = @GC_CFLAGS@
 AM_CFLAGS = @GC_CFLAGS@

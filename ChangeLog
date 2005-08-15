@@ -1,3 +1,7 @@
+2005-08-15  Klaus Treichel  <ktreichel@web.de>
+
+	* Makefile.am: add coremul to SUBDIRS. 
+
 2005-08-13  Klaus Treichel  <ktreichel@web.de>
 
 	* Makefile.am: change to run all targets on all subdirs.

@@ -413,28 +413,8 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				}
 			}
 
-	// Add a hash entry to the table directly, with no error checking.
-	// This assumes that there is at least one spare bucket available.
-	private void AddDirect(Object key, Object value)
-			{
-				int hash = GetHash(key);
-				hash = (int)(((uint)hash) % ((uint)capacity));
-				for(;;)
-				{
-					if(table[hash].key == null || table[hash].key == removed)
-					{
-						// We've found an empty slot, so add the entry.
-						table[hash].key = key;
-						table[hash].value = value;
-						break;
-					}
-					hash = (hash + 1) % capacity;
-				}
-				++num;
-			}
-
 	// Expand the hash table and add a new entry.
-	private void ExpandAndAdd(Object key, Object value)
+	private void Expand()
 			{
 				HashBucket[] orig;
 				int origSize;
@@ -445,77 +425,76 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				origSize = capacity;
 
 				// Expand the size of the hash table.
-				if(capacity == 0)
+				// Keep going until we meet the load factor constraint
+				do
 				{
-					newCapacity = 2;
-				}
-				else
-				{
-					newCapacity = capacity * 2;
-					if(newCapacity <= primes[primes.Length - 1])
+					if(capacity == 0)
 					{
-						// Search for the next value in the "primes" table.
-						int left, right, middle;
-						left = 0;
-						right = primes.Length - 1;
-						while(left <= right)
-						{
-							middle = (left + right) / 2;
-							if(newCapacity < primes[middle])
-							{
-								right = middle - 1;
-							}
-							else if(newCapacity > primes[middle])
-							{
-								left = middle + 1;
-							}
-							else
-							{
-								right = middle;
-								break;
-							}
-						}
-						newCapacity = primes[right];
+						newCapacity = 2;
 					}
 					else
 					{
-						// We've run out of primes, so make the number odd
-						// and assume that the result is close enough to
-						// prime that it will be useful for our purposes.
-						++newCapacity;
+						newCapacity = capacity * 2;
+						if(newCapacity <= primes[primes.Length - 1])
+						{
+							// Search for the next value in the "primes" table.
+							int left, right, middle;
+							left = 0;
+							right = primes.Length - 1;
+							while(left <= right)
+							{
+								middle = (left + right) / 2;
+								if(newCapacity < primes[middle])
+								{
+									right = middle - 1;
+								}
+								else if(newCapacity > primes[middle])
+								{
+									left = middle + 1;
+								}
+								else
+								{
+									right = middle;
+									break;
+								}
+							}
+							newCapacity = primes[right];
+						}
+						else
+						{
+							// We've run out of primes, so make the number odd
+							// and assume that the result is close enough to
+							// prime that it will be useful for our purposes.
+							++newCapacity;
+						}
 					}
-				}
-				table = new HashBucket [newCapacity];
-				capacity = newCapacity;
-				num = 0;
+					table = new HashBucket [newCapacity];
+					capacity = newCapacity;
 
-				// Determine the new capacity limit.
-				try
-				{
-					capacityLimit = (int)(capacity * loadFactor);
-				}
-				catch(NotImplementedException)
-				{
-					// The runtime engine does not support floating point,
-					// so assume a load factor of 1.
-					capacityLimit = capacity;
-				}
+					// Determine the new capacity limit.
+					try
+					{
+						capacityLimit = (int)(capacity * loadFactor);
+					}
+					catch(NotImplementedException)
+					{
+						// The runtime engine does not support floating point,
+						// so assume a load factor of 1.
+						capacityLimit = capacity;
+					}
+				} while (capacityLimit <= num);
 
 				// Copy the original entries to the new table.
-				while(origSize > 0)
+				while (origSize > 0)
 				{
 					--origSize;
-					if(orig[origSize].key != null && orig[origSize].key != removed)
-					{
-						AddDirect(orig[origSize].key, orig[origSize].value);
-					}
+					if(orig[origSize].key == null || orig[origSize].key == removed)
+					  	continue;
+					int insertionPoint;
+					FindSlot(orig[origSize].key, out insertionPoint);
+					table[insertionPoint].key = orig[origSize].key;
+					table[insertionPoint].value = orig[origSize].value;
 				}
-
-				// Add the new entry to the hash table.
-				AddDirect(key, value);
-
-				// Update the generation count.
-				++generation;
 			}
 
 	// Implement the ICloneable interface.
@@ -593,46 +572,22 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 	// Implement the IDictionary interface.
 	public virtual void Add(Object key, Object value)
 			{
-				// Find an empty slot to add the entry, or expand
-				// the table if there are no free slots.
-				int hash = GetHash(key);
-				if(capacity == 0)
+				int insertionPoint;
+				int found = FindSlot(key, out insertionPoint);
+				if(found != -1)
 				{
-					ExpandAndAdd(key, value);
-					return;
+					// There is already an entry with the key.
+					throw new ArgumentException
+						(_("Arg_ExistingEntry"));
 				}
-				hash = (int)(((uint)hash) % ((uint)capacity));
-				int count = capacity;
-				while(count > 0)
+				if(insertionPoint == -1)
 				{
-					if(table[hash].key == null || table[hash].key == removed)
-					{
-						// We've found an empty slot.  Check the capacity.
-						if(num >= capacityLimit)
-						{
-							// We must increase the capacity before adding.
-							ExpandAndAdd(key, value);
-						}
-						else
-						{
-							// Add the entry to the empty slot.
-							table[hash].key = key;
-							table[hash].value = value;
-							++num;
-							++generation;
-						}
-						return;
-					}
-					else if(KeyEquals(table[hash].key, key))
-					{
-						// There is already an entry with the key.
-						throw new ArgumentException
-							(_("Arg_ExistingEntry"));
-					}
-					hash = (hash + 1) % capacity;
-					--count;
+					Expand();
+					FindSlot(key, out insertionPoint);
 				}
-				ExpandAndAdd(key, value);
+				table[insertionPoint].key = key;
+				table[insertionPoint].value = value;
+				++num;
 			}
 	public virtual void Clear()
 			{
@@ -652,29 +607,14 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 			}
 	public virtual void Remove(Object key)
 			{
-				int hash = GetHash(key);
-				if(capacity == 0)
+				int insertionPoint;
+				int found = FindSlot(key, out insertionPoint);
+				if(found != -1)
 				{
-					return;
-				}
-				hash = (int)(((uint)hash) % ((uint)capacity));
-				int count = capacity;
-				while(count > 0)
-				{
-					if( table[hash].key == null ) break; // reached end of table
-					if(table[hash].key != removed)
-					{
-						if(KeyEquals(table[hash].key, key))
-						{
-							table[hash].key = removed;
-							table[hash].value = null;
-							--num;
-							++generation;
-							break;
-						}
-					}
-					hash = (hash + 1) % capacity;
-					--count;
+					table[found].key = removed;
+					table[found].value = null;
+					--num;
+					++generation;
 				}
 			}
 	public virtual bool IsFixedSize
@@ -696,79 +636,26 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 			{
 				get
 				{
-					// Find an existing entry with the specified key.
-					int hash = GetHash(key);
-					if(capacity == 0)
-					{
-						return null;
-					}
-					hash = (int)(((uint)hash) % ((uint)capacity));
-					int count = capacity;
-					while(count > 0)
-					{
-						if(table[hash].key == null || table[hash].key == removed)
-						{
-							break;
-						}
-						else if(KeyEquals(table[hash].key, key))
-						{
-							return table[hash].value;
-						}
-						hash = (hash + 1) % capacity;
-						--count;
-					}
-					return null;
+					int insertionPoint;
+					int found = FindSlot(key, out insertionPoint);
+					return found == -1 ?  null : table[found].value;
 				}
 				set
 				{
-					// Find an existing entry and replace it, or
-					// add a new entry to the table if not found.
-					int hash = GetHash(key);
-					if(capacity == 0)
+					int insertionPoint;
+					int found = FindSlot(key, out insertionPoint);
+					if (insertionPoint == -1)
 					{
-						ExpandAndAdd(key, value);
-						return;
+						Expand();
+						FindSlot(key, out insertionPoint);
 					}
-					hash = (int)(((uint)hash) % ((uint)capacity));
-					int count = capacity;
-					int removed_hash = -1;
-					while(count > 0)
+					table[insertionPoint].value = value;
+					if (found == -1)
 					{
-						if(table[hash].key == removed && removed_hash == -1)
-							removed_hash = hash;
-						else if(table[hash].key == null)
-							break;
-						else if(KeyEquals(table[hash].key, key))
-						{
-							// There is already an entry with the key,
-							// so replace its value.
-							table[hash].value = value;
-							++generation;
-							return;
-						}
-						hash = (hash + 1) % capacity;
-						--count;
-					}
-					// The key wan't in the table.  Add it.
-					//
-					// This code assums the invariant:
-					//     capacity >= capacityLimit
-					// always holds true.
-					if(num >= capacityLimit)
-					{
-						// We must increase the capacity before adding.
-						ExpandAndAdd(key, value);
-					}
-					else
-					{
-						// Add the entry to the empty slot.
-						if (removed_hash != -1)
-							hash = removed_hash;
-						table[hash].key = key;
-						table[hash].value = value;
+						table[insertionPoint].key = key;
 						++num;
-						++generation;
 					}
+					++generation;
 				}
 			}
 	public virtual ICollection Keys
@@ -795,27 +682,8 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 	// Determine if this hash table contains a specific key.
 	public virtual bool ContainsKey(Object key)
 			{
-				int hash = GetHash(key);
-				if(capacity == 0)
-				{
-					return false;
-				}
-				hash = (int)(((uint)hash) % ((uint)capacity));
-				int count = capacity;
-				while(count > 0)
-				{
-					if(table[hash].key == null || table[hash].key == removed)
-					{
-						break;
-					}
-					else if(KeyEquals(table[hash].key, key))
-					{
-						return true;
-					}
-					hash = (hash + 1) % capacity;
-					--count;
-				}
-				return false;
+				int insertionPoint;
+				return FindSlot(key, out insertionPoint) != -1;
 			}
 
 	// Determine if this hash table contains a specific value.
@@ -856,6 +724,52 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					return key.GetHashCode();
 				}
+			}
+
+	//
+	// Find the position of the key in the hash table.
+	//
+	// Returns: the hash of the found key, or -1 if not found.
+	//
+	// out insertionPoint: the place the key can be inserted into the
+	// hash table, or -1 if adding this key would cause the the hashtable 
+	// to execeed its capacityLimit.
+	//
+	private int FindSlot(Object key, out int insertionPoint)
+			{
+				insertionPoint = -1;
+				if(capacity == 0)
+				{
+					return -1;
+				}
+				int hash = (int)((uint)GetHash(key) % (uint)capacity);
+				for (int count = capacity; count > 0; count -= 1)
+				{
+					if (table[hash].key == null)
+					{
+						if (insertionPoint == -1)
+							insertionPoint = hash;
+						break;
+					}
+					if(table[hash].key == removed)
+					{
+						if (insertionPoint == -1)
+						{
+							insertionPoint = hash;
+						}
+					}
+					else if(KeyEquals(table[hash].key, key))
+					{
+						insertionPoint = hash;
+						return hash;
+					}
+					hash = (hash + 1) % capacity;
+				}
+				if(num >= capacityLimit)
+				{
+					insertionPoint = -1;
+				}
+				return -1;
 			}
 
 #if CONFIG_SERIALIZATION
@@ -1039,6 +953,29 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					comparer__ = value;	
 				}
 			}
+
+#if	false
+	public void dump(System.IO.TextWriter writer)
+			{
+				if (table == null)
+				{
+					writer.WriteLine("HastTable: null");
+					return;
+				}
+				for (int i = 0; i < table.Length; i += 1)
+				{
+					if (table[i].key == null)
+						continue;
+					if (table[i].key == removed)
+					{
+						writer.WriteLine("Hashtable[" + i + "] removed");
+						continue;
+					}
+					writer.WriteLine("Hashtable[" + i + "] key=" + table[i].key);
+				}
+				writer.WriteLine("HastTable: END size=" + table.Length);
+			}
+#endif
 
 #endif // !ECMA_COMPAT
 

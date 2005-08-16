@@ -611,10 +611,25 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				int found = FindSlot(key, out insertionPoint);
 				if(found != -1)
 				{
-					table[found].key = removed;
 					table[found].value = null;
 					--num;
 					++generation;
+					//
+					// Get rid of unnecessary "removed" entries.  If we
+					// don't purge them, then searching for an element
+					// that isn't in the hash table will become an O(n)
+					// operation as the hash table ages.
+					//
+					if (num != 0 && table[(found + 1) % capacity].key != null)
+						table[found].key = removed;
+					else
+					{
+						do
+						{
+							table[found].key = null;
+							found = (found == 0 ? capacity : found) - 1;
+						} while (table[found].key == removed);
+					}
 				}
 			}
 	public virtual bool IsFixedSize

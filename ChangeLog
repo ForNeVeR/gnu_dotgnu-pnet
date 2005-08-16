@@ -2,6 +2,8 @@
 
 	* Hashtabe.cs: Hashtable.ContainsKey wasn't handling deleted
 	  keys properly.
+	* Hashtabe.cs: Hashtable.Remove(Object) now cleans up 'removed'
+	  slots so hashtable performance doesn't degenerate to O(n).
 
 2005-08-12  Deryk Robosson  <deryk@0x0a.com>
 

@@ -1,4 +1,9 @@
 
+2005-08-17  Deryk Robosson  <deryk@0x0a.com>
+
+	* resources/en_US/System.Drawing/SystemIcons/*.ico: Removed
+	SystemIcons from the filenames as incorrectly renamed from 2005-08-08.
+
 2005-08-17  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/ThreadExceptionEventArgs.cs,

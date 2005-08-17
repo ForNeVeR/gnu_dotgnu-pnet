@@ -12,7 +12,7 @@ endif
   
 if PNET_TOOLS
 
-SUBDIRS = . $(LIBGC_DIR) $(LIBFFI_DIR) include coremul support image dumpasm engine ilasm ildasm \
+SUBDIRS = . $(LIBGC_DIR) $(LIBFFI_DIR) include support image dumpasm engine ilasm ildasm \
 		  ilalink ilsize ilnative ilheader ilfind ildd codegen cscc \
 		  resgen ilstrip ilranlib ilgac csdoc csant clrwrap samples doc tests
 

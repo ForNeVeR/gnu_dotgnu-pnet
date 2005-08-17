@@ -1,3 +1,10 @@
+2005-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am: remove coremul from SUBDIRS.  It never built on anything
+	other than x86 and will cause problems elsewhere.  Also, on Win32 it
+	needs to be built as a .dll to work correctly.  Until these problems
+	are fixed, it needs to stay out of the main build process.
+
 2005-08-15  Klaus Treichel  <ktreichel@web.de>
 
 	* Makefile.am: add coremul to SUBDIRS. 

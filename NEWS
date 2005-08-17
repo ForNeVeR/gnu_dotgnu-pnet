@@ -1,4 +1,32 @@
 
+0.7.2 (17 August 2005)
+
+	Runtime engine:
+
+	* Manual register allocation in CVM for x86-64 (Gopal V).
+	* Fix lookup logic for nested class names (Klaus Treichel).
+	* Fix deserialization of arrays (Klaus Treichel).
+
+	Linker:
+
+	* Missing newline in error message (Deryk Robosson).
+
+	Documentation:
+
+	* Texinfo bug in pnetasm.texi (Rainer Größlinger).
+	* Update cvmdoc.py to use Pythons re module (Rainer Größlinger).
+
+	Platform Support:
+
+	* BeOS thread support (Deryk Robosson).
+
+	Other:
+
+	* Fix type-punned alias warnings (Klaus Treichel).
+	* Update libgc to version 6.5 and apply our custom mods (Klaus Treichel).
+	* Update version of libffi to the latest (Klaus Treichel).
+	* Fix CSAntDirCombine and filename expansion on Win32 (Klaus Treichel).
+
 0.7.0 (11 June 2005)
 
 	Runtime engine:

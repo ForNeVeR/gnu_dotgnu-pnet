@@ -5,6 +5,8 @@
 	needs to be built as a .dll to work correctly.  Until these problems
 	are fixed, it needs to stay out of the main build process.
 
+	* NEWS, configure.in: update version for the "0.7.2" release.
+
 2005-08-15  Klaus Treichel  <ktreichel@web.de>
 
 	* Makefile.am: add coremul to SUBDIRS. 

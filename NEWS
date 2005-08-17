@@ -1,4 +1,34 @@
 
+0.7.2 (17 August 2005)
+
+	System.Windows.Forms and System.Drawing: 
+
+	* API compatibility fixes to NotifyIcon (Deryk Robosson).
+	* Improve the look of text and scrollbars under Win32 (Kirill Kononenko).
+	* Wrong toolkit used in font code (Deryk Robosson).
+	* ColorTranslator.ToHtml and FromHtml (Robert Lascelle).
+	* Fix the icon loading in SystemIcons (Deryk Robosson).
+	* Non-opaque background colors (Marc Haisenko).
+	* Optimise Frame.Scale for scaling to the same size (Marc Haisenko).
+	* 32argb support in ShrinkBmp (Marc Haisenko).
+	* Theme support for DrawSizeGrip (Deryk Robosson).
+	* Enable the SetColorMatrix methods (Deryk Robosson).
+
+	Basic: 
+
+	* Implement missing functions in Strings class (Robert Lascelle).
+
+	Tests: 
+
+	* Test cases for attributes (Klaus Treichel).
+
+	Other: 
+
+	* Add newl's graphic to the dining developers example (Deryk Robosson).
+	* Install bug on MingGW (Klaus Treichel).
+	* Fix erroneous TODO markers (Deryk Robosson).
+	* Fixes to Hashtable (Russell Stuart).
+
 0.7.0 (11 June 2005)
 
 	System.Windows.Forms and System.Drawing: 

@@ -1,3 +1,8 @@
+
+2005-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* NEWS, configure.in: update version for the "0.7.2" release.
+
 2005-08-07  Klaus Treichel  <ktreichel@web.de>
 
 	* class/System.Web/System.Web.build,

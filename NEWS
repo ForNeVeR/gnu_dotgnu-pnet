@@ -1,4 +1,10 @@
 
+0.7.2 (17 August 2005)
+
+	* Add IBM.Data.DB2 to ml-pnet (Klaus Treichel).
+	* Handle movement of Mono's TODOAttribute class (Klaus Treichel).
+	* Exclude conflicting code in tests and LDAP code (Klaus Treichel).
+
 0.7.0 (11 June 2005)
 
 	* Updated debian files (Russell Stuart).

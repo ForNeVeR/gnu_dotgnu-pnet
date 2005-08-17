@@ -1,7 +1,7 @@
 
 2005-08-17  Gopal V  <gopalv82@yahoo.com>
 
-	* System.Windows.Forms/ThreadExceptionEventArgs.cs.
+	* System.Windows.Forms/ThreadExceptionEventArgs.cs,
 	System.Windows.Forms/ThreadExceptionEventHandler.cs: Remove
 	misplaced classes from the Windows.Forms namespace (bug #14146).
 
@@ -13,9 +13,9 @@
 
 2005-08-16  Russell Stuart  <russell-savannah@stuart.id.au>
 
-	* Hashtabe.cs: Hashtable.ContainsKey wasn't handling deleted
+	* Hashtable.cs: Hashtable.ContainsKey wasn't handling deleted
 	  keys properly.
-	* Hashtabe.cs: Hashtable.Remove(Object) now cleans up 'removed'
+	* Hashtable.cs: Hashtable.Remove(Object) now cleans up 'removed'
 	  slots so hashtable performance doesn't degenerate to O(n).
 
 2005-08-12  Deryk Robosson  <deryk@0x0a.com>

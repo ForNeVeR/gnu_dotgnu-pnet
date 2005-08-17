@@ -60,7 +60,7 @@ target_triplet = @target@
 @SH_TRUE@am__append_19 = src/sh/sysv.S src/sh/ffi.c
 @SH64_TRUE@am__append_20 = src/sh64/sysv.S src/sh64/ffi.c
 @PA_TRUE@am__append_21 = src/pa/linux.S src/pa/ffi.c
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
+DIST_COMMON = README $(am__configure_deps) \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../install-sh \
 	$(srcdir)/../ltmain.sh $(srcdir)/../missing \

@@ -42,6 +42,7 @@ AM_CONDITIONAL(TESTSUBDIR, test -d $srcdir/testsuite)
 TARGETDIR="unknown"
 case "$host" in
 i*86-*-linux*) TARGET=X86; TARGETDIR=x86;;
+i*86-*-gnu*) TARGET=X86; TARGETDIR=x86;;
 i*86-*-solaris2.1[[0-9]]*) TARGET=X86_64; TARGETDIR=x86;;
 i*86-*-solaris*) TARGET=X86; TARGETDIR=x86;;
 i*86-*-beos*) TARGET=X86; TARGETDIR=x86;;
@@ -190,6 +191,38 @@ else
     AC_DEFINE(EH_FRAME_FLAGS, "aw",
 	      [Define to the flags needed for the .section .eh_frame directive.])
 fi
+
+AC_CACHE_CHECK([for __attribute__((visibility("hidden")))],
+    libffi_cv_hidden_visibility_attribute, [
+	echo 'int __attribute__ ((visibility ("hidden"))) foo (void) { return 1; }' > conftest.c
+	libffi_cv_hidden_visibility_attribute=no
+	if AC_TRY_COMMAND(${CC-cc} -Werror -S conftest.c -o conftest.s 1>&AS_MESSAGE_LOG_FD); then
+	    if grep '\.hidden.*foo' conftest.s >/dev/null; then
+		libffi_cv_hidden_visibility_attribute=yes
+	    fi
+	fi
+	rm -f conftest.*
+    ])
+if test $libffi_cv_hidden_visibility_attribute = yes; then
+    AC_DEFINE(HAVE_HIDDEN_VISIBILITY_ATTRIBUTE, 1,
+	      [Define if __attribute__((visibility("hidden"))) is supported.])
+fi
+
+AH_BOTTOM([
+#ifdef HAVE_HIDDEN_VISIBILITY_ATTRIBUTE
+#ifdef LIBFFI_ASM
+#define FFI_HIDDEN(name) .hidden name
+#else
+#define FFI_HIDDEN __attribute__ ((visibility ("hidden")))
+#endif
+#else
+#ifdef LIBFFI_ASM
+#define FFI_HIDDEN(name)
+#else
+#define FFI_HIDDEN
+#endif
+#endif
+])
 
 AC_SUBST(TARGET)
 AC_SUBST(TARGETDIR)

@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.7.2 release.
 
+	* configure.in: update working version to "0.7.3".
+
 2005-08-16  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* Hashtabe.cs: Hashtable.ContainsKey wasn't handling deleted

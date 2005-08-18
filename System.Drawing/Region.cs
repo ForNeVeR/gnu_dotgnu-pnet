@@ -97,6 +97,8 @@ using System.Drawing.Toolkit;
 #endif
 public sealed class Region : MarshalByRefObject, IDisposable
 {
+	// Internal byte representation of the region
+	private RegionData rgnData;
 	// Overall extent of the region
 	private RectangleF extent;
 	// rectangles that make up the region sorted top to bottom, left to right
@@ -105,17 +107,17 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	// Constructors.
 	public Region()
 	{
+		rgnData = new RegionData() ;
 		MakeInfinite();
 	}
 
-	[TODO]
 	public Region(GraphicsPath path)
 	{
 		if(path == null)
 		{
 			throw new ArgumentNullException("path");
 		}
-		// TODO
+		rgnData = new RegionData( path );
 	}
 
 	public Region(Rectangle rect) : this( (RectangleF)rect)
@@ -123,6 +125,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 
 	public Region(RectangleF rect)
 	{
+		rgnData = new RegionData( rect );
 		if (rect.Width < 0)
 			rect = new RectangleF(rect.Right, rect.Top, -rect.Width, rect.Height);
 		if (rect.Height < 0)
@@ -139,7 +142,6 @@ public sealed class Region : MarshalByRefObject, IDisposable
 			// extent is already empty(0,0,0,0)
 			rects = new RectangleF[0];
 		}
-		
 	}
 
 	private Region(int initialRectSize)
@@ -147,14 +149,16 @@ public sealed class Region : MarshalByRefObject, IDisposable
 		rects = new RectangleF[initialRectSize];
 	}
 
-	[TODO]
-	public Region(RegionData rgnData)
+	public Region(RegionData otherRgnData)
 	{
-		if(rgnData == null)
+		if(otherRgnData == null)
 		{
 			throw new ArgumentNullException("rgnData");
 		}
-		// TODO
+		Region r = otherRgnData.ConstructRegion ( otherRgnData ) ;
+		this.rects = r.rects ;
+		this.extent = r.extent ;
+		this.rgnData = r.GetRegionData() ;
 	}
 
 	// Helpers, to replace missing "Math" class in some profiles.
@@ -207,6 +211,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	public Region Clone()
 	{
 		Region newRegion = new Region();
+		newRegion.rgnData = rgnData.Clone();
 		newRegion.rects = (RectangleF[])rects.Clone();
 		newRegion.extent = extent;
 		return newRegion;
@@ -230,6 +235,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 
 	public void Complement(Region region)
 	{
+		rgnData.Complement( region ) ;
 		Region subtract = Subtract(region, this);
 		extent = subtract.extent;
 		rects = subtract.rects;
@@ -295,6 +301,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 
 	public void Exclude(Region region)
 	{
+		rgnData.Exclude( region ) ;
 		Region subtract = Subtract(this, region);
 		extent = subtract.extent;
 		rects = subtract.rects;
@@ -321,10 +328,9 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	}
 
 	// Get the raw region data for this region.
-	[TODO]
 	public RegionData GetRegionData()
 	{
-		return null;
+		return rgnData;
 	}
 
 	// Get an array of rectangles that represents this region.
@@ -367,6 +373,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	
 	public void Intersect(Region region)
 	{
+		rgnData.Intersect(region);
 		Intersect(this, region);
 	}
 
@@ -492,6 +499,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	// Make this region empty.
 	public void MakeEmpty()
 	{
+		rgnData.MakeEmpty() ;
 		rects = new RectangleF[0];
 		extent = Rectangle.Empty;
 	}
@@ -499,6 +507,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	// Make this region infinite.
 	public void MakeInfinite()
 	{
+		rgnData.MakeInfinite() ;
 		const float maxCoord = 4194304; //Math.Pow(2, 22)
 		extent = new RectangleF(-maxCoord, -maxCoord, 2 * maxCoord, 2 * maxCoord);
 		rects = new RectangleF[1] { extent };
@@ -508,7 +517,8 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	[TODO]
 	public void Transform(Matrix matrix)
 	{
-		// TODO
+		rgnData.Transform( matrix ) ;
+		// TODO: other state variables
 	}
 
 	// Translate this matrix by a specific amount.
@@ -519,6 +529,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	
 	public void Translate(float dx, float dy)
 	{
+		rgnData.Translate( dx, dy ) ;
 		for( int i = 0; i < rects.Length; i++)
 			rects[i].Offset(dx, dy);
 		if (rects.Length>0)
@@ -543,6 +554,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	
 	public void Union(Region region)
 	{
+		rgnData.Union( region );
 		Union (this, region);
 	}
 
@@ -1270,6 +1282,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	
 	public void Xor(Region region)
 	{
+		rgnData.Xor( region ) ;
 		Region reg1 = Subtract(this, region);
 		Union(reg1, Subtract(region, this));
 		extent = reg1.extent;

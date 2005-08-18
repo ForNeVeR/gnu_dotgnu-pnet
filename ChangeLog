@@ -1,4 +1,9 @@
 
+2005-08-18  Marco Bosatta  <mboss@xp-obj.ch>
+
+	* System/Drawing/Region.cs, System/Drawing/Drawing2D/RegionData.cs:
+	Parse and load RegionData binary data files. (patch #3774, Gopal)
+
 2005-08-18  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Xml/Nametable.cs: Throw the right exceptions in Nametable.

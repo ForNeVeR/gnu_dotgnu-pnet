@@ -1,4 +1,9 @@
 
+2005-08-18  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Xml/Nametable.cs: Throw the right exceptions in Nametable.
+	(patch #4325, Gopal)
+
 2005-08-17  Deryk Robosson  <deryk@0x0a.com>
 
 	* resources/en_US/System.Drawing/SystemIcons/*.ico: Removed

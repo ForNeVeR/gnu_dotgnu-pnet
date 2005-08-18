@@ -75,6 +75,11 @@ public class NameTable : XmlNameTable
 					throw new ArgumentOutOfRangeException
 						("len", S._("ArgRange_StringRange"));
 				}
+				else if((start < 0) || (start + len > key.Length))
+				{
+					throw new IndexOutOfRangeException
+						(S._("Arg_InvalidArrayRange"));
+				}
 
 				// If the key is zero length, then always return String.Empty.
 				if(len == 0)
@@ -126,6 +131,11 @@ public class NameTable : XmlNameTable
 				{
 					throw new ArgumentOutOfRangeException
 						("len", S._("ArgRange_StringRange"));
+				}
+				else if((start < 0) || (start + len > key.Length))
+				{
+					throw new IndexOutOfRangeException
+						(S._("Arg_InvalidArrayRange"));
 				}
 
 				// If the key is zero length, then always return String.Empty.

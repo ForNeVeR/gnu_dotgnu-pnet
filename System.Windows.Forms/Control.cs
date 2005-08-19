@@ -5177,7 +5177,6 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnParentVisibleChanged(EventArgs e)
 			{
-				bool parentVisible = parent.Visible;
 				OnVisibleChanged(e);
 			}
 	internal virtual void OnPrimaryEnter(EventArgs e)
@@ -5676,6 +5675,14 @@ public class Control : IWin32Window, IDisposable
 								value.CreateControl();
 								owner.PerformLayout(value, "Parent");
 							}
+
+							// If it's supposed to be visible then fire the
+							// OnVisibleChanged event.
+							if (value.visible)
+							{
+								value.OnVisibleChanged(EventArgs.Empty);
+							}
+							
 							// Notify the owner that the control was added.
 							owner.OnControlAdded
 								(new ControlEventArgs(value));
@@ -5720,11 +5727,18 @@ public class Control : IWin32Window, IDisposable
 				{
 					if(value != null && value.Parent == owner)
 					{
+						bool wasVisible = value.Visible;
+
 						// Update the parent.
 						value.Parent = null;
 
 						// Perform layout on the owner.
 						owner.PerformLayout(value, "Parent");
+
+						// If it was visible, it now isn't and thus the
+						// visibility changed.
+						if (wasVisible)
+							value.OnVisibleChanged (EventArgs.Empty);
 
 						// Notify the owner that the control has been removed.
 						owner.OnControlRemoved(new ControlEventArgs(value));

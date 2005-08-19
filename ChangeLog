@@ -1,4 +1,10 @@
 
+2005-08-19  Marc Haisenko  <marc@darkdust.net>
+
+	* System.Windows.Forms/Control.cs: Call OnVisibleChanged for a control
+	that is added to another control (and has Visible==true) and for
+	a control that is removed from another control and was visible.
+
 2005-08-18  Marco Bosatta  <mboss@xp-obj.ch>
 
 	* System/Drawing/Region.cs, System/Drawing/Drawing2D/RegionData.cs:

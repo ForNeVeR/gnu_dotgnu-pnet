@@ -1,4 +1,10 @@
 
+2005-08-20  Rainer Groesslinger  <rainer.groesslinger@gmx.net>
+
+	* System/Text/RegularExpressions/*: Latest updates from 
+	SVN HEAD as of 12th August 2005. Removed match.cs, added
+	Match.cs, Group.cs and Capture.cs. (patch #4326, Gopal).
+
 2005-08-20  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Reflection/ClrType.cs: Remove sort code from 

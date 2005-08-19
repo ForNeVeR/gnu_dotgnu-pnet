@@ -1,13 +1,10 @@
 //
-// System.Text.RegularExpressions.CaptureCollection
+// assembly:	System
+// namespace:	System.Text.RegularExpressions
+// file:	Group.cs
 //
-// Authors:
-//	Dan Lewis (dlewis@gmx.co.uk)
-//	Dick Porter (dick@ximian.com)
-//
-// (C) 2002 Dan Lewis
-// (C) 2004 Novell, Inc.
-//
+// author:	Dan Lewis (dlewis@gmx.co.uk)
+// 		(c) 2002
 
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -31,61 +28,41 @@
 //
 
 using System;
-using System.Collections;
 
-namespace System.Text.RegularExpressions 
-{
+namespace System.Text.RegularExpressions {
+
 	[Serializable]
-	public class CaptureCollection: ICollection, IEnumerable
-	{
-		private Capture [] list;
-
-		/* No public constructor */
-		internal CaptureCollection (int n)
+	public class Group : Capture {
+		public static Group Synchronized (Group inner)
 		{
-			list = new Capture [n];
+			return inner;	// is this enough?
 		}
 
-		public virtual int Count {
-			get { return list.Length; }
+		internal static Group Fail = new Group ();
+
+		public CaptureCollection Captures {
+			get { return captures; }
 		}
 
-		public bool IsReadOnly {
-			get { return true; }
+		public bool Success {
+			get { return success; }
 		}
 
-		public virtual bool IsSynchronized {
-			get { return false; }
-		}
-
-		public Capture this [int i] {
-			get {
-				if (i < 0 || i > Count)
-					throw new ArgumentOutOfRangeException ("Index is out of range");
-				return list [i];
-			}
-		}
-
-		internal void SetValue (Capture cap, int i)
+		// internal
+		internal Group (string text, int index, int length, int n_caps) : base (text, index, length)
 		{
-			list [i] = cap;
+			success = true;
+			captures = new CaptureCollection (n_caps);
+			captures.SetValue (this, n_caps - 1);
 		}
-
-		public virtual object SyncRoot {
-			get { return list; }
-		}
-
-		public virtual void CopyTo (Array array, int index)
+		
+		internal Group () : base ("")
 		{
-			list.CopyTo (array, index);
+			success = false;
+			captures = new CaptureCollection (0);
 		}
 
-		public virtual IEnumerator GetEnumerator ()
-		{
-			return list.GetEnumerator ();
-		}
+		private bool success;
+		private CaptureCollection captures;
 	}
 }
-
-		
-		

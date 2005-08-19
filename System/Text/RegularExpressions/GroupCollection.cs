@@ -9,6 +9,27 @@
 // (C) 2004 Novell, Inc.
 //
 
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
 using System;
 using System.Collections;
 
@@ -17,118 +38,66 @@ namespace System.Text.RegularExpressions
 	[Serializable]
 	public class GroupCollection: ICollection, IEnumerable
 	{
-		private ArrayList list;
+		private Group [] list;
 
 		/* No public constructor */
-		internal GroupCollection () {
-			list = new ArrayList ();
+		internal GroupCollection (int n)
+		{
+			list = new Group [n];
 		}
 
 		public virtual int Count {
-			get {
-				return(list.Count);
-			}
+			get { return list.Length; }
 		}
 
 		public bool IsReadOnly {
-			get {
-				return(true);
-			}
+			get { return true; }
 		}
 
 		public virtual bool IsSynchronized {
+			get { return false; }
+		}
+
+		public Group this [int i] {
 			get {
-				return(false);
+				if (i < list.Length && i >= 0)
+					return list [i];
+				else
+					return Group.Fail;
 			}
 		}
 
-		public Group this[int i] {
-			get {
-				if (i < list.Count &&
-				    i >= 0) {
-					return((Group)list[i]);
-				} else {
-					return(new Group ());
-				}
-			}
+		internal void SetValue (Group g, int i)
+		{
+			list [i] = g;
 		}
 
-		public Group this[string groupName] {
+		public Group this [string groupName] {
 			get {
-				foreach (object o in list) {
-					if (!(o is Match)) {
-						continue;
-					}
-
-					int index = ((Match)o).Regex.GroupNumberFromName (groupName);
-
-					if (index != -1) {
-						return(this[index]);
-					}
+				// The 0th group is the match.
+				Match m = (Match) list [0];
+				if (m != Match.Empty) {
+					int index = m.Regex.GroupNumberFromName (groupName);
+					if (index != -1)
+						return this [index];
 				}
 
-				return(new Group ());
+				return Group.Fail;
 			}
 		}
 
 		public virtual object SyncRoot {
-			get {
-				return(list);
-			}
+			get { return list; }
 		}
 
-		public virtual void CopyTo (Array array, int index) {
-			foreach (object o in list) {
-				if (index > array.Length) {
-					break;
-				}
-
-				array.SetValue (o, index++);
-			}
+		public virtual void CopyTo (Array array, int index)
+		{
+			list.CopyTo (array, index);
 		}
 
-		public virtual IEnumerator GetEnumerator () {
-			return(new Enumerator (list));
-		}
-
-		internal void Add (object o) {
-			list.Add (o);
-		}
-
-		internal void Reverse () {
-			list.Reverse ();
-		}
-
-		private class Enumerator: IEnumerator {
-			private IList list;
-			private int ptr;
-
-			public Enumerator (IList list) {
-				this.list = list;
-				Reset ();
-			}
-
-			public object Current {
-				get {
-					if (ptr >= list.Count) {
-						throw new InvalidOperationException ();
-					}
-
-					return(list[ptr]);
-				}
-			}
-
-			public bool MoveNext () {
-				if (ptr > list.Count) {
-					throw new InvalidOperationException ();
-				}
-
-				return(++ptr < list.Count);
-			}
-
-			public void Reset () {
-				ptr = -1;
-			}
+		public virtual IEnumerator GetEnumerator ()
+		{
+			return list.GetEnumerator ();
 		}
 	}
 }

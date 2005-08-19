@@ -6,6 +6,27 @@
 // author:	Dan Lewis (dlewis@gmx.co.uk)
 // 		(c) 2002
 
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
 using System;
 using System.Text;
 using System.Collections;
@@ -23,6 +44,8 @@ namespace System.Text.RegularExpressions {
 	
 	public delegate string MatchEvaluator (Match match);
 
+	delegate void MatchAppendEvaluator (Match match, StringBuilder sb);
+
 	[Flags]
 	public enum RegexOptions {
 		None				= 0x000,
@@ -37,13 +60,8 @@ namespace System.Text.RegularExpressions {
 		CultureInvariant		= 0x200 
 	}
 	
-#if CONFIG_SERIALIZATION
 	[Serializable]
 	public class Regex : ISerializable {
-#else
-	public class Regex {
-#endif // CONFIG_SERIALIZATION
-#if CONFIG_SERIALIZATION_EMIT
 		public static void CompileToAssembly
 			(RegexCompilationInfo[] regexes, AssemblyName aname)
 		{
@@ -54,14 +72,15 @@ namespace System.Text.RegularExpressions {
 			(RegexCompilationInfo[] regexes, AssemblyName aname,
 			 CustomAttributeBuilder[] attribs)
 		{
-			Regex.CompileToAssembly(regexes, aname, attribs, null);		       
+			Regex.CompileToAssembly(regexes, aname, attribs, null);
 		}
 
+		[TODO]
 		public static void CompileToAssembly
 			(RegexCompilationInfo[] regexes, AssemblyName aname,
 			 CustomAttributeBuilder[] attribs, string resourceFile)
 		{
-			throw new Exception ("Not fully implemented.");
+			throw new NotImplementedException ();
 			// TODO : Make use of attribs and resourceFile parameters
 			/*
 			AssemblyBuilder asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly (aname, AssemblyBuilderAccess.RunAndSave);
@@ -91,7 +110,6 @@ namespace System.Text.RegularExpressions {
 			asmBuilder.Save(aname.Name);
 			*/
 		}
-#endif // CONFIG_REFLECTION_EMIT
 		
 		public static string Escape (string str) {
 			return Parser.Escape (str);
@@ -215,13 +233,15 @@ namespace System.Text.RegularExpressions {
 			}
 		}
 
-#if CONFIG_SERIALIZATION
-		protected Regex (SerializationInfo info, StreamingContext context) :
+		private Regex (SerializationInfo info, StreamingContext context) :
 			this (info.GetString ("pattern"), 
-			      (RegexOptions) info.GetValue ("roptions", typeof (RegexOptions))) {			
+			      (RegexOptions) info.GetValue ("options", typeof (RegexOptions))) {
 		}
-#endif // CONFIG_SERIALIZATION
 
+		// fixes public API signature
+		~Regex ()
+		{
+		}
 
 		// public instance properties
 		
@@ -306,14 +326,8 @@ namespace System.Text.RegularExpressions {
 		}
 
 		public MatchCollection Matches (string input, int startat) {
-			MatchCollection ms = new MatchCollection ();
 			Match m = Match (input, startat);
-			while (m.Success) {
-				ms.Add (m);
-				m = m.NextMatch ();
-			}
-
-			return ms;
+			return new MatchCollection (m);
 		}
 
 		// replace methods
@@ -332,20 +346,43 @@ namespace System.Text.RegularExpressions {
 				return Replace (input, evaluator, count, 0);
 		}
 
+		class Adapter
+		{
+			MatchEvaluator ev;
+			public Adapter (MatchEvaluator ev) { this.ev = ev; }
+			public void Evaluate (Match m, StringBuilder sb) { sb.Append (ev (m)); }
+		}
+
 		public string Replace (string input, MatchEvaluator evaluator, int count, int startat)
+		{
+			Adapter a = new Adapter (evaluator);
+			return Replace (input, new MatchAppendEvaluator (a.Evaluate), count, startat);
+		}
+
+		string Replace (string input, MatchAppendEvaluator evaluator, int count, int startat)
 		{
 			StringBuilder result = new StringBuilder ();
 			int ptr = startat;
+			int counter = count;
+
+			result.Append (input, 0, ptr);
 
 			Match m = Match (input, startat);
-			while (m.Success && count -- > 0) {
-				result.Append (input.Substring (ptr, m.Index - ptr));
-				result.Append (evaluator (m));
+			while (m.Success) {
+				if (count != -1)
+					if(counter -- <= 0)
+						break;
+				result.Append (input, ptr, m.Index - ptr);
+				evaluator (m, result);
 
 				ptr = m.Index + m.Length;
 				m = m.NextMatch ();
 			}
-			result.Append (input.Substring (ptr));
+			
+			if (ptr == 0)
+				return input;
+			
+			result.Append (input, ptr, input.Length - ptr);
 
 			return result.ToString ();
 		}
@@ -366,7 +403,7 @@ namespace System.Text.RegularExpressions {
 
 		public string Replace (string input, string replacement, int count, int startat) {
 			ReplacementEvaluator ev = new ReplacementEvaluator (this, replacement);
-			return Replace (input, new MatchEvaluator (ev.Evaluate), count, startat);
+			return Replace (input, new MatchAppendEvaluator (ev.EvaluateAppend), count, startat);
 		}
 
 		// split methods
@@ -391,8 +428,13 @@ namespace System.Text.RegularExpressions {
 				count = Int32.MaxValue;
 
 			int ptr = startat;
+			Match m = null;
 			while (--count > 0) {
-				Match m = Match (input, ptr);
+				if (m != null)
+					m = m.NextMatch ();
+				else
+					m = Match (input, ptr);
+
 				if (!m.Success)
 					break;
 			
@@ -430,17 +472,19 @@ namespace System.Text.RegularExpressions {
 		}
 
 		// MS undocummented method
-                               
+		[TODO]
 		protected void InitializeReferences() {
-			throw new Exception ("Not implemented.");
-		}
-		
-		protected bool UseOptionC(){
-			throw new Exception ("Not implemented.");
+			throw new NotImplementedException ();
 		}
 
+		[TODO]
+		protected bool UseOptionC(){
+			throw new NotImplementedException ();
+		}
+
+		[TODO]
 		protected bool UseOptionR(){
-			throw new Exception ("Not implemented.");
+			throw new NotImplementedException ();
 		}
 
 		// object methods
@@ -449,13 +493,11 @@ namespace System.Text.RegularExpressions {
 			return pattern;
 		}
 
-#if CONFIG_SERIALIZATION
 		// ISerializable interface
 		void ISerializable.GetObjectData (SerializationInfo info, StreamingContext context) {
 			info.AddValue ("pattern", this.ToString (), typeof (string));
-			info.AddValue ("roptions", this.Options, typeof (RegexOptions));
+			info.AddValue ("options", this.Options, typeof (RegexOptions));
 		}
-#endif // CONFIG_SERIALIZATION
 
 		// internal
 
@@ -480,26 +522,32 @@ namespace System.Text.RegularExpressions {
 		protected internal RegexOptions roptions;
 		
 		// MS undocumented members
+		[TODO]
 		protected internal System.Collections.Hashtable capnames;
-		protected internal System.Collections.Hashtable cap;
+		[TODO]
+		protected internal System.Collections.Hashtable caps;
+		[TODO]
 		protected internal int capsize;
-		protected internal string[] caplist;
+		[TODO]
+		protected internal string[] capslist;
+		[TODO]
 		protected internal RegexRunnerFactory factory;
 	}
 
 	[Serializable]
 	public class RegexCompilationInfo {
-		public RegexCompilationInfo (string pattern, RegexOptions options, string name, string full_namespace, bool is_public) {
+		public RegexCompilationInfo (string pattern, RegexOptions options, string name, string nspace, bool isPublic)
+		{
 			this.pattern = pattern;
 			this.options = options;
 			this.name = name;
-			this.full_namespace = full_namespace;
-			this.is_public = is_public;
+			this.nspace = nspace;
+			this.isPublic = isPublic;
 		}
 
 		public bool IsPublic {
-			get { return is_public; }
-			set { is_public = value; }
+			get { return isPublic; }
+			set { isPublic = value; }
 		}
 
 		public string Name {
@@ -508,8 +556,8 @@ namespace System.Text.RegularExpressions {
 		}
 
 		public string Namespace {
-			get { return full_namespace; }
-			set { full_namespace = value; }
+			get { return nspace; }
+			set { nspace = value; }
 		}
 
 		public RegexOptions Options {
@@ -524,8 +572,8 @@ namespace System.Text.RegularExpressions {
 
 		// private
 
-		private string pattern, name, full_namespace;
+		private string pattern, name, nspace;
 		private RegexOptions options;
-		private bool is_public;
+		private bool isPublic;
 	}
 }

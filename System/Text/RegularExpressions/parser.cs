@@ -6,6 +6,27 @@
 // author:	Dan Lewis (dlewis@gmx.co.uk)
 // 		(c) 2002
 
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
 using System;
 using System.Collections;
 using System.Globalization;
@@ -94,6 +115,8 @@ namespace System.Text.RegularExpressions.Syntax {
 		}
 
 		public static string Unescape (string str) {
+			if (str.IndexOf ('\\') == -1)
+				return str;
 			return new Parser ().ParseString (str);
 		}
 
@@ -266,20 +289,29 @@ namespace System.Text.RegularExpressions.Syntax {
 				
 				if (ptr < pattern.Length) {
 					char k = pattern[ptr];
+					int min = 0, max = 0;
+					bool lazy = false;
+					bool haveRep = false;
 
-					if (k == '?' || k == '*' || k == '+' || k == '{') {
+
+					if (k == '?' || k == '*' || k == '+') {
 						++ ptr;
-
-						int min = 0, max = 0;
-						bool lazy = false;
+						haveRep = true;
 
 						switch (k) {
 						case '?': min = 0; max = 1; break;
 						case '*': min = 0; max = 0xffff; break;
 						case '+': min = 1; max = 0xffff; break;
-						case '{': ParseRepetitionBounds (out min, out max, options); break;
 						}
+					} else if (k == '{' && ptr + 1 < pattern.Length) {
+						int saved_ptr = ptr;
+						++ptr;
+						haveRep = ParseRepetitionBounds (out min, out max, options);
+						if (!haveRep)
+							ptr = saved_ptr;
+					}
 
+					if (haveRep) {
 						ConsumeWhitespace (IsIgnorePatternWhitespace (options));
 						if (ptr < pattern.Length && pattern[ptr] == '?') {
 							++ ptr;
@@ -717,8 +749,9 @@ namespace System.Text.RegularExpressions.Syntax {
 			return cls;
 		}
 
-		private void ParseRepetitionBounds (out int min, out int max, RegexOptions options) {
+		private bool ParseRepetitionBounds (out int min, out int max, RegexOptions options) {
 			int n, m;
+			min = max = 0;
 
 			/* check syntax */
 
@@ -740,10 +773,10 @@ namespace System.Text.RegularExpressions.Syntax {
 				m = ParseNumber (10, 1, 0);
 				ConsumeWhitespace (IsIgnorePatternWhitespace (options));
 				if (pattern[ptr ++] != '}')
-					throw NewParseException ("Illegal {x,y} - bad value of y.");
+					return false;
 				break;
 			default:
-				throw NewParseException ("Illegal {x,y}");
+				return false;
 			}
 
 			/* check bounds and ordering */
@@ -760,6 +793,8 @@ namespace System.Text.RegularExpressions.Syntax {
 				max = m;
 			else
 				max = 0xffff;
+
+			return true;
 		}
 
 		private Category ParseUnicodeCategory () {
@@ -909,6 +944,13 @@ namespace System.Text.RegularExpressions.Syntax {
 			// character codes
 
 			case '0':
+				//
+				// Turns out that octal values can be specified
+				// without a leading zero.   But also the limit
+				// of three character should include this first
+				// one.  
+				//
+				ptr--;
 				int prevptr = ptr;
 				int result = ParseOctal (pattern, ref ptr);
 				if (result == -1 && prevptr == ptr)
@@ -964,10 +1006,6 @@ namespace System.Text.RegularExpressions.Syntax {
 			return Parser.ParseNumber (pattern, ref ptr, b, min, max);
 		}
 
-		private int ParseDecimal () {
-			return Parser.ParseDecimal (pattern, ref ptr);
-		}
-
 		private static int ParseDigit (char c, int b, int n) {
 			switch (b) {
 			case 8:
@@ -995,10 +1033,7 @@ namespace System.Text.RegularExpressions.Syntax {
 		}
 
 		private void ConsumeWhitespace (bool ignore) {
-			while (true) {
-				if (ptr >= pattern.Length)
-					break;
-			
+			while (ptr < pattern.Length) {
 				if (pattern[ptr] == '(') {
 					if (ptr + 3 >= pattern.Length)
 						return;
@@ -1007,7 +1042,7 @@ namespace System.Text.RegularExpressions.Syntax {
 						return;
 
 					ptr += 3;
-					while (pattern[ptr ++] != ')')
+					while (ptr < pattern.Length && pattern[ptr ++] != ')')
 						/* ignore */ ;
 				}
 				else if (ignore && pattern[ptr] == '#') {
@@ -1027,7 +1062,7 @@ namespace System.Text.RegularExpressions.Syntax {
 			this.pattern = pattern;
 			this.ptr = 0;
 
-			string result = "";
+			StringBuilder result = new StringBuilder (pattern.Length);
 			while (ptr < pattern.Length) {
 				int c = pattern[ptr ++];
 				if (c == '\\') {
@@ -1039,10 +1074,10 @@ namespace System.Text.RegularExpressions.Syntax {
 							c = '\b';
 					}
 				}
-				result += (char)c;
+				result.Append ((char) c);
 			}
 
-			return result;
+			return result.ToString ();
 		}
 
 		private void ResolveReferences () {
@@ -1117,10 +1152,6 @@ namespace System.Text.RegularExpressions.Syntax {
 
 		private static bool IsIgnorePatternWhitespace (RegexOptions options) {
 			return (options & RegexOptions.IgnorePatternWhitespace) != 0;
-		}
-
-		private static bool IsRightToLeft (RegexOptions options) {
-			return (options & RegexOptions.RightToLeft) != 0;
 		}
 
 		private static bool IsECMAScript (RegexOptions options) {

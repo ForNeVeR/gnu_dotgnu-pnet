@@ -1,13 +1,10 @@
 //
-// System.Text.RegularExpressions.CaptureCollection
+// assembly:	System
+// namespace:	System.Text.RegularExpressions
+// file:	Capture.cs
 //
-// Authors:
-//	Dan Lewis (dlewis@gmx.co.uk)
-//	Dick Porter (dick@ximian.com)
-//
-// (C) 2002 Dan Lewis
-// (C) 2004 Novell, Inc.
-//
+// author:	Dan Lewis (dlewis@gmx.co.uk)
+// 		(c) 2002
 
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -31,61 +28,46 @@
 //
 
 using System;
-using System.Collections;
 
-namespace System.Text.RegularExpressions 
-{
+namespace System.Text.RegularExpressions {
+
 	[Serializable]
-	public class CaptureCollection: ICollection, IEnumerable
-	{
-		private Capture [] list;
+	public class Capture {
+		public int Index {
+			get { return index; }
+		}
 
-		/* No public constructor */
-		internal CaptureCollection (int n)
+		public int Length {
+			get { return length; }
+		}
+
+		public string Value {
+			get { return text == null ? String.Empty : text.Substring (index, length); }
+		}
+
+		public override string ToString ()
 		{
-			list = new Capture [n];
+			return Value;
 		}
 
-		public virtual int Count {
-			get { return list.Length; }
-		}
+		// internal members
 
-		public bool IsReadOnly {
-			get { return true; }
-		}
+		internal Capture (string text) : this (text, 0, 0) { }
 
-		public virtual bool IsSynchronized {
-			get { return false; }
-		}
-
-		public Capture this [int i] {
-			get {
-				if (i < 0 || i > Count)
-					throw new ArgumentOutOfRangeException ("Index is out of range");
-				return list [i];
-			}
-		}
-
-		internal void SetValue (Capture cap, int i)
+		internal Capture (string text, int index, int length)
 		{
-			list [i] = cap;
+			this.text = text;
+			this.index = index;
+			this.length = length;
+		}
+		
+		internal string Text {
+			get { return text; }
 		}
 
-		public virtual object SyncRoot {
-			get { return list; }
-		}
+		// private
 
-		public virtual void CopyTo (Array array, int index)
-		{
-			list.CopyTo (array, index);
-		}
-
-		public virtual IEnumerator GetEnumerator ()
-		{
-			return list.GetEnumerator ();
-		}
+		internal int index, length;
+		internal string text;
 	}
 }
-
-		
-		

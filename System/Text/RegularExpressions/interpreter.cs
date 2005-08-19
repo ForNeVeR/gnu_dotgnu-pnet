@@ -6,6 +6,27 @@
 // author:	Dan Lewis (dlewis@gmx.co.uk)
 // 		(c) 2002
 
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
 using System;
 using System.Collections;
 using System.Diagnostics;
@@ -20,11 +41,11 @@ namespace System.Text.RegularExpressions {
 
 			// process info block
 
-			Debug.Assert ((OpCode)program[0] == OpCode.Info, "Regex", "Cant' find info block");
+			//Debug.Assert ((OpCode)program[0] == OpCode.Info, "Regex", "Cant' find info block");
 
 			this.group_count = program[1] + 1;
 			this.match_min = program[2];
-			this.match_max = program[3];
+			//this.match_max = program[3];
 
 			// setup
 
@@ -604,7 +625,7 @@ namespace System.Text.RegularExpressions {
 				}
 
 				case OpCode.Info: {
-					Debug.Assert (false, "Regex", "Info block found in pattern");
+					//Debug.Assert (false, "Regex", "Info block found in pattern");
 					goto Fail;
 				}
 				}
@@ -837,7 +858,7 @@ namespace System.Text.RegularExpressions {
 				return false;
 			}
 
-			Debug.Assert (marks [b].IsDefined, "Regex", "Balancng group not closed");
+			//Debug.Assert (marks [b].IsDefined, "Regex", "Balancng group not closed");
 
 			if (gid > 0 && capture){ 
 				Open (gid, marks [b].Index + marks [b].Length);
@@ -855,7 +876,7 @@ namespace System.Text.RegularExpressions {
 		}
 
 		private void Backtrack (int cp) {
-			Debug.Assert (cp >= mark_start, "Regex", "Attempt to backtrack forwards");
+			//Debug.Assert (cp > mark_start, "Regex", "Attempt to backtrack forwards");
 
 			for (int i = 0; i < groups.Length; ++ i) {
 				int m = groups [i];
@@ -905,24 +926,54 @@ namespace System.Text.RegularExpressions {
 			return m;
 		}
 
-		private Match GenerateMatch (Regex regex) {
-			int[][] grps = new int[groups.Length][];
-			ArrayList caps = new ArrayList ();
-
-			for (int gid = 0; gid < groups.Length; ++ gid) {
-				caps.Clear ();
-				for (int m = groups[gid]; m >= 0; m = marks[m].Previous) {
-					if (!marks[m].IsDefined)
-						continue;
-					
-					caps.Add (marks[m].Index);
-					caps.Add (marks[m].Length);
+		private void GetGroupInfo (int gid, out int first_mark_index, out int n_caps)
+		{
+			first_mark_index = -1;
+			bool first = true;
+			n_caps = 0;
+			for (int m = groups [gid]; m >= 0; m = marks [m].Previous) {
+				if (!marks [m].IsDefined)
+					continue;
+				++n_caps;
+				if (first) {
+					first = false;
+					first_mark_index = m;
 				}
-
-				grps[gid] = (int[])caps.ToArray (typeof (int));
 			}
+		}
 
-			return new Match (regex, this, text, text_end, grps);
+		private void PopulateGroup (Group g, int first_mark_index, int n_caps)
+		{
+			int i = 1;
+			for (int m = marks [first_mark_index].Previous; m >= 0; m = marks [m].Previous) {
+				if (!marks [m].IsDefined)
+					continue;
+				Capture cap = new Capture (text, marks [m].Index, marks [m].Length);
+				g.Captures.SetValue (cap, n_caps - 1 - i);
+				++i;
+			}
+		}
+
+		private Match GenerateMatch (Regex regex)
+		{
+			int n_caps, first_mark_index;
+			Group g;
+			GetGroupInfo (0, out first_mark_index, out n_caps);
+			Match retval = new Match (regex, this, text, text_end, groups.Length, 
+						  marks [first_mark_index].Index, marks [first_mark_index].Length, n_caps);
+			PopulateGroup (retval, first_mark_index, n_caps);
+
+			for (int gid = 1; gid < groups.Length; ++ gid) {
+				GetGroupInfo (gid, out first_mark_index, out n_caps);
+				if (first_mark_index < 0) {
+					g = Group.Fail;
+				} else {
+					g = new Group (text, marks [first_mark_index].Index, marks [first_mark_index].Length, n_caps);
+					PopulateGroup (g, first_mark_index, n_caps);
+				}
+				retval.Groups.SetValue (g, gid);
+			}
+			return retval;
 		}
 
 		// interpreter attributes
@@ -932,7 +983,7 @@ namespace System.Text.RegularExpressions {
 		private string text;			// input text
 		private int text_end;			// end of input text (last character + 1)
 		private int group_count;		// number of capturing groups
-		private int match_min, match_max;	// match width information
+		private int match_min;//, match_max;	// match width information
 		private QuickSearch qs;			// fast substring matcher
 
 		// match state

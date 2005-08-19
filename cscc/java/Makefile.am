@@ -17,13 +17,19 @@ TREECC_SRCOUT = java_nodes.c java_semantics.c
 
 TREECC_OUTPUT = $(TREECC_SRCOUT) java_defs.h
 
-libILJava_a_SOURCES  =  $(TREECC_SRCOUT) \
-				         java_grammar.y \
-				         java_scanner.l \
-				         java_gather.c \
-				         java_modifiers.c \
-						 java_lookup.c \
-						 java_semvalue.c 
+EXTRA_DIST = $(TREECC_INPUTS)
+
+nodist_libILJava_a_SOURCES = $(TREECC_SRCOUT)
+
+dist_libILJava_a_SOURCES = java_internal.h \
+						   java_grammar.y \
+						   java_scanner.l \
+						   java_gather.c \
+						   java_modifiers.c \
+						   java_lookup.c \
+						   java_rename.h \
+						   java_semvalue.c \
+						   java_semvalue.h
 
 AM_YFLAGS = -d
 

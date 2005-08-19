@@ -51,20 +51,32 @@ TREECC_SRCOUT = cg_ainit.c \
 
 TREECC_OUTPUT = $(TREECC_SRCOUT) cg_nodes.h
 
-libILCodeGen_a_SOURCES = $(TREECC_SRCOUT) \
-						 cg_coerce.c \
-						 cg_gen.c \
-						 cg_interface.c \
-						 cg_library.c \
-						 cg_nodemap.c \
-						 cg_optable.c \
-						 cg_output.c \
-						 cg_rbtree.c \
-						 cg_resolve.c \
-						 cg_scope.c \
-						 cg_utils.c \
-						 cg_varusage.c \
-						 jv_output.c
+EXTRA_DIST = $(TREECC_INPUTS)
+
+nodist_libILCodeGen_a_SOURCES = $(TREECC_SRCOUT)
+
+dist_libILCodeGen_a_SOURCES = cg_coerce.c \
+							  cg_coerce.h \
+							  cg_gen.c \
+							  cg_gen.h \
+							  cg_interface.c \
+							  cg_library.c \
+							  cg_nodemap.c \
+							  cg_nodemap.h \
+							  cg_optable.c \
+							  cg_output.c \
+							  cg_rbtree.c \
+							  cg_rbtree.h \
+							  cg_resolve.c \
+							  cg_resolve.h \
+							  cg_scope.c \
+							  cg_scope.h \
+							  cg_utils.c \
+							  cg_utils.h \
+							  cg_varusage.c \
+							  cg_varusage.h \
+							  jv_output.c \
+							  jv_output.h
 
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 

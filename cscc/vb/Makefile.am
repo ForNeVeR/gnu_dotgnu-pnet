@@ -3,8 +3,10 @@ noinst_LIBRARIES = libILVB.a
 
 libILVB_a_SOURCES  = vb_date.c \
 					 vb_grammar.y \
+					 vb_internal.h \
 					 vb_modifiers.c \
 					 vb_options.c \
+					 vb_rename.h \
 					 vb_scanner.l
 
 AM_YFLAGS = -d

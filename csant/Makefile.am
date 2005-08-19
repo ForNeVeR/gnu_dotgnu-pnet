@@ -4,8 +4,11 @@ EXTRA_DIST     = $(man_MANS)
 csant_SOURCES  = csant.c \
 				 csant_build.c \
 				 csant_cscc.c \
+				 csant_defs.h \
 				 csant_dir.c \
+				 csant_dir.h \
 				 csant_fileset.c \
+				 csant_fileset.h \
 				 csant_parse.c \
 				 csant_prop.c \
 				 csant_task.c

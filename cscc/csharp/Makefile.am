@@ -17,15 +17,21 @@ TREECC_SRCOUT = cs_nodes.c cs_semantics.c
 
 TREECC_OUTPUT = $(TREECC_SRCOUT) cs_defs.h
 
-libILCSharp_a_SOURCES  = $(TREECC_SRCOUT) \
-						 cs_attrs.c \
-				         cs_gather.c \
-				         cs_grammar.y \
-				         cs_lookup.c \
-				         cs_modifiers.c \
-				         cs_scanner.l \
-						 cs_semvalue.c \
-				         cs_valdoc.c
+EXTRA_DIST = $(TREECC_SOURCES)
+
+nodist_libILCSharp_a_SOURCES  = $(TREECC_SRCOUT)
+
+dist_libILCSharp_a_SOURCES  = cs_attrs.c \
+							  cs_gather.c \
+							  cs_grammar.y \
+							  cs_internal.h \
+							  cs_lookup.c \
+							  cs_modifiers.c \
+							  cs_rename.h \
+							  cs_scanner.l \
+							  cs_semvalue.c \
+							  cs_semvalue.h \
+							  cs_valdoc.c
 
 AM_YFLAGS = -d
 

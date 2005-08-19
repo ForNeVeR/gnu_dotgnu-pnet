@@ -1,3 +1,29 @@
+2005-08-19  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/Makefile.am: Add TREECC_INPUTS to EXTRA_DIST. Move TREECC_OUTPUT
+	to nodist_SOURCES and add header files to dist_SOURCES.
+
+	* coremul/Makefile.am: Add header files to SOURCES.
+
+	* csant/Makefile.am: Add header files to SOURCES.
+
+	* cscc/bf/Makefile.am: Add TREECC_INPUTS to EXTRA_DIST. Move
+	TREECC_SRCOUT to nodist_SOURCES and add header files to dist_SOURCES.
+
+	* cscc/c/Makefile.am: Add TREECC_INPUTS to EXTRA_DIST. Move
+	TREECC_SRCOUT to nodist_SOURCES and add header files to dist_SOURCES.
+
+	* cscc/common/Makefile.am: Add cpp_defs.c to nodist_SOURCES, add
+	cpp_defs.sh to EXTRA_DIST and add header files to dist_SOURCES.
+
+	* cscc/csharp/Makefile.am: Add TREECC_INPUTS to EXTRA_DIST. Move
+	TREECC_SRCOUT to nodist_SOURCES and add header files to dist_SOURCES.
+
+	* cscc/java/Makefile.am: Add TREECC_INPUTS to EXTRA_DIST. Move
+	TREECC_SRCOUT to nodist_SOURCES and add header files to dist_SOURCES.
+
+	* cscc/vb/Makefile.am: Add header files to SOURCES.
+
 2005-08-17  Klaus Treichel  <ktreichel@web.de>
 
 	* libffi/Makefile.in: remove $(srcdir)/../compile from DIST_COMMON because

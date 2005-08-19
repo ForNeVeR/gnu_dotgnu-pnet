@@ -1,4 +1,10 @@
 
+2005-08-20  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Reflection/ClrType.cs: Remove sort code from 
+	TrimMembers() and replace with a hacked-up bubble sort which
+	behaves almost the same. (bug #14007, Gopal).
+
 2005-08-19  Marc Haisenko  <marc@darkdust.net>
 
 	* System.Windows.Forms/Control.cs: Call OnVisibleChanged for a control

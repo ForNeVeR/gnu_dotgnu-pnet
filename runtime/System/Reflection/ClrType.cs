@@ -274,8 +274,18 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				}
 				if(m1.MemberType==MemberTypes.Field)
 				{
-					if(((FieldInfo)m1).Attributes==((FieldInfo)m2).Attributes)
+					FieldInfo f1 = (FieldInfo)m1;
+					FieldInfo f2 = (FieldInfo)m2;
+
+					if(f1.Attributes == f2.Attributes)
 					{
+						if(((f1.Attributes & FieldAttributes.FieldAccessMask) & FieldAttributes.Private) != 0)
+						{
+							// Private members never override each other.
+							// Very important for serialization.
+							// TODO: more research on protected and internal stuff here.
+							return MemberComparison.None;
+						}
 						goto overrideCheck;
 					}
 				}
@@ -370,30 +380,32 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 			}
 
 	/// <summary>
-	/// This function sorts and removes overrides from an array of
-	/// MemberInfo[]
+	/// This function removes overrides from an array of
+	/// MemberInfo[] while retaining original order of
+	/// the members in the array.
 	/// </summary>
 	private Object TrimMembers(Object memberArray, Type type)
 			{
 				MemberInfo[] members=(MemberInfo[])(memberArray);
-				ArrayList list=new ArrayList(members.Length/2);
+				BitArray visibleMask = new BitArray(members.Length, false);
+				int count = 0;
 				int best;
 
-				// Sort the members on name to make it easier to
-				// efficiently remove overrides.
-				Array.Sort(members, memberNameComparer);
-
-				// Remove overrides from the list.
-				int i = 0;
-				while(i < members.Length)
+				// Technically speaking, this algorithm
+				// should not touch a type twice in the
+				// inner loop. Need to fix that up
+				// Real Soon Now (tm).
+				for(int i = 0; i < members.Length; i++)
 				{
 					best = i;
-					++i;
-					while(i < members.Length &&
-					      members[i].Name == members[best].Name)
+					for(int j = 0; j < members.Length; j++)
 					{
-						MemberComparison cmp = CompareMembers(members[i], 
-															  members[best]);
+						if(members[j].Name != members[best].Name)
+						{
+							continue;
+						}
+						MemberComparison cmp = CompareMembers(members[j],
+																members[best]);
 						if(cmp == MemberComparison.None)
 						{
 							break;
@@ -402,14 +414,25 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 						{
 							if((cmp & MemberComparison.Override) != 0)
 							{
-								best = i;
+								best = j;
 							}
 						}
-						++i;
 					}
-					list.Add(members[best]);
+					if(visibleMask[best] == false)
+					{
+						visibleMask[best] = true;
+						count++;
+					}
 				}
-				return list.ToArray(type);
+				MemberInfo [] newMembers = (MemberInfo[])Array.CreateInstance(type,count);
+				for(int i = 0, j = 0; i < visibleMask.Count; i++)
+				{
+					if(visibleMask[i] == true)
+					{
+						newMembers[j++] = members[i];
+					}
+				}
+				return newMembers;
 			}
 	
 	// Implementation of "GetConstructor" provided by subclasses.

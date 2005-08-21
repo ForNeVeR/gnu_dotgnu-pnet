@@ -2,12 +2,17 @@ bin_PROGRAMS  = ilasm
 lib_LIBRARIES = libILAsm.a
 man_MANS      = ilasm.1
 EXTRA_DIST    = $(man_MANS)
+BUILT_SOURCES = ilasm_grammar.c ilasm_grammar.h ilasm_scanner.c
 
 libILAsm_a_SOURCES =	ilasm_build.c \
+			ilasm_build.h \
 		 	ilasm_data.c \
+		 	ilasm_data.h \
 			ilasm_grammar.y \
 			ilasm_main.c \
 			ilasm_output.c \
+			ilasm_output.h \
+			ilasm_rename.h \
 			ilasm_scanner.l
 
 ilasm_SOURCES = ilasm.c

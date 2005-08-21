@@ -5,6 +5,7 @@ ildasm_SOURCES = ildasm_attrs.c \
 				 ildasm_class.c \
 				 ildasm_data.c \
 				 ildasm_global.c \
+				 ildasm_internal.h \
 				 ildasm_java.c \
 				 ildasm_main.c \
 				 ildasm_method.c \

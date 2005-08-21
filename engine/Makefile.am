@@ -2,67 +2,126 @@ bin_PROGRAMS = ilrun ilverify
 lib_LIBRARIES = libILEngine.a
 man_MANS = ilrun.1 ilverify.1
 
-libILEngine_a_SOURCES = cvm.c \
-						box.c \
-						call.c \
-						convert.c \
-						custom.c \
-						cvm_dasm.c \
-						cvm_lengths.c \
-						cvmc.c \
-						dumpconfig.c \
-						engine.c \
-						gen_marshal.c \
-						heap.c \
-						internal.c \
-						layout.c \
-						lib_array.c \
-						lib_charinfo.c \
-						lib_crypt.c \
-						lib_decimal.c \
-						lib_delegate.c \
-						lib_diag.c \
-						lib_dir.c \
-						lib_emit.c \
-						lib_encoding.c \
-						lib_enum.c \
-						lib_file.c \
-						lib_gc.c \
-						lib_helpers.c \
-						lib_info.c \
-						lib_marshal.c \
-						lib_math.c \
-						lib_misc.c \
-						lib_monitor.c \
-						lib_object.c \
-						lib_profiling.c \
-						lib_reflect.c \
-						lib_regexp.c \
-						lib_security.c \
-						lib_serial.c \
-						lib_socket.c \
-						lib_stdio.c \
-						lib_string.c \
-						lib_stringbuilder.c \
-						lib_task.c \
-						lib_thread.c \
-						lib_time.c \
-						lib_type.c \
-						lookup.c \
-						monitor.c \
-						method_cache.c \
-						null_coder.c \
-						pinvoke.c \
-						process.c \
-						register.c \
-						thread.c \
-						throw.c \
-						unroll.c \
-						md_x86.c \
-						md_arm.c \
-						md_ia64.c \
-						md_ppc.c \
-						verify.c
+
+CVM_INCLUDES = cvm.h cvm_arith.c cvm_branch.c cvm_call.c cvm_compare.c \
+			   cvm_config.h cvm_const.c cvm_conv.c cvm_except.c cvm_format.h \
+			   cvm_inline.c cvm_interrupt.c cvm_ptr.c cvm_stack.c cvm_var.c
+
+CVMC_INCLUDES = cvmc_arith.c cvmc_branch.c cvmc_call.c cvmc_const.c \
+				cvmc_conv.c cvmc_except.c cvmc_gen.h cvmc_obj.c cvmc_ptr.c \
+				cvmc_setup.c cvmc_stack.c cvmc_var.c
+				
+INTERNAL_INCLUDES = int_table.c
+
+MD_ARM_INCLUDES = md_arm.h arm_codegen.h
+
+MD_IA64_INCLUDES = md_ia64.h md_ia64_macros.h
+
+MD_PPC_INCLUDES = md_ppc.h ppc_codegen.h
+
+MD_X86_INCLUDES = md_x86.h x86_codegen.h
+
+UNROLL_INCLUDES = unroll_arith.c \
+				  unroll_branch.c \
+				  unroll_const.c \
+				  unroll_conv.c \
+				  unroll_ptr.c \
+				  unroll_var.c
+
+VERIFY_INCLUDES = verify_ann.c \
+				  verify_arith.c \
+				  verify_branch.c \
+				  verify_call.c \
+				  verify_const.c \
+				  verify_conv.c \
+				  verify_except.c \
+				  verify_obj.c \
+				  verify_ptr.c \
+				  verify_stack.c \
+				  verify_var.c
+
+EXTRA_DIST = $(man_MANS) cvm_doc.txt mkint.sh mklabel.sh
+
+EXTRA_libILEngine_a_SOURCES = $(CVM_INCLUDES) \
+							  $(CVMC_INCLUDES) \
+							  gen_marshal.tc \
+							  $(INTERNAL_INCLUDES) \
+							  $(MD_ARM_INCLUDES) \
+							  $(MD_IA64_INCLUDES) \
+							  $(MD_PPC_INCLUDES) \
+							  $(MD_X86_INCLUDES) \
+							  $(UNROLL_INCLUDES) \
+							  $(VERIFY_INCLUDES)
+
+nodist_libILEngine_a_SOURCES = gen_marshal.c \
+							   gen_marshal.h
+
+dist_libILEngine_a_SOURCES = cvm.c \
+							 box.c \
+							 call.c \
+							 convert.c \
+							 custom.c \
+							 cvm_dasm.c \
+							 cvm_lengths.c \
+							 cvmc.c \
+							 dumpconfig.c \
+							 engine.c \
+							 engine.h \
+							 engine_private.h \
+							 heap.c \
+							 int_proto.h \
+							 internal.c \
+							 layout.c \
+							 lib_array.c \
+							 lib_charinfo.c \
+							 lib_crypt.c \
+							 lib_decimal.c \
+							 lib_defs.h \
+							 lib_delegate.c \
+							 lib_diag.c \
+							 lib_dir.c \
+							 lib_emit.c \
+							 lib_encoding.c \
+							 lib_enum.c \
+							 lib_file.c \
+							 lib_gc.c \
+							 lib_helpers.c \
+							 lib_info.c \
+							 lib_marshal.c \
+							 lib_math.c \
+							 lib_misc.c \
+							 lib_monitor.c \
+							 lib_object.c \
+							 lib_profiling.c \
+							 lib_reflect.c \
+							 lib_regexp.c \
+							 lib_security.c \
+							 lib_serial.c \
+							 lib_socket.c \
+							 lib_stdio.c \
+							 lib_string.c \
+							 lib_stringbuilder.c \
+							 lib_task.c \
+							 lib_thread.c \
+							 lib_time.c \
+							 lib_type.c \
+							 lookup.c \
+							 md_default.h \
+							 method_cache.h \
+							 monitor.c \
+							 method_cache.c \
+							 null_coder.c \
+							 pinvoke.c \
+							 process.c \
+							 register.c \
+							 thread.c \
+							 throw.c \
+							 unroll.c \
+							 md_x86.c \
+							 md_arm.c \
+							 md_ia64.c \
+							 md_ppc.c \
+							 verify.c
 
 PACKAGE_LIBS = $(FFILIBS) $(GCLIBS) $(SOCKETLIBS) $(WINLIBS)
 
@@ -110,13 +169,29 @@ AM_CFLAGS = -I$(top_srcdir)/libgc/include -I$(top_srcdir)/libffi/include \
 
 endif
 
-cvm.o: cvm_labels.h
+cvmc.$(OBJEXT): cvmc.c $(CVMC_INCLUDES)
+
+cvm.$(OBJEXT): cvm.c $(CVM_INCLUDES) cvm_labels.h
+
+internal.$(OBJEXT): internal.c $(INTERNAL_INCLUDES)
+
+md_arm.$(OBJEXT): md_arm.c $(MD_ARM_INCLUDES) cvm_config.h
+
+md_ia64.$(OBJEXT): md_ia64.c $(MD_IA64_INCLUDES) cvm_config.h
+
+md_ppc.$(OBJEXT): md_ppc.c $(MD_PPC_INCLUDES) cvm_config.h
+
+md_x86.$(OBJEXT): md_x86.c $(MD_X86_INCLUDES) cvm_config.h
+
+unroll.$(OBJEXT): unroll.c $(UNROLL_INCLUDES)
+
+verify.$(OBJEXT): verify.c $(VERIFY_INCLUDES)
 
 cvm_labels.h: $(srcdir)/cvm.h $(srcdir)/mklabel.sh
 	$(SHELL) $(srcdir)/mklabel.sh "$(AWK)" $(srcdir)/cvm.h >cvm_labels.h
 
-$(srcdir)/gen_marshal.c: $(srcdir)/gen_marshal.tc
-	$(TREECC) -f -o $(srcdir)/gen_marshal.c -h $(srcdir)/gen_marshal.h \
+gen_marshal.c: $(srcdir)/gen_marshal.tc
+	$(TREECC) -f -o gen_marshal.c -h gen_marshal.h \
 			$(srcdir)/gen_marshal.tc
 
-CLEANFILES = cvm_labels.h $(srcdir)/gen_marshal.c $(srcdir)/gen_marshal.h
+CLEANFILES = cvm_labels.h gen_marshal.c gen_marshal.h

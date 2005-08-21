@@ -1,3 +1,27 @@
+2005-08-21  Klaus Treichel  <ktreichel@web.de>
+
+	* Makefile.am: Add config-ml.in to EXTRA_DIST.
+
+	* engine/Makefile.am: Add various dependencies for build and make dist.
+
+	* ilalink/Makefile.am: Add linker.h to SOURCES.
+
+	* ilasm/Makefile.am: Add header files to SOURCES and ilasm_grammar.c,
+	ilasm_grammar.h and ilasm_scanner.c to BUILT_SOURCES.
+
+	* ildasm/Makefile.am: Add ildasm_internal.h to SOURCES.
+
+	* image/Makefile.am: Add opdef.c to EXTRA_SOURCES and image.h and program.h
+	to SOURCES.
+
+	* libffi/Makefile.am, libffi/Makefile.in: Add configure.host and
+	libtool-version to EXTRA_DIST.
+
+	* support/Makefile.am: Add gen_errno.sh to EXTRA_DIST. Move errno_map.c to
+	nodist_SOURCES, Add header files to dist_SOURCES. Remove $(srcdir) from
+	errno_map.c to allow builddir != srcdir. Add dependencies for
+	unicode.$(OBJEXT).
+
 2005-08-19  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/Makefile.am: Add TREECC_INPUTS to EXTRA_DIST. Move TREECC_OUTPUT

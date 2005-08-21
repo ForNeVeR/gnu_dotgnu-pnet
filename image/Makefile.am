@@ -1,6 +1,10 @@
 lib_LIBRARIES = libILImage.a
 noinst_LIBRARIES = libILTestMacros.a
 
+OPCODES_INCLUDES = opdef.c
+
+EXTRA_libILImage_a_SOURCES = $(OPCODES_INCLUDES)
+
 libILImage_a_SOURCES = assembly.c \
 					   attr.c \
 					   class.c \
@@ -13,6 +17,7 @@ libILImage_a_SOURCES = assembly.c \
 					   errors.c \
 					   generic.c \
 					   image.c \
+					   image.h \
 					   item.c \
 					   java_loader.c \
 					   java_writer.c \
@@ -32,6 +37,7 @@ libILImage_a_SOURCES = assembly.c \
 					   opcodes_small.c \
 					   pecoff_loader.c \
 					   pecoff_writer.c \
+					   program.h \
 					   ser_parse.c \
 					   ser_writer.c \
 					   sig_parse.c \

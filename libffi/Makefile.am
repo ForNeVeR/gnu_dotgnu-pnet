@@ -6,6 +6,7 @@ ACLOCAL_AMFLAGS = -I ..
 SUBDIRS = include 
 
 EXTRA_DIST = LICENSE ChangeLog.v1 \
+	configure.host libtool-version \
 	src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h \
 	src/arm/ffi.c src/arm/sysv.S src/arm/ffitarget.h \
 	src/cris/ffi.c src/cris/sysv.S src/cris/ffitarget.h \

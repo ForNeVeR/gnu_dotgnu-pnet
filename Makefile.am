@@ -9,7 +9,7 @@ LIBGC_DIR = libgc
 else
 LIBGC_DIR = 
 endif
-  
+
 if PNET_TOOLS
 
 SUBDIRS = . $(LIBGC_DIR) $(LIBFFI_DIR) include support image dumpasm engine ilasm ildasm \
@@ -22,4 +22,7 @@ else
 SUBDIRS = . $(LIBGC_DIR) $(LIBFFI_DIR) include coremul support image engine
 
 endif
+
+EXTRA_DIST = config-ml.in
+
 

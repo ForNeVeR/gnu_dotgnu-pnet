@@ -19,7 +19,8 @@ libILLink_a_SOURCES = link_attrs.c \
 					  link_misc.c \
 					  link_module.c \
 					  link_res.c \
-					  link_type.c
+					  link_type.c \
+					  linker.h
 
 AM_CFLAGS = -I$(top_srcdir)/include
 

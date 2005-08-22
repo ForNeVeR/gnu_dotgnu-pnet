@@ -1,4 +1,10 @@
 
+2005-08-22  Deryk Robosson  <deryk@0x0a.com>
+
+	* samples/forms/FormsTest.cs: Add StatusBar. Implement status bar
+	updating when tabcontrol clicked. Remove duplicate Controls.Add()
+	method call.
+
 2005-08-22  Marc Haisenko  <marc@darkdust.net>
 
 	* System.Windows.Forms/Application.cs: Call SelectNextControl on the

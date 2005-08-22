@@ -41,6 +41,7 @@ namespace FormsTest
 		private TabPage tabPage26;
 		private TabPage tabPage27;
 		private TabPage tabPage28;
+		private StatusBar statusBar;
 		
 		// Tab1 Labels Test
 		private Label label;
@@ -350,7 +351,7 @@ namespace FormsTest
 			
 			SuspendLayout();
 			tabControl1 = new TabControl();
-			tabControl1.Dock = DockStyle.Fill;
+			tabControl1.Size = new Size(500, 628);
 			tabControl1.Multiline = true;
 			tabControl1.SizeMode = TabSizeMode.FillToRight;
 			tabControl1.Name = "Main Tab";
@@ -440,8 +441,15 @@ namespace FormsTest
 			tabPage28 = new TabPage();
 			tabPage28.Text = "TrackBar";
 			tabControl1.Controls.Add(tabPage28);
-			Controls.Add(tabControl1);
-			
+
+			statusBar = new StatusBar();
+			statusBar.Dock = DockStyle.Bottom;
+			statusBar.Name = "statusBar";
+			statusBar.Text = "FormsTest Ready";
+			statusBar.Location = new Point(0, 628);
+			statusBar.Size = new Size(500, 22);
+
+			Controls.Add(statusBar);
 			Controls.Add(tabControl1);
 
 			AddTreeViewTest(tabPage12);
@@ -474,6 +482,10 @@ namespace FormsTest
 			AddMessageBoxTest(tabPage26);
 			AddUpDownTest(tabPage27);
 			AddTrackbarTest(tabPage28);
+
+			// Add the events here after the controls have been added
+			// to the pages, otherwise the events will not be raised
+			tabControl1.Click += new System.EventHandler(this.UpdateStatusBar);
 
 			ResumeLayout(false);
 			MinimumSize = new Size(300, 300);
@@ -3493,6 +3505,7 @@ namespace FormsTest
 				ControlPaint.DrawSelectionFrame(g, true, b, new Rectangle(b.Left + 5, b.Top + 5, b.Width - 10, b.Height - 10), Color.Blue);
 
 				b = NextBoundsPaint(g, "DSizeGrip");
+Console.WriteLine("DSizeGrip bounds: " + b.ToString());
 				ControlPaint.DrawSizeGrip(g, Color.Blue, b);
 
 				b = NextBoundsPaint(g, "DStringDisabled");
@@ -3913,6 +3926,12 @@ namespace FormsTest
 			catch
 			{}
 			
+		}
+
+		private void UpdateStatusBar(object sender, System.EventArgs e)
+		{
+			TabPage tabPage = (sender as TabControl).SelectedTab;
+			statusBar.Text = tabPage.Text;
 		}
 	}
 }

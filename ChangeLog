@@ -1,4 +1,16 @@
 
+2005-08-22  Marc Haisenko  <marc@darkdust.net>
+
+	* System.Windows.Forms/Application.cs: Call SelectNextControl on the
+	main form in RunMessageLoop.
+
+	* System.Windows.Forms/ContainerControl.cs: Set style
+	ControlStyles.ContainerControl to true.
+
+	* System.Windows.Forms/UserControl.cs: SelectNextControl in
+	OnMouseDown if no active control and override Select, which also
+	calls SelectNextControl to select the first contained control.
+	
 2005-08-22  Gopal V  <gopalv82@yahoo.com>
 
 	* JScript/Nodes/JNode.tc: Eval of a JFunction returns

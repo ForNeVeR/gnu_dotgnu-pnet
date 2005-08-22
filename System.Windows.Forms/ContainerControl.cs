@@ -91,6 +91,7 @@ public class ContainerControl : ScrollableControl, IContainerControl
 	public ContainerControl()
 	{
 		SetStyle(ControlStyles.AllPaintingInWmPaint, false);
+		SetStyle(ControlStyles.ContainerControl, true);
 	}
 
 #if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS

@@ -386,6 +386,7 @@ public sealed class Application
 				if(mainForm != null)
 				{
 					mainForm.Show();
+					mainForm.SelectNextControl (null, true, true, true, false);
 					Form.activeForm = mainForm;
 				}
 

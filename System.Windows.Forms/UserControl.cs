@@ -27,7 +27,9 @@ using System.Drawing;
 public class UserControl : ContainerControl
 {
 	// Constructor.
-	public UserControl() {}
+	public UserControl()
+			{
+			}
 
 	// Event that is emitted before the control becomes
 	// visible for the first time.
@@ -73,7 +75,19 @@ public class UserControl : ContainerControl
 	// Override the mouse down event.
 	protected override void OnMouseDown(MouseEventArgs e)
 			{
+				if (ActiveControl == null)
+				{
+					SelectNextControl(null, true, true, true, false);
+				}
+				
 				base.OnMouseDown(e);
+			}
+
+	// Override Select. Try to select the next available control,
+	// preferably the first on in this UserControl.
+	protected override void Select(bool directed, bool forward)
+			{
+				SelectNextControl(null, forward, true, true, false);
 			}
 
 #if !CONFIG_COMPACT_FORMS

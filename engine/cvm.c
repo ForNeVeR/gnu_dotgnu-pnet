@@ -368,7 +368,7 @@ static IL_INLINE ILInt64 ReadLong(CVMWord *stack)
 	return *((ILInt64 *)stack);
 #else
 	ILInt64 temp;
-	ILMemCpy(&temp, stack, sizeof(ILInt64));
+	IL_MEMCPY(&temp, stack, sizeof(ILInt64));
 	return temp;
 #endif
 }
@@ -381,7 +381,7 @@ static IL_INLINE void WriteLong(CVMWord *stack, ILInt64 value)
 #ifdef CVM_LONGS_ALIGNED_WORD
 	*((ILInt64 *)stack) = value;
 #else
-	ILMemCpy(stack, &value, sizeof(ILInt64));
+	IL_MEMCPY(stack, &value, sizeof(ILInt64));
 #endif
 }
 
@@ -394,7 +394,7 @@ static IL_INLINE ILUInt64 ReadULong(CVMWord *stack)
 	return *((ILUInt64 *)stack);
 #else
 	ILUInt64 temp;
-	ILMemCpy(&temp, stack, sizeof(ILUInt64));
+	IL_MEMCPY(&temp, stack, sizeof(ILUInt64));
 	return temp;
 #endif
 }
@@ -407,7 +407,7 @@ static IL_INLINE void WriteULong(CVMWord *stack, ILUInt64 value)
 #ifdef CVM_LONGS_ALIGNED_WORD
 	*((ILUInt64 *)stack) = value;
 #else
-	ILMemCpy(stack, &value, sizeof(ILUInt64));
+	IL_MEMCPY(stack, &value, sizeof(ILUInt64));
 #endif
 }
 
@@ -422,7 +422,7 @@ static IL_INLINE ILNativeFloat ReadFloat(CVMWord *stack)
 	return *((ILNativeFloat *)stack);
 #else
 	ILNativeFloat temp;
-	ILMemCpy(&temp, stack, sizeof(ILNativeFloat));
+	IL_MEMCPY(&temp, stack, sizeof(ILNativeFloat));
 	return temp;
 #endif
 }
@@ -435,7 +435,7 @@ static IL_INLINE void WriteFloat(CVMWord *stack, ILNativeFloat value)
 #ifdef CVM_REALS_ALIGNED_WORD
 	*((ILNativeFloat *)stack) = value;
 #else
-	ILMemCpy(stack, &value, sizeof(ILNativeFloat));
+	IL_MEMCPY(stack, &value, sizeof(ILNativeFloat));
 #endif
 }
 
@@ -448,7 +448,7 @@ static IL_INLINE ILDouble ReadDouble(CVMWord *stack)
 	return *((ILDouble *)stack);
 #else
 	ILDouble temp;
-	ILMemCpy(&temp, stack, sizeof(ILDouble));
+	IL_MEMCPY(&temp, stack, sizeof(ILDouble));
 	return temp;
 #endif
 }
@@ -461,7 +461,7 @@ static IL_INLINE void WriteDouble(CVMWord *stack, ILDouble value)
 #ifdef CVM_DOUBLES_ALIGNED_WORD
 	*((ILDouble *)stack) = value;
 #else
-	ILMemCpy(stack, &value, sizeof(ILDouble));
+	IL_MEMCPY(stack, &value, sizeof(ILDouble));
 #endif
 }
 

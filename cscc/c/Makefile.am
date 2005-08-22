@@ -18,27 +18,26 @@ TREECC_OUTPUT = $(TREECC_SRCOUT) c_defs.h
 
 EXTRA_DIST = $(TREECC_INPUTS)
 
-nodist_libILCLang_a_SOURCES = $(TREECC_SRCOUT)
-
-dist_libILCLang_a_SOURCES = c_coerce.c \
-							c_crt0.c \
-							c_declspec.c \
-							c_declspec.h \
-							c_function.c \
-							c_function.h \
-							c_grammar.y \
-							c_internal.c \
-							c_internal.h \
-							c_lexutils.c \
-							c_lexutils.h \
-							c_library.c \
-							c_rename.h \
-							c_scanner.l \
-							c_scope.c \
-							c_scope.h \
-							c_typeout.c \
-							c_types.c \
-							c_types.h
+libILCLang_a_SOURCES = c_coerce.c \
+					   c_crt0.c \
+					   c_declspec.c \
+					   c_declspec.h \
+					   c_function.c \
+					   c_function.h \
+					   c_grammar.y \
+					   c_internal.c \
+					   c_internal.h \
+					   c_lexutils.c \
+					   c_lexutils.h \
+					   c_library.c \
+					   c_rename.h \
+					   c_scanner.l \
+					   c_scope.c \
+					   c_scope.h \
+					   c_typeout.c \
+					   c_types.c \
+					   c_types.h \
+					   $(TREECC_SRCOUT)
 
 AM_YFLAGS = -d
 

@@ -1,3 +1,10 @@
+2005-08-22  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/Makefile.am, cscc/bf/Makefile.am, cscc/c/Makefile.am,
+	cscc/common/Makefile.am, cscc/csharp/Makefile.am, cscc/java/Makefile.am,
+	engine/Makefile.am, support/Makefile.am: Remove the dist_ and nodist_
+	prefixes of the targets and add the nodist_ sources to the normal SOURCES
+	because automake 1.4 can't handle them.
 
 2005-08-22  Gopal V  <gopalv82@yahoo.com>
 

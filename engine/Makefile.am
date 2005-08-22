@@ -53,75 +53,76 @@ EXTRA_libILEngine_a_SOURCES = $(CVM_INCLUDES) \
 							  $(UNROLL_INCLUDES) \
 							  $(VERIFY_INCLUDES)
 
-nodist_libILEngine_a_SOURCES = gen_marshal.c \
-							   gen_marshal.h
+BUILT_SOURCES = gen_marshal.c \
+				gen_marshal.h
 
-dist_libILEngine_a_SOURCES = cvm.c \
-							 box.c \
-							 call.c \
-							 convert.c \
-							 custom.c \
-							 cvm_dasm.c \
-							 cvm_lengths.c \
-							 cvmc.c \
-							 dumpconfig.c \
-							 engine.c \
-							 engine.h \
-							 engine_private.h \
-							 heap.c \
-							 int_proto.h \
-							 internal.c \
-							 layout.c \
-							 lib_array.c \
-							 lib_charinfo.c \
-							 lib_crypt.c \
-							 lib_decimal.c \
-							 lib_defs.h \
-							 lib_delegate.c \
-							 lib_diag.c \
-							 lib_dir.c \
-							 lib_emit.c \
-							 lib_encoding.c \
-							 lib_enum.c \
-							 lib_file.c \
-							 lib_gc.c \
-							 lib_helpers.c \
-							 lib_info.c \
-							 lib_marshal.c \
-							 lib_math.c \
-							 lib_misc.c \
-							 lib_monitor.c \
-							 lib_object.c \
-							 lib_profiling.c \
-							 lib_reflect.c \
-							 lib_regexp.c \
-							 lib_security.c \
-							 lib_serial.c \
-							 lib_socket.c \
-							 lib_stdio.c \
-							 lib_string.c \
-							 lib_stringbuilder.c \
-							 lib_task.c \
-							 lib_thread.c \
-							 lib_time.c \
-							 lib_type.c \
-							 lookup.c \
-							 md_default.h \
-							 method_cache.h \
-							 monitor.c \
-							 method_cache.c \
-							 null_coder.c \
-							 pinvoke.c \
-							 process.c \
-							 register.c \
-							 thread.c \
-							 throw.c \
-							 unroll.c \
-							 md_x86.c \
-							 md_arm.c \
-							 md_ia64.c \
-							 md_ppc.c \
-							 verify.c
+libILEngine_a_SOURCES = cvm.c \
+						box.c \
+						call.c \
+						convert.c \
+						custom.c \
+						cvm_dasm.c \
+						cvm_lengths.c \
+						cvmc.c \
+						dumpconfig.c \
+						engine.c \
+						engine.h \
+						engine_private.h \
+						gen_marshal.c \
+						heap.c \
+						int_proto.h \
+						internal.c \
+						layout.c \
+						lib_array.c \
+						lib_charinfo.c \
+						lib_crypt.c \
+						lib_decimal.c \
+						lib_defs.h \
+						lib_delegate.c \
+						lib_diag.c \
+						lib_dir.c \
+						lib_emit.c \
+						lib_encoding.c \
+						lib_enum.c \
+						lib_file.c \
+						lib_gc.c \
+						lib_helpers.c \
+						lib_info.c \
+						lib_marshal.c \
+						lib_math.c \
+						lib_misc.c \
+						lib_monitor.c \
+						lib_object.c \
+						lib_profiling.c \
+						lib_reflect.c \
+						lib_regexp.c \
+						lib_security.c \
+						lib_serial.c \
+						lib_socket.c \
+						lib_stdio.c \
+						lib_string.c \
+						lib_stringbuilder.c \
+						lib_task.c \
+						lib_thread.c \
+						lib_time.c \
+						lib_type.c \
+						lookup.c \
+						md_default.h \
+						method_cache.h \
+						monitor.c \
+						method_cache.c \
+						null_coder.c \
+						pinvoke.c \
+						process.c \
+						register.c \
+						thread.c \
+						throw.c \
+						unroll.c \
+						md_x86.c \
+						md_arm.c \
+						md_ia64.c \
+						md_ppc.c \
+						verify.c
 
 PACKAGE_LIBS = $(FFILIBS) $(GCLIBS) $(SOCKETLIBS) $(WINLIBS)
 

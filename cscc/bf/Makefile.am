@@ -10,13 +10,12 @@ TREECC_OUTPUT = $(TREECC_SRCOUT) bf_defs.h
 
 EXTRA_DIST = $(TREECC_INPUTS)
 
-nodist_libILBf_a_SOURCES  =	$(TREECC_SRCOUT)
-
-dist_libILBf_a_SOURCES  = bf_grammar.y \
-						  bf_scanner.l \
-						  bf_optimize.c \
-						  bf_internal.h \
-						  bf_rename.h
+libILBf_a_SOURCES  = bf_grammar.y \
+					 bf_scanner.l \
+					 bf_optimize.c \
+					 bf_internal.h \
+					 bf_rename.h \
+					 $(TREECC_SRCOUT)
 
 AM_YFLAGS = -d
 

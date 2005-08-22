@@ -1,3 +1,11 @@
+
+2005-08-22  Gopal V  <gopalv82@yahoo.com>
+
+	* image/link.c: add lib64 paths to the default lookup
+	path for libraries. This is to ensure the 64bit libraries
+	are preferred over 32 bit ones when ilrun is built for 
+	x86_64.
+
 2005-08-21  Klaus Treichel  <ktreichel@web.de>
 
 	* Makefile.am: Add config-ml.in to EXTRA_DIST.

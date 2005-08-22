@@ -30,8 +30,16 @@ extern	"C" {
  */
 #define	CSCC_LIB_PATH_DEFAULT	\
 			"/usr/local/lib/cscc/lib:/usr/lib/cscc/lib"
+#if defined(__x86_64) || defined(__x86_64__)
+/* Note: x86_64 is a special case as it has 32 bit binaries
+		 in /lib and 64 bit in /lib64*/
+#define	LD_LIBRARY_PATH_DEFAULT	\
+			("/usr/local/lib64:/usr/X11R6/lib64:/usr/lib64" \
+			"/usr/local/lib:/usr/X11R6/lib:/usr/lib")
+#else
 #define	LD_LIBRARY_PATH_DEFAULT	\
 			"/usr/local/lib:/usr/X11R6/lib:/usr/lib"
+#endif
 
 /*
  * The cached system path, loaded from the environment.  The "important"

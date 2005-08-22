@@ -1,4 +1,12 @@
 
+2005-08-22  Gopal V  <gopalv82@yahoo.com>
+
+	* JScript/Nodes/JNode.tc: Eval of a JFunction returns
+	a ScriptFunction instead of a NULL to ensure that they
+	can be passed as arguments to functions. Also allow 
+	anonymous functions which are not to be included into
+	the scope.
+
 2005-08-20  Rainer Groesslinger  <rainer.groesslinger@gmx.net>
 
 	* System/Text/RegularExpressions/*: Latest updates from 

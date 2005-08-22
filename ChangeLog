@@ -1,4 +1,10 @@
 
+2005-08-22  Marc Haisenko  <marc@darkdust.net>
+
+	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs: Fix handling of
+	ToolkitWindowFlags.ShowInTaskbar in SetWindowFlags, this was wrong
+	for ages.
+
 2005-08-22  Deryk Robosson  <deryk@0x0a.com>
 
 	* samples/forms/FormsTest.cs: Add StatusBar. Implement status bar

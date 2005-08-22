@@ -7,6 +7,9 @@
 	anonymous functions which are not to be included into
 	the scope.
 
+	* samples/jscript/lispisms.js: Test out simple functional
+	programming and ensure the scopes are merged properly.
+
 2005-08-20  Rainer Groesslinger  <rainer.groesslinger@gmx.net>
 
 	* System/Text/RegularExpressions/*: Latest updates from 

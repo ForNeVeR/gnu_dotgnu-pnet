@@ -382,7 +382,11 @@ public abstract class XmlReader
 				if(NodeType == XmlNodeType.Element)
 				{
 					// bail out now if there's nothing to read
-					if(IsEmptyElement) { return String.Empty; }
+					if(IsEmptyElement)
+					{
+						Read();
+						return String.Empty;
+					}
 					Read();
 				}
 

@@ -1,4 +1,10 @@
+2005-08-23  Radek Polak  <psonek2@seznam.cz>
 
+	* System.Xml/XmlReader.cs: Advance reader in ReadString if the element is
+	empty. (bug #14261, Klaus)
+
+	* tests/System.Xml/TestXmlTextReader.cs: Add testcase for an empty element.
+	
 2005-08-22  Marc Haisenko  <marc@darkdust.net>
 
 	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs: Fix handling of
@@ -34,7 +40,7 @@
 	* samples/jscript/lispisms.js: Test out simple functional
 	programming and ensure the scopes are merged properly.
 
-2005-08-20  Rainer Groesslinger  <rainer.groesslinger@gmx.net>
+2005-08-20  Rainer Größlinger  <rainer.groesslinger@gmx.net>
 
 	* System/Text/RegularExpressions/*: Latest updates from 
 	SVN HEAD as of 12th August 2005. Removed match.cs, added

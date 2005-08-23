@@ -63,6 +63,7 @@ public class TestXmlTextReader : TestCase
 		 "<test>Brave GNU <![CDATA[World]]> &hello;</test>" +
 		 "					" +
 		 "<?pi HeLlO wOrLd ?>"),
+		 "<doc><text/></doc>"
 	};
 
 
@@ -243,4 +244,13 @@ public class TestXmlTextReader : TestCase
 				AssertEquals("ReadString (2)", "Brave GNU World ", xr.ReadString());
 			}
 
+	// Test if NodeType after reading empty element with ReadElementString() is XmlNodeType.EndElement (bug #14261).
+	public void TestXmlTextReaderReadElementStringOnEmpyElement()
+	{
+		Reset(6);
+		AssertEquals("ReadElementStringOnEmpyElement (1)", XmlNodeType.Element, xr.MoveToContent());
+		AssertEquals("ReadElementStringOnEmpyElement (2)", true, xr.Read());
+		AssertEquals("ReadElementStringOnEmpyElement (3)", String.Empty, xr.ReadElementString());
+		AssertEquals("ReadElementStringOnEmpyElement (4)", XmlNodeType.EndElement, xr.NodeType);
+	}
 }; // class TestXmlTextReader

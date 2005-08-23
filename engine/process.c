@@ -135,6 +135,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->gcHandles = 0;
 	process->entryImage = 0;
 	process->internalClassTable = 0;
+	process->firstClassPrivate = 0;
 #ifdef IL_CONFIG_DEBUG_LINES
 	process->debugHookFunc = 0;
 	process->debugHookData = 0;
@@ -169,7 +170,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	ILContextSetUserData(process->context, process);
 
 	/* Initialize the CVM coder */
-	process->coder = ILCoderCreate(&_ILCVMCoderClass, 100000, cachePageSize);
+	process->coder = ILCoderCreate(&_ILCVMCoderClass, process, 100000, cachePageSize);
 	if(!(process->coder))
 	{
 		ILExecProcessDestroy(process);

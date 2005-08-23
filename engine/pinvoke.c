@@ -88,11 +88,11 @@ static ffi_type ffi_type_typedref =
 /*
  * Forward declarations.
  */
-static ffi_type *TypeToFFI(ILType *type, int isInternal);
+static ffi_type *TypeToFFI(ILExecProcess *process, ILType *type, int isInternal);
 
 #ifdef IL_CONFIG_PINVOKE
 
-static ffi_type *StructToFFI(ILClass *classInfo);
+static ffi_type *StructToFFI(ILExecProcess *process, ILClass *classInfo);
 
 #if !FFI_NO_STRUCTS
 
@@ -101,8 +101,8 @@ static ffi_type *StructToFFI(ILClass *classInfo);
  * about the non-static fields of a class.  Returns zero if
  * out of memory.
  */
-static int PopulateStructFFI(ILClass *classInfo, ffi_type **fieldTypes,
-							 unsigned *posn)
+static int PopulateStructFFI(ILExecProcess *process, ILClass *classInfo,
+							  ffi_type **fieldTypes, unsigned *posn)
 {
 	ILClass *parent;
 	ILField *field;
@@ -113,7 +113,7 @@ static int PopulateStructFFI(ILClass *classInfo, ffi_type **fieldTypes,
 	parent = ILClassGetParent(classInfo);
 	if(parent)
 	{
-		if(!PopulateStructFFI(parent, fieldTypes, posn))
+		if(!PopulateStructFFI(process, parent, fieldTypes, posn))
 		{
 			return 0;
 		}
@@ -130,7 +130,7 @@ static int PopulateStructFFI(ILClass *classInfo, ffi_type **fieldTypes,
 			if(ILType_IsValueType(type))
 			{
 				/* Process an embedded structure type */
-				ffi = StructToFFI(ILType_ToValueType(type));
+				ffi = StructToFFI(process, ILType_ToValueType(type));
 				if(!ffi)
 				{
 					return 0;
@@ -139,7 +139,7 @@ static int PopulateStructFFI(ILClass *classInfo, ffi_type **fieldTypes,
 			else
 			{
 				/* Process a non-structure type */
-				ffi = TypeToFFI(type, 0);
+				ffi = TypeToFFI(process, type, 0);
 			}
 			fieldTypes[(*posn)++] = ffi;
 		}
@@ -155,7 +155,7 @@ static int PopulateStructFFI(ILClass *classInfo, ffi_type **fieldTypes,
  * Convert a "struct" class into a "ffi" type descriptor.
  * Returns zero if out of memory.
  */
-static ffi_type *StructToFFI(ILClass *classInfo)
+static ffi_type *StructToFFI(ILExecProcess *process, ILClass *classInfo)
 {
 #if !FFI_NO_STRUCTS
 	ILClass *current;
@@ -190,7 +190,7 @@ static ffi_type *StructToFFI(ILClass *classInfo)
 	else
 	{
 		/* Use the explicit layout information from "layout.c" */
-		explicitSize = _ILLayoutClassReturn(classInfo, &explicitAlignment);
+		explicitSize = _ILLayoutClassReturn(process, classInfo, &explicitAlignment);
 	}
 
 	/* Allocate space for the struct's type descriptor */
@@ -213,7 +213,7 @@ static ffi_type *StructToFFI(ILClass *classInfo)
 	if(!ILClass_IsExplicitLayout(classInfo))
 	{
 		numFields = 0;
-		if(!PopulateStructFFI(classInfo, fieldTypes, &numFields))
+		if(!PopulateStructFFI(process, classInfo, fieldTypes, &numFields))
 		{
 			ILFree(descr);
 			return 0;
@@ -239,7 +239,7 @@ static ffi_type *StructToFFI(ILClass *classInfo)
 /*
  * Convert an IL type into an "ffi" type descriptor.
  */
-static ffi_type *TypeToFFI(ILType *type, int isInternal)
+static ffi_type *TypeToFFI(ILExecProcess *process, ILType *type, int isInternal)
 {
 	if(ILType_IsPrimitive(type))
 	{
@@ -279,7 +279,7 @@ static ffi_type *TypeToFFI(ILType *type, int isInternal)
 	else if(!isInternal && ILType_IsValueType(type))
 	{
 		/* Structure that is passed by value to a PInvoke method */
-		ffi_type *ffi = StructToFFI(ILClassResolve(ILType_ToValueType(type)));
+		ffi_type *ffi = StructToFFI(process, ILClassResolve(ILType_ToValueType(type)));
 		return (ffi ? ffi : &ffi_type_pointer);
 	}
 #endif
@@ -290,7 +290,7 @@ static ffi_type *TypeToFFI(ILType *type, int isInternal)
 	}
 }
 
-void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
+void *_ILMakeCifForMethod(ILExecProcess *process, ILMethod *method, int isInternal)
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILType *returnType = ILTypeGetEnumType(ILTypeGetReturn(signature));
@@ -333,7 +333,7 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 	args = ((ffi_type **)(cif + 1));
 
 	/* Convert the return type */
-	rtype = TypeToFFI(modReturnType, isInternal);
+	rtype = TypeToFFI(process, modReturnType, isInternal);
 
 	/* Convert the argument types */
 	arg = 0;
@@ -354,7 +354,7 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 	}
 	for(param = 1; param <= numParams; ++param)
 	{
-		args[arg++] = TypeToFFI(ILTypeGetEnumType
+		args[arg++] = TypeToFFI(process, ILTypeGetEnumType
 									(ILTypeGetParam(signature, param)),
 							    isInternal);
 	}
@@ -378,7 +378,7 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 	return (void *)cif;
 }
 
-void *_ILMakeCifForConstructor(ILMethod *method, int isInternal)
+void *_ILMakeCifForConstructor(ILExecProcess *process, ILMethod *method, int isInternal)
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILUInt32 numArgs;
@@ -420,7 +420,7 @@ void *_ILMakeCifForConstructor(ILMethod *method, int isInternal)
 	}
 	for(param = 1; param <= numParams; ++param)
 	{
-		args[arg++] = TypeToFFI(ILTypeGetEnumType
+		args[arg++] = TypeToFFI(process, ILTypeGetEnumType
 									(ILTypeGetParam(signature, param)),
 							    isInternal);
 	}
@@ -1032,7 +1032,7 @@ static void MethodInvoke(ffi_cif *cif, void *result,
 
 #endif /* FFI_CLOSURES */
 
-void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method)
+void *_ILMakeClosureForDelegate(ILExecProcess *process, ILObject *delegate, ILMethod *method)
 {
 #if FFI_CLOSURES
 	ILType *signature = ILMethod_Signature(method);
@@ -1058,7 +1058,7 @@ void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method)
 	args = ((ffi_type **)(cif + 1));
 
 	/* Convert the return type */
-	rtype = TypeToFFI(returnType, 0);
+	rtype = TypeToFFI(process, returnType, 0);
 
 	/* Convert the argument types */
 	arg = 0;
@@ -1069,7 +1069,7 @@ void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method)
 	}
 	for(param = 1; param <= numArgs; ++param)
 	{
-		args[arg++] = TypeToFFI(ILTypeGetEnumType
+		args[arg++] = TypeToFFI(process, ILTypeGetEnumType
 									(ILTypeGetParam(signature, param)), 0);
 	}
 

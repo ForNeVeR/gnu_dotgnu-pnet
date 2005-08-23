@@ -166,6 +166,9 @@ struct __tagILFinalizationContext
 	ILExecProcess *volatile process;
 };
 
+/* class private data */
+typedef struct _tagILClassPrivate ILClassPrivate;
+ 
 /*
  * Execution control context for a process.
  */
@@ -222,6 +225,11 @@ struct _tagILExecProcess
 
 	/* Hash table that contains all intern'ed strings within the system */
 	void		   *internHash;
+
+	/* linked list of class private data */
+	/* This is supposed to prevent them to be collected */
+	/* when they are alloceted using GC_MALLOC. */
+	ILClassPrivate *firstClassPrivate;
 
 #ifdef IL_CONFIG_USE_THIN_LOCKS
 	/* Hash table that contains all monitors */
@@ -416,7 +424,6 @@ struct _tagILImplPrivate
 /*
  * Private information that is associated with a class.
  */
-typedef struct _tagILClassPrivate ILClassPrivate;
 struct _tagILClassPrivate
 {
 	ILClass		   *classInfo;			/* Back-pointer to the class */
@@ -435,6 +442,8 @@ struct _tagILClassPrivate
 	ILObject       *staticData;			/* Static data area object */
 	ILImplPrivate  *implements;			/* Interface implementation records */
 	ILNativeInt		gcTypeDescriptor;	/* Describes the layout of the type for the GC */
+	ILClassPrivate *nextClassPrivate;	/* linked list of ILClassPrivate objects */
+	ILExecProcess  *process;			/* Back-pointer to the process this class belongs to */
 #ifdef IL_USE_IMTS
 	ILUInt32		imtBase;			/* Base for IMT identifiers */
 	ILMethod	   *imt[IL_IMT_SIZE];	/* Interface method table */
@@ -545,12 +554,13 @@ int _ILCVMInterpreter(ILExecThread *thread);
  * Lay out a class's fields, virtual methods, and interfaces.
  * Returns zero if there is something wrong with the definition.
  */
-int _ILLayoutClass(ILClass *info);
+int _ILLayoutClass(ILExecProcess *process, ILClass *info);
 
 /*
  * Lay out a class and return its size and alignment.
  */
-ILUInt32 _ILLayoutClassReturn(ILClass *info, ILUInt32 *alignment);
+ILUInt32 _ILLayoutClassReturn(ILExecProcess *process, ILClass *info,
+								ILUInt32 *alignment);
 
 /*
  * Determine if layout of a class has already been done.
@@ -568,7 +578,8 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
  * call a PInvoke or "internalcall" method.  Returns NULL
  * if insufficient memory for the structure.
  */
-void *_ILMakeCifForMethod(ILMethod *method, int isInternal);
+void *_ILMakeCifForMethod(ILExecProcess *process, ILMethod *method,
+							int isInternal);
 
 /*
  * Construct the "ffi_cif" structure that is needed to
@@ -576,13 +587,15 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal);
  * allocation mode.  Returns NULL if insufficient memory
  * for the structure.
  */
-void *_ILMakeCifForConstructor(ILMethod *method, int isInternal);
+void *_ILMakeCifForConstructor(ILExecProcess *process, ILMethod *method,
+								int isInternal);
 
 /*
  * Make a native closure for a particular delegate.  "method"
  * is the method within the delegate object.
  */
-void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method);
+void *_ILMakeClosureForDelegate(ILExecProcess *process, ILObject *delegate,
+								ILMethod *method);
 
 /*
  * Convert a method into executable code.  Returns a pointer
@@ -754,7 +767,7 @@ int _ILUnrollMethod(ILExecThread *thread, ILCoder *coder,
  * Determine the size of a type's values in bytes.  This assumes
  * that the caller has obtained the metadata write lock.
  */
-ILUInt32 _ILSizeOfTypeLocked(ILType *type);
+ILUInt32 _ILSizeOfTypeLocked(ILExecProcess *process, ILType *type);
 
 /*
  * Get the native closure associated with a delegate.  Returns NULL
@@ -769,18 +782,18 @@ ILUInt32 _ILGetMethodParamCount(ILExecThread *thread, ILMethod *method,
 								int suppressThis);
 
 /*
- * Lock metadata for reading or writing from the current thread.
+ * Lock metadata for reading or writing from the given process.
  */
-#define	IL_METADATA_WRLOCK(thread)	\
-			ILRWLockWriteLock((thread)->process->metadataLock)
-#define	IL_METADATA_RDLOCK(thread)	\
-			ILRWLockReadLock((thread)->process->metadataLock)
+#define	IL_METADATA_WRLOCK(process)	\
+			ILRWLockWriteLock((process)->metadataLock)
+#define	IL_METADATA_RDLOCK(process)	\
+			ILRWLockReadLock((process)->metadataLock)
 
 /*
- * Unlock metadata from the current thread.
+ * Unlock metadata from the given process.
  */
-#define	IL_METADATA_UNLOCK(thread)	\
-			ILRWLockUnlock((thread)->process->metadataLock)
+#define	IL_METADATA_UNLOCK(process)	\
+			ILRWLockUnlock((process)->metadataLock)
 
 #ifdef IL_CONFIG_DEBUG_LINES
 
@@ -891,6 +904,11 @@ ILInt32 _ILExecThreadGetState(ILExecThread *thread, ILThread* supportThread);
  * Resumes a thread.
  */
 void _ILExecThreadResumeThread(ILExecThread *thread, ILThread *supportThread);
+
+/*
+ * Get the ILExecProcess in which a thread is running.
+ */
+#define _ILExecThreadProcess(thread) ((thread)->process)
 
 /*
  * Creates a monitor used by the execution engine.

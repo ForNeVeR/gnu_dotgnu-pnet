@@ -50,7 +50,8 @@ static void CVMCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 								   ILEngineStackItem *args, ILUInt32 numArgs)
 {
 	ILUInt32 posn = ComputeStackSize(coder, args, numArgs);
-	ILUInt32 size = GetTypeSize(ILType_FromValueType(classInfo));
+	ILUInt32 size = GetTypeSize(_ILCoderToILCVMCoder(coder)->process,
+								ILType_FromValueType(classInfo));
 	CVM_OUT_DWIDE(COP_NEW_VALUE, posn, size);
 	CVM_ADJUST(size + 1);
 }
@@ -525,7 +526,8 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 
 		case ILEngineType_MV:
 		{
-			ILUInt32 size = GetTypeSize(returnType);
+			ILUInt32 size = GetTypeSize(_ILCoderToILCVMCoder(coder)->process,
+										returnType);
 			CVM_OUT_RETURN(size);
 			CVM_ADJUST(-(ILInt32)size);
 		}

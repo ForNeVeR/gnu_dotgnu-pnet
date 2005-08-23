@@ -23,7 +23,7 @@
 /*
  * Get a field token from within a method's code.
  */
-static ILField *GetFieldToken(ILMethod *method, unsigned char *pc)
+static ILField *GetFieldToken(ILExecProcess *process, ILMethod *method, unsigned char *pc)
 {
 	ILUInt32 token;
 	ILField *fieldInfo;
@@ -62,7 +62,7 @@ static ILField *GetFieldToken(ILMethod *method, unsigned char *pc)
 	}
 
 	/* Make sure that the field's class has been laid out */
-	if(!_ILLayoutClass(ILField_Owner(fieldInfo)))
+	if(!_ILLayoutClass(process, ILField_Owner(fieldInfo)))
 	{
 		return 0;
 	}
@@ -75,7 +75,7 @@ static ILField *GetFieldToken(ILMethod *method, unsigned char *pc)
  * Process a "box" operation on a value.  Returns zero if
  * invalid parameters.
  */
-static int BoxValue(ILCoder *coder, ILEngineType valueType,
+static int BoxValue(ILExecProcess *process, ILEngineType valueType,
 					ILType *typeInfo, ILClass *boxClass)
 {
 	ILUInt32 size;
@@ -85,7 +85,7 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 	rawType = ILTypeGetEnumType(ILClassToType(boxClass));
 
 	/* Get the size of the value type */
-	size = _ILSizeOfTypeLocked(rawType);
+	size = _ILSizeOfTypeLocked(process, rawType);
 
 	/* Determine how to box the value */
 	if(ILType_IsPrimitive(rawType))
@@ -100,7 +100,7 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 				case IL_META_ELEMTYPE_I1:
 				case IL_META_ELEMTYPE_U1:
 				{
-					ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Int8);
+					ILCoderBoxSmaller(process->coder, boxClass, valueType, ILType_Int8);
 					return 1;
 				}
 				/* Not reached */
@@ -109,7 +109,7 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 				case IL_META_ELEMTYPE_U2:
 				case IL_META_ELEMTYPE_CHAR:
 				{
-					ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Int16);
+					ILCoderBoxSmaller(process->coder, boxClass, valueType, ILType_Int16);
 					return 1;
 				}
 				/* Not reached */
@@ -121,7 +121,7 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 				case IL_META_ELEMTYPE_U:
 			#endif
 				{
-					ILCoderBox(coder, boxClass, valueType, size);
+					ILCoderBox(process->coder, boxClass, valueType, size);
 					return 1;
 				}
 				/* Not reached */
@@ -135,7 +135,7 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 				case IL_META_ELEMTYPE_I:
 				case IL_META_ELEMTYPE_U:
 				{
-					ILCoderBox(coder, boxClass, valueType, size);
+					ILCoderBox(process->coder, boxClass, valueType, size);
 					return 1;
 				}
 				/* Not reached */
@@ -149,7 +149,7 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 				case IL_META_ELEMTYPE_I8:
 				case IL_META_ELEMTYPE_U8:
 				{
-					ILCoderBox(coder, boxClass, valueType, size);
+					ILCoderBox(process->coder, boxClass, valueType, size);
 					return 1;
 				}
 				/* Not reached */
@@ -161,13 +161,13 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 			   based on the size of the value type */
 			if(rawType == ILType_Float32)
 			{
-				ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Float32);
+				ILCoderBoxSmaller(process->coder, boxClass, valueType, ILType_Float32);
 				return 1;
 			}
 			else if(rawType == ILType_Float64 ||
 				    rawType == ILType_Float)
 			{
-				ILCoderBoxSmaller(coder, boxClass, valueType, ILType_Float64);
+				ILCoderBoxSmaller(process->coder, boxClass, valueType, ILType_Float64);
 				return 1;
 			}
 		}
@@ -177,7 +177,7 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 	{
 		if(ILTypeIdentical(typeInfo, ILClassToType(boxClass)))
 		{
-			ILCoderBox(coder, boxClass, valueType, size);
+			ILCoderBox(process->coder, boxClass, valueType, size);
 			return 1;
 		}
 	}
@@ -286,7 +286,7 @@ case IL_OP_BOX:
 	classInfo = GetValueTypeToken(method, pc);
 	if(classInfo)
 	{
-		if(BoxValue(coder, stack[stackSize - 1].engineType,
+		if(BoxValue(_ILExecThreadProcess(thread), stack[stackSize - 1].engineType,
 					stack[stackSize - 1].typeInfo, classInfo))
 		{
 			stack[stackSize - 1].engineType = ILEngineType_O;
@@ -338,7 +338,7 @@ case IL_OP_LDFLD:
 	   instructions that are normally used for that.  The only difference
 	   is that the type of the object is verified to ensure that it
 	   is consistent with the field's type */
-	fieldInfo = GetFieldToken(method, pc);
+	fieldInfo = GetFieldToken(_ILExecThreadProcess(thread), method, pc);
 	if(fieldInfo)
 	{
 		classType = ILField_Type(fieldInfo);
@@ -453,7 +453,7 @@ break;
 case IL_OP_LDFLDA:
 {
 	/* Load the address of an object field */
-	fieldInfo = GetFieldToken(method, pc);
+	fieldInfo = GetFieldToken(_ILExecThreadProcess(thread), method, pc);
 	if(fieldInfo)
 	{
 		classType = ILField_Type(fieldInfo);
@@ -554,7 +554,7 @@ break;
 case IL_OP_STFLD:
 {
 	/* Store a value into an object field */
-	fieldInfo = GetFieldToken(method, pc);
+	fieldInfo = GetFieldToken(_ILExecThreadProcess(thread), method, pc);
 	if(fieldInfo)
 	{
 		classType = ILField_Type(fieldInfo);
@@ -652,7 +652,7 @@ break;
 case IL_OP_LDSFLD:
 {
 	/* Load the contents of a static field */
-	fieldInfo = GetFieldToken(method, pc);
+	fieldInfo = GetFieldToken(_ILExecThreadProcess(thread), method, pc);
 	if(fieldInfo)
 	{
 		classType = ILField_Type(fieldInfo);
@@ -673,7 +673,7 @@ break;
 case IL_OP_LDSFLDA:
 {
 	/* Load the address of a static field */
-	fieldInfo = GetFieldToken(method, pc);
+	fieldInfo = GetFieldToken(_ILExecThreadProcess(thread), method, pc);
 	if(fieldInfo)
 	{
 		classType = ILField_Type(fieldInfo);
@@ -694,7 +694,7 @@ break;
 case IL_OP_STSFLD:
 {
 	/* Store a value into a static field */
-	fieldInfo = GetFieldToken(method, pc);
+	fieldInfo = GetFieldToken(_ILExecThreadProcess(thread), method, pc);
 	if(fieldInfo)
 	{
 		classType = ILField_Type(fieldInfo);
@@ -811,7 +811,8 @@ case IL_OP_LDTOKEN:
 		}
 		else if((methodInfo = ILProgramItemToMethod(item)) != 0)
 		{
-			methodInfo = GetMethodToken(method, pc, (ILType **)0);
+			methodInfo = GetMethodToken(_ILExecThreadProcess(thread), method,
+										pc, (ILType **)0);
 			if(methodInfo &&
 			   ILMemberAccessible((ILMember *)methodInfo,
 								  ILMethod_Owner(method)))
@@ -829,7 +830,7 @@ case IL_OP_LDTOKEN:
 		}
 		else if((fieldInfo = ILProgramItemToField(item)) != 0)
 		{
-			fieldInfo = GetFieldToken(method, pc);
+			fieldInfo = GetFieldToken(_ILExecThreadProcess(thread), method, pc);
 			if(fieldInfo)
 			{
 				ILCoderPushToken(coder, (ILProgramItem *)fieldInfo);

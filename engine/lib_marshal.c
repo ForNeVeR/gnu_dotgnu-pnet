@@ -135,10 +135,10 @@ ILNativeInt _IL_Marshal_OffsetOfInternal(ILExecThread *_thread, ILObject *t,
 		}
 
 		/* Make sure that the class has been laid out */
-		IL_METADATA_WRLOCK(_thread);
-		if(!_ILLayoutClass(classInfo))
+		IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
+		if(!_ILLayoutClass(_ILExecThreadProcess(_thread), classInfo))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			return -1;
 		}
 
@@ -154,13 +154,13 @@ ILNativeInt _IL_Marshal_OffsetOfInternal(ILExecThread *_thread, ILObject *t,
 				   !strcmp(ILField_Name(field), name))
 				{
 					offset = (ILNativeInt)(ILUInt32)(field->offset);
-					IL_METADATA_UNLOCK(_thread);
+					IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 					return offset;
 				}
 			}
 			classInfo = ILClass_Parent(classInfo);
 		}
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	}
 	return -1;
 }

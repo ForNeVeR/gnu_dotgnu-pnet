@@ -151,7 +151,7 @@ static void CVMLoadField(ILCoder *coder, ILEngineType ptrType,
 	   to the start of the managed value on the stack */
 	if(ptrType == ILEngineType_MV)
 	{
-		ptrSize = GetTypeSize(objectType);
+		ptrSize = GetTypeSize(_ILCoderToILCVMCoder(coder)->process, objectType);
 		CVM_OUT_WIDE(COP_MADDR, ptrSize);
 	}
 	else
@@ -251,7 +251,8 @@ static void CVMLoadField(ILCoder *coder, ILEngineType ptrType,
 	{
 		/* Access a value type */
 		CVMLoadValueField(coder, offset,
-						  _ILSizeOfTypeLocked(fieldType), mayBeNull);
+						  _ILSizeOfTypeLocked(((ILCVMCoder *)coder)->process,
+												fieldType), mayBeNull);
 	}
 	else
 	{
@@ -264,7 +265,8 @@ static void CVMLoadField(ILCoder *coder, ILEngineType ptrType,
 	   to remove the managed value */
 	if(ptrType == ILEngineType_MV)
 	{
-		fieldSize = GetStackTypeSize(fieldType);
+		fieldSize = GetStackTypeSize(_ILCoderToILCVMCoder(coder)->process,
+									 fieldType);
 		CVM_OUT_DWIDE(COP_SQUASH, fieldSize, ptrSize);
 		CVM_ADJUST(-((ILInt32)ptrSize));
 	}
@@ -627,7 +629,8 @@ static void CVMStoreFieldReverse(ILCoder *coder, ILField *field,
 	}
 	else if(ILType_IsValueType(fieldType))
 	{
-		size = _ILSizeOfTypeLocked(fieldType);
+		size = _ILSizeOfTypeLocked(_ILCoderToILCVMCoder(coder)->process,
+								   fieldType);
 		CVM_OUT_WIDE(COP_MWRITE_R, size);
 	}
 	else
@@ -777,7 +780,8 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 	else if(ILType_IsValueType(fieldType))
 	{
 		/* Store a managed value */
-		size = _ILSizeOfTypeLocked(fieldType);
+		size = _ILSizeOfTypeLocked(_ILCoderToILCVMCoder(coder)->process,
+								   fieldType);
 		CVM_OUT_WIDE(COP_MWRITE, size);
 	}
 	else
@@ -791,7 +795,7 @@ static void CVMCoder_StoreField(ILCoder *coder, ILEngineType ptrType,
 							    ILType *objectType, ILField *field,
 							    ILType *fieldType, ILEngineType valueType)
 {
-	ILUInt32 valueSize = GetStackTypeSize(fieldType);
+	ILUInt32 valueSize = GetStackTypeSize(((ILCVMCoder *)coder)->process, fieldType);
 
 #ifdef IL_NATIVE_INT64
 	/* Convert I4 to I if necessary */
@@ -811,7 +815,8 @@ static void CVMCoder_StoreField(ILCoder *coder, ILEngineType ptrType,
 static void CVMCoder_StoreStaticField(ILCoder *coder, ILField *field,
 							          ILType *fieldType, ILEngineType valueType)
 {
-	ILUInt32 valueSize = GetStackTypeSize(fieldType);
+	ILUInt32 valueSize = GetStackTypeSize(_ILCoderToILCVMCoder(coder)->process,
+										  fieldType);
 	ILClass *classInfo;
 #ifdef IL_CONFIG_PINVOKE
 	ILPInvoke *pinvoke;
@@ -899,7 +904,8 @@ static void CVMCoder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
 	}
 
 	/* Copy the memory block */
-	size = _ILSizeOfTypeLocked(ILType_FromValueType(classInfo));
+	size = _ILSizeOfTypeLocked(_ILCoderToILCVMCoder(coder)->process,
+								ILType_FromValueType(classInfo));
 	CVM_OUT_WIDE(COP_MEMCPY, size);
 	CVM_ADJUST(-2);
 }
@@ -954,7 +960,8 @@ static void CVMCoder_InitObject(ILCoder *coder, ILEngineType ptrType,
 	}
 
 	/* Initialize the block to all-zeroes */
-	size = _ILSizeOfTypeLocked(ILType_FromValueType(classInfo));
+	size = _ILSizeOfTypeLocked(_ILCoderToILCVMCoder(coder)->process,
+								ILType_FromValueType(classInfo));
 	CVM_OUT_WIDE(COP_MEMZERO, size);
 	CVM_ADJUST(-1);
 }
@@ -1074,7 +1081,8 @@ static void CVMCoder_PushToken(ILCoder *coder, ILProgramItem *item)
 
 static void CVMCoder_SizeOf(ILCoder *coder, ILType *type)
 {
-	ILUInt32 size = _ILSizeOfTypeLocked(type);
+	ILUInt32 size = _ILSizeOfTypeLocked(_ILCoderToILCVMCoder(coder)->process,
+										type);
 	if(size <= 8)
 	{
 		CVM_OUT_NONE(COP_LDC_I4_0 + size);

@@ -144,7 +144,7 @@ static int CVMEntryAllocArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 		}
 		else
 		{
-			offset += GetTypeSize(type);
+			offset += GetTypeSize(coder->process, type);
 		}
 	}
 
@@ -194,7 +194,7 @@ static int CVMEntryAllocLocals(CVMEntryContext *ctx, ILCVMCoder *coder,
 		{
 			type = ILTypeGetLocal(signature, current);
 			coder->localOffsets[current] = offset;
-			offset += GetTypeSize(type);
+			offset += GetTypeSize(coder->process, type);
 		}
 
 		/* Record the number of words used for local variables */
@@ -208,9 +208,10 @@ static int CVMEntryAllocLocals(CVMEntryContext *ctx, ILCVMCoder *coder,
  * Make space for an extra local.  If "type" is NULL, then allocate
  * a single word for a pointer argument.
  */
-static void CVMEntryNeedExtraLocal(CVMEntryContext *ctx, ILType *type)
+static void CVMEntryNeedExtraLocal(ILExecProcess *process, CVMEntryContext *ctx,
+									ILType *type)
 {
-	ctx->extraLocals += (type ? GetTypeSize(type) : 1);
+	ctx->extraLocals += (type ? GetTypeSize(process, type) : 1);
 }
 
 /*
@@ -218,9 +219,9 @@ static void CVMEntryNeedExtraLocal(CVMEntryContext *ctx, ILType *type)
  * If "type" is NULL, then allocate a single word for a
  * pointer argument.
  */
-static ILUInt32 CVMEntryAllocExtraLocal(CVMEntryContext *ctx, ILType *type)
+static ILUInt32 CVMEntryAllocExtraLocal(ILExecProcess *process, CVMEntryContext *ctx, ILType *type)
 {
-	ILUInt32 size = (type ? GetTypeSize(type) : 1);
+	ILUInt32 size = (type ? GetTypeSize(process, type) : 1);
 	ILUInt32 offset = ctx->extraOffset;
 	ctx->firstExtraIsTop = (offset == 0 && ctx->extraLocals == size);
 	ctx->extraOffset += size;
@@ -442,7 +443,7 @@ static void CVMEntryPushLeadIn(CVMEntryContext *ctx, ILCVMCoder *coder,
 		if(coder)
 		{
 			/* Allocate space for the return value */
-			offset = CVMEntryAllocExtraLocal(ctx, returnType);
+			offset = CVMEntryAllocExtraLocal(coder->process, ctx, returnType);
 			ctx->returnOffset = offset;
 
 			/* Pass the pointer to the native method */
@@ -456,7 +457,7 @@ static void CVMEntryPushLeadIn(CVMEntryContext *ctx, ILCVMCoder *coder,
 			{
 				CVM_OUT_WIDE(COP_WADDR, offset);
 				CVM_ADJUST(1);
-				offset = CVMEntryAllocExtraLocal(ctx, 0);
+				offset = CVMEntryAllocExtraLocal(coder->process, ctx, 0);
 				if(offset < 4)
 				{
 					CVM_OUT_NONE(COP_PSTORE_0 + offset);
@@ -473,11 +474,11 @@ static void CVMEntryPushLeadIn(CVMEntryContext *ctx, ILCVMCoder *coder,
 		else
 		{
 			/* Inform the context that we need space for the return value */
-			CVMEntryNeedExtraLocal(ctx, returnType);
+			CVMEntryNeedExtraLocal((ILExecProcess *)0, ctx, returnType);
 			if(!useRawCalls)
 			{
 				/* We also need space for the pointer to the value */
-				CVMEntryNeedExtraLocal(ctx, 0);
+				CVMEntryNeedExtraLocal((ILExecProcess *)0, ctx, 0);
 			}
 		}
 	}
@@ -486,11 +487,11 @@ static void CVMEntryPushLeadIn(CVMEntryContext *ctx, ILCVMCoder *coder,
 		/* Allocate space for the return value */
 		if(coder)
 		{
-			ctx->returnOffset = CVMEntryAllocExtraLocal(ctx, returnType);
+			ctx->returnOffset = CVMEntryAllocExtraLocal(coder->process, ctx, returnType);
 		}
 		else
 		{
-			CVMEntryNeedExtraLocal(ctx, returnType);
+			CVMEntryNeedExtraLocal((ILExecProcess *)0, ctx, returnType);
 		}
 	}
 	else if(isConstructor)
@@ -498,11 +499,11 @@ static void CVMEntryPushLeadIn(CVMEntryContext *ctx, ILCVMCoder *coder,
 		/* We need space to return the object pointer */
 		if(coder)
 		{
-			ctx->returnOffset = CVMEntryAllocExtraLocal(ctx, 0);
+			ctx->returnOffset = CVMEntryAllocExtraLocal(coder->process, ctx, 0);
 		}
 		else
 		{
-			CVMEntryNeedExtraLocal(ctx, 0);
+			CVMEntryNeedExtraLocal((ILExecProcess *)0, ctx, 0);
 		}
 	}
 
@@ -667,7 +668,7 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 			   we use the non-raw version of function invocation */
 			if(!useRawCalls && isInternal && ILType_IsValueType(paramType))
 			{
-				CVMEntryNeedExtraLocal(ctx, 0);
+				CVMEntryNeedExtraLocal((ILExecProcess *)0, ctx, 0);
 			}
 			continue;
 		}
@@ -866,7 +867,7 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 
 					default:
 					{
-						size = GetTypeSize(paramType);
+						size = GetTypeSize(coder->process, paramType);
 						CVM_OUT_DWIDE(COP_MLOAD, offset, size);
 						CVM_ADJUST(size);
 						ctx->nativeArgWords += size;
@@ -905,7 +906,7 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 				/* Push a pointer to the value type onto the native stack */
 				CVM_OUT_WIDE(COP_WADDR, coder->argOffsets[param - thisAdjust]);
 				CVM_ADJUST(1);
-				offset = CVMEntryAllocExtraLocal(ctx, 0);
+				offset = CVMEntryAllocExtraLocal(coder->process, ctx, 0);
 				if(offset < 4)
 				{
 					CVM_OUT_NONE(COP_PSTORE_0 + offset);
@@ -1173,7 +1174,7 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 
 			default:
 			{
-				size = GetTypeSize(returnType);
+				size = GetTypeSize(coder->process, returnType);
 				if(ctx->returnOffset != 0 || !(ctx->firstExtraIsTop))
 				{
 					CVM_OUT_DWIDE(COP_MLOAD, ctx->returnOffset, size);
@@ -1187,7 +1188,7 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 	else if(ILType_IsValueType(returnType))
 	{
 		/* Load the value type onto the stack and return */
-		size = GetTypeSize(returnType);
+		size = GetTypeSize(coder->process, returnType);
 		if(ctx->returnOffset != 0 || !(ctx->firstExtraIsTop))
 		{
 			CVM_OUT_DWIDE(COP_MLOAD, ctx->returnOffset, size);

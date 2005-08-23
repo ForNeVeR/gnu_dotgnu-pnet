@@ -132,15 +132,15 @@ ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 	}
 
 	/* Make sure that the class has been laid out */
-	IL_METADATA_WRLOCK(thread);
-	if(!_ILLayoutClass(classInfo))
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
+	if(!_ILLayoutClass(_ILExecThreadProcess(thread), classInfo))
 	{
-		IL_METADATA_UNLOCK(thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		thread->thrownException = _ILSystemException
 			(thread, "System.TypeInitializationException");
 		return 0;
 	}
-	IL_METADATA_UNLOCK(thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 
 	/* Does the class already have a "ClrType" instance? */
 	if(((ILClassPrivate *)(classInfo->userData))->clrType)

@@ -152,13 +152,13 @@ static ILClass *LookupClass(ILExecThread *thread, const char *className,
 	/* Make sure that the class has been laid out */
 	if(classInfo != 0)
 	{
-		IL_METADATA_WRLOCK(thread);
-		if(!_ILLayoutClass(classInfo))
+		IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
+		if(!_ILLayoutClass(_ILExecThreadProcess(thread), classInfo))
 		{
-			IL_METADATA_UNLOCK(thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 			return 0;
 		}
-		IL_METADATA_UNLOCK(thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 	}
 
 	/* Return the final class structure to the caller */

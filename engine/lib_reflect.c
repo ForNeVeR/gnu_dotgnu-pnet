@@ -797,7 +797,7 @@ System_Array *_IL_AppDomain_GetAssemblies(ILExecThread *thread,
 	ILImage **images;
 	ILImage **ptr;
 
-	IL_METADATA_RDLOCK(thread);
+	IL_METADATA_RDLOCK(_ILExecThreadProcess(thread));
 
 	context = thread->process->context;
 
@@ -812,7 +812,7 @@ System_Array *_IL_AppDomain_GetAssemblies(ILExecThread *thread,
 	/* create the image array */
 	if (!(images = (ILImage **)ILMalloc(sizeof(ILImage *)*num)))
 	{
-		IL_METADATA_UNLOCK(thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		ILExecThreadThrowOutOfMemory(thread);
 		return 0;
 	}
@@ -826,7 +826,7 @@ System_Array *_IL_AppDomain_GetAssemblies(ILExecThread *thread,
 		++ptr;
 	}
 
-	IL_METADATA_UNLOCK(thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 
 	/* create the assembly array */
 	array = (System_Array *)ILExecThreadNew(thread,
@@ -2683,7 +2683,8 @@ ILNativeInt _IL_RuntimeMethodHandle_GetFunctionPointer
 	if(method)
 	{
 		/* Create a closure for the method, without a delegate around it */
-		return (ILNativeInt)(_ILMakeClosureForDelegate(0, method));
+		return (ILNativeInt)(_ILMakeClosureForDelegate(_ILExecThreadProcess(thread),
+														0, method));
 	}
 	else
 #endif

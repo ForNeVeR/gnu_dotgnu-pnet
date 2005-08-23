@@ -144,7 +144,8 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 		if(ILType_IsValueType(enumType))
 		{
 			/* Managed value type */
-			ILUInt32 size = GetTypeSize(type);
+			ILUInt32 size = GetTypeSize(_ILCoderToILCVMCoder(coder)->process,
+										type);
 			CVM_OUT_DWIDE(COP_MLOAD, offset, size);
 			CVM_ADJUST(size);
 		}
@@ -302,7 +303,8 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 		if(ILType_IsValueType(enumType))
 		{
 			/* Managed value type */
-			ILUInt32 size = GetTypeSize(type);
+			ILUInt32 size = GetTypeSize(_ILCoderToILCVMCoder(coder)->process,
+										type);
 			CVM_OUT_DWIDE(COP_MSTORE, offset, size);
 			CVM_ADJUST(-((ILInt32)size));
 		}

@@ -94,13 +94,13 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name,
  */
 #define	METADATA_WRLOCK(thread)	\
 			do { \
-				IL_METADATA_WRLOCK((thread)); \
+				IL_METADATA_WRLOCK(_ILExecThreadProcess(thread)); \
 				ILGCDisableFinalizers(0); \
 			} while (0)
 #define	METADATA_UNLOCK(thread)	\
 			do { \
 				ILGCEnableFinalizers(); \
-				IL_METADATA_UNLOCK((thread)); \
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
 				ILGCInvokeFinalizers(0); \
 			} while (0)
 
@@ -150,7 +150,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 #endif
 
 	/* Make sure that we can lay out the method's class */
-	if(!_ILLayoutClass(ILMethod_Owner(method)))
+	if(!_ILLayoutClass(_ILExecThreadProcess(thread), ILMethod_Owner(method)))
 	{
 		METADATA_UNLOCK(thread);
 		*errorCode = IL_CONVERT_TYPE_INIT;
@@ -312,7 +312,8 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 		if(fnInfo.func)
 		{
 			/* Make the "cif" structure for the normal method entry */
-			cif = _ILMakeCifForMethod(method, (pinv == 0));
+			cif = _ILMakeCifForMethod(_ILExecThreadProcess(thread),
+										method, (pinv == 0));
 			if(!cif)
 			{
 				METADATA_UNLOCK(thread);
@@ -327,7 +328,8 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 		if(ctorfnInfo.func)
 		{
 			/* Make the "cif" structure for the allocating constructor */
-			ctorcif = _ILMakeCifForConstructor(method, (pinv == 0));
+			ctorcif = _ILMakeCifForConstructor(_ILExecThreadProcess(thread),
+												method, (pinv == 0));
 			if(!ctorcif)
 			{
 				METADATA_UNLOCK(thread);

@@ -54,7 +54,8 @@ void *_ILDelegateGetClosure(ILExecThread *thread, ILObject *delegate)
 
 	/* Make a native closure and cache it for next time */
 	((System_Delegate *)delegate)->closure =
-		_ILMakeClosureForDelegate(delegate, methodInfo);
+		_ILMakeClosureForDelegate(_ILExecThreadProcess(thread), delegate,
+									methodInfo);
 	return ((System_Delegate *)delegate)->closure;
 #else
 	/* We don't have support for creating closures on this system */

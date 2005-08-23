@@ -1,3 +1,78 @@
+2005-08-23  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/call.c, engine/heap.c, engine/lib_marshal.c, engine/lib_object.c,
+	engine/lookup.c:
+	Pass process instead of thread to the IL_METADATA_* macros and add process
+	as parameter to the call of _ILLayoutClass.
+
+	* engine/convert.c: Pass process instead of thread to the IL_METADATA_*
+	macros and add process as parameter to the call of _ILLayoutClass.
+	Add process parameter to the _ILMakeCifFor* functions.
+
+	* engine/cvmc.c: Add backpointer to the owning process to ILCVMCoder.
+	Add Macro for the cast from ILCoder to ILCVMCoder. Add process parameter
+	to the functions GetTypeSize, GetStackTypeSize because they are needed for
+	_ILSizeOfTypeLocked now. Add param process to CVMCoder_Create and set the
+	backpointer.
+
+	* engine/cvmc_call.c, engine/cvmc_stack.c, engine/cvmc_var.c: Add process
+	parameter to the calls of GetTypeSize.
+
+	* engine/cvmc_obj.c, engine/cvmc_ptr.c: Add process parameter to the calls
+	of GetTypeSize, GetStackTypeSize and _ILSizeOfTypeLocked.
+
+	* engine/cvmc_setup.c: Add process parameter to the calls of GetTypeSize,
+	Add process parameter to CVMEntryAllocExtraLocal and CVMEntryNeedExtraLocal
+	and the calls of these static functions.
+
+	* engine/engine.h: Add element firstClassPrivate to ILExecProcess to get
+	a list of already created classPrivate objects for the gc. Add backpointer
+	to the owning process and the nextClassPrivate pointer for the linked list
+	to ILClassPrivate. Add the process parameter to the function prototypes.
+	Change the IL_METADATA_ macros so that they require the process instead of
+	the thread as parameter. Add macro _ILExecThreadProcess to get the current
+	process of a thread.
+
+	* engine/layout.c: Add the class owning process as a parameter to
+	LayoutClass, LayoutType, BuildIMT, _ILLayoutClass, _ILSizeOfTypeLocked.
+	Remove the finding process in BuildIMT and LayoutClass. Allocate the
+	ClassPrivateData collectable instead of uncollectable so that the storage
+	will be cleaned up by the gc and the static objects too when the process is
+	destroyed. Add maintenance of the linked list in LayoutClass. Change the
+	parameter of IL_META_* macro calls from thread to the process.
+	
+	* engine/lib_delegate.c: Add process parameter to the call of
+	_ILMakeClosureForDelegate.
+	
+	* engine/lib_emit.c, engine/lib_helpers.c: Pass process instead of thread
+	to the IL_METADATA_* macros.
+	
+	* engine/lib_reflect.c:  Pass process instead of thread to the IL_METADATA_*
+	macros. Add process parameter to call of _ILMakeClosureForDelegate.
+
+	* engine/null_coder.c: Add process parameter to Coder_Create.
+
+	* engine/pinvoke.c: Add process as additional parameter to the funcions
+	PopulateStructFFI, StructToFFI, TypeToFFI and the calls of these functions.
+	Add additional process parameter to _ILMakeCifForMethod,
+	_ILMakeCifForConstructor and _ILMakeClosureForDelegate.
+
+	* engine/process.c: Pass process to the call of ILCoderCreate.
+
+	* engine/verify_call.c: Add process as additional parameter to
+	TryInlineLoad, TryInlineMethod, TryInlineStore, GetMethodToken,
+	GetConstructorToken and the calls of these functions ans _ILLayoutClass.
+
+	* engine/verify_obj.c: Add process to the function GetFieldToken. Change
+	the first parameter of BoxValue from coder to process and adjust the args
+	of the ILCoderBox* calls. Add process as parameter to the calls of
+	_ILLayoutClass. _ILSizeOfTypeLocked, GetFieldToken and GetMethodToken.
+
+	* engine/verify_var.c: Add process parameter to call of GetFieldToken.
+
+	* include/il_coder.h: Add process parameter to the prototype of the create
+	function and the ILCoderCreate macro.
+
 2005-08-22  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.c: Replace calls to ILMemCpy in inlined functions with calls

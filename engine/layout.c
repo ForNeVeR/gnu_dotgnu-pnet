@@ -51,13 +51,13 @@ typedef struct
 /*
  * Forward declaration.
  */
-static int LayoutClass(ILClass *info, LayoutInfo *layout);
+static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout);
 
 /*
  * Get the layout information for a type.  Returns zero
  * if there is something wrong with the type.
  */
-static int LayoutType(ILType *type, LayoutInfo *layout)
+static int LayoutType(ILExecProcess *process, ILType *type, LayoutInfo *layout)
 {
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsPrimitive(type))
@@ -186,11 +186,11 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 		ILType *synType = ILClassGetSynType(classInfo);
 		if(synType == 0)
 		{
-			return LayoutClass(classInfo, layout);
+			return LayoutClass(process, classInfo, layout);
 		}
 		else
 		{
-			return LayoutType(ILTypeStripPrefixes(synType), layout);
+			return LayoutType(process, ILTypeStripPrefixes(synType), layout);
 		}
 	}
 	else
@@ -452,23 +452,14 @@ static int ComputeInterfaceTable(ILClass *info, ILClass *interface)
  * This is necessary because we convert methods one at a time, instead of
  * class at a time like RVM does.
  */
-static void BuildIMT(ILClass *info, ILClassPrivate *classPrivate)
+static void BuildIMT(ILExecProcess *process, ILClass *info,
+					 ILClassPrivate *classPrivate)
 {
-	ILExecThread *thread;
-	ILExecProcess *process;
 	ILImplPrivate *impl;
 	ILClassPrivate *implPrivate;
 	ILUInt32 posn, size;
 	ILUInt32 vtableIndex;
 	ILUInt32 imtIndex;
-
-	/* Find the process that owns the class */
-	thread = ILExecThreadCurrent();
-	if(!thread)
-	{
-		return;
-	}
-	process = thread->process;
 
 	/* Is this class itself an interface? */
 	if(ILClass_IsInterface(info))
@@ -546,7 +537,7 @@ static void BuildIMT(ILClass *info, ILClassPrivate *classPrivate)
  * Lay out a particular class.  Returns zero if there
  * is something wrong with the class definition.
  */
-static int LayoutClass(ILClass *info, LayoutInfo *layout)
+static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout)
 {
 	ILClassLayout *classLayout;
 	ILFieldLayout *fieldLayout;
@@ -600,7 +591,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		   garbage collector so that the object pointers that
 		   it contains will be visible to the collector */
 		classPrivate = (ILClassPrivate *)
-				(ILGCAllocPersistent(sizeof(ILClassPrivate)));
+				(ILGCAlloc(sizeof(ILClassPrivate)));
 		if(!classPrivate)
 		{
 			return 0;
@@ -609,6 +600,10 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		info->userData = (void *)classPrivate;
 		classPrivate->inLayout = 1;
 		classPrivate->gcTypeDescriptor = IL_MAX_NATIVE_UINT;
+		classPrivate->process = process;
+		classPrivate->nextClassPrivate = process->firstClassPrivate;
+		process->firstClassPrivate = classPrivate;
+
 	}
 
 	/* Lay out the parent class first */
@@ -616,7 +611,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	{
 		/* Use "ILClassGetParent" to resolve cross-image links */
 		parent = ILClassGetParent(info);
-		if(!LayoutClass(parent, layout))
+		if(!LayoutClass(process, parent, layout))
 		{
 			info->userData = 0;
 			return 0;
@@ -643,7 +638,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	implements = info->implements;
 	while(implements != 0)
 	{
-		if(!LayoutClass(ILClassResolve(implements->interface), &typeLayout))
+		if(!LayoutClass(process, ILClassResolve(implements->interface), &typeLayout))
 		{
 			info->userData = 0;
 			return 0;
@@ -698,7 +693,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		if((field->member.attributes & IL_META_FIELDDEF_STATIC) == 0)
 		{
 			/* Get the layout information for this field's type */
-			if(!LayoutType(field->member.signature, &typeLayout))
+			if(!LayoutType(process, field->member.signature, &typeLayout))
 			{
 				info->userData = 0;
 				return 0;
@@ -827,7 +822,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 			if(!fieldRVA || !allowRVALayout)
 			{
 				/* Get the layout information for this field's type */
-				if(!LayoutType(field->member.signature, &typeLayout))
+				if(!LayoutType(process, field->member.signature, &typeLayout))
 				{
 					info->userData = 0;
 					return 0;
@@ -838,16 +833,9 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 				   function has acquired the metadata lock on the process */
 				if(ILFieldIsThreadStatic(field))
 				{
-					ILExecThread *thread = ILExecThreadCurrent();
-					if(!thread)
-					{
-						/* This shouldn't happen if the engine has
-						   been initialized correctly */
-						continue;
-					}
 					/* Store the slot number in the "offset" field and
 					   the field size in the "nativeOffset" field */
-					field->offset = (thread->process->numThreadStaticSlots)++;
+					field->offset = (process->numThreadStaticSlots)++;
 					field->nativeOffset = typeLayout.size;
 					continue;
 				}
@@ -992,23 +980,23 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 
 #ifdef IL_USE_IMTS
 	/* Build the interface method table for this class */
-	BuildIMT(info, classPrivate);
+	BuildIMT(process, info, classPrivate);
 #endif
 
 	/* Done */
 	return 1;
 }
 
-int _ILLayoutClass(ILClass *info)
+int _ILLayoutClass(ILExecProcess *process, ILClass *info)
 {
 	LayoutInfo layout;
-	return LayoutClass(info, &layout);
+	return LayoutClass(process, info, &layout);
 }
 
-ILUInt32 _ILLayoutClassReturn(ILClass *info, ILUInt32 *alignment)
+ILUInt32 _ILLayoutClassReturn(ILExecProcess *process, ILClass *info, ILUInt32 *alignment)
 {
 	LayoutInfo layout;
-	if(LayoutClass(info, &layout))
+	if(LayoutClass(process, info, &layout))
 	{
 		*alignment = layout.alignment;
 		return layout.size;
@@ -1033,10 +1021,10 @@ int _ILLayoutAlreadyDone(ILClass *info)
 	}
 }
 
-ILUInt32 _ILSizeOfTypeLocked(ILType *type)
+ILUInt32 _ILSizeOfTypeLocked(ILExecProcess *process, ILType *type)
 {
 	LayoutInfo layout;
-	if(!LayoutType(type, &layout))
+	if(!LayoutType(process, type, &layout))
 	{
 		return 0;
 	}
@@ -1051,15 +1039,15 @@ ILUInt32 ILSizeOfType(ILExecThread *thread, ILType *type)
 	if(!ILType_IsValueType(type))
 	{
 		/* We can take a shortcut because the type is not a value type */
-		return _ILSizeOfTypeLocked(type);
+		return _ILSizeOfTypeLocked(_ILExecThreadProcess(thread), type);
 	}
 	else
 	{
 		/* We have to lock down the metadata first */
 		ILUInt32 size;
-		IL_METADATA_WRLOCK(thread);
-		size = _ILSizeOfTypeLocked(type);
-		IL_METADATA_UNLOCK(thread);
+		IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
+		size = _ILSizeOfTypeLocked(_ILExecThreadProcess(thread), type);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		return size;
 	}
 }

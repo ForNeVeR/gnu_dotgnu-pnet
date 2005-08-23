@@ -85,7 +85,7 @@ case IL_OP_LDARG_0:
 		{
 			/* We have a match on the pattern "ldarg.0, ldfld".
 			   See if the field is valid and instance-based */
-			fieldInfo = GetFieldToken(method, pc + 1);
+			fieldInfo = GetFieldToken(_ILExecThreadProcess(thread), method, pc + 1);
 			if(fieldInfo)
 			{
 				classType = ILField_Type(fieldInfo);

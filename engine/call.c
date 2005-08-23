@@ -1080,17 +1080,17 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 
 	/* Make sure that the class has been initialized */
 	classInfo = ILMethod_Owner(ctor);
-	IL_METADATA_WRLOCK(thread);
-	if(!_ILLayoutClass(classInfo))
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
+	if(!_ILLayoutClass(_ILExecThreadProcess(thread), classInfo))
 	{
 		/* Throw a "TypeLoadException" */
-		IL_METADATA_UNLOCK(thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		VA_END;
 		ILExecThreadThrowSystem(thread, "System.TypeLoadException",
 								(const char *)0);
 		return 0;
 	}
-	IL_METADATA_UNLOCK(thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 
 	/* Call the constructor */
 	result = 0;
@@ -1125,16 +1125,16 @@ ILObject *ILExecThreadNewV(ILExecThread *thread, const char *typeName,
 
 	/* Make sure that the class has been initialized */
 	classInfo = ILMethod_Owner(ctor);
-	IL_METADATA_WRLOCK(thread);
-	if(!_ILLayoutClass(classInfo))
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
+	if(!_ILLayoutClass(_ILExecThreadProcess(thread), classInfo))
 	{
 		/* Throw a "TypeLoadException" */
-		IL_METADATA_UNLOCK(thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		ILExecThreadThrowSystem(thread, "System.TypeLoadException",
 								(const char *)0);
 		return 0;
 	}
-	IL_METADATA_UNLOCK(thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 
 	/* Call the constructor */
 	result = 0;

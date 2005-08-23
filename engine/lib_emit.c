@@ -60,7 +60,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
 	}
 
 	/* Lock the metadata system while we do this */
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	/* Determine which context to use: internal or external */
 	if((access & 1) != 0)
@@ -75,7 +75,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
 		context = ILContextCreate();
 		if(!context)
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
@@ -90,7 +90,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
 		{
 			ILContextDestroy(context);
 		}
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
@@ -105,7 +105,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
 		{
 			ILContextDestroy(context);
 		}
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
@@ -119,7 +119,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
 		{
 			ILContextDestroy(context);
 		}
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
@@ -127,7 +127,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
 	ILAssemblySetVersionSplit(retval, v1, v2, v3, v4);
 
 	/* Unlock and return the information to the caller */
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	*writerReturn = (ILNativeInt)writer;
 	return (ILNativeInt)retval;
 }
@@ -150,7 +150,7 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 	int tmp;
 	int needChmod;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	item = (ILProgramItem *)_assembly;
 	image = ILProgramItem_Image(item);
@@ -158,7 +158,7 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 	entryMethod = (ILMethod *)_entryMethod;
 	if (!(path = (const char *)ILStringToPathname(_thread, _path)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
@@ -166,7 +166,7 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 	{
 		if (!(stream = fopen(path, "w")))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			return 0;
 		}
 	}
@@ -210,26 +210,26 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 	{
 		if ((fclose(stream)))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			return 0;
 		}
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		return 0;
 	}
 	else if (tmp == -1)
 	{
 		if ((fclose(stream)))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			return 0;
 		}
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	if ((fclose(stream)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		return 0;
 	}
 #if !(defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__))
@@ -241,7 +241,7 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 	}
 #endif
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILBool)1;
 }
 /*
@@ -275,7 +275,7 @@ ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread *_thread,
 	unsigned char *buf;
 	unsigned long i, len, length;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	/* align to the next 4-byte boundary and get the starting rva */
 	writer = (ILWriter *)_writer;
@@ -310,7 +310,7 @@ ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread *_thread,
 	/* if there are no exception blocks, we're done */
 	if (!_exceptionBlocks)
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		return retval;
 	}
 
@@ -342,7 +342,7 @@ ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread *_thread,
 		}
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return retval;
 }
 
@@ -440,24 +440,24 @@ ILNativeInt _IL_EventBuilder_ClrEventCreate(ILExecThread *_thread,
 	ILClass *typeInfo;
 	const char *str;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	info = (ILClass *)classInfo;
 	typeInfo = (ILClass *)type;
 	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	if (!(retval = ILEventCreate(info, 0, str, (ILUInt32)attrs, typeInfo)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)retval;
 }
 
@@ -475,25 +475,25 @@ void _IL_EventBuilder_ClrEventAddSemantics(ILExecThread *_thread,
 	ILToken tok;
 	ILMethod *method;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	item = (ILProgramItem *)eventInfo;
 	image = ILProgramItem_Image(item);
 	tok = *((ILToken *)token);
 	if (!(method = ILMethod_FromToken(image,tok)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	if (!(ILMethodSemCreate(item, 0, (ILUInt32)attr, method)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -510,25 +510,25 @@ ILNativeInt _IL_FieldBuilder_ClrFieldCreate(ILExecThread *_thread,
 	ILType *sig;
 	const char *str;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	info = (ILClass *)classInfo;
 	sig = (ILType *)type;
 	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	if (!(retval = ILFieldCreate(info, 0, str, (ILUInt32)attrs)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	ILMemberSetSignature((ILMember *)retval, sig);
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)retval;
 }
 
@@ -549,7 +549,7 @@ void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread *_thread,
 	ILExecValue blob;
 	unsigned long len;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	owner = (ILProgramItem *)item;
 	image = ILProgramItem_Image(owner);
@@ -569,18 +569,18 @@ void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread *_thread,
 	{
 		if (!(constant = ILConstantCreate(image, 0, owner, IL_META_ELEMTYPE_CLASS)))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return;
 		}
 		blob.int32Value = (ILInt32)0;
 		if (!(ILConstantSetValue(constant, &blob, 4)))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return;
 		}
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		return;
 	}
 
@@ -615,7 +615,7 @@ void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread *_thread,
 			len = (((System_String *)value)->length);
 			if (!(blob.ptrValue = (ILUInt16 *)ILMalloc(len*2)))
 			{
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 				return;
 			}
@@ -628,47 +628,47 @@ void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread *_thread,
 			if (!(constant = ILConstantCreate(image, 0, owner, elemType)))
 			{
 				ILFree(blob.ptrValue);
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 				return;
 			}
 			if (!(ILConstantSetValue(constant, blob.ptrValue, len*2)))
 			{
 				ILFree(blob.ptrValue);
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 				return;
 			}
 			ILFree(blob.ptrValue);
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		}
 		return;
 
 		default:
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		}
 		return;
 	}
 	if (!(ILExecThreadUnbox(_thread, type, value, &blob)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		return;
 	}
 	if (!(constant = ILConstantCreate(image, 0, owner, elemType)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	if (!(ILConstantSetValue(constant, &blob, len)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -684,7 +684,7 @@ void _IL_FieldBuilder_ClrFieldSetMarshal(ILExecThread *_thread,
 	ILUInt8 *blob;
 	unsigned long length;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	owner = (ILProgramItem *)item;
 	image = ILProgramItem_Image(owner);
@@ -692,18 +692,18 @@ void _IL_FieldBuilder_ClrFieldSetMarshal(ILExecThread *_thread,
 	length = (unsigned long)data->length;
 	if (!(marshal = ILFieldMarshalCreate(image, 0, owner)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	if (!(ILFieldMarshalSetType(marshal, blob, length)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -713,7 +713,7 @@ void _IL_FieldBuilder_ClrFieldSetOffset(ILExecThread *_thread,
                                         ILNativeInt item, ILInt32 offset)
 {
 	ILFieldLayout *layout;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(item)
 	{
 		layout = ILFieldLayoutGetFromOwner((ILField *)item);
@@ -726,12 +726,12 @@ void _IL_FieldBuilder_ClrFieldSetOffset(ILExecThread *_thread,
 			if(!ILFieldLayoutCreate(ILProgramItem_Image(item), 0,
 									(ILField *)item, (ILUInt32)offset))
 			{
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 			}
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -741,7 +741,7 @@ void _IL_FieldBuilder_ClrFieldSetRVA(ILExecThread *_thread,
                                      ILNativeInt item, ILInt32 rva)
 {
 	ILFieldRVA *rvainfo;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(item)
 	{
 		rvainfo = ILFieldRVAGetFromOwner((ILField *)item);
@@ -754,12 +754,12 @@ void _IL_FieldBuilder_ClrFieldSetRVA(ILExecThread *_thread,
 			if(!ILFieldRVACreate(ILProgramItem_Image(item), 0,
 								 (ILField *)item, (ILUInt32)rva))
 			{
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 			}
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -773,23 +773,23 @@ ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
 	ILImage *image;
 	const char *str;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	image = ILProgramItem_Image(assembly); 
 	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	if (!(retval = ILModuleCreate(image, 0, str, NULL)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)retval;
 }
 
@@ -806,7 +806,7 @@ ILInt32 _IL_ModuleBuilder_ClrModuleCreateString(ILExecThread *_thread,
 	const char *string;
 	int length;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	item = (ILProgramItem *)module;
 	image = ILProgramItem_Image(item);
@@ -814,12 +814,12 @@ ILInt32 _IL_ModuleBuilder_ClrModuleCreateString(ILExecThread *_thread,
 	string = (const char *)ILStringToAnsi(_thread, str);
 	if (!(retval = ILImageAddUserString(image, string, length)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILInt32)(retval | IL_META_TOKEN_STRING);
 }
 
@@ -860,24 +860,24 @@ ILNativeInt _IL_PropertyBuilder_ClrPropertyCreate(ILExecThread *_thread,
 	ILType *sig;
 	const char *str;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	info = (ILClass *)classInfo;
 	sig = (ILType *)signature;
 	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	if (!(retval = ILPropertyCreate(info, 0, str, (ILUInt32)attrs, sig)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)retval;
 }
 
@@ -896,25 +896,25 @@ void _IL_PropertyBuilder_ClrPropertyAddSemantics(ILExecThread *_thread,
 	ILToken tok;
 	ILMethod *method;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	itemInfo = (ILProgramItem *)item;
 	image = ILProgramItem_Image(itemInfo);
 	tok = *((ILToken *)token);
 	if (!(method = ILMethod_FromToken(image,tok)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	if (!(ILMethodSemCreate(itemInfo, 0, (ILUInt32)attr, method)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -934,7 +934,7 @@ void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
 	ILExecValue blob;
 	unsigned long len;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	owner = (ILProgramItem *)item;
 	image = ILProgramItem_Image(owner);
@@ -954,18 +954,18 @@ void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
 	{
 		if (!(constant = ILConstantCreate(image, 0, owner, IL_META_ELEMTYPE_CLASS)))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return;
 		}
 		blob.int32Value = (ILInt32)0;
 		if (!(ILConstantSetValue(constant, &blob, 4)))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return;
 		}
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		return;
 	}
 
@@ -1000,7 +1000,7 @@ void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
 			len = (((System_String *)value)->length);
 			if (!(blob.ptrValue = (ILUInt16 *)ILMalloc(len*2)))
 			{
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 				return;
 			}
@@ -1013,47 +1013,47 @@ void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
 			if (!(constant = ILConstantCreate(image, 0, owner, elemType)))
 			{
 				ILFree(blob.ptrValue);
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 				return;
 			}
 			if (!(ILConstantSetValue(constant, blob.ptrValue, len*2)))
 			{
 				ILFree(blob.ptrValue);
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 				return;
 			}
 			ILFree(blob.ptrValue);
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		}
 		return;
 
 		default:
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		}
 		return;
 	}
 	if (!(ILExecThreadUnbox(_thread, type, value, &blob)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		return;
 	}
 	if (!(constant = ILConstantCreate(image, 0, owner, elemType)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	if (!(ILConstantSetValue(constant, &blob, len)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -1077,20 +1077,20 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 	ILClass *baseClass;
 	ILClass *retval;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	image = ((ILProgramItem *)module)->image;
 	token = *((ILToken *)parent);
 	if (!(scope = (ILProgramItem *)nestedParent) &&
 	    !(scope = ILClassGlobalScope(image)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	if (!(typeName = (const char *)ILStringToAnsi(_thread, name)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
@@ -1098,7 +1098,7 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 	{
 		if (!(nameSpace = (const char *)ILStringToAnsi(_thread, nspace)))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
@@ -1117,7 +1117,7 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 	}
 	else if (!(baseClass = ILClass_FromToken(image, token)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
@@ -1127,7 +1127,7 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 		ILClassSetAttrs(retval, (ILUInt32)-1, (ILUInt32)attr);
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)retval;
 }
 
@@ -1139,7 +1139,7 @@ void _IL_TypeBuilder_ClrTypeSetPackingSize(ILExecThread *_thread,
                                            ILInt32 packingSize)
 {
 	ILClassLayout *layout;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(classInfo)
 	{
 		layout = ILClassLayoutGetFromOwner((ILClass *)classInfo);
@@ -1153,12 +1153,12 @@ void _IL_TypeBuilder_ClrTypeSetPackingSize(ILExecThread *_thread,
 									(ILClass *)classInfo,
 									(ILUInt32)packingSize, 0))
 			{
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 			}
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -1169,7 +1169,7 @@ void _IL_TypeBuilder_ClrTypeSetClassSize(ILExecThread *_thread,
                                          ILInt32 classSize)
 {
 	ILClassLayout *layout;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(classInfo)
 	{
 		layout = ILClassLayoutGetFromOwner((ILClass *)classInfo);
@@ -1183,12 +1183,12 @@ void _IL_TypeBuilder_ClrTypeSetClassSize(ILExecThread *_thread,
 									(ILClass *)classInfo,
 									0, (ILUInt32)classSize))
 			{
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 			}
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -1203,25 +1203,25 @@ void _IL_TypeBuilder_ClrTypeAddInterface(ILExecThread *_thread,
 	ILImage *image;
 	ILClass *interface;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	class = (ILClass *)classInfo;
 	token = *((ILToken *)iface);
 	image = ILClassToImage(class);
 	if (!(interface = ILClass_FromToken(image, token)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	if (!(ILClassAddImplements(class, interface, token)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -1232,7 +1232,7 @@ ILInt32 _IL_TypeBuilder_ClrTypeGetPackingSize(ILExecThread *_thread,
 {
 	ILInt32 size = 0;
 	ILClassLayout *layout;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(classInfo)
 	{
 		layout = ILClassLayoutGetFromOwner((ILClass *)classInfo);
@@ -1241,7 +1241,7 @@ ILInt32 _IL_TypeBuilder_ClrTypeGetPackingSize(ILExecThread *_thread,
 			size = (ILInt32)(ILClassLayoutGetPackingSize(layout));
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return size;
 }
 
@@ -1253,7 +1253,7 @@ ILInt32 _IL_TypeBuilder_ClrTypeGetClassSize(ILExecThread *_thread,
 {
 	ILInt32 size = 0;
 	ILClassLayout *layout;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(classInfo)
 	{
 		layout = ILClassLayoutGetFromOwner((ILClass *)classInfo);
@@ -1262,7 +1262,7 @@ ILInt32 _IL_TypeBuilder_ClrTypeGetClassSize(ILExecThread *_thread,
 			size = (ILInt32)(ILClassLayoutGetClassSize(layout));
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return size;
 }
 
@@ -1278,20 +1278,20 @@ void _IL_TypeBuilder_ClrTypeSetParent(ILExecThread *_thread,
 	ILImage *image;
 	ILClass *parentClass;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	class = (ILClass *)classInfo;
 	token = *((ILToken *)parent);
 	image = ILClassToImage(class);
 	if (!(parentClass = ILClass_FromToken(image, token)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	ILClassSetParent(class, parentClass);
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -1305,7 +1305,7 @@ ILInt32 _IL_TypeBuilder_ClrTypeImport(ILExecThread *_thread,
 	ILClass *import;
 	ILToken token;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	image = ((ILProgramItem *)module)->image;
 	import = ILClassImport(image, (ILClass *)classInfo);
@@ -1315,7 +1315,7 @@ ILInt32 _IL_TypeBuilder_ClrTypeImport(ILExecThread *_thread,
 		token = ILClass_Token(import);
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILInt32)token;
 }
 
@@ -1330,19 +1330,19 @@ ILInt32 _IL_TypeBuilder_ClrTypeImportMember(ILExecThread *_thread,
 	ILMember *import;
 	ILToken token;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	image = ((ILProgramItem *)module)->image;
 	import = ILMemberImport(image, (ILMember *)memberInfo);
 	if (!import)
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	token = ILMember_Token(import);
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILInt32)token;
 }
 
@@ -1360,30 +1360,30 @@ void _IL_TypeBuilder_ClrTypeAddOverride(ILExecThread *_thread,
 	ILMethod *decl;
 	ILClass *class;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	image = ((ILProgramItem *)module)->image;
 	if (!(body = ILMethod_FromToken(image, (ILToken)bodyToken)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	if (!(decl = ILMethod_FromToken(image, (ILToken)declToken)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	class = ILMethod_Owner(decl);
 	if (!(ILOverrideCreate(class, 0, decl, body)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -1401,24 +1401,24 @@ ILNativeInt _IL_MethodBuilder_ClrMethodCreate(ILExecThread *_thread,
 	const char *str;
 	ILMethod *method;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	class = (ILClass *)classInfo;
 	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	if (!(method = ILMethodCreate(class, 0, str, (ILUInt32)attributes)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	ILMemberSetSignature((ILMember *)method, (ILType *)signature);
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)method;
 }
 
@@ -1479,36 +1479,36 @@ void _IL_MethodBuilder_ClrMethodAddPInvoke(ILExecThread *_thread,
 	const char *dll;
 	const char *entry;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	methodInfo = (ILMethod *)method;
 	image = ((ILProgramItem *)methodInfo)->image;
 	if (!(dll = (const char *)ILStringToAnsi(_thread, dllName)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	if (!(entry = (const char *)ILStringToAnsi(_thread, entryName)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	if (!(module = ILModuleCreate(image, 0, dll, 0)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 	if (!(ILPInvokeCreate(methodInfo, 0, (ILUInt32)pinvAttrs, module, entry)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }
 
 /*
@@ -1521,19 +1521,19 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateMethod(ILExecThread *_thread,
                                                    ILNativeInt returnType)
 {
 	ILType *type = 0;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(context)
 	{
 		type = ILTypeCreateMethod((ILContext *)context, (ILType *)returnType);
 		if(!type)
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
 		ILTypeSetCallConv(type, (ILUInt32)callConv);
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)type;
 }
 
@@ -1546,18 +1546,18 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateProperty(ILExecThread *_thread,
                                                      ILNativeInt returnType)
 {
 	ILType *type = 0;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(context)
 	{
 		type = ILTypeCreateProperty((ILContext *)context, (ILType *)returnType);
 		if(!type)
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)type;
 }
 
@@ -1606,7 +1606,7 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateArray(ILExecThread *_thread,
                                                   ILNativeInt elemType)
 {
 	ILType *type = 0;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(context)
 	{
 		type = ILTypeCreateArray
@@ -1614,12 +1614,12 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateArray(ILExecThread *_thread,
 			 (ILType *)elemType);
 		if(!type)
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)type;
 }
 
@@ -1631,19 +1631,19 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreatePointer(ILExecThread *_thread,
                                                     ILNativeInt elemType)
 {
 	ILType *type = 0;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(context)
 	{
 		type = ILTypeCreateRef
 			((ILContext *)context, IL_TYPE_COMPLEX_PTR, (ILType *)elemType);
 		if(!type)
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)type;
 }
 
@@ -1655,19 +1655,19 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateByRef(ILExecThread *_thread,
                                                   ILNativeInt elemType)
 {
 	ILType *type = 0;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(context)
 	{
 		type = ILTypeCreateRef
 			((ILContext *)context, IL_TYPE_COMPLEX_BYREF, (ILType *)elemType);
 		if(!type)
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)type;
 }
 
@@ -1716,18 +1716,18 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateLocal(ILExecThread *_thread,
                                                   ILNativeInt context)
 {
 	ILType *type = 0;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(context)
 	{
 		type = ILTypeCreateLocalList((ILContext *)context);
 		if(!type)
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)type;
 }
 
@@ -1741,7 +1741,7 @@ ILBool _IL_SignatureHelper_ClrSigAddArgument(ILExecThread *_thread,
                                              ILNativeInt arg)
 {
 	int result = 0;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(context && sig)
 	{
 		if(ILType_IsComplex((ILType *)sig) &&
@@ -1750,7 +1750,7 @@ ILBool _IL_SignatureHelper_ClrSigAddArgument(ILExecThread *_thread,
 			if(!ILTypeAddLocal((ILContext *)context,
 							   (ILType *)sig, (ILType *)arg))
 			{
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 				return 0;
 			}
@@ -1761,14 +1761,14 @@ ILBool _IL_SignatureHelper_ClrSigAddArgument(ILExecThread *_thread,
 			if(!ILTypeAddParam((ILContext *)context,
 							   (ILType *)sig, (ILType *)arg))
 			{
-				IL_METADATA_UNLOCK(_thread);
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 				ILExecThreadThrowOutOfMemory(_thread);
 				return 0;
 			}
 			result = 1;
 		}
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILBool)result;
 }
 
@@ -1780,18 +1780,18 @@ ILBool _IL_SignatureHelper_ClrSigAddSentinel(ILExecThread *_thread,
                                              ILNativeInt sig)
 {
 	int result = 0;
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 	if(context && sig)
 	{
 		if(!ILTypeAddSentinel((ILContext *)context, (ILType *)sig))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
 		result = 1;
 	}
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILBool)result;
 }
 
@@ -1817,7 +1817,7 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateMethodCopy(ILExecThread *_thread,
 
 	if (!context || !module) { return 0; }
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	cntxt = (ILContext *)context;
 	item = (ILProgramItem *)module;
@@ -1828,7 +1828,7 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateMethodCopy(ILExecThread *_thread,
 	callConv = ILType_CallConv(methodType);
 	if (!(retval = ILTypeCreateMethod(cntxt, tmp)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
@@ -1839,13 +1839,13 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateMethodCopy(ILExecThread *_thread,
 		tmp = ILTypeGetParamWithPrefixes(methodType, i);
 		if (!(ILTypeAddParam(cntxt, retval, tmp)))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)retval;
 }
 
@@ -1888,7 +1888,7 @@ ILInt64 _IL_SignatureHelper_ClrSigFinalize(ILExecThread *_thread,
 	ILType *type;
 	unsigned long offset;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	item = (ILProgramItem *)module;
 	image = ILProgramItem_Image(item);
@@ -1907,12 +1907,12 @@ ILInt64 _IL_SignatureHelper_ClrSigFinalize(ILExecThread *_thread,
 	}
 	if (!offset)
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return (ILInt64)-1;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILInt64)offset;
 }
 
@@ -1931,7 +1931,7 @@ System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
 	unsigned long length;
 	unsigned char *blob;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	item = (ILProgramItem *)module;
 	image = ILProgramItem_Image(item);
@@ -1940,14 +1940,14 @@ System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
 	bytes = (System_Array *)ILExecThreadNew(_thread, "[B", "(Ti)V", (ILVaInt)length);
 	if (!bytes)
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	buf = (ILUInt8 *)ArrayToBuffer(bytes);
 	ILMemCpy(buf, blob, length);
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return bytes;
 }
 /*
@@ -1963,20 +1963,20 @@ ILInt32 _IL_SignatureHelper_ClrStandAloneToken(ILExecThread *_thread,
 	ILType *sig;
 	ILStandAloneSig *saSig;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	module = (ILProgramItem *)_module;
 	image = ILProgramItem_Image(module);
 	sig = (ILType *)_sig;
 	if (!(saSig = ILStandAloneSigCreate(image, 0, sig)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	retval = (ILInt32)ILProgramItem_Token(saSig);
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return retval;
 }
 
@@ -1995,14 +1995,14 @@ ILNativeInt _IL_ParameterBuilder_ClrParameterCreate(ILExecThread *_thread,
 	ILMethod *methodInfo;
 	const char *str;
 
-	IL_METADATA_WRLOCK(_thread);
+	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	methodInfo = (ILMethod *)method;
 	if(name != NULL)
 	{
 		if (!(str = (const char *)ILStringToAnsi(_thread, name)))
 		{
-			IL_METADATA_UNLOCK(_thread);
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 			ILExecThreadThrowOutOfMemory(_thread);
 			return 0;
 		}
@@ -2014,12 +2014,12 @@ ILNativeInt _IL_ParameterBuilder_ClrParameterCreate(ILExecThread *_thread,
 	}
 	if (!(retval = ILParameterCreate(methodInfo, 0, str, (ILUInt32)attributes, (ILUInt32)position)))
 	{
-		IL_METADATA_UNLOCK(_thread);
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 
-	IL_METADATA_UNLOCK(_thread);
+	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	return (ILNativeInt)retval;
 }
 

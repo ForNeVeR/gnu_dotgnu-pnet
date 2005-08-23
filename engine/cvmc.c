@@ -81,7 +81,13 @@ struct _tagILCVMCoder
 	int				flags;
 	long			nativeArgPosn;
 	long			nativeArgHeight;
+	ILExecProcess  *process;		/* Backpointer to the owning process */
 };
+
+/*
+ * Convert a pointer to an ILCoder to a pointer to the ILCVMVoder instance
+ */
+#define _ILCoderToILCVMCoder(coder) ((ILCVMCoder *)coder)
 
 /*
  * Include the CVM code generation macros.
@@ -105,16 +111,16 @@ struct _tagILCVMCoder
 /*
  * Get the size of a type in stack words.
  */
-static ILUInt32 GetTypeSize(ILType *type)
+static ILUInt32 GetTypeSize(ILExecProcess *process, ILType *type)
 {
-	ILUInt32 size = _ILSizeOfTypeLocked(type);
+	ILUInt32 size = _ILSizeOfTypeLocked(process, type);
 	return (size + sizeof(CVMWord) - 1) / sizeof(CVMWord);
 }
 
 /*
  * Get the size of a type in stack words, taking float expansion into account.
  */
-static ILUInt32 GetStackTypeSize(ILType *type)
+static ILUInt32 GetStackTypeSize(ILExecProcess *process, ILType *type)
 {
 	ILUInt32 size;
 	if(type == ILType_Float32 || type == ILType_Float64)
@@ -123,7 +129,7 @@ static ILUInt32 GetStackTypeSize(ILType *type)
 	}
 	else
 	{
-		size = _ILSizeOfTypeLocked(type);
+		size = _ILSizeOfTypeLocked(process, type);
 	}
 	return (size + sizeof(CVMWord) - 1) / sizeof(CVMWord);
 }
@@ -131,7 +137,8 @@ static ILUInt32 GetStackTypeSize(ILType *type)
 /*
  * Create a new CVM coder instance.
  */
-static ILCoder *CVMCoder_Create(ILUInt32 size, unsigned long cachePageSize)
+static ILCoder *CVMCoder_Create(ILExecProcess *process, ILUInt32 size,
+								unsigned long cachePageSize)
 {
 	ILCVMCoder *coder;
 	if((coder = (ILCVMCoder *)ILMalloc(sizeof(ILCVMCoder))) == 0)
@@ -165,6 +172,7 @@ static ILCoder *CVMCoder_Create(ILUInt32 size, unsigned long cachePageSize)
 	coder->flags = 0;
 	coder->nativeArgPosn = 0;
 	coder->nativeArgHeight = 0;
+	coder->process = process;
 
 	/* Call the interpreter to export the label tables for
 	   use in code generation for direct threading */

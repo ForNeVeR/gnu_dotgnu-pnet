@@ -2748,6 +2748,10 @@ public class Control : IWin32Window, IDisposable
 					{
 						x = child.distLeft;
 						w = rect.Width - x - child.distRight;
+						if (w < 0)
+						{
+							w = 0;
+						}
 					}
 					else
 					{
@@ -2769,6 +2773,10 @@ public class Control : IWin32Window, IDisposable
 					{
 						y = child.distTop;
 						h = rect.Height - y - child.distBottom;
+						if (h < 0)
+						{
+							h = 0;
+						}
 					}
 					else
 					{

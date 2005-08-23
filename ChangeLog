@@ -1,3 +1,8 @@
+2005-08-23  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
+
+	* System.Windows.Forms/Control.cs: Set width of child to 0 if width
+	gets < 0 and for the height the same in PerformAnchorLayout. (Klaus)
+
 2005-08-23  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Xml/XmlReader.cs: Advance reader in ReadString if the element is

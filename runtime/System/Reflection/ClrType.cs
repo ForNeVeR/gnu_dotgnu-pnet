@@ -289,6 +289,21 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 						goto overrideCheck;
 					}
 				}
+				if(m1.MemberType == MemberTypes.NestedType)
+				{
+					Type t1 = (Type)m1;
+					Type t2 = (Type)m2;
+					if(t1.Attributes == t2.Attributes) 
+					{
+						// TODO: big question, right ?
+						// same as above
+						if(t1.IsNestedPrivate)
+						{
+							return MemberComparison.None;
+						}
+					}
+					goto overrideCheck;
+				}
 				MethodBase method1 = null;
 				MethodBase method2 = null;
 				switch(m1.MemberType)
@@ -400,7 +415,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					best = i;
 					for(int j = 0; j < members.Length; j++)
 					{
-						if(members[j].Name != members[best].Name)
+						if(i == j || members[j].Name != members[best].Name)
 						{
 							continue;
 						}

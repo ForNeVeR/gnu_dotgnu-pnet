@@ -1,3 +1,9 @@
+
+2005-08-27  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Reflection/ClrType.cs: Handle nested types
+	in Type.GetMembers()
+
 2005-08-23  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* System.Windows.Forms/Control.cs: Set width of child to 0 if width

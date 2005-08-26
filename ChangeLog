@@ -1,3 +1,28 @@
+2005-08-26  Klaus Treichel  <ktreichel@web.de>
+
+	* class/Custommarshalers/Custommarshalers.build,
+	class/Mono.Cairo/Mono.Cairo.build,
+	class/Mono.Data.SqliteClient/Mono.Data.SqliteClient.build,
+	class/Mono.Data.SybaseClient/Mono.Data.SybaseClient.build,
+	class/Mono.Data.Tds/Mono.Data.Tds.build,
+	class/Mono.Data.TdsClient/Mono.Data.TdsClient.build,
+	class/Mono.GetOptions/Mono.GetOptions.build,
+	class/Mono.Http/Mono.Http.build, class/Mono.Security/Mono.Security.build,
+	class/Mono.Security/Mono.Security.build,
+	class/Novell.Directory.Ldap/Novell.Directory.Ldap.build,
+	class/Npgsql/Npgsql.build, class/PEAPI/PEAPI.build,
+	class/System.Data/System.Data.build,
+	class/System.Data.OracleClient/System.Data.OracleClient.build,
+	class/System.DirectoryServices/System.DirectoryServices.build,
+	class/System.Management/System.Management.build,
+	class/System.Messaging/System.Messaging.build,
+	class/System.Runtime.Remoting/System.Runtime.Remoting.build,
+	class/System.Runtime.Serialization.Formatters.Soap/System.Runtime.Serialization.Formatters.Soap.build,
+	class/System.Security/System.Security.build,
+	class/System.ServiceProcess/System.ServiceProcess.build,
+	class/System.Web/System.Web.build,
+	class/System.Web.Services/System.Web.Services.build: Add file
+	build/common/Consts.cs to build.
 
 2005-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -11,6 +11,7 @@
 
 			<sources basedir="${mono.sources}/class/Npgsql/">
 				<includes name="**/*.cs"/> 
+				<includes name="../../build/common/Consts.cs"/>
 				<excludes name="Test/**"/>
 			</sources>
 

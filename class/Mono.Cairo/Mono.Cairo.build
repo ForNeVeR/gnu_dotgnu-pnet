@@ -11,6 +11,7 @@
 
 			<sources basedir="${mono.sources}/class/Mono.Cairo">
 				<includes name="**/*.cs"/> 
+				<includes name="../../build/common/Consts.cs"/>
 				<excludes name="Test/**"/>
 				<excludes name="Samples/**"/>
 			</sources>

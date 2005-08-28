@@ -396,7 +396,7 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 				length+=Math.Sqrt((x2-x3)*(x2-x3) + (y2-y3) * (y2-y3));
 				length+=Math.Sqrt((x3-x4)*(x3-x4) + (y3-y4) * (y3-y4));
 				
-                                return (int)Math.Ceiling(length);	
+        return (int)Math.Ceiling(length);	
 			}
 
 	private Point[] ComputeBezier(int x1, int y1, int x2, int y2,		
@@ -465,13 +465,26 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 			{
 				// TODO: Optimize this to plot points without 
 				// involving line-drawing operations
-                                Point [] points = ComputeBezier(x1,y1,x2,y2,x3,y3,x4,y4);
-                                if (points.Length > 2)
+				Point [] points = ComputeBezier(x1,y1,x2,y2,x3,y3,x4,y4);
+				if (points.Length > 2)
 				{
 					DrawLines(points);
 				}
 			}
 
+// Fill a bezier curve using the current pen.
+	public virtual void FillBezier(int x1, int y1, int x2, int y2,
+																		 int x3, int y3, int x4, int y4, FillMode fillMode )
+	{
+		// TODO: Optimize this to plot points without 
+		// involving line-drawing operations
+		Point [] points = ComputeBezier(x1,y1,x2,y2,x3,y3,x4,y4);
+		if (points.Length > 2)
+		{
+			FillPolygon(points,fillMode);
+		}
+	}
+			
 	// Draw a closed cardinal curve using the current pen.
 	public virtual void DrawClosedCurve(Point[] points, float tension)
 			{			

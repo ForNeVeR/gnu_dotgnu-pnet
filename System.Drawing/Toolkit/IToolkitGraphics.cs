@@ -61,6 +61,10 @@ public interface IToolkitGraphics : IDisposable
 	void DrawBezier(int x1, int y1, int x2, int y2,
 					int x3, int y3, int x4, int y4);
 
+	// Draw a bezier curve using the current pen.
+	void FillBezier(int x1, int y1, int x2, int y2,
+									int x3, int y3, int x4, int y4, FillMode fillMode);
+	
 	// Draw an arc within a rectangle defined by four points.
 	void DrawArc(Point[] rect, float startAngle, float sweepAngle);
 

@@ -1,3 +1,10 @@
+2005-08-28  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing/Drawing2D/GraphicsPath.cs,
+	System.Drawing/Graphics.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs,
+	System.Drawing/Toolkit/IToolkitGraphics.cs: fixed Graphics.FillPath
+	filling Beziers (patch #3835 fixes bug #12350, drobosson).
 
 2005-08-27  Gopal V  <gopalv82@yahoo.com>
 

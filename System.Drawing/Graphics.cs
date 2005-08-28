@@ -617,6 +617,42 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				}
 			}
 
+	// Draw a Bezier spline.
+			public void FillBezier(Brush brush, Point pt1, Point pt2,
+														 Point pt3, Point pt4, FillMode fillMode)
+			{
+				FillBezier(brush, (float)(pt1.X), (float)(pt1.Y),
+									 (float)(pt2.X), (float)(pt2.Y),
+									 (float)(pt3.X), (float)(pt3.Y),
+									 (float)(pt4.X), (float)(pt4.Y), fillMode);
+			}
+			public void FillBezier(Brush brush, PointF pt1, PointF pt2,
+														 PointF pt3, PointF pt4, FillMode fillMode)
+			{
+				FillBezier(brush, pt1.X, pt1.Y, pt2.X, pt2.Y,
+									 pt3.X, pt3.Y, pt4.X, pt4.Y, fillMode);
+			}
+			public void FillBezier(Brush brush, float x1, float y1, float x2, float y2,
+														 float x3, float y3, float x4, float y4, FillMode fillMode)
+			{
+
+				int dx1, dy1, dx2, dy2;
+				int dx3, dy3, dx4, dy4;
+				ConvertPoint(x1 + baseWindow.X, y1 + baseWindow.Y, out dx1, out dy1, pageUnit);
+				ConvertPoint(x2 + baseWindow.X, y2 + baseWindow.Y, out dx2, out dy2, pageUnit);
+				ConvertPoint(x3 + baseWindow.X, y3 + baseWindow.Y, out dx3, out dy3, pageUnit);
+				ConvertPoint(x4 + baseWindow.X, y4 + baseWindow.Y, out dx4, out dy4, pageUnit);
+				lock(this)
+				{
+					SelectBrush(brush);
+					ToolkitGraphics.DrawBezier(dx1, dy1, dx2, dy2,
+																		 dx3, dy3, dx4, dy4);
+					ToolkitGraphics.FillBezier(dx1, dy1, dx2, dy2,
+																		 dx3, dy3, dx4, dy4, fillMode);
+				}
+			}
+
+			
 	// Draw a series of Bezier splines.
 	public void DrawBeziers(Pen pen, Point[] points)
 			{

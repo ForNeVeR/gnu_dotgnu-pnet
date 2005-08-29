@@ -1157,45 +1157,68 @@ static int SearchForDllMap(ILProgramItem *item, const char *name,
 	/* Hack around a hard-wired library names in Gtk#.  This is temporary
 	   until we can come up with a better solution that does not require
 	   the user to manually edit configuration files */
-	if(!strcmp(name, "libgtk-win32-2.0-0.dll"))
+	newNameLen = strlen(name);
+	if(newNameLen > 4)
 	{
-		*remapName = "libgtk-x11-2.0.so";
-		return strlen(*remapName);
-	}
-	else if(!strcmp(name, "libgobject-2.0-0.dll"))
-	{
-		*remapName = "libgobject-2.0.so.0";
-		return strlen(*remapName);
-	}
-	else if(!strcmp(name, "libglib-2.0-0.dll"))
-	{
-		*remapName = "libglib-2.0.so.0";
-		return strlen(*remapName);
-	}
-	else if(!strcmp(name, "libpango-1.0-0.dll"))
-	{
-		*remapName = "libpango-1.0.so.0";
-		return strlen(*remapName);
-	}
-	else if(!strcmp(name, "libatk-1.0-0.dll"))
-	{
-		*remapName = "libatk-1.0.so.0";
-		return strlen(*remapName);
-	}
-	else if(!strcmp(name, "libgdk-win32-2.0-0.dll"))
-	{
-		*remapName = "libgdk-x11-2.0.so.0";
-		return strlen(*remapName);
-	}
-	else if(!strcmp(name, "libgdk_pixbuf-2.0-0.dll"))
-	{
-		*remapName = "libgdk_pixbuf-2.0.so.0";
-		return strlen(*remapName);
-	}
-	else if(!strcmp(name, "libglade-2.0-0.dll"))
-	{
-		*remapName = "libglade-2.0.so.0";
-		return strlen(*remapName);
+		/* strip off the .dll suffix if present */
+		if((name[newNameLen - 4] == '.') && (name[newNameLen - 3] == 'd') &&
+			(name[newNameLen - 2] == 'l') && (name[newNameLen - 1] == 'l'))
+		{
+			newNameLen -= 4;
+			/* now strip of the lib at the beginning if present */
+			if(newNameLen > 3)
+			{
+				if((name[0] == 'l') && (name[1] == 'i') && (name[2] == 'b'))
+				{
+					int index
+;
+					newName = name + 3;
+					newNameLen -= 3;
+
+					/* now search for the first dash after the last dot */
+					index = newNameLen -1;
+
+					while(index >= 0)
+					{
+						if(newName[index] == '.')
+						{
+							/* found the dot */
+							index ++;
+
+							while(index < newNameLen)
+							{
+								if(newName[index] == '-')
+								{
+									newNameLen = index;
+									break;
+								}
+								index++;
+							}
+							break;
+						}
+						index--;
+					}
+					if((newNameLen == 13) && 
+						!strncmp(newName, "gtk-win32-2.0", 13))
+					{
+						*remapName = "gtk-x11-2.0";
+					}
+					else
+					{
+						if((newNameLen == 13) &&
+							!strncmp(newName, "gdk-win32-2.0", 13))
+						{
+							*remapName = "gdk-x11-2.0";
+						}
+						else
+						{
+							*remapName = newName;
+						}
+					}
+					return newNameLen;
+				}
+			}
+		}
 	}
 #endif
 

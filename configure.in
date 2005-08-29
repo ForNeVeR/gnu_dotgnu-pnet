@@ -516,6 +516,12 @@ AC_CHECK_FUNCS(mbstowcs)
 
 dnl List of libraries that need .so version mappings.
 so_imports="ICE X11 Xext ssl gnutls jpeg"
+dnl Add gnome libraries that need .so version mappings.
+so_imports="$so_imports art_lgpl atk-1.0 gconf-2 gda-2 gdk-x11-2.0 gdk_pixbuf-2.0 glade-2.0 glib-2.0 gnome-2 gnomecanvas-2 gnomeprint-2-2 gnomeprintui-2-2 gnomeui-2 gnomevfs-2 gobject-2.0 gthread-2.0 gtk-html-3.0 gtk-x11-2.0 panel-applet-2 pango-1.0 vte"
+dnl Add gtk# 1.0.x glue libraries that need .so version mappings.
+so_imports="$so_imports gdksharpglue gladesharpglue glibsharpglue gnomesharpglue gtksharpglue pangosharpglue"
+dnl Add gtk# 1.9.x glue libraries that need .so version mappings.
+so_imports="$so_imports gladesharpglue-2 glibsharpglue-2 gnomesharpglue-2"
 
 dnl Get the full list of library paths to search.
 so_lib_path=`echo "$LD_LIBRARY_PATH" | sed -e '1,$s/:/ /g'`

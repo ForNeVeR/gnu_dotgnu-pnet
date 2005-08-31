@@ -417,13 +417,23 @@ public class BinaryReader : IDisposable
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_NonNegative"));
 				}
+
 				buffer = new byte [count];
-				result = Read(buffer, 0, count);
-				if(result == 0)
+
+				do
 				{
-					throw new EndOfStreamException(_("IO_ReadEndOfStream"));
+					int num2 = Read(buffer, result, count);
+					if(num2 == 0)
+					{
+						throw new EndOfStreamException(_("IO_ReadEndOfStream"));
+						break;
+					}
+					result += num2;
+					count -= num2;
 				}
-				if(result != count)
+				while(count > 0);
+
+				if(result != buffer.Length)
 				{
 					byte[] newBuffer = new byte [result];
 					Array.Copy(buffer, newBuffer, result);

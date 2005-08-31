@@ -1,3 +1,9 @@
+2005-08-31  Deryk Robosson  <deryk@0x0a.com>
+
+	* runtime/System/IO/BinaryReader.cs: ReadBytes now reads the specified
+	number of bytes if the end of stream is not reached.  Fixes bug
+	#14339, inline patch supplied by Peter Flaig <fliege>
+
 2005-08-30  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Xml/Schema/XmlSchema.cs: declare correct XSI namespace.

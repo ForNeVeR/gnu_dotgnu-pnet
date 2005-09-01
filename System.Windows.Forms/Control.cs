@@ -98,6 +98,7 @@ public class Control : IWin32Window, IDisposable
 	private Cursor cursor;
 	private IToolkitWindowBuffer buffer;
 	private ControlBindingsCollection controlBindingsCollection;
+	private ControlCollection controlCollection;
 	private Timer hoverTimer;
 
 
@@ -846,7 +847,11 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					return CreateControlsInstance();
+					if(controlCollection == null)
+					{
+						controlCollection = CreateControlsInstance();
+					}
+					return controlCollection;
 				}
 			}
 #if CONFIG_COMPONENT_MODEL

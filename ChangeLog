@@ -1,3 +1,8 @@
+
+2005-08-27  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/Control.cs: Cache ControlCollection instances.
+
 2005-08-31  Deryk Robosson  <deryk@0x0a.com>
 
 	* runtime/System/IO/BinaryReader.cs: ReadBytes now reads the specified

@@ -439,6 +439,7 @@ namespace System.Xml.Serialization
 				else 
 					UnknownNode(ob);
 
+				Reader.Read();
 				Reader.MoveToContent();
 			}
 

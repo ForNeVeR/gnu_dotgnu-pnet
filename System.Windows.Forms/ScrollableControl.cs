@@ -331,6 +331,15 @@ public class ScrollableControl : Control
 				base.ScaleCore(dx, dy);
 			}
 
+	protected override void OnVisibleChanged(EventArgs e)
+	{
+		if(base.Visible)
+		{
+			base.PerformLayout();
+		}
+		base.OnVisibleChanged(e);
+	}
+
 	private void ScrollByOffset(Size offset)
 			{
 				//Console.WriteLine("Scroll by " + offset);

@@ -1,10 +1,17 @@
 
+2005-09-08  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/Forms.build,
+	System.Drawing/System.Drawing.build: Fix out of tree builds,
+	add ${csant.src.dir} to the relative paths as suggested by
+	Miroslaw Dobrzanski.
+
 2005-09-02  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/ScrollableControl.cs: add OnVisibleChanged()
 	method.  Fixes bug #14370.
 
-	* System.Xml\Serialization\XmlSerializationReaderInterpreter.cs: Fix
+	* System.Xml/Serialization/XmlSerializationReaderInterpreter.cs: Fix
 	XML Deserialization condition where an object contained a list, fixes
 	bug #14340.
 

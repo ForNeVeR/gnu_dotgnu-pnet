@@ -36,9 +36,9 @@
 				<includes if="${CONFIG_RUNTIME_INFRA}"
 					name="../resources/en_US/System.Windows.Forms/System.Windows.Forms.resources"/>
 				<includes if="${CONFIG_RUNTIME_INFRA}"
-					name="../resources/en_US/System.Windows.Forms/*.ico"/>
+					name="${csant.src.dir}/../resources/en_US/System.Windows.Forms/*.ico"/>
 				<includes if="${CONFIG_RUNTIME_INFRA}"
-					name="../resources/en_US/System.Windows.Forms/*.cur"/>
+					name="${csant.src.dir}/../resources/en_US/System.Windows.Forms/*.cur"/>
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>

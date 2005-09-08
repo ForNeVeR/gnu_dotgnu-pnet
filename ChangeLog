@@ -1,7 +1,13 @@
+
+2005-09-08  Gopal V  <gopalv82@yahoo.com>
+
+	* configure.in: replace '[' chars with corresponding
+	quadrigraphs to escape them the m4 way.
+
 2005-08-29  Klaus Treichel  <ktreichel@web.de>
 
 	* image/link.c:Change mapping of windows dll names to the names on non
-	windows plattforms. If the name starts with lib and ends with .dll then
+	windows platforms. If the name starts with lib and ends with .dll then
 	cut of these parts. Additionally cut off all including the first dash
 	following the last point. Use this name for the libary search. Two special
 	cases are left: gdk-win32 and gtk-win32 are mapped to gdk-x11 or gtk-x11.

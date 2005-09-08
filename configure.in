@@ -623,7 +623,7 @@ if test "x$no_recursion" != "xyes"; then
 	dnl Figure out how to find the source directory for directories
 	dnl under $srcdir from a subdirectory of the build tree.  This is
 	dnl	different depending on whether $srcdir is absolute or relative.
-	if echo $srcdir | grep '^[~/]'; then
+	if echo $srcdir | grep '^@<:@~/@:>@'; then # that's m4 quadrigraphs []
 		ffisrcdir=$srcdir/libffi
 		gcsrcdir=$srcdir/libgc
 	else

@@ -594,7 +594,19 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					topLevel = value;
+					// Brubbel recreate toolkitwindow, if exists
+					if( value != topLevel ) {
+						topLevel = value;
+						if( null != toolkitWindow ) {
+							Control [] copy = new Control[this.Controls.Count];
+							this.Controls.CopyTo( copy, 0 );
+							this.Controls.Clear();;
+							toolkitWindow.Destroy();
+							toolkitWindow = null;
+							this.CreateHandle();
+							this.Controls.AddRange( copy );
+						}
+					}
 				}
 			}
 	public bool TopMost
@@ -736,6 +748,7 @@ public class Form : ContainerControl
 					return ((mdiParent == null) && TopLevel);
 				}
 			}
+			
 
 	// Get the current state of a window decoration flag.
 	private bool GetWindowFlag(ToolkitWindowFlags flag)
@@ -930,6 +943,7 @@ public class Form : ContainerControl
 
 					// Make the form visible.
 					Visible = true;
+					Activate();
 
 					// Enter a message loop until the dialog result is set.
 					Application.InnerMessageLoop(this);
@@ -938,7 +952,6 @@ public class Form : ContainerControl
 				{
 					// Make sure that the form is not visible.
 					Visible = false;
-
 					// The form is no longer modal.
 					SetWindowFlag(ToolkitWindowFlags.Modal, false);
 				}

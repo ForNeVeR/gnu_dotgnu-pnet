@@ -1,3 +1,7 @@
+2005-09-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Form.cs: Can now reparent forms. (patch #4404
+	applied by drobosson)
 
 2005-09-08  Gopal V  <gopalv82@yahoo.com>
 

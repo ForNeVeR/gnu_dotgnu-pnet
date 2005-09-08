@@ -4,6 +4,9 @@
 	* configure.in: replace '[' chars with corresponding
 	quadrigraphs to escape them the m4 way.
 
+	* configure.in: throw away fancy quadrigraphs and use
+	old fashioned [[ to escape for backward compatibility.
+
 2005-08-29  Klaus Treichel  <ktreichel@web.de>
 
 	* image/link.c:Change mapping of windows dll names to the names on non

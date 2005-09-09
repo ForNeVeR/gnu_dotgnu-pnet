@@ -641,20 +641,20 @@ internal sealed unsafe class Xlib
 	extern public static void XSharpFreeFontXft
 			(IntPtr display, IntPtr fontSet);
 
-	[DllImport("XsharpSupport")]
+	[DllImport("XsharpSupport", CharSet=CharSet.Unicode)]
 	extern public static void XSharpDrawStringXft
 			(IntPtr display, XDrawable drawable, IntPtr gc,
 			 IntPtr fontSet, @X_int@ x, @X_int@ y,
 			 String str, @X_int@ style, IntPtr clipRegion,
 			 @X_ulong@ colorValue);
 
-	[DllImport("XsharpSupport")]
+	[DllImport("XsharpSupport", CharSet=CharSet.Unicode)]
 	extern public static void XSharpTextExtentsXft
 			(IntPtr display, IntPtr fontSet, String str,
 			 out XRectangle overall_ink_return,
 			 out XRectangle overall_logical_return);
 
-	[DllImport("XsharpSupport")]
+	[DllImport("XsharpSupport", CharSet=CharSet.Unicode)]
 	extern public static void XSharpFontExtentsXft
 			(IntPtr fontSet,
 			 out XRectangle max_ink_return,

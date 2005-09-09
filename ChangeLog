@@ -1,3 +1,15 @@
+2005-09-09  Marc Haisenko  <haisenko@darkdust.net>
+	
+	* Xsharp/Xlib.cs: tell the DllImporter to marshall strings passed to
+	the Xft functions as UTF-8 (part 1/2 to fix bug #14368).
+
+	* Xsharp/XsharpSupport.c: throw away the mbstowcs stuff and just use
+	XftDrawStringUtf8 and XftTextExtentsUtf8 functions (part 2/2 to fix
+	bug #14368).
+
+	* configure.in: remove the check for mbstowcs (XsharpSupport.c was the
+	only place it was used and it doesn't need it anymore).
+
 2005-09-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Form.cs: Can now reparent forms. (patch #4404

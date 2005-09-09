@@ -512,37 +512,13 @@ void XSharpDrawStringXft(Display *dpy, Drawable drawable, GC gc,
 						 DefaultColormap(dpy, DefaultScreen(dpy)));
 	if(draw)
 	{
-#ifdef HAVE_MBSTOWCS
-		size_t len;
-#endif /* HAVE_MBSTOWCS */
-		
 		if(clipRegion)
 		{
 			XftDrawSetClip(draw, clipRegion);
 		}
 
-#ifdef HAVE_MBSTOWCS
-		/* Can the string be converted into wide chars (Unicode) ? */
-		len = mbstowcs (NULL, str, 0);
-		if (len != -1)
-		{
-			/* Yes, convert to to Unicode and draw */
-			wchar_t wstr[len + 1];
-			mbstowcs (wstr, str, len);
-			XftDrawString32(draw, &color, (XftFont *)fontSet,
-				x, y, (XftChar32 *)wstr, len);
-		}
-		else
-		{
-#endif /* HAVE_MBSTOWCS */
-
-			/* No, draw plain ASCII */
-			XftDrawString8(draw, &color, (XftFont *)fontSet,
-				x, y, (XftChar8 *)str, strlen(str));
-
-#ifdef HAVE_MBSTOWCS
-		}
-#endif /* HAVE_MBSTOWCS */
+		XftDrawStringUtf8(draw, &color, (XftFont *)fontSet,
+			x, y, (XftChar8 *)str, strlen(str));
 		
 		XftDrawDestroy(draw);
 	}
@@ -762,29 +738,7 @@ void XSharpTextExtentsXft(Display *dpy, void *fontSet, const char *str,
 
 	XGlyphInfo extents;
 	
-#ifdef HAVE_MBSTOWCS
-	size_t len;
-
-	/* Can the string be converted into wide chars (Unicode) ? */
-	len = mbstowcs (NULL, str, 0);
-	if (len != -1)
-	{
-		/* Yes, convert to to Unicode and measure */
-		wchar_t wstr[len + 1];
-		mbstowcs (wstr, str, len);
-		XftTextExtents32(dpy, fontSet, (XftChar32 *)wstr, len, &extents);
-	}
-	else
-	{
-#endif /* HAVE_MBSTOWCS */
-
-		/* No, measure plain ASCII */
-		XftTextExtents8(dpy, fontSet, (XftChar8 *)str, strlen(str), &extents);
-
-#ifdef HAVE_MBSTOWCS
-	}
-#endif /* HAVE_MBSTOWCS */
-
+	XftTextExtentsUtf8(dpy, fontSet, (XftChar8 *)str, strlen(str), &extents);
 
 	overall_ink_return->x = -(extents.x);
 	overall_ink_return->y = -(extents.y);

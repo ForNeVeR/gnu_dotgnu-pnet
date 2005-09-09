@@ -1,3 +1,7 @@
+2005-09-09  Peter Flaig <fliege>
+
+	* engine/lib_type.c: GetInterface was not moving back up the tree,
+	fixed with patch attached to bug #14476 (patch applied by drobosson).
 
 2005-09-08  Gopal V  <gopalv82@yahoo.com>
 

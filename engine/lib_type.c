@@ -788,6 +788,7 @@ ILObject *_IL_ClrType_GetInterface(ILExecThread *thread,
 {
 #ifdef IL_CONFIG_REFLECTION
 	ILClass *classInfo;
+	ILClass *interfaceClassInfo;
 
 	/* Bail out if "name" is NULL or the class is invalid in some way */
 	if(!name)
@@ -796,21 +797,19 @@ ILObject *_IL_ClrType_GetInterface(ILExecThread *thread,
 		return 0;
 	}
 	classInfo = _ILGetClrClass(thread, _this);
-	if(!classInfo)
-	{
-		return 0;
-	}
-
+	
 	/* Scan all implemented interfaces for the name */
-	classInfo = GetInterface(thread, classInfo, name, ignoreCase);
-	if(classInfo)
+	while(classInfo != 0)
 	{
-		return _ILGetClrType(thread, classInfo);
+		interfaceClassInfo = GetInterface(thread, classInfo, name, ignoreCase);
+		if(interfaceClassInfo)
+		{
+			return _ILGetClrType(thread, interfaceClassInfo);
+		}
+		/* Move up to the parent of this class */
+		classInfo = ILClass_Parent(classInfo);
 	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 #else
 	_ILClrNotImplemented(thread);
 	return 0;

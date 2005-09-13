@@ -1,3 +1,9 @@
+2005-09-12  Russell Stuart  <russell-savannah@stuart.id.au>
+
+	* engine/lib_task.cs: _IL_Process_StartProcess wasn't closing
+	the pipe it used to report errno in case of a exec failure in
+	the child.
+
 2005-09-09  Peter Flaig <fliege>
 
 	* engine/lib_type.c: GetInterface was not moving back up the tree,

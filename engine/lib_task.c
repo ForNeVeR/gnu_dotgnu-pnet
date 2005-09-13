@@ -746,6 +746,7 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 			extern char **environ;
 			environ = newEnviron;
 		}
+		close(pipefds[0]);
 		
 	#ifdef HAVE_FCNTL
 		fcntl(pipefds[1],F_SETFD,1);
@@ -774,6 +775,7 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 		close(pipefds[1]);
 		errno = 0;
 		read(pipefds[0],&errno,sizeof(errno));
+		close(pipefds[0]);
 		result = 1;
 	}
 	else
@@ -794,6 +796,8 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 			close(stderrFds[0]);
 			close(stderrFds[1]);
 		}
+		close(pipefds[0]);
+		close(pipefds[1]);
 	}
 
 	/* Clean up and exit */

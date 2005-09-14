@@ -1503,6 +1503,12 @@ internal sealed class NumberParser
 		double result = 0;
 		int t;
 
+		// Bail out if the string is empty
+		if(s.Length == 0)
+		{
+			throw new FormatException();
+		}
+
 		//  Double does not parse hex numbers
 		if ((style & NumberStyles.AllowHexSpecifier) != 0)
 			throw new FormatException(_("Format_HexNotSupported"));

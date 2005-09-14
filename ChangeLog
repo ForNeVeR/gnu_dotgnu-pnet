@@ -1,3 +1,9 @@
+2005-09-14  Peter Flaig <fliege>
+
+	* runtime/System/Private/NumberParser.cs: No longer return zero when
+	String.Empty or null string is passed.  (fixes bug #14531, patch
+	applied by drobosson)
+
 2005-09-09  Marc Haisenko  <haisenko@darkdust.net>
 	
 	* Xsharp/Xlib.cs: tell the DllImporter to marshall strings passed to

@@ -403,7 +403,7 @@ ILDouble _IL_Math_RoundDouble(ILExecThread *thread, ILDouble value,
 	else
 	{
 	#ifdef HAVE_POW
-		power = pow(1.0, (double)digits);
+		power = pow(10, (double)digits);
 	#else
 		power = 1.0;
 		while(digits > 0)

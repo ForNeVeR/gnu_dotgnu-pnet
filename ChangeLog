@@ -1,3 +1,15 @@
+2005-09-17  Klaus Treichel  <ktreichel@web.de>
+
+	* libgc/Makefile.am, libgc/Makefile.in, libgc/alpha_mach_dep.S,
+	libgc/configure, libgc/configure.in, libgc/dyn_load.c, libgc/mach_dep.c,
+	libgc/os_dep.c, libgc/pthread_stop_world.c, libgc/pthread_support.c,
+	libgc/version.h, libgc/win32_threads.c, libgc/doc/Makefile.in,
+	libgc/doc/README, libgc/doc/README.changes, libgc/doc/README.linux,
+	libgc/include/Makefile.in, libgc/include/private/gc_priv.h,
+	libgc/include/private/gcconfig.h,
+	libgc/include/private/pthread_stop_world.h: update to version 6.6
+
+	* libgc/mips_sgi_mach_dep.S: renamed to libgc/mips_sgi_mach_dep.s. 
 
 2005-09-14  Gerd Nick  <gerd.nick@de.trumpf-laser.com>
 

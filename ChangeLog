@@ -1,3 +1,9 @@
+2005-09-22  Peter Flaig  <fliege>
+
+	* Xsharp/TopLevelWindow.cs, Xsharp/InputOutputWidget.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs: BeginInvoke was not being
+	called from non-toplevel windows. (drobosson, bug #14351)
+
 2005-09-21  Peter Flaig  <fliege>
 
 	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs,

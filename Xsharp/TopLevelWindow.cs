@@ -1582,16 +1582,7 @@ public class TopLevelWindow : InputOutputWidget
 				}
 			}
 
-	/// <summary>
-	/// <para>Method that is called when a custom "BeginInvoke" message comes in
-	/// changes.</para>
-	/// </summary>
-	protected virtual void OnBeginInvokeMessage(IntPtr i_gch)
-			{
-				// Nothing to do in this base class.
-			}
-
-
+	
 	/// <summary>
 	/// <para>Method that is called when the window's iconic state
 	/// changes.</para>
@@ -1969,10 +1960,6 @@ public class TopLevelWindow : InputOutputWidget
 									dpy.Unlock();
 								}
 							}
-						}
-						else if(xevent.xclient.message_type == dpy.internalBeginInvoke)
-						{
-							OnBeginInvokeMessage((IntPtr)xevent.xclient.l(0));
 						}
 					}
 					break;

@@ -756,6 +756,12 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 			{
 				base.SendBeginInvoke(i_gch);
 			}
+			
+	protected override void OnBeginInvokeMessage(IntPtr i_gch)
+			{
+				if( sink != null )
+					sink.ToolkitBeginInvoke(i_gch);
+			}
 
 }; // class DrawingWindow
 

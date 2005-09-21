@@ -571,9 +571,28 @@ public class InputOutputWidget : InputOnlyWidget
 						}
 					}
 					break;
+					
+					case Xsharp.Events.EventType.ClientMessage:
+					{
+						if(xevent.xclient.message_type == dpy.internalBeginInvoke)
+						{
+							OnBeginInvokeMessage((IntPtr)xevent.xclient.l(0));
+						}
+					}
+					break;
 				}
 				base.DispatchEvent(ref xevent);
 			}
+			
+	/// <summary>
+	/// <para>Method that is called when a custom "BeginInvoke" message comes in
+	/// changes.</para>
+	/// </summary>
+	protected virtual void OnBeginInvokeMessage(IntPtr i_gch)
+			{
+				// Nothing to do in this base class.
+			}
+
 
 	// Remove this widget from the pending expose list.
 	internal void RemovePendingExpose()

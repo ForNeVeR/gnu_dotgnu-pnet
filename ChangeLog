@@ -1,3 +1,9 @@
+2005-09-21  Peter Flaig  <fliege>
+
+	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	Xsharp/TopLevelWindow.cs: Correct event handling in TopLevelWindows.
+	(drobosson, bug #14610)
+
 2005-09-14  Peter Flaig <fliege>
 
 	* runtime/System/Private/NumberParser.cs: No longer return zero when

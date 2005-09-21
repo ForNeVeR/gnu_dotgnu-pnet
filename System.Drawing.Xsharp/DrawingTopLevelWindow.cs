@@ -660,6 +660,59 @@ internal sealed class DrawingTopLevelWindow
 			{
 				base.SendBeginInvoke(i_gch);
 			}
+			
+	protected override bool OnButtonWheel(int x, int y, ButtonName button,
+									  	   ModifierMask modifiers, int iDelta)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitMouseWheel
+						(MapButton(button),
+						MapKey(KeyName.XK_VoidSymbol, modifiers),
+						1, x, y, iDelta);
+				}
+
+				return true;
+			}
+			
+	// Map an Xsharp key description into a "ToolkitKeys" value.
+	internal static ToolkitKeys MapKey(KeyName key, ModifierMask modifiers)
+			{
+				ToolkitKeys toolkitKey =  ToolkitKeys.None;
+				if((modifiers & ModifierMask.ControlMask) != 0)
+				{
+					toolkitKey |= ToolkitKeys.Control;
+				}
+				if((modifiers & ModifierMask.ShiftMask) != 0)
+				{
+					toolkitKey |= ToolkitKeys.Shift;
+				}
+				if((modifiers & ModifierMask.Mod1Mask) != 0)
+				{
+					toolkitKey |= ToolkitKeys.Alt;
+				}
+				return toolkitKey;
+			}
+
+	// Map an Xsharp button name into a "ToolkitMouseButtons" value.
+	internal static ToolkitMouseButtons MapButton(ButtonName button)
+			{
+				switch(button)
+				{
+					case ButtonName.Button1:
+						return ToolkitMouseButtons.Left;
+					case ButtonName.Button2:
+						return ToolkitMouseButtons.Middle;
+					case ButtonName.Button3:
+						return ToolkitMouseButtons.Right;
+					case ButtonName.Button4:
+						return ToolkitMouseButtons.XButton1;
+					case ButtonName.Button5:
+						return ToolkitMouseButtons.XButton2;
+					default:
+						return ToolkitMouseButtons.None;
+				}
+			}	
 
 }; // class DrawingTopLevelWindow
 

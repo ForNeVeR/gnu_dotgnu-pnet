@@ -2191,6 +2191,14 @@ public class TopLevelWindow : InputOutputWidget
 					}
 					break;
 
+				case Xsharp.Events.EventType.ButtonPress:
+					{
+						if ((xevent.xbutton.button == ButtonName.Button4) ||
+						    (xevent.xbutton.button == ButtonName.Button5))
+							return;
+					}
+					break;
+
 				case Xsharp.Events.EventType.ButtonRelease:
 					{
 						// Handle mouse wheel events.
@@ -2198,7 +2206,7 @@ public class TopLevelWindow : InputOutputWidget
 						// Sanity check
 						if ((xevent.xbutton.button != ButtonName.Button4) &&
 						    (xevent.xbutton.button != ButtonName.Button5))
-							return;
+							break;
 
 						// Dispatch the event.
 						widget = focusWidget;
@@ -2209,7 +2217,7 @@ public class TopLevelWindow : InputOutputWidget
 							{
 								if (io.DispatchWheelEvent (ref xevent))
 								{
-									break;
+									return;
 								}
 							}
 							if (widget == this)

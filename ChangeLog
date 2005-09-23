@@ -1,3 +1,11 @@
+2005-09-23  Peter Flaig  <fliege>
+
+	* System.Windows.Forms/Control.cs: Send mouse events to parent if
+	control is disabled. (drobosson, bug #14622)
+
+	* System.Drawing/Graphics.cs: Correct LineAlignment (drobosson, bug
+	#14623)
+
 2005-09-22  Peter Flaig  <fliege>
 
 	* Xsharp/TopLevelWindow.cs, Xsharp/InputOutputWidget.cs,

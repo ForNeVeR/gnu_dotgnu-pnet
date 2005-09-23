@@ -4818,7 +4818,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								GetNextSpan(span);
 
 								// draw the pending line, as needed
-								if(span.newline)
+								if(span.newline && !firstSpan)
 								{
 									// draw the line, if needed
 									if(textWidth > 0)

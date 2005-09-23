@@ -6028,13 +6028,15 @@ public class Control : IWin32Window, IDisposable
 	// Toolkit event that is emitted when the mouse enters this window.
 	void IToolkitEventSink.ToolkitMouseEnter()
 			{
-				OnMouseEnter(EventArgs.Empty);
+				if(GetControlFlag(ControlFlags.Enabled))
+					OnMouseEnter(EventArgs.Empty);
 			}
 
 	// Toolkit event that is emitted when the mouse leaves this window.
 	void IToolkitEventSink.ToolkitMouseLeave()
 			{
-				OnMouseLeave(EventArgs.Empty);
+				if(GetControlFlag(ControlFlags.Enabled))
+					OnMouseLeave(EventArgs.Empty);
 			}
 
 	// Toolkit event that is emitted when the focus enters this window.
@@ -6114,6 +6116,8 @@ public class Control : IWin32Window, IDisposable
 			{
 				if(!GetControlFlag(ControlFlags.Enabled))
 				{
+					if (parent != null)
+						((IToolkitEventSink)parent).ToolkitMouseDown(buttons, modifiers, clicks, x + left, y + top, delta);
 					return;
 				}
 				// Convert to client coordinates
@@ -6162,6 +6166,13 @@ public class Control : IWin32Window, IDisposable
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		int clicks, int x, int y, int delta)
 			{
+				if(!GetControlFlag(ControlFlags.Enabled))
+				{
+					if (parent != null)
+						((IToolkitEventSink)parent).ToolkitMouseUp(buttons, modifiers, clicks, x + left, y + top, delta);
+					return;
+				}
+				
 				// Convert to client coordinates
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
@@ -6191,6 +6202,13 @@ public class Control : IWin32Window, IDisposable
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		int clicks, int x, int y, int delta)
 			{
+				if(!GetControlFlag(ControlFlags.Enabled))
+				{
+					if (parent != null)
+						((IToolkitEventSink)parent).ToolkitMouseHover(buttons, modifiers, clicks, x + left, y + top, delta);
+					return;
+				}
+				
 				// Convert to client coordinates
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
@@ -6205,6 +6223,13 @@ public class Control : IWin32Window, IDisposable
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		int clicks, int x, int y, int delta)
 			{
+				if(!GetControlFlag(ControlFlags.Enabled))
+				{
+					if (parent != null)
+						((IToolkitEventSink)parent).ToolkitMouseMove(buttons, modifiers, clicks, x + left, y + top, delta);
+					return;
+				}
+				
 				// Convert to client coordinates
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;

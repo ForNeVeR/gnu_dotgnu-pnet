@@ -176,6 +176,27 @@ internal enum EventId
 	SplitterMoved,
 	SplitterMoving,
 
+	// "DataGrid" events
+	AllowNavigationChanged,
+	BackButtonClick,
+	BackgroundColorChanged,
+	CaptionVisibleChanged,
+	CurrentCellChanged,
+	FlatModeChanged,
+	Navigate,
+	ParentRowsLabelStyleChanged,
+	ParentRowsVisibleChanged,
+	RowHeaderClick,
+	ShowParentDetailsButtonClick,
+
+	// DataGridColumnStyle events
+	AlignmentChanged,
+	HeaderTextChanged,
+	MappingNameChanged,
+	NullTextChanged,
+	PropertyDescriptorChanged,
+	WidthChanged
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

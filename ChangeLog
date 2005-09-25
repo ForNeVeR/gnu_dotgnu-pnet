@@ -1,3 +1,20 @@
+2005-09-25  Boris Manojlovic  <steki>
+
+	* System.Windows.Forms/DataGrid.cs,
+	System.Windows.Forms/DataGridBoolColumn.cs,
+	System.Windows.Forms/DataGridPreferredColumnWidthTypeConverter.cs,
+	System.Windows.Forms/DataGridTableStyle.cs,
+	System.Windows.Forms/DataGridTextBox.cs,
+	System.Windows.Forms/DataGridTextBoxColumn.cs,
+	System.Windows.Forms/GridColumnStylesCollection.cs,
+	System.Windows.Forms/GridTableStylesCollection.cs: Add stubbs.
+
+	* System.Windows.Forms/DataGridCell.cs,
+	System.Windows.Forms/DataGridColumnStyle.cs: Complete stubbs.
+
+	* System.Windows.Forms/EventId.cs: Add DataGrid events.
+	(patch #4471, applied by klaus)
+
 2005-09-23  Peter Flaig  <fliege>
 
 	* System.Windows.Forms/Control.cs: Send mouse events to parent if

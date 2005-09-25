@@ -40,22 +40,22 @@ public struct DataGridCell
 			{
 				get
 				{
-					return column;
+					return this.column;
 				}
 				set
 				{
-					column = value;
+					this.column = value;
 				}
 			}
 	public int RowNumber
 			{
 				get
 				{
-					return row;
+					return this.row;
 				}
 				set
 				{
-					row = value;
+					this.row = value;
 				}
 			}
 

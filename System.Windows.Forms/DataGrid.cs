@@ -95,7 +95,7 @@ namespace System.Windows.Forms
 		// Constructor
 		public DataGrid()
 		{
-			Console.WriteLine("DataGrid.constr");
+//			Console.WriteLine("DataGrid.constr");
 
 			SetStyle(ControlStyles.ResizeRedraw,true);
 			SetStyle(ControlStyles.DoubleBuffer, true);
@@ -122,12 +122,12 @@ namespace System.Windows.Forms
 		[TODO]
 		public virtual bool BeginEdit(DataGridColumnStyle gridColumn, int rowNumber)
 		{
-			throw new NotImplementedException("CancelEditing");
+			throw new NotImplementedException("BeginEdit");
 		}
 		[TODO]
 		public virtual void BeginInit()
 		{
-			Console.WriteLine("BeginInit()");
+//			Console.WriteLine("BeginInit()");
 		}
 
 		[TODO]
@@ -186,7 +186,7 @@ namespace System.Windows.Forms
 		[TODO]
 		public virtual void EndInit()
 		{
-			Console.WriteLine("EndInit()");
+//			Console.WriteLine("EndInit()");
 		}
 
 		[TODO]
@@ -223,14 +223,14 @@ namespace System.Windows.Forms
 		protected virtual void GridHScrolled(System.Object sender, EventArgs e)
 		{
 			//throw new NotImplementedException("GridHScrolled");
-			Console.Write("HS");
+//			Console.Write("HS");
 		}
 
 		[TODO]
 		protected virtual void GridVScrolled(System.Object sender, EventArgs e)
 		{
 			//throw new NotImplementedException("GridVScrolled");
-			Console.Write("VS");
+//			Console.Write("VS");
 		}
 		[TODO]
 		public HitTestInfo HitTest(int x, int y)
@@ -362,13 +362,13 @@ namespace System.Windows.Forms
 		[TODO]
 		protected override void OnKeyDown(System.Windows.Forms.KeyEventArgs ke)
 		{
-			Console.WriteLine("OnKeyDown");
+//			Console.WriteLine("OnKeyDown");
 		}
 
 		[TODO]
 		protected override void OnKeyPress(System.Windows.Forms.KeyPressEventArgs kpe)
 		{
-			Console.WriteLine("OnKeyPress");
+//			Console.WriteLine("OnKeyPress");
 		}
 
 		internal void Draw()
@@ -378,13 +378,13 @@ namespace System.Windows.Forms
 			
 				Rectangle clientRectangle = ClientRectangle;
 				int drawableHeight = clientRectangle.Height;
-				Console.WriteLine(drawableHeight);
+//				Console.WriteLine(drawableHeight);
 				int drawableWidth = clientRectangle.Width;
-				Console.WriteLine(drawableWidth);
+//				Console.WriteLine(drawableWidth);
 
 			using(Graphics g = CreateGraphics())
 			{
-				Console.Write("D");
+//				Console.Write("D");
 				// Need to fill bg...
 				SolidBrush b = new SolidBrush(_backgroundColor);
 				g.FillRectangle(b, 0, 0, Width, Height);
@@ -405,7 +405,7 @@ namespace System.Windows.Forms
 		
 		protected override void OnLayout(System.Windows.Forms.LayoutEventArgs levent)
 		{
-			Console.Write("OL");
+//			Console.Write("OL");
 			Draw();
 			base.OnLayout(levent);
 
@@ -422,7 +422,7 @@ namespace System.Windows.Forms
 		{
 			base.OnMouseDown(e);
 			this._backgroundColor = Color.Beige;
-			Console.Write("M");
+//			Console.Write("M");
 		}
 
 		[TODO]
@@ -468,7 +468,7 @@ namespace System.Windows.Forms
 		{
 			Draw();
 			base.OnPaint(pe);
-			Console.Write("P");
+//			Console.Write("P");
 			//throw new NotImplementedException("OnPaint");
 		}
 
@@ -637,20 +637,20 @@ namespace System.Windows.Forms
 			switch(dataSource.GetType().ToString()) 
 			{
 				case "djoka":
-					Console.WriteLine("asd");
+//					Console.WriteLine("asd");
 					break;
 				case "sdasdas":
-					Console.WriteLine("asdasdasd");
+//					Console.WriteLine("asdasdasd");
 					break;
 				default:
-					Console.WriteLine("asdasd");
+//					Console.WriteLine("asdasd");
 					break;
 			}
 			this.set_DataSource(dataSource);
 			this.set_DataMember(dataMember);
 
-			Console.WriteLine(dataSource.GetType());
-			Console.WriteLine(dataMember.ToString());
+//			Console.WriteLine(dataSource.GetType());
+//			Console.WriteLine(dataMember.ToString());
 			//throw new NotImplementedException("SetDataBinding");
 		}
 
@@ -753,111 +753,220 @@ namespace System.Windows.Forms
 
 		public event EventHandler AllowNavigationChanged
 		{
-				add { AddHandler(EventId.AllowNavigationChanged,value); }
-				remove { RemoveHandler(EventId.AllowNavigationChanged,value); }
+				add
+				{
+					AddHandler(EventId.AllowNavigationChanged,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.AllowNavigationChanged,value);
+				}
 		}
 
 		public event EventHandler BackButtonClick
 		{
-				add { AddHandler(EventId.BackButtonClick,value); }
-				remove { RemoveHandler(EventId.BackButtonClick,value); }
+				add
+				{
+					AddHandler(EventId.BackButtonClick,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.BackButtonClick,value);
+				}
 		}
 
 		public event EventHandler BackgroundColorChanged
 		{
-				add { AddHandler(EventId.BackgroundColorChanged,value); }
-				remove { RemoveHandler(EventId.BackgroundColorChanged,value); }
+				add
+				{
+					AddHandler(EventId.BackgroundColorChanged,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.BackgroundColorChanged,value);
+				}
 		}
 
 		public new event EventHandler BackgroundImageChanged
 		{
-				add		{ base.BackgroundImageChanged += value; }
-				remove	{ base.BackgroundImageChanged -= value; }
+				add
+				{
+					base.BackgroundImageChanged += value;
+				}
+				remove
+				{
+					base.BackgroundImageChanged -= value;
+				}
 		}
 
 		public event EventHandler BorderStyleChanged
 		{
-				add { AddHandler(EventId.BorderStyleChanged,value); }
-				remove { RemoveHandler(EventId.BorderStyleChanged,value); }
+				add
+				{
+					AddHandler(EventId.BorderStyleChanged,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.BorderStyleChanged,value);
+				}
 		}
 
 		public event EventHandler CaptionVisibleChanged
 		{
-				add { AddHandler(EventId.CaptionVisibleChanged,value); }
-				remove { RemoveHandler(EventId.CaptionVisibleChanged,value); }
+				add
+				{
+					AddHandler(EventId.CaptionVisibleChanged,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.CaptionVisibleChanged,value);
+				}
 		}
 
 		public event EventHandler CurrentCellChanged
 		{
-				add { AddHandler(EventId.CurrentCellChanged,value); }
-				remove { RemoveHandler(EventId.CurrentCellChanged,value); }
+				add
+				{
+					AddHandler(EventId.CurrentCellChanged,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.CurrentCellChanged,value);
+				}
 		}
 
 		public new event EventHandler CursorChanged
 		{
-				add 	{ base.CursorChanged += value; }
-				remove	{ base.CursorChanged -= value; }
+				add
+				{
+					base.CursorChanged += value;
+				}
+				remove
+				{
+					base.CursorChanged -= value;
+				}
 		}
 
 		public event EventHandler DataSourceChanged
 		{
-				add { AddHandler(EventId.DataSourceChanged,value); }
-				remove { RemoveHandler(EventId.DataSourceChanged,value); }
+				add
+				{
+					AddHandler(EventId.DataSourceChanged,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.DataSourceChanged,value);
+				}
 		}
 
 		public event EventHandler FlatModeChanged
 		{
-				add { AddHandler(EventId.FlatModeChanged,value); }
-				remove { RemoveHandler(EventId.FlatModeChanged,value); }
+				add
+				{
+					AddHandler(EventId.FlatModeChanged,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.FlatModeChanged,value);
+				}
 		}
 
 		public event EventHandler Navigate
 		{
-				add { AddHandler(EventId.Navigate,value); }
-				remove { RemoveHandler(EventId.Navigate,value); }
+				add
+				{
+					AddHandler(EventId.Navigate,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.Navigate,value);
+				}
 		}
 
 		public event EventHandler ParentRowsLabelStyleChanged
 		{
-				add { AddHandler(EventId.ParentRowsLabelStyleChanged,value); }
-				remove { RemoveHandler(EventId.ParentRowsLabelStyleChanged,value); }
+				add
+				{
+					AddHandler(EventId.ParentRowsLabelStyleChanged,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.ParentRowsLabelStyleChanged,value);
+				}
 		}
 
 		public event EventHandler ParentRowsVisibleChanged
 		{
-				add { AddHandler(EventId.ParentRowsVisibleChanged,value); }
-				remove { RemoveHandler(EventId.ParentRowsVisibleChanged,value); }
+				add
+				{
+					AddHandler(EventId.ParentRowsVisibleChanged,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.ParentRowsVisibleChanged,value);
+				}
 		}
 
 		public event EventHandler ReadOnlyChanged
 		{
-				add { AddHandler(EventId.ReadOnlyChanged,value); }
-				remove { RemoveHandler(EventId.ReadOnlyChanged,value); }
+				add
+				{
+					AddHandler(EventId.ReadOnlyChanged,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.ReadOnlyChanged,value);
+				}
 		}
 
 		public event EventHandler RowHeaderClick
 		{
-				add { AddHandler(EventId.RowHeaderClick,value); }
-				remove { RemoveHandler(EventId.RowHeaderClick,value); }
+				add
+				{
+					AddHandler(EventId.RowHeaderClick,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.RowHeaderClick,value);
+				}
 		}
 
 		public event EventHandler Scroll
 		{
-				add { AddHandler(EventId.Scroll,value); }
-				remove { RemoveHandler(EventId.Scroll,value); }
+				add
+				{
+					AddHandler(EventId.Scroll,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.Scroll,value);
+				}
 		}
 
 		public event EventHandler ShowParentDetailsButtonClick
 		{
-				add { AddHandler(EventId.ShowParentDetailsButtonClick,value); }
-				remove { RemoveHandler(EventId.ShowParentDetailsButtonClick,value); }
+				add
+				{
+					AddHandler(EventId.ShowParentDetailsButtonClick,value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.ShowParentDetailsButtonClick,value);
+				}
 		}
 
 		public new event EventHandler TextChanged
 		{
-				add { base.TextChanged += value; }
-				remove { base.TextChanged -= value; }
+				add
+				{
+					base.TextChanged += value;
+				}
+				remove
+				{
+					base.TextChanged -= value;
+				}
 		}
+
 /////////////////////////////////////
 
 
@@ -1535,13 +1644,11 @@ namespace System.Windows.Forms
  			get
 			{
 				return base.Text;
-				//throw new NotImplementedException("Text");
 			}
 
  			set
 			{
 				base.Text = value;
-				//throw new NotImplementedException("Text");
 			}
 
  		}
@@ -1575,6 +1682,7 @@ namespace System.Windows.Forms
 			}
 
  		}
+
  		[Flags]
 		[Serializable]
 		public enum HitTestType
@@ -1588,6 +1696,7 @@ namespace System.Windows.Forms
 			RowHeader		= 4,
 			RowResize		= 16
 		}
+
 		public sealed class HitTestInfo
 		{
 			internal int _column;
@@ -1643,3 +1752,4 @@ namespace System.Windows.Forms
 	}
 
 }//namespace System.Windows.Forms
+

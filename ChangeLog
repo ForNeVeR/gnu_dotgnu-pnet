@@ -3,6 +3,10 @@
 	* samples/forms/FormsTest.cs: Add DataGrid tab with single DataGrid
 	object.
 
+	* System.Windows.Forms/DataGrid.cs: Correct exception text thrown.
+	General clean up in code style (exceptions mainly) to keep consistant.
+	Commented out Console.WriteLine() used for debugging.
+
 2005-09-25  Boris Manojlovic  <steki>
 
 	* System.Windows.Forms/DataGrid.cs,

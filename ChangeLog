@@ -5,7 +5,12 @@
 
 	* System.Windows.Forms/DataGrid.cs: Correct exception text thrown.
 	General clean up in code style (exceptions mainly) to keep consistant.
-	Commented out Console.WriteLine() used for debugging.
+	Commented out Console.WriteLine() used for debugging.  Remove
+	underscore from field names for code uniformity.
+
+	* System.Windows.Forms/DataGridTableStyle.cs,
+	System.Windows.Forms/GridTableStylesCollection.cs: Remove underscore
+	from field names for code uniformity.
 
 2005-09-25  Boris Manojlovic  <steki>
 

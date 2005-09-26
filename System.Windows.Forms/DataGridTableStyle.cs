@@ -28,48 +28,48 @@ namespace System.Windows.Forms
 
 	public class DataGridTableStyle : Component, IDataGridEditingService
 	{
-		private int _rowHeaderWidth;
-		private int _preferredRowHeight;
-		private int _preferredColumnWidth;
+		private int rowHeaderWidth;
+		private int preferredRowHeight;
+		private int preferredColumnWidth;
 			
-		private System.String _mappingName;
+		private System.String mappingName;
 
-		private bool _defaultStyle = true;
-		private bool _readOnly = false;
-		private bool _rowHeadersVisible;
-		private bool _allowSorting;
-		private bool _columnHeadersVisible;
+		private bool defaultStyle = true;
+		private bool readOnly = false;
+		private bool rowHeadersVisible;
+		private bool allowSorting;
+		private bool columnHeadersVisible;
 		
-		private System.Drawing.Color _alternatingBackColor;
-		private System.Drawing.Color _selectionForeColor;
-		private System.Drawing.Color _selectionBackColor;
-		private System.Drawing.Color _linkHoverColor;
-		private System.Drawing.Color _linkColor;
-		private System.Drawing.Color _headerForeColor;
-		private System.Drawing.Color _gridLineColor;
-		private System.Drawing.Font _headerFont;
-		private System.Drawing.Color _headerBackColor;
-		private System.Drawing.Color _backColor;
-		private System.Drawing.Color _foreColor; 
+		private System.Drawing.Color alternatingBackColor;
+		private System.Drawing.Color selectionForeColor;
+		private System.Drawing.Color selectionBackColor;
+		private System.Drawing.Color linkHoverColor;
+		private System.Drawing.Color linkColor;
+		private System.Drawing.Color headerForeColor;
+		private System.Drawing.Color gridLineColor;
+		private System.Drawing.Font headerFont;
+		private System.Drawing.Color headerBackColor;
+		private System.Drawing.Color backColor;
+		private System.Drawing.Color foreColor; 
 		
-		private DataGridLineStyle _gridLineStyle;
+		private DataGridLineStyle gridLineStyle;
 		
 
 		[TODO]
 		public DataGridTableStyle()
 		{
-			this._allowSorting = true;
-			this._alternatingBackColor = System.Drawing.Color.Gold;
-			this._backColor = System.Drawing.Color.White;
-			this._gridLineColor = Color.Red;
-			this._gridLineStyle = System.Windows.Forms.DataGridLineStyle.Solid;
-			this._headerBackColor = System.Drawing.Color.AntiqueWhite;
+			this.allowSorting = true;
+			this.alternatingBackColor = System.Drawing.Color.Gold;
+			this.backColor = System.Drawing.Color.White;
+			this.gridLineColor = Color.Red;
+			this.gridLineStyle = System.Windows.Forms.DataGridLineStyle.Solid;
+			this.headerBackColor = System.Drawing.Color.AntiqueWhite;
 		}
 
 		[TODO]
 		public DataGridTableStyle(bool isDefaultTableStyle)
 		{
-			this._defaultStyle = isDefaultTableStyle;
+			this.defaultStyle = isDefaultTableStyle;
 		}
 
 
@@ -608,12 +608,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._allowSorting;
+				return this.allowSorting;
 			}
 
  			set
 			{
-				this._allowSorting = value;
+				this.allowSorting = value;
 			}
 
  		}
@@ -623,12 +623,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._alternatingBackColor;
+				return this.alternatingBackColor;
 			}
 
  			set
 			{
-				this._alternatingBackColor = value;
+				this.alternatingBackColor = value;
 			}
 
  		}
@@ -638,12 +638,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._backColor;
+				return this.backColor;
 			}
 
  			set
 			{
-				this._backColor = value;
+				this.backColor = value;
 			}
 
  		}
@@ -653,12 +653,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._columnHeadersVisible;
+				return this.columnHeadersVisible;
 			}
 
  			set
 			{
-				this._columnHeadersVisible = value;
+				this.columnHeadersVisible = value;
 			}
 
  		}
@@ -683,7 +683,7 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._foreColor;
+				return this.foreColor;
 			}
 
  			set
@@ -708,12 +708,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._gridLineColor;
+				return this.gridLineColor;
 			}
 
  			set
 			{
-				this._gridLineColor = value;
+				this.gridLineColor = value;
 			}
 
  		}
@@ -738,12 +738,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._headerBackColor;
+				return this.headerBackColor;
 			}
 
  			set
 			{
-				this._headerBackColor = value;
+				this.headerBackColor = value;
 			}
 
  		}
@@ -753,12 +753,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._headerFont;
+				return this.headerFont;
 			}
 
  			set
 			{
-				this._headerFont = value;
+				this.headerFont = value;
 			}
 
  		}
@@ -768,12 +768,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._headerForeColor;
+				return this.headerForeColor;
 			}
 
  			set
 			{
-				this._headerForeColor = value;
+				this.headerForeColor = value;
 			}
 
  		}
@@ -783,12 +783,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._linkColor;
+				return this.linkColor;
 			}
 
  			set
 			{
-				this._linkColor = value;
+				this.linkColor = value;
 			}
 
  		}
@@ -798,12 +798,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._linkHoverColor;
+				return this.linkHoverColor;
 			}
 
  			set
 			{
-				this._linkHoverColor = value;
+				this.linkHoverColor = value;
 			}
 
  		}
@@ -813,12 +813,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._mappingName;
+				return this.mappingName;
 			}
 
  			set
 			{
-				this._mappingName = value;
+				this.mappingName = value;
 			}
 
  		}
@@ -828,12 +828,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._preferredColumnWidth;
+				return this.preferredColumnWidth;
 			}
 
  			set
 			{
-				this._preferredColumnWidth = value;
+				this.preferredColumnWidth = value;
 			}
 
  		}
@@ -843,12 +843,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._preferredRowHeight;
+				return this.preferredRowHeight;
 			}
 
  			set
 			{
-				this._preferredRowHeight = value;
+				this.preferredRowHeight = value;
 			}
 
  		}
@@ -858,12 +858,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._readOnly;
+				return this.readOnly;
 			}
 
  			set
 			{
-				this._readOnly = value;
+				this.readOnly = value;
 			}
 
  		}
@@ -873,12 +873,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._rowHeaderWidth;
+				return this.rowHeaderWidth;
 			}
 
  			set
 			{
-				this._rowHeaderWidth = value;
+				this.rowHeaderWidth = value;
 			}
 
  		}
@@ -888,12 +888,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._rowHeadersVisible;
+				return this.rowHeadersVisible;
 			}
 
  			set
 			{
-				this._rowHeadersVisible = value;
+				this.rowHeadersVisible = value;
 			}
 
  		}
@@ -903,12 +903,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._selectionBackColor;
+				return this.selectionBackColor;
 			}
 
  			set
 			{
-				this._selectionBackColor = value;
+				this.selectionBackColor = value;
 			}
 
  		}
@@ -918,12 +918,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._selectionForeColor;
+				return this.selectionForeColor;
 			}
 
  			set
 			{
-				this._selectionForeColor = value;
+				this.selectionForeColor = value;
 			}
 
  		}

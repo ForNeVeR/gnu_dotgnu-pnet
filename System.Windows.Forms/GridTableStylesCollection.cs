@@ -28,12 +28,12 @@ namespace System.Windows.Forms
 	
 	public class GridTableStylesCollection : BaseCollection
 	{
-		private ArrayList _tableStylesCollection = new ArrayList();
+		private ArrayList tableStylesCollection = new ArrayList();
 		
 		[TODO]
 		public virtual int Add(DataGridTableStyle table)
 		{
-			return this._tableStylesCollection.Add(table);
+			return this.tableStylesCollection.Add(table);
 		}
 
 		[TODO]
@@ -95,7 +95,7 @@ namespace System.Windows.Forms
 		{
  			get
 			{
- 				return (DataGridTableStyle)  this._tableStylesCollection[index];
+ 				return (DataGridTableStyle)  this.tableStylesCollection[index];
 			}
 
  		}
@@ -115,7 +115,7 @@ namespace System.Windows.Forms
 		{
  			get
 			{
- 				return this._tableStylesCollection;
+ 				return this.tableStylesCollection;
  			}
 
  		}

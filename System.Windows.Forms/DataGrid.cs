@@ -37,61 +37,60 @@ namespace System.Windows.Forms
 		public DataGridColumnStyle gridColumn;
 		public System.Drawing.Rectangle bounds;
 
-		private HScrollBar _hScrollBar;
-		private VScrollBar _vScrollBar;
+		private HScrollBar hScrollBar;
+		private VScrollBar vScrollBar;
 
-		private BorderStyle _borderStyle;
+		private BorderStyle borderStyle;
 		
-		private bool _initializing;
-		private bool _captionVisible = true;
-		private bool _columnHeadersVisible = true;
-		private bool _rowHeadersVisible = true;
-		private bool _allowNavigation = true;
-		private bool _allowSorting = true;
+		private bool initializing;
+		private bool captionVisible = true;
+		private bool columnHeadersVisible = true;
+		private bool rowHeadersVisible = true;
+		private bool allowNavigation = true;
+		private bool allowSorting = true;
 
-		private String _dataMember= "";
-		private String _text = "";
-		private String _captionText = "";
+		private String dataMember= "";
+		private String captionText = "";
 
-		private int _rowHeight;
-		private int _columnWidth;
-		private int _rows;
-		private int _columns;
-		private int _row;
-		private int _col;
-		private int _numEntries = 1;
-		private int _textHeight;
-		private int _leftMostColumn;
-		private int _selected;
-		private int _columnSpacing;
-		private	int _currentRowIndex;
-		private int _preferredColumnWidth = 75;
-		private int _preferredRowHeight = 16;
-		private int _rowHeaderWidth = 35;
+		private int rowHeight;
+		private int columnWidth;
+		private int rows;
+		private int columns;
+		private int row;
+		private int col;
+		private int numEntries = 1;
+		private int textHeight;
+		private int leftMostColumn;
+		private int selected;
+		private int columnSpacing;
+		private	int currentRowIndex;
+		private int preferredColumnWidth = 75;
+		private int preferredRowHeight = 16;
+		private int rowHeaderWidth = 35;
 
-		private Font _captionFont;
-		private Font _headerFont;
+		private Font captionFont;
+		private Font headerFont;
 
-		private Color _foreColor; 
-		private Color _backgroundColor;
-		private Color _headerBackColor;
-		private Color _backColor;
-		private Color _headerForeColor;
-		private Color _captionBackColor;
-		private Color _captionForeColor; 
-		private Color _gridLineColor;
-		private Color _alternatingBackColor;
+		private Color dgforeColor; 
+		private Color backgroundColor;
+		private Color headerBackColor;
+		private Color dgbackColor;
+		private Color headerForeColor;
+		private Color captionBackColor;
+		private Color captionForeColor; 
+		private Color gridLineColor;
+		private Color alternatingBackColor;
 		
-		private Image _backgroundImage;
+		private Image backgroundImage;
 		
-		private System.Object _dataSource;
+		private System.Object dataSource;
 		
-		private TextBox _textBox;
+		private TextBox textBox;
 
-		private DataGridCell _currentCell;
-		private DataGridCell _editCell;
+		private DataGridCell currentCell;
+		private DataGridCell editCell;
 		
-		private GridTableStylesCollection _gridTableStylesCollection;
+		private GridTableStylesCollection gridTableStylesCollection;
 		// Constructor
 		public DataGrid()
 		{
@@ -99,24 +98,24 @@ namespace System.Windows.Forms
 
 			SetStyle(ControlStyles.ResizeRedraw,true);
 			SetStyle(ControlStyles.DoubleBuffer, true);
-			_initializing = true;
-			_gridTableStylesCollection= new GridTableStylesCollection();
-			_gridTableStylesCollection.Add(new DataGridTableStyle());
-			_foreColor = SystemColors.WindowText;
-			_backgroundColor = SystemColors.Window;
-			_headerForeColor = SystemColors.WindowText;
-			_hScrollBar = new HScrollBar();
-			_hScrollBar.Visible = false;
-			_hScrollBar.Dock = DockStyle.Bottom;
-			_hScrollBar.TabStop = false;
-			_hScrollBar.ValueChanged += new EventHandler(GridHScrolled);
-			_vScrollBar = new VScrollBar();
-			_vScrollBar.Visible = false;
-			_vScrollBar.Dock = DockStyle.Right;
-			_vScrollBar.TabStop = false;
-			_vScrollBar.ValueChanged += new EventHandler(GridVScrolled);
-			Controls.Add(_vScrollBar);
-			Controls.Add(_hScrollBar);
+			initializing = true;
+			gridTableStylesCollection= new GridTableStylesCollection();
+			gridTableStylesCollection.Add(new DataGridTableStyle());
+			dgforeColor = SystemColors.WindowText;
+			backgroundColor = SystemColors.Window;
+			headerForeColor = SystemColors.WindowText;
+			hScrollBar = new HScrollBar();
+			hScrollBar.Visible = false;
+			hScrollBar.Dock = DockStyle.Bottom;
+			hScrollBar.TabStop = false;
+			hScrollBar.ValueChanged += new EventHandler(GridHScrolled);
+			vScrollBar = new VScrollBar();
+			vScrollBar.Visible = false;
+			vScrollBar.Dock = DockStyle.Right;
+			vScrollBar.TabStop = false;
+			vScrollBar.ValueChanged += new EventHandler(GridVScrolled);
+			Controls.Add(vScrollBar);
+			Controls.Add(hScrollBar);
 		}
 
 		[TODO]
@@ -386,19 +385,19 @@ namespace System.Windows.Forms
 			{
 //				Console.Write("D");
 				// Need to fill bg...
-				SolidBrush b = new SolidBrush(_backgroundColor);
+				SolidBrush b = new SolidBrush(backgroundColor);
 				g.FillRectangle(b, 0, 0, Width, Height);
 				System.Drawing.SolidBrush myBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red);
 				Size s = ClientSize;
-				//Rectangle rect = new Rectangle(drawableWidth + xOffset, 1, _vScrollBar.Width, clientRectangle.Height);
-				Rectangle rect = new Rectangle(0, 0, _hScrollBar.Width - _vScrollBar.Width,_vScrollBar.Height);
-				_hScrollBar.Visible = false;
-				_vScrollBar.Visible = false;
+				//Rectangle rect = new Rectangle(drawableWidth + xOffset, 1, vScrollBar.Width, clientRectangle.Height);
+				Rectangle rect = new Rectangle(0, 0, hScrollBar.Width - vScrollBar.Width,vScrollBar.Height);
+				hScrollBar.Visible = false;
+				vScrollBar.Visible = false;
 				//g.FillRectangle(myBrush, rect);
 				Pen	Black = new Pen(Color.Black);
 				g.DrawRectangle(Black, rect);
 				Pen	txtPen = new Pen(Color.Black);
-				g.DrawLine(txtPen,_vScrollBar.Width/2,_vScrollBar.Width, 0, _vScrollBar.Width);
+				g.DrawLine(txtPen,vScrollBar.Width/2,vScrollBar.Width, 0, vScrollBar.Width);
 				//g.ExcludeClip(rect);
 			}
 		}
@@ -421,7 +420,7 @@ namespace System.Windows.Forms
 		protected override void OnMouseDown(System.Windows.Forms.MouseEventArgs e)
 		{
 			base.OnMouseDown(e);
-			this._backgroundColor = Color.Beige;
+			this.backgroundColor = Color.Beige;
 //			Console.Write("M");
 		}
 
@@ -477,7 +476,7 @@ namespace System.Windows.Forms
 		{
 			
 			base.OnPaintBackground (ebe);
-			using (Brush back = new SolidBrush(_backgroundColor)) 
+			using (Brush back = new SolidBrush(backgroundColor)) 
 			{
 				ebe.Graphics.FillRectangle(back, 0, 0, Width, Height);
 			}
@@ -975,13 +974,13 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._allowNavigation;
+				return this.allowNavigation;
 			}
 
  			set
 			{
- 				if(this._allowNavigation != value) {
- 					this._allowNavigation = value;
+ 				if(this.allowNavigation != value) {
+ 					this.allowNavigation = value;
  					// OnAllowNavigationChanged event should be fired
  				}
 			}
@@ -993,12 +992,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._allowSorting;
+				return this.allowSorting;
 			}
 
  			set
 			{
-				this._allowSorting = value;
+				this.allowSorting = value;
 			}
 
  		}
@@ -1008,12 +1007,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._alternatingBackColor;
+				return this.alternatingBackColor;
 			}
 
  			set
 			{
-				this._alternatingBackColor = value;
+				this.alternatingBackColor = value;
 			}
 
  		}
@@ -1022,12 +1021,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._backColor;
+				return this.dgbackColor;
 			}
 
  			set
 			{
-				this._backColor = value;
+				this.dgbackColor = value;
 			}
 
  		}
@@ -1037,12 +1036,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._backgroundColor;
+				return this.backgroundColor;
 			}
 
  			set
 			{
-				this._backgroundColor = value;
+				this.backgroundColor = value;
 			}
 
  		}
@@ -1052,12 +1051,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._backgroundImage;
+				return this.backgroundImage;
 			}
 
  			set
 			{
-				this._backgroundImage = value;
+				this.backgroundImage = value;
 			}
 
  		}
@@ -1067,12 +1066,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._borderStyle;
+				return this.borderStyle;
 			}
 
  			set
 			{
-				this._borderStyle = value;
+				this.borderStyle = value;
 			}
 
  		}
@@ -1082,12 +1081,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._captionBackColor;
+				return this.captionBackColor;
 			}
 
  			set
 			{
-				this._captionBackColor = value;
+				this.captionBackColor = value;
 			}
 
  		}
@@ -1097,12 +1096,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._captionFont;
+				return this.captionFont;
 			}
 
  			set
 			{
-				this._captionFont = value;
+				this.captionFont = value;
 			}
 
  		}
@@ -1112,12 +1111,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._captionForeColor;
+				return this.captionForeColor;
 			}
 
  			set
 			{
-				this._captionForeColor = value;
+				this.captionForeColor = value;
 			}
 
  		}
@@ -1127,12 +1126,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._captionText;
+				return this.captionText;
 			}
 
  			set
 			{
-				this._captionText = value;
+				this.captionText = value;
 			}
 
  		}
@@ -1142,12 +1141,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._captionVisible;
+				return this.captionVisible;
 			}
 
  			set
 			{
-				this._captionVisible = value;
+				this.captionVisible = value;
 			}
 
  		}
@@ -1157,12 +1156,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._columnHeadersVisible;
+				return this.columnHeadersVisible;
 			}
 
  			set
 			{
-				this._columnHeadersVisible = value;
+				this.columnHeadersVisible = value;
 			}
 
  		}
@@ -1187,12 +1186,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._currentRowIndex;
+				return this.currentRowIndex;
 			}
 
  			set
 			{
-				this._currentRowIndex = value;
+				this.currentRowIndex = value;
 			}
 
  		}
@@ -1216,12 +1215,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._dataMember;
+				return this.dataMember;
 			}
 
  			set
 			{
-				this._dataMember = value;
+				this.dataMember = value;
 			}
 
  		}
@@ -1231,12 +1230,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._dataSource;
+				return this.dataSource;
 			}
 
  			set
 			{
-				this._dataSource = value;
+				this.dataSource = value;
 			}
 
  		}
@@ -1280,12 +1279,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._foreColor;
+				return this.dgforeColor;
 			}
 
  			set
 			{
-				this._foreColor = value;
+				this.dgforeColor = value;
 			}
 
  		}
@@ -1295,12 +1294,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._gridLineColor;
+				return this.gridLineColor;
 			}
 
  			set
 			{
-				this._gridLineColor = value;
+				this.gridLineColor = value;
 			}
 
  		}
@@ -1325,12 +1324,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._headerBackColor;
+				return this.headerBackColor;
 			}
 
  			set
 			{
-				this._headerBackColor = value;
+				this.headerBackColor = value;
 			}
 
  		}
@@ -1340,12 +1339,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._headerFont;
+				return this.headerFont;
 			}
 
  			set
 			{
-				this._headerFont = value;
+				this.headerFont = value;
 			}
 
  		}
@@ -1354,12 +1353,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return _headerForeColor;
+				return headerForeColor;
 			}
 
  			set
 			{
-				_headerForeColor = value;
+				headerForeColor = value;
 			}
 
  		}
@@ -1514,12 +1513,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._preferredColumnWidth;
+				return this.preferredColumnWidth;
 			}
 
  			set
 			{
-				this._preferredColumnWidth = value;
+				this.preferredColumnWidth = value;
 			}
 
  		}
@@ -1529,12 +1528,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._preferredRowHeight;
+				return this.preferredRowHeight;
 			}
 
  			set
 			{
-				this._preferredRowHeight = value;
+				this.preferredRowHeight = value;
 			}
 
  		}
@@ -1559,12 +1558,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._rowHeaderWidth;
+				return this.rowHeaderWidth;
 			}
 
  			set
 			{
-				this._rowHeaderWidth = value;
+				this.rowHeaderWidth = value;
 			}
 
  		}
@@ -1574,12 +1573,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				return this._rowHeadersVisible;
+				return this.rowHeadersVisible;
 			}
 
  			set
 			{
-				this._rowHeadersVisible = value;
+				this.rowHeadersVisible = value;
 			}
 
  		}
@@ -1634,7 +1633,7 @@ namespace System.Windows.Forms
 		{
  			get
 			{	
-				return this._gridTableStylesCollection;
+				return this.gridTableStylesCollection;
 			}
 
  		}
@@ -1699,8 +1698,8 @@ namespace System.Windows.Forms
 
 		public sealed class HitTestInfo
 		{
-			internal int _column;
-			internal int _row;
+			internal int column;
+			internal int row;
 		
 			public static readonly DataGrid.HitTestInfo Nowhere = null;
 

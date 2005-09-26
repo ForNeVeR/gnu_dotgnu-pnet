@@ -41,6 +41,7 @@ namespace FormsTest
 		private TabPage tabPage26;
 		private TabPage tabPage27;
 		private TabPage tabPage28;
+		private TabPage tabPage29;
 		private StatusBar statusBar;
 		
 		// Tab1 Labels Test
@@ -333,6 +334,9 @@ namespace FormsTest
 		private NumericUpDown upDown4;
 		private NumericUpDown upDown3ro;
 		private NumericUpDown upDown4ro;
+
+		// tabPage29 Datagrid
+		private DataGrid dataGrid;
 		#endregion
 		
 		public static void Main(String[] args)
@@ -441,6 +445,9 @@ namespace FormsTest
 			tabPage28 = new TabPage();
 			tabPage28.Text = "TrackBar";
 			tabControl1.Controls.Add(tabPage28);
+			tabPage29 = new TabPage();
+			tabPage29.Text = "DataGrid";
+			tabControl1.Controls.Add(tabPage29);
 
 			statusBar = new StatusBar();
 			statusBar.Dock = DockStyle.Bottom;
@@ -482,6 +489,7 @@ namespace FormsTest
 			AddMessageBoxTest(tabPage26);
 			AddUpDownTest(tabPage27);
 			AddTrackbarTest(tabPage28);
+			AddDataGrid(tabPage29);
 
 			// Add the events here after the controls have been added
 			// to the pages, otherwise the events will not be raised
@@ -3932,6 +3940,15 @@ Console.WriteLine("DSizeGrip bounds: " + b.ToString());
 		{
 			TabPage tabPage = (sender as TabControl).SelectedTab;
 			statusBar.Text = tabPage.Text;
+		}
+
+		private void AddDataGrid(Control c)
+		{
+			dataGrid = new DataGrid();
+			dataGrid.Location = new Point(50, 20);
+			dataGrid.Size = new System.Drawing.Size(400, 500);
+			dataGrid.Text = "Data Grid";
+			c.Controls.Add(dataGrid);
 		}
 	}
 }

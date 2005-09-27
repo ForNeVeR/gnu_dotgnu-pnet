@@ -1,3 +1,8 @@
+2005-09-27  Peter Flaig  <fliege>
+
+	* System.Windows.Forms/Control.cs: InvokeRequired returned true, while
+	createThread was null. (drobosson, bug #14653)
+
 2005-09-26  Deryk Robosson  <drobosson@0x0a.com>
 
 	* samples/forms/FormsTest.cs: Add DataGrid tab with single DataGrid

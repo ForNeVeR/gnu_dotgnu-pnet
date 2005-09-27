@@ -402,7 +402,8 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					return (createThread != Thread.CurrentThread);
+					return (createThread != null &&
+							createThread != Thread.CurrentThread);
 				}
 			}
 

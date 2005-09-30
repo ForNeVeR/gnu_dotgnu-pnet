@@ -471,6 +471,12 @@ public class Label : Control
 						g.FillRectangle(brush, ClientRectangle);
 					}
 				}
+				
+				// Draw the image
+				if(image != null)
+				{
+					this.DrawImage(g, image, base.ClientRectangle, this.imageAlign);
+				}
 
 				// Draw the text within the label.
 				RectangleF layout = (RectangleF)ClientRectangle;
@@ -490,8 +496,6 @@ public class Label : Control
 							(g, Text, Font, BackColor, layout, format);
 					}
 				}
-
-				// TODO: image labels
 			}
 
 	// Override the "ParentChanged" event.

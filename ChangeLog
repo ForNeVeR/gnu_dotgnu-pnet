@@ -1,3 +1,8 @@
+2005-09-30  Peter Flaig  <fliege>
+
+	* System.Windows.Forms/Label.cs: Add image drawing support.
+	(drobosson, bug #14674)
+
 2005-09-27  Peter Flaig  <fliege>
 
 	* System.Windows.Forms/Control.cs: InvokeRequired returned true, while

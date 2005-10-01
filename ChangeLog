@@ -1,3 +1,10 @@
+2005-10-01  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
+
+	* engine/pinvoke.c: Added an error message in case libffi does not support
+	closures.
+	* engine/lib_delegate.c: Added an error message in case we don't have
+	support for creating closures on this system. (patch #4386, Klaus)
+
 2005-09-18  Klaus Treichel  <ktreichel@web.de>
 
 	* libgc/tests/middle.c: added

@@ -59,6 +59,7 @@ void *_ILDelegateGetClosure(ILExecThread *thread, ILObject *delegate)
 	return ((System_Delegate *)delegate)->closure;
 #else
 	/* We don't have support for creating closures on this system */
+	fprintf(stderr, "We don't have support for creating closures on this system\n");
 	return 0;
 #endif
 }

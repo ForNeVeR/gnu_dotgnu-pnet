@@ -1116,6 +1116,7 @@ void *_ILMakeClosureForDelegate(ILExecProcess *process, ILObject *delegate, ILMe
 	return (void *)closure;
 #else	/* !FFI_CLOSURES */
 	/* libffi does not support closures */
+	fprintf(stderr, "libffi does not support closures on this arch.\n");
 	return 0;
 #endif	/* !FFI_CLOSURES */
 }

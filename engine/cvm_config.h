@@ -195,6 +195,16 @@ extern int _ILCVMInsnCount[];
 #undef	IL_CVM_FLAVOUR
 #define	IL_CVM_FLAVOUR "Direct Unrolled (x86)"
 #endif
+/* TODO: enable when the amd64 unroller is complete 
+#if defined(IL_CVM_DIRECT) && defined(CVM_X86_64) && \
+	defined(__GNUC__) && !defined(IL_NO_ASM) && \
+	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
+	defined(IL_CONFIG_UNROLL)
+#define	IL_CVM_DIRECT_UNROLLED
+#undef	IL_CVM_FLAVOUR
+#define	IL_CVM_FLAVOUR "Direct Unrolled (amd64)"
+#endif
+*/
 #if defined(IL_CVM_DIRECT) && defined(CVM_ARM) && \
 	defined(__GNUC__) && !defined(IL_NO_ASM) && \
 	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \

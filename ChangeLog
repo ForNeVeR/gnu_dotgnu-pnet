@@ -1,3 +1,13 @@
+
+2005-10-04  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/amd64_codegen.h, engine/md_amd64.c, engine/md_amd64.h,
+	engine/unroll.c, engine/cvm_config.h: Check in parts of the 
+	unroller for x86_64 (AMD64/EM64T).
+
+	* engine/Makefile.am: dependencies for gen_marshal.h and 
+	unroll.c depends on all md_*.h files.
+
 2005-10-01  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* engine/pinvoke.c: Added an error message in case libffi does not support

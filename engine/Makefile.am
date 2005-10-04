@@ -21,6 +21,14 @@ MD_PPC_INCLUDES = md_ppc.h ppc_codegen.h
 
 MD_X86_INCLUDES = md_x86.h x86_codegen.h
 
+MD_AMD64_INCLUDES = md_amd64.h amd64_codegen.h
+
+MD_INCLUDES = 	$(MD_AMD64_INCLUDES) \
+				$(MD_ARM_INCLUDES) \
+				$(MD_IA64_INCLUDES) \
+				$(MD_PPC_INCLUDES) \
+				$(MD_X86_INCLUDES) 
+
 UNROLL_INCLUDES = unroll_arith.c \
 				  unroll_branch.c \
 				  unroll_const.c \
@@ -46,6 +54,7 @@ EXTRA_libILEngine_a_SOURCES = $(CVM_INCLUDES) \
 							  $(CVMC_INCLUDES) \
 							  gen_marshal.tc \
 							  $(INTERNAL_INCLUDES) \
+							  $(MD_AMD64_INCLUDES) \
 							  $(MD_ARM_INCLUDES) \
 							  $(MD_IA64_INCLUDES) \
 							  $(MD_PPC_INCLUDES) \
@@ -119,6 +128,7 @@ libILEngine_a_SOURCES = cvm.c \
 						throw.c \
 						unroll.c \
 						md_x86.c \
+						md_amd64.c \
 						md_arm.c \
 						md_ia64.c \
 						md_ppc.c \
@@ -176,15 +186,17 @@ cvm.$(OBJEXT): cvm.c $(CVM_INCLUDES) cvm_labels.h
 
 internal.$(OBJEXT): internal.c $(INTERNAL_INCLUDES)
 
+md_x86.$(OBJEXT): md_x86.c $(MD_X86_INCLUDES) cvm_config.h
+
 md_arm.$(OBJEXT): md_arm.c $(MD_ARM_INCLUDES) cvm_config.h
 
 md_ia64.$(OBJEXT): md_ia64.c $(MD_IA64_INCLUDES) cvm_config.h
 
 md_ppc.$(OBJEXT): md_ppc.c $(MD_PPC_INCLUDES) cvm_config.h
 
-md_x86.$(OBJEXT): md_x86.c $(MD_X86_INCLUDES) cvm_config.h
+md_amd64.$(OBJEXT): md_amd64.c $(MD_AMD64_INCLUDES) cvm_config.h
 
-unroll.$(OBJEXT): unroll.c $(UNROLL_INCLUDES)
+unroll.$(OBJEXT): unroll.c $(UNROLL_INCLUDES) $(MD_INCLUDES)
 
 verify.$(OBJEXT): verify.c $(VERIFY_INCLUDES)
 
@@ -194,5 +206,7 @@ cvm_labels.h: $(srcdir)/cvm.h $(srcdir)/mklabel.sh
 gen_marshal.c: $(srcdir)/gen_marshal.tc
 	$(TREECC) -f -o gen_marshal.c -h gen_marshal.h \
 			$(srcdir)/gen_marshal.tc
+
+gen_marshal.h: gen_marshal.c
 
 CLEANFILES = cvm_labels.h gen_marshal.c gen_marshal.h

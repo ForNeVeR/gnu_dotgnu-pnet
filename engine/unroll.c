@@ -37,6 +37,8 @@ extern	"C" {
  */
 #if defined(CVM_X86)
 	#include "md_x86.h"
+#elif defined(CVM_X86_64)
+	#include "md_amd64.h"
 #elif defined(CVM_ARM)
 	#include "md_arm.h"
 #elif defined(CVM_PPC)

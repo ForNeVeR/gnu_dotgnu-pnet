@@ -2601,11 +2601,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Invoke a delegate on the thread that owns the low-level control.
-	[TODO]
 	public Object Invoke(Delegate method)
 			{
-				// Fill in
-				return null;
+				return this.Invoke( method, null );
 			}
 
 	// Invoke the "GotFocus" event on a particular control.

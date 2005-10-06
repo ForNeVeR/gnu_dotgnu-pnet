@@ -1,3 +1,9 @@
+2005-10-06  Heiko Weiss <brubbel>
+
+	* System.Windows.Forms/Control.cs: Fixed method Invoke(Delegate method)
+	calling Invoke(Delegate method, null )
+	
+
 2005-09-30  Peter Flaig  <fliege>
 
 	* System.Windows.Forms/Label.cs: Add image drawing support.

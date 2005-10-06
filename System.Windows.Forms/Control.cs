@@ -374,7 +374,7 @@ public class Control : IWin32Window, IDisposable
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public IAsyncResult BeginInvoke(Delegate method)
 			{
-				return BeginInvoke(method, null);
+				return BeginInvoke(method,null);
 			}
 
 	[TODO]
@@ -2603,7 +2603,7 @@ public class Control : IWin32Window, IDisposable
 	// Invoke a delegate on the thread that owns the low-level control.
 	public Object Invoke(Delegate method)
 			{
-				return this.Invoke( method, null );
+				return this.Invoke(method, null);
 			}
 
 	// Invoke the "GotFocus" event on a particular control.

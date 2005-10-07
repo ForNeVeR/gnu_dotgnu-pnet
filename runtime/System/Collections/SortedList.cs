@@ -1147,7 +1147,7 @@ public class SortedList : IDictionary, ICollection, IEnumerable, ICloneable
 				{
 					this.list  = list;
 					generation = list.generation;
-					position = -1;
+					Reset();
 				}
 
 		// Implement the IEnumerator interface.
@@ -1208,6 +1208,7 @@ public class SortedList : IDictionary, ICollection, IEnumerable, ICloneable
 				{
 					this.list  = list;
 					generation = list.generation;
+					Reset();
 				}
 
 		// Implement the IEnumerator interface.

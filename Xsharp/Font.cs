@@ -1406,7 +1406,7 @@ public class Font
 						Xlib.XSharpDrawStringXft
 								(display, graphics.drawableHandle, graphics.gc,
 								 fontSet, x, y, str, (int)style,
-								 IntPtr.Zero, graphics.Foreground.value);
+								 graphics.clipRegion.GetRegion(), graphics.Foreground.value);
 					}
 					finally
 					{

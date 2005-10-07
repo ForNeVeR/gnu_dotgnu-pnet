@@ -69,6 +69,7 @@ public sealed class Graphics : IDisposable
 	private Bitmap stipple;
 	private byte[] dashPattern;
 	internal Region exposeRegion;
+	internal Region clipRegion;
 
 
 	/// <summary>
@@ -1162,6 +1163,9 @@ public sealed class Graphics : IDisposable
 					IntPtr display = Lock();
 					Xlib.XSetClipOrigin(display, gc, 0, 0);
 					Xlib.XSetRegion(display, gc, r.GetRegion());
+					if(clipRegion != null)
+						clipRegion.Dispose();
+					clipRegion = new Region(r);
 				}
 				finally
 				{

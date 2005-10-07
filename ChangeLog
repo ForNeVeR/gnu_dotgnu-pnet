@@ -1,5 +1,11 @@
 2005-10-07  Heiko Weiss <brubbel>
 
+	* Xsharp/Font.cs : Fixed using clipping
+	* Xsharp/Graphics.cs : Fixed keeping clipping
+	Problem was, that clipping was ignored if drawing text.
+
+2005-10-07  Heiko Weiss <brubbel>
+
 	* runtime/System/Collections/SortedList.cs : Fixed KeyListEnumerator( SortedList list ) and ValueListEnumerator( SortedList list )
 	KeyListEnumerator( SortedList list ) : calling Reset(); instead of position = -1;
 	ValueListEnumerator( SortedList list ): inserted missed Reset();

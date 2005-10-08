@@ -1403,10 +1403,20 @@ public class Font
 					try
 					{
 						IntPtr display = graphics.dpy.Lock();
-						Xlib.XSharpDrawStringXft
-								(display, graphics.drawableHandle, graphics.gc,
-								 fontSet, x, y, str, (int)style,
-								 graphics.clipRegion.GetRegion(), graphics.Foreground.value);
+						if(graphics.clipRegion == null)
+						{
+							Xlib.XSharpDrawStringXft
+									(display, graphics.drawableHandle, graphics.gc,
+									 fontSet, x, y, str, (int)style,
+									 IntPtr.Zero, graphics.Foreground.value);
+						}
+						else
+						{
+							Xlib.XSharpDrawStringXft
+									(display, graphics.drawableHandle, graphics.gc,
+									 fontSet, x, y, str, (int)style,
+									 graphics.clipRegion.GetRegion(), graphics.Foreground.value);
+						}
 					}
 					finally
 					{

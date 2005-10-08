@@ -1,3 +1,8 @@
+2005-10-08  Klaus Treichel  <ktreichel@web.de>
+
+	* Xsharp/Font.cs: Fix a System.NullReferenceException if graphics.clipRegion
+	is not set.
+
 2005-10-07  Heiko Weiss <brubbel>
 
 	* Xsharp/Font.cs : Fixed using clipping

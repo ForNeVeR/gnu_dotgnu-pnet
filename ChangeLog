@@ -3,30 +3,30 @@
 	* Xsharp/Font.cs: Fix a System.NullReferenceException if graphics.clipRegion
 	is not set.
 
-2005-10-07  Heiko Weiss <brubbel>
+2005-10-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* Xsharp/Font.cs : Fixed using clipping
 	* Xsharp/Graphics.cs : Fixed keeping clipping
 	Problem was, that clipping was ignored if drawing text.
 
-2005-10-07  Heiko Weiss <brubbel>
+2005-10-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Collections/SortedList.cs : Fixed KeyListEnumerator( SortedList list ) and ValueListEnumerator( SortedList list )
 	KeyListEnumerator( SortedList list ) : calling Reset(); instead of position = -1;
 	ValueListEnumerator( SortedList list ): inserted missed Reset();
 
-2005-10-06  Heiko Weiss <brubbel>
+2005-10-06  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: Fixed method Invoke(Delegate method)
 	calling Invoke(Delegate method, null )
 	
 
-2005-09-30  Peter Flaig  <fliege>
+2005-09-30  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Label.cs: Add image drawing support.
 	(drobosson, bug #14674)
 
-2005-09-27  Peter Flaig  <fliege>
+2005-09-27  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: InvokeRequired returned true, while
 	createThread was null. (drobosson, bug #14653)
@@ -62,7 +62,7 @@
 	* System.Windows.Forms/EventId.cs: Add DataGrid events.
 	(patch #4471, applied by klaus)
 
-2005-09-23  Peter Flaig  <fliege>
+2005-09-23  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: Send mouse events to parent if
 	control is disabled. (drobosson, bug #14622)
@@ -70,19 +70,19 @@
 	* System.Drawing/Graphics.cs: Correct LineAlignment (drobosson, bug
 	#14623)
 
-2005-09-22  Peter Flaig  <fliege>
+2005-09-22  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* Xsharp/TopLevelWindow.cs, Xsharp/InputOutputWidget.cs,
 	System.Drawing.Xsharp/DrawingWindow.cs: BeginInvoke was not being
 	called from non-toplevel windows. (drobosson, bug #14351)
 
-2005-09-21  Peter Flaig  <fliege>
+2005-09-21  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
 	Xsharp/TopLevelWindow.cs: Correct event handling in TopLevelWindows.
 	(drobosson, bug #14610)
 
-2005-09-14  Peter Flaig <fliege>
+2005-09-14  Peter Flaig <peter.flaig@de.trumpf-laser.com>
 
 	* runtime/System/Private/NumberParser.cs: No longer return zero when
 	String.Empty or null string is passed.  (fixes bug #14531, patch

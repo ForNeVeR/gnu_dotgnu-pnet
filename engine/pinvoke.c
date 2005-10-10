@@ -942,46 +942,59 @@ static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
 	}
 }
 
+typedef struct {
+	ILExecThread *thread;
+	ffi_cif *cif;
+	void *result;
+	void **args;
+	System_Delegate *delegate;
+} ILDelegateInvokeParams;
+
 /*
- * Invoke a delegate from a closure.
+ * Do the real delegate invokation.
  */
-static void DelegateInvoke(ffi_cif *cif, void *result,
-						   void **args, void *delegate)
+static void _DelegateInvoke(ILDelegateInvokeParams *params)
 {
-	ILExecThread *thread = ILExecThreadCurrent();
 	ILMethod *method;
 	ILType *type;
 	ILUInt32 size;
 	PackDelegateUserData userData;
 
 	/* If this is a multicast delegate, then execute "prev" first */
-	if(((System_Delegate *)delegate)->prev)
+	if(params->delegate->prev)
 	{
-		DelegateInvoke(cif, result, args,
-					   ((System_Delegate *)delegate)->prev);
-		if(ILExecThreadHasException(thread))
+		ILDelegateInvokeParams prevParams;
+
+		prevParams.thread = params->thread;
+		prevParams.cif = params->cif;
+		prevParams.result = params->result;
+		prevParams.args = params->args;
+		prevParams.delegate = (System_Delegate *)(params->delegate->prev);
+;
+		_DelegateInvoke(&prevParams);
+		if(ILExecThreadHasException(params->thread))
 		{
 			return;
 		}
 	}
 
 	/* Extract the method from the delegate */
-	method = ((System_Delegate *)delegate)->methodInfo;
+	method = params->delegate->methodInfo;
 	if(!method)
 	{
-		ILExecThreadThrowSystem(thread, "System.MissingMethodException",
+		ILExecThreadThrowSystem(params->thread, "System.MissingMethodException",
 								(const char *)0);
 		return;
 	}
 
 	/* Call the method */
-	userData.args = args;
+	userData.args = params->args;
 	userData.pinvokeInfo = (ILMethod *)ILTypeGetDelegateMethod
-		(ILType_FromClass(GetObjectClass(delegate)));
+		(ILType_FromClass(GetObjectClass(params->delegate)));
 	userData.needThis = 0;
-	if(_ILCallMethod(thread, method,
-				     UnpackDelegateResult, result,
-				     0, ((System_Delegate *)delegate)->target,
+	if(_ILCallMethod(params->thread, method,
+				     UnpackDelegateResult, params->result,
+				     0, params->delegate->target,
 				     PackDelegateParams, &userData))
 	{
 		/* An exception occurred, which is already stored in the thread */
@@ -991,8 +1004,70 @@ static void DelegateInvoke(ffi_cif *cif, void *result,
 		{
 			/* Clear the native return value, because we cannot assume
 			   that the native caller knows how to handle exceptions */
-			size = ILSizeOfType(thread, type);
-			ILMemZero(result, size);
+			size = ILSizeOfType(params->thread, type);
+			ILMemZero(params->result, size);
+		}
+	}
+}
+
+/*
+ * Invoke the delegate from a new thread.
+ */
+static void *_DelegateInvokeFromNewThread(void *params)
+{
+	ILThread *thread = ILThreadSelf();
+	ILClassPrivate *classPrivate = GetObjectClassPrivate(((ILDelegateInvokeParams *)params)->delegate);
+	ILExecProcess *process = classPrivate->process;
+
+	if((((ILDelegateInvokeParams *)params)->thread = ILThreadRegisterForManagedExecution(process, thread)))
+	{
+		_DelegateInvoke((ILDelegateInvokeParams *)params);
+		ILThreadUnregisterForManagedExecution(thread);
+	}
+	return 0;
+}
+
+/*
+ * Invoke a delegate from a closure.
+ */
+static void DelegateInvoke(ffi_cif *cif, void *result,
+						   void **args, void *delegate)
+{
+	ILThread *thread = ILThreadSelf();
+	ILClassPrivate *classPrivate = GetObjectClassPrivate(delegate);
+	ILExecProcess *process = classPrivate->process;
+	ILDelegateInvokeParams params;
+
+	params.thread = 0;
+	params.cif = cif;
+	params.result = result;
+	params.args = args;
+	params.delegate = (System_Delegate *)delegate;
+	if(!thread)
+	{
+		/* callback was invoked by a non pnet thread. */
+		
+		ILThreadRunSelf(_DelegateInvokeFromNewThread, (void *)&params);
+	}
+	else
+	{
+		params.thread = _ILExecThreadFromThread(thread);
+
+		if(params.thread)
+		{
+			IL_BEGIN_EXECPROCESS_SWITCH(params.thread, process)
+			_DelegateInvoke(&params);
+			IL_END_EXECPROCESS_SWITCH(params.thread)
+		}
+		else
+		{
+			/* thread is not registerd for managed execution */
+			if((params.thread = ILThreadRegisterForManagedExecution(process, thread)))
+			{
+
+				_DelegateInvoke(&params);
+				ILThreadUnregisterForManagedExecution(thread);
+			}
 		}
 	}
 }

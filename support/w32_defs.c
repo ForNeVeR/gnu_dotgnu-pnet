@@ -88,6 +88,23 @@ int _ILThreadGetPriority(ILThread *thread)
 	}
 }
 
+/*
+ * This function is only used for initializing an ILThread
+ * structure for threads not created by pnet.
+ * This Thread MUST NOT BE USED to run managed code or create
+ * managed objects because this thread is not controled by the GC.
+ */
+void _ILThreadInitHandleSelf(ILThread *thread)
+{
+	/* Initialize the thread's handle and identifier.  We have
+	   to duplicate the thread handle because "GetCurrentThread()" returns
+	   a pseudo-handle and not a real one. We need the real one */
+	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(),
+					GetCurrentProcess(), (HANDLE *)(&(thread->handle)),
+					0, 0, DUPLICATE_SAME_ACCESS);
+	thread->identifier = GetCurrentThreadId();
+}
+
 void _ILThreadInitSystem(ILThread *mainThread)
 {
 	/* Allocate a TLS key for storing thread objects */

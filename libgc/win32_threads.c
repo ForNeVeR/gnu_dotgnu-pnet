@@ -953,4 +953,35 @@ BOOL WINAPI DllMain(HINSTANCE inst, ULONG reason, LPVOID reserved)
 
 # endif /* !MSWINCE */
 
+/*
+ * Run a function under GC control in a thread that was not created
+ * through the gc routines.
+ * (for example by a thrid party library that does a callback).
+ */
+GC_API void *
+GC_run_thread(LPTHREAD_START_ROUTINE thread_func,  LPVOID arg)
+{
+    LPVOID result;
+
+    /* register the thread */
+#if defined(GC_DLL) && !defined(CYGWIN32)
+    /* we have nothing to do here because the thread is registered through DllMain */
+#else
+    GC_ASSERT(GC_thr_initialized);
+    if (GC_main_thread != GetCurrentThreadId()) {
+        GC_new_thread();
+    } /* o.w. we already did it during GC_thr_init(), called by GC_init() */
+#endif
+    result = thread_func(arg);
+
+    /* unregister the thread */
+#if defined(GC_DLL) && !defined(CYGWIN32)
+	/* we have nothing to do here because the thread is will be unregistered */
+    /* through DllMain */
+#else
+    GC_delete_thread(GetCurrentThreadId());
+#endif
+    return result;
+}
+
 #endif /* GC_WIN32_THREADS */

@@ -29,6 +29,16 @@
 extern	"C" {
 #endif
 
+/*
+ * This function is only used for initializing an ILThread
+ * structure for threads not created by pnet.
+ * This Thread MUST NOT BE USED to run managed code or create
+ * managed objects because this thread is not controled by the GC.
+ */
+void _ILThreadInitHandleSelf(ILThread *thread)
+{
+}
+
 void _ILThreadInitSystem(ILThread *mainThread)
 {
 	mainThread->handle = 0;

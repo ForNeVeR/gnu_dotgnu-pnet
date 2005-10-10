@@ -119,6 +119,22 @@ static void AbortSignal(int sig)
 	   to force system calls to exit with EINTR */
 }
 
+/*
+ * This function is only used for initializing an ILThread
+ * structure for threads not created by pnet.
+ */
+void _ILThreadInitHandleSelf(ILThread *thread)
+{
+	/* Set the thread handle and identifier for the thread */
+	thread->handle = pthread_self();
+	thread->identifier = thread->handle;
+}
+
+void _ILThreadDestroyHandleSelf(ILThread *thread)
+{
+	/* there is nothing to do with pthreads. */
+}
+
 void _ILThreadInitSystem(ILThread *mainThread)
 {
 	struct sigaction action;

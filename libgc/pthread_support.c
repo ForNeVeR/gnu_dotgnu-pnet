@@ -1593,5 +1593,75 @@ void GC_notify_all_marker()
 
 #endif /* PARALLEL_MARK */
 
+/*
+ * Register a thread that was not created by the gc routines.
+ * Thread was created either by a third party library or a timer or ...
+ */
+static void
+GC_register_current_thread(pthread_t my_pthread)
+{
+
+    int dummy;
+    GC_thread me;
+
+#   ifdef DEBUG_THREADS
+        GC_printf1("Registering thread 0x%lx\n", my_pthread);
+        GC_printf1("pid = %ld\n", (long) getpid());
+#   endif
+    LOCK();
+    GC_in_thread_creation = TRUE;
+    me = GC_new_thread(my_pthread);
+    GC_in_thread_creation = FALSE;
+#ifdef GC_DARWIN_THREADS
+    me -> stop_info.mach_thread = mach_thread_self();
+#else
+    me -> stop_info.stack_ptr = 0;
+#endif
+    me -> flags = DETACHED;
+    /* me -> stack_end = GC_linux_stack_base(); -- currently (11/99)	*/
+    /* doesn't work because the stack base in /proc/self/stat is the 	*/
+    /* one for the main thread.  There is a strong argument that that's	*/
+    /* a kernel bug, but a pervasive one.				*/
+#   ifdef STACK_GROWS_DOWN
+      me -> stack_end = (ptr_t)(((word)(&dummy) + (GC_page_size - 1))
+		                & ~(GC_page_size - 1));
+#	  ifndef GC_DARWIN_THREADS
+        me -> stop_info.stack_ptr = me -> stack_end - 0x10;
+#	  endif
+	/* Needs to be plausible, since an asynchronous stack mark	*/
+	/* should not crash.						*/
+#   else
+      me -> stack_end = (ptr_t)((word)(&dummy) & ~(GC_page_size - 1));
+      me -> stop_info.stack_ptr = me -> stack_end + 0x10;
+#   endif
+    /* This is dubious, since we may be more than a page into the stack, */
+    /* and hence skip some of it, though it's not clear that matters.	 */
+#   ifdef IA64
+      me -> backing_store_end = (ptr_t)
+			(GC_save_regs_in_stack() & ~(GC_page_size - 1));
+      /* This is also < 100% convincing.  We should also read this 	*/
+      /* from /proc, but the hook to do so isn't there yet.		*/
+#   endif /* IA64 */
+	GC_init_thread_local(me);
+    UNLOCK();
+}
+
+/*
+ * Run a function under gc control in a thread not created by the gc.
+ */
+GC_API void *
+GC_run_thread(void *(*thread_func)(void *), void *arg)
+{
+    pthread_t my_pthread;
+    void *result = 0;
+
+    my_pthread = pthread_self();
+    GC_register_current_thread(my_pthread);
+    pthread_cleanup_push(GC_thread_exit_proc, 0);
+    result = (*thread_func)(arg);
+    pthread_cleanup_pop(1);
+    return result;
+}
+
 # endif /* GC_LINUX_THREADS and friends */
 

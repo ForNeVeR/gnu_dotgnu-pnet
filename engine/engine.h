@@ -166,6 +166,29 @@ struct __tagILFinalizationContext
 	ILExecProcess *volatile process;
 };
 
+#ifdef IL_CONFIG_APPDOMAINS
+/*
+ * Structure to save the old execution context of an ILExecThread
+ * when a process switch occures.
+ */
+typedef struct _tagILExecContext ILExecContext;
+struct _tagILExecContext
+{
+	/* Pointer to the previous exec context */
+	ILExecContext *prevContext;
+
+	/* Back-pointer to the process this thread belongs to */
+	ILExecProcess  *process;
+
+	/* System.Threading.Thread object */
+	ILObject *clrThread;
+
+	/* Thread-static values for this thread */
+	void		  **threadStaticSlots;
+	ILUInt32		threadStaticSlotsUsed;
+};
+#endif
+
 /* class private data */
 typedef struct _tagILClassPrivate ILClassPrivate;
  
@@ -393,6 +416,12 @@ struct _tagILExecThread
 	int		profilingEnabled;
 #endif
 
+#ifdef IL_CONFIG_APPDOMAINS
+	/* Keep track of the process switches for this thread */
+	/* Needed to clean them up when the thread is destroyed. */
+	ILExecContext *prevContext;
+#endif
+
 #if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
 	/* Context for the current interrupt */
 	ILInterruptContext	interruptContext;
@@ -489,6 +518,54 @@ void ILExecEngineDestroy(ILExecEngine *engine);
  * Returns the ILExecEngine or 0 if the function fails.
  */
 ILExecEngine *ILExecEngineCreate();
+
+/*
+ * Let the thread return from an other ILExecProcess and restore the saved
+ * state.
+ * Returns 0 on failure.
+ */
+int ILExecThreadReturnToProcess(ILExecThread *thread, ILExecContext *context);
+
+/*
+ * Let the thread join an other ILExecProcess and save the current state
+ * in context.
+ * Returns 0 on failure.
+ */
+int ILExecThreadSwitchToProcess(ILExecThread *thread,
+								ILExecProcess *process,
+								ILExecContext *context);
+
+#define IL_BEGIN_EXECPROCESS_SWITCH(thread, process) \
+{ \
+	int __processSwitched = 0; \
+	int __error = 0; \
+	ILExecContext __context; \
+	if((thread)->process != (process)) \
+	{ \
+		__processSwitched = ILExecThreadSwitchToProcess((thread), \
+														(process), \
+														 &__context); \
+	} \
+	if(!__error) \
+	{
+#define IL_END_EXECPROCESS_SWITCH(thread) \
+		if(__processSwitched) \
+		{ \
+			if(!ILExecThreadReturnToProcess((thread), &__context)) \
+			{ \
+			  \
+			} \
+		} \
+	} \
+	else \
+	{ \
+	} \
+}
+#else
+#define IL_BEGIN_EXECPROCESS_SWITCH(thread, process) \
+{
+#define IL_END_EXECPROCESS_SWITCH(thread) \
+}
 #endif
 
 /*
@@ -824,6 +901,12 @@ void *_ILObjectToCustom(ILExecThread *thread, ILObject *obj,
 ILObject *_ILCustomToObject(ILExecThread *thread, void *ptr,
 							const char *customName, int customNameLen,
 							const char *customCookie, int customCookieLen);
+
+/*
+ * Get an ILExecThread from the given support thread.
+ */
+#define _ILExecThreadFromThread(thread) \
+	((ILExecThread *)(ILThreadGetObject(thread)))
 
 /*
  *	Gets the managed thread object from an engine thread.

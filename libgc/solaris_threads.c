@@ -951,6 +951,16 @@ GC_thr_create(void *stack_base, size_t stack_size,
     return(result);
 }
 
+/*
+ * Run a function under gc control in a thread not created by the gc.
+ */
+GC_API void *
+GC_run_thread(void *(*thread_func)(void *), void *arg)
+{
+	/* TODO */
+	return 0;
+}
+
 # else /* !GC_SOLARIS_THREADS */
 
 #ifndef LINT

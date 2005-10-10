@@ -1,3 +1,30 @@
+2005-10-10  Klaus Treichel  <ktreichel@web.de>
+
+	* libgc/include/gc.h: Add prototypes for GC_run_thread.
+
+	* libgc/pthread_support.c, libgc/win32_threads.c: Add function
+	GC_run_thread.
+
+	* libgc/solaris_threads.c: Stubb out function GC_run_thread.
+
+	* include/il_thread.c: Add prototype for ILThreadRunSelf.
+
+	* engine/engine.h: Add support for ILExecThreads to switch appdomains.
+
+	* engine/pinvoke.c: Add support in DelegateInvoke to exeute managed code
+	in non pnet threads.
+
+	* engine/thread.c: Add support for ILExecThreads to switch between
+	appdomains.
+
+	* support/thr_defs.h: Add prototype for _ILThreadInitHandleSelf.
+
+	* support/thread.c: Add function ILThreadRunSelf to run a function under
+	gc conthol in a thread not created with the gc functions.
+
+	* support/no_defs.c, support/w32_defs.c, support/pt_defs.c: Add function
+	_ILThreadInitHandleSelf to initialize the threads in an ILThread for the
+	current thread.
 
 2005-10-04  Gopal V  <gopalv82@yahoo.com>
 

@@ -144,6 +144,11 @@ ILThread *ILThreadSelf(void);
 void *ILThreadGetObject(ILThread *thread);
 
 /*
+ * Run a function in a thread not created by pnet.
+ */
+void *ILThreadRunSelf(void *(* thread_func)(void *), void *arg);
+
+/*
  * Set the object reference that is associated with a thread.
  * This is used by the engine to store a pointer to an ILExecThread.
  */

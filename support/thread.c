@@ -246,6 +246,69 @@ void ILThreadDestroy(ILThread *thread)
 	_ILPrivateThreadDestroy(thread, 0);
 }
 
+void *ILThreadRunSelf(void *(* thread_func)(void *), void *arg)
+{
+	ILThread *thread_self;
+	void *result;
+
+	/* Create a new thread object and populate it */
+	thread_self = (ILThread *)ILCalloc(1, sizeof(ILThread));
+	if(!thread_self)
+	{
+		return 0;
+	}
+
+	_ILMutexCreate(&(thread_self->lock));	
+	thread_self->state = IL_TS_UNSTARTED;
+	thread_self->resumeRequested = 0;
+	thread_self->suspendRequested = 0;
+	thread_self->numLocksHeld = 0;
+	thread_self->firstCleanupEntry = 0;
+	thread_self->lastCleanupEntry = 0;
+	thread_self->monitor = ILWaitMonitorCreate();
+	_ILSemaphoreCreate(&(thread_self->resumeAck));
+	_ILSemaphoreCreate(&(thread_self->suspendAck));
+	thread_self->startFunc = 0;
+	thread_self->userObject = 0;
+	thread_self->startArg = 0;
+	_ILWakeupCreate(&(thread_self->wakeup));
+	_ILWakeupQueueCreate(&(thread_self->joinQueue));
+	thread_self->handle = 0;
+	thread_self->destroyOnExit = 0;
+	#ifdef IL_INTERRUPT_SUPPORTS
+		thread_self->interruptHandler = 0;
+	#endif
+	
+	/* Initialize the handle and the identifier */
+	_ILThreadInitHandleSelf(thread_self);
+
+	/* Set the thread object for the thread */
+	_ILThreadSetSelf(thread_self);
+
+	#ifdef HAVE_LIBGC
+		result = GC_run_thread(thread_func, arg);
+	#else
+		result = thread_func(arg);
+	#endif
+
+	_ILThreadRunAndFreeCleanups(thread_self);
+
+	/* and now destroy the ILThread instance. */
+	ILWaitHandleClose(thread_self->monitor);
+	_ILMutexDestroy(&(thread_self->lock));
+	_ILSemaphoreDestroy(&(thread_self->suspendAck));
+	_ILSemaphoreDestroy(&(thread_self->resumeAck));	
+	_ILWakeupQueueDestroy(&(thread_self->joinQueue));
+
+	_ILThreadSetSelf(0);
+	/* Release the handle */
+	_ILThreadDestroy(thread_self);
+
+	ILFree(thread_self);
+
+	return result;
+}
+
 void _ILThreadRun(ILThread *thread)
 {	
 	/* When a thread starts, it blocks until the ILThreadStart function

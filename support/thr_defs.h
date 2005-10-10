@@ -124,6 +124,7 @@ struct _tagILThread
 	ILThreadCleanupEntry			*lastCleanupEntry;
 	int								destroyOnExit;
 	ILWaitHandle					*monitor;
+	/* 1 if the gc knows the thread and is allowed to execute managed code */
 #if defined(IL_INTERRUPT_SUPPORTS)
 	ILInterruptHandler				interruptHandler;
 #endif
@@ -340,6 +341,12 @@ void _ILInterruptDeinit();
  * the thread must immediately exit.
  */
 void _ILThreadRun(ILThread *thread);
+
+/*
+ * This function is only used for initializing an ILThread
+ * structure for threads not created by pnet.
+ */
+void _ILThreadInitHandleSelf(ILThread *thread);
 
 /*
  * Create a new system-specific thread.  Returns zero if

@@ -29,19 +29,20 @@ extern	"C" {
 #endif
 
 /*
- * Get an ILExecThread from the given support thread.
- */
-static ILExecThread *_ILExecThreadFromThread(ILThread *thread)
-{
-	return (ILExecThread *)(ILThreadGetObject(thread));
-}
-
-/*
  * Gets the currently ILExecThread.
  */
 ILExecThread *ILExecThreadCurrent()
 {
-	return _ILExecThreadFromThread(ILThreadSelf());
+	ILThread *thread = ILThreadSelf();
+
+	if(thread)
+	{
+		return _ILExecThreadFromThread(thread);
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*
@@ -544,6 +545,46 @@ int _ILExecThreadHandleWaitResult(ILExecThread *thread, int result)
 	return result;
 }
 
+/*
+ * Join an ILExecProcess for normal execution.
+ * The caller has to handle the thread safety and to make sure
+ * that the process is not unloaded.
+ */
+static IL_INLINE void ILExecThreadJoinProcess(ILExecThread *thread, ILExecProcess *process)
+{
+	_ILExecThreadProcess(thread) = process;
+	thread->nextThread = process->firstThread;
+	thread->prevThread = 0;
+	if(process->firstThread)
+	{
+		process->firstThread->prevThread = thread;
+	}
+	process->firstThread = thread;
+
+}
+
+/*
+ * Detach from the ILExecProcess.
+ * The caller has to handle the thread safety.
+ */
+static IL_INLINE void ILExecThreadDetachFromProcess(ILExecThread *thread)
+{
+	if(thread->nextThread)
+	{
+		thread->nextThread->prevThread = thread->prevThread;
+	}
+	if(thread->prevThread)
+	{
+		thread->prevThread->nextThread = thread->nextThread;
+	}
+	else
+	{
+		_ILExecThreadProcess(thread)->firstThread = thread->nextThread;
+	}
+	_ILExecThreadProcess(thread) = 0;
+	thread->nextThread = thread->prevThread = 0;
+}
+
 ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState)
 {
 	ILExecThread *thread;
@@ -626,14 +667,10 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 
 		return 0;
 	}
-	thread->process = process;
-	thread->nextThread = process->firstThread;
-	thread->prevThread = 0;
-	if(process->firstThread)
-	{
-		process->firstThread->prevThread = thread;
-	}
-	process->firstThread = thread;
+#ifdef IL_CONFIG_APPDOMAINS
+	thread->prevContext = 0;
+#endif
+	ILExecThreadJoinProcess(thread, process);
 
 	ILMutexUnlock(process->lock);
 	
@@ -643,7 +680,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 
 void _ILExecThreadDestroy(ILExecThread *thread)
 {	
-	ILExecProcess *process = thread->process;
+	ILExecProcess *process = _ILExecThreadProcess(thread);
 
 	/* Lock down the process */
 	ILMutexLock(process->lock);
@@ -660,18 +697,7 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 	}
 
 	/* Detach the thread from its process */
-	if(thread->nextThread)
-	{
-		thread->nextThread->prevThread = thread->prevThread;
-	}
-	if(thread->prevThread)
-	{
-		thread->prevThread->nextThread = thread->nextThread;
-	}
-	else
-	{
-		process->firstThread = thread->nextThread;
-	}
+	ILExecThreadDetachFromProcess(thread);
 
 	/* Remove associations between ILExecThread and ILThread if they
 	   haven't already been removed */
@@ -696,7 +722,7 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 
 ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread)
 {
-	return thread->process;
+	return _ILExecThreadProcess(thread);
 }
 
 ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n)
@@ -753,6 +779,201 @@ ILMethod *ILExecThreadStackMethod(ILExecThread *thread, unsigned long num)
 		return 0;
 	}
 }
+
+#ifdef IL_CONFIG_APPDOMAINS
+/* Copy the process dependant data to the ILExecContext */
+static IL_INLINE void ILExecThreadSaveExecContext(ILExecThread *thread, ILExecContext *context)
+{
+	context->prevContext = thread->prevContext;
+	context->clrThread = thread->clrThread;
+	context->process = _ILExecThreadProcess(thread);
+	context->threadStaticSlots = thread->threadStaticSlots;
+	context->threadStaticSlotsUsed = thread->threadStaticSlotsUsed;
+}
+
+/* Clean up an ILExecContext */
+static IL_INLINE void ILExecThreadClearExecContext(ILExecContext *context)
+{
+	context->prevContext = 0;
+	context->process = 0;
+	context->clrThread = 0;
+	context->threadStaticSlots = 0;
+	context->threadStaticSlotsUsed = 0;
+}
+
+/* Copy the process dependant data to the ILExecContext */
+static IL_INLINE void ILExecThreadRestoreExecContext(ILExecThread *thread, ILExecContext *context)
+{
+	thread->prevContext = context->prevContext;
+	thread->clrThread = context->clrThread;
+	_ILExecThreadProcess(thread) = context->process;
+	thread->threadStaticSlots = context->threadStaticSlots;
+	thread->threadStaticSlotsUsed = context->threadStaticSlotsUsed;
+}
+
+/*
+ * Let the thread return from an other ILExecProcess and restore the saved state.
+ * Returns 0 on failure.
+ */
+int ILExecThreadReturnToProcess(ILExecThread *thread, ILExecContext *context)
+{
+	if(context->process != _ILExecThreadProcess(thread))
+	{
+		int result = 1;
+		ILExecProcess *returnProcess = context->process;
+		ILExecProcess *leavingProcess = _ILExecThreadProcess(thread);
+		/* perform a real return */
+
+		/* do this so that the locks are always in the same order to avoid a deadlock */
+		if(returnProcess < leavingProcess)
+		{
+			if(returnProcess)
+			{
+				ILMutexLock(returnProcess->lock);
+			}
+			if(leavingProcess)
+			{
+				ILMutexLock(leavingProcess->lock);
+			}
+		}
+		else
+		{
+			if(leavingProcess)
+			{
+				ILMutexLock(leavingProcess->lock);
+			}
+			if(returnProcess)
+			{
+				ILMutexLock(returnProcess->lock);
+			}
+		}
+		if(leavingProcess)
+		{
+			ILExecThreadDetachFromProcess(thread);
+		}
+		/* restore the previous state */
+		thread->prevContext = context->prevContext;
+		thread->clrThread = context->clrThread;
+		_ILExecThreadProcess(thread) = context->process;
+		thread->threadStaticSlots = context->threadStaticSlots;
+		thread->threadStaticSlotsUsed = context->threadStaticSlotsUsed;
+		/* check if the new process can't be entered */
+		if(returnProcess->state >= _IL_PROCESS_STATE_UNLOADING)
+		{
+			/* process is unloaded */
+			result = 0;
+			/* i'm not sure what to do */
+			/* abort the thread */
+		}
+		else
+		{
+			if(returnProcess)
+			{
+				ILExecThreadJoinProcess(thread, returnProcess);
+			}
+		}
+		if(returnProcess)
+		{
+			ILMutexUnlock(returnProcess->lock);
+		}
+		if(leavingProcess)
+		{
+			ILMutexUnlock(leavingProcess->lock);
+		}
+		return result;
+	}
+	else
+	{
+		/* just clean up the context */
+		ILExecThreadClearExecContext(context);
+	}
+	return 1;
+}
+
+/*
+ * Let the thread join an other ILExecProcess and save the current state in context.
+ * Returns 0 on failure.
+ */
+int ILExecThreadSwitchToProcess(ILExecThread *thread, ILExecProcess *process, ILExecContext *context)
+{
+	ILExecProcess *prevProcess = _ILExecThreadProcess(thread);
+
+	if(prevProcess != process)
+	{
+		int result = 1;
+
+		/* do this so that the locks are always in the same order to avoid a deadlock */
+		if(prevProcess < process)
+		{
+			if(prevProcess)
+			{
+				ILMutexLock(prevProcess->lock);
+			}
+			if(process)
+			{
+				ILMutexLock(process->lock);
+			}
+		}
+		else
+		{
+			if(process)
+			{
+				ILMutexLock(process->lock);
+			}
+			if(prevProcess)
+			{
+				ILMutexLock(prevProcess->lock);
+			}
+		}
+		/* check if the new process can't be entered */
+		if(process->state >= _IL_PROCESS_STATE_UNLOADING)
+		{
+			/* process is unloaded */
+			result = 0;
+			if(prevProcess)
+			{
+				ILExecThreadThrowSystem(thread, "System.AppDomainUnloadedException", 0);
+			}
+		}
+		else
+		{
+			ILExecThreadSaveExecContext(thread, context);
+			if(prevProcess)
+			{
+				ILExecThreadDetachFromProcess(thread);
+			}
+			if(process)
+			{
+				ILExecThreadJoinProcess(thread, process);
+			}
+			else
+			{
+				_ILExecThreadProcess(thread) = 0;
+			}
+			thread->prevContext = context;
+			thread->clrThread = 0;
+			thread->threadStaticSlots = 0;
+			thread->threadStaticSlotsUsed = 0;
+		}
+		if(process)
+		{
+			ILMutexUnlock(process->lock);
+		}
+		if(prevProcess)
+		{
+			ILMutexUnlock(prevProcess->lock);
+		}
+		return result;
+	}
+	else
+	{
+		/* save the old context anyways */
+		ILExecThreadSaveExecContext(thread, context);
+		thread->prevContext = context;
+	}
+	return 1;	
+}
+#endif
 
 #ifdef	__cplusplus
 };

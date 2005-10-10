@@ -45,7 +45,7 @@
 	System.Windows.Forms/GridTableStylesCollection.cs: Remove underscore
 	from field names for code uniformity.
 
-2005-09-25  Boris Manojlovic  <steki>
+2005-09-25  Boris Manojlovic  <boris.manojlovic@gmail.com>
 
 	* System.Windows.Forms/DataGrid.cs,
 	System.Windows.Forms/DataGridBoolColumn.cs,

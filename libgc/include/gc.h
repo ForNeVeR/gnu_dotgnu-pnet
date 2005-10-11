@@ -891,12 +891,14 @@ GC_PTR GC_malloc_many(size_t lb);
 					/* in returned list.		*/
 extern void GC_thr_init();	/* Needed for Solaris/X86	*/
 
+#if !defined(GC_WIN32_THREADS)
 /*
  * Run a function under GC control in a thread that was not created
  * through the gc routines.
  * (for example by a thrid party library that does a callback).
  */
 GC_API void *GC_run_thread(void *(*thread_func)(void *), void *arg);
+#endif
 
 #endif /* THREADS && !SRC_M3 */
 

@@ -46,6 +46,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				this.sink = sink;
 				this.toolkit = toolkit;
 				this.AutoMapChildren = false;
+				this.DrawBackground = false;
 			}
 
 

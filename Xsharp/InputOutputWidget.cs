@@ -41,6 +41,7 @@ public class InputOutputWidget : InputOnlyWidget
 	internal InputOutputWidget nextExpose;
 	private Region invalidateRegion;
 	internal InputOutputWidget nextInvalidate;
+	private bool drawBackground = true;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.InputOutputWidget"/>
@@ -170,6 +171,30 @@ public class InputOutputWidget : InputOnlyWidget
 			}
 
 	/// <summary>
+	/// <para>Get or set whether the background should be drawn before OnPaint is invoked.
+	/// </para>
+	/// </summary>
+	///
+	/// <remarks>
+	/// <para>
+	/// If this property is false, the background may not necessarily be drawn (by the server)
+	/// before the user painting commences.  If this property is true, the background
+	/// is guaranteed to always be drawn by the server before user painting commences.
+	/// </para>
+	/// </remarks>
+	public bool DrawBackground
+	{
+		get
+		{
+			return drawBackground;
+		}
+		set
+		{
+			drawBackground = value;
+		}
+	}
+
+	/// <summary>
 	/// <para>Get or set the foreground color for this widget.</para>
 	/// </summary>
 	///
@@ -227,9 +252,7 @@ public class InputOutputWidget : InputOnlyWidget
 								(display, window, ToPixel(value));
 							if(mapped && AncestorsMapped)
 							{
-								Xlib.XClearArea(display, window,
-												0, 0, (uint)0, (uint)0,
-												XBool.True);
+								Invalidate();
 							}
 						}
 						finally
@@ -296,9 +319,7 @@ public class InputOutputWidget : InputOnlyWidget
 						}
 						if(mapped && AncestorsMapped)
 						{
-							Xlib.XClearArea(display, window,
-											0, 0, (uint)0, (uint)0,
-											XBool.True);
+							Invalidate();
 						}
 					}
 					finally
@@ -478,13 +499,61 @@ public class InputOutputWidget : InputOnlyWidget
 					// No point redrawing if we are unmapped.
 					if(handle != XDrawable.Zero && mapped && AncestorsMapped)
 					{
-						ClearRegion(region, XBool.True);
+						Invalidate(region);
 					}
-
-					// Dispose the region that we no longer require.
-					region.Dispose();
 				}
 			}
+
+	/*
+	 * <summary><p>Invalidate the whole widget and flush the request</p></summary>
+	 */
+	private void Invalidate()
+	{
+		Invalidate(0, 0, width, height);
+	}
+	
+	/*
+	 * <summary><p>Invalidate the given region and flush the request</p></summary>
+	 */
+	private void Invalidate(int x, int y, int width, int height)
+	{
+		Region region = new Region();
+		
+		region.Union(x, y, width, height);
+		
+		Invalidate(region);
+	}
+	
+	/*
+	 * <summary><p>Invalidate the given region and flush the request</p></summary>
+	 */		
+	private void Invalidate(Region region)
+	{
+		if (drawBackground)
+		{
+			ClearRegion(region, XBool.True);
+		}
+		else
+		{
+			/* Don't flush to the X server cause we don't want it to draw
+				the background */
+			
+			region.Intersect(0, 0, width, height);
+			
+			if (exposeRegion == null)
+			{
+				exposeRegion = region;
+				
+				dpy.AddPendingExpose(this);
+			}
+			else
+			{
+				exposeRegion.Union(region);
+				
+				region.Dispose();
+			}
+		}
+	}
 
 	/// <summary>
 	/// <para>Process a color theme change for this widget.</para>

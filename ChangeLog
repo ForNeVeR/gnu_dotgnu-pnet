@@ -1,3 +1,10 @@
+
+2005-10-12  Thong Nguyen  <tum@veridicus.com>
+
+	* Xsharp/InputOutputWidget.cs, System.Drawing.Xsharp/DrawingWindow.cs:
+	Allow double buffering to work without any XClearArea calls in
+	between. (flicker free patches, applied by Gopal).
+
 2005-10-08  Klaus Treichel  <ktreichel@web.de>
 
 	* Xsharp/Font.cs: Fix a System.NullReferenceException if graphics.clipRegion

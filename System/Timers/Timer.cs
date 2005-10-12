@@ -193,6 +193,7 @@ public class Timer : Component, ISupportInitialize
 				Timer timer = (Timer)state;
 				if(!(timer.autoReset))
 				{
+					timer.enabled = false;
 					timer.timer = null;
 				}
 				if(timer.Elapsed != null)

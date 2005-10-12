@@ -1,3 +1,12 @@
+2005-10-12  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Foms/Control.cs : Fixed Invoke, waiting of result
+	A Mutex was used to wait for the result, but you cannot wait for Mutexes.
+	Now using a ManualResetEvent.
+
+2005-10-12  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System/Timers/Timer.cs : Fixed non AutoReset timers
 
 2005-10-12  Thong Nguyen  <tum@veridicus.com>
 

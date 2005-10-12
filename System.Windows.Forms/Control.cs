@@ -132,14 +132,14 @@ public class Control : IWin32Window, IDisposable
 	internal class InvokeAsyncResult: IAsyncResult
 	{
 		private bool bComplete;
-		private Mutex waitHandle;		// The waithandle for EndInvoke
+		private ManualResetEvent waitHandle;	// brubbel: waitHandle must not be a Mutex, you cannot wait for Mutexes
 		public Object retObject;
 		public Object asyncStateObject;	// The AsyncState object
 
 		public InvokeAsyncResult()
 		{
 			bComplete = false;			// This event hasn't completed
-			waitHandle = new Mutex();	// NOT initially locked
+			waitHandle = new ManualResetEvent(false);	// brubbel: create an event
 		}
 
 		public void WaitToComplete()
@@ -151,7 +151,7 @@ public class Control : IWin32Window, IDisposable
 					return;			// just blow out of here
 				}
 			}
-			waitHandle.WaitOne();	// and do so
+			waitHandle.WaitOne();	// wait for the vent to be fired 
 		}
 
 		public void SetComplete()
@@ -160,7 +160,8 @@ public class Control : IWin32Window, IDisposable
 			{
 				bComplete = true;
 			}
-			waitHandle.ReleaseMutex();	// else wake up sleeper waiting for us
+			
+			waitHandle.Set(); // fire the event. this would not work with mutex. but works with events.
 		}
 
 		public Object AsyncState

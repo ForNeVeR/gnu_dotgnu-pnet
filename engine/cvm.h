@@ -577,9 +577,9 @@ extern	"C" {
  */
 typedef union
 {
-	ILInt32		intValue;
-	ILUInt32	uintValue;
-	void       *ptrValue;
+	ILInt32		volatile intValue;
+	ILUInt32	volatile uintValue;
+	void       *volatile ptrValue;
 
 	/* Pad this structure to the best alignment on the underlying platform.
 	   This is usually needed on 64-bit platforms to ensure that stack

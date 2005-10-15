@@ -23,7 +23,7 @@
 /*
  * Integer add with overflow detection.
  */
-static IL_INLINE int IAddOvf(ILInt32 *result, ILInt32 a, ILInt32 b)
+static IL_INLINE int IAddOvf(volatile ILInt32 *result, ILInt32 a, ILInt32 b)
 {
 	if(a >= 0 && b >= 0)
 	{
@@ -43,7 +43,7 @@ static IL_INLINE int IAddOvf(ILInt32 *result, ILInt32 a, ILInt32 b)
 /*
  * Unsigned integer add with overflow detection.
  */
-static IL_INLINE int IUAddOvf(ILUInt32 *result, ILUInt32 a, ILUInt32 b)
+static IL_INLINE int IUAddOvf(volatile ILUInt32 *result, ILUInt32 a, ILUInt32 b)
 {
 	return ((*result = a + b) >= a);
 }
@@ -51,7 +51,7 @@ static IL_INLINE int IUAddOvf(ILUInt32 *result, ILUInt32 a, ILUInt32 b)
 /*
  * Integer subtract with overflow detection.
  */
-static IL_INLINE int ISubOvf(ILInt32 *result, ILInt32 a, ILInt32 b)
+static IL_INLINE int ISubOvf(volatile ILInt32 *result, ILInt32 a, ILInt32 b)
 {
 	if(a >= 0 && b >= 0)
 	{
@@ -76,7 +76,7 @@ static IL_INLINE int ISubOvf(ILInt32 *result, ILInt32 a, ILInt32 b)
 /*
  * Unsigned integer subtract with overflow detection.
  */
-static IL_INLINE int IUSubOvf(ILUInt32 *result, ILUInt32 a, ILUInt32 b)
+static IL_INLINE int IUSubOvf(volatile ILUInt32 *result, ILUInt32 a, ILUInt32 b)
 {
 	return ((*result = a - b) <= a);
 }
@@ -84,7 +84,7 @@ static IL_INLINE int IUSubOvf(ILUInt32 *result, ILUInt32 a, ILUInt32 b)
 /*
  * Integer multiply with overflow detection.
  */
-static IL_INLINE int IMulOvf(ILInt32 *result, ILInt32 a, ILInt32 b)
+static IL_INLINE int IMulOvf(volatile ILInt32 *result, ILInt32 a, ILInt32 b)
 {
 	ILInt64 temp = ((ILInt64)a) * ((ILInt64)b);
 	if(temp >= (ILInt64)IL_MIN_INT32 && temp <= (ILInt64)IL_MAX_INT32)
@@ -101,7 +101,7 @@ static IL_INLINE int IMulOvf(ILInt32 *result, ILInt32 a, ILInt32 b)
 /*
  * Unsigned integer multiply with overflow detection.
  */
-static IL_INLINE int IUMulOvf(ILUInt32 *result, ILUInt32 a, ILUInt32 b)
+static IL_INLINE int IUMulOvf(volatile ILUInt32 *result, ILUInt32 a, ILUInt32 b)
 {
 	ILUInt64 temp = ((ILUInt64)a) * ((ILUInt64)b);
 	if(temp <= (ILUInt64)IL_MAX_UINT32)

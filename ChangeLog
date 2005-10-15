@@ -1,3 +1,20 @@
+2005-10-15  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.h: mark members intValue, uintValue and ptrValue of CVMWord
+	volatile.
+
+	* engine/cvm.c: mark stackmax and method in _ILCVMInterpreter volatile.
+
+	* engine/cvm_arith.c: add volatile to first arg of static functions to
+	avoid warnings.
+
+	* engine/cvm_call.c: add a cast to the last arg in the call to
+	_ILPackCVMStackArgs to avoid a warning.
+
+	* engine/cvm_ptr.c: mark tempptr volatile.
+	(All changes are to build the engine with gcc4 without optimizations.
+	This is the first step. There seems to be still an issue with exceptions.)
+
 2005-10-13  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* engine/lib_info.c: GetNetBIOSMachineName fixed

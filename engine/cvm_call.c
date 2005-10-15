@@ -2029,7 +2029,7 @@ VMCASE(COP_PREFIX_PACK_VARARGS):
 	COPY_STATE_TO_THREAD();
 	tempNum = _ILPackCVMStackArgs
 		(thread, stacktop, CVMP_ARG_WORD, CVMP_ARG_WORD2,
-		 CVMP_ARG_WORD2_PTR(ILType *), &tempptr);
+		 CVMP_ARG_WORD2_PTR(ILType *), (void **)&tempptr);
 	RESTORE_STATE_FROM_THREAD();
 
 	stacktop -= tempNum;

@@ -518,7 +518,7 @@ CVM_DEFINE_TABLES();
 
 int _ILCVMInterpreter(ILExecThread *thread)
 {
-	REGISTER_ASM_PC(unsigned char *pc);
+	REGISTER_ASM_PC(unsigned char *volatile pc);
 	REGISTER_ASM_STACK(CVMWord *stacktop);
 	REGISTER_ASM_FRAME(CVMWord *frame);
 	int divResult;

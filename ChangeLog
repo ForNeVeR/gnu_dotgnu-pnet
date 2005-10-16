@@ -1,3 +1,7 @@
+2005-10-16  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.c: mark pc volatile.
+
 2005-10-15  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.h: mark members intValue, uintValue and ptrValue of CVMWord

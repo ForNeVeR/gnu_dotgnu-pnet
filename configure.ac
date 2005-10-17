@@ -3,6 +3,7 @@
 # Initialize autoconf.
 AC_PREREQ(2.59)
 AC_INIT(Crayons, 0.0.1)
+#AC_CONFIG_HEADERS([include/CrayonsConfig.h:include/CrayonsConfig.h.in])
 AC_CONFIG_SRCDIR(src/CGraphics.c)
 
 # Initialize automake.

@@ -1,8 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 lib_LTLIBRARIES = libCrayons.la
 
-libcrayonsdir = $(libdir)
-libcrayons_LTLIBRARIES = libCrayons.la
+#libcrayonsdir = $(libdir)
+#libcrayons_LTLIBRARIES = libCrayons.la
 
 libCrayons_la_SOURCES = CMemory.c Crayons.h CrayonsInternal.h CrayonsConfig.h \
 						CAffineTransform.c   CAffineTransform.h \
@@ -49,9 +49,9 @@ libCrayons_la_SOURCES = CMemory.c Crayons.h CrayonsInternal.h CrayonsConfig.h \
 EXTRA_libCrayons_la_SOURCES = CPThreadMutex.c CPThreadMutex.h \
 							  CNoThreadMutex.h
 
-libSystemDrawing_la_LDFLAGS = -version-info 0:0:0 -no-undefined \
-							  $(X_LIBS) $(X_PRE_LIBS) $(X11_LIB) $(X_EXTRA_LIBS)
+#libSystemDrawing_la_LDFLAGS = -version-info 0:0:0 -no-undefined \
+#							  $(X_LIBS) $(X_PRE_LIBS) $(X11_LIB) $(X_EXTRA_LIBS)
 
-libSystemDrawing_la_LDADD = $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS)
+#libSystemDrawing_la_LDADD = $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS)
 
 AM_CFLAGS = $(X_CFLAGS)

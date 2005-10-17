@@ -22,10 +22,10 @@
 extern "C" {
 #endif
 
-#if HAVE_PTHREAD_H
+#ifdef HAVE_PTHREAD_H
 	#include "CPThreadMutex.c"
 #else
-	#include "CNoThreadMutex.c"
+	/* nothing to do here */
 #endif
 
 #ifdef __cplusplus

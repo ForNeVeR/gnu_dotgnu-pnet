@@ -9,7 +9,6 @@ noinst_HEADERS = CrayonsInternal.h \
 				 CColorPalette.h \
 				 CFiller.h \
 				 CFlattener.h \
-				 CFTFont.h \
 				 CGraphics.h \
 				 CGraphicsPipeline.h \
 				 CHatchBrush.h \

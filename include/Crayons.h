@@ -62,10 +62,10 @@ typedef SDUInt16       SDChar16;
 #if defined(_MSC_VER)
 	typedef __int32          SDInt32;
 	typedef unsigned __int32 SDUInt32;
-#elif defined(SIZEOF_INT) && (SIZEOF_INT == 4)
+#elif defined(SD_SIZEOF_INT) && (SD_SIZEOF_INT == 4)
 	typedef int              SDInt32;
 	typedef unsigned int     SDUInt32;
-#elif defined(SIZEOF_LONG) && (SIZEOF_LONG == 4)
+#elif defined(SD_SIZEOF_LONG) && (SD_SIZEOF_LONG == 4)
 	typedef long             SDInt32;
 	typedef unsigned long    SDUInt32;
 #else
@@ -81,10 +81,10 @@ typedef SDUInt32 SDGraphicsContainer;
 #if defined(_MSC_VER)
 	typedef __int64            SDInt64;
 	typedef unsigned __int64   SDUInt64;
-#elif defined(SIZEOF_LONG) && (SIZEOF_LONG == 8)
+#elif defined(SD_SIZEOF_LONG) && (SD_SIZEOF_LONG == 8)
 	typedef long               SDInt64;
 	typedef unsigned long      SDUInt64;
-#elif defined(SIZEOF_LONG_LONG) && (SIZEOF_LONG_LONG == 8)
+#elif defined(SD_SIZEOF_LONG_LONG) && (SD_SIZEOF_LONG_LONG == 8)
 	typedef long long          SDInt64;
 	typedef unsigned long long SDUInt64;
 #else

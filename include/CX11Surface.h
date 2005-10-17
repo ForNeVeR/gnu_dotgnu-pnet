@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifdef HAVE_XLIB_H
+#ifdef HAVE_X11_XLIB_H
 
 #ifndef _SD_X11SURFACE_H_
 #define _SD_X11SURFACE_H_
@@ -75,4 +75,4 @@ static const SDSurfaceClass SDX11Surface_Class =
 
 #endif /* _SD_X11SURFACE_H_ */
 
-#endif /* HAVE_XLIB_H */
+#endif /* HAVE_X11_XLIB_H */

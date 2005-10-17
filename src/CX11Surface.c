@@ -387,4 +387,4 @@ SDX11Surface_Create(SDX11Surface **_this,
 };
 #endif
 
-#endif
+#endif /* HAVE_X11_XLIB_H */

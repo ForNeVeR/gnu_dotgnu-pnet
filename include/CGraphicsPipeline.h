@@ -21,7 +21,7 @@
 #ifndef _SD_GRAPHICSPIPELINE_H_
 #define _SD_GRAPHICSPIPELINE_H_
 
-#include "SDLibInternal.h"
+#include "CrayonsInternal.h"
 
 #ifdef __cplusplus
 extern "C" {

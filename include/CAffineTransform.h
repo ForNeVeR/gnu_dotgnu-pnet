@@ -21,7 +21,7 @@
 #ifndef _SD_AFFINETRANFSORM_H_
 #define _SD_AFFINETRANFSORM_H_
 
-#include "Crayons.h"
+#include "CrayonsInternal.h"
 
 #ifdef __cplusplus
 extern "C" {

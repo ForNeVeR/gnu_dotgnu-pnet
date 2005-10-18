@@ -178,7 +178,7 @@ static void *GetThreadStatic(ILExecThread *thread,
 
 #elif defined(IL_CVM_LOCALS)
 
-void *volatile tempptr;
+void *IL_TEMPPTR_VOLATILE tempptr;
 ILClass *classInfo;
 ILUInt32 tempSize;
 

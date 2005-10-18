@@ -549,7 +549,7 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	ILUInt32 explicitSize;
 	int allowFieldLayout;
 	int allowRVALayout;
-	ILClassPrivate *classPrivate;
+	ILClassPrivate *volatile classPrivate;
 	ILField *field;
 	ILMethod *method;
 	ILMethod *ancestor;
@@ -601,9 +601,6 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 		classPrivate->inLayout = 1;
 		classPrivate->gcTypeDescriptor = IL_MAX_NATIVE_UINT;
 		classPrivate->process = process;
-		classPrivate->nextClassPrivate = process->firstClassPrivate;
-		process->firstClassPrivate = classPrivate;
-
 	}
 
 	/* Lay out the parent class first */
@@ -984,6 +981,10 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 #endif
 
 	/* Done */
+	/* add the classprivate data to the liked list */
+	classPrivate->nextClassPrivate = process->firstClassPrivate;
+	process->firstClassPrivate = classPrivate;
+
 	return 1;
 }
 

@@ -141,6 +141,57 @@ extern	"C" {
 	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
 #endif
 
+/*
+ * Defining macros to declare variables in the interpreter loop volatile.
+ * This is done to fix problems with gcc's optimized code.
+ */
+#ifdef __GNUC__
+#if (__GNUC__ == 4) && defined(CVM_X86)
+#define IL_PC_VOLATILE volatile
+#define IL_STACKTOP_VOLATILE volatile
+#define IL_FRAME_VOLATILE volatile
+#define IL_STACKMAX_VOLATILE volatile
+#define IL_METHOD_VOLATILE volatile
+#define IL_METHODTOCALL_VOLATILE volatile
+#define IL_CALLFRAME_VOLATILE volatile
+#define IL_TEMPPTR_VOLATILE volatile
+#endif
+#if (__GNUC__ == 4) && defined(CVM_X86_64)
+#define IL_PC_VOLATILE volatile
+#define IL_STACKTOP_VOLATILE volatile
+#define IL_FRAME_VOLATILE volatile
+#define IL_STACKMAX_VOLATILE volatile
+#define IL_METHOD_VOLATILE volatile
+#define IL_METHODTOCALL_VOLATILE volatile
+#define IL_CALLFRAME_VOLATILE volatile
+#define IL_TEMPPTR_VOLATILE volatile
+#endif
+#endif
+#ifndef IL_PC_VOLATILE
+#define IL_PC_VOLATILE
+#endif
+#ifndef IL_STACKTOP_VOLATILE
+#define IL_STACKTOP_VOLATILE
+#endif
+#ifndef IL_FRAME_VOLATILE
+#define IL_FRAME_VOLATILE
+#endif
+#ifndef IL_STACKMAX_VOLATILE
+#define IL_STACKMAX_VOLATILE
+#endif
+#ifndef IL_METHOD_VOLATILE
+#define IL_METHOD_VOLATILE
+#endif
+#ifndef IL_METHODTOCALL_VOLATILE
+#define IL_METHODTOCALL_VOLATILE
+#endif
+#ifndef IL_CALLFRAME_VOLATILE
+#define IL_CALLFRAME_VOLATILE
+#endif
+#ifndef IL_TEMPPTR_VOLATILE
+#define IL_TEMPPTR_VOLATILE
+#endif
+
 #if defined(IL_USE_INTERRUPT_BASED_X)
 	#if defined(IL_INTERRUPT_HAVE_X86_CONTEXT) && defined(REGISTER_ASM_X86)
 		/* If the interrupt subsystem can provide us the x86 registers at the
@@ -518,12 +569,12 @@ CVM_DEFINE_TABLES();
 
 int _ILCVMInterpreter(ILExecThread *thread)
 {
-	REGISTER_ASM_PC(unsigned char *volatile pc);
-	REGISTER_ASM_STACK(CVMWord *stacktop);
-	REGISTER_ASM_FRAME(CVMWord *frame);
+	REGISTER_ASM_PC(unsigned char *IL_PC_VOLATILE pc);
+	REGISTER_ASM_STACK(CVMWord *IL_STACKTOP_VOLATILE stacktop);
+	REGISTER_ASM_FRAME(CVMWord *IL_FRAME_VOLATILE frame);
 	int divResult;
-	CVMWord  *volatile stackmax;
-	ILMethod *volatile method;
+	CVMWord  *IL_STACKMAX_VOLATILE stackmax;
+	ILMethod *IL_METHOD_VOLATILE method;
 	void *nativeArgs[CVM_MAX_NATIVE_ARGS + 1];
 
 	/* Define local variables that are used by the instruction categories */

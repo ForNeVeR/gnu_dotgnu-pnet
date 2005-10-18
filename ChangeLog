@@ -1,3 +1,16 @@
+2005-10-18  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.c: Add macros depending on the arch to declare the
+	interpreter globals volatile and add the macros to the variable
+	declarations.
+
+	* engine/cvm_call.c, engine/cvm_ptr.c: Add the macros to the variable
+	declarations.
+
+	* engine/layout.c: make classPrivate in LayoutClass volatile to avoid
+	possible gc problems. Move the adding of classPrivate to the linked list
+	of classes in the process to the end of LayoutClass.
+
 2005-10-16  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.c: mark pc volatile.

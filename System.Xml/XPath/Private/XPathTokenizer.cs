@@ -370,7 +370,7 @@ namespace System.Xml.XPath.Private
 					Assert(Read() == ch);
 					if(Peek() == '=')
 					{
-						Assert(Read() == ch);
+						Assert(Read() == '=');
 						return (ch == '>') ? Token.OP_GE : Token.OP_LE;
 					}
 					else

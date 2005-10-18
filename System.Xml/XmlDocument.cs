@@ -685,7 +685,8 @@ class XmlDocument : XmlNode
 				{
 					throw new XmlException(S._("XmlException_NoXml"));
 				}
-
+				
+				RemoveAll();
 				XmlTextReader reader = new XmlTextReader(xml, XmlNodeType.Document, null);
 				BuildStructure(reader);
 			}

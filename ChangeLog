@@ -1,3 +1,7 @@
+2005-10-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System/Net/Sockets/SocketException.cs : fixed creating socketexception with errno.
+
 2005-10-18  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* System.Xml/XmlDocument.cs : Fixed loading XML from string 

@@ -64,9 +64,8 @@ public class SocketException :
 		}
 #if !ECMA_COMPAT
 	public SocketException(int errorCode)
-		: base(errorCode)
+		: this((Errno)errorCode)
 		{
-			errno = Errno.EREMOTEIO;
 		}
 #endif
 

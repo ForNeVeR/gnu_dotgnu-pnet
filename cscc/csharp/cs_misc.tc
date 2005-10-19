@@ -191,11 +191,15 @@ ILNode_SemAnalysis(ILNode_SizeOf)
 {
 	CSSemValue value;
 
-	/* Print an error or warning for this construct if necessary */
-	CCUnsafeMessage(info, (ILNode *)node, "unsafe `sizeof' operator");
-
 	/* Get the semantic value for the sub-expression */
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+
+	/* sizeof(primitive) is safe in C# 2.0 */
+	if(!ILType_IsPrimitive(CSSemGetType(value)))
+	{
+		/* Print an error or warning for this construct if necessary */
+		CCUnsafeMessage(info, (ILNode *)node, "unsafe `sizeof' operator");
+	}
 
 	/* Convert native types into their value type forms */
 	if(CSSemIsType(value))

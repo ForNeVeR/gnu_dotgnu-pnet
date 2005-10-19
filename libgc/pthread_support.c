@@ -1642,7 +1642,9 @@ GC_register_current_thread(pthread_t my_pthread)
       /* This is also < 100% convincing.  We should also read this 	*/
       /* from /proc, but the hook to do so isn't there yet.		*/
 #   endif /* IA64 */
-	GC_init_thread_local(me);
+#   if defined(THREAD_LOCAL_ALLOC) && !defined(DBG_HDRS_ALL)
+    GC_init_thread_local(me);
+#   endif
     UNLOCK();
 }
 

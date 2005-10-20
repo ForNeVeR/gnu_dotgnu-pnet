@@ -1,4 +1,4 @@
-2005-10-19  pfr  <jhcclouse@charter.net>
+2005-10-19  Jason Clouse  <jhcclouse@charter.net>
 
 	* cscc/csharp/cs_misc.cs: allow sizeof(primitive type) in safe code.
 	(Patch #4526, Klaus).

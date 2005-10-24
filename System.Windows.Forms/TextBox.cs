@@ -79,6 +79,8 @@ public class TextBox : TextBoxBase
 	private bool showVScrollBar;
 	private bool showHScrollBar;
 
+	private int graphicsOffset;
+
 	[TODO]
 	public TextBox()
 	{
@@ -831,6 +833,8 @@ public class TextBox : TextBoxBase
 		// We need to do this here so TextDrawArea returns correct values.
 		callSetScrollBarPositions = SetupScrollBars();
 
+		graphicsOffset = g.MeasureCharacters("A", Font, new Rectangle(0,0, 100, 100), new StringFormat())[0].X;
+
 		// We leave 1 pixel on the left and right for the caret
 		// Multiline textboxes are infinite in the y direction
 		// non multiline are infinite in the x direction and we scroll when needed
@@ -842,7 +846,7 @@ public class TextBox : TextBoxBase
 		}
 		else
 		{
-			measureBounds = new Rectangle(1, yLine - 1, maxXY, TextDrawArea.Height - (yLine - 1));
+			measureBounds = new Rectangle(1 - graphicsOffset, yLine - 1, maxXY + graphicsOffset - 1, TextDrawArea.Height - (yLine - 1));
 		}
 
 		string measureText = newText.Substring(posLine);
@@ -972,7 +976,7 @@ public class TextBox : TextBoxBase
 		}
 		if (caretBounds.Left- XViewOffset < TextDrawArea.Left)
 		{
-			XViewOffset = caretBounds.Left;
+			XViewOffset = caretBounds.Left - 1;
 		}
 		else if (caretBounds.Right - XViewOffset > TextDrawArea.Right)
 		{
@@ -995,7 +999,7 @@ public class TextBox : TextBoxBase
 			}
 			else if (textAlign == HorizontalAlignment.Right)
 			{
-				XViewOffset = maxXY - TextDrawArea.Width + 2;
+				XViewOffset = maxXY - TextDrawArea.Width - graphicsOffset + 1;
 			}
 		}
 		else
@@ -1420,7 +1424,7 @@ public class TextBox : TextBoxBase
 					// Setup the first values.
 					if (y == int.MinValue)
 					{
-						x = bounds.X;
+						x = bounds.X - graphicsOffset;
 						y = bounds.Y;
 						prevFore = fore;
 					}
@@ -1451,6 +1455,7 @@ public class TextBox : TextBoxBase
 							{
 								lineText = text.Substring(lineStart, cleanI - lineStart + 1);
 							}
+							
 							if (Enabled)
 							{
 								g.DrawString(lineText, font, prevFore, new Point (x, y));
@@ -1461,7 +1466,7 @@ public class TextBox : TextBoxBase
 							}
 						}
 						lineStart = i;
-						x = bounds.X;
+						x = bounds.X - graphicsOffset;
 						y = bounds.Y;
 						prevFore = fore;
 					}

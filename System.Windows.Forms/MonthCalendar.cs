@@ -267,12 +267,12 @@ public class MonthCalendar : Control
 
 		using(Graphics g = MonthCalendar.DefaultGraphics)
 		{
-			int textWidth = Size.Round(g.MeasureString("w",font)).Width;
+			int textWidth = g.MeasureCharacters("w", Font, new Rectangle(0,0, 100, 100), new StringFormat())[0].Width;
 			int textHeight = font.Height;
 
 			textSize = new Size(textWidth, textHeight);	
 
-			numSize = Size.Round(g.MeasureString("9",Font));	
+			numSize = g.MeasureCharacters("9", Font, new Rectangle(0,0, 100, 100), new StringFormat())[0].Size;
 		}
 
 		cellSize = new Size(textSize.Width*3 + 1 , textSize.Height+2);

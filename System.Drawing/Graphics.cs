@@ -1527,6 +1527,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				// bail out now if there's nothing to draw
 				if(((Object)s) == null || s.Length == 0) { return; }
 
+				// make a little inset around the text dependent of the font size
+				layoutRectangle.Inflate((int)(-font.SizeInPoints*DpiX/369.7184), 0);
+
 				// convert the layout into device coordinates
 				Point[] rect = ConvertRectangle
 					((layoutRectangle.X + baseWindow.X),
@@ -2823,7 +2826,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					else
 					{
 						// set the maximum x to the maximum width
-						xMax = (layout.Width - 1);
+						xMax = (layout.Width - 1 - (int)(font.SizeInPoints*graphics.DpiX/369.7184));
 
 						// set the maximum y to the maximum height
 						yMax = (layout.Height - 1);
@@ -2995,7 +2998,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					int initialPos = currentPos;
 
 					// set the default x position
-					int x = 0;
+					int x = (int)(f.SizeInPoints*g.DpiX/369.7184);
 
 					// set the default y position
 					int y = 0;
@@ -3022,7 +3025,10 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							//TODO use Platform specific measure function & take into account kerning
 
 							// get the size of the current character
-							Size s = g.MeasureString(c.ToString(), f).ToSize();
+							g.SelectFont(f);
+							int charactersFitted, linesFilled;
+							Size s = g.ToolkitGraphics.MeasureString(c.ToString(), null, null, out charactersFitted, out linesFilled, false);
+							s.Height = f.Height;
 
 							// ??
 							int newX = x;
@@ -3197,8 +3203,10 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					calculator.LayoutByWords();
 
 					// calculate and return the bounds of the text
-					return calculator.GetBounds
+					SizeF s = calculator.GetBounds
 						(out charactersFitted, out linesFilled);
+					s.Width += font.SizeInPoints*DpiX/184.8592;
+					return s;
 				}
 				else
 				{
@@ -3216,7 +3224,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					linesFilled = 1;
 
 					// return the size of the text
-					return new SizeF(size.Width, font.Height);
+					return new SizeF(size.Width + font.SizeInPoints*DpiX/184.8592f, font.Height);
 				}
 			}
 

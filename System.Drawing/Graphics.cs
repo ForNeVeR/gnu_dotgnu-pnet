@@ -4924,7 +4924,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								GetNextSpan(span);
 
 								// handle span on new line
-								if(span.newline)
+								if(span.newline && !firstSpan)
 								{
 									// remove trailing spaces, if needed
 									if(!firstSpan && text[prev.start] == ' ')

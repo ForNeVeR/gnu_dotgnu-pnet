@@ -1,3 +1,7 @@
+2005-10-25  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
+
+	* System.Drawing/Graphics.cs : fixes drawing text if LineAlignment = Far and drawing rect less than textsize
+
 2005-10-21  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* System.Drawing/Graphics.cs : fixes drawing text like windows with little offset left

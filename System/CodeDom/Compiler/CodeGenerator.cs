@@ -1197,9 +1197,9 @@ public abstract class CodeGenerator : ICodeGenerator
 					case CodeBinaryOperatorType.BitwiseAnd:
 						oper = "&"; break;
 					case CodeBinaryOperatorType.BooleanOr:
-						oper = "&&"; break;
-					case CodeBinaryOperatorType.BooleanAnd:
 						oper = "||"; break;
+					case CodeBinaryOperatorType.BooleanAnd:
+						oper = "&&"; break;
 					case CodeBinaryOperatorType.LessThan:
 						oper = "<"; break;
 					case CodeBinaryOperatorType.LessThanOrEqual:

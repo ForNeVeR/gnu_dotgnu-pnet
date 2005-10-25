@@ -1,16 +1,27 @@
+2005-10-26  Deryk Robosson  <deryk@0x0a.com>
+
+	* System/CodeDom/Compiler/CodeGenerator.cs: Fix bool or/and cases (bug
+	#14858)
+	* System/CodeDom/Compiler/VBCodeCompiler.cs: Fix bool or/and cases
+	(bug #14858)
+
 2005-10-25  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
-	* System.Drawing/Graphics.cs : fixes drawing text if LineAlignment = Far and drawing rect less than textsize
+	* System.Drawing/Graphics.cs : fixes drawing text if LineAlignment =
+	Far and drawing rect less than textsize
 
 2005-10-21  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
-	* System.Drawing/Graphics.cs : fixes drawing text like windows with little offset left
-	* System.Windows.Forms/MonthCalendar.cs : fixes drawing text like windows
+	* System.Drawing/Graphics.cs : fixes drawing text like windows with
+	little offset left
+	* System.Windows.Forms/MonthCalendar.cs : fixes drawing text like
+	Windows
 	* System.Windows.Forms/TextBox.cs : fixes drawing text like windows
 
 2005-10-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System/Net/Sockets/SocketException.cs : fixed creating socketexception with errno.
+	* System/Net/Sockets/SocketException.cs : fixed creating
+	socketexception with errno.
 
 2005-10-18  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 

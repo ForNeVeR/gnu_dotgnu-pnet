@@ -1187,9 +1187,9 @@ internal class VBCodeCompiler : CodeCompiler
 					case CodeBinaryOperatorType.BitwiseAnd:
 						oper = "And"; break;
 					case CodeBinaryOperatorType.BooleanOr:
-						oper = "AndAlso"; break;
-					case CodeBinaryOperatorType.BooleanAnd:
 						oper = "OrElse"; break;
+					case CodeBinaryOperatorType.BooleanAnd:
+						oper = "AndAlso"; break;
 					case CodeBinaryOperatorType.LessThan:
 						oper = "<"; break;
 					case CodeBinaryOperatorType.LessThanOrEqual:

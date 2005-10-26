@@ -5697,8 +5697,9 @@ public class Control : IWin32Window, IDisposable
 							}
 							
 							// Notify the owner that the control was added.
-							owner.OnControlAdded
-								(new ControlEventArgs(value));
+							// no, do not notify, because the statement value.Parent = owner does the notify for us.
+							/* owner.OnControlAdded
+								(new ControlEventArgs(value)); */
 						}
 					}
 				}

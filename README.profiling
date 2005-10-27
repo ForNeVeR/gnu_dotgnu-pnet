@@ -53,13 +53,13 @@ the first column:
 
  * Count: how many times was the method called ?
  * Total time: the total accumulated time spent in the method (in
-   milliseconds)
- * Average time: "Total time" divided by "count" (in milliseconds)
+   microseconds)
+ * Average time: "Total time" divided by "count" (in microseconds)
  * The method name (including argument and return types)
 
 On fast machines some methods may show an average time of "0". This is just
 normal and just means the method took a few nanoseconds in average, that is
-less than a millisecond.
+less than a microsecond.
 
 
 WHY DIDN'T THE PROFILER MEASURE ANY TIMES ?

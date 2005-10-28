@@ -2829,60 +2829,66 @@ public class Control : IWin32Window, IDisposable
 				for(posn = numChildren - 1; posn >= 0; --posn)
 				{
 					child = children[posn];
-					switch(child.Dock)
+					if(child.Visible)
 					{
-						case DockStyle.Top:
+						switch(child.Dock)
 						{
-							child.SetBounds
-								(left, top, right - left, child.Height);
-							top += child.Height;
+							case DockStyle.Top:
+							{
+								child.SetBounds
+									(left, top, right - left, child.Height);
+								top += child.Height;
+							}
+							break;
+	
+							case DockStyle.Bottom:
+							{
+								temp = child.Height;
+								child.SetBounds
+									(left, bottom - temp, right - left, temp);
+								bottom -= child.Height;
+							}
+							break;
+	
+							case DockStyle.Left:
+							{
+								child.SetBounds
+									(left, top, child.Width, bottom - top);
+								left += child.Width;
+							}
+							break;
+	
+							case DockStyle.Right:
+							{
+								temp = child.Width;
+								child.SetBounds
+									(right - temp, top, temp, bottom - top);
+								right -= child.Width;
+							}
+							break;
+	
+							case DockStyle.Fill:
+							{
+								child.SetBounds
+									(left, top, right - left, bottom - top);
+								right = left;
+								bottom = top;
+							}
+							break;
 						}
-						break;
-
-						case DockStyle.Bottom:
-						{
-							temp = child.Height;
-							child.SetBounds
-								(left, bottom - temp, right - left, temp);
-							bottom -= child.Height;
-						}
-						break;
-
-						case DockStyle.Left:
-						{
-							child.SetBounds
-								(left, top, child.Width, bottom - top);
-							left += child.Width;
-						}
-						break;
-
-						case DockStyle.Right:
-						{
-							temp = child.Width;
-							child.SetBounds
-								(right - temp, top, temp, bottom - top);
-							right -= child.Width;
-						}
-						break;
-
-						case DockStyle.Fill:
-						{
-							child.SetBounds
-								(left, top, right - left, bottom - top);
-							right = left;
-							bottom = top;
-						}
-						break;
 					}
 				}
 				
 				for(posn = numChildren - 1; posn >= 0; --posn)
 				{
 					child = children[posn];
-					if (child.Dock == DockStyle.None)
+					if(child.Visible)
 					{
-						// rect is still the DisplayRectangle
-						PerformAnchorLayout (child, rect);
+						if (child.Dock == DockStyle.None)
+						{
+							// rect is still the DisplayRectangle
+							PerformAnchorLayout (child, rect);
+						}
 					}
 				}
 			} 

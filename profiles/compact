@@ -97,3 +97,7 @@ IL_CONFIG_DEBUG_LINES=n
 
 # Use file and directory internalcalls (y/n).
 IL_CONFIG_FILESYSTEM=y
+
+# ECMA compliance. Might differ from observed behavior of .NET (y/n).
+IL_CONFIG_ECMA=y
+

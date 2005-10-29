@@ -1,3 +1,13 @@
+2005-10-29  Peter Fristedt  <belial@belial.com>
+
+	* engine/lib_reflect.c: allow modification of init only fields through
+	reflection (like in mono or ms) when IL_CONFIG_ECMA is set to n in the
+	profile.
+
+	* profiles/compact, profiles/compact-fp, profiles/full, profiles/full-tl,
+	profiles/kernel, profiles/kernel-fp, profiles/tiny: add IL_CONFIG_ECMA
+	switch (bug #14876, Klaus).
+
 2005-10-19  Jason Clouse  <jhcclouse@charter.net>
 
 	* cscc/csharp/cs_misc.cs: allow sizeof(primitive type) in safe code.

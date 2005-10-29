@@ -2505,8 +2505,14 @@ void _IL_ClrField_SetValueInternal(ILExecThread *thread, ILObject *_this,
 		return;
 	}
 
+
+
 	/* Is the field literla, static or instance? */
+#ifdef IL_CONFIG_ECMA
 	if(ILField_IsLiteral(field) || ILField_IsInitOnly(field))
+#else
+	if(ILField_IsLiteral(field))
+#endif
 	{
 		/* Cannot set literal fields */
 		ILExecThreadThrowSystem

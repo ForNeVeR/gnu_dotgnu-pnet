@@ -3,13 +3,13 @@
 <!-- Full profile, that enables all relevant features -->
 
 <!-- Main framework version -->
-<define name="FRAMEWORK_VERSION" value="2.0.3600.0"/>
+<define name="FRAMEWORK_VERSION" value="2.0.0.0"/>
 
 <!-- Secondary framework version -->
-<define name="SECONDARY_VERSION" value="8.0.1200.0"/>
+<define name="SECONDARY_VERSION" value="8.0.50727.42"/>
 
 <!-- Metadata version to embed in assembly headers -->
-<define name="METADATA_VERSION" value="v2.0.40607"/>
+<define name="METADATA_VERSION" value="v2.0.50727"/>
 
 <!-- Install as the default version in the assembly cache -->
 <define name="INSTALL_AS_DEFAULT" value="true"/>

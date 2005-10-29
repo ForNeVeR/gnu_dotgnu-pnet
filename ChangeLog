@@ -1,3 +1,7 @@
+2005-10-29  Klaus Treichel  <ktreichel@web.de>
+
+	* profiles/full: change versions to match MS .NET framework 2.0.
+
 2005-10-28  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs : fixed : non visible controls are no longer included while layouting

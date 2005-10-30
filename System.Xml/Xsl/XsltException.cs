@@ -25,73 +25,132 @@
 
 using System;
 using System.Runtime.Serialization;
+using System.Xml.XPath;
 
 namespace System.Xml.Xsl
 {
+#if CONFIG_SERIALIZATION
+	[Serializable]
+#endif
 	public class XsltException: System.SystemException
 	{
-		[TODO]
-		public XsltException(String message, Exception innerException)
+		private int lineNumber;
+		private int linePosition;
+		private String sourceUri;
+
+		private static String CreateMessage(String message, XPathNavigator nav)
 		{
-			throw new NotImplementedException(".ctor");
+			IXmlLineInfo li = nav as IXmlLineInfo;
+			int lineNumber = li != null ? li.LineNumber : 0;
+			int linePosition = li != null ? li.LinePosition : 0;
+			String sourceUri = nav != null ? nav.BaseURI : String.Empty;
+			return CreateMessage(lineNumber, linePosition, sourceUri, message);
+		}
+
+		private static String CreateMessage(int lineNumber, int linePosition,
+											String sourceUri, String msg)
+		{
+			if(sourceUri != null)
+			{
+				msg = String.Concat(msg, " ", sourceUri);
+			}
+			if(lineNumber != 0)
+			{
+				msg = String.Concat(msg, " line ", lineNumber);
+			}
+			if(linePosition != 0)
+			{
+				msg = String.Concat(msg, ", position ", linePosition);
+			}
+			return msg;
+		}
+
+#if CONFIG_FRAMEWORK_2_0
+		public XsltException() : base(String.Empty, null)
+		{
+		}
+
+		public XsltException(String message) : base(message, null)
+		{
+		}
+#endif
+
+		public XsltException(String message, Exception innerException)
+			: base(message, innerException)
+		{
+		}
+
+		protected internal XsltException(String sourceUri, int lineNumber,
+								int linePosition, Exception innerException)
+			: base(CreateMessage(lineNumber, linePosition, sourceUri, String.Empty),
+					innerException)
+		{
 		}
 
 #if CONFIG_SERIALIZATION
 
-		[TODO]
 		protected XsltException(SerializationInfo info, 
 								StreamingContext context)
 		{
-			throw new NotImplementedException(".ctor");
+			lineNumber = info.GetInt32("lineNumber");
+			linePosition = info.GetInt32("linePosition");
+			sourceUri = info.GetString("sourceUri");
 		}
 
-		[TODO]
 		public override void GetObjectData(SerializationInfo info, 
 											StreamingContext context)
 		{
-			throw new NotImplementedException("GetObjectData");
+			base.GetObjectData(info, context);
+			info.AddValue("lineNumber", lineNumber);
+			info.AddValue("linePosition", linePosition);
+			info.AddValue("sourceUri", sourceUri);
 		}
 
 #endif
 
-		[TODO]
 		public int LineNumber 
 		{
  			get
 			{
-				throw new NotImplementedException("LineNumber");
+				return lineNumber;
 			}
-
  		}
 
-		[TODO]
 		public int LinePosition 
 		{
  			get
 			{
-				throw new NotImplementedException("LinePosition");
+				return linePosition;
 			}
-
  		}
 
-		[TODO]
 		public override String Message 
 		{
  			get
 			{
-				throw new NotImplementedException("Message");
+				String msg = base.Message;
+				if(sourceUri != null)
+				{
+					msg = String.Concat(msg, " ", sourceUri);
+				}
+				if(lineNumber != 0)
+				{
+					msg = String.Concat(msg, " line ", lineNumber);
+				}
+				if(linePosition != 0)
+				{
+					msg = String.Concat(msg, ", position ", linePosition);
+				}
+				return msg;
 			}
-
  		}
 
-		[TODO]
 		public String SourceUri 
 		{
  			get
 			{
-				throw new NotImplementedException("SourceUri");
+				return sourceUri;
 			}
-
  		}
 
 	}

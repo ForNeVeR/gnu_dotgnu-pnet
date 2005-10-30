@@ -23,58 +23,160 @@
 #if !ECMA_COMPAT
 
 using System;
+using System.Collections;
+using System.Xml.XPath;
+
 namespace System.Xml.Xsl
 {
-	public sealed class XsltArgumentList
+	public
+#if !CONFIG_FRAMEWORK_2_0
+	sealed
+#endif
+	class XsltArgumentList
 	{
-		[TODO]
+		private Hashtable extensions;
+		private Hashtable parameters;
+
 		public XsltArgumentList()
 		{
-			throw new NotImplementedException(".ctor");
+			extensions = new Hashtable ();
+			parameters = new Hashtable ();
 		}
 
-		[TODO]
 		public void AddExtensionObject(String namespaceUri, Object extension)
 		{
-			throw new NotImplementedException("AddExtensionObject");
+			if(namespaceUri == null)
+			{
+				throw new ArgumentException("namespaceUri");
+			}
+			if(namespaceUri == "http://www.w3.org/1999/XSL/Transform")
+			{
+				throw new ArgumentException("namespaceUri");
+			}
+			if(extensions.Contains (namespaceUri))
+			{
+				throw new ArgumentException("namespaceUri");
+			}
+			
+			extensions[namespaceUri] = extension;
 		}
 
-		[TODO]
 		public void AddParam(String name, String namespaceUri, Object parameter)
 		{
-			throw new NotImplementedException("AddParam");
+			XmlQualifiedName qName;
+
+			if(namespaceUri == null)
+			{
+				throw new ArgumentException("namespaceUri");
+			}
+			if(namespaceUri == "http://www.w3.org/1999/XSL/Transform")
+			{
+				throw new ArgumentException("namespaceUri");
+			}
+			if(name == null)
+			{
+				throw new ArgumentException("name");
+			}
+
+			qName = new XmlQualifiedName(name, namespaceUri);
+			if(parameters.Contains(qName))
+			{
+				throw new ArgumentException("namespaceUri");
+			}
+			parameter = ValidateParam(parameter);
+			parameters[qName] = parameter;
 		}
 
-		[TODO]
 		public void Clear()
 		{
-			throw new NotImplementedException("Clear");
+			extensions.Clear();
+			parameters.Clear();
 		}
 
-		[TODO]
 		public Object GetExtensionObject(String namespaceUri)
 		{
-			throw new NotImplementedException("GetExtensionObject");
+			return extensions[namespaceUri];
 		}
 
-		[TODO]
 		public Object GetParam(String name, String namespaceUri)
 		{
-			throw new NotImplementedException("GetParam");
+			XmlQualifiedName qName;
+
+			if(name == null)
+			{
+				throw (new ArgumentException("name"));
+			}
+			qName = new XmlQualifiedName(name, namespaceUri);
+			return parameters[qName];
 		}
 
-		[TODO]
 		public Object RemoveExtensionObject(String namespaceUri)
 		{
-			throw new NotImplementedException("RemoveExtensionObject");
+			Object extensionObject = this.GetExtensionObject(namespaceUri);
+			extensions.Remove(namespaceUri);
+			return extensionObject;
 		}
 
-		[TODO]
 		public Object RemoveParam(String name, String namespaceUri)
 		{
-			throw new NotImplementedException("RemoveParam");
+			XmlQualifiedName qName = new XmlQualifiedName(name, namespaceUri);
+			Object parameter = this.GetParam(name, namespaceUri);
+			parameters.Remove(qName);
+			return parameter;
 		}
 
+		private Object ValidateParam(Object parameter)
+		{
+			if(parameter is string)
+			{
+				return parameter;
+			}
+			if(parameter is bool)
+			{
+				return parameter;
+			}
+			if(parameter is double)
+			{
+				return parameter;
+			}
+			if(parameter is XPathNavigator)
+			{
+				return parameter;
+			}
+			if(parameter is XPathNodeIterator)
+			{
+				return parameter;
+			}
+			if(parameter is Int16)
+			{
+				return (double)(Int16)parameter;
+			}
+			if(parameter is UInt16)
+			{
+				return (double)(UInt16)parameter;
+			}
+			if(parameter is Int32)
+			{
+				return (double)(Int32)parameter;
+			}
+			if(parameter is Int64)
+			{
+				return (double)(Int64)parameter;
+			}
+			if(parameter is UInt64)
+			{
+				return (double)(UInt64)parameter;
+			}
+			if(parameter is Single)
+			{
+				return (double)(Single)parameter;
+			}
+			if(parameter is decimal)
+			{
+				return (double)(decimal)parameter;
+			}
+			return parameter.ToString();
+		}
 	}
 }//namespace
 #endif

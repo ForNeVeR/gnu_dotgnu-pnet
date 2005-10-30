@@ -29,37 +29,58 @@ using System.Runtime.Serialization;
 
 namespace System.Xml.Xsl
 {
+#if CONFIG_SERIALIZATION
+	[Serializable]
+#endif
 	public class XsltCompileException: XsltException
 	{
-		[TODO]
+#if CONFIG_FRAMEWORK_2_0
+		public XsltCompileException() : base(String.Empty, null)
+		{
+		}
+
+		public XsltCompileException(string message) : base(message, null)
+		{
+		}
+
+		public XsltCompileException(string message, Exception innerException)
+			: base(message, innerException)
+		{
+		}
+#endif
+
+		protected XsltCompileException(SerializationInfo info, StreamingContext context)
+			: base (info, context)
+		{
+		}
+
 		public XsltCompileException(Exception inner, String sourceUri, 
 									int lineNumber, int linePosition) 
-									: base(sourceUri, inner)
+									: base(sourceUri, lineNumber, linePosition,
+											inner)
 		{
-			throw new NotImplementedException(".ctor");
 		}
 
 #if CONFIG_SERIALIZATION
 
-		[TODO]
 		public override void GetObjectData(SerializationInfo info, 
 											StreamingContext context)
 		{
-			throw new NotImplementedException("GetObjectData");
+			base.GetObjectData (info, context);
 		}
 
 #endif
 
-		[TODO]
+#if !CONFIG_FRAMEWORK_2_0
 		public override String Message 
 		{
  			get
 			{
-				throw new NotImplementedException("Message");
+				return base.Message;
 			}
 
  		}
-
+#endif
 	}
 }//namespace
 #endif /* CONFIG_XSL */

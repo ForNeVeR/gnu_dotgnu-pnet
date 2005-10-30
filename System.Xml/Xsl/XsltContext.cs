@@ -38,10 +38,8 @@ namespace System.Xml.Xsl
 			throw new NotImplementedException(".ctor");
 		}
 
-		[TODO]
 		public XsltContext(NameTable table) : base(table)
 		{
-			throw new NotImplementedException(".ctor");
 		}
 
 		public abstract int CompareDocument(String baseUri, 

@@ -1,3 +1,15 @@
+2005-10-30  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Xml/ConformanceLevel.cs, System.Xml/NewLineHandling.cs,
+	System.Xml/XmlOutputMethod.cs, System.Xml/Xsl/XsltSettings.cs: Add new 2.0
+	classes.
+
+	* System.Xml/Xsl/XslCompiledTransform.cs: Add new 2.0 stub.
+
+	* System.Xml/Xsl/XsltArgumentList.cs,
+	System.Xml/Xsl/XsltCompileException.cs, System.Xml/Xsl/XsltContext.cs,
+	System.Xml/Xsl/XsltException.cs: Implement functionality.
+
 2005-10-29  Klaus Treichel  <ktreichel@web.de>
 
 	* profiles/full: change versions to match MS .NET framework 2.0.

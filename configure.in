@@ -154,6 +154,9 @@ if test "$THREADS" = "no"; then
 	*-freebsd*)
 			THREADS=posix
 			;;
+	*-*-darwin*)
+			THREADS=posix
+			;;
 	*-*-beos*)
 			THREADS=beos
 			;;	
@@ -208,6 +211,11 @@ case "$THREADS" in
 	AC_DEFINE(GC_OPENBSD_THREADS, 1, [Define to use libgc openbsd thread support])
 	INCLUDES="$INCLUDES -pthread"
 	THREADLIBS=-pthread
+	;;
+	*-*-darwin*)
+	AC_DEFINE(GC_DARWIN_THREADS, 1, [Define to use libgc darwin thread support])
+	INCLUDES="$INCLUDES -pthread"
+	THREADLIBS=-lpthread
 	;;
      *-*-solaris*)
 	AC_DEFINE(GC_SOLARIS_THREADS, 1, [Define to use libgc solaris thread support])

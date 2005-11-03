@@ -19,64 +19,66 @@
  */
 
 #include "cvm_config.h"
-#include "md_x86.h"
+#include "md_amd64.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
 
-#ifdef CVM_X86
+#ifdef CVM_X86_64
 
-md_inst_ptr _md_x86_shift(md_inst_ptr inst, int opc, int reg1, int reg2)
+md_inst_ptr _md_amd64_shift(md_inst_ptr inst, int opc, int reg1, int reg2)
 {
-	if(reg2 == X86_ECX)
+	if(reg2 == AMD64_RCX)
 	{
 		/* The shift value is already in ECX */
-		x86_shift_reg(inst, opc, reg1);
+		amd64_shift_reg_size(inst, opc, reg1, 4);
 	}
-	else if(reg1 == X86_ECX)
+	else if(reg1 == AMD64_RCX)
 	{
 		/* The value to be shifted is in ECX, so swap the order */
-		x86_xchg_reg_reg(inst, reg1, reg2, 4);
-		x86_shift_reg(inst, opc, reg2);
-		x86_mov_reg_reg(inst, reg1, reg2, 4);
+		amd64_xchg_reg_reg(inst, reg1, reg2, 4);
+		amd64_shift_reg_size(inst, opc, reg2, 4);
+		amd64_mov_reg_reg(inst, reg1, reg2, 4);
 	}
 	else
 	{
 		/* Save ECX, perform the shift, and then restore ECX */
-		x86_push_reg(inst, X86_ECX);
-		x86_mov_reg_reg(inst, X86_ECX, reg2, 4);
-		x86_shift_reg(inst, opc, reg1);
-		x86_pop_reg(inst, X86_ECX);
+		amd64_push_reg(inst, AMD64_RCX);
+		amd64_mov_reg_reg(inst, AMD64_RCX, reg2, 4);
+		amd64_shift_reg_size(inst, opc, reg1, 4);
+		amd64_pop_reg(inst, AMD64_RCX);
 	}
 	return inst;
 }
 
-md_inst_ptr _md_x86_mov_membase_reg_byte
+
+md_inst_ptr _md_amd64_mov_membase_reg_byte
 			(md_inst_ptr inst, int basereg, int offset, int srcreg)
 {
-	if(srcreg == X86_EAX || srcreg == X86_EBX ||
-	   srcreg == X86_ECX || srcreg == X86_EDX)
+	if(srcreg == AMD64_RAX || srcreg == AMD64_RBX ||
+	   srcreg == AMD64_RCX || srcreg == AMD64_RDX)
 	{
-		x86_mov_membase_reg(inst, basereg, offset, srcreg, 1);
+		amd64_mov_membase_reg(inst, basereg, offset, srcreg, 1);
 	}
-	else if(basereg != X86_EAX)
+	else if(basereg != AMD64_RAX)
 	{
-		x86_push_reg(inst, X86_EAX);
-		x86_mov_reg_reg(inst, X86_EAX, srcreg, 4);
-		x86_mov_membase_reg(inst, basereg, offset, X86_EAX, 1);
-		x86_pop_reg(inst, X86_EAX);
+		amd64_push_reg(inst, AMD64_RAX);
+		amd64_mov_reg_reg(inst, AMD64_RAX, srcreg, 4);
+		amd64_mov_membase_reg(inst, basereg, offset, AMD64_RAX, 1);
+		amd64_pop_reg(inst, AMD64_RAX);
 	}
 	else
 	{
-		x86_push_reg(inst, X86_EDX);
-		x86_mov_reg_reg(inst, X86_EDX, srcreg, 4);
-		x86_mov_membase_reg(inst, basereg, offset, X86_EDX, 1);
-		x86_pop_reg(inst, X86_EDX);
+		amd64_push_reg(inst, AMD64_RDX);
+		amd64_mov_reg_reg(inst, AMD64_RDX, srcreg, 4);
+		amd64_mov_membase_reg(inst, basereg, offset, AMD64_RDX, 1);
+		amd64_pop_reg(inst, AMD64_RDX);
 	}
 	return inst;
 }
 
+#if 0 /* TODO */
 md_inst_ptr _md_x86_mov_memindex_reg_byte(md_inst_ptr inst, int basereg,
 							   			  unsigned offset, int indexreg,
 							   			  int srcreg)
@@ -131,76 +133,78 @@ md_inst_ptr _md_x86_rem_float
 	}
 	return inst;
 }
+#endif
 
-md_inst_ptr _md_x86_setcc(md_inst_ptr inst, int reg, int cond)
+md_inst_ptr _md_amd64_setcc(md_inst_ptr inst, int reg, int cond)
 {
 	if(cond == X86_CC_EQ || cond == X86_CC_NE)
 	{
-		x86_alu_reg_reg(inst, X86_OR, reg, reg);
+		amd64_alu_reg_reg_size(inst, X86_OR, reg, reg, 4);
 	}
 	else
 	{
-		x86_alu_reg_imm(inst, X86_CMP, reg, 0);
+		amd64_alu_reg_imm_size(inst, X86_CMP, reg, 0, 4);
 	}
-	if(reg == X86_EAX || reg == X86_EBX || reg == X86_ECX || reg == X86_EDX)
+	if(reg == AMD64_RAX || reg == AMD64_RBX || reg == AMD64_RCX || reg == AMD64_RDX)
 	{
 		/* Use a SETcc instruction if we have a basic register */
-		x86_set_reg(inst, cond, reg, 1);
-		x86_widen_reg(inst, reg, reg, 0, 0);
+		amd64_set_reg_size(inst, cond, reg, 1, 4);
+		amd64_widen_reg_size(inst, reg, reg, 0, 0, 4);
 	}
 	else
 	{
 		/* The register is not useable as an 8-bit destination */
 		unsigned char *patch1, *patch2;
 		patch1 = inst;
-		x86_branch8(inst, cond, 0, 1);
-		x86_clear_reg(inst, reg);
+		amd64_branch8(inst, cond, 0, 1);
+		amd64_clear_reg_size(inst, reg, 4);
 		patch2 = inst;
-		x86_jump8(inst, 0);
-		x86_patch(patch1, inst);
-		x86_mov_reg_imm(inst, reg, 1);
-		x86_patch(patch2, inst);
+		amd64_jump8(inst, 0);
+		amd64_patch(patch1, inst);
+		amd64_mov_reg_imm_size(inst, reg, 1, 4);
+		amd64_patch(patch2, inst);
 	}
 	return inst;
 }
 
-md_inst_ptr _md_x86_compare(md_inst_ptr inst, int reg1, int reg2, int isSigned)
+md_inst_ptr _md_amd64_compare(md_inst_ptr inst, int reg1, int reg2, int isSigned, int size)
 {
 	unsigned char *patch1, *patch2, *patch3;
-	x86_alu_reg_reg(inst, X86_CMP, reg1, reg2);
+	amd64_alu_reg_reg_size(inst, X86_CMP, reg1, reg2, size);
 	patch1 = inst;
-	x86_branch8(inst, X86_CC_GE, 0, isSigned);
-	x86_mov_reg_imm(inst, reg1, -1);
+	amd64_branch8(inst, X86_CC_GE, 0, isSigned);
+	amd64_mov_reg_imm_size(inst, reg1, -1, size);
 	patch2 = inst;
-	x86_jump8(inst, 0);
-	x86_patch(patch1, inst);
+	amd64_jump8(inst, 0);
+	amd64_patch(patch1, inst);
 	patch1 = inst;
-	x86_branch8(inst, X86_CC_EQ, 0, 0);
-	x86_mov_reg_imm(inst, reg1, 1);
+	amd64_branch8(inst, X86_CC_EQ, 0, 0);
+	amd64_mov_reg_imm_size(inst, reg1, 1, size);
 	patch3 = inst;
-	x86_jump8(inst, 0);
-	x86_patch(patch1, inst);
-	x86_clear_reg(inst, reg1);
-	x86_patch(patch2, inst);
-	x86_patch(patch3, inst);
+	amd64_jump8(inst, 0);
+	amd64_patch(patch1, inst);
+	amd64_clear_reg_size(inst, reg1, size);
+	amd64_patch(patch2, inst);
+	amd64_patch(patch3, inst);
 	return inst;
 }
 
-md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned)
+md_inst_ptr _md_amd64_widen_byte(md_inst_ptr inst, int reg, int isSigned)
 {
-	if(reg == X86_EAX || reg == X86_EBX || reg == X86_ECX || reg == X86_EDX)
+	if(reg == AMD64_RAX || reg == AMD64_RBX || reg == AMD64_RCX || reg == AMD64_RDX)
 	{
-		x86_widen_reg(inst, reg, reg, isSigned, 0);
+		amd64_widen_reg(inst, reg, reg, isSigned, 0);
 	}
 	else
 	{
-		x86_push_reg(inst, X86_EAX);
-		x86_mov_reg_reg(inst, X86_EAX, reg, 4);
-		x86_widen_reg(inst, reg, X86_EAX, isSigned, 0);
-		x86_pop_reg(inst, X86_EAX);
+		amd64_push_reg(inst, AMD64_RAX);
+		amd64_mov_reg_reg(inst, AMD64_RAX, reg, 4);
+		amd64_widen_reg(inst, reg, AMD64_RAX, isSigned, 0);
+		amd64_pop_reg(inst, AMD64_RAX);
 	}
 	return inst;
 }
+#if 0
 
 md_inst_ptr _md_x86_cmp_float(md_inst_ptr inst, int dreg, int lessop)
 {
@@ -258,8 +262,9 @@ md_inst_ptr _md_x86_cmp_float(md_inst_ptr inst, int dreg, int lessop)
 	}
 	return inst;
 }
+#endif
 
-#endif /* CVM_X86 */
+#endif /* CVM_X86_64 */
 
 #ifdef	__cplusplus
 };

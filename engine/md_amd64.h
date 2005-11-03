@@ -293,11 +293,11 @@ typedef unsigned char *md_inst_ptr;
 /*
  * Store a byte value to an offset from a pointer register.
  */
-md_inst_ptr _md_x86_mov_membase_reg_byte
+md_inst_ptr _md_amd64_mov_membase_reg_byte
 			(md_inst_ptr inst, int basereg, int offset, int srcreg);
 #define	md_store_membase_byte(inst,reg,basereg,offset)	\
 			do { \
-				(inst) = _md_x86_mov_membase_reg_byte	\
+				(inst) = _md_amd64_mov_membase_reg_byte	\
 					((inst), (basereg), (int)(offset), (reg)); \
 			} while (0)
 
@@ -375,15 +375,15 @@ extern md_inst_ptr _md_x86_divide(md_inst_ptr inst, int reg1, int reg2,
 			amd64_alu_reg_reg_size((inst), X86_OR, (reg1), (reg2), 4)
 #define	md_not_reg_word_32(inst,reg)	\
 			amd64_not_reg_size((inst), (reg), 4)
-extern md_inst_ptr _md_x86_shift(md_inst_ptr inst, int opc, int reg1, int reg2);
+extern md_inst_ptr _md_amd64_shift(md_inst_ptr inst, int opc, int reg1, int reg2);
 #define	md_shl_reg_reg_word_32(inst,reg1,reg2)	\
-			do { (inst) = _md_x86_shift \
+			do { (inst) = _md_amd64_shift \
 					((inst), X86_SHL, (reg1), (reg2)); } while (0)
 #define	md_shr_reg_reg_word_32(inst,reg1,reg2)	\
-			do { (inst) = _md_x86_shift \
+			do { (inst) = _md_amd64_shift \
 					((inst), X86_SAR, (reg1), (reg2)); } while (0)
 #define	md_ushr_reg_reg_word_32(inst,reg1,reg2)	\
-			do { (inst) = _md_x86_shift \
+			do { (inst) = _md_amd64_shift \
 					((inst), X86_SHR, (reg1), (reg2)); } while (0)
 /* 
  * Perform arithmetic on native word values 
@@ -454,14 +454,14 @@ extern md_inst_ptr _md_x86_cmp_float(md_inst_ptr inst, int dreg, int lessop);
 /*
  * Convert word registers between various types.
  */
-extern md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned);
+extern md_inst_ptr _md_amd64_widen_byte(md_inst_ptr inst, int reg, int isSigned);
 #define	md_reg_to_byte(inst,reg)	\
 			do { \
-				(inst) = _md_x86_widen_byte((inst), (reg), 0); \
+				(inst) = _md_amd64_widen_byte((inst), (reg), 0); \
 			} while (0)
 #define	md_reg_to_sbyte(inst,reg)	\
 			do { \
-				(inst) = _md_x86_widen_byte((inst), (reg), 1); \
+				(inst) = _md_amd64_widen_byte((inst), (reg), 1); \
 			} while (0)
 #define	md_reg_to_short(inst,reg)	\
 			amd64_widen_reg((inst), (reg), (reg), 1, 1)
@@ -470,7 +470,7 @@ extern md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned);
 #define	md_reg_to_word_32(inst,reg)	\
 			amd64_mov_reg_reg((inst), (reg), (reg), 4)
 #define	md_reg_to_word_native(inst,reg)	\
-			amd64_movxsd_reg_reg((inst), (reg), (reg))
+			amd64_movsxd_reg_reg((inst), (reg), (reg))
 #define	md_reg_to_word_native_un(inst,reg)	\
 			amd64_mov_reg_reg_size((inst), (reg), (reg), 4)
 
@@ -560,32 +560,34 @@ extern md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned);
 /*
  * Set a register to a 0 or 1 value based on a condition.
  */
-extern md_inst_ptr _md_x86_setcc(md_inst_ptr inst, int reg, int cond);
+extern md_inst_ptr _md_amd64_setcc(md_inst_ptr inst, int reg, int cond);
 #define	md_seteq_reg(inst,reg)	\
-			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_EQ); } while (0)
+			do { (inst) = _md_amd64_setcc((inst), (reg), X86_CC_EQ); } while (0)
 #define	md_setne_reg(inst,reg)	\
-			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_NE); } while (0)
+			do { (inst) = _md_amd64_setcc((inst), (reg), X86_CC_NE); } while (0)
 #define	md_setlt_reg(inst,reg)	\
-			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_LT); } while (0)
+			do { (inst) = _md_amd64_setcc((inst), (reg), X86_CC_LT); } while (0)
 #define	md_setle_reg(inst,reg)	\
-			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_LE); } while (0)
+			do { (inst) = _md_amd64_setcc((inst), (reg), X86_CC_LE); } while (0)
 #define	md_setgt_reg(inst,reg)	\
-			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_GT); } while (0)
+			do { (inst) = _md_amd64_setcc((inst), (reg), X86_CC_GT); } while (0)
 #define	md_setge_reg(inst,reg)	\
-			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_GE); } while (0)
+			do { (inst) = _md_amd64_setcc((inst), (reg), X86_CC_GE); } while (0)
 
 /*
  * Set a register to -1, 0, or 1 based on comparing two values.
  */
-extern md_inst_ptr _md_x86_compare
-				(md_inst_ptr inst, int reg1, int reg2, int isSigned);
+extern md_inst_ptr _md_amd64_compare
+				(md_inst_ptr inst, int reg1, int reg2, int isSigned, int size);
 #define	md_cmp_reg_reg_word_32(inst,reg1,reg2)	\
-			do { (inst) = _md_x86_compare \
-					((inst), (reg1), (reg2), 1); } while (0)
+			do { (inst) = _md_amd64_compare \
+					((inst), (reg1), (reg2), 1, 4); } while (0)
 #define	md_ucmp_reg_reg_word_32(inst,reg1,reg2)	\
-			do { (inst) = _md_x86_compare \
-					((inst), (reg1), (reg2), 0); } while (0)
-
+			do { (inst) = _md_amd64_compare \
+					((inst), (reg1), (reg2), 0, 4); } while (0)
+#define	md_ucmp_reg_reg_word_native(inst,reg1,reg2)	\
+			do { (inst) = _md_amd64_compare \
+					((inst), (reg1), (reg2), 0, 8); } while (0)
 /*
  * Set the condition codes based on comparing two values.
  * The "cond" value indicates the type of condition that we

@@ -6464,9 +6464,20 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Get the focused child, or this control if it has focus.
-	[TODO]
 	internal Control GetFocusedChild()
 			{
+				if(toolkitWindow != null && toolkitWindow.Focused)
+				{
+					return this;
+				}
+
+				for(int i = (numChildren - 1); i >= 0; --i)
+				{
+					if(children[i].ContainsFocus)
+					{
+						return children[i];
+					}
+				}
 				return null;
 			}
 

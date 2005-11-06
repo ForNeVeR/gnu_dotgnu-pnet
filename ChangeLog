@@ -3,6 +3,9 @@
 	* System.Windows.Forms/Control.cs: Implement GetFocusedChild
 	functionality.
 
+	* System.Windows.Forms/Screen.cs: Fill in the meat to GetBounds(Point)
+	and GetBounds(Rectangle) methods.
+
 2005-10-30  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Xml/ConformanceLevel.cs, System.Xml/NewLineHandling.cs,

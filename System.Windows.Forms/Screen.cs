@@ -153,15 +153,23 @@ public class Screen
 				return GetBounds(ctl.Bounds);	
 			}
 
-	[TODO]
 	public static Rectangle GetBounds(Point pt)
 			{
-				return new Rectangle(pt.X, pt.Y,0,0);
+				Rectangle r = PrimaryScreen.Bounds;
+				if(r.Contains(pt))
+				{
+					return r;
+				}
+				return new Rectangle(pt.X, pt.Y, 0, 0);
 			}
 
-	[TODO]
 	public static Rectangle GetBounds(Rectangle rect)
 			{
+				Rectangle r = PrimaryScreen.Bounds;
+				if(r.Contains(rect))
+				{
+					return(r);
+				}
 				return rect;
 			}
 

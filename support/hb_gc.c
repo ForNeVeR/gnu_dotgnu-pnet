@@ -154,7 +154,7 @@ static void _FinalizerThreadFunc(void *data)
  */
 static int _InvokeFinalizersSynchronously()
 {
-	long fg, bg;
+	unsigned long fg, bg;
 
 	ILThreadGetCounts(&fg, &bg);
 

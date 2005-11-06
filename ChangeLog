@@ -1,3 +1,15 @@
+2005-11-06  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_monitor.c: return 0 in _IL_Monitor_InternalWait when the
+	timeout expired before the lock could be aquired.
+
+	* support/hb_gc.c: fix a warning because of a difference in signedness.
+
+	* support/thread.c: replace the suspend / resume in ILThreadStart /
+	_ILThreadRun by a lock and release of the new threads lock mutex to
+	wait until ILStartThread has finished it's housekeeping. This fixes
+	problems on cygwin and MAC OSX where the resume got lost and the new
+	thread.didn't start.
 
 2005-11-03  Gopal V  <gopalv82@yahoo.com>
 

@@ -461,14 +461,20 @@ ILBool _IL_Monitor_InternalWait(ILExecThread *thread,
 
 		return 0;
 
-	case 1:
-	case IL_WAIT_TIMEOUT:
 	case IL_WAIT_FAILED:
+	case 1:
 
-		/* Success or timed out */
+		/* Success or wait failed */
 
 		/* Returning 1 because the lock is always regained */
 		return 1;
+
+	case IL_WAIT_TIMEOUT:
+
+		/* Timed out. We didn't regain the lock in the specified amount of */
+		/* so we have ro return false. But we do have regained the lock. */
+
+		return 0;
 
 	default:
 

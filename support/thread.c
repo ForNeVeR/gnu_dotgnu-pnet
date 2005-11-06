@@ -313,7 +313,9 @@ void _ILThreadRun(ILThread *thread)
 {	
 	/* When a thread starts, it blocks until the ILThreadStart function
 	   has finished setup */
-	_ILThreadSuspendSelf(thread);
+	/* Wait until the starting thread has released the lock */
+	_ILMutexLock(&(thread->lock));
+	_ILMutexUnlock(&(thread->lock));
 
 	/* If we still have a startup function, then execute it.
 	   The field may have been replaced with NULL if the thread
@@ -421,13 +423,6 @@ int ILThreadStart(ILThread *thread)
 			thread->state |= IL_TS_RUNNING;
 
 			_ILThreadAdjustCount(1, (thread->state & IL_TS_BACKGROUND) ? 1 : 0);
-
-		#if defined(GC_OPENBSD_THREADS)
-			pthread_yield();
-		#endif
-
-			/* Let the thread start running */
-			_ILThreadResumeSelf(thread);
 
 			result = 1;
 		}

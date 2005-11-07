@@ -362,10 +362,11 @@ namespace System.Windows.Forms
 				tabOwner.SetTabPageBounds();
 			}
 
-			[TODO]
 			public override void Remove(Control control)
 			{
 				base.Remove(control);
+				tabOwner.InvalidateTabs	();
+				tabOwner.SetTabPageBounds();
 			}
 
 		};
@@ -381,7 +382,6 @@ namespace System.Windows.Forms
 				this.tabOwner = owner;
 			}
 
-			[TODO]
 			public TabPage this[int idx]
 			{
 				get
@@ -390,7 +390,7 @@ namespace System.Windows.Forms
 				}
 				set
 				{
-					// Handle
+					tabOwner.Controls[idx] = (TabPage)value;
 				}
 			}
 

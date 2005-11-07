@@ -111,8 +111,13 @@ public class CultureInfo : ICloneable, IFormatProvider
 				}
 			#if CONFIG_REFLECTION
 				userOverride = useUserOverride;
-				handler = GetCultureHandler(name, useUserOverride);
-				cultureID = handler.LCID;
+				if( name == string.Empty ) {
+					cultureID = 0x007F;
+				}
+				else {
+					handler = GetCultureHandler(name, useUserOverride);
+					cultureID = handler.LCID;
+				}
 			#else
 				cultureID = 0x007F;
 				userOverride = useUserOverride;

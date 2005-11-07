@@ -317,10 +317,70 @@ public class ScrollableControl : Control
 				ScrollByOffset(new Size(xOffset,yOffset));
 			}
 
-	[TODO]
 	// Handle a mouse wheel event.
 	protected override void OnMouseWheel(MouseEventArgs e)
 			{
+				int value = 0;
+				int min = 0;
+				int max = 0;
+
+				// if both are visible, logic tells us to use
+				// the verticle scroll.  If only verticle, use
+				// it, otherwise, horizontal of course if it
+				// is visible.
+				if(hScrollBar.Visible && vScrollBar.Visible)
+				{
+					value = vScrollBar.Value;
+					min = vScrollBar.Minimum;
+					max = vScrollBar.Maximum;
+				}
+				else if(vScrollBar.Visible && !hScrollBar.Visible)
+				{
+					value = vScrollBar.Value;
+					min = vScrollBar.Minimum;
+					max = vScrollBar.Maximum;
+				}
+				else if(hScrollBar.Visible && !vScrollBar.Visible)
+				{
+					value = hScrollBar.Value;
+					min = hScrollBar.Minimum;
+					max = hScrollBar.Maximum;
+				}
+
+				if(e.Delta == 120) // wheel up
+				{
+					if(value - SystemInformation.MouseWheelScrollLines >= min)
+					{
+						value -= SystemInformation.MouseWheelScrollLines;
+					}
+				}
+				else if(e.Delta == -120) // wheel down
+				{
+					if(value + SystemInformation.MouseWheelScrollLines <= max)
+					{
+						value += SystemInformation.MouseWheelScrollLines;
+					}
+				}
+
+				if(hScrollBar.Visible && vScrollBar.Visible)
+				{
+					vScrollBar.Value = value;
+					ScrollByOffset(new Size(0, autoScrollPosition.Y + value));
+					UpdateScrollBars();
+				}
+				else if(vScrollBar.Visible && !hScrollBar.Visible)
+				{
+					vScrollBar.Value = value;
+					ScrollByOffset(new Size(0, autoScrollPosition.Y + value));
+					UpdateScrollBars();
+				}
+				else if(hScrollBar.Visible && !vScrollBar.Visible)
+				{
+					hScrollBar.Value = value;
+					ScrollByOffset(new Size(autoScrollPosition.X + value, 0));
+					UpdateScrollBars();
+				}
+
 				base.OnMouseWheel(e);
 			}
 

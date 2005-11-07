@@ -6,6 +6,9 @@
 	* System.Windows.Forms/Screen.cs: Fill in the meat to GetBounds(Point)
 	and GetBounds(Rectangle) methods.
 
+	* System.Windows.Forms/ScrollableControl.cs: Implement
+	ScrollControlIntoView functionality.
+
 2005-10-30  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Xml/ConformanceLevel.cs, System.Xml/NewLineHandling.cs,

@@ -425,9 +425,16 @@ public class ScrollableControl : Control
 				}
 			}
 
-	[TODO]
 	public void ScrollControlIntoView(Control activeControl)
 	{
+		if(activeControl.Visible && AutoScroll &&
+			(hScrollBar.Visible || vScrollBar.Visible))
+		{
+			int x = autoScrollPosition.X + activeControl.Left;
+			int y = autoScrollPosition.Y + activeControl.Top;
+			ScrollByOffset(new Size(x, y));
+			UpdateScrollBars();
+		}
 		return;
 	}
 

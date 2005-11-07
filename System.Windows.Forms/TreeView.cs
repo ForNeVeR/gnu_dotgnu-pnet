@@ -483,11 +483,38 @@ namespace System.Windows.Forms
 							// Draw the node text.
 							if (nodes.currentNode  == selectedNode && (Focused || !hideSelection))
 							{
-								// TODO: FullRowSelect
-								g.FillRectangle(SystemBrushes.Highlight, bounds);
+								Rectangle r;
+
+								// **TODO**
+								// Running into a chicken and egg issue here where if
+								// we fill the rect here, we're overdrawing the
+								// checkBoxes or ExpanderMarker of above
+
+								// Draw FullRowSelect if we qualify
+								if(fullRowSelect && !showLines)
+								{
+									int left = 1;
+//									if(nodes.currentNode)
+//									{
+//										left = 10;
+//									}
+									g.FillRectangle(SystemBrushes.Highlight, new Rectangle(left, bounds.Y, drawableWidth - 1, bounds.Height));
+								}
+								else
+								{
+									g.FillRectangle(SystemBrushes.Highlight, bounds);
+								}
 								g.DrawString(nodes.currentNode.Text, Font, SystemBrushes.HighlightText, bounds, format);
+
 								// Draw the focus rectangle.
-								Rectangle r = new Rectangle(bounds.X - 1, bounds.Y - 1, bounds.Width + 1, bounds.Height + 1);
+								if(FullRowSelect && !ShowLines)
+								{
+									r = new Rectangle(0, bounds.Y - 1, drawableWidth, bounds.Height + 1);
+								}
+								else
+								{
+									r = new Rectangle(bounds.X - 1, bounds.Y - 1, bounds.Width + 1, bounds.Height + 1);
+								}
 								ControlPaint.DrawFocusRectangle(g, r);
 							}
 							else

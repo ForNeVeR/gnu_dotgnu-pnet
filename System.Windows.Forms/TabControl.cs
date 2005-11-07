@@ -390,7 +390,18 @@ namespace System.Windows.Forms
 				}
 				set
 				{
-					tabOwner.Controls[idx] = (TabPage)value;
+					ArrayList tabpages = new ArrayList();
+					this.RemoveAt(idx);
+					for(int i = 0; i < tabOwner.Controls.Count; i++)
+					{
+						if(i != idx)
+						{
+							tabpages.Add(tabOwner.Controls[i]);
+						}
+					}
+					tabpages.Insert(idx, value);
+					tabOwner.Controls.Clear();
+					tabOwner.Controls.AddRange((TabPage[])tabpages.ToArray(typeof(TabPage)));
 				}
 			}
 

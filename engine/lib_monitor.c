@@ -467,12 +467,15 @@ ILBool _IL_Monitor_InternalWait(ILExecThread *thread,
 		/* Success or wait failed */
 
 		/* Returning 1 because the lock is always regained */
+
 		return 1;
 
 	case IL_WAIT_TIMEOUT:
 
-		/* Timed out. We didn't regain the lock in the specified amount of */
-		/* so we have ro return false. But we do have regained the lock. */
+		/* Return 0 to indicate that the thread competed and reacquired 
+		   the lock after it was woken and that it was woken because it 
+		   timed out waiting for a pulse rather than because it received 
+		   a pulse. */
 
 		return 0;
 

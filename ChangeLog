@@ -1,3 +1,8 @@
+2005-11-08  Thong Nguyen  <tum@veridicus.com>
+
+	* engine/lib_monitor.c: Updated _IL_Monitor_InternalWait comments
+	to clarify what happens when Monitor.Wait times out.
+
 2005-11-06  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_monitor.c: return 0 in _IL_Monitor_InternalWait when the

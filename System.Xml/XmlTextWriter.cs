@@ -1627,33 +1627,8 @@ public class XmlTextWriter : XmlWriter
 					prefix = LookupPrefix(ns);
 					if(((Object)prefix) == null || prefix.Length == 0)
 					{
-						if(scope == null)
-						{
-							writer.Write(localName);
-							writer.Write(' ');
-							writer.Write("xmlns");
-							writer.Write('=');
-							writer.Write(quoteChar);
-							WriteQuotedString(ns);
-							writer.Write(quoteChar);
-							scopeShown = true;
-						}
-						else if(scope.scopeShown == false || scope.xmlns != ns)
-						{
-							writer.Write(localName);
-							writer.Write(' ');	
-							writer.Write("xmlns");
-							writer.Write('=');
-							writer.Write(quoteChar);
-							WriteQuotedString(ns);
-							writer.Write(quoteChar);
-							scopeShown = true;
-						}
-						else if(scope.xmlns == ns)
-						{
-							writer.Write(localName);
-							scopeShown = true;
-						}
+						writer.Write(localName);
+						scopeShown = true;
 					}
 					else if(prefix != currPrefix)
 					{

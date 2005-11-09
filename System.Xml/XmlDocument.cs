@@ -932,7 +932,7 @@ class XmlDocument : XmlNode
 							{
 								if(r.NodeType != XmlNodeType.Whitespace)
 								{
-									return ReadNodeInternal(r);
+									return null;
 								}
 							}
 							return null;

@@ -426,10 +426,10 @@ public abstract class ScrollBar : Control
 		{
 	
 			
-			track  = new Rectangle(0, s.Width * 2/3 + 1, s.Width, s.Height - (s.Width * 4/3) - 1);
+			track  = new Rectangle(0, s.Width * 2/3, s.Width, s.Height - (s.Width * 4/3));
 		
-			decrement = new Rectangle(0, 0, s.Width, s.Width * 2/3 + 1);
-			increment = new Rectangle(0, s.Width * 2/3 + trackHeight, s.Width, s.Width * 2/3 );
+			decrement = new Rectangle(0, 0, s.Width, s.Width * 2/3);
+			increment = new Rectangle(0, s.Width * 2/3 + trackHeight, s.Width, (s.Width) * 2/3);
 		}
 		else
 		{

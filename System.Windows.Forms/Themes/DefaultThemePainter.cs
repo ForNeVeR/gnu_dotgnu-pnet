@@ -1896,7 +1896,7 @@ public class DefaultThemePainter : IThemePainter
 				           state,
 				           foreColor, backColor,
 				           false);
-
+#if false
 				// Get the drawing color and adjust for the pressed state.
 				Color color;
 				Color inactiveColor = ControlPaint.LightLight(backColor);
@@ -1926,39 +1926,17 @@ public class DefaultThemePainter : IThemePainter
 					{
 						case ScrollButton.Up:
 						{
-							if(width<=20) // if there is not enough space we only draw a point
-							{
-								DrawGlyph(graphics, x + 1, y + 1, width - 3, height,
-								 	Glyphs.up_arrow_bits,
-								  	Glyphs.up_arrow_width / 2,
-								  	Glyphs.up_arrow_height / 2, inactiveColor);
-						
-							}
-
-							else 
-							{ 
 						
 								DrawGlyph(graphics, x + 1, y + 1, width, height,
 									  Glyphs.up_arrow_bits,
 									  Glyphs.up_arrow_width,
 									  Glyphs.up_arrow_height, inactiveColor);
-							}
+
 						}
 						break;
 	
 						case ScrollButton.Down:
 						{
-							if(width<=20)  // if there is not enough space we only draw a point 
-							{
-								DrawGlyph(graphics, x + 1, y + 1, width - 3, height,
-									  Glyphs.up_arrow_bits,
-								  	  Glyphs.up_arrow_width / 2,
-								 	  Glyphs.up_arrow_height / 2, inactiveColor);
-						
-							}
-
-							else 
-							{ 
 						
 								DrawGlyph(graphics, x + 1, y + 1, width, height,
 									  Glyphs.down_arrow_bits,
@@ -1966,7 +1944,6 @@ public class DefaultThemePainter : IThemePainter
 									  Glyphs.down_arrow_height, inactiveColor);
 						
 							}
-						}
 						break;
 	                                        
 						case ScrollButton.Left:
@@ -1994,43 +1971,23 @@ public class DefaultThemePainter : IThemePainter
 				{
 					case ScrollButton.Up:
 					{      
-						if(width<=20)  // if there is not enough space we draw a point
-						{
-							DrawGlyph(graphics, x, y, width - 3, height,
-								  Glyphs.up_arrow_bits,
-								  Glyphs.up_arrow_width / 2,
-								  Glyphs.up_arrow_height / 2, color);
 						
-						}
-
-						else 
-						{ 
 							DrawGlyph(graphics, x, y, width, height,
 								  Glyphs.up_arrow_bits,
 								  Glyphs.up_arrow_width,
 								  Glyphs.up_arrow_height, color);
-						}
 						
 					}
 					break;
 					 
 					case ScrollButton.Down:
 					{       
-						if(width<=20) // if there is not enough space we draw a point 
-						{
-							DrawGlyph(graphics, x, y, width - 3, height,
-								  Glyphs.up_arrow_bits,
-								  Glyphs.up_arrow_width / 2,
-								  Glyphs.up_arrow_height / 2, color);
 						
-						}
-						else
-						{
 							DrawGlyph(graphics, x, y, width, height,
 								  Glyphs.down_arrow_bits,
 								  Glyphs.down_arrow_width,
 								  Glyphs.down_arrow_height, color);
-						}
+
 					}
 					break;
 
@@ -2056,8 +2013,10 @@ public class DefaultThemePainter : IThemePainter
 					}
 					break;
 				}
+#endif
 
-#if false	// May need later for non-standard glyph sizes.
+				// Set non-standard glyph sizes.
+				// The glyphs are resizable using the space left for the increment and decrement buttons.
 				x += 2; // skip border
 				y += 2; // skip border
 				width -= 4; // skip border
@@ -2077,69 +2036,172 @@ public class DefaultThemePainter : IThemePainter
 					y -= 1;
 				}
 
-				// setup the glyph shape
-				int glyphWidth = 3;
-				int glyphHeight = 3;
-				if (button == ScrollButton.Up || button == ScrollButton.Down)
-				{
-					glyphWidth *= 2;
-				}
-				else
-				{
-					glyphHeight *= 2;
-				}
-				Point[] glyph = new Point[3];
-				int offsetX = x+((width-glyphWidth)/2);
-				int offsetY = y+((height-glyphHeight)/2);
+				int glyphWidth = 3; // Glyph width size
+				int glyphHeight = 3; // Glyph height size
 				switch (button)
 				{
 					case ScrollButton.Up:
-					{
-						glyph[0] = new Point(offsetX+3,
-						                     offsetY);
-						glyph[1] = new Point(offsetX+6,
-						                     offsetY+3);
-						glyph[2] = new Point(offsetX,
-						                     offsetY+3);
+				{
+						if (height<1)  // Same but for height (UP and DOWN buttons) 
+						{
+							glyphWidth = 0;
+							glyphHeight = 0;				    
+				}
+						else if (height<=4) // if the glyph is small we draw a single point
+						{
+							glyphWidth = 0;
+							glyphHeight = 1;
+						}
+						else if (height<=12) // We resize the glyph picture using its logical size.
+						{
+							glyphWidth = (int)(3.0*((double)height/12.0));
+							glyphHeight = (int)(3.0*((double)height/12.0));
+						}
 					}
-					break;
+					break;	
+
 
 					case ScrollButton.Down:
 					{
-						glyph[0] = new Point(offsetX,
-						                     offsetY);
-						glyph[1] = new Point(offsetX+6,
-						                     offsetY);
-						glyph[2] = new Point(offsetX+3,
-						                     offsetY+3);
+						if (height<1)  // Same but for height (UP and DOWN buttons) 
+						{
+							glyphWidth = 0;
+							glyphHeight = 0;				    
+						}
+						else if (height<=4) // if the glyph is small we draw a single point
+						{
+							glyphWidth = 0;
+							glyphHeight = 1;
+						}
+						else if (height<=12) // We resize the glysh picture using its logical size.
+				{
+							glyphWidth = (int)(3.0*((double)height/12.0));
+							glyphHeight = (int)(3.0*((double)height/12.0));
+				}
+					}
+					break;	
+					
+					case ScrollButton.Right:
+					{
+						if (width<1) // If the glyph width is too small we don't draw it (LEFT and RIGHT buttons)
+						{
+							glyphWidth = 0;
+							glyphHeight = 0;
+						}
+						else if (width<=4) // if the glyph is small we draw a single point
+						{
+							glyphWidth = 1;
+							glyphHeight = 0;
+						}
+						else if (width<=12) // We resize the glysh picture using its logical size.
+						{
+							glyphWidth = (int)(3.0*((double)width/12.0));
+							glyphHeight = (int)(3.0*((double)width/12.0));
+						}
 					}
 					break;
+
 
 					case ScrollButton.Left:
 					{
-						glyph[0] = new Point(offsetX,
-						                     offsetY+3);
-						glyph[1] = new Point(offsetX+3,
-						                     offsetY);
-						glyph[2] = new Point(offsetX+3,
-						                     offsetY+6);
-					}
-					break;
-
-					case ScrollButton.Right:
-					{
-						glyph[0] = new Point(offsetX,
-						                     offsetY);
-						glyph[1] = new Point(offsetX,
-						                     offsetY+6);
-						glyph[2] = new Point(offsetX+3,
-						                     offsetY+3);
+						if (width<1) // If the glyph width is too small we don't draw it (LEFT and RIGHT buttons)
+						{
+							glyphWidth = 0;
+							glyphHeight = 0;
+						}
+						else if (width<=4) // if the glyph is small we draw a single point
+						{
+							glyphWidth = 1;
+							glyphHeight = 0;
+						}
+						else if (width<=12) // We resize the glyph using its logical size.
+						{
+							glyphWidth = (int)(3.0*((double)width/12.0));
+							glyphHeight = (int)(3.0*((double)width/12.0));
+						}
 					}
 					break;
 
 					default:
 					{
-						throw new ArgumentException("button");
+						throw new ArgumentException("Invalid scroll button");
+					}
+				}
+
+
+				
+
+					
+
+				
+				// setup the glyph shape
+
+				Point[] glyph = new Point[3];
+				int offsetX;
+				int offsetY;
+
+				switch (button)
+				{
+					case ScrollButton.Up:
+					{
+						offsetX = x+width/2-glyphWidth;
+						offsetY = y+(height+1)/2;
+
+						glyph[0] = new Point(offsetX,
+						                     offsetY);
+						glyph[1] = new Point(offsetX+glyphWidth*2,
+						                     offsetY);
+						glyph[2] = new Point(offsetX+glyphWidth,
+						                     offsetY-glyphHeight);
+					}
+					break;
+
+					case ScrollButton.Down:
+					{
+						offsetX = x+width/2-glyphWidth;
+	  					offsetY = y+(height+1)/2-glyphHeight/2;
+
+						glyph[0] = new Point(offsetX,
+						                     offsetY);
+						glyph[1] = new Point(offsetX+glyphWidth*2,
+						                     offsetY);
+						glyph[2] = new Point(offsetX+glyphWidth,
+						                     offsetY+glyphHeight);
+					}
+					break;
+
+					case ScrollButton.Left:
+					{
+
+						offsetX = x+(width+1)/2-glyphWidth/2;
+
+						offsetY = y+((height-glyphHeight*2)/2);
+
+						glyph[0] = new Point(offsetX+glyphWidth,
+						                     offsetY);
+						glyph[1] = new Point(offsetX+glyphWidth,
+						                     offsetY+glyphHeight*2);
+						glyph[2] = new Point(offsetX,
+						                     offsetY+glyphHeight);
+					}
+					break;
+
+					case ScrollButton.Right:
+					{
+						offsetX = x+(width+1)/2;
+						offsetY = y+((height-glyphHeight*2)/2);
+						glyph[0] = new Point(offsetX,
+						                     offsetY);
+						glyph[1] = new Point(offsetX,
+						                     offsetY+glyphHeight*2);
+						glyph[2] = new Point(offsetX+glyphWidth,
+						                     offsetY+glyphHeight);
+					}
+					break;
+
+					default:
+					{
+						throw new ArgumentException("Invalid scroll button");
 					}
 				}
 				
@@ -2157,7 +2219,8 @@ public class DefaultThemePainter : IThemePainter
 				{
 					graphics.DrawPolygon(pen,glyph);
 				}
-#endif
+
+
 			}
 
 	// Draw a selection frame.

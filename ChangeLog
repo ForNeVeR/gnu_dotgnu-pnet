@@ -128,6 +128,12 @@
 	* System.Windows.Forms/Control.cs: Fixed method Invoke(Delegate method)
 	calling Invoke(Delegate method, null )
 	
+2005-09-30  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
+
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Control.cs: Glyphs on a scrollbar resize
+	proportionally to the space left for the increment and decrement
+	buttons..
 
 2005-09-30  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 

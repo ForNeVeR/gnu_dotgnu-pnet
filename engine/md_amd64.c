@@ -78,41 +78,51 @@ md_inst_ptr _md_amd64_mov_membase_reg_byte
 	return inst;
 }
 
-#if 0 /* TODO */
-md_inst_ptr _md_x86_mov_memindex_reg_byte(md_inst_ptr inst, int basereg,
+md_inst_ptr _md_amd64_mov_memindex_reg_byte(md_inst_ptr inst, int basereg,
 							   			  unsigned offset, int indexreg,
 							   			  int srcreg)
 {
-	if(srcreg == X86_EAX || srcreg == X86_EBX ||
-	   srcreg == X86_ECX || srcreg == X86_EDX)
+	if(srcreg == AMD64_RAX || srcreg == AMD64_RBX ||
+	   srcreg == AMD64_RCX || srcreg == AMD64_RDX)
 	{
-		x86_mov_memindex_reg(inst, basereg, offset, indexreg,
+		amd64_mov_memindex_reg(inst, basereg, offset, indexreg,
 							 0, srcreg, 1);
 	}
 	else
 	{
 		int tempreg;
-		if(basereg != X86_EAX && indexreg != X86_EAX)
+		if(basereg != AMD64_RAX && indexreg != AMD64_RAX)
 		{
-			tempreg = X86_EAX;
+			tempreg = AMD64_RAX;
 		}
-		else if(basereg != X86_ECX && indexreg != X86_ECX)
+		else if(basereg != AMD64_RCX && indexreg != AMD64_RCX)
 		{
-			tempreg = X86_ECX;
+			tempreg = AMD64_RCX;
 		}
 		else
 		{
-			tempreg = X86_EDX;
+			tempreg = AMD64_RDX;
 		}
-		x86_push_reg(inst, tempreg);
-		x86_mov_reg_reg(inst, tempreg, srcreg, 4);
-		x86_mov_memindex_reg(inst, basereg, offset, indexreg,
+		amd64_push_reg(inst, tempreg);
+		amd64_mov_reg_reg(inst, tempreg, srcreg, 4);
+		amd64_mov_memindex_reg(inst, basereg, offset, indexreg,
 							 0, tempreg, 1);
-		x86_pop_reg(inst, tempreg);
+		amd64_pop_reg(inst, tempreg);
 	}
 	return inst;
 }
 
+md_inst_ptr _md_amd64_switch(md_inst_ptr inst, int reg, void * table)
+{
+	/* we can clobber over MD_REG_PC */
+	amd64_mov_reg_imm_size(inst, MD_REG_PC, table, 8);
+	amd64_mov_reg_memindex(inst, MD_REG_PC, MD_REG_PC,
+									 0, reg, 3, 8);
+	amd64_jump_membase(inst, MD_REG_PC, 0);
+
+	return inst;
+}
+#if 0
 md_inst_ptr _md_x86_rem_float
 		(md_inst_ptr inst, int reg1, int reg2, int used)
 {

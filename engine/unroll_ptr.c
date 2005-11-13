@@ -1011,7 +1011,7 @@ case COP_PWRITE_FIELD:
 	unsigned temp = (unsigned)CVM_ARG_BYTE;
 	UNROLL_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
-						   MD_REG1_NATIVE | MD_REG2_32BIT);
+						   MD_REG1_NATIVE | MD_REG2_NATIVE);
 	CheckForNull(&unroll, reg, pc, (unsigned char *)inst, 0);
 	md_store_membase_word_native(unroll.out, reg2, reg, (int)temp);
 	FreeTopRegister(&unroll, -1);

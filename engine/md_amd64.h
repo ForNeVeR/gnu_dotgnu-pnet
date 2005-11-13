@@ -518,12 +518,10 @@ extern md_inst_ptr _md_amd64_widen_byte(md_inst_ptr inst, int reg, int isSigned)
 /*
  * Jump to a program counter that is defined by a switch table.
  */
+extern md_inst_ptr _md_amd64_switch(md_inst_ptr inst, int reg, void * table);
 #define	md_switch(inst,reg,table)	\
 			do { \
-				/* amd64_mov_reg_memindex((inst), MD_REG_PC, X86_NOBASEREG, \
-									 (long long)(table), (reg), 2, 4); \
-				amd64_jump_membase((inst), MD_REG_PC, 0); */\
-				TODO_trap(inst);\
+				(inst) = _md_amd64_switch((inst), (reg), (table));\
 			} while (0)
 
 /*
@@ -671,7 +669,7 @@ extern md_inst_ptr _md_amd64_compare
  * and "reg2" is the array index to check.
  */
 #define	md_bounds_check(inst,reg1,reg2)	\
-			x86_alu_reg_membase((inst), X86_CMP, (reg2), (reg1), 0)
+			amd64_alu_reg_membase((inst), X86_CMP, (reg2), (reg1), 0)
 
 /*
  * Load a 32-bit word value from an indexed array.  "disp" is the offset
@@ -680,7 +678,7 @@ extern md_inst_ptr _md_amd64_compare
  */
 #define	md_load_memindex_word_32(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				x86_mov_reg_memindex((inst), (reg), (basereg), \
+				amd64_mov_reg_memindex((inst), (reg), (basereg), \
 									 (disp), (indexreg), 2, 4); \
 			} while (0)
 
@@ -689,8 +687,8 @@ extern md_inst_ptr _md_amd64_compare
  */
 #define	md_load_memindex_word_native(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				x86_mov_reg_memindex((inst), (reg), (basereg), \
-									 (disp), (indexreg), 2, 4); \
+				amd64_mov_reg_memindex((inst), (reg), (basereg), \
+									 (disp), (indexreg), 3, 8); \
 			} while (0)
 
 /*
@@ -698,7 +696,7 @@ extern md_inst_ptr _md_amd64_compare
  */
 #define	md_load_memindex_byte(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				x86_widen_memindex((inst), (reg), (basereg), \
+				amd64_widen_memindex((inst), (reg), (basereg), \
 								   (disp), (indexreg), 0, 0, 0); \
 			} while (0)
 
@@ -707,7 +705,7 @@ extern md_inst_ptr _md_amd64_compare
  */
 #define	md_load_memindex_sbyte(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				x86_widen_memindex((inst), (reg), (basereg), \
+				amd64_widen_memindex((inst), (reg), (basereg), \
 								   (disp), (indexreg), 0, 1, 0); \
 			} while (0)
 
@@ -716,7 +714,7 @@ extern md_inst_ptr _md_amd64_compare
  */
 #define	md_load_memindex_short(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				x86_widen_memindex((inst), (reg), (basereg), \
+				amd64_widen_memindex((inst), (reg), (basereg), \
 								   (disp), (indexreg), 1, 1, 1); \
 			} while (0)
 
@@ -725,7 +723,7 @@ extern md_inst_ptr _md_amd64_compare
  */
 #define	md_load_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				x86_widen_memindex((inst), (reg), (basereg), \
+				amd64_widen_memindex((inst), (reg), (basereg), \
 								   (disp), (indexreg), 1, 0, 1); \
 			} while (0)
 
@@ -734,7 +732,7 @@ extern md_inst_ptr _md_amd64_compare
  */
 #define	md_store_memindex_word_32(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				x86_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
+				amd64_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
 									 2, (reg), 4); \
 			} while (0)
 
@@ -743,19 +741,19 @@ extern md_inst_ptr _md_amd64_compare
  */
 #define	md_store_memindex_word_native(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				x86_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
-									 2, (reg), 4); \
+				amd64_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
+									 3, (reg), 8); \
 			} while (0)
 
 /*
  * Store a byte value into an indexed array.
  */
-extern md_inst_ptr _md_x86_mov_memindex_reg_byte
+extern md_inst_ptr _md_amd64_mov_memindex_reg_byte
 			(md_inst_ptr inst, int basereg,
 			 unsigned offset, int indexreg, int srcreg);
 #define	md_store_memindex_byte(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				(inst) = _md_x86_mov_memindex_reg_byte \
+				(inst) = _md_amd64_mov_memindex_reg_byte \
 					((inst), (basereg), (disp), (indexreg), (reg)); \
 			} while (0)
 
@@ -764,7 +762,7 @@ extern md_inst_ptr _md_x86_mov_memindex_reg_byte
  */
 #define	md_store_memindex_sbyte(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				(inst) = _md_x86_mov_memindex_reg_byte \
+				(inst) = _md_amd64_mov_memindex_reg_byte \
 					((inst), (basereg), (disp), (indexreg), (reg)); \
 			} while (0)
 
@@ -773,7 +771,7 @@ extern md_inst_ptr _md_x86_mov_memindex_reg_byte
  */
 #define	md_store_memindex_short(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				x86_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
+				amd64_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
 									 1, (reg), 2); \
 			} while (0)
 
@@ -782,7 +780,7 @@ extern md_inst_ptr _md_x86_mov_memindex_reg_byte
  */
 #define	md_store_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
 			do { \
-				x86_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
+				amd64_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
 									 1, (reg), 2); \
 			} while (0)
 

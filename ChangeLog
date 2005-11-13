@@ -1,3 +1,10 @@
+
+2005-11-13  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/md_amd64.c, engine/md_amd64.h, engine/unroll_ptr.c,
+	engine/cvm_config.h: All basic opcodes for AMD64 are now 
+	working, turned on unrolled mode by default for AMD64.
+
 2005-11-08  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_monitor.c: Updated _IL_Monitor_InternalWait comments

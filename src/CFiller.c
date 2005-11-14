@@ -1,5 +1,5 @@
 /*
- * SDFiller.c - Filler implementation.
+ * CFiller.c - Filler implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -26,145 +26,145 @@
 extern "C" {
 #endif
 
-static SDStatus
-SDFiller_Move(SDPathInterpreter *_this,
-              SDFloat            x,
-              SDFloat            y,
-              SDPathType         type)
+static CStatus
+CFiller_Move(CPathInterpreter *_this,
+              CFloat            x,
+              CFloat            y,
+              CPathType         type)
 {
 	/* declarations */
-	SDPolygonX *polygon;
-	SDPointX    point;
+	CPolygonX *polygon;
+	CPointX    point;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* get the polygon */
-	polygon = &(((SDFiller *)_this)->polygon);
+	polygon = &(((CFiller *)_this)->polygon);
 
 	/* close the polygon */
-	SDStatus_Check
-		(SDPolygonX_Close
+	CStatus_Check
+		(CPolygonX_Close
 			(polygon));
 
 	/* get the point */
-	SDPoint_X(point) = SDFloat_ToFixed(x);
-	SDPoint_Y(point) = SDFloat_ToFixed(y);
+	CPoint_X(point) = CFloat_ToFixed(x);
+	CPoint_Y(point) = CFloat_ToFixed(y);
 
 	/* move to the point */
-	SDStatus_Check
-		(SDPolygonX_MoveTo
+	CStatus_Check
+		(CPolygonX_MoveTo
 			(polygon, &point));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDFiller_Line(SDPathInterpreter *_this,
-              SDFloat            x,
-              SDFloat            y,
-              SDPathType         type)
+static CStatus
+CFiller_Line(CPathInterpreter *_this,
+              CFloat            x,
+              CFloat            y,
+              CPathType         type)
 {
 	/* declarations */
-	SDPolygonX *polygon;
-	SDPointX    point;
+	CPolygonX *polygon;
+	CPointX    point;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* get the polygon */
-	polygon = &(((SDFiller *)_this)->polygon);
+	polygon = &(((CFiller *)_this)->polygon);
 
 	/* get the point */
-	SDPoint_X(point) = SDFloat_ToFixed(x);
-	SDPoint_Y(point) = SDFloat_ToFixed(y);
+	CPoint_X(point) = CFloat_ToFixed(x);
+	CPoint_Y(point) = CFloat_ToFixed(y);
 
 	/* line to the point */
-	SDStatus_Check
-		(SDPolygonX_LineTo
+	CStatus_Check
+		(CPolygonX_LineTo
 			(polygon, &point));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDFiller_Curve(SDPathInterpreter *_this,
-               SDFloat            x1,
-               SDFloat            y1,
-               SDFloat            x2,
-               SDFloat            y2,
-               SDFloat            x3,
-               SDFloat            y3,
-               SDPathType         type)
+static CStatus
+CFiller_Curve(CPathInterpreter *_this,
+               CFloat            x1,
+               CFloat            y1,
+               CFloat            x2,
+               CFloat            y2,
+               CFloat            x3,
+               CFloat            y3,
+               CPathType         type)
 {
 	/* declarations */
-	SDPointArrayX *array;
-	SDPolygonX    *polygon;
-	SDBezierX      bezier;
+	CPointArrayX *array;
+	CPolygonX    *polygon;
+	CBezierX      bezier;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* perform setup for curve flattening */
 	{
-		SDFiller *filler;
-		SDPointX  a;
-		SDPointX  b;
-		SDPointX  c;
-		SDPointX  d;
+		CFiller *filler;
+		CPointX  a;
+		CPointX  b;
+		CPointX  c;
+		CPointX  d;
 
 		/* get this as a filler */
-		filler = ((SDFiller *)_this);
+		filler = ((CFiller *)_this);
 
 		/* get the polygon */
 		polygon = &(filler->polygon);
 
 		/* get the current point */
-		a = SDPolygonX_GetCurrentPoint(polygon);
+		a = CPolygonX_GetCurrentPoint(polygon);
 
 		/* get the first point */
-		SDPoint_X(b) = SDFloat_ToFixed(x1);
-		SDPoint_Y(b) = SDFloat_ToFixed(y1);
+		CPoint_X(b) = CFloat_ToFixed(x1);
+		CPoint_Y(b) = CFloat_ToFixed(y1);
 
 		/* get the second point */
-		SDPoint_X(c) = SDFloat_ToFixed(x2);
-		SDPoint_Y(c) = SDFloat_ToFixed(y2);
+		CPoint_X(c) = CFloat_ToFixed(x2);
+		CPoint_Y(c) = CFloat_ToFixed(y2);
 
 		/* get the third point */
-		SDPoint_X(d) = SDFloat_ToFixed(x3);
-		SDPoint_Y(d) = SDFloat_ToFixed(y3);
+		CPoint_X(d) = CFloat_ToFixed(x3);
+		CPoint_Y(d) = CFloat_ToFixed(y3);
 
 		/* initialize bezier and bail out now if curve is degenerate */
-		if(SDBezierX_Initialize(&bezier, &a, &b, &c, &d))
+		if(CBezierX_Initialize(&bezier, &a, &b, &c, &d))
 		{
-			return SDStatus_OK;
+			return CStatus_OK;
 		}
 
 		/* get the point array */
 		array = &(filler->array);
 
 		/* reset the count of the point array */
-		SDPointArray_Count(*array) = 0;
+		CPointArray_Count(*array) = 0;
 	}
 
 	/* flatten the bezier curve */
-	SDStatus_Check
-		(SDBezierX_Flatten
-			(&bezier, array, SDFiller_TOLERANCE));
+	CStatus_Check
+		(CBezierX_Flatten
+			(&bezier, array, CFiller_TOLERANCE));
 
 	/* add the lines to the polygon */
 	{
 		/* declarations */
-		SDPointX *curr;
-		SDPointX *end;
+		CPointX *curr;
+		CPointX *end;
 
 		/* get the point pointer */
-		curr = SDPointArray_Points(*array);
+		curr = CPointArray_Points(*array);
 
 		/* get the end pointer */
-		end = (curr + SDPointArray_Count(*array));
+		end = (curr + CPointArray_Count(*array));
 
 		/* skip the current point */
 		++curr;
@@ -173,8 +173,8 @@ SDFiller_Curve(SDPathInterpreter *_this,
 		while(curr != end)
 		{
 			/* add the current point */
-			SDStatus_Check
-				(SDPolygonX_LineTo
+			CStatus_Check
+				(CPolygonX_LineTo
 					(polygon, curr));
 
 			/* move to the next point */
@@ -183,74 +183,74 @@ SDFiller_Curve(SDPathInterpreter *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDFiller_Close(SDPathInterpreter *_this)
+static CStatus
+CFiller_Close(CPathInterpreter *_this)
 {
 	/* declarations */
-	SDFiller   *filler;
-	SDPolygonX *polygon;
+	CFiller   *filler;
+	CPolygonX *polygon;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* get this as a filler */
-	filler = ((SDFiller *)_this);
+	filler = ((CFiller *)_this);
 
 	/* get the polygon */
 	polygon = &(filler->polygon);
 
 	/* close the polygon */
-	SDStatus_Check(SDPolygonX_Close(polygon));
+	CStatus_Check(CPolygonX_Close(polygon));
 
 	/* tessellate the polygon, as needed */
 	if(filler->trapezoids != 0)
 	{
 		/* tessellate the polygon */
-		SDStatus_Check
-			(SDTrapezoids_TessellatePolygon
+		CStatus_Check
+			(CTrapezoids_TessellatePolygon
 				(filler->trapezoids, polygon, filler->fillMode));
 
 		/* reset the polygon */
-		SDPolygonX_Reset(polygon);
+		CPolygonX_Reset(polygon);
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDFiller_ToPolygon(SDFiller       *_this,
-                   SDPolygonX     *polygon,
-                   const SDPointF *points,
-                   const SDByte   *types,
-                   SDUInt32        count)
+CINTERNAL CStatus
+CFiller_ToPolygon(CFiller       *_this,
+                   CPolygonX     *polygon,
+                   const CPointF *points,
+                   const CByte   *types,
+                   CUInt32        count)
 {
 	/* declarations */
-	SDPathInterpreter *interpreter;
-	SDPolygonX         original;
-	SDStatus           status;
+	CPathInterpreter *interpreter;
+	CPolygonX         original;
+	CStatus           status;
 
 	/* assertions */
-	SDASSERT((_this    != 0));
-	SDASSERT((points  != 0));
-	SDASSERT((types   != 0));
-	SDASSERT((polygon != 0));
+	CASSERT((_this    != 0));
+	CASSERT((points  != 0));
+	CASSERT((types   != 0));
+	CASSERT((polygon != 0));
 
 	/* get this as a path interpreter */
-	interpreter = ((SDPathInterpreter *)_this);
+	interpreter = ((CPathInterpreter *)_this);
 
 	/* swap the polygons */
 	original       = _this->polygon;
 	_this->polygon = *polygon;
 
 	/* interpret the path */
-	status = SDPathInterpreter_Interpret(interpreter, points, types, count);
+	status = CPathInterpreter_Interpret(interpreter, points, types, count);
 
 	/* handle path interpretation failures */
-	if(status != SDStatus_OK)
+	if(status != CStatus_OK)
 	{
 		/* swap the polygons */
 		*polygon       = _this->polygon;
@@ -261,7 +261,7 @@ SDFiller_ToPolygon(SDFiller       *_this,
 	}
 
 	/* ensure the polygon is closed */
-	status = SDPolygonX_Close(&(_this->polygon));
+	status = CPolygonX_Close(&(_this->polygon));
 
 	/* swap the polygons */
 	*polygon       = _this->polygon;
@@ -271,26 +271,26 @@ SDFiller_ToPolygon(SDFiller       *_this,
 	return status;
 }
 
-SDINTERNAL SDStatus
-SDFiller_ToTrapezoids(SDFiller       *_this,
-                      SDTrapezoids   *trapezoids,
-                      const SDPointF *points,
-                      const SDByte   *types,
-                      SDUInt32        count,
-                      SDFillMode      fillMode)
+CINTERNAL CStatus
+CFiller_ToTrapezoids(CFiller       *_this,
+                      CTrapezoids   *trapezoids,
+                      const CPointF *points,
+                      const CByte   *types,
+                      CUInt32        count,
+                      CFillMode      fillMode)
 {
 	/* declarations */
-	SDPathInterpreter *interpreter;
-	SDStatus           status;
+	CPathInterpreter *interpreter;
+	CStatus           status;
 
 	/* assertions */
-	SDASSERT((_this       != 0));
-	SDASSERT((points     != 0));
-	SDASSERT((types      != 0));
-	SDASSERT((trapezoids != 0));
+	CASSERT((_this       != 0));
+	CASSERT((points     != 0));
+	CASSERT((types      != 0));
+	CASSERT((trapezoids != 0));
 
 	/* get this as a path interpreter */
-	interpreter = ((SDPathInterpreter *)_this);
+	interpreter = ((CPathInterpreter *)_this);
 
 	/* set the trapezoids */
 	_this->trapezoids = trapezoids;
@@ -299,93 +299,93 @@ SDFiller_ToTrapezoids(SDFiller       *_this,
 	_this->fillMode = fillMode;
 
 	/* interpret the path */
-	status = SDPathInterpreter_Interpret(interpreter, points, types, count);
+	status = CPathInterpreter_Interpret(interpreter, points, types, count);
 
 	/* reset the trapezoids */
 	_this->trapezoids = 0;
 
 	/* handle path interpretation failures */
-	SDStatus_Check(status);
+	CStatus_Check(status);
 
 	/* finish trapezoidation, as needed */
-	if(SDPolygonX_HasCurrentPoint(&(_this->polygon)))
+	if(CPolygonX_HasCurrentPoint(&(_this->polygon)))
 	{
 		/* ensure the polygon is closed */
-		SDStatus_Check
-			(SDPolygonX_Close
+		CStatus_Check
+			(CPolygonX_Close
 				(&(_this->polygon)));
 
 		/* tessellate the polygon */
 		return
-			SDTrapezoids_TessellatePolygon
+			CTrapezoids_TessellatePolygon
 				(trapezoids, &(_this->polygon), fillMode);
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static const SDPathInterpreterClass SDFiller_Class =
+static const CPathInterpreterClass CFiller_Class =
 {
-	SDFiller_Move,
-	SDFiller_Line,
-	SDFiller_Curve,
-	SDFiller_Close,
+	CFiller_Move,
+	CFiller_Line,
+	CFiller_Curve,
+	CFiller_Close,
 	"sentinel"
 };
 
-SDINTERNAL void
-SDFiller_Initialize(SDFiller *_this)
+CINTERNAL void
+CFiller_Initialize(CFiller *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the base */
-	_this->_base._class = &SDFiller_Class;
+	_this->_base._class = &CFiller_Class;
 
 	/* initialize the point array */
-	SDPointArrayX_Initialize(&(_this->array));
+	CPointArrayX_Initialize(&(_this->array));
 
 	/* initialize the polygon */
-	SDPolygonX_Initialize(&(_this->polygon));
+	CPolygonX_Initialize(&(_this->polygon));
 
 	/* set the trapezoids to the default */
 	_this->trapezoids = 0;
 }
 
-SDINTERNAL void
-SDFiller_Finalize(SDFiller *_this)
+CINTERNAL void
+CFiller_Finalize(CFiller *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* reset the trapezoids */
 	_this->trapezoids = 0;
 
 	/* finalize the point array */
-	SDPointArrayX_Finalize(&(_this->array));
+	CPointArrayX_Finalize(&(_this->array));
 
 	/* finalize the polygon */
-	SDPolygonX_Finalize(&(_this->polygon));
+	CPolygonX_Finalize(&(_this->polygon));
 
 	/* finalize the base */
 	_this->_base._class = 0;
 }
 
-SDINTERNAL void
-SDFiller_Reset(SDFiller *_this)
+CINTERNAL void
+CFiller_Reset(CFiller *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* reset the trapezoids */
 	_this->trapezoids = 0;
 
 	/* reset the polygon */
-	SDPolygonX_Reset(&(_this->polygon));
+	CPolygonX_Reset(&(_this->polygon));
 
 	/* reset the point array */
-	SDPointArray_Count(_this->array) = 0;
+	CPointArray_Count(_this->array) = 0;
 }
 
 #ifdef __cplusplus

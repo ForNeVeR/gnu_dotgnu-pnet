@@ -1,5 +1,5 @@
 /*
- * SDMath.h - Math header.
+ * CMath.h - Math header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_MATH_H_
-#define _SD_MATH_H_
+#ifndef _C_MATH_H_
+#define _C_MATH_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,18 +27,18 @@
 extern "C" {
 #endif
 
-SDINTERNAL SDMATH SDDouble
-SDMath_Cos(SDDouble radians);
-SDINTERNAL SDMATH SDDouble
-SDMath_Sin(SDDouble radians);
-SDINTERNAL SDMATH SDDouble
-SDMath_Sqrt(SDDouble value);
-SDINTERNAL SDMATH SDDouble
-SDMath_Erf(SDDouble value);
+CINTERNAL CMATH CDouble
+CMath_Cos(CDouble radians);
+CINTERNAL CMATH CDouble
+CMath_Sin(CDouble radians);
+CINTERNAL CMATH CDouble
+CMath_Sqrt(CDouble value);
+CINTERNAL CMATH CDouble
+CMath_Erf(CDouble value);
 
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_MATH_H_ */
+#endif /* _C_MATH_H_ */

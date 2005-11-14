@@ -1,5 +1,5 @@
 /*
- * SDRegionCloner.c - Region cloner implementation.
+ * CRegionCloner.c - Region cloner implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,114 +24,114 @@
 extern "C" {
 #endif
 
-static SDStatus
-SDRegionCloner_Op(SDRegionInterpreter  *_this,
-                  SDRegionOp           *op,
+static CStatus
+CRegionCloner_Op(CRegionInterpreter  *_this,
+                  CRegionOp           *op,
                   void                 *left,
                   void                 *right,
                   void                **data)
 {
 	/* declarations */
-	SDRegionOp *ro;
+	CRegionOp *ro;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((op    != 0));
-	SDASSERT((left  != 0));
-	SDASSERT((right != 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((op    != 0));
+	CASSERT((left  != 0));
+	CASSERT((right != 0));
+	CASSERT((data  != 0));
 
 	/* create the operation node */
-	if(!(SDRegionOp_Alloc(ro)))
+	if(!(CRegionOp_Alloc(ro)))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the operation node */
 	ro->_base = op->_base;
-	ro->left  = (SDRegionNode *)left;
-	ro->right = (SDRegionNode *)right;
+	ro->left  = (CRegionNode *)left;
+	ro->right = (CRegionNode *)right;
 
 	/* set the clone */
 	*data = (void *)ro;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDRegionCloner_Data(SDRegionInterpreter  *_this,
-                    SDRegionNode         *node,
+static CStatus
+CRegionCloner_Data(CRegionInterpreter  *_this,
+                    CRegionNode         *node,
                     void                **data)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((node  != 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((node  != 0));
+	CASSERT((data  != 0));
 
 	/* set the data to the default */
 	*data = 0;
 
 	/* clone the data node */
-	if(node->type == SDRegionType_Path)
+	if(node->type == CRegionType_Path)
 	{
 		/* declarations */
-		SDRegionPath *rp;
+		CRegionPath *rp;
 
 		/* get the count and sizes */
-		const SDUInt32 count = ((SDRegionPath *)node)->count;
-		const SDUInt32 sizeP = (count * sizeof(SDPointF));
-		const SDUInt32 sizeT = (count * sizeof(SDByte));
+		const CUInt32 count = ((CRegionPath *)node)->count;
+		const CUInt32 sizeP = (count * sizeof(CPointF));
+		const CUInt32 sizeT = (count * sizeof(CByte));
 
 		/* create the path node */
-		if(!(SDRegionPath_Alloc(rp)))
+		if(!(CRegionPath_Alloc(rp)))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* initialize the path node */
 		rp->_base    = *node;
 		rp->count    = count;
-		rp->fillMode = ((SDRegionPath *)node)->fillMode;
+		rp->fillMode = ((CRegionPath *)node)->fillMode;
 
 		/* allocate the point list */
-		if(!(rp->points = (SDPointF *)SDMalloc(sizeP)))
+		if(!(rp->points = (CPointF *)CMalloc(sizeP)))
 		{
-			SDFree(rp);
-			return SDStatus_OutOfMemory;
+			CFree(rp);
+			return CStatus_OutOfMemory;
 		}
 
 		/* allocate the type list */
-		if(!(rp->types = (SDByte *)SDMalloc(sizeT)))
+		if(!(rp->types = (CByte *)CMalloc(sizeT)))
 		{
-			SDFree(rp->points);
-			SDFree(rp);
-			return SDStatus_OutOfMemory;
+			CFree(rp->points);
+			CFree(rp);
+			return CStatus_OutOfMemory;
 		}
 
 		/* copy the points */
-		SDMemCopy(rp->points, ((SDRegionPath *)node)->points, sizeP);
+		CMemCopy(rp->points, ((CRegionPath *)node)->points, sizeP);
 
 		/* copy the types */
-		SDMemCopy(rp->types, ((SDRegionPath *)node)->types, sizeT);
+		CMemCopy(rp->types, ((CRegionPath *)node)->types, sizeT);
 
 		/* set the clone */
 		*data = (void *)rp;
 	}
-	else if(node->type == SDRegionType_Rectangle)
+	else if(node->type == CRegionType_Rectangle)
 	{
 		/* declarations */
-		SDRegionRect *rr;
+		CRegionRect *rr;
 
 		/* create the rectangle node */
-		if(!(SDRegionRect_Alloc(rr)))
+		if(!(CRegionRect_Alloc(rr)))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* initialize the rectangle node */
 		rr->_base     = *node;
-		rr->rectangle = ((SDRegionRect *)node)->rectangle;
+		rr->rectangle = ((CRegionRect *)node)->rectangle;
 
 		/* set the clone */
 		*data = (void *)rr;
@@ -139,12 +139,12 @@ SDRegionCloner_Data(SDRegionInterpreter  *_this,
 	else
 	{
 		/* declarations */
-		SDRegionNode *rn;
+		CRegionNode *rn;
 
 		/* create the node */
-		if(!(SDRegionNode_Alloc(rn)))
+		if(!(CRegionNode_Alloc(rn)))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* initialize the node */
@@ -155,69 +155,69 @@ SDRegionCloner_Data(SDRegionInterpreter  *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 static void
-SDRegionCloner_FreeData(void *data)
+CRegionCloner_FreeData(void *data)
 {
 	/* assertions */
-	SDASSERT((data != 0));
+	CASSERT((data != 0));
 
 	/* free the node members, as needed */
-	if(SDRegionNode_IsOp(((SDRegionNode *)data)))
+	if(CRegionNode_IsOp(((CRegionNode *)data)))
 	{
 		/* get the operation node */
-		SDRegionOp *op = ((SDRegionOp *)data);
+		CRegionOp *op = ((CRegionOp *)data);
 
 		/* free the left operand node, as needed */
-		if(op->left) { SDRegionCloner_FreeData(op->left); }
+		if(op->left) { CRegionCloner_FreeData(op->left); }
 
 		/* free the right operand node, as needed */
-		if(op->right) { SDRegionCloner_FreeData(op->right); }
+		if(op->right) { CRegionCloner_FreeData(op->right); }
 	}
-	else if(((SDRegionNode *)data)->type == SDRegionType_Path)
+	else if(((CRegionNode *)data)->type == CRegionType_Path)
 	{
 		/* get the path node */
-		SDRegionPath *rp = ((SDRegionPath *)data);
+		CRegionPath *rp = ((CRegionPath *)data);
 
 		/* free the point list */
-		SDFree(rp->points);
+		CFree(rp->points);
 
 		/* free the type list */
-		SDFree(rp->types);
+		CFree(rp->types);
 	}
 
 	/* free the node */
-	SDFree(data);
+	CFree(data);
 }
 
-static const SDRegionInterpreterClass SDRegionCloner_Class =
+static const CRegionInterpreterClass CRegionCloner_Class =
 {
-	SDRegionCloner_Data,
-	SDRegionCloner_Op,
-	SDRegionCloner_FreeData
+	CRegionCloner_Data,
+	CRegionCloner_Op,
+	CRegionCloner_FreeData
 };
 
-SDINTERNAL void
-SDRegionCloner_Initialize(SDRegionCloner *_this)
+CINTERNAL void
+CRegionCloner_Initialize(CRegionCloner *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the base */
-	SDRegionInterpreter_Initialize
-		((SDRegionInterpreter *)_this, &SDRegionCloner_Class);
+	CRegionInterpreter_Initialize
+		((CRegionInterpreter *)_this, &CRegionCloner_Class);
 }
 
-SDINTERNAL void
-SDRegionCloner_Finalize(SDRegionCloner *_this)
+CINTERNAL void
+CRegionCloner_Finalize(CRegionCloner *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the base */
-	SDRegionInterpreter_Finalize((SDRegionInterpreter *)_this);
+	CRegionInterpreter_Finalize((CRegionInterpreter *)_this);
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * SDLib.h - Main library header.
+ * Crayons.h - Main library header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_LIBRARY_H_
-#define _SD_LIBRARY_H_
+#ifndef _C_LIBRARY_H_
+#define _C_LIBRARY_H_
 
 #include "CrayonsConfig.h"
 
@@ -38,619 +38,619 @@ extern "C" {
 #endif
 
 /*\
-|*| NOTE: The SDLIBRARY_* defines/ifdefs here are a hack to get something akin
+|*| NOTE: The CLIBRARY_* defines/ifdefs here are a hack to get something akin
 |*|       to C# region blocks; they serve a purely aesthetic purpose.
 \*/
 
 /******************************************************************************/
-#define SDLIBRARY_BASIC_TYPES
-#ifdef SDLIBRARY_BASIC_TYPES
+#define CLIBRARY_BASIC_TYPES
+#ifdef CLIBRARY_BASIC_TYPES
 /* Define the 8-bit numeric types. */
-typedef signed char    SDInt8;
-typedef unsigned char  SDUInt8;
-typedef SDInt8         SDSByte;
-typedef SDUInt8        SDChar8;
-typedef SDUInt8        SDByte;
-typedef SDUInt8        SDBool;
+typedef signed char    CInt8;
+typedef unsigned char  CUInt8;
+typedef CInt8          CSByte;
+typedef CUInt8         CChar8;
+typedef CUInt8         CByte;
+typedef CUInt8         CBool;
 
 /* Define the 16-bit numeric types. */
-typedef short          SDInt16;
-typedef unsigned short SDUInt16;
-typedef SDUInt16       SDChar16;
+typedef short          CInt16;
+typedef unsigned short CUInt16;
+typedef CUInt16        CChar16;
 
 /* Define the 32-bit numeric types. */
 #if defined(_MSC_VER)
-	typedef __int32          SDInt32;
-	typedef unsigned __int32 SDUInt32;
-#elif defined(SD_SIZEOF_INT) && (SD_SIZEOF_INT == 4)
-	typedef int              SDInt32;
-	typedef unsigned int     SDUInt32;
-#elif defined(SD_SIZEOF_LONG) && (SD_SIZEOF_LONG == 4)
-	typedef long             SDInt32;
-	typedef unsigned long    SDUInt32;
+	typedef __int32          CInt32;
+	typedef unsigned __int32 CUInt32;
+#elif defined(C_SIZEOF_INT) && (C_SIZEOF_INT == 4)
+	typedef int              CInt32;
+	typedef unsigned int     CUInt32;
+#elif defined(C_SIZEOF_LONG) && (C_SIZEOF_LONG == 4)
+	typedef long             CInt32;
+	typedef unsigned long    CUInt32;
 #else
 	#error "The 32-bit integer type for this compiler could not be determined."
 #endif
-typedef SDUInt32 SDChar32;
-typedef SDUInt32 SDColor;
-typedef SDUInt32 SDLanguageID;
-typedef SDUInt32 SDPropertyID;
-typedef SDUInt32 SDGraphicsContainer;
+typedef CUInt32 CChar32;
+typedef CUInt32 CColor;
+typedef CUInt32 CLanguageID;
+typedef CUInt32 CPropertyID;
+typedef CUInt32 CGraphicsContainer;
 
 /* Define the 64-bit numeric types. */
 #if defined(_MSC_VER)
-	typedef __int64            SDInt64;
-	typedef unsigned __int64   SDUInt64;
-#elif defined(SD_SIZEOF_LONG) && (SD_SIZEOF_LONG == 8)
-	typedef long               SDInt64;
-	typedef unsigned long      SDUInt64;
-#elif defined(SD_SIZEOF_LONG_LONG) && (SD_SIZEOF_LONG_LONG == 8)
-	typedef long long          SDInt64;
-	typedef unsigned long long SDUInt64;
+	typedef __int64            CInt64;
+	typedef unsigned __int64   CUInt64;
+#elif defined(C_SIZEOF_LONG) && (C_SIZEOF_LONG == 8)
+	typedef long               CInt64;
+	typedef unsigned long      CUInt64;
+#elif defined(C_SIZEOF_LONG_LONG) && (C_SIZEOF_LONG_LONG == 8)
+	typedef long long          CInt64;
+	typedef unsigned long long CUInt64;
 #else
 	#error "The 64-bit integer type for this compiler could not be determined."
 #endif
 
 /* Define the floating point types */
-typedef float  SDFloat;
-typedef double SDDouble;
+typedef float  CFloat;
+typedef double CDouble;
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_OPAQUE_TYPES
-#ifdef SDLIBRARY_OPAQUE_TYPES
+#define CLIBRARY_OPAQUE_TYPES
+#ifdef CLIBRARY_OPAQUE_TYPES
 /* Define opaque types. */
-typedef struct _tagSDAdjustableArrowCap SDAdjustableArrowCap;
-typedef struct _tagSDImage              SDBitmap;
-typedef struct _tagSDBitmapSurface      SDBitmapSurface;
-typedef struct _tagSDBrush              SDBrush;
-typedef struct _tagSDCustomLineCap      SDCustomLineCap;
-typedef struct _tagSDFont               SDFont;
-typedef struct _tagSDFontFamily         SDFontFamily;
-typedef struct _tagSDFontCollection     SDFontCollection;
-typedef struct _tagSDGraphics           SDGraphics;
-typedef struct _tagSDHatchBrush         SDHatchBrush;
-typedef struct _tagSDImage              SDImage;
-typedef struct _tagSDImageAttributes    SDImageAttributes;
-typedef struct _tagSDLineBrush          SDLineBrush;
-typedef struct _tagSDMatrix             SDMatrix;
-typedef struct _tagSDPath               SDPath;
-typedef struct _tagSDPathBrush          SDPathBrush;
-typedef struct _tagSDPathIterator       SDPathIterator;
-typedef struct _tagSDPen                SDPen;
-typedef struct _tagSDRegion             SDRegion;
-typedef struct _tagSDSolidBrush         SDSolidBrush;
-typedef struct _tagSDStringFormat       SDStringFormat;
-typedef struct _tagSDSurface            SDSurface;
-typedef struct _tagSDTextureBrush       SDTextureBrush;
-typedef struct _tagSDX11Surface         SDX11Surface;
+typedef struct _tagCAdjustableArrowCap CAdjustableArrowCap;
+typedef struct _tagCImage              CBitmap;
+typedef struct _tagCBitmapSurface      CBitmapSurface;
+typedef struct _tagCBrush              CBrush;
+typedef struct _tagCCustomLineCap      CCustomLineCap;
+typedef struct _tagCFont               CFont;
+typedef struct _tagCFontFamily         CFontFamily;
+typedef struct _tagCFontCollection     CFontCollection;
+typedef struct _tagCGraphics           CGraphics;
+typedef struct _tagCHatchBrush         CHatchBrush;
+typedef struct _tagCImage              CImage;
+typedef struct _tagCImageAttributes    CImageAttributes;
+typedef struct _tagCLineBrush          CLineBrush;
+typedef struct _tagCMatrix             CMatrix;
+typedef struct _tagCPath               CPath;
+typedef struct _tagCPathBrush          CPathBrush;
+typedef struct _tagCPathIterator       CPathIterator;
+typedef struct _tagCPen                CPen;
+typedef struct _tagCRegion             CRegion;
+typedef struct _tagCSolidBrush         CSolidBrush;
+typedef struct _tagCStringFormat       CStringFormat;
+typedef struct _tagCSurface            CSurface;
+typedef struct _tagCTextureBrush       CTextureBrush;
+typedef struct _tagCX11Surface         CX11Surface;
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_ENUMERATIONS
-#ifdef SDLIBRARY_ENUMERATIONS
+#define CLIBRARY_ENUMERATIONS
+#ifdef CLIBRARY_ENUMERATIONS
 /* Define enumeration types. */
-typedef SDUInt32 SDBrushType;
-#define SDBrushType_SolidFill      0
-#define SDBrushType_HatchFill      1
-#define SDBrushType_TextureFill    2
-#define SDBrushType_PathGradient   3
-#define SDBrushType_LinearGradient 4
+typedef CUInt32 CBrushType;
+#define CBrushType_SolidFill      0
+#define CBrushType_HatchFill      1
+#define CBrushType_TextureFill    2
+#define CBrushType_PathGradient   3
+#define CBrushType_LinearGradient 4
 
-typedef SDUInt32 SDColorAdjustType;
-#define SDColorAdjustType_Default   0
-#define SDColorAdjustType_Bitmap    1
-#define SDColorAdjustType_Brush     2
-#define SDColorAdjustType_Pen       3
-#define SDColorAdjustType_Text      4
-#define SDColorAdjustType_Count     5
-#define SDColorAdjustType_Any       6
+typedef CUInt32 CColorAdjustType;
+#define CColorAdjustType_Default   0
+#define CColorAdjustType_Bitmap    1
+#define CColorAdjustType_Brush     2
+#define CColorAdjustType_Pen       3
+#define CColorAdjustType_Text      4
+#define CColorAdjustType_Count     5
+#define CColorAdjustType_Any       6
 
-typedef SDUInt32 SDColorChannelFlag;
-#define SDColorChannelFlag_C    0
-#define SDColorChannelFlag_M    1
-#define SDColorChannelFlag_Y    2
-#define SDColorChannelFlag_K    3
-#define SDColorChannelFlag_Last 4
+typedef CUInt32 CColorChannelFlag;
+#define CColorChannelFlag_C    0
+#define CColorChannelFlag_M    1
+#define CColorChannelFlag_Y    2
+#define CColorChannelFlag_K    3
+#define CColorChannelFlag_Last 4
 
-typedef SDUInt32 SDCombineMode;
-#define SDCombineMode_Replace    0
-#define SDCombineMode_Intersect  1
-#define SDCombineMode_Union      2
-#define SDCombineMode_Xor        3
-#define SDCombineMode_Exclude    4
-#define SDCombineMode_Complement 5
+typedef CUInt32 CCombineMode;
+#define CCombineMode_Replace    0
+#define CCombineMode_Intersect  1
+#define CCombineMode_Union      2
+#define CCombineMode_Xor        3
+#define CCombineMode_Exclude    4
+#define CCombineMode_Complement 5
 
-typedef SDUInt32 SDColorMatrixFlag;
-#define SDColorMatrixFlag_Default   0
-#define SDColorMatrixFlag_SkipGrays 1
-#define SDColorMatrixFlag_AltGray   2
+typedef CUInt32 CColorMatrixFlag;
+#define CColorMatrixFlag_Default   0
+#define CColorMatrixFlag_SkipGrays 1
+#define CColorMatrixFlag_AltGray   2
 
-typedef SDUInt32 SDCompositingMode;
-#define SDCompositingMode_SourceOver 0
-#define SDCompositingMode_SourceCopy 1
-#define SDCompositingMode_Xor        2
+typedef CUInt32 CCompositingMode;
+#define CCompositingMode_SourceOver 0
+#define CCompositingMode_SourceCopy 1
+#define CCompositingMode_Xor        2
 
-typedef SDUInt32 SDCompositingQuality;
-#define SDCompositingQuality_Default        0
-#define SDCompositingQuality_HighSpeed      1
-#define SDCompositingQuality_HighQuality    2
-#define SDCompositingQuality_GammaCorrected 3
-#define SDCompositingQuality_AssumeLinear   4
+typedef CUInt32 CCompositingQuality;
+#define CCompositingQuality_Default        0
+#define CCompositingQuality_HighSpeed      1
+#define CCompositingQuality_HighQuality    2
+#define CCompositingQuality_GammaCorrected 3
+#define CCompositingQuality_AssumeLinear   4
 
-typedef SDUInt32 SDCoordinateSpace;
-#define SDCoordinateSpace_World  0
-#define SDCoordinateSpace_Page   1
-#define SDCoordinateSpace_Device 2
+typedef CUInt32 CCoordinateSpace;
+#define CCoordinateSpace_World  0
+#define CCoordinateSpace_Page   1
+#define CCoordinateSpace_Device 2
 
-typedef SDUInt32 SDDashCap;
-#define SDDashCap_Flat     0
-#define SDDashCap_Round    2
-#define SDDashCap_Triangle 3
+typedef CUInt32 CDashCap;
+#define CDashCap_Flat     0
+#define CDashCap_Round    2
+#define CDashCap_Triangle 3
 
-typedef SDUInt32 SDDashStyle;
-#define SDDashStyle_Solid       0
-#define SDDashStyle_Dot         1
-#define SDDashStyle_Dash        2
-#define SDDashStyle_DashDot     3
-#define SDDashStyle_DashDashDot 4
-#define SDDashStyle_Custom      5
+typedef CUInt32 CDashStyle;
+#define CDashStyle_Solid       0
+#define CDashStyle_Dot         1
+#define CDashStyle_Dash        2
+#define CDashStyle_DashDot     3
+#define CDashStyle_DashDashDot 4
+#define CDashStyle_Custom      5
 
-typedef SDUInt32 SDFillMode;
-#define SDFillMode_Alternate 0
-#define SDFillMode_Winding   1
+typedef CUInt32 CFillMode;
+#define CFillMode_Alternate 0
+#define CFillMode_Winding   1
 
-typedef SDUInt32 SDFlushIntention;
-#define SDFlushIntention_Flush 0
-#define SDFlushIntention_Sync  1
+typedef CUInt32 CFlushIntention;
+#define CFlushIntention_Flush 0
+#define CFlushIntention_Sync  1
 
-typedef SDUInt32 SDFontStyle;
-#define SDFontStyle_Regular   0
-#define SDFontStyle_Bold      1
-#define SDFontStyle_Italic    2
-#define SDFontStyle_Underline 4
-#define SDFontStyle_Strikeout 8
+typedef CUInt32 CFontStyle;
+#define CFontStyle_Regular   0
+#define CFontStyle_Bold      1
+#define CFontStyle_Italic    2
+#define CFontStyle_Underline 4
+#define CFontStyle_Strikeout 8
 
-typedef SDUInt32 SDGraphicsUnit;
-#define SDGraphicsUnit_World      0
-#define SDGraphicsUnit_Display    1
-#define SDGraphicsUnit_Pixel      2
-#define SDGraphicsUnit_Point      3
-#define SDGraphicsUnit_Inch       4
-#define SDGraphicsUnit_Document   5
-#define SDGraphicsUnit_Millimeter 6
+typedef CUInt32 CGraphicsUnit;
+#define CGraphicsUnit_World      0
+#define CGraphicsUnit_Display    1
+#define CGraphicsUnit_Pixel      2
+#define CGraphicsUnit_Point      3
+#define CGraphicsUnit_Inch       4
+#define CGraphicsUnit_Document   5
+#define CGraphicsUnit_Millimeter 6
 
-typedef SDUInt32 SDHatchStyle;
-#define SDHatchStyle_Horizontal             0
-#define SDHatchStyle_Vertical               1
-#define SDHatchStyle_ForwardDiagonal        2
-#define SDHatchStyle_BackwardDiagonal       3
-#define SDHatchStyle_Cross                  4
-#define SDHatchStyle_LargeGrid              SDHatchStyle_Cross
-#define SDHatchStyle_DiagonalCross          5
-#define SDHatchStyle_Percent05              6
-#define SDHatchStyle_Percent10              7
-#define SDHatchStyle_Percent20              8
-#define SDHatchStyle_Percent25              9
-#define SDHatchStyle_Percent30              10
-#define SDHatchStyle_Percent40              11
-#define SDHatchStyle_Percent50              12
-#define SDHatchStyle_Percent60              13
-#define SDHatchStyle_Percent70              14
-#define SDHatchStyle_Percent75              15
-#define SDHatchStyle_Percent80              16
-#define SDHatchStyle_Percent90              17
-#define SDHatchStyle_LightDownwardDiagonal  18
-#define SDHatchStyle_LightUpwardDiagonal    19
-#define SDHatchStyle_DarkDownwardDiagonal   20
-#define SDHatchStyle_DarkUpwardDiagonal     21
-#define SDHatchStyle_WideDownwardDiagonal   22
-#define SDHatchStyle_WideUpwardDiagonal     23
-#define SDHatchStyle_LightVertical          24
-#define SDHatchStyle_LightHorizontal        25
-#define SDHatchStyle_NarrowVertical         26
-#define SDHatchStyle_NarrowHorizontal       27
-#define SDHatchStyle_DarkVertical           28
-#define SDHatchStyle_DarkHorizontal         29
-#define SDHatchStyle_DashedDownwardDiagonal 30
-#define SDHatchStyle_DashedUpwardDiagonal   31
-#define SDHatchStyle_DashedHorizontal       32
-#define SDHatchStyle_DashedVertical         33
-#define SDHatchStyle_SmallConfetti          34
-#define SDHatchStyle_LargeConfetti          35
-#define SDHatchStyle_ZigZag                 36
-#define SDHatchStyle_Wave                   37
-#define SDHatchStyle_DiagonalBrick          38
-#define SDHatchStyle_HorizontalBrick        39
-#define SDHatchStyle_Weave                  40
-#define SDHatchStyle_Plaid                  41
-#define SDHatchStyle_Divot                  42
-#define SDHatchStyle_DottedGrid             43
-#define SDHatchStyle_DottedDiamond          44
-#define SDHatchStyle_Shingle                45
-#define SDHatchStyle_Trellis                46
-#define SDHatchStyle_Sphere                 47
-#define SDHatchStyle_SmallGrid              48
-#define SDHatchStyle_SmallCheckerBoard      49
-#define SDHatchStyle_LargeCheckerBoard      50
-#define SDHatchStyle_OutlinedDiamond        51
-#define SDHatchStyle_SolidDiamond           52
-#define SDHatchStyle_Min                    SDHatchStyle_Horizontal
-#define SDHatchStyle_Max                    SDHatchStyle_SolidDiamond
+typedef CUInt32 CHatchStyle;
+#define CHatchStyle_Horizontal             0
+#define CHatchStyle_Vertical               1
+#define CHatchStyle_ForwardDiagonal        2
+#define CHatchStyle_BackwardDiagonal       3
+#define CHatchStyle_Cross                  4
+#define CHatchStyle_LargeGrid              CHatchStyle_Cross
+#define CHatchStyle_DiagonalCross          5
+#define CHatchStyle_Percent05              6
+#define CHatchStyle_Percent10              7
+#define CHatchStyle_Percent20              8
+#define CHatchStyle_Percent25              9
+#define CHatchStyle_Percent30              10
+#define CHatchStyle_Percent40              11
+#define CHatchStyle_Percent50              12
+#define CHatchStyle_Percent60              13
+#define CHatchStyle_Percent70              14
+#define CHatchStyle_Percent75              15
+#define CHatchStyle_Percent80              16
+#define CHatchStyle_Percent90              17
+#define CHatchStyle_LightDownwardDiagonal  18
+#define CHatchStyle_LightUpwardDiagonal    19
+#define CHatchStyle_DarkDownwardDiagonal   20
+#define CHatchStyle_DarkUpwardDiagonal     21
+#define CHatchStyle_WideDownwardDiagonal   22
+#define CHatchStyle_WideUpwardDiagonal     23
+#define CHatchStyle_LightVertical          24
+#define CHatchStyle_LightHorizontal        25
+#define CHatchStyle_NarrowVertical         26
+#define CHatchStyle_NarrowHorizontal       27
+#define CHatchStyle_DarkVertical           28
+#define CHatchStyle_DarkHorizontal         29
+#define CHatchStyle_DashedDownwardDiagonal 30
+#define CHatchStyle_DashedUpwardDiagonal   31
+#define CHatchStyle_DashedHorizontal       32
+#define CHatchStyle_DashedVertical         33
+#define CHatchStyle_SmallConfetti          34
+#define CHatchStyle_LargeConfetti          35
+#define CHatchStyle_ZigZag                 36
+#define CHatchStyle_Wave                   37
+#define CHatchStyle_DiagonalBrick          38
+#define CHatchStyle_HorizontalBrick        39
+#define CHatchStyle_Weave                  40
+#define CHatchStyle_Plaid                  41
+#define CHatchStyle_Divot                  42
+#define CHatchStyle_DottedGrid             43
+#define CHatchStyle_DottedDiamond          44
+#define CHatchStyle_Shingle                45
+#define CHatchStyle_Trellis                46
+#define CHatchStyle_Sphere                 47
+#define CHatchStyle_SmallGrid              48
+#define CHatchStyle_SmallCheckerBoard      49
+#define CHatchStyle_LargeCheckerBoard      50
+#define CHatchStyle_OutlinedDiamond        51
+#define CHatchStyle_SolidDiamond           52
+#define CHatchStyle_Min                    CHatchStyle_Horizontal
+#define CHatchStyle_Max                    CHatchStyle_SolidDiamond
 
-typedef SDUInt32 SDHotkeyPrefix;
-#define SDHotkeyPrefix_None 0
-#define SDHotkeyPrefix_Show 1
-#define SDHotkeyPrefix_Hide 2
+typedef CUInt32 CHotkeyPrefix;
+#define CHotkeyPrefix_None 0
+#define CHotkeyPrefix_Show 1
+#define CHotkeyPrefix_Hide 2
 
-typedef SDUInt32 SDImageFlag;
-#define SDImageFlag_None              0x00000000
-#define SDImageFlag_Scalable          0x00000001
-#define SDImageFlag_HasAlpha          0x00000002
-#define SDImageFlag_HasTranslucent    0x00000004
-#define SDImageFlag_PartiallyScalable 0x00000008
-#define SDImageFlag_ColorSpaceRGB     0x00000010
-#define SDImageFlag_ColorSpaceCMYK    0x00000020
-#define SDImageFlag_ColorSpaceGRAY    0x00000040
-#define SDImageFlag_ColorSpaceYCBCR   0x00000080
-#define SDImageFlag_ColorSpaceYCCK    0x00000100
-#define SDImageFlag_HasRealDPI        0x00001000
-#define SDImageFlag_HasRealPixelSize  0x00002000
-#define SDImageFlag_ReadOnly          0x00010000
-#define SDImageFlag_Caching           0x00020000
+typedef CUInt32 CImageFlag;
+#define CImageFlag_None              0x00000000
+#define CImageFlag_Scalable          0x00000001
+#define CImageFlag_HasAlpha          0x00000002
+#define CImageFlag_HasTranslucent    0x00000004
+#define CImageFlag_PartiallyScalable 0x00000008
+#define CImageFlag_ColorSpaceRGB     0x00000010
+#define CImageFlag_ColorSpaceCMYK    0x00000020
+#define CImageFlag_ColorSpaceGRAY    0x00000040
+#define CImageFlag_ColorSpaceYCBCR   0x00000080
+#define CImageFlag_ColorSpaceYCCK    0x00000100
+#define CImageFlag_HasRealDPI        0x00001000
+#define CImageFlag_HasRealPixelSize  0x00002000
+#define CImageFlag_ReadOnly          0x00010000
+#define CImageFlag_Caching           0x00020000
 
-typedef SDUInt32 SDImageLockMode;
-#define SDImageLockMode_None      0
-#define SDImageLockMode_ReadOnly  1
-#define SDImageLockMode_WriteOnly 2
-#define SDImageLockMode_ReadWrite 3
+typedef CUInt32 CImageLockMode;
+#define CImageLockMode_None      0
+#define CImageLockMode_ReadOnly  1
+#define CImageLockMode_WriteOnly 2
+#define CImageLockMode_ReadWrite 3
 
-typedef SDUInt32 SDImageType;
-#define SDImageType_Unknown  0
-#define SDImageType_Bitmap   1
-#define SDImageType_Metafile 2
+typedef CUInt32 CImageType;
+#define CImageType_Unknown  0
+#define CImageType_Bitmap   1
+#define CImageType_Metafile 2
 
-typedef SDUInt32 SDInterpolationMode;
-#define SDInterpolationMode_Default             0
-#define SDInterpolationMode_LowQuality          1
-#define SDInterpolationMode_HighQuality         2
-#define SDInterpolationMode_Bilinear            3
-#define SDInterpolationMode_Bicubic             4
-#define SDInterpolationMode_NearestNeighbor     5
-#define SDInterpolationMode_HighQualityBilinear 6
-#define SDInterpolationMode_HighQualityBicubic  7
+typedef CUInt32 CInterpolationMode;
+#define CInterpolationMode_Default             0
+#define CInterpolationMode_LowQuality          1
+#define CInterpolationMode_HighQuality         2
+#define CInterpolationMode_Bilinear            3
+#define CInterpolationMode_Bicubic             4
+#define CInterpolationMode_NearestNeighbor     5
+#define CInterpolationMode_HighQualityBilinear 6
+#define CInterpolationMode_HighQualityBicubic  7
 
-typedef SDUInt32 SDLineCap;
-#define SDLineCap_Flat          0x00
-#define SDLineCap_Square        0x01
-#define SDLineCap_Round         0x02
-#define SDLineCap_Triangle      0x03
-#define SDLineCap_NoAnchor      0x10
-#define SDLineCap_SquareAnchor  0x11
-#define SDLineCap_RoundAnchor   0x12
-#define SDLineCap_DiamondAnchor 0x13
-#define SDLineCap_ArrowAnchor   0x14
-#define SDLineCap_AnchorMask    0xF0
-#define SDLineCap_Custom        0xFF
+typedef CUInt32 CLineCap;
+#define CLineCap_Flat          0x00
+#define CLineCap_Square        0x01
+#define CLineCap_Round         0x02
+#define CLineCap_Triangle      0x03
+#define CLineCap_NoAnchor      0x10
+#define CLineCap_SquareAnchor  0x11
+#define CLineCap_RoundAnchor   0x12
+#define CLineCap_DiamondAnchor 0x13
+#define CLineCap_ArrowAnchor   0x14
+#define CLineCap_AnchorMask    0xF0
+#define CLineCap_Custom        0xFF
 
-typedef SDUInt32 SDLineJoin;
-#define SDLineJoin_Miter        0
-#define SDLineJoin_Bevel        1
-#define SDLineJoin_Round        2
-#define SDLineJoin_MiterClipped 3
+typedef CUInt32 CLineJoin;
+#define CLineJoin_Miter        0
+#define CLineJoin_Bevel        1
+#define CLineJoin_Round        2
+#define CLineJoin_MiterClipped 3
 
-typedef SDUInt32 SDMatrixOrder;
-#define SDMatrixOrder_Prepend 0
-#define SDMatrixOrder_Append  1
+typedef CUInt32 CMatrixOrder;
+#define CMatrixOrder_Prepend 0
+#define CMatrixOrder_Append  1
 
-typedef SDUInt32 SDPaletteFlag;
-#define SDPaletteFlag_HasAlpha  1
-#define SDPaletteFlag_GrayScale 2
-#define SDPaletteFlag_Halftone  4
+typedef CUInt32 CPaletteFlag;
+#define CPaletteFlag_HasAlpha  1
+#define CPaletteFlag_GrayScale 2
+#define CPaletteFlag_Halftone  4
 
-typedef SDUInt32 SDPathType;
-#define SDPathType_Start        0x00
-#define SDPathType_Line         0x01
-#define SDPathType_Bezier       0x03
-#define SDPathType_TypeMask     0x07
-#define SDPathType_DashMode     0x10
-#define SDPathType_PathMarker   0x20
-#define SDPathType_CloseSubpath 0x80
+typedef CUInt32 CPathType;
+#define CPathType_Start        0x00
+#define CPathType_Line         0x01
+#define CPathType_Bezier       0x03
+#define CPathType_TypeMask     0x07
+#define CPathType_DashMode     0x10
+#define CPathType_PathMarker   0x20
+#define CPathType_CloseSubpath 0x80
 
-typedef SDUInt32 SDPenAlignment;
-#define SDPenAlignment_Center 0
-#define SDPenAlignment_Inset  1
-#define SDPenAlignment_Outset 2
-#define SDPenAlignment_Left   3
-#define SDPenAlignment_Right  4
+typedef CUInt32 CPenAlignment;
+#define CPenAlignment_Center 0
+#define CPenAlignment_Inset  1
+#define CPenAlignment_Outset 2
+#define CPenAlignment_Left   3
+#define CPenAlignment_Right  4
 
-typedef SDUInt32 SDPenType;
-#define SDPenType_SolidFill      SDBrushType_SolidFill
-#define SDPenType_HatchFill      SDBrushType_HatchFill
-#define SDPenType_TextureFill    SDBrushType_TextureFill
-#define SDPenType_PathGradient   SDBrushType_PathGradient
-#define SDPenType_LinearGradient SDBrushType_LinearGradient
+typedef CUInt32 CPenType;
+#define CPenType_SolidFill      CBrushType_SolidFill
+#define CPenType_HatchFill      CBrushType_HatchFill
+#define CPenType_TextureFill    CBrushType_TextureFill
+#define CPenType_PathGradient   CBrushType_PathGradient
+#define CPenType_LinearGradient CBrushType_LinearGradient
 
 /*\
-|*| SDPixelFormat format:
+|*| CPixelFormat format:
 |*|
 |*|   byte 0 = index
 |*|   byte 1 = bits per pixel
 |*|   byte 2 = flags
 |*|   byte 3 = reserved
 \*/
-typedef SDUInt32 SDPixelFormat;
-#define SDPixelFormat_Undefined      0x00000000
-#define SDPixelFormat_DontCare       0x00000000
-#define SDPixelFormat_Indexed        0x00010000
-#define SDPixelFormat_Gdi            0x00020000
-#define SDPixelFormat_Alpha          0x00040000
-#define SDPixelFormat_PAlpha         0x00080000
-#define SDPixelFormat_Extended       0x00100000
-#define SDPixelFormat_Canonical      0x00200000
-#define SDPixelFormat_1bppIndexed    0x00030101
-#define SDPixelFormat_4bppIndexed    0x00030402
-#define SDPixelFormat_8bppIndexed    0x00030803
-#define SDPixelFormat_16bppGrayScale 0x00101004
-#define SDPixelFormat_16bppRgb555    0x00021005
-#define SDPixelFormat_16bppRgb565    0x00021006
-#define SDPixelFormat_16bppArgb1555  0x00061007
-#define SDPixelFormat_24bppRgb       0x00021808
-#define SDPixelFormat_32bppRgb       0x00022009
-#define SDPixelFormat_32bppArgb      0x0026200A
-#define SDPixelFormat_32bppPArgb     0x000E200B
-#define SDPixelFormat_48bppRgb       0x0010300C
-#define SDPixelFormat_64bppArgb      0x0034400D
-#define SDPixelFormat_64bppPArgb     0x001C400E
-#define SDPixelFormat_Max            0x0000000F
+typedef CUInt32 CPixelFormat;
+#define CPixelFormat_Undefined      0x00000000
+#define CPixelFormat_DontCare       0x00000000
+#define CPixelFormat_Indexed        0x00010000
+#define CPixelFormat_Gdi            0x00020000
+#define CPixelFormat_Alpha          0x00040000
+#define CPixelFormat_PAlpha         0x00080000
+#define CPixelFormat_Extended       0x00100000
+#define CPixelFormat_Canonical      0x00200000
+#define CPixelFormat_1bppIndexed    0x00030101
+#define CPixelFormat_4bppIndexed    0x00030402
+#define CPixelFormat_8bppIndexed    0x00030803
+#define CPixelFormat_16bppGrayScale 0x00101004
+#define CPixelFormat_16bppRgb555    0x00021005
+#define CPixelFormat_16bppRgb565    0x00021006
+#define CPixelFormat_16bppArgb1555  0x00061007
+#define CPixelFormat_24bppRgb       0x00021808
+#define CPixelFormat_32bppRgb       0x00022009
+#define CPixelFormat_32bppArgb      0x0026200A
+#define CPixelFormat_32bppPArgb     0x000E200B
+#define CPixelFormat_48bppRgb       0x0010300C
+#define CPixelFormat_64bppArgb      0x0034400D
+#define CPixelFormat_64bppPArgb     0x001C400E
+#define CPixelFormat_Max            0x0000000F
 
-typedef SDUInt32 SDPixelOffsetMode;
-#define SDPixelOffsetMode_Default     0
-#define SDPixelOffsetMode_HighSpeed   1
-#define SDPixelOffsetMode_HighQuality 2
-#define SDPixelOffsetMode_None        3
-#define SDPixelOffsetMode_Half        4
+typedef CUInt32 CPixelOffsetMode;
+#define CPixelOffsetMode_Default     0
+#define CPixelOffsetMode_HighSpeed   1
+#define CPixelOffsetMode_HighQuality 2
+#define CPixelOffsetMode_None        3
+#define CPixelOffsetMode_Half        4
 
-typedef SDUInt32 SDRotateFlipType;
-#define SDRotateFlipType_RotateNoneFlipNone 0
-#define SDRotateFlipType_Rotate90FlipNone   1
-#define SDRotateFlipType_Rotate180FlipNone  2
-#define SDRotateFlipType_Rotate270FlipNone  3
-#define SDRotateFlipType_RotateNoneFlipX    4
-#define SDRotateFlipType_Rotate90FlipX      5
-#define SDRotateFlipType_Rotate180FlipX     6
-#define SDRotateFlipType_Rotate270FlipX     7
-#define SDRotateFlipType_Rotate180FlipXY    SDRotateFlipType_RotateNoneFlipNone
-#define SDRotateFlipType_Rotate270FlipXY    SDRotateFlipType_Rotate90FlipNone
-#define SDRotateFlipType_RotateNoneFlipXY   SDRotateFlipType_Rotate180FlipNone
-#define SDRotateFlipType_Rotate90FlipXY     SDRotateFlipType_Rotate270FlipNone
-#define SDRotateFlipType_Rotate180FlipY     SDRotateFlipType_RotateNoneFlipX
-#define SDRotateFlipType_Rotate270FlipY     SDRotateFlipType_Rotate90FlipX
-#define SDRotateFlipType_RotateNoneFlipY    SDRotateFlipType_Rotate180FlipX
-#define SDRotateFlipType_Rotate90FlipY      SDRotateFlipType_Rotate270FlipX
+typedef CUInt32 CRotateFlipType;
+#define CRotateFlipType_RotateNoneFlipNone 0
+#define CRotateFlipType_Rotate90FlipNone   1
+#define CRotateFlipType_Rotate180FlipNone  2
+#define CRotateFlipType_Rotate270FlipNone  3
+#define CRotateFlipType_RotateNoneFlipX    4
+#define CRotateFlipType_Rotate90FlipX      5
+#define CRotateFlipType_Rotate180FlipX     6
+#define CRotateFlipType_Rotate270FlipX     7
+#define CRotateFlipType_Rotate180FlipXY    CRotateFlipType_RotateNoneFlipNone
+#define CRotateFlipType_Rotate270FlipXY    CRotateFlipType_Rotate90FlipNone
+#define CRotateFlipType_RotateNoneFlipXY   CRotateFlipType_Rotate180FlipNone
+#define CRotateFlipType_Rotate90FlipXY     CRotateFlipType_Rotate270FlipNone
+#define CRotateFlipType_Rotate180FlipY     CRotateFlipType_RotateNoneFlipX
+#define CRotateFlipType_Rotate270FlipY     CRotateFlipType_Rotate90FlipX
+#define CRotateFlipType_RotateNoneFlipY    CRotateFlipType_Rotate180FlipX
+#define CRotateFlipType_Rotate90FlipY      CRotateFlipType_Rotate270FlipX
 
-typedef SDUInt32 SDSmoothingMode;
-#define SDSmoothingMode_Default     0
-#define SDSmoothingMode_HighSpeed   1
-#define SDSmoothingMode_HighQuality 2
-#define SDSmoothingMode_None        3
-#define SDSmoothingMode_AntiAlias   4
+typedef CUInt32 CSmoothingMode;
+#define CSmoothingMode_Default     0
+#define CSmoothingMode_HighSpeed   1
+#define CSmoothingMode_HighQuality 2
+#define CSmoothingMode_None        3
+#define CSmoothingMode_AntiAlias   4
 
 /*\
-|*| SDStatus format:
+|*| CStatus format:
 |*|
 |*|    lower half = exception
 |*|   higher half = message (optional)
 \*/
-typedef SDUInt32 SDStatus;
-#define SDStatus_OK                              0x00000000
-#define SDStatus_OutOfMemory                     0x00000001
-#define SDStatus_Argument                        0x00000002
-#define SDStatus_ArgumentNull                    0x00000003
-#define SDStatus_ArgumentOutOfRange              0x00000004
-#define SDStatus_InvalidOperation                0x00000005
-#define SDStatus_NotImplemented                  0x00000006
-#define SDStatus_NotSupported                    0x00000007
-#define SDStatus_Error                           0x00000008
-#define SDStatus_Argument_FontFamilyNotFound     0x00010002
-#define SDStatus_Argument_InvalidPointCount      0x00020002
-#define SDStatus_Argument_NeedAtLeast2Points     0x00030002
-#define SDStatus_Argument_NeedAtLeast3Points     0x00040002
-#define SDStatus_Argument_NeedAtLeast4Points     0x00050002
-#define SDStatus_InvalidOperation_ImageLocked    0x00010005
-#define SDStatus_InvalidOperation_SingularMatrix 0x00020005
+typedef CUInt32 CStatus;
+#define CStatus_OK                              0x00000000
+#define CStatus_OutOfMemory                     0x00000001
+#define CStatus_Argument                        0x00000002
+#define CStatus_ArgumentNull                    0x00000003
+#define CStatus_ArgumentOutOfRange              0x00000004
+#define CStatus_InvalidOperation                0x00000005
+#define CStatus_NotImplemented                  0x00000006
+#define CStatus_NotSupported                    0x00000007
+#define CStatus_Error                           0x00000008
+#define CStatus_Argument_FontFamilyNotFound     0x00010002
+#define CStatus_Argument_InvalidPointCount      0x00020002
+#define CStatus_Argument_NeedAtLeast2Points     0x00030002
+#define CStatus_Argument_NeedAtLeast3Points     0x00040002
+#define CStatus_Argument_NeedAtLeast4Points     0x00050002
+#define CStatus_InvalidOperation_ImageLocked    0x00010005
+#define CStatus_InvalidOperation_SingularMatrix 0x00020005
 
-typedef SDUInt32 SDStringAlignment;
-#define SDStringAlignment_Near   0
-#define SDStringAlignment_Center 1
-#define SDStringAlignment_Far    2
+typedef CUInt32 CStringAlignment;
+#define CStringAlignment_Near   0
+#define CStringAlignment_Center 1
+#define CStringAlignment_Far    2
 
-typedef SDUInt32 SDDigitSubstitute;
-#define SDDigitSubstitute_User        0
-#define SDDigitSubstitute_None        1
-#define SDDigitSubstitute_National    2
-#define SDDigitSubstitute_Traditional 3
+typedef CUInt32 CDigitSubstitute;
+#define CDigitSubstitute_User        0
+#define CDigitSubstitute_None        1
+#define CDigitSubstitute_National    2
+#define CDigitSubstitute_Traditional 3
 
-typedef SDUInt32 SDStringFormatFlag;
-#define SDStringFormatFlag_DirectionRightToLeft  0x0001
-#define SDStringFormatFlag_DirectionVertical     0x0002
-#define SDStringFormatFlag_NoFitBlackBox         0x0004
-#define SDStringFormatFlag_DisplayFormatControl  0x0020
-#define SDStringFormatFlag_NoFontFallback        0x0400
-#define SDStringFormatFlag_MeasureTrailingSpaces 0x0800
-#define SDStringFormatFlag_NoWrap                0x1000
-#define SDStringFormatFlag_LineLimit             0x2000
-#define SDStringFormatFlag_NoClip                0x4000
+typedef CUInt32 CStringFormatFlag;
+#define CStringFormatFlag_DirectionRightToLeft  0x0001
+#define CStringFormatFlag_DirectionVertical     0x0002
+#define CStringFormatFlag_NoFitBlackBox         0x0004
+#define CStringFormatFlag_DisplayFormatControl  0x0020
+#define CStringFormatFlag_NoFontFallback        0x0400
+#define CStringFormatFlag_MeasureTrailingSpaces 0x0800
+#define CStringFormatFlag_NoWrap                0x1000
+#define CStringFormatFlag_LineLimit             0x2000
+#define CStringFormatFlag_NoClip                0x4000
 
-typedef SDUInt32 SDStringTrimming;
-#define SDStringTrimming_None              0
-#define SDStringTrimming_Character         1
-#define SDStringTrimming_Word              2
-#define SDStringTrimming_EllipsisCharacter 3
-#define SDStringTrimming_EllipsisWord      4
-#define SDStringTrimming_EllipsisPath      5
+typedef CUInt32 CStringTrimming;
+#define CStringTrimming_None              0
+#define CStringTrimming_Character         1
+#define CStringTrimming_Word              2
+#define CStringTrimming_EllipsisCharacter 3
+#define CStringTrimming_EllipsisWord      4
+#define CStringTrimming_EllipsisPath      5
 
-typedef SDUInt32 SDTextRenderingHint;
-#define SDTextRenderingHint_SystemDefault            0
-#define SDTextRenderingHint_SingleBitPerPixelGridFit 1
-#define SDTextRenderingHint_SingleBitPerPixel        2
-#define SDTextRenderingHint_AntiAliasGridFit         3
-#define SDTextRenderingHint_AntiAlias                4
-#define SDTextRenderingHint_ClearTypeGridFit         5
+typedef CUInt32 CTextRenderingHint;
+#define CTextRenderingHint_SystemDefault            0
+#define CTextRenderingHint_SingleBitPerPixelGridFit 1
+#define CTextRenderingHint_SingleBitPerPixel        2
+#define CTextRenderingHint_AntiAliasGridFit         3
+#define CTextRenderingHint_AntiAlias                4
+#define CTextRenderingHint_ClearTypeGridFit         5
 
-typedef SDUInt32 SDWarpMode;
-#define SDWarpMode_Perspective 0
-#define SDWarpMode_Bilinear    1
+typedef CUInt32 CWarpMode;
+#define CWarpMode_Perspective 0
+#define CWarpMode_Bilinear    1
 
-typedef SDUInt32 SDWrapMode;
-#define SDWrapMode_Tile       0
-#define SDWrapMode_TileFlipX  1
-#define SDWrapMode_TileFlipY  2
-#define SDWrapMode_TileFlipXY 3
-#define SDWrapMode_Clamp      4
+typedef CUInt32 CWrapMode;
+#define CWrapMode_Tile       0
+#define CWrapMode_TileFlipX  1
+#define CWrapMode_TileFlipY  2
+#define CWrapMode_TileFlipXY 3
+#define CWrapMode_Clamp      4
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_TRANSPARENT_TYPES
-#ifdef SDLIBRARY_TRANSPARENT_TYPES
+#define CLIBRARY_TRANSPARENT_TYPES
+#ifdef CLIBRARY_TRANSPARENT_TYPES
 /* Define transparent types. */
-typedef struct _tagSDBitmapData SDBitmapData;
-struct _tagSDBitmapData
+typedef struct _tagCBitmapData CBitmapData;
+struct _tagCBitmapData
 {
-	SDUInt32       width;
-	SDUInt32       height;
-	SDUInt32       stride;
-	SDPixelFormat  pixelFormat;
-	SDByte        *scan0;
-	SDUInt32       reserved;
+	CUInt32       width;
+	CUInt32       height;
+	CUInt32       stride;
+	CPixelFormat  pixelFormat;
+	CByte        *scan0;
+	CUInt32       reserved;
 };
 
-typedef struct _tagSDBlend SDBlend;
-struct _tagSDBlend
+typedef struct _tagCBlend CBlend;
+struct _tagCBlend
 {
-	SDFloat  *factors;
-	SDFloat  *positions;
-	SDUInt32  count;
+	CFloat  *factors;
+	CFloat  *positions;
+	CUInt32  count;
 };
 
-typedef struct _tagSDCharacterRange SDCharacterRange;
-struct _tagSDCharacterRange
+typedef struct _tagCCharacterRange CCharacterRange;
+struct _tagCCharacterRange
 {
-	SDUInt32 first;
-	SDUInt32 length;
+	CUInt32 first;
+	CUInt32 length;
 };
 
-typedef struct _tagSDColorBlend SDColorBlend;
-struct _tagSDColorBlend
+typedef struct _tagCColorBlend CColorBlend;
+struct _tagCColorBlend
 {
-	SDColor  *colors;
-	SDFloat  *positions;
-	SDUInt32  count;
+	CColor  *colors;
+	CFloat  *positions;
+	CUInt32  count;
 };
 
-typedef struct _tagSDColorMap SDColorMap;
-struct _tagSDColorMap
+typedef struct _tagCColorMap CColorMap;
+struct _tagCColorMap
 {
-	SDColor oldColor;
-	SDColor newColor;
+	CColor oldColor;
+	CColor newColor;
 };
 
-typedef struct _tagSDColorMatrix SDColorMatrix;
-struct _tagSDColorMatrix
+typedef struct _tagCColorMatrix CColorMatrix;
+struct _tagCColorMatrix
 {
-	SDFloat m[5][5];
+	CFloat m[5][5];
 };
 
-typedef struct _tagSDColorPalette SDColorPalette;
-struct _tagSDColorPalette
+typedef struct _tagCColorPalette CColorPalette;
+struct _tagCColorPalette
 {
-	SDPaletteFlag  flags;
-	SDUInt32       count;
-	SDColor       *colors;
+	CPaletteFlag  flags;
+	CUInt32       count;
+	CColor       *colors;
 };
 
-typedef struct _tagSDFontMetricsI SDFontMetricsI;
-struct _tagSDFontMetricsI
+typedef struct _tagCFontMetricsI CFontMetricsI;
+struct _tagCFontMetricsI
 {
-	SDInt32 cellAscent;
-	SDInt32 cellDescent;
-	SDInt32 lineSpacing;
-	SDInt32 emHeight;
+	CInt32 cellAscent;
+	CInt32 cellDescent;
+	CInt32 lineSpacing;
+	CInt32 emHeight;
 };
 
-typedef struct _tagSDFontMetricsF SDFontMetricsF;
-struct _tagSDFontMetricsF
+typedef struct _tagCFontMetricsF CFontMetricsF;
+struct _tagCFontMetricsF
 {
-	SDFloat cellAscent;
-	SDFloat cellDescent;
-	SDFloat lineSpacing;
-	SDFloat emHeight;
+	CFloat cellAscent;
+	CFloat cellDescent;
+	CFloat lineSpacing;
+	CFloat emHeight;
 };
 
-typedef struct _tagSDGuid SDGuid;
-struct _tagSDGuid
+typedef struct _tagCGuid CGuid;
+struct _tagCGuid
 {
-	SDUInt32 a;
-	SDUInt16 b;
-	SDUInt16 c;
-	SDByte   d;
-	SDByte   e;
-	SDByte   f;
-	SDByte   g;
-	SDByte   h;
-	SDByte   i;
-	SDByte   j;
-	SDByte   k;
+	CUInt32 a;
+	CUInt16 b;
+	CUInt16 c;
+	CByte   d;
+	CByte   e;
+	CByte   f;
+	CByte   g;
+	CByte   h;
+	CByte   i;
+	CByte   j;
+	CByte   k;
 };
 
-typedef SDGuid SDImageFormat;
+typedef CGuid CImageFormat;
 
-typedef struct _tagSDPointI SDPointI;
-struct _tagSDPointI
+typedef struct _tagCPointI CPointI;
+struct _tagCPointI
 {
-	SDInt32 x;
-	SDInt32 y;
+	CInt32 x;
+	CInt32 y;
 };
 
-typedef struct _tagSDPointF SDPointF;
-struct _tagSDPointF
+typedef struct _tagCPointF CPointF;
+struct _tagCPointF
 {
-	SDFloat x;
-	SDFloat y;
+	CFloat x;
+	CFloat y;
 };
 
-typedef struct _tagSDPropertyItem SDPropertyItem;
-struct _tagSDPropertyItem
+typedef struct _tagCPropertyItem CPropertyItem;
+struct _tagCPropertyItem
 {
-	SDPropertyID  id;
-	SDUInt32      length;
-	SDUInt16      type;
-	SDByte       *value;
+	CPropertyID  id;
+	CUInt32      length;
+	CUInt16      type;
+	CByte       *value;
 };
 
-typedef struct _tagSDRectangleF SDRectangleF;
-struct _tagSDRectangleF
+typedef struct _tagCRectangleF CRectangleF;
+struct _tagCRectangleF
 {
-	SDFloat x;
-	SDFloat y;
-	SDFloat width;
-	SDFloat height;
+	CFloat x;
+	CFloat y;
+	CFloat width;
+	CFloat height;
 };
 
-typedef struct _tagSDSizeF SDSizeF;
-struct _tagSDSizeF
+typedef struct _tagCSizeF CSizeF;
+struct _tagCSizeF
 {
-	SDFloat width;
-	SDFloat height;
+	CFloat width;
+	CFloat height;
 };
 
 #endif
@@ -659,1421 +659,1421 @@ struct _tagSDSizeF
 
 
 /******************************************************************************/
-#define SDLIBRARY_CONSTANTS
-#ifdef SDLIBRARY_CONSTANTS
+#define CLIBRARY_CONSTANTS
+#ifdef CLIBRARY_CONSTANTS
 /* Declare various constants. */
-extern const SDGuid SDFrameDimension_Page;
-extern const SDGuid SDFrameDimension_Resolution;
-extern const SDGuid SDFrameDimension_Time;
-extern const SDGuid SDImageFormat_MemoryBMP;
-extern const SDGuid SDImageFormat_BMP;
-extern const SDGuid SDImageFormat_EMF;
-extern const SDGuid SDImageFormat_WMF;
-extern const SDGuid SDImageFormat_JPG;
-extern const SDGuid SDImageFormat_PNG;
-extern const SDGuid SDImageFormat_GIF;
-extern const SDGuid SDImageFormat_TIFF;
-extern const SDGuid SDImageFormat_EXIF;
+extern const CGuid CFrameDimension_Page;
+extern const CGuid CFrameDimension_Resolution;
+extern const CGuid CFrameDimension_Time;
+extern const CGuid CImageFormat_MemoryBMP;
+extern const CGuid CImageFormat_BMP;
+extern const CGuid CImageFormat_EMF;
+extern const CGuid CImageFormat_WMF;
+extern const CGuid CImageFormat_JPG;
+extern const CGuid CImageFormat_PNG;
+extern const CGuid CImageFormat_GIF;
+extern const CGuid CImageFormat_TIFF;
+extern const CGuid CImageFormat_EXIF;
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_BITMAP_METHODS
-#ifdef SDLIBRARY_BITMAP_METHODS
+#define CLIBRARY_BITMAP_METHODS
+#ifdef CLIBRARY_BITMAP_METHODS
 /* Declare public bitmap methods. */
-SDStatus
-SDBitmap_Create(SDBitmap      **_this,
-                SDUInt32        width,
-                SDUInt32        height,
-                SDPixelFormat   format);
-SDStatus
-SDBitmap_CreateData(SDBitmap      **_this,
-                    SDByte         *data,
-                    SDUInt32        width,
-                    SDUInt32        height,
-                    SDUInt32        stride,
-                    SDPixelFormat   format);
-SDStatus
-SDBitmap_Destroy(SDBitmap **_this);
-SDStatus
-SDBitmap_Clone(SDBitmap       *_this,
-               SDBitmap      **clone,
-               SDUInt32        x,
-               SDUInt32        y,
-               SDUInt32        width,
-               SDUInt32        height,
-               SDPixelFormat   format);
-SDStatus
-SDBitmap_GetPixel(SDBitmap *_this,
-                  SDUInt32  x,
-                  SDUInt32  y,
-                  SDColor  *color);
-SDStatus
-SDBitmap_SetPixel(SDBitmap *_this,
-                  SDUInt32  x,
-                  SDUInt32  y,
-                  SDColor   color);
-SDStatus
-SDBitmap_LockBits(SDBitmap        *_this,
-                  SDUInt32         x,
-                  SDUInt32         y,
-                  SDUInt32         width,
-                  SDUInt32         height,
-                  SDImageLockMode  lockMode,
-                  SDPixelFormat    format,
-                  SDBitmapData    *bitmapData);
-SDStatus
-SDBitmap_SetResolution(SDBitmap *_this,
-                       SDFloat   dpiX,
-                       SDFloat   dpiY);
-SDStatus
-SDBitmap_UnlockBits(SDBitmap     *_this,
-                    SDBitmapData *bitmapData);
+CStatus
+CBitmap_Create(CBitmap      **_this,
+               CUInt32        width,
+               CUInt32        height,
+               CPixelFormat   format);
+CStatus
+CBitmap_CreateData(CBitmap      **_this,
+                    CByte         *data,
+                    CUInt32        width,
+                    CUInt32        height,
+                    CUInt32        stride,
+                    CPixelFormat   format);
+CStatus
+CBitmap_Destroy(CBitmap **_this);
+CStatus
+CBitmap_Clone(CBitmap       *_this,
+              CBitmap      **clone,
+              CUInt32        x,
+              CUInt32        y,
+              CUInt32        width,
+              CUInt32        height,
+              CPixelFormat   format);
+CStatus
+CBitmap_GetPixel(CBitmap *_this,
+                 CUInt32  x,
+                 CUInt32  y,
+                 CColor  *color);
+CStatus
+CBitmap_SetPixel(CBitmap *_this,
+                 CUInt32  x,
+                 CUInt32  y,
+                 CColor   color);
+CStatus
+CBitmap_LockBits(CBitmap        *_this,
+                 CUInt32         x,
+                 CUInt32         y,
+                 CUInt32         width,
+                 CUInt32         height,
+                 CImageLockMode  lockMode,
+                 CPixelFormat    format,
+                 CBitmapData    *bitmapData);
+CStatus
+CBitmap_SetResolution(CBitmap *_this,
+                      CFloat   dpiX,
+                      CFloat   dpiY);
+CStatus
+CBitmap_UnlockBits(CBitmap     *_this,
+                   CBitmapData *bitmapData);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_BRUSH_METHODS
-#ifdef SDLIBRARY_BRUSH_METHODS
+#define CLIBRARY_BRUSH_METHODS
+#ifdef CLIBRARY_BRUSH_METHODS
 /* Declare public brush methods. */
-SDStatus
-SDBrush_GetBrushType(SDBrush     *_this,
-                     SDBrushType *type);
-SDStatus
-SDBrush_Clone(SDBrush  *_this,
-              SDBrush **clone);
-SDStatus
-SDBrush_Destroy(SDBrush **_this);
+CStatus
+CBrush_GetBrushType(CBrush     *_this,
+                    CBrushType *type);
+CStatus
+CBrush_Clone(CBrush  *_this,
+             CBrush **clone);
+CStatus
+CBrush_Destroy(CBrush **_this);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_COLORPALETTE_METHODS
-#ifdef SDLIBRARY_COLORPALETTE_METHODS
+#define CLIBRARY_COLORPALETTE_METHODS
+#ifdef CLIBRARY_COLORPALETTE_METHODS
 /* Declare public color palette methods. */
-SDStatus
-SDColorPalette_Create(SDColorPalette **_this,
-                      SDColor         *colors,
-                      SDUInt32         count,
-                      SDPaletteFlag    flags);
-SDStatus
-SDColorPalette_Destroy(SDColorPalette **_this);
+CStatus
+CColorPalette_Create(CColorPalette **_this,
+                     CColor         *colors,
+                     CUInt32         count,
+                     CPaletteFlag    flags);
+CStatus
+ColorPalette_Destroy(CColorPalette **_this);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_GRAPHICS_METHODS
-#ifdef SDLIBRARY_GRAPHICS_METHODS
+#define CLIBRARY_GRAPHICS_METHODS
+#ifdef CLIBRARY_GRAPHICS_METHODS
 /* Declare public graphics methods. */
-SDStatus
-SDGraphics_Create(SDGraphics **_this,
-                  SDSurface   *surface);
-SDStatus
-SDGraphics_Destroy(SDGraphics **_this);
-SDStatus
-SDGraphics_GetTransform(SDGraphics *_this,
-                        SDMatrix   *matrix);
-SDStatus
-SDGraphics_MultiplyTransform(SDGraphics    *_this,
-                             SDMatrix      *matrix,
-                             SDMatrixOrder  order);
-SDStatus
-SDGraphics_ResetTransform(SDGraphics *_this);
-SDStatus
-SDGraphics_RotateTransform(SDGraphics    *_this,
-                           SDFloat        angle,
-                           SDMatrixOrder  order);
-SDStatus
-SDGraphics_ScaleTransform(SDGraphics    *_this,
-                          SDFloat        sx,
-                          SDFloat        sy,
-                          SDMatrixOrder  order);
-SDStatus
-SDGraphics_SetTransform(SDGraphics *_this,
-                        SDMatrix   *matrix);
-SDStatus
-SDGraphics_TranslateTransform(SDGraphics    *_this,
-                              SDFloat        dx,
-                              SDFloat        dy,
-                              SDMatrixOrder  order);
-SDStatus
-SDGraphics_GetClip(SDGraphics *_this,
-                   SDRegion   *region);
-SDStatus
-SDGraphics_GetClipBounds(SDGraphics   *_this,
-                         SDRectangleF *clipBounds);
-SDStatus
-SDGraphics_GetVisibleClipBounds(SDGraphics   *_this,
-                                SDRectangleF *bounds);
-SDStatus
-SDGraphics_IsClipEmpty(SDGraphics *_this,
-                       SDBool     *empty);
-SDStatus
-SDGraphics_IsVisibleClipEmpty(SDGraphics *_this,
-                              SDBool     *empty);
-SDStatus
-SDGraphics_IsVisiblePoint(SDGraphics *_this,
-                          SDPointF    point,
-                          SDBool     *visible);
-SDStatus
-SDGraphics_IsVisibleRectangle(SDGraphics   *_this,
-                              SDRectangleF  rect,
-                              SDBool       *visible);
-SDStatus
-SDGraphics_ResetClip(SDGraphics *_this);
-SDStatus
-SDGraphics_SetClipGraphics(SDGraphics    *_this,
-                           SDGraphics    *graphics,
-                           SDCombineMode  combineMode);
-SDStatus
-SDGraphics_SetClipPath(SDGraphics    *_this,
-                       SDPath        *path,
-                       SDCombineMode  combineMode);
-SDStatus
-SDGraphics_SetClipRegion(SDGraphics    *_this,
-                         SDRegion      *region,
-                         SDCombineMode  combineMode);
-SDStatus
-SDGraphics_SetClipRectangle(SDGraphics    *_this,
-                            SDRectangleF   rect,
-                            SDCombineMode  combineMode);
-SDStatus
-SDGraphics_TranslateClip(SDGraphics *_this,
-                         SDFloat     dx,
-                         SDFloat     dy);
-SDStatus
-SDGraphics_GetCompositingMode(SDGraphics        *_this,
-                              SDCompositingMode *compositingMode);
-SDStatus
-SDGraphics_SetCompositingMode(SDGraphics        *_this,
-                              SDCompositingMode  compositingMode);
-SDStatus
-SDGraphics_GetCompositingQuality(SDGraphics           *_this,
-                                 SDCompositingQuality *compositingQuality);
-SDStatus
-SDGraphics_SetCompositingQuality(SDGraphics           *_this,
-                                 SDCompositingQuality  compositingQuality);
-SDStatus
-SDGraphics_GetDpiX(SDGraphics *_this,
-                   SDFloat    *dpiX);
-SDStatus
-SDGraphics_GetDpiY(SDGraphics *_this,
-                   SDFloat    *dpiY);
-SDStatus
-SDGraphics_GetInterpolationMode(SDGraphics          *_this,
-                                SDInterpolationMode *interpolationMode);
-SDStatus
-SDGraphics_SetInterpolationMode(SDGraphics          *_this,
-                                SDInterpolationMode  interpolationMode);
-SDStatus
-SDGraphics_GetPageScale(SDGraphics *_this,
-                        SDFloat    *pageScale);
-SDStatus
-SDGraphics_SetPageScale(SDGraphics *_this,
-                        SDFloat     pageScale);
-SDStatus
-SDGraphics_GetPageUnit(SDGraphics     *_this,
-                       SDGraphicsUnit *pageUnit);
-SDStatus
-SDGraphics_SetPageUnit(SDGraphics     *_this,
-                       SDGraphicsUnit  pageUnit);
-SDStatus
-SDGraphics_GetPixelOffsetMode(SDGraphics        *_this,
-                              SDPixelOffsetMode *pixelOffsetMode);
-SDStatus
-SDGraphics_SetPixelOffsetMode(SDGraphics        *_this,
-                              SDPixelOffsetMode  pixelOffsetMode);
-SDStatus
-SDGraphics_GetRenderingOrigin(SDGraphics *_this,
-                              SDPointI   *renderingOrigin);
-SDStatus
-SDGraphics_SetRenderingOrigin(SDGraphics *_this,
-                              SDPointI    renderingOrigin);
-SDStatus
-SDGraphics_GetSmoothingMode(SDGraphics      *_this,
-                            SDSmoothingMode *smoothingMode);
-SDStatus
-SDGraphics_SetSmoothingMode(SDGraphics      *_this,
-                            SDSmoothingMode  smoothingMode);
-SDStatus
-SDGraphics_GetTextContrast(SDGraphics *_this,
-                           SDUInt32   *textContrast);
-SDStatus
-SDGraphics_SetTextContrast(SDGraphics *_this,
-                           SDUInt32    textContrast);
-SDStatus
-SDGraphics_GetTextRenderingHint(SDGraphics          *_this,
-                                SDTextRenderingHint *textRenderingHint);
-SDStatus
-SDGraphics_SetTextRenderingHint(SDGraphics          *_this,
-                                SDTextRenderingHint  textRenderingHint);
-SDStatus
-SDGraphics_DrawXBM(SDGraphics   *_this,
-                   SDByte       *bits,
-                   SDUInt32      count,
-                   SDRectangleF  dst,
-                   SDColor       color);
-SDStatus
-SDGraphics_DrawImage(SDGraphics *_this,
-                     SDImage    *image,
-                     SDFloat     x,
-                     SDFloat     y);
-SDStatus
-SDGraphics_DrawImageRect(SDGraphics *_this,
-                         SDImage    *image,
-                         SDFloat     x,
-                         SDFloat     y,
-                         SDFloat     width,
-                         SDFloat     height);
-SDStatus
-SDGraphics_DrawImagePoints(SDGraphics *_this,
-                           SDImage    *image,
-                           SDPointF   *dst,
-                           SDUInt32    count);
-SDStatus
-SDGraphics_DrawImageRectPoints(SDGraphics     *_this,
-                               SDImage        *image,
-                               SDPointF        dst,
-                               SDRectangleF    src,
-                               SDGraphicsUnit  srcUnit);
-SDStatus
-SDGraphics_DrawImageRectPointsAttributes(SDGraphics           *_this,
-                                         SDImage              *image,
-                                         SDPointF             *dst,
-                                         SDUInt32              count,
-                                         SDRectangleF          src,
-                                         SDGraphicsUnit        srcUnit,
-                                         SDImageAttributes    *atts);
-SDStatus
-SDGraphics_DrawImageRectRectAttributes(SDGraphics           *_this,
-                                       SDImage              *image,
-                                       SDRectangleF          dst,
-                                       SDRectangleF          src,
-                                       SDGraphicsUnit        srcUnit,
-                                       SDImageAttributes    *atts);
-SDStatus
-SDGraphics_DrawArc(SDGraphics   *_this,
-                   SDPen        *pen,
-                   SDRectangleF  rect,
-                   SDFloat       startAngle,
-                   SDFloat       sweepAngle);
-SDStatus
-SDGraphics_DrawBezier(SDGraphics *_this,
-                      SDPen      *pen,
-                      SDPointF    a,
-                      SDPointF    b,
-                      SDPointF    c,
-                      SDPointF    d);
-SDStatus
-SDGraphics_DrawBeziers(SDGraphics *_this,
-                       SDPen      *pen,
-                       SDPointF   *points,
-                       SDUInt32    count);
-SDStatus
-SDGraphics_DrawClosedCurve(SDGraphics *_this,
-                           SDPen      *pen,
-                           SDPointF   *points,
-                           SDUInt32    count,
-                           SDFloat     tension);
-SDStatus
-SDGraphics_DrawCurve(SDGraphics *_this,
-                     SDPen      *pen,
-                     SDPointF   *points,
-                     SDUInt32    count,
-                     SDUInt32    offset,
-                     SDUInt32    numberOfSegments,
-                     SDFloat     tension);
-SDStatus
-SDGraphics_DrawEllipse(SDGraphics   *_this,
-                       SDPen        *pen,
-                       SDRectangleF  rect);
-SDStatus
-SDGraphics_DrawLine(SDGraphics *_this,
-                    SDPen      *pen,
-                    SDPointF    start,
-                    SDPointF    end);
-SDStatus
-SDGraphics_DrawLines(SDGraphics *_this,
-                     SDPen      *pen,
-                     SDPointF   *points,
-                     SDUInt32    count);
-SDStatus
-SDGraphics_DrawPath(SDGraphics *_this,
-                    SDPen      *pen,
-                    SDPath     *path);
-SDStatus
-SDGraphics_DrawPie(SDGraphics   *_this,
-                   SDPen        *pen,
-                   SDRectangleF  rect,
-                   SDFloat       startAngle,
-                   SDFloat       sweepAngle);
-SDStatus
-SDGraphics_DrawPolygon(SDGraphics *_this,
-                       SDPen      *pen,
-                       SDPointF   *points,
-                       SDUInt32    count);
-SDStatus
-SDGraphics_DrawRectangle(SDGraphics   *_this,
-                         SDPen        *pen,
-                         SDRectangleF  rect);
-SDStatus
-SDGraphics_DrawRectangles(SDGraphics   *_this,
-                          SDPen        *pen,
-                          SDRectangleF *rects,
-                          SDUInt32      count);
-SDStatus
-SDGraphics_Clear(SDGraphics *_this,
-                 SDColor     color);
-SDStatus
-SDGraphics_FillClosedCurve(SDGraphics *_this,
-                           SDBrush    *brush,
-                           SDPointF   *points,
-                           SDUInt32    count,
-                           SDFloat     tension,
-                           SDFillMode  fillMode);
-SDStatus
-SDGraphics_FillEllipse(SDGraphics   *_this,
-                       SDBrush      *brush,
-                       SDRectangleF  rect);
-SDStatus
-SDGraphics_FillPath(SDGraphics *_this,
-                    SDBrush    *brush,
-                    SDPath     *path);
-SDStatus
-SDGraphics_FillPie(SDGraphics   *_this,
-                   SDBrush      *brush,
-                   SDRectangleF  rect,
-                   SDFloat       startAngle,
-                   SDFloat       sweepAngle);
-SDStatus
-SDGraphics_FillPolygon(SDGraphics *_this,
-                       SDBrush    *brush,
-                       SDPointF   *points,
-                       SDUInt32    count,
-                       SDFillMode  fillMode);
-SDStatus
-SDGraphics_FillRectangle(SDGraphics   *_this,
-                         SDBrush      *brush,
-                         SDRectangleF  rect);
-SDStatus
-SDGraphics_FillRectangles(SDGraphics   *_this,
-                          SDBrush      *brush,
-                          SDRectangleF *rects,
-                          SDUInt32      count);
-SDStatus
-SDGraphics_FillRegion(SDGraphics *_this,
-                      SDBrush    *brush,
-                      SDRegion   *region);
-SDStatus
-SDGraphics_BeginContainer(SDGraphics          *_this,
-                          SDGraphicsContainer *container);
-SDStatus
-SDGraphics_BeginContainer2(SDGraphics          *_this,
-                           SDRectangleF         dst,
-                           SDRectangleF         src,
-                           SDGraphicsUnit       unit,
-                           SDGraphicsContainer *container);
-SDStatus
-SDGraphics_EndContainer(SDGraphics          *_this,
-                        SDGraphicsContainer  container);
-SDStatus
-SDGraphics_Restore(SDGraphics *_this,
-                   SDUInt32    state);
-SDStatus
-SDGraphics_Save(SDGraphics *_this,
-                SDUInt32   *state);
-SDStatus
-SDGraphics_DrawString(SDGraphics     *_this,
-                      SDBrush        *brush,
-                      SDChar16       *s,
-                      SDUInt32        length,
-                      SDFont         *font,
-                      SDRectangleF    layoutRect,
-                      SDStringFormat *format);
-SDStatus
-SDGraphics_MeasureCharacterRanges(SDGraphics      *_this,
-                                  SDChar16        *s,
-                                  SDUInt32         length,
-                                  SDFont          *font,
-                                  SDRectangleF     layoutRect,
-                                  SDStringFormat  *format,
-                                  SDRegion       **regions,
-                                  SDUInt32        *count);
-SDStatus
-SDGraphics_MeasureString(SDGraphics     *_this,
-                         SDChar16       *s,
-                         SDUInt32        length,
-                         SDFont         *font,
-                         SDRectangleF    layoutRect,
-                         SDStringFormat *format,
-                         SDUInt32       *charactersFitted,
-                         SDUInt32       *linesFilled,
-                         SDSizeF        *size);
-SDStatus
-SDGraphics_Flush(SDGraphics       *_this,
-                 SDFlushIntention  intention);
-SDStatus
-SDGraphics_GetHdc(SDGraphics  *_this,
-                  void       **hdc);
-SDStatus
-SDGraphics_GetNearestColor(SDGraphics *_this,
-                           SDColor     color,
-                           SDColor    *nearest);
-SDStatus
-SDGraphics_ReleaseHdc(SDGraphics *_this,
-                      void       *hdc);
-SDStatus
-SDGraphics_TransformPoints(SDGraphics        *_this,
-                           SDCoordinateSpace  dst,
-                           SDCoordinateSpace  src,
-                           SDPointF          *points,
-                           SDUInt32           count);
+CStatus
+CGraphics_Create(CGraphics **_this,
+                 CSurface   *surface);
+CStatus
+CGraphics_Destroy(CGraphics **_this);
+CStatus
+CGraphics_GetTransform(CGraphics *_this,
+                       CMatrix   *matrix);
+CStatus
+CGraphics_MultiplyTransform(CGraphics    *_this,
+                            CMatrix      *matrix,
+                            CMatrixOrder  order);
+CStatus
+CGraphics_ResetTransform(CGraphics *_this);
+CStatus
+CGraphics_RotateTransform(CGraphics    *_this,
+                          CFloat        angle,
+                          CMatrixOrder  order);
+CStatus
+CGraphics_ScaleTransform(CGraphics    *_this,
+                         CFloat        sx,
+                         CFloat        sy,
+                         CMatrixOrder  order);
+CStatus
+CGraphics_SetTransform(CGraphics *_this,
+                       CMatrix   *matrix);
+CStatus
+CGraphics_TranslateTransform(CGraphics    *_this,
+                             CFloat        dx,
+                             CFloat        dy,
+                             CMatrixOrder  order);
+CStatus
+CGraphics_GetClip(CGraphics *_this,
+                  CRegion   *region);
+CStatus
+CGraphics_GetClipBounds(CGraphics   *_this,
+                        CRectangleF *clipBounds);
+CStatus
+CGraphics_GetVisibleClipBounds(CGraphics   *_this,
+                               CRectangleF *bounds);
+CStatus
+CGraphics_IsClipEmpty(CGraphics *_this,
+                      CBool     *empty);
+CStatus
+CGraphics_IsVisibleClipEmpty(CGraphics *_this,
+                             CBool     *empty);
+CStatus
+CGraphics_IsVisiblePoint(CGraphics *_this,
+                         CPointF    point,
+                         CBool     *visible);
+CStatus
+CGraphics_IsVisibleRectangle(CGraphics   *_this,
+                             CRectangleF  rect,
+                             CBool       *visible);
+CStatus
+CGraphics_ResetClip(CGraphics *_this);
+CStatus
+CGraphics_SetClipGraphics(CGraphics    *_this,
+                          CGraphics    *graphics,
+                          CCombineMode  combineMode);
+CStatus
+CGraphics_SetClipPath(CGraphics    *_this,
+                      CPath        *path,
+                      CCombineMode  combineMode);
+CStatus
+CGraphics_SetClipRegion(CGraphics    *_this,
+                        CRegion      *region,
+                        CCombineMode  combineMode);
+CStatus
+CGraphics_SetClipRectangle(CGraphics    *_this,
+                           CRectangleF   rect,
+                           CCombineMode  combineMode);
+CStatus
+CGraphics_TranslateClip(CGraphics *_this,
+                        CFloat     dx,
+                        CFloat     dy);
+CStatus
+CGraphics_GetCompositingMode(CGraphics        *_this,
+                             CCompositingMode *compositingMode);
+CStatus
+CGraphics_SetCompositingMode(CGraphics        *_this,
+                             CCompositingMode  compositingMode);
+CStatus
+CGraphics_GetCompositingQuality(CGraphics           *_this,
+                                CCompositingQuality *compositingQuality);
+CStatus
+CGraphics_SetCompositingQuality(CGraphics           *_this,
+                                CCompositingQuality  compositingQuality);
+CStatus
+CGraphics_GetDpiX(CGraphics *_this,
+                  CFloat    *dpiX);
+CStatus
+CGraphics_GetDpiY(CGraphics *_this,
+                  CFloat    *dpiY);
+CStatus
+CGraphics_GetInterpolationMode(CGraphics          *_this,
+                               CInterpolationMode *interpolationMode);
+CStatus
+CGraphics_SetInterpolationMode(CGraphics          *_this,
+                               CInterpolationMode  interpolationMode);
+CStatus
+CGraphics_GetPageScale(CGraphics *_this,
+                       CFloat    *pageScale);
+CStatus
+CGraphics_SetPageScale(CGraphics *_this,
+                       CFloat     pageScale);
+CStatus
+CGraphics_GetPageUnit(CGraphics     *_this,
+                      CGraphicsUnit *pageUnit);
+CStatus
+CGraphics_SetPageUnit(CGraphics     *_this,
+                      CGraphicsUnit  pageUnit);
+CStatus
+CGraphics_GetPixelOffsetMode(CGraphics        *_this,
+                             CPixelOffsetMode *pixelOffsetMode);
+CStatus
+CGraphics_SetPixelOffsetMode(CGraphics        *_this,
+                             CPixelOffsetMode  pixelOffsetMode);
+CStatus
+CGraphics_GetRenderingOrigin(CGraphics *_this,
+                             CPointI   *renderingOrigin);
+CStatus
+CGraphics_SetRenderingOrigin(CGraphics *_this,
+                             CPointI    renderingOrigin);
+CStatus
+CGraphics_GetSmoothingMode(CGraphics      *_this,
+                           CSmoothingMode *smoothingMode);
+CStatus
+CGraphics_SetSmoothingMode(CGraphics      *_this,
+                           CSmoothingMode  smoothingMode);
+CStatus
+CGraphics_GetTextContrast(CGraphics *_this,
+                          CUInt32   *textContrast);
+CStatus
+CGraphics_SetTextContrast(CGraphics *_this,
+                          CUInt32    textContrast);
+CStatus
+CGraphics_GetTextRenderingHint(CGraphics          *_this,
+                               CTextRenderingHint *textRenderingHint);
+CStatus
+CGraphics_SetTextRenderingHint(CGraphics          *_this,
+                               CTextRenderingHint  textRenderingHint);
+CStatus
+CGraphics_DrawXBM(CGraphics   *_this,
+                  CByte       *bits,
+                  CUInt32      count,
+                  CRectangleF  dst,
+                  CColor       color);
+CStatus
+CGraphics_DrawImage(CGraphics *_this,
+                    CImage    *image,
+                    CFloat     x,
+                    CFloat     y);
+CStatus
+CGraphics_DrawImageRect(CGraphics *_this,
+                        CImage    *image,
+                        CFloat     x,
+                        CFloat     y,
+                        CFloat     width,
+                        CFloat     height);
+CStatus
+CGraphics_DrawImagePoints(CGraphics *_this,
+                          CImage    *image,
+                          CPointF   *dst,
+                          CUInt32    count);
+CStatus
+CGraphics_DrawImageRectPoints(CGraphics     *_this,
+                              CImage        *image,
+                              CPointF        dst,
+                              CRectangleF    src,
+                              CGraphicsUnit  srcUnit);
+CStatus
+CGraphics_DrawImageRectPointsAttributes(CGraphics           *_this,
+                                        CImage              *image,
+                                        CPointF             *dst,
+                                        CUInt32              count,
+                                        CRectangleF          src,
+                                        CGraphicsUnit        srcUnit,
+                                        CImageAttributes    *atts);
+CStatus
+CGraphics_DrawImageRectRectAttributes(CGraphics           *_this,
+                                      CImage              *image,
+                                      CRectangleF          dst,
+                                      CRectangleF          src,
+                                      CGraphicsUnit        srcUnit,
+                                      CImageAttributes    *atts);
+CStatus
+CGraphics_DrawArc(CGraphics   *_this,
+                  CPen        *pen,
+                  CRectangleF  rect,
+                  CFloat       startAngle,
+                  CFloat       sweepAngle);
+CStatus
+CGraphics_DrawBezier(CGraphics *_this,
+                     CPen      *pen,
+                     CPointF    a,
+                     CPointF    b,
+                     CPointF    c,
+                     CPointF    d);
+CStatus
+CGraphics_DrawBeziers(CGraphics *_this,
+                      CPen      *pen,
+                      CPointF   *points,
+                      CUInt32    count);
+CStatus
+CGraphics_DrawClosedCurve(CGraphics *_this,
+                          CPen      *pen,
+                          CPointF   *points,
+                          CUInt32    count,
+                          CFloat     tension);
+CStatus
+CGraphics_DrawCurve(CGraphics *_this,
+                    CPen      *pen,
+                    CPointF   *points,
+                    CUInt32    count,
+                    CUInt32    offset,
+                    CUInt32    numberOfSegments,
+                    CFloat     tension);
+CStatus
+CGraphics_DrawEllipse(CGraphics   *_this,
+                      CPen        *pen,
+                      CRectangleF  rect);
+CStatus
+CGraphics_DrawLine(CGraphics *_this,
+                   CPen      *pen,
+                   CPointF    start,
+                   CPointF    end);
+CStatus
+CGraphics_DrawLines(CGraphics *_this,
+                    CPen      *pen,
+                    CPointF   *points,
+                    CUInt32    count);
+CStatus
+CGraphics_DrawPath(CGraphics *_this,
+                   CPen      *pen,
+                   CPath     *path);
+CStatus
+CGraphics_DrawPie(CGraphics   *_this,
+                  CPen        *pen,
+                  CRectangleF  rect,
+                  CFloat       startAngle,
+                  CFloat       sweepAngle);
+CStatus
+CGraphics_DrawPolygon(CGraphics *_this,
+                      CPen      *pen,
+                      CPointF   *points,
+                      CUInt32    count);
+CStatus
+CGraphics_DrawRectangle(CGraphics   *_this,
+                        CPen        *pen,
+                        CRectangleF  rect);
+CStatus
+CGraphics_DrawRectangles(CGraphics   *_this,
+                         CPen        *pen,
+                         CRectangleF *rects,
+                         CUInt32      count);
+CStatus
+CGraphics_Clear(CGraphics *_this,
+                CColor     color);
+CStatus
+CGraphics_FillClosedCurve(CGraphics *_this,
+                          CBrush    *brush,
+                          CPointF   *points,
+                          CUInt32    count,
+                          CFloat     tension,
+                          CFillMode  fillMode);
+CStatus
+CGraphics_FillEllipse(CGraphics   *_this,
+                      CBrush      *brush,
+                      CRectangleF  rect);
+CStatus
+CGraphics_FillPath(CGraphics *_this,
+                   CBrush    *brush,
+                   CPath     *path);
+CStatus
+CGraphics_FillPie(CGraphics   *_this,
+                  CBrush      *brush,
+                  CRectangleF  rect,
+                  CFloat       startAngle,
+                  CFloat       sweepAngle);
+CStatus
+CGraphics_FillPolygon(CGraphics *_this,
+                      CBrush    *brush,
+                      CPointF   *points,
+                      CUInt32    count,
+                      CFillMode  fillMode);
+CStatus
+CGraphics_FillRectangle(CGraphics   *_this,
+                        CBrush      *brush,
+                        CRectangleF  rect);
+CStatus
+CGraphics_FillRectangles(CGraphics   *_this,
+                         CBrush      *brush,
+                         CRectangleF *rects,
+                         CUInt32      count);
+CStatus
+CGraphics_FillRegion(CGraphics *_this,
+                     CBrush    *brush,
+                     CRegion   *region);
+CStatus
+CGraphics_BeginContainer(CGraphics          *_this,
+                         CGraphicsContainer *container);
+CStatus
+CGraphics_BeginContainer2(CGraphics          *_this,
+                          CRectangleF         dst,
+                          CRectangleF         src,
+                          CGraphicsUnit       unit,
+                          CGraphicsContainer *container);
+CStatus
+CGraphics_EndContainer(CGraphics          *_this,
+                       CGraphicsContainer  container);
+CStatus
+CGraphics_Restore(CGraphics *_this,
+                  CUInt32    state);
+CStatus
+CGraphics_Save(CGraphics *_this,
+               CUInt32   *state);
+CStatus
+CGraphics_DrawString(CGraphics     *_this,
+                     CBrush        *brush,
+                     CChar16       *s,
+                     CUInt32        length,
+                     CFont         *font,
+                     CRectangleF    layoutRect,
+                     CStringFormat *format);
+CStatus
+CGraphics_MeasureCharacterRanges(CGraphics      *_this,
+                                 CChar16        *s,
+                                 CUInt32         length,
+                                 CFont          *font,
+                                 CRectangleF     layoutRect,
+                                 CStringFormat  *format,
+                                 CRegion       **regions,
+                                 CUInt32        *count);
+CStatus
+CGraphics_MeasureString(CGraphics     *_this,
+                        CChar16       *s,
+                        CUInt32        length,
+                        CFont         *font,
+                        CRectangleF    layoutRect,
+                        CStringFormat *format,
+                        CUInt32       *charactersFitted,
+                        CUInt32       *linesFilled,
+                        CSizeF        *size);
+CStatus
+CGraphics_Flush(CGraphics       *_this,
+                CFlushIntention  intention);
+CStatus
+CGraphics_GetHdc(CGraphics  *_this,
+                 void      **hdc);
+CStatus
+CGraphics_GetNearestColor(CGraphics *_this,
+                          CColor     color,
+                          CColor    *nearest);
+CStatus
+CGraphics_ReleaseHdc(CGraphics *_this,
+                     void      *hdc);
+CStatus
+CGraphics_TransformPoints(CGraphics        *_this,
+                          CCoordinateSpace  dst,
+                          CCoordinateSpace  src,
+                          CPointF          *points,
+                          CUInt32           count);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_HATCHBRUSH_METHODS
-#ifdef SDLIBRARY_HATCHBRUSH_METHODS
+#define CLIBRARY_HATCHBRUSH_METHODS
+#ifdef CLIBRARY_HATCHBRUSH_METHODS
 /* Declare public hatch brush methods. */
-SDStatus
-SDHatchBrush_Create(SDHatchBrush **_this,
-                    SDHatchStyle   style,
-                    SDColor        foreground,
-                    SDColor        background);
-SDStatus
-SDHatchBrush_GetBackgroundColor(SDHatchBrush *_this,
-                                SDColor      *background);
-SDStatus
-SDHatchBrush_GetForegroundColor(SDHatchBrush *_this,
-                                SDColor      *foreground);
-SDStatus
-SDHatchBrush_GetHatchStyle(SDHatchBrush *_this,
-                           SDHatchStyle *style);
+CStatus
+CHatchBrush_Create(CHatchBrush **_this,
+                   CHatchStyle   style,
+                   CColor        foreground,
+                   CColor        background);
+CStatus
+CHatchBrush_GetBackgroundColor(CHatchBrush *_this,
+                               CColor      *background);
+CStatus
+CHatchBrush_GetForegroundColor(CHatchBrush *_this,
+                               CColor      *foreground);
+CStatus
+CHatchBrush_GetHatchStyle(CHatchBrush *_this,
+                          CHatchStyle *style);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_IMAGE_METHODS
-#ifdef SDLIBRARY_IMAGE_METHODS
+#define CLIBRARY_IMAGE_METHODS
+#ifdef CLIBRARY_IMAGE_METHODS
 /* Declare public image methods. */
-SDStatus
-SDImage_Destroy(SDImage **_this);
-SDStatus
-SDImage_GetFlags(SDImage     *_this,
-                 SDImageFlag *flags);
-SDStatus
-SDImage_GetHeight(SDImage  *_this,
-                  SDUInt32 *height);
-SDStatus
-SDImage_GetHorizontalResolution(SDImage *_this,
-                                SDFloat *dpiX);
-SDStatus
-SDImage_GetImageType(SDImage     *_this,
-                     SDImageType *type);
-SDStatus
-SDImage_GetPhysicalDimension(SDImage *_this,
-                             SDSizeF *size);
-SDStatus
-SDImage_GetPixelFormat(SDImage       *_this,
-                       SDPixelFormat *pixelFormat);
-SDStatus
-SDImage_GetRawFormat(SDImage *_this,
-                     SDGuid  *format);
-SDStatus
-SDImage_GetVerticalResolution(SDImage *_this,
-                              SDFloat *dpiY);
-SDStatus
-SDImage_GetWidth(SDImage  *_this,
-                 SDUInt32 *width);
-SDStatus
-SDImage_Clone(SDImage  *_this,
-              SDImage **clone);
-SDStatus
-SDImage_GetBounds(SDImage        *_this,
-                  SDGraphicsUnit  pageUnit,
-                  SDRectangleF   *bounds);
+CStatus
+CImage_Destroy(CImage **_this);
+CStatus
+CImage_GetFlags(CImage     *_this,
+                CImageFlag *flags);
+CStatus
+CImage_GetHeight(CImage  *_this,
+                 CUInt32 *height);
+CStatus
+CImage_GetHorizontalResolution(CImage *_this,
+                               CFloat *dpiX);
+CStatus
+CImage_GetImageType(CImage     *_this,
+                    CImageType *type);
+CStatus
+CImage_GetPhysicalDimension(CImage *_this,
+                            CSizeF *size);
+CStatus
+CImage_GetPixelFormat(CImage       *_this,
+                      CPixelFormat *pixelFormat);
+CStatus
+CImage_GetRawFormat(CImage *_this,
+                    CGuid  *format);
+CStatus
+CImage_GetVerticalResolution(CImage *_this,
+                             CFloat *dpiY);
+CStatus
+CImage_GetWidth(CImage  *_this,
+                CUInt32 *width);
+CStatus
+CImage_Clone(CImage  *_this,
+             CImage **clone);
+CStatus
+CImage_GetBounds(CImage        *_this,
+                 CGraphicsUnit  pageUnit,
+                 CRectangleF   *bounds);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_LINEBRUSH_METHODS
-#ifdef SDLIBRARY_LINEBRUSH_METHODS
+#define CLIBRARY_LINEBRUSH_METHODS
+#ifdef CLIBRARY_LINEBRUSH_METHODS
 /* Declare public line brush methods. */
-SDStatus
-SDLineBrush_Create(SDLineBrush  **_this,
-                   SDRectangleF   rectangle,
-                   SDColor        startColor,
-                   SDColor        endColor,
-                   SDFloat        angle,
-                   SDBool         isAngleScalable,
-                   SDWrapMode     wrapMode);
-SDStatus
-SDLineBrush_GetBlend(SDLineBrush *_this,
-                     SDBlend     *blend);
-SDStatus
-SDLineBrush_SetBlend(SDLineBrush *_this,
-                     SDBlend      blend);
-SDStatus
-SDLineBrush_GetColors(SDLineBrush *_this,
-                      SDColor     *startColor,
-                      SDColor     *endColor);
-SDStatus
-SDLineBrush_SetColor(SDLineBrush *_this,
-                     SDColor      startColor,
-                     SDColor      endColor);
-SDStatus
-SDLineBrush_GetColorBlend(SDLineBrush  *_this,
-                          SDColorBlend *colorBlend);
-SDStatus
-SDLineBrush_SetColorBlend(SDLineBrush  *_this,
-                          SDColorBlend  colorBlend);
-SDStatus
-SDLineBrush_GetGammaCorrection(SDLineBrush *_this,
-                               SDBool      *gammaCorrection);
-SDStatus
-SDLineBrush_SetGammaCorrection(SDLineBrush *_this,
-                               SDBool       gammaCorrection);
-SDStatus
-SDLineBrush_GetRectangle(SDLineBrush  *_this,
-                         SDRectangleF *rectangle);
-SDStatus
-SDLineBrush_GetWrapMode(SDLineBrush *_this,
-                        SDWrapMode  *wrapMode);
-SDStatus
-SDLineBrush_SetWrapMode(SDLineBrush *_this,
-                        SDWrapMode   wrapMode);
-SDStatus
-SDLineBrush_GetTransform(SDLineBrush *_this,
-                         SDMatrix    *matrix);
-SDStatus
-SDLineBrush_MultiplyTransform(SDLineBrush   *_this,
-                              SDMatrix      *matrix,
-                              SDMatrixOrder  order);
-SDStatus
-SDLineBrush_ResetTransform(SDLineBrush *_this);
-SDStatus
-SDLineBrush_RotateTransform(SDLineBrush   *_this,
-                            SDFloat        angle,
-                            SDMatrixOrder  order);
-SDStatus
-SDLineBrush_ScaleTransform(SDLineBrush   *_this,
-                           SDFloat        sx,
-                           SDFloat        sy,
-                           SDMatrixOrder  order);
-SDStatus
-SDLineBrush_SetTriangularShape(SDLineBrush *_this,
-                               SDFloat      focus,
-                               SDFloat      scale);
-SDStatus
-SDLineBrush_SetSigmaBellShape(SDLineBrush *_this,
-                              SDFloat      focus,
-                              SDFloat      scale);
-SDStatus
-SDLineBrush_SetTransform(SDLineBrush *_this,
-                         SDMatrix    *matrix);
-SDStatus
-SDLineBrush_TranslateTransform(SDLineBrush   *_this,
-                               SDFloat        dx,
-                               SDFloat        dy,
-                               SDMatrixOrder  order);
+CStatus
+CLineBrush_Create(CLineBrush  **_this,
+                  CRectangleF   rectangle,
+                  CColor        startColor,
+                  CColor        endColor,
+                  CFloat        angle,
+                  CBool         isAngleScalable,
+                  CWrapMode     wrapMode);
+CStatus
+CLineBrush_GetBlend(CLineBrush *_this,
+                    CBlend     *blend);
+CStatus
+CLineBrush_SetBlend(CLineBrush *_this,
+                    CBlend      blend);
+CStatus
+CLineBrush_GetColors(CLineBrush *_this,
+                     CColor     *startColor,
+                     CColor     *endColor);
+CStatus
+CLineBrush_SetColor(CLineBrush *_this,
+                    CColor      startColor,
+                    CColor      endColor);
+CStatus
+CLineBrush_GetColorBlend(CLineBrush  *_this,
+                         CColorBlend *colorBlend);
+CStatus
+CLineBrush_SetColorBlend(CLineBrush  *_this,
+                         CColorBlend  colorBlend);
+CStatus
+CLineBrush_GetGammaCorrection(CLineBrush *_this,
+                              CBool      *gammaCorrection);
+CStatus
+CLineBrush_SetGammaCorrection(CLineBrush *_this,
+                              CBool       gammaCorrection);
+CStatus
+CLineBrush_GetRectangle(CLineBrush  *_this,
+                        CRectangleF *rectangle);
+CStatus
+CLineBrush_GetWrapMode(CLineBrush *_this,
+                       CWrapMode  *wrapMode);
+CStatus
+CLineBrush_SetWrapMode(CLineBrush *_this,
+                       CWrapMode   wrapMode);
+CStatus
+CLineBrush_GetTransform(CLineBrush *_this,
+                        CMatrix    *matrix);
+CStatus
+CLineBrush_MultiplyTransform(CLineBrush   *_this,
+                             CMatrix      *matrix,
+                             CMatrixOrder  order);
+CStatus
+CLineBrush_ResetTransform(CLineBrush *_this);
+CStatus
+CLineBrush_RotateTransform(CLineBrush   *_this,
+                           CFloat        angle,
+                           CMatrixOrder  order);
+CStatus
+CLineBrush_ScaleTransform(CLineBrush   *_this,
+                          CFloat        sx,
+                          CFloat        sy,
+                          CMatrixOrder  order);
+CStatus
+CLineBrush_SetTriangularShape(CLineBrush *_this,
+                              CFloat      focus,
+                              CFloat      scale);
+CStatus
+CLineBrush_SetSigmaBellShape(CLineBrush *_this,
+                             CFloat      focus,
+                             CFloat      scale);
+CStatus
+CLineBrush_SetTransform(CLineBrush *_this,
+                        CMatrix    *matrix);
+CStatus
+CLineBrush_TranslateTransform(CLineBrush   *_this,
+                              CFloat        dx,
+                              CFloat        dy,
+                              CMatrixOrder  order);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_MATRIX_METHODS
-#ifdef SDLIBRARY_MATRIX_METHODS
+#define CLIBRARY_MATRIX_METHODS
+#ifdef CLIBRARY_MATRIX_METHODS
 /* Declare public matrix methods. */
-SDStatus
-SDMatrix_Create(SDMatrix **_this);
-SDStatus
-SDMatrix_CreateParallelogram(SDMatrix     **_this,
-                             SDRectangleF   rect,
-                             SDPointF       tl,
-                             SDPointF       tr,
-                             SDPointF       bl);
-SDStatus
-SDMatrix_CreateElements(SDMatrix **_this,
-                        SDFloat    m11,
-                        SDFloat    m12,
-                        SDFloat    m21,
-                        SDFloat    m22,
-                        SDFloat    dx,
-                        SDFloat    dy);
-SDStatus
-SDMatrix_GetDeterminant(SDMatrix *_this,
-                        SDFloat  *determinant);
-SDStatus
-SDMatrix_GetInverse(SDMatrix *_this,
-                    SDMatrix *inverse);
-SDStatus
-SDMatrix_Multiply(SDMatrix      *_this,
-                  SDMatrix      *other,
-                  SDMatrixOrder  order);
-SDStatus
-SDMatrix_Equals(SDMatrix *_this,
-                SDMatrix *other,
-                SDBool   *eq);
-SDStatus
-SDMatrix_NotEquals(SDMatrix *_this,
-                   SDMatrix *other,
-                   SDBool   *ne);
-SDStatus
-SDMatrix_Rotate(SDMatrix      *_this,
-                SDFloat        angle,
-                SDMatrixOrder  order);
-SDStatus
-SDMatrix_Scale(SDMatrix      *_this,
-               SDFloat        scaleX,
-               SDFloat        scaleY,
-               SDMatrixOrder  order);
-SDStatus
-SDMatrix_Shear(SDMatrix      *_this,
-               SDFloat        shearX,
-               SDFloat        shearY,
-               SDMatrixOrder  order);
-SDStatus
-SDMatrix_Translate(SDMatrix      *_this,
-                   SDFloat        offsetX,
-                   SDFloat        offsetY,
-                   SDMatrixOrder  order);
-SDStatus
-SDMatrix_TransformPoints(SDMatrix *_this,
-                         SDPointF *points,
-                         SDUInt32  count);
-SDStatus
-SDMatrix_TransformVectors(SDMatrix *_this,
-                          SDPointF *points,
-                          SDUInt32  count);
+CStatus
+CMatrix_Create(CMatrix **_this);
+CStatus
+CMatrix_CreateParallelogram(CMatrix     **_this,
+                            CRectangleF   rect,
+                            CPointF       tl,
+                            CPointF       tr,
+                            CPointF       bl);
+CStatus
+CMatrix_CreateElements(CMatrix **_this,
+                       CFloat    m11,
+                       CFloat    m12,
+                       CFloat    m21,
+                       CFloat    m22,
+                       CFloat    dx,
+                       CFloat    dy);
+CStatus
+CMatrix_GetDeterminant(CMatrix *_this,
+                       CFloat  *determinant);
+CStatus
+CMatrix_GetInverse(CMatrix *_this,
+                   CMatrix *inverse);
+CStatus
+CMatrix_Multiply(CMatrix      *_this,
+                 CMatrix      *other,
+                 CMatrixOrder  order);
+CStatus
+CMatrix_Equals(CMatrix *_this,
+               CMatrix *other,
+               CBool   *eq);
+CStatus
+CMatrix_NotEquals(CMatrix *_this,
+                  CMatrix *other,
+                  CBool   *ne);
+CStatus
+CMatrix_Rotate(CMatrix      *_this,
+               CFloat        angle,
+               CMatrixOrder  order);
+CStatus
+CMatrix_Scale(CMatrix      *_this,
+              CFloat        scaleX,
+              CFloat        scaleY,
+              CMatrixOrder  order);
+CStatus
+CMatrix_Shear(CMatrix      *_this,
+              CFloat        shearX,
+              CFloat        shearY,
+              CMatrixOrder  order);
+CStatus
+CMatrix_Translate(CMatrix      *_this,
+                  CFloat        offsetX,
+                  CFloat        offsetY,
+                  CMatrixOrder  order);
+CStatus
+CMatrix_TransformPoints(CMatrix *_this,
+                        CPointF *points,
+                        CUInt32  count);
+CStatus
+CMatrix_TransformVectors(CMatrix *_this,
+                         CPointF *points,
+                         CUInt32  count);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_PATH_METHODS
-#ifdef SDLIBRARY_PATH_METHODS
+#define CLIBRARY_PATH_METHODS
+#ifdef CLIBRARY_PATH_METHODS
 /* Declare public path methods. */
-SDStatus
-SDPath_Create(SDPath **_this);
-SDStatus
-SDPath_Destroy(SDPath **_this);
-SDStatus
-SDPath_GetFillMode(SDPath     *_this,
-                   SDFillMode *fillMode);
-SDStatus
-SDPath_SetFillMode(SDPath     *_this,
-                   SDFillMode  fillMode);
-SDStatus
-SDPath_GetPoints(SDPath    *_this,
-                 SDPointF **points,
-                 SDUInt32  *count);
-SDStatus
-SDPath_GetTypes(SDPath    *_this,
-                SDByte   **types,
-                SDUInt32  *count);
-SDStatus
-SDPath_GetPathData(SDPath    *_this,
-                   SDPointF **points,
-                   SDByte   **types,
-                   SDUInt32  *count);
-SDStatus
-SDPath_SetPathData(SDPath   *_this,
-                   SDPointF *points,
-                   SDByte   *types,
-                   SDUInt32  count);
-SDStatus
-SDPath_AddArc(SDPath  *_this,
-              SDFloat  x,
-              SDFloat  y,
-              SDFloat  width,
-              SDFloat  height,
-              SDFloat  startAngle,
-              SDFloat  sweepAngle);
-SDStatus
-SDPath_AddBezier(SDPath  *_this,
-                 SDFloat  x1,
-                 SDFloat  y1,
-                 SDFloat  x2,
-                 SDFloat  y2,
-                 SDFloat  x3,
-                 SDFloat  y3,
-                 SDFloat  x4,
-                 SDFloat  y4);
-SDStatus
-SDPath_AddBeziers(SDPath   *_this,
-                  SDPointF *points,
-                  SDUInt32  count);
-SDStatus
-SDPath_AddClosedCardinalCurve(SDPath   *_this,
-                              SDPointF *points,
-                              SDUInt32  count,
-                              SDFloat   tension);
-SDStatus
-SDPath_AddCardinalCurve(SDPath   *_this,
-                        SDPointF *points,
-                        SDUInt32  count,
-                        SDUInt32  offset,
-                        SDUInt32  numberOfSegments,
-                        SDFloat   tension);
-SDStatus
-SDPath_AddEllipse(SDPath  *_this,
-                  SDFloat  x,
-                  SDFloat  y,
-                  SDFloat  width,
-                  SDFloat  height);
-SDStatus
-SDPath_AddLine(SDPath  *_this,
-               SDFloat  x1,
-               SDFloat  y1,
-               SDFloat  x2,
-               SDFloat  y2);
-SDStatus
-SDPath_AddLines(SDPath   *_this,
-                SDPointF *points,
-                SDUInt32  count);
-SDStatus
-SDPath_AddPath(SDPath *_this,
-               SDPath *path,
-               SDBool  connect);
-SDStatus
-SDPath_AddPie(SDPath  *_this,
-              SDFloat  x,
-              SDFloat  y,
-              SDFloat  width,
-              SDFloat  height,
-              SDFloat  startAngle,
-              SDFloat  sweepAngle);
-SDStatus
-SDPath_AddPolygon(SDPath   *_this,
-                  SDPointF *points,
-                  SDUInt32  count);
-SDStatus
-SDPath_AddRectangle(SDPath  *_this,
-                    SDFloat  x,
-                    SDFloat  y,
-                    SDFloat  width,
-                    SDFloat  height);
-SDStatus
-SDPath_AddRectangles(SDPath       *_this,
-                     SDRectangleF *rects,
-                     SDUInt32      count);
-SDStatus
-SDPath_AddString(SDPath         *_this,
-                 SDChar16       *s,
-                 SDUInt32        length,
-                 SDFontFamily   *family,
-                 SDFontStyle     style,
-                 SDFloat         emSize,
-                 SDRectangleF    layoutRect,
-                 SDStringFormat *format);
-SDStatus
-SDPath_ClearMarkers(SDPath *_this);
-SDStatus
-SDPath_Clone(SDPath  *_this,
-             SDPath **clone);
-SDStatus
-SDPath_CloseAllFigures(SDPath *_this);
-SDStatus
-SDPath_CloseFigure(SDPath *_this);
-SDStatus
-SDPath_Flatten(SDPath   *_this,
-               SDMatrix *matrix,
-               SDFloat   flatness);
-SDStatus
-SDPath_GetCount(SDPath   *_this,
-                SDUInt32 *count);
-SDStatus
-SDPath_GetBounds(SDPath       *_this,
-                 SDMatrix     *matrix,
-                 SDPen        *pen,
-                 SDRectangleF *bounds);
-SDStatus
-SDPath_GetLastPoint(SDPath   *_this,
-                    SDPointF *point);
-SDStatus
-SDPath_IsOutlineVisible(SDPath     *_this,
-                        SDFloat     x,
-                        SDFloat     y,
-                        SDPen      *pen,
-                        SDGraphics *graphics,
-                        SDBool     *visible);
-SDStatus
-SDPath_IsVisible(SDPath     *_this,
-                 SDFloat     x,
-                 SDFloat     y,
-                 SDGraphics *graphics,
-                 SDBool     *visible);
-SDStatus
-SDPath_Reset(SDPath *_this);
-SDStatus
-SDPath_Reverse(SDPath *_this);
-SDStatus
-SDPath_SetMarker(SDPath *_this);
-SDStatus
-SDPath_StartFigure(SDPath *_this);
-SDStatus
-SDPath_Transform(SDPath   *_this,
-                 SDMatrix *matrix);
-SDStatus
-SDPath_Warp(SDPath     *_this,
-            SDMatrix   *matrix,
-            SDPointF   *dstPoints,
-            SDUInt32    dstLength,
-            SDFloat     srcX,
-            SDFloat     srcY,
-            SDFloat     srcWidth,
-            SDFloat     srcHeight,
-            SDWarpMode  warpMode,
-            SDFloat     flatness);
-SDStatus
-SDPath_Widen(SDPath   *_this,
-             SDPen    *pen,
-             SDMatrix *matrix,
-             SDFloat   flatness);
+CStatus
+CPath_Create(CPath **_this);
+CStatus
+CPath_Destroy(CPath **_this);
+CStatus
+CPath_GetFillMode(CPath     *_this,
+                  CFillMode *fillMode);
+CStatus
+CPath_SetFillMode(CPath     *_this,
+                  CFillMode  fillMode);
+CStatus
+CPath_GetPoints(CPath    *_this,
+                CPointF **points,
+                CUInt32  *count);
+CStatus
+CPath_GetTypes(CPath    *_this,
+               CByte   **types,
+               CUInt32  *count);
+CStatus
+CPath_GetPathData(CPath    *_this,
+                  CPointF **points,
+                  CByte   **types,
+                  CUInt32  *count);
+CStatus
+CPath_SetPathData(CPath   *_this,
+                  CPointF *points,
+                  CByte   *types,
+                  CUInt32  count);
+CStatus
+CPath_AddArc(CPath  *_this,
+             CFloat  x,
+             CFloat  y,
+             CFloat  width,
+             CFloat  height,
+             CFloat  startAngle,
+             CFloat  sweepAngle);
+CStatus
+CPath_AddBezier(CPath  *_this,
+                CFloat  x1,
+                CFloat  y1,
+                CFloat  x2,
+                CFloat  y2,
+                CFloat  x3,
+                CFloat  y3,
+                CFloat  x4,
+                CFloat  y4);
+CStatus
+CPath_AddBeziers(CPath   *_this,
+                 CPointF *points,
+                 CUInt32  count);
+CStatus
+CPath_AddClosedCardinalCurve(CPath   *_this,
+                             CPointF *points,
+                             CUInt32  count,
+                             CFloat   tension);
+CStatus
+CPath_AddCardinalCurve(CPath   *_this,
+                       CPointF *points,
+                       CUInt32  count,
+                       CUInt32  offset,
+                       CUInt32  numberOfSegments,
+                       CFloat   tension);
+CStatus
+CPath_AddEllipse(CPath  *_this,
+                 CFloat  x,
+                 CFloat  y,
+                 CFloat  width,
+                 CFloat  height);
+CStatus
+CPath_AddLine(CPath  *_this,
+              CFloat  x1,
+              CFloat  y1,
+              CFloat  x2,
+              CFloat  y2);
+CStatus
+CPath_AddLines(CPath   *_this,
+               CPointF *points,
+               CUInt32  count);
+CStatus
+CPath_AddPath(CPath *_this,
+              CPath *path,
+              CBool  connect);
+CStatus
+CPath_AddPie(CPath  *_this,
+             CFloat  x,
+             CFloat  y,
+             CFloat  width,
+             CFloat  height,
+             CFloat  startAngle,
+             CFloat  sweepAngle);
+CStatus
+CPath_AddPolygon(CPath   *_this,
+                 CPointF *points,
+                 CUInt32  count);
+CStatus
+CPath_AddRectangle(CPath  *_this,
+                   CFloat  x,
+                   CFloat  y,
+                   CFloat  width,
+                   CFloat  height);
+CStatus
+CPath_AddRectangles(CPath       *_this,
+                    CRectangleF *rects,
+                    CUInt32      count);
+CStatus
+CPath_AddString(CPath         *_this,
+                CChar16       *s,
+                CUInt32        length,
+                CFontFamily   *family,
+                CFontStyle     style,
+                CFloat         emSize,
+                CRectangleF    layoutRect,
+                CStringFormat *format);
+CStatus
+CPath_ClearMarkers(CPath *_this);
+CStatus
+CPath_Clone(CPath  *_this,
+            CPath **clone);
+CStatus
+CPath_CloseAllFigures(CPath *_this);
+CStatus
+CPath_CloseFigure(CPath *_this);
+CStatus
+CPath_Flatten(CPath   *_this,
+              CMatrix *matrix,
+              CFloat   flatness);
+CStatus
+CPath_GetCount(CPath   *_this,
+               CUInt32 *count);
+CStatus
+CPath_GetBounds(CPath       *_this,
+                CMatrix     *matrix,
+                CPen        *pen,
+                CRectangleF *bounds);
+CStatus
+CPath_GetLastPoint(CPath   *_this,
+                   CPointF *point);
+CStatus
+CPath_IsOutlineVisible(CPath     *_this,
+                       CFloat     x,
+                       CFloat     y,
+                       CPen      *pen,
+                       CGraphics *graphics,
+                       CBool     *visible);
+CStatus
+CPath_IsVisible(CPath     *_this,
+                CFloat     x,
+                CFloat     y,
+                CGraphics *graphics,
+                CBool     *visible);
+CStatus
+CPath_Reset(CPath *_this);
+CStatus
+CPath_Reverse(CPath *_this);
+CStatus
+CPath_SetMarker(CPath *_this);
+CStatus
+CPath_StartFigure(CPath *_this);
+CStatus
+CPath_Transform(CPath   *_this,
+                CMatrix *matrix);
+CStatus
+CPath_Warp(CPath     *_this,
+           CMatrix   *matrix,
+           CPointF   *dstPoints,
+           CUInt32    dstLength,
+           CFloat     srcX,
+           CFloat     srcY,
+           CFloat     srcWidth,
+           CFloat     srcHeight,
+           CWarpMode  warpMode,
+           CFloat     flatness);
+CStatus
+CPath_Widen(CPath   *_this,
+            CPen    *pen,
+            CMatrix *matrix,
+            CFloat   flatness);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_PATHBRUSH_METHODS
-#ifdef SDLIBRARY_PATHBRUSH_METHODS
+#define CLIBRARY_PATHBRUSH_METHODS
+#ifdef CLIBRARY_PATHBRUSH_METHODS
 /* Declare public path brush methods. */
-SDStatus
-SDPathBrush_Create(SDPathBrush **_this,
-                   SDPath       *path);
-SDStatus
-SDPathBrush_GetBlend(SDPathBrush *_this,
-                     SDBlend     *blend);
-SDStatus
-SDPathBrush_SetBlend(SDPathBrush *_this,
-                     SDBlend      blend);
-SDStatus
-SDPathBrush_GetCenterColor(SDPathBrush *_this,
-                           SDColor     *centerColor);
-SDStatus
-SDPathBrush_SetCenterColor(SDPathBrush *_this,
-                           SDColor      centerColor);
-SDStatus
-SDPathBrush_GetCenterPoint(SDPathBrush *_this,
-                           SDPointF    *centerPoint);
-SDStatus
-SDPathBrush_SetCenterPoint(SDPathBrush *_this,
-                           SDPointF     centerPoint);
-SDStatus
-SDPathBrush_GetColorBlend(SDPathBrush  *_this,
-                          SDColorBlend *colorBlend);
-SDStatus
-SDPathBrush_SetColorBlend(SDPathBrush  *_this,
-                          SDColorBlend  colorBlend);
-SDStatus
-SDPathBrush_GetFocusPoint(SDPathBrush *_this,
-                          SDPointF    *focusPoint);
-SDStatus
-SDPathBrush_SetFocusPoint(SDPathBrush *_this,
-                          SDPointF     focusPoint);
-SDStatus
-SDPathBrush_GetRectangle(SDPathBrush  *_this,
-                         SDRectangleF *rectangle);
-SDStatus
-SDPathBrush_GetSurroundColors(SDPathBrush  *_this,
-                              SDColor     **surroundColors,
-                              SDUInt32     *count);
-SDStatus
-SDPathBrush_SetSurroundColors(SDPathBrush *_this,
-                              SDColor     *surroundColors,
-                              SDUInt32     count);
-SDStatus
-SDPathBrush_GetWrapMode(SDPathBrush *_this,
-                        SDWrapMode  *wrapMode);
-SDStatus
-SDPathBrush_SetWrapMode(SDPathBrush *_this,
-                        SDWrapMode   wrapMode);
-SDStatus
-SDPathBrush_GetTransform(SDPathBrush *_this,
-                         SDMatrix    *matrix);
-SDStatus
-SDPathBrush_MultiplyTransform(SDPathBrush   *_this,
-                              SDMatrix      *matrix,
-                              SDMatrixOrder  order);
-SDStatus
-SDPathBrush_ResetTransform(SDPathBrush *_this);
-SDStatus
-SDPathBrush_RotateTransform(SDPathBrush   *_this,
-                            SDFloat        angle,
-                            SDMatrixOrder  order);
-SDStatus
-SDPathBrush_ScaleTransform(SDPathBrush   *_this,
-                           SDFloat        sx,
-                           SDFloat        sy,
-                           SDMatrixOrder  order);
-SDStatus
-SDPathBrush_SetTriangularShape(SDPathBrush *_this,
-                               SDFloat      focus,
-                               SDFloat      scale);
-SDStatus
-SDPathBrush_SetSigmaBellShape(SDPathBrush *_this,
-                              SDFloat      focus,
-                              SDFloat      scale);
-SDStatus
-SDPathBrush_SetTransform(SDPathBrush *_this,
-                         SDMatrix    *matrix);
-SDStatus
-SDPathBrush_TranslateTransform(SDPathBrush   *_this,
-                               SDFloat        dx,
-                               SDFloat        dy,
-                               SDMatrixOrder  order);
+CStatus
+CPathBrush_Create(CPathBrush **_this,
+                  CPath       *path);
+CStatus
+CPathBrush_GetBlend(CPathBrush *_this,
+                    CBlend     *blend);
+CStatus
+CPathBrush_SetBlend(CPathBrush *_this,
+                    CBlend      blend);
+CStatus
+CPathBrush_GetCenterColor(CPathBrush *_this,
+                          CColor     *centerColor);
+CStatus
+CPathBrush_SetCenterColor(CPathBrush *_this,
+                          CColor      centerColor);
+CStatus
+CPathBrush_GetCenterPoint(CPathBrush *_this,
+                          CPointF    *centerPoint);
+CStatus
+CPathBrush_SetCenterPoint(CPathBrush *_this,
+                          CPointF     centerPoint);
+CStatus
+CPathBrush_GetColorBlend(CPathBrush  *_this,
+                         CColorBlend *colorBlend);
+CStatus
+CPathBrush_SetColorBlend(CPathBrush  *_this,
+                         CColorBlend  colorBlend);
+CStatus
+CPathBrush_GetFocusPoint(CPathBrush *_this,
+                         CPointF    *focusPoint);
+CStatus
+CPathBrush_SetFocusPoint(CPathBrush *_this,
+                         CPointF     focusPoint);
+CStatus
+CPathBrush_GetRectangle(CPathBrush  *_this,
+                        CRectangleF *rectangle);
+CStatus
+CPathBrush_GetSurroundColors(CPathBrush  *_this,
+                             CColor     **surroundColors,
+                             CUInt32     *count);
+CStatus
+CPathBrush_SetSurroundColors(CPathBrush *_this,
+                             CColor     *surroundColors,
+                             CUInt32     count);
+CStatus
+CPathBrush_GetWrapMode(CPathBrush *_this,
+                       CWrapMode  *wrapMode);
+CStatus
+CPathBrush_SetWrapMode(CPathBrush *_this,
+                       CWrapMode   wrapMode);
+CStatus
+CPathBrush_GetTransform(CPathBrush *_this,
+                        CMatrix    *matrix);
+CStatus
+CPathBrush_MultiplyTransform(CPathBrush   *_this,
+                             CMatrix      *matrix,
+                             CMatrixOrder  order);
+CStatus
+CPathBrush_ResetTransform(CPathBrush *_this);
+CStatus
+CPathBrush_RotateTransform(CPathBrush   *_this,
+                           CFloat        angle,
+                           CMatrixOrder  order);
+CStatus
+CPathBrush_ScaleTransform(CPathBrush   *_this,
+                          CFloat        sx,
+                          CFloat        sy,
+                          CMatrixOrder  order);
+CStatus
+CPathBrush_SetTriangularShape(CPathBrush *_this,
+                              CFloat      focus,
+                              CFloat      scale);
+CStatus
+CPathBrush_SetSigmaBellShape(CPathBrush *_this,
+                             CFloat      focus,
+                             CFloat      scale);
+CStatus
+CPathBrush_SetTransform(CPathBrush *_this,
+                        CMatrix    *matrix);
+CStatus
+CPathBrush_TranslateTransform(CPathBrush   *_this,
+                              CFloat        dx,
+                              CFloat        dy,
+                              CMatrixOrder  order);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_PEN_METHODS
-#ifdef SDLIBRARY_PEN_METHODS
+#define CLIBRARY_PEN_METHODS
+#ifdef CLIBRARY_PEN_METHODS
 /* Declare public pen methods. */
-SDStatus
-SDPen_Create(SDPen   **_this,
-             SDBrush  *brush,
-             SDFloat   width);
-SDStatus
-SDPen_Destroy(SDPen **_this);
-SDStatus
-SDPen_GetAlignment(SDPen          *_this,
-                   SDPenAlignment *alignment);
-SDStatus
-SDPen_SetAlignment(SDPen          *_this,
-                   SDPenAlignment  alignment);
-SDStatus
-SDPen_GetBrush(SDPen    *_this,
-               SDBrush **brush);
-SDStatus
-SDPen_SetBrush(SDPen   *_this,
-               SDBrush *brush);
-SDStatus
-SDPen_SetCaps(SDPen     *_this,
-              SDLineCap  startCap,
-              SDLineCap  endCap,
-              SDDashCap  dashCap);
-SDStatus
-SDPen_GetColor(SDPen   *_this,
-               SDColor *color);
-SDStatus
-SDPen_GetCompoundArray(SDPen     *_this,
-                       SDFloat  **compoundArray,
-                       SDUInt32  *count);
-SDStatus
-SDPen_SetCompoundArray(SDPen         *_this,
-                       const SDFloat *compoundArray,
-                       SDUInt32       count);
-SDStatus
-SDPen_GetCustomEndCap(SDPen            *_this,
-                      SDCustomLineCap **customEndCap);
-SDStatus
-SDPen_SetCustomEndCap(SDPen           *_this,
-                      SDCustomLineCap *customEndCap);
-SDStatus
-SDPen_GetCustomStartCap(SDPen            *_this,
-                        SDCustomLineCap **customStartCap);
-SDStatus
-SDPen_SetCustomStartCap(SDPen           *_this,
-                        SDCustomLineCap *customStartCap);
-SDStatus
-SDPen_GetDashCap(SDPen     *_this,
-                 SDDashCap *dashCap);
-SDStatus
-SDPen_SetDashCap(SDPen     *_this,
-                 SDDashCap  dashCap);
-SDStatus
-SDPen_GetDashOffset(SDPen   *_this,
-                    SDFloat *dashOffset);
-SDStatus
-SDPen_SetDashOffset(SDPen   *_this,
-                    SDFloat  dashOffset);
-SDStatus
-SDPen_GetDashPattern(SDPen     *_this,
-                     SDFloat  **dashPattern,
-                     SDUInt32  *count);
-SDStatus
-SDPen_SetDashPattern(SDPen         *_this,
-                     const SDFloat *dashPattern,
-                     SDUInt32       count);
-SDStatus
-SDPen_GetDashStyle(SDPen       *_this,
-                   SDDashStyle *dashStyle);
-SDStatus
-SDPen_SetDashStyle(SDPen       *_this,
-                   SDDashStyle  dashStyle);
-SDStatus
-SDPen_GetEndCap(SDPen     *_this,
-                SDLineCap *endCap);
-SDStatus
-SDPen_SetEndCap(SDPen     *_this,
-                SDLineCap  endCap);
-SDStatus
-SDPen_GetLineJoin(SDPen      *_this,
-                  SDLineJoin *lineJoin);
-SDStatus
-SDPen_SetLineJoin(SDPen      *_this,
-                  SDLineJoin  lineJoin);
-SDStatus
-SDPen_GetMiterLimit(SDPen   *_this,
-                    SDFloat *miterLimit);
-SDStatus
-SDPen_SetMiterLimit(SDPen   *_this,
-                    SDFloat  miterLimit);
-SDStatus
-SDPen_GetPenType(SDPen     *_this,
-                 SDPenType *type);
-SDStatus
-SDPen_GetStartCap(SDPen     *_this,
-                  SDLineCap *startCap);
-SDStatus
-SDPen_SetStartCap(SDPen     *_this,
-                  SDLineCap  startCap);
-SDStatus
-SDPen_GetWidth(SDPen   *_this,
-               SDFloat *width);
-SDStatus
-SDPen_SetWidth(SDPen   *_this,
-               SDFloat  width);
-SDStatus
-SDPen_Clone(SDPen  *_this,
-            SDPen **clone);
-SDStatus
-SDPen_GetTransform(SDPen    *_this,
-                   SDMatrix *matrix);
-SDStatus
-SDPen_MultiplyTransform(SDPen         *_this,
-                        SDMatrix      *matrix,
-                        SDMatrixOrder  order);
-SDStatus
-SDPen_ResetTransform(SDPen *_this);
-SDStatus
-SDPen_RotateTransform(SDPen         *_this,
-                      SDFloat        angle,
-                      SDMatrixOrder  order);
-SDStatus
-SDPen_ScaleTransform(SDPen         *_this,
-                     SDFloat        sx,
-                     SDFloat        sy,
-                     SDMatrixOrder  order);
-SDStatus
-SDPen_SetTransform(SDPen    *_this,
-                   SDMatrix *matrix);
-SDStatus
-SDPen_TranslateTransform(SDPen         *_this,
-                         SDFloat        dx,
-                         SDFloat        dy,
-                         SDMatrixOrder  order);
+CStatus
+CPen_Create(CPen   **_this,
+            CBrush  *brush,
+            CFloat   width);
+CStatus
+CPen_Destroy(CPen **_this);
+CStatus
+CPen_GetAlignment(CPen          *_this,
+                  CPenAlignment *alignment);
+CStatus
+CPen_SetAlignment(CPen          *_this,
+                  CPenAlignment  alignment);
+CStatus
+CPen_GetBrush(CPen    *_this,
+              CBrush **brush);
+CStatus
+CPen_SetBrush(CPen   *_this,
+              CBrush *brush);
+CStatus
+CPen_SetCaps(CPen     *_this,
+             CLineCap  startCap,
+             CLineCap  endCap,
+             CDashCap  dashCap);
+CStatus
+CPen_GetColor(CPen   *_this,
+              CColor *color);
+CStatus
+CPen_GetCompoundArray(CPen     *_this,
+                      CFloat  **compoundArray,
+                      CUInt32  *count);
+CStatus
+CPen_SetCompoundArray(CPen         *_this,
+                      const CFloat *compoundArray,
+                      CUInt32       count);
+CStatus
+CPen_GetCustomEndCap(CPen            *_this,
+                     CCustomLineCap **customEndCap);
+CStatus
+CPen_SetCustomEndCap(CPen           *_this,
+                     CCustomLineCap *customEndCap);
+CStatus
+CPen_GetCustomStartCap(CPen            *_this,
+                       CCustomLineCap **customStartCap);
+CStatus
+CPen_SetCustomStartCap(CPen           *_this,
+                       CCustomLineCap *customStartCap);
+CStatus
+CPen_GetDashCap(CPen     *_this,
+                CDashCap *dashCap);
+CStatus
+CPen_SetDashCap(CPen     *_this,
+                CDashCap  dashCap);
+CStatus
+CPen_GetDashOffset(CPen   *_this,
+                   CFloat *dashOffset);
+CStatus
+CPen_SetDashOffset(CPen   *_this,
+                   CFloat  dashOffset);
+CStatus
+CPen_GetDashPattern(CPen     *_this,
+                    CFloat  **dashPattern,
+                    CUInt32  *count);
+CStatus
+CPen_SetDashPattern(CPen         *_this,
+                    const CFloat *dashPattern,
+                    CUInt32       count);
+CStatus
+CPen_GetDashStyle(CPen       *_this,
+                  CDashStyle *dashStyle);
+CStatus
+CPen_SetDashStyle(CPen       *_this,
+                  CDashStyle  dashStyle);
+CStatus
+CPen_GetEndCap(CPen     *_this,
+               CLineCap *endCap);
+CStatus
+CPen_SetEndCap(CPen     *_this,
+               CLineCap  endCap);
+CStatus
+CPen_GetLineJoin(CPen      *_this,
+                 CLineJoin *lineJoin);
+CStatus
+CPen_SetLineJoin(CPen      *_this,
+                 CLineJoin  lineJoin);
+CStatus
+CPen_GetMiterLimit(CPen   *_this,
+                   CFloat *miterLimit);
+CStatus
+CPen_SetMiterLimit(CPen   *_this,
+                   CFloat  miterLimit);
+CStatus
+CPen_GetPenType(CPen     *_this,
+                CPenType *type);
+CStatus
+CPen_GetStartCap(CPen     *_this,
+                 CLineCap *startCap);
+CStatus
+CPen_SetStartCap(CPen     *_this,
+                 CLineCap  startCap);
+CStatus
+CPen_GetWidth(CPen   *_this,
+              CFloat *width);
+CStatus
+CPen_SetWidth(CPen   *_this,
+              CFloat  width);
+CStatus
+CPen_Clone(CPen  *_this,
+           CPen **clone);
+CStatus
+CPen_GetTransform(CPen    *_this,
+                  CMatrix *matrix);
+CStatus
+CPen_MultiplyTransform(CPen         *_this,
+                       CMatrix      *matrix,
+                       CMatrixOrder  order);
+CStatus
+CPen_ResetTransform(CPen *_this);
+CStatus
+CPen_RotateTransform(CPen         *_this,
+                     CFloat        angle,
+                     CMatrixOrder  order);
+CStatus
+CPen_ScaleTransform(CPen         *_this,
+                    CFloat        sx,
+                    CFloat        sy,
+                    CMatrixOrder  order);
+CStatus
+CPen_SetTransform(CPen    *_this,
+                  CMatrix *matrix);
+CStatus
+CPen_TranslateTransform(CPen         *_this,
+                        CFloat        dx,
+                        CFloat        dy,
+                        CMatrixOrder  order);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_REGION_METHODS
-#ifdef SDLIBRARY_REGION_METHODS
+#define CLIBRARY_REGION_METHODS
+#ifdef CLIBRARY_REGION_METHODS
 /* Declare public region methods. */
-SDStatus
-SDRegion_Create(SDRegion **_this);
-SDStatus
-SDRegion_CreatePath(SDRegion **_this,
-                    SDPath    *path);
-SDStatus
-SDRegion_CreateRectangle(SDRegion     **_this,
-                         SDRectangleF   rectangle);
-SDStatus
-SDRegion_Destroy(SDRegion **_this);
-SDStatus
-SDRegion_Clone(SDRegion  *_this,
-               SDRegion **clone);
-SDStatus
-SDRegion_CombinePath(SDRegion      *_this,
-                     SDPath        *path,
-                     SDCombineMode  combineMode);
-SDStatus
-SDRegion_CombineRectangle(SDRegion      *_this,
-                          SDRectangleF   rectangle,
-                          SDCombineMode  combineMode);
-SDStatus
-SDRegion_CombineRegion(SDRegion      *_this,
-                       SDRegion      *other,
-                       SDCombineMode  combineMode);
-SDStatus
-SDRegion_Equals(SDRegion   *_this,
-                SDRegion   *other,
-                SDGraphics *graphics,
-                SDBool     *eq);
-SDStatus
-SDRegion_GetBounds(SDRegion     *_this,
-                   SDGraphics   *graphics,
-                   SDRectangleF *bounds);
-SDStatus
-SDRegion_GetData(SDRegion  *_this,
-                 SDByte   **data,
-                 SDUInt32  *count);
-SDStatus
-SDRegion_GetRegionScans(SDRegion      *_this,
-                        SDMatrix      *matrix,
-                        SDRectangleF **scans,
-                        SDUInt32      *count);
-SDStatus
-SDRegion_IsEmpty(SDRegion   *_this,
-                 SDGraphics *graphics,
-                 SDBool     *empty);
-SDStatus
-SDRegion_IsInfinite(SDRegion   *_this,
-                    SDGraphics *graphics,
-                    SDBool     *infinite);
-SDStatus
-SDRegion_IsVisiblePoint(SDRegion   *_this,
-                        SDGraphics *graphics,
-                        SDPointF    point,
-                        SDBool     *visible);
-SDStatus
-SDRegion_IsVisibleRectangle(SDRegion     *_this,
-                            SDGraphics   *graphics,
-                            SDRectangleF  rectangle,
-                            SDBool       *visible);
-SDStatus
-SDRegion_MakeEmpty(SDRegion *_this);
-SDStatus
-SDRegion_MakeInfinite(SDRegion *_this);
-SDStatus
-SDRegion_Transform(SDRegion *_this,
-                   SDMatrix *matrix);
-SDStatus
-SDRegion_Translate(SDRegion *_this,
-                   SDFloat   dx,
-                   SDFloat   dy);
+CStatus
+CRegion_Create(CRegion **_this);
+CStatus
+CRegion_CreatePath(CRegion **_this,
+                   CPath    *path);
+CStatus
+CRegion_CreateRectangle(CRegion     **_this,
+                        CRectangleF   rectangle);
+CStatus
+CRegion_Destroy(CRegion **_this);
+CStatus
+CRegion_Clone(CRegion  *_this,
+              CRegion **clone);
+CStatus
+CRegion_CombinePath(CRegion      *_this,
+                    CPath        *path,
+                    CCombineMode  combineMode);
+CStatus
+CRegion_CombineRectangle(CRegion      *_this,
+                         CRectangleF   rectangle,
+                         CCombineMode  combineMode);
+CStatus
+CRegion_CombineRegion(CRegion      *_this,
+                      CRegion      *other,
+                      CCombineMode  combineMode);
+CStatus
+CRegion_Equals(CRegion   *_this,
+               CRegion   *other,
+               CGraphics *graphics,
+               CBool     *eq);
+CStatus
+CRegion_GetBounds(CRegion     *_this,
+                  CGraphics   *graphics,
+                  CRectangleF *bounds);
+CStatus
+CRegion_GetData(CRegion  *_this,
+                CByte   **data,
+                CUInt32  *count);
+CStatus
+CRegion_GetRegionScans(CRegion      *_this,
+                       CMatrix      *matrix,
+                       CRectangleF **scans,
+                       CUInt32      *count);
+CStatus
+CRegion_IsEmpty(CRegion   *_this,
+                CGraphics *graphics,
+                CBool     *empty);
+CStatus
+CRegion_IsInfinite(CRegion   *_this,
+                   CGraphics *graphics,
+                   CBool     *infinite);
+CStatus
+CRegion_IsVisiblePoint(CRegion   *_this,
+                       CGraphics *graphics,
+                       CPointF    point,
+                       CBool     *visible);
+CStatus
+CRegion_IsVisibleRectangle(CRegion     *_this,
+                           CGraphics   *graphics,
+                           CRectangleF  rectangle,
+                           CBool       *visible);
+CStatus
+CRegion_MakeEmpty(CRegion *_this);
+CStatus
+CRegion_MakeInfinite(CRegion *_this);
+CStatus
+CRegion_Transform(CRegion *_this,
+                  CMatrix *matrix);
+CStatus
+CRegion_Translate(CRegion *_this,
+                  CFloat   dx,
+                  CFloat   dy);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_SOLIDBRUSH_METHODS
-#ifdef SDLIBRARY_SOLIDBRUSH_METHODS
+#define CLIBRARY_SOLIDBRUSH_METHODS
+#ifdef CLIBRARY_SOLIDBRUSH_METHODS
 /* Declare public solid brush methods. */
-SDStatus
-SDSolidBrush_Create(SDSolidBrush **_this,
-                    SDColor        color);
-SDStatus
-SDSolidBrush_GetColor(SDSolidBrush *_this,
-                      SDColor      *color);
-SDStatus
-SDSolidBrush_SetColor(SDSolidBrush *_this,
-                      SDColor       color);
+CStatus
+CSolidBrush_Create(CSolidBrush **_this,
+                   CColor        color);
+CStatus
+CSolidBrush_GetColor(CSolidBrush *_this,
+                     CColor      *color);
+CStatus
+CSolidBrush_SetColor(CSolidBrush *_this,
+                     CColor       color);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_STRINGFORMAT_METHODS
-#ifdef SDLIBRARY_STRINGFORMAT_METHODS
+#define CLIBRARY_STRINGFORMAT_METHODS
+#ifdef CLIBRARY_STRINGFORMAT_METHODS
 /* Declare public string format methods. */
-SDStatus
-SDStringFormat_Create(SDStringFormat      **_this,
-                      SDStringFormatFlag    flags,
-                      SDLanguageID          language);
-SDStatus
-SDStringFormat_Destroy(SDStringFormat **_this);
-SDStatus
-SDStringFormat_CreateGenericDefault(SDStringFormat **_this);
-SDStatus
-SDStringFormat_CreateGenericTypographic(SDStringFormat **_this);
-SDStatus
-SDStringFormat_Clone(SDStringFormat  *_this,
-                     SDStringFormat **clone);
-SDStatus
-SDStringFormat_GetAlignment(SDStringFormat    *_this,
-                            SDStringAlignment *alignment);
-SDStatus
-SDStringFormat_SetAlignment(SDStringFormat    *_this,
-                            SDStringAlignment  alignment);
-SDStatus
-SDStringFormat_GetCharacterRanges(SDStringFormat    *_this,
-                                  SDCharacterRange **characterRanges,
-                                  SDUInt32          *count);
-SDStatus
-SDStringFormat_SetCharacterRanges(SDStringFormat   *_this,
-                                  SDCharacterRange *characterRanges,
-                                  SDUInt32          count);
-SDStatus
-SDStringFormat_GetDigitSubstitution(SDStringFormat          *_this,
-                                    SDDigitSubstitute *method,
-                                    SDLanguageID            *language);
-SDStatus
-SDStringFormat_SetDigitSubstitution(SDStringFormat          *_this,
-                                    SDDigitSubstitute  method,
-                                    SDLanguageID             language);
-SDStatus
-SDStringFormat_GetFormatFlags(SDStringFormat     *_this,
-                              SDStringFormatFlag *formatFlags);
-SDStatus
-SDStringFormat_SetFormatFlags(SDStringFormat     *_this,
-                              SDStringFormatFlag  formatFlags);
-SDStatus
-SDStringFormat_GetHotkeyPrefix(SDStringFormat *_this,
-                               SDHotkeyPrefix *hotkeyPrefix);
-SDStatus
-SDStringFormat_SetHotkeyPrefix(SDStringFormat *_this,
-                               SDHotkeyPrefix  hotkeyPrefix);
-SDStatus
-SDStringFormat_GetLineAlignment(SDStringFormat    *_this,
-                                SDStringAlignment *lineAlignment);
-SDStatus
-SDStringFormat_SetLineAlignment(SDStringFormat    *_this,
-                                SDStringAlignment  lineAlignment);
-SDStatus
-SDStringFormat_GetTabStops(SDStringFormat  *_this,
-                           SDFloat         *firstTabOffset,
-                           SDFloat        **tabStops,
-                           SDUInt32        *count);
-SDStatus
-SDStringFormat_SetTabStops(SDStringFormat *_this,
-                           SDFloat         firstTabOffset,
-                           SDFloat        *tabStops,
-                           SDUInt32        count);
-SDStatus
-SDStringFormat_GetTrimming(SDStringFormat   *_this,
-                           SDStringTrimming *trimming);
-SDStatus
-SDStringFormat_SetTrimming(SDStringFormat   *_this,
-                           SDStringTrimming  trimming);
+CStatus
+CStringFormat_Create(CStringFormat      **_this,
+                     CStringFormatFlag    flags,
+                     CLanguageID          language);
+CStatus
+CStringFormat_Destroy(CStringFormat **_this);
+CStatus
+CStringFormat_CreateGenericDefault(CStringFormat **_this);
+CStatus
+CStringFormat_CreateGenericTypographic(CStringFormat **_this);
+CStatus
+CStringFormat_Clone(CStringFormat  *_this,
+                    CStringFormat **clone);
+CStatus
+CStringFormat_GetAlignment(CStringFormat    *_this,
+                           CStringAlignment *alignment);
+CStatus
+CStringFormat_SetAlignment(CStringFormat    *_this,
+                           CStringAlignment  alignment);
+CStatus
+CStringFormat_GetCharacterRanges(CStringFormat    *_this,
+                                 CCharacterRange **characterRanges,
+                                 CUInt32          *count);
+CStatus
+CStringFormat_SetCharacterRanges(CStringFormat   *_this,
+                                 CCharacterRange *characterRanges,
+                                 CUInt32          count);
+CStatus
+CStringFormat_GetDigitSubstitution(CStringFormat          *_this,
+                                   CDigitSubstitute *method,
+                                   CLanguageID            *language);
+CStatus
+CStringFormat_SetDigitSubstitution(CStringFormat          *_this,
+                                   CDigitSubstitute  method,
+                                   CLanguageID             language);
+CStatus
+CStringFormat_GetFormatFlags(CStringFormat     *_this,
+                             CStringFormatFlag *formatFlags);
+CStatus
+CStringFormat_SetFormatFlags(CStringFormat     *_this,
+                             CStringFormatFlag  formatFlags);
+CStatus
+CStringFormat_GetHotkeyPrefix(CStringFormat *_this,
+                              CHotkeyPrefix *hotkeyPrefix);
+CStatus
+CStringFormat_SetHotkeyPrefix(CStringFormat *_this,
+                              CHotkeyPrefix  hotkeyPrefix);
+CStatus
+CStringFormat_GetLineAlignment(CStringFormat    *_this,
+                               CStringAlignment *lineAlignment);
+CStatus
+CStringFormat_SetLineAlignment(CStringFormat    *_this,
+                               CStringAlignment  lineAlignment);
+CStatus
+CStringFormat_GetTabStops(CStringFormat  *_this,
+                          CFloat         *firstTabOffset,
+                          CFloat        **tabStops,
+                          CUInt32        *count);
+CStatus
+CStringFormat_SetTabStops(CStringFormat *_this,
+                          CFloat         firstTabOffset,
+                          CFloat        *tabStops,
+                          CUInt32        count);
+CStatus
+CStringFormat_GetTrimming(CStringFormat   *_this,
+                          CStringTrimming *trimming);
+CStatus
+CStringFormat_SetTrimming(CStringFormat   *_this,
+                          CStringTrimming  trimming);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_SURFACE_METHODS
-#ifdef SDLIBRARY_SURFACE_METHODS
+#define CLIBRARY_SURFACE_METHODS
+#ifdef CLIBRARY_SURFACE_METHODS
 /* Declare public surface methods. */
-SDStatus
-SDSurface_Lock(SDSurface *_this);
-SDStatus
-SDSurface_Unlock(SDSurface *_this);
-SDStatus
-SDSurface_GetBoundsF(SDSurface    *_this,
-                     SDRectangleF *bounds);
-SDStatus
-SDSurface_GetBounds(SDSurface *_this,
-                    SDUInt32  *x,
-                    SDUInt32  *y,
-                    SDUInt32  *width,
-                    SDUInt32  *height);
-SDStatus
-SDSurface_SetBounds(SDSurface *_this,
-                    SDUInt32   x,
-                    SDUInt32   y,
-                    SDUInt32   width,
-                    SDUInt32   height);
-SDStatus
-SDSurface_Reference(SDSurface *_this);
-SDStatus
-SDSurface_Destroy(SDSurface **_this);
-SDStatus
-SDSurface_Composite(SDSurface           *_this,
-                    SDUInt32             x,
-                    SDUInt32             y,
-                    SDUInt32             width,
-                    SDUInt32             height,
-                    pixman_image_t      *src,
-                    pixman_image_t      *mask,
-                    SDInterpolationMode  interpolationMode,
-                    SDCompositingMode    compositingMode);
-SDStatus
-SDSurface_Clear(SDSurface *_this,
-                SDColor    color);
-SDStatus
-SDSurface_Flush(SDSurface        *_this,
-                SDFlushIntention  intention);
+CStatus
+CSurface_Lock(CSurface *_this);
+CStatus
+CSurface_Unlock(CSurface *_this);
+CStatus
+CSurface_GetBoundsF(CSurface    *_this,
+                    CRectangleF *bounds);
+CStatus
+CSurface_GetBounds(CSurface *_this,
+                   CUInt32  *x,
+                   CUInt32  *y,
+                   CUInt32  *width,
+                   CUInt32  *height);
+CStatus
+CSurface_SetBounds(CSurface *_this,
+                   CUInt32   x,
+                   CUInt32   y,
+                   CUInt32   width,
+                   CUInt32   height);
+CStatus
+CSurface_Reference(CSurface *_this);
+CStatus
+CSurface_Destroy(CSurface **_this);
+CStatus
+CSurface_Composite(CSurface           *_this,
+                   CUInt32             x,
+                   CUInt32             y,
+                   CUInt32             width,
+                   CUInt32             height,
+                   pixman_image_t     *src,
+                   pixman_image_t     *mask,
+                   CInterpolationMode  interpolationMode,
+                   CCompositingMode    compositingMode);
+CStatus
+CSurface_Clear(CSurface *_this,
+               CColor    color);
+CStatus
+CSurface_Flush(CSurface        *_this,
+               CFlushIntention  intention);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_TEXTUREBRUSH_METHODS
-#ifdef SDLIBRARY_TEXTUREBRUSH_METHODS
+#define CLIBRARY_TEXTUREBRUSH_METHODS
+#ifdef CLIBRARY_TEXTUREBRUSH_METHODS
 /* Declare public texture brush methods. */
-SDStatus
-SDTextureBrush_Create(SDTextureBrush **_this,
-                      SDImage         *image,
-                      SDRectangleF     rectangle,
-                      SDWrapMode       wrapMode);
-SDStatus
-SDTextureBrush_GetImage(SDTextureBrush  *_this,
-                        SDImage        **image);
-SDStatus
-SDTextureBrush_GetWrapMode(SDTextureBrush *_this,
-                           SDWrapMode     *wrapMode);
-SDStatus
-SDTextureBrush_SetWrapMode(SDTextureBrush *_this,
-                           SDWrapMode      wrapMode);
-SDStatus
-SDTextureBrush_GetTransform(SDTextureBrush *_this,
-                            SDMatrix       *matrix);
-SDStatus
-SDTextureBrush_MultiplyTransform(SDTextureBrush *_this,
-                                 SDMatrix       *matrix,
-                                 SDMatrixOrder   order);
-SDStatus
-SDTextureBrush_ResetTransform(SDTextureBrush *_this);
-SDStatus
-SDTextureBrush_RotateTransform(SDTextureBrush *_this,
-                               SDFloat         angle,
-                               SDMatrixOrder   order);
-SDStatus
-SDTextureBrush_ScaleTransform(SDTextureBrush *_this,
-                              SDFloat         sx,
-                              SDFloat         sy,
-                              SDMatrixOrder   order);
-SDStatus
-SDTextureBrush_SetTransform(SDTextureBrush *_this,
-                            SDMatrix       *matrix);
-SDStatus
-SDTextureBrush_TranslateTransform(SDTextureBrush *_this,
-                                  SDFloat         dx,
-                                  SDFloat         dy,
-                                  SDMatrixOrder   order);
+CStatus
+CTextureBrush_Create(CTextureBrush **_this,
+                     CImage         *image,
+                     CRectangleF     rectangle,
+                     CWrapMode       wrapMode);
+CStatus
+CTextureBrush_GetImage(CTextureBrush  *_this,
+                       CImage        **image);
+CStatus
+CTextureBrush_GetWrapMode(CTextureBrush *_this,
+                          CWrapMode     *wrapMode);
+CStatus
+CTextureBrush_SetWrapMode(CTextureBrush *_this,
+                          CWrapMode      wrapMode);
+CStatus
+CTextureBrush_GetTransform(CTextureBrush *_this,
+                           CMatrix       *matrix);
+CStatus
+CTextureBrush_MultiplyTransform(CTextureBrush *_this,
+                                CMatrix       *matrix,
+                                CMatrixOrder   order);
+CStatus
+CTextureBrush_ResetTransform(CTextureBrush *_this);
+CStatus
+CTextureBrush_RotateTransform(CTextureBrush *_this,
+                              CFloat         angle,
+                              CMatrixOrder   order);
+CStatus
+CTextureBrush_ScaleTransform(CTextureBrush *_this,
+                             CFloat         sx,
+                             CFloat         sy,
+                             CMatrixOrder   order);
+CStatus
+CTextureBrush_SetTransform(CTextureBrush *_this,
+                           CMatrix       *matrix);
+CStatus
+CTextureBrush_TranslateTransform(CTextureBrush *_this,
+                                 CFloat         dx,
+                                 CFloat         dy,
+                                 CMatrixOrder   order);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define SDLIBRARY_X11SURFACE_METHODS
-#ifdef SDLIBRARY_X11SURFACE_METHODS
+#define CLIBRARY_X11SURFACE_METHODS
+#ifdef CLIBRARY_X11SURFACE_METHODS
 /* Declare public x surface methods. */
 #ifdef HAVE_X11_XLIB_H
-SDStatus
-SDX11Surface_Create(SDX11Surface **_this,
-                    Display       *dpy,
-                    Drawable       drawable,
-                    Screen        *screen,
-                    Visual        *visual,
-                    SDUInt32       width,
-                    SDUInt32       height);
+CStatus
+CX11Surface_Create(CX11Surface **_this,
+                   Display      *dpy,
+                   Drawable      drawable,
+                   Screen       *screen,
+                   Visual       *visual,
+                   CUInt32       width,
+                   CUInt32       height);
 #endif
 #endif
 /******************************************************************************/
@@ -2082,4 +2082,4 @@ SDX11Surface_Create(SDX11Surface **_this,
 };
 #endif
 
-#endif /* _SD_LIBRARY_H_ */
+#endif /* _C_LIBRARY_H_ */

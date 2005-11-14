@@ -1,5 +1,5 @@
 /*
- * SDRegionTransformer.c - Region transformer implementation.
+ * CRegionTransformer.c - Region transformer implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -25,17 +25,17 @@
 extern "C" {
 #endif
 
-static SDStatus
-SDRegionTransformer_Op(SDRegionInterpreter  *_this,
-                       SDRegionOp           *op,
+static CStatus
+CRegionTransformer_Op(CRegionInterpreter  *_this,
+                       CRegionOp           *op,
                        void                 *left,
                        void                 *right,
                        void                **data)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((op    != 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((op    != 0));
+	CASSERT((data  != 0));
 
 	/* set data to the default */
 	*data = 0;
@@ -44,14 +44,14 @@ SDRegionTransformer_Op(SDRegionInterpreter  *_this,
 	if(left != 0)
 	{
 		/* get the left node */
-		SDRegionNode *node = ((SDRegionNode *)left);
+		CRegionNode *node = ((CRegionNode *)left);
 
 		/* assertions */
-		SDASSERT((op->left->type == SDRegionType_Rectangle));
-		SDASSERT((node->type     == SDRegionType_Path));
+		CASSERT((op->left->type == CRegionType_Rectangle));
+		CASSERT((node->type     == CRegionType_Path));
 
 		/* free the current left node */
-		SDRegionData_Free(op->left);
+		CRegionData_Free(op->left);
 
 		/* set the left node */
 		op->left = node;
@@ -61,262 +61,262 @@ SDRegionTransformer_Op(SDRegionInterpreter  *_this,
 	if(right != 0)
 	{
 		/* get the right node */
-		SDRegionNode *node = ((SDRegionNode *)right);
+		CRegionNode *node = ((CRegionNode *)right);
 
 		/* assertions */
-		SDASSERT((op->right->type == SDRegionType_Rectangle));
-		SDASSERT((node->type      == SDRegionType_Path));
+		CASSERT((op->right->type == CRegionType_Rectangle));
+		CASSERT((node->type      == CRegionType_Path));
 
 		/* free the current right node */
-		SDRegionData_Free(op->right);
+		CRegionData_Free(op->right);
 
 		/* set the right node */
 		op->right = node;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDRegionTransformer_Data(SDRegionInterpreter  *_this,
-                         SDRegionNode         *node,
+static CStatus
+CRegionTransformer_Data(CRegionInterpreter  *_this,
+                         CRegionNode         *node,
                          void                **data)
 {
 	/* declarations */
-	SDRegionTransformer *t;
+	CRegionTransformer *t;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((node  != 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((node  != 0));
+	CASSERT((data  != 0));
 
 	/* set the data to the default */
 	*data = 0;
 
 	/* get this as a region transformer */
-	t = ((SDRegionTransformer *)_this);
+	t = ((CRegionTransformer *)_this);
 
 	/* transform the node */
-	if(node->type == SDRegionType_Rectangle)
+	if(node->type == CRegionType_Rectangle)
 	{
 		/* declarations */
-		SDRegionPath *rp;
-		SDRegionRect *rr;
+		CRegionPath *rp;
+		CRegionRect *rr;
 
 		/* get the rectangle node */
-		rr = ((SDRegionRect *)node);
+		rr = ((CRegionRect *)node);
 
 		/* allocate the path node */
-		if(!SDRegionPath_Alloc(rp))
+		if(!CRegionPath_Alloc(rp))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* allocate the point list */
-		if(!(rp->points = (SDPointF *)SDMalloc(4 * sizeof(SDPointF))))
+		if(!(rp->points = (CPointF *)CMalloc(4 * sizeof(CPointF))))
 		{
-			SDFree(rp);
-			return SDStatus_OutOfMemory;
+			CFree(rp);
+			return CStatus_OutOfMemory;
 		}
 
 		/* allocate the type list */
-		if(!(rp->types = (SDByte *)SDMalloc(4 * sizeof(SDByte))))
+		if(!(rp->types = (CByte *)CMalloc(4 * sizeof(CByte))))
 		{
-			SDFree(rp->points);
-			SDFree(rp);
-			return SDStatus_OutOfMemory;
+			CFree(rp->points);
+			CFree(rp);
+			return CStatus_OutOfMemory;
 		}
 
 		/* set the base */
-		rp->_base = SDRegionNode_Path;
+		rp->_base = CRegionNode_Path;
 
 		/* set the count */
 		rp->count = 4;
 
 		/* set the fill mode */
-		rp->fillMode = SDFillMode_Alternate;
+		rp->fillMode = CFillMode_Alternate;
 
 		/* set the points */
-		SDRegionRect_RectToPath(rp->points, rr->rectangle);
+		CRegionRect_RectToPath(rp->points, rr->rectangle);
 
 		/* set the types */
-		SDMemCopy(rp->types, SDRegionRect_PathTypes, 4);
+		CMemCopy(rp->types, CRegionRect_PathTypes, 4);
 
 		/* transform the points */
-		SDAffineTransformF_TransformPoints(t->transform, rp->points, 4);
+		CAffineTransformF_TransformPoints(t->transform, rp->points, 4);
 
 		/* set the data */
 		*data = (void *)rp;
 	}
-	else if(node->type == SDRegionType_Path)
+	else if(node->type == CRegionType_Path)
 	{
 		/* get the path node */
-		SDRegionPath *rp = ((SDRegionPath *)node);
+		CRegionPath *rp = ((CRegionPath *)node);
 
 		/* transform the points */
-		SDAffineTransformF_TransformPoints
+		CAffineTransformF_TransformPoints
 			(t->transform, rp->points, rp->count);
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDRegionTransformer_DataSimple(SDRegionInterpreter  *_this,
-                               SDRegionNode         *node,
+static CStatus
+CRegionTransformer_DataSimple(CRegionInterpreter  *_this,
+                               CRegionNode         *node,
                                void                **data)
 {
 	/* declarations */
-	SDRegionTransformer *t;
+	CRegionTransformer *t;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((node  != 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((node  != 0));
+	CASSERT((data  != 0));
 
 	/* set the data to the default */
 	*data = 0;
 
 	/* get this as a region transformer */
-	t = ((SDRegionTransformer *)_this);
+	t = ((CRegionTransformer *)_this);
 
 	/* transform the node */
-	if(node->type == SDRegionType_Rectangle)
+	if(node->type == CRegionType_Rectangle)
 	{
 		/* declarations */
-		SDRegionRect *rr;
+		CRegionRect *rr;
 
 		/* get the transformation properties */
-		const SDFloat xx = SDAffineTransform_XX(*(t->transform));
-		const SDFloat yy = SDAffineTransform_YY(*(t->transform));
-		const SDFloat dx = SDAffineTransform_DX(*(t->transform));
-		const SDFloat dy = SDAffineTransform_DY(*(t->transform));
+		const CFloat xx = CAffineTransform_XX(*(t->transform));
+		const CFloat yy = CAffineTransform_YY(*(t->transform));
+		const CFloat dx = CAffineTransform_DX(*(t->transform));
+		const CFloat dy = CAffineTransform_DY(*(t->transform));
 
 		/* get the rectangle node */
-		rr = ((SDRegionRect *)node);
+		rr = ((CRegionRect *)node);
 
 		/* perform the transformation */
 		{
 			/* get the rectangle properties */
-			const SDFloat x = SDRectangle_X(rr->rectangle);
-			const SDFloat y = SDRectangle_Y(rr->rectangle);
-			const SDFloat w = SDRectangle_Width(rr->rectangle);
-			const SDFloat h = SDRectangle_Height(rr->rectangle);
+			const CFloat x = CRectangle_X(rr->rectangle);
+			const CFloat y = CRectangle_Y(rr->rectangle);
+			const CFloat w = CRectangle_Width(rr->rectangle);
+			const CFloat h = CRectangle_Height(rr->rectangle);
 
 			/* transform x and width */
 			if(xx < 0.0f)
 			{
-				SDRectangle_X(rr->rectangle)     = (xx * (x + w)) + dx;
-				SDRectangle_Width(rr->rectangle) = (-xx * w);
+				CRectangle_X(rr->rectangle)     = (xx * (x + w)) + dx;
+				CRectangle_Width(rr->rectangle) = (-xx * w);
 			}
 			else
 			{
-				SDRectangle_X(rr->rectangle)     = (xx * x) + dx;
-				SDRectangle_Width(rr->rectangle) = (xx * w);
+				CRectangle_X(rr->rectangle)     = (xx * x) + dx;
+				CRectangle_Width(rr->rectangle) = (xx * w);
 			}
 
 			/* transform y and height */
 			if(yy < 0.0f)
 			{
-				SDRectangle_Y(rr->rectangle)      = (yy * (y - h)) + dy;
-				SDRectangle_Height(rr->rectangle) = (-yy * h);
+				CRectangle_Y(rr->rectangle)      = (yy * (y - h)) + dy;
+				CRectangle_Height(rr->rectangle) = (-yy * h);
 			}
 			else
 			{
-				SDRectangle_Y(rr->rectangle)      = (yy * y) + dy;
-				SDRectangle_Height(rr->rectangle) = (yy * h);
+				CRectangle_Y(rr->rectangle)      = (yy * y) + dy;
+				CRectangle_Height(rr->rectangle) = (yy * h);
 			}
 		}
 	}
-	else if(node->type == SDRegionType_Path)
+	else if(node->type == CRegionType_Path)
 	{
 		/* get the path node */
-		SDRegionPath *rp = ((SDRegionPath *)node);
+		CRegionPath *rp = ((CRegionPath *)node);
 
 		/* transform the points */
-		SDAffineTransformF_TransformPoints
+		CAffineTransformF_TransformPoints
 			(t->transform, rp->points, rp->count);
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 static void
-SDRegionTransformer_FreeData(void *data)
+CRegionTransformer_FreeData(void *data)
 {
 	/* declarations */
-	SDRegionPath *rp;
+	CRegionPath *rp;
 
 	/* assertions */
-	SDASSERT((data != 0));
+	CASSERT((data != 0));
 
 	/* get the path node */
-	rp = ((SDRegionPath *)data);
+	rp = ((CRegionPath *)data);
 
 	/* assertions */
-	SDASSERT((rp->_base.type == SDRegionType_Path));
+	CASSERT((rp->_base.type == CRegionType_Path));
 
 	/* free the point list */
-	SDFree(rp->points);
+	CFree(rp->points);
 
 	/* free the type list */
-	SDFree(rp->types);
+	CFree(rp->types);
 
 	/* free the node */
-	SDFree(rp);
+	CFree(rp);
 }
 
-static const SDRegionInterpreterClass SDRegionTransformer_Class =
+static const CRegionInterpreterClass CRegionTransformer_Class =
 {
-	SDRegionTransformer_Data,
-	SDRegionTransformer_Op,
-	SDRegionTransformer_FreeData
+	CRegionTransformer_Data,
+	CRegionTransformer_Op,
+	CRegionTransformer_FreeData
 };
-static const SDRegionInterpreterClass SDRegionTransformer_ClassSimple =
+static const CRegionInterpreterClass CRegionTransformer_ClassSimple =
 {
-	SDRegionTransformer_DataSimple,
-	SDRegionTransformer_Op,
+	CRegionTransformer_DataSimple,
+	CRegionTransformer_Op,
 	0
 };
 
-SDINTERNAL void
-SDRegionTransformer_Initialize(SDRegionTransformer *_this,
-                               SDAffineTransformF  *transform)
+CINTERNAL void
+CRegionTransformer_Initialize(CRegionTransformer *_this,
+                               CAffineTransformF  *transform)
 {
 	/* assertions */
-	SDASSERT((_this     != 0));
-	SDASSERT((transform != 0));
+	CASSERT((_this     != 0));
+	CASSERT((transform != 0));
 
 	/* initialize the transformation */
 	_this->transform = transform;
 
 	/* initialize the base */
-	if((SDAffineTransform_XY(*transform) == 0.0f) &&
-	   (SDAffineTransform_YX(*transform) == 0.0f))
+	if((CAffineTransform_XY(*transform) == 0.0f) &&
+	   (CAffineTransform_YX(*transform) == 0.0f))
 	{
-		SDRegionInterpreter_Initialize
-			((SDRegionInterpreter *)_this, &SDRegionTransformer_ClassSimple);
+		CRegionInterpreter_Initialize
+			((CRegionInterpreter *)_this, &CRegionTransformer_ClassSimple);
 	}
 	else
 	{
-		SDRegionInterpreter_Initialize
-			((SDRegionInterpreter *)_this, &SDRegionTransformer_Class);
+		CRegionInterpreter_Initialize
+			((CRegionInterpreter *)_this, &CRegionTransformer_Class);
 	}
 }
 
-SDINTERNAL void
-SDRegionTransformer_Finalize(SDRegionTransformer *_this)
+CINTERNAL void
+CRegionTransformer_Finalize(CRegionTransformer *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the members */
 	{
 		/* finalize the base */
-		SDRegionInterpreter_Finalize((SDRegionInterpreter *)_this);
+		CRegionInterpreter_Finalize((CRegionInterpreter *)_this);
 
 		/* finalize the transform */
 		_this->transform = 0;

@@ -1,5 +1,5 @@
 /*
- * SDStroker.h - Stroker header.
+ * CStroker.h - Stroker header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_STROKER_H_
-#define _SD_STROKER_H_
+#ifndef _C_STROKER_H_
+#define _C_STROKER_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,100 +27,100 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDStrokeJoiner SDStrokeJoiner;
-typedef struct _tagSDStrokeCapper SDStrokeCapper;
+typedef struct _tagCStrokeJoiner CStrokeJoiner;
+typedef struct _tagCStrokeCapper CStrokeCapper;
 
-struct _tagSDStrokeJoiner
+struct _tagCStrokeJoiner
 {
-	SDLineJoin type;
+	CLineJoin type;
 	union
 	{
 		struct
 		{
-			SDPointF *points;
-			SDUInt32  count;
-			SDUInt32  size;
+			CPointF *points;
+			CUInt32  count;
+			CUInt32  size;
 		} round;
 		struct
 		{
-			SDAffineTransformF  *transform;
-			SDVectorF            scale;
-			SDDouble             limitSquared;
+			CAffineTransformF  *transform;
+			CVectorF            scale;
+			CDouble             limitSquared;
 		} other;
 	} u;
 
-	SDStatus (*Join)(SDStrokeJoiner *_this,
-	                 SDPath         *path,
-	                 SDFloat         centerX,
-	                 SDFloat         centerY,
-	                 SDFloat         prevC,
-	                 SDFloat         prevS,
-	                 SDFloat         currC,
-	                 SDFloat         currS);
+	CStatus (*Join)(CStrokeJoiner *_this,
+	                CPath         *path,
+	                CFloat         centerX,
+	                CFloat         centerY,
+	                CFloat         prevC,
+	                CFloat         prevS,
+	                CFloat         currC,
+	                CFloat         currS);
 };
 
-struct _tagSDStrokeCapper
+struct _tagCStrokeCapper
 {
-	SDLineCap type;
+	CLineCap type;
 	union
 	{
 		struct
 		{
-			SDPointF *points;
-			SDUInt32  count;
-			SDUInt32  size;
+			CPointF *points;
+			CUInt32  count;
+			CUInt32  size;
 		} round;
 		struct
 		{
-			SDFloat radius;
+			CFloat radius;
 			union
 			{
-				SDAffineTransformF  *transform;
-				SDVectorF           *scale;
+				CAffineTransformF  *transform;
+				CVectorF           *scale;
 			} u;
 		} other;
 	} u;
 
-	SDStatus (*Cap)(SDStrokeCapper *_this,
-	                SDPath         *path,
-	                SDFloat        *centerX,
-	                SDFloat        *centerY,
-	                SDFloat         slopeX,
-	                SDFloat         slopeY);
+	CStatus (*Cap)(CStrokeCapper *_this,
+	               CPath         *path,
+	               CFloat        *centerX,
+	               CFloat        *centerY,
+	               CFloat         slopeX,
+	               CFloat         slopeY);
 };
 
-struct _tagSDStroker
+struct _tagCStroker
 {
-	SDPointArrayF       array;
-	SDStrokeCapper      startCapper;
-	SDStrokeCapper      endCapper;
-	SDStrokeJoiner      joiner;
-	SDAffineTransformF  dev;
-	SDAffineTransformF  pen;
-	SDVectorF           scale;
-	SDFloat             radius;
+	CPointArrayF       array;
+	CStrokeCapper      startCapper;
+	CStrokeCapper      endCapper;
+	CStrokeJoiner      joiner;
+	CAffineTransformF  dev;
+	CAffineTransformF  pen;
+	CVectorF           scale;
+	CFloat             radius;
 
-	SDStatus (*Stroke)(SDStroker *_this,
-	                   SDPath    *path,
-	                   SDPointF  *points,
-	                   SDUInt32   count);
+	CStatus (*Stroke)(CStroker *_this,
+	                  CPath    *path,
+	                  CPointF  *points,
+	                  CUInt32   count);
 };
 
-SDINTERNAL SDStatus
-SDStroker_Initialize(SDStroker          *_this,
-                     SDPen              *pen,
-                     SDAffineTransformF *deviceTransform);
-SDINTERNAL void
-SDStroker_Finalize(SDStroker *_this);
-SDINTERNAL SDStatus
-SDStroker_Stroke(SDStroker *_this,
-                 SDPath    *path,
-                 SDPointF  *points,
-                 SDByte    *types,
-                 SDUInt32   count);
+CINTERNAL CStatus
+CStroker_Initialize(CStroker          *_this,
+                    CPen              *pen,
+                    CAffineTransformF *deviceTransform);
+CINTERNAL void
+CStroker_Finalize(CStroker *_this);
+CINTERNAL CStatus
+CStroker_Stroke(CStroker *_this,
+                CPath    *path,
+                CPointF  *points,
+                CByte    *types,
+                CUInt32   count);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_STROKER_H_ */
+#endif /* _C_STROKER_H_ */

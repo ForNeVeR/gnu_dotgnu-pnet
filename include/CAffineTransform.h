@@ -1,5 +1,5 @@
 /*
- * SDAffineTransform.h - Affine transformation header.
+ * CAffineTransform.h - Affine transformation header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_AFFINETRANFSORM_H_
-#define _SD_AFFINETRANFSORM_H_
+#ifndef _C_AFFINETRANFSORM_H_
+#define _C_AFFINETRANFSORM_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,111 +27,111 @@
 extern "C" {
 #endif
 
-static const SDAffineTransformF SDAffineTransformF_Identity =
+static const CAffineTransformF CAffineTransformF_Identity =
 {
 	1.0f, 0.0f,
 	0.0f, 1.0f,
 	0.0f, 0.0f
 };
-static const SDVectorF SDVectorF_Zero = { 0.0f, 0.0f };
+static const CVectorF CVectorF_Zero = { 0.0f, 0.0f };
 
 
-SDINTERNAL void
-SDAffineTransformF_Equals(const SDAffineTransformF *_this,
-                          const SDAffineTransformF *other,
-                          SDBool                   *eq);
-SDINTERNAL void
-SDAffineTransformF_NotEquals(const SDAffineTransformF *_this,
-                             const SDAffineTransformF *other,
-                             SDBool                   *ne);
-SDINTERNAL void
-SDAffineTransformF_SetIdentity(SDAffineTransformF *_this);
-SDINTERNAL SDStatus
-SDAffineTransformF_SetParallelogram(SDAffineTransformF *_this,
-                                    SDRectangleF        rect,
-                                    SDPointF            tl,
-                                    SDPointF            tr,
-                                    SDPointF            bl);
-SDINTERNAL void
-SDAffineTransformF_SetElements(SDAffineTransformF *_this,
-                               SDFloat             m11,
-                               SDFloat             m12,
-                               SDFloat             m21,
-                               SDFloat             m22,
-                               SDFloat             dx,
-                               SDFloat             dy);
-SDINTERNAL void
-SDAffineTransformF_GetDeterminant(const SDAffineTransformF *_this,
-                                  SDFloat                  *determinant);
-SDINTERNAL SDStatus
-SDAffineTransformF_GetInverse(const SDAffineTransformF *_this,
-                              SDAffineTransformF       *inverse);
-SDINTERNAL void
-SDAffineTransformF_Multiply(SDAffineTransformF       *_this,
-                            const SDAffineTransformF *other,
-                            SDMatrixOrder             order);
-SDINTERNAL SDStatus
-SDAffineTransformF_MultiplyInverse(SDAffineTransformF       *_this,
-                                   const SDAffineTransformF *other,
-                                   SDMatrixOrder             order);
-SDINTERNAL void
-SDAffineTransformF_Rotate(SDAffineTransformF *_this,
-                          SDFloat             angle,
-                          SDMatrixOrder       order);
-SDINTERNAL void
-SDAffineTransformF_RotateInverse(SDAffineTransformF *_this,
-                                 SDFloat             angle,
-                                 SDMatrixOrder       order);
-SDINTERNAL void
-SDAffineTransformF_Scale(SDAffineTransformF *_this,
-                         SDFloat             scaleX,
-                         SDFloat             scaleY,
-                         SDMatrixOrder       order);
-SDINTERNAL void
-SDAffineTransformF_ScaleInverse(SDAffineTransformF *_this,
-                                SDFloat             scaleX,
-                                SDFloat             scaleY,
-                                SDMatrixOrder       order);
-SDINTERNAL void
-SDAffineTransformF_ExtractScale(SDAffineTransformF *_this,
-                                SDFloat            *scaleX,
-                                SDFloat            *scaleY,
-                                SDMatrixOrder       order);
-SDINTERNAL void
-SDAffineTransformF_Shear(SDAffineTransformF *_this,
-                         SDFloat             shearX,
-                         SDFloat             shearY,
-                         SDMatrixOrder       order);
-SDINTERNAL void
-SDAffineTransformF_Translate(SDAffineTransformF *_this,
-                             SDFloat             offsetX,
-                             SDFloat             offsetY,
-                             SDMatrixOrder       order);
-SDINTERNAL void
-SDAffineTransformF_TranslateInverse(SDAffineTransformF *_this,
-                                    SDFloat             offsetX,
-                                    SDFloat             offsetY,
-                                    SDMatrixOrder       order);
-SDINTERNAL void
-SDAffineTransformF_TransformPoints(const SDAffineTransformF *_this,
-                                   SDPointF                 *points,
-                                   SDUInt32                  count);
-SDINTERNAL void
-SDAffineTransformF_TransformVectors(const SDAffineTransformF *_this,
-                                    SDPointF                 *points,
-                                    SDUInt32                  count);
+CINTERNAL void
+CAffineTransformF_Equals(const CAffineTransformF *_this,
+                         const CAffineTransformF *other,
+                         CBool                   *eq);
+CINTERNAL void
+CAffineTransformF_NotEquals(const CAffineTransformF *_this,
+                            const CAffineTransformF *other,
+                            CBool                   *ne);
+CINTERNAL void
+CAffineTransformF_SetIdentity(CAffineTransformF *_this);
+CINTERNAL CStatus
+CAffineTransformF_SetParallelogram(CAffineTransformF *_this,
+                                   CRectangleF        rect,
+                                   CPointF            tl,
+                                   CPointF            tr,
+                                   CPointF            bl);
+CINTERNAL void
+CAffineTransformF_SetElements(CAffineTransformF *_this,
+                              CFloat             m11,
+                              CFloat             m12,
+                              CFloat             m21,
+                              CFloat             m22,
+                              CFloat             dx,
+                              CFloat             dy);
+CINTERNAL void
+CAffineTransformF_GetDeterminant(const CAffineTransformF *_this,
+                                 CFloat                  *determinant);
+CINTERNAL CStatus
+CAffineTransformF_GetInverse(const CAffineTransformF *_this,
+                             CAffineTransformF       *inverse);
+CINTERNAL void
+CAffineTransformF_Multiply(CAffineTransformF       *_this,
+                           const CAffineTransformF *other,
+                           CMatrixOrder             order);
+CINTERNAL CStatus
+CAffineTransformF_MultiplyInverse(CAffineTransformF       *_this,
+                                  const CAffineTransformF *other,
+                                  CMatrixOrder             order);
+CINTERNAL void
+CAffineTransformF_Rotate(CAffineTransformF *_this,
+                         CFloat             angle,
+                         CMatrixOrder       order);
+CINTERNAL void
+CAffineTransformF_RotateInverse(CAffineTransformF *_this,
+                                CFloat             angle,
+                                CMatrixOrder       order);
+CINTERNAL void
+CAffineTransformF_Scale(CAffineTransformF *_this,
+                        CFloat             scaleX,
+                        CFloat             scaleY,
+                        CMatrixOrder       order);
+CINTERNAL void
+CAffineTransformF_ScaleInverse(CAffineTransformF *_this,
+                               CFloat             scaleX,
+                               CFloat             scaleY,
+                               CMatrixOrder       order);
+CINTERNAL void
+CAffineTransformF_ExtractScale(CAffineTransformF *_this,
+                               CFloat            *scaleX,
+                               CFloat            *scaleY,
+                               CMatrixOrder       order);
+CINTERNAL void
+CAffineTransformF_Shear(CAffineTransformF *_this,
+                        CFloat             shearX,
+                        CFloat             shearY,
+                        CMatrixOrder       order);
+CINTERNAL void
+CAffineTransformF_Translate(CAffineTransformF *_this,
+                            CFloat             offsetX,
+                            CFloat             offsetY,
+                            CMatrixOrder       order);
+CINTERNAL void
+CAffineTransformF_TranslateInverse(CAffineTransformF *_this,
+                                   CFloat             offsetX,
+                                   CFloat             offsetY,
+                                   CMatrixOrder       order);
+CINTERNAL void
+CAffineTransformF_TransformPoints(const CAffineTransformF *_this,
+                                  CPointF                 *points,
+                                  CUInt32                  count);
+CINTERNAL void
+CAffineTransformF_TransformVectors(const CAffineTransformF *_this,
+                                   CPointF                 *points,
+                                   CUInt32                  count);
 
-SDINTERNAL void
-SDVectorF_ScalePoints(const SDVectorF *_this,
-                      SDPointF        *points,
-                      SDUInt32         count);
-SDINTERNAL void
-SDVectorF_TranslatePoints(const SDVectorF *_this,
-                          SDPointF        *points,
-                          SDUInt32         count);
+CINTERNAL void
+CVectorF_ScalePoints(const CVectorF *_this,
+                     CPointF        *points,
+                     CUInt32         count);
+CINTERNAL void
+CVectorF_TranslatePoints(const CVectorF *_this,
+                         CPointF        *points,
+                         CUInt32         count);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_AFFINETRANFSORM_H_ */
+#endif /* _C_AFFINETRANFSORM_H_ */

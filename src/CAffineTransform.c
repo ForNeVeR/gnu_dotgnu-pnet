@@ -1,5 +1,5 @@
 /*
- * SDAffineTransform.c - Affine transformation implementation.
+ * CAffineTransform.c - Affine transformation implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -26,98 +26,98 @@ extern "C" {
 #endif
 
 /* Determine if the given transformations are equal. */
-SDINTERNAL void
-SDAffineTransformF_Equals(const SDAffineTransformF *_this,
-                          const SDAffineTransformF *other,
-                          SDBool                   *eq)
+CINTERNAL void
+CAffineTransformF_Equals(const CAffineTransformF *_this,
+                          const CAffineTransformF *other,
+                          CBool                   *eq)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((other != 0));
-	SDASSERT((eq    != 0));
+	CASSERT((_this != 0));
+	CASSERT((other != 0));
+	CASSERT((eq    != 0));
 
 	/* determine equality */
-	*eq = !SDMemCmp(_this, other, sizeof(SDAffineTransformF));
+	*eq = !CMemCmp(_this, other, sizeof(CAffineTransformF));
 }
 
 /* Determine if the given transformations are not equal. */
-SDINTERNAL void
-SDAffineTransformF_NotEquals(const SDAffineTransformF *_this,
-                             const SDAffineTransformF *other,
-                             SDBool                   *ne)
+CINTERNAL void
+CAffineTransformF_NotEquals(const CAffineTransformF *_this,
+                             const CAffineTransformF *other,
+                             CBool                   *ne)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((other != 0));
-	SDASSERT((ne    != 0));
+	CASSERT((_this != 0));
+	CASSERT((other != 0));
+	CASSERT((ne    != 0));
 
 	/* determine inequality */
-	*ne = !(!SDMemCmp(_this, other, sizeof(SDAffineTransformF)));
+	*ne = !(!CMemCmp(_this, other, sizeof(CAffineTransformF)));
 }
 
 /* Set this transformation to the identity transformation. */
-SDINTERNAL void
-SDAffineTransformF_SetIdentity(SDAffineTransformF *_this)
+CINTERNAL void
+CAffineTransformF_SetIdentity(CAffineTransformF *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* set the transformation to the identity transformation */
-	(*_this) = SDAffineTransformF_Identity;
+	(*_this) = CAffineTransformF_Identity;
 }
 
 /* Set this transformation to warp to a parallelogram. */
-SDINTERNAL SDStatus
-SDAffineTransformF_SetParallelogram(SDAffineTransformF *_this,
-                                    SDRectangleF        rect,
-                                    SDPointF            tl,
-                                    SDPointF            tr,
-                                    SDPointF            bl)
+CINTERNAL CStatus
+CAffineTransformF_SetParallelogram(CAffineTransformF *_this,
+                                    CRectangleF        rect,
+                                    CPointF            tl,
+                                    CPointF            tr,
+                                    CPointF            bl)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* ensure we have a non-singular rectangle matrix */
-	SDStatus_Require
-		(((SDRectangle_Width(rect)  != 0.0f) &&
-		  (SDRectangle_Height(rect) != 0.0f)),
-		 SDStatus_InvalidOperation_SingularMatrix);
+	CStatus_Require
+		(((CRectangle_Width(rect)  != 0.0f) &&
+		  (CRectangle_Height(rect) != 0.0f)),
+		 CStatus_InvalidOperation_SingularMatrix);
 
 	/* set the transformation to the parallelogram warp transformation */
 	{
 		/* calculate values used multiple times */
-		const SDDouble scaleX = (1.0 / SDRectangle_Width(rect));
-		const SDDouble scaleY = (1.0 / SDRectangle_Height(rect));
-		const SDDouble transX = -SDRectangle_X(rect);
-		const SDDouble transY = -SDRectangle_Y(rect);
+		const CDouble scaleX = (1.0 / CRectangle_Width(rect));
+		const CDouble scaleY = (1.0 / CRectangle_Height(rect));
+		const CDouble transX = -CRectangle_X(rect);
+		const CDouble transY = -CRectangle_Y(rect);
 
 		/* set the transformation elements */
-		_this->m11 = ((SDPoint_X(tr) - SDPoint_X(tl)) * scaleX);
-		_this->m12 = ((SDPoint_Y(tr) - SDPoint_Y(tl)) * scaleX);
-		_this->m21 = ((SDPoint_X(bl) - SDPoint_X(tl)) * scaleY);
-		_this->m22 = ((SDPoint_Y(bl) - SDPoint_Y(tl)) * scaleY);
+		_this->m11 = ((CPoint_X(tr) - CPoint_X(tl)) * scaleX);
+		_this->m12 = ((CPoint_Y(tr) - CPoint_Y(tl)) * scaleX);
+		_this->m21 = ((CPoint_X(bl) - CPoint_X(tl)) * scaleY);
+		_this->m22 = ((CPoint_Y(bl) - CPoint_Y(tl)) * scaleY);
 		_this->dx  =
-			(SDPoint_X(tl) + (_this->m11 * transX) + (_this->m21 * transY));
+			(CPoint_X(tl) + (_this->m11 * transX) + (_this->m21 * transY));
 		_this->dy  =
-			(SDPoint_Y(tl) + (_this->m12 * transX) + (_this->m22 * transY));
+			(CPoint_Y(tl) + (_this->m12 * transX) + (_this->m22 * transY));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the elements of this transformation. */
-SDINTERNAL void
-SDAffineTransformF_SetElements(SDAffineTransformF *_this,
-                               SDFloat             m11,
-                               SDFloat             m12,
-                               SDFloat             m21,
-                               SDFloat             m22,
-                               SDFloat             dx,
-                               SDFloat             dy)
+CINTERNAL void
+CAffineTransformF_SetElements(CAffineTransformF *_this,
+                               CFloat             m11,
+                               CFloat             m12,
+                               CFloat             m21,
+                               CFloat             m22,
+                               CFloat             dx,
+                               CFloat             dy)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* set the elements of the transformation */
 	_this->m11 = m11;
@@ -129,34 +129,34 @@ SDAffineTransformF_SetElements(SDAffineTransformF *_this,
 }
 
 /* Get the determinant of this transformation. */
-SDINTERNAL void
-SDAffineTransformF_GetDeterminant(const SDAffineTransformF *_this,
-                                  SDFloat                  *determinant)
+CINTERNAL void
+CAffineTransformF_GetDeterminant(const CAffineTransformF *_this,
+                                  CFloat                  *determinant)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* calculate the determinant */
 	*determinant = ((_this->m11 * _this->m22) - (_this->m12 * _this->m21));
 }
 
 /* Get the inverse of this transformation. */
-SDINTERNAL SDStatus
-SDAffineTransformF_GetInverse(const SDAffineTransformF *_this,
-                              SDAffineTransformF       *inverse)
+CINTERNAL CStatus
+CAffineTransformF_GetInverse(const CAffineTransformF *_this,
+                              CAffineTransformF       *inverse)
 {
 	/* declarations */
-	SDFloat determinant;
+	CFloat determinant;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* get the determinant */
-	SDAffineTransformF_GetDeterminant(_this, &determinant);
+	CAffineTransformF_GetDeterminant(_this, &determinant);
 
 	/* ensure the transformation is invertible */
-	SDStatus_Require
-		((determinant != 0.0f), SDStatus_InvalidOperation_SingularMatrix);
+	CStatus_Require
+		((determinant != 0.0f), CStatus_InvalidOperation_SingularMatrix);
 
 	/* perform the division once */
 	determinant = (1.0 / determinant);
@@ -172,25 +172,25 @@ SDAffineTransformF_GetInverse(const SDAffineTransformF *_this,
 		(((_this->dx * _this->m12) - (_this->dy * _this->m11)) * determinant);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Multiply this transformation with another. */
-SDINTERNAL void
-SDAffineTransformF_Multiply(SDAffineTransformF       *_this,
-                            const SDAffineTransformF *other,
-                            SDMatrixOrder             order)
+CINTERNAL void
+CAffineTransformF_Multiply(CAffineTransformF       *_this,
+                            const CAffineTransformF *other,
+                            CMatrixOrder             order)
 {
 	/* declarations */
-	SDAffineTransformF t1;
-	SDAffineTransformF t2;
+	CAffineTransformF t1;
+	CAffineTransformF t2;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((other != 0));
+	CASSERT((_this != 0));
+	CASSERT((other != 0));
 
 	/* set up transformations based on order */
-	if(order == SDMatrixOrder_Prepend)
+	if(order == CMatrixOrder_Prepend)
 	{
 		t1 = *other;
 		t2 = *_this;
@@ -211,31 +211,31 @@ SDAffineTransformF_Multiply(SDAffineTransformF       *_this,
 }
 
 /* Inverse multiply this transformation with another. */
-SDINTERNAL SDStatus
-SDAffineTransformF_MultiplyInverse(SDAffineTransformF       *_this,
-                                   const SDAffineTransformF *other,
-                                   SDMatrixOrder             order)
+CINTERNAL CStatus
+CAffineTransformF_MultiplyInverse(CAffineTransformF       *_this,
+                                   const CAffineTransformF *other,
+                                   CMatrixOrder             order)
 {
 	/* declarations */
-	SDAffineTransformF t1;
-	SDAffineTransformF t2;
+	CAffineTransformF t1;
+	CAffineTransformF t2;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((other != 0));
+	CASSERT((_this != 0));
+	CASSERT((other != 0));
 
 	/* set up transformations based on order */
-	if(order == SDMatrixOrder_Prepend)
+	if(order == CMatrixOrder_Prepend)
 	{
 		t1 = *_this;
-		SDStatus_Check
-			(SDAffineTransformF_GetInverse
+		CStatus_Check
+			(CAffineTransformF_GetInverse
 				(other, &t2));
 	}
 	else
 	{
-		SDStatus_Check
-			(SDAffineTransformF_GetInverse
+		CStatus_Check
+			(CAffineTransformF_GetInverse
 				(other, &t1));
 		t2 = *_this;
 	}
@@ -249,99 +249,99 @@ SDAffineTransformF_MultiplyInverse(SDAffineTransformF       *_this,
 	_this->dy  = ((t1.dy  * t2.m22) + (t1.dx  * t2.m12) + (t2.dy));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Rotate a transformation. */
-SDINTERNAL void
-SDAffineTransformF_Rotate(SDAffineTransformF *_this,
-                          SDFloat             angle,
-                          SDMatrixOrder       order)
+CINTERNAL void
+CAffineTransformF_Rotate(CAffineTransformF *_this,
+                          CFloat             angle,
+                          CMatrixOrder       order)
 {
 	/* declarations */
-	SDAffineTransformF rotate;
-	SDDouble           radians;
-	SDFloat            sin;
-	SDFloat            cos;
+	CAffineTransformF rotate;
+	CDouble           radians;
+	CFloat            sin;
+	CFloat            cos;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* calculate the radians */
-	radians = SDMath_ToRadians(angle);
+	radians = CMath_ToRadians(angle);
 
 	/* calculate the sine */
-	sin = (SDFloat)SDMath_Sin(radians);
+	sin = (CFloat)CMath_Sin(radians);
 
 	/* calculate the cosine */
-	cos = (SDFloat)SDMath_Cos(radians);
+	cos = (CFloat)CMath_Cos(radians);
 
 	/* create the rotation transformation */
-	SDAffineTransformF_SetElements(&rotate, cos, sin, -sin, cos, 0, 0);
+	CAffineTransformF_SetElements(&rotate, cos, sin, -sin, cos, 0, 0);
 
 	/* rotate the transformation */
-	SDAffineTransformF_Multiply(_this, &rotate, order);
+	CAffineTransformF_Multiply(_this, &rotate, order);
 }
 
 /* Inverse rotate a transformation. */
-SDINTERNAL void
-SDAffineTransformF_RotateInverse(SDAffineTransformF *_this,
-                                 SDFloat             angle,
-                                 SDMatrixOrder       order)
+CINTERNAL void
+CAffineTransformF_RotateInverse(CAffineTransformF *_this,
+                                 CFloat             angle,
+                                 CMatrixOrder       order)
 {
 	/* declarations */
-	SDAffineTransformF rotate;
-	SDDouble           radians;
-	SDFloat            sin;
-	SDFloat            cos;
+	CAffineTransformF rotate;
+	CDouble           radians;
+	CFloat            sin;
+	CFloat            cos;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* calculate the radians */
-	radians = SDMath_ToRadians(-angle);
+	radians = CMath_ToRadians(-angle);
 
 	/* calculate the sine */
-	sin = (SDFloat)SDMath_Sin(radians);
+	sin = (CFloat)CMath_Sin(radians);
 
 	/* calculate the cosine */
-	cos = (SDFloat)SDMath_Cos(radians);
+	cos = (CFloat)CMath_Cos(radians);
 
 	/* create the rotation transformation */
-	SDAffineTransformF_SetElements(&rotate, cos, sin, -sin, cos, 0, 0);
+	CAffineTransformF_SetElements(&rotate, cos, sin, -sin, cos, 0, 0);
 
 	/* invert the order */
-	if(order == SDMatrixOrder_Prepend)
+	if(order == CMatrixOrder_Prepend)
 	{
-		order = SDMatrixOrder_Append;
+		order = CMatrixOrder_Append;
 	}
 	else
 	{
-		order = SDMatrixOrder_Prepend;
+		order = CMatrixOrder_Prepend;
 	}
 
 	/* rotate the transformation */
-	SDAffineTransformF_Multiply(_this, &rotate, order);
+	CAffineTransformF_Multiply(_this, &rotate, order);
 }
 
 /* Scale a transformation. */
-SDINTERNAL void
-SDAffineTransformF_Scale(SDAffineTransformF *_this,
-                         SDFloat             scaleX,
-                         SDFloat             scaleY,
-                         SDMatrixOrder       order)
+CINTERNAL void
+CAffineTransformF_Scale(CAffineTransformF *_this,
+                         CFloat             scaleX,
+                         CFloat             scaleY,
+                         CMatrixOrder       order)
 {
 	/*\
 	|*| NOTE: technically we could just multiply with an
-	|*|       SDAffineTransformF(scaleX, 0, 0, scaleY, 0, 0),
+	|*|       CAffineTransformF(scaleX, 0, 0, scaleY, 0, 0),
 	|*|       but this is more efficient
 	\*/
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* scale the transformation */
-	if(order == SDMatrixOrder_Prepend)
+	if(order == CMatrixOrder_Prepend)
 	{
 		_this->m11 *= scaleX;
 		_this->m12 *= scaleX;
@@ -360,25 +360,25 @@ SDAffineTransformF_Scale(SDAffineTransformF *_this,
 }
 
 /* Inverse scale a transformation. */
-SDINTERNAL void
-SDAffineTransformF_ScaleInverse(SDAffineTransformF *_this,
-                                SDFloat             scaleX,
-                                SDFloat             scaleY,
-                                SDMatrixOrder       order)
+CINTERNAL void
+CAffineTransformF_ScaleInverse(CAffineTransformF *_this,
+                                CFloat             scaleX,
+                                CFloat             scaleY,
+                                CMatrixOrder       order)
 {
 	/* declarations */
-	SDDouble sx;
-	SDDouble sy;
+	CDouble sx;
+	CDouble sy;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* calculate the inverse scale factors */
-	sx = (1.0f / (SDDouble)scaleX);
-	sy = (1.0f / (SDDouble)scaleY);
+	sx = (1.0f / (CDouble)scaleX);
+	sy = (1.0f / (CDouble)scaleY);
 
 	/* scale the transformation */
-	if(order == SDMatrixOrder_Prepend)
+	if(order == CMatrixOrder_Prepend)
 	{
 		_this->m11 *= sx;
 		_this->m12 *= sy;
@@ -397,24 +397,24 @@ SDAffineTransformF_ScaleInverse(SDAffineTransformF *_this,
 }
 
 /* Extract the scaling factors from, then unscale, this transformation. */
-SDINTERNAL void
-SDAffineTransformF_ExtractScale(SDAffineTransformF *_this,
-                                SDFloat            *scaleX,
-                                SDFloat            *scaleY,
-                                SDMatrixOrder       order)
+CINTERNAL void
+CAffineTransformF_ExtractScale(CAffineTransformF *_this,
+                                CFloat            *scaleX,
+                                CFloat            *scaleY,
+                                CMatrixOrder       order)
 {
 	/* declarations */
-	SDFloat m11;
-	SDFloat m12;
-	SDFloat m21;
-	SDFloat m22;
-	SDFloat determinant;
-	SDFloat shear;
+	CFloat m11;
+	CFloat m12;
+	CFloat m21;
+	CFloat m22;
+	CFloat determinant;
+	CFloat shear;
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((scaleX != 0));
-	SDASSERT((scaleY != 0));
+	CASSERT((_this  != 0));
+	CASSERT((scaleX != 0));
+	CASSERT((scaleY != 0));
 
 	/* get the transformation components */
 	m11 = _this->m11;
@@ -423,10 +423,10 @@ SDAffineTransformF_ExtractScale(SDAffineTransformF *_this,
 	m22 = _this->m22;
 
 	/* get the determinant */
-	SDAffineTransformF_GetDeterminant(_this, &determinant);
+	CAffineTransformF_GetDeterminant(_this, &determinant);
 
 	/* calculate the horizontal scaling factor */
-	*scaleX = SDMath_Sqrt((m11 * m11) + (m12 * m12));
+	*scaleX = CMath_Sqrt((m11 * m11) + (m12 * m12));
 
 	/* unscale the first row */
 	m11 *= (1.0f / *scaleX);
@@ -440,7 +440,7 @@ SDAffineTransformF_ExtractScale(SDAffineTransformF *_this,
 	m22 -= (shear * m12);
 
 	/* calculate the vertical scaling factor */
-	*scaleY = SDMath_Sqrt((m21 * m21) + (m22 * m22));
+	*scaleY = CMath_Sqrt((m21 * m21) + (m22 * m22));
 
 	/* handle reflection, as needed */
 	if(determinant < 0.0f)
@@ -450,40 +450,40 @@ SDAffineTransformF_ExtractScale(SDAffineTransformF *_this,
 	}
 
 	/* inverse scale the transformation */
-	if(order == SDMatrixOrder_Prepend)
+	if(order == CMatrixOrder_Prepend)
 	{
-		SDAffineTransformF_ScaleInverse
-			(_this, *scaleX, *scaleY, SDMatrixOrder_Append);
+		CAffineTransformF_ScaleInverse
+			(_this, *scaleX, *scaleY, CMatrixOrder_Append);
 	}
 	else
 	{
-		SDAffineTransformF_ScaleInverse
-			(_this, *scaleX, *scaleY, SDMatrixOrder_Prepend);
+		CAffineTransformF_ScaleInverse
+			(_this, *scaleX, *scaleY, CMatrixOrder_Prepend);
 	}
 }
 
 /* Shear a transformation. */
-SDINTERNAL void
-SDAffineTransformF_Shear(SDAffineTransformF *_this,
-                         SDFloat             shearX,
-                         SDFloat             shearY,
-                         SDMatrixOrder       order)
+CINTERNAL void
+CAffineTransformF_Shear(CAffineTransformF *_this,
+                         CFloat             shearX,
+                         CFloat             shearY,
+                         CMatrixOrder       order)
 {
 	/*\
 	|*| NOTE: technically we could just multiply with an
-	|*|       SDAffineTransformF(1, shearX, shearY, 1, 0, 0),
+	|*|       CAffineTransformF(1, shearX, shearY, 1, 0, 0),
 	|*|       but this is more efficient
 	\*/
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* shear the transformation */
-	if(order == SDMatrixOrder_Prepend)
+	if(order == CMatrixOrder_Prepend)
 	{
 		/* get the first row of the transformation */
-		const SDFloat m11 = _this->m11;
-		const SDFloat m12 = _this->m12;
+		const CFloat m11 = _this->m11;
+		const CFloat m12 = _this->m12;
 
 		/* perform the shear */
 		_this->m11 += (_this->m21 * shearY);
@@ -494,9 +494,9 @@ SDAffineTransformF_Shear(SDAffineTransformF *_this,
 	else
 	{
 		/* get the first column of the transformation */
-		const SDFloat m11 = _this->m11;
-		const SDFloat m21 = _this->m21;
-		const SDFloat dx  = _this->dx;
+		const CFloat m11 = _this->m11;
+		const CFloat m21 = _this->m21;
+		const CFloat dx  = _this->dx;
 
 		/* perform the shear */
 		_this->m11 += (_this->m12 * shearY);
@@ -509,23 +509,23 @@ SDAffineTransformF_Shear(SDAffineTransformF *_this,
 }
 
 /* Translate a transformation. */
-SDINTERNAL void
-SDAffineTransformF_Translate(SDAffineTransformF *_this,
-                             SDFloat             offsetX,
-                             SDFloat             offsetY,
-                             SDMatrixOrder       order)
+CINTERNAL void
+CAffineTransformF_Translate(CAffineTransformF *_this,
+                             CFloat             offsetX,
+                             CFloat             offsetY,
+                             CMatrixOrder       order)
 {
 	/*\
 	|*| NOTE: technically we could just multiply with an
-	|*|       SDAffineTransformF(1, 0, 0, 1, offsetX, offsetY),
+	|*|       CAffineTransformF(1, 0, 0, 1, offsetX, offsetY),
 	|*|       but this is more efficient
 	\*/
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* translate the matrix */
-	if(order == SDMatrixOrder_Prepend)
+	if(order == CMatrixOrder_Prepend)
 	{
 		_this->dx += (_this->m11 * offsetX) + (_this->m21 * offsetY);
 		_this->dy += (_this->m12 * offsetX) + (_this->m22 * offsetY);
@@ -538,17 +538,17 @@ SDAffineTransformF_Translate(SDAffineTransformF *_this,
 }
 
 /* Inverse translate a transformation. */
-SDINTERNAL void
-SDAffineTransformF_TranslateInverse(SDAffineTransformF *_this,
-                                    SDFloat             offsetX,
-                                    SDFloat             offsetY,
-                                    SDMatrixOrder       order)
+CINTERNAL void
+CAffineTransformF_TranslateInverse(CAffineTransformF *_this,
+                                    CFloat             offsetX,
+                                    CFloat             offsetY,
+                                    CMatrixOrder       order)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* inverse translate the matrix */
-	if(order == SDMatrixOrder_Prepend)
+	if(order == CMatrixOrder_Prepend)
 	{
 		_this->dx -= offsetX;
 		_this->dy -= offsetY;
@@ -561,35 +561,35 @@ SDAffineTransformF_TranslateInverse(SDAffineTransformF *_this,
 }
 
 /* Transform a list of points. */
-SDINTERNAL void
-SDAffineTransformF_TransformPoints(const SDAffineTransformF *_this,
-                                   SDPointF                 *points,
-                                   SDUInt32                  count)
+CINTERNAL void
+CAffineTransformF_TransformPoints(const CAffineTransformF *_this,
+                                   CPointF                 *points,
+                                   CUInt32                  count)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((points != 0));
+	CASSERT((_this  != 0));
+	CASSERT((points != 0));
 
 	/* transform the points */
 	{
 		/* get the transformation */
-		const SDAffineTransformF t = *_this;
+		const CAffineTransformF t = *_this;
 
 		/* get the end pointer */
-		const SDPointF *const end = (points + count);
+		const CPointF *const end = (points + count);
 
 		/* transform the points */
 		while(points != end)
 		{
 			/* get the x coordinate */
-			const SDFloat x = SDPoint_X(*points);
+			const CFloat x = CPoint_X(*points);
 
 			/* get the y coordinate */
-			const SDFloat y = SDPoint_Y(*points);
+			const CFloat y = CPoint_Y(*points);
 
 			/* transform the point */
-			SDPoint_X(*points) = ((x * t.m11) + (y * t.m21) + t.dx);
-			SDPoint_Y(*points) = ((x * t.m12) + (y * t.m22) + t.dy);
+			CPoint_X(*points) = ((x * t.m11) + (y * t.m21) + t.dx);
+			CPoint_Y(*points) = ((x * t.m12) + (y * t.m22) + t.dy);
 
 			/* update the points pointer */
 			++points;
@@ -598,35 +598,35 @@ SDAffineTransformF_TransformPoints(const SDAffineTransformF *_this,
 }
 
 /* Transform a list of vectors. */
-SDINTERNAL void
-SDAffineTransformF_TransformVectors(const SDAffineTransformF *_this,
-                                    SDPointF                 *points,
-                                    SDUInt32                  count)
+CINTERNAL void
+CAffineTransformF_TransformVectors(const CAffineTransformF *_this,
+                                    CPointF                 *points,
+                                    CUInt32                  count)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((points != 0));
+	CASSERT((_this  != 0));
+	CASSERT((points != 0));
 
 	/* transform the vectors */
 	{
 		/* get the transformation */
-		const SDAffineTransformF t = *_this;
+		const CAffineTransformF t = *_this;
 
 		/* get the end pointer */
-		const SDPointF *const end = (points + count);
+		const CPointF *const end = (points + count);
 
 		/* transform the vectors */
 		while(points != end)
 		{
 			/* get the horizontal weight */
-			const SDFloat x = SDPoint_X(*points);
+			const CFloat x = CPoint_X(*points);
 
 			/* get the vertical weight */
-			const SDFloat y = SDPoint_Y(*points);
+			const CFloat y = CPoint_Y(*points);
 
 			/* transform the vector */
-			SDPoint_X(*points) = ((x * t.m11) + (y * t.m21));
-			SDPoint_Y(*points) = ((x * t.m12) + (y * t.m22));
+			CPoint_X(*points) = ((x * t.m11) + (y * t.m21));
+			CPoint_Y(*points) = ((x * t.m12) + (y * t.m22));
 
 			/* update the vector pointer */
 			++points;
@@ -634,30 +634,30 @@ SDAffineTransformF_TransformVectors(const SDAffineTransformF *_this,
 	}
 }
 
-SDINTERNAL void
-SDVectorF_ScalePoints(const SDVectorF *_this,
-                      SDPointF        *points,
-                      SDUInt32         count)
+CINTERNAL void
+CVectorF_ScalePoints(const CVectorF *_this,
+                      CPointF        *points,
+                      CUInt32         count)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((points != 0));
+	CASSERT((_this  != 0));
+	CASSERT((points != 0));
 
 	/* scale the points */
 	{
 		/* get the scaling factors */
-		const SDFloat scaleX = SDVector_X(*_this);
-		const SDFloat scaleY = SDVector_Y(*_this);
+		const CFloat scaleX = CVector_X(*_this);
+		const CFloat scaleY = CVector_Y(*_this);
 
 		/* get the end pointer */
-		const SDPointF *const end = (points + count);
+		const CPointF *const end = (points + count);
 
 		/* scale the points */
 		while(points != end)
 		{
 			/* scale the point */
-			SDPoint_X(*points) *= scaleX;
-			SDPoint_Y(*points) *= scaleY;
+			CPoint_X(*points) *= scaleX;
+			CPoint_Y(*points) *= scaleY;
 
 			/* update the points pointer */
 			++points;
@@ -665,30 +665,30 @@ SDVectorF_ScalePoints(const SDVectorF *_this,
 	}
 }
 
-SDINTERNAL void
-SDVectorF_TranslatePoints(const SDVectorF *_this,
-                          SDPointF        *points,
-                          SDUInt32         count)
+CINTERNAL void
+CVectorF_TranslatePoints(const CVectorF *_this,
+                          CPointF        *points,
+                          CUInt32         count)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((points != 0));
+	CASSERT((_this  != 0));
+	CASSERT((points != 0));
 
 	/* translate the points */
 	{
 		/* get the translation factors */
-		const SDFloat transX = SDVector_X(*_this);
-		const SDFloat transY = SDVector_Y(*_this);
+		const CFloat transX = CVector_X(*_this);
+		const CFloat transY = CVector_Y(*_this);
 
 		/* get the end pointer */
-		const SDPointF *const end = (points + count);
+		const CPointF *const end = (points + count);
 
 		/* translate the points */
 		while(points != end)
 		{
 			/* translate the point */
-			SDPoint_X(*points) += transX;
-			SDPoint_Y(*points) += transY;
+			CPoint_X(*points) += transX;
+			CPoint_Y(*points) += transY;
 
 			/* update the points pointer */
 			++points;

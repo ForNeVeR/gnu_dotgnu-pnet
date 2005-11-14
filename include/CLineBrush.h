@@ -1,5 +1,5 @@
 /*
- * SDLineBrush.h - Linear gradient brush header.
+ * CLineBrush.h - Linear gradient brush header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_LINEBRUSH_H_
-#define _SD_LINEBRUSH_H_
+#ifndef _C_LINEBRUSH_H_
+#define _C_LINEBRUSH_H_
 
 #include "CBlend.h"
 
@@ -27,36 +27,36 @@
 extern "C" {
 #endif
 
-struct _tagSDLineBrush
+struct _tagCLineBrush
 {
-	SDBrush            _base;
-	SDAffineTransformF transform;
-	SDRectangleF       rectangle;
-	SDWrapMode         wrapMode;
-	SDBlend            blend;
-	SDColorBlend       colorBlend;
-	SDColor            startColor;
-	SDColor            endColor;
-	SDFloat            angle;
-	SDBitField         isAngleScalable : 1;
-	SDBitField         gammaCorrection : 1;
+	CBrush            _base;
+	CAffineTransformF transform;
+	CRectangleF       rectangle;
+	CWrapMode         wrapMode;
+	CBlend            blend;
+	CColorBlend       colorBlend;
+	CColor            startColor;
+	CColor            endColor;
+	CFloat            angle;
+	CBitField         isAngleScalable : 1;
+	CBitField         gammaCorrection : 1;
 };
 
-static SDStatus
-SDLineBrush_Clone(SDBrush  *_this,
-                  SDBrush **_clone);
+static CStatus
+CLineBrush_Clone(CBrush  *_this,
+                 CBrush **_clone);
 static void
-SDLineBrush_Finalize(SDBrush *_this);
-static SDStatus
-SDLineBrush_CreatePattern(SDBrush   *_this,
-                          SDPattern *pattern);
+CLineBrush_Finalize(CBrush *_this);
+static CStatus
+CLineBrush_CreatePattern(CBrush   *_this,
+                         CPattern *pattern);
 
-static const SDBrushClass SDLineBrush_Class =
+static const CBrushClass CLineBrush_Class =
 {
-	SDBrushType_LinearGradient,
-	SDLineBrush_Clone,
-	SDLineBrush_Finalize,
-	SDLineBrush_CreatePattern,
+	CBrushType_LinearGradient,
+	CLineBrush_Clone,
+	CLineBrush_Finalize,
+	CLineBrush_CreatePattern,
 	"sentinel"
 };
 
@@ -64,4 +64,4 @@ static const SDBrushClass SDLineBrush_Class =
 };
 #endif
 
-#endif /* _SD_LINEBRUSH_H_ */
+#endif /* _C_LINEBRUSH_H_ */

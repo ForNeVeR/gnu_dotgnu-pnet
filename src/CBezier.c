@@ -1,5 +1,5 @@
 /*
- * SDBezier.c - Bezier implementation.
+ * CBezier.c - Bezier implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,19 +24,19 @@
 extern "C" {
 #endif
 
-SDINTERNAL SDBool
-SDBezierX_Initialize(SDBezierX *_this,
-                     SDPointX  *a,
-                     SDPointX  *b,
-                     SDPointX  *c,
-                     SDPointX  *d)
+CINTERNAL CBool
+CBezierX_Initialize(CBezierX *_this,
+                     CPointX  *a,
+                     CPointX  *b,
+                     CPointX  *c,
+                     CPointX  *d)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((a     != 0));
-	SDASSERT((b     != 0));
-	SDASSERT((c     != 0));
-	SDASSERT((d     != 0));
+	CASSERT((_this != 0));
+	CASSERT((a     != 0));
+	CASSERT((b     != 0));
+	CASSERT((c     != 0));
+	CASSERT((d     != 0));
 
 	/* set the control points of the curve */
     _this->a = *a;
@@ -45,7 +45,7 @@ SDBezierX_Initialize(SDBezierX *_this,
     _this->d = *d;
 
 	/* bail out now if the curve is degenerate */
-	if(SDPoint_X(*a) == SDPoint_X(*d) && SDPoint_Y(*a) == SDPoint_Y(*d))
+	if(CPoint_X(*a) == CPoint_X(*d) && CPoint_Y(*a) == CPoint_Y(*d))
 	{
 		/* return with degenerate flag */
 		return 1;
@@ -55,19 +55,19 @@ SDBezierX_Initialize(SDBezierX *_this,
 	return 0;
 }
 
-SDINTERNAL SDBool
-SDBezierF_Initialize(SDBezierF *_this,
-                     SDPointF  *a,
-                     SDPointF  *b,
-                     SDPointF  *c,
-                     SDPointF  *d)
+CINTERNAL CBool
+CBezierF_Initialize(CBezierF *_this,
+                     CPointF  *a,
+                     CPointF  *b,
+                     CPointF  *c,
+                     CPointF  *d)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((a     != 0));
-	SDASSERT((b     != 0));
-	SDASSERT((c     != 0));
-	SDASSERT((d     != 0));
+	CASSERT((_this != 0));
+	CASSERT((a     != 0));
+	CASSERT((b     != 0));
+	CASSERT((c     != 0));
+	CASSERT((d     != 0));
 
 	/* set the control points of the curve */
     _this->a = *a;
@@ -76,7 +76,7 @@ SDBezierF_Initialize(SDBezierF *_this,
     _this->d = *d;
 
 	/* bail out now if the curve is degenerate */
-	if(SDPoint_X(*a) == SDPoint_X(*d) && SDPoint_Y(*a) == SDPoint_Y(*d))
+	if(CPoint_X(*a) == CPoint_X(*d) && CPoint_Y(*a) == CPoint_Y(*d))
 	{
 		/* return with degenerate flag */
 		return 1;
@@ -87,85 +87,85 @@ SDBezierF_Initialize(SDBezierF *_this,
 }
 
 
-SDINTERNAL void
-SDBezierX_Finalize(SDBezierX *_this)
+CINTERNAL void
+CBezierX_Finalize(CBezierX *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* reset the members */
-	*_this = SDBezierX_Zero;
+	*_this = CBezierX_Zero;
 }
 
-SDINTERNAL void
-SDBezierF_Finalize(SDBezierF *_this)
+CINTERNAL void
+CBezierF_Finalize(CBezierF *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* reset the members */
-	*_this = SDBezierF_Zero;
+	*_this = CBezierF_Zero;
 }
 
-static SDMATH SDPointX
-SDBezierX_Midpoint(SDPointX start,
-                   SDPointX end)
+static CMATH CPointX
+CBezierX_Midpoint(CPointX start,
+                   CPointX end)
 {
 	/* initialize the midpoint to the start point */
-	SDPointX middle = start;
+	CPointX middle = start;
 
 	/* calculate and set the midpoint */
-	SDPoint_X(middle) += ((SDPoint_X(end) - SDPoint_X(start)) >> 1);
-	SDPoint_Y(middle) += ((SDPoint_Y(end) - SDPoint_Y(start)) >> 1);
+	CPoint_X(middle) += ((CPoint_X(end) - CPoint_X(start)) >> 1);
+	CPoint_Y(middle) += ((CPoint_Y(end) - CPoint_Y(start)) >> 1);
 
 	/* return the midpoint */
 	return middle;
 }
 
-static SDMATH SDPointF
-SDBezierF_Midpoint(SDPointF start,
-                   SDPointF end)
+static CMATH CPointF
+CBezierF_Midpoint(CPointF start,
+                   CPointF end)
 {
 	/* initialize the midpoint to the start point */
-	SDPointF middle = start;
+	CPointF middle = start;
 
 	/* calculate and set the midpoint */
-	SDPoint_X(middle) += ((SDPoint_X(end) - SDPoint_X(start)) * 0.5f);
-	SDPoint_Y(middle) += ((SDPoint_Y(end) - SDPoint_Y(start)) * 0.5f);
+	CPoint_X(middle) += ((CPoint_X(end) - CPoint_X(start)) * 0.5f);
+	CPoint_Y(middle) += ((CPoint_Y(end) - CPoint_Y(start)) * 0.5f);
 
 	/* return the midpoint */
 	return middle;
 }
 
 static void
-SDBezierX_DeCasteljau(SDBezierX *_this,
-                      SDBezierX *start,
-                      SDBezierX *end)
+CBezierX_DeCasteljau(CBezierX *_this,
+                      CBezierX *start,
+                      CBezierX *end)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((start != 0));
-	SDASSERT((end   != 0));
+	CASSERT((_this != 0));
+	CASSERT((start != 0));
+	CASSERT((end   != 0));
 
 	/* initialize the results */
-	*start = SDBezierX_Zero;
-	*end   = SDBezierX_Zero;
+	*start = CBezierX_Zero;
+	*end   = CBezierX_Zero;
 
 	/* calculate the results */
 	{
 		/* get the curve control points */
-		const SDPointX a = _this->a;
-		const SDPointX b = _this->b;
-		const SDPointX c = _this->c;
-		const SDPointX d = _this->d;
+		const CPointX a = _this->a;
+		const CPointX b = _this->b;
+		const CPointX c = _this->c;
+		const CPointX d = _this->d;
 
 		/* calculate the midpoints */
-		const SDPointX ab    = SDBezierX_Midpoint(a, b);
-		const SDPointX bc    = SDBezierX_Midpoint(b, c);
-		const SDPointX cd    = SDBezierX_Midpoint(c, d);
-		const SDPointX abbc  = SDBezierX_Midpoint(ab, bc);
-		const SDPointX bccd  = SDBezierX_Midpoint(bc, cd);
-		const SDPointX ab_cd = SDBezierX_Midpoint(abbc, bccd);
+		const CPointX ab    = CBezierX_Midpoint(a, b);
+		const CPointX bc    = CBezierX_Midpoint(b, c);
+		const CPointX cd    = CBezierX_Midpoint(c, d);
+		const CPointX abbc  = CBezierX_Midpoint(ab, bc);
+		const CPointX bccd  = CBezierX_Midpoint(bc, cd);
+		const CPointX ab_cd = CBezierX_Midpoint(abbc, bccd);
 
 		/* set the starting curve control points */
 		start->a = a;
@@ -182,34 +182,34 @@ SDBezierX_DeCasteljau(SDBezierX *_this,
 }
 
 static void
-SDBezierF_DeCasteljau(SDBezierF *_this,
-                      SDBezierF *start,
-                      SDBezierF *end)
+CBezierF_DeCasteljau(CBezierF *_this,
+                      CBezierF *start,
+                      CBezierF *end)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((start != 0));
-	SDASSERT((end   != 0));
+	CASSERT((_this != 0));
+	CASSERT((start != 0));
+	CASSERT((end   != 0));
 
 	/* initialize the results */
-	*start = SDBezierF_Zero;
-	*end   = SDBezierF_Zero;
+	*start = CBezierF_Zero;
+	*end   = CBezierF_Zero;
 
 	/* calculate the results */
 	{
 		/* get the curve control points */
-		const SDPointF a = _this->a;
-		const SDPointF b = _this->b;
-		const SDPointF c = _this->c;
-		const SDPointF d = _this->d;
+		const CPointF a = _this->a;
+		const CPointF b = _this->b;
+		const CPointF c = _this->c;
+		const CPointF d = _this->d;
 
 		/* calculate the midpoints */
-		const SDPointF ab    = SDBezierF_Midpoint(a, b);
-		const SDPointF bc    = SDBezierF_Midpoint(b, c);
-		const SDPointF cd    = SDBezierF_Midpoint(c, d);
-		const SDPointF abbc  = SDBezierF_Midpoint(ab, bc);
-		const SDPointF bccd  = SDBezierF_Midpoint(bc, cd);
-		const SDPointF ab_cd = SDBezierF_Midpoint(abbc, bccd);
+		const CPointF ab    = CBezierF_Midpoint(a, b);
+		const CPointF bc    = CBezierF_Midpoint(b, c);
+		const CPointF cd    = CBezierF_Midpoint(c, d);
+		const CPointF abbc  = CBezierF_Midpoint(ab, bc);
+		const CPointF bccd  = CBezierF_Midpoint(bc, cd);
+		const CPointF ab_cd = CBezierF_Midpoint(abbc, bccd);
 
 		/* set the starting curve control points */
 		start->a = a;
@@ -225,13 +225,13 @@ SDBezierF_DeCasteljau(SDBezierF *_this,
 	}
 }
 
-static SDMATH SDDouble
-SDBezierX_DistanceToLine(SDPointX p,
-                         SDPointX start,
-                         SDPointX end)
+static CMATH CDouble
+CBezierX_DistanceToLine(CPointX p,
+                         CPointX start,
+                         CPointX end)
 {
 	/* declarations */
-	SDDouble u;
+	CDouble u;
 
 	/*\
 	|*|
@@ -259,58 +259,58 @@ SDBezierX_DistanceToLine(SDPointX p,
 	\*/
 
 	/* calculate the component vectors */
-	const SDDouble esX = SDFixed_ToFloat(SDPoint_X(end) - SDPoint_X(start));
-	const SDDouble esY = SDFixed_ToFloat(SDPoint_Y(end) - SDPoint_Y(start));
-	const SDDouble psX = SDFixed_ToFloat(SDPoint_X(p)   - SDPoint_X(start));
-	const SDDouble psY = SDFixed_ToFloat(SDPoint_Y(p)   - SDPoint_Y(start));
+	const CDouble esX = CFixed_ToFloat(CPoint_X(end) - CPoint_X(start));
+	const CDouble esY = CFixed_ToFloat(CPoint_Y(end) - CPoint_Y(start));
+	const CDouble psX = CFixed_ToFloat(CPoint_X(p)   - CPoint_X(start));
+	const CDouble psY = CFixed_ToFloat(CPoint_Y(p)   - CPoint_Y(start));
 
 	/* handle degenerate case (distance to start point) */
 	if(esX == 0.0f && esY == 0.0f)
 	{
 		/* calculate and return the distance (squared) */
-		return SDMath_DotProduct(psX, psY, psX, psY);
+		return CMath_DotProduct(psX, psY, psX, psY);
 	}
 
 	/* calculate the line coefficient */
-	u = (SDMath_DotProduct(psX, psY, esX, esY) /
-	     SDMath_DotProduct(esX, esY, esX, esY));
+	u = (CMath_DotProduct(psX, psY, esX, esY) /
+	     CMath_DotProduct(esX, esY, esX, esY));
 
 	/* handle degenerate case (distance to start point) */
 	if(u <= 0.0f)
 	{
 		/* calculate and return the distance (squared) */
-		return SDMath_DotProduct(psX, psY, psX, psY);
+		return CMath_DotProduct(psX, psY, psX, psY);
 	}
 
 	/* handle degenerate case (distance to end point) */
 	if(u >= 1.0f)
 	{
 		/* calculate the component vectors */
-		const SDDouble peX = SDFixed_ToFloat(SDPoint_X(p) - SDPoint_X(end));
-		const SDDouble peY = SDFixed_ToFloat(SDPoint_Y(p) - SDPoint_Y(end));
+		const CDouble peX = CFixed_ToFloat(CPoint_X(p) - CPoint_X(end));
+		const CDouble peY = CFixed_ToFloat(CPoint_Y(p) - CPoint_Y(end));
 
 		/* calculate and return the distance (squared) */
-		return SDMath_DotProduct(peX, peY, peX, peY);
+		return CMath_DotProduct(peX, peY, peX, peY);
 	}
 
 	/* handle non-degenerate case (distance to line segment) */
 	{
 		/* calculate the component vectors */
-		const SDDouble piX = psX - (u * esX);
-		const SDDouble piY = psY - (u * esY);
+		const CDouble piX = psX - (u * esX);
+		const CDouble piY = psY - (u * esY);
 
 		/* calculate and return the distance (squared) */
-		return SDMath_DotProduct(piX, piY, piX, piY);
+		return CMath_DotProduct(piX, piY, piX, piY);
 	}
 }
 
-static SDMATH SDDouble
-SDBezierF_DistanceToLine(SDPointF p,
-                         SDPointF start,
-                         SDPointF end)
+static CMATH CDouble
+CBezierF_DistanceToLine(CPointF p,
+                         CPointF start,
+                         CPointF end)
 {
 	/* declarations */
-	SDDouble u;
+	CDouble u;
 
 	/*\
 	|*|
@@ -338,67 +338,67 @@ SDBezierF_DistanceToLine(SDPointF p,
 	\*/
 
 	/* calculate the component vectors */
-	const SDDouble esX = (SDPoint_X(end) - SDPoint_X(start));
-	const SDDouble esY = (SDPoint_Y(end) - SDPoint_Y(start));
-	const SDDouble psX = (SDPoint_X(p)   - SDPoint_X(start));
-	const SDDouble psY = (SDPoint_Y(p)   - SDPoint_Y(start));
+	const CDouble esX = (CPoint_X(end) - CPoint_X(start));
+	const CDouble esY = (CPoint_Y(end) - CPoint_Y(start));
+	const CDouble psX = (CPoint_X(p)   - CPoint_X(start));
+	const CDouble psY = (CPoint_Y(p)   - CPoint_Y(start));
 
 	/* handle degenerate case (distance to start point) */
 	if(esX == 0.0f && esY == 0.0f)
 	{
 		/* calculate and return the distance (squared) */
-		return SDMath_DotProduct(psX, psY, psX, psY);
+		return CMath_DotProduct(psX, psY, psX, psY);
 	}
 
 	/* calculate the line coefficient */
-	u = (SDMath_DotProduct(psX, psY, esX, esY) /
-	     SDMath_DotProduct(esX, esY, esX, esY));
+	u = (CMath_DotProduct(psX, psY, esX, esY) /
+	     CMath_DotProduct(esX, esY, esX, esY));
 
 	/* handle degenerate case (distance to start point) */
 	if(u <= 0.0f)
 	{
 		/* calculate and return the distance (squared) */
-		return SDMath_DotProduct(psX, psY, psX, psY);
+		return CMath_DotProduct(psX, psY, psX, psY);
 	}
 
 	/* handle degenerate case (distance to end point) */
 	if(u >= 1.0f)
 	{
 		/* calculate the component vectors */
-		const SDDouble peX = (SDPoint_X(p) - SDPoint_X(end));
-		const SDDouble peY = (SDPoint_Y(p) - SDPoint_Y(end));
+		const CDouble peX = (CPoint_X(p) - CPoint_X(end));
+		const CDouble peY = (CPoint_Y(p) - CPoint_Y(end));
 
 		/* calculate and return the distance (squared) */
-		return SDMath_DotProduct(peX, peY, peX, peY);
+		return CMath_DotProduct(peX, peY, peX, peY);
 	}
 
 	/* handle non-degenerate case (distance to line segment) */
 	{
 		/* calculate the component vectors */
-		const SDDouble piX = psX - (u * esX);
-		const SDDouble piY = psY - (u * esY);
+		const CDouble piX = psX - (u * esX);
+		const CDouble piY = psY - (u * esY);
 
 		/* calculate and return the distance (squared) */
-		return SDMath_DotProduct(piX, piY, piX, piY);
+		return CMath_DotProduct(piX, piY, piX, piY);
 	}
 }
 
-static SDBool
-SDBezierX_IsInTolerance(SDBezierX *_this,
-                        SDDouble   tSquared)
+static CBool
+CBezierX_IsInTolerance(CBezierX *_this,
+                        CDouble   tSquared)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* perform a tolerance check on the first control point */
-	if(SDBezierX_DistanceToLine(_this->b, _this->a, _this->d) >= tSquared)
+	if(CBezierX_DistanceToLine(_this->b, _this->a, _this->d) >= tSquared)
 	{
 		/* return the 'is not inside tolerance' flag */
 		return 0;
 	}
 
 	/* perform a tolerance check on the second control point */
-	if(SDBezierX_DistanceToLine(_this->c, _this->a, _this->d) >= tSquared)
+	if(CBezierX_DistanceToLine(_this->c, _this->a, _this->d) >= tSquared)
 	{
 		/* return the 'is not inside tolerance' flag */
 		return 0;
@@ -408,22 +408,22 @@ SDBezierX_IsInTolerance(SDBezierX *_this,
 	return 1;
 }
 
-static SDBool
-SDBezierF_IsInTolerance(SDBezierF *_this,
-                        SDDouble   tSquared)
+static CBool
+CBezierF_IsInTolerance(CBezierF *_this,
+                        CDouble   tSquared)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* perform a tolerance check on the first control point */
-	if(SDBezierF_DistanceToLine(_this->b, _this->a, _this->d) >= tSquared)
+	if(CBezierF_DistanceToLine(_this->b, _this->a, _this->d) >= tSquared)
 	{
 		/* return the 'is not inside tolerance' flag */
 		return 0;
 	}
 
 	/* perform a tolerance check on the second control point */
-	if(SDBezierF_DistanceToLine(_this->c, _this->a, _this->d) >= tSquared)
+	if(CBezierF_DistanceToLine(_this->c, _this->a, _this->d) >= tSquared)
 	{
 		/* return the 'is not inside tolerance' flag */
 		return 0;
@@ -433,86 +433,86 @@ SDBezierF_IsInTolerance(SDBezierF *_this,
 	return 1;
 }
 
-static SDStatus
-SDBezierX_FlattenR(SDBezierX     *_this,
-                   SDPointArrayX *array,
-                   SDDouble       tSquared)
+static CStatus
+CBezierX_FlattenR(CBezierX     *_this,
+                   CPointArrayX *array,
+                   CDouble       tSquared)
 {
 	/* declarations */
-	SDBezierX w;
-	SDBezierX z;
+	CBezierX w;
+	CBezierX z;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((array != 0));
+	CASSERT((_this != 0));
+	CASSERT((array != 0));
 
 	/* handle the base case */
-	if(SDBezierX_IsInTolerance(_this, tSquared))
+	if(CBezierX_IsInTolerance(_this, tSquared))
 	{
-		return SDPointArrayX_AppendPoint(array, &(_this->a));
+		return CPointArrayX_AppendPoint(array, &(_this->a));
 	}
 
 	/* split the curve */
-	SDBezierX_DeCasteljau(_this, &w, &z);
+	CBezierX_DeCasteljau(_this, &w, &z);
 
 	/* recurse on the first half of the curve */
-	SDStatus_Check
-		(SDBezierX_FlattenR
+	CStatus_Check
+		(CBezierX_FlattenR
 			(&w, array, tSquared));
 
 	/* recurse on the second half of the curve */
-	SDStatus_Check
-		(SDBezierX_FlattenR
+	CStatus_Check
+		(CBezierX_FlattenR
 			(&z, array, tSquared));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDBezierF_FlattenR(SDBezierF     *_this,
-                   SDPointArrayF *array,
-                   SDDouble       tSquared)
+static CStatus
+CBezierF_FlattenR(CBezierF     *_this,
+                   CPointArrayF *array,
+                   CDouble       tSquared)
 {
 	/* declarations */
-	SDBezierF w;
-	SDBezierF z;
+	CBezierF w;
+	CBezierF z;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((array != 0));
+	CASSERT((_this != 0));
+	CASSERT((array != 0));
 
 	/* handle the base case */
-	if(SDBezierF_IsInTolerance(_this, tSquared))
+	if(CBezierF_IsInTolerance(_this, tSquared))
 	{
-		return SDPointArrayF_AppendPoint(array, &(_this->a));
+		return CPointArrayF_AppendPoint(array, &(_this->a));
 	}
 
 	/* split the curve */
-	SDBezierF_DeCasteljau(_this, &w, &z);
+	CBezierF_DeCasteljau(_this, &w, &z);
 
 	/* recurse on the first half of the curve */
-	SDStatus_Check
-		(SDBezierF_FlattenR
+	CStatus_Check
+		(CBezierF_FlattenR
 			(&w, array, tSquared));
 
 	/* recurse on the second half of the curve */
-	SDStatus_Check
-		(SDBezierF_FlattenR
+	CStatus_Check
+		(CBezierF_FlattenR
 			(&z, array, tSquared));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDBezierX_Flatten(SDBezierX     *_this,
-                  SDPointArrayX *array,
-                  SDDouble       tolerance)
+CINTERNAL CStatus
+CBezierX_Flatten(CBezierX     *_this,
+                  CPointArrayX *array,
+                  CDouble       tolerance)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((array != 0));
+	CASSERT((_this != 0));
+	CASSERT((array != 0));
 
 	/* calculate the tolerance squared */
 	tolerance = (tolerance * tolerance);
@@ -521,27 +521,27 @@ SDBezierX_Flatten(SDBezierX     *_this,
 	if(tolerance < 0.000001f) { tolerance = 0.000001f; }
 
 	/* recursively flatten the curve */
-	SDStatus_Check
-		(SDBezierX_FlattenR
+	CStatus_Check
+		(CBezierX_FlattenR
 			(_this, array, tolerance));
 
 	/* add the final point */
-	SDStatus_Check
-		(SDPointArrayX_AppendPoint
+	CStatus_Check
+		(CPointArrayX_AppendPoint
 			(array, &(_this->d)));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDBezierF_Flatten(SDBezierF     *_this,
-                  SDPointArrayF *array,
-                  SDDouble       tolerance)
+CINTERNAL CStatus
+CBezierF_Flatten(CBezierF     *_this,
+                  CPointArrayF *array,
+                  CDouble       tolerance)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((array != 0));
+	CASSERT((_this != 0));
+	CASSERT((array != 0));
 
 	/* calculate the tolerance squared */
 	tolerance = (tolerance * tolerance);
@@ -550,17 +550,17 @@ SDBezierF_Flatten(SDBezierF     *_this,
 	if(tolerance < 0.000001f) { tolerance = 0.000001f; }
 
 	/* recursively flatten the curve */
-	SDStatus_Check
-		(SDBezierF_FlattenR
+	CStatus_Check
+		(CBezierF_FlattenR
 			(_this, array, tolerance));
 
 	/* add the final point */
-	SDStatus_Check
-		(SDPointArrayF_AppendPoint
+	CStatus_Check
+		(CPointArrayF_AppendPoint
 			(array, &(_this->d)));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 #ifdef __cplusplus

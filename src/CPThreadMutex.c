@@ -1,5 +1,5 @@
 /*
- * SDPThreadMutex.c - Posix thread mutex implementation.
+ * CPThreadMutex.c - Posix thread mutex implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,51 +24,51 @@
 extern "C" {
 #endif
 
-SDINTERNAL void
-SDMutex_Lock(SDMutex *_this)
+CINTERNAL void
+CMutex_Lock(CMutex *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* lock the mutex */
 	pthread_mutex_lock(&(_this->mutex));
 }
 
-SDINTERNAL void
-SDMutex_Unlock(SDMutex *_this)
+CINTERNAL void
+CMutex_Unlock(CMutex *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* unlock the mutex */
 	pthread_mutex_unlock(&(_this->mutex));
 }
 
-SDINTERNAL SDStatus
-SDMutex_Create(SDMutex **_this)
+CINTERNAL CStatus
+CMutex_Create(CMutex **_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* allocate the mutex */
-	if(!(*_this = (SDMutex *)SDMalloc(sizeof(SDMutex))))
+	if(!(*_this = (CMutex *)CMalloc(sizeof(CMutex))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the mutex */
 	pthread_mutex_init(&((*_this)->mutex), 0);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL void
-SDMutex_Destroy(SDMutex **_this)
+CINTERNAL void
+CMutex_Destroy(CMutex **_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((*_this != 0));
+	CASSERT((_this != 0));
+	CASSERT((*_this != 0));
 
 	/* finalize the mutex */
 	pthread_mutex_destroy(&((*_this)->mutex));

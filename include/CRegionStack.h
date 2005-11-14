@@ -1,5 +1,5 @@
 /*
- * SDRegionStack.h - Region stack header.
+ * CRegionStack.h - Region stack header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_REGIONSTACK_H_
-#define _SD_REGIONSTACK_H_
+#ifndef _C_REGIONSTACK_H_
+#define _C_REGIONSTACK_H_
 
 #include "CRegion.h"
 
@@ -27,46 +27,46 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDRegionStackNode SDRegionStackNode;
-struct _tagSDRegionStackNode
+typedef struct _tagCRegionStackNode CRegionStackNode;
+struct _tagCRegionStackNode
 {
-	SDUInt32    visited;
-	SDRegionOp *op;
-	void       *left;
-	void       *right;
+	CUInt32    visited;
+	CRegionOp *op;
+	void      *left;
+	void      *right;
 };
-static const SDRegionStackNode SDRegionStackNode_Zero;
+static const CRegionStackNode CRegionStackNode_Zero;
 
-#define SDRegionStack_Top(stack) ((stack).elements[((stack).count - 1)])
-#define SDRegionStack_Size 32
+#define CRegionStack_Top(stack) ((stack).elements[((stack).count - 1)])
+#define CRegionStack_Size 32
 
-typedef struct _tagSDRegionStack SDRegionStack;
-struct _tagSDRegionStack
+typedef struct _tagCRegionStack CRegionStack;
+struct _tagCRegionStack
 {
-	SDRegionStackNode  elements[SDRegionStack_Size];
-	SDUInt32           count;
-	SDRegionStack     *prev;
-	SDRegionStack     *next;
+	CRegionStackNode  elements[CRegionStack_Size];
+	CUInt32           count;
+	CRegionStack     *prev;
+	CRegionStack     *next;
 };
-static const SDRegionStack SDRegionStack_Zero;
+static const CRegionStack CRegionStack_Zero;
 
-#define SDRegionStack_Alloc(stack) \
-	((stack) = ((SDRegionStack *)SDMalloc(sizeof(SDRegionStack))))
+#define CRegionStack_Alloc(stack) \
+	((stack) = ((CRegionStack *)CMalloc(sizeof(CRegionStack))))
 
-SDINTERNAL void
-SDRegionStack_Initialize(SDRegionStack *_this);
-SDINTERNAL void
-SDRegionStack_Finalize(SDRegionStack *_this);
-SDINTERNAL void
-SDRegionStack_Pop(SDRegionStack **_this);
-SDINTERNAL SDStatus
-SDRegionStack_Push(SDRegionStack **_this,
-                   SDRegionOp     *op);
-SDINTERNAL void
-SDRegionStack_Reset(SDRegionStack **_this);
+CINTERNAL void
+CRegionStack_Initialize(CRegionStack *_this);
+CINTERNAL void
+CRegionStack_Finalize(CRegionStack *_this);
+CINTERNAL void
+CRegionStack_Pop(CRegionStack **_this);
+CINTERNAL CStatus
+CRegionStack_Push(CRegionStack **_this,
+                  CRegionOp     *op);
+CINTERNAL void
+CRegionStack_Reset(CRegionStack **_this);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_REGIONSTACK_H_ */
+#endif /* _C_REGIONSTACK_H_ */

@@ -1,5 +1,5 @@
 /*
- * SDSurface.c - Surface implementation.
+ * CSurface.c - Surface implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,67 +24,67 @@
 extern "C" {
 #endif
 
-SDStatus
-SDSurface_Lock(SDSurface *_this)
+CStatus
+CSurface_Lock(CSurface *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* lock this surface */
-	SDMutex_Lock(_this->lock);
+	CMutex_Lock(_this->lock);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDSurface_Unlock(SDSurface *_this)
+CStatus
+CSurface_Unlock(CSurface *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* unlock this surface */
-	SDMutex_Unlock(_this->lock);
+	CMutex_Unlock(_this->lock);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDSurface_GetBoundsF(SDSurface    *_this,
-                     SDRectangleF *bounds)
+CStatus
+CSurface_GetBoundsF(CSurface    *_this,
+                     CRectangleF *bounds)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a bounds pointer */
-	SDStatus_Require((bounds != 0), SDStatus_ArgumentNull);
+	CStatus_Require((bounds != 0), CStatus_ArgumentNull);
 
 	/* set the width and height */
-	SDRectangle_X(*bounds)      = _this->x;
-	SDRectangle_Y(*bounds)      = _this->y;
-	SDRectangle_Width(*bounds)  = _this->width;
-	SDRectangle_Height(*bounds) = _this->height;
+	CRectangle_X(*bounds)      = _this->x;
+	CRectangle_Y(*bounds)      = _this->y;
+	CRectangle_Width(*bounds)  = _this->width;
+	CRectangle_Height(*bounds) = _this->height;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDSurface_GetBounds(SDSurface *_this,
-                    SDUInt32  *x,
-                    SDUInt32  *y,
-                    SDUInt32  *width,
-                    SDUInt32  *height)
+CStatus
+CSurface_GetBounds(CSurface *_this,
+                    CUInt32  *x,
+                    CUInt32  *y,
+                    CUInt32  *width,
+                    CUInt32  *height)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have bounds pointers */
-	SDStatus_Require((x      != 0), SDStatus_ArgumentNull);
-	SDStatus_Require((y      != 0), SDStatus_ArgumentNull);
-	SDStatus_Require((width  != 0), SDStatus_ArgumentNull);
-	SDStatus_Require((height != 0), SDStatus_ArgumentNull);
+	CStatus_Require((x      != 0), CStatus_ArgumentNull);
+	CStatus_Require((y      != 0), CStatus_ArgumentNull);
+	CStatus_Require((width  != 0), CStatus_ArgumentNull);
+	CStatus_Require((height != 0), CStatus_ArgumentNull);
 
 	/* set the width and height */
 	*x      = _this->x;
@@ -93,33 +93,33 @@ SDSurface_GetBounds(SDSurface *_this,
 	*height = _this->height;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDSurface_SetBounds(SDSurface *_this,
-                    SDUInt32   x,
-                    SDUInt32   y,
-                    SDUInt32   width,
-                    SDUInt32   height)
+CStatus
+CSurface_SetBounds(CSurface *_this,
+                    CUInt32   x,
+                    CUInt32   y,
+                    CUInt32   width,
+                    CUInt32   height)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* bail out now if nothing has changed */
 	if(x     == _this->x     && y      == _this->y &&
 	   width == _this->width && height == _this->height)
 	{
-		return SDStatus_OK;
+		return CStatus_OK;
 	}
 
 	/* ensure the width is within bounds */
-	SDStatus_Require
-		((width > 0 && (x + width) < 32768), SDStatus_ArgumentOutOfRange);
+	CStatus_Require
+		((width > 0 && (x + width) < 32768), CStatus_ArgumentOutOfRange);
 
 	/* ensure the height is within bounds */
-	SDStatus_Require
-		((height > 0 && (y + height) < 32768), SDStatus_ArgumentOutOfRange);
+	CStatus_Require
+		((height > 0 && (y + height) < 32768), CStatus_ArgumentOutOfRange);
 
 	/* set the width and height */
 	_this->x      = x;
@@ -142,26 +142,26 @@ SDSurface_SetBounds(SDSurface *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDSurface_GetClipMask(SDSurface        *_this,
+CINTERNAL CStatus
+CSurface_GetClipMask(CSurface        *_this,
                       pixman_image_t  **mask,
-                      SDBool            gray)
+                      CBool            gray)
 {
 	/* declarations */
 	pixman_format_t *format;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((mask  != 0));
+	CASSERT((_this != 0));
+	CASSERT((mask  != 0));
 
 	/* bail out now if there's nothing to do */
-	if(_this->clip != 0 && !(_this->maskFlags & SDSurface_ClipMask8) == !gray)
+	if(_this->clip != 0 && !(_this->maskFlags & CSurface_ClipMask8) == !gray)
 	{
 		*mask = _this->clip;
-		return SDStatus_OK;
+		return CStatus_OK;
 	}
 
 	/* dispose of the clip mask, as needed */
@@ -175,16 +175,16 @@ SDSurface_GetClipMask(SDSurface        *_this,
 	if(gray)
 	{
 		format = pixman_format_create(PIXMAN_FORMAT_NAME_A8);
-		_this->maskFlags |= SDSurface_ClipMask8;
+		_this->maskFlags |= CSurface_ClipMask8;
 	}
 	else
 	{
 		format = pixman_format_create(PIXMAN_FORMAT_NAME_A1);
-		_this->maskFlags &= ~SDSurface_ClipMask8;
+		_this->maskFlags &= ~CSurface_ClipMask8;
 	}
 
 	/* ensure we have a format */
-	SDStatus_Require((format != 0), SDStatus_OutOfMemory);
+	CStatus_Require((format != 0), CStatus_OutOfMemory);
 
 	/* create the pixman image */
 	*mask = pixman_image_create(format, _this->width, _this->height);
@@ -193,32 +193,32 @@ SDSurface_GetClipMask(SDSurface        *_this,
 	pixman_format_destroy(format);
 
 	/* ensure we have an image */
-	SDStatus_Require((*mask != 0), SDStatus_OutOfMemory);
+	CStatus_Require((*mask != 0), CStatus_OutOfMemory);
 
 	/* set the clip mask */
 	_this->clip = *mask;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDSurface_GetCompositingMask(SDSurface       *_this,
+CINTERNAL CStatus
+CSurface_GetCompositingMask(CSurface       *_this,
                              pixman_image_t **mask,
-                             SDBool           gray)
+                             CBool           gray)
 {
 	/* declarations */
 	pixman_format_t *format;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((mask  != 0));
+	CASSERT((_this != 0));
+	CASSERT((mask  != 0));
 
 	/* bail out now if there's nothing to do */
-	if(_this->comp != 0 && !(_this->maskFlags & SDSurface_CompMask8) == !gray)
+	if(_this->comp != 0 && !(_this->maskFlags & CSurface_CompMask8) == !gray)
 	{
 		*mask = _this->comp;
-		return SDStatus_OK;
+		return CStatus_OK;
 	}
 
 	/* dispose of the compositing mask, as needed */
@@ -232,16 +232,16 @@ SDSurface_GetCompositingMask(SDSurface       *_this,
 	if(gray)
 	{
 		format = pixman_format_create(PIXMAN_FORMAT_NAME_A8);
-		_this->maskFlags |= SDSurface_CompMask8;
+		_this->maskFlags |= CSurface_CompMask8;
 	}
 	else
 	{
 		format = pixman_format_create(PIXMAN_FORMAT_NAME_A1);
-		_this->maskFlags &= ~SDSurface_CompMask8;
+		_this->maskFlags &= ~CSurface_CompMask8;
 	}
 
 	/* ensure we have a format */
-	SDStatus_Require((format != 0), SDStatus_OutOfMemory);
+	CStatus_Require((format != 0), CStatus_OutOfMemory);
 
 	/* create the pixman image */
 	*mask = pixman_image_create(format, _this->width, _this->height);
@@ -250,50 +250,50 @@ SDSurface_GetCompositingMask(SDSurface       *_this,
 	pixman_format_destroy(format);
 
 	/* ensure we have an image */
-	SDStatus_Require((*mask != 0), SDStatus_OutOfMemory);
+	CStatus_Require((*mask != 0), CStatus_OutOfMemory);
 
 	/* set the compositing mask */
 	_this->comp = *mask;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDSurface_Reference(SDSurface *_this)
+CStatus
+CSurface_Reference(CSurface *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* update the reference count synchronously */
-	SDSurface_Lock(_this);
+	CSurface_Lock(_this);
 	{
 		++(_this->refCount);
 	}
-	SDSurface_Unlock(_this);
+	CSurface_Unlock(_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDSurface_Destroy(SDSurface **_this)
+CStatus
+CSurface_Destroy(CSurface **_this)
 {
 	/* declarations */
-	SDMutex *lock;
-	SDBool   lockOwner;
+	CMutex *lock;
+	CBool   lockOwner;
 
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((*_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((*_this != 0), CStatus_ArgumentNull);
 
 	/* get the lock */
 	lock = (*_this)->lock;
 
 	/* finalize this surface synchronously */
-	SDMutex_Lock(lock);
+	CMutex_Lock(lock);
 	{
 		/* update the reference count */
 		--((*_this)->refCount);
@@ -324,51 +324,51 @@ SDSurface_Destroy(SDSurface **_this)
 			(*_this)->_class->Finalize(*_this);
 
 			/* dispose of the surface */
-			SDFree(*_this);
+			CFree(*_this);
 		}
 	}
-	SDMutex_Unlock(lock);
+	CMutex_Unlock(lock);
 
 	/* destroy the lock, as needed */
-	if(lockOwner) { SDMutex_Destroy(&lock); }
+	if(lockOwner) { CMutex_Destroy(&lock); }
 
 	/* null the surface pointer */
 	*_this = 0;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDSurface_Composite(SDSurface           *_this,
-                    SDUInt32             x,
-                    SDUInt32             y,
-                    SDUInt32             width,
-                    SDUInt32             height,
+CStatus
+CSurface_Composite(CSurface           *_this,
+                    CUInt32             x,
+                    CUInt32             y,
+                    CUInt32             width,
+                    CUInt32             height,
                     pixman_image_t      *src,
                     pixman_image_t      *mask,
-                    SDInterpolationMode  interpolationMode,
-                    SDCompositingMode    compositingMode)
+                    CInterpolationMode  interpolationMode,
+                    CCompositingMode    compositingMode)
 {
 	/* declarations */
 	pixman_operator_t op;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a source pointer */
-	SDStatus_Require((src != 0), SDStatus_ArgumentNull);
+	CStatus_Require((src != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a mask pointer */
-	SDStatus_Require((mask != 0), SDStatus_ArgumentNull);
+	CStatus_Require((mask != 0), CStatus_ArgumentNull);
 
 	/* adjust bounds of composite */
 	{
 		/* get the bounds */
-		SDUInt32 x1 = _this->x;
-		SDUInt32 y1 = _this->y;
-		SDUInt32 x2 = _this->width  + x1;
-		SDUInt32 y2 = _this->height + x2;
+		CUInt32 x1 = _this->x;
+		CUInt32 y1 = _this->y;
+		CUInt32 x2 = _this->width  + x1;
+		CUInt32 y2 = _this->height + x2;
 
 		/* calculate the new bounds */
 		if(x            > x1) { x1 = x; }
@@ -377,7 +377,7 @@ SDSurface_Composite(SDSurface           *_this,
 		if((y + height) < y2) { y2 = (y + height); }
 
 		/* bail out now if there's nothing to do */
-		SDStatus_Require((x1 < x2 && y1 < y2), SDStatus_OK);
+		CStatus_Require((x1 < x2 && y1 < y2), CStatus_OK);
 
 		/* set the bounds */
 		x      = x1;
@@ -389,22 +389,22 @@ SDSurface_Composite(SDSurface           *_this,
 	/* set the filter */
 	switch(interpolationMode)
 	{
-		case SDInterpolationMode_Bicubic:
-		case SDInterpolationMode_HighQuality:
-		case SDInterpolationMode_HighQualityBilinear:
-		case SDInterpolationMode_HighQualityBicubic:
+		case CInterpolationMode_Bicubic:
+		case CInterpolationMode_HighQuality:
+		case CInterpolationMode_HighQualityBilinear:
+		case CInterpolationMode_HighQualityBicubic:
 			{ pixman_image_set_filter(src, PIXMAN_FILTER_BEST); } break;
 
-		case SDInterpolationMode_NearestNeighbor:
+		case CInterpolationMode_NearestNeighbor:
 			{ pixman_image_set_filter(src, PIXMAN_FILTER_NEAREST); } break;
 
-		case SDInterpolationMode_Bilinear:
+		case CInterpolationMode_Bilinear:
 			{ pixman_image_set_filter(src, PIXMAN_FILTER_BILINEAR); } break;
 
-		case SDInterpolationMode_LowQuality:
+		case CInterpolationMode_LowQuality:
 			{ pixman_image_set_filter(src, PIXMAN_FILTER_FAST); } break;
 
-		case SDInterpolationMode_Default:
+		case CInterpolationMode_Default:
 		default:
 			{ pixman_image_set_filter(src, PIXMAN_FILTER_GOOD); } break;
 	}
@@ -412,68 +412,68 @@ SDSurface_Composite(SDSurface           *_this,
 	/* set the operator */
 	switch(compositingMode)
 	{
-		case SDCompositingMode_SourceCopy:
+		case CCompositingMode_SourceCopy:
 			{ op = PIXMAN_OPERATOR_SRC; } break;
 
-		case SDCompositingMode_Xor:
+		case CCompositingMode_Xor:
 			{ op = PIXMAN_OPERATOR_XOR; } break;
 
-		case SDCompositingMode_SourceOver:
+		case CCompositingMode_SourceOver:
 		default:
 			{ op = PIXMAN_OPERATOR_OVER; } break;
 	}
 
 	/* perform the compositing operation */
-	SDStatus_Check
+	CStatus_Check
 		(_this->_class->Composite
 			(_this, x, y, width, height, src, mask, op));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDSurface_Clear(SDSurface *_this,
-                SDColor    color)
+CStatus
+CSurface_Clear(CSurface *_this,
+                CColor    color)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* perform the compositing operation */
-	SDStatus_Check
+	CStatus_Check
 		(_this->_class->Clear
 			(_this, color));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDSurface_Flush(SDSurface        *_this,
-                SDFlushIntention  intention)
+CStatus
+CSurface_Flush(CSurface        *_this,
+                CFlushIntention  intention)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* perform the compositing operation */
-	SDStatus_Check
+	CStatus_Check
 		(_this->_class->Flush
 			(_this, intention));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDSurface_Initialize(SDSurface            *_this,
-                     const SDSurfaceClass *_class,
-                     SDUInt32              x,
-                     SDUInt32              y,
-                     SDUInt32              width,
-                     SDUInt32              height)
+CINTERNAL CStatus
+CSurface_Initialize(CSurface            *_this,
+                     const CSurfaceClass *_class,
+                     CUInt32              x,
+                     CUInt32              y,
+                     CUInt32              width,
+                     CUInt32              height)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* set the bounds */
 	_this->x      = x;
@@ -493,7 +493,7 @@ SDSurface_Initialize(SDSurface            *_this,
 	_this->maskFlags = 0;
 
 	/* create the lock */
-	return SDMutex_Create(&(_this->lock));
+	return CMutex_Create(&(_this->lock));
 }
 
 #ifdef __cplusplus

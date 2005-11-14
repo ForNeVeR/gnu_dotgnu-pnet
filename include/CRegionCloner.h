@@ -1,5 +1,5 @@
 /*
- * SDRegionCloner.h - Region cloner header.
+ * CRegionCloner.h - Region cloner header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_REGIONCLONER_H_
-#define _SD_REGIONCLONER_H_
+#ifndef _C_REGIONCLONER_H_
+#define _C_REGIONCLONER_H_
 
 #include "CRegionInterpreter.h"
 
@@ -27,19 +27,19 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDRegionCloner SDRegionCloner;
-struct _tagSDRegionCloner
+typedef struct _tagCRegionCloner CRegionCloner;
+struct _tagCRegionCloner
 {
-	SDRegionInterpreter _base;
+	CRegionInterpreter _base;
 };
 
-SDINTERNAL void
-SDRegionCloner_Initialize(SDRegionCloner *_this);
-SDINTERNAL void
-SDRegionCloner_Finalize(SDRegionCloner *_this);
+CINTERNAL void
+CRegionCloner_Initialize(CRegionCloner *_this);
+CINTERNAL void
+CRegionCloner_Finalize(CRegionCloner *_this);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_REGIONCLONER_H_ */
+#endif /* _C_REGIONCLONER_H_ */

@@ -1,5 +1,5 @@
 /*
- * SDImage.h - Image header.
+ * CImage.h - Image header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_IMAGE_H_
-#define _SD_IMAGE_H_
+#ifndef _C_IMAGE_H_
+#define _C_IMAGE_H_
 
 #include "CrayonsInternal.h"
 #include "CMutex.h"
@@ -28,39 +28,39 @@
 extern "C" {
 #endif
 
-struct _tagSDImage
+struct _tagCImage
 {
-	SDImageType      type;
-	SDImageFormat    format;
-	SDImageFlag      flags;
-	SDPixelFormat    pixelFormat;
-	SDFloat          dpiX;
-	SDFloat          dpiY;
-	SDUInt32         width;
-	SDUInt32         height;
+	CImageType      type;
+	CImageFormat    format;
+	CImageFlag      flags;
+	CPixelFormat    pixelFormat;
+	CFloat          dpiX;
+	CFloat          dpiY;
+	CUInt32         width;
+	CUInt32         height;
 #if 0
-	SDPropertyItem  *propertyItems;
-	SDUInt32         propertyItemCount;
-	SDFrameInfo     *frameDimensions;
-	SDUInt32         frameDimensionCount;
-	SDFrame         *active;
-	SDFrame         *activeBuffer;
+	CPropertyItem  *propertyItems;
+	CUInt32         propertyItemCount;
+	CFrameInfo     *frameDimensions;
+	CUInt32         frameDimensionCount;
+	CFrame         *active;
+	CFrame         *activeBuffer;
 #endif
-	SDUInt32         bitmapDataX;
-	SDUInt32         bitmapDataY;
-	SDBitmapData    *bitmapData;
-	SDBool           locked;
-	SDColorPalette  *palette;
-	pixman_image_t  *image;
-	SDMutex         *lock;
-	SDUInt32         refCount;
+	CUInt32         bitmapDataX;
+	CUInt32         bitmapDataY;
+	CBitmapData    *bitmapData;
+	CBool           locked;
+	CColorPalette  *palette;
+	pixman_image_t *image;
+	CMutex         *lock;
+	CUInt32         refCount;
 };
 
-SDINTERNAL SDImage *
-SDImage_Reference(SDImage *_this);
+CINTERNAL CImage *
+CImage_Reference(CImage *_this);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_IMAGE_H_ */
+#endif /* _C_IMAGE_H_ */

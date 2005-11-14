@@ -1,5 +1,14 @@
 /* include/CrayonsConfig.h.in.  Generated from configure.ac by autoheader.  */
 
+/* The number of bytes in type int */
+#undef C_SIZEOF_INT
+
+/* The number of bytes in type long */
+#undef C_SIZEOF_LONG
+
+/* The number of bytes in type long long */
+#undef C_SIZEOF_LONG_LONG
+
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
@@ -112,15 +121,6 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
-
-/* The number of bytes in type int */
-#undef SD_SIZEOF_INT
-
-/* The number of bytes in type long */
-#undef SD_SIZEOF_LONG
-
-/* The number of bytes in type long long */
-#undef SD_SIZEOF_LONG_LONG
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

@@ -1,5 +1,5 @@
 /*
- * SDSolidBrush.c - Solid brush implementation.
+ * CSolidBrush.c - Solid brush implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -27,129 +27,129 @@ extern "C" {
 
 /* Initialize this solid brush. */
 static void
-SDSolidBrush_Initialize(SDSolidBrush *_this,
-                        SDColor       color)
+CSolidBrush_Initialize(CSolidBrush *_this,
+                        CColor       color)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* intialize the members */
 	_this->color = color;
 
 	/* initialize the base */
-	SDBrush_Initialize((SDBrush *)_this, &SDSolidBrush_Class);
+	CBrush_Initialize((CBrush *)_this, &CSolidBrush_Class);
 }
 
 /* Finalize this solid brush. */
 static void
-SDSolidBrush_Finalize(SDBrush *_this)
+CSolidBrush_Finalize(CBrush *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* nothing to do here */
 }
 
 /* Clone this solid brush. */
-static SDStatus
-SDSolidBrush_Clone(SDBrush  *_this,
-                   SDBrush **_clone)
+static CStatus
+CSolidBrush_Clone(CBrush  *_this,
+                   CBrush **_clone)
 {
 	/* declarations */
-	SDSolidBrush  *brush;
-	SDSolidBrush **clone;
+	CSolidBrush  *brush;
+	CSolidBrush **clone;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((clone != 0));
+	CASSERT((_this != 0));
+	CASSERT((clone != 0));
 
 	/* get this as a solid brush */
-	brush = (SDSolidBrush  *)_this;
+	brush = (CSolidBrush  *)_this;
 
 	/* get the clone as a solid brush */
-	clone = (SDSolidBrush **)_clone;
+	clone = (CSolidBrush **)_clone;
 
 	/* clone this brush */
-	return SDSolidBrush_Create(clone, brush->color);
+	return CSolidBrush_Create(clone, brush->color);
 }
 
 /* Create a pattern for this brush. */
-static SDStatus
-SDSolidBrush_CreatePattern(SDBrush   *_this,
-                           SDPattern *pattern)
+static CStatus
+CSolidBrush_CreatePattern(CBrush   *_this,
+                           CPattern *pattern)
 {
 	/* declarations */
-	SDSolidBrush *brush;
+	CSolidBrush *brush;
 
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((pattern != 0));
+	CASSERT((_this   != 0));
+	CASSERT((pattern != 0));
 
 	/* get this as a solid brush */
-	brush = (SDSolidBrush *)_this;
+	brush = (CSolidBrush *)_this;
 
 	/* set the pattern transformation */
 	pattern->transform = 0;
 
 	/* create the pattern */
-	return SDUtils_CreateSolidPattern(&(pattern->image), brush->color);
+	return CUtils_CreateSolidPattern(&(pattern->image), brush->color);
 }
 
 /* Create a solid brush. */
-SDStatus
-SDSolidBrush_Create(SDSolidBrush **_this,
-                    SDColor        color)
+CStatus
+CSolidBrush_Create(CSolidBrush **_this,
+                    CColor        color)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the brush */
-	if(!(*_this = (SDSolidBrush *)SDMalloc(sizeof(SDSolidBrush))))
+	if(!(*_this = (CSolidBrush *)CMalloc(sizeof(CSolidBrush))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the brush */
-	SDSolidBrush_Initialize(*_this, color);
+	CSolidBrush_Initialize(*_this, color);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the color of this brush. */
-SDStatus
-SDSolidBrush_GetColor(SDSolidBrush *_this,
-                      SDColor      *color)
+CStatus
+CSolidBrush_GetColor(CSolidBrush *_this,
+                      CColor      *color)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a color pointer */
-	SDStatus_Require((color != 0), SDStatus_ArgumentNull);
+	CStatus_Require((color != 0), CStatus_ArgumentNull);
 
 	/* get the color */
 	*color = _this->color;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the color of this brush. */
-SDStatus
-SDSolidBrush_SetColor(SDSolidBrush *_this,
-                      SDColor       color)
+CStatus
+CSolidBrush_SetColor(CSolidBrush *_this,
+                      CColor       color)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the color */
 	_this->color = color;
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

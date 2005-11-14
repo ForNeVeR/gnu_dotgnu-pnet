@@ -1,5 +1,5 @@
 /*
- * SDMutex.c - Mutex implementation.
+ * CMutex.c - Mutex implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *

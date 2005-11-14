@@ -1,5 +1,5 @@
 /*
- * SDBitmapSurface.h - Bitmap surface header.
+ * CBitmapSurface.h - Bitmap surface header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_BITMAPSURFACE_H_
-#define _SD_BITMAPSURFACE_H_
+#ifndef _C_BITMAPSURFACE_H_
+#define _C_BITMAPSURFACE_H_
 
 #include "CBitmap.h"
 #include "CSurface.h"
@@ -28,36 +28,36 @@
 extern "C" {
 #endif
 
-struct _tagSDBitmapSurface
+struct _tagCBitmapSurface
 {
-	SDBitmap *image;
+	CBitmap *image;
 };
 
-static SDStatus
-SDBitmapSurface_Composite(SDSurface         *_this,
-                          SDUInt32           x,
-                          SDUInt32           y,
-                          SDUInt32           width,
-                          SDUInt32           height,
-                          pixman_image_t    *src,
-                          pixman_image_t    *mask,
-                          pixman_operator_t  op);
-static SDStatus
-SDBitmapSurface_Clear(SDSurface *_this,
-                      SDColor    color);
-static SDStatus
-SDBitmapSurface_Flush(SDSurface        *_this,
-                      SDFlushIntention  intention);
+static CStatus
+CBitmapSurface_Composite(CSurface          *_this,
+                         CUInt32            x,
+                         CUInt32            y,
+                         CUInt32            width,
+                         CUInt32            height,
+                         pixman_image_t    *src,
+                         pixman_image_t    *mask,
+                         pixman_operator_t  op);
+static CStatus
+CBitmapSurface_Clear(CSurface *_this,
+                     CColor    color);
+static CStatus
+CBitmapSurface_Flush(CSurface        *_this,
+                      CFlushIntention  intention);
 static void
-SDBitmapSurface_Finalize(SDSurface *_this);
+CBitmapSurface_Finalize(CSurface *_this);
 
 
-static const SDSurfaceClass SDBitmapSurface_Class =
+static const CSurfaceClass CBitmapSurface_Class =
 {
-	SDBitmapSurface_Composite,
-	SDBitmapSurface_Clear,
-	SDBitmapSurface_Flush,
-	SDBitmapSurface_Finalize,
+	CBitmapSurface_Composite,
+	CBitmapSurface_Clear,
+	CBitmapSurface_Flush,
+	CBitmapSurface_Finalize,
 	"sentinel"
 };
 
@@ -65,4 +65,4 @@ static const SDSurfaceClass SDBitmapSurface_Class =
 };
 #endif
 
-#endif /* _SD_BITMAPSURFACE_H_ */
+#endif /* _C_BITMAPSURFACE_H_ */

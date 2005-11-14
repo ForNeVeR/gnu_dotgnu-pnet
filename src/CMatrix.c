@@ -1,5 +1,5 @@
 /*
- * SDMatrix.c - Matrix implementation.
+ * CMatrix.c - Matrix implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -25,54 +25,54 @@ extern "C" {
 #endif
 
 /* Create an identity matrix. */
-SDStatus
-SDMatrix_Create(SDMatrix **_this)
+CStatus
+CMatrix_Create(CMatrix **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the matrix */
-	if(!(*_this = (SDMatrix *)SDMalloc(sizeof(SDMatrix))))
+	if(!(*_this = (CMatrix *)CMalloc(sizeof(CMatrix))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* set the transformation to the identity transformation */
-	(*_this)->transform = SDAffineTransformF_Identity;
+	(*_this)->transform = CAffineTransformF_Identity;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Create a parallelogram warp matrix. */
-SDStatus
-SDMatrix_CreateParallelogram(SDMatrix     **_this,
-                             SDRectangleF   rect,
-                             SDPointF       tl,
-                             SDPointF       tr,
-                             SDPointF       bl)
+CStatus
+CMatrix_CreateParallelogram(CMatrix     **_this,
+                             CRectangleF   rect,
+                             CPointF       tl,
+                             CPointF       tr,
+                             CPointF       bl)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the matrix */
-	if(!(*_this = (SDMatrix *)SDMalloc(sizeof(SDMatrix))))
+	if(!(*_this = (CMatrix *)CMalloc(sizeof(CMatrix))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* set the transformation to the parallelogram warp transformation */
 	status =
-		SDAffineTransformF_SetParallelogram
+		CAffineTransformF_SetParallelogram
 			(&((*_this)->transform), rect, tl, tr, bl);
 
 	/* handle status */
-	if(status != SDStatus_OK)
+	if(status != CStatus_OK)
 	{
-		SDFree(*_this);
+		CFree(*_this);
 		*_this = 0;
 	}
 
@@ -81,271 +81,271 @@ SDMatrix_CreateParallelogram(SDMatrix     **_this,
 }
 
 /* Create a matrix with the given elements. */
-SDStatus
-SDMatrix_CreateElements(SDMatrix **_this,
-                        SDFloat    m11,
-                        SDFloat    m12,
-                        SDFloat    m21,
-                        SDFloat    m22,
-                        SDFloat    dx,
-                        SDFloat    dy)
+CStatus
+CMatrix_CreateElements(CMatrix **_this,
+                        CFloat    m11,
+                        CFloat    m12,
+                        CFloat    m21,
+                        CFloat    m22,
+                        CFloat    dx,
+                        CFloat    dy)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the matrix */
-	if(!(*_this = (SDMatrix *)SDMalloc(sizeof(SDMatrix))))
+	if(!(*_this = (CMatrix *)CMalloc(sizeof(CMatrix))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* set the elements of the transformation */
-	SDAffineTransformF_SetElements
+	CAffineTransformF_SetElements
 		(&((*_this)->transform), m11, m12, m21, m22, dx, dy);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the determinant of this matrix. */
-SDStatus
-SDMatrix_GetDeterminant(SDMatrix *_this,
-                        SDFloat  *determinant)
+CStatus
+CMatrix_GetDeterminant(CMatrix *_this,
+                        CFloat  *determinant)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a determinant pointer */
-	SDStatus_Require((determinant != 0), SDStatus_ArgumentNull);
+	CStatus_Require((determinant != 0), CStatus_ArgumentNull);
 
 	/* get the determinant */
-	SDAffineTransformF_GetDeterminant
+	CAffineTransformF_GetDeterminant
 		(&(_this->transform), determinant);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the inverse of this matrix. */
-SDStatus
-SDMatrix_GetInverse(SDMatrix *_this,
-                    SDMatrix *inverse)
+CStatus
+CMatrix_GetInverse(CMatrix *_this,
+                    CMatrix *inverse)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an inverse pointer */
-	SDStatus_Require((inverse != 0), SDStatus_ArgumentNull);
+	CStatus_Require((inverse != 0), CStatus_ArgumentNull);
 
 	/* get the inverse */
 	return
-		SDAffineTransformF_GetInverse
+		CAffineTransformF_GetInverse
 			(&(_this->transform), &(inverse->transform));
 }
 
 /* Get the transformation of this matrix. */
-SDINTERNAL SDStatus
-SDMatrix_GetTransform(SDMatrix           *_this,
-                      SDAffineTransformF *transform)
+CINTERNAL CStatus
+CMatrix_GetTransform(CMatrix           *_this,
+                      CAffineTransformF *transform)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a transformation pointer */
-	SDStatus_Require((transform != 0), SDStatus_ArgumentNull);
+	CStatus_Require((transform != 0), CStatus_ArgumentNull);
 
 	/* get the transformation */
 	*transform = _this->transform;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the transformation of this matrix. */
-SDINTERNAL SDStatus
-SDMatrix_SetTransform(SDMatrix           *_this,
-                      SDAffineTransformF *transform)
+CINTERNAL CStatus
+CMatrix_SetTransform(CMatrix           *_this,
+                      CAffineTransformF *transform)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a transformation pointer */
-	SDStatus_Require((transform != 0), SDStatus_ArgumentNull);
+	CStatus_Require((transform != 0), CStatus_ArgumentNull);
 
 	/* set the transformation */
 	_this->transform = *transform;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Multiply this matrix with another. */
-SDStatus
-SDMatrix_Multiply(SDMatrix      *_this,
-                  SDMatrix      *other,
-                  SDMatrixOrder  order)
+CStatus
+CMatrix_Multiply(CMatrix      *_this,
+                  CMatrix      *other,
+                  CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an other pointer */
-	SDStatus_Require((other != 0), SDStatus_ArgumentNull);
+	CStatus_Require((other != 0), CStatus_ArgumentNull);
 
 	/* perform the multiplication */
-	SDAffineTransformF_Multiply
+	CAffineTransformF_Multiply
 		(&(_this->transform), &(other->transform), order);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Determine if the given matrices are equal. */
-SDStatus
-SDMatrix_Equals(SDMatrix *_this,
-                SDMatrix *other,
-                SDBool   *eq)
+CStatus
+CMatrix_Equals(CMatrix *_this,
+                CMatrix *other,
+                CBool   *eq)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an other pointer */
-	SDStatus_Require((other != 0), SDStatus_ArgumentNull);
+	CStatus_Require((other != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an equality pointer */
-	SDStatus_Require((eq != 0), SDStatus_ArgumentNull);
+	CStatus_Require((eq != 0), CStatus_ArgumentNull);
 
 	/* determine equality */
-	SDAffineTransformF_Equals(&(_this->transform), &(other->transform), eq);
+	CAffineTransformF_Equals(&(_this->transform), &(other->transform), eq);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Determine if the given matrices are not equal. */
-SDStatus
-SDMatrix_NotEquals(SDMatrix *_this,
-                   SDMatrix *other,
-                   SDBool   *ne)
+CStatus
+CMatrix_NotEquals(CMatrix *_this,
+                   CMatrix *other,
+                   CBool   *ne)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an other pointer */
-	SDStatus_Require((other != 0), SDStatus_ArgumentNull);
+	CStatus_Require((other != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an inequality pointer */
-	SDStatus_Require((ne != 0), SDStatus_ArgumentNull);
+	CStatus_Require((ne != 0), CStatus_ArgumentNull);
 
 	/* determine equality */
-	SDAffineTransformF_NotEquals(&(_this->transform), &(other->transform), ne);
+	CAffineTransformF_NotEquals(&(_this->transform), &(other->transform), ne);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Rotate this matrix. */
-SDStatus
-SDMatrix_Rotate(SDMatrix      *_this,
-                SDFloat        angle,
-                SDMatrixOrder  order)
+CStatus
+CMatrix_Rotate(CMatrix      *_this,
+                CFloat        angle,
+                CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* perform the rotation */
-	SDAffineTransformF_Rotate(&(_this->transform), angle, order);
+	CAffineTransformF_Rotate(&(_this->transform), angle, order);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Scale this matrix. */
-SDStatus
-SDMatrix_Scale(SDMatrix      *_this,
-               SDFloat        scaleX,
-               SDFloat        scaleY,
-               SDMatrixOrder  order)
+CStatus
+CMatrix_Scale(CMatrix      *_this,
+               CFloat        scaleX,
+               CFloat        scaleY,
+               CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* perform the scale */
-	SDAffineTransformF_Scale(&(_this->transform), scaleX, scaleY, order);
+	CAffineTransformF_Scale(&(_this->transform), scaleX, scaleY, order);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Shear this matrix. */
-SDStatus
-SDMatrix_Shear(SDMatrix      *_this,
-               SDFloat        shearX,
-               SDFloat        shearY,
-               SDMatrixOrder  order)
+CStatus
+CMatrix_Shear(CMatrix      *_this,
+               CFloat        shearX,
+               CFloat        shearY,
+               CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* perform the shear */
-	SDAffineTransformF_Shear(&(_this->transform), shearX, shearY, order);
+	CAffineTransformF_Shear(&(_this->transform), shearX, shearY, order);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Translate this matrix. */
-SDStatus
-SDMatrix_Translate(SDMatrix      *_this,
-                   SDFloat        offsetX,
-                   SDFloat        offsetY,
-                   SDMatrixOrder  order)
+CStatus
+CMatrix_Translate(CMatrix      *_this,
+                   CFloat        offsetX,
+                   CFloat        offsetY,
+                   CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* perform the translation */
-	SDAffineTransformF_Translate(&(_this->transform), offsetX, offsetY, order);
+	CAffineTransformF_Translate(&(_this->transform), offsetX, offsetY, order);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Transform a list of points. */
-SDStatus
-SDMatrix_TransformPoints(SDMatrix *_this,
-                         SDPointF *points,
-                         SDUInt32  count)
+CStatus
+CMatrix_TransformPoints(CMatrix *_this,
+                         CPointF *points,
+                         CUInt32  count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a points pointer */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* perform the point transformations */
-	SDAffineTransformF_TransformPoints(&(_this->transform), points, count);
+	CAffineTransformF_TransformPoints(&(_this->transform), points, count);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Transform a list of vectors. */
-SDStatus
-SDMatrix_TransformVectors(SDMatrix *_this,
-                          SDPointF *points,
-                          SDUInt32  count)
+CStatus
+CMatrix_TransformVectors(CMatrix *_this,
+                          CPointF *points,
+                          CUInt32  count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a points pointer */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* perform the vector transformations */
-	SDAffineTransformF_TransformVectors(&(_this->transform), points, count);
+	CAffineTransformF_TransformVectors(&(_this->transform), points, count);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 #ifdef __cplusplus

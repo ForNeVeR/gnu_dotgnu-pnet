@@ -1,5 +1,5 @@
 /*
- * SDRegionDisposer.h - Region disposer header.
+ * CRegionDisposer.h - Region disposer header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_REGIONDISPOSER_H_
-#define _SD_REGIONDISPOSER_H_
+#ifndef _C_REGIONDISPOSER_H_
+#define _C_REGIONDISPOSER_H_
 
 #include "CRegionInterpreter.h"
 
@@ -27,19 +27,19 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDRegionDisposer SDRegionDisposer;
-struct _tagSDRegionDisposer
+typedef struct _tagCRegionDisposer CRegionDisposer;
+struct _tagCRegionDisposer
 {
-	SDRegionInterpreter _base;
+	CRegionInterpreter _base;
 };
 
-SDINTERNAL void
-SDRegionDisposer_Initialize(SDRegionDisposer *_this);
-SDINTERNAL void
-SDRegionDisposer_Finalize(SDRegionDisposer *_this);
+CINTERNAL void
+CRegionDisposer_Initialize(CRegionDisposer *_this);
+CINTERNAL void
+CRegionDisposer_Finalize(CRegionDisposer *_this);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_REGIONDISPOSER_H_ */
+#endif /* _C_REGIONDISPOSER_H_ */

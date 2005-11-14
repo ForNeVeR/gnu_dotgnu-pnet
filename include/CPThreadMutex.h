@@ -1,5 +1,5 @@
 /*
- * SDPThreadMutex.h - Posix thread mutex header.
+ * CPThreadMutex.h - Posix thread mutex header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_PTHREADMUTEX_H_
-#define _SD_PTHREADMUTEX_H_
+#ifndef _C_PTHREADMUTEX_H_
+#define _C_PTHREADMUTEX_H_
 
 #include "CrayonsInternal.h"
 #include <pthread.h>
@@ -28,25 +28,25 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDMutex SDMutex;
-struct _tagSDMutex
+typedef struct _tagCMutex CMutex;
+struct _tagCMutex
 {
 	pthread_mutex_t mutex;
 };
 
-static const SDMutex SDMutex_StaticInitializer = { PTHREAD_MUTEX_INITIALIZER };
+static const CMutex CMutex_StaticInitializer = { PTHREAD_MUTEX_INITIALIZER };
 
-SDINTERNAL void
-SDMutex_Lock(SDMutex *_this);
-SDINTERNAL void
-SDMutex_Unlock(SDMutex *_this);
-SDINTERNAL SDStatus
-SDMutex_Create(SDMutex **_this);
-SDINTERNAL void
-SDMutex_Destroy(SDMutex **_this);
+CINTERNAL void
+CMutex_Lock(CMutex *_this);
+CINTERNAL void
+CMutex_Unlock(CMutex *_this);
+CINTERNAL CStatus
+CMutex_Create(CMutex **_this);
+CINTERNAL void
+CMutex_Destroy(CMutex **_this);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_PTHREADMUTEX_H_ */
+#endif /* _C_PTHREADMUTEX_H_ */

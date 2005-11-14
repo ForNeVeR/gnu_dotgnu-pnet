@@ -1,5 +1,5 @@
 /*
- * SDPathBrush.h - Path gradient brush header.
+ * CPathBrush.h - Path gradient brush header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_PATHBRUSH_H_
-#define _SD_PATHBRUSH_H_
+#ifndef _C_PATHBRUSH_H_
+#define _C_PATHBRUSH_H_
 
 #include "CBlend.h"
 
@@ -27,37 +27,37 @@
 extern "C" {
 #endif
 
-struct _tagSDPathBrush
+struct _tagCPathBrush
 {
-	SDBrush             _base;
-	SDAffineTransformF  transform;
-	SDRectangleF        rectangle;
-	SDWrapMode          wrapMode;
-	SDBlend             blend;
-	SDColorBlend        colorBlend;
-	SDPointF            focusPoint;
-	SDPointF            centerPoint;
-	SDColor             centerColor;
-	SDPath             *path;
-	SDColor            *surroundColors;
-	SDUInt32            surroundCount;
+	CBrush             _base;
+	CAffineTransformF  transform;
+	CRectangleF        rectangle;
+	CWrapMode          wrapMode;
+	CBlend             blend;
+	CColorBlend        colorBlend;
+	CPointF            focusPoint;
+	CPointF            centerPoint;
+	CColor             centerColor;
+	CPath             *path;
+	CColor            *surroundColors;
+	CUInt32            surroundCount;
 };
 
-static SDStatus
-SDPathBrush_Clone(SDBrush  *_this,
-                  SDBrush **_clone);
+static CStatus
+CPathBrush_Clone(CBrush  *_this,
+                 CBrush **_clone);
 static void
-SDPathBrush_Finalize(SDBrush *_this);
-static SDStatus
-SDPathBrush_CreatePattern(SDBrush   *_this,
-                          SDPattern *pattern);
+CPathBrush_Finalize(CBrush *_this);
+static CStatus
+CPathBrush_CreatePattern(CBrush   *_this,
+                         CPattern *pattern);
 
-static const SDBrushClass SDPathBrush_Class =
+static const CBrushClass CPathBrush_Class =
 {
-	SDBrushType_PathGradient,
-	SDPathBrush_Clone,
-	SDPathBrush_Finalize,
-	SDPathBrush_CreatePattern,
+	CBrushType_PathGradient,
+	CPathBrush_Clone,
+	CPathBrush_Finalize,
+	CPathBrush_CreatePattern,
 	"sentinel"
 };
 
@@ -65,4 +65,4 @@ static const SDBrushClass SDPathBrush_Class =
 };
 #endif
 
-#endif /* _SD_PATHBRUSH_H_ */
+#endif /* _C_PATHBRUSH_H_ */

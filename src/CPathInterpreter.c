@@ -1,5 +1,5 @@
 /*
- * SDPathInterpreter.c - Path interpreter implementation.
+ * CPathInterpreter.c - Path interpreter implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,26 +24,26 @@
 extern "C" {
 #endif
 
-SDINTERNAL SDStatus
-SDPathInterpreter_Interpret(SDPathInterpreter *_this,
-                            const SDPointF    *points,
-                            const SDByte      *types,
-                            SDUInt32           count)
+CINTERNAL CStatus
+CPathInterpreter_Interpret(CPathInterpreter *_this,
+                            const CPointF    *points,
+                            const CByte      *types,
+                            CUInt32           count)
 {
 	/* declarations */
-	const SDPointF *currP;
-	const SDPointF *end;
-	const SDByte   *currT;
+	const CPointF *currP;
+	const CPointF *end;
+	const CByte   *currT;
 
 	/* assertions */
-	SDASSERT((_this                != 0));
-	SDASSERT((_this->_class        != 0));
-	SDASSERT((_this->_class->Move  != 0));
-	SDASSERT((_this->_class->Line  != 0));
-	SDASSERT((_this->_class->Curve != 0));
-	SDASSERT((_this->_class->Close != 0));
-	SDASSERT((points               != 0));
-	SDASSERT((types                != 0));
+	CASSERT((_this                != 0));
+	CASSERT((_this->_class        != 0));
+	CASSERT((_this->_class->Move  != 0));
+	CASSERT((_this->_class->Line  != 0));
+	CASSERT((_this->_class->Curve != 0));
+	CASSERT((_this->_class->Close != 0));
+	CASSERT((points               != 0));
+	CASSERT((types                != 0));
 
 	/* get the type input pointer */
 	currT = types;
@@ -58,72 +58,72 @@ SDPathInterpreter_Interpret(SDPathInterpreter *_this,
 	while(currP != end)
 	{
 		/* declarations */
-		SDByte type;
+		CByte type;
 
 		/* get the current type */
-		type = (*currT & SDPathType_TypeMask);
+		type = (*currT & CPathType_TypeMask);
 
 		/* process point based on type */
-		if(type == SDPathType_Line)
+		if(type == CPathType_Line)
 		{
 			/* line to point */
-			SDStatus_Check
-				(SDPathInterpreter_Line
-					(_this, SDPoint_X(*currP), SDPoint_Y(*currP), *currT));
+			CStatus_Check
+				(CPathInterpreter_Line
+					(_this, CPoint_X(*currP), CPoint_Y(*currP), *currT));
 		}
-		else if(type == SDPathType_Bezier)
+		else if(type == CPathType_Bezier)
 		{
 			/* declarations */
-			SDFloat x1, y1, x2, y2, x3, y3;
+			CFloat x1, y1, x2, y2, x3, y3;
 
 			/* assertions */
-			SDASSERT(((currP + 2) != end));
+			CASSERT(((currP + 2) != end));
 
 			/* get the first point coordinates */
-			x1 = SDPoint_X(*currP);
-			y1 = SDPoint_Y(*currP);
+			x1 = CPoint_X(*currP);
+			y1 = CPoint_Y(*currP);
 
 			/* advance to the second point */
 			++currP; ++currT;
 
 			/* assertions */
-			SDASSERT(((*currT & SDPathType_TypeMask) == SDPathType_Bezier));
+			CASSERT(((*currT & CPathType_TypeMask) == CPathType_Bezier));
 
 			/* get the second point coordinates */
-			x2 = SDPoint_X(*currP);
-			y2 = SDPoint_Y(*currP);
+			x2 = CPoint_X(*currP);
+			y2 = CPoint_Y(*currP);
 
 			/* advance to the third point */
 			++currP; ++currT;
 
 			/* assertions */
-			SDASSERT(((*currT & SDPathType_TypeMask) == SDPathType_Bezier));
+			CASSERT(((*currT & CPathType_TypeMask) == CPathType_Bezier));
 
 			/* get the third point coordinates */
-			x3 = SDPoint_X(*currP);
-			y3 = SDPoint_Y(*currP);
+			x3 = CPoint_X(*currP);
+			y3 = CPoint_Y(*currP);
 
 			/* curve to point */
-			SDStatus_Check
-				(SDPathInterpreter_Curve
+			CStatus_Check
+				(CPathInterpreter_Curve
 					(_this, x1, y1, x2, y2, x3, y3, *currT));
 		}
 		else
 		{
 			/* assertions */
-			SDASSERT((type == SDPathType_Start));
+			CASSERT((type == CPathType_Start));
 
 			/* move to point */
-			SDStatus_Check
-				(SDPathInterpreter_Move
-					(_this, SDPoint_X(*currP), SDPoint_Y(*currP), *currT));
+			CStatus_Check
+				(CPathInterpreter_Move
+					(_this, CPoint_X(*currP), CPoint_Y(*currP), *currT));
 		}
 
 		/* close the subpath, as needed */
-		if((*currT & SDPathType_CloseSubpath) != 0)
+		if((*currT & CPathType_CloseSubpath) != 0)
 		{
-			SDStatus_Check
-				(SDPathInterpreter_Close
+			CStatus_Check
+				(CPathInterpreter_Close
 					(_this));
         }
 
@@ -132,7 +132,7 @@ SDPathInterpreter_Interpret(SDPathInterpreter *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

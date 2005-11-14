@@ -1,5 +1,5 @@
 /*
- * SDMutex.h - Mutex header.
+ * CMutex.h - Mutex header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_MUTEX_H_
-#define _SD_MUTEX_H_
+#ifndef _C_MUTEX_H_
+#define _C_MUTEX_H_
 
 #include "CrayonsInternal.h"
 
@@ -37,4 +37,4 @@ extern "C" {
 };
 #endif
 
-#endif /* _SD_MUTEX_H_ */
+#endif /* _C_MUTEX_H_ */

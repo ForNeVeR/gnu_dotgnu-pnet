@@ -1,5 +1,5 @@
 /*
- * SDFlattener.h - Flattener header.
+ * CFlattener.h - Flattener header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_FLATTENER_H_
-#define _SD_FLATTENER_H_
+#ifndef _C_FLATTENER_H_
+#define _C_FLATTENER_H_
 
 #include "CBezier.h"
 
@@ -27,33 +27,33 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDFlattener SDFlattener;
-struct _tagSDFlattener
+typedef struct _tagCFlattener CFlattener;
+struct _tagCFlattener
 {
-	SDPointArrayF  array;
-	SDPointF      *points;
-	SDByte        *types;
-	SDUInt32       count;
-	SDUInt32       capacity;
+	CPointArrayF  array;
+	CPointF      *points;
+	CByte        *types;
+	CUInt32       count;
+	CUInt32       capacity;
 };
 
-SDINTERNAL void
-SDFlattener_Initialize(SDFlattener *_this);
-SDINTERNAL void
-SDFlattener_Finalize(SDFlattener *_this,
-                     SDPointF    **points,
-                     SDByte      **types,
-                     SDUInt32     *count,
-                     SDUInt32     *capacity);
-SDINTERNAL SDStatus
-SDFlattener_Flatten(SDFlattener *_this,
-                    SDPointF    *points,
-                    SDByte      *types,
-                    SDUInt32     count,
-                    SDFloat      tolerance);
+CINTERNAL void
+CFlattener_Initialize(CFlattener *_this);
+CINTERNAL void
+CFlattener_Finalize(CFlattener *_this,
+                    CPointF    **points,
+                    CByte      **types,
+                    CUInt32     *count,
+                    CUInt32     *capacity);
+CINTERNAL CStatus
+CFlattener_Flatten(CFlattener *_this,
+                   CPointF    *points,
+                   CByte      *types,
+                   CUInt32     count,
+                   CFloat      tolerance);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_FLATTENER_H_ */
+#endif /* _C_FLATTENER_H_ */

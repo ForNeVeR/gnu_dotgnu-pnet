@@ -1,5 +1,5 @@
 /*
- * SDColorPalette.c - Color palette implementation.
+ * CColorPalette.c - Color palette implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,38 +24,38 @@
 extern "C" {
 #endif
 
-SDStatus
-SDColorPalette_Create(SDColorPalette **_this,
-                      SDColor         *colors,
-                      SDUInt32         count,
-                      SDPaletteFlag    flags)
+CStatus
+CColorPalette_Create(CColorPalette **_this,
+                      CColor         *colors,
+                      CUInt32         count,
+                      CPaletteFlag    flags)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a color table */
-	SDStatus_Require((colors != 0), SDStatus_ArgumentNull);
+	CStatus_Require((colors != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a valid count */
-	SDStatus_Require
-		((count == 256 || count == 128 || count == 2), SDStatus_Argument);
+	CStatus_Require
+		((count == 256 || count == 128 || count == 2), CStatus_Argument);
 
 	/* allocate the palette */
-	if(!(*_this = (SDColorPalette *)SDMalloc(sizeof(SDColorPalette))))
+	if(!(*_this = (CColorPalette *)CMalloc(sizeof(CColorPalette))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* allocate the color table */
-	if(!((*_this)->colors = (SDColor *)SDMalloc(count * sizeof(SDColor))))
+	if(!((*_this)->colors = (CColor *)CMalloc(count * sizeof(CColor))))
 	{
-		SDFree(*_this);
+		CFree(*_this);
 		*_this = 0;
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* copy the color entries */
-	SDMemCopy((*_this)->colors, colors, (count * sizeof(SDColor)));
+	CMemCopy((*_this)->colors, colors, (count * sizeof(CColor)));
 
 	/* set the count */
 	(*_this)->count = count;
@@ -64,83 +64,83 @@ SDColorPalette_Create(SDColorPalette **_this,
 	(*_this)->flags = flags;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDColorPalette_Destroy(SDColorPalette **_this)
+CStatus
+CColorPalette_Destroy(CColorPalette **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* finalize the members */
 	if((*_this)->colors != 0)
 	{
-		SDFree((*_this)->colors);
+		CFree((*_this)->colors);
 	}
 
 	/* dispose of this color palette */
-	SDFree(*_this);
+	CFree(*_this);
 
 	/* null the this pointer */
 	*_this = 0;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDBool
-SDColorPalette_CheckFormat(SDColorPalette *_this,
-                           SDPixelFormat   format)
+CINTERNAL CBool
+CColorPalette_CheckFormat(CColorPalette *_this,
+                           CPixelFormat   format)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* determine and return if the format is ok */
 	switch(format)
 	{
 		default: return 1;
-		case SDPixelFormat_1bppIndexed: { return (_this->count >=   2); }
-		case SDPixelFormat_4bppIndexed: { return (_this->count >=  16); }
-		case SDPixelFormat_8bppIndexed: { return (_this->count >= 256); }
+		case CPixelFormat_1bppIndexed: { return (_this->count >=   2); }
+		case CPixelFormat_4bppIndexed: { return (_this->count >=  16); }
+		case CPixelFormat_8bppIndexed: { return (_this->count >= 256); }
 	}
 }
 
-SDINTERNAL SDColor
-SDColorPalette_GetColor(SDColorPalette *_this,
-                        SDUInt32        index)
+CINTERNAL CColor
+CColorPalette_GetColor(CColorPalette *_this,
+                        CUInt32        index)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((index < _this->count));
+	CASSERT((_this != 0));
+	CASSERT((index < _this->count));
 
 	/* return the color table entry */
 	return _this->colors[index];
 }
 
-SDINTERNAL SDUInt32
-SDColorPalette_FindBestMatch(SDColorPalette *_this,
-                             SDColor         color)
+CINTERNAL CUInt32
+CColorPalette_FindBestMatch(CColorPalette *_this,
+                             CColor         color)
 {
 	/* declarations */
-	SDByte    a;
-	SDByte    r;
-	SDByte    g;
-	SDByte    b;
-	SDUInt32  index;
-	SDUInt32  best;
-	SDUInt32  distance;
-	SDColor  *curr;
-	SDColor  *end;
+	CByte    a;
+	CByte    r;
+	CByte    g;
+	CByte    b;
+	CUInt32  index;
+	CUInt32  best;
+	CUInt32  distance;
+	CColor  *curr;
+	CColor  *end;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* get the color components */
-	a = SDColor_A(color);
-	r = SDColor_R(color);
-	g = SDColor_G(color);
-	b = SDColor_B(color);
+	a = CColor_A(color);
+	r = CColor_R(color);
+	g = CColor_G(color);
+	b = CColor_B(color);
 
 	/* set the index to the default */
 	index = 0;
@@ -161,13 +161,13 @@ SDColorPalette_FindBestMatch(SDColorPalette *_this,
 	while(curr != end)
 	{
 		/* declarations */
-		SDInt32 distA, distR, distG, distB, dist;
+		CInt32 distA, distR, distG, distB, dist;
 
 		/* get the color components for the current entry */
-		distA = SDColor_A(*curr) - a;
-		distR = SDColor_R(*curr) - r;
-		distG = SDColor_G(*curr) - g;
-		distB = SDColor_B(*curr) - b;
+		distA = CColor_A(*curr) - a;
+		distR = CColor_R(*curr) - r;
+		distG = CColor_G(*curr) - g;
+		distB = CColor_B(*curr) - b;
 
 		/* calculate the distance */
 		dist = ((distA * distA) +
@@ -179,7 +179,7 @@ SDColorPalette_FindBestMatch(SDColorPalette *_this,
 		if(dist < distance)
 		{
 			/* reset the distance */
-			distance = (SDUInt32)dist;
+			distance = (CUInt32)dist;
 
 			/* reset the best match */
 			best = index;

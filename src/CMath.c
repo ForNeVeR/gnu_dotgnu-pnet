@@ -1,5 +1,5 @@
 /*
- * SDMath.c - Math implementation.
+ * CMath.c - Math implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -30,26 +30,26 @@
 extern "C" {
 #endif
 
-SDINTERNAL SDMATH SDDouble
-SDMath_Cos(SDDouble radians)
+CINTERNAL CMATH CDouble
+CMath_Cos(CDouble radians)
 {
 	return cos(radians);
 }
 
-SDINTERNAL SDMATH SDDouble
-SDMath_Sin(SDDouble radians)
+CINTERNAL CMATH CDouble
+CMath_Sin(CDouble radians)
 {
 	return sin(radians);
 }
 
-SDINTERNAL SDMATH SDDouble
-SDMath_Sqrt(SDDouble value)
+CINTERNAL CMATH CDouble
+CMath_Sqrt(CDouble value)
 {
 	return sqrt(value);
 }
 
-SDINTERNAL SDMATH SDDouble
-SDMath_Erf(SDDouble value)
+CINTERNAL CMATH CDouble
+CMath_Erf(CDouble value)
 {
 	return erf(value);
 }

@@ -1,5 +1,5 @@
 /*
- * SDRegionRasterizer.h - Region rasterizer header.
+ * CRegionRasterizer.h - Region rasterizer header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_REGIONRASTERIZER_H_
-#define _SD_REGIONRASTERIZER_H_
+#ifndef _C_REGIONRASTERIZER_H_
+#define _C_REGIONRASTERIZER_H_
 
 #include "CRegionInterpreter.h"
 #include "CFiller.h"
@@ -28,31 +28,31 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDRegionRasterizer SDRegionRasterizer;
-struct _tagSDRegionRasterizer
+typedef struct _tagCRegionRasterizer CRegionRasterizer;
+struct _tagCRegionRasterizer
 {
-	SDRegionInterpreter  _base;
-	pixman_format_t     *format;
-	SDAffineTransformF  *transform;
-	SDTrapezoids         trapezoids;
-	SDFiller             filler;
-	SDPointArrayF        array;
-	SDUInt32             width;
-	SDUInt32             height;
-	SDUInt32             size;
+	CRegionInterpreter  _base;
+	pixman_format_t    *format;
+	CAffineTransformF  *transform;
+	CTrapezoids         trapezoids;
+	CFiller             filler;
+	CPointArrayF        array;
+	CUInt32             width;
+	CUInt32             height;
+	CUInt32             size;
 };
 
-SDINTERNAL SDStatus
-SDRegionRasterizer_Initialize(SDRegionRasterizer *_this,
-                              SDAffineTransformF *transform,
-                              SDFloat             width,
-                              SDFloat             height,
-                              SDBool              gray);
-SDINTERNAL void
-SDRegionRasterizer_Finalize(SDRegionRasterizer *_this);
+CINTERNAL CStatus
+CRegionRasterizer_Initialize(CRegionRasterizer *_this,
+                             CAffineTransformF *transform,
+                             CFloat             width,
+                             CFloat             height,
+                             CBool              gray);
+CINTERNAL void
+CRegionRasterizer_Finalize(CRegionRasterizer *_this);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_REGIONRASTERIZER_H_ */
+#endif /* _C_REGIONRASTERIZER_H_ */

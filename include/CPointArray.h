@@ -1,5 +1,5 @@
 /*
- * SDPointArray.h - Point array header.
+ * CPointArray.h - Point array header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_POINTARRAY_H_
-#define _SD_POINTARRAY_H_
+#ifndef _C_POINTARRAY_H_
+#define _C_POINTARRAY_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,38 +27,38 @@
 extern "C" {
 #endif
 
-static const SDPointArrayX SDPointArrayX_Zero;
-static const SDPointArrayF SDPointArrayF_Zero;
+static const CPointArrayX CPointArrayX_Zero;
+static const CPointArrayF CPointArrayF_Zero;
 
-SDINTERNAL void
-SDPointArrayX_Initialize(SDPointArrayX *_this);
-SDINTERNAL void
-SDPointArrayF_Initialize(SDPointArrayF *_this);
-SDINTERNAL void
-SDPointArrayX_Finalize(SDPointArrayX *_this);
-SDINTERNAL void
-SDPointArrayF_Finalize(SDPointArrayF *_this);
-SDINTERNAL SDStatus
-SDPointArrayX_AppendPointNoRepeat(SDPointArrayX *_this,
-                                  SDPointX      *point);
-SDINTERNAL SDStatus
-SDPointArrayF_AppendPointNoRepeat(SDPointArrayF *_this,
-                                  SDPointF      *point);
-SDINTERNAL SDStatus
-SDPointArrayX_AppendPoint(SDPointArrayX *_this,
-                          SDPointX      *point);
-SDINTERNAL SDStatus
-SDPointArrayF_AppendPoint(SDPointArrayF *_this,
-                          SDPointF      *point);
-SDINTERNAL SDStatus
-SDPointArrayX_EnsureCapacity(SDPointArrayX *_this,
-                             SDUInt32       minimum);
-SDINTERNAL SDStatus
-SDPointArrayF_EnsureCapacity(SDPointArrayF *_this,
-                             SDUInt32       minimum);
+CINTERNAL void
+CPointArrayX_Initialize(CPointArrayX *_this);
+CINTERNAL void
+CPointArrayF_Initialize(CPointArrayF *_this);
+CINTERNAL void
+CPointArrayX_Finalize(CPointArrayX *_this);
+CINTERNAL void
+CPointArrayF_Finalize(CPointArrayF *_this);
+CINTERNAL CStatus
+CPointArrayX_AppendPointNoRepeat(CPointArrayX *_this,
+                                 CPointX      *point);
+CINTERNAL CStatus
+CPointArrayF_AppendPointNoRepeat(CPointArrayF *_this,
+                                 CPointF      *point);
+CINTERNAL CStatus
+CPointArrayX_AppendPoint(CPointArrayX *_this,
+                         CPointX      *point);
+CINTERNAL CStatus
+CPointArrayF_AppendPoint(CPointArrayF *_this,
+                         CPointF      *point);
+CINTERNAL CStatus
+CPointArrayX_EnsureCapacity(CPointArrayX *_this,
+                            CUInt32       minimum);
+CINTERNAL CStatus
+CPointArrayF_EnsureCapacity(CPointArrayF *_this,
+                            CUInt32       minimum);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_POINTARRAY_H_ */
+#endif /* _C_POINTARRAY_H_ */

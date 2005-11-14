@@ -1,5 +1,5 @@
 /*
- * SDRegionInterpreter.c - Region interpreter implementation.
+ * CRegionInterpreter.c - Region interpreter implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,67 +24,67 @@
 extern "C" {
 #endif
 
-static const SDRegionInterpreter SDRegionInterpreter_Zero;
+static const CRegionInterpreter CRegionInterpreter_Zero;
 
-SDINTERNAL void
-SDRegionInterpreter_Initialize(SDRegionInterpreter          *_this,
-                               const SDRegionInterpreterClass *_class)
+CINTERNAL void
+CRegionInterpreter_Initialize(CRegionInterpreter          *_this,
+                               const CRegionInterpreterClass *_class)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the stack */
-	SDRegionStack_Initialize(&(_this->stack));
+	CRegionStack_Initialize(&(_this->stack));
 
 	/* initialize the class */
 	_this->_class = _class;
 }
 
-SDINTERNAL void
-SDRegionInterpreter_Finalize(SDRegionInterpreter *_this)
+CINTERNAL void
+CRegionInterpreter_Finalize(CRegionInterpreter *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the stack */
-	SDRegionStack_Finalize(&(_this->stack));
+	CRegionStack_Finalize(&(_this->stack));
 
 	/* finalize the remaining members */
 	_this->_class = 0;
 }
 
-#define SDRegionInterpreter_Op(_this, op, left, right, data) \
+#define CRegionInterpreter_Op(_this, op, left, right, data) \
 	((_this)->_class->Op((_this), (op), (left), (right), (data)))
-#define SDRegionInterpreter_Data(_this, node, data) \
+#define CRegionInterpreter_Data(_this, node, data) \
 	((_this)->_class->Data((_this), (node), (data)))
-#define SDRegionInterpreter_FreeData(_this, data) \
+#define CRegionInterpreter_FreeData(_this, data) \
 	((_this)->_class->FreeData((data)))
 
-SDINTERNAL SDStatus
-SDRegionInterpreter_Interpret(SDRegionInterpreter  *_this,
-                              SDRegionNode         *head,
+CINTERNAL CStatus
+CRegionInterpreter_Interpret(CRegionInterpreter  *_this,
+                              CRegionNode         *head,
                               void                **data)
 {
 	/* declarations */
-	SDRegionStack *stack;
+	CRegionStack *stack;
 	void          *tmp;
-	SDStatus       status;
+	CStatus       status;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((head  != 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((head  != 0));
+	CASSERT((data  != 0));
 
 	/* get the stack pointer */
 	stack = &(_this->stack);
 
 	/* reset the stack */
-	SDRegionStack_Reset(&stack);
+	CRegionStack_Reset(&stack);
 
 	/* handle the trivial case */
-	if(SDRegionNode_IsData(head))
+	if(CRegionNode_IsData(head))
 	{
-		return SDRegionInterpreter_Data(_this, head, data);
+		return CRegionInterpreter_Data(_this, head, data);
 	}
 	else
 	{
@@ -93,16 +93,16 @@ SDRegionInterpreter_Interpret(SDRegionInterpreter  *_this,
 		tmp   = 0;
 
 		/* push the head */
-		SDStatus_Check
-			(SDRegionStack_Push
-				(&stack, (SDRegionOp *)head));
+		CStatus_Check
+			(CRegionStack_Push
+				(&stack, (CRegionOp *)head));
 	}
 
 	/* interpret the region */
 	while(_this->stack.count > 0)
 	{
 		/* get the top of the stack */
-		SDRegionStackNode *top = &SDRegionStack_Top(*stack);
+		CRegionStackNode *top = &CRegionStack_Top(*stack);
 
 		/* handle the current node */
 		if(top->visited == 0)
@@ -115,25 +115,25 @@ SDRegionInterpreter_Interpret(SDRegionInterpreter  *_this,
 			{
 				tmp = 0;
 			}
-			else if(SDRegionNode_IsData(top->op->left))
+			else if(CRegionNode_IsData(top->op->left))
 			{
 				/* process the data */
 				status =
-					SDRegionInterpreter_Data
+					CRegionInterpreter_Data
 						(_this, top->op->left, &tmp);
 
 				/* handle data failures */
-				if(status != SDStatus_OK) { goto GOTO_FreeData; }
+				if(status != CStatus_OK) { goto GOTO_FreeData; }
 			}
 			else
 			{
 				/* push the operation */
 				status =
-					SDRegionStack_Push
-						(&stack, ((SDRegionOp *)top->op->left));
+					CRegionStack_Push
+						(&stack, ((CRegionOp *)top->op->left));
 
 				/* handle push failures */
-				if(status != SDStatus_OK) { goto GOTO_FreeData; }
+				if(status != CStatus_OK) { goto GOTO_FreeData; }
 			}
 		}
 		else if(top->visited == 1)
@@ -149,25 +149,25 @@ SDRegionInterpreter_Interpret(SDRegionInterpreter  *_this,
 			{
 				tmp = 0;
 			}
-			else if(SDRegionNode_IsData(top->op->right))
+			else if(CRegionNode_IsData(top->op->right))
 			{
 				/* process the data */
 				status =
-					SDRegionInterpreter_Data
+					CRegionInterpreter_Data
 						(_this, top->op->right, &tmp);
 
 				/* handle data failures */
-				if(status != SDStatus_OK) { goto GOTO_FreeData; }
+				if(status != CStatus_OK) { goto GOTO_FreeData; }
 			}
 			else
 			{
 				/* push the operation */
 				status =
-					SDRegionStack_Push
-						(&stack, ((SDRegionOp *)top->op->right));
+					CRegionStack_Push
+						(&stack, ((CRegionOp *)top->op->right));
 
 				/* handle push failures */
-				if(status != SDStatus_OK) { goto GOTO_FreeData; }
+				if(status != CStatus_OK) { goto GOTO_FreeData; }
 			}
 		}
 		else
@@ -177,14 +177,14 @@ SDRegionInterpreter_Interpret(SDRegionInterpreter  *_this,
 
 			/* perform the operation */
 			status =
-				SDRegionInterpreter_Op
+				CRegionInterpreter_Op
 					(_this, top->op, top->left, top->right, &tmp);
 
 			/* pop the operation */
-			SDRegionStack_Pop(&stack);
+			CRegionStack_Pop(&stack);
 
 			/* handle operation failures */
-			if(status != SDStatus_OK) { goto GOTO_FreeData; }
+			if(status != CStatus_OK) { goto GOTO_FreeData; }
 		}
 	}
 
@@ -192,7 +192,7 @@ SDRegionInterpreter_Interpret(SDRegionInterpreter  *_this,
 	*data = tmp;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 
 GOTO_FreeData:
 
@@ -203,24 +203,24 @@ GOTO_FreeData:
 		while(_this->stack.count > 0)
 		{
 			/* get the top of the stack */
-			SDRegionStackNode *top = &SDRegionStack_Top(*stack);
+			CRegionStackNode *top = &CRegionStack_Top(*stack);
 
 			/* free the left data, as needed */
 			if(top->left != 0)
 			{
-				SDRegionInterpreter_FreeData(_this, top->left);
+				CRegionInterpreter_FreeData(_this, top->left);
 				top->left = 0;
 			}
 
 			/* free the right data, as needed */
 			if(top->right != 0)
 			{
-				SDRegionInterpreter_FreeData(_this, top->right);
+				CRegionInterpreter_FreeData(_this, top->right);
 				top->right = 0;
 			}
 
 			/* pop the operation */
-			SDRegionStack_Pop(&stack);
+			CRegionStack_Pop(&stack);
 		}
 	}
 

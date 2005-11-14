@@ -1,5 +1,5 @@
 /*
- * SDBlend.h - Gradient blending header.
+ * CBlend.h - Gradient blending header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_BLEND_H_
-#define _SD_BLEND_H_
+#ifndef _C_BLEND_H_
+#define _C_BLEND_H_
 
 #include "CBrush.h"
 
@@ -27,38 +27,38 @@
 extern "C" {
 #endif
 
-static const SDBlend      SDBlend_Zero      = { 0, 0, 0 };
-static const SDColorBlend SDColorBlend_Zero = { 0, 0, 0 };
+static const CBlend      CBlend_Zero      = { 0, 0, 0 };
+static const CColorBlend CColorBlend_Zero = { 0, 0, 0 };
 
-#define SDBlend_TriangularHalfCount 2
-#define SDBlend_TriangularFullCount 3
-#define SDBlend_SigmaBellHalfCount  256
-#define SDBlend_SigmaBellFullCount  511
+#define CBlend_TriangularHalfCount 2
+#define CBlend_TriangularFullCount 3
+#define CBlend_SigmaBellHalfCount  256
+#define CBlend_SigmaBellFullCount  511
 
-SDINTERNAL SDStatus
-SDBlend_Initialize(SDBlend  *_this,
-                   SDUInt32  count);
-SDINTERNAL SDStatus
-SDBlend_Copy(SDBlend *_this,
-             SDBlend *copy);
-SDINTERNAL void
-SDBlend_SetTriangularShape(SDBlend *_this,
-                           SDFloat  focus,
-                           SDFloat  scale);
-SDINTERNAL void
-SDBlend_SetSigmaBellShape(SDBlend *_this,
-                          SDFloat  focus,
-                          SDFloat  scale);
-SDINTERNAL void
-SDBlend_Finalize(SDBlend *_this);
-SDINTERNAL SDStatus
-SDColorBlend_Copy(SDColorBlend *_this,
-                  SDColorBlend *copy);
-SDINTERNAL void
-SDColorBlend_Finalize(SDColorBlend *_this);
+CINTERNAL CStatus
+CBlend_Initialize(CBlend  *_this,
+                   CUInt32  count);
+CINTERNAL CStatus
+CBlend_Copy(CBlend *_this,
+             CBlend *copy);
+CINTERNAL void
+CBlend_SetTriangularShape(CBlend *_this,
+                          CFloat  focus,
+                          CFloat  scale);
+CINTERNAL void
+CDBlend_SetSigmaBellShape(CBlend *_this,
+                          CFloat  focus,
+                          CFloat  scale);
+CINTERNAL void
+CBlend_Finalize(CBlend *_this);
+CINTERNAL CStatus
+CColorBlend_Copy(CColorBlend *_this,
+                 CColorBlend *copy);
+CINTERNAL void
+CColorBlend_Finalize(CColorBlend *_this);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_BLEND_H_ */
+#endif /* _C_BLEND_H_ */

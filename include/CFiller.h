@@ -1,5 +1,5 @@
 /*
- * SDFiller.h - Filler header.
+ * CFiller.h - Filler header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_FILLER_H_
-#define _SD_FILLER_H_
+#ifndef _C_FILLER_H_
+#define _C_FILLER_H_
 
 #include "CPathInterpreter.h"
 #include "CPolygon.h"
@@ -28,37 +28,37 @@
 extern "C" {
 #endif
 
-struct _tagSDFiller
+struct _tagCFiller
 {
-	SDPathInterpreter  _base;
-	SDPointArrayX      array;
-	SDPolygonX         polygon;
-	SDTrapezoids      *trapezoids;
-	SDFillMode         fillMode;
+	CPathInterpreter  _base;
+	CPointArrayX      array;
+	CPolygonX         polygon;
+	CTrapezoids      *trapezoids;
+	CFillMode         fillMode;
 };
 
-SDINTERNAL void
-SDFiller_Initialize(SDFiller *_this);
-SDINTERNAL void
-SDFiller_Finalize(SDFiller *_this);
-SDINTERNAL void
-SDFiller_Reset(SDFiller *_this);
-SDINTERNAL SDStatus
-SDFiller_ToPolygon(SDFiller       *_this,
-                   SDPolygonX     *polygon,
-                   const SDPointF *points,
-                   const SDByte   *types,
-                   SDUInt32        count);
-SDINTERNAL SDStatus
-SDFiller_ToTrapezoids(SDFiller       *_this,
-                      SDTrapezoids   *trapezoids,
-                      const SDPointF *points,
-                      const SDByte   *types,
-                      SDUInt32        count,
-                      SDFillMode      fillMode);
+CINTERNAL void
+CFiller_Initialize(CFiller *_this);
+CINTERNAL void
+CFiller_Finalize(CFiller *_this);
+CINTERNAL void
+CFiller_Reset(CFiller *_this);
+CINTERNAL CStatus
+CFiller_ToPolygon(CFiller       *_this,
+                  CPolygonX     *polygon,
+                  const CPointF *points,
+                  const CByte   *types,
+                  CUInt32        count);
+CINTERNAL CStatus
+CFiller_ToTrapezoids(CFiller       *_this,
+                     CTrapezoids   *trapezoids,
+                     const CPointF *points,
+                     const CByte   *types,
+                     CUInt32        count,
+                     CFillMode      fillMode);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_FILLER_H_ */
+#endif /* _C_FILLER_H_ */

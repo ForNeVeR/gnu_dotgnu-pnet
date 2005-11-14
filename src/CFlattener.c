@@ -1,5 +1,5 @@
 /*
- * SDFlattener.c - Flattener implementation.
+ * CFlattener.c - Flattener implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -25,28 +25,28 @@
 extern "C" {
 #endif
 
-static SDStatus
-SDFlattener_EnsureCapacity(SDFlattener *_this,
-                           SDUInt32     minimum)
+static CStatus
+CFlattener_EnsureCapacity(CFlattener *_this,
+                           CUInt32     minimum)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* ensure capacity */
 	_EnsurePathCapacity(_this, minimum);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL void
-SDFlattener_Initialize(SDFlattener *_this)
+CINTERNAL void
+CFlattener_Initialize(CFlattener *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the point array */
-	SDPointArrayF_Initialize(&(_this->array));
+	CPointArrayF_Initialize(&(_this->array));
 
 	/* initialize the remaining members */
 	_this->points    = 0;
@@ -55,26 +55,26 @@ SDFlattener_Initialize(SDFlattener *_this)
 	_this->capacity  = 0;
 }
 
-SDINTERNAL void
-SDFlattener_Finalize(SDFlattener *_this,
-                     SDPointF    **points,
-                     SDByte      **types,
-                     SDUInt32     *count,
-                     SDUInt32     *capacity)
+CINTERNAL void
+CFlattener_Finalize(CFlattener *_this,
+                     CPointF    **points,
+                     CByte      **types,
+                     CUInt32     *count,
+                     CUInt32     *capacity)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
+	CASSERT((_this  != 0));
 
 	/* finalize the point array */
-	SDPointArrayF_Finalize(&(_this->array));
+	CPointArrayF_Finalize(&(_this->array));
 
 	/* get or finalize the path information */
 	if(points != 0)
 	{
 		/* assertions */
-		SDASSERT((types    != 0));
-		SDASSERT((count    != 0));
-		SDASSERT((capacity != 0));
+		CASSERT((types    != 0));
+		CASSERT((count    != 0));
+		CASSERT((capacity != 0));
 
 		/* get the path information */
 		*points   = _this->points;
@@ -85,13 +85,13 @@ SDFlattener_Finalize(SDFlattener *_this,
 	else
 	{
 		/* assertions */
-		SDASSERT((types    == 0));
-		SDASSERT((count    == 0));
-		SDASSERT((capacity == 0));
+		CASSERT((types    == 0));
+		CASSERT((count    == 0));
+		CASSERT((capacity == 0));
 
 		/* finalize the path information */
-		SDFree(_this->points);
-		SDFree(_this->types);
+		CFree(_this->points);
+		CFree(_this->types);
 	}
 
 	/* reset the path information */
@@ -101,26 +101,26 @@ SDFlattener_Finalize(SDFlattener *_this,
 	_this->capacity = 0;
 }
 
-SDINTERNAL SDStatus
-SDFlattener_Flatten(SDFlattener *_this,
-                    SDPointF    *points,
-                    SDByte      *types,
-                    SDUInt32     count,
-                    SDFloat      tolerance)
+CINTERNAL CStatus
+CFlattener_Flatten(CFlattener *_this,
+                    CPointF    *points,
+                    CByte      *types,
+                    CUInt32     count,
+                    CFloat      tolerance)
 {
 	/* declarations */
-	SDByte    *srcT;
-	SDByte    *dstT;
-	SDPointF  *srcP;
-	SDPointF  *dstP;
-	SDPointF  *end;
-	SDUInt32   srcN;
-	SDUInt32   dstN;
+	CByte    *srcT;
+	CByte    *dstT;
+	CPointF  *srcP;
+	CPointF  *dstP;
+	CPointF  *end;
+	CUInt32   srcN;
+	CUInt32   dstN;
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((points != 0));
-	SDASSERT((types  != 0));
+	CASSERT((_this  != 0));
+	CASSERT((points != 0));
+	CASSERT((types  != 0));
 
 	/* get the type input pointer */
 	srcT = types;
@@ -142,7 +142,7 @@ SDFlattener_Flatten(SDFlattener *_this,
 	\*/
 
 	/* ensure capacity */
-	SDStatus_Check(SDFlattener_EnsureCapacity(_this, count));
+	CStatus_Check(CFlattener_EnsureCapacity(_this, count));
 
 	/* get the type output pointer */
 	dstT = types;
@@ -154,7 +154,7 @@ SDFlattener_Flatten(SDFlattener *_this,
 	while(srcP != end)
 	{
 		/* process point based on type */
-		if((*srcT & SDPathType_TypeMask) != SDPathType_Bezier)
+		if((*srcT & CPathType_TypeMask) != CPathType_Bezier)
 		{
 			/* line to point */
 			*dstP = *srcP;
@@ -166,17 +166,17 @@ SDFlattener_Flatten(SDFlattener *_this,
 		else
 		{
 			/* declarations */
-			SDByte         type;
-			SDPointArrayF *array;
-			SDPointF      *a;
-			SDPointF      *b;
-			SDPointF      *c;
-			SDPointF      *d;
-			SDBezierF      bezier;
+			CByte         type;
+			CPointArrayF *array;
+			CPointF      *a;
+			CPointF      *b;
+			CPointF      *c;
+			CPointF      *d;
+			CBezierF      bezier;
 
 			/* assertions */
-			SDASSERT((srcP       != points));
-			SDASSERT(((srcP + 2) != end));
+			CASSERT((srcP       != points));
+			CASSERT(((srcP + 2) != end));
 
 			/* get the current point */
 			a = (srcP - 1);
@@ -191,7 +191,7 @@ SDFlattener_Flatten(SDFlattener *_this,
 			++srcP; ++srcT; ++srcN;
 
 			/* assertions */
-			SDASSERT(((*srcT & SDPathType_TypeMask) == SDPathType_Bezier));
+			CASSERT(((*srcT & CPathType_TypeMask) == CPathType_Bezier));
 
 			/* get the second point */
 			c = srcP;
@@ -200,13 +200,13 @@ SDFlattener_Flatten(SDFlattener *_this,
 			++srcP; ++srcT; ++srcN;
 
 			/* assertions */
-			SDASSERT(((*srcT & SDPathType_TypeMask) == SDPathType_Bezier));
+			CASSERT(((*srcT & CPathType_TypeMask) == CPathType_Bezier));
 
 			/* get the third point */
 			d = srcP;
 
 			/* initialize the bezier and handle degenerates */
-			if(SDBezierF_Initialize(&bezier, a, b, c, d))
+			if(CBezierF_Initialize(&bezier, a, b, c, d))
 			{
 				/* move to the next source position */
 				++srcP; ++srcT; ++srcN;
@@ -221,29 +221,29 @@ SDFlattener_Flatten(SDFlattener *_this,
 			array = &(_this->array);
 
 			/* reset the count of the point array */
-			SDPointArray_Count(*array) = 0;
+			CPointArray_Count(*array) = 0;
 
 			/* flatten the bezier curve */
-			SDStatus_Check
-				(SDBezierF_Flatten
+			CStatus_Check
+				(CBezierF_Flatten
 					(&bezier, array, tolerance));
 
 			/* add the lines */
 			{
 				/* declarations */
-				SDPointF *arrP;
-				SDPointF *arrE;
-				SDUInt32  arrN;
+				CPointF *arrP;
+				CPointF *arrE;
+				CUInt32  arrN;
 
 				/* get the count */
-				arrN = SDPointArray_Count(*array);
+				arrN = CPointArray_Count(*array);
 
 				/* set the count */
 				_this->count = dstN;
 
 				/* ensure capacity */
-				SDStatus_Check
-					(SDFlattener_EnsureCapacity
+				CStatus_Check
+					(CFlattener_EnsureCapacity
 						(_this, (((dstN + arrN) - 1) + (count - srcN))));
 
 				/* get the destination type pointer */
@@ -256,7 +256,7 @@ SDFlattener_Flatten(SDFlattener *_this,
 				dstN += (arrN - 1);
 
 				/* get the array point pointer */
-				arrP = SDPointArray_Points(*array);
+				arrP = CPointArray_Points(*array);
 
 				/* get the end pointer */
 				arrE = (arrP + arrN);
@@ -271,11 +271,11 @@ SDFlattener_Flatten(SDFlattener *_this,
 					*dstP++ = *arrP++;
 
 					/* set the type */
-					*dstT++ = SDPathType_Line;
+					*dstT++ = CPathType_Line;
 				}
 
 				/* add the extra type information to the last point */
-				*(dstT - 1) |= (type & ~SDPathType_TypeMask);
+				*(dstT - 1) |= (type & ~CPathType_TypeMask);
 			}
 		}
 
@@ -284,7 +284,7 @@ SDFlattener_Flatten(SDFlattener *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

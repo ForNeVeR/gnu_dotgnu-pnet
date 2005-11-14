@@ -1,5 +1,5 @@
 /*
- * SDRegionTranslator.c - Region translator implementation.
+ * CRegionTranslator.c - Region translator implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -25,107 +25,107 @@
 extern "C" {
 #endif
 
-static SDStatus
-SDRegionTranslator_Data(SDRegionInterpreter  *_this,
-                        SDRegionNode         *node,
+static CStatus
+CRegionTranslator_Data(CRegionInterpreter  *_this,
+                        CRegionNode         *node,
                         void                **data)
 {
 	/* declarations */
-	SDRegionTranslator *rt;
+	CRegionTranslator *rt;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((node  != 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((node  != 0));
+	CASSERT((data  != 0));
 
 	/* set the data to the default */
 	*data = 0;
 
 	/* get this as a region translator */
-	rt = ((SDRegionTranslator *)_this);
+	rt = ((CRegionTranslator *)_this);
 
 	/* translate the node */
-	if(node->type == SDRegionType_Rectangle)
+	if(node->type == CRegionType_Rectangle)
 	{
 		/* get the rectangle node */
-		SDRegionRect *rr = ((SDRegionRect *)node);
+		CRegionRect *rr = ((CRegionRect *)node);
 
 		/* apply the translation */
-		SDRectangle_X(rr->rectangle) += SDVector_X(rt->offset);
-		SDRectangle_Y(rr->rectangle) += SDVector_Y(rt->offset);
+		CRectangle_X(rr->rectangle) += CVector_X(rt->offset);
+		CRectangle_Y(rr->rectangle) += CVector_Y(rt->offset);
 	}
-	else if(node->type == SDRegionType_Path)
+	else if(node->type == CRegionType_Path)
 	{
 		/* get the path node */
-		SDRegionPath *rp = ((SDRegionPath *)node);
+		CRegionPath *rp = ((CRegionPath *)node);
 
 		/* apply the translation */
-		SDVectorF_TranslatePoints
+		CVectorF_TranslatePoints
 			(&(rt->offset), rp->points, rp->count);
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDRegionTranslator_Op(SDRegionInterpreter  *_this,
-                      SDRegionOp           *op,
+static CStatus
+CRegionTranslator_Op(CRegionInterpreter  *_this,
+                      CRegionOp           *op,
                       void                 *left,
                       void                 *right,
                       void                **data)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((op    != 0));
-	SDASSERT((left  == 0));
-	SDASSERT((right == 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((op    != 0));
+	CASSERT((left  == 0));
+	CASSERT((right == 0));
+	CASSERT((data  != 0));
 
 	/* set the data to the default */
 	*data = 0;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static const SDRegionInterpreterClass SDRegionTranslator_Class =
+static const CRegionInterpreterClass CRegionTranslator_Class =
 {
-	SDRegionTranslator_Data,
-	SDRegionTranslator_Op,
+	CRegionTranslator_Data,
+	CRegionTranslator_Op,
 	0
 };
 
-SDINTERNAL void
-SDRegionTranslator_Initialize(SDRegionTranslator *_this,
-                              SDFloat             dx,
-                              SDFloat             dy)
+CINTERNAL void
+CRegionTranslator_Initialize(CRegionTranslator *_this,
+                              CFloat             dx,
+                              CFloat             dy)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the offset */
-	SDVector_X(_this->offset) = dx;
-	SDVector_Y(_this->offset) = dy;
+	CVector_X(_this->offset) = dx;
+	CVector_Y(_this->offset) = dy;
 
 	/* initialize the base */
-	SDRegionInterpreter_Initialize
-		((SDRegionInterpreter *)_this, &SDRegionTranslator_Class);
+	CRegionInterpreter_Initialize
+		((CRegionInterpreter *)_this, &CRegionTranslator_Class);
 }
 
-SDINTERNAL void
-SDRegionTranslator_Finalize(SDRegionTranslator *_this)
+CINTERNAL void
+CRegionTranslator_Finalize(CRegionTranslator *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the members */
 	{
 		/* finalize the base */
-		SDRegionInterpreter_Finalize((SDRegionInterpreter *)_this);
+		CRegionInterpreter_Finalize((CRegionInterpreter *)_this);
 
 		/* finalize the offset */
-		_this->offset = SDVectorF_Zero;
+		_this->offset = CVectorF_Zero;
 	}
 }
 

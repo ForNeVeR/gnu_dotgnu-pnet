@@ -1,5 +1,5 @@
 /*
- * SDRegion.c - Region implementation.
+ * CRegion.c - Region implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -30,203 +30,203 @@
 extern "C" {
 #endif
 
-static const SDRegionMask SDRegionMask_Zero =
+static const CRegionMask CRegionMask_Zero =
 	{ 0, { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f } };
 
 #define _OperationPath(_this, type, path)                                      \
 	do {                                                                       \
 		/* declarations */                                                     \
-		SDRegionOp   *_op;                                                     \
-		SDRegionPath *_data;                                                   \
+		CRegionOp   *_op;                                                     \
+		CRegionPath *_data;                                                   \
 		                                                                       \
 		/* create the path node */                                             \
-		SDStatus_Check                                                         \
-			(SDRegionPath_Create                                               \
+		CStatus_Check                                                         \
+			(CRegionPath_Create                                               \
 				(&_data, (path)));                                             \
 		                                                                       \
 		/* create the operation node */                                        \
-		if(!(SDRegionOp_Alloc(_op)))                                           \
+		if(!(CRegionOp_Alloc(_op)))                                           \
 		{                                                                      \
-			return SDStatus_OutOfMemory;                                       \
+			return CStatus_OutOfMemory;                                       \
 		}                                                                      \
 		                                                                       \
 		/* initialize the operation node */                                    \
-		_op->_base = SDRegionNode_ ## type;                                    \
+		_op->_base = CRegionNode_ ## type;                                    \
 		_op->left  = (_this)->head;                                            \
-		_op->right = ((SDRegionNode *)_data);                                  \
+		_op->right = ((CRegionNode *)_data);                                  \
 		                                                                       \
 		/* reset the head node */                                              \
-		(_this)->head = ((SDRegionNode *)_op);                                 \
+		(_this)->head = ((CRegionNode *)_op);                                 \
 		                                                                       \
 		/* handle change event */                                              \
-		SDRegion_OnChange((_this));                                            \
+		CRegion_OnChange((_this));                                            \
 	} while(0)
 #define _OperationRectangle(_this, type, rectangle)                            \
 	do {                                                                       \
 		/* declarations */                                                     \
-		SDRegionOp   *_op;                                                     \
-		SDRegionRect *_data;                                                   \
+		CRegionOp   *_op;                                                     \
+		CRegionRect *_data;                                                   \
 		                                                                       \
 		/* create the rectangle node */                                        \
-		SDStatus_Check                                                         \
-			(SDRegionRect_Create                                               \
+		CStatus_Check                                                         \
+			(CRegionRect_Create                                               \
 				(&_data, (rectangle)));                                        \
 		                                                                       \
 		/* create the operation node */                                        \
-		if(!(SDRegionOp_Alloc(_op)))                                           \
+		if(!(CRegionOp_Alloc(_op)))                                           \
 		{                                                                      \
-			return SDStatus_OutOfMemory;                                       \
+			return CStatus_OutOfMemory;                                       \
 		}                                                                      \
 		                                                                       \
 		/* initialize the operation node */                                    \
-		_op->_base = SDRegionNode_ ## type;                                    \
+		_op->_base = CRegionNode_ ## type;                                    \
 		_op->left  = (_this)->head;                                            \
-		_op->right = ((SDRegionNode *)_data);                                  \
+		_op->right = ((CRegionNode *)_data);                                  \
 		                                                                       \
 		/* reset the head node */                                              \
-		(_this)->head = ((SDRegionNode *)_op);                                 \
+		(_this)->head = ((CRegionNode *)_op);                                 \
 		                                                                       \
 		/* handle change event */                                              \
-		SDRegion_OnChange((_this));                                            \
+		CRegion_OnChange((_this));                                            \
 	} while(0)
 #define _OperationRegion(_this, type, other)                                   \
 	do {                                                                       \
 		/* declarations */                                                     \
-		SDRegionOp   *_op;                                                     \
-		SDRegionNode *_data;                                                   \
+		CRegionOp   *_op;                                                     \
+		CRegionNode *_data;                                                   \
 		                                                                       \
 		/* create the copy nodes */                                            \
-		SDStatus_Check                                                         \
-			(SDRegionNode_Clone                                                \
+		CStatus_Check                                                         \
+			(CRegionNode_Clone                                                \
 				((other)->head, &_data));                                      \
 		                                                                       \
 		/* create the operation node */                                        \
-		if(!(SDRegionOp_Alloc(_op)))                                           \
+		if(!(CRegionOp_Alloc(_op)))                                           \
 		{                                                                      \
-			return SDStatus_OutOfMemory;                                       \
+			return CStatus_OutOfMemory;                                       \
 		}                                                                      \
 		                                                                       \
 		/* initialize the operation node */                                    \
-		_op->_base = SDRegionNode_ ## type;                                    \
+		_op->_base = CRegionNode_ ## type;                                    \
 		_op->left  = (_this)->head;                                            \
-		_op->right = ((SDRegionNode *)_data);                                  \
+		_op->right = ((CRegionNode *)_data);                                  \
 		                                                                       \
 		/* reset the head node */                                              \
-		(_this)->head = ((SDRegionNode *)_op);                                 \
+		(_this)->head = ((CRegionNode *)_op);                                 \
 		                                                                       \
 		/* handle change event */                                              \
-		SDRegion_OnChange((_this));                                            \
+		CRegion_OnChange((_this));                                            \
 	} while(0)
 
-SDINTERNAL void
-SDRegionData_Free(SDRegionNode *node)
+CINTERNAL void
+CRegionData_Free(CRegionNode *node)
 {
 	/* assertions */
-	SDASSERT((node != 0));
+	CASSERT((node != 0));
 
 	/* dispose of path data, as needed */
-	if(node->type == SDRegionType_Path)
+	if(node->type == CRegionType_Path)
 	{
 		/* get the path node */
-		SDRegionPath *rp = ((SDRegionPath *)node);
+		CRegionPath *rp = ((CRegionPath *)node);
 
 		/* free the point list */
-		SDFree(rp->points);
+		CFree(rp->points);
 
 		/* free the type list */
-		SDFree(rp->types);
+		CFree(rp->types);
 	}
 
 	/* free the node */
-	SDFree(node);
+	CFree(node);
 }
 
-static SDStatus
-SDRegionPath_Create(SDRegionPath **_this,
-                    SDPath        *path)
+static CStatus
+CRegionPath_Create(CRegionPath **_this,
+                    CPath        *path)
 {
 	/* declarations */
-	SDPointF     *points;
-	SDByte       *types;
-	SDUInt32      count;
-	SDFillMode    fillMode;
+	CPointF     *points;
+	CByte       *types;
+	CUInt32      count;
+	CFillMode    fillMode;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* get the fill mode */
-	SDStatus_Check
-		(SDPath_GetFillMode
+	CStatus_Check
+		(CPath_GetFillMode
 			(path, &fillMode));
 
 	/* get the path data */
-	SDStatus_Check
-		(SDPath_GetPathData
+	CStatus_Check
+		(CPath_GetPathData
 			(path, &points, &types, &count));
 
 	/* create the node */
-	if(!(SDRegionPath_Alloc(*_this)))
+	if(!(CRegionPath_Alloc(*_this)))
 	{
-		SDFree(points);
-		SDFree(types);
-		return SDStatus_OutOfMemory;
+		CFree(points);
+		CFree(types);
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the node */
-	(*_this)->_base    = SDRegionNode_Path;
+	(*_this)->_base    = CRegionNode_Path;
 	(*_this)->points   = points;
 	(*_this)->types    = types;
 	(*_this)->count    = count;
 	(*_this)->fillMode = fillMode;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDRegionRect_Create(SDRegionRect **_this,
-                    SDRectangleF   rectangle)
+static CStatus
+CRegionRect_Create(CRegionRect **_this,
+                    CRectangleF   rectangle)
 {
 	/* assertions */
-	SDASSERT((_this     != 0));
+	CASSERT((_this     != 0));
 
 	/* create the node */
-	if(!(SDRegionRect_Alloc(*_this)))
+	if(!(CRegionRect_Alloc(*_this)))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the node */
-	(*_this)->_base     = SDRegionNode_Rectangle;
+	(*_this)->_base     = CRegionNode_Rectangle;
 	(*_this)->rectangle = rectangle;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 
-static SDStatus
-SDRegionNode_Clone(SDRegionNode  *_this,
-                   SDRegionNode **clone)
+static CStatus
+CRegionNode_Clone(CRegionNode  *_this,
+                   CRegionNode **clone)
 {
 	/* declarations */
-	SDRegionCloner cloner;
-	SDStatus       status;
+	CRegionCloner cloner;
+	CStatus       status;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((clone != 0));
+	CASSERT((_this != 0));
+	CASSERT((clone != 0));
 
 	/* initialize the cloner */
-	SDRegionCloner_Initialize(&cloner);
+	CRegionCloner_Initialize(&cloner);
 
 	/* clone the node */
 	status =
-		SDRegionInterpreter_Interpret
-			(((SDRegionInterpreter *)(&cloner)), _this, (void **)clone);
+		CRegionInterpreter_Interpret
+			(((CRegionInterpreter *)(&cloner)), _this, (void **)clone);
 
 	/* finalize the cloner */
-	SDRegionCloner_Finalize(&cloner);
+	CRegionCloner_Finalize(&cloner);
 
 	/* return status */
 	return status;
@@ -234,38 +234,38 @@ SDRegionNode_Clone(SDRegionNode  *_this,
 
 /* Handle change events. */
 static void
-SDRegion_OnChange(SDRegion *_this)
+CRegion_OnChange(CRegion *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* clear the mask */
 	if(_this->mask.image != 0)
 	{
 		pixman_image_destroy(_this->mask.image);
-		_this->mask = SDRegionMask_Zero;
+		_this->mask = CRegionMask_Zero;
 	}
 }
 
 /* Generate the mask for this region. */
-static SDStatus
-SDRegion_GenerateMask(SDRegion           *_this,
-                      SDAffineTransformF *transform,
-                      SDUInt32            width,
-                      SDUInt32            height,
-                      SDBool              gray)
+static CStatus
+CRegion_GenerateMask(CRegion           *_this,
+                      CAffineTransformF *transform,
+                      CUInt32            width,
+                      CUInt32            height,
+                      CBool              gray)
 {
 	/* assertions */
-	SDASSERT((_this     != 0));
-	SDASSERT((transform != 0));
+	CASSERT((_this     != 0));
+	CASSERT((transform != 0));
 
 	/* clear the mask, as needed */
 	if(_this->mask.image != 0)
 	{
 		/* declarations */
-		SDUInt32 w;
-		SDUInt32 h;
-		SDBool   g;
+		CUInt32 w;
+		CUInt32 h;
+		CBool   g;
 
 		/* get the mask image information */
 		w = pixman_image_get_width(_this->mask.image);
@@ -276,80 +276,80 @@ SDRegion_GenerateMask(SDRegion           *_this,
 		if(w == width && h == height && g == gray)
 		{
 			/* declarations */
-			SDBool eq;
+			CBool eq;
 
 			/* determine if the transformations are equal */
-			SDAffineTransformF_Equals(transform, &(_this->mask.transform), &eq);
+			CAffineTransformF_Equals(transform, &(_this->mask.transform), &eq);
 
 			/* bail out now if everything matches */
-			SDStatus_Require((!eq), SDStatus_OK);
+			CStatus_Require((!eq), CStatus_OK);
 		}
 
 		/* destroy the current mask image */
 		pixman_image_destroy(_this->mask.image);
 
 		/* reset the mask */
-		_this->mask = SDRegionMask_Zero;
+		_this->mask = CRegionMask_Zero;
 	}
 
 	/* generate a new mask */
 	{
 		/* declarations */
-		SDRegionRasterizer rast;
-		SDStatus           status;
+		CRegionRasterizer rast;
+		CStatus           status;
 
 		/* initialize the rasterizer */
-		SDStatus_Check
-			(SDRegionRasterizer_Initialize
+		CStatus_Check
+			(CRegionRasterizer_Initialize
 				(&rast, transform, width, height, gray));
 
 		/* generate the mask image */
 		status =
-			SDRegionInterpreter_Interpret
-				((SDRegionInterpreter *)&rast,
+			CRegionInterpreter_Interpret
+				((CRegionInterpreter *)&rast,
 				 _this->head, (void **)&(_this->mask.image));
 
 		/* finalize the rasterizer */
-		SDRegionRasterizer_Finalize(&rast);
+		CRegionRasterizer_Finalize(&rast);
 
 		/* handle mask generation failures */
-		SDStatus_Check(status);
+		CStatus_Check(status);
 
 		/* set the mask transform */
 		_this->mask.transform = *transform;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Initialize this region. */
 static void
-SDRegion_Initialize(SDRegion     *_this,
-                    SDRegionNode *head)
+CRegion_Initialize(CRegion     *_this,
+                    CRegionNode *head)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((head  != 0));
+	CASSERT((_this != 0));
+	CASSERT((head  != 0));
 
 	/* initialize the region */
 	_this->head = head;
 
 	/* initialize the mask */
-	_this->mask = SDRegionMask_Zero;
+	_this->mask = CRegionMask_Zero;
 }
 
 /* Finalize this region. */
 static void
-SDRegion_Finalize(SDRegion *_this)
+CRegion_Finalize(CRegion *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the region */
 	{
 		/* declarations */
-		SDRegionNode *node;
+		CRegionNode *node;
 
 		/* get the head node */
 		node = _this->head;
@@ -357,25 +357,25 @@ SDRegion_Finalize(SDRegion *_this)
 		/* dispose of nodes, as needed */
 		if(node != 0)
 		{
-			if(SDRegionNode_IsData(node))
+			if(CRegionNode_IsData(node))
 			{
-				SDRegionData_Free(node);
+				CRegionData_Free(node);
 			}
 			else
 			{
 				/* declarations */
-				SDRegionDisposer  disposer;
+				CRegionDisposer  disposer;
 				void             *data;
 
 				/* initialize the disposer */
-				SDRegionDisposer_Initialize(&disposer);
+				CRegionDisposer_Initialize(&disposer);
 
 				/* dispose of the node */
-				SDRegionInterpreter_Interpret
-					(((SDRegionInterpreter *)(&disposer)), _this->head, data);
+				CRegionInterpreter_Interpret
+					(((CRegionInterpreter *)(&disposer)), _this->head, data);
 
 				/* finalize the disposer */
-				SDRegionDisposer_Finalize(&disposer);
+				CRegionDisposer_Finalize(&disposer);
 			}
 		}
 
@@ -386,204 +386,204 @@ SDRegion_Finalize(SDRegion *_this)
 		if(_this->mask.image != 0)
 		{
 			pixman_image_destroy(_this->mask.image);
-			_this->mask = SDRegionMask_Zero;
+			_this->mask = CRegionMask_Zero;
 		}
 	}
 }
 
 /* Create an infinite region. */
-SDStatus
-SDRegion_Create(SDRegion **_this)
+CStatus
+CRegion_Create(CRegion **_this)
 {
 	/* declarations */
-	SDRegionNode *node;
+	CRegionNode *node;
 
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the region */
-	if(!(*_this = (SDRegion *)SDMalloc(sizeof(SDRegion))))
+	if(!(*_this = (CRegion *)CMalloc(sizeof(CRegion))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* create the node */
-	if(!(SDRegionNode_Alloc(node)))
+	if(!(CRegionNode_Alloc(node)))
 	{
-		SDFree(*_this);
+		CFree(*_this);
 		*_this = 0;
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the node */
-	*node = SDRegionNode_Infinite;
+	*node = CRegionNode_Infinite;
 
 	/* initialize the region */
-	SDRegion_Initialize(*_this, node);
+	CRegion_Initialize(*_this, node);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Create a path region. */
-SDStatus
-SDRegion_CreatePath(SDRegion **_this,
-                    SDPath    *path)
+CStatus
+CRegion_CreatePath(CRegion **_this,
+                    CPath    *path)
 {
 	/* declarations */
-	SDRegionPath *node;
+	CRegionPath *node;
 
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* create the path node */
-	SDStatus_Check
-		(SDRegionPath_Create
+	CStatus_Check
+		(CRegionPath_Create
 			(&node, path));
 
 	/* allocate the region */
-	if(!(*_this = (SDRegion *)SDMalloc(sizeof(SDRegion))))
+	if(!(*_this = (CRegion *)CMalloc(sizeof(CRegion))))
 	{
-		SDRegionData_Free((SDRegionNode *)node);
-		return SDStatus_OutOfMemory;
+		CRegionData_Free((CRegionNode *)node);
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the region */
-	SDRegion_Initialize(*_this, (SDRegionNode *)node);
+	CRegion_Initialize(*_this, (CRegionNode *)node);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Create a rectangular region. */
-SDStatus
-SDRegion_CreateRectangle(SDRegion     **_this,
-                         SDRectangleF   rectangle)
+CStatus
+CRegion_CreateRectangle(CRegion     **_this,
+                         CRectangleF   rectangle)
 {
 	/* declarations */
-	SDRegionRect *node;
+	CRegionRect *node;
 
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* create the rectangle node */
-	SDStatus_Check
-		(SDRegionRect_Create
+	CStatus_Check
+		(CRegionRect_Create
 			(&node, rectangle));
 
 	/* allocate the region */
-	if(!(*_this = (SDRegion *)SDMalloc(sizeof(SDRegion))))
+	if(!(*_this = (CRegion *)CMalloc(sizeof(CRegion))))
 	{
-		SDRegionData_Free((SDRegionNode *)node);
-		return SDStatus_OutOfMemory;
+		CRegionData_Free((CRegionNode *)node);
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the region */
-	SDRegion_Initialize(*_this, (SDRegionNode *)node);
+	CRegion_Initialize(*_this, (CRegionNode *)node);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Create a region from serialized region data. */
-SDStatus
-SDRegion_CreateData(SDRegion **_this,
-                    SDByte    *data,
-                    SDUInt32   count)
+CStatus
+CRegion_CreateData(CRegion **_this,
+                    CByte    *data,
+                    CUInt32   count)
 {
 #if 0
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the region */
-	if(!(*_this = (SDRegion *)SDMalloc(sizeof(SDRegion))))
+	if(!(*_this = (CRegion *)CMalloc(sizeof(CRegion))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* TODO */
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 #else
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 #endif
 }
 
 /* Create a region from a GDI region. */
-SDStatus
-SDRegion_CreateHRGN(SDRegion **_this,
+CStatus
+CRegion_CreateHRGN(CRegion **_this,
                     void      *hrgn)
 {
 #if 0
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the region */
-	if(!(*_this = (SDRegion *)SDMalloc(sizeof(SDRegion))))
+	if(!(*_this = (CRegion *)CMalloc(sizeof(CRegion))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* TODO: add support for wine and native win32 */
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 #else
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 #endif
 }
 
 /* Destroy a region. */
-SDStatus
-SDRegion_Destroy(SDRegion **_this)
+CStatus
+CRegion_Destroy(CRegion **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a this pointer */
-	SDStatus_Require(((*_this) != 0), SDStatus_ArgumentNull);
+	CStatus_Require(((*_this) != 0), CStatus_ArgumentNull);
 
 	/* finalize the region */
-	SDRegion_Finalize(*_this);
+	CRegion_Finalize(*_this);
 
 	/* free the region */
-	SDFree(*_this);
+	CFree(*_this);
 
 	/* null the this pointer */
 	*_this = 0;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Clone this region. */
-SDStatus
-SDRegion_Clone(SDRegion  *_this,
-               SDRegion **clone)
+CStatus
+CRegion_Clone(CRegion  *_this,
+               CRegion **clone)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a clone pointer pointer */
-	SDStatus_Require((clone != 0), SDStatus_ArgumentNull);
+	CStatus_Require((clone != 0), CStatus_ArgumentNull);
 
 	/* create the clone region */
-	SDStatus_Check(SDRegion_Create(clone));
+	CStatus_Check(CRegion_Create(clone));
 
 	/* clone the members */
 	{
 		/* declarations */
-		SDStatus status;
+		CStatus status;
 
 		/* copy the nodes */
-		status = SDRegion_CombineRegion(*clone, _this, SDCombineMode_Replace);
+		status = CRegion_CombineRegion(*clone, _this, CCombineMode_Replace);
 
 		/* handle status */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
 			/* destroy the clone */
-			SDRegion_Destroy(clone);
+			CRegion_Destroy(clone);
 
 			/* return status */
 			return status;
@@ -591,93 +591,93 @@ SDRegion_Clone(SDRegion  *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Form the combination of this region with a path. */
-SDStatus
-SDRegion_CombinePath(SDRegion      *_this,
-                     SDPath        *path,
-                     SDCombineMode  combineMode)
+CStatus
+CRegion_CombinePath(CRegion      *_this,
+                     CPath        *path,
+                     CCombineMode  combineMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a path pointer */
-	SDStatus_Require((path != 0), SDStatus_ArgumentNull);
+	CStatus_Require((path != 0), CStatus_ArgumentNull);
 
 	/* ensure the combination mode is in range */
-	SDCombineMode_Default(combineMode);
+	CCombineMode_Default(combineMode);
 
 	/* form the combination */
 	{
 		/* declarations */
-		SDRegionType t;
+		CRegionType t;
 
 		/* get the head node type */
-		t = SDRegionNode_Type(_this->head);
+		t = CRegionNode_Type(_this->head);
 
 		/* form the combination */
 		switch(combineMode)
 		{
-			case SDCombineMode_Intersect:
+			case CCombineMode_Intersect:
 			{
 				/* bail out now if there's nothing to do */
-				SDStatus_Require((t != SDRegionType_Empty), SDStatus_OK);
+				CStatus_Require((t != CRegionType_Empty), CStatus_OK);
 
 				/* replace, as needed */
-				if(t == SDRegionType_Infinite) { goto _Replace; }
+				if(t == CRegionType_Infinite) { goto _Replace; }
 
 				/* form the intersection */
 				_OperationPath(_this, Intersect, path);
 			}
 			break;
-			case SDCombineMode_Union:
+			case CCombineMode_Union:
 			{
 				/* bail out now if there's nothing to do */
-				SDStatus_Require((t != SDRegionType_Infinite), SDStatus_OK);
+				CStatus_Require((t != CRegionType_Infinite), CStatus_OK);
 
 				/* replace, as needed */
-				if(t == SDRegionType_Empty) { goto _Replace; }
+				if(t == CRegionType_Empty) { goto _Replace; }
 
 				/* form the union */
 				_OperationPath(_this, Union, path);
 			}
 			break;
-			case SDCombineMode_Xor:
+			case CCombineMode_Xor:
 			{
 				/* replace, as needed */
-				if(t == SDRegionType_Empty) { goto _Replace; }
+				if(t == CRegionType_Empty) { goto _Replace; }
 
 				/* form the xor */
 				_OperationPath(_this, Xor, path);
 			}
 			break;
-			case SDCombineMode_Exclude:
+			case CCombineMode_Exclude:
 			{
 				/* bail out now if there's nothing to do */
-				SDStatus_Require((t != SDRegionType_Empty), SDStatus_OK);
+				CStatus_Require((t != CRegionType_Empty), CStatus_OK);
 
 				/* form the exclusion */
 				_OperationPath(_this, Exclude, path);
 			}
 			break;
-			case SDCombineMode_Complement:
+			case CCombineMode_Complement:
 			{
 				/* replace, as needed */
-				if(t == SDRegionType_Empty) { goto _Replace; }
+				if(t == CRegionType_Empty) { goto _Replace; }
 
 				/* form the empty region, as needed */
-				if(t == SDRegionType_Infinite)
+				if(t == CRegionType_Infinite)
 				{
-					return SDRegion_MakeEmpty(_this);
+					return CRegion_MakeEmpty(_this);
 				}
 
 				/* form the complement */
 				_OperationPath(_this, Complement, path);
 			}
 			break;
-			case SDCombineMode_Replace:
+			case CCombineMode_Replace:
 			default:
 			{
 				/* provide local jump target */
@@ -686,18 +686,18 @@ SDRegion_CombinePath(SDRegion      *_this,
 				/* add new path */
 				{
 					/* declarations */
-					SDRegionPath *data;
+					CRegionPath *data;
 
 					/* create the path node */
-					SDStatus_Check
-						(SDRegionPath_Create
+					CStatus_Check
+						(CRegionPath_Create
 							(&data, path));
 
 					/* dispose of current region data */
-					SDRegion_Finalize(_this);
+					CRegion_Finalize(_this);
 
 					/* reset the head node */
-					_this->head = (SDRegionNode *)data;
+					_this->head = (CRegionNode *)data;
 				}
 			}
 			break;
@@ -705,90 +705,90 @@ SDRegion_CombinePath(SDRegion      *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Form the combination of this region with a rectangle. */
-SDStatus
-SDRegion_CombineRectangle(SDRegion      *_this,
-                          SDRectangleF   rectangle,
-                          SDCombineMode  combineMode)
+CStatus
+CRegion_CombineRectangle(CRegion      *_this,
+                          CRectangleF   rectangle,
+                          CCombineMode  combineMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure the combination mode is in range */
-	SDCombineMode_Default(combineMode);
+	CCombineMode_Default(combineMode);
 
 	/* form the combination */
 	{
 		/* declarations */
-		SDRegionType t;
+		CRegionType t;
 
 		/* get the head node type */
-		t = SDRegionNode_Type(_this->head);
+		t = CRegionNode_Type(_this->head);
 
 		/* form the combination */
 		switch(combineMode)
 		{
-			case SDCombineMode_Intersect:
+			case CCombineMode_Intersect:
 			{
 				/* bail out now if there's nothing to do */
-				SDStatus_Require((t != SDRegionType_Empty), SDStatus_OK);
+				CStatus_Require((t != CRegionType_Empty), CStatus_OK);
 
 				/* replace, as needed */
-				if(t == SDRegionType_Infinite) { goto _Replace; }
+				if(t == CRegionType_Infinite) { goto _Replace; }
 
 				/* form the intersection */
 				_OperationRectangle(_this, Intersect, rectangle);
 			}
 			break;
-			case SDCombineMode_Union:
+			case CCombineMode_Union:
 			{
 				/* bail out now if there's nothing to do */
-				SDStatus_Require((t != SDRegionType_Infinite), SDStatus_OK);
+				CStatus_Require((t != CRegionType_Infinite), CStatus_OK);
 
 				/* replace, as needed */
-				if(t == SDRegionType_Empty) { goto _Replace; }
+				if(t == CRegionType_Empty) { goto _Replace; }
 
 				/* form the union */
 				_OperationRectangle(_this, Union, rectangle);
 			}
 			break;
-			case SDCombineMode_Xor:
+			case CCombineMode_Xor:
 			{
 				/* replace, as needed */
-				if(t == SDRegionType_Empty) { goto _Replace; }
+				if(t == CRegionType_Empty) { goto _Replace; }
 
 				/* form the xor */
 				_OperationRectangle(_this, Xor, rectangle);
 			}
 			break;
-			case SDCombineMode_Exclude:
+			case CCombineMode_Exclude:
 			{
 				/* bail out now if there's nothing to do */
-				SDStatus_Require((t != SDRegionType_Empty), SDStatus_OK);
+				CStatus_Require((t != CRegionType_Empty), CStatus_OK);
 
 				/* form the exclusion */
 				_OperationRectangle(_this, Exclude, rectangle);
 			}
 			break;
-			case SDCombineMode_Complement:
+			case CCombineMode_Complement:
 			{
 				/* replace, as needed */
-				if(t == SDRegionType_Empty) { goto _Replace; }
+				if(t == CRegionType_Empty) { goto _Replace; }
 
 				/* form the empty region, as needed */
-				if(t == SDRegionType_Infinite)
+				if(t == CRegionType_Infinite)
 				{
-					return SDRegion_MakeEmpty(_this);
+					return CRegion_MakeEmpty(_this);
 				}
 
 				/* form the complement */
 				_OperationRectangle(_this, Complement, rectangle);
 			}
 			break;
-			case SDCombineMode_Replace:
+			case CCombineMode_Replace:
 			default:
 			{
 				/* provide local jump target */
@@ -797,18 +797,18 @@ SDRegion_CombineRectangle(SDRegion      *_this,
 				/* add new rectangle */
 				{
 					/* declarations */
-					SDRegionRect *data;
+					CRegionRect *data;
 
 					/* create the rectangle node */
-					SDStatus_Check
-						(SDRegionRect_Create
+					CStatus_Check
+						(CRegionRect_Create
 							(&data, rectangle));
 
 					/* dispose of current region data */
-					SDRegion_Finalize(_this);
+					CRegion_Finalize(_this);
 
 					/* reset the head node */
-					_this->head = (SDRegionNode *)data;
+					_this->head = (CRegionNode *)data;
 				}
 			}
 			break;
@@ -816,119 +816,119 @@ SDRegion_CombineRectangle(SDRegion      *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Form the combination of this region with another region. */
-SDStatus
-SDRegion_CombineRegion(SDRegion      *_this,
-                       SDRegion      *other,
-                       SDCombineMode  combineMode)
+CStatus
+CRegion_CombineRegion(CRegion      *_this,
+                       CRegion      *other,
+                       CCombineMode  combineMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an other pointer */
-	SDStatus_Require((other != 0), SDStatus_ArgumentNull);
+	CStatus_Require((other != 0), CStatus_ArgumentNull);
 
 	/* ensure the combination mode is in range */
-	SDCombineMode_Default(combineMode);
+	CCombineMode_Default(combineMode);
 
 	/* form the combination */
 	{
 		/* declarations */
-		SDRegionType tt;
-		SDRegionType ot;
+		CRegionType tt;
+		CRegionType ot;
 
 		/* get the head node types */
-		tt = SDRegionNode_Type(_this->head);
-		ot = SDRegionNode_Type(other->head);
+		tt = CRegionNode_Type(_this->head);
+		ot = CRegionNode_Type(other->head);
 
 		/* form the combination */
 		switch(combineMode)
 		{
-			case SDCombineMode_Intersect:
+			case CCombineMode_Intersect:
 			{
 				/* bail out now if there's nothing to do */
-				SDStatus_Require((tt != SDRegionType_Empty), SDStatus_OK);
-				SDStatus_Require((ot != SDRegionType_Infinite), SDStatus_OK);
+				CStatus_Require((tt != CRegionType_Empty), CStatus_OK);
+				CStatus_Require((ot != CRegionType_Infinite), CStatus_OK);
 
 				/* replace, as needed */
-				if(tt == SDRegionType_Infinite) { goto _Replace; }
+				if(tt == CRegionType_Infinite) { goto _Replace; }
 
 				/* form the empty region, as needed */
-				if(ot == SDRegionType_Empty)
+				if(ot == CRegionType_Empty)
 				{
-					return SDRegion_MakeEmpty(_this);
+					return CRegion_MakeEmpty(_this);
 				}
 
 				/* form the intersection */
 				_OperationRegion(_this, Intersect, other);
 			}
 			break;
-			case SDCombineMode_Union:
+			case CCombineMode_Union:
 			{
 				/* bail out now if there's nothing to do */
-				SDStatus_Require((ot != SDRegionType_Empty), SDStatus_OK);
-				SDStatus_Require((tt != SDRegionType_Infinite), SDStatus_OK);
+				CStatus_Require((ot != CRegionType_Empty), CStatus_OK);
+				CStatus_Require((tt != CRegionType_Infinite), CStatus_OK);
 
 				/* replace, as needed */
-				if(tt == SDRegionType_Empty) { goto _Replace; }
+				if(tt == CRegionType_Empty) { goto _Replace; }
 
 				/* form the infinite region, as needed */
-				if(ot == SDRegionType_Infinite)
+				if(ot == CRegionType_Infinite)
 				{
-					return SDRegion_MakeInfinite(_this);
+					return CRegion_MakeInfinite(_this);
 				}
 
 				/* form the union */
 				_OperationRegion(_this, Union, other);
 			}
 			break;
-			case SDCombineMode_Xor:
+			case CCombineMode_Xor:
 			{
 				/* bail out now if there's nothing to do */
-				SDStatus_Require((ot != SDRegionType_Empty), SDStatus_OK);
+				CStatus_Require((ot != CRegionType_Empty), CStatus_OK);
 
 				/* replace, as needed */
-				if(tt == SDRegionType_Empty) { goto _Replace; }
+				if(tt == CRegionType_Empty) { goto _Replace; }
 
 				/* form the xor */
 				_OperationRegion(_this, Xor, other);
 			}
 			break;
-			case SDCombineMode_Exclude:
+			case CCombineMode_Exclude:
 			{
 				/* bail out now if there's nothing to do */
-				SDStatus_Require((tt != SDRegionType_Empty), SDStatus_OK);
-				SDStatus_Require((ot != SDRegionType_Empty), SDStatus_OK);
+				CStatus_Require((tt != CRegionType_Empty), CStatus_OK);
+				CStatus_Require((ot != CRegionType_Empty), CStatus_OK);
 
 				/* form the empty region, as needed */
-				if(ot == SDRegionType_Infinite)
+				if(ot == CRegionType_Infinite)
 				{
-					return SDRegion_MakeEmpty(_this);
+					return CRegion_MakeEmpty(_this);
 				}
 
 				/* form the exclusion */
 				_OperationRegion(_this, Exclude, other);
 			}
 			break;
-			case SDCombineMode_Complement:
+			case CCombineMode_Complement:
 			{
 				/* replace, as needed */
-				if(tt == SDRegionType_Empty) { goto _Replace; }
+				if(tt == CRegionType_Empty) { goto _Replace; }
 
 				/* form the empty region, as needed */
-				if(tt == SDRegionType_Infinite || ot == SDRegionType_Empty)
+				if(tt == CRegionType_Infinite || ot == CRegionType_Empty)
 				{
-					return SDRegion_MakeEmpty(_this);
+					return CRegion_MakeEmpty(_this);
 				}
 
 				/* form the complement */
 				_OperationRegion(_this, Complement, other);
 			}
 			break;
-			case SDCombineMode_Replace:
+			case CCombineMode_Replace:
 			default:
 			{
 				/* provide local jump target */
@@ -937,18 +937,18 @@ SDRegion_CombineRegion(SDRegion      *_this,
 				/* add new region */
 				{
 					/* declarations */
-					SDRegionNode *data;
+					CRegionNode *data;
 
 					/* copy the other tree */
-					SDStatus_Check
-						(SDRegionNode_Clone
+					CStatus_Check
+						(CRegionNode_Clone
 							(other->head, &data));
 
 					/* dispose of current region data */
-					SDRegion_Finalize(_this);
+					CRegion_Finalize(_this);
 
 					/* reset the head node */
-					_this->head = (SDRegionNode *)data;
+					_this->head = (CRegionNode *)data;
 				}
 			}
 			break;
@@ -956,245 +956,245 @@ SDRegion_CombineRegion(SDRegion      *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Determine if two regions are equal after applying a transformation. */
-SDStatus
-SDRegion_Equals(SDRegion   *_this,
-                SDRegion   *other,
-                SDGraphics *graphics,
-                SDBool     *eq)
+CStatus
+CRegion_Equals(CRegion   *_this,
+                CRegion   *other,
+                CGraphics *graphics,
+                CBool     *eq)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Get the bounds of this region on a particular graphics context. */
-SDStatus
-SDRegion_GetBounds(SDRegion     *_this,
-                   SDGraphics   *graphics,
-                   SDRectangleF *bounds)
+CStatus
+CRegion_GetBounds(CRegion     *_this,
+                   CGraphics   *graphics,
+                   CRectangleF *bounds)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Get the raw region data for this region. */
-SDStatus
-SDRegion_GetData(SDRegion  *_this,
-                 SDByte   **data,
-                 SDUInt32  *count)
+CStatus
+CRegion_GetData(CRegion  *_this,
+                 CByte   **data,
+                 CUInt32  *count)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Get an array of rectangles which represents this region. */
-SDStatus
-SDRegion_GetRegionScans(SDRegion      *_this,
-                        SDMatrix      *matrix,
-                        SDRectangleF **scans,
-                        SDUInt32      *count)
+CStatus
+CRegion_GetRegionScans(CRegion      *_this,
+                        CMatrix      *matrix,
+                        CRectangleF **scans,
+                        CUInt32      *count)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Determine if this region is empty on a particular graphics context. */
-SDStatus
-SDRegion_IsEmpty(SDRegion   *_this,
-                 SDGraphics *graphics,
-                 SDBool     *empty)
+CStatus
+CRegion_IsEmpty(CRegion   *_this,
+                 CGraphics *graphics,
+                 CBool     *empty)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Determine if this region is infinite on a particular graphics context. */
-SDStatus
-SDRegion_IsInfinite(SDRegion   *_this,
-                    SDGraphics *graphics,
-                    SDBool     *infinite)
+CStatus
+CRegion_IsInfinite(CRegion   *_this,
+                    CGraphics *graphics,
+                    CBool     *infinite)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Determine if a point is contained within this region. */
-SDStatus
-SDRegion_IsVisiblePoint(SDRegion   *_this,
-                        SDGraphics *graphics,
-                        SDPointF    point,
-                        SDBool     *visible)
+CStatus
+CRegion_IsVisiblePoint(CRegion   *_this,
+                        CGraphics *graphics,
+                        CPointF    point,
+                        CBool     *visible)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Determine if any part of a rectangle is contained within this region. */
-SDStatus
-SDRegion_IsVisibleRectangle(SDRegion     *_this,
-                            SDGraphics   *graphics,
-                            SDRectangleF  rectangle,
-                            SDBool       *visible)
+CStatus
+CRegion_IsVisibleRectangle(CRegion     *_this,
+                            CGraphics   *graphics,
+                            CRectangleF  rectangle,
+                            CBool       *visible)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Make this region empty. */
-SDStatus
-SDRegion_MakeEmpty(SDRegion *_this)
+CStatus
+CRegion_MakeEmpty(CRegion *_this)
 {
 	/* declarations */
-	SDRegionNode *data;
+	CRegionNode *data;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* create the empty node */
-	if(!(SDRegionNode_Alloc(data)))
+	if(!(CRegionNode_Alloc(data)))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the empty node */
-	*data = SDRegionNode_Empty;
+	*data = CRegionNode_Empty;
 
 	/* dispose of current region data */
-	SDRegion_Finalize(_this);
+	CRegion_Finalize(_this);
 
 	/* reset the head node */
 	_this->head = data;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Make this region infinite. */
-SDStatus
-SDRegion_MakeInfinite(SDRegion *_this)
+CStatus
+CRegion_MakeInfinite(CRegion *_this)
 {
 	/* declarations */
-	SDRegionNode *data;
+	CRegionNode *data;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* create the infinite node */
-	if(!(SDRegionNode_Alloc(data)))
+	if(!(CRegionNode_Alloc(data)))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the infinite node */
-	*data = SDRegionNode_Infinite;
+	*data = CRegionNode_Infinite;
 
 	/* dispose of current region data */
-	SDRegion_Finalize(_this);
+	CRegion_Finalize(_this);
 
 	/* reset the head node */
 	_this->head = data;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Transform this region by a matrix. */
-SDStatus
-SDRegion_Transform(SDRegion *_this,
-                   SDMatrix *matrix)
+CStatus
+CRegion_Transform(CRegion *_this,
+                   CMatrix *matrix)
 {
 	/* declarations */
-	SDRegionTransformer  transformer;
-	SDAffineTransformF   t;
-	SDBool               eq;
-	SDStatus             status;
+	CRegionTransformer  transformer;
+	CAffineTransformF   t;
+	CBool               eq;
+	CStatus             status;
 	void                *data;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* get the matrix transformation */
-	SDStatus_Check
-		(SDMatrix_GetTransform
+	CStatus_Check
+		(CMatrix_GetTransform
 			(matrix, &t));
 
 	/* determine if we have the identity transformation */
-	SDAffineTransformF_Equals(&t, &SDAffineTransformF_Identity, &eq);
+	CAffineTransformF_Equals(&t, &CAffineTransformF_Identity, &eq);
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require((!eq), SDStatus_OK);
+	CStatus_Require((!eq), CStatus_OK);
 
 	/* initialize the transformer */
-	SDRegionTransformer_Initialize(&transformer, &t);
+	CRegionTransformer_Initialize(&transformer, &t);
 
 	/* transform the region */
 	status =
-		SDRegionInterpreter_Interpret
-			(((SDRegionInterpreter *)(&transformer)), _this->head, &data);
+		CRegionInterpreter_Interpret
+			(((CRegionInterpreter *)(&transformer)), _this->head, &data);
 
 	/* finalize the transformer */
-	SDRegionTransformer_Finalize(&transformer);
+	CRegionTransformer_Finalize(&transformer);
 
 	/* handle change event */
-	SDRegion_OnChange((_this));
+	CRegion_OnChange((_this));
 
 	/* return status */
 	return status;
 }
 
 /* Translate this region by a specific amount. */
-SDStatus
-SDRegion_Translate(SDRegion *_this,
-                   SDFloat   dx,
-                   SDFloat   dy)
+CStatus
+CRegion_Translate(CRegion *_this,
+                   CFloat   dx,
+                   CFloat   dy)
 {
 	/* declarations */
-	SDRegionTranslator  translator;
-	SDStatus            status;
+	CRegionTranslator  translator;
+	CStatus            status;
 	void               *data;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require(((dx != 0.0f) || (dy != 0.0f)), SDStatus_OK);
+	CStatus_Require(((dx != 0.0f) || (dy != 0.0f)), CStatus_OK);
 
 	/* initialize the translator */
-	SDRegionTranslator_Initialize(&translator, dx, dy);
+	CRegionTranslator_Initialize(&translator, dx, dy);
 
 	/* translate the region */
 	status =
-		SDRegionInterpreter_Interpret
-			(((SDRegionInterpreter *)(&translator)), _this->head, &data);
+		CRegionInterpreter_Interpret
+			(((CRegionInterpreter *)(&translator)), _this->head, &data);
 
 	/* finalize the translator */
-	SDRegionTranslator_Finalize(&translator);
+	CRegionTranslator_Finalize(&translator);
 
 	/* handle change event */
-	SDRegion_OnChange((_this));
+	CRegion_OnChange((_this));
 
 	/* return status */
 	return status;
 }
 
 /* Get the mask for this region. */
-SDINTERNAL SDStatus
-SDRegion_GetMask(SDRegion           *_this,
-                 SDAffineTransformF *transform,
+CINTERNAL CStatus
+CRegion_GetMask(CRegion           *_this,
+                 CAffineTransformF *transform,
                  pixman_image_t     *mask)
 {
 	/* declarations */
-	SDUInt32 w;
-	SDUInt32 h;
-	SDBool   g;
+	CUInt32 w;
+	CUInt32 h;
+	CBool   g;
 
 	/* assertions */
-	SDASSERT((_this     != 0));
-	SDASSERT((transform != 0));
-	SDASSERT((mask      != 0));
+	CASSERT((_this     != 0));
+	CASSERT((transform != 0));
+	CASSERT((mask      != 0));
 
 	/* get the mask image information */
 	w = pixman_image_get_width(mask);
@@ -1202,30 +1202,30 @@ SDRegion_GetMask(SDRegion           *_this,
 	g = (pixman_image_get_depth(mask) != 1);
 
 	/* ensure we have a mask for the given settings */
-	SDStatus_Check
-		(SDRegion_GenerateMask
+	CStatus_Check
+		(CRegion_GenerateMask
 			(_this, transform, w, h, g));
 
 	/* copy the mask data */
 	{
 		/* declarations */
-		SDByte   *dst;
-		SDByte   *src;
-		SDUInt32  s;
+		CByte   *dst;
+		CByte   *src;
+		CUInt32  s;
 
 		/* get the mask data */
-		dst = (SDByte *)pixman_image_get_data(mask);
-		src = (SDByte *)pixman_image_get_data(_this->mask.image);
+		dst = (CByte *)pixman_image_get_data(mask);
+		src = (CByte *)pixman_image_get_data(_this->mask.image);
 
 		/* get the stride */
 		s = pixman_image_get_stride(mask);
 
 		/* copy the data */
-		SDMemCopy(dst, src, (h * s));
+		CMemCopy(dst, src, (h * s));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

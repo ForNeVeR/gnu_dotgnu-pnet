@@ -1,5 +1,5 @@
 /*
- * SDX11Surface.h - X11 surface header.
+ * CX11Surface.h - X11 surface header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -20,8 +20,8 @@
 
 #ifdef HAVE_X11_XLIB_H
 
-#ifndef _SD_X11SURFACE_H_
-#define _SD_X11SURFACE_H_
+#ifndef _C_X11SURFACE_H_
+#define _C_X11SURFACE_H_
 
 #include "CSurface.h"
 
@@ -29,43 +29,43 @@
 extern "C" {
 #endif
 
-struct _tagSDX11Surface
+struct _tagCX11Surface
 {
-	SDSurface  _base;
-	Display   *dpy;
-	Screen    *screen;
-	Visual    *visual;
-	GC         gc;
-	Drawable   drawable;
-	SDFloat    dpi;
-	int        depth;
+	CSurface  _base;
+	Display  *dpy;
+	Screen   *screen;
+	Visual   *visual;
+	GC        gc;
+	Drawable  drawable;
+	CFloat    dpi;
+	int       depth;
 };
 
-static SDStatus
-SDX11Surface_Composite(SDSurface         *_this,
-                       SDUInt32           x,
-                       SDUInt32           y,
-                       SDUInt32           width,
-                       SDUInt32           height,
-                       pixman_image_t    *src,
-                       pixman_image_t    *mask,
-                       pixman_operator_t  op);
-static SDStatus
-SDX11Surface_Clear(SDSurface *_this,
-                   SDColor    color);
-static SDStatus
-SDX11Surface_Flush(SDSurface        *_this,
-                   SDFlushIntention  intention);
+static CStatus
+CX11Surface_Composite(CSurface          *_this,
+                      CUInt32            x,
+                      CUInt32            y,
+                      CUInt32            width,
+                      CUInt32            height,
+                      pixman_image_t    *src,
+                      pixman_image_t    *mask,
+                      pixman_operator_t  op);
+static CStatus
+CX11Surface_Clear(CSurface *_this,
+                  CColor    color);
+static CStatus
+CX11Surface_Flush(CSurface        *_this,
+                  CFlushIntention  intention);
 static void
-SDX11Surface_Finalize(SDSurface *_this);
+CX11Surface_Finalize(CSurface *_this);
 
 
-static const SDSurfaceClass SDX11Surface_Class =
+static const CSurfaceClassCDX11Surface_Class =
 {
-	SDX11Surface_Composite,
-	SDX11Surface_Clear,
-	SDX11Surface_Flush,
-	SDX11Surface_Finalize,
+	CX11Surface_Composite,
+	CX11Surface_Clear,
+	CX11Surface_Flush,
+	CX11Surface_Finalize,
 	"sentinel"
 };
 
@@ -73,6 +73,6 @@ static const SDSurfaceClass SDX11Surface_Class =
 };
 #endif
 
-#endif /* _SD_X11SURFACE_H_ */
+#endif /* _C_X11SURFACE_H_ */
 
 #endif /* HAVE_X11_XLIB_H */

@@ -1,5 +1,5 @@
 /*
- * SDBrush.h - Brush header.
+ * CBrush.h - Brush header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_BRUSH_H_
-#define _SD_BRUSH_H_
+#ifndef _C_BRUSH_H_
+#define _C_BRUSH_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,20 +27,20 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDBrushClass SDBrushClass;
+typedef struct _tagCBrushClass CBrushClass;
 
-struct _tagSDBrush
+struct _tagCBrush
 {
-	const SDBrushClass *_class;
-	SDPattern           pattern;
+	const CBrushClass *_class;
+	CPattern           pattern;
 };
 
-struct _tagSDBrushClass
+struct _tagCBrushClass
 {
 	/*\
 	|*| The type of the brush.
 	\*/
-	SDBrushType type;
+	CBrushType type;
 
 	/*\
 	|*| Clone this brush.
@@ -50,15 +50,15 @@ struct _tagSDBrushClass
 	|*|
 	|*|  Returns status code.
 	\*/
-	SDStatus (*Clone)(SDBrush  *_this,
-	                  SDBrush **clone);
+	CStatus (*Clone)(CBrush  *_this,
+                     CBrush **clone);
 
 	/*\
 	|*| Finalize this brush.
 	|*|
 	|*|   _this - this brush
 	\*/
-	void (*Finalize)(SDBrush *_this);
+	void (*Finalize)(CBrush *_this);
 
 	/*\
 	|*| Create a pattern for this brush.
@@ -68,8 +68,8 @@ struct _tagSDBrushClass
 	|*|
 	|*|  Returns status code.
 	\*/
-	SDStatus (*CreatePattern)(SDBrush   *_this,
-	                          SDPattern *pattern);
+	CStatus (*CreatePattern)(CBrush   *_this,
+	                         CPattern *pattern);
 
 	/*\
 	|*| Sentinel string to catch missing methods in class tables.
@@ -78,17 +78,17 @@ struct _tagSDBrushClass
 };
 
 
-SDINTERNAL void
-SDBrush_Initialize(SDBrush            *_this,
-                   const SDBrushClass *_class);
-SDINTERNAL void
-SDBrush_OnChange(SDBrush *_this);
-SDINTERNAL SDStatus
-SDBrush_GetPattern(SDBrush   *_this,
-                   SDPattern *pattern);
+CINTERNAL void
+CBrush_Initialize(CBrush            *_this,
+                  const CBrushClass *_class);
+CINTERNAL void
+CBrush_OnChange(CBrush *_this);
+CINTERNAL CStatus
+CBrush_GetPattern(CBrush   *_this,
+                  CPattern *pattern);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_BRUSH_H_ */
+#endif /* _C_BRUSH_H_ */

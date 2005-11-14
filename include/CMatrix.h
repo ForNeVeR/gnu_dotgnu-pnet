@@ -1,5 +1,5 @@
 /*
- * SDMatrix.h - Matrix header.
+ * CMatrix.h - Matrix header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_MATRIX_H_
-#define _SD_MATRIX_H_
+#ifndef _C_MATRIX_H_
+#define _C_MATRIX_H_
 
 #include "CAffineTransform.h"
 
@@ -27,20 +27,20 @@
 extern "C" {
 #endif
 
-struct _tagSDMatrix
+struct _tagCMatrix
 {
-	SDAffineTransformF transform;
+	CAffineTransformF transform;
 };
 
-SDINTERNAL SDStatus
-SDMatrix_GetTransform(SDMatrix           *_this,
-                      SDAffineTransformF *transform);
-SDINTERNAL SDStatus
-SDMatrix_SetTransform(SDMatrix           *_this,
-                      SDAffineTransformF *transform);
+CINTERNAL CStatus
+CMatrix_GetTransform(CMatrix           *_this,
+                     CAffineTransformF *transform);
+CINTERNAL CStatus
+CMatrix_SetTransform(CMatrix           *_this,
+                     CAffineTransformF *transform);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_MATRIX_H_ */
+#endif /* _C_MATRIX_H_ */

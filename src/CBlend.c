@@ -1,5 +1,5 @@
 /*
- * SDBlend.c - Gradient blending implementation.
+ * CBlend.c - Gradient blending implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -25,96 +25,96 @@
 extern "C" {
 #endif
 
-SDINTERNAL SDStatus
-SDBlend_Initialize(SDBlend  *_this,
-                   SDUInt32  count)
+CINTERNAL CStatus
+CBlend_Initialize(CBlend  *_this,
+                   CUInt32  count)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((count != 0));
+	CASSERT((_this != 0));
+	CASSERT((count != 0));
 
 	/* allocate the factors */
-	if(!(_this->factors = (SDFloat *)SDMalloc(count * sizeof(SDFloat))))
+	if(!(_this->factors = (CFloat *)CMalloc(count * sizeof(CFloat))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* allocate the positions */
-	if(!(_this->positions = (SDFloat *)SDMalloc(count * sizeof(SDFloat))))
+	if(!(_this->positions = (CFloat *)CMalloc(count * sizeof(CFloat))))
 	{
-		SDFree(_this->factors);
-		return SDStatus_OutOfMemory;
+		CFree(_this->factors);
+		return CStatus_OutOfMemory;
 	}
 
 	/* set the count */
 	_this->count = count;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDBlend_Copy(SDBlend *_this,
-             SDBlend *copy)
+CINTERNAL CStatus
+CBlend_Copy(CBlend *_this,
+             CBlend *copy)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((copy  != 0));
+	CASSERT((_this != 0));
+	CASSERT((copy  != 0));
 
 	/* copy the blend */
 	{
 		/* get the count */
-		const SDUInt32 count = _this->count;
+		const CUInt32 count = _this->count;
 
 		/* get the size */
-		const SDUInt32 size = (count * sizeof(SDFloat));
+		const CUInt32 size = (count * sizeof(CFloat));
 
 		/* handle trivial case */
 		if(count == 0)
 		{
-			*copy = SDBlend_Zero;
+			*copy = CBlend_Zero;
 		}
 
 		/* allocate the factors */
-		if(!(copy->factors = (SDFloat *)SDMalloc(size)))
+		if(!(copy->factors = (CFloat *)CMalloc(size)))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* copy the factors */
-		SDMemCopy(copy->factors, _this->factors, size);
+		CMemCopy(copy->factors, _this->factors, size);
 
 		/* allocate the positions */
-		if(!(copy->positions = (SDFloat *)SDMalloc(size)))
+		if(!(copy->positions = (CFloat *)CMalloc(size)))
 		{
-			SDFree(copy->factors);
-			return SDStatus_OutOfMemory;
+			CFree(copy->factors);
+			return CStatus_OutOfMemory;
 		}
 
 		/* copy the positions */
-		SDMemCopy(copy->positions, _this->positions, size);
+		CMemCopy(copy->positions, _this->positions, size);
 
 		/* copy the count */
 		copy->count = count;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL void
-SDBlend_SetTriangularShape(SDBlend *_this,
-                           SDFloat  focus,
-                           SDFloat  scale)
+CINTERNAL void
+CBlend_SetTriangularShape(CBlend *_this,
+                           CFloat  focus,
+                           CFloat  scale)
 {
 	/* declarations */
-	SDFloat *currF;
-	SDFloat *currP;
+	CFloat *currF;
+	CFloat *currP;
 
 	/* assertions */
-	SDASSERT((_this            != 0));
-	SDASSERT((_this->factors   != 0));
-	SDASSERT((_this->positions != 0));
+	CASSERT((_this            != 0));
+	CASSERT((_this->factors   != 0));
+	CASSERT((_this->positions != 0));
 
 	/* get the output pointers */
 	currF = _this->factors;
@@ -124,7 +124,7 @@ SDBlend_SetTriangularShape(SDBlend *_this,
 	if(focus == 0.0f)
 	{
 		/* assertions */
-		SDASSERT((_this->count == SDBlend_TriangularHalfCount));
+		CASSERT((_this->count == CBlend_TriangularHalfCount));
 
 		/* set the starting factor and position */
 		*currF++ = scale;
@@ -137,7 +137,7 @@ SDBlend_SetTriangularShape(SDBlend *_this,
 	else if(focus == 1.0f)
 	{
 		/* assertions */
-		SDASSERT((_this->count == SDBlend_TriangularHalfCount));
+		CASSERT((_this->count == CBlend_TriangularHalfCount));
 
 		/* set the starting factor and position */
 		*currF++ = 0.0f;
@@ -150,7 +150,7 @@ SDBlend_SetTriangularShape(SDBlend *_this,
 	else
 	{
 		/* assertions */
-		SDASSERT((_this->count == SDBlend_TriangularFullCount));
+		CASSERT((_this->count == CBlend_TriangularFullCount));
 
 		/* set the starting factor and position */
 		*currF++ = 0.0f;
@@ -166,10 +166,10 @@ SDBlend_SetTriangularShape(SDBlend *_this,
 	}
 }
 
-SDINTERNAL void
-SDBlend_SetSigmaBellShape(SDBlend *_this,
-                          SDFloat  focus,
-                          SDFloat  scale)
+CINTERNAL void
+CBlend_SetSigmaBellShape(CBlend *_this,
+                          CFloat  focus,
+                          CFloat  scale)
 {
 	/*\
 	|*| NOTE: The cumulative distribution function of the standard normal
@@ -191,14 +191,14 @@ SDBlend_SetSigmaBellShape(SDBlend *_this,
 	\*/
 
 	/* declarations */
-	SDFloat *currF;
-	SDFloat *currP;
-	SDFloat *last;
+	CFloat *currF;
+	CFloat *currP;
+	CFloat *last;
 
 	/* assertions */
-	SDASSERT((_this            != 0));
-	SDASSERT((_this->factors   != 0));
-	SDASSERT((_this->positions != 0));
+	CASSERT((_this            != 0));
+	CASSERT((_this->factors   != 0));
+	CASSERT((_this->positions != 0));
 
 	/* get the output pointers */
 	currF = _this->factors;
@@ -211,34 +211,34 @@ SDBlend_SetSigmaBellShape(SDBlend *_this,
 	#define _CALC_Z(pos) (((pos) * zmul) + zoff)
 
 	/* define the factor calculation */
-	#define _CALC_F(pos) ((SDMath_Erf(_CALC_Z(pos)) * fmul) + foff)
+	#define _CALC_F(pos) ((CMath_Erf(_CALC_Z(pos)) * fmul) + foff)
 
 	/* set the blend factors and positions */
 	if(focus == 0.0f)
 	{
 		/* declarations */
-		SDFloat pos;
+		CFloat pos;
 
 		/* calculate distance between samples */
-		const SDDouble delta = (1.0f / 255.0f);
+		const CDouble delta = (1.0f / 255.0f);
 
 		/* calculate error function input multiplier (sigma = 1/2) */
-		const SDDouble zmul = (1.0f / (0.5f * SDMath_Sqrt(2.0f)));
+		const CDouble zmul = (1.0f / (0.5f * CMath_Sqrt(2.0f)));
 
 		/* calculate error function input offset (mu = 1/2) */
-		const SDDouble zoff = -(0.5f * zmul);
+		const CDouble zoff = -(0.5f * zmul);
 
 		/* calculate the curve extrema */
-		const SDDouble cmax  = (0.5f * (1.0f - SDMath_Erf(_CALC_Z(0.0f))));
-		const SDDouble cmin  = (0.5f * (1.0f - SDMath_Erf(_CALC_Z(1.0f))));
-		const SDDouble cdiff = (cmax - cmin);
+		const CDouble cmax  = (0.5f * (1.0f - CMath_Erf(_CALC_Z(0.0f))));
+		const CDouble cmin  = (0.5f * (1.0f - CMath_Erf(_CALC_Z(1.0f))));
+		const CDouble cdiff = (cmax - cmin);
 
 		/* precalculate factor calculation values */
-		const SDDouble foff =  ((scale * (0.5f - cmin)) / cdiff);
-		const SDDouble fmul = -((scale * (0.5f       )) / cdiff);
+		const CDouble foff =  ((scale * (0.5f - cmin)) / cdiff);
+		const CDouble fmul = -((scale * (0.5f       )) / cdiff);
 
 		/* assertions */
-		SDASSERT((_this->count == SDBlend_SigmaBellHalfCount));
+		CASSERT((_this->count == CBlend_SigmaBellHalfCount));
 
 		/* set the starting factor and position */
 		*currF++ = scale;
@@ -265,28 +265,28 @@ SDBlend_SetSigmaBellShape(SDBlend *_this,
 	else if(focus == 1.0f)
 	{
 		/* declarations */
-		SDFloat pos;
+		CFloat pos;
 
 		/* calculate distance between samples */
-		const SDDouble delta = (1.0f / 255.0f);
+		const CDouble delta = (1.0f / 255.0f);
 
 		/* calculate error function input multiplier (sigma = 1/2) */
-		const SDDouble zmul = (1.0f / (0.5f * SDMath_Sqrt(2.0f)));
+		const CDouble zmul = (1.0f / (0.5f * CMath_Sqrt(2.0f)));
 
 		/* calculate error function input offset (mu = 1/2) */
-		const SDDouble zoff = -(0.5f * zmul);
+		const CDouble zoff = -(0.5f * zmul);
 
 		/* calculate the curve extrema */
-		const SDDouble cmax  = (0.5f * (1.0f + SDMath_Erf(_CALC_Z(1.0f))));
-		const SDDouble cmin  = (0.5f * (1.0f + SDMath_Erf(_CALC_Z(0.0f))));
-		const SDDouble cdiff = (cmax - cmin);
+		const CDouble cmax  = (0.5f * (1.0f + CMath_Erf(_CALC_Z(1.0f))));
+		const CDouble cmin  = (0.5f * (1.0f + CMath_Erf(_CALC_Z(0.0f))));
+		const CDouble cdiff = (cmax - cmin);
 
 		/* precalculate factor calculation values */
-		const SDDouble foff = ((scale * (0.5f - cmin)) / cdiff);
-		const SDDouble fmul = ((scale * (0.5f       )) / cdiff);
+		const CDouble foff = ((scale * (0.5f - cmin)) / cdiff);
+		const CDouble fmul = ((scale * (0.5f       )) / cdiff);
 
 		/* assertions */
-		SDASSERT((_this->count == SDBlend_SigmaBellHalfCount));
+		CASSERT((_this->count == CBlend_SigmaBellHalfCount));
 
 		/* set the starting factor and position */
 		*currF++ = 0.0f;
@@ -313,26 +313,26 @@ SDBlend_SetSigmaBellShape(SDBlend *_this,
 	else
 	{
 		/* declarations */
-		SDDouble pos, delta, zmul, zoff, cmax, cmin, cdiff, foff, fmul;
+		CDouble pos, delta, zmul, zoff, cmax, cmin, cdiff, foff, fmul;
 
 		/* get the middle of output pointer */
-		SDFloat *const middle = (currF + 256);
+		CFloat *const middle = (currF + 256);
 
 		/* assertions */
-		SDASSERT((_this->count == SDBlend_SigmaBellFullCount));
+		CASSERT((_this->count == CBlend_SigmaBellFullCount));
 
 		/* calculate distance between samples */
 		delta = (focus / 255.0f);
 
 		/* calculate error function input multiplier (sigma = focus/4) */
-		zmul = (1.0f / (focus * 0.25f * SDMath_Sqrt(2.0f)));
+		zmul = (1.0f / (focus * 0.25f * CMath_Sqrt(2.0f)));
 
 		/* calculate error function input offset (mu = focus/2) */
 		zoff = -(focus * 0.5f * zmul);
 
 		/* calculate the curve extrema */
-		cmax  = (0.5f * (1.0f + SDMath_Erf(_CALC_Z(focus))));
-		cmin  = (0.5f * (1.0f + SDMath_Erf(_CALC_Z(0.0f))));
+		cmax  = (0.5f * (1.0f + CMath_Erf(_CALC_Z(focus))));
+		cmin  = (0.5f * (1.0f + CMath_Erf(_CALC_Z(0.0f))));
 		cdiff = (cmax - cmin);
 
 		/* precalculate factor calculation values */
@@ -365,14 +365,14 @@ SDBlend_SetSigmaBellShape(SDBlend *_this,
 		delta = ((1.0f - focus) / 255.0f);
 
 		/* calculate error function input multiplier (sigma = (1-focus)/4) */
-		zmul = (1.0f / ((1.0f - focus) * 0.25f * SDMath_Sqrt(2.0f)));
+		zmul = (1.0f / ((1.0f - focus) * 0.25f * CMath_Sqrt(2.0f)));
 
 		/* calculate error function input offset (mu = (1+focus)/2) */
 		zoff = -((1.0f + focus) * 0.5f * zmul);
 
 		/* calculate the curve extrema */
-		cmax  = (0.5f * (1.0f - SDMath_Erf(_CALC_Z(focus))));
-		cmin  = (0.5f * (1.0f - SDMath_Erf(_CALC_Z(1.0f))));
+		cmax  = (0.5f * (1.0f - CMath_Erf(_CALC_Z(focus))));
+		cmin  = (0.5f * (1.0f - CMath_Erf(_CALC_Z(1.0f))));
 		cdiff = (cmax - cmin);
 
 		/* precalculate factor calculation values */
@@ -403,84 +403,84 @@ SDBlend_SetSigmaBellShape(SDBlend *_this,
 	#undef _CALC_F
 }
 
-SDINTERNAL void
-SDBlend_Finalize(SDBlend *_this)
+CINTERNAL void
+CBlend_Finalize(CBlend *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the blend, as needed */
 	if(_this->count != 0)
 	{
-		SDFree(_this->factors);
-		SDFree(_this->positions);
+		CFree(_this->factors);
+		CFree(_this->positions);
 		_this->count = 0;
 	}
 }
 
-SDINTERNAL SDStatus
-SDColorBlend_Copy(SDColorBlend *_this,
-                  SDColorBlend *copy)
+CINTERNAL CStatus
+CColorBlend_Copy(CColorBlend *_this,
+                  CColorBlend *copy)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((copy  != 0));
+	CASSERT((_this != 0));
+	CASSERT((copy  != 0));
 
 	/* copy the color blend */
 	{
 		/* get the count */
-		const SDUInt32 count = _this->count;
+		const CUInt32 count = _this->count;
 
 		/* get the color size */
-		const SDUInt32 sizeC = (count * sizeof(SDColor));
+		const CUInt32 sizeC = (count * sizeof(CColor));
 
 		/* get the position size */
-		const SDUInt32 sizeP = (count * sizeof(SDFloat));
+		const CUInt32 sizeP = (count * sizeof(CFloat));
 
 		/* handle trivial case */
 		if(count == 0)
 		{
-			*copy = SDColorBlend_Zero;
+			*copy = CColorBlend_Zero;
 		}
 
 		/* allocate the colors */
-		if(!(copy->colors = (SDColor *)SDMalloc(sizeC)))
+		if(!(copy->colors = (CColor *)CMalloc(sizeC)))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* copy the colors */
-		SDMemCopy(copy->colors, _this->colors, sizeC);
+		CMemCopy(copy->colors, _this->colors, sizeC);
 
 		/* allocate the positions */
-		if(!(copy->positions = (SDFloat *)SDMalloc(sizeP)))
+		if(!(copy->positions = (CFloat *)CMalloc(sizeP)))
 		{
-			SDFree(copy->colors);
-			return SDStatus_OutOfMemory;
+			CFree(copy->colors);
+			return CStatus_OutOfMemory;
 		}
 
 		/* copy the positions */
-		SDMemCopy(copy->positions, _this->positions, sizeP);
+		CMemCopy(copy->positions, _this->positions, sizeP);
 
 		/* copy the count */
 		copy->count = count;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL void
-SDColorBlend_Finalize(SDColorBlend *_this)
+CINTERNAL void
+CColorBlend_Finalize(CColorBlend *_this)
 {
 	/* assertions */
-	SDASSERT((_this        != 0));
+	CASSERT((_this        != 0));
 
 	/* finalize the blend, as needed */
 	if(_this->count != 0)
 	{
-		SDFree(_this->colors);
-		SDFree(_this->positions);
+		CFree(_this->colors);
+		CFree(_this->positions);
 		_this->count = 0;
 	}
 }

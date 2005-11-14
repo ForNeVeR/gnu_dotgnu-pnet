@@ -1,5 +1,5 @@
 /*
- * SDBitmap.c - Bitmap implementation.
+ * CBitmap.c - Bitmap implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -26,25 +26,25 @@ extern "C" {
 #endif
 
 /* Initialize this bitmap. */
-static SDStatus
-SDBitmap_Initialize(SDBitmap      *_this,
-                    SDUInt32       width,
-                    SDUInt32       height,
-                    SDPixelFormat  format)
+static CStatus
+CBitmap_Initialize(CBitmap      *_this,
+                    CUInt32       width,
+                    CUInt32       height,
+                    CPixelFormat  format)
 {
 	/* declarations */
 	pixman_format_t *fmt;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the members */
-	_this->type        = SDImageType_Bitmap;
-	_this->format      = SDImageFormat_MemoryBMP;
-	_this->flags       = SDImageFlag_None;
+	_this->type        = CImageType_Bitmap;
+	_this->format      = CImageFormat_MemoryBMP;
+	_this->flags       = CImageFlag_None;
 	_this->pixelFormat = format;
-	_this->dpiX        = SDGraphics_DefaultDpiX;
-	_this->dpiY        = SDGraphics_DefaultDpiY;
+	_this->dpiX        = CGraphics_DefaultDpiX;
+	_this->dpiY        = CGraphics_DefaultDpiY;
 	_this->width       = width;
 	_this->height      = height;
 	_this->bitmapDataX = 0;
@@ -55,15 +55,15 @@ SDBitmap_Initialize(SDBitmap      *_this,
 	_this->refCount    = 1;
 
 	/* create the mutex */
-	SDStatus_Check
-		(SDMutex_Create
+	CStatus_Check
+		(CMutex_Create
 			(&(_this->lock)));
 
 	/* create the pixman format */
 	if(!(fmt = pixman_format_create(PIXMAN_FORMAT_NAME_ARGB32)))
 	{
-		SDMutex_Destroy(&(_this->lock));
-		return SDStatus_OutOfMemory;
+		CMutex_Destroy(&(_this->lock));
+		return CStatus_OutOfMemory;
 	}
 
 	/* create the pixman image */
@@ -75,209 +75,209 @@ SDBitmap_Initialize(SDBitmap      *_this,
 	/* handle image creation failures */
 	if(_this->image == 0)
 	{
-		SDMutex_Destroy(&(_this->lock));
-		return SDStatus_OutOfMemory;
+		CMutex_Destroy(&(_this->lock));
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the pixman image data */
 	{
 		/* declarations */
-		SDByte   *d;
-		SDUInt32  h;
-		SDUInt32  s;
+		CByte   *d;
+		CUInt32  h;
+		CUInt32  s;
 
 		/* get the pixman image information */
-		d = (SDByte *)pixman_image_get_data(_this->image);
-		h = (SDUInt32)pixman_image_get_height(_this->image);
-		s = (SDUInt32)pixman_image_get_stride(_this->image);
+		d = (CByte *)pixman_image_get_data(_this->image);
+		h = (CUInt32)pixman_image_get_height(_this->image);
+		s = (CUInt32)pixman_image_get_stride(_this->image);
 
 		/* initialize the data */
-		SDMemSet(d, 0x00, (h * s));
+		CMemSet(d, 0x00, (h * s));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Create a bitmap. */
 #if 0
-SDStatus
-SDBitmap_CreateStream(SDBitmap **_this,
-                      SDStream  *stream,
-                      SDBool     useICM)
+CStatus
+CBitmap_CreateStream(CBitmap **_this,
+                      CStream  *stream,
+                      CBool     useICM)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
-SDStatus
-SDBitmap_CreateFile(SDBitmap **_this,
-                    SDChar16  *filename,
-                    SDBool     useICM)
+CStatus
+CBitmap_CreateFile(CBitmap **_this,
+                    CChar16  *filename,
+                    CBool     useICM)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 #endif
 
-SDStatus
-SDBitmap_Create(SDBitmap      **_this,
-                SDUInt32        width,
-                SDUInt32        height,
-                SDPixelFormat   format)
+CStatus
+CBitmap_Create(CBitmap      **_this,
+                CUInt32        width,
+                CUInt32        height,
+                CPixelFormat   format)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the bitmap */
-	if(!(*_this = (SDBitmap *)SDMalloc(sizeof(SDBitmap))))
+	if(!(*_this = (CBitmap *)CMalloc(sizeof(CBitmap))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the members */
-	status = SDBitmap_Initialize(*_this, width, height, format);
+	status = CBitmap_Initialize(*_this, width, height, format);
 
 	/* handle initialization failures */
-	if(status != SDStatus_OK)
+	if(status != CStatus_OK)
 	{
-		SDFree(*_this);
+		CFree(*_this);
 		*_this = 0;
 		return status;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDBitmap_CreateData(SDBitmap      **_this,
-                    SDByte         *data,
-                    SDUInt32        width,
-                    SDUInt32        height,
-                    SDUInt32        stride,
-                    SDPixelFormat   format)
+CStatus
+CBitmap_CreateData(CBitmap      **_this,
+                    CByte         *data,
+                    CUInt32        width,
+                    CUInt32        height,
+                    CUInt32        stride,
+                    CPixelFormat   format)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a data pointer */
-	SDStatus_Require((data != 0), SDStatus_ArgumentNull);
+	CStatus_Require((data != 0), CStatus_ArgumentNull);
 
 	/* create the bitmap */
-	SDStatus_Check
-		(SDBitmap_Create
+	CStatus_Check
+		(CBitmap_Create
 			(_this, width, height, format));
 
 	/* initialize the pixman image data */
 	status =
-		SDUtils_ToPixmanImage
+		CUtils_ToPixmanImage
 			(format, data, (*_this)->image, 0, 0, width, height, stride,
 			 (*_this)->palette);
 
 	/* handle image data initialization failures */
-	if(status != SDStatus_OK)
+	if(status != CStatus_OK)
 	{
-		SDBitmap_Destroy(_this);
+		CBitmap_Destroy(_this);
 		return status;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Destroy this bitmap. */
-SDStatus
-SDBitmap_Destroy(SDBitmap **_this)
+CStatus
+CBitmap_Destroy(CBitmap **_this)
 {
-	return SDImage_Destroy(_this);
+	return CImage_Destroy(_this);
 }
 
 /* Clone this bitmap and transform it into a new pixel format. */
-SDStatus
-SDBitmap_Clone(SDBitmap       *_this,
-               SDBitmap      **clone,
-               SDUInt32        x,
-               SDUInt32        y,
-               SDUInt32        width,
-               SDUInt32        height,
-               SDPixelFormat   format)
+CStatus
+CBitmap_Clone(CBitmap       *_this,
+               CBitmap      **clone,
+               CUInt32        x,
+               CUInt32        y,
+               CUInt32        width,
+               CUInt32        height,
+               CPixelFormat   format)
 {
 	/* declarations */
-	SDStatus     status;
-	SDBitmapData bd;
+	CStatus     status;
+	CBitmapData bd;
 
 	/* lock the image data */
-	SDStatus_Check
-		(SDBitmap_LockBits
+	CStatus_Check
+		(CBitmap_LockBits
 			(_this, x, y, width, height,
-			 SDImageLockMode_ReadOnly, format, &bd));
+			 CImageLockMode_ReadOnly, format, &bd));
 
 	/* create the bitmap */
 	status =
-		SDBitmap_CreateData
+		CBitmap_CreateData
 			(clone, bd.scan0, width, height, bd.stride, format);
 
 	/* unlock the image data */
-	SDBitmap_UnlockBits(_this, &bd);
+	CBitmap_UnlockBits(_this, &bd);
 
 	/* return status */
 	return status;
 }
 
 /* Get the color of a specific pixel. */
-SDStatus
-SDBitmap_GetPixel(SDBitmap *_this,
-                  SDUInt32  x,
-                  SDUInt32  y,
-                  SDColor  *color)
+CStatus
+CBitmap_GetPixel(CBitmap *_this,
+                  CUInt32  x,
+                  CUInt32  y,
+                  CColor  *color)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a color pointer */
-	SDStatus_Require((color != 0), SDStatus_ArgumentNull);
+	CStatus_Require((color != 0), CStatus_ArgumentNull);
 
 	/* get the pixel synchronously */
-	SDMutex_Lock(_this->lock);
+	CMutex_Lock(_this->lock);
 	{
 		/* declarations */
-		SDStatus  status;
-		SDColor  *pixel;
+		CStatus  status;
+		CColor  *pixel;
 
 		/* ensure the image data isn't locked */
 		if(_this->locked)
 		{
-			SDMutex_Unlock(_this->lock);
-			return SDStatus_InvalidOperation_ImageLocked;
+			CMutex_Unlock(_this->lock);
+			return CStatus_InvalidOperation_ImageLocked;
 		}
 
 		/* get the pixel pointer */
 		status =
-			SDUtils_GetPixmanPixelPointer
+			CUtils_GetPixmanPixelPointer
 				(_this->image, x, y, &pixel);
 
 		/* ensure we have a pixel pointer */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDMutex_Unlock(_this->lock);
+			CMutex_Unlock(_this->lock);
 			return status;
 		}
 
 		/* get the pixel color */
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the pixel color components */
-			SDPixmanPixel_ToARGB(*pixel, a, r, g, b);
+			CPixmanPixel_ToARGB(*pixel, a, r, g, b);
 
 			/* get the pixel color based on transparency */
 			if(a == 0)
 			{
-				*color = SDColor_FromARGB(0, 0, 0, 0);
+				*color = CColor_FromARGB(0, 0, 0, 0);
 			}
 			else
 			{
@@ -287,104 +287,104 @@ SDBitmap_GetPixel(SDBitmap *_this,
 				r = (((r << 8) - r) / a);
 
 				/* get the pixel color */
-				*color = SDColor_FromARGB(a, r, g, b);
+				*color = CColor_FromARGB(a, r, g, b);
 			}
 		}
 	}
-	SDMutex_Unlock(_this->lock);
+	CMutex_Unlock(_this->lock);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set a pixel within this bitmap. */
-SDStatus
-SDBitmap_SetPixel(SDBitmap *_this,
-                  SDUInt32  x,
-                  SDUInt32  y,
-                  SDColor   color)
+CStatus
+CBitmap_SetPixel(CBitmap *_this,
+                  CUInt32  x,
+                  CUInt32  y,
+                  CColor   color)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the pixel synchronously */
-	SDMutex_Lock(_this->lock);
+	CMutex_Lock(_this->lock);
 	{
 		/* declarations */
-		SDStatus  status;
-		SDColor  *pixel;
+		CStatus  status;
+		CColor  *pixel;
 
 		/* ensure the image data isn't locked */
 		if(_this->locked)
 		{
-			SDMutex_Unlock(_this->lock);
-			return SDStatus_InvalidOperation_ImageLocked;
+			CMutex_Unlock(_this->lock);
+			return CStatus_InvalidOperation_ImageLocked;
 		}
 
 		/* get the pixel pointer */
 		status =
-			SDUtils_GetPixmanPixelPointer
+			CUtils_GetPixmanPixelPointer
 				(_this->image, x, y, &pixel);
 
 		/* ensure we have a pixel pointer */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDMutex_Unlock(_this->lock);
+			CMutex_Unlock(_this->lock);
 			return status;
 		}
 
 		/* get the pixel value */
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the color components */
-			a = SDColor_A(color);
-			r = SDColor_R(color);
-			g = SDColor_G(color);
-			b = SDColor_B(color);
+			a = CColor_A(color);
+			r = CColor_R(color);
+			g = CColor_G(color);
+			b = CColor_B(color);
 
 			/* set the pixel color based on the transparency */
 			if(a == 0)
 			{
-				*pixel = SDPixmanPixel_FromARGB(0, 0, 0, 0);
+				*pixel = CPixmanPixel_FromARGB(0, 0, 0, 0);
 			}
 			else
 			{
 				*pixel =
-					SDPixmanPixel_FromARGB
+					CPixmanPixel_FromARGB
 						(a, ((r * a) / 255), ((g * a) / 255), ((b * a) / 255));
 			}
 		}
 	}
-	SDMutex_Unlock(_this->lock);
+	CMutex_Unlock(_this->lock);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Make the bitmap data from the current image data. */
-static SDStatus
-SDBitmap_MakeBitmapData(SDBitmap        *_this,
-                        SDUInt32         x,
-                        SDUInt32         y,
-                        SDUInt32         width,
-                        SDUInt32         height,
-                        SDImageLockMode  lockMode,
-                        SDPixelFormat    format)
+static CStatus
+CBitmap_MakeBitmapData(CBitmap        *_this,
+                        CUInt32         x,
+                        CUInt32         y,
+                        CUInt32         width,
+                        CUInt32         height,
+                        CImageLockMode  lockMode,
+                        CPixelFormat    format)
 {
 	/* declarations */
-	SDUInt32 stride;
+	CUInt32 stride;
 
 	/* assertions */
-	SDASSERT((_this             != 0));
-	SDASSERT((_this->bitmapData == 0));
+	CASSERT((_this             != 0));
+	CASSERT((_this->bitmapData == 0));
 
 	/* ensure we have a valid lock mode */
-	if(lockMode < SDImageLockMode_ReadOnly ||
-	   lockMode > SDImageLockMode_ReadWrite)
+	if(lockMode < CImageLockMode_ReadOnly ||
+	   lockMode > CImageLockMode_ReadWrite)
 	{
-		return SDStatus_Argument;
+		return CStatus_Argument;
 	}
 
 	/* ensure the rectangle is in bounds */
@@ -393,60 +393,60 @@ SDBitmap_MakeBitmapData(SDBitmap        *_this,
 	   ((x + width) > _this->width) ||
 	   ((y + height) > _this->height))
 	{
-		return SDStatus_ArgumentOutOfRange;
+		return CStatus_ArgumentOutOfRange;
 	}
 
 	/* calculate the stride based on the pixel format */
 	switch(format)
 	{
-		case SDPixelFormat_1bppIndexed:
-		case SDPixelFormat_4bppIndexed:
-		case SDPixelFormat_8bppIndexed:
-		case SDPixelFormat_48bppRgb:
-		case SDPixelFormat_64bppArgb:
-		case SDPixelFormat_64bppPArgb:
-			{ return SDStatus_NotImplemented; }
+		case CPixelFormat_1bppIndexed:
+		case CPixelFormat_4bppIndexed:
+		case CPixelFormat_8bppIndexed:
+		case CPixelFormat_48bppRgb:
+		case CPixelFormat_64bppArgb:
+		case CPixelFormat_64bppPArgb:
+			{ return CStatus_NotImplemented; }
 
-		case SDPixelFormat_16bppGrayScale:
-		case SDPixelFormat_16bppRgb555:
-		case SDPixelFormat_16bppRgb565:
-		case SDPixelFormat_16bppArgb1555:
+		case CPixelFormat_16bppGrayScale:
+		case CPixelFormat_16bppRgb555:
+		case CPixelFormat_16bppRgb565:
+		case CPixelFormat_16bppArgb1555:
 		{
 			stride = (((width << 1) + 3) & ~3);
 		}
 		break;
 
-		case SDPixelFormat_24bppRgb:
+		case CPixelFormat_24bppRgb:
 		{
 			stride = ((((width << 1) + width) + 3) & ~3);
 		}
 		break;
 
-		case SDPixelFormat_32bppRgb:
-		case SDPixelFormat_32bppArgb:
-		case SDPixelFormat_32bppPArgb:
+		case CPixelFormat_32bppRgb:
+		case CPixelFormat_32bppArgb:
+		case CPixelFormat_32bppPArgb:
 		{
 			stride = (width << 2);
 		}
 		break;
 
-		default: { return SDStatus_NotSupported; }
+		default: { return CStatus_NotSupported; }
 	}
 
 	/* create the bitmap data */
 	{
 		/* calculate the size */
-		const SDUInt32 size = (sizeof(SDBitmapData) + (height * stride));
+		const CUInt32 size = (sizeof(CBitmapData) + (height * stride));
 
 		/* allocate the bitmap data */
-		if(!(_this->bitmapData = (SDBitmapData *)SDMalloc(size)))
+		if(!(_this->bitmapData = (CBitmapData *)CMalloc(size)))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* set the bitmap data scans */
 		_this->bitmapData->scan0 =
-			(((SDByte *)_this->bitmapData) + sizeof(SDBitmapData));
+			(((CByte *)_this->bitmapData) + sizeof(CBitmapData));
 
 		/* set the remaining bitmap data members */
 		_this->bitmapDataX             = x;
@@ -459,14 +459,14 @@ SDBitmap_MakeBitmapData(SDBitmap        *_this,
 	}
 
 	/* copy the image data, as needed */
-	if(lockMode & SDImageLockMode_ReadOnly)
+	if(lockMode & CImageLockMode_ReadOnly)
 	{
 		/* declarations */
-		SDStatus status;
+		CStatus status;
 
 		/* copy the image data */
 		status =
-			SDUtils_FromPixmanImage
+			CUtils_FromPixmanImage
 				(_this->bitmapData->pixelFormat, _this->image,
 				 _this->bitmapData->scan0,       _this->bitmapDataX,
         		 _this->bitmapDataY,             _this->bitmapData->width,
@@ -474,142 +474,142 @@ SDBitmap_MakeBitmapData(SDBitmap        *_this,
 				 _this->palette);
 
 		/* handle copying failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDFree(_this->bitmapData);
+			CFree(_this->bitmapData);
 			_this->bitmapData = 0;
 			return status;
 		}
 	}
 	else
 	{
-		SDMemSet(_this->bitmapData->scan0, 0x00, (height * stride));
+		CMemSet(_this->bitmapData->scan0, 0x00, (height * stride));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Lock a region of this bitmap. */
-SDStatus
-SDBitmap_LockBits(SDBitmap        *_this,
-                  SDUInt32         x,
-                  SDUInt32         y,
-                  SDUInt32         width,
-                  SDUInt32         height,
-                  SDImageLockMode  lockMode,
-                  SDPixelFormat    format,
-                  SDBitmapData    *bitmapData)
+CStatus
+CBitmap_LockBits(CBitmap        *_this,
+                  CUInt32         x,
+                  CUInt32         y,
+                  CUInt32         width,
+                  CUInt32         height,
+                  CImageLockMode  lockMode,
+                  CPixelFormat    format,
+                  CBitmapData    *bitmapData)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a bitmap data pointer */
-	SDStatus_Require((bitmapData != 0), SDStatus_ArgumentNull);
+	CStatus_Require((bitmapData != 0), CStatus_ArgumentNull);
 
 	/* lock the bits synchronously */
-	SDMutex_Lock(_this->lock);
+	CMutex_Lock(_this->lock);
 	{
 		/* declarations */
-		SDStatus status;
+		CStatus status;
 
 		/* ensure the image data isn't locked */
 		if(_this->locked)
 		{
-			SDMutex_Unlock(_this->lock);
-			return SDStatus_InvalidOperation_ImageLocked;
+			CMutex_Unlock(_this->lock);
+			return CStatus_InvalidOperation_ImageLocked;
 		}
 
 		/* create the bitmap data */
 		status =
-			SDBitmap_MakeBitmapData
+			CBitmap_MakeBitmapData
 				(_this, x, y, width, height, lockMode, format);
 
 		/* handle bitmap data creation failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDMutex_Unlock(_this->lock);
+			CMutex_Unlock(_this->lock);
 			return status;
 		}
 
 		/* set the locked flag */
 		_this->locked = 1;
 	}
-	SDMutex_Unlock(_this->lock);
+	CMutex_Unlock(_this->lock);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the resolution for this bitmap. */
-SDStatus
-SDBitmap_SetResolution(SDBitmap *_this,
-                       SDFloat   dpiX,
-                       SDFloat   dpiY)
+CStatus
+CBitmap_SetResolution(CBitmap *_this,
+                       CFloat   dpiX,
+                       CFloat   dpiY)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the resolution synchronously */
-	SDMutex_Lock(_this->lock);
+	CMutex_Lock(_this->lock);
 	{
 		/* ensure the image data isn't locked */
 		if(_this->locked)
 		{
-			SDMutex_Unlock(_this->lock);
-			return SDStatus_InvalidOperation_ImageLocked;
+			CMutex_Unlock(_this->lock);
+			return CStatus_InvalidOperation_ImageLocked;
 		}
 
 		/* set the resolution */
 		_this->dpiX = dpiX;
 		_this->dpiY = dpiY;
 	}
-	SDMutex_Unlock(_this->lock);
+	CMutex_Unlock(_this->lock);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Unlock the bits within this bitmap. */
-SDStatus
-SDBitmap_UnlockBits(SDBitmap     *_this,
-                    SDBitmapData *bitmapData)
+CStatus
+CBitmap_UnlockBits(CBitmap     *_this,
+                    CBitmapData *bitmapData)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a bitmap data pointer */
-	SDStatus_Require((bitmapData != 0), SDStatus_ArgumentNull);
+	CStatus_Require((bitmapData != 0), CStatus_ArgumentNull);
 
 	/* lock the bits synchronously */
-	SDMutex_Lock(_this->lock);
+	CMutex_Lock(_this->lock);
 	{
 		/* declarations */
-		SDStatus status;
+		CStatus status;
 
 		/* ensure the image data is locked */
 		if(!(_this->locked))
 		{
-			SDMutex_Unlock(_this->lock);
-			return SDStatus_InvalidOperation;
+			CMutex_Unlock(_this->lock);
+			return CStatus_InvalidOperation;
 		}
 
 		/* ensure the bitmap data is for this image */
 		if(_this->bitmapData->scan0 != bitmapData->scan0)
 		{
-			SDMutex_Unlock(_this->lock);
-			return SDStatus_Argument;
+			CMutex_Unlock(_this->lock);
+			return CStatus_Argument;
 		}
 
 		/* set the status to the default */
-		status = SDStatus_OK;
+		status = CStatus_OK;
 
 		/* set the image data, as needed */
-		if(_this->bitmapData->reserved & SDImageLockMode_WriteOnly)
+		if(_this->bitmapData->reserved & CImageLockMode_WriteOnly)
 		{
 			/* copy the bitmap data to the image */
 			status =
-				SDUtils_ToPixmanImage
+				CUtils_ToPixmanImage
 					(_this->bitmapData->pixelFormat, _this->bitmapData->scan0,
 					 _this->image,                   _this->bitmapDataX,
 					 _this->bitmapDataY,             _this->bitmapData->width,
@@ -618,7 +618,7 @@ SDBitmap_UnlockBits(SDBitmap     *_this,
 		}
 
 		/* free the bitmap data */
-		SDFree(_this->bitmapData);
+		CFree(_this->bitmapData);
 
 		/* reset the bitmap data */
 		_this->bitmapData = 0;
@@ -626,16 +626,16 @@ SDBitmap_UnlockBits(SDBitmap     *_this,
 		bitmapData->scan0 = 0;
 
 		/* handle failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDMutex_Unlock(_this->lock);
+			CMutex_Unlock(_this->lock);
 			return status;
 		}
 	}
-	SDMutex_Unlock(_this->lock);
+	CMutex_Unlock(_this->lock);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

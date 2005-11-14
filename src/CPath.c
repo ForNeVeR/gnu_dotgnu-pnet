@@ -1,5 +1,5 @@
 /*
- * SDPath.c - Path implementation.
+ * CPath.c - Path implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -29,13 +29,13 @@
 extern "C" {
 #endif
 
-#define _TYPE_LINE_CLOSE   (SDPathType_Line   | SDPathType_CloseSubpath)
-#define _TYPE_BEZIER_CLOSE (SDPathType_Bezier | SDPathType_CloseSubpath)
+#define _TYPE_LINE_CLOSE   (CPathType_Line   | CPathType_CloseSubpath)
+#define _TYPE_BEZIER_CLOSE (CPathType_Bezier | CPathType_CloseSubpath)
 
 #define _SetPoint(currP, currT, x, y, type)                                    \
 		*(currT) = (type);                                                     \
-		SDPoint_X(*(currP)) = (x);                                             \
-		SDPoint_Y(*(currP)) = (y)
+		CPoint_X(*(currP)) = (x);                                             \
+		CPoint_Y(*(currP)) = (y)
 #define _NextPoint(currP, currT)                                               \
 	++currP; ++currT
 #define _SetPointAdvance(currP, currT, x, y, type)                             \
@@ -43,11 +43,11 @@ extern "C" {
 	_NextPoint((currP), (currT))
 #define _MoveTo(currP, currT, x, y)                                            \
 	do {                                                                       \
-		_SetPointAdvance((currP), (currT), (x), (y), SDPathType_Start);        \
+		_SetPointAdvance((currP), (currT), (x), (y), CPathType_Start);        \
 	} while(0)
 #define _LineTo(currP, currT, x, y)                                            \
 	do {                                                                       \
-		_SetPointAdvance((currP), (currT), (x), (y), SDPathType_Line);         \
+		_SetPointAdvance((currP), (currT), (x), (y), CPathType_Line);         \
 	} while(0)
 #define _LineToClose(currP, currT, x, y)                                       \
 	do {                                                                       \
@@ -55,23 +55,23 @@ extern "C" {
 	} while(0)
 #define _CurveTo(currP, currT, x1, y1, x2, y2, x3, y3)                         \
 	do {                                                                       \
-		_SetPointAdvance((currP), (currT), (x1), (y1), SDPathType_Bezier);     \
-		_SetPointAdvance((currP), (currT), (x2), (y2), SDPathType_Bezier);     \
-		_SetPointAdvance((currP), (currT), (x3), (y3), SDPathType_Bezier);     \
+		_SetPointAdvance((currP), (currT), (x1), (y1), CPathType_Bezier);     \
+		_SetPointAdvance((currP), (currT), (x2), (y2), CPathType_Bezier);     \
+		_SetPointAdvance((currP), (currT), (x3), (y3), CPathType_Bezier);     \
 	} while(0)
 #define _CurveToClose(currP, currT, x1, y1, x2, y2, x3, y3)                    \
 	do {                                                                       \
-		_SetPointAdvance((currP), (currT), (x1), (y1), SDPathType_Bezier);     \
-		_SetPointAdvance((currP), (currT), (x2), (y2), SDPathType_Bezier);     \
+		_SetPointAdvance((currP), (currT), (x1), (y1), CPathType_Bezier);     \
+		_SetPointAdvance((currP), (currT), (x2), (y2), CPathType_Bezier);     \
 		_SetPointAdvance((currP), (currT), (x3), (y3), _TYPE_BEZIER_CLOSE);    \
 	} while(0)
 #define _BeginAdd(path, n, plist, tlist, x1, y1)                               \
 	do {                                                                       \
 		/* get the current count */                                            \
-		const SDUInt32 _cc_ = (path)->count;                                   \
+		const CUInt32 _cc_ = (path)->count;                                   \
 		                                                                       \
 		/* ensure the capacity of the point and type lists */                  \
-		SDStatus_Check(SDPath_EnsureCapacity((path), (_cc_ + (n))));           \
+		CStatus_Check(CPath_EnsureCapacity((path), (_cc_ + (n))));           \
 		                                                                       \
 		/* update the count */                                                 \
 		(path)->count = (_cc_ + (n));                                          \
@@ -98,10 +98,10 @@ extern "C" {
 #define _BeginNew(path, n, plist, tlist, x1, y1)                               \
 	do {                                                                       \
 		/* get the current count */                                            \
-		const SDUInt32 _cc_ = (path)->count;                                   \
+		const CUInt32 _cc_ = (path)->count;                                   \
 		                                                                       \
 		/* ensure the capacity of the point and type lists */                  \
-		SDStatus_Check(SDPath_EnsureCapacity((path), (_cc_ + (n))));           \
+		CStatus_Check(CPath_EnsureCapacity((path), (_cc_ + (n))));           \
 		                                                                       \
 		/* update the count */                                                 \
 		(path)->count = (_cc_ + (n));                                          \
@@ -118,10 +118,10 @@ extern "C" {
 	} while(0)
 
 static void
-SDPath_Initialize(SDPath *_this)
+CPath_Initialize(CPath *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the path */
 	_this->capacity  = 0;
@@ -134,18 +134,18 @@ SDPath_Initialize(SDPath *_this)
 }
 
 static void
-SDPath_Finalize(SDPath *_this)
+CPath_Finalize(CPath *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the path */
 	{
 		/* get the point list */
-		SDPointF *points = _this->points;
+		CPointF *points = _this->points;
 
 		/* get the type list */
-		SDByte *types = _this->types;
+		CByte *types = _this->types;
 
 		/* finalize, as needed */
 		if(points != 0)
@@ -160,10 +160,10 @@ SDPath_Finalize(SDPath *_this)
 			_this->hasCurves = 0;
 
 			/* free the point list */
-			SDFree(points);
+			CFree(points);
 
 			/* free the type list */
-			SDFree(types);
+			CFree(types);
 		}
 	}
 }
@@ -176,318 +176,318 @@ SDPath_Finalize(SDPath *_this)
 |*|
 |*|  Returns status code.
 \*/
-static SDStatus
-SDPath_EnsureCapacity(SDPath   *_this,
-                      SDUInt32  minimum)
+static CStatus
+CPath_EnsureCapacity(CPath   *_this,
+                      CUInt32  minimum)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* ensure capacity */
 	_EnsurePathCapacity(_this, minimum);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Sanity check the given type list. */
-static SDStatus
-_SanityCheckTypes(SDByte   *types,
-                  SDUInt32  count)
+static CStatus
+_SanityCheckTypes(CByte   *types,
+                  CUInt32  count)
 {
 	/* TODO: assume all is ok for now */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 
 /* Create a path. */
-SDStatus
-SDPath_Create(SDPath **_this)
+CStatus
+CPath_Create(CPath **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the path */
-	if(!(*_this = (SDPath *)SDMalloc(sizeof(SDPath))))
+	if(!(*_this = (CPath *)CMalloc(sizeof(CPath))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the path */
-	SDPath_Initialize(*_this);
+	CPath_Initialize(*_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Destroy a path. */
-SDStatus
-SDPath_Destroy(SDPath **_this)
+CStatus
+CPath_Destroy(CPath **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a this pointer */
-	SDStatus_Require(((*_this) != 0), SDStatus_ArgumentNull);
+	CStatus_Require(((*_this) != 0), CStatus_ArgumentNull);
 
 	/* finalize the path */
-	SDPath_Finalize(*_this);
+	CPath_Finalize(*_this);
 
 	/* free the path */
-	SDFree(*_this);
+	CFree(*_this);
 
 	/* null the this pointer */
 	*_this = 0;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the fill mode of this path. */
-SDStatus
-SDPath_GetFillMode(SDPath     *_this,
-                   SDFillMode *fillMode)
+CStatus
+CPath_GetFillMode(CPath     *_this,
+                   CFillMode *fillMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a fill mode pointer */
-	SDStatus_Require((fillMode != 0), SDStatus_ArgumentNull);
+	CStatus_Require((fillMode != 0), CStatus_ArgumentNull);
 
 	/* get the fill mode */
-	*fillMode = (_this->winding ? SDFillMode_Winding : SDFillMode_Alternate);
+	*fillMode = (_this->winding ? CFillMode_Winding : CFillMode_Alternate);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the fill mode of this path. */
-SDStatus
-SDPath_SetFillMode(SDPath     *_this,
-                   SDFillMode  fillMode)
+CStatus
+CPath_SetFillMode(CPath     *_this,
+                   CFillMode  fillMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the fill mode */
-	_this->winding = ((fillMode == SDFillMode_Winding) ?  1 : 0);
+	_this->winding = ((fillMode == CFillMode_Winding) ?  1 : 0);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the points in this path. */
-SDStatus
-SDPath_GetPoints(SDPath    *_this,
-                 SDPointF **points,
-                 SDUInt32  *count)
+CStatus
+CPath_GetPoints(CPath    *_this,
+                 CPointF **points,
+                 CUInt32  *count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list pointer */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a count pointer */
-	SDStatus_Require((count != 0), SDStatus_ArgumentNull);
+	CStatus_Require((count != 0), CStatus_ArgumentNull);
 
 	/* get the points */
 	{
 		/* get the count and size */
-		const SDUInt32 cnt  = _this->count;
-		const SDUInt32 size = (cnt * sizeof(SDPointF));
+		const CUInt32 cnt  = _this->count;
+		const CUInt32 size = (cnt * sizeof(CPointF));
 
 		/* allocate the point list */
-		if(!(*points = (SDPointF *)SDMalloc(size)))
+		if(!(*points = (CPointF *)CMalloc(size)))
 		{
 			*count = 0;
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* get the points */
-		SDMemCopy(*points, _this->points, size);
+		CMemCopy(*points, _this->points, size);
 
 		/* get the count */
 		*count = cnt;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the types of the points in this path. */
-SDStatus
-SDPath_GetTypes(SDPath    *_this,
-                SDByte   **types,
-                SDUInt32  *count)
+CStatus
+CPath_GetTypes(CPath    *_this,
+                CByte   **types,
+                CUInt32  *count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a type list pointer */
-	SDStatus_Require((types != 0), SDStatus_ArgumentNull);
+	CStatus_Require((types != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a count pointer */
-	SDStatus_Require((count != 0), SDStatus_ArgumentNull);
+	CStatus_Require((count != 0), CStatus_ArgumentNull);
 
 	/* get the types */
 	{
 		/* get the count and size */
-		const SDUInt32 cnt  = _this->count;
-		const SDUInt32 size = (cnt * sizeof(SDByte));
+		const CUInt32 cnt  = _this->count;
+		const CUInt32 size = (cnt * sizeof(CByte));
 
 		/* allocate the type list */
-		if(!(*types = (SDByte *)SDMalloc(size)))
+		if(!(*types = (CByte *)CMalloc(size)))
 		{
 			*count = 0;
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* get the types */
-		SDMemCopy(*types, _this->types, size);
+		CMemCopy(*types, _this->types, size);
 
 		/* get the count */
 		*count = cnt;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the points and types in this path. */
-SDStatus
-SDPath_GetPathData(SDPath    *_this,
-                   SDPointF **points,
-                   SDByte   **types,
-                   SDUInt32  *count)
+CStatus
+CPath_GetPathData(CPath    *_this,
+                   CPointF **points,
+                   CByte   **types,
+                   CUInt32  *count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list pointer */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a type list pointer */
-	SDStatus_Require((types != 0), SDStatus_ArgumentNull);
+	CStatus_Require((types != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a count pointer */
-	SDStatus_Require((count != 0), SDStatus_ArgumentNull);
+	CStatus_Require((count != 0), CStatus_ArgumentNull);
 
 	/* get the path data */
 	{
 		/* get the count and sizes */
-		const SDUInt32 cnt   = _this->count;
-		const SDUInt32 sizeP = (cnt * sizeof(SDPointF));
-		const SDUInt32 sizeT = (cnt * sizeof(SDByte));
+		const CUInt32 cnt   = _this->count;
+		const CUInt32 sizeP = (cnt * sizeof(CPointF));
+		const CUInt32 sizeT = (cnt * sizeof(CByte));
 
 		/* allocate the point list */
-		if(!(*points = (SDPointF *)SDMalloc(sizeP)))
+		if(!(*points = (CPointF *)CMalloc(sizeP)))
 		{
 			*types = 0;
 			*count = 0;
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* allocate the type list */
-		if(!(*types = (SDByte *)SDMalloc(sizeT)))
+		if(!(*types = (CByte *)CMalloc(sizeT)))
 		{
-			SDFree(*points);
+			CFree(*points);
 			*points = 0;
 			*count = 0;
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* get the points */
-		SDMemCopy(*points, _this->points, sizeP);
+		CMemCopy(*points, _this->points, sizeP);
 
 		/* get the types */
-		SDMemCopy(*types, _this->types, sizeT);
+		CMemCopy(*types, _this->types, sizeT);
 
 		/* get the count */
 		*count = cnt;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the points and types in this path. */
-SDStatus
-SDPath_SetPathData(SDPath   *_this,
-                   SDPointF *points,
-                   SDByte   *types,
-                   SDUInt32  count)
+CStatus
+CPath_SetPathData(CPath   *_this,
+                   CPointF *points,
+                   CByte   *types,
+                   CUInt32  count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a type list */
-	SDStatus_Require((types != 0), SDStatus_ArgumentNull);
+	CStatus_Require((types != 0), CStatus_ArgumentNull);
 
 	/* sanity check the types */
-	SDStatus_Check(_SanityCheckTypes(types, count));
+	CStatus_Check(_SanityCheckTypes(types, count));
 
 	/* set the points and types */
 	{
 		/* ensure the capacity of the point and type lists */
-		SDStatus_Check(SDPath_EnsureCapacity(_this, count));
+		CStatus_Check(CPath_EnsureCapacity(_this, count));
 
 		/* update the count */
 		_this->count = count;
 
 		/* copy the points to the point list */
-		SDMemCopy(_this->points, points, (count * sizeof(SDPointF)));
+		CMemCopy(_this->points, points, (count * sizeof(CPointF)));
 
 		/* copy the types to the type list */
-		SDMemCopy(_this->types, types, (count * sizeof(SDByte)));
+		CMemCopy(_this->types, types, (count * sizeof(CByte)));
 
 		/* set the new figure flag */
 		_this->newFigure =
 			((count == 0) ||
-			 ((types[count - 1] & SDPathType_CloseSubpath) != 0));
+			 ((types[count - 1] & CPathType_CloseSubpath) != 0));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Add an arc to the current figure. */
-SDStatus
-SDPath_AddArc(SDPath  *_this,
-              SDFloat  x,
-              SDFloat  y,
-              SDFloat  width,
-              SDFloat  height,
-              SDFloat  startAngle,
-              SDFloat  sweepAngle)
+CStatus
+CPath_AddArc(CPath  *_this,
+              CFloat  x,
+              CFloat  y,
+              CFloat  width,
+              CFloat  height,
+              CFloat  startAngle,
+              CFloat  sweepAngle)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Add a bezier curve to the current figure. */
-SDStatus
-SDPath_AddBezier(SDPath  *_this,
-                 SDFloat  x1,
-                 SDFloat  y1,
-                 SDFloat  x2,
-                 SDFloat  y2,
-                 SDFloat  x3,
-                 SDFloat  y3,
-                 SDFloat  x4,
-                 SDFloat  y4)
+CStatus
+CPath_AddBezier(CPath  *_this,
+                 CFloat  x1,
+                 CFloat  y1,
+                 CFloat  x2,
+                 CFloat  y2,
+                 CFloat  x3,
+                 CFloat  y3,
+                 CFloat  x4,
+                 CFloat  y4)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* add the bezier curve */
 	{
 		/* declarations */
-		SDPointF *p;
-		SDByte   *t;
+		CPointF *p;
+		CByte   *t;
 
 		/* perform standard startup procedures for path segment additions */
 		_BeginAdd(_this, 4, p, t, x1, y1);
@@ -500,51 +500,51 @@ SDPath_AddBezier(SDPath  *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Add a sequence of connected bezier curves to the current figure. */
-SDStatus
-SDPath_AddBeziers(SDPath   *_this,
-                  SDPointF *points,
-                  SDUInt32  count)
+CStatus
+CPath_AddBeziers(CPath   *_this,
+                  CPointF *points,
+                  CUInt32  count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list pointer */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* ensure we have the required minimum number of points */
-	SDStatus_Require((count >= 4), SDStatus_Argument_NeedAtLeast4Points);
+	CStatus_Require((count >= 4), CStatus_Argument_NeedAtLeast4Points);
 
 	/* ensure we have a valid number of additional points */
-	SDStatus_Require
-		((((count - 4) % 3) == 0), SDStatus_Argument_InvalidPointCount);
+	CStatus_Require
+		((((count - 4) % 3) == 0), CStatus_Argument_InvalidPointCount);
 
 	/* add the bezier curves */
 	{
 		/* declarations */
-		SDPointF *p;
-		SDByte   *t;
+		CPointF *p;
+		CByte   *t;
 
 		/* get the end of input pointer */
-		const SDPointF *const end = (points + count);
+		const CPointF *const end = (points + count);
 
 		/* perform standard startup procedures for path segment additions */
 		_BeginAdd
 			(_this,              count,
 			 p,                  t,
-			 SDPoint_X(*points), SDPoint_Y(*points++));
+			 CPoint_X(*points), CPoint_Y(*points++));
 
 		/* add the curve segments */
 		while(points != end)
 		{
 			_CurveTo
 				(p,                  t,
-				 SDPoint_X(*points), SDPoint_Y(*points++),
-				 SDPoint_X(*points), SDPoint_Y(*points++),
-				 SDPoint_X(*points), SDPoint_Y(*points++));
+				 CPoint_X(*points), CPoint_Y(*points++),
+				 CPoint_X(*points), CPoint_Y(*points++),
+				 CPoint_X(*points), CPoint_Y(*points++));
 		}
 
 		/* flag that we have curves */
@@ -552,71 +552,71 @@ SDPath_AddBeziers(SDPath   *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Add a closed curve to this path. */
-SDStatus
-SDPath_AddClosedCardinalCurve(SDPath   *_this,
-                              SDPointF *points,
-                              SDUInt32  count,
-                              SDFloat   tension)
+CStatus
+CPath_AddClosedCardinalCurve(CPath   *_this,
+                              CPointF *points,
+                              CUInt32  count,
+                              CFloat   tension)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Add a curve to the current figure. */
-SDStatus
-SDPath_AddCardinalCurve(SDPath   *_this,
-                        SDPointF *points,
-                        SDUInt32  count,
-                        SDUInt32  offset,
-                        SDUInt32  numberOfSegments,
-                        SDFloat   tension)
+CStatus
+CPath_AddCardinalCurve(CPath   *_this,
+                        CPointF *points,
+                        CUInt32  count,
+                        CUInt32  offset,
+                        CUInt32  numberOfSegments,
+                        CFloat   tension)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Add an ellipse to this path. */
-SDStatus
-SDPath_AddEllipse(SDPath  *_this,
-                  SDFloat  x,
-                  SDFloat  y,
-                  SDFloat  width,
-                  SDFloat  height)
+CStatus
+CPath_AddEllipse(CPath  *_this,
+                  CFloat  x,
+                  CFloat  y,
+                  CFloat  width,
+                  CFloat  height)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* add the ellipse */
 	{
 		/* declarations */
-		SDPointF *p;
-		SDByte   *t;
+		CPointF *p;
+		CByte   *t;
 
 		/* calculate the radii */
-		const SDDouble rX = width / 2;
-		const SDDouble rY = height / 2;
+		const CDouble rX = width / 2;
+		const CDouble rY = height / 2;
 
 		/* calculate the distances along the tangents */
-		const SDDouble dX = rX * SDMath_Arc90Fraction;
-		const SDDouble dY = rY * SDMath_Arc90Fraction;
+		const CDouble dX = rX * CMath_Arc90Fraction;
+		const CDouble dY = rY * CMath_Arc90Fraction;
 
 		/* calculate the center point */
-		const SDFloat cX = x + rX;
-		const SDFloat cY = y + rY;
+		const CFloat cX = x + rX;
+		const CFloat cY = y + rY;
 
 		/* calculate the tangential control points */
-		const SDFloat pX = cX + dX;
-		const SDFloat pY = cY + dY;
-		const SDFloat mX = cX - dX;
-		const SDFloat mY = cY - dY;
+		const CFloat pX = cX + dX;
+		const CFloat pY = cY + dY;
+		const CFloat mX = cX - dX;
+		const CFloat mY = cY - dY;
 
 		/* calculate the edge points */
-		const SDFloat right  = x + width;
-		const SDFloat bottom = y + height;
+		const CFloat right  = x + width;
+		const CFloat bottom = y + height;
 
 		/* perform standard startup procedures for new figure additions */
 		_BeginNew(_this, 13, p, t, right, cY);
@@ -632,25 +632,25 @@ SDPath_AddEllipse(SDPath  *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Add a line to the current figure. */
-SDStatus
-SDPath_AddLine(SDPath  *_this,
-               SDFloat  x1,
-               SDFloat  y1,
-               SDFloat  x2,
-               SDFloat  y2)
+CStatus
+CPath_AddLine(CPath  *_this,
+               CFloat  x1,
+               CFloat  y1,
+               CFloat  x2,
+               CFloat  y2)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* add the line */
 	{
 		/* declarations */
-		SDPointF *p;
-		SDByte   *t;
+		CPointF *p;
+		CByte   *t;
 
 		/* perform standard startup procedures for path segment additions */
 		_BeginAdd(_this, 2, p, t, x1, y1);
@@ -660,88 +660,88 @@ SDPath_AddLine(SDPath  *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Add a sequence of connected line segments to the current figure. */
-SDStatus
-SDPath_AddLines(SDPath   *_this,
-                SDPointF *points,
-                SDUInt32  count)
+CStatus
+CPath_AddLines(CPath   *_this,
+                CPointF *points,
+                CUInt32  count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list pointer */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* ensure we have the required minimum number of points */
-	SDStatus_Require((count >= 2), SDStatus_Argument_NeedAtLeast2Points);
+	CStatus_Require((count >= 2), CStatus_Argument_NeedAtLeast2Points);
 
 	/* add the lines */
 	{
 		/* declarations */
-		SDPointF *p;
-		SDByte   *t;
+		CPointF *p;
+		CByte   *t;
 
 		/* get the end of input pointer */
-		const SDPointF *const end = (points + count);
+		const CPointF *const end = (points + count);
 
 		/* perform standard startup procedures for path segment additions */
 		_BeginAdd
 			(_this,              count,
 			 p,                  t,
-			 SDPoint_X(*points), SDPoint_Y(*points++));
+			 CPoint_X(*points), CPoint_Y(*points++));
 
 		/* add the line segments */
 		while(points != end)
 		{
 			_LineTo
 				(p,                  t,
-				 SDPoint_X(*points), SDPoint_Y(*points++));
+				 CPoint_X(*points), CPoint_Y(*points++));
 		}
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Add the contents of another path to this path. */
-SDStatus
-SDPath_AddPath(SDPath *_this,
-               SDPath *path,
-               SDBool  connect)
+CStatus
+CPath_AddPath(CPath *_this,
+               CPath *path,
+               CBool  connect)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a path pointer */
-	SDStatus_Require((path != 0), SDStatus_ArgumentNull);
+	CStatus_Require((path != 0), CStatus_ArgumentNull);
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require((path->count != 0), SDStatus_OK);
+	CStatus_Require((path->count != 0), CStatus_OK);
 
 	/* add the path */
 	{
 		/* ensure the path capacity */
-		SDStatus_Check
-			(SDPath_EnsureCapacity
+		CStatus_Check
+			(CPath_EnsureCapacity
 				(_this, (_this->count + path->count)));
 
 		/* copy the points */
-		SDMemCopy
+		CMemCopy
 			((_this->points + _this->count),
-			 path->points, (path->count * sizeof(SDPointF)));
+			 path->points, (path->count * sizeof(CPointF)));
 
 		/* copy the types */
-		SDMemCopy
+		CMemCopy
 			((_this->types + _this->count),
-			 path->types, (path->count * sizeof(SDByte)));
+			 path->types, (path->count * sizeof(CByte)));
 
 		/* connect the path as needed */
 		if(connect && !(_this->newFigure))
 		{
-			_this->types[_this->count] = SDPathType_Line;
+			_this->types[_this->count] = CPathType_Line;
 		}
 
 		/* update the flags */
@@ -753,50 +753,50 @@ SDPath_AddPath(SDPath *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Add a pie section to this path. */
-SDStatus
-SDPath_AddPie(SDPath  *_this,
-              SDFloat  x,
-              SDFloat  y,
-              SDFloat  width,
-              SDFloat  height,
-              SDFloat  startAngle,
-              SDFloat  sweepAngle)
+CStatus
+CPath_AddPie(CPath  *_this,
+              CFloat  x,
+              CFloat  y,
+              CFloat  width,
+              CFloat  height,
+              CFloat  startAngle,
+              CFloat  sweepAngle)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Add a polygon to this path. */
-SDStatus
-SDPath_AddPolygon(SDPath   *_this,
-                  SDPointF *points,
-                  SDUInt32  count)
+CStatus
+CPath_AddPolygon(CPath   *_this,
+                  CPointF *points,
+                  CUInt32  count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list pointer */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* ensure we have the required minimum number of points */
-	SDStatus_Require((count >= 3), SDStatus_Argument_NeedAtLeast3Points);
+	CStatus_Require((count >= 3), CStatus_Argument_NeedAtLeast3Points);
 
 	/* add the polygon */
 	{
 		/* declarations */
-		SDPointF *p;
-		SDByte   *t;
+		CPointF *p;
+		CByte   *t;
 
 		/* get the last point pointer */
-		const SDPointF *last = (points + count - 1);
+		const CPointF *last = (points + count - 1);
 
 		/* ignore redundant last points */
-		if(SDPoint_X(*points) == SDPoint_X(*last) &&
-		   SDPoint_Y(*points) == SDPoint_Y(*last))
+		if(CPoint_X(*points) == CPoint_X(*last) &&
+		   CPoint_Y(*points) == CPoint_Y(*last))
 		{
 			--last;
 			--count;
@@ -806,46 +806,46 @@ SDPath_AddPolygon(SDPath   *_this,
 		_BeginNew
 			(_this,            count,
 			 p,                t,
-			 SDPoint_X(*points), SDPoint_Y(*points++));
+			 CPoint_X(*points), CPoint_Y(*points++));
 
 		/* add the polygon edges */
 		while(points != last)
 		{
 			_LineTo
 				(p,                  t,
-				 SDPoint_X(*points), SDPoint_Y(*points++));
+				 CPoint_X(*points), CPoint_Y(*points++));
 		}
 
 		/* complete the polygon */
 		_LineToClose
 			(p,                  t,
-			 SDPoint_X(*points), SDPoint_Y(*points));
+			 CPoint_X(*points), CPoint_Y(*points));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Add a rectangle to this path. */
-SDStatus
-SDPath_AddRectangle(SDPath  *_this,
-                    SDFloat  x,
-                    SDFloat  y,
-                    SDFloat  width,
-                    SDFloat  height)
+CStatus
+CPath_AddRectangle(CPath  *_this,
+                    CFloat  x,
+                    CFloat  y,
+                    CFloat  width,
+                    CFloat  height)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* add the rectangle */
 	{
 		/* declarations */
-		SDPointF *p;
-		SDByte   *t;
+		CPointF *p;
+		CByte   *t;
 
 		/* calculate edges */
-		const SDFloat right  = (x + width);
-		const SDFloat bottom = (y + height);
+		const CFloat right  = (x + width);
+		const CFloat bottom = (y + height);
 
 		/* perform standard startup procedures for new figure additions */
 		_BeginNew(_this, 4, p, t, x, y);
@@ -857,42 +857,42 @@ SDPath_AddRectangle(SDPath  *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Add a sequence of rectangles to this path. */
-SDStatus
-SDPath_AddRectangles(SDPath       *_this,
-                     SDRectangleF *rects,
-                     SDUInt32      count)
+CStatus
+CPath_AddRectangles(CPath       *_this,
+                     CRectangleF *rects,
+                     CUInt32      count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a rectangle list pointer */
-	SDStatus_Require((rects != 0), SDStatus_ArgumentNull);
+	CStatus_Require((rects != 0), CStatus_ArgumentNull);
 
 	/* bail out now if there's nothing to add */
-	SDStatus_Require((count != 0), SDStatus_OK);
+	CStatus_Require((count != 0), CStatus_OK);
 
 	/* add the rectangles */
 	{
 		/* declarations */
-		SDPointF *p;
-		SDByte   *t;
-		SDFloat   left;
-		SDFloat   top;
-		SDFloat   right;
-		SDFloat   bottom;
+		CPointF *p;
+		CByte   *t;
+		CFloat   left;
+		CFloat   top;
+		CFloat   right;
+		CFloat   bottom;
 
 		/* get the end of input pointer */
-		const SDRectangleF *const end = (rects + count);
+		const CRectangleF *const end = (rects + count);
 
 		/* get the rectangle edges */
-		left   = SDRectangle_X(*rects);
-		top    = SDRectangle_Y(*rects);
-		right  = left + SDRectangle_Width(*rects);
-		bottom = top + SDRectangle_Height(*rects++);
+		left   = CRectangle_X(*rects);
+		top    = CRectangle_Y(*rects);
+		right  = left + CRectangle_Width(*rects);
+		bottom = top + CRectangle_Height(*rects++);
 
 		/* perform standard startup procedures for new figure additions */
 		_BeginNew
@@ -909,10 +909,10 @@ SDPath_AddRectangles(SDPath       *_this,
 		while(rects != end)
 		{
 			/* get the rectangle edges */
-			left   = SDRectangle_X(*rects);
-			top    = SDRectangle_Y(*rects);
-			right  = left + SDRectangle_Width(*rects);
-			bottom = top + SDRectangle_Height(*rects++);
+			left   = CRectangle_X(*rects);
+			top    = CRectangle_Y(*rects);
+			right  = left + CRectangle_Width(*rects);
+			bottom = top + CRectangle_Height(*rects++);
 
 			/* add the rectangle */
 			_MoveTo(p, t, left, top);
@@ -923,94 +923,94 @@ SDPath_AddRectangles(SDPath       *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Add a string to this path. */
-SDStatus
-SDPath_AddString(SDPath         *_this,
-                 SDChar16       *s,
-                 SDUInt32        length,
-                 SDFontFamily   *family,
-                 SDFontStyle     style,
-                 SDFloat         emSize,
-                 SDRectangleF    layoutRect,
-                 SDStringFormat *format)
+CStatus
+CPath_AddString(CPath         *_this,
+                 CChar16       *s,
+                 CUInt32        length,
+                 CFontFamily   *family,
+                 CFontStyle     style,
+                 CFloat         emSize,
+                 CRectangleF    layoutRect,
+                 CStringFormat *format)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Clear all markers from this path. */
-SDStatus
-SDPath_ClearMarkers(SDPath *_this)
+CStatus
+CPath_ClearMarkers(CPath *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* clear markers */
 	{
 		/* declarations */
-		SDByte *curr;
+		CByte *curr;
 
 		/* get the end pointer */
-		const SDByte *const end = (_this->types + _this->count);
+		const CByte *const end = (_this->types + _this->count);
 
 		/* clear the markers */
 		for(curr = _this->types; curr != end; ++curr)
 		{
-			*curr &= ~SDPathType_PathMarker;
+			*curr &= ~CPathType_PathMarker;
 		}
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Clone this path. */
-SDStatus
-SDPath_Clone(SDPath  *_this,
-             SDPath **clone)
+CStatus
+CPath_Clone(CPath  *_this,
+             CPath **clone)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a clone pointer pointer */
-	SDStatus_Require((clone != 0), SDStatus_ArgumentNull);
+	CStatus_Require((clone != 0), CStatus_ArgumentNull);
 
 	/* create the clone path */
-	SDStatus_Check(SDPath_Create(clone));
+	CStatus_Check(CPath_Create(clone));
 
 	/* clone the members */
 	{
 		/* declarations */
-		SDPointF *tmpP;
-		SDByte   *tmpT;
+		CPointF *tmpP;
+		CByte   *tmpT;
 
 		/* get the count and capacity */
-		const SDUInt32 count    = _this->count;
-		const SDUInt32 capacity = ((count + 31) & ~31);
+		const CUInt32 count    = _this->count;
+		const CUInt32 capacity = ((count + 31) & ~31);
 
 		/* allocate the clone points list */
-		if(!(tmpP = (SDPointF *)SDMalloc(capacity * sizeof(SDPointF))))
+		if(!(tmpP = (CPointF *)CMalloc(capacity * sizeof(CPointF))))
 		{
-			SDPath_Destroy(clone);
-			return SDStatus_OutOfMemory;
+			CPath_Destroy(clone);
+			return CStatus_OutOfMemory;
 		}
 
 		/* allocate the clone types list */
-		if(!(tmpT = (SDByte *)SDMalloc(capacity * sizeof(SDByte))))
+		if(!(tmpT = (CByte *)CMalloc(capacity * sizeof(CByte))))
 		{
-			SDFree(tmpP);
-			SDPath_Destroy(clone);
-			return SDStatus_OutOfMemory;
+			CFree(tmpP);
+			CPath_Destroy(clone);
+			return CStatus_OutOfMemory;
 		}
 
 		/* deep copy the points into the clone */
-		SDMemCopy(tmpP, _this->points, (count * sizeof(SDPointF)));
+		CMemCopy(tmpP, _this->points, (count * sizeof(CPointF)));
 
 		/* deep copy the types into the clone */
-		SDMemCopy(tmpT, _this->types, (count * sizeof(SDByte)));
+		CMemCopy(tmpT, _this->types, (count * sizeof(CByte)));
 
 		/* set the clone members */
 		(*clone)->capacity  = capacity;
@@ -1022,26 +1022,26 @@ SDPath_Clone(SDPath  *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Close all open figures in this path and start a new one. */
-SDStatus
-SDPath_CloseAllFigures(SDPath *_this)
+CStatus
+CPath_CloseAllFigures(CPath *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* close the figures */
 	{
 		/* declarations */
-		SDByte *curr, *prev;
+		CByte *curr, *prev;
 
 		/* get the end pointer */
-		const SDByte *const end = (_this->types + _this->count);
+		const CByte *const end = (_this->types + _this->count);
 
 		/* bail out now if there's nothing to close */
-		SDStatus_Require((_this->count <= 1), SDStatus_OK);
+		CStatus_Require((_this->count <= 1), CStatus_OK);
 
 		/* get the current pointer */
 		curr = (_this->types + 2);
@@ -1053,9 +1053,9 @@ SDPath_CloseAllFigures(SDPath *_this)
 		while(curr != end)
 		{
 			/* close the previous figure if we're on a new figure */
-			if(*curr == SDPathType_Start)
+			if(*curr == CPathType_Start)
 			{
-				*prev |= SDPathType_CloseSubpath;
+				*prev |= CPathType_CloseSubpath;
 			}
 
 			/* advance to next position */
@@ -1063,98 +1063,98 @@ SDPath_CloseAllFigures(SDPath *_this)
 		}
 
 		/* close the current figure */
-		*prev |= SDPathType_CloseSubpath;
+		*prev |= CPathType_CloseSubpath;
 
 		/* start a new figure */
 		_this->newFigure = 1;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Close the current figure in this path and start a new one. */
-SDStatus
-SDPath_CloseFigure(SDPath *_this)
+CStatus
+CPath_CloseFigure(CPath *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* close the current figure */
 	{
 		/* bail out now if there's nothing to close */
-		SDStatus_Require((_this->count <= 1), SDStatus_OK);
+		CStatus_Require((_this->count <= 1), CStatus_OK);
 
 		/* close the current figure */
-		_this->types[_this->count - 1] |= SDPathType_CloseSubpath;
+		_this->types[_this->count - 1] |= CPathType_CloseSubpath;
 
 		/* start a new figure */
 		_this->newFigure = 1;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Flatten curves in this path into sequences of connected line segments. */
-SDStatus
-SDPath_Flatten(SDPath   *_this,
-               SDMatrix *matrix,
-               SDFloat   flatness)
+CStatus
+CPath_Flatten(CPath   *_this,
+               CMatrix *matrix,
+               CFloat   flatness)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* bail out now if there's nothing to flatten */
-	SDStatus_Require((_this->count == 0), SDStatus_OK);
+	CStatus_Require((_this->count == 0), CStatus_OK);
 
 	/* transform the path, as needed */
 	if(matrix != 0)
 	{
 		/* transform the points */
-		SDStatus_Check
-			(SDMatrix_TransformPoints
+		CStatus_Check
+			(CMatrix_TransformPoints
 				(matrix, _this->points, _this->count));
 	}
 
 	/* bail out now if there's nothing more to do */
-	SDStatus_Require((_this->hasCurves != 0), SDStatus_OK);
+	CStatus_Require((_this->hasCurves != 0), CStatus_OK);
 
 	/* flatten the path */
 	{
 		/* declarations */
-		SDFlattener  flattener;
-		SDPointF    *points;
-		SDByte      *types;
-		SDUInt32     count;
-		SDUInt32     capacity;
-		SDStatus     status;
+		CFlattener  flattener;
+		CPointF    *points;
+		CByte      *types;
+		CUInt32     count;
+		CUInt32     capacity;
+		CStatus     status;
 
 		/* initialize the flattener */
-		SDFlattener_Initialize(&flattener);
+		CFlattener_Initialize(&flattener);
 
 		/* flatten the path */
 		status =
-			SDFlattener_Flatten
+			CFlattener_Flatten
 				(&flattener, _this->points, _this->types, _this->count,
 				 flatness);
 
 		/* handle flattening failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
 			/* finalize the flattener */
-			SDFlattener_Finalize(&flattener, 0, 0, 0, 0);
+			CFlattener_Finalize(&flattener, 0, 0, 0, 0);
 
 			/* return status */
 			return status;
 		}
 
 		/* finalize the flattener */
-		SDFlattener_Finalize(&flattener, &points, &types, &count, &capacity);
+		CFlattener_Finalize(&flattener, &points, &types, &count, &capacity);
 
 		/* finalize the current path members */
-		SDFree(_this->points);
-		SDFree(_this->types);
+		CFree(_this->points);
+		CFree(_this->types);
 
 		/* initialize the members */
 		_this->points   = points;
@@ -1164,90 +1164,90 @@ SDPath_Flatten(SDPath   *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the point count of this path. */
-SDStatus
-SDPath_GetCount(SDPath   *_this,
-                SDUInt32 *count)
+CStatus
+CPath_GetCount(CPath   *_this,
+                CUInt32 *count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a count pointer */
-	SDStatus_Require((count != 0), SDStatus_ArgumentNull);
+	CStatus_Require((count != 0), CStatus_ArgumentNull);
 
 	/* get the count */
 	*count = _this->count;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the bounds of this path. */
-SDStatus
-SDPath_GetBounds(SDPath       *_this,
-                 SDMatrix     *matrix,
-                 SDPen        *pen,
-                 SDRectangleF *bounds)
+CStatus
+CPath_GetBounds(CPath       *_this,
+                 CMatrix     *matrix,
+                 CPen        *pen,
+                 CRectangleF *bounds)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Get the last point in this path. */
-SDStatus
-SDPath_GetLastPoint(SDPath   *_this,
-                    SDPointF *point)
+CStatus
+CPath_GetLastPoint(CPath   *_this,
+                    CPointF *point)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* get the last point */
 	{
 		/* ensure we have a point */
-		SDStatus_Require((_this->count > 0), SDStatus_Argument);
+		CStatus_Require((_this->count > 0), CStatus_Argument);
 
 		/* get the last point */
 		*point = _this->points[_this->count - 1];
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Determine if a point is visible within an outline of this path. */
-SDStatus
-SDPath_IsOutlineVisible(SDPath     *_this,
-                        SDFloat     x,
-                        SDFloat     y,
-                        SDPen      *pen,
-                        SDGraphics *graphics,
-                        SDBool     *visible)
+CStatus
+CPath_IsOutlineVisible(CPath     *_this,
+                        CFloat     x,
+                        CFloat     y,
+                        CPen      *pen,
+                        CGraphics *graphics,
+                        CBool     *visible)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Determine if a point is visible within this path. */
-SDStatus
-SDPath_IsVisible(SDPath     *_this,
-                 SDFloat     x,
-                 SDFloat     y,
-                 SDGraphics *graphics,
-                 SDBool     *visible)
+CStatus
+CPath_IsVisible(CPath     *_this,
+                 CFloat     x,
+                 CFloat     y,
+                 CGraphics *graphics,
+                 CBool     *visible)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Reset this path. */
-SDStatus
-SDPath_Reset(SDPath *_this)
+CStatus
+CPath_Reset(CPath *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* reset this path */
 	{
@@ -1259,164 +1259,164 @@ SDPath_Reset(SDPath *_this)
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Reverse the order of the points in this path. */
-SDStatus
-SDPath_Reverse(SDPath *_this)
+CStatus
+CPath_Reverse(CPath *_this)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Set a marker at the current position in this path. */
-SDStatus
-SDPath_SetMarker(SDPath *_this)
+CStatus
+CPath_SetMarker(CPath *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the marker */
 	{
 		/* ensure we have a point at which to set the marker */
-		SDStatus_Require((_this->count > 0), SDStatus_Argument);
+		CStatus_Require((_this->count > 0), CStatus_Argument);
 
 		/* set the marker */
-		_this->types[_this->count - 1] |= SDPathType_PathMarker;
+		_this->types[_this->count - 1] |= CPathType_PathMarker;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Start a new figure in this path without closing the current one. */
-SDStatus
-SDPath_StartFigure(SDPath *_this)
+CStatus
+CPath_StartFigure(CPath *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* start the new figure */
 	_this->newFigure = 1;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Transform the points of this path by a matrix. */
-SDStatus
-SDPath_Transform(SDPath   *_this,
-                 SDMatrix *matrix)
+CStatus
+CPath_Transform(CPath   *_this,
+                 CMatrix *matrix)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a matrix pointer */
-	SDStatus_Require((matrix != 0), SDStatus_ArgumentNull);
+	CStatus_Require((matrix != 0), CStatus_ArgumentNull);
 
 	/* transform the points */
 	{
 		/* bail out now if there's nothing to transform */
-		SDStatus_Require((_this->count == 0), SDStatus_OK);
+		CStatus_Require((_this->count == 0), CStatus_OK);
 
 		/* transform the points */
-		SDStatus_Check
-			(SDMatrix_TransformPoints
+		CStatus_Check
+			(CMatrix_TransformPoints
 				(matrix, _this->points, _this->count));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Warp the points of this path. */
-SDStatus
-SDPath_Warp(SDPath     *_this,
-            SDMatrix   *matrix,
-            SDPointF   *dstPoints,
-            SDUInt32    dstLength,
-            SDFloat     srcX,
-            SDFloat     srcY,
-            SDFloat     srcWidth,
-            SDFloat     srcHeight,
-            SDWarpMode  warpMode,
-            SDFloat     flatness)
+CStatus
+CPath_Warp(CPath     *_this,
+            CMatrix   *matrix,
+            CPointF   *dstPoints,
+            CUInt32    dstLength,
+            CFloat     srcX,
+            CFloat     srcY,
+            CFloat     srcWidth,
+            CFloat     srcHeight,
+            CWarpMode  warpMode,
+            CFloat     flatness)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Widen this path. */
-SDStatus
-SDPath_Widen(SDPath   *_this,
-             SDPen    *pen,
-             SDMatrix *matrix,
-             SDFloat   flatness)
+CStatus
+CPath_Widen(CPath   *_this,
+             CPen    *pen,
+             CMatrix *matrix,
+             CFloat   flatness)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Transform the points of this path by an affine transformation. */
-SDINTERNAL void
-SDPath_TransformAffine(SDPath             *_this,
-                       SDAffineTransformF *transform)
+CINTERNAL void
+CPath_TransformAffine(CPath             *_this,
+                       CAffineTransformF *transform)
 {
 	/* assertions */
-	SDASSERT((_this     != 0));
-	SDASSERT((transform != 0));
+	CASSERT((_this     != 0));
+	CASSERT((transform != 0));
 
 	/* transform the points, as needed */
 	if(_this->count != 0)
 	{
-		SDAffineTransformF_TransformPoints
+		CAffineTransformF_TransformPoints
 			(transform, _this->points, _this->count);
 	}
 }
 
 /* Stroke this path to another path. */
-SDINTERNAL SDStatus
-SDPath_Stroke(SDPath    *_this,
-              SDPath    *stroke,
-              SDStroker *stroker)
+CINTERNAL CStatus
+CPath_Stroke(CPath    *_this,
+              CPath    *stroke,
+              CStroker *stroker)
 {
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((stroke  != 0));
-	SDASSERT((stroker != 0));
+	CASSERT((_this   != 0));
+	CASSERT((stroke  != 0));
+	CASSERT((stroker != 0));
 
 	/* stroke the path */
-	SDStatus_Check
-		(SDStroker_Stroke
+	CStatus_Check
+		(CStroker_Stroke
 			(stroker, stroke, _this->points, _this->types, _this->count));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Fill this path to trapezoids. */
-SDINTERNAL SDStatus
-SDPath_Fill(SDPath       *_this,
-            SDTrapezoids *trapezoids)
+CINTERNAL CStatus
+CPath_Fill(CPath       *_this,
+            CTrapezoids *trapezoids)
 {
 	/* declarations */
-	SDFillMode fillMode;
+	CFillMode fillMode;
 
 	/* assertions */
-	SDASSERT((_this      != 0));
-	SDASSERT((trapezoids != 0));
+	CASSERT((_this      != 0));
+	CASSERT((trapezoids != 0));
 
 	/* get the fill mode */
-	fillMode = (_this->winding ? SDFillMode_Winding : SDFillMode_Alternate);
+	fillMode = (_this->winding ? CFillMode_Winding : CFillMode_Alternate);
 
 	/* fill the path */
-	SDStatus_Check
-		(SDTrapezoids_Fill
+	CStatus_Check
+		(CTrapezoids_Fill
 			(trapezoids, _this->points, _this->types, _this->count, fillMode));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * SDColorPalette.h - Color palette header.
+ * CColorPalette.h - Color palette header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_COLORPALETTE_H_
-#define _SD_COLORPALETTE_H_
+#ifndef _C_COLORPALETTE_H_
+#define _C_COLORPALETTE_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,18 +27,18 @@
 extern "C" {
 #endif
 
-SDINTERNAL SDBool
-SDColorPalette_CheckFormat(SDColorPalette *_this,
-                           SDPixelFormat   format);
-SDINTERNAL SDColor
-SDColorPalette_GetColor(SDColorPalette *_this,
-                        SDUInt32        index);
-SDINTERNAL SDUInt32
-SDColorPalette_FindBestMatch(SDColorPalette *_this,
-                             SDColor         color);
+CINTERNAL CBool
+CColorPalette_CheckFormat(CColorPalette *_this,
+                          CPixelFormat   format);
+CINTERNAL CColor
+CColorPalette_GetColor(CColorPalette *_this,
+                       CUInt32        index);
+CINTERNAL CUInt32
+CColorPalette_FindBestMatch(CColorPalette *_this,
+                            CColor         color);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_COLORPALETTE_H_ */
+#endif /* _C_COLORPALETTE_H_ */

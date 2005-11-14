@@ -1,5 +1,5 @@
 /*
- * SDTextureBrush.h - Texture brush header.
+ * CTextureBrush.h - Texture brush header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_TEXTUREBRUSH_H_
-#define _SD_TEXTUREBRUSH_H_
+#ifndef _C_TEXTUREBRUSH_H_
+#define _C_TEXTUREBRUSH_H_
 
 #include "CBrush.h"
 
@@ -27,30 +27,30 @@
 extern "C" {
 #endif
 
-struct _tagSDTextureBrush
+struct _tagCTextureBrush
 {
-	SDBrush             _base;
-	SDAffineTransformF  transform;
-	SDRectangleF        rectangle;
-	SDWrapMode          wrapMode;
-	SDImage            *image;
+	CBrush             _base;
+	CAffineTransformF  transform;
+	CRectangleF        rectangle;
+	CWrapMode          wrapMode;
+	CImage            *image;
 };
 
-static SDStatus
-SDTextureBrush_Clone(SDBrush  *_this,
-                     SDBrush **_clone);
+static CStatus
+CTextureBrush_Clone(CBrush  *_this,
+                    CBrush **_clone);
 static void
-SDTextureBrush_Finalize(SDBrush *_this);
-static SDStatus
-SDTextureBrush_CreatePattern(SDBrush   *_this,
-                             SDPattern *pattern);
+CTextureBrush_Finalize(CBrush *_this);
+static CStatus
+CTextureBrush_CreatePattern(CBrush   *_this,
+                            CPattern *pattern);
 
-static const SDBrushClass SDTextureBrush_Class =
+static const CBrushClass CTextureBrush_Class =
 {
-	SDBrushType_TextureFill,
-	SDTextureBrush_Clone,
-	SDTextureBrush_Finalize,
-	SDTextureBrush_CreatePattern,
+	CBrushType_TextureFill,
+	CTextureBrush_Clone,
+	CTextureBrush_Finalize,
+	CTextureBrush_CreatePattern,
 	"sentinel"
 };
 
@@ -58,4 +58,4 @@ static const SDBrushClass SDTextureBrush_Class =
 };
 #endif
 
-#endif /* _SD_TEXTUREBRUSH_H_ */
+#endif /* _C_TEXTUREBRUSH_H_ */

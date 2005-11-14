@@ -1,5 +1,5 @@
 /*
- * SDPathBrush.c - Path gradient brush implementation.
+ * CPathBrush.c - Path gradient brush implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -29,30 +29,30 @@ extern "C" {
 
 /* TODO: implement more than a glorified solid brush */
 
-static const SDPointF SDPointF_Zero = { 0.0f, 0.0f };
+static const CPointF CPointF_Zero = { 0.0f, 0.0f };
 
 /* Initialize this path brush. */
-static SDStatus
-SDPathBrush_Initialize(SDPathBrush *_this,
-                       SDPath      *path)
+static CStatus
+CPathBrush_Initialize(CPathBrush *_this,
+                       CPath      *path)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the members */
 	{
 		/* initialize the path */
-		SDStatus_Check
-			(SDPath_Clone
+		CStatus_Check
+			(CPath_Clone
 				(path, &(_this->path)));
 
 		/* find the center point and bounds */
 		{
 			/* declarations */
-			SDFloat   maxX,  maxY;
-			SDFloat   minX,  minY;
-			SDFloat   sumX,  sumY;
-			SDPointF *curr, *end;
+			CFloat   maxX,  maxY;
+			CFloat   minX,  minY;
+			CFloat   sumX,  sumY;
+			CPointF *curr, *end;
 
 			/*\
 			|*| NOTE: directly accessing the path internals isn't exactly a
@@ -72,13 +72,13 @@ SDPathBrush_Initialize(SDPathBrush *_this,
 			/* ensure we have at least one point (for now) */
 			if(curr == end)
 			{
-				SDPath_Destroy(&(_this->path));
-				return SDStatus_Argument;
+				CPath_Destroy(&(_this->path));
+				return CStatus_Argument;
 			}
 
 			/* initialize the bounds and sums */
-			sumX = maxX = minX = SDPoint_X(*curr);
-			sumY = maxY = minY = SDPoint_Y(*curr);
+			sumX = maxX = minX = CPoint_X(*curr);
+			sumY = maxY = minY = CPoint_Y(*curr);
 
 			/* move to the next point position */
 			++curr;
@@ -87,11 +87,11 @@ SDPathBrush_Initialize(SDPathBrush *_this,
 			while(curr != end)
 			{
 				/* declarations */
-				SDFloat x, y;
+				CFloat x, y;
 
 				/* get the current coordinates */
-				x = SDPoint_X(*curr);
-				y = SDPoint_Y(*curr);
+				x = CPoint_X(*curr);
+				y = CPoint_Y(*curr);
 
 				/* update the sums */
 				sumX += x;
@@ -105,66 +105,66 @@ SDPathBrush_Initialize(SDPathBrush *_this,
 			}
 
 			/* initialize the center point */
-			SDPoint_X(_this->centerPoint) = (sumX / _this->path->count);
-			SDPoint_Y(_this->centerPoint) = (sumY / _this->path->count);
+			CPoint_X(_this->centerPoint) = (sumX / _this->path->count);
+			CPoint_Y(_this->centerPoint) = (sumY / _this->path->count);
 
 			/* initialize the bounding rectangle */
-			SDRectangle_X(_this->rectangle)      = (minX);
-			SDRectangle_Y(_this->rectangle)      = (minY);
-			SDRectangle_Width(_this->rectangle)  = (maxX - minX);
-			SDRectangle_Height(_this->rectangle) = (maxY - minY);
+			CRectangle_X(_this->rectangle)      = (minX);
+			CRectangle_Y(_this->rectangle)      = (minY);
+			CRectangle_Width(_this->rectangle)  = (maxX - minX);
+			CRectangle_Height(_this->rectangle) = (maxY - minY);
 		}
 
 		/* allocate the surrounding colors */
-		if(!(_this->surroundColors = (SDColor *)SDMalloc(sizeof(SDColor))))
+		if(!(_this->surroundColors = (CColor *)CMalloc(sizeof(CColor))))
 		{
-			SDPath_Destroy(&(_this->path));
-			return SDStatus_OutOfMemory;
+			CPath_Destroy(&(_this->path));
+			return CStatus_OutOfMemory;
 		}
 
 		/* initialize the remaining members */
-		_this->transform         = SDAffineTransformF_Identity;
-		_this->wrapMode          = SDWrapMode_Clamp;
-		_this->blend             = SDBlend_Zero;
-		_this->colorBlend        = SDColorBlend_Zero;
-		_this->focusPoint        = SDPointF_Zero;
-		_this->centerColor       = SDColor_White;
-		_this->surroundColors[0] = SDColor_White;
+		_this->transform         = CAffineTransformF_Identity;
+		_this->wrapMode          = CWrapMode_Clamp;
+		_this->blend             = CBlend_Zero;
+		_this->colorBlend        = CColorBlend_Zero;
+		_this->focusPoint        = CPointF_Zero;
+		_this->centerColor       = CColor_White;
+		_this->surroundColors[0] = CColor_White;
 		_this->surroundCount     = 1;
 	}
 
 	/* initialize the base */
-	SDBrush_Initialize((SDBrush *)_this, &SDPathBrush_Class);
+	CBrush_Initialize((CBrush *)_this, &CPathBrush_Class);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Finalize this path brush. */
 static void
-SDPathBrush_Finalize(SDBrush *_this)
+CPathBrush_Finalize(CBrush *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize this brush */
 	{
 		/* declarations */
-		SDPathBrush *brush;
+		CPathBrush *brush;
 
 		/* get this as a path brush */
-		brush = (SDPathBrush *)_this;
+		brush = (CPathBrush *)_this;
 
 		/* finalize the blend */
-		SDBlend_Finalize(&(brush->blend));
+		CBlend_Finalize(&(brush->blend));
 
 		/* finalize the color blend */
-		SDColorBlend_Finalize(&(brush->colorBlend));
+		CColorBlend_Finalize(&(brush->colorBlend));
 
 		/* finalize the surrounding colors, as needed */
 		if(brush->surroundColors != 0)
 		{
-			SDFree(brush->surroundColors);
+			CFree(brush->surroundColors);
 			brush->surroundColors = 0;
 			brush->surroundCount  = 0;
 		}
@@ -172,72 +172,72 @@ SDPathBrush_Finalize(SDBrush *_this)
 		/* finalize the path, as needed */
 		if(brush->path != 0)
 		{
-			SDPath_Destroy(&(brush->path));
+			CPath_Destroy(&(brush->path));
 		}
 	}
 }
 
 /* Clone this path brush. */
-static SDStatus
-SDPathBrush_Clone(SDBrush  *_this,
-                  SDBrush **_clone)
+static CStatus
+CPathBrush_Clone(CBrush  *_this,
+                  CBrush **_clone)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((_clone != 0));
+	CASSERT((_this  != 0));
+	CASSERT((_clone != 0));
 
 	/* clone this brush */
 	{
 		/* declarations */
-		SDPathBrush *brush;
-		SDPathBrush *clone;
-		SDStatus     status;
+		CPathBrush *brush;
+		CPathBrush *clone;
+		CStatus     status;
 
 		/* get this as a path brush */
-		brush = (SDPathBrush *)_this;
+		brush = (CPathBrush *)_this;
 
 		/* create the clone */
-		SDStatus_Check
-			(SDPathBrush_Create
-				(((SDPathBrush **)_clone), brush->path));
+		CStatus_Check
+			(CPathBrush_Create
+				(((CPathBrush **)_clone), brush->path));
 
 		/* get the clone brush */
-		clone = ((SDPathBrush *)(*_clone));
+		clone = ((CPathBrush *)(*_clone));
 
 		/* copy the blend */
-		status = SDBlend_Copy(&(brush->blend), &(clone->blend));
+		status = CBlend_Copy(&(brush->blend), &(clone->blend));
 
 		/* handle blend copy failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDPathBrush_Finalize(*_clone);
-			SDFree(*_clone);
+			CPathBrush_Finalize(*_clone);
+			CFree(*_clone);
 			*_clone = 0;
 			return status;
 		}
 
 		/* copy the color blend */
-		status = SDColorBlend_Copy(&(brush->colorBlend), &(clone->colorBlend));
+		status = CColorBlend_Copy(&(brush->colorBlend), &(clone->colorBlend));
 
 		/* handle color blend copy failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDPathBrush_Finalize(*_clone);
-			SDFree(*_clone);
+			CPathBrush_Finalize(*_clone);
+			CFree(*_clone);
 			*_clone = 0;
 			return status;
 		}
 
 		/* copy the surrounding colors */
 		status =
-			SDPathBrush_SetSurroundColors
+			CPathBrush_SetSurroundColors
 				(clone, brush->surroundColors, brush->surroundCount);
 
 		/* handle surrounding colors copy failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDPathBrush_Finalize(*_clone);
-			SDFree(*_clone);
+			CPathBrush_Finalize(*_clone);
+			CFree(*_clone);
 			*_clone = 0;
 			return status;
 		}
@@ -250,121 +250,121 @@ SDPathBrush_Clone(SDBrush  *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Create a pattern for this brush. */
-static SDStatus
-SDPathBrush_CreatePattern(SDBrush   *_this,
-                          SDPattern *pattern)
+static CStatus
+CPathBrush_CreatePattern(CBrush   *_this,
+                          CPattern *pattern)
 {
 	/* declarations */
-	SDPathBrush *brush;
+	CPathBrush *brush;
 
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((pattern != 0));
+	CASSERT((_this   != 0));
+	CASSERT((pattern != 0));
 
 	/* TODO: implement this the right way */
 
 	/* get this as a path brush */
-	brush = (SDPathBrush *)_this;
+	brush = (CPathBrush *)_this;
 
 	/* set the pattern transformation */
 	pattern->transform = 0;
 
 	/* create the pattern */
-	return SDUtils_CreateSolidPattern(&(pattern->image), brush->centerColor);
+	return CUtils_CreateSolidPattern(&(pattern->image), brush->centerColor);
 }
 
 /* Create a path brush. */
-SDStatus
-SDPathBrush_Create(SDPathBrush **_this,
-                   SDPath       *path)
+CStatus
+CPathBrush_Create(CPathBrush **_this,
+                   CPath       *path)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a path */
-	SDStatus_Require((path != 0), SDStatus_ArgumentNull);
+	CStatus_Require((path != 0), CStatus_ArgumentNull);
 
 	/* allocate the brush */
-	if(!(*_this = (SDPathBrush *)SDMalloc(sizeof(SDPathBrush))))
+	if(!(*_this = (CPathBrush *)CMalloc(sizeof(CPathBrush))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the brush */
 	{
 		/* declarations */
-		SDStatus status;
+		CStatus status;
 
 		/* initialize the brush */
-		if((status = SDPathBrush_Initialize(*_this, path)) != SDStatus_OK)
+		if((status = CPathBrush_Initialize(*_this, path)) != CStatus_OK)
 		{
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
 			return status;
 		}
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the gradient blend. */
-SDStatus
-SDPathBrush_GetBlend(SDPathBrush *_this,
-                     SDBlend     *blend)
+CStatus
+CPathBrush_GetBlend(CPathBrush *_this,
+                     CBlend     *blend)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a blend pointer */
-	SDStatus_Require((blend != 0), SDStatus_ArgumentNull);
+	CStatus_Require((blend != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a blend */
-	SDStatus_Require((_this->blend.count > 0), SDStatus_InvalidOperation);
+	CStatus_Require((_this->blend.count > 0), CStatus_InvalidOperation);
 
 	/* get the blend */
-	return SDBlend_Copy(&(_this->blend), blend);
+	return CBlend_Copy(&(_this->blend), blend);
 }
 
 /* Set the gradient blend. */
-SDStatus
-SDPathBrush_SetBlend(SDPathBrush *_this,
-                     SDBlend      blend)
+CStatus
+CPathBrush_SetBlend(CPathBrush *_this,
+                     CBlend      blend)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have factors */
-	SDStatus_Require((blend.factors != 0), SDStatus_ArgumentNull);
+	CStatus_Require((blend.factors != 0), CStatus_ArgumentNull);
 
 	/* ensure we have positions */
-	SDStatus_Require((blend.positions != 0), SDStatus_ArgumentNull);
+	CStatus_Require((blend.positions != 0), CStatus_ArgumentNull);
 
 	/* ensure the count is in range */
-	SDStatus_Require((blend.count >= 2), SDStatus_ArgumentOutOfRange);
+	CStatus_Require((blend.count >= 2), CStatus_ArgumentOutOfRange);
 
 	/* set the blend */
 	{
 		/* declarations */
-		SDBlend tmp;
+		CBlend tmp;
 
 		/* copy the blend */
-		SDStatus_Check
-			(SDBlend_Copy
+		CStatus_Check
+			(CBlend_Copy
 				(&(blend), &(tmp)));
 
 		/* dispose of the current blend as needed */
 		if(_this->blend.count != 0)
 		{
-			SDBlend_Finalize(&(_this->blend));
+			CBlend_Finalize(&(_this->blend));
 		}
 		else
 		{
-			SDColorBlend_Finalize(&(_this->colorBlend));
+			CColorBlend_Finalize(&(_this->colorBlend));
 		}
 
 		/* set the blend */
@@ -372,137 +372,137 @@ SDPathBrush_SetBlend(SDPathBrush *_this,
 	}
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the center color of the gradient. */
-SDStatus
-SDPathBrush_GetCenterColor(SDPathBrush *_this,
-                           SDColor     *centerColor)
+CStatus
+CPathBrush_GetCenterColor(CPathBrush *_this,
+                           CColor     *centerColor)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a center color pointer */
-	SDStatus_Require((centerColor != 0), SDStatus_ArgumentNull);
+	CStatus_Require((centerColor != 0), CStatus_ArgumentNull);
 
 	/* get the center color */
 	*centerColor = _this->centerColor;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the center color of the gradient. */
-SDStatus
-SDPathBrush_SetCenterColor(SDPathBrush *_this,
-                           SDColor      centerColor)
+CStatus
+CPathBrush_SetCenterColor(CPathBrush *_this,
+                           CColor      centerColor)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the center color */
 	_this->centerColor = centerColor;
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the center point of the gradient. */
-SDStatus
-SDPathBrush_GetCenterPoint(SDPathBrush *_this,
-                           SDPointF    *centerPoint)
+CStatus
+CPathBrush_GetCenterPoint(CPathBrush *_this,
+                           CPointF    *centerPoint)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a center point pointer */
-	SDStatus_Require((centerPoint != 0), SDStatus_ArgumentNull);
+	CStatus_Require((centerPoint != 0), CStatus_ArgumentNull);
 
 	/* get the center point */
 	*centerPoint = _this->centerPoint;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the center point of the gradient. */
-SDStatus
-SDPathBrush_SetCenterPoint(SDPathBrush *_this,
-                           SDPointF     centerPoint)
+CStatus
+CPathBrush_SetCenterPoint(CPathBrush *_this,
+                           CPointF     centerPoint)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the center point */
 	_this->centerPoint = centerPoint;
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the color blend of the gradient. */
-SDStatus
-SDPathBrush_GetColorBlend(SDPathBrush  *_this,
-                          SDColorBlend *colorBlend)
+CStatus
+CPathBrush_GetColorBlend(CPathBrush  *_this,
+                          CColorBlend *colorBlend)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a color blend pointer */
-	SDStatus_Require((colorBlend != 0), SDStatus_ArgumentNull);
+	CStatus_Require((colorBlend != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a color blend */
-	SDStatus_Require((_this->colorBlend.count > 0), SDStatus_InvalidOperation);
+	CStatus_Require((_this->colorBlend.count > 0), CStatus_InvalidOperation);
 
 	/* get the color blend */
-	return SDColorBlend_Copy(&(_this->colorBlend), colorBlend);
+	return CColorBlend_Copy(&(_this->colorBlend), colorBlend);
 }
 
 /* Set the color blend of the gradient. */
-SDStatus
-SDPathBrush_SetColorBlend(SDPathBrush  *_this,
-                          SDColorBlend  colorBlend)
+CStatus
+CPathBrush_SetColorBlend(CPathBrush  *_this,
+                          CColorBlend  colorBlend)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have colors */
-	SDStatus_Require((colorBlend.colors != 0), SDStatus_ArgumentNull);
+	CStatus_Require((colorBlend.colors != 0), CStatus_ArgumentNull);
 
 	/* ensure we have positions */
-	SDStatus_Require((colorBlend.positions != 0), SDStatus_ArgumentNull);
+	CStatus_Require((colorBlend.positions != 0), CStatus_ArgumentNull);
 
 	/* ensure the count is in range */
-	SDStatus_Require((colorBlend.count >= 2), SDStatus_ArgumentOutOfRange);
+	CStatus_Require((colorBlend.count >= 2), CStatus_ArgumentOutOfRange);
 
 	/* set the color blend */
 	{
 		/* declarations */
-		SDColorBlend tmp;
+		CColorBlend tmp;
 
 		/* copy the color blend */
-		SDStatus_Check
-			(SDColorBlend_Copy
+		CStatus_Check
+			(CColorBlend_Copy
 				(&(colorBlend), &(tmp)));
 
 		/* dispose of the current blend as needed */
 		if(_this->colorBlend.count != 0)
 		{
-			SDColorBlend_Finalize(&(_this->colorBlend));
+			CColorBlend_Finalize(&(_this->colorBlend));
 		}
 		else
 		{
-			SDBlend_Finalize(&(_this->blend));
+			CBlend_Finalize(&(_this->blend));
 		}
 
 		/* set the color blend */
@@ -510,80 +510,80 @@ SDPathBrush_SetColorBlend(SDPathBrush  *_this,
 	}
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the focus point of the gradient. */
-SDStatus
-SDPathBrush_GetFocusPoint(SDPathBrush *_this,
-                          SDPointF    *focusPoint)
+CStatus
+CPathBrush_GetFocusPoint(CPathBrush *_this,
+                          CPointF    *focusPoint)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a focus point pointer */
-	SDStatus_Require((focusPoint != 0), SDStatus_ArgumentNull);
+	CStatus_Require((focusPoint != 0), CStatus_ArgumentNull);
 
 	/* get the focus point */
 	*focusPoint = _this->focusPoint;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the focus point of the gradient. */
-SDStatus
-SDPathBrush_SetFocusPoint(SDPathBrush *_this,
-                          SDPointF     focusPoint)
+CStatus
+CPathBrush_SetFocusPoint(CPathBrush *_this,
+                          CPointF     focusPoint)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the focus point */
 	_this->focusPoint = focusPoint;
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the bounding rectangle of the gradient. */
-SDStatus
-SDPathBrush_GetRectangle(SDPathBrush  *_this,
-                         SDRectangleF *rectangle)
+CStatus
+CPathBrush_GetRectangle(CPathBrush  *_this,
+                         CRectangleF *rectangle)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a bounding rectangle pointer */
-	SDStatus_Require((rectangle != 0), SDStatus_ArgumentNull);
+	CStatus_Require((rectangle != 0), CStatus_ArgumentNull);
 
 	/* get the bounding rectangle */
 	*rectangle = _this->rectangle;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the surrounding colors of the gradient. */
-SDStatus
-SDPathBrush_GetSurroundColors(SDPathBrush  *_this,
-                              SDColor     **surroundColors,
-                              SDUInt32     *count)
+CStatus
+CPathBrush_GetSurroundColors(CPathBrush  *_this,
+                              CColor     **surroundColors,
+                              CUInt32     *count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a surrounding colors pointer pointer */
-	SDStatus_Require((surroundColors != 0), SDStatus_ArgumentNull);
+	CStatus_Require((surroundColors != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a count pointer */
-	SDStatus_Require((count != 0), SDStatus_ArgumentNull);
+	CStatus_Require((count != 0), CStatus_ArgumentNull);
 
 	/* get the surrounding colors */
 	{
@@ -591,59 +591,59 @@ SDPathBrush_GetSurroundColors(SDPathBrush  *_this,
 		*count = _this->surroundCount;
 
 		/* allocate the surrounding colors */
-		*surroundColors = (SDColor *)SDMalloc(*count * sizeof(SDColor));
+		*surroundColors = (CColor *)CMalloc(*count * sizeof(CColor));
 
 		/* ensure we have surrounding colors */
-		SDStatus_Require((*surroundColors != 0), SDStatus_OutOfMemory);
+		CStatus_Require((*surroundColors != 0), CStatus_OutOfMemory);
 
 		/* get the surrounding colors */
-		SDMemCopy(*surroundColors, _this->surroundColors, *count);
+		CMemCopy(*surroundColors, _this->surroundColors, *count);
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the colors of the gradient path points. */
-SDStatus
-SDPathBrush_SetSurroundColors(SDPathBrush *_this,
-                              SDColor     *surroundColors,
-                              SDUInt32     count)
+CStatus
+CPathBrush_SetSurroundColors(CPathBrush *_this,
+                              CColor     *surroundColors,
+                              CUInt32     count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a surrounding colors pointer */
-	SDStatus_Require((surroundColors != 0), SDStatus_ArgumentNull);
+	CStatus_Require((surroundColors != 0), CStatus_ArgumentNull);
 
 	/* set the surrounding colors */
 	{
 		/* declarations */
-		SDUInt32  pc;
-		SDColor  *tmp;
+		CUInt32  pc;
+		CColor  *tmp;
 
 		/* get the path count */
-		SDStatus_Check
-			(SDPath_GetCount
+		CStatus_Check
+			(CPath_GetCount
 				(_this->path, &pc));
 
 		/* ensure the count is in range */
-		SDStatus_Require
-			((count != 0 && count < pc), SDStatus_ArgumentOutOfRange);
+		CStatus_Require
+			((count != 0 && count < pc), CStatus_ArgumentOutOfRange);
 
 		/* allocate the surrounding colors */
-		tmp = (SDColor *)SDMalloc(count * sizeof(SDColor));
+		tmp = (CColor *)CMalloc(count * sizeof(CColor));
 
 		/* ensure we have surrounding colors */
-		SDStatus_Require((tmp != 0), SDStatus_OutOfMemory);
+		CStatus_Require((tmp != 0), CStatus_OutOfMemory);
 
 		/* copy the surrounding colors */
-		SDMemCopy(tmp, surroundColors, count);
+		CMemCopy(tmp, surroundColors, count);
 
 		/* dispose of the current surrounding colors, as needed */
 		if(_this->surroundCount != 0)
 		{
-			SDFree(_this->surroundColors);
+			CFree(_this->surroundColors);
 		}
 
 		/* set the surrounding colors */
@@ -654,186 +654,186 @@ SDPathBrush_SetSurroundColors(SDPathBrush *_this,
 	}
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the wrap mode of the gradient. */
-SDStatus
-SDPathBrush_GetWrapMode(SDPathBrush *_this,
-                        SDWrapMode  *wrapMode)
+CStatus
+CPathBrush_GetWrapMode(CPathBrush *_this,
+                        CWrapMode  *wrapMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a wrap mode pointer */
-	SDStatus_Require((wrapMode != 0), SDStatus_ArgumentNull);
+	CStatus_Require((wrapMode != 0), CStatus_ArgumentNull);
 
 	/* get the wrap mode */
 	*wrapMode = _this->wrapMode;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the wrap mode of the gradient. */
-SDStatus
-SDPathBrush_SetWrapMode(SDPathBrush *_this,
-                        SDWrapMode   wrapMode)
+CStatus
+CPathBrush_SetWrapMode(CPathBrush *_this,
+                        CWrapMode   wrapMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the wrap mode */
 	_this->wrapMode = wrapMode;
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the transformation matrix of the gradient. */
-SDStatus
-SDPathBrush_GetTransform(SDPathBrush *_this,
-                         SDMatrix    *matrix)
+CStatus
+CPathBrush_GetTransform(CPathBrush *_this,
+                         CMatrix    *matrix)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* get the transformation */
-	return SDMatrix_SetTransform(matrix, &(_this->transform));
+	return CMatrix_SetTransform(matrix, &(_this->transform));
 }
 
 /* Multiply the transformation matrix of the gradient by another matrix. */
-SDStatus
-SDPathBrush_MultiplyTransform(SDPathBrush   *_this,
-                              SDMatrix      *matrix,
-                              SDMatrixOrder  order)
+CStatus
+CPathBrush_MultiplyTransform(CPathBrush   *_this,
+                              CMatrix      *matrix,
+                              CMatrixOrder  order)
 {
 	/* declarations */
-	SDAffineTransformF t;
+	CAffineTransformF t;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* get the matrix transformation */
-	SDStatus_Check
-		(SDMatrix_GetTransform
+	CStatus_Check
+		(CMatrix_GetTransform
 			(matrix, &t));
 
 	/* multiply the transformation */
-	SDAffineTransformF_Multiply(&(_this->transform), &t, order);
+	CAffineTransformF_Multiply(&(_this->transform), &t, order);
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Reset the transformation matrix of the gradient. */
-SDStatus
-SDPathBrush_ResetTransform(SDPathBrush *_this)
+CStatus
+CPathBrush_ResetTransform(CPathBrush *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* reset the transformation */
-	_this->transform = SDAffineTransformF_Identity;
+	_this->transform = CAffineTransformF_Identity;
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Rotate the transformation matrix of the gradient. */
-SDStatus
-SDPathBrush_RotateTransform(SDPathBrush   *_this,
-                            SDFloat        angle,
-                            SDMatrixOrder  order)
+CStatus
+CPathBrush_RotateTransform(CPathBrush   *_this,
+                            CFloat        angle,
+                            CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* rotate the transformation */
-	SDAffineTransformF_Rotate(&(_this->transform), angle, order);
+	CAffineTransformF_Rotate(&(_this->transform), angle, order);
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Scale the transformation matrix of the gradient. */
-SDStatus
-SDPathBrush_ScaleTransform(SDPathBrush   *_this,
-                           SDFloat        sx,
-                           SDFloat        sy,
-                           SDMatrixOrder  order)
+CStatus
+CPathBrush_ScaleTransform(CPathBrush   *_this,
+                           CFloat        sx,
+                           CFloat        sy,
+                           CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* scale the transformation */
-	SDAffineTransformF_Scale(&(_this->transform), sx, sy, order);
+	CAffineTransformF_Scale(&(_this->transform), sx, sy, order);
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the shape of the gradient to a triangle. */
-SDStatus
-SDPathBrush_SetTriangularShape(SDPathBrush *_this,
-                               SDFloat      focus,
-                               SDFloat      scale)
+CStatus
+CPathBrush_SetTriangularShape(CPathBrush *_this,
+                               CFloat      focus,
+                               CFloat      scale)
 {
 	/* declarations */
-	SDUInt32 count;
+	CUInt32 count;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* clamp the focus and scale */
-	SDCLAMP(focus, 0.0f, 1.0f);
-	SDCLAMP(scale, 0.0f, 1.0f);
+	CCLAMP(focus, 0.0f, 1.0f);
+	CCLAMP(scale, 0.0f, 1.0f);
 
 	/* set the count */
 	if(focus == 0.0f || focus == 1.0f)
 	{
-		count = SDBlend_TriangularHalfCount;
+		count = CBlend_TriangularHalfCount;
 	}
 	else
 	{
-		count = SDBlend_TriangularFullCount;
+		count = CBlend_TriangularFullCount;
 	}
 
 	/* allocate and dispose, as needed */
 	if(_this->blend.count != count)
 	{
 		/* declarations */
-		SDBlend tmp;
+		CBlend tmp;
 
 		/* initialize the blend */
-		SDBlend_Initialize(&(tmp), count);
+		CBlend_Initialize(&(tmp), count);
 
 		/* dispose of the current blend as needed */
 		if(_this->blend.count != 0)
 		{
-			SDBlend_Finalize(&(_this->blend));
+			CBlend_Finalize(&(_this->blend));
 		}
 		else
 		{
-			SDColorBlend_Finalize(&(_this->colorBlend));
+			CColorBlend_Finalize(&(_this->colorBlend));
 		}
 
 		/* set the blend */
@@ -841,58 +841,58 @@ SDPathBrush_SetTriangularShape(SDPathBrush *_this,
 	}
 
 	/* set the blend to the triangular shape */
-	SDBlend_SetTriangularShape(&(_this->blend), focus, scale);
+	CBlend_SetTriangularShape(&(_this->blend), focus, scale);
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the shape of the gradient to a sigma bell. */
-SDStatus
-SDPathBrush_SetSigmaBellShape(SDPathBrush *_this,
-                              SDFloat      focus,
-                              SDFloat      scale)
+CStatus
+CPathBrush_SetSigmaBellShape(CPathBrush *_this,
+                              CFloat      focus,
+                              CFloat      scale)
 {
 	/* declarations */
-	SDUInt32 count;
+	CUInt32 count;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* clamp the focus and scale */
-	SDCLAMP(focus, 0.0f, 1.0f);
-	SDCLAMP(scale, 0.0f, 1.0f);
+	CCLAMP(focus, 0.0f, 1.0f);
+	CCLAMP(scale, 0.0f, 1.0f);
 
 	/* set the count */
 	if(focus == 0.0f || focus == 1.0f)
 	{
-		count = SDBlend_SigmaBellHalfCount;
+		count = CBlend_SigmaBellHalfCount;
 	}
 	else
 	{
-		count = SDBlend_SigmaBellFullCount;
+		count = CBlend_SigmaBellFullCount;
 	}
 
 	/* allocate and dispose, as needed */
 	if(_this->blend.count != count)
 	{
 		/* declarations */
-		SDBlend tmp;
+		CBlend tmp;
 
 		/* initialize the blend */
-		SDBlend_Initialize(&(tmp), count);
+		CBlend_Initialize(&(tmp), count);
 
 		/* dispose of the current blend as needed */
 		if(_this->blend.count != 0)
 		{
-			SDBlend_Finalize(&(_this->blend));
+			CBlend_Finalize(&(_this->blend));
 		}
 		else
 		{
-			SDColorBlend_Finalize(&(_this->colorBlend));
+			CColorBlend_Finalize(&(_this->colorBlend));
 		}
 
 		/* set the blend */
@@ -900,53 +900,53 @@ SDPathBrush_SetSigmaBellShape(SDPathBrush *_this,
 	}
 
 	/* set the blend to the sigma bell shape */
-	SDBlend_SetSigmaBellShape(&(_this->blend), focus, scale);
+	CBlend_SetSigmaBellShape(&(_this->blend), focus, scale);
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the transformation matrix of the gradient. */
-SDStatus
-SDPathBrush_SetTransform(SDPathBrush *_this,
-                         SDMatrix    *matrix)
+CStatus
+CPathBrush_SetTransform(CPathBrush *_this,
+                         CMatrix    *matrix)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the transformation */
-	SDStatus_Check
-		(SDMatrix_GetTransform
+	CStatus_Check
+		(CMatrix_GetTransform
 			(matrix, &(_this->transform)));
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Translate the transformation matrix of the gradient. */
-SDStatus
-SDPathBrush_TranslateTransform(SDPathBrush   *_this,
-                               SDFloat        dx,
-                               SDFloat        dy,
-                               SDMatrixOrder  order)
+CStatus
+CPathBrush_TranslateTransform(CPathBrush   *_this,
+                               CFloat        dx,
+                               CFloat        dy,
+                               CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* translate the transformation */
-	SDAffineTransformF_Translate(&(_this->transform), dx, dy, order);
+	CAffineTransformF_Translate(&(_this->transform), dx, dy, order);
 
 	/* send change signal to base */
-	SDBrush_OnChange((SDBrush *)_this);
+	CBrush_OnChange((CBrush *)_this);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

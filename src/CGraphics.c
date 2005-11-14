@@ -1,5 +1,5 @@
 /*
- * SDGraphics.c - Graphics implementation.
+ * CGraphics.c - Graphics implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -41,120 +41,120 @@ extern "C" {
 \*/
 
 /******************************************************************************/
-#define SDGraphics_LIFETIME
-#ifdef SDGraphics_LIFETIME
+#define CGraphics_LIFETIME
+#ifdef CGraphics_LIFETIME
 /* Create a graphics context. */
-SDStatus
-SDGraphics_Create(SDGraphics **_this,
-                  SDSurface   *surface)
+CStatus
+CGraphics_Create(CGraphics **_this,
+                  CSurface   *surface)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a surface pointer */
-	SDStatus_Require((surface != 0), SDStatus_ArgumentNull);
+	CStatus_Require((surface != 0), CStatus_ArgumentNull);
 
 	/* allocate the graphics context */
-	if(!(*_this = (SDGraphics *)SDMalloc(sizeof(SDGraphics))))
+	if(!(*_this = (CGraphics *)CMalloc(sizeof(CGraphics))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the graphics context */
 	{
 		/* declarations */
-		SDStatus status;
+		CStatus status;
 
 		/* get the graphics context */
-		SDGraphics *gc = *_this;
+		CGraphics *gc = *_this;
 
 		/* initialize the transformation pipeline */
-		SDGraphicsPipeline_ResetWorld(&(gc->pipeline));
-		SDGraphicsPipeline_ResetPage(&(gc->pipeline));
+		CGraphicsPipeline_ResetWorld(&(gc->pipeline));
+		CGraphicsPipeline_ResetPage(&(gc->pipeline));
 
 		/* initialize the clipping region */
-		if((status = SDRegion_Create(&(gc->clip))) != SDStatus_OK)
+		if((status = CRegion_Create(&(gc->clip))) != CStatus_OK)
 		{
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
 			return status;
 		}
 
 		/* initialize the rendering path */
-		if((status = SDPath_Create(&(gc->path))) != SDStatus_OK)
+		if((status = CPath_Create(&(gc->path))) != CStatus_OK)
 		{
-			SDRegion_Destroy(&(gc->clip));
-			SDFree(*_this);
+			CRegion_Destroy(&(gc->clip));
+			CFree(*_this);
 			*_this = 0;
 			return status;
 		}
 
 		/* initialize the stroking path */
-		if((status = SDPath_Create(&(gc->stroke))) != SDStatus_OK)
+		if((status = CPath_Create(&(gc->stroke))) != CStatus_OK)
 		{
-			SDPath_Destroy(&(gc->path));
-			SDRegion_Destroy(&(gc->clip));
-			SDFree(*_this);
+			CPath_Destroy(&(gc->path));
+			CRegion_Destroy(&(gc->clip));
+			CFree(*_this);
 			*_this = 0;
 			return status;
 		}
 
 		/* initialize the remaining members */
 		gc->surface                    = surface;
-		gc->compositingMode            = SDCompositingMode_SourceOver;
-		gc->compositingQuality         = SDCompositingQuality_Default;
-		gc->pageUnit                   = SDGraphicsUnit_Display;
+		gc->compositingMode            = CCompositingMode_SourceOver;
+		gc->compositingQuality         = CCompositingQuality_Default;
+		gc->pageUnit                   = CGraphicsUnit_Display;
 		gc->pageScale                  = 1.0;
-		gc->interpolationMode          = SDInterpolationMode_Default;
-		gc->pixelOffsetMode            = SDPixelOffsetMode_Default;
-		SDPoint_X(gc->renderingOrigin) = 0;
-		SDPoint_Y(gc->renderingOrigin) = 0;
-		gc->smoothingMode              = SDSmoothingMode_Default;
+		gc->interpolationMode          = CInterpolationMode_Default;
+		gc->pixelOffsetMode            = CPixelOffsetMode_Default;
+		CPoint_X(gc->renderingOrigin) = 0;
+		CPoint_Y(gc->renderingOrigin) = 0;
+		gc->smoothingMode              = CSmoothingMode_Default;
 		gc->textContrast               = 0;
-		gc->textRenderingHint          = SDTextRenderingHint_SystemDefault;
+		gc->textRenderingHint          = CTextRenderingHint_SystemDefault;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Destroy a graphics context. */
-SDStatus
-SDGraphics_Destroy(SDGraphics **_this)
+CStatus
+CGraphics_Destroy(CGraphics **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((*_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((*_this != 0), CStatus_ArgumentNull);
 
 	/* finalize the graphics context */
 	{
 		/* get the graphics context */
-		SDGraphics *gc = *_this;
+		CGraphics *gc = *_this;
 
 		/* finalize, as needed */
 		if(gc->surface != 0)
 		{
 			/* destroy the surface */
-			SDSurface_Destroy(&(gc->surface));
+			CSurface_Destroy(&(gc->surface));
 
 			/* destroy the clip */
-			SDRegion_Destroy(&(gc->clip));
+			CRegion_Destroy(&(gc->clip));
 
 			/* destroy the rendering path */
-			SDPath_Destroy(&(gc->path));
+			CPath_Destroy(&(gc->path));
 		}
 	}
 
 	/* dispose of the graphics context */
-	SDFree(*_this);
+	CFree(*_this);
 
 	/* null the graphics context */
 	*_this = 0;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 #endif
 /******************************************************************************/
@@ -170,147 +170,147 @@ SDGraphics_Destroy(SDGraphics **_this)
 
 
 /******************************************************************************/
-#define SDGraphics_WORLD
-#ifdef SDGraphics_WORLD
+#define CGraphics_WORLD
+#ifdef CGraphics_WORLD
 /* Get the transformation matrix of this graphics context. */
-SDStatus
-SDGraphics_GetTransform(SDGraphics *_this,
-                        SDMatrix   *matrix)
+CStatus
+CGraphics_GetTransform(CGraphics *_this,
+                        CMatrix   *matrix)
 {
 	/* declarations */
-	SDAffineTransformF t;
+	CAffineTransformF t;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a matrix pointer */
-	SDStatus_Require((matrix != 0), SDStatus_ArgumentNull);
+	CStatus_Require((matrix != 0), CStatus_ArgumentNull);
 
 	/* get the world transformation */
-	SDGraphicsPipeline_GetWorld(&(_this->pipeline), &t);
+	CGraphicsPipeline_GetWorld(&(_this->pipeline), &t);
 
 	/* set the matrix transformation */
-	SDMatrix_SetTransform(matrix, &t);
+	CMatrix_SetTransform(matrix, &t);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Multiply the transformation matrix by another matrix. */
-SDStatus
-SDGraphics_MultiplyTransform(SDGraphics    *_this,
-                             SDMatrix      *matrix,
-                             SDMatrixOrder  order)
+CStatus
+CGraphics_MultiplyTransform(CGraphics    *_this,
+                             CMatrix      *matrix,
+                             CMatrixOrder  order)
 {
 	/* declarations */
-	SDAffineTransformF t;
+	CAffineTransformF t;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a matrix pointer */
-	SDStatus_Require((matrix != 0), SDStatus_ArgumentNull);
+	CStatus_Require((matrix != 0), CStatus_ArgumentNull);
 
 	/* get the matrix transformation */
-	SDMatrix_GetTransform(matrix, &t);
+	CMatrix_GetTransform(matrix, &t);
 
 	/* multiply the world transformation */
-	SDStatus_Check
-		(SDGraphicsPipeline_MultiplyWorld
+	CStatus_Check
+		(CGraphicsPipeline_MultiplyWorld
 			(&(_this->pipeline), &t, order));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Reset the transformation matrix of this graphics context. */
-SDStatus
-SDGraphics_ResetTransform(SDGraphics *_this)
+CStatus
+CGraphics_ResetTransform(CGraphics *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* reset the world transformation and inverse */
-	SDGraphicsPipeline_ResetWorld(&(_this->pipeline));
+	CGraphicsPipeline_ResetWorld(&(_this->pipeline));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Rotate the transformation matrix of this graphics context. */
-SDStatus
-SDGraphics_RotateTransform(SDGraphics    *_this,
-                           SDFloat        angle,
-                           SDMatrixOrder  order)
+CStatus
+CGraphics_RotateTransform(CGraphics    *_this,
+                           CFloat        angle,
+                           CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* rotate the world transformation and inverse */
-	SDGraphicsPipeline_RotateWorld(&(_this->pipeline), angle, order);
+	CGraphicsPipeline_RotateWorld(&(_this->pipeline), angle, order);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Scale the transformation matrix of this graphics context. */
-SDStatus
-SDGraphics_ScaleTransform(SDGraphics    *_this,
-                          SDFloat        sx,
-                          SDFloat        sy,
-                          SDMatrixOrder  order)
+CStatus
+CGraphics_ScaleTransform(CGraphics    *_this,
+                          CFloat        sx,
+                          CFloat        sy,
+                          CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* scale the world transformation and inverse */
-	SDGraphicsPipeline_ScaleWorld(&(_this->pipeline), sx, sy, order);
+	CGraphicsPipeline_ScaleWorld(&(_this->pipeline), sx, sy, order);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the transformation matrix of this graphics context. */
-SDStatus
-SDGraphics_SetTransform(SDGraphics *_this,
-                        SDMatrix   *matrix)
+CStatus
+CGraphics_SetTransform(CGraphics *_this,
+                        CMatrix   *matrix)
 {
 	/* declarations */
-	SDAffineTransformF t;
+	CAffineTransformF t;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a matrix pointer */
-	SDStatus_Require((matrix != 0), SDStatus_ArgumentNull);
+	CStatus_Require((matrix != 0), CStatus_ArgumentNull);
 
 	/* get the matrix transformation */
-	SDMatrix_GetTransform(matrix, &t);
+	CMatrix_GetTransform(matrix, &t);
 
 	/* set the world transformation */
-	SDStatus_Check
-		(SDGraphicsPipeline_SetWorld
+	CStatus_Check
+		(CGraphicsPipeline_SetWorld
 			(&(_this->pipeline), &t));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Translate the transformation matrix of this graphics context. */
-SDStatus
-SDGraphics_TranslateTransform(SDGraphics    *_this,
-                              SDFloat        dx,
-                              SDFloat        dy,
-                              SDMatrixOrder  order)
+CStatus
+CGraphics_TranslateTransform(CGraphics    *_this,
+                              CFloat        dx,
+                              CFloat        dy,
+                              CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* translate the world transformation and inverse */
-	SDGraphicsPipeline_TranslateWorld(&(_this->pipeline), dx, dy, order);
+	CGraphicsPipeline_TranslateWorld(&(_this->pipeline), dx, dy, order);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 #endif
 /******************************************************************************/
@@ -327,86 +327,86 @@ SDGraphics_TranslateTransform(SDGraphics    *_this,
 
 
 /******************************************************************************/
-#define SDGraphics_METAFILE
-#ifdef SDGraphics_METAFILE
+#define CGraphics_METAFILE
+#ifdef CGraphics_METAFILE
 #if 0
 /* Add a metafile comment. */
-SDStatus
-SDGraphics_AddMetafileComment(SDGraphics *_this,
-                              SDByte     *data,
-                              SDUInt32    count)
+CStatus
+CGraphics_AddMetafileComment(CGraphics *_this,
+                              CByte     *data,
+                              CUInt32    count)
 {
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Enumerate the contents of a metafile. */
-SDStatus
-SDGraphics_EnumerateMetafile(SDGraphics             *_this,
-                             SDMetafile             *metafile,
-                             SDPointF                dst,
-                             SDImageAttributes      *atts,
-                             SDMetafileEnumCallback  callback,
+CStatus
+CGraphics_EnumerateMetafile(CGraphics             *_this,
+                             CMetafile             *metafile,
+                             CPointF                dst,
+                             CImageAttributes      *atts,
+                             CMetafileEnumCallback  callback,
                              void                   *callbackData)
 {
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
-SDStatus
-SDGraphics_EnumerateMetafile(SDGraphics             *_this,
-                             SDMetafile             *metafile,
-                             SDPointF               *dst,
-                             SDUInt32                count,
-                             SDImageAttributes      *atts,
-                             SDMetafileEnumCallback  callback,
+CStatus
+CGraphics_EnumerateMetafile(CGraphics             *_this,
+                             CMetafile             *metafile,
+                             CPointF               *dst,
+                             CUInt32                count,
+                             CImageAttributes      *atts,
+                             CMetafileEnumCallback  callback,
                              void                   *callbackData)
 {
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
-SDStatus
-SDGraphics_EnumerateMetafile(SDGraphics             *_this,
-                             SDMetafile             *metafile,
-                             SDRectangleF            dst,
-                             SDImageAttributes      *atts,
-                             SDMetafileEnumCallback  callback,
+CStatus
+CGraphics_EnumerateMetafile(CGraphics             *_this,
+                             CMetafile             *metafile,
+                             CRectangleF            dst,
+                             CImageAttributes      *atts,
+                             CMetafileEnumCallback  callback,
                              void                   *callbackData)
 {
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
-SDStatus
-SDGraphics_EnumerateMetafile(SDGraphics             *_this,
-                             SDMetafile             *metafile,
-                             SDPointF                dst,
-                             SDRectangleF            src,
-                             SDGraphicsUnit          srcUnit,
-                             SDImageAttributes      *atts,
-                             SDMetafileEnumCallback  callback,
+CStatus
+CGraphics_EnumerateMetafile(CGraphics             *_this,
+                             CMetafile             *metafile,
+                             CPointF                dst,
+                             CRectangleF            src,
+                             CGraphicsUnit          srcUnit,
+                             CImageAttributes      *atts,
+                             CMetafileEnumCallback  callback,
                              void                   *callbackData)
 {
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
-SDStatus
-SDGraphics_EnumerateMetafile(SDGraphics             *_this,
-                             SDMetafile             *metafile,
-                             SDPointF               *dst,
-                             SDUInt32                count,
-                             SDRectangleF            src,
-                             SDGraphicsUnit          srcUnit,
-                             SDImageAttributes      *atts,
-                             SDMetafileEnumCallback  callback,
+CStatus
+CGraphics_EnumerateMetafile(CGraphics             *_this,
+                             CMetafile             *metafile,
+                             CPointF               *dst,
+                             CUInt32                count,
+                             CRectangleF            src,
+                             CGraphicsUnit          srcUnit,
+                             CImageAttributes      *atts,
+                             CMetafileEnumCallback  callback,
                              void                   *callbackData)
 {
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
-SDStatus
-SDGraphics_EnumerateMetafile(SDGraphics             *_this,
-                             SDMetafile             *metafile,
-                             SDRectangleF            dst,
-                             SDRectangleF            src,
-                             SDGraphicsUnit          srcUnit,
-                             SDImageAttributes      *atts,
-                             SDMetafileEnumCallback  callback,
+CStatus
+CGraphics_EnumerateMetafile(CGraphics             *_this,
+                             CMetafile             *metafile,
+                             CRectangleF            dst,
+                             CRectangleF            src,
+                             CGraphicsUnit          srcUnit,
+                             CImageAttributes      *atts,
+                             CMetafileEnumCallback  callback,
                              void                   *callbackData)
 {
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 #endif
 #endif
@@ -424,66 +424,66 @@ SDGraphics_EnumerateMetafile(SDGraphics             *_this,
 
 
 /******************************************************************************/
-#define SDGraphics_CLIP
-#ifdef SDGraphics_CLIP
+#define CGraphics_CLIP
+#ifdef CGraphics_CLIP
 /* Get the clipping region of this graphics context. */
-SDStatus
-SDGraphics_GetClip(SDGraphics *_this,
-                   SDRegion   *region)
+CStatus
+CGraphics_GetClip(CGraphics *_this,
+                   CRegion   *region)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the region to the clipping region */
-	SDStatus_Check
-		(SDRegion_CombineRegion
-			(region, _this->clip, SDCombineMode_Replace));
+	CStatus_Check
+		(CRegion_CombineRegion
+			(region, _this->clip, CCombineMode_Replace));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the clipping bounds of this graphics context. */
-SDStatus
-SDGraphics_GetClipBounds(SDGraphics   *_this,
-                         SDRectangleF *clipBounds)
+CStatus
+CGraphics_GetClipBounds(CGraphics   *_this,
+                         CRectangleF *clipBounds)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* get the clipping bounds */
-	SDStatus_Check
-		(SDRegion_GetBounds
+	CStatus_Check
+		(CRegion_GetBounds
 			(_this->clip, _this, clipBounds));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the visible clipping bounds of this graphics context. */
-SDStatus
-SDGraphics_GetVisibleClipBounds(SDGraphics   *_this,
-                                SDRectangleF *bounds)
+CStatus
+CGraphics_GetVisibleClipBounds(CGraphics   *_this,
+                                CRectangleF *bounds)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a bounds pointer */
-	SDStatus_Require((bounds != 0), SDStatus_ArgumentNull);
+	CStatus_Require((bounds != 0), CStatus_ArgumentNull);
 
 	/* get the visible clipping bounds */
 	{
 		/* declarations */
-		SDRectangleF visible;
+		CRectangleF visible;
 
 		/* get the clipping bounds */
-		SDStatus_Check
-			(SDRegion_GetBounds
+		CStatus_Check
+			(CRegion_GetBounds
 				(_this->clip, _this, bounds));
 
 		/* get the surface bounds */
-		SDStatus_Check
-			(SDSurface_GetBoundsF
+		CStatus_Check
+			(CSurface_GetBoundsF
 				(_this->surface, &visible));
 
 		/* obtain the intersection of the visible area and the clip bounds */
@@ -491,296 +491,296 @@ SDGraphics_GetVisibleClipBounds(SDGraphics   *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Determine if the clipping region is empty. */
-SDStatus
-SDGraphics_IsClipEmpty(SDGraphics *_this,
-                       SDBool     *empty)
+CStatus
+CGraphics_IsClipEmpty(CGraphics *_this,
+                       CBool     *empty)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an empty flag pointer */
-	SDStatus_Require((empty != 0), SDStatus_ArgumentNull);
+	CStatus_Require((empty != 0), CStatus_ArgumentNull);
 
 	/* determine if the clipping region is empty */
-	SDStatus_Check
-		(SDRegion_IsEmpty
+	CStatus_Check
+		(CRegion_IsEmpty
 			(_this->clip, _this, empty));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Determine if the visible clipping region is empty. */
-SDStatus
-SDGraphics_IsVisibleClipEmpty(SDGraphics *_this,
-                              SDBool     *empty)
+CStatus
+CGraphics_IsVisibleClipEmpty(CGraphics *_this,
+                              CBool     *empty)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an empty flag pointer */
-	SDStatus_Require((empty != 0), SDStatus_ArgumentNull);
+	CStatus_Require((empty != 0), CStatus_ArgumentNull);
 
 	/* determine if the visible clipping region is empty */
 	{
 		/* declarations */
-		SDRectangleF visible;
+		CRectangleF visible;
 
 		/* get the surface bounds */
-		SDStatus_Check
-			(SDSurface_GetBoundsF
+		CStatus_Check
+			(CSurface_GetBoundsF
 				(_this->surface, &visible));
 
 		/* determine if the visible area is within the clipping region */
-		SDStatus_Check
-			(SDRegion_IsVisibleRectangle
+		CStatus_Check
+			(CRegion_IsVisibleRectangle
 				(_this->clip, _this, visible, empty));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Determine if a point is within the visible clip region. */
-SDStatus
-SDGraphics_IsVisiblePoint(SDGraphics *_this,
-                          SDPointF    point,
-                          SDBool     *visible)
+CStatus
+CGraphics_IsVisiblePoint(CGraphics *_this,
+                          CPointF    point,
+                          CBool     *visible)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a visible flag pointer */
-	SDStatus_Require((visible != 0), SDStatus_ArgumentNull);
+	CStatus_Require((visible != 0), CStatus_ArgumentNull);
 
 	/* determine if the visible clipping region is empty */
 	{
 		/* declarations */
-		SDRectangleF v;
+		CRectangleF v;
 
 		/* get the surface bounds */
-		SDStatus_Check
-			(SDSurface_GetBoundsF
+		CStatus_Check
+			(CSurface_GetBoundsF
 				(_this->surface, &v));
 
 		/* determine if the point is within the visible bounds */
-		if(!(SDRectangle_ContainsPoint(v, point)))
+		if(!(CRectangle_ContainsPoint(v, point)))
 		{
 			/* set the visible flag to false */
 			*visible = 0;
 
 			/* return successfully */
-			return SDStatus_OK;
+			return CStatus_OK;
 		}
 
 		/* determine if the point is within the clipping region */
-		SDStatus_Check
-			(SDRegion_IsVisiblePoint
+		CStatus_Check
+			(CRegion_IsVisiblePoint
 				(_this->clip, _this, point, visible));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Determine if any part of a rectangle is within the visible clip region. */
-SDStatus
-SDGraphics_IsVisibleRectangle(SDGraphics   *_this,
-                              SDRectangleF  rect,
-                              SDBool       *visible)
+CStatus
+CGraphics_IsVisibleRectangle(CGraphics   *_this,
+                              CRectangleF  rect,
+                              CBool       *visible)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Reset the clipping region. */
-SDStatus
-SDGraphics_ResetClip(SDGraphics *_this)
+CStatus
+CGraphics_ResetClip(CGraphics *_this)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* reset the clipping region */
-	SDStatus_Check
-		(SDRegion_MakeInfinite
+	CStatus_Check
+		(CRegion_MakeInfinite
 			(_this->clip));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the clipping region to that of another graphics context. */
-SDStatus
-SDGraphics_SetClipGraphics(SDGraphics    *_this,
-                           SDGraphics    *graphics,
-                           SDCombineMode  combineMode)
+CStatus
+CGraphics_SetClipGraphics(CGraphics    *_this,
+                           CGraphics    *graphics,
+                           CCombineMode  combineMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a graphics context pointer */
-	SDStatus_Require((graphics != 0), SDStatus_ArgumentNull);
+	CStatus_Require((graphics != 0), CStatus_ArgumentNull);
 
 	/* set the clipping region */
-	SDStatus_Check
-		(SDRegion_CombineRegion
+	CStatus_Check
+		(CRegion_CombineRegion
 			(_this->clip, graphics->clip, combineMode));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the clipping region to a given path. */
-SDStatus
-SDGraphics_SetClipPath(SDGraphics    *_this,
-                       SDPath        *path,
-                       SDCombineMode  combineMode)
+CStatus
+CGraphics_SetClipPath(CGraphics    *_this,
+                       CPath        *path,
+                       CCombineMode  combineMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a path pointer */
-	SDStatus_Require((path != 0), SDStatus_ArgumentNull);
+	CStatus_Require((path != 0), CStatus_ArgumentNull);
 
 	/* set the clipping region */
-	SDStatus_Check
-		(SDRegion_CombinePath
+	CStatus_Check
+		(CRegion_CombinePath
 			(_this->clip, path, combineMode));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the clipping region to a given region. */
-SDStatus
-SDGraphics_SetClipRegion(SDGraphics    *_this,
-                         SDRegion      *region,
-                         SDCombineMode  combineMode)
+CStatus
+CGraphics_SetClipRegion(CGraphics    *_this,
+                         CRegion      *region,
+                         CCombineMode  combineMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a region pointer */
-	SDStatus_Require((region != 0), SDStatus_ArgumentNull);
+	CStatus_Require((region != 0), CStatus_ArgumentNull);
 
 	/* set the clipping region */
-	SDStatus_Check
-		(SDRegion_CombineRegion
+	CStatus_Check
+		(CRegion_CombineRegion
 			(_this->clip, region, combineMode));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the clipping region to a given rectangle. */
-SDStatus
-SDGraphics_SetClipRectangle(SDGraphics    *_this,
-                            SDRectangleF   rect,
-                            SDCombineMode  combineMode)
+CStatus
+CGraphics_SetClipRectangle(CGraphics    *_this,
+                            CRectangleF   rect,
+                            CCombineMode  combineMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the clipping region */
-	SDStatus_Check
-		(SDRegion_CombineRectangle
+	CStatus_Check
+		(CRegion_CombineRectangle
 			(_this->clip, rect, combineMode));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Translate the clipping region by a specific amount. */
-SDStatus
-SDGraphics_TranslateClip(SDGraphics *_this,
-                         SDFloat     dx,
-                         SDFloat     dy)
+CStatus
+CGraphics_TranslateClip(CGraphics *_this,
+                         CFloat     dx,
+                         CFloat     dy)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* translate the clipping region */
-	SDStatus_Check
-		(SDRegion_Translate
+	CStatus_Check
+		(CRegion_Translate
 			(_this->clip, dx, dy));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the clipping mask. */
-static SDStatus
-SDGraphics_GetClipMask(SDGraphics      *_this,
+static CStatus
+CGraphics_GetClipMask(CGraphics      *_this,
                        pixman_image_t **mask)
 {
 	/* declarations */
-	SDBool gray;
+	CBool gray;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((mask  != 0));
+	CASSERT((_this != 0));
+	CASSERT((mask  != 0));
 
 	/* determine if we should use gray values */
-	gray = SDUtils_UseGray(_this->smoothingMode, _this->pixelOffsetMode);
+	gray = CUtils_UseGray(_this->smoothingMode, _this->pixelOffsetMode);
 
 	/* get the surface mask */
-	SDStatus_Check
-		(SDSurface_GetClipMask
+	CStatus_Check
+		(CSurface_GetClipMask
 			(_this->surface, mask, gray));
 
 	/* get the clipping mask */
-	SDStatus_Check
-		(SDRegion_GetMask
-			(_this->clip, &SDGraphicsPipeline_Device(_this->pipeline), *mask));
+	CStatus_Check
+		(CRegion_GetMask
+			(_this->clip, &CGraphicsPipeline_Device(_this->pipeline), *mask));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the compositing mask. */
-static SDStatus
-SDGraphics_GetCompositingMask(SDGraphics      *_this,
+static CStatus
+CGraphics_GetCompositingMask(CGraphics      *_this,
                               pixman_image_t **mask)
 {
 	/* declarations */
-	SDBool gray;
+	CBool gray;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((mask  != 0));
+	CASSERT((_this != 0));
+	CASSERT((mask  != 0));
 
 	/* determine if we should use gray values */
-	gray = SDUtils_UseGray(_this->smoothingMode, _this->pixelOffsetMode);
+	gray = CUtils_UseGray(_this->smoothingMode, _this->pixelOffsetMode);
 
 	/* get the surface mask */
-	SDStatus_Check
-		(SDSurface_GetCompositingMask
+	CStatus_Check
+		(CSurface_GetCompositingMask
 			(_this->surface, mask, gray));
 
 	/* reset the compositing mask */
 	{
 		/* declarations */
-		SDByte   *data;
-		SDUInt32  height;
-		SDUInt32  stride;
+		CByte   *data;
+		CUInt32  height;
+		CUInt32  stride;
 
 		/* TODO: is this needed? */
 
 		/* get the mask information */
-		data   = (SDByte *)pixman_image_get_data(*mask);
-		height = (SDUInt32)pixman_image_get_height(*mask);
-		stride = (SDUInt32)pixman_image_get_stride(*mask);
+		data   = (CByte *)pixman_image_get_data(*mask);
+		height = (CUInt32)pixman_image_get_height(*mask);
+		stride = (CUInt32)pixman_image_get_stride(*mask);
 
 		/* reset the mask */
-		SDMemSet(data, 0x00, (height * stride));
+		CMemSet(data, 0x00, (height * stride));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 #endif
 /******************************************************************************/
@@ -797,420 +797,420 @@ SDGraphics_GetCompositingMask(SDGraphics      *_this,
 
 
 /******************************************************************************/
-#define SDGraphics_PROPERTIES
-#ifdef SDGraphics_PROPERTIES
+#define CGraphics_PROPERTIES
+#ifdef CGraphics_PROPERTIES
 /* Get the compositing mode of this graphics context. */
-SDStatus
-SDGraphics_GetCompositingMode(SDGraphics        *_this,
-                              SDCompositingMode *compositingMode)
+CStatus
+CGraphics_GetCompositingMode(CGraphics        *_this,
+                              CCompositingMode *compositingMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a compositing mode pointer */
-	SDStatus_Require((compositingMode != 0), SDStatus_ArgumentNull);
+	CStatus_Require((compositingMode != 0), CStatus_ArgumentNull);
 
 	/* get the compositing mode */
 	*compositingMode = _this->compositingMode;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the compositing mode of this graphics context. */
-SDStatus
-SDGraphics_SetCompositingMode(SDGraphics        *_this,
-                              SDCompositingMode  compositingMode)
+CStatus
+CGraphics_SetCompositingMode(CGraphics        *_this,
+                              CCompositingMode  compositingMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the compositing mode */
 	_this->compositingMode = compositingMode;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the compositing quality of this graphics context. */
-SDStatus
-SDGraphics_GetCompositingQuality(SDGraphics           *_this,
-                                 SDCompositingQuality *compositingQuality)
+CStatus
+CGraphics_GetCompositingQuality(CGraphics           *_this,
+                                 CCompositingQuality *compositingQuality)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a compositing quality pointer */
-	SDStatus_Require((compositingQuality != 0), SDStatus_ArgumentNull);
+	CStatus_Require((compositingQuality != 0), CStatus_ArgumentNull);
 
 	/* get the compositing quality */
 	*compositingQuality = _this->compositingQuality;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the compositing quality of this graphics context. */
-SDStatus
-SDGraphics_SetCompositingQuality(SDGraphics           *_this,
-                                 SDCompositingQuality  compositingQuality)
+CStatus
+CGraphics_SetCompositingQuality(CGraphics           *_this,
+                                 CCompositingQuality  compositingQuality)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the compositing quality */
 	_this->compositingQuality = compositingQuality;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the horizontal resolution of this graphics context. */
-SDStatus
-SDGraphics_GetDpiX(SDGraphics *_this,
-                   SDFloat    *dpiX)
+CStatus
+CGraphics_GetDpiX(CGraphics *_this,
+                   CFloat    *dpiX)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a horizontal resolution pointer */
-	SDStatus_Require((dpiX != 0), SDStatus_ArgumentNull);
+	CStatus_Require((dpiX != 0), CStatus_ArgumentNull);
 
 	/* get the horizontal resolution */
 #if 0
-	SDStatus_Check
-		(SDSurface_GetDpiX
+	CStatus_Check
+		(CSurface_GetDpiX
 			(_this->surface, dpiX));
 #else
-	*dpiX = SDGraphics_DefaultDpiX;
+	*dpiX = CGraphics_DefaultDpiX;
 #endif
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the vertical resolution of this graphics context. */
-SDStatus
-SDGraphics_GetDpiY(SDGraphics *_this,
-                   SDFloat    *dpiY)
+CStatus
+CGraphics_GetDpiY(CGraphics *_this,
+                   CFloat    *dpiY)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a vertical resolution pointer */
-	SDStatus_Require((dpiY != 0), SDStatus_ArgumentNull);
+	CStatus_Require((dpiY != 0), CStatus_ArgumentNull);
 
 	/* get the vertical resolution */
 #if 0
-	SDStatus_Check
-		(SDSurface_GetDpiY
+	CStatus_Check
+		(CSurface_GetDpiY
 			(_this->surface, dpiY));
 #else
-	*dpiY = SDGraphics_DefaultDpiY;
+	*dpiY = CGraphics_DefaultDpiY;
 #endif
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the interpolation mode of this graphics context. */
-SDStatus
-SDGraphics_GetInterpolationMode(SDGraphics          *_this,
-                                SDInterpolationMode *interpolationMode)
+CStatus
+CGraphics_GetInterpolationMode(CGraphics          *_this,
+                                CInterpolationMode *interpolationMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an interpolation mode pointer */
-	SDStatus_Require((interpolationMode != 0), SDStatus_ArgumentNull);
+	CStatus_Require((interpolationMode != 0), CStatus_ArgumentNull);
 
 	/* get the interpolation mode */
 	*interpolationMode = _this->interpolationMode;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the interpolation mode of this graphics context. */
-SDStatus
-SDGraphics_SetInterpolationMode(SDGraphics          *_this,
-                                SDInterpolationMode  interpolationMode)
+CStatus
+CGraphics_SetInterpolationMode(CGraphics          *_this,
+                                CInterpolationMode  interpolationMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the interpolation mode */
 	_this->interpolationMode = interpolationMode;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the page scaling factor of this graphics context. */
-SDStatus
-SDGraphics_GetPageScale(SDGraphics *_this,
-                        SDFloat    *pageScale)
+CStatus
+CGraphics_GetPageScale(CGraphics *_this,
+                        CFloat    *pageScale)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a page scaling factor pointer */
-	SDStatus_Require((pageScale != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pageScale != 0), CStatus_ArgumentNull);
 
 	/* get the page scaling factor */
 	*pageScale = _this->pageScale;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the page scaling factor of this graphics context. */
-SDStatus
-SDGraphics_SetPageScale(SDGraphics *_this,
-                        SDFloat     pageScale)
+CStatus
+CGraphics_SetPageScale(CGraphics *_this,
+                        CFloat     pageScale)
 {
 	/* declarations */
-	SDFloat dpiX;
-	SDFloat dpiY;
+	CFloat dpiX;
+	CFloat dpiY;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the page scaling factor */
 	_this->pageScale = pageScale;
 
 	/* get the horizontal resolution */
-	SDStatus_Check
-		(SDGraphics_GetDpiX
+	CStatus_Check
+		(CGraphics_GetDpiX
 			(_this, &dpiX));
 
 	/* get the vertical resolution */
-	SDStatus_Check
-		(SDGraphics_GetDpiY
+	CStatus_Check
+		(CGraphics_GetDpiY
 			(_this, &dpiY));
 
 	/* update the pipeline */
-	SDGraphicsPipeline_SetPage
+	CGraphicsPipeline_SetPage
 		(&(_this->pipeline), _this->pageUnit, pageScale, dpiX, dpiY);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the page unit of this graphics context. */
-SDStatus
-SDGraphics_GetPageUnit(SDGraphics     *_this,
-                       SDGraphicsUnit *pageUnit)
+CStatus
+CGraphics_GetPageUnit(CGraphics     *_this,
+                       CGraphicsUnit *pageUnit)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a page unit pointer */
-	SDStatus_Require((pageUnit != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pageUnit != 0), CStatus_ArgumentNull);
 
 	/* get the page unit */
 	*pageUnit = _this->pageUnit;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the page unit of this graphics context. */
-SDStatus
-SDGraphics_SetPageUnit(SDGraphics     *_this,
-                       SDGraphicsUnit  pageUnit)
+CStatus
+CGraphics_SetPageUnit(CGraphics     *_this,
+                       CGraphicsUnit  pageUnit)
 {
 	/* declarations */
-	SDFloat dpiX;
-	SDFloat dpiY;
+	CFloat dpiX;
+	CFloat dpiY;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the page unit */
 	_this->pageUnit = pageUnit;
 
 	/* get the horizontal resolution */
-	SDStatus_Check
-		(SDGraphics_GetDpiX
+	CStatus_Check
+		(CGraphics_GetDpiX
 			(_this, &dpiX));
 
 	/* get the vertical resolution */
-	SDStatus_Check
-		(SDGraphics_GetDpiY
+	CStatus_Check
+		(CGraphics_GetDpiY
 			(_this, &dpiY));
 
 	/* update the pipeline */
-	SDGraphicsPipeline_SetPage
+	CGraphicsPipeline_SetPage
 		(&(_this->pipeline), pageUnit, _this->pageScale, dpiX, dpiY);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the pixel offset mode of this graphics context. */
-SDStatus
-SDGraphics_GetPixelOffsetMode(SDGraphics        *_this,
-                              SDPixelOffsetMode *pixelOffsetMode)
+CStatus
+CGraphics_GetPixelOffsetMode(CGraphics        *_this,
+                              CPixelOffsetMode *pixelOffsetMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pixel offset mode pointer */
-	SDStatus_Require((pixelOffsetMode != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pixelOffsetMode != 0), CStatus_ArgumentNull);
 
 	/* get the pixel offset mode */
 	*pixelOffsetMode = _this->pixelOffsetMode;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the pixel offset mode of this graphics context. */
-SDStatus
-SDGraphics_SetPixelOffsetMode(SDGraphics        *_this,
-                              SDPixelOffsetMode  pixelOffsetMode)
+CStatus
+CGraphics_SetPixelOffsetMode(CGraphics        *_this,
+                              CPixelOffsetMode  pixelOffsetMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the pixel offset mode */
 	_this->pixelOffsetMode = pixelOffsetMode;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the rendering origin of this graphics context. */
-SDStatus
-SDGraphics_GetRenderingOrigin(SDGraphics *_this,
-                              SDPointI   *renderingOrigin)
+CStatus
+CGraphics_GetRenderingOrigin(CGraphics *_this,
+                              CPointI   *renderingOrigin)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a rendering origin pointer */
-	SDStatus_Require((renderingOrigin != 0), SDStatus_ArgumentNull);
+	CStatus_Require((renderingOrigin != 0), CStatus_ArgumentNull);
 
 	/* get the rendering origin */
 	*renderingOrigin = _this->renderingOrigin;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the rendering origin of this graphics context. */
-SDStatus
-SDGraphics_SetRenderingOrigin(SDGraphics *_this,
-                              SDPointI    renderingOrigin)
+CStatus
+CGraphics_SetRenderingOrigin(CGraphics *_this,
+                              CPointI    renderingOrigin)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the rendering origin */
 	_this->renderingOrigin = renderingOrigin;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the smoothing mode of this graphics context. */
-SDStatus
-SDGraphics_GetSmoothingMode(SDGraphics      *_this,
-                            SDSmoothingMode *smoothingMode)
+CStatus
+CGraphics_GetSmoothingMode(CGraphics      *_this,
+                            CSmoothingMode *smoothingMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a smoothing mode pointer */
-	SDStatus_Require((smoothingMode != 0), SDStatus_ArgumentNull);
+	CStatus_Require((smoothingMode != 0), CStatus_ArgumentNull);
 
 	/* get the smoothing mode */
 	*smoothingMode = _this->smoothingMode;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the smoothing mode of this graphics context. */
-SDStatus
-SDGraphics_SetSmoothingMode(SDGraphics      *_this,
-                            SDSmoothingMode  smoothingMode)
+CStatus
+CGraphics_SetSmoothingMode(CGraphics      *_this,
+                            CSmoothingMode  smoothingMode)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the smoothing mode */
 	_this->smoothingMode = smoothingMode;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the text contrast of this graphics context. */
-SDStatus
-SDGraphics_GetTextContrast(SDGraphics *_this,
-                           SDUInt32   *textContrast)
+CStatus
+CGraphics_GetTextContrast(CGraphics *_this,
+                           CUInt32   *textContrast)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a text contrast pointer */
-	SDStatus_Require((textContrast != 0), SDStatus_ArgumentNull);
+	CStatus_Require((textContrast != 0), CStatus_ArgumentNull);
 
 	/* get the text contrast */
 	*textContrast = _this->textContrast;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the text contrast of this graphics context. */
-SDStatus
-SDGraphics_SetTextContrast(SDGraphics *_this,
-                           SDUInt32    textContrast)
+CStatus
+CGraphics_SetTextContrast(CGraphics *_this,
+                           CUInt32    textContrast)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the text contrast */
 	_this->textContrast = textContrast;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the text rendering hint of this graphics context. */
-SDStatus
-SDGraphics_GetTextRenderingHint(SDGraphics          *_this,
-                                SDTextRenderingHint *textRenderingHint)
+CStatus
+CGraphics_GetTextRenderingHint(CGraphics          *_this,
+                                CTextRenderingHint *textRenderingHint)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a text rendering hint pointer */
-	SDStatus_Require((textRenderingHint != 0), SDStatus_ArgumentNull);
+	CStatus_Require((textRenderingHint != 0), CStatus_ArgumentNull);
 
 	/* get the text rendering hint */
 	*textRenderingHint = _this->textRenderingHint;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the text rendering hint of this graphics context. */
-SDStatus
-SDGraphics_SetTextRenderingHint(SDGraphics          *_this,
-                                SDTextRenderingHint  textRenderingHint)
+CStatus
+CGraphics_SetTextRenderingHint(CGraphics          *_this,
+                                CTextRenderingHint  textRenderingHint)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the text rendering hint */
 	_this->textRenderingHint = textRenderingHint;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 #endif
 /******************************************************************************/
@@ -1227,118 +1227,118 @@ SDGraphics_SetTextRenderingHint(SDGraphics          *_this,
 
 
 /******************************************************************************/
-#define SDGraphics_IMAGING
-#ifdef SDGraphics_IMAGING
+#define CGraphics_IMAGING
+#ifdef CGraphics_IMAGING
 
-static const pixman_transform_t SDPixmanTransform_Identity =
+static const pixman_transform_t CPixmanTransform_Identity =
 {{
-	{ SDFixed_One,  SDFixed_Zero, SDFixed_Zero },
-	{ SDFixed_Zero, SDFixed_One,  SDFixed_Zero },
-	{ SDFixed_Zero, SDFixed_Zero, SDFixed_One  }
+	{ CFixed_One,  CFixed_Zero, CFixed_Zero },
+	{ CFixed_Zero, CFixed_One,  CFixed_Zero },
+	{ CFixed_Zero, CFixed_Zero, CFixed_One  }
 }};
 
 /* Draw an xbm glyph. */
-SDStatus
-SDGraphics_DrawXBM(SDGraphics   *_this,
-                   SDByte       *bits,
-                   SDUInt32      count,
-                   SDRectangleF  dst,
-                   SDColor       color)
+CStatus
+CGraphics_DrawXBM(CGraphics   *_this,
+                   CByte       *bits,
+                   CUInt32      count,
+                   CRectangleF  dst,
+                   CColor       color)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Draw an image. */
-SDStatus
-SDGraphics_DrawImage(SDGraphics *_this,
-                     SDImage    *image,
-                     SDFloat     x,
-                     SDFloat     y)
+CStatus
+CGraphics_DrawImage(CGraphics *_this,
+                     CImage    *image,
+                     CFloat     x,
+                     CFloat     y)
 {
 	/* declarations */
-	SDSizeF size;
+	CSizeF size;
 
 	/* get the size of the image */
-	SDStatus_Check
-		(SDImage_GetPhysicalDimension
+	CStatus_Check
+		(CImage_GetPhysicalDimension
 			(image, &size));
 
 	/* draw the image */
 	return
-		SDGraphics_DrawImageRect
-			(_this, image, x, y, SDSize_Width(size), SDSize_Height(size));
+		CGraphics_DrawImageRect
+			(_this, image, x, y, CSize_Width(size), CSize_Height(size));
 }
 
 /* Draw an image. */
-SDStatus
-SDGraphics_DrawImageRect(SDGraphics *_this,
-                         SDImage    *image,
-                         SDFloat     x,
-                         SDFloat     y,
-                         SDFloat     width,
-                         SDFloat     height)
+CStatus
+CGraphics_DrawImageRect(CGraphics *_this,
+                         CImage    *image,
+                         CFloat     x,
+                         CFloat     y,
+                         CFloat     width,
+                         CFloat     height)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an image pointer */
-	SDStatus_Require((image != 0), SDStatus_ArgumentNull);
+	CStatus_Require((image != 0), CStatus_ArgumentNull);
 
 	/* paint to the surface synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* declarations */
 		pixman_image_t *mask;
 
 		/* get the clip mask */
 		status =
-			SDGraphics_GetClipMask
+			CGraphics_GetClipMask
 				(_this, &mask);
 
 		/* handle masking failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* draw the image synchronously */
-		SDMutex_Lock(image->lock);
+		CMutex_Lock(image->lock);
 		{
 			/* declarations */
 			pixman_transform_t transform;
 
 			/* get the transformation */
 			transform =
-				SDUtils_ToPixmanTransform
-					(&(SDGraphicsPipeline_DeviceInverse(_this->pipeline)));
+				CUtils_ToPixmanTransform
+					(&(CGraphicsPipeline_DeviceInverse(_this->pipeline)));
 
 			/* set the image transformation */
 			if(pixman_image_set_transform(image->image, &transform))
 			{
-				SDMutex_Unlock(image->lock);
-				SDSurface_Unlock(_this->surface);
-				return SDStatus_OutOfMemory;
+				CMutex_Unlock(image->lock);
+				CSurface_Unlock(_this->surface);
+				return CStatus_OutOfMemory;
 			}
 
 			/* composite the image */
 			status =
-				SDSurface_Composite
+				CSurface_Composite
 					(_this->surface, x, y, width, height, image->image, mask,
 					 _this->interpolationMode, _this->compositingMode);
 
 			/* reset the image transformation */
 			pixman_image_set_transform
 				(image->image,
-				 ((pixman_transform_t *)&SDPixmanTransform_Identity));
+				 ((pixman_transform_t *)&CPixmanTransform_Identity));
 		}
-		SDMutex_Unlock(image->lock);
+		CMutex_Unlock(image->lock);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
@@ -1346,53 +1346,53 @@ SDGraphics_DrawImageRect(SDGraphics *_this,
 
 
 /* Draw an image. */
-SDStatus
-SDGraphics_DrawImagePoints(SDGraphics *_this,
-                           SDImage    *image,
-                           SDPointF   *dst,
-                           SDUInt32    count)
+CStatus
+CGraphics_DrawImagePoints(CGraphics *_this,
+                           CImage    *image,
+                           CPointF   *dst,
+                           CUInt32    count)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Draw an image. */
-SDStatus
-SDGraphics_DrawImageRectPoints(SDGraphics     *_this,
-                               SDImage        *image,
-                               SDPointF        dst,
-                               SDRectangleF    src,
-                               SDGraphicsUnit  srcUnit)
+CStatus
+CGraphics_DrawImageRectPoints(CGraphics     *_this,
+                               CImage        *image,
+                               CPointF        dst,
+                               CRectangleF    src,
+                               CGraphicsUnit  srcUnit)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Draw an image. */
-SDStatus
-SDGraphics_DrawImageRectPointsAttributes(SDGraphics           *_this,
-                                         SDImage              *image,
-                                         SDPointF             *dst,
-                                         SDUInt32              count,
-                                         SDRectangleF          src,
-                                         SDGraphicsUnit        srcUnit,
-                                         SDImageAttributes    *atts)
+CStatus
+CGraphics_DrawImageRectPointsAttributes(CGraphics           *_this,
+                                         CImage              *image,
+                                         CPointF             *dst,
+                                         CUInt32              count,
+                                         CRectangleF          src,
+                                         CGraphicsUnit        srcUnit,
+                                         CImageAttributes    *atts)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Draw an image. */
-SDStatus
-SDGraphics_DrawImageRectRectAttributes(SDGraphics           *_this,
-                                       SDImage              *image,
-                                       SDRectangleF          dst,
-                                       SDRectangleF          src,
-                                       SDGraphicsUnit        srcUnit,
-                                       SDImageAttributes    *atts)
+CStatus
+CGraphics_DrawImageRectRectAttributes(CGraphics           *_this,
+                                       CImage              *image,
+                                       CRectangleF          dst,
+                                       CRectangleF          src,
+                                       CGraphicsUnit        srcUnit,
+                                       CImageAttributes    *atts)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 #endif
 /******************************************************************************/
@@ -1409,42 +1409,42 @@ SDGraphics_DrawImageRectRectAttributes(SDGraphics           *_this,
 
 
 /******************************************************************************/
-#define SDGraphics_DRAWING
-#ifdef SDGraphics_DRAWING
+#define CGraphics_DRAWING
+#ifdef CGraphics_DRAWING
 
 /* Composite the image. */
-static SDStatus
-SDGraphics_Composite(SDGraphics     *_this,
-                     SDPattern      *pattern,
+static CStatus
+CGraphics_Composite(CGraphics     *_this,
+                     CPattern      *pattern,
                      pixman_image_t *mask)
 {
 	/* declarations */
-	SDStatus  status;
-	SDUInt32  width;
-	SDUInt32  height;
+	CStatus  status;
+	CUInt32  width;
+	CUInt32  height;
 
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((pattern != 0));
-	SDASSERT((mask    != 0));
+	CASSERT((_this   != 0));
+	CASSERT((pattern != 0));
+	CASSERT((mask    != 0));
 
 	/* apply transformation, as needed */
 	if(pattern->transform != 0)
 	{
 		/* declarations */
-		SDAffineTransformF affine;
+		CAffineTransformF affine;
 		pixman_transform_t transform;
 
 		/* get the pattern transformation */
 		affine = *(pattern->transform);
 
 		/* apply the device transformation */
-		SDAffineTransformF_Multiply
-			(&affine, &SDGraphicsPipeline_DeviceInverse(_this->pipeline),
-			 SDMatrixOrder_Append);
+		CAffineTransformF_Multiply
+			(&affine, &CGraphicsPipeline_DeviceInverse(_this->pipeline),
+			 CMatrixOrder_Append);
 
 		/* get the pixman transformation */
-		transform = SDUtils_ToPixmanTransform(&affine);
+		transform = CUtils_ToPixmanTransform(&affine);
 
 		/* set the image transformation */
 		pixman_image_set_transform(pattern->image, &transform);
@@ -1456,7 +1456,7 @@ SDGraphics_Composite(SDGraphics     *_this,
 
 	/* composite the image */
 	status =
-		SDSurface_Composite
+		CSurface_Composite
 			(_this->surface, 0, 0, width, height, pattern->image, mask,
 			 _this->interpolationMode, _this->compositingMode);
 
@@ -1465,7 +1465,7 @@ SDGraphics_Composite(SDGraphics     *_this,
 	{
 		pixman_image_set_transform
 			(pattern->image,
-			 ((pixman_transform_t *)&SDPixmanTransform_Identity));
+			 ((pixman_transform_t *)&CPixmanTransform_Identity));
 	}
 
 	/* return status */
@@ -1473,62 +1473,62 @@ SDGraphics_Composite(SDGraphics     *_this,
 }
 
 /* Fill the given path. */
-static SDStatus
-SDGraphics_Fill2(SDGraphics *_this,
-                 SDPath     *path,
-                 SDPattern  *pattern)
+static CStatus
+CGraphics_Fill2(CGraphics *_this,
+                 CPath     *path,
+                 CPattern  *pattern)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((path    != 0));
-	SDASSERT((pattern != 0));
+	CASSERT((_this   != 0));
+	CASSERT((path    != 0));
+	CASSERT((pattern != 0));
 
 	/* fill the given path */
 	{
 		/* declarations */
-		SDTrapezoids    trapezoids;
+		CTrapezoids    trapezoids;
 		pixman_image_t *clip;
 		pixman_image_t *mask;
 
 		/* get the clipping mask */
-		SDStatus_Check
-			(SDGraphics_GetClipMask
+		CStatus_Check
+			(CGraphics_GetClipMask
 				(_this, &clip));
 
 		/* get the compositing mask */
-		SDStatus_Check
-			(SDGraphics_GetCompositingMask
+		CStatus_Check
+			(CGraphics_GetCompositingMask
 				(_this, &mask));
 
 		/* initialize the trapezoids */
-		SDTrapezoids_Initialize(&trapezoids);
+		CTrapezoids_Initialize(&trapezoids);
 
 		/* fill the path */
 		status =
-			SDPath_Fill
+			CPath_Fill
 				(path, &trapezoids);
 
 		/* handle fill failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDTrapezoids_Finalize(&trapezoids);
+			CTrapezoids_Finalize(&trapezoids);
 			return status;
 		}
 
 		/* composite the trapezoids */
 		pixman_composite_trapezoids
 			(PIXMAN_OPERATOR_IN, clip, mask, 0, 0,
-			 ((pixman_trapezoid_t *)SDTrapezoids_Trapezoids(trapezoids)),
-			 SDTrapezoids_Count(trapezoids));
+			 ((pixman_trapezoid_t *)CTrapezoids_Trapezoids(trapezoids)),
+			 CTrapezoids_Count(trapezoids));
 
 		/* finalize the trapezoids */
-		SDTrapezoids_Finalize(&trapezoids);
+		CTrapezoids_Finalize(&trapezoids);
 
 		/* composite the image */
-		status = SDGraphics_Composite(_this, pattern, mask);
+		status = CGraphics_Composite(_this, pattern, mask);
 	}
 
 	/* return status */
@@ -1536,752 +1536,752 @@ SDGraphics_Fill2(SDGraphics *_this,
 }
 
 /* Stroke the current path. */
-static SDStatus
-SDGraphics_Stroke(SDGraphics *_this,
-                  SDPen      *pen)
+static CStatus
+CGraphics_Stroke(CGraphics *_this,
+                  CPen      *pen)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((pen   != 0));
+	CASSERT((_this != 0));
+	CASSERT((pen   != 0));
 
 	/* perform the stroke */
 	{
 		/* declarations */
-		SDStatus  status;
-		SDStroker stroker;
-		SDPattern pattern;
+		CStatus  status;
+		CStroker stroker;
+		CPattern pattern;
 
 		/* get the source pattern */
-		SDStatus_Check
-			(SDPen_GetPattern
+		CStatus_Check
+			(CPen_GetPattern
 				(pen, &pattern));
 
 		/* reset the stroke path */
-		SDStatus_Check
-			(SDPath_Reset
+		CStatus_Check
+			(CPath_Reset
 				(_this->stroke));
 
 		/* initialize the stroker */
-		SDStatus_Check
-			(SDStroker_Initialize
-				(&stroker, pen, &SDGraphicsPipeline_Device(_this->pipeline)));
+		CStatus_Check
+			(CStroker_Initialize
+				(&stroker, pen, &CGraphicsPipeline_Device(_this->pipeline)));
 
 		/* stroke the path */
 		status =
-			SDPath_Stroke
+			CPath_Stroke
 				(_this->path, _this->stroke, &stroker);
 
 		/* finalize the stroker */
-		SDStroker_Finalize(&stroker);
+		CStroker_Finalize(&stroker);
 
 		/* handle stroke failures */
-		SDStatus_Check(status);
+		CStatus_Check(status);
 
 		/* fill the path */
-		SDStatus_Check
-			(SDGraphics_Fill2
+		CStatus_Check
+			(CGraphics_Fill2
 				(_this, _this->stroke, &pattern));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Draw an arc. */
-SDStatus
-SDGraphics_DrawArc(SDGraphics   *_this,
-                   SDPen        *pen,
-                   SDRectangleF  rect,
-                   SDFloat       startAngle,
-                   SDFloat       sweepAngle)
+CStatus
+CGraphics_DrawArc(CGraphics   *_this,
+                   CPen        *pen,
+                   CRectangleF  rect,
+                   CFloat       startAngle,
+                   CFloat       sweepAngle)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the arc to the path */
 		status =
-			SDPath_AddArc
+			CPath_AddArc
 				(_this->path,
-				 SDRectangle_X(rect),
-				 SDRectangle_Y(rect),
-				 SDRectangle_Width(rect),
-				 SDRectangle_Height(rect),
+				 CRectangle_X(rect),
+				 CRectangle_Y(rect),
+				 CRectangle_Width(rect),
+				 CRectangle_Height(rect),
 				 startAngle, sweepAngle);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a Bezier spline. */
-SDStatus
-SDGraphics_DrawBezier(SDGraphics *_this,
-                      SDPen      *pen,
-                      SDPointF    a,
-                      SDPointF    b,
-                      SDPointF    c,
-                      SDPointF    d)
+CStatus
+CGraphics_DrawBezier(CGraphics *_this,
+                      CPen      *pen,
+                      CPointF    a,
+                      CPointF    b,
+                      CPointF    c,
+                      CPointF    d)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the bezier to the path */
 		status =
-			SDPath_AddBezier
+			CPath_AddBezier
 				(_this->path,
-				 SDPoint_X(a), SDPoint_Y(a),
-				 SDPoint_X(b), SDPoint_Y(b),
-				 SDPoint_X(c), SDPoint_Y(c),
-				 SDPoint_X(d), SDPoint_Y(d));
+				 CPoint_X(a), CPoint_Y(a),
+				 CPoint_X(b), CPoint_Y(b),
+				 CPoint_X(c), CPoint_Y(c),
+				 CPoint_X(d), CPoint_Y(d));
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a series of Bezier splines. */
-SDStatus
-SDGraphics_DrawBeziers(SDGraphics *_this,
-                       SDPen      *pen,
-                       SDPointF   *points,
-                       SDUInt32    count)
+CStatus
+CGraphics_DrawBeziers(CGraphics *_this,
+                       CPen      *pen,
+                       CPointF   *points,
+                       CUInt32    count)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the beziers to the path */
 		status =
-			SDPath_AddBeziers
+			CPath_AddBeziers
 				(_this->path, points, count);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a closed cardinal spline. */
-SDStatus
-SDGraphics_DrawClosedCurve(SDGraphics *_this,
-                           SDPen      *pen,
-                           SDPointF   *points,
-                           SDUInt32    count,
-                           SDFloat     tension)
+CStatus
+CGraphics_DrawClosedCurve(CGraphics *_this,
+                           CPen      *pen,
+                           CPointF   *points,
+                           CUInt32    count,
+                           CFloat     tension)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the cardinal curve to the path */
 		status =
-			SDPath_AddClosedCardinalCurve
+			CPath_AddClosedCardinalCurve
 				(_this->path, points, count, tension);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a cardinal spline. */
-SDStatus
-SDGraphics_DrawCurve(SDGraphics *_this,
-                     SDPen      *pen,
-                     SDPointF   *points,
-                     SDUInt32    count,
-                     SDUInt32    offset,
-                     SDUInt32    numberOfSegments,
-                     SDFloat     tension)
+CStatus
+CGraphics_DrawCurve(CGraphics *_this,
+                     CPen      *pen,
+                     CPointF   *points,
+                     CUInt32    count,
+                     CUInt32    offset,
+                     CUInt32    numberOfSegments,
+                     CFloat     tension)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the cardinal curve to the path */
 		status =
-			SDPath_AddCardinalCurve
+			CPath_AddCardinalCurve
 				(_this->path, points, count, offset, numberOfSegments, tension);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw an ellipse. */
-SDStatus
-SDGraphics_DrawEllipse(SDGraphics   *_this,
-                       SDPen        *pen,
-                       SDRectangleF  rect)
+CStatus
+CGraphics_DrawEllipse(CGraphics   *_this,
+                       CPen        *pen,
+                       CRectangleF  rect)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the ellipse to the path */
 		status =
-			SDPath_AddEllipse
+			CPath_AddEllipse
 				(_this->path,
-				 SDRectangle_X(rect),
-				 SDRectangle_Y(rect),
-				 SDRectangle_Width(rect),
-				 SDRectangle_Height(rect));
+				 CRectangle_X(rect),
+				 CRectangle_Y(rect),
+				 CRectangle_Width(rect),
+				 CRectangle_Height(rect));
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a line between two points. */
-SDStatus
-SDGraphics_DrawLine(SDGraphics *_this,
-                    SDPen      *pen,
-                    SDPointF    start,
-                    SDPointF    end)
+CStatus
+CGraphics_DrawLine(CGraphics *_this,
+                    CPen      *pen,
+                    CPointF    start,
+                    CPointF    end)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the line to the path */
 		status =
-			SDPath_AddLine
+			CPath_AddLine
 				(_this->path,
-				 SDPoint_X(start), SDPoint_Y(start),
-				 SDPoint_X(end),   SDPoint_Y(end));
+				 CPoint_X(start), CPoint_Y(start),
+				 CPoint_X(end),   CPoint_Y(end));
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a series of connected line segments. */
-SDStatus
-SDGraphics_DrawLines(SDGraphics *_this,
-                     SDPen      *pen,
-                     SDPointF   *points,
-                     SDUInt32    count)
+CStatus
+CGraphics_DrawLines(CGraphics *_this,
+                     CPen      *pen,
+                     CPointF   *points,
+                     CUInt32    count)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the lines to the path */
 		status =
-			SDPath_AddLines
+			CPath_AddLines
 				(_this->path, points, count);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a path object. */
-SDStatus
-SDGraphics_DrawPath(SDGraphics *_this,
-                    SDPen      *pen,
-                    SDPath     *path)
+CStatus
+CGraphics_DrawPath(CGraphics *_this,
+                    CPen      *pen,
+                    CPath     *path)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a path pointer */
-	SDStatus_Require((path != 0), SDStatus_ArgumentNull);
+	CStatus_Require((path != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the path to the path */
 		status =
-			SDPath_AddPath
+			CPath_AddPath
 				(_this->path, path, 0);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a pie shape. */
-SDStatus
-SDGraphics_DrawPie(SDGraphics   *_this,
-                   SDPen        *pen,
-                   SDRectangleF  rect,
-                   SDFloat       startAngle,
-                   SDFloat       sweepAngle)
+CStatus
+CGraphics_DrawPie(CGraphics   *_this,
+                   CPen        *pen,
+                   CRectangleF  rect,
+                   CFloat       startAngle,
+                   CFloat       sweepAngle)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the pie to the path */
 		status =
-			SDPath_AddPie
+			CPath_AddPie
 				(_this->path,
-				 SDRectangle_X(rect),
-				 SDRectangle_Y(rect),
-				 SDRectangle_Width(rect),
-				 SDRectangle_Height(rect),
+				 CRectangle_X(rect),
+				 CRectangle_Y(rect),
+				 CRectangle_Width(rect),
+				 CRectangle_Height(rect),
 				 startAngle, sweepAngle);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a polygon. */
-SDStatus
-SDGraphics_DrawPolygon(SDGraphics *_this,
-                       SDPen      *pen,
-                       SDPointF   *points,
-                       SDUInt32    count)
+CStatus
+CGraphics_DrawPolygon(CGraphics *_this,
+                       CPen      *pen,
+                       CPointF   *points,
+                       CUInt32    count)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the polygon to the path */
 		status =
-			SDPath_AddPolygon
+			CPath_AddPolygon
 				(_this->path, points, count);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a rectangle. */
-SDStatus
-SDGraphics_DrawRectangle(SDGraphics   *_this,
-                         SDPen        *pen,
-                         SDRectangleF  rect)
+CStatus
+CGraphics_DrawRectangle(CGraphics   *_this,
+                         CPen        *pen,
+                         CRectangleF  rect)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the rectangle to the path */
 		status =
-			SDPath_AddRectangle
+			CPath_AddRectangle
 				(_this->path, 
-				 SDRectangle_X(rect),
-				 SDRectangle_Y(rect),
-				 SDRectangle_Width(rect),
-				 SDRectangle_Height(rect));
+				 CRectangle_X(rect),
+				 CRectangle_Y(rect),
+				 CRectangle_Width(rect),
+				 CRectangle_Height(rect));
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Draw a series of rectangles. */
-SDStatus
-SDGraphics_DrawRectangles(SDGraphics   *_this,
-                          SDPen        *pen,
-                          SDRectangleF *rects,
-                          SDUInt32      count)
+CStatus
+CGraphics_DrawRectangles(CGraphics   *_this,
+                          CPen        *pen,
+                          CRectangleF *rects,
+                          CUInt32      count)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a pen pointer */
-	SDStatus_Require((pen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((pen != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a rectangle list */
-	SDStatus_Require((rects != 0), SDStatus_ArgumentNull);
+	CStatus_Require((rects != 0), CStatus_ArgumentNull);
 
 	/* perform the stroke synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the rectangles to the path */
 		status =
-			SDPath_AddRectangles
+			CPath_AddRectangles
 				(_this->path, rects, count);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* stroke the path */
-		status = SDGraphics_Stroke(_this, pen);
+		status = CGraphics_Stroke(_this, pen);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
@@ -2301,548 +2301,548 @@ SDGraphics_DrawRectangles(SDGraphics   *_this,
 
 
 /******************************************************************************/
-#define SDGraphics_FILLING
-#ifdef SDGraphics_FILLING
+#define CGraphics_FILLING
+#ifdef CGraphics_FILLING
 /* Fill the current path. */
-static SDStatus
-SDGraphics_Fill(SDGraphics *_this,
-                SDBrush    *brush,
-                SDFillMode  fillMode)
+static CStatus
+CGraphics_Fill(CGraphics *_this,
+                CBrush    *brush,
+                CFillMode  fillMode)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((brush != 0));
+	CASSERT((_this != 0));
+	CASSERT((brush != 0));
 
 	/* perform the stroke */
 	{
 		/* declarations */
-		SDPattern pattern;
+		CPattern pattern;
 
 		/* get the source pattern */
-		SDStatus_Check
-			(SDBrush_GetPattern
+		CStatus_Check
+			(CBrush_GetPattern
 				(brush, &pattern));
 
 		/* set the fill mode */
-		SDStatus_Check
-			(SDPath_SetFillMode
+		CStatus_Check
+			(CPath_SetFillMode
 				(_this->path, fillMode));
 
 		/* fill the path */
-		SDStatus_Check
-			(SDGraphics_Fill2
+		CStatus_Check
+			(CGraphics_Fill2
 				(_this, _this->path, &pattern));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Clear the entire drawing surface. */
-SDStatus
-SDGraphics_Clear(SDGraphics *_this,
-                 SDColor     color)
+CStatus
+CGraphics_Clear(CGraphics *_this,
+                 CColor     color)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* perform the clear synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* clear the surface */
 		status =
-			SDSurface_Clear
+			CSurface_Clear
 				(_this->surface, color);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Fill a closed cardinal spline. */
-SDStatus
-SDGraphics_FillClosedCurve(SDGraphics *_this,
-                           SDBrush    *brush,
-                           SDPointF   *points,
-                           SDUInt32    count,
-                           SDFloat     tension,
-                           SDFillMode  fillMode)
+CStatus
+CGraphics_FillClosedCurve(CGraphics *_this,
+                           CBrush    *brush,
+                           CPointF   *points,
+                           CUInt32    count,
+                           CFloat     tension,
+                           CFillMode  fillMode)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a brush pointer */
-	SDStatus_Require((brush != 0), SDStatus_ArgumentNull);
+	CStatus_Require((brush != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* perform the fill synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the cardinal curve to the path */
 		status =
-			SDPath_AddClosedCardinalCurve
+			CPath_AddClosedCardinalCurve
 				(_this->path, points, count, tension);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* fill the path */
 		status =
-			SDGraphics_Fill
+			CGraphics_Fill
 				(_this, brush, fillMode);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Fill an ellipse. */
-SDStatus
-SDGraphics_FillEllipse(SDGraphics   *_this,
-                       SDBrush      *brush,
-                       SDRectangleF  rect)
+CStatus
+CGraphics_FillEllipse(CGraphics   *_this,
+                       CBrush      *brush,
+                       CRectangleF  rect)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a brush pointer */
-	SDStatus_Require((brush != 0), SDStatus_ArgumentNull);
+	CStatus_Require((brush != 0), CStatus_ArgumentNull);
 
 	/* perform the fill synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the ellipse to the path */
 		status =
-			SDPath_AddEllipse
+			CPath_AddEllipse
 				(_this->path,
-				 SDRectangle_X(rect),
-				 SDRectangle_Y(rect),
-				 SDRectangle_Width(rect),
-				 SDRectangle_Height(rect));
+				 CRectangle_X(rect),
+				 CRectangle_Y(rect),
+				 CRectangle_Width(rect),
+				 CRectangle_Height(rect));
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* fill the path */
 		status =
-			SDGraphics_Fill
-				(_this, brush, SDFillMode_Alternate);
+			CGraphics_Fill
+				(_this, brush, CFillMode_Alternate);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Fill the interior of a path. */
-SDStatus
-SDGraphics_FillPath(SDGraphics *_this,
-                    SDBrush    *brush,
-                    SDPath     *path)
+CStatus
+CGraphics_FillPath(CGraphics *_this,
+                    CBrush    *brush,
+                    CPath     *path)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a brush pointer */
-	SDStatus_Require((brush != 0), SDStatus_ArgumentNull);
+	CStatus_Require((brush != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a path pointer */
-	SDStatus_Require((path != 0), SDStatus_ArgumentNull);
+	CStatus_Require((path != 0), CStatus_ArgumentNull);
 
 	/* perform the fill synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the path to the path */
 		status =
-			SDPath_AddPath
+			CPath_AddPath
 				(_this->path, path, 0);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* fill the path */
 		status =
-			SDGraphics_Fill
-				(_this, brush, SDFillMode_Alternate);
+			CGraphics_Fill
+				(_this, brush, CFillMode_Alternate);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Fill a pie shape. */
-SDStatus
-SDGraphics_FillPie(SDGraphics   *_this,
-                   SDBrush      *brush,
-                   SDRectangleF  rect,
-                   SDFloat       startAngle,
-                   SDFloat       sweepAngle)
+CStatus
+CGraphics_FillPie(CGraphics   *_this,
+                   CBrush      *brush,
+                   CRectangleF  rect,
+                   CFloat       startAngle,
+                   CFloat       sweepAngle)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a brush pointer */
-	SDStatus_Require((brush != 0), SDStatus_ArgumentNull);
+	CStatus_Require((brush != 0), CStatus_ArgumentNull);
 
 	/* perform the fill synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the pie to the path */
 		status =
-			SDPath_AddPie
+			CPath_AddPie
 				(_this->path,
-				 SDRectangle_X(rect),
-				 SDRectangle_Y(rect),
-				 SDRectangle_Width(rect),
-				 SDRectangle_Height(rect),
+				 CRectangle_X(rect),
+				 CRectangle_Y(rect),
+				 CRectangle_Width(rect),
+				 CRectangle_Height(rect),
 				 startAngle, sweepAngle);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* fill the path */
 		status =
-			SDGraphics_Fill
-				(_this, brush, SDFillMode_Alternate);
+			CGraphics_Fill
+				(_this, brush, CFillMode_Alternate);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Fill a polygon. */
-SDStatus
-SDGraphics_FillPolygon(SDGraphics *_this,
-                       SDBrush    *brush,
-                       SDPointF   *points,
-                       SDUInt32    count,
-                       SDFillMode  fillMode)
+CStatus
+CGraphics_FillPolygon(CGraphics *_this,
+                       CBrush    *brush,
+                       CPointF   *points,
+                       CUInt32    count,
+                       CFillMode  fillMode)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a brush pointer */
-	SDStatus_Require((brush != 0), SDStatus_ArgumentNull);
+	CStatus_Require((brush != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* perform the fill synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the polygon to the path */
 		status =
-			SDPath_AddPolygon
+			CPath_AddPolygon
 				(_this->path, points, count);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* fill the path */
 		status =
-			SDGraphics_Fill
+			CGraphics_Fill
 				(_this, brush, fillMode);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Fill a rectangle. */
-SDStatus
-SDGraphics_FillRectangle(SDGraphics   *_this,
-                         SDBrush      *brush,
-                         SDRectangleF  rect)
+CStatus
+CGraphics_FillRectangle(CGraphics   *_this,
+                         CBrush      *brush,
+                         CRectangleF  rect)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a brush pointer */
-	SDStatus_Require((brush != 0), SDStatus_ArgumentNull);
+	CStatus_Require((brush != 0), CStatus_ArgumentNull);
 
 	/* perform the fill synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the rectangle to the path */
 		status =
-			SDPath_AddRectangle
+			CPath_AddRectangle
 				(_this->path, 
-				 SDRectangle_X(rect),
-				 SDRectangle_Y(rect),
-				 SDRectangle_Width(rect),
-				 SDRectangle_Height(rect));
+				 CRectangle_X(rect),
+				 CRectangle_Y(rect),
+				 CRectangle_Width(rect),
+				 CRectangle_Height(rect));
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* fill the path */
 		status =
-			SDGraphics_Fill
-				(_this, brush, SDFillMode_Alternate);
+			CGraphics_Fill
+				(_this, brush, CFillMode_Alternate);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Fill a series of rectangles. */
-SDStatus
-SDGraphics_FillRectangles(SDGraphics   *_this,
-                          SDBrush      *brush,
-                          SDRectangleF *rects,
-                          SDUInt32      count)
+CStatus
+CGraphics_FillRectangles(CGraphics   *_this,
+                          CBrush      *brush,
+                          CRectangleF *rects,
+                          CUInt32      count)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a brush pointer */
-	SDStatus_Require((brush != 0), SDStatus_ArgumentNull);
+	CStatus_Require((brush != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a rectangle list */
-	SDStatus_Require((rects != 0), SDStatus_ArgumentNull);
+	CStatus_Require((rects != 0), CStatus_ArgumentNull);
 
 	/* perform the fill synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* reset the path */
-		status = SDPath_Reset(_this->path);
+		status = CPath_Reset(_this->path);
 
 		/* handle reset failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* add the rectangles to the path */
 		status =
-			SDPath_AddRectangles
+			CPath_AddRectangles
 				(_this->path, rects, count);
 
 		/* handle pathing failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* fill the path */
 		status =
-			SDGraphics_Fill
-				(_this, brush, SDFillMode_Alternate);
+			CGraphics_Fill
+				(_this, brush, CFillMode_Alternate);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
 }
 
 /* Fill a region. */
-SDStatus
-SDGraphics_FillRegion(SDGraphics *_this,
-                      SDBrush    *brush,
-                      SDRegion   *region)
+CStatus
+CGraphics_FillRegion(CGraphics *_this,
+                      CBrush    *brush,
+                      CRegion   *region)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a brush pointer */
-	SDStatus_Require((brush != 0), SDStatus_ArgumentNull);
+	CStatus_Require((brush != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a region pointer */
-	SDStatus_Require((region != 0), SDStatus_ArgumentNull);
+	CStatus_Require((region != 0), CStatus_ArgumentNull);
 
 	/* perform the fill synchronously */
-	SDSurface_Lock(_this->surface);
+	CSurface_Lock(_this->surface);
 	{
 		/* declarations */
 		pixman_image_t *clip;
 		pixman_image_t *mask;
-		SDPattern       pattern;
-		SDUInt32        w;
-		SDUInt32        h;
-		SDBool          gray;
+		CPattern       pattern;
+		CUInt32        w;
+		CUInt32        h;
+		CBool          gray;
 
 		/* determine if we should use gray values */
-		gray = SDUtils_UseGray(_this->smoothingMode, _this->pixelOffsetMode);
+		gray = CUtils_UseGray(_this->smoothingMode, _this->pixelOffsetMode);
 
 		/* get the clip mask */
 		status =
-			SDSurface_GetClipMask
+			CSurface_GetClipMask
 				(_this->surface, &clip, gray);
 
 		/* handle clip masking failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* get the compositing mask */
 		status =
-			SDSurface_GetCompositingMask
+			CSurface_GetCompositingMask
 				(_this->surface, &mask, gray);
 
 		/* handle composite masking failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* get the region mask */
 		status =
-			SDRegion_GetMask
-				(region, &SDGraphicsPipeline_Device(_this->pipeline), mask);
+			CRegion_GetMask
+				(region, &CGraphicsPipeline_Device(_this->pipeline), mask);
 
 		/* handle region masking failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* get the width and height */
-		w = (SDUInt32)pixman_image_get_width(mask);
-		h = (SDUInt32)pixman_image_get_width(mask);
+		w = (CUInt32)pixman_image_get_width(mask);
+		h = (CUInt32)pixman_image_get_width(mask);
 
 		/* clip the region mask */
 		pixman_composite
 			(PIXMAN_OPERATOR_IN_REVERSE, clip, 0, mask, 0, 0, 0, 0, 0, 0, w, h);
 
 		/* get the pattern */
-		status = SDBrush_GetPattern(brush, &pattern);
+		status = CBrush_GetPattern(brush, &pattern);
 
 		/* handle pattern failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDSurface_Unlock(_this->surface);
+			CSurface_Unlock(_this->surface);
 			return status;
 		}
 
 		/* composite the region */
-		status = SDGraphics_Composite(_this, &pattern, mask);
+		status = CGraphics_Composite(_this, &pattern, mask);
 	}
-	SDSurface_Unlock(_this->surface);
+	CSurface_Unlock(_this->surface);
 
 	/* return status */
 	return status;
@@ -2861,52 +2861,52 @@ SDGraphics_FillRegion(SDGraphics *_this,
 
 
 /******************************************************************************/
-#define SDGraphics_STACK
-#ifdef SDGraphics_STACK
+#define CGraphics_STACK
+#ifdef CGraphics_STACK
 /* Save the current contents of the graphics context in a container. */
-SDStatus
-SDGraphics_BeginContainer(SDGraphics          *_this,
-                          SDGraphicsContainer *container)
+CStatus
+CGraphics_BeginContainer(CGraphics          *_this,
+                          CGraphicsContainer *container)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
-SDStatus
-SDGraphics_BeginContainer2(SDGraphics          *_this,
-                           SDRectangleF         dst,
-                           SDRectangleF         src,
-                           SDGraphicsUnit       unit,
-                           SDGraphicsContainer *container)
+CStatus
+CGraphics_BeginContainer2(CGraphics          *_this,
+                           CRectangleF         dst,
+                           CRectangleF         src,
+                           CGraphicsUnit       unit,
+                           CGraphicsContainer *container)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Reset the graphics state back to a previous container level. */
-SDStatus
-SDGraphics_EndContainer(SDGraphics          *_this,
-                        SDGraphicsContainer  container)
+CStatus
+CGraphics_EndContainer(CGraphics          *_this,
+                        CGraphicsContainer  container)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Restore to a previous save point. */
-SDStatus
-SDGraphics_Restore(SDGraphics *_this,
-                   SDUInt32    state)
+CStatus
+CGraphics_Restore(CGraphics *_this,
+                   CUInt32    state)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Save the current graphics state. */
-SDStatus
-SDGraphics_Save(SDGraphics *_this,
-                SDUInt32   *state)
+CStatus
+CGraphics_Save(CGraphics *_this,
+                CUInt32   *state)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 #endif
 /******************************************************************************/
@@ -2923,51 +2923,51 @@ SDGraphics_Save(SDGraphics *_this,
 
 
 /******************************************************************************/
-#define SDGraphics_TEXT
-#ifdef SDGraphics_TEXT
+#define CGraphics_TEXT
+#ifdef CGraphics_TEXT
 /* Draw a string. */
-SDStatus
-SDGraphics_DrawString(SDGraphics     *_this,
-                      SDBrush        *brush,
-                      SDChar16       *s,
-                      SDUInt32        length,
-                      SDFont         *font,
-                      SDRectangleF    layoutRect,
-                      SDStringFormat *format)
+CStatus
+CGraphics_DrawString(CGraphics     *_this,
+                      CBrush        *brush,
+                      CChar16       *s,
+                      CUInt32        length,
+                      CFont         *font,
+                      CRectangleF    layoutRect,
+                      CStringFormat *format)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Measure the character ranges for a string. */
-SDStatus
-SDGraphics_MeasureCharacterRanges(SDGraphics      *_this,
-                                  SDChar16        *s,
-                                  SDUInt32         length,
-                                  SDFont          *font,
-                                  SDRectangleF     layoutRect,
-                                  SDStringFormat  *format,
-                                  SDRegion       **regions,
-                                  SDUInt32        *count)
+CStatus
+CGraphics_MeasureCharacterRanges(CGraphics      *_this,
+                                  CChar16        *s,
+                                  CUInt32         length,
+                                  CFont          *font,
+                                  CRectangleF     layoutRect,
+                                  CStringFormat  *format,
+                                  CRegion       **regions,
+                                  CUInt32        *count)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Measure the size of a string. */
-SDStatus
-SDGraphics_MeasureString(SDGraphics     *_this,
-                         SDChar16       *s,
-                         SDUInt32        length,
-                         SDFont         *font,
-                         SDRectangleF    layoutRect,
-                         SDStringFormat *format,
-                         SDUInt32       *charactersFitted,
-                         SDUInt32       *linesFilled,
-                         SDSizeF        *size)
+CStatus
+CGraphics_MeasureString(CGraphics     *_this,
+                         CChar16       *s,
+                         CUInt32        length,
+                         CFont         *font,
+                         CRectangleF    layoutRect,
+                         CStringFormat *format,
+                         CUInt32       *charactersFitted,
+                         CUInt32       *linesFilled,
+                         CSizeF        *size)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 #endif
 /******************************************************************************/
@@ -2984,45 +2984,45 @@ SDGraphics_MeasureString(SDGraphics     *_this,
 
 
 /******************************************************************************/
-#define SDGraphics_UTILITIES
-#ifdef SDGraphics_UTILITIES
+#define CGraphics_UTILITIES
+#ifdef CGraphics_UTILITIES
 /* Flush graphics operations to the display device. */
-SDStatus
-SDGraphics_Flush(SDGraphics       *_this,
-                 SDFlushIntention  intention)
+CStatus
+CGraphics_Flush(CGraphics       *_this,
+                 CFlushIntention  intention)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* flush the surface */
-	SDStatus_Check
-		(SDSurface_Flush
+	CStatus_Check
+		(CSurface_Flush
 			(_this->surface, intention));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the HDC associated with this graphics context. */
-SDStatus
-SDGraphics_GetHdc(SDGraphics  *_this,
+CStatus
+CGraphics_GetHdc(CGraphics  *_this,
                   void       **hdc)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Get the nearest color that is supported by this graphics context. */
-SDStatus
-SDGraphics_GetNearestColor(SDGraphics *_this,
-                           SDColor     color,
-                           SDColor    *nearest)
+CStatus
+CGraphics_GetNearestColor(CGraphics *_this,
+                           CColor     color,
+                           CColor    *nearest)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a nearest color pointer */
-	SDStatus_Require((nearest != 0), SDStatus_ArgumentNull);
+	CStatus_Require((nearest != 0), CStatus_ArgumentNull);
 
 	/* TODO: is there anything to do here? */
 
@@ -3030,49 +3030,49 @@ SDGraphics_GetNearestColor(SDGraphics *_this,
 	*nearest = color;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Release a HDC that was obtained via a previous call to "GetHdc". */
-SDStatus
-SDGraphics_ReleaseHdc(SDGraphics *_this,
+CStatus
+CGraphics_ReleaseHdc(CGraphics *_this,
                       void       *hdc)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Transform points from one coordinate space to another. */
-SDStatus
-SDGraphics_TransformPoints(SDGraphics        *_this,
-                           SDCoordinateSpace  dst,
-                           SDCoordinateSpace  src,
-                           SDPointF          *points,
-                           SDUInt32           count)
+CStatus
+CGraphics_TransformPoints(CGraphics        *_this,
+                           CCoordinateSpace  dst,
+                           CCoordinateSpace  src,
+                           CPointF          *points,
+                           CUInt32           count)
 {
 	/* declarations */
-	SDAffineTransformF t;
+	CAffineTransformF t;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a point list pointer */
-	SDStatus_Require((points != 0), SDStatus_ArgumentNull);
+	CStatus_Require((points != 0), CStatus_ArgumentNull);
 
 	/* bail out now if there's nothing to transform */
-	SDStatus_Require((count != 0), SDStatus_OK);
+	CStatus_Require((count != 0), CStatus_OK);
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require((src != dst), SDStatus_OK);
+	CStatus_Require((src != dst), CStatus_OK);
 
 	/* get the transformation from source space to destination space */
-	SDGraphicsPipeline_GetSpaceTransform(&(_this->pipeline), dst, src, &t);
+	CGraphicsPipeline_GetSpaceTransform(&(_this->pipeline), dst, src, &t);
 
 	/* apply the transformation to the point list */
-	SDAffineTransformF_TransformPoints(&t, points, count);
+	CAffineTransformF_TransformPoints(&t, points, count);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 #endif
 /******************************************************************************/

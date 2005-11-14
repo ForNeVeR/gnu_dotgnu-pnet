@@ -1,5 +1,5 @@
 /*
- * SDLibInternal.h - Internal library header.
+ * CLibInternal.h - Internal library header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_LIBRARYINTERNAL_H_
-#define _SD_LIBRARYINTERNAL_H_
+#ifndef _C_LIBRARYINTERNAL_H_
+#define _C_LIBRARYINTERNAL_H_
 
 #include <pixman.h>
 #include "Crayons.h"
@@ -30,131 +30,131 @@ extern "C" {
 
 /* Define function attributes. */
 #if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) && defined(__ELF__)
-	#ifndef SDTESTING
-		#define SDINTERNAL __attribute__((__visibility__("hidden")))
+	#ifndef CTESTING
+		#define CINTERNAL __attribute__((__visibility__("hidden")))
 	#else
-		#define SDINTERNAL
+		#define CINTERNAL
 	#endif
 #else
-	#define SDINTERNAL
+	#define CINTERNAL
 #endif
 
 #if (__GNUC__ >= 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5))
-	#define SDMATH __attribute__((__const__))
+	#define CMATH __attribute__((__const__))
 #else
-	#define SDMATH
+	#define CMATH
 #endif
 
 /* Include basic system headers. */
 #ifdef HAVE_STDLIB_H
 	#include <stdlib.h>
 #endif
-#if (defined(HAVE_ASSERT_H) && defined(SDDEBUG))
+#if (defined(HAVE_ASSERT_H) && defined(CDEBUG))
 	#include <assert.h>
-	#define SDASSERT(foo) assert(foo)
+	#define CASSERT(foo) assert(foo)
 #else
-	#define SDASSERT(foo)
+	#define CASSERT(foo)
 #endif
 
-typedef unsigned int SDBitField;
-typedef SDUInt32     SDFixedU;
-typedef SDInt32      SDFixed;
+typedef unsigned int CBitField;
+typedef CUInt32      CFixedU;
+typedef CInt32       CFixed;
 
-typedef struct _tagSDPointX SDPointX;
-struct _tagSDPointX
+typedef struct _tagCPointX CPointX;
+struct _tagCPointX
 {
-	SDFixed x;
-	SDFixed y;
+	CFixed x;
+	CFixed y;
 };
 
-typedef struct _tagSDLineX SDLineX;
-struct _tagSDLineX
+typedef struct _tagCLineX CLineX;
+struct _tagCLineX
 {
-	SDPointX point1;
-	SDPointX point2;
+	CPointX point1;
+	CPointX point2;
 };
 
-typedef struct _tagSDEdgeX SDEdgeX;
-struct _tagSDEdgeX
+typedef struct _tagCEdgeX CEdgeX;
+struct _tagCEdgeX
 {
-	SDLineX line;
-	SDBool  clockwise;
-	SDFixed currentX;
+	CLineX line;
+	CBool  clockwise;
+	CFixed currentX;
 };
 
-typedef struct _tagSDTrapezoidX SDTrapezoidX;
-struct _tagSDTrapezoidX
+typedef struct _tagCTrapezoidX CTrapezoidX;
+struct _tagCTrapezoidX
 {
-	SDFixed top;
-	SDFixed bottom;
-	SDLineX left;
-	SDLineX right;
+	CFixed top;
+	CFixed bottom;
+	CLineX left;
+	CLineX right;
 };
 
-typedef struct _tagSDTrapezoids SDTrapezoids;
-struct _tagSDTrapezoids
+typedef struct _tagCTrapezoids CTrapezoids;
+struct _tagCTrapezoids
 {
-	SDUInt32      count;
-	SDUInt32      capacity;
-	SDTrapezoidX *trapezoids;
+	CUInt32      count;
+	CUInt32      capacity;
+	CTrapezoidX *trapezoids;
 };
 
-typedef struct _tagSDAffineTransformF SDAffineTransformF;
-struct _tagSDAffineTransformF
+typedef struct _tagCAffineTransformF CAffineTransformF;
+struct _tagCAffineTransformF
 {
-	SDFloat m11;
-	SDFloat m12;
-	SDFloat m21;
-	SDFloat m22;
-	SDFloat dx;
-	SDFloat dy;
+	CFloat m11;
+	CFloat m12;
+	CFloat m21;
+	CFloat m22;
+	CFloat dx;
+	CFloat dy;
 };
 
-typedef struct _tagSDPattern SDPattern;
-struct _tagSDPattern
+typedef struct _tagCPattern CPattern;
+struct _tagCPattern
 {
 	pixman_image_t     *image;
-	SDAffineTransformF *transform;
+	CAffineTransformF  *transform;
 };
 
-typedef struct _tagSDPointArrayX SDPointArrayX;
-struct _tagSDPointArrayX
+typedef struct _tagCPointArrayX CPointArrayX;
+struct _tagCPointArrayX
 {
-	SDUInt32  capacity;
-	SDUInt32  count;
-	SDPointX *points;
+	CUInt32  capacity;
+	CUInt32  count;
+	CPointX *points;
 };
 
-typedef struct _tagSDPointArrayF SDPointArrayF;
-struct _tagSDPointArrayF
+typedef struct _tagCPointArrayF CPointArrayF;
+struct _tagCPointArrayF
 {
-	SDUInt32  capacity;
-	SDUInt32  count;
-	SDPointF *points;
+	CUInt32  capacity;
+	CUInt32  count;
+	CPointF *points;
 };
 
-typedef struct _tagSDBezierX SDBezierX;
-struct _tagSDBezierX
+typedef struct _tagCBezierX CBezierX;
+struct _tagCBezierX
 {
-	SDPointX a;
-	SDPointX b;
-	SDPointX c;
-	SDPointX d;
+	CPointX a;
+	CPointX b;
+	CPointX c;
+	CPointX d;
 };
 
-typedef struct _tagSDBezierF SDBezierF;
-struct _tagSDBezierF
+typedef struct _tagCBezierF CBezierF;
+struct _tagCBezierF
 {
-	SDPointF a;
-	SDPointF b;
-	SDPointF c;
-	SDPointF d;
+	CPointF a;
+	CPointF b;
+	CPointF c;
+	CPointF d;
 };
 
-typedef struct _tagSDFiller   SDFiller;
-typedef struct _tagSDPolygonX SDPolygonX;
-typedef struct _tagSDStroker  SDStroker;
-typedef SDPointF              SDVectorF;
+typedef struct _tagCFiller   CFiller;
+typedef struct _tagCPolygonX CPolygonX;
+typedef struct _tagCStroker  CStroker;
+typedef CPointF              CVectorF;
 
 
 
@@ -163,32 +163,32 @@ typedef SDPointF              SDVectorF;
 
 
 
-SDINTERNAL void *
-SDMalloc(SDUInt32 size);
-SDINTERNAL void *
-SDRealloc(void     *ptr,
-          SDUInt32  size);
-SDINTERNAL void *
-SDCalloc(SDUInt32 count,
-         SDUInt32 size);
-SDINTERNAL void
-SDFree(void *ptr);
-SDINTERNAL void *
-SDMemSet(void     *dst,
-         SDByte    value,
-         SDUInt32  length);
-SDINTERNAL void *
-SDMemCopy(void       *dst,
-          const void *src,
-          SDUInt32    length);
-SDINTERNAL void *
-SDMemMove(void       *dst,
-          const void *src,
-          SDUInt32    length);
-SDINTERNAL int
-SDMemCmp(const void *a,
-         const void *b,
-         SDUInt32    length);
+CINTERNAL void *
+CMalloc(CUInt32 size);
+CINTERNAL void *
+CRealloc(void     *ptr,
+         CUInt32  size);
+CINTERNAL void *
+CCalloc(CUInt32 count,
+        CUInt32 size);
+CINTERNAL void
+CFree(void *ptr);
+CINTERNAL void *
+CMemSet(void     *dst,
+        CByte     value,
+        CUInt32  length);
+CINTERNAL void *
+CMemCopy(void       *dst,
+         const void *src,
+         CUInt32    length);
+CINTERNAL void *
+CMemMove(void       *dst,
+         const void *src,
+         CUInt32    length);
+CINTERNAL int
+CMemCmp(const void *a,
+        const void *b,
+        CUInt32    length);
 
 
 
@@ -197,7 +197,7 @@ SDMemCmp(const void *a,
 
 
 
-#define SDCLAMP(value, min, max)                                               \
+#define CCLAMP(value, min, max)                                               \
 	do {                                                                       \
 		if((value) < (min))                                                    \
 		{                                                                      \
@@ -209,11 +209,11 @@ SDMemCmp(const void *a,
 		}                                                                      \
 	} while(0)
 
-#define SDMath_PI                           (3.14159265358979323846)
-#define SDMath_ToRadians(angle)             (((angle) * SDMath_PI) / 180)
-#define SDMath_DotProduct(x1, y1, x2, y2)   (((x1) * (x2)) + ((y1) * (y2)))
-#define SDMath_CrossProduct(x1, y1, x2, y2) (((x2) * (y1)) - ((x1) * (y2)))
-#define SDMath_Abs(x) ((x) < 0 ? -(x) : (x))
+#define CMath_PI                           (3.14159265358979323846)
+#define CMath_ToRadians(angle)             (((angle) * CMath_PI) / 180)
+#define CMath_DotProduct(x1, y1, x2, y2)   (((x1) * (x2)) + ((y1) * (y2)))
+#define CMath_CrossProduct(x1, y1, x2, y2) (((x2) * (y1)) - ((x1) * (y2)))
+#define CMath_Abs(x) ((x) < 0 ? -(x) : (x))
 
 /*\
 |*| When appromixating arcs less-than-or-equal-to 90 degrees, the control
@@ -237,144 +237,144 @@ SDMemCmp(const void *a,
 |*|  f = 4 / (3 + 3*sqrt(2)) ~= 0.552284749830793
 |*|
 \*/
-#define SDMath_Arc90Fraction 0.552284749830793
+#define CMath_Arc90Fraction 0.552284749830793
 
-#define SDDouble_ToFixed(f) ((SDFixed) ((f) * 65536))
-#define SDFloat_ToFixed(f)  ((SDFixed) ((f) * 65536))
-#define SDFixed_ToDouble(f) (((SDDouble) (f)) / 65536)
-#define SDFixed_ToFloat(f)  (((SDFloat) (f)) / 65536)
-#define SDFixed_Zero        (0)
-#define SDFixed_One         (65536)
-#define SDFixed_MinusOne    (-65536)
+#define CDouble_ToFixed(f) ((CFixed) ((f) * 65536))
+#define CFloat_ToFixed(f)  ((CFixed) ((f) * 65536))
+#define CFixed_ToDouble(f) (((CDouble) (f)) / 65536)
+#define CFixed_ToFloat(f)  (((CFloat) (f)) / 65536)
+#define CFixed_Zero        (0)
+#define CFixed_One         (65536)
+#define CFixed_MinusOne    (-65536)
 
-#define SDColor_FromARGB(a, r, g, b)                                           \
+#define CColor_FromARGB(a, r, g, b)                                           \
 	((((a) << 24) & 0xFF000000) |                                              \
 	 (((r) << 16) & 0x00FF0000) |                                              \
      (((g) <<  8) & 0x0000FF00) |                                              \
      (((b) <<  0) & 0x000000FF))
-#define SDColor_IntensityR 0.30
-#define SDColor_IntensityG 0.59
-#define SDColor_IntensityB 0.11
-#define SDColor_IntensityRGB(r, g, b)                                          \
-	(((r) * SDColor_IntensityR) +                                              \
-	 ((g) * SDColor_IntensityG) +                                              \
-	 ((b) * SDColor_IntensityB))
-#define SDColor_A(color) ((SDByte)((color) >> 24))
-#define SDColor_R(color) ((SDByte)((color) >> 16))
-#define SDColor_G(color) ((SDByte)((color) >>  8))
-#define SDColor_B(color) ((SDByte)((color) >>  0))
-#define SDColor_Black    (0xFF000000)
-#define SDColor_White    (0xFFFFFFFF)
-#define SDColor_Empty    (0x00000000)
+#define CColor_IntensityR 0.30
+#define CColor_IntensityG 0.59
+#define CColor_IntensityB 0.11
+#define CColor_IntensityRGB(r, g, b)                                          \
+	(((r) * CColor_IntensityR) +                                              \
+	 ((g) * CColor_IntensityG) +                                              \
+	 ((b) * CColor_IntensityB))
+#define CColor_A(color) ((CByte)((color) >> 24))
+#define CColor_R(color) ((CByte)((color) >> 16))
+#define CColor_G(color) ((CByte)((color) >>  8))
+#define CColor_B(color) ((CByte)((color) >>  0))
+#define CColor_Black    (0xFF000000)
+#define CColor_White    (0xFFFFFFFF)
+#define CColor_Empty    (0x00000000)
 
 
 /* TODO: use configure-time tests to generate this properly */
-#define SDPixmanPixel_FromARGB(a, r, g, b)                                     \
-	(((SDByte)((a) << 24)) |                                                   \
-	 ((SDByte)((r) << 16)) |                                                   \
-	 ((SDByte)((g) <<  8)) |                                                   \
-	 ((SDByte)((b) <<  0)))
+#define CPixmanPixel_FromARGB(a, r, g, b)                                     \
+	(((CByte)((a) << 24)) |                                                   \
+	 ((CByte)((r) << 16)) |                                                   \
+	 ((CByte)((g) <<  8)) |                                                   \
+	 ((CByte)((b) <<  0)))
 
 /* TODO: use configure-time tests to generate this properly */
-#define SDPixmanPixel_ToARGB(pixel, a, r, g, b)                                \
+#define CPixmanPixel_ToARGB(pixel, a, r, g, b)                                \
 	do {                                                                       \
-		(a) = ((SDByte)((pixel) >> 24));                                       \
-		(r) = ((SDByte)((pixel) >> 16));                                       \
-		(g) = ((SDByte)((pixel) >>  8));                                       \
-		(b) = ((SDByte)((pixel) >>  0));                                       \
+		(a) = ((CByte)((pixel) >> 24));                                       \
+		(r) = ((CByte)((pixel) >> 16));                                       \
+		(g) = ((CByte)((pixel) >>  8));                                       \
+		(b) = ((CByte)((pixel) >>  0));                                       \
 	} while(0)
 
-#define SDCombineMode_Default(combineMode)                                     \
+#define CCombineMode_Default(combineMode)                                     \
 	do {                                                                       \
-		if((combineMode) < SDCombineMode_Replace ||                            \
-		   (combineMode) > SDCombineMode_Complement)                           \
+		if((combineMode) < CCombineMode_Replace ||                            \
+		   (combineMode) > CCombineMode_Complement)                           \
 		{                                                                      \
-			(combineMode) = SDCombineMode_Replace;                             \
+			(combineMode) = CCombineMode_Replace;                             \
 		}                                                                      \
 	} while(0)
 
-#define SDPixelFormat_IsGdi(pixelFormat) \
-	(((pixelFormat) & SDPixelFormat_Gdi) != 0)
-#define SDPixelFormat_IsExtended(pixelFormat) \
-	(((pixelFormat) & SDPixelFormat_Extended) != 0)
-#define SDPixelFormat_IsCanonical(pixelFormat) \
-	(((pixelFormat) & SDPixelFormat_Canonical) != 0)
-#define SDPixelFormat_IsIndexed(pixelFormat) \
-	(((pixelFormat) & SDPixelFormat_Indexed) != 0)
-#define SDPixelFormat_HasAlpha(pixelFormat) \
-	(((pixelFormat) & SDPixelFormat_Alpha) != 0)
-#define SDPixelFormat_HasPAlpha(pixelFormat) \
-	(((pixelFormat) & SDPixelFormat_PAlpha) != 0)
-#define SDPixelFormat_BitsPerPixel(pixelFormat) \
+#define CPixelFormat_IsGdi(pixelFormat) \
+	(((pixelFormat) & CPixelFormat_Gdi) != 0)
+#define CPixelFormat_IsExtended(pixelFormat) \
+	(((pixelFormat) & CPixelFormat_Extended) != 0)
+#define CPixelFormat_IsCanonical(pixelFormat) \
+	(((pixelFormat) & CPixelFormat_Canonical) != 0)
+#define CPixelFormat_IsIndexed(pixelFormat) \
+	(((pixelFormat) & CPixelFormat_Indexed) != 0)
+#define CPixelFormat_HasAlpha(pixelFormat) \
+	(((pixelFormat) & CPixelFormat_Alpha) != 0)
+#define CPixelFormat_HasPAlpha(pixelFormat) \
+	(((pixelFormat) & CPixelFormat_PAlpha) != 0)
+#define CPixelFormat_BitsPerPixel(pixelFormat) \
 	(((pixelFormat) >> 8) & 0xFF)
-#define SDPixelFormat_PaletteSize(pixelFormat) \
-	(2 << (SDPixelFormat_BitsPerPixel((pixelFormat))))
+#define CPixelFormat_PaletteSize(pixelFormat) \
+	(2 << (CPixelFormat_BitsPerPixel((pixelFormat))))
 
-#define SDRectangle_ContainsPoint(r, p) \
-	((SDPoint_X(p) >= (SDRectangle_X(r))) && \
-	 (SDPoint_X(p) <= (SDRectangle_X(r) + SDRectangle_Width(r))) && \
-	 (SDPoint_Y(p) >= (SDRectangle_Y(r))) && \
-	 (SDPoint_Y(p) <= (SDRectangle_Y(v) + SDRectangle_Height(r))))
+#define CRectangle_ContainsPoint(r, p) \
+	((CPoint_X(p) >= (CRectangle_X(r))) && \
+	 (CPoint_X(p) <= (CRectangle_X(r) + CRectangle_Width(r))) && \
+	 (CPoint_Y(p) >= (CRectangle_Y(r))) && \
+	 (CPoint_Y(p) <= (CRectangle_Y(v) + CRectangle_Height(r))))
 
-#define SDAffineTransform_XX(transform) ((transform).m11)
-#define SDAffineTransform_XY(transform) ((transform).m12)
-#define SDAffineTransform_YX(transform) ((transform).m21)
-#define SDAffineTransform_YY(transform) ((transform).m22)
-#define SDAffineTransform_DX(transform) ((transform).dx)
-#define SDAffineTransform_DY(transform) ((transform).dy)
+#define CAffineTransform_XX(transform) ((transform).m11)
+#define CAffineTransform_XY(transform) ((transform).m12)
+#define CAffineTransform_YX(transform) ((transform).m21)
+#define CAffineTransform_YY(transform) ((transform).m22)
+#define CAffineTransform_DX(transform) ((transform).dx)
+#define CAffineTransform_DY(transform) ((transform).dy)
 
 
-#define SDPoint_X(point)              ((point).x)
-#define SDPoint_Y(point)              ((point).y)
-#define SDLine_Point1(line)           ((line).point1)
-#define SDLine_Point2(line)           ((line).point2)
-#define SDLine_X1(line)               (SDPoint_X(SDLine_Point1(line)))
-#define SDLine_Y1(line)               (SDPoint_Y(SDLine_Point1(line)))
-#define SDLine_X2(line)               (SDPoint_X(SDLine_Point2(line)))
-#define SDLine_Y2(line)               (SDPoint_Y(SDLine_Point2(line)))
-#define SDEdge_Line(edge)             ((edge).line)
-#define SDEdge_Clockwise(edge)        ((edge).clockwise)
-#define SDEdge_CurrentX(edge)         ((edge).currentX)
-#define SDEdge_Point1(edge)           (SDLine_Point1(SDEdge_Line(edge)))
-#define SDEdge_Point2(edge)           (SDLine_Point2(SDEdge_Line(edge)))
-#define SDEdge_X1(edge)               (SDLine_X1(SDEdge_Line(edge)))
-#define SDEdge_Y1(edge)               (SDLine_Y1(SDEdge_Line(edge)))
-#define SDEdge_X2(edge)               (SDLine_X2(SDEdge_Line(edge)))
-#define SDEdge_Y2(edge)               (SDLine_Y2(SDEdge_Line(edge)))
-#define SDVector_X(vector)            (SDPoint_X(vector))
-#define SDVector_Y(vector)            (SDPoint_Y(vector))
-#define SDRectangle_X(rectangle)      ((rectangle).x)
-#define SDRectangle_Y(rectangle)      ((rectangle).y)
-#define SDRectangle_Width(rectangle)  ((rectangle).width)
-#define SDRectangle_Height(rectangle) ((rectangle).height)
-#define SDSize_Width(size)            ((size).width)
-#define SDSize_Height(size)           ((size).height)
-#define SDTrapezoid_Top(trapezoid)    ((trapezoid).top)
-#define SDTrapezoid_Bottom(trapezoid) ((trapezoid).bottom)
-#define SDTrapezoid_Left(trapezoid)   ((trapezoid).left)
-#define SDTrapezoid_Right(trapezoid)  ((trapezoid).right)
+#define CPoint_X(point)              ((point).x)
+#define CPoint_Y(point)              ((point).y)
+#define CLine_Point1(line)           ((line).point1)
+#define CLine_Point2(line)           ((line).point2)
+#define CLine_X1(line)               (CPoint_X(CLine_Point1(line)))
+#define CLine_Y1(line)               (CPoint_Y(CLine_Point1(line)))
+#define CLine_X2(line)               (CPoint_X(CLine_Point2(line)))
+#define CLine_Y2(line)               (CPoint_Y(CLine_Point2(line)))
+#define CEdge_Line(edge)             ((edge).line)
+#define CEdge_Clockwise(edge)        ((edge).clockwise)
+#define CEdge_CurrentX(edge)         ((edge).currentX)
+#define CEdge_Point1(edge)           (CLine_Point1(CEdge_Line(edge)))
+#define CEdge_Point2(edge)           (CLine_Point2(CEdge_Line(edge)))
+#define CEdge_X1(edge)               (CLine_X1(CEdge_Line(edge)))
+#define CEdge_Y1(edge)               (CLine_Y1(CEdge_Line(edge)))
+#define CEdge_X2(edge)               (CLine_X2(CEdge_Line(edge)))
+#define CEdge_Y2(edge)               (CLine_Y2(CEdge_Line(edge)))
+#define CVector_X(vector)            (CPoint_X(vector))
+#define CVector_Y(vector)            (CPoint_Y(vector))
+#define CRectangle_X(rectangle)      ((rectangle).x)
+#define CRectangle_Y(rectangle)      ((rectangle).y)
+#define CRectangle_Width(rectangle)  ((rectangle).width)
+#define CRectangle_Height(rectangle) ((rectangle).height)
+#define CSize_Width(size)            ((size).width)
+#define CSize_Height(size)           ((size).height)
+#define CTrapezoid_Top(trapezoid)    ((trapezoid).top)
+#define CTrapezoid_Bottom(trapezoid) ((trapezoid).bottom)
+#define CTrapezoid_Left(trapezoid)   ((trapezoid).left)
+#define CTrapezoid_Right(trapezoid)  ((trapezoid).right)
 
-#define SDPointArray_Count(array)    ((array).count)
-#define SDPointArray_Points(array)   ((array).points)
-#define SDPointArray_Point(array, i) ((array).points[(i)])
+#define CPointArray_Count(array)    ((array).count)
+#define CPointArray_Points(array)   ((array).points)
+#define CPointArray_Point(array, i) ((array).points[(i)])
 
-#define SDTrapezoids_Count(t)      ((t).count)
-#define SDTrapezoids_Trapezoids(t) ((t).trapezoids)
+#define CTrapezoids_Count(t)      ((t).count)
+#define CTrapezoids_Trapezoids(t) ((t).trapezoids)
 
-#define SDGraphics_DefaultDpiX 96.0f
-#define SDGraphics_DefaultDpiY 96.0f
+#define CGraphics_DefaultDpiX 96.0f
+#define CGraphics_DefaultDpiY 96.0f
 
-#define SDFiller_TOLERANCE 0.1f
+#define CFiller_TOLERANCE 0.1f
 
-#define SDStatus_Check(status)                                                 \
+#define CStatus_Check(status)                                                 \
 	do {                                                                       \
-		const SDStatus _status_ = (status);                                    \
-		if(_status_ != SDStatus_OK)                                            \
+		const CStatus _status_ = (status);                                    \
+		if(_status_ != CStatus_OK)                                            \
 		{                                                                      \
 			return _status_;                                                   \
 		}                                                                      \
 	} while(0)
-#define SDStatus_Require(cond, status)                                         \
+#define CStatus_Require(cond, status)                                         \
 	do {                                                                       \
 		if(!(cond))                                                            \
 		{                                                                      \
@@ -386,4 +386,4 @@ SDMemCmp(const void *a,
 };
 #endif
 
-#endif /* _SD_LIBRARYINTERNAL_H_ */
+#endif /* _C_LIBRARYINTERNAL_H_ */

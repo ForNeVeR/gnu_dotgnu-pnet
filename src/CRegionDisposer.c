@@ -1,5 +1,5 @@
 /*
- * SDRegionDisposer.c - Region disposer implementation.
+ * CRegionDisposer.c - Region disposer implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,104 +24,104 @@
 extern "C" {
 #endif
 
-static SDStatus
-SDRegionDisposer_Op(SDRegionInterpreter  *_this,
-                    SDRegionOp           *op,
+static CStatus
+CRegionDisposer_Op(CRegionInterpreter  *_this,
+                    CRegionOp           *op,
                     void                 *left,
                     void                 *right,
                     void                **data)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((op    != 0));
-	SDASSERT((left  == 0));
-	SDASSERT((right == 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((op    != 0));
+	CASSERT((left  == 0));
+	CASSERT((right == 0));
+	CASSERT((data  != 0));
 
 	/* dispose of the operation node */
-	SDFree(op);
+	CFree(op);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDRegionDisposer_Data(SDRegionInterpreter  *_this,
-                      SDRegionNode         *node,
+static CStatus
+CRegionDisposer_Data(CRegionInterpreter  *_this,
+                      CRegionNode         *node,
                       void                **data)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((node  != 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((node  != 0));
+	CASSERT((data  != 0));
 
 	/* dispose of the data node */
-	SDRegionData_Free(node);
+	CRegionData_Free(node);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 static void
-SDRegionDisposer_FreeData(void *data)
+CRegionDisposer_FreeData(void *data)
 {
 	/* assertions */
-	SDASSERT((data != 0));
+	CASSERT((data != 0));
 
 	/* free the node members, as needed */
-	if(SDRegionNode_IsOp(((SDRegionNode *)data)))
+	if(CRegionNode_IsOp(((CRegionNode *)data)))
 	{
 		/* get the operation node */
-		SDRegionOp *op = ((SDRegionOp *)data);
+		CRegionOp *op = ((CRegionOp *)data);
 
 		/* free the left operand node, as needed */
-		if(op->left) { SDRegionDisposer_FreeData(op->left); }
+		if(op->left) { CRegionDisposer_FreeData(op->left); }
 
 		/* free the right operand node, as needed */
-		if(op->right) { SDRegionDisposer_FreeData(op->right); }
+		if(op->right) { CRegionDisposer_FreeData(op->right); }
 	}
-	else if(((SDRegionNode *)data)->type == SDRegionType_Path)
+	else if(((CRegionNode *)data)->type == CRegionType_Path)
 	{
 		/* get the path node */
-		SDRegionPath *rp = ((SDRegionPath *)data);
+		CRegionPath *rp = ((CRegionPath *)data);
 
 		/* free the point list */
-		SDFree(rp->points);
+		CFree(rp->points);
 
 		/* free the type list */
-		SDFree(rp->types);
+		CFree(rp->types);
 	}
 
 	/* free the node */
-	SDFree(data);
+	CFree(data);
 }
 
-static const SDRegionInterpreterClass SDRegionDisposer_Class =
+static const CRegionInterpreterClass CRegionDisposer_Class =
 {
-	SDRegionDisposer_Data,
-	SDRegionDisposer_Op,
-	SDRegionDisposer_FreeData
+	CRegionDisposer_Data,
+	CRegionDisposer_Op,
+	CRegionDisposer_FreeData
 };
 
-SDINTERNAL void
-SDRegionDisposer_Initialize(SDRegionDisposer *_this)
+CINTERNAL void
+CRegionDisposer_Initialize(CRegionDisposer *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the base */
-	SDRegionInterpreter_Initialize
-		((SDRegionInterpreter *)_this, &SDRegionDisposer_Class);
+	CRegionInterpreter_Initialize
+		((CRegionInterpreter *)_this, &CRegionDisposer_Class);
 }
 
-SDINTERNAL void
-SDRegionDisposer_Finalize(SDRegionDisposer *_this)
+CINTERNAL void
+CRegionDisposer_Finalize(CRegionDisposer *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the base */
-	SDRegionInterpreter_Finalize((SDRegionInterpreter *)_this);
+	CRegionInterpreter_Finalize((CRegionInterpreter *)_this);
 }
 
 

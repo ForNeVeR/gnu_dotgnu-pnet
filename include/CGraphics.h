@@ -1,5 +1,5 @@
 /*
- * SDGraphics.h - Graphics header.
+ * CGraphics.h - Graphics header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_GRAPHICS_H_
-#define _SD_GRAPHICS_H_
+#ifndef _C_GRAPHICS_H_
+#define _C_GRAPHICS_H_
 
 #include "CrayonsInternal.h"
 #include "CGraphicsPipeline.h"
@@ -28,27 +28,27 @@
 extern "C" {
 #endif
 
-struct _tagSDGraphics
+struct _tagCGraphics
 {
-	SDCompositingMode     compositingMode;
-	SDCompositingQuality  compositingQuality;
-	SDGraphicsUnit        pageUnit;
-	SDFloat               pageScale;
-	SDInterpolationMode   interpolationMode;
-	SDPixelOffsetMode     pixelOffsetMode;
-	SDPointI              renderingOrigin;
-	SDSmoothingMode       smoothingMode;
-	SDUInt32              textContrast;
-	SDTextRenderingHint   textRenderingHint;
-	SDGraphicsPipeline    pipeline;
-	SDPath               *path;
-	SDPath               *stroke;
-	SDRegion             *clip;
-	SDSurface            *surface;
+	CCompositingMode     compositingMode;
+	CCompositingQuality  compositingQuality;
+	CGraphicsUnit        pageUnit;
+	CFloat               pageScale;
+	CInterpolationMode   interpolationMode;
+	CPixelOffsetMode     pixelOffsetMode;
+	CPointI              renderingOrigin;
+	CSmoothingMode       smoothingMode;
+	CUInt32              textContrast;
+	CTextRenderingHint   textRenderingHint;
+	CGraphicsPipeline    pipeline;
+	CPath               *path;
+	CPath               *stroke;
+	CRegion             *clip;
+	CSurface            *surface;
 };
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_GRAPHICS_H_ */
+#endif /* _C_GRAPHICS_H_ */

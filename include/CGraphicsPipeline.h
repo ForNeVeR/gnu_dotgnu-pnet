@@ -1,5 +1,5 @@
 /*
- * SDGraphicsPipeline.h - Graphics pipeline header.
+ * CGraphicsPipeline.h - Graphics pipeline header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_GRAPHICSPIPELINE_H_
-#define _SD_GRAPHICSPIPELINE_H_
+#ifndef _C_GRAPHICSPIPELINE_H_
+#define _C_GRAPHICSPIPELINE_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,8 +27,8 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDGraphicsPipeline SDGraphicsPipeline;
-struct _tagSDGraphicsPipeline
+typedef struct _tagCGraphicsPipeline CGraphicsPipeline;
+struct _tagCGraphicsPipeline
 {
 	/*\
 	|*| w == world
@@ -46,84 +46,84 @@ struct _tagSDGraphicsPipeline
 	|*| dt  : w -> d
 	|*| dti : d -> w
 	\*/
-	SDAffineTransformF worldTransform;
-	SDAffineTransformF worldTransformInverse;
-	SDAffineTransformF pageTransform;
-	SDAffineTransformF pageTransformInverse;
-	SDAffineTransformF deviceTransform;
-	SDAffineTransformF deviceTransformInverse;
+	CAffineTransformF worldTransform;
+	CAffineTransformF worldTransformInverse;
+	CAffineTransformF pageTransform;
+	CAffineTransformF pageTransformInverse;
+	CAffineTransformF deviceTransform;
+	CAffineTransformF deviceTransformInverse;
 };
 
-#define SDGraphicsPipeline_World(pipeline) \
+#define CGraphicsPipeline_World(pipeline) \
 			((pipeline).worldTransform)
-#define SDGraphicsPipeline_WorldInverse(pipeline) \
+#define CGraphicsPipeline_WorldInverse(pipeline) \
 			((pipeline).worldTransformInverse)
-#define SDGraphicsPipeline_Page(pipeline) \
+#define CGraphicsPipeline_Page(pipeline) \
 			((pipeline).pageTransform)
-#define SDGraphicsPipeline_PageInverse(pipeline) \
+#define CGraphicsPipeline_PageInverse(pipeline) \
 			((pipeline).pageTransformInverse)
-#define SDGraphicsPipeline_Device(pipeline) \
+#define CGraphicsPipeline_Device(pipeline) \
 			((pipeline).deviceTransform)
-#define SDGraphicsPipeline_DeviceInverse(pipeline) \
+#define CGraphicsPipeline_DeviceInverse(pipeline) \
 			((pipeline).deviceTransformInverse)
 
-SDINTERNAL void
-SDGraphicsPipeline_GetDevice(SDGraphicsPipeline *_this,
-                             SDAffineTransformF *transform);
-SDINTERNAL void
-SDGraphicsPipeline_GetDeviceInverse(SDGraphicsPipeline *_this,
-                                    SDAffineTransformF *transform);
-SDINTERNAL void
-SDGraphicsPipeline_GetPage(SDGraphicsPipeline *_this,
-                           SDAffineTransformF *transform);
-SDINTERNAL void
-SDGraphicsPipeline_GetPageInverse(SDGraphicsPipeline *_this,
-                                  SDAffineTransformF *transform);
-SDINTERNAL void
-SDGraphicsPipeline_GetWorld(SDGraphicsPipeline *_this,
-                            SDAffineTransformF *transform);
-SDINTERNAL void
-SDGraphicsPipeline_GetWorldInverse(SDGraphicsPipeline *_this,
-                                   SDAffineTransformF *transform);
-SDINTERNAL void
-SDGraphicsPipeline_GetSpaceTransform(SDGraphicsPipeline *_this,
-                                     SDCoordinateSpace   dst,
-                                     SDCoordinateSpace   src,
-                                     SDAffineTransformF *transform);
-SDINTERNAL void
-SDGraphicsPipeline_ResetPage(SDGraphicsPipeline *_this);
-SDINTERNAL void
-SDGraphicsPipeline_SetPage(SDGraphicsPipeline *_this,
-                           SDGraphicsUnit      pageUnit,
-                           SDFloat             pageScale,
-                           SDFloat             dpiX,
-                           SDFloat             dpiY);
-SDINTERNAL void
-SDGraphicsPipeline_ResetWorld(SDGraphicsPipeline *_this);
-SDINTERNAL SDStatus
-SDGraphicsPipeline_SetWorld(SDGraphicsPipeline *_this,
-                            SDAffineTransformF *transform);
-SDINTERNAL SDStatus
-SDGraphicsPipeline_MultiplyWorld(SDGraphicsPipeline *_this,
-                                 SDAffineTransformF *other,
-                                 SDMatrixOrder       order);
-SDINTERNAL void
-SDGraphicsPipeline_RotateWorld(SDGraphicsPipeline *_this,
-                               SDFloat             angle,
-                               SDMatrixOrder       order);
-SDINTERNAL void
-SDGraphicsPipeline_ScaleWorld(SDGraphicsPipeline *_this,
-                              SDFloat             sx,
-                              SDFloat             sy,
-                              SDMatrixOrder       order);
-SDINTERNAL void
-SDGraphicsPipeline_TranslateWorld(SDGraphicsPipeline *_this,
-                                  SDFloat             dx,
-                                  SDFloat             dy,
-                                  SDMatrixOrder       order);
+CINTERNAL void
+CGraphicsPipeline_GetDevice(CGraphicsPipeline *_this,
+                            CAffineTransformF *transform);
+CINTERNAL void
+CGraphicsPipeline_GetDeviceInverse(CGraphicsPipeline *_this,
+                                   CAffineTransformF *transform);
+CINTERNAL void
+CGraphicsPipeline_GetPage(CGraphicsPipeline *_this,
+                          CAffineTransformF *transform);
+CINTERNAL void
+CGraphicsPipeline_GetPageInverse(CGraphicsPipeline *_this,
+                                 CAffineTransformF *transform);
+CINTERNAL void
+CGraphicsPipeline_GetWorld(CGraphicsPipeline *_this,
+                           CAffineTransformF *transform);
+CINTERNAL void
+CGraphicsPipeline_GetWorldInverse(CGraphicsPipeline *_this,
+                                  CAffineTransformF *transform);
+CINTERNAL void
+CGraphicsPipeline_GetSpaceTransform(CGraphicsPipeline *_this,
+                                    CCoordinateSpace   dst,
+                                    CCoordinateSpace   src,
+                                    CAffineTransformF *transform);
+CINTERNAL void
+CGraphicsPipeline_ResetPage(CGraphicsPipeline *_this);
+CINTERNAL void
+CGraphicsPipeline_SetPage(CGraphicsPipeline *_this,
+                          CGraphicsUnit      pageUnit,
+                          CFloat             pageScale,
+                          CFloat             dpiX,
+                          CFloat             dpiY);
+CINTERNAL void
+CGraphicsPipeline_ResetWorld(CGraphicsPipeline *_this);
+CINTERNAL CStatus
+CGraphicsPipeline_SetWorld(CGraphicsPipeline *_this,
+                           CAffineTransformF *transform);
+CINTERNAL CStatus
+CGraphicsPipeline_MultiplyWorld(CGraphicsPipeline *_this,
+                                CAffineTransformF *other,
+                                CMatrixOrder       order);
+CINTERNAL void
+CGraphicsPipeline_RotateWorld(CGraphicsPipeline *_this,
+                              CFloat             angle,
+                              CMatrixOrder       order);
+CINTERNAL void
+CGraphicsPipeline_ScaleWorld(CGraphicsPipeline *_this,
+                             CFloat             sx,
+                             CFloat             sy,
+                             CMatrixOrder       order);
+CINTERNAL void
+CGraphicsPipeline_TranslateWorld(CGraphicsPipeline *_this,
+                                 CFloat             dx,
+                                 CFloat             dy,
+                                 CMatrixOrder       order);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_GRAPHICSPIPELINE_H_ */
+#endif /* _C_GRAPHICSPIPELINE_H_ */

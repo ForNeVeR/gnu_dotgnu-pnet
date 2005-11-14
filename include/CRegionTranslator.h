@@ -1,5 +1,5 @@
 /*
- * SDRegionTranslator.h - Region translator header.
+ * CRegionTranslator.h - Region translator header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_REGIONTRANSLATOR_H_
-#define _SD_REGIONTRANSLATOR_H_
+#ifndef _C_REGIONTRANSLATOR_H_
+#define _C_REGIONTRANSLATOR_H_
 
 #include "CRegionInterpreter.h"
 
@@ -27,22 +27,22 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDRegionTranslator SDRegionTranslator;
-struct _tagSDRegionTranslator
+typedef struct _tagCRegionTranslator CRegionTranslator;
+struct _tagCRegionTranslator
 {
-	SDRegionInterpreter _base;
-	SDVectorF           offset;
+	CRegionInterpreter _base;
+	CVectorF           offset;
 };
 
-SDINTERNAL void
-SDRegionTranslator_Initialize(SDRegionTranslator *_this,
-                              SDFloat             dx,
-                              SDFloat             dy);
-SDINTERNAL void
-SDRegionTranslator_Finalize(SDRegionTranslator *_this);
+CINTERNAL void
+CRegionTranslator_Initialize(CRegionTranslator *_this,
+                             CFloat             dx,
+                             CFloat             dy);
+CINTERNAL void
+CRegionTranslator_Finalize(CRegionTranslator *_this);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_REGIONTRANSLATOR_H_ */
+#endif /* _C_REGIONTRANSLATOR_H_ */

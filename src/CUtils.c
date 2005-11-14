@@ -1,5 +1,5 @@
 /*
- * SDUtils.c - Utilities implementation.
+ * CUtils.c - Utilities implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -25,23 +25,23 @@ extern "C" {
 #endif
 
 /* Convert a value from one unit to another. */
-SDINTERNAL SDFloat
-SDUtils_ConvertUnits(SDGraphicsUnit fromUnit,
-                     SDGraphicsUnit toUnit,
-                     SDFloat        value)
+CINTERNAL CFloat
+CUtils_ConvertUnits(CGraphicsUnit fromUnit,
+                     CGraphicsUnit toUnit,
+                     CFloat        value)
 {
 	/* get the vertical resolution */
-	const SDFloat dpiY = SDGraphics_DefaultDpiY;
+	const CFloat dpiY = CGraphics_DefaultDpiY;
 
 	/* return the converted value */
-	return SDUtils_ConvertUnitsDPI(fromUnit, toUnit, value, dpiY, dpiY);
+	return CUtils_ConvertUnitsDPI(fromUnit, toUnit, value, dpiY, dpiY);
 }
-SDINTERNAL SDFloat
-SDUtils_ConvertUnitsDPI(SDGraphicsUnit fromUnit,
-                        SDGraphicsUnit toUnit,
-                        SDFloat        value,
-                        SDFloat        fromDpiY,
-                        SDFloat        toDpiY)
+CINTERNAL CFloat
+CUtils_ConvertUnitsDPI(CGraphicsUnit fromUnit,
+                        CGraphicsUnit toUnit,
+                        CFloat        value,
+                        CFloat        fromDpiY,
+                        CFloat        toDpiY)
 {
 	/* bail out now if there's nothing to do */
 	if(fromUnit == toUnit) { return value; }
@@ -55,25 +55,25 @@ SDUtils_ConvertUnitsDPI(SDGraphicsUnit fromUnit,
 	/* convert the value from the starting value to inch scale */
 	switch(toUnit)
 	{
-		case SDGraphicsUnit_World:
-		case SDGraphicsUnit_Pixel:      { value *= toDpiY;         } break;
-		case SDGraphicsUnit_Display:    { value *= 75.0f;          } break;
-		case SDGraphicsUnit_Point:      { value *= 72.0f;          } break;
-		case SDGraphicsUnit_Inch:       { /* nothing to do here */ } break;
-		case SDGraphicsUnit_Document:   { value *= 300.0f;         } break;
-		case SDGraphicsUnit_Millimeter: { value *= 25.4f;          } break;
+		case CGraphicsUnit_World:
+		case CGraphicsUnit_Pixel:      { value *= toDpiY;         } break;
+		case CGraphicsUnit_Display:    { value *= 75.0f;          } break;
+		case CGraphicsUnit_Point:      { value *= 72.0f;          } break;
+		case CGraphicsUnit_Inch:       { /* nothing to do here */ } break;
+		case CGraphicsUnit_Document:   { value *= 300.0f;         } break;
+		case CGraphicsUnit_Millimeter: { value *= 25.4f;          } break;
 	}
 
 	/* convert the value from inch scale to the target units */
 	switch(fromUnit)
 	{
-		case SDGraphicsUnit_World:
-		case SDGraphicsUnit_Pixel:      { value /= fromDpiY;       } break;
-		case SDGraphicsUnit_Display:    { value /= 75.0f;          } break;
-		case SDGraphicsUnit_Point:      { value /= 72.0f;          } break;
-		case SDGraphicsUnit_Inch:       { /* nothing to do here */ } break;
-		case SDGraphicsUnit_Document:   { value /= 300.0f;         } break;
-		case SDGraphicsUnit_Millimeter: { value /= 25.4;           } break;
+		case CGraphicsUnit_World:
+		case CGraphicsUnit_Pixel:      { value /= fromDpiY;       } break;
+		case CGraphicsUnit_Display:    { value /= 75.0f;          } break;
+		case CGraphicsUnit_Point:      { value /= 72.0f;          } break;
+		case CGraphicsUnit_Inch:       { /* nothing to do here */ } break;
+		case CGraphicsUnit_Document:   { value /= 300.0f;         } break;
+		case CGraphicsUnit_Millimeter: { value /= 25.4;           } break;
 	}
 
 	/* return the converted value */
@@ -83,26 +83,26 @@ SDUtils_ConvertUnitsDPI(SDGraphicsUnit fromUnit,
 
 /* TODO: should we support 0xC080 encoded nulls? */
 
-#define SDUtils_Char8Length(c) \
+#define CUtils_Char8Length(c) \
 	(((c) < 0x80) ? 1 : \
      (((c) < 0x800) ? 2 : \
       (((c) < 0x10000) ? 3 : \
        (((c) < 0x200000) ? 4 : \
         (((c) < 0x4000000) ? 5 : 6)))))
 
-#define SDUtils_SurrogatesToChar32(hi, lo) \
-	(((((SDChar32)hi) - 0xD800) << 10) + (((SDChar32)lo) & 0x03FF) + 0x10000)
+#define CUtils_SurrogatesToChar32(hi, lo) \
+	(((((CChar32)hi) - 0xD800) << 10) + (((CChar32)lo) & 0x03FF) + 0x10000)
 
 /* Convert a UTF16 string to a UTF8 string. */
-SDINTERNAL SDStatus
-SDUtils_Char16ToChar8(SDChar16  *string,
-                      SDChar8  **result)
+CINTERNAL CStatus
+CUtils_Char16ToChar8(CChar16  *string,
+                      CChar8  **result)
 {
 	/* declarations */
-	SDChar8  *end;
-	SDChar8  *dst;
-	SDChar16 *src;
-	SDUInt32  count;
+	CChar8  *end;
+	CChar8  *dst;
+	CChar16 *src;
+	CUInt32  count;
 
 	/* get the character pointer */
 	src = string;
@@ -114,8 +114,8 @@ SDUtils_Char16ToChar8(SDChar16  *string,
 	while(*src)
 	{
 		/* declarations */
-		SDChar32 c32;
-		SDChar16 c16;
+		CChar32 c32;
+		CChar16 c16;
 
 		/* get the current character */
 		c16 = *src;
@@ -124,16 +124,16 @@ SDUtils_Char16ToChar8(SDChar16  *string,
 		if(c16 < 0xD800 || c16 > 0xDBFF)
 		{
 			/* ensure we don't have a low surrogate */
-			SDStatus_Require
-				((c16 < 0xDC00 || c16 > 0xDFFF), SDStatus_Argument);
+			CStatus_Require
+				((c16 < 0xDC00 || c16 > 0xDFFF), CStatus_Argument);
 
 			/* set the full character */
-			c32 = (SDChar32)c16;
+			c32 = (CChar32)c16;
 		}
 		else
 		{
 			/* declarations */
-			SDChar16 hi;
+			CChar16 hi;
 
 			/* get the high surrogate */
 			hi = c16;
@@ -142,24 +142,24 @@ SDUtils_Char16ToChar8(SDChar16  *string,
 			c16 = *(++src);
 
 			/* ensure we have a low surrogate */
-			SDStatus_Require
-				((c16 > 0xDBFF && c16 < 0xE000), SDStatus_Argument);
+			CStatus_Require
+				((c16 > 0xDBFF && c16 < 0xE000), CStatus_Argument);
 
 			/* combine the surrogates to get the full character */
-			c32 = SDUtils_SurrogatesToChar32(hi, c16);
+			c32 = CUtils_SurrogatesToChar32(hi, c16);
 		}
 
 		/* update the count */
-		count += SDUtils_Char8Length(c32);
+		count += CUtils_Char8Length(c32);
 
 		/* move to the next character position */
 		++c16;
 	}
 
 	/* allocate the UTF8 string */
-	if(!(*result = (SDChar8 *)SDMalloc((count + 1) * sizeof(SDChar8))))
+	if(!(*result = (CChar8 *)CMalloc((count + 1) * sizeof(CChar8))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* get the input character pointer */
@@ -175,8 +175,8 @@ SDUtils_Char16ToChar8(SDChar16  *string,
 	while(dst != end)
 	{
 		/* declarations */
-		SDChar16 c16;
-		SDChar32 c32;
+		CChar16 c16;
+		CChar32 c32;
 
 		/* get the current character */
 		c16 = *src;
@@ -185,12 +185,12 @@ SDUtils_Char16ToChar8(SDChar16  *string,
 		if(c16 < 0xD800 || c16 > 0xDBFF)
 		{
 			/* set the full character */
-			c32 = (SDChar32)c16;
+			c32 = (CChar32)c16;
 		}
 		else
 		{
 			/* declarations */
-			SDChar16 hi;
+			CChar16 hi;
 
 			/* get the high surrogate */
 			hi = c16;
@@ -199,48 +199,48 @@ SDUtils_Char16ToChar8(SDChar16  *string,
 			c16 = *(++src);
 
 			/* get the UTF32 character */
-			c32 = SDUtils_SurrogatesToChar32(hi, c16);
+			c32 = CUtils_SurrogatesToChar32(hi, c16);
 		}
 
 		/* encode the full character into the output buffer */
 		if(c32 < 0x80)
 		{
-			*dst++ = (SDChar8)c32;
+			*dst++ = (CChar8)c32;
 		}
 		else if(c32 < 0x800)
 		{
-			*dst++ = (SDChar8)(0xC0 | ((c32 >> 6) & 0xFF));
-			*dst++ = (SDChar8)(0x80 | ((c32 >> 0) & 0x3F));
+			*dst++ = (CChar8)(0xC0 | ((c32 >> 6) & 0xFF));
+			*dst++ = (CChar8)(0x80 | ((c32 >> 0) & 0x3F));
 		}
 		else if(c32 < 0x10000)
 		{
-			*dst++ = (SDChar8)(0xE0 | ((c32 >> 12) & 0xFF));
-			*dst++ = (SDChar8)(0x80 | ((c32 >>  6) & 0x3F));
-			*dst++ = (SDChar8)(0x80 | ((c32 >>  0) & 0x3F));
+			*dst++ = (CChar8)(0xE0 | ((c32 >> 12) & 0xFF));
+			*dst++ = (CChar8)(0x80 | ((c32 >>  6) & 0x3F));
+			*dst++ = (CChar8)(0x80 | ((c32 >>  0) & 0x3F));
 		}
 		else if(c32 < 0x200000)
 		{
-			*dst++ = (SDChar8)(0xF0 | ((c32 >> 18) & 0xFF));
-			*dst++ = (SDChar8)(0x80 | ((c32 >> 12) & 0x3F));
-			*dst++ = (SDChar8)(0x80 | ((c32 >>  6) & 0x3F));
-			*dst++ = (SDChar8)(0x80 | ((c32 >>  0) & 0x3F));
+			*dst++ = (CChar8)(0xF0 | ((c32 >> 18) & 0xFF));
+			*dst++ = (CChar8)(0x80 | ((c32 >> 12) & 0x3F));
+			*dst++ = (CChar8)(0x80 | ((c32 >>  6) & 0x3F));
+			*dst++ = (CChar8)(0x80 | ((c32 >>  0) & 0x3F));
 		}
 		else if(c32 < 0x4000000)
 		{
-			*dst++ = (SDChar8)(0xF8 | ((c32 >> 24) & 0xFF));
-			*dst++ = (SDChar8)(0x80 | ((c32 >> 18) & 0x3F));
-			*dst++ = (SDChar8)(0x80 | ((c32 >> 12) & 0x3F));
-			*dst++ = (SDChar8)(0x80 | ((c32 >>  6) & 0x3F));
-			*dst++ = (SDChar8)(0x80 | ((c32 >>  0) & 0x3F));
+			*dst++ = (CChar8)(0xF8 | ((c32 >> 24) & 0xFF));
+			*dst++ = (CChar8)(0x80 | ((c32 >> 18) & 0x3F));
+			*dst++ = (CChar8)(0x80 | ((c32 >> 12) & 0x3F));
+			*dst++ = (CChar8)(0x80 | ((c32 >>  6) & 0x3F));
+			*dst++ = (CChar8)(0x80 | ((c32 >>  0) & 0x3F));
 		}
 		else
 		{
-			*dst++ = (SDChar8)(0xFC | ((c32 >> 30) & 0xFF));
-			*dst++ = (SDChar8)(0x80 | ((c32 >> 24) & 0x3F));
-			*dst++ = (SDChar8)(0x80 | ((c32 >> 18) & 0x3F));
-			*dst++ = (SDChar8)(0x80 | ((c32 >> 12) & 0x3F));
-			*dst++ = (SDChar8)(0x80 | ((c32 >>  6) & 0x3F));
-			*dst++ = (SDChar8)(0x80 | ((c32 >>  0) & 0x3F));
+			*dst++ = (CChar8)(0xFC | ((c32 >> 30) & 0xFF));
+			*dst++ = (CChar8)(0x80 | ((c32 >> 24) & 0x3F));
+			*dst++ = (CChar8)(0x80 | ((c32 >> 18) & 0x3F));
+			*dst++ = (CChar8)(0x80 | ((c32 >> 12) & 0x3F));
+			*dst++ = (CChar8)(0x80 | ((c32 >>  6) & 0x3F));
+			*dst++ = (CChar8)(0x80 | ((c32 >>  0) & 0x3F));
 		}
 
 		/* move to the next input position */
@@ -251,67 +251,67 @@ SDUtils_Char16ToChar8(SDChar16  *string,
 	*dst = '\0';
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage64bppPArgb(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage64bppPArgb(CByte         *scan0,
                                 pixman_image_t *image,
-                                SDUInt32        x,
-                                SDUInt32        y,
-                                SDUInt32        width,
-                                SDUInt32        height,
-                                SDUInt32        stride)
+                                CUInt32        x,
+                                CUInt32        y,
+                                CUInt32        width,
+                                CUInt32        height,
+                                CUInt32        stride)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage64bppArgb(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage64bppArgb(CByte         *scan0,
                                pixman_image_t *image,
-                               SDUInt32        x,
-                               SDUInt32        y,
-                               SDUInt32        width,
-                               SDUInt32        height,
-                               SDUInt32        stride)
+                               CUInt32        x,
+                               CUInt32        y,
+                               CUInt32        width,
+                               CUInt32        height,
+                               CUInt32        stride)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage48bppRgb(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage48bppRgb(CByte         *scan0,
                               pixman_image_t *image,
-                              SDUInt32        x,
-                              SDUInt32        y,
-                              SDUInt32        width,
-                              SDUInt32        height,
-                              SDUInt32        stride)
+                              CUInt32        x,
+                              CUInt32        y,
+                              CUInt32        width,
+                              CUInt32        height,
+                              CUInt32        stride)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage32bppPArgb(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage32bppPArgb(CByte         *scan0,
                                 pixman_image_t *image,
-                                SDUInt32        x,
-                                SDUInt32        y,
-                                SDUInt32        width,
-                                SDUInt32        height,
-                                SDUInt32        stride)
+                                CUInt32        x,
+                                CUInt32        y,
+                                CUInt32        width,
+                                CUInt32        height,
+                                CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -320,12 +320,12 @@ SDUtils_ToPixmanImage32bppPArgb(SDByte         *scan0,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 2));
@@ -334,13 +334,13 @@ SDUtils_ToPixmanImage32bppPArgb(SDByte         *scan0,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* get the color components */
-			const SDByte b = *currP++;
-			const SDByte g = *currP++;
-			const SDByte r = *currP++;
-			const SDByte a = *currP++;
+			const CByte b = *currP++;
+			const CByte g = *currP++;
+			const CByte r = *currP++;
+			const CByte a = *currP++;
 
 			/* get the pixel color */
-			*currC++ = SDPixmanPixel_FromARGB(a, r, g, b);
+			*currC++ = CPixmanPixel_FromARGB(a, r, g, b);
 		}
 
 		/* update the y position */
@@ -348,28 +348,28 @@ SDUtils_ToPixmanImage32bppPArgb(SDByte         *scan0,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage32bppArgb(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage32bppArgb(CByte         *scan0,
                                pixman_image_t *image,
-                               SDUInt32        x,
-                               SDUInt32        y,
-                               SDUInt32        width,
-                               SDUInt32        height,
-                               SDUInt32        stride)
+                               CUInt32        x,
+                               CUInt32        y,
+                               CUInt32        width,
+                               CUInt32        height,
+                               CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -378,12 +378,12 @@ SDUtils_ToPixmanImage32bppArgb(SDByte         *scan0,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 2));
@@ -392,20 +392,20 @@ SDUtils_ToPixmanImage32bppArgb(SDByte         *scan0,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* get the color components */
-			const SDByte b = *currP++;
-			const SDByte g = *currP++;
-			const SDByte r = *currP++;
-			const SDByte a = *currP++;
+			const CByte b = *currP++;
+			const CByte g = *currP++;
+			const CByte r = *currP++;
+			const CByte a = *currP++;
 
 			/* get the pixel color based on the transparency */
 			if(a == 0)
 			{
-				*currC++ = SDPixmanPixel_FromARGB(0, 0, 0, 0);
+				*currC++ = CPixmanPixel_FromARGB(0, 0, 0, 0);
 			}
 			else
 			{
 				*currC++ =
-					SDPixmanPixel_FromARGB
+					CPixmanPixel_FromARGB
 						(a, ((r * a) / 255), ((g * a) / 255), ((b * a) / 255));
 			}
 		}
@@ -415,28 +415,28 @@ SDUtils_ToPixmanImage32bppArgb(SDByte         *scan0,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage32bppRgb(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage32bppRgb(CByte         *scan0,
                               pixman_image_t *image,
-                              SDUInt32        x,
-                              SDUInt32        y,
-                              SDUInt32        width,
-                              SDUInt32        height,
-                              SDUInt32        stride)
+                              CUInt32        x,
+                              CUInt32        y,
+                              CUInt32        width,
+                              CUInt32        height,
+                              CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -445,12 +445,12 @@ SDUtils_ToPixmanImage32bppRgb(SDByte         *scan0,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 2));
@@ -459,12 +459,12 @@ SDUtils_ToPixmanImage32bppRgb(SDByte         *scan0,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* get the color components */
-			const SDByte b = *currP++;
-			const SDByte g = *currP++;
-			const SDByte r = *currP++;
+			const CByte b = *currP++;
+			const CByte g = *currP++;
+			const CByte r = *currP++;
 
 			/* get the pixel color */
-			*currC++ = SDPixmanPixel_FromARGB(0xFF, r, g, b);
+			*currC++ = CPixmanPixel_FromARGB(0xFF, r, g, b);
 
 			/* update the pixel position */
 			++currP;
@@ -475,28 +475,28 @@ SDUtils_ToPixmanImage32bppRgb(SDByte         *scan0,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage24bppRgb(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage24bppRgb(CByte         *scan0,
                               pixman_image_t *image,
-                              SDUInt32        x,
-                              SDUInt32        y,
-                              SDUInt32        width,
-                              SDUInt32        height,
-                              SDUInt32        stride)
+                              CUInt32        x,
+                              CUInt32        y,
+                              CUInt32        width,
+                              CUInt32        height,
+                              CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -505,12 +505,12 @@ SDUtils_ToPixmanImage24bppRgb(SDByte         *scan0,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + ((x << 1) + x));
@@ -519,12 +519,12 @@ SDUtils_ToPixmanImage24bppRgb(SDByte         *scan0,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* get the color components */
-			const SDByte b = *currP++;
-			const SDByte g = *currP++;
-			const SDByte r = *currP++;
+			const CByte b = *currP++;
+			const CByte g = *currP++;
+			const CByte r = *currP++;
 
 			/* get the pixel color */
-			*currC++ = SDPixmanPixel_FromARGB(0xFF, r, g, b);
+			*currC++ = CPixmanPixel_FromARGB(0xFF, r, g, b);
 		}
 
 		/* update the y position */
@@ -532,28 +532,28 @@ SDUtils_ToPixmanImage24bppRgb(SDByte         *scan0,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage16bppArgb1555(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage16bppArgb1555(CByte         *scan0,
                                    pixman_image_t *image,
-                                   SDUInt32        x,
-                                   SDUInt32        y,
-                                   SDUInt32        width,
-                                   SDUInt32        height,
-                                   SDUInt32        stride)
+                                   CUInt32        x,
+                                   CUInt32        y,
+                                   CUInt32        width,
+                                   CUInt32        height,
+                                   CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -562,12 +562,12 @@ SDUtils_ToPixmanImage16bppArgb1555(SDByte         *scan0,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 1));
@@ -576,7 +576,7 @@ SDUtils_ToPixmanImage16bppArgb1555(SDByte         *scan0,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte r, g, b;
+			CByte r, g, b;
 
 			/* get the color components */
 			g = *currP++;
@@ -585,22 +585,22 @@ SDUtils_ToPixmanImage16bppArgb1555(SDByte         *scan0,
 			/* get the pixel color based on transparency */
 			if((r & 0x80) == 0)
 			{
-				*currC++ = SDPixmanPixel_FromARGB(0, 0, 0, 0);
+				*currC++ = CPixmanPixel_FromARGB(0, 0, 0, 0);
 			}
 			else
 			{
 				/* extract the color components */
-				b = (SDByte)(g & 0x1F);
-				g = (SDByte)(((r << 3) & 0x18) | ((g >> 5) & 0x07));
-				r = (SDByte)((r >> 2) & 0x1F);
+				b = (CByte)(g & 0x1F);
+				g = (CByte)(((r << 3) & 0x18) | ((g >> 5) & 0x07));
+				r = (CByte)((r >> 2) & 0x1F);
 
 				/* scale the color components */
-				b = (SDByte)(((b << 8) - b) / 31);
-				g = (SDByte)(((g << 8) - g) / 31);
-				r = (SDByte)(((r << 8) - r) / 31);
+				b = (CByte)(((b << 8) - b) / 31);
+				g = (CByte)(((g << 8) - g) / 31);
+				r = (CByte)(((r << 8) - r) / 31);
 
 				/* get the pixel color */
-				*currC++ = SDPixmanPixel_FromARGB(0xFF, r, g, b);
+				*currC++ = CPixmanPixel_FromARGB(0xFF, r, g, b);
 			}
 		}
 
@@ -609,28 +609,28 @@ SDUtils_ToPixmanImage16bppArgb1555(SDByte         *scan0,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage16bppRgb565(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage16bppRgb565(CByte         *scan0,
                                  pixman_image_t *image,
-                                 SDUInt32        x,
-                                 SDUInt32        y,
-                                 SDUInt32        width,
-                                 SDUInt32        height,
-                                 SDUInt32        stride)
+                                 CUInt32        x,
+                                 CUInt32        y,
+                                 CUInt32        width,
+                                 CUInt32        height,
+                                 CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -639,12 +639,12 @@ SDUtils_ToPixmanImage16bppRgb565(SDByte         *scan0,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 1));
@@ -653,24 +653,24 @@ SDUtils_ToPixmanImage16bppRgb565(SDByte         *scan0,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte r, g, b;
+			CByte r, g, b;
 
 			/* get the color components */
 			g = *currP++;
 			r = *currP++;
 
 			/* extract the color components */
-			b = (SDByte)(g & 0x1F);
-			g = (SDByte)(((r << 3) & 0x38) | ((g >> 5) & 0x07));
-			r = (SDByte)(r >> 3);
+			b = (CByte)(g & 0x1F);
+			g = (CByte)(((r << 3) & 0x38) | ((g >> 5) & 0x07));
+			r = (CByte)(r >> 3);
 
 			/* scale the color components */
-			b = (SDByte)(((b << 8) - b) / 31);
-			g = (SDByte)(((g << 8) - g) / 63);
-			r = (SDByte)(((r << 8) - r) / 31);
+			b = (CByte)(((b << 8) - b) / 31);
+			g = (CByte)(((g << 8) - g) / 63);
+			r = (CByte)(((r << 8) - r) / 31);
 
 			/* get the pixel color */
-			*currC++ = SDPixmanPixel_FromARGB(0xFF, r, g, b);
+			*currC++ = CPixmanPixel_FromARGB(0xFF, r, g, b);
 		}
 
 		/* update the y position */
@@ -678,28 +678,28 @@ SDUtils_ToPixmanImage16bppRgb565(SDByte         *scan0,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage16bppRgb555(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage16bppRgb555(CByte         *scan0,
                                  pixman_image_t *image,
-                                 SDUInt32        x,
-                                 SDUInt32        y,
-                                 SDUInt32        width,
-                                 SDUInt32        height,
-                                 SDUInt32        stride)
+                                 CUInt32        x,
+                                 CUInt32        y,
+                                 CUInt32        width,
+                                 CUInt32        height,
+                                 CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -708,12 +708,12 @@ SDUtils_ToPixmanImage16bppRgb555(SDByte         *scan0,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 1));
@@ -722,24 +722,24 @@ SDUtils_ToPixmanImage16bppRgb555(SDByte         *scan0,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte r, g, b;
+			CByte r, g, b;
 
 			/* get the color components */
 			g = *currP++;
 			r = *currP++;
 
 			/* extract the color components */
-			b = (SDByte)(g & 0x1F);
-			g = (SDByte)(((r << 3) & 0x18) | ((g >> 5) & 0x07));
-			r = (SDByte)((r >> 2) & 0x1F);
+			b = (CByte)(g & 0x1F);
+			g = (CByte)(((r << 3) & 0x18) | ((g >> 5) & 0x07));
+			r = (CByte)((r >> 2) & 0x1F);
 
 			/* scale the color components */
-			b = (SDByte)(((b << 8) - b) / 31);
-			g = (SDByte)(((g << 8) - g) / 31);
-			r = (SDByte)(((r << 8) - r) / 31);
+			b = (CByte)(((b << 8) - b) / 31);
+			g = (CByte)(((g << 8) - g) / 31);
+			r = (CByte)(((r << 8) - r) / 31);
 
 			/* get the pixel color */
-			*currC++ = SDPixmanPixel_FromARGB(0xFF, r, g, b);
+			*currC++ = CPixmanPixel_FromARGB(0xFF, r, g, b);
 		}
 
 		/* update the y position */
@@ -747,28 +747,28 @@ SDUtils_ToPixmanImage16bppRgb555(SDByte         *scan0,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage16bppGrayScale(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage16bppGrayScale(CByte         *scan0,
                                     pixman_image_t *image,
-                                    SDUInt32        x,
-                                    SDUInt32        y,
-                                    SDUInt32        width,
-                                    SDUInt32        height,
-                                    SDUInt32        stride)
+                                    CUInt32        x,
+                                    CUInt32        y,
+                                    CUInt32        width,
+                                    CUInt32        height,
+                                    CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -777,12 +777,12 @@ SDUtils_ToPixmanImage16bppGrayScale(SDByte         *scan0,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer (offset for the high byte) */
 		currP = ((scan0 + (y * stride)) + ((x << 1) + 1));
@@ -791,10 +791,10 @@ SDUtils_ToPixmanImage16bppGrayScale(SDByte         *scan0,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* get the gray value */
-			const SDByte val = *currP++; ++currP;
+			const CByte val = *currP++; ++currP;
 
 			/* get the pixel color */
-			*currC++ = SDPixmanPixel_FromARGB(0xFF, val, val, val);
+			*currC++ = CPixmanPixel_FromARGB(0xFF, val, val, val);
 		}
 
 		/* update the y position */
@@ -802,109 +802,109 @@ SDUtils_ToPixmanImage16bppGrayScale(SDByte         *scan0,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage8bppIndexed(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage8bppIndexed(CByte         *scan0,
                                  pixman_image_t *image,
-                                 SDUInt32        x,
-                                 SDUInt32        y,
-                                 SDUInt32        width,
-                                 SDUInt32        height,
-                                 SDUInt32        stride,
-                                 SDColorPalette *palette)
+                                 CUInt32        x,
+                                 CUInt32        y,
+                                 CUInt32        width,
+                                 CUInt32        height,
+                                 CUInt32        stride,
+                                 CColorPalette *palette)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage4bppIndexed(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage4bppIndexed(CByte         *scan0,
                                  pixman_image_t *image,
-                                 SDUInt32        x,
-                                 SDUInt32        y,
-                                 SDUInt32        width,
-                                 SDUInt32        height,
-                                 SDUInt32        stride,
-                                 SDColorPalette *palette)
+                                 CUInt32        x,
+                                 CUInt32        y,
+                                 CUInt32        width,
+                                 CUInt32        height,
+                                 CUInt32        stride,
+                                 CColorPalette *palette)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_ToPixmanImage1bppIndexed(SDByte         *scan0,
+static CStatus
+CUtils_ToPixmanImage1bppIndexed(CByte         *scan0,
                                  pixman_image_t *image,
-                                 SDUInt32        x,
-                                 SDUInt32        y,
-                                 SDUInt32        width,
-                                 SDUInt32        height,
-                                 SDUInt32        stride,
-                                 SDColorPalette *palette)
+                                 CUInt32        x,
+                                 CUInt32        y,
+                                 CUInt32        width,
+                                 CUInt32        height,
+                                 CUInt32        stride,
+                                 CColorPalette *palette)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage64bppPArgb(pixman_image_t *image,
-                                  SDByte         *scan0,
-                                  SDUInt32        x,
-                                  SDUInt32        y,
-                                  SDUInt32        width,
-                                  SDUInt32        height,
-                                  SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage64bppPArgb(pixman_image_t *image,
+                                  CByte         *scan0,
+                                  CUInt32        x,
+                                  CUInt32        y,
+                                  CUInt32        width,
+                                  CUInt32        height,
+                                  CUInt32        stride)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage64bppArgb(pixman_image_t *image,
-                                 SDByte         *scan0,
-                                 SDUInt32        x,
-                                 SDUInt32        y,
-                                 SDUInt32        width,
-                                 SDUInt32        height,
-                                 SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage64bppArgb(pixman_image_t *image,
+                                 CByte         *scan0,
+                                 CUInt32        x,
+                                 CUInt32        y,
+                                 CUInt32        width,
+                                 CUInt32        height,
+                                 CUInt32        stride)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage48bppRgb(pixman_image_t *image,
-                                SDByte         *scan0,
-                                SDUInt32        x,
-                                SDUInt32        y,
-                                SDUInt32        width,
-                                SDUInt32        height,
-                                SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage48bppRgb(pixman_image_t *image,
+                                CByte         *scan0,
+                                CUInt32        x,
+                                CUInt32        y,
+                                CUInt32        width,
+                                CUInt32        height,
+                                CUInt32        stride)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage32bppPArgb(pixman_image_t *image,
-                                  SDByte         *scan0,
-                                  SDUInt32        x,
-                                  SDUInt32        y,
-                                  SDUInt32        width,
-                                  SDUInt32        height,
-                                  SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage32bppPArgb(pixman_image_t *image,
+                                  CByte         *scan0,
+                                  CUInt32        x,
+                                  CUInt32        y,
+                                  CUInt32        width,
+                                  CUInt32        height,
+                                  CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -913,12 +913,12 @@ SDUtils_FromPixmanImage32bppPArgb(pixman_image_t *image,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 2));
@@ -927,10 +927,10 @@ SDUtils_FromPixmanImage32bppPArgb(pixman_image_t *image,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the color components */
-			SDPixmanPixel_ToARGB(*currC, a, r, g, b);
+			CPixmanPixel_ToARGB(*currC, a, r, g, b);
 
 			/* set the pixel color */
 			*currP++ = b;
@@ -947,28 +947,28 @@ SDUtils_FromPixmanImage32bppPArgb(pixman_image_t *image,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage32bppArgb(pixman_image_t *image,
-                                 SDByte         *scan0,
-                                 SDUInt32        x,
-                                 SDUInt32        y,
-                                 SDUInt32        width,
-                                 SDUInt32        height,
-                                 SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage32bppArgb(pixman_image_t *image,
+                                 CByte         *scan0,
+                                 CUInt32        x,
+                                 CUInt32        y,
+                                 CUInt32        width,
+                                 CUInt32        height,
+                                 CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -977,12 +977,12 @@ SDUtils_FromPixmanImage32bppArgb(pixman_image_t *image,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 2));
@@ -991,10 +991,10 @@ SDUtils_FromPixmanImage32bppArgb(pixman_image_t *image,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the color components */
-			SDPixmanPixel_ToARGB(*currC, a, r, g, b);
+			CPixmanPixel_ToARGB(*currC, a, r, g, b);
 
 			/* set the pixel color based on the transparency */
 			if(a == 0)
@@ -1006,9 +1006,9 @@ SDUtils_FromPixmanImage32bppArgb(pixman_image_t *image,
 			}
 			else
 			{
-				*currP++ = ((SDByte)(((b << 8) - b) / a));
-				*currP++ = ((SDByte)(((g << 8) - g) / a));
-				*currP++ = ((SDByte)(((r << 8) - r) / a));
+				*currP++ = ((CByte)(((b << 8) - b) / a));
+				*currP++ = ((CByte)(((g << 8) - g) / a));
+				*currP++ = ((CByte)(((r << 8) - r) / a));
 				*currP++ = a;
 			}
 
@@ -1021,28 +1021,28 @@ SDUtils_FromPixmanImage32bppArgb(pixman_image_t *image,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage32bppRgb(pixman_image_t *image,
-                                SDByte         *scan0,
-                                SDUInt32        x,
-                                SDUInt32        y,
-                                SDUInt32        width,
-                                SDUInt32        height,
-                                SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage32bppRgb(pixman_image_t *image,
+                                CByte         *scan0,
+                                CUInt32        x,
+                                CUInt32        y,
+                                CUInt32        width,
+                                CUInt32        height,
+                                CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -1051,12 +1051,12 @@ SDUtils_FromPixmanImage32bppRgb(pixman_image_t *image,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 2));
@@ -1065,10 +1065,10 @@ SDUtils_FromPixmanImage32bppRgb(pixman_image_t *image,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the color components */
-			SDPixmanPixel_ToARGB(*currC, a, r, g, b);
+			CPixmanPixel_ToARGB(*currC, a, r, g, b);
 
 			/* set the pixel color */
 			*currP++ = b;
@@ -1085,28 +1085,28 @@ SDUtils_FromPixmanImage32bppRgb(pixman_image_t *image,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage24bppRgb(pixman_image_t *image,
-                                SDByte         *scan0,
-                                SDUInt32        x,
-                                SDUInt32        y,
-                                SDUInt32        width,
-                                SDUInt32        height,
-                                SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage24bppRgb(pixman_image_t *image,
+                                CByte         *scan0,
+                                CUInt32        x,
+                                CUInt32        y,
+                                CUInt32        width,
+                                CUInt32        height,
+                                CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -1115,12 +1115,12 @@ SDUtils_FromPixmanImage24bppRgb(pixman_image_t *image,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + ((x << 1) + x));
@@ -1129,10 +1129,10 @@ SDUtils_FromPixmanImage24bppRgb(pixman_image_t *image,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the color components */
-			SDPixmanPixel_ToARGB(*currC, a, r, g, b);
+			CPixmanPixel_ToARGB(*currC, a, r, g, b);
 
 			/* set the pixel color */
 			*currP++ = b;
@@ -1148,28 +1148,28 @@ SDUtils_FromPixmanImage24bppRgb(pixman_image_t *image,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage16bppArgb1555(pixman_image_t *image,
-                                     SDByte         *scan0,
-                                     SDUInt32        x,
-                                     SDUInt32        y,
-                                     SDUInt32        width,
-                                     SDUInt32        height,
-                                     SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage16bppArgb1555(pixman_image_t *image,
+                                     CByte         *scan0,
+                                     CUInt32        x,
+                                     CUInt32        y,
+                                     CUInt32        width,
+                                     CUInt32        height,
+                                     CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -1178,12 +1178,12 @@ SDUtils_FromPixmanImage16bppArgb1555(pixman_image_t *image,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 1));
@@ -1192,10 +1192,10 @@ SDUtils_FromPixmanImage16bppArgb1555(pixman_image_t *image,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the color components */
-			SDPixmanPixel_ToARGB(*currC, a, r, g, b);
+			CPixmanPixel_ToARGB(*currC, a, r, g, b);
 
 			/* set the pixel color based on transparency */
 			if(a < 128)
@@ -1206,9 +1206,9 @@ SDUtils_FromPixmanImage16bppArgb1555(pixman_image_t *image,
 			else
 			{
 				/* set the pixel color */
-				*currP++ = ((SDByte)(((g << 2) & 0xE0) | ((b >> 3) & 0x1F)));
+				*currP++ = ((CByte)(((g << 2) & 0xE0) | ((b >> 3) & 0x1F)));
 				*currP++ =
-					((SDByte)(((r >> 1) & 0x7C) | ((g >> 6) & 0x03) | 0x80));
+					((CByte)(((r >> 1) & 0x7C) | ((g >> 6) & 0x03) | 0x80));
 			}
 
 			/* move to the next pixel position */
@@ -1220,28 +1220,28 @@ SDUtils_FromPixmanImage16bppArgb1555(pixman_image_t *image,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage16bppRgb565(pixman_image_t *image,
-                                   SDByte         *scan0,
-                                   SDUInt32        x,
-                                   SDUInt32        y,
-                                   SDUInt32        width,
-                                   SDUInt32        height,
-                                   SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage16bppRgb565(pixman_image_t *image,
+                                   CByte         *scan0,
+                                   CUInt32        x,
+                                   CUInt32        y,
+                                   CUInt32        width,
+                                   CUInt32        height,
+                                   CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -1250,12 +1250,12 @@ SDUtils_FromPixmanImage16bppRgb565(pixman_image_t *image,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 1));
@@ -1264,10 +1264,10 @@ SDUtils_FromPixmanImage16bppRgb565(pixman_image_t *image,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the color components */
-			SDPixmanPixel_ToARGB(*currC, a, r, g, b);
+			CPixmanPixel_ToARGB(*currC, a, r, g, b);
 
 			/* set the pixel color based on transparency */
 			if(a < 128)
@@ -1278,8 +1278,8 @@ SDUtils_FromPixmanImage16bppRgb565(pixman_image_t *image,
 			else
 			{
 				/* set the pixel color */
-				*currP++ = ((SDByte)(((g << 3) & 0xE0) | ((b >> 3) & 0x1F)));
-				*currP++ = ((SDByte)(((r << 0) & 0xF8) | ((g >> 5) & 0x07)));
+				*currP++ = ((CByte)(((g << 3) & 0xE0) | ((b >> 3) & 0x1F)));
+				*currP++ = ((CByte)(((r << 0) & 0xF8) | ((g >> 5) & 0x07)));
 			}
 
 			/* move to the next pixel position */
@@ -1291,28 +1291,28 @@ SDUtils_FromPixmanImage16bppRgb565(pixman_image_t *image,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage16bppRgb555(pixman_image_t *image,
-                                   SDByte         *scan0,
-                                   SDUInt32        x,
-                                   SDUInt32        y,
-                                   SDUInt32        width,
-                                   SDUInt32        height,
-                                   SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage16bppRgb555(pixman_image_t *image,
+                                   CByte         *scan0,
+                                   CUInt32        x,
+                                   CUInt32        y,
+                                   CUInt32        width,
+                                   CUInt32        height,
+                                   CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -1321,12 +1321,12 @@ SDUtils_FromPixmanImage16bppRgb555(pixman_image_t *image,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 1));
@@ -1335,10 +1335,10 @@ SDUtils_FromPixmanImage16bppRgb555(pixman_image_t *image,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the color components */
-			SDPixmanPixel_ToARGB(*currC, a, r, g, b);
+			CPixmanPixel_ToARGB(*currC, a, r, g, b);
 
 			/* set the pixel color based on transparency */
 			if(a < 128)
@@ -1349,8 +1349,8 @@ SDUtils_FromPixmanImage16bppRgb555(pixman_image_t *image,
 			else
 			{
 				/* set the pixel color */
-				*currP++ = ((SDByte)(((g << 2) & 0xE0) | ((b >> 3) & 0x1F)));
-				*currP++ = ((SDByte)(((r >> 1) & 0x7C) | ((g >> 6) & 0x03)));
+				*currP++ = ((CByte)(((g << 2) & 0xE0) | ((b >> 3) & 0x1F)));
+				*currP++ = ((CByte)(((r >> 1) & 0x7C) | ((g >> 6) & 0x03)));
 			}
 
 			/* move to the next pixel position */
@@ -1362,28 +1362,28 @@ SDUtils_FromPixmanImage16bppRgb555(pixman_image_t *image,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage16bppGrayScale(pixman_image_t *image,
-                                      SDByte         *scan0,
-                                      SDUInt32        x,
-                                      SDUInt32        y,
-                                      SDUInt32        width,
-                                      SDUInt32        height,
-                                      SDUInt32        stride)
+static CStatus
+CUtils_FromPixmanImage16bppGrayScale(pixman_image_t *image,
+                                      CByte         *scan0,
+                                      CUInt32        x,
+                                      CUInt32        y,
+                                      CUInt32        width,
+                                      CUInt32        height,
+                                      CUInt32        stride)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  strideC;
+	CByte   *data;
+	CUInt32  strideC;
 
 	/* assertions */
-	SDASSERT((scan0 != 0));
-	SDASSERT((image != 0));
+	CASSERT((scan0 != 0));
+	CASSERT((image != 0));
 
 	/* get the data */
-	data = (SDByte *)pixman_image_get_data(image);
+	data = (CByte *)pixman_image_get_data(image);
 
 	/* get the stride */
 	strideC = pixman_image_get_stride(image);
@@ -1392,12 +1392,12 @@ SDUtils_FromPixmanImage16bppGrayScale(pixman_image_t *image,
 	while(y < height)
 	{
 		/* declarations */
-		SDColor  *currC;
-		SDByte   *currP;
-		SDUInt32  pos;
+		CColor  *currC;
+		CByte   *currP;
+		CUInt32  pos;
 
 		/* get the current color pointer */
-		currC = (SDColor *)((data + (y * strideC)) + (x << 2));
+		currC = (CColor *)((data + (y * strideC)) + (x << 2));
 
 		/* get the current pixel pointer */
 		currP = ((scan0 + (y * stride)) + (x << 1));
@@ -1406,10 +1406,10 @@ SDUtils_FromPixmanImage16bppGrayScale(pixman_image_t *image,
 		for(pos = x; pos < width; ++pos)
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the color components */
-			SDPixmanPixel_ToARGB(*currC, a, r, g, b);
+			CPixmanPixel_ToARGB(*currC, a, r, g, b);
 
 			/* set the pixel color based on transparency */
 			if(a < 128)
@@ -1420,14 +1420,14 @@ SDUtils_FromPixmanImage16bppGrayScale(pixman_image_t *image,
 			else
 			{
 				/* declarations */
-				SDUInt16 value;
+				CUInt16 value;
 
 				/* get the gray value */
-				value = (SDUInt16)(255 * SDColor_IntensityRGB(r, g, b));
+				value = (CUInt16)(255 * CColor_IntensityRGB(r, g, b));
 
 				/* set the pixel color */
-				*currP++ = ((SDByte)(value & 0xFF));
-				*currP++ = ((SDByte)(value >> 8));
+				*currP++ = ((CByte)(value & 0xFF));
+				*currP++ = ((CByte)(value >> 8));
 			}
 
 			/* move to the next pixel position */
@@ -1439,332 +1439,332 @@ SDUtils_FromPixmanImage16bppGrayScale(pixman_image_t *image,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage8bppIndexed(pixman_image_t *image,
-                                   SDByte         *scan0,
-                                   SDUInt32        x,
-                                   SDUInt32        y,
-                                   SDUInt32        width,
-                                   SDUInt32        height,
-                                   SDUInt32        stride,
-                                   SDColorPalette *palette)
+static CStatus
+CUtils_FromPixmanImage8bppIndexed(pixman_image_t *image,
+                                   CByte         *scan0,
+                                   CUInt32        x,
+                                   CUInt32        y,
+                                   CUInt32        width,
+                                   CUInt32        height,
+                                   CUInt32        stride,
+                                   CColorPalette *palette)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage4bppIndexed(pixman_image_t *image,
-                                   SDByte         *scan0,
-                                   SDUInt32        x,
-                                   SDUInt32        y,
-                                   SDUInt32        width,
-                                   SDUInt32        height,
-                                   SDUInt32        stride,
-                                   SDColorPalette *palette)
+static CStatus
+CUtils_FromPixmanImage4bppIndexed(pixman_image_t *image,
+                                   CByte         *scan0,
+                                   CUInt32        x,
+                                   CUInt32        y,
+                                   CUInt32        width,
+                                   CUInt32        height,
+                                   CUInt32        stride,
+                                   CColorPalette *palette)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
-static SDStatus
-SDUtils_FromPixmanImage1bppIndexed(pixman_image_t *image,
-                                   SDByte         *scan0,
-                                   SDUInt32        x,
-                                   SDUInt32        y,
-                                   SDUInt32        width,
-                                   SDUInt32        height,
-                                   SDUInt32        stride,
-                                   SDColorPalette *palette)
+static CStatus
+CUtils_FromPixmanImage1bppIndexed(pixman_image_t *image,
+                                   CByte         *scan0,
+                                   CUInt32        x,
+                                   CUInt32        y,
+                                   CUInt32        width,
+                                   CUInt32        height,
+                                   CUInt32        stride,
+                                   CColorPalette *palette)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 /* Convert pixel data into pixman image data. */
-SDINTERNAL SDStatus
-SDUtils_ToPixmanImage(SDPixelFormat   format,
-                      SDByte         *scan0,
+CINTERNAL CStatus
+CUtils_ToPixmanImage(CPixelFormat   format,
+                      CByte         *scan0,
                       pixman_image_t *image,
-                      SDUInt32        x,
-                      SDUInt32        y,
-                      SDUInt32        width,
-                      SDUInt32        height,
-                      SDUInt32        stride,
-                      SDColorPalette *palette)
+                      CUInt32        x,
+                      CUInt32        y,
+                      CUInt32        width,
+                      CUInt32        height,
+                      CUInt32        stride,
+                      CColorPalette *palette)
 {
 	/* convert the image according to the format */
 	switch(format)
 	{
-		default: { return SDStatus_NotSupported; }
+		default: { return CStatus_NotSupported; }
 
-		case SDPixelFormat_64bppPArgb:
+		case CPixelFormat_64bppPArgb:
 		{
 			return
-				SDUtils_ToPixmanImage64bppPArgb
+				CUtils_ToPixmanImage64bppPArgb
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_64bppArgb:
+		case CPixelFormat_64bppArgb:
 		{
 			return
-				SDUtils_ToPixmanImage64bppArgb
+				CUtils_ToPixmanImage64bppArgb
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_48bppRgb:
+		case CPixelFormat_48bppRgb:
 		{
 			return
-				SDUtils_ToPixmanImage48bppRgb
+				CUtils_ToPixmanImage48bppRgb
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_32bppPArgb:
+		case CPixelFormat_32bppPArgb:
 		{
 			return
-				SDUtils_ToPixmanImage32bppPArgb
+				CUtils_ToPixmanImage32bppPArgb
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_32bppArgb:
+		case CPixelFormat_32bppArgb:
 		{
 			return
-				SDUtils_ToPixmanImage32bppArgb
+				CUtils_ToPixmanImage32bppArgb
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_32bppRgb:
+		case CPixelFormat_32bppRgb:
 		{
 			return
-				SDUtils_ToPixmanImage32bppRgb
+				CUtils_ToPixmanImage32bppRgb
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_24bppRgb:
+		case CPixelFormat_24bppRgb:
 		{
 			return
-				SDUtils_ToPixmanImage24bppRgb
+				CUtils_ToPixmanImage24bppRgb
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_16bppArgb1555:
+		case CPixelFormat_16bppArgb1555:
 		{
 			return
-				SDUtils_ToPixmanImage16bppArgb1555
+				CUtils_ToPixmanImage16bppArgb1555
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_16bppRgb565:
+		case CPixelFormat_16bppRgb565:
 		{
 			return
-				SDUtils_ToPixmanImage16bppRgb565
+				CUtils_ToPixmanImage16bppRgb565
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_16bppRgb555:
+		case CPixelFormat_16bppRgb555:
 		{
 			return
-				SDUtils_ToPixmanImage16bppRgb555
+				CUtils_ToPixmanImage16bppRgb555
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_16bppGrayScale:
+		case CPixelFormat_16bppGrayScale:
 		{
 			return
-				SDUtils_ToPixmanImage16bppGrayScale
+				CUtils_ToPixmanImage16bppGrayScale
 					(scan0, image, x, y, width, height, stride);
 		}
-		case SDPixelFormat_8bppIndexed:
+		case CPixelFormat_8bppIndexed:
 		{
 			return
-				SDUtils_ToPixmanImage8bppIndexed
+				CUtils_ToPixmanImage8bppIndexed
 					(scan0, image, x, y, width, height, stride, palette);
 		}
-		case SDPixelFormat_4bppIndexed:
+		case CPixelFormat_4bppIndexed:
 		{
 			return
-				SDUtils_ToPixmanImage4bppIndexed
+				CUtils_ToPixmanImage4bppIndexed
 					(scan0, image, x, y, width, height, stride, palette);
 		}
-		case SDPixelFormat_1bppIndexed:
+		case CPixelFormat_1bppIndexed:
 		{
 			return
-				SDUtils_ToPixmanImage1bppIndexed
+				CUtils_ToPixmanImage1bppIndexed
 					(scan0, image, x, y, width, height, stride, palette);
 		}
 	}
 }
 
 /* Convert pixman image data into pixel data. */
-SDINTERNAL SDStatus
-SDUtils_FromPixmanImage(SDPixelFormat   format,
+CINTERNAL CStatus
+CUtils_FromPixmanImage(CPixelFormat   format,
                         pixman_image_t *image,
-                        SDByte         *scan0,
-                        SDUInt32        x,
-                        SDUInt32        y,
-                        SDUInt32        width,
-                        SDUInt32        height,
-                        SDUInt32        stride,
-                        SDColorPalette *palette)
+                        CByte         *scan0,
+                        CUInt32        x,
+                        CUInt32        y,
+                        CUInt32        width,
+                        CUInt32        height,
+                        CUInt32        stride,
+                        CColorPalette *palette)
 {
 	/* convert the image according to the format */
 	switch(format)
 	{
-		default: { return SDStatus_NotSupported; }
+		default: { return CStatus_NotSupported; }
 
-		case SDPixelFormat_64bppPArgb:
+		case CPixelFormat_64bppPArgb:
 		{
 			return
-				SDUtils_FromPixmanImage64bppPArgb
+				CUtils_FromPixmanImage64bppPArgb
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_64bppArgb:
+		case CPixelFormat_64bppArgb:
 		{
 			return
-				SDUtils_FromPixmanImage64bppArgb
+				CUtils_FromPixmanImage64bppArgb
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_48bppRgb:
+		case CPixelFormat_48bppRgb:
 		{
 			return
-				SDUtils_FromPixmanImage48bppRgb
+				CUtils_FromPixmanImage48bppRgb
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_32bppPArgb:
+		case CPixelFormat_32bppPArgb:
 		{
 			return
-				SDUtils_FromPixmanImage32bppPArgb
+				CUtils_FromPixmanImage32bppPArgb
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_32bppArgb:
+		case CPixelFormat_32bppArgb:
 		{
 			return
-				SDUtils_FromPixmanImage32bppArgb
+				CUtils_FromPixmanImage32bppArgb
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_32bppRgb:
+		case CPixelFormat_32bppRgb:
 		{
 			return
-				SDUtils_FromPixmanImage32bppRgb
+				CUtils_FromPixmanImage32bppRgb
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_24bppRgb:
+		case CPixelFormat_24bppRgb:
 		{
 			return
-				SDUtils_FromPixmanImage24bppRgb
+				CUtils_FromPixmanImage24bppRgb
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_16bppArgb1555:
+		case CPixelFormat_16bppArgb1555:
 		{
 			return
-				SDUtils_FromPixmanImage16bppArgb1555
+				CUtils_FromPixmanImage16bppArgb1555
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_16bppRgb565:
+		case CPixelFormat_16bppRgb565:
 		{
 			return
-				SDUtils_FromPixmanImage16bppRgb565
+				CUtils_FromPixmanImage16bppRgb565
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_16bppRgb555:
+		case CPixelFormat_16bppRgb555:
 		{
 			return
-				SDUtils_FromPixmanImage16bppRgb555
+				CUtils_FromPixmanImage16bppRgb555
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_16bppGrayScale:
+		case CPixelFormat_16bppGrayScale:
 		{
 			return
-				SDUtils_FromPixmanImage16bppGrayScale
+				CUtils_FromPixmanImage16bppGrayScale
 					(image, scan0, x, y, width, height, stride);
 		}
-		case SDPixelFormat_8bppIndexed:
+		case CPixelFormat_8bppIndexed:
 		{
 			return
-				SDUtils_FromPixmanImage8bppIndexed
+				CUtils_FromPixmanImage8bppIndexed
 					(image, scan0, x, y, width, height, stride, palette);
 		}
-		case SDPixelFormat_4bppIndexed:
+		case CPixelFormat_4bppIndexed:
 		{
 			return
-				SDUtils_FromPixmanImage4bppIndexed
+				CUtils_FromPixmanImage4bppIndexed
 					(image, scan0, x, y, width, height, stride, palette);
 		}
-		case SDPixelFormat_1bppIndexed:
+		case CPixelFormat_1bppIndexed:
 		{
 			return
-				SDUtils_FromPixmanImage1bppIndexed
+				CUtils_FromPixmanImage1bppIndexed
 					(image, scan0, x, y, width, height, stride, palette);
 		}
 	}
 }
 
-SDINTERNAL SDStatus
-SDUtils_GetPixmanPixelPointer(pixman_image_t  *image,
-                              SDUInt32         x,
-                              SDUInt32         y,
-                              SDColor        **pixel)
+CINTERNAL CStatus
+CUtils_GetPixmanPixelPointer(pixman_image_t  *image,
+                              CUInt32         x,
+                              CUInt32         y,
+                              CColor        **pixel)
 {
 	/* declarations */
-	SDByte   *data;
-	SDUInt32  width;
-	SDUInt32  height;
-	SDUInt32  stride;
+	CByte   *data;
+	CUInt32  width;
+	CUInt32  height;
+	CUInt32  stride;
 
 	/* assertions */
-	SDASSERT((image != 0));
-	SDASSERT((pixel != 0));
+	CASSERT((image != 0));
+	CASSERT((pixel != 0));
 
 	/* get the pixman image information */
-	data   = (SDByte *)pixman_image_get_data(image);
-	width  = (SDUInt32)pixman_image_get_width(image);
-	height = (SDUInt32)pixman_image_get_height(image);
-	stride = (SDUInt32)pixman_image_get_stride(image);
+	data   = (CByte *)pixman_image_get_data(image);
+	width  = (CUInt32)pixman_image_get_width(image);
+	height = (CUInt32)pixman_image_get_height(image);
+	stride = (CUInt32)pixman_image_get_stride(image);
 
 	/* ensure the pixel is within bounds */
-	SDStatus_Require((x < width && y < height), SDStatus_ArgumentOutOfRange);
+	CStatus_Require((x < width && y < height), CStatus_ArgumentOutOfRange);
 
 	/* get the pixel pointer */
-	*pixel = ((SDColor *)(data + (y * stride) + (x << 2)));
+	*pixel = ((CColor *)(data + (y * stride) + (x << 2)));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDUInt32
-SDUtils_FormatToStride(SDPixelFormat pixelFormat,
-                       SDUInt32      width)
+CINTERNAL CUInt32
+CUtils_FormatToStride(CPixelFormat pixelFormat,
+                       CUInt32      width)
 {
-	return ((SDUtils_BytesPerLine(pixelFormat, width) + 3) & ~3);
+	return ((CUtils_BytesPerLine(pixelFormat, width) + 3) & ~3);
 }
 
-SDINTERNAL SDUInt32
-SDUtils_BytesPerLine(SDPixelFormat pixelFormat,
-                     SDUInt32      width)
+CINTERNAL CUInt32
+CUtils_BytesPerLine(CPixelFormat pixelFormat,
+                     CUInt32      width)
 {
 	switch(pixelFormat)
 	{
-		case SDPixelFormat_1bppIndexed:
+		case CPixelFormat_1bppIndexed:
 			{ return ((width + 7) / 8); }
 
-		case SDPixelFormat_4bppIndexed:
+		case CPixelFormat_4bppIndexed:
 			{ return ((width + 1) / 2); }
 
-		case SDPixelFormat_8bppIndexed:
+		case CPixelFormat_8bppIndexed:
 			{ return (width * 1); }
 
-		case SDPixelFormat_16bppRgb555:
-		case SDPixelFormat_16bppRgb565:
-		case SDPixelFormat_16bppArgb1555:
-		case SDPixelFormat_16bppGrayScale:
+		case CPixelFormat_16bppRgb555:
+		case CPixelFormat_16bppRgb565:
+		case CPixelFormat_16bppArgb1555:
+		case CPixelFormat_16bppGrayScale:
 			{ return (width * 2); }
 
-		case SDPixelFormat_24bppRgb:
+		case CPixelFormat_24bppRgb:
 			{ return (width * 3); }
 
-		case SDPixelFormat_32bppRgb:
-		case SDPixelFormat_32bppPArgb:
-		case SDPixelFormat_32bppArgb:
+		case CPixelFormat_32bppRgb:
+		case CPixelFormat_32bppPArgb:
+		case CPixelFormat_32bppArgb:
 			{ return (width * 4); }
 
-		case SDPixelFormat_48bppRgb:
+		case CPixelFormat_48bppRgb:
 			{ return (width * 6); }
 
-		case SDPixelFormat_64bppPArgb:
-		case SDPixelFormat_64bppArgb:
+		case CPixelFormat_64bppPArgb:
+		case CPixelFormat_64bppArgb:
 			{ return (width * 8); }
 
 		default:
@@ -1772,54 +1772,54 @@ SDUtils_BytesPerLine(SDPixelFormat pixelFormat,
 	}
 }
 
-SDINTERNAL pixman_transform_t
-SDUtils_ToPixmanTransform(SDAffineTransformF *transform)
+CINTERNAL pixman_transform_t
+CUtils_ToPixmanTransform(CAffineTransformF *transform)
 {
 	/* declarations */
 	pixman_transform_t pt;
-	SDFloat            xx;
-	SDFloat            xy;
-	SDFloat            yx;
-	SDFloat            yy;
-	SDFloat            dx;
-	SDFloat            dy;
+	CFloat            xx;
+	CFloat            xy;
+	CFloat            yx;
+	CFloat            yy;
+	CFloat            dx;
+	CFloat            dy;
 
 	/* assertions */
-	SDASSERT((transform != 0));
+	CASSERT((transform != 0));
 
 	/* get the transformation components */
 	{
-		xx = SDAffineTransform_XX(*transform);
-		xy = SDAffineTransform_XY(*transform);
-		yx = SDAffineTransform_YX(*transform);
-		yy = SDAffineTransform_YY(*transform);
-		dx = SDAffineTransform_DX(*transform);
-		dy = SDAffineTransform_DX(*transform);
+		xx = CAffineTransform_XX(*transform);
+		xy = CAffineTransform_XY(*transform);
+		yx = CAffineTransform_YX(*transform);
+		yy = CAffineTransform_YY(*transform);
+		dx = CAffineTransform_DX(*transform);
+		dy = CAffineTransform_DX(*transform);
 	}
 
 	/* initialize the pixman transformation */
 	{
-		pt.matrix[0][0] = SDFloat_ToFixed(xx);
-		pt.matrix[0][1] = SDFloat_ToFixed(xy);
-		pt.matrix[0][2] = SDFloat_ToFixed(dx);
-		pt.matrix[1][0] = SDFloat_ToFixed(yx);
-		pt.matrix[1][1] = SDFloat_ToFixed(yy);
-		pt.matrix[1][2] = SDFloat_ToFixed(dy);
-		pt.matrix[2][0] = SDFixed_Zero;
-		pt.matrix[2][1] = SDFixed_Zero;
-		pt.matrix[2][2] = SDFixed_One;
+		pt.matrix[0][0] = CFloat_ToFixed(xx);
+		pt.matrix[0][1] = CFloat_ToFixed(xy);
+		pt.matrix[0][2] = CFloat_ToFixed(dx);
+		pt.matrix[1][0] = CFloat_ToFixed(yx);
+		pt.matrix[1][1] = CFloat_ToFixed(yy);
+		pt.matrix[1][2] = CFloat_ToFixed(dy);
+		pt.matrix[2][0] = CFixed_Zero;
+		pt.matrix[2][1] = CFixed_Zero;
+		pt.matrix[2][2] = CFixed_One;
 	}
 
 	/* return the pixman transformation */
 	return pt;
 }
 
-SDINTERNAL SDStatus
-SDUtils_CreateSolidPattern(pixman_image_t **pattern,
-                           SDColor          color)
+CINTERNAL CStatus
+CUtils_CreateSolidPattern(pixman_image_t **pattern,
+                           CColor          color)
 {
 	/* assertions */
-	SDASSERT((pattern != 0));
+	CASSERT((pattern != 0));
 
 	/* create the pattern */
 	{
@@ -1830,7 +1830,7 @@ SDUtils_CreateSolidPattern(pixman_image_t **pattern,
 		format = pixman_format_create(PIXMAN_FORMAT_NAME_ARGB32);
 
 		/* ensure we have a format */
-		SDStatus_Require((format != 0), SDStatus_OutOfMemory);
+		CStatus_Require((format != 0), CStatus_OutOfMemory);
 
 		/* create the pixman image */
 		*pattern = pixman_image_create(format, 1, 1);
@@ -1839,30 +1839,30 @@ SDUtils_CreateSolidPattern(pixman_image_t **pattern,
 		pixman_format_destroy(format);
 
 		/* ensure we have an image */
-		SDStatus_Require((*pattern != 0), SDStatus_OutOfMemory);
+		CStatus_Require((*pattern != 0), CStatus_OutOfMemory);
 
 		/* calculate the pre-multiplied color */
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the components and pre-multiply */
-			a = ((SDColor_A(color)));
-			r = ((SDColor_R(color) * a) / 255);
-			g = ((SDColor_G(color) * a) / 255);
-			b = ((SDColor_B(color) * a) / 255);
+			a = ((CColor_A(color)));
+			r = ((CColor_R(color) * a) / 255);
+			g = ((CColor_G(color) * a) / 255);
+			b = ((CColor_B(color) * a) / 255);
 
 			/* set the color */
-			color = SDPixmanPixel_FromARGB(a, r, g, b);
+			color = CPixmanPixel_FromARGB(a, r, g, b);
 		}
 
 		/* generate the pattern */
 		{
 			/* declarations */
-			SDColor *data;
+			CColor *data;
 
 			/* get the data */
-			data = (SDColor *)pixman_image_get_data(*pattern);
+			data = (CColor *)pixman_image_get_data(*pattern);
 
 			/* set the pixel color */
 			*data = color;
@@ -1873,50 +1873,50 @@ SDUtils_CreateSolidPattern(pixman_image_t **pattern,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL pixman_color_t
-SDUtils_ToPixmanColor(SDColor color)
+CINTERNAL pixman_color_t
+CUtils_ToPixmanColor(CColor color)
 {
 	/* declarations */
 	pixman_color_t pc;
 
 	/* get the components and pre-multiply */
-	pc.alpha = (SDColor_A(color));
-	pc.red   = ((SDColor_R(color) * pc.alpha) / 255);
-	pc.green = ((SDColor_G(color) * pc.alpha) / 255);
-	pc.blue  = ((SDColor_B(color) * pc.alpha) / 255);
-	pc.alpha = (((SDByte)(pc.alpha << 8)) | ((SDByte)pc.alpha));
-	pc.red   = (((SDByte)(pc.red   << 8)) | ((SDByte)pc.red));
-	pc.green = (((SDByte)(pc.green << 8)) | ((SDByte)pc.green));
-	pc.blue  = (((SDByte)(pc.blue  << 8)) | ((SDByte)pc.blue));
+	pc.alpha = (CColor_A(color));
+	pc.red   = ((CColor_R(color) * pc.alpha) / 255);
+	pc.green = ((CColor_G(color) * pc.alpha) / 255);
+	pc.blue  = ((CColor_B(color) * pc.alpha) / 255);
+	pc.alpha = (((CByte)(pc.alpha << 8)) | ((CByte)pc.alpha));
+	pc.red   = (((CByte)(pc.red   << 8)) | ((CByte)pc.red));
+	pc.green = (((CByte)(pc.green << 8)) | ((CByte)pc.green));
+	pc.blue  = (((CByte)(pc.blue  << 8)) | ((CByte)pc.blue));
 
 	/* return the pixman color */
 	return pc;
 }
 
-SDINTERNAL SDStatus
-SDUtils_PixmanImageRectangle(pixman_image_t *src,
+CINTERNAL CStatus
+CUtils_PixmanImageRectangle(pixman_image_t *src,
                              pixman_image_t *dst,
-                             SDUInt32        x,
-                             SDUInt32        y,
-                             SDUInt32        width,
-                             SDUInt32        height)
+                             CUInt32        x,
+                             CUInt32        y,
+                             CUInt32        width,
+                             CUInt32        height)
 {
 	/* declarations */
-	SDByte   *dataS;
-	SDByte   *dataD;
-	SDUInt32  strideS;
-	SDUInt32  strideD;
+	CByte   *dataS;
+	CByte   *dataD;
+	CUInt32  strideS;
+	CUInt32  strideD;
 
 	/* assertions */
-	SDASSERT((src != 0));
-	SDASSERT((dst != 0));
+	CASSERT((src != 0));
+	CASSERT((dst != 0));
 
 	/* get the data */
-	dataS = (SDByte *)pixman_image_get_data(src);
-	dataD = (SDByte *)pixman_image_get_data(dst);
+	dataS = (CByte *)pixman_image_get_data(src);
+	dataD = (CByte *)pixman_image_get_data(dst);
 
 	/* get the stride */
 	strideS = pixman_image_get_stride(src);
@@ -1926,48 +1926,48 @@ SDUtils_PixmanImageRectangle(pixman_image_t *src,
 	while(y < height)
 	{
 		/* declarations */
-		SDByte *currS;
-		SDByte *currD;
+		CByte *currS;
+		CByte *currD;
 
 		/* get the current pointers */
 		currS = ((dataS + (y * strideS)) + (x << 2));
 		currD = ((dataD + (y * strideD)) + (x << 2));
 
 		/* copy the data */
-		SDMemCopy(currD, currS, (width << 2));
+		CMemCopy(currD, currS, (width << 2));
 
 		/* update the y position */
 		++y;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDBool
-SDUtils_UseGray(SDSmoothingMode   smoothing,
-                SDPixelOffsetMode pixelOffset)
+CINTERNAL CBool
+CUtils_UseGray(CSmoothingMode   smoothing,
+                CPixelOffsetMode pixelOffset)
 {
 	switch(smoothing)
 	{
-		case SDSmoothingMode_AntiAlias:
-		case SDSmoothingMode_HighQuality:
+		case CSmoothingMode_AntiAlias:
+		case CSmoothingMode_HighQuality:
 			{ return 1; }
 
-		case SDSmoothingMode_None:
-		case SDSmoothingMode_HighSpeed:
-		case SDSmoothingMode_Default:
+		case CSmoothingMode_None:
+		case CSmoothingMode_HighSpeed:
+		case CSmoothingMode_Default:
 		default:
 		{
 			switch(pixelOffset)
 			{
-				case SDPixelOffsetMode_HighQuality:
-				case SDPixelOffsetMode_Half:
+				case CPixelOffsetMode_HighQuality:
+				case CPixelOffsetMode_Half:
 					{ return 1; }
 
-				case SDPixelOffsetMode_None:
-				case SDPixelOffsetMode_HighSpeed:
-				case SDPixelOffsetMode_Default:
+				case CPixelOffsetMode_None:
+				case CPixelOffsetMode_HighSpeed:
+				case CPixelOffsetMode_Default:
 				default:
 					{ return 0; }
 			}

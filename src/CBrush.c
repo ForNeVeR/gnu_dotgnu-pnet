@@ -1,5 +1,5 @@
 /*
- * SDBrush.c - Brush implementation.
+ * CBrush.c - Brush implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -27,13 +27,13 @@ extern "C" {
 /* TODO: brush pattern caching should be made thread-safe */
 
 /* Initialize this brush. */
-SDINTERNAL void
-SDBrush_Initialize(SDBrush            *_this,
-                   const SDBrushClass *_class)
+CINTERNAL void
+CBrush_Initialize(CBrush            *_this,
+                   const CBrushClass *_class)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((_class != 0));
+	CASSERT((_this  != 0));
+	CASSERT((_class != 0));
 
 	/* initialize the members */
 	_this->_class        = _class;
@@ -41,47 +41,47 @@ SDBrush_Initialize(SDBrush            *_this,
 }
 
 /* Get the type of this brush. */
-SDStatus
-SDBrush_GetBrushType(SDBrush     *_this,
-                     SDBrushType *type)
+CStatus
+CBrush_GetBrushType(CBrush     *_this,
+                     CBrushType *type)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a type pointer */
-	SDStatus_Require((type != 0), SDStatus_ArgumentNull);
+	CStatus_Require((type != 0), CStatus_ArgumentNull);
 
 	/* get the type */
 	*type = _this->_class->type;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Clone this brush. */
-SDStatus
-SDBrush_Clone(SDBrush  *_this,
-              SDBrush **clone)
+CStatus
+CBrush_Clone(CBrush  *_this,
+              CBrush **clone)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a clone pointer */
-	SDStatus_Require((clone != 0), SDStatus_ArgumentNull);
+	CStatus_Require((clone != 0), CStatus_ArgumentNull);
 
 	/* create the clone */
 	return _this->_class->Clone(_this, clone);
 }
 
 /* Destroy this brush. */
-SDStatus
-SDBrush_Destroy(SDBrush **_this)
+CStatus
+CBrush_Destroy(CBrush **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a this pointer */
-	SDStatus_Require(((*_this) != 0), SDStatus_ArgumentNull);
+	CStatus_Require(((*_this) != 0), CStatus_ArgumentNull);
 
 	/* finalize the brush */
 	(*_this)->_class->Finalize(*_this);
@@ -97,15 +97,15 @@ SDBrush_Destroy(SDBrush **_this)
 	*_this = 0;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Handle a change signal. */
-SDINTERNAL void
-SDBrush_OnChange(SDBrush *_this)
+CINTERNAL void
+CBrush_OnChange(CBrush *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* destroy the current pattern, as needed */
 	if(_this->pattern.image != 0)
@@ -116,18 +116,18 @@ SDBrush_OnChange(SDBrush *_this)
 }
 
 /* Get a pattern for this brush. */
-SDINTERNAL SDStatus
-SDBrush_GetPattern(SDBrush   *_this,
-                   SDPattern *pattern)
+CINTERNAL CStatus
+CBrush_GetPattern(CBrush   *_this,
+                   CPattern *pattern)
 {
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((pattern != 0));
+	CASSERT((_this   != 0));
+	CASSERT((pattern != 0));
 
 	/* create a pattern, as needed */
 	if(_this->pattern.image == 0)
 	{
-		SDStatus_Check
+		CStatus_Check
 			(_this->_class->CreatePattern
 				(_this, &(_this->pattern)));
 	}
@@ -136,7 +136,7 @@ SDBrush_GetPattern(SDBrush   *_this,
 	*pattern = _this->pattern;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

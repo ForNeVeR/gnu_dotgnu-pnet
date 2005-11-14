@@ -1,5 +1,5 @@
 /*
- * SDPointArray.c - Point array implementation.
+ * CPointArray.c - Point array implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,180 +24,180 @@
 extern "C" {
 #endif
 
-SDINTERNAL void
-SDPointArrayX_Initialize(SDPointArrayX *_this)
+CINTERNAL void
+CPointArrayX_Initialize(CPointArrayX *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the members */
-	*_this = SDPointArrayX_Zero;
+	*_this = CPointArrayX_Zero;
 }
 
-SDINTERNAL void
-SDPointArrayF_Initialize(SDPointArrayF *_this)
+CINTERNAL void
+CPointArrayF_Initialize(CPointArrayF *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the members */
-	*_this = SDPointArrayF_Zero;
+	*_this = CPointArrayF_Zero;
 }
 
-SDINTERNAL void
-SDPointArrayX_Finalize(SDPointArrayX *_this)
+CINTERNAL void
+CPointArrayX_Finalize(CPointArrayX *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the members */
 	if(_this->points != 0)
 	{
-		SDFree(_this->points);
-		*_this = SDPointArrayX_Zero;
+		CFree(_this->points);
+		*_this = CPointArrayX_Zero;
 	}
 }
 
-SDINTERNAL void
-SDPointArrayF_Finalize(SDPointArrayF *_this)
+CINTERNAL void
+CPointArrayF_Finalize(CPointArrayF *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the members */
 	if(_this->points != 0)
 	{
-		SDFree(_this->points);
-		*_this = SDPointArrayF_Zero;
+		CFree(_this->points);
+		*_this = CPointArrayF_Zero;
 	}
 }
 
-SDINTERNAL SDStatus
-SDPointArrayX_AppendPointNoRepeat(SDPointArrayX *_this,
-                                  SDPointX      *point)
+CINTERNAL CStatus
+CPointArrayX_AppendPointNoRepeat(CPointArrayX *_this,
+                                  CPointX      *point)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((point != 0));
+	CASSERT((_this != 0));
+	CASSERT((point != 0));
 
 	/* bail out now if there's nothing to append */
-	if(SDPointArray_Count(*_this) != 0)
+	if(CPointArray_Count(*_this) != 0)
 	{
 		/* get the last point */
-		const SDPointX last =
-			SDPointArray_Point(*_this, SDPointArray_Count(*_this) - 1);
+		const CPointX last =
+			CPointArray_Point(*_this, CPointArray_Count(*_this) - 1);
 
 		/* bail out if the last point and the current point match */
-		if(SDPoint_X(last) == SDPoint_X(*point) &&
-		   SDPoint_Y(last) == SDPoint_Y(*point))
+		if(CPoint_X(last) == CPoint_X(*point) &&
+		   CPoint_Y(last) == CPoint_Y(*point))
 		{
-			return SDStatus_OK;
+			return CStatus_OK;
 		}
 	}
 
 	/* ensure capacity of point list */
-	SDStatus_Check
-		(SDPointArrayX_EnsureCapacity
-			(_this, (SDPointArray_Count(*_this) + 1)));
+	CStatus_Check
+		(CPointArrayX_EnsureCapacity
+			(_this, (CPointArray_Count(*_this) + 1)));
 
 	/* append the point */
-	SDPointArray_Point(*_this, SDPointArray_Count(*_this)++) = *point;
+	CPointArray_Point(*_this, CPointArray_Count(*_this)++) = *point;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDPointArrayF_AppendPointNoRepeat(SDPointArrayF *_this,
-                                  SDPointF      *point)
+CINTERNAL CStatus
+CPointArrayF_AppendPointNoRepeat(CPointArrayF *_this,
+                                  CPointF      *point)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((point != 0));
+	CASSERT((_this != 0));
+	CASSERT((point != 0));
 
 	/* bail out now if there's nothing to append */
-	if(SDPointArray_Count(*_this) != 0)
+	if(CPointArray_Count(*_this) != 0)
 	{
 		/* get the last point */
-		const SDPointF last =
-			SDPointArray_Point(*_this, SDPointArray_Count(*_this) - 1);
+		const CPointF last =
+			CPointArray_Point(*_this, CPointArray_Count(*_this) - 1);
 
 		/* bail out if the last point and the current point match */
-		if(SDPoint_X(last) == SDPoint_X(*point) &&
-		   SDPoint_Y(last) == SDPoint_Y(*point))
+		if(CPoint_X(last) == CPoint_X(*point) &&
+		   CPoint_Y(last) == CPoint_Y(*point))
 		{
-			return SDStatus_OK;
+			return CStatus_OK;
 		}
 	}
 
 	/* ensure capacity of point list */
-	SDStatus_Check
-		(SDPointArrayF_EnsureCapacity
-			(_this, (SDPointArray_Count(*_this) + 1)));
+	CStatus_Check
+		(CPointArrayF_EnsureCapacity
+			(_this, (CPointArray_Count(*_this) + 1)));
 
 	/* append the point */
-	SDPointArray_Point(*_this, SDPointArray_Count(*_this)++) = *point;
+	CPointArray_Point(*_this, CPointArray_Count(*_this)++) = *point;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDPointArrayX_AppendPoint(SDPointArrayX *_this,
-                          SDPointX      *point)
+CINTERNAL CStatus
+CPointArrayX_AppendPoint(CPointArrayX *_this,
+                          CPointX      *point)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((point != 0));
+	CASSERT((_this != 0));
+	CASSERT((point != 0));
 
 	/* ensure capacity of point list */
-	SDStatus_Check
-		(SDPointArrayX_EnsureCapacity
-			(_this, (SDPointArray_Count(*_this) + 1)));
+	CStatus_Check
+		(CPointArrayX_EnsureCapacity
+			(_this, (CPointArray_Count(*_this) + 1)));
 
 	/* append the point */
-	SDPointArray_Point(*_this, SDPointArray_Count(*_this)++) = *point;
+	CPointArray_Point(*_this, CPointArray_Count(*_this)++) = *point;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDPointArrayF_AppendPoint(SDPointArrayF *_this,
-                          SDPointF      *point)
+CINTERNAL CStatus
+CPointArrayF_AppendPoint(CPointArrayF *_this,
+                          CPointF      *point)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((point != 0));
+	CASSERT((_this != 0));
+	CASSERT((point != 0));
 
 	/* ensure capacity of point list */
-	SDStatus_Check
-		(SDPointArrayF_EnsureCapacity
-			(_this, (SDPointArray_Count(*_this) + 1)));
+	CStatus_Check
+		(CPointArrayF_EnsureCapacity
+			(_this, (CPointArray_Count(*_this) + 1)));
 
 	/* append the point */
-	SDPointArray_Point(*_this, SDPointArray_Count(*_this)++) = *point;
+	CPointArray_Point(*_this, CPointArray_Count(*_this)++) = *point;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDPointArrayX_EnsureCapacity(SDPointArrayX *_this,
-                             SDUInt32       minimum)
+CINTERNAL CStatus
+CPointArrayX_EnsureCapacity(CPointArrayX *_this,
+                             CUInt32       minimum)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require((minimum != 0), SDStatus_OK);
+	CStatus_Require((minimum != 0), CStatus_OK);
 
 	/* reallocate the list, as needed */
 	if(minimum > _this->capacity)
 	{
 		/* declarations */
-		SDPointX *tmp;
-		SDUInt32  capacity;
+		CPointX *tmp;
+		CUInt32  capacity;
 
 		/* calculate the new capacity */
 		capacity = (_this->capacity << 1);
@@ -210,23 +210,23 @@ SDPointArrayX_EnsureCapacity(SDPointArrayX *_this,
 		}
 
 		/* create the new point list */
-		if(!(tmp = (SDPointX *)SDMalloc(capacity * sizeof(SDPointX))))
+		if(!(tmp = (CPointX *)CMalloc(capacity * sizeof(CPointX))))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* copy existing data, as needed */
 		if(_this->count != 0)
 		{
 			/* copy the points */
-			SDMemCopy(tmp, _this->points, (_this->count * sizeof(SDPointX)));
+			CMemCopy(tmp, _this->points, (_this->count * sizeof(CPointX)));
 		}
 
 		/* free existing list, as needed */
 		if(_this->capacity != 0)
 		{
 			/* free the point list */
-			SDFree(_this->points);
+			CFree(_this->points);
 		}
 
 		/* update the capacity */
@@ -237,25 +237,25 @@ SDPointArrayX_EnsureCapacity(SDPointArrayX *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDPointArrayF_EnsureCapacity(SDPointArrayF *_this,
-                             SDUInt32       minimum)
+CINTERNAL CStatus
+CPointArrayF_EnsureCapacity(CPointArrayF *_this,
+                             CUInt32       minimum)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require((minimum != 0), SDStatus_OK);
+	CStatus_Require((minimum != 0), CStatus_OK);
 
 	/* reallocate the list, as needed */
 	if(minimum > _this->capacity)
 	{
 		/* declarations */
-		SDPointF *tmp;
-		SDUInt32  capacity;
+		CPointF *tmp;
+		CUInt32  capacity;
 
 		/* calculate the new capacity */
 		capacity = (_this->capacity << 1);
@@ -268,23 +268,23 @@ SDPointArrayF_EnsureCapacity(SDPointArrayF *_this,
 		}
 
 		/* create the new point list */
-		if(!(tmp = (SDPointF *)SDMalloc(capacity * sizeof(SDPointF))))
+		if(!(tmp = (CPointF *)CMalloc(capacity * sizeof(CPointF))))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* copy existing data, as needed */
 		if(_this->count != 0)
 		{
 			/* copy the points */
-			SDMemCopy(tmp, _this->points, (_this->count * sizeof(SDPointF)));
+			CMemCopy(tmp, _this->points, (_this->count * sizeof(CPointF)));
 		}
 
 		/* free existing list, as needed */
 		if(_this->capacity != 0)
 		{
 			/* free the point list */
-			SDFree(_this->points);
+			CFree(_this->points);
 		}
 
 		/* update the capacity */
@@ -295,7 +295,7 @@ SDPointArrayF_EnsureCapacity(SDPointArrayF *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

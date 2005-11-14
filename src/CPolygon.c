@@ -1,5 +1,5 @@
 /*
- * SDPolygon.c - Polygon implementation.
+ * CPolygon.c - Polygon implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,11 +24,11 @@
 extern "C" {
 #endif
 
-SDINTERNAL void
-SDPolygonX_Initialize(SDPolygonX *_this)
+CINTERNAL void
+CPolygonX_Initialize(CPolygonX *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the path */
 	_this->capacity        = 0;
@@ -37,16 +37,16 @@ SDPolygonX_Initialize(SDPolygonX *_this)
 	_this->hasCurrentPoint = 0;
 }
 
-SDINTERNAL void
-SDPolygonX_Finalize(SDPolygonX *_this)
+CINTERNAL void
+CPolygonX_Finalize(CPolygonX *_this)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
+	CASSERT((_this  != 0));
 
 	/* finalize the polygon */
 	{
 		/* get the edge list */
-		SDEdgeX *edges = _this->edges;
+		CEdgeX *edges = _this->edges;
 
 		/* finalize, as needed */
 		if(edges != 0)
@@ -57,7 +57,7 @@ SDPolygonX_Finalize(SDPolygonX *_this)
 			_this->edges     = 0;
 
 			/* free the edge list */
-			SDFree(edges);
+			CFree(edges);
 		}
 
 		/* reset the current point flag */
@@ -65,63 +65,63 @@ SDPolygonX_Finalize(SDPolygonX *_this)
 	}
 }
 
-SDINTERNAL void
-SDPolygonX_Reset(SDPolygonX *_this)
+CINTERNAL void
+CPolygonX_Reset(CPolygonX *_this)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
+	CASSERT((_this  != 0));
 
 	/* reset the members */
 	_this->count           = 0;
 	_this->hasCurrentPoint = 0;
 }
 
-SDINTERNAL SDPointX
-SDPolygonX_GetCurrentPoint(SDPolygonX *_this)
+CINTERNAL CPointX
+CPolygonX_GetCurrentPoint(CPolygonX *_this)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
+	CASSERT((_this  != 0));
 
 	/* return the current point */
 	return _this->currentPoint;
 }
 
-SDINTERNAL SDBool
-SDPolygonX_HasCurrentPoint(SDPolygonX *_this)
+CINTERNAL CBool
+CPolygonX_HasCurrentPoint(CPolygonX *_this)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
+	CASSERT((_this  != 0));
 
 	/* return the has current point flag */
 	return _this->hasCurrentPoint;
 }
 
-SDINTERNAL SDStatus
-SDPolygonX_AddEdge(SDPolygonX *_this,
-                   SDPointX   *point1,
-                   SDPointX   *point2)
+CINTERNAL CStatus
+CPolygonX_AddEdge(CPolygonX *_this,
+                   CPointX   *point1,
+                   CPointX   *point2)
 {
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((point1 != 0));
-	SDASSERT((point2 != 0));
+	CASSERT((_this  != 0));
+	CASSERT((point1 != 0));
+	CASSERT((point2 != 0));
 
 	/* add the edge, if it isn't horizontal */
-	if(SDPoint_Y(*point1) != SDPoint_Y(*point2))
+	if(CPoint_Y(*point1) != CPoint_Y(*point2))
 	{
 		/* get the edge count */
-		const SDUInt32 count = _this->count;
+		const CUInt32 count = _this->count;
 
 		/* get the capacity */
-		const SDUInt32 capacity = _this->capacity;
+		const CUInt32 capacity = _this->capacity;
 
 		/* ensure the capacity of edge list */
 		if(count >= capacity)
 		{
 			/* declarations */
-			SDEdgeX  *tmp;
-			SDUInt32  newSize;
-			SDUInt32  newCapacity;
+			CEdgeX  *tmp;
+			CUInt32  newSize;
+			CUInt32  newCapacity;
 
 			/* calculate the new capacity */
 			newCapacity = ((capacity + 32) & ~31);
@@ -130,7 +130,7 @@ SDPolygonX_AddEdge(SDPolygonX *_this,
 			if(capacity != 0)
 			{
 				/* calculate a new capacity candidate */
-				const SDUInt32 newCapacity2 = (capacity << 1);
+				const CUInt32 newCapacity2 = (capacity << 1);
 
 				/* use the larger candidate capacity */
 				if(newCapacity < newCapacity2)
@@ -140,12 +140,12 @@ SDPolygonX_AddEdge(SDPolygonX *_this,
 			}
 
 			/* calculate the new points size */
-			newSize = (newCapacity  * sizeof(SDEdgeX));
+			newSize = (newCapacity  * sizeof(CEdgeX));
 
 			/* create the new edge list */
-			if(!(tmp = (SDEdgeX *)SDRealloc(_this->edges, newSize)))
+			if(!(tmp = (CEdgeX *)CRealloc(_this->edges, newSize)))
 			{
-				return SDStatus_OutOfMemory;
+				return CStatus_OutOfMemory;
 			}
 
 			/* update the capacity */
@@ -158,20 +158,20 @@ SDPolygonX_AddEdge(SDPolygonX *_this,
 		/* add the new edge */
 		{
 			/* get the current edge */
-			SDEdgeX *edge = (_this->edges + count);
+			CEdgeX *edge = (_this->edges + count);
 
 			/* set the edge properties based on the point order */
-			if(SDPoint_Y(*point1) < SDPoint_Y(*point2))
+			if(CPoint_Y(*point1) < CPoint_Y(*point2))
 			{
-				SDEdge_Point1(*edge)    = *point1;
-				SDEdge_Point2(*edge)    = *point2;
-				SDEdge_Clockwise(*edge) =  1;
+				CEdge_Point1(*edge)    = *point1;
+				CEdge_Point2(*edge)    = *point2;
+				CEdge_Clockwise(*edge) =  1;
 			}
 			else
 			{
-				SDEdge_Point1(*edge)    = *point2;
-				SDEdge_Point2(*edge)    = *point1;
-				SDEdge_Clockwise(*edge) =  0;
+				CEdge_Point1(*edge)    = *point2;
+				CEdge_Point2(*edge)    = *point1;
+				CEdge_Clockwise(*edge) =  0;
 			}
 		}
 
@@ -180,19 +180,19 @@ SDPolygonX_AddEdge(SDPolygonX *_this,
 	}
 
 	/* update the current point */
-	SDPolygonX_MoveTo(_this, point2);
+	CPolygonX_MoveTo(_this, point2);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDPolygonX_MoveTo(SDPolygonX *_this,
-                  SDPointX   *point)
+CINTERNAL CStatus
+CPolygonX_MoveTo(CPolygonX *_this,
+                  CPointX   *point)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((point != 0));
+	CASSERT((_this != 0));
+	CASSERT((point != 0));
 
 	/* set the first point, as needed */
 	if(!(_this->hasCurrentPoint))
@@ -205,42 +205,42 @@ SDPolygonX_MoveTo(SDPolygonX *_this,
 	_this->hasCurrentPoint = 1;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDPolygonX_LineTo(SDPolygonX *_this,
-                  SDPointX   *point)
+CINTERNAL CStatus
+CPolygonX_LineTo(CPolygonX *_this,
+                  CPointX   *point)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((point != 0));
+	CASSERT((_this != 0));
+	CASSERT((point != 0));
 
 	/* add an edge, if possible */
 	if(_this->hasCurrentPoint)
 	{
-		return SDPolygonX_AddEdge(_this, &(_this->currentPoint), point);
+		return CPolygonX_AddEdge(_this, &(_this->currentPoint), point);
 	}
 
 	/* move to the point */
-	SDPolygonX_MoveTo(_this, point);
+	CPolygonX_MoveTo(_this, point);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL SDStatus
-SDPolygonX_Close(SDPolygonX *_this)
+CINTERNAL CStatus
+CPolygonX_Close(CPolygonX *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* close the polygon, as needed */
 	if(_this->hasCurrentPoint)
 	{
 		/* add an edge from the last point to the first */
-		SDStatus_Check
-			(SDPolygonX_AddEdge
+		CStatus_Check
+			(CPolygonX_AddEdge
 				(_this, &(_this->currentPoint), &(_this->firstPoint)));
 
 		/* reset current point flag */
@@ -248,7 +248,7 @@ SDPolygonX_Close(SDPolygonX *_this)
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

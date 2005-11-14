@@ -1,5 +1,5 @@
 /*
- * SDTrapezoids.c - Trapezoids implementation.
+ * CTrapezoids.c - Trapezoids implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -25,22 +25,22 @@
 extern "C" {
 #endif
 
-typedef SDInt64 SDFixedL;
-typedef SDInt64 SDFixedL48;
+typedef CInt64 CFixedL;
+typedef CInt64 CFixedL48;
 
-typedef struct _tagSDIntersectionInfo SDIntersectionInfo;
-struct _tagSDIntersectionInfo
+typedef struct _tagCIntersectionInfo CIntersectionInfo;
+struct _tagCIntersectionInfo
 {
-	SDFixed intersection;
-	SDBool  ok;
+	CFixed intersection;
+	CBool  ok;
 };
 
 /* Initialize these trapezoids. */
-SDINTERNAL void
-SDTrapezoids_Initialize(SDTrapezoids *_this)
+CINTERNAL void
+CTrapezoids_Initialize(CTrapezoids *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the trapezoids */
 	_this->count      = 0;
@@ -49,16 +49,16 @@ SDTrapezoids_Initialize(SDTrapezoids *_this)
 }
 
 /* Finalize these trapezoids. */
-SDINTERNAL void
-SDTrapezoids_Finalize(SDTrapezoids *_this)
+CINTERNAL void
+CTrapezoids_Finalize(CTrapezoids *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the trapezoids */
 	{
 		/* get the trapezoid list */
-		SDTrapezoidX *trapezoids = _this->trapezoids;
+		CTrapezoidX *trapezoids = _this->trapezoids;
 
 		/* finalize, as needed */
 		if(trapezoids)
@@ -69,40 +69,40 @@ SDTrapezoids_Finalize(SDTrapezoids *_this)
 			_this->trapezoids = 0;
 
 			/* free the trapezoid list */
-			SDFree(trapezoids);
+			CFree(trapezoids);
 		}
 	}
 }
 
 /* Reset these trapezoids. */
-SDINTERNAL void
-SDTrapezoids_Reset(SDTrapezoids *_this)
+CINTERNAL void
+CTrapezoids_Reset(CTrapezoids *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* reset the trapezoids */
 	_this->count = 0;
 }
 
 /* Add a trapezoid. */
-static SDStatus
-SDTrapezoids_AddTrapezoid(SDTrapezoids  *_this,
-                          SDFixed        top,
-                          SDFixed        bottom,
-                          const SDLineX *left,
-                          const SDLineX *right)
+static CStatus
+CTrapezoids_AddTrapezoid(CTrapezoids  *_this,
+                          CFixed        top,
+                          CFixed        bottom,
+                          const CLineX *left,
+                          const CLineX *right)
 {
 	/* declarations */
-	SDUInt32 count;
+	CUInt32 count;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((left  != 0));
-	SDASSERT((right != 0));
+	CASSERT((_this != 0));
+	CASSERT((left  != 0));
+	CASSERT((right != 0));
 
 	/* bail out now if the trapezoid is degenerate */
-	SDStatus_Require((top != bottom), SDStatus_OK);
+	CStatus_Require((top != bottom), CStatus_OK);
 
 	/* get the trapezoid count */
 	count = _this->count;
@@ -111,12 +111,12 @@ SDTrapezoids_AddTrapezoid(SDTrapezoids  *_this,
 	if(count >= _this->capacity)
 	{
 		/* declarations */
-		SDTrapezoidX *tmp;
-		SDUInt32  newSize;
-		SDUInt32  newCapacity;
+		CTrapezoidX *tmp;
+		CUInt32  newSize;
+		CUInt32  newCapacity;
 
 		/* get the capacity */
-		const SDUInt32 capacity = _this->capacity;
+		const CUInt32 capacity = _this->capacity;
 
 		/* calculate the new capacity */
 		newCapacity = ((capacity + 32) & ~31);
@@ -125,7 +125,7 @@ SDTrapezoids_AddTrapezoid(SDTrapezoids  *_this,
 		if(capacity != 0)
 		{
 			/* calculate a new capacity candidate */
-			const SDUInt32 newCapacity2 = (capacity << 1);
+			const CUInt32 newCapacity2 = (capacity << 1);
 
 			/* use the larger candidate capacity */
 			if(newCapacity < newCapacity2)
@@ -135,12 +135,12 @@ SDTrapezoids_AddTrapezoid(SDTrapezoids  *_this,
 		}
 
 		/* calculate the new points size */
-		newSize = (newCapacity * sizeof(SDTrapezoidX));
+		newSize = (newCapacity * sizeof(CTrapezoidX));
 
 		/* create the new trapezoid list */
-		if(!(tmp = (SDTrapezoidX *)SDRealloc(_this->trapezoids, newSize)))
+		if(!(tmp = (CTrapezoidX *)CRealloc(_this->trapezoids, newSize)))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* update the capacity */
@@ -152,59 +152,59 @@ SDTrapezoids_AddTrapezoid(SDTrapezoids  *_this,
 
 	/* add the new trapezoid */
 	{
-		SDTrapezoidX *trapezoid        = (_this->trapezoids + count);
-		SDTrapezoid_Top(*trapezoid)    =  top;
-		SDTrapezoid_Bottom(*trapezoid) =  bottom;
-		SDTrapezoid_Left(*trapezoid)   = *left;
-		SDTrapezoid_Right(*trapezoid)  = *right;
+		CTrapezoidX *trapezoid        = (_this->trapezoids + count);
+		CTrapezoid_Top(*trapezoid)    =  top;
+		CTrapezoid_Bottom(*trapezoid) =  bottom;
+		CTrapezoid_Left(*trapezoid)   = *left;
+		CTrapezoid_Right(*trapezoid)  = *right;
 	}
 
 	/* update the trapezoid count */
 	_this->count = (count + 1);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Compare the tops of two edges. */
 static int
-SDEdgeX_CompareTop(const void *_a,
+CEdgeX_CompareTop(const void *_a,
                    const void *_b)
 {
 	/* get the edges */
-	const SDEdgeX *a = (const SDEdgeX *)_a;
-	const SDEdgeX *b = (const SDEdgeX *)_b;
+	const CEdgeX *a = (const CEdgeX *)_a;
+	const CEdgeX *b = (const CEdgeX *)_b;
 
 	/* return comparison */
-	return (SDEdge_Y1(*a) - SDEdge_Y1(*b));
+	return (CEdge_Y1(*a) - CEdge_Y1(*b));
 }
 
 /* Compare the current x positions of two edges. */
 static int
-SDEdgeX_CompareCurrentX(const void *_a,
+CEdgeX_CompareCurrentX(const void *_a,
                         const void *_b)
 {
 	/* declarations */
 	int cmp;
 
 	/* get the edges */
-	const SDEdgeX *a = _a;
-	const SDEdgeX *b = _b;
+	const CEdgeX *a = _a;
+	const CEdgeX *b = _b;
 
 	/* compare on current x position */
-	cmp = (int)(SDEdge_CurrentX(*a) - SDEdge_CurrentX(*b));
+	cmp = (int)(CEdge_CurrentX(*a) - CEdge_CurrentX(*b));
 
 	/* compare on slope, if current x positions are equal */
 	if(cmp == 0)
 	{
 		/* calculate the vectors */
-		const SDFixedL48 aVectorX = (SDEdge_X2(*a) - SDEdge_X1(*a));
-		const SDFixedL48 aVectorY = (SDEdge_Y2(*a) - SDEdge_Y1(*a));
-		const SDFixedL48 bVectorX = (SDEdge_X2(*b) - SDEdge_X1(*b));
-		const SDFixedL48 bVectorY = (SDEdge_Y2(*b) - SDEdge_Y1(*b));
+		const CFixedL48 aVectorX = (CEdge_X2(*a) - CEdge_X1(*a));
+		const CFixedL48 aVectorY = (CEdge_Y2(*a) - CEdge_Y1(*a));
+		const CFixedL48 bVectorX = (CEdge_X2(*b) - CEdge_X1(*b));
+		const CFixedL48 bVectorY = (CEdge_Y2(*b) - CEdge_Y1(*b));
 
 		/* return the slope comparison (positive is clockwise) */
-		return (int)SDMath_CrossProduct(bVectorX, bVectorY, aVectorX, aVectorY);
+		return (int)CMath_CrossProduct(bVectorX, bVectorY, aVectorX, aVectorY);
 	}
 
 	/* return comparison */
@@ -212,19 +212,19 @@ SDEdgeX_CompareCurrentX(const void *_a,
 }
 
 /* Calculate the intersection of the given line segments. */
-static SDMATH SDIntersectionInfo
-SDLineX_CalculateIntersection(SDLineX a, SDLineX b)
+static CMATH CIntersectionInfo
+CLineX_CalculateIntersection(CLineX a, CLineX b)
 {
 	/* declarations */
-	SDIntersectionInfo info;
+	CIntersectionInfo info;
 
 	/* calculate the inverse slopes */
-	const SDDouble sA =
-		(SDFixed_ToDouble(SDLine_X2(a) - SDLine_X1(a)) /
-		 SDFixed_ToDouble(SDLine_Y2(a) - SDLine_Y1(a)));
-	const SDDouble sB =
-		(SDFixed_ToDouble(SDLine_X2(b) - SDLine_X1(b)) /
-		 SDFixed_ToDouble(SDLine_Y2(b) - SDLine_Y1(b)));
+	const CDouble sA =
+		(CFixed_ToDouble(CLine_X2(a) - CLine_X1(a)) /
+		 CFixed_ToDouble(CLine_Y2(a) - CLine_Y1(a)));
+	const CDouble sB =
+		(CFixed_ToDouble(CLine_X2(b) - CLine_X1(b)) /
+		 CFixed_ToDouble(CLine_Y2(b) - CLine_Y1(b)));
 
 	/* calculate the intersection, if possible */
 	if(sA == sB)
@@ -234,15 +234,15 @@ SDLineX_CalculateIntersection(SDLineX a, SDLineX b)
 	else
 	{
 		/* calculate the intercepts */
-		const SDDouble iA =
-			(SDFixed_ToDouble(SDLine_X1(a)) -
-			 (sA * SDFixed_ToDouble(SDLine_Y1(a))));
-		const SDDouble iB =
-			(SDFixed_ToDouble(SDLine_X1(b)) -
-			 (sB * SDFixed_ToDouble(SDLine_Y1(b))));
+		const CDouble iA =
+			(CFixed_ToDouble(CLine_X1(a)) -
+			 (sA * CFixed_ToDouble(CLine_Y1(a))));
+		const CDouble iB =
+			(CFixed_ToDouble(CLine_X1(b)) -
+			 (sB * CFixed_ToDouble(CLine_Y1(b))));
 
 		/* calculate the intersection */
-		info.intersection = SDDouble_ToFixed((iB - iA) / (sA - sB));
+		info.intersection = CDouble_ToFixed((iB - iA) / (sA - sB));
 
 		/* flag that we have an intersection */
 		info.ok = 1;
@@ -253,57 +253,57 @@ SDLineX_CalculateIntersection(SDLineX a, SDLineX b)
 }
 
 /* Calculate the x position of the line at the given y position. */
-static SDMATH SDFixed
-SDLineX_CalculateCurrentX(SDLineX line, SDFixed y)
+static CMATH CFixed
+CLineX_CalculateCurrentX(CLineX line, CFixed y)
 {
 	/* declarations */
-	SDFixed dx;
+	CFixed dx;
 
 	/* calculate the x vector */
-	const SDFixed vectorX = (SDLine_X2(line) - SDLine_X1(line));
+	const CFixed vectorX = (CLine_X2(line) - CLine_X1(line));
 
 	/* calculate the y vector */
-	const SDFixed vectorY = (SDLine_Y2(line) - SDLine_Y1(line));
+	const CFixed vectorY = (CLine_Y2(line) - CLine_Y1(line));
 
 	/* calculate the y delta */
-	y -= SDLine_Y1(line);
+	y -= CLine_Y1(line);
 
 	/* calculate the x delta */
-	dx = (((SDFixedL48)vectorX * (SDFixedL48)(y)) / vectorY);
+	dx = (((CFixedL48)vectorX * (CFixedL48)(y)) / vectorY);
 
 	/* calculate and return the current x position */
-	return (SDLine_X1(line) + dx);
+	return (CLine_X1(line) + dx);
 }
 
 /* Tessellate the polygon into trapezoids (corrupts polygon). */
-SDINTERNAL SDStatus
-SDTrapezoids_TessellatePolygon(SDTrapezoids *_this,
-                               SDPolygonX   *polygon,
-                               SDFillMode    fillMode)
+CINTERNAL CStatus
+CTrapezoids_TessellatePolygon(CTrapezoids *_this,
+                               CPolygonX   *polygon,
+                               CFillMode    fillMode)
 {
 	/* declarations */
-	SDFixed   top;
-	SDUInt32  edgeCount;
-	SDEdgeX  *edges;
-	SDEdgeX  *active;
-	SDEdgeX  *inactive;
-	SDEdgeX  *end;
+	CFixed   top;
+	CUInt32  edgeCount;
+	CEdgeX  *edges;
+	CEdgeX  *active;
+	CEdgeX  *inactive;
+	CEdgeX  *end;
 
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((polygon != 0));
+	CASSERT((_this   != 0));
+	CASSERT((polygon != 0));
 
 	/* get the edge count */
-	edgeCount = SDPolygon_EdgeCount(*polygon);
+	edgeCount = CPolygon_EdgeCount(*polygon);
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require((edgeCount != 0), SDStatus_OK);
+	CStatus_Require((edgeCount != 0), CStatus_OK);
 
 	/* get the edges */
-	edges = SDPolygon_Edges(*polygon);
+	edges = CPolygon_Edges(*polygon);
 
 	/* sort the edges by top */
-	qsort(edges, edgeCount, sizeof(SDEdgeX), SDEdgeX_CompareTop);
+	qsort(edges, edgeCount, sizeof(CEdgeX), CEdgeX_CompareTop);
 
 	/* get the active edge pointer */
 	active = edges;
@@ -315,58 +315,58 @@ SDTrapezoids_TessellatePolygon(SDTrapezoids *_this,
 	end = (edges + edgeCount);
 
 	/* get the starting y position */
-	top = SDEdge_Y1(*edges);
+	top = CEdge_Y1(*edges);
 
 	/* process all the edges */
 	while(active != end)
 	{
 		/* declarations */
-		SDEdgeX *curr;
-		SDFixed  bottom;
+		CEdgeX *curr;
+		CFixed  bottom;
 
 		/* find inactive edges */
-		while(inactive != end && SDEdge_Y1(*inactive) <= top) { ++inactive; }
+		while(inactive != end && CEdge_Y1(*inactive) <= top) { ++inactive; }
 
 		/* calculate the current x positions of the active edges */
 		for(curr = active; curr != inactive; ++curr)
 		{
-			SDEdge_CurrentX(*curr) =
-				SDLineX_CalculateCurrentX
-					(SDEdge_Line(*curr), top);
+			CEdge_CurrentX(*curr) =
+				CLineX_CalculateCurrentX
+					(CEdge_Line(*curr), top);
 		}
 
 		/* sort the edges by their current x position */
 		qsort
-			(active, (inactive - active), sizeof(SDEdgeX),
-			 SDEdgeX_CompareCurrentX);
+			(active, (inactive - active), sizeof(CEdgeX),
+			 CEdgeX_CompareCurrentX);
 
 		/* set the bottom position to the default */
-		bottom = SDEdge_Y2(*active);
+		bottom = CEdge_Y2(*active);
 
 		/* search for the bottom position among active edges */
 		{
 			/* get the last active edge */
-			const SDEdgeX *last = (inactive - 1);
+			const CEdgeX *last = (inactive - 1);
 
 			/* check the last active edge for the bottom position */
-			if(SDEdge_Y2(*last) < bottom) { bottom = SDEdge_Y2(*last); }
+			if(CEdge_Y2(*last) < bottom) { bottom = CEdge_Y2(*last); }
 
 			/* search the active edges */
 			for(curr = active; curr != last; ++curr)
 			{
 				/* get the next active edge */
-				const SDEdgeX *next = (curr + 1);
+				const CEdgeX *next = (curr + 1);
 
 				/* set the bottom position, based on vertex */
-				if(SDEdge_Y2(*curr) < bottom) { bottom = SDEdge_Y2(*curr); }
+				if(CEdge_Y2(*curr) < bottom) { bottom = CEdge_Y2(*curr); }
 
 				/* set the bottom position, based on intersection */
-				if(SDEdge_CurrentX(*curr) != SDEdge_CurrentX(*next))
+				if(CEdge_CurrentX(*curr) != CEdge_CurrentX(*next))
 				{
 					/* calculate the intersection ceiling */
-					const SDIntersectionInfo info =
-						SDLineX_CalculateIntersection
-							(SDEdge_Line(*curr), SDEdge_Line(*next));
+					const CIntersectionInfo info =
+						CLineX_CalculateIntersection
+							(CEdge_Line(*curr), CEdge_Line(*next));
 
 					/* set the bottom position, as needed */
 					if(info.ok &&
@@ -380,19 +380,19 @@ SDTrapezoids_TessellatePolygon(SDTrapezoids *_this,
 		}
 
 		/* set the bottom position, based on next inactive vertex */
-		if(inactive != end && SDEdge_Y1(*inactive) < bottom)
+		if(inactive != end && CEdge_Y1(*inactive) < bottom)
 		{
-			bottom = SDEdge_Y1(*inactive);
+			bottom = CEdge_Y1(*inactive);
 		}
 
 		/* generate trapezoids from the active edges */
-		if(fillMode == SDFillMode_Alternate)
+		if(fillMode == CFillMode_Alternate)
 		{
 			/* declarations */
-			SDInt32 inside;
+			CInt32 inside;
 
 			/* get the last active edge */
-			const SDEdgeX *last = (inactive - 1);
+			const CEdgeX *last = (inactive - 1);
 
 			/* set the insideness to the default */
 			inside = 0;
@@ -401,7 +401,7 @@ SDTrapezoids_TessellatePolygon(SDTrapezoids *_this,
 			for(curr = active; curr != last; ++curr)
 			{
 				/* get the next active edge */
-				const SDEdgeX *next = (curr + 1);
+				const CEdgeX *next = (curr + 1);
 
 				/* calculate the insideness of the current edge */
 				inside = ((inside + 1) & 1);
@@ -410,22 +410,22 @@ SDTrapezoids_TessellatePolygon(SDTrapezoids *_this,
 				if(inside != 0)
 				{
 					/* add the trapezoid */
-					SDStatus_Check
-						(SDTrapezoids_AddTrapezoid
+					CStatus_Check
+						(CTrapezoids_AddTrapezoid
 							(_this,
 							 top, bottom,
-							 &SDEdge_Line(*curr),
-							 &SDEdge_Line(*next)));
+							 &CEdge_Line(*curr),
+							 &CEdge_Line(*next)));
 				}
 			}
 		}
 		else
 		{
 			/* declarations */
-			SDInt32 inside;
+			CInt32 inside;
 
 			/* get the last active edge */
-			const SDEdgeX *last = (inactive - 1);
+			const CEdgeX *last = (inactive - 1);
 
 			/* set the insideness to the default */
 			inside = 0;
@@ -434,21 +434,21 @@ SDTrapezoids_TessellatePolygon(SDTrapezoids *_this,
 			for(curr = active; curr != last; ++curr)
 			{
 				/* get the next active edge */
-				const SDEdgeX *next = (curr + 1);
+				const CEdgeX *next = (curr + 1);
 
 				/* calculate the insideness of the current edge */
-				inside = (inside + (SDEdge_Clockwise(*curr) ? 1 : -1));
+				inside = (inside + (CEdge_Clockwise(*curr) ? 1 : -1));
 
 				/* add the trapezoid, if it's inside */
 				if(inside != 0)
 				{
 					/* add the trapezoid */
-					SDStatus_Check
-						(SDTrapezoids_AddTrapezoid
+					CStatus_Check
+						(CTrapezoids_AddTrapezoid
 							(_this,
 							 top, bottom,
-							 &SDEdge_Line(*curr),
-							 &SDEdge_Line(*next)));
+							 &CEdge_Line(*curr),
+							 &CEdge_Line(*next)));
 				}
 			}
 		}
@@ -457,13 +457,13 @@ SDTrapezoids_TessellatePolygon(SDTrapezoids *_this,
 		for(curr = active; curr != inactive; ++curr)
 		{
 			/* remove the current edge, as needed */
-			if(SDEdge_Y2(*curr) <= bottom)
+			if(CEdge_Y2(*curr) <= bottom)
 			{
 				/* calculate the number of bytes to move */
-				const SDUInt32 n = ((curr - active) * sizeof(SDEdgeX));
+				const CUInt32 n = ((curr - active) * sizeof(CEdgeX));
 
 				/* remove the current edge from the edge list */
-				SDMemMove((active + 1), active, n);
+				CMemMove((active + 1), active, n);
 
 				/* update active edge pointer */
 				++active;
@@ -475,39 +475,39 @@ SDTrapezoids_TessellatePolygon(SDTrapezoids *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Fill the path to these trapezoids. */
-SDINTERNAL SDStatus
-SDTrapezoids_Fill(SDTrapezoids *_this,
-                  SDPointF     *points,
-                  SDByte       *types,
-                  SDUInt32      count,
-                  SDFillMode    fillMode)
+CINTERNAL CStatus
+CTrapezoids_Fill(CTrapezoids *_this,
+                  CPointF     *points,
+                  CByte       *types,
+                  CUInt32      count,
+                  CFillMode    fillMode)
 {
 	/* declarations */
-	SDStatus status;
-	SDFiller filler;
+	CStatus status;
+	CFiller filler;
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require((count != 0), SDStatus_OK);
+	CStatus_Require((count != 0), CStatus_OK);
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((points != 0));
-	SDASSERT((types  != 0));
+	CASSERT((_this  != 0));
+	CASSERT((points != 0));
+	CASSERT((types  != 0));
 
 	/* initialize the filler */
-	SDFiller_Initialize(&filler);
+	CFiller_Initialize(&filler);
 
 	/* fill to the trapezoids */
 	status =
-		SDFiller_ToTrapezoids
+		CFiller_ToTrapezoids
 			(&filler, _this, points, types, count, fillMode);
 
 	/* finalize the filler */
-	SDFiller_Finalize(&filler);
+	CFiller_Finalize(&filler);
 
 	/* return status */
 	return status;

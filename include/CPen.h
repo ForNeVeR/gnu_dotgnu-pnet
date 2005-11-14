@@ -1,5 +1,5 @@
 /*
- * SDPen.h - Pen header.
+ * CPen.h - Pen header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_PEN_H_
-#define _SD_PEN_H_
+#ifndef _C_PEN_H_
+#define _C_PEN_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,33 +27,33 @@
 extern "C" {
 #endif
 
-struct _tagSDPen
+struct _tagCPen
 {
-	SDFloat             dashOffset;
-	SDFloat             miterLimit;
-	SDFloat             width;
-	SDFloat            *compoundArray;
-	SDFloat            *dashPattern;
-	SDUInt32            compoundCount;
-	SDUInt32            dashCount;
-	SDAffineTransformF  transform;
-	SDDashCap           dashCap;
-	SDDashStyle         dashStyle;
-	SDBrush            *brush;
-	SDCustomLineCap    *customEndCap;
-	SDCustomLineCap    *customStartCap;
-	SDLineCap           endCap;
-	SDLineCap           startCap;
-	SDLineJoin          lineJoin;
-	SDPenAlignment      alignment;
+	CFloat             dashOffset;
+	CFloat             miterLimit;
+	CFloat             width;
+	CFloat            *compoundArray;
+	CFloat            *dashPattern;
+	CUInt32            compoundCount;
+	CUInt32            dashCount;
+	CAffineTransformF  transform;
+	CDashCap           dashCap;
+	CDashStyle         dashStyle;
+	CBrush            *brush;
+	CCustomLineCap    *customEndCap;
+	CCustomLineCap    *customStartCap;
+	CLineCap           endCap;
+	CLineCap           startCap;
+	CLineJoin          lineJoin;
+	CPenAlignment      alignment;
 };
 
-SDINTERNAL SDStatus
-SDPen_GetPattern(SDPen     *_this,
-                 SDPattern *pattern);
+CINTERNAL CStatus
+CPen_GetPattern(CPen     *_this,
+                CPattern *pattern);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_PEN_H_ */
+#endif /* _C_PEN_H_ */

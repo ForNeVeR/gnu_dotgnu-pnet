@@ -1,5 +1,5 @@
 /*
- * SDRegionInterpreter.h - Region interpreter header.
+ * CRegionInterpreter.h - Region interpreter header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_REGIONINTERPRETER_H_
-#define _SD_REGIONINTERPRETER_H_
+#ifndef _C_REGIONINTERPRETER_H_
+#define _C_REGIONINTERPRETER_H_
 
 #include "CRegionStack.h"
 
@@ -27,40 +27,40 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDRegionInterpreter SDRegionInterpreter;
-typedef struct _tagSDRegionInterpreterClass SDRegionInterpreterClass;
+typedef struct _tagCRegionInterpreter CRegionInterpreter;
+typedef struct _tagCRegionInterpreterClass CRegionInterpreterClass;
 
-struct _tagSDRegionInterpreter
+struct _tagCRegionInterpreter
 {
-	const SDRegionInterpreterClass *_class;
-	SDRegionStack                   stack;
+	const CRegionInterpreterClass *_class;
+	CRegionStack                   stack;
 };
 
-struct _tagSDRegionInterpreterClass
+struct _tagCRegionInterpreterClass
 {
-	SDStatus (*Data)(SDRegionInterpreter  *_this,
-	                 SDRegionNode         *node,
-	                 void                **data);
-	SDStatus (*Op)(SDRegionInterpreter  *_this,
-	               SDRegionOp           *op,
-	               void                 *left,
-	               void                 *right,
-	               void                **data);
+	CStatus (*Data)(CRegionInterpreter  *_this,
+	                CRegionNode         *node,
+	                void               **data);
+	CStatus (*Op)(CRegionInterpreter  *_this,
+	              CRegionOp           *op,
+	              void                *left,
+	              void                *right,
+	              void               **data);
 	void (*FreeData)(void *data);
 };
 
-SDINTERNAL void
-SDRegionInterpreter_Initialize(SDRegionInterpreter            *_this,
-                               const SDRegionInterpreterClass *_class);
-SDINTERNAL void
-SDRegionInterpreter_Finalize(SDRegionInterpreter *_this);
-SDINTERNAL SDStatus
-SDRegionInterpreter_Interpret(SDRegionInterpreter  *_this,
-                              SDRegionNode         *head,
-                              void                **data);
+CINTERNAL void
+CRegionInterpreter_Initialize(CRegionInterpreter            *_this,
+                              const CRegionInterpreterClass *_class);
+CINTERNAL void
+CRegionInterpreter_Finalize(CRegionInterpreter *_this);
+CINTERNAL CStatus
+CRegionInterpreter_Interpret(CRegionInterpreter  *_this,
+                             CRegionNode         *head,
+                             void               **data);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_REGIONINTERPRETER_H_ */
+#endif /* _C_REGIONINTERPRETER_H_ */

@@ -1,5 +1,5 @@
 /*
- * SDBitmap.h - Bitmap header.
+ * CBitmap.h - Bitmap header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_BITMAP_H_
-#define _SD_BITMAP_H_
+#ifndef _C_BITMAP_H_
+#define _C_BITMAP_H_
 
 #include "CImage.h"
 
@@ -33,4 +33,4 @@ extern "C" {
 };
 #endif
 
-#endif /* _SD_BITMAP_H_ */
+#endif /* _C_BITMAP_H_ */

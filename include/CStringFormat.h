@@ -1,5 +1,5 @@
 /*
- * SDStringFormat.h - String format header.
+ * CStringFormat.h - String format header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_STRINGFORMAT_H_
-#define _SD_STRINGFORMAT_H_
+#ifndef _C_STRINGFORMAT_H_
+#define _C_STRINGFORMAT_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,24 +27,24 @@
 extern "C" {
 #endif
 
-struct _tagSDStringFormat
+struct _tagCStringFormat
 {
-	SDStringAlignment   alignment;
-	SDStringAlignment   lineAlignment;
-	SDStringFormatFlag  formatFlags;
-	SDHotkeyPrefix      hotkeyPrefix;
-	SDStringTrimming    trimming;
-	SDDigitSubstitute   method;
-	SDLanguageID        language;
-	SDFloat             firstTabOffset;
-	SDFloat            *tabStops;
-	SDUInt32            tabStopCount;
-	SDCharacterRange   *characterRanges;
-	SDUInt32            characterRangeCount;
+	CStringAlignment   alignment;
+	CStringAlignment   lineAlignment;
+	CStringFormatFlag  formatFlags;
+	CHotkeyPrefix      hotkeyPrefix;
+	CStringTrimming    trimming;
+	CDigitSubstitute   method;
+	CLanguageID        language;
+	CFloat             firstTabOffset;
+	CFloat            *tabStops;
+	CUInt32            tabStopCount;
+	CCharacterRange   *characterRanges;
+	CUInt32            characterRangeCount;
 };
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_STRINGFORMAT_H_ */
+#endif /* _C_STRINGFORMAT_H_ */

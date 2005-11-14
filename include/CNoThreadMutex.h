@@ -1,5 +1,5 @@
 /*
- * SDNoThreadMutex.h - No thread mutex header.
+ * CNoThreadMutex.h - No thread mutex header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_NOTHREADMUTEX_H_
-#define _SD_NOTHREADMUTEX_H_
+#ifndef _C_NOTHREADMUTEX_H_
+#define _C_NOTHREADMUTEX_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,16 +27,16 @@
 extern "C" {
 #endif
 
-typedef SDUInt32 SDMutex;
-static const SDMutex SDMutex_StaticInitializer = 0;
+typedef CUInt32 CMutex;
+static const CMutex CMutex_StaticInitializer = 0;
 
-#define SDMutex_Lock(_this)
-#define SDMutex_Unlock(_this)
-#define SDMutex_Create(_this) (SDStatus_OK)
-#define SDMutex_Destroy(_this)
+#define CMutex_Lock(_this)
+#define CMutex_Unlock(_this)
+#define CMutex_Create(_this) (CStatus_OK)
+#define CMutex_Destroy(_this)
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_PTHREADMUTEX_H_ */
+#endif /* _C_PTHREADMUTEX_H_ */

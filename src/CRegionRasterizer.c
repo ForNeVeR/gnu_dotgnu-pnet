@@ -1,5 +1,5 @@
 /*
- * SDRegionRasterizer.c - Region rasterizer implementation.
+ * CRegionRasterizer.c - Region rasterizer implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-static const pixman_operator_t SDRegionType_PixmanOperator[] =
+static const pixman_operator_t CRegionType_PixmanOperator[] =
 {
 	PIXMAN_OPERATOR_SRC,
 	PIXMAN_OPERATOR_IN,
@@ -37,14 +37,14 @@ static const pixman_operator_t SDRegionType_PixmanOperator[] =
 	PIXMAN_OPERATOR_OUT_REVERSE
 };
 
-static SDStatus
-SDRegionRasterizer_CreateMaskSimple(SDRegionRasterizer  *_this,
-                                    SDByte               value,
+static CStatus
+CRegionRasterizer_CreateMaskSimple(CRegionRasterizer  *_this,
+                                    CByte               value,
                                     pixman_image_t     **mask)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((mask  != 0));
+	CASSERT((_this != 0));
+	CASSERT((mask  != 0));
 
 	/* create the mask */
 	*mask =
@@ -52,7 +52,7 @@ SDRegionRasterizer_CreateMaskSimple(SDRegionRasterizer  *_this,
 			(_this->format, _this->width, _this->height);
 
 	/* ensure we have a mask */
-	SDStatus_Require((*mask != 0), SDStatus_OutOfMemory);
+	CStatus_Require((*mask != 0), CStatus_OutOfMemory);
 
 	/* ensure we have the size */
 	if(_this->size == -1)
@@ -61,93 +61,93 @@ SDRegionRasterizer_CreateMaskSimple(SDRegionRasterizer  *_this,
 	}
 
 	/* initialize the mask */
-	SDMemSet(pixman_image_get_data(*mask), value, _this->size);
+	CMemSet(pixman_image_get_data(*mask), value, _this->size);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDRegionRasterizer_CreateMaskPath(SDRegionRasterizer  *_this,
-                                  const SDPointF      *points,
-                                  const SDByte        *types,
-                                  SDUInt32             count,
-                                  SDFillMode           fillMode,
+static CStatus
+CRegionRasterizer_CreateMaskPath(CRegionRasterizer  *_this,
+                                  const CPointF      *points,
+                                  const CByte        *types,
+                                  CUInt32             count,
+                                  CFillMode           fillMode,
                                   pixman_image_t     **mask)
 {
 	/* declarations */
-	SDTrapezoidX *trapezoids;
-	SDUInt32      tcount;
+	CTrapezoidX *trapezoids;
+	CUInt32      tcount;
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((points != 0));
-	SDASSERT((types  != 0));
-	SDASSERT((mask   != 0));
+	CASSERT((_this  != 0));
+	CASSERT((points != 0));
+	CASSERT((types  != 0));
+	CASSERT((mask   != 0));
 
 	/* reset filler and trapezoids */
-	SDTrapezoids_Reset(&(_this->trapezoids));
-	SDFiller_Reset(&(_this->filler));
+	CTrapezoids_Reset(&(_this->trapezoids));
+	CFiller_Reset(&(_this->filler));
 
 	/* perform path trapezoidation */
-	SDStatus_Check
-		(SDFiller_ToTrapezoids
+	CStatus_Check
+		(CFiller_ToTrapezoids
 			(&(_this->filler), &(_this->trapezoids),
 			 points, types, count, fillMode));
 
 	/* create the mask */
-	SDStatus_Check
-		(SDRegionRasterizer_CreateMaskSimple
+	CStatus_Check
+		(CRegionRasterizer_CreateMaskSimple
 			(_this, 0x00, mask));
 
 	/* get the trapezoid list and the count */
-	tcount     = SDTrapezoids_Count(_this->trapezoids);
-	trapezoids = SDTrapezoids_Trapezoids(_this->trapezoids);
+	tcount     = CTrapezoids_Count(_this->trapezoids);
+	trapezoids = CTrapezoids_Trapezoids(_this->trapezoids);
 
 	/* add the trapezoids to the mask */
 	pixman_add_trapezoids
 		(*mask, 0, 0, ((pixman_trapezoid_t *)trapezoids), tcount);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDRegionRasterizer_Data(SDRegionInterpreter  *_this,
-                        SDRegionNode         *node,
+static CStatus
+CRegionRasterizer_Data(CRegionInterpreter  *_this,
+                        CRegionNode         *node,
                         void                **data)
 {
 	/* declarations */
-	SDRegionRasterizer *rast;
+	CRegionRasterizer *rast;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((node  != 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((node  != 0));
+	CASSERT((data  != 0));
 
 	/* set the data to the default */
 	*data = 0;
 
 	/* get this as a rasterizer */
-	rast = ((SDRegionRasterizer *)_this);
+	rast = ((CRegionRasterizer *)_this);
 
 	/* rasterize based on type */
-	if(node->type == SDRegionType_Rectangle)
+	if(node->type == CRegionType_Rectangle)
 	{
 		/* declarations */
-		SDPointF      points[4];
-		SDRegionRect *rr;
+		CPointF      points[4];
+		CRegionRect *rr;
 
 		/* get the region rectangle */
-		rr = ((SDRegionRect *)node);
+		rr = ((CRegionRect *)node);
 
 		/* set the points */
-		SDRegionRect_RectToPath(points, rr->rectangle);
+		CRegionRect_RectToPath(points, rr->rectangle);
 
 		/* transform the points, as needed */
 		if(rast->transform != 0)
 		{
-			SDAffineTransformF_TransformPoints(rast->transform, points, 4);
+			CAffineTransformF_TransformPoints(rast->transform, points, 4);
 		}
 
 		/* rasterize the rectangle */
@@ -156,40 +156,40 @@ SDRegionRasterizer_Data(SDRegionInterpreter  *_this,
 			pixman_image_t *mask;
 
 			/* create the mask */
-			SDStatus_Check
-				(SDRegionRasterizer_CreateMaskPath
-					(rast, points, SDRegionRect_PathTypes, 4,
-					 SDFillMode_Alternate, &mask));
+			CStatus_Check
+				(CRegionRasterizer_CreateMaskPath
+					(rast, points, CRegionRect_PathTypes, 4,
+					 CFillMode_Alternate, &mask));
 
 			/* set the data */
 			*data = mask;
 		}
 	}
-	else if(node->type == SDRegionType_Path)
+	else if(node->type == CRegionType_Path)
 	{
 		/* declarations */
-		SDPointArrayF *array;
-		SDRegionPath  *rp;
+		CPointArrayF *array;
+		CRegionPath  *rp;
 
 		/* get the region path */
-		rp = ((SDRegionPath *)node);
+		rp = ((CRegionPath *)node);
 
 		/* get the array */
 		array = &(rast->array);
 
 		/* ensure the capacity of the array */
-		SDStatus_Check
-			(SDPointArrayF_EnsureCapacity
+		CStatus_Check
+			(CPointArrayF_EnsureCapacity
 				(array, rp->count));
 
 		/* copy the points */
-		SDMemCopy(SDPointArray_Points(*array), rp->points, rp->count);
+		CMemCopy(CPointArray_Points(*array), rp->points, rp->count);
 
 		/* transform the points, as needed */
 		if(rast->transform != 0)
 		{
-			SDAffineTransformF_TransformPoints
-				(rast->transform, SDPointArray_Points(*array), rp->count);
+			CAffineTransformF_TransformPoints
+				(rast->transform, CPointArray_Points(*array), rp->count);
 		}
 
 		/* rasterize the path */
@@ -198,23 +198,23 @@ SDRegionRasterizer_Data(SDRegionInterpreter  *_this,
 			pixman_image_t *mask;
 
 			/* create the mask */
-			SDStatus_Check
-				(SDRegionRasterizer_CreateMaskPath
-					(rast, SDPointArray_Points(*array), rp->types, rp->count,
+			CStatus_Check
+				(CRegionRasterizer_CreateMaskPath
+					(rast, CPointArray_Points(*array), rp->types, rp->count,
 					 rp->fillMode, &mask));
 
 			/* set the data */
 			*data = mask;
 		}
 	}
-	else if(node->type == SDRegionType_Infinite)
+	else if(node->type == CRegionType_Infinite)
 	{
 		/* declarations */
 		pixman_image_t *mask;
 
 		/* create the mask */
-		SDStatus_Check
-			(SDRegionRasterizer_CreateMaskSimple
+		CStatus_Check
+			(CRegionRasterizer_CreateMaskSimple
 				(rast, 0xFF, &mask));
 
 		/* set the data */
@@ -226,11 +226,11 @@ SDRegionRasterizer_Data(SDRegionInterpreter  *_this,
 		pixman_image_t *mask;
 
 		/* assertions */
-		SDASSERT((node->type == SDRegionType_Empty));
+		CASSERT((node->type == CRegionType_Empty));
 
 		/* create the mask */
-		SDStatus_Check
-			(SDRegionRasterizer_CreateMaskSimple
+		CStatus_Check
+			(CRegionRasterizer_CreateMaskSimple
 				(rast, 0x00, &mask));
 
 		/* set the data */
@@ -238,31 +238,31 @@ SDRegionRasterizer_Data(SDRegionInterpreter  *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDRegionRasterizer_Op(SDRegionInterpreter  *_this,
-                      SDRegionOp           *op,
+static CStatus
+CRegionRasterizer_Op(CRegionInterpreter  *_this,
+                      CRegionOp           *op,
                       void                 *left,
                       void                 *right,
                       void                **data)
 {
 	/* declarations */
-	SDRegionRasterizer *rast;
+	CRegionRasterizer *rast;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((op    != 0));
-	SDASSERT((left  != 0));
-	SDASSERT((right != 0));
-	SDASSERT((data  != 0));
+	CASSERT((_this != 0));
+	CASSERT((op    != 0));
+	CASSERT((left  != 0));
+	CASSERT((right != 0));
+	CASSERT((data  != 0));
 
 	/* set the data to the default */
 	*data = 0;
 
 	/* get this as a rasterizer */
-	rast = ((SDRegionRasterizer *)_this);
+	rast = ((CRegionRasterizer *)_this);
 
 	/* perform the operation */
 	{
@@ -276,7 +276,7 @@ SDRegionRasterizer_Op(SDRegionInterpreter  *_this,
 
 		/* composite the images */
 		pixman_composite
-			(SDRegionType_PixmanOperator[op->_base.type], li, 0, ri,
+			(CRegionType_PixmanOperator[op->_base.type], li, 0, ri,
 			 0, 0, 0, 0, 0, 0, rast->width, rast->height);
 
 		/* free the left operand */
@@ -287,35 +287,35 @@ SDRegionRasterizer_Op(SDRegionInterpreter  *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 static void
-SDRegionRasterizer_FreeData(void *data)
+CRegionRasterizer_FreeData(void *data)
 {
 	/* assertions */
-	SDASSERT((data != 0));
+	CASSERT((data != 0));
 
 	/* free the data */
 	pixman_image_destroy((pixman_image_t *)data);
 }
 
-static const SDRegionInterpreterClass SDRegionRasterizer_Class =
+static const CRegionInterpreterClass CRegionRasterizer_Class =
 {
-	SDRegionRasterizer_Data,
-	SDRegionRasterizer_Op,
-	SDRegionRasterizer_FreeData
+	CRegionRasterizer_Data,
+	CRegionRasterizer_Op,
+	CRegionRasterizer_FreeData
 };
 
-SDINTERNAL SDStatus
-SDRegionRasterizer_Initialize(SDRegionRasterizer *_this,
-                              SDAffineTransformF *transform,
-                              SDFloat             width,
-                              SDFloat             height,
-                              SDBool              gray)
+CINTERNAL CStatus
+CRegionRasterizer_Initialize(CRegionRasterizer *_this,
+                              CAffineTransformF *transform,
+                              CFloat             width,
+                              CFloat             height,
+                              CBool              gray)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the members */
 	{
@@ -330,16 +330,16 @@ SDRegionRasterizer_Initialize(SDRegionRasterizer *_this,
 		}
 
 		/* ensure we have a format */
-		SDStatus_Require((_this->format != 0), SDStatus_OutOfMemory);
+		CStatus_Require((_this->format != 0), CStatus_OutOfMemory);
 
 		/* initialize the trapezoids */
-		SDTrapezoids_Initialize(&(_this->trapezoids));
+		CTrapezoids_Initialize(&(_this->trapezoids));
 
 		/* initialize the filler */
-		SDFiller_Initialize(&(_this->filler));
+		CFiller_Initialize(&(_this->filler));
 
 		/* initialize the array */
-		SDPointArrayF_Initialize(&(_this->array));
+		CPointArrayF_Initialize(&(_this->array));
 
 		/* initialize the remaining members */
 		_this->transform = transform;
@@ -349,32 +349,32 @@ SDRegionRasterizer_Initialize(SDRegionRasterizer *_this,
 	}
 
 	/* initialize the base */
-	SDRegionInterpreter_Initialize
-		((SDRegionInterpreter *)_this, &SDRegionRasterizer_Class);
+	CRegionInterpreter_Initialize
+		((CRegionInterpreter *)_this, &CRegionRasterizer_Class);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL void
-SDRegionRasterizer_Finalize(SDRegionRasterizer *_this)
+CINTERNAL void
+CRegionRasterizer_Finalize(CRegionRasterizer *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the members */
 	{
 		/* finalize the base */
-		SDRegionInterpreter_Finalize((SDRegionInterpreter *)_this);
+		CRegionInterpreter_Finalize((CRegionInterpreter *)_this);
 
 		/* finalize the trapezoids */
-		SDTrapezoids_Finalize(&(_this->trapezoids));
+		CTrapezoids_Finalize(&(_this->trapezoids));
 
 		/* finalize the filler */
-		SDFiller_Finalize(&(_this->filler));
+		CFiller_Finalize(&(_this->filler));
 
 		/* finalize the array */
-		SDPointArrayF_Finalize(&(_this->array));
+		CPointArrayF_Finalize(&(_this->array));
 
 		/* free the format */
 		pixman_format_destroy(_this->format);

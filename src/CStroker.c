@@ -1,5 +1,5 @@
 /*
- * SDStroker.c - Stroker implementation.
+ * CStroker.c - Stroker implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -31,136 +31,136 @@
 extern "C" {
 #endif
 
-static const SDStrokeJoiner SDStrokeJoiner_Zero;
-static const SDStrokeCapper SDStrokeCapper_Zero;
+static const CStrokeJoiner CStrokeJoiner_Zero;
+static const CStrokeCapper CStrokeCapper_Zero;
 
-#define SDStrokeJoiner_Join(j, p, cX, cY, pC, pS, cC, cS) \
+#define CStrokeJoiner_Join(j, p, cX, cY, pC, pS, cC, cS) \
 	((j)->Join((j), (p), (cX), (cY), (pC), (pS), (cC), (cS)))
-#define SDStrokeCapper_Cap(c, p, cX, cY, sX, sY) \
+#define CStrokeCapper_Cap(c, p, cX, cY, sX, sY) \
 	((c)->Cap((c), (p), (cX), (cY), (sX), (sY)))
 
-#define SDStroker_CirclePoints(array, radius, transform, scale)                \
+#define CStroker_CirclePoints(array, radius, transform, scale)                \
 	do {                                                                       \
 		/* declarations */                                                     \
-		SDBezierF bezier;                                                      \
-		SDPointF  points[12];                                                  \
+		CBezierF bezier;                                                      \
+		CPointF  points[12];                                                  \
 		                                                                       \
 		/* calculate the width and radius */                                   \
-		const SDDouble r = (radius);                                           \
-		const SDDouble w = (r * 2.0f);                                         \
+		const CDouble r = (radius);                                           \
+		const CDouble w = (r * 2.0f);                                         \
 		                                                                       \
 		/* calculate the distance along the tangents */                        \
-		const SDDouble d = (r * SDMath_Arc90Fraction);                         \
+		const CDouble d = (r * CMath_Arc90Fraction);                         \
 		                                                                       \
 		/* calculate the tangential control points */                          \
-		const SDFloat p = (r + d);                                             \
-		const SDFloat m = (r - d);                                             \
+		const CFloat p = (r + d);                                             \
+		const CFloat m = (r - d);                                             \
 		                                                                       \
 		/* initialize the points */                                            \
-		SDPoint_X(points[0])  = w; SDPoint_Y(points[0])  = r;                  \
-		SDPoint_X(points[1])  = w; SDPoint_Y(points[1])  = m;                  \
-		SDPoint_X(points[2])  = p; SDPoint_Y(points[2])  = 0;                  \
-		SDPoint_X(points[3])  = r; SDPoint_Y(points[3])  = 0;                  \
-		SDPoint_X(points[4])  = m; SDPoint_Y(points[4])  = 0;                  \
-		SDPoint_X(points[5])  = 0; SDPoint_Y(points[5])  = m;                  \
-		SDPoint_X(points[6])  = 0; SDPoint_Y(points[6])  = r;                  \
-		SDPoint_X(points[7])  = 0; SDPoint_Y(points[7])  = p;                  \
-		SDPoint_X(points[8])  = m; SDPoint_Y(points[8])  = w;                  \
-		SDPoint_X(points[9])  = r; SDPoint_Y(points[9])  = w;                  \
-		SDPoint_X(points[10]) = p; SDPoint_Y(points[10]) = w;                  \
-		SDPoint_X(points[11]) = w; SDPoint_Y(points[11]) = p;                  \
+		CPoint_X(points[0])  = w; CPoint_Y(points[0])  = r;                  \
+		CPoint_X(points[1])  = w; CPoint_Y(points[1])  = m;                  \
+		CPoint_X(points[2])  = p; CPoint_Y(points[2])  = 0;                  \
+		CPoint_X(points[3])  = r; CPoint_Y(points[3])  = 0;                  \
+		CPoint_X(points[4])  = m; CPoint_Y(points[4])  = 0;                  \
+		CPoint_X(points[5])  = 0; CPoint_Y(points[5])  = m;                  \
+		CPoint_X(points[6])  = 0; CPoint_Y(points[6])  = r;                  \
+		CPoint_X(points[7])  = 0; CPoint_Y(points[7])  = p;                  \
+		CPoint_X(points[8])  = m; CPoint_Y(points[8])  = w;                  \
+		CPoint_X(points[9])  = r; CPoint_Y(points[9])  = w;                  \
+		CPoint_X(points[10]) = p; CPoint_Y(points[10]) = w;                  \
+		CPoint_X(points[11]) = w; CPoint_Y(points[11]) = p;                  \
 		                                                                       \
 		/* transform or scale the points */                                    \
 		if((transform) != 0)                                                   \
 		{                                                                      \
-			SDAffineTransformF_TransformPoints((transform), points, 12);       \
+			CAffineTransformF_TransformPoints((transform), points, 12);       \
 		}                                                                      \
 		else                                                                   \
 		{                                                                      \
-			SDVectorF_ScalePoints((scale), points, 12);                        \
+			CVectorF_ScalePoints((scale), points, 12);                        \
 		}                                                                      \
 		                                                                       \
 		/* reset the count */                                                  \
-		SDPointArray_Count(*(array)) = 0;                                      \
+		CPointArray_Count(*(array)) = 0;                                      \
 		                                                                       \
 		/* initialize the first quadrant */                                    \
-		SDBezierF_Initialize                                                   \
+		CBezierF_Initialize                                                   \
 			(&bezier, &points[0], &points[1], &points[2], &points[3]);         \
 		                                                                       \
 		/* flatten the first quadrant */                                       \
-		SDStatus_Check                                                         \
-			(SDBezierF_Flatten                                                 \
-				(&bezier, (array), SDFiller_TOLERANCE));                       \
+		CStatus_Check                                                         \
+			(CBezierF_Flatten                                                 \
+				(&bezier, (array), CFiller_TOLERANCE));                       \
 		                                                                       \
 		/* initialize the second quadrant */                                   \
-		SDBezierF_Initialize                                                   \
+		CBezierF_Initialize                                                   \
 			(&bezier, &points[3], &points[4], &points[5], &points[6]);         \
 		                                                                       \
 		/* flatten the second quadrant */                                      \
-		SDStatus_Check                                                         \
-			(SDBezierF_Flatten                                                 \
-				(&bezier, (array), SDFiller_TOLERANCE));                       \
+		CStatus_Check                                                         \
+			(CBezierF_Flatten                                                 \
+				(&bezier, (array), CFiller_TOLERANCE));                       \
 		                                                                       \
 		/* initialize the third quadrant */                                    \
-		SDBezierF_Initialize                                                   \
+		CBezierF_Initialize                                                   \
 			(&bezier, &points[6], &points[7], &points[8], &points[9]);         \
 		                                                                       \
 		/* flatten the third quadrant */                                       \
-		SDStatus_Check                                                         \
-			(SDBezierF_Flatten                                                 \
-				(&bezier, (array), SDFiller_TOLERANCE));                       \
+		CStatus_Check                                                         \
+			(CBezierF_Flatten                                                 \
+				(&bezier, (array), CFiller_TOLERANCE));                       \
 		                                                                       \
 		/* initialize the fourth quadrant */                                   \
-		SDBezierF_Initialize                                                   \
+		CBezierF_Initialize                                                   \
 			(&bezier, &points[9], &points[10], &points[11], &points[0]);       \
 		                                                                       \
 		/* flatten the fourth quadrant */                                      \
-		SDStatus_Check                                                         \
-			(SDBezierF_Flatten                                                 \
-				(&bezier, (array), SDFiller_TOLERANCE));                       \
+		CStatus_Check                                                         \
+			(CBezierF_Flatten                                                 \
+				(&bezier, (array), CFiller_TOLERANCE));                       \
 	} while(0)
 
-#define SDStroker_TempSpacePoints(array, points, count, size)                  \
+#define CStroker_TempSpacePoints(array, points, count, size)                  \
 	do {                                                                       \
 		/* declarations */                                                     \
-		SDPointF *tmp;                                                         \
+		CPointF *tmp;                                                         \
 		                                                                       \
 		/* get the points */                                                   \
-		tmp = SDPointArray_Points(*(array));                                   \
+		tmp = CPointArray_Points(*(array));                                   \
 		                                                                       \
 		/* get the count */                                                    \
-		(count) = SDPointArray_Count(*(array));                                \
+		(count) = CPointArray_Count(*(array));                                \
 		                                                                       \
 		/* calculate the size */                                               \
-		(size) = ((count) * sizeof(SDPointF));                                 \
+		(size) = ((count) * sizeof(CPointF));                                 \
 		                                                                       \
 		/* allocate the points */                                              \
-		if(!((points) = (SDPointF *)SDMalloc((size) << 1)))                    \
+		if(!((points) = (CPointF *)CMalloc((size) << 1)))                    \
 		{                                                                      \
-			return SDStatus_OutOfMemory;                                       \
+			return CStatus_OutOfMemory;                                       \
 		}                                                                      \
 		                                                                       \
 		/* copy the points */                                                  \
-		SDMemCopy((points), tmp, (size));                                      \
+		CMemCopy((points), tmp, (size));                                      \
 	} while(0)
 
-static SDStatus
-SDStroker_StrokeSubpaths(SDStroker *_this,
-                         SDPath    *path,
-                         SDPointF  *points,
-                         SDByte    *types,
-                         SDUInt32   count)
+static CStatus
+CStroker_StrokeSubpaths(CStroker *_this,
+                         CPath    *path,
+                         CPointF  *points,
+                         CByte    *types,
+                         CUInt32   count)
 {
 	/* declarations */
-	SDByte   *type;
-	SDPointF *curr;
-	SDPointF *end;
+	CByte   *type;
+	CPointF *curr;
+	CPointF *end;
 
 	/* assertions */
-	SDASSERT((_this     != 0));
-	SDASSERT((path      != 0));
-	SDASSERT((points    != 0));
-	SDASSERT((types     != 0));
+	CASSERT((_this     != 0));
+	CASSERT((path      != 0));
+	CASSERT((points    != 0));
+	CASSERT((types     != 0));
 
 	/* get the current type pointer */
 	type = types;
@@ -172,30 +172,30 @@ SDStroker_StrokeSubpaths(SDStroker *_this,
 	end = (curr + count);
 
 	/* reset the count of the array */
-	SDPointArray_Count(_this->array) = 0;
+	CPointArray_Count(_this->array) = 0;
 
 	/* stroke the subpaths */
 	while(curr != end)
 	{
 		/* declarations */
-		SDPointF *first;
+		CPointF *first;
 
 		/* get the first point */
 		first = curr;
 
 		/* get the current subpath */
-		while(curr != end && ((*type & SDPathType_Start) == 0))
+		while(curr != end && ((*type & CPathType_Start) == 0))
 		{
 			/* add the current point */
-			SDStatus_Check
-				(SDPointArrayF_AppendPointNoRepeat
+			CStatus_Check
+				(CPointArrayF_AppendPointNoRepeat
 					(&(_this->array), curr));
 
 			/* close, as needed */
-			if((*type & SDPathType_CloseSubpath) != 0)
+			if((*type & CPathType_CloseSubpath) != 0)
 			{
-				SDStatus_Check
-					(SDPointArrayF_AppendPointNoRepeat
+				CStatus_Check
+					(CPointArrayF_AppendPointNoRepeat
 						(&(_this->array), first));
 			}
 
@@ -204,47 +204,47 @@ SDStroker_StrokeSubpaths(SDStroker *_this,
 		}
 
 		/* stroke the subpath, as needed */
-		if(SDPointArray_Count(_this->array) != 0)
+		if(CPointArray_Count(_this->array) != 0)
 		{
 			/* stroke the subpath */
-			SDStatus_Check
+			CStatus_Check
 				(_this->Stroke
-					(_this, path, SDPointArray_Points(_this->array),
-					 SDPointArray_Count(_this->array)));
+					(_this, path, CPointArray_Points(_this->array),
+					 CPointArray_Count(_this->array)));
 
 			/* reset for next subpath */
-			SDPointArray_Count(_this->array) = 0;
+			CPointArray_Count(_this->array) = 0;
 		}
 	}
 
 	/* apply device transformation */
-	SDPath_TransformAffine(path, &(_this->dev));
+	CPath_TransformAffine(path, &(_this->dev));
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStroker_FullStroke(SDStroker *_this,
-                     SDPath    *path,
-                     SDPointF  *points,
-                     SDUInt32   count)
+static CStatus
+CStroker_FullStroke(CStroker *_this,
+                     CPath    *path,
+                     CPointF  *points,
+                     CUInt32   count)
 {
 	/* declarations */
-	SDAffineTransformF *transform;
-	SDPointF           *end;
-	SDPointF           *curr;
-	SDPointF           *next;
-	SDPointF           *last;
-	SDBool              needCap;
-	SDFloat             prevC;
-	SDFloat             prevS;
-	SDFloat             radius;
+	CAffineTransformF *transform;
+	CPointF           *end;
+	CPointF           *curr;
+	CPointF           *next;
+	CPointF           *last;
+	CBool              needCap;
+	CFloat             prevC;
+	CFloat             prevS;
+	CFloat             radius;
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((path   != 0));
-	SDASSERT((points != 0));
+	CASSERT((_this  != 0));
+	CASSERT((path   != 0));
+	CASSERT((points != 0));
 
 	/* get the end of points pointer */
 	end  = (points + count);
@@ -271,20 +271,20 @@ SDStroker_FullStroke(SDStroker *_this,
 	while(next != end)
 	{
 		/* declarations */
-		SDFloat  currX;
-		SDFloat  currY;
-		SDFloat  nextX;
-		SDFloat  nextY;
-		SDFloat  slopeX;
-		SDFloat  slopeY;
-		SDFloat  length;
-		SDPointF delta[4];
+		CFloat  currX;
+		CFloat  currY;
+		CFloat  nextX;
+		CFloat  nextY;
+		CFloat  slopeX;
+		CFloat  slopeY;
+		CFloat  length;
+		CPointF delta[4];
 
 		/* get the current and next coordinates */
-		currX = SDPoint_X(*curr);
-		currY = SDPoint_Y(*curr);
-		nextX = SDPoint_X(*next);
-		nextY = SDPoint_Y(*next);
+		currX = CPoint_X(*curr);
+		currY = CPoint_Y(*curr);
+		nextX = CPoint_X(*next);
+		nextY = CPoint_Y(*next);
 
 		/* calculate the line slope */
 		slopeX = (nextX - currX);
@@ -292,7 +292,7 @@ SDStroker_FullStroke(SDStroker *_this,
 
 		/* calculate the line length */
 		length =
-			(SDFloat)SDMath_Sqrt
+			(CFloat)CMath_Sqrt
 				((slopeX * slopeX) + (slopeY * slopeY));
 
 		/* stroke non-degenerate lines */
@@ -308,8 +308,8 @@ SDStroker_FullStroke(SDStroker *_this,
 				/* add the start cap, as needed */
 				if((_this->startCapper.Cap) != 0)
 				{
-					SDStatus_Check
-						(SDStrokeCapper_Cap
+					CStatus_Check
+						(CStrokeCapper_Cap
 							(&(_this->startCapper), path, &currX, &currY,
 							 slopeX, slopeY));
 				}
@@ -320,8 +320,8 @@ SDStroker_FullStroke(SDStroker *_this,
 			else
 			{
 				/* add the join */
-				SDStatus_Check
-					(SDStrokeJoiner_Join
+				CStatus_Check
+					(CStrokeJoiner_Join
 						(&(_this->joiner), path, currX, currY,
 						 prevC, prevS, slopeX, slopeY));
 			}
@@ -329,38 +329,38 @@ SDStroker_FullStroke(SDStroker *_this,
 			/* add the end cap, as needed */
 			if(next == last && ((_this->endCapper.Cap) != 0))
 			{
-				SDStatus_Check
-					(SDStrokeCapper_Cap
+				CStatus_Check
+					(CStrokeCapper_Cap
 						(&(_this->endCapper), path, &nextX, &nextY,
 						 -slopeX, -slopeY));
 			}
 
 			/* calculate the stroke bounds */
-			SDPoint_X(delta[0]) =  slopeY * radius;
-			SDPoint_Y(delta[0]) = -slopeX * radius;
-			SDPoint_X(delta[1]) = -slopeY * radius;
-			SDPoint_Y(delta[1]) =  slopeX * radius;
-			SDPoint_X(delta[2]) =  SDPoint_X(delta[1]);
-			SDPoint_Y(delta[2]) =  SDPoint_Y(delta[1]);
-			SDPoint_X(delta[3]) =  SDPoint_X(delta[0]);
-			SDPoint_Y(delta[3]) =  SDPoint_Y(delta[0]);
+			CPoint_X(delta[0]) =  slopeY * radius;
+			CPoint_Y(delta[0]) = -slopeX * radius;
+			CPoint_X(delta[1]) = -slopeY * radius;
+			CPoint_Y(delta[1]) =  slopeX * radius;
+			CPoint_X(delta[2]) =  CPoint_X(delta[1]);
+			CPoint_Y(delta[2]) =  CPoint_Y(delta[1]);
+			CPoint_X(delta[3]) =  CPoint_X(delta[0]);
+			CPoint_Y(delta[3]) =  CPoint_Y(delta[0]);
 
 			/* transform by the pen transformation */
-			SDAffineTransformF_TransformPoints(transform, delta, 4);
+			CAffineTransformF_TransformPoints(transform, delta, 4);
 
 			/* translate the stroke into place */
-			SDPoint_X(delta[0]) += currX;
-			SDPoint_Y(delta[0]) += currY;
-			SDPoint_X(delta[1]) += currX;
-			SDPoint_Y(delta[1]) += currY;
-			SDPoint_X(delta[2]) += nextX;
-			SDPoint_Y(delta[2]) += nextY;
-			SDPoint_X(delta[3]) += nextX;
-			SDPoint_Y(delta[3]) += nextY;
+			CPoint_X(delta[0]) += currX;
+			CPoint_Y(delta[0]) += currY;
+			CPoint_X(delta[1]) += currX;
+			CPoint_Y(delta[1]) += currY;
+			CPoint_X(delta[2]) += nextX;
+			CPoint_Y(delta[2]) += nextY;
+			CPoint_X(delta[3]) += nextX;
+			CPoint_Y(delta[3]) += nextY;
 
 			/* add the stroke to the path */
-			SDStatus_Check
-				(SDPath_AddPolygon
+			CStatus_Check
+				(CPath_AddPolygon
 					(path, delta, 4));
 
 			/* update the points */
@@ -381,14 +381,14 @@ SDStroker_FullStroke(SDStroker *_this,
 			if((_this->startCapper.Cap) != 0)
 			{
 				/* get the current x coordinate */
-				SDFloat x = SDPoint_X(*curr);
+				CFloat x = CPoint_X(*curr);
 
 				/* get the current y coordinate */
-				SDFloat y = SDPoint_Y(*curr);
+				CFloat y = CPoint_Y(*curr);
 
 				/* add the start cap */
-				SDStatus_Check
-					(SDStrokeCapper_Cap
+				CStatus_Check
+					(CStrokeCapper_Cap
 						(&(_this->startCapper), path, &x, &y, 1.0f, 0.0f));
 			}
 
@@ -396,38 +396,38 @@ SDStroker_FullStroke(SDStroker *_this,
 			if((_this->endCapper.Cap) != 0)
 			{
 				/* get the current x coordinate */
-				SDFloat x = SDPoint_X(*curr);
+				CFloat x = CPoint_X(*curr);
 
 				/* get the current y coordinate */
-				SDFloat y = SDPoint_Y(*curr);
+				CFloat y = CPoint_Y(*curr);
 
 				/* add the end cap */
-				SDStatus_Check
-					(SDStrokeCapper_Cap
+				CStatus_Check
+					(CStrokeCapper_Cap
 						(&(_this->endCapper), path, &x, &y, -1.0f, 0.0f));
 			}
 		}
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStroker_FastStroke(SDStroker *_this,
-                     SDPath    *path,
-                     SDPointF  *points,
-                     SDUInt32   count)
+static CStatus
+CStroker_FastStroke(CStroker *_this,
+                     CPath    *path,
+                     CPointF  *points,
+                     CUInt32   count)
 {
 	/* declarations */
-	SDPointF           *end;
-	SDPointF           *curr;
-	SDPointF           *next;
+	CPointF           *end;
+	CPointF           *curr;
+	CPointF           *next;
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((path   != 0));
-	SDASSERT((points != 0));
+	CASSERT((_this  != 0));
+	CASSERT((path   != 0));
+	CASSERT((points != 0));
 
 	/* get the end of points pointer */
 	end  = (points + count);
@@ -442,20 +442,20 @@ SDStroker_FastStroke(SDStroker *_this,
 	while(next != end)
 	{
 		/* declarations */
-		SDFloat  currX;
-		SDFloat  currY;
-		SDFloat  nextX;
-		SDFloat  nextY;
-		SDFloat  slopeX;
-		SDFloat  slopeY;
-		SDFloat  length;
-		SDPointF delta[4];
+		CFloat  currX;
+		CFloat  currY;
+		CFloat  nextX;
+		CFloat  nextY;
+		CFloat  slopeX;
+		CFloat  slopeY;
+		CFloat  length;
+		CPointF delta[4];
 
 		/* get the current and next coordinates */
-		currX = SDPoint_X(*curr);
-		currY = SDPoint_Y(*curr);
-		nextX = SDPoint_X(*next);
-		nextY = SDPoint_Y(*next);
+		currX = CPoint_X(*curr);
+		currY = CPoint_Y(*curr);
+		nextX = CPoint_X(*next);
+		nextY = CPoint_Y(*next);
 
 		/* calculate the line slope */
 		slopeX = (nextX - currX);
@@ -463,7 +463,7 @@ SDStroker_FastStroke(SDStroker *_this,
 
 		/* calculate the line length */
 		length =
-			(SDFloat)SDMath_Sqrt
+			(CFloat)CMath_Sqrt
 				((slopeX * slopeX) + (slopeY * slopeY));
 
 		/* stroke non-degenerate lines */
@@ -474,28 +474,28 @@ SDStroker_FastStroke(SDStroker *_this,
 			slopeY = slopeY / length;
 
 			/* calculate the stroke bounds */
-			SDPoint_X(delta[0]) =  slopeY * 0.5f;
-			SDPoint_Y(delta[0]) = -slopeX * 0.5f;
-			SDPoint_X(delta[1]) = -slopeY * 0.5f;
-			SDPoint_Y(delta[1]) =  slopeX * 0.5f;
-			SDPoint_X(delta[2]) =  SDPoint_X(delta[1]);
-			SDPoint_Y(delta[2]) =  SDPoint_Y(delta[1]);
-			SDPoint_X(delta[3]) =  SDPoint_X(delta[0]);
-			SDPoint_Y(delta[3]) =  SDPoint_Y(delta[0]);
+			CPoint_X(delta[0]) =  slopeY * 0.5f;
+			CPoint_Y(delta[0]) = -slopeX * 0.5f;
+			CPoint_X(delta[1]) = -slopeY * 0.5f;
+			CPoint_Y(delta[1]) =  slopeX * 0.5f;
+			CPoint_X(delta[2]) =  CPoint_X(delta[1]);
+			CPoint_Y(delta[2]) =  CPoint_Y(delta[1]);
+			CPoint_X(delta[3]) =  CPoint_X(delta[0]);
+			CPoint_Y(delta[3]) =  CPoint_Y(delta[0]);
 
 			/* translate the stroke into place */
-			SDPoint_X(delta[0]) += currX;
-			SDPoint_Y(delta[0]) += currY;
-			SDPoint_X(delta[1]) += currX;
-			SDPoint_Y(delta[1]) += currY;
-			SDPoint_X(delta[2]) += nextX;
-			SDPoint_Y(delta[2]) += nextY;
-			SDPoint_X(delta[3]) += nextX;
-			SDPoint_Y(delta[3]) += nextY;
+			CPoint_X(delta[0]) += currX;
+			CPoint_Y(delta[0]) += currY;
+			CPoint_X(delta[1]) += currX;
+			CPoint_Y(delta[1]) += currY;
+			CPoint_X(delta[2]) += nextX;
+			CPoint_Y(delta[2]) += nextY;
+			CPoint_X(delta[3]) += nextX;
+			CPoint_Y(delta[3]) += nextY;
 
 			/* add the stroke to the path */
-			SDStatus_Check
-				(SDPath_AddPolygon
+			CStatus_Check
+				(CPath_AddPolygon
 					(path, delta, 4));
 
 			/* update the points */
@@ -504,203 +504,203 @@ SDStroker_FastStroke(SDStroker *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDMATH SDPointF
-SDStrokeJoiner_MiterIntersect(SDPointF a,
-                              SDPointF b,
-                              SDFloat  prevC,
-                              SDFloat  prevS,
-                              SDFloat  currC,
-                              SDFloat  currS,
-                              SDDouble cross)
+static CMATH CPointF
+CStrokeJoiner_MiterIntersect(CPointF a,
+                              CPointF b,
+                              CFloat  prevC,
+                              CFloat  prevS,
+                              CFloat  currC,
+                              CFloat  currS,
+                              CDouble cross)
 {
 	/* declarations */
-	SDPointF intersect;
-	SDDouble  iX;
-	SDDouble  iY;
+	CPointF intersect;
+	CDouble  iX;
+	CDouble  iY;
 
 	/* get the point components */
-	const SDFloat aX = SDPoint_X(a);
-	const SDFloat aY = SDPoint_Y(a);
-	const SDFloat bX = SDPoint_X(b);
-	const SDFloat bY = SDPoint_Y(b);
+	const CFloat aX = CPoint_X(a);
+	const CFloat aY = CPoint_Y(a);
+	const CFloat bX = CPoint_X(b);
+	const CFloat bY = CPoint_Y(b);
 
 	/* calculate the product of the previous sine and current cosine */
-	const SDDouble pScC = (prevS * currC);
+	const CDouble pScC = (prevS * currC);
 
 	/* calculate the product of the previous cosine and current sine */
-	const SDDouble pCcS = (prevC * currS);
+	const CDouble pCcS = (prevC * currS);
 
 	/* calculate the product of the previous sine and current sine */
-	const SDDouble pScS = (prevS * currS);
+	const CDouble pScS = (prevS * currS);
 
 	/* calculate the vertical component of the intersection vector */
 	iY  = ((((bX - aX) * pScS) + (aY * pCcS) - (bY * pScC)) / cross);
 
 	/* calculate the horizontal component of the intersection vector */
-	iX = (SDMath_Abs(prevS) >= SDMath_Abs(currS)) ?
+	iX = (CMath_Abs(prevS) >= CMath_Abs(currS)) ?
 	     ((((iY - aY) * prevC) / prevS) + aX) :
 	     ((((iY - bY) * currC) / currS) + bX);
 
 	/* set the components of the intersection vector */
-	SDPoint_X(intersect) = (SDFloat)iX;
-	SDPoint_Y(intersect) = (SDFloat)iY;
+	CPoint_X(intersect) = (CFloat)iX;
+	CPoint_Y(intersect) = (CFloat)iY;
 
 	/* return the intersection vector */
 	return intersect;
 }
 
-static SDStatus
-SDStrokeJoiner_AddMiter(SDStrokeJoiner *_this,
-                        SDPath         *path,
-                        SDFloat         centerX,
-                        SDFloat         centerY,
-                        SDFloat         prevC,
-                        SDFloat         prevS,
-                        SDFloat         currC,
-                        SDFloat         currS)
+static CStatus
+CStrokeJoiner_AddMiter(CStrokeJoiner *_this,
+                        CPath         *path,
+                        CFloat         centerX,
+                        CFloat         centerY,
+                        CFloat         prevC,
+                        CFloat         prevS,
+                        CFloat         currC,
+                        CFloat         currS)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((path  != 0));
+	CASSERT((_this != 0));
+	CASSERT((path  != 0));
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require(((currC != prevC) || (currS != prevS)), SDStatus_OK);
+	CStatus_Require(((currC != prevC) || (currS != prevS)), CStatus_OK);
 
 	/* add the miter */
 	{
 		/* declarations */
-		SDVectorF center;
+		CVectorF center;
 
 		/* calculate the dot and cross products */
-		const SDDouble dot   = SDMath_DotProduct(prevC, prevS, currC, currS);
-		const SDDouble cross = SDMath_CrossProduct(prevC, prevS, currC, currS);
+		const CDouble dot   = CMath_DotProduct(prevC, prevS, currC, currS);
+		const CDouble cross = CMath_CrossProduct(prevC, prevS, currC, currS);
 
 		/* get the center point */
-		SDVector_X(center) = centerX;
-		SDVector_Y(center) = centerY;
+		CVector_X(center) = centerX;
+		CVector_Y(center) = centerY;
 
 		/* add the join based on the limit and angle */
 		if((_this->u.other.limitSquared * (1 + dot)) >= 2)
 		{
 			/* declarations */
-			SDPointF delta[4];
+			CPointF delta[4];
 
 			/* set the first point */
-			SDPoint_X(delta[0]) = 0.0f;
-			SDPoint_Y(delta[0]) = 0.0f;
+			CPoint_X(delta[0]) = 0.0f;
+			CPoint_Y(delta[0]) = 0.0f;
 
 			/* set the second and fourth points based on angle */
 			if(cross < 0.0f)
 			{
-				SDPoint_X(delta[1]) =  prevS;
-				SDPoint_Y(delta[1]) = -prevC;
-				SDPoint_X(delta[3]) =  currS;
-				SDPoint_Y(delta[3]) = -currC;
+				CPoint_X(delta[1]) =  prevS;
+				CPoint_Y(delta[1]) = -prevC;
+				CPoint_X(delta[3]) =  currS;
+				CPoint_Y(delta[3]) = -currC;
 			}
 			else
 			{
-				SDPoint_X(delta[1]) = -prevS;
-				SDPoint_Y(delta[1]) =  prevC;
-				SDPoint_X(delta[3]) = -currS;
-				SDPoint_Y(delta[3]) =  currC;
+				CPoint_X(delta[1]) = -prevS;
+				CPoint_Y(delta[1]) =  prevC;
+				CPoint_X(delta[3]) = -currS;
+				CPoint_Y(delta[3]) =  currC;
 			}
 
 			/* calculate the intersection */
 			delta[2] =
-				SDStrokeJoiner_MiterIntersect
+				CStrokeJoiner_MiterIntersect
 					(delta[1], delta[3], prevC, prevS, currC, currS, cross);
 
 			/* scale the join to the stroke size */
-			SDVectorF_ScalePoints(&(_this->u.other.scale), delta, 4);
+			CVectorF_ScalePoints(&(_this->u.other.scale), delta, 4);
 
 			/* transform the join */
-			SDAffineTransformF_TransformPoints
+			CAffineTransformF_TransformPoints
 				(_this->u.other.transform, delta, 4);
 
 			/* translate the join into place */
-			SDVectorF_TranslatePoints(&center, delta, 4);
+			CVectorF_TranslatePoints(&center, delta, 4);
 
 			/* add the join to the path */
-			SDStatus_Check
-				(SDPath_AddPolygon
+			CStatus_Check
+				(CPath_AddPolygon
 					(path, delta, 4));
 		}
 		else
 		{
 			/* declarations */
-			SDPointF delta[3];
+			CPointF delta[3];
 
 			/* set the first point */
-			SDPoint_X(delta[0]) = 0.0f;
-			SDPoint_Y(delta[0]) = 0.0f;
+			CPoint_X(delta[0]) = 0.0f;
+			CPoint_Y(delta[0]) = 0.0f;
 
 			/* set the second and third points based on angle */
 			if(cross < 0.0f)
 			{
-				SDPoint_X(delta[1]) =  prevS;
-				SDPoint_Y(delta[1]) = -prevC;
-				SDPoint_X(delta[2]) =  currS;
-				SDPoint_Y(delta[2]) = -currC;
+				CPoint_X(delta[1]) =  prevS;
+				CPoint_Y(delta[1]) = -prevC;
+				CPoint_X(delta[2]) =  currS;
+				CPoint_Y(delta[2]) = -currC;
 			}
 			else
 			{
-				SDPoint_X(delta[1]) = -prevS;
-				SDPoint_Y(delta[1]) =  prevC;
-				SDPoint_X(delta[2]) = -currS;
-				SDPoint_Y(delta[2]) =  currC;
+				CPoint_X(delta[1]) = -prevS;
+				CPoint_Y(delta[1]) =  prevC;
+				CPoint_X(delta[2]) = -currS;
+				CPoint_Y(delta[2]) =  currC;
 			}
 
 			/* scale the join to the stroke size */
-			SDVectorF_ScalePoints(&(_this->u.other.scale), delta, 3);
+			CVectorF_ScalePoints(&(_this->u.other.scale), delta, 3);
 
 			/* transform the join */
-			SDAffineTransformF_TransformPoints
+			CAffineTransformF_TransformPoints
 				(_this->u.other.transform, delta, 3);
 
 			/* translate the join into place */
-			SDVectorF_TranslatePoints(&center, delta, 3);
+			CVectorF_TranslatePoints(&center, delta, 3);
 
 			/* add the join to the path */
-			SDStatus_Check
-				(SDPath_AddPolygon
+			CStatus_Check
+				(CPath_AddPolygon
 					(path, delta, 3));
 		}
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStrokeJoiner_AddRound(SDStrokeJoiner *_this,
-                        SDPath         *path,
-                        SDFloat         centerX,
-                        SDFloat         centerY,
-                        SDFloat         prevC,
-                        SDFloat         prevS,
-                        SDFloat         currC,
-                        SDFloat         currS)
+static CStatus
+CStrokeJoiner_AddRound(CStrokeJoiner *_this,
+                        CPath         *path,
+                        CFloat         centerX,
+                        CFloat         centerY,
+                        CFloat         prevC,
+                        CFloat         prevS,
+                        CFloat         currC,
+                        CFloat         currS)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((path  != 0));
+	CASSERT((_this != 0));
+	CASSERT((path  != 0));
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require(((currC != prevC) || (currS != prevS)), SDStatus_OK);
+	CStatus_Require(((currC != prevC) || (currS != prevS)), CStatus_OK);
 
 	/* add the circle */
 	{
 		/* declarations */
-		SDPointF  *points;
-		SDPointF  *tmp;
-		SDVectorF  center;
+		CPointF  *points;
+		CPointF  *tmp;
+		CVectorF  center;
 
 		/* get the center point */
-		SDVector_X(center) = centerX;
-		SDVector_X(center) = centerY;
+		CVector_X(center) = centerX;
+		CVector_X(center) = centerY;
 
 		/* get the points */
 		points = _this->u.round.points;
@@ -709,339 +709,339 @@ SDStrokeJoiner_AddRound(SDStrokeJoiner *_this,
 		tmp = (points + _this->u.round.count);
 
 		/* copy the points into temporary space */
-		SDMemCopy(tmp, points, _this->u.round.size);
+		CMemCopy(tmp, points, _this->u.round.size);
 
 		/* translate the cap into place */
-		SDVectorF_TranslatePoints(&center, tmp, _this->u.round.count);
+		CVectorF_TranslatePoints(&center, tmp, _this->u.round.count);
 
 		/* add the cap to the path */
-		SDStatus_Check
-			(SDPath_AddPolygon
+		CStatus_Check
+			(CPath_AddPolygon
 				(path, tmp, _this->u.round.count));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStrokeJoiner_AddBevel(SDStrokeJoiner *_this,
-                        SDPath         *path,
-                        SDFloat         centerX,
-                        SDFloat         centerY,
-                        SDFloat         prevC,
-                        SDFloat         prevS,
-                        SDFloat         currC,
-                        SDFloat         currS)
+static CStatus
+CStrokeJoiner_AddBevel(CStrokeJoiner *_this,
+                        CPath         *path,
+                        CFloat         centerX,
+                        CFloat         centerY,
+                        CFloat         prevC,
+                        CFloat         prevS,
+                        CFloat         currC,
+                        CFloat         currS)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((path  != 0));
+	CASSERT((_this != 0));
+	CASSERT((path  != 0));
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require(((currC != prevC) || (currS != prevS)), SDStatus_OK);
+	CStatus_Require(((currC != prevC) || (currS != prevS)), CStatus_OK);
 
 	/* add the bevel */
 	{
 		/* declarations */
-		SDVectorF center;
-		SDPointF  delta[3];
+		CVectorF center;
+		CPointF  delta[3];
 
 		/* calculate the cross product */
-		const SDDouble cross = SDMath_CrossProduct(prevC, prevS, currC, currS);
+		const CDouble cross = CMath_CrossProduct(prevC, prevS, currC, currS);
 
 		/* get the center point */
-		SDVector_X(center) = centerX;
-		SDVector_Y(center) = centerY;
+		CVector_X(center) = centerX;
+		CVector_Y(center) = centerY;
 
 		/* set the first point */
-		SDPoint_X(delta[0]) = 0.0f;
-		SDPoint_Y(delta[0]) = 0.0f;
+		CPoint_X(delta[0]) = 0.0f;
+		CPoint_Y(delta[0]) = 0.0f;
 
 		/* set the second and third points based on angle */
 		if(cross < 0.0f)
 		{
-			SDPoint_X(delta[1]) =  prevS;
-			SDPoint_Y(delta[1]) = -prevC;
-			SDPoint_X(delta[2]) =  currS;
-			SDPoint_Y(delta[2]) = -currC;
+			CPoint_X(delta[1]) =  prevS;
+			CPoint_Y(delta[1]) = -prevC;
+			CPoint_X(delta[2]) =  currS;
+			CPoint_Y(delta[2]) = -currC;
 		}
 		else
 		{
-			SDPoint_X(delta[1]) = -prevS;
-			SDPoint_Y(delta[1]) =  prevC;
-			SDPoint_X(delta[2]) = -currS;
-			SDPoint_Y(delta[2]) =  currC;
+			CPoint_X(delta[1]) = -prevS;
+			CPoint_Y(delta[1]) =  prevC;
+			CPoint_X(delta[2]) = -currS;
+			CPoint_Y(delta[2]) =  currC;
 		}
 
 		/* scale the join to the stroke size */
-		SDVectorF_ScalePoints(&(_this->u.other.scale), delta, 3);
+		CVectorF_ScalePoints(&(_this->u.other.scale), delta, 3);
 
 		/* transform the join */
-		SDAffineTransformF_TransformPoints
+		CAffineTransformF_TransformPoints
 			(_this->u.other.transform, delta, 3);
 
 		/* translate the join into place */
-		SDVectorF_TranslatePoints(&center, delta, 3);
+		CVectorF_TranslatePoints(&center, delta, 3);
 
 		/* add the join to the path */
-		SDStatus_Check
-			(SDPath_AddPolygon
+		CStatus_Check
+			(CPath_AddPolygon
 				(path, delta, 3));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStrokeCapper_AddSquare(SDStrokeCapper *_this,
-                         SDPath         *path,
-                         SDFloat        *centerX,
-                         SDFloat        *centerY,
-                         SDFloat         slopeX,
-                         SDFloat         slopeY)
+static CStatus
+CStrokeCapper_AddSquare(CStrokeCapper *_this,
+                         CPath         *path,
+                         CFloat        *centerX,
+                         CFloat        *centerY,
+                         CFloat         slopeX,
+                         CFloat         slopeY)
 {
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((path    != 0));
-	SDASSERT((centerX != 0));
-	SDASSERT((centerY != 0));
+	CASSERT((_this   != 0));
+	CASSERT((path    != 0));
+	CASSERT((centerX != 0));
+	CASSERT((centerY != 0));
 
 	/* add the square */
 	{
 		/* declarations */
-		SDPointF  delta[4];
-		SDVectorF center;
-		SDFloat   dX;
-		SDFloat   dY;
+		CPointF  delta[4];
+		CVectorF center;
+		CFloat   dX;
+		CFloat   dY;
 
 		/* get the center point */
-		SDVector_X(center) = *centerX;
-		SDVector_Y(center) = *centerY;
+		CVector_X(center) = *centerX;
+		CVector_Y(center) = *centerY;
 
 		/* calculate the bounds components */
 		dX = (slopeX * _this->u.other.radius);
 		dY = (slopeY * _this->u.other.radius);
 
 		/* calculate the cap bounds */
-		SDPoint_X(delta[0]) =  (dY + dX);
-		SDPoint_Y(delta[0]) =  (dY - dX);
-		SDPoint_X(delta[1]) =  (dY);
-		SDPoint_Y(delta[1]) = -(dX);
-		SDPoint_X(delta[2]) = -(dY);
-		SDPoint_Y(delta[2]) =  (dX);
-		SDPoint_X(delta[3]) = -(SDPoint_Y(delta[0]));
-		SDPoint_Y(delta[3]) =  (SDPoint_X(delta[0]));
+		CPoint_X(delta[0]) =  (dY + dX);
+		CPoint_Y(delta[0]) =  (dY - dX);
+		CPoint_X(delta[1]) =  (dY);
+		CPoint_Y(delta[1]) = -(dX);
+		CPoint_X(delta[2]) = -(dY);
+		CPoint_Y(delta[2]) =  (dX);
+		CPoint_X(delta[3]) = -(CPoint_Y(delta[0]));
+		CPoint_Y(delta[3]) =  (CPoint_X(delta[0]));
 
 		/* transform the cap */
-		SDAffineTransformF_TransformPoints
+		CAffineTransformF_TransformPoints
 			(_this->u.other.u.transform, delta, 4);
 
 		/* translate the cap into place */
-		SDVectorF_TranslatePoints(&center, delta, 4);
+		CVectorF_TranslatePoints(&center, delta, 4);
 
 		/* add the stroke to the path */
-		SDStatus_Check
-			(SDPath_AddPolygon
+		CStatus_Check
+			(CPath_AddPolygon
 				(path, delta, 4));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStrokeCapper_AddSquareAnchor(SDStrokeCapper *_this,
-                               SDPath         *path,
-                               SDFloat        *centerX,
-                               SDFloat        *centerY,
-                               SDFloat         slopeX,
-                               SDFloat         slopeY)
+static CStatus
+CStrokeCapper_AddSquareAnchor(CStrokeCapper *_this,
+                               CPath         *path,
+                               CFloat        *centerX,
+                               CFloat        *centerY,
+                               CFloat         slopeX,
+                               CFloat         slopeY)
 {
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((path    != 0));
-	SDASSERT((centerX != 0));
-	SDASSERT((centerY != 0));
+	CASSERT((_this   != 0));
+	CASSERT((path    != 0));
+	CASSERT((centerX != 0));
+	CASSERT((centerY != 0));
 
 	/* add the square */
 	{
 		/* declarations */
-		SDPointF  delta[4];
-		SDVectorF center;
-		SDFloat   dX;
-		SDFloat   dY;
+		CPointF  delta[4];
+		CVectorF center;
+		CFloat   dX;
+		CFloat   dY;
 
 		/* get the center point */
-		SDVector_X(center) = *centerX;
-		SDVector_Y(center) = *centerY;
+		CVector_X(center) = *centerX;
+		CVector_Y(center) = *centerY;
 
 		/* calculate the bounds components */
 		dX = (slopeX * _this->u.other.radius);
 		dY = (slopeY * _this->u.other.radius);
 
 		/* calculate the cap bounds */
-		SDPoint_X(delta[0]) =  (dY + dX);
-		SDPoint_Y(delta[0]) =  (dY - dX);
-		SDPoint_X(delta[1]) =  SDPoint_Y(delta[0]);
-		SDPoint_Y(delta[1]) = -SDPoint_X(delta[0]);
-		SDPoint_X(delta[2]) = -SDPoint_X(delta[0]);
-		SDPoint_Y(delta[2]) = -SDPoint_Y(delta[0]);
-		SDPoint_X(delta[3]) = -SDPoint_Y(delta[0]);
-		SDPoint_Y(delta[3]) =  SDPoint_X(delta[0]);
+		CPoint_X(delta[0]) =  (dY + dX);
+		CPoint_Y(delta[0]) =  (dY - dX);
+		CPoint_X(delta[1]) =  CPoint_Y(delta[0]);
+		CPoint_Y(delta[1]) = -CPoint_X(delta[0]);
+		CPoint_X(delta[2]) = -CPoint_X(delta[0]);
+		CPoint_Y(delta[2]) = -CPoint_Y(delta[0]);
+		CPoint_X(delta[3]) = -CPoint_Y(delta[0]);
+		CPoint_Y(delta[3]) =  CPoint_X(delta[0]);
 
 		/* transform the cap */
-		SDVectorF_ScalePoints(_this->u.other.u.scale, delta, 4);
+		CVectorF_ScalePoints(_this->u.other.u.scale, delta, 4);
 
 		/* translate the cap into place */
-		SDVectorF_TranslatePoints(&center, delta, 4);
+		CVectorF_TranslatePoints(&center, delta, 4);
 
 		/* add the stroke to the path */
-		SDStatus_Check
-			(SDPath_AddPolygon
+		CStatus_Check
+			(CPath_AddPolygon
 				(path, delta, 4));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStrokeCapper_AddTriangle(SDStrokeCapper *_this,
-                           SDPath         *path,
-                           SDFloat        *centerX,
-                           SDFloat        *centerY,
-                           SDFloat         slopeX,
-                           SDFloat         slopeY)
+static CStatus
+CStrokeCapper_AddTriangle(CStrokeCapper *_this,
+                           CPath         *path,
+                           CFloat        *centerX,
+                           CFloat        *centerY,
+                           CFloat         slopeX,
+                           CFloat         slopeY)
 {
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((path    != 0));
-	SDASSERT((centerX != 0));
-	SDASSERT((centerY != 0));
+	CASSERT((_this   != 0));
+	CASSERT((path    != 0));
+	CASSERT((centerX != 0));
+	CASSERT((centerY != 0));
 
 	/* add the triangle */
 	{
 		/* declarations */
-		SDPointF  delta[3];
-		SDVectorF center;
-		SDFloat   dX;
-		SDFloat   dY;
+		CPointF  delta[3];
+		CVectorF center;
+		CFloat   dX;
+		CFloat   dY;
 
 		/* get the center point */
-		SDVector_X(center) = *centerX;
-		SDVector_Y(center) = *centerY;
+		CVector_X(center) = *centerX;
+		CVector_Y(center) = *centerY;
 
 		/* calculate the bounds components */
 		dX = (slopeX * _this->u.other.radius);
 		dY = (slopeY * _this->u.other.radius);
 
 		/* calculate the cap bounds */
-		SDPoint_X(delta[0]) =  dY;
-		SDPoint_Y(delta[0]) = -dX;
-		SDPoint_X(delta[1]) =  dX;
-		SDPoint_Y(delta[1]) =  dY;
-		SDPoint_X(delta[2]) = -dY;
-		SDPoint_Y(delta[2]) =  dX;
+		CPoint_X(delta[0]) =  dY;
+		CPoint_Y(delta[0]) = -dX;
+		CPoint_X(delta[1]) =  dX;
+		CPoint_Y(delta[1]) =  dY;
+		CPoint_X(delta[2]) = -dY;
+		CPoint_Y(delta[2]) =  dX;
 
 		/* transform the cap */
-		SDAffineTransformF_TransformPoints
+		CAffineTransformF_TransformPoints
 			(_this->u.other.u.transform, delta, 3);
 
 		/* translate the cap into place */
-		SDVectorF_TranslatePoints(&center, delta, 3);
+		CVectorF_TranslatePoints(&center, delta, 3);
 
 		/* add the cap to the path */
-		SDStatus_Check
-			(SDPath_AddPolygon
+		CStatus_Check
+			(CPath_AddPolygon
 				(path, delta, 3));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStrokeCapper_AddDiamondAnchor(SDStrokeCapper *_this,
-                                SDPath         *path,
-                                SDFloat        *centerX,
-                                SDFloat        *centerY,
-                                SDFloat         slopeX,
-                                SDFloat         slopeY)
+static CStatus
+CStrokeCapper_AddDiamondAnchor(CStrokeCapper *_this,
+                                CPath         *path,
+                                CFloat        *centerX,
+                                CFloat        *centerY,
+                                CFloat         slopeX,
+                                CFloat         slopeY)
 {
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((path    != 0));
-	SDASSERT((centerX != 0));
-	SDASSERT((centerY != 0));
+	CASSERT((_this   != 0));
+	CASSERT((path    != 0));
+	CASSERT((centerX != 0));
+	CASSERT((centerY != 0));
 
 	/* add the diamond */
 	{
 		/* declarations */
-		SDPointF  delta[4];
-		SDVectorF center;
-		SDFloat   dX;
-		SDFloat   dY;
+		CPointF  delta[4];
+		CVectorF center;
+		CFloat   dX;
+		CFloat   dY;
 
 		/* get the center point */
-		SDVector_X(center) = *centerX;
-		SDVector_Y(center) = *centerY;
+		CVector_X(center) = *centerX;
+		CVector_Y(center) = *centerY;
 
 		/* calculate the bounds components */
 		dX = (slopeX * _this->u.other.radius);
 		dY = (slopeY * _this->u.other.radius);
 
 		/* calculate the cap bounds */
-		SDPoint_X(delta[0]) =  dY;
-		SDPoint_Y(delta[0]) = -dX;
-		SDPoint_X(delta[1]) =  dX;
-		SDPoint_Y(delta[1]) =  dY;
-		SDPoint_X(delta[2]) = -dY;
-		SDPoint_Y(delta[2]) =  dX;
-		SDPoint_X(delta[3]) = -dX;
-		SDPoint_Y(delta[3]) = -dY;
+		CPoint_X(delta[0]) =  dY;
+		CPoint_Y(delta[0]) = -dX;
+		CPoint_X(delta[1]) =  dX;
+		CPoint_Y(delta[1]) =  dY;
+		CPoint_X(delta[2]) = -dY;
+		CPoint_Y(delta[2]) =  dX;
+		CPoint_X(delta[3]) = -dX;
+		CPoint_Y(delta[3]) = -dY;
 
 		/* scale the cap */
-		SDVectorF_ScalePoints(_this->u.other.u.scale, delta, 4);
+		CVectorF_ScalePoints(_this->u.other.u.scale, delta, 4);
 
 		/* translate the cap into place */
-		SDVectorF_TranslatePoints(&center, delta, 4);
+		CVectorF_TranslatePoints(&center, delta, 4);
 
 		/* add the cap to the path */
-		SDStatus_Check
-			(SDPath_AddPolygon
+		CStatus_Check
+			(CPath_AddPolygon
 				(path, delta, 4));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStrokeCapper_AddRound(SDStrokeCapper *_this,
-                        SDPath         *path,
-                        SDFloat        *centerX,
-                        SDFloat        *centerY,
-                        SDFloat         slopeX,
-                        SDFloat         slopeY)
+static CStatus
+CStrokeCapper_AddRound(CStrokeCapper *_this,
+                        CPath         *path,
+                        CFloat        *centerX,
+                        CFloat        *centerY,
+                        CFloat         slopeX,
+                        CFloat         slopeY)
 {
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((path    != 0));
-	SDASSERT((centerX != 0));
-	SDASSERT((centerY != 0));
+	CASSERT((_this   != 0));
+	CASSERT((path    != 0));
+	CASSERT((centerX != 0));
+	CASSERT((centerY != 0));
 
 	/* add the circle */
 	{
 		/* declarations */
-		SDPointF  *points;
-		SDPointF  *tmp;
-		SDVectorF  center;
+		CPointF  *points;
+		CPointF  *tmp;
+		CVectorF  center;
 
 		/* get the center point */
-		SDVector_X(center) = *centerX;
-		SDVector_X(center) = *centerY;
+		CVector_X(center) = *centerX;
+		CVector_X(center) = *centerY;
 
 		/* get the points */
 		points = _this->u.round.points;
@@ -1050,44 +1050,44 @@ SDStrokeCapper_AddRound(SDStrokeCapper *_this,
 		tmp = (points + _this->u.round.count);
 
 		/* copy the points into temporary space */
-		SDMemCopy(tmp, points, _this->u.round.size);
+		CMemCopy(tmp, points, _this->u.round.size);
 
 		/* translate the cap into place */
-		SDVectorF_TranslatePoints(&center, tmp, _this->u.round.count);
+		CVectorF_TranslatePoints(&center, tmp, _this->u.round.count);
 
 		/* add the cap to the path */
-		SDStatus_Check
-			(SDPath_AddPolygon
+		CStatus_Check
+			(CPath_AddPolygon
 				(path, tmp, _this->u.round.count));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStrokeCapper_AddArrowAnchor(SDStrokeCapper *_this,
-                              SDPath         *path,
-                              SDFloat        *centerX,
-                              SDFloat        *centerY,
-                              SDFloat         slopeX,
-                              SDFloat         slopeY)
+static CStatus
+CStrokeCapper_AddArrowAnchor(CStrokeCapper *_this,
+                              CPath         *path,
+                              CFloat        *centerX,
+                              CFloat        *centerY,
+                              CFloat         slopeX,
+                              CFloat         slopeY)
 {
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((path    != 0));
-	SDASSERT((centerX != 0));
-	SDASSERT((centerY != 0));
+	CASSERT((_this   != 0));
+	CASSERT((path    != 0));
+	CASSERT((centerX != 0));
+	CASSERT((centerY != 0));
 
 	/* add the arrow */
 	{
 		/* declarations */
-		SDPointF  delta[3];
-		SDVectorF center;
-		SDFloat   dX;
-		SDFloat   dY;
-		SDFloat   oX;
-		SDFloat   oY;
+		CPointF  delta[3];
+		CVectorF center;
+		CFloat   dX;
+		CFloat   dY;
+		CFloat   oX;
+		CFloat   oY;
 
 		/*\
 		|*| NOTE: the arrow cap is essentially two 30-60 right triangles, with
@@ -1113,8 +1113,8 @@ SDStrokeCapper_AddArrowAnchor(SDStrokeCapper *_this,
 		\*/
 
 		/* get the center point */
-		SDVector_X(center) = *centerX;
-		SDVector_Y(center) = *centerY;
+		CVector_X(center) = *centerX;
+		CVector_Y(center) = *centerY;
 
 		/* calculate the bounds components */
 		dX = (slopeX * _this->u.other.radius);
@@ -1132,45 +1132,45 @@ SDStrokeCapper_AddArrowAnchor(SDStrokeCapper *_this,
 		#undef _COS30NEG2
 
 		/* calculate the cap bounds */
-		SDPoint_X(delta[0]) = 0.0f;
-		SDPoint_Y(delta[0]) = 0.0f;
-		SDPoint_X(delta[1]) = (oX + dY);
-		SDPoint_Y(delta[1]) = (oY - dX);
-		SDPoint_X(delta[2]) = (oX - dY);
-		SDPoint_Y(delta[2]) = (oY + dX);
+		CPoint_X(delta[0]) = 0.0f;
+		CPoint_Y(delta[0]) = 0.0f;
+		CPoint_X(delta[1]) = (oX + dY);
+		CPoint_Y(delta[1]) = (oY - dX);
+		CPoint_X(delta[2]) = (oX - dY);
+		CPoint_Y(delta[2]) = (oY + dX);
 
 		/* transform the cap */
-		SDVectorF_ScalePoints(_this->u.other.u.scale, delta, 3);
+		CVectorF_ScalePoints(_this->u.other.u.scale, delta, 3);
 
 		/* translate the cap into place */
-		SDVectorF_TranslatePoints(&center, delta, 3);
+		CVectorF_TranslatePoints(&center, delta, 3);
 
 		/* add the cap to the path */
-		SDStatus_Check
-			(SDPath_AddPolygon
+		CStatus_Check
+			(CPath_AddPolygon
 				(path, delta, 3));
 
 		/* update the center point */
-		*centerX = (oX + SDVector_X(center));
-		*centerY = (oY + SDVector_Y(center));
+		*centerX = (oX + CVector_X(center));
+		*centerY = (oY + CVector_Y(center));
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDStrokeJoiner_Initialize(SDStrokeJoiner     *_this,
-                          SDPointArrayF      *array,
-                          SDAffineTransformF *transform,
-                          SDLineJoin          join,
-                          SDFloat             radius,
-                          SDFloat             limit)
+static CStatus
+CStrokeJoiner_Initialize(CStrokeJoiner     *_this,
+                          CPointArrayF      *array,
+                          CAffineTransformF *transform,
+                          CLineJoin          join,
+                          CFloat             radius,
+                          CFloat             limit)
 {
 	/* assertions */
-	SDASSERT((_this     != 0));
-	SDASSERT((array     != 0));
-	SDASSERT((transform != 0));
+	CASSERT((_this     != 0));
+	CASSERT((array     != 0));
+	CASSERT((transform != 0));
 
 	/* set the type to the default */
 	_this->type = 0;
@@ -1178,8 +1178,8 @@ SDStrokeJoiner_Initialize(SDStrokeJoiner     *_this,
 	/* initialize the joiner */
 	switch(join)
 	{
-		case SDLineJoin_Miter:
-		case SDLineJoin_MiterClipped:
+		case CLineJoin_Miter:
+		case CLineJoin_MiterClipped:
 		{
 			/*\
 			|*| TODO: the fallback for Miter should be a partial miter, out to
@@ -1187,35 +1187,35 @@ SDStrokeJoiner_Initialize(SDStrokeJoiner     *_this,
 			|*|       bevel fallback, as is the case for MiterClipped
 			\*/
 			_this->u.other.transform         = transform;
-			SDVector_X(_this->u.other.scale) = radius;
-			SDVector_Y(_this->u.other.scale) = radius;
+			CVector_X(_this->u.other.scale) = radius;
+			CVector_Y(_this->u.other.scale) = radius;
 			_this->u.other.limitSquared      = (limit * limit);
-			_this->Join                      = SDStrokeJoiner_AddMiter;
+			_this->Join                      = CStrokeJoiner_AddMiter;
 		}
 		break;
-		case SDLineJoin_Round:
+		case CLineJoin_Round:
 		{
 			/* get the circle points */
-			SDStroker_CirclePoints(array, radius, transform, 0);
+			CStroker_CirclePoints(array, radius, transform, 0);
 
 			/* set the points with temporary spacing */
-			SDStroker_TempSpacePoints
+			CStroker_TempSpacePoints
 				(array,
 				 _this->u.round.points,
 				 _this->u.round.count,
 				 _this->u.round.size);
 
 			/* set the join method */
-			_this->Join = SDStrokeJoiner_AddRound;
+			_this->Join = CStrokeJoiner_AddRound;
 		}
 		break;
-		case SDLineJoin_Bevel:
+		case CLineJoin_Bevel:
 		default:
 		{
 			_this->u.other.transform         = transform;
-			SDVector_X(_this->u.other.scale) = radius;
-			SDVector_Y(_this->u.other.scale) = radius;
-			_this->Join                      = SDStrokeJoiner_AddBevel;
+			CVector_X(_this->u.other.scale) = radius;
+			CVector_Y(_this->u.other.scale) = radius;
+			_this->Join                      = CStrokeJoiner_AddBevel;
 		}
 		break;
 	}
@@ -1224,36 +1224,36 @@ SDStrokeJoiner_Initialize(SDStrokeJoiner     *_this,
 	_this->type = join;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 static void
-SDStrokeJoiner_Finalize(SDStrokeJoiner *_this)
+CStrokeJoiner_Finalize(CStrokeJoiner *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the capper */
-	if(_this->type == SDLineJoin_Round)
+	if(_this->type == CLineJoin_Round)
 	{
-		SDFree(_this->u.round.points);
+		CFree(_this->u.round.points);
 		_this->type = 0;
 	}
 }
 
-static SDStatus
-SDStrokeCapper_Initialize(SDStrokeCapper     *_this,
-                          SDPointArrayF      *array,
-                          SDAffineTransformF *transform,
-                          SDVectorF          *scale,
-                          SDLineCap           cap,
-                          SDFloat             radius)
+static CStatus
+CStrokeCapper_Initialize(CStrokeCapper     *_this,
+                          CPointArrayF      *array,
+                          CAffineTransformF *transform,
+                          CVectorF          *scale,
+                          CLineCap           cap,
+                          CFloat             radius)
 {
 	/* assertions */
-	SDASSERT((_this     != 0));
-	SDASSERT((array     != 0));
-	SDASSERT((transform != 0));
-	SDASSERT((scale     != 0));
+	CASSERT((_this     != 0));
+	CASSERT((array     != 0));
+	CASSERT((transform != 0));
+	CASSERT((scale     != 0));
 
 	/* set the type to the default */
 	_this->type = 0;
@@ -1261,68 +1261,68 @@ SDStrokeCapper_Initialize(SDStrokeCapper     *_this,
 	/* initialize the capper */
 	switch(cap)
 	{
-		case SDLineCap_Square:
+		case CLineCap_Square:
 		{
 			_this->u.other.radius      = radius;
 			_this->u.other.u.transform = transform;
-			_this->Cap                 = SDStrokeCapper_AddSquare;
+			_this->Cap                 = CStrokeCapper_AddSquare;
 		}
 		break;
-		case SDLineCap_Round:
-		case SDLineCap_RoundAnchor:
+		case CLineCap_Round:
+		case CLineCap_RoundAnchor:
 		{
 			/* get the circle points */
-			if(cap == SDLineCap_Round)
+			if(cap == CLineCap_Round)
 			{
-				SDStroker_CirclePoints(array, radius, transform, 0);
+				CStroker_CirclePoints(array, radius, transform, 0);
 			}
 			else
 			{
-				SDStroker_CirclePoints(array, (radius * 2.0f), 0, scale);
+				CStroker_CirclePoints(array, (radius * 2.0f), 0, scale);
 			}
 
 			/* set the points with temporary spacing */
-			SDStroker_TempSpacePoints
+			CStroker_TempSpacePoints
 				(array,
 				 _this->u.round.points,
 				 _this->u.round.count,
 				 _this->u.round.size);
 
 			/* set the cap method */
-			_this->Cap = SDStrokeCapper_AddRound;
+			_this->Cap = CStrokeCapper_AddRound;
 		}
 		break;
-		case SDLineCap_Triangle:
+		case CLineCap_Triangle:
 		{
 			_this->u.other.radius      = radius;
 			_this->u.other.u.transform = transform;
-			_this->Cap                 = SDStrokeCapper_AddTriangle;
+			_this->Cap                 = CStrokeCapper_AddTriangle;
 		}
 		break;
-		case SDLineCap_SquareAnchor:
+		case CLineCap_SquareAnchor:
 		{
 			_this->u.other.radius  = (radius * 1.5f);
 			_this->u.other.u.scale = scale;
-			_this->Cap             = SDStrokeCapper_AddSquareAnchor;
+			_this->Cap             = CStrokeCapper_AddSquareAnchor;
 		}
 		break;
-		case SDLineCap_DiamondAnchor:
+		case CLineCap_DiamondAnchor:
 		{
 			_this->u.other.radius  = (radius * 2.0f);
 			_this->u.other.u.scale = scale;
-			_this->Cap             = SDStrokeCapper_AddDiamondAnchor;
+			_this->Cap             = CStrokeCapper_AddDiamondAnchor;
 		}
 		break;
-		case SDLineCap_ArrowAnchor:
+		case CLineCap_ArrowAnchor:
 		{
 			_this->u.other.radius  = (radius * 2.0f);
 			_this->u.other.u.scale = scale;
-			_this->Cap             = SDStrokeCapper_AddArrowAnchor;
+			_this->Cap             = CStrokeCapper_AddArrowAnchor;
 		}
 		break;
-		case SDLineCap_Flat:
-		case SDLineCap_NoAnchor:
-		case SDLineCap_Custom: /* TODO: add custom cap */
+		case CLineCap_Flat:
+		case CLineCap_NoAnchor:
+		case CLineCap_Custom: /* TODO: add custom cap */
 		default:
 		{
 			_this->Cap  = 0;
@@ -1334,43 +1334,43 @@ SDStrokeCapper_Initialize(SDStrokeCapper     *_this,
 	_this->type = cap;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 static void
-SDStrokeCapper_Finalize(SDStrokeCapper *_this)
+CStrokeCapper_Finalize(CStrokeCapper *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the capper */
-	if((_this->type & ~SDLineCap_AnchorMask) == SDLineCap_Round)
+	if((_this->type & ~CLineCap_AnchorMask) == CLineCap_Round)
 	{
-		SDFree(_this->u.round.points);
+		CFree(_this->u.round.points);
 		_this->type = 0;
 	}
 }
 
-SDINTERNAL SDStatus
-SDStroker_Initialize(SDStroker          *_this,
-                     SDPen              *pen,
-                     SDAffineTransformF *deviceTransform)
+CINTERNAL CStatus
+CStroker_Initialize(CStroker          *_this,
+                     CPen              *pen,
+                     CAffineTransformF *deviceTransform)
 {
 	/* assertions */
-	SDASSERT((_this           != 0));
-	SDASSERT((pen             != 0));
-	SDASSERT((deviceTransform != 0));
+	CASSERT((_this           != 0));
+	CASSERT((pen             != 0));
+	CASSERT((deviceTransform != 0));
 
 	/* initialize the stroker */
 	{
 		/* declarations */
-		SDLineCap  startCap;
-		SDLineCap  endCap;
-		SDLineJoin lineJoin;
-		SDFloat    scaleX;
-		SDFloat    scaleY;
-		SDFloat    width;
-		SDFloat    miterLimit;
+		CLineCap  startCap;
+		CLineCap  endCap;
+		CLineJoin lineJoin;
+		CFloat    scaleX;
+		CFloat    scaleY;
+		CFloat    width;
+		CFloat    miterLimit;
 
 		/* get the cap and join information from the pen */
 		startCap = pen->startCap;
@@ -1389,19 +1389,19 @@ SDStroker_Initialize(SDStroker          *_this,
 		_this->pen =  pen->transform;
 
 		/* extract the scale from the device transformation */
-		SDAffineTransformF_ExtractScale
-			(&(_this->dev), &scaleX, &scaleY, SDMatrixOrder_Prepend);
+		CAffineTransformF_ExtractScale
+			(&(_this->dev), &scaleX, &scaleY, CMatrixOrder_Prepend);
 
 		/* set the scale */
-		SDVector_X(_this->scale) = scaleX;
-		SDVector_Y(_this->scale) = scaleY;
+		CVector_X(_this->scale) = scaleX;
+		CVector_Y(_this->scale) = scaleY;
 
 		/* scale the pen transformation */
-		SDAffineTransformF_Scale
-			(&(_this->pen), scaleX, scaleY, SDMatrixOrder_Append);
+		CAffineTransformF_Scale
+			(&(_this->pen), scaleX, scaleY, CMatrixOrder_Append);
 
 		/* initialize the temporary array */
-		SDPointArrayF_Initialize(&(_this->array));
+		CPointArrayF_Initialize(&(_this->array));
 
 		/* TODO: compound and dashed strokes */
 
@@ -1409,127 +1409,127 @@ SDStroker_Initialize(SDStroker          *_this,
 		if(width <= 0 || ((width * scaleX) == 1  && (width * scaleY) == 1))
 		{
 			/* set up for fast stroke */
-			_this->startCapper = SDStrokeCapper_Zero;
-			_this->endCapper   = SDStrokeCapper_Zero;
-			_this->joiner      = SDStrokeJoiner_Zero;
-			_this->Stroke      = SDStroker_FastStroke;
+			_this->startCapper = CStrokeCapper_Zero;
+			_this->endCapper   = CStrokeCapper_Zero;
+			_this->joiner      = CStrokeJoiner_Zero;
+			_this->Stroke      = CStroker_FastStroke;
 			_this->dev         = *deviceTransform;
-			_this->pen         = SDAffineTransformF_Identity;
+			_this->pen         = CAffineTransformF_Identity;
 		}
 		else
 		{
 			/* initialize the start capper */
-			SDStatus_Check
-				(SDStrokeCapper_Initialize
+			CStatus_Check
+				(CStrokeCapper_Initialize
 					(&(_this->startCapper), &(_this->array), &(_this->pen),
 					 &(_this->scale), startCap, _this->radius));
 
 			/* initialize the end capper */
-			SDStatus_Check
-				(SDStrokeCapper_Initialize
+			CStatus_Check
+				(CStrokeCapper_Initialize
 					(&(_this->endCapper), &(_this->array), &(_this->pen),
 					 &(_this->scale), endCap, _this->radius));
 
 			/* initialize the joiner */
-			SDStatus_Check
-				(SDStrokeJoiner_Initialize
+			CStatus_Check
+				(CStrokeJoiner_Initialize
 					(&(_this->joiner), &(_this->array), &(_this->pen),
 					 lineJoin, _this->radius, miterLimit));
 
 			/* set the stroke method */
-			_this->Stroke = SDStroker_FullStroke;
+			_this->Stroke = CStroker_FullStroke;
 		}
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL void
-SDStroker_Finalize(SDStroker *_this)
+CINTERNAL void
+CStroker_Finalize(CStroker *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the stroker */
-	SDPointArrayF_Finalize(&(_this->array));
-	SDStrokeCapper_Finalize(&(_this->startCapper));
-	SDStrokeCapper_Finalize(&(_this->endCapper));
-	SDStrokeJoiner_Finalize(&(_this->joiner));
+	CPointArrayF_Finalize(&(_this->array));
+	CStrokeCapper_Finalize(&(_this->startCapper));
+	CStrokeCapper_Finalize(&(_this->endCapper));
+	CStrokeJoiner_Finalize(&(_this->joiner));
 	_this->Stroke = 0;
 }
 
-SDINTERNAL SDStatus
-SDStroker_Stroke(SDStroker *_this,
-                 SDPath    *path,
-                 SDPointF  *points,
-                 SDByte    *types,
-                 SDUInt32   count)
+CINTERNAL CStatus
+CStroker_Stroke(CStroker *_this,
+                 CPath    *path,
+                 CPointF  *points,
+                 CByte    *types,
+                 CUInt32   count)
 {
 	/* declarations */
-	SDStatus  status;
+	CStatus  status;
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((path   != 0));
-	SDASSERT((points != 0));
-	SDASSERT((types  != 0));
+	CASSERT((_this  != 0));
+	CASSERT((path   != 0));
+	CASSERT((points != 0));
+	CASSERT((types  != 0));
 
 	/* bail out now if there's nothing to do */
-	SDStatus_Require((count != 0), SDStatus_OK);
+	CStatus_Require((count != 0), CStatus_OK);
 
 	/* stroke path */
 	{
 		/* declarations */
-		SDPointF *newPoints;
-		SDByte   *newTypes;
-		SDUInt32  newCount;
+		CPointF *newPoints;
+		CByte   *newTypes;
+		CUInt32  newCount;
 
 		/* assertions */
-		SDASSERT((points != 0));
-		SDASSERT((types  != 0));
+		CASSERT((points != 0));
+		CASSERT((types  != 0));
 
 		/* scale the path */
-		SDVectorF_ScalePoints(&(_this->scale), points, count);
+		CVectorF_ScalePoints(&(_this->scale), points, count);
 
 		/* flatten the path */
 		{
 			/* declarations */
-			SDFlattener flattener;
-			SDUInt32    capacity;
+			CFlattener flattener;
+			CUInt32    capacity;
 
 			/* initialize the flattener */
-			SDFlattener_Initialize(&flattener);
+			CFlattener_Initialize(&flattener);
 
 			/* flatten the path */
 			status =
-				SDFlattener_Flatten
-					(&flattener, points, types, count, SDFiller_TOLERANCE);
+				CFlattener_Flatten
+					(&flattener, points, types, count, CFiller_TOLERANCE);
 
 			/* handle flattening failures */
-			if(status != SDStatus_OK)
+			if(status != CStatus_OK)
 			{
 				/* finalize the flattener */
-				SDFlattener_Finalize(&flattener, 0, 0, 0, 0);
+				CFlattener_Finalize(&flattener, 0, 0, 0, 0);
 
 				/* return status */
 				return status;
 			}
 
 			/* finalize the flattener */
-			SDFlattener_Finalize
+			CFlattener_Finalize
 				(&flattener, &newPoints, &newTypes, &newCount, &capacity);
 
 		}
 
 		/* stroke the subpaths */
 		status =
-			SDStroker_StrokeSubpaths
+			CStroker_StrokeSubpaths
 				(_this, path, newPoints, newTypes, newCount);
 
 		/* free the flattened path */
-		SDFree(newPoints);
-		SDFree(newTypes);
+		CFree(newPoints);
+		CFree(newTypes);
 	}
 
 	/* return status */

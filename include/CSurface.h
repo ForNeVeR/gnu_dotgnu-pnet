@@ -1,5 +1,5 @@
 /*
- * SDSurface.h - Surface header.
+ * CSurface.h - Surface header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_SURFACE_H_
-#define _SD_SURFACE_H_
+#ifndef _C_SURFACE_H_
+#define _C_SURFACE_H_
 
 #include "CrayonsInternal.h"
 #include "CMutex.h"
@@ -28,23 +28,23 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDSurfaceClass SDSurfaceClass;
+typedef struct _tagCSurfaceClass CSurfaceClass;
 
-struct _tagSDSurface
+struct _tagCSurface
 {
-	const SDSurfaceClass *_class;
-	SDMutex              *lock;
-	SDUInt32              refCount;
-	SDUInt32              x;
-	SDUInt32              y;
-	SDUInt32              width;
-	SDUInt32              height;
-	pixman_image_t       *clip;
-	pixman_image_t       *comp;
-	SDUInt32              maskFlags;
+	const CSurfaceClass *_class;
+	CMutex              *lock;
+	CUInt32              refCount;
+	CUInt32              x;
+	CUInt32              y;
+	CUInt32              width;
+	CUInt32              height;
+	pixman_image_t      *clip;
+	pixman_image_t      *comp;
+	CUInt32              maskFlags;
 };
 
-struct _tagSDSurfaceClass
+struct _tagCSurfaceClass
 {
 	/*\
 	|*| Composite the image onto the surface.
@@ -60,14 +60,14 @@ struct _tagSDSurfaceClass
 	|*|
 	|*|  Returns status code.
 	\*/
-	SDStatus (*Composite)(SDSurface         *_this,
-	                      SDUInt32           x,
-	                      SDUInt32           y,
-	                      SDUInt32           width,
-	                      SDUInt32           height,
-	                      pixman_image_t    *src,
-	                      pixman_image_t    *mask,
-	                      pixman_operator_t  op);
+	CStatus (*Composite)(CSurface          *_this,
+	                     CUInt32            x,
+	                     CUInt32            y,
+	                     CUInt32            width,
+	                     CUInt32            height,
+	                     pixman_image_t    *src,
+	                     pixman_image_t    *mask,
+	                     pixman_operator_t  op);
 
 	/*\
 	|*| Clear the surface.
@@ -77,8 +77,8 @@ struct _tagSDSurfaceClass
 	|*|
 	|*|  Returns status code.
 	\*/
-	SDStatus (*Clear)(SDSurface *_this,
-	                  SDColor    color);
+	CStatus (*Clear)(CSurface *_this,
+	                 CColor    color);
 
 	/*\
 	|*| Flush the surface.
@@ -88,15 +88,15 @@ struct _tagSDSurfaceClass
 	|*|
 	|*|  Returns status code.
 	\*/
-	SDStatus (*Flush)(SDSurface        *_this,
-	                  SDFlushIntention  intention);
+	CStatus (*Flush)(CSurface        *_this,
+	                 CFlushIntention  intention);
 
 	/*\
 	|*| Finalize the surface.
 	|*|
 	|*|   _this - this surface
 	\*/
-	void (*Finalize)(SDSurface *_this);
+	void (*Finalize)(CSurface *_this);
 
 	/*\
 	|*| Sentinel string to catch missing methods in class tables.
@@ -105,27 +105,27 @@ struct _tagSDSurfaceClass
 };
 
 
-SDINTERNAL SDStatus
-SDSurface_GetClipMask(SDSurface        *_this,
-                      pixman_image_t  **mask,
-                      SDBool            gray);
-SDINTERNAL SDStatus
-SDSurface_GetCompositingMask(SDSurface       *_this,
-                             pixman_image_t **mask,
-                             SDBool           gray);
-SDINTERNAL SDStatus
-SDSurface_Initialize(SDSurface            *_this,
-                     const SDSurfaceClass *_class,
-                     SDUInt32              x,
-                     SDUInt32              y,
-                     SDUInt32              width,
-                     SDUInt32              height);
+CINTERNAL CStatus
+CSurface_GetClipMask(CSurface        *_this,
+                     pixman_image_t **mask,
+                     CBool            gray);
+CINTERNAL CStatus
+CSurface_GetCompositingMask(CSurface        *_this,
+                            pixman_image_t **mask,
+                            CBool            gray);
+CINTERNAL CStatus
+CSurface_Initialize(CSurface            *_this,
+                    const CSurfaceClass *_class,
+                    CUInt32              x,
+                    CUInt32              y,
+                    CUInt32              width,
+                    CUInt32              height);
 
-#define SDSurface_ClipMask8 1
-#define SDSurface_CompMask8 2
+#define CSurface_ClipMask8 1
+#define CSurface_CompMask8 2
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_SURFACE_H_ */
+#endif /* _C_SURFACE_H_ */

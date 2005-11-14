@@ -1,5 +1,5 @@
 /*
- * SDRegionTransformer.h - Region transformer header.
+ * CRegionTransformer.h - Region transformer header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_REGIONTRANSFORMER_H_
-#define _SD_REGIONTRANSFORMER_H_
+#ifndef _C_REGIONTRANSFORMER_H_
+#define _C_REGIONTRANSFORMER_H_
 
 #include "CRegionInterpreter.h"
 
@@ -27,21 +27,21 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDRegionTransformer SDRegionTransformer;
-struct _tagSDRegionTransformer
+typedef struct _tagCRegionTransformer CRegionTransformer;
+struct _tagCRegionTransformer
 {
-	SDRegionInterpreter  _base;
-	SDAffineTransformF  *transform;
+	CRegionInterpreter  _base;
+	CAffineTransformF  *transform;
 };
 
-SDINTERNAL void
-SDRegionTransformer_Initialize(SDRegionTransformer *_this,
-                               SDAffineTransformF  *transform);
-SDINTERNAL void
-SDRegionTransformer_Finalize(SDRegionTransformer *_this);
+CINTERNAL void
+CRegionTransformer_Initialize(CRegionTransformer *_this,
+                              CAffineTransformF  *transform);
+CINTERNAL void
+CRegionTransformer_Finalize(CRegionTransformer *_this);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_REGIONTRANSFORMER_H_ */
+#endif /* _C_REGIONTRANSFORMER_H_ */

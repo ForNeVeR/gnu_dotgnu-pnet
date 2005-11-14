@@ -1,5 +1,5 @@
 /*
- * SDX11Surface.c - X11 surface implementation.
+ * CX11Surface.c - X11 surface implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -30,12 +30,12 @@ extern "C" {
 
 /* TODO: use XRender when available */
 
-static SDStatus
-SDX11Surface_GetImages(SDX11Surface    *_this,
-                       SDUInt32         x,
-                       SDUInt32         y,
-                       SDUInt32         width,
-                       SDUInt32         height,
+static CStatus
+CX11Surface_GetImages(CX11Surface    *_this,
+                       CUInt32         x,
+                       CUInt32         y,
+                       CUInt32         width,
+                       CUInt32         height,
                        XImage         **imageX,
                        pixman_image_t **imageP)
 {
@@ -44,9 +44,9 @@ SDX11Surface_GetImages(SDX11Surface    *_this,
 	pixman_format_t *format;
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((imageX != 0));
-	SDASSERT((imageP != 0));
+	CASSERT((_this  != 0));
+	CASSERT((imageX != 0));
+	CASSERT((imageP != 0));
 
 	/* create the pixmap */
 	pixmap =
@@ -82,7 +82,7 @@ SDX11Surface_GetImages(SDX11Surface    *_this,
 	XFreePixmap(_this->dpy, pixmap);
 
 	/* ensure we have the image data */
-	SDStatus_Require((*imageX != 0), SDStatus_OutOfMemory);
+	CStatus_Require((*imageX != 0), CStatus_OutOfMemory);
 
 	/* create the pixman format */
 	format =
@@ -94,7 +94,7 @@ SDX11Surface_GetImages(SDX11Surface    *_this,
 	if(format == 0)
 	{
 		XDestroyImage(*imageX);
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* create the pixman image */
@@ -111,32 +111,32 @@ SDX11Surface_GetImages(SDX11Surface    *_this,
 	if(imageP == 0)
 	{
 		XDestroyImage(*imageX);
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDX11Surface_Composite(SDSurface         *_this,
-                       SDUInt32           x,
-                       SDUInt32           y,
-                       SDUInt32           width,
-                       SDUInt32           height,
+static CStatus
+CX11Surface_Composite(CSurface         *_this,
+                       CUInt32           x,
+                       CUInt32           y,
+                       CUInt32           width,
+                       CUInt32           height,
                        pixman_image_t    *src,
                        pixman_image_t    *mask,
                        pixman_operator_t  op)
 {
 	/* declarations */
-	SDX11Surface *surface;
+	CX11Surface *surface;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((src   != 0));
+	CASSERT((_this != 0));
+	CASSERT((src   != 0));
 
 	/* get this as an x surface */
-	surface = (SDX11Surface *)_this;
+	surface = (CX11Surface *)_this;
 
 	/* perform the composite */
 	{
@@ -145,8 +145,8 @@ SDX11Surface_Composite(SDSurface         *_this,
 		pixman_image_t  *imageP;
 
 		/* create the images */
-		SDStatus_Check
-			(SDX11Surface_GetImages
+		CStatus_Check
+			(CX11Surface_GetImages
 				(surface, x, y, width, height, &imageX, &imageP));
 
 		/* perform the composite */
@@ -166,21 +166,21 @@ SDX11Surface_Composite(SDSurface         *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDX11Surface_Clear(SDSurface *_this,
-                   SDColor    color)
+static CStatus
+CX11Surface_Clear(CSurface *_this,
+                   CColor    color)
 {
 	/* declarations */
-	SDX11Surface *surface;
+	CX11Surface *surface;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* get this as an x surface */
-	surface = (SDX11Surface *)_this;
+	surface = (CX11Surface *)_this;
 
 	/* clear the surface */
 	{
@@ -190,11 +190,11 @@ SDX11Surface_Clear(SDSurface *_this,
 		pixman_color_t   pixel;
 
 		/* create the pixel */
-		pixel = SDUtils_ToPixmanColor(color);
+		pixel = CUtils_ToPixmanColor(color);
 
 		/* create the images */
-		SDStatus_Check
-			(SDX11Surface_GetImages
+		CStatus_Check
+			(CX11Surface_GetImages
 				(surface, 0, 0, _this->width, _this->height, &imageX, &imageP));
 
 		/* perform the clear */
@@ -215,25 +215,25 @@ SDX11Surface_Clear(SDSurface *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDX11Surface_Flush(SDSurface        *_this,
-                   SDFlushIntention  intention)
+static CStatus
+CX11Surface_Flush(CSurface        *_this,
+                   CFlushIntention  intention)
 {
 	/* declarations */
-	SDX11Surface *surface;
+	CX11Surface *surface;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* get this as an x surface */
-	surface = (SDX11Surface *)_this;
+	surface = (CX11Surface *)_this;
 
 	/* flush the surface */
 	{
-		if(intention == SDFlushIntention_Flush)
+		if(intention == CFlushIntention_Flush)
 		{
 			XFlush(surface->dpy);
 		}
@@ -244,20 +244,20 @@ SDX11Surface_Flush(SDSurface        *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 static void
-SDX11Surface_Finalize(SDSurface *_this)
+CX11Surface_Finalize(CSurface *_this)
 {
 	/* declarations */
-	SDX11Surface *surface;
+	CX11Surface *surface;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* get this as an x surface */
-	surface = (SDX11Surface *)_this;
+	surface = (CX11Surface *)_this;
 
 	/* finalize the graphics context, as needed */
 	if(surface->gc != 0)
@@ -266,57 +266,57 @@ SDX11Surface_Finalize(SDSurface *_this)
 	}
 }
 
-SDStatus
-SDX11Surface_Create(SDX11Surface **_this,
+CStatus
+CX11Surface_Create(CX11Surface **_this,
                     Display       *dpy,
                     Drawable       drawable,
                     Screen        *screen,
                     Visual        *visual,
-                    SDUInt32       width,
-                    SDUInt32       height)
+                    CUInt32       width,
+                    CUInt32       height)
 {
 	/* declarations */
-	SDX11Surface *surface;
+	CX11Surface *surface;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a display pointer */
-	SDStatus_Require((dpy != 0), SDStatus_ArgumentNull);
+	CStatus_Require((dpy != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a screen pointer */
-	SDStatus_Require((screen != 0), SDStatus_ArgumentNull);
+	CStatus_Require((screen != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a visual pointer */
-	SDStatus_Require((visual != 0), SDStatus_ArgumentNull);
+	CStatus_Require((visual != 0), CStatus_ArgumentNull);
 
 	/* allocate the surface */
-	if(!(*_this = (SDX11Surface *)SDMalloc(sizeof(SDX11Surface))))
+	if(!(*_this = (CX11Surface *)CMalloc(sizeof(CX11Surface))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* get this as an x surface */
-	surface = ((SDX11Surface *)(*_this));
+	surface = ((CX11Surface *)(*_this));
 
 	/* initialize the base */
 	{
 		/* declarations */
-		SDStatus   status;
-		SDSurface *surface;
+		CStatus   status;
+		CSurface *surface;
 
 		/* get this as a surface */
-		surface = (SDSurface *)*_this;
+		surface = (CSurface *)*_this;
 
 		/* initialize the base */
 		status =
-			SDSurface_Initialize
-				(surface, &SDX11Surface_Class, 0, 0, width, height);
+			CSurface_Initialize
+				(surface, &CX11Surface_Class, 0, 0, width, height);
 
 		/* handle base initialization failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
 			return status;
 		}
@@ -379,7 +379,7 @@ SDX11Surface_Create(SDX11Surface **_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * SDMemory.c - Memory management and manipulation implementation.
+ * CMemory.c - Memory management and manipulation implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -35,42 +35,42 @@
 extern "C" {
 #endif
 
-SDINTERNAL void *
-SDMalloc(SDUInt32 size)
+CINTERNAL void *
+CMalloc(CUInt32 size)
 {
 	return malloc(size);
 }
 
-SDINTERNAL void *
-SDRealloc(void     *ptr,
-          SDUInt32  size)
+CINTERNAL void *
+CRealloc(void     *ptr,
+          CUInt32  size)
 {
 	return realloc(ptr, size);
 }
 
-SDINTERNAL void *
-SDCalloc(SDUInt32 count,
-         SDUInt32 size)
+CINTERNAL void *
+CCalloc(CUInt32 count,
+         CUInt32 size)
 {
 	return calloc(count, size);
 }
 
-SDINTERNAL void
-SDFree(void *ptr)
+CINTERNAL void
+CFree(void *ptr)
 {
 	free(ptr);
 }
 
-SDINTERNAL void *
-SDMemSet(void     *_dst,
-         SDByte    value,
-         SDUInt32  length)
+CINTERNAL void *
+CMemSet(void     *_dst,
+         CByte    value,
+         CUInt32  length)
 {
 #ifdef HAVE_MEMSET
 	return memset(_dst, value, length);
 #else
 	/* get the data pointer */
-	SDByte *dst = (SDByte *)_dst;
+	CByte *dst = (CByte *)_dst;
 
 	/* set the memory */
 	while(length > 0)
@@ -87,10 +87,10 @@ SDMemSet(void     *_dst,
 #endif
 }
 
-SDINTERNAL void *
-SDMemCopy(void       *_dst,
+CINTERNAL void *
+CMemCopy(void       *_dst,
           const void *_src,
-          SDUInt32    length)
+          CUInt32    length)
 {
 #ifdef HAVE_MEMCPY
 	return memcpy(_dst, _src, length);
@@ -98,10 +98,10 @@ SDMemCopy(void       *_dst,
 	return bcopy((char *)_src, (char *)_dst, length);
 #else
 	/* get the source data pointer */
-	const SDByte *src = (const SDByte *)_src;
+	const CByte *src = (const CByte *)_src;
 
 	/* get the destination data pointer */
-	SDByte *dst = (SDByte *)_dst;
+	CByte *dst = (CByte *)_dst;
 
 	/* copy the memory */
 	while(length > 0)
@@ -118,19 +118,19 @@ SDMemCopy(void       *_dst,
 #endif
 }
 
-SDINTERNAL void *
-SDMemMove(void       *_dst,
+CINTERNAL void *
+CMemMove(void       *_dst,
           const void *_src,
-          SDUInt32    length)
+          CUInt32    length)
 {
 #ifdef HAVE_MEMMOVE
 	return memmove(_dst, _src, length);
 #else
 	/* get the source data pointer */
-	const SDByte *src = (const SDByte *)_src;
+	const CByte *src = (const CByte *)_src;
 
 	/* get the destination data pointer */
-	SDByte *dst = (SDByte *)_dst;
+	CByte *dst = (CByte *)_dst;
 
 	/* move the memory, based on the direction */
 	if(dst < src)
@@ -167,10 +167,10 @@ SDMemMove(void       *_dst,
 #endif
 }
 
-SDINTERNAL int
-SDMemCmp(const void *_a,
+CINTERNAL int
+CMemCmp(const void *_a,
          const void *_b,
-         SDUInt32    length)
+         CUInt32    length)
 {
 #ifdef HAVE_MEMCMP
 	return memcmp(_a, _b, length);
@@ -178,10 +178,10 @@ SDMemCmp(const void *_a,
 	return bcmp((char *)_a, (char *)_b, length);
 #else
 	/* get the first data pointer */
-	const SDByte *a = (SDByte *)_a;
+	const CByte *a = (CByte *)_a;
 
 	/* get the second data pointer */
-	const SDByte *b = (SDByte *)_b;
+	const CByte *b = (CByte *)_b;
 
 	/* compare the memory */
 	while(length > 0)

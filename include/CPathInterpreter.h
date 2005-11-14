@@ -1,5 +1,5 @@
 /*
- * SDPathInterpreter.h - Path interpreter header.
+ * CPathInterpreter.h - Path interpreter header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_PATHINTERPRETER_H_
-#define _SD_PATHINTERPRETER_H_
+#ifndef _C_PATHINTERPRETER_H_
+#define _C_PATHINTERPRETER_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,16 +27,16 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDPathInterpreter      SDPathInterpreter;
-typedef struct _tagSDPathInterpreterClass SDPathInterpreterClass;
+typedef struct _tagCPathInterpreter      CPathInterpreter;
+typedef struct _tagCPathInterpreterClass CPathInterpreterClass;
 
 
-struct _tagSDPathInterpreter
+struct _tagCPathInterpreter
 {
-	const SDPathInterpreterClass *_class;
+	const CPathInterpreterClass *_class;
 };
 
-struct _tagSDPathInterpreterClass
+struct _tagCPathInterpreterClass
 {
 	/*\
 	|*| Move to the given coordinates.
@@ -47,10 +47,10 @@ struct _tagSDPathInterpreterClass
 	|*|
 	|*|  Returns status code.
 	\*/
-	SDStatus (*Move)(SDPathInterpreter *_this,
-	                 SDFloat            x,
-	                 SDFloat            y,
-                     SDPathType         type);
+	CStatus (*Move)(CPathInterpreter *_this,
+	                CFloat            x,
+	                CFloat            y,
+                    CPathType         type);
 
 	/*\
 	|*| Line to the given coordinates.
@@ -61,10 +61,10 @@ struct _tagSDPathInterpreterClass
 	|*|
 	|*|  Returns status code.
 	\*/
-	SDStatus (*Line)(SDPathInterpreter *_this,
-	                 SDFloat            x,
-	                 SDFloat            y,
-                     SDPathType         type);
+	CStatus (*Line)(CPathInterpreter *_this,
+	                CFloat            x,
+	                CFloat            y,
+                    CPathType         type);
 
 	/*\
 	|*| Curve to the given coordinates.
@@ -79,21 +79,21 @@ struct _tagSDPathInterpreterClass
 	|*|
 	|*|  Returns status code.
 	\*/
-	SDStatus (*Curve)(SDPathInterpreter *_this,
-	                  SDFloat            x1,
-	                  SDFloat            y1,
-	                  SDFloat            x2,
-	                  SDFloat            y2,
-	                  SDFloat            x3,
-	                  SDFloat            y3,
-                      SDPathType         type);
+	CStatus (*Curve)(CPathInterpreter *_this,
+	                 CFloat            x1,
+	                 CFloat            y1,
+	                 CFloat            x2,
+	                 CFloat            y2,
+	                 CFloat            x3,
+	                 CFloat            y3,
+                     CPathType         type);
 
 	/*\
 	|*| Close the path.
 	|*|
 	|*|  Returns status code.
 	\*/
-	SDStatus (*Close)(SDPathInterpreter *_this);
+	CStatus (*Close)(CPathInterpreter *_this);
 
 	/*\
 	|*| Sentinel string used to catch missing methods in class tables.
@@ -101,23 +101,23 @@ struct _tagSDPathInterpreterClass
 	const char *sentinel;
 };
 
-SDINTERNAL SDStatus
-SDPathInterpreter_Interpret(SDPathInterpreter *_this,
-                            const SDPointF    *points,
-                            const SDByte      *types,
-                            SDUInt32           count);
+CINTERNAL CStatus
+CPathInterpreter_Interpret(CPathInterpreter *_this,
+                           const CPointF    *points,
+                           const CByte      *types,
+                           CUInt32           count);
 
-#define SDPathInterpreter_Move(_this, x, y, t) \
+#define CPathInterpreter_Move(_this, x, y, t) \
 	((_this)->_class->Move((_this), (x), (y), (t)))
-#define SDPathInterpreter_Line(_this, x, y, t) \
+#define CPathInterpreter_Line(_this, x, y, t) \
 	((_this)->_class->Line((_this), (x), (y), (t)))
-#define SDPathInterpreter_Curve(_this, x1, y1, x2, y2, x3, y3, t) \
+#define CPathInterpreter_Curve(_this, x1, y1, x2, y2, x3, y3, t) \
 	((_this)->_class->Curve((_this), (x1), (y1), (x2), (y2), (x3), (y3), (t)))
-#define SDPathInterpreter_Close(_this) \
+#define CPathInterpreter_Close(_this) \
 	((_this)->_class->Close((_this)))
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_PATHINTERPRETER_H_ */
+#endif /* _C_PATHINTERPRETER_H_ */

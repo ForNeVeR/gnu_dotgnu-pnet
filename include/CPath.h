@@ -1,5 +1,5 @@
 /*
- * SDPath.h - Path header.
+ * CPath.h - Path header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_PATH_H_
-#define _SD_PATH_H_
+#ifndef _C_PATH_H_
+#define _C_PATH_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,21 +27,21 @@
 extern "C" {
 #endif
 
-struct _tagSDPath
+struct _tagCPath
 {
-	SDUInt32    capacity;
-	SDUInt32    count;
-	SDPointF   *points;
-	SDUInt8    *types;
-	SDBitField  winding   : 1;
-	SDBitField  newFigure : 1;
-	SDBitField  hasCurves : 1;
+	CUInt32    capacity;
+	CUInt32    count;
+	CPointF   *points;
+	CUInt8    *types;
+	CBitField  winding   : 1;
+	CBitField  newFigure : 1;
+	CBitField  hasCurves : 1;
 };
 
 #if 0
-struct _tagSDPathIterator
+struct _tagCPathIterator
 {
-	SDPath   *path;
+	CPath   *path;
 	/* TODO */
 };
 #endif
@@ -60,13 +60,13 @@ struct _tagSDPathIterator
 		if((minimum) > (path)->capacity)                                       \
 		{                                                                      \
 			/* declarations */                                                 \
-			SDPointF *tmpP;                                                    \
-			SDByte   *tmpT;                                                    \
-			SDUInt32  newSize;                                                 \
-			SDUInt32  newCapacity;                                             \
+			CPointF *tmpP;                                                    \
+			CByte   *tmpT;                                                    \
+			CUInt32  newSize;                                                 \
+			CUInt32  newCapacity;                                             \
 			                                                                   \
 			/* get the capacity */                                             \
-			const SDUInt32 capacity = (path)->capacity;                        \
+			const CUInt32 capacity = (path)->capacity;                        \
 			                                                                   \
 			/* calculate the new capacity */                                   \
 			newCapacity = (((capacity + (minimum)) + 31) & ~31);               \
@@ -75,7 +75,7 @@ struct _tagSDPathIterator
 			if(capacity != 0)                                                  \
 			{                                                                  \
 				/* calculate a new capacity candidate */                       \
-				const SDUInt32 newCapacity2 = (capacity << 1);                 \
+				const CUInt32 newCapacity2 = (capacity << 1);                 \
 				                                                               \
 				/* use the larger candidate capacity */                        \
 				if(newCapacity < newCapacity2)                                 \
@@ -85,42 +85,42 @@ struct _tagSDPathIterator
 			}                                                                  \
 			                                                                   \
 			/* calculate the new points size */                                \
-			newSize = (newCapacity * sizeof(SDPointF));                        \
+			newSize = (newCapacity * sizeof(CPointF));                        \
 			                                                                   \
 			/* create the new points list */                                   \
-			if(!(tmpP = (SDPointF *)SDMalloc(newSize)))                        \
+			if(!(tmpP = (CPointF *)CMalloc(newSize)))                        \
 			{                                                                  \
-				return SDStatus_OutOfMemory;                                   \
+				return CStatus_OutOfMemory;                                   \
 			}                                                                  \
 			                                                                   \
 			/* calculate the new types size */                                 \
-			newSize = (newCapacity * sizeof(SDByte));                          \
+			newSize = (newCapacity * sizeof(CByte));                          \
 			                                                                   \
 			/* create the new types list */                                    \
-			if(!(tmpT = (SDByte *)SDMalloc(newSize)))                          \
+			if(!(tmpT = (CByte *)CMalloc(newSize)))                          \
 			{                                                                  \
-				SDFree(tmpP);                                                  \
-				return SDStatus_OutOfMemory;                                   \
+				CFree(tmpP);                                                  \
+				return CStatus_OutOfMemory;                                   \
 			}                                                                  \
 			                                                                   \
 			/* copy existing data, as needed */                                \
 			if((path)->count != 0)                                             \
 			{                                                                  \
 				/* copy the points and types */                                \
-				SDMemCopy                                                      \
+				CMemCopy                                                      \
 					(tmpP, (path)->points,                                     \
-					 ((path)->count * sizeof(SDPointF)));                      \
-				SDMemCopy                                                      \
+					 ((path)->count * sizeof(CPointF)));                      \
+				CMemCopy                                                      \
 					(tmpT, (path)->types,                                      \
-					 ((path)->count  * sizeof(SDByte)));                       \
+					 ((path)->count  * sizeof(CByte)));                       \
 			}                                                                  \
 			                                                                   \
 			/* free existing lists, as needed */                               \
 			if(capacity != 0)                                                  \
 			{                                                                  \
 				/* free the point and type lists */                            \
-				SDFree((path)->points);                                        \
-				SDFree((path)->types);                                         \
+				CFree((path)->points);                                        \
+				CFree((path)->types);                                         \
 			}                                                                  \
 			                                                                   \
 			/* update the capacity */                                          \
@@ -132,19 +132,19 @@ struct _tagSDPathIterator
 		}                                                                      \
 	} while(0)
 
-SDINTERNAL void
-SDPath_TransformAffine(SDPath             *_this,
-                       SDAffineTransformF *transform);
-SDINTERNAL SDStatus
-SDPath_Stroke(SDPath    *_this,
-              SDPath    *stroke,
-              SDStroker *stroker);
-SDINTERNAL SDStatus
-SDPath_Fill(SDPath       *_this,
-            SDTrapezoids *trapezoids);
+CINTERNAL void
+CPath_TransformAffine(CPath             *_this,
+                      CAffineTransformF *transform);
+CINTERNAL CStatus
+CPath_Stroke(CPath    *_this,
+             CPath    *stroke,
+             CStroker *stroker);
+CINTERNAL CStatus
+CPath_Fill(CPath       *_this,
+           CTrapezoids *trapezoids);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_PATH_H_ */
+#endif /* _C_PATH_H_ */

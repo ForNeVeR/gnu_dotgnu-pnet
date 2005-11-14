@@ -1,5 +1,5 @@
 /*
- * SDTrapezoids.h - Trapezoids header.
+ * CTrapezoids.h - Trapezoids header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_TRAPEZOIDS_H_
-#define _SD_TRAPEZOIDS_H_
+#ifndef _C_TRAPEZOIDS_H_
+#define _C_TRAPEZOIDS_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,25 +27,25 @@
 extern "C" {
 #endif
 
-SDINTERNAL void
-SDTrapezoids_Initialize(SDTrapezoids *_this);
-SDINTERNAL void
-SDTrapezoids_Finalize(SDTrapezoids *_this);
-SDINTERNAL void
-SDTrapezoids_Reset(SDTrapezoids *_this);
-SDINTERNAL SDStatus
-SDTrapezoids_TessellatePolygon(SDTrapezoids *_this,
-                               SDPolygonX   *polygon,
-                               SDFillMode    fillMode);
-SDINTERNAL SDStatus
-SDTrapezoids_Fill(SDTrapezoids *_this,
-                  SDPointF     *points,
-                  SDByte       *types,
-                  SDUInt32      count,
-                  SDFillMode    fillMode);
+CINTERNAL void
+CTrapezoids_Initialize(CTrapezoids *_this);
+CINTERNAL void
+CTrapezoids_Finalize(CTrapezoids *_this);
+CINTERNAL void
+CTrapezoids_Reset(CTrapezoids *_this);
+CINTERNAL CStatus
+CTrapezoids_TessellatePolygon(CTrapezoids *_this,
+                              CPolygonX   *polygon,
+                              CFillMode    fillMode);
+CINTERNAL CStatus
+CTrapezoids_Fill(CTrapezoids *_this,
+                 CPointF     *points,
+                 CByte       *types,
+                 CUInt32      count,
+                 CFillMode    fillMode);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_TRAPEZOIDS_H_ */
+#endif /* _C_TRAPEZOIDS_H_ */

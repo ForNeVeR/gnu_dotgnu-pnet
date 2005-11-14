@@ -1,5 +1,5 @@
 /*
- * SDBezier.h - Bezier header.
+ * CBezier.h - Bezier header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_BEZIER_H_
-#define _SD_BEZIER_H_
+#ifndef _C_BEZIER_H_
+#define _C_BEZIER_H_
 
 #include "CPointArray.h"
 
@@ -27,15 +27,15 @@
 extern "C" {
 #endif
 
-static const SDBezierX SDBezierX_Zero =
+static const CBezierX CBezierX_Zero =
 {
-	{ SDFixed_Zero, SDFixed_Zero },
-	{ SDFixed_Zero, SDFixed_Zero },
-	{ SDFixed_Zero, SDFixed_Zero },
-	{ SDFixed_Zero, SDFixed_Zero }
+	{ CFixed_Zero, CFixed_Zero },
+	{ CFixed_Zero, CFixed_Zero },
+	{ CFixed_Zero, CFixed_Zero },
+	{ CFixed_Zero, CFixed_Zero }
 };
 
-static const SDBezierF SDBezierF_Zero =
+static const CBezierF CBezierF_Zero =
 {
 	{ 0.0f, 0.0f },
 	{ 0.0f, 0.0f },
@@ -43,34 +43,34 @@ static const SDBezierF SDBezierF_Zero =
 	{ 0.0f, 0.0f }
 };
 
-SDINTERNAL SDBool
-SDBezierX_Initialize(SDBezierX *_this,
-                     SDPointX  *a,
-                     SDPointX  *b,
-                     SDPointX  *c,
-                     SDPointX  *d);
-SDINTERNAL SDBool
-SDBezierF_Initialize(SDBezierF *_this,
-                     SDPointF  *a,
-                     SDPointF  *b,
-                     SDPointF  *c,
-                     SDPointF  *d);
-SDINTERNAL void
-SDBezierX_Finalize(SDBezierX *_this);
-SDINTERNAL void
-SDBezierF_Finalize(SDBezierF *_this);
+CINTERNAL CBool
+CBezierX_Initialize(CBezierX *_this,
+                    CPointX  *a,
+                    CPointX  *b,
+                    CPointX  *c,
+                    CPointX  *d);
+CINTERNAL CBool
+CBezierF_Initialize(CBezierF *_this,
+                    CPointF  *a,
+                    CPointF  *b,
+                    CPointF  *c,
+                    CPointF  *d);
+CINTERNAL void
+CBezierX_Finalize(CBezierX *_this);
+CINTERNAL void
+CBezierF_Finalize(CBezierF *_this);
 
-SDINTERNAL SDStatus
-SDBezierX_Flatten(SDBezierX     *_this,
-                  SDPointArrayX *array,
-                  SDDouble       tolerance);
-SDINTERNAL SDStatus
-SDBezierF_Flatten(SDBezierF     *_this,
-                  SDPointArrayF *array,
-                  SDDouble       tolerance);
+CINTERNAL CStatus
+CBezierX_Flatten(CBezierX     *_this,
+                 CPointArrayX *array,
+                 CDouble       tolerance);
+CINTERNAL CStatus
+CBezierF_Flatten(CBezierF     *_this,
+                 CPointArrayF *array,
+                 CDouble       tolerance);
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_BEZIER_H_ */
+#endif /* _C_BEZIER_H_ */

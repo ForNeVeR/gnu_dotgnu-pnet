@@ -1,5 +1,5 @@
 /*
- * SDStringFormat.c - String format implementation.
+ * CStringFormat.c - String format implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -25,20 +25,20 @@ extern "C" {
 #endif
 
 static void
-SDStringFormat_Initialize(SDStringFormat     *_this,
-                          SDStringFormatFlag  flags,
-                          SDLanguageID        language)
+CStringFormat_Initialize(CStringFormat     *_this,
+                          CStringFormatFlag  flags,
+                          CLanguageID        language)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* initialize the members */
-	_this->alignment           = SDStringAlignment_Near;
-	_this->lineAlignment       = SDStringAlignment_Near;
+	_this->alignment           = CStringAlignment_Near;
+	_this->lineAlignment       = CStringAlignment_Near;
 	_this->formatFlags         = flags;
-	_this->hotkeyPrefix        = SDHotkeyPrefix_None;
-	_this->trimming            = SDStringTrimming_None;
-	_this->method              = SDDigitSubstitute_None;
+	_this->hotkeyPrefix        = CHotkeyPrefix_None;
+	_this->trimming            = CStringTrimming_None;
+	_this->method              = CDigitSubstitute_None;
 	_this->language            = language;
 	_this->firstTabOffset      = 0;
 	_this->tabStops            = NULL;
@@ -48,17 +48,17 @@ SDStringFormat_Initialize(SDStringFormat     *_this,
 }
 
 static void
-SDStringFormat_Finalize(SDStringFormat *_this)
+CStringFormat_Finalize(CStringFormat *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* finalize the members */
 	{
 		/* finalize the tab stop list, as needed */
 		if(_this->tabStops != 0)
 		{
-			SDFree(_this->tabStops);
+			CFree(_this->tabStops);
 			_this->tabStopCount = 0;
 			_this->tabStops     = 0;
 		}
@@ -66,7 +66,7 @@ SDStringFormat_Finalize(SDStringFormat *_this)
 		/* finalize the character range list, as needed */
 		if(_this->characterRanges != 0)
 		{
-			SDFree(_this->characterRanges);
+			CFree(_this->characterRanges);
 			_this->characterRangeCount = 0;
 			_this->characterRanges     = 0;
 		}
@@ -74,124 +74,124 @@ SDStringFormat_Finalize(SDStringFormat *_this)
 }
 
 /* Create a string format. */
-SDStatus
-SDStringFormat_Create(SDStringFormat     **_this,
-                      SDStringFormatFlag   flags,
-                      SDLanguageID         language)
+CStatus
+CStringFormat_Create(CStringFormat     **_this,
+                      CStringFormatFlag   flags,
+                      CLanguageID         language)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the string format */
-	if(!(*_this = (SDStringFormat *)SDMalloc(sizeof(SDStringFormat))))
+	if(!(*_this = (CStringFormat *)CMalloc(sizeof(CStringFormat))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the string format */
-	SDStringFormat_Initialize(*_this, flags, language);
+	CStringFormat_Initialize(*_this, flags, language);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Destroy a string format. */
-SDStatus
-SDStringFormat_Destroy(SDStringFormat **_this)
+CStatus
+CStringFormat_Destroy(CStringFormat **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a this pointer */
-	SDStatus_Require(((*_this) != 0), SDStatus_ArgumentNull);
+	CStatus_Require(((*_this) != 0), CStatus_ArgumentNull);
 
 	/* finalize the string format */
-	SDStringFormat_Finalize(*_this);
+	CStringFormat_Finalize(*_this);
 
 	/* free the string format */
-	SDFree(*_this);
+	CFree(*_this);
 
 	/* null the this pointer */
 	*_this = 0;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the generic default string format. */
-SDStatus
-SDStringFormat_CreateGenericDefault(SDStringFormat **_this)
+CStatus
+CStringFormat_CreateGenericDefault(CStringFormat **_this)
 {
 	/* create the format */
-	SDStatus_Check
-		(SDStringFormat_Create
+	CStatus_Check
+		(CStringFormat_Create
 			(_this, 0, 0));
 
 	/* initialize the members */
-	(*_this)->trimming = SDStringTrimming_Character;
-	(*_this)->method   = SDDigitSubstitute_User;
+	(*_this)->trimming = CStringTrimming_Character;
+	(*_this)->method   = CDigitSubstitute_User;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the generic typographic string format. */
-SDStatus
-SDStringFormat_CreateGenericTypographic(SDStringFormat **_this)
+CStatus
+CStringFormat_CreateGenericTypographic(CStringFormat **_this)
 {
 	/* get the flags */
-	const SDStringFormatFlag flags =
-		(SDStringFormatFlag_NoFitBlackBox |
-		 SDStringFormatFlag_LineLimit     |
-		 SDStringFormatFlag_NoClip);
+	const CStringFormatFlag flags =
+		(CStringFormatFlag_NoFitBlackBox |
+		 CStringFormatFlag_LineLimit     |
+		 CStringFormatFlag_NoClip);
 
 	/* create the format */
-	SDStatus_Check
-		(SDStringFormat_Create
+	CStatus_Check
+		(CStringFormat_Create
 			(_this, flags, 0));
 
 	/* initialize the members */
-	(*_this)->method = SDDigitSubstitute_User;
+	(*_this)->method = CDigitSubstitute_User;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Clone this string format. */
-SDStatus
-SDStringFormat_Clone(SDStringFormat  *_this,
-                     SDStringFormat **clone)
+CStatus
+CStringFormat_Clone(CStringFormat  *_this,
+                     CStringFormat **clone)
 {
 	/* declarations */
-	SDStatus status;
+	CStatus status;
 
 	/* create the format */
-	SDStatus_Check
-		(SDStringFormat_Create
+	CStatus_Check
+		(CStringFormat_Create
 			(clone, _this->formatFlags, _this->language));
 
 	/* set the clone tab stops */
 	status =
-		SDStringFormat_SetTabStops
+		CStringFormat_SetTabStops
 			(*clone, _this->firstTabOffset, _this->tabStops,
 			 _this->tabStopCount);
 
 	/* handle tab stop cloning failures */
-	if(status != SDStatus_OK)
+	if(status != CStatus_OK)
 	{
-		SDStringFormat_Destroy(clone);
+		CStringFormat_Destroy(clone);
 		return status;
 	}
 
 	/* set the clone character ranges */
 	status =
-		SDStringFormat_SetCharacterRanges
+		CStringFormat_SetCharacterRanges
 			(*clone, _this->characterRanges, _this->characterRangeCount);
 
 	/* handle character range cloning failures */
-	if(status != SDStatus_OK)
+	if(status != CStatus_OK)
 	{
-		SDStringFormat_Destroy(clone);
+		CStringFormat_Destroy(clone);
 		return status;
 	}
 
@@ -203,97 +203,97 @@ SDStringFormat_Clone(SDStringFormat  *_this,
 	(*clone)->method        = _this->method;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the alignment of this string format. */
-SDStatus
-SDStringFormat_GetAlignment(SDStringFormat    *_this,
-                            SDStringAlignment *alignment)
+CStatus
+CStringFormat_GetAlignment(CStringFormat    *_this,
+                            CStringAlignment *alignment)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an alignment pointer */
-	SDStatus_Require((alignment != 0), SDStatus_ArgumentNull);
+	CStatus_Require((alignment != 0), CStatus_ArgumentNull);
 
 	/* get the alignment */
 	*alignment = _this->alignment;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the alignment of this string format. */
-SDStatus
-SDStringFormat_SetAlignment(SDStringFormat    *_this,
-                            SDStringAlignment  alignment)
+CStatus
+CStringFormat_SetAlignment(CStringFormat    *_this,
+                            CStringAlignment  alignment)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the alignment */
 	_this->alignment = alignment;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the character ranges of this string format. */
-SDStatus
-SDStringFormat_GetCharacterRanges(SDStringFormat    *_this,
-                                  SDCharacterRange **characterRanges,
-                                  SDUInt32          *count)
+CStatus
+CStringFormat_GetCharacterRanges(CStringFormat    *_this,
+                                  CCharacterRange **characterRanges,
+                                  CUInt32          *count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a character range list pointer */
-	SDStatus_Require((characterRanges != 0), SDStatus_ArgumentNull);
+	CStatus_Require((characterRanges != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a count pointer */
-	SDStatus_Require((count != 0), SDStatus_ArgumentNull);
+	CStatus_Require((count != 0), CStatus_ArgumentNull);
 
 	/* get the character ranges */
 	{
 		/* get the count and size */
-		const SDUInt32 cnt  = _this->characterRangeCount;
-		const SDUInt32 size = (cnt * sizeof(SDCharacterRange));
+		const CUInt32 cnt  = _this->characterRangeCount;
+		const CUInt32 size = (cnt * sizeof(CCharacterRange));
 
 		/* allocate the character range list */
-		if(!(*characterRanges = (SDCharacterRange *)SDMalloc(size)))
+		if(!(*characterRanges = (CCharacterRange *)CMalloc(size)))
 		{
 			*count = 0;
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* get the character ranges */
-		SDMemCopy(*characterRanges, _this->characterRanges, size);
+		CMemCopy(*characterRanges, _this->characterRanges, size);
 
 		/* get the count */
 		*count = cnt;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the character ranges of this string format. */
-SDStatus
-SDStringFormat_SetCharacterRanges(SDStringFormat   *_this,
-                                  SDCharacterRange *characterRanges,
-                                  SDUInt32          count)
+CStatus
+CStringFormat_SetCharacterRanges(CStringFormat   *_this,
+                                  CCharacterRange *characterRanges,
+                                  CUInt32          count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a character range list */
-	SDStatus_Require((characterRanges != 0), SDStatus_ArgumentNull);
+	CStatus_Require((characterRanges != 0), CStatus_ArgumentNull);
 
 	/* set the character ranges */
 	{
 		/* get the size */
-		const SDUInt32 size = (count * sizeof(SDCharacterRange));
+		const CUInt32 size = (count * sizeof(CCharacterRange));
 
 		/* clear the character range list, as needed */
 		if(count == 0)
@@ -301,32 +301,32 @@ SDStringFormat_SetCharacterRanges(SDStringFormat   *_this,
 			/* free the existing character range list, as needed */
 			if(_this->characterRanges != 0)
 			{
-				SDFree(_this->characterRanges);
+				CFree(_this->characterRanges);
 			}
 
 			/* reset the count */
 			_this->characterRangeCount = 0;
 
 			/* return successfully */
-			return SDStatus_OK;
+			return CStatus_OK;
 		}
 
 		/* reallocate the character range list, as needed */
 		if(count != _this->characterRangeCount)
 		{
 			/* declarations */
-			SDCharacterRange *tmp;
+			CCharacterRange *tmp;
 
 			/* allocate the character range list */
-			if(!(tmp = (SDCharacterRange *)SDMalloc(size)))
+			if(!(tmp = (CCharacterRange *)CMalloc(size)))
 			{
-				return SDStatus_OutOfMemory;
+				return CStatus_OutOfMemory;
 			}
 
 			/* free the existing character range list, as needed */
 			if(_this->characterRanges != 0)
 			{
-				SDFree(_this->characterRanges);
+				CFree(_this->characterRanges);
 			}
 
 			/* set the character range list */
@@ -337,27 +337,27 @@ SDStringFormat_SetCharacterRanges(SDStringFormat   *_this,
 		}
 
 		/* copy the character ranges */
-		SDMemCopy(_this->characterRanges, characterRanges, size);
+		CMemCopy(_this->characterRanges, characterRanges, size);
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the digit substitution settings of this string format. */
-SDStatus
-SDStringFormat_GetDigitSubstitution(SDStringFormat    *_this,
-                                    SDDigitSubstitute *method,
-                                    SDLanguageID      *language)
+CStatus
+CStringFormat_GetDigitSubstitution(CStringFormat    *_this,
+                                    CDigitSubstitute *method,
+                                    CLanguageID      *language)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a method pointer */
-	SDStatus_Require((method != 0), SDStatus_ArgumentNull);
+	CStatus_Require((method != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a language pointer */
-	SDStatus_Require((language != 0), SDStatus_ArgumentNull);
+	CStatus_Require((language != 0), CStatus_ArgumentNull);
 
 	/* get the method */
 	*method = _this->method;
@@ -366,17 +366,17 @@ SDStringFormat_GetDigitSubstitution(SDStringFormat    *_this,
 	*language = _this->language;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the digit substitution settings of this string format. */
-SDStatus
-SDStringFormat_SetDigitSubstitution(SDStringFormat    *_this,
-                                    SDDigitSubstitute  method,
-                                    SDLanguageID       language)
+CStatus
+CStringFormat_SetDigitSubstitution(CStringFormat    *_this,
+                                    CDigitSubstitute  method,
+                                    CLanguageID       language)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the method */
 	_this->method = method;
@@ -385,142 +385,142 @@ SDStringFormat_SetDigitSubstitution(SDStringFormat    *_this,
 	_this->language = language;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the format flags of this string format. */
-SDStatus
-SDStringFormat_GetFormatFlags(SDStringFormat     *_this,
-                              SDStringFormatFlag *formatFlags)
+CStatus
+CStringFormat_GetFormatFlags(CStringFormat     *_this,
+                              CStringFormatFlag *formatFlags)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a format flags pointer */
-	SDStatus_Require((formatFlags != 0), SDStatus_ArgumentNull);
+	CStatus_Require((formatFlags != 0), CStatus_ArgumentNull);
 
 	/* get the format flags */
 	*formatFlags = _this->formatFlags;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the format flags of this string format. */
-SDStatus
-SDStringFormat_SetFormatFlags(SDStringFormat     *_this,
-                              SDStringFormatFlag  formatFlags)
+CStatus
+CStringFormat_SetFormatFlags(CStringFormat     *_this,
+                              CStringFormatFlag  formatFlags)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the format flags */
 	_this->formatFlags = formatFlags;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the hotkey prefix mode of this string format. */
-SDStatus
-SDStringFormat_GetHotkeyPrefix(SDStringFormat *_this,
-                               SDHotkeyPrefix *hotkeyPrefix)
+CStatus
+CStringFormat_GetHotkeyPrefix(CStringFormat *_this,
+                               CHotkeyPrefix *hotkeyPrefix)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a hotkey prefix mode pointer */
-	SDStatus_Require((hotkeyPrefix != 0), SDStatus_ArgumentNull);
+	CStatus_Require((hotkeyPrefix != 0), CStatus_ArgumentNull);
 
 	/* get the hotkey prefix mode */
 	*hotkeyPrefix = _this->hotkeyPrefix;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the hotkey prefix mode of this string format. */
-SDStatus
-SDStringFormat_SetHotkeyPrefix(SDStringFormat *_this,
-                               SDHotkeyPrefix  hotkeyPrefix)
+CStatus
+CStringFormat_SetHotkeyPrefix(CStringFormat *_this,
+                               CHotkeyPrefix  hotkeyPrefix)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the hotkey prefix mode */
 	_this->hotkeyPrefix = hotkeyPrefix;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the line alignment of this string format. */
-SDStatus
-SDStringFormat_GetLineAlignment(SDStringFormat    *_this,
-                                SDStringAlignment *lineAlignment)
+CStatus
+CStringFormat_GetLineAlignment(CStringFormat    *_this,
+                                CStringAlignment *lineAlignment)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a line alignment pointer */
-	SDStatus_Require((lineAlignment != 0), SDStatus_ArgumentNull);
+	CStatus_Require((lineAlignment != 0), CStatus_ArgumentNull);
 
 	/* get the line alignment */
 	*lineAlignment = _this->lineAlignment;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the line alignment of this string format. */
-SDStatus
-SDStringFormat_SetLineAlignment(SDStringFormat    *_this,
-                                SDStringAlignment  lineAlignment)
+CStatus
+CStringFormat_SetLineAlignment(CStringFormat    *_this,
+                                CStringAlignment  lineAlignment)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the line alignment */
 	_this->lineAlignment = lineAlignment;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the tab stop settings of this string format. */
-SDStatus
-SDStringFormat_GetTabStops(SDStringFormat  *_this,
-                           SDFloat         *firstTabOffset,
-                           SDFloat        **tabStops,
-                           SDUInt32        *count)
+CStatus
+CStringFormat_GetTabStops(CStringFormat  *_this,
+                           CFloat         *firstTabOffset,
+                           CFloat        **tabStops,
+                           CUInt32        *count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a first tab offset pointer */
-	SDStatus_Require((firstTabOffset != 0), SDStatus_ArgumentNull);
+	CStatus_Require((firstTabOffset != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a tab stop list pointer */
-	SDStatus_Require((tabStops != 0), SDStatus_ArgumentNull);
+	CStatus_Require((tabStops != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a count pointer */
-	SDStatus_Require((count != 0), SDStatus_ArgumentNull);
+	CStatus_Require((count != 0), CStatus_ArgumentNull);
 
 	/* get the tab stops */
 	{
 		/* get the count and size */
-		const SDUInt32 cnt  = _this->tabStopCount;
-		const SDUInt32 size = (cnt * sizeof(SDFloat));
+		const CUInt32 cnt  = _this->tabStopCount;
+		const CUInt32 size = (cnt * sizeof(CFloat));
 
 		/* allocate the tab stop list */
-		if(!(*tabStops = (SDFloat *)SDMalloc(size)))
+		if(!(*tabStops = (CFloat *)CMalloc(size)))
 		{
 			*count = 0;
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* get the tab stops */
-		SDMemCopy(*tabStops, _this->tabStops, size);
+		CMemCopy(*tabStops, _this->tabStops, size);
 
 		/* get the count */
 		*count = cnt;
@@ -530,26 +530,26 @@ SDStringFormat_GetTabStops(SDStringFormat  *_this,
 	*firstTabOffset = _this->firstTabOffset;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the tab stop settings of this string format. */
-SDStatus
-SDStringFormat_SetTabStops(SDStringFormat *_this,
-                           SDFloat         firstTabOffset,
-                           SDFloat        *tabStops,
-                           SDUInt32        count)
+CStatus
+CStringFormat_SetTabStops(CStringFormat *_this,
+                           CFloat         firstTabOffset,
+                           CFloat        *tabStops,
+                           CUInt32        count)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a tab stop list */
-	SDStatus_Require((tabStops != 0), SDStatus_ArgumentNull);
+	CStatus_Require((tabStops != 0), CStatus_ArgumentNull);
 
 	/* set the tab stops */
 	{
 		/* get the size */
-		const SDUInt32 size = (count * sizeof(SDFloat));
+		const CUInt32 size = (count * sizeof(CFloat));
 
 		/* clear the tab stop list, as needed */
 		if(count == 0)
@@ -557,32 +557,32 @@ SDStringFormat_SetTabStops(SDStringFormat *_this,
 			/* free the existing tab stop list, as needed */
 			if(_this->tabStops != 0)
 			{
-				SDFree(_this->tabStops);
+				CFree(_this->tabStops);
 			}
 
 			/* reset the count */
 			_this->tabStopCount = 0;
 
 			/* return successfully */
-			return SDStatus_OK;
+			return CStatus_OK;
 		}
 
 		/* reallocate the tab stop list, as needed */
 		if(count != _this->tabStopCount)
 		{
 			/* declarations */
-			SDFloat *tmp;
+			CFloat *tmp;
 
 			/* allocate the tab stop list */
-			if(!(tmp = (SDFloat *)SDMalloc(size)))
+			if(!(tmp = (CFloat *)CMalloc(size)))
 			{
-				return SDStatus_OutOfMemory;
+				return CStatus_OutOfMemory;
 			}
 
 			/* free the existing tab stop list, as needed */
 			if(_this->tabStops != 0)
 			{
-				SDFree(_this->tabStops);
+				CFree(_this->tabStops);
 			}
 
 			/* set the tab stop list */
@@ -593,47 +593,47 @@ SDStringFormat_SetTabStops(SDStringFormat *_this,
 		}
 
 		/* copy the tab stops */
-		SDMemCopy(_this->tabStops, tabStops, size);
+		CMemCopy(_this->tabStops, tabStops, size);
 	}
 
 	/* set the first tab offset */
 	_this->firstTabOffset = firstTabOffset;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the trimming mode of this string format. */
-SDStatus
-SDStringFormat_GetTrimming(SDStringFormat   *_this,
-                           SDStringTrimming *trimming)
+CStatus
+CStringFormat_GetTrimming(CStringFormat   *_this,
+                           CStringTrimming *trimming)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a trimming mode pointer */
-	SDStatus_Require((trimming != 0), SDStatus_ArgumentNull);
+	CStatus_Require((trimming != 0), CStatus_ArgumentNull);
 
 	/* get the trimming mode */
 	*trimming = _this->trimming;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Set the trimming mode of this string format. */
-SDStatus
-SDStringFormat_SetTrimming(SDStringFormat   *_this,
-                           SDStringTrimming  trimming)
+CStatus
+CStringFormat_SetTrimming(CStringFormat   *_this,
+                           CStringTrimming  trimming)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* set the trimming mode */
 	_this->trimming = trimming;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 #ifdef __cplusplus

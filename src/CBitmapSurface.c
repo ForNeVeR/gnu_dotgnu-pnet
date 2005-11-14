@@ -1,5 +1,5 @@
 /*
- * SDBitmapSurface.c - Bitmap surface implementation.
+ * CBitmapSurface.c - Bitmap surface implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -25,125 +25,125 @@
 extern "C" {
 #endif
 
-SDStatus
-SDBitmapSurface_Create(SDBitmapSurface **_this,
-                       SDBitmap         *image)
+CStatus
+CBitmapSurface_Create(CBitmapSurface **_this,
+                       CBitmap         *image)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an image pointer */
-	SDStatus_Require((image != 0), SDStatus_ArgumentNull);
+	CStatus_Require((image != 0), CStatus_ArgumentNull);
 
 	/* allocate the bitmap surface */
-	if(!(*_this = (SDBitmapSurface *)SDMalloc(sizeof(SDBitmapSurface))))
+	if(!(*_this = (CBitmapSurface *)CMalloc(sizeof(CBitmapSurface))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the bitmap surface */
-	if(!((*_this)->image = (SDBitmap *)SDImage_Reference((SDImage *)image)))
+	if(!((*_this)->image = (CBitmap *)CImage_Reference((CImage *)image)))
 	{
-		SDFree(*_this);
+		CFree(*_this);
 		*_this = 0;
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the base */
 	{
 		/* declarations */
-		SDStatus   status;
-		SDSurface *surface;
+		CStatus   status;
+		CSurface *surface;
 
 		/* get this as a surface */
-		surface = (SDSurface *)*_this;
+		surface = (CSurface *)*_this;
 
 		/* initialize the base */
 		status =
-			SDSurface_Initialize
-				(surface, &SDBitmapSurface_Class, 0, 0, image->width,
+			CSurface_Initialize
+				(surface, &CBitmapSurface_Class, 0, 0, image->width,
 				 image->height);
 
 		/* handle base initialization failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDBitmapSurface_Finalize(surface);
-			SDFree(*_this);
+			CBitmapSurface_Finalize(surface);
+			CFree(*_this);
 			*_this = 0;
 			return status;
 		}
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDBitmapSurface_Composite(SDSurface         *_this,
-                          SDUInt32           x,
-                          SDUInt32           y,
-                          SDUInt32           width,
-                          SDUInt32           height,
+static CStatus
+CBitmapSurface_Composite(CSurface         *_this,
+                          CUInt32           x,
+                          CUInt32           y,
+                          CUInt32           width,
+                          CUInt32           height,
                           pixman_image_t    *src,
                           pixman_image_t    *mask,
                           pixman_operator_t  op)
 {
 	/* declarations */
-	SDBitmap *image;
+	CBitmap *image;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((src   != 0));
-	SDASSERT((mask  != 0));
+	CASSERT((_this != 0));
+	CASSERT((src   != 0));
+	CASSERT((mask  != 0));
 
 	/* get the image */
-	image = ((SDBitmapSurface *)_this)->image;
+	image = ((CBitmapSurface *)_this)->image;
 
 	/* perform the composite synchronously */
-	SDMutex_Lock(image->lock);
+	CMutex_Lock(image->lock);
 	{
 		/* ensure the image data isn't locked */
 		if(image->locked)
 		{
-			SDMutex_Unlock(image->lock);
-			return SDStatus_InvalidOperation_ImageLocked;
+			CMutex_Unlock(image->lock);
+			return CStatus_InvalidOperation_ImageLocked;
 		}
 
 		/* perform the composite */
 		pixman_composite
 			(op, src, mask, image->image, 0, 0, 0, 0, x, y, width, height);
 	}
-	SDMutex_Unlock(image->lock);
+	CMutex_Unlock(image->lock);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDBitmapSurface_Clear(SDSurface *_this,
-                      SDColor    color)
+static CStatus
+CBitmapSurface_Clear(CSurface *_this,
+                      CColor    color)
 {
 	/* declarations */
-	SDBitmap       *image;
+	CBitmap       *image;
 	pixman_color_t  pixel;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* create the pixel */
-	pixel = SDUtils_ToPixmanColor(color);
+	pixel = CUtils_ToPixmanColor(color);
 
 	/* get the image */
-	image = ((SDBitmapSurface *)_this)->image;
+	image = ((CBitmapSurface *)_this)->image;
 
 	/* perform the clear synchronously */
-	SDMutex_Lock(image->lock);
+	CMutex_Lock(image->lock);
 	{
 		/* ensure the image data isn't locked */
 		if(image->locked)
 		{
-			SDMutex_Unlock(image->lock);
-			return SDStatus_InvalidOperation_ImageLocked;
+			CMutex_Unlock(image->lock);
+			return CStatus_InvalidOperation_ImageLocked;
 		}
 
 		/* clear the image */
@@ -151,39 +151,39 @@ SDBitmapSurface_Clear(SDSurface *_this,
 			(PIXMAN_OPERATOR_SRC, image->image, &pixel, _this->x, _this->y,
 			 _this->width, _this->height);
 	}
-	SDMutex_Unlock(image->lock);
+	CMutex_Unlock(image->lock);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDBitmapSurface_Flush(SDSurface        *_this,
-                      SDFlushIntention  intention)
+static CStatus
+CBitmapSurface_Flush(CSurface        *_this,
+                      CFlushIntention  intention)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* nothing to do here */
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 static void
-SDBitmapSurface_Finalize(SDSurface *_this)
+CBitmapSurface_Finalize(CSurface *_this)
 {
 	/* declarations */
-	SDBitmapSurface *surface;
+	CBitmapSurface *surface;
 
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* get this as a bitmap surface */
-	surface = (SDBitmapSurface *)_this;
+	surface = (CBitmapSurface *)_this;
 
 	/* finalize the bitmap surface */
-	SDImage_Destroy((SDImage **)&(surface->image));
+	CImage_Destroy((CImage **)&(surface->image));
 }
 
 

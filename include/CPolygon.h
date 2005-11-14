@@ -1,5 +1,5 @@
 /*
- * SDPolygon.h - Polygon header.
+ * CPolygon.h - Polygon header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_POLYGON_H_
-#define _SD_POLYGON_H_
+#ifndef _C_POLYGON_H_
+#define _C_POLYGON_H_
 
 #include "CrayonsInternal.h"
 
@@ -27,44 +27,44 @@
 extern "C" {
 #endif
 
-struct _tagSDPolygonX
+struct _tagCPolygonX
 {
-	SDUInt32  capacity;
-	SDUInt32  count;
-	SDEdgeX  *edges;
-	SDPointX  firstPoint;
-	SDPointX  currentPoint;
-	SDBool    hasCurrentPoint;
+	CUInt32  capacity;
+	CUInt32  count;
+	CEdgeX  *edges;
+	CPointX  firstPoint;
+	CPointX  currentPoint;
+	CBool    hasCurrentPoint;
 };
 
-SDINTERNAL void
-SDPolygonX_Initialize(SDPolygonX *_this);
-SDINTERNAL void
-SDPolygonX_Finalize(SDPolygonX *_this);
-SDINTERNAL void
-SDPolygonX_Reset(SDPolygonX *_this);
-SDINTERNAL SDPointX
-SDPolygonX_GetCurrentPoint(SDPolygonX *_this);
-SDINTERNAL SDBool
-SDPolygonX_HasCurrentPoint(SDPolygonX *_this);
-SDINTERNAL SDStatus
-SDPolygonX_AddEdge(SDPolygonX *_this,
-                   SDPointX   *point1,
-                   SDPointX   *point2);
-SDINTERNAL SDStatus
-SDPolygonX_MoveTo(SDPolygonX *_this,
-                  SDPointX   *point);
-SDINTERNAL SDStatus
-SDPolygonX_LineTo(SDPolygonX *_this,
-                  SDPointX   *point);
-SDINTERNAL SDStatus
-SDPolygonX_Close(SDPolygonX *_this);
+CINTERNAL void
+CPolygonX_Initialize(CPolygonX *_this);
+CINTERNAL void
+CPolygonX_Finalize(CPolygonX *_this);
+CINTERNAL void
+CPolygonX_Reset(CPolygonX *_this);
+CINTERNAL CPointX
+CPolygonX_GetCurrentPoint(CPolygonX *_this);
+CINTERNAL CBool
+CPolygonX_HasCurrentPoint(CPolygonX *_this);
+CINTERNAL CStatus
+CPolygonX_AddEdge(CPolygonX *_this,
+                  CPointX   *point1,
+                  CPointX   *point2);
+CINTERNAL CStatus
+CPolygonX_MoveTo(CPolygonX *_this,
+                 CPointX   *point);
+CINTERNAL CStatus
+CPolygonX_LineTo(CPolygonX *_this,
+                 CPointX   *point);
+CINTERNAL CStatus
+CPolygonX_Close(CPolygonX *_this);
 
-#define SDPolygon_Edges(polygon)     ((polygon).edges)
-#define SDPolygon_EdgeCount(polygon) ((polygon).count)
+#define CPolygon_Edges(polygon)     ((polygon).edges)
+#define CPolygon_EdgeCount(polygon) ((polygon).count)
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _SD_POLYGON_H_ */
+#endif /* _C_POLYGON_H_ */

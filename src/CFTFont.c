@@ -1,5 +1,5 @@
 /*
- * SDFTFont.c - FreeType font implementation.
+ * CFTFont.c - FreeType font implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -26,57 +26,57 @@
 extern "C" {
 #endif
 
-typedef struct _tagSDFTFontFamily SDFTFontFamily;
+typedef struct _tagCFTFontFamily CFTFontFamily;
 struct _tagFTFontFamily
 {
-	SDFontFamily    _base;
+	CFontFamily    _base;
 	FcPattern      *pattern;
-	SDMutex        *lock;
-	SDUInt32        refCount;
-	SDFontStyle     metricsStyle;
-	SDFontMetricsI  metrics;
+	CMutex        *lock;
+	CUInt32        refCount;
+	CFontStyle     metricsStyle;
+	CFontMetricsI  metrics;
 };
-typedef struct _tagSDFTFont SDFTFont;
-struct _tagSDFTFont
+typedef struct _tagCFTFont CFTFont;
+struct _tagCFTFont
 {
-	SDFont          _base;
+	CFont          _base;
 	FT_Face        *face;
-	SDFloat         pixelSize;
-	SDFloat         size;
-	SDFontStyle     style;
-	SDGraphicsUnit  unit;
+	CFloat         pixelSize;
+	CFloat         size;
+	CFontStyle     style;
+	CGraphicsUnit  unit;
 };
-typedef struct _tagSDFTFontCollection SDFTFontCollection;
-struct _tagSDFTFontCollection
+typedef struct _tagCFTFontCollection CFTFontCollection;
+struct _tagCFTFontCollection
 {
-	SDFontCollection  _base;
+	CFontCollection  _base;
 	FcConfig         *config;
 	FcFontSet        *fonts;
 };
 
 /* maintain mutually exclusive access to the generic families */
-static SDMutex SDFTFontFamily_GenericSerifLock     = SDMutex_StaticInitializer;
-static SDMutex SDFTFontFamily_GenericSansSerifLock = SDMutex_StaticInitializer;
-static SDMutex SDFTFontFamily_GenericMonospaceLock = SDMutex_StaticInitializer;
+static CMutex CFTFontFamily_GenericSerifLock     = CMutex_StaticInitializer;
+static CMutex CFTFontFamily_GenericSansSerifLock = CMutex_StaticInitializer;
+static CMutex CFTFontFamily_GenericMonospaceLock = CMutex_StaticInitializer;
 
 /* declare generic families (created on demand) */
-static SDFTFontFamily *SDFTFontFamily_GenericSerif     = 0;
-static SDFTFontFamily *SDFTFontFamily_GenericSansSerif = 0;
-static SDFTFontFamily *SDFTFontFamily_GenericMonospace = 0;
+static CFTFontFamily *CFTFontFamily_GenericSerif     = 0;
+static CFTFontFamily *CFTFontFamily_GenericSansSerif = 0;
+static CFTFontFamily *CFTFontFamily_GenericMonospace = 0;
 
 /* create the generic family names */
-static const FcChar8 SDFTFontFamily_GenericSerifName[]     = "Serif";
-static const FcChar8 SDFTFontFamily_GenericSansSerifName[] = "MS Sans Serif";
-static const FcChar8 SDFTFontFamily_GenericMonospaceName[] = "Monospace";
+static const FcChar8 CFTFontFamily_GenericSerifName[]     = "Serif";
+static const FcChar8 CFTFontFamily_GenericSansSerifName[] = "MS Sans Serif";
+static const FcChar8 CFTFontFamily_GenericMonospaceName[] = "Monospace";
 
 /* maintain mutually exclusive access to the freetype library */
-static SDMutex SDFTFont_FreeTypeLibraryLock = SDMutex_StaticInitializer;
+static CMutex CFTFont_FreeTypeLibraryLock = CMutex_StaticInitializer;
 
 /* declare freetype library (created on demand) */
-static FT_Library SDFTFont_FreeTypeLibrary;
+static FT_Library CFTFont_FreeTypeLibrary;
 
 /* set freetype library initialization to false */
-static SDBool SDFTFont_FreeTypeLibraryInit = 0;
+static CBool CFTFont_FreeTypeLibraryInit = 0;
 
 /*\
 |*| NOTE: the font frontend should load these itself, based on configure-time
@@ -87,104 +87,104 @@ static SDBool SDFTFont_FreeTypeLibraryInit = 0;
 |*|       in which case we'll need to initialize the base from here
 \*/
 
-extern const SDFontCollectionClass SDFTFontCollection_Class =
+extern const CFontCollectionClass CFTFontCollection_Class =
 {
-	SDFTFontCollection_CreateInstalled,
-	SDFTFontCollection_CreatePrivate,
-	SDFTFontCollection_Destroy,
-	SDFTFontCollection_AddFontFile,
-	SDFTFontCollection_AddFontMemory,
-	SDFTFontCollection_GetFamilyList,
+	CFTFontCollection_CreateInstalled,
+	CFTFontCollection_CreatePrivate,
+	CFTFontCollection_Destroy,
+	CFTFontCollection_AddFontFile,
+	CFTFontCollection_AddFontMemory,
+	CFTFontCollection_GetFamilyList,
 	"sentinel"
 };
 
-extern const SDFontFamilyClass SDFTFontFamily_Class =
+extern const CFontFamilyClass CFTFontFamily_Class =
 {
-	SDFTFontFamily_CreateName,
-	SDFTFontFamily_CreateGeneric,
-	SDFTFontFamily_Destroy,
-	SDFTFontFamily_GetMetrics,
-	SDFTFontFamily_GetName,
-	SDFTFontFamily_IsStyleAvailable,
+	CFTFontFamily_CreateName,
+	CFTFontFamily_CreateGeneric,
+	CFTFontFamily_Destroy,
+	CFTFontFamily_GetMetrics,
+	CFTFontFamily_GetName,
+	CFTFontFamily_IsStyleAvailable,
 	"sentinel"
 };
 
-extern const SDFontClass SDFTFont_Class =
+extern const CFontClass CFTFont_Class =
 {
-	SDFTFontFamily_CreateName,
-	SDFTFontFamily_CreateGeneric,
-	SDFTFontFamily_Destroy,
-	SDFTFontFamily_GetGlyphMetrics,
-	SDFTFontFamily_GetMetrics,
-	SDFTFontFamily_GetName,
-	SDFTFontFamily_IsStyleAvailable,
+	CFTFontFamily_CreateName,
+	CFTFontFamily_CreateGeneric,
+	CFTFontFamily_Destroy,
+	CFTFontFamily_GetGlyphMetrics,
+	CFTFontFamily_GetMetrics,
+	CFTFontFamily_GetName,
+	CFTFontFamily_IsStyleAvailable,
 	"sentinel"
 };
 
-SDStatus
-SDFTFontCollection_CreateInstalled(SDFontCollection **_this)
+CStatus
+CFTFontCollection_CreateInstalled(CFontCollection **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the font collection */
-	if(!(*_this = (SDFontCollection *)SDMalloc(sizeof(SDFTFontCollection))))
+	if(!(*_this = (CFontCollection *)CMalloc(sizeof(CFTFontCollection))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the font collection */
 	{
 		/* declarations */
-		SDStatus            status;
-		SDFTFontCollection *fc;
+		CStatus            status;
+		CFTFontCollection *fc;
 
 		/* get this as a freetype font collection */
-		fc = ((SDFTFontCollection *)(*_this));
+		fc = ((CFTFontCollection *)(*_this));
 
 		/* set the members to the defaults */
 		fc->config = 0;
 		fc->fonts  = 0;
 
 		/* update the font set */
-		if((status = SDFTFontCollection_UpdateFonts(fc)) != SDStatus_OK)
+		if((status = CFTFontCollection_UpdateFonts(fc)) != CStatus_OK)
 		{
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
 			return status;
 		}
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFontCollection_CreatePrivate(SDFontCollection **_this)
+CStatus
+CFTFontCollection_CreatePrivate(CFontCollection **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* allocate the font collection */
-	if(!(*_this = (SDFontCollection *)SDMalloc(sizeof(SDFTFontCollection))))
+	if(!(*_this = (CFontCollection *)CMalloc(sizeof(CFTFontCollection))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the font collection */
 	{
 		/* declarations */
-		SDFTFontCollection *fc;
+		CFTFontCollection *fc;
 
 		/* get this as a freetype font collection */
-		fc = ((SDFTFontCollection *)(*_this));
+		fc = ((CFTFontCollection *)(*_this));
 
 		/* create the font configuration */
 		if(!(fc->config = FcConfigCreate()))
 		{
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* set the font set */
@@ -192,22 +192,22 @@ SDFTFontCollection_CreatePrivate(SDFontCollection **_this)
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFontCollection_Destroy(SDFontCollection **_this)
+CStatus
+CFTFontCollection_Destroy(CFontCollection **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* finalize the font collection */
 	{
 		/* declarations */
-		SDFTFontCollection *fc;
+		CFTFontCollection *fc;
 
 		/* get this as a free type font collection */
-		fc = ((SDFTFontCollection *)(*_this));
+		fc = ((CFTFontCollection *)(*_this));
 
 		/* destroy the font set, as needed */
 		if(fc->fonts != 0)
@@ -223,76 +223,76 @@ SDFTFontCollection_Destroy(SDFontCollection **_this)
 	}
 
 	/* free the font collection */
-	SDFree(*_this);
+	CFree(*_this);
 
 	/* null the font collection */
 	*_this = 0;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 SStatus
-SDFTFontCollection_AddFontFile(SDFontCollection *_this,
-                               const SDChar16   *filename)
+CFTFontCollection_AddFontFile(CFontCollection *_this,
+                               const CChar16   *filename)
 {
 	/* declarations */
 	FcConfig *config;
 	FcChar8  *fname;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a file name pointer */
-	SDStatus_Require((filename != 0), SDStatus_ArgumentNull);
+	CStatus_Require((filename != 0), CStatus_ArgumentNull);
 
 	/* get the font configuration */
-	config = ((SDFTFontCollection *)_this)->config;
+	config = ((CFTFontCollection *)_this)->config;
 
 	/* ensure we have a font configuration */
-	SDStatus_Require((config != 0), SDStatus_Argument);
+	CStatus_Require((config != 0), CStatus_Argument);
 
 	/* convert the file name to utf8 */
-	SDStatus_Check
-		(SDUtils_Char16ToChar8
-			(filename, (SDChar8 **)&fname));
+	CStatus_Check
+		(CUtils_Char16ToChar8
+			(filename, (CChar8 **)&fname));
 
 	/* add the font file */
 	if(!(FcConfigAppFontAddFile(config, fname))
 	{
-		SDFree(fname);
-		return SDStatus_OutOfMemory;
+		CFree(fname);
+		return CStatus_OutOfMemory;
 	}
 
 	/* dispose of the utf8 file name */
-	SDFree(fname);
+	CFree(fname);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 
-SDStatus
-SDFTFontFamily_Destroy(SDFontFamily **_this)
+CStatus
+CFTFontFamily_Destroy(CFontFamily **_this)
 {
 	/* declarations */
-	SDMutex *lock;
-	SDBool   lockOwner;
+	CMutex *lock;
+	CBool   lockOwner;
 
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((*_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((*_this != 0), CStatus_ArgumentNull);
 
 	/* get the lock */
 	lock = (*_this)->lock;
 
 	/* finalize and dispose of the font family */
-	SDMutex_Lock(lock);
+	CMutex_Lock(lock);
 	{
 		/* declarations */
-		SDFTFontFamily **global;
+		CFTFontFamily **global;
 
 		/* update the reference count */
 		--((*_this)->refCount);
@@ -307,24 +307,24 @@ SDFTFontFamily_Destroy(SDFontFamily **_this)
 			FcPatternDestroy((*_this)->pattern);
 
 			/* null any global references and determine lock ownership */
-			if((*_this) == SDFTFontFamily_GenericSerif)
+			if((*_this) == CFTFontFamily_GenericSerif)
 			{
-				SDFTFontFamily_GenericSerif = 0;
+				CFTFontFamily_GenericSerif = 0;
 				lockOwner = 0;
 			}
-			else if((*_this) == SDFTFontFamily_GenericSansSerif)
+			else if((*_this) == CFTFontFamily_GenericSansSerif)
 			{
-				SDFTFontFamily_GenericSansSerif = 0;
+				CFTFontFamily_GenericSansSerif = 0;
 				lockOwner = 0;
 			}
-			else if((*_this) == SDFTFontFamily_GenericMonospace)
+			else if((*_this) == CFTFontFamily_GenericMonospace)
 			{
-				SDFTFontFamily_GenericMonospace = 0;
+				CFTFontFamily_GenericMonospace = 0;
 				lockOwner = 0;
 			}
 
 			/* dispose of the font family */
-			SDFree(*_this);
+			CFree(*_this);
 		}
 		else
 		{
@@ -332,23 +332,23 @@ SDFTFontFamily_Destroy(SDFontFamily **_this)
 			lockOwner = 0;
 		}
 	}
-	SDMutex_Unlock(lock);
+	CMutex_Unlock(lock);
 
 	/* destroy the lock, as needed */
-	if(lockOwner) { SDMutex_Destroy(&lock); }
+	if(lockOwner) { CMutex_Destroy(&lock); }
 
 	/* null the font family pointer */
 	*_this = 0;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDFTFontCollection_UpdateFonts(SDFTFontCollection *_this)
+static CStatus
+CFTFontCollection_UpdateFonts(CFTFontCollection *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* update fonts, as needed */
 	if(_this->config != 0 || _this->fonts == 0)
@@ -361,14 +361,14 @@ SDFTFontCollection_UpdateFonts(SDFTFontCollection *_this)
 		/* create the font config obect set */
 		if(!(objects = FcObjectSetBuild(FC_FAMILY, FC_FOUNDRY, FC_SCALABLE, 0)))
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* create the font config pattern */
 		if(!(pattern = FcPatternBuild(0, FC_SCALABLE, FcTypeBool, FcTrue, 0)))
 		{
 			FcObjectSetDestroy(objects);
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* get all the scalable fonts */
@@ -381,7 +381,7 @@ SDFTFontCollection_UpdateFonts(SDFTFontCollection *_this)
 		FcPatternDestroy(pattern);
 
 		/* ensure we have a font set */
-		SDStatus_Require((tmp != 0), SDStatus_OutOfMemory);
+		CStatus_Require((tmp != 0), CStatus_OutOfMemory);
 
 		/* dispose of the old font set, as needed */
 		if(_this->fonts != 0)
@@ -394,58 +394,58 @@ SDFTFontCollection_UpdateFonts(SDFTFontCollection *_this)
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFontCollection_GetFamilyList(SDFontCollection   *_this,
-                                 SDFontFamily     ***families,
-                                 SDUInt32           *count)
+CStatus
+CFTFontCollection_GetFamilyList(CFontCollection   *_this,
+                                 CFontFamily     ***families,
+                                 CUInt32           *count)
 {
 	/* declarations */
-	SDFTFontCollection *fc;
-	SDUInt32            size;
+	CFTFontCollection *fc;
+	CUInt32            size;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a font family list pointer */
-	SDStatus_Require((families != 0), SDStatus_ArgumentNull);
+	CStatus_Require((families != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a count pointer */
-	SDStatus_Require((count != 0), SDStatus_ArgumentNull);
+	CStatus_Require((count != 0), CStatus_ArgumentNull);
 
 	/* get this as a freetype font collection */
-	fc = (SDFTFontCollection *)_this;
+	fc = (CFTFontCollection *)_this;
 
 	/* update the font set */
-	SDStatus_Check(SDFTFontCollection_UpdateFonts(fc));
+	CStatus_Check(CFTFontCollection_UpdateFonts(fc));
 
 	/* get the count */
 	*count = fontCollection->fonts->nfont;
 
 	/* calculate the list size */
-	size = ((*count) * sizeof(SDFTFontFamily *));
+	size = ((*count) * sizeof(CFTFontFamily *));
 
 	/* allocate the font family list */
-	if(!(*families = (SDFontFamily **)SDMalloc(size)))
+	if(!(*families = (CFontFamily **)CMalloc(size)))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* get the font families */
 	{
 		/* declarations */
 		FcPattern      **currP;
-		SDFTFontFamily **currF;
-		SDFTFontFamily **start;
-		SDFTFontFamily **end;
+		CFTFontFamily **currF;
+		CFTFontFamily **start;
+		CFTFontFamily **end;
 
 		/* get the pattern pointer */
 		currP = fontCollection->fonts->fonts;
 
 		/* get the font family pointer */
-		currF = ((SDFTFontFamily **)(*families));
+		currF = ((CFTFontFamily **)(*families));
 
 		/* get the start pointer */
 		start = (currF - 1);
@@ -457,51 +457,51 @@ SDFTFontCollection_GetFamilyList(SDFontCollection   *_this,
 		while(currF != end)
 		{
 			/* declarations */
-			SDStatus status;
+			CStatus status;
 
 			/* allocate the font family */
-			if(!(*currF = (SDFTFontFamily *)SDMalloc(sizeof(SDFTFontFamily))))
+			if(!(*currF = (CFTFontFamily *)CMalloc(sizeof(CFTFontFamily))))
 			{
 				/* destroy all the previously created families */
 				while(*currF != start)
 				{
 					--currF;
-					SDFTFontFamily_Destroy(currF);
+					CFTFontFamily_Destroy(currF);
 				}
 
 				/* finish clean up */
-				SDFree(*families);
+				CFree(*families);
 				*families = 0;
 				*count    = 0;
 
 				/* return out of memory status */
-				return SDStatus_OutOfMemory;
+				return CStatus_OutOfMemory;
 			}
 
 			/* reference the current pattern */
 			FcPatternReference(*currP);
 
 			/* initialize the current font family */
-			status = SDFTFontFamily_Initialize(*currF, *currP);
+			status = CFTFontFamily_Initialize(*currF, *currP);
 
 			/* handle initialization errors */
-			if(status != SDStatus_OK)
+			if(status != CStatus_OK)
 			{
 				/* dereference the current pattern */
 				FcPatternDestroy(*currP);
 
 				/* dispose of the current font family */
-				SDFree(*currF);
+				CFree(*currF);
 
 				/* destroy all the previously created families */
 				while(*currF != start)
 				{
 					--currF;
-					SDFTFontFamily_Destroy(currF);
+					CFTFontFamily_Destroy(currF);
 				}
 
 				/* finish clean up */
-				SDFree(*families);
+				CFree(*families);
 				*families = 0;
 				*count    = 0;
 
@@ -515,51 +515,51 @@ SDFTFontCollection_GetFamilyList(SDFontCollection   *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
-SDFTFontFamily_Initialize(SDFTFontFamily *_this,
+static CStatus
+CFTFontFamily_Initialize(CFTFontFamily *_this,
                           FcPattern      *pattern)
 {
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((pattern != 0));
+	CASSERT((_this   != 0));
+	CASSERT((pattern != 0));
 
 	/* create the mutex */
-	SDStatus_Check
-		(SDMutex_Create
+	CStatus_Check
+		(CMutex_Create
 			(&(_this->lock)));
 
 	/* set the metrics style to the default */
-	_this->metricsStyle = (SDFontStyle)-1;
+	_this->metricsStyle = (CFontStyle)-1;
 
 	/* set the pattern */
 	_this->pattern = pattern;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFontFamily_CreateName(SDFontFamily     **_this,
-                          const SDChar16    *name,
-                          SDFontCollection  *fc)
+CStatus
+CFTFontFamily_CreateName(CFontFamily     **_this,
+                          const CChar16    *name,
+                          CFontCollection  *fc)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((*_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((*_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a name pointer */
-	SDStatus_Require((name != 0), SDStatus_ArgumentNull);
+	CStatus_Require((name != 0), CStatus_ArgumentNull);
 
 	/* allocate the font family */
-	if(!(*_this = (SDFontFamily *)SDMalloc(sizeof(SDFTFontFamily))))
+	if(!(*_this = (CFontFamily *)CMalloc(sizeof(CFTFontFamily))))
 	{
-		SDFree(fname);
-		return SDStatus_OutOfMemory;
+		CFree(fname);
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the font family */
@@ -569,13 +569,13 @@ SDFTFontFamily_CreateName(SDFontFamily     **_this,
 		FcChar8        *fname;
 		FcPattern      *pattern;
 		FcConfig       *config;
-		SDFTFontFamily *family;
-		SDStatus        status;
+		CFTFontFamily *family;
+		CStatus        status;
 
 		/* get the font configuration, if available */
 		if(fc != 0)
 		{
-			config = ((SDFTFontCollection *)fc)->config;
+			config = ((CFTFontCollection *)fc)->config;
 		}
 		else
 		{
@@ -584,44 +584,44 @@ SDFTFontFamily_CreateName(SDFontFamily     **_this,
 
 		/* get the font name in utf8 */
 		status =
-			SDUtils_Char16ToChar8
-				(name, (SDChar8 **)&fname);
+			CUtils_Char16ToChar8
+				(name, (CChar8 **)&fname);
 
 		/* handle utf8 conversion failures */
-		if(status != SDStatus_OK)
+		if(status != CStatus_OK)
 		{
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
 			return status;
 		}
 
 		/* build the pattern */
-		if((status = _BuildPattern(&pattern, config, fname)) != SDStatus_OK)
+		if((status = _BuildPattern(&pattern, config, fname)) != CStatus_OK)
 		{
-			SDFree(fname);
-			SDFree(*_this);
+			CFree(fname);
+			CFree(*_this);
 			*_this = 0;
 			return status;
 		}
 
 		/* dispose of the utf8 font name */
-		SDFree(fname);
+		CFree(fname);
 
 		/* initialize the font family */
-		if((status = SDFTFontFamily_Initialize(family, pattern)) != SDStatus_OK)
+		if((status = CFTFontFamily_Initialize(family, pattern)) != CStatus_OK)
 		{
 			FcPatternDestroy(pattern);
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
 			return status;
 		}
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-static SDStatus
+static CStatus
 _BuildPattern(FcPattern **fpattern,
               FcConfig   *config,
               FcChar8    *name)
@@ -642,7 +642,7 @@ _BuildPattern(FcPattern **fpattern,
 	if(!pattern)
 	{
 		*fpattern = 0;
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* TODO: figure out the optimal order for the next two ops */
@@ -660,11 +660,11 @@ _BuildPattern(FcPattern **fpattern,
 		/* return status based on result */
 		if(result == FcResultNoMatch)
 		{
-			return SDStatus_Argument_FontFamilyNotFound;
+			return CStatus_Argument_FontFamilyNotFound;
 		}
 		else
 		{
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 	}
 
@@ -672,82 +672,82 @@ _BuildPattern(FcPattern **fpattern,
 	FcPatternDestroy(pattern);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFontFamily_CreateGeneric(SDFontFamily          **_this,
-                             SDGenericFontFamilies   generic)
+CStatus
+CFTFontFamily_CreateGeneric(CFontFamily          **_this,
+                             CGenericFontFamilies   generic)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* initialize the font family */
 	{
 		/* declarations */
-		SDFTFontFamily **global;
-		SDMutex         *lock;
+		CFTFontFamily **global;
+		CMutex         *lock;
 		FcChar8         *name;
 
 		/* get the lock and name, based on the generic type */
 		switch(generic)
 		{
-			case SDGenericFontFamilies_Serif:
+			case CGenericFontFamilies_Serif:
 			{
-				global = &(SDFTFontFamily_GenericSerif);
-				lock   = &(SDFTFontFamily_GenericSerifLock);
-				name   = SDFTFontFamily_GenericSerifName;
+				global = &(CFTFontFamily_GenericSerif);
+				lock   = &(CFTFontFamily_GenericSerifLock);
+				name   = CFTFontFamily_GenericSerifName;
 			}
 			break;
-			case SDGenericFontFamilies_SansSerif:
+			case CGenericFontFamilies_SansSerif:
 			{
-				global = &(SDFTFontFamily_GenericSansSerif);
-				lock   = &(SDFTFontFamily_GenericSansSerifLock);
-				name   = SDFTFontFamily_GenericSansSerifName;
+				global = &(CFTFontFamily_GenericSansSerif);
+				lock   = &(CFTFontFamily_GenericSansSerifLock);
+				name   = CFTFontFamily_GenericSansSerifName;
 			}
 			break;
-			case SDGenericFontFamilies_Monospace:
+			case CGenericFontFamilies_Monospace:
 			default:
 			{
-				global = &(SDFTFontFamily_GenericMonospace);
-				lock   = &(SDFTFontFamily_GenericMonospaceLock);
-				name   = SDFTFontFamily_GenericMonospaceName;
+				global = &(CFTFontFamily_GenericMonospace);
+				lock   = &(CFTFontFamily_GenericMonospaceLock);
+				name   = CFTFontFamily_GenericMonospaceName;
 			}
 			break;
 		}
 
 		/* get the generic font family, synchronously */
-		SDMutex_Lock(lock);
+		CMutex_Lock(lock);
 		{
 			/* create the generic, as needed */
 			if(*global == 0)
 			{
 				/* declarations */
-				SDStatus   status;
+				CStatus   status;
 				FcPattern *pattern;
 
 				/* allocate the font family */
-				if(!(*global = (SDFontFamily *)SDMalloc(sizeof(SDFTFontFamily))))
+				if(!(*global = (CFontFamily *)CMalloc(sizeof(CFTFontFamily))))
 				{
 					/* unlock global space */
-					SDMutex_Unlock(lock);
+					CMutex_Unlock(lock);
 
 					/* finish clean	up */
 					*_this  = 0;
 
 					/* return out of memory status */
-					return SDStatus_OutOfMemory;
+					return CStatus_OutOfMemory;
 				}
 
 				/* build the pattern */
-				if((status _BuildPattern(&pattern, 0, name)) != SDStatus_OK)
+				if((status _BuildPattern(&pattern, 0, name)) != CStatus_OK)
 				{
 					/* clean up global space */
-					SDFree(*global);
+					CFree(*global);
 					*global = 0;
 
 					/* unlock global space */
-					SDMutex_Unlock(lock);
+					CMutex_Unlock(lock);
 
 					/* finish clean up */
 					*_this  = 0;
@@ -758,41 +758,41 @@ SDFTFontFamily_CreateGeneric(SDFontFamily          **_this,
 
 				/* initialize the members */
 				(*global)->lock         = lock;
-				(*global)->metricsStyle = (SDFontStyle)-1;
+				(*global)->metricsStyle = (CFontStyle)-1;
 				(*global)->pattern      = pattern;
 			}
 
 			/* set the font family to the global generic family */
 			*_this = *global;
 		}
-		SDMutex_Unlock(lock);
+		CMutex_Unlock(lock);
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFontFamily_GetMetrics(SDFontFamily   *_this,
-                          SDFontStyle     style,
-                          SDFontMetricsI *metrics)
+CStatus
+CFTFontFamily_GetMetrics(CFontFamily   *_this,
+                          CFontStyle     style,
+                          CFontMetricsI *metrics)
 {
 	/* declarations */
-	SDFTFontFamily *family;
-	SDFTFont       *font;
-	SDStatus        status;
+	CFTFontFamily *family;
+	CFTFont       *font;
+	CStatus        status;
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a metrics pointer */
-	SDStatus_Require((metrics != 0), SDStatus_ArgumentNull);
+	CStatus_Require((metrics != 0), CStatus_ArgumentNull);
 
 	/* get this as a freetype font family */
-	family = (SDFontFamily *)_this;
+	family = (CFontFamily *)_this;
 
 	/* get the family metrics, synchronously */
-	SDMutex_Lock(family->lock);
+	CMutex_Lock(family->lock);
 	{
 		/* get the cached metrics, if available */
 		if(family->metricsStyle == style)
@@ -801,13 +801,13 @@ SDFTFontFamily_GetMetrics(SDFontFamily   *_this,
 			*metrics = family->metrics;
 
 			/* unlock the font family*/
-			SDMutex_Unlock(family->lock);
+			CMutex_Unlock(family->lock);
 
 			/* return successfully */
-			return SDStatus_OK;
+			return CStatus_OK;
 		}
 	}
-	SDMutex_Unlock(family->lock);
+	CMutex_Unlock(family->lock);
 
 	/*\
 	|*| NOTE: we get the metrics outside the lock to avoid blocking during
@@ -817,23 +817,23 @@ SDFTFontFamily_GetMetrics(SDFontFamily   *_this,
 
 	/* create the font */
 	status =
-		SDFTFont_Create
-			(&((SDFont *)font), family, 0.0f, style, SDGraphicsUnit_Pixel);
+		CFTFont_Create
+			(&((CFont *)font), family, 0.0f, style, CGraphicsUnit_Pixel);
 
 	/* handle font creation failures */
-	if(status != SDStatus_OK) { return status; }
+	if(status != CStatus_OK) { return status; }
 
 	/* get the font metrics */
-	status = SDFTFont_GetMetricsI(((SDFont *)font), metrics);
+	status = CFTFont_GetMetricsI(((CFont *)font), metrics);
 
 	/* destroy the font */
-	SDFTFont_Destroy(&((SDFont *)font));
+	CFTFont_Destroy(&((CFont *)font));
 
 	/* handle metrics failures */
-	if(status != SDStatus_OK) { return status; }
+	if(status != CStatus_OK) { return status; }
 
 	/* cache the family metrics, synchronously */
-	SDMutex_Lock(family->lock);
+	CMutex_Lock(family->lock);
 	{
 		/*\
 		|*| NOTE: we don't bother to recheck for caching, because the odds
@@ -845,38 +845,38 @@ SDFTFontFamily_GetMetrics(SDFontFamily   *_this,
 		family->metrics      = metrics;
 		family->metricsStyle = style;
 	}
-	SDMutex_Unlock(family->lock);
+	CMutex_Unlock(family->lock);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFontFamily_IsStyleAvailable(SDFontFamily *_this,
-                                SDFontStyle   style,
-                                SDBool       *available)
+CStatus
+CFTFontFamily_IsStyleAvailable(CFontFamily *_this,
+                                CFontStyle   style,
+                                CBool       *available)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a style available flag pointer */
-	SDStatus_Require((available != 0), SDStatus_ArgumentNull);
+	CStatus_Require((available != 0), CStatus_ArgumentNull);
 
 	/* assume all styles are available */
 	*available = 1;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
-SDStatus
-SDFTFont_GetMetricsI(SDFont         *_this,
-                     SDFontMetricsI *metrics)
+CStatus
+CFTFont_GetMetricsI(CFont         *_this,
+                     CFontMetricsI *metrics)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a metrics pointer */
-	SDStatus_Require((metrics != 0), SDStatus_ArgumentNull);
+	CStatus_Require((metrics != 0), CStatus_ArgumentNull);
 
 	/* get the metrics */
 	{
@@ -887,7 +887,7 @@ SDFTFont_GetMetricsI(SDFont         *_this,
 		face = _this->face;
 
 		/* assertions */
-		SDASSERT((FT_IS_SCALABLE(face)));
+		CASSERT((FT_IS_SCALABLE(face)));
 
 		/* get the metrics information */
 		metrics->emHeight    = face->units_per_EM;
@@ -897,30 +897,30 @@ SDFTFont_GetMetricsI(SDFont         *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFont_GetMetricsF(SDFont         *_this,
-                     SDFontMetricsF *metrics)
+CStatus
+CFTFont_GetMetricsF(CFont         *_this,
+                     CFontMetricsF *metrics)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a metrics pointer */
-	SDStatus_Require((metrics != 0), SDStatus_ArgumentNull);
+	CStatus_Require((metrics != 0), CStatus_ArgumentNull);
 
 	/* get the metrics */
 	{
 		/* declarations */
 		FT_Face face;
-		SDFloat pixels;
+		CFloat pixels;
 
 		/* get the face */
 		face = _this->face;
 
 		/* assertions */
-		SDASSERT((FT_IS_SCALABLE(face)));
+		CASSERT((FT_IS_SCALABLE(face)));
 
 		/* get the pixel size */
 		pixels = _this->pixelSize;
@@ -933,26 +933,26 @@ SDFTFont_GetMetricsF(SDFont         *_this,
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFont_Create(SDFont         **_this,
-                SDFontFamily    *family,
-                SDFontStyle      style,
-                SDFloat          size,
-                SDGraphicsUnit   unit)
+CStatus
+CFTFont_Create(CFont         **_this,
+                CFontFamily    *family,
+                CFontStyle      style,
+                CFloat          size,
+                CGraphicsUnit   unit)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a font family pointer */
-	SDStatus_Require((family != 0), SDStatus_ArgumentNull);
+	CStatus_Require((family != 0), CStatus_ArgumentNull);
 
 	/* allocate the font */
-	if(!(*_this = (SDFont *)SDMalloc(sizeof(SDFTFont))))
+	if(!(*_this = (CFont *)CMalloc(sizeof(CFTFont))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the font */
@@ -967,26 +967,26 @@ SDFTFont_Create(SDFont         **_this,
 		FcPattern       *pattern;
 		FcPattern       *match;
 		FcResult         result;
-		SDFloat          pointSize;
-		SDFTFont        *font;
-		SDFTFontFamily  *ff;
+		CFloat          pointSize;
+		CFTFont        *font;
+		CFTFontFamily  *ff;
 
 		/* get the family as a freetype family */
-		ff = (SDFTFontFamily *)family;
+		ff = (CFTFontFamily *)family;
 
 		/* get the family name */
 		result = FcPatternGetString(ff->pattern, FC_FAMILY, 0, &name);
 
 		/* assertions */
-		SDASSERT((result == FcResultMatch));
+		CASSERT((result == FcResultMatch));
 
 		/* get this as a freetype font */
-		font = ((SDFTFont *)(*_this));
+		font = ((CFTFont *)(*_this));
 
 		/* calculate size in pixels */
 		font->pixelSize =
-			SDUtils_ConvertUnits
-				(unit, SDGraphicsUnit_Pixel, size);
+			CUtils_ConvertUnits
+				(unit, CGraphicsUnit_Pixel, size);
 
 		/* initialize the remaining simple members */
 		font->size  = size;
@@ -994,7 +994,7 @@ SDFTFont_Create(SDFont         **_this,
 		font->style = style;
 
 		/* get the font weight */
-		if((style & SDFontStyle_Bold) == SDFontStyle_Bold)
+		if((style & CFontStyle_Bold) == CFontStyle_Bold)
 		{
 			weight = FC_WEIGHT_BOLD;
 		}
@@ -1004,7 +1004,7 @@ SDFTFont_Create(SDFont         **_this,
 		}
 
 		/* get the font slant */
-		if((style & SDFontStyle_Italic) == SDFontStyle_Italic)
+		if((style & CFontStyle_Italic) == CFontStyle_Italic)
 		{
 			slant = FC_SLANT_ITALIC;
 		}
@@ -1014,26 +1014,26 @@ SDFTFont_Create(SDFont         **_this,
 		}
 
 		/* ensure library is initialized, synchronously */
-		SDMutex_Lock(&(SDFTFont_FreeTypeLibraryLock));
+		CMutex_Lock(&(CFTFont_FreeTypeLibraryLock));
 		{
 			/* initialize the library, as needed */
-			if(!SDFTFont_FreeTypeLibraryInit)
+			if(!CFTFont_FreeTypeLibraryInit)
 			{
 				/* initialize the freetype library */
-				if((error = FT_Init_FreeType(SDFTFont_FreeTypeLibrary)))
+				if((error = FT_Init_FreeType(CFTFont_FreeTypeLibrary)))
 				{
 					/* assume out of memory for now */
-					SDMutex_Unlock(&(SDFTFont_FreeTypeLibraryLock));
-					SDFree(*_this);
+					CMutex_Unlock(&(CFTFont_FreeTypeLibraryLock));
+					CFree(*_this);
 					*_this = 0;
-					return SDStatus_OutOfMemory;
+					return CStatus_OutOfMemory;
 				}
 
 				/* set the freetype library initialized flag to true */
-				SDFTFont_FreeTypeLibraryInit = 1;
+				CFTFont_FreeTypeLibraryInit = 1;
 			}
 		}
-		SDMutex_Unlock(&(SDFTFont_FreeTypeLibraryLock));
+		CMutex_Unlock(&(CFTFont_FreeTypeLibraryLock));
 
 		/* build the pattern */
 		pattern =
@@ -1048,9 +1048,9 @@ SDFTFont_Create(SDFont         **_this,
 		/* handle pattern creation failures */
 		if(!pattern)
 		{
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* set up pattern for font matching */
@@ -1062,17 +1062,17 @@ SDFTFont_Create(SDFont         **_this,
 		{
 			/* clean up */
 			FcPatternDestroy(pattern);
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
 
 			/* return status based on result */
 			if(result == FcResultNoMatch)
 			{
-				return SDStatus_Argument_FontFamilyNotFound;
+				return CStatus_Argument_FontFamilyNotFound;
 			}
 			else
 			{
-				return SDStatus_OutOfMemory;
+				return CStatus_OutOfMemory;
 			}
 		}
 
@@ -1087,17 +1087,17 @@ SDFTFont_Create(SDFont         **_this,
 		{
 			/* clean up */
 			FcPatternDestroy(match);
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
 
 			/* return status based on result */
 			if(result == FcResultNoMatch)
 			{
-				return SDStatus_Argument_FontFamilyNotFound;
+				return CStatus_Argument_FontFamilyNotFound;
 			}
 			else
 			{
-				return SDStatus_OutOfMemory;
+				return CStatus_OutOfMemory;
 			}
 		}
 
@@ -1106,9 +1106,9 @@ SDFTFont_Create(SDFont         **_this,
 		{
 			/* assume out of memory for now */
 			FcPatternDestroy(match);
-			SDFree(*_this);
+			CFree(*_this);
 			*_this = 0;
-			return SDStatus_OutOfMemory;
+			return CStatus_OutOfMemory;
 		}
 
 		/* destroy the match pattern */
@@ -1116,8 +1116,8 @@ SDFTFont_Create(SDFont         **_this,
 
 		/* calculate size in points */
 		pointSize =
-			SDUtils_ConvertUnits
-				(unit, SDGraphicsUnit_Pixel, size);
+			CUtils_ConvertUnits
+				(unit, CGraphicsUnit_Pixel, size);
 
 		/*\
 		|*| NOTE: we don't use FT_Set_Pixel_Sizes to avoid rounding away
@@ -1128,24 +1128,24 @@ SDFTFont_Create(SDFont         **_this,
 		FT_Set_Char_Size
 			(face,
 			 DOUBLE_TO_26_6(pointSize), DOUBLE_TO_26_6(pointSize),
-			 SDGraphics_DefaultDpiY,    SDGraphics_DefaultDpiY);
+			 CGraphics_DefaultDpiY,    CGraphics_DefaultDpiY);
 
 		/* set the face */
 		font->face = face;
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFont_Destroy(SDFont **_this)
+CStatus
+CFTFont_Destroy(CFont **_this)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a this pointer */
-	SDStatus_Require((*_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((*_this != 0), CStatus_ArgumentNull);
 
 	/* finalize the font */
 	{
@@ -1154,22 +1154,22 @@ SDFTFont_Destroy(SDFont **_this)
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFontCollection_AddFontMemory(SDFontCollection *_this,
-                                 const SDByte     *memory,
-                                 SDUInt32          length)
+CStatus
+CFTFontCollection_AddFontMemory(CFontCollection *_this,
+                                 const CByte     *memory,
+                                 CUInt32          length)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a memory pointer */
-	SDStatus_Require((memory != 0), SDStatus_ArgumentNull);
+	CStatus_Require((memory != 0), CStatus_ArgumentNull);
 
 	/* ensure we have memory */
-	SDStatus_Require((length != 0), SDStatus_Argument);
+	CStatus_Require((length != 0), CStatus_Argument);
 
 	/* add the memory font */
 	{
@@ -1177,10 +1177,10 @@ SDFTFontCollection_AddFontMemory(SDFontCollection *_this,
 		int fd, len;
 
 		/* create the temporary file name */
-		SDByte fname[] = "/tmp/XXXXXXXXXXXXXXXX";
+		CByte fname[] = "/tmp/XXXXXXXXXXXXXXXX";
 
 		/* create the temporary file */
-		if((fd = mkstemp((char *)fname)) == -1) { return SDStatus_Error; }
+		if((fd = mkstemp((char *)fname)) == -1) { return CStatus_Error; }
 
 		/* get the length */
 		len = (int)length;
@@ -1192,24 +1192,24 @@ SDFTFontCollection_AddFontMemory(SDFontCollection *_this,
 		close(fd);
 
 		/* handle write errors */
-		if(len == -1) { return SDStatus_Error; }
+		if(len == -1) { return CStatus_Error; }
 
 		/* add the font file to the collection */
-		FcConfigAppFontAddFile(((SDFTFontCollection *)_this)->config, fname);
+		FcConfigAppFontAddFile(((CFTFontCollection *)_this)->config, fname);
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDStatus
-SDFTFont_GetGlyphMetrics(SDFont    *_this,
-                         SDChar16  *s,
-                         SDSizeF  **metrics,
-                         SDUInt32  *count)
+CStatus
+CFTFont_GetGlyphMetrics(CFont    *_this,
+                         CChar16  *s,
+                         CSizeF  **metrics,
+                         CUInt32  *count)
 {
 	/* TODO */
-	return SDStatus_NotImplemented;
+	return CStatus_NotImplemented;
 }
 
 

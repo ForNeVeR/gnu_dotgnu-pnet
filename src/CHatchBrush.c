@@ -1,5 +1,5 @@
 /*
- * SDHatchBrush.c - Hatch brush implementation.
+ * CHatchBrush.c - Hatch brush implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -25,61 +25,61 @@ extern "C" {
 #endif
 
 /* Clone this hatch brush. */
-static SDStatus
-SDHatchBrush_Clone(SDBrush  *_this,
-                   SDBrush **_clone)
+static CStatus
+CHatchBrush_Clone(CBrush  *_this,
+                   CBrush **_clone)
 {
 	/* declarations */
-	SDHatchBrush  *brush;
-	SDHatchBrush **clone;
+	CHatchBrush  *brush;
+	CHatchBrush **clone;
 
 	/* assertions */
-	SDASSERT((_this != 0));
-	SDASSERT((clone != 0));
+	CASSERT((_this != 0));
+	CASSERT((clone != 0));
 
 	/* get this as a hatch brush */
-	brush = (SDHatchBrush *)_this;
+	brush = (CHatchBrush *)_this;
 
 	/* get the clone as a hatch brush */
-	clone = (SDHatchBrush **)_clone;
+	clone = (CHatchBrush **)_clone;
 
 	/* create the clone */
 	return
-		SDHatchBrush_Create
+		CHatchBrush_Create
 			(clone, brush->style, brush->foreground, brush->background);
 }
 
 /* Finalize this hatch brush. */
 static void
-SDHatchBrush_Finalize(SDBrush *_this)
+CHatchBrush_Finalize(CBrush *_this)
 {
 	/* assertions */
-	SDASSERT((_this != 0));
+	CASSERT((_this != 0));
 
 	/* nothing to do here */
 }
 
 /* Create a pattern for this brush. */
-static SDStatus
-SDHatchBrush_CreatePattern(SDBrush   *_this,
-                           SDPattern *pattern)
+static CStatus
+CHatchBrush_CreatePattern(CBrush   *_this,
+                           CPattern *pattern)
 {
 	/* assertions */
-	SDASSERT((_this   != 0));
-	SDASSERT((pattern != 0));
+	CASSERT((_this   != 0));
+	CASSERT((pattern != 0));
 
 	/* create the pattern */
 	{
 		/* declarations */
 		pixman_format_t *format;
-		SDHatchBrush    *brush;
-		SDByte          *data;
-		SDColor          fg;
-		SDColor          bg;
-		SDUInt32         stride;
+		CHatchBrush    *brush;
+		CByte          *data;
+		CColor          fg;
+		CColor          bg;
+		CUInt32         stride;
 
 		/* get this as a hatch brush */
-		brush = (SDHatchBrush *)_this;
+		brush = (CHatchBrush *)_this;
 
 		/* set the pattern transformation */
 		pattern->transform = 0;
@@ -87,88 +87,88 @@ SDHatchBrush_CreatePattern(SDBrush   *_this,
 		/* calculate the pre-multiplied foreground */
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the foreground */
 			fg = brush->foreground;
 
 			/* get the components and pre-multiply */
-			a = ((SDColor_A(fg)));
-			r = ((SDColor_R(fg) * a) / 255);
-			g = ((SDColor_G(fg) * a) / 255);
-			b = ((SDColor_B(fg) * a) / 255);
+			a = ((CColor_A(fg)));
+			r = ((CColor_R(fg) * a) / 255);
+			g = ((CColor_G(fg) * a) / 255);
+			b = ((CColor_B(fg) * a) / 255);
 
 			/* set the foreground */
-			fg = SDPixmanPixel_FromARGB(a, r, g, b);
+			fg = CPixmanPixel_FromARGB(a, r, g, b);
 		}
 
 		/* calculate the pre-multiplied background */
 		{
 			/* declarations */
-			SDByte a, r, g, b;
+			CByte a, r, g, b;
 
 			/* get the background */
 			bg = brush->background;
 
 			/* get the components and pre-multiply */
-			a = ((SDColor_A(bg)));
-			r = ((SDColor_R(bg) * a) / 255);
-			g = ((SDColor_G(bg) * a) / 255);
-			b = ((SDColor_B(bg) * a) / 255);
+			a = ((CColor_A(bg)));
+			r = ((CColor_R(bg) * a) / 255);
+			g = ((CColor_G(bg) * a) / 255);
+			b = ((CColor_B(bg) * a) / 255);
 
 			/* set the background */
-			bg = SDPixmanPixel_FromARGB(a, r, g, b);
+			bg = CPixmanPixel_FromARGB(a, r, g, b);
 		}
 
 		/* create the pixman format */
-		format = pixman_format_create(SDHatchBrush_DataFormat);
+		format = pixman_format_create(CHatchBrush_DataFormat);
 
 		/* ensure we have a format */
-		SDStatus_Require((format != 0), SDStatus_OutOfMemory);
+		CStatus_Require((format != 0), CStatus_OutOfMemory);
 
 		/* create the pixman image */
 		pattern->image =
 			pixman_image_create
-				(format, SDHatchBrush_StyleWidth, SDHatchBrush_StyleHeight);
+				(format, CHatchBrush_StyleWidth, CHatchBrush_StyleHeight);
 
 		/* destroy the pixman format */
 		pixman_format_destroy(format);
 
 		/* ensure we have an image */
-		SDStatus_Require((pattern->image != 0), SDStatus_OutOfMemory);
+		CStatus_Require((pattern->image != 0), CStatus_OutOfMemory);
 
 		/* get the data and stride */
-		data = (SDByte *)pixman_image_get_data(pattern->image);
-		stride = (SDUInt32)pixman_image_get_stride(pattern->image);
+		data = (CByte *)pixman_image_get_data(pattern->image);
+		stride = (CUInt32)pixman_image_get_stride(pattern->image);
 
 		/* get the image data for the style */
-		SDHatchBrush_StyleToData(brush->style, data, stride, fg, bg);
+		CHatchBrush_StyleToData(brush->style, data, stride, fg, bg);
 
 		/* set the repeat flag */
 		pixman_image_set_repeat(pattern->image, 1);
 	}
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Create a hatch brush. */
-SDStatus
-SDHatchBrush_Create(SDHatchBrush **_this,
-                    SDHatchStyle   style,
-                    SDColor        foreground,
-                    SDColor        background)
+CStatus
+CHatchBrush_Create(CHatchBrush **_this,
+                    CHatchStyle   style,
+                    CColor        foreground,
+                    CColor        background)
 {
 	/* ensure we have a this pointer pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a valid hatch style */
-	SDStatus_Require((SDHatchStyle_IsValid(style)), SDStatus_Argument);
+	CStatus_Require((CHatchStyle_IsValid(style)), CStatus_Argument);
 
 	/* allocate the brush */
-	if(!(*_this = (SDHatchBrush *)SDMalloc(sizeof(SDHatchBrush))))
+	if(!(*_this = (CHatchBrush *)CMalloc(sizeof(CHatchBrush))))
 	{
-		return SDStatus_OutOfMemory;
+		return CStatus_OutOfMemory;
 	}
 
 	/* initialize the members */
@@ -177,64 +177,64 @@ SDHatchBrush_Create(SDHatchBrush **_this,
 	(*_this)->background = background;
 
 	/* initialize the base */
-	SDBrush_Initialize((SDBrush *)(*_this), &SDHatchBrush_Class);
+	CBrush_Initialize((CBrush *)(*_this), &CHatchBrush_Class);
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the background color of the hatch. */
-SDStatus
-SDHatchBrush_GetBackgroundColor(SDHatchBrush *_this,
-                                SDColor      *background)
+CStatus
+CHatchBrush_GetBackgroundColor(CHatchBrush *_this,
+                                CColor      *background)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a background color pointer */
-	SDStatus_Require((background != 0), SDStatus_ArgumentNull);
+	CStatus_Require((background != 0), CStatus_ArgumentNull);
 
 	/* get the background color */
 	*background = _this->background;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the foreground color of the hatch. */
-SDStatus
-SDHatchBrush_GetForegroundColor(SDHatchBrush *_this,
-                                SDColor      *foreground)
+CStatus
+CHatchBrush_GetForegroundColor(CHatchBrush *_this,
+                                CColor      *foreground)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a foreground color pointer */
-	SDStatus_Require((foreground != 0), SDStatus_ArgumentNull);
+	CStatus_Require((foreground != 0), CStatus_ArgumentNull);
 
 	/* get the foreground color */
 	*foreground = _this->foreground;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 /* Get the style of the hatch. */
-SDStatus
-SDHatchBrush_GetHatchStyle(SDHatchBrush *_this,
-                           SDHatchStyle *style)
+CStatus
+CHatchBrush_GetHatchStyle(CHatchBrush *_this,
+                           CHatchStyle *style)
 {
 	/* ensure we have a this pointer */
-	SDStatus_Require((_this != 0), SDStatus_ArgumentNull);
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a style pointer */
-	SDStatus_Require((style != 0), SDStatus_ArgumentNull);
+	CStatus_Require((style != 0), CStatus_ArgumentNull);
 
 	/* get the style */
 	*style = _this->style;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
 

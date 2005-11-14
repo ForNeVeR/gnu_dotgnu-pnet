@@ -1,5 +1,5 @@
 /*
- * SDRegionStack.c - Region stack implementation.
+ * CRegionStack.c - Region stack implementation.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -24,21 +24,21 @@
 extern "C" {
 #endif
 
-SDINTERNAL void
-SDRegionStack_Initialize(SDRegionStack *_this)
+CINTERNAL void
+CRegionStack_Initialize(CRegionStack *_this)
 {
 	/* assertions */
-	SDASSERT(_this != 0);
+	CASSERT(_this != 0);
 
 	/* initialize the stack */
-	*_this = SDRegionStack_Zero;
+	*_this = CRegionStack_Zero;
 }
 
-SDINTERNAL void
-SDRegionStack_Finalize(SDRegionStack *_this)
+CINTERNAL void
+CRegionStack_Finalize(CRegionStack *_this)
 {
 	/* assertions */
-	SDASSERT(_this != 0);
+	CASSERT(_this != 0);
 
 	/* get the current stack */
 	while(_this->prev != 0) { _this = _this->prev; }
@@ -50,25 +50,25 @@ SDRegionStack_Finalize(SDRegionStack *_this)
 	while(_this != 0)
 	{
 		/* get the next stack */
-		SDRegionStack *next = _this->next;
+		CRegionStack *next = _this->next;
 
 		/* free the current stack */
-		SDFree(_this);
+		CFree(_this);
 
 		/* move to the next stack */
 		_this = next;
 	}
 }
 
-SDINTERNAL void
-SDRegionStack_Pop(SDRegionStack **_this)
+CINTERNAL void
+CRegionStack_Pop(CRegionStack **_this)
 {
 	/* declarations */
-	SDRegionStack *stack;
+	CRegionStack *stack;
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((*_this != 0));
+	CASSERT((_this  != 0));
+	CASSERT((*_this != 0));
 
 	/* get the current stack */
 	stack = *_this;
@@ -83,23 +83,23 @@ SDRegionStack_Pop(SDRegionStack **_this)
 	}
 }
 
-SDINTERNAL SDStatus
-SDRegionStack_Push(SDRegionStack **_this,
-                   SDRegionOp     *op)
+CINTERNAL CStatus
+CRegionStack_Push(CRegionStack **_this,
+                   CRegionOp     *op)
 {
 	/* declarations */
-	SDRegionStack *stack;
+	CRegionStack *stack;
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((*_this != 0));
-	SDASSERT((op     != 0));
+	CASSERT((_this  != 0));
+	CASSERT((*_this != 0));
+	CASSERT((op     != 0));
 
 	/* get the current stack */
 	stack = *_this;
 
 	/* ensure the capacity of the stack */
-	if(stack->count == SDRegionStack_Size)
+	if(stack->count == CRegionStack_Size)
 	{
 		/* get or create the next stack */
 		if(stack->next != 0)
@@ -110,16 +110,16 @@ SDRegionStack_Push(SDRegionStack **_this,
 		else
 		{
 			/* declarations */
-			SDRegionStack *next;
+			CRegionStack *next;
 
 			/* allocate the next stack */
-			if(!SDRegionStack_Alloc(stack))
+			if(!CRegionStack_Alloc(stack))
 			{
-				return SDStatus_OutOfMemory;
+				return CStatus_OutOfMemory;
 			}
 
 			/* initialize the next stack */
-			*next = SDRegionStack_Zero;
+			*next = CRegionStack_Zero;
 
 			/* update the stack list */
 			stack->next = next;
@@ -135,23 +135,23 @@ SDRegionStack_Push(SDRegionStack **_this,
 	++(stack->count);
 
 	/* push the operation node */
-	SDRegionStack_Top(*stack)    = SDRegionStackNode_Zero;
-	SDRegionStack_Top(*stack).op = op;
+	CRegionStack_Top(*stack)    = CRegionStackNode_Zero;
+	CRegionStack_Top(*stack).op = op;
 
 	/* return successfully */
-	return SDStatus_OK;
+	return CStatus_OK;
 }
 
-SDINTERNAL void
-SDRegionStack_Reset(SDRegionStack **_this)
+CINTERNAL void
+CRegionStack_Reset(CRegionStack **_this)
 {
 	/* declarations */
-	SDRegionStack *stack;
-	SDRegionStack *prev;
+	CRegionStack *stack;
+	CRegionStack *prev;
 
 	/* assertions */
-	SDASSERT((_this  != 0));
-	SDASSERT((*_this != 0));
+	CASSERT((_this  != 0));
+	CASSERT((*_this != 0));
 
 	/* get the current stack */
 	stack = *_this;

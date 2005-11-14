@@ -1,5 +1,5 @@
 /*
- * SDSolidBrush.h - Solid brush header.
+ * CSolidBrush.h - Solid brush header.
  *
  * Copyright (C) 2005  Free Software Foundation, Inc.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _SD_SOLIDBRUSH_H_
-#define _SD_SOLIDBRUSH_H_
+#ifndef _C_SOLIDBRUSH_H_
+#define _C_SOLIDBRUSH_H_
 
 #include "CBrush.h"
 
@@ -27,27 +27,27 @@
 extern "C" {
 #endif
 
-struct _tagSDSolidBrush
+struct _tagCSolidBrush
 {
-	SDBrush _base;
-	SDColor color;
+	CBrush _base;
+	CColor color;
 };
 
-static SDStatus
-SDSolidBrush_Clone(SDBrush  *_this,
-                   SDBrush **_clone);
+static CStatus
+CSolidBrush_Clone(CBrush  *_this,
+                  CBrush **_clone);
 static void
-SDSolidBrush_Finalize(SDBrush *_this);
-static SDStatus
-SDSolidBrush_CreatePattern(SDBrush   *_this,
-                           SDPattern *pattern);
+CSolidBrush_Finalize(CBrush *_this);
+static CStatus
+CSolidBrush_CreatePattern(CBrush   *_this,
+                          CPattern *pattern);
 
-static const SDBrushClass SDSolidBrush_Class =
+static const CBrushClass CSolidBrush_Class =
 {
-	SDBrushType_SolidFill,
-	SDSolidBrush_Clone,
-	SDSolidBrush_Finalize,
-	SDSolidBrush_CreatePattern,
+	CBrushType_SolidFill,
+	CSolidBrush_Clone,
+	CSolidBrush_Finalize,
+	CSolidBrush_CreatePattern,
 	"sentinel"
 };
 
@@ -55,4 +55,4 @@ static const SDBrushClass SDSolidBrush_Class =
 };
 #endif
 
-#endif /* _SD_SOLIDBRUSH_H_ */
+#endif /* _C_SOLIDBRUSH_H_ */

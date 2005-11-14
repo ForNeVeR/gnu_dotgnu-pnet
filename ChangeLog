@@ -1,4 +1,9 @@
 
+2005-11-14  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/amd64_codegen.h, engine/unroll_ptr.c: 2D arrays
+	and fix for ReExecute segfault.
+
 2005-11-13  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/md_amd64.c, engine/md_amd64.h, engine/unroll_ptr.c,

@@ -207,6 +207,124 @@ static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 
 #endif /* CVM_X86 */
 
+#ifdef CVM_X86_64
+
+#define	MD_HAS_2D_ARRAYS	1 
+
+/*
+ * Check a 2D array access operation for exception conditions.
+ */
+static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
+							   unsigned char *pc, unsigned char *label)
+{
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
+	unsigned char *patch1;
+#endif
+	unsigned char *patch2;
+	unsigned char *patch3;
+
+	fprintf(stderr, "%p %p\n", pc, label);
+
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
+	/* Check the array reference against NULL */
+	amd64_alu_reg_reg(unroll->out, X86_OR, reg, reg);
+	patch1 = unroll->out;
+	amd64_branch8(unroll->out, X86_CC_EQ, 0, 0);
+#endif
+
+	/*
+	  a->data + (((i - a->bounds[0].lower) * a->bounds[0].multiplier) +
+	  	(j - a->bounds[1].lower) * a->bounds[0].multiplier)) * a->elemSize)
+
+	  as follows
+
+	  i = i - a->bounds[0].lower 
+	  j = j - a->bounds[1].lower
+	  i = i * a->bounds[0].multiplier
+	  j = j * a->bounds[1].multiplier
+	  i = i + j
+	  i = i * a->elemSize
+	  a = a->data
+	  a = a + i
+	*/
+
+	/* Check the array bounds (all of which are ILInt32) */
+	amd64_alu_reg_membase_size(unroll->out, X86_SUB, reg2, reg, 
+							offsetof(System_MArray, bounds)
+							+ offsetof(MArrayBounds, lower),
+							4); /* i = i - a->bounds[0].lower */
+	
+	amd64_alu_reg_membase_size(unroll->out, X86_CMP, reg2, reg,
+							offsetof(System_MArray, bounds)
+							+ offsetof(MArrayBounds, size),
+							4);
+	patch2 = unroll->out;
+	amd64_branch32(unroll->out, X86_CC_LT, 0, 0);
+	amd64_alu_reg_membase_size(unroll->out, X86_ADD, reg2, reg, 
+							offsetof(System_MArray, bounds)
+							+ offsetof(MArrayBounds, lower),
+							4);
+	patch3 = unroll->out;
+	amd64_jump8(unroll->out, 0);
+	amd64_patch(patch2, unroll->out);
+
+	amd64_alu_reg_membase_size(unroll->out, X86_SUB, reg3, reg,
+							offsetof(System_MArray, bounds)
+							+ sizeof(MArrayBounds)
+							+ offsetof(MArrayBounds, lower),
+							4); /* j = j - a->bounds[1].lower */
+	
+	amd64_alu_reg_membase_size(unroll->out, X86_CMP, reg3, reg, 
+							offsetof(System_MArray, bounds)
+							+ sizeof(MArrayBounds)
+							+ offsetof(MArrayBounds, size),
+							4);
+	patch2 = unroll->out;
+	amd64_branch32(unroll->out, X86_CC_LT, 0, 0);
+	amd64_alu_reg_membase_size(unroll->out, X86_ADD, reg2, reg,
+							offsetof(System_MArray, bounds) +
+							offsetof(MArrayBounds, lower),
+							4);
+	amd64_alu_reg_membase_size(unroll->out, X86_ADD, reg3, reg,
+							offsetof(System_MArray, bounds) 
+							+ sizeof(MArrayBounds)
+							+ offsetof(MArrayBounds, lower),
+							4);
+
+	/* Re-execute the current instruction in the interpreter */
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
+	amd64_patch(patch1, unroll->out);
+#endif
+	amd64_patch(patch3, unroll->out);
+	ReExecute(unroll, pc, label);
+
+	/* Compute the address of the array element */
+	amd64_patch(patch2, unroll->out);
+	
+	amd64_imul_reg_membase_size(unroll->out, reg2, reg, 
+									offsetof(System_MArray, bounds)
+									+ offsetof(MArrayBounds, multiplier),
+									4); /* i = i * a->bounds[0].multiplier */
+	amd64_imul_reg_membase_size(unroll->out, reg3, reg,
+									offsetof(System_MArray, bounds)
+									+ sizeof(MArrayBounds)
+									+ offsetof(MArrayBounds, multiplier),
+									4); /* j = j * a->bounds[1].multiplier */
+	amd64_alu_reg_reg(unroll->out, X86_ADD, reg2, reg3); /* i = i + j */
+	amd64_imul_reg_membase_size(unroll->out, reg2, reg,
+									offsetof(System_MArray, elemSize),
+									4); /* i = i * a->elemSize */
+	amd64_mov_reg_membase(unroll->out, reg, reg, 
+									offsetof(System_MArray, data), 
+									8); /* a = a->data */
+	
+	/* up-convert to 32 bit */
+	amd64_movsxd_reg_reg(unroll->out, reg2, reg2);
+	amd64_alu_reg_reg(unroll->out, X86_ADD, reg, reg2); /* a = a + i */
+}
+
+#endif /* CVM_X86_64 */
+
 #ifdef CVM_ARM
 
 #define	MD_HAS_2D_ARRAYS	1
@@ -297,7 +415,7 @@ static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 	/*
 	  Algorithm of calc_address:
 		
-	  a + (((i - a->bounds[0].lower) * a->bounds[0].multiplier) +
+	  a->data + (((i - a->bounds[0].lower) * a->bounds[0].multiplier) +
 	  	(j - a->bounds[1].lower) * a->bounds[0].multiplier)) * a->elemSize)
 	  
 	  I've tried to pre-compute a->bounds into bounds (or MD_REG_PC)

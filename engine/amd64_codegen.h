@@ -107,7 +107,7 @@ typedef union {
 #define amd64_rex_x(rex) ((((rex) >> 1) & 0x1) << 3)
 #define amd64_rex_b(rex) ((((rex) >> 0) & 0x1) << 3)
 
-#define amd64_is_imm32(val) ((glong)val >= -((glong)1<<31) && (glong)val <= (((glong)1<<31)-1))
+#define amd64_is_imm32(val) ((long)val >= -((long)1<<31) && (long)val <= (((long)1<<31)-1))
 
 #define x86_imm_emit64(inst,imm)     \
 	do {	\
@@ -660,7 +660,20 @@ typedef union {
 #define amd64_jump_reg_size(inst,reg,size) do { amd64_emit_rex ((inst),(size),0,0,(reg)); x86_jump_reg((inst),((reg)&0x7)); } while (0)
 #define amd64_jump_mem_size(inst,mem,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_jump_mem((inst),(mem)); } while (0)
 #define amd64_jump_membase_size(inst,basereg,disp,size) do { amd64_emit_rex ((inst),(size),0,0,(basereg)); x86_jump_membase((inst),((basereg)&0x7),(disp)); } while (0)
-#define amd64_jump_code_size(inst,target,size) do { x86_jump_code((inst),(target)); } while (0)
+#define amd64_jump_code_size(inst,target,size) do { \
+			long t = (unsigned char*)(target) - (inst) - 2;	\
+			if (x86_is_imm8(t)) {	\
+				x86_jump8 ((inst), t);	\
+			} else if(amd64_is_imm32(t)){	\
+				t -= 3;	\
+				x86_jump32 ((inst), t);	\
+			}\
+			else {\
+				/* TODO : properly with ModRM and 64 bit jumps */\
+				amd64_mov_reg_imm_size(inst, AMD64_RAX, target, size);\
+				amd64_jump_reg(inst, AMD64_RAX);\
+			}\
+		} while (0)
 #define amd64_jump_disp_size(inst,disp,size) do { amd64_emit_rex ((inst),0,0,0,0); x86_jump_disp((inst),(disp)); } while (0)
 #define amd64_branch8_size(inst,cond,imm,is_signed,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_branch8((inst),(cond),(imm),(is_signed)); } while (0)
 #define amd64_branch32_size(inst,cond,imm,is_signed,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_branch32((inst),(cond),(imm),(is_signed)); } while (0)

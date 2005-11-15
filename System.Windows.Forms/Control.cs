@@ -2014,10 +2014,14 @@ public class Control : IWin32Window, IDisposable
 					CreateHandle();
 				}
 			}
+	
 	private void CreateControlInner()
 			{
-				// Create the handle for this control.
-				CreateHandle();
+				// Create the handle for this control only if needed.
+				if(toolkitWindow == null) 
+				{
+					CreateHandle();
+				}
 
 				// Create the child controls.
 				for(int posn = (numChildren - 1); posn >= 0; --posn)
@@ -2070,6 +2074,8 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void CreateHandle()
 			{
+				if( toolkitWindow != null ) return; // already created
+				
 				// Cannot create the control if it has been disposed.
 				if(GetControlFlag(ControlFlags.Disposed))
 				{
@@ -2527,7 +2533,7 @@ public class Control : IWin32Window, IDisposable
 			{
 				if (!Visible)
 				{
-					return;
+					return; // nothing to do 
 				}
 
 				if (toolkitWindow == null)
@@ -2536,7 +2542,7 @@ public class Control : IWin32Window, IDisposable
 					{
 						return;
 					}
-					
+
 					CreateControl ();
 				}
 
@@ -2702,6 +2708,10 @@ public class Control : IWin32Window, IDisposable
 					return;
 				}
 
+				if( !this.Visible ) {
+					return; // no need to layout, increases performance 
+				}
+				
 				// Mark this control as currently being laid out.
 				SetControlFlag(ControlFlags.PerformingLayout, true);
 				++layoutSuspended;
@@ -3402,6 +3412,9 @@ public class Control : IWin32Window, IDisposable
 		BoundsSpecified specified)
 			{
 				bool modified = (x != this.left || y != this.top || width != this.width || height != this.height);
+				
+				if( !modified ) return; // no need to do anything
+				
 				// Set unspecified components to the right values.
 				if((specified & BoundsSpecified.X) == 0)
 				{

@@ -1,3 +1,6 @@
+2005-11-01  Peter Fristedt  <belial@belial.com>
+
+	* engine/cvm.c: add volatile definitions for gcc4 on powerpc. (Klaus)
 
 2005-11-14  Gopal V  <gopalv82@yahoo.com>
 

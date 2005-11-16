@@ -94,9 +94,11 @@ extern	"C" {
 	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
 	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
 
-	#define X86_64_CGOTO(pc) __asm__ __volatile__ (\
+	#define X86_64_CGOTO(pc) do { __asm__ __volatile__ (\
 								"jmpq *(%0)" \
-								:: "r" (pc) )
+								:: "r" (pc) ); \
+								/* just to fool the compiler */ \
+								goto ** ((void **)(pc)); } while(0)
 	/* VM_CGOTO_SWITCH segfaults with just a jmpq */
 	#define VM_CGOTO_PREFIXSWITCH(val) X86_64_CGOTO(pc)
 	#define VM_CGOTO_BREAK(val) X86_64_CGOTO(pc)

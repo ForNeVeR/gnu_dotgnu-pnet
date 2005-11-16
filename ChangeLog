@@ -1,3 +1,10 @@
+
+2005-11-16  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/cvm.c: Insert a dummy cgoto to ensure that
+	the compiler register allocator picks up the jump
+	in -O3
+
 2005-11-01  Peter Fristedt  <belial@belial.com>
 
 	* engine/cvm.c: add volatile definitions for gcc4 on powerpc. (Klaus)

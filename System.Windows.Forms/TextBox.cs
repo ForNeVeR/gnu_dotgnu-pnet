@@ -117,7 +117,8 @@ public class TextBox : TextBoxBase
 		SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 	
 		// we need this or no text is displayed after first start
-		this.CreateHandle();
+		// this.CreateHandle(); // do we really need this ?????
+		
 	}
 
 	// Gets or sets a value indicating whether pressing ENTER in a multiline TextBox control creates a new line of text in the control or activates the default button for the form.
@@ -374,38 +375,49 @@ public class TextBox : TextBoxBase
 		}
 		set
 		{
-			// Change all text endings of CR or LF into CRLF
-			System.Text.StringBuilder sb = new System.Text.StringBuilder
-				(value != null ? value.Length : 0);
-			if (value != null && value.Length > 0)
-			{
-				char cPrevious = (char)0;
-				for (int i = 0; i < value.Length; i++)
-				{
-					char c = value[i];
-					bool isNext = (i < value.Length - 1);
-					char cNext = (char)0;
-					if (isNext)
-					{
-						cNext = value[i+1];
-					}
-					if ((!isNext || cNext != '\n') && c == '\r')
-					{
-						sb.Append("\r\n");
-					}
-					else if (c=='\n' && cPrevious != '\r')
-					{
-						sb.Append("\r\n");
-					}
-					else
-					{
-						sb.Append(c);
-					}
-					cPrevious = c;
-				}
+			if( base.Text == value ) {	// check if text has changed
+				return;
 			}
 			
-			SetTextActual( sb.ToString());
+			if( value.IndexOfAny( new char [] { '\n', '\r' } ) >= 0 ) {	// check if chars are in use, before use of StringBuilder (performance)
+			
+				// Change all text endings of CR or LF into CRLF
+				System.Text.StringBuilder sb = new System.Text.StringBuilder
+					(value != null ? value.Length : 0);
+				if (value != null && value.Length > 0)
+				{
+					char cPrevious = (char)0;
+					for (int i = 0; i < value.Length; i++)
+					{
+						char c = value[i];
+						bool isNext = (i < value.Length - 1);
+						char cNext = (char)0;
+						if (isNext)
+						{
+							cNext = value[i+1];
+						}
+						if ((!isNext || cNext != '\n') && c == '\r')
+						{
+							sb.Append("\r\n");
+						}
+						else if (c=='\n' && cPrevious != '\r')
+						{
+							sb.Append("\r\n");
+						}
+						else
+						{
+							sb.Append(c);
+						}
+						cPrevious = c;
+					}
+				}
+				
+				SetTextActual( sb.ToString());
+			}
+			else {
+				SetTextActual( value );
+			}
+			
 			// Set the position to the end
 			SelectInternal(Text.Length, 0);
 			if (!inTextChangedEvent)
@@ -1366,11 +1378,19 @@ public class TextBox : TextBoxBase
 		{
 			height = ClientToBounds(Size.Empty).Height + Font.Height + 1;
 		}
+		
+		Rectangle oldRec = Bounds;
+		
+		if( oldRec.X == x && oldRec.Y == y && oldRec.Width == width && oldRec.Height == height ) { // no update needed if same bounds
+			return;
+		}
+		
 		base.SetBoundsCore (x, y, width, height, specified);
 		if (!IsHandleCreated)
 		{
 			return;
 		}
+		
 		// If the height or width changes then relayout the text
 		if ((specified & BoundsSpecified.Height) != 0 | (specified & BoundsSpecified.Width) != 0)
 		{

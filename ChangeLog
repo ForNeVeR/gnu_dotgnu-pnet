@@ -1,5 +1,10 @@
 2005-11-15  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
+	* System.Windows.Forms/TextBox.cs : increased performance by checking unchanged values
+
+
+2005-11-15  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
 	* System.Windows.Forms/Control.cs : fixed: multiply creating of toolkitwindow
 	* System.Windows.Forms/Control.cs : fixed: increased performance on layout if not visible
 

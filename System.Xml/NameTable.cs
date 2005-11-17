@@ -157,7 +157,7 @@ public class NameTable : XmlNameTable
 		private int arrayLength;
 
 		// Constructor.
-		public NameHashtable() : base() {}
+		public NameHashtable() : base(128) {} // avoid expanding of hashtable
 
 		// Do a lookup based on a character array.
 		public String Lookup(char[] key, int offset, int length)

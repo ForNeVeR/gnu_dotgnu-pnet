@@ -189,8 +189,8 @@ public sealed class ConfigurationSettings
 				#if SECOND_PASS
 					documents = new XmlDocument [8];
 					numDocuments = 0;
-					sectionSchema = new Hashtable();
-					cachedInfo = new Hashtable();
+					sectionSchema = new Hashtable(128);
+					cachedInfo = new Hashtable(128);
 				#endif
 				}
 

@@ -113,7 +113,7 @@ public class ObjectIDGenerator
 	private sealed class IdentityHashtable : Hashtable
 	{
 		// Constructor.
-		public IdentityHashtable() : base() {}
+		public IdentityHashtable() : base(128) {} // avoid expansation of hashtable
 
 		// Determine if an item is equal to a key value.
 		protected override bool KeyEquals(Object item, Object key)

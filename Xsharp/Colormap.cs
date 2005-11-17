@@ -45,7 +45,7 @@ public sealed class Colormap
 				this.dpy = dpy;
 				this.screen = screen;
 				this.colormap = colormap;
-				this.cachedPixels = new Hashtable();
+				this.cachedPixels = new Hashtable(1024); // create hash with big capacity to avoid expansions of hashtable
 			}
 
 	// Convert an RGB color value into a pixel using this colormap.

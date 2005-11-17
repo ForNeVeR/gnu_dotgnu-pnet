@@ -218,7 +218,7 @@ public class ObjectManager
 				// Initialize the object manager.
 				this.selector = selector;
 				this.context = context;
-				this.objects = new Hashtable();
+				this.objects = new Hashtable(16); // avoid expanding of hashtable
 				this.callbackList = new ArrayList();
 			}
 

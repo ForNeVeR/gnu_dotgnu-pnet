@@ -35,7 +35,7 @@ internal sealed class NameCache : Hashtable
 	private String emptyString;
 
 	// Constructor.
-	public NameCache(XmlNameTable nt) : base()
+	public NameCache(XmlNameTable nt) : base(128)  // avoid expanding of hashtable
 			{
 				nameTable = nt;
 

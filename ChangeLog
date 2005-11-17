@@ -1,3 +1,15 @@
+2005-11-17  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* Xsharp/Colormap.cs, 
+	  System/Uri.cs, 
+	  System/Configuration/ConfigurationSettings.cs, 
+	  System.Xml/NameTable.cs,
+	  System.Xml/Private/NameCache.cs,
+	  System.Xml/Serialization/TypeTranslator.cs,
+	  runtime/System/Runtime/Serialization/ObjectManager.cs,
+	  runtime/System/Runtime/Serialization/ObjectIDGenerator.cs :
+	  speeded up runtime by creating hashtables with specific capacities.
+
 2005-11-16  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs : removed some unneccesary calls for performance

@@ -66,7 +66,7 @@ public class Uri : MarshalByRefObject
 	private static Regex uriRegex = null;
 	private static bool hasFastRegex = false;
 	private static readonly String hexChars = "0123456789ABCDEF";
-	private static Hashtable schemes=new Hashtable();
+	private static Hashtable schemes=new Hashtable(10);  // avoid expanding of hashtable
 	
 
 	/* State specific fields */

@@ -44,7 +44,7 @@ namespace System.Xml.Serialization
 
 		static TypeTranslator ()
 		{
-			nameCache = new Hashtable ();
+			nameCache = new Hashtable (64); // avoid expantion of ashtable
 
 			// XSD Types with direct map to CLR types
 
@@ -71,7 +71,7 @@ namespace System.Xml.Serialization
 			nameCache.Add (typeof (XmlElement), new TypeData (typeof (XmlElement), "XmlElement", false));
 			nameCache.Add (typeof (TimeSpan), new TypeData (typeof (TimeSpan), "duration", true));
 
-			primitiveTypes = new Hashtable();
+			primitiveTypes = new Hashtable(64); // avoid expantion of ashtable
 			ICollection types = nameCache.Values;
 			foreach (TypeData td in types)
 				primitiveTypes.Add (td.XmlType, td);

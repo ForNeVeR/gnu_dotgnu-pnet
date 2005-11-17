@@ -1759,6 +1759,7 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
+					if( null == text ) return String.Empty;
 					return text;
 				}
 				set
@@ -1835,7 +1836,8 @@ public class Control : IWin32Window, IDisposable
 				}
 				set
 				{
-					SetVisibleCore(value);
+					if( value != visible )	// check last state here, even is checked in SetVisibleCore to get more performance
+						SetVisibleCore(value);
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -1996,6 +1998,7 @@ public class Control : IWin32Window, IDisposable
 						("control", S._("SWF_ControlDisposed"));
 				}
 
+				#if false // brubbel, does this break anything ?
 				// Find the highest ancestor that isn't created
 				// and start building the control tree from there.
 				Control control = this;
@@ -2005,6 +2008,10 @@ public class Control : IWin32Window, IDisposable
 					control = control.parent;
 				}
 				control.CreateControlInner();
+				#else
+				this.CreateControlInner();
+				#endif
+				
 
 				// If one of the parents of this control is not visible then the control
 				// will not be created. We must ensure that the control is created, even if
@@ -3441,7 +3448,7 @@ public class Control : IWin32Window, IDisposable
 
 				// Update the bounds and emit the necessary events.
 				UpdateBounds(x, y, width, height);
-			}
+				}
 
 	// Adjust the actual position of the control depending on windows decorations (Draw Origin) or non client areas (client origin) like menus.
 	private void SetBoundsToolkit(int x, int y, int width, int height)
@@ -4722,8 +4729,10 @@ public class Control : IWin32Window, IDisposable
 	protected virtual void OnEnabledChanged(EventArgs e)
 			{
 				// Repaint the control.
-				Invalidate();
-				Update();
+				if( toolkitWindow != null ) {
+					Invalidate();
+					Update();
+				}
 
 				// Invoke the event handler.
 				EventHandler handler;
@@ -5167,12 +5176,18 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnParentEnabledChanged(EventArgs e)
 			{
+				if( GetControlFlag(ControlFlags.Enabled) ) {
+					OnEnabledChanged(e);
+				}
+				/*
+				the above code does the same
 				bool parentEnabled = parent.Enabled;
 				bool enabled = GetControlFlag(ControlFlags.Enabled);
 				if((!parentEnabled && enabled) != (parentEnabled && enabled))
-				{
+				{	
 					OnEnabledChanged(e);
 				}
+				*/
 			}
 #if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
@@ -5710,10 +5725,13 @@ public class Control : IWin32Window, IDisposable
 
 							// If it's supposed to be visible then fire the
 							// OnVisibleChanged event.
+							
+							/* Brubbel : this is not needed
 							if (value.visible)
 							{
 								value.OnVisibleChanged(EventArgs.Empty);
 							}
+							*/
 							
 							// Notify the owner that the control was added.
 							// no, do not notify, because the statement value.Parent = owner does the notify for us.
@@ -5770,8 +5788,10 @@ public class Control : IWin32Window, IDisposable
 
 						// If it was visible, it now isn't and thus the
 						// visibility changed.
+						/* Brubbel : this is not needed
 						if (wasVisible)
 							value.OnVisibleChanged (EventArgs.Empty);
+							*/
 
 						// Notify the owner that the control has been removed.
 						owner.OnControlRemoved(new ControlEventArgs(value));

@@ -1,5 +1,9 @@
 2005-11-16  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
+	* System.Windows.Forms/Control.cs : removed some unneccesary calls for performance
+
+2005-11-16  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
 	* runtime/System/String.c : fixed crash LastIndexOf(String value) if this was an empty string
 
 2005-11-15  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>

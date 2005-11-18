@@ -2502,8 +2502,7 @@ public class Control : IWin32Window, IDisposable
 			{
 				if(parent != null && Dock == DockStyle.None)
 				{
-					if(layoutSuspended > 0)
-						SetControlFlag(ControlFlags.LayoutInitSuspended, true);
+					UpdateDistances();
 				}
 			}
 
@@ -3179,15 +3178,15 @@ public class Control : IWin32Window, IDisposable
 			{
 				if(layoutSuspended <= 0 || (--layoutSuspended) == 0)
 				{
-					if(GetControlFlag(ControlFlags.LayoutInitSuspended))
-					{
-						InitLayout();
-						SetControlFlag(ControlFlags.LayoutInitSuspended, false);
-					}
 					if(performLayout &&
 					   !GetControlFlag(ControlFlags.PerformingLayout))
 					{
 						PerformLayout();
+					}
+					if( !performLayout) {
+						for( int i = (numChildren - 1); i >= 0; --i ) {
+							children[i].InitLayout();
+						}
 					}
 				}
 			}
@@ -5162,8 +5161,6 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnParentChanged(EventArgs e)
 			{
-				UpdateDistances ();
-
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.ParentChanged));
 				if(handler != null)

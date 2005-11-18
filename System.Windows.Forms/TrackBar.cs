@@ -641,15 +641,15 @@ namespace System.Windows.Forms
 
 		private void LargeIncrement ()
     	{
-			int pos = Value + LargeChange;
+			int pos = value + LargeChange;
 
 			if(pos < minimum) 
 			{
-				Value = minimum;
+				value = minimum;
 			}
 			else if(pos > maximum) 
 			{
-				Value = maximum;
+				value = maximum;
 			}
 			else 
 			{
@@ -662,15 +662,15 @@ namespace System.Windows.Forms
 
     	private void LargeDecrement ()
     	{
-			int pos = Value - LargeChange;
+			int pos = value - LargeChange;
 
 			if(pos < minimum) 
 			{
-				Value = minimum;
+				value = minimum;
 			}
 			else if(pos > maximum) 
 			{
-				Value = maximum;
+				value = maximum;
 			}
 			else 
 			{
@@ -683,15 +683,15 @@ namespace System.Windows.Forms
 
 		private void SmallIncrement ()
     	{
-			int pos = Value + SmallChange;
+			int pos = value + SmallChange;
 
 			if(pos < minimum) 
 			{
-				Value = minimum;
+				value = minimum;
 			}
 			else if(pos > maximum) 
 			{
-				Value = maximum;
+				value = maximum;
 			}
 			else 
 			{
@@ -704,15 +704,15 @@ namespace System.Windows.Forms
 
     	private void SmallDecrement ()
     	{
-			int pos = Value - SmallChange;
+			int pos = value - SmallChange;
 
 			if(pos < minimum) 
 			{
-				Value = minimum;
+				value = minimum;
 			}
 			else if(pos > maximum) 
 			{
-				Value = maximum;
+				value = maximum;
 			}
 			else 
 			{
@@ -815,7 +815,7 @@ namespace System.Windows.Forms
 
 		public override string ToString()
 		{
-			return base.ToString() + ", Minimum: " + Minimum + ", Maximum: " + Maximum + ", Value: " + Value;
+			return base.ToString() + ", Minimum: " + minimum + ", Maximum: " + maximum + ", Value: " + value;
 		}
 
 #if !CONFIG_COMPACT_FORMS

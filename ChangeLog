@@ -1,3 +1,8 @@
+2005-11-18  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/TrackBar.cs: performance increase by using
+	fields instead of members.
+
 2005-11-18  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs : fixed layouting with anchors

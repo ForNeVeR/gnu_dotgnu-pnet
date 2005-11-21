@@ -1093,6 +1093,19 @@ VMCASE(COP_CALL_INTERFACE):
 				MISSING_METHOD_EXCEPTION();
 			}
 		}
+		#if 0
+		/* uncomment to debug IMT */
+		if(methodToCall)
+		{
+			fprintf(stderr, "%s:%d found <%s:%s> for <%s:%s> \n", 
+				__FILE__, __LINE__,
+				ILClass_Name(methodToCall->member.owner),
+				ILMethod_Name(methodToCall),
+				ILClass_Name(
+					ILMethod_Owner(CVM_ARG_DWIDE_PTR_SMALL(ILMethod *))),
+				ILMethod_Name(CVM_ARG_DWIDE_PTR_SMALL(ILMethod*)));
+		}
+		#endif
 	#else
 		methodToCall = _ILLookupInterfaceMethod
 			(GetObjectClassPrivate(tempptr), CVM_ARG_DWIDE_PTR_SMALL(ILClass *),

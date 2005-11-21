@@ -457,6 +457,7 @@ static void BuildIMT(ILExecProcess *process, ILClass *info,
 {
 	ILImplPrivate *impl;
 	ILClassPrivate *implPrivate;
+	ILClassPrivate *parentPrivate;
 	ILUInt32 posn, size;
 	ILUInt32 vtableIndex;
 	ILUInt32 imtIndex;
@@ -477,48 +478,57 @@ static void BuildIMT(ILExecProcess *process, ILClass *info,
 		return;
 	}
 
-	/* Process the implementation records that are attached to this class */
-	impl = classPrivate->implements;
-	while(impl != 0)
+	parentPrivate = classPrivate;
+	while(parentPrivate != NULL)
 	{
-		implPrivate = (ILClassPrivate *)(impl->interface->userData);
-		if(implPrivate)
+		/* Process the implementation records that are attached to this class */
+		impl = parentPrivate->implements;
+		while(impl != 0)
 		{
-			/* Allocate a base identifer for the interface if necessary.
-			   This will probably never be used because interfaces are
-			   typically laid out before their implementing classes, and
-			   the allocation above will catch us.  But let's be paranoid
-			   and allocate the base identifier here anyway, just in case */
-			size = (ILUInt32)(implPrivate->vtableSize);
-			if(!(implPrivate->imtBase))
+			implPrivate = (ILClassPrivate *)(impl->interface->userData);
+			if(implPrivate)
 			{
-				implPrivate->imtBase = process->imtBase;
-				process->imtBase += size;
-			}
-
-			/* Process the members of this interface */
-			for(posn = 0; posn < size; ++posn)
-			{
-				imtIndex = (implPrivate->imtBase + posn) % IL_IMT_SIZE;
-				vtableIndex = (ILImplPrivate_Table(impl))[posn];
-				if(vtableIndex != (ILUInt32)(ILUInt16)0xFFFF)
+				/* Allocate a base identifer for the interface if necessary.
+				   This will probably never be used because interfaces are
+				   typically laid out before their implementing classes, and
+				   the allocation above will catch us.  But let's be paranoid
+				   and allocate the base identifier here anyway, just in case */
+				size = (ILUInt32)(implPrivate->vtableSize);
+				if(!(implPrivate->imtBase))
 				{
-					if(!(classPrivate->imt[imtIndex]))
+					implPrivate->imtBase = process->imtBase;
+					process->imtBase += size;
+				}
+
+				/* Process the members of this interface */
+				for(posn = 0; posn < size; ++posn)
+				{
+					imtIndex = (implPrivate->imtBase + posn) % IL_IMT_SIZE;
+					vtableIndex = (ILImplPrivate_Table(impl))[posn];
+					if(vtableIndex != (ILUInt32)(ILUInt16)0xFFFF)
 					{
-						/* No conflict at this table position */
-						classPrivate->imt[imtIndex] =
-							classPrivate->vtable[vtableIndex];
-					}
-					else
-					{
-						/* We have encountered a conflict in the table */
-						classPrivate->imt[imtIndex] =
-							(ILMethod *)(ILNativeInt)(-1);
+						if(!(classPrivate->imt[imtIndex]))
+						{
+							/* No conflict at this table position */
+							classPrivate->imt[imtIndex] =
+								classPrivate->vtable[vtableIndex];
+						}
+						else
+						{
+							/* We have encountered a conflict in the table */
+							classPrivate->imt[imtIndex] =
+								(ILMethod *)(ILNativeInt)(-1);
+						}
 					}
 				}
 			}
+			impl = impl->next;
 		}
-		impl = impl->next;
+		if(!parentPrivate->classInfo->parent)
+		{
+			break;
+		}
+		parentPrivate = (ILClassPrivate*) (parentPrivate->classInfo->parent->userData);
 	}
 
 	/* Clear positions in the table that indicate conflicts */

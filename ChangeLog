@@ -13,6 +13,10 @@
 	* engine/unroll_var.c: copy the entire CVMWord while
 	doing a dup, not just a single ILNativeInt off the
 	stack.
+
+	* engine/layout.c, engine/cvm_call.c: update BuildIMT
+	to handle interface implementations fulfilled by parent 
+	classes.
 	
 2005-11-16  Gopal V  <gopalv82@yahoo.com>
 

@@ -48,7 +48,7 @@ public abstract class UpDownBase : ContainerControl
 		private Timer timer;
 		private int mouseX;
 		private int mouseY;
-
+		
 		private const int repeatDelay = 50;
 		private const int startDelay = 300;
 
@@ -309,10 +309,12 @@ public abstract class UpDownBase : ContainerControl
 	private UpDownEdit upDownEdit;
 	private bool userEdit;
 	private bool interceptArrowKeys;
-
+	private HorizontalAlignment textAlignment;
+	
 	[TODO]
 	public UpDownBase() : base()
 	{
+		textAlignment = HorizontalAlignment.Left;
 		base.BorderStyleInternal = DefaultBorderStyle;
 		upDownEdit = new UpDownEdit(this);
 		upDownEdit.AutoSize = true;
@@ -470,6 +472,23 @@ public abstract class UpDownBase : ContainerControl
 	public abstract void UpButton();
 
 	protected abstract void UpdateEditText();
+
+	public HorizontalAlignment TextAlign
+	{
+		get
+		{
+			return textAlignment;
+		}
+		set
+		{
+			if(textAlignment != value)
+			{
+				textAlignment = value;
+				doLayout();
+				Invalidate();
+			}
+		}
+	}
 
 	public LeftRightAlignment UpDownAlign
 	{

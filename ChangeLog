@@ -1,3 +1,7 @@
+2005-11-21  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/UpDownBase.cs: Add missing TextAlign property.
+
 2005-11-21  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueReader.cs: removed unneccessary property calls

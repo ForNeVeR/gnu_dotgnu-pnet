@@ -28,24 +28,26 @@
 static IL_INLINE int StringEquals(System_String *str1,
 								  System_String *str2)
 {
-	if(str1)
+	/* marginally faster */
+	if (str2 == str1)
 	{
-		if(str2 && str1->length == str2->length &&
-		   (str1->length == 0 ||
-		    !IL_MEMCMP(StringToBuffer(str1), StringToBuffer(str2),
-		   			   str1->length * 2)))
-		{
-			return 1;
-		}
-		else
+		return 1;
+	}
+	else if(str1 && str2)
+	{
+		if(str1->length != str2->length) 
 		{
 			return 0;
 		}
+		if(str2->length == 0 ||
+			!IL_MEMCMP(StringToBuffer(str1), 
+					StringToBuffer(str2), str1->length * 2))
+		{
+			return 1;
+		}
 	}
-	else
-	{
-		return (str2 == 0);
-	}
+
+	return 0;
 }
 
 #define COP_PREFIX_MATH_CASE(f1, f2) \

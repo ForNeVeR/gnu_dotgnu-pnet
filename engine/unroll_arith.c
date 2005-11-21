@@ -110,6 +110,97 @@ static void Divide(MDUnroll *unroll, int isSigned, int wantRemainder,
 
 #endif /* CVM_X86 */
 
+#ifdef CVM_X86_64
+
+/*
+ * Perform an integer division or remainder (basically the x86 
+ * version modded for 8-byte words).
+ */
+static void Divide(MDUnroll *unroll, int isSigned, int wantRemainder,
+				      unsigned char *pc, unsigned char *label)
+{
+#if !defined(IL_USE_INTERRUPT_BASED_INT_DIVIDE_BY_ZERO_CHECKS)
+	#define IL_NEED_DIVIDE_REEXECUTE 1
+	unsigned char *patch1;
+#endif
+
+#if !defined(IL_USE_INTERRUPT_BASED_INT_OVERFLOW_CHECKS)
+	#define IL_NEED_DIVIDE_REEXECUTE 1
+	unsigned char  *patch2, *patch3;
+#endif
+
+	/* Get the arguments into EAX and ECX so we know where they are */
+	if(unroll->pseudoStackSize != 2 ||
+	   unroll->pseudoStack[0] != AMD64_RAX ||
+	   unroll->pseudoStack[1] != AMD64_RCX)
+	{
+		FlushRegisterStack(unroll);
+		unroll->stackHeight -= 2 * sizeof(CVMWord)  ;
+		amd64_mov_reg_membase(unroll->out, AMD64_RAX, MD_REG_STACK,
+							unroll->stackHeight, 4);
+		amd64_mov_reg_membase(unroll->out, AMD64_RCX, MD_REG_STACK,
+							unroll->stackHeight + sizeof(CVMWord), 4);
+		unroll->pseudoStack[0] = AMD64_RAX;
+		unroll->pseudoStack[1] = AMD64_RCX;
+		unroll->pseudoStackSize = 2;
+		unroll->regsUsed |= ((1 << AMD64_RAX) | (1 << AMD64_RCX));
+	}
+
+	/* Check for conditions that may cause an exception */
+#if !defined(IL_USE_INTERRUPT_BASED_INT_DIVIDE_BY_ZERO_CHECKS)
+	amd64_alu_reg_imm_size(unroll->out, X86_CMP, AMD64_RCX, 0, 4);
+	patch1 = unroll->out;
+	amd64_branch8(unroll->out, X86_CC_EQ, 0, 0);
+#endif
+
+#if !defined(IL_USE_INTERRUPT_BASED_INT_OVERFLOW_CHECKS)
+	amd64_alu_reg_imm_size(unroll->out, X86_CMP, AMD64_RCX, -1, 4);
+	patch2 = unroll->out;
+	amd64_branch32(unroll->out, X86_CC_NE, 0, 0);
+
+	amd64_alu_reg_imm_size(unroll->out, X86_CMP, AMD64_RAX, (int)0x80000000, 4);
+	patch3 = unroll->out;
+	amd64_branch32(unroll->out, X86_CC_NE, 0, 0);
+#endif
+
+#if !defined(IL_USE_INTERRUPT_BASED_INT_DIVIDE_BY_ZERO_CHECKS)
+	amd64_patch(patch1, unroll->out);
+#endif
+
+#if defined(IL_NEED_DIVIDE_REEXECUTE)
+	/* Re-execute the division instruction to throw the exception */
+	ReExecute(unroll, pc, label);
+#endif
+
+#if !defined(IL_USE_INTERRUPT_BASED_INT_OVERFLOW_CHECKS)
+	amd64_patch(patch2, unroll->out);
+	amd64_patch(patch3, unroll->out);
+#endif
+
+	/* Perform the division */
+	if(isSigned)
+	{
+		amd64_cdq_size(unroll->out, 4);
+	}
+	else
+	{
+		amd64_clear_reg_size(unroll->out, AMD64_RDX, 4);
+	}
+	amd64_div_reg_size(unroll->out, AMD64_RCX, isSigned, 4);
+
+	/* Pop ECX from the pseudo stack */
+	FreeTopRegister(unroll, -1);
+
+	/* If we want the remainder, then replace EAX with EDX on the stack */
+	if(wantRemainder)
+	{
+		unroll->pseudoStack[0] = AMD64_RDX;
+		unroll->regsUsed = (1 << AMD64_RDX);
+	}
+}
+
+#endif /* CVM_X86_64 */
+
 #if defined(CVM_PPC) && (MD_HAS_INT_DIVISION == 1)
 static void Divide(MDUnroll *unroll, int isSigned, int wantRemainder,
 				      unsigned char *pc, unsigned char *label)
@@ -596,7 +687,6 @@ case 0x100 + COP_PREFIX_FCMPG:
 break;
 
 #endif /* MD_HAS_FP */
-
 case 0x100 + COP_PREFIX_ICMP:
 {
 	/* Compare integer values with -1, 0, or 1 result */

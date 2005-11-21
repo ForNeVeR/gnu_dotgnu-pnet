@@ -6,6 +6,9 @@
 
 	* engine/cvm_inline.c: Minor tweaks on the string
 	equality function, favouring interned strings.
+
+	* engine/unroll_arith.c: Integer division operations for
+	AMD64/EM64T.
 	
 2005-11-16  Gopal V  <gopalv82@yahoo.com>
 

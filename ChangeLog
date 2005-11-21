@@ -1,3 +1,7 @@
+2005-11-21  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
+
+	* Xsharp/Graphics.cs : fixed clipping of images
+
 2005-11-21  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/UpDownBase.cs: Add missing TextAlign property.

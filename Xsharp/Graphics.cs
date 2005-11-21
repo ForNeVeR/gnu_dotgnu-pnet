@@ -1163,9 +1163,12 @@ public sealed class Graphics : IDisposable
 					IntPtr display = Lock();
 					Xlib.XSetClipOrigin(display, gc, 0, 0);
 					Xlib.XSetRegion(display, gc, r.GetRegion());
-					if(clipRegion != null)
-						clipRegion.Dispose();
-					clipRegion = new Region(r);
+					if(clipRegion != r)
+					{
+						if(clipRegion != null)
+							clipRegion.Dispose();
+						clipRegion = new Region(r);
+					}
 				}
 				finally
 				{
@@ -1215,6 +1218,12 @@ public sealed class Graphics : IDisposable
 					IntPtr display = Lock();
 					Xlib.XSetClipOrigin(display, gc, xorigin, yorigin);
 					Xlib.XSetRegion(display, gc, r.GetRegion());
+					if(clipRegion != r)
+					{
+						if(clipRegion != null)
+							clipRegion.Dispose();
+						clipRegion = new Region(r);
+					}
 				}
 				finally
 				{
@@ -2254,40 +2263,7 @@ public sealed class Graphics : IDisposable
 	/// </exception>
 	public void DrawImage(int x, int y, Image image)
 			{
-				// Validate the image parameter.
-				if(image == null)
-				{
-					throw new ArgumentNullException("image");
-				}
-
-				// Can we take a short-cut using the XImage?
-				if(image.ShouldUseXImage && !(drawable is Pixmap) &&
-				   !(drawable is DoubleBuffer))
-				{
-					// Use "PutXImage" to draw through the clip mask,
-					// to avoid having to create a Pixmap in the server.
-					int width, height;
-					SetFillSolid();
-					if (image.Mask != null)
-						SetClipMask(image.Mask, x, y);
-					Xlib.XSharpGetImageSize
-						(image.XImage, out width, out height);
-					PutXImage(image.XImage, 0, 0, x, y, width, height);
-				}
-				else
-				{
-					// Set the context to "tiling" and fill the region.
-					SetFillTiled(image.Pixmap, x, y);
-					if (image.Mask != null)
-						SetClipMask(image.Mask, x, y);
-					FillRectangle(x, y, image.Pixmap.Width,
-								  image.Pixmap.Height);
-				}
-
-				// Revert the context to a sane fill mode.
-				SetFillSolid();
-				if (image.Mask != null)
-					SetClipMask(null);
+				DrawImage(x,y, image, 0,0, image.Width, image.Height);
 			}
 
 	/// <summary>
@@ -2356,7 +2332,42 @@ public sealed class Graphics : IDisposable
 				{
 					throw new XException(S._("X_RectCoordRange"));
 				}
+				
+				// Intersect image with clip rect
+				Rectangle clipRect = clipRegion.ClipBox();
+				
+				int right = x + srcWidth;
+				int clipRight = clipRect.x + clipRect.width;
+				int bottom = y + srcHeight;
+				int clipBottom = clipRect.y + clipRect.height;
+				if(right < clipRect.x || x > clipRight || bottom < clipRect.y || y > clipBottom)
+					return;
 
+				if(right > clipRight)
+				{
+					srcWidth -= right - clipRight;
+				}
+				if(x < clipRect.x)
+				{
+					int i = clipRect.x - x;
+					srcX += i;
+					srcWidth -= i;
+					x += i;
+				}
+				
+
+				if(bottom > clipBottom)
+				{
+					srcHeight -= bottom - clipBottom;
+				}
+				if(y < clipRect.y)
+				{
+					int i = clipRect.y - y;
+					srcY += i;
+					srcHeight -= i;
+					y += i;
+				}
+	
 				// Can we take a short-cut using the XImage?
 				if(image.ShouldUseXImage && !(drawable is Pixmap) &&
 				   !(drawable is DoubleBuffer))
@@ -2364,7 +2375,7 @@ public sealed class Graphics : IDisposable
 					// Use "PutXImage" to draw through the clip mask,
 					// to avoid having to create a Pixmap in the server.
 					SetFillSolid();
-					SetClipMask(image.Mask, x - srcX, y - srcY);
+					if(image.Mask != null) SetClipMask(image.Mask, x - srcX, y - srcY);
 					PutXImage(image.XImage, srcX, srcY, x, y,
 							  srcWidth, srcHeight);
 				}
@@ -2372,13 +2383,14 @@ public sealed class Graphics : IDisposable
 				{
 					// Set the context to "tiling" and fill the region.
 					SetFillTiled(image.Pixmap, x - srcX, y - srcY);
-					SetClipMask(image.Mask, x - srcX, y - srcY);
+					if(image.Mask != null) SetClipMask(image.Mask, x - srcX, y - srcY);
 					FillRectangle(x, y, srcWidth, srcHeight);
 				}
 
 				// Revert the context to a sane fill mode.
 				SetFillSolid();
-				SetClipMask(null);
+				if(image.Mask != null) SetClipRegion(clipRegion);
+
 			}
 
 	/// <summary>

@@ -125,7 +125,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		else if(array.Rank != 1)
+		else if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -142,7 +142,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		else if(array.Rank != 1)
+		else if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -252,14 +252,14 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("destinationArray");
 		}
-		if(sourceArray.Rank != destinationArray.Rank)
+		if(sourceArray.GetRank() != destinationArray.GetRank())
 		{
 			throw new RankException(_("Arg_MustBeSameRank"));
 		}
 		int srcLower = sourceArray.GetLowerBound(0);
-		int srcLength = sourceArray.Length;
+		int srcLength = sourceArray.GetLength();
 		int dstLower = destinationArray.GetLowerBound(0);
-		int dstLength = destinationArray.Length;
+		int dstLength = destinationArray.GetLength();
 		if(sourceIndex < srcLower)
 		{
 			throw new ArgumentOutOfRangeException
@@ -333,25 +333,25 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		else if(Rank != 1)
+		else if(GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
-		else if(array.Rank > 1)
+		else if(array.GetRank() > 1)
 		{
 			throw new ArgumentException("array", _("Arg_RankMustBe1"));
 		}
 		else
 		{
 			Copy(this, GetLowerBound(0), array,
-			     index + array.GetLowerBound(0), Length);
+			     index + array.GetLowerBound(0), GetLength());
 		}
 	}
 	int ICollection.Count
 	{
 		get
 		{
-			return Length;
+			return GetLength();
 		}
 	}
 	public virtual bool IsSynchronized
@@ -445,11 +445,11 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("lengths");
 		}
-		if(lengths.Length < 1)
+		if(lengths.GetLength() < 1)
 		{
 			throw new ArgumentException(_("Arg_MustHaveOneElement"));
 		}
-		for(index = lengths.Length - 1; index >= 0; --index)
+		for(index = lengths.GetLength() - 1; index >= 0; --index)
 		{
 			if(lengths[index] < 0)
 			{
@@ -477,15 +477,15 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("lowerBounds");
 		}
-		if(lengths.Length != lowerBounds.Length)
+		if(lengths.GetLength() != lowerBounds.GetLength())
 		{
 			throw new ArgumentException(_("Arg_MustBeSameSize"));
 		}
-		if(lengths.Length < 1)
+		if(lengths.GetLength() < 1)
 		{
 			throw new ArgumentException(_("Arg_MustHaveOneElement"));
 		}
-		for(index = lengths.Length - 1; index >= 0; --index)
+		for(index = lengths.GetLength() - 1; index >= 0; --index)
 		{
 			if(lengths[index] < 0)
 			{
@@ -500,7 +500,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	// Implement the IEnumerable interface.
 	public virtual IEnumerator GetEnumerator()
 	{
-		int rank = Rank;
+		int rank = GetRank();
 		if(rank == 1)
 		{
 			return new ArrayEnumerator1(this);
@@ -779,7 +779,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("indices");
 		}
-		if(indices.Length != Rank)
+		if(indices.GetLength() != GetRank())
 		{
 			throw new ArgumentException(_("Arg_MustBeSameSize"));
 		}
@@ -789,7 +789,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	// Get the value at a particular index within a single-dimensional array.
 	public Object GetValue(int index)
 	{
-		if(Rank != 1)
+		if(GetRank() != 1)
 		{
 			throw new ArgumentException(_("Arg_RankMustBe1"));
 		}
@@ -799,7 +799,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	// Get the value at a particular index within a double-dimensional array.
 	public Object GetValue(int index1, int index2)
 	{
-		if(Rank != 2)
+		if(GetRank() != 2)
 		{
 			throw new ArgumentException(_("Arg_RankMustBe2"));
 		}
@@ -809,7 +809,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	// Get the value at a particular index within a triple-dimensional array.
 	public Object GetValue(int index1, int index2, int index3)
 	{
-		if(Rank != 3)
+		if(GetRank() != 3)
 		{
 			throw new ArgumentException(_("Arg_RankMustBe3"));
 		}
@@ -874,7 +874,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		if(array.Rank != 1)
+		if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -889,7 +889,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		if(array.Rank != 1)
+		if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -905,7 +905,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		if(array.Rank != 1)
+		if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -927,7 +927,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		if(array.Rank != 1)
+		if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -950,7 +950,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		if(array.Rank != 1)
+		if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -973,7 +973,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		if(array.Rank != 1)
+		if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -1008,7 +1008,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		if(array.Rank != 1)
+		if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -1022,7 +1022,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		if(array.Rank != 1)
+		if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -1061,7 +1061,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("indices");
 		}
-		if(indices.Length != Rank)
+		if(indices.GetLength() != GetRank())
 		{
 			throw new ArgumentException(_("Arg_MustBeSameSize"));
 		}
@@ -1071,7 +1071,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	// Set the value at a particular index within a single-dimensional array.
 	public void SetValue(Object value, int index)
 	{
-		if(Rank != 1)
+		if(GetRank() != 1)
 		{
 			throw new ArgumentException(_("Arg_RankMustBe1"));
 		}
@@ -1081,7 +1081,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	// Set the value at a particular index within a double-dimensional array.
 	public void SetValue(Object value, int index1, int index2)
 	{
-		if(Rank != 2)
+		if(GetRank() != 2)
 		{
 			throw new ArgumentException(_("Arg_RankMustBe2"));
 		}
@@ -1091,7 +1091,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	// Set the value at a particular index within a triple-dimensional array.
 	public void SetValue(Object value, int index1, int index2, int index3)
 	{
-		if(Rank != 3)
+		if(GetRank() != 3)
 		{
 			throw new ArgumentException(_("Arg_RankMustBe3"));
 		}
@@ -1193,7 +1193,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		if(array.Rank != 1)
+		if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -1218,13 +1218,13 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("keys");
 		}
-		if(keys.Rank != 1)
+		if(keys.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(items != null)
 		{
-			if(items.Rank != 1)
+			if(items.GetRank() != 1)
 			{
 				throw new RankException(_("Arg_RankMustBe1"));
 			}
@@ -1232,7 +1232,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			{
 				throw new ArgumentException(_("Arg_LowBoundsMustMatch"));
 			}
-			if(items.Length < keys.Length)
+			if(items.GetLength() < keys.GetLength())
 			{
 				throw new ArgumentException(_("Arg_ShortItemsArray"));
 			}
@@ -1259,7 +1259,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("array");
 		}
-		if(array.Rank != 1)
+		if(array.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -1300,7 +1300,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("keys");
 		}
-		if(keys.Rank != 1)
+		if(keys.GetRank() != 1)
 		{
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
@@ -1321,7 +1321,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		if(items != null)
 		{
-			if(items.Rank != 1)
+			if(items.GetRank() != 1)
 			{
 				throw new RankException(_("Arg_RankMustBe1"));
 			}
@@ -1350,7 +1350,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	}
 	void IList.Clear()
 	{
-		Clear(this, 0, Length);
+		Clear(this, 0, GetLength());
 	}
 	bool IList.Contains(Object value)
 	{
@@ -1505,9 +1505,9 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("lengths");
 		}
-		int[] ilengths = new int [lengths.Length];
+		int[] ilengths = new int [lengths.GetLength()];
 		int posn;
-		for(posn = 0; posn < lengths.Length; ++posn)
+		for(posn = 0; posn < lengths.GetLength(); ++posn)
 		{
 			ilengths[posn] = DowngradeLength("lengths", lengths[posn]);
 		}
@@ -1543,9 +1543,9 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("indices");
 		}
-		int[] iindices = new int [indices.Length];
+		int[] iindices = new int [indices.GetLength()];
 		int posn;
-		for(posn = 0; posn < indices.Length; ++posn)
+		for(posn = 0; posn < indices.GetLength(); ++posn)
 		{
 			iindices[posn] = DowngradeIndex2("indices", indices[posn]);
 		}
@@ -1578,9 +1578,9 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentNullException("indices");
 		}
-		int[] iindices = new int [indices.Length];
+		int[] iindices = new int [indices.GetLength()];
 		int posn;
-		for(posn = 0; posn < indices.Length; ++posn)
+		for(posn = 0; posn < indices.GetLength(); ++posn)
 		{
 			iindices[posn] = DowngradeIndex2("indices", indices[posn]);
 		}

@@ -52,29 +52,29 @@ using System.Runtime.Serialization.Formatters.Binary;
 internal class DeserializationContext 
 {
 	// the manager used for unresolved references
-	private ObjectManager mObjManager;
+	public ObjectManager Manager;
 	// the reader supplying the data
-	private BinaryReader mReader;
+	public BinaryReader Reader;
 	// meta-info for already deserialized types is stored here
 	private Hashtable mTypeStore;
 	// meta-info for already loaded assemblies is stored here
 	private Hashtable mAssemblyStore;
 	// the calling BinaryFormatter (not used for now)
-	private BinaryFormatter mFormatter;
+	public BinaryFormatter Formatter;
 	// info if there are user defined headers (not used for now as 
 	// headers are not supported for now)
-	private bool mIsHeaderPresent;
+	public bool IsHeaderPresent;
 	// major and minor version used for serialization
-	private uint mMajorVersion, mMinorVersion;
+	public uint MajorVersion, MinorVersion;
 
 	public DeserializationContext(BinaryFormatter formatter,
 		BinaryReader reader)
 	{
-		mFormatter = formatter;
-		mReader = reader;
+		Formatter = formatter;
+		Reader = reader;
 		mTypeStore = new Hashtable();
 		mAssemblyStore = new Hashtable();
-		mObjManager = new ObjectManager(formatter.SurrogateSelector, 
+		Manager = new ObjectManager(formatter.SurrogateSelector, 
 										formatter.Context);
 	}
 
@@ -110,39 +110,6 @@ internal class DeserializationContext
 		{
 			return (TypeInfo) mTypeStore[id];
 		}
-	}
-
-	public ObjectManager Manager 
-	{
-		get { return mObjManager; }
-	}
-
-	public BinaryFormatter Formatter
-	{
-		get { return mFormatter; }
-	}
-
-	public BinaryReader Reader
-	{
-		get { return mReader; }
-	}
-
-	public bool IsHeaderPresent
-	{
-		get { return mIsHeaderPresent; }
-		set { mIsHeaderPresent = value; }
-	}
-
-	public uint MajorVersion
-	{
-		get { return mMajorVersion; }
-		set { mMajorVersion = value; }
-	}
-
-	public uint MinorVersion
-	{
-		get { return mMinorVersion; }
-		set { mMinorVersion = value; }
 	}
 }
 

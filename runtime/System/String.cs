@@ -159,12 +159,12 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 				if(strA != null)
 				{
-					if(indexA >= strA.Length)
+					if(indexA >= strA.length)
 					{
 						throw new ArgumentOutOfRangeException
 							("indexA", _("ArgRange_StringIndex"));
 					}
-					if(length > (strA.Length - indexA))
+					if(length > (strA.length - indexA))
 					{
 						throw new ArgumentOutOfRangeException
 							("length", _("ArgRange_StringRange"));
@@ -185,12 +185,12 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 				if(strB != null)
 				{
-					if(indexB >= strB.Length)
+					if(indexB >= strB.length)
 					{
 						throw new ArgumentOutOfRangeException
 							("indexB", _("ArgRange_StringIndex"));
 					}
-					if(length > (strB.Length - indexB))
+					if(length > (strB.length - indexB))
 					{
 						throw new ArgumentOutOfRangeException
 							("length", _("ArgRange_StringRange"));
@@ -231,12 +231,12 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 				else
 				{
-					if(indexA < 0 || indexA >= strA.Length)
+					if(indexA < 0 || indexA >= strA.length)
 					{
 						throw new ArgumentOutOfRangeException
 							("indexA", _("ArgRange_StringIndex"));
 					}
-					int adj = strA.Length - indexA - lengthA;
+					int adj = strA.length - indexA - lengthA;
 					if(adj < 0)
 					{ 
 						lengthA += adj;
@@ -254,14 +254,14 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 				else
 				{
-					if(indexB < 0 || indexB >= strB.Length)
+					if(indexB < 0 || indexB >= strB.length)
 					{
 						indexB = 0;
 						lengthB = 0;
 					}
 					else
 					{
-						int adj = strB.Length - indexB - lengthB;
+						int adj = strB.length - indexB - lengthB;
 						if(adj < 0)
 						{ 
 							lengthB += adj;
@@ -304,12 +304,12 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 				else
 				{
-					if(indexA < 0 || indexA >= strA.Length)
+					if(indexA < 0 || indexA >= strA.length)
 					{
 						throw new ArgumentOutOfRangeException
 							("indexA", _("ArgRange_StringIndex"));
 					}
-					int adj = strA.Length - indexA - lengthA;
+					int adj = strA.length - indexA - lengthA;
 					if(adj < 0)
 					{ 
 						lengthA += adj;
@@ -327,14 +327,14 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 				else
 				{
-					if(indexB < 0 || indexB >= strB.Length)
+					if(indexB < 0 || indexB >= strB.length)
 					{
 						indexB = 0;
 						lengthB =0;
 					}
 					else
 					{
-						int adj = strB.Length - indexB - lengthB;
+						int adj = strB.length - indexB - lengthB;
 						if(adj < 0)
 						{ 
 							lengthB += adj;
@@ -391,8 +391,8 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	public static int CompareOrdinal(String strA, String strB)
 			{
 				return InternalOrdinal
-							(strA, 0, ((strA != null) ? strA.Length : 0),
-							 strB, 0, ((strB != null) ? strB.Length : 0));
+							(strA, 0, ((strA != null) ? strA.length : 0),
+							 strB, 0, ((strB != null) ? strB.length : 0));
 			}
 
 	// Compare two sub-strings by ordinal character value.
@@ -459,8 +459,8 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	// Internal helper routines for string concatenation.
 	private static String ConcatInternal2(String str1, String str2)
 			{
-				int str1Len = str1.Length;
-				int str2Len = str2.Length;
+				int str1Len = str1.length;
+				int str2Len = str2.length;
 				String result = NewString(str1Len + str2Len);
 				Copy(result, 0, str1);
 				Copy(result, str1Len, str2);
@@ -469,9 +469,9 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	private static String ConcatInternal3(String str1, String str2,
 										  String str3)
 			{
-				int str1Len = str1.Length;
-				int str2Len = str2.Length;
-				int str3Len = str3.Length;
+				int str1Len = str1.length;
+				int str2Len = str2.length;
+				int str3Len = str3.length;
 				String result = NewString(str1Len + str2Len + str3Len);
 				Copy(result, 0, str1);
 				Copy(result, str1Len, str2);
@@ -488,7 +488,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					if(strings[posn] != null)
 					{
 						Copy(result, outposn, strings[posn]);
-						outposn += strings[posn].Length;
+						outposn += strings[posn].length;
 					}
 				}
 				return result;
@@ -519,10 +519,10 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	public static String Concat(String str1, String str2,
 								String str3, String str4)
 			{
-				int str1Len = (str1 != null ? str1.Length : 0);
-				int str2Len = (str2 != null ? str2.Length : 0);
-				int str3Len = (str3 != null ? str3.Length : 0);
-				int str4Len = (str4 != null ? str4.Length : 0);
+				int str1Len = (str1 != null ? str1.length : 0);
+				int str2Len = (str2 != null ? str2.length : 0);
+				int str3Len = (str3 != null ? str3.length : 0);
+				int str4Len = (str4 != null ? str4.length : 0);
 				String result = NewString(str1Len + str2Len +
 										  str3Len + str4Len);
 				if(str1 != null)
@@ -555,7 +555,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					{
 						if(values[posn] != null)
 						{
-							strLen += values[posn].Length;
+							strLen += values[posn].length;
 						}
 					}
 					return ConcatArrayInternal(values, strLen);
@@ -639,7 +639,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							strings[posn] = args[posn].ToString();
 							if(strings[posn] != null)
 							{
-								strLen += strings[posn].Length;
+								strLen += strings[posn].length;
 							}
 						}
 						else
@@ -660,7 +660,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				if(str != null)
 				{
-					String result = NewString(str.Length);
+					String result = NewString(str.length);
 					Copy(result, 0, str);
 					return result;
 				}
@@ -715,7 +715,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				{
 					throw new ArgumentNullException("value");
 				}
-				valueLen = value.Length;
+				valueLen = value.length;
 				return (valueLen <= length &&
 				        Compare(this, length - valueLen,
 						  	    value, 0, valueLen) == 0);
@@ -786,7 +786,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				int temp = posn;
 				uint value = 0;
-				char ch = format[temp++];
+				char ch = format.GetChar(temp++); // format[temp++];
 				if(ch < '0' || ch > '9')
 				{
 					return -1;
@@ -794,7 +794,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				value = ((uint)ch) - ((uint)'0');
 				while(temp < len)
 				{
-					ch = format[temp];
+					ch = format.GetChar(temp); // format[temp];
 					if(ch < '0' || ch > '9')
 					{
 						posn = temp;
@@ -832,7 +832,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				StringBuilder sb = new StringBuilder();
 
 				// Search for format specifiers and replace them.
-				int len = format.Length;
+				int len = format.length;
 				int posn = 0;
 				int next, argNum, width;
 				Object arg;
@@ -848,18 +848,18 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 					// Take care of escape sequences before trying anything
 					// fancy...
-					if(format[next] == '{' && format[next+1] == '{')
+					if(format.GetChar(next) == '{' && format.GetChar(next+1) == '{') //if(format[next] == '{' && format[next+1] == '{')
 					{
 						sb.Append('{');
                         posn = next + 2;
                         continue;
 					}
 
-					if(format[next] == '}')
+					if(format.GetChar(next) == '}') // if(format[next] == '}')
 					{
 						sb.Append('}');
 						posn = next + 1;
-						if (format[posn] == '}') posn++;
+						if (format.GetChar(posn) == '}') posn++; // if (format[posn] == '}') posn++;
 						continue;
 					}
 					posn = next + 1;
@@ -878,7 +878,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						throw new FormatException (_("Format_FormatString"));
 					}
 
-					if(format[posn] == ',')
+					if(format.GetChar(posn) == ',') //if(format[posn] == ',')
 					{
 						++posn;
 						if(posn >= len)
@@ -886,7 +886,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							throw new FormatException
 												(_("Format_FormatString"));
 						}
-						if(format[posn] == '-')
+						if(format.GetChar(posn) == '-') //if(format[posn] == '-')
 						{
 							++posn;
 							width = GetFormatInteger(format, len, ref posn);
@@ -912,7 +912,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						width = 0;
 					}
 
-					if(format[posn] == ':')
+					if(format.GetChar(posn) == ':') // if(format[posn] == ':')
 					{
 						++posn;
 						if(posn >= len)
@@ -933,7 +933,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					{
 						specifier = null;
 					}
-					if(format[posn] != '}')
+					if(format.GetChar(posn) != '}') // if(format[posn] != '}')
 					{
 						throw new FormatException (_("Format_FormatString"));
 					}
@@ -971,9 +971,9 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					if(width >= 0)
 					{
 						// Right-justify the string.
-						if(width > formatted.Length)
+						if(width > formatted.length)
 						{
-							sb.Append(' ', width - formatted.Length);
+							sb.Append(' ', width - formatted.length);
 						}
 						sb.Append(formatted);
 					}
@@ -982,9 +982,9 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						// Left-justify the string.
 						sb.Append(formatted);
 						width = -width;
-						if(width > formatted.Length)
+						if(width > formatted.length)
 						{
-							sb.Append(' ', width - formatted.Length);
+							sb.Append(' ', width - formatted.length);
 						}
 					}
 				} // for (...; next != -1; ...)
@@ -1050,7 +1050,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						("count", _("ArgRange_StringRange"));
 				}
 				return FindInRange
-					(startIndex, startIndex + count - value.Length, 1, value);
+					(startIndex, startIndex + count - value.length, 1, value);
 			}
 
 	// Internal helper for string range searching.
@@ -1084,7 +1084,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
 				}
-				valueLen = value.Length;
+				valueLen = value.length;
 				result = NewString(length + valueLen);
 				Copy(result, 0, this, 0, startIndex);
 				Copy(result, startIndex, value, 0, valueLen);
@@ -1141,7 +1141,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				// Determine the total length of the result string.
 				if(separator != null)
 				{
-					sepLen = separator.Length;
+					sepLen = separator.length;
 				}
 				else
 				{
@@ -1156,7 +1156,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					}
 					if((tempStr = value[startIndex + posn]) != null)
 					{
-						resultLen += tempStr.Length;
+						resultLen += tempStr.length;
 					}
 				}
 
@@ -1179,7 +1179,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					if((tempStr = value[startIndex + posn]) != null)
 					{
 						Copy(result, resultLen, tempStr);
-						resultLen += tempStr.Length;
+						resultLen += tempStr.length;
 					}
 				}
 				return result;
@@ -1244,7 +1244,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				if (value.length == 0) return 0;
 
 				return FindInRange
-					(startIndex - value.Length + 1,
+					(startIndex - value.length + 1,
 					 startIndex - count + 1, -1, value);
 			}
 
@@ -1394,7 +1394,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					separator = WhitespaceChars;
 				}
 				numStrings = 1;
-				len = Length;
+				len = length;
 				posn = 0;
 				while(posn < len)
 				{
@@ -1422,7 +1422,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 				// Construct the elements for the array.
 				arrayPosn = 0;
-				len = Length;
+				len = length;
 				start = 0;
 				posn = 0;
 				while(posn < len && arrayPosn < (count-1))
@@ -1450,7 +1450,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				{
 					throw new ArgumentNullException("value");
 				}
-				valueLen = value.Length;
+				valueLen = value.length;
 				return (valueLen <= length &&
 						Compare(this, 0, value, 0, valueLen) == 0);
 			}
@@ -1460,27 +1460,27 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				return Substring(startIndex, length - startIndex);
 			}
-	public String Substring(int startIndex, int length)
+	public String Substring(int startIndex, int ilength)
 			{
 				String result;
-				if(startIndex < 0 || startIndex > Length)
+				if(startIndex < 0 || startIndex > length)
 				{
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
 				}
-				else if(length < 0 || (Length - startIndex) < length)
+				else if(ilength < 0 || (length - startIndex) < ilength)
 				{
 					throw new ArgumentOutOfRangeException
 						("length", _("ArgRange_StringRange"));
 				}
-				if(length == 0)
+				if(ilength == 0)
 				{
 					return Empty;
 				}
 				else
 				{
-					result = NewString(length);
-					Copy(result, 0, this, startIndex, length);
+					result = NewString(ilength);
+					Copy(result, 0, this, startIndex, ilength);
 					return result;
 				}
 			}
@@ -1490,21 +1490,21 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				return ToCharArray(0, length);
 			}
-	public char[] ToCharArray(int startIndex, int length)
+	public char[] ToCharArray(int startIndex, int ilength)
 			{
 				char[] result;
-				if(startIndex < 0 || startIndex > Length)
+				if(startIndex < 0 || startIndex > length)
 				{
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
 				}
-				else if(length < 0 || (Length - startIndex) < length)
+				else if(ilength < 0 || (length - startIndex) < ilength)
 				{
 					throw new ArgumentOutOfRangeException
 						("length", _("ArgRange_StringRange"));
 				}
-				result = new char [length];
-				CopyToChecked(startIndex, result, 0, length);
+				result = new char [ilength];
+				CopyToChecked(startIndex, result, 0, ilength);
 				return result;
 			}
 

@@ -1180,8 +1180,8 @@ static void GetFPAndWordRegisters(MDUnroll *unroll, int *reg1, int *reg2)
 	/* If we have 1 word value on the stack, then load the FP into MD_FREG_0 */
 	if(unroll->pseudoStackSize == 1 && !MD_IS_FREG(unroll->pseudoStack[0]))
 	{
-		*reg1 = unroll->pseudoStack[0];
-		*reg2 = MD_FREG_0;
+		*reg1 = MD_FREG_0;
+		*reg2 = unroll->pseudoStack[0];
 		unroll->pseudoStack[0] = *reg1;
 		unroll->pseudoStack[1] = *reg2 | MD_NATIVE_REG_MASK;
 		unroll->pseudoStackSize = 2;

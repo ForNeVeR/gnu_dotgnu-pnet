@@ -19,7 +19,6 @@
  */
 
 #ifdef IL_UNROLL_CASES
-
 case COP_ILOAD_0:
 {
 	/* Unroll an access to frame variable 0 */
@@ -422,15 +421,31 @@ case COP_DUP:
 	}
 	else
 	{
+		int i = 0;
+		int j = 0;
 		/* We don't know if the top is 32-bit or native, so copy
 		   the entire native word but leave it on the CVM stack.
-		   A later reload will determine the true size */
+		   Even worse, we don't even know if one CVMWord fits 
+		   inside a native register, hence we need to keep 
+		   copying all the data. A later reload will determine 
+		   the true size and type. */
 		FlushRegisterStack(&unroll);
-		md_load_membase_word_native
-				(unroll.out, MD_REG_0,
-				 MD_REG_STACK, unroll.stackHeight - sizeof(CVMWord));
-		md_store_membase_word_native
-				(unroll.out, MD_REG_0, MD_REG_STACK, unroll.stackHeight);
+
+		for(i = 0, j = 0; i < sizeof(CVMWord); 
+						i = i + sizeof(ILNativeUInt), ++j)
+		{
+			/* just for fun, I thought I'd use a bunch of regs */
+			if(regAllocOrder[j] == -1) j = 0;
+			
+			md_load_membase_word_native
+					(unroll.out, regAllocOrder[j],
+					 MD_REG_STACK, 
+					 unroll.stackHeight - sizeof(CVMWord) + i);
+			md_store_membase_word_native
+					(unroll.out, regAllocOrder[j], MD_REG_STACK, 
+						unroll.stackHeight + i);
+		}
+		
 		unroll.stackHeight += sizeof(CVMWord);
 	}
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
@@ -456,5 +471,4 @@ case COP_POP:
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
-
 #endif /* IL_UNROLL_CASES */

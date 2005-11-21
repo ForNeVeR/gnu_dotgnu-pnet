@@ -9,6 +9,10 @@
 
 	* engine/unroll_arith.c: Integer division operations for
 	AMD64/EM64T.
+
+	* engine/unroll_var.c: copy the entire CVMWord while
+	doing a dup, not just a single ILNativeInt off the
+	stack.
 	
 2005-11-16  Gopal V  <gopalv82@yahoo.com>
 

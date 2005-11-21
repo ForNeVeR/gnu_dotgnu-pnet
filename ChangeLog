@@ -21,6 +21,9 @@
 	* engine/unroll.c: Fix bug in GetFPAndWordRegisters for
 	the case where there is one word on the stack and 
 	FP stack is empty.
+
+	* engine/engine.h, engine/layout.c, engine/cvm_call.c:
+	Add IL_DEBUG_IMTS flags to debug IMT bugs easily.
 	
 2005-11-16  Gopal V  <gopalv82@yahoo.com>
 

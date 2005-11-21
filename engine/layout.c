@@ -479,6 +479,9 @@ static void BuildIMT(ILExecProcess *process, ILClass *info,
 	}
 
 	parentPrivate = classPrivate;
+	#if IL_DEBUG_IMTS
+	fprintf(stderr, "%s->imt = {\n", ILClass_Name(info));
+	#endif
 	while(parentPrivate != NULL)
 	{
 		/* Process the implementation records that are attached to this class */
@@ -486,6 +489,9 @@ static void BuildIMT(ILExecProcess *process, ILClass *info,
 		while(impl != 0)
 		{
 			implPrivate = (ILClassPrivate *)(impl->interface->userData);
+			#if IL_DEBUG_IMTS
+			fprintf(stderr, "\t /* %s */\n", ILClass_Name(implPrivate->classInfo));
+			#endif
 			if(implPrivate)
 			{
 				/* Allocate a base identifer for the interface if necessary.
@@ -538,7 +544,17 @@ static void BuildIMT(ILExecProcess *process, ILClass *info,
 		{
 			classPrivate->imt[posn] = 0;
 		}
+		#if IL_DEBUG_IMTS
+		if(classPrivate->imt[posn] != 0)
+		{
+			fprintf(stderr, "\t %d : %s\n", posn, ILMethod_Name(classPrivate->imt[posn]));
+		}
+		#endif
 	}
+
+	#if IL_DEBUG_IMTS
+	fprintf(stderr, "}\n");
+	#endif
 }
 
 #endif /* IL_USE_IMTS */

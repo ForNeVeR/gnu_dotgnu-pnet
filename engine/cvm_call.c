@@ -1093,8 +1093,7 @@ VMCASE(COP_CALL_INTERFACE):
 				MISSING_METHOD_EXCEPTION();
 			}
 		}
-		#if 0
-		/* uncomment to debug IMT */
+		#if IL_DEBUG_IMTS
 		if(methodToCall)
 		{
 			fprintf(stderr, "%s:%d found <%s:%s> for <%s:%s> \n", 

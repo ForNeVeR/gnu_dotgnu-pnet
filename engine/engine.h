@@ -103,6 +103,10 @@ extern	"C" {
 	/*#define	IL_USE_IMTS	1*/
 #endif
 
+/*#define	IL_USE_IMTS	1 */
+
+/*#define IL_DEBUG_IMTS 1 */
+
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 /* Global lock for trace outputs */
 extern ILMutex *globalTraceMutex;

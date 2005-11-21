@@ -34,6 +34,9 @@
 	#ifdef HAVE_SYS_WAIT_H
 		#include <sys/wait.h>
 	#endif
+	#ifdef HAVE_LIMITS_H
+		#include <limits.h>
+	#endif
 	#ifndef WEXITSTATUS
 		#define	WEXITSTATUS(status)		((unsigned)(status) >> 8)
 	#endif
@@ -250,11 +253,96 @@ static int ImportantSignal(unsigned sig)
 }
 
 /*
+ * Use a @file shortcut if you run into arguments
+ * that overflow the system limits. This function
+ * modifies only template and does not modify argv.
+ * Ensure that template is writable.
+ */
+#if defined(HAVE_LIMITS_H) && defined(HAVE_MKSTEMP)
+static int CreateResponseFile(char * argv[], char * template)
+{
+	int arg;
+	int len;
+	int useResponseFile;
+	int fd = 0;
+	FILE *fp = NULL;
+	
+	/* Scan the command-line to see if it may be too big to
+	   fit in the system's command-line buffer.  If so, we
+	   must write the options to a temporary file instead */
+	arg = 0;
+	len = 0;
+	useResponseFile = 0;
+	while(argv[arg] != 0)
+	{
+		len += strlen(argv[arg]);
+		if(len >= 8192) /* TODO: obtain from configure.in */
+		{
+			useResponseFile = 1;
+			break;
+		}
+		++len;
+		++arg;
+	} 
+	#if defined(_POSIX_ARG_MAX)
+	if(arg >= _POSIX_ARG_MAX)
+	{
+		useResponseFile = 1;
+	}
+	#endif
+
+	if(useResponseFile)
+	{
+		if((fd = mkstemp(template)) == -1)
+		{
+			perror("mkstemp");
+			return 0;
+		}
+		
+		fp = fdopen(fd, "w");
+
+		if(fp == NULL)
+		{
+			perror("fdopen");
+			return 0;
+		}
+
+		arg = 1;
+		while(argv[arg] != 0)
+		{
+			fputs(argv[arg], fp);
+			putc('\n', fp);
+			++arg;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+
+	fclose(fp);
+	close(fd);
+
+	return 1;
+}
+#else
+static int CreateResponseFile(char * argv[], char * template)
+{
+	return 0;
+}
+#endif
+
+/*
  * Use Unix-specific functions to spawn child processes.
  */
 int ILSpawnProcess(char *argv[])
 {
 	int pid = fork();
+	char template[] = "@/tmp/cscc-args-XXXXXX";
+	char *newargv[] = {argv[0], template, 0};
+	int responseFile = CreateResponseFile(argv, template+1);
+	int result = 0;
+
 	if(pid < 0)
 	{
 		/* Could not fork the child process */
@@ -264,7 +352,14 @@ int ILSpawnProcess(char *argv[])
 	else if(pid == 0)
 	{
 		/* We are in the child process */
-		execvp(argv[0], argv);
+		if(responseFile)
+		{
+			execvp(argv[0], newargv);
+		}
+		else
+		{
+			execvp(argv[0], argv);
+		}
 		perror(argv[0]);
 		exit(1);
 		return -1;		/* Keep the compiler happy */
@@ -272,7 +367,12 @@ int ILSpawnProcess(char *argv[])
 	else
 	{
 		/* We are in the parent process */
-		return ILSpawnProcessWaitForExit(pid, argv);
+		result = ILSpawnProcessWaitForExit(pid, argv);
+		if(responseFile)
+		{
+			ILDeleteFile(template+1);
+		}
+		return result;
 	}
 }
 

@@ -1,4 +1,9 @@
 
+2005-11-21  Gopal V  <gopalv82@yahoo.com>
+
+	* configure.in, support/spawn.c: use response files
+	if arguments exceed 8192 bytes (bug #12797)
+	
 2005-11-16  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/cvm.c: Insert a dummy cgoto to ensure that

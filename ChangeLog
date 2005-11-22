@@ -1,3 +1,8 @@
+2005-11-22  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/FileDialog.cs: Perform Layout of FileIconListBox
+	only when the form is visible to fix an ArgumentOutOfRangeException.
+
 2005-11-22  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Drawing/Drawing2D/RegionData.cs: enhanced performance

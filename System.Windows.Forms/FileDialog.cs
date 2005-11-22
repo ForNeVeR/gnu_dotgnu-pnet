@@ -996,6 +996,12 @@ public abstract class FileDialog : CommonDialog
 		// Lay out the control after a change in contents.
 		private void LayoutControl()
 				{
+					// Bail out early if the form is not visible
+					if(!Visible)
+					{
+						return;
+					}
+
 					// Bail out early if there are no entries to display.
 					if(numEntries == 0)
 					{

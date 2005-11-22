@@ -676,23 +676,17 @@ public sealed class RegionData
 	//  IEEE floating point standard representation
 	private void PutSingle( Single value, int index )
 	{
-		PutInt32( (Int32)BitConverter.DoubleToInt64Bits(value), index );
-		/*
-		not using BitConverter enhances performance
 		byte[] bytes = BitConverter.GetBytes( value ) ;
 		for ( ushort s = 0; s<4 ; s++ )
 		{
 			data[index+s] = bytes[s] ;
 		}
-		*/
 	}
 	
 	// Read a single precision floating point from specified index 
 	private static Single GetSingle( byte[] bts, int index )
 	{
-		return (Single)BitConverter.Int64BitsToDouble( GetInt32( bts, index ) );
-		// not using BitConverter enhances performance
-		// return BitConverter.ToSingle( bts , index ) ;
+		return BitConverter.ToSingle( bts , index ) ;
 	}
 
 

@@ -198,14 +198,17 @@ namespace System.Windows.Forms
 					children[i].CollapseInternal();
 				}
 			}
-			// Do the events.
-			TreeViewCancelEventArgs eventArgs = new TreeViewCancelEventArgs(this, false, TreeViewAction.Collapse);
-			treeView.OnBeforeCollapse(eventArgs);
-			if (!eventArgs.Cancel)
+			if(expanded)
 			{
-				treeView.OnAfterCollapse(new TreeViewEventArgs(this));
-				// The node is now collapsed.
-				expanded = false;
+				// Do the events.
+				TreeViewCancelEventArgs eventArgs = new TreeViewCancelEventArgs(this, false, TreeViewAction.Collapse);
+				treeView.OnBeforeCollapse(eventArgs);
+				if (!eventArgs.Cancel)
+				{
+					// The node is now collapsed.
+					expanded = false;
+					treeView.OnAfterCollapse(new TreeViewEventArgs(this));
+				}
 			}
 			if (selected)
 			{
@@ -312,13 +315,20 @@ namespace System.Windows.Forms
 			{
 				return;
 			}
-			TreeNode node = this;
-			node.expanded = true;
 			if (treeView == null)
+			{
+				expanded = true;
+				return;
+			}
+
+			TreeViewCancelEventArgs args = new TreeViewCancelEventArgs(this, false, TreeViewAction.Expand);
+			treeView.OnBeforeExpand(args);
+			if(args.Cancel)
 			{
 				return;
 			}
 
+			TreeNode node = this;
 			TreeNode highestNode = node;
 			for (; node != null; node = node.Parent)
 			{
@@ -326,6 +336,7 @@ namespace System.Windows.Forms
 				highestNode = node;
 			}
 			treeView.InvalidateDown(highestNode);
+			treeView.OnAfterExpand(new TreeViewEventArgs(this, TreeViewAction.Expand));
 		}
 
 		public void ExpandAll()

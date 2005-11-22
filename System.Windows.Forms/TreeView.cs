@@ -1096,7 +1096,7 @@ namespace System.Windows.Forms
 			}
 		}
 		
-		protected virtual void OnAfterExpand(TreeViewEventArgs e)
+		protected internal virtual void OnAfterExpand(TreeViewEventArgs e)
 		{
 			TreeViewEventHandler handler = (TreeViewEventHandler)GetHandler(EventId.AfterExpand);
 			if (handler != null)
@@ -1141,7 +1141,7 @@ namespace System.Windows.Forms
 			}
 		}
 
-		protected virtual void OnBeforeExpand(TreeViewCancelEventArgs e)
+		protected internal virtual void OnBeforeExpand(TreeViewCancelEventArgs e)
 		{
 			TreeViewCancelEventHandler handler = (TreeViewCancelEventHandler)GetHandler(EventId.BeforeExpand);
 			if (handler != null)

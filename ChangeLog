@@ -1,3 +1,9 @@
+2005-11-22  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Windows.Forms/TreeView.cs,
+	System.Windows.Forms/TreeNode.cs: Raise Expand/Collapse events
+	correctly. (bug #15010, patch applied by drobosson)
+
 2005-11-21  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* Xsharp/Graphics.cs : fixed clipping of images

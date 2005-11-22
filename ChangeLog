@@ -1,3 +1,7 @@
+2005-11-22  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing/Drawing2D/RegionData.cs: enhanced performance
+
 2005-11-22  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Windows.Forms/TreeView.cs,

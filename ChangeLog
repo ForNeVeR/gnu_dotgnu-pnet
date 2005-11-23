@@ -1,3 +1,7 @@
+2005-11-23  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Control.cs : fixed, map toolkitwindow to screen only if size greater 0
+
 2005-11-22  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/FileDialog.cs: Perform Layout of FileIconListBox

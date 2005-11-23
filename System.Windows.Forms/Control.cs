@@ -5311,6 +5311,9 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnSizeChanged(EventArgs e)
 			{
+				if(toolkitWindow != null)
+					toolkitWindow.IsMapped = visible && width > 0 && height > 0;
+
 				// Raise the "Resize" event first.
 				OnResize(e);
 
@@ -5417,7 +5420,7 @@ public class Control : IWin32Window, IDisposable
 				// Map or unmap the toolkit window.
 				if(toolkitWindow != null)
 				{
-					toolkitWindow.IsMapped = visible;
+					toolkitWindow.IsMapped = visible && height > 0 && width > 0;
 
 					// May as well release the double buffer resource if its being used.
 					if(!visible && buffer != null)

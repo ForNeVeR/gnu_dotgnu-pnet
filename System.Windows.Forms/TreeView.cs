@@ -65,7 +65,8 @@ namespace System.Windows.Forms
 		internal int xOffset = 0;
 		const int xPadding = 2;
 		int xScrollValueBeforeEdit = 0;
- 
+		ClickEvent clickEvent;
+
 		public event TreeViewEventHandler AfterCheck
 		{
 			add
@@ -1276,7 +1277,7 @@ namespace System.Windows.Forms
 			}
 			else
 			{
-				ProcessClick(e.X, e.Y, true);
+				ProcessClick(e.X, e.Y, true, ClickEvent.None);
 			}
 			base.OnMouseDown (e);
 		}
@@ -1298,12 +1299,12 @@ namespace System.Windows.Forms
 		// Non Microsoft member.
 		protected override void OnMouseUp(MouseEventArgs e)
 		{
-			ProcessClick(e.X, e.Y, (e.Button == MouseButtons.Right));
+			ProcessClick(e.X, e.Y, (e.Button == MouseButtons.Right), clickEvent);
 
 			base.OnMouseUp (e);
 		}
 
-		void ProcessClick(int x, int y, bool rightMouse)
+		void ProcessClick(int x, int y, bool rightMouse, ClickEvent clickEvent)
 		{
 			int nodeFromTop = -1;
 			int height = ItemHeight;
@@ -1322,9 +1323,18 @@ namespace System.Windows.Forms
 					{
 						// Check if the y matches this node.
 						if (y < height * (nodeFromTop + 1))
-						{
+						{							
 							bool allowEdit = false;
 							bool allowSelect = true;
+							// Raise click or double click when called from MouseUp
+							if(clickEvent == ClickEvent.Click)
+							{
+								OnClick(EventArgs.Empty);
+							}
+							else if(clickEvent == ClickEvent.DoubleClick)
+							{
+								OnDoubleClick(EventArgs.Empty);
+							}
 							// Clicking the image can be used to select.
 							if (imageList == null || !GetImageBounds(nodeFromTop, nodes.level).Contains(x, y))
 							{
@@ -1853,6 +1863,8 @@ namespace System.Windows.Forms
 			{
 				OnMouseDown(new MouseEventArgs(buttons, clicks, x, y, delta));
 			}
+			// Set event to be raised on mouse up
+			clickEvent = (clicks == 1) ? ClickEvent.Click : ClickEvent.DoubleClick;
 		}
 
 		public TreeNode TopNode 
@@ -2008,6 +2020,13 @@ namespace System.Windows.Forms
 					}
 				}
 			}
+		}
+		
+		internal enum ClickEvent
+		{
+			Click,
+			DoubleClick,
+			None
 		}
 	}
 

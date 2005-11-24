@@ -1,3 +1,8 @@
+2005-11-24  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Windows.Forms/TreeView.cs: Improve click events.
+	(bug #14163, Klaus)
+
 2005-11-23  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs : fixed, map toolkitwindow to screen only if size greater 0

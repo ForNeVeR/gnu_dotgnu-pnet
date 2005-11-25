@@ -478,6 +478,12 @@ static void BuildIMT(ILExecProcess *process, ILClass *info,
 		return;
 	}
 
+	if(ILClass_IsAbstract(info))
+	{
+		/* will never have an object */
+		return;
+	}
+
 	parentPrivate = classPrivate;
 	#if IL_DEBUG_IMTS
 	fprintf(stderr, "%s->imt = {\n", ILClass_Name(info));

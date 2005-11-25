@@ -4,6 +4,8 @@
 	* engine/layout.c: resolve the parent classes with ILGetParentClass,
 	for cross-assembly relationships.
 	
+	* engine/layout.c: Do not fill in IMT tables for abstract classes.
+
 2005-11-21  Gopal V  <gopalv82@yahoo.com>
 
 	* configure.in, support/spawn.c: use response files

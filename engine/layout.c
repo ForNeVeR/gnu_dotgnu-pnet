@@ -534,7 +534,7 @@ static void BuildIMT(ILExecProcess *process, ILClass *info,
 		{
 			break;
 		}
-		parentPrivate = (ILClassPrivate*) (parentPrivate->classInfo->parent->userData);
+		parentPrivate = (ILClassPrivate*) (ILClassGetParent(parentPrivate->classInfo)->userData);
 	}
 
 	/* Clear positions in the table that indicate conflicts */

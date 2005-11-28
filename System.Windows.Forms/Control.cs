@@ -6075,6 +6075,8 @@ public class Control : IWin32Window, IDisposable
 	// Toolkit event that is emitted when the mouse leaves this window.
 	void IToolkitEventSink.ToolkitMouseLeave()
 			{
+				SetControlFlag(ControlFlags.NotifyDoubleClick, false);
+				SetControlFlag(ControlFlags.NotifyClick, false);
 				if(GetControlFlag(ControlFlags.Enabled))
 					OnMouseLeave(EventArgs.Empty);
 			}

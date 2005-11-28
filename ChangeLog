@@ -1,3 +1,8 @@
+2005-11-28  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Control.cs : fixed, no click events, if mouse has left the control
+	* System.Windows.Forms/Button.cs  : fixed, fire OnClick before MouseUp (like M$ does)
+
 2005-11-24  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Windows.Forms/TreeView.cs: Improve click events.

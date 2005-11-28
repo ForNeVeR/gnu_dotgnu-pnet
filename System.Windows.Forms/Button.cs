@@ -98,19 +98,11 @@ public class Button : ButtonBase, IButtonControl
 	// Handle the mouse up event to cause "Click" to be emitted.
 	protected override void OnMouseUp(MouseEventArgs e)
 			{
-				if(button == e.Button)
+				if(button == e.Button && entered && pressed)
 				{
-					bool clicked = (entered && pressed);
-					base.OnMouseUp(e);
-					if(clicked)
-					{
-						OnClick(EventArgs.Empty);
-					}
+					OnClick(EventArgs.Empty);
 				}
-				else
-				{
-					base.OnMouseUp(e);
-				}
+				base.OnMouseUp(e);
 			}
 
 	// Process a key mnemonic.

@@ -412,29 +412,34 @@ public sealed class Application
 					{
 						for(;;)
 						{
-							// Process events in the queue.
-							if(!toolkit.ProcessEvents(false))
-							{
-							#if !CONFIG_COMPACT_FORMS
-								// There were no events, so raise "Idle".
-								if(Idle != null)
+							try {
+								// Process events in the queue.
+								if(!toolkit.ProcessEvents(false))
 								{
-									Idle(null, EventArgs.Empty);
+								#if !CONFIG_COMPACT_FORMS
+									// There were no events, so raise "Idle".
+									if(Idle != null)
+									{
+										Idle(null, EventArgs.Empty);
+									}
+								#endif
+		
+									// Block until an event, or quit, arrives.
+									if(!toolkit.ProcessEvents(true))
+									{
+										break;
+									}
 								}
-							#endif
-	
-								// Block until an event, or quit, arrives.
-								if(!toolkit.ProcessEvents(true))
+		
+								// Process requests sent via "SendRequest".
+								while((request = NextRequest(thread, false))
+											!= null)
 								{
-									break;
+									request.Execute();
 								}
 							}
-	
-							// Process requests sent via "SendRequest".
-							while((request = NextRequest(thread, false))
-										!= null)
-							{
-								request.Execute();
+							catch( Exception e ) {
+								Application.OnThreadException( e );
 							}
 						}
 					}

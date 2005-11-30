@@ -1,3 +1,9 @@
+2005-11-30  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Control.cs: update mouse position on toolkit mouse down 
+	this is needed, because if you have a touch screen the mouse move is not fired, 
+	if we click on the screen
+
 2005-11-29  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Application.cs: catch X Exceptions and forwared it to Application.OnThreadException

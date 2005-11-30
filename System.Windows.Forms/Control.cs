@@ -6177,6 +6177,11 @@ public class Control : IWin32Window, IDisposable
 		int clicks, int x, int y, int delta)
 			{
 				
+				// Convert to client coordinates
+				x += ToolkitDrawOrigin.X - ClientOrigin.X;
+				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
+				mousePosition = PointToScreen(new Point(x, y));
+				
 				if(GetStyle(ControlStyles.Selectable) && buttons == MouseButtons.Left)
 				{
 					Focus();

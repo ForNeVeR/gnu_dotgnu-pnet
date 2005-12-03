@@ -1,3 +1,8 @@
+2005-12-03  Radek Polak  <psonek2@seznam.cz>
+
+	* System/Diagnostics/Process.cs: Fix Process.Start so that it uses the
+	Process.StartInfo.WorkingDirectory. (Bug# 15098, Klaus)
+
 2005-11-30  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: update mouse position on toolkit mouse down 

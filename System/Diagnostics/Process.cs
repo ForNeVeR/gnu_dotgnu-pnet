@@ -909,11 +909,9 @@ public class Process
 
 				// Get the pathname of the program to be executed.
 				String program;
-				if(startInfo.WorkingDirectory != String.Empty)
+				if(startInfo.UseShellExecute && startInfo.WorkingDirectory != String.Empty && !Path.IsPathRooted(startInfo.FileName))
 				{
-					program = startInfo.WorkingDirectory +
-							  Path.PathSeparator +
-							  startInfo.FileName;
+					program = Path.Combine(startInfo.WorkingDirectory, startInfo.FileName);
 				}
 				else
 				{
@@ -931,7 +929,7 @@ public class Process
 				IntPtr stdinHandle;
 				IntPtr stdoutHandle;
 				IntPtr stderrHandle;
-				if(!StartProcess(program, startInfo.Arguments, argv,
+				if(!StartProcess(program, startInfo.Arguments, startInfo.WorkingDirectory, argv,
 								 (int)flags, (int)(startInfo.WindowStyle),
 								 env, startInfo.Verb,
 								 startInfo.ErrorDialogParentHandle,
@@ -939,15 +937,12 @@ public class Process
 								 out stdinHandle, out stdoutHandle,
 								 out stderrHandle))
 				{
-					throw new Win32Exception();
-				}
-				
-				// Checking errno for error
-				Errno errno = Process.GetErrno();
-				if( errno != Errno.Success ) {
-					throw new Win32Exception(Process.GetErrnoMessage(errno));
-				}
-				
+					// Checking errno for error
+					Errno errno = Process.GetErrno();
+					if( errno != Errno.Success ) {
+						throw new Win32Exception(Process.GetErrnoMessage(errno));
+					}
+				}				
 
 				// Wrap up the redirected I/O streams.
 				if(stdinHandle != SocketMethods.GetInvalidHandle())
@@ -1141,7 +1136,7 @@ public class Process
 	// Start a new process.  Returns false if it could not be started.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static bool StartProcess
-			(String filename, String arguments, String[] argv,
+			(String filename, String arguments, String workingDir, String[] argv,
 			 int flags, int windowStyle, String[] envVars,
 			 String verb, IntPtr errorDialogParent,
 			 out IntPtr processHandle, out int processID,

@@ -23,6 +23,7 @@
 #include "il_utils.h"
 #include "il_sysio.h"
 #include "il_thread.h"
+#include "il_errno.h"
 #ifdef IL_WIN32_PLATFORM
 	#include <windows.h>
 	#include <io.h>
@@ -411,6 +412,7 @@ void _IL_Process_KillProcess(ILExecThread *_thread,
 
 /*
  * private static bool StartProcess(String filename, String arguments,
+ *									String workingDir,
  *									String[] argv, int flags,
  *									int windowStyle, String[] envVars,
  *									String verb, IntPtr errorDialogParent,
@@ -423,6 +425,7 @@ void _IL_Process_KillProcess(ILExecThread *_thread,
 ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 								ILString *filename,
 								ILString *arguments,
+								ILString *workingDir,
 								System_Array *argv,
 								ILInt32 flags,
 								ILInt32 windowStyle,
@@ -446,6 +449,7 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 #endif
 
 	const char *fname;
+	const char *workdir = 0;
 	char *args;
 	STARTUPINFO startupInfo;
 	PROCESS_INFORMATION processInfo;
@@ -458,11 +462,22 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	int numCloseAfterFork = 0;
 	int index;
 
+	/* Clear errno, because we will check for it when something fails */
+	ILSysIOSetErrno(0);
+
 	/* Convert the parameters into something that the OS can understand */
 	fname = ILStringToAnsi(_thread, filename);
 	if(!fname)
 	{
 		return 0;
+	}
+	if(((System_String *) workingDir)->length)
+	{
+		workdir = ILStringToAnsi(_thread, workingDir);
+		if(!workdir)
+		{
+			return 0;
+		}
 	}
 	args = ILStringToAnsi(_thread, arguments);
 	if(!args)
@@ -536,12 +551,19 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	*processID = -1;
 	*processHandle = 0;
 	result = 0;
-	if(CreateProcess(fname, args, NULL, NULL, TRUE, 0, env, NULL,
+	if(CreateProcess(fname, args, NULL, NULL, TRUE, 0, env, workdir,
 					 &startupInfo, &processInfo))
 	{
 		*processHandle = (ILNativeInt)(processInfo.hProcess);
 		*processID = (ILInt32)(processInfo.dwProcessId);
 		result = 1;
+	}
+	else
+	{
+		/* TODO: it could be useful to report error details using GetLastError().
+		   We can't do ILSysIOSetErrno(GetLastError()), because errno is related
+		   to IO function, while GetLastError() is windows-specific error code */
+		ILSysIOSetErrno(ENOENT);
 	}
 
 	/* Clean up and exit */
@@ -569,6 +591,7 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 #define	IL_USING_FORK	1
 
 	const char *fname;
+	const char *workdir = 0;
 	char **args;
 	char **newEnviron = 0;
 	int varNum = 0;
@@ -599,6 +622,14 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	if(!fname)
 	{
 		return 0;
+	}
+	if(((System_String *) workingDir)->length)
+	{
+		workdir = ILStringToAnsi(_thread, workingDir);
+		if(!workdir)
+		{
+			return 0;
+		}
 	}
 	args = (char **)ILCalloc(argv->length + 1, sizeof(char *));
 	if(!args)
@@ -751,6 +782,15 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	#ifdef HAVE_FCNTL
 		fcntl(pipefds[1],F_SETFD,1);
 	#endif
+		if(workdir)
+		{
+			if(ILChangeDir(workdir) != IL_ERRNO_Success)
+			{
+				/* Send errno to parent process */
+				write(pipefds[1],&errno, sizeof(errno));
+				exit(1);
+			}
+		}
 
 		execvp(fname, args);
 		write(pipefds[1],&errno, sizeof(errno));
@@ -776,7 +816,7 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 		errno = 0;
 		read(pipefds[0],&errno,sizeof(errno));
 		close(pipefds[0]);
-		result = 1;
+		result = (errno == 0);
 	}
 	else
 	{

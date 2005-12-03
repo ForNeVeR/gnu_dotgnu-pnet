@@ -27,17 +27,17 @@ extern void _IL_ArgIterator_GetNextArgType(ILExecThread * _thread, void * _resul
 extern ILInt32 _IL_ArgIterator_GetRemainingCount(ILExecThread * _thread, void * _this);
 
 extern ILObject * _IL_Array_CreateArray_jiiii(ILExecThread * _thread, ILNativeInt elementType, ILInt32 rank, ILInt32 length1, ILInt32 length2, ILInt32 length3);
+extern ILInt32 _IL_Array_GetRank(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Array_Set_Objectiii(ILExecThread * _thread, ILObject * _this, ILObject * value, ILInt32 index1, ILInt32 index2, ILInt32 index3);
 extern ILObject * _IL_Array_Get_iii(ILExecThread * _thread, ILObject * _this, ILInt32 index1, ILInt32 index2, ILInt32 index3);
 extern ILInt32 _IL_Array_GetLowerBound(ILExecThread * _thread, ILObject * _this, ILInt32 dimension);
 extern ILInt32 _IL_Array_GetUpperBound(ILExecThread * _thread, ILObject * _this, ILInt32 dimension);
-extern ILInt32 _IL_Array_GetRank(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Array_Clear(ILExecThread * _thread, ILObject * array, ILInt32 index, ILInt32 length);
 extern void _IL_Array_Initialize(ILExecThread * _thread, ILObject * _this);
+extern ILInt32 _IL_Array_GetLength_(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Array_InternalCopy(ILExecThread * _thread, ILObject * sourceArray, ILInt32 sourceIndex, ILObject * destinationArray, ILInt32 destinationIndex, ILInt32 length);
 extern ILObject * _IL_Array_GetRelative(ILExecThread * _thread, ILObject * _this, ILInt32 index);
 extern void _IL_Array_SetRelative(ILExecThread * _thread, ILObject * _this, ILObject * value, ILInt32 index);
-extern ILInt32 _IL_Array_GetLength_(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Array_CreateArray_jaiai(ILExecThread * _thread, ILNativeInt elementType, System_Array * lengths, System_Array * lowerBounds);
 extern ILObject * _IL_Array_Get_ai(ILExecThread * _thread, ILObject * _this, System_Array * indices);
 extern ILInt32 _IL_Array_GetLength_i(ILExecThread * _thread, ILObject * _this, ILInt32 dimension);
@@ -707,7 +707,7 @@ extern void _IL_Process_CloseProcess(ILExecThread * _thread, ILNativeInt process
 extern ILBool _IL_Process_CloseMainWindow(ILExecThread * _thread, ILNativeInt windowHandle);
 extern void _IL_Process_GetCurrentProcessInfo(ILExecThread * _thread, ILInt32 * processID, ILNativeInt * handle);
 extern void _IL_Process_KillProcess(ILExecThread * _thread, ILNativeInt processHandle, ILInt32 processID);
-extern ILBool _IL_Process_StartProcess(ILExecThread * _thread, ILString * filename, ILString * arguments, System_Array * argv, ILInt32 flags, ILInt32 windowStyle, System_Array * envVars, ILString * verb, ILNativeInt errorDialogParent, ILNativeInt * processHandle, ILInt32 * processID, ILNativeInt * stdinHandle, ILNativeInt * stdoutHandle, ILNativeInt * stderrHandle);
+extern ILBool _IL_Process_StartProcess(ILExecThread * _thread, ILString * filename, ILString * arguments, ILString * workingDir, System_Array * argv, ILInt32 flags, ILInt32 windowStyle, System_Array * envVars, ILString * verb, ILNativeInt errorDialogParent, ILNativeInt * processHandle, ILInt32 * processID, ILNativeInt * stdinHandle, ILNativeInt * stdoutHandle, ILNativeInt * stderrHandle);
 extern ILInt32 _IL_Process_GetErrno(ILExecThread * _thread);
 extern ILString * _IL_Process_GetErrnoMessage(ILExecThread * _thread, ILInt32 error);
 extern ILBool _IL_Process_WaitForExit(ILExecThread * _thread, ILNativeInt processHandle, ILInt32 processID, ILInt32 milliseconds, ILInt32 * exitCode);

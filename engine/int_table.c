@@ -240,17 +240,17 @@ static void marshal_ppjpp(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(Array_Methods)
 	IL_METHOD("CreateArray", "(jiiii)oSystem.Array;", _IL_Array_CreateArray_jiiii, marshal_ppjiiii)
+	IL_METHOD("GetRank", "(T)i", _IL_Array_GetRank, marshal_ipp)
 	IL_METHOD("Set", "(ToSystem.Object;iii)V", _IL_Array_Set_Objectiii, marshal_vpppiii)
 	IL_METHOD("Get", "(Tiii)oSystem.Object;", _IL_Array_Get_iii, marshal_pppiii)
 	IL_METHOD("GetLowerBound", "(Ti)i", _IL_Array_GetLowerBound, marshal_ippi)
 	IL_METHOD("GetUpperBound", "(Ti)i", _IL_Array_GetUpperBound, marshal_ippi)
-	IL_METHOD("GetRank", "(T)i", _IL_Array_GetRank, marshal_ipp)
 	IL_METHOD("Clear", "(oSystem.Array;ii)V", _IL_Array_Clear, marshal_vppii)
 	IL_METHOD("Initialize", "(T)V", _IL_Array_Initialize, marshal_vpp)
+	IL_METHOD("GetLength", "(T)i", _IL_Array_GetLength_, marshal_ipp)
 	IL_METHOD("InternalCopy", "(oSystem.Array;ioSystem.Array;ii)V", _IL_Array_InternalCopy, marshal_vppipii)
 	IL_METHOD("GetRelative", "(Ti)oSystem.Object;", _IL_Array_GetRelative, marshal_pppi)
 	IL_METHOD("SetRelative", "(ToSystem.Object;i)V", _IL_Array_SetRelative, marshal_vpppi)
-	IL_METHOD("GetLength", "(T)i", _IL_Array_GetLength_, marshal_ipp)
 	IL_METHOD("CreateArray", "(j[i[i)oSystem.Array;", _IL_Array_CreateArray_jaiai, marshal_ppjpp)
 	IL_METHOD("Get", "(T[i)oSystem.Object;", _IL_Array_Get_ai, marshal_pppp)
 	IL_METHOD("GetLength", "(Ti)i", _IL_Array_GetLength_i, marshal_ippi)
@@ -3058,9 +3058,9 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_bppppiippjppppp(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_bpppppiippjppppp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, void *, void *, ILInt32, ILInt32, void *, void *, ILNativeUInt, void *, void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((void * *)(avalue[6])), *((void * *)(avalue[7])), *((ILNativeUInt *)(avalue[8])), *((void * *)(avalue[9])), *((void * *)(avalue[10])), *((void * *)(avalue[11])), *((void * *)(avalue[12])), *((void * *)(avalue[13])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, void *, void *, void *, ILInt32, ILInt32, void *, void *, ILNativeUInt, void *, void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((void * *)(avalue[7])), *((void * *)(avalue[8])), *((ILNativeUInt *)(avalue[9])), *((void * *)(avalue[10])), *((void * *)(avalue[11])), *((void * *)(avalue[12])), *((void * *)(avalue[13])), *((void * *)(avalue[14])));
 }
 
 #endif
@@ -3086,7 +3086,7 @@ IL_METHOD_BEGIN(Process_Methods)
 	IL_METHOD("CloseMainWindow", "(j)Z", _IL_Process_CloseMainWindow, marshal_bpj)
 	IL_METHOD("GetCurrentProcessInfo", "(&i&j)V", _IL_Process_GetCurrentProcessInfo, marshal_vppp)
 	IL_METHOD("KillProcess", "(ji)V", _IL_Process_KillProcess, marshal_vpji)
-	IL_METHOD("StartProcess", "(oSystem.String;oSystem.String;[oSystem.String;ii[oSystem.String;oSystem.String;j&j&i&j&j&j)Z", _IL_Process_StartProcess, marshal_bppppiippjppppp)
+	IL_METHOD("StartProcess", "(oSystem.String;oSystem.String;oSystem.String;[oSystem.String;ii[oSystem.String;oSystem.String;j&j&i&j&j&j)Z", _IL_Process_StartProcess, marshal_bpppppiippjppppp)
 	IL_METHOD("GetErrno", "()vPlatform.Errno;", _IL_Process_GetErrno, marshal_ip)
 	IL_METHOD("GetErrnoMessage", "(vPlatform.Errno;)oSystem.String;", _IL_Process_GetErrnoMessage, marshal_ppi)
 	IL_METHOD("WaitForExit", "(jii&i)Z", _IL_Process_WaitForExit, marshal_bpjiip)

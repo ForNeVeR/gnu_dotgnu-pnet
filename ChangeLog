@@ -1,3 +1,8 @@
+2005-12-03  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/verify_call.c: Fix verification error when inlining an instance
+	getter that returns a static field.
+	
 2005-12-03  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/lib_task.c, engine/int_proto.h, engine/int_table.c: Fix

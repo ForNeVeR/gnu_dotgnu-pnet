@@ -1688,11 +1688,11 @@ callNonvirtualFromVirtual:
 								classType = ILField_Type(fieldInfo);
 								if(STK_UNARY == ILEngineType_O)
 								{
-									/* Accessing a field within an object reference */
-									if(IsSubClass(stack[stackSize - 1].typeInfo,
-												ILField_Owner(fieldInfo)))
+									if(!ILField_IsStatic(fieldInfo))
 									{
-										if(!ILField_IsStatic(fieldInfo))
+										/* Accessing a field within an object reference */
+										if(IsSubClass(stack[stackSize - 1].typeInfo,
+												ILField_Owner(fieldInfo)))
 										{
 											ILCoderLoadField(coder, ILEngineType_O,
 															stack[stackSize - 1].typeInfo,
@@ -1700,13 +1700,13 @@ callNonvirtualFromVirtual:
 										}
 										else
 										{
-											ILCoderPop(coder, ILEngineType_O, ILType_Invalid);
-											ILCoderLoadStaticField(coder, fieldInfo, classType);
+											VERIFY_TYPE_ERROR();
 										}
 									}
 									else
 									{
-										VERIFY_TYPE_ERROR();
+										ILCoderPop(coder, ILEngineType_O, ILType_Invalid);
+										ILCoderLoadStaticField(coder, fieldInfo, classType);
 									}
 								}
 								else if(!unsafeAllowed &&

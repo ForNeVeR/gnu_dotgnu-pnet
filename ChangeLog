@@ -1,3 +1,8 @@
+2005-12-05  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Control.cs: fixed computing mouse popsition on mouse down (menu problem)
+	* System.Windows.Forms/TabPage.cs: fixed displaying TabPage (see FormsTest.exe)
+
 2005-12-03  Radek Polak  <psonek2@seznam.cz>
 
 	* System/Diagnostics/Process.cs: Fix Process.Start so that it uses the

@@ -6176,10 +6176,9 @@ public class Control : IWin32Window, IDisposable
 		(MouseButtons buttons, Keys modifiers,
 		int clicks, int x, int y, int delta)
 			{
-				
 				// Convert to client coordinates
-				x += ToolkitDrawOrigin.X - ClientOrigin.X;
-				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
+				if( x >= 0 ) x += ToolkitDrawOrigin.X - ClientOrigin.X;
+				if( y >= 0 ) y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
 				mousePosition = PointToScreen(new Point(x, y));
 				
 				if(GetStyle(ControlStyles.Selectable) && buttons == MouseButtons.Left)
@@ -6281,6 +6280,7 @@ public class Control : IWin32Window, IDisposable
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
 				mousePosition = PointToScreen(new Point(x, y));
+				
 				currentModifiers = (Keys)modifiers;
 				OnMouseMove(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));

@@ -31,6 +31,7 @@ namespace System.Windows.Forms
 		
 		public TabPage()
 		{
+			base.Visible = false; // base is first not visible, TabControl sets it to visible, if TabPage is selected.
 			visible = true;
 		}
 

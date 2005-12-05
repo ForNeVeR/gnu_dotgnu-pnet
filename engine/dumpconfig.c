@@ -112,10 +112,16 @@ int _ILDumpConfig(FILE *stream,int level)
 	#endif
 
 	/* There was no way I could put that in cvm_config.h */
-	#if defined(CVM_X86) || defined(CVM_ARM) || defined(CVM_PPC)
+	#if defined(CVM_X86) || defined(CVM_ARM) || defined(CVM_PPC) || \
+		defined(CVM_X86_64)
 		#if defined(CVM_X86) && defined(__GNUC__) && !defined(IL_NO_ASM)
 			PrintFormatted(stream,"Manual Register Allocation",
 										"Yes (esi,edi,ebx)");
+		#endif
+
+		#if defined(CVM_X86_64) && defined(__GNUC__) && !defined(IL_NO_ASM)
+			PrintFormatted(stream,"Manual Register Allocation",
+										"Yes (r12,r14,r15)");
 		#endif
 			
 		#if defined(CVM_ARM) && defined(__GNUC__) && !defined(IL_NO_ASM)

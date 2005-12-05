@@ -1,3 +1,9 @@
+
+2005-12-04  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/dumpconfig.c, engine/md_amd64.h: Fix ilrun -D and 
+	enable integer division on AMD64/EM64T.
+
 2005-12-03  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/verify_call.c: Fix verification error when inlining an instance

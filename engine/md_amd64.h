@@ -132,7 +132,7 @@ extern	"C" {
  * Set it to zero if integer division is too hard to be performed
  * inline using a simple opcode.
  */
-#define	MD_HAS_INT_DIVISION			0
+#define	MD_HAS_INT_DIVISION			1
 
 /*
  * Set to 1 if 64-bit register pairs are stored in little-endian order.

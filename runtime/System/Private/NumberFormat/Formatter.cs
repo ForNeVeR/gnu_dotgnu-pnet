@@ -616,6 +616,8 @@ internal abstract class Formatter
 			ret = new CustomFormatter(format);
 			break;
 		}
+		
+		formats[format] = ret;
 		return ret;
 	}
 

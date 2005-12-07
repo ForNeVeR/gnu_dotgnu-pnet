@@ -1,3 +1,7 @@
+2005-12-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Private/NumberFormat/Formatter.cs: cache created formatters
+
 2005-12-05  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: fixed computing mouse popsition on mouse down (menu problem)

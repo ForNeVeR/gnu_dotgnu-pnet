@@ -817,9 +817,13 @@ namespace System.Text.RegularExpressions.Syntax {
 			int n = (int)cat;
 			
 			if (negate) {
-				neg_cats[n] = true;
+				// use BitArray.Set for speedups 
+				// neg_cats[n] = true;
+				neg_cats.Set( n, true );
 			} else {
-				pos_cats[n] = true;
+				// use BitArray.Set for speedups 
+				//pos_cats[n] = true;
+				pos_cats.Set( n, true );
 			}
 		}
 
@@ -868,8 +872,11 @@ namespace System.Text.RegularExpressions.Syntax {
 			
 			int count = meta.Count;
 			for (int i = 0; i < pos_cats.Length; ++ i) {
-				if (pos_cats[i]) ++ count;
-				if (neg_cats[i]) ++ count;
+				// use BitArray.Get instead of indexer for speedups
+				//if (pos_cats[i]) ++ count;
+				//if (neg_cats[i]) ++ count;
+				if (pos_cats.Get(i)) ++ count;
+				if (neg_cats.Get(i)) ++ count;
 			}
 
 			if (count == 0)
@@ -885,12 +892,16 @@ namespace System.Text.RegularExpressions.Syntax {
 			// emit categories
 
 			for (int i = 0; i < pos_cats.Length; ++ i) {
-				if (pos_cats[i]) {
-					if (neg_cats [i])
+				// use BitArray.Get instead of indexer for speedups
+				//if (pos_cats[i]) {
+				if (pos_cats.Get(i)) {
+					//if (neg_cats [i])
+					if (neg_cats.Get(i))
 						cmp.EmitCategory (Category.AnySingleline, negate, reverse);
 					else
 						cmp.EmitCategory ((Category)i, negate, reverse);
-				} else if (neg_cats[i]) {
+//				} else if (neg_cats[i]) {
+				} else if (neg_cats.Get(i)) {
 					cmp.EmitCategory ((Category)i, !negate, reverse);
 				}
 			}
@@ -903,7 +914,8 @@ namespace System.Text.RegularExpressions.Syntax {
 					foreach (Interval b in intervals) {
 						if (a.Contains (b)) {
 							for (int i = b.low; i <= b.high; ++ i)
-								bits[i - a.low] = true;
+								// use BitArray.Get instead of indexer for speedups : bits[i - a.low] = true;
+								bits.Set( i - a.low, true );
 						}
 					}
 

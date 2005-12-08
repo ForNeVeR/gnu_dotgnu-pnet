@@ -70,6 +70,8 @@ internal sealed class ClrResourceStream : Stream
 			}
 
 	// Set up for a read.
+	// removed for speedup
+	/*
 	private void SetupRead()
 			{
 				if(handle == IntPtr.Zero)
@@ -77,6 +79,7 @@ internal sealed class ClrResourceStream : Stream
 					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
 			}
+			*/
 
 	// Close the stream.
 	public override void Close()
@@ -113,7 +116,12 @@ internal sealed class ClrResourceStream : Stream
 				{
 					count = (int)(length - position);
 				}
-				SetupRead();
+				// SetupRead();
+				if(handle == IntPtr.Zero)
+				{
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
+				}
+				
 
 				// Read data into the caller's buffer.
 				result = ResourceRead(handle, start + position,
@@ -133,7 +141,11 @@ internal sealed class ClrResourceStream : Stream
 				int byteval;
 
 				// Setup the object for reading.
-				SetupRead();
+				// SetupRead();
+				if(handle == IntPtr.Zero)
+				{
+					throw new ObjectDisposedException(_("IO_StreamClosed"));
+				}
 
 				// Bail out if we are already at the end of the stream.
 				if(position >= length)

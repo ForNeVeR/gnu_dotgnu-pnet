@@ -174,7 +174,11 @@ namespace System.Text.RegularExpressions {
 					if (b >= set.Length)
 						break;
 				
+					/* use BitArray.Get instead of indexer for speedup
 					if (set[b ++])
+						word |= (ushort)(1 << i);
+						*/
+					if (set.Get(b ++))
 						word |= (ushort)(1 << i);
 				}
 

@@ -433,16 +433,29 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 							}
 						}
 					}
+					/* speed up, use get/set instead of indexer
 					if(visibleMask[best] == false)
 					{
 						visibleMask[best] = true;
+						count++;
+					}
+					*/
+					if(visibleMask.Get(best) == false)
+					{
+						visibleMask.Set(best, true);
 						count++;
 					}
 				}
 				MemberInfo [] newMembers = (MemberInfo[])Array.CreateInstance(type,count);
 				for(int i = 0, j = 0; i < visibleMask.Count; i++)
 				{
+					/* speed up, use get/set instead of indexer
 					if(visibleMask[i] == true)
+					{
+						newMembers[j++] = members[i];
+					}
+					*/
+					if(visibleMask.Get(i) == true)
 					{
 						newMembers[j++] = members[i];
 					}

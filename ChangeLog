@@ -1,3 +1,11 @@
+2005-12-08  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Reflection/ClrType.cs: for speedup use BitArray Get/Set instead of indexer
+	* System/Text/RegularExpressions/compiler.cs: for speedup use BitArray Get/Set instead of indexer
+	* System/Text/RegularExpressions/syntax.cs: for speedup use BitArray Get/Set instead of indexer
+
+	* runtime/System/Reflection/ClrResourceStream.cs: for speedup removed SetupRead, check pointer directly instead
+
 2005-12-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Private/NumberFormat/Formatter.cs: cache created formatters

@@ -58,8 +58,8 @@ extern	"C" {
  * -1 is the list terminator.  The floating point register numbers
  * must include the MD_FREG_MASK value.
  */
-//#define	MD_FREG_0		(MD_FREG_MASK | 0)
-#define	MD_FREG_0		-1 /* TODO: implement FPU support */
+#define	MD_FREG_0		(MD_FREG_MASK | 0)
+//#define	MD_FREG_0		-1 /* TODO: implement FPU support */
 #define	MD_FREG_1		(MD_FREG_MASK | 1)
 #define	MD_FREG_2		(MD_FREG_MASK | 2)
 #define	MD_FREG_3		(MD_FREG_MASK | 3)
@@ -80,7 +80,7 @@ extern	"C" {
  * Set this to a non-zero value if floating-point registers are organised
  * in a stack (e.g. the x87 FPU).
  */
-#define	MD_FP_STACK_SIZE	0
+#define	MD_FP_STACK_SIZE	8
 
 /*
  * The register that contains the CVM program counter.  This may be
@@ -187,15 +187,26 @@ typedef unsigned char *md_inst_ptr;
  * floating-point registers, then load onto the top of the stack.
  */
 #define	md_load_const_float_32(inst,reg,mem)	\
-			x86_fld((inst), (int)(mem), 0)
+			do { \
+				amd64_push_reg((inst), MD_REG_PC); \
+				amd64_mov_reg_imm_size((inst), MD_REG_PC, (mem), 8); \
+				amd64_fld_membase((inst), (MD_REG_PC), (0), 0); \
+				amd64_pop_reg((inst), MD_REG_PC);\
+			}while(0)
 
 /*
  * Load a 64-bit floating-point constant into a register.  The constant
  * is at a particular memory location.  If the system does not use
  * floating-point registers, then load onto the top of the stack.
+ * TODO: fix all pushes and pops
  */
 #define	md_load_const_float_64(inst,reg,mem)	\
-			x86_fld((inst), (int)(mem), 1)
+			do { \
+				amd64_push_reg((inst), MD_REG_PC); \
+				amd64_mov_reg_imm_size((inst), MD_REG_PC, (mem), 8); \
+				amd64_fld_membase((inst), (MD_REG_PC), (0), 1); \
+				amd64_pop_reg((inst), MD_REG_PC);\
+			}while(0)
 
 /*
  * Load the 32-bit constant zero into a register.  This will zero-extend
@@ -263,11 +274,11 @@ typedef unsigned char *md_inst_ptr;
  * floating-point stack.
  */
 #define	md_load_membase_float_32(inst,reg,basereg,offset)	\
-			x86_fld_membase((inst), (basereg), (offset), 0)
+			amd64_fld_membase((inst), (basereg), (offset), 0)
 #define	md_load_membase_float_64(inst,reg,basereg,offset)	\
-			x86_fld_membase((inst), (basereg), (offset), 1)
+			amd64_fld_membase((inst), (basereg), (offset), 1)
 #define	md_load_membase_float_native(inst,reg,basereg,offset)	\
-			x86_fld80_membase((inst), (basereg), (offset))
+			amd64_fld80_membase((inst), (basereg), (offset))
 
 /*
  * Store a 32-bit word register to an offset from a pointer register.
@@ -311,13 +322,13 @@ md_inst_ptr _md_amd64_mov_membase_reg_byte
  * Store a short value to an offset from a pointer register.
  */
 #define	md_store_membase_short(inst,reg,basereg,offset)	\
-			x86_mov_membase_reg((inst), (basereg), (offset), (reg), 2)
+			amd64_mov_membase_reg((inst), (basereg), (offset), (reg), 2)
 
 /*
  * Store an unsigned short value to an offset from a pointer register.
  */
 #define	md_store_membase_ushort(inst,reg,basereg,offset)	\
-			x86_mov_membase_reg((inst), (basereg), (offset), (reg), 2)
+			amd64_mov_membase_reg((inst), (basereg), (offset), (reg), 2)
 
 /*
  * Store a floating-point value to an offset from a pointer register.
@@ -326,11 +337,11 @@ md_inst_ptr _md_amd64_mov_membase_reg_byte
  * floating-point stack.
  */
 #define	md_store_membase_float_32(inst,reg,basereg,offset)	\
-			x86_fst_membase((inst), (basereg), (offset), 0, 1)
+			amd64_fst_membase_size((inst), (basereg), (offset), 0, 1, 4)
 #define	md_store_membase_float_64(inst,reg,basereg,offset)	\
-			x86_fst_membase((inst), (basereg), (offset), 1, 1)
+			amd64_fst_membase((inst), (basereg), (offset), 1, 1)
 #define	md_store_membase_float_native(inst,reg,basereg,offset)	\
-			x86_fst80_membase((inst), (basereg), (offset))
+			amd64_fst80_membase((inst), (basereg), (offset))
 
 /*
  * Add an immediate value to a register.
@@ -347,7 +358,7 @@ md_inst_ptr _md_amd64_mov_membase_reg_byte
 /*
  * Perform arithmetic and logical operations on 32-bit word registers.
  *
- * Division is tricky, so it is handled elsewhere for x86.
+ * Division is tricky, so it is handled elsewhere for AMD64.
  */
 #define	md_add_reg_reg_word_32(inst,reg1,reg2)	\
 			amd64_alu_reg_reg_size((inst), X86_ADD, (reg1), (reg2), 4)
@@ -355,8 +366,6 @@ md_inst_ptr _md_amd64_mov_membase_reg_byte
 			amd64_alu_reg_reg_size((inst), X86_SUB, (reg1), (reg2), 4)
 #define	md_mul_reg_reg_word_32(inst,reg1,reg2)	\
 			amd64_imul_reg_reg_size((inst), (reg1), (reg2), 4)
-extern md_inst_ptr _md_x86_divide(md_inst_ptr inst, int reg1, int reg2,
-								  int isSigned, int wantRemainder);
 #define	md_div_reg_reg_word_32(inst,reg1,reg2)	\
 			do { ; } while (0)
 #define	md_udiv_reg_reg_word_32(inst,reg1,reg2)	\
@@ -424,31 +433,31 @@ extern md_inst_ptr _md_amd64_shift(md_inst_ptr inst, int opc, int reg1, int reg2
  * Perform arithmetic operations on native float values.  If the system
  * uses a floating-point stack, then the register arguments are ignored.
  *
- * Note: x86 remainder is handled elsewhere because it is complicated.
+ * Note: remainder is handled elsewhere because it is complicated.
  */
 #define	md_add_reg_reg_float(inst,reg1,reg2)	\
-			x86_fp_op_reg((inst), X86_FADD, 1, 1)
+			amd64_fp_op_reg((inst), X86_FADD, 1, 1)
 #define	md_sub_reg_reg_float(inst,reg1,reg2)	\
-			x86_fp_op_reg((inst), X86_FSUB, 1, 1)
+			amd64_fp_op_reg((inst), X86_FSUB, 1, 1)
 #define	md_mul_reg_reg_float(inst,reg1,reg2)	\
-			x86_fp_op_reg((inst), X86_FMUL, 1, 1)
+			amd64_fp_op_reg((inst), X86_FMUL, 1, 1)
 #define	md_div_reg_reg_float(inst,reg1,reg2)	\
-			x86_fp_op_reg((inst), X86_FDIV, 1, 1)
-extern md_inst_ptr _md_x86_rem_float
+			amd64_fp_op_reg((inst), X86_FDIV, 1, 1)
+extern md_inst_ptr _md_amd64_rem_float
 			(md_inst_ptr inst, int reg1, int reg2, int used);
 #define	md_rem_reg_reg_float(inst,reg1,reg2,used)	\
-			do { (inst) = _md_x86_rem_float \
+			do { (inst) = _md_amd64_rem_float \
 					((inst), (reg1), (reg2), (used)); } while (0)
 #define	md_neg_reg_float(inst,reg)	\
-			x86_fchs((inst))
+			amd64_fchs((inst))
 
 /*
  * Compare two floating point values and produce a -1, 0, or 1 result.
  */
-extern md_inst_ptr _md_x86_cmp_float(md_inst_ptr inst, int dreg, int lessop);
+extern md_inst_ptr _md_amd64_cmp_float(md_inst_ptr inst, int dreg, int lessop);
 #define	md_cmp_reg_reg_float(inst, dreg, sreg1, sreg2, lessop)	\
 			do { \
-				(inst) = _md_x86_cmp_float((inst), (dreg), (lessop)); \
+				(inst) = _md_amd64_cmp_float((inst), (dreg), (lessop)); \
 			} while (0)
 
 /*
@@ -476,26 +485,27 @@ extern md_inst_ptr _md_amd64_widen_byte(md_inst_ptr inst, int reg, int isSigned)
 
 /*
  * Truncate floating point values to 32-bit or 64-bit.
+ * TODO: use cvt2* opcodes here
  */
 #define	md_reg_to_float_32(inst,reg)	\
 			do { \
-				x86_alu_reg_imm((inst), X86_SUB, X86_ESP, 4); \
-				x86_fst_membase((inst), X86_ESP, 0, 0, 1); \
-				x86_fld_membase((inst), X86_ESP, 0, 0); \
-				x86_alu_reg_imm((inst), X86_ADD, X86_ESP, 4); \
+				amd64_alu_reg_imm((inst), X86_SUB, AMD64_RSP, 4); \
+				amd64_fst_membase((inst), AMD64_RSP, 0, 0, 1); \
+				amd64_fld_membase((inst), AMD64_RSP, 0, 0); \
+				amd64_alu_reg_imm((inst), X86_ADD, AMD64_RSP, 4); \
 			} while (0)
 #define	md_reg_to_float_64(inst,reg)	\
 			do { \
-				x86_alu_reg_imm((inst), X86_SUB, X86_ESP, 8); \
-				x86_fst_membase((inst), X86_ESP, 0, 1, 1); \
-				x86_fld_membase((inst), X86_ESP, 0, 1); \
-				x86_alu_reg_imm((inst), X86_ADD, X86_ESP, 8); \
+				amd64_alu_reg_imm((inst), X86_SUB, AMD64_RSP, 8); \
+				amd64_fst_membase((inst), AMD64_RSP, 0, 1, 1); \
+				amd64_fld_membase((inst), AMD64_RSP, 0, 1); \
+				amd64_alu_reg_imm((inst), X86_ADD, AMD64_RSP, 8); \
 			} while (0)
 
 /*
  * Swap the top two items on the floating-point stack.
  */
-#define	md_freg_swap(inst)		x86_fxch((inst), 1)
+#define	md_freg_swap(inst)		amd64_fxch((inst), 1)
 
 /*
  * Jump back into the CVM interpreter to execute the instruction
@@ -615,7 +625,7 @@ extern md_inst_ptr _md_amd64_compare
  * the condition codes based on the result.
  */
 #define	md_cmp_reg_imm_word_32(inst,cond,reg,imm)	\
-			x86_alu_reg_imm((inst), X86_CMP, (reg), (int)(imm))
+			amd64_alu_reg_imm_size((inst), X86_CMP, (reg), (int)(imm), 4)
 
 /*
  * Output a branch to a location based on a condition.  The actual

@@ -223,8 +223,6 @@ static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 	unsigned char *patch2;
 	unsigned char *patch3;
 
-	fprintf(stderr, "%p %p\n", pc, label);
-
 #ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	/* Check the array reference against NULL */
 	amd64_alu_reg_reg(unroll->out, X86_OR, reg, reg);

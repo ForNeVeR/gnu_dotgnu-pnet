@@ -1181,7 +1181,7 @@ static void GetFPAndWordRegisters(MDUnroll *unroll, int *reg1, int *reg2)
 	if(unroll->pseudoStackSize == 1 && !MD_IS_FREG(unroll->pseudoStack[0]))
 	{
 		*reg1 = MD_FREG_0;
-		*reg2 = unroll->pseudoStack[0];
+		*reg2 = unroll->pseudoStack[0] & ~MD_NATIVE_REG_MASK;
 		unroll->pseudoStack[0] = *reg1;
 		unroll->pseudoStack[1] = *reg2 | MD_NATIVE_REG_MASK;
 		unroll->pseudoStackSize = 2;

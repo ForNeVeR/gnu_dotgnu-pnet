@@ -122,28 +122,27 @@ md_inst_ptr _md_amd64_switch(md_inst_ptr inst, int reg, void * table)
 
 	return inst;
 }
-#if 0
-md_inst_ptr _md_x86_rem_float
+
+md_inst_ptr _md_amd64_rem_float
 		(md_inst_ptr inst, int reg1, int reg2, int used)
 {
 	md_inst_ptr label;
-	if((used & (1 << X86_EAX)) != 0)
+	if((used & (1 << AMD64_RAX)) != 0)
 	{
-		x86_push_reg(inst, X86_EAX);
+		amd64_push_reg(inst, AMD64_RAX);
 	}
 	label = inst;
-	x86_fprem(inst);
-	x86_fnstsw(inst);
-	x86_alu_reg_imm(inst, X86_AND, X86_EAX, 0x0400);
-	x86_branch(inst, X86_CC_NZ, label, 0);
-	x86_fstp(inst, 1);
-	if((used & (1 << X86_EAX)) != 0)
+	amd64_fprem(inst);
+	amd64_fnstsw(inst);
+	amd64_alu_reg_imm(inst, X86_AND, AMD64_RAX, 0x0400);
+	amd64_branch(inst, X86_CC_NZ, label, 0);
+	amd64_fstp(inst, 1);
+	if((used & (1 << AMD64_RAX)) != 0)
 	{
-		x86_pop_reg(inst, X86_EAX);
+		amd64_pop_reg(inst, AMD64_RAX);
 	}
 	return inst;
 }
-#endif
 
 md_inst_ptr _md_amd64_setcc(md_inst_ptr inst, int reg, int cond)
 {
@@ -214,65 +213,63 @@ md_inst_ptr _md_amd64_widen_byte(md_inst_ptr inst, int reg, int isSigned)
 	}
 	return inst;
 }
-#if 0
 
-md_inst_ptr _md_x86_cmp_float(md_inst_ptr inst, int dreg, int lessop)
+md_inst_ptr _md_amd64_cmp_float(md_inst_ptr inst, int dreg, int lessop)
 {
 	md_inst_ptr patch1, patch2, patch3;
 
 	/* We need the EAX register to store the FPU status word */
-	if(dreg != X86_EAX)
+	if(dreg != AMD64_RAX)
 	{
-		x86_push_reg(inst, X86_EAX);
+		amd64_push_reg(inst, AMD64_RAX);
 	}
 
 	/* Compare the values and get the FPU status word */
-	x86_fcompp(inst);
-	x86_fnstsw(inst);
-	x86_alu_reg_imm(inst, X86_AND, X86_EAX, 0x4500);
+	amd64_fcompp(inst);
+	amd64_fnstsw(inst);
+	amd64_alu_reg_imm(inst, X86_AND, AMD64_RAX, 0x4500);
 
 	/* Decode the FPU status word to determine the result */
-	x86_alu_reg_imm(inst, X86_CMP, X86_EAX, 0x4000);		/* eq */
+	amd64_alu_reg_imm(inst, X86_CMP, AMD64_RAX, 0x4000);		/* eq */
 	patch1 = inst;
-	x86_branch8(inst, X86_CC_NE, 0, 0);
-	x86_clear_reg(inst, X86_EAX);
+	amd64_branch8(inst, X86_CC_NE, 0, 0);
+	amd64_clear_reg(inst, AMD64_RAX);
 	patch2 = inst;
-	x86_jump8(inst, 0);
-	x86_patch(patch1, inst);
+	amd64_jump8(inst, 0);
+	amd64_patch(patch1, inst);
 	if(lessop)
 	{
-		x86_alu_reg_imm(inst, X86_CMP, X86_EAX, 0x0100);	/* gt */
+		amd64_alu_reg_imm(inst, X86_CMP, AMD64_RAX, 0x0100);	/* gt */
 		patch1 = inst;
-		x86_branch8(inst, X86_CC_NE, 0, 0);
-		x86_mov_reg_imm(inst, X86_EAX, 1);
+		amd64_branch8(inst, X86_CC_NE, 0, 0);
+		amd64_mov_reg_imm(inst, AMD64_RAX, 1);
 		patch3 = inst;
-		x86_jump8(inst, 0);
-		x86_patch(patch1, inst);
-		x86_mov_reg_imm(inst, X86_EAX, -1);
+		amd64_jump8(inst, 0);
+		amd64_patch(patch1, inst);
+		amd64_mov_reg_imm(inst, AMD64_RAX, -1);
 	}
 	else
 	{
-		x86_alu_reg_imm(inst, X86_CMP, X86_EAX, 0x0000);	/* lt */
+		amd64_alu_reg_imm(inst, X86_CMP, AMD64_RAX, 0x0000);	/* lt */
 		patch1 = inst;
-		x86_branch8(inst, X86_CC_NE, 0, 0);
-		x86_mov_reg_imm(inst, X86_EAX, -1);
+		amd64_branch8(inst, X86_CC_NE, 0, 0);
+		amd64_mov_reg_imm(inst, AMD64_RAX, -1);
 		patch3 = inst;
-		x86_jump8(inst, 0);
-		x86_patch(patch1, inst);
-		x86_mov_reg_imm(inst, X86_EAX, 1);
+		amd64_jump8(inst, 0);
+		amd64_patch(patch1, inst);
+		amd64_mov_reg_imm(inst, AMD64_RAX, 1);
 	}
-	x86_patch(patch2, inst);
-	x86_patch(patch3, inst);
+	amd64_patch(patch2, inst);
+	amd64_patch(patch3, inst);
 
 	/* Shift the result into the destination register */
-	if(dreg != X86_EAX)
+	if(dreg != AMD64_RAX)
 	{
-		x86_mov_reg_reg(inst, dreg, X86_EAX, 4);
-		x86_pop_reg(inst, X86_EAX);
+		amd64_mov_reg_reg(inst, dreg, AMD64_RAX, 4);
+		amd64_pop_reg(inst, AMD64_RAX);
 	}
 	return inst;
 }
-#endif
 
 #endif /* CVM_X86_64 */
 

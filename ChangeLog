@@ -1,4 +1,12 @@
 
+2005-12-08  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/md_amd64.h, engine/md_amd64.c: AMD64 fpu unrollers.
+
+	* engine/unroll.c, engine/unroll_ptr.c: Remove the NATIVE_MASK
+	on the reg2 in GetFPAndWordRegisters before returning. Remove
+	debug code in 2D array code.
+
 2005-12-04  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/dumpconfig.c, engine/md_amd64.h: Fix ilrun -D and 

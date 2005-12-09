@@ -1,5 +1,16 @@
 2005-12-08  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
+	* runtime/System/Convert.cs: changed Convert.ToInt32 ToUInt32 ToInt64 ToUInt64.
+	Round value to the nearest value. 
+	if value is halfway between two whole numbers, the even number is returned.
+	Sample: 
+	4.5 is converted to 4  (!)  
+	5.5 is converted to 6  
+	See MSDN.
+
+
+2005-12-08  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
 	* runtime/System/Reflection/ClrType.cs: for speedup use BitArray Get/Set instead of indexer
 	* System/Text/RegularExpressions/compiler.cs: for speedup use BitArray Get/Set instead of indexer
 	* System/Text/RegularExpressions/syntax.cs: for speedup use BitArray Get/Set instead of indexer

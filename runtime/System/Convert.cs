@@ -1186,7 +1186,24 @@ public sealed class Convert
 				// of detecting when overflow occurs.
 				try
 				{
-					return checked((int)value);
+					int iNum = checked((int)value);
+					// Round value to the nearest 32-bit signed int. 
+					// if value is halfway between two whole numbers, the even number is returned.
+					// Sample: 
+					//         4.5 is converted to 4  (!)  
+					//         5.5 is converted to 6  
+					double d2 = value - iNum;
+					if( iNum >= 0 ) {
+						if( d2 > 0.5 || ( d2 == 0.5 && ( (iNum & 1) != 0 ) ) ) {
+							iNum++;
+						}
+					}
+					else {
+						if( d2 < -0.5 || ( d2 == -0.5 && ( (iNum & 1) != 0 ) ) ) {
+							iNum--;
+						}
+					}
+					return iNum;
 				}
 				catch(OverflowException)
 				{
@@ -1416,7 +1433,17 @@ public sealed class Convert
 				// of detecting when overflow occurs.
 				try
 				{
-					return checked((uint)value);
+					uint uiNum = checked((uint)value);
+					// Round value to the nearest 32-bit unsigned int. 
+					// if value is halfway between two whole numbers, the even number is returned.
+					// Sample: 
+					//         4.5 is converted to 4  (!)  
+					//         5.5 is converted to 6  
+					double d2 = value - uiNum;
+					if( d2 > 0.5 || ( d2 == 0.5 && ( (uiNum & 1) != 0 ) ) ) {
+						uiNum++;
+					}
+					return uiNum;
 				}
 				catch(OverflowException)
 				{
@@ -1617,7 +1644,24 @@ public sealed class Convert
 				// of detecting when overflow occurs.
 				try
 				{
-					return checked((long)value);
+					long lNum = checked((long)value);
+					// Round value to the nearest 64-bit signed int. 
+					// if value is halfway between two whole numbers, the even number is returned.
+					// Sample: 
+					//         4.5 is converted to 4  (!)  
+					//         5.5 is converted to 6  
+					double d2 = value - lNum;
+					if( lNum >= 0 ) {
+						if( d2 > 0.5 || ( d2 == 0.5 && ( (lNum & 1) != 0 ) ) ) {
+							lNum++;
+						}
+					}
+					else {
+						if( d2 < -0.5 || ( d2 == -0.5 && ( (lNum & 1) != 0 ) ) ) {
+							lNum--;
+						}
+					}
+					return lNum;
 				}
 				catch(OverflowException)
 				{
@@ -1840,7 +1884,17 @@ public sealed class Convert
 				// of detecting when overflow occurs.
 				try
 				{
-					return checked((ulong)value);
+					ulong ulNum = checked((ulong)value);
+					// Round value to the nearest 64-bit signed int. 
+					// if value is halfway between two whole numbers, the even number is returned.
+					// Sample: 
+					//         4.5 is converted to 4  (!)  
+					//         5.5 is converted to 6  
+					double d2 = value - ulNum;
+					if( d2 > 0.5 || ( d2 == 0.5 && ( (ulNum & 1) != 0 ) ) ) {
+						ulNum++;
+					}
+					return ulNum;
 				}
 				catch(OverflowException)
 				{

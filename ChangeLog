@@ -7,6 +7,8 @@
 	* samples/Makefile.am,
 	samples/sample1.c: initial creation of stub source.
 
+	* src/CMutex.c: Include Crayons.h so the defines are seen.
+
 2005-11-14  Gopal V  <gopalv82@yahoo.com>
 
 	* acinclude.m4,	include/*: check in changes from klausT

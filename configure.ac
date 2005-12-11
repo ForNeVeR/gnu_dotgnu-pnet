@@ -48,5 +48,6 @@ AC_COMPILE_CHECK_SIZEOF(long long)
 # Set output files.
 AC_CONFIG_FILES([Makefile
                  include/Makefile
-                 src/Makefile])
+                 src/Makefile
+		 samples/Makefile])
 AC_OUTPUT

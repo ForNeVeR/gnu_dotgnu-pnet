@@ -1,3 +1,8 @@
+2005-12-11  Deryk Robosson  <deryk@0x0a.com>
+
+	* doc/, samples/: Addition of directories.
+
+	* configure.ac: Add samples/Makefile.am.
 
 2005-11-14  Gopal V  <gopalv82@yahoo.com>
 

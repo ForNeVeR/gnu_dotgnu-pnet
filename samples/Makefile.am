@@ -5,6 +5,8 @@ sample1_SOURCES = sample1.c
 sample1_LDADD = $(top_builddir)/src/libCrayons.la
 sample1_DEPENDENCIES = $(top_builddir)/src/libCrayons.la
 
-AM_CFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I. -I$(srcdir)
-AM_CXXFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I. -I$(srcdir)
+AM_CFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I. -I$(srcdir) \
+-I/usr/X11R6/include -L/usr/X11R6/lib -lX11
+AM_CXXFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I. -I$(srcdir) \
+-I/usr/X11R6/include -L/usr/X11R6/lib -lX11
 

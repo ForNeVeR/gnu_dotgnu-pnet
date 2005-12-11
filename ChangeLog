@@ -4,6 +4,9 @@
 
 	* configure.ac: Add samples/Makefile.am.
 
+	* samples/Makefile.am,
+	samples/sample1.c: initial creation of stub source.
+
 2005-11-14  Gopal V  <gopalv82@yahoo.com>
 
 	* acinclude.m4,	include/*: check in changes from klausT

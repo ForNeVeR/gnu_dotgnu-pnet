@@ -985,7 +985,7 @@ static void GetTopTwoFPRegisters(MDUnroll *unroll, int *reg1,
 		if(MD_IS_FREG(unroll->pseudoStack[unroll->pseudoStackSize - 2]) &&
 		   MD_IS_FREG(unroll->pseudoStack[unroll->pseudoStackSize - 1]))
 		{
-#ifdef CVM_X86
+#if defined(CVM_X86) || defined(CVM_X86_64)
 			if(fprem)
 			{
 				md_freg_swap(unroll->out);
@@ -1011,7 +1011,7 @@ static void GetTopTwoFPRegisters(MDUnroll *unroll, int *reg1,
 				(unroll->out, MD_FREG_0, MD_REG_STACK, unroll->stackHeight);
 
 			/* Put the values into the correct order */
-#ifdef CVM_X86
+#if defined(CVM_X86) || defined(CVM_X86_64)
 			if(!fprem)
 #endif
 			{

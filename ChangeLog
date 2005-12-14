@@ -1,3 +1,10 @@
+2005-12-13  Carl-Adam Brengesjo <ptah@se.linux.org>
+
+	* System/UriBuilder.cs: Fixed two destructive bugs.
+	set_Scheme() had a incorrect test expr.
+	get_Query() returned null if not a value was set.
+	
+
 2005-12-08  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Convert.cs: changed Convert.ToInt32 ToUInt32 ToInt64 ToUInt64.

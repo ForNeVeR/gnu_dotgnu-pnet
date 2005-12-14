@@ -295,7 +295,7 @@ public class UriBuilder
 		get
 		{
 			// gets with the ?
-			return this.query;
+			return (this.query != null) ? this.query : String.Empty;
 		}
 		set
 		{
@@ -320,7 +320,7 @@ public class UriBuilder
 			else
 			{
 				int colon = value.IndexOf(':');
-				if (colon > -1)
+				if (colon <= -1)
 					this.scheme = value.ToLower();
 				else
 					this.scheme = value.Substring(0, colon).

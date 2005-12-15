@@ -1,4 +1,8 @@
 
+2005-12-15  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/unroll.c: Missed a line in last commit.
+
 2005-12-14  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/unroll.c: Flip the order of the remainder operands

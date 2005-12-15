@@ -1033,7 +1033,7 @@ static void GetTopTwoFPRegisters(MDUnroll *unroll, int *reg1,
 
 	/* Load the top of the CVM stack onto the FP stack */
 	unroll->stackHeight -= CVM_WORDS_PER_NATIVE_FLOAT * sizeof(CVMWord) * 2;
-#ifdef CVM_X86
+#if defined(CVM_X86) || defined(CVM_X86_64)
 	if(fprem)
 	{
 		md_load_membase_float_native(unroll->out, MD_FREG_0, MD_REG_STACK,

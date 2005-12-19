@@ -39,6 +39,7 @@ enum {
   FLAG_RETURNS_NOTHING  = 1 << (31-30), /* These go in cr7 */
   FLAG_RETURNS_FP       = 1 << (31-29),
   FLAG_RETURNS_64BITS   = 1 << (31-28),
+  FLAG_RETURNS_128BITS  = 1 << (31-27),
 
   FLAG_ARG_NEEDS_COPY   = 1 << (31- 7),
   FLAG_FP_ARGUMENTS     = 1 << (31- 6), /* cr1.eq; specified by ABI */
@@ -155,7 +156,8 @@ void ffi_prep_args_SYSV(extended_cif *ecif, unsigned *const stack)
 
 	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
 	    {
-	      if (intarg_count%2 != 0)
+	      if (intarg_count >= NUM_GPR_ARG_REGISTERS
+		  && intarg_count % 2 != 0)
 		{
 		  intarg_count++;
 		  next_arg++;
@@ -542,6 +544,12 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
       /* else fall through.  */
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
     case FFI_TYPE_LONGDOUBLE:
+      if (type == FFI_TYPE_LONGDOUBLE && cif->abi == FFI_LINUX64)
+	{
+	  flags |= FLAG_RETURNS_128BITS;
+	  flags |= FLAG_RETURNS_FP;
+	  break;
+	}
 #endif
       intarg_count++;
       flags |= FLAG_RETVAL_REFERENCE;
@@ -575,7 +583,8 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 	    /* If this FP arg is going on the stack, it must be
 	       8-byte-aligned.  */
 	    if (fparg_count > NUM_FPR_ARG_REGISTERS
-		&& intarg_count%2 != 0)
+		&& intarg_count >= NUM_GPR_ARG_REGISTERS
+		&& intarg_count % 2 != 0)
 	      intarg_count++;
 	    break;
 

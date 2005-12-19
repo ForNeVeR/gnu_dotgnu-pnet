@@ -1,3 +1,7 @@
+2005-12-19  Klaus Treichel  <ktreichel@web.de>
+
+	* libffi/ChangeLog, libffi/src/powerpc/linux64.S, libffi/src/powerpc/ffi.c:
+	update to current libffi.
 
 2005-12-15  Gopal V  <gopalv82@yahoo.com>
 

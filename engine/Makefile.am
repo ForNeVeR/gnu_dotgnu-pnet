@@ -13,6 +13,19 @@ CVMC_INCLUDES = cvmc_arith.c cvmc_branch.c cvmc_call.c cvmc_const.c \
 				
 INTERNAL_INCLUDES = int_table.c
 
+JITC_INCLUDES = jitc.h \
+				jitc_arith.c \
+				jitc_branch.c \
+				jitc_call.c \
+				jitc_const.c \
+				jitc_conv.c \
+				jitc_except.c \
+				jitc_obj.c \
+				jitc_ptr.c \
+				jitc_setup.c \
+				jitc_stack.c \
+				jitc_var.c
+
 MD_ARM_INCLUDES = md_arm.h arm_codegen.h
 
 MD_IA64_INCLUDES = md_ia64.h md_ia64_macros.h
@@ -54,6 +67,7 @@ EXTRA_libILEngine_a_SOURCES = $(CVM_INCLUDES) \
 							  $(CVMC_INCLUDES) \
 							  gen_marshal.tc \
 							  $(INTERNAL_INCLUDES) \
+							  $(JITC_INCLUDES) \
 							  $(MD_AMD64_INCLUDES) \
 							  $(MD_ARM_INCLUDES) \
 							  $(MD_IA64_INCLUDES) \
@@ -81,6 +95,7 @@ libILEngine_a_SOURCES = cvm.c \
 						heap.c \
 						int_proto.h \
 						internal.c \
+						jitc.c \
 						layout.c \
 						lib_array.c \
 						lib_charinfo.c \
@@ -141,12 +156,12 @@ if PNET_TOOLS
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
-			  $(PACKAGE_LIBS) $(TERMCAPLIBS)
+			  $(PACKAGE_LIBS) $(TERMCAPLIBS) $(JIT_LIBS)
 
 ilverify_SOURCES = ilverify.c
 ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			     ../image/libILImage.a ../support/libILSupport.a \
-			  	 $(PACKAGE_LIBS) $(TERMCAPLIBS)
+			  	 $(PACKAGE_LIBS) $(TERMCAPLIBS) $(JIT_LIBS)
 
 ## We need "-fno-gcse" to stop gcc being overeager when it compiles
 ## the interpreter core in direct threading mode.
@@ -155,6 +170,7 @@ ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 AM_CFLAGS = -I$(top_srcdir)/libffi/include $(NO_GCSE) $(NO_INLINE_FUNCTIONS) \
 			$(NO_UNIT_AT_A_TIME) -I$(top_srcdir)/support \
 			-I$(top_srcdir)/libgc/include -I$(top_srcdir)/include \
+			$(JIT_INCLUDE) \
 			-I../libffi/include -I. -DBUILD_PROFILE_NAME="\"$(PROFILE_NAME)\""
 
 else
@@ -162,12 +178,12 @@ else
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
-			  $(PACKAGE_LIBS) $(TERMCAPLIBS)
+			  $(PACKAGE_LIBS) $(TERMCAPLIBS) $(JIT_LIBS)
 
 ilverify_SOURCES = ilverify.c
 ilverify_LDADD = libILEngine.a \
 			     ../image/libILImage.a ../support/libILSupport.a \
-			  	 $(PACKAGE_LIBS) $(TERMCAPLIBS)
+			  	 $(PACKAGE_LIBS) $(TERMCAPLIBS) $(JIT_LIBS)
 
 ## We need "-fno-gcse" to stop gcc being overeager when it compiles
 ## the interpreter core in direct threading mode.
@@ -176,6 +192,7 @@ ilverify_LDADD = libILEngine.a \
 AM_CFLAGS = -I$(top_srcdir)/libgc/include -I$(top_srcdir)/libffi/include \
 			$(NO_GCSE) $(NO_INLINE_FUNCTIONS) $(NO_UNIT_AT_A_TIME) \
 			-I$(top_srcdir)/include -I../libffi/include -I../support/ -I. \
+			$(JIT_INCLUDE) \
 			-DIL_WITHOUT_TOOLS -Os
 
 endif
@@ -185,6 +202,8 @@ cvmc.$(OBJEXT): cvmc.c $(CVMC_INCLUDES)
 cvm.$(OBJEXT): cvm.c $(CVM_INCLUDES) cvm_labels.h
 
 internal.$(OBJEXT): internal.c $(INTERNAL_INCLUDES)
+
+jitc.$(OBJEXT): jitc.c $(JITC_INCLUDES)
 
 md_x86.$(OBJEXT): md_x86.c $(MD_X86_INCLUDES) cvm_config.h
 

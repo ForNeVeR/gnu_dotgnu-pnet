@@ -45,7 +45,9 @@ typedef struct
 	int			hasFinalizer;
 	int			managedInstance;
 	int			managedStatic;
-
+#ifdef IL_USE_JIT
+	ILJitTypes *jitTypes;
+#endif	
 } LayoutInfo;
 
 /*
@@ -64,6 +66,14 @@ static int LayoutType(ILExecProcess *process, ILType *type, LayoutInfo *layout)
 	{
 		/* Lay out a primitive type */
 		layout->managedInstance = 0;
+	#ifdef IL_USE_JIT
+		if(!(layout->jitTypes = ILJitPrimitiveClrTypeToJitTypes(ILType_ToElement(type))))
+		{
+			return 0;
+		}
+		layout->size = ILJitTypeGetSize(layout->jitTypes->jitTypeBase);
+		layout->alignment = ILJitTypeGetAlignment(layout->jitTypes->jitTypeBase);
+	#else
 		switch(ILType_ToElement(type))
 		{
 			case IL_META_ELEMTYPE_BOOLEAN:
@@ -169,6 +179,7 @@ static int LayoutType(ILExecProcess *process, ILType *type, LayoutInfo *layout)
 
 			default: return 0;
 		}
+	#endif /* IL_USE_JIT */
 		layout->nativeSize = layout->size;
 		layout->nativeAlignment = layout->alignment;
 		layout->vtableSize = 0;
@@ -196,6 +207,14 @@ static int LayoutType(ILExecProcess *process, ILType *type, LayoutInfo *layout)
 	else
 	{
 		/* Everything else is laid out as a pointer */
+	#ifdef IL_USE_JIT
+		if(!(layout->jitTypes = ILJitPrimitiveClrTypeToJitTypes(IL_META_ELEMTYPE_TYPEDBYREF)))
+		{
+			return 0;
+		}
+		layout->size = ILJitTypeGetSize(layout->jitTypes->jitTypeBase);
+		layout->alignment = ILJitTypeGetAlignment(layout->jitTypes->jitTypeBase);
+	#else
 	#if defined(HAVE_LIBFFI)
 		layout->size = ffi_type_pointer.size;
 		layout->alignment = ffi_type_pointer.alignment;
@@ -203,6 +222,7 @@ static int LayoutType(ILExecProcess *process, ILType *type, LayoutInfo *layout)
 		layout->size = sizeof(void *);
 		layout->alignment = _IL_ALIGN_FOR_TYPE(void_p);
 	#endif
+	#endif /* IL_USE_JIT */
 		layout->nativeSize = layout->size;
 		layout->nativeAlignment = layout->alignment;
 		layout->vtableSize = 0;
@@ -613,6 +633,9 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 			layout->hasFinalizer = classPrivate->hasFinalizer;
 			layout->managedInstance = classPrivate->managedInstance;
 			layout->managedStatic = classPrivate->managedStatic;
+		#ifdef IL_USE_JIT
+			layout->jitTypes = &(classPrivate->jitTypes);
+		#endif
 			return 1;
 		}
 	}
@@ -662,6 +685,9 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 
 	/* Zero the static size, which must be recomputed for each class */
 	layout->staticSize = 0;
+#ifdef IL_USE_JIT
+	_ILJitTypesInit(&(classPrivate->jitTypes));
+#endif
 
 	/* Lay out the interfaces that this class implements */
 	implements = info->implements;
@@ -997,6 +1023,13 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 			implements = implements->nextInterface;
 		}
 	}
+#ifdef IL_USE_JIT
+	if(!ILJitTypeCreate(classPrivate))
+	{
+		info->userData = 0;
+		return 0;
+	}
+#endif
 
 	/* Record the rest of the layout information for this class */
 	classPrivate->staticSize = layout->staticSize;

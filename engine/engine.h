@@ -196,6 +196,10 @@ struct _tagILExecContext
 /* class private data */
 typedef struct _tagILClassPrivate ILClassPrivate;
  
+#ifdef IL_USE_JIT
+#include "jitc.h"
+#endif
+
 /*
  * Execution control context for a process.
  */
@@ -477,6 +481,9 @@ struct _tagILClassPrivate
 	ILNativeInt		gcTypeDescriptor;	/* Describes the layout of the type for the GC */
 	ILClassPrivate *nextClassPrivate;	/* linked list of ILClassPrivate objects */
 	ILExecProcess  *process;			/* Back-pointer to the process this class belongs to */
+#ifdef IL_USE_JIT
+	ILJitTypes		jitTypes;			/* jit types for this CLR type */
+#endif
 #ifdef IL_USE_IMTS
 	ILUInt32		imtBase;			/* Base for IMT identifiers */
 	ILMethod	   *imt[IL_IMT_SIZE];	/* Interface method table */
@@ -570,6 +577,13 @@ int ILExecThreadSwitchToProcess(ILExecThread *thread,
 {
 #define IL_END_EXECPROCESS_SWITCH(thread) \
 }
+#endif
+
+#ifdef IL_USE_JIT
+/*
+ * Class information for the JIT coder.
+ */
+extern ILCoderClass const _ILJITCoderClass;
 #endif
 
 /*

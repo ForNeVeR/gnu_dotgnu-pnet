@@ -104,6 +104,33 @@ AC_ARG_WITH(libgc,
 	withgc=yes
 ])
 
+def_jit=false
+AC_SUBST(JIT_LIBS)
+AC_SUBST(JIT_INCLUDE)
+AC_ARG_ENABLE(jit,
+[  --enable-jit            Enable the just in time compiler],
+[case "${enableval}" in
+  yes) jit=true ;;
+  no)  jit=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-jit) ;;
+esac],[jit=$def_jit])
+if test x$jit = xtrue ; then
+  AC_DEFINE(IL_USE_JIT, 1, [Use the just in time compiler])
+  if test -f "../libjit/jit/.libs/libjit.so" ; then
+    JIT_LIBS='$(top_builddir)/../libjit/jit/.libs/libjit.so'
+  else
+    if test -f "../libjit/jit/.libs/libjit.a" ; then
+      JIT_LIBS='$(top_builddir)/../libjit/jit/.libs/libjit.a'
+    else
+	  AC_MSG_ERROR(libjit library not found in ../libjit/jit/.libs)
+    fi
+  fi
+  JIT_INCLUDE='-I$(top_srcdir)/../libjit/include'
+else
+  JIT_LIBS=""
+  JIT_INCLUDE=""
+fi
+
 dnl The --with-profile=NAME option is used to change the build profile.
 AC_SUBST(PROFILE_NAME)
 AC_ARG_WITH(profile,

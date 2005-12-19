@@ -51,6 +51,12 @@ int ILExecInit(unsigned long maxSize)
 		return IL_EXEC_INIT_OUTOFMEMORY;
 	}
 #endif
+#ifdef IL_USE_JIT
+	if(!ILJitInit())
+	{
+		return IL_EXEC_INIT_OUTOFMEMORY;
+	}
+#endif
 
 	/* Initialize the thread routines */	
 	ILThreadInit();

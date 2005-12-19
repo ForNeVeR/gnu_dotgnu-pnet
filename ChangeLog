@@ -1,5 +1,20 @@
 2005-12-19  Klaus Treichel  <ktreichel@web.de>
 
+	* configure.in: add switch --enable-jit for enabling the jit coder.
+
+	* engine/Makefile.am: add the new jit coder sources to build.
+
+	* engine/engine.c, engine/engine.h, engine/layout.c: add first changes for
+	the jit coder (mainly classlayout).
+
+	* engine/jitc.c, engine/jitc.h, engine/jitc_arith.c, engine/jitc_branch.c,
+	engine/jitc_call.c, engine/jitc_const.c, engine/jitc_conv.c,
+	engine/jitc_except.c, engine/jitc_obj.c, engine/jitc_ptr.c,
+	engine/jitc_setup.c, engine/jitc_stack.c, engine/jitc_var.c: Stub the first
+	files for the jit coder (thanks radekp).
+
+2005-12-19  Klaus Treichel  <ktreichel@web.de>
+
 	* libffi/ChangeLog, libffi/src/powerpc/linux64.S, libffi/src/powerpc/ffi.c:
 	update to current libffi.
 

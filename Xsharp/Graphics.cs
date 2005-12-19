@@ -263,6 +263,10 @@ public sealed class Graphics : IDisposable
 					exposeRegion.Dispose();
 					exposeRegion = null;
 				}
+				if(clipRegion != null ) {
+					clipRegion.Dispose();
+					clipRegion = null;
+				}
 			}
 
 	/// <summary>

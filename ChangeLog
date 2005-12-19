@@ -1,3 +1,7 @@
+2005-12-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* Xsharp/Graphics.cs: fixed a memory leak
+
 2005-12-13  Carl-Adam Brengesjo <ptah@se.linux.org>
 
 	* System/UriBuilder.cs: Fixed two destructive bugs.

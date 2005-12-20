@@ -1,3 +1,7 @@
+2005-12-20  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* Xsharp/Timer.cs: fixed loop if system clock was changed
+
 2005-12-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* Xsharp/Graphics.cs: fixed a memory leak

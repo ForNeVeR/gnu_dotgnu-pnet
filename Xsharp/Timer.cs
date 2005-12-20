@@ -359,6 +359,7 @@ public sealed class Timer : IDisposable
 					{
 						Timer current = dpy.timerQueue;
 						Timer prev = null;
+						int iCount = 0;
 						while(current != null && current.nextDue <= nextDue)
 						{
 							prev = current;
@@ -483,12 +484,28 @@ public sealed class Timer : IDisposable
 							next = timer.nextDue +
 								new TimeSpan(timer.period *
 											 TimeSpan.TicksPerMillisecond);
+											 
+							// if the next due is less than now, the date/time may have changed.
+							// since the timer expired right now the next due might be now + period
+							if(next <= now)
+							{
+								next += new TimeSpan
+									(((((Int64)(now - next).TotalMilliseconds) / timer.period) + 1) *
+										timer.period * 
+										TimeSpan.TicksPerMillisecond);
+							}
+							
+							/* 
+							do not increment here, since the time might have changed with years
+							this would do a long loop here 
+							
 							while(next <= now)
 							{
 								next += new TimeSpan
 										(timer.period *
 										 TimeSpan.TicksPerMillisecond);
 							}
+							*/
 							timer.nextDue = next;
 							timer.AddTimer();
 						}
@@ -496,6 +513,16 @@ public sealed class Timer : IDisposable
 				}
 				return activated;
 			}
+
+	// fix all timers in the queue if the system time has been changed
+	internal static void FixTimers( Timer timer ) {
+		DateTime fixTime = DateTime.UtcNow;
+		long tpms = TimeSpan.TicksPerMillisecond;
+		while( null != timer ) {
+			timer.nextDue = fixTime + new TimeSpan(timer.period * tpms);
+			timer = timer.next;
+		}
+	}
 
 	// Get the number of milliseconds until the next timeout.
 	// Returns -1 if there are no active timers.
@@ -518,8 +545,11 @@ public sealed class Timer : IDisposable
 							// supposed to wait. This propably means the system clock has
 							// been turned back (either manually or by NTP). In this case
 							// we must calculate a new due time and just return 0.
+							FixTimers( dpy.timerQueue );
+							/*
 							dpy.timerQueue.nextDue = DateTime.UtcNow + new TimeSpan
 								(dpy.timerQueue.period * TimeSpan.TicksPerMillisecond);
+							*/
 							return 0;
 						}
 						else if (diff > (100 * TimeSpan.TicksPerSecond))

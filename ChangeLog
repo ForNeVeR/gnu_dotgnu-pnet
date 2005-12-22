@@ -1,3 +1,13 @@
+2005-12-22  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/process.c: Init JitCoder when IL_USE_JIT is defined.
+
+	* engine/layout.c: Add the generation of jit function stubs for each
+	layouted class.
+
+	* engine/jit.c, engine/jit.h: Add generation of function stubs and start the
+	on demand compiler function.
+
 2005-12-19  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: add switch --enable-jit for enabling the jit coder.

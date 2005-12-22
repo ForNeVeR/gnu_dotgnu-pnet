@@ -73,6 +73,10 @@ static int LayoutType(ILExecProcess *process, ILType *type, LayoutInfo *layout)
 		}
 		layout->size = ILJitTypeGetSize(layout->jitTypes->jitTypeBase);
 		layout->alignment = ILJitTypeGetAlignment(layout->jitTypes->jitTypeBase);
+		if(ILType_ToElement(type) == IL_META_ELEMTYPE_TYPEDBYREF)
+		{
+			layout->managedInstance = 1;
+		}
 	#else
 		switch(ILType_ToElement(type))
 		{
@@ -916,6 +920,19 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 		}
 	}
 
+#ifdef IL_USE_JIT
+	if(!ILJitTypeCreate(classPrivate))
+	{
+		info->userData = 0;
+		return 0;
+	}
+	if(!ILJitCreateFunctionsForClass(process->coder, info))
+	{
+		ILJitTypesDestroy(&(classPrivate->jitTypes));
+		info->userData = 0;
+		return 0;
+	}
+#endif
 	/* Allocate vtable slots to the virtual methods in this class */
 	method = 0;
 	explicitSize = layout->vtableSize;
@@ -1023,13 +1040,6 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 			implements = implements->nextInterface;
 		}
 	}
-#ifdef IL_USE_JIT
-	if(!ILJitTypeCreate(classPrivate))
-	{
-		info->userData = 0;
-		return 0;
-	}
-#endif
 
 	/* Record the rest of the layout information for this class */
 	classPrivate->staticSize = layout->staticSize;

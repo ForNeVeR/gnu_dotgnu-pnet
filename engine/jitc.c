@@ -40,6 +40,7 @@ static struct _tagILJitTypes _ILJitType_VOID;
 static struct _tagILJitTypes _ILJitType_BOOLEAN;
 static struct _tagILJitTypes _ILJitType_BYTE;
 static struct _tagILJitTypes _ILJitType_CHAR;
+static struct _tagILJitTypes _ILJitType_I;
 static struct _tagILJitTypes _ILJitType_I2;
 static struct _tagILJitTypes _ILJitType_I4;
 static struct _tagILJitTypes _ILJitType_I8;
@@ -47,6 +48,7 @@ static struct _tagILJitTypes _ILJitType_NFLOAT;
 static struct _tagILJitTypes _ILJitType_R4;
 static struct _tagILJitTypes _ILJitType_R8;
 static struct _tagILJitTypes _ILJitType_SBYTE;
+static struct _tagILJitTypes _ILJitType_U;
 static struct _tagILJitTypes _ILJitType_U2;
 static struct _tagILJitTypes _ILJitType_U4;
 static struct _tagILJitTypes _ILJitType_U8;
@@ -104,6 +106,34 @@ struct _tagILJITCoder
 				} \
 			} while (0)
 
+
+/*
+ * Destroy every ILJitType in a ILJitTypes  structure 
+ */
+void ILJitTypesDestroy(ILJitTypes *jitTypes)
+{
+	if(jitTypes->jitTypeOut)
+	{
+		ILJitTypeDestroy(jitTypes->jitTypeOut);
+		jitTypes->jitTypeOut = 0;
+	}
+	if(jitTypes->jitTypeRef)
+	{
+		ILJitTypeDestroy(jitTypes->jitTypeRef);
+		jitTypes->jitTypeRef = 0;
+	}
+	if(jitTypes->jitTypePtr)
+	{
+		ILJitTypeDestroy(jitTypes->jitTypePtr);
+		jitTypes->jitTypePtr = 0;
+	}
+	if(jitTypes->jitTypeBase)
+	{
+		ILJitTypeDestroy(jitTypes->jitTypeBase);
+		jitTypes->jitTypeBase = 0;
+	}
+}
+
 /*
  * Get the jit types for this ILType.
  */
@@ -127,12 +157,64 @@ static ILJitTypes *_ILJitGetTypes(ILType *type, ILExecProcess *process)
 
 			if(synType != 0)
 			{
-				classInfo = ILClassResolve(ILTypeStripPrefixes(synType));
+				/* classInfo = ILClassResolve(ILType_ToClass(ILTypeStripPrefixes(synType))); */
+				return _ILJitGetTypes(synType, process);
 			}
 		}
+		else if(ILType_IsComplex(type) && type != 0)
+		{
+			switch(ILType_Kind(type))
+			{
+				case IL_TYPE_COMPLEX_PTR:
+				{
+					/* Unsafe pointers are represented as native integers */
+					return &_ILJitType_I;
+				}
+				/* Not reached */
+
+				case IL_TYPE_COMPLEX_BYREF:
+				{
+					/* Reference values are managed pointers */
+					return &_ILJitType_VPTR;
+				}
+				/* Not reached */
+
+				case IL_TYPE_COMPLEX_PINNED:
+				{
+					/* Pinned types are the same as their underlying type */
+					return _ILJitGetTypes(ILType_Ref(type), process);
+				}
+				/* Not reached */
+
+				case IL_TYPE_COMPLEX_CMOD_REQD:
+				case IL_TYPE_COMPLEX_CMOD_OPT:
+				{
+					/* Strip the modifier and inspect the underlying type */
+					return _ILJitGetTypes(type->un.modifier__.type__, process);
+				}
+				/* Not reached */
+
+				case IL_TYPE_COMPLEX_METHOD:
+				case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
+				{
+					/* Pass method pointers around the system as "I".  Higher
+				   	   level code will also set the "typeInfo" field to reflect
+					   the signature so that method pointers become verifiable */
+					return &_ILJitType_I;
+				}
+				/* Not reached */
+
+				default:
+				{
+					/* Everything else is a pointer type. */
+					return &_ILJitType_VPTR;
+				}
+				/* Not reached */
+			}
+		} 
 		else
 		{
-			classInfo = ILClassResolve(type);
+			classInfo = ILClassResolve(ILType_ToClass(type));
 		}
 		classPrivate = classInfo->userData;
 
@@ -150,6 +232,23 @@ static ILJitTypes *_ILJitGetTypes(ILType *type, ILExecProcess *process)
 }
 
 /*
+ * Get the pointer to base type from the JitTypes.
+ * The pointer type is created on demand if not allready present.
+ * Returns 0 when out of memory.
+ */
+static ILJitType _ILJitGetPointerTypeFromJitTypes(ILJitTypes *types)
+{
+	if(!types->jitTypePtr)
+	{
+		if(!(types->jitTypePtr = jit_type_create_pointer(types->jitTypeBase, 1)))
+		{
+			return 0;
+		}
+	}
+	return types->jitTypePtr;
+}
+
+/*
  * Get the jit type representing the this pointer for the given ILType.
  */
 static ILJitType _ILJitGetThisType(ILType *type, ILExecProcess *process)
@@ -160,14 +259,7 @@ static ILJitType _ILJitGetThisType(ILType *type, ILExecProcess *process)
 	{
 		return 0;
 	}
-	if(!types->jitTypePtr)
-	{
-		if(!(types->jitTypePtr = jit_type_create_pointer(types->jitTypeBase, 1)))
-		{
-			return 0;
-		}
-	}
-	return types->jitTypePtr;
+	return _ILJitGetPointerTypeFromJitTypes(types);
 }
 
 /*
@@ -184,14 +276,7 @@ static ILJitType _ILJitGetArgType(ILType *type, ILExecProcess *process)
 	}
 	if(ILType_IsClass(type))
 	{
-		if(!types->jitTypePtr)
-		{
-			if(!(types->jitTypePtr = jit_type_create_pointer(types->jitTypeBase, 1)))
-			{
-				return 0;
-			}
-		}
-		return types->jitTypePtr;
+		return _ILJitGetPointerTypeFromJitTypes(types);
 	}
 	else
 	{
@@ -212,14 +297,7 @@ static ILJitType _ILJitGetReturnType(ILType *type, ILExecProcess *process)
 	}
 	if(ILType_IsClass(type))
 	{
-		if(!types->jitTypePtr)
-		{
-			if(!(types->jitTypePtr = jit_type_create_pointer(types->jitTypeBase, 1)))
-			{
-				return 0;
-			}
-		}
-		return types->jitTypePtr;
+		return _ILJitGetPointerTypeFromJitTypes(types);
 	}
 	else
 	{
@@ -240,6 +318,13 @@ int ILJitInit()
 	_ILJitTypesInitBase(&_ILJitType_BOOLEAN, jit_type_ubyte);
 	_ILJitTypesInitBase(&_ILJitType_BYTE, jit_type_ubyte);
 	_ILJitTypesInitBase(&_ILJitType_CHAR, jit_type_ushort);
+#ifdef IL_NATIVE_INT32
+	_ILJitTypesInitBase(&_ILJitType_I, jit_type_int);
+#else
+#ifdef IL_NATIVE_INT64
+	_ILJitTypesInitBase(&_ILJitType_I, jit_type_long);
+#endif
+#endif
 	_ILJitTypesInitBase(&_ILJitType_I2, jit_type_short);
 	_ILJitTypesInitBase(&_ILJitType_I4, jit_type_int);
 	_ILJitTypesInitBase(&_ILJitType_I8, jit_type_long);
@@ -247,6 +332,13 @@ int ILJitInit()
 	_ILJitTypesInitBase(&_ILJitType_R4, jit_type_float32);
 	_ILJitTypesInitBase(&_ILJitType_R8, jit_type_float64);
 	_ILJitTypesInitBase(&_ILJitType_SBYTE, jit_type_sbyte);
+#ifdef IL_NATIVE_INT32
+	_ILJitTypesInitBase(&_ILJitType_U, jit_type_uint);
+#else
+#ifdef IL_NATIVE_INT64
+	_ILJitTypesInitBase(&_ILJitType_U, jit_type_ulong);
+#endif
+#endif
 	_ILJitTypesInitBase(&_ILJitType_U2, jit_type_ushort);
 	_ILJitTypesInitBase(&_ILJitType_U4, jit_type_uint);
 	_ILJitTypesInitBase(&_ILJitType_U8, jit_type_ulong);
@@ -316,9 +408,15 @@ static unsigned long JITCoder_GetCacheSize(ILCoder *_coder)
 static void JITCoder_Destroy(ILCoder *_coder)
 {
 	ILJITCoder *coder = _ILCoderToILJITCoder(_coder);
+	if(coder->jitStack)
+	{
+		ILFree(coder->jitStack);
+		coder->jitStack = 0;
+	}
 	if(coder->context)
 	{
 		jit_context_destroy(coder->context);
+		coder->context = 0;
 	}
 	ILFree(coder);
 }
@@ -384,14 +482,46 @@ int _ILJITStartUnrollBlock(ILCoder *_coder, int align, ILCachePosn *posn)
 static int _ILJitOnDemandFunc(jit_function_t func)
 {
 	/* TODO */
-	return JIT_RESULT_OK;
+	ILExecThread *thread = ILExecThreadCurrent();
+	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
+	ILMethodCode code;
+
+	if(!method)
+	{
+		return JIT_RESULT_COMPILE_ERROR;
+	}
+
+	/* Get the method code */
+	if(!ILMethodGetCode(method, &code))
+	{
+		code.code = 0;
+	}
+	
+	/* We have to handle pinvokes too. */
+	if(code.code)
+	{
+		if(!_ILConvertMethod(thread, method))
+		{
+			return JIT_RESULT_COMPILE_ERROR;
+		}
+		return JIT_RESULT_OK;
+	}
+	else
+	{
+		/* This is a "PInvoke", "internalcall", or "runtime" method */
+		ILPInvoke *pinv;
+
+		pinv = ILPInvokeFind(method);
+
+		return JIT_RESULT_OK;
+	}
 }
 
 /*
  * Create the jit function header for an ILMethod.
  * We allways pass the ILExecThread as arg 0.
  */
-int _ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
+int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 {
 	ILJITCoder *coder = ((ILJITCoder *)_coder);
 	ILType *signature = ILMethod_Signature(method);
@@ -402,28 +532,42 @@ int _ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 	/* total number of args */
 	/* because we pass the ILExecThread as first arg we have to add one */
 	ILUInt32 total = num + 1;
-	ILUInt32 argc = 1;
 	ILUInt32 current;
+	/* We set jitArgc to 1 because we allways pass the current ILExecThread */
+	/* in jitArgs[0]. */
+	ILUInt32 jitArgc = 1;
+	/* We use the C calling convention by default for jitted functions. */
+	jit_abi_t jitAbi = jit_abi_cdecl;
 	/* JitType to hold the return type */
-	ILJitType returnType;
+	ILJitType jitReturnType;
+	/* calling convention for this function. */
+	/* The type of the jit signature for this function. */
+	ILJitType jitSignature;
+	/* The new created function. */
+	ILJitFunction jitFunction;
 
+	/* Don't create the jit function twice. */
+	if(method->userData)
+	{
+		return 1;
+	}
 	if(ILType_HasThis(signature))
 	{
 		/* we need an other arg for this */
 		total++;
 	}
 
-	ILJitType args[total];
+	ILJitType jitArgs[total];
 
 	/* Get the return type for this function */
 	type = ILTypeGetEnumType(ILTypeGetParam(signature, 0));
-	if(!(returnType = _ILJitGetReturnType(type, coder->process)))
+	if(!(jitReturnType = _ILJitGetReturnType(type, coder->process)))
 	{
 		return 0;
 	}
 
 	/* arg 0 is allways the ILExecThread */
-	args[0] = _IL_JIT_TYPE_VPTR;
+	jitArgs[0] = _IL_JIT_TYPE_VPTR;
 
 	if(ILType_HasThis(signature))
 	{
@@ -434,25 +578,93 @@ int _ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 			return 0;
 		}
 		/* at this time the type must be layouted or at least partially layouted */
-		if(!(args[1] = _ILJitGetThisType(type, coder->process)))
+		if(!(jitArgs[1] = _ILJitGetThisType(type, coder->process)))
 		{
 			return 0;
 		}
-		argc++;
+		jitArgc++;
 	}
 
 	/* Get the jit types for the regular arguments */
 	for(current = 1; current <= num; ++current)
 	{
 		type = ILTypeGetEnumType(ILTypeGetParam(signature, current));
-		if(!(args[argc] = _ILJitGetArgType(type, coder->process)))
+		if(!(jitArgs[jitArgc] = _ILJitGetArgType(type, coder->process)))
 		{
 			return 0;
 		}
-		argc++;
+		jitArgc++;
 	}
 
+#ifdef IL_CONFIG_VARARGS
+	/* Vararg methods can have additional arguments not specified in the signature. */
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		jitAbi = jit_abi_vararg;
+	}
+#endif
+
+	if(!(jitSignature = jit_type_create_signature(jitAbi, jitReturnType,
+													jitArgs, jitArgc, 1)))
+	{
+		return 0;
+	}
+
+	/* Now we can create the jit function itself. */
+	/* We must be able to create jit function prototypes while an other */
+	/* function is on demand compiled. */
+	if(!(jitFunction = jit_function_create(coder->context, jitSignature)))
+	{
+		ILJitTypeDestroy(jitSignature);
+		return 0;
+	}
+
+	/* Set the ILMethod in the new functions metadata. */
+	/* Because there has nothing to be freed we can use 0 for the free_func. */
+	if(!jit_function_set_meta(jitFunction, IL_JIT_META_METHOD, method, 0, 0))
+	{
+		ILJitTypeDestroy(jitSignature);
+		return 0;
+	}
+	
+	/* now set the on demand compiler function */
+	jit_function_set_on_demand_compiler(jitFunction, _ILJitOnDemandFunc);
+
+	/* and link the new jitFunction to the method. */
+	method->userData = jitFunction;
+
+	/* are we ready now ? */
+
 	return 1;
+}
+
+
+/*
+ * Create all jitMethods for the given class.
+ * Returns 0 on error.
+ */
+int ILJitCreateFunctionsForClass(ILCoder *_coder, ILClass *info)
+{
+	int result = 1;
+
+	/* we do not need to create functions for interfaces. */
+	if((info->attributes & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK) !=
+				IL_META_TYPEDEF_INTERFACE)
+	{
+		ILMethod *method;
+
+		method = 0;
+		while((method = (ILMethod *)ILClassNextMemberByKind
+				(info, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			if(!ILJitFunctionCreate(_coder, method))
+			{
+				result = 0;
+			}
+		}
+	}
+	return result;
 }
 
 /*
@@ -548,26 +760,14 @@ ILJitTypes *ILJitPrimitiveClrTypeToJitTypes(int primitiveClrType)
 		{
 			return &_ILJitType_U8;
 		}
-	#ifdef IL_NATIVE_INT32
 		case IL_META_ELEMTYPE_I:
 		{
-			return &_ILJitType_I4;
+			return &_ILJitType_I;
 		}
 		case IL_META_ELEMTYPE_U:
 		{
-			return &_ILJitType_U4;
+			return &_ILJitType_U;
 		}
-	#endif
-	#ifdef IL_NATIVE_INT64
-		case IL_META_ELEMTYPE_I:
-		{
-			return &_ILJitType_I8;
-		}
-		case IL_META_ELEMTYPE_U:
-		{
-			return &_ILJitType_U8;
-		}
-	#endif
 		case IL_META_ELEMTYPE_R4:
 		{
 			return &_ILJitType_R4;

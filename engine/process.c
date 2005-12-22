@@ -169,8 +169,13 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	/* Associate the process with the context */
 	ILContextSetUserData(process->context, process);
 
+#ifdef IL_USE_JIT
+	/* Initialize the JIT coder */
+	process->coder = ILCoderCreate(&_ILJITCoderClass, process, 100000, cachePageSize);
+#else
 	/* Initialize the CVM coder */
 	process->coder = ILCoderCreate(&_ILCVMCoderClass, process, 100000, cachePageSize);
+#endif
 	if(!(process->coder))
 	{
 		ILExecProcessDestroy(process);

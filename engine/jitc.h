@@ -93,6 +93,19 @@ struct _tagILJitTypes
 int ILJitInit();
 
 /*
+ * Create the jit function header for an ILMethod.
+ * We allways pass the ILExecThread as arg 0.
+ * Returns 1 on success and 0 on error.
+ */
+int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method);
+
+/*
+ * Create all jitMethods for the given class.
+ * Returns 1 on success and 0 on error.
+ */
+int ILJitCreateFunctionsForClass(ILCoder *_coder, ILClass *info);
+
+/*
  * Create the class/struct representation of a clr type for libjit.
  * and store the type in classPrivate.
  * Returns the jit type on success else 0
@@ -103,6 +116,11 @@ int ILJitTypeCreate(ILClassPrivate *classPrivate);
  * Destroy the given type in libjit.
  */
 void ILJitTypeDestroy(ILJitType type);
+
+/*
+ * Destroy every ILJitType in a ILJitTypes  structure 
+ */
+void ILJitTypesDestroy(ILJitTypes *jitTypes);
 
 /*
  * Get the jit type for a primitive clr type.

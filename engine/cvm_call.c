@@ -65,7 +65,7 @@
  *
  * These macros get called whenever a function gets called and when it is left,
  * respectivly. They record the time a function needed to execute INCLUDING
- * CHILD FUNCTIONS. It's very dump and simple but better than no time profiling
+ * CHILD FUNCTIONS. It's very dumb and simple but better than no time profiling
  * at all ;-)
  */
 #define DO_PROFILE_START() \
@@ -1243,9 +1243,10 @@ popFrame:
 
 	CHECK_MANAGED_BARRIER();
 	
-	DO_PROFILE_STOP();
-
 	callFrame = &(thread->frameStack[--(thread->numFrames)]);
+
+	DO_PROFILE_STOP();
+	
 	methodToCall = callFrame->method;
 	pc = callFrame->pc;
 	thread->exceptHeight = callFrame->exceptHeight;
@@ -2071,7 +2072,18 @@ VMBREAK(COP_PREFIX_PACK_VARARGS);
  */
 VMCASE(COP_PREFIX_PROFILE_COUNT):
 {
-	ILInterlockedIncrement(&method->count);
+#ifdef ENHANCED_PROFILER
+	/* If the enhanced profiler is selected then don't count when
+	 * profiling is disabled
+	 * (e.g. via DotGNU.Misc.Profiling.StopProfiling())
+	 */
+	if ((thread->profilingEnabled) && ((ILCoderGetFlags (thread->process->coder) & IL_CODER_FLAG_METHOD_PROFILE) != 0))
+	{
+#endif
+		ILInterlockedIncrement(&method->count);
+#ifdef ENHANCED_PROFILER
+	}
+#endif
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE,0);
 }
 VMBREAK(COP_PREFIX_PROFILE_COUNT);

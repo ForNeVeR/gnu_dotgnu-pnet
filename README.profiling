@@ -10,6 +10,20 @@ Both the standard and enhanced profiler show their data when the application
 exits.
 
 
+DIFFERENCES BETWEEN THE NORMAL AND ENHANCED PROFILER
+===============================================================================
+
+The normal profiler is enabled with -M and simply counts the number of times a
+method is called and prints those numbers on exit.
+
+For the enhanced profiler to work -M is not enough: -M activates the profiling
+support BUT IT DOES NOT ENABLE IT ! You have to either activate it with the -E
+commandline switch or with the DotGNU.Misc.Profiling class (see below).
+
+The enhanced profiler not only counts the number of times a method is called
+but also how much time was spent in the method (total and average).
+
+
 HOW TO ENABLE THE ENHANCED PROFILER (COMPILE-TIME)
 ===============================================================================
 
@@ -65,9 +79,15 @@ less than a microsecond.
 WHY DIDN'T THE PROFILER MEASURE ANY TIMES ?
 ===============================================================================
 
-If all entries show "0" in the total time and average time columns you've most
-likely forgotten to either use the "-E" option to "ilrun" or didn't use the
-DotGNU.Misc.Profiling class.
+If you get the error message:
+
+ilrun: method profiles are not available (forgot -E or enabling profiling at
+runtime ?)
+
+you have either not used the -E commandline switch to activate the enhanced
+profiler or haven't activated it via the Profiling class, depending on how you
+wanted to profile. Maybe you've included calls to Profiling.StartProfiling ()
+but in that particular run your code didn't reach it ?
 
 
 HOW TO USE THE DotGNU.Misc.Profiling CLASS
@@ -87,7 +107,7 @@ DotGNU.Misc.Profiling class. This class only has static methods:
 
  * void StopProfiling (): tell the profiler to stop collecting data.
 
-Note that when using the DotGNU.Misc.Profiling class, you'll get weird times
-for the DotGNU.Misc.Profiling.StartProfiling method. This is normal and can be
-ignored.
+Note that when using the DotGNU.Misc.Profiling class, you'll sometimes get
+weird times for the DotGNU.Misc.Profiling.StartProfiling method. This is normal
+and can be ignored.
 

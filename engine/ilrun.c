@@ -565,8 +565,15 @@ int main(int argc, char *argv[])
 	{
 		if(!_ILDumpMethodProfile(stdout, process))
 		{
-			fprintf(stderr, "%s: method profiles are not available\n",
-					progname);
+			fprintf(stderr, "%s: method profiles are not available%s\n",
+					progname,
+#ifdef ENHANCED_PROFILER
+					profilingEnabled ? "" : " (forgot -E or enabling profiling at runtime ?)"
+#else
+					""
+#endif
+
+					);
 		}
 	}
 	if(dumpVarProfile)

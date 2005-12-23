@@ -13,7 +13,7 @@
 
 2005-12-23  Klaus Treichel  <ktreichel@web.de>
 
-	* image/link.c: Add missing colon after /usr/lin64 for AMD64 systems so
+	* image/link.c: Add missing colon after /usr/lib64 for AMD64 systems so
 	that libs in /usr/lib64 can be found (thanks marcusU).
 
 2005-12-22  Klaus Treichel  <ktreichel@web.de>

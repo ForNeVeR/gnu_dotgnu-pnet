@@ -1,3 +1,16 @@
+2005-12-23  Marc Haisenko <marc@darkdust.net>
+
+	* engine/cvm_call.c: Don't count method calls if enhanced profiler is
+	activated but not enabled (e.g. -M is given but -E is not). Also fixed
+	time measurement (VMCASE(COP_RETURN), credits go to Tim Nichols
+	<timnichols@mac.com> for sending this fix.
+
+	* engine/ilrun.c: Give hint on enabling profiling in "method profiles
+	are not available" error message
+
+	* README.profiling: Updated the profiling README to explain the new
+	behaviour.
+
 2005-12-23  Klaus Treichel  <ktreichel@web.de>
 
 	* image/link.c: Add missing colon after /usr/lin64 for AMD64 systems so

@@ -1,3 +1,7 @@
+2005-12-24  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c, engine/jitc_setup.c: Add some more work on the jit coder.
+
 2005-12-23  Marc Haisenko <marc@darkdust.net>
 
 	* engine/cvm_call.c: Don't count method calls if enhanced profiler is

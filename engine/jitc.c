@@ -66,9 +66,19 @@ struct _tagILJITCoder
 
 	ILMethod	   *currentMethod;
 	int				debugEnabled;
+
+	/* Members to manage the evaluation stack. */
 	jit_value_t	   *jitStack;
 	int				stackSize;
 	int				stackTop;
+
+	/* Members to manage the local variables. */
+	jit_value_t	   *jitLocals;
+	int				numLocals;
+	int				maxLocals;
+
+	/* The current jitted function. */
+	ILJitFunction	jitFunction;
 };
 
 /*
@@ -95,13 +105,13 @@ struct _tagILJITCoder
 				if(n > (coder)->stackSize) \
 				{ \
 					ILJitValue *newStack = \
-						(ILJitValue *)ILRealloc((coder)->stack, \
+						(ILJitValue *)ILRealloc((coder)->jitStack, \
 											  n * sizeof(ILJitValue)); \
 					if(!newStack) \
 					{ \
 						return 0; \
 					} \
-					(coder)->stack = newStack; \
+					(coder)->jitStack = newStack; \
 					(coder)->stackSize = n; \
 				} \
 			} while (0)
@@ -250,6 +260,7 @@ static ILJitType _ILJitGetPointerTypeFromJitTypes(ILJitTypes *types)
 
 /*
  * Get the jit type representing the this pointer for the given ILType.
+ * Returns 0 whne the type could not be found or out of memory.
  */
 static ILJitType _ILJitGetThisType(ILType *type, ILExecProcess *process)
 {
@@ -264,9 +275,32 @@ static ILJitType _ILJitGetThisType(ILType *type, ILExecProcess *process)
 
 /*
  * Get the jit type representing the argument type for the given ILType.
+ * Returns 0 whne the type could not be found or out of memory.
  * TODO: Handle ref and out args.
  */
 static ILJitType _ILJitGetArgType(ILType *type, ILExecProcess *process)
+{
+	ILJitTypes *types = _ILJitGetTypes(type, process);
+
+	if(!types)
+	{
+		return 0;
+	}
+	if(ILType_IsClass(type))
+	{
+		return _ILJitGetPointerTypeFromJitTypes(types);
+	}
+	else
+	{
+		return types->jitTypeBase;
+	}
+}
+
+/*
+ * Get the jit type representing the local type for the given ILType.
+ * Returns 0 whne the type could not be found or out of memory.
+ */
+static ILJitType _ILJitGetLocalsType(ILType *type, ILExecProcess *process)
 {
 	ILJitTypes *types = _ILJitGetTypes(type, process);
 
@@ -369,6 +403,14 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 	coder->jitStack = 0;
 	coder->stackTop = -1;
 	coder->stackSize = 0;
+	/* Initialize the locals management. */
+	coder->jitLocals = 0;
+	coder->numLocals = 0;
+	coder->maxLocals = 0;
+
+	/* Init the current jitted function. */
+	coder->jitFunction = 0;
+
 	/* Ready to go */
 	return &(coder->coder);
 }
@@ -412,6 +454,11 @@ static void JITCoder_Destroy(ILCoder *_coder)
 	{
 		ILFree(coder->jitStack);
 		coder->jitStack = 0;
+	}
+	if(coder->jitLocals)
+	{
+		ILFree(coder->jitLocals);
+		coder->jitLocals = 0;
 	}
 	if(coder->context)
 	{

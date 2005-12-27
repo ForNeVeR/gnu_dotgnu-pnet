@@ -36,6 +36,9 @@
 extern	"C" {
 #endif
 
+/*
+ * Mapping of the native clr types to the corresponing jit types.
+ */
 static struct _tagILJitTypes _ILJitType_VOID;
 static struct _tagILJitTypes _ILJitType_BOOLEAN;
 static struct _tagILJitTypes _ILJitType_BYTE;
@@ -53,6 +56,25 @@ static struct _tagILJitTypes _ILJitType_U2;
 static struct _tagILJitTypes _ILJitType_U4;
 static struct _tagILJitTypes _ILJitType_U8;
 static struct _tagILJitTypes _ILJitType_VPTR;
+
+/*
+ * Definition of signatures of internal functions used by jitted code.
+ * They have to be kept in sync wirh the corresponding engine funcions.
+ */
+
+/*
+ * ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
+ *						 	ILUInt32 size)
+ */
+static ILJitType _ILJitSignature_ILEngineAlloc = 0;
+
+/*
+ * Define offsetof macro if not present.
+ */
+#ifndef offsetof
+#define offsetof(struct_type, member) \
+          (size_t) &(((struct_type *)0)->member)
+#endif
 
 /*
  * Define the structure of a JIT coder's instance block.
@@ -340,14 +362,30 @@ static ILJitType _ILJitGetReturnType(ILType *type, ILExecProcess *process)
 }
 
 /*
+ * Generate the code to throw the current exception in the thread in libjit.
+ */
+static void _ILJitThrowCurrentException(ILJITCoder *coder)
+{
+	ILJitValue thread = jit_value_get_param(coder->jitFunction,0);
+	ILJitValue currentException = jit_insn_load_relative(coder->jitFunction, thread,
+									offsetof(ILExecThread, currentException), 
+									jit_type_void_ptr);
+	jit_insn_throw(coder->jitFunction, currentException);
+}
+
+/*
  * Initialize the libjit coder.
  * Returns 1 on success and 0 on failure.
  */
 int ILJitInit()
 {
+	ILJitType	returnType;
+	ILJitType	args[3];
+
 	/* Initialize libjit */
 	jit_init();
 
+	/* Initialize the nattive types. */
 	_ILJitTypesInitBase(&_ILJitType_VOID, jit_type_void);
 	_ILJitTypesInitBase(&_ILJitType_BOOLEAN, jit_type_ubyte);
 	_ILJitTypesInitBase(&_ILJitType_BYTE, jit_type_ubyte);
@@ -377,6 +415,17 @@ int ILJitInit()
 	_ILJitTypesInitBase(&_ILJitType_U4, jit_type_uint);
 	_ILJitTypesInitBase(&_ILJitType_U8, jit_type_ulong);
 	_ILJitTypesInitBase(&_ILJitType_VPTR, jit_type_void_ptr);
+
+	/* Initialize the native method signatures. */
+	args[0] = jit_type_void_ptr;
+	args[1] = jit_type_void_ptr;
+	args[2] = jit_type_int;
+	returnType = jit_type_void_ptr;
+	if(!(_ILJitSignature_ILEngineAlloc = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
+	{
+		return 0;
+	}
 
 	return 1;
 }
@@ -523,6 +572,97 @@ int _ILJITStartUnrollBlock(ILCoder *_coder, int align, ILCachePosn *posn)
 
 #endif /* !IL_CONFIG_REDUCE_CODE */
 
+#ifdef IL_CONFIG_PINVOKE
+
+/*
+ * Locate or load an external module that is being referenced via "PInvoke".
+ * Returns the system module pointer, or NULL if it could not be loaded.
+ */
+static void *LocateExternalModule(ILExecProcess *process, const char *name,
+								  ILPInvoke *pinvoke)
+{
+	ILLoadedModule *loaded;
+	char *pathname;
+
+	/* Search for an already-loaded module with the same name */
+	loaded = process->loadedModules;
+	while(loaded != 0)
+	{
+		if(!ILStrICmp(loaded->name, name))
+		{
+			return loaded->handle;
+		}
+		loaded = loaded->next;
+	}
+
+	/* Create a new module structure.  We keep this structure even
+	   if we cannot load the actual module.  This ensures that
+	   future requests for the same module will be rejected without
+	   re-trying the open */
+	loaded = (ILLoadedModule *)ILMalloc(sizeof(ILLoadedModule) + strlen(name));
+	if(!loaded)
+	{
+		return 0;
+	}
+	loaded->next = process->loadedModules;
+	loaded->handle = 0;
+	strcpy(loaded->name, name);
+	process->loadedModules = loaded;
+
+	/* Resolve the module name to a library name */
+	pathname = ILPInvokeResolveModule(pinvoke);
+	if(!pathname)
+	{
+		return 0;
+	}
+
+	/* Attempt to open the module */
+	loaded->handle = ILDynLibraryOpen(pathname);
+	ILFree(pathname);
+	return loaded->handle;
+}
+
+#endif /* IL_CONFIG_PINVOKE */
+
+/*
+ * Generate the stub for calling an internal function.
+ */
+static int _ILJitCompileInternal(jit_function_t func, void *nativeFunction)
+{
+	ILJitType signature = jit_function_get_signature(func);
+	ILJitType returnType = jit_type_get_return(signature);
+	unsigned int numParams = jit_type_num_params(signature);
+	ILJitValue returnValue;
+
+	if(numParams > 0)
+	{
+		ILJitValue jitParams[numParams];
+		ILUInt32 current;
+		
+		for(current = 0; current < numParams; current++)
+		{
+			if(!(jitParams[current] = jit_value_get_param(func, current)))
+			{
+				return JIT_RESULT_OUT_OF_MEMORY;
+			}
+		}
+		returnValue = jit_insn_call_native(func, 0, nativeFunction, signature, jitParams, numParams, 0);
+	}
+	else
+	{
+		returnValue = jit_insn_call_native(func, 0, nativeFunction, signature, 0, 0, 0);
+	}
+	if(returnType != jit_type_void_ptr)
+	{
+		jit_insn_return(func, returnValue);	
+	}
+	else
+	{
+		jit_insn_return(func, 0);	
+	}
+	return JIT_RESULT_OK;
+}
+
 /*
  * On demand code generator.
  */
@@ -556,11 +696,125 @@ static int _ILJitOnDemandFunc(jit_function_t func)
 	else
 	{
 		/* This is a "PInvoke", "internalcall", or "runtime" method */
-		ILPInvoke *pinv;
+		ILPInvoke *pinv = ILPInvokeFind(method);
+		ILInternalInfo fnInfo;
+		int isConstructor = ILMethod_IsConstructor(method);;
+	#ifdef IL_CONFIG_PINVOKE
+		ILModule *module;
+		const char *name;
+		void *moduleHandle;
+	#endif
 
-		pinv = ILPInvokeFind(method);
+		switch(method->implementAttrs &
+					(IL_META_METHODIMPL_CODE_TYPE_MASK |
+					 IL_META_METHODIMPL_INTERNAL_CALL |
+					 IL_META_METHODIMPL_JAVA))
+		{
+			case IL_META_METHODIMPL_IL:
+			case IL_META_METHODIMPL_OPTIL:
+			{
+				/* If we don't have a PInvoke record, then we don't
+				   know what to map this method call to */
+				if(!pinv)
+				{
+					return JIT_RESULT_COMPILE_ERROR;
+				}
 
-		return JIT_RESULT_OK;
+			#ifdef IL_CONFIG_PINVOKE
+				/* Find the module for the PInvoke record */
+				module = ILPInvoke_Module(pinv);
+				if(!module)
+				{
+					return JIT_RESULT_COMPILE_ERROR;
+				}
+				name = ILModule_Name(module);
+				if(!name || *name == '\0')
+				{
+					return JIT_RESULT_COMPILE_ERROR;
+				}
+				moduleHandle = LocateExternalModule
+									(ILExecThreadGetProcess(thread), name, pinv);
+				if(!moduleHandle)
+				{
+					return JIT_RESULT_COMPILE_ERROR;
+				}
+
+				/* Get the name of the function within the module */
+				name = ILPInvoke_Alias(pinv);
+				if(!name || *name == '\0')
+				{
+					name = ILMethod_Name(method);
+				}
+
+				/* Look up the method within the module */
+				fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+			#else /* !IL_CONFIG_PINVOKE */
+				return JIT_RESULT_COMPILE_ERROR;
+			#endif /* IL_CONFIG_PINVOKE */
+			}
+			break;
+
+			case IL_META_METHODIMPL_RUNTIME:
+			case IL_META_METHODIMPL_IL | IL_META_METHODIMPL_INTERNAL_CALL:
+			{
+				/* "internalcall" and "runtime" methods must not
+				   have PInvoke records associated with them */
+				if(pinv)
+				{
+					return JIT_RESULT_COMPILE_ERROR;
+				}
+
+				/* Look up the internalcall function details */
+				if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
+										method, 0, &fnInfo))
+				{
+					if(isConstructor)
+					{
+						if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
+												method, 1, &fnInfo))
+						{
+							return JIT_RESULT_COMPILE_ERROR;
+						}
+					}
+					else
+					{
+						return JIT_RESULT_COMPILE_ERROR;
+					}
+				}
+				else if(isConstructor)
+				{
+					_ILFindInternalCall(ILExecThreadGetProcess(thread),
+										method, 1, &fnInfo);
+				}
+			}
+			break;
+
+			default:
+			{
+				/* No idea how to invoke this method */
+				return JIT_RESULT_COMPILE_ERROR;
+			}
+			/* Not reached */
+		}
+
+		/* Bail out if we did not find the underlying native method */
+		if(!(fnInfo.func))
+		{
+			return JIT_RESULT_COMPILE_ERROR;
+		}
+
+		switch(method->implementAttrs &
+					(IL_META_METHODIMPL_CODE_TYPE_MASK |
+					 IL_META_METHODIMPL_INTERNAL_CALL |
+					 IL_META_METHODIMPL_JAVA))
+		{
+			case IL_META_METHODIMPL_RUNTIME:
+			case IL_META_METHODIMPL_IL | IL_META_METHODIMPL_INTERNAL_CALL:
+			{
+				return _ILJitCompileInternal(func, fnInfo.func);
+			}
+		}
+		return JIT_RESULT_COMPILE_ERROR;
 	}
 }
 
@@ -712,6 +966,40 @@ int ILJitCreateFunctionsForClass(ILCoder *_coder, ILClass *info)
 		}
 	}
 	return result;
+}
+
+/*
+ * Call the jit function for a ILMethod.
+ * Returns 1 if an exception occured.
+ */
+int ILJitCallMethod(ILMethod *method, void**jitArgs, void *result)
+{
+	ILJitFunction jitFunction = method->userData;
+
+	if(!jitFunction)
+	{
+		/* We may have to layout the class. */
+		return 1;
+	}
+
+	if(!jit_function_apply(jitFunction, jitArgs, result))
+	{
+		return 1;
+	}
+	return 0;
+}
+
+/*
+ * Get the ILJitFunction for an ILMethod.
+ * Returns 0 if the jit function stub isn't created yet.
+ */
+ILJitFunction ILJitFunctionFromILMethod(ILMethod *method)
+{
+	if(method)
+	{
+		return (ILJitFunction)(method->userData);
+	}
+	return 0;
 }
 
 /*

@@ -20,6 +20,88 @@
 
 #ifdef IL_JITC_CODE
 
+/*
+ * Call the static constructor for a class if necessary.
+ */
+static void _ILJitCallStaticConstructor(ILCoder *_coder, ILClass *classInfo,
+								  int isCtor)
+{
+	if((classInfo->attributes & IL_META_TYPEDEF_CCTOR_ONCE) != 0)
+	{
+		/* We already know that the static constructor has been called,
+		   so there is no point outputting a call to it again */
+		return;
+	}
+	if(isCtor ||
+	   (classInfo->attributes & IL_META_TYPEDEF_BEFORE_FIELD_INIT) == 0)
+	{
+		ILJITCoder *coder = _ILCoderToILJITCoder(_coder);
+
+		/* We must call the static constructor before instance
+		   constructors, or before static methods when the
+		   "beforefieldinit" attribute is not present */
+		ILMethod *cctor = 0;
+		while((cctor = (ILMethod *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)cctor,
+					 IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			if(ILMethod_IsStaticConstructor(cctor))
+			{
+				break;
+			}
+		}
+		if(cctor != 0)
+		{
+			/* Don't call it if we are within the constructor already */
+			if(cctor != coder->currentMethod)
+			{
+				/* Output a call to the static constructor */
+				jit_value_t thread = jit_value_get_param(coder->jitFunction, 0);
+
+				jit_insn_call(coder->jitFunction, "cctor",
+								ILJitFunctionFromILMethod(cctor), 0,
+								&thread, 1, 0);
+			}
+		}
+		else
+		{
+			/* This class does not have a static constructor,
+			   so mark it so that we never do this test again */
+			classInfo->attributes |= IL_META_TYPEDEF_CCTOR_ONCE;
+		}
+	}
+}
+
+/*
+ * Create a new object and push it on the stack.
+ */
+static void _ILJitNewObj(ILJITCoder *coder, ILClass *info, ILJitValue *newArg)
+{
+	ILJitValue newObj;
+	ILJitValue args[3];
+	jit_label_t label1 = jit_label_undefined;
+	
+	args[0] = jit_value_get_param(coder->jitFunction, 0);
+	args[1] = jit_value_create_nint_constant(coder->jitFunction,
+												jit_type_void_ptr, (jit_nint)info);
+	args[2] = jit_value_create_nint_constant(coder->jitFunction,
+												jit_type_int, 0);
+	newObj = jit_insn_call_native(coder->jitFunction, 0, _ILEngineAlloc,
+									_ILJitSignature_ILEngineAlloc, args, 3, 0);
+	jit_insn_branch_if(coder->jitFunction, newObj, &label1);
+	_ILJitThrowCurrentException(coder);
+	jit_insn_label(coder->jitFunction, &label1);
+	*newArg = newObj;
+}
+
+/*
+ * Call a Method.
+ */
+static void _ILJitCallMethod(ILJITCoder *coder, ILJitValue *stackTop, int isCtor)
+{
+
+}
+
 static void JITCoder_UpConvertArg(ILCoder *coder, ILEngineStackItem *args,
 						          ILUInt32 numArgs, ILUInt32 param,
 						          ILType *paramType)

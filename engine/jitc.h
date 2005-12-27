@@ -48,13 +48,28 @@
  */
 #define IL_JIT_META_METHOD 1
 
+
 /*
- * Representation of a type representation for lingit.
+ * Defaut calling convention for libjit.
+ */
+#define IL_JIT_CALLCONV_DEFAULT		jit_abi_cdecl
+
+
+/*
+ * Calling conventions for libjit.
+ */
+#define IL_JIT_CALLCONV_CDECL		jit_abi_cdecl
+#define IL_JIT_CALLCONV_VARARG		jit_abi_vararg
+#define IL_JIT_CALLCONV_STDCALL		jit_abi_stdcall
+#define IL_JIT_CALLCONV_FASTCALL	jit_abi_fastcall
+
+/*
+ * Representation of a type representation for libjit.
  */
 typedef jit_type_t		ILJitType;
 
 /*
- * Representation of a method representation for lingit.
+ * Representation of a method representation for libjit.
  */
 typedef jit_function_t	ILJitFunction;
 
@@ -104,6 +119,18 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method);
  * Returns 1 on success and 0 on error.
  */
 int ILJitCreateFunctionsForClass(ILCoder *_coder, ILClass *info);
+
+/*
+ * Get the ILJitFunction for an ILMethod.
+ * Returns 0 if the jit function stub isn't created yet.
+ */
+ILJitFunction ILJitFunctionFromILMethod(ILMethod *method);
+
+/*
+ * Call the jit function for an ILMethod.
+ * Returns 1 if an exception occured.
+ */
+int ILJitCallMethod(ILMethod *method, void**jitArgs, void *result);
 
 /*
  * Create the class/struct representation of a clr type for libjit.

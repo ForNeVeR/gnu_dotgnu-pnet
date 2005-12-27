@@ -595,15 +595,25 @@ extern ILCoderClass const _ILCVMCoderClass;
  * Pack parameters onto the CVM stack for a call, using a "va_list"
  * as the source of the values.
  */
+#ifdef IL_USE_JIT
+int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
+					    void *argBuffer, void **jitArgs, void *userData);
+#else
 int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 					    int isCtor, void *_this, void *userData);
+#endif
 
 /*
  * Pack parameters onto the CVM stack for a call, using an array
  * of ILExecValue values to supply the parameters.
  */
+#ifdef IL_USE_JIT
+int _ILCallPackVParams(ILExecThread *thread, ILType *signature,
+					   void *argBuffer, void **jitArgs, void *userData);
+#else
 int _ILCallPackVParams(ILExecThread *thread, ILMethod *method,
 					   int isCtor, void *_this, void *userData);
+#endif
 
 /*
  * Unpack a method result from the CVM stack and store it into
@@ -622,8 +632,13 @@ void _ILCallUnpackVResult(ILExecThread *thread, ILMethod *method,
 /*
  * Prototype for a parameter packing function.
  */
+#ifdef IL_USE_JIT
+typedef int (*ILCallPackFunc)(ILExecThread *thread, ILType *signature,
+					          void *argBuffer, void **jitArgs, void *userData);
+#else
 typedef int (*ILCallPackFunc)(ILExecThread *thread, ILMethod *method,
 					          int isCtor, void *_this, void *userData);
+#endif
 
 /*
  * Prototype for a return value unpacking function.

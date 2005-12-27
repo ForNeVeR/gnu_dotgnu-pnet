@@ -99,6 +99,160 @@ extern	"C" {
 				} \
 			} while (0)
 
+#ifdef IL_USE_JIT
+int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
+					    void *argBuffer, void **jitArgs, void *userData)
+{
+	VA_LIST va;
+	ILExecValue *args = (ILExecValue *)userData;
+	ILUInt32 param, numParams;
+	ILType *paramType;
+
+	/* TODO */
+	/* What i'm doing here right now might be not portable at all. */
+	/* We might need to create a local buffer for the args and get the */
+	/* parameter pointers from this buffer. */
+
+	/* Copy the incoming "va_list" value */
+	ILMemCpy(&va, userData, sizeof(VA_LIST));
+
+	numParams = ILTypeNumParams(signature);
+	for(param = 1; param <= numParams; ++param)
+	{
+		paramType = ILTypeGetEnumType(ILTypeGetParam(signature, param));
+		if(ILType_IsPrimitive(paramType))
+		{
+			/* Process a primitive value */
+			switch(ILType_ToElement(paramType))
+			{
+				case IL_META_ELEMTYPE_VOID:		break;
+
+				case IL_META_ELEMTYPE_BOOLEAN:
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_I4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_I:
+			#endif
+				{
+					*jitArgs = argBuffer;
+					*((ILVaInt *)argBuffer) = VA_ARG(va, ILVaInt);
+					argBuffer += sizeof(ILVaInt);
+					++args;
+					++jitArgs;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_U1:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_CHAR:
+				case IL_META_ELEMTYPE_U4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					*jitArgs = argBuffer;
+					*((ILVaUInt *)argBuffer) = VA_ARG(va, ILVaUInt);
+					argBuffer += sizeof(ILVaUInt);
+					++args;
+					++jitArgs;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I8:
+			#ifdef IL_NATIVE_INT64
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					*jitArgs = argBuffer;
+					*((ILInt64 *)argBuffer) = VA_ARG(va, ILInt64);
+					argBuffer += sizeof(ILInt64);
+					++args;
+					++jitArgs;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_U8:
+			#ifdef IL_NATIVE_INT64
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					*jitArgs = argBuffer;
+					*((ILUInt64 *)argBuffer) = VA_ARG(va, ILUInt64);
+					argBuffer += sizeof(ILUInt64);
+					++args;
+					++jitArgs;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R4:
+				case IL_META_ELEMTYPE_R8:
+				case IL_META_ELEMTYPE_R:
+				{
+					*jitArgs = argBuffer;
+					*((ILVaDouble *)argBuffer) = VA_ARG(va, ILVaDouble);
+					argBuffer += sizeof(ILUInt64);
+					++args;
+					++jitArgs;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_TYPEDBYREF:
+				{
+					/* We assume that typed references are passed to us
+					   as a pointer to a temporary typedref structure */
+					*jitArgs = argBuffer;
+					*((void **)argBuffer) = VA_ARG(va, void *);
+					argBuffer += sizeof(void *);
+					++args;
+					++jitArgs;
+				}
+				break;
+			}
+		}
+		else if(ILType_IsClass(paramType))
+		{
+			/* Process an object reference */
+			*jitArgs = argBuffer;
+			*((ILObject **)argBuffer) = VA_ARG(va, ILObject *);
+			argBuffer += sizeof(ILObject *);
+			++args;
+			++jitArgs;
+		}
+		else if(ILType_IsValueType(paramType))
+		{
+			/* Process a value type: we assume that the caller has
+			   put the value into a temporary location and then
+			   passed a pointer to the temporary to us */
+			*jitArgs = (void *)(VA_ARG(va, void *));
+			++args;
+			++jitArgs;
+		}
+		else if(paramType != 0 && ILType_IsComplex(paramType) &&
+				ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF)
+		{
+			/* Process a value that is being passed by reference */
+			*jitArgs = argBuffer;
+			*((void **)argBuffer) = VA_ARG(va, void *);
+			argBuffer += sizeof(void *);
+			++args;
+			++jitArgs;
+		}
+		else
+		{
+			/* Assume that everything else is an object reference */
+			*jitArgs = argBuffer;
+			*((ILObject **)argBuffer) = VA_ARG(va, ILObject *);
+			argBuffer += sizeof(ILObject *);
+			++args;
+			++jitArgs;
+		}
+	}
+
+	return 0;
+}
+#else
 int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 					    int isCtor, void *_this, void *userData)
 {
@@ -252,7 +406,134 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 	thread->stackTop = stacktop;
 	return 0;
 }
+#endif
 
+#ifdef IL_USE_JIT
+int _ILCallPackVParams(ILExecThread *thread, ILType *signature,
+					   void *argBuffer, void **jitArgs, void *userData)
+{
+	ILExecValue *args = (ILExecValue *)userData;
+	ILUInt32 param, numParams;
+	ILType *paramType;
+
+	/* Store pointers to the args in the jitArgs Array. */
+	numParams = ILTypeNumParams(signature);
+	for(param = 1; param <= numParams; ++param)
+	{
+		paramType = ILTypeGetEnumType(ILTypeGetParam(signature, param));
+		if(ILType_IsPrimitive(paramType))
+		{
+			/* Process a primitive value */
+			switch(ILType_ToElement(paramType))
+			{
+				case IL_META_ELEMTYPE_VOID:		break;
+
+				case IL_META_ELEMTYPE_BOOLEAN:
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_CHAR:
+				case IL_META_ELEMTYPE_I4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_I:
+			#endif
+				{
+					*jitArgs = &(args->int32Value);
+					++args;
+					++jitArgs;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_U1:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_U4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					*jitArgs = &(args->uint32Value);
+					++args;
+					++jitArgs;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I8:
+			#ifdef IL_NATIVE_INT64
+				case IL_META_ELEMTYPE_I:
+			#endif
+				{
+					*jitArgs = &(args->int64Value);
+					++args;
+					++jitArgs;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_U8:
+			#ifdef IL_NATIVE_INT64
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					*jitArgs = &(args->uint64Value);
+					++args;
+					++jitArgs;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R4:
+				case IL_META_ELEMTYPE_R8:
+				case IL_META_ELEMTYPE_R:
+				{
+					*jitArgs = &(args->floatValue);
+					++args;
+					++jitArgs;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_TYPEDBYREF:
+				{
+					*jitArgs = &(args->typedRefValue);
+					++args;
+					++jitArgs;
+				}
+				break;
+			}
+		}
+		else if(ILType_IsClass(paramType))
+		{
+			/* Process an object reference */
+			*jitArgs = &(args->objValue);
+			++args;
+			++jitArgs;
+		}
+		else if(ILType_IsValueType(paramType))
+		{
+			/* Process a value type: we assume that the caller has
+			   put the value into a temporary location and then
+			   passed a pointer to the temporary to us */
+			*jitArgs = args->ptrValue;
+			++args;
+			++jitArgs;
+		}
+		else if(paramType != 0 && ILType_IsComplex(paramType) &&
+				ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF)
+		{
+			/* Process a value that is being passed by reference */
+			*jitArgs = &(args->ptrValue);
+			++args;
+			++jitArgs;
+		}
+		else
+		{
+			/* Assume that everything else is an object reference */
+			*jitArgs = &(args->objValue);
+			++args;
+			++jitArgs;
+		}
+	}
+
+	return 0;
+
+}
+#else
 int _ILCallPackVParams(ILExecThread *thread, ILMethod *method,
 					   int isCtor, void *_this, void *userData)
 {
@@ -408,6 +689,7 @@ int _ILCallPackVParams(ILExecThread *thread, ILMethod *method,
 	thread->stackTop = stacktop;
 	return 0;
 }
+#endif
 
 void _ILCallUnpackDirectResult(ILExecThread *thread, ILMethod *method,
 					           int isCtor, void *result, void *userData)
@@ -642,6 +924,61 @@ void _ILCallUnpackVResult(ILExecThread *thread, ILMethod *method,
 	}
 }
 
+#ifdef IL_USE_JIT
+int _ILCallMethod(ILExecThread *thread, ILMethod *method,
+				  ILCallUnpackFunc unpack, void *result,
+				  int isCtor, void *_this,
+				  ILCallPackFunc pack, void *userData)
+{
+	ILType *signature = ILMethod_Signature(method);
+	ILUInt32 numParams = ILTypeNumParams(signature);
+	/* We need an additional parameter for the ILExecThread. */
+	ILUInt32 totalParams = numParams + 1;
+	/* current arg in the parameter Array. */
+	ILUInt32 current = 1;
+
+	/* We need to calculate the number of needed arguments first for the args array. */
+	if(ILType_HasThis(signature))
+	{
+		/* We need an additional parameter for the this pointer. */
+		totalParams++;
+	}
+
+	/* Now create the array for the args. */
+	void *jitArgs[totalParams];
+	/* and a buffer for the va args. */
+	/* We take the biggest possible arg type here so we don't need to compute it. */
+ 	ILNativeFloat jitArgsBuffer[numParams];
+
+	/* Store the ILExecThread instance in arg[0]. */
+	jitArgs[0] = &thread;
+
+	if(ILType_HasThis(signature))
+	{
+		if(isCtor)
+		{
+			/* We need to allocate the Object. */
+			if(!(jitArgs[1] = _ILEngineAlloc(thread, ILMethod_Owner(method), 0)))
+			{
+				return 1;
+			}
+		}
+		else
+		{
+			jitArgs[1] = &_this;
+		}
+		current++;
+	}
+
+	if((*pack)(thread, signature, &(jitArgsBuffer[0]), &(jitArgs[current]), userData))
+	{
+		return 1;
+	}
+
+	/* Now we can call the jitted function. */
+	return ILJitCallMethod(method, jitArgs, result);
+}
+#else
 int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 				  ILCallUnpackFunc unpack, void *result,
 				  int isCtor, void *_this,
@@ -721,6 +1058,7 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	/* Done */
 	return threwException;
 }
+#endif
 
 ILMethod *_ILLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
 								   ILClass *interfaceClass,

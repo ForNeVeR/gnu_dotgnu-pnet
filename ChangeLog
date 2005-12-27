@@ -1,3 +1,14 @@
+2005-12-27  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/call.c: implement _ILCallPackVaParams, _ILCallPackVParams and
+	_ILCallMethod for the jit coder.
+
+	* engine/engine.h: add the prototypes for _ILCallPackVaParams and
+	_ILCallPackVParams and the definition of ILCallPackFunc for the jit coder.
+
+	* engine/jitc.c, engine/jitc.h, engine/jit_call.h: add some more work on the
+	jit coder.
+
 2005-12-24  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c, engine/jitc_setup.c: Add some more work on the jit coder.

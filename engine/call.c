@@ -936,12 +936,36 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	ILUInt32 totalParams = numParams + 1;
 	/* current arg in the parameter Array. */
 	ILUInt32 current = 1;
+	/* Some infos that we'll need later. */
+	ILClass *info = ILMethod_Owner(method);
+	/* Flag if this is an array or string constructor. */
+	int isArrayOrString = 0;
 
 	/* We need to calculate the number of needed arguments first for the args array. */
 	if(ILType_HasThis(signature))
 	{
-		/* We need an additional parameter for the this pointer. */
-		totalParams++;
+		/* the this arg is not passed to constructors of arrays or strings. */
+		if(!isCtor)
+		{
+			/* We need an additional parameter for the this pointer. */
+			totalParams++;
+		}
+		else
+		{
+			ILType *type = ILType_FromClass(info);
+			ILType *synType = type = ILClassGetSynType(info);
+
+			if(!(synType && ILType_IsArray(synType)) && !ILTypeIsStringClass(type))
+			{
+				/* We need an additional parameter for the this pointer */
+				/* for all casese except arrays or strings. */
+				totalParams++;
+			}
+			else
+			{
+				isArrayOrString = 1;
+			}
+		}
 	}
 
 	/* Now create the array for the args. */
@@ -957,17 +981,22 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	{
 		if(isCtor)
 		{
-			/* We need to allocate the Object. */
-			if(!(jitArgs[1] = _ILEngineAlloc(thread, ILMethod_Owner(method), 0)))
+			if(!isArrayOrString)
 			{
-				return 1;
+				/* We need to allocate the Object. */
+				if(!(_this = _ILEngineAlloc(thread, ILMethod_Owner(method), 0)))
+				{
+					return 1;
+				}
+				jitArgs[1] = &_this;
+				current++;
 			}
 		}
 		else
 		{
 			jitArgs[1] = &_this;
+			current++;
 		}
-		current++;
 	}
 
 	if((*pack)(thread, signature, &(jitArgsBuffer[0]), &(jitArgs[current]), userData))

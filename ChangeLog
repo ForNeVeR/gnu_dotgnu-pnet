@@ -1,3 +1,11 @@
+2005-12-28  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/call.c: Fix that the constructors of array and string classes
+	don't get the this parameter.
+
+	* engine/jitc.c: Fix the same problem as in call.c and fix the return type
+	of constructors.
+
 2005-12-27  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/call.c: implement _ILCallPackVaParams, _ILCallPackVParams and

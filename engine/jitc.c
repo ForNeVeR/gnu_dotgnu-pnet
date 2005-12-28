@@ -627,13 +627,15 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name,
 /*
  * Generate the stub for calling an internal function.
  */
-static int _ILJitCompileInternal(jit_function_t func, void *nativeFunction)
+static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *nativeFunction)
 {
 	ILJitType signature = jit_function_get_signature(func);
 	ILJitType returnType = jit_type_get_return(signature);
 	unsigned int numParams = jit_type_num_params(signature);
 	ILJitValue returnValue;
+	ILJitValue methodPtr = jit_value_create_nint_constant(func, jit_type_void_ptr, (jit_nint)method);
 
+	/* We need to set the method member in the ILExecThread == arg[0]. */
 	if(numParams > 0)
 	{
 		ILJitValue jitParams[numParams];
@@ -646,20 +648,14 @@ static int _ILJitCompileInternal(jit_function_t func, void *nativeFunction)
 				return JIT_RESULT_OUT_OF_MEMORY;
 			}
 		}
+		jit_insn_store_relative(func, jitParams[0], offsetof(ILExecThread, method), methodPtr);
 		returnValue = jit_insn_call_native(func, 0, nativeFunction, signature, jitParams, numParams, 0);
 	}
 	else
 	{
 		returnValue = jit_insn_call_native(func, 0, nativeFunction, signature, 0, 0, 0);
 	}
-	if(returnType != jit_type_void_ptr)
-	{
-		jit_insn_return(func, returnValue);	
-	}
-	else
-	{
-		jit_insn_return(func, 0);	
-	}
+	jit_insn_return(func, returnValue);	
 	return JIT_RESULT_OK;
 }
 
@@ -811,7 +807,7 @@ static int _ILJitOnDemandFunc(jit_function_t func)
 			case IL_META_METHODIMPL_RUNTIME:
 			case IL_META_METHODIMPL_IL | IL_META_METHODIMPL_INTERNAL_CALL:
 			{
-				return _ILJitCompileInternal(func, fnInfo.func);
+				return _ILJitCompileInternal(func, method, fnInfo.func);
 			}
 		}
 		return JIT_RESULT_COMPILE_ERROR;
@@ -846,6 +842,12 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 	ILJitType jitSignature;
 	/* The new created function. */
 	ILJitFunction jitFunction;
+	/* Some infos that we'll need later. */
+	ILClass *info = ILMethod_Owner(method);
+	/* Flag if this is an array or string constructor. */
+	int isArrayOrString = 0;
+	/* Flag if the method is a ctor. */
+	int isCtor = ILMethodIsConstructor(method);
 
 	/* Don't create the jit function twice. */
 	if(method->userData)
@@ -854,14 +856,39 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 	}
 	if(ILType_HasThis(signature))
 	{
-		/* we need an other arg for this */
-		total++;
+		if(!isCtor)
+		{
+			/* we need an other arg for this */
+			total++;
+		}
+		else
+		{
+			ILType *ownerType = ILType_FromClass(info);
+			ILType *synType = type = ILClassGetSynType(info);
+
+			if(!(synType && ILType_IsArray(synType)) && !ILTypeIsStringClass(ownerType))
+			{
+				/* we need an other arg for this */
+				total++;
+			}
+			else
+			{
+				isArrayOrString = 1;
+			}
+		}
 	}
 
 	ILJitType jitArgs[total];
 
 	/* Get the return type for this function */
-	type = ILTypeGetEnumType(ILTypeGetParam(signature, 0));
+	if(isCtor)
+	{
+		type = ILType_FromClass(info);
+	}
+	else
+	{
+		type = ILTypeGetEnumType(ILTypeGetParam(signature, 0));
+	}
 	if(!(jitReturnType = _ILJitGetReturnType(type, coder->process)))
 	{
 		return 0;
@@ -872,18 +899,21 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 
 	if(ILType_HasThis(signature))
 	{
-		/* We need to setup the this arg */
-		/* determine the type of this arg */
-		if(!(type = (ILType *)ILMethod_Owner(method)))
+		if(!isCtor || !isArrayOrString)
 		{
-			return 0;
+			/* We need to setup the this arg */
+			/* determine the type of this arg */
+			if(!(type = ILType_FromClass(info)))
+			{
+				return 0;
+			}
+			/* at this time the type must be layouted or at least partially layouted */
+			if(!(jitArgs[1] = _ILJitGetThisType(type, coder->process)))
+			{
+				return 0;
+			}
+			jitArgc++;
 		}
-		/* at this time the type must be layouted or at least partially layouted */
-		if(!(jitArgs[1] = _ILJitGetThisType(type, coder->process)))
-		{
-			return 0;
-		}
-		jitArgc++;
 	}
 
 	/* Get the jit types for the regular arguments */
@@ -972,7 +1002,7 @@ int ILJitCreateFunctionsForClass(ILCoder *_coder, ILClass *info)
  * Call the jit function for a ILMethod.
  * Returns 1 if an exception occured.
  */
-int ILJitCallMethod(ILMethod *method, void**jitArgs, void *result)
+int ILJitCallMethod(ILMethod *method, void **jitArgs, void *result)
 {
 	ILJitFunction jitFunction = method->userData;
 

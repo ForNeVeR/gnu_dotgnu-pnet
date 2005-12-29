@@ -152,7 +152,7 @@ static int JITCoder_CtorOffset(ILCoder *coder)
  */
 static int JITCoder_Finish(ILCoder *_coder)
 {
-	return 1;
+	return IL_CODER_END_OK;
 }
 
 /*
@@ -160,12 +160,12 @@ static int JITCoder_Finish(ILCoder *_coder)
  */
 static void JITCoder_SetFlags(ILCoder *_coder,int flags)
 {
-	
+	(_ILCoderToILJITCoder(_coder))->flags = flags;
 }
 
 static int JITCoder_GetFlags(ILCoder *_coder)
 {
-	return 0;
+	return (_ILCoderToILJITCoder(_coder))->flags;
 }
 
 /*

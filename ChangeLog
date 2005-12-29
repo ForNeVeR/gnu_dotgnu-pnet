@@ -1,3 +1,25 @@
+2005-12-29  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/convert.c: Add a version of ConvertMethod for use with the jit
+	coder.
+
+	* engine/call.c: Add the ILExecThread as param 1 to the call of
+	ILJitCallMethod.
+
+	* engine/jitc.c: Add layouting of a class when necessary when a native call
+	from the engine is done.
+
+	* engine/jitc.h: Add the ILExecTread as parameter 1 in ILJitCallMethod.
+
+	* engine/jitc_const.c: Fill in the code generation.
+
+	* engine/jitc_setup.c: Return IL_CODER_END_OK in JITCoder_Finish instead of
+	1.
+
+	* engine/jitc_stack.c: Implement pop and dup.
+
+	* engine/jitc_gen.h: Added code generation helper macros.
+
 2005-12-28  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/call.c: Fix that the constructors of array and string classes

@@ -130,7 +130,8 @@ ILJitFunction ILJitFunctionFromILMethod(ILMethod *method);
  * Call the jit function for an ILMethod.
  * Returns 1 if an exception occured.
  */
-int ILJitCallMethod(ILMethod *method, void**jitArgs, void *result);
+int ILJitCallMethod(ILExecThread *thread, ILMethod *method,
+					void**jitArgs, void *result);
 
 /*
  * Create the class/struct representation of a clr type for libjit.

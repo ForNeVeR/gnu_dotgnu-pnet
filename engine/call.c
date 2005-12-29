@@ -108,11 +108,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 	ILUInt32 param, numParams;
 	ILType *paramType;
 
-	/* TODO */
-	/* What i'm doing here right now might be not portable at all. */
-	/* We might need to create a local buffer for the args and get the */
-	/* parameter pointers from this buffer. */
-
 	/* Copy the incoming "va_list" value */
 	ILMemCpy(&va, userData, sizeof(VA_LIST));
 
@@ -1005,7 +1000,7 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	}
 
 	/* Now we can call the jitted function. */
-	return ILJitCallMethod(method, jitArgs, result);
+	return ILJitCallMethod(thread, method, jitArgs, result);
 }
 #else
 int _ILCallMethod(ILExecThread *thread, ILMethod *method,

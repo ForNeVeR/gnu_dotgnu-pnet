@@ -23,9 +23,10 @@
 /*
  * Refresh the coder's notion of the stack contents.
  */
-static void JITCoder_StackRefresh(ILCoder *_coder, ILEngineStackItem *stack,
+static void JITCoder_StackRefresh(ILCoder *coder, ILEngineStackItem *stack,
 							      ILUInt32 stackSize)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 }
 
 /*
@@ -33,6 +34,11 @@ static void JITCoder_StackRefresh(ILCoder *_coder, ILEngineStackItem *stack,
  */
 static void JITCoder_Dup(ILCoder *coder, ILEngineType engineType, ILType *type)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	jitCoder->jitStack[jitCoder->stackTop] = 
+		jitCoder->jitStack[jitCoder->stackTop - 1];
+	JITC_ADJUST(jitCoder, 1);
 }
 
 /*
@@ -40,6 +46,9 @@ static void JITCoder_Dup(ILCoder *coder, ILEngineType engineType, ILType *type)
  */
 static void JITCoder_Pop(ILCoder *coder, ILEngineType engineType, ILType *type)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	JITC_ADJUST(jitCoder, -1);
 }
 
 #endif	/* IL_JITC_CODE */

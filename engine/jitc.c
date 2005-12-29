@@ -30,7 +30,7 @@
 #include "il_dumpasm.h"
 #endif
 #include "lib_defs.h"
-#include "jitc.h"
+#include "jitc_gen.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -88,6 +88,7 @@ struct _tagILJITCoder
 
 	ILMethod	   *currentMethod;
 	int				debugEnabled;
+	int				flags;
 
 	/* Members to manage the evaluation stack. */
 	jit_value_t	   *jitStack;
@@ -138,6 +139,30 @@ struct _tagILJITCoder
 				} \
 			} while (0)
 
+/*
+ * Acquire and release the metadata lock during layouting a class.
+ */
+#define	METADATA_WRLOCK(thread)	\
+			do { \
+				IL_METADATA_WRLOCK(_ILExecThreadProcess(thread)); \
+			} while (0)
+#define	METADATA_UNLOCK(thread)	\
+			do { \
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
+			} while (0)
+
+/*
+ * Perform a class layout.
+ */
+static int _LayoutClass(ILExecThread *thread, ILClass *info)
+{
+	int result = 0;
+
+	METADATA_WRLOCK(thread);
+	result = _ILLayoutClass(_ILExecThreadProcess(thread), info);
+	METADATA_UNLOCK(thread);
+	return result; 
+}
 
 /*
  * Destroy every ILJitType in a ILJitTypes  structure 
@@ -448,6 +473,7 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 		return 0;
 	}
 	coder->debugEnabled = 0;
+	coder->flags = 0;
 	/* Initialize the stack management. */
 	coder->jitStack = 0;
 	coder->stackTop = -1;
@@ -1002,14 +1028,18 @@ int ILJitCreateFunctionsForClass(ILCoder *_coder, ILClass *info)
  * Call the jit function for a ILMethod.
  * Returns 1 if an exception occured.
  */
-int ILJitCallMethod(ILMethod *method, void **jitArgs, void *result)
+int ILJitCallMethod(ILExecThread *thread, ILMethod *method, void **jitArgs, void *result)
 {
 	ILJitFunction jitFunction = method->userData;
 
 	if(!jitFunction)
 	{
-		/* We may have to layout the class. */
-		return 1;
+		/* We have to layout the class. */
+		if(!_LayoutClass(thread, ILMethod_Owner(method)))
+		{
+			return 1;
+		}
+		jitFunction = method->userData;
 	}
 
 	if(!jit_function_apply(jitFunction, jitArgs, result))

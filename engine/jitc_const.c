@@ -25,6 +25,81 @@
  */
 static void JITCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	if(opcode == IL_OP_LDNULL)
+	{
+		jitCoder->jitStack[jitCoder->stackTop] = 
+			jit_value_create_nint_constant(jitCoder->jitFunction,
+											jit_type_void_ptr,
+											(jit_nint)0);
+		JITC_ADJUST(jitCoder, 1);
+	}
+	else if(opcode >= IL_OP_LDC_I4_M1 && opcode <= IL_OP_LDC_I4_8)
+	{
+		ILInt32 temp = opcode - IL_OP_LDC_I4_M1 - 1;
+
+		jitCoder->jitStack[jitCoder->stackTop] = 
+			jit_value_create_nint_constant(jitCoder->jitFunction,
+										_IL_JIT_TYPE_INT32,
+										(jit_nint)temp);
+		JITC_ADJUST(jitCoder, 1);
+	}
+	else if(opcode == IL_OP_LDC_I4_S)
+	{
+		ILInt8 temp;
+
+		JITC_GET_INT8(arg, temp);
+		jitCoder->jitStack[jitCoder->stackTop] = 
+			jit_value_create_nint_constant(jitCoder->jitFunction,
+										_IL_JIT_TYPE_INT32,
+										(jit_nint)temp);
+		JITC_ADJUST(jitCoder, 1);
+	}
+	else if(opcode == IL_OP_LDC_I4)
+	{
+		ILInt32 temp;
+
+		JITC_GET_INT32(arg, temp);
+		jitCoder->jitStack[jitCoder->stackTop] = 
+			jit_value_create_nint_constant(jitCoder->jitFunction,
+										_IL_JIT_TYPE_INT32,
+										(jit_nint)temp);
+		JITC_ADJUST(jitCoder, 1);
+	}
+	else if(opcode == IL_OP_LDC_R4)
+	{
+		ILFloat temp;
+
+		JITC_GET_FLOAT32(arg, temp);
+		jitCoder->jitStack[jitCoder->stackTop] = 
+			jit_value_create_nfloat_constant(jitCoder->jitFunction,
+											_IL_JIT_TYPE_NFLOAT,
+											(jit_nfloat)temp);
+		JITC_ADJUST(jitCoder, 1);
+	}
+	else if(opcode == IL_OP_LDC_I8)
+	{
+		ILInt64 temp;
+
+		JITC_GET_INT64(arg, temp);
+		jitCoder->jitStack[jitCoder->stackTop] = 
+			jit_value_create_long_constant(jitCoder->jitFunction,
+										_IL_JIT_TYPE_INT64,
+										(jit_long)temp);
+		JITC_ADJUST(jitCoder, 1);
+	}
+	else if(opcode == IL_OP_LDC_R8)
+	{
+		ILDouble temp;
+
+		JITC_GET_FLOAT64(arg, temp);
+		jitCoder->jitStack[jitCoder->stackTop] = 
+			jit_value_create_nfloat_constant(jitCoder->jitFunction,
+											_IL_JIT_TYPE_NFLOAT,
+											(jit_nfloat)temp);
+		JITC_ADJUST(jitCoder, 1);
+	}
 }
 
 /*
@@ -32,6 +107,21 @@ static void JITCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
  */
 static void JITCoder_StringConstant(ILCoder *coder, ILToken token, void *object)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	if(object)
+	{
+		/* Push the object pointer directly, to save time at runtime */
+		jitCoder->jitStack[jitCoder->stackTop] = 
+			jit_value_create_nint_constant(jitCoder->jitFunction,
+											jit_type_void_ptr,
+											(jit_nint)object);
+		JITC_ADJUST(jitCoder, 1);
+	}
+	else
+	{
+		/* TODO */
+	}
 }
 
 #endif	/* IL_JITC_CODE */

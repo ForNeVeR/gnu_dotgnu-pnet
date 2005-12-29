@@ -36,6 +36,78 @@ extern	"C" {
 #define	IL_CONVERT_TYPE_INIT		5
 #define	IL_CONVERT_DLL_NOT_FOUND	6
 
+#ifdef IL_USE_JIT
+/*
+ * Wee keep these macros for now until all references to _ILUnrollMethod
+ * are removed when the jit coder is used.
+ */
+#define	METADATA_WRLOCK(thread)	\
+			do { \
+				IL_METADATA_WRLOCK(_ILExecThreadProcess(thread)); \
+				ILGCDisableFinalizers(0); \
+			} while (0)
+#define	METADATA_UNLOCK(thread)	\
+			do { \
+				ILGCEnableFinalizers(); \
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
+				ILGCInvokeFinalizers(0); \
+			} while (0)
+
+
+/*
+ * Inner version of "_ILConvertMethod", which detects the type of
+ * exception to throw, but does not throw it.
+ * This method is invoked only during on demand compilation of a jitted IL method
+ * and is secured through libjit.
+ */
+static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
+								    int *errorCode, const char **errorInfo)
+{
+	ILMethodCode code;
+	ILCoder *coder = thread->process->coder;
+	unsigned char *start;
+
+#ifndef IL_CONFIG_VARARGS
+	/* Vararg methods are not supported */
+	if((ILMethod_CallConv(method) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
+		return 0;
+	}
+#endif
+
+	/* Get the method code */
+	if(!ILMethodGetCode(method, &code))
+	{
+		code.code = 0;
+	}
+
+	/* The conversion is different depending upon whether the
+	   method is written in IL or not */
+	if(code.code)
+	{
+		/* Use the bytecode verifier and coder to convert the method */
+		if(!_ILVerify(coder, &start, method, &code,
+					  ILImageIsSecure(ILProgramItem_Image(method)), thread))
+		{
+			*errorCode = IL_CONVERT_VERIFY_FAILED;
+			return 0;
+		}
+	}
+	else
+	{
+		/* All other cases should be handled in the jit coder. */
+
+		*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+		return 0;
+	}
+
+	/* The method is converted now */
+	*errorCode = IL_CONVERT_OK;
+	return 1;
+}
+#else
 #ifdef IL_CONFIG_PINVOKE
 
 /*
@@ -419,6 +491,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	*errorCode = IL_CONVERT_OK;
 	return start;
 }
+#endif
 
 unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 {

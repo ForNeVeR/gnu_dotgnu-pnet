@@ -34,6 +34,7 @@
 #define _IL_JIT_TYPE_INT16	jit_type_short
 #define _IL_JIT_TYPE_INT32	jit_type_int
 #define _IL_JIT_TYPE_INT64	jit_type_long
+#define _IL_JIT_TYPE_NINT	jit_type_nint
 #define _IL_JIT_TYPE_INTPTR	jit_type_void_ptr
 #define _IL_JIT_TYPE_NFLOAT	jit_type_nfloat
 #define _IL_JIT_TYPE_SBYTE	jit_type_sbyte
@@ -41,6 +42,7 @@
 #define _IL_JIT_TYPE_UINT16	jit_type_ushort
 #define _IL_JIT_TYPE_UINT32	jit_type_uint
 #define _IL_JIT_TYPE_UINT64	jit_type_ulong
+#define _IL_JIT_TYPE_NUINT	jit_type_nuint
 #define _IL_JIT_TYPE_VPTR	jit_type_void_ptr;
  
 /*

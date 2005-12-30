@@ -77,6 +77,18 @@ static ILJitType _ILJitSignature_ILEngineAlloc = 0;
 #endif
 
 /*
+ * Define the structure of a JIT label.
+ */
+typedef struct _tagILJITLabel ILJITLabel;
+struct _tagILJITLabel
+{
+	ILUInt32	address;		/* Address in the IL code */
+	jit_label_t	label;			/* the libjit label */
+	ILJITLabel *next;			/* Next label block */
+
+};
+
+/*
  * Define the structure of a JIT coder's instance block.
  */
 typedef struct _tagILJITCoder ILJITCoder;
@@ -99,6 +111,11 @@ struct _tagILJITCoder
 	jit_value_t	   *jitLocals;
 	int				numLocals;
 	int				maxLocals;
+
+	/* Handle the labels. */
+	ILMemPool		labelPool;
+	ILJITLabel     *labelList;
+	int				labelOutOfMemory;
 
 	/* The current jitted function. */
 	ILJitFunction	jitFunction;
@@ -485,6 +502,11 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 
 	/* Init the current jitted function. */
 	coder->jitFunction = 0;
+
+	/* Init the label stuff. */
+	ILMemPoolInit(&(coder->labelPool), sizeof(ILJITLabel), 8);
+	coder->labelList = 0;
+	coder->labelOutOfMemory = 0;
 
 	/* Ready to go */
 	return &(coder->coder);

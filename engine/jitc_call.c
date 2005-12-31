@@ -170,6 +170,18 @@ static void JITCoder_JumpMethod(ILCoder *coder, ILMethod *methodInfo)
 static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 							    ILType *returnType)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	if(engineType == ILEngineType_Invalid)
+	{
+	       jit_insn_return(jitCoder->jitFunction, 0);
+	}
+	else
+	{
+		jit_insn_return(jitCoder->jitFunction,
+					jitCoder->jitStack[jitCoder->stackTop - 1]);
+		JITC_ADJUST(jitCoder, -1);
+	}
 }
 
 static void JITCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)

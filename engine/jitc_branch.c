@@ -227,7 +227,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two values for equality */
 			AdjustMixedBinary(coder, 0, value1, value2);
-			return jit_insn_eq(coder->jitFunction, *value1, *value2);
+			return jit_insn_eq(coder->jitFunction, *value2, *value1);
 		}
 		break;
 
@@ -235,7 +235,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for inequality */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_ne(coder->jitFunction, *value1, *value2);
+			return jit_insn_ne(coder->jitFunction, *value2, *value1);
 		}
 		break;
 
@@ -244,7 +244,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two signed values for greater than */
 			AdjustMixedBinary(coder, 0, value1, value2);
-			return jit_insn_gt(coder->jitFunction, *value1, *value2);
+			return jit_insn_gt(coder->jitFunction, *value2, *value1);
 		}
 		break;
 
@@ -253,7 +253,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for greater than */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_gt(coder->jitFunction, *value1, *value2);
+			return jit_insn_gt(coder->jitFunction, *value2, *value1);
 		}
 		break;
 
@@ -261,7 +261,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two signed values for greater than  or equal */
 			AdjustMixedBinary(coder, 0, value1, value2);
-			return jit_insn_ge(coder->jitFunction, *value1, *value2);
+			return jit_insn_ge(coder->jitFunction, *value2, *value1);
 		}
 		break;
 
@@ -269,7 +269,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for greater than  or equal */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_ge(coder->jitFunction, *value1, *value2);
+			return jit_insn_ge(coder->jitFunction, *value2, *value1);
 		}
 		break;
 
@@ -278,7 +278,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two signed values for less than */
 			AdjustMixedBinary(coder, 0, value1, value2);
-			return jit_insn_lt(coder->jitFunction, *value1, *value2);
+			return jit_insn_lt(coder->jitFunction, *value2, *value1);
 		}
 		break;
 
@@ -287,7 +287,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for less than */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_lt(coder->jitFunction, *value1, *value2);
+			return jit_insn_lt(coder->jitFunction, *value2, *value1);
 		}
 		break;
 
@@ -295,7 +295,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two signed values for less than or equal */
 			AdjustMixedBinary(coder, 0, value1, value2);
-			return jit_insn_le(coder->jitFunction, *value1, *value2);
+			return jit_insn_le(coder->jitFunction, *value2, *value1);
 		}
 		break;
 
@@ -303,7 +303,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for less than  or equal */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_lt(coder->jitFunction, *value1, *value2);
+			return jit_insn_lt(coder->jitFunction, *value2, *value1);
 		}
 		break;
 	}

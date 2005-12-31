@@ -103,9 +103,12 @@ static void JITCoder_StoreLocal(ILCoder *coder, ILUInt32 localNum,
 static void JITCoder_AddrOfArg(ILCoder *coder, ILUInt32 argNum)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	/* We need argNum + 1 because the ILExecThread is added as param 0 */
+	ILJitValue argValue = jit_value_get_param(jitCoder->jitFunction, argNum + 1);
 
-
-
+	jitCoder->jitStack[jitCoder->stackTop] = 
+					jit_insn_address_of(jitCoder->jitFunction, argValue);
+	JITC_ADJUST(jitCoder, 1);
 }
 
 /*
@@ -114,7 +117,11 @@ static void JITCoder_AddrOfArg(ILCoder *coder, ILUInt32 argNum)
 static void JITCoder_AddrOfLocal(ILCoder *coder, ILUInt32 localNum)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue localValue = jitCoder->jitLocals[localNum];
 
+	jitCoder->jitStack[jitCoder->stackTop] = 
+					jit_insn_address_of(jitCoder->jitFunction, localValue);
+	JITC_ADJUST(jitCoder, 1);
 }
 
 /*
@@ -124,6 +131,9 @@ static void JITCoder_LocalAlloc(ILCoder *coder, ILEngineType sizeType)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
+	jitCoder->jitStack[jitCoder->stackTop - 1] = 
+					jit_insn_alloca(jitCoder->jitFunction,
+									jitCoder->jitStack[jitCoder->stackTop - 1]);
 }
 
 #endif	/* IL_JITC_CODE */

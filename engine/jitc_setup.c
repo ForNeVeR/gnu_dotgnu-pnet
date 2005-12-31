@@ -152,6 +152,20 @@ static int JITCoder_CtorOffset(ILCoder *coder)
  */
 static int JITCoder_Finish(ILCoder *_coder)
 {
+	ILJITCoder *jitCoder = ((ILJITCoder *)_coder);
+
+	/* Clear the label pool */
+	ILMemPoolClear(&(jitCoder->labelPool));
+	jitCoder->labelList = 0;
+	if(jitCoder->labelOutOfMemory)
+	{
+		/* We ran out of memory trying to allocate labels */
+		jitCoder->labelOutOfMemory = 0;
+
+		return IL_CODER_END_TOO_BIG;
+	}
+	jitCoder->labelOutOfMemory = 0;
+
 	return IL_CODER_END_OK;
 }
 

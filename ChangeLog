@@ -1,3 +1,7 @@
+2005-12-31  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
+
+	* engine/jitc_arith.c: Implement first version of the arithmetic functions.
+
 2005-12-31  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_branch.c: switch value1 and value2 in the jit_insn_ compare

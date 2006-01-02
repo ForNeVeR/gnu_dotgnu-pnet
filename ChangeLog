@@ -1,3 +1,7 @@
+2006-01-02  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_stack.c: Implement JITCoder_StackRefresh.
+
 2005-12-31  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_setup.c: Reset the labellist in ILJITCoder_Finish.

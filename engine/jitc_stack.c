@@ -27,6 +27,8 @@ static void JITCoder_StackRefresh(ILCoder *coder, ILEngineStackItem *stack,
 							      ILUInt32 stackSize)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	jitCoder->stackTop = stackSize;
 }
 
 /*

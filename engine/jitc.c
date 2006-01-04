@@ -459,10 +459,10 @@ int ILJitInit()
 	_ILJitTypesInitBase(&_ILJitType_VPTR, jit_type_void_ptr);
 
 	/* Initialize the native method signatures. */
-	args[0] = jit_type_void_ptr;
-	args[1] = jit_type_void_ptr;
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
 	args[2] = jit_type_int;
-	returnType = jit_type_void_ptr;
+	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILEngineAlloc = 
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
 	{
@@ -562,6 +562,8 @@ static void JITCoder_Destroy(ILCoder *_coder)
 		jit_context_destroy(coder->context);
 		coder->context = 0;
 	}
+	ILMemPoolDestroy(&(coder->labelPool));
+
 	ILFree(coder);
 }
 
@@ -673,15 +675,23 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name,
 #endif /* IL_CONFIG_PINVOKE */
 
 /*
+ * Set the method member in the ILExecThread instance.
+ */
+static void SetMethodInThread(jit_function_t func, ILJitValue thread, ILMethod *method)
+{
+	ILJitValue methodPtr = jit_value_create_nint_constant(func, _IL_JIT_TYPE_VPTR, (jit_nint)method);
+
+	jit_insn_store_relative(func, thread, offsetof(ILExecThread, method), methodPtr);
+}
+
+/*
  * Generate the stub for calling an internal function.
  */
 static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *nativeFunction)
 {
 	ILJitType signature = jit_function_get_signature(func);
-	ILJitType returnType = jit_type_get_return(signature);
 	unsigned int numParams = jit_type_num_params(signature);
 	ILJitValue returnValue;
-	ILJitValue methodPtr = jit_value_create_nint_constant(func, jit_type_void_ptr, (jit_nint)method);
 
 	/* We need to set the method member in the ILExecThread == arg[0]. */
 	if(numParams > 0)
@@ -696,7 +706,7 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 				return JIT_RESULT_OUT_OF_MEMORY;
 			}
 		}
-		jit_insn_store_relative(func, jitParams[0], offsetof(ILExecThread, method), methodPtr);
+		SetMethodInThread(func, jitParams[0], method);
 		returnValue = jit_insn_call_native(func, 0, nativeFunction, signature, jitParams, numParams, 0);
 	}
 	else

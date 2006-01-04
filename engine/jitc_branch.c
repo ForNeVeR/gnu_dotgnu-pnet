@@ -227,7 +227,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two values for equality */
 			AdjustMixedBinary(coder, 0, value1, value2);
-			return jit_insn_eq(coder->jitFunction, *value2, *value1);
+			return jit_insn_eq(coder->jitFunction, *value1, *value2);
 		}
 		break;
 
@@ -235,7 +235,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for inequality */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_ne(coder->jitFunction, *value2, *value1);
+			return jit_insn_ne(coder->jitFunction, *value1, *value2);
 		}
 		break;
 
@@ -244,7 +244,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two signed values for greater than */
 			AdjustMixedBinary(coder, 0, value1, value2);
-			return jit_insn_gt(coder->jitFunction, *value2, *value1);
+			return jit_insn_gt(coder->jitFunction, *value1, *value2);
 		}
 		break;
 
@@ -253,7 +253,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for greater than */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_gt(coder->jitFunction, *value2, *value1);
+			return jit_insn_gt(coder->jitFunction, *value1, *value2);
 		}
 		break;
 
@@ -261,7 +261,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two signed values for greater than  or equal */
 			AdjustMixedBinary(coder, 0, value1, value2);
-			return jit_insn_ge(coder->jitFunction, *value2, *value1);
+			return jit_insn_ge(coder->jitFunction, *value1, *value2);
 		}
 		break;
 
@@ -269,7 +269,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for greater than  or equal */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_ge(coder->jitFunction, *value2, *value1);
+			return jit_insn_ge(coder->jitFunction, *value1, *value2);
 		}
 		break;
 
@@ -278,7 +278,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two signed values for less than */
 			AdjustMixedBinary(coder, 0, value1, value2);
-			return jit_insn_lt(coder->jitFunction, *value2, *value1);
+			return jit_insn_lt(coder->jitFunction, *value1, *value2);
 		}
 		break;
 
@@ -287,7 +287,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for less than */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_lt(coder->jitFunction, *value2, *value1);
+			return jit_insn_lt(coder->jitFunction, *value1, *value2);
 		}
 		break;
 
@@ -295,7 +295,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two signed values for less than or equal */
 			AdjustMixedBinary(coder, 0, value1, value2);
-			return jit_insn_le(coder->jitFunction, *value2, *value1);
+			return jit_insn_le(coder->jitFunction, *value1, *value2);
 		}
 		break;
 
@@ -303,7 +303,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for less than  or equal */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_lt(coder->jitFunction, *value2, *value1);
+			return jit_insn_lt(coder->jitFunction, *value1, *value2);
 		}
 		break;
 	}
@@ -360,8 +360,8 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		{
 			/* Equality testing branch */
 			temp = OutputCompare(jitCoder, IL_OP_BEQ,
-								 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-								 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+								 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+								 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 			jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
 			JITC_ADJUST(jitCoder, -2);
 		}
@@ -372,8 +372,8 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		{
 			/* Unsigned inequality testing branch */
 			temp = OutputCompare(jitCoder, IL_OP_BNE_UN,
-								 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-								 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+								 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+								 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 			jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
 			JITC_ADJUST(jitCoder, -2);
 		}
@@ -384,8 +384,8 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		{
 			/* Signed greater than testing branch */
 			temp = OutputCompare(jitCoder, IL_OP_BGT,
-								 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-								 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+								 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+								 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 			jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
 			JITC_ADJUST(jitCoder, -2);
 		}
@@ -396,8 +396,8 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		{
 			/* Unsigned greater than testing branch */
 			temp = OutputCompare(jitCoder, IL_OP_BGT_UN,
-								 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-								 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+								 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+								 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 			jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
 			JITC_ADJUST(jitCoder, -2);
 		}
@@ -408,8 +408,8 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		{
 			/* Signed greater than or equal testing branch */
 			temp = OutputCompare(jitCoder, IL_OP_BGE,
-								 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-								 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+								 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+								 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 			jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
 			JITC_ADJUST(jitCoder, -2);
 		}
@@ -420,8 +420,8 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		{
 			/* Unsigned greater than or equal testing branch */
 			temp = OutputCompare(jitCoder, IL_OP_BGE_UN,
-								 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-								 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+								 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+								 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 			jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
 			JITC_ADJUST(jitCoder, -2);
 		}
@@ -432,8 +432,8 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		{
 			/* Signed less than testing branch */
 			temp = OutputCompare(jitCoder, IL_OP_BLT,
-								 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-								 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+								 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+								 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 			jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
 			JITC_ADJUST(jitCoder, -2);
 		}
@@ -444,8 +444,8 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		{
 			/* Unsigned less than testing branch */
 			temp = OutputCompare(jitCoder, IL_OP_BLT_UN,
-								 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-								 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+								 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+								 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 			jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
 			JITC_ADJUST(jitCoder, -2);
 		}
@@ -456,8 +456,8 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		{
 			/* Signed less than or equal testing branch */
 			temp = OutputCompare(jitCoder, IL_OP_BLE,
-								 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-								 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+								 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+								 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 			jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
 			JITC_ADJUST(jitCoder, -2);
 		}
@@ -468,8 +468,8 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		{
 			/* Unsigned less than or equal testing branch */
 			temp = OutputCompare(jitCoder, IL_OP_BLE_UN,
-								 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-								 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+								 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+								 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 			jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
 			JITC_ADJUST(jitCoder, -2);
 		}
@@ -503,8 +503,8 @@ static void JITCoder_Compare(ILCoder *coder, int opcode,
 	ILJitValue temp;
 
 	temp = OutputCompare(jitCoder, opcode,
-						 &(jitCoder->jitStack[jitCoder->stackTop - 1]),
-						 &(jitCoder->jitStack[jitCoder->stackTop - 2]));
+						 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
+						 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
 	if(invertTest)
 	{
 		temp = jit_insn_to_not_bool(jitCoder->jitFunction, temp);

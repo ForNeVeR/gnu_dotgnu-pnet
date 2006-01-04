@@ -43,7 +43,7 @@
 #define _IL_JIT_TYPE_UINT32	jit_type_uint
 #define _IL_JIT_TYPE_UINT64	jit_type_ulong
 #define _IL_JIT_TYPE_NUINT	jit_type_nuint
-#define _IL_JIT_TYPE_VPTR	jit_type_void_ptr;
+#define _IL_JIT_TYPE_VPTR	jit_type_void_ptr
  
 /*
  * Definition of method metadata indexes.

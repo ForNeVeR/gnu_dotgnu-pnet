@@ -1,3 +1,5 @@
+
+
 2005-12-20  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* Xsharp/Timer.cs: fixed loop if system clock was changed
@@ -15,31 +17,39 @@
 
 2005-12-08  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* runtime/System/Convert.cs: changed Convert.ToInt32 ToUInt32 ToInt64 ToUInt64.
-	Round value to the nearest value. 
-	if value is halfway between two whole numbers, the even number is returned.
-	Sample: 
-	4.5 is converted to 4  (!)  
-	5.5 is converted to 6  
-	See MSDN.
+	* runtime/System/Convert.cs: changed Convert.ToInt32 ToUInt32 
+	ToInt64 ToUInt64. Round value to the nearest value. if value 
+	is halfway between two whole numbers, the even number is 
+	returned. Sample: 4.5 is converted to 4  (!) ,
+	5.5 is converted to 6. See MSDN.
 
 
 2005-12-08  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* runtime/System/Reflection/ClrType.cs: for speedup use BitArray Get/Set instead of indexer
-	* System/Text/RegularExpressions/compiler.cs: for speedup use BitArray Get/Set instead of indexer
-	* System/Text/RegularExpressions/syntax.cs: for speedup use BitArray Get/Set instead of indexer
-
-	* runtime/System/Reflection/ClrResourceStream.cs: for speedup removed SetupRead, check pointer directly instead
+	* runtime/System/Reflection/ClrType.cs: for speedup use BitArray 
+	Get/Set instead of indexer
+	
+	* System/Text/RegularExpressions/compiler.cs: for speedup use 
+	BitArray Get/Set instead of indexer
+	
+	* System/Text/RegularExpressions/syntax.cs: for speedup use BitArray
+	Get/Set instead of indexer
+	
+	* runtime/System/Reflection/ClrResourceStream.cs: for speedup removed
+	SetupRead, check pointer directly instead
 
 2005-12-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* runtime/System/Private/NumberFormat/Formatter.cs: cache created formatters
+	* runtime/System/Private/NumberFormat/Formatter.cs: cache created
+	formatters.
 
 2005-12-05  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs: fixed computing mouse popsition on mouse down (menu problem)
-	* System.Windows.Forms/TabPage.cs: fixed displaying TabPage (see FormsTest.exe)
+	* System.Windows.Forms/Control.cs: fixed computing mouse popsition
+	on mouse down (menu problem)
+	
+	* System.Windows.Forms/TabPage.cs: fixed displaying TabPage (see 
+	FormsTest.exe)
 
 2005-12-03  Radek Polak  <psonek2@seznam.cz>
 
@@ -48,18 +58,22 @@
 
 2005-11-30  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs: update mouse position on toolkit mouse down 
-	this is needed, because if you have a touch screen the mouse move is not fired, 
-	if we click on the screen
+	* System.Windows.Forms/Control.cs: update mouse position on 
+	toolkit mouse down this is needed, because if you have a touch
+	screen the mouse move is not fired, if we click on the screen.
 
 2005-11-29  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Application.cs: catch X Exceptions and forwared it to Application.OnThreadException
+	* System.Windows.Forms/Application.cs: catch X Exceptions and
+	forwared it to Application.OnThreadException
 
 2005-11-28  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs : fixed, no click events, if mouse has left the control
-	* System.Windows.Forms/Button.cs  : fixed, fire OnClick before MouseUp (like M$ does)
+	* System.Windows.Forms/Control.cs : fixed, no click events, if mouse
+	has left the control
+	
+	* System.Windows.Forms/Button.cs  : fixed, fire OnClick before MouseUp
+	(like M$ does)
 
 2005-11-24  Radek Polak  <psonek2@seznam.cz>
 
@@ -106,7 +120,7 @@
 
 2005-11-18  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs : fixed layouting with anchors
+	* System.Windows.Forms/Control.cs: fixed layouting with anchors
 
 2005-11-17  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
@@ -122,34 +136,43 @@
 
 2005-11-16  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs : removed some unneccesary calls for performance
+	* System.Windows.Forms/Control.cs: removed some unneccesary calls for
+	performance
 
 2005-11-16  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* runtime/System/String.c : fixed crash LastIndexOf(String value) if this was an empty string
+	* runtime/System/String.cs: fixed crash LastIndexOf(String value) if
+	this was an empty string.
 
 2005-11-15  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/TextBox.cs : increased performance by checking unchanged values
+	* System.Windows.Forms/TextBox.cs: increased performance by checking
+	unchanged values.
 
 
 2005-11-15  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs : fixed: multiply creating of toolkitwindow
-	* System.Windows.Forms/Control.cs : fixed: increased performance on layout if not visible
+	* System.Windows.Forms/Control.cs: fixed: multiply creating of 
+	toolkitwindow.
+	
+	* System.Windows.Forms/Control.cs : fixed: increased performance on
+	layout if not visible.
 
 2005-11-09  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
-	* System.Xml/XmlDocument.cs : fixes crash Doc.InnerXml = "<a><b> </b></a>"
-	* System.Xml/XmlTextWriter.cs : fixes doublicate namespace attribute
+	* System.Xml/XmlDocument.cs: fixes crash Doc.InnerXml = "<a><b> </b></a>"
+	
+	* System.Xml/XmlTextWriter.cs: fixes doublicate namespace attribute
 
 2005-11-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/ScrollableControl.cs : fixes crashes in OnMouseWheel, if scrollbars are not created
+	* System.Windows.Forms/ScrollableControl.cs: fixes crashes in OnMouseWheel,
+	if scrollbars are not created
 
 2005-11-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* runtime/System/Globalisation/CultureInfo.cs : Fixed ctor( string.Empty) creating invariant culture 
+	* runtime/System/Globalisation/CultureInfo.cs: Fixed ctor( string.Empty)
+	creating invariant culture 
 
 2005-11-07  Deryk Robosson  <deryk@0x0a.com>
 
@@ -194,11 +217,12 @@
 
 2005-10-28  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs : fixed : non visible controls are no longer included while layouting
+	* System.Windows.Forms/Control.cs: fixed : non visible controls are 
+	no longer included while layouting
 
 2005-10-26  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs : fixed duplicates calls OnControlAdded
+	* System.Windows.Forms/Control.cs: fixed duplicates calls OnControlAdded
 
 2005-10-26  Deryk Robosson  <deryk@0x0a.com>
 
@@ -259,9 +283,11 @@
 
 2005-10-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* runtime/System/Collections/SortedList.cs : Fixed KeyListEnumerator( SortedList list ) and ValueListEnumerator( SortedList list )
-	KeyListEnumerator( SortedList list ) : calling Reset(); instead of position = -1;
-	ValueListEnumerator( SortedList list ): inserted missed Reset();
+	* runtime/System/Collections/SortedList.cs: Fixed KeyListEnumerator
+	( SortedList list ) and ValueListEnumerator( SortedList list )
+	KeyListEnumerator( SortedList list ) : calling Reset(); 
+	instead of position = -1; ValueListEnumerator( SortedList list )
+	inserted missed Reset();
 
 2005-10-06  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 

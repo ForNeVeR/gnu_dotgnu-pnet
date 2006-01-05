@@ -73,6 +73,23 @@ static void _ILJitCallStaticConstructor(ILCoder *_coder, ILClass *classInfo,
 }
 
 /*
+ * Fill the argument array for the methodcall with the args on the stack.
+ * This function pops the arguments off the stack too.
+ */
+static void _ILJitFillArguments(ILJITCoder *coder, ILJitValue *args,
+								ILCoderMethodInfo *info)
+{
+	int argCount = info->numBaseArgs + info->numVarArgs;
+	int current = 0;
+	
+	JITC_ADJUST(coder, -argCount);
+	for(current = 0; current < argCount; current++)
+	{
+		args[current] = coder->jitStack[coder->stackTop + current];
+	}
+}
+
+/*
  * Create a new object and push it on the stack.
  */
 static void _ILJitNewObj(ILJITCoder *coder, ILClass *info, ILJitValue *newArg)
@@ -94,12 +111,33 @@ static void _ILJitNewObj(ILJITCoder *coder, ILClass *info, ILJitValue *newArg)
 	*newArg = newObj;
 }
 
+
+static int _ILJitIsStringClass(ILClass *info)
+{
+	ILImage *systemImage;
+	if(!strcmp(info->className->name, "String") &&
+	    info->className->namespace &&
+	    !strcmp(info->className->namespace, "System"))
+	{
+		/* Check that it is within the system image, to prevent
+		   applications from fooling us into believeing that their
+		   own class is the system's string class */
+		
+		info = ILClassResolve(info);
+		systemImage = info->programItem.image->context->systemImage;
+		if(!systemImage || systemImage == info->programItem.image)
+		{
+			return 1;
+		}
+	}	
+	return 0;
+}
+
 /*
  * Call a Method.
  */
 static void _ILJitCallMethod(ILJITCoder *coder, ILJitValue *stackTop, int isCtor)
 {
-
 }
 
 static void JITCoder_UpConvertArg(ILCoder *coder, ILEngineStackItem *args,
@@ -133,6 +171,33 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 								ILEngineStackItem *returnItem,
 								ILMethod *methodInfo)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitFunction jitFunction = ILJitFunctionFromILMethod(methodInfo);
+	int argCount = info->numBaseArgs + info->numVarArgs;
+	ILJitValue jitParams[argCount + 1];
+	ILJitValue returnValue;
+
+	/* Set the ILExecThread argument. */
+	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0);
+
+	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
+	/* TODO: create call signature for vararg calls. */	
+		
+	if(info->tailCall == 1)
+	{
+		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
+									jitParams, argCount + 1, JIT_CALL_TAIL);
+	}
+	else
+	{		
+		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
+									jitParams, argCount + 1, 0);
+		if(returnItem->engineType != ILEngineType_Invalid)
+		{
+			jitCoder->jitStack[jitCoder->stackTop] = returnValue;
+			JITC_ADJUST(jitCoder, 1);
+		}
+	}
 }
 
 static void JITCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
@@ -143,12 +208,85 @@ static void JITCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 					   		  ILMethod *methodInfo)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitFunction jitFunction = ILJitFunctionFromILMethod(methodInfo);
+	int argCount = info->numBaseArgs + info->numVarArgs;
+	ILJitValue jitParams[argCount + 2];
+	ILJitValue returnValue;
+	
+	/* Output a call to the constructor */
+	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0); // we add the current function thread as the first param
+		
+	if(_ILJitIsStringClass(ILMethod_Owner(methodInfo)))
+	{
+		_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
+		// call the constructor with jitParams as input
+		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
+									jitParams, argCount + 1, 0);
+		jitCoder->jitStack[jitCoder->stackTop] = returnValue;
+	}
+	else
+	{
+		_ILJitNewObj(jitCoder, ILMethod_Owner(methodInfo), &jitParams[1]); // create a newobj and add it to the jitParams[1]
+		_ILJitFillArguments(jitCoder, &(jitParams[2]), info);
+
+		// call the constructor with jitParams as input
+		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
+									jitParams, argCount + 2, 0);
+		jitCoder->jitStack[jitCoder->stackTop] = jitParams[1];
+	}	
+	JITC_ADJUST(jitCoder, 1);
 }
 
 static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 								 ILEngineStackItem *returnItem,
 								 ILMethod *methodInfo)
 {
+
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	int argCount = info->numBaseArgs + info->numVarArgs;
+	ILJitValue jitParams[argCount + 2];
+	ILJitValue returnValue;
+	ILJitValue classPrivate;
+	ILJitValue vtable;
+	ILJitValue vtableIndex;
+	ILJitValue method;
+	ILJitValue jitFunction;
+
+	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0);
+	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
+	jit_insn_check_null(jitCoder->jitFunction, jitParams[1]);
+	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction, jitParams[1]);
+	vtable = jit_insn_load_relative(jitCoder->jitFunction, classPrivate, 
+									offsetof(ILClassPrivate, vtable), 
+									_IL_JIT_TYPE_VPTR);
+	vtableIndex = jit_value_create_nint_constant(jitCoder->jitFunction,
+												 _IL_JIT_TYPE_INT32,
+												 (jit_nint)methodInfo->index);
+	method = jit_insn_load_elem(jitCoder->jitFunction, vtable,
+									 vtableIndex, _IL_JIT_TYPE_VPTR);
+	jitFunction = jit_insn_load_relative(jitCoder->jitFunction, method, 
+									offsetof(ILClassPrivate, vtable), 
+									_IL_JIT_TYPE_VPTR);
+	if(info->tailCall == 1)
+	{
+		returnValue = jit_insn_call_indirect(jitCoder->jitFunction,
+											 jitFunction, 0,
+											 jitParams, argCount,
+											 JIT_CALL_TAIL);
+	}
+	else
+	{
+		returnValue = jit_insn_call_indirect(jitCoder->jitFunction,
+											 jitFunction, 0,
+											 jitParams, argCount,
+											 0);
+		if(returnItem->engineType != ILEngineType_Invalid)
+		{
+			jitCoder->jitStack[jitCoder->stackTop] = returnValue;
+			JITC_ADJUST(jitCoder, 1);
+		}
+	}
 }
 
 static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
@@ -160,6 +298,7 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 								   ILMethod *methodInfo)
 {
+	/* If we get here, then we don't know how to inline the method */
 	return 0;
 }
 

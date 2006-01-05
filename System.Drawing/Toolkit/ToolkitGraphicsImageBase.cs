@@ -122,6 +122,7 @@ namespace System.Drawing.Toolkit
 							SetPixelLine(frame, x1,y1, color);
 						}
 					}
+					this.image.ImageChanged();
 				}
 
 		private void SetPixelLine(Frame frame, int x, int yPtr, int color)

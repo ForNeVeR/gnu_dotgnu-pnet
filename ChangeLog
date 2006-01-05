@@ -1,4 +1,9 @@
 
+2006-01-05  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs: Fire an
+	OnChanged whenever a line draw occurs, so that the native image
+	can be regenerated.
 
 2005-12-20  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 

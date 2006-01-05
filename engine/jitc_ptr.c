@@ -601,7 +601,7 @@ static void JITCoder_NewArray(ILCoder *coder, ILType *arrayType,
 	args[0] = jit_value_get_param(jitCoder->jitFunction, 0);
 	args[1] = length;
 	JITC_ADJUST(jitCoder, -1);
-	SetMethodInThread(jitCoder->jitFunction, args[0], ctor);
+	_ILJitSetMethodInThread(jitCoder->jitFunction, args[0], ctor);
 	/* Output code to call the array type's constructor */
 	returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction,
 								0, args, 2, 0);

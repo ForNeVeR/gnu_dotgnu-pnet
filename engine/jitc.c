@@ -362,7 +362,7 @@ static ILJitType _ILJitGetArgType(ILType *type, ILExecProcess *process)
 
 /*
  * Get the jit type representing the local type for the given ILType.
- * Returns 0 whne the type could not be found or out of memory.
+ * Returns 0 when the type could not be found or out of memory.
  */
 static ILJitType _ILJitGetLocalsType(ILType *type, ILExecProcess *process)
 {
@@ -596,13 +596,12 @@ static ILUInt32 JITCoder_GetNativeOffset(ILCoder *_coder, void *start,
  */
 static void JITCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 {
-	/* 
-	ILCacheMarkBytecode(&(((ILCVMCoder *)coder)->codePosn), offset);
-	if(((ILCVMCoder *)coder)->debugEnabled)
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	if(offset != 0)
 	{
-		CVM_OUT_BREAK(IL_BREAK_DEBUG_LINE);
+		jit_insn_mark_offset(jitCoder->jitFunction, (jit_int)offset);
 	}
-	*/
 }
 
 /*
@@ -677,11 +676,24 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name,
 /*
  * Set the method member in the ILExecThread instance.
  */
-static void SetMethodInThread(jit_function_t func, ILJitValue thread, ILMethod *method)
+static void _ILJitSetMethodInThread(ILJitFunction func, ILJitValue thread, ILMethod *method)
 {
 	ILJitValue methodPtr = jit_value_create_nint_constant(func, _IL_JIT_TYPE_VPTR, (jit_nint)method);
 
 	jit_insn_store_relative(func, thread, offsetof(ILExecThread, method), methodPtr);
+}
+
+/*
+ * Get the classPrivate pointer from an object reference.
+ */
+static ILJitValue _ILJitGetObjectClassPrivate(ILJitFunction func, ILJitValue object)
+{
+	ILJitValue classPrivate = 
+		jit_insn_load_relative(func, object, 
+		    				   -IL_OBJECT_HEADER_SIZE +
+							   offsetof(ILObjectHeader, classPrivate),
+							   _IL_JIT_TYPE_VPTR);
+	return classPrivate;	
 }
 
 /*
@@ -706,7 +718,7 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 				return JIT_RESULT_OUT_OF_MEMORY;
 			}
 		}
-		SetMethodInThread(func, jitParams[0], method);
+		_ILJitSetMethodInThread(func, jitParams[0], method);
 		returnValue = jit_insn_call_native(func, 0, nativeFunction, signature, jitParams, numParams, 0);
 	}
 	else
@@ -939,7 +951,7 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 	ILJitType jitArgs[total];
 
 	/* Get the return type for this function */
-	if(isCtor)
+	if(isCtor && isArrayOrString)
 	{
 		type = ILType_FromClass(info);
 	}

@@ -97,6 +97,8 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 
 	/* Record the current jitted function. */
 	coder->jitFunction = (ILJitFunction)(method->userData);
+	/* Record the current method. */
+	coder->currentMethod = method;
 
 	/* Create the local variables. */
 	if(!_JITCreateLocals(coder, code->localVarSig))

@@ -3,14 +3,19 @@
 	* engine/jitc.c, engine/jitc_ptr.c: Clean up the code a bit and fix a bug
 	in stelem where a conversion to the array type was missing.
 
+2006-01-05  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c, engine/jitc_ptr.c, engine/jitc_setup.c: Make some minor
+	changes needed for jitc_call.c
+
+	* engine/jitc_call.c: Add constructor-, normal- and virtual calls.
+	(thanks krokas).
+
 2006-01-04  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c, engine/jitc.h, engine/jitc_branch.c, engine/jitc_conv.c,
 	engine/jitc_ptr.c: Implement the type conversion opcodes, the array stuff
 	and some other pointer related opcodes.
-
-	* engine/jitc_call.c: Add constructor-, normal- and virtual calls.
-	(thanks krokas).
 
 2006-01-02  Klaus Treichel  <ktreichel@web.de>
 

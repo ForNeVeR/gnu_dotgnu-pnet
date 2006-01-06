@@ -697,6 +697,40 @@ static ILJitValue _ILJitGetObjectClassPrivate(ILJitFunction func, ILJitValue obj
 }
 
 /*
+ * Get the evaluation stack type for the given ILJitType.
+ */
+static ILJitType _ILJitTypeToStackType(ILJitType type)
+{
+	ILJitType  stackType = jit_type_promote_int(type);;
+
+	if(type == stackType)
+	{
+		if((type == _IL_JIT_TYPE_SINGLE) || (type == _IL_JIT_TYPE_DOUBLE))
+		{
+			stackType = _IL_JIT_TYPE_NFLOAT;
+		}
+	}
+	return stackType;
+}
+
+/*
+ * Convert the given ILJitValue to the type needed on the evaluation stack.
+ * When no conversion is needed the value is returned as it is.
+ */
+static ILJitValue _ILJitValueConvertToStackType(ILJitFunction func,
+												ILJitValue value)
+{
+	ILJitType type = jit_value_get_type(value);
+	ILJitType stackType = _ILJitTypeToStackType(type);
+
+	if(type != stackType)
+	{
+		value = jit_insn_convert(func, value, stackType, 0);
+	}
+	return value;
+}
+
+/*
  * Generate the stub for calling an internal function.
  */
 static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *nativeFunction)

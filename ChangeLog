@@ -1,3 +1,8 @@
+2006-01-06  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c, engine/jitc_ptr.c: Clean up the code a bit and fix a bug
+	in stelem where a conversion to the array type was missing.
+
 2006-01-04  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c, engine/jitc.h, engine/jitc_branch.c, engine/jitc_conv.c,

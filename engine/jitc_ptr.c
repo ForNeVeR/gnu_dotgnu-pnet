@@ -82,31 +82,15 @@ static void LoadArrayElem(ILJITCoder *coder, ILJitType type)
 	ILJitValue length;
 	ILJitValue value;
 	ILJitValue arrayBase;
-	ILJitType  stackType = jit_type_promote_int(type);;
 
 	ValidateAddress(coder, array);
 	length = GetArrayLength(coder, array);
 	ValidateArrayIndex(coder, length, index);
 	arrayBase = GetArrayBase(coder, array);
-	if(type == stackType)
-	{
-		if((type == _IL_JIT_TYPE_SINGLE) || (type == _IL_JIT_TYPE_DOUBLE))
-		{
-			stackType = _IL_JIT_TYPE_NFLOAT;
-		}
-	}
 	value = jit_insn_load_elem(coder->jitFunction, arrayBase, index,
 							   type);
-	if(type != stackType)
-	{
-		coder->jitStack[coder->stackTop - 2] =
-			jit_insn_convert(coder->jitFunction, value,
-							 stackType, 0);
-	}
-	else
-	{
-		coder->jitStack[coder->stackTop - 2] = value;
-	}
+	coder->jitStack[coder->stackTop - 2] = 
+		_ILJitValueConvertToStackType(coder->jitFunction, value);
 	JITC_ADJUST(coder, -1);
 }
 
@@ -120,12 +104,18 @@ static void StoreArrayElem(ILJITCoder *coder, ILJitType type)
 	ILJitValue value = coder->jitStack[coder->stackTop - 1];
 	ILJitValue length;
 	ILJitValue arrayBase;
+	ILJitType valueType = jit_value_get_type(value);
 
 	ValidateAddress(coder, array);
 	length = GetArrayLength(coder, array);
 	ValidateArrayIndex(coder, length, index);
 	arrayBase = GetArrayBase(coder, array);
 
+	/* Convert the value to the array type when needed. */
+	if(valueType != type)
+	{
+		value = jit_insn_convert(coder->jitFunction, value, type, 0);
+	}
 	jit_insn_store_elem(coder->jitFunction, arrayBase, index, value);
 	JITC_ADJUST(coder, -3);
 }
@@ -137,27 +127,11 @@ static void LoadRelative(ILJITCoder *coder, ILJitType type)
 {
 	ILJitValue ptr = coder->jitStack[coder->stackTop - 1];
 	ILJitValue value;
-	ILJitType  stackType = jit_type_promote_int(type);;
 
 	ValidateAddress(coder, ptr);
-	if(type == stackType)
-	{
-		if((type == _IL_JIT_TYPE_SINGLE) || (type == _IL_JIT_TYPE_DOUBLE))
-		{
-			stackType = _IL_JIT_TYPE_NFLOAT;
-		}
-	}
 	value = jit_insn_load_relative(coder->jitFunction, ptr, (jit_nint)0, type);
-	if(type != stackType)
-	{
-		coder->jitStack[coder->stackTop - 1] =
-			jit_insn_convert(coder->jitFunction, value,
-							 stackType, 0);
-	}
-	else
-	{
-		coder->jitStack[coder->stackTop - 1] = value;
-	}
+	coder->jitStack[coder->stackTop - 1] = 
+		_ILJitValueConvertToStackType(coder->jitFunction, value);
 }
 
 /*

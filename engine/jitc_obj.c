@@ -20,9 +20,107 @@
 
 #ifdef IL_JITC_CODE
 
+/*
+ * Get a ILJitValue with a pointer to the class' static area.
+ */
+static ILJitValue _ILJitGetClassStaticArea(ILExecThread *thread,
+										   ILJitFunction func,
+										   ILField *field)
+{
+	/* Get the static data area for a particular class */
+	ILClass *classInfo = ILField_Owner(field);
+	void *classStaticData = ((ILClassPrivate *)(classInfo->userData))->staticData;
+	ILJitValue staticData;
+
+	if(!classStaticData)
+	{
+		if(((ILClassPrivate *)(classInfo->userData))->managedStatic)
+		{
+			classStaticData = _ILEngineAlloc(thread, 0,
+			   ((ILClassPrivate *)(classInfo->userData))->staticSize);
+		}
+		else
+		{
+			/* There are no managed fields in the static area,
+		   	so use atomic allocation */
+			classStaticData = _ILEngineAllocAtomic(thread, 0,
+			   ((ILClassPrivate *)(classInfo->userData))->staticSize);
+		}
+		if(!classStaticData)
+		{
+			jit_exception_builtin(JIT_RESULT_OUT_OF_MEMORY);
+		}
+		else
+		{
+			((ILClassPrivate *)(classInfo->userData))->staticData = classStaticData;
+		}
+	}
+	staticData = jit_value_create_nint_constant(func, _IL_JIT_TYPE_VPTR,
+												(jit_nint)classStaticData);
+	return staticData;
+}
+
 static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 							   int throwException)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue classTo = jit_value_create_nint_constant(jitCoder->jitFunction,
+														_IL_JIT_TYPE_VPTR,
+														(jit_nint)classInfo);
+	ILJitValue object = jitCoder->jitStack[jitCoder->stackTop - 1];
+	jit_label_t label = jit_label_undefined;
+	ILJitValue args[3];
+	ILJitValue returnValue;
+
+	jit_insn_branch_if_not(jitCoder->jitFunction, object, &label);
+	if(ILClass_IsInterface(classInfo))
+	{
+		/* We are casting to an interface */
+		args[0] = object;
+		args[1] = classTo;
+		returnValue = jit_insn_call_native(jitCoder->jitFunction, 0,
+										   ILRuntimeClassImplements,
+										   _ILJitSignature_ILRuntimeClassImplements,
+										   args, 2, 0);
+		jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label);
+		if(throwException)
+		{
+			/* TODO: Throw an InvalidCastException here. */
+		}
+		else
+		{
+			ILJitValue nullPointer = 
+					jit_value_create_nint_constant(jitCoder->jitFunction,
+												   _IL_JIT_TYPE_VPTR,
+												   (jit_nint)0);
+			jitCoder->jitStack[jitCoder->stackTop - 1] = nullPointer;
+		}
+	}
+	else
+	{
+		args[0] = jit_value_get_param(jitCoder->jitFunction, 0);
+		args[1] = object;
+		args[2] = classTo;
+		returnValue = jit_insn_call_native(jitCoder->jitFunction, 0,
+										   ILRuntimeCanCastClass,
+										   _ILJitSignature_ILRuntimeCanCastClass,
+										   args, 3, 0);
+		jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label);
+		if(throwException)
+		{
+			/* TODO: Throw an InvalidCastException here. */
+
+		}
+		else
+		{
+			ILJitValue nullPointer = 
+					jit_value_create_nint_constant(jitCoder->jitFunction,
+												   _IL_JIT_TYPE_VPTR,
+												   (jit_nint)0);
+			jitCoder->jitStack[jitCoder->stackTop - 1] = nullPointer;
+		}
+	}
+	jit_insn_label(jitCoder->jitFunction, &label);
 }
 
 static void JITCoder_LoadField(ILCoder *coder, ILEngineType ptrType,
@@ -110,6 +208,12 @@ static void JITCoder_RefAnyType(ILCoder *coder)
 
 static void JITCoder_PushToken(ILCoder *coder, ILProgramItem *item)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue token = jit_value_create_nint_constant(jitCoder->jitFunction,
+													  _IL_JIT_TYPE_VPTR, 
+							    					 (jit_nint)item);
+
+	JITC_ADJUST(jitCoder, 1);
 }
 
 static void JITCoder_SizeOf(ILCoder *coder, ILType *type)

@@ -69,6 +69,23 @@ static struct _tagILJitTypes _ILJitType_VPTR;
 static ILJitType _ILJitSignature_ILEngineAlloc = 0;
 
 /*
+ * ILInt32 ILRuntimeCanCastClass(ILExecThread *thread, ILObject *object, ILClass *toClass)
+ *
+ */
+static ILJitType _ILJitSignature_ILRuntimeCanCastClass = 0;
+
+/*
+ * ILInt32 ILRuntimeClassImplements(ILObject *object, ILClass *toClass)
+ */
+static ILJitType _ILJitSignature_ILRuntimeClassImplements = 0;
+
+/*
+ * void *ILRuntimeGetThreadStatic(ILExecThread *thread,
+ *							   ILUInt32 slot, ILUInt32 size)
+ */
+static ILJitType _ILJitSignature_ILRuntimeGetThreadStatic = 0;
+
+/*
  * Define offsetof macro if not present.
  */
 #ifndef offsetof
@@ -306,6 +323,104 @@ static ILJitTypes *_ILJitGetTypes(ILType *type, ILExecProcess *process)
 }
 
 /*
+ * Perform a class cast, taking arrays into account.
+ */
+ILInt32 ILRuntimeCanCastClass(ILExecThread *thread, ILObject *object, ILClass *toClass)
+{
+	ILImage *image = ILProgramItem_Image(thread->method);
+	ILClass *fromClass = GetObjectClass(object);
+	ILType *fromType = ILClassGetSynType(fromClass);
+	ILType *toType = ILClassGetSynType(toClass);
+	if(fromType && toType)
+	{
+		if(ILType_IsArray(fromType) && ILType_IsArray(toType) &&
+		   ILTypeGetRank(fromType) == ILTypeGetRank(toType))
+		{
+			return ILTypeAssignCompatibleNonBoxing
+			  (image, ILTypeGetElemType(fromType), ILTypeGetElemType(toType));
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		fromType=ILTypeGetEnumType(ILClassToType(fromClass));
+		toType=ILTypeGetEnumType(ILClassToType(toClass));
+		
+		if(ILTypeIdentical(fromType,toType))
+		{
+			return 1;
+		}
+
+	   	return ILClassInheritsFrom(fromClass, toClass);
+	}
+}
+
+/*
+ * Perform a check if a class implements a given interface.
+ */
+ILInt32 ILRuntimeClassImplements(ILObject *object, ILClass *toClass)
+{
+	ILClass *info = GetObjectClass(object);
+
+	return ILClassImplements(info, toClass);
+}
+
+/*
+ * Get a thread-static value from the current thread.
+ */
+void *ILRuntimeGetThreadStatic(ILExecThread *thread,
+							   ILUInt32 slot, ILUInt32 size)
+{
+	void **array;
+	ILUInt32 used;
+	void *ptr;
+
+	/* Determine if we need to allocate space for a new slot */
+	if(slot >= thread->threadStaticSlotsUsed)
+	{
+		used = (slot + 8) & ~7;
+		array = (void **)ILGCAlloc(sizeof(void *) * used);
+		if(!array)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		if(thread->threadStaticSlotsUsed > 0)
+		{
+			ILMemMove(array, thread->threadStaticSlots,
+					  sizeof(void *) * thread->threadStaticSlotsUsed);
+		}
+		thread->threadStaticSlots = array;
+		thread->threadStaticSlotsUsed = used;
+	}
+
+	/* Fetch the current value in the slot */
+	ptr = thread->threadStaticSlots[slot];
+	if(ptr)
+	{
+		return ptr;
+	}
+
+	/* Allocate a new value and write it to the slot */
+	if(!size)
+	{
+		/* Sanity check, just in case */
+		size = sizeof(unsigned long);
+	}
+	ptr = ILGCAlloc((unsigned long)size);
+	if(!ptr)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+	thread->threadStaticSlots[slot] = ptr;
+	return ptr;
+}
+
+/*
  * Get the pointer to base type from the JitTypes.
  * The pointer type is created on demand if not allready present.
  * Returns 0 when out of memory.
@@ -464,6 +579,35 @@ int ILJitInit()
 	args[2] = jit_type_int;
 	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILEngineAlloc = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	args[2] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_INT32;
+	if(!(_ILJitSignature_ILRuntimeCanCastClass = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_INT32;
+	if(!(_ILJitSignature_ILRuntimeClassImplements = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_UINT32;
+	args[2] = _IL_JIT_TYPE_UINT32;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILRuntimeGetThreadStatic = 
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
 	{
 		return 0;

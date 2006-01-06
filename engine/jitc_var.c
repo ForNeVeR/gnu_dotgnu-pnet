@@ -20,25 +20,6 @@
 
 #ifdef IL_JITC_CODE
 
-/*
- * Convert a local/arg to the type needed on the stack.
- * Returns the converted value when conversion is needed or value as it is.
- */
-static ILJitValue ConvertToStack(ILJITCoder *coder, ILJitValue value)
-{
-	ILJitType type = jit_value_get_type(value);
-	ILJitType newType = jit_type_promote_int(type);
-
-	if(type != newType)
-	{
-		return jit_insn_convert(coder->jitFunction, value, newType, 0);
-	}
-	if((type == _IL_JIT_TYPE_SINGLE) || (type == _IL_JIT_TYPE_DOUBLE))
-	{
-		return jit_insn_convert(coder->jitFunction, value, _IL_JIT_TYPE_NFLOAT, 0);
-	}
-	return value;
-}
 
 /*
  * Handle a load from an argument.
@@ -48,7 +29,8 @@ static void JITCoder_LoadArg(ILCoder *coder, ILUInt32 argNum, ILType *type)
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	/* We need argNum + 1 because the ILExecThread is added as param 0 */
 	ILJitValue param = jit_value_get_param(jitCoder->jitFunction, argNum + 1);
-	ILJitValue newParam = ConvertToStack(jitCoder, param);
+	ILJitValue newParam = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+														param);
 
 	jitCoder->jitStack[jitCoder->stackTop] = newParam;
 	JITC_ADJUST(jitCoder, 1);
@@ -63,7 +45,8 @@ static void JITCoder_LoadLocal(ILCoder *coder, ILUInt32 localNum, ILType *type)
 	ILJitValue localValue = jitCoder->jitLocals[localNum];
 
 	jitCoder->jitStack[jitCoder->stackTop] = 
-					ConvertToStack(jitCoder, localValue);
+					_ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  localValue);
 	JITC_ADJUST(jitCoder, 1);
 }
 

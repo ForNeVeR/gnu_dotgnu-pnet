@@ -483,6 +483,10 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
  */
 static void JITCoder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	jitCoder->numSwitch = 0;
+	jitCoder->maxSwitch = numEntries;
 }
 
 /*
@@ -490,6 +494,24 @@ static void JITCoder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
  */
 static void JITCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
+	ILJITLabel *label = GetLabel(jitCoder, dest);
+	
+	jit_value_t constant = jit_value_create_nint_constant(jitCoder->jitFunction,
+														  jit_type_nint,
+														  jitCoder->numSwitch);
+
+	jit_value_t temp = jit_insn_eq(jitCoder->jitFunction, 
+					jitCoder->jitStack[jitCoder->stackTop - 1],
+					constant);
+
+	jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
+
+	++jitCoder->numSwitch;
+	if(jitCoder->numSwitch==jitCoder->maxSwitch) 
+	{
+		JITC_ADJUST(jitCoder, -1);
+	}
 }
 
 /*

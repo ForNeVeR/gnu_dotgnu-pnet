@@ -1,3 +1,8 @@
+2006-01-07  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
+
+	* engine/jitc.c, engine/jitc_branch.c: Implement support for the switch
+	instruction.
+
 2006-01-06  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Add some helper functions for jitc_obj.c

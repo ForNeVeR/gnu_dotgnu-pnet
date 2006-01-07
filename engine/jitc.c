@@ -134,6 +134,10 @@ struct _tagILJITCoder
 	ILJITLabel     *labelList;
 	int				labelOutOfMemory;
 
+	/* Handle the switch table. */
+	int				numSwitch;
+	int				maxSwitch;
+
 	/* The current jitted function. */
 	ILJitFunction	jitFunction;
 };

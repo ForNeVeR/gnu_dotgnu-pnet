@@ -46,6 +46,7 @@ typedef struct
 	int			managedInstance;
 	int			managedStatic;
 #ifdef IL_USE_JIT
+	void	  **jitVtable;
 	ILJitTypes *jitTypes;
 #endif	
 } LayoutInfo;
@@ -77,6 +78,7 @@ static int LayoutType(ILExecProcess *process, ILType *type, LayoutInfo *layout)
 		{
 			layout->managedInstance = 1;
 		}
+		layout->jitVtable = 0;
 	#else
 		switch(ILType_ToElement(type))
 		{
@@ -218,6 +220,7 @@ static int LayoutType(ILExecProcess *process, ILType *type, LayoutInfo *layout)
 		}
 		layout->size = ILJitTypeGetSize(layout->jitTypes->jitTypeBase);
 		layout->alignment = ILJitTypeGetAlignment(layout->jitTypes->jitTypeBase);
+		layout->jitVtable = 0;
 	#else
 	#if defined(HAVE_LIBFFI)
 		layout->size = ffi_type_pointer.size;
@@ -546,14 +549,23 @@ static void BuildIMT(ILExecProcess *process, ILClass *info,
 						if(!(classPrivate->imt[imtIndex]))
 						{
 							/* No conflict at this table position */
+						#ifdef IL_USE_JIT
+							classPrivate->imt[imtIndex] =
+								classPrivate->jitVtable[vtableIndex];
+						#else
 							classPrivate->imt[imtIndex] =
 								classPrivate->vtable[vtableIndex];
+						#endif
 						}
 						else
 						{
 							/* We have encountered a conflict in the table */
 							classPrivate->imt[imtIndex] =
+							#ifdef IL_USE_JIT
+								(void *)(ILNativeInt)(-1);
+							#else
 								(ILMethod *)(ILNativeInt)(-1);
+							#endif
 						}
 					}
 				}
@@ -570,16 +582,22 @@ static void BuildIMT(ILExecProcess *process, ILClass *info,
 	/* Clear positions in the table that indicate conflicts */
 	for(posn = 0; posn < IL_IMT_SIZE; ++posn)
 	{
+	#ifdef IL_USE_JIT
+		if(classPrivate->imt[posn] == (void *)(ILNativeInt)(-1))
+	#else
 		if(classPrivate->imt[posn] == (ILMethod *)(ILNativeInt)(-1))
+	#endif
 		{
 			classPrivate->imt[posn] = 0;
 		}
+	#ifndef IL_USE_JIT
 		#if IL_DEBUG_IMTS
 		if(classPrivate->imt[posn] != 0)
 		{
 			fprintf(stderr, "\t %d : %s\n", posn, ILMethod_Name(classPrivate->imt[posn]));
 		}
 		#endif
+	#endif
 	}
 
 	#if IL_DEBUG_IMTS
@@ -613,6 +631,9 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	ILClass *parent;
 	ILImplements *implements;
 	ILMethodCode code;
+#ifdef IL_USE_JIT
+	void **jitVtable;
+#endif
 
 	/* Determine if we have already tried to lay out this class */
 	if(info->userData)
@@ -638,6 +659,7 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 			layout->managedInstance = classPrivate->managedInstance;
 			layout->managedStatic = classPrivate->managedStatic;
 		#ifdef IL_USE_JIT
+			layout->jitVtable = classPrivate->jitVtable;
 			layout->jitTypes = &(classPrivate->jitTypes);
 		#endif
 			return 1;
@@ -858,6 +880,13 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	classPrivate->alignment = layout->alignment;
 	classPrivate->nativeSize = layout->nativeSize;
 	classPrivate->nativeAlignment = layout->nativeAlignment;
+#ifdef IL_USE_JIT
+	if(!ILJitTypeCreate(classPrivate, process))
+	{
+		info->userData = 0;
+		return 0;
+	}
+#endif
 	classPrivate->inLayout = 0;
 
 	/* Allocate the static fields.  We must do this after the
@@ -920,19 +949,6 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 		}
 	}
 
-#ifdef IL_USE_JIT
-	if(!ILJitTypeCreate(classPrivate))
-	{
-		info->userData = 0;
-		return 0;
-	}
-	if(!ILJitCreateFunctionsForClass(process->coder, info))
-	{
-		ILJitTypesDestroy(&(classPrivate->jitTypes));
-		info->userData = 0;
-		return 0;
-	}
-#endif
 	/* Allocate vtable slots to the virtual methods in this class */
 	method = 0;
 	explicitSize = layout->vtableSize;
@@ -975,6 +991,15 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 			{
 				/* Use the same index as the ancestor */
 				method->index = ancestor->index;
+			#ifdef IL_USE_JIT
+				if(!ILJitFunctionCreateFromAncestor(process->coder,
+													method,
+													ancestor))
+				{
+					info->userData = 0;
+					return 0;
+				}
+			#endif
 			}
 			else
 			{
@@ -997,6 +1022,15 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 		return 0;
 	}
 
+#ifdef IL_USE_JIT
+	if(!ILJitCreateFunctionsForClass(process->coder, info))
+	{
+		ILJitTypesDestroy(&(classPrivate->jitTypes));
+		info->userData = 0;
+		return 0;
+	}
+#endif
+
 	/* Allocate the vtable and copy the parent's vtable into it */
 	if((vtable = (ILMethod **)
 			ILMemStackAllocItem(&(info->programItem.image->memStack),
@@ -1005,9 +1039,21 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 		info->userData = 0;
 		return 0;
 	}
+#ifdef IL_USE_JIT
+	if((jitVtable = (void **)
+			ILMemStackAllocItem(&(info->programItem.image->memStack),
+						        layout->vtableSize * sizeof(void *))) == 0)
+	{
+		info->userData = 0;
+		return 0;
+	}
+#endif
 	if(explicitSize > 0)
 	{
 		ILMemCpy(vtable, layout->vtable, explicitSize * sizeof(ILMethod *));
+	#ifdef IL_USE_JIT
+		ILMemCpy(jitVtable, layout->jitVtable, explicitSize * sizeof(ILMethod *));
+	#endif
 	}
 
 	/* Override the vtable slots with this class's method implementations */
@@ -1018,6 +1064,9 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 		if((method->member.attributes & IL_META_METHODDEF_VIRTUAL) != 0)
 		{
 			vtable[method->index] = method;
+		#ifdef IL_USE_JIT
+			jitVtable[method->index] = jit_function_to_vtable_pointer(method->userData);
+		#endif
 		}
 	}
 
@@ -1049,6 +1098,10 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	classPrivate->managedInstance = layout->managedInstance;
 	classPrivate->managedStatic = layout->managedStatic;
 	layout->vtable = vtable;
+#ifdef IL_USE_JIT
+	classPrivate->jitVtable = jitVtable;
+	layout->jitVtable = jitVtable;
+#endif
 
 #ifdef IL_USE_IMTS
 	/* Build the interface method table for this class */

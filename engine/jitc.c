@@ -69,6 +69,13 @@ static struct _tagILJitTypes _ILJitType_VPTR;
 static ILJitType _ILJitSignature_ILEngineAlloc = 0;
 
 /*
+ * static void *_ILRuntimeLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
+ *												ILClass *interfaceClass,
+ *												ILUInt32 index)
+ */
+static ILJitType _ILJitSignature_ILRuntimeLookupInterfaceMethod = 0;
+
+/*
  * ILInt32 ILRuntimeCanCastClass(ILExecThread *thread, ILObject *object, ILClass *toClass)
  *
  */
@@ -424,6 +431,51 @@ void *ILRuntimeGetThreadStatic(ILExecThread *thread,
 	return ptr;
 }
 
+static void *_ILRuntimeLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
+											 ILClass *interfaceClass,
+											 ILUInt32 index)
+{
+	ILImplPrivate *implements;
+	ILClassPrivate *searchClass = objectClassPrivate;
+	ILClass *parent;
+
+	/* Locate the interface table within the class hierarchy for the object */
+	while(searchClass != 0)
+	{
+		implements = searchClass->implements;
+		while(implements != 0)
+		{
+			if(implements->interface == interfaceClass)
+			{
+				/* We've found the interface, so look in the interface
+				   table to find the vtable slot, which is then used to
+				   look in the class's vtable for the actual method */
+				index = (ILUInt32)((ILImplPrivate_Table(implements))[index]);
+				if(index != (ILUInt32)(ILUInt16)0xFFFF)
+				{
+					return objectClassPrivate->jitVtable[index];
+				}
+				else
+				{
+					/* The interface slot is abstract.  This shouldn't
+					   happen in practice, but let's be paranoid anyway */
+					return 0;
+				}
+			}
+			implements = implements->next;
+		}
+		parent = ILClassGetParent(searchClass->classInfo);
+		if(!parent)
+		{
+			break;
+		}
+		searchClass = (ILClassPrivate *)(parent->userData);
+	}
+
+	/* The interface implementation was not found */
+	return 0;
+}
+
 /*
  * Get the pointer to base type from the JitTypes.
  * The pointer type is created on demand if not allready present.
@@ -523,6 +575,56 @@ static ILJitType _ILJitGetReturnType(ILType *type, ILExecProcess *process)
 }
 
 /*
+ * Call the static constructor for a class if necessary.
+ */
+static void _ILJitCallStaticConstructor(ILJITCoder *coder, ILClass *classInfo,
+								  int isCtor)
+{
+	if((classInfo->attributes & IL_META_TYPEDEF_CCTOR_ONCE) != 0)
+	{
+		/* We already know that the static constructor has been called,
+		   so there is no point outputting a call to it again */
+		return;
+	}
+	if(isCtor ||
+	   (classInfo->attributes & IL_META_TYPEDEF_BEFORE_FIELD_INIT) == 0)
+	{
+		/* We must call the static constructor before instance
+		   constructors, or before static methods when the
+		   "beforefieldinit" attribute is not present */
+		ILMethod *cctor = 0;
+		while((cctor = (ILMethod *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)cctor,
+					 IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			if(ILMethod_IsStaticConstructor(cctor))
+			{
+				break;
+			}
+		}
+		if(cctor != 0)
+		{
+			/* Don't call it if we are within the constructor already */
+			if(cctor != coder->currentMethod)
+			{
+				/* Output a call to the static constructor */
+				jit_value_t thread = jit_value_get_param(coder->jitFunction, 0);
+
+				jit_insn_call(coder->jitFunction, "cctor",
+								ILJitFunctionFromILMethod(cctor), 0,
+								&thread, 1, 0);
+			}
+		}
+		else
+		{
+			/* This class does not have a static constructor,
+			   so mark it so that we never do this test again */
+			classInfo->attributes |= IL_META_TYPEDEF_CCTOR_ONCE;
+		}
+	}
+}
+
+/*
  * Generate the code to throw the current exception in the thread in libjit.
  */
 static void _ILJitThrowCurrentException(ILJITCoder *coder)
@@ -612,6 +714,16 @@ int ILJitInit()
 	args[2] = _IL_JIT_TYPE_UINT32;
 	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILRuntimeGetThreadStatic = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	args[2] = _IL_JIT_TYPE_UINT32;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILRuntimeLookupInterfaceMethod = 
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
 	{
 		return 0;
@@ -916,7 +1028,6 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
  */
 static int _ILJitOnDemandFunc(jit_function_t func)
 {
-	/* TODO */
 	ILExecThread *thread = ILExecThreadCurrent();
 	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
 	ILMethodCode code;
@@ -1067,14 +1178,13 @@ static int _ILJitOnDemandFunc(jit_function_t func)
 }
 
 /*
- * Create the jit function header for an ILMethod.
- * We allways pass the ILExecThread as arg 0.
+ * Create the signature type for an ILMethod.
  */
-int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
+static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder, ILMethod *method)
 {
-	ILJITCoder *coder = ((ILJITCoder *)_coder);
 	ILType *signature = ILMethod_Signature(method);
 	ILType *type;
+
 	/* number of args in the bytecode */
 	/* Argument 0 is the type of the return value. */
 	ILUInt32 num = ILTypeNumParams(signature);
@@ -1092,20 +1202,13 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 	/* calling convention for this function. */
 	/* The type of the jit signature for this function. */
 	ILJitType jitSignature;
-	/* The new created function. */
-	ILJitFunction jitFunction;
-	/* Some infos that we'll need later. */
-	ILClass *info = ILMethod_Owner(method);
 	/* Flag if this is an array or string constructor. */
 	int isArrayOrString = 0;
 	/* Flag if the method is a ctor. */
 	int isCtor = ILMethodIsConstructor(method);
+	/* Some infos that we'll need later. */
+	ILClass *info = ILMethod_Owner(method);
 
-	/* Don't create the jit function twice. */
-	if(method->userData)
-	{
-		return 1;
-	}
 	if(ILType_HasThis(signature))
 	{
 		if(!isCtor)
@@ -1130,6 +1233,7 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 		}
 	}
 
+	/* Array to hold the parameter types. */
 	ILJitType jitArgs[total];
 
 	/* Get the return type for this function */
@@ -1193,7 +1297,31 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 	{
 		return 0;
 	}
+	return jitSignature;
+}
 
+/*
+ * Create the jit function header for an ILMethod.
+ * We allways pass the ILExecThread as arg 0.
+ */
+int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
+{
+	ILJITCoder *coder = ((ILJITCoder *)_coder);
+	/* The type of the jit signature for this function. */
+	ILJitType jitSignature;
+	/* The new created function. */
+	ILJitFunction jitFunction;
+
+	/* Don't create the jit function twice. */
+	if(method->userData)
+	{
+		return 1;
+	}
+	if(!(jitSignature = _ILJitCreateMethodSignature(coder, method)))
+	{
+		return 0;
+	}
+	
 	/* Now we can create the jit function itself. */
 	/* We must be able to create jit function prototypes while an other */
 	/* function is on demand compiled. */
@@ -1222,6 +1350,59 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 	return 1;
 }
 
+/*
+ * Create the jit function header for an ILMethod with the information from
+ * a virtual ancestor.
+ * We can reuse the signature in this case.
+ */
+int ILJitFunctionCreateFromAncestor(ILCoder *_coder, ILMethod *method,
+													 ILMethod *virtualAncestor)
+{
+	ILJITCoder *jitCoder = ((ILJITCoder *)_coder);
+	ILJitFunction ancestor = virtualAncestor->userData;
+	ILJitFunction jitFunction;
+	ILJitType jitSignature;
+
+	/* Don't create the jit function twice. */
+	if(method->userData)
+	{
+		return 1;
+	}
+
+	if(!ancestor)
+	{
+		/* Tha ancestor has no jit function (might be abstract). */
+		/* So we need to do it the hard way. */
+		return ILJitFunctionCreate(_coder, method);
+	}
+
+	jitSignature = jit_function_get_signature(ancestor);
+
+	/* Now we can create the jit function itself. */
+	/* We must be able to create jit function prototypes while an other */
+	/* function is on demand compiled. */
+	if(!(jitFunction = jit_function_create(jitCoder->context, jitSignature)))
+	{
+		return 0;
+	}
+
+	/* Set the ILMethod in the new functions metadata. */
+	/* Because there has nothing to be freed we can use 0 for the free_func. */
+	if(!jit_function_set_meta(jitFunction, IL_JIT_META_METHOD, method, 0, 0))
+	{
+		return 0;
+	}
+	
+	/* now set the on demand compiler function */
+	jit_function_set_on_demand_compiler(jitFunction, _ILJitOnDemandFunc);
+
+	/* and link the new jitFunction to the method. */
+	method->userData = jitFunction;
+
+	/* are we ready now ? */
+
+	return 1;
+}
 
 /*
  * Create all jitMethods for the given class.
@@ -1289,23 +1470,59 @@ ILJitFunction ILJitFunctionFromILMethod(ILMethod *method)
 }
 
 /*
+ * Handle special cases of the Type creation like handles, ...
+ * Returns the jit type for the special case or 0 if is no special case.
+ */
+static ILJitType _ILJitTypeSpecials(ILClassName *className)
+{
+	if(className->namespace && !strcmp(className->namespace, "System"))
+	{
+		if(!strcmp(className->name, "RuntimeTypeHandle"))
+		{
+			return _IL_JIT_TYPE_NINT;
+		}
+		if(!strcmp(className->name, "RuntimeMethodHandle"))
+		{
+			return _IL_JIT_TYPE_NINT;
+		}
+		if(!strcmp(className->name, "RuntimeFieldHandle"))
+		{
+			return _IL_JIT_TYPE_NINT;
+		}
+		if(!strcmp(className->name, "RuntimeArgumentHandle"))
+		{
+			return _IL_JIT_TYPE_NINT;
+		}
+	}
+	return 0;
+}
+
+/*
  * Create the class/struct representation of a clr type for libjit.
  * and store the type in classPrivate.
  * Returns the 1 on success else 0
  */
-int ILJitTypeCreate(ILClassPrivate *classPrivate)
+int ILJitTypeCreate(ILClassPrivate *classPrivate, ILExecProcess *process)
 {
-	ILJitType type;
+	ILJitType type = 0;
 
 	if(classPrivate->size >= 0)
 	{
-		if(!(type = jit_type_create_struct(0, 0, 0)))
+		/* When it's a runtime object check if it has to be handled special. */
+		if(process->context->systemImage == classPrivate->classInfo->programItem.image)
 		{
-			return 0;
+			type = _ILJitTypeSpecials(classPrivate->classInfo->className);
 		}
-		jit_type_set_size_and_alignment(type,
-										classPrivate->size,
-										classPrivate->alignment);
+		if(!type)
+		{
+			if(!(type = jit_type_create_struct(0, 0, 0)))
+			{
+				return 0;
+			}
+			jit_type_set_size_and_alignment(type,
+											classPrivate->size,
+											classPrivate->alignment);
+		}
 		classPrivate->jitTypes.jitTypeBase = type;
 		if(!(classPrivate->jitTypes.jitTypePtr = jit_type_create_pointer(type, 1)))
 		{

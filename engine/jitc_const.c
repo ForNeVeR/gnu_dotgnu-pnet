@@ -116,12 +116,15 @@ static void JITCoder_StringConstant(ILCoder *coder, ILToken token, void *object)
 			jit_value_create_nint_constant(jitCoder->jitFunction,
 											jit_type_void_ptr,
 											(jit_nint)object);
-		JITC_ADJUST(jitCoder, 1);
 	}
 	else
 	{
-		/* TODO */
+		jitCoder->jitStack[jitCoder->stackTop] = 
+			jit_value_create_nint_constant(jitCoder->jitFunction,
+										   _IL_JIT_TYPE_VPTR, 
+								    	   (jit_nint)token);
 	}
+	JITC_ADJUST(jitCoder, 1);
 }
 
 #endif	/* IL_JITC_CODE */

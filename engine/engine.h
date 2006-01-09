@@ -482,11 +482,16 @@ struct _tagILClassPrivate
 	ILClassPrivate *nextClassPrivate;	/* linked list of ILClassPrivate objects */
 	ILExecProcess  *process;			/* Back-pointer to the process this class belongs to */
 #ifdef IL_USE_JIT
+	void		  **jitVtable;			/* table with vtable pointers to the vtable methods. */
 	ILJitTypes		jitTypes;			/* jit types for this CLR type */
 #endif
 #ifdef IL_USE_IMTS
 	ILUInt32		imtBase;			/* Base for IMT identifiers */
+#ifdef IL_USE_JIT
+	void		   *imt[IL_IMT_SIZE];	/* Interface method table with vtable pointers. */
+#else
 	ILMethod	   *imt[IL_IMT_SIZE];	/* Interface method table */
+#endif
 #endif
 
 };

@@ -117,6 +117,14 @@ int ILJitInit();
 int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method);
 
 /*
+ * Create the jit function header for an ILMethod with the information from
+ * a virtual ancestor.
+ * We can reuse the signature in this case.
+ */
+int ILJitFunctionCreateFromAncestor(ILCoder *_coder, ILMethod *method,
+													 ILMethod *virtualAncestor);
+
+/*
  * Create all jitMethods for the given class.
  * Returns 1 on success and 0 on error.
  */
@@ -140,7 +148,7 @@ int ILJitCallMethod(ILExecThread *thread, ILMethod *method,
  * and store the type in classPrivate.
  * Returns the jit type on success else 0
  */
-int ILJitTypeCreate(ILClassPrivate *classPrivate);
+int ILJitTypeCreate(ILClassPrivate *classPrivate, ILExecProcess *process);
 
 /*
  * Destroy the given type in libjit.

@@ -1,3 +1,26 @@
+2006-01-09  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.h: Add jitVtable (vtable pointers for jit functions) and
+	change imt do void ** (vtable pointers for jit interface functions) in the
+	classPrivate data.
+
+	* engine/layout.c: Add the management of the jit vtables and optimize the
+	creation of overriding virtual functuins so that they use the signature of
+	the ancestor.
+
+	* engine/jitc.h: Add some prototypes.
+
+	* engine/jitc.c, engine/jitc_call.c: Add more functionality for calls.
+
+	* engine/jitc_const.c: Add support for pushing a string token on the
+	evaluation stack.
+
+	* engine/jitc_setup.c: Add support for static constructors so that they are
+	not executed more than once.
+
+	* engine/jitc_obj.c: Fix a bug in PushToken (Value was not pushed on the
+	stack).
+
 2006-01-07  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* engine/jitc.c, engine/jitc_branch.c: Implement support for the switch

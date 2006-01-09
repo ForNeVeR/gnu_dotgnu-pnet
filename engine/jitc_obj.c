@@ -209,9 +209,11 @@ static void JITCoder_RefAnyType(ILCoder *coder)
 static void JITCoder_PushToken(ILCoder *coder, ILProgramItem *item)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue token = jit_value_create_nint_constant(jitCoder->jitFunction,
-													  _IL_JIT_TYPE_VPTR, 
-							    					 (jit_nint)item);
+
+	jitCoder->jitStack[jitCoder->stackTop] = 
+		jit_value_create_nint_constant(jitCoder->jitFunction,
+									   _IL_JIT_TYPE_VPTR, 
+							    	   (jit_nint)item);
 
 	JITC_ADJUST(jitCoder, 1);
 }

@@ -1,3 +1,7 @@
+2006-01-12  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_obj.c: Fix JITCoder_CastClass.
+
 2006-01-09  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.h: Add jitVtable (vtable pointers for jit functions) and

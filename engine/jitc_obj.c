@@ -82,19 +82,6 @@ static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 										   ILRuntimeClassImplements,
 										   _ILJitSignature_ILRuntimeClassImplements,
 										   args, 2, 0);
-		jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label);
-		if(throwException)
-		{
-			/* TODO: Throw an InvalidCastException here. */
-		}
-		else
-		{
-			ILJitValue nullPointer = 
-					jit_value_create_nint_constant(jitCoder->jitFunction,
-												   _IL_JIT_TYPE_VPTR,
-												   (jit_nint)0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = nullPointer;
-		}
 	}
 	else
 	{
@@ -105,20 +92,28 @@ static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 										   ILRuntimeCanCastClass,
 										   _ILJitSignature_ILRuntimeCanCastClass,
 										   args, 3, 0);
+	}
+	if(throwException)
+	{
 		jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label);
-		if(throwException)
-		{
-			/* TODO: Throw an InvalidCastException here. */
+		/* TODO: Throw an InvalidCastException here. */
 
-		}
-		else
-		{
-			ILJitValue nullPointer = 
-					jit_value_create_nint_constant(jitCoder->jitFunction,
-												   _IL_JIT_TYPE_VPTR,
-												   (jit_nint)0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = nullPointer;
-		}
+	}
+	else
+	{
+		jit_label_t label1 = jit_label_undefined;
+		ILJitValue temp = jit_value_create(jitCoder->jitFunction, _IL_JIT_TYPE_VPTR);
+		ILJitValue nullPointer = 
+				jit_value_create_nint_constant(jitCoder->jitFunction,
+											   _IL_JIT_TYPE_VPTR,
+											   (jit_nint)0);
+	
+		jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label1);
+		jit_insn_store(jitCoder->jitFunction, temp, nullPointer);
+		jit_insn_branch(jitCoder->jitFunction, &label);
+		jit_insn_label(jitCoder->jitFunction, &label1);
+		jit_insn_store(jitCoder->jitFunction, temp, jitCoder->jitStack[jitCoder->stackTop - 1]);
+		jitCoder->jitStack[jitCoder->stackTop - 1] = temp;
 	}
 	jit_insn_label(jitCoder->jitFunction, &label);
 }

@@ -294,6 +294,11 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitTopLevelWindow
 
 	}
 
+	void IToolkitTopLevelWindow.SetOpacity(double opacity)
+	{
+		// Not yet implemented
+	}
+
 	internal override void SetFocus()
 	{
 		if (sink != null)

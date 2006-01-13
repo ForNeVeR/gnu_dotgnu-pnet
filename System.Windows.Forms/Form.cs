@@ -513,9 +513,12 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					// We don't support transparent windows,
-					// so just save the value away for later.
 					opacity = value;
+					IToolkitTopLevelWindow window = (IToolkitTopLevelWindow)ToolkitWindow;
+					if(window != null)
+					{
+						window.SetOpacity(opacity);
+					}
 				}
 			}
 	public Form[] OwnedForms
@@ -736,6 +739,10 @@ public class Form : ContainerControl
 							window.Dimensions.Width,
 							window.Dimensions.Height
 						);
+				}
+				if(opacity != 1.0)
+				{
+					window.SetOpacity(opacity);
 				}
 				return window;
 			}

@@ -410,6 +410,11 @@ internal sealed class DrawingTopLevelWindow
 				OtherHints = otherHints;
 			}
 
+	void IToolkitTopLevelWindow.SetOpacity(double opacity)
+			{
+				Opacity = opacity;
+			}
+
 	protected override void OnBeginInvokeMessage(IntPtr i_gch)
 			{
 				if( sink != null )

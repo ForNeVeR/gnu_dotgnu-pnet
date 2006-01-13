@@ -2377,6 +2377,32 @@ public class TopLevelWindow : InputOutputWidget
 				}
 			}
 
+	public double Opacity
+	{
+		set
+		{
+			int op = (int)(value * 0xffffffff);
+			try
+			{	
+				IntPtr display = dpy.Lock();
+				XWindow handle = GetWidgetHandle();
+				
+				Xsharp.Xlib.XChangeProperty
+									(display, handle,
+									Xlib.XInternAtom(display, "_NET_WM_WINDOW_OPACITY",
+													XBool.False),
+									Xlib.XInternAtom(display, "CARDINAL",
+													XBool.False),
+									32, 0 /* PropModeReplace */,
+									new Xlib.Xlong [] {(Xlib.Xlong)(op)}, 1);
+			}
+			finally
+			{
+				dpy.Unlock();
+			}
+		}
+	}
+
 } // class TopLevelWindow
 
 } // namespace Xsharp

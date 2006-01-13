@@ -1,3 +1,14 @@
+2006-01-13  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing/Toolkit/IToolkitTopLevelWindow.cs,
+	* System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	* System.Windows.Forms/Form.cs,
+	* Xsharp/TopLevelWindow.cs:
+	enable transparent forms.
+	can be used with xorg and if option "Composite" is "Enable" in section "Extensions" in xorg.conf.
+	Now we can display semi transparent forms!!!.
+	
 
 2006-01-05  Gopal V  <gopalv82@yahoo.com>
 

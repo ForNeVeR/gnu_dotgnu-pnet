@@ -54,6 +54,9 @@ public interface IToolkitTopLevelWindow : IToolkitWindow
 	// Change the set of supported window decorations and functions.
 	void SetWindowFlags(ToolkitWindowFlags flags);
 
+	// Set opacity
+	void SetOpacity(double opacity);
+
 }; // interface IToolkitWindow
 
 }; // namespace System.Drawing.Toolkit

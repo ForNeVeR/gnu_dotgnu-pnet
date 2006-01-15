@@ -1,3 +1,7 @@
+2006-01.15  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_obj.c: Add the rest of the opcodes. (thanks_terminus_)
+	
 2006-01-15  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* engine/jitc.c: Add jit type for typed references.

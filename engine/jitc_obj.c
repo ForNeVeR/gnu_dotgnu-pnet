@@ -23,17 +23,17 @@
 /*
  * Get a ILJitValue with a pointer to the class' static area.
  */
-static ILJitValue _ILJitGetClassStaticArea(ILExecThread *thread,
-										   ILJitFunction func,
+static ILJitValue _ILJitGetClassStaticArea(ILJitFunction func,
 										   ILField *field)
 {
 	/* Get the static data area for a particular class */
 	ILClass *classInfo = ILField_Owner(field);
 	void *classStaticData = ((ILClassPrivate *)(classInfo->userData))->staticData;
-	ILJitValue staticData;
 
 	if(!classStaticData)
 	{
+		ILExecThread *thread = ILExecThreadCurrent();
+
 		if(((ILClassPrivate *)(classInfo->userData))->managedStatic)
 		{
 			classStaticData = _ILEngineAlloc(thread, 0,
@@ -55,9 +55,8 @@ static ILJitValue _ILJitGetClassStaticArea(ILExecThread *thread,
 			((ILClassPrivate *)(classInfo->userData))->staticData = classStaticData;
 		}
 	}
-	staticData = jit_value_create_nint_constant(func, _IL_JIT_TYPE_VPTR,
+	return jit_value_create_nint_constant(func, _IL_JIT_TYPE_VPTR,
 												(jit_nint)classStaticData);
-	return staticData;
 }
 
 /*
@@ -90,6 +89,60 @@ static ILJitValue _ILJitGetValFromRef(ILJITCoder *jitCoder, ILJitValue refValue,
 	valuePtr = jit_insn_load_relative(jitCoder->jitFunction, ptr, valueOffset,
 									  _IL_JIT_TYPE_VPTR);
 	return valuePtr;
+}
+
+/*
+ * Process the ldflda / ldsflda opcodes.
+ * Returns the ILJitValue with the field address.
+ */
+static ILJitValue _ILJitLoadFieldAddress(ILJITCoder *coder, ILJitValue base,
+										 ILUInt32 offset, int mayBeNull)
+{
+	if(mayBeNull)
+	{
+		jit_insn_check_null(coder->jitFunction, base);
+	}
+	return jit_insn_add_relative(coder->jitFunction, base, offset);
+}
+
+/*
+ * Process the ldfld / ldsfld opcodes.
+ * Returns the ILJitValue with the field contents.
+ */
+static ILJitValue _ILJitLoadField(ILJITCoder *coder, ILJitValue base,
+								  ILType *fieldType, ILUInt32 offset,
+								  int mayBeNull)
+{
+	ILJitType type = _ILJitGetReturnType(fieldType, coder->process);
+	ILJitValue value;
+
+	if(mayBeNull)
+	{
+		jit_insn_check_null(coder->jitFunction, base);
+	}
+	value =  jit_insn_load_relative(coder->jitFunction, base, offset, type);
+	return _ILJitValueConvertToStackType(coder->jitFunction, value);
+}
+
+/*
+ * Process the stfld / stsfld opcodes.
+ */
+static void _ILJitStoreField(ILJITCoder *coder, ILJitValue base,
+								   ILJitValue value, ILType *fieldType,
+								   ILUInt32 offset, int mayBeNull)
+								   
+{
+	ILJitType type = _ILJitGetReturnType(fieldType, coder->process);
+
+	if(mayBeNull)
+	{
+		jit_insn_check_null(coder->jitFunction, base);
+	}
+	if(jit_value_get_type(value) != type)
+	{
+		value = jit_insn_convert(coder->jitFunction, value, type, 0);
+	}
+	jit_insn_store_relative(coder->jitFunction, base, offset, value);
 }
 
 static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
@@ -154,57 +207,169 @@ static void JITCoder_LoadField(ILCoder *coder, ILEngineType ptrType,
 							   ILType *objectType, ILField *field,
 							   ILType *fieldType)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue ptr = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+	jitCoder->jitStack[jitCoder->stackTop - 1] =
+		_ILJitLoadField(jitCoder, ptr, fieldType, field->offset, 1);
 }
 
 static void JITCoder_LoadThisField(ILCoder *coder, ILField *field,
 							   	   ILType *fieldType)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	/* We need argNum + 1 because the ILExecThread is added as param 0 */
+	ILJitValue param = jit_value_get_param(jitCoder->jitFunction, 1);
+
+	jitCoder->jitStack[jitCoder->stackTop] = param;
+	JITC_ADJUST(jitCoder, 1);
 }
 
 static void JITCoder_LoadStaticField(ILCoder *coder, ILField *field,
 							         ILType *fieldType)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
+											  field);
+	/* Output a call to the static constructor */
+	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 0);
+
+	jitCoder->jitStack[jitCoder->stackTop] =
+		_ILJitLoadField(jitCoder, ptr, fieldType, field->offset, 0);
+	JITC_ADJUST(jitCoder, 1);
 }
 
 static void JITCoder_LoadFieldAddr(ILCoder *coder, ILEngineType ptrType,
 							       ILType *objectType, ILField *field,
 							       ILType *fieldType)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue ptr = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+	jitCoder->jitStack[jitCoder->stackTop - 1] =
+		_ILJitLoadFieldAddress(jitCoder, ptr, field->offset, 1);
 }
 
 static void JITCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 					 ILType *fieldType)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
+											  field);
+
+	/* Output a call to the static constructor */
+	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 0);
+
+	jitCoder->jitStack[jitCoder->stackTop] =
+		_ILJitLoadFieldAddress(jitCoder, ptr, field->offset, 0);
+	JITC_ADJUST(jitCoder, 1);
 }
 
 static void JITCoder_StoreField(ILCoder *coder, ILEngineType ptrType,
 							    ILType *objectType, ILField *field,
 							    ILType *fieldType, ILEngineType valueType)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue ptr = jitCoder->jitStack[jitCoder->stackTop - 2];
+	ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+	_ILJitStoreField(jitCoder, ptr, value, fieldType, field->offset, 1);
+	JITC_ADJUST(jitCoder, -2);
 }
 
 static void JITCoder_StoreStaticField(ILCoder *coder, ILField *field,
 				      ILType *fieldType, ILEngineType valueType)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
+											  field);
+	ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+	/* Output a call to the static constructor */
+	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 0);
+
+	_ILJitStoreField(jitCoder, ptr, value, fieldType, field->offset, 1);
+	JITC_ADJUST(jitCoder, -1);
 }
 
 static void JITCoder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
 							    ILEngineType srcPtrType, ILClass *classInfo)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue  dest = jitCoder->jitStack[jitCoder->stackTop - 2];
+	ILJitValue  src = jitCoder->jitStack[jitCoder->stackTop - 1];
+	ILType *type = ILClassToType(classInfo);
+    ILUInt32 size = _ILSizeOfTypeLocked(jitCoder->process, type);
+	ILJitValue  memSize = jit_value_create_nint_constant(jitCoder->jitFunction,
+														 _IL_JIT_TYPE_UINT32,
+														 (jit_nint)size);
+
+	/*
+	 * Do the verification early.
+	 */
+	jit_insn_check_null(jitCoder->jitFunction, dest);
+	jit_insn_check_null(jitCoder->jitFunction, src);
+
+	jit_insn_memcpy(jitCoder->jitFunction, dest, src, memSize);
+	JITC_ADJUST(jitCoder, -3);
 }
 
 static void JITCoder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
 							   ILEngineType srcPtrType)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue  src = jitCoder->jitStack[jitCoder->stackTop - 2];
+	ILJitValue  dest = jitCoder->jitStack[jitCoder->stackTop - 3];
+	ILJitValue  size = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+	/*
+	 * Do the verification early.
+	 */
+	jit_insn_check_null(jitCoder->jitFunction, dest);
+	jit_insn_check_null(jitCoder->jitFunction, src);
+
+	jit_insn_memcpy(jitCoder->jitFunction, dest, src, size);
+	JITC_ADJUST(jitCoder, -3);
 }
 
 static void JITCoder_InitObject(ILCoder *coder, ILEngineType ptrType,
 				ILClass *classInfo)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILType *type = ILClassToType(classInfo);
+    ILUInt32 size = _ILSizeOfTypeLocked(jitCoder->process, type);
+	ILJitValue  dest = jitCoder->jitStack[jitCoder->stackTop - 1];
+	ILJitValue  value = jit_value_create_nint_constant(jitCoder->jitFunction,
+													   _IL_JIT_TYPE_BYTE,
+													   (jit_nint)0);
+	ILJitValue  memSize = jit_value_create_nint_constant(jitCoder->jitFunction,
+														 _IL_JIT_TYPE_UINT32,
+														 (jit_nint)size);
+	/*
+	 * Do the verification early.
+	 */
+	jit_insn_check_null(jitCoder->jitFunction, dest);
+
+	jit_insn_memset(jitCoder->jitFunction, dest, value, memSize);
+
+	JITC_ADJUST(jitCoder, -1);
 }
 
 static void JITCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue  dest = jitCoder->jitStack[jitCoder->stackTop - 3];
+	ILJitValue  value = jitCoder->jitStack[jitCoder->stackTop - 2];
+	ILJitValue  size = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+	/*
+	 * Do the verification early.
+	 */
+	jit_insn_check_null(jitCoder->jitFunction, dest);
+
+	value = jit_insn_convert(jitCoder->jitFunction, value, _IL_JIT_TYPE_BYTE, 0);
+	jit_insn_memset(jitCoder->jitFunction, dest, value, size);
+	JITC_ADJUST(jitCoder, -3);
 }
 
 static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
@@ -354,6 +519,13 @@ static void JITCoder_PushToken(ILCoder *coder, ILProgramItem *item)
 
 static void JITCoder_SizeOf(ILCoder *coder, ILType *type)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+    ILUInt32 size = _ILSizeOfTypeLocked(jitCoder->process, type);
+	ILJitValue constSize = jit_value_create_nint_constant(jitCoder->jitFunction,
+														  _IL_JIT_TYPE_UINT32,
+														  (jit_nint)size);
+	jitCoder->jitStack[jitCoder->stackTop] = constSize;
+	JITC_ADJUST(jitCoder, 1);
 }
 
 static void JITCoder_ArgList(ILCoder *coder)

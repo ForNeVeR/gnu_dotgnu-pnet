@@ -58,6 +58,11 @@ static struct _tagILJitTypes _ILJitType_U8;
 static struct _tagILJitTypes _ILJitType_VPTR;
 
 /*
+ * Jit type for typed references.
+ */
+static ILJitType _ILJitTypedRef = 0;
+
+/*
  * Definition of signatures of internal functions used by jitted code.
  * They have to be kept in sync wirh the corresponding engine funcions.
  */
@@ -644,6 +649,7 @@ int ILJitInit()
 {
 	ILJitType	returnType;
 	ILJitType	args[3];
+	ILJitType	fields[2];
 
 	/* Initialize libjit */
 	jit_init();
@@ -679,10 +685,19 @@ int ILJitInit()
 	_ILJitTypesInitBase(&_ILJitType_U8, jit_type_ulong);
 	_ILJitTypesInitBase(&_ILJitType_VPTR, jit_type_void_ptr);
 
+
+	// Initialize the TypedRef type in its jit representation.	
+	fields[0] = _IL_JIT_TYPE_VPTR;
+	fields[1] = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitTypedRef = jit_type_create_struct(fields, 2, 1)))
+	{
+		return 0;
+	}
+
 	/* Initialize the native method signatures. */
 	args[0] = _IL_JIT_TYPE_VPTR;
 	args[1] = _IL_JIT_TYPE_VPTR;
-	args[2] = jit_type_int;
+	args[2] = _IL_JIT_TYPE_UINT32;
 	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILEngineAlloc = 
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))

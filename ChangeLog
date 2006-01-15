@@ -3,6 +3,8 @@
 
 	* NEWS, configure.in: update version for the "0.7.4" release.
 
+	* configure.in: update working version to "0.7.5".
+
 2005-12-28  Klaus Treichel  <ktreichel@web.de>
 
 	* config.sub: replace the outdated version with the one in pnet.

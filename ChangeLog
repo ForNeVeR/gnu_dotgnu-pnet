@@ -3,6 +3,8 @@
 
 	* NEWS, configure.in: update version for the "0.7.4" release.
 
+	* configure.in: update working version to "0.7.5".
+
 2006-01-12  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_obj.c: Fix JITCoder_CastClass.

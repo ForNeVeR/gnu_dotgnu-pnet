@@ -1,4 +1,108 @@
 
+0.7.4 (15 January 2006)
+
+	System.Windows.Forms and System.Drawing: 
+
+	* Misplaced classes in Forms namespaces (Gopal V).
+	* Icon naming issues (Deryk Robosson).
+	* Parse and load binary RegionData file (Marco Bosatta).
+	* Bug in order is IsVisible changes (Marc Haisenko).
+	* Select a control by default on main forms and mouse click (Marc Haisenko).
+	* Fix ShowInTaskbar flag for Xsharp (Marc Haisenko).
+	* Don't allow control width/height less than zero (Kirill Kononenko).
+	* Fix bezier fills in Graphics.FillPath (Heiko Weiss).
+	* Gnome libraries that need .so mappings (Kirill Kononenko).
+	* Cache ControlCollection instances (Gopal V).
+	* Add ScrollableControl.OnVisibleChanged (Deryk Robosson).
+	* Fix out of tree builds (Gopal V).
+	* Form reparenting (Heiko Weiss).
+	* Use UTF8 for Xft font rendering, not ANSI (Marc Haisenko).
+	* Correct top-level window event handling (Peter Flaig).
+	* Async invoke fixes (Peter Flaig, Heiko Weiss).
+	* Send mouse events to parent if control is disabled (Peter Flaig).
+	* Fix LineAlignment (Peter Flaig).
+	* DataGrid (Boris Manojlovic, Deryk Robosson).
+	* Add image drawing support to Label (Peter Flaig).
+	* Glyphs on a scrollbar resize proportionally to the space left for
+	  the increment and decrement buttons (Kirill Kononenko).
+	* Fix clipping of text drawing (Heiko Weiss).
+	* Handle font drawing properly if no clip region set (Klaus Treichel).
+	* Flicker-free double buffering (Thong Nguyen).
+	* Make text drawing in various controls more Windows-like (Peter Flaig).
+	* Prevent duplicate calls to OnControlAdded (Heiko Weiss).
+	* Don't include non-visible controls in layouting (Peter Flaig).
+	* Implement GetFocusedChild (Deryk Robosson).
+	* Screen.GetBounds (Deryk Robosson).
+	* ScrollableControl.ScrollControlIntoView (Deryk Robosson).
+	* ScrollableControl.OnMouseWheel (Deryk Robosson, Heiko Weiss).
+	* TabControl child remove and set operators (Deryk Robosson).
+	* ToolBarButton.ToString (Deryk Robosson).
+	* TreeView.FullRowSelect (Deryk Robosson).
+	* Prevent multiple creation of toolkit window object (Heiko Weiss).
+	* Increase control layout performance (Heiko Weiss).
+	* Increase TextBox performance by checking previous values (Heiko Weiss).
+	* Fixed layout with anchors (Peter Flaig).
+	* Performance improvements in TrackBar (Deryk Robosson).
+	* UpDownBase - add missing TextAlign property (Deryk Robosson).
+	* Fix image clipping in Xsharp (Peter Flaig).
+	* Raise expand/collapse events properly in TreeView/TreeNode (Radek Polak).
+	* Enhance RegionData performance (Heiko Weiss).
+	* Crash bug fix in FileDialog (Klaus Treichel).
+	* Only map toolkit to window if non-zero size (Peter Flaig).
+	* Improve click events in TreeView (Radek Polak).
+	* Fix click event handling when mouse leaves window (Peter Flaig).
+	* Button.OnClick before MouseUp for compat (Peter Flaig).
+	* Forward Xsharp exceptions to OnThreadException (Heiko Weiss).
+	* Update mouse position on mouse down, for touch screens (Heiko Weiss).
+	* TabPage fixes (Heiko Weiss).
+	* Memory leak in Xsharp (Heiko Weiss).
+	* ToolkitGraphicsImageBase - fire an OnChanged whenever a line draw
+	  occurs, so that the native image can be regenerated (Gopal V).
+	* Support semi-transparent forms in Xsharp (Heiko Weiss).
+
+	JScript:
+
+	* Changes to JFunction.Eval for functional programming (Gopal V).
+
+	XML:
+
+	* Advance reader in ReadString if element is empty (Radek Polak).
+	* Declare correct XSI namespace in scheme code (Deryk Robosson).
+	* Deserialization of objects containing lists (Deryk Robosson).
+	* Fixed loading of XML from a string (Peter Flaig).
+	* Add new 2.0 classes (Klaus Treichel).
+	* Various small fixes (Peter Flaig).
+
+	Tests: 
+
+	* Tests for StatusBar (Deryk Robosson).
+	* Test for empty element read in XML (Radek Polak).
+
+	Other: 
+
+	* Throw the right exceptions in System.Xml.Nametable (Klaus Treichel).
+	* Sorting of return values from TrimMembers (Gopal V).
+	* Integrate Mono's latest regex code (Rainer Größlinger).
+	* Handle nested types in Type.GetMembers (Gopal V).
+	* Read correct number of bytes in BinaryRead.ReadBytes even if
+	  EOF is seen (Peter Flaig).
+	* Handle empty strings properly in NumberParser (Peter Flaig).
+	* Make SortedList enumerators call Reset properly (Heiko Weiss).
+	* Fix non AutoReset timers (Heiko Weiss).
+	* Create correct SocketException from errno (Heiko Weiss).
+	* Bugs in logical and/or within CodeDom (Deryk Robosson).
+	* Change versions to match MS .NET Framework 2.0.
+	* Create invariant CultureInfo correctly (Heiko Weiss).
+	* Fix crash in String.LastIndexOf for empty strings (Heiko Weiss).
+	* Set Hashtable capacity at various points for speed ups (Heiko Weiss).
+	* Remove unnecessary properly calls (Heiko Weiss).
+	* Use current working dir for process starts (Radek Polak).
+	* Cache number formatters (Heiko Weiss).
+	* Speedups in use of BitArray class (Heiko Weiss).
+	* Rounding fixes in Convert for integer types (Heiko Weiss).
+	* Bug fixes in UriBuilder (Carl-Adam Brengesjo).
+	* Deal with system clock changes in System.Timer (Heiko Weiss).
+
 0.7.2 (17 August 2005)
 
 	System.Windows.Forms and System.Drawing: 

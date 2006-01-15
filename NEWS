@@ -1,4 +1,70 @@
 
+0.7.4 (15 January 2006)
+
+	Runtime engine:
+
+	* Use IL_MEMCPY in some places instead of ILMemCpy to get around
+	  problems with x86 and gcc optimization (Klaus Treichel).
+	* Modify internal engine API's to use the ILExecProcess instead of
+	  ILExecThread where appropriate (Klaus Treichel).
+	* Fix Type.GetInterface internalcall (Peter Flaig).
+	* Close error pipe in Process.StartProcess internalcall (Russell Stuart).
+	* Fix Math.RoundDouble to use correct power (Gerd Nick).
+	* Print a useful error message if libffi doesn't support closures
+	  (Kirill Kononenko).
+	* Unroller for x86_64 (Gopal V).
+	* Handle foreign threads that call into the engine (Klaus Treichel).
+	* Support for switching ILExecThread's between appdomains (Klaus Treichel).
+	* Fix GetNetBIOSMachineName (Heiko Weiss).
+	* Add some volatile keywords to make gcc do the right thing (Klaus T).
+	* Allow modification of initonly fields for compat (Peter Fristedt).
+	* Get around gcc -O3 bugs with computed goto (Gopal V).
+	* Tweak string equality for interned strings (Gopal V).
+	* Fixes to BuildIMT for parent interface implementations (Gopal V).
+	* Debugging code for IMT layout (Gopal V).
+	* Use current working dir for process starts (Radek Polak).
+	* Verifier bug when inlining getters that return static fields (Klaus T).
+	* Enhanced profiler implementation (Marc Haisenko).
+	* Fix that the constructors of array and string classes don't get
+	  the this parameter (Klaus Treichel).
+
+	JIT:
+
+	* Add --enable-jit to the configuration options (Klaus Treichel).
+	* Begin JIT coder implementation (Klaus Treichel, Radek Polak,
+	  Kirill Kononenko).
+	* Changes to layout engine for JIT (Klaus Treichel).
+	* Generation of function stubs and on-demand compilation in the
+	  layout engine (Klaus Treichel).
+
+	C# Compiler:
+
+	* Allow sizeof(primitive type) to be used in safe code (Jason Clouse).
+
+	Loader and Metadata:
+
+	* Link order fixes for x86_64 systems (Gopal V).
+	* Improvements to dll -> so mapping rules (Klaus Treichel).
+	* Add missing colon after /usr/lib64 for AMD64 systems so that libs
+	  in /usr/lib64 can be found (Marcus Urban).
+
+	Documentation:
+
+	* Document the enhanced method profiler (Marc Haisenko).
+
+	Platform Support:
+
+	* Mac OS X threading support (Peter Fristedt).
+	* Various bugs in threading code (Klaus Treichel, Thong Nguyen).
+	* Use response files if more than 8192 bytes on command-line (Gopal V).
+
+	Other:
+
+	* Fixes to "make dist" to make it work properly (Klaus Treichel).
+	* Update to current libffi (Klaus Treichel).
+	* Proper escaping of '[' in configure.in (Gopal V).
+	* Update libgc to version 6.6 (Klaus Treichel).
+
 0.7.2 (17 August 2005)
 
 	Runtime engine:

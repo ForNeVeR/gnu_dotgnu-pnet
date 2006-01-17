@@ -311,7 +311,7 @@ static void JITCoder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
 	jit_insn_check_null(jitCoder->jitFunction, src);
 
 	jit_insn_memcpy(jitCoder->jitFunction, dest, src, memSize);
-	JITC_ADJUST(jitCoder, -3);
+	JITC_ADJUST(jitCoder, -2);
 }
 
 static void JITCoder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,

@@ -1,3 +1,8 @@
+2006-01-17  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_obj.c: Adjust evaluationstack in JITCoder_CopyObject with -2
+	instead of -3.
+
 2006-01.15  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_obj.c: Add the rest of the opcodes. (thanks_terminus_)

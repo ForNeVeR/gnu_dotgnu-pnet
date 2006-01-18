@@ -32,6 +32,16 @@ static void JITCoder_LoadArg(ILCoder *coder, ILUInt32 argNum, ILType *type)
 	ILJitValue newParam = _ILJitValueConvertToStackType(jitCoder->jitFunction,
 														param);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"LoadArg: %i\n", 
+			argNum);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	jitCoder->jitStack[jitCoder->stackTop] = newParam;
 	JITC_ADJUST(jitCoder, 1);
 }
@@ -44,6 +54,16 @@ static void JITCoder_LoadLocal(ILCoder *coder, ILUInt32 localNum, ILType *type)
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitValue localValue = jitCoder->jitLocals[localNum];
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"LoadLocal: %i\n", 
+			localNum);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	jitCoder->jitStack[jitCoder->stackTop] = 
 					_ILJitValueConvertToStackType(jitCoder->jitFunction,
 												  localValue);
@@ -60,6 +80,16 @@ static void JITCoder_StoreArg(ILCoder *coder, ILUInt32 argNum,
 	/* We need argNum + 1 because the ILExecThread is added as param 0 */
 	ILJitValue argValue = jit_value_get_param(jitCoder->jitFunction, argNum + 1);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"StoreArg: %i\n", 
+			argNum);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	jit_insn_store(jitCoder->jitFunction, argValue,
 					jitCoder->jitStack[jitCoder->stackTop - 1]);
 
@@ -74,6 +104,16 @@ static void JITCoder_StoreLocal(ILCoder *coder, ILUInt32 localNum,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"StoreLocal: %i\n", 
+			localNum);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	jit_insn_store(jitCoder->jitFunction, jitCoder->jitLocals[localNum],
 					jitCoder->jitStack[jitCoder->stackTop - 1]);
 

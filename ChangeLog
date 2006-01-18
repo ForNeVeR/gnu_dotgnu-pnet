@@ -1,3 +1,9 @@
+2006-01-18  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_call.c, engine/jitc_obj.c, engine/jitc_setup.c,
+	engine/jitc_var.c: Fix a bug in JITCoder_LoadThisField and add trace output
+	in various coder functions. (can be activated with the -Z switch).
+
 2006-01-17  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_obj.c: Adjust evaluationstack in JITCoder_CopyObject with -2

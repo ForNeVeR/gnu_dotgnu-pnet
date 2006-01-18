@@ -100,6 +100,17 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	/* Record the current method. */
 	coder->currentMethod = method;
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (coder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"Setup: %s.%s\n", 
+			ILClass_Name(ILMethod_Owner(method)),
+			ILMethod_Name(method));
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	/* Create the local variables. */
 	if(!_JITCreateLocals(coder, code->localVarSig))
 	{

@@ -210,6 +210,18 @@ static void JITCoder_LoadField(ILCoder *coder, ILEngineType ptrType,
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitValue ptr = jitCoder->jitStack[jitCoder->stackTop - 1];
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"LoadField: %s.%s at offset %i\n", 
+			ILClass_Name(ILField_Owner(field)),
+			ILField_Name(field),
+			field->offset);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	jitCoder->jitStack[jitCoder->stackTop - 1] =
 		_ILJitLoadField(jitCoder, ptr, fieldType, field->offset, 1);
 }
@@ -221,7 +233,20 @@ static void JITCoder_LoadThisField(ILCoder *coder, ILField *field,
 	/* We need argNum + 1 because the ILExecThread is added as param 0 */
 	ILJitValue param = jit_value_get_param(jitCoder->jitFunction, 1);
 
-	jitCoder->jitStack[jitCoder->stackTop] = param;
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"LoadThisField: %s.%s at offset %i\n", 
+			ILClass_Name(ILField_Owner(field)),
+			ILField_Name(field),
+			field->offset);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+	jitCoder->jitStack[jitCoder->stackTop] =
+		_ILJitLoadField(jitCoder, param, fieldType, field->offset, 1);
 	JITC_ADJUST(jitCoder, 1);
 }
 
@@ -231,6 +256,18 @@ static void JITCoder_LoadStaticField(ILCoder *coder, ILField *field,
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
 											  field);
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"LoadStaticField: %s.%s at offset %i\n", 
+			ILClass_Name(ILField_Owner(field)),
+			ILField_Name(field),
+			field->offset);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 0);
 
@@ -246,6 +283,18 @@ static void JITCoder_LoadFieldAddr(ILCoder *coder, ILEngineType ptrType,
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitValue ptr = jitCoder->jitStack[jitCoder->stackTop - 1];
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"LoadFieldAddr: %s.%s at offset %i\n", 
+			ILClass_Name(ILField_Owner(field)),
+			ILField_Name(field),
+			field->offset);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	jitCoder->jitStack[jitCoder->stackTop - 1] =
 		_ILJitLoadFieldAddress(jitCoder, ptr, field->offset, 1);
 }
@@ -257,6 +306,18 @@ static void JITCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 	ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
 											  field);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"LoadStaticFieldAddr: %s.%s at offset %i\n", 
+			ILClass_Name(ILField_Owner(field)),
+			ILField_Name(field),
+			field->offset);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 0);
 
@@ -273,6 +334,18 @@ static void JITCoder_StoreField(ILCoder *coder, ILEngineType ptrType,
 	ILJitValue ptr = jitCoder->jitStack[jitCoder->stackTop - 2];
 	ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"StoreField: %s.%s at offset %i\n", 
+			ILClass_Name(ILField_Owner(field)),
+			ILField_Name(field),
+			field->offset);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	_ILJitStoreField(jitCoder, ptr, value, fieldType, field->offset, 1);
 	JITC_ADJUST(jitCoder, -2);
 }
@@ -285,6 +358,18 @@ static void JITCoder_StoreStaticField(ILCoder *coder, ILField *field,
 											  field);
 	ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"StoreStaticField: %s.%s at offset %i\n", 
+			ILClass_Name(ILField_Owner(field)),
+			ILField_Name(field),
+			field->offset);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 0);
 

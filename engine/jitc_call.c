@@ -118,6 +118,17 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJitValue jitParams[argCount + 1];
 	ILJitValue returnValue;
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CallMethod: %s.%s\n", 
+			ILClass_Name(ILMethod_Owner(methodInfo)),
+			ILMethod_Name(methodInfo));
+			ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	/* Set the ILExecThread argument. */
 	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0);
 
@@ -155,6 +166,17 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJitValue jitParams[argCount + 2];
 	ILJitValue returnValue;
 	
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CallCtor: %s.%s\n", 
+			ILClass_Name(ILMethod_Owner(methodInfo)),
+			ILMethod_Name(methodInfo));
+			ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 1);
 
@@ -198,6 +220,17 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJitValue vtableIndex;
 	ILJitValue jitFunction;
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CallVirtual: %s.%s\n", 
+			ILClass_Name(ILMethod_Owner(methodInfo)),
+			ILMethod_Name(methodInfo));
+			ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	if(!func)
 	{
 		signature = _ILJitCreateMethodSignature(jitCoder, methodInfo);

@@ -161,7 +161,7 @@ namespace System.Threading
 			//
 			long due = dueTime == -1 ? AlarmClock.INFINITE : dueTime;
 			long interval = period <= 0 ? AlarmClock.INFINITE : period;
-			Timer.AdvanceTime();
+			Timer.AdvanceTime(period);
 			this.alarm.SetAlarm(due, interval);
 			//
 			// Wake up the background thread so it sees the new state.
@@ -295,7 +295,7 @@ namespace System.Threading
 				long longMs = Timer.alarmClock.TimeTillAlarm;
 				int ms = longMs > int.MaxValue ? int.MaxValue : (int)longMs;
 				Timer.threadWakeup.WaitOne(ms, false);
-				Timer.AdvanceTime();
+				Timer.AdvanceTime(ms);
 			}
 		}
 
@@ -303,7 +303,7 @@ namespace System.Threading
 		// Advance the time in the Alarm object so it is the same as the
 		// real time.
 		//
-		private static void AdvanceTime()
+		private static void AdvanceTime(long timerPeriod)
 		{
 			long elapsed;
 			lock (typeof(Timer))
@@ -311,6 +311,16 @@ namespace System.Threading
 				long was = Timer.now;
 				Timer.now = Timer.UtcMilliseconds();
 				elapsed = Timer.now - was;
+			}
+			// if elapsed is less then zero the system time might have been changed to the past.
+			// so dont sleep. This works well.
+			if( elapsed < 0 ) {
+				elapsed = 0;
+			}
+			// if elapsed is greater then x*timerPeriod the system time might have been changed to the future.
+			// This is a workaround. but works.
+			else if( timerPeriod > 0 && elapsed > 10*timerPeriod ) {
+				elapsed = 0;
 			}
 			Timer.alarmClock.Sleep(elapsed);
 		}

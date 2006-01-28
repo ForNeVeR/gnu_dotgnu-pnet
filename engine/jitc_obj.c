@@ -269,7 +269,7 @@ static void JITCoder_LoadStaticField(ILCoder *coder, ILField *field,
 	}
 #endif
 	/* Output a call to the static constructor */
-	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 0);
+	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 1);
 
 	jitCoder->jitStack[jitCoder->stackTop] =
 		_ILJitLoadField(jitCoder, ptr, fieldType, field->offset, 0);
@@ -319,7 +319,7 @@ static void JITCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 	}
 #endif
 	/* Output a call to the static constructor */
-	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 0);
+	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 1);
 
 	jitCoder->jitStack[jitCoder->stackTop] =
 		_ILJitLoadFieldAddress(jitCoder, ptr, field->offset, 0);
@@ -371,7 +371,7 @@ static void JITCoder_StoreStaticField(ILCoder *coder, ILField *field,
 	}
 #endif
 	/* Output a call to the static constructor */
-	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 0);
+	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 1);
 
 	_ILJitStoreField(jitCoder, ptr, value, fieldType, field->offset, 1);
 	JITC_ADJUST(jitCoder, -1);

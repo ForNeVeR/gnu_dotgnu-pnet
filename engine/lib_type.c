@@ -2548,7 +2548,11 @@ void _IL_Type_GetTypeHandle(ILExecThread *thread, void *handle, ILObject *obj)
  */
 ILObject *_IL_Type_GetTypeFromHandle(ILExecThread *thread, void *handle)
 {
+#ifdef IL_USE_JIT
+	ILClass *classInfo = (ILClass *)handle;
+#else
 	ILClass *classInfo = *((ILClass **)handle);
+#endif
 	if(classInfo)
 	{
 		return _ILGetClrType(thread, classInfo);

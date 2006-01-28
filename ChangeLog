@@ -1,3 +1,41 @@
+2006-01-28  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Add the functions _ILJitGetSizeOfClass for the ctors and
+	_ILJitGetTypeFromClass for the ValueCtorArgs. Add definitions for the two
+	label types (normal and startfinally). Add labelType to ILJitLabel and
+	isInCatcher in ILJITCoder. Change the type resolution so that
+	_IL_JIT_TYPE_VPTR is returned for object references and pointers to avoid
+	recursive class layouting because this messed up the vtables. (We might need
+	a better solution because it could still happen.) Add some debug code that
+	is printed when ilrun is started with -Z.
+
+	* engine/jitc_branch.c Add support for the different label types. With
+	_IL_JIT_LABEL_FINALLY a finally subroutine is started instead of inserting
+	a label. Add some debug code that is printed when ilrun is started with -Z.
+
+	* engine/jitc_call.c: Pass the object size instead of 0 to _ILEngineAlloc
+	and set the call type to JIT_CALL_NOTHROW. Implement the ValueCtorArgs.
+	Set the number of parameters to argCount + 1 in vtable- and interface calls.
+	Reset the method in the current ILExecThread on return from a function.
+	Make sure that the returned value is pushed on the stack as a stack type.
+	Add some debug code that is printed when ilrun is started with -Z.
+	
+	* engine/jitc_const.c: Change the constant load to match the cvmc coder.
+
+	* engine/jitc_except.c: Add some debug code that is printed when ilrun is
+	started with -Z. Add creation of the finally labels in setup exceptions.
+	Add the returning from a finally clause. Add some exception support for
+	debugging.
+
+	* engine/jitc_obj.c: Set parameter isCtor to 1 in the calls to
+	_ILJitCallStaticConstructor on access of a static field.
+
+	* engine/jitc_setup.c: Add two stack items to handle the ValueCtorArgs
+	items and initialize the isInCatcher flag in JITCoder_Setup.
+
+	* engine/lib_type.c: Handles are passed on the stack instead of a pointer
+	to the handle when jitting.
+
 2006-01-18  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_call.c, engine/jitc_obj.c, engine/jitc_setup.c,

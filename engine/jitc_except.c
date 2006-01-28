@@ -26,6 +26,43 @@
 static void JITCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 									 int hasRethrow)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"SetupExceptions: hasRethrow: %i\n", 
+			hasRethrow);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+
+	/* We need to setup the filally labels first. */
+	while(exceptions != 0)
+	{
+		if((exceptions->flags & IL_META_EXCEPTION_FINALLY) != 0)
+		{
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"AddFinallyLabel for offset: %i\n", 
+					exceptions->handlerOffset);
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			GetLabel(jitCoder, exceptions->handlerOffset,
+							   _IL_JIT_LABEL_STARTFINALLY);
+		}
+		exceptions = exceptions->next;
+	}
+	/* Setup the jit function to handle exceptions. */
+	
+	jit_insn_uses_catcher(jitCoder->jitFunction);
+	
 }
 
 /*
@@ -33,6 +70,28 @@ static void JITCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
  */
 static void JITCoder_Throw(ILCoder *coder, int inCurrentMethod)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue exception = jitCoder->jitStack[jitCoder->stackTop - 1];;
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"Throw: inCurrentMethod: %i\n", 
+			inCurrentMethod);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+	/*
+	if(inCurrentMethod == 1)
+	{
+	*/
+		jit_insn_throw(jitCoder->jitFunction, exception);
+		JITC_ADJUST(jitCoder, -1);
+	/*
+	}
+	*/
 }
 
 /*
@@ -47,6 +106,17 @@ static void JITCoder_SetStackTrace(ILCoder *coder)
  */
 static void JITCoder_Rethrow(ILCoder *coder, ILException *exception)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"Rethrow: \n");
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 }
 
 /*
@@ -54,6 +124,18 @@ static void JITCoder_Rethrow(ILCoder *coder, ILException *exception)
  */
 static void JITCoder_Jsr(ILCoder *coder, ILUInt32 dest)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"Jsr: dest: %i\n", 
+			dest);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 }
 
 /*
@@ -61,6 +143,17 @@ static void JITCoder_Jsr(ILCoder *coder, ILUInt32 dest)
  */
 static void JITCoder_RetFromJsr(ILCoder *coder)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"RetFromJsr: \n");
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 }
 
 /*
@@ -69,6 +162,42 @@ static void JITCoder_RetFromJsr(ILCoder *coder)
 static void JITCoder_TryHandlerStart(ILCoder *_coder,
 									 ILUInt32 start, ILUInt32 end)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
+	ILJitValue exception;
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"TryHandlerStart: start: %i end: %i\n", 
+			start,
+			end);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+
+	if(!jitCoder->isInCatcher)
+	{
+		/* Tell libjit that we are in the catcher. */
+		
+		jit_insn_start_catcher(jitCoder->jitFunction);
+		
+		jitCoder->isInCatcher = 1;
+	}
+
+	/* We need the exception object on top of the stack. */
+	exception = jit_insn_thrown_exception(jitCoder->jitFunction);
+	jitCoder->jitStack[jitCoder->stackTop] = exception;
+	JITC_ADJUST(jitCoder, 1);
+
+	if(start == 0 && end == IL_MAX_UINT32)
+	{
+		/* This handler was the last one in the table */
+		/*
+		jit_insn_rethrow_unhandled(jitCoder->jitFunction);
+		*/
+	}
 }
 
 /*
@@ -76,6 +205,17 @@ static void JITCoder_TryHandlerStart(ILCoder *_coder,
  */
 static void JITCoder_TryHandlerEnd(ILCoder *coder)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"TryHandlerEnd: \n");
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 }
 
 /*
@@ -84,14 +224,59 @@ static void JITCoder_TryHandlerEnd(ILCoder *coder)
 static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 						   ILClass *classInfo, int hasRethrow)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"Catch: %s hasRethrow: %i\n",
+			ILClass_Name(classInfo),
+			hasRethrow);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 }
 
 static void JITCoder_EndCatchFinally(ILCoder *coder, ILException *exception)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"EndCatchFinally: \n");
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+
+	jit_insn_return_from_finally(jitCoder->jitFunction);
 }
 
+/*
+ * Handle the leave opcodes.
+ */
 static void JITCoder_Finally(ILCoder *coder, ILException *exception, int dest)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJITLabel *label = GetLabel(jitCoder, dest, _IL_JIT_LABEL_STARTFINALLY);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CallFinally: dest: %i\n",
+			dest);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+	/*	
+	jit_insn_call_finally(jitCoder->jitFunction, &(label->label));
+	*/
 }
 
 /*

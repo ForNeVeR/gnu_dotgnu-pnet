@@ -42,6 +42,7 @@ static void _ILJitFillArguments(ILJITCoder *coder, ILJitValue *args,
  */
 static void _ILJitNewObj(ILJITCoder *coder, ILClass *info, ILJitValue *newArg)
 {
+	ILUInt32 objSize = _ILJitGetSizeOfClass(info);
 	ILJitValue newObj;
 	ILJitValue args[3];
 	jit_label_t label1 = jit_label_undefined;
@@ -50,9 +51,10 @@ static void _ILJitNewObj(ILJITCoder *coder, ILClass *info, ILJitValue *newArg)
 	args[1] = jit_value_create_nint_constant(coder->jitFunction,
 												jit_type_void_ptr, (jit_nint)info);
 	args[2] = jit_value_create_nint_constant(coder->jitFunction,
-												jit_type_int, 0);
+												jit_type_int, objSize);
 	newObj = jit_insn_call_native(coder->jitFunction, 0, _ILEngineAlloc,
-									_ILJitSignature_ILEngineAlloc, args, 3, 0);
+									_ILJitSignature_ILEngineAlloc, args, 3,
+									JIT_CALL_NOTHROW);
 	jit_insn_branch_if(coder->jitFunction, newObj, &label1);
 	_ILJitThrowCurrentException(coder);
 	jit_insn_label(coder->jitFunction, &label1);
@@ -102,6 +104,35 @@ static void JITCoder_PackVarArgs(ILCoder *coder, ILType *callSiteSig,
 static void JITCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 								   ILEngineStackItem *args, ILUInt32 numArgs)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILInt32 argPos = jitCoder->stackTop - numArgs;
+	ILInt32 current = 0;
+	ILJitType valueType = _ILJitGetTypeFromClass(classInfo);
+	ILJitValue value = jit_value_create(jitCoder->jitFunction, valueType);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"ValueCtorArgs: %s %i\n", 
+			ILClass_Name(classInfo),
+			numArgs);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+
+	jitCoder->stackTop += 2;
+	/* Move the constructor args up two slots on the stack. */
+	for(current = 0; current < numArgs; current++)
+	{
+		jitCoder->jitStack[jitCoder->stackTop - current - 1] = 
+			jitCoder->jitStack[jitCoder->stackTop - current - 3];
+	}
+	jitCoder->jitStack[argPos] = value;
+	jitCoder->jitStack[argPos + 1] = jit_insn_address_of(jitCoder->jitFunction,
+														 value);
+	
 }
 
 static void JITCoder_CheckCallNull(ILCoder *coder, ILCoderMethodInfo *info)
@@ -126,9 +157,37 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 			"CallMethod: %s.%s\n", 
 			ILClass_Name(ILMethod_Owner(methodInfo)),
 			ILMethod_Name(methodInfo));
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+	
+	if(!jitFunction)
+	{
+		/* We need to layout the class first. */
+		if(!_LayoutClass(ILExecThreadCurrent(), ILMethod_Owner(methodInfo)))
+		{
+			return;
+		}
+		jitFunction = ILJitFunctionFromILMethod(methodInfo);
+	}
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILJitType  signature  = jit_function_get_signature(jitFunction);
+
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CallInfos: StackTop: %i, ArgCount: %i, Signature argCount: %i\n",
+			jitCoder->stackTop,
+			argCount,
+			jit_type_num_params(signature));
 			ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+	/* Output a call to the static constructor */
+	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 0);
+
 	/* Set the ILExecThread argument. */
 	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0);
 
@@ -139,17 +198,30 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
 									jitParams, argCount + 1, JIT_CALL_TAIL);
+		if(returnItem->engineType != ILEngineType_Invalid)
+		{
+			jitCoder->jitStack[jitCoder->stackTop] =
+					_ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  returnValue);
+			JITC_ADJUST(jitCoder, 1);
+		}
 	}
 	else
 	{		
 		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
 									jitParams, argCount + 1, 0);
-		if(returnItem->engineType != ILEngineType_Invalid)
+		if(returnItem && returnItem->engineType != ILEngineType_Invalid)
 		{
-			jitCoder->jitStack[jitCoder->stackTop] = returnValue;
+			jitCoder->jitStack[jitCoder->stackTop] =
+					_ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  returnValue);
 			JITC_ADJUST(jitCoder, 1);
 		}
 	}
+	/* Restore the current method in the thread on return. */
+	_ILJitSetMethodInThread(jitCoder->jitFunction, 
+							jit_value_get_param(jitCoder->jitFunction, 0),
+							jitCoder->currentMethod);
 }
 
 static void JITCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
@@ -174,6 +246,31 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 			"CallCtor: %s.%s\n", 
 			ILClass_Name(ILMethod_Owner(methodInfo)),
 			ILMethod_Name(methodInfo));
+			ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+
+	if(!jitFunction)
+	{
+		/* We need to layout the class first. */
+		if(!_LayoutClass(ILExecThreadCurrent(), ILMethod_Owner(methodInfo)))
+		{
+			return;
+		}
+		jitFunction = ILJitFunctionFromILMethod(methodInfo);
+	}
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILJitType  signature  = jit_function_get_signature(jitFunction);
+
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CallInfos: StackTop: %i, ArgCount: %i, Signature argCount: %i\n",
+			jitCoder->stackTop,
+			argCount,
+			jit_type_num_params(signature));
 			ILMutexUnlock(globalTraceMutex);
 	}
 #endif
@@ -202,6 +299,11 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 		jitCoder->jitStack[jitCoder->stackTop] = jitParams[1];
 	}	
 	JITC_ADJUST(jitCoder, 1);
+
+	/* Restore the current method in the thread on return. */
+	_ILJitSetMethodInThread(jitCoder->jitFunction, 
+							jit_value_get_param(jitCoder->jitFunction, 0),
+							jitCoder->currentMethod);
 }
 
 static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
@@ -211,9 +313,9 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	int argCount = info->numBaseArgs + info->numVarArgs;
-	ILJitFunction func = methodInfo->userData;
+	ILJitFunction func = ILJitFunctionFromILMethod(methodInfo);
 	ILJitType  signature;
-	ILJitValue jitParams[argCount + 2];
+	ILJitValue jitParams[argCount + 1];
 	ILJitValue returnValue;
 	ILJitValue classPrivate;
 	ILJitValue vtable;
@@ -225,12 +327,24 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		ILMutexLock(globalTraceMutex);
 		fprintf(stdout,
-			"CallVirtual: %s.%s\n", 
+			"CallVirtual: %s.%s at slot %i\n", 
 			ILClass_Name(ILMethod_Owner(methodInfo)),
-			ILMethod_Name(methodInfo));
+			ILMethod_Name(methodInfo),
+			methodInfo->index);
 			ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+
+	if(!func)
+	{
+		/* We might need to layout the class first. */
+		if(!_LayoutClass(ILExecThreadCurrent(), ILMethod_Owner(methodInfo)))
+		{
+			return;
+		}
+		func = ILJitFunctionFromILMethod(methodInfo);
+	}
+
 	if(!func)
 	{
 		signature = _ILJitCreateMethodSignature(jitCoder, methodInfo);
@@ -239,6 +353,18 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		signature = jit_function_get_signature(func);
 	}
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CallInfos: StackTop: %i, ArgCount: %i, Signature argCount: %i\n",
+			jitCoder->stackTop,
+			argCount,
+			jit_type_num_params(signature));
+			ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0);
 	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
 	/* TODO: handle varargs here and create a call signature. */
@@ -257,21 +383,26 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		returnValue = jit_insn_call_indirect_vtable(jitCoder->jitFunction,
 													jitFunction, signature,
-													jitParams, argCount,
+													jitParams, argCount + 1,
 													JIT_CALL_TAIL);
 	}
 	else
 	{
 		returnValue = jit_insn_call_indirect_vtable(jitCoder->jitFunction,
 													jitFunction, signature,
-													jitParams, argCount,
+													jitParams, argCount + 1,
 													0);
 	}
 	if(returnItem->engineType != ILEngineType_Invalid)
 	{
-		jitCoder->jitStack[jitCoder->stackTop] = returnValue;
+		jitCoder->jitStack[jitCoder->stackTop] =
+			_ILJitValueConvertToStackType(jitCoder->jitFunction, returnValue);
 		JITC_ADJUST(jitCoder, 1);
 	}
+	/* Restore the current method in the thread on return. */
+	_ILJitSetMethodInThread(jitCoder->jitFunction, 
+							jit_value_get_param(jitCoder->jitFunction, 0),
+							jitCoder->currentMethod);
 }
 
 static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
@@ -282,7 +413,7 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	int argCount = info->numBaseArgs + info->numVarArgs;
 	ILJitFunction func = methodInfo->userData;
 	ILJitType  signature;
-	ILJitValue jitParams[argCount + 2];
+	ILJitValue jitParams[argCount + 1];
 	ILJitValue returnValue;
 	ILJitValue classPrivate;
 	ILJitValue jitFunction;
@@ -290,6 +421,19 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJitValue methodIndex;
 	ILJitValue args[3];
 	jit_label_t label = jit_label_undefined;
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CallInterface: %s.%s at slot %i\n", 
+			ILClass_Name(ILMethod_Owner(methodInfo)),
+			ILMethod_Name(methodInfo),
+			methodInfo->index);
+			ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 
 	if(!func)
 	{
@@ -326,21 +470,26 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		returnValue = jit_insn_call_indirect_vtable(jitCoder->jitFunction,
 													jitFunction, signature,
-													jitParams, argCount,
+													jitParams, argCount + 1,
 													JIT_CALL_TAIL);
 	}
 	else
 	{
 		returnValue = jit_insn_call_indirect_vtable(jitCoder->jitFunction,
 													jitFunction, signature,
-													jitParams, argCount,
+													jitParams, argCount + 1,
 													0);
 	}
 	if(returnItem->engineType != ILEngineType_Invalid)
 	{
-		jitCoder->jitStack[jitCoder->stackTop] = returnValue;
+		jitCoder->jitStack[jitCoder->stackTop] = 
+			_ILJitValueConvertToStackType(jitCoder->jitFunction, returnValue);
 		JITC_ADJUST(jitCoder, 1);
 	}
+	/* Restore the current method in the thread on return. */
+	_ILJitSetMethodInThread(jitCoder->jitFunction, 
+							jit_value_get_param(jitCoder->jitFunction, 0),
+							jitCoder->currentMethod);
 }
 
 static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
@@ -359,6 +508,15 @@ static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"Return\n");
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	if(engineType == ILEngineType_Invalid)
 	{
 	       jit_insn_return(jitCoder->jitFunction, 0);

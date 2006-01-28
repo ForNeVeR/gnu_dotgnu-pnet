@@ -47,24 +47,18 @@ static void JITCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 	}
 	else if(opcode == IL_OP_LDC_I4_S)
 	{
-		ILInt8 temp;
-
-		JITC_GET_INT8(arg, temp);
 		jitCoder->jitStack[jitCoder->stackTop] = 
 			jit_value_create_nint_constant(jitCoder->jitFunction,
 										_IL_JIT_TYPE_INT32,
-										(jit_nint)temp);
+										(jit_nint)arg[0]);
 		JITC_ADJUST(jitCoder, 1);
 	}
 	else if(opcode == IL_OP_LDC_I4)
 	{
-		ILInt32 temp;
-
-		JITC_GET_INT32(arg, temp);
 		jitCoder->jitStack[jitCoder->stackTop] = 
 			jit_value_create_nint_constant(jitCoder->jitFunction,
 										_IL_JIT_TYPE_INT32,
-										(jit_nint)temp);
+										(jit_nint)IL_READ_UINT32(arg));
 		JITC_ADJUST(jitCoder, 1);
 	}
 	else if(opcode == IL_OP_LDC_R4)

@@ -106,6 +106,12 @@ static ILJitType _ILJitSignature_ILRuntimeGetThreadStatic = 0;
 #endif
 
 /*
+ * declaration of the different label types.
+ */
+#define _IL_JIT_LABEL_NORMAL 0
+#define _IL_JIT_LABEL_STARTFINALLY 1
+
+/*
  * Define the structure of a JIT label.
  */
 typedef struct _tagILJITLabel ILJITLabel;
@@ -114,7 +120,7 @@ struct _tagILJITLabel
 	ILUInt32	address;		/* Address in the IL code */
 	jit_label_t	label;			/* the libjit label */
 	ILJITLabel *next;			/* Next label block */
-
+	int			labelType;      /* type of the label. */
 };
 
 /*
@@ -152,6 +158,9 @@ struct _tagILJITCoder
 
 	/* The current jitted function. */
 	ILJitFunction	jitFunction;
+
+	/* Flag if the catcher is started. */
+	int				isInCatcher;
 };
 
 /*
@@ -488,14 +497,7 @@ static void *_ILRuntimeLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
  */
 static ILJitType _ILJitGetPointerTypeFromJitTypes(ILJitTypes *types)
 {
-	if(!types->jitTypePtr)
-	{
-		if(!(types->jitTypePtr = jit_type_create_pointer(types->jitTypeBase, 1)))
-		{
-			return 0;
-		}
-	}
-	return types->jitTypePtr;
+	return _IL_JIT_TYPE_VPTR;
 }
 
 /*
@@ -504,13 +506,7 @@ static ILJitType _ILJitGetPointerTypeFromJitTypes(ILJitTypes *types)
  */
 static ILJitType _ILJitGetThisType(ILType *type, ILExecProcess *process)
 {
-	ILJitTypes *types = _ILJitGetTypes(type, process);
-
-	if(!types)
-	{
-		return 0;
-	}
-	return _ILJitGetPointerTypeFromJitTypes(types);
+	return _IL_JIT_TYPE_VPTR;
 }
 
 /*
@@ -520,18 +516,18 @@ static ILJitType _ILJitGetThisType(ILType *type, ILExecProcess *process)
  */
 static ILJitType _ILJitGetArgType(ILType *type, ILExecProcess *process)
 {
-	ILJitTypes *types = _ILJitGetTypes(type, process);
-
-	if(!types)
-	{
-		return 0;
-	}
 	if(ILType_IsClass(type))
 	{
-		return _ILJitGetPointerTypeFromJitTypes(types);
+		return _IL_JIT_TYPE_VPTR;
 	}
 	else
 	{
+		ILJitTypes *types = _ILJitGetTypes(type, process);
+
+		if(!types)
+		{
+			return 0;
+		}
 		return types->jitTypeBase;
 	}
 }
@@ -542,18 +538,18 @@ static ILJitType _ILJitGetArgType(ILType *type, ILExecProcess *process)
  */
 static ILJitType _ILJitGetLocalsType(ILType *type, ILExecProcess *process)
 {
-	ILJitTypes *types = _ILJitGetTypes(type, process);
-
-	if(!types)
-	{
-		return 0;
-	}
 	if(ILType_IsClass(type))
 	{
-		return _ILJitGetPointerTypeFromJitTypes(types);
+		return _IL_JIT_TYPE_VPTR;
 	}
 	else
 	{
+		ILJitTypes *types = _ILJitGetTypes(type, process);
+
+		if(!types)
+		{
+			return 0;
+		}
 		return types->jitTypeBase;
 	}
 }
@@ -563,20 +559,58 @@ static ILJitType _ILJitGetLocalsType(ILType *type, ILExecProcess *process)
  */
 static ILJitType _ILJitGetReturnType(ILType *type, ILExecProcess *process)
 {
-	ILJitTypes *types = _ILJitGetTypes(type, process);
-
-	if(!types)
-	{
-		return 0;
-	}
 	if(ILType_IsClass(type))
 	{
-		return _ILJitGetPointerTypeFromJitTypes(types);
+		return _IL_JIT_TYPE_VPTR;
 	}
 	else
 	{
+		ILJitTypes *types = _ILJitGetTypes(type, process);
+
+		if(!types)
+		{
+			return 0;
+		}
 		return types->jitTypeBase;
 	}
+}
+
+/*
+ * Get the jit typee from an ILClass.
+ */
+static ILJitType _ILJitGetTypeFromClass(ILClass *info)
+{
+	ILClassPrivate *classPrivate = (ILClassPrivate *)info->userData;
+
+	if(!classPrivate)
+	{
+		/* We need to layout the class first. */
+		if(!_LayoutClass(ILExecThreadCurrent(), info))
+		{
+			return 0;
+		}
+		classPrivate = (ILClassPrivate *)info->userData;
+	}
+	return(classPrivate->jitTypes.jitTypeBase);
+}
+
+/*
+ * Get the size of an object.
+ */
+static ILUInt32 _ILJitGetSizeOfClass(ILClass *info)
+{
+	ILClassPrivate *classPrivate = (ILClassPrivate *)info->userData;
+
+	if(!classPrivate)
+	{
+		/* We need to layout the class first. */
+		if(!_LayoutClass(ILExecThreadCurrent(), info))
+		{
+			return 0;
+		}
+		classPrivate = (ILClassPrivate *)info->userData;
+	}
+	return((ILUInt32)jit_type_get_size(classPrivate->jitTypes.jitTypeBase));
 }
 
 /*
@@ -1391,6 +1425,20 @@ int ILJitFunctionCreateFromAncestor(ILCoder *_coder, ILMethod *method,
 		return ILJitFunctionCreate(_coder, method);
 	}
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CreateMethodFromAncestor: Ancestor: %s.%s at Slot %i New: %s.%s\n", 
+			ILClass_Name(ILMethod_Owner(virtualAncestor)),
+			ILMethod_Name(virtualAncestor),
+			virtualAncestor->index,
+			ILClass_Name(ILMethod_Owner(method)),
+			ILMethod_Name(method));
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	jitSignature = jit_function_get_signature(ancestor);
 
 	/* Now we can create the jit function itself. */

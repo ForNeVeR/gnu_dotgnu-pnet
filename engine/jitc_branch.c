@@ -24,7 +24,7 @@
  * Look for a label for a specific IL address.  Create
  * a new label if necessary.
  */
-static ILJITLabel *GetLabel(ILJITCoder *coder, ILUInt32 address)
+static ILJITLabel *GetLabel(ILJITCoder *coder, ILUInt32 address, int labelType)
 {
 	ILJITLabel *label;
 	label = coder->labelList;
@@ -42,6 +42,7 @@ static ILJITLabel *GetLabel(ILJITCoder *coder, ILUInt32 address)
 		label->address = address;
 		label->label = jit_label_undefined;
 		label->next = coder->labelList;
+		label->labelType = labelType;
 		coder->labelList = label;
 	}
 	else
@@ -57,11 +58,38 @@ static ILJITLabel *GetLabel(ILJITCoder *coder, ILUInt32 address)
 static void JITCoder_Label(ILCoder *coder, ILUInt32 offset)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJITLabel *label = GetLabel(jitCoder, offset);
+	ILJITLabel *label = GetLabel(jitCoder, offset, _IL_JIT_LABEL_NORMAL);
 
 	if(label)
 	{
-		jit_insn_label(jitCoder->jitFunction, &(label->label));
+		if(label->labelType == _IL_JIT_LABEL_STARTFINALLY)
+		{
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"StartFinally: %i\n", 
+					offset);
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			jit_insn_start_finally(jitCoder->jitFunction, &(label->label));
+		}
+		else
+		{
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"Label: %i\n", 
+					offset);
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			jit_insn_label(jitCoder->jitFunction, &(label->label));
+		}
 	}
 }
 
@@ -317,9 +345,19 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				   		    ILEngineType type1, ILEngineType type2)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJITLabel *label = GetLabel(jitCoder, dest);
+	ILJITLabel *label = GetLabel(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
 	ILJitValue temp;
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"Branch: %i\n", 
+			dest);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	/* Determine what form of branch to use */
 	switch(opcode)
 	{
@@ -495,7 +533,7 @@ static void JITCoder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 static void JITCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
-	ILJITLabel *label = GetLabel(jitCoder, dest);
+	ILJITLabel *label = GetLabel(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
 	
 	jit_value_t constant = jit_value_create_nint_constant(jitCoder->jitFunction,
 														  jit_type_nint,

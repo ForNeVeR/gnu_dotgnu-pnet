@@ -119,13 +119,14 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 
 	/* Ensure that the evaluation stack can hold at least the methods maxStack */
 	/* items. */
-	if(code->maxStack > 0)
-	{
-		ALLOC_STACK(coder, code->maxStack);
-	}
+	/* We need two additional slots for the ValueCtorArgs. */
+	ALLOC_STACK(coder, code->maxStack + 2);
 	
 	/* And reset the stack top. */
 	coder->stackTop = 0;
+
+	/* Reset the isInCatcher flag. */
+	coder->isInCatcher = 0;
 
 	/* Set the current method in the thread. */
 	_ILJitSetMethodInThread(coder->jitFunction, 

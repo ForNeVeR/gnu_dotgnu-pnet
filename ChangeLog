@@ -1,3 +1,7 @@
+2006-02-01  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/TreeNode.cs: fixed some NullReferenceException
+
 2006-01-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Threading/Timer.cs: fixed bug, if system time was changed

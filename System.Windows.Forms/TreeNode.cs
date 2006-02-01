@@ -108,6 +108,8 @@ namespace System.Windows.Forms
 
 		public void BeginEdit()
 		{
+			if( null == treeView ) return;
+			
 			if (treeView.toolkitWindow != null)
 			{
 				if (!treeView.LabelEdit)
@@ -126,6 +128,7 @@ namespace System.Windows.Forms
 		{
 			get
 			{
+				if( null == treeView ) return new Rectangle( 0,0,0,0 );
 				return treeView.GetNodeBounds(this);
 			}
 		}
@@ -180,6 +183,8 @@ namespace System.Windows.Forms
 
 		public void Collapse()
 		{
+			if( null == treeView ) return;
+			
 			CollapseInternal();
 			treeView.InvalidateDown(this);
 		}
@@ -187,6 +192,8 @@ namespace System.Windows.Forms
 		// Collapse the children recursively but don't redraw.
 		private void CollapseInternal()
 		{
+			if( null == treeView ) return;
+			
 			bool selected = false;
 			// Recursively collapse, if a child was selected, mark to select the parent.
 			if (childCount > 0)
@@ -226,6 +233,8 @@ namespace System.Windows.Forms
 
 		public void EnsureVisible()
 		{
+			if( null == treeView ) return;
+			
 			TreeView.NodeEnumerator nodes;
 			int nodeFromTop;
 			int nodeNo;
@@ -593,6 +602,8 @@ namespace System.Windows.Forms
 		{
 			get
 			{
+				if( null == treeView ) return null;
+				
 				bool pastThis = false;
 				TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(treeView.nodes);
 				while (nodes.MoveNext())
@@ -675,6 +686,8 @@ namespace System.Windows.Forms
 		{
 			get
 			{
+				if( null == treeView ) return null;
+				
 				TreeNode visibleNode = null;
 				TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(treeView.nodes);
 				while (nodes.MoveNext())

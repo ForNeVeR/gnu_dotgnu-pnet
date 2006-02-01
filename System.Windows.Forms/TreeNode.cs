@@ -183,25 +183,25 @@ namespace System.Windows.Forms
 
 		public void Collapse()
 		{
-			if( null == treeView ) return;
-			
 			CollapseInternal();
-			treeView.InvalidateDown(this);
+			if( null != treeView ) {
+				treeView.InvalidateDown(this);
+			}
 		}
 
 		// Collapse the children recursively but don't redraw.
 		private void CollapseInternal()
 		{
-			if( null == treeView ) return;
-			
 			bool selected = false;
 			// Recursively collapse, if a child was selected, mark to select the parent.
 			if (childCount > 0)
 			{
 				for (int i = 0; i < childCount; i++)
 				{
-					if (treeView.SelectedNode == children[i])
-						selected = true;
+					if( null != treeView ) {
+						if (treeView.SelectedNode == children[i])
+							selected = true;
+					}
 					children[i].CollapseInternal();
 				}
 			}
@@ -209,17 +209,17 @@ namespace System.Windows.Forms
 			{
 				// Do the events.
 				TreeViewCancelEventArgs eventArgs = new TreeViewCancelEventArgs(this, false, TreeViewAction.Collapse);
-				treeView.OnBeforeCollapse(eventArgs);
+				if( null != treeView ) treeView.OnBeforeCollapse(eventArgs);
 				if (!eventArgs.Cancel)
 				{
 					// The node is now collapsed.
 					expanded = false;
-					treeView.OnAfterCollapse(new TreeViewEventArgs(this));
+					if( null != treeView ) treeView.OnAfterCollapse(new TreeViewEventArgs(this));
 				}
 			}
 			if (selected)
 			{
-				treeView.SelectedNode = this;
+				if( null != treeView ) treeView.SelectedNode = this;
 			}
 		}
 

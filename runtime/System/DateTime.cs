@@ -901,6 +901,12 @@ public struct DateTime : IComparable, IFormattable
 						month -= 12;
 					}
 				}
+				int daysInMonth = daysForEachMonth[month - 1];
+				if (day > daysInMonth)
+				{
+					day = daysInMonth;
+				}
+
 				return new DateTime(year, month, day,
 									hour, minute, second, fractions);
 			}

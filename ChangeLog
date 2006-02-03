@@ -1,3 +1,7 @@
+2006-02-03  Peter Flaig  <Peter.Flaig@de.trumpf-laser.com>
+
+	* support/time.c: fixed getting offset to UTC time if timezone was changed
+
 2006-01-28  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Add the functions _ILJitGetSizeOfClass for the ctors and

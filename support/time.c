@@ -237,7 +237,7 @@ ILInt32 ILGetTimeZoneAdjust(void)
 		timezone = -(tms->tm_gmtoff);
 #endif
 #endif
-		initialized = 1;
+		//initialized = 1;
 	}
 	return (ILInt32)timezone;
 #else

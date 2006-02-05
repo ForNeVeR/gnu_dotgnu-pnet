@@ -35,7 +35,9 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 	ILField *field;
 	ILFieldRVA *fieldRVA;
 	ILUInt32 rva;
+#ifndef IL_USE_JIT
 	ILMethod *caller;
+#endif
 	ILImage *image;
 	void *addr;
 	unsigned long maxLen;
@@ -49,7 +51,11 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 	{
 		return;
 	}
+#ifdef IL_USE_JIT
+	field = (ILField *)handle;
+#else
 	field = *((ILField **)handle);
+#endif
 	if(!field)
 	{
 		return;
@@ -71,11 +77,13 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 		return;
 	}
 	image = ILProgramItem_Image(field);
+#ifndef IL_USE_JIT
 	caller = ILExecThreadStackMethod(thread, 1);
 	if(!caller || ILProgramItem_Image(caller) != image)
 	{
 		return;
 	}
+#endif
 
 	/* Map the RVA to find the array data */
 	addr = ILImageMapRVA(image, rva, &maxLen);

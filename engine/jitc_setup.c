@@ -199,6 +199,9 @@ static int JITCoder_CtorOffset(ILCoder *coder)
 static int JITCoder_Finish(ILCoder *_coder)
 {
 	ILJITCoder *jitCoder = ((ILJITCoder *)_coder);
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	char *methodName = _ILJitFunctionGetMethodName(jitCoder->jitFunction);
+#endif
 
 	/* Clear the label pool */
 	ILMemPoolClear(&(jitCoder->labelPool));
@@ -212,6 +215,22 @@ static int JITCoder_Finish(ILCoder *_coder)
 	}
 	jitCoder->labelOutOfMemory = 0;
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+#ifdef _IL_JIT_DUMP_FUNCTION
+	ILMutexLock(globalTraceMutex);
+	jit_dump_function(stdout, jitCoder->jitFunction, methodName);
+	ILMutexUnlock(globalTraceMutex);
+#endif
+#ifdef _IL_JIT_DISASSEMBLE_FUNCTION
+	if(!jit_function_compile(jitCoder->jitFunction))
+	{
+		return IL_CODER_END_TOO_BIG;
+	}
+	ILMutexLock(globalTraceMutex);
+	jit_dump_function(stdout, jitCoder->jitFunction, methodName);
+	ILMutexUnlock(globalTraceMutex);
+#endif
+#endif
 	return IL_CODER_END_OK;
 }
 

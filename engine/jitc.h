@@ -50,6 +50,11 @@
  */
 #define IL_JIT_META_METHOD 1
 
+/*
+ * Definitions of method metadata only set when the coder is built with
+ * extended debugging.
+ */
+#define IL_JIT_META_METHODNAME 1001
 
 /*
  * Defaut calling convention for libjit.

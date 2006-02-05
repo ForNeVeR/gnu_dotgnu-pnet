@@ -471,10 +471,35 @@ static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
 
 	if(valueType == ILEngineType_TypedRef)
 	{
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+		if (jitCoder->flags & IL_CODER_FLAG_STATS)
+		{
+			ILMutexLock(globalTraceMutex);
+			fprintf(stdout,
+				"BoxTypedRef: %s Size: %i\n", 
+				ILClass_Name(boxClass),
+				size);
+			ILMutexUnlock(globalTraceMutex);
+		}
+#endif
 		/* We have to unpack the value first. */	
 		ILJitValue ptr = _ILJitGetValFromRef(jitCoder, value, boxClass);
 		value = jit_insn_load_relative(jitCoder->jitFunction, ptr, 0, jitType);
 	}
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	else
+	{
+		if (jitCoder->flags & IL_CODER_FLAG_STATS)
+		{
+			ILMutexLock(globalTraceMutex);
+			fprintf(stdout,
+				"Box: %s Size: %i\n", 
+				ILClass_Name(boxClass),
+				size);
+			ILMutexUnlock(globalTraceMutex);
+		}
+	}
+#endif
 
 	/* Allocate the object. */
 	args[0] = jit_value_get_param(jitCoder->jitFunction, 0);
@@ -482,10 +507,11 @@ static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
 							_IL_JIT_TYPE_VPTR, (jit_nint)boxClass);
 
 	args[2] = jit_value_create_nint_constant(jitCoder->jitFunction,
-							jit_type_int, size);
+							_IL_JIT_TYPE_UINT32, size);
 
-	newObj = jit_insn_call_native(jitCoder->jitFunction, 0, _ILEngineAlloc,
-					_ILJitSignature_ILEngineAlloc, args, 3, 0);
+	newObj = jit_insn_call_native(jitCoder->jitFunction, "_ILEngineAlloc",
+								  _ILEngineAlloc, _ILJitSignature_ILEngineAlloc,
+					 			  args, 3, JIT_CALL_NOTHROW);
 
 	jit_insn_branch_if(jitCoder->jitFunction, newObj, &label1);
 	_ILJitThrowCurrentException(jitCoder);
@@ -521,8 +547,9 @@ static void JITCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 											 _IL_JIT_TYPE_UINT32,
 											 jit_type_get_size(jitType));
 							
-	newObj = jit_insn_call_native(jitCoder->jitFunction, 0, _ILEngineAlloc,
-								  _ILJitSignature_ILEngineAlloc, args, 3, 0);
+	newObj = jit_insn_call_native(jitCoder->jitFunction, "_ILEngineAlloc",
+								  _ILEngineAlloc, _ILJitSignature_ILEngineAlloc,
+								  args, 3, 0);
 					
 	jit_insn_branch_if(jitCoder->jitFunction, newObj, &label1);
 	_ILJitThrowCurrentException(jitCoder);

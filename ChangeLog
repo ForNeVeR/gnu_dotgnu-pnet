@@ -1,3 +1,25 @@
+2006-02-05  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.h: Add jit function metadata index IL_JIT_META_METHODNAME for
+	the complete methodname.
+
+	* engine/jitc.c: Fix a bug in the ALLOC_STACK macro. Add support for
+	setting and getting the methodname in/from the jit functions metadata.
+	Add the function names to the native calls for debugging purposes.
+
+	* engine/jitc_call.c: Add the function names to native calls for debugging
+	purposes. Add the complete method name to the jit_insn_call.
+
+	* engine/jitc_obj.c: Add function names to the native calls. Add some
+	debugging output when ilrun is invoked with -Z.
+
+	* engine/jitc_setup.c: Add the dumping of the jitted methods in
+	JITCoder_Finish.
+
+	* engine/lib_helpers.c: In the jitted code the handle is passed by value
+	and not by reference in _IL_RuntimeHelpers_InitializeArray. Removed the
+	check of the callers image because the stack methods are not done yet.
+
 2006-02-03  Peter Flaig  <Peter.Flaig@de.trumpf-laser.com>
 
 	* support/time.c: fixed getting offset to UTC time if timezone was changed

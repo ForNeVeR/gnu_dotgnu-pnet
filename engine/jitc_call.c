@@ -52,9 +52,10 @@ static void _ILJitNewObj(ILJITCoder *coder, ILClass *info, ILJitValue *newArg)
 												jit_type_void_ptr, (jit_nint)info);
 	args[2] = jit_value_create_nint_constant(coder->jitFunction,
 												jit_type_int, objSize);
-	newObj = jit_insn_call_native(coder->jitFunction, 0, _ILEngineAlloc,
-									_ILJitSignature_ILEngineAlloc, args, 3,
-									JIT_CALL_NOTHROW);
+	newObj = jit_insn_call_native(coder->jitFunction, "_ILEngineAlloc",
+								  _ILEngineAlloc,
+								  _ILJitSignature_ILEngineAlloc, args, 3,
+								  JIT_CALL_NOTHROW);
 	jit_insn_branch_if(coder->jitFunction, newObj, &label1);
 	_ILJitThrowCurrentException(coder);
 	jit_insn_label(coder->jitFunction, &label1);
@@ -148,6 +149,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	int argCount = info->numBaseArgs + info->numVarArgs;
 	ILJitValue jitParams[argCount + 1];
 	ILJitValue returnValue;
+	char *methodName = 0;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -171,7 +173,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		jitFunction = ILJitFunctionFromILMethod(methodInfo);
 	}
 
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
 		ILJitType  signature  = jit_function_get_signature(jitFunction);
@@ -182,7 +184,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 			jitCoder->stackTop,
 			argCount,
 			jit_type_num_params(signature));
-			ILMutexUnlock(globalTraceMutex);
+		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
 	/* Output a call to the static constructor */
@@ -194,9 +196,13 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
 	/* TODO: create call signature for vararg calls. */	
 		
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	methodName = _ILJitFunctionGetMethodName(jitFunction);
+#endif
 	if(info->tailCall == 1)
 	{
-		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
+		returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
+									jitFunction, 0,
 									jitParams, argCount + 1, JIT_CALL_TAIL);
 		if(returnItem->engineType != ILEngineType_Invalid)
 		{
@@ -208,7 +214,8 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	}
 	else
 	{		
-		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
+		returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
+									jitFunction, 0,
 									jitParams, argCount + 1, 0);
 		if(returnItem && returnItem->engineType != ILEngineType_Invalid)
 		{
@@ -237,6 +244,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	int argCount = info->numBaseArgs + info->numVarArgs;
 	ILJitValue jitParams[argCount + 2];
 	ILJitValue returnValue;
+	char *methodName = 0;
 	
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -246,7 +254,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 			"CallCtor: %s.%s\n", 
 			ILClass_Name(ILMethod_Owner(methodInfo)),
 			ILMethod_Name(methodInfo));
-			ILMutexUnlock(globalTraceMutex);
+		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
 
@@ -261,6 +269,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	}
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+#if defined(_IL_JIT_ENABLE_DEBUG)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
 		ILJitType  signature  = jit_function_get_signature(jitFunction);
@@ -271,8 +280,10 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 			jitCoder->stackTop,
 			argCount,
 			jit_type_num_params(signature));
-			ILMutexUnlock(globalTraceMutex);
+		ILMutexUnlock(globalTraceMutex);
 	}
+	methodName = _ILJitFunctionGetMethodName(jitFunction);
+#endif
 #endif
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 1);
@@ -294,7 +305,8 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 		_ILJitFillArguments(jitCoder, &(jitParams[2]), info);
 
 		// call the constructor with jitParams as input
-		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
+		returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
+									jitFunction, 0,
 									jitParams, argCount + 2, 0);
 		jitCoder->jitStack[jitCoder->stackTop] = jitParams[1];
 	}	
@@ -331,7 +343,7 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 			ILClass_Name(ILMethod_Owner(methodInfo)),
 			ILMethod_Name(methodInfo),
 			methodInfo->index);
-			ILMutexUnlock(globalTraceMutex);
+		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
 
@@ -353,7 +365,7 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		signature = jit_function_get_signature(func);
 	}
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
 		ILMutexLock(globalTraceMutex);
@@ -362,7 +374,7 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 			jitCoder->stackTop,
 			argCount,
 			jit_type_num_params(signature));
-			ILMutexUnlock(globalTraceMutex);
+		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
 	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0);
@@ -422,6 +434,14 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJitValue args[3];
 	jit_label_t label = jit_label_undefined;
 
+	if(!func)
+	{
+		signature = _ILJitCreateMethodSignature(jitCoder, methodInfo);
+	}
+	else
+	{
+		signature = jit_function_get_signature(func);
+	}
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
@@ -431,18 +451,21 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 			ILClass_Name(ILMethod_Owner(methodInfo)),
 			ILMethod_Name(methodInfo),
 			methodInfo->index);
-			ILMutexUnlock(globalTraceMutex);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#if defined(_IL_JIT_ENABLE_DEBUG)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CallInfos: StackTop: %i, ArgCount: %i, Signature argCount: %i\n",
+			jitCoder->stackTop,
+			argCount,
+			jit_type_num_params(signature));
+		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-
-	if(!func)
-	{
-		signature = _ILJitCreateMethodSignature(jitCoder, methodInfo);
-	}
-	else
-	{
-		signature = jit_function_get_signature(func);
-	}
+#endif
 	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0);
 	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
 	/* TODO: handle varargs here and create a call signature. */
@@ -458,10 +481,11 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	args[0] = classPrivate;
 	args[1] = interfaceClass;
 	args[2] = methodIndex;
-	jitFunction = jit_insn_call_native(jitCoder->jitFunction, 0,
+	jitFunction = jit_insn_call_native(jitCoder->jitFunction,
+									   "_ILRuntimeLookupInterfaceMethod",
 									   _ILRuntimeLookupInterfaceMethod,
 									   _ILJitSignature_ILRuntimeLookupInterfaceMethod,
-									   args, 3, 0);
+									   args, 3, JIT_CALL_NOTHROW);
 	jit_insn_branch_if(jitCoder->jitFunction, jitFunction, &label);
 	/* TODO: raise a MissingMethodException here. */
 

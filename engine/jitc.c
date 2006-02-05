@@ -37,6 +37,40 @@ extern	"C" {
 #endif
 
 /*
+ * For enabling extended debugging output uncomment the following define.
+ */
+/* #define _IL_JIT_ENABLE_DEBUG 1 */
+
+/*
+ * For dumping the jitted function before it is compiled uncomment the
+ * following define.
+ */
+/* #define _IL_JIT_DUMP_FUNCTION 1 */
+
+/*
+ * For dumping the disassembled jitted function before after  it is compiled
+ *  uncomment the following define.
+ */
+/* #define _IL_JIT_DISASSEMBLE_FUNCTION 1 */
+
+
+#ifdef _IL_JIT_DUMP_FUNCTION
+#ifndef _IL_JIT_ENABLE_DEBUG
+#define _IL_JIT_ENABLE_DEBUG 1
+#endif
+#endif
+
+#ifdef _IL_JIT_DISASSEMBLE_FUNCTION
+#ifndef _IL_JIT_ENABLE_DEBUG
+#define _IL_JIT_ENABLE_DEBUG 1
+#endif
+#endif
+
+#ifdef _IL_JIT_ENABLE_DEBUG
+#include "jit/jit-dump.h"
+#endif
+
+/*
  * Mapping of the native clr types to the corresponing jit types.
  */
 static struct _tagILJitTypes _ILJitType_VOID;
@@ -123,6 +157,7 @@ struct _tagILJITLabel
 	int			labelType;      /* type of the label. */
 };
 
+
 /*
  * Define the structure of a JIT coder's instance block.
  */
@@ -184,17 +219,17 @@ struct _tagILJITCoder
  */
 #define	ALLOC_STACK(coder, n)	\
 			do { \
-				if(n > (coder)->stackSize) \
+				if((n) > (coder)->stackSize) \
 				{ \
 					ILJitValue *newStack = \
 						(ILJitValue *)ILRealloc((coder)->jitStack, \
-											  n * sizeof(ILJitValue)); \
+											  (n) * sizeof(ILJitValue)); \
 					if(!newStack) \
 					{ \
 						return 0; \
 					} \
 					(coder)->jitStack = newStack; \
-					(coder)->stackSize = n; \
+					(coder)->stackSize = (n); \
 				} \
 			} while (0)
 
@@ -222,6 +257,102 @@ static int _LayoutClass(ILExecThread *thread, ILClass *info)
 	METADATA_UNLOCK(thread);
 	return result; 
 }
+
+/*
+ * Function to free the metadata attached to a jit_function_t.
+ */
+static void _ILJitMetaFreeFunc(void *data)
+{
+	if(data)
+	{
+		ILFree(data);
+	}
+}
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+/*
+ * Get a complete methodname.
+ * The string returned must be freed by the caller.
+ */
+static char *_ILJitGetMethodName(ILMethod *method)
+{
+	const char *methodName = ILMethod_Name(method);
+	const char *className = ILClass_Name(ILMethod_Owner(method));
+	const char *namespaceName = ILClass_Namespace(ILMethod_Owner(method));
+	int namespaceLen = 0;
+	int classLen = 0;
+	int methodLen = 0;
+	int len = 0;
+	char *fullName = 0;
+
+	if(namespaceName)
+	{
+		namespaceLen = strlen(namespaceName);
+		len += namespaceLen + 1;
+	}
+	if(className)
+	{
+		classLen = strlen(className);
+		len += classLen + 1;
+	}
+	if(methodName)
+	{
+		methodLen = strlen(methodName);
+		len += methodLen;
+	}
+	if(len)
+	{
+		int pos = 0;
+
+		if(!(fullName = ILMalloc(len + 1)))
+		{
+			return 0;
+		}
+		if(namespaceName)
+		{
+			strcpy(fullName, namespaceName);
+			pos = namespaceLen;
+			fullName[pos] = '.';
+			pos++;
+		}
+		if(className)
+		{
+			strcpy(fullName + pos, className);
+			pos += classLen;
+			fullName[pos] = '.';
+			pos++;
+		}
+		if(methodName)
+		{
+			strcpy(fullName + pos, methodName);
+			pos += methodLen;
+		}
+	}
+	return fullName;
+}
+
+/*
+ * Set the full methodname in the functions metadata.
+ */
+static void _ILJitFunctionSetMethodName(ILJitFunction func, ILMethod *method)
+{
+	char *methodName = _ILJitGetMethodName(method);
+
+	if(methodName)
+	{
+		jit_function_set_meta(func, IL_JIT_META_METHODNAME, methodName,
+							  _ILJitMetaFreeFunc, 0);
+	}
+}
+
+/*
+ * Get the full methodname from the jit functions metadata.
+ */
+static char *_ILJitFunctionGetMethodName(ILJitFunction func)
+{
+	return (char *)jit_function_get_meta(func, IL_JIT_META_METHODNAME);
+}
+#endif
 
 /*
  * Destroy every ILJitType in a ILJitTypes  structure 
@@ -1047,7 +1178,14 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 	ILJitType signature = jit_function_get_signature(func);
 	unsigned int numParams = jit_type_num_params(signature);
 	ILJitValue returnValue;
+	char *methodName = 0;
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	methodName = _ILJitFunctionGetMethodName(func);
+	ILMutexLock(globalTraceMutex);
+	fprintf(stdout, "CompileInternalMethod: %s\n", methodName);
+	ILMutexUnlock(globalTraceMutex);
+#endif
 	/* We need to set the method member in the ILExecThread == arg[0]. */
 	if(numParams > 0)
 	{
@@ -1062,11 +1200,11 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 			}
 		}
 		_ILJitSetMethodInThread(func, jitParams[0], method);
-		returnValue = jit_insn_call_native(func, 0, nativeFunction, signature, jitParams, numParams, 0);
+		returnValue = jit_insn_call_native(func, methodName, nativeFunction, signature, jitParams, numParams, 0);
 	}
 	else
 	{
-		returnValue = jit_insn_call_native(func, 0, nativeFunction, signature, 0, 0, 0);
+		returnValue = jit_insn_call_native(func, methodName, nativeFunction, signature, 0, 0, 0);
 	}
 	jit_insn_return(func, returnValue);	
 	return JIT_RESULT_OK;
@@ -1394,6 +1532,9 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 	/* and link the new jitFunction to the method. */
 	method->userData = jitFunction;
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	_ILJitFunctionSetMethodName(jitFunction, method);
+#endif
 	/* are we ready now ? */
 
 	return 1;
@@ -1462,6 +1603,9 @@ int ILJitFunctionCreateFromAncestor(ILCoder *_coder, ILMethod *method,
 	/* and link the new jitFunction to the method. */
 	method->userData = jitFunction;
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	_ILJitFunctionSetMethodName(jitFunction, method);
+#endif
 	/* are we ready now ? */
 
 	return 1;

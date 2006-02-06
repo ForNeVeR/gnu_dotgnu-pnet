@@ -493,7 +493,7 @@ public sealed class Font
 				else
 				{
 					return fontFamily.GetLineSpacing(fontStyle) *
-							(size / fontFamily.GetEmHeight(fontStyle)) * dpi;
+							(size / fontFamily.GetEmHeight(fontStyle)) * dpi / 72f;
 				}
 			}
 

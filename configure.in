@@ -104,32 +104,50 @@ AC_ARG_WITH(libgc,
 	withgc=yes
 ])
 
-def_jit=false
-AC_SUBST(JIT_LIBS)
-AC_SUBST(JIT_INCLUDE)
-AC_ARG_ENABLE(jit,
-[  --enable-jit            Enable the just in time compiler],
-[case "${enableval}" in
-  yes) jit=true ;;
-  no)  jit=false ;;
-  *) AC_MSG_ERROR(bad value ${enableval} for --enable-jit) ;;
-esac],[jit=$def_jit])
-if test x$jit = xtrue ; then
-  AC_DEFINE(IL_USE_JIT, 1, [Use the just in time compiler])
-  if test -f "../libjit/jit/.libs/libjit.so" ; then
-    JIT_LIBS='$(top_builddir)/../libjit/jit/.libs/libjit.so'
-  else
-    if test -f "../libjit/jit/.libs/libjit.a" ; then
-      JIT_LIBS='$(top_builddir)/../libjit/jit/.libs/libjit.a'
-    else
-	  AC_MSG_ERROR(libjit library not found in ../libjit/jit/.libs)
+dnl this should check correctly for libjit
+
+AC_DEFUN(AC_LIBJIT, [
+        if $search_libjit
+        then
+                if test -f $1/$2
+                then
+                        AC_MSG_RESULT($1/$2)
+                        JIT_LIBS="$3"
+                        JIT_INCLUDE="$4"
+                        search_libjit=false
+                        jit=true
     fi
   fi
-  JIT_INCLUDE='-I$(top_srcdir)/../libjit/include'
-else
-  JIT_LIBS=""
-  JIT_INCLUDE=""
+])
+
+AC_DEFUN(AC_SEARCH_LIBJIT, [
+        AC_MSG_CHECKING([location of libjit])
+        AC_LIBJIT(../libjit/include/jit,jit.h, -ljit -L../libjit/jit/.libs, -I../libjit/include/jit, "../libjit")
+        AC_LIBJIT(/usr/include/jit, jit.h, -ljit, -I/usr/include/jit, "/usr")
+        AC_LIBJIT(/usr/local/include/jit, jit.h, -ljit, -I/usr/local/include/jit, "/usr/local")
+])
+
+AC_SUBST(JIT_LIBS)
+AC_SUBST(JIT_INCLUDE)
+search_libjit=false
+AC_ARG_WITH(jit,
+[  --with-jit             Use the Just In Time compiler],
+if test x$withval = xyes ; then
+        search_libjit=true
+        AC_DEFINE([IL_USE_JIT], 1, [Use the just in time compiler])
+elif test x$withval != xyes ; then
+        JIT_LIBS="$LIBS -L$withval/lib -ljit"
+        JIT_INCLUDE="-I$withval/include"
+        search_libjit=false
+        AC_DEFINE([IL_USE_JIT], 1, [Use the just in time compiler])
 fi
+)
+
+if $search_libjit
+then
+        AC_SEARCH_LIBJIT()
+fi
+dnl end of libjit check
 
 dnl The --with-profile=NAME option is used to change the build profile.
 AC_SUBST(PROFILE_NAME)

@@ -1,3 +1,7 @@
+2006-02-08  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Fix include and library paths in the search paths for
+	libjit.
 
 2006-02-08  Boris Manojlovic  <boris.manojlovic@gmail.com>
 

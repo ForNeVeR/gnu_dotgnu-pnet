@@ -30,7 +30,7 @@ static void JITCoder_LoadArg(ILCoder *coder, ILUInt32 argNum, ILType *type)
 	/* We need argNum + 1 because the ILExecThread is added as param 0 */
 	ILJitValue param = jit_value_get_param(jitCoder->jitFunction, argNum + 1);
 	ILJitValue newParam = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-														param);
+									jit_insn_dup(jitCoder->jitFunction, param));
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -52,7 +52,8 @@ static void JITCoder_LoadArg(ILCoder *coder, ILUInt32 argNum, ILType *type)
 static void JITCoder_LoadLocal(ILCoder *coder, ILUInt32 localNum, ILType *type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue localValue = jitCoder->jitLocals[localNum];
+	ILJitValue localValue = jit_insn_dup(jitCoder->jitFunction,
+										 jitCoder->jitLocals[localNum]);
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)

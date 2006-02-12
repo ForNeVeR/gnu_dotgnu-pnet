@@ -1,3 +1,10 @@
+2006-02-12  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/call.c: Fix a build problem on 64 bit platforms with libjit
+	enabled.
+
+	* engine/jitc_except.c: Enable the calling of finally sections.
+
 2006-02-10  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_var.c: Duplicate the local/argument before pushing it on the

@@ -274,9 +274,7 @@ static void JITCoder_Finally(ILCoder *coder, ILException *exception, int dest)
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-	/*	
 	jit_insn_call_finally(jitCoder->jitFunction, &(label->label));
-	*/
 }
 
 /*

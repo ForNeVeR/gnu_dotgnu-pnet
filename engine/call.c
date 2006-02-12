@@ -157,7 +157,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 				case IL_META_ELEMTYPE_I8:
 			#ifdef IL_NATIVE_INT64
 				case IL_META_ELEMTYPE_I:
-				case IL_META_ELEMTYPE_U:
 			#endif
 				{
 					*jitArgs = argBuffer;

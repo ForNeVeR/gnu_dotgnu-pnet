@@ -551,7 +551,6 @@ namespace System.Windows.Forms
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
-
 			Draw(e.Graphics);
 			// Draw the visible TabPage (child controls)
 			base.OnPaint (e);
@@ -1005,7 +1004,17 @@ namespace System.Windows.Forms
 			{
 				if (selectedIndex == -1)
 				{
-					return 0;
+					// if selectedIndex is -1 (none TabPage was selected)
+					// Check if any TabPage is visible
+					// Select first visible TabPage
+					int iCount = tabPageCollection.Count;
+					for( int i = 0; i < iCount; i++ ) {
+						if( tabPageCollection[i].Visible ) {
+							SelectedIndex = i;
+							break;
+						}
+					}
+					return selectedIndex;
 				}
 				else
 				{

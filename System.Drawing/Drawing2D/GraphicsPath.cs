@@ -510,7 +510,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 						  int style, float emSize,
 						  PointF origin, StringFormat format)
 			{
-				// TODO
+				AddPathObject( new StringPathObject( s, family, style, emSize, origin, format ) );
 			}
 	public void AddString(String s, FontFamily family,
 						  int style, float emSize,
@@ -524,7 +524,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 						  int style, float emSize,
 						  RectangleF layoutRect, StringFormat format)
 			{
-				// TODO
+				AddPathObject( new StringPathObject( s, family, style, emSize, layoutRect, format ) );
 			}
 
 	// Clean all markers from this path.
@@ -707,6 +707,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					{
 						last = obj;
 					}
+					obj = next;
 				}
 			}
 
@@ -971,8 +972,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 		public override void Fill(Graphics graphics, Brush brush,
 								  Pen penBrush, FillMode fillMode)
 				{
-					graphics.DrawCurve(penBrush, points, offset,
-									   numberOfSegments, tension);
+					graphics.DrawCurve(penBrush, points, offset, numberOfSegments, tension);
 				}
 
 		// Clone this path object.
@@ -1162,6 +1162,75 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 				{
 					return new RectanglePathObject(x, y, width, height);
 				}
+
+	}; // class RectanglePathObject
+
+	// String path objects.
+	private sealed class StringPathObject : PathObject
+	{
+		// Internal state.
+		String 			mString;
+		RectangleF		mRect;
+		PointF			mPoint;
+		StringFormat 	mFormat;
+		Font				mFont;
+
+		// Constructor.
+		public StringPathObject( String s, FontFamily family, int style, float emSize, PointF origin, StringFormat format ) :
+				this( s, family, style, emSize, origin, RectangleF.Empty, format )
+		{
+		}
+
+		// Constructor.
+		public StringPathObject( String s, FontFamily family, int style, float emSize, RectangleF layoutRect, StringFormat format ) :
+				this( s, family, style, emSize, PointF.Empty, layoutRect, format )
+		{
+		}
+		
+		private StringPathObject( String s, FontFamily family, int style, float emSize, PointF origin, RectangleF layoutRect, StringFormat format ) :
+			this( s, new Font( family, emSize, (FontStyle)style ), origin, layoutRect, format )
+		{
+		}
+		
+		private StringPathObject( String s, Font font, PointF origin, RectangleF layoutRect, StringFormat format )
+		{
+			mString		= s;
+			mFont			= font;
+			mPoint		= origin;
+			mRect			= layoutRect;
+			mFormat		= format;
+			mFormat.FormatFlags |= StringFormatFlags.NoClip;
+		}
+						
+		
+		RectangleF GetRect(Graphics graphics ) {
+			if( RectangleF.Empty != mRect ) return mRect;
+			SizeF sz = graphics.MeasureString( mString, mFont, mPoint, mFormat );
+			RectangleF rNew = new RectangleF( mPoint, sz );
+			return rNew;
+		}
+		
+		// Draw this path object.
+		public override void Draw(Graphics graphics, Pen pen)
+		{
+			using( SolidBrush b = new SolidBrush(pen.Color) ) {
+				this.Fill( graphics, b, null, FillMode.Alternate );
+			}
+		}
+
+		// Fill this path object.
+		public override void Fill(Graphics graphics, Brush brush,
+										  Pen penBrush, FillMode fillMode)
+		{
+			RectangleF r = GetRect(graphics);
+			graphics.DrawString(mString, mFont, brush, r, mFormat);
+		}
+
+		// Clone this path object.
+		public override PathObject Clone()
+		{
+			return (PathObject) this.MemberwiseClone();
+		}
 
 	}; // class RectanglePathObject
 

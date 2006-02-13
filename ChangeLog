@@ -1,5 +1,9 @@
 2006-02-13  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
+	* System.Drawing/Drawing2D/GraphicsPath.cs: added functionality to draw text in graphics path
+
+2006-02-13  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
 	* System.Windows.Forms/TabControl.cs: fixed drawing TabPage first time (bug #15698)
 
 2006-02-06  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>

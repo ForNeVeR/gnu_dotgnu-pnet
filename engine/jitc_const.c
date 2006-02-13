@@ -50,7 +50,7 @@ static void JITCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 		jitCoder->jitStack[jitCoder->stackTop] = 
 			jit_value_create_nint_constant(jitCoder->jitFunction,
 										_IL_JIT_TYPE_INT32,
-										(jit_nint)arg[0]);
+										(jit_nint)(char)arg[0]);
 		JITC_ADJUST(jitCoder, 1);
 	}
 	else if(opcode == IL_OP_LDC_I4)

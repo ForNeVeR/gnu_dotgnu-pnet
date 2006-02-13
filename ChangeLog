@@ -1,3 +1,8 @@
+2006-02-13  Klaus Treichel  <ktreichel@weblde>
+
+	* engine/jitc_const.c: Fix a bug with negative small constants (> -128).
+	(Thanks krokas for finding this bug.)
+
 2006-02-12  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/call.c: Fix a build problem on 64 bit platforms with libjit

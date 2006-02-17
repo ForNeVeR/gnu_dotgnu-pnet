@@ -45,9 +45,9 @@ internal sealed class DrawingPen : ToolkitPenBase
 				switch(style)
 				{
 					case DashStyle.Solid:
-					case DashStyle.Custom:
 					default:
 						return LineStyle.LineSolid;
+					case DashStyle.Custom:
 					case DashStyle.Dash:
 					case DashStyle.Dot:
 					case DashStyle.DashDot:
@@ -134,6 +134,24 @@ internal sealed class DrawingPen : ToolkitPenBase
 							case DashStyle.DashDotDot:
 							{
 								g.DashPattern = dashdotdot;
+							}
+							break;
+							
+							case DashStyle.Custom :
+							{
+								float [] src = properties.DashPattern;
+								int iLen = src.Length;
+								byte [] ayCopy = new byte[ iLen ];
+								float fWidth = properties.Width;
+								float tmp;
+								for( int i = 0; i < iLen; i++ ) {
+									tmp = src[i]*fWidth;
+									     if( tmp < 0    ) tmp = 0;
+									else if( tmp > 0xFF ) tmp = 0xFF;
+									ayCopy[i] = (byte) ( tmp );
+								}
+								
+								g.DashPattern = ayCopy; 
 							}
 							break;
 						}

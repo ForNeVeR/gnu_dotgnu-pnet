@@ -1,3 +1,7 @@
+2006-02-17  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing.Xsharp/DrawingPen.cs: let pen.DashStyle to be DashStyle.Custom and use pen.DashPattern as dasharray
+
 2006-02-13  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Drawing/Drawing2D/GraphicsPath.cs: added functionality to draw text in graphics path

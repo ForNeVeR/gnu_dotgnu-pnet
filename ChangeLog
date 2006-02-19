@@ -1,14 +1,24 @@
+2006-02-19  Radek Polak  <psonek2@seznam.cz>
+
+	* System/Diagnostics/Process.cs: Change environment variables in
+	ProcessStartInfo.EnvironmentVariables to upper case (Bug# 15802).
+	
+	Reformat some ChangeLog entries so tat they do not exeed 80 chars. (Klaus)
+
 2006-02-17  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Drawing.Xsharp/DrawingPen.cs: let pen.DashStyle to be DashStyle.Custom and use pen.DashPattern as dasharray
+	* System.Drawing.Xsharp/DrawingPen.cs: let pen.DashStyle to be
+	DashStyle.Custom and use pen.DashPattern as dasharray.
 
 2006-02-13  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Drawing/Drawing2D/GraphicsPath.cs: added functionality to draw text in graphics path
+	* System.Drawing/Drawing2D/GraphicsPath.cs: added functionality to draw
+	text in graphics path
 
 2006-02-13  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/TabControl.cs: fixed drawing TabPage first time (bug #15698)
+	* System.Windows.Forms/TabControl.cs: fixed drawing TabPage first time
+	(bug #15698)
 
 2006-02-06  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
@@ -16,7 +26,8 @@
 
 2006-02-03  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
-	* runtime/System/DateTime.cs: fixed exception in AddMonths, if the new month has less days then the old month
+	* runtime/System/DateTime.cs: fixed exception in AddMonths, if the new month
+	has less days then the old month
 
 2006-02-01  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
@@ -40,9 +51,8 @@
 	* System.Windows.Forms/Form.cs,
 	* Xsharp/TopLevelWindow.cs:
 	enable transparent forms.
-	can be used with xorg and if option "Composite" is "Enable" in section "Extensions" in xorg.conf.
-	Now we can display semi transparent forms!!!.
-	
+	can be used with xorg and if option "Composite" is "Enable" in section
+	"Extensions" in xorg.conf. Now we can display semi transparent forms!!!.
 
 2006-01-05  Gopal V  <gopalv82@yahoo.com>
 

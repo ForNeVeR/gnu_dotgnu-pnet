@@ -27,6 +27,7 @@ using Platform;
 using System.IO;
 using System.ComponentModel;
 using System.Collections;
+using System.Globalization;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 using System.Security.Permissions;
@@ -900,8 +901,8 @@ public class Process
 							(startInfo.envVars.GetEnumerator());
 					while(e.MoveNext())
 					{
-						coll.Add(((String)(e.Key)) + "=" +
-								 ((String)(e.Value)));
+						coll.Add(((String)(e.Key)).ToUpper(CultureInfo.InvariantCulture) +
+						 "=" + ((String)(e.Value)));
 					}
 					env = new String [coll.Count];
 					coll.CopyTo(env, 0);

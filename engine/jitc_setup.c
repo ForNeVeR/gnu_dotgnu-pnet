@@ -111,6 +111,9 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+	/* Initialize the mem stack for the label stackstates. */
+	ILMemStackInit(&(coder->stackStates), 0);
+
 	/* Create the local variables. */
 	if(!_JITCreateLocals(coder, code->localVarSig))
 	{
@@ -202,6 +205,9 @@ static int JITCoder_Finish(ILCoder *_coder)
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	char *methodName = _ILJitFunctionGetMethodName(jitCoder->jitFunction);
 #endif
+
+	/* Destroy the mem stack for the label stackstates. */
+	ILMemStackDestroy(&(jitCoder->stackStates));
 
 	/* Clear the label pool */
 	ILMemPoolClear(&(jitCoder->labelPool));

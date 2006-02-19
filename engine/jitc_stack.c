@@ -28,6 +28,16 @@ static void JITCoder_StackRefresh(ILCoder *coder, ILEngineStackItem *stack,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"StackRefresh: %i\n", 
+			stackSize);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	jitCoder->stackTop = stackSize;
 }
 
@@ -39,7 +49,8 @@ static void JITCoder_Dup(ILCoder *coder, ILEngineType engineType, ILType *type)
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
 	jitCoder->jitStack[jitCoder->stackTop] = 
-		jitCoder->jitStack[jitCoder->stackTop - 1];
+		jit_insn_dup(jitCoder->jitFunction,
+					 jitCoder->jitStack[jitCoder->stackTop - 1]);
 	JITC_ADJUST(jitCoder, 1);
 }
 

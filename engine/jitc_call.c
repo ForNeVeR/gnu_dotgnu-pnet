@@ -38,6 +38,59 @@ static void _ILJitFillArguments(ILJITCoder *coder, ILJitValue *args,
 }
 
 /*
+ * Get the vtable pointer for an interface function from an object.
+ */
+static ILJitValue _ILJitGetInterfaceFunction(ILJitFunction func,
+											 ILJitValue object,
+											 ILClass *interface,
+											 int index)
+{
+	ILJitValue classPrivate;
+	ILJitValue interfaceClass;
+	ILJitValue methodIndex;
+	ILJitValue args[3];
+
+	jit_insn_check_null(func, object);
+	classPrivate = _ILJitGetObjectClassPrivate(func, object);
+	interfaceClass = jit_value_create_nint_constant(func,
+													_IL_JIT_TYPE_VPTR,
+													(jit_nint)interface);
+	methodIndex = jit_value_create_nint_constant(func,
+												 _IL_JIT_TYPE_UINT32,
+												 (jit_nint)index);
+	args[0] = classPrivate;
+	args[1] = interfaceClass;
+	args[2] = methodIndex;
+	return jit_insn_call_native(func,
+								"_ILRuntimeLookupInterfaceMethod",
+								_ILRuntimeLookupInterfaceMethod,
+								_ILJitSignature_ILRuntimeLookupInterfaceMethod,
+								args, 3, JIT_CALL_NOTHROW);
+}
+
+/*
+ * Get the vtable pointer for a virtual function from an object.
+ */
+static ILJitValue _ILJitGetVirtualFunction(ILJitFunction func,
+										   ILJitValue object,
+										   int index)
+{
+	ILJitValue classPrivate;
+	ILJitValue vtable;
+	ILJitValue vtableIndex;
+
+	jit_insn_check_null(func, object);
+	classPrivate = _ILJitGetObjectClassPrivate(func, object);
+	vtable = jit_insn_load_relative(func, classPrivate, 
+									offsetof(ILClassPrivate, jitVtable), 
+									_IL_JIT_TYPE_VPTR);
+	vtableIndex = jit_value_create_nint_constant(func,
+												 _IL_JIT_TYPE_INT32,
+												 (jit_nint)index);
+	return jit_insn_load_elem(func, vtable, vtableIndex, _IL_JIT_TYPE_VPTR);
+}
+
+/*
  * Create a new object and push it on the stack.
  */
 static void _ILJitNewObj(ILJITCoder *coder, ILClass *info, ILJitValue *newArg)
@@ -329,9 +382,6 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJitType  signature;
 	ILJitValue jitParams[argCount + 1];
 	ILJitValue returnValue;
-	ILJitValue classPrivate;
-	ILJitValue vtable;
-	ILJitValue vtableIndex;
 	ILJitValue jitFunction;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
@@ -381,16 +431,9 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
 	/* TODO: handle varargs here and create a call signature. */
 
-	jit_insn_check_null(jitCoder->jitFunction, jitParams[1]);
-	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction, jitParams[1]);
-	vtable = jit_insn_load_relative(jitCoder->jitFunction, classPrivate, 
-									offsetof(ILClassPrivate, jitVtable), 
-									_IL_JIT_TYPE_VPTR);
-	vtableIndex = jit_value_create_nint_constant(jitCoder->jitFunction,
-												 _IL_JIT_TYPE_INT32,
-												 (jit_nint)methodInfo->index);
-	jitFunction = jit_insn_load_elem(jitCoder->jitFunction, vtable,
-									 vtableIndex, _IL_JIT_TYPE_VPTR);
+	jitFunction = _ILJitGetVirtualFunction(jitCoder->jitFunction,
+										   jitParams[1],
+										   methodInfo->index);
 	if(info->tailCall == 1)
 	{
 		returnValue = jit_insn_call_indirect_vtable(jitCoder->jitFunction,
@@ -427,11 +470,7 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJitType  signature;
 	ILJitValue jitParams[argCount + 1];
 	ILJitValue returnValue;
-	ILJitValue classPrivate;
 	ILJitValue jitFunction;
-	ILJitValue interfaceClass;
-	ILJitValue methodIndex;
-	ILJitValue args[3];
 	jit_label_t label = jit_label_undefined;
 
 	if(!func)
@@ -470,22 +509,10 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
 	/* TODO: handle varargs here and create a call signature. */
 
-	jit_insn_check_null(jitCoder->jitFunction, jitParams[1]);
-	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction, jitParams[1]);
-	interfaceClass = jit_value_create_nint_constant(jitCoder->jitFunction,
-													_IL_JIT_TYPE_VPTR,
-													(jit_nint)methodInfo->member.owner);
-	methodIndex = jit_value_create_nint_constant(jitCoder->jitFunction,
-												 _IL_JIT_TYPE_UINT32,
-												 (jit_nint)methodInfo->index);
-	args[0] = classPrivate;
-	args[1] = interfaceClass;
-	args[2] = methodIndex;
-	jitFunction = jit_insn_call_native(jitCoder->jitFunction,
-									   "_ILRuntimeLookupInterfaceMethod",
-									   _ILRuntimeLookupInterfaceMethod,
-									   _ILJitSignature_ILRuntimeLookupInterfaceMethod,
-									   args, 3, JIT_CALL_NOTHROW);
+	jitFunction = _ILJitGetInterfaceFunction(jitCoder->jitFunction,
+											 jitParams[1],
+											 methodInfo->member.owner,
+											 methodInfo->index);
 	jit_insn_branch_if(jitCoder->jitFunction, jitFunction, &label);
 	/* TODO: raise a MissingMethodException here. */
 
@@ -555,14 +582,93 @@ static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 
 static void JITCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitFunction jitFunction = ILJitFunctionFromILMethod(methodInfo);
+	void *function; /* vtable pointer for the function. */
+	ILJitValue functionPtr; /* jt value containing the vtable pointer. */
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"LoadFuncAddr: %s.%s\n",
+			ILClass_Name(ILMethod_Owner(methodInfo)),
+			ILMethod_Name(methodInfo));
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+	if(!jitFunction)
+	{
+		/* We need to layout the class first. */
+		if(!_LayoutClass(ILExecThreadCurrent(), ILMethod_Owner(methodInfo)))
+		{
+			return;
+		}
+		jitFunction = ILJitFunctionFromILMethod(methodInfo);
+	}
+	/* Get the vtable pointer for the function. */
+	function = jit_function_to_vtable_pointer(jitFunction);
+	functionPtr = jit_value_create_nint_constant(jitCoder->jitFunction,
+												 _IL_JIT_TYPE_VPTR,
+												(jit_nint)function);
+
+	/* Push the function pointer on the stack. */
+	jitCoder->jitStack[jitCoder->stackTop] = functionPtr;
+	JITC_ADJUST(jitCoder, 1);
 }
 
 static void JITCoder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue object = jitCoder->jitStack[jitCoder->stackTop - 1];
+	ILJitValue jitFunction;
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"LoadVirtualAddr: %s.%s at slot %i\n", 
+			ILClass_Name(ILMethod_Owner(methodInfo)),
+			ILMethod_Name(methodInfo),
+			methodInfo->index);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+
+	jitFunction = _ILJitGetVirtualFunction(jitCoder->jitFunction,
+										   object,
+										   methodInfo->index);
+	/* Push the function pointer on the stack. */
+	jitCoder->jitStack[jitCoder->stackTop - 1] = jitFunction;
 }
 
 static void JITCoder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue object = jitCoder->jitStack[jitCoder->stackTop - 1];
+	ILJitValue jitFunction;
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"LoadInterfaceAddr: %s.%s at slot %i\n", 
+			ILClass_Name(ILMethod_Owner(methodInfo)),
+			ILMethod_Name(methodInfo),
+			methodInfo->index);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+
+	jitFunction = _ILJitGetInterfaceFunction(jitCoder->jitFunction,
+											 object,
+											 methodInfo->member.owner,
+											 methodInfo->index);
+	/* Push the function pointer on the stack. */
+	jitCoder->jitStack[jitCoder->stackTop - 1] = jitFunction;
 }
 
 #endif	/* IL_JITC_CODE */

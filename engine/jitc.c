@@ -132,6 +132,11 @@ static ILJitType _ILJitSignature_ILRuntimeClassImplements = 0;
 static ILJitType _ILJitSignature_ILRuntimeGetThreadStatic = 0;
 
 /*
+ * void jit_exception_builtin(int exception_type)
+ */
+static ILJitType _ILJitSignature_JitExceptionBuiltin = 0;
+
+/*
  * Define offsetof macro if not present.
  */
 #ifndef offsetof
@@ -155,6 +160,8 @@ struct _tagILJITLabel
 	jit_label_t	label;			/* the libjit label */
 	ILJITLabel *next;			/* Next label block */
 	int			labelType;      /* type of the label. */
+	int			stackSize;		/* No. of elements on the stack. */
+	ILJitValue *jitStack;		/* Values on the stack. */
 };
 
 
@@ -186,8 +193,10 @@ struct _tagILJITCoder
 	ILMemPool		labelPool;
 	ILJITLabel     *labelList;
 	int				labelOutOfMemory;
+	ILMemStack		stackStates;
 
 	/* Handle the switch table. */
+	ILJitValue		switchValue;
 	int				numSwitch;
 	int				maxSwitch;
 
@@ -268,6 +277,21 @@ static void _ILJitMetaFreeFunc(void *data)
 		ILFree(data);
 	}
 }
+
+/*
+ * Emit the code to throw a libjit internal exception.
+ */
+static void _ILJitThrowInternal(ILJitFunction func, int exception)
+{
+	ILJitValue value = jit_value_create_nint_constant(func,
+													  _IL_JIT_TYPE_INT32,
+			 										  (jit_nint)exception);
+
+	jit_insn_call_native(func, "jit_exception_builtin", jit_exception_builtin,
+						 _ILJitSignature_JitExceptionBuiltin, &value, 1,
+						 JIT_CALL_NORETURN);
+}
+
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 /*
@@ -476,6 +500,53 @@ static ILJitTypes *_ILJitGetTypes(ILType *type, ILExecProcess *process)
 		}
 		return &(classPrivate->jitTypes);
 	}
+}
+
+/*
+ * Get the ILMethod for the call frame up n slots.
+ * Returns 0 if the function at that slot is not a jitted function.
+ */
+ILMethod *_ILJitGetCallingMethod(ILExecThread *thread, ILUInt32 frames)
+{
+	void *returnAddress = 0;
+
+	fprintf(stdout, "CallingMethod \n");
+	if(frames > 0)
+	{
+		void *callFrame = jit_get_frame_address(frames);
+		if(callFrame)
+		{
+			returnAddress = jit_get_return_address(callFrame);
+		}
+	}
+	else
+	{
+		returnAddress = jit_get_current_return();
+	}
+	if(returnAddress)
+	{
+		ILExecProcess *process = _ILExecThreadProcess(thread);
+		ILJITCoder *jitCoder;
+		ILJitFunction jitFunction;
+		void *exceptionHandler = 0;
+
+		if(!process)
+		{
+			return 0;
+		}
+		if(!(jitCoder = _ILCoderToILJITCoder(process->coder)))
+		{
+			return 0;
+		}
+		if(!(jitFunction = jit_function_from_pc(jitCoder->context,
+										   returnAddress,
+										   &exceptionHandler)))
+		{
+			return 0;
+		}
+		return (ILMethod *)jit_function_get_meta(jitFunction, IL_JIT_META_METHOD);
+	}
+	return 0;
 }
 
 /*
@@ -909,6 +980,14 @@ int ILJitInit()
 		return 0;
 	}
 
+	args[0] = _IL_JIT_TYPE_INT32;
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_JitExceptionBuiltin =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
+	{
+		return 0;
+	}
+
 	return 1;
 }
 /*
@@ -947,6 +1026,11 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 	ILMemPoolInit(&(coder->labelPool), sizeof(ILJITLabel), 8);
 	coder->labelList = 0;
 	coder->labelOutOfMemory = 0;
+
+	/* Init the switch stuff. */
+	coder->switchValue = 0;
+	coder->numSwitch = 0;
+	coder->maxSwitch = 0;
 
 	/* Ready to go */
 	return &(coder->coder);

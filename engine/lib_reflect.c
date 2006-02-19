@@ -861,11 +861,19 @@ System_Array *_IL_AppDomain_GetAssemblies(ILExecThread *thread,
  */
 ILObject *_IL_Assembly_GetCallingAssembly(ILExecThread *thread)
 {
+#ifdef IL_USE_JIT
+	ILMethod *method = _ILJitGetCallingMethod(thread, 2);
+	if(method)
+	{
+		return ImageToAssembly(thread, ILProgramItem_Image(method));
+	}
+#else
 	ILCallFrame *frame = _ILGetCallFrame(thread, 1);
 	if(frame && frame->method)
 	{
 		return ImageToAssembly(thread, ILProgramItem_Image(frame->method));
 	}
+#endif
 	else
 	{
 		return 0;
@@ -893,11 +901,19 @@ ILObject *_IL_Assembly_GetEntryAssembly(ILExecThread *thread)
  */
 ILObject *_IL_Assembly_GetExecutingAssembly(ILExecThread *thread)
 {
+#ifdef IL_USE_JIT
+	ILMethod *method = _ILJitGetCallingMethod(thread, 1);
+	if(method)
+	{
+		return ImageToAssembly(thread, ILProgramItem_Image(method));
+	}
+#else
 	ILCallFrame *frame = _ILGetCallFrame(thread, 0);
 	if(frame && frame->method)
 	{
 		return ImageToAssembly(thread, ILProgramItem_Image(frame->method));
 	}
+#endif
 	else
 	{
 		return 0;
@@ -1446,6 +1462,7 @@ ILObject *_IL_Assembly_LoadFromName(ILExecThread *thread,
 										image, &newImage);
 		if(loadError == 0)
 		{
+			*error = LoadError_OK;
 			return ImageToAssembly(thread, newImage);
 		}
 		else if(loadError == -1)

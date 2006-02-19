@@ -65,8 +65,8 @@ static void ValidateArrayIndex(ILJITCoder *coder, ILJitValue length,
 	temp = jit_insn_lt(coder->jitFunction, index, length);
 	jit_insn_branch_if(coder->jitFunction, temp, &label2);
 	jit_insn_label(coder->jitFunction, &label1);
-	/* TODO throw the System.IndexOutOfRange exception here. */
-
+	/* throw the System.IndexOutOfRange exception. */
+	_ILJitThrowInternal(coder->jitFunction, JIT_RESULT_OUT_OF_BOUNDS);
 	jit_insn_label(coder->jitFunction, &label2);
 
 

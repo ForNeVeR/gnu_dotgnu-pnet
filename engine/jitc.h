@@ -28,6 +28,7 @@
 /*
  * Map the native IL types to JIT types.
  */
+#define _IL_JIT_TYPE_VOID	jit_type_void
 #define _IL_JIT_TYPE_BYTE	jit_type_ubyte
 #define _IL_JIT_TYPE_CHAR	jit_type_ushort
 #define _IL_JIT_TYPE_DOUBLE	jit_type_float64
@@ -147,6 +148,12 @@ ILJitFunction ILJitFunctionFromILMethod(ILMethod *method);
  */
 int ILJitCallMethod(ILExecThread *thread, ILMethod *method,
 					void**jitArgs, void *result);
+
+/*
+ * Get the ILMethod for the call frame up n slots.
+ * Returns 0 if the function at that slot is not a jitted function.
+ */
+ILMethod *_ILJitGetCallingMethod(ILExecThread *thread, ILUInt32 frames);
 
 /*
  * Create the class/struct representation of a clr type for libjit.

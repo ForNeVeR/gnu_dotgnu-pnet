@@ -19,7 +19,7 @@
 
 	* engine/jitc_obj.c: Add support for thread static members.
 
-	* engine/jitc_ptr.c: Add throwing of the IndexOutOfRange exceptinn.
+	* engine/jitc_ptr.c: Add throwing of the IndexOutOfRange exception.
 
 	* engine/jitc_setup.c: Add intialization and destruction of the label
 	stackstates MemStack.

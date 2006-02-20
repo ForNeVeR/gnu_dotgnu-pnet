@@ -1,3 +1,7 @@
+2006-02-20  Russell Stuart  <russell-savannah@stuart.id.au>
+
+	* minor re-work of build-debian-packages.
+
 2005-08-26  Klaus Treichel  <ktreichel@web.de>
 
 	* class/Custommarshalers/Custommarshalers.build,

@@ -11,7 +11,7 @@
 	* System/Diagnostics/Process.cs: Change environment variables in
 	ProcessStartInfo.EnvironmentVariables to upper case (Bug# 15802).
 	
-	Reformat some ChangeLog entries so tat they do not exeed 80 chars. (Klaus)
+	Reformat some ChangeLog entries so that they do not exceed 80 chars. (Klaus)
 
 2006-02-17  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 

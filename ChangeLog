@@ -1,3 +1,7 @@
+2006-02-20  Russell Stuart  <russell-savannah@stuart.id.au>
+
+	* minor re-work of build-debian-packages.
+
 2006-02-19  Radek Polak  <psonek2@seznam.cz>
 
 	* System/Diagnostics/Process.cs: Change environment variables in

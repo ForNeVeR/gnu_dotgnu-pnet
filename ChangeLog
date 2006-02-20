@@ -1,3 +1,7 @@
+2006-02-20  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing/Drawing2D/GraphicsPath.cs: changed handling of filling paths
+
 2006-02-20  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* minor re-work of build-debian-packages.

@@ -1,3 +1,10 @@
+
+2006-02-21  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Array.cs, runtime/System/ArrayList.cs: call 
+	IComparer.Compare with (elem, value) so that the collection
+	element is always the first argument (thanks to Belial).
+
 2006-02-20  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Drawing/Drawing2D/GraphicsPath.cs: changed handling of filling paths

@@ -377,7 +377,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					{
 						if(comparer != null)
 						{
-							cmp = comparer.Compare(value, elem);
+							cmp = comparer.Compare(elem, value);
 						}
 						else if((icmp = (elem as IComparable)) != null)
 						{

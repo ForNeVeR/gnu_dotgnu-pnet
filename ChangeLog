@@ -1,3 +1,11 @@
+2006-02-21  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Fix a bug in creting the jit types. Enum types must be
+	converted to their underlying type.
+
+	* engine/lib_reflect.c: Field- and Method handles are passed by value and
+	not by reference in jitted code.
+
 2006-02-20  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* minor re-work of build-debian-packages.

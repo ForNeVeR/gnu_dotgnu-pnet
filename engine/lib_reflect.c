@@ -2317,7 +2317,11 @@ ILObject *_IL_FieldInfo_GetFieldFromHandle(ILExecThread *thread,
 									       void *handle)
 {
 	ILField *field;
+#ifdef IL_USE_JIT
+	field = ILProgramItemToField((ILProgramItem *)handle);
+#else
 	field = ILProgramItemToField((ILProgramItem *)(*((void **)handle)));
+#endif
 	if(field)
 	{
 		return _ILClrToObject(thread, field, "System.Reflection.ClrField");
@@ -2647,7 +2651,11 @@ ILObject *_IL_MethodBase_GetMethodFromHandle(ILExecThread *thread,
 									         void *handle)
 {
 	ILMethod *method;
+#ifdef IL_USE_JIT
+	method = ILProgramItemToMethod((ILProgramItem *)handle);
+#else
 	method = ILProgramItemToMethod((ILProgramItem *)(*((void **)handle)));
+#endif
 	if(method)
 	{
 		if(ILMethod_IsConstructor(method) ||

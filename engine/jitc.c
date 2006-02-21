@@ -412,6 +412,7 @@ static ILJitTypes *_ILJitGetTypes(ILType *type, ILExecProcess *process)
 {
 
 	type = ILTypeStripPrefixes(type);
+	type = ILTypeGetEnumType(type);
 	if(ILType_IsPrimitive(type))
 	{
 		return ILJitPrimitiveClrTypeToJitTypes(ILType_ToElement(type));

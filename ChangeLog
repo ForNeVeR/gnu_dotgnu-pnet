@@ -1,3 +1,7 @@
+2006-02-22  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing.Xsharp/DrawingPen.cs: fixed X-crash if dash pattern has a zero length.
+	* System.Drawing/Drawing2D/GraphicsPath.cs: added filling arc, drawing arc path object and more 
 
 2006-02-21  Gopal V  <gopalv82@yahoo.com>
 

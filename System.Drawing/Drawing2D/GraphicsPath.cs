@@ -28,6 +28,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 {
 	// Internal state.
 	private ArrayList  pathFigures  = new ArrayList();
+	private ArrayList  stringObjs   = new ArrayList();
 	private PathFigure actualFigure = null; 
 
 	private bool needPenBrush;
@@ -283,7 +284,9 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 						(String.Format
 							(S._("Arg_NeedsAtLeastNPoints"), 4));
 				}
+				this.actualFigure = null; // Close Figure before adding a closed curve
 				AddPathObject(new ClosedCurvePathObject(points, tension));
+				this.actualFigure = null; // Close Figure after adding a closed curve
 			}
 
 	// Add a curve to the current path.
@@ -363,8 +366,10 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			}
 	public void AddEllipse(float x, float y, float width, float height)
 			{
+				this.actualFigure = null;	// Ellipse closes figure
 				AddPathObject(new ArcPathObject
-					(x, y, width, height, 0.0f, 360f));
+					(x, y, width, height, -5f, 365f));
+				this.actualFigure = null;	// Ellipse closes figure
 			}
 
 	// Add a line to the current figure.
@@ -409,17 +414,26 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			}
 
 	// Append another path to this one.  "connect" is intended for figures,
-	// which we don't do anything special with here.
 	public void AddPath(GraphicsPath addingPath, bool connect)
 			{
 				if(addingPath == null)
 				{
 					throw new ArgumentNullException("addingPath");
 				}
-				foreach( PathFigure fig in addingPath.pathFigures ) {
-					this.pathFigures.Add( fig.Clone() );
+				
+				if( connect ) {
+					foreach( PathFigure fig in addingPath.pathFigures ) {
+						foreach( PathObject obj in fig.pathObjs ) {
+							this.AddPathObject( obj.Clone() );
+						}
+					}
 				}
-				actualFigure = null;
+				else {
+					foreach( PathFigure fig in addingPath.pathFigures ) {
+						this.pathFigures.Add( fig.Clone() );
+					}
+					actualFigure = null;
+				}
 				
 				if(addingPath.needPenBrush)
 				{
@@ -443,8 +457,10 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	public void AddPie(float x, float y, float width, float height,
 					   float startAngle, float sweepAngle)
 			{
+				this.actualFigure = null; // Adding Pie closes a figure
 				AddPathObject(new PiePathObject(x, y, width, height,
 												startAngle, sweepAngle));
+				this.actualFigure = null;// Adding Pie closes a figure
 			}
 
 	// Add a polygon to this path.
@@ -464,7 +480,9 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 						(String.Format
 							(S._("Arg_NeedsAtLeastNPoints"), 2));
 				}
+				this.actualFigure = null; // Adding Plygon closes a figure
 				AddPathObject(new PolygonPathObject(points));
+				this.actualFigure = null; // Adding Plygon closes a figure
 			}
 
 	// Add a rectangle to this path.
@@ -474,8 +492,10 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			}
 	public void AddRectangle(RectangleF rect)
 			{
+				this.actualFigure = null; // Adding Rectangle closes a figure
 				AddPathObject(new RectanglePathObject
 					(rect.X, rect.Y, rect.Width, rect.Height));
+				this.actualFigure = null; // Adding Rectangle closes a figure
 			}
 
 	// Add a list of rectangles to this path.
@@ -508,7 +528,8 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 						  int style, float emSize,
 						  PointF origin, StringFormat format)
 			{
-				AddPathObject( new StringPathObject( s, family, style, emSize, origin, format ) );
+				// String Paths are added drawn
+				this.stringObjs.Add( new StringPathObject( s, family, style, emSize, origin, format ) );
 			}
 	public void AddString(String s, FontFamily family,
 						  int style, float emSize,
@@ -522,7 +543,9 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 						  int style, float emSize,
 						  RectangleF layoutRect, StringFormat format)
 			{
+				this.actualFigure = null; // Close Figure before adding a Text
 				AddPathObject( new StringPathObject( s, family, style, emSize, layoutRect, format ) );
+				this.actualFigure = null; // Close Figure after adding a Text
 			}
 
 	// Clean all markers from this path.
@@ -547,14 +570,12 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	public void CloseAllFigures()
 			{
 				actualFigure = null;
-				// We don't do anything special with figures here.
 			}
 
 	// Close the current figure and start a new one.
 	public void CloseFigure()
 			{
 				actualFigure = null;
-				// We don't do anything special with figures here.
 			}
 
 	// Dispose of this object.
@@ -603,6 +624,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	public PointF GetLastPoint()
 			{
 				PointF[] points = PathPoints;
+				if( null == PathPoints ) return new PointF(0,0);
 				return points[points.Length - 1];
 			}
 
@@ -715,7 +737,12 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	[TODO]
 	public void Transform(Matrix matrix)
 			{
-				// TODO
+				foreach( PathFigure fig in pathFigures ) {
+					fig.Transform(matrix);
+				}
+				foreach( StringPathObject obj in stringObjs ) {
+					obj.Transform(matrix);
+				}
 			}
 
 	// Apply a warp transformation to this path.
@@ -756,9 +783,12 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 
 	// Draw this graphics path.
 	internal void Draw(Graphics graphics, Pen pen)
-			{
+			{	
 				foreach( PathFigure fig in pathFigures ) {
 					fig.Draw( graphics, pen );
+				}
+				foreach( StringPathObject obj in stringObjs ) {
+					obj.Draw( graphics, pen );
 				}
 			}
 
@@ -775,9 +805,28 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					pen = null;
 				}
 				
+				// XorBrush xorbrush = new XorBrush( brush );
+				
+				/* TODO:
+					Fill graphics Path xor, does not do yet :(
+				*/
+				
 				foreach( PathFigure fig in pathFigures ) {
 					fig.Fill( graphics, brush, pen, fillMode );
 				}
+				foreach( StringPathObject obj in stringObjs ) {
+					obj.Fill( graphics, brush, pen, fillMode );
+				}
+				
+				/*
+				XorBrush xorbrush = new XorBrush( brush );
+				foreach( PathFigure fig in pathFigures ) {
+					fig.Fill( graphics, xorbrush, pen, fillMode );
+				}
+				foreach( StringPathObject obj in stringObjs ) {
+					obj.Fill( graphics, xorbrush, pen, fillMode );
+				}
+				*/
 				
 				if(needPenBrush)
 				{
@@ -787,7 +836,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			
 	private class PathFigure : ICloneable
 	{
-		ArrayList pathObjs;
+		public ArrayList pathObjs;
 		
 		public PathFigure() 
 		{
@@ -802,13 +851,13 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			return cpy;
 		}
 		
-		public PointF[] GetFillPoints() {
+		public PointF[] GetPathPoints() {
 			PointF[][] fpoints = new PointF[pathObjs.Count][];
 			int size=0;
 			int i= 0;
 			foreach( PathObject obj in pathObjs ) 
 			{
-				fpoints[i] = obj.GetFillPoints();
+				fpoints[i] = obj.GetPathPoints();
 				if( null != fpoints[i] ) size += fpoints[i].Length;
 				i++;
 			}
@@ -835,10 +884,31 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			pathObjs.Reverse();
 		} 
 		
+		public void Transform(Matrix matrix)
+		{
+			foreach( PathObject obj in pathObjs ) {
+				obj.Transform( matrix );
+			}
+		}
+		
+		// Draw the graphics path
 		public void Draw(Graphics graphics, Pen pen)
 		{
+			/*
 			foreach( PathObject o in pathObjs ) {
 				o.Draw( graphics, pen );
+			}
+			*/
+			
+			PointF [] poly = GetPathPoints();
+				
+			if( poly.Length > 1 ) {
+				
+				graphics.DrawLines(pen, poly);
+				
+			}
+			foreach( PathObject o in pathObjs ) {
+				if( !o.HasPathPoints ) o.Draw( graphics, pen );
 			}
 		}
 
@@ -850,14 +920,15 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 				o.Fill( graphics, brush, pen, fillMode );
 			}
 			*/
-			PointF [] poly = GetFillPoints();
+			PointF [] poly = GetPathPoints();
 				
 			if( poly.Length > 2 ) {
 				
 				graphics.FillPolygon(brush, poly, fillMode );
+				
 			}
 			foreach( PathObject o in pathObjs ) {
-				if( !o.HasFillPoints ) o.Fill(graphics, brush, pen, fillMode);
+				if( !o.HasPathPoints ) o.Fill(graphics, brush, pen, fillMode);
 			}
 		}
 	}
@@ -865,6 +936,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	// Base class for path objects.
 	private abstract class PathObject
 	{
+		protected Matrix mMatrix;
 		// Constructor.
 		protected PathObject() {}
 
@@ -878,8 +950,25 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 		// Clone this path object.
 		public abstract PathObject Clone();
 		
-		public abstract PointF [] GetFillPoints();
-		public abstract bool HasFillPoints { get; }
+		public void Transform(Matrix matrix)
+		{
+			if( null == mMatrix ) {
+				mMatrix = new Matrix();
+			}
+			mMatrix.Multiply( matrix );
+		}
+		
+		public PointF[] GetPathPoints() {
+			PointF[] data = DoGetPathPoints();
+			if( null == data ) return null;
+			data = (PointF[])data.Clone();
+			if( null != mMatrix ) {
+				mMatrix.TransformPoints( data );
+			}
+			return data;
+		}
+		protected abstract PointF [] DoGetPathPoints();
+		public abstract bool HasPathPoints { get; }
 
 		protected static PointF ComputePoint(double u,
 														 double x1, double y1,
@@ -986,6 +1075,17 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			}			
 			return tan;
 		}
+		
+		protected double DegToRad( double val ) {
+			return Math.PI*val/180.0;
+		}
+		protected double DegCosinus( double val ) {
+			return Math.Cos( DegToRad( val ) );
+		}
+		protected double DegSinus( double val ) {
+			return Math.Sin( DegToRad( val ) );
+		}
+	
 	}; // class PathObject
 
 	// Arc path objects.
@@ -994,6 +1094,8 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 		// Internal state.
 		private float x, y, width, height;
 		private float startAngle, sweepAngle;
+		PointF [] pathPoints;
+		PointF startPoint, endPoint; 
 
 		// Constructor.
 		public ArcPathObject(float x, float y, float width, float height,
@@ -1005,33 +1107,56 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					this.height = height;
 					this.startAngle = startAngle;
 					this.sweepAngle = sweepAngle;
+					this.pathPoints = CalculatePathPoints();
 				}
 				
-			public override bool HasFillPoints { 
+		public override bool HasPathPoints { 
 			get {
-				return false;
+				return true;
 			} 
 		}
+		
+		PointF [] CalculatePathPoints() {
+			int    iCount = 360;
+			PointF [] points = new PointF[iCount];
+			
+			double dDelta = this.sweepAngle;
+			dDelta /= iCount;
+			double dStart = this.startAngle;
+			double dEnd   = dStart +  this.sweepAngle;
+			double px,py;
+			double rx = this.width/2;
+			double ry = this.height/2;
+			for( int i = 0; i < iCount-1; i++ ) {
+				px = rx*( 1 + DegCosinus( dStart ) ) + this.x+1;
+				py = ry*( 1 + DegSinus  ( dStart ) ) + this.y+1;
+				points[i] = new PointF( (float)px,(float)py );
+				if( i == 0 ) startPoint = points[i];
+				dStart += dDelta;
+			}
+			px = rx*( 1 + DegCosinus( dEnd ) ) + this.x+1;
+			py = ry*( 1 + DegSinus  ( dEnd ) ) + this.y+1;
+			points[iCount-1] = new PointF( (float)px,(float)py );
+			endPoint = points[iCount-1];
+			return points;
+		}
 
-		public override PointF [] GetFillPoints() {
-			// TODO 
-			return null;
+		protected override PointF [] DoGetPathPoints() {
+			return this.pathPoints;
 		}
 				
 		// Draw this path object.
 		public override void Draw(Graphics graphics, Pen pen)
 				{
-					graphics.DrawArc(pen, x, y, width, height,
-									 startAngle, sweepAngle);
-					// TODO: brubbel calculate points
+					graphics.DrawArc(pen, x, y, width, height, startAngle, sweepAngle);
+					//graphics.DrawLine(pen, this.startPoint, this.endPoint);
 				}
 
 		// Fill this path object.
 		public override void Fill(Graphics graphics, Brush brush,
 								  Pen penBrush, FillMode fillMode)
 				{
-					graphics.DrawArc(penBrush, x, y, width, height,
-									 startAngle, sweepAngle);
+					graphics.DrawArc(penBrush, x, y, width, height, startAngle, sweepAngle);
 				}
 
 		// Clone this path object.
@@ -1065,13 +1190,13 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					points = ComputeBezier( x1, y1, x2, y2, x3, y3, x4, y4 );
 				}
 
-		public override bool HasFillPoints { 
+		public override bool HasPathPoints { 
 			get {
 				return true;
 			} 
 		}
 		
-		public override PointF [] GetFillPoints() {
+		protected override PointF [] DoGetPathPoints() {
 			 return points;
 		}
 		
@@ -1102,7 +1227,6 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	{
 		// Internal state.
 		private PointF[] points;
-		private PointF[] fillPoints;
 		private float tension;
 
 		// Constructor.
@@ -1110,57 +1234,46 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 				{
 					this.points = (PointF[])(points.Clone());
 					this.tension = tension;
-					this.fillPoints = ComputeFillPoints();
 				}
 				
 				
-		public override bool HasFillPoints { 
+		public override bool HasPathPoints { 
 			get {
-				return true;
+				return false;
 			} 
 		}
 		
-		public override PointF [] GetFillPoints() {
-			return fillPoints;
-		}
-
-		private PointF [] ComputeFillPoints() {
-			PointF [] tangent=ComputeTangent(points,tension,true,points.Length);
-			if (tangent == null)
-			{
-				return points;
-			}
-			PointF[][] fpoints = new PointF[points.Length][];
-			int size=0;
-			for(int i=0;i<points.Length-1;i++)
-			{
-				fpoints[i]=ComputeSplineSegment(points[i],points[i+1],tangent[i],tangent[i+1]);
-				size+=fpoints[i].Length;				
-			}
-
-			fpoints[points.Length-1]= 
-					ComputeSplineSegment(points[points.Length-1],points[0],tangent[points.Length-1],tangent[0]);
-			size+=fpoints[points.Length-1].Length;
-
-			PointF[] poly= new PointF[size];
-			int z=0;
-			for(int i=0;i<fpoints.Length;i++) 			
-				for(int j=0;j<fpoints[i].Length;j++)
-					poly[z++]=fpoints[i][j];
-			return poly;
+		protected override PointF [] DoGetPathPoints() {
+			return null;
 		}
 
 		// Draw this path object.
 		public override void Draw(Graphics graphics, Pen pen)
 				{
-					graphics.DrawClosedCurve(pen, points, tension, FillMode.Alternate);
+					if( null != mMatrix ) {
+						Matrix save = graphics.Transform;
+						graphics.Transform = mMatrix;
+						graphics.DrawClosedCurve(pen, points, tension, FillMode.Alternate);
+						graphics.Transform = save;
+					}
+					else {
+						graphics.DrawClosedCurve(pen, points, tension, FillMode.Alternate);
+					}
 				}
 
 		// Fill this path object.
 		public override void Fill(Graphics graphics, Brush brush,
 								  Pen penBrush, FillMode fillMode)
 				{
-					graphics.FillClosedCurve(brush, points, fillMode, tension);
+					if( null != mMatrix ) {
+						Matrix save = graphics.Transform;
+						graphics.Transform = mMatrix;
+						graphics.FillClosedCurve(brush, points, fillMode, tension);
+						graphics.Transform = save;
+					}
+					else {
+						graphics.FillClosedCurve(brush, points, fillMode, tension);
+					}
 				}
 
 		// Clone this path object.
@@ -1176,9 +1289,9 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	{
 		// Internal state.
 		private PointF[] points;
-		private PointF[] fillPoints;
 		private int offset, numberOfSegments;
 		private float tension;
+		private PointF [] pathPoints;
 
 		// Constructor.
 		public CurvePathObject(PointF[] points, int offset,
@@ -1188,28 +1301,18 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					this.offset = offset;
 					this.numberOfSegments = numberOfSegments;
 					this.tension = tension;
-					this.fillPoints = ComputeFillPoints();
+					this.pathPoints = ComputePathPoints();
 				}
-		
-		public override bool HasFillPoints { 
-			get {
-				return true;
-			} 
-		}
-
-		public override PointF [] GetFillPoints() {
-			return fillPoints;
-		}
-		
-		private PointF [] ComputeFillPoints() {
+				
+		private PointF [] ComputePathPoints() {
 			PointF [] tangent=ComputeTangent(points,tension,false,numberOfSegments+1);
 			if (tangent == null)
 			{
 				return points;
 			}
-			PointF[][] fpoints = new PointF[points.Length][];
+			PointF[][] fpoints = new PointF[numberOfSegments][];
 			int size=0;
-			for(int i=0;i<points.Length-1;i++)
+			for(int i=0;i<numberOfSegments;i++)
 			{
 				fpoints[i]=ComputeSplineSegment(points[i],points[i+1],tangent[i],tangent[i+1]);
 				size+=fpoints[i].Length;				
@@ -1217,12 +1320,22 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 
 			PointF[] poly= new PointF[size];
 			int z=0;
-			for(int i=0;i<fpoints.Length;i++) 			
+			for(int i=0;i<numberOfSegments;i++) 			
 				for(int j=0;j<fpoints[i].Length;j++)
 					poly[z++]=fpoints[i][j];
 			return poly;
 		}
+		
+		public override bool HasPathPoints { 
+			get {
+				return true;
+			} 
+		}
 
+		protected override PointF [] DoGetPathPoints() {
+			return this.pathPoints;
+		}
+		
 		// Draw this path object.
 		public override void Draw(Graphics graphics, Pen pen)
 				{
@@ -1250,7 +1363,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	{
 		// Internal state.
 		private float x1, y1, x2, y2;
-		PointF [] fillPoints;
+		PointF [] pathPoints;
 
 		// Constructor.
 		public LinePathObject(float x1, float y1, float x2, float y2)
@@ -1259,19 +1372,19 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					this.y1 = y1;
 					this.x2 = x2;
 					this.y2 = y2;
-					fillPoints = new PointF[2];
-					fillPoints[0] = new PointF( x1,y1 );
-					fillPoints[1] = new PointF( x2,y2 );
+					pathPoints = new PointF[2];
+					pathPoints[0] = new PointF( x1,y1 );
+					pathPoints[1] = new PointF( x2,y2 );
 				}
 				
-		public override bool HasFillPoints { 
+		public override bool HasPathPoints { 
 			get {
 				return true;
 			} 
 		}
 
-		public override PointF [] GetFillPoints() {
-			return fillPoints;
+		protected override PointF [] DoGetPathPoints() {
+			return pathPoints;
 		}
 
 		// Draw this path object.
@@ -1307,13 +1420,13 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					this.points = (PointF[])(points.Clone());
 				}
 
-		public override bool HasFillPoints { 
+		public override bool HasPathPoints { 
 			get {
 				return true;
 			} 
 		}
 
-		public override PointF [] GetFillPoints() {
+		protected override PointF [] DoGetPathPoints() {
 			return points;
 		}
 		
@@ -1344,6 +1457,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 		// Internal state.
 		private float x, y, width, height;
 		private float startAngle, sweepAngle;
+		PointF [] pathPoints;
 
 		// Constructor.
 		public PiePathObject(float x, float y, float width, float height,
@@ -1355,17 +1469,42 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					this.height = height;
 					this.startAngle = startAngle;
 					this.sweepAngle = sweepAngle;
+					this.pathPoints = CalculatePathPoints();
 				}
 				
-		public override bool HasFillPoints { 
+		public override bool HasPathPoints { 
 			get {
-				return false;
+				return true;
 			} 
 		}
 
-		public override PointF [] GetFillPoints() {
-			// TODO: Calculate points
-			return null;
+		protected override PointF [] DoGetPathPoints() {
+			return this.pathPoints;
+		}
+
+		PointF [] CalculatePathPoints() {
+			int    iCount = 360;
+			PointF [] points = new PointF[iCount+2];
+			
+			double dDelta = this.sweepAngle;
+			dDelta /= iCount;
+			double dStart = this.startAngle;
+			double dEnd   = dStart+this.sweepAngle;
+			double xP,yP;
+			double rx = this.width/2;
+			double ry = this.height/2;
+			points[0] = new PointF( (float)(this.x+rx),(float)(this.y+ry) );
+			for( int i = 1; i < iCount; i++ ) {
+				xP = rx*( 1 + DegCosinus( dStart ) ) + this.x+1;
+				yP = ry*( 1 + DegSinus  ( dStart ) ) + this.y+1;
+				points[i] = new PointF( (float)xP,(float)yP );
+				dStart += dDelta;
+			}
+			xP = rx*( 1 + DegCosinus( dEnd ) ) + this.x+1;
+			yP = ry*( 1 + DegSinus  ( dEnd ) ) + this.y+1;
+			points[iCount]   = new PointF( (float)xP,(float)yP );
+			points[iCount+1] = points[0];
+			return points;
 		}
 
 				
@@ -1400,21 +1539,26 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	{
 		// Internal state.
 		private PointF[] points;
-
+		private PointF[] pathPoints;
+		
 		// Constructor.
 		public PolygonPathObject(PointF[] points)
 				{
 					this.points = (PointF[])(points.Clone());
+					int iCount = this.points.Length;
+					this.pathPoints = new PointF[iCount+1];
+					this.points.CopyTo( this.pathPoints, 0 );
+					this.pathPoints[iCount] = this.pathPoints[0];
 				}
 
-		public override bool HasFillPoints { 
+		public override bool HasPathPoints { 
 			get {
 				return true;
 			} 
 		}
 
-		public override PointF [] GetFillPoints() {
-			return points;
+		protected override PointF [] DoGetPathPoints() {
+			return this.pathPoints;
 		}
 				
 		// Draw this path object.
@@ -1443,7 +1587,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	{
 		// Internal state.
 		private float x, y, width, height;
-		private PointF [] fillPoints;
+		private PointF [] pathPoints;
 
 		// Constructor.
 		public RectanglePathObject(float x, float y, float width, float height)
@@ -1452,23 +1596,23 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					this.y = y;
 					this.width = width;
 					this.height = height;
-					fillPoints = new PointF[5];
-					fillPoints[0] = new PointF( x, y );
-					fillPoints[1] = new PointF( x+width, y );
-					fillPoints[2] = new PointF( x+width, y+height );
-					fillPoints[3] = new PointF( x      , y+height );
-					fillPoints[4] = new PointF( x      , y );
+					pathPoints = new PointF[5];
+					pathPoints[0] = new PointF( x, y );
+					pathPoints[1] = new PointF( x+width, y );
+					pathPoints[2] = new PointF( x+width, y+height );
+					pathPoints[3] = new PointF( x      , y+height );
+					pathPoints[4] = new PointF( x      , y );
 					
 				}
 		
-		public override bool HasFillPoints { 
+		public override bool HasPathPoints { 
 			get {
 				return true;
 			} 
 		}
 
-		public override PointF [] GetFillPoints() {
-			return fillPoints;
+		protected override PointF [] DoGetPathPoints() {
+			return pathPoints;
 		}
 
 		// Draw this path object.
@@ -1529,31 +1673,36 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			mFormat.FormatFlags |= StringFormatFlags.NoClip;
 		}
 		
-		public override bool HasFillPoints { 
+		public override bool HasPathPoints { 
 			get {
 				return false;
 			} 
 		}
 
 						
-		public override PointF [] GetFillPoints() {
+		protected override PointF [] DoGetPathPoints() {
 			// How should I ????
 			return null;
 		}
 
 		
 		RectangleF GetRect(Graphics graphics ) {
-			if( RectangleF.Empty != mRect ) return mRect;
-			SizeF sz = graphics.MeasureString( mString, mFont, mPoint, mFormat );
-			RectangleF rNew = new RectangleF( mPoint, sz );
-			return rNew;
+			RectangleF ret;
+			if( RectangleF.Empty != mRect ) {
+				ret = mRect;
+			}
+			else {
+				SizeF sz = graphics.MeasureString( mString, mFont, mPoint, mFormat );
+				ret = new RectangleF( mPoint, sz );
+			}
+			return ret;
 		}
 		
 		// Draw this path object.
 		public override void Draw(Graphics graphics, Pen pen)
 		{
 			using( SolidBrush b = new SolidBrush(pen.Color) ) {
-				this.Fill( graphics, b, null, FillMode.Winding );
+				this.Fill( graphics, b, pen, FillMode.Alternate );
 			}
 		}
 
@@ -1562,7 +1711,15 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 										  Pen penBrush, FillMode fillMode)
 		{
 			RectangleF r = GetRect(graphics);
-			graphics.DrawString(mString, mFont, brush, r, mFormat);
+			if( null != mMatrix ) {
+				Matrix oldMatrix = graphics.Transform;
+				graphics.Transform = mMatrix;
+				graphics.DrawString(mString, mFont, brush, r, mFormat);
+				graphics.Transform = oldMatrix;
+			}
+			else {
+				graphics.DrawString(mString, mFont, brush, r, mFormat);
+			}
 		}
 
 		// Clone this path object.

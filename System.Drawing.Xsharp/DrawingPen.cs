@@ -149,8 +149,8 @@ internal sealed class DrawingPen : ToolkitPenBase
 									     if( tmp < 0    ) tmp = 0;
 									else if( tmp > 0xFF ) tmp = 0xFF;
 									ayCopy[i] = (byte) ( tmp );
+									if( ayCopy[i] == 0 ) ayCopy[i] = 1; // must not be zero
 								}
-								
 								g.DashPattern = ayCopy; 
 							}
 							break;

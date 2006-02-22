@@ -602,6 +602,7 @@ extern ILCoderClass const _ILCVMCoderClass;
  */
 #ifdef IL_USE_JIT
 int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
+						int isCtor, void *_this,
 					    void *argBuffer, void **jitArgs, void *userData);
 #else
 int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
@@ -614,6 +615,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
  */
 #ifdef IL_USE_JIT
 int _ILCallPackVParams(ILExecThread *thread, ILType *signature,
+					   int isCtor, void *_this,
 					   void *argBuffer, void **jitArgs, void *userData);
 #else
 int _ILCallPackVParams(ILExecThread *thread, ILMethod *method,
@@ -639,6 +641,7 @@ void _ILCallUnpackVResult(ILExecThread *thread, ILMethod *method,
  */
 #ifdef IL_USE_JIT
 typedef int (*ILCallPackFunc)(ILExecThread *thread, ILType *signature,
+							  int isCtor, void *_this,
 					          void *argBuffer, void **jitArgs, void *userData);
 #else
 typedef int (*ILCallPackFunc)(ILExecThread *thread, ILMethod *method,

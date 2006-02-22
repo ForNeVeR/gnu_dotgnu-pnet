@@ -1,6 +1,13 @@
+2006-02-22  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/call.c: Pass the size of the type to _ILEngineAlloc and fix a bug
+	in packing the args.
+
+	* engine/engine.h: Adjust the prototypes for the arg packing functions.
+
 2006-02-21  Klaus Treichel  <ktreichel@web.de>
 
-	* engine/jitc.c: Fix a bug in creting the jit types. Enum types must be
+	* engine/jitc.c: Fix a bug in creating the jit types. Enum types must be
 	converted to their underlying type.
 
 	* engine/lib_reflect.c: Field- and Method handles are passed by value and

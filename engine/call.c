@@ -101,16 +101,35 @@ extern	"C" {
 
 #ifdef IL_USE_JIT
 int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
+						int isCtor, void *_this,
 					    void *argBuffer, void **jitArgs, void *userData)
 {
 	VA_LIST va;
-	ILExecValue *args = (ILExecValue *)userData;
 	ILUInt32 param, numParams;
 	ILType *paramType;
 
 	/* Copy the incoming "va_list" value */
 	ILMemCpy(&va, userData, sizeof(VA_LIST));
 
+	/* Push the arguments onto the evaluation stack */
+	if(ILType_HasThis(signature) && !isCtor)
+	{
+		/* Push the "this" argument */
+		if(_this)
+		{
+			/* Use the supplied "this" parameter */
+			*jitArgs = argBuffer;
+			*((void **)argBuffer) = _this;
+		}
+		else
+		{
+			/* Get the "this" parameter from the varargs list */
+			*jitArgs = argBuffer;
+			*((void **)argBuffer) = (void *)(VA_ARG(va, ILObject *));
+		}
+		argBuffer += sizeof(void *);
+		++jitArgs;
+	}
 	numParams = ILTypeNumParams(signature);
 	for(param = 1; param <= numParams; ++param)
 	{
@@ -133,7 +152,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 					*jitArgs = argBuffer;
 					*((ILVaInt *)argBuffer) = VA_ARG(va, ILVaInt);
 					argBuffer += sizeof(ILVaInt);
-					++args;
 					++jitArgs;
 				}
 				break;
@@ -149,7 +167,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 					*jitArgs = argBuffer;
 					*((ILVaUInt *)argBuffer) = VA_ARG(va, ILVaUInt);
 					argBuffer += sizeof(ILVaUInt);
-					++args;
 					++jitArgs;
 				}
 				break;
@@ -162,7 +179,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 					*jitArgs = argBuffer;
 					*((ILInt64 *)argBuffer) = VA_ARG(va, ILInt64);
 					argBuffer += sizeof(ILInt64);
-					++args;
 					++jitArgs;
 				}
 				break;
@@ -175,7 +191,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 					*jitArgs = argBuffer;
 					*((ILUInt64 *)argBuffer) = VA_ARG(va, ILUInt64);
 					argBuffer += sizeof(ILUInt64);
-					++args;
 					++jitArgs;
 				}
 				break;
@@ -187,7 +202,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 					*jitArgs = argBuffer;
 					*((ILVaDouble *)argBuffer) = VA_ARG(va, ILVaDouble);
 					argBuffer += sizeof(ILUInt64);
-					++args;
 					++jitArgs;
 				}
 				break;
@@ -199,7 +213,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 					*jitArgs = argBuffer;
 					*((void **)argBuffer) = VA_ARG(va, void *);
 					argBuffer += sizeof(void *);
-					++args;
 					++jitArgs;
 				}
 				break;
@@ -211,7 +224,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			*jitArgs = argBuffer;
 			*((ILObject **)argBuffer) = VA_ARG(va, ILObject *);
 			argBuffer += sizeof(ILObject *);
-			++args;
 			++jitArgs;
 		}
 		else if(ILType_IsValueType(paramType))
@@ -220,7 +232,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			   put the value into a temporary location and then
 			   passed a pointer to the temporary to us */
 			*jitArgs = (void *)(VA_ARG(va, void *));
-			++args;
 			++jitArgs;
 		}
 		else if(paramType != 0 && ILType_IsComplex(paramType) &&
@@ -230,7 +241,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			*jitArgs = argBuffer;
 			*((void **)argBuffer) = VA_ARG(va, void *);
 			argBuffer += sizeof(void *);
-			++args;
 			++jitArgs;
 		}
 		else
@@ -239,7 +249,6 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			*jitArgs = argBuffer;
 			*((ILObject **)argBuffer) = VA_ARG(va, ILObject *);
 			argBuffer += sizeof(ILObject *);
-			++args;
 			++jitArgs;
 		}
 	}
@@ -404,6 +413,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 
 #ifdef IL_USE_JIT
 int _ILCallPackVParams(ILExecThread *thread, ILType *signature,
+					   int isCtor, void *_this,
 					   void *argBuffer, void **jitArgs, void *userData)
 {
 	ILExecValue *args = (ILExecValue *)userData;
@@ -411,6 +421,24 @@ int _ILCallPackVParams(ILExecThread *thread, ILType *signature,
 	ILType *paramType;
 
 	/* Store pointers to the args in the jitArgs Array. */
+	if(ILType_HasThis(signature) && !isCtor)
+	{
+		/* Push the "this" argument */
+		if(_this)
+		{
+			/* Use the supplied "this" parameter */
+			*jitArgs = argBuffer;
+			*((void **)argBuffer) = _this;
+			argBuffer += sizeof(void *);
+		}
+		else
+		{
+			/* Get the "this" parameter from the argument list */
+			*jitArgs = &(args->objValue);
+			++args;
+		}
+		++jitArgs;
+	}
 	numParams = ILTypeNumParams(signature);
 	for(param = 1; param <= numParams; ++param)
 	{
@@ -978,7 +1006,9 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 			if(!isArrayOrString)
 			{
 				/* We need to allocate the Object. */
-				if(!(_this = _ILEngineAlloc(thread, ILMethod_Owner(method), 0)))
+				ILUInt32 size = ILSizeOfType(thread, ILClassToType(info));
+
+				if(!(_this = _ILEngineAlloc(thread, ILMethod_Owner(method), size)))
 				{
 					return 1;
 				}
@@ -986,14 +1016,10 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 				current++;
 			}
 		}
-		else
-		{
-			jitArgs[1] = &_this;
-			current++;
-		}
 	}
 
-	if((*pack)(thread, signature, &(jitArgsBuffer[0]), &(jitArgs[current]), userData))
+	if((*pack)(thread, signature, isCtor, _this, 
+			   &(jitArgsBuffer[0]), &(jitArgs[current]), userData))
 	{
 		return 1;
 	}

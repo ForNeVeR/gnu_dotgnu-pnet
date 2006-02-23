@@ -49,6 +49,7 @@ internal class PortMethods
 	public const int SERIAL_REGULAR		= 0;
 	public const int SERIAL_INFRARED	= 1;
 	public const int SERIAL_USB			= 2;
+	public const int SERIAL_RFCOMM		= 3;
 
 	// Bits for various serial pins.
 	public const int PIN_BREAK			= (1<<0);

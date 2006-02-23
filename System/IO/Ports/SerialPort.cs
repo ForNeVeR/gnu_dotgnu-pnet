@@ -529,6 +529,17 @@ public class SerialPort
 						posn = 6;
 						type = PortMethods.SERIAL_INFRARED;
 					}
+					else if(value.Length > 6 &&
+					        (value[0] == 'r' || value[0] == 'R') &&
+					        (value[1] == 'f' || value[1] == 'F') &&
+					        (value[2] == 'c' || value[2] == 'C') &&
+					        (value[3] == 'o' || value[3] == 'O') &&
+					        (value[4] == 'm' || value[4] == 'M') &&
+					        (value[5] == 'm' || value[5] == 'M'))
+					{
+						posn = 6;
+						type = PortMethods.SERIAL_RFCOMM;
+					}
 					else if(value.Length > 3 &&
 					        (value[0] == 'u' || value[0] == 'U') &&
 					        (value[1] == 's' || value[1] == 'S') &&

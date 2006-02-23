@@ -124,6 +124,10 @@ static void GetSerialName(char *name, ILInt32 type, ILInt32 portNumber)
 	{
 		sprintf(name, "/dev/ircomm%d", (int)(portNumber - 1));
 	}
+	else if(type == IL_SERIAL_RFCOMM)
+	{
+		sprintf(name, "/dev/rfcomm%d", (int)(portNumber - 1));
+	}
 	else
 	{
 		sprintf(name, "/dev/ttyUSB%d", (int)(portNumber - 1));
@@ -137,7 +141,7 @@ static int SerialIsValid(ILInt32 type, ILInt32 portNumber, int checkAccess)
 {
 	char name[64];
 	if(type != IL_SERIAL_REGULAR && type != IL_SERIAL_INFRARED &&
-	   type != IL_SERIAL_USB)
+	   type != IL_SERIAL_USB && type != IL_SERIAL_RFCOMM)
 	{
 		return 0;
 	}

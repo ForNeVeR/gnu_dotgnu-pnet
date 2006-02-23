@@ -1,3 +1,9 @@
+
+2006-02-23  Gopal V  <gopalv82@yahoo.com>
+
+	* support/serial.c, support/il_serial.h: add IL_SERIAL_RFCOMM and
+	generate /dev/rfcomm<n> devices for it.
+
 2006-02-22  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/call.c: Pass the size of the type to _ILEngineAlloc and fix a bug

@@ -34,6 +34,7 @@ extern	"C" {
 #define	IL_SERIAL_REGULAR		0
 #define	IL_SERIAL_INFRARED		1
 #define	IL_SERIAL_USB			2
+#define	IL_SERIAL_RFCOMM		3
 
 /*
  * Bits for various serial pins.

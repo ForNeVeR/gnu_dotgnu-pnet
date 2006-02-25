@@ -1025,7 +1025,15 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	}
 
 	/* Now we can call the jitted function. */
-	return ILJitCallMethod(thread, method, jitArgs, result);
+	if(ILJitCallMethod(thread, method, jitArgs, result))
+	{
+		if(isCtor && !isArrayOrString && result)
+		{
+			/* Return the this pointer. */
+			*(void **)result = *(void **)(jitArgs[1]);
+		}
+	}
+	return 0;
 }
 #else
 int _ILCallMethod(ILExecThread *thread, ILMethod *method,

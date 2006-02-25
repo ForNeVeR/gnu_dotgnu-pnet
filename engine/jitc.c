@@ -1736,16 +1736,16 @@ int ILJitCallMethod(ILExecThread *thread, ILMethod *method, void **jitArgs, void
 		/* We have to layout the class. */
 		if(!_LayoutClass(thread, ILMethod_Owner(method)))
 		{
-			return 1;
+			return 0;
 		}
 		jitFunction = method->userData;
 	}
 
 	if(!jit_function_apply(jitFunction, jitArgs, result))
 	{
-		return 1;
+		return 0;
 	}
-	return 0;
+	return 1;
 }
 
 /*

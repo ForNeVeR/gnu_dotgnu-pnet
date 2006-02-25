@@ -1,3 +1,9 @@
+2006-02-25  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/call.c: Return the this pointer for ctor calls in ILCallMethod.
+
+	* engine/jitc.c: Exchange the return values in ILJitCallMethod to 0 for
+	failure and 1 for success.
 
 2006-02-23  Gopal V  <gopalv82@yahoo.com>
 

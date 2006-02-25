@@ -5,6 +5,10 @@
 	* engine/jitc.c: Exchange the return values in ILJitCallMethod to 0 for
 	failure and 1 for success.
 
+	* engine/lib_reflect.c: Increase the number of callframes by one to look
+	for in _IL_Assembly_GetCallingAssembly and
+	_IL_Assembly_GetExecutingAssembly.
+
 2006-02-23  Gopal V  <gopalv82@yahoo.com>
 
 	* support/serial.c, support/il_serial.h: add IL_SERIAL_RFCOMM and

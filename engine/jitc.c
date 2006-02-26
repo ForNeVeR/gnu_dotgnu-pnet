@@ -509,45 +509,62 @@ static ILJitTypes *_ILJitGetTypes(ILType *type, ILExecProcess *process)
  */
 ILMethod *_ILJitGetCallingMethod(ILExecThread *thread, ILUInt32 frames)
 {
+	ILExecProcess *process = _ILExecThreadProcess(thread);
+	ILJITCoder *jitCoder;
+	ILJitFunction jitFunction = 0;
+	void *callFrame = jit_get_current_frame();
 	void *returnAddress = 0;
+	void *exceptionHandler = 0;
 
-	fprintf(stdout, "CallingMethod \n");
-	if(frames > 0)
+	if(!process)
 	{
-		void *callFrame = jit_get_frame_address(frames);
-		if(callFrame)
+		return 0;
+	}
+	if(!(jitCoder = _ILCoderToILJITCoder(process->coder)))
+	{
+		return 0;
+	}
+	/* Find the first callframe that has a jitFunction assigned. */
+	/* This callframe is usually the jitFunction for the internalcall. */
+	do {
+		returnAddress = jit_get_return_address(callFrame);
+		if(!(callFrame = jit_get_next_frame_address(callFrame)))
 		{
-			returnAddress = jit_get_return_address(callFrame);
+			/* Could not get the next frame address. */
+			return 0;
 		}
-	}
-	else
-	{
-		returnAddress = jit_get_current_return();
-	}
-	if(returnAddress)
-	{
-		ILExecProcess *process = _ILExecThreadProcess(thread);
-		ILJITCoder *jitCoder;
-		ILJitFunction jitFunction;
-		void *exceptionHandler = 0;
+		if((jitFunction = jit_function_from_pc(jitCoder->context,
+											  returnAddress,
+											  &exceptionHandler)))
+		{
+			break;
+		}
 
-		if(!process)
+	} while(1);
+
+	/* callFrame is the first frame with a jitFunction assigned. */
+	/* Now we have to find the return address frames down the stack */
+	/* with a jitFunction assigned. */
+	do {
+		returnAddress = jit_get_return_address(callFrame);
+		if((jitFunction = jit_function_from_pc(jitCoder->context,
+											  returnAddress,
+											  &exceptionHandler)))
 		{
+			if(frames == 0)
+			{
+				break;
+			}
+		}
+		frames--;
+		if(!(callFrame = jit_get_next_frame_address(callFrame)))
+		{
+			/* Could not get the next frame address. */
 			return 0;
 		}
-		if(!(jitCoder = _ILCoderToILJITCoder(process->coder)))
-		{
-			return 0;
-		}
-		if(!(jitFunction = jit_function_from_pc(jitCoder->context,
-										   returnAddress,
-										   &exceptionHandler)))
-		{
-			return 0;
-		}
-		return (ILMethod *)jit_function_get_meta(jitFunction, IL_JIT_META_METHOD);
-	}
-	return 0;
+	} while(1);
+	/* And we return the ILMethod assigned to that jitFunction. */
+	return (ILMethod *)jit_function_get_meta(jitFunction, IL_JIT_META_METHOD);
 }
 
 /*

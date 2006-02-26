@@ -982,6 +982,7 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 				/* We need an additional parameter for the this pointer */
 				/* for all casese except arrays or strings. */
 				totalParams++;
+				numParams++;
 			}
 			else
 			{
@@ -1033,8 +1034,9 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 			/* Return the this pointer. */
 			*(void **)result = *(void **)(jitArgs[1]);
 		}
+		return 0;
 	}
-	return 0;
+	return 1;
 }
 #else
 int _ILCallMethod(ILExecThread *thread, ILMethod *method,

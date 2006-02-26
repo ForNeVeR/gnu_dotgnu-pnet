@@ -862,7 +862,7 @@ System_Array *_IL_AppDomain_GetAssemblies(ILExecThread *thread,
 ILObject *_IL_Assembly_GetCallingAssembly(ILExecThread *thread)
 {
 #ifdef IL_USE_JIT
-	ILMethod *method = _ILJitGetCallingMethod(thread, 3);
+	ILMethod *method = _ILJitGetCallingMethod(thread, 1);
 	if(method)
 	{
 		return ImageToAssembly(thread, ILProgramItem_Image(method));
@@ -902,7 +902,7 @@ ILObject *_IL_Assembly_GetEntryAssembly(ILExecThread *thread)
 ILObject *_IL_Assembly_GetExecutingAssembly(ILExecThread *thread)
 {
 #ifdef IL_USE_JIT
-	ILMethod *method = _ILJitGetCallingMethod(thread, 2);
+	ILMethod *method = _ILJitGetCallingMethod(thread, 0);
 	if(method)
 	{
 		return ImageToAssembly(thread, ILProgramItem_Image(method));

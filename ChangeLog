@@ -1,6 +1,8 @@
 2006-02-25  Klaus Treichel  <ktreichel@web.de>
 
-	* engine/call.c: Return the this pointer for ctor calls in ILCallMethod.
+	* engine/call.c: Return the this pointer for ctor calls in ILCallMethod and
+	use _ILLayoutClassReturn to obtain the size of the object to create instead
+	of ILSizeOfType.
 
 	* engine/jitc.c: Exchange the return values in ILJitCallMethod to 0 for
 	failure and 1 for success.

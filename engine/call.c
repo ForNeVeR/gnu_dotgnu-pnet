@@ -1006,7 +1006,8 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 			if(!isArrayOrString)
 			{
 				/* We need to allocate the Object. */
-				ILUInt32 size = ILSizeOfType(thread, ILClassToType(info));
+				ILUInt32 alignment;
+				ILUInt32 size = _ILLayoutClassReturn(_ILExecThreadProcess(thread), info, &alignment);
 
 				if(!(_this = _ILEngineAlloc(thread, ILMethod_Owner(method), size)))
 				{

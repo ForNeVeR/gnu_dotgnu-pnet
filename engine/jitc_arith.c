@@ -26,164 +26,130 @@
 static void JITCoder_Binary(ILCoder *coder, int opcode,
 							ILEngineType type1, ILEngineType type2)
 {
-
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	
+	ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
+	ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+	ILJitValue result = 0;
+
 	switch(opcode)
 	{
 		case IL_OP_ADD:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_add(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustMixedBinary(jitCoder, 0, &value1, &value2);
+			result = jit_insn_add(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_ADD_OVF:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_add_ovf(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
-
+			AdjustMixedBinary(jitCoder, 0, &value1, &value2);
+			result = jit_insn_add_ovf(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_ADD_OVF_UN:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_add_ovf(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustMixedBinary(jitCoder, 1, &value1, &value2);
+			result = jit_insn_add_ovf(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_SUB:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_sub(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
-
+			AdjustMixedBinary(jitCoder, 0, &value1, &value2);
+			result = jit_insn_sub(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_SUB_OVF:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_sub_ovf(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
-
+			AdjustMixedBinary(jitCoder, 0, &value1, &value2);
+			result = jit_insn_sub_ovf(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_SUB_OVF_UN:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_sub_ovf(jitCoder->jitFunction,
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustMixedBinary(jitCoder, 1, &value1, &value2);
+			result = jit_insn_sub_ovf(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_MUL:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_mul(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustMixedBinary(jitCoder, 0, &value1, &value2);
+			result = jit_insn_mul(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_MUL_OVF:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_mul_ovf(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustMixedBinary(jitCoder, 0, &value1, &value2);
+			result = jit_insn_mul_ovf(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_MUL_OVF_UN:
 		{
-
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_mul_ovf(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustMixedBinary(jitCoder, 1, &value1, &value2);
+			result = jit_insn_mul_ovf(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_DIV:
-
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_div(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustMixedBinary(jitCoder, 0, &value1, &value2);
+			result = jit_insn_div(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_DIV_UN:
 		{
-
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_div(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustMixedBinary(jitCoder, 1, &value1, &value2);
+			result = jit_insn_div(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_REM:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_rem_ieee(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustMixedBinary(jitCoder, 0, &value1, &value2);
+			result = jit_insn_rem_ieee(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_REM_UN:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_rem_ieee(jitCoder->jitFunction,
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustMixedBinary(jitCoder, 1, &value1, &value2);
+			result = jit_insn_rem_ieee(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_AND:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_and(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			result = jit_insn_and(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_OR:
 		{
-
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_or(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			result = jit_insn_or(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_XOR:
 		{
-
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_xor(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			result = jit_insn_xor(jitCoder->jitFunction, value1, value2);
 		}
 		break;
+		
+		default:
+		{
+			return;
+		}
+	}
 
-	}	
+	jitCoder->jitStack[jitCoder->stackTop - 2] = result;
+	JITC_ADJUST(jitCoder, -1);
 }
 
 /*

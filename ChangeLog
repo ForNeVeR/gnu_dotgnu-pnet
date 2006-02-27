@@ -1,3 +1,13 @@
+2006-02-27  Aleksey Demakov  <ademakov@gmail.com>
+
+	* engine/jitc_conv.c (JITCoder_Conv): fix a typo.
+
+	* engine/jitc_arith.c (JITCoder_Binary): use AdjustMixedBinary
+	for arithmetic ops.
+	* engine/jitc_branch.c, engine/jitc.c (AdjustMixedBinary): moved
+	AdjustMixedBinary from jitc_branch.c to jitc.c. Bail out on floating
+	point values.
+
 2006-02-26  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/call.c: add an additional slot in the arg buffer for ctors. Return

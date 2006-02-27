@@ -322,7 +322,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 	#endif
 		{
 			/* Convert to "unsigned int32" */
-			value = ConvertValue(jitCoder, IL_OP_CONV_U8, 0, 0);
+			value = ConvertValue(jitCoder, IL_OP_CONV_U4, 0, 0);
 			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;

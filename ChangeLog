@@ -1,4 +1,13 @@
 
+2006-02-27  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XmlNodeReader.cs: Implement most of 
+	XmlNodeReader functionality, except entity support.
+
+	* System.Xml/XmlDocument.cs: Set IsEmpty on elements
+	to make sure that element nodes without any children
+	can be non-empty.
+
 2006-02-23  Gopal V  <gopalv82@yahoo.com>
 
 	* System/Platform/PortMethods.cs, System/IO/Ports/SerialPort.cs: allow

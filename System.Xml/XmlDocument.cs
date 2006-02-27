@@ -845,6 +845,8 @@ class XmlDocument : XmlNode
 							return elem;
 						}
 
+						elem.IsEmpty = isEmptyElement;
+
 						// read and append the children
 						ReadChildren(r, elem);
 

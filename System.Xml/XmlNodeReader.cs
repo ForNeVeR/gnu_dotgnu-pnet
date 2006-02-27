@@ -26,6 +26,8 @@ namespace System.Xml
 using System;
 using System.IO;
 using System.Text;
+using System.Diagnostics;
+using System.Globalization;
 
 public class XmlNodeReader : XmlReader
 {
@@ -35,339 +37,935 @@ public class XmlNodeReader : XmlReader
 	private XmlDocument doc;
 	private ReadState readState;
 
+	private bool isAttributeReader = false;
+	private bool isEndElement = false;
+	private bool skipThisNode = true;
+	private int attributePosn;
+	private int depth = 0;
+	private bool inAttrValue = false;
+
 	// Constructor.
 	public XmlNodeReader(XmlNode node)
-			{
-				startNode = currentNode = node;
-				doc = node.OwnerDocument;
-			}
+	{
+		startNode = currentNode = node;
+		if(node.NodeType == XmlNodeType.Document)
+		{
+			doc = (XmlDocument) (node);
+		}
+		else
+		{
+			doc = node.OwnerDocument;
+		}
+		if(node.NodeType == XmlNodeType.Attribute)
+		{
+			this.isAttributeReader = true;
+		}
+		if(node.NodeType != XmlNodeType.Document &&
+			node.NodeType != XmlNodeType.DocumentFragment)
+		{
+			skipThisNode = false;
+		}
+		this.readState = ReadState.Initial;
+	}
 
 	// Clean up the resources that were used by this XML reader.
 	public override void Close()
-			{
-				readState = ReadState.Closed;
-			}
+	{
+		readState = ReadState.Closed;
+	}
 
 	// Returns the value of an attribute with a specific index.
-	public override String GetAttribute(int i)
+	public override String GetAttribute(int attributeIndex)
+	{
+		if(this.isAttributeReader || (!this.InReadState))
+		{
+			return null;
+		}
+
+		if(attributeIndex < 0 || attributeIndex >= this.AttributeCount)
+		{
+			throw new ArgumentOutOfRangeException("attributeIndex");
+		}
+
+		switch(this.currentNode.NodeType)
+		{
+			case XmlNodeType.Element: 
+			{
+				return ((XmlElement)
+						(this.currentNode)).Attributes[attributeIndex].Value;
+			}
+			break;
+
+			case XmlNodeType.Attribute:
+			{
+				XmlElement element = (XmlElement)(this.currentNode.ParentNode);
+				return element.Attributes[attributeIndex].Value;
+			}
+			break;
+			
+			case XmlNodeType.DocumentType:
 			{
 				// TODO
-				return null;
 			}
+			break;
 
+			case XmlNodeType.XmlDeclaration:
+			{
+				// TODO
+			}
+			break;
+		}
+		
+		return null;
+	}
 	// Returns the value of an attribute with a specific name.
 	public override String GetAttribute(String name, String namespaceURI)
+	{
+		if(this.isAttributeReader || (!this.InReadState))
+		{
+			return null;
+		}
+
+		switch(this.currentNode.NodeType)
+		{
+			case XmlNodeType.Element: 
+			{
+				return ((XmlElement)
+						(this.currentNode)).GetAttribute(name, namespaceURI);
+			}
+			break;
+
+			case XmlNodeType.Attribute:
+			{
+				XmlElement element = (XmlElement)(this.currentNode.ParentNode);
+				return element.GetAttribute(name, namespaceURI);
+			}
+			break;
+			
+			case XmlNodeType.DocumentType:
 			{
 				// TODO
-				return null;
 			}
+			break;
+
+			case XmlNodeType.XmlDeclaration:
+			{
+				// TODO
+			}
+			break;
+		}
+		
+		return null;
+	}
 
 	// Returns the value of an attribute with a specific qualified name.
 	public override String GetAttribute(String name)
+	{
+		if(this.isAttributeReader || (!this.InReadState))
+		{
+			return null;
+		}
+
+		switch(this.currentNode.NodeType)
+		{
+			case XmlNodeType.Element: 
+			{
+				return ((XmlElement)
+						(this.currentNode)).GetAttribute(name);
+			}
+			break;
+
+			case XmlNodeType.Attribute:
+			{
+				XmlElement element = (XmlElement)(this.currentNode.ParentNode);
+				return element.GetAttribute(name);
+			}
+			break;
+			
+			case XmlNodeType.DocumentType:
 			{
 				// TODO
-				return null;
 			}
+			break;
+
+			case XmlNodeType.XmlDeclaration:
+			{
+				// TODO
+			}
+			break;
+		}
+		
+		return null;
+	}
 
 	// Resolve a namespace in the scope of the current element.
 	public override String LookupNamespace(String prefix)
+	{
+		if(!this.InReadState)
+		{
+			return null;
+		}
+		if(prefix == "xmlns")
+		{
+			return XmlDocument.xmlns; 
+		}
+		
+		if(this.isAttributeReader)
+		{
+			// prefix lookups on attributes are supposed 
+			// to work for 'xmlns'. w3rd
+			return null;
+		}
+
+		XmlElement element = null;
+		String attrName = "xmlns" + (prefix == String.Empty ? "" : ":"+prefix);
+		String ns = null;
+
+		for(XmlNode node = this.currentNode; 
+			node != null; node = node.ParentNode)
+		{
+			element = (node as XmlElement);
+			if(element == null)
 			{
-				// TODO
-				return null;
+				continue;
 			}
+			ns = element.GetAttribute(attrName);
+			if(ns != null)
+			{
+				return ns;
+			}
+		}
+		return null;
+	}
 
 	// Move the current position to a particular attribute.
-	public override void MoveToAttribute(int i)
+	public override void MoveToAttribute(int attributeIndex)
+	{
+		if(this.isAttributeReader || (!this.InReadState))
+		{
+			return ;
+		}
+
+		if(attributeIndex < 0 || attributeIndex >= this.AttributeCount)
+		{
+			// TODO: should this be only for the cases where we
+			// handle the calls ?
+			throw new ArgumentOutOfRangeException("attributeIndex");
+		}
+		
+		XmlAttribute attribute = null;
+
+		switch(this.currentNode.NodeType)
+		{
+			case XmlNodeType.Element: 
+			{
+				attribute = 
+					((XmlElement)(this.currentNode)).Attributes[attributeIndex];
+				MoveToAttribute(attribute, attributeIndex);
+			}
+			break;
+
+			case XmlNodeType.Attribute:
+			{
+				XmlElement element = (XmlElement)(this.currentNode.ParentNode);
+				attribute = element.Attributes[attributeIndex];
+				MoveToAttribute(attribute, attributeIndex);
+			}
+			break;
+			
+			case XmlNodeType.DocumentType:
+			case XmlNodeType.XmlDeclaration:
 			{
 				// TODO
 			}
+			break;
+		}
+	}
 
 	// Move the current position to an attribute with a particular name.
 	public override bool MoveToAttribute(String name, String ns)
-			{
-				// TODO
-				return false;
-			}
+	{
+		if(this.isAttributeReader || (!this.InReadState))
+		{
+			return false;
+		}
 
-	// Move the current position to an attribute with a qualified name.
-	public override bool MoveToAttribute(String name)
-			{
-				// TODO
-				return false;
-			}
+		XmlAttribute attribute = null;
+		XmlElement element = null;
 
-	// Move to the element that owns the current attribute.
-	public override bool MoveToElement()
+		switch(this.currentNode.NodeType)
+		{
+			case XmlNodeType.Element: 
 			{
-				// TODO
-				return false;
-			}
-
-	// Move to the first attribute owned by the current element.
-	public override bool MoveToFirstAttribute()
-			{
-				// TODO
-				return false;
-			}
-
-	// Move to the next attribute owned by the current element.
-	public override bool MoveToNextAttribute()
-			{
-				// TODO
-				return false;
-			}
-
-	// Read the next node in the input stream.
-	public override bool Read()
-			{
-				// TODO
-				return false;
-			}
-
-	// Read the next attribute value in the input stream.
-	public override bool ReadAttributeValue()
-			{
-				// TODO
-				return false;
-			}
-
-	// Read the contents of the current node, including all markup.
-	public override String ReadInnerXml()
-			{
-				// TODO: skip
-				return currentNode.InnerXml;
-			}
-
-	// Read the current node, including all markup.
-	public override String ReadOuterXml()
-			{
-				// TODO: skip
-				return currentNode.OuterXml;
-			}
-
-	// Read the contents of an element or text node as a string.
-	public override String ReadString()
-			{
-				// TODO
-				return null;
-			}
-
-	// Resolve an entity reference.
-	public override void ResolveEntity()
-			{
-				// TODO
-			}
-
-	// Skip the current element in the input.
-	public override void Skip()
-			{
-				// TODO
-			}
-
-	// Get the number of attributes on the current node.
-	public override int AttributeCount
-			{
-				get
+				element = (XmlElement)(this.currentNode);
+				attribute =	element.GetAttributeNode(name,ns);
+				if(attribute != null)
 				{
-					// TODO
-					return 0;
-				}
-			}
-
-	// Get the base URI for the current node.
-	public override String BaseURI
-			{
-				get
-				{
-					return currentNode.BaseURI;
-				}
-			}
-
-	// Determine if this reader can parse and resolve entities.
-	public override bool CanResolveEntity
-			{
-				get
-				{
+					MoveToAttribute(attribute, -1);
 					return true;
 				}
 			}
+			break;
+
+			case XmlNodeType.Attribute:
+			{
+				element = (XmlElement)(this.currentNode.ParentNode);
+				attribute =	element.GetAttributeNode(name,ns);
+				if(attribute != null)
+				{
+					MoveToAttribute(attribute, -1);
+					return true;
+				}
+			}
+			break;
+			
+			case XmlNodeType.DocumentType:
+			{
+				// TODO
+			}
+			break;
+
+			case XmlNodeType.XmlDeclaration:
+			{
+				// TODO
+			}
+			break;
+		}
+
+		return false;	
+	}
+
+	// Move the current position to an attribute with a qualified name.
+	public override bool MoveToAttribute(String name)
+	{
+		if(this.isAttributeReader || (!this.InReadState))
+		{
+			return false;
+		}
+
+		XmlAttribute attribute = null;
+		XmlElement element = null;
+
+		switch(this.currentNode.NodeType)
+		{
+			case XmlNodeType.Element: 
+			{
+				element = (XmlElement)(this.currentNode);
+				attribute =	element.GetAttributeNode(name);
+				if(attribute != null)
+				{
+					MoveToAttribute(attribute, -1);
+					return true;
+				}
+			}
+			break;
+
+			case XmlNodeType.Attribute:
+			{
+				element = (XmlElement)(this.currentNode.ParentNode);
+				attribute =	element.GetAttributeNode(name);
+				if(attribute != null)
+				{
+					MoveToAttribute(attribute, -1);
+					return true;
+				}
+			}
+			break;
+			
+			case XmlNodeType.DocumentType:
+			{
+				// TODO
+			}
+			break;
+
+			case XmlNodeType.XmlDeclaration:
+			{
+				// TODO
+			}
+			break;
+		}
+
+		return false;
+	}
+
+	private void MoveToAttribute(XmlAttribute attribute, int index)
+	{
+		if(index == -1)
+		{
+			index = attribute.OwnerElement.Attributes.IndexOf(attribute);
+		}
+		this.attributePosn = index;
+		this.currentNode = attribute;
+		this.readState = ReadState.Interactive;
+		Debug.Assert(this.currentNode != null);
+	}
+
+	// Move to the element that owns the current attribute.
+	public override bool MoveToElement()
+	{
+		if(this.isAttributeReader || (!this.InReadState))
+		{
+			return false;
+		}
+		if(this.currentNode.NodeType == XmlNodeType.Attribute)
+		{
+			XmlAttribute attribute = (XmlAttribute)(this.currentNode);
+			this.currentNode = attribute.OwnerElement;
+			this.attributePosn = 0;
+			this.readState = ReadState.Interactive;
+			Debug.Assert(this.currentNode != null);
+			return true;
+		}
+		else if(this.currentNode.NodeType == XmlNodeType.DocumentType ||
+				this.currentNode.NodeType == XmlNodeType.XmlDeclaration)
+		{
+			// TODO: DocumentType and XmlDeclaration
+		}
+
+		return false;
+	}
+
+	// Move to the first attribute owned by the current element.
+	public override bool MoveToFirstAttribute()
+	{
+		if(this.InReadState && this.AttributeCount > 0)
+		{
+			this.MoveToAttribute(0);
+			return true;
+		}
+		return false;
+	}
+
+	// Move to the next attribute owned by the current element.
+	public override bool MoveToNextAttribute()
+	{
+		if(!this.InReadState)
+		{
+			return false;
+		}
+		int nextAttr = 0;
+		if(this.currentNode.NodeType == XmlNodeType.Element ||
+				this.currentNode.NodeType == XmlNodeType.Attribute)
+		{
+			nextAttr = this.attributePosn + 1; 
+			if(nextAttr < this.AttributeCount)
+			{
+				this.MoveToAttribute(nextAttr);
+				return true;
+			}
+		}
+		else if(this.currentNode.NodeType == XmlNodeType.DocumentType ||
+				this.currentNode.NodeType == XmlNodeType.XmlDeclaration)
+		{
+			// TODO:
+		}
+		return false;
+	}
+
+	// Read the next node in the input stream.
+	public override bool Read()
+	{
+		if(EOF)
+		{
+			return false;
+		}
+
+		if(ReadState == ReadState.Initial)
+		{
+			currentNode = startNode;
+			readState = ReadState.Interactive;
+			// skip a Document or DocumentFragment node
+			// sometimes I hate this API 
+			if(skipThisNode)
+			{
+				currentNode = startNode.FirstChild;
+			}
+			else 
+			{
+				skipThisNode = true;
+			}
+			if(currentNode == null) 
+			{
+				this.readState = ReadState.Error;
+				return false;
+			}
+			return true;
+		}
+
+		MoveToElement();
+
+		if(!skipThisNode)
+		{
+			skipThisNode = true;
+			return (currentNode != null);
+		}
+
+		bool eof = false;
+
+		Console.WriteLine(this.currentNode.Name);
+
+		if (IsEmptyElement || this.isEndElement)
+		{
+			this.isEndElement = false;
+			
+			/* now that skipThisNode makes sense */
+			if(currentNode.ParentNode == null 
+				|| currentNode == startNode)
+			{
+				eof = true;
+			}
+			else if(currentNode.NextSibling == null)
+			{
+				this.depth--;
+				currentNode = currentNode.ParentNode;
+				this.isEndElement = true;
+				return true;
+			}
+			else
+			{
+				currentNode = currentNode.NextSibling;
+				return true;
+			}
+		}
+
+		if(currentNode.NextSibling == null &&
+					this.startNode.NodeType == XmlNodeType.EntityReference)
+		{
+			// One level only :)
+			eof = true;
+		}
+		
+		if(eof)
+		{
+			this.currentNode = null;
+			this.readState = ReadState.EndOfFile;
+			return false;
+		}
+
+		if(this.currentNode.FirstChild != null && !this.isEndElement)
+		{
+			this.depth++;
+			this.isEndElement = false;
+			currentNode = currentNode.FirstChild;
+		}
+		else if(this.currentNode.NodeType == XmlNodeType.Element) 
+		{
+			this.isEndElement = true;
+			if(this.currentNode.FirstChild != null)
+			{
+				// empty elements do not increment depth
+				this.depth--;
+			}
+		}
+		else
+		{
+			if(!this.skipThisNode)
+			{
+				this.skipThisNode = true;
+				return (this.currentNode != null);
+			}
+			if(this.currentNode.NextSibling != null)
+			{
+				this.isEndElement = false;
+				this.currentNode = this.currentNode.NextSibling;
+			}
+			else
+			{
+				this.currentNode = this.currentNode.ParentNode;
+				if(this.currentNode.NodeType == XmlNodeType.Element)
+				{
+					this.isEndElement = true;
+				}
+				this.depth--; // this node *has* children for sure :)
+			}
+		}
+
+		if(this.currentNode == null)
+		{
+			this.readState = ReadState.EndOfFile;
+			return false;
+		}
+		
+		return true;
+	}
+
+	// Read the next attribute value in the input stream.
+	public override bool ReadAttributeValue()
+	{
+		if(!this.InReadState)
+		{
+			return false;
+		}
+
+		this.readState = ReadState.Interactive;
+		
+		if(this.currentNode.NodeType == XmlNodeType.Attribute)
+		{
+			if(this.currentNode.FirstChild != null)
+			{
+				this.currentNode = this.currentNode.FirstChild;
+				this.inAttrValue = true;
+				return true;
+			}
+		}
+		else if(this.inAttrValue)
+		{
+			Debug.Assert(this.currentNode.ParentNode.NodeType ==
+							XmlNodeType.Attribute);
+			if(this.currentNode.NextSibling != null)
+			{
+				this.currentNode = this.currentNode.NextSibling;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Read the contents of the current node, including all markup.
+	public override String ReadInnerXml()
+	{
+		// TODO: skip
+		return currentNode.InnerXml;
+	}
+
+	// Read the current node, including all markup.
+	public override String ReadOuterXml()
+	{
+		// TODO: skip
+		return currentNode.OuterXml;
+	}
+
+	// Read the contents of an element or text node as a string.
+	public override String ReadString()
+	{
+		// what about entities ?	
+		return base.ReadString();
+	}
+
+	// Resolve an entity reference.
+	public override void ResolveEntity()
+	{
+		// TODO: no idea what to do here :(
+	}
+
+	// Skip the current element in the input.
+	public override void Skip()
+	{
+		this.readState = ReadState.Interactive;
+		// what else ?
+		base.Skip();
+	}
+
+	// Get the number of attributes on the current node.
+	public override int AttributeCount
+	{
+		get
+		{
+			if(this.isAttributeReader)
+			{
+				return 0; // or -1 ?
+			}
+
+			switch(this.currentNode.NodeType)
+			{
+				case XmlNodeType.Element:
+				{
+					return ((XmlElement)this.currentNode).Attributes.Count;
+				}
+				break;
+
+				case XmlNodeType.Attribute:
+				{
+					XmlElement element = (XmlElement)
+											(this.currentNode.ParentNode);
+					return element.Attributes.Count;
+				}
+				break;
+
+				case XmlNodeType.XmlDeclaration:
+				{
+					// TODO: 
+				}
+				break;
+
+				case XmlNodeType.DocumentType:
+				{
+					// TODO:
+				}
+				break;
+			}
+			return 0;
+		}
+	}
+
+	// Get the base URI for the current node.
+	public override String BaseURI
+	{
+		get
+		{
+			return currentNode.BaseURI;
+		}
+	}
+
+	// Determine if this reader can parse and resolve entities.
+	public override bool CanResolveEntity
+	{
+		get
+		{
+			return true;
+		}
+	}
 
 	// Get the depth of the current node.
 	public override int Depth
+	{
+		get
+		{
+			if(this.currentNode == null) 
 			{
-				get
-				{
-					// TODO
-					return 0;
-				}
+				return 0;
 			}
+			if(this.currentNode.NodeType == XmlNodeType.Attribute)
+			{
+				return this.depth + (this.inAttrValue ? 2 : 1);
+			}
+			return this.depth;
+		}
+	}
 
 	// Determine if we have reached the end of the input stream.
 	public override bool EOF
-			{
-				get
-				{
-					// TODO
-					return false;
-				}
-			}
+	{
+		get
+		{
+			return (this.readState == ReadState.EndOfFile ||
+						this.readState == ReadState.Error);
+		}
+	}
 
 	// Determine if the current node can have an associated text value.
 	public override bool HasValue
+	{
+		get
+		{
+			// confusing part is the 'can' part
+			if(this.currentNode.Value == null &&
+				this.currentNode.NodeType != XmlNodeType.DocumentType)
 			{
-				get
-				{
-					// TODO
-					return false;
-				}
+				return false;
 			}
+			return true;
+		}
+	}
 
 	// Determine if the current node's value was generated from a DTD default.
 	public override bool IsDefault
+	{
+		get
+		{
+			if(this.currentNode.NodeType == XmlNodeType.Attribute)
 			{
-				get
-				{
-					// TODO
-					return false;
-				}
+				// this is funny because Specified is defined as 
+				// !isDefault in XmlAttribute.cs :)
+				return !((XmlAttribute) this.currentNode).Specified;
 			}
+			return false;
+		}
+	}
 
 	// Determine if the current node is an empty element.
 	public override bool IsEmptyElement
+	{
+		get
+		{
+			if(this.currentNode.NodeType == XmlNodeType.Element)
 			{
-				get
-				{
-					// TODO
-					return false;
-				}
+				// is element. now check if is empty
+				return ((XmlElement) this.currentNode).IsEmpty;
 			}
+			return false;
+		}
+	}
 
 	// Retrieve an attribute value with a specified index.
 	public override String this[int i]
-			{
-				get
-				{
-					return GetAttribute(i);
-				}
-			}
+	{
+		get
+		{
+			return GetAttribute(i);
+		}
+	}
 
 	// Retrieve an attribute value with a specified name.
 	public override String this[String localname, String namespaceURI]
-			{
-				get
-				{
-					return GetAttribute(localname, namespaceURI);
-				}
-			}
+	{
+		get
+		{
+			return GetAttribute(localname, namespaceURI);
+		}
+	}
 
 	// Retrieve an attribute value with a specified qualified name.
 	public override String this[String name]
-			{
-				get
-				{
-					return GetAttribute(name);
-				}
-			}
+	{
+		get
+		{
+			return GetAttribute(name);
+		}
+	}
 
 	// Get the local name of the current node.
 	public override String LocalName
-			{
-				get
-				{
-					return currentNode.LocalName;
-				}
-			}
+	{
+		get
+		{
+			return currentNode.LocalName;
+		}
+	}
 
 	// Get the fully-qualified name of the current node.
 	public override String Name
-			{
-				get
-				{
-					return currentNode.Name;
-				}
-			}
+	{
+		get
+		{
+			return currentNode.Name;
+		}
+	}
 
 	// Get the name that that is used to look up and resolve names.
 	public override XmlNameTable NameTable
-			{
-				get
-				{
-					return doc.NameTable;
-				}
-			}
+	{
+		get
+		{
+			return doc.NameTable;
+		}
+	}
 
 	// Get the namespace URI associated with the current node.
 	public override String NamespaceURI
-			{
-				get
-				{
-					return currentNode.NamespaceURI;
-				}
-			}
+	{
+		get
+		{
+			return currentNode.NamespaceURI;
+		}
+	}
 
 	// Get the type of the current node.
 	public override XmlNodeType NodeType
+	{
+		get
+		{
+			if(!this.InReadState)
 			{
-				get
-				{
-					return currentNode.NodeType;
-				}
+				return XmlNodeType.None;
 			}
+			if(this.inAttrValue)
+			{
+				Debug.Assert(this.currentNode.NodeType 
+								== XmlNodeType.Attribute);
+				return XmlNodeType.Text;
+			}
+			if(this.isEndElement)
+			{
+				// DOM doesn't really mark endElements
+				// we have to fake it.
+				return XmlNodeType.EndElement;
+			}
+			return currentNode.NodeType;
+		}
+	}
 
 	// Get the namespace prefix associated with the current node.
 	public override String Prefix
-			{
-				get
-				{
-					return currentNode.Prefix;
-				}
-			}
+	{
+		get
+		{
+			return currentNode.Prefix;
+		}
+	}
 
 	// Get the quote character that was used to enclose an attribute value.
 	public override char QuoteChar
-			{
-				get
-				{
-					return '"';
-				}
-			}
+	{
+		get
+		{
+			return '"';
+		}
+	}
 
 	public override ReadState ReadState
-			{
-				get
-				{
-					return readState;
-				}
-			}
+	{
+		get
+		{
+			return readState;
+		}
+	}
 
 	// Get the text value of the current node.
 	public override String Value
-			{
-				get
-				{
-					return currentNode.Value;
-				}
-			}
+	{
+		get
+		{
+			return currentNode.Value;
+		}
+	}
 
 	// Get the current xml:lang scope.
 	public override String XmlLang
+	{
+		get
+		{
+			XmlElement element = null;
+			for(XmlNode node = this.currentNode; 
+					node != null; node = node.ParentNode)
 			{
-				get
+				element = (node as XmlElement);
+				if(element != null && element.HasAttribute("xml:lang")) 
 				{
-					// TODO
-					return null;
+					return element.GetAttribute("xml:lang");
 				}
 			}
+			return String.Empty;
+		}
+	}
 
 	// Get the current xml:space scope.
 	public override XmlSpace XmlSpace
+	{
+		get
+		{
+			XmlElement element = null;
+			for(XmlNode node = this.currentNode; 
+					node != null; node = node.ParentNode)
 			{
-				get
+				element = node as XmlElement;
+				if(element != null && element.HasAttribute("xml:space"))
 				{
-					// TODO
-					return XmlSpace.None;
+					String xmlspace = element.GetAttribute("xml:space");
+					if(String.Compare(xmlspace, "preserve", true) == 0)
+					{
+						return XmlSpace.Preserve;
+					}
+					else if(String.Compare(xmlspace, "default", true) == 0)
+					{
+						return XmlSpace.Default;
+					}
 				}
 			}
+
+			return XmlSpace.None;
+		}
+	}
+		
+	// helper functions
+	// kinda obvious, isn't it ?
+	private bool InReadState
+	{
+		get
+		{
+			return (this.readState == ReadState.Interactive);
+		}
+	}
 
 }; // class XmlNodeReader
 

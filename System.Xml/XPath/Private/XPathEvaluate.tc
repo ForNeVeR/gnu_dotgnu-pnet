@@ -29,7 +29,7 @@ EvaluateInternal(RootPathExpression)
 {
 	XPathNavigator nav = iterator.Current.Clone();
 	nav.MoveToRoot();
-	return new XPathSelfIterator(nav, null);
+	return new XPathSelfIterator(nav, this.NamespaceManager);
 }
 
 EvaluateInternal(NodeTest)
@@ -91,6 +91,41 @@ EvaluateInternal(NodeTest)
 		case XPathAxis.DescendantOrSelf:
 		{
 			axis = new XPathDescendantOrSelfIterator(
+									(XPathBaseIterator)iterator);
+		}
+		break;
+
+		case XPathAxis.Following:
+		{
+			axis = new XPathFollowingIterator(
+									(XPathBaseIterator)iterator);
+		}
+		break;
+
+		case XPathAxis.FollowingSibling:
+		{
+			axis = new XPathFollowingSiblingIterator(
+									(XPathBaseIterator)iterator);
+		}
+		break;
+		
+		case XPathAxis.Preceding:
+		{
+			axis = new XPathPrecedingIterator(
+									(XPathBaseIterator)iterator);
+		}
+		break;
+		
+		case XPathAxis.PrecedingSibling:
+		{
+			axis = new XPathPrecedingSiblingIterator(
+									(XPathBaseIterator)iterator);
+		}
+		break;
+
+		case XPathAxis.Namespace:
+		{
+			axis = new XPathNamespaceIterator(
 									(XPathBaseIterator)iterator);
 		}
 		break;

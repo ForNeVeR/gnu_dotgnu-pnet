@@ -30,6 +30,8 @@ using System.Collections;
 
 internal abstract class XPathExpressionBase : XPathExpression
 {
+	private XmlNamespaceManager nsManager = null;
+
 	private XPathResultType resultType = XPathResultType.Error;
 
 	public override void AddSort(Object expr, IComparer comparer){}
@@ -43,7 +45,10 @@ internal abstract class XPathExpressionBase : XPathExpression
 		return null; 
 	}
 
-	public override void SetContext(XmlNamespaceManager nsManager){}
+	public override void SetContext(XmlNamespaceManager nsManager)
+	{
+		this.nsManager = nsManager;
+	}
 
 	public override String Expression
 	{
@@ -76,6 +81,14 @@ internal abstract class XPathExpressionBase : XPathExpression
 				throw new XPathException("Error during compile", e);
 			}
 			return resultType;
+		}
+	}
+
+	protected XmlNamespaceManager NamespaceManager 
+	{
+		get
+		{
+			return this.nsManager;
 		}
 	}
 

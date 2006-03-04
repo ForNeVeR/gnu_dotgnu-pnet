@@ -1,4 +1,15 @@
 
+2006-03-04  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/Private/XmlDocumentNavigator.cs,
+	System.Xml/XPath/Private/XPathEvaluate.tc,
+	System.Xml/XPath/Private/XPathExpressionBase.cs,
+	System.Xml/XPath/Private/XPathIterators.cs,
+	System.Xml/XPath/Private/XPathTokenizer.cs,
+	System.Xml/XPath/XPathNavigator.cs: Implement
+	more iterators, fix up namespaces and partially
+	implement namespaces in document navigator.
+
 2006-02-27  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XmlNodeReader.cs: Implement most of 

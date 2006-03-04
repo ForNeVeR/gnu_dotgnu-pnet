@@ -496,8 +496,6 @@ namespace System.Xml.XPath.Private
 				{
 					String ns=sb.ToString();
 					sb = new StringBuilder();
-					
-					sb.Append(':');
 					do
 					{
 						Assert(Read() == ch);
@@ -505,12 +503,12 @@ namespace System.Xml.XPath.Private
 						ch = Peek();
 					}while(Char.IsLetter((Char)ch) || Char.IsDigit((Char)ch)
 							|| ch == '_');
-					Value = new XmlQualifiedName(ns, sb.ToString());
+					Value = new XmlQualifiedName(sb.ToString(), ns);
 					return Token.QNAME;
 				}
 				else if(ch == '*')
 				{
-					Value = new XmlQualifiedName(sb.ToString(),"*");
+					Value = new XmlQualifiedName("*", sb.ToString());
 					return Token.WILDCARDNAME;
 				}
 				else

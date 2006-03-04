@@ -32,6 +32,7 @@ using System.Xml.XPath;
 internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 {
 	private XmlNode node;
+	private XmlAttribute nsAttr = null;
 	private XmlDocument document;
 
 	public XmlDocumentNavigator(XmlNode node) : base()
@@ -43,8 +44,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 
 	public XmlDocumentNavigator(XmlDocumentNavigator copy)
 	{
-		this.node = copy.node;
-		this.document = copy.document;
+		this.MoveTo(copy);
 	}
 
 	public override XPathNavigator Clone()
@@ -72,7 +72,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	public override bool IsSamePosition(XPathNavigator other)
 	{
 		XmlDocumentNavigator nav = (other as XmlDocumentNavigator);
-		return ((nav != null) && (nav.node == node));
+		return ((nav != null) && (nav.node == node) && (nav.nsAttr == nsAttr));
 	}
 	
 	public override bool MoveTo(XPathNavigator other)
@@ -81,6 +81,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 		if(nav != null)
 		{
 			node = nav.node;
+			nsAttr = nav.nsAttr;
 			document = nav.document;
 			return true;
 		}
@@ -98,6 +99,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 					attr.NamespaceURI == namespaceURI)
 				{
 					node = attr;
+					NamespaceAttribute = null;
 					return true;
 				}
 			}
@@ -120,10 +122,14 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	{
 		if(NodeType == XPathNodeType.Element && node.Attributes != null)
 		{
-			if(node.Attributes.Count != 0)
+			foreach(XmlAttribute attr in node.Attributes)
 			{
-				node = node.Attributes[0];
-				return true;
+				if(attr.NamespaceURI != XmlDocument.xmlns)
+				{
+					node = attr;
+					NamespaceAttribute = null;
+					return true;
+				}
 			}
 		}
 		return false;
@@ -131,6 +137,11 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 
 	public override bool MoveToFirstChild()
 	{
+		if(!HasChildren)
+		{
+			return false;
+		}
+
 		XmlNode next = node.FirstChild;
 		// TODO: implement normalization
 		while(next!= null && 
@@ -151,6 +162,38 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 
 	public override bool MoveToFirstNamespace(XPathNamespaceScope namespaceScope)
 	{
+		if(NodeType != XPathNodeType.Element)
+		{
+			return false;
+		}
+
+		XmlElement element = (XmlElement)node;
+		while(element != null)
+		{
+			if(element.Attributes != null)
+			{
+				foreach(XmlAttribute attr in element.Attributes)
+				{
+					Console.WriteLine(attr.NamespaceURI);
+					if(attr.NamespaceURI == XmlDocument.xmlns)
+					{
+						NamespaceAttribute = attr;
+						return true;
+					}
+				}
+			}
+			if(namespaceScope == XPathNamespaceScope.Local)
+			{
+				return false;
+			}
+
+			element = element.ParentNode as XmlElement;
+		}
+
+		if(namespaceScope == XPathNamespaceScope.All)
+		{
+			// TODO
+		}
 		return false;
 	}
 
@@ -161,11 +204,38 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 
 	public override bool MoveToNamespace(String name)
 	{
+		if(NodeType != XPathNodeType.Element)
+		{
+			return false;
+		}
+
+		XmlElement element = (XmlElement)node;
+		while(element != null)
+		{
+			if(element.Attributes != null)
+			{
+				foreach(XmlAttribute attr in element.Attributes)
+				{
+					if(attr.NamespaceURI == XmlDocument.xmlns)
+					{
+						NamespaceAttribute = attr;
+						return true;
+					}
+				}
+			}
+			element = element.ParentNode as XmlElement;
+		}
+
 		return false;
 	}
 
 	public override bool MoveToNext()
 	{
+		if(nsAttr != null)
+		{
+			return false;
+		}
+
 		XmlNode next = node.NextSibling;
 		// TODO: implement normalization
 		while(next!= null && 
@@ -217,6 +287,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 			if(i != list.Count)
 			{
 				node = list[i];
+				NamespaceAttribute = null;
 				return true;
 			}
 		}
@@ -225,24 +296,69 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 
 	public override bool MoveToNextNamespace(XPathNamespaceScope namespaceScope)
 	{
+		if(nsAttr == null)
+		{
+			return false;
+		}
+		
+		XmlElement owner = nsAttr.OwnerElement;
+		
+		if(owner == null) 
+		{
+			return false;
+		}
+
+		for(int i = 0; i < owner.Attributes.Count; i++)
+		{
+			XmlAttribute attr = owner.Attributes[i];
+			if(attr == nsAttr)
+			{
+				for(int j = 0; j < owner.Attributes.Count; j++)
+				{
+					if(owner.Attributes[j].NamespaceURI == 
+							XmlDocument.xmlns)
+					{
+						NamespaceAttribute = owner.Attributes[j];	
+					}
+				}
+			}
+		}
+
+		if(namespaceScope == XPathNamespaceScope.Local)
+		{
+			// TODO: 
+		}
+		
+		if(namespaceScope == XPathNamespaceScope.All)
+		{
+			// TODO:
+		}
 		return false;
 	}
 	
 
 	public override bool MoveToParent()
 	{
+		if(nsAttr != null)
+		{
+			NamespaceAttribute = null;
+			return true;
+		}
+
 		if(node.NodeType == XmlNodeType.Attribute)
 		{
 			XmlElement owner = ((XmlAttribute)node).OwnerElement;
 			if(owner != null)
 			{
 				node = owner;
+				NamespaceAttribute = null;
 				return true;
 			}
 		}
 		else if (node.ParentNode != null)
 		{
 			node = node.ParentNode;
+			NamespaceAttribute = null;
 			return true;
 		}
 		return false;
@@ -250,6 +366,11 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 
 	public override bool MoveToPrevious()
 	{
+		if(nsAttr != null)
+		{
+			return true;
+		}
+
 		if(node.PreviousSibling != null)
 		{
 			node = node.PreviousSibling;
@@ -265,6 +386,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 		{
 			node = document;
 		}
+		NamespaceAttribute = null;
 		return;
 	}
 	
@@ -280,7 +402,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	{
 		get
 		{
-			if(node.Attributes != null)
+			if(nsAttr == null && node.Attributes != null)
 			{
 				return (node.Attributes.Count != 0);
 			}
@@ -292,7 +414,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	{
 		get
 		{
-			return (node.FirstChild != null);	
+			return (nsAttr == null && node.FirstChild != null);	
 		}
 	}
 
@@ -300,7 +422,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	{
 		get
 		{
-			if(node.NodeType == XmlNodeType.Element)
+			if(nsAttr == null && node.NodeType == XmlNodeType.Element)
 			{
 				return ((XmlElement)node).IsEmpty;
 			}
@@ -316,10 +438,13 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 			
 			if(nodeType == XPathNodeType.Element ||
 				nodeType == XPathNodeType.Attribute ||
-				nodeType == XPathNodeType.ProcessingInstruction ||
-				nodeType == XPathNodeType.Namespace)
+				nodeType == XPathNodeType.ProcessingInstruction)
 			{
 				return node.LocalName;
+			}
+			else if(nodeType == XPathNodeType.Namespace)
+			{
+				return nsAttr.LocalName;
 			}
 			return String.Empty;
 		}
@@ -333,10 +458,13 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 			
 			if(nodeType == XPathNodeType.Element ||
 				nodeType == XPathNodeType.Attribute ||
-				nodeType == XPathNodeType.ProcessingInstruction ||
-				nodeType == XPathNodeType.Namespace)
+				nodeType == XPathNodeType.ProcessingInstruction)
 			{
 				return node.Name;
+			}
+			else if(nodeType == XPathNodeType.Namespace)
+			{
+				return LocalName;
 			}
 			return String.Empty;
 		}
@@ -354,6 +482,10 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	{
 		get
 		{
+			if(nsAttr != null) 
+			{
+				return String.Empty;
+			}
 			return node.NamespaceURI;
 		}
 	}
@@ -362,6 +494,11 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	{
 		get
 		{
+			if(nsAttr != null)
+			{
+				return XPathNodeType.Namespace;
+			}
+
 			switch(node.NodeType)
 			{
 				case XmlNodeType.Element:
@@ -449,8 +586,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 				break;
 				case XPathNodeType.Namespace:
 				{
-					// TODO ?
-					return String.Empty;
+					return nsAttr.Value; 
 				}
 				break;
 			}
@@ -475,13 +611,30 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	{
 		get
 		{
+			if(this.nsAttr != null) 
+			{
+				return this.nsAttr;
+			}
 			return this.node;
+		}
+	}
+
+	internal XmlAttribute NamespaceAttribute 
+	{
+		get
+		{
+			return this.nsAttr;
+		}
+		set
+		{
+			/* TODO: keep track of all available ns values */
+			this.nsAttr = value;
 		}
 	}
 
 	XmlNode IHasXmlNode.GetNode()
 	{
-		return this.node;
+		return CurrentNode;
 	}
 }
 

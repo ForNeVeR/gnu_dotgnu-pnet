@@ -30,12 +30,17 @@ namespace System.Xml.XPath.Private
 	internal abstract class XPathBaseIterator : XPathNodeIterator
 	{
 		private int count = -1;
+		/* reference hell :) */
+		private XmlNamespaceManager nsManager;
+
 		public XPathBaseIterator (XPathBaseIterator parent)
 		{
+			this.nsManager = parent.nsManager;
 		}
 		
 		public XPathBaseIterator (XmlNamespaceManager nsmanager)
 		{
+			this.nsManager = nsManager;
 		}
 
 		public override int Count
@@ -57,6 +62,13 @@ namespace System.Xml.XPath.Private
 			}
 		}
 
+		public XmlNamespaceManager NamespaceManager
+		{
+			get
+			{
+				return this.nsManager;
+			}
+		}
 	}
 
 	internal abstract class XPathSimpleIterator : XPathBaseIterator
@@ -460,6 +472,257 @@ namespace System.Xml.XPath.Private
 		}
 	}
 
+	internal class XPathPrecedingIterator : XPathSimpleIterator
+	{
+		private bool finished = false; 
+		private XPathNavigator start = null;
+		
+		public XPathPrecedingIterator (XPathBaseIterator iterator) : base (iterator)
+		{
+			/* remember where we started from and go up the tree */
+			start = iterator.Current.Clone();
+			this.navigator.MoveToRoot();
+		}
+
+		public XPathPrecedingIterator(XPathPrecedingIterator copy) : base (copy)
+		{
+			this.finished = copy.finished;
+			this.start = copy.start;
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathPrecedingIterator(this);
+		}
+
+		public override bool MoveNext()
+		{
+			if(finished) 
+			{
+				return false;
+			}
+			
+			/* the lesson seems to be that you really
+			   mean ::preceding-sibling half the time
+			   you say ::preceding. This is expensive
+			   as hell !!! */
+			do
+			{
+				while(!navigator.MoveToFirstChild())
+				{
+					/* every sibling is traversed before any child */
+					while(!navigator.MoveToNext())
+					{
+						if(!navigator.MoveToParent())
+						{
+							/* we hit the root node */
+							finished = true;
+							return false;
+						}
+					}
+				}
+			}
+			while(navigator.IsDescendant(start));
+
+			/* start is not a descendant of current node */
+			if(navigator.ComparePosition(this.start) == XmlNodeOrder.Before)
+			{
+				pos++;
+				current = navigator.Clone();	
+				return true;
+			}
+			
+			finished = true;
+			return false;
+		}
+	}
+
+	internal class XPathPrecedingSiblingIterator : XPathSimpleIterator
+	{
+		private bool finished = false; 
+		private bool started = false;
+		private XPathNavigator start = null;
+		
+		public XPathPrecedingSiblingIterator (XPathBaseIterator iterator) 
+			: base (iterator)
+		{
+			start = iterator.Current.Clone();
+			if(start.NodeType == XPathNodeType.Attribute ||
+				start.NodeType == XPathNodeType.Namespace)
+			{
+				finished = true;
+			}
+			navigator.MoveToFirst();
+		}
+
+		public XPathPrecedingSiblingIterator(XPathPrecedingSiblingIterator copy)
+			: base (copy)
+		{
+			this.finished = copy.finished;
+			this.started = copy.started;
+			this.start = copy.start;
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathPrecedingSiblingIterator(this);
+		}
+
+		public override bool MoveNext()
+		{
+			if(finished) 
+			{
+				return false;
+			}
+
+			if((!started) || navigator.MoveToNext())
+			{
+				started = true;
+				if(navigator.ComparePosition(start) == XmlNodeOrder.Before)
+				{
+					pos++;
+					current = navigator.Clone();
+					return true;
+				}
+			}
+
+			/* the code will never again  reach this line 
+			   thanks to the first if(finished)
+			   started = true; 
+			*/
+			finished = true;
+			return false;
+		}
+	}
+
+	internal class XPathFollowingIterator : XPathSimpleIterator
+	{
+		private bool finished = false; 
+		
+		public XPathFollowingIterator (XPathBaseIterator iterator) : base (iterator)
+		{
+		}
+
+		public XPathFollowingIterator(XPathFollowingIterator copy) : base (copy)
+		{
+			this.finished = copy.finished;
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathFollowingIterator(this);
+		}
+
+		public override bool MoveNext()
+		{
+			// This is needed as at the end of the loop, the original 
+			// will be restored as the navigator value.
+			if(finished) 
+			{
+				return false;
+			}
+			bool movedToParent = false;
+
+			if(this.pos == 0)
+			{
+				if(navigator.NodeType == XPathNodeType.Attribute ||
+					navigator.NodeType == XPathNodeType.Namespace)
+				{
+					/* this is almost always true ? */
+					movedToParent = navigator.MoveToParent();
+				}
+			}
+
+			if(this.pos != 0 || movedToParent)
+			{
+				if(navigator.MoveToFirstChild())
+				{
+					pos++;
+					current = navigator.Clone();
+					return true;
+				}
+			}
+
+			do 
+			{
+				if(navigator.MoveToNext())
+				{
+					pos++;
+					current = navigator.Clone();
+					return true;
+				}
+			}
+			while(navigator.MoveToParent());
+
+			finished = true;
+			return false;
+		}
+	}
+
+	internal class XPathFollowingSiblingIterator : XPathSimpleIterator
+	{
+		public XPathFollowingSiblingIterator (XPathBaseIterator iterator) 
+			: base (iterator)
+		{
+		}
+
+		public XPathFollowingSiblingIterator(XPathFollowingSiblingIterator copy)
+			: base (copy)
+		{
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathFollowingSiblingIterator(this);
+		}
+
+		public override bool MoveNext()
+		{
+			if(navigator.NodeType == XPathNodeType.Attribute ||
+				navigator.NodeType == XPathNodeType.Namespace)
+			{
+				/* nodemaps not siblings */
+				return false;
+			}
+			if(navigator.MoveToNext())
+			{
+				pos++;
+				current = navigator.Clone();
+				return true;
+			}
+			return false;
+		}
+	}
+	
+	internal class XPathNamespaceIterator : XPathSimpleIterator
+	{
+		public XPathNamespaceIterator (XPathBaseIterator iterator) 
+			: base (iterator)
+		{
+		}
+
+		public XPathNamespaceIterator(XPathNamespaceIterator copy)
+			: base (copy)
+		{
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathNamespaceIterator(this);
+		}
+
+		public override bool MoveNext()
+		{
+			if((pos == 0 && navigator.MoveToFirstNamespace()) ||
+				navigator.MoveToNextNamespace())
+			{
+				pos++;
+				current = navigator.Clone();
+				return true;
+			}
+			return false;
+		}
+	}
 
 	internal class XPathAxisIterator : XPathBaseIterator
 	{
@@ -467,7 +730,8 @@ namespace System.Xml.XPath.Private
 		protected NodeTest test;
 		protected int pos;
 
-		public XPathAxisIterator(XPathSimpleIterator iterator, NodeTest test)
+		public XPathAxisIterator(XPathSimpleIterator iterator, 
+									NodeTest test)
 			: base(iterator)
 		{
 			this.iterator = iterator;
@@ -491,11 +755,16 @@ namespace System.Xml.XPath.Private
 		{
 			String name = null; 
 			String ns = null;
+			String nsURI = null;
 			
 			if(test.name != null)
 			{
 				name = test.name.Name;
 				ns = test.name.Namespace;
+				if(ns != null && this.NamespaceManager != null)
+				{
+					nsURI = this.NamespaceManager.LookupNamespace(ns);
+				}
 			}
 			while(iterator.MoveNext())
 			{
@@ -504,8 +773,7 @@ namespace System.Xml.XPath.Private
 				{
 					continue;
 				}
-				// TODO: namespace lookups using namespace manager
-				if(ns != null && Current.NamespaceURI != ns)
+				if(nsURI != null && Current.NamespaceURI != nsURI)
 				{
 					continue;
 				}

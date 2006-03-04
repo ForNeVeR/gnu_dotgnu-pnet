@@ -120,10 +120,9 @@ abstract class XPathNavigator : ICloneable
 
 	public abstract bool MoveToFirstChild();
 
-	[TODO]
 	public bool MoveToFirstNamespace()
 			{
-				 throw new NotImplementedException("MoveToFirstNamespace");
+				return MoveToFirstNamespace(XPathNamespaceScope.All);
 			}
 
 	public abstract bool MoveToFirstNamespace(
@@ -137,10 +136,9 @@ abstract class XPathNavigator : ICloneable
 
 	public abstract bool MoveToNextAttribute();
 
-	[TODO]
 	public bool MoveToNextNamespace()
 			{
-				 throw new NotImplementedException("MoveToNextNamespace");
+				return MoveToFirstNamespace(XPathNamespaceScope.All);
 			}
 
 	public abstract bool MoveToNextNamespace(XPathNamespaceScope namespaceScope);

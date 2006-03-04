@@ -96,15 +96,13 @@ static ILJitValue _ILJitGetValFromRef(ILJITCoder *jitCoder, ILJitValue refValue,
 									  ILClass *classInfo)
 {
 	jit_label_t label1 = jit_label_undefined;
-	jit_nuint typeOffset = jit_type_get_offset(_ILJitTypedRef, 0);
-	jit_nuint valueOffset = jit_type_get_offset(_ILJitTypedRef, 1);
 	ILJitValue info = jit_value_create_nint_constant(jitCoder->jitFunction,
 				    								 _IL_JIT_TYPE_VPTR,
 								    				 (jit_nint)classInfo);
 	ILJitValue ptr = jit_insn_address_of(jitCoder->jitFunction, refValue);;
 	ILJitValue type = jit_insn_load_relative(jitCoder->jitFunction,
 											 ptr,
-											 typeOffset,
+											 offsetof(ILTypedRef, type),
 											 _IL_JIT_TYPE_VPTR);
 	ILJitValue temp;
 	ILJitValue valuePtr;
@@ -114,7 +112,8 @@ static ILJitValue _ILJitGetValFromRef(ILJITCoder *jitCoder, ILJitValue refValue,
 	/* TODO: Throw System.InvalidCastException */
 
 	jit_insn_label(jitCoder->jitFunction, &label1);
-	valuePtr = jit_insn_load_relative(jitCoder->jitFunction, ptr, valueOffset,
+	valuePtr = jit_insn_load_relative(jitCoder->jitFunction, ptr,
+									  offsetof(ILTypedRef, value),
 									  _IL_JIT_TYPE_VPTR);
 	return valuePtr;
 }
@@ -675,8 +674,6 @@ static void JITCoder_Unbox(ILCoder *coder, ILClass *boxClass)
 static void JITCoder_MakeTypedRef(ILCoder *coder, ILClass *classInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	jit_nuint typeOffset = jit_type_get_offset(_ILJitTypedRef, 0);
-	jit_nuint valueOffset = jit_type_get_offset(_ILJitTypedRef, 1);
 	/* Create the structure */
 	ILJitValue value = jit_value_create(jitCoder->jitFunction, _ILJitTypedRef);
 	ILJitValue ptr = jit_insn_address_of(jitCoder->jitFunction, value);
@@ -685,9 +682,11 @@ static void JITCoder_MakeTypedRef(ILCoder *coder, ILClass *classInfo)
 														  _IL_JIT_TYPE_VPTR,
 														  (jit_nint)classInfo);
 	
-	jit_insn_store_relative(jitCoder->jitFunction, ptr, typeOffset, typeConst);
+	jit_insn_store_relative(jitCoder->jitFunction, ptr,
+							offsetof(ILTypedRef, type), typeConst);
 				
-	jit_insn_store_relative(jitCoder->jitFunction, ptr, valueOffset,
+	jit_insn_store_relative(jitCoder->jitFunction, ptr,
+							offsetof(ILTypedRef, value),
 							jitCoder->jitStack[jitCoder->stackTop - 1]);
 
 	jitCoder->jitStack[jitCoder->stackTop - 1] = value;
@@ -708,12 +707,11 @@ static void JITCoder_RefAnyType(ILCoder *coder)
 	ILJitValue ptr =
 				jit_insn_address_of(jitCoder->jitFunction,
 									jitCoder->jitStack[jitCoder->stackTop - 1]);
-	jit_nuint typeOffset = jit_type_get_offset(_ILJitTypedRef, 0);
 	jitCoder->jitStack[jitCoder->stackTop - 1] =
-								jit_insn_load_relative(jitCoder->jitFunction,
-													   ptr,
-													   typeOffset,
-													   _IL_JIT_TYPE_VPTR);
+							jit_insn_load_relative(jitCoder->jitFunction,
+												   ptr,
+												   offsetof(ILTypedRef, type),
+												   _IL_JIT_TYPE_VPTR);
 }
 
 static void JITCoder_PushToken(ILCoder *coder, ILProgramItem *item)

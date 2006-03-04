@@ -48,6 +48,9 @@
 extern	"C" {
 #endif
 
+#ifdef IL_USE_JIT
+#define ArgWalker void *
+#else
 /*
  * Support for walking the argument stack in methods that
  * require a variable number of arguments.  This is CVM
@@ -82,6 +85,7 @@ typedef struct
 			((args)->posn)
 #define	ArgWalkerAdvance(args,nwords) \
 			((args)->posn += (nwords))
+#endif
 
 /*
  * Allocation constructor for single-dimensional arrays.
@@ -252,21 +256,38 @@ static System_MArray *ConstructMArrayData(ILExecThread *thread,
  */
 static void *GetElemAddress(ILExecThread *thread,
 							System_MArray *_this,
+#ifdef IL_USE_JIT
+							void *args)
+#else
 							ArgWalker *args)
+#endif
 {
 	ILInt32 offset;
 	ILInt32 dim;
 	ILInt32 index;
+#ifdef IL_USE_JIT
+	VA_LIST va;
+	
+	/* Copy the incoming "va_list" value */
+	ILMemCpy(&va, args, sizeof(VA_LIST));
+#endif
 
 	/* Find the offset of the element */
 	offset = 0;
 	for(dim = 0; dim < _this->rank; ++dim)
 	{
+	#ifdef IL_USE_JIT
+		index = VA_ARG(va, ILVaInt) - _this->bounds[dim].lower;
+	#else
 		index = ArgWalkerGetInt(args) - _this->bounds[dim].lower;
+	#endif
 		if(((ILUInt32)index) >= ((ILUInt32)(_this->bounds[dim].size)))
 		{
 			ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
 									"Arg_InvalidArrayIndex");
+		#ifdef IL_USE_JIT
+			VA_END;
+		#endif
 			return 0;
 		}
 		offset += index * _this->bounds[dim].multiplier;
@@ -316,18 +337,32 @@ static void *Get2ElemAddress(ILExecThread *thread,
  * the type of value.
  */
 static void SetElement(ILExecThread *thread, System_MArray *_this,
+#ifdef IL_USE_JIT
+					   int valueType, void *args)
+#else
 					   int valueType, ArgWalker *args)
+#endif
 {
 	ILInt32 offset;
 	ILInt32 dim;
 	ILInt32 index;
 	void *address;
+#ifdef IL_USE_JIT
+	VA_LIST va;
+	
+	/* Copy the incoming "va_list" value */
+	ILMemCpy(&va, args, sizeof(VA_LIST));
+#endif
 
 	/* Find the offset of the element */
 	offset = 0;
 	for(dim = 0; dim < _this->rank; ++dim)
 	{
+	#ifdef IL_USE_JIT
+		index = VA_ARG(va, ILVaInt) - _this->bounds[dim].lower;
+	#else
 		index = ArgWalkerGetInt(args) - _this->bounds[dim].lower;
+	#endif
 		if(((ILUInt32)index) >= ((ILUInt32)(_this->bounds[dim].size)))
 		{
 			ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
@@ -348,59 +383,100 @@ static void SetElement(ILExecThread *thread, System_MArray *_this,
 	{
 		case IL_META_ELEMTYPE_I1:
 		{
+		#ifdef IL_USE_JIT
+			*((ILInt8 *)address) = VA_ARG(va, ILVaInt);
+		#else
 			*((ILInt8 *)address) = ArgWalkerGetShortInt(args, ILInt8);
+		#endif
 		}
 		break;
 
 		case IL_META_ELEMTYPE_I2:
 		{
+		#ifdef IL_USE_JIT
+			*((ILInt16 *)address) = VA_ARG(va, ILVaInt);
+		#else
 			*((ILInt16 *)address) = ArgWalkerGetShortInt(args, ILInt16);
+		#endif
 		}
 		break;
 
 		case IL_META_ELEMTYPE_I4:
 		{
+		#ifdef IL_USE_JIT
+			*((ILInt32 *)address) = VA_ARG(va, ILVaInt);
+		#else
 			*((ILInt32 *)address) = ArgWalkerGetInt(args);
+		#endif
 		}
 		break;
 
 		case IL_META_ELEMTYPE_I8:
 		{
+		#ifdef IL_USE_JIT
+			ILInt64 longValue = VA_ARG(va, ILInt64);
+			ILMemCpy(address, &longValue, sizeof(ILInt64));
+		#else
 			ILMemCpy(address, ArgWalkerGetAddr(args), sizeof(ILInt64));
 			ArgWalkerAdvance(args, CVM_WORDS_PER_LONG);
+		#endif
 		}
 		break;
 
 		case IL_META_ELEMTYPE_R4:
 		{
+		#ifdef IL_USE_JIT
+			ILFloat floatValue = VA_ARG(va, ILDouble);
+			ILMemCpy(address, &floatValue, sizeof(ILFloat));
+		#else
 			ILMemCpy(address, ArgWalkerGetAddr(args), sizeof(ILFloat));
 			ArgWalkerAdvance(args, CVM_WORDS_PER_NATIVE_FLOAT);
+		#endif
 		}
 		break;
 
 		case IL_META_ELEMTYPE_R8:
 		{
+		#ifdef IL_USE_JIT
+			ILDouble floatValue = VA_ARG(va, ILVaDouble);
+			ILMemCpy(address, &floatValue, sizeof(ILDouble));
+		#else
 			ILMemCpy(address, ArgWalkerGetAddr(args), sizeof(ILDouble));
 			ArgWalkerAdvance(args, CVM_WORDS_PER_NATIVE_FLOAT);
+		#endif
 		}
 		break;
 
 		case IL_META_ELEMTYPE_R:
 		{
+		#ifdef IL_USE_JIT
+			ILNativeFloat floatValue = VA_ARG(va, ILNativeFloat);
+			ILMemCpy(address, &floatValue, sizeof(ILNativeFloat));
+		#else
 			ILMemCpy(address, ArgWalkerGetAddr(args), sizeof(ILNativeFloat));
 			ArgWalkerAdvance(args, CVM_WORDS_PER_NATIVE_FLOAT);
+		#endif
 		}
 		break;
 
 		case IL_META_ELEMTYPE_OBJECT:
 		{
+		#ifdef IL_USE_JIT
+			*((ILObject **)address) = (ILObject *)VA_ARG(va, void *);
+		#else
 			*((ILObject **)address) = (ILObject *)ArgWalkerGetPtr(args);
+		#endif
 		}
 		break;
 
 		case IL_META_ELEMTYPE_VALUETYPE:
 		{
+		#ifdef IL_USE_JIT
+			void *ptrValue = VA_ARG(va, void *);
+			ILMemCpy(address, ptrValue, _this->elemSize);
+		#else
 			ILMemCpy(address, ArgWalkerGetAddr(args), _this->elemSize);
+		#endif
 		}
 		break;
 	}
@@ -411,12 +487,20 @@ static void SetElement(ILExecThread *thread, System_MArray *_this,
  *
  * public T[,,,](int size1, int size2, ..., int sizeN)
  */
+#ifdef IL_USE_JIT
+static System_MArray *System_MArray_ctor_1(ILExecThread *thread, ...)
+#else
 static System_MArray *System_MArray_ctor_1(ILExecThread *thread)
+#endif
 {
 	System_MArray *_this;
 	ILInt32 dim;
 	ILInt32 multiplier;
+#ifdef IL_USE_JIT
+	VA_START(thread);
+#else
 	ArgWalker args;
+#endif
 	int elemIsPrimitive;
 
 	/* Construct the header part of the array */
@@ -428,12 +512,21 @@ static System_MArray *System_MArray_ctor_1(ILExecThread *thread)
 	}
 
 	/* Fill in the array header with the size values */
+#ifndef IL_USE_JIT
 	ArgWalkerInit(&args);
+#endif
 	for(dim = 0; dim < _this->rank; ++dim)
 	{
 		_this->bounds[dim].lower = 0;
+#ifdef IL_USE_JIT
+		_this->bounds[dim].size  = VA_ARG(va, ILVaInt);
+#else
 		_this->bounds[dim].size  = ArgWalkerGetInt(&args);
+#endif
 	}
+#ifdef IL_USE_JIT
+	VA_END;
+#endif
 
 	/* Fill in the array header with the multiplier values */
 	multiplier = 1;
@@ -452,12 +545,20 @@ static System_MArray *System_MArray_ctor_1(ILExecThread *thread)
  *
  * public T[,,,](int low1, int size1, ..., int lowN, int sizeN)
  */
+#ifdef IL_USE_JIT
+static System_MArray *System_MArray_ctor_2(ILExecThread *thread, ...)
+#else
 static System_MArray *System_MArray_ctor_2(ILExecThread *thread)
+#endif
 {
 	System_MArray *_this;
 	ILInt32 dim;
 	ILInt32 multiplier;
+#ifdef IL_USE_JIT
+	VA_START(thread);
+#else
 	ArgWalker args;
+#endif
 	int elemIsPrimitive;
 
 	/* Construct the header part of the array */
@@ -465,16 +566,29 @@ static System_MArray *System_MArray_ctor_2(ILExecThread *thread)
 								  &elemIsPrimitive);
 	if(!_this)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 
 	/* Fill in the array header with the lower bound and size values */
+#ifndef IL_USE_JIT
 	ArgWalkerInit(&args);
+#endif
 	for(dim = 0; dim < _this->rank; ++dim)
 	{
+	#ifdef IL_USE_JIT
+		_this->bounds[dim].lower = VA_ARG(va, ILVaInt);
+		_this->bounds[dim].size  = VA_ARG(va, ILVaInt);
+	#else
 		_this->bounds[dim].lower = ArgWalkerGetInt(&args);
 		_this->bounds[dim].size  = ArgWalkerGetInt(&args);
+	#endif
 	}
+#ifdef IL_USE_JIT
+	VA_END;
+#endif
 
 	/* Fill in the array header with the multiplier values */
 	multiplier = 1;
@@ -494,18 +608,35 @@ static System_MArray *System_MArray_ctor_2(ILExecThread *thread)
  * public sbyte Get(int index1, ..., int indexN)
  */
 static ILInt8 System_MArray_Get_sbyte(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							          System_MArray *_this, ...)
+#else
 							          System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
+
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILInt8 *)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -537,18 +668,33 @@ static ILInt8 System_MArray_Get2_sbyte(ILExecThread *thread,
  * public byte Get(int index1, ..., int indexN)
  */
 static ILUInt8 System_MArray_Get_byte(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							          System_MArray *_this, ...)
+#else
 							          System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILUInt8 *)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -580,18 +726,33 @@ static ILUInt8 System_MArray_Get2_byte(ILExecThread *thread,
  * public short Get(int index1, ..., int indexN)
  */
 static ILInt16 System_MArray_Get_short(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							           System_MArray *_this, ...)
+#else
 							           System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILInt16 *)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -623,18 +784,33 @@ static ILInt16 System_MArray_Get2_short(ILExecThread *thread,
  * public ushort Get(int index1, ..., int indexN)
  */
 static ILUInt16 System_MArray_Get_ushort(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							             System_MArray *_this, ...)
+#else
 							             System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILUInt16 *)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -666,19 +842,34 @@ static ILUInt16 System_MArray_Get2_ushort(ILExecThread *thread,
  * public int Get(int index1, ..., int indexN)
  */
 static ILInt32 System_MArray_Get_int(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							         System_MArray *_this, ...)
+#else
 							         System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILInt32 *)address);
 	}
 	else
 	{
 		return 0;
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 	}
 }
 
@@ -709,18 +900,33 @@ static ILInt32 System_MArray_Get2_int(ILExecThread *thread,
  * public uint Get(int index1, ..., int indexN)
  */
 static ILUInt32 System_MArray_Get_uint(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							           System_MArray *_this, ...)
+#else
 							           System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILUInt32 *)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -752,18 +958,33 @@ static ILUInt32 System_MArray_Get2_uint(ILExecThread *thread,
  * public long Get(int index1, ..., int indexN)
  */
 static ILInt64 System_MArray_Get_long(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							          System_MArray *_this, ...)
+#else
 							          System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILInt64 *)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -795,18 +1016,33 @@ static ILInt64 System_MArray_Get2_long(ILExecThread *thread,
  * public ulong Get(int index1, ..., int indexN)
  */
 static ILUInt64 System_MArray_Get_ulong(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							            System_MArray *_this, ...)
+#else
 							            System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILUInt64 *)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -838,18 +1074,33 @@ static ILUInt64 System_MArray_Get2_ulong(ILExecThread *thread,
  * public float Get(int index1, ..., int indexN)
  */
 static ILFloat System_MArray_Get_float(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							           System_MArray *_this, ...)
+#else
 							           System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILFloat *)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -881,18 +1132,33 @@ static ILFloat System_MArray_Get2_float(ILExecThread *thread,
  * public double Get(int index1, ..., int indexN)
  */
 static ILDouble System_MArray_Get_double(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							             System_MArray *_this, ...)
+#else
 							             System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILDouble *)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -924,18 +1190,33 @@ static ILDouble System_MArray_Get2_double(ILExecThread *thread,
  * public native float Get(int index1, ..., int indexN)
  */
 static ILNativeFloat System_MArray_Get_nativeFloat(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							             		   System_MArray *_this, ...)
+#else
 							             		   System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILNativeFloat *)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -968,18 +1249,33 @@ static ILNativeFloat System_MArray_Get2_nativeFloat(ILExecThread *thread,
  * public Object Get(int index1, ..., int indexN)
  */
 static ILObject *System_MArray_Get_ref(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							           System_MArray *_this, ...)
+#else
 							           System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return *((ILObject **)address);
 	}
 	else
 	{
+	#ifdef IL_USE_JIT
+		VA_END;
+	#endif
 		return 0;
 	}
 }
@@ -1012,16 +1308,28 @@ static ILObject *System_MArray_Get2_ref(ILExecThread *thread,
  */
 static void System_MArray_Get_managedValue(ILExecThread *thread,
 										   void *result,
+#ifdef IL_USE_JIT
+							       		   System_MArray *_this, ...)
+#else
 							               System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	if(address)
 	{
 		ILMemCpy(result, address, _this->elemSize);
 	}
+#ifdef IL_USE_JIT
+	VA_END;
+#endif
 }
 
 /*
@@ -1056,12 +1364,22 @@ static void System_MArray_Get_managedValue(ILExecThread *thread,
  * public type & Address(int index1, ..., int indexN)
  */
 static void *System_MArray_Address(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							       System_MArray *_this, ...)
+#else
 							       System_MArray *_this)
+#endif
 {
 	void *address;
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	address = GetElemAddress(thread, _this, &va);
+	VA_END;
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	address = GetElemAddress(thread, _this, &args);
+#endif
 	return address;
 }
 
@@ -1072,11 +1390,21 @@ static void *System_MArray_Address(ILExecThread *thread,
  * public void Set(int index1, ..., int indexN, byte value)
  */
 static void System_MArray_Set_byte(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							       System_MArray *_this, ...)
+#else
 							       System_MArray *_this)
+#endif
 {
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	SetElement(thread, _this, IL_META_ELEMTYPE_I1, &va);
+	VA_END;
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_I1, &args);
+#endif
 }
 
 /*
@@ -1105,11 +1433,21 @@ static void System_MArray_Set2_byte(ILExecThread *thread,
  * public void Set(int index1, ..., int indexN, ushort value)
  */
 static void System_MArray_Set_short(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							        System_MArray *_this, ...)
+#else
 							        System_MArray *_this)
+#endif
 {
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	SetElement(thread, _this, IL_META_ELEMTYPE_I2, &va);
+	VA_END;
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_I2, &args);
+#endif
 }
 
 /*
@@ -1138,11 +1476,21 @@ static void System_MArray_Set2_short(ILExecThread *thread,
  * public void Set(int index1, ..., int indexN, uint value)
  */
 static void System_MArray_Set_int(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							      System_MArray *_this, ...)
+#else
 							      System_MArray *_this)
+#endif
 {
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	SetElement(thread, _this, IL_META_ELEMTYPE_I4, &va);
+	VA_END;
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_I4, &args);
+#endif
 }
 
 /*
@@ -1171,11 +1519,21 @@ static void System_MArray_Set2_int(ILExecThread *thread,
  * public void Set(int index1, ..., int indexN, ulong value)
  */
 static void System_MArray_Set_long(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							       System_MArray *_this, ...)
+#else
 							       System_MArray *_this)
+#endif
 {
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	SetElement(thread, _this, IL_META_ELEMTYPE_I8, &va);
+	VA_END;
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_I8, &args);
+#endif
 }
 
 /*
@@ -1203,11 +1561,21 @@ static void System_MArray_Set2_long(ILExecThread *thread,
  * public void Set(int index1, ..., int indexN, float value)
  */
 static void System_MArray_Set_float(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							        System_MArray *_this, ...)
+#else
 							        System_MArray *_this)
+#endif
 {
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	SetElement(thread, _this, IL_META_ELEMTYPE_R4, &va);
+	VA_END;
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_R4, &args);
+#endif
 }
 
 /*
@@ -1234,11 +1602,21 @@ static void System_MArray_Set2_float(ILExecThread *thread,
  * public void Set(int index1, ..., int indexN, double value)
  */
 static void System_MArray_Set_double(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							         System_MArray *_this, ...)
+#else
 							         System_MArray *_this)
+#endif
 {
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	SetElement(thread, _this, IL_META_ELEMTYPE_R8, &va);
+	VA_END;
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_R8, &args);
+#endif
 }
 
 /*
@@ -1265,11 +1643,21 @@ static void System_MArray_Set2_double(ILExecThread *thread,
  * public void Set(int index1, ..., int indexN, native float value)
  */
 static void System_MArray_Set_nativeFloat(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							              System_MArray *_this, ...)
+#else
 							              System_MArray *_this)
+#endif
 {
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	SetElement(thread, _this, IL_META_ELEMTYPE_R, &va);
+	VA_END;
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_R, &args);
+#endif
 }
 
 /*
@@ -1296,11 +1684,21 @@ static void System_MArray_Set2_nativeFloat(ILExecThread *thread,
  * public void Set(int index1, ..., int indexN, Object value)
  */
 static void System_MArray_Set_ref(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							      System_MArray *_this, ...)
+#else
 							      System_MArray *_this)
+#endif
 {
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	SetElement(thread, _this, IL_META_ELEMTYPE_OBJECT, &va);
+	VA_END;
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_OBJECT, &args);
+#endif
 }
 
 /*
@@ -1327,11 +1725,21 @@ static void System_MArray_Set2_ref(ILExecThread *thread,
  * public void Set(int index1, ..., int indexN, type value)
  */
 static void System_MArray_Set_managedValue(ILExecThread *thread,
+#ifdef IL_USE_JIT
+							               System_MArray *_this, ...)
+#else
 							               System_MArray *_this)
+#endif
 {
+#ifdef IL_USE_JIT
+	VA_START(_this);
+	SetElement(thread, _this, IL_META_ELEMTYPE_VALUETYPE, &va);
+	VA_END;
+#else
 	ArgWalker args;
 	ArgWalkerInitThis(&args);
 	SetElement(thread, _this, IL_META_ELEMTYPE_VALUETYPE, &args);
+#endif
 }
 
 /*

@@ -1065,8 +1065,13 @@ restart:
 			VALIDATE_TARGET_STACK(offset);
 
 			/* Notify the coder of a label at this position */
+		#ifdef IL_USE_JIT
+			ILCoderStackRefresh(coder, stack, stackSize);
+			ILCoderLabel(coder, offset);
+		#else
 			ILCoderLabel(coder, offset);
 			ILCoderStackRefresh(coder, stack, stackSize);
+		#endif
 		}
 		else if(lastWasJump)
 		{

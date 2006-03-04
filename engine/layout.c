@@ -214,7 +214,7 @@ static int LayoutType(ILExecProcess *process, ILType *type, LayoutInfo *layout)
 	{
 		/* Everything else is laid out as a pointer */
 	#ifdef IL_USE_JIT
-		if(!(layout->jitTypes = ILJitPrimitiveClrTypeToJitTypes(IL_META_ELEMTYPE_TYPEDBYREF)))
+		if(!(layout->jitTypes = ILJitPrimitiveClrTypeToJitTypes(IL_META_ELEMTYPE_PTR)))
 		{
 			return 0;
 		}

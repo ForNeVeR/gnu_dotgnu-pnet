@@ -1,3 +1,21 @@
+2006-03-04  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c, engine/jitc_obj.c: Fix the TypedRef so that the layout of
+	the ILTypedRefstructure is used. Fix jit type resolution of
+	IL_META_ELEMTYPE_TYPEDREF.
+
+	* engine/jitc_call.c: Fix the constructor call for multidimensional arrays.
+
+	* engine/layout.c: Use IL_META_ELEMTYPE_PTR instead of
+	IL_META_ELEMTYPE_TYPEDREF for pointer/reference types (what was obviously a
+	bug).
+
+	* engine/lib_array.c: use varargs for multidimensional arrays when the jit
+	is used.
+
+	* engine/verify.c: Do the stackrefresh before the label is inserted when the
+	jit is used.
+
 2006-02-27  Aleksey Demakov  <ademakov@gmail.com>
 
 	* engine/jitc_conv.c (JITCoder_Conv): fix a typo.

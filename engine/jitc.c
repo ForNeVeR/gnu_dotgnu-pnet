@@ -90,6 +90,7 @@ static struct _tagILJitTypes _ILJitType_U2;
 static struct _tagILJitTypes _ILJitType_U4;
 static struct _tagILJitTypes _ILJitType_U8;
 static struct _tagILJitTypes _ILJitType_VPTR;
+static struct _tagILJitTypes _ILJitType_TYPEDREF;
 
 /*
  * Jit type for typed references.
@@ -1065,7 +1066,6 @@ int ILJitInit()
 {
 	ILJitType	returnType;
 	ILJitType	args[3];
-	ILJitType	fields[2];
 
 	/* Initialize libjit */
 	jit_init();
@@ -1103,12 +1103,14 @@ int ILJitInit()
 
 
 	// Initialize the TypedRef type in its jit representation.	
-	fields[0] = _IL_JIT_TYPE_VPTR;
-	fields[1] = _IL_JIT_TYPE_VPTR;
-	if(!(_ILJitTypedRef = jit_type_create_struct(fields, 2, 1)))
+	if(!(_ILJitTypedRef = jit_type_create_struct(0, 0, 0)))
 	{
 		return 0;
 	}
+	jit_type_set_size_and_alignment(_ILJitTypedRef,
+									sizeof(ILTypedRef),
+									_IL_ALIGN_FOR_TYPE(void_p));
+	_ILJitTypesInitBase(&_ILJitType_TYPEDREF, _ILJitTypedRef);
 
 	/* Initialize the native method signatures. */
 	args[0] = _IL_JIT_TYPE_VPTR;
@@ -1670,7 +1672,7 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder, ILMethod *method
 		else
 		{
 			ILType *ownerType = ILType_FromClass(info);
-			ILType *synType = type = ILClassGetSynType(info);
+			ILType *synType = ILClassGetSynType(info);
 
 			if(!(synType && ILType_IsArray(synType)) && !ILTypeIsStringClass(ownerType))
 			{
@@ -2090,6 +2092,16 @@ ILJitTypes *ILJitPrimitiveClrTypeToJitTypes(int primitiveClrType)
 			return &_ILJitType_NFLOAT;
 		}
 		case IL_META_ELEMTYPE_TYPEDBYREF:
+		{
+			return &_ILJitType_TYPEDREF;
+		}
+		case IL_META_ELEMTYPE_PTR:
+		case IL_META_ELEMTYPE_STRING:
+		case IL_META_ELEMTYPE_BYREF:
+		case IL_META_ELEMTYPE_ARRAY:
+		case IL_META_ELEMTYPE_FNPTR:
+		case IL_META_ELEMTYPE_OBJECT:
+		case IL_META_ELEMTYPE_SZARRAY:
 		{
 			return &_ILJitType_VPTR;
 		}

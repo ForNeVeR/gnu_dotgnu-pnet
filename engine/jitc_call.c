@@ -293,6 +293,9 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 					   		  ILMethod *methodInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILClass *classInfo;
+	ILType *type;
+	ILType *synType;
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(methodInfo);
 	int argCount = info->numBaseArgs + info->numVarArgs;
 	ILJitValue jitParams[argCount + 2];
@@ -338,13 +341,17 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	methodName = _ILJitFunctionGetMethodName(jitFunction);
 #endif
 #endif
+	classInfo = ILMethod_Owner(methodInfo);
+	type = ILType_FromClass(classInfo);
+	synType = ILClassGetSynType(classInfo);
+
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 1);
 
 	/* Output a call to the constructor */
 	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0); // we add the current function thread as the first param
 		
-	if(_ILJitIsStringClass(ILMethod_Owner(methodInfo)))
+	if((synType && ILType_IsArray(synType)) || ILTypeIsStringClass(type))
 	{
 		_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
 		// call the constructor with jitParams as input

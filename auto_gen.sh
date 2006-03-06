@@ -27,13 +27,25 @@ AUTOMAKE_VERSION=`automake --version`
 case "$AUTOMAKE_VERSION" in
 	automake*1.7*) AUTOMAKE_BIN="automake"; ACLOCAL_BIN="aclocal" ;;
 	automake*1.8*) AUTOMAKE_BIN="automake"; ACLOCAL_BIN="aclocal" ;;
+	automake*1.9*) AUTOMAKE_BIN="automake"; ACLOCAL_BIN="aclocal" ;;
+	automake*2.0*) AUTOMAKE_BIN="automake"; ACLOCAL_BIN="aclocal" ;;
 	*)
 		AUTOMAKE_BIN=`which automake-1.7`
 		if test "x$AUTOMAKE_BIN" = "x"; then
 			AUTOMAKE_BIN=`which automake-1.8`
 			if test "x$AUTOMAKE_BIN" = "x"; then
-				echo "error: unable to find a suitable version automake."
-				exit 1
+				AUTOMAKE_BIN=`which automake-1.9`
+				if test "x$AUTOMAKE_BIN" = "x"; then
+					AUTOMAKE_BIN=`which automake-2.0`
+					if test "x$AUTOMAKE_BIN" = "x"; then
+						echo "error: unable to find a suitable version automake."
+						exit 1
+					else
+						ACLOCAL_BIN=`which aclocal-2.0`
+					fi
+				else
+					ACLOCAL_BIN=`which aclocal-1.9`
+				fi
 			else
 				ACLOCAL_BIN=`which aclocal-1.8`
 			fi

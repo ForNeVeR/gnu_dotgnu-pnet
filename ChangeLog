@@ -1,5 +1,7 @@
 2006-03-06  Richard Baumann  <biochem333@nyc.rr.com>
 
+	* auto_gen.sh: add support for newer versions of automake
+
 	* src/CBrush.c: fix memory leak in brush destruction
 
 	* src/CPThreadMutex.c: fix memory leak in mutex destruction

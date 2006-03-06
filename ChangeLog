@@ -1,3 +1,6 @@
+2006-02-22  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/TextBoxBase.cs: Fixed changing selected text, setting caret pos and notify text changes
 
 2006-03-04  Gopal V  <gopalv82@yahoo.com>
 

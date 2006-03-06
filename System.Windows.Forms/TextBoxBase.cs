@@ -249,6 +249,10 @@ public abstract class TextBoxBase : Control
 				{
 					SetSelectionText(value);
 					ClearUndo();
+					SelectInternal(SelectionStart + value.Length, 0);
+					CaretSetPosition(SelectionStart);
+					ScrollToCaretInternal();
+					OnTextChanged(EventArgs.Empty);
 				}
 			}
 

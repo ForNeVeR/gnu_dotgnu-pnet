@@ -43,6 +43,8 @@ class XmlDocument : XmlNode
 	internal XmlDocumentFragment placeholder;
 	internal XmlImplementation implementation;
 	internal static readonly String xmlns = "http://www.w3.org/2000/xmlns/";
+	/* is it me or did they a miss a trailing '/' here ? */
+	internal static readonly String xmlnsXml = "http://www.w3.org/XML/1998/namespace";
 
 	// Constructors.
 	public XmlDocument() : base(null)

@@ -502,8 +502,6 @@ public class XmlNodeReader : XmlReader
 
 		bool eof = false;
 
-		Console.WriteLine(this.currentNode.Name);
-
 		if (IsEmptyElement || this.isEndElement)
 		{
 			this.isEndElement = false;
@@ -670,6 +668,10 @@ public class XmlNodeReader : XmlReader
 			{
 				case XmlNodeType.Element:
 				{
+					if(this.isEndElement)
+					{
+						return 0;
+					}
 					return ((XmlElement)this.currentNode).Attributes.Count;
 				}
 				break;

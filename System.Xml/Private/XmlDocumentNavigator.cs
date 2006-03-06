@@ -35,11 +35,17 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	private XmlAttribute nsAttr = null;
 	private XmlDocument document;
 
+	/* xml:xmlns="http://www.w3.org/XML/1998/namespace" */
+	private XmlAttribute xmlAttr = null;
+
 	public XmlDocumentNavigator(XmlNode node) : base()
 	{
 		this.node = node;
 		this.document = (node is XmlDocument) ? 
 							(XmlDocument)node : node.OwnerDocument;
+		this.xmlAttr = document.CreateAttribute("xmlns", "xml", 
+												XmlDocument.xmlns);
+		this.xmlAttr.Value = XmlDocument.xmlnsXml;
 	}
 
 	public XmlDocumentNavigator(XmlDocumentNavigator copy)
@@ -83,6 +89,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 			node = nav.node;
 			nsAttr = nav.nsAttr;
 			document = nav.document;
+			xmlAttr = nav.xmlAttr;
 			return true;
 		}
 		return false;
@@ -160,7 +167,8 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 		return false;
 	}
 
-	public override bool MoveToFirstNamespace(XPathNamespaceScope namespaceScope)
+	public override bool MoveToFirstNamespace(
+								XPathNamespaceScope namespaceScope)
 	{
 		if(NodeType != XPathNodeType.Element)
 		{
@@ -174,8 +182,9 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 			{
 				foreach(XmlAttribute attr in element.Attributes)
 				{
-					Console.WriteLine(attr.NamespaceURI);
-					if(attr.NamespaceURI == XmlDocument.xmlns)
+					/* TODO: checks for duplicates, not cheat */
+					if(attr.NamespaceURI == XmlDocument.xmlns 
+						&& (attr.Name != "xmlns"))
 					{
 						NamespaceAttribute = attr;
 						return true;
@@ -192,7 +201,12 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 
 		if(namespaceScope == XPathNamespaceScope.All)
 		{
-			// TODO
+			/* TODO: implement better duplicate checking */
+			if(((Object)nsAttr) != ((Object)this.xmlAttr)) 
+			{
+				NamespaceAttribute = xmlAttr;
+				return true;
+			}
 		}
 		return false;
 	}
@@ -204,6 +218,14 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 
 	public override bool MoveToNamespace(String name)
 	{
+		if(name == "xml")
+		{
+			/* seems to be that xml namespaces are valid
+			   wherever you are ? */
+			NamespaceAttribute = xmlAttr;
+			return true;
+		}
+		
 		if(NodeType != XPathNodeType.Element)
 		{
 			return false;
@@ -216,7 +238,9 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 			{
 				foreach(XmlAttribute attr in element.Attributes)
 				{
-					if(attr.NamespaceURI == XmlDocument.xmlns)
+					/* TODO: checks for duplicates, not cheat */
+					if(attr.NamespaceURI == XmlDocument.xmlns
+						&& (attr.Name != "xmlns"))
 					{
 						NamespaceAttribute = attr;
 						return true;
@@ -294,6 +318,30 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 		return false;
 	}
 
+	private XmlAttribute GetNextNamespace(XmlElement owner, 
+											XmlAttribute current)
+	{
+		for(int i = 0; i < owner.Attributes.Count; i++)
+		{
+			XmlAttribute attr = owner.Attributes[i];
+			if(((Object)attr) == ((Object)current) || current == null)
+			{
+				for(int j = i+1; j < owner.Attributes.Count; j++)
+				{
+					attr = owner.Attributes[j];
+					/* TODO: checks for duplicates, not cheat */
+					if(attr.NamespaceURI == XmlDocument.xmlns 
+						&& (attr.Name != "xmlns"))
+					{
+						return attr;	
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
 	public override bool MoveToNextNamespace(XPathNamespaceScope namespaceScope)
 	{
 		if(nsAttr == null)
@@ -303,35 +351,51 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 		
 		XmlElement owner = nsAttr.OwnerElement;
 		
-		if(owner == null) 
+		if(owner == null || ((Object)nsAttr) == ((Object)this.xmlAttr)) 
 		{
+			/* technically, I don't think we need the extra condition
+			   because xmlAttr won't be attached to an element, but
+			   it's there because it makes it clear :) */
 			return false;
 		}
 
-		for(int i = 0; i < owner.Attributes.Count; i++)
+		XmlAttribute nextNs = GetNextNamespace(owner, nsAttr);
+
+		if(nextNs != null)
 		{
-			XmlAttribute attr = owner.Attributes[i];
-			if(attr == nsAttr)
-			{
-				for(int j = 0; j < owner.Attributes.Count; j++)
-				{
-					if(owner.Attributes[j].NamespaceURI == 
-							XmlDocument.xmlns)
-					{
-						NamespaceAttribute = owner.Attributes[j];	
-					}
-				}
-			}
+			NamespaceAttribute = nextNs;
+			return true;
 		}
 
 		if(namespaceScope == XPathNamespaceScope.Local)
 		{
-			// TODO: 
+			return false;
+		}
+		
+		for(XmlNode node = owner.ParentNode;
+				node != null; node = node.ParentNode)
+		{
+			owner = (node as XmlElement);
+			if(owner == null)
+			{
+				continue;
+			}
+			nextNs = GetNextNamespace(owner, null);
+			if(nextNs != null)
+			{
+				NamespaceAttribute = nextNs;
+				return true;
+			}
 		}
 		
 		if(namespaceScope == XPathNamespaceScope.All)
 		{
-			// TODO:
+			/* TODO: implement better duplicate checking */
+			if(((Object)nsAttr) != ((Object)this.xmlAttr)) 
+			{
+				NamespaceAttribute = xmlAttr;
+				return true;
+			}
 		}
 		return false;
 	}
@@ -341,6 +405,10 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	{
 		if(nsAttr != null)
 		{
+			/* the scary part is the MoveToNextNamespace
+			   function where you just traverse up. So
+			   there is no guarantee that parent node of
+			   nsAttr is the next node you want */
 			NamespaceAttribute = null;
 			return true;
 		}

@@ -56,11 +56,11 @@ public class XmlNamespaceManager : IEnumerable
 				xmlNsCompareQuick = nameTable.Add("xmlns");
 				namespaces = new NamespaceInfo
 					(xmlCompareQuick,
-					 nameTable.Add("http://www.w3.org/XML/1998/namespace"),
+					 nameTable.Add(XmlDocument.xmlnsXml),
 					 null);
 				namespaces = new NamespaceInfo
 					(xmlNsCompareQuick,
-					 nameTable.Add("http://www.w3.org/2000/xmlns/"),
+					 nameTable.Add(XmlDocument.xmlns),
 					 namespaces);
 
 				// Mark the position of the outermost scope level.

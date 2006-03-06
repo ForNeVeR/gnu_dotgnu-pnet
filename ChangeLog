@@ -1,6 +1,25 @@
-2006-02-22  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/TextBoxBase.cs: Fixed changing selected text, setting caret pos and notify text changes
+2006-03-04  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XmlDocument.cs,
+	System.Xml/XmlNamespaceManager.cs,
+	System.Xml/XmlTextWriter.cs,
+	System.Xml/Private/Attributes.cs: add XmlDocument.xmlnsXml
+	and use the same everywhere.
+	
+	* System.Xml/Private/XmlDocumentNavigator.cs,
+	System.Xml/XPath/XPathNavigator.cs: Fix Namespace navigation.
+
+	* System.Xml/XmlNodeReader.cs: Fix Attribute count for the
+	fake EndElement node reads.
+	
+	* System.Xml/XmlTextReader.cs: Enable namespaces when reading
+	entire documents via the fragment codepath.
+
+2006-03-06  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/TextBoxBase.cs: Fixed changing selected text,
+	setting caret pos and notify text changes.
 
 2006-03-04  Gopal V  <gopalv82@yahoo.com>
 

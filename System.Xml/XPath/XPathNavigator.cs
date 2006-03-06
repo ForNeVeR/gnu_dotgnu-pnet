@@ -138,7 +138,7 @@ abstract class XPathNavigator : ICloneable
 
 	public bool MoveToNextNamespace()
 			{
-				return MoveToFirstNamespace(XPathNamespaceScope.All);
+				return MoveToNextNamespace(XPathNamespaceScope.All);
 			}
 
 	public abstract bool MoveToNextNamespace(XPathNamespaceScope namespaceScope);

@@ -1353,7 +1353,7 @@ public class XmlTextWriter : XmlWriter
 						// Ensure the namespace is correct.
 						if(nsLen != 0 &&
 						   (nsLen != 29 ||
-						    ns != "http://www.w3.org/2000/xmlns/"))
+						    ns != XmlDocument.xmlns))
 						{
 							throw new ArgumentException(/* TODO */);
 						}
@@ -1380,7 +1380,7 @@ public class XmlTextWriter : XmlWriter
 						// Ensure the namespace is correct.
 						if(nsLen != 0 &&
 						   (nsLen != 36 ||
-						    ns != "http://www.w3.org/XML/1998/namespace"))
+						    ns != XmlDocument.xmlnsXml))
 						{
 							throw new ArgumentException(/* TODO */);
 						}
@@ -1452,7 +1452,7 @@ public class XmlTextWriter : XmlWriter
 					   (localName.Length == 5 && localName == "xmlns"))
 					{
 						// Ensure the namespace is correct.
-						if(nsLen != 29 || ns != "http://www.w3.org/2000/xmlns/")
+						if(nsLen != 29 || ns != XmlDocument.xmlns)
 						{
 							throw new ArgumentException(/* TODO */);
 						}
@@ -1464,12 +1464,12 @@ public class XmlTextWriter : XmlWriter
 						return;
 					}
 					else if(nsLen == 29 &&
-					        ns == "http://www.w3.org/2000/xmlns/")
+					        ns == XmlDocument.xmlns)
 					{
 						throw new ArgumentException(/* TODO */);
 					}
 					else if(nsLen == 36 &&
-					        ns == "http://www.w3.org/XML/1998/namespace")
+					        ns == XmlDocument.xmlnsXml)
 					{
 						throw new ArgumentException(/* TODO */);
 					}

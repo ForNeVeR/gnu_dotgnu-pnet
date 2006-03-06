@@ -234,7 +234,7 @@ public class XmlTextReader : XmlReader
 					}
 					input.Reader = sr;
 				}
-				namespaces = false;
+				namespaces = (fragType == XmlNodeType.Document);
 			}
 	public XmlTextReader(String xmlFragment, XmlNodeType fragType,
 						 XmlParserContext context)
@@ -285,7 +285,7 @@ public class XmlTextReader : XmlReader
 					}
 					input.Reader = sr.TxtReader;
 				}
-				namespaces = false;
+				namespaces = (fragType == XmlNodeType.Document);
 			}
 	public XmlTextReader(String url)
 			: this(url, new NameTable())

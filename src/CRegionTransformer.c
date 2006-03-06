@@ -27,10 +27,10 @@ extern "C" {
 
 static CStatus
 CRegionTransformer_Op(CRegionInterpreter  *_this,
-                       CRegionOp           *op,
-                       void                 *left,
-                       void                 *right,
-                       void                **data)
+                      CRegionOp           *op,
+                      void                *left,
+                      void                *right,
+                      void               **data)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -80,8 +80,8 @@ CRegionTransformer_Op(CRegionInterpreter  *_this,
 
 static CStatus
 CRegionTransformer_Data(CRegionInterpreter  *_this,
-                         CRegionNode         *node,
-                         void                **data)
+                        CRegionNode         *node,
+                        void               **data)
 {
 	/* declarations */
 	CRegionTransformer *t;
@@ -165,8 +165,8 @@ CRegionTransformer_Data(CRegionInterpreter  *_this,
 
 static CStatus
 CRegionTransformer_DataSimple(CRegionInterpreter  *_this,
-                               CRegionNode         *node,
-                               void                **data)
+                              CRegionNode         *node,
+                              void               **data)
 {
 	/* declarations */
 	CRegionTransformer *t;
@@ -284,7 +284,7 @@ static const CRegionInterpreterClass CRegionTransformer_ClassSimple =
 
 CINTERNAL void
 CRegionTransformer_Initialize(CRegionTransformer *_this,
-                               CAffineTransformF  *transform)
+                              CAffineTransformF  *transform)
 {
 	/* assertions */
 	CASSERT((_this     != 0));

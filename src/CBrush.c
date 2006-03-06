@@ -29,7 +29,7 @@ extern "C" {
 /* Initialize this brush. */
 CINTERNAL void
 CBrush_Initialize(CBrush            *_this,
-                   const CBrushClass *_class)
+                  const CBrushClass *_class)
 {
 	/* assertions */
 	CASSERT((_this  != 0));
@@ -43,7 +43,7 @@ CBrush_Initialize(CBrush            *_this,
 /* Get the type of this brush. */
 CStatus
 CBrush_GetBrushType(CBrush     *_this,
-                     CBrushType *type)
+                    CBrushType *type)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -61,7 +61,7 @@ CBrush_GetBrushType(CBrush     *_this,
 /* Clone this brush. */
 CStatus
 CBrush_Clone(CBrush  *_this,
-              CBrush **clone)
+             CBrush **clone)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -93,6 +93,9 @@ CBrush_Destroy(CBrush **_this)
 		(*_this)->pattern.image = 0;
 	}
 
+	/* dispose of the brush */
+	CFree(*_this);
+
 	/* null the this pointer */
 	*_this = 0;
 
@@ -118,7 +121,7 @@ CBrush_OnChange(CBrush *_this)
 /* Get a pattern for this brush. */
 CINTERNAL CStatus
 CBrush_GetPattern(CBrush   *_this,
-                   CPattern *pattern)
+                  CPattern *pattern)
 {
 	/* assertions */
 	CASSERT((_this   != 0));

@@ -28,9 +28,9 @@ extern "C" {
 
 static CStatus
 CFiller_Move(CPathInterpreter *_this,
-              CFloat            x,
-              CFloat            y,
-              CPathType         type)
+             CFloat            x,
+             CFloat            y,
+             CPathType         type)
 {
 	/* declarations */
 	CPolygonX *polygon;
@@ -62,9 +62,9 @@ CFiller_Move(CPathInterpreter *_this,
 
 static CStatus
 CFiller_Line(CPathInterpreter *_this,
-              CFloat            x,
-              CFloat            y,
-              CPathType         type)
+             CFloat            x,
+             CFloat            y,
+             CPathType         type)
 {
 	/* declarations */
 	CPolygonX *polygon;
@@ -91,13 +91,13 @@ CFiller_Line(CPathInterpreter *_this,
 
 static CStatus
 CFiller_Curve(CPathInterpreter *_this,
-               CFloat            x1,
-               CFloat            y1,
-               CFloat            x2,
-               CFloat            y2,
-               CFloat            x3,
-               CFloat            y3,
-               CPathType         type)
+              CFloat            x1,
+              CFloat            y1,
+              CFloat            x2,
+              CFloat            y2,
+              CFloat            x3,
+              CFloat            y3,
+              CPathType         type)
 {
 	/* declarations */
 	CPointArrayX *array;
@@ -223,10 +223,10 @@ CFiller_Close(CPathInterpreter *_this)
 
 CINTERNAL CStatus
 CFiller_ToPolygon(CFiller       *_this,
-                   CPolygonX     *polygon,
-                   const CPointF *points,
-                   const CByte   *types,
-                   CUInt32        count)
+                  CPolygonX     *polygon,
+                  const CPointF *points,
+                  const CByte   *types,
+                  CUInt32        count)
 {
 	/* declarations */
 	CPathInterpreter *interpreter;
@@ -273,11 +273,11 @@ CFiller_ToPolygon(CFiller       *_this,
 
 CINTERNAL CStatus
 CFiller_ToTrapezoids(CFiller       *_this,
-                      CTrapezoids   *trapezoids,
-                      const CPointF *points,
-                      const CByte   *types,
-                      CUInt32        count,
-                      CFillMode      fillMode)
+                     CTrapezoids   *trapezoids,
+                     const CPointF *points,
+                     const CByte   *types,
+                     CUInt32        count,
+                     CFillMode      fillMode)
 {
 	/* declarations */
 	CPathInterpreter *interpreter;

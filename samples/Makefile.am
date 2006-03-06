@@ -1,12 +1,11 @@
+## Process this file with automake to produce Makefile.in
+noinst_PROGRAMS = sampleX11
 
-noinst_PROGRAMS = sample1
+if CRAYONS_X11_ENABLED
+sampleX11_SOURCES = sampleX11.c
+endif
 
-sample1_SOURCES = sample1.c
-sample1_LDADD = $(top_builddir)/src/libCrayons.la
-sample1_DEPENDENCIES = $(top_builddir)/src/libCrayons.la
-
-AM_CFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I. -I$(srcdir) \
--I/usr/X11R6/include -L/usr/X11R6/lib -lX11
-AM_CXXFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I. -I$(srcdir) \
--I/usr/X11R6/include -L/usr/X11R6/lib -lX11
-
+sampleX11_LDFLAGS      = $(CRAYONS_LDFLAGS)
+sampleX11_LDADD        = $(top_builddir)/src/libCrayons.la
+sampleX11_DEPENDENCIES = $(top_builddir)/src/libCrayons.la
+sampleX11_CFLAGS       = $(CRAYONS_CFLAGS)

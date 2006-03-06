@@ -26,10 +26,10 @@ extern "C" {
 
 static CStatus
 CRegionCloner_Op(CRegionInterpreter  *_this,
-                  CRegionOp           *op,
-                  void                 *left,
-                  void                 *right,
-                  void                **data)
+                 CRegionOp           *op,
+                 void                *left,
+                 void                *right,
+                 void               **data)
 {
 	/* declarations */
 	CRegionOp *ro;
@@ -61,8 +61,8 @@ CRegionCloner_Op(CRegionInterpreter  *_this,
 
 static CStatus
 CRegionCloner_Data(CRegionInterpreter  *_this,
-                    CRegionNode         *node,
-                    void                **data)
+                   CRegionNode         *node,
+                   void               **data)
 {
 	/* assertions */
 	CASSERT((_this != 0));

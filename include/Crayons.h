@@ -18,80 +18,62 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _C_LIBRARY_H_
-#define _C_LIBRARY_H_
+#ifndef _CRAYONS_H_
+#define _CRAYONS_H_
 
-#include "CrayonsConfig.h"
-
-#ifdef HAVE_PIXMAN_H
-	#include <pixman.h>
-#else
-	#error "The pixman library could not be found."
-#endif
-
-#ifdef HAVE_X11_XLIB_H
-	#include <X11/Xlib.h>
-#endif
+#include "CrayonsFeatures.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*\
-|*| NOTE: The CLIBRARY_* defines/ifdefs here are a hack to get something akin
+|*| NOTE: The CRAYONS_* defines/ifdefs here are a hack to get something akin
 |*|       to C# region blocks; they serve a purely aesthetic purpose.
 \*/
 
 /******************************************************************************/
-#define CLIBRARY_BASIC_TYPES
-#ifdef CLIBRARY_BASIC_TYPES
-/* Define the 8-bit numeric types. */
-typedef signed char    CInt8;
-typedef unsigned char  CUInt8;
-typedef CInt8          CSByte;
-typedef CUInt8         CChar8;
-typedef CUInt8         CByte;
-typedef CUInt8         CBool;
+#define CRAYONS_VERSION_INFO
+#ifdef CRAYONS_VERSION_INFO
+/* Make a crayons version number from version number components. */
+#define CrayonsMakeVersion(major, minor, micro) \
+	(((major) * 10000) + \
+	 ((minor) *   100) + \
+	 ((micro) *     1))
 
-/* Define the 16-bit numeric types. */
-typedef short          CInt16;
-typedef unsigned short CUInt16;
-typedef CUInt16        CChar16;
-
-/* Define the 32-bit numeric types. */
-#if defined(_MSC_VER)
-	typedef __int32          CInt32;
-	typedef unsigned __int32 CUInt32;
-#elif defined(C_SIZEOF_INT) && (C_SIZEOF_INT == 4)
-	typedef int              CInt32;
-	typedef unsigned int     CUInt32;
-#elif defined(C_SIZEOF_LONG) && (C_SIZEOF_LONG == 4)
-	typedef long             CInt32;
-	typedef unsigned long    CUInt32;
-#else
-	#error "The 32-bit integer type for this compiler could not be determined."
+/* Define the crayons version. */
+#define CrayonsVersion \
+	(CrayonsMakeVersion \
+		(CrayonsVersionMajor, \
+		 CrayonsVersionMinor, \
+		 CrayonsVersionMicro))
 #endif
+/******************************************************************************/
+
+
+
+/******************************************************************************/
+#define CRAYONS_BASIC_TYPES
+#ifdef CRAYONS_BASIC_TYPES
+/* Define the 8-bit alias types. */
+typedef CInt8  CSByte;
+typedef CUInt8 CByte;
+
+/* Define the boolean type. */
+typedef CUInt8 CBool;
+
+/* Define the character types. */
+typedef CUInt8  CChar8;
+typedef CUInt16 CChar16;
 typedef CUInt32 CChar32;
+
+/* Define miscellaneous 32-bit numeric types. */
 typedef CUInt32 CColor;
 typedef CUInt32 CLanguageID;
 typedef CUInt32 CPropertyID;
 typedef CUInt32 CGraphicsContainer;
 
-/* Define the 64-bit numeric types. */
-#if defined(_MSC_VER)
-	typedef __int64            CInt64;
-	typedef unsigned __int64   CUInt64;
-#elif defined(C_SIZEOF_LONG) && (C_SIZEOF_LONG == 8)
-	typedef long               CInt64;
-	typedef unsigned long      CUInt64;
-#elif defined(C_SIZEOF_LONG_LONG) && (C_SIZEOF_LONG_LONG == 8)
-	typedef long long          CInt64;
-	typedef unsigned long long CUInt64;
-#else
-	#error "The 64-bit integer type for this compiler could not be determined."
-#endif
-
-/* Define the floating point types */
+/* Define the basic floating point types. */
 typedef float  CFloat;
 typedef double CDouble;
 #endif
@@ -100,8 +82,8 @@ typedef double CDouble;
 
 
 /******************************************************************************/
-#define CLIBRARY_OPAQUE_TYPES
-#ifdef CLIBRARY_OPAQUE_TYPES
+#define CRAYONS_OPAQUE_TYPES
+#ifdef CRAYONS_OPAQUE_TYPES
 /* Define opaque types. */
 typedef struct _tagCAdjustableArrowCap CAdjustableArrowCap;
 typedef struct _tagCImage              CBitmap;
@@ -133,8 +115,8 @@ typedef struct _tagCX11Surface         CX11Surface;
 
 
 /******************************************************************************/
-#define CLIBRARY_ENUMERATIONS
-#ifdef CLIBRARY_ENUMERATIONS
+#define CRAYONS_ENUMERATIONS
+#ifdef CRAYONS_ENUMERATIONS
 /* Define enumeration types. */
 typedef CUInt32 CBrushType;
 #define CBrushType_SolidFill      0
@@ -202,6 +184,12 @@ typedef CUInt32 CDashStyle;
 #define CDashStyle_DashDashDot 4
 #define CDashStyle_Custom      5
 
+typedef CUInt32 CDigitSubstitute;
+#define CDigitSubstitute_User        0
+#define CDigitSubstitute_None        1
+#define CDigitSubstitute_National    2
+#define CDigitSubstitute_Traditional 3
+
 typedef CUInt32 CFillMode;
 #define CFillMode_Alternate 0
 #define CFillMode_Winding   1
@@ -216,6 +204,11 @@ typedef CUInt32 CFontStyle;
 #define CFontStyle_Italic    2
 #define CFontStyle_Underline 4
 #define CFontStyle_Strikeout 8
+
+typedef CUInt32 CFontFamilyGeneric;
+#define CFontFamilyGeneric_Serif     0
+#define CFontFamilyGeneric_SansSerif 1
+#define CFontFamilyGeneric_Monospace 2
 
 typedef CUInt32 CGraphicsUnit;
 #define CGraphicsUnit_World      0
@@ -457,25 +450,21 @@ typedef CUInt32 CStatus;
 #define CStatus_InvalidOperation                0x00000005
 #define CStatus_NotImplemented                  0x00000006
 #define CStatus_NotSupported                    0x00000007
-#define CStatus_Error                           0x00000008
+#define CStatus_IOError                         0x00000008
 #define CStatus_Argument_FontFamilyNotFound     0x00010002
 #define CStatus_Argument_InvalidPointCount      0x00020002
 #define CStatus_Argument_NeedAtLeast2Points     0x00030002
 #define CStatus_Argument_NeedAtLeast3Points     0x00040002
 #define CStatus_Argument_NeedAtLeast4Points     0x00050002
+#define CStatus_Argument_StyleNotAvailable      0x00060002
 #define CStatus_InvalidOperation_ImageLocked    0x00010005
 #define CStatus_InvalidOperation_SingularMatrix 0x00020005
+#define CStatus_IOError_FileNotFound            0x00010008
 
 typedef CUInt32 CStringAlignment;
 #define CStringAlignment_Near   0
 #define CStringAlignment_Center 1
 #define CStringAlignment_Far    2
-
-typedef CUInt32 CDigitSubstitute;
-#define CDigitSubstitute_User        0
-#define CDigitSubstitute_None        1
-#define CDigitSubstitute_National    2
-#define CDigitSubstitute_Traditional 3
 
 typedef CUInt32 CStringFormatFlag;
 #define CStringFormatFlag_DirectionRightToLeft  0x0001
@@ -520,8 +509,8 @@ typedef CUInt32 CWrapMode;
 
 
 /******************************************************************************/
-#define CLIBRARY_TRANSPARENT_TYPES
-#ifdef CLIBRARY_TRANSPARENT_TYPES
+#define CRAYONS_TRANSPARENT_TYPES
+#ifdef CRAYONS_TRANSPARENT_TYPES
 /* Define transparent types. */
 typedef struct _tagCBitmapData CBitmapData;
 struct _tagCBitmapData
@@ -578,22 +567,13 @@ struct _tagCColorPalette
 	CColor       *colors;
 };
 
-typedef struct _tagCFontMetricsI CFontMetricsI;
-struct _tagCFontMetricsI
+typedef struct _tagCFontMetrics CFontMetrics;
+struct _tagCFontMetrics
 {
 	CInt32 cellAscent;
 	CInt32 cellDescent;
 	CInt32 lineSpacing;
 	CInt32 emHeight;
-};
-
-typedef struct _tagCFontMetricsF CFontMetricsF;
-struct _tagCFontMetricsF
-{
-	CFloat cellAscent;
-	CFloat cellDescent;
-	CFloat lineSpacing;
-	CFloat emHeight;
 };
 
 typedef struct _tagCGuid CGuid;
@@ -659,29 +639,29 @@ struct _tagCSizeF
 
 
 /******************************************************************************/
-#define CLIBRARY_CONSTANTS
-#ifdef CLIBRARY_CONSTANTS
+#define CRAYONS_CONSTANTS
+#ifdef CRAYONS_CONSTANTS
 /* Declare various constants. */
-extern const CGuid CFrameDimension_Page;
-extern const CGuid CFrameDimension_Resolution;
-extern const CGuid CFrameDimension_Time;
-extern const CGuid CImageFormat_MemoryBMP;
-extern const CGuid CImageFormat_BMP;
-extern const CGuid CImageFormat_EMF;
-extern const CGuid CImageFormat_WMF;
-extern const CGuid CImageFormat_JPG;
-extern const CGuid CImageFormat_PNG;
-extern const CGuid CImageFormat_GIF;
-extern const CGuid CImageFormat_TIFF;
-extern const CGuid CImageFormat_EXIF;
+extern _Cconst CGuid CFrameDimension_Page;
+extern _Cconst CGuid CFrameDimension_Resolution;
+extern _Cconst CGuid CFrameDimension_Time;
+extern _Cconst CGuid CImageFormat_MemoryBMP;
+extern _Cconst CGuid CImageFormat_BMP;
+extern _Cconst CGuid CImageFormat_EMF;
+extern _Cconst CGuid CImageFormat_WMF;
+extern _Cconst CGuid CImageFormat_JPG;
+extern _Cconst CGuid CImageFormat_PNG;
+extern _Cconst CGuid CImageFormat_GIF;
+extern _Cconst CGuid CImageFormat_TIFF;
+extern _Cconst CGuid CImageFormat_EXIF;
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define CLIBRARY_BITMAP_METHODS
-#ifdef CLIBRARY_BITMAP_METHODS
+#define CRAYONS_BITMAP_METHODS
+#ifdef CRAYONS_BITMAP_METHODS
 /* Declare public bitmap methods. */
 CStatus
 CBitmap_Create(CBitmap      **_this,
@@ -737,8 +717,20 @@ CBitmap_UnlockBits(CBitmap     *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_BRUSH_METHODS
-#ifdef CLIBRARY_BRUSH_METHODS
+#define CRAYONS_BITMAPSURFACE_METHODS
+#ifdef CRAYONS_BITMAPSURFACE_METHODS
+/* Declare public bitmap surface methods. */
+CStatus
+CBitmapSurface_Create(CBitmapSurface **_this,
+                      CBitmap         *image);
+#endif
+/******************************************************************************/
+
+
+
+/******************************************************************************/
+#define CRAYONS_BRUSH_METHODS
+#ifdef CRAYONS_BRUSH_METHODS
 /* Declare public brush methods. */
 CStatus
 CBrush_GetBrushType(CBrush     *_this,
@@ -754,8 +746,8 @@ CBrush_Destroy(CBrush **_this);
 
 
 /******************************************************************************/
-#define CLIBRARY_COLORPALETTE_METHODS
-#ifdef CLIBRARY_COLORPALETTE_METHODS
+#define CRAYONS_COLORPALETTE_METHODS
+#ifdef CRAYONS_COLORPALETTE_METHODS
 /* Declare public color palette methods. */
 CStatus
 CColorPalette_Create(CColorPalette **_this,
@@ -763,15 +755,123 @@ CColorPalette_Create(CColorPalette **_this,
                      CUInt32         count,
                      CPaletteFlag    flags);
 CStatus
-ColorPalette_Destroy(CColorPalette **_this);
+CColorPalette_Destroy(CColorPalette **_this);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define CLIBRARY_GRAPHICS_METHODS
-#ifdef CLIBRARY_GRAPHICS_METHODS
+#define CRAYONS_FONTCOLLECTION_METHODS
+#ifdef CRAYONS_FONTCOLLECTION_METHODS
+CStatus
+CFontCollection_CreateInstalled(CFontCollection **_this);
+CStatus
+CFontCollection_CreatePrivate(CFontCollection **_this);
+CStatus
+CFontCollection_Destroy(CFontCollection **_this);
+CStatus
+CFontCollection_AddFontFile(CFontCollection *_this,
+                            _Cconst CChar16 *filename);
+CStatus
+CFontCollection_AddFontMemory(CFontCollection *_this,
+                              _Cconst CByte   *memory,
+                              CUInt32          length);
+CStatus
+CFontCollection_GetFamilyList(CFontCollection   *_this,
+                              CFontFamily     ***families,
+                              CUInt32           *count);
+#endif
+/******************************************************************************/
+
+
+
+/******************************************************************************/
+#define CRAYONS_FONTFAMILY_METHODS
+#ifdef CRAYONS_FONTFAMILY_METHODS
+CStatus
+CFontFamily_CreateName(CFontFamily     **_this,
+                       _Cconst CChar16  *name,
+                       CFontCollection  *collection);
+CStatus
+CFontFamily_CreateGeneric(CFontFamily        **_this,
+                          CFontFamilyGeneric   generic);
+CStatus
+CFontFamily_Destroy(CFontFamily **_this);
+CStatus
+CFontFamily_GetMetrics(CFontFamily  *_this,
+                       CFontStyle    style,
+                       CFontMetrics *metrics);
+CStatus
+CFontFamily_GetName(CFontFamily  *_this,
+                    CChar16     **name);
+CStatus
+CFontFamily_IsStyleAvailable(CFontFamily *_this,
+                             CFontStyle   style,
+                             CBool       *available);
+#endif
+/******************************************************************************/
+
+
+
+/******************************************************************************/
+#define CRAYONS_FONT_METHODS
+#ifdef CRAYONS_FONT_METHODS
+CStatus
+CFont_Create(CFont         **_this,
+             CFontFamily    *family,
+             CFontStyle      style,
+             CFloat          size,
+             CGraphicsUnit   unit);
+CStatus
+CFont_Destroy(CFont **_this);
+CStatus
+CFont_Clone(CFont  *_this,
+            CFont **clone);
+CStatus
+CFont_Equals(CFont *_this,
+             CFont *other,
+             CBool *equal);
+CStatus
+CFont_GetFontFamily(CFont        *_this,
+                    CFontFamily **family);
+CStatus
+CFont_GetHashCode(CFont   *_this,
+                  CUInt32 *hash);
+CStatus
+CFont_GetHeight(CFont  *_this,
+                CFloat *height);
+CStatus
+CFont_GetHeightDPI(CFont  *_this,
+                   CFloat  dpiY,
+                   CFloat *height);
+CStatus
+CFont_GetHeightGraphics(CFont     *_this,
+                        CGraphics *graphics,
+                        CFloat    *height);
+CStatus
+CFont_GetName(CFont    *_this,
+              CChar16 **name);
+CStatus
+CFont_GetSize(CFont  *_this,
+              CFloat *size);
+CStatus
+CFont_GetSizeInPoints(CFont  *_this,
+                      CFloat *points);
+CStatus
+CFont_GetStyle(CFont      *_this,
+               CFontStyle *style);
+CStatus
+CFont_GetUnit(CFont         *_this,
+              CGraphicsUnit *unit);
+#endif
+/******************************************************************************/
+
+
+
+/******************************************************************************/
+#define CRAYONS_GRAPHICS_METHODS
+#ifdef CRAYONS_GRAPHICS_METHODS
 /* Declare public graphics methods. */
 CStatus
 CGraphics_Create(CGraphics **_this,
@@ -916,11 +1016,14 @@ CStatus
 CGraphics_SetTextRenderingHint(CGraphics          *_this,
                                CTextRenderingHint  textRenderingHint);
 CStatus
-CGraphics_DrawXBM(CGraphics   *_this,
-                  CByte       *bits,
-                  CUInt32      count,
-                  CRectangleF  dst,
-                  CColor       color);
+CGraphics_DrawXBM(CGraphics     *_this,
+                  _Cconst CByte *bits,
+                  CFloat         x,
+                  CFloat         y,
+                  CUInt16        width,
+                  CUInt16        height,
+                  CColor         color,
+                  CBool          transform);
 CStatus
 CGraphics_DrawImage(CGraphics *_this,
                     CImage    *image,
@@ -1091,32 +1194,45 @@ CStatus
 CGraphics_Save(CGraphics *_this,
                CUInt32   *state);
 CStatus
-CGraphics_DrawString(CGraphics     *_this,
-                     CBrush        *brush,
-                     CChar16       *s,
-                     CUInt32        length,
-                     CFont         *font,
-                     CRectangleF    layoutRect,
-                     CStringFormat *format);
+CGraphics_DrawString(CGraphics       *_this,
+                     CBrush          *brush,
+                     _Cconst CChar16 *s,
+                     CUInt32          length,
+                     CFont           *font,
+                     CRectangleF      layoutRect,
+                     CStringFormat   *format);
 CStatus
-CGraphics_MeasureCharacterRanges(CGraphics      *_this,
-                                 CChar16        *s,
-                                 CUInt32         length,
-                                 CFont          *font,
-                                 CRectangleF     layoutRect,
-                                 CStringFormat  *format,
-                                 CRegion       **regions,
-                                 CUInt32        *count);
+CGraphics_MeasureCharacterRanges(CGraphics        *_this,
+                                 _Cconst CChar16  *s,
+                                 CUInt32           length,
+                                 CFont            *font,
+                                 CRectangleF       layoutRect,
+                                 CStringFormat    *format,
+                                 CRegion         **regions,
+                                 CUInt32          *count);
 CStatus
-CGraphics_MeasureString(CGraphics     *_this,
-                        CChar16       *s,
-                        CUInt32        length,
-                        CFont         *font,
-                        CRectangleF    layoutRect,
-                        CStringFormat *format,
-                        CUInt32       *charactersFitted,
-                        CUInt32       *linesFilled,
-                        CSizeF        *size);
+CGraphics_MeasureString(CGraphics       *_this,
+                        _Cconst CChar16 *s,
+                        CUInt32          length,
+                        CFont           *font,
+                        CRectangleF      layoutRect,
+                        CStringFormat   *format,
+                        CUInt32         *charactersFitted,
+                        CUInt32         *linesFilled,
+                        CSizeF          *size);
+CStatus
+CGraphics_MeasureStringSimple(CGraphics       *_this,
+                              _Cconst CChar16 *s,
+                              CUInt32          length,
+                              CFont           *font,
+                              CSizeF          *size);
+CStatus
+CGraphics_DrawStringSimple(CGraphics       *_this,
+                           CBrush          *brush,
+                           _Cconst CChar16 *s,
+                           CUInt32          length,
+                           CFont           *font,
+                           CRectangleF      layoutRect);
 CStatus
 CGraphics_Flush(CGraphics       *_this,
                 CFlushIntention  intention);
@@ -1142,8 +1258,8 @@ CGraphics_TransformPoints(CGraphics        *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_HATCHBRUSH_METHODS
-#ifdef CLIBRARY_HATCHBRUSH_METHODS
+#define CRAYONS_HATCHBRUSH_METHODS
+#ifdef CRAYONS_HATCHBRUSH_METHODS
 /* Declare public hatch brush methods. */
 CStatus
 CHatchBrush_Create(CHatchBrush **_this,
@@ -1165,8 +1281,8 @@ CHatchBrush_GetHatchStyle(CHatchBrush *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_IMAGE_METHODS
-#ifdef CLIBRARY_IMAGE_METHODS
+#define CRAYONS_IMAGE_METHODS
+#ifdef CRAYONS_IMAGE_METHODS
 /* Declare public image methods. */
 CStatus
 CImage_Destroy(CImage **_this);
@@ -1210,8 +1326,8 @@ CImage_GetBounds(CImage        *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_LINEBRUSH_METHODS
-#ifdef CLIBRARY_LINEBRUSH_METHODS
+#define CRAYONS_LINEBRUSH_METHODS
+#ifdef CRAYONS_LINEBRUSH_METHODS
 /* Declare public line brush methods. */
 CStatus
 CLineBrush_Create(CLineBrush  **_this,
@@ -1296,8 +1412,8 @@ CLineBrush_TranslateTransform(CLineBrush   *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_MATRIX_METHODS
-#ifdef CLIBRARY_MATRIX_METHODS
+#define CRAYONS_MATRIX_METHODS
+#ifdef CRAYONS_MATRIX_METHODS
 /* Declare public matrix methods. */
 CStatus
 CMatrix_Create(CMatrix **_this);
@@ -1315,6 +1431,8 @@ CMatrix_CreateElements(CMatrix **_this,
                        CFloat    m22,
                        CFloat    dx,
                        CFloat    dy);
+CStatus
+CMatrix_Destroy(CMatrix **_this);
 CStatus
 CMatrix_GetDeterminant(CMatrix *_this,
                        CFloat  *determinant);
@@ -1366,8 +1484,8 @@ CMatrix_TransformVectors(CMatrix *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_PATH_METHODS
-#ifdef CLIBRARY_PATH_METHODS
+#define CRAYONS_PATH_METHODS
+#ifdef CRAYONS_PATH_METHODS
 /* Declare public path methods. */
 CStatus
 CPath_Create(CPath **_this);
@@ -1552,8 +1670,8 @@ CPath_Widen(CPath   *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_PATHBRUSH_METHODS
-#ifdef CLIBRARY_PATHBRUSH_METHODS
+#define CRAYONS_PATHBRUSH_METHODS
+#ifdef CRAYONS_PATHBRUSH_METHODS
 /* Declare public path brush methods. */
 CStatus
 CPathBrush_Create(CPathBrush **_this,
@@ -1645,8 +1763,8 @@ CPathBrush_TranslateTransform(CPathBrush   *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_PEN_METHODS
-#ifdef CLIBRARY_PEN_METHODS
+#define CRAYONS_PEN_METHODS
+#ifdef CRAYONS_PEN_METHODS
 /* Declare public pen methods. */
 CStatus
 CPen_Create(CPen   **_this,
@@ -1679,9 +1797,9 @@ CPen_GetCompoundArray(CPen     *_this,
                       CFloat  **compoundArray,
                       CUInt32  *count);
 CStatus
-CPen_SetCompoundArray(CPen         *_this,
-                      const CFloat *compoundArray,
-                      CUInt32       count);
+CPen_SetCompoundArray(CPen           *_this,
+                      _Cconst CFloat *compoundArray,
+                      CUInt32         count);
 CStatus
 CPen_GetCustomEndCap(CPen            *_this,
                      CCustomLineCap **customEndCap);
@@ -1711,9 +1829,9 @@ CPen_GetDashPattern(CPen     *_this,
                     CFloat  **dashPattern,
                     CUInt32  *count);
 CStatus
-CPen_SetDashPattern(CPen         *_this,
-                    const CFloat *dashPattern,
-                    CUInt32       count);
+CPen_SetDashPattern(CPen           *_this,
+                    _Cconst CFloat *dashPattern,
+                    CUInt32         count);
 CStatus
 CPen_GetDashStyle(CPen       *_this,
                   CDashStyle *dashStyle);
@@ -1788,8 +1906,8 @@ CPen_TranslateTransform(CPen         *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_REGION_METHODS
-#ifdef CLIBRARY_REGION_METHODS
+#define CRAYONS_REGION_METHODS
+#ifdef CRAYONS_REGION_METHODS
 /* Declare public region methods. */
 CStatus
 CRegion_Create(CRegion **_this);
@@ -1869,8 +1987,8 @@ CRegion_Translate(CRegion *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_SOLIDBRUSH_METHODS
-#ifdef CLIBRARY_SOLIDBRUSH_METHODS
+#define CRAYONS_SOLIDBRUSH_METHODS
+#ifdef CRAYONS_SOLIDBRUSH_METHODS
 /* Declare public solid brush methods. */
 CStatus
 CSolidBrush_Create(CSolidBrush **_this,
@@ -1887,8 +2005,8 @@ CSolidBrush_SetColor(CSolidBrush *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_STRINGFORMAT_METHODS
-#ifdef CLIBRARY_STRINGFORMAT_METHODS
+#define CRAYONS_STRINGFORMAT_METHODS
+#ifdef CRAYONS_STRINGFORMAT_METHODS
 /* Declare public string format methods. */
 CStatus
 CStringFormat_Create(CStringFormat      **_this,
@@ -1918,13 +2036,13 @@ CStringFormat_SetCharacterRanges(CStringFormat   *_this,
                                  CCharacterRange *characterRanges,
                                  CUInt32          count);
 CStatus
-CStringFormat_GetDigitSubstitution(CStringFormat          *_this,
+CStringFormat_GetDigitSubstitution(CStringFormat    *_this,
                                    CDigitSubstitute *method,
-                                   CLanguageID            *language);
+                                   CLanguageID      *language);
 CStatus
-CStringFormat_SetDigitSubstitution(CStringFormat          *_this,
+CStringFormat_SetDigitSubstitution(CStringFormat    *_this,
                                    CDigitSubstitute  method,
-                                   CLanguageID             language);
+                                   CLanguageID       language);
 CStatus
 CStringFormat_GetFormatFlags(CStringFormat     *_this,
                              CStringFormatFlag *formatFlags);
@@ -1965,16 +2083,13 @@ CStringFormat_SetTrimming(CStringFormat   *_this,
 
 
 /******************************************************************************/
-#define CLIBRARY_SURFACE_METHODS
-#ifdef CLIBRARY_SURFACE_METHODS
+#define CRAYONS_SURFACE_METHODS
+#ifdef CRAYONS_SURFACE_METHODS
 /* Declare public surface methods. */
 CStatus
-CSurface_Lock(CSurface *_this);
+CSurface_Reference(CSurface *_this);
 CStatus
-CSurface_Unlock(CSurface *_this);
-CStatus
-CSurface_GetBoundsF(CSurface    *_this,
-                    CRectangleF *bounds);
+CSurface_Destroy(CSurface **_this);
 CStatus
 CSurface_GetBounds(CSurface *_this,
                    CUInt32  *x,
@@ -1987,34 +2102,14 @@ CSurface_SetBounds(CSurface *_this,
                    CUInt32   y,
                    CUInt32   width,
                    CUInt32   height);
-CStatus
-CSurface_Reference(CSurface *_this);
-CStatus
-CSurface_Destroy(CSurface **_this);
-CStatus
-CSurface_Composite(CSurface           *_this,
-                   CUInt32             x,
-                   CUInt32             y,
-                   CUInt32             width,
-                   CUInt32             height,
-                   pixman_image_t     *src,
-                   pixman_image_t     *mask,
-                   CInterpolationMode  interpolationMode,
-                   CCompositingMode    compositingMode);
-CStatus
-CSurface_Clear(CSurface *_this,
-               CColor    color);
-CStatus
-CSurface_Flush(CSurface        *_this,
-               CFlushIntention  intention);
 #endif
 /******************************************************************************/
 
 
 
 /******************************************************************************/
-#define CLIBRARY_TEXTUREBRUSH_METHODS
-#ifdef CLIBRARY_TEXTUREBRUSH_METHODS
+#define CRAYONS_TEXTUREBRUSH_METHODS
+#ifdef CRAYONS_TEXTUREBRUSH_METHODS
 /* Declare public texture brush methods. */
 CStatus
 CTextureBrush_Create(CTextureBrush **_this,
@@ -2059,27 +2154,8 @@ CTextureBrush_TranslateTransform(CTextureBrush *_this,
 #endif
 /******************************************************************************/
 
-
-
-/******************************************************************************/
-#define CLIBRARY_X11SURFACE_METHODS
-#ifdef CLIBRARY_X11SURFACE_METHODS
-/* Declare public x surface methods. */
-#ifdef HAVE_X11_XLIB_H
-CStatus
-CX11Surface_Create(CX11Surface **_this,
-                   Display      *dpy,
-                   Drawable      drawable,
-                   Screen       *screen,
-                   Visual       *visual,
-                   CUInt32       width,
-                   CUInt32       height);
-#endif
-#endif
-/******************************************************************************/
-
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _C_LIBRARY_H_ */
+#endif /* _CRAYONS_H_ */

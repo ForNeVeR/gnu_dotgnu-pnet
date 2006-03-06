@@ -63,7 +63,7 @@ struct _tagCBrushClass
 	/*\
 	|*| Create a pattern for this brush.
 	|*|
-	|*|   _this   - this brush
+	|*|     _this - this brush
 	|*|   pattern - pointer to pattern
 	|*|
 	|*|  Returns status code.

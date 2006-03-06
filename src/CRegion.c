@@ -36,86 +36,86 @@ static const CRegionMask CRegionMask_Zero =
 #define _OperationPath(_this, type, path)                                      \
 	do {                                                                       \
 		/* declarations */                                                     \
-		CRegionOp   *_op;                                                     \
-		CRegionPath *_data;                                                   \
+		CRegionOp   *_op;                                                      \
+		CRegionPath *_data;                                                    \
 		                                                                       \
 		/* create the path node */                                             \
-		CStatus_Check                                                         \
-			(CRegionPath_Create                                               \
+		CStatus_Check                                                          \
+			(CRegionPath_Create                                                \
 				(&_data, (path)));                                             \
 		                                                                       \
 		/* create the operation node */                                        \
-		if(!(CRegionOp_Alloc(_op)))                                           \
+		if(!(CRegionOp_Alloc(_op)))                                            \
 		{                                                                      \
-			return CStatus_OutOfMemory;                                       \
+			return CStatus_OutOfMemory;                                        \
 		}                                                                      \
 		                                                                       \
 		/* initialize the operation node */                                    \
-		_op->_base = CRegionNode_ ## type;                                    \
+		_op->_base = CRegionNode_ ## type;                                     \
 		_op->left  = (_this)->head;                                            \
-		_op->right = ((CRegionNode *)_data);                                  \
+		_op->right = ((CRegionNode *)_data);                                   \
 		                                                                       \
 		/* reset the head node */                                              \
-		(_this)->head = ((CRegionNode *)_op);                                 \
+		(_this)->head = ((CRegionNode *)_op);                                  \
 		                                                                       \
 		/* handle change event */                                              \
-		CRegion_OnChange((_this));                                            \
+		CRegion_OnChange((_this));                                             \
 	} while(0)
 #define _OperationRectangle(_this, type, rectangle)                            \
 	do {                                                                       \
 		/* declarations */                                                     \
-		CRegionOp   *_op;                                                     \
-		CRegionRect *_data;                                                   \
+		CRegionOp   *_op;                                                      \
+		CRegionRect *_data;                                                    \
 		                                                                       \
 		/* create the rectangle node */                                        \
-		CStatus_Check                                                         \
-			(CRegionRect_Create                                               \
+		CStatus_Check                                                          \
+			(CRegionRect_Create                                                \
 				(&_data, (rectangle)));                                        \
 		                                                                       \
 		/* create the operation node */                                        \
-		if(!(CRegionOp_Alloc(_op)))                                           \
+		if(!(CRegionOp_Alloc(_op)))                                            \
 		{                                                                      \
-			return CStatus_OutOfMemory;                                       \
+			return CStatus_OutOfMemory;                                        \
 		}                                                                      \
 		                                                                       \
 		/* initialize the operation node */                                    \
-		_op->_base = CRegionNode_ ## type;                                    \
+		_op->_base = CRegionNode_ ## type;                                     \
 		_op->left  = (_this)->head;                                            \
-		_op->right = ((CRegionNode *)_data);                                  \
+		_op->right = ((CRegionNode *)_data);                                   \
 		                                                                       \
 		/* reset the head node */                                              \
-		(_this)->head = ((CRegionNode *)_op);                                 \
+		(_this)->head = ((CRegionNode *)_op);                                  \
 		                                                                       \
 		/* handle change event */                                              \
-		CRegion_OnChange((_this));                                            \
+		CRegion_OnChange((_this));                                             \
 	} while(0)
 #define _OperationRegion(_this, type, other)                                   \
 	do {                                                                       \
 		/* declarations */                                                     \
-		CRegionOp   *_op;                                                     \
-		CRegionNode *_data;                                                   \
+		CRegionOp   *_op;                                                      \
+		CRegionNode *_data;                                                    \
 		                                                                       \
 		/* create the copy nodes */                                            \
-		CStatus_Check                                                         \
-			(CRegionNode_Clone                                                \
+		CStatus_Check                                                          \
+			(CRegionNode_Clone                                                 \
 				((other)->head, &_data));                                      \
 		                                                                       \
 		/* create the operation node */                                        \
-		if(!(CRegionOp_Alloc(_op)))                                           \
+		if(!(CRegionOp_Alloc(_op)))                                            \
 		{                                                                      \
-			return CStatus_OutOfMemory;                                       \
+			return CStatus_OutOfMemory;                                        \
 		}                                                                      \
 		                                                                       \
 		/* initialize the operation node */                                    \
-		_op->_base = CRegionNode_ ## type;                                    \
+		_op->_base = CRegionNode_ ## type;                                     \
 		_op->left  = (_this)->head;                                            \
-		_op->right = ((CRegionNode *)_data);                                  \
+		_op->right = ((CRegionNode *)_data);                                   \
 		                                                                       \
 		/* reset the head node */                                              \
-		(_this)->head = ((CRegionNode *)_op);                                 \
+		(_this)->head = ((CRegionNode *)_op);                                  \
 		                                                                       \
 		/* handle change event */                                              \
-		CRegion_OnChange((_this));                                            \
+		CRegion_OnChange((_this));                                             \
 	} while(0)
 
 CINTERNAL void
@@ -143,7 +143,7 @@ CRegionData_Free(CRegionNode *node)
 
 static CStatus
 CRegionPath_Create(CRegionPath **_this,
-                    CPath        *path)
+                   CPath        *path)
 {
 	/* declarations */
 	CPointF     *points;
@@ -185,7 +185,7 @@ CRegionPath_Create(CRegionPath **_this,
 
 static CStatus
 CRegionRect_Create(CRegionRect **_this,
-                    CRectangleF   rectangle)
+                   CRectangleF   rectangle)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -207,7 +207,7 @@ CRegionRect_Create(CRegionRect **_this,
 
 static CStatus
 CRegionNode_Clone(CRegionNode  *_this,
-                   CRegionNode **clone)
+                  CRegionNode **clone)
 {
 	/* declarations */
 	CRegionCloner cloner;
@@ -250,10 +250,10 @@ CRegion_OnChange(CRegion *_this)
 /* Generate the mask for this region. */
 static CStatus
 CRegion_GenerateMask(CRegion           *_this,
-                      CAffineTransformF *transform,
-                      CUInt32            width,
-                      CUInt32            height,
-                      CBool              gray)
+                     CAffineTransformF *transform,
+                     CUInt32            width,
+                     CUInt32            height,
+                     CBool              gray)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -275,14 +275,11 @@ CRegion_GenerateMask(CRegion           *_this,
 		/* bail out now if the mask is okay as is */
 		if(w == width && h == height && g == gray)
 		{
-			/* declarations */
-			CBool eq;
-
-			/* determine if the transformations are equal */
-			CAffineTransformF_Equals(transform, &(_this->mask.transform), &eq);
-
 			/* bail out now if everything matches */
-			CStatus_Require((!eq), CStatus_OK);
+			CStatus_Require
+				((!CAffineTransformF_Equals
+					(transform, &(_this->mask.transform))),
+				 CStatus_OK);
 		}
 
 		/* destroy the current mask image */
@@ -326,7 +323,7 @@ CRegion_GenerateMask(CRegion           *_this,
 /* Initialize this region. */
 static void
 CRegion_Initialize(CRegion     *_this,
-                    CRegionNode *head)
+                   CRegionNode *head)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -365,14 +362,17 @@ CRegion_Finalize(CRegion *_this)
 			{
 				/* declarations */
 				CRegionDisposer  disposer;
-				void             *data;
+				void            *data;
+
+				/* set the data to the default */
+				data = 0;
 
 				/* initialize the disposer */
 				CRegionDisposer_Initialize(&disposer);
 
-				/* dispose of the node */
+				/* dispose of the nodes */
 				CRegionInterpreter_Interpret
-					(((CRegionInterpreter *)(&disposer)), _this->head, data);
+					(((CRegionInterpreter *)(&disposer)), _this->head, &data);
 
 				/* finalize the disposer */
 				CRegionDisposer_Finalize(&disposer);
@@ -428,7 +428,7 @@ CRegion_Create(CRegion **_this)
 /* Create a path region. */
 CStatus
 CRegion_CreatePath(CRegion **_this,
-                    CPath    *path)
+                   CPath    *path)
 {
 	/* declarations */
 	CRegionPath *node;
@@ -458,7 +458,7 @@ CRegion_CreatePath(CRegion **_this,
 /* Create a rectangular region. */
 CStatus
 CRegion_CreateRectangle(CRegion     **_this,
-                         CRectangleF   rectangle)
+                        CRectangleF   rectangle)
 {
 	/* declarations */
 	CRegionRect *node;
@@ -488,8 +488,8 @@ CRegion_CreateRectangle(CRegion     **_this,
 /* Create a region from serialized region data. */
 CStatus
 CRegion_CreateData(CRegion **_this,
-                    CByte    *data,
-                    CUInt32   count)
+                   CByte    *data,
+                   CUInt32   count)
 {
 #if 0
 	/* ensure we have a this pointer pointer */
@@ -513,7 +513,7 @@ CRegion_CreateData(CRegion **_this,
 /* Create a region from a GDI region. */
 CStatus
 CRegion_CreateHRGN(CRegion **_this,
-                    void      *hrgn)
+                   void      *hrgn)
 {
 #if 0
 	/* ensure we have a this pointer pointer */
@@ -560,7 +560,7 @@ CRegion_Destroy(CRegion **_this)
 /* Clone this region. */
 CStatus
 CRegion_Clone(CRegion  *_this,
-               CRegion **clone)
+              CRegion **clone)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -597,8 +597,8 @@ CRegion_Clone(CRegion  *_this,
 /* Form the combination of this region with a path. */
 CStatus
 CRegion_CombinePath(CRegion      *_this,
-                     CPath        *path,
-                     CCombineMode  combineMode)
+                    CPath        *path,
+                    CCombineMode  combineMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -711,8 +711,8 @@ CRegion_CombinePath(CRegion      *_this,
 /* Form the combination of this region with a rectangle. */
 CStatus
 CRegion_CombineRectangle(CRegion      *_this,
-                          CRectangleF   rectangle,
-                          CCombineMode  combineMode)
+                         CRectangleF   rectangle,
+                         CCombineMode  combineMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -822,8 +822,8 @@ CRegion_CombineRectangle(CRegion      *_this,
 /* Form the combination of this region with another region. */
 CStatus
 CRegion_CombineRegion(CRegion      *_this,
-                       CRegion      *other,
-                       CCombineMode  combineMode)
+                      CRegion      *other,
+                      CCombineMode  combineMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -962,9 +962,9 @@ CRegion_CombineRegion(CRegion      *_this,
 /* Determine if two regions are equal after applying a transformation. */
 CStatus
 CRegion_Equals(CRegion   *_this,
-                CRegion   *other,
-                CGraphics *graphics,
-                CBool     *eq)
+               CRegion   *other,
+               CGraphics *graphics,
+               CBool     *eq)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -973,8 +973,8 @@ CRegion_Equals(CRegion   *_this,
 /* Get the bounds of this region on a particular graphics context. */
 CStatus
 CRegion_GetBounds(CRegion     *_this,
-                   CGraphics   *graphics,
-                   CRectangleF *bounds)
+                  CGraphics   *graphics,
+                  CRectangleF *bounds)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -983,8 +983,8 @@ CRegion_GetBounds(CRegion     *_this,
 /* Get the raw region data for this region. */
 CStatus
 CRegion_GetData(CRegion  *_this,
-                 CByte   **data,
-                 CUInt32  *count)
+                CByte   **data,
+                CUInt32  *count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -993,9 +993,9 @@ CRegion_GetData(CRegion  *_this,
 /* Get an array of rectangles which represents this region. */
 CStatus
 CRegion_GetRegionScans(CRegion      *_this,
-                        CMatrix      *matrix,
-                        CRectangleF **scans,
-                        CUInt32      *count)
+                       CMatrix      *matrix,
+                       CRectangleF **scans,
+                       CUInt32      *count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1004,8 +1004,8 @@ CRegion_GetRegionScans(CRegion      *_this,
 /* Determine if this region is empty on a particular graphics context. */
 CStatus
 CRegion_IsEmpty(CRegion   *_this,
-                 CGraphics *graphics,
-                 CBool     *empty)
+                CGraphics *graphics,
+                CBool     *empty)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1014,8 +1014,8 @@ CRegion_IsEmpty(CRegion   *_this,
 /* Determine if this region is infinite on a particular graphics context. */
 CStatus
 CRegion_IsInfinite(CRegion   *_this,
-                    CGraphics *graphics,
-                    CBool     *infinite)
+                   CGraphics *graphics,
+                   CBool     *infinite)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1024,9 +1024,9 @@ CRegion_IsInfinite(CRegion   *_this,
 /* Determine if a point is contained within this region. */
 CStatus
 CRegion_IsVisiblePoint(CRegion   *_this,
-                        CGraphics *graphics,
-                        CPointF    point,
-                        CBool     *visible)
+                       CGraphics *graphics,
+                       CPointF    point,
+                       CBool     *visible)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1035,9 +1035,9 @@ CRegion_IsVisiblePoint(CRegion   *_this,
 /* Determine if any part of a rectangle is contained within this region. */
 CStatus
 CRegion_IsVisibleRectangle(CRegion     *_this,
-                            CGraphics   *graphics,
-                            CRectangleF  rectangle,
-                            CBool       *visible)
+                           CGraphics   *graphics,
+                           CRectangleF  rectangle,
+                           CBool       *visible)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1104,14 +1104,13 @@ CRegion_MakeInfinite(CRegion *_this)
 /* Transform this region by a matrix. */
 CStatus
 CRegion_Transform(CRegion *_this,
-                   CMatrix *matrix)
+                  CMatrix *matrix)
 {
 	/* declarations */
 	CRegionTransformer  transformer;
 	CAffineTransformF   t;
-	CBool               eq;
 	CStatus             status;
-	void                *data;
+	void               *data;
 
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1121,11 +1120,10 @@ CRegion_Transform(CRegion *_this,
 		(CMatrix_GetTransform
 			(matrix, &t));
 
-	/* determine if we have the identity transformation */
-	CAffineTransformF_Equals(&t, &CAffineTransformF_Identity, &eq);
-
 	/* bail out now if there's nothing to do */
-	CStatus_Require((!eq), CStatus_OK);
+	CStatus_Require
+		((!CAffineTransformF_Equals(&t, &CAffineTransformF_Identity)),
+		 CStatus_OK);
 
 	/* initialize the transformer */
 	CRegionTransformer_Initialize(&transformer, &t);
@@ -1148,13 +1146,13 @@ CRegion_Transform(CRegion *_this,
 /* Translate this region by a specific amount. */
 CStatus
 CRegion_Translate(CRegion *_this,
-                   CFloat   dx,
-                   CFloat   dy)
+                  CFloat   dx,
+                  CFloat   dy)
 {
 	/* declarations */
 	CRegionTranslator  translator;
 	CStatus            status;
-	void               *data;
+	void              *data;
 
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1183,8 +1181,8 @@ CRegion_Translate(CRegion *_this,
 /* Get the mask for this region. */
 CINTERNAL CStatus
 CRegion_GetMask(CRegion           *_this,
-                 CAffineTransformF *transform,
-                 pixman_image_t     *mask)
+                CAffineTransformF *transform,
+                pixman_image_t    *mask)
 {
 	/* declarations */
 	CUInt32 w;

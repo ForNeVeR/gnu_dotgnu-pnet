@@ -19,6 +19,7 @@
  */
 
 #include "CLineBrush.h"
+#include "CBlend.h"
 #include "CMatrix.h"
 #include "CUtils.h"
 
@@ -32,12 +33,12 @@ static const CRectangleF CRectangleF_Zero = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 static void
 CLineBrush_Initialize(CLineBrush  *_this,
-                       CRectangleF  rectangle,
-                       CColor       startColor,
-                       CColor       endColor,
-                       CFloat       angle,
-                       CBool        isAngleScalable,
-                       CWrapMode    wrapMode)
+                      CRectangleF  rectangle,
+                      CColor       startColor,
+                      CColor       endColor,
+                      CFloat       angle,
+                      CBool        isAngleScalable,
+                      CWrapMode    wrapMode)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -86,7 +87,7 @@ CLineBrush_Finalize(CBrush *_this)
 /* Clone this line brush. */
 static CStatus
 CLineBrush_Clone(CBrush  *_this,
-                  CBrush **_clone)
+                 CBrush **_clone)
 {
 	/* assertions */
 	CASSERT((_this  != 0));
@@ -153,7 +154,7 @@ CLineBrush_Clone(CBrush  *_this,
 /* Create a pattern for this brush. */
 static CStatus
 CLineBrush_CreatePattern(CBrush   *_this,
-                          CPattern *pattern)
+                         CPattern *pattern)
 {
 	/* declarations */
 	CLineBrush *brush;
@@ -177,12 +178,12 @@ CLineBrush_CreatePattern(CBrush   *_this,
 /* Create a line brush. */
 CStatus
 CLineBrush_Create(CLineBrush  **_this,
-                   CRectangleF   rectangle,
-                   CColor        startColor,
-                   CColor        endColor,
-                   CFloat        angle,
-                   CBool         isAngleScalable,
-                   CWrapMode     wrapMode)
+                  CRectangleF   rectangle,
+                  CColor        startColor,
+                  CColor        endColor,
+                  CFloat        angle,
+                  CBool         isAngleScalable,
+                  CWrapMode     wrapMode)
 {
 	/* ensure we have a this pointer pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -210,7 +211,7 @@ CLineBrush_Create(CLineBrush  **_this,
 /* Get the gradient blend. */
 CStatus
 CLineBrush_GetBlend(CLineBrush *_this,
-                     CBlend     *blend)
+                    CBlend     *blend)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -228,7 +229,7 @@ CLineBrush_GetBlend(CLineBrush *_this,
 /* Set the gradient blend. */
 CStatus
 CLineBrush_SetBlend(CLineBrush *_this,
-                     CBlend      blend)
+                    CBlend      blend)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -276,8 +277,8 @@ CLineBrush_SetBlend(CLineBrush *_this,
 /* Get the start and end colors of the gradient. */
 CStatus
 CLineBrush_GetColors(CLineBrush *_this,
-                      CColor     *startColor,
-                      CColor     *endColor)
+                     CColor     *startColor,
+                     CColor     *endColor)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -299,8 +300,8 @@ CLineBrush_GetColors(CLineBrush *_this,
 /* Set the start and end colors of the gradient. */
 CStatus
 CLineBrush_SetColor(CLineBrush *_this,
-                     CColor      startColor,
-                     CColor      endColor)
+                    CColor      startColor,
+                    CColor      endColor)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -319,7 +320,7 @@ CLineBrush_SetColor(CLineBrush *_this,
 /* Get the color blend of the gradient. */
 CStatus
 CLineBrush_GetColorBlend(CLineBrush  *_this,
-                          CColorBlend *colorBlend)
+                         CColorBlend *colorBlend)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -337,7 +338,7 @@ CLineBrush_GetColorBlend(CLineBrush  *_this,
 /* Set the color blend of the gradient. */
 CStatus
 CLineBrush_SetColorBlend(CLineBrush  *_this,
-                          CColorBlend  colorBlend)
+                         CColorBlend  colorBlend)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -385,7 +386,7 @@ CLineBrush_SetColorBlend(CLineBrush  *_this,
 /* Get the gamma correction flag of the gradient. */
 CStatus
 CLineBrush_GetGammaCorrection(CLineBrush *_this,
-                               CBool      *gammaCorrection)
+                              CBool      *gammaCorrection)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -403,7 +404,7 @@ CLineBrush_GetGammaCorrection(CLineBrush *_this,
 /* Set the gamma correction flag of the gradient. */
 CStatus
 CLineBrush_SetGammaCorrection(CLineBrush *_this,
-                               CBool       gammaCorrection)
+                              CBool       gammaCorrection)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -421,7 +422,7 @@ CLineBrush_SetGammaCorrection(CLineBrush *_this,
 /* Get the bounding rectangle of the gradient. */
 CStatus
 CLineBrush_GetRectangle(CLineBrush  *_this,
-                         CRectangleF *rectangle)
+                        CRectangleF *rectangle)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -439,7 +440,7 @@ CLineBrush_GetRectangle(CLineBrush  *_this,
 /* Get the wrap mode of the gradient. */
 CStatus
 CLineBrush_GetWrapMode(CLineBrush *_this,
-                        CWrapMode  *wrapMode)
+                       CWrapMode  *wrapMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -457,7 +458,7 @@ CLineBrush_GetWrapMode(CLineBrush *_this,
 /* Set the wrap mode of the gradient. */
 CStatus
 CLineBrush_SetWrapMode(CLineBrush *_this,
-                        CWrapMode   wrapMode)
+                       CWrapMode   wrapMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -475,7 +476,7 @@ CLineBrush_SetWrapMode(CLineBrush *_this,
 /* Get the transformation matrix of the gradient. */
 CStatus
 CLineBrush_GetTransform(CLineBrush *_this,
-                         CMatrix    *matrix)
+                        CMatrix    *matrix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -487,8 +488,8 @@ CLineBrush_GetTransform(CLineBrush *_this,
 /* Multiply the transformation matrix of the gradient by another matrix. */
 CStatus
 CLineBrush_MultiplyTransform(CLineBrush   *_this,
-                              CMatrix      *matrix,
-                              CMatrixOrder  order)
+                             CMatrix      *matrix,
+                             CMatrixOrder  order)
 {
 	/* declarations */
 	CAffineTransformF t;
@@ -531,8 +532,8 @@ CLineBrush_ResetTransform(CLineBrush *_this)
 /* Rotate the transformation matrix of the gradient. */
 CStatus
 CLineBrush_RotateTransform(CLineBrush   *_this,
-                            CFloat        angle,
-                            CMatrixOrder  order)
+                           CFloat        angle,
+                           CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -550,9 +551,9 @@ CLineBrush_RotateTransform(CLineBrush   *_this,
 /* Scale the transformation matrix of the gradient. */
 CStatus
 CLineBrush_ScaleTransform(CLineBrush   *_this,
-                           CFloat        sx,
-                           CFloat        sy,
-                           CMatrixOrder  order)
+                          CFloat        sx,
+                          CFloat        sy,
+                          CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -570,8 +571,8 @@ CLineBrush_ScaleTransform(CLineBrush   *_this,
 /* Set the shape of the gradient to a triangle. */
 CStatus
 CLineBrush_SetTriangularShape(CLineBrush *_this,
-                               CFloat      focus,
-                               CFloat      scale)
+                              CFloat      focus,
+                              CFloat      scale)
 {
 	/* declarations */
 	CUInt32 count;
@@ -629,8 +630,8 @@ CLineBrush_SetTriangularShape(CLineBrush *_this,
 /* Set the shape of the gradient to a sigma bell. */
 CStatus
 CLineBrush_SetSigmaBellShape(CLineBrush *_this,
-                              CFloat      focus,
-                              CFloat      scale)
+                             CFloat      focus,
+                             CFloat      scale)
 {
 	/* declarations */
 	CUInt32 count;
@@ -688,7 +689,7 @@ CLineBrush_SetSigmaBellShape(CLineBrush *_this,
 /* Set the transformation matrix of the gradient. */
 CStatus
 CLineBrush_SetTransform(CLineBrush *_this,
-                         CMatrix    *matrix)
+                        CMatrix    *matrix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -708,9 +709,9 @@ CLineBrush_SetTransform(CLineBrush *_this,
 /* Translate the transformation matrix of the gradient. */
 CStatus
 CLineBrush_TranslateTransform(CLineBrush   *_this,
-                               CFloat        dx,
-                               CFloat        dy,
-                               CMatrixOrder  order)
+                              CFloat        dx,
+                              CFloat        dy,
+                              CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);

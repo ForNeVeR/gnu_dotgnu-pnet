@@ -98,8 +98,8 @@ CPolygonX_HasCurrentPoint(CPolygonX *_this)
 
 CINTERNAL CStatus
 CPolygonX_AddEdge(CPolygonX *_this,
-                   CPointX   *point1,
-                   CPointX   *point2)
+                  CPointX   *point1,
+                  CPointX   *point2)
 {
 	/* assertions */
 	CASSERT((_this  != 0));
@@ -188,7 +188,7 @@ CPolygonX_AddEdge(CPolygonX *_this,
 
 CINTERNAL CStatus
 CPolygonX_MoveTo(CPolygonX *_this,
-                  CPointX   *point)
+                 CPointX   *point)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -210,7 +210,7 @@ CPolygonX_MoveTo(CPolygonX *_this,
 
 CINTERNAL CStatus
 CPolygonX_LineTo(CPolygonX *_this,
-                  CPointX   *point)
+                 CPointX   *point)
 {
 	/* assertions */
 	CASSERT((_this != 0));

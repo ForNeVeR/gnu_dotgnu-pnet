@@ -74,7 +74,7 @@ CPointArrayF_Finalize(CPointArrayF *_this)
 
 CINTERNAL CStatus
 CPointArrayX_AppendPointNoRepeat(CPointArrayX *_this,
-                                  CPointX      *point)
+                                 CPointX      *point)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -109,7 +109,7 @@ CPointArrayX_AppendPointNoRepeat(CPointArrayX *_this,
 
 CINTERNAL CStatus
 CPointArrayF_AppendPointNoRepeat(CPointArrayF *_this,
-                                  CPointF      *point)
+                                 CPointF      *point)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -144,7 +144,7 @@ CPointArrayF_AppendPointNoRepeat(CPointArrayF *_this,
 
 CINTERNAL CStatus
 CPointArrayX_AppendPoint(CPointArrayX *_this,
-                          CPointX      *point)
+                         CPointX      *point)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -164,7 +164,7 @@ CPointArrayX_AppendPoint(CPointArrayX *_this,
 
 CINTERNAL CStatus
 CPointArrayF_AppendPoint(CPointArrayF *_this,
-                          CPointF      *point)
+                         CPointF      *point)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -184,7 +184,7 @@ CPointArrayF_AppendPoint(CPointArrayF *_this,
 
 CINTERNAL CStatus
 CPointArrayX_EnsureCapacity(CPointArrayX *_this,
-                             CUInt32       minimum)
+                            CUInt32       minimum)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -242,7 +242,7 @@ CPointArrayX_EnsureCapacity(CPointArrayX *_this,
 
 CINTERNAL CStatus
 CPointArrayF_EnsureCapacity(CPointArrayF *_this,
-                             CUInt32       minimum)
+                            CUInt32       minimum)
 {
 	/* assertions */
 	CASSERT((_this != 0));

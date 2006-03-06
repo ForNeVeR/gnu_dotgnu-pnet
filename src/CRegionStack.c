@@ -85,7 +85,7 @@ CRegionStack_Pop(CRegionStack **_this)
 
 CINTERNAL CStatus
 CRegionStack_Push(CRegionStack **_this,
-                   CRegionOp     *op)
+                  CRegionOp     *op)
 {
 	/* declarations */
 	CRegionStack *stack;
@@ -113,7 +113,7 @@ CRegionStack_Push(CRegionStack **_this,
 			CRegionStack *next;
 
 			/* allocate the next stack */
-			if(!CRegionStack_Alloc(stack))
+			if(!CRegionStack_Alloc(next))
 			{
 				return CStatus_OutOfMemory;
 			}

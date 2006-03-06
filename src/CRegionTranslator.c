@@ -27,8 +27,8 @@ extern "C" {
 
 static CStatus
 CRegionTranslator_Data(CRegionInterpreter  *_this,
-                        CRegionNode         *node,
-                        void                **data)
+                       CRegionNode         *node,
+                       void               **data)
 {
 	/* declarations */
 	CRegionTranslator *rt;
@@ -70,10 +70,10 @@ CRegionTranslator_Data(CRegionInterpreter  *_this,
 
 static CStatus
 CRegionTranslator_Op(CRegionInterpreter  *_this,
-                      CRegionOp           *op,
-                      void                 *left,
-                      void                 *right,
-                      void                **data)
+                     CRegionOp           *op,
+                     void                *left,
+                     void                *right,
+                     void               **data)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -98,8 +98,8 @@ static const CRegionInterpreterClass CRegionTranslator_Class =
 
 CINTERNAL void
 CRegionTranslator_Initialize(CRegionTranslator *_this,
-                              CFloat             dx,
-                              CFloat             dy)
+                             CFloat             dx,
+                             CFloat             dy)
 {
 	/* assertions */
 	CASSERT((_this != 0));

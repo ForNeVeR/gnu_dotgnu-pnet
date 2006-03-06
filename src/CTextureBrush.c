@@ -30,15 +30,15 @@ extern "C" {
 /* Clone this texture brush. */
 static CStatus
 CTextureBrush_Clone(CBrush  *_this,
-                     CBrush **_clone)
+                    CBrush **_clone)
 {
 	/* declarations */
 	CTextureBrush  *brush;
 	CTextureBrush **clone;
 
 	/* assertions */
-	CASSERT((_this != 0));
-	CASSERT((clone != 0));
+	CASSERT((_this  != 0));
+	CASSERT((_clone != 0));
 
 	/* get this as a texture brush */
 	brush = (CTextureBrush *)_this;
@@ -78,7 +78,7 @@ CTextureBrush_Finalize(CBrush *_this)
 /* Create a pattern for this brush. */
 static CStatus
 CTextureBrush_CreatePattern(CBrush   *_this,
-                             CPattern *pattern)
+                            CPattern *pattern)
 {
 	/* assertions */
 	CASSERT((_this   != 0));
@@ -142,9 +142,9 @@ CTextureBrush_CreatePattern(CBrush   *_this,
 /* Intialize this texture brush. */
 static CStatus
 CTextureBrush_Initialize(CTextureBrush *_this,
-                          CImage        *image,
-                          CRectangleF    rectangle,
-                          CWrapMode      wrapMode)
+                         CImage        *image,
+                         CRectangleF    rectangle,
+                         CWrapMode      wrapMode)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -173,9 +173,9 @@ CTextureBrush_Initialize(CTextureBrush *_this,
 /* Create a texture brush. */
 CStatus
 CTextureBrush_Create(CTextureBrush **_this,
-                      CImage         *image,
-                      CRectangleF     rectangle,
-                      CWrapMode       wrapMode)
+                     CImage         *image,
+                     CRectangleF     rectangle,
+                     CWrapMode       wrapMode)
 {
 	/* ensure we have a this pointer pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -198,7 +198,7 @@ CTextureBrush_Create(CTextureBrush **_this,
 /* Get the image of the texture. */
 CStatus
 CTextureBrush_GetImage(CTextureBrush  *_this,
-                        CImage        **image)
+                       CImage        **image)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -213,7 +213,7 @@ CTextureBrush_GetImage(CTextureBrush  *_this,
 /* Get the wrap mode of the texture. */
 CStatus
 CTextureBrush_GetWrapMode(CTextureBrush *_this,
-                           CWrapMode     *wrapMode)
+                          CWrapMode     *wrapMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -231,7 +231,7 @@ CTextureBrush_GetWrapMode(CTextureBrush *_this,
 /* Set the wrap mode of the texture. */
 CStatus
 CTextureBrush_SetWrapMode(CTextureBrush *_this,
-                           CWrapMode      wrapMode)
+                          CWrapMode      wrapMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -249,7 +249,7 @@ CTextureBrush_SetWrapMode(CTextureBrush *_this,
 /* Get the transformation matrix of the texture. */
 CStatus
 CTextureBrush_GetTransform(CTextureBrush *_this,
-                            CMatrix       *matrix)
+                           CMatrix       *matrix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -261,8 +261,8 @@ CTextureBrush_GetTransform(CTextureBrush *_this,
 /* Multiply the transformation matrix of the texture by another matrix. */
 CStatus
 CTextureBrush_MultiplyTransform(CTextureBrush *_this,
-                                 CMatrix       *matrix,
-                                 CMatrixOrder   order)
+                                CMatrix       *matrix,
+                                CMatrixOrder   order)
 {
 	/* declarations */
 	CAffineTransformF t;
@@ -305,8 +305,8 @@ CTextureBrush_ResetTransform(CTextureBrush *_this)
 /* Rotate the transformation matrix of the texture. */
 CStatus
 CTextureBrush_RotateTransform(CTextureBrush *_this,
-                               CFloat         angle,
-                               CMatrixOrder   order)
+                              CFloat         angle,
+                              CMatrixOrder   order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -324,9 +324,9 @@ CTextureBrush_RotateTransform(CTextureBrush *_this,
 /* Scale the transformation matrix of the texture. */
 CStatus
 CTextureBrush_ScaleTransform(CTextureBrush *_this,
-                              CFloat         sx,
-                              CFloat         sy,
-                              CMatrixOrder   order)
+                             CFloat         sx,
+                             CFloat         sy,
+                             CMatrixOrder   order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -344,7 +344,7 @@ CTextureBrush_ScaleTransform(CTextureBrush *_this,
 /* Set the transformation matrix of the texture. */
 CStatus
 CTextureBrush_SetTransform(CTextureBrush *_this,
-                            CMatrix       *matrix)
+                           CMatrix       *matrix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -364,9 +364,9 @@ CTextureBrush_SetTransform(CTextureBrush *_this,
 /* Translate the transformation matrix of the texture. */
 CStatus
 CTextureBrush_TranslateTransform(CTextureBrush *_this,
-                                  CFloat         dx,
-                                  CFloat         dy,
-                                  CMatrixOrder   order)
+                                 CFloat         dx,
+                                 CFloat         dy,
+                                 CMatrixOrder   order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);

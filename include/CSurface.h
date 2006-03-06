@@ -49,14 +49,14 @@ struct _tagCSurfaceClass
 	/*\
 	|*| Composite the image onto the surface.
 	|*|
-	|*|   _this  - this surface
-	|*|   x      - destination x coordinate
-	|*|   y      - destination y coordinate
-	|*|   width  - width of composition
+	|*|    _this - this surface
+	|*|        x - destination x coordinate
+	|*|        y - destination y coordinate
+	|*|    width - width of composition
 	|*|   height - height of composition
-	|*|   src    - source image
-	|*|   mask   - mask image
-	|*|   op     - compositing operator
+	|*|      src - source image
+	|*|     mask - mask image
+	|*|       op - compositing operator
 	|*|
 	|*|  Returns status code.
 	\*/
@@ -83,13 +83,35 @@ struct _tagCSurfaceClass
 	/*\
 	|*| Flush the surface.
 	|*|
-	|*|   _this     - this surface
+	|*|       _this - this surface
 	|*|   intention - flush operation
 	|*|
 	|*|  Returns status code.
 	\*/
 	CStatus (*Flush)(CSurface        *_this,
 	                 CFlushIntention  intention);
+
+	/*\
+	|*| Get the horizontal resolution of the surface.
+	|*|
+	|*|   _this - this surface
+	|*|    dpiX - horizontal resolution
+	|*|
+	|*|  Returns status code.
+	\*/
+	CStatus (*GetDpiX)(CSurface *_this,
+	                   CFloat   *dpiX);
+
+	/*\
+	|*| Get the vertical resolution of the surface.
+	|*|
+	|*|   _this - this surface
+	|*|    dpiY - vertical resolution
+	|*|
+	|*|  Returns status code.
+	\*/
+	CStatus (*GetDpiY)(CSurface *_this,
+	                   CFloat   *dpiY);
 
 	/*\
 	|*| Finalize the surface.
@@ -104,7 +126,12 @@ struct _tagCSurfaceClass
 	const char *sentinel;
 };
 
-
+CINTERNAL void
+CSurface_Lock(CSurface *_this);
+CINTERNAL void
+CSurface_Unlock(CSurface *_this);
+CINTERNAL CRectangleF
+CSurface_GetBoundsF(CSurface *_this);
 CINTERNAL CStatus
 CSurface_GetClipMask(CSurface        *_this,
                      pixman_image_t **mask,
@@ -113,6 +140,28 @@ CINTERNAL CStatus
 CSurface_GetCompositingMask(CSurface        *_this,
                             pixman_image_t **mask,
                             CBool            gray);
+CINTERNAL CStatus
+CSurface_Composite(CSurface           *_this,
+                   CInt32              x,
+                   CInt32              y,
+                   CUInt32             width,
+                   CUInt32             height,
+                   pixman_image_t     *src,
+                   pixman_image_t     *mask,
+                   CInterpolationMode  interpolationMode,
+                   CCompositingMode    compositingMode);
+CINTERNAL CStatus
+CSurface_Clear(CSurface *_this,
+               CColor    color);
+CINTERNAL CStatus
+CSurface_Flush(CSurface        *_this,
+               CFlushIntention  intention);
+CINTERNAL CStatus
+CSurface_GetDpiX(CSurface *_this,
+                 CFloat   *dpiX);
+CINTERNAL CStatus
+CSurface_GetDpiY(CSurface *_this,
+                 CFloat   *dpiY);
 CINTERNAL CStatus
 CSurface_Initialize(CSurface            *_this,
                     const CSurfaceClass *_class,

@@ -28,7 +28,7 @@ extern "C" {
 #endif
 
 typedef CUInt32 CMutex;
-static const CMutex CMutex_StaticInitializer = 0;
+#define CMutex_StaticInitializer 0
 
 #define CMutex_Lock(_this)
 #define CMutex_Unlock(_this)

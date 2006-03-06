@@ -38,76 +38,9 @@ struct _tagCHatchBrush
 #define CHatchStyle_IsValid(style) \
 	(((style) >= CHatchStyle_Min) && ((style) <= CHatchStyle_Max))
 
-#define CHatchBrush_DataFormat   PIXMAN_FORMAT_NAME_ARGB32
 #define CHatchBrush_StyleWidth   8
 #define CHatchBrush_StyleHeight  8
-#define CHatchBrush_StylesLength (sizeof(CHatchBrush_HatchInfo) / 8)
-
-#define CHatchBrush_StyleToData_SetRow(src, dst, fg, bg)                      \
-	do {                                                                       \
-		/* get the current source row */                                       \
-		const CByte row = *(src);                                             \
-		                                                                       \
-		/* set the current data row */                                         \
-		*(dst)++ = ((row & 0x80) ? (fg) : (bg));                               \
-		*(dst)++ = ((row & 0x40) ? (fg) : (bg));                               \
-		*(dst)++ = ((row & 0x20) ? (fg) : (bg));                               \
-		*(dst)++ = ((row & 0x10) ? (fg) : (bg));                               \
-		*(dst)++ = ((row & 0x08) ? (fg) : (bg));                               \
-		*(dst)++ = ((row & 0x04) ? (fg) : (bg));                               \
-		*(dst)++ = ((row & 0x02) ? (fg) : (bg));                               \
-		*(dst)++ = ((row & 0x01) ? (fg) : (bg));                               \
-		                                                                       \
-		/* move to the next row */                                             \
-		++src;                                                                 \
-	} while(0)
-
-#define CHatchBrush_StyleToData(style, data, stride, foreground, background)  \
-	do {                                                                       \
-		/* declarations */                                                     \
-		const CByte  *src;                                                    \
-		CColor       *dst;                                                    \
-		CColor        fg;                                                     \
-		CColor        bg;                                                     \
-		                                                                       \
-		/* get the source pixel row pointer */                                 \
-		src = CHatchBrush_Styles[(style)];                                    \
-		                                                                       \
-		/* NOTE: pixman's format is native endian */                           \
-		                                                                       \
-		/* get the destination pixel pointer */                                \
-		dst = ((CColor *)(data));                                             \
-		                                                                       \
-		/* get the foreground color */                                         \
-		fg = (foreground);                                                     \
-		                                                                       \
-		/* get the background color */                                         \
-		bg = (background);                                                     \
-		                                                                       \
-		/* set the data, row by row */                                         \
-		CHatchBrush_StyleToData_SetRow(src, dst, fg, bg);                     \
-		(data) += (stride);                                                    \
-		dst = ((CColor *)(data));                                             \
-		CHatchBrush_StyleToData_SetRow(src, dst, fg, bg);                     \
-		(data) += (stride);                                                    \
-		dst = ((CColor *)(data));                                             \
-		CHatchBrush_StyleToData_SetRow(src, dst, fg, bg);                     \
-		(data) += (stride);                                                    \
-		dst = ((CColor *)(data));                                             \
-		CHatchBrush_StyleToData_SetRow(src, dst, fg, bg);                     \
-		(data) += (stride);                                                    \
-		dst = ((CColor *)(data));                                             \
-		CHatchBrush_StyleToData_SetRow(src, dst, fg, bg);                     \
-		(data) += (stride);                                                    \
-		dst = ((CColor *)(data));                                             \
-		CHatchBrush_StyleToData_SetRow(src, dst, fg, bg);                     \
-		(data) += (stride);                                                    \
-		dst = ((CColor *)(data));                                             \
-		CHatchBrush_StyleToData_SetRow(src, dst, fg, bg);                     \
-		(data) += (stride);                                                    \
-		dst = ((CColor *)(data));                                             \
-		CHatchBrush_StyleToData_SetRow(src, dst, fg, bg);                     \
-	} while(0)
+#define CHatchBrush_StylesLength (sizeof(CHatchBrush_Styles) / 8)
 
 static const CByte CHatchBrush_Styles[][8] =
 {

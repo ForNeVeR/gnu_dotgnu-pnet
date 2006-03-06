@@ -2,5 +2,6 @@ Makefile
 Makefile.in
 .libs
 *.lo
+*.o
 libCrayons.la
 .deps

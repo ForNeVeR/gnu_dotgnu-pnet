@@ -47,7 +47,13 @@ CBitmapSurface_Clear(CSurface *_this,
                      CColor    color);
 static CStatus
 CBitmapSurface_Flush(CSurface        *_this,
-                      CFlushIntention  intention);
+                     CFlushIntention  intention);
+static CStatus
+CBitmapSurface_GetDpiX(CSurface *_this,
+                       CFloat   *dpiX);
+static CStatus
+CBitmapSurface_GetDpiY(CSurface *_this,
+                       CFloat   *dpiY);
 static void
 CBitmapSurface_Finalize(CSurface *_this);
 
@@ -57,6 +63,8 @@ static const CSurfaceClass CBitmapSurface_Class =
 	CBitmapSurface_Composite,
 	CBitmapSurface_Clear,
 	CBitmapSurface_Flush,
+	CBitmapSurface_GetDpiX,
+	CBitmapSurface_GetDpiY,
 	CBitmapSurface_Finalize,
 	"sentinel"
 };

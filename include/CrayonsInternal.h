@@ -18,11 +18,51 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _C_LIBRARYINTERNAL_H_
-#define _C_LIBRARYINTERNAL_H_
+#ifndef _CRAYONS_INTERNAL_H_
+#define _CRAYONS_INTERNAL_H_
+
+#include "Crayons.h"
+#include "CrayonsConfig.h"
+
+#include <stdio.h>
+
+#if STDC_HEADERS
+	#include <stdlib.h>
+	#include <stddef.h>
+#elif HAVE_STDLIB_H
+	#include <stdlib.h>
+#endif
+
+#if HAVE_STRING_H
+	#if !STDC_HEADERS && HAVE_MEMORY_H
+		#include <memory.h>
+	#endif
+	#include <string.h>
+#endif
+
+#if HAVE_STRINGS_H
+	#include <strings.h>
+#endif
+
+#if HAVE_SYS_TYPES_H
+	#include <sys/types.h>
+#endif
+
+#if HAVE_SYS_STAT_H
+	#include <sys/stat.h>
+#endif
+
+#if HAVE_UNISTD_H
+	#include <unistd.h>
+#endif
+
+#if HAVE_ASSERT_H && CDEBUG
+	#include <assert.h>
+#else
+	#undef CDEBUG
+#endif
 
 #include <pixman.h>
-#include "Crayons.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,22 +78,26 @@ extern "C" {
 #else
 	#define CINTERNAL
 #endif
-
 #if (__GNUC__ >= 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5))
 	#define CMATH __attribute__((__const__))
 #else
 	#define CMATH
 #endif
 
-/* Include basic system headers. */
-#ifdef HAVE_STDLIB_H
-	#include <stdlib.h>
-#endif
-#if (defined(HAVE_ASSERT_H) && defined(CDEBUG))
-	#include <assert.h>
+/* Define debugging macros. */
+#ifdef CDEBUG
 	#define CASSERT(foo) assert(foo)
 #else
 	#define CASSERT(foo)
+#endif
+
+/* Define system type. */
+#if defined(__CYGWIN__) || defined(__CYGWIN32__)
+	#define	C_SYSTEM_WIN32_CYGWIN 1
+	#define	C_SYSTEM_WIN32        1
+#elif defined(_WIN32) || defined(WIN32)
+	#define	C_SYSTEM_WIN32_NATIVE 1
+	#define	C_SYSTEM_WIN32        1
 #endif
 
 typedef unsigned int CBitField;
@@ -158,6 +202,39 @@ typedef CPointF              CVectorF;
 
 
 
+typedef struct _tagCPredicateBinary CPredicateBinary;
+struct _tagCPredicateBinary
+{
+	CBool (*Predicate)(CPredicateBinary *_this,
+	                   void             *a,
+	                   void             *b);
+};
+typedef struct _tagCPredicateUnary CPredicateUnary;
+struct _tagCPredicateUnary
+{
+	CBool (*Predicate)(CPredicateUnary *_this,
+	                   void            *a);
+};
+typedef struct _tagCOperatorBinary COperatorBinary;
+struct _tagCOperatorBinary
+{
+	void (*Operator)(COperatorBinary *_this,
+	                 void           *a,
+	                 void           *b);
+};
+typedef struct _tagCOperatorUnary COperatorUnary;
+struct _tagCOperatorUnary
+{
+	void (*Operator)(COperatorUnary *_this,
+	                 void           *a);
+};
+
+#define CPredicate_Binary(_this, a, b) ((_this)->Predicate((_this), (a), (b)))
+#define CPredicate_Unary(_this, a)     ((_this)->Predicate((_this), (a)))
+#define COperator_Binary(_this, a, b)  ((_this)->Operator((_this),  (a), (b)))
+#define COperator_Unary(_this, a)      ((_this)->Operator((_this),  (a)))
+
+
 
 
 
@@ -197,7 +274,7 @@ CMemCmp(const void *a,
 
 
 
-#define CCLAMP(value, min, max)                                               \
+#define CCLAMP(value, min, max)                                                \
 	do {                                                                       \
 		if((value) < (min))                                                    \
 		{                                                                      \
@@ -219,7 +296,7 @@ CMemCmp(const void *a,
 |*| When appromixating arcs less-than-or-equal-to 90 degrees, the control
 |*| points can be calculated thusly:
 |*|
-|*|  i - the intersetion of the tangents of the end points of the arc
+|*|  i - the intersection of the tangents of the end points of the arc
 |*|  r - the radius of the arc
 |*|  d - the distance from an end point to 'i'
 |*|  f - the distance from an end point to 'i', along its tangent,
@@ -239,15 +316,21 @@ CMemCmp(const void *a,
 \*/
 #define CMath_Arc90Fraction 0.552284749830793
 
-#define CDouble_ToFixed(f) ((CFixed) ((f) * 65536))
-#define CFloat_ToFixed(f)  ((CFixed) ((f) * 65536))
-#define CFixed_ToDouble(f) (((CDouble) (f)) / 65536)
-#define CFixed_ToFloat(f)  (((CFloat) (f)) / 65536)
-#define CFixed_Zero        (0)
-#define CFixed_One         (65536)
-#define CFixed_MinusOne    (-65536)
+#define CFloat_ToFixed(f)  ((CFixed) (((CFloat) (f)) * 65536))
+#define CDouble_ToFixed(f) ((CFixed) (((CDouble)(f)) * 65536))
+#define CFixed_ToFloat(f)  ((CFloat) (((CFloat) (f)) / 65536))
+#define CFixed_ToDouble(f) ((CDouble)(((CDouble)(f)) / 65536))
 
-#define CColor_FromARGB(a, r, g, b)                                           \
+#define CFixed_Floor(f)    ((CFixed)(((f) +     0)  & ~65535))
+#define CFixed_Ceil(f)     ((CFixed)(((f) + 65535)  & ~65535))
+#define CFixed_Round(f)    ((CFixed)(((f) + 32768)  & ~65535))
+#define CFixed_Trunc(f)    ((CInt32)((f) >> 16))
+
+#define CFixed_Zero        ((CFixed)0)
+#define CFixed_One         ((CFixed)65536)
+#define CFixed_MinusOne    ((CFixed)-65536)
+
+#define CColor_FromARGB(a, r, g, b)                                            \
 	((((a) << 24) & 0xFF000000) |                                              \
 	 (((r) << 16) & 0x00FF0000) |                                              \
      (((g) <<  8) & 0x0000FF00) |                                              \
@@ -255,9 +338,9 @@ CMemCmp(const void *a,
 #define CColor_IntensityR 0.30
 #define CColor_IntensityG 0.59
 #define CColor_IntensityB 0.11
-#define CColor_IntensityRGB(r, g, b)                                          \
-	(((r) * CColor_IntensityR) +                                              \
-	 ((g) * CColor_IntensityG) +                                              \
+#define CColor_IntensityRGB(r, g, b)                                           \
+	(((r) * CColor_IntensityR) +                                               \
+	 ((g) * CColor_IntensityG) +                                               \
 	 ((b) * CColor_IntensityB))
 #define CColor_A(color) ((CByte)((color) >> 24))
 #define CColor_R(color) ((CByte)((color) >> 16))
@@ -269,27 +352,34 @@ CMemCmp(const void *a,
 
 
 /* TODO: use configure-time tests to generate this properly */
-#define CPixmanPixel_FromARGB(a, r, g, b)                                     \
-	(((CByte)((a) << 24)) |                                                   \
-	 ((CByte)((r) << 16)) |                                                   \
-	 ((CByte)((g) <<  8)) |                                                   \
-	 ((CByte)((b) <<  0)))
+#define CPixmanPixel_FromARGB(a, r, g, b)                                      \
+	(((CColor)((a) << 24)) |                                                   \
+	 ((CColor)((r) << 16)) |                                                   \
+	 ((CColor)((g) <<  8)) |                                                   \
+	 ((CColor)((b) <<  0)))
 
 /* TODO: use configure-time tests to generate this properly */
-#define CPixmanPixel_ToARGB(pixel, a, r, g, b)                                \
+#define CPixmanPixel_ToARGB(pixel, a, r, g, b)                                 \
 	do {                                                                       \
-		(a) = ((CByte)((pixel) >> 24));                                       \
-		(r) = ((CByte)((pixel) >> 16));                                       \
-		(g) = ((CByte)((pixel) >>  8));                                       \
-		(b) = ((CByte)((pixel) >>  0));                                       \
+		(a) = ((CByte)((pixel) >> 24));                                        \
+		(r) = ((CByte)((pixel) >> 16));                                        \
+		(g) = ((CByte)((pixel) >>  8));                                        \
+		(b) = ((CByte)((pixel) >>  0));                                        \
 	} while(0)
 
-#define CCombineMode_Default(combineMode)                                     \
+#define CCombineMode_Default(combineMode)                                      \
 	do {                                                                       \
-		if((combineMode) < CCombineMode_Replace ||                            \
-		   (combineMode) > CCombineMode_Complement)                           \
+		if((combineMode) > CCombineMode_Complement)                            \
 		{                                                                      \
-			(combineMode) = CCombineMode_Replace;                             \
+			(combineMode) = CCombineMode_Replace;                              \
+		}                                                                      \
+	} while(0)
+
+#define CFontFamilyGeneric_Default(generic)                                    \
+	do {                                                                       \
+		if((generic) > CFontFamilyGeneric_Monospace)                           \
+		{                                                                      \
+			(generic) = CFontFamilyGeneric_Monospace;                          \
 		}                                                                      \
 	} while(0)
 
@@ -361,29 +451,26 @@ CMemCmp(const void *a,
 #define CTrapezoids_Count(t)      ((t).count)
 #define CTrapezoids_Trapezoids(t) ((t).trapezoids)
 
-#define CGraphics_DefaultDpiX 96.0f
-#define CGraphics_DefaultDpiY 96.0f
+#define CGraphics_DefaultDpi 96.0f
 
 #define CFiller_TOLERANCE 0.1f
 
-#define CStatus_Check(status)                                                 \
+#define CStatus_CheckGOTO(status, save, target)                                \
 	do {                                                                       \
-		const CStatus _status_ = (status);                                    \
-		if(_status_ != CStatus_OK)                                            \
-		{                                                                      \
-			return _status_;                                                   \
-		}                                                                      \
+		if(((save) = (status)) != CStatus_OK) { goto target; }                 \
 	} while(0)
-#define CStatus_Require(cond, status)                                         \
+#define CStatus_Check(status)                                                  \
 	do {                                                                       \
-		if(!(cond))                                                            \
-		{                                                                      \
-			return (status);                                                   \
-		}                                                                      \
+		const CStatus _status_ = (status);                                     \
+		if(_status_ != CStatus_OK) { return _status_; }                        \
+	} while(0)
+#define CStatus_Require(cond, status)                                          \
+	do {                                                                       \
+		if(!(cond)) { return (status); }                                       \
 	} while(0)
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* _C_LIBRARYINTERNAL_H_ */
+#endif /* _CRAYONS_INTERNAL_H_ */

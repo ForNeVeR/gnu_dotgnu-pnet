@@ -27,7 +27,7 @@ extern "C" {
 
 static CStatus
 CFlattener_EnsureCapacity(CFlattener *_this,
-                           CUInt32     minimum)
+                          CUInt32     minimum)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -57,10 +57,10 @@ CFlattener_Initialize(CFlattener *_this)
 
 CINTERNAL void
 CFlattener_Finalize(CFlattener *_this,
-                     CPointF    **points,
-                     CByte      **types,
-                     CUInt32     *count,
-                     CUInt32     *capacity)
+                    CPointF    **points,
+                    CByte      **types,
+                    CUInt32     *count,
+                    CUInt32     *capacity)
 {
 	/* assertions */
 	CASSERT((_this  != 0));
@@ -103,10 +103,10 @@ CFlattener_Finalize(CFlattener *_this,
 
 CINTERNAL CStatus
 CFlattener_Flatten(CFlattener *_this,
-                    CPointF    *points,
-                    CByte      *types,
-                    CUInt32     count,
-                    CFloat      tolerance)
+                   CPointF    *points,
+                   CByte      *types,
+                   CUInt32     count,
+                   CFloat      tolerance)
 {
 	/* declarations */
 	CByte    *srcT;
@@ -145,10 +145,10 @@ CFlattener_Flatten(CFlattener *_this,
 	CStatus_Check(CFlattener_EnsureCapacity(_this, count));
 
 	/* get the type output pointer */
-	dstT = types;
+	dstT = _this->types;
 
 	/* get the point output pointer */
-	dstP = points;
+	dstP = _this->points;
 
 	/* flatten the path */
 	while(srcP != end)
@@ -282,6 +282,9 @@ CFlattener_Flatten(CFlattener *_this,
 		/* move to the next source position */
 		++srcP; ++srcT; ++srcN;
 	}
+
+	/* set the count */
+	_this->count = dstN;
 
 	/* return successfully */
 	return CStatus_OK;

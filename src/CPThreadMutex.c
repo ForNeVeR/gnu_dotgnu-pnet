@@ -72,6 +72,12 @@ CMutex_Destroy(CMutex **_this)
 
 	/* finalize the mutex */
 	pthread_mutex_destroy(&((*_this)->mutex));
+
+	/* dispose of the mutex */
+	CFree(*_this);
+
+	/* null the this pointer */
+	*_this = 0;
 }
 
 

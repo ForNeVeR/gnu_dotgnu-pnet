@@ -26,33 +26,29 @@ extern "C" {
 #endif
 
 /* Determine if the given transformations are equal. */
-CINTERNAL void
+CINTERNAL CBool
 CAffineTransformF_Equals(const CAffineTransformF *_this,
-                          const CAffineTransformF *other,
-                          CBool                   *eq)
+                         const CAffineTransformF *other)
 {
 	/* assertions */
 	CASSERT((_this != 0));
 	CASSERT((other != 0));
-	CASSERT((eq    != 0));
 
-	/* determine equality */
-	*eq = !CMemCmp(_this, other, sizeof(CAffineTransformF));
+	/* determine and return equality */
+	return !CMemCmp(_this, other, sizeof(CAffineTransformF));
 }
 
 /* Determine if the given transformations are not equal. */
-CINTERNAL void
+CINTERNAL CBool
 CAffineTransformF_NotEquals(const CAffineTransformF *_this,
-                             const CAffineTransformF *other,
-                             CBool                   *ne)
+                            const CAffineTransformF *other)
 {
 	/* assertions */
 	CASSERT((_this != 0));
 	CASSERT((other != 0));
-	CASSERT((ne    != 0));
 
-	/* determine inequality */
-	*ne = !(!CMemCmp(_this, other, sizeof(CAffineTransformF)));
+	/* determine and return inequality */
+	return !(!CMemCmp(_this, other, sizeof(CAffineTransformF)));
 }
 
 /* Set this transformation to the identity transformation. */
@@ -69,10 +65,10 @@ CAffineTransformF_SetIdentity(CAffineTransformF *_this)
 /* Set this transformation to warp to a parallelogram. */
 CINTERNAL CStatus
 CAffineTransformF_SetParallelogram(CAffineTransformF *_this,
-                                    CRectangleF        rect,
-                                    CPointF            tl,
-                                    CPointF            tr,
-                                    CPointF            bl)
+                                   CRectangleF        rect,
+                                   CPointF            tl,
+                                   CPointF            tr,
+                                   CPointF            bl)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -109,12 +105,12 @@ CAffineTransformF_SetParallelogram(CAffineTransformF *_this,
 /* Set the elements of this transformation. */
 CINTERNAL void
 CAffineTransformF_SetElements(CAffineTransformF *_this,
-                               CFloat             m11,
-                               CFloat             m12,
-                               CFloat             m21,
-                               CFloat             m22,
-                               CFloat             dx,
-                               CFloat             dy)
+                              CFloat             m11,
+                              CFloat             m12,
+                              CFloat             m21,
+                              CFloat             m22,
+                              CFloat             dx,
+                              CFloat             dy)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -129,21 +125,20 @@ CAffineTransformF_SetElements(CAffineTransformF *_this,
 }
 
 /* Get the determinant of this transformation. */
-CINTERNAL void
-CAffineTransformF_GetDeterminant(const CAffineTransformF *_this,
-                                  CFloat                  *determinant)
+CINTERNAL CFloat
+CAffineTransformF_GetDeterminant(const CAffineTransformF *_this)
 {
 	/* assertions */
 	CASSERT((_this != 0));
 
-	/* calculate the determinant */
-	*determinant = ((_this->m11 * _this->m22) - (_this->m12 * _this->m21));
+	/* calculate and return the determinant */
+	return ((_this->m11 * _this->m22) - (_this->m12 * _this->m21));
 }
 
 /* Get the inverse of this transformation. */
 CINTERNAL CStatus
 CAffineTransformF_GetInverse(const CAffineTransformF *_this,
-                              CAffineTransformF       *inverse)
+                             CAffineTransformF       *inverse)
 {
 	/* declarations */
 	CFloat determinant;
@@ -152,7 +147,7 @@ CAffineTransformF_GetInverse(const CAffineTransformF *_this,
 	CASSERT((_this != 0));
 
 	/* get the determinant */
-	CAffineTransformF_GetDeterminant(_this, &determinant);
+	determinant = CAffineTransformF_GetDeterminant(_this);
 
 	/* ensure the transformation is invertible */
 	CStatus_Require
@@ -178,8 +173,8 @@ CAffineTransformF_GetInverse(const CAffineTransformF *_this,
 /* Multiply this transformation with another. */
 CINTERNAL void
 CAffineTransformF_Multiply(CAffineTransformF       *_this,
-                            const CAffineTransformF *other,
-                            CMatrixOrder             order)
+                           const CAffineTransformF *other,
+                           CMatrixOrder             order)
 {
 	/* declarations */
 	CAffineTransformF t1;
@@ -213,8 +208,8 @@ CAffineTransformF_Multiply(CAffineTransformF       *_this,
 /* Inverse multiply this transformation with another. */
 CINTERNAL CStatus
 CAffineTransformF_MultiplyInverse(CAffineTransformF       *_this,
-                                   const CAffineTransformF *other,
-                                   CMatrixOrder             order)
+                                  const CAffineTransformF *other,
+                                  CMatrixOrder             order)
 {
 	/* declarations */
 	CAffineTransformF t1;
@@ -255,8 +250,8 @@ CAffineTransformF_MultiplyInverse(CAffineTransformF       *_this,
 /* Rotate a transformation. */
 CINTERNAL void
 CAffineTransformF_Rotate(CAffineTransformF *_this,
-                          CFloat             angle,
-                          CMatrixOrder       order)
+                         CFloat             angle,
+                         CMatrixOrder       order)
 {
 	/* declarations */
 	CAffineTransformF rotate;
@@ -286,8 +281,8 @@ CAffineTransformF_Rotate(CAffineTransformF *_this,
 /* Inverse rotate a transformation. */
 CINTERNAL void
 CAffineTransformF_RotateInverse(CAffineTransformF *_this,
-                                 CFloat             angle,
-                                 CMatrixOrder       order)
+                                CFloat             angle,
+                                CMatrixOrder       order)
 {
 	/* declarations */
 	CAffineTransformF rotate;
@@ -327,12 +322,12 @@ CAffineTransformF_RotateInverse(CAffineTransformF *_this,
 /* Scale a transformation. */
 CINTERNAL void
 CAffineTransformF_Scale(CAffineTransformF *_this,
-                         CFloat             scaleX,
-                         CFloat             scaleY,
-                         CMatrixOrder       order)
+                        CFloat             scaleX,
+                        CFloat             scaleY,
+                        CMatrixOrder       order)
 {
 	/*\
-	|*| NOTE: technically we could just multiply with an
+	|*| NOTE: technically we could just multiply with a
 	|*|       CAffineTransformF(scaleX, 0, 0, scaleY, 0, 0),
 	|*|       but this is more efficient
 	\*/
@@ -362,9 +357,9 @@ CAffineTransformF_Scale(CAffineTransformF *_this,
 /* Inverse scale a transformation. */
 CINTERNAL void
 CAffineTransformF_ScaleInverse(CAffineTransformF *_this,
-                                CFloat             scaleX,
-                                CFloat             scaleY,
-                                CMatrixOrder       order)
+                               CFloat             scaleX,
+                               CFloat             scaleY,
+                               CMatrixOrder       order)
 {
 	/* declarations */
 	CDouble sx;
@@ -399,9 +394,9 @@ CAffineTransformF_ScaleInverse(CAffineTransformF *_this,
 /* Extract the scaling factors from, then unscale, this transformation. */
 CINTERNAL void
 CAffineTransformF_ExtractScale(CAffineTransformF *_this,
-                                CFloat            *scaleX,
-                                CFloat            *scaleY,
-                                CMatrixOrder       order)
+                               CFloat            *scaleX,
+                               CFloat            *scaleY,
+                               CMatrixOrder       order)
 {
 	/* declarations */
 	CFloat m11;
@@ -423,7 +418,7 @@ CAffineTransformF_ExtractScale(CAffineTransformF *_this,
 	m22 = _this->m22;
 
 	/* get the determinant */
-	CAffineTransformF_GetDeterminant(_this, &determinant);
+	determinant = CAffineTransformF_GetDeterminant(_this);
 
 	/* calculate the horizontal scaling factor */
 	*scaleX = CMath_Sqrt((m11 * m11) + (m12 * m12));
@@ -465,12 +460,12 @@ CAffineTransformF_ExtractScale(CAffineTransformF *_this,
 /* Shear a transformation. */
 CINTERNAL void
 CAffineTransformF_Shear(CAffineTransformF *_this,
-                         CFloat             shearX,
-                         CFloat             shearY,
-                         CMatrixOrder       order)
+                        CFloat             shearX,
+                        CFloat             shearY,
+                        CMatrixOrder       order)
 {
 	/*\
-	|*| NOTE: technically we could just multiply with an
+	|*| NOTE: technically we could just multiply with a
 	|*|       CAffineTransformF(1, shearX, shearY, 1, 0, 0),
 	|*|       but this is more efficient
 	\*/
@@ -511,12 +506,12 @@ CAffineTransformF_Shear(CAffineTransformF *_this,
 /* Translate a transformation. */
 CINTERNAL void
 CAffineTransformF_Translate(CAffineTransformF *_this,
-                             CFloat             offsetX,
-                             CFloat             offsetY,
-                             CMatrixOrder       order)
+                            CFloat             offsetX,
+                            CFloat             offsetY,
+                            CMatrixOrder       order)
 {
 	/*\
-	|*| NOTE: technically we could just multiply with an
+	|*| NOTE: technically we could just multiply with a
 	|*|       CAffineTransformF(1, 0, 0, 1, offsetX, offsetY),
 	|*|       but this is more efficient
 	\*/
@@ -540,9 +535,9 @@ CAffineTransformF_Translate(CAffineTransformF *_this,
 /* Inverse translate a transformation. */
 CINTERNAL void
 CAffineTransformF_TranslateInverse(CAffineTransformF *_this,
-                                    CFloat             offsetX,
-                                    CFloat             offsetY,
-                                    CMatrixOrder       order)
+                                   CFloat             offsetX,
+                                   CFloat             offsetY,
+                                   CMatrixOrder       order)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -563,8 +558,8 @@ CAffineTransformF_TranslateInverse(CAffineTransformF *_this,
 /* Transform a list of points. */
 CINTERNAL void
 CAffineTransformF_TransformPoints(const CAffineTransformF *_this,
-                                   CPointF                 *points,
-                                   CUInt32                  count)
+                                  CPointF                 *points,
+                                  CUInt32                  count)
 {
 	/* assertions */
 	CASSERT((_this  != 0));
@@ -600,8 +595,8 @@ CAffineTransformF_TransformPoints(const CAffineTransformF *_this,
 /* Transform a list of vectors. */
 CINTERNAL void
 CAffineTransformF_TransformVectors(const CAffineTransformF *_this,
-                                    CPointF                 *points,
-                                    CUInt32                  count)
+                                   CPointF                 *points,
+                                   CUInt32                  count)
 {
 	/* assertions */
 	CASSERT((_this  != 0));
@@ -636,8 +631,8 @@ CAffineTransformF_TransformVectors(const CAffineTransformF *_this,
 
 CINTERNAL void
 CVectorF_ScalePoints(const CVectorF *_this,
-                      CPointF        *points,
-                      CUInt32         count)
+                     CPointF        *points,
+                     CUInt32         count)
 {
 	/* assertions */
 	CASSERT((_this  != 0));
@@ -667,8 +662,8 @@ CVectorF_ScalePoints(const CVectorF *_this,
 
 CINTERNAL void
 CVectorF_TranslatePoints(const CVectorF *_this,
-                          CPointF        *points,
-                          CUInt32         count)
+                         CPointF        *points,
+                         CUInt32         count)
 {
 	/* assertions */
 	CASSERT((_this  != 0));

@@ -37,18 +37,18 @@ static const CColorBlend CColorBlend_Zero = { 0, 0, 0 };
 
 CINTERNAL CStatus
 CBlend_Initialize(CBlend  *_this,
-                   CUInt32  count);
+                  CUInt32  count);
 CINTERNAL CStatus
 CBlend_Copy(CBlend *_this,
-             CBlend *copy);
+            CBlend *copy);
 CINTERNAL void
 CBlend_SetTriangularShape(CBlend *_this,
                           CFloat  focus,
                           CFloat  scale);
 CINTERNAL void
-CDBlend_SetSigmaBellShape(CBlend *_this,
-                          CFloat  focus,
-                          CFloat  scale);
+CBlend_SetSigmaBellShape(CBlend *_this,
+                         CFloat  focus,
+                         CFloat  scale);
 CINTERNAL void
 CBlend_Finalize(CBlend *_this);
 CINTERNAL CStatus

@@ -18,8 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifdef HAVE_X11_XLIB_H
-
 #include "CX11Surface.h"
 #include "CUtils.h"
 #include <X11/Xutil.h>
@@ -31,13 +29,13 @@ extern "C" {
 /* TODO: use XRender when available */
 
 static CStatus
-CX11Surface_GetImages(CX11Surface    *_this,
-                       CUInt32         x,
-                       CUInt32         y,
-                       CUInt32         width,
-                       CUInt32         height,
-                       XImage         **imageX,
-                       pixman_image_t **imageP)
+CX11Surface_GetImages(CX11Surface     *_this,
+                      CUInt32          x,
+                      CUInt32          y,
+                      CUInt32          width,
+                      CUInt32          height,
+                      XImage         **imageX,
+                      pixman_image_t **imageP)
 {
 	/* declarations */
 	Pixmap           pixmap;
@@ -119,14 +117,14 @@ CX11Surface_GetImages(CX11Surface    *_this,
 }
 
 static CStatus
-CX11Surface_Composite(CSurface         *_this,
-                       CUInt32           x,
-                       CUInt32           y,
-                       CUInt32           width,
-                       CUInt32           height,
-                       pixman_image_t    *src,
-                       pixman_image_t    *mask,
-                       pixman_operator_t  op)
+CX11Surface_Composite(CSurface          *_this,
+                      CUInt32            x,
+                      CUInt32            y,
+                      CUInt32            width,
+                      CUInt32            height,
+                      pixman_image_t    *src,
+                      pixman_image_t    *mask,
+                      pixman_operator_t  op)
 {
 	/* declarations */
 	CX11Surface *surface;
@@ -141,8 +139,8 @@ CX11Surface_Composite(CSurface         *_this,
 	/* perform the composite */
 	{
 		/* declarations */
-		XImage          *imageX;
-		pixman_image_t  *imageP;
+		XImage         *imageX;
+		pixman_image_t *imageP;
 
 		/* create the images */
 		CStatus_Check
@@ -171,7 +169,7 @@ CX11Surface_Composite(CSurface         *_this,
 
 static CStatus
 CX11Surface_Clear(CSurface *_this,
-                   CColor    color)
+                  CColor    color)
 {
 	/* declarations */
 	CX11Surface *surface;
@@ -220,7 +218,7 @@ CX11Surface_Clear(CSurface *_this,
 
 static CStatus
 CX11Surface_Flush(CSurface        *_this,
-                   CFlushIntention  intention)
+                  CFlushIntention  intention)
 {
 	/* declarations */
 	CX11Surface *surface;
@@ -247,6 +245,48 @@ CX11Surface_Flush(CSurface        *_this,
 	return CStatus_OK;
 }
 
+static CStatus
+CX11Surface_GetDpiX(CSurface *_this,
+                    CFloat   *dpiX)
+{
+	/* declarations */
+	CX11Surface *surface;
+
+	/* assertions */
+	CASSERT((_this != 0));
+	CASSERT((dpiX  != 0));
+
+	/* get this as an x surface */
+	surface = (CX11Surface *)_this;
+
+	/* get the horizontal resolution */
+	*dpiX = surface->dpiX;
+
+	/* return successfully */
+	return CStatus_OK;
+}
+
+static CStatus
+CX11Surface_GetDpiY(CSurface *_this,
+                    CFloat   *dpiY)
+{
+	/* declarations */
+	CX11Surface *surface;
+
+	/* assertions */
+	CASSERT((_this != 0));
+	CASSERT((dpiY  != 0));
+
+	/* get this as an x surface */
+	surface = (CX11Surface *)_this;
+
+	/* get the vertical resolution */
+	*dpiY = surface->dpiY;
+
+	/* return successfully */
+	return CStatus_OK;
+}
+
 static void
 CX11Surface_Finalize(CSurface *_this)
 {
@@ -268,12 +308,12 @@ CX11Surface_Finalize(CSurface *_this)
 
 CStatus
 CX11Surface_Create(CX11Surface **_this,
-                    Display       *dpy,
-                    Drawable       drawable,
-                    Screen        *screen,
-                    Visual        *visual,
-                    CUInt32       width,
-                    CUInt32       height)
+                   Display      *dpy,
+                   Drawable      drawable,
+                   Screen       *screen,
+                   Visual       *visual,
+                   CUInt32       width,
+                   CUInt32       height)
 {
 	/* declarations */
 	CX11Surface *surface;
@@ -328,7 +368,27 @@ CX11Surface_Create(CX11Surface **_this,
 	surface->visual      = visual;
 	surface->gc          = 0;
 	surface->drawable    = drawable;
-	/* surface->dpi         = ; */
+
+	/* get the resolution */
+	{
+		/* declarations */
+		CDouble px;
+		CDouble mm;
+
+		/* get the pixel width and millimeter width of the screen */
+		px = XWidthOfScreen(screen);
+		mm = XWidthMMOfScreen(screen);
+
+		/* set the horizontal resolution */
+		surface->dpiX = (CFloat)((px * 25.4) / mm);
+
+		/* get the pixel height and millimeter height of the screen */
+		px = XHeightOfScreen(screen);
+		mm = XHeightMMOfScreen(screen);
+
+		/* set the vertical resolution */
+		surface->dpiY = (CFloat)((px * 25.4) / mm);
+	}
 
 	/* get the depth */
 	{
@@ -386,5 +446,3 @@ CX11Surface_Create(CX11Surface **_this,
 #ifdef __cplusplus
 };
 #endif
-
-#endif /* HAVE_X11_XLIB_H */

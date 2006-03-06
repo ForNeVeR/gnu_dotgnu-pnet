@@ -27,7 +27,7 @@ extern "C" {
 
 CStatus
 CBitmapSurface_Create(CBitmapSurface **_this,
-                       CBitmap         *image)
+                      CBitmap         *image)
 {
 	/* ensure we have a this pointer pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -79,14 +79,14 @@ CBitmapSurface_Create(CBitmapSurface **_this,
 }
 
 static CStatus
-CBitmapSurface_Composite(CSurface         *_this,
-                          CUInt32           x,
-                          CUInt32           y,
-                          CUInt32           width,
-                          CUInt32           height,
-                          pixman_image_t    *src,
-                          pixman_image_t    *mask,
-                          pixman_operator_t  op)
+CBitmapSurface_Composite(CSurface          *_this,
+                         CUInt32            x,
+                         CUInt32            y,
+                         CUInt32            width,
+                         CUInt32            height,
+                         pixman_image_t    *src,
+                         pixman_image_t    *mask,
+                         pixman_operator_t  op)
 {
 	/* declarations */
 	CBitmap *image;
@@ -121,10 +121,10 @@ CBitmapSurface_Composite(CSurface         *_this,
 
 static CStatus
 CBitmapSurface_Clear(CSurface *_this,
-                      CColor    color)
+                     CColor    color)
 {
 	/* declarations */
-	CBitmap       *image;
+	CBitmap        *image;
 	pixman_color_t  pixel;
 
 	/* assertions */
@@ -159,12 +159,62 @@ CBitmapSurface_Clear(CSurface *_this,
 
 static CStatus
 CBitmapSurface_Flush(CSurface        *_this,
-                      CFlushIntention  intention)
+                     CFlushIntention  intention)
 {
 	/* assertions */
 	CASSERT((_this != 0));
 
 	/* nothing to do here */
+
+	/* return successfully */
+	return CStatus_OK;
+}
+
+static CStatus
+CBitmapSurface_GetDpiX(CSurface *_this,
+                       CFloat   *dpiX)
+{
+	/* declarations */
+	CBitmap *image;
+
+	/* assertions */
+	CASSERT((_this != 0));
+	CASSERT((dpiX  != 0));
+
+	/* get the image */
+	image = ((CBitmapSurface *)_this)->image;
+
+	/* get the horizontal resolution, synchronously */
+	CMutex_Lock(image->lock);
+	{
+		*dpiX = image->dpiX;
+	}
+	CMutex_Unlock(image->lock);
+
+	/* return successfully */
+	return CStatus_OK;
+}
+
+static CStatus
+CBitmapSurface_GetDpiY(CSurface *_this,
+                       CFloat   *dpiY)
+{
+	/* declarations */
+	CBitmap *image;
+
+	/* assertions */
+	CASSERT((_this != 0));
+	CASSERT((dpiY  != 0));
+
+	/* get the image */
+	image = ((CBitmapSurface *)_this)->image;
+
+	/* get the vertical resolution, synchronously */
+	CMutex_Lock(image->lock);
+	{
+		*dpiY = image->dpiY;
+	}
+	CMutex_Unlock(image->lock);
 
 	/* return successfully */
 	return CStatus_OK;

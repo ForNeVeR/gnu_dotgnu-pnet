@@ -19,6 +19,7 @@
  */
 
 #include "CHatchBrush.h"
+#include "CUtils.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,15 +28,15 @@ extern "C" {
 /* Clone this hatch brush. */
 static CStatus
 CHatchBrush_Clone(CBrush  *_this,
-                   CBrush **_clone)
+                  CBrush **_clone)
 {
 	/* declarations */
 	CHatchBrush  *brush;
 	CHatchBrush **clone;
 
 	/* assertions */
-	CASSERT((_this != 0));
-	CASSERT((clone != 0));
+	CASSERT((_this  != 0));
+	CASSERT((_clone != 0));
 
 	/* get this as a hatch brush */
 	brush = (CHatchBrush *)_this;
@@ -62,7 +63,7 @@ CHatchBrush_Finalize(CBrush *_this)
 /* Create a pattern for this brush. */
 static CStatus
 CHatchBrush_CreatePattern(CBrush   *_this,
-                           CPattern *pattern)
+                          CPattern *pattern)
 {
 	/* assertions */
 	CASSERT((_this   != 0));
@@ -71,12 +72,7 @@ CHatchBrush_CreatePattern(CBrush   *_this,
 	/* create the pattern */
 	{
 		/* declarations */
-		pixman_format_t *format;
-		CHatchBrush    *brush;
-		CByte          *data;
-		CColor          fg;
-		CColor          bg;
-		CUInt32         stride;
+		CHatchBrush *brush;
 
 		/* get this as a hatch brush */
 		brush = (CHatchBrush *)_this;
@@ -84,68 +80,16 @@ CHatchBrush_CreatePattern(CBrush   *_this,
 		/* set the pattern transformation */
 		pattern->transform = 0;
 
-		/* calculate the pre-multiplied foreground */
-		{
-			/* declarations */
-			CByte a, r, g, b;
-
-			/* get the foreground */
-			fg = brush->foreground;
-
-			/* get the components and pre-multiply */
-			a = ((CColor_A(fg)));
-			r = ((CColor_R(fg) * a) / 255);
-			g = ((CColor_G(fg) * a) / 255);
-			b = ((CColor_B(fg) * a) / 255);
-
-			/* set the foreground */
-			fg = CPixmanPixel_FromARGB(a, r, g, b);
-		}
-
-		/* calculate the pre-multiplied background */
-		{
-			/* declarations */
-			CByte a, r, g, b;
-
-			/* get the background */
-			bg = brush->background;
-
-			/* get the components and pre-multiply */
-			a = ((CColor_A(bg)));
-			r = ((CColor_R(bg) * a) / 255);
-			g = ((CColor_G(bg) * a) / 255);
-			b = ((CColor_B(bg) * a) / 255);
-
-			/* set the background */
-			bg = CPixmanPixel_FromARGB(a, r, g, b);
-		}
-
-		/* create the pixman format */
-		format = pixman_format_create(CHatchBrush_DataFormat);
-
-		/* ensure we have a format */
-		CStatus_Require((format != 0), CStatus_OutOfMemory);
-
-		/* create the pixman image */
-		pattern->image =
-			pixman_image_create
-				(format, CHatchBrush_StyleWidth, CHatchBrush_StyleHeight);
-
-		/* destroy the pixman format */
-		pixman_format_destroy(format);
-
-		/* ensure we have an image */
-		CStatus_Require((pattern->image != 0), CStatus_OutOfMemory);
-
-		/* get the data and stride */
-		data = (CByte *)pixman_image_get_data(pattern->image);
-		stride = (CUInt32)pixman_image_get_stride(pattern->image);
-
-		/* get the image data for the style */
-		CHatchBrush_StyleToData(brush->style, data, stride, fg, bg);
-
-		/* set the repeat flag */
-		pixman_image_set_repeat(pattern->image, 1);
+		/* create the hatch pattern */
+		CStatus_Check
+			(CUtils_CreateHatchPattern
+				(&pattern->image,
+				 CHatchBrush_Styles[brush->style],
+				 CHatchBrush_StyleWidth,
+				 CHatchBrush_StyleHeight,
+				 brush->foreground,
+				 brush->background,
+				 1));
 	}
 
 	/* return successfully */
@@ -155,9 +99,9 @@ CHatchBrush_CreatePattern(CBrush   *_this,
 /* Create a hatch brush. */
 CStatus
 CHatchBrush_Create(CHatchBrush **_this,
-                    CHatchStyle   style,
-                    CColor        foreground,
-                    CColor        background)
+                   CHatchStyle   style,
+                   CColor        foreground,
+                   CColor        background)
 {
 	/* ensure we have a this pointer pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -186,7 +130,7 @@ CHatchBrush_Create(CHatchBrush **_this,
 /* Get the background color of the hatch. */
 CStatus
 CHatchBrush_GetBackgroundColor(CHatchBrush *_this,
-                                CColor      *background)
+                               CColor      *background)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -204,7 +148,7 @@ CHatchBrush_GetBackgroundColor(CHatchBrush *_this,
 /* Get the foreground color of the hatch. */
 CStatus
 CHatchBrush_GetForegroundColor(CHatchBrush *_this,
-                                CColor      *foreground)
+                               CColor      *foreground)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -222,7 +166,7 @@ CHatchBrush_GetForegroundColor(CHatchBrush *_this,
 /* Get the style of the hatch. */
 CStatus
 CHatchBrush_GetHatchStyle(CHatchBrush *_this,
-                           CHatchStyle *style)
+                          CHatchStyle *style)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);

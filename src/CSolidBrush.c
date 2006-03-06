@@ -28,7 +28,7 @@ extern "C" {
 /* Initialize this solid brush. */
 static void
 CSolidBrush_Initialize(CSolidBrush *_this,
-                        CColor       color)
+                       CColor       color)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -53,15 +53,15 @@ CSolidBrush_Finalize(CBrush *_this)
 /* Clone this solid brush. */
 static CStatus
 CSolidBrush_Clone(CBrush  *_this,
-                   CBrush **_clone)
+                  CBrush **_clone)
 {
 	/* declarations */
 	CSolidBrush  *brush;
 	CSolidBrush **clone;
 
 	/* assertions */
-	CASSERT((_this != 0));
-	CASSERT((clone != 0));
+	CASSERT((_this  != 0));
+	CASSERT((_clone != 0));
 
 	/* get this as a solid brush */
 	brush = (CSolidBrush  *)_this;
@@ -76,7 +76,7 @@ CSolidBrush_Clone(CBrush  *_this,
 /* Create a pattern for this brush. */
 static CStatus
 CSolidBrush_CreatePattern(CBrush   *_this,
-                           CPattern *pattern)
+                          CPattern *pattern)
 {
 	/* declarations */
 	CSolidBrush *brush;
@@ -98,7 +98,7 @@ CSolidBrush_CreatePattern(CBrush   *_this,
 /* Create a solid brush. */
 CStatus
 CSolidBrush_Create(CSolidBrush **_this,
-                    CColor        color)
+                   CColor        color)
 {
 	/* ensure we have a this pointer pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -119,7 +119,7 @@ CSolidBrush_Create(CSolidBrush **_this,
 /* Get the color of this brush. */
 CStatus
 CSolidBrush_GetColor(CSolidBrush *_this,
-                      CColor      *color)
+                     CColor      *color)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -137,7 +137,7 @@ CSolidBrush_GetColor(CSolidBrush *_this,
 /* Set the color of this brush. */
 CStatus
 CSolidBrush_SetColor(CSolidBrush *_this,
-                      CColor       color)
+                     CColor       color)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);

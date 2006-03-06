@@ -19,6 +19,7 @@
  */
 
 #include "CPathBrush.h"
+#include "CBlend.h"
 #include "CMatrix.h"
 #include "CPath.h"
 #include "CUtils.h"
@@ -34,7 +35,7 @@ static const CPointF CPointF_Zero = { 0.0f, 0.0f };
 /* Initialize this path brush. */
 static CStatus
 CPathBrush_Initialize(CPathBrush *_this,
-                       CPath      *path)
+                      CPath      *path)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -180,7 +181,7 @@ CPathBrush_Finalize(CBrush *_this)
 /* Clone this path brush. */
 static CStatus
 CPathBrush_Clone(CBrush  *_this,
-                  CBrush **_clone)
+                 CBrush **_clone)
 {
 	/* assertions */
 	CASSERT((_this  != 0));
@@ -256,7 +257,7 @@ CPathBrush_Clone(CBrush  *_this,
 /* Create a pattern for this brush. */
 static CStatus
 CPathBrush_CreatePattern(CBrush   *_this,
-                          CPattern *pattern)
+                         CPattern *pattern)
 {
 	/* declarations */
 	CPathBrush *brush;
@@ -280,7 +281,7 @@ CPathBrush_CreatePattern(CBrush   *_this,
 /* Create a path brush. */
 CStatus
 CPathBrush_Create(CPathBrush **_this,
-                   CPath       *path)
+                  CPath       *path)
 {
 	/* ensure we have a this pointer pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -315,7 +316,7 @@ CPathBrush_Create(CPathBrush **_this,
 /* Get the gradient blend. */
 CStatus
 CPathBrush_GetBlend(CPathBrush *_this,
-                     CBlend     *blend)
+                    CBlend     *blend)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -333,7 +334,7 @@ CPathBrush_GetBlend(CPathBrush *_this,
 /* Set the gradient blend. */
 CStatus
 CPathBrush_SetBlend(CPathBrush *_this,
-                     CBlend      blend)
+                    CBlend      blend)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -381,7 +382,7 @@ CPathBrush_SetBlend(CPathBrush *_this,
 /* Get the center color of the gradient. */
 CStatus
 CPathBrush_GetCenterColor(CPathBrush *_this,
-                           CColor     *centerColor)
+                          CColor     *centerColor)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -399,7 +400,7 @@ CPathBrush_GetCenterColor(CPathBrush *_this,
 /* Set the center color of the gradient. */
 CStatus
 CPathBrush_SetCenterColor(CPathBrush *_this,
-                           CColor      centerColor)
+                          CColor      centerColor)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -417,7 +418,7 @@ CPathBrush_SetCenterColor(CPathBrush *_this,
 /* Get the center point of the gradient. */
 CStatus
 CPathBrush_GetCenterPoint(CPathBrush *_this,
-                           CPointF    *centerPoint)
+                          CPointF    *centerPoint)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -435,7 +436,7 @@ CPathBrush_GetCenterPoint(CPathBrush *_this,
 /* Set the center point of the gradient. */
 CStatus
 CPathBrush_SetCenterPoint(CPathBrush *_this,
-                           CPointF     centerPoint)
+                          CPointF     centerPoint)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -453,7 +454,7 @@ CPathBrush_SetCenterPoint(CPathBrush *_this,
 /* Get the color blend of the gradient. */
 CStatus
 CPathBrush_GetColorBlend(CPathBrush  *_this,
-                          CColorBlend *colorBlend)
+                         CColorBlend *colorBlend)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -471,7 +472,7 @@ CPathBrush_GetColorBlend(CPathBrush  *_this,
 /* Set the color blend of the gradient. */
 CStatus
 CPathBrush_SetColorBlend(CPathBrush  *_this,
-                          CColorBlend  colorBlend)
+                         CColorBlend  colorBlend)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -519,7 +520,7 @@ CPathBrush_SetColorBlend(CPathBrush  *_this,
 /* Get the focus point of the gradient. */
 CStatus
 CPathBrush_GetFocusPoint(CPathBrush *_this,
-                          CPointF    *focusPoint)
+                         CPointF    *focusPoint)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -537,7 +538,7 @@ CPathBrush_GetFocusPoint(CPathBrush *_this,
 /* Set the focus point of the gradient. */
 CStatus
 CPathBrush_SetFocusPoint(CPathBrush *_this,
-                          CPointF     focusPoint)
+                         CPointF     focusPoint)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -555,7 +556,7 @@ CPathBrush_SetFocusPoint(CPathBrush *_this,
 /* Get the bounding rectangle of the gradient. */
 CStatus
 CPathBrush_GetRectangle(CPathBrush  *_this,
-                         CRectangleF *rectangle)
+                        CRectangleF *rectangle)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -573,8 +574,8 @@ CPathBrush_GetRectangle(CPathBrush  *_this,
 /* Get the surrounding colors of the gradient. */
 CStatus
 CPathBrush_GetSurroundColors(CPathBrush  *_this,
-                              CColor     **surroundColors,
-                              CUInt32     *count)
+                             CColor     **surroundColors,
+                             CUInt32     *count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -607,8 +608,8 @@ CPathBrush_GetSurroundColors(CPathBrush  *_this,
 /* Set the colors of the gradient path points. */
 CStatus
 CPathBrush_SetSurroundColors(CPathBrush *_this,
-                              CColor     *surroundColors,
-                              CUInt32     count)
+                             CColor     *surroundColors,
+                             CUInt32     count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -663,7 +664,7 @@ CPathBrush_SetSurroundColors(CPathBrush *_this,
 /* Get the wrap mode of the gradient. */
 CStatus
 CPathBrush_GetWrapMode(CPathBrush *_this,
-                        CWrapMode  *wrapMode)
+                       CWrapMode  *wrapMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -681,7 +682,7 @@ CPathBrush_GetWrapMode(CPathBrush *_this,
 /* Set the wrap mode of the gradient. */
 CStatus
 CPathBrush_SetWrapMode(CPathBrush *_this,
-                        CWrapMode   wrapMode)
+                       CWrapMode   wrapMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -699,7 +700,7 @@ CPathBrush_SetWrapMode(CPathBrush *_this,
 /* Get the transformation matrix of the gradient. */
 CStatus
 CPathBrush_GetTransform(CPathBrush *_this,
-                         CMatrix    *matrix)
+                        CMatrix    *matrix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -711,8 +712,8 @@ CPathBrush_GetTransform(CPathBrush *_this,
 /* Multiply the transformation matrix of the gradient by another matrix. */
 CStatus
 CPathBrush_MultiplyTransform(CPathBrush   *_this,
-                              CMatrix      *matrix,
-                              CMatrixOrder  order)
+                             CMatrix      *matrix,
+                             CMatrixOrder  order)
 {
 	/* declarations */
 	CAffineTransformF t;
@@ -755,8 +756,8 @@ CPathBrush_ResetTransform(CPathBrush *_this)
 /* Rotate the transformation matrix of the gradient. */
 CStatus
 CPathBrush_RotateTransform(CPathBrush   *_this,
-                            CFloat        angle,
-                            CMatrixOrder  order)
+                           CFloat        angle,
+                           CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -774,9 +775,9 @@ CPathBrush_RotateTransform(CPathBrush   *_this,
 /* Scale the transformation matrix of the gradient. */
 CStatus
 CPathBrush_ScaleTransform(CPathBrush   *_this,
-                           CFloat        sx,
-                           CFloat        sy,
-                           CMatrixOrder  order)
+                          CFloat        sx,
+                          CFloat        sy,
+                          CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -794,8 +795,8 @@ CPathBrush_ScaleTransform(CPathBrush   *_this,
 /* Set the shape of the gradient to a triangle. */
 CStatus
 CPathBrush_SetTriangularShape(CPathBrush *_this,
-                               CFloat      focus,
-                               CFloat      scale)
+                              CFloat      focus,
+                              CFloat      scale)
 {
 	/* declarations */
 	CUInt32 count;
@@ -853,8 +854,8 @@ CPathBrush_SetTriangularShape(CPathBrush *_this,
 /* Set the shape of the gradient to a sigma bell. */
 CStatus
 CPathBrush_SetSigmaBellShape(CPathBrush *_this,
-                              CFloat      focus,
-                              CFloat      scale)
+                             CFloat      focus,
+                             CFloat      scale)
 {
 	/* declarations */
 	CUInt32 count;
@@ -912,7 +913,7 @@ CPathBrush_SetSigmaBellShape(CPathBrush *_this,
 /* Set the transformation matrix of the gradient. */
 CStatus
 CPathBrush_SetTransform(CPathBrush *_this,
-                         CMatrix    *matrix)
+                        CMatrix    *matrix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -932,9 +933,9 @@ CPathBrush_SetTransform(CPathBrush *_this,
 /* Translate the transformation matrix of the gradient. */
 CStatus
 CPathBrush_TranslateTransform(CPathBrush   *_this,
-                               CFloat        dx,
-                               CFloat        dy,
-                               CMatrixOrder  order)
+                              CFloat        dx,
+                              CFloat        dy,
+                              CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);

@@ -20,17 +20,6 @@
 
 #include "CrayonsInternal.h"
 
-#ifdef HAVE_STRING_H
-	#include <string.h>
-#else
-	#ifdef HAVE_STRINGS_H
-		#include <strings.h>
-	#endif
-#endif
-#ifdef HAVE_MEMORY_H
-	#include <memory.h>
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -43,14 +32,14 @@ CMalloc(CUInt32 size)
 
 CINTERNAL void *
 CRealloc(void     *ptr,
-          CUInt32  size)
+         CUInt32   size)
 {
 	return realloc(ptr, size);
 }
 
 CINTERNAL void *
 CCalloc(CUInt32 count,
-         CUInt32 size)
+        CUInt32 size)
 {
 	return calloc(count, size);
 }
@@ -63,8 +52,8 @@ CFree(void *ptr)
 
 CINTERNAL void *
 CMemSet(void     *_dst,
-         CByte    value,
-         CUInt32  length)
+        CByte     value,
+        CUInt32   length)
 {
 #ifdef HAVE_MEMSET
 	return memset(_dst, value, length);
@@ -89,8 +78,8 @@ CMemSet(void     *_dst,
 
 CINTERNAL void *
 CMemCopy(void       *_dst,
-          const void *_src,
-          CUInt32    length)
+         const void *_src,
+         CUInt32     length)
 {
 #ifdef HAVE_MEMCPY
 	return memcpy(_dst, _src, length);
@@ -120,8 +109,8 @@ CMemCopy(void       *_dst,
 
 CINTERNAL void *
 CMemMove(void       *_dst,
-          const void *_src,
-          CUInt32    length)
+         const void *_src,
+         CUInt32     length)
 {
 #ifdef HAVE_MEMMOVE
 	return memmove(_dst, _src, length);
@@ -169,8 +158,8 @@ CMemMove(void       *_dst,
 
 CINTERNAL int
 CMemCmp(const void *_a,
-         const void *_b,
-         CUInt32    length)
+        const void *_b,
+        CUInt32     length)
 {
 #ifdef HAVE_MEMCMP
 	return memcmp(_a, _b, length);

@@ -49,7 +49,7 @@ struct _tagCPathIterator
 /*\
 |*| Ensure the capacity of point and type lists of a path.
 |*|
-|*|   path  - the path
+|*|    path - the path
 |*|   count - the total minimum capacity required
 |*|
 |*|  Returns status code on error.

@@ -36,14 +36,12 @@ static const CAffineTransformF CAffineTransformF_Identity =
 static const CVectorF CVectorF_Zero = { 0.0f, 0.0f };
 
 
-CINTERNAL void
+CINTERNAL CBool
 CAffineTransformF_Equals(const CAffineTransformF *_this,
-                         const CAffineTransformF *other,
-                         CBool                   *eq);
-CINTERNAL void
+                         const CAffineTransformF *other);
+CINTERNAL CBool
 CAffineTransformF_NotEquals(const CAffineTransformF *_this,
-                            const CAffineTransformF *other,
-                            CBool                   *ne);
+                            const CAffineTransformF *other);
 CINTERNAL void
 CAffineTransformF_SetIdentity(CAffineTransformF *_this);
 CINTERNAL CStatus
@@ -60,9 +58,8 @@ CAffineTransformF_SetElements(CAffineTransformF *_this,
                               CFloat             m22,
                               CFloat             dx,
                               CFloat             dy);
-CINTERNAL void
-CAffineTransformF_GetDeterminant(const CAffineTransformF *_this,
-                                 CFloat                  *determinant);
+CINTERNAL CFloat
+CAffineTransformF_GetDeterminant(const CAffineTransformF *_this);
 CINTERNAL CStatus
 CAffineTransformF_GetInverse(const CAffineTransformF *_this,
                              CAffineTransformF       *inverse);

@@ -26,9 +26,9 @@ extern "C" {
 
 CStatus
 CColorPalette_Create(CColorPalette **_this,
-                      CColor         *colors,
-                      CUInt32         count,
-                      CPaletteFlag    flags)
+                     CColor         *colors,
+                     CUInt32         count,
+                     CPaletteFlag    flags)
 {
 	/* ensure we have a this pointer pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -91,7 +91,7 @@ CColorPalette_Destroy(CColorPalette **_this)
 
 CINTERNAL CBool
 CColorPalette_CheckFormat(CColorPalette *_this,
-                           CPixelFormat   format)
+                          CPixelFormat   format)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -108,7 +108,7 @@ CColorPalette_CheckFormat(CColorPalette *_this,
 
 CINTERNAL CColor
 CColorPalette_GetColor(CColorPalette *_this,
-                        CUInt32        index)
+                       CUInt32        index)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -120,7 +120,7 @@ CColorPalette_GetColor(CColorPalette *_this,
 
 CINTERNAL CUInt32
 CColorPalette_FindBestMatch(CColorPalette *_this,
-                             CColor         color)
+                            CColor         color)
 {
 	/* declarations */
 	CByte    a;

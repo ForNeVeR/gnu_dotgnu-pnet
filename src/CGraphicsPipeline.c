@@ -56,7 +56,7 @@ CGraphicsPipeline_OnChange(CGraphicsPipeline *_this)
 /* Get the device transformation of this graphics pipeline */
 CINTERNAL void
 CGraphicsPipeline_GetDevice(CGraphicsPipeline *_this,
-                             CAffineTransformF *transform)
+                            CAffineTransformF *transform)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -69,7 +69,7 @@ CGraphicsPipeline_GetDevice(CGraphicsPipeline *_this,
 /* Get the inverse device transformation of this graphics pipeline */
 CINTERNAL void
 CGraphicsPipeline_GetDeviceInverse(CGraphicsPipeline *_this,
-                                    CAffineTransformF *transform)
+                                   CAffineTransformF *transform)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -82,7 +82,7 @@ CGraphicsPipeline_GetDeviceInverse(CGraphicsPipeline *_this,
 /* Get the page transformation of this graphics pipeline */
 CINTERNAL void
 CGraphicsPipeline_GetPage(CGraphicsPipeline *_this,
-                           CAffineTransformF *transform)
+                          CAffineTransformF *transform)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -95,7 +95,7 @@ CGraphicsPipeline_GetPage(CGraphicsPipeline *_this,
 /* Get the inverse page transformation of this graphics pipeline */
 CINTERNAL void
 CGraphicsPipeline_GetPageInverse(CGraphicsPipeline *_this,
-                                  CAffineTransformF *transform)
+                                 CAffineTransformF *transform)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -108,7 +108,7 @@ CGraphicsPipeline_GetPageInverse(CGraphicsPipeline *_this,
 /* Get the world transformation of this graphics pipeline */
 CINTERNAL void
 CGraphicsPipeline_GetWorld(CGraphicsPipeline *_this,
-                            CAffineTransformF *transform)
+                           CAffineTransformF *transform)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -121,7 +121,7 @@ CGraphicsPipeline_GetWorld(CGraphicsPipeline *_this,
 /* Get the inverse world transformation of this graphics pipeline */
 CINTERNAL void
 CGraphicsPipeline_GetWorldInverse(CGraphicsPipeline *_this,
-                                   CAffineTransformF *transform)
+                                  CAffineTransformF *transform)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -134,9 +134,9 @@ CGraphicsPipeline_GetWorldInverse(CGraphicsPipeline *_this,
 /* Get the transformation from one coordinate space to another. */
 CINTERNAL void
 CGraphicsPipeline_GetSpaceTransform(CGraphicsPipeline *_this,
-                                     CCoordinateSpace   dst,
-                                     CCoordinateSpace   src,
-                                     CAffineTransformF *transform)
+                                    CCoordinateSpace   dst,
+                                    CCoordinateSpace   src,
+                                    CAffineTransformF *transform)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -209,10 +209,10 @@ CGraphicsPipeline_ResetPage(CGraphicsPipeline *_this)
 /* Set the page transformation of this graphics pipeline. */
 CINTERNAL void
 CGraphicsPipeline_SetPage(CGraphicsPipeline *_this,
-                           CGraphicsUnit      pageUnit,
-                           CFloat             pageScale,
-                           CFloat             dpiX,
-                           CFloat             dpiY)
+                          CGraphicsUnit      pageUnit,
+                          CFloat             pageScale,
+                          CFloat             dpiX,
+                          CFloat             dpiY)
 {
 	/* declarations */
 	CFloat sx;
@@ -321,7 +321,7 @@ CGraphicsPipeline_ResetWorld(CGraphicsPipeline *_this)
 /* Set the world transformation of this graphics pipeline. */
 CINTERNAL CStatus
 CGraphicsPipeline_SetWorld(CGraphicsPipeline *_this,
-                            CAffineTransformF *transform)
+                           CAffineTransformF *transform)
 {
 	/* declarations */
 	CAffineTransformF inverse;
@@ -349,8 +349,8 @@ CGraphicsPipeline_SetWorld(CGraphicsPipeline *_this,
 /* Multiply the world transformation by another transformation. */
 CINTERNAL CStatus
 CGraphicsPipeline_MultiplyWorld(CGraphicsPipeline *_this,
-                                 CAffineTransformF *other,
-                                 CMatrixOrder       order)
+                                CAffineTransformF *other,
+                                CMatrixOrder       order)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -375,8 +375,8 @@ CGraphicsPipeline_MultiplyWorld(CGraphicsPipeline *_this,
 /* Rotate the world transformation of this graphics pipeline. */
 CINTERNAL void
 CGraphicsPipeline_RotateWorld(CGraphicsPipeline *_this,
-                               CFloat             angle,
-                               CMatrixOrder       order)
+                              CFloat             angle,
+                              CMatrixOrder       order)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -396,9 +396,9 @@ CGraphicsPipeline_RotateWorld(CGraphicsPipeline *_this,
 /* Scale the world transformation of this graphics pipeline. */
 CINTERNAL void
 CGraphicsPipeline_ScaleWorld(CGraphicsPipeline *_this,
-                              CFloat             sx,
-                              CFloat             sy,
-                              CMatrixOrder       order)
+                             CFloat             sx,
+                             CFloat             sy,
+                             CMatrixOrder       order)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -418,9 +418,9 @@ CGraphicsPipeline_ScaleWorld(CGraphicsPipeline *_this,
 /* Translate the world transformation of this graphics pipeline. */
 CINTERNAL void
 CGraphicsPipeline_TranslateWorld(CGraphicsPipeline *_this,
-                                  CFloat             dx,
-                                  CFloat             dy,
-                                  CMatrixOrder       order)
+                                 CFloat             dx,
+                                 CFloat             dy,
+                                 CMatrixOrder       order)
 {
 	/* assertions */
 	CASSERT((_this != 0));

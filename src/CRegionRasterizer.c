@@ -31,7 +31,7 @@ static const pixman_operator_t CRegionType_PixmanOperator[] =
 {
 	PIXMAN_OPERATOR_SRC,
 	PIXMAN_OPERATOR_IN,
-	PIXMAN_OPERATOR_OVER,
+	PIXMAN_OPERATOR_ADD,
 	PIXMAN_OPERATOR_XOR,
 	PIXMAN_OPERATOR_OUT,
 	PIXMAN_OPERATOR_OUT_REVERSE
@@ -39,8 +39,8 @@ static const pixman_operator_t CRegionType_PixmanOperator[] =
 
 static CStatus
 CRegionRasterizer_CreateMaskSimple(CRegionRasterizer  *_this,
-                                    CByte               value,
-                                    pixman_image_t     **mask)
+                                   CByte               value,
+                                   pixman_image_t    **mask)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -69,11 +69,11 @@ CRegionRasterizer_CreateMaskSimple(CRegionRasterizer  *_this,
 
 static CStatus
 CRegionRasterizer_CreateMaskPath(CRegionRasterizer  *_this,
-                                  const CPointF      *points,
-                                  const CByte        *types,
-                                  CUInt32             count,
-                                  CFillMode           fillMode,
-                                  pixman_image_t     **mask)
+                                 const CPointF      *points,
+                                 const CByte        *types,
+                                 CUInt32             count,
+                                 CFillMode           fillMode,
+                                 pixman_image_t    **mask)
 {
 	/* declarations */
 	CTrapezoidX *trapezoids;
@@ -114,8 +114,8 @@ CRegionRasterizer_CreateMaskPath(CRegionRasterizer  *_this,
 
 static CStatus
 CRegionRasterizer_Data(CRegionInterpreter  *_this,
-                        CRegionNode         *node,
-                        void                **data)
+                       CRegionNode         *node,
+                       void               **data)
 {
 	/* declarations */
 	CRegionRasterizer *rast;
@@ -243,10 +243,10 @@ CRegionRasterizer_Data(CRegionInterpreter  *_this,
 
 static CStatus
 CRegionRasterizer_Op(CRegionInterpreter  *_this,
-                      CRegionOp           *op,
-                      void                 *left,
-                      void                 *right,
-                      void                **data)
+                     CRegionOp           *op,
+                     void                *left,
+                     void                *right,
+                     void               **data)
 {
 	/* declarations */
 	CRegionRasterizer *rast;
@@ -309,10 +309,10 @@ static const CRegionInterpreterClass CRegionRasterizer_Class =
 
 CINTERNAL CStatus
 CRegionRasterizer_Initialize(CRegionRasterizer *_this,
-                              CAffineTransformF *transform,
-                              CFloat             width,
-                              CFloat             height,
-                              CBool              gray)
+                             CAffineTransformF *transform,
+                             CFloat             width,
+                             CFloat             height,
+                             CBool              gray)
 {
 	/* assertions */
 	CASSERT((_this != 0));

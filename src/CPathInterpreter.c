@@ -26,9 +26,9 @@ extern "C" {
 
 CINTERNAL CStatus
 CPathInterpreter_Interpret(CPathInterpreter *_this,
-                            const CPointF    *points,
-                            const CByte      *types,
-                            CUInt32           count)
+                           const CPointF    *points,
+                           const CByte      *types,
+                           CUInt32           count)
 {
 	/* declarations */
 	const CPointF *currP;

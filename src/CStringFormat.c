@@ -26,8 +26,8 @@ extern "C" {
 
 static void
 CStringFormat_Initialize(CStringFormat     *_this,
-                          CStringFormatFlag  flags,
-                          CLanguageID        language)
+                         CStringFormatFlag  flags,
+                         CLanguageID        language)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -41,9 +41,9 @@ CStringFormat_Initialize(CStringFormat     *_this,
 	_this->method              = CDigitSubstitute_None;
 	_this->language            = language;
 	_this->firstTabOffset      = 0;
-	_this->tabStops            = NULL;
+	_this->tabStops            = 0;
 	_this->tabStopCount        = 0;
-	_this->characterRanges     = NULL;
+	_this->characterRanges     = 0;
 	_this->characterRangeCount = 0;
 }
 
@@ -76,8 +76,8 @@ CStringFormat_Finalize(CStringFormat *_this)
 /* Create a string format. */
 CStatus
 CStringFormat_Create(CStringFormat     **_this,
-                      CStringFormatFlag   flags,
-                      CLanguageID         language)
+                     CStringFormatFlag   flags,
+                     CLanguageID         language)
 {
 	/* ensure we have a this pointer pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -160,7 +160,7 @@ CStringFormat_CreateGenericTypographic(CStringFormat **_this)
 /* Clone this string format. */
 CStatus
 CStringFormat_Clone(CStringFormat  *_this,
-                     CStringFormat **clone)
+                    CStringFormat **clone)
 {
 	/* declarations */
 	CStatus status;
@@ -209,7 +209,7 @@ CStringFormat_Clone(CStringFormat  *_this,
 /* Get the alignment of this string format. */
 CStatus
 CStringFormat_GetAlignment(CStringFormat    *_this,
-                            CStringAlignment *alignment)
+                           CStringAlignment *alignment)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -227,7 +227,7 @@ CStringFormat_GetAlignment(CStringFormat    *_this,
 /* Set the alignment of this string format. */
 CStatus
 CStringFormat_SetAlignment(CStringFormat    *_this,
-                            CStringAlignment  alignment)
+                           CStringAlignment  alignment)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -242,8 +242,8 @@ CStringFormat_SetAlignment(CStringFormat    *_this,
 /* Get the character ranges of this string format. */
 CStatus
 CStringFormat_GetCharacterRanges(CStringFormat    *_this,
-                                  CCharacterRange **characterRanges,
-                                  CUInt32          *count)
+                                 CCharacterRange **characterRanges,
+                                 CUInt32          *count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -281,8 +281,8 @@ CStringFormat_GetCharacterRanges(CStringFormat    *_this,
 /* Set the character ranges of this string format. */
 CStatus
 CStringFormat_SetCharacterRanges(CStringFormat   *_this,
-                                  CCharacterRange *characterRanges,
-                                  CUInt32          count)
+                                 CCharacterRange *characterRanges,
+                                 CUInt32          count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -347,8 +347,8 @@ CStringFormat_SetCharacterRanges(CStringFormat   *_this,
 /* Get the digit substitution settings of this string format. */
 CStatus
 CStringFormat_GetDigitSubstitution(CStringFormat    *_this,
-                                    CDigitSubstitute *method,
-                                    CLanguageID      *language)
+                                   CDigitSubstitute *method,
+                                   CLanguageID      *language)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -372,8 +372,8 @@ CStringFormat_GetDigitSubstitution(CStringFormat    *_this,
 /* Set the digit substitution settings of this string format. */
 CStatus
 CStringFormat_SetDigitSubstitution(CStringFormat    *_this,
-                                    CDigitSubstitute  method,
-                                    CLanguageID       language)
+                                   CDigitSubstitute  method,
+                                   CLanguageID       language)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -391,7 +391,7 @@ CStringFormat_SetDigitSubstitution(CStringFormat    *_this,
 /* Get the format flags of this string format. */
 CStatus
 CStringFormat_GetFormatFlags(CStringFormat     *_this,
-                              CStringFormatFlag *formatFlags)
+                             CStringFormatFlag *formatFlags)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -409,7 +409,7 @@ CStringFormat_GetFormatFlags(CStringFormat     *_this,
 /* Set the format flags of this string format. */
 CStatus
 CStringFormat_SetFormatFlags(CStringFormat     *_this,
-                              CStringFormatFlag  formatFlags)
+                             CStringFormatFlag  formatFlags)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -424,7 +424,7 @@ CStringFormat_SetFormatFlags(CStringFormat     *_this,
 /* Get the hotkey prefix mode of this string format. */
 CStatus
 CStringFormat_GetHotkeyPrefix(CStringFormat *_this,
-                               CHotkeyPrefix *hotkeyPrefix)
+                              CHotkeyPrefix *hotkeyPrefix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -442,7 +442,7 @@ CStringFormat_GetHotkeyPrefix(CStringFormat *_this,
 /* Set the hotkey prefix mode of this string format. */
 CStatus
 CStringFormat_SetHotkeyPrefix(CStringFormat *_this,
-                               CHotkeyPrefix  hotkeyPrefix)
+                              CHotkeyPrefix  hotkeyPrefix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -457,7 +457,7 @@ CStringFormat_SetHotkeyPrefix(CStringFormat *_this,
 /* Get the line alignment of this string format. */
 CStatus
 CStringFormat_GetLineAlignment(CStringFormat    *_this,
-                                CStringAlignment *lineAlignment)
+                               CStringAlignment *lineAlignment)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -475,7 +475,7 @@ CStringFormat_GetLineAlignment(CStringFormat    *_this,
 /* Set the line alignment of this string format. */
 CStatus
 CStringFormat_SetLineAlignment(CStringFormat    *_this,
-                                CStringAlignment  lineAlignment)
+                               CStringAlignment  lineAlignment)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -490,9 +490,9 @@ CStringFormat_SetLineAlignment(CStringFormat    *_this,
 /* Get the tab stop settings of this string format. */
 CStatus
 CStringFormat_GetTabStops(CStringFormat  *_this,
-                           CFloat         *firstTabOffset,
-                           CFloat        **tabStops,
-                           CUInt32        *count)
+                          CFloat         *firstTabOffset,
+                          CFloat        **tabStops,
+                          CUInt32        *count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -536,9 +536,9 @@ CStringFormat_GetTabStops(CStringFormat  *_this,
 /* Set the tab stop settings of this string format. */
 CStatus
 CStringFormat_SetTabStops(CStringFormat *_this,
-                           CFloat         firstTabOffset,
-                           CFloat        *tabStops,
-                           CUInt32        count)
+                          CFloat         firstTabOffset,
+                          CFloat        *tabStops,
+                          CUInt32        count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -606,7 +606,7 @@ CStringFormat_SetTabStops(CStringFormat *_this,
 /* Get the trimming mode of this string format. */
 CStatus
 CStringFormat_GetTrimming(CStringFormat   *_this,
-                           CStringTrimming *trimming)
+                          CStringTrimming *trimming)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -624,7 +624,7 @@ CStringFormat_GetTrimming(CStringFormat   *_this,
 /* Set the trimming mode of this string format. */
 CStatus
 CStringFormat_SetTrimming(CStringFormat   *_this,
-                           CStringTrimming  trimming)
+                          CStringTrimming  trimming)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);

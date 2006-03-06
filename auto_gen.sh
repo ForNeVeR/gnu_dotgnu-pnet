@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-# auto_gen.sh - Make the Makefile.in and configure files.
+# auto_gen.sh - Generate the build files.
 #
-# Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+# Copyright (C) 2006  Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,24 +16,56 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-# Run aclocal to update the macros.
-aclocal
+# Set the automake and aclocal binaries to the default.
+AUTOMAKE_BIN=
+ACLOCAL_BIN=
 
-# Get extra options to use depending upon the automake version.
-AM_VERSION=`automake --version`
-case "$AM_VERSION" in
-    automake*1.4*) AM_FLAGS="" ;;
-                *) AM_FLAGS="--ignore-deps" ;;
+# Find a suitable version of automake.
+AUTOMAKE_VERSION=`automake --version`
+case "$AUTOMAKE_VERSION" in
+	automake*1.7*) AUTOMAKE_BIN="automake"; ACLOCAL_BIN="aclocal" ;;
+	automake*1.8*) AUTOMAKE_BIN="automake"; ACLOCAL_BIN="aclocal" ;;
+	*)
+		AUTOMAKE_BIN=`which automake-1.7`
+		if test "x$AUTOMAKE_BIN" = "x"; then
+			AUTOMAKE_BIN=`which automake-1.8`
+			if test "x$AUTOMAKE_BIN" = "x"; then
+				echo "error: unable to find a suitable version automake."
+				exit 1
+			else
+				ACLOCAL_BIN=`which aclocal-1.8`
+			fi
+		else
+			ACLOCAL_BIN=`which aclocal-1.7`
+		fi
+	;;
 esac
 
-# Run libtoolize if necessary.
+# Ensure we have aclocal.
+if test "x$ACLOCAL_BIN" = "x"; then
+	echo "error: unable to find a suitable version of aclocal."
+	exit 1
+fi
+
+# Print using message.
+echo "Using automake: $AUTOMAKE_BIN"
+echo "Using aclocal:  $ACLOCAL_BIN"
+
+# Run aclocal to update the autoconf macros.
+$ACLOCAL_BIN
+
+# Run libtoolize, as needed.
 if test ! -f "ltconfig" ; then
 	libtoolize --copy 2>/dev/null
 fi
 
-# Run automake and autoconf.
-automake --add-missing --copy $AM_FLAGS
+# Run automake.
+$AUTOMAKE_BIN --add-missing --copy --ignore-deps
+
+# Run autoconf.
 autoconf
+
+# Exit successfully.
 exit 0

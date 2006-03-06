@@ -26,10 +26,10 @@ extern "C" {
 
 CINTERNAL CBool
 CBezierX_Initialize(CBezierX *_this,
-                     CPointX  *a,
-                     CPointX  *b,
-                     CPointX  *c,
-                     CPointX  *d)
+                    CPointX  *a,
+                    CPointX  *b,
+                    CPointX  *c,
+                    CPointX  *d)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -57,10 +57,10 @@ CBezierX_Initialize(CBezierX *_this,
 
 CINTERNAL CBool
 CBezierF_Initialize(CBezierF *_this,
-                     CPointF  *a,
-                     CPointF  *b,
-                     CPointF  *c,
-                     CPointF  *d)
+                    CPointF  *a,
+                    CPointF  *b,
+                    CPointF  *c,
+                    CPointF  *d)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -109,7 +109,7 @@ CBezierF_Finalize(CBezierF *_this)
 
 static CMATH CPointX
 CBezierX_Midpoint(CPointX start,
-                   CPointX end)
+                  CPointX end)
 {
 	/* initialize the midpoint to the start point */
 	CPointX middle = start;
@@ -124,7 +124,7 @@ CBezierX_Midpoint(CPointX start,
 
 static CMATH CPointF
 CBezierF_Midpoint(CPointF start,
-                   CPointF end)
+                  CPointF end)
 {
 	/* initialize the midpoint to the start point */
 	CPointF middle = start;
@@ -139,8 +139,8 @@ CBezierF_Midpoint(CPointF start,
 
 static void
 CBezierX_DeCasteljau(CBezierX *_this,
-                      CBezierX *start,
-                      CBezierX *end)
+                     CBezierX *start,
+                     CBezierX *end)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -183,8 +183,8 @@ CBezierX_DeCasteljau(CBezierX *_this,
 
 static void
 CBezierF_DeCasteljau(CBezierF *_this,
-                      CBezierF *start,
-                      CBezierF *end)
+                     CBezierF *start,
+                     CBezierF *end)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -227,8 +227,8 @@ CBezierF_DeCasteljau(CBezierF *_this,
 
 static CMATH CDouble
 CBezierX_DistanceToLine(CPointX p,
-                         CPointX start,
-                         CPointX end)
+                        CPointX start,
+                        CPointX end)
 {
 	/* declarations */
 	CDouble u;
@@ -306,8 +306,8 @@ CBezierX_DistanceToLine(CPointX p,
 
 static CMATH CDouble
 CBezierF_DistanceToLine(CPointF p,
-                         CPointF start,
-                         CPointF end)
+                        CPointF start,
+                        CPointF end)
 {
 	/* declarations */
 	CDouble u;
@@ -385,7 +385,7 @@ CBezierF_DistanceToLine(CPointF p,
 
 static CBool
 CBezierX_IsInTolerance(CBezierX *_this,
-                        CDouble   tSquared)
+                       CDouble   tSquared)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -410,7 +410,7 @@ CBezierX_IsInTolerance(CBezierX *_this,
 
 static CBool
 CBezierF_IsInTolerance(CBezierF *_this,
-                        CDouble   tSquared)
+                       CDouble   tSquared)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -435,8 +435,8 @@ CBezierF_IsInTolerance(CBezierF *_this,
 
 static CStatus
 CBezierX_FlattenR(CBezierX     *_this,
-                   CPointArrayX *array,
-                   CDouble       tSquared)
+                  CPointArrayX *array,
+                  CDouble       tSquared)
 {
 	/* declarations */
 	CBezierX w;
@@ -471,8 +471,8 @@ CBezierX_FlattenR(CBezierX     *_this,
 
 static CStatus
 CBezierF_FlattenR(CBezierF     *_this,
-                   CPointArrayF *array,
-                   CDouble       tSquared)
+                  CPointArrayF *array,
+                  CDouble       tSquared)
 {
 	/* declarations */
 	CBezierF w;
@@ -507,8 +507,8 @@ CBezierF_FlattenR(CBezierF     *_this,
 
 CINTERNAL CStatus
 CBezierX_Flatten(CBezierX     *_this,
-                  CPointArrayX *array,
-                  CDouble       tolerance)
+                 CPointArrayX *array,
+                 CDouble       tolerance)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -536,8 +536,8 @@ CBezierX_Flatten(CBezierX     *_this,
 
 CINTERNAL CStatus
 CBezierF_Flatten(CBezierF     *_this,
-                  CPointArrayF *array,
-                  CDouble       tolerance)
+                 CPointArrayF *array,
+                 CDouble       tolerance)
 {
 	/* assertions */
 	CASSERT((_this != 0));

@@ -48,8 +48,8 @@ static const CDashInfo CPen_DashInfo[] =
 
 static CStatus
 CPen_Initialize(CPen   *_this,
-                 CBrush *brush,
-                 CFloat  width)
+                CBrush *brush,
+                CFloat  width)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -123,8 +123,8 @@ CPen_Finalize(CPen *_this)
 /* Create a pen. */
 CStatus
 CPen_Create(CPen   **_this,
-             CBrush  *brush,
-             CFloat   width)
+            CBrush  *brush,
+            CFloat   width)
 {
 	/* declarations */
 	CStatus status;
@@ -174,7 +174,7 @@ CPen_Destroy(CPen **_this)
 /* Get the alignment of this pen. */
 CStatus
 CPen_GetAlignment(CPen          *_this,
-                   CPenAlignment *alignment)
+                  CPenAlignment *alignment)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -192,7 +192,7 @@ CPen_GetAlignment(CPen          *_this,
 /* Set the alignment of this pen. */
 CStatus
 CPen_SetAlignment(CPen          *_this,
-                   CPenAlignment  alignment)
+                  CPenAlignment  alignment)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -207,7 +207,7 @@ CPen_SetAlignment(CPen          *_this,
 /* Get the brush of this pen. */
 CStatus
 CPen_GetBrush(CPen    *_this,
-               CBrush **brush)
+              CBrush **brush)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -222,7 +222,7 @@ CPen_GetBrush(CPen    *_this,
 /* Set the brush of this pen. */
 CStatus
 CPen_SetBrush(CPen   *_this,
-               CBrush *brush)
+              CBrush *brush)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -254,9 +254,9 @@ CPen_SetBrush(CPen   *_this,
 /* Set the line and dash caps of this pen. */
 CStatus
 CPen_SetCaps(CPen     *_this,
-              CLineCap  startCap,
-              CLineCap  endCap,
-              CDashCap  dashCap)
+             CLineCap  startCap,
+             CLineCap  endCap,
+             CDashCap  dashCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -273,7 +273,7 @@ CPen_SetCaps(CPen     *_this,
 /* Get the color of this pen. */
 CStatus
 CPen_GetColor(CPen   *_this,
-               CColor *color)
+              CColor *color)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -309,8 +309,8 @@ CPen_GetColor(CPen   *_this,
 /* Get the compound array of this pen. */
 CStatus
 CPen_GetCompoundArray(CPen     *_this,
-                       CFloat  **compoundArray,
-                       CUInt32  *count)
+                      CFloat  **compoundArray,
+                      CUInt32  *count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -360,8 +360,8 @@ CPen_GetCompoundArray(CPen     *_this,
 /* Set the compound array of this pen. */
 CStatus
 CPen_SetCompoundArray(CPen         *_this,
-                       const CFloat *compoundArray,
-                       CUInt32       count)
+                      const CFloat *compoundArray,
+                      CUInt32       count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -466,7 +466,7 @@ CPen_SetCompoundArray(CPen         *_this,
 /* Get the custom end cap of this pen. */
 CStatus
 CPen_GetCustomEndCap(CPen            *_this,
-                      CCustomLineCap **customEndCap)
+                     CCustomLineCap **customEndCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -495,7 +495,7 @@ CPen_GetCustomEndCap(CPen            *_this,
 /* Set the custom end cap of this pen. */
 CStatus
 CPen_SetCustomEndCap(CPen           *_this,
-                      CCustomLineCap *customEndCap)
+                     CCustomLineCap *customEndCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -531,7 +531,7 @@ CPen_SetCustomEndCap(CPen           *_this,
 /* Get the custom start cap of this pen. */
 CStatus
 CPen_GetCustomStartCap(CPen            *_this,
-                        CCustomLineCap **customStartCap)
+                       CCustomLineCap **customStartCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -560,7 +560,7 @@ CPen_GetCustomStartCap(CPen            *_this,
 /* Set the custom start cap of this pen. */
 CStatus
 CPen_SetCustomStartCap(CPen           *_this,
-                        CCustomLineCap *customStartCap)
+                       CCustomLineCap *customStartCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -596,7 +596,7 @@ CPen_SetCustomStartCap(CPen           *_this,
 /* Get the dash cap of this pen. */
 CStatus
 CPen_GetDashCap(CPen     *_this,
-                 CDashCap *dashCap)
+                CDashCap *dashCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -614,7 +614,7 @@ CPen_GetDashCap(CPen     *_this,
 /* Set the dash cap of this pen. */
 CStatus
 CPen_SetDashCap(CPen     *_this,
-                 CDashCap  dashCap)
+                CDashCap  dashCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -629,7 +629,7 @@ CPen_SetDashCap(CPen     *_this,
 /* Get the dash offset of this pen. */
 CStatus
 CPen_GetDashOffset(CPen   *_this,
-                    CFloat *dashOffset)
+                   CFloat *dashOffset)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -647,7 +647,7 @@ CPen_GetDashOffset(CPen   *_this,
 /* Set the dash offset of this pen. */
 CStatus
 CPen_SetDashOffset(CPen   *_this,
-                    CFloat  dashOffset)
+                   CFloat  dashOffset)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -662,8 +662,8 @@ CPen_SetDashOffset(CPen   *_this,
 /* Get the dash pattern of this pen. */
 CStatus
 CPen_GetDashPattern(CPen     *_this,
-                     CFloat  **dashPattern,
-                     CUInt32  *count)
+                    CFloat  **dashPattern,
+                    CUInt32  *count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -712,8 +712,8 @@ CPen_GetDashPattern(CPen     *_this,
 /* Set the dash pattern of this pen. */
 CStatus
 CPen_SetDashPattern(CPen         *_this,
-                     const CFloat *dashPattern,
-                     CUInt32       count)
+                    const CFloat *dashPattern,
+                    CUInt32       count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -778,7 +778,7 @@ CPen_SetDashPattern(CPen         *_this,
 /* Get the dash style of this pen. */
 CStatus
 CPen_GetDashStyle(CPen       *_this,
-                   CDashStyle *dashStyle)
+                  CDashStyle *dashStyle)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -796,7 +796,7 @@ CPen_GetDashStyle(CPen       *_this,
 /* Set the dash style of this pen. */
 CStatus
 CPen_SetDashStyle(CPen       *_this,
-                   CDashStyle  dashStyle)
+                  CDashStyle  dashStyle)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -825,7 +825,7 @@ CPen_SetDashStyle(CPen       *_this,
 /* Get the end cap of this pen. */
 CStatus
 CPen_GetEndCap(CPen     *_this,
-                CLineCap *endCap)
+               CLineCap *endCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -843,7 +843,7 @@ CPen_GetEndCap(CPen     *_this,
 /* Set the end cap of this pen. */
 CStatus
 CPen_SetEndCap(CPen     *_this,
-                CLineCap  endCap)
+               CLineCap  endCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -858,7 +858,7 @@ CPen_SetEndCap(CPen     *_this,
 /* Get the line join of this pen. */
 CStatus
 CPen_GetLineJoin(CPen      *_this,
-                  CLineJoin *lineJoin)
+                 CLineJoin *lineJoin)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -876,7 +876,7 @@ CPen_GetLineJoin(CPen      *_this,
 /* Set the line join of this pen. */
 CStatus
 CPen_SetLineJoin(CPen      *_this,
-                  CLineJoin  lineJoin)
+                 CLineJoin  lineJoin)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -891,7 +891,7 @@ CPen_SetLineJoin(CPen      *_this,
 /* Get the miter limit of this pen. */
 CStatus
 CPen_GetMiterLimit(CPen   *_this,
-                    CFloat *miterLimit)
+                   CFloat *miterLimit)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -909,7 +909,7 @@ CPen_GetMiterLimit(CPen   *_this,
 /* Set the miter limit of this pen. */
 CStatus
 CPen_SetMiterLimit(CPen   *_this,
-                    CFloat  miterLimit)
+                   CFloat  miterLimit)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -924,7 +924,7 @@ CPen_SetMiterLimit(CPen   *_this,
 /* Get the type of this pen. */
 CStatus
 CPen_GetPenType(CPen     *_this,
-                 CPenType *type)
+                CPenType *type)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -953,7 +953,7 @@ CPen_GetPenType(CPen     *_this,
 /* Get the start cap of this pen. */
 CStatus
 CPen_GetStartCap(CPen     *_this,
-                  CLineCap *startCap)
+                 CLineCap *startCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -971,7 +971,7 @@ CPen_GetStartCap(CPen     *_this,
 /* Set the start cap of this pen. */
 CStatus
 CPen_SetStartCap(CPen     *_this,
-                  CLineCap  startCap)
+                 CLineCap  startCap)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -986,7 +986,7 @@ CPen_SetStartCap(CPen     *_this,
 /* Get the width of this pen. */
 CStatus
 CPen_GetWidth(CPen   *_this,
-               CFloat *width)
+              CFloat *width)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1004,7 +1004,7 @@ CPen_GetWidth(CPen   *_this,
 /* Set the width of this pen. */
 CStatus
 CPen_SetWidth(CPen   *_this,
-               CFloat  width)
+              CFloat  width)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1019,7 +1019,7 @@ CPen_SetWidth(CPen   *_this,
 /* Clone this pen. */
 CStatus
 CPen_Clone(CPen  *_this,
-            CPen **clone)
+           CPen **clone)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1143,7 +1143,7 @@ CPen_Clone(CPen  *_this,
 /* Get the transformation matrix of this pen. */
 CStatus
 CPen_GetTransform(CPen    *_this,
-                   CMatrix *matrix)
+                  CMatrix *matrix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1155,8 +1155,8 @@ CPen_GetTransform(CPen    *_this,
 /* Multiply the transformation matrix of this pen by another matrix. */
 CStatus
 CPen_MultiplyTransform(CPen         *_this,
-                        CMatrix      *matrix,
-                        CMatrixOrder  order)
+                       CMatrix      *matrix,
+                       CMatrixOrder  order)
 {
 	/* declarations */
 	CAffineTransformF t;
@@ -1193,8 +1193,8 @@ CPen_ResetTransform(CPen *_this)
 /* Rotate the transformation matrix of this pen. */
 CStatus
 CPen_RotateTransform(CPen         *_this,
-                      CFloat        angle,
-                      CMatrixOrder  order)
+                     CFloat        angle,
+                     CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1209,9 +1209,9 @@ CPen_RotateTransform(CPen         *_this,
 /* Scale the transformation matrix of this pen. */
 CStatus
 CPen_ScaleTransform(CPen         *_this,
-                     CFloat        sx,
-                     CFloat        sy,
-                     CMatrixOrder  order)
+                    CFloat        sx,
+                    CFloat        sy,
+                    CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1226,7 +1226,7 @@ CPen_ScaleTransform(CPen         *_this,
 /* Set the transformation matrix of this pen. */
 CStatus
 CPen_SetTransform(CPen    *_this,
-                   CMatrix *matrix)
+                  CMatrix *matrix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1243,9 +1243,9 @@ CPen_SetTransform(CPen    *_this,
 /* Translate the transformation matrix of this pen. */
 CStatus
 CPen_TranslateTransform(CPen         *_this,
-                         CFloat        dx,
-                         CFloat        dy,
-                         CMatrixOrder  order)
+                        CFloat        dx,
+                        CFloat        dy,
+                        CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1260,7 +1260,7 @@ CPen_TranslateTransform(CPen         *_this,
 /* Get a pattern for this pen. */
 CINTERNAL CStatus
 CPen_GetPattern(CPen     *_this,
-                 CPattern *pattern)
+                CPattern *pattern)
 {
 	/* assertions */
 	CASSERT((_this   != 0));

@@ -28,9 +28,9 @@ extern "C" {
 /* Initialize this bitmap. */
 static CStatus
 CBitmap_Initialize(CBitmap      *_this,
-                    CUInt32       width,
-                    CUInt32       height,
-                    CPixelFormat  format)
+                   CUInt32       width,
+                   CUInt32       height,
+                   CPixelFormat  format)
 {
 	/* declarations */
 	pixman_format_t *fmt;
@@ -43,8 +43,8 @@ CBitmap_Initialize(CBitmap      *_this,
 	_this->format      = CImageFormat_MemoryBMP;
 	_this->flags       = CImageFlag_None;
 	_this->pixelFormat = format;
-	_this->dpiX        = CGraphics_DefaultDpiX;
-	_this->dpiY        = CGraphics_DefaultDpiY;
+	_this->dpiX        = CGraphics_DefaultDpi;
+	_this->dpiY        = CGraphics_DefaultDpi;
 	_this->width       = width;
 	_this->height      = height;
 	_this->bitmapDataX = 0;
@@ -103,16 +103,16 @@ CBitmap_Initialize(CBitmap      *_this,
 #if 0
 CStatus
 CBitmap_CreateStream(CBitmap **_this,
-                      CStream  *stream,
-                      CBool     useICM)
+                     CStream  *stream,
+                     CBool     useICM)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
 }
 CStatus
 CBitmap_CreateFile(CBitmap **_this,
-                    CChar16  *filename,
-                    CBool     useICM)
+                   CChar16  *filename,
+                   CBool     useICM)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -121,9 +121,9 @@ CBitmap_CreateFile(CBitmap **_this,
 
 CStatus
 CBitmap_Create(CBitmap      **_this,
-                CUInt32        width,
-                CUInt32        height,
-                CPixelFormat   format)
+               CUInt32        width,
+               CUInt32        height,
+               CPixelFormat   format)
 {
 	/* declarations */
 	CStatus status;
@@ -154,11 +154,11 @@ CBitmap_Create(CBitmap      **_this,
 
 CStatus
 CBitmap_CreateData(CBitmap      **_this,
-                    CByte         *data,
-                    CUInt32        width,
-                    CUInt32        height,
-                    CUInt32        stride,
-                    CPixelFormat   format)
+                   CByte         *data,
+                   CUInt32        width,
+                   CUInt32        height,
+                   CUInt32        stride,
+                   CPixelFormat   format)
 {
 	/* declarations */
 	CStatus status;
@@ -198,12 +198,12 @@ CBitmap_Destroy(CBitmap **_this)
 /* Clone this bitmap and transform it into a new pixel format. */
 CStatus
 CBitmap_Clone(CBitmap       *_this,
-               CBitmap      **clone,
-               CUInt32        x,
-               CUInt32        y,
-               CUInt32        width,
-               CUInt32        height,
-               CPixelFormat   format)
+              CBitmap      **clone,
+              CUInt32        x,
+              CUInt32        y,
+              CUInt32        width,
+              CUInt32        height,
+              CPixelFormat   format)
 {
 	/* declarations */
 	CStatus     status;
@@ -230,9 +230,9 @@ CBitmap_Clone(CBitmap       *_this,
 /* Get the color of a specific pixel. */
 CStatus
 CBitmap_GetPixel(CBitmap *_this,
-                  CUInt32  x,
-                  CUInt32  y,
-                  CColor  *color)
+                 CUInt32  x,
+                 CUInt32  y,
+                 CColor  *color)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -300,9 +300,9 @@ CBitmap_GetPixel(CBitmap *_this,
 /* Set a pixel within this bitmap. */
 CStatus
 CBitmap_SetPixel(CBitmap *_this,
-                  CUInt32  x,
-                  CUInt32  y,
-                  CColor   color)
+                 CUInt32  x,
+                 CUInt32  y,
+                 CColor   color)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -366,12 +366,12 @@ CBitmap_SetPixel(CBitmap *_this,
 /* Make the bitmap data from the current image data. */
 static CStatus
 CBitmap_MakeBitmapData(CBitmap        *_this,
-                        CUInt32         x,
-                        CUInt32         y,
-                        CUInt32         width,
-                        CUInt32         height,
-                        CImageLockMode  lockMode,
-                        CPixelFormat    format)
+                       CUInt32         x,
+                       CUInt32         y,
+                       CUInt32         width,
+                       CUInt32         height,
+                       CImageLockMode  lockMode,
+                       CPixelFormat    format)
 {
 	/* declarations */
 	CUInt32 stride;
@@ -493,13 +493,13 @@ CBitmap_MakeBitmapData(CBitmap        *_this,
 /* Lock a region of this bitmap. */
 CStatus
 CBitmap_LockBits(CBitmap        *_this,
-                  CUInt32         x,
-                  CUInt32         y,
-                  CUInt32         width,
-                  CUInt32         height,
-                  CImageLockMode  lockMode,
-                  CPixelFormat    format,
-                  CBitmapData    *bitmapData)
+                 CUInt32         x,
+                 CUInt32         y,
+                 CUInt32         width,
+                 CUInt32         height,
+                 CImageLockMode  lockMode,
+                 CPixelFormat    format,
+                 CBitmapData    *bitmapData)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -544,8 +544,8 @@ CBitmap_LockBits(CBitmap        *_this,
 /* Set the resolution for this bitmap. */
 CStatus
 CBitmap_SetResolution(CBitmap *_this,
-                       CFloat   dpiX,
-                       CFloat   dpiY)
+                      CFloat   dpiX,
+                      CFloat   dpiY)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -573,7 +573,7 @@ CBitmap_SetResolution(CBitmap *_this,
 /* Unlock the bits within this bitmap. */
 CStatus
 CBitmap_UnlockBits(CBitmap     *_this,
-                    CBitmapData *bitmapData)
+                   CBitmapData *bitmapData)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);

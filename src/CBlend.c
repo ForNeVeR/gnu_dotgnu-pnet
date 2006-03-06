@@ -27,7 +27,7 @@ extern "C" {
 
 CINTERNAL CStatus
 CBlend_Initialize(CBlend  *_this,
-                   CUInt32  count)
+                  CUInt32  count)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -55,7 +55,7 @@ CBlend_Initialize(CBlend  *_this,
 
 CINTERNAL CStatus
 CBlend_Copy(CBlend *_this,
-             CBlend *copy)
+            CBlend *copy)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -104,8 +104,8 @@ CBlend_Copy(CBlend *_this,
 
 CINTERNAL void
 CBlend_SetTriangularShape(CBlend *_this,
-                           CFloat  focus,
-                           CFloat  scale)
+                          CFloat  focus,
+                          CFloat  scale)
 {
 	/* declarations */
 	CFloat *currF;
@@ -168,8 +168,8 @@ CBlend_SetTriangularShape(CBlend *_this,
 
 CINTERNAL void
 CBlend_SetSigmaBellShape(CBlend *_this,
-                          CFloat  focus,
-                          CFloat  scale)
+                         CFloat  focus,
+                         CFloat  scale)
 {
 	/*\
 	|*| NOTE: The cumulative distribution function of the standard normal
@@ -420,7 +420,7 @@ CBlend_Finalize(CBlend *_this)
 
 CINTERNAL CStatus
 CColorBlend_Copy(CColorBlend *_this,
-                  CColorBlend *copy)
+                 CColorBlend *copy)
 {
 	/* assertions */
 	CASSERT((_this != 0));

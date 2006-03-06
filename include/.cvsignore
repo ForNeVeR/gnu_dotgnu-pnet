@@ -2,6 +2,6 @@ Makefile
 Makefile.in
 CrayonsConfig.h
 CrayonsConfig.h.in
-stamp-h
-stamp-h.in
+CrayonsFeatures.h
+stamp-h*
 .deps

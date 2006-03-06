@@ -19,12 +19,7 @@
  */
 
 #include "CMath.h"
-
-#ifdef HAVE_MATH_H
-	#include <math.h>
-#else
-	#error "Basic arithmetic functions (e.g. cos, sqrt) could not be found."
-#endif
+#include <math.h>
 
 #ifdef __cplusplus
 extern "C" {

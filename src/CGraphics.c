@@ -21,6 +21,7 @@
 #include "CGraphics.h"
 #include "CBrush.h"
 #include "CFiller.h"
+#include "CFont.h"
 #include "CImage.h"
 #include "CMatrix.h"
 #include "CPath.h"
@@ -46,7 +47,7 @@ extern "C" {
 /* Create a graphics context. */
 CStatus
 CGraphics_Create(CGraphics **_this,
-                  CSurface   *surface)
+                 CSurface   *surface)
 {
 	/* ensure we have a this pointer pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -99,6 +100,9 @@ CGraphics_Create(CGraphics **_this,
 			return status;
 		}
 
+		/* reference the surface */
+		CSurface_Reference(surface);
+
 		/* initialize the remaining members */
 		gc->surface                    = surface;
 		gc->compositingMode            = CCompositingMode_SourceOver;
@@ -107,8 +111,8 @@ CGraphics_Create(CGraphics **_this,
 		gc->pageScale                  = 1.0;
 		gc->interpolationMode          = CInterpolationMode_Default;
 		gc->pixelOffsetMode            = CPixelOffsetMode_Default;
-		CPoint_X(gc->renderingOrigin) = 0;
-		CPoint_Y(gc->renderingOrigin) = 0;
+		CPoint_X(gc->renderingOrigin)  = 0;
+		CPoint_Y(gc->renderingOrigin)  = 0;
 		gc->smoothingMode              = CSmoothingMode_Default;
 		gc->textContrast               = 0;
 		gc->textRenderingHint          = CTextRenderingHint_SystemDefault;
@@ -175,7 +179,7 @@ CGraphics_Destroy(CGraphics **_this)
 /* Get the transformation matrix of this graphics context. */
 CStatus
 CGraphics_GetTransform(CGraphics *_this,
-                        CMatrix   *matrix)
+                       CMatrix   *matrix)
 {
 	/* declarations */
 	CAffineTransformF t;
@@ -186,8 +190,12 @@ CGraphics_GetTransform(CGraphics *_this,
 	/* ensure we have a matrix pointer */
 	CStatus_Require((matrix != 0), CStatus_ArgumentNull);
 
-	/* get the world transformation */
-	CGraphicsPipeline_GetWorld(&(_this->pipeline), &t);
+	/* get the world transformation, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		CGraphicsPipeline_GetWorld(&(_this->pipeline), &t);
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* set the matrix transformation */
 	CMatrix_SetTransform(matrix, &t);
@@ -199,11 +207,12 @@ CGraphics_GetTransform(CGraphics *_this,
 /* Multiply the transformation matrix by another matrix. */
 CStatus
 CGraphics_MultiplyTransform(CGraphics    *_this,
-                             CMatrix      *matrix,
-                             CMatrixOrder  order)
+                            CMatrix      *matrix,
+                            CMatrixOrder  order)
 {
 	/* declarations */
 	CAffineTransformF t;
+	CStatus           status;
 
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -214,13 +223,17 @@ CGraphics_MultiplyTransform(CGraphics    *_this,
 	/* get the matrix transformation */
 	CMatrix_GetTransform(matrix, &t);
 
-	/* multiply the world transformation */
-	CStatus_Check
-		(CGraphicsPipeline_MultiplyWorld
-			(&(_this->pipeline), &t, order));
+	/* multiply the world transformation, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status =
+			CGraphicsPipeline_MultiplyWorld
+				(&(_this->pipeline), &t, order);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Reset the transformation matrix of this graphics context. */
@@ -230,8 +243,12 @@ CGraphics_ResetTransform(CGraphics *_this)
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* reset the world transformation and inverse */
-	CGraphicsPipeline_ResetWorld(&(_this->pipeline));
+	/* reset the world transformation and inverse, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		CGraphicsPipeline_ResetWorld(&(_this->pipeline));
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -240,14 +257,18 @@ CGraphics_ResetTransform(CGraphics *_this)
 /* Rotate the transformation matrix of this graphics context. */
 CStatus
 CGraphics_RotateTransform(CGraphics    *_this,
-                           CFloat        angle,
-                           CMatrixOrder  order)
+                          CFloat        angle,
+                          CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* rotate the world transformation and inverse */
-	CGraphicsPipeline_RotateWorld(&(_this->pipeline), angle, order);
+	/* rotate the world transformation and inverse, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		CGraphicsPipeline_RotateWorld(&(_this->pipeline), angle, order);
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -256,15 +277,19 @@ CGraphics_RotateTransform(CGraphics    *_this,
 /* Scale the transformation matrix of this graphics context. */
 CStatus
 CGraphics_ScaleTransform(CGraphics    *_this,
-                          CFloat        sx,
-                          CFloat        sy,
-                          CMatrixOrder  order)
+                         CFloat        sx,
+                         CFloat        sy,
+                         CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* scale the world transformation and inverse */
-	CGraphicsPipeline_ScaleWorld(&(_this->pipeline), sx, sy, order);
+	/* scale the world transformation and inverse, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		CGraphicsPipeline_ScaleWorld(&(_this->pipeline), sx, sy, order);
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -273,10 +298,11 @@ CGraphics_ScaleTransform(CGraphics    *_this,
 /* Set the transformation matrix of this graphics context. */
 CStatus
 CGraphics_SetTransform(CGraphics *_this,
-                        CMatrix   *matrix)
+                       CMatrix   *matrix)
 {
 	/* declarations */
 	CAffineTransformF t;
+	CStatus           status;
 
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -287,27 +313,33 @@ CGraphics_SetTransform(CGraphics *_this,
 	/* get the matrix transformation */
 	CMatrix_GetTransform(matrix, &t);
 
-	/* set the world transformation */
-	CStatus_Check
-		(CGraphicsPipeline_SetWorld
-			(&(_this->pipeline), &t));
+	/* set the world transformation, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status = CGraphicsPipeline_SetWorld(&(_this->pipeline), &t);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Translate the transformation matrix of this graphics context. */
 CStatus
 CGraphics_TranslateTransform(CGraphics    *_this,
-                              CFloat        dx,
-                              CFloat        dy,
-                              CMatrixOrder  order)
+                             CFloat        dx,
+                             CFloat        dy,
+                             CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* translate the world transformation and inverse */
-	CGraphicsPipeline_TranslateWorld(&(_this->pipeline), dx, dy, order);
+	/* translate the world transformation and inverse, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		CGraphicsPipeline_TranslateWorld(&(_this->pipeline), dx, dy, order);
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -333,8 +365,8 @@ CGraphics_TranslateTransform(CGraphics    *_this,
 /* Add a metafile comment. */
 CStatus
 CGraphics_AddMetafileComment(CGraphics *_this,
-                              CByte     *data,
-                              CUInt32    count)
+                             CByte     *data,
+                             CUInt32    count)
 {
 	return CStatus_NotImplemented;
 }
@@ -342,69 +374,69 @@ CGraphics_AddMetafileComment(CGraphics *_this,
 /* Enumerate the contents of a metafile. */
 CStatus
 CGraphics_EnumerateMetafile(CGraphics             *_this,
-                             CMetafile             *metafile,
-                             CPointF                dst,
-                             CImageAttributes      *atts,
-                             CMetafileEnumCallback  callback,
-                             void                   *callbackData)
+                            CMetafile             *metafile,
+                            CPointF                dst,
+                            CImageAttributes      *atts,
+                            CMetafileEnumCallback  callback,
+                            void                  *callbackData)
 {
 	return CStatus_NotImplemented;
 }
 CStatus
 CGraphics_EnumerateMetafile(CGraphics             *_this,
-                             CMetafile             *metafile,
-                             CPointF               *dst,
-                             CUInt32                count,
-                             CImageAttributes      *atts,
-                             CMetafileEnumCallback  callback,
-                             void                   *callbackData)
+                            CMetafile             *metafile,
+                            CPointF               *dst,
+                            CUInt32                count,
+                            CImageAttributes      *atts,
+                            CMetafileEnumCallback  callback,
+                            void                  *callbackData)
 {
 	return CStatus_NotImplemented;
 }
 CStatus
 CGraphics_EnumerateMetafile(CGraphics             *_this,
-                             CMetafile             *metafile,
-                             CRectangleF            dst,
-                             CImageAttributes      *atts,
-                             CMetafileEnumCallback  callback,
-                             void                   *callbackData)
+                            CMetafile             *metafile,
+                            CRectangleF            dst,
+                            CImageAttributes      *atts,
+                            CMetafileEnumCallback  callback,
+                            void                  *callbackData)
 {
 	return CStatus_NotImplemented;
 }
 CStatus
 CGraphics_EnumerateMetafile(CGraphics             *_this,
-                             CMetafile             *metafile,
-                             CPointF                dst,
-                             CRectangleF            src,
-                             CGraphicsUnit          srcUnit,
-                             CImageAttributes      *atts,
-                             CMetafileEnumCallback  callback,
-                             void                   *callbackData)
+                            CMetafile             *metafile,
+                            CPointF                dst,
+                            CRectangleF            src,
+                            CGraphicsUnit          srcUnit,
+                            CImageAttributes      *atts,
+                            CMetafileEnumCallback  callback,
+                            void                  *callbackData)
 {
 	return CStatus_NotImplemented;
 }
 CStatus
 CGraphics_EnumerateMetafile(CGraphics             *_this,
-                             CMetafile             *metafile,
-                             CPointF               *dst,
-                             CUInt32                count,
-                             CRectangleF            src,
-                             CGraphicsUnit          srcUnit,
-                             CImageAttributes      *atts,
-                             CMetafileEnumCallback  callback,
-                             void                   *callbackData)
+                            CMetafile             *metafile,
+                            CPointF               *dst,
+                            CUInt32                count,
+                            CRectangleF            src,
+                            CGraphicsUnit          srcUnit,
+                            CImageAttributes      *atts,
+                            CMetafileEnumCallback  callback,
+                            void                  *callbackData)
 {
 	return CStatus_NotImplemented;
 }
 CStatus
 CGraphics_EnumerateMetafile(CGraphics             *_this,
-                             CMetafile             *metafile,
-                             CRectangleF            dst,
-                             CRectangleF            src,
-                             CGraphicsUnit          srcUnit,
-                             CImageAttributes      *atts,
-                             CMetafileEnumCallback  callback,
-                             void                   *callbackData)
+                            CMetafile             *metafile,
+                            CRectangleF            dst,
+                            CRectangleF            src,
+                            CGraphicsUnit          srcUnit,
+                            CImageAttributes      *atts,
+                            CMetafileEnumCallback  callback,
+                            void                  *callbackData)
 {
 	return CStatus_NotImplemented;
 }
@@ -429,143 +461,168 @@ CGraphics_EnumerateMetafile(CGraphics             *_this,
 /* Get the clipping region of this graphics context. */
 CStatus
 CGraphics_GetClip(CGraphics *_this,
-                   CRegion   *region)
+                  CRegion   *region)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the region to the clipping region */
-	CStatus_Check
-		(CRegion_CombineRegion
-			(region, _this->clip, CCombineMode_Replace));
+	/* set the region to the clipping region, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status =
+			CRegion_CombineRegion
+				(region, _this->clip, CCombineMode_Replace);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Get the clipping bounds of this graphics context. */
 CStatus
 CGraphics_GetClipBounds(CGraphics   *_this,
-                         CRectangleF *clipBounds)
+                        CRectangleF *clipBounds)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* get the clipping bounds */
-	CStatus_Check
-		(CRegion_GetBounds
-			(_this->clip, _this, clipBounds));
+	/* get the clipping bounds, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status =
+			CRegion_GetBounds
+				(_this->clip, _this, clipBounds);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Get the visible clipping bounds of this graphics context. */
 CStatus
 CGraphics_GetVisibleClipBounds(CGraphics   *_this,
-                                CRectangleF *bounds)
+                               CRectangleF *bounds)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a bounds pointer */
 	CStatus_Require((bounds != 0), CStatus_ArgumentNull);
 
-	/* get the visible clipping bounds */
+	/* get the visible clipping bounds, synchronously */
+	CSurface_Lock(_this->surface);
 	{
 		/* declarations */
 		CRectangleF visible;
 
-		/* get the clipping bounds */
-		CStatus_Check
-			(CRegion_GetBounds
-				(_this->clip, _this, bounds));
-
 		/* get the surface bounds */
-		CStatus_Check
-			(CSurface_GetBoundsF
-				(_this->surface, &visible));
+		visible = CSurface_GetBoundsF(_this->surface);
+
+		/* get the clipping bounds */
+		status = CRegion_GetBounds(_this->clip, _this, bounds);
 
 		/* obtain the intersection of the visible area and the clip bounds */
 		/* TODO */
 	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Determine if the clipping region is empty. */
 CStatus
 CGraphics_IsClipEmpty(CGraphics *_this,
-                       CBool     *empty)
+                      CBool     *empty)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an empty flag pointer */
 	CStatus_Require((empty != 0), CStatus_ArgumentNull);
 
-	/* determine if the clipping region is empty */
-	CStatus_Check
-		(CRegion_IsEmpty
-			(_this->clip, _this, empty));
+	/* determine if the clipping region is empty, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status = CRegion_IsEmpty(_this->clip, _this, empty);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Determine if the visible clipping region is empty. */
 CStatus
 CGraphics_IsVisibleClipEmpty(CGraphics *_this,
-                              CBool     *empty)
+                             CBool     *empty)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have an empty flag pointer */
 	CStatus_Require((empty != 0), CStatus_ArgumentNull);
 
-	/* determine if the visible clipping region is empty */
+	/* determine if the visible clipping region is empty, synchronously */
+	CSurface_Lock(_this->surface);
 	{
 		/* declarations */
 		CRectangleF visible;
 
 		/* get the surface bounds */
-		CStatus_Check
-			(CSurface_GetBoundsF
-				(_this->surface, &visible));
+		visible = CSurface_GetBoundsF(_this->surface);
 
 		/* determine if the visible area is within the clipping region */
-		CStatus_Check
-			(CRegion_IsVisibleRectangle
-				(_this->clip, _this, visible, empty));
+		status =
+			CRegion_IsVisibleRectangle
+				(_this->clip, _this, visible, empty);
 	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Determine if a point is within the visible clip region. */
 CStatus
 CGraphics_IsVisiblePoint(CGraphics *_this,
-                          CPointF    point,
-                          CBool     *visible)
+                         CPointF    point,
+                         CBool     *visible)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a visible flag pointer */
 	CStatus_Require((visible != 0), CStatus_ArgumentNull);
 
-	/* determine if the visible clipping region is empty */
+	/* determine if the visible clipping region is empty, synchronously */
+	CSurface_Lock(_this->surface);
 	{
 		/* declarations */
 		CRectangleF v;
 
 		/* get the surface bounds */
-		CStatus_Check
-			(CSurface_GetBoundsF
-				(_this->surface, &v));
+		v = CSurface_GetBoundsF(_this->surface);
 
 		/* determine if the point is within the visible bounds */
 		if(!(CRectangle_ContainsPoint(v, point)))
@@ -573,25 +630,28 @@ CGraphics_IsVisiblePoint(CGraphics *_this,
 			/* set the visible flag to false */
 			*visible = 0;
 
-			/* return successfully */
-			return CStatus_OK;
+			/* set the status */
+			status = CStatus_OK;
 		}
-
-		/* determine if the point is within the clipping region */
-		CStatus_Check
-			(CRegion_IsVisiblePoint
-				(_this->clip, _this, point, visible));
+		else
+		{
+			/* determine if the point is within the clipping region */
+			status =
+				CRegion_IsVisiblePoint
+					(_this->clip, _this, point, visible);
+		}
 	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Determine if any part of a rectangle is within the visible clip region. */
 CStatus
 CGraphics_IsVisibleRectangle(CGraphics   *_this,
-                              CRectangleF  rect,
-                              CBool       *visible)
+                             CRectangleF  rect,
+                             CBool       *visible)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -601,121 +661,177 @@ CGraphics_IsVisibleRectangle(CGraphics   *_this,
 CStatus
 CGraphics_ResetClip(CGraphics *_this)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* reset the clipping region */
-	CStatus_Check
-		(CRegion_MakeInfinite
-			(_this->clip));
+	/* reset the clipping region, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status = CRegion_MakeInfinite(_this->clip);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Set the clipping region to that of another graphics context. */
 CStatus
 CGraphics_SetClipGraphics(CGraphics    *_this,
-                           CGraphics    *graphics,
-                           CCombineMode  combineMode)
+                          CGraphics    *graphics,
+                          CCombineMode  combineMode)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a graphics context pointer */
 	CStatus_Require((graphics != 0), CStatus_ArgumentNull);
 
-	/* set the clipping region */
-	CStatus_Check
-		(CRegion_CombineRegion
-			(_this->clip, graphics->clip, combineMode));
+	/* set the clipping region, synchronously */
+	if(_this->surface == graphics->surface)
+	{
+		/* set the clipping region */
+		if(_this == graphics)
+		{
+			/* TODO: how should we handle this case? */
+			status = CStatus_Argument;
+		}
+		else
+		{
+			CSurface_Lock(_this->surface);
+			{
+				status =
+					CRegion_CombineRegion
+						(_this->clip, graphics->clip, combineMode);
+			}
+			CSurface_Unlock(_this->surface);
+		}
+	}
+	else
+	{
+		CSurface_Lock(_this->surface);
+		CSurface_Lock(graphics->surface);
+		{
+			status =
+				CRegion_CombineRegion
+					(_this->clip, graphics->clip, combineMode);
+		}
+		CSurface_Lock(graphics->surface);
+		CSurface_Unlock(_this->surface);
+	}
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Set the clipping region to a given path. */
 CStatus
 CGraphics_SetClipPath(CGraphics    *_this,
-                       CPath        *path,
-                       CCombineMode  combineMode)
+                      CPath        *path,
+                      CCombineMode  combineMode)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a path pointer */
 	CStatus_Require((path != 0), CStatus_ArgumentNull);
 
-	/* set the clipping region */
-	CStatus_Check
-		(CRegion_CombinePath
-			(_this->clip, path, combineMode));
+	/* set the clipping region, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status = CRegion_CombinePath(_this->clip, path, combineMode);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Set the clipping region to a given region. */
 CStatus
 CGraphics_SetClipRegion(CGraphics    *_this,
-                         CRegion      *region,
-                         CCombineMode  combineMode)
+                        CRegion      *region,
+                        CCombineMode  combineMode)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a region pointer */
 	CStatus_Require((region != 0), CStatus_ArgumentNull);
 
-	/* set the clipping region */
-	CStatus_Check
-		(CRegion_CombineRegion
-			(_this->clip, region, combineMode));
+	/* set the clipping region, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status = CRegion_CombineRegion(_this->clip, region, combineMode);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Set the clipping region to a given rectangle. */
 CStatus
 CGraphics_SetClipRectangle(CGraphics    *_this,
-                            CRectangleF   rect,
-                            CCombineMode  combineMode)
+                           CRectangleF   rect,
+                           CCombineMode  combineMode)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the clipping region */
-	CStatus_Check
-		(CRegion_CombineRectangle
-			(_this->clip, rect, combineMode));
+	/* set the clipping region, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status = CRegion_CombineRectangle(_this->clip, rect, combineMode);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Translate the clipping region by a specific amount. */
 CStatus
 CGraphics_TranslateClip(CGraphics *_this,
-                         CFloat     dx,
-                         CFloat     dy)
+                        CFloat     dx,
+                        CFloat     dy)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* translate the clipping region */
-	CStatus_Check
-		(CRegion_Translate
-			(_this->clip, dx, dy));
+	/* translate the clipping region, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status = CRegion_Translate(_this->clip, dx, dy);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Get the clipping mask. */
 static CStatus
-CGraphics_GetClipMask(CGraphics      *_this,
-                       pixman_image_t **mask)
+CGraphics_GetClipMask(CGraphics       *_this,
+                      pixman_image_t **mask)
 {
 	/* declarations */
 	CBool gray;
@@ -743,8 +859,8 @@ CGraphics_GetClipMask(CGraphics      *_this,
 
 /* Get the compositing mask. */
 static CStatus
-CGraphics_GetCompositingMask(CGraphics      *_this,
-                              pixman_image_t **mask)
+CGraphics_GetCompositingMask(CGraphics       *_this,
+                             pixman_image_t **mask)
 {
 	/* declarations */
 	CBool gray;
@@ -768,7 +884,62 @@ CGraphics_GetCompositingMask(CGraphics      *_this,
 		CUInt32  height;
 		CUInt32  stride;
 
-		/* TODO: is this needed? */
+		/* get the mask information */
+		data   = (CByte *)pixman_image_get_data(*mask);
+		height = (CUInt32)pixman_image_get_height(*mask);
+		stride = (CUInt32)pixman_image_get_stride(*mask);
+
+		/* reset the mask */
+		CMemSet(data, 0x00, (height * stride));
+	}
+
+	/* return successfully */
+	return CStatus_OK;
+}
+
+/* Get the text compositing mask. */
+static CStatus
+CGraphics_GetTextCompositingMask(CGraphics       *_this,
+                                 pixman_image_t **mask)
+{
+	/* declarations */
+	CBool gray;
+
+	/* assertions */
+	CASSERT((_this != 0));
+	CASSERT((mask  != 0));
+
+	/* determine if we should use gray values */
+	switch(_this->textRenderingHint)
+	{
+		case CTextRenderingHint_SingleBitPerPixelGridFit:
+		case CTextRenderingHint_SingleBitPerPixel:
+		{
+			gray = 0;
+		}
+		break;
+		case CTextRenderingHint_SystemDefault:
+		case CTextRenderingHint_AntiAlias:
+		case CTextRenderingHint_AntiAliasGridFit:
+		case CTextRenderingHint_ClearTypeGridFit:
+		default:
+		{
+			gray = 1;
+		}
+		break;
+	}
+
+	/* get the surface mask */
+	CStatus_Check
+		(CSurface_GetCompositingMask
+			(_this->surface, mask, gray));
+
+	/* reset the compositing mask */
+	{
+		/* declarations */
+		CByte   *data;
+		CUInt32  height;
+		CUInt32  stride;
 
 		/* get the mask information */
 		data   = (CByte *)pixman_image_get_data(*mask);
@@ -802,7 +973,7 @@ CGraphics_GetCompositingMask(CGraphics      *_this,
 /* Get the compositing mode of this graphics context. */
 CStatus
 CGraphics_GetCompositingMode(CGraphics        *_this,
-                              CCompositingMode *compositingMode)
+                             CCompositingMode *compositingMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -810,8 +981,12 @@ CGraphics_GetCompositingMode(CGraphics        *_this,
 	/* ensure we have a compositing mode pointer */
 	CStatus_Require((compositingMode != 0), CStatus_ArgumentNull);
 
-	/* get the compositing mode */
-	*compositingMode = _this->compositingMode;
+	/* get the compositing mode, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		*compositingMode = _this->compositingMode;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -820,13 +995,17 @@ CGraphics_GetCompositingMode(CGraphics        *_this,
 /* Set the compositing mode of this graphics context. */
 CStatus
 CGraphics_SetCompositingMode(CGraphics        *_this,
-                              CCompositingMode  compositingMode)
+                             CCompositingMode  compositingMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the compositing mode */
-	_this->compositingMode = compositingMode;
+	/* set the compositing mode, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		_this->compositingMode = compositingMode;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -835,7 +1014,7 @@ CGraphics_SetCompositingMode(CGraphics        *_this,
 /* Get the compositing quality of this graphics context. */
 CStatus
 CGraphics_GetCompositingQuality(CGraphics           *_this,
-                                 CCompositingQuality *compositingQuality)
+                                CCompositingQuality *compositingQuality)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -843,8 +1022,12 @@ CGraphics_GetCompositingQuality(CGraphics           *_this,
 	/* ensure we have a compositing quality pointer */
 	CStatus_Require((compositingQuality != 0), CStatus_ArgumentNull);
 
-	/* get the compositing quality */
-	*compositingQuality = _this->compositingQuality;
+	/* get the compositing quality, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		*compositingQuality = _this->compositingQuality;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -853,13 +1036,17 @@ CGraphics_GetCompositingQuality(CGraphics           *_this,
 /* Set the compositing quality of this graphics context. */
 CStatus
 CGraphics_SetCompositingQuality(CGraphics           *_this,
-                                 CCompositingQuality  compositingQuality)
+                                CCompositingQuality  compositingQuality)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the compositing quality */
-	_this->compositingQuality = compositingQuality;
+	/* set the compositing quality, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		_this->compositingQuality = compositingQuality;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -868,55 +1055,57 @@ CGraphics_SetCompositingQuality(CGraphics           *_this,
 /* Get the horizontal resolution of this graphics context. */
 CStatus
 CGraphics_GetDpiX(CGraphics *_this,
-                   CFloat    *dpiX)
+                  CFloat    *dpiX)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a horizontal resolution pointer */
 	CStatus_Require((dpiX != 0), CStatus_ArgumentNull);
 
-	/* get the horizontal resolution */
-#if 0
-	CStatus_Check
-		(CSurface_GetDpiX
-			(_this->surface, dpiX));
-#else
-	*dpiX = CGraphics_DefaultDpiX;
-#endif
+	/* get the horizontal resolution, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status = CSurface_GetDpiX(_this->surface, dpiX);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Get the vertical resolution of this graphics context. */
 CStatus
 CGraphics_GetDpiY(CGraphics *_this,
-                   CFloat    *dpiY)
+                  CFloat    *dpiY)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
 	/* ensure we have a vertical resolution pointer */
 	CStatus_Require((dpiY != 0), CStatus_ArgumentNull);
 
-	/* get the vertical resolution */
-#if 0
-	CStatus_Check
-		(CSurface_GetDpiY
-			(_this->surface, dpiY));
-#else
-	*dpiY = CGraphics_DefaultDpiY;
-#endif
+	/* get the vertical resolution, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status = CSurface_GetDpiY(_this->surface, dpiY);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Get the interpolation mode of this graphics context. */
 CStatus
 CGraphics_GetInterpolationMode(CGraphics          *_this,
-                                CInterpolationMode *interpolationMode)
+                               CInterpolationMode *interpolationMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -924,8 +1113,12 @@ CGraphics_GetInterpolationMode(CGraphics          *_this,
 	/* ensure we have an interpolation mode pointer */
 	CStatus_Require((interpolationMode != 0), CStatus_ArgumentNull);
 
-	/* get the interpolation mode */
-	*interpolationMode = _this->interpolationMode;
+	/* get the interpolation mode, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		*interpolationMode = _this->interpolationMode;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -934,13 +1127,17 @@ CGraphics_GetInterpolationMode(CGraphics          *_this,
 /* Set the interpolation mode of this graphics context. */
 CStatus
 CGraphics_SetInterpolationMode(CGraphics          *_this,
-                                CInterpolationMode  interpolationMode)
+                               CInterpolationMode  interpolationMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the interpolation mode */
-	_this->interpolationMode = interpolationMode;
+	/* set the interpolation mode, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		_this->interpolationMode = interpolationMode;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -949,7 +1146,7 @@ CGraphics_SetInterpolationMode(CGraphics          *_this,
 /* Get the page scaling factor of this graphics context. */
 CStatus
 CGraphics_GetPageScale(CGraphics *_this,
-                        CFloat    *pageScale)
+                       CFloat    *pageScale)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -957,8 +1154,12 @@ CGraphics_GetPageScale(CGraphics *_this,
 	/* ensure we have a page scaling factor pointer */
 	CStatus_Require((pageScale != 0), CStatus_ArgumentNull);
 
-	/* get the page scaling factor */
-	*pageScale = _this->pageScale;
+	/* get the page scaling factor, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		*pageScale = _this->pageScale;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -967,40 +1168,45 @@ CGraphics_GetPageScale(CGraphics *_this,
 /* Set the page scaling factor of this graphics context. */
 CStatus
 CGraphics_SetPageScale(CGraphics *_this,
-                        CFloat     pageScale)
+                       CFloat     pageScale)
 {
 	/* declarations */
-	CFloat dpiX;
-	CFloat dpiY;
+	CStatus status;
+	CFloat  dpiX;
+	CFloat  dpiY;
 
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the page scaling factor */
-	_this->pageScale = pageScale;
+	/* set the page scaling factor, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		/* set the page scaling factor */
+		_this->pageScale = pageScale;
 
-	/* get the horizontal resolution */
-	CStatus_Check
-		(CGraphics_GetDpiX
-			(_this, &dpiX));
+		/* get the horizontal resolution */
+		CStatus_CheckGOTO
+			(CSurface_GetDpiX(_this->surface, &dpiX), status, GOTO_Cleanup);
 
-	/* get the vertical resolution */
-	CStatus_Check
-		(CGraphics_GetDpiY
-			(_this, &dpiY));
+		/* get the vertical resolution */
+		CStatus_CheckGOTO
+			(CSurface_GetDpiY(_this->surface, &dpiY), status, GOTO_Cleanup);
 
-	/* update the pipeline */
-	CGraphicsPipeline_SetPage
-		(&(_this->pipeline), _this->pageUnit, pageScale, dpiX, dpiY);
+		/* update the pipeline */
+		CGraphicsPipeline_SetPage
+			(&(_this->pipeline), _this->pageUnit, pageScale, dpiX, dpiY);
+	}
+GOTO_Cleanup:
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Get the page unit of this graphics context. */
 CStatus
 CGraphics_GetPageUnit(CGraphics     *_this,
-                       CGraphicsUnit *pageUnit)
+                      CGraphicsUnit *pageUnit)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1008,8 +1214,12 @@ CGraphics_GetPageUnit(CGraphics     *_this,
 	/* ensure we have a page unit pointer */
 	CStatus_Require((pageUnit != 0), CStatus_ArgumentNull);
 
-	/* get the page unit */
-	*pageUnit = _this->pageUnit;
+	/* get the page unit, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		*pageUnit = _this->pageUnit;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1018,40 +1228,45 @@ CGraphics_GetPageUnit(CGraphics     *_this,
 /* Set the page unit of this graphics context. */
 CStatus
 CGraphics_SetPageUnit(CGraphics     *_this,
-                       CGraphicsUnit  pageUnit)
+                      CGraphicsUnit  pageUnit)
 {
 	/* declarations */
-	CFloat dpiX;
-	CFloat dpiY;
+	CStatus status;
+	CFloat  dpiX;
+	CFloat  dpiY;
 
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the page unit */
-	_this->pageUnit = pageUnit;
+	/* set the page unit, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		/* set the page unit */
+		_this->pageUnit = pageUnit;
 
-	/* get the horizontal resolution */
-	CStatus_Check
-		(CGraphics_GetDpiX
-			(_this, &dpiX));
+		/* get the horizontal resolution */
+		CStatus_CheckGOTO
+			(CSurface_GetDpiX(_this->surface, &dpiX), status, GOTO_Cleanup);
 
-	/* get the vertical resolution */
-	CStatus_Check
-		(CGraphics_GetDpiY
-			(_this, &dpiY));
+		/* get the vertical resolution */
+		CStatus_CheckGOTO
+			(CSurface_GetDpiY(_this->surface, &dpiY), status, GOTO_Cleanup);
 
-	/* update the pipeline */
-	CGraphicsPipeline_SetPage
-		(&(_this->pipeline), pageUnit, _this->pageScale, dpiX, dpiY);
+		/* update the pipeline */
+		CGraphicsPipeline_SetPage
+			(&(_this->pipeline), pageUnit, _this->pageScale, dpiX, dpiY);
+	}
+GOTO_Cleanup:
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Get the pixel offset mode of this graphics context. */
 CStatus
 CGraphics_GetPixelOffsetMode(CGraphics        *_this,
-                              CPixelOffsetMode *pixelOffsetMode)
+                             CPixelOffsetMode *pixelOffsetMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1059,8 +1274,12 @@ CGraphics_GetPixelOffsetMode(CGraphics        *_this,
 	/* ensure we have a pixel offset mode pointer */
 	CStatus_Require((pixelOffsetMode != 0), CStatus_ArgumentNull);
 
-	/* get the pixel offset mode */
-	*pixelOffsetMode = _this->pixelOffsetMode;
+	/* get the pixel offset mode, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		*pixelOffsetMode = _this->pixelOffsetMode;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1069,13 +1288,17 @@ CGraphics_GetPixelOffsetMode(CGraphics        *_this,
 /* Set the pixel offset mode of this graphics context. */
 CStatus
 CGraphics_SetPixelOffsetMode(CGraphics        *_this,
-                              CPixelOffsetMode  pixelOffsetMode)
+                             CPixelOffsetMode  pixelOffsetMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the pixel offset mode */
-	_this->pixelOffsetMode = pixelOffsetMode;
+	/* set the pixel offset mode, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		_this->pixelOffsetMode = pixelOffsetMode;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1084,7 +1307,7 @@ CGraphics_SetPixelOffsetMode(CGraphics        *_this,
 /* Get the rendering origin of this graphics context. */
 CStatus
 CGraphics_GetRenderingOrigin(CGraphics *_this,
-                              CPointI   *renderingOrigin)
+                             CPointI   *renderingOrigin)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1092,8 +1315,12 @@ CGraphics_GetRenderingOrigin(CGraphics *_this,
 	/* ensure we have a rendering origin pointer */
 	CStatus_Require((renderingOrigin != 0), CStatus_ArgumentNull);
 
-	/* get the rendering origin */
-	*renderingOrigin = _this->renderingOrigin;
+	/* get the rendering origin, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		*renderingOrigin = _this->renderingOrigin;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1102,13 +1329,17 @@ CGraphics_GetRenderingOrigin(CGraphics *_this,
 /* Set the rendering origin of this graphics context. */
 CStatus
 CGraphics_SetRenderingOrigin(CGraphics *_this,
-                              CPointI    renderingOrigin)
+                             CPointI    renderingOrigin)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the rendering origin */
-	_this->renderingOrigin = renderingOrigin;
+	/* set the rendering origin, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		_this->renderingOrigin = renderingOrigin;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1117,7 +1348,7 @@ CGraphics_SetRenderingOrigin(CGraphics *_this,
 /* Get the smoothing mode of this graphics context. */
 CStatus
 CGraphics_GetSmoothingMode(CGraphics      *_this,
-                            CSmoothingMode *smoothingMode)
+                           CSmoothingMode *smoothingMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1125,8 +1356,12 @@ CGraphics_GetSmoothingMode(CGraphics      *_this,
 	/* ensure we have a smoothing mode pointer */
 	CStatus_Require((smoothingMode != 0), CStatus_ArgumentNull);
 
-	/* get the smoothing mode */
-	*smoothingMode = _this->smoothingMode;
+	/* get the smoothing mode, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		*smoothingMode = _this->smoothingMode;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1135,13 +1370,17 @@ CGraphics_GetSmoothingMode(CGraphics      *_this,
 /* Set the smoothing mode of this graphics context. */
 CStatus
 CGraphics_SetSmoothingMode(CGraphics      *_this,
-                            CSmoothingMode  smoothingMode)
+                           CSmoothingMode  smoothingMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the smoothing mode */
-	_this->smoothingMode = smoothingMode;
+	/* set the smoothing mode, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		_this->smoothingMode = smoothingMode;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1150,7 +1389,7 @@ CGraphics_SetSmoothingMode(CGraphics      *_this,
 /* Get the text contrast of this graphics context. */
 CStatus
 CGraphics_GetTextContrast(CGraphics *_this,
-                           CUInt32   *textContrast)
+                          CUInt32   *textContrast)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1158,8 +1397,12 @@ CGraphics_GetTextContrast(CGraphics *_this,
 	/* ensure we have a text contrast pointer */
 	CStatus_Require((textContrast != 0), CStatus_ArgumentNull);
 
-	/* get the text contrast */
-	*textContrast = _this->textContrast;
+	/* get the text contrast, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		*textContrast = _this->textContrast;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1168,13 +1411,17 @@ CGraphics_GetTextContrast(CGraphics *_this,
 /* Set the text contrast of this graphics context. */
 CStatus
 CGraphics_SetTextContrast(CGraphics *_this,
-                           CUInt32    textContrast)
+                          CUInt32    textContrast)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the text contrast */
-	_this->textContrast = textContrast;
+	/* set the text contrast, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		_this->textContrast = textContrast;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1183,7 +1430,7 @@ CGraphics_SetTextContrast(CGraphics *_this,
 /* Get the text rendering hint of this graphics context. */
 CStatus
 CGraphics_GetTextRenderingHint(CGraphics          *_this,
-                                CTextRenderingHint *textRenderingHint)
+                               CTextRenderingHint *textRenderingHint)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1191,8 +1438,12 @@ CGraphics_GetTextRenderingHint(CGraphics          *_this,
 	/* ensure we have a text rendering hint pointer */
 	CStatus_Require((textRenderingHint != 0), CStatus_ArgumentNull);
 
-	/* get the text rendering hint */
-	*textRenderingHint = _this->textRenderingHint;
+	/* get the text rendering hint, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		*textRenderingHint = _this->textRenderingHint;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1201,13 +1452,17 @@ CGraphics_GetTextRenderingHint(CGraphics          *_this,
 /* Set the text rendering hint of this graphics context. */
 CStatus
 CGraphics_SetTextRenderingHint(CGraphics          *_this,
-                                CTextRenderingHint  textRenderingHint)
+                               CTextRenderingHint  textRenderingHint)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* set the text rendering hint */
-	_this->textRenderingHint = textRenderingHint;
+	/* set the text rendering hint, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		_this->textRenderingHint = textRenderingHint;
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1240,21 +1495,93 @@ static const pixman_transform_t CPixmanTransform_Identity =
 /* Draw an xbm glyph. */
 CStatus
 CGraphics_DrawXBM(CGraphics   *_this,
-                   CByte       *bits,
-                   CUInt32      count,
-                   CRectangleF  dst,
-                   CColor       color)
+                  const CByte *bits,
+                  CFloat       x,
+                  CFloat       y,
+                  CUInt16      width,
+                  CUInt16      height,
+                  CColor       color,
+                  CBool        transform)
 {
-	/* TODO */
-	return CStatus_NotImplemented;
+	/* declarations */
+	pixman_image_t *pattern;
+	CStatus         status;
+
+	/* ensure we have a this pointer */
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
+
+	/* ensure we have a bit list pointer */
+	CStatus_Require((bits != 0), CStatus_ArgumentNull);
+
+	/* ensure we have a valid xbm size */
+	CStatus_Require((width != 0 && height != 0), CStatus_Argument);
+
+	/* bail out now if there's nothing to do */
+	CStatus_Require((color != 0), CStatus_OK);
+
+	/* create the pattern */
+	CStatus_Check
+		(CUtils_CreateHatchPattern
+			(&pattern, bits, width, height, color, 0, 0));
+
+	/* paint to the surface synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		/* declarations */
+		pixman_image_t *clip;
+
+		/* get the clip mask */
+		status = CGraphics_GetClipMask(_this, &clip);
+
+		/* handle masking failures */
+		if(status != CStatus_OK)
+		{
+			CSurface_Unlock(_this->surface);
+			pixman_image_destroy(pattern);
+			return status;
+		}
+
+		/* set the pattern transformation, as needed */
+		if(transform)
+		{
+			/* declarations */
+			pixman_transform_t xform;
+
+			/* get the transformation */
+			xform =
+				CUtils_ToPixmanTransform
+					(&(CGraphicsPipeline_DeviceInverse(_this->pipeline)));
+
+			/* set the image transformation */
+			if(pixman_image_set_transform(pattern, &xform))
+			{
+				CSurface_Unlock(_this->surface);
+				pixman_image_destroy(pattern);
+				return CStatus_OutOfMemory;
+			}
+		}
+
+		/* draw the xbm */
+		status =
+			CSurface_Composite
+				(_this->surface, x, y, width, height, pattern, clip,
+				 _this->interpolationMode, _this->compositingMode);
+	}
+	CSurface_Unlock(_this->surface);
+
+	/* destroy the pattern */
+	pixman_image_destroy(pattern);
+
+	/* return status */
+	return status;
 }
 
 /* Draw an image. */
 CStatus
 CGraphics_DrawImage(CGraphics *_this,
-                     CImage    *image,
-                     CFloat     x,
-                     CFloat     y)
+                    CImage    *image,
+                    CFloat     x,
+                    CFloat     y)
 {
 	/* declarations */
 	CSizeF size;
@@ -1273,11 +1600,11 @@ CGraphics_DrawImage(CGraphics *_this,
 /* Draw an image. */
 CStatus
 CGraphics_DrawImageRect(CGraphics *_this,
-                         CImage    *image,
-                         CFloat     x,
-                         CFloat     y,
-                         CFloat     width,
-                         CFloat     height)
+                        CImage    *image,
+                        CFloat     x,
+                        CFloat     y,
+                        CFloat     width,
+                        CFloat     height)
 {
 	/* declarations */
 	CStatus status;
@@ -1348,9 +1675,9 @@ CGraphics_DrawImageRect(CGraphics *_this,
 /* Draw an image. */
 CStatus
 CGraphics_DrawImagePoints(CGraphics *_this,
-                           CImage    *image,
-                           CPointF   *dst,
-                           CUInt32    count)
+                          CImage    *image,
+                          CPointF   *dst,
+                          CUInt32    count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1359,10 +1686,10 @@ CGraphics_DrawImagePoints(CGraphics *_this,
 /* Draw an image. */
 CStatus
 CGraphics_DrawImageRectPoints(CGraphics     *_this,
-                               CImage        *image,
-                               CPointF        dst,
-                               CRectangleF    src,
-                               CGraphicsUnit  srcUnit)
+                              CImage        *image,
+                              CPointF        dst,
+                              CRectangleF    src,
+                              CGraphicsUnit  srcUnit)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1371,12 +1698,12 @@ CGraphics_DrawImageRectPoints(CGraphics     *_this,
 /* Draw an image. */
 CStatus
 CGraphics_DrawImageRectPointsAttributes(CGraphics           *_this,
-                                         CImage              *image,
-                                         CPointF             *dst,
-                                         CUInt32              count,
-                                         CRectangleF          src,
-                                         CGraphicsUnit        srcUnit,
-                                         CImageAttributes    *atts)
+                                        CImage              *image,
+                                        CPointF             *dst,
+                                        CUInt32              count,
+                                        CRectangleF          src,
+                                        CGraphicsUnit        srcUnit,
+                                        CImageAttributes    *atts)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1385,11 +1712,11 @@ CGraphics_DrawImageRectPointsAttributes(CGraphics           *_this,
 /* Draw an image. */
 CStatus
 CGraphics_DrawImageRectRectAttributes(CGraphics           *_this,
-                                       CImage              *image,
-                                       CRectangleF          dst,
-                                       CRectangleF          src,
-                                       CGraphicsUnit        srcUnit,
-                                       CImageAttributes    *atts)
+                                      CImage              *image,
+                                      CRectangleF          dst,
+                                      CRectangleF          src,
+                                      CGraphicsUnit        srcUnit,
+                                      CImageAttributes    *atts)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1414,14 +1741,16 @@ CGraphics_DrawImageRectRectAttributes(CGraphics           *_this,
 
 /* Composite the image. */
 static CStatus
-CGraphics_Composite(CGraphics     *_this,
-                     CPattern      *pattern,
-                     pixman_image_t *mask)
+CGraphics_Composite(CGraphics      *_this,
+                    CInt32          x,
+					CInt32          y,
+                    CUInt32         width,
+                    CUInt32         height,
+                    CPattern       *pattern,
+                    pixman_image_t *mask)
 {
 	/* declarations */
 	CStatus  status;
-	CUInt32  width;
-	CUInt32  height;
 
 	/* assertions */
 	CASSERT((_this   != 0));
@@ -1432,7 +1761,7 @@ CGraphics_Composite(CGraphics     *_this,
 	if(pattern->transform != 0)
 	{
 		/* declarations */
-		CAffineTransformF affine;
+		CAffineTransformF  affine;
 		pixman_transform_t transform;
 
 		/* get the pattern transformation */
@@ -1450,14 +1779,10 @@ CGraphics_Composite(CGraphics     *_this,
 		pixman_image_set_transform(pattern->image, &transform);
 	}
 
-	/* get the source dimensions */
-	width = pixman_image_get_width(pattern->image);
-	height = pixman_image_get_height(pattern->image);
-
 	/* composite the image */
 	status =
 		CSurface_Composite
-			(_this->surface, 0, 0, width, height, pattern->image, mask,
+			(_this->surface, x, y, width, height, pattern->image, mask,
 			 _this->interpolationMode, _this->compositingMode);
 
 	/* reset transformation, as needed */
@@ -1475,8 +1800,8 @@ CGraphics_Composite(CGraphics     *_this,
 /* Fill the given path. */
 static CStatus
 CGraphics_Fill2(CGraphics *_this,
-                 CPath     *path,
-                 CPattern  *pattern)
+                CPath     *path,
+                CPattern  *pattern)
 {
 	/* declarations */
 	CStatus status;
@@ -1489,7 +1814,9 @@ CGraphics_Fill2(CGraphics *_this,
 	/* fill the given path */
 	{
 		/* declarations */
-		CTrapezoids    trapezoids;
+		CUInt32         width;
+		CUInt32         height;
+		CTrapezoids     trapezoids;
 		pixman_image_t *clip;
 		pixman_image_t *mask;
 
@@ -1506,6 +1833,14 @@ CGraphics_Fill2(CGraphics *_this,
 		/* initialize the trapezoids */
 		CTrapezoids_Initialize(&trapezoids);
 
+		/*\
+		|*| TODO: special case identity transformation
+		\*/
+
+		/* transform the path */
+		CPath_TransformAffine
+			(path, &CGraphicsPipeline_Device(_this->pipeline));
+
 		/* fill the path */
 		status =
 			CPath_Fill
@@ -1520,15 +1855,25 @@ CGraphics_Fill2(CGraphics *_this,
 
 		/* composite the trapezoids */
 		pixman_composite_trapezoids
-			(PIXMAN_OPERATOR_IN, clip, mask, 0, 0,
+			(PIXMAN_OPERATOR_ADD, clip, mask, 0, 0,
 			 ((pixman_trapezoid_t *)CTrapezoids_Trapezoids(trapezoids)),
 			 CTrapezoids_Count(trapezoids));
 
 		/* finalize the trapezoids */
 		CTrapezoids_Finalize(&trapezoids);
 
+		/*\
+		|*| TODO: calculate and use trapezoid bounds
+		\*/
+
+		/* get the mask dimensions */
+		width = pixman_image_get_width(mask);
+		height = pixman_image_get_height(mask);
+
 		/* composite the image */
-		status = CGraphics_Composite(_this, pattern, mask);
+		status =
+			CGraphics_Composite
+				(_this, 0, 0, width, height, pattern, mask);
 	}
 
 	/* return status */
@@ -1538,7 +1883,7 @@ CGraphics_Fill2(CGraphics *_this,
 /* Stroke the current path. */
 static CStatus
 CGraphics_Stroke(CGraphics *_this,
-                  CPen      *pen)
+                 CPen      *pen)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -1590,10 +1935,10 @@ CGraphics_Stroke(CGraphics *_this,
 /* Draw an arc. */
 CStatus
 CGraphics_DrawArc(CGraphics   *_this,
-                   CPen        *pen,
-                   CRectangleF  rect,
-                   CFloat       startAngle,
-                   CFloat       sweepAngle)
+                  CPen        *pen,
+                  CRectangleF  rect,
+                  CFloat       startAngle,
+                  CFloat       sweepAngle)
 {
 	/* declarations */
 	CStatus status;
@@ -1646,11 +1991,11 @@ CGraphics_DrawArc(CGraphics   *_this,
 /* Draw a Bezier spline. */
 CStatus
 CGraphics_DrawBezier(CGraphics *_this,
-                      CPen      *pen,
-                      CPointF    a,
-                      CPointF    b,
-                      CPointF    c,
-                      CPointF    d)
+                     CPen      *pen,
+                     CPointF    a,
+                     CPointF    b,
+                     CPointF    c,
+                     CPointF    d)
 {
 	/* declarations */
 	CStatus status;
@@ -1702,9 +2047,9 @@ CGraphics_DrawBezier(CGraphics *_this,
 /* Draw a series of Bezier splines. */
 CStatus
 CGraphics_DrawBeziers(CGraphics *_this,
-                       CPen      *pen,
-                       CPointF   *points,
-                       CUInt32    count)
+                      CPen      *pen,
+                      CPointF   *points,
+                      CUInt32    count)
 {
 	/* declarations */
 	CStatus status;
@@ -1755,10 +2100,10 @@ CGraphics_DrawBeziers(CGraphics *_this,
 /* Draw a closed cardinal spline. */
 CStatus
 CGraphics_DrawClosedCurve(CGraphics *_this,
-                           CPen      *pen,
-                           CPointF   *points,
-                           CUInt32    count,
-                           CFloat     tension)
+                          CPen      *pen,
+                          CPointF   *points,
+                          CUInt32    count,
+                          CFloat     tension)
 {
 	/* declarations */
 	CStatus status;
@@ -1809,12 +2154,12 @@ CGraphics_DrawClosedCurve(CGraphics *_this,
 /* Draw a cardinal spline. */
 CStatus
 CGraphics_DrawCurve(CGraphics *_this,
-                     CPen      *pen,
-                     CPointF   *points,
-                     CUInt32    count,
-                     CUInt32    offset,
-                     CUInt32    numberOfSegments,
-                     CFloat     tension)
+                    CPen      *pen,
+                    CPointF   *points,
+                    CUInt32    count,
+                    CUInt32    offset,
+                    CUInt32    numberOfSegments,
+                    CFloat     tension)
 {
 	/* declarations */
 	CStatus status;
@@ -1865,8 +2210,8 @@ CGraphics_DrawCurve(CGraphics *_this,
 /* Draw an ellipse. */
 CStatus
 CGraphics_DrawEllipse(CGraphics   *_this,
-                       CPen        *pen,
-                       CRectangleF  rect)
+                      CPen        *pen,
+                      CRectangleF  rect)
 {
 	/* declarations */
 	CStatus status;
@@ -1918,9 +2263,9 @@ CGraphics_DrawEllipse(CGraphics   *_this,
 /* Draw a line between two points. */
 CStatus
 CGraphics_DrawLine(CGraphics *_this,
-                    CPen      *pen,
-                    CPointF    start,
-                    CPointF    end)
+                   CPen      *pen,
+                   CPointF    start,
+                   CPointF    end)
 {
 	/* declarations */
 	CStatus status;
@@ -1970,9 +2315,9 @@ CGraphics_DrawLine(CGraphics *_this,
 /* Draw a series of connected line segments. */
 CStatus
 CGraphics_DrawLines(CGraphics *_this,
-                     CPen      *pen,
-                     CPointF   *points,
-                     CUInt32    count)
+                    CPen      *pen,
+                    CPointF   *points,
+                    CUInt32    count)
 {
 	/* declarations */
 	CStatus status;
@@ -2023,8 +2368,8 @@ CGraphics_DrawLines(CGraphics *_this,
 /* Draw a path object. */
 CStatus
 CGraphics_DrawPath(CGraphics *_this,
-                    CPen      *pen,
-                    CPath     *path)
+                   CPen      *pen,
+                   CPath     *path)
 {
 	/* declarations */
 	CStatus status;
@@ -2075,10 +2420,10 @@ CGraphics_DrawPath(CGraphics *_this,
 /* Draw a pie shape. */
 CStatus
 CGraphics_DrawPie(CGraphics   *_this,
-                   CPen        *pen,
-                   CRectangleF  rect,
-                   CFloat       startAngle,
-                   CFloat       sweepAngle)
+                  CPen        *pen,
+                  CRectangleF  rect,
+                  CFloat       startAngle,
+                  CFloat       sweepAngle)
 {
 	/* declarations */
 	CStatus status;
@@ -2131,9 +2476,9 @@ CGraphics_DrawPie(CGraphics   *_this,
 /* Draw a polygon. */
 CStatus
 CGraphics_DrawPolygon(CGraphics *_this,
-                       CPen      *pen,
-                       CPointF   *points,
-                       CUInt32    count)
+                      CPen      *pen,
+                      CPointF   *points,
+                      CUInt32    count)
 {
 	/* declarations */
 	CStatus status;
@@ -2184,8 +2529,8 @@ CGraphics_DrawPolygon(CGraphics *_this,
 /* Draw a rectangle. */
 CStatus
 CGraphics_DrawRectangle(CGraphics   *_this,
-                         CPen        *pen,
-                         CRectangleF  rect)
+                        CPen        *pen,
+                        CRectangleF  rect)
 {
 	/* declarations */
 	CStatus status;
@@ -2237,9 +2582,9 @@ CGraphics_DrawRectangle(CGraphics   *_this,
 /* Draw a series of rectangles. */
 CStatus
 CGraphics_DrawRectangles(CGraphics   *_this,
-                          CPen        *pen,
-                          CRectangleF *rects,
-                          CUInt32      count)
+                         CPen        *pen,
+                         CRectangleF *rects,
+                         CUInt32      count)
 {
 	/* declarations */
 	CStatus status;
@@ -2306,8 +2651,8 @@ CGraphics_DrawRectangles(CGraphics   *_this,
 /* Fill the current path. */
 static CStatus
 CGraphics_Fill(CGraphics *_this,
-                CBrush    *brush,
-                CFillMode  fillMode)
+               CBrush    *brush,
+               CFillMode  fillMode)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -2341,7 +2686,7 @@ CGraphics_Fill(CGraphics *_this,
 /* Clear the entire drawing surface. */
 CStatus
 CGraphics_Clear(CGraphics *_this,
-                 CColor     color)
+                CColor     color)
 {
 	/* declarations */
 	CStatus status;
@@ -2366,11 +2711,11 @@ CGraphics_Clear(CGraphics *_this,
 /* Fill a closed cardinal spline. */
 CStatus
 CGraphics_FillClosedCurve(CGraphics *_this,
-                           CBrush    *brush,
-                           CPointF   *points,
-                           CUInt32    count,
-                           CFloat     tension,
-                           CFillMode  fillMode)
+                          CBrush    *brush,
+                          CPointF   *points,
+                          CUInt32    count,
+                          CFloat     tension,
+                          CFillMode  fillMode)
 {
 	/* declarations */
 	CStatus status;
@@ -2423,8 +2768,8 @@ CGraphics_FillClosedCurve(CGraphics *_this,
 /* Fill an ellipse. */
 CStatus
 CGraphics_FillEllipse(CGraphics   *_this,
-                       CBrush      *brush,
-                       CRectangleF  rect)
+                      CBrush      *brush,
+                      CRectangleF  rect)
 {
 	/* declarations */
 	CStatus status;
@@ -2478,8 +2823,8 @@ CGraphics_FillEllipse(CGraphics   *_this,
 /* Fill the interior of a path. */
 CStatus
 CGraphics_FillPath(CGraphics *_this,
-                    CBrush    *brush,
-                    CPath     *path)
+                   CBrush    *brush,
+                   CPath     *path)
 {
 	/* declarations */
 	CStatus status;
@@ -2532,10 +2877,10 @@ CGraphics_FillPath(CGraphics *_this,
 /* Fill a pie shape. */
 CStatus
 CGraphics_FillPie(CGraphics   *_this,
-                   CBrush      *brush,
-                   CRectangleF  rect,
-                   CFloat       startAngle,
-                   CFloat       sweepAngle)
+                  CBrush      *brush,
+                  CRectangleF  rect,
+                  CFloat       startAngle,
+                  CFloat       sweepAngle)
 {
 	/* declarations */
 	CStatus status;
@@ -2590,10 +2935,10 @@ CGraphics_FillPie(CGraphics   *_this,
 /* Fill a polygon. */
 CStatus
 CGraphics_FillPolygon(CGraphics *_this,
-                       CBrush    *brush,
-                       CPointF   *points,
-                       CUInt32    count,
-                       CFillMode  fillMode)
+                      CBrush    *brush,
+                      CPointF   *points,
+                      CUInt32    count,
+                      CFillMode  fillMode)
 {
 	/* declarations */
 	CStatus status;
@@ -2646,8 +2991,8 @@ CGraphics_FillPolygon(CGraphics *_this,
 /* Fill a rectangle. */
 CStatus
 CGraphics_FillRectangle(CGraphics   *_this,
-                         CBrush      *brush,
-                         CRectangleF  rect)
+                        CBrush      *brush,
+                        CRectangleF  rect)
 {
 	/* declarations */
 	CStatus status;
@@ -2701,9 +3046,9 @@ CGraphics_FillRectangle(CGraphics   *_this,
 /* Fill a series of rectangles. */
 CStatus
 CGraphics_FillRectangles(CGraphics   *_this,
-                          CBrush      *brush,
-                          CRectangleF *rects,
-                          CUInt32      count)
+                         CBrush      *brush,
+                         CRectangleF *rects,
+                         CUInt32      count)
 {
 	/* declarations */
 	CStatus status;
@@ -2756,8 +3101,8 @@ CGraphics_FillRectangles(CGraphics   *_this,
 /* Fill a region. */
 CStatus
 CGraphics_FillRegion(CGraphics *_this,
-                      CBrush    *brush,
-                      CRegion   *region)
+                     CBrush    *brush,
+                     CRegion   *region)
 {
 	/* declarations */
 	CStatus status;
@@ -2777,49 +3122,34 @@ CGraphics_FillRegion(CGraphics *_this,
 		/* declarations */
 		pixman_image_t *clip;
 		pixman_image_t *mask;
-		CPattern       pattern;
-		CUInt32        w;
-		CUInt32        h;
-		CBool          gray;
+		CPattern        pattern;
+		CUInt32         w;
+		CUInt32         h;
+		CBool           gray;
 
 		/* determine if we should use gray values */
 		gray = CUtils_UseGray(_this->smoothingMode, _this->pixelOffsetMode);
 
 		/* get the clip mask */
-		status =
-			CSurface_GetClipMask
-				(_this->surface, &clip, gray);
-
-		/* handle clip masking failures */
-		if(status != CStatus_OK)
-		{
-			CSurface_Unlock(_this->surface);
-			return status;
-		}
+		CStatus_CheckGOTO
+			(CSurface_GetClipMask
+				(_this->surface, &clip, gray),
+			 status,
+			 GOTO_Cleanup);
 
 		/* get the compositing mask */
-		status =
-			CSurface_GetCompositingMask
-				(_this->surface, &mask, gray);
-
-		/* handle composite masking failures */
-		if(status != CStatus_OK)
-		{
-			CSurface_Unlock(_this->surface);
-			return status;
-		}
+		CStatus_CheckGOTO
+			(CSurface_GetCompositingMask
+				(_this->surface, &mask, gray),
+			 status,
+			 GOTO_Cleanup);
 
 		/* get the region mask */
-		status =
-			CRegion_GetMask
-				(region, &CGraphicsPipeline_Device(_this->pipeline), mask);
-
-		/* handle region masking failures */
-		if(status != CStatus_OK)
-		{
-			CSurface_Unlock(_this->surface);
-			return status;
-		}
+		CStatus_CheckGOTO
+			(CRegion_GetMask
+				(region, &CGraphicsPipeline_Device(_this->pipeline), mask),
+			 status,
+			 GOTO_Cleanup);
 
 		/* get the width and height */
 		w = (CUInt32)pixman_image_get_width(mask);
@@ -2830,18 +3160,18 @@ CGraphics_FillRegion(CGraphics *_this,
 			(PIXMAN_OPERATOR_IN_REVERSE, clip, 0, mask, 0, 0, 0, 0, 0, 0, w, h);
 
 		/* get the pattern */
-		status = CBrush_GetPattern(brush, &pattern);
-
-		/* handle pattern failures */
-		if(status != CStatus_OK)
-		{
-			CSurface_Unlock(_this->surface);
-			return status;
-		}
+		CStatus_CheckGOTO
+			(CBrush_GetPattern
+				(brush, &pattern),
+			 status,
+			 GOTO_Cleanup);
 
 		/* composite the region */
-		status = CGraphics_Composite(_this, &pattern, mask);
+		status =
+			CGraphics_Composite
+				(_this, 0, 0, w, h, &pattern, mask);
 	}
+GOTO_Cleanup:
 	CSurface_Unlock(_this->surface);
 
 	/* return status */
@@ -2866,17 +3196,17 @@ CGraphics_FillRegion(CGraphics *_this,
 /* Save the current contents of the graphics context in a container. */
 CStatus
 CGraphics_BeginContainer(CGraphics          *_this,
-                          CGraphicsContainer *container)
+                         CGraphicsContainer *container)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
 }
 CStatus
 CGraphics_BeginContainer2(CGraphics          *_this,
-                           CRectangleF         dst,
-                           CRectangleF         src,
-                           CGraphicsUnit       unit,
-                           CGraphicsContainer *container)
+                          CRectangleF         dst,
+                          CRectangleF         src,
+                          CGraphicsUnit       unit,
+                          CGraphicsContainer *container)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -2885,7 +3215,7 @@ CGraphics_BeginContainer2(CGraphics          *_this,
 /* Reset the graphics state back to a previous container level. */
 CStatus
 CGraphics_EndContainer(CGraphics          *_this,
-                        CGraphicsContainer  container)
+                       CGraphicsContainer  container)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -2894,7 +3224,7 @@ CGraphics_EndContainer(CGraphics          *_this,
 /* Restore to a previous save point. */
 CStatus
 CGraphics_Restore(CGraphics *_this,
-                   CUInt32    state)
+                  CUInt32    state)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -2903,7 +3233,7 @@ CGraphics_Restore(CGraphics *_this,
 /* Save the current graphics state. */
 CStatus
 CGraphics_Save(CGraphics *_this,
-                CUInt32   *state)
+               CUInt32   *state)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -2928,12 +3258,12 @@ CGraphics_Save(CGraphics *_this,
 /* Draw a string. */
 CStatus
 CGraphics_DrawString(CGraphics     *_this,
-                      CBrush        *brush,
-                      CChar16       *s,
-                      CUInt32        length,
-                      CFont         *font,
-                      CRectangleF    layoutRect,
-                      CStringFormat *format)
+                     CBrush        *brush,
+                     const CChar16 *s,
+                     CUInt32        length,
+                     CFont         *font,
+                     CRectangleF    layoutRect,
+                     CStringFormat *format)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -2942,13 +3272,13 @@ CGraphics_DrawString(CGraphics     *_this,
 /* Measure the character ranges for a string. */
 CStatus
 CGraphics_MeasureCharacterRanges(CGraphics      *_this,
-                                  CChar16        *s,
-                                  CUInt32         length,
-                                  CFont          *font,
-                                  CRectangleF     layoutRect,
-                                  CStringFormat  *format,
-                                  CRegion       **regions,
-                                  CUInt32        *count)
+                                 const CChar16  *s,
+                                 CUInt32         length,
+                                 CFont          *font,
+                                 CRectangleF     layoutRect,
+                                 CStringFormat  *format,
+                                 CRegion       **regions,
+                                 CUInt32        *count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -2957,17 +3287,166 @@ CGraphics_MeasureCharacterRanges(CGraphics      *_this,
 /* Measure the size of a string. */
 CStatus
 CGraphics_MeasureString(CGraphics     *_this,
-                         CChar16       *s,
-                         CUInt32        length,
-                         CFont         *font,
-                         CRectangleF    layoutRect,
-                         CStringFormat *format,
-                         CUInt32       *charactersFitted,
-                         CUInt32       *linesFilled,
-                         CSizeF        *size)
+                        const CChar16 *s,
+                        CUInt32        length,
+                        CFont         *font,
+                        CRectangleF    layoutRect,
+                        CStringFormat *format,
+                        CUInt32       *charactersFitted,
+                        CUInt32       *linesFilled,
+                        CSizeF        *size)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
+}
+
+/*\
+|*| NOTE: This is just a temporary solution until the above
+|*|       methods are implemented and support is added for
+|*|       a text layout system which can handle the complex
+|*|       requirements of text boxes and rich text boxes.
+\*/
+
+/* Measure the size of a string. */
+CStatus
+CGraphics_MeasureStringSimple(CGraphics     *_this,
+                              const CChar16 *s,
+                              CUInt32        length,
+                              CFont         *font,
+                              CSizeF        *size)
+{
+	/* declarations */
+	CTextMetrics metrics;
+	CStatus      status;
+
+	/* ensure we have a this pointer */
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
+
+	/* ensure we have a string pointer */
+	CStatus_Require((s != 0), CStatus_ArgumentNull);
+
+	/* ensure we have a font pointer */
+	CStatus_Require((font != 0), CStatus_ArgumentNull);
+
+	/* ensure we have a size pointer */
+	CStatus_Require((size != 0), CStatus_ArgumentNull);
+
+	/* set the size to the default */
+	CSize_Width(*size)  = 0;
+	CSize_Height(*size) = 0;
+
+	/* bail out now if there's nothing to do */
+	CStatus_Require((length != 0), CStatus_OK);
+
+	/* measure the string synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status =
+			CFont_MeasureString
+				(font, s, length, &CGraphicsPipeline_Device(_this->pipeline),
+				 _this->textRenderingHint, &metrics);
+	}
+	CSurface_Unlock(_this->surface);
+
+	/* handle measuring failures */
+	if(status != CStatus_OK) { return status; }
+
+	/* get the font height */
+	CStatus_Check
+		(CFont_GetHeight
+			(font, &CSize_Height(*size)));
+
+	/* calculate the width */
+	CSize_Width(*size) =
+		(CVector_X(metrics.bearing) + CVector_X(metrics.advance));
+
+	/* return successfully */
+	return CStatus_OK;
+}
+
+/* Draw a string. */
+CStatus
+CGraphics_DrawStringSimple(CGraphics     *_this,
+                           CBrush        *brush,
+                           const CChar16 *s,
+                           CUInt32        length,
+                           CFont         *font,
+                           CRectangleF    layoutRect)
+{
+	/* declarations */
+	CPattern pattern;
+	CStatus  status;
+
+	/* ensure we have a this pointer */
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
+
+	/* ensure we have a brush pointer */
+	CStatus_Require((brush != 0), CStatus_ArgumentNull);
+
+	/* ensure we have a string pointer */
+	CStatus_Require((s != 0), CStatus_ArgumentNull);
+
+	/* ensure we have a font pointer */
+	CStatus_Require((font != 0), CStatus_ArgumentNull);
+
+	/* bail out now if there's nothing to do */
+	CStatus_Require((length != 0), CStatus_OK);
+
+	/* get the source pattern */
+	CStatus_Check
+		(CBrush_GetPattern
+			(brush, &pattern));
+
+	/* draw the string synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		/* declarations */
+		pixman_image_t *clip;
+		pixman_image_t *mask;
+		CUInt32         width;
+		CUInt32         height;
+
+		/* get the clipping mask */
+		CStatus_CheckGOTO
+			(CGraphics_GetClipMask(_this, &clip),
+			 status,
+			 GOTO_Cleanup);
+
+		/* get the text compositing mask */
+		CStatus_CheckGOTO
+			(CGraphics_GetTextCompositingMask(_this, &mask),
+			 status,
+			 GOTO_Cleanup);
+
+		/* draw the string to the mask */
+		CStatus_CheckGOTO
+			(CFont_DrawString
+				(font, s, length,
+				 CRectangle_X(layoutRect),
+				 CRectangle_Y(layoutRect),
+				 &CGraphicsPipeline_Device(_this->pipeline),
+				 _this->textRenderingHint, clip, mask),
+			 status,
+			 GOTO_Cleanup);
+
+		/* get the layout bounds */
+		width  = (CUInt32)CRectangle_X(layoutRect);
+		height = (CUInt32)CRectangle_X(layoutRect);
+
+		/* ensure that the bounds are non-zero */
+		if(width  == 0) { width  = 32767; }
+		if(height == 0) { height = 32767; }
+
+		/* composite the string */
+		status =
+			CGraphics_Composite
+				(_this, 0, 0, width, height, &pattern, mask);
+	}
+GOTO_Cleanup:
+	CSurface_Unlock(_this->surface);
+
+	/* return status */
+	return status;
 }
 #endif
 /******************************************************************************/
@@ -2989,24 +3468,29 @@ CGraphics_MeasureString(CGraphics     *_this,
 /* Flush graphics operations to the display device. */
 CStatus
 CGraphics_Flush(CGraphics       *_this,
-                 CFlushIntention  intention)
+                CFlushIntention  intention)
 {
+	/* declarations */
+	CStatus status;
+
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
 
-	/* flush the surface */
-	CStatus_Check
-		(CSurface_Flush
-			(_this->surface, intention));
+	/* flush the surface, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		status = CSurface_Flush(_this->surface, intention);
+	}
+	CSurface_Unlock(_this->surface);
 
-	/* return successfully */
-	return CStatus_OK;
+	/* return status */
+	return status;
 }
 
 /* Get the HDC associated with this graphics context. */
 CStatus
 CGraphics_GetHdc(CGraphics  *_this,
-                  void       **hdc)
+                 void      **hdc)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -3015,8 +3499,8 @@ CGraphics_GetHdc(CGraphics  *_this,
 /* Get the nearest color that is supported by this graphics context. */
 CStatus
 CGraphics_GetNearestColor(CGraphics *_this,
-                           CColor     color,
-                           CColor    *nearest)
+                          CColor     color,
+                          CColor    *nearest)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -3036,7 +3520,7 @@ CGraphics_GetNearestColor(CGraphics *_this,
 /* Release a HDC that was obtained via a previous call to "GetHdc". */
 CStatus
 CGraphics_ReleaseHdc(CGraphics *_this,
-                      void       *hdc)
+                     void      *hdc)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -3045,10 +3529,10 @@ CGraphics_ReleaseHdc(CGraphics *_this,
 /* Transform points from one coordinate space to another. */
 CStatus
 CGraphics_TransformPoints(CGraphics        *_this,
-                           CCoordinateSpace  dst,
-                           CCoordinateSpace  src,
-                           CPointF          *points,
-                           CUInt32           count)
+                          CCoordinateSpace  dst,
+                          CCoordinateSpace  src,
+                          CPointF          *points,
+                          CUInt32           count)
 {
 	/* declarations */
 	CAffineTransformF t;
@@ -3065,8 +3549,13 @@ CGraphics_TransformPoints(CGraphics        *_this,
 	/* bail out now if there's nothing to do */
 	CStatus_Require((src != dst), CStatus_OK);
 
-	/* get the transformation from source space to destination space */
-	CGraphicsPipeline_GetSpaceTransform(&(_this->pipeline), dst, src, &t);
+	/* get the transformation, synchronously */
+	CSurface_Lock(_this->surface);
+	{
+		/* get the transformation from source space to destination space */
+		CGraphicsPipeline_GetSpaceTransform(&(_this->pipeline), dst, src, &t);
+	}
+	CSurface_Unlock(_this->surface);
 
 	/* apply the transformation to the point list */
 	CAffineTransformF_TransformPoints(&t, points, count);

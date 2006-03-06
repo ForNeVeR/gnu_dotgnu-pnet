@@ -39,117 +39,117 @@ static const CStrokeCapper CStrokeCapper_Zero;
 #define CStrokeCapper_Cap(c, p, cX, cY, sX, sY) \
 	((c)->Cap((c), (p), (cX), (cY), (sX), (sY)))
 
-#define CStroker_CirclePoints(array, radius, transform, scale)                \
+#define CStroker_CirclePoints(array, radius, transform, scale)                 \
 	do {                                                                       \
 		/* declarations */                                                     \
-		CBezierF bezier;                                                      \
-		CPointF  points[12];                                                  \
+		CBezierF bezier;                                                       \
+		CPointF  points[12];                                                   \
 		                                                                       \
 		/* calculate the width and radius */                                   \
-		const CDouble r = (radius);                                           \
-		const CDouble w = (r * 2.0f);                                         \
+		const CDouble r = (radius);                                            \
+		const CDouble w = (r * 2.0f);                                          \
 		                                                                       \
 		/* calculate the distance along the tangents */                        \
-		const CDouble d = (r * CMath_Arc90Fraction);                         \
+		const CDouble d = (r * CMath_Arc90Fraction);                           \
 		                                                                       \
 		/* calculate the tangential control points */                          \
-		const CFloat p = (r + d);                                             \
-		const CFloat m = (r - d);                                             \
+		const CFloat p = (r + d);                                              \
+		const CFloat m = (r - d);                                              \
 		                                                                       \
 		/* initialize the points */                                            \
-		CPoint_X(points[0])  = w; CPoint_Y(points[0])  = r;                  \
-		CPoint_X(points[1])  = w; CPoint_Y(points[1])  = m;                  \
-		CPoint_X(points[2])  = p; CPoint_Y(points[2])  = 0;                  \
-		CPoint_X(points[3])  = r; CPoint_Y(points[3])  = 0;                  \
-		CPoint_X(points[4])  = m; CPoint_Y(points[4])  = 0;                  \
-		CPoint_X(points[5])  = 0; CPoint_Y(points[5])  = m;                  \
-		CPoint_X(points[6])  = 0; CPoint_Y(points[6])  = r;                  \
-		CPoint_X(points[7])  = 0; CPoint_Y(points[7])  = p;                  \
-		CPoint_X(points[8])  = m; CPoint_Y(points[8])  = w;                  \
-		CPoint_X(points[9])  = r; CPoint_Y(points[9])  = w;                  \
-		CPoint_X(points[10]) = p; CPoint_Y(points[10]) = w;                  \
-		CPoint_X(points[11]) = w; CPoint_Y(points[11]) = p;                  \
+		CPoint_X(points[0])  = w; CPoint_Y(points[0])  = r;                    \
+		CPoint_X(points[1])  = w; CPoint_Y(points[1])  = m;                    \
+		CPoint_X(points[2])  = p; CPoint_Y(points[2])  = 0;                    \
+		CPoint_X(points[3])  = r; CPoint_Y(points[3])  = 0;                    \
+		CPoint_X(points[4])  = m; CPoint_Y(points[4])  = 0;                    \
+		CPoint_X(points[5])  = 0; CPoint_Y(points[5])  = m;                    \
+		CPoint_X(points[6])  = 0; CPoint_Y(points[6])  = r;                    \
+		CPoint_X(points[7])  = 0; CPoint_Y(points[7])  = p;                    \
+		CPoint_X(points[8])  = m; CPoint_Y(points[8])  = w;                    \
+		CPoint_X(points[9])  = r; CPoint_Y(points[9])  = w;                    \
+		CPoint_X(points[10]) = p; CPoint_Y(points[10]) = w;                    \
+		CPoint_X(points[11]) = w; CPoint_Y(points[11]) = p;                    \
 		                                                                       \
 		/* transform or scale the points */                                    \
 		if((transform) != 0)                                                   \
 		{                                                                      \
-			CAffineTransformF_TransformPoints((transform), points, 12);       \
+			CAffineTransformF_TransformPoints((transform), points, 12);        \
 		}                                                                      \
 		else                                                                   \
 		{                                                                      \
-			CVectorF_ScalePoints((scale), points, 12);                        \
+			CVectorF_ScalePoints((scale), points, 12);                         \
 		}                                                                      \
 		                                                                       \
 		/* reset the count */                                                  \
-		CPointArray_Count(*(array)) = 0;                                      \
+		CPointArray_Count(*(array)) = 0;                                       \
 		                                                                       \
 		/* initialize the first quadrant */                                    \
-		CBezierF_Initialize                                                   \
+		CBezierF_Initialize                                                    \
 			(&bezier, &points[0], &points[1], &points[2], &points[3]);         \
 		                                                                       \
 		/* flatten the first quadrant */                                       \
-		CStatus_Check                                                         \
-			(CBezierF_Flatten                                                 \
-				(&bezier, (array), CFiller_TOLERANCE));                       \
+		CStatus_Check                                                          \
+			(CBezierF_Flatten                                                  \
+				(&bezier, (array), CFiller_TOLERANCE));                        \
 		                                                                       \
 		/* initialize the second quadrant */                                   \
-		CBezierF_Initialize                                                   \
+		CBezierF_Initialize                                                    \
 			(&bezier, &points[3], &points[4], &points[5], &points[6]);         \
 		                                                                       \
 		/* flatten the second quadrant */                                      \
-		CStatus_Check                                                         \
-			(CBezierF_Flatten                                                 \
-				(&bezier, (array), CFiller_TOLERANCE));                       \
+		CStatus_Check                                                          \
+			(CBezierF_Flatten                                                  \
+				(&bezier, (array), CFiller_TOLERANCE));                        \
 		                                                                       \
 		/* initialize the third quadrant */                                    \
-		CBezierF_Initialize                                                   \
+		CBezierF_Initialize                                                    \
 			(&bezier, &points[6], &points[7], &points[8], &points[9]);         \
 		                                                                       \
 		/* flatten the third quadrant */                                       \
-		CStatus_Check                                                         \
-			(CBezierF_Flatten                                                 \
-				(&bezier, (array), CFiller_TOLERANCE));                       \
+		CStatus_Check                                                          \
+			(CBezierF_Flatten                                                  \
+				(&bezier, (array), CFiller_TOLERANCE));                        \
 		                                                                       \
 		/* initialize the fourth quadrant */                                   \
-		CBezierF_Initialize                                                   \
+		CBezierF_Initialize                                                    \
 			(&bezier, &points[9], &points[10], &points[11], &points[0]);       \
 		                                                                       \
 		/* flatten the fourth quadrant */                                      \
-		CStatus_Check                                                         \
-			(CBezierF_Flatten                                                 \
-				(&bezier, (array), CFiller_TOLERANCE));                       \
+		CStatus_Check                                                          \
+			(CBezierF_Flatten                                                  \
+				(&bezier, (array), CFiller_TOLERANCE));                        \
 	} while(0)
 
-#define CStroker_TempSpacePoints(array, points, count, size)                  \
+#define CStroker_TempSpacePoints(array, points, count, size)                   \
 	do {                                                                       \
 		/* declarations */                                                     \
-		CPointF *tmp;                                                         \
+		CPointF *tmp;                                                          \
 		                                                                       \
 		/* get the points */                                                   \
-		tmp = CPointArray_Points(*(array));                                   \
+		tmp = CPointArray_Points(*(array));                                    \
 		                                                                       \
 		/* get the count */                                                    \
-		(count) = CPointArray_Count(*(array));                                \
+		(count) = CPointArray_Count(*(array));                                 \
 		                                                                       \
 		/* calculate the size */                                               \
-		(size) = ((count) * sizeof(CPointF));                                 \
+		(size) = ((count) * sizeof(CPointF));                                  \
 		                                                                       \
 		/* allocate the points */                                              \
-		if(!((points) = (CPointF *)CMalloc((size) << 1)))                    \
+		if(!((points) = (CPointF *)CMalloc((size) << 1)))                      \
 		{                                                                      \
-			return CStatus_OutOfMemory;                                       \
+			return CStatus_OutOfMemory;                                        \
 		}                                                                      \
 		                                                                       \
 		/* copy the points */                                                  \
-		CMemCopy((points), tmp, (size));                                      \
+		CMemCopy((points), tmp, (size));                                       \
 	} while(0)
 
 static CStatus
 CStroker_StrokeSubpaths(CStroker *_this,
-                         CPath    *path,
-                         CPointF  *points,
-                         CByte    *types,
-                         CUInt32   count)
+                        CPath    *path,
+                        CPointF  *points,
+                        CByte    *types,
+                        CUInt32   count)
 {
 	/* declarations */
 	CByte   *type;
@@ -226,9 +226,9 @@ CStroker_StrokeSubpaths(CStroker *_this,
 
 static CStatus
 CStroker_FullStroke(CStroker *_this,
-                     CPath    *path,
-                     CPointF  *points,
-                     CUInt32   count)
+                    CPath    *path,
+                    CPointF  *points,
+                    CUInt32   count)
 {
 	/* declarations */
 	CAffineTransformF *transform;
@@ -266,6 +266,10 @@ CStroker_FullStroke(CStroker *_this,
 
 	/* get the pen radius */
 	radius = _this->radius;
+
+	/* set the previous cosine and sine to the default */
+	prevC = 0;
+	prevS = 0;
 
 	/* generate the stroke */
 	while(next != end)
@@ -415,9 +419,9 @@ CStroker_FullStroke(CStroker *_this,
 
 static CStatus
 CStroker_FastStroke(CStroker *_this,
-                     CPath    *path,
-                     CPointF  *points,
-                     CUInt32   count)
+                    CPath    *path,
+                    CPointF  *points,
+                    CUInt32   count)
 {
 	/* declarations */
 	CPointF           *end;
@@ -509,17 +513,17 @@ CStroker_FastStroke(CStroker *_this,
 
 static CMATH CPointF
 CStrokeJoiner_MiterIntersect(CPointF a,
-                              CPointF b,
-                              CFloat  prevC,
-                              CFloat  prevS,
-                              CFloat  currC,
-                              CFloat  currS,
-                              CDouble cross)
+                             CPointF b,
+                             CFloat  prevC,
+                             CFloat  prevS,
+                             CFloat  currC,
+                             CFloat  currS,
+                             CDouble cross)
 {
 	/* declarations */
 	CPointF intersect;
-	CDouble  iX;
-	CDouble  iY;
+	CDouble iX;
+	CDouble iY;
 
 	/* get the point components */
 	const CFloat aX = CPoint_X(a);
@@ -554,13 +558,13 @@ CStrokeJoiner_MiterIntersect(CPointF a,
 
 static CStatus
 CStrokeJoiner_AddMiter(CStrokeJoiner *_this,
-                        CPath         *path,
-                        CFloat         centerX,
-                        CFloat         centerY,
-                        CFloat         prevC,
-                        CFloat         prevS,
-                        CFloat         currC,
-                        CFloat         currS)
+                       CPath         *path,
+                       CFloat         centerX,
+                       CFloat         centerY,
+                       CFloat         prevC,
+                       CFloat         prevS,
+                       CFloat         currC,
+                       CFloat         currS)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -676,13 +680,13 @@ CStrokeJoiner_AddMiter(CStrokeJoiner *_this,
 
 static CStatus
 CStrokeJoiner_AddRound(CStrokeJoiner *_this,
-                        CPath         *path,
-                        CFloat         centerX,
-                        CFloat         centerY,
-                        CFloat         prevC,
-                        CFloat         prevS,
-                        CFloat         currC,
-                        CFloat         currS)
+                       CPath         *path,
+                       CFloat         centerX,
+                       CFloat         centerY,
+                       CFloat         prevC,
+                       CFloat         prevS,
+                       CFloat         currC,
+                       CFloat         currS)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -726,13 +730,13 @@ CStrokeJoiner_AddRound(CStrokeJoiner *_this,
 
 static CStatus
 CStrokeJoiner_AddBevel(CStrokeJoiner *_this,
-                        CPath         *path,
-                        CFloat         centerX,
-                        CFloat         centerY,
-                        CFloat         prevC,
-                        CFloat         prevS,
-                        CFloat         currC,
-                        CFloat         currS)
+                       CPath         *path,
+                       CFloat         centerX,
+                       CFloat         centerY,
+                       CFloat         prevC,
+                       CFloat         prevS,
+                       CFloat         currC,
+                       CFloat         currS)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -796,11 +800,11 @@ CStrokeJoiner_AddBevel(CStrokeJoiner *_this,
 
 static CStatus
 CStrokeCapper_AddSquare(CStrokeCapper *_this,
-                         CPath         *path,
-                         CFloat        *centerX,
-                         CFloat        *centerY,
-                         CFloat         slopeX,
-                         CFloat         slopeY)
+                        CPath         *path,
+                        CFloat        *centerX,
+                        CFloat        *centerY,
+                        CFloat         slopeX,
+                        CFloat         slopeY)
 {
 	/* assertions */
 	CASSERT((_this   != 0));
@@ -853,11 +857,11 @@ CStrokeCapper_AddSquare(CStrokeCapper *_this,
 
 static CStatus
 CStrokeCapper_AddSquareAnchor(CStrokeCapper *_this,
-                               CPath         *path,
-                               CFloat        *centerX,
-                               CFloat        *centerY,
-                               CFloat         slopeX,
-                               CFloat         slopeY)
+                              CPath         *path,
+                              CFloat        *centerX,
+                              CFloat        *centerY,
+                              CFloat         slopeX,
+                              CFloat         slopeY)
 {
 	/* assertions */
 	CASSERT((_this   != 0));
@@ -909,11 +913,11 @@ CStrokeCapper_AddSquareAnchor(CStrokeCapper *_this,
 
 static CStatus
 CStrokeCapper_AddTriangle(CStrokeCapper *_this,
-                           CPath         *path,
-                           CFloat        *centerX,
-                           CFloat        *centerY,
-                           CFloat         slopeX,
-                           CFloat         slopeY)
+                          CPath         *path,
+                          CFloat        *centerX,
+                          CFloat        *centerY,
+                          CFloat         slopeX,
+                          CFloat         slopeY)
 {
 	/* assertions */
 	CASSERT((_this   != 0));
@@ -964,11 +968,11 @@ CStrokeCapper_AddTriangle(CStrokeCapper *_this,
 
 static CStatus
 CStrokeCapper_AddDiamondAnchor(CStrokeCapper *_this,
-                                CPath         *path,
-                                CFloat        *centerX,
-                                CFloat        *centerY,
-                                CFloat         slopeX,
-                                CFloat         slopeY)
+                               CPath         *path,
+                               CFloat        *centerX,
+                               CFloat        *centerY,
+                               CFloat         slopeX,
+                               CFloat         slopeY)
 {
 	/* assertions */
 	CASSERT((_this   != 0));
@@ -1020,11 +1024,11 @@ CStrokeCapper_AddDiamondAnchor(CStrokeCapper *_this,
 
 static CStatus
 CStrokeCapper_AddRound(CStrokeCapper *_this,
-                        CPath         *path,
-                        CFloat        *centerX,
-                        CFloat        *centerY,
-                        CFloat         slopeX,
-                        CFloat         slopeY)
+                       CPath         *path,
+                       CFloat        *centerX,
+                       CFloat        *centerY,
+                       CFloat         slopeX,
+                       CFloat         slopeY)
 {
 	/* assertions */
 	CASSERT((_this   != 0));
@@ -1067,11 +1071,11 @@ CStrokeCapper_AddRound(CStrokeCapper *_this,
 
 static CStatus
 CStrokeCapper_AddArrowAnchor(CStrokeCapper *_this,
-                              CPath         *path,
-                              CFloat        *centerX,
-                              CFloat        *centerY,
-                              CFloat         slopeX,
-                              CFloat         slopeY)
+                             CPath         *path,
+                             CFloat        *centerX,
+                             CFloat        *centerY,
+                             CFloat         slopeX,
+                             CFloat         slopeY)
 {
 	/* assertions */
 	CASSERT((_this   != 0));
@@ -1161,11 +1165,11 @@ CStrokeCapper_AddArrowAnchor(CStrokeCapper *_this,
 
 static CStatus
 CStrokeJoiner_Initialize(CStrokeJoiner     *_this,
-                          CPointArrayF      *array,
-                          CAffineTransformF *transform,
-                          CLineJoin          join,
-                          CFloat             radius,
-                          CFloat             limit)
+                         CPointArrayF      *array,
+                         CAffineTransformF *transform,
+                         CLineJoin          join,
+                         CFloat             radius,
+                         CFloat             limit)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -1186,11 +1190,11 @@ CStrokeJoiner_Initialize(CStrokeJoiner     *_this,
 			|*|       a distance of the limit times the width, instead of a
 			|*|       bevel fallback, as is the case for MiterClipped
 			\*/
-			_this->u.other.transform         = transform;
+			_this->u.other.transform        = transform;
 			CVector_X(_this->u.other.scale) = radius;
 			CVector_Y(_this->u.other.scale) = radius;
-			_this->u.other.limitSquared      = (limit * limit);
-			_this->Join                      = CStrokeJoiner_AddMiter;
+			_this->u.other.limitSquared     = (limit * limit);
+			_this->Join                     = CStrokeJoiner_AddMiter;
 		}
 		break;
 		case CLineJoin_Round:
@@ -1212,10 +1216,10 @@ CStrokeJoiner_Initialize(CStrokeJoiner     *_this,
 		case CLineJoin_Bevel:
 		default:
 		{
-			_this->u.other.transform         = transform;
+			_this->u.other.transform        = transform;
 			CVector_X(_this->u.other.scale) = radius;
 			CVector_Y(_this->u.other.scale) = radius;
-			_this->Join                      = CStrokeJoiner_AddBevel;
+			_this->Join                     = CStrokeJoiner_AddBevel;
 		}
 		break;
 	}
@@ -1243,11 +1247,11 @@ CStrokeJoiner_Finalize(CStrokeJoiner *_this)
 
 static CStatus
 CStrokeCapper_Initialize(CStrokeCapper     *_this,
-                          CPointArrayF      *array,
-                          CAffineTransformF *transform,
-                          CVectorF          *scale,
-                          CLineCap           cap,
-                          CFloat             radius)
+                         CPointArrayF      *array,
+                         CAffineTransformF *transform,
+                         CVectorF          *scale,
+                         CLineCap           cap,
+                         CFloat             radius)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -1353,8 +1357,8 @@ CStrokeCapper_Finalize(CStrokeCapper *_this)
 
 CINTERNAL CStatus
 CStroker_Initialize(CStroker          *_this,
-                     CPen              *pen,
-                     CAffineTransformF *deviceTransform)
+                    CPen              *pen,
+                    CAffineTransformF *deviceTransform)
 {
 	/* assertions */
 	CASSERT((_this           != 0));
@@ -1461,10 +1465,11 @@ CStroker_Finalize(CStroker *_this)
 
 CINTERNAL CStatus
 CStroker_Stroke(CStroker *_this,
-                 CPath    *path,
-                 CPointF  *points,
-                 CByte    *types,
-                 CUInt32   count)
+                CPath    *path,
+                CPointF  *points,
+                CByte    *types,
+                CUInt32   count,
+                CBool     hasCurves)
 {
 	/* declarations */
 	CStatus  status;
@@ -1480,56 +1485,69 @@ CStroker_Stroke(CStroker *_this,
 
 	/* stroke path */
 	{
-		/* declarations */
-		CPointF *newPoints;
-		CByte   *newTypes;
-		CUInt32  newCount;
-
 		/* assertions */
 		CASSERT((points != 0));
 		CASSERT((types  != 0));
 
-		/* scale the path */
-		CVectorF_ScalePoints(&(_this->scale), points, count);
-
-		/* flatten the path */
+		/* scale the path, as needed */
+		if(_this->Stroke == CStroker_FullStroke)
 		{
-			/* declarations */
-			CFlattener flattener;
-			CUInt32    capacity;
-
-			/* initialize the flattener */
-			CFlattener_Initialize(&flattener);
-
-			/* flatten the path */
-			status =
-				CFlattener_Flatten
-					(&flattener, points, types, count, CFiller_TOLERANCE);
-
-			/* handle flattening failures */
-			if(status != CStatus_OK)
-			{
-				/* finalize the flattener */
-				CFlattener_Finalize(&flattener, 0, 0, 0, 0);
-
-				/* return status */
-				return status;
-			}
-
-			/* finalize the flattener */
-			CFlattener_Finalize
-				(&flattener, &newPoints, &newTypes, &newCount, &capacity);
-
+			CVectorF_ScalePoints(&(_this->scale), points, count);
 		}
 
-		/* stroke the subpaths */
-		status =
-			CStroker_StrokeSubpaths
-				(_this, path, newPoints, newTypes, newCount);
+		/* stroke the path */
+		if(!hasCurves)
+		{
+			/* stroke the subpaths */
+			status =
+				CStroker_StrokeSubpaths
+					(_this, path, points, types, count);
+		}
+		else
+		{
+			/* declarations */
+			CPointF *newPoints;
+			CByte   *newTypes;
+			CUInt32  newCount;
 
-		/* free the flattened path */
-		CFree(newPoints);
-		CFree(newTypes);
+			/* flatten the path */
+			{
+				/* declarations */
+				CFlattener flattener;
+				CUInt32    capacity;
+
+				/* initialize the flattener */
+				CFlattener_Initialize(&flattener);
+
+				/* flatten the path */
+				status =
+					CFlattener_Flatten
+						(&flattener, points, types, count, CFiller_TOLERANCE);
+
+				/* handle flattening failures */
+				if(status != CStatus_OK)
+				{
+					/* finalize the flattener */
+					CFlattener_Finalize(&flattener, 0, 0, 0, 0);
+	
+					/* return status */
+					return status;
+				}
+
+				/* finalize the flattener */
+				CFlattener_Finalize
+					(&flattener, &newPoints, &newTypes, &newCount, &capacity);
+			}
+
+			/* stroke the subpaths */
+			status =
+				CStroker_StrokeSubpaths
+					(_this, path, newPoints, newTypes, newCount);
+
+			/* free the flattened path */
+			CFree(newPoints);
+			CFree(newTypes);
+		}
 	}
 
 	/* return status */

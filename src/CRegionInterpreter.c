@@ -27,8 +27,8 @@ extern "C" {
 static const CRegionInterpreter CRegionInterpreter_Zero;
 
 CINTERNAL void
-CRegionInterpreter_Initialize(CRegionInterpreter          *_this,
-                               const CRegionInterpreterClass *_class)
+CRegionInterpreter_Initialize(CRegionInterpreter            *_this,
+                              const CRegionInterpreterClass *_class)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -62,12 +62,12 @@ CRegionInterpreter_Finalize(CRegionInterpreter *_this)
 
 CINTERNAL CStatus
 CRegionInterpreter_Interpret(CRegionInterpreter  *_this,
-                              CRegionNode         *head,
-                              void                **data)
+                             CRegionNode         *head,
+                             void               **data)
 {
 	/* declarations */
 	CRegionStack *stack;
-	void          *tmp;
+	void         *tmp;
 	CStatus       status;
 
 	/* assertions */

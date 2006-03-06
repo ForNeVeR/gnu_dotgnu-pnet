@@ -113,44 +113,44 @@ static const CByte CRegionRect_PathTypes[] =
 	(CPathType_Line | CPathType_CloseSubpath)
 };
 
-#define CRegionRect_RectToPath(points, rectangle)                             \
+#define CRegionRect_RectToPath(points, rectangle)                              \
 	do {                                                                       \
 		/* declarations */                                                     \
-		CPointF *curr;                                                        \
+		CPointF *curr;                                                         \
 		                                                                       \
 		/* get the edges of the rectangle */                                   \
-		const CFloat top = CRectangle_Y((rectangle));                        \
-		const CFloat left = CRectangle_X((rectangle));                       \
-		const CFloat right = CRectangle_Width((rectangle)) + left;           \
-		const CFloat bottom = CRectangle_Height((rectangle)) + top;          \
+		const CFloat top = CRectangle_Y((rectangle));                          \
+		const CFloat left = CRectangle_X((rectangle));                         \
+		const CFloat right = CRectangle_Width((rectangle)) + left;             \
+		const CFloat bottom = CRectangle_Height((rectangle)) + top;            \
 		                                                                       \
 		/* get the current point pointer */                                    \
 		curr = (points);                                                       \
 		                                                                       \
 		/* set the first point */                                              \
-		CPoint_X(*curr) = left;                                               \
-		CPoint_Y(*curr) = top;                                                \
+		CPoint_X(*curr) = left;                                                \
+		CPoint_Y(*curr) = top;                                                 \
 		                                                                       \
 		/* move to the next position */                                        \
 		++curr;                                                                \
 		                                                                       \
 		/* set the second point */                                             \
-		CPoint_X(*curr) = right;                                              \
-		CPoint_Y(*curr) = top;                                                \
+		CPoint_X(*curr) = right;                                               \
+		CPoint_Y(*curr) = top;                                                 \
 		                                                                       \
 		/* move to the next position */                                        \
 		++curr;                                                                \
 		                                                                       \
 		/* set the third point */                                              \
-		CPoint_X(*curr) = right;                                              \
-		CPoint_Y(*curr) = bottom;                                             \
+		CPoint_X(*curr) = right;                                               \
+		CPoint_Y(*curr) = bottom;                                              \
 		                                                                       \
 		/* move to the next position */                                        \
 		++curr;                                                                \
 		                                                                       \
 		/* set the fourth point */                                             \
-		CPoint_X(*curr) = left;                                               \
-		CPoint_Y(*curr) = bottom;                                             \
+		CPoint_X(*curr) = left;                                                \
+		CPoint_Y(*curr) = bottom;                                              \
 	} while(0)
 
 CINTERNAL void
@@ -159,6 +159,18 @@ CINTERNAL CStatus
 CRegion_GetMask(CRegion           *_this,
                 CAffineTransformF *transform,
                 pixman_image_t    *mask);
+
+/*\
+|*| NOTE: these declarations should be moved to the public
+|*|       header once they're properly implemented
+\*/
+CStatus
+CRegion_CreateData(CRegion **_this,
+                   CByte    *data,
+                   CUInt32   count);
+CStatus
+CRegion_CreateHRGN(CRegion **_this,
+                   void      *hrgn);
 
 #ifdef __cplusplus
 };

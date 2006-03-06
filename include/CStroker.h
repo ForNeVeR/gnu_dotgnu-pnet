@@ -117,7 +117,8 @@ CStroker_Stroke(CStroker *_this,
                 CPath    *path,
                 CPointF  *points,
                 CByte    *types,
-                CUInt32   count);
+                CUInt32   count,
+                CBool     hasCurves);
 
 #ifdef __cplusplus
 };

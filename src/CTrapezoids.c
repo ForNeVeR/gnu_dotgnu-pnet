@@ -88,10 +88,10 @@ CTrapezoids_Reset(CTrapezoids *_this)
 /* Add a trapezoid. */
 static CStatus
 CTrapezoids_AddTrapezoid(CTrapezoids  *_this,
-                          CFixed        top,
-                          CFixed        bottom,
-                          const CLineX *left,
-                          const CLineX *right)
+                         CFixed        top,
+                         CFixed        bottom,
+                         const CLineX *left,
+                         const CLineX *right)
 {
 	/* declarations */
 	CUInt32 count;
@@ -169,7 +169,7 @@ CTrapezoids_AddTrapezoid(CTrapezoids  *_this,
 /* Compare the tops of two edges. */
 static int
 CEdgeX_CompareTop(const void *_a,
-                   const void *_b)
+                  const void *_b)
 {
 	/* get the edges */
 	const CEdgeX *a = (const CEdgeX *)_a;
@@ -182,7 +182,7 @@ CEdgeX_CompareTop(const void *_a,
 /* Compare the current x positions of two edges. */
 static int
 CEdgeX_CompareCurrentX(const void *_a,
-                        const void *_b)
+                       const void *_b)
 {
 	/* declarations */
 	int cmp;
@@ -213,7 +213,8 @@ CEdgeX_CompareCurrentX(const void *_a,
 
 /* Calculate the intersection of the given line segments. */
 static CMATH CIntersectionInfo
-CLineX_CalculateIntersection(CLineX a, CLineX b)
+CLineX_CalculateIntersection(CLineX a,
+                             CLineX b)
 {
 	/* declarations */
 	CIntersectionInfo info;
@@ -229,7 +230,8 @@ CLineX_CalculateIntersection(CLineX a, CLineX b)
 	/* calculate the intersection, if possible */
 	if(sA == sB)
 	{
-		info.ok = 0;
+		info.intersection = 0;
+		info.ok           = 0;
 	}
 	else
 	{
@@ -254,7 +256,8 @@ CLineX_CalculateIntersection(CLineX a, CLineX b)
 
 /* Calculate the x position of the line at the given y position. */
 static CMATH CFixed
-CLineX_CalculateCurrentX(CLineX line, CFixed y)
+CLineX_CalculateCurrentX(CLineX line,
+                         CFixed y)
 {
 	/* declarations */
 	CFixed dx;
@@ -278,8 +281,8 @@ CLineX_CalculateCurrentX(CLineX line, CFixed y)
 /* Tessellate the polygon into trapezoids (corrupts polygon). */
 CINTERNAL CStatus
 CTrapezoids_TessellatePolygon(CTrapezoids *_this,
-                               CPolygonX   *polygon,
-                               CFillMode    fillMode)
+                              CPolygonX   *polygon,
+                              CFillMode    fillMode)
 {
 	/* declarations */
 	CFixed   top;
@@ -481,10 +484,10 @@ CTrapezoids_TessellatePolygon(CTrapezoids *_this,
 /* Fill the path to these trapezoids. */
 CINTERNAL CStatus
 CTrapezoids_Fill(CTrapezoids *_this,
-                  CPointF     *points,
-                  CByte       *types,
-                  CUInt32      count,
-                  CFillMode    fillMode)
+                 CPointF     *points,
+                 CByte       *types,
+                 CUInt32      count,
+                 CFillMode    fillMode)
 {
 	/* declarations */
 	CStatus status;

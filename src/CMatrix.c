@@ -47,10 +47,10 @@ CMatrix_Create(CMatrix **_this)
 /* Create a parallelogram warp matrix. */
 CStatus
 CMatrix_CreateParallelogram(CMatrix     **_this,
-                             CRectangleF   rect,
-                             CPointF       tl,
-                             CPointF       tr,
-                             CPointF       bl)
+                            CRectangleF   rect,
+                            CPointF       tl,
+                            CPointF       tr,
+                            CPointF       bl)
 {
 	/* declarations */
 	CStatus status;
@@ -83,12 +83,12 @@ CMatrix_CreateParallelogram(CMatrix     **_this,
 /* Create a matrix with the given elements. */
 CStatus
 CMatrix_CreateElements(CMatrix **_this,
-                        CFloat    m11,
-                        CFloat    m12,
-                        CFloat    m21,
-                        CFloat    m22,
-                        CFloat    dx,
-                        CFloat    dy)
+                       CFloat    m11,
+                       CFloat    m12,
+                       CFloat    m21,
+                       CFloat    m22,
+                       CFloat    dx,
+                       CFloat    dy)
 {
 	/* ensure we have a this pointer pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -107,10 +107,30 @@ CMatrix_CreateElements(CMatrix **_this,
 	return CStatus_OK;
 }
 
+/* Destroy this matrix. */
+CStatus
+CMatrix_Destroy(CMatrix **_this)
+{
+	/* ensure we have a this pointer pointer */
+	CStatus_Require((_this != 0), CStatus_ArgumentNull);
+
+	/* ensure we have a this pointer */
+	CStatus_Require((*_this != 0), CStatus_ArgumentNull);
+
+	/* dispose of the matrix */
+	CFree(*_this);
+
+	/* null the this pointer */
+	*_this = 0;
+
+	/* return successfully */
+	return CStatus_OK;
+}
+
 /* Get the determinant of this matrix. */
 CStatus
 CMatrix_GetDeterminant(CMatrix *_this,
-                        CFloat  *determinant)
+                       CFloat  *determinant)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -119,8 +139,7 @@ CMatrix_GetDeterminant(CMatrix *_this,
 	CStatus_Require((determinant != 0), CStatus_ArgumentNull);
 
 	/* get the determinant */
-	CAffineTransformF_GetDeterminant
-		(&(_this->transform), determinant);
+	*determinant = CAffineTransformF_GetDeterminant(&(_this->transform));
 
 	/* return successfully */
 	return CStatus_OK;
@@ -129,7 +148,7 @@ CMatrix_GetDeterminant(CMatrix *_this,
 /* Get the inverse of this matrix. */
 CStatus
 CMatrix_GetInverse(CMatrix *_this,
-                    CMatrix *inverse)
+                   CMatrix *inverse)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -146,7 +165,7 @@ CMatrix_GetInverse(CMatrix *_this,
 /* Get the transformation of this matrix. */
 CINTERNAL CStatus
 CMatrix_GetTransform(CMatrix           *_this,
-                      CAffineTransformF *transform)
+                     CAffineTransformF *transform)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -164,7 +183,7 @@ CMatrix_GetTransform(CMatrix           *_this,
 /* Set the transformation of this matrix. */
 CINTERNAL CStatus
 CMatrix_SetTransform(CMatrix           *_this,
-                      CAffineTransformF *transform)
+                     CAffineTransformF *transform)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -182,8 +201,8 @@ CMatrix_SetTransform(CMatrix           *_this,
 /* Multiply this matrix with another. */
 CStatus
 CMatrix_Multiply(CMatrix      *_this,
-                  CMatrix      *other,
-                  CMatrixOrder  order)
+                 CMatrix      *other,
+                 CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -202,8 +221,8 @@ CMatrix_Multiply(CMatrix      *_this,
 /* Determine if the given matrices are equal. */
 CStatus
 CMatrix_Equals(CMatrix *_this,
-                CMatrix *other,
-                CBool   *eq)
+               CMatrix *other,
+               CBool   *eq)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -215,7 +234,7 @@ CMatrix_Equals(CMatrix *_this,
 	CStatus_Require((eq != 0), CStatus_ArgumentNull);
 
 	/* determine equality */
-	CAffineTransformF_Equals(&(_this->transform), &(other->transform), eq);
+	*eq = CAffineTransformF_Equals(&(_this->transform), &(other->transform));
 
 	/* return successfully */
 	return CStatus_OK;
@@ -224,8 +243,8 @@ CMatrix_Equals(CMatrix *_this,
 /* Determine if the given matrices are not equal. */
 CStatus
 CMatrix_NotEquals(CMatrix *_this,
-                   CMatrix *other,
-                   CBool   *ne)
+                  CMatrix *other,
+                  CBool   *ne)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -237,7 +256,7 @@ CMatrix_NotEquals(CMatrix *_this,
 	CStatus_Require((ne != 0), CStatus_ArgumentNull);
 
 	/* determine equality */
-	CAffineTransformF_NotEquals(&(_this->transform), &(other->transform), ne);
+	*ne = CAffineTransformF_NotEquals(&(_this->transform), &(other->transform));
 
 	/* return successfully */
 	return CStatus_OK;
@@ -246,8 +265,8 @@ CMatrix_NotEquals(CMatrix *_this,
 /* Rotate this matrix. */
 CStatus
 CMatrix_Rotate(CMatrix      *_this,
-                CFloat        angle,
-                CMatrixOrder  order)
+               CFloat        angle,
+               CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -262,9 +281,9 @@ CMatrix_Rotate(CMatrix      *_this,
 /* Scale this matrix. */
 CStatus
 CMatrix_Scale(CMatrix      *_this,
-               CFloat        scaleX,
-               CFloat        scaleY,
-               CMatrixOrder  order)
+              CFloat        scaleX,
+              CFloat        scaleY,
+              CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -279,9 +298,9 @@ CMatrix_Scale(CMatrix      *_this,
 /* Shear this matrix. */
 CStatus
 CMatrix_Shear(CMatrix      *_this,
-               CFloat        shearX,
-               CFloat        shearY,
-               CMatrixOrder  order)
+              CFloat        shearX,
+              CFloat        shearY,
+              CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -296,9 +315,9 @@ CMatrix_Shear(CMatrix      *_this,
 /* Translate this matrix. */
 CStatus
 CMatrix_Translate(CMatrix      *_this,
-                   CFloat        offsetX,
-                   CFloat        offsetY,
-                   CMatrixOrder  order)
+                  CFloat        offsetX,
+                  CFloat        offsetY,
+                  CMatrixOrder  order)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -313,8 +332,8 @@ CMatrix_Translate(CMatrix      *_this,
 /* Transform a list of points. */
 CStatus
 CMatrix_TransformPoints(CMatrix *_this,
-                         CPointF *points,
-                         CUInt32  count)
+                        CPointF *points,
+                        CUInt32  count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -332,8 +351,8 @@ CMatrix_TransformPoints(CMatrix *_this,
 /* Transform a list of vectors. */
 CStatus
 CMatrix_TransformVectors(CMatrix *_this,
-                          CPointF *points,
-                          CUInt32  count)
+                         CPointF *points,
+                         CUInt32  count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -347,6 +366,7 @@ CMatrix_TransformVectors(CMatrix *_this,
 	/* return successfully */
 	return CStatus_OK;
 }
+
 
 #ifdef __cplusplus
 };

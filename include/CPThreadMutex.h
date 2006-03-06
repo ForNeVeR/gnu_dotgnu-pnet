@@ -34,7 +34,7 @@ struct _tagCMutex
 	pthread_mutex_t mutex;
 };
 
-static const CMutex CMutex_StaticInitializer = { PTHREAD_MUTEX_INITIALIZER };
+#define CMutex_StaticInitializer { PTHREAD_MUTEX_INITIALIZER }
 
 CINTERNAL void
 CMutex_Lock(CMutex *_this);

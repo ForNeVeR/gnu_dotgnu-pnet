@@ -18,11 +18,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifdef HAVE_X11_XLIB_H
-
 #ifndef _C_X11SURFACE_H_
 #define _C_X11SURFACE_H_
 
+#include "CrayonsSurfaceX11.h"
 #include "CSurface.h"
 
 #ifdef __cplusplus
@@ -37,7 +36,8 @@ struct _tagCX11Surface
 	Visual   *visual;
 	GC        gc;
 	Drawable  drawable;
-	CFloat    dpi;
+	CFloat    dpiX;
+	CFloat    dpiY;
 	int       depth;
 };
 
@@ -56,15 +56,23 @@ CX11Surface_Clear(CSurface *_this,
 static CStatus
 CX11Surface_Flush(CSurface        *_this,
                   CFlushIntention  intention);
+static CStatus
+CX11Surface_GetDpiX(CSurface *_this,
+                    CFloat   *dpiX);
+static CStatus
+CX11Surface_GetDpiY(CSurface *_this,
+                    CFloat   *dpiY);
 static void
 CX11Surface_Finalize(CSurface *_this);
 
 
-static const CSurfaceClassCDX11Surface_Class =
+static const CSurfaceClass CX11Surface_Class =
 {
 	CX11Surface_Composite,
 	CX11Surface_Clear,
 	CX11Surface_Flush,
+	CX11Surface_GetDpiX,
+	CX11Surface_GetDpiY,
 	CX11Surface_Finalize,
 	"sentinel"
 };
@@ -74,5 +82,3 @@ static const CSurfaceClassCDX11Surface_Class =
 #endif
 
 #endif /* _C_X11SURFACE_H_ */
-
-#endif /* HAVE_X11_XLIB_H */

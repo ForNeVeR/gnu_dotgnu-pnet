@@ -106,24 +106,24 @@ const CGuid CImageFormat_EXIF =
 #if 0
 CStatus
 CImage_CreateData(CImage  **_this,
-                   CByte    *data,
-                   CUInt32  count)
+                  CByte    *data,
+                  CUInt32  count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
 }
 CStatus
 CImage_CreateFile(CImage  **_this,
-                   CChar16  *filename,
-                   CBool     useICM)
+                  CChar16  *filename,
+                  CBool     useICM)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
 }
 CStatus
 CImage_CreateStream(CImage  **_this,
-                     CStream  *stream,
-                     CBool     useICM)
+                    CStream  *stream,
+                    CBool     useICM)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -217,7 +217,7 @@ CImage_Destroy(CImage **_this)
 /* Get the flags of this image. */
 CStatus
 CImage_GetFlags(CImage     *_this,
-                 CImageFlag *flags)
+                CImageFlag *flags)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -239,7 +239,7 @@ CImage_GetFlags(CImage     *_this,
 /* Get the height of this image. */
 CStatus
 CImage_GetHeight(CImage  *_this,
-                  CUInt32 *height)
+                 CUInt32 *height)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -261,7 +261,7 @@ CImage_GetHeight(CImage  *_this,
 /* Get the horizontal resolution of this image. */
 CStatus
 CImage_GetHorizontalResolution(CImage *_this,
-                                CFloat *dpiX)
+                               CFloat *dpiX)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -283,7 +283,7 @@ CImage_GetHorizontalResolution(CImage *_this,
 /* Get the type of this image. */
 CStatus
 CImage_GetImageType(CImage     *_this,
-                     CImageType *type)
+                    CImageType *type)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -301,7 +301,7 @@ CImage_GetImageType(CImage     *_this,
 /* Get the size of this image. */
 CStatus
 CImage_GetPhysicalDimension(CImage *_this,
-                             CSizeF *size)
+                            CSizeF *size)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -324,7 +324,7 @@ CImage_GetPhysicalDimension(CImage *_this,
 /* Get the pixel format of this image. */
 CStatus
 CImage_GetPixelFormat(CImage       *_this,
-                       CPixelFormat *pixelFormat)
+                      CPixelFormat *pixelFormat)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -346,7 +346,7 @@ CImage_GetPixelFormat(CImage       *_this,
 /* Get the raw format of this image. */
 CStatus
 CImage_GetRawFormat(CImage *_this,
-                     CGuid  *format)
+                    CGuid  *format)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -364,7 +364,7 @@ CImage_GetRawFormat(CImage *_this,
 /* Get the vertical resolution of this image. */
 CStatus
 CImage_GetVerticalResolution(CImage *_this,
-                              CFloat *dpiY)
+                             CFloat *dpiY)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -386,7 +386,7 @@ CImage_GetVerticalResolution(CImage *_this,
 /* Get the width of this image. */
 CStatus
 CImage_GetWidth(CImage  *_this,
-                 CUInt32 *width)
+                CUInt32 *width)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -419,7 +419,7 @@ CImage_GetWidth(CImage  *_this,
 /* Clone this image. */
 CStatus
 CImage_Clone(CImage  *_this,
-              CImage **clone)
+             CImage **clone)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -492,8 +492,8 @@ CImage_Clone(CImage  *_this,
 /* Get a bounding rectangle for this image. */
 CStatus
 CImage_GetBounds(CImage        *_this,
-                  CGraphicsUnit  pageUnit,
-                  CRectangleF   *bounds)
+                 CGraphicsUnit  pageUnit,
+                 CRectangleF   *bounds)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -530,9 +530,9 @@ CImage_GetBounds(CImage        *_this,
 /* Get parameter information for a specific encoder. */
 CStatus
 CImage_GetEncoderParameters(CImage             *_this,
-                             CGuid               encoder,
-                             CEncoderParameter **parameters,
-                             CUInt32            *count)
+                            CGuid               encoder,
+                            CEncoderParameter **parameters,
+                            CUInt32            *count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -542,8 +542,8 @@ CImage_GetEncoderParameters(CImage             *_this,
 /* Get the raw image data of this image. */
 CStatus
 CImage_GetData(CImage   *_this,
-                CByte   **data,
-                CUInt32  *count)
+               CByte   **data,
+               CUInt32  *count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -560,7 +560,7 @@ CImage_GetData(CImage   *_this,
 /* Get the palette of this image. */
 CStatus
 CImage_GetPalette(CImage         *_this,
-                   CColorPalette **palette)
+                  CColorPalette **palette)
 {
 #if 0
 	/* declarations */
@@ -599,7 +599,7 @@ CImage_GetPalette(CImage         *_this,
 /* Set the palette of this image. */
 CStatus
 CImage_SetPalette(CImage        *_this,
-                   CColorPalette *palette)
+                  CColorPalette *palette)
 {
 #if 0
 	/* declarations */
@@ -668,8 +668,8 @@ CImage_SetPalette(CImage        *_this,
 /* Get a specific property item. */
 CStatus
 CImage_GetPropertyItem(CImage        *_this,
-                        CPropertyID    id,
-                        CPropertyItem *item)
+                       CPropertyID    id,
+                       CPropertyItem *item)
 {
 #if 0
 	/* ensure we have a this pointer */
@@ -725,7 +725,7 @@ CImage_GetPropertyItem(CImage        *_this,
 /* Set a property on this image. */
 CStatus
 CImage_SetPropertyItem(CImage        *_this,
-                        CPropertyItem *item)
+                       CPropertyItem *item)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -734,7 +734,7 @@ CImage_SetPropertyItem(CImage        *_this,
 /* Remove a specific property item. */
 CStatus
 CImage_RemovePropertyItem(CImage      *_this,
-                           CPropertyID  id)
+                          CPropertyID  id)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -743,8 +743,8 @@ CImage_RemovePropertyItem(CImage      *_this,
 /* Get a list of the property ids of this image. */
 CStatus
 CImage_GetPropertyIDs(CImage       *_this,
-                       CPropertyID **ids,
-                       CUInt32      *count)
+                      CPropertyID **ids,
+                      CUInt32      *count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -753,8 +753,8 @@ CImage_GetPropertyIDs(CImage       *_this,
 /* Get a list of the property items of this image. */
 CStatus
 CImage_GetPropertyItems(CImage         *_this,
-                         CPropertyItem **propertyItems,
-                         CUInt32        *count)
+                        CPropertyItem **propertyItems,
+                        CUInt32        *count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -772,9 +772,9 @@ CImage_GetPropertyItems(CImage         *_this,
 /* Get a thumbnail version of this image. */
 CStatus
 CImage_GetThumbnailImage(CImage               *_this,
-                          CUInt32               width,
-                          CUInt32               height,
-                          CImage              **thumbnail)
+                         CUInt32               width,
+                         CUInt32               height,
+                         CImage              **thumbnail)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -783,7 +783,7 @@ CImage_GetThumbnailImage(CImage               *_this,
 /* Rotate and/or flip this image. */
 CStatus
 CImage_RotateFlip(CImage          *_this,
-                   CRotateFlipType  rotateFlipType)
+                  CRotateFlipType  rotateFlipType)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -801,10 +801,10 @@ CImage_RotateFlip(CImage          *_this,
 /* Save this image. */
 CStatus
 CImage_Save(CImage            *_this,
-             CStream           *stream,
-             CGuid              encoder,
-             CEncoderParameter *parameters,
-             CUInt32            count)
+            CStream           *stream,
+            CGuid              encoder,
+            CEncoderParameter *parameters,
+            CUInt32            count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -813,17 +813,17 @@ CImage_Save(CImage            *_this,
 /* Add a frame to the previously saved image file. */
 CStatus
 CImage_SaveAdd(CImage            *_this,
-                CEncoderParameter *parameters,
-                CUInt32            count)
+               CEncoderParameter *parameters,
+               CUInt32            count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
 }
 CStatus
 CImage_SaveAddImage(CImage            *_this,
-                     CImage            *image,
-                     CEncoderParameter *parameters,
-                     CUInt32            count)
+                    CImage            *image,
+                    CEncoderParameter *parameters,
+                    CUInt32            count)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -844,8 +844,8 @@ CImage_SaveAddImage(CImage            *_this,
 /* Get the number of frames in a specific dimension. */
 CStatus
 CImage_GetFrameCount(CImage  *_this,
-                      CGuid    dimension,
-                      CUInt32 *frameCount)
+                     CGuid    dimension,
+                     CUInt32 *frameCount)
 {
 #if 0
 	/* ensure we have a this pointer */
@@ -897,8 +897,8 @@ CImage_GetFrameCount(CImage  *_this,
 /* Get a list of the frame dimensions of this image. */
 CStatus
 CImage_GetFrameDimensions(CImage   *_this,
-                           CGuid   **dimensions,
-                           CUInt32  *count)
+                          CGuid   **dimensions,
+                          CUInt32  *count)
 {
 #if 0
 	/* ensure we have a this pointer */
@@ -959,8 +959,8 @@ CImage_GetFrameDimensions(CImage   *_this,
 /* Select a new frame and make it the active one. */
 CStatus
 CImage_SelectActiveFrame(CImage  *_this,
-                          CGuid    dimension,
-                          CUInt32  frameIndex)
+                         CGuid    dimension,
+                         CUInt32  frameIndex)
 {
 #if 0
 	/* ensure we have a this pointer */

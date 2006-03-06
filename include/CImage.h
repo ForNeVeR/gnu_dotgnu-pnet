@@ -59,6 +59,59 @@ struct _tagCImage
 CINTERNAL CImage *
 CImage_Reference(CImage *_this);
 
+/*\
+|*| NOTE: these declarations should be moved to the public
+|*|       header once they're properly implemented
+\*/
+CStatus
+CImage_GetData(CImage   *_this,
+               CByte   **data,
+               CUInt32  *count);
+CStatus
+CImage_GetPalette(CImage         *_this,
+                  CColorPalette **palette);
+CStatus
+CImage_SetPalette(CImage        *_this,
+                  CColorPalette *palette);
+CStatus
+CImage_GetPropertyItem(CImage        *_this,
+                       CPropertyID    id,
+                       CPropertyItem *item);
+CStatus
+CImage_SetPropertyItem(CImage        *_this,
+                       CPropertyItem *item);
+CStatus
+CImage_RemovePropertyItem(CImage      *_this,
+                          CPropertyID  id);
+CStatus
+CImage_GetPropertyIDs(CImage       *_this,
+                      CPropertyID **ids,
+                      CUInt32      *count);
+CStatus
+CImage_GetPropertyItems(CImage         *_this,
+                        CPropertyItem **propertyItems,
+                        CUInt32        *count);
+CStatus
+CImage_GetThumbnailImage(CImage               *_this,
+                         CUInt32               width,
+                         CUInt32               height,
+                         CImage              **thumbnail);
+CStatus
+CImage_RotateFlip(CImage          *_this,
+                  CRotateFlipType  rotateFlipType);
+CStatus
+CImage_GetFrameCount(CImage  *_this,
+                     CGuid    dimension,
+                     CUInt32 *frameCount);
+CStatus
+CImage_GetFrameDimensions(CImage   *_this,
+                          CGuid   **dimensions,
+                          CUInt32  *count);
+CStatus
+CImage_SelectActiveFrame(CImage  *_this,
+                         CGuid    dimension,
+                         CUInt32  frameIndex);
+
 #ifdef __cplusplus
 };
 #endif

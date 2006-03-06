@@ -34,7 +34,7 @@ extern "C" {
 
 #define _SetPoint(currP, currT, x, y, type)                                    \
 		*(currT) = (type);                                                     \
-		CPoint_X(*(currP)) = (x);                                             \
+		CPoint_X(*(currP)) = (x);                                              \
 		CPoint_Y(*(currP)) = (y)
 #define _NextPoint(currP, currT)                                               \
 	++currP; ++currT
@@ -43,11 +43,11 @@ extern "C" {
 	_NextPoint((currP), (currT))
 #define _MoveTo(currP, currT, x, y)                                            \
 	do {                                                                       \
-		_SetPointAdvance((currP), (currT), (x), (y), CPathType_Start);        \
+		_SetPointAdvance((currP), (currT), (x), (y), CPathType_Start);         \
 	} while(0)
 #define _LineTo(currP, currT, x, y)                                            \
 	do {                                                                       \
-		_SetPointAdvance((currP), (currT), (x), (y), CPathType_Line);         \
+		_SetPointAdvance((currP), (currT), (x), (y), CPathType_Line);          \
 	} while(0)
 #define _LineToClose(currP, currT, x, y)                                       \
 	do {                                                                       \
@@ -55,23 +55,23 @@ extern "C" {
 	} while(0)
 #define _CurveTo(currP, currT, x1, y1, x2, y2, x3, y3)                         \
 	do {                                                                       \
-		_SetPointAdvance((currP), (currT), (x1), (y1), CPathType_Bezier);     \
-		_SetPointAdvance((currP), (currT), (x2), (y2), CPathType_Bezier);     \
-		_SetPointAdvance((currP), (currT), (x3), (y3), CPathType_Bezier);     \
+		_SetPointAdvance((currP), (currT), (x1), (y1), CPathType_Bezier);      \
+		_SetPointAdvance((currP), (currT), (x2), (y2), CPathType_Bezier);      \
+		_SetPointAdvance((currP), (currT), (x3), (y3), CPathType_Bezier);      \
 	} while(0)
 #define _CurveToClose(currP, currT, x1, y1, x2, y2, x3, y3)                    \
 	do {                                                                       \
-		_SetPointAdvance((currP), (currT), (x1), (y1), CPathType_Bezier);     \
-		_SetPointAdvance((currP), (currT), (x2), (y2), CPathType_Bezier);     \
+		_SetPointAdvance((currP), (currT), (x1), (y1), CPathType_Bezier);      \
+		_SetPointAdvance((currP), (currT), (x2), (y2), CPathType_Bezier);      \
 		_SetPointAdvance((currP), (currT), (x3), (y3), _TYPE_BEZIER_CLOSE);    \
 	} while(0)
 #define _BeginAdd(path, n, plist, tlist, x1, y1)                               \
 	do {                                                                       \
 		/* get the current count */                                            \
-		const CUInt32 _cc_ = (path)->count;                                   \
+		const CUInt32 _cc_ = (path)->count;                                    \
 		                                                                       \
 		/* ensure the capacity of the point and type lists */                  \
-		CStatus_Check(CPath_EnsureCapacity((path), (_cc_ + (n))));           \
+		CStatus_Check(CPath_EnsureCapacity((path), (_cc_ + (n))));             \
 		                                                                       \
 		/* update the count */                                                 \
 		(path)->count = (_cc_ + (n));                                          \
@@ -98,10 +98,10 @@ extern "C" {
 #define _BeginNew(path, n, plist, tlist, x1, y1)                               \
 	do {                                                                       \
 		/* get the current count */                                            \
-		const CUInt32 _cc_ = (path)->count;                                   \
+		const CUInt32 _cc_ = (path)->count;                                    \
 		                                                                       \
 		/* ensure the capacity of the point and type lists */                  \
-		CStatus_Check(CPath_EnsureCapacity((path), (_cc_ + (n))));           \
+		CStatus_Check(CPath_EnsureCapacity((path), (_cc_ + (n))));             \
 		                                                                       \
 		/* update the count */                                                 \
 		(path)->count = (_cc_ + (n));                                          \
@@ -178,7 +178,7 @@ CPath_Finalize(CPath *_this)
 \*/
 static CStatus
 CPath_EnsureCapacity(CPath   *_this,
-                      CUInt32  minimum)
+                     CUInt32  minimum)
 {
 	/* assertions */
 	CASSERT((_this != 0));
@@ -246,7 +246,7 @@ CPath_Destroy(CPath **_this)
 /* Get the fill mode of this path. */
 CStatus
 CPath_GetFillMode(CPath     *_this,
-                   CFillMode *fillMode)
+                  CFillMode *fillMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -264,7 +264,7 @@ CPath_GetFillMode(CPath     *_this,
 /* Set the fill mode of this path. */
 CStatus
 CPath_SetFillMode(CPath     *_this,
-                   CFillMode  fillMode)
+                  CFillMode  fillMode)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -279,8 +279,8 @@ CPath_SetFillMode(CPath     *_this,
 /* Get the points in this path. */
 CStatus
 CPath_GetPoints(CPath    *_this,
-                 CPointF **points,
-                 CUInt32  *count)
+                CPointF **points,
+                CUInt32  *count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -318,8 +318,8 @@ CPath_GetPoints(CPath    *_this,
 /* Get the types of the points in this path. */
 CStatus
 CPath_GetTypes(CPath    *_this,
-                CByte   **types,
-                CUInt32  *count)
+               CByte   **types,
+               CUInt32  *count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -357,9 +357,9 @@ CPath_GetTypes(CPath    *_this,
 /* Get the points and types in this path. */
 CStatus
 CPath_GetPathData(CPath    *_this,
-                   CPointF **points,
-                   CByte   **types,
-                   CUInt32  *count)
+                  CPointF **points,
+                  CByte   **types,
+                  CUInt32  *count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -414,9 +414,9 @@ CPath_GetPathData(CPath    *_this,
 /* Set the points and types in this path. */
 CStatus
 CPath_SetPathData(CPath   *_this,
-                   CPointF *points,
-                   CByte   *types,
-                   CUInt32  count)
+                  CPointF *points,
+                  CByte   *types,
+                  CUInt32  count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -457,12 +457,12 @@ CPath_SetPathData(CPath   *_this,
 /* Add an arc to the current figure. */
 CStatus
 CPath_AddArc(CPath  *_this,
-              CFloat  x,
-              CFloat  y,
-              CFloat  width,
-              CFloat  height,
-              CFloat  startAngle,
-              CFloat  sweepAngle)
+             CFloat  x,
+             CFloat  y,
+             CFloat  width,
+             CFloat  height,
+             CFloat  startAngle,
+             CFloat  sweepAngle)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -471,14 +471,14 @@ CPath_AddArc(CPath  *_this,
 /* Add a bezier curve to the current figure. */
 CStatus
 CPath_AddBezier(CPath  *_this,
-                 CFloat  x1,
-                 CFloat  y1,
-                 CFloat  x2,
-                 CFloat  y2,
-                 CFloat  x3,
-                 CFloat  y3,
-                 CFloat  x4,
-                 CFloat  y4)
+                CFloat  x1,
+                CFloat  y1,
+                CFloat  x2,
+                CFloat  y2,
+                CFloat  x3,
+                CFloat  y3,
+                CFloat  x4,
+                CFloat  y4)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -506,8 +506,8 @@ CPath_AddBezier(CPath  *_this,
 /* Add a sequence of connected bezier curves to the current figure. */
 CStatus
 CPath_AddBeziers(CPath   *_this,
-                  CPointF *points,
-                  CUInt32  count)
+                 CPointF *points,
+                 CUInt32  count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -533,15 +533,15 @@ CPath_AddBeziers(CPath   *_this,
 
 		/* perform standard startup procedures for path segment additions */
 		_BeginAdd
-			(_this,              count,
-			 p,                  t,
+			(_this,             count,
+			 p,                 t,
 			 CPoint_X(*points), CPoint_Y(*points++));
 
 		/* add the curve segments */
 		while(points != end)
 		{
 			_CurveTo
-				(p,                  t,
+				(p,                 t,
 				 CPoint_X(*points), CPoint_Y(*points++),
 				 CPoint_X(*points), CPoint_Y(*points++),
 				 CPoint_X(*points), CPoint_Y(*points++));
@@ -558,9 +558,9 @@ CPath_AddBeziers(CPath   *_this,
 /* Add a closed curve to this path. */
 CStatus
 CPath_AddClosedCardinalCurve(CPath   *_this,
-                              CPointF *points,
-                              CUInt32  count,
-                              CFloat   tension)
+                             CPointF *points,
+                             CUInt32  count,
+                             CFloat   tension)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -569,11 +569,11 @@ CPath_AddClosedCardinalCurve(CPath   *_this,
 /* Add a curve to the current figure. */
 CStatus
 CPath_AddCardinalCurve(CPath   *_this,
-                        CPointF *points,
-                        CUInt32  count,
-                        CUInt32  offset,
-                        CUInt32  numberOfSegments,
-                        CFloat   tension)
+                       CPointF *points,
+                       CUInt32  count,
+                       CUInt32  offset,
+                       CUInt32  numberOfSegments,
+                       CFloat   tension)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -582,10 +582,10 @@ CPath_AddCardinalCurve(CPath   *_this,
 /* Add an ellipse to this path. */
 CStatus
 CPath_AddEllipse(CPath  *_this,
-                  CFloat  x,
-                  CFloat  y,
-                  CFloat  width,
-                  CFloat  height)
+                 CFloat  x,
+                 CFloat  y,
+                 CFloat  width,
+                 CFloat  height)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -638,10 +638,10 @@ CPath_AddEllipse(CPath  *_this,
 /* Add a line to the current figure. */
 CStatus
 CPath_AddLine(CPath  *_this,
-               CFloat  x1,
-               CFloat  y1,
-               CFloat  x2,
-               CFloat  y2)
+              CFloat  x1,
+              CFloat  y1,
+              CFloat  x2,
+              CFloat  y2)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -666,8 +666,8 @@ CPath_AddLine(CPath  *_this,
 /* Add a sequence of connected line segments to the current figure. */
 CStatus
 CPath_AddLines(CPath   *_this,
-                CPointF *points,
-                CUInt32  count)
+               CPointF *points,
+               CUInt32  count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -689,15 +689,15 @@ CPath_AddLines(CPath   *_this,
 
 		/* perform standard startup procedures for path segment additions */
 		_BeginAdd
-			(_this,              count,
-			 p,                  t,
+			(_this,             count,
+			 p,                 t,
 			 CPoint_X(*points), CPoint_Y(*points++));
 
 		/* add the line segments */
 		while(points != end)
 		{
 			_LineTo
-				(p,                  t,
+				(p,                 t,
 				 CPoint_X(*points), CPoint_Y(*points++));
 		}
 	}
@@ -709,8 +709,8 @@ CPath_AddLines(CPath   *_this,
 /* Add the contents of another path to this path. */
 CStatus
 CPath_AddPath(CPath *_this,
-               CPath *path,
-               CBool  connect)
+              CPath *path,
+              CBool  connect)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -759,12 +759,12 @@ CPath_AddPath(CPath *_this,
 /* Add a pie section to this path. */
 CStatus
 CPath_AddPie(CPath  *_this,
-              CFloat  x,
-              CFloat  y,
-              CFloat  width,
-              CFloat  height,
-              CFloat  startAngle,
-              CFloat  sweepAngle)
+             CFloat  x,
+             CFloat  y,
+             CFloat  width,
+             CFloat  height,
+             CFloat  startAngle,
+             CFloat  sweepAngle)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -773,8 +773,8 @@ CPath_AddPie(CPath  *_this,
 /* Add a polygon to this path. */
 CStatus
 CPath_AddPolygon(CPath   *_this,
-                  CPointF *points,
-                  CUInt32  count)
+                 CPointF *points,
+                 CUInt32  count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -804,21 +804,21 @@ CPath_AddPolygon(CPath   *_this,
 
 		/* perform standard startup procedures for new figure additions */
 		_BeginNew
-			(_this,            count,
-			 p,                t,
+			(_this,             count,
+			 p,                 t,
 			 CPoint_X(*points), CPoint_Y(*points++));
 
 		/* add the polygon edges */
 		while(points != last)
 		{
 			_LineTo
-				(p,                  t,
+				(p,                 t,
 				 CPoint_X(*points), CPoint_Y(*points++));
 		}
 
 		/* complete the polygon */
 		_LineToClose
-			(p,                  t,
+			(p,                 t,
 			 CPoint_X(*points), CPoint_Y(*points));
 	}
 
@@ -829,10 +829,10 @@ CPath_AddPolygon(CPath   *_this,
 /* Add a rectangle to this path. */
 CStatus
 CPath_AddRectangle(CPath  *_this,
-                    CFloat  x,
-                    CFloat  y,
-                    CFloat  width,
-                    CFloat  height)
+                   CFloat  x,
+                   CFloat  y,
+                   CFloat  width,
+                   CFloat  height)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -863,8 +863,8 @@ CPath_AddRectangle(CPath  *_this,
 /* Add a sequence of rectangles to this path. */
 CStatus
 CPath_AddRectangles(CPath       *_this,
-                     CRectangleF *rects,
-                     CUInt32      count)
+                    CRectangleF *rects,
+                    CUInt32      count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -929,13 +929,13 @@ CPath_AddRectangles(CPath       *_this,
 /* Add a string to this path. */
 CStatus
 CPath_AddString(CPath         *_this,
-                 CChar16       *s,
-                 CUInt32        length,
-                 CFontFamily   *family,
-                 CFontStyle     style,
-                 CFloat         emSize,
-                 CRectangleF    layoutRect,
-                 CStringFormat *format)
+                CChar16       *s,
+                CUInt32        length,
+                CFontFamily   *family,
+                CFontStyle     style,
+                CFloat         emSize,
+                CRectangleF    layoutRect,
+                CStringFormat *format)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -970,7 +970,7 @@ CPath_ClearMarkers(CPath *_this)
 /* Clone this path. */
 CStatus
 CPath_Clone(CPath  *_this,
-             CPath **clone)
+            CPath **clone)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1099,8 +1099,8 @@ CPath_CloseFigure(CPath *_this)
 /* Flatten curves in this path into sequences of connected line segments. */
 CStatus
 CPath_Flatten(CPath   *_this,
-               CMatrix *matrix,
-               CFloat   flatness)
+              CMatrix *matrix,
+              CFloat   flatness)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1170,7 +1170,7 @@ CPath_Flatten(CPath   *_this,
 /* Get the point count of this path. */
 CStatus
 CPath_GetCount(CPath   *_this,
-                CUInt32 *count)
+               CUInt32 *count)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1188,9 +1188,9 @@ CPath_GetCount(CPath   *_this,
 /* Get the bounds of this path. */
 CStatus
 CPath_GetBounds(CPath       *_this,
-                 CMatrix     *matrix,
-                 CPen        *pen,
-                 CRectangleF *bounds)
+                CMatrix     *matrix,
+                CPen        *pen,
+                CRectangleF *bounds)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1199,7 +1199,7 @@ CPath_GetBounds(CPath       *_this,
 /* Get the last point in this path. */
 CStatus
 CPath_GetLastPoint(CPath   *_this,
-                    CPointF *point)
+                   CPointF *point)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1220,11 +1220,11 @@ CPath_GetLastPoint(CPath   *_this,
 /* Determine if a point is visible within an outline of this path. */
 CStatus
 CPath_IsOutlineVisible(CPath     *_this,
-                        CFloat     x,
-                        CFloat     y,
-                        CPen      *pen,
-                        CGraphics *graphics,
-                        CBool     *visible)
+                       CFloat     x,
+                       CFloat     y,
+                       CPen      *pen,
+                       CGraphics *graphics,
+                       CBool     *visible)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1233,10 +1233,10 @@ CPath_IsOutlineVisible(CPath     *_this,
 /* Determine if a point is visible within this path. */
 CStatus
 CPath_IsVisible(CPath     *_this,
-                 CFloat     x,
-                 CFloat     y,
-                 CGraphics *graphics,
-                 CBool     *visible)
+                CFloat     x,
+                CFloat     y,
+                CGraphics *graphics,
+                CBool     *visible)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1307,7 +1307,7 @@ CPath_StartFigure(CPath *_this)
 /* Transform the points of this path by a matrix. */
 CStatus
 CPath_Transform(CPath   *_this,
-                 CMatrix *matrix)
+                CMatrix *matrix)
 {
 	/* ensure we have a this pointer */
 	CStatus_Require((_this != 0), CStatus_ArgumentNull);
@@ -1333,15 +1333,15 @@ CPath_Transform(CPath   *_this,
 /* Warp the points of this path. */
 CStatus
 CPath_Warp(CPath     *_this,
-            CMatrix   *matrix,
-            CPointF   *dstPoints,
-            CUInt32    dstLength,
-            CFloat     srcX,
-            CFloat     srcY,
-            CFloat     srcWidth,
-            CFloat     srcHeight,
-            CWarpMode  warpMode,
-            CFloat     flatness)
+           CMatrix   *matrix,
+           CPointF   *dstPoints,
+           CUInt32    dstLength,
+           CFloat     srcX,
+           CFloat     srcY,
+           CFloat     srcWidth,
+           CFloat     srcHeight,
+           CWarpMode  warpMode,
+           CFloat     flatness)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1350,9 +1350,9 @@ CPath_Warp(CPath     *_this,
 /* Widen this path. */
 CStatus
 CPath_Widen(CPath   *_this,
-             CPen    *pen,
-             CMatrix *matrix,
-             CFloat   flatness)
+            CPen    *pen,
+            CMatrix *matrix,
+            CFloat   flatness)
 {
 	/* TODO */
 	return CStatus_NotImplemented;
@@ -1361,7 +1361,7 @@ CPath_Widen(CPath   *_this,
 /* Transform the points of this path by an affine transformation. */
 CINTERNAL void
 CPath_TransformAffine(CPath             *_this,
-                       CAffineTransformF *transform)
+                      CAffineTransformF *transform)
 {
 	/* assertions */
 	CASSERT((_this     != 0));
@@ -1378,8 +1378,8 @@ CPath_TransformAffine(CPath             *_this,
 /* Stroke this path to another path. */
 CINTERNAL CStatus
 CPath_Stroke(CPath    *_this,
-              CPath    *stroke,
-              CStroker *stroker)
+             CPath    *stroke,
+             CStroker *stroker)
 {
 	/* assertions */
 	CASSERT((_this   != 0));
@@ -1389,7 +1389,8 @@ CPath_Stroke(CPath    *_this,
 	/* stroke the path */
 	CStatus_Check
 		(CStroker_Stroke
-			(stroker, stroke, _this->points, _this->types, _this->count));
+			(stroker, stroke, _this->points, _this->types, _this->count,
+			 _this->hasCurves));
 
 	/* return successfully */
 	return CStatus_OK;
@@ -1398,7 +1399,7 @@ CPath_Stroke(CPath    *_this,
 /* Fill this path to trapezoids. */
 CINTERNAL CStatus
 CPath_Fill(CPath       *_this,
-            CTrapezoids *trapezoids)
+           CTrapezoids *trapezoids)
 {
 	/* declarations */
 	CFillMode fillMode;

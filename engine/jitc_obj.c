@@ -127,7 +127,7 @@ static ILJitValue _ILJitLoadFieldAddress(ILJITCoder *coder, ILJitValue base,
 {
 	if(mayBeNull)
 	{
-		jit_insn_check_null(coder->jitFunction, base);
+		_ILJitCheckNull(coder, base);
 	}
 	return jit_insn_add_relative(coder->jitFunction, base, offset);
 }
@@ -145,7 +145,7 @@ static ILJitValue _ILJitLoadField(ILJITCoder *coder, ILJitValue base,
 
 	if(mayBeNull)
 	{
-		jit_insn_check_null(coder->jitFunction, base);
+		_ILJitCheckNull(coder, base);
 	}
 	value =  jit_insn_load_relative(coder->jitFunction, base, offset, type);
 	return _ILJitValueConvertToStackType(coder->jitFunction, value);
@@ -163,7 +163,7 @@ static void _ILJitStoreField(ILJITCoder *coder, ILJitValue base,
 
 	if(mayBeNull)
 	{
-		jit_insn_check_null(coder->jitFunction, base);
+		_ILJitCheckNull(coder, base);
 	}
 	if(jit_value_get_type(value) != type)
 	{
@@ -259,8 +259,7 @@ static void JITCoder_LoadThisField(ILCoder *coder, ILField *field,
 							   	   ILType *fieldType)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	/* We need argNum + 1 because the ILExecThread is added as param 0 */
-	ILJitValue param = jit_value_get_param(jitCoder->jitFunction, 1);
+	ILJitValue param = _ILJitParamValue(jitCoder, 0);
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -490,8 +489,8 @@ static void JITCoder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
 	/*
 	 * Do the verification early.
 	 */
-	jit_insn_check_null(jitCoder->jitFunction, dest);
-	jit_insn_check_null(jitCoder->jitFunction, src);
+	_ILJitCheckNull(jitCoder, dest);
+	_ILJitCheckNull(jitCoder, src);
 
 	jit_insn_memcpy(jitCoder->jitFunction, dest, src, memSize);
 	JITC_ADJUST(jitCoder, -2);
@@ -508,8 +507,8 @@ static void JITCoder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
 	/*
 	 * Do the verification early.
 	 */
-	jit_insn_check_null(jitCoder->jitFunction, dest);
-	jit_insn_check_null(jitCoder->jitFunction, src);
+	_ILJitCheckNull(jitCoder, dest);
+	_ILJitCheckNull(jitCoder, src);
 
 	jit_insn_memcpy(jitCoder->jitFunction, dest, src, size);
 	JITC_ADJUST(jitCoder, -3);
@@ -531,7 +530,7 @@ static void JITCoder_InitObject(ILCoder *coder, ILEngineType ptrType,
 	/*
 	 * Do the verification early.
 	 */
-	jit_insn_check_null(jitCoder->jitFunction, dest);
+	_ILJitCheckNull(jitCoder, dest);
 
 	jit_insn_memset(jitCoder->jitFunction, dest, value, memSize);
 
@@ -548,7 +547,7 @@ static void JITCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
 	/*
 	 * Do the verification early.
 	 */
-	jit_insn_check_null(jitCoder->jitFunction, dest);
+	_ILJitCheckNull(jitCoder, dest);
 
 	value = jit_insn_convert(jitCoder->jitFunction, value, _IL_JIT_TYPE_BYTE, 0);
 	jit_insn_memset(jitCoder->jitFunction, dest, value, size);

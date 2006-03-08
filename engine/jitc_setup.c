@@ -21,73 +21,6 @@
 #ifdef IL_JITC_CODE
 
 /*
- * Allocate enough space for "n" locals.
- */
-#define	ALLOC_LOCALS(n)	\
-			do { \
-				ILUInt32 temp = (ILUInt32)(((n) + 7) & ~7); \
-				if(temp > coder->maxLocals) \
-				{ \
-					jit_value_t *newLocals = \
-						(jit_value_t *)ILRealloc(coder->jitLocals, \
-											  temp * sizeof(jit_value_t)); \
-					if(!newLocals) \
-					{ \
-						return 0; \
-					} \
-					coder->jitLocals = newLocals; \
-					coder->maxLocals = temp; \
-				} \
-			} while (0)
-
-
-/*
- * Create the jit vars for the declared local variables.
- * Returns zero if out of memory.
- */
-static int _JITCreateLocals(ILJITCoder *coder, ILStandAloneSig *localVarSig)
-{
-	ILType *signature;
-	ILType *type;
-	ILJitType jitType;
-	ILUInt32 num;
-	ILUInt32 current;
-
-	if(localVarSig)
-	{
-		/* Determine the number of locals to allocate */
-		signature = ILStandAloneSigGetType(localVarSig);
-		num = ILTypeNumLocals(signature);
-
-		/* Allocate the "jitLocals" array for the variables */
-		ALLOC_LOCALS(num);
-
-		/* Set the offsets for each of the local variables */
-		for(current = 0; current < num; ++current)
-		{
-			type = ILTypeGetLocal(signature, current);
-			if(!(jitType = _ILJitGetLocalsType(type, coder->process)))
-			{
-				return 0;
-			}
-			if(!(coder->jitLocals[current] = jit_value_create(coder->jitFunction, jitType)))
-			{
-				return 0;
-			}
-		}
-		/* Record the number of used locals in the coder. */
-		coder->numLocals = num;
-	}
-	else
-	{
-		/* Set the number of used locals to 0. */
-		coder->numLocals = 0;
-	}
-
-	return 1;
-}
-
-/*
  * Set up a JIT coder instance to process a specific method.
  */
 static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
@@ -114,8 +47,14 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	/* Initialize the mem stack for the label stackstates. */
 	ILMemStackInit(&(coder->stackStates), 0);
 
+	/* Create the parameters. */
+	if(!_ILJitParamsCreate(coder))
+	{
+		return 0;
+	}
+
 	/* Create the local variables. */
-	if(!_JITCreateLocals(coder, code->localVarSig))
+	if(!_ILJitLocalsCreate(coder, code->localVarSig))
 	{
 		return 0;
 	}

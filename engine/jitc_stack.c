@@ -48,9 +48,23 @@ static void JITCoder_Dup(ILCoder *coder, ILEngineType engineType, ILType *type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"Dup: \n");
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+	jitCoder->jitStack[jitCoder->stackTop] = 
+					 jitCoder->jitStack[jitCoder->stackTop - 1];
+#else
 	jitCoder->jitStack[jitCoder->stackTop] = 
 		jit_insn_dup(jitCoder->jitFunction,
 					 jitCoder->jitStack[jitCoder->stackTop - 1]);
+#endif
 	JITC_ADJUST(jitCoder, 1);
 }
 

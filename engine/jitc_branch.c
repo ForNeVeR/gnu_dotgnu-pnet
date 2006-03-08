@@ -51,6 +51,14 @@ static int _ILJitLabelSaveStack(ILJITCoder *coder, ILJITLabel *label)
 				/* Now replace the constant with the new temporary. */
 				coder->jitStack[current] = temp;
 			}
+			else
+			{
+				if(_ILJitValueIsArgOrLocal(coder, coder->jitStack[current]))
+				{
+					coder->jitStack[current] = jit_insn_dup(coder->jitFunction,
+													coder->jitStack[current]);
+				}
+			}
 			stack[current] = coder->jitStack[current];
 		}
 		label->jitStack = stack;
@@ -168,6 +176,9 @@ static void JITCoder_Label(ILCoder *coder, ILUInt32 offset)
 
 	if(label)
 	{
+	#ifdef _IL_JIT_OPTIMIZE_NULLCHECKS
+		_ILJitValuesResetNullChecked(jitCoder);
+	#endif
 		if(label->labelType == _IL_JIT_LABEL_STARTFINALLY)
 		{
 		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)

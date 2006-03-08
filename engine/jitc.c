@@ -53,6 +53,15 @@ extern	"C" {
  */
 /* #define _IL_JIT_DISASSEMBLE_FUNCTION 1 */
 
+/*
+ * To enable parameter / locals optimizations uncomment the following define.
+ */
+/* #define _IL_JIT_OPTIMIZE_LOCALS 1 */
+
+/*
+ * To enable null check optimizations uncomment the following define.
+ */
+/* #define _IL_JIT_OPTIMIZE_NULLCHECKS 1 */
 
 #ifdef _IL_JIT_DUMP_FUNCTION
 #ifndef _IL_JIT_ENABLE_DEBUG
@@ -165,6 +174,44 @@ struct _tagILJITLabel
 	ILJitValue *jitStack;		/* Values on the stack. */
 };
 
+/*
+ * Define the structure of a local/argument slot.
+ */
+typedef struct _tagILJitLocalSlot ILJitLocalSlot;
+struct _tagILJitLocalSlot
+{
+	ILJitValue	value;			/* the ILJitValue */
+	ILUInt32	flags;			/* State of the local/arg. */
+};
+
+/*
+ * Define the structure for managing the local slots.
+ */
+typedef struct _tagILJitLocalSlots ILJitLocalSlots;
+struct _tagILJitLocalSlots
+{
+	ILJitLocalSlot *slots;		/* Pointer to the slots. */
+	int				numSlots;	/* Number of used slots. */
+	int				maxSlots;	/* Number of allocated slots. */
+};
+
+#define _ILJitLocalSlotsInit(s) \
+	do { \
+		(s).slots = 0;		\
+		(s).numSlots = 0;	\
+		(s).maxSlots = 0;	\
+	} while (0);
+
+#define _ILJitLocalSlotsDestroy(s) \
+	do { \
+		if((s).slots)			\
+		{						\
+			ILFree((s).slots);	\
+		}						\
+		(s).slots = 0;			\
+		(s).numSlots = 0;		\
+		(s).maxSlots = 0;		\
+	} while (0);
 
 /*
  * Define the structure of a JIT coder's instance block.
@@ -181,14 +228,15 @@ struct _tagILJITCoder
 	int				flags;
 
 	/* Members to manage the evaluation stack. */
-	jit_value_t	   *jitStack;
+	ILJitValue	   *jitStack;
 	int				stackSize;
 	int				stackTop;
 
+	/* Members to manage the fixed arguments. */
+	ILJitLocalSlots	jitParams;
+
 	/* Members to manage the local variables. */
-	jit_value_t	   *jitLocals;
-	int				numLocals;
-	int				maxLocals;
+	ILJitLocalSlots jitLocals;
 
 	/* Handle the labels. */
 	ILMemPool		labelPool;
@@ -1196,10 +1244,12 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 	coder->jitStack = 0;
 	coder->stackTop = -1;
 	coder->stackSize = 0;
+
+	/* Initialize the parameter management. */
+	_ILJitLocalSlotsInit(coder->jitParams)
+
 	/* Initialize the locals management. */
-	coder->jitLocals = 0;
-	coder->numLocals = 0;
-	coder->maxLocals = 0;
+	_ILJitLocalSlotsInit(coder->jitLocals)
 
 	/* Init the current jitted function. */
 	coder->jitFunction = 0;
@@ -1258,11 +1308,11 @@ static void JITCoder_Destroy(ILCoder *_coder)
 		ILFree(coder->jitStack);
 		coder->jitStack = 0;
 	}
-	if(coder->jitLocals)
-	{
-		ILFree(coder->jitLocals);
-		coder->jitLocals = 0;
-	}
+
+	_ILJitLocalSlotsDestroy(coder->jitLocals)
+
+	_ILJitLocalSlotsDestroy(coder->jitParams)
+
 	if(coder->context)
 	{
 		jit_context_destroy(coder->context);
@@ -1443,7 +1493,10 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 {
 	ILJitType signature = jit_function_get_signature(func);
 	unsigned int numParams = jit_type_num_params(signature);
-	ILJitValue returnValue;
+	unsigned int totalParams = numParams;
+	ILJitType returnType = jit_type_get_return(signature);;
+	ILJitValue returnValue = 0;
+	int hasStructReturn = 0;
 	char *methodName = 0;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
@@ -1452,6 +1505,28 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 	fprintf(stdout, "CompileInternalMethod: %s\n", methodName);
 	ILMutexUnlock(globalTraceMutex);
 #endif
+
+	if(jit_type_is_struct(returnType))
+	{
+		/* We need to create a new Signature for the native Call with */
+		/* a pointer to the return value as last arg. */
+		++totalParams;
+		ILJitType jitParamTypes[totalParams];
+		ILUInt32 current;
+		
+		for(current = 0; current < numParams; current++)
+		{
+			jitParamTypes[current] = jit_type_get_param(signature, current); 
+		}
+		jitParamTypes[totalParams -1] = _IL_JIT_TYPE_VPTR;
+		signature = jit_type_create_signature(IL_JIT_CALLCONV_CDECL,
+											  _IL_JIT_TYPE_VOID,
+											  jitParamTypes,
+											  totalParams, 1);
+		returnValue = jit_value_create(func, returnType);
+		hasStructReturn = 1;
+	}
+
 	/* We need to set the method member in the ILExecThread == arg[0]. */
 	if(numParams > 0)
 	{
@@ -1466,7 +1541,19 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 			}
 		}
 		_ILJitSetMethodInThread(func, jitParams[0], method);
-		returnValue = jit_insn_call_native(func, methodName, nativeFunction, signature, jitParams, numParams, 0);
+		if(!hasStructReturn)
+		{
+			returnValue = jit_insn_call_native(func, methodName, nativeFunction,
+											   signature,
+											   jitParams, numParams, 0);
+		}
+		else
+		{
+			jitParams[totalParams -1] = jit_insn_address_of(func, returnValue);
+			jit_insn_call_native(func, methodName, nativeFunction,
+								 signature,
+								 jitParams, totalParams, 0);
+		}
 	}
 	else
 	{
@@ -2108,6 +2195,8 @@ ILJitTypes *ILJitPrimitiveClrTypeToJitTypes(int primitiveClrType)
 	}
 	return 0;
 }
+
+#include "jitc_locals.c"
 
 /*
  * Include the rest of the JIT conversion routines from other files.

@@ -20,6 +20,7 @@ JITC_INCLUDES = jitc.h \
 				jitc_const.c \
 				jitc_conv.c \
 				jitc_except.c \
+				jitc_locals.c \
 				jitc_obj.c \
 				jitc_ptr.c \
 				jitc_setup.c \

@@ -1,3 +1,31 @@
+2006-03-08  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Add the new locals management and include jitc_locals.c.
+	Fix a problem in ILJitCompileInternal when a struct is returned.
+
+	* engine/jitc_branch.c: Replace locals on the stack with copies when the
+	stach state is saved. Reset the NullChecked flag when a label 
+	(branch target) is inserted.
+
+	* engine/jitc_call.c: Add suppport of argument packing in an object array.
+
+	* engine/jitc_locals.c: Added.
+
+	* engine/jitc_obj.c: Use the new locals / parameter management in
+	jitc_locals.c and replace calls of jit_insn_check_null with calls of
+	_ILJitCheckNull.
+
+	* engine/jitc_setup.c: Use the new locals / parameter management in
+	jitc_locals.c.
+
+	* engine/jitc_stack.c: Start with some basic optimizations to avoid
+	duplicating values.
+
+	* engine/jitc_var.c: Use the functions in jitc_locals to accedd the locals
+	and parameters. Start with some basic optimizations.
+
+	* engine/Makefile.am: Add jitc_locals.c to the jitc dependencies.
+
 2006-03-04  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c, engine/jitc_obj.c: Fix the TypedRef so that the layout of

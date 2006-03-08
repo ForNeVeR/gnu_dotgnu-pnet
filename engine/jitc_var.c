@@ -27,10 +27,14 @@
 static void JITCoder_LoadArg(ILCoder *coder, ILUInt32 argNum, ILType *type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	/* We need argNum + 1 because the ILExecThread is added as param 0 */
-	ILJitValue param = jit_value_get_param(jitCoder->jitFunction, argNum + 1);
+	ILJitValue param = _ILJitParamValue(jitCoder, argNum);
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+	ILJitValue newParam = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+														param);
+#else
 	ILJitValue newParam = _ILJitValueConvertToStackType(jitCoder->jitFunction,
 									jit_insn_dup(jitCoder->jitFunction, param));
+#endif
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -52,8 +56,12 @@ static void JITCoder_LoadArg(ILCoder *coder, ILUInt32 argNum, ILType *type)
 static void JITCoder_LoadLocal(ILCoder *coder, ILUInt32 localNum, ILType *type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+	ILJitValue localValue = _ILJitLocalValue(jitCoder, localNum);
+#else
 	ILJitValue localValue = jit_insn_dup(jitCoder->jitFunction,
-										 jitCoder->jitLocals[localNum]);
+										 _ILJitLocalValue(jitCoder, localNum));
+#endif
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -78,8 +86,7 @@ static void JITCoder_StoreArg(ILCoder *coder, ILUInt32 argNum,
 							  ILEngineType engineType, ILType *type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	/* We need argNum + 1 because the ILExecThread is added as param 0 */
-	ILJitValue argValue = jit_value_get_param(jitCoder->jitFunction, argNum + 1);
+	ILJitValue argValue = _ILJitParamValue(jitCoder, argNum);
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -91,10 +98,15 @@ static void JITCoder_StoreArg(ILCoder *coder, ILUInt32 argNum,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-	jit_insn_store(jitCoder->jitFunction, argValue,
-					jitCoder->jitStack[jitCoder->stackTop - 1]);
-
 	JITC_ADJUST(jitCoder, -1);
+
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+	_ILJitValueFindAndDup(jitCoder, argValue);
+#endif
+
+	jit_insn_store(jitCoder->jitFunction, argValue,
+					jitCoder->jitStack[jitCoder->stackTop]);
+
 }
 
 /*
@@ -104,6 +116,7 @@ static void JITCoder_StoreLocal(ILCoder *coder, ILUInt32 localNum,
 								ILEngineType engineType, ILType *type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue localValue = _ILJitLocalValue(jitCoder, localNum);
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -115,10 +128,16 @@ static void JITCoder_StoreLocal(ILCoder *coder, ILUInt32 localNum,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-	jit_insn_store(jitCoder->jitFunction, jitCoder->jitLocals[localNum],
-					jitCoder->jitStack[jitCoder->stackTop - 1]);
 
 	JITC_ADJUST(jitCoder, -1);
+
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+	_ILJitValueFindAndDup(jitCoder, localValue);
+#endif
+
+	jit_insn_store(jitCoder->jitFunction, localValue,
+					jitCoder->jitStack[jitCoder->stackTop]);
+
 }
 
 /*
@@ -127,11 +146,9 @@ static void JITCoder_StoreLocal(ILCoder *coder, ILUInt32 localNum,
 static void JITCoder_AddrOfArg(ILCoder *coder, ILUInt32 argNum)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	/* We need argNum + 1 because the ILExecThread is added as param 0 */
-	ILJitValue argValue = jit_value_get_param(jitCoder->jitFunction, argNum + 1);
 
-	jitCoder->jitStack[jitCoder->stackTop] = 
-					jit_insn_address_of(jitCoder->jitFunction, argValue);
+	jitCoder->jitStack[jitCoder->stackTop] = _ILJitParamGetPointerTo(jitCoder,
+																	 argNum);
 	JITC_ADJUST(jitCoder, 1);
 }
 
@@ -141,10 +158,9 @@ static void JITCoder_AddrOfArg(ILCoder *coder, ILUInt32 argNum)
 static void JITCoder_AddrOfLocal(ILCoder *coder, ILUInt32 localNum)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue localValue = jitCoder->jitLocals[localNum];
 
-	jitCoder->jitStack[jitCoder->stackTop] = 
-					jit_insn_address_of(jitCoder->jitFunction, localValue);
+	jitCoder->jitStack[jitCoder->stackTop] = _ILJitLocalGetPointerTo(jitCoder,
+																	 localNum);
 	JITC_ADJUST(jitCoder, 1);
 }
 

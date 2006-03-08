@@ -15,6 +15,9 @@
 	jitc_locals.c and replace calls of jit_insn_check_null with calls of
 	_ILJitCheckNull.
 
+	* engine/jitc_ptr.c: Replace calls of jit_insn_check_null with calls of
+	_ILJitCheckNull.
+
 	* engine/jitc_setup.c: Use the new locals / parameter management in
 	jitc_locals.c.
 

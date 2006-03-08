@@ -6068,7 +6068,7 @@ public class Control : IWin32Window, IDisposable
 	// Toolkit event that is emitted when the mouse enters this window.
 	void IToolkitEventSink.ToolkitMouseEnter()
 			{
-				if(GetControlFlag(ControlFlags.Enabled))
+				if(Enabled) // Check Parent Enabled too, not just this Control. GetControlFlag(ControlFlags.Enabled))
 					OnMouseEnter(EventArgs.Empty);
 			}
 
@@ -6077,7 +6077,7 @@ public class Control : IWin32Window, IDisposable
 			{
 				SetControlFlag(ControlFlags.NotifyDoubleClick, false);
 				SetControlFlag(ControlFlags.NotifyClick, false);
-				if(GetControlFlag(ControlFlags.Enabled))
+				if(Enabled) // Check Parent Enabled too, not just this Control. GetControlFlag(ControlFlags.Enabled))
 					OnMouseLeave(EventArgs.Empty);
 			}
 
@@ -6156,12 +6156,13 @@ public class Control : IWin32Window, IDisposable
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		int clicks, int x, int y, int delta)
 			{
-				if(!GetControlFlag(ControlFlags.Enabled))
+				if( !Enabled) //Check if this !Enabled OR Parent !Enabled, not just this control.  //if(!GetControlFlag(ControlFlags.Enabled))
 				{
 					if (parent != null)
 						((IToolkitEventSink)parent).ToolkitMouseDown(buttons, modifiers, clicks, x + left, y + top, delta);
 					return;
 				}
+				
 				// Convert to client coordinates
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
@@ -6187,7 +6188,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// Walk up the hierarchy and see if we must focus the control
-				if(Enabled)
+				//if(Enabled) checked above
 				{
 					OnMouseDown(new MouseEventArgs
 						(buttons, clicks, x, y, delta));
@@ -6212,7 +6213,7 @@ public class Control : IWin32Window, IDisposable
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		int clicks, int x, int y, int delta)
 			{
-				if(!GetControlFlag(ControlFlags.Enabled))
+				if(!Enabled) // Check Parent Enabled too, not just this Control. !GetControlFlag(ControlFlags.Enabled))
 				{
 					if (parent != null)
 						((IToolkitEventSink)parent).ToolkitMouseUp(buttons, modifiers, clicks, x + left, y + top, delta);
@@ -6248,7 +6249,7 @@ public class Control : IWin32Window, IDisposable
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		int clicks, int x, int y, int delta)
 			{
-				if(!GetControlFlag(ControlFlags.Enabled))
+				if(!Enabled) // Check Parent Enabled too, not just this Control. !GetControlFlag(ControlFlags.Enabled))
 				{
 					if (parent != null)
 						((IToolkitEventSink)parent).ToolkitMouseHover(buttons, modifiers, clicks, x + left, y + top, delta);
@@ -6269,7 +6270,7 @@ public class Control : IWin32Window, IDisposable
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		int clicks, int x, int y, int delta)
 			{
-				if(!GetControlFlag(ControlFlags.Enabled))
+				if(!Enabled) //Check Parent Enabled too, not just this Control. !GetControlFlag(ControlFlags.Enabled))
 				{
 					if (parent != null)
 						((IToolkitEventSink)parent).ToolkitMouseMove(buttons, modifiers, clicks, x + left, y + top, delta);
@@ -6291,6 +6292,11 @@ public class Control : IWin32Window, IDisposable
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		int clicks, int x, int y, int delta)
 			{
+				if( !Enabled) { // Check Parent Enabled too, not just this Control.
+					if (parent != null)
+						((IToolkitEventSink)parent).ToolkitMouseWheel(buttons, modifiers, clicks, x + left, y + top, delta);
+					return;
+				}
 				// Convert to client coordinates
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;

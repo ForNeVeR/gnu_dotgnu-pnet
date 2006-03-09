@@ -1530,7 +1530,7 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 	/* We need to set the method member in the ILExecThread == arg[0]. */
 	if(numParams > 0)
 	{
-		ILJitValue jitParams[numParams];
+		ILJitValue jitParams[totalParams];
 		ILUInt32 current;
 		
 		for(current = 0; current < numParams; current++)
@@ -1549,7 +1549,7 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 		}
 		else
 		{
-			jitParams[totalParams -1] = jit_insn_address_of(func, returnValue);
+			jitParams[totalParams - 1] = jit_insn_address_of(func, returnValue);
 			jit_insn_call_native(func, methodName, nativeFunction,
 								 signature,
 								 jitParams, totalParams, 0);

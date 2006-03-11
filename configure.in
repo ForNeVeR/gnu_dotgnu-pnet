@@ -104,27 +104,39 @@ AC_ARG_WITH(libgc,
 	withgc=yes
 ])
 
+dnl check which type of engine should be built
+
+AC_ARG_WITH(cvm,
+[  --with-cvm             Use the CVM interpreter],
+[
+	AC_DEFINE([IL_USE_CVM], 1, [Use the CVM interpreter])
+	withcvm=yes
+],
+[
+	withcvm=no
+])
+
 dnl this should check correctly for libjit
 
 AC_DEFUN([AC_LIBJIT], [
-        if $search_libjit
-        then
-                if test -f $1/$2
-                then
-                        AC_MSG_RESULT($1/$2)
-                        JIT_LIBS="$3"
-                        JIT_INCLUDE="$4"
-                        search_libjit=false
-                        jit=true
-    fi
-  fi
+	if $search_libjit
+	then
+		if test -f $1/$2
+		then
+			AC_MSG_RESULT($1/$2)
+			JIT_LIBS="$3"
+			JIT_INCLUDE="$4"
+			search_libjit=false
+			jit=true
+		fi
+	fi
 ])
 
 AC_DEFUN([AC_SEARCH_LIBJIT], [
-        AC_MSG_CHECKING([location of libjit])
-        AC_LIBJIT(../libjit/include/jit,jit.h, -ljit -L../../libjit/jit/.libs, -I../../libjit/include, "../libjit")
-        AC_LIBJIT(/usr/include/jit, jit.h, -ljit, -I/usr/include, "/usr")
-        AC_LIBJIT(/usr/local/include/jit, jit.h, -ljit, -I/usr/local/include, "/usr/local")
+	AC_MSG_CHECKING([location of libjit])
+	AC_LIBJIT(../libjit/include/jit,jit.h, -ljit -L../../libjit/jit/.libs, -I../../libjit/include, "../libjit")
+	AC_LIBJIT(/usr/include/jit, jit.h, -ljit, -I/usr/include, "/usr")
+	AC_LIBJIT(/usr/local/include/jit, jit.h, -ljit, -I/usr/local/include, "/usr/local")
 ])
 
 AC_SUBST(JIT_LIBS)
@@ -132,16 +144,37 @@ AC_SUBST(JIT_INCLUDE)
 search_libjit=false
 AC_ARG_WITH(jit,
 [  --with-jit             Use the Just In Time compiler],
-if test x$withval = xyes ; then
-        search_libjit=true
-        AC_DEFINE([IL_USE_JIT], 1, [Use the just in time compiler])
-elif test x$withval != xyes ; then
-        JIT_LIBS="$LIBS -L$withval/lib -ljit"
-        JIT_INCLUDE="-I$withval/include"
-        search_libjit=false
-        AC_DEFINE([IL_USE_JIT], 1, [Use the just in time compiler])
+[
+	if test x$withval = xyes ; then
+		search_libjit=true
+		AC_DEFINE([IL_USE_JIT], 1, [Use the just in time compiler])
+		withjit=yes
+		withffi=no
+	elif test x$withval != xyes ; then
+		JIT_LIBS="$LIBS -L$withval/lib -ljit"
+		JIT_INCLUDE="-I$withval/include"
+		search_libjit=false
+		AC_DEFINE([IL_USE_JIT], 1, [Use the just in time compiler])
+		withjit=yes
+		withffi=no
+	fi
+],
+[
+	withjit=no
+])
+
+dnl Make sure one engine type is selected
+
+if test x$withjit = xyes ; then
+	if test x$withcvm = xyes ; then
+		AC_MSG_ERROR(Only one engine type can be selected. Either --with-jit or --with-cvm.)
+	fi
+elif test x$withjit = xno ; then
+	if test x$withcvm = xno ; then
+		AC_DEFINE([IL_USE_CVM], 1, [Use the CVM interpreter])
+		withcvm=yes
+	fi
 fi
-)
 
 if $search_libjit
 then

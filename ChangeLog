@@ -1,3 +1,9 @@
+2006-03-11  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Add new sonfigure switch --with-cvm which defines
+	IL_USE_CVM. The cvm coder is used by default. Disable libffi when using the
+	jit coder.
+
 2006-03-09  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Allocate one more arg for the pointer to the return struct

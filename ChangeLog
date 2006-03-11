@@ -1,6 +1,6 @@
 2006-03-11  Klaus Treichel  <ktreichel@web.de>
 
-	* configure.in: Add new sonfigure switch --with-cvm which defines
+	* configure.in: Add new configure switch --with-cvm which defines
 	IL_USE_CVM. The cvm coder is used by default. Disable libffi when using the
 	jit coder.
 

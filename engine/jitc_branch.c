@@ -26,7 +26,9 @@
  */
 static int _ILJitLabelSaveStack(ILJITCoder *coder, ILJITLabel *label)
 {
-	if((label->labelType == _IL_JIT_LABEL_NORMAL) && (coder->stackTop > 0))
+	if(((label->labelType & (_IL_JIT_LABEL_NORMAL |
+							 _IL_JIT_LABEL_STARTCATCH)) != 0) &&
+		(coder->stackTop > 0))
 	{
 		int current = 0;
 		ILJitValue *stack = ILMemStackAllocItem(&(coder->stackStates),
@@ -72,7 +74,7 @@ static int _ILJitLabelSaveStack(ILJITCoder *coder, ILJITLabel *label)
  */
 static int _ILJitLabelMergeStack(ILJITCoder *coder, ILJITLabel *label)
 {
-	if(label->labelType == _IL_JIT_LABEL_NORMAL)
+	if(label->labelType & (_IL_JIT_LABEL_NORMAL | _IL_JIT_LABEL_STARTCATCH))
 	{
 		/* Verify that the stack sizes match. */
 		if(coder->stackTop != label->stackSize)
@@ -122,46 +124,63 @@ static void _ILJitLabelRestoreStack(ILJITCoder *coder, ILJITLabel *label)
 }
 
 /*
+ * Look for an existing label for the specified IL address.
+ * Returns 0 if there is no label for this address.
+ */
+static ILJITLabel *FindLabel(ILJITCoder *coder, ILUInt32 address)
+{
+	ILJITLabel *label = coder->labelList;
+
+	while(label != 0)
+	{
+		if(label->address == address)
+		{
+			return label;
+		}
+		label = label->next;
+	}
+	return 0;
+}
+
+/*
  * Look for a label for a specific IL address.  Create
  * a new label if necessary.
  */
 static ILJITLabel *GetLabel(ILJITCoder *coder, ILUInt32 address, int labelType)
 {
-	ILJITLabel *label;
-	label = coder->labelList;
-	while(label != 0)
+	ILJITLabel *label = FindLabel(coder, address);
+;
+	if(!label)
 	{
-		if(label->address == address)
+		label = ILMemPoolAlloc(&(coder->labelPool), ILJITLabel);
+		if(label)
 		{
-			if(!_ILJitLabelMergeStack(coder, label))
+			label->stackSize = 0;
+			label->jitStack = 0;
+			label->address = address;
+			label->label = jit_label_undefined;
+			label->labelType = labelType;
+			if(!_ILJitLabelSaveStack(coder, label))
 			{
-				/* We have a stack size mismatch!!! */
 				coder->labelOutOfMemory = 1;
 				return 0;
 			}
-			return label;
+			label->next = coder->labelList;
+			coder->labelList = label;
 		}
-		label = label->next;
-	}
-	label = ILMemPoolAlloc(&(coder->labelPool), ILJITLabel);
-	if(label)
-	{
-		label->stackSize = 0;
-		label->jitStack = 0;
-		label->address = address;
-		label->label = jit_label_undefined;
-		label->labelType = labelType;
-		if(!_ILJitLabelSaveStack(coder, label))
+		else
 		{
 			coder->labelOutOfMemory = 1;
-			return 0;
 		}
-		label->next = coder->labelList;
-		coder->labelList = label;
 	}
 	else
 	{
-		coder->labelOutOfMemory = 1;
+		if(!_ILJitLabelMergeStack(coder, label))
+		{
+			/* We have a stack size mismatch!!! */
+			coder->labelOutOfMemory = 1;
+			return 0;
+		}
 	}
 	return label;
 }

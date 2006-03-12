@@ -147,6 +147,11 @@ static ILJitType _ILJitSignature_ILRuntimeGetThreadStatic = 0;
 static ILJitType _ILJitSignature_JitExceptionBuiltin = 0;
 
 /*
+ * void jit_exception_clear_last()
+ */
+static ILJitType _ILJitSignature_JitExceptionClearLast = 0;
+
+/*
  * Define offsetof macro if not present.
  */
 #ifndef offsetof
@@ -157,8 +162,9 @@ static ILJitType _ILJitSignature_JitExceptionBuiltin = 0;
 /*
  * declaration of the different label types.
  */
-#define _IL_JIT_LABEL_NORMAL 0
-#define _IL_JIT_LABEL_STARTFINALLY 1
+#define _IL_JIT_LABEL_NORMAL 1
+#define _IL_JIT_LABEL_STARTCATCH 2
+#define _IL_JIT_LABEL_STARTFINALLY 4
 
 /*
  * Define the structure of a JIT label.
@@ -254,6 +260,8 @@ struct _tagILJITCoder
 
 	/* Flag if the catcher is started. */
 	int				isInCatcher;
+	jit_label_t     nextBlock;
+	jit_label_t     rethrowBlock;
 };
 
 /*
@@ -1007,7 +1015,7 @@ static ILJitType _ILJitGetReturnType(ILType *type, ILExecProcess *process)
 }
 
 /*
- * Get the jit typee from an ILClass.
+ * Get the jit type from an ILClass.
  */
 static ILJitType _ILJitGetTypeFromClass(ILClass *info)
 {
@@ -1095,15 +1103,91 @@ static void _ILJitCallStaticConstructor(ILJITCoder *coder, ILClass *classInfo,
 }
 
 /*
+ * The exception handler which converts libjit inbuilt exceptions
+ * into clr exceptions.
+ */
+void *_ILJitExceptionHandler(int exception_type)
+{
+    ILExecThread *thread = ILExecThreadCurrent();
+    void *object = 0;
+
+    switch(exception_type)
+    {
+		case(JIT_RESULT_OVERFLOW):
+		{
+			object = _ILSystemException(thread, "System.OverflowException");
+		}
+		break;
+
+		case(JIT_RESULT_ARITHMETIC):
+		{
+			object = _ILSystemException(thread, "System.ArithmeticException");
+		}
+		break;
+
+		case(JIT_RESULT_DIVISION_BY_ZERO):
+		{
+			object = _ILSystemException(thread, "System.DivideByZeroException");
+		}
+		break;
+
+		case(JIT_RESULT_COMPILE_ERROR):
+		{
+			object = _ILSystemException(thread, "System.ExecutionEngineException");
+		}
+		break;
+
+		case(JIT_RESULT_OUT_OF_MEMORY):
+		{
+			object = _ILSystemException(thread, "System.OutOfMemoryException");
+		}    
+		break;
+
+		case(JIT_RESULT_NULL_REFERENCE):
+		{
+			object = _ILSystemException(thread, "System.NullReferenceException");
+		}
+		break;
+
+		case(JIT_RESULT_NULL_FUNCTION):
+		{
+			object = _ILSystemException(thread, "System.MissingMethodException");
+		}
+		break;
+
+		case(JIT_RESULT_CALLED_NESTED):
+		{
+			object = _ILSystemException(thread, "System.MissingMethodException");
+		}
+		break;
+
+		case(JIT_RESULT_OUT_OF_BOUNDS):
+		{
+			object = _ILSystemException(thread, "System.IndexOutOfRangeException");
+		}
+		break;
+
+		default:
+		{
+			object = _ILSystemException(thread, "System.Exception");
+		}
+		break;
+	}
+	thread->thrownException = object;
+	return object;
+}
+
+/*
  * Generate the code to throw the current exception in the thread in libjit.
  */
 static void _ILJitThrowCurrentException(ILJITCoder *coder)
 {
 	ILJitValue thread = jit_value_get_param(coder->jitFunction,0);
-	ILJitValue currentException = jit_insn_load_relative(coder->jitFunction, thread,
-									offsetof(ILExecThread, currentException), 
+	ILJitValue thrownException = jit_insn_load_relative(coder->jitFunction,
+									thread,
+									offsetof(ILExecThread, thrownException), 
 									jit_type_void_ptr);
-	jit_insn_throw(coder->jitFunction, currentException);
+	jit_insn_throw(coder->jitFunction, thrownException);
 }
 
 /*
@@ -1218,6 +1302,13 @@ int ILJitInit()
 		return 0;
 	}
 
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_JitExceptionClearLast =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, 0, 0, 1)))
+	{
+		return 0;
+	}
+
 	return 1;
 }
 /*
@@ -1240,6 +1331,7 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 	}
 	coder->debugEnabled = 0;
 	coder->flags = 0;
+
 	/* Initialize the stack management. */
 	coder->jitStack = 0;
 	coder->stackTop = -1;
@@ -1491,13 +1583,18 @@ static ILJitValue _ILJitValueConvertToStackType(ILJitFunction func,
  */
 static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *nativeFunction)
 {
+	ILType *ilSignature = ILMethod_Signature(method);
+	ILType *type = ILTypeGetEnumType(ILTypeGetParam(ilSignature, 0));
 	ILJitType signature = jit_function_get_signature(func);
 	unsigned int numParams = jit_type_num_params(signature);
 	unsigned int totalParams = numParams;
+	ILJitValue thread = jit_value_get_param(func, 0);
 	ILJitType returnType = jit_type_get_return(signature);;
 	ILJitValue returnValue = 0;
 	int hasStructReturn = 0;
 	char *methodName = 0;
+	jit_label_t label = jit_label_undefined;
+	ILJitValue thrownException = 0;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	methodName = _ILJitFunctionGetMethodName(func);
@@ -1506,19 +1603,20 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 	ILMutexUnlock(globalTraceMutex);
 #endif
 
-	if(jit_type_is_struct(returnType))
+	if(ILType_IsValueType(type))
 	{
 		/* We need to create a new Signature for the native Call with */
-		/* a pointer to the return value as last arg. */
+		/* a pointer to the return value as second arg after the ILExecThread. */
 		++totalParams;
 		ILJitType jitParamTypes[totalParams];
 		ILUInt32 current;
 		
-		for(current = 0; current < numParams; current++)
+		jitParamTypes[0] = jit_type_get_param(signature, 0); 
+		jitParamTypes[1] = _IL_JIT_TYPE_VPTR;
+		for(current = 1; current < numParams; current++)
 		{
-			jitParamTypes[current] = jit_type_get_param(signature, current); 
+			jitParamTypes[current + 1] = jit_type_get_param(signature, current); 
 		}
-		jitParamTypes[totalParams -1] = _IL_JIT_TYPE_VPTR;
 		signature = jit_type_create_signature(IL_JIT_CALLCONV_CDECL,
 											  _IL_JIT_TYPE_VOID,
 											  jitParamTypes,
@@ -1532,13 +1630,22 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 	{
 		ILJitValue jitParams[totalParams];
 		ILUInt32 current;
+		ILUInt32 param = 1;
 		
-		for(current = 0; current < numParams; current++)
+		jitParams[0] = jit_value_get_param(func, 0);
+		if(hasStructReturn)
 		{
-			if(!(jitParams[current] = jit_value_get_param(func, current)))
+			jitParams[1] = jit_insn_address_of(func, returnValue);
+			++param;
+
+		}
+		for(current = 1; current < numParams; current++)
+		{
+			if(!(jitParams[param] = jit_value_get_param(func, current)))
 			{
 				return JIT_RESULT_OUT_OF_MEMORY;
 			}
+			++param;
 		}
 		_ILJitSetMethodInThread(func, jitParams[0], method);
 		if(!hasStructReturn)
@@ -1549,7 +1656,6 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 		}
 		else
 		{
-			jitParams[totalParams - 1] = jit_insn_address_of(func, returnValue);
 			jit_insn_call_native(func, methodName, nativeFunction,
 								 signature,
 								 jitParams, totalParams, 0);
@@ -1559,7 +1665,13 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 	{
 		returnValue = jit_insn_call_native(func, methodName, nativeFunction, signature, 0, 0, 0);
 	}
+	thrownException = jit_insn_load_relative(func, thread,
+									offsetof(ILExecThread, thrownException),
+									_IL_JIT_TYPE_VPTR);
+	jit_insn_branch_if(func, thrownException, &label);
 	jit_insn_return(func, returnValue);	
+	jit_insn_label(func, &label);
+	jit_insn_throw(func, thrownException);
 	return JIT_RESULT_OK;
 }
 

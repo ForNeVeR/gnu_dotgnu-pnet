@@ -188,6 +188,12 @@ ILJitTypes *ILJitPrimitiveClrTypeToJitTypes(int primitiveClrType);
  */
 #define ILJitTypeGetSize(jitType)      jit_type_get_size((jitType))
 
+/*
+ * The exception handler which converts libjit inbuilt exceptions
+ * into clr exceptions.
+ */
+void *_ILJitExceptionHandler(int exception_type);
+
 #endif  /* IL_USE_JIT */
 
 #endif	/* _ENGINE_JITC_H */

@@ -1,3 +1,16 @@
+2006-03-12  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Add the exceptionhandler and some exception stuff.
+
+	* engine/jitc.h: Add the prototype for the exceptionhandler.
+
+	* engine/jitc_branch.c, engine/jitc_except.c: Add some exception stuff.
+
+	* engine/thread.c: Register the exceptionhandler for the thread when the
+	thread is registered for managed execution.
+
+	Thanks krokas for the help.
+
 2006-03-11  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add new configure switch --with-cvm which defines

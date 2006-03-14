@@ -1,3 +1,7 @@
+2006-03-14  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* Xsharp/Widget.cs: Fixed detaching Widget (MemoryLeak).
+
 2006-03-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: Fixed not processing mouse events if Control is not enabled.

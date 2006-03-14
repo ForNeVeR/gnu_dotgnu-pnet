@@ -159,7 +159,9 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 						XDrawable tempHandle = handle;
 						Disassociate();
 						Xlib.XDestroyWindow(d, (XWindow)tempHandle);
+						
 					}
+					Detach(false); // must detach
 				}
 				finally
 				{

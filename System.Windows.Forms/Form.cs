@@ -954,6 +954,7 @@ public class Form : ContainerControl
 
 					// Enter a message loop until the dialog result is set.
 					Application.InnerMessageLoop(this);
+					Dispose();	// must call Dispose, when closing the dialog
 				}
 				finally
 				{
@@ -962,7 +963,7 @@ public class Form : ContainerControl
 					// The form is no longer modal.
 					SetWindowFlag(ToolkitWindowFlags.Modal, false);
 				}
-
+				
 				// Return the dialog result.
 				return dialogResult;
 			}
@@ -1622,6 +1623,7 @@ public class Form : ContainerControl
 				OnClosing(args);
 				if(!(args.Cancel))
 				{
+					dialogResultIsSet = true;	// must be set here, or Application.InnerMessageLoop won't end
 					OnClosed(EventArgs.Empty);
 					Dispose();
 				}

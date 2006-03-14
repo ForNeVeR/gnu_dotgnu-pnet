@@ -137,13 +137,18 @@ public class DoubleBuffer : Drawable
 					IntPtr display = dpy.Lock();
 					if(handle != XDrawable.Zero)
 					{
-						if(usesXdbe)
-						{
-							Xlib.XdbeDeallocateBackBufferName(display, handle);
+						if( widget.HasWidgetHandle() ) {
+							if(usesXdbe)
+							{
+								Xlib.XdbeDeallocateBackBufferName(display, handle);
+							}
+							else
+							{
+								Xlib.XFreePixmap(display, (XPixmap)handle);
+							}
 						}
-						else
-						{
-							Xlib.XFreePixmap(display, (XPixmap)handle);
+						else {
+							// the widget was destroyed
 						}
 						handle = XDrawable.Zero;
 					}

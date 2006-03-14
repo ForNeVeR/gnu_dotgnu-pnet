@@ -102,6 +102,11 @@ public abstract class Drawable : IDisposable
 						(S._("X_WidgetDestroyed"));
 				}
 			}
+			
+	public bool HasWidgetHandle() 
+		{
+			return handle != XDrawable.Zero;
+		}
 
 	// Get the handle for drawable, assuming that it is
 	// a pixmap.  Should be called with the display lock.

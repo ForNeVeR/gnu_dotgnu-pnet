@@ -1,5 +1,11 @@
 2006-03-14  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
+	* System.Window.Forms/Form.cs: Fixed closing dialog stopping Application.InnerMessageLoop if Form was shown with ShowDialog
+	* Xsharp/DoubleBuffer.cs: Added query widget.HasWidgetHandle, if widget was detroyed (was Exception before)
+	* Xsharp/Drawable.cs: added Method bool HasWidgetHandle() to get if widget handle is valid
+
+2006-03-14  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
 	* Xsharp/Widget.cs: Fixed detaching Widget (MemoryLeak).
 
 2006-03-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>

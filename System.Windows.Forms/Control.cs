@@ -2268,6 +2268,9 @@ public class Control : IWin32Window, IDisposable
 				{
 					SetControlFlag(ControlFlags.Disposing, false);
 				}
+#if CONFIG_COMPONENT_MODEL
+				base.Dispose(disposing);
+#endif
 			}
 
 	// Find the form that this control is a member of.

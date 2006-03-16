@@ -44,13 +44,13 @@ public class ScrollableControl : Control
 	private Point autoScrollPosition=new Point(0,0);
 	private DockPaddingEdges dockPadding;
 	private ScrollBar vScrollBar;
-   	private ScrollBar hScrollBar;
+	private ScrollBar hScrollBar;
 
 	// Constructor.
 	public ScrollableControl()
 			{
 				base.SetStyle(ControlStyles.ContainerControl, true);
-				HandleCreated+=new EventHandler(ScrollableControl_HandleCreated);
+				// HandleCreated+=new EventHandler(ScrollableControl_HandleCreated);
 			}
 
 	protected virtual void AdjustFormScrollbars(bool displayScrollbars)
@@ -515,12 +515,21 @@ public class ScrollableControl : Control
 				}
 			}
 
+	protected override void OnHandleCreated(EventArgs e) 
+		{
+			if (autoScroll)
+				CreateScrollBars();
+			base.OnHandleCreated(e);
+		}
+		
+#if false
 	private void ScrollableControl_HandleCreated(object sender, EventArgs e)
 			{
 				// We now have a handle, so create the scrollbars if needed.
 				if (autoScroll)
 					CreateScrollBars();
 			}
+#endif
 
 	// Create the scrollBars but dont add them to the control, just parent them using the toolkit.
 	private void CreateScrollBars()

@@ -220,7 +220,11 @@ ILInt32 _IL_GCHandle_GCAlloc(ILExecThread *_thread, ILObject *value,
 				if((table->numWeakHandles & 7) == 0)
 				{
 					/* Extend the size of the weak handle table */
-					newArray = (void **)ILGCAllocPersistent
+					/* 
+					*****: for weak refs, do not use AllocPersistent 
+					newArray = (void **)ILGCAllocPersistent		
+					*/
+					newArray = (void **)ILGCAllocAtomic
 						((table->numWeakHandles + 8) * sizeof(void *));
 					if(!newArray)
 					{
@@ -235,9 +239,18 @@ ILInt32 _IL_GCHandle_GCAlloc(ILExecThread *_thread, ILObject *value,
 							if(table->weakHandles[index] !=
 									(void *)(ILNativeInt)(-1))
 							{
-								ILGCUnregisterWeak
-									(&(table->weakHandles[index]));
+								/* *****:
+								ILGCUnregisterWeak(&(table->weakHandles[index]));
 								ILGCRegisterWeak(&(newArray[index]));
+								*/
+								
+								// use RegisterGeneralWeak to monitor disappearing links
+								if( 0 != table->weakHandles[index] ) {
+									ILGCUnregisterWeak(&(table->weakHandles[index]));
+								}
+								if( 0 != newArray[index] ) {
+									ILGCRegisterGeneralWeak(&(newArray[index]), newArray[index] ); 
+								}
 							}
 						}
 						ILGCFreePersistent(table->weakHandles);
@@ -245,7 +258,12 @@ ILInt32 _IL_GCHandle_GCAlloc(ILExecThread *_thread, ILObject *value,
 					table->weakHandles = newArray;
 				}
 				table->weakHandles[table->numWeakHandles] = ptr;
-				ILGCRegisterWeak(&(table->weakHandles[table->numWeakHandles]));
+				// *****: 
+				// ILGCRegisterWeak(&(table->weakHandles[table->numWeakHandles]));
+				
+				if( 0 != table->weakHandles[table->numWeakHandles] ) {
+					ILGCRegisterGeneralWeak(&(table->weakHandles[table->numWeakHandles]), table->weakHandles[table->numWeakHandles] );
+				}
 				handle = (((++(table->numWeakHandles)) << 2) | type);
 			}
 			break;
@@ -439,7 +457,20 @@ void _IL_GCHandle_GCSetTarget(ILExecThread *_thread, ILInt32 handle,
 					if(table->weakHandles[index - 1] !=
 							(void *)(ILNativeInt)(-1))
 					{
+						/* *****:
+						unregister old Target and Register new Ttarget
+						*/
+						
+						if( 0 != table->weakHandles[index - 1] ) {
+							ILGCUnregisterWeak(&(table->weakHandles[index-1]));
+						}
+						
 						table->weakHandles[index - 1] = ptr;
+						
+						// *****:
+						if( 0 != ptr ) {
+							ILGCRegisterGeneralWeak(&(table->weakHandles[index-1]), table->weakHandles[index-1] ); 
+						}
 					}
 				}
 			}

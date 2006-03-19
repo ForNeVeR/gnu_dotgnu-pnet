@@ -24,6 +24,7 @@
 #ifdef IL_USE_JIT
 
 #include "jit/jit.h"
+#include "lib_defs.h"
 
 /*
  * Map the native IL types to JIT types.
@@ -156,6 +157,17 @@ int ILJitCallMethod(ILExecThread *thread, ILMethod *method,
 ILMethod *_ILJitGetCallingMethod(ILExecThread *thread, ILUInt32 frames);
 
 /*
+ * Get the number of stack frames associated with an ILMethod on the current
+ * call stack.
+ */
+ILInt32 _ILJitDiagNumFrames(ILExecThread *thread);
+
+/*
+ * Get the current PackedStackFrame.
+ */
+System_Array *_ILJitGetExceptionStackTrace(ILExecThread *thread);
+
+/*
  * Create the class/struct representation of a clr type for libjit.
  * and store the type in classPrivate.
  * Returns the jit type on success else 0
@@ -193,6 +205,7 @@ ILJitTypes *ILJitPrimitiveClrTypeToJitTypes(int primitiveClrType);
  * into clr exceptions.
  */
 void *_ILJitExceptionHandler(int exception_type);
+
 
 #endif  /* IL_USE_JIT */
 

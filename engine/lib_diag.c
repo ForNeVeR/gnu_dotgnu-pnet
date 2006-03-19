@@ -269,12 +269,17 @@ void _IL_Debugger_Log(ILExecThread *thread, ILInt32 level,
 ILInt32 _IL_StackFrame_InternalGetTotalFrames(ILExecThread *thread)
 {
 	ILInt32 num = 0;
+#ifdef IL_USE_CVM
 	ILCallFrame *frame = _ILGetCallFrame(thread, 0);
 	while(frame != 0)
 	{
 		++num;
 		frame = _ILGetNextCallFrame(thread, frame);
 	}
+#endif
+#ifdef IL_USE_JIT
+	num = _ILJitDiagNumFrames(thread);
+#endif
 	return num;
 }
 
@@ -284,6 +289,7 @@ ILInt32 _IL_StackFrame_InternalGetTotalFrames(ILExecThread *thread)
 void _IL_StackFrame_InternalGetMethod(ILExecThread *thread,
 									  void *result, ILInt32 skipFrames)
 {
+#ifdef IL_USE_CVM
 	ILCallFrame *frame = _ILGetCallFrame(thread, skipFrames);
 	if(frame)
 	{
@@ -293,6 +299,10 @@ void _IL_StackFrame_InternalGetMethod(ILExecThread *thread,
 	{
 		*((ILMethod **)result) = 0;
 	}
+#endif
+#ifdef IL_USE_JIT
+	*(ILMethod **)result = _ILJitGetCallingMethod(thread, skipFrames);
+#endif
 }
 
 /*
@@ -403,6 +413,7 @@ ILString *_IL_StackFrame_InternalGetDebugInfo
  */
 System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 {
+#ifdef IL_USE_CVM
 #ifdef IL_CONFIG_REFLECTION
 	ILInt32 num;
 	ILCallFrame *frame;
@@ -488,6 +499,10 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 	return (System_Array *)array;
 #else
 	return 0;
+#endif
+#endif
+#ifdef IL_USE_JIT
+	return _ILJitGetExceptionStackTrace(thread);
 #endif
 }
 

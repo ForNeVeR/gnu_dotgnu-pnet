@@ -1,3 +1,32 @@
+2006-03-19  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Add signature for _ILJitGetExceptionStackTrace. Pass
+	structs by ref in _ILJitCompileInternal. Include the new files jitc_diag.c
+	and jitc_labels.c. Move _ILJitGetCallingMethod to jitc_diag.c.
+
+	* engine/jitc.h: Add the prototypes for the new functions in jitc_diag.c
+	and include lib_defs.h.
+
+	* engine/jitc_branch.c: Mobe the stack management functions to
+	jitc_labels.c and rename GetLabel to _ILJitLabelGet and FindLabel to
+	_ILJitLabelFind.
+
+	* engine/jitc_except.c: Add support for filling the stack trace in the
+	exception object and rename GetLabel to _ILJitLabelGet and FindLabel to
+	_ILJitLabelFind. Fix a bug in the exception catcher.
+ 
+	* engine/jitc_ptr.c: Fix getting the base of the array data.
+
+	* engine/jitc_setup.c: Dump the functions only when argument -Z was passed
+	to ilrun. Add a label for offset 0 at the start of the function to fix an
+	exception bug.
+
+	* engine/lib_diag.c: Add some stack support for the jit coder.
+
+	* engine/Makefile.am: Add jitc_diag.c and jitc_labels.c as jitc sources.
+
+	* engine/jitc_diag.c, engine/jitc_labels.c: Added.
+
 2006-03-17  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_gc.c : fixed weak references

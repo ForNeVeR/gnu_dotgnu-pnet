@@ -21,177 +21,12 @@
 #ifdef IL_JITC_CODE
 
 /*
- * Save the current jitStack status to the label.
- * This is done when the label is referenced the first time.
- */
-static int _ILJitLabelSaveStack(ILJITCoder *coder, ILJITLabel *label)
-{
-	if(((label->labelType & (_IL_JIT_LABEL_NORMAL |
-							 _IL_JIT_LABEL_STARTCATCH)) != 0) &&
-		(coder->stackTop > 0))
-	{
-		int current = 0;
-		ILJitValue *stack = ILMemStackAllocItem(&(coder->stackStates),
-									coder->stackTop * sizeof(ILJitValue));
-		if(!stack)
-		{
-			return 0;
-		}
-		/* Now save the current stack state. */
-		for(current = 0; current < coder->stackTop; current++)
-		{
-			ILJitValue value = coder->jitStack[current];
-
-			if(jit_value_is_constant(value))
-			{
-				/* We have to handle this case different. */
-				/* Create a local value of the type of the constant. */
-				ILJitValue temp = jit_value_create(coder->jitFunction,
-												   jit_value_get_type(value));
-				/* and store the value o the constant in the new temporary. */
-				jit_insn_store(coder->jitFunction, temp, value);
-				/* Now replace the constant with the new temporary. */
-				coder->jitStack[current] = temp;
-			}
-			else
-			{
-				if(_ILJitValueIsArgOrLocal(coder, coder->jitStack[current]))
-				{
-					coder->jitStack[current] = jit_insn_dup(coder->jitFunction,
-													coder->jitStack[current]);
-				}
-			}
-			stack[current] = coder->jitStack[current];
-		}
-		label->jitStack = stack;
-		label->stackSize = coder->stackTop;
-	}
-	return 1;
-}
-
-/*
- * Merge the current jitStack status with the one saved in the label.
- */
-static int _ILJitLabelMergeStack(ILJITCoder *coder, ILJITLabel *label)
-{
-	if(label->labelType & (_IL_JIT_LABEL_NORMAL | _IL_JIT_LABEL_STARTCATCH))
-	{
-		/* Verify that the stack sizes match. */
-		if(coder->stackTop != label->stackSize)
-		{
-			fprintf(stdout, "Stack sizes don't match!\n");
-			/* return 0; */
-		}
-		if(coder->stackTop > 0)
-		{
-			int numItems = coder->stackTop > label->stackSize ?
-								label->stackSize : coder->stackTop;
-			int current = 0;
-
-			/* Now save the current stack state. */
-			for(current = 0; current < numItems; current++)
-			{
-				ILJitValue value = coder->jitStack[current];
-
-				if(value != label->jitStack[current])
-				{
-					/* store the changed value to the saved stack. */
-					jit_insn_store(coder->jitFunction, label->jitStack[current],
-								   value);
-				}
-			}
-		}
-	}
-	return 1;
-}
-
-/*
- * Restore the stack from the label to the coder.
- */
-static void _ILJitLabelRestoreStack(ILJITCoder *coder, ILJITLabel *label)
-{
-	if(label->stackSize > 0)
-	{
-		int current = 0;
-
-		/* Now restore the stack state. */
-		for(current = 0; current < label->stackSize; current++)
-		{
-			coder->jitStack[current] = label->jitStack[current];
-		}
-	}
-	coder->stackTop = label->stackSize;
-}
-
-/*
- * Look for an existing label for the specified IL address.
- * Returns 0 if there is no label for this address.
- */
-static ILJITLabel *FindLabel(ILJITCoder *coder, ILUInt32 address)
-{
-	ILJITLabel *label = coder->labelList;
-
-	while(label != 0)
-	{
-		if(label->address == address)
-		{
-			return label;
-		}
-		label = label->next;
-	}
-	return 0;
-}
-
-/*
- * Look for a label for a specific IL address.  Create
- * a new label if necessary.
- */
-static ILJITLabel *GetLabel(ILJITCoder *coder, ILUInt32 address, int labelType)
-{
-	ILJITLabel *label = FindLabel(coder, address);
-;
-	if(!label)
-	{
-		label = ILMemPoolAlloc(&(coder->labelPool), ILJITLabel);
-		if(label)
-		{
-			label->stackSize = 0;
-			label->jitStack = 0;
-			label->address = address;
-			label->label = jit_label_undefined;
-			label->labelType = labelType;
-			if(!_ILJitLabelSaveStack(coder, label))
-			{
-				coder->labelOutOfMemory = 1;
-				return 0;
-			}
-			label->next = coder->labelList;
-			coder->labelList = label;
-		}
-		else
-		{
-			coder->labelOutOfMemory = 1;
-		}
-	}
-	else
-	{
-		if(!_ILJitLabelMergeStack(coder, label))
-		{
-			/* We have a stack size mismatch!!! */
-			coder->labelOutOfMemory = 1;
-			return 0;
-		}
-	}
-	return label;
-}
-
-/*
  * Handle a label.
  */
 static void JITCoder_Label(ILCoder *coder, ILUInt32 offset)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJITLabel *label = GetLabel(jitCoder, offset, _IL_JIT_LABEL_NORMAL);
+	ILJITLabel *label = _ILJitLabelGet(jitCoder, offset, _IL_JIT_LABEL_NORMAL);
 
 	if(label)
 	{
@@ -358,7 +193,7 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		case IL_OP_LEAVE_S:
 		{
 			/* Unconditional branch */
-			label = GetLabel(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
+			label = _ILJitLabelGet(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
 
 			jit_insn_branch(jitCoder->jitFunction, &(label->label));
 		}
@@ -370,7 +205,7 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 			/* Branch if the top-most stack item is true */
 			value1 = jitCoder->jitStack[jitCoder->stackTop - 1];
 			JITC_ADJUST(jitCoder, -1);
-			label = GetLabel(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
+			label = _ILJitLabelGet(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
 
 			jit_insn_branch_if(jitCoder->jitFunction, value1, &(label->label));
 		}
@@ -382,7 +217,7 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 			/* Branch if the top-most stack item is false */
 			value1 = jitCoder->jitStack[jitCoder->stackTop - 1];
 			JITC_ADJUST(jitCoder, -1);
-			label = GetLabel(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
+			label = _ILJitLabelGet(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
 
 			jit_insn_branch_if_not(jitCoder->jitFunction, value1,
 									&(label->label));
@@ -394,7 +229,7 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 			value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
 			value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
 			JITC_ADJUST(jitCoder, -2);
-			label = GetLabel(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
+			label = _ILJitLabelGet(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
 
 			switch(opcode)
 			{
@@ -528,7 +363,7 @@ static void JITCoder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 static void JITCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
-	ILJITLabel *label = GetLabel(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
+	ILJITLabel *label = _ILJitLabelGet(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
 	
 	ILJitValue constant = jit_value_create_nint_constant(jitCoder->jitFunction,
 														 jit_type_nint,

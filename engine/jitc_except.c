@@ -21,6 +21,36 @@
 #ifdef IL_JITC_CODE
 
 /*
+ * Find the "stackTrace" field within "System.Exception" and then set.
+ */
+static void _ILJitFindAndSetStackTrace(ILJITCoder *jitCoder, ILJitValue exception)
+{
+	ILExecThread *_thread = ILExecThreadCurrent();
+	ILJitValue thread = jit_value_get_param(jitCoder->jitFunction,0);
+	ILJitValue trace;
+	ILField *field;
+
+	/* Find the "stackTrace" field within the "Exception" class */
+	field = ILExecThreadLookupField
+			(_thread, "System.Exception", "stackTrace",
+			 "[vSystem.Diagnostics.PackedStackFrame;");
+	if(field)
+	{
+		/* Get the stack trace and pop the frame */
+		trace = jit_insn_call_native(jitCoder->jitFunction,
+									 "_ILJitGetExceptionStackTrace",
+									 _ILJitGetExceptionStackTrace,
+									 _ILJitSignature_ILJitGetExceptionStackTrace,
+									 &thread, 1, JIT_CALL_NOTHROW);
+
+		/* Write the stack trace into the object */
+		jit_insn_store_relative(jitCoder->jitFunction, exception,
+								field->offset, trace);
+	}
+}
+
+
+/*
  * Set up exception handling for the current method.
  */
 static void JITCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
@@ -60,8 +90,8 @@ static void JITCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 				ILMutexUnlock(globalTraceMutex);
 			}
 		#endif
-			GetLabel(jitCoder, exceptions->handlerOffset,
-							   _IL_JIT_LABEL_STARTFINALLY);
+			_ILJitLabelGet(jitCoder, exceptions->handlerOffset,
+									 _IL_JIT_LABEL_STARTFINALLY);
 		}
 		else if ((exceptions->flags & IL_META_EXCEPTION_FILTER) == 0)
 		{
@@ -82,8 +112,8 @@ static void JITCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 		#endif
 			jitCoder->jitStack[0] = exception;
 			jitCoder->stackTop = 1;
-			GetLabel(jitCoder, exceptions->handlerOffset,
-							   _IL_JIT_LABEL_STARTCATCH);
+			_ILJitLabelGet(jitCoder, exceptions->handlerOffset,
+									 _IL_JIT_LABEL_STARTCATCH);
 			jitCoder->stackTop = 0;
 		}
 		exceptions = exceptions->next;
@@ -115,6 +145,9 @@ static void JITCoder_Throw(ILCoder *coder, int inCurrentMethod)
 		jit_insn_store_relative(jitCoder->jitFunction, thread,
 								offsetof(ILExecThread, thrownException), 
 								exception);
+		/* Set the stacktrace in the exception. */
+		_ILJitFindAndSetStackTrace(jitCoder, exception);
+
 		jit_insn_throw(jitCoder->jitFunction, exception);
 		JITC_ADJUST(jitCoder, -1);
 	}
@@ -210,8 +243,11 @@ static void JITCoder_TryHandlerStart(ILCoder *_coder,
 		
 		jitCoder->isInCatcher = 1;
 	}
-	/* Insert the jump target for the previous block. */
-	jit_insn_label(jitCoder->jitFunction, &(jitCoder->nextBlock));
+	else
+	{
+		/* Insert the jump target for the previous block. */
+		jit_insn_label(jitCoder->jitFunction, &(jitCoder->nextBlock));
+	}
 	/* and reset the label so that it can be used with the next block. */
 	jitCoder->nextBlock = jit_label_undefined;
 
@@ -223,8 +259,8 @@ static void JITCoder_TryHandlerStart(ILCoder *_coder,
 	}
 	else
 	{
-		ILJITLabel *startLabel = FindLabel(jitCoder, start);;
-		ILJITLabel *endLabel = FindLabel(jitCoder, end);
+		ILJITLabel *startLabel = _ILJitLabelFind(jitCoder, start);;
+		ILJITLabel *endLabel = _ILJitLabelFind(jitCoder, end);
 		if(startLabel && endLabel)
 		{
 			jit_insn_branch_if_pc_not_in_range(jitCoder->jitFunction,
@@ -295,8 +331,8 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 	/* Push the exception object on the stack. */
 	jitCoder->jitStack[0] = exceptionObject;
 	jitCoder->stackTop = 1;
-	catchBlock = GetLabel(jitCoder, exception->handlerOffset,
-									_IL_JIT_LABEL_STARTCATCH);
+	catchBlock = _ILJitLabelGet(jitCoder, exception->handlerOffset,
+										  _IL_JIT_LABEL_STARTCATCH);
 
 	/* Look if the object can be casted to the cought exception type. */
 	args[0] = thread;
@@ -307,7 +343,7 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 									   ILRuntimeCanCastClass,
 									   _ILJitSignature_ILRuntimeCanCastClass,
 									   args, 3, JIT_CALL_NOTHROW);
-	jit_insn_branch_if_not(jitCoder->jitFunction, returnValue, &(catchBlock->label));
+	jit_insn_branch_if_not(jitCoder->jitFunction, returnValue, &label);
 	jit_insn_store_relative(jitCoder->jitFunction, thread, 
 							offsetof(ILExecThread, thrownException),
 							nullException);
@@ -345,7 +381,8 @@ static void JITCoder_EndCatchFinally(ILCoder *coder, ILException *exception)
 static void JITCoder_Finally(ILCoder *coder, ILException *exception, int dest)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJITLabel *label = GetLabel(jitCoder, dest, _IL_JIT_LABEL_STARTFINALLY);
+	ILJITLabel *label = _ILJitLabelGet(jitCoder, dest,
+									   _IL_JIT_LABEL_STARTFINALLY);
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)

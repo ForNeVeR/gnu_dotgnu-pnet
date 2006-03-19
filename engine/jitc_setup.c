@@ -27,6 +27,7 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 						  ILMethod *method, ILMethodCode *code)
 {
 	ILJITCoder *coder = ((ILJITCoder *)_coder);
+	ILJITLabel *label0;
 
 	/* Record the current jitted function. */
 	coder->jitFunction = (ILJitFunction)(method->userData);
@@ -69,6 +70,10 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 
 	/* Reset the isInCatcher flag. */
 	coder->isInCatcher = 0;
+
+	/* Set the label for the start of the function. */
+	label0 = _ILJitLabelGet(coder, 0, _IL_JIT_LABEL_NORMAL);
+	jit_insn_label(coder->jitFunction, &(label0->label));
 
 	/* Set the current method in the thread. */
 	_ILJitSetMethodInThread(coder->jitFunction, 
@@ -162,18 +167,24 @@ static int JITCoder_Finish(ILCoder *_coder)
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 #ifdef _IL_JIT_DUMP_FUNCTION
-	ILMutexLock(globalTraceMutex);
-	jit_dump_function(stdout, jitCoder->jitFunction, methodName);
-	ILMutexUnlock(globalTraceMutex);
+	if(jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		jit_dump_function(stdout, jitCoder->jitFunction, methodName);
+		ILMutexUnlock(globalTraceMutex);
+	}
 #endif
 #ifdef _IL_JIT_DISASSEMBLE_FUNCTION
-	if(!jit_function_compile(jitCoder->jitFunction))
+	if(jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
-		return IL_CODER_END_TOO_BIG;
+		if(!jit_function_compile(jitCoder->jitFunction))
+		{
+			return IL_CODER_END_TOO_BIG;
+		}
+		ILMutexLock(globalTraceMutex);
+		jit_dump_function(stdout, jitCoder->jitFunction, methodName);
+		ILMutexUnlock(globalTraceMutex);
 	}
-	ILMutexLock(globalTraceMutex);
-	jit_dump_function(stdout, jitCoder->jitFunction, methodName);
-	ILMutexUnlock(globalTraceMutex);
 #endif
 #endif
 	return IL_CODER_END_OK;

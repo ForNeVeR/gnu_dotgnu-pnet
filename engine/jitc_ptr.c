@@ -25,7 +25,7 @@
  */
 static ILJitValue GetArrayBase(ILJITCoder *coder, ILJitValue array)
 {
-	return jit_insn_add_relative(coder->jitFunction, array, sizeof(void *));
+	return jit_insn_add_relative(coder->jitFunction, array, sizeof(System_Array));
 }
 
 /*

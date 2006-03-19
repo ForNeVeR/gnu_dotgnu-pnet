@@ -1,3 +1,19 @@
+2006-03-19  Rainer Größlinger  <rainer.groesslinger@gmx.net>
+
+	* libgc/Makefile.am, libgc/Makefile.direct, libgc/Makefile.in,
+	libgc/allchblk.c, libgc/alloc.c, libgc/configure, libgc/configure.in,
+	libgc/darwin_stop_world.c, libgc/dbg_mlc.c, libgc/dyn_load.c,
+	libgc/headers.c, libgc/malloc.c, libgc/mark.c, libgc/misc.c,
+	libgc/mkinstalldirs, libgc/os_dep.c, libgc/powerpc_darwin_mach_dep.s,
+	libgc/pthread_stop_world.c, libgc/pthread_support.c, libgc/threadlibs.c,
+	libgc/version.h, libgc/doc/README, libgc/doc/README.changes,
+	libgc/doc/gcinterface.html, libgc/include/gc.h,
+	libgc/include/gc_config_macros.h, libgc/include/gc_cpp.h,
+	libgc/include/gc_pthread_redirects.h, libgc/include/leak_detector.h,
+	libgc/include/private/gc_locks.h, libgc/include/private/gc_pmark.h,
+	libgc/include/private/gc_priv.h, libgc/include/private/gcconfig.h: Update
+	to libgc 6.7. (Klaus)
+
 2006-03-19  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Add signature for _ILJitGetExceptionStackTrace. Pass
@@ -7,7 +23,7 @@
 	* engine/jitc.h: Add the prototypes for the new functions in jitc_diag.c
 	and include lib_defs.h.
 
-	* engine/jitc_branch.c: Mobe the stack management functions to
+	* engine/jitc_branch.c: Move the stack management functions to
 	jitc_labels.c and rename GetLabel to _ILJitLabelGet and FindLabel to
 	_ILJitLabelFind.
 

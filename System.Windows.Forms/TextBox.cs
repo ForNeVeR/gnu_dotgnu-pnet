@@ -1416,7 +1416,7 @@ public class TextBox : TextBoxBase
 		int x = 0;
 		int y = int.MinValue;
 		int i;
-		using (Brush foreBrush = new SolidBrush(ForeColor), selectedForeBrush = new SolidBrush(SystemColors.HighlightText))
+		using (SolidBrush foreBrush = new SolidBrush(ForeColor), selectedForeBrush = new SolidBrush(SystemColors.HighlightText))
 		{
 			int cleanI = 0;
 			for (i=0; i < text.Length;i++) 
@@ -1482,7 +1482,9 @@ public class TextBox : TextBoxBase
 							}
 							else
 							{
-								ControlPaint.DrawStringDisabled(g, lineText, font, BackColor, new Rectangle(x, y, bounds.Width, bounds.Height), StringFormat.GenericDefault);
+								if(BackColor != Color.Gray)
+									foreBrush.Color = Color.Gray;
+								g.DrawString(lineText, Font, foreBrush, new Point (x, y));
 							}
 						}
 						lineStart = i;
@@ -1513,7 +1515,9 @@ public class TextBox : TextBoxBase
 				}
 				else
 				{
-					ControlPaint.DrawStringDisabled(g, lineText, font, BackColor, new Rectangle(x, y, Bounds.Width, Bounds.Height), StringFormat.GenericDefault);
+					if(BackColor != Color.Gray)
+						foreBrush.Color = Color.Gray;
+					g.DrawString(lineText, Font, foreBrush, new Point (x, y));
 				}
 			}
 		}

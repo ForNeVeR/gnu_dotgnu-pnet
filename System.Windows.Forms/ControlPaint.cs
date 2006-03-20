@@ -65,8 +65,6 @@ public sealed class ControlPaint
 
 				float temp1 = 2.0f * brightness - temp2;
 				float t1 = hue + 120.0f;
-				if (t1 > 360.0)
-					t1 -= 360.0f;
 				float t2 = hue;
 				float t3 = hue - 120.0f;
 				if (t3 < 0)

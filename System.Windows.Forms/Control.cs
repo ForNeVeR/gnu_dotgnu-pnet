@@ -213,7 +213,11 @@ public class Control : IWin32Window, IDisposable
 	{
 		public Delegate method;
 		public Object[] args;
+#if BRUBBEL
 		public WeakReference wr;	// to the InvokeAsyncResult
+#else
+		public InvokeAsyncResult wr;
+#endif
 	}
 
 	// Constructors.
@@ -335,7 +339,11 @@ public class Control : IWin32Window, IDisposable
 		Delegate dg = iParm.method;
 		Object ro = dg.DynamicInvoke(iParm.args);
 
+#if BRUBBEL
 		InvokeAsyncResult ar = (InvokeAsyncResult)iParm.wr.Target;
+#else
+		InvokeAsyncResult ar = iParm.wr;
+#endif
 		if( ar != null )
 		{
 			ar.retObject = ro;
@@ -359,7 +367,11 @@ public class Control : IWin32Window, IDisposable
 
 				iParm.method = method;
 				iParm.args   = args;
+#if BRUBBEL
 				iParm.wr = new WeakReference(ar);
+#else
+				iParm.wr = ar;
+#endif
 
 				if(toolkitWindow == null)
 				{
@@ -1436,6 +1448,7 @@ public class Control : IWin32Window, IDisposable
 										parent.children[posn + 1];
 									posn++;
 								}
+								parent.children[posn] = null; // Brubbel: Don't forget to set to null !!!
 								break;
 							}
 							posn++;
@@ -2188,7 +2201,7 @@ public class Control : IWin32Window, IDisposable
 				{
 					return;
 				}
-
+				
 				// Destroy all of the child controls.
 				int child;
 				for(child = 0; child < numChildren; ++child)
@@ -2202,6 +2215,13 @@ public class Control : IWin32Window, IDisposable
 					toolkitWindow.Destroy();
 					toolkitWindow = null;
 				}
+				
+				// Brubbel
+				if( buffer != null ) {
+					buffer.Dispose();
+					buffer = null;
+				}
+
 
 				// Notify event handlers that the handle is destroyed.
 				OnHandleDestroyed(EventArgs.Empty);
@@ -2257,6 +2277,23 @@ public class Control : IWin32Window, IDisposable
 						try
 						{
 							DestroyHandle();
+						
+							// Brubbel start
+							if( null != this.parent ) {
+								this.parent.Controls.Remove(this);
+							}
+							
+							if( null != controlCollection ) {
+								Control o;
+								for( int i = 0; i < controlCollection.Count; i++ ) {
+									o = controlCollection[i];
+									o.parent = null;
+									o.Dispose();
+									o = null;
+								}
+								controlCollection = null;
+							}
+							// brubbel end
 						}
 						finally
 						{
@@ -5498,8 +5535,11 @@ public class Control : IWin32Window, IDisposable
 
 				if(newParent == null)
 				{
+					/* Brubbel Start */
 					toolkitWindow.Reparent(null, left + ToolkitDrawOrigin.X,
 						top + ToolkitDrawOrigin.Y);
+					/* Brubbel should*/
+					//DestroyHandle();
 				}
 				else if(newParent.toolkitWindow != null)
 				{
@@ -5781,7 +5821,7 @@ public class Control : IWin32Window, IDisposable
 				{
 					if(value != null && value.Parent == owner)
 					{
-						bool wasVisible = value.Visible;
+						//bool wasVisible = value.Visible;
 
 						// Update the parent.
 						value.Parent = null;
@@ -5798,6 +5838,12 @@ public class Control : IWin32Window, IDisposable
 
 						// Notify the owner that the control has been removed.
 						owner.OnControlRemoved(new ControlEventArgs(value));
+						
+						// Brubbel new
+						ContainerControl container = this.owner.GetContainerControl() as ContainerControl;
+						if( null != container ) {
+							container.AfterControlRemoved(value);
+						}
 					}
 				}
 

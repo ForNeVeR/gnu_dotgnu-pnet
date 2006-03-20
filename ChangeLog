@@ -1,3 +1,8 @@
+2006-03-20  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Form/Control.cs : fixed Dispose, Controls.Remove(), DestroyHandle
+	* System.Windows.Form/ContainerControl.cs : added AfterControlRemoved
+
 2006-03-20  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
 	* System.Windows.Forms/TextBox.cs : always draw disabled textbox with gray, if backcolor not gray

@@ -436,6 +436,39 @@ public class ContainerControl : ScrollableControl, IContainerControl
 		base.OnControlRemoved(e);
 	}
 
+	// Brubbel
+	internal virtual void AfterControlRemoved(Control control)
+	{
+		// Select next control, if control was active and removed.
+		if (control == activeControl || control.Contains(activeControl))
+		{
+			if( base.SelectNextControl( control, true, true, true, true ) ) {
+				this.SetFocus( activeControl );
+			}
+			else {
+				this.SetActiveControl( null );
+			}
+		}
+		else if( (this.activeControl == null) && (this.Parent != null) ) {
+			ContainerControl container = Parent.GetContainerControl() as ContainerControl;
+			if( null != container && container.ActiveControl == this ) {
+				Form form = base.FindForm();
+				if( null != form ) {
+					form.SelectNextControl( this, true, true, true, true );
+				}
+				
+			}
+		}
+		else {
+		}
+		
+		// Make sure the unvalidated control and active control are cleaned up.
+		if (control == unvalidatedControl || control.Contains(unvalidatedControl))
+		{
+			unvalidatedControl = null;
+		}
+	}
+	
 #if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
 #endif // CONFIG_COMPONENT_MODEL

@@ -132,14 +132,14 @@ public class Control : IWin32Window, IDisposable
 	internal class InvokeAsyncResult: IAsyncResult
 	{
 		private bool bComplete;
-		private ManualResetEvent waitHandle;	// brubbel: waitHandle must not be a Mutex, you cannot wait for Mutexes
+		private ManualResetEvent waitHandle;
 		public Object retObject;
 		public Object asyncStateObject;	// The AsyncState object
 
 		public InvokeAsyncResult()
 		{
 			bComplete = false;			// This event hasn't completed
-			waitHandle = new ManualResetEvent(false);	// brubbel: create an event
+			waitHandle = new ManualResetEvent(false);
 		}
 
 		public void WaitToComplete()
@@ -213,11 +213,7 @@ public class Control : IWin32Window, IDisposable
 	{
 		public Delegate method;
 		public Object[] args;
-#if BRUBBEL
-		public WeakReference wr;	// to the InvokeAsyncResult
-#else
 		public InvokeAsyncResult wr;
-#endif
 	}
 
 	// Constructors.
@@ -339,11 +335,8 @@ public class Control : IWin32Window, IDisposable
 		Delegate dg = iParm.method;
 		Object ro = dg.DynamicInvoke(iParm.args);
 
-#if BRUBBEL
-		InvokeAsyncResult ar = (InvokeAsyncResult)iParm.wr.Target;
-#else
 		InvokeAsyncResult ar = iParm.wr;
-#endif
+		
 		if( ar != null )
 		{
 			ar.retObject = ro;
@@ -367,11 +360,7 @@ public class Control : IWin32Window, IDisposable
 
 				iParm.method = method;
 				iParm.args   = args;
-#if BRUBBEL
-				iParm.wr = new WeakReference(ar);
-#else
 				iParm.wr = ar;
-#endif
 
 				if(toolkitWindow == null)
 				{
@@ -1448,7 +1437,11 @@ public class Control : IWin32Window, IDisposable
 										parent.children[posn + 1];
 									posn++;
 								}
-								parent.children[posn] = null; // Brubbel: Don't forget to set to null !!!
+								/* 
+								Don't forget to set to null, 
+								Or a reference of the would be kept !!!
+								*/
+								parent.children[posn] = null; 
 								break;
 							}
 							posn++;
@@ -2011,20 +2004,7 @@ public class Control : IWin32Window, IDisposable
 						("control", S._("SWF_ControlDisposed"));
 				}
 
-				#if false // brubbel, does this break anything ?
-				// Find the highest ancestor that isn't created
-				// and start building the control tree from there.
-				Control control = this;
-				while(control.parent != null &&
-					control.parent.toolkitWindow == null)
-				{
-					control = control.parent;
-				}
-				control.CreateControlInner();
-				#else
 				this.CreateControlInner();
-				#endif
-				
 
 				// If one of the parents of this control is not visible then the control
 				// will not be created. We must ensure that the control is created, even if
@@ -2216,7 +2196,7 @@ public class Control : IWin32Window, IDisposable
 					toolkitWindow = null;
 				}
 				
-				// Brubbel
+				// Dispose DoubleBuffer too here
 				if( buffer != null ) {
 					buffer.Dispose();
 					buffer = null;
@@ -2278,11 +2258,12 @@ public class Control : IWin32Window, IDisposable
 						{
 							DestroyHandle();
 						
-							// Brubbel start
+							// Remove this control from Parent
 							if( null != this.parent ) {
 								this.parent.Controls.Remove(this);
 							}
 							
+							// Dispose all childs
 							if( null != controlCollection ) {
 								Control o;
 								for( int i = 0; i < controlCollection.Count; i++ ) {
@@ -2293,7 +2274,6 @@ public class Control : IWin32Window, IDisposable
 								}
 								controlCollection = null;
 							}
-							// brubbel end
 						}
 						finally
 						{
@@ -5535,11 +5515,18 @@ public class Control : IWin32Window, IDisposable
 
 				if(newParent == null)
 				{
-					/* Brubbel Start */
+					/* 
+					 * Don't reparent the window to null, because the window would be 
+					 * reparent to a placeholder window.
+					 * Then a reference would be still kept, and the control never gets disposed.
+					 * So Destroy the handle. If the control is reused, the handle gets 
+					 * created again.
+					 */
+					/*
 					toolkitWindow.Reparent(null, left + ToolkitDrawOrigin.X,
 						top + ToolkitDrawOrigin.Y);
-					/* Brubbel should*/
-					//DestroyHandle();
+					*/
+					DestroyHandle();
 				}
 				else if(newParent.toolkitWindow != null)
 				{
@@ -5765,21 +5752,6 @@ public class Control : IWin32Window, IDisposable
 								value.CreateControl();
 								owner.PerformLayout(value, "Parent");
 							}
-
-							// If it's supposed to be visible then fire the
-							// OnVisibleChanged event.
-							
-							/* Brubbel : this is not needed
-							if (value.visible)
-							{
-								value.OnVisibleChanged(EventArgs.Empty);
-							}
-							*/
-							
-							// Notify the owner that the control was added.
-							// no, do not notify, because the statement value.Parent = owner does the notify for us.
-							/* owner.OnControlAdded
-								(new ControlEventArgs(value)); */
 						}
 					}
 				}
@@ -5821,25 +5793,19 @@ public class Control : IWin32Window, IDisposable
 				{
 					if(value != null && value.Parent == owner)
 					{
-						//bool wasVisible = value.Visible;
-
 						// Update the parent.
 						value.Parent = null;
 
 						// Perform layout on the owner.
 						owner.PerformLayout(value, "Parent");
 
-						// If it was visible, it now isn't and thus the
-						// visibility changed.
-						/* Brubbel : this is not needed
-						if (wasVisible)
-							value.OnVisibleChanged (EventArgs.Empty);
-							*/
-
 						// Notify the owner that the control has been removed.
 						owner.OnControlRemoved(new ControlEventArgs(value));
 						
-						// Brubbel new
+						/* 
+						 * Get the ContainerControl and notify that the control was removed.
+						 * the ContainerControl should activate the next control
+						*/
 						ContainerControl container = this.owner.GetContainerControl() as ContainerControl;
 						if( null != container ) {
 							container.AfterControlRemoved(value);

@@ -125,6 +125,12 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	void IToolkitWindow.Destroy()
 			{
 				Destroy();
+				/*
+				 * if the window is destroyed, set toolkit and sink to zero.
+				 * otherwise, we couold get events like LostFocus...
+				*/
+				toolkit = null;
+				sink    = null;
 			}
 
 	// Move or resize this window.

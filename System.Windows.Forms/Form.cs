@@ -597,7 +597,7 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					// Brubbel recreate toolkitwindow, if exists
+					// recreate toolkitwindow, if exists
 					if( value != topLevel ) {
 						topLevel = value;
 						if( null != toolkitWindow ) {
@@ -1619,6 +1619,8 @@ public class Form : ContainerControl
 	// Close request received from "Control.ToolkitClose".
 	internal override void CloseRequest()
 			{
+				if( IsDisposed ) return;	// irgnore CloseRequest, if form was destroyed
+				
 				CancelEventArgs args = new CancelEventArgs();
 				OnClosing(args);
 				if(!(args.Cancel))

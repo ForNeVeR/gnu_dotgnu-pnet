@@ -5519,10 +5519,12 @@ public class Control : IWin32Window, IDisposable
 					 * created again.
 					 */
 					/*
-					toolkitWindow.Reparent(null, left + ToolkitDrawOrigin.X,
-						top + ToolkitDrawOrigin.Y);
-					*/
+					fu..., if we do this, we get a deadlock on Invokes!
+					because the handle might be created the by nother thread.
 					DestroyHandle();
+					*/
+					toolkitWindow.Reparent(null, left + ToolkitDrawOrigin.X,
+												  top + ToolkitDrawOrigin.Y);
 				}
 				else if(newParent.toolkitWindow != null)
 				{

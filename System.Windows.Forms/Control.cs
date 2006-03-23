@@ -1073,7 +1073,7 @@ public class Control : IWin32Window, IDisposable
 						dockStyle = (byte)value;
 						OnDockChanged(EventArgs.Empty);
 						// Rethink our layout
-						PerformLayout();
+						PerformLayout(this,"Dock");
 					}
 				}
 			}
@@ -2241,44 +2241,40 @@ public class Control : IWin32Window, IDisposable
 	protected virtual void Dispose(bool disposing)
 #endif
 			{
+				if( GetControlFlag(ControlFlags.Disposed) || GetControlFlag(ControlFlags.Disposing) ) {
+					return;// do nothing if already disposing or disposed
+				}
+				
 				try
 				{
 					SetControlFlag(ControlFlags.Disposing, true);
 					try
 					{
-						if(buffer != null)
-						{
-							buffer.Dispose();
-							buffer = null;
+						if( toolkitWindow != null ) { // prevent one method call for performance
+							DestroyHandle();
+						}
+						
+						// Remove this control from Parent
+						if( null != this.parent ) {
+							this.parent.Controls.Remove(this);
+						}
+						
+						// Dispose all childs
+						if( null != controlCollection ) {
+							Control o;
+							int iCount = controlCollection.Count;
+							for( int i = 0; i < iCount; i++ ) {
+								o = controlCollection[i];
+								o.parent = null;
+								o.Dispose();
+								o = null;
+							}
+							controlCollection = null;
 						}
 					}
 					finally
 					{
-						try
-						{
-							DestroyHandle();
-						
-							// Remove this control from Parent
-							if( null != this.parent ) {
-								this.parent.Controls.Remove(this);
-							}
-							
-							// Dispose all childs
-							if( null != controlCollection ) {
-								Control o;
-								for( int i = 0; i < controlCollection.Count; i++ ) {
-									o = controlCollection[i];
-									o.parent = null;
-									o.Dispose();
-									o = null;
-								}
-								controlCollection = null;
-							}
-						}
-						finally
-						{
-							SetControlFlag(ControlFlags.Disposed, true);
-						}
+						SetControlFlag(ControlFlags.Disposed, true);
 					}
 				}
 				finally
@@ -2286,7 +2282,7 @@ public class Control : IWin32Window, IDisposable
 					SetControlFlag(ControlFlags.Disposing, false);
 				}
 #if CONFIG_COMPONENT_MODEL
-				base.Dispose(disposing);
+				// not needed in this implementation base.Dispose(disposing);
 #endif
 			}
 
@@ -3467,7 +3463,7 @@ public class Control : IWin32Window, IDisposable
 
 				// Update the bounds and emit the necessary events.
 				UpdateBounds(x, y, width, height);
-				}
+			}
 
 	// Adjust the actual position of the control depending on windows decorations (Draw Origin) or non client areas (client origin) like menus.
 	private void SetBoundsToolkit(int x, int y, int width, int height)
@@ -5478,7 +5474,7 @@ public class Control : IWin32Window, IDisposable
 	// Make sure that the control lays itself out and all its children.
 	private void ForceLayout()
 			{
-				PerformLayout();
+				PerformLayout(this,null);
 				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
 					children[posn].ForceLayout();

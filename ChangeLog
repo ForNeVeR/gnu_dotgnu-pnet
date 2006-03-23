@@ -1,5 +1,9 @@
 2006-03-21  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
+	* System.Windows.Forms/Control.cs: optimized dispose, changed ForceLayout
+
+2006-03-21  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
 	* System.Windows.Forms/Form.cs: CloseRequest, do nothing if Form was desposed
 	* System.Windows.Forms/Control.cs: changed handling of setting Parent to null, or reparent the control.
 	* System.Drawing.Xsharp/DrawingWindow.cs: fixed Dispose.

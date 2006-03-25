@@ -183,7 +183,13 @@ static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 	jit_label_t label = jit_label_undefined;
 	ILJitValue args[3];
 	ILJitValue returnValue;
+	ILJitValue result = jit_value_create(jitCoder->jitFunction,
+										 _IL_JIT_TYPE_VPTR);
 
+	if(!throwException)
+	{
+		jit_insn_store(jitCoder->jitFunction, result, object);
+	}
 	jit_insn_branch_if_not(jitCoder->jitFunction, object, &label);
 	if(ILClass_IsInterface(classInfo))
 	{
@@ -215,19 +221,14 @@ static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 	}
 	else
 	{
-		jit_label_t label1 = jit_label_undefined;
-		ILJitValue temp = jit_value_create(jitCoder->jitFunction, _IL_JIT_TYPE_VPTR);
 		ILJitValue nullPointer = 
 				jit_value_create_nint_constant(jitCoder->jitFunction,
 											   _IL_JIT_TYPE_VPTR,
 											   (jit_nint)0);
 	
-		jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label1);
-		jit_insn_store(jitCoder->jitFunction, temp, nullPointer);
-		jit_insn_branch(jitCoder->jitFunction, &label);
-		jit_insn_label(jitCoder->jitFunction, &label1);
-		jit_insn_store(jitCoder->jitFunction, temp, jitCoder->jitStack[jitCoder->stackTop - 1]);
-		jitCoder->jitStack[jitCoder->stackTop - 1] = temp;
+		jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label);
+		jit_insn_store(jitCoder->jitFunction, result, nullPointer);
+		jitCoder->jitStack[jitCoder->stackTop - 1] = result;
 	}
 	jit_insn_label(jitCoder->jitFunction, &label);
 }

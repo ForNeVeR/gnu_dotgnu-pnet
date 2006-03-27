@@ -943,7 +943,127 @@ namespace System.Xml.XPath.Private
 				return pos;
 			}
 		}
-	}					
+	}
+
+	internal class XPathUnionIterator : XPathSimpleIterator
+	{
+		XPathBaseIterator left;
+		XPathBaseIterator right;
+		bool moveLeft = true;
+		bool moveRight = true;
+
+		public XPathUnionIterator(XPathBaseIterator iterator, 
+									XPathBaseIterator left,
+									XPathBaseIterator right)
+			: base(iterator)
+		{
+			this.left = left;
+			this.right = right;
+			this.current = null;
+		}
+
+		/* caveat: the base ctor gets the useless parent arg */
+		public XPathUnionIterator(XPathUnionIterator copy) : base(copy.parent)
+		{
+			this.left = (XPathBaseIterator)copy.left.Clone();
+			this.right = (XPathBaseIterator)copy.right.Clone();
+			this.moveRight = copy.moveRight;
+			this.moveLeft = copy.moveLeft;
+		}
+
+		public override bool MoveNext()
+		{
+			// TODO: investigate removing these variables
+			bool movedRight = false;
+			bool movedLeft = false;
+
+			if(!moveLeft && !moveRight)
+			{
+				return false;
+			}
+
+			if(moveLeft)
+			{
+				movedLeft = left.MoveNext();
+			}
+			if(moveRight)
+			{
+				movedRight = right.MoveNext();
+			}
+
+			if(moveLeft && !movedLeft && moveRight && !movedRight)
+			{
+				return false;
+			}
+
+			if(moveLeft && !movedLeft)
+			{
+				moveLeft = false;
+				current = right.Current.Clone();
+				pos++;
+				return true;
+			}
+
+			if(moveRight && !movedRight)
+			{
+				/* from next time, don't move right */
+				moveRight = false;
+				current = left.Current.Clone();
+				pos++;
+				return true;
+			}
+
+			// both moves were successful or we had leftover nodes from 
+			// one side now we need to chose which side to output first
+			
+			XmlNodeOrder order = left.Current.ComparePosition(right.Current);
+
+			switch(order)
+			{
+				case XmlNodeOrder.Same:
+				{
+					moveRight = moveLeft = true;
+					current = left.Current.Clone();
+					pos++;
+					return true;
+				}
+				break;
+
+				case XmlNodeOrder.Before:
+				case XmlNodeOrder.Unknown:
+				{
+					moveLeft = true;
+					moveRight = false;
+					current = left.Current.Clone();
+					pos++;
+					return true;
+				}
+				break;
+
+				case XmlNodeOrder.After:
+				{
+					moveLeft = false;
+					moveRight = true;
+					current = right.Current.Clone();
+					pos++;
+					return true;
+				}
+				break;
+				default:
+				{
+					throw new XPathException("Could understand node relationship : "+order.ToString(), null);
+				}
+				break;
+			}
+
+			return false;
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathUnionIterator(this);
+		}
+	}
 
 }
 

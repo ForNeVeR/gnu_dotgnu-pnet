@@ -27,6 +27,7 @@ namespace System.Xml.Private
 using System;
 using System.Xml;
 using System.Xml.XPath;
+using System.Collections;
 
 
 internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
@@ -38,6 +39,8 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	/* xml:xmlns="http://www.w3.org/XML/1998/namespace" */
 	private XmlAttribute xmlAttr = null;
 
+	private ArrayList nsNames = null;
+
 	public XmlDocumentNavigator(XmlNode node) : base()
 	{
 		this.node = node;
@@ -46,6 +49,8 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 		this.xmlAttr = document.CreateAttribute("xmlns", "xml", 
 												XmlDocument.xmlns);
 		this.xmlAttr.Value = XmlDocument.xmlnsXml;
+
+		this.nsNames = null;
 	}
 
 	public XmlDocumentNavigator(XmlDocumentNavigator copy)
@@ -74,7 +79,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	{
 		return node.GetNamespaceOfPrefix(name);
 	}
-	
+
 	public override bool IsSamePosition(XPathNavigator other)
 	{
 		XmlDocumentNavigator nav = (other as XmlDocumentNavigator);
@@ -90,6 +95,14 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 			nsAttr = nav.nsAttr;
 			document = nav.document;
 			xmlAttr = nav.xmlAttr;
+			if(nav.nsNames == null || nav.nsNames.IsReadOnly)
+			{
+				nsNames = nav.nsNames;
+			}
+			else
+			{
+				nsNames = ArrayList.ReadOnly(nav.nsNames);
+			}
 			return true;
 		}
 		return false;
@@ -182,9 +195,8 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 			{
 				foreach(XmlAttribute attr in element.Attributes)
 				{
-					/* TODO: checks for duplicates, not cheat */
 					if(attr.NamespaceURI == XmlDocument.xmlns 
-						&& (attr.Name != "xmlns"))
+						&& !CheckForDuplicateNS(attr.Name, attr.Value))
 					{
 						NamespaceAttribute = attr;
 						return true;
@@ -201,8 +213,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 
 		if(namespaceScope == XPathNamespaceScope.All)
 		{
-			/* TODO: implement better duplicate checking */
-			if(((Object)nsAttr) != ((Object)this.xmlAttr)) 
+			if(!CheckForDuplicateNS(xmlAttr.Name, xmlAttr.Value))
 			{
 				NamespaceAttribute = xmlAttr;
 				return true;
@@ -238,9 +249,8 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 			{
 				foreach(XmlAttribute attr in element.Attributes)
 				{
-					/* TODO: checks for duplicates, not cheat */
 					if(attr.NamespaceURI == XmlDocument.xmlns
-						&& (attr.Name != "xmlns"))
+						&& !CheckForDuplicateNS(attr.Name,attr.Value))
 					{
 						NamespaceAttribute = attr;
 						return true;
@@ -329,9 +339,8 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 				for(int j = i+1; j < owner.Attributes.Count; j++)
 				{
 					attr = owner.Attributes[j];
-					/* TODO: checks for duplicates, not cheat */
 					if(attr.NamespaceURI == XmlDocument.xmlns 
-						&& (attr.Name != "xmlns"))
+						&& !CheckForDuplicateNS(attr.Name, attr.Value))
 					{
 						return attr;	
 					}
@@ -390,8 +399,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 		
 		if(namespaceScope == XPathNamespaceScope.All)
 		{
-			/* TODO: implement better duplicate checking */
-			if(((Object)nsAttr) != ((Object)this.xmlAttr)) 
+			if(!CheckForDuplicateNS(xmlAttr.Name, xmlAttr.Value))
 			{
 				NamespaceAttribute = xmlAttr;
 				return true;
@@ -695,9 +703,58 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 		}
 		set
 		{
-			/* TODO: keep track of all available ns values */
 			this.nsAttr = value;
+
+			if(value != null)
+			{
+				if(this.nsNames == null)
+				{
+					this.nsNames = new ArrayList();
+				}
+				else if(this.nsNames.IsReadOnly)
+				{
+					this.nsNames = new ArrayList(this.nsNames);
+				}
+
+				this.nsNames.Add(value.Value);
+			}
+			else
+			{
+				this.nsNames = null;
+			}
 		}
+	}
+
+	// return true if the namespace has been seen before 
+	private bool CheckForDuplicateNS(String name, String ns)
+	{
+		// XmlNameTable to the rescue, we can compare names as objects
+		if(this.nsNames != null && this.nsNames.Contains((Object)name))
+		{
+			// duplicate 
+			return true;
+		}
+
+		/* tricky part: setting xmlns='' in your XML causes 
+		   the default namespace to be *seen* but forgotten.
+		*/
+		
+		if(ns == String.Empty)
+		{
+			if(this.nsNames == null)
+			{
+				this.nsNames = new ArrayList();
+			}
+			else if(this.nsNames.IsReadOnly)
+			{
+				this.nsNames = new ArrayList(this.nsNames);
+			}
+			this.nsNames.Add(NameTable.Get("xmlns"));
+
+			return true;
+		}
+
+		return false;
 	}
 
 	XmlNode IHasXmlNode.GetNode()

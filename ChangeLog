@@ -1,45 +1,85 @@
+
+2006-03-27  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/Private/XmlDocumentNavigator.cs,
+	System.Xml/XPath/XPathNavigator.cs: Implement node order
+	comparisons and add duplicate checks for namespaces.
+
+	* System.Xml/XPath/Private/XPathEvaluate.tc,
+	System.Xml/XPath/Private/XPathIterators.cs: Union operator.
+
 2006-03-27  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/ControlToolkitMgr.cs: New file, new class for handling create windows thread safe.
-	* System.Windows.Forms/Control.cs: using ControlToolkitManager to create toolkitWindow thread safe. Now we can Destroy windows, if parent is set to null. Fixed DockStyle problem.
-	* System.Windows.Forms/Form.cs: using ControlToolkitManager to create toolkitWindow thread safe. Fixed Mdi forms not working.
-	* System.Windows.Forms/MdiClient.cs: using ControlToolkitManager to create toolkitWindow thread safe.
-	* System.Windows.Forms/PopupControl.cs: using ControlToolkitManager to create toolkitWindow thread safe.
+	* System.Windows.Forms/ControlToolkitMgr.cs: New file, new class 
+	for handling create windows thread safe.
+	
+	* System.Windows.Forms/Control.cs: using ControlToolkitManager to 
+	create toolkitWindow thread safe. Now we can Destroy windows, if 
+	parent is set to null. Fixed DockStyle problem.
+	
+	* System.Windows.Forms/Form.cs: using ControlToolkitManager to 
+	create toolkitWindow thread safe. Fixed Mdi forms not working.
+	
+	* System.Windows.Forms/MdiClient.cs: using ControlToolkitManager 
+	to create toolkitWindow thread safe.
+	
+	* System.Windows.Forms/PopupControl.cs: using ControlToolkitManager
+	to create toolkitWindow thread safe.
+	
 	* System.Windows.Forms/TreeView.cs: fixed drawing plus and minus buttons.
 
 
 2006-03-23  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs: removed my last change in Reparent of Controls, because it breaked using invokes.
+	* System.Windows.Forms/Control.cs: removed my last change in Reparent
+	of Controls, because it breaked using invokes.
+	
 	* System.Windows.Forms/Control.cs: optimized dispose, changed ForceLayout
 
 2006-03-21  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Form.cs: CloseRequest, do nothing if Form was desposed
-	* System.Windows.Forms/Control.cs: changed handling of setting Parent to null, or reparent the control.
+	* System.Windows.Forms/Form.cs: CloseRequest, do nothing if Form
+	was desposed
+	
+	* System.Windows.Forms/Control.cs: changed handling of setting 
+	Parent to null, or reparent the control.
+	
 	* System.Drawing.Xsharp/DrawingWindow.cs: fixed Dispose.
 
 
 2006-03-20  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Form/Control.cs : fixed Dispose, Controls.Remove(), DestroyHandle
+	* System.Windows.Form/Control.cs : fixed Dispose, Controls.Remove(),
+	DestroyHandle
+	
 	* System.Windows.Form/ContainerControl.cs : added AfterControlRemoved
 
 2006-03-20  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
-	* System.Windows.Forms/TextBox.cs : always draw disabled textbox with gray, if backcolor not gray
-	* System.Windows.Forms/ControlPaint.cs: fixed bug in calculating color FromHSB
+	* System.Windows.Forms/TextBox.cs : always draw disabled textbox with gray,
+	if backcolor not gray
+	
+	* System.Windows.Forms/ControlPaint.cs: fixed bug in calculating color
+	FromHSB
 
 2006-03-16  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Form/ScrollableControl.cs : replaced setting EventHandler HandleCreated with OnHandleCreated
-	* System.Windows.Form/Control.cs : call base.Dispose(...) if CONFIG_COMPONENT_MODEL
+	* System.Windows.Form/ScrollableControl.cs : replaced setting 
+	EventHandler HandleCreated with OnHandleCreated
+	
+	* System.Windows.Form/Control.cs : call base.Dispose(...) if 
+	CONFIG_COMPONENT_MODEL
 
 2006-03-14  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Window.Forms/Form.cs: Fixed closing dialog stopping Application.InnerMessageLoop if Form was shown with ShowDialog
-	* Xsharp/DoubleBuffer.cs: Added query widget.HasWidgetHandle, if widget was detroyed (was Exception before)
-	* Xsharp/Drawable.cs: added Method bool HasWidgetHandle() to get if widget handle is valid
+	* System.Window.Forms/Form.cs: Fixed closing dialog stopping 
+	Application.InnerMessageLoop if Form was shown with ShowDialog
+	
+	* Xsharp/DoubleBuffer.cs: Added query widget.HasWidgetHandle, if 
+	widget was detroyed (was Exception before)
+	
+	* Xsharp/Drawable.cs: added Method bool HasWidgetHandle() to get
+	if widget handle is valid
 
 2006-03-14  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 

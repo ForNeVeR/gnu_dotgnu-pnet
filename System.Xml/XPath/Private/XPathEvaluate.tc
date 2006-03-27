@@ -285,6 +285,13 @@ EvaluateInternal(OrExpression)
 	((bool)node.right.EvaluateAs(iterator, XPathResultType.Boolean) == true));
 }
 
+EvaluateInternal(UnionExpression)
+{
+	XPathBaseIterator left = (XPathBaseIterator)node.left.Evaluate(iterator);
+	XPathBaseIterator right = (XPathBaseIterator)node.right.Evaluate(iterator);
+	return new XPathUnionIterator((XPathBaseIterator)iterator, left, right); 
+}
+
 
 EvaluateInternal(FunctionCallExpression)
 {
@@ -464,3 +471,7 @@ EvaluateInternal(XPathTranslateFunction)
 {
 	return null; /* TODO */
 }
+
+/*
+ * vim: sw=4 ts=4 syntax=cs
+ */

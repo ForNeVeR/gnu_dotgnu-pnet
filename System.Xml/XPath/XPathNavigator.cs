@@ -49,26 +49,114 @@ abstract class XPathNavigator : ICloneable
 				return Clone();
 			}
 
-	[TODO]
 	public virtual XmlNodeOrder ComparePosition(XPathNavigator nav)
 			{
-				 throw new NotImplementedException("ComparePosition");
+				if(IsSamePosition(nav))
+				{
+					return XmlNodeOrder.Same;
+				}
+
+				if(IsDescendant(nav))
+				{
+					return XmlNodeOrder.Before;
+				}
+				else if(nav.IsDescendant(this))
+				{
+					return XmlNodeOrder.After;
+				}
+				
+				XPathNavigator copy = this.Clone();
+				XPathNavigator other = nav.Clone();
+				
+				/* now, it gets expensive - we find the 
+				   closest common ancestor. But these two
+				   might be from totally different places.
+				   
+				   Someone should re-implement this somewhere,
+				   so that it is faster for XmlDocument.
+				 */
+				int common = 0;
+				int otherDepth = 0;
+				int copyDepth = 0;
+				
+				copy.MoveToRoot();
+				other.MoveToRoot();
+
+				if(!copy.IsSamePosition(other))
+				{
+					return XmlNodeOrder.Unknown;
+				}
+
+				/* what do you think ? I'm made of GC space ? */
+				copy.MoveTo(this);
+				other.MoveTo(nav);	
+
+				while(other.MoveToParent())
+				{
+					otherDepth++;
+				}
+
+				while(copy.MoveToParent())
+				{
+					copyDepth++;
+				}
+
+				common = (otherDepth > copyDepth) ? copyDepth : otherDepth;
+
+				other.MoveTo(nav);
+				copy.MoveTo(this);
+
+				// traverse both till you get to depth == common
+				for(;otherDepth > common; otherDepth--)
+				{
+					other.MoveToParent();
+				}
+				for(;copyDepth > common; copyDepth--)
+				{
+					copy.MoveToParent();
+				}
+
+				other.MoveTo(nav);
+				copy.MoveTo(this);
+
+				XPathNavigator copy1 = copy.Clone();
+				XPathNavigator other1 = other.Clone();
+
+				while(copy.IsSamePosition(other))
+				{
+					copy1.MoveTo(copy);
+					other1.MoveTo(other);
+
+					copy.MoveToParent();
+					other.MoveToParent();
+				}
+
+				copy.MoveTo(copy1);
+				other.MoveTo(other1);
+
+				// Now copy & other are siblings and can be compared
+				while(copy.MoveToNext())
+				{
+					if(copy.IsSamePosition(other))
+					{
+						return XmlNodeOrder.Before;
+					}
+				}
+
+				return XmlNodeOrder.After;
 			}
 
-	[TODO]
 	public virtual XPathExpression Compile(String xpath)
 			{
 				XPathParser parser = new XPathParser();
 				return parser.Parse(xpath);
 			}
 
-	[TODO]
 	public virtual Object Evaluate(XPathExpression expr)
 			{
 				return Evaluate(expr, new XPathSelfIterator(this,null));
 			}
 
-	[TODO]
 	public virtual Object Evaluate(XPathExpression expr, 
 									XPathNodeIterator context)
 			{
@@ -79,7 +167,6 @@ abstract class XPathNavigator : ICloneable
 				return null;
 			}
 
-	[TODO]
 	public virtual Object Evaluate(String xpath)
 			{
 				XPathExpression expr = Compile(xpath);
@@ -90,10 +177,20 @@ abstract class XPathNavigator : ICloneable
 
 	public abstract String GetNamespace(String name);
 
-	[TODO]
 	public virtual bool IsDescendant(XPathNavigator nav)
 			{
-				 throw new NotImplementedException("IsDescendant");
+				if(nav != null)
+				{
+					nav = nav.Clone();
+					while(nav.MoveToParent())
+					{
+						if(IsSamePosition(nav))
+						{
+							return true;
+						}
+					}
+				}
+				return false;
 			}
 
 	public abstract bool IsSamePosition(XPathNavigator other);

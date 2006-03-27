@@ -49,14 +49,16 @@ internal class PopupControl : Control
 				}
 			}
 
-	// Create the toolkit window underlying this control.
+
 	internal override IToolkitWindow CreateToolkitWindow(IToolkitWindow parent)
-			{
-				CreateParams cp = CreateParams;
-				return ToolkitManager.Toolkit.CreatePopupWindow
-						(cp.X + ToolkitDrawOrigin.X, cp.Y + ToolkitDrawOrigin.Y,
-						 cp.Width - ToolkitDrawSize.Width, cp.Height - ToolkitDrawSize.Height, this);
-			}
+	{
+		CreateParams cp = CreateParams;
+
+		// use ControlToolkitManager to create the window thread safe
+		return ControlToolkitManager.CreatePopupWindow( this,
+				cp.X + ToolkitDrawOrigin.X, cp.Y + ToolkitDrawOrigin.Y,
+				 cp.Width - ToolkitDrawSize.Width, cp.Height - ToolkitDrawSize.Height);
+	}
 
 	// Trap the "OnMouseDown" event and pop down the window if a
 	// mouse click occurs outside the control's bounds.

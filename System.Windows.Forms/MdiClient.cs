@@ -90,35 +90,38 @@ public sealed class MdiClient : Control
 
 	// Create the toolkit window underlying this control.
 	internal override IToolkitWindow CreateToolkitWindow(IToolkitWindow parent)
+	{
+		CreateParams cp = CreateParams;
+		int x = cp.X + ToolkitDrawOrigin.X;
+		int y = cp.Y + ToolkitDrawOrigin.Y;
+		int width = cp.Width - ToolkitDrawSize.Width;
+		int height = cp.Height - ToolkitDrawSize.Height;
+						
+		if(parent != null)
+		{
+						// Use the parent's toolkit to create.
+			if(Parent is Form)
 			{
-				CreateParams cp = CreateParams;
-				int x = cp.X + ToolkitDrawOrigin.X;
-				int y = cp.Y + ToolkitDrawOrigin.Y;
-				int width = cp.Width - ToolkitDrawSize.Width;
-				int height = cp.Height - ToolkitDrawSize.Height;
-					
-				if(parent != null)
-				{
-					// Use the parent's toolkit to create.
-					if(Parent is Form)
-					{
-						return parent.Toolkit.CreateMdiClient
-							(parent, x, y, width, height, this);
-					}
-					else
-					{
-						return parent.Toolkit.CreateMdiClient
-							(parent, x + Parent.ClientOrigin.X,
-							 y +  Parent.ClientOrigin.Y, width, height, this);
-					}
-				}
-				else
-				{
-					// Use the default toolkit to create.
-					return ToolkitManager.Toolkit.CreateMdiClient
-						(null, x, y, width, height, this);
-				}
+				// use ControlToolkitManager to create the window thread safe
+				return ControlToolkitManager.CreateMdiClient( this, 
+						parent, x, y, width, height);
 			}
+			else
+			{
+				// use ControlToolkitManager to create the window thread safe
+				return ControlToolkitManager.CreateMdiClient( this,
+						parent,
+						x + Parent.ClientOrigin.X,
+						y +  Parent.ClientOrigin.Y, width, height);
+			}
+		}
+		else
+		{
+			// Use the default toolkit to create.
+			// use ControlToolkitManager to create the window thread safe
+			return ControlToolkitManager.CreateMdiClient	(this, null, x, y, width, height);
+		}
+	}
 
 	// Create a new control collection for this instance.
 	protected override Control.ControlCollection CreateControlsInstance()

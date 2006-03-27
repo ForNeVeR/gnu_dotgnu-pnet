@@ -409,8 +409,10 @@ public class Form : ContainerControl
 					{
 						return;
 					}
+					
 					mdiParent = value;
 					value.mdiClient.Controls.Add(this);
+					Parent = value.mdiClient;
 				}
 			}
 	public bool MinimizeBox
@@ -666,86 +668,91 @@ public class Form : ContainerControl
 				}
 			}
 
-	// Create the toolkit window underlying this control.
 	internal override IToolkitWindow CreateToolkitWindow(IToolkitWindow parent)
-			{
-				// When a Form is reparented to a normal container control 
-				// which does work on Win32 unfortunately.
-				if(mdiParent == null && (!TopLevel))
-				{
-					return base.CreateToolkitWindow(parent);
-				}
+	{
+		// When a Form is reparented to a normal container control 
+		// which does work on Win32 unfortunately.
+		if(mdiParent == null && (!TopLevel))
+		{
+			return base.CreateToolkitWindow(parent);
+		}
 
-				CreateParams cp = CreateParams;
+		CreateParams cp = CreateParams;
 
-				// Create the window and set its initial caption.
-				IToolkitTopLevelWindow window;
-				if(mdiParent == null)
-				{
-					window = ToolkitManager.Toolkit.CreateTopLevelWindow
-						(cp.Width - ToolkitDrawSize.Width,
-						 cp.Height - ToolkitDrawSize.Height, this);
-				}
-				else
-				{
-					mdiParent.mdiClient.CreateControl();
-					IToolkitMdiClient mdi =
-						(mdiParent.mdiClient.toolkitWindow as
-							IToolkitMdiClient);
-					window = mdi.CreateChildWindow
-						(cp.X, cp.Y,
-						 cp.Width - ToolkitDrawSize.Width,
-						 cp.Height - ToolkitDrawSize.Height, this);
-				}
-				window.SetTitle(cp.Caption);
-				// Win32 requires this because if the window is maximized, the windows size needs to be set.
-				toolkitWindow = window;
+		// Create the window and set its initial caption.
+		IToolkitTopLevelWindow window;
+		if(mdiParent == null)
+		{
+			// use ControlToolkitManager to create the window thread safe
+			window = ControlToolkitManager.CreateTopLevelWindow( this,
+					cp.Width - ToolkitDrawSize.Width,
+					cp.Height - ToolkitDrawSize.Height);
+		}
+		else
+		{
+			mdiParent.mdiClient.CreateControl();
+			IToolkitMdiClient mdi =
+					(mdiParent.mdiClient.toolkitWindow as
+					IToolkitMdiClient);
+			
+			// use ControlToolkitManager to create the window thread safe
+			window = ControlToolkitManager.CreateMdiChildWindow( this, mdi, 
+					cp.X, cp.Y,
+					cp.Width - ToolkitDrawSize.Width,
+					cp.Height - ToolkitDrawSize.Height);
+		}
+		
+		window.SetTitle(cp.Caption);
+		// Win32 requires this because if the window is maximized, the windows size needs to be set.
+		toolkitWindow = window;
 
-				// Adjust the window hints to match our requirements.
-				SetWindowFlags(window);
-				if(icon != null)
-				{
-					window.SetIcon(icon);
-				}
-				window.SetMaximumSize(maximumSize);
-				window.SetMinimumSize(minimumSize);
-			#if !CONFIG_COMPACT_FORMS
-				if(windowState == FormWindowState.Minimized)
-				{
-					window.Iconify();
-				}
-				else
-			#endif
-				if(windowState == FormWindowState.Maximized)
-				{
-					window.Maximize();
-				}
+		// Adjust the window hints to match our requirements.
+		SetWindowFlags(window);
+		if(icon != null)
+		{
+			window.SetIcon(icon);
+		}
+		window.SetMaximumSize(maximumSize);
+		window.SetMinimumSize(minimumSize);
 
-				// Center the window on-screen if necessary.
-				if(formStartPosition == FormStartPosition.CenterScreen)
-				{
-					Size screenSize = ToolkitManager.Toolkit.GetScreenSize();
-					window.MoveResize
-							((screenSize.Width - cp.Width) / 2,
-							 (screenSize.Height - cp.Height) / 2,
-							 window.Dimensions.Width, window.Dimensions.Height);
-				}
-				else if(formStartPosition == FormStartPosition.Manual)
-				{
-					window.MoveResize
-						(
-							cp.X,
-							cp.Y,
-							window.Dimensions.Width,
-							window.Dimensions.Height
-						);
-				}
-				if(opacity != 1.0)
-				{
-					window.SetOpacity(opacity);
-				}
-				return window;
-			}
+#if !CONFIG_COMPACT_FORMS
+		if(windowState == FormWindowState.Minimized)
+		{
+			window.Iconify();
+		}
+		else
+#endif
+		if(windowState == FormWindowState.Maximized)
+		{
+			window.Maximize();
+		}
+
+		// Center the window on-screen if necessary.
+		if(formStartPosition == FormStartPosition.CenterScreen)
+		{
+			Size screenSize = ToolkitManager.Toolkit.GetScreenSize();
+			window.MoveResize
+					((screenSize.Width - cp.Width) / 2,
+					(screenSize.Height - cp.Height) / 2,
+					window.Dimensions.Width, window.Dimensions.Height);
+		}
+		else if(formStartPosition == FormStartPosition.Manual)
+		{
+			window.MoveResize
+					(
+					cp.X,
+			cp.Y,
+			window.Dimensions.Width,
+			window.Dimensions.Height
+					);
+		}
+		if(opacity != 1.0)
+		{
+			window.SetOpacity(opacity);
+		}
+		return window;
+}
+
 
 	// Determine if this is a top-level control which cannot have parents.
 	internal override bool IsTopLevel

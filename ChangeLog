@@ -1,3 +1,13 @@
+2006-03-27  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/ControlToolkitMgr.cs: New file, new class for handling create windows thread safe.
+	* System.Windows.Forms/Control.cs: using ControlToolkitManager to create toolkitWindow thread safe. Now we can Destroy windows, if parent is set to null. Fixed DockStyle problem.
+	* System.Windows.Forms/Form.cs: using ControlToolkitManager to create toolkitWindow thread safe. Fixed Mdi forms not working.
+	* System.Windows.Forms/MdiClient.cs: using ControlToolkitManager to create toolkitWindow thread safe.
+	* System.Windows.Forms/PopupControl.cs: using ControlToolkitManager to create toolkitWindow thread safe.
+	* System.Windows.Forms/TreeView.cs: fixed drawing plus and minus buttons.
+
+
 2006-03-23  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: removed my last change in Reparent of Controls, because it breaked using invokes.

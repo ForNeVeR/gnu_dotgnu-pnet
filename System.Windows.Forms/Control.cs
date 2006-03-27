@@ -94,7 +94,7 @@ public class Control : IWin32Window, IDisposable
 	private static MouseButtons mouseButtons;
 	private int controlStyle;
 	// The thread that was used to create the control.
-	private Thread createThread;
+	// private Thread createThread; not needed anymore
 	private Cursor cursor;
 	private IToolkitWindowBuffer buffer;
 	private ControlBindingsCollection controlBindingsCollection;
@@ -307,16 +307,11 @@ public class Control : IWin32Window, IDisposable
 					// the toolkit co-ordinates must be relative to the draw origin.
 					x += Parent.ClientOrigin.X - Parent.ToolkitDrawOrigin.X;
 					y += Parent.ClientOrigin.Y - Parent.ToolkitDrawOrigin.Y; 
-					return parent.Toolkit.CreateChildWindow
-							(parent, x, y, width, height, this);
 				}
-				else
-				{
-					// Use the default toolkit to create.
-					return ToolkitManager.Toolkit.CreateChildWindow
-						(null, x, y, width, height, this);
-				}
+				// use ControlToolkitManager to create the window thread safe
+				return ControlToolkitManager.CreateChildWindow( this, parent, x, y, width, height );
 			}
+
 
 	// Process a hoverTimer event
 	private void ProcessHoverTimerEvent(object sender, EventArgs e)
@@ -404,8 +399,8 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					return (createThread != null &&
-							createThread != Thread.CurrentThread);
+					// return (createThread != null && createThread != Thread.CurrentThread); not needed any more
+					return ControlToolkitManager.IsInvokeRequired;
 				}
 			}
 
@@ -2083,18 +2078,6 @@ public class Control : IWin32Window, IDisposable
 						("control", S._("SWF_ControlDisposed"));
 				}
 
-				// Reparent underneath the new parent if the handle
-				// already exists from some previous incarnation.
-				if(toolkitWindow != null)
-				{
-					if(parent != null &&
-					   toolkitWindow.Parent != parent.toolkitWindow)
-					{
-						Reparent(parent);
-					}
-					return;
-				}
-
 				// Create the handle using the toolkit.
 				if(parent != null)
 				{
@@ -2125,7 +2108,7 @@ public class Control : IWin32Window, IDisposable
 					cursor.SetCursorOnWindow(toolkitWindow);
 				}
 
-				createThread = Thread.CurrentThread;
+				// createThread = Thread.CurrentThread; not needed anymore
 
 				// Reparent the children which require it.
 				for(int i = 0; i < numChildren; ++i)
@@ -3549,8 +3532,10 @@ public class Control : IWin32Window, IDisposable
 					OnVisibleChanged(EventArgs.Empty);
 
 					// Perform layout on the parent or self.
-					if(parent != null)
+					if(parent != null) {
 						parent.PerformLayout(this, "Visible");
+						if( this.Dock != DockStyle.None ) parent.PerformActualLayout();
+					}
 					else
 						PerformLayout(this, "Visible");
 				}
@@ -5517,14 +5502,10 @@ public class Control : IWin32Window, IDisposable
 					 * Then a reference would be still kept, and the control never gets disposed.
 					 * So Destroy the handle. If the control is reused, the handle gets 
 					 * created again.
+					 *
+					 * we can do this again, since we can create handles thread  safe with ControlToolkitManager.
 					 */
-					/*
-					fu..., if we do this, we get a deadlock on Invokes!
-					because the handle might be created the by nother thread.
 					DestroyHandle();
-					*/
-					toolkitWindow.Reparent(null, left + ToolkitDrawOrigin.X,
-												  top + ToolkitDrawOrigin.Y);
 				}
 				else if(newParent.toolkitWindow != null)
 				{

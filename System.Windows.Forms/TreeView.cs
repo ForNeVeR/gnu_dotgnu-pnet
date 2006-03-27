@@ -577,12 +577,10 @@ namespace System.Windows.Forms
 			int lineTopEnd = midY;
 			if (node.Nodes.Count > 0 && showPlusMinus)
 			{
-				GraphicsPath path = new GraphicsPath();
-				path.AddRectangle(new Rectangle(midX - 4, midY - 4, 8, 8));
-				path.AddLine(midX - 2, midY, midX + 2, midY);
+				g.DrawRectangle(SystemPens.ControlText, midX - 4, midY - 4, 8, 8 );
+				g.DrawLine(SystemPens.ControlText, midX - 2, midY, midX + 2, midY);
 				if (!node.IsExpanded)
-					path.AddLine(midX, midY - 2, midX, midY + 2);
-				g.DrawPath(SystemPens.ControlText, path);
+					g.DrawLine(SystemPens.ControlText, midX, midY - 2, midX, midY + 2);
 				lineRightStart += 6;
 				lineTopEnd -= 6;
 			}

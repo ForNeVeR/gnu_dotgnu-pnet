@@ -974,8 +974,8 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 		}
 		else
 		{
-			ILType *type = ILType_FromClass(info);
-			ILType *synType = type = ILClassGetSynType(info);
+			ILType *type = ILClassToType(info);
+			ILType *synType = ILClassGetSynType(info);
 
 			if(!(synType && ILType_IsArray(synType)) && !ILTypeIsStringClass(type))
 			{

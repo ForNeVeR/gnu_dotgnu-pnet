@@ -375,7 +375,11 @@ ILString *_IL_StackFrame_InternalGetDebugInfo
 	*col = 0;
 
 	/* Validate the method handle */
+#ifdef IL_USE_JIT
+	method = (ILMethod *)_method;
+#else
 	method = *((ILMethod **)_method);
+#endif
 	if(!method)
 	{
 		return 0;

@@ -619,6 +619,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJitValue jitParams[argCount + 1];
 	ILJitValue returnValue;
 	char *methodName = 0;
+	ILInternalInfo fnInfo;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -659,15 +660,39 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 0);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	methodName = _ILJitFunctionGetMethodName(jitFunction);
+#endif
+
+	/* Check if the function is implemented in the engine. */
+	if(_ILJitFunctionIsInternal(jitCoder, methodInfo, &fnInfo, 0))
+	{
+		/* Call the engine function directly with the supplied args. */
+		if(info->hasParamArray)
+		{
+			++argCount;
+		}
+		JITC_ADJUST(jitCoder, -argCount);
+		returnValue = _ILJitCallInternal(jitCoder->jitFunction, methodInfo,
+										 fnInfo.func, methodName,
+										 &(jitCoder->jitStack[jitCoder->stackTop]),
+										 argCount);
+		if(returnItem && returnItem->engineType != ILEngineType_Invalid)
+		{
+			jitCoder->jitStack[jitCoder->stackTop] =
+					_ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  returnValue);
+			JITC_ADJUST(jitCoder, 1);
+		}
+		return;
+	}
+
 	/* Set the ILExecThread argument. */
 	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0);
 
 	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
 	/* TODO: create call signature for vararg calls. */	
 		
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-	methodName = _ILJitFunctionGetMethodName(jitFunction);
-#endif
 	if(info->tailCall == 1)
 	{
 		returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
@@ -716,6 +741,8 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	int argCount = info->numBaseArgs + info->numVarArgs;
 	ILJitValue jitParams[argCount + 2];
 	ILJitValue returnValue;
+	ILInternalInfo fnInfo;
+	int internalType = 0;
 	char *methodName = 0;
 	
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
@@ -764,6 +791,43 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 1);
 
+	/* Check if the function is implemented in the engine. */
+	if((internalType = _ILJitFunctionIsInternal(jitCoder, methodInfo, &fnInfo, 1)))
+	{
+		/* Call the engine function directly with the supplied args. */
+		if(internalType == 2)
+		{
+			/* This is an allocating constructor. */
+			if(info->hasParamArray)
+			{
+				++argCount;
+			}
+			JITC_ADJUST(jitCoder, -argCount);
+			returnValue = _ILJitCallInternal(jitCoder->jitFunction, methodInfo,
+											 fnInfo.func, methodName,
+											 &(jitCoder->jitStack[jitCoder->stackTop]),
+											 argCount);
+			jitCoder->jitStack[jitCoder->stackTop] =
+						_ILJitValueConvertToStackType(jitCoder->jitFunction,
+													  returnValue);
+		}
+		else
+		{
+			/* create a newobj and add it to the jitParams[0]. */
+			_ILJitNewObj(jitCoder, ILMethod_Owner(methodInfo), &jitParams[0]); 
+			_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
+
+			returnValue = _ILJitCallInternal(jitCoder->jitFunction, methodInfo,
+											 fnInfo.func, methodName,
+											 jitParams, argCount + 1);
+			jitCoder->jitStack[jitCoder->stackTop] =
+						_ILJitValueConvertToStackType(jitCoder->jitFunction,
+													  jitParams[0]);
+		}
+		JITC_ADJUST(jitCoder, 1);
+		return;
+	}
+
 	/* Output a call to the constructor */
 	jitParams[0] = jit_value_get_param(jitCoder->jitFunction, 0); // we add the current function thread as the first param
 		
@@ -777,7 +841,8 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	}
 	else
 	{
-		_ILJitNewObj(jitCoder, ILMethod_Owner(methodInfo), &jitParams[1]); // create a newobj and add it to the jitParams[1]
+		/* create a newobj and add it to the jitParams[1]. */
+		_ILJitNewObj(jitCoder, ILMethod_Owner(methodInfo), &jitParams[1]);
 		_ILJitFillArguments(jitCoder, &(jitParams[2]), info);
 
 		// call the constructor with jitParams as input

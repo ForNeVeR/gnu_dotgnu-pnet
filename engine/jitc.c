@@ -45,13 +45,13 @@ extern	"C" {
  * For dumping the jitted function before it is compiled uncomment the
  * following define.
  */
-/* #define _IL_JIT_DUMP_FUNCTION 1 */
+#define _IL_JIT_DUMP_FUNCTION 1
 
 /*
  * For dumping the disassembled jitted function before after  it is compiled
  *  uncomment the following define.
  */
-/* #define _IL_JIT_DISASSEMBLE_FUNCTION 1 */
+#define _IL_JIT_DISASSEMBLE_FUNCTION 1
 
 /*
  * To enable parameter / locals optimizations uncomment the following define.
@@ -1528,26 +1528,208 @@ static ILJitValue _ILJitValueConvertToStackType(ILJitFunction func,
 }
 
 /*
+ * Check if a function is implemented by an internalcall.
+ * Returns 0 if the function is not implemented by an internal call,
+ * 1 if the function is implemented by an internal call and the function
+ * is not an allocating constructor (it doesn't allocate the new object)
+ * and 2 if the function is an allocating constructor.
+ */
+static int _ILJitFunctionIsInternal(ILJITCoder *coder, ILMethod *method,
+									ILInternalInfo *fnInfo, int isConstructor)
+{
+	ILMethodCode code;
+
+	/* Get the method code */
+	if(!ILMethodGetCode(method, &code))
+	{
+		code.code = 0;
+	}
+	if(!(code.code))
+	{
+		switch(method->implementAttrs &
+					(IL_META_METHODIMPL_CODE_TYPE_MASK |
+					 IL_META_METHODIMPL_INTERNAL_CALL |
+					 IL_META_METHODIMPL_JAVA))
+		{
+			case IL_META_METHODIMPL_RUNTIME:
+			case IL_META_METHODIMPL_IL | IL_META_METHODIMPL_INTERNAL_CALL:
+			{
+				/* Look up the internalcall function details */
+				if(isConstructor)
+				{
+					if(!_ILFindInternalCall(coder->process,
+										method, 0, fnInfo))
+					{
+						if(!_ILFindInternalCall(coder->process,
+												method, 1, fnInfo))
+						{
+							return 0;
+						}
+						if(fnInfo->func)
+						{
+							return 2;
+						}
+					}
+				}
+				else
+				{
+					if(!_ILFindInternalCall(coder->process,
+										method, 0, fnInfo))
+					{
+						return 0;
+					}
+				}
+				if(fnInfo->func)
+				{
+					return 1;
+				}
+			}
+			break;
+		}
+	}
+	return 0;
+}
+
+/*
+ * Generate the code to call an internal function.
+ */
+static ILJitValue _ILJitCallInternal(ILJitFunction func, ILMethod *method,
+							  void *nativeFunction, const char *methodName,
+							   ILJitValue *args, ILUInt32 numArgs)
+{
+	ILType *ilSignature = ILMethod_Signature(method);
+	ILType *type = ILTypeGetEnumType(ILTypeGetParam(ilSignature, 0));
+	/* Get the function to call. */
+	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
+	ILJitValue thread = jit_value_get_param(func, 0);
+	jit_label_t label = jit_label_undefined;
+	ILJitType signature = 0;
+	ILJitType callSignature = 0;
+	ILJitType returnType = 0;
+	ILJitValue returnValue = 0;
+	unsigned int numParams = 0;
+	unsigned int totalParams = 0;
+	int hasStructReturn = 0;
+	ILJitValue thrownException = 0;
+	ILUInt32 current = 0;
+
+	if(!jitFunction)
+	{
+		/* We need to layout the class first. */
+		if(!_LayoutClass(ILExecThreadCurrent(), ILMethod_Owner(method)))
+		{
+			return 0;
+		}
+		if(!(jitFunction = ILJitFunctionFromILMethod(method)))
+		{
+			return 0;
+		}
+	}
+
+	if(!(signature = jit_function_get_signature(jitFunction)))
+	{
+		return 0;
+	}
+	numParams = jit_type_num_params(signature);
+	totalParams = numParams;
+	returnType = jit_type_get_return(signature);;
+
+	if(numParams != (numArgs + 1))
+	{
+		printf("Number of args doesn't match: signature: %i - numArgs: %i\n", numParams, numArgs);
+	}
+
+	/* We need to set the method member in the ILExecThread == arg[0]. */
+	if(numParams > 0)
+	{
+		ILJitType paramType;
+		ILJitType jitParamTypes[totalParams + 1];
+		ILJitValue jitParams[totalParams + 1];
+		ILUInt32 param = 1;
+
+		/* We need to create a new Signature for the native Call with */
+		/* an additional argument when the return value is a value type */
+		/* and pointers for structs. */
+		jitParamTypes[0] = jit_type_get_param(signature, 0); 
+		jitParams[0] = jit_value_get_param(func, 0);
+		if(ILType_IsValueType(type))
+		{
+			++totalParams;
+			jitParamTypes[1] = _IL_JIT_TYPE_VPTR;
+			returnValue = jit_value_create(func, returnType);
+			jitParams[1] = jit_insn_address_of(func, returnValue);
+			returnType = _IL_JIT_TYPE_VOID;
+			hasStructReturn = 1;
+			++param;
+		}
+		for(current = 1; current < numParams; ++current)
+		{
+			paramType = jit_type_get_param(signature, current);
+	
+			if(jit_type_is_struct(paramType))
+			{
+				jitParamTypes[param] = _IL_JIT_TYPE_VPTR;
+				jitParams[param] = jit_insn_address_of(func, args[current - 1]);
+			}
+			else
+			{
+				jitParamTypes[param] = paramType;
+				jitParams[param] = args[current - 1];
+			}
+			++param;
+		}
+		callSignature = jit_type_create_signature(IL_JIT_CALLCONV_CDECL,
+												  returnType,
+												  jitParamTypes,
+												  totalParams, 1);
+
+		_ILJitSetMethodInThread(func, jitParams[0], method);
+		if(!hasStructReturn)
+		{
+			returnValue = jit_insn_call_native(func, methodName, nativeFunction,
+											   callSignature,
+											   jitParams, numParams, 0);
+		}
+		else
+		{
+			jit_insn_call_native(func, methodName, nativeFunction,
+								 callSignature,
+								 jitParams, totalParams, 0);
+		}
+		jit_type_free(callSignature);
+	}
+	else
+	{
+		returnValue = jit_insn_call_native(func, methodName, nativeFunction,
+										   signature, 0, 0, 0);
+	}
+	thrownException = jit_insn_load_relative(func, thread,
+									offsetof(ILExecThread, thrownException),
+									_IL_JIT_TYPE_VPTR);
+	jit_insn_branch_if_not(func, thrownException, &label);
+	jit_insn_call_native(func, "jit_exception_clear_last",
+								jit_exception_clear_last,
+								_ILJitSignature_JitExceptionClearLast,
+								0, 0, JIT_CALL_NOTHROW);
+	jit_insn_throw(func, thrownException);
+	jit_insn_label(func, &label);
+
+	return returnValue;
+}
+
+/*
  * Generate the stub for calling an internal function.
  */
-static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *nativeFunction)
+static int _ILJitCompileInternal(ILJitFunction func, ILMethod *method, void *nativeFunction)
 {
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	ILExecThread *_thread = ILExecThreadCurrent();
 	ILJITCoder *jitCoder = (ILJITCoder *)(_ILExecThreadProcess(_thread)->coder);
 #endif
-	ILType *ilSignature = ILMethod_Signature(method);
-	ILType *type = ILTypeGetEnumType(ILTypeGetParam(ilSignature, 0));
 	ILJitType signature = jit_function_get_signature(func);
 	unsigned int numParams = jit_type_num_params(signature);
-	unsigned int totalParams = numParams;
-	ILJitValue thread = jit_value_get_param(func, 0);
-	ILJitType returnType = jit_type_get_return(signature);;
 	ILJitValue returnValue = 0;
-	int hasStructReturn = 0;
 	char *methodName = 0;
-	jit_label_t label = jit_label_undefined;
-	ILJitValue thrownException = 0;
 	ILUInt32 current;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
@@ -1560,104 +1742,31 @@ static int _ILJitCompileInternal(jit_function_t func, ILMethod *method, void *na
 	}
 #endif
 
-	/* We need to set the method member in the ILExecThread == arg[0]. */
 	if(numParams > 0)
 	{
 		ILJitValue paramValue;
-		ILJitType paramType;
-		ILJitType jitParamTypes[totalParams + 1];
-		ILJitValue jitParams[totalParams + 1];
-		ILUInt32 param = 1;
+		ILJitValue jitParams[numParams - 1];
 
-		/* We need to create a new Signature for the native Call with */
-		/* an additional argument when the return value is a value type */
-		/* and pointers for structs. */
-		jitParamTypes[0] = jit_type_get_param(signature, 0); 
-		if(ILType_IsValueType(type))
-		{
-			++totalParams;
-			jitParamTypes[1] = _IL_JIT_TYPE_VPTR;
-			returnValue = jit_value_create(func, returnType);
-			returnType = _IL_JIT_TYPE_VOID;
-			hasStructReturn = 1;
-			++param;
-		}
-		for(current = 1; current < numParams; ++current)
-		{
-			paramType = jit_type_get_param(signature, current);
-	
-			if(jit_type_is_struct(paramType))
-			{
-				jitParamTypes[param] = _IL_JIT_TYPE_VPTR;
-			}
-			else
-			{
-				jitParamTypes[param] = paramType;
-			}
-			++param;
-		}
-		signature = jit_type_create_signature(IL_JIT_CALLCONV_CDECL,
-											  returnType,
-											  jitParamTypes,
-											  totalParams, 1);
-
-		param = 1;
-		jitParams[0] = jit_value_get_param(func, 0);
-		if(hasStructReturn)
-		{
-			jitParams[1] = jit_insn_address_of(func, returnValue);
-			++param;
-
-		}
 		for(current = 1; current < numParams; ++current)
 		{
 			if(!(paramValue = jit_value_get_param(func, current)))
 			{
 				return JIT_RESULT_OUT_OF_MEMORY;
 			}
-			paramType = jit_value_get_type(paramValue);
-			if(jit_type_is_struct(paramType))
-			{
-				jit_value_set_addressable(paramValue);
-				jitParams[param] = jit_insn_address_of(func, paramValue);
-			}
-			else
-			{
-				jitParams[param] = paramValue;
-			}	
-			++param;
+			jitParams[current - 1] = paramValue;
 		}
-		_ILJitSetMethodInThread(func, jitParams[0], method);
-		if(!hasStructReturn)
-		{
-			returnValue = jit_insn_call_native(func, methodName, nativeFunction,
-											   signature,
-											   jitParams, numParams, 0);
-		}
-		else
-		{
-			jit_insn_call_native(func, methodName, nativeFunction,
-								 signature,
-								 jitParams, totalParams, 0);
-		}
-		jit_type_free(signature);
+
+		returnValue = _ILJitCallInternal(func, method,
+										 nativeFunction, methodName,
+										 jitParams, numParams - 1);
 	}
 	else
 	{
 		returnValue = jit_insn_call_native(func, methodName, nativeFunction,
 										   signature, 0, 0, 0);
 	}
-	thrownException = jit_insn_load_relative(func, thread,
-									offsetof(ILExecThread, thrownException),
-									_IL_JIT_TYPE_VPTR);
-	jit_insn_branch_if(func, thrownException, &label);
 	jit_insn_return(func, returnValue);	
-	jit_insn_label(func, &label);
-	jit_insn_call_native(func, "jit_exception_clear_last",
-								jit_exception_clear_last,
-								_ILJitSignature_JitExceptionClearLast,
-								0, 0, JIT_CALL_NOTHROW);
-	jit_insn_throw(func, thrownException);
+
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 #ifdef _IL_JIT_DUMP_FUNCTION
 	if(jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -1880,8 +1989,12 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder, ILMethod *method
 		{
 			ILType *ownerType = ILType_FromClass(info);
 			ILType *synType = ILClassGetSynType(info);
-
-			if(!(synType && ILType_IsArray(synType)) && !ILTypeIsStringClass(ownerType))
+			ILInternalInfo fnInfo;
+			int ctorType = _ILJitFunctionIsInternal(coder, method, &fnInfo, 1);
+			
+			if(!(synType && ILType_IsArray(synType)) &&
+			   !ILTypeIsStringClass(ownerType) &&
+			   !(ctorType == 2))
 			{
 				/* we need an other arg for this */
 				total++;

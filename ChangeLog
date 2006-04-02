@@ -3,6 +3,9 @@
 	* enjine/jitc_obj.c: Fix a bug in ILJITCoder_CastClass that caused a
 	segfault in IsInst when the object to cast was null.
 
+	* engine/jitc.c, engine/jitc_call.c: Call internal fuctions now directly
+	for normal calls and ctors.
+	
 2006-03-19  Rainer Größlinger  <rainer.groesslinger@gmx.net>
 
 	* libgc/Makefile.am, libgc/Makefile.direct, libgc/Makefile.in,

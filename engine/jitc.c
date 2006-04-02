@@ -45,13 +45,13 @@ extern	"C" {
  * For dumping the jitted function before it is compiled uncomment the
  * following define.
  */
-#define _IL_JIT_DUMP_FUNCTION 1
+/* #define _IL_JIT_DUMP_FUNCTION 1 */
 
 /*
  * For dumping the disassembled jitted function before after  it is compiled
  *  uncomment the following define.
  */
-#define _IL_JIT_DISASSEMBLE_FUNCTION 1
+/* #define _IL_JIT_DISASSEMBLE_FUNCTION 1 */
 
 /*
  * To enable parameter / locals optimizations uncomment the following define.

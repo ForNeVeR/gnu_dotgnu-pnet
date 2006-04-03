@@ -1,3 +1,6 @@
+2006-04-03  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Control.cs: fixed some layouting issues. Do layout in PerformLayout, if control visible, even if parent not visible.
 
 2006-03-27  Gopal V  <gopalv82@yahoo.com>
 

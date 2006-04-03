@@ -2713,7 +2713,7 @@ public class Control : IWin32Window, IDisposable
 					return;
 				}
 
-				if( !this.Visible ) {
+				if( !this.visible ) {	// attention, don't use Visible, do layout, if this visible even if Parent is not visible.
 					return; // no need to layout, increases performance 
 				}
 				

@@ -961,6 +961,9 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
+					if( null == controlBindingsCollection ) {
+						controlBindingsCollection = new ControlBindingsCollection(this);
+					}
 					return controlBindingsCollection;
 				}
 			}
@@ -2244,15 +2247,36 @@ public class Control : IWin32Window, IDisposable
 						
 						// Dispose all childs
 						if( null != controlCollection ) {
-							Control o;
-							int iCount = controlCollection.Count;
-							for( int i = 0; i < iCount; i++ ) {
-								o = controlCollection[i];
-								o.parent = null;
-								o.Dispose();
-								o = null;
+							try {
+								Control o;
+								int iCount = controlCollection.Count;
+								for( int i = 0; i < iCount; i++ ) {
+									o = controlCollection[i];
+									o.parent = null;
+									o.Dispose();
+									o = null;
+								}
+							}
+							catch( Exception ) {
+								// ignore exceptions
 							}
 							controlCollection = null;
+						}
+						
+						if( null != children ) {
+							for(int i = 0; i < children.Length; i++ )
+							{
+								children[i] = null;
+							}
+						}
+						numChildren = 0;
+						children = null;
+						
+						if( null != hoverTimer ) {
+							hoverTimer.Enabled = false;
+							hoverTimer.Tick -= new EventHandler(this.ProcessHoverTimerEvent);
+							hoverTimer.Dispose();
+							hoverTimer = null;
 						}
 					}
 					finally
@@ -2265,7 +2289,7 @@ public class Control : IWin32Window, IDisposable
 					SetControlFlag(ControlFlags.Disposing, false);
 				}
 #if CONFIG_COMPONENT_MODEL
-				// not needed in this implementation base.Dispose(disposing);
+				base.Dispose(disposing);
 #endif
 			}
 
@@ -4982,6 +5006,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseDown(MouseEventArgs e)
 			{
+				if( null == hoverTimer ) return; // we are disposed
 				hoverTimer.Enabled = false;
 				hoverTimer.Stop();
 
@@ -5001,6 +5026,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseEnter(EventArgs e)
 			{
+				if( null == hoverTimer ) return; // we are disposed
 				hoverTimer.Enabled = true;
 				hoverTimer.Start();
 
@@ -5016,6 +5042,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseHover(EventArgs e)
 			{
+				if( null == hoverTimer ) return; // we are disposed
 				hoverTimer.Stop();
 
 				EventHandler handler;
@@ -5030,6 +5057,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseLeave(EventArgs e)
 			{
+				if( null == hoverTimer ) return; // we are disposed
 				hoverTimer.Enabled = false;
 				hoverTimer.Stop();
 
@@ -5057,6 +5085,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseUp(MouseEventArgs e)
 			{
+				if( null == hoverTimer ) return; // we are disposed
 				hoverTimer.Enabled = false;
 				hoverTimer.Stop();
 
@@ -5076,6 +5105,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseWheel(MouseEventArgs e)
 			{
+				if( null == hoverTimer ) return; // we are disposed
 				hoverTimer.Enabled = false;
 				hoverTimer.Stop();
 
@@ -5533,12 +5563,14 @@ public class Control : IWin32Window, IDisposable
 	{
 		// Internal state.
 		private Control owner;
+		bool bDisposeRemove = false;
 
 		// Constructor.
 		public ControlCollection(Control owner)
 				{
 					this.owner = owner;
 				}
+				
 
 		// Get the control at a specific index.
 		public virtual Control this[int index]
@@ -5616,6 +5648,7 @@ public class Control : IWin32Window, IDisposable
 						owner.ResumeLayout();
 					}
 				}
+				
 		bool IList.Contains(Object value)
 				{
 					if(value is Control)
@@ -5770,6 +5803,8 @@ public class Control : IWin32Window, IDisposable
 		// Remove a specific control from the collection.
 		public virtual void Remove(Control value)
 				{
+					if( this.bDisposeRemove ) return;
+					
 					if(value != null && value.Parent == owner)
 					{
 						// Update the parent.

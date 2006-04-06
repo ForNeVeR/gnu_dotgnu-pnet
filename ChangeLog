@@ -1,3 +1,18 @@
+2006-04-06  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Control.cs,
+	System.Windows.Forms/ControlBindingsCollection.cs,
+	System.Windows.Forms/ControlToolkitMgr.cs,
+	System.Windows.Forms/Form.cs,
+	System.Windows.Forms/MainMenu.cs,
+	System.Windows.Forms/ScrollableControl.cs,
+	System.Windows.Forms/TextBox.cs,
+	System.Windows.Forms/TextBoxBase.cs: fixed some memory leaks by keeping references. 
+	Now a weak reference of a control is given for the toolkit 
+	and not the control itself. This avoids keeping a reference of the control in
+	toolkit.
+	Still some memory leaks are in pnetlib.
+
 2006-04-03  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: fixed some layouting issues. Do layout in PerformLayout, if control visible, even if parent not visible.

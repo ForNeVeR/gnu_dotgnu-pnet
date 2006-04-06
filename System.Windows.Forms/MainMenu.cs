@@ -29,7 +29,7 @@ using System.Drawing;
 	{
 		// Internal state.
 		private RightToLeft rightToLeft;
-		private Form ownerForm;
+		internal Form ownerForm;
 		private ContextMenu menuPopup;
 		private int currentMouseItem = -1;
 		// Has the menu been clicked.

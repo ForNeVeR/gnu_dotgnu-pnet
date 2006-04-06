@@ -1179,6 +1179,35 @@ public class Form : ContainerControl
 	// Dispose of this control.
 	protected override void Dispose(bool disposing)
 			{
+				acceptButton = null;
+				defaultButton = null;
+				cancelButton = null;
+				mdiClient = null;
+				if( null != owner ) {
+					this.RemoveOwnedForm(owner);
+					owner = null;
+				}
+				if( null != ownedForms ) {
+					int iCount = ownedForms.Length;
+					for( int i = iCount-1; i >= 0; i-- ) {
+						if( null != ownedForms[i] ) {
+							ownedForms[i].Dispose();
+						}
+					}
+				}
+
+				if( null != menu ) {
+					menu.ownerForm = null;
+					menu = null;
+				}
+
+				if( null != mergedMenu ) {
+					if( mergedMenu.ownerForm == this || mergedMenu.ownerForm == null ) {
+						mergedMenu.Dispose();
+					}
+					mergedMenu = null;
+				}
+
 				base.Dispose(disposing);
 			}
 
@@ -1695,7 +1724,6 @@ public class Form : ContainerControl
 				}
 
 	}; // class ControlCollection
-
 
 	protected override void OnMouseDown(MouseEventArgs e)
 			{

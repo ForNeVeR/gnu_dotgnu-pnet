@@ -219,6 +219,7 @@ public class TextBox : TextBoxBase
 		}
 		else if (vScrollBar != null)
 		{
+			vScrollBar.ValueChanged-=new EventHandler(vScrollBar_ValueChanged);
 			Controls.Remove(vScrollBar);
 			vScrollBar = null;
 		}
@@ -238,6 +239,7 @@ public class TextBox : TextBoxBase
 		}
 		else if (hScrollBar != null)
 		{
+			hScrollBar.ValueChanged-=new EventHandler(hScrollBar_ValueChanged);
 			Controls.Remove(hScrollBar);
 			hScrollBar = null;
 		}
@@ -589,7 +591,10 @@ public class TextBox : TextBoxBase
 		InvalidateDirty();
 		mouseDown = false;
 		// We dont need to update any selection
-		selectedRegion = null;
+		if( null != selectedRegion ) {
+			selectedRegion.Dispose();
+			selectedRegion = null;
+		}
 	}
 
 	protected override void OnFontChanged(EventArgs e)
@@ -1094,14 +1099,12 @@ public class TextBox : TextBoxBase
 		InvalidateDirty();
 	}
 
-	
 	// Called to change the text. Sets the update to whats needed to but doesnt change the selection point or caret
 	private void SetTextActual( string text)
 	{
-		if (!IsHandleCreated)
-		{
-			(this as Control).text = text;
-			return;
+		if( !IsHandleCreated ) {
+			// create handle here to be sure that LayoutInfo will be set correct.
+			this.CreateHandle();
 		}
 		// Layout the new text. Compare with old layout, Creating a region for areas that must be updated.
 		bool prevLayout = layout != null;
@@ -2090,16 +2093,35 @@ public class TextBox : TextBoxBase
 			invalidateRegion.Dispose();
 			invalidateRegion = null;
 		}
+		if( selectedRegion != null ) {
+			selectedRegion.Dispose();
+			selectedRegion = null;
+		}
 		if (vScrollBar != null)
 		{
+			vScrollBar.ValueChanged-=new EventHandler(vScrollBar_ValueChanged);
 			vScrollBar.Dispose();
 			vScrollBar = null;
 		}
 		if (hScrollBar != null)
 		{
+			hScrollBar.ValueChanged-=new EventHandler(hScrollBar_ValueChanged);
 			hScrollBar.Dispose();
 			hScrollBar = null;
 		}
+		
+		// remove event handler
+		MouseDown -= new MouseEventHandler(HandleMouseDown);
+		MouseMove -= new MouseEventHandler(HandleMouseMove);
+		DoubleClick -= new EventHandler(HandleDoubleClick);
+		Paint -= new PaintEventHandler(HandlePaint);
+		MultilineChanged -=new EventHandler(HandleMultilineChanged);
+		WordWrapChanged -=new EventHandler(HandleWordWrapChanged);
+		
+#if CONFIG_COMPONENT_MODEL
+		this.DataBindings.CollectionChanged -=new CollectionChangeEventHandler(HandleDataBindingCollectionChanged);
+#endif
+		
 		base.Dispose (disposing);
 	}
 

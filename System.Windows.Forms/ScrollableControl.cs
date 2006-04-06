@@ -52,6 +52,12 @@ public class ScrollableControl : Control
 				base.SetStyle(ControlStyles.ContainerControl, true);
 				// HandleCreated+=new EventHandler(ScrollableControl_HandleCreated);
 			}
+			
+	protected override void Dispose(bool disposing) {
+		DestroyScrollBars();
+		base.Dispose( disposing );
+	}
+
 
 	protected virtual void AdjustFormScrollbars(bool displayScrollbars)
 			{
@@ -77,10 +83,7 @@ public class ScrollableControl : Control
 					}
 					else
 					{
-						vScrollBar.Dispose();
-						vScrollBar = null;
-						hScrollBar.Dispose();
-						hScrollBar = null;
+						DestroyScrollBars();
 					}
 				}
 			}
@@ -547,6 +550,21 @@ public class ScrollableControl : Control
 				vScrollBar.toolkitWindow.Raise();
 				UpdateScrollBars();
 			}
+			
+	private void DestroyScrollBars() 
+			{
+				if( null != vScrollBar ) {
+					vScrollBar.Scroll-=new ScrollEventHandler(HandleScroll);
+					vScrollBar.Dispose();
+					vScrollBar = null;
+				}
+				if( null != hScrollBar ) {
+					hScrollBar.Scroll-=new ScrollEventHandler(HandleScroll);
+					hScrollBar.Dispose();
+					hScrollBar = null;
+				}
+			}
+			
 
 	// Dock padding edge definitions.
 	public class DockPaddingEdges: ICloneable

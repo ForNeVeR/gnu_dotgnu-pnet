@@ -76,6 +76,10 @@ public class ControlBindingsCollection: BindingsCollection
 	
 	protected override void ClearCore()
 			{
+				int iCount = this.Count;
+				for( int i = 0; i < iCount; i++ ) {
+					base[i].AssociateControl(null);
+				}
 				base.ClearCore();
 			}
 
@@ -91,6 +95,7 @@ public class ControlBindingsCollection: BindingsCollection
 
 	protected override void RemoveCore(Binding dataBinding)
 			{
+				dataBinding.AssociateControl(null);
 				base.RemoveCore(dataBinding);
 			}
 

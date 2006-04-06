@@ -21,6 +21,7 @@ namespace System.Windows.Forms
 
 using System;
 using System.Threading;
+using System.Drawing;
 using System.Drawing.Toolkit;
 
 /*
@@ -59,13 +60,13 @@ internal class ControlToolkitManager : Control
 		if(parent != null )
 		{
 			return parent.Toolkit.CreateChildWindow
-					(parent, x, y, w, h, control);
+					(parent, x, y, w, h, new ControlWeakRef(control) );
 		}
 		else
 		{
 			// Use the default toolkit to create.
 			return ToolkitManager.Toolkit.CreateChildWindow
-					(null, x, y, w, h, control);
+					(null, x, y, w, h, new ControlWeakRef(control) );
 		}
 	}
 	
@@ -84,7 +85,7 @@ internal class ControlToolkitManager : Control
 			new object[] { control, w, h } );
 		}
 		
-		return ToolkitManager.Toolkit.CreateTopLevelWindow( w, h, control );
+		return ToolkitManager.Toolkit.CreateTopLevelWindow( w, h, new ControlWeakRef(control) );
 	}
 	
 	#endregion 
@@ -103,7 +104,7 @@ internal class ControlToolkitManager : Control
 				);
 		}
 		
-		return mdiClient.CreateChildWindow(x,y,w,h, control);
+		return mdiClient.CreateChildWindow(x,y,w,h, new ControlWeakRef(control) );
 	}
 	
 	#endregion
@@ -123,10 +124,10 @@ internal class ControlToolkitManager : Control
 		}
 		
 		if( null != parent ) {
-			return parent.Toolkit.CreateMdiClient( parent, x, y, w, h, control );
+			return parent.Toolkit.CreateMdiClient( parent, x, y, w, h, new ControlWeakRef(control) );
 		}
 		else {
-			return ToolkitManager.Toolkit.CreateMdiClient(null, x, y, w, h, control);
+			return ToolkitManager.Toolkit.CreateMdiClient(null, x, y, w, h, new ControlWeakRef(control) );
 		}
 	}
 	
@@ -146,7 +147,7 @@ internal class ControlToolkitManager : Control
 				);
 		}
 		
-		return ToolkitManager.Toolkit.CreatePopupWindow( x,y,w,h,control);
+		return ToolkitManager.Toolkit.CreatePopupWindow( x,y,w,h, new ControlWeakRef(control) );
 	}
 
 	#endregion
@@ -186,6 +187,176 @@ internal class ControlToolkitManager : Control
 	}
 	
 	#endregion
+
+}
+
+// Helper class to keep WeakReferences to Control
+// this is needed, because we must not keep a real reference in ToolkitWindow, 
+// else Control never would get disposed.
+internal class ControlWeakRef : IToolkitEventSink
+{
+	private WeakReference mControlWeakRef;
+
+	public ControlWeakRef( IToolkitEventSink control ) {
+		this.mControlWeakRef = new WeakReference( control, false );
+	}
+
+	public void ToolkitExpose(Graphics graphics) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitExpose(graphics);
+		}
+	}
+
+	public void ToolkitMouseEnter() {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitMouseEnter();
+		}
+	}
+
+	public void ToolkitMouseLeave() {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitMouseLeave();
+		}
+	}
+
+	public void ToolkitFocusEnter() {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitFocusEnter();
+		}
+	}
+
+	public void ToolkitFocusLeave() {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitFocusLeave();
+		}
+	}
+
+	public void ToolkitPrimaryFocusEnter() {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitPrimaryFocusEnter();
+		}
+	}
+
+	public void ToolkitPrimaryFocusLeave() {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitPrimaryFocusLeave();
+		}
+	}
+
+	public bool ToolkitKeyDown(ToolkitKeys key) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			return co.ToolkitKeyDown(key);
+		}
+		return false;
+	}
+
+	public bool ToolkitKeyUp(ToolkitKeys key) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			return co.ToolkitKeyUp(key);
+		}
+		return false;
+	}
+
+	public bool ToolkitKeyChar(char charCode) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			return co.ToolkitKeyChar(charCode);
+		}
+		return false;
+	}
+
+	public void ToolkitMouseDown(ToolkitMouseButtons buttons, ToolkitKeys modifiers, int clicks, int x, int y, int delta) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitMouseDown(buttons, modifiers, clicks, x, y, delta);
+		}
+	}
+
+	public void ToolkitMouseUp(ToolkitMouseButtons buttons, ToolkitKeys modifiers, int clicks, int x, int y, int delta) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitMouseUp(buttons, modifiers, clicks, x, y, delta);
+		}
+	}
+
+	public void ToolkitMouseHover(ToolkitMouseButtons buttons, ToolkitKeys modifiers, int clicks, int x, int y, int delta) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitMouseHover(buttons, modifiers, clicks, x, y, delta);
+		}
+	}
+
+	public void ToolkitMouseMove(ToolkitMouseButtons buttons, ToolkitKeys modifiers, int clicks, int x, int y, int delta) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitMouseMove(buttons, modifiers, clicks, x, y, delta);
+		}
+	}
+
+	public void ToolkitMouseWheel(ToolkitMouseButtons buttons, ToolkitKeys modifiers, int clicks, int x, int y, int delta) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitMouseWheel(buttons, modifiers, clicks, x, y, delta);
+		}
+	}
+
+	public void ToolkitExternalMove(int x, int y) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitExternalMove(x,y);
+		}
+	}
+
+	public void ToolkitExternalResize(int width, int height) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitExternalResize(width,height);
+		}
+	}
+
+	public void ToolkitClose() {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitClose();
+		}
+	}
+
+	public void ToolkitHelp() {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitHelp();
+		}
+	}
+
+	public void ToolkitStateChanged(int state) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitStateChanged(state);
+		}
+	}
+
+	public void ToolkitMdiActivate(IToolkitWindow child) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitMdiActivate(child);
+		}
+	}
+
+	public void ToolkitBeginInvoke(IntPtr i_gch) {
+		IToolkitEventSink co = this.mControlWeakRef.Target as IToolkitEventSink;
+		if( null != co ) {
+			co.ToolkitBeginInvoke(i_gch);
+		}
+	}
 
 }
 

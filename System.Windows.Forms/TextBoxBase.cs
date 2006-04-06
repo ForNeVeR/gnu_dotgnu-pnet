@@ -60,6 +60,13 @@ public abstract class TextBoxBase : Control
 				KeyDown += new KeyEventHandler(HandleKeyDown);
 			}
 
+	protected override void Dispose(bool disposing)
+	{
+		// remove event handler
+		KeyDown -= new KeyEventHandler(HandleKeyDown);
+		base.Dispose(disposing);
+	}
+			
 	// Get or set this object's properties.
 	public bool AcceptsTab
 			{

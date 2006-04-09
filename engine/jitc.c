@@ -361,6 +361,109 @@ struct _tagILJITCoder
  (typeKind == JIT_TYPE_SBYTE))
 
 /*
+ * Convert a value to the corresponding signed/unsigned type.
+ * Returns 1 if the value is converted 0 otherwise.
+ */
+static int AdjustSign(ILJitFunction func, ILJitValue *value, int toUnsigned,
+															  int checkOverflow)
+{
+	ILJitType type = jit_value_get_type(*value);
+	int typeKind = jit_type_get_kind(type);
+	
+	if(_JIT_TYPEKIND_IS_SIGNED(typeKind) && toUnsigned)
+	{
+		switch(typeKind)
+		{
+			case JIT_TYPE_SBYTE:
+			{
+				*value = jit_insn_convert(func, *value, _IL_JIT_TYPE_BYTE,
+														checkOverflow);
+				return 1;
+			}
+			break;
+
+			case JIT_TYPE_SHORT:
+			{
+				*value = jit_insn_convert(func, *value, _IL_JIT_TYPE_UINT16,
+														checkOverflow);
+				return 1;
+			}
+			break;
+
+			case JIT_TYPE_INT:
+			{
+				*value = jit_insn_convert(func, *value, _IL_JIT_TYPE_UINT32,
+														checkOverflow);
+				return 1;
+			}
+			break;
+
+			case JIT_TYPE_NINT:
+			{
+				*value = jit_insn_convert(func, *value, _IL_JIT_TYPE_NUINT,
+														checkOverflow);
+				return 1;
+			}
+			break;
+
+			case JIT_TYPE_LONG:
+			{
+				*value = jit_insn_convert(func, *value, _IL_JIT_TYPE_UINT64,
+														checkOverflow);
+				return 1;
+			}
+			break;
+		}
+	}
+	else if(_JIT_TYPEKIND_IS_UNSIGNED(typeKind) && !toUnsigned)
+	{
+		switch(typeKind)
+		{
+			case JIT_TYPE_UBYTE:
+			{
+				*value = jit_insn_convert(func, *value, _IL_JIT_TYPE_SBYTE,
+														checkOverflow);
+				return 1;
+			}
+			break;
+
+			case JIT_TYPE_USHORT:
+			{
+				*value = jit_insn_convert(func, *value, _IL_JIT_TYPE_INT16,
+														checkOverflow);
+				return 1;
+			}
+			break;
+
+			case JIT_TYPE_UINT:
+			{
+				*value = jit_insn_convert(func, *value, _IL_JIT_TYPE_INT32,
+														checkOverflow);
+				return 1;
+			}
+			break;
+
+			case JIT_TYPE_NUINT:
+			{
+				*value = jit_insn_convert(func, *value, _IL_JIT_TYPE_NINT,
+														checkOverflow);
+				return 1;
+			}
+			break;
+
+			case JIT_TYPE_ULONG:
+			{
+				*value = jit_insn_convert(func, *value, _IL_JIT_TYPE_INT64,
+														checkOverflow);
+				return 1;
+			}
+			break;
+		}
+	}
+	return 0;
+}
+
+/*
  * Readjust the stack to normalize binary operands when
  * I and I4 are mixed together.  Also determine which of
  * I4 or I8 to use if the operation involves I.
@@ -382,6 +485,25 @@ static void AdjustMixedBinary(ILJITCoder *coder, int isUnsigned,
 	if(type1IsFloat || type2IsFloat)
 	{
 		return;
+	}
+
+	/* When converted to unsigned the values have to be extended with 0s. */
+	/* So we have to adjust the sign first. */
+	if(isUnsigned)
+	{
+		if(AdjustSign(coder->jitFunction, value1, isUnsigned, 0))
+		{
+			type1 = jit_value_get_type(*value1);
+			newType1 = type1;
+			type1Kind = jit_type_get_kind(type1);
+		}
+
+		if(AdjustSign(coder->jitFunction, value2, isUnsigned, 0))
+		{
+			type2 = jit_value_get_type(*value2);
+			newType2 = type2;
+			type2Kind = jit_type_get_kind(type2);
+		}
 	}
 
 	/* If the arguments mix I8 and I4, then cast the I4 value to I8 */
@@ -1517,14 +1639,19 @@ static ILJitType _ILJitTypeToStackType(ILJitType type)
 static ILJitValue _ILJitValueConvertToStackType(ILJitFunction func,
 												ILJitValue value)
 {
-	ILJitType type = jit_value_get_type(value);
+	ILJitValue temp = value;
+	ILJitType type = jit_value_get_type(temp);
 	ILJitType stackType = _ILJitTypeToStackType(type);
 
 	if(type != stackType)
 	{
-		value = jit_insn_convert(func, value, stackType, 0);
+		temp = jit_insn_convert(func, temp, stackType, 0);
 	}
-	return value;
+
+	/* We have only signed values on the stack. */
+	AdjustSign(func, &temp, 0, 0);
+
+	return temp;
 }
 
 /*

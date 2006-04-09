@@ -1,3 +1,7 @@
+2006-04-09  Klaus Treichel  <ktreichel@weblde>
+
+	* engine/jitc.c, engine/jitc_conv.c: Fix bugs in type conversion.
+
 2006-03-25  Klaus Treichel  <ktreichel@web.de>
 
 	* enjine/jitc_obj.c: Fix a bug in ILJITCoder_CastClass that caused a

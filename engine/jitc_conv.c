@@ -21,55 +21,6 @@
 #ifdef IL_JITC_CODE
 
 /*
- * Make sure that the given value is signed or unsigned.
- * Does a conversion if necessairy and returns the converted item
- * or returns the item as it is.
- */
-static ILJitValue ConvertSign(ILJITCoder *jitCoder, ILJitValue value,
-							  int isUnsigned, int checkOverflow)
-{
-	ILJitType type = jit_value_get_type(value);
-	
-	type = jit_type_normalize(type);
-
-	if(isUnsigned)
-	{
-		if(type == _IL_JIT_TYPE_INT32)
-		{
-			return jit_insn_convert(jitCoder->jitFunction,
-									value,
-									_IL_JIT_TYPE_UINT32,
-									checkOverflow);
-		}
-		else if(type == _IL_JIT_TYPE_INT64)
-		{
-			return jit_insn_convert(jitCoder->jitFunction,
-									value,
-									_IL_JIT_TYPE_UINT64,
-									checkOverflow);
-		}
-	}
-	else
-	{
-		if(type == _IL_JIT_TYPE_UINT32)
-		{
-			return jit_insn_convert(jitCoder->jitFunction,
-									value,
-									_IL_JIT_TYPE_INT32,
-									checkOverflow);
-		}
-		else if(type == _IL_JIT_TYPE_UINT64)
-		{
-			return jit_insn_convert(jitCoder->jitFunction,
-									value,
-									_IL_JIT_TYPE_INT64,
-									checkOverflow);
-		}
-	}
-	return value;
-}
-
-/*
  * Convert the topmost stackitem according to the given opcode.
  * When unsigned is 0 then a sign extension will be done.
  * When checkOberflow is not 0 then an overflow check will be done.
@@ -80,7 +31,7 @@ static ILJitValue ConvertValue(ILJITCoder *jitCoder, int opcode, int isUnsigned,
 {
 	ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
 
-	value = ConvertSign(jitCoder, value, isUnsigned, checkOverflow);
+	AdjustSign(jitCoder->jitFunction, &value, isUnsigned, checkOverflow);
 	switch(opcode)
 	{
 		case IL_OP_CONV_I1:
@@ -217,7 +168,7 @@ static ILJitValue ConvertValue(ILJITCoder *jitCoder, int opcode, int isUnsigned,
 static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue value;
+	ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
 
 	/* Determine how to convert the value */
 	switch(opcode)
@@ -226,11 +177,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int8" */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I1, 0, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_INT32,
-									 0);
 		}
 		break;
 
@@ -238,11 +184,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int16" */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I2, 0, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_INT32,
-									 0);
 		}
 		break;
 
@@ -253,7 +194,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int32" */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I4, 0, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -264,7 +204,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int64" */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I8, 0, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -272,11 +211,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "float32" */
 			value = ConvertValue(jitCoder, IL_OP_CONV_R4, 0, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_NFLOAT,
-									 0);
 		}
 		break;
 
@@ -284,11 +218,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "float64" */
 			value = ConvertValue(jitCoder, IL_OP_CONV_R8, 0, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_NFLOAT,
-									 0);
 		}
 		break;
 
@@ -296,11 +225,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int8" */
 			value = ConvertValue(jitCoder, IL_OP_CONV_U1, 0, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_UINT32,
-									 0);
 		}
 		break;
 
@@ -308,11 +232,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int16" */
 			value = ConvertValue(jitCoder, IL_OP_CONV_U2, 0, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_UINT32,
-									 0);
 		}
 		break;
 
@@ -323,7 +242,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int32" */
 			value = ConvertValue(jitCoder, IL_OP_CONV_U4, 0, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -333,8 +251,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 	#endif
 		{
 			/* Convert to "unsigned int64" */
-			value = ConvertValue(jitCoder, IL_OP_CONV_U8, 0, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			value = ConvertValue(jitCoder, IL_OP_CONV_U8, 1, 0);
 		}
 		break;
 
@@ -342,7 +259,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "native float" with unsigned input */
 			value = ConvertValue(jitCoder, IL_OP_CONV_R_UN, 1, 0);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -350,11 +266,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int8" with unsigned input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I1, 1, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_INT32,
-									 0);
 		}
 		break;
 
@@ -362,11 +273,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int16" with unsigned input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I2, 1, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_INT32,
-									 0);
 		}
 		break;
 
@@ -377,7 +283,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int32" with unsigned input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I4, 1, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -388,7 +293,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int64" with unsigned input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I8, 1, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -396,11 +300,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int8" with unsigned input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_U1, 1, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_UINT32,
-									 0);
 		}
 		break;
 
@@ -408,11 +307,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int16" with unsigned input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_U2, 1, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_UINT32,
-									 0);
 		}
 		break;
 
@@ -423,7 +317,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int32" with unsigned input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_U4, 1, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -434,7 +327,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int64" with unsigned input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_U8, 1, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -442,11 +334,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int8" with signed input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I1, 0, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_INT32,
-									 0);
 		}
 		break;
 
@@ -454,11 +341,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int8" with signed input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_U1, 0, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_UINT32,
-									 0);
 		}
 		break;
 
@@ -466,11 +348,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int16" with signed input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I2, 0, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_INT32,
-									 0);
 		}
 		break;
 
@@ -478,11 +355,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int16" with signed input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_U2, 0, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] =
-					jit_insn_convert(jitCoder->jitFunction,
-									 value,
-									 _IL_JIT_TYPE_UINT32,
-									 0);
 		}
 		break;
 
@@ -493,7 +365,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int32" with signed input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I4, 0, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -504,7 +375,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int32" with signed input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_U4, 0, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -515,7 +385,6 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int64" with signed input and overflow */
 			value = ConvertValue(jitCoder, IL_OP_CONV_I8, 0, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
 		}
 		break;
 
@@ -525,11 +394,12 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 	#endif
 		{
 			/* Convert to "unsigned int64" with signed input and overflow */
-			value = ConvertValue(jitCoder, IL_OP_CONV_U8, 0, 1);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			value = ConvertValue(jitCoder, IL_OP_CONV_U8, 1, 1);
 		}
 		break;
 	}
+	jitCoder->jitStack[jitCoder->stackTop - 1] =
+				_ILJitValueConvertToStackType(jitCoder->jitFunction, value);
 }
 
 /*

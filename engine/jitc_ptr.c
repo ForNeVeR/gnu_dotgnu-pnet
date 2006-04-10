@@ -46,22 +46,18 @@ static ILJitValue GetArrayLength(ILJITCoder *coder, ILJitValue array)
 static void ValidateArrayIndex(ILJITCoder *coder, ILJitValue length,
 												  ILJitValue index)
 {
-	jit_label_t label1 = jit_label_undefined;
-	jit_label_t label2 = jit_label_undefined;
-	ILJitValue constNull = jit_value_create_nint_constant(coder->jitFunction,
-														  _IL_JIT_TYPE_NINT,
-														  (jit_nint)0);
-	ILJitValue temp = jit_insn_lt(coder->jitFunction, index, constNull);
+	jit_label_t label = jit_label_undefined;
+	ILJitValue temp;
 
-	jit_insn_branch_if(coder->jitFunction, temp, &label1);
+	/* Make both values unsigned. We can save one compare this way. */
+	AdjustSign(coder->jitFunction, &length, 1, 0);
+	AdjustSign(coder->jitFunction, &index, 1, 0);
+
 	temp = jit_insn_lt(coder->jitFunction, index, length);
-	jit_insn_branch_if(coder->jitFunction, temp, &label2);
-	jit_insn_label(coder->jitFunction, &label1);
+	jit_insn_branch_if(coder->jitFunction, temp, &label);
 	/* throw the System.IndexOutOfRange exception. */
 	_ILJitThrowInternal(coder->jitFunction, JIT_RESULT_OUT_OF_BOUNDS);
-	jit_insn_label(coder->jitFunction, &label2);
-
-
+	jit_insn_label(coder->jitFunction, &label);
 }
 
 /*
@@ -544,9 +540,7 @@ static void JITCoder_NewArray(ILCoder *coder, ILType *arrayType,
 	ILJitFunction jitFunction;
 	ILJitValue returnValue;
 	jit_label_t label = jit_label_undefined;
-	ILJitValue nullConst = jit_value_create_nint_constant(jitCoder->jitFunction,
-														  _IL_JIT_TYPE_VPTR, 0);
-	ILJitValue temp;
+	ILInternalInfo fnInfo;
 
 	/* Find the allocation constructor within the array class.
 	   We know that the class only has one method, so it must
@@ -564,15 +558,23 @@ static void JITCoder_NewArray(ILCoder *coder, ILType *arrayType,
 		}
 		jitFunction = ILJitFunctionFromILMethod(ctor);
 	}
-	args[0] = jit_value_get_param(jitCoder->jitFunction, 0);
-	args[1] = length;
-	JITC_ADJUST(jitCoder, -1);
-	_ILJitSetMethodInThread(jitCoder->jitFunction, args[0], ctor);
-	/* Output code to call the array type's constructor */
-	returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction,
-								0, args, 2, 0);
-	temp = jit_insn_ne(jitCoder->jitFunction, returnValue, nullConst);
-	jit_insn_branch_if(jitCoder->jitFunction, temp, &label);
+	if(_ILJitFunctionIsInternal(jitCoder, ctor, &fnInfo, 1))
+	{
+		JITC_ADJUST(jitCoder, -1);
+		returnValue = _ILJitCallInternal(jitCoder->jitFunction, ctor,
+										 fnInfo.func, 0, &length, 1);
+	}
+	else
+	{
+		args[0] = jit_value_get_param(jitCoder->jitFunction, 0);
+		args[1] = length;
+		JITC_ADJUST(jitCoder, -1);
+		_ILJitSetMethodInThread(jitCoder->jitFunction, args[0], ctor);
+		/* Output code to call the array type's constructor */
+		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction,
+									0, args, 2, 0);
+	}
+	jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label);
 	_ILJitThrowCurrentException(jitCoder);
 	jit_insn_label(jitCoder->jitFunction, &label);
 	jitCoder->jitStack[jitCoder->stackTop] = returnValue;

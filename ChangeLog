@@ -1,3 +1,9 @@
+2006-04-10  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_ptr.c: Do some optimizations in the array index verification
+	(converting the array length and index to unsigned saves one comparision
+	and jump). Inline the internal call in NewArray.
+
 2006-04-09  Klaus Treichel  <ktreichel@weblde>
 
 	* engine/jitc.c, engine/jitc_conv.c: Fix bugs in type conversion.

@@ -332,21 +332,30 @@ public class Control : IWin32Window, IDisposable
 	// Implement the ISynchronizeInvoke interface.
 	private void ProcessInvokeEvent(IntPtr i_gch)	
 	{
-		lock( this.invokeEventQueue ) {
+		while( true ) {
+			InvokeParameters iParm = null;
 			
-			while( this.invokeEventQueue.Count > 0 ) {
-				InvokeParameters iParm = (InvokeParameters) invokeEventQueue.Dequeue();
-	
-				Delegate dg = iParm.method;
-				Object ro = dg.DynamicInvoke(iParm.args);
-		
-				InvokeAsyncResult ar = iParm.wr;
+			lock( this.invokeEventQueue ) {
 				
-				if( ar != null )
-				{
-					ar.retObject = ro;
-					ar.SetComplete();
+				if( this.invokeEventQueue.Count > 0 ) {
+					iParm = (InvokeParameters) invokeEventQueue.Dequeue();
 				}
+				else {
+					iParm = null;
+				}
+			}
+			
+			if( null == iParm ) break;	// no more items
+		
+			Delegate dg = iParm.method;
+			Object ro = dg.DynamicInvoke(iParm.args);
+	
+			InvokeAsyncResult ar = iParm.wr;
+			
+			if( ar != null )
+			{
+				ar.retObject = ro;
+				ar.SetComplete();
 			}
 		}
 	}

@@ -141,6 +141,12 @@ public class Control : IWin32Window, IDisposable
 			bComplete = false;			// This event hasn't completed
 			waitHandle = new ManualResetEvent(false);
 		}
+		
+		~InvokeAsyncResult() {
+			if( null != waitHandle ) {
+				waitHandle.Close();
+			}
+		}
 
 		public void WaitToComplete()
 		{
@@ -321,51 +327,58 @@ public class Control : IWin32Window, IDisposable
 
 #if CONFIG_COMPONENT_MODEL
 
+	private Queue invokeEventQueue = new Queue();
+
 	// Implement the ISynchronizeInvoke interface.
 	private void ProcessInvokeEvent(IntPtr i_gch)	
 	{
-		GCHandle gch = (GCHandle)i_gch;
-		InvokeParameters iParm = (InvokeParameters)gch.Target;
-
-		Delegate dg = iParm.method;
-		Object ro = dg.DynamicInvoke(iParm.args);
-
-		InvokeAsyncResult ar = iParm.wr;
+		lock( this.invokeEventQueue ) {
+			
+			while( this.invokeEventQueue.Count > 0 ) {
+				InvokeParameters iParm = (InvokeParameters) invokeEventQueue.Dequeue();
+	
+				Delegate dg = iParm.method;
+				Object ro = dg.DynamicInvoke(iParm.args);
 		
-		if( ar != null )
-		{
-			ar.retObject = ro;
-			ar.SetComplete();
+				InvokeAsyncResult ar = iParm.wr;
+				
+				if( ar != null )
+				{
+					ar.retObject = ro;
+					ar.SetComplete();
+				}
+			}
 		}
-		gch.Free();
 	}
 
 	[TODO]
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public IAsyncResult BeginInvoke(Delegate method, Object[] args)
 			{
-				InvokeParameters iParm = new InvokeParameters();
-				InvokeAsyncResult ar = new InvokeAsyncResult();
-				if( args != null )
-				{
-					ar.AsyncState = args[args.Length - 1];
+				lock( this.invokeEventQueue ) {
+
+					InvokeParameters iParm = new InvokeParameters();
+					InvokeAsyncResult ar = new InvokeAsyncResult();
+					if( args != null )
+					{
+						ar.AsyncState = args[args.Length - 1];
+					}
+					
+					iParm.method = method;
+					iParm.args   = args;
+					iParm.wr = ar;
+	
+					if(toolkitWindow == null)
+					{
+						CreateControlInner();
+					}
+					
+					this.invokeEventQueue.Enqueue( iParm );
+	
+					toolkitWindow.SendBeginInvoke(IntPtr.Zero);
+	
+					return ar;
 				}
-				GCHandle gch = GCHandle.Alloc(iParm);
-				IntPtr i_gch = (IntPtr)gch;
-
-				iParm.method = method;
-				iParm.args   = args;
-				iParm.wr = ar;
-
-				if(toolkitWindow == null)
-				{
-					CreateControlInner();
-				}
-
-				lock(this)	// this may not be necessary
-					toolkitWindow.SendBeginInvoke(i_gch);
-
-				return ar;
 			}
 
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
@@ -379,14 +392,27 @@ public class Control : IWin32Window, IDisposable
 	public Object EndInvoke(IAsyncResult result)
 			{
 				InvokeAsyncResult ar = (result as InvokeAsyncResult);
-				ar.WaitToComplete();
+				if( !ar.IsCompleted ) {	// it could be that we processed it already, so it might be completed
+					if( !InvokeRequired ) {
+						// we do not need to wait for the callback from toolkit.
+						// all waiting invokes will be processed.
+						this.ProcessInvokeEvent( IntPtr.Zero );	
+					}
+					else {
+						ar.WaitToComplete();
+					}
+				}
 				return ar.retObject;
 			}
 
 	public Object Invoke(Delegate method, Object[] args)
 			{
-				IAsyncResult ar = this.BeginInvoke(method,args);
-				return this.EndInvoke(ar);
+				if( !InvokeRequired ) {		// no need to use toolkit, do the invoke directly
+					return method.DynamicInvoke( args );
+				}
+				InvokeAsyncResult ar = this.BeginInvoke(method,args) as InvokeAsyncResult;
+				ar.WaitToComplete();
+				return ar.retObject;
 			}
 #if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]

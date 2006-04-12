@@ -1,3 +1,8 @@
+2006-04-12  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Windows.Forms/TabControl.cs: Fix an IndexOutOfRange exception in
+	Draw. (Klaus)
+  
 2006-04-11  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: Fixed deadlock with invokes.
@@ -11,15 +16,16 @@
 	System.Windows.Forms/MainMenu.cs,
 	System.Windows.Forms/ScrollableControl.cs,
 	System.Windows.Forms/TextBox.cs,
-	System.Windows.Forms/TextBoxBase.cs: fixed some memory leaks by keeping references. 
-	Now a weak reference of a control is given for the toolkit 
-	and not the control itself. This avoids keeping a reference of the control in
-	toolkit.
+	System.Windows.Forms/TextBoxBase.cs: fixed some memory leaks by keeping
+	references. Now a weak reference of a control is given for the toolkit
+	and not the control itself. This avoids keeping a reference of the control
+	in toolkit.
 	Still some memory leaks are in pnetlib.
 
 2006-04-03  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs: fixed some layouting issues. Do layout in PerformLayout, if control visible, even if parent not visible.
+	* System.Windows.Forms/Control.cs: fixed some layouting issues. Do layout
+	in PerformLayout, if control visible, even if parent not visible.
 
 2006-03-27  Gopal V  <gopalv82@yahoo.com>
 

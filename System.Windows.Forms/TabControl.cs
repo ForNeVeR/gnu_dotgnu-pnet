@@ -621,7 +621,7 @@ namespace System.Windows.Forms
 					}
 				}
 			}
-			if (SelectedIndex < TabPages.Count)
+			if (SelectedIndex < TabPages.Count && SelectedIndex >= 0)
 			{
 				Rectangle bounds = GetTabRect(SelectedIndex);
 				g.SetClip(new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height), Drawing.Drawing2D.CombineMode.Intersect);

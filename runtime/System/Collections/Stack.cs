@@ -133,6 +133,13 @@ public class Stack : ICollection, IEnumerable, ICloneable
 	// Clear the contents of this stack.
 	public virtual void Clear()
 			{
+				// brubbel
+				// set all references to zero, to avoid memory leaks !!!
+				int iCount = items.Length;
+				for( int i = 0; i < iCount; i++ ) {
+					items[i] = null;
+				}
+				
 				size = 0;
 				++generation;
 			}
@@ -164,7 +171,10 @@ public class Stack : ICollection, IEnumerable, ICloneable
 				if(size > 0)
 				{
 					++generation;
-					return items[--size];
+					--size;
+					Object o = items[size];
+					items[size] = null; // remove reference of object, to avoid memory leaks !!!
+					return o;
 				}
 				else
 				{

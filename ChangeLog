@@ -1,5 +1,15 @@
 2006-04-13  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
+	* pnetlib/runtime/System/Collections/ArrayList.cs: fixed memory leak.
+	* pnetlib/runtime/System/Collections/Queue.cs: fixed memory leak.
+	* pnetlib/runtime/System/Collections/SortedList.cs: fixed memory leak.
+	* pnetlib/runtime/System/Private/NumberFormat/CustomFormatter.cs: fixed bug with formatting floats.
+	* pnetlib/runtime/System/Private/NumberFormat/Formatter.cs: fixed bug with formatting floats.
+	* pnetlib/runtime/System/Private/NumberFormat/ScientificFormatter.cs: fixed bug with formatting floats.
+	* pnetlib/runtime/System/Private/NumberFormat/GeneralFormatter.cs: fixed bug with formatting floats.
+
+2006-04-13  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
 	* runtime/System/Collections/Stack.cs: Fixed a memory leak in Stack.Pop() and Stack.Clear().
 
 2006-04-12  Radek Polak  <psonek2@seznam.cz>

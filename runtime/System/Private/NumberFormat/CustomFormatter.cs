@@ -326,7 +326,8 @@ internal class CustomFormatter : Formatter
 	private string FormatScientific(double d, string format, int sign,
 													IFormatProvider provider)
 	{
-		int exponent = (int)Math.Floor(Math.Log10(d));
+		//int exponent = (int)Math.Floor(Math.Log10(d));
+		int exponent = Formatter.GetExponent( d );
 		double mantissa = d/Math.Pow(10,exponent);
 
 		int i = ScientificStart(format);

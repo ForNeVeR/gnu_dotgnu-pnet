@@ -172,6 +172,7 @@ class Queue : ICollection, IEnumerable, ICloneable
 	// Clear the contents of this queue.
 	public virtual void Clear()
 			{
+				Array.Clear(items, 0, items.Length); // clear references of objects
 				add = 0;
 				remove = 0;
 				size = 0;
@@ -209,6 +210,7 @@ class Queue : ICollection, IEnumerable, ICloneable
 				if(size > 0)
 				{
 					Object value = items[remove];
+					items[remove] = null;	// set to null to release the handle
 					remove = (remove + 1) % items.Length;
 					--size;
 					++generation;

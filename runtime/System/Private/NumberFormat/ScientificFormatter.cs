@@ -78,7 +78,8 @@ internal class ScientificFormatter : Formatter
 		}
 		else
 		{
-			exponent = (int) Math.Floor(Math.Log10(value));
+			//exponent = (int) Math.Floor(Math.Log10(value));
+			exponent = Formatter.GetExponent( value );
 			mantissa = value / Math.Pow(10, exponent);
 		}
 

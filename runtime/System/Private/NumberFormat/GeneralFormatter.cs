@@ -100,7 +100,8 @@ internal class GeneralFormatter : Formatter
 		}
 		else
 		{
-			exponent = (int) Math.Floor(Math.Log10(Math.Abs(OToDouble(o))));
+			//exponent = (int) Math.Floor(Math.Log10(Math.Abs(OToDouble(o))));
+			exponent = Formatter.GetExponent( OToDouble(o) );
 		}
 #else
 		// Determine the exponent without using floating-point.

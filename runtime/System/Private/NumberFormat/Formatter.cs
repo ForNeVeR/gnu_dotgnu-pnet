@@ -436,12 +436,42 @@ internal abstract class Formatter
 		return ret.ToString();
 	}
 
+	internal static int GetExponent( double value ) {
+		// return (int)Math.Floor(Math.Log10(Math.Abs(value)));
+		/*
+			Note:
+			if value is a value like 99.9999999999999999999999999999998
+			Math.Log10(value) would return 2.0
+			but it should return 1.0
+			so the exponent would be one to big.
+			So the Method below is now used to calculate the exponent.
+		*/
+		if( value == 0.0 ) return 0;
+		
+		value = Math.Abs(value);
+		int exponent = 0;
+		if( value >= 1.0 ) {
+			while( value >= 10.0 ) {
+				exponent++;
+				value /= 10.0;
+			} 
+		}
+		else {
+			while( value <= 1.0 ) {
+				exponent--;
+				value *= 10.0;
+			} 
+		}
+		return exponent;
+	}
+	
 	static protected string FormatFloat(double value, int precision)
 	{
 		if (value == 0.0) return ".";
 
 		//  
-		int exponent = (int)Math.Floor(Math.Log10(Math.Abs(value)));
+		//int exponent = (int)Math.Floor(Math.Log10(Math.Abs(value)));
+		int exponent = Formatter.GetExponent( value );
 		double work = value * Math.Pow(10, 16 - exponent);
 		
 		//

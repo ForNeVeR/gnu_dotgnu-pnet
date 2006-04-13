@@ -178,6 +178,10 @@ public class SortedList : IDictionary, ICollection, IEnumerable, ICloneable
 					keys[posn]   = keys[posn + 1];
 					values[posn] = values[posn + 1];
 				}
+				// remove last reference to avoid memory leak
+				keys[posn]   = null;
+				values[posn] = null;
+				
 				--count;
 				++generation;
 			}
@@ -198,6 +202,8 @@ public class SortedList : IDictionary, ICollection, IEnumerable, ICloneable
 			}
 	public virtual void Clear()
 			{
+				Array.Clear( values, 0, values.Length ); // clear the array to release references
+				Array.Clear( keys, 0, keys.Length ); // clear the array to release references
 				count = 0;
 				++generation;
 			}

@@ -97,6 +97,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					while(posn >= index)
 					{
 						store[posn + n] = store[posn];
+						store[posn] = null; // Brubbel: set the new free entry to zero
 						--posn;
 					}
 				}
@@ -127,9 +128,15 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 	// This modifies "count".
 	private void Delete(int n, int index)
 			{
-				while((index + n) < count)
+				while((index + n) <= count) // brubbel : must be <=
 				{
-					store[index] = store[index + n];
+					if( (index + n) == count ) {
+						store[index] = null;
+					}
+					else {
+						store[index] = store[index + n];
+						store[index + n] = null; // brubbel : set the new free entries to zero to avoid mem leaks
+					}
 					++index;
 				}
 				count -= n;

@@ -129,7 +129,14 @@ static ILJitValue _ILJitLoadFieldAddress(ILJITCoder *coder, ILJitValue base,
 	{
 		_ILJitCheckNull(coder, base);
 	}
-	return jit_insn_add_relative(coder->jitFunction, base, offset);
+	if(offset != 0)
+	{
+		return jit_insn_add_relative(coder->jitFunction, base, offset);
+	}
+	else
+	{
+		return base;
+	}
 }
 
 /*
@@ -167,7 +174,7 @@ static void _ILJitStoreField(ILJITCoder *coder, ILJitValue base,
 	}
 	if(jit_value_get_type(value) != type)
 	{
-		value = jit_insn_convert(coder->jitFunction, value, type, 0);
+		value = _ILJitValueConvertImplicit(coder->jitFunction, value, type);
 	}
 	jit_insn_store_relative(coder->jitFunction, base, offset, value);
 }
@@ -550,7 +557,8 @@ static void JITCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
 	 */
 	_ILJitCheckNull(jitCoder, dest);
 
-	value = jit_insn_convert(jitCoder->jitFunction, value, _IL_JIT_TYPE_BYTE, 0);
+	value = _ILJitValueConvertImplicit(jitCoder->jitFunction, value,
+									   _IL_JIT_TYPE_BYTE);
 	jit_insn_memset(jitCoder->jitFunction, dest, value, size);
 	JITC_ADJUST(jitCoder, -3);
 }
@@ -600,9 +608,10 @@ static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
 	/* Allocate the object. */
 	newObj = _ILJitAllocObjectGen(jitCoder, boxClass);
 
-	if(jit_value_get_type(value)!=jitType)
+	if(jit_value_get_type(value) != jitType)
 	{
-		value = jit_insn_convert(jitCoder->jitFunction, value, jitType, 1);
+		value = _ILJitValueConvertImplicit(jitCoder->jitFunction, value,
+										   jitType);
 	}
 	/* Box a managed value */
 	jit_insn_store_relative(jitCoder->jitFunction, newObj, 0, value);
@@ -624,7 +633,8 @@ static void JITCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 	/* If the smallerType is smaller then the initiale type then convert to it. */
 	if(jit_value_get_type(value) != jitType)
 	{
-		value = jit_insn_convert(jitCoder->jitFunction, value, jitType, 0);
+		value = _ILJitValueConvertImplicit(jitCoder->jitFunction, value,
+										   jitType);
 	}
 	
 	jit_insn_store_relative(jitCoder->jitFunction, newObj, 0, value);

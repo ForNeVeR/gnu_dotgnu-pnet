@@ -59,6 +59,9 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	{
 		return 0;
 	}
+#ifdef _IL_JIT_OPTIMIZE_INIT_LOCALS
+	coder->localsInitialized = 0;
+#endif
 
 	/* Ensure that the evaluation stack can hold at least the methods maxStack */
 	/* items. */

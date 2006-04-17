@@ -102,7 +102,7 @@ static void StoreArrayElem(ILJITCoder *coder, ILJitType type)
 	/* Convert the value to the array type when needed. */
 	if(valueType != type)
 	{
-		value = jit_insn_convert(coder->jitFunction, value, type, 0);
+		value = _ILJitValueConvertImplicit(coder->jitFunction, value, type);
 	}
 	jit_insn_store_elem(coder->jitFunction, arrayBase, index, value);
 	JITC_ADJUST(coder, -3);
@@ -134,7 +134,7 @@ static void StoreRelative(ILJITCoder *coder, ILJitType type)
 	_ILJitCheckNull(coder, ptr);
 	if(valueType != type)
 	{
-		value = jit_insn_convert(coder->jitFunction, value, type, 0);
+		value = _ILJitValueConvertImplicit(coder->jitFunction, value, type);
 	}
 	jit_insn_store_relative(coder->jitFunction, ptr, (jit_nint)0, value);
 	JITC_ADJUST(coder, -2);
@@ -483,8 +483,10 @@ static void JITCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 		address = jitCoder->jitStack[jitCoder->stackTop - 1];
 		_ILJitCheckNull(jitCoder, address);
 		jitCoder->jitStack[jitCoder->stackTop - 1] =
-			jit_insn_load_relative(jitCoder->jitFunction, address, (jit_nint)0,
-								   jitType);
+		_ILJitValueConvertToStackType(jitCoder->jitFunction,
+									  jit_insn_load_relative(jitCoder->jitFunction,
+															 address, (jit_nint)0,
+								   							 jitType));
 	}
 	else
 	{
@@ -496,7 +498,8 @@ static void JITCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 		
 		if(jit_value_get_type(object) != jitType)
 		{
-			object = jit_insn_convert(jitCoder->jitFunction, object, jitType, 0);
+			object = _ILJitValueConvertImplicit(jitCoder->jitFunction, object,
+												jitType);
 		}
 		jit_insn_store_relative(jitCoder->jitFunction, address, (jit_nint)0, object);
 		JITC_ADJUST(jitCoder, -2);
@@ -524,7 +527,10 @@ static void JITCoder_ArrayLength(ILCoder *coder)
 	_ILJitCheckNull(jitCoder, array);
 	len = GetArrayLength(jitCoder, array);
 	jitCoder->jitStack[jitCoder->stackTop - 1] = 
-		jit_insn_convert(jitCoder->jitFunction, len, _IL_JIT_TYPE_NUINT, 0);
+		_ILJitValueConvertToStackType(jitCoder->jitFunction,
+									  jit_insn_convert(jitCoder->jitFunction,
+													   len,
+													   _IL_JIT_TYPE_NUINT, 0));
 }
 
 /*

@@ -562,10 +562,8 @@ static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
 
 	ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
 	ILJitValue newObj;
-	ILJitValue args[3];
 	ILType *type = ILClassToType(boxClass);
 	ILJitType jitType = _ILJitGetReturnType(type, jitCoder->process);
-	jit_label_t label1 = jit_label_undefined;
 
 	if(valueType == ILEngineType_TypedRef)
 	{
@@ -600,20 +598,7 @@ static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
 #endif
 
 	/* Allocate the object. */
-	args[0] = jit_value_get_param(jitCoder->jitFunction, 0);
-	args[1] = jit_value_create_nint_constant(jitCoder->jitFunction,
-							_IL_JIT_TYPE_VPTR, (jit_nint)boxClass);
-
-	args[2] = jit_value_create_nint_constant(jitCoder->jitFunction,
-							_IL_JIT_TYPE_UINT32, size);
-
-	newObj = jit_insn_call_native(jitCoder->jitFunction, "_ILEngineAlloc",
-								  _ILEngineAlloc, _ILJitSignature_ILEngineAlloc,
-					 			  args, 3, JIT_CALL_NOTHROW);
-
-	jit_insn_branch_if(jitCoder->jitFunction, newObj, &label1);
-	_ILJitThrowCurrentException(jitCoder);
-	jit_insn_label(jitCoder->jitFunction, &label1);
+	newObj = _ILJitAllocObjectGen(jitCoder, boxClass);
 
 	if(jit_value_get_type(value)!=jitType)
 	{
@@ -632,27 +617,9 @@ static void JITCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 	ILJitType jitType = _ILJitGetReturnType(smallerType, jitCoder->process);
 
 	ILJitValue newObj;
-	ILJitValue args[3];
-
-	jit_label_t label1 = jit_label_undefined;
 
 	/* Allocate memory */
-	args[0] = jit_value_get_param(jitCoder->jitFunction, 0);
-	args[1] = jit_value_create_nint_constant(jitCoder->jitFunction,
-											 _IL_JIT_TYPE_VPTR,
-											 (jit_nint)boxClass);
-	args[2] = jit_value_create_nint_constant(jitCoder->jitFunction,
-											 _IL_JIT_TYPE_UINT32,
-											 jit_type_get_size(jitType));
-							
-	newObj = jit_insn_call_native(jitCoder->jitFunction, "_ILEngineAlloc",
-								  _ILEngineAlloc, _ILJitSignature_ILEngineAlloc,
-								  args, 3, 0);
-					
-	jit_insn_branch_if(jitCoder->jitFunction, newObj, &label1);
-	_ILJitThrowCurrentException(jitCoder);
-	jit_insn_label(jitCoder->jitFunction, &label1);
-
+	newObj = _ILJitAllocGen(jitCoder, boxClass, jit_type_get_size(jitType));
 	
 	/* If the smallerType is smaller then the initiale type then convert to it. */
 	if(jit_value_get_type(value) != jitType)

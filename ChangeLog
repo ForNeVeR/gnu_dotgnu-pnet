@@ -1,3 +1,15 @@
+2006-04-17  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/Makefile.am: Add jitc_alloc.c to jitc.o sources.
+
+	* engine/jitc_alloc.c: Add object allocation functions.
+
+	* engine/jitc.c, engine/jitc_call.c, engine/jitc_conv.c,
+	engine/jitc_labels.c, engine/jitc_locals.c, engine/jitc_obj.c,
+	engine/jitc_ptr.c, engine/jitc_setup.c, engine/jitc_var.c: Replace the
+	calls of EngineAlloc with calls to the new allocation functions.
+	Add initialization of locals. Redo the value conversion.
+
 2006-04-10  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_ptr.c: Do some optimizations in the array index verification

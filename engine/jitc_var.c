@@ -86,7 +86,6 @@ static void JITCoder_StoreArg(ILCoder *coder, ILUInt32 argNum,
 							  ILEngineType engineType, ILType *type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue argValue = _ILJitParamValue(jitCoder, argNum);
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -98,15 +97,11 @@ static void JITCoder_StoreArg(ILCoder *coder, ILUInt32 argNum,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+
 	JITC_ADJUST(jitCoder, -1);
 
-#ifdef _IL_JIT_OPTIMIZE_LOCALS
-	_ILJitValueFindAndDup(jitCoder, argValue);
-#endif
-
-	jit_insn_store(jitCoder->jitFunction, argValue,
-					jitCoder->jitStack[jitCoder->stackTop]);
-
+	_ILJitParamStoreValue(jitCoder, argNum,
+						  jitCoder->jitStack[jitCoder->stackTop]);
 }
 
 /*
@@ -116,7 +111,6 @@ static void JITCoder_StoreLocal(ILCoder *coder, ILUInt32 localNum,
 								ILEngineType engineType, ILType *type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue localValue = _ILJitLocalValue(jitCoder, localNum);
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -131,13 +125,8 @@ static void JITCoder_StoreLocal(ILCoder *coder, ILUInt32 localNum,
 
 	JITC_ADJUST(jitCoder, -1);
 
-#ifdef _IL_JIT_OPTIMIZE_LOCALS
-	_ILJitValueFindAndDup(jitCoder, localValue);
-#endif
-
-	jit_insn_store(jitCoder->jitFunction, localValue,
-					jitCoder->jitStack[jitCoder->stackTop]);
-
+	_ILJitLocalStoreValue(jitCoder, localNum,
+						  jitCoder->jitStack[jitCoder->stackTop]);
 }
 
 /*

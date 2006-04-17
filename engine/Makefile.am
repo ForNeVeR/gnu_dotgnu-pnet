@@ -14,6 +14,7 @@ CVMC_INCLUDES = cvmc_arith.c cvmc_branch.c cvmc_call.c cvmc_const.c \
 INTERNAL_INCLUDES = int_table.c
 
 JITC_INCLUDES = jitc.h \
+				jitc_alloc.c \
 				jitc_arith.c \
 				jitc_branch.c \
 				jitc_call.c \

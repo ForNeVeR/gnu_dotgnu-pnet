@@ -63,6 +63,11 @@ extern	"C" {
  */
 /* #define _IL_JIT_OPTIMIZE_NULLCHECKS 1 */
 
+/*
+ * To delay the initialization of the locals uncomment the following define.
+ */
+/* #define _IL_JIT_OPTIMIZE_INIT_LOCALS 1 */
+
 #ifdef _IL_JIT_DUMP_FUNCTION
 #ifndef _IL_JIT_ENABLE_DEBUG
 #define _IL_JIT_ENABLE_DEBUG 1
@@ -112,10 +117,9 @@ static ILJitType _ILJitTypedRef = 0;
  */
 
 /*
- * ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
- *						 	ILUInt32 size)
+ * ILObject *_ILJitAlloc(ILClass *classInfo, ILUInt32 size)
  */
-static ILJitType _ILJitSignature_ILEngineAlloc = 0;
+static ILJitType _ILJitSignature_ILJitAlloc = 0;
 
 /*
  * System_Array *_ILJitGetExceptionStackTrace(ILExecThread *thread)
@@ -155,6 +159,12 @@ static ILJitType _ILJitSignature_JitExceptionBuiltin = 0;
  * void jit_exception_clear_last()
  */
 static ILJitType _ILJitSignature_JitExceptionClearLast = 0;
+
+/*
+ * void *malloc(size_t nbytes)
+ * This signature is used for GCAlloc and GCAllocAtomic too.
+ */
+static ILJitType _ILJitSignature_malloc = 0;
 
 /*
  * Define offsetof macro if not present.
@@ -248,6 +258,9 @@ struct _tagILJITCoder
 
 	/* Members to manage the local variables. */
 	ILJitLocalSlots jitLocals;
+#ifdef _IL_JIT_OPTIMIZE_INIT_LOCALS
+	int				localsInitialized;
+#endif
 
 	/* Handle the labels. */
 	ILMemPool		labelPool;
@@ -273,6 +286,19 @@ struct _tagILJITCoder
  * Convert a pointer to an ILCoder to a pointer to the ILJITVoder instance
  */
 #define _ILCoderToILJITCoder(coder) ((ILJITCoder *)coder)
+
+/*
+ * Generate the code to allocate the memory for an object.
+ * Returns the ILJitValue with the pointer to the new object.
+ */
+static ILJitValue _ILJitAllocGen(ILJITCoder *jitCoder, ILClass *classInfo,
+								 ILUInt32 size);
+
+/*
+ * Generate the code to allocate the memory for an object.
+ * Returns the ILJitValue with the pointer to the new object.
+ */
+static ILJitValue _ILJitAllocObjectGen(ILJITCoder *jitCoder, ILClass *classInfo);
 
 /*
  * Initialize a ILJitTypes base structure 
@@ -325,7 +351,31 @@ struct _tagILJITCoder
  (typeKind == JIT_TYPE_NFLOAT))
 
 /*
- * Check if the typeKind is a long.
+ * Check if the typeKind is an int (<=32 bit value).
+ */
+#ifdef IL_NATIVE_INT64
+#define _JIT_TYPEKIND_IS_INT(typeKind) \
+((typeKind == JIT_TYPE_INT)		|| \
+ (typeKind == JIT_TYPE_UINT)	|| \
+ (typeKind == JIT_TYPE_SHORT)	|| \
+ (typeKind == JIT_TYPE_USHORT)	|| \
+ (typeKind == JIT_TYPE_SBYTE)	|| \
+ (typeKind == JIT_TYPE_UBYTE))
+#else
+#define _JIT_TYPEKIND_IS_INT(typeKind) \
+((typeKind == JIT_TYPE_NINT)	|| \
+ (typeKind == JIT_TYPE_NUINT)	|| \
+ (typeKind == JIT_TYPE_INT)		|| \
+ (typeKind == JIT_TYPE_UINT)	|| \
+ (typeKind == JIT_TYPE_SHORT)	|| \
+ (typeKind == JIT_TYPE_USHORT)	|| \
+ (typeKind == JIT_TYPE_SBYTE)	|| \
+ (typeKind == JIT_TYPE_UBYTE)	|| \
+ (typeKind == JIT_TYPE_PTR))
+#endif
+
+/*
+ * Check if the typeKind is a long (64 bit value).
  */
 #ifdef IL_NATIVE_INT64
 #define _JIT_TYPEKIND_IS_LONG(typeKind) \
@@ -359,6 +409,12 @@ struct _tagILJITCoder
  (typeKind == JIT_TYPE_INT)	|| \
  (typeKind == JIT_TYPE_SHORT)	|| \
  (typeKind == JIT_TYPE_SBYTE))
+
+/*
+ * Check if the typeKind is a pointer type.
+ */
+#define _JIT_TYPEKIND_IS_POINTER(typeKind) \
+(typeKind == JIT_TYPE_PTR)
 
 /*
  * Convert a value to the corresponding signed/unsigned type.
@@ -464,6 +520,289 @@ static int AdjustSign(ILJitFunction func, ILJitValue *value, int toUnsigned,
 }
 
 /*
+ * Do the explicit conversion of an ILJitValue to the given target type.
+ * The value to convert is on the stack in it's source type. This means that no
+ * implicit conversion to the stacktype (either INT32, INT64 or a pointer type
+ * was done.
+ * Because of this we have to take into account that unsigned values with a
+ * length < 4 should have been zero extended to a size of an INT32 and signed
+ * values would have been sign extended.
+ */
+static ILJitValue _ILJitValueConvertExplicit(ILJitFunction func,
+											 ILJitValue value,
+											 ILJitType targetType,
+											 int isUnsigned,
+											 int overflowCheck)
+{
+	ILJitType sourceType = jit_value_get_type(value);
+	int sourceSize;
+	int sourceTypeKind;
+	int targetSize;
+	int targetTypeKind;
+
+	if(sourceType == targetType)
+	{
+		/* Nothing to do here. */
+		return value;
+	}
+	if(jit_type_is_struct(sourceType) || jit_type_is_union(sourceType))
+	{
+		/* something is wrong here. */
+		return value;
+	}
+	sourceTypeKind = jit_type_get_kind(sourceType);
+	targetTypeKind = jit_type_get_kind(targetType);
+	if(_JIT_TYPEKIND_IS_FLOAT(sourceTypeKind))
+	{
+		/* We can convert these values directly */
+		return jit_insn_convert(func, value, targetType, overflowCheck);
+	}
+	else
+	{
+		if(_JIT_TYPEKIND_IS_FLOAT(targetTypeKind))
+		{
+			if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
+			{
+				if(isUnsigned)
+				{
+					AdjustSign(func, &value, 1, overflowCheck);
+				}
+			}
+			else if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
+			{
+				if(!isUnsigned)
+				{
+					AdjustSign(func, &value, 0, overflowCheck);
+				}
+			}
+			else if(_JIT_TYPEKIND_IS_POINTER(sourceTypeKind))
+			{
+				if(isUnsigned)
+				{
+					value = jit_insn_convert(func, value, _IL_JIT_TYPE_NUINT,
+														  overflowCheck);
+				}
+				else
+				{
+						value = jit_insn_convert(func, value, _IL_JIT_TYPE_NINT,
+													  overflowCheck);
+				}
+			}
+			value = jit_insn_convert(func, value, targetType, overflowCheck);
+		}
+		else
+		{
+			sourceSize = jit_type_get_size(sourceType);
+			targetSize = jit_type_get_size(targetType);
+
+			if(targetSize <= sourceSize)
+			{
+				/* The value is truncated or the sign is changed. */
+			}
+			else
+			{
+				if(_JIT_TYPEKIND_IS_LONG(targetTypeKind))
+				{
+					if(_JIT_TYPEKIND_IS_SIGNED(targetTypeKind))
+					{
+						/* In this case we have to zero extend unsigned source */
+						/* values to the size of an INT32 first. */
+						if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
+						{
+							/* We have to zero extend the value to the */
+							/* size an INT32 first. */
+							/* I assume that unsigned source values will be  */
+							/* zero extended to the target size. */
+							value = jit_insn_convert(func, value,
+														 _IL_JIT_TYPE_INT32,
+														 overflowCheck);
+						}
+						else if(_JIT_TYPEKIND_IS_POINTER(sourceTypeKind))
+						{
+							/* Pointers have to be sign extended in this case. */
+							/* So we convert to a signed NINT first. */
+							value = jit_insn_convert(func, value,
+														 _IL_JIT_TYPE_NINT,
+														 overflowCheck);
+						}
+					}
+					else if(_JIT_TYPEKIND_IS_UNSIGNED(targetTypeKind))
+					{
+
+						/* In this case we have to sign extend signed source */
+						/* values to the size of an INT32 first. */
+						if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
+						{
+							/* We have to sign extend the value to the */
+							/* size an INT32 first. */
+							/* I assume that signed source values will be  */
+							/* sign extended to the target size. */
+							value = jit_insn_convert(func, value,
+														 _IL_JIT_TYPE_UINT32,
+														 overflowCheck);
+						}
+						else if(_JIT_TYPEKIND_IS_POINTER(sourceTypeKind))
+						{
+							/* Pointers have to be zero extended in this case. */
+							/* So we convert to a unsigned NUINT first. */
+							value = jit_insn_convert(func, value,
+														 _IL_JIT_TYPE_NUINT,
+														 overflowCheck);
+						}
+					}
+#ifdef IL_NATIVE_INT64
+					else if(_JIT_TYPEKIND_IS_POINTER(targetTypeKind))
+					{
+						/* This is not allowed in explicit conversion. */
+						/* But we treat pointers like unsigned values. */
+						if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
+						{
+							AdjustSign(func, &value, 1, overflowCheck);
+						}
+					}
+#endif
+				}
+				else
+				{
+					/* The value would have been zero- or sign extended to */
+					/* the size of an INT32 depending on the signedness of */
+					/* the value. Now we have the less or the same size so */
+					/* we can safely simply convert to the target type.    */
+				}
+			}
+			value = jit_insn_convert(func, value, targetType, overflowCheck);
+		}
+	}
+	return value;
+}
+
+/*
+ * Do the implicit conversion of an ILJitValue to the given target type.
+ * The value to convert is on the stack in it's source type. This means that no
+ * implicit conversion to the stacktype (either INT32, INT64 or a pointer type
+ * was done.
+ * Because of this we have to take into account that unsigned values with a
+ * length < 4 should have been zero extended to a size of an INT32 and signed
+ * values would have been sign extended.
+ */
+static ILJitValue _ILJitValueConvertImplicit(ILJitFunction func,
+											 ILJitValue value,
+											 ILJitType targetType)
+{
+	ILJitType sourceType = jit_value_get_type(value);
+	int sourceTypeKind;
+	int targetTypeKind;
+
+	if(sourceType == targetType)
+	{
+		/* Nothing to do here. */
+		return value;
+	}
+	if(jit_type_is_struct(sourceType) || jit_type_is_union(sourceType))
+	{
+		/* something is wrong here. */
+		return value;
+	}
+	sourceTypeKind = jit_type_get_kind(sourceType);
+	targetTypeKind = jit_type_get_kind(targetType);
+	if(_JIT_TYPEKIND_IS_FLOAT(sourceTypeKind))
+	{
+		/* We can convert these values directly */
+		return jit_insn_convert(func, value, targetType, 0);
+	}
+	else
+	{
+		if(_JIT_TYPEKIND_IS_FLOAT(targetTypeKind))
+		{
+			value = jit_insn_convert(func, value, targetType, 0);
+		}
+		else
+		{
+			int sourceSize = jit_type_get_size(sourceType);
+			int targetSize = jit_type_get_size(targetType);
+
+			if(targetSize <= sourceSize)
+			{
+				/* The value is truncated or the sign is changed. */
+			}
+			else
+			{
+				if(_JIT_TYPEKIND_IS_LONG(targetTypeKind))
+				{
+					if(_JIT_TYPEKIND_IS_SIGNED(targetTypeKind))
+					{
+						/* In this case we have to zero extend unsigned source */
+						/* values to the size of an INT32 first. */
+						if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
+						{
+							/* We have to zero extend the value to the */
+							/* size an INT32 first. */
+							/* I assume that unsigned source values will be  */
+							/* zero extended to the target size. */
+							value = jit_insn_convert(func, value,
+														 _IL_JIT_TYPE_INT32,
+														 0);
+						}
+						else if(_JIT_TYPEKIND_IS_POINTER(sourceTypeKind))
+						{
+							/* Pointers have to be sign extended in this case. */
+							/* So we convert to a signed NINT first. */
+							value = jit_insn_convert(func, value,
+														 _IL_JIT_TYPE_NINT,
+														 0);
+						}
+					}
+					else if(_JIT_TYPEKIND_IS_UNSIGNED(targetTypeKind))
+					{
+
+						/* In this case we have to sign extend signed source */
+						/* values to the size of an INT32 first. */
+						if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
+						{
+							/* We have to sign extend the value to the */
+							/* size an INT32 first. */
+							/* I assume that signed source values will be  */
+							/* sign extended to the target size. */
+							value = jit_insn_convert(func, value,
+														 _IL_JIT_TYPE_UINT32,
+														 0);
+						}
+						else if(_JIT_TYPEKIND_IS_POINTER(sourceTypeKind))
+						{
+							/* Pointers have to be zero extended in this case. */
+							/* So we convert to a unsigned NUINT first. */
+							value = jit_insn_convert(func, value,
+														 _IL_JIT_TYPE_NUINT,
+														 0);
+						}
+					}
+#ifdef IL_NATIVE_INT64
+					else if(_JIT_TYPEKIND_IS_POINTER(targetTypeKind))
+					{
+						/* This is not allowed in explicit conversion. */
+						/* But we treat pointers like unsigned values. */
+						if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
+						{
+							AdjustSign(func, &value, 1, 0);
+						}
+					}
+#endif
+				}
+				else
+				{
+					/* The value would have been zero- or sign extended to */
+					/* the size of an INT32 depending on the signedness of */
+					/* the value. Now we have the less or the same size so */
+					/* we can safely simply convert to the target type.    */
+				}
+			}
+			value = jit_insn_convert(func, value, targetType, 0);
+		}
+	}
+	return value;
+}
+
+/*
  * Readjust the stack to normalize binary operands when
  * I and I4 are mixed together.  Also determine which of
  * I4 or I8 to use if the operation involves I.
@@ -485,25 +824,6 @@ static void AdjustMixedBinary(ILJITCoder *coder, int isUnsigned,
 	if(type1IsFloat || type2IsFloat)
 	{
 		return;
-	}
-
-	/* When converted to unsigned the values have to be extended with 0s. */
-	/* So we have to adjust the sign first. */
-	if(isUnsigned)
-	{
-		if(AdjustSign(coder->jitFunction, value1, isUnsigned, 0))
-		{
-			type1 = jit_value_get_type(*value1);
-			newType1 = type1;
-			type1Kind = jit_type_get_kind(type1);
-		}
-
-		if(AdjustSign(coder->jitFunction, value2, isUnsigned, 0))
-		{
-			type2 = jit_value_get_type(*value2);
-			newType2 = type2;
-			type2Kind = jit_type_get_kind(type2);
-		}
 	}
 
 	/* If the arguments mix I8 and I4, then cast the I4 value to I8 */
@@ -592,11 +912,13 @@ static void AdjustMixedBinary(ILJITCoder *coder, int isUnsigned,
 	/* now do the conversion if necessairy. */
 	if(type1 != newType1)
 	{
-		*value1 = jit_insn_convert(coder->jitFunction, *value1, newType1, 0);
+		*value1 = _ILJitValueConvertImplicit(coder->jitFunction, *value1,
+											 newType1);
 	}
 	if(type2 != newType2)
 	{
-		*value2 = jit_insn_convert(coder->jitFunction, *value2, newType2, 0);
+		*value2 = _ILJitValueConvertImplicit(coder->jitFunction, *value2,
+											 newType2);
 	}
 }
 
@@ -607,6 +929,11 @@ static int _LayoutClass(ILExecThread *thread, ILClass *info)
 {
 	int result = 0;
 
+	/* Check if the class is allready layouted. */
+	if((info->userData) && !(((ILClassPrivate *)(info->userData))->inLayout))
+	{
+		return 1;
+	}
 	METADATA_WRLOCK(thread);
 	result = _ILLayoutClass(_ILExecThreadProcess(thread), info);
 	METADATA_UNLOCK(thread);
@@ -1309,11 +1636,10 @@ int ILJitInit()
 
 	/* Initialize the native method signatures. */
 	args[0] = _IL_JIT_TYPE_VPTR;
-	args[1] = _IL_JIT_TYPE_VPTR;
-	args[2] = _IL_JIT_TYPE_UINT32;
+	args[1] = _IL_JIT_TYPE_UINT32;
 	returnType = _IL_JIT_TYPE_VPTR;
-	if(!(_ILJitSignature_ILEngineAlloc = 
-		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
+	if(!(_ILJitSignature_ILJitAlloc = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
 	{
 		return 0;
 	}
@@ -1375,6 +1701,14 @@ int ILJitInit()
 	args[0] = _IL_JIT_TYPE_VPTR;
 	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILJitGetExceptionStackTrace =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_NINT;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_malloc =
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
 	{
 		return 0;
@@ -2556,6 +2890,7 @@ ILJitTypes *ILJitPrimitiveClrTypeToJitTypes(int primitiveClrType)
 	return 0;
 }
 
+#include "jitc_alloc.c"
 #include "jitc_diag.c"
 #include "jitc_locals.c"
 #include "jitc_labels.c"

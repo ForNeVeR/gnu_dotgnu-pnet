@@ -19,6 +19,12 @@
  */
 
 /*
+ * definitions used in the slot's flags
+ */
+#define _IL_JIT_VALUE_NULLCHECKED 1
+#define _IL_JIT_VALUE_INITIALIZED 2
+
+/*
  * Allocate enough space for "n" slots.
  */
 #define	_ILJitLocalsAlloc(s, n)	\
@@ -104,6 +110,100 @@ static ILJitValue _ILJitParamGetPointerTo(ILJITCoder *coder,
 }
 
 /*
+ * Initialize the local value to 0.
+ */
+static int _ILJitLocalInit(ILJITCoder *coder, ILJitLocalSlot *slot)
+{
+	if((slot->flags & _IL_JIT_VALUE_INITIALIZED) == 0)
+	{
+		ILJitType type = jit_value_get_type(slot->value);
+
+		if(!jit_type_is_struct(type))
+		{
+			int typeKind = jit_type_get_kind(type);
+			ILJitValue constant = 0;
+
+			if(_JIT_TYPEKIND_IS_FLOAT(typeKind))
+			{
+				if(!(constant = jit_value_create_nfloat_constant(coder->jitFunction,
+															type,
+															(jit_nfloat)0)))
+				{
+					return 0;
+				}
+				jit_insn_store(coder->jitFunction, slot->value, constant);
+			}
+			else
+			{
+				if(_JIT_TYPEKIND_IS_LONG(typeKind))
+				{
+					if(!(constant = jit_value_create_long_constant(coder->jitFunction,
+															  type, (jit_long)0)))
+					{
+						return 0;
+					}
+					jit_insn_store(coder->jitFunction, slot->value, constant);
+				}
+				else
+				{
+					if(!(constant = jit_value_create_nint_constant(coder->jitFunction,
+															  type, (jit_nint)0)))
+					{
+						return 0;
+					}
+					jit_insn_store(coder->jitFunction, slot->value, constant);
+				}
+			}
+		}
+		slot->flags |= _IL_JIT_VALUE_INITIALIZED;
+	}
+	return 1;
+}
+
+/*
+ * Initialize the not yet initialized local values to 0 and move the
+ * initialization sequence to the start of the function.
+ */
+static int _ILJitLocalsInit(ILJITCoder *coder)
+{
+	ILUInt32 num = coder->jitLocals.numSlots;
+	ILUInt32 current;
+
+	if(num > 0)
+	{
+		jit_label_t startLabel = jit_label_undefined;
+		jit_label_t endLabel = jit_label_undefined;
+		ILJitLocalSlot *slot;
+
+		if(!jit_insn_label(coder->jitFunction, &startLabel))
+		{
+			return 0;
+		}
+
+		for(current = 0; current < num; ++current)
+		{
+			slot = &_ILJitLocalGet(coder, current);
+
+			if(!_ILJitLocalInit(coder, slot))
+			{
+				return 0;
+			}
+		}
+
+		if(!jit_insn_label(coder->jitFunction, &endLabel))
+		{
+			return 0;
+		}
+		if(!jit_insn_move_blocks_to_start(coder->jitFunction, startLabel,
+															  endLabel))
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/*
  * Create the slots for the declared local variables.
  * Returns zero if out of memory.
  */
@@ -142,6 +242,14 @@ static int _ILJitLocalsCreate(ILJITCoder *coder, ILStandAloneSig *localVarSig)
 		}
 		/* Record the number of used locals in the coder. */
 		coder->jitLocals.numSlots = num;
+
+#ifndef _IL_JIT_OPTIMIZE_INIT_LOCALS
+		/* Initialize the locals. */
+		if(!_ILJitLocalsInit(coder))
+		{
+			return 0;
+		}
+#endif
 	}
 	else
 	{
@@ -191,6 +299,90 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 	return 0;
 }
 
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+
+/*
+ * Find the given value on the stack and replace it by a duplicate.
+ */
+static void _ILJitValueFindAndDup(ILJITCoder *coder, ILJitValue value)
+{
+	ILJitValue dupValue = 0;
+	ILInt32 stackPos = 0;
+
+	for(stackPos = 0; stackPos < coder->stackTop; ++stackPos)
+	{
+		if(coder->jitStack[stackPos] == value)
+		{
+			if(!dupValue)
+			{
+				dupValue = jit_insn_dup(coder->jitFunction, value);
+			}
+			coder->jitStack[stackPos] = dupValue;
+		}
+	}
+}
+#endif
+
+/*
+ * Get the value of a local slot.
+ * The value in the local slot is initialized to 0 if it is not yet initialized.
+ */
+static ILJitValue _ILJitLocalGetValue(ILJITCoder *coder, ILUInt32 localNum)
+{
+	ILJitLocalSlot *slot = &_ILJitLocalGet(coder, localNum);
+
+	if((slot->flags & _IL_JIT_VALUE_INITIALIZED) == 0)
+	{
+		_ILJitLocalInit(coder, slot);
+	}
+	return slot->value;
+}
+
+/*
+ * Store a value in a local variable.
+ */
+static void _ILJitLocalStoreValue(ILJITCoder *coder, ILUInt32 localNum,
+													 ILJitValue value)
+{
+	ILJitLocalSlot *slot = &_ILJitLocalGet(coder, localNum);
+
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+	_ILJitValueFindAndDup(coder, slot->value);
+#endif
+
+	jit_insn_store(coder->jitFunction, slot->value, value);
+
+	slot->flags |= _IL_JIT_VALUE_INITIALIZED;
+	slot->flags &= ~_IL_JIT_VALUE_NULLCHECKED;
+}
+
+/*
+ * Get the value of a parameter slot.
+ */
+static ILJitValue _ILJitParamGetValue(ILJITCoder *coder, ILUInt32 paramNum)
+{
+	ILJitLocalSlot *slot = &_ILJitParamGet(coder, paramNum);
+
+	return slot->value;
+}
+
+/*
+ * Store a value in a parameter.
+ */
+static void _ILJitParamStoreValue(ILJITCoder *coder, ILUInt32 paramNum,
+													 ILJitValue value)
+{
+	ILJitLocalSlot *slot = &_ILJitParamGet(coder, paramNum);
+
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+	_ILJitValueFindAndDup(coder, slot->value);
+#endif
+
+	jit_insn_store(coder->jitFunction, slot->value, value);
+
+	slot->flags &= ~_IL_JIT_VALUE_NULLCHECKED;
+}
+
 /*
  * Check if the given value is a parameter or local.
  * Returns 1 if the value is either a param or local value or pointer to
@@ -224,33 +416,7 @@ static ILInt32 _ILJitValueIsArgOrLocal(ILJITCoder *coder, ILJitValue value)
 	return 0;
 }
 
-#ifdef _IL_JIT_OPTIMIZE_LOCALS
-
-/*
- * Find the given value on the stack and replace it by a duplicate.
- */
-static void _ILJitValueFindAndDup(ILJITCoder *coder, ILJitValue value)
-{
-	ILJitValue dupValue = 0;
-	ILInt32 stackPos = 0;
-
-	for(stackPos = 0; stackPos < coder->stackTop; ++stackPos)
-	{
-		if(coder->jitStack[stackPos] == value)
-		{
-			if(!dupValue)
-			{
-				dupValue = jit_insn_dup(coder->jitFunction, value);
-			}
-			coder->jitStack[stackPos] = dupValue;
-		}
-	}
-}
-#endif
-
 #ifdef _IL_JIT_OPTIMIZE_NULLCHECKS
-
-#define _IL_JIT_VALUE_NULLCHECKED 1
 
 #define _ILJitValuesResetNullChecked(coder) \
 		_ILJitValuesSetFlags((coder), 0, _IL_JIT_VALUE_NULLCHECKED)
@@ -258,7 +424,7 @@ static void _ILJitValueFindAndDup(ILJITCoder *coder, ILJitValue value)
 
 /*
  * Find the slot for the given value.
- * Returns the slot with the valuewhen found otherwise 0.
+ * Returns the slot with the value when found otherwise 0.
  */
 static ILJitLocalSlot *_ILJitValueFindSlot(ILJITCoder *coder, ILJitValue value)
 {

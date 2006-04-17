@@ -99,24 +99,7 @@ static ILJitValue _ILJitGetVirtualFunction(ILJitFunction func,
  */
 static void _ILJitNewObj(ILJITCoder *coder, ILClass *info, ILJitValue *newArg)
 {
-	ILUInt32 objSize = _ILJitGetSizeOfClass(info);
-	ILJitValue newObj;
-	ILJitValue args[3];
-	jit_label_t label1 = jit_label_undefined;
-	
-	args[0] = jit_value_get_param(coder->jitFunction, 0);
-	args[1] = jit_value_create_nint_constant(coder->jitFunction,
-												jit_type_void_ptr, (jit_nint)info);
-	args[2] = jit_value_create_nint_constant(coder->jitFunction,
-												jit_type_int, objSize);
-	newObj = jit_insn_call_native(coder->jitFunction, "_ILEngineAlloc",
-								  _ILEngineAlloc,
-								  _ILJitSignature_ILEngineAlloc, args, 3,
-								  JIT_CALL_NOTHROW);
-	jit_insn_branch_if(coder->jitFunction, newObj, &label1);
-	_ILJitThrowCurrentException(coder);
-	jit_insn_label(coder->jitFunction, &label1);
-	*newArg = newObj;
+	*newArg = _ILJitAllocObjectGen(coder, info);
 }
 
 /*
@@ -145,6 +128,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 	ILJitValue arrayBase;
 	ILJitValue boxObject;
 	ILJitValue boxValue;
+	ILJitValue boxObjectSize;
 	ILJitValue ptr;
 	jit_label_t labelException = jit_label_undefined;
 	jit_label_t label = jit_label_undefined;
@@ -477,20 +461,10 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 			 				0, paramType, 0);
 			info = ILClassResolve(info);
 			typeSize = ILSizeOfType(_thread, paramType);
-
-			args[0] = thread;
-			args[1] = jit_value_create_nint_constant(jitCoder->jitFunction,
-									_IL_JIT_TYPE_VPTR, (jit_nint)info);
-			args[2] = jit_value_create_nint_constant(jitCoder->jitFunction,
+			boxObjectSize = jit_value_create_nint_constant(jitCoder->jitFunction,
 												_IL_JIT_TYPE_UINT32, typeSize);
 
-			boxObject = jit_insn_call_native(jitCoder->jitFunction,
-											 "_ILEngineAlloc",
-								  			 _ILEngineAlloc,
-											 _ILJitSignature_ILEngineAlloc,
-					 			  			 args, 3, JIT_CALL_NOTHROW);
-			jit_insn_branch_if_not(jitCoder->jitFunction, boxObject,
-								   &labelException);
+			boxObject = _ILJitAllocGen(jitCoder, info, typeSize);
 			if(boxValue)
 			{
 				jit_insn_store_relative(jitCoder->jitFunction, boxObject, 0,
@@ -498,7 +472,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 			}
 			else
 			{
-				jit_insn_memcpy(jitCoder->jitFunction, boxObject, ptr, args[2]);
+				jit_insn_memcpy(jitCoder->jitFunction, boxObject, ptr, boxObjectSize);
 			}
 			jit_insn_store_relative(jitCoder->jitFunction, arrayBase, 0,
 									boxObject);
@@ -616,7 +590,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(methodInfo);
 	int argCount = info->numBaseArgs + info->numVarArgs;
-	ILJitValue jitParams[argCount + 1];
+	ILJitValue jitParams[argCount + 2];
 	ILJitValue returnValue;
 	char *methodName = 0;
 	ILInternalInfo fnInfo;
@@ -664,14 +638,15 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	methodName = _ILJitFunctionGetMethodName(jitFunction);
 #endif
 
+	if(info->hasParamArray)
+	{
+		++argCount;
+	}
+
 	/* Check if the function is implemented in the engine. */
 	if(_ILJitFunctionIsInternal(jitCoder, methodInfo, &fnInfo, 0))
 	{
 		/* Call the engine function directly with the supplied args. */
-		if(info->hasParamArray)
-		{
-			++argCount;
-		}
 		JITC_ADJUST(jitCoder, -argCount);
 		returnValue = _ILJitCallInternal(jitCoder->jitFunction, methodInfo,
 										 fnInfo.func, methodName,

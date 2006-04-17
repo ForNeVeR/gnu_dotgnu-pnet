@@ -167,6 +167,17 @@ static ILJITLabel *_ILJitLabelGet(ILJITCoder *coder, ILUInt32 address,
 			}
 			label->next = coder->labelList;
 			coder->labelList = label;
+#ifdef _IL_JIT_OPTIMIZE_INIT_LOCALS
+			if((coder->localsInitialized == 0) && (address != 0))
+			{
+				/* Initialize the locals. */
+				if(!_ILJitLocalsInit(coder))
+				{
+					return 0;
+				}
+				coder->localsInitialized = 1;
+			}
+#endif
 		}
 		else
 		{

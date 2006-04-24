@@ -1,3 +1,7 @@
+2006-04-24  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* pnetlib/System.Drawing/ColorConverter.cs: fixed ConvertFrom.
+	
 2006-04-13  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* pnetlib/runtime/System/Collections/ArrayList.cs: fixed memory leak.

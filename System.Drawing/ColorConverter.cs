@@ -180,9 +180,9 @@ public class ColorConverter : TypeConverter
 				if(str[0] == '#' && str.Length == 7)
 				{
 					// Web color 
-					return Color.FromArgb(
-							Int32.Parse(str.Substring(1), 
-											NumberStyles.HexNumber));
+					uint val = UInt32.Parse(str.Substring(1), NumberStyles.HexNumber);
+					val |= 0xFF000000;
+					return Color.FromArgb((int)val);
 				}
 
 				// Parse "[A,] R, G, B" components from the string.

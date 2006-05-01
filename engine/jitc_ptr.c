@@ -55,8 +55,8 @@ static void ValidateArrayIndex(ILJITCoder *coder, ILJitValue length,
 
 	temp = jit_insn_lt(coder->jitFunction, index, length);
 	jit_insn_branch_if(coder->jitFunction, temp, &label);
-	/* throw the System.IndexOutOfRange exception. */
-	_ILJitThrowInternal(coder->jitFunction, JIT_RESULT_OUT_OF_BOUNDS);
+	/* Throw a System.IndexOutOfRange exception. */
+	_ILJitThrowSystem(coder, _IL_JIT_INDEX_OUT_OF_RANGE);
 	jit_insn_label(coder->jitFunction, &label);
 }
 
@@ -483,10 +483,10 @@ static void JITCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 		address = jitCoder->jitStack[jitCoder->stackTop - 1];
 		_ILJitCheckNull(jitCoder, address);
 		jitCoder->jitStack[jitCoder->stackTop - 1] =
-		_ILJitValueConvertToStackType(jitCoder->jitFunction,
-									  jit_insn_load_relative(jitCoder->jitFunction,
-															 address, (jit_nint)0,
-								   							 jitType));
+			_ILJitValueConvertToStackType(jitCoder->jitFunction,
+										  jit_insn_load_relative(jitCoder->jitFunction,
+																 address, (jit_nint)0,
+									   							 jitType));
 	}
 	else
 	{
@@ -566,19 +566,28 @@ static void JITCoder_NewArray(ILCoder *coder, ILType *arrayType,
 	}
 	if(_ILJitFunctionIsInternal(jitCoder, ctor, &fnInfo, 1))
 	{
+		ILJitValue thread = _ILJitCoderGetThread(jitCoder);
+
 		JITC_ADJUST(jitCoder, -1);
-		returnValue = _ILJitCallInternal(jitCoder->jitFunction, ctor,
+		returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread, ctor,
 										 fnInfo.func, 0, &length, 1);
 	}
 	else
 	{
-		args[0] = jit_value_get_param(jitCoder->jitFunction, 0);
+	#ifdef IL_JIT_THREAD_IN_SIGNATURE
+		args[0] = _ILJitCoderGetThread(jitCoder);
 		args[1] = length;
 		JITC_ADJUST(jitCoder, -1);
-		_ILJitSetMethodInThread(jitCoder->jitFunction, args[0], ctor);
 		/* Output code to call the array type's constructor */
 		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction,
 									0, args, 2, 0);
+	#else
+		args[0] = length;
+		JITC_ADJUST(jitCoder, -1);
+		/* Output code to call the array type's constructor */
+		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction,
+									0, args, 1, 0);
+	#endif
 	}
 	jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label);
 	_ILJitThrowCurrentException(jitCoder);

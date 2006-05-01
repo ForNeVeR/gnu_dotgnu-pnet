@@ -1,3 +1,16 @@
+2006-05-01  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/call.c: Add support for the thread not included in the signature.
+
+	* engine/jitc.c, engine/jitc.h, engine/jitc_alloc.c, engine/jitc_arith.c,
+	engine/jitc_call.c, engine/jitc_except.c, engine/jitc_locals.c,
+	engine/jitc_obj.c, engine/jitc_ptr.c, engine/jitc_setup.c: Add support for
+	the thread not included in the signature. Remove as many thread accesses as
+	possible. Add more exception support. Fix Bugs and improve performance.
+
+	* engine/lib_defs.h: Add declaration of the ECMA specific part of the
+	System.Exception class.
+
 2006-04-17  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/Makefile.am: Add jitc_alloc.c to jitc.o sources.

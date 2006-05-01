@@ -148,7 +148,8 @@ static void JITCoder_Binary(ILCoder *coder, int opcode,
 		}
 	}
 
-	jitCoder->jitStack[jitCoder->stackTop - 2] = result;
+	jitCoder->jitStack[jitCoder->stackTop - 2] =
+		_ILJitValueConvertToStackType(jitCoder->jitFunction, result);
 	JITC_ADJUST(jitCoder, -1);
 }
 
@@ -159,41 +160,35 @@ static void JITCoder_BinaryPtr(ILCoder *coder, int opcode,
 							   ILEngineType type1, ILEngineType type2)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
+	ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+	ILJitValue result = 0;
 
 	switch(opcode)
 	{
 		case IL_OP_ADD:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_add(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			result = jit_insn_add(jitCoder->jitFunction, value1, value2);
 		}
 		case IL_OP_ADD_OVF_UN:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_add_ovf(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			result = jit_insn_add_ovf(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_SUB:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_sub(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			result = jit_insn_sub(jitCoder->jitFunction, value1, value2);
 		}
 		case IL_OP_SUB_OVF_UN:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_sub_ovf(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			result = jit_insn_sub_ovf(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 	}
+	JITC_ADJUST(jitCoder, -1);
+	jitCoder->jitStack[jitCoder->stackTop - 1] = 
+			_ILJitValueConvertToStackType(jitCoder->jitFunction, result);
 }
 
 /*
@@ -203,37 +198,37 @@ static void JITCoder_Shift(ILCoder *coder, int opcode,
 						   ILEngineType type1, ILEngineType type2)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
+	ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+	ILJitValue result = 0;
 
 	/* Determine how to perform the operation */
 	switch(opcode)
 	{
 		case IL_OP_SHL:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_shl(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustSign(jitCoder->jitFunction, &value1, 0, 0);
+			result = jit_insn_shl(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_SHR:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_shr(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
-			JITC_ADJUST(jitCoder, -1);
+			AdjustSign(jitCoder->jitFunction, &value1, 0, 0);
+			result= jit_insn_shr(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 
 		case IL_OP_SHR_UN:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 2] = jit_insn_shr(jitCoder->jitFunction,
-									jitCoder->jitStack[jitCoder->stackTop - 2],
-									jitCoder->jitStack[jitCoder->stackTop - 1]);		
-			JITC_ADJUST(jitCoder, -1);
+			AdjustSign(jitCoder->jitFunction, &value1, 1, 0);
+			result = jit_insn_shr(jitCoder->jitFunction, value1, value2);
 		}
 		break;
 	}
+	JITC_ADJUST(jitCoder, -1);
+	jitCoder->jitStack[jitCoder->stackTop - 1] = 
+			_ILJitValueConvertToStackType(jitCoder->jitFunction, result);
 }
 
 /*
@@ -242,31 +237,32 @@ static void JITCoder_Shift(ILCoder *coder, int opcode,
 static void JITCoder_Unary(ILCoder *coder, int opcode, ILEngineType type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+	ILJitValue result = 0;
 
 	switch(opcode)
 	{
 		case IL_OP_NEG:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 1] = jit_insn_neg(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
+			result = jit_insn_neg(jitCoder->jitFunction, value);
 		}
 		break;
 
 		case IL_OP_NOT:
 		{
-			jitCoder->jitStack[jitCoder->stackTop - 1] = jit_insn_not(jitCoder->jitFunction, 
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
+			result = jit_insn_not(jitCoder->jitFunction, value);
 		}
 		break;
 
 		case IL_OP_CKFINITE:
 		{
 			/* Check the stack Top-most F value to see if it is finite */
-			jitCoder->jitStack[jitCoder->stackTop - 1] = jit_insn_is_finite(jitCoder->jitFunction,
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
+			result = jit_insn_is_finite(jitCoder->jitFunction, value);
 		}
 		break;
 	}
+	jitCoder->jitStack[jitCoder->stackTop - 1] = 
+			_ILJitValueConvertToStackType(jitCoder->jitFunction, result);
 }
 
 #endif	/* IL_JITC_CODE */

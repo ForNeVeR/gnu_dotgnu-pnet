@@ -345,6 +345,18 @@ typedef struct
 } PackedStackFrame;
 
 /*
+ * Structure of the ECMA part of the "System.Exception" class.
+ */
+typedef struct _tagSystemException System_Exception;
+struct _tagSystemException
+{
+	System_String	   *message;
+	System_Exception   *innerException;
+	System_Array	   *stackTrace;
+
+};
+
+/*
  * Prototype all of the "internalcall" methods in the engine.
  */
 #include "int_proto.h"

@@ -59,10 +59,14 @@
 #define IL_JIT_META_METHODNAME 1001
 
 /*
- * Defaut calling convention for libjit.
+ * Use the ILMethod * as function pointer.
  */
-#define IL_JIT_CALLCONV_DEFAULT		jit_abi_cdecl
+#define IL_JIT_FNPTR_ILMETHOD 1
 
+/*
+ * Include the current thread in the method's signature.
+ */
+#define IL_JIT_THREAD_IN_SIGNATURE 1
 
 /*
  * Calling conventions for libjit.
@@ -73,12 +77,17 @@
 #define IL_JIT_CALLCONV_FASTCALL	jit_abi_fastcall
 
 /*
+ * Defaut calling convention for libjit.
+ */
+#define IL_JIT_CALLCONV_DEFAULT		IL_JIT_CALLCONV_CDECL
+
+/*
  * Representation of a type representation for libjit.
  */
 typedef jit_type_t		ILJitType;
 
 /*
- * Representation of a method representation for libjit.
+ * Definition of a method representation for libjit.
  */
 typedef jit_function_t	ILJitFunction;
 

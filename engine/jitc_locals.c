@@ -273,6 +273,7 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 		ILJitLocalSlot *param = 0;
 		ILUInt32 numParams = jit_type_num_params(signature);
 
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
 		/* We don't include the ILExecThread in the params. */
 		if(numParams > 1)
 		{
@@ -290,6 +291,24 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 			}
 			coder->jitParams.numSlots = numParams - 1;
 		}
+#else
+		if(numParams > 0)
+		{
+			ILInt32 current = 0;
+
+			/* Allocate the locals for the parameters */
+			_ILJitLocalsAlloc(coder->jitParams, numParams);
+
+			for(current = 0; current < numParams; ++current)
+			{
+				param = &_ILJitParamGet(coder, current);
+
+				param->value = jit_value_get_param(coder->jitFunction, current);
+				param->flags = 0;
+			}
+			coder->jitParams.numSlots = numParams;
+		}
+#endif
 		else
 		{
 			coder->jitParams.numSlots = 0;
@@ -333,7 +352,10 @@ static ILJitValue _ILJitLocalGetValue(ILJITCoder *coder, ILUInt32 localNum)
 
 	if((slot->flags & _IL_JIT_VALUE_INITIALIZED) == 0)
 	{
-		_ILJitLocalInit(coder, slot);
+		if(!_ILJitLocalInit(coder, slot))
+		{
+			return 0;
+		}
 	}
 	return slot->value;
 }
@@ -350,7 +372,10 @@ static void _ILJitLocalStoreValue(ILJITCoder *coder, ILUInt32 localNum,
 	_ILJitValueFindAndDup(coder, slot->value);
 #endif
 
-	jit_insn_store(coder->jitFunction, slot->value, value);
+	jit_insn_store(coder->jitFunction, slot->value, 
+				   _ILJitValueConvertImplicit(coder->jitFunction,
+											  value,
+											  jit_value_get_type(slot->value)));
 
 	slot->flags |= _IL_JIT_VALUE_INITIALIZED;
 	slot->flags &= ~_IL_JIT_VALUE_NULLCHECKED;
@@ -378,7 +403,10 @@ static void _ILJitParamStoreValue(ILJITCoder *coder, ILUInt32 paramNum,
 	_ILJitValueFindAndDup(coder, slot->value);
 #endif
 
-	jit_insn_store(coder->jitFunction, slot->value, value);
+	jit_insn_store(coder->jitFunction, slot->value,
+				   _ILJitValueConvertImplicit(coder->jitFunction,
+											  value,
+											  jit_value_get_type(slot->value)));
 
 	slot->flags &= ~_IL_JIT_VALUE_NULLCHECKED;
 }

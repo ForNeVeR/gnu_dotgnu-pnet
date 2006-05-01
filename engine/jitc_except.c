@@ -26,7 +26,7 @@
 static void _ILJitFindAndSetStackTrace(ILJITCoder *jitCoder, ILJitValue exception)
 {
 	ILExecThread *_thread = ILExecThreadCurrent();
-	ILJitValue thread = jit_value_get_param(jitCoder->jitFunction,0);
+	ILJitValue thread = _ILJitCoderGetThread(jitCoder);
 	ILJitValue trace;
 	ILField *field;
 
@@ -49,6 +49,61 @@ static void _ILJitFindAndSetStackTrace(ILJITCoder *jitCoder, ILJitValue exceptio
 	}
 }
 
+/*
+ * Emit the code to throw a system exception.
+ */
+static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception)
+{
+	static const char * const exceptionClasses[] = {
+		"Ok",
+		"System.OutOfMemoryException",
+		"System.InvalidCastException",
+		"System.IndexOutOfRangeException"
+	};
+	#define	numExceptions	(sizeof(exceptionClasses) / sizeof(const char *))
+	ILExecThread *_thread = ILExecThreadCurrent();
+
+	if(exception == _IL_JIT_OUT_OF_MEMORY)
+	{
+		jit_insn_call_native(jitCoder->jitFunction,
+							 "ILRuntimeExceptionThrowOutOfMemory",
+							 ILRuntimeExceptionThrowOutOfMemory,
+							 _ILJitSignature_ILRuntimeExceptionThrowOutOfMemory,
+							 0, 0, JIT_CALL_NORETURN);
+	}
+	if(exception > 0)
+	{
+		ILClass *classInfo = ILExecThreadLookupClass(_thread,
+													 exceptionClasses[exception]);
+		ILJitValue info;
+		if(!classInfo)
+		{
+		#ifndef REDUCED_STDIO
+			/* Huh?  The required class doesn't exist.  This shouldn't happen */
+			fprintf(stderr, "Fatal error: %s is missing from the system library\n",
+					exceptionClasses[exception]);
+			return;
+		#endif
+		}
+		classInfo = ILClassResolve(classInfo);
+		if(!(classInfo->userData) || 
+		   	(((ILClassPrivate *)(classInfo->userData))->inLayout))
+		{
+			if(!_LayoutClass(_thread, classInfo))
+			{
+				return;
+			}
+		}
+		info = jit_value_create_nint_constant(jitCoder->jitFunction,
+											  _IL_JIT_TYPE_VPTR,
+											  (jit_nint)classInfo);
+		jit_insn_call_native(jitCoder->jitFunction,
+							 "ILRuntimeExceptionThrowClass",
+							 ILRuntimeExceptionThrowClass,
+							 _ILJitSignature_ILRuntimeExceptionThrowClass,
+							 &info, 1, JIT_CALL_NORETURN);
+	}
+}
 
 /*
  * Set up exception handling for the current method.
@@ -126,7 +181,6 @@ static void JITCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 static void JITCoder_Throw(ILCoder *coder, int inCurrentMethod)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue thread = jit_value_get_param(jitCoder->jitFunction,0);
 	ILJitValue exception = jitCoder->jitStack[jitCoder->stackTop - 1];;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
@@ -142,13 +196,11 @@ static void JITCoder_Throw(ILCoder *coder, int inCurrentMethod)
 
 	if(!(jitCoder->isInCatcher))
 	{
-		jit_insn_store_relative(jitCoder->jitFunction, thread,
-								offsetof(ILExecThread, thrownException), 
-								exception);
-		/* Set the stacktrace in the exception. */
-		_ILJitFindAndSetStackTrace(jitCoder, exception);
-
-		jit_insn_throw(jitCoder->jitFunction, exception);
+		jit_insn_call_native(jitCoder->jitFunction,
+							 "ILRuntimeExceptionThrow",
+							 ILRuntimeExceptionThrow,
+							 _ILJitSignature_ILRuntimeExceptionThrow,
+							 &exception, 1, JIT_CALL_NORETURN);
 		JITC_ADJUST(jitCoder, -1);
 	}
 }
@@ -235,10 +287,9 @@ static void JITCoder_TryHandlerStart(ILCoder *_coder,
 	}
 #endif
 
-	if(!jitCoder->isInCatcher)
+	if(!(jitCoder->isInCatcher))
 	{
 		/* Tell libjit that we are in the catcher. */
-		
 		jit_insn_start_catcher(jitCoder->jitFunction);
 		
 		jitCoder->isInCatcher = 1;
@@ -297,10 +348,13 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 						   ILClass *classInfo, int hasRethrow)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
-	ILJitValue thread = jit_value_get_param(jitCoder->jitFunction, 0);
+	ILJitValue thread = _ILJitCoderGetThread(jitCoder);
 	ILJitValue classTo = jit_value_create_nint_constant(jitCoder->jitFunction,
 														_IL_JIT_TYPE_VPTR,
 														(jit_nint)classInfo);
+	ILJitValue method = jit_value_create_nint_constant(jitCoder->jitFunction,
+													   _IL_JIT_TYPE_VPTR,
+													   (jit_nint)jitCoder->currentMethod);
 	ILJitValue nullException = jit_value_create_nint_constant(jitCoder->jitFunction,
 															  _IL_JIT_TYPE_VPTR,
 														      (jit_nint)0);
@@ -335,7 +389,7 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 										  _IL_JIT_LABEL_STARTCATCH);
 
 	/* Look if the object can be casted to the cought exception type. */
-	args[0] = thread;
+	args[0] = method;
 	args[1] = exceptionObject;
 	args[2] = classTo;
 	returnValue = jit_insn_call_native(jitCoder->jitFunction,
@@ -402,6 +456,15 @@ static void JITCoder_Finally(ILCoder *coder, ILException *exception, int dest)
  */
 static void *JITCoder_PCToHandler(ILCoder *_coder, void *pc, int beyond)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
+	void *handler;
+
+	ILJitFunction jitFunction = jit_function_from_pc(jitCoder->context, pc,
+													 &handler);
+	if(jitFunction)
+	{
+		return handler;
+	}
 	return 0;
 }
 
@@ -410,6 +473,15 @@ static void *JITCoder_PCToHandler(ILCoder *_coder, void *pc, int beyond)
  */
 static ILMethod *JITCoder_PCToMethod(ILCoder *_coder, void *pc, int beyond)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
+	ILJitFunction jitFunction = jit_function_from_pc(jitCoder->context, pc,
+													 (void **)0);
+
+	if(jitFunction)
+	{
+		return (ILMethod *)jit_function_get_meta(jitFunction,
+												 IL_JIT_META_METHOD);
+	}
 	return 0;
 }
 

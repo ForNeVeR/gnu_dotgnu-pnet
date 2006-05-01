@@ -63,6 +63,11 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	coder->localsInitialized = 0;
 #endif
 
+#ifndef IL_JIT_THREAD_IN_SIGNATURE
+	/* Reset the cached thread. */
+	coder->thread = 0;
+#endif
+
 	/* Ensure that the evaluation stack can hold at least the methods maxStack */
 	/* items. */
 	/* We need two additional slots for the ValueCtorArgs. */
@@ -77,11 +82,6 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	/* Set the label for the start of the function. */
 	label0 = _ILJitLabelGet(coder, 0, _IL_JIT_LABEL_NORMAL);
 	jit_insn_label(coder->jitFunction, &(label0->label));
-
-	/* Set the current method in the thread. */
-	_ILJitSetMethodInThread(coder->jitFunction, 
-							jit_value_get_param(coder->jitFunction, 0),
-							method);
 
 	if(ILMethod_IsStaticConstructor(method))
 	{

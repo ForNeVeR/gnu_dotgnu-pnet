@@ -954,10 +954,16 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILUInt32 numParams = ILTypeNumParams(signature);
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
 	/* We need an additional parameter for the ILExecThread. */
 	ILUInt32 totalParams = numParams + 1;
 	/* current arg in the parameter Array. */
 	ILUInt32 current = 1;
+#else
+	ILUInt32 totalParams = numParams;
+	/* current arg in the parameter Array. */
+	ILUInt32 current = 0;
+#endif
 	/* Some infos that we'll need later. */
 	ILClass *info = ILMethod_Owner(method);
 	/* Flag if this is an array or string constructor. */
@@ -997,8 +1003,10 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	/* We take the biggest possible arg type here so we don't need to compute it. */
  	ILNativeFloat jitArgsBuffer[numParams];
 
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
 	/* Store the ILExecThread instance in arg[0]. */
 	jitArgs[0] = &thread;
+#endif
 
 	if(ILType_HasThis(signature))
 	{
@@ -1014,7 +1022,11 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 				{
 					return 1;
 				}
+			#ifdef IL_JIT_THREAD_IN_SIGNATURE
 				jitArgs[1] = &_this;
+			#else
+				jitArgs[0] = &_this;
+			#endif
 				current++;
 			}
 		}
@@ -1032,7 +1044,11 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 		if(isCtor && !isArrayOrString && result)
 		{
 			/* Return the this pointer. */
+		#ifdef IL_JIT_THREAD_IN_SIGNATURE
 			*(void **)result = *(void **)(jitArgs[1]);
+		#else
+			*(void **)result = *(void **)(jitArgs[0]);
+		#endif
 		}
 		return 0;
 	}

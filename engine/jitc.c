@@ -112,9 +112,26 @@ static struct _tagILJitTypes _ILJitType_TYPEDREF;
 static ILJitType _ILJitTypedRef = 0;
 
 /*
+ * Allocate memory for an object that contains object references.
+ */
+static ILObject *_ILJitAlloc(ILClass *classInfo, ILUInt32 size);
+
+/*
+ * Allocate memory for an object that does not contain any object references.
+ */
+static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size);
+
+/*
  * Definition of signatures of internal functions used by jitted code.
  * They have to be kept in sync wirh the corresponding engine funcions.
  */
+
+#ifndef IL_JIT_THREAD_IN_SIGNATURE
+/*
+ * ILExecThread *ILExecThreadCurrent()
+ */
+static ILJitType _ILJitSignature_ILExecThreadCurrent = 0;
+#endif
 
 /*
  * ILObject *_ILJitAlloc(ILClass *classInfo, ILUInt32 size)
@@ -127,6 +144,22 @@ static ILJitType _ILJitSignature_ILJitAlloc = 0;
 static ILJitType _ILJitSignature_ILJitGetExceptionStackTrace = 0;
 
 /*
+ * void ILRuntimeExceptionThrow(ILObject *exception)
+ */
+static ILJitType _ILJitSignature_ILRuntimeExceptionThrow = 0;
+
+/*
+ * void ILRuntimeExceptionThrowClass(ILClass *classInfo)
+ */
+static ILJitType _ILJitSignature_ILRuntimeExceptionThrowClass = 0;
+
+/*
+ * void ILRuntimeExceptionThrowOutOfMemory()
+ */
+static ILJitType _ILJitSignature_ILRuntimeExceptionThrowOutOfMemory = 0;
+
+
+/*
  * static void *_ILRuntimeLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
  *												ILClass *interfaceClass,
  *												ILUInt32 index)
@@ -134,7 +167,7 @@ static ILJitType _ILJitSignature_ILJitGetExceptionStackTrace = 0;
 static ILJitType _ILJitSignature_ILRuntimeLookupInterfaceMethod = 0;
 
 /*
- * ILInt32 ILRuntimeCanCastClass(ILExecThread *thread, ILObject *object, ILClass *toClass)
+ * ILInt32 ILRuntimeCanCastClass(ILMethod *method, ILObject *object, ILClass *toClass)
  *
  */
 static ILJitType _ILJitSignature_ILRuntimeCanCastClass = 0;
@@ -149,11 +182,6 @@ static ILJitType _ILJitSignature_ILRuntimeClassImplements = 0;
  *							   ILUInt32 slot, ILUInt32 size)
  */
 static ILJitType _ILJitSignature_ILRuntimeGetThreadStatic = 0;
-
-/*
- * void jit_exception_builtin(int exception_type)
- */
-static ILJitType _ILJitSignature_JitExceptionBuiltin = 0;
 
 /*
  * void jit_exception_clear_last()
@@ -280,6 +308,11 @@ struct _tagILJITCoder
 	int				isInCatcher;
 	jit_label_t     nextBlock;
 	jit_label_t     rethrowBlock;
+
+#ifndef IL_JIT_THREAD_IN_SIGNATURE
+	/* cache for the current thread. */
+	ILJitValue		thread;
+#endif
 };
 
 /*
@@ -299,6 +332,58 @@ static ILJitValue _ILJitAllocGen(ILJITCoder *jitCoder, ILClass *classInfo,
  * Returns the ILJitValue with the pointer to the new object.
  */
 static ILJitValue _ILJitAllocObjectGen(ILJITCoder *jitCoder, ILClass *classInfo);
+
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
+#define _ILJitCoderGetThread(coder)		jit_value_get_param((coder)->jitFunction, 0)
+#define _ILJitFunctionGetThread(func)	jit_value_get_param((func), 0)
+#else
+static ILJitValue _ILJitFunctionGetThread(ILJitFunction func)
+{
+	return jit_insn_call_native(func, "ILExecThreadCurrent",
+										ILExecThreadCurrent,
+										_ILJitSignature_ILExecThreadCurrent,
+										0, 0, JIT_CALL_NOTHROW);
+}
+
+static ILJitValue _ILJitCoderGetThread(ILJITCoder *jitCoder)
+{
+	if(!(jitCoder->thread))
+	{
+		ILJitValue thread;
+
+		if(!(jitCoder->isInCatcher))
+		{
+			jit_label_t startLabel = jit_label_undefined;
+			jit_label_t endLabel = jit_label_undefined;
+			
+			jit_insn_label(jitCoder->jitFunction, &startLabel);
+			thread = _ILJitFunctionGetThread(jitCoder->jitFunction);
+			jit_insn_label(jitCoder->jitFunction, &endLabel);
+			jit_insn_move_blocks_to_start(jitCoder->jitFunction, startLabel,
+																 endLabel);
+		}
+		else
+		{
+			thread = _ILJitFunctionGetThread(jitCoder->jitFunction);
+		}
+		jitCoder->thread = thread;
+	}
+	return jitCoder->thread;
+}
+#endif
+
+/*
+ * Declaration of the engine internal exceptions.
+ */
+#define _IL_JIT_OK					0
+#define _IL_JIT_OUT_OF_MEMORY		1
+#define _IL_JIT_INVALID_CAST		2
+#define _IL_JIT_INDEX_OUT_OF_RANGE	3
+
+/*
+ * Emit the code to throw a system exception.
+ */
+static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception);
 
 /*
  * Initialize a ILJitTypes base structure 
@@ -951,21 +1036,6 @@ static void _ILJitMetaFreeFunc(void *data)
 	}
 }
 
-/*
- * Emit the code to throw a libjit internal exception.
- */
-static void _ILJitThrowInternal(ILJitFunction func, int exception)
-{
-	ILJitValue value = jit_value_create_nint_constant(func,
-													  _IL_JIT_TYPE_INT32,
-			 										  (jit_nint)exception);
-
-	jit_insn_call_native(func, "jit_exception_builtin", jit_exception_builtin,
-						 _ILJitSignature_JitExceptionBuiltin, &value, 1,
-						 JIT_CALL_NORETURN);
-}
-
-
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 /*
  * Get a complete methodname.
@@ -1177,11 +1247,71 @@ static ILJitTypes *_ILJitGetTypes(ILType *type, ILExecProcess *process)
 }
 
 /*
+ * Throw the given exception.
+ */
+void ILRuntimeExceptionThrow(ILObject *object)
+{
+	ILExecThread *thread = ILExecThreadCurrent();
+	System_Exception *exception = (System_Exception *)object;
+
+	if(thread)
+	{
+		thread->thrownException = object;
+		if(exception)
+		{
+			exception->stackTrace = _ILJitGetExceptionStackTrace(thread);
+		}
+	}
+	if(exception)
+	{
+		jit_exception_throw(exception);
+	}
+}
+
+/*
+ * Throw an exception of the given type.
+ * The caller has to make sure that the exception class is allready layouted.
+ */
+void ILRuntimeExceptionThrowClass(ILClass *classInfo)
+{
+	ILExecThread *thread = ILExecThreadCurrent();
+	System_Exception *exception =
+		(System_Exception *)_ILJitAlloc(classInfo,
+							((ILClassPrivate *)(classInfo->userData))->size);
+
+	/* We don't have to check exception for 0 because _ILJitAlloc would have */
+	/* thrown an OutOfMenory exception then. */
+	if(thread)
+	{
+		thread->thrownException = (ILObject *)exception;
+		exception->stackTrace = _ILJitGetExceptionStackTrace(thread);
+	}
+	jit_exception_throw(exception);
+}
+
+/*
+ * Throw an OutOfMemoryException.
+ */
+void ILRuntimeExceptionThrowOutOfMemory()
+{
+	ILExecThread *thread = ILExecThreadCurrent();
+	void *exception = 0;
+
+	if(thread)
+	{
+		thread->thrownException = thread->process->outOfMemoryObject;
+		jit_exception_throw(exception);
+		return;
+	}
+	jit_exception_builtin(JIT_RESULT_OUT_OF_MEMORY);
+}
+
+/*
  * Perform a class cast, taking arrays into account.
  */
-ILInt32 ILRuntimeCanCastClass(ILExecThread *thread, ILObject *object, ILClass *toClass)
+ILInt32 ILRuntimeCanCastClass(ILMethod *method, ILObject *object, ILClass *toClass)
 {
-	ILImage *image = ILProgramItem_Image(thread->method);
+	ILImage *image = ILProgramItem_Image(method);
 	ILClass *fromClass = GetObjectClass(object);
 	ILType *fromType = ILClassGetSynType(fromClass);
 	ILType *toType = ILClassGetSynType(toClass);
@@ -1318,6 +1448,57 @@ static void *_ILRuntimeLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
 	/* The interface implementation was not found */
 	return 0;
 }
+
+#ifdef IL_JIT_FNPTR_ILMETHOD
+/*
+ * This is the same function as above but returns the ILMethod instead of the
+ * vtable pointer of the interface method.
+ */
+static void *_ILRuntimeLookupInterfaceILMethod(ILClassPrivate *objectClassPrivate,
+											   ILClass *interfaceClass,
+											   ILUInt32 index)
+{
+	ILImplPrivate *implements;
+	ILClassPrivate *searchClass = objectClassPrivate;
+	ILClass *parent;
+
+	/* Locate the interface table within the class hierarchy for the object */
+	while(searchClass != 0)
+	{
+		implements = searchClass->implements;
+		while(implements != 0)
+		{
+			if(implements->interface == interfaceClass)
+			{
+				/* We've found the interface, so look in the interface
+				   table to find the vtable slot, which is then used to
+				   look in the class's vtable for the actual method */
+				index = (ILUInt32)((ILImplPrivate_Table(implements))[index]);
+				if(index != (ILUInt32)(ILUInt16)0xFFFF)
+				{
+					return objectClassPrivate->vtable[index];
+				}
+				else
+				{
+					/* The interface slot is abstract.  This shouldn't
+					   happen in practice, but let's be paranoid anyway */
+					return 0;
+				}
+			}
+			implements = implements->next;
+		}
+		parent = ILClassGetParent(searchClass->classInfo);
+		if(!parent)
+		{
+			break;
+		}
+		searchClass = (ILClassPrivate *)(parent->userData);
+	}
+
+	/* The interface implementation was not found */
+	return 0;
+}
+#endif
 
 /*
  * Get the pointer to base type from the JitTypes.
@@ -1476,11 +1657,17 @@ static void _ILJitCallStaticConstructor(ILJITCoder *coder, ILClass *classInfo,
 			if(cctor != coder->currentMethod)
 			{
 				/* Output a call to the static constructor */
-				jit_value_t thread = jit_value_get_param(coder->jitFunction, 0);
+			#ifdef IL_JIT_THREAD_IN_SIGNATURE
+				jit_value_t thread = _ILJitCoderGetThread(coder);
 
 				jit_insn_call(coder->jitFunction, "cctor",
 								ILJitFunctionFromILMethod(cctor), 0,
 								&thread, 1, 0);
+			#else
+				jit_insn_call(coder->jitFunction, "cctor",
+								ILJitFunctionFromILMethod(cctor), 0,
+								0, 0, 0);
+			#endif
 			}
 		}
 		else
@@ -1572,7 +1759,7 @@ void *_ILJitExceptionHandler(int exception_type)
  */
 static void _ILJitThrowCurrentException(ILJITCoder *coder)
 {
-	ILJitValue thread = jit_value_get_param(coder->jitFunction,0);
+	ILJitValue thread = _ILJitCoderGetThread(coder);
 	ILJitValue thrownException = jit_insn_load_relative(coder->jitFunction,
 									thread,
 									offsetof(ILExecThread, thrownException), 
@@ -1635,6 +1822,15 @@ int ILJitInit()
 	_ILJitTypesInitBase(&_ILJitType_TYPEDREF, _ILJitTypedRef);
 
 	/* Initialize the native method signatures. */
+#ifndef IL_JIT_THREAD_IN_SIGNATURE
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILExecThreadCurrent = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, 0, 0, 1)))
+	{
+		return 0;
+	}
+#endif
+
 	args[0] = _IL_JIT_TYPE_VPTR;
 	args[1] = _IL_JIT_TYPE_UINT32;
 	returnType = _IL_JIT_TYPE_VPTR;
@@ -1664,6 +1860,29 @@ int ILJitInit()
 	}
 
 	args[0] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_ILRuntimeExceptionThrow =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_ILRuntimeExceptionThrowClass =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
+	{
+		return 0;
+	}
+
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_ILRuntimeExceptionThrowOutOfMemory =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, 0, 0, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
 	args[1] = _IL_JIT_TYPE_UINT32;
 	args[2] = _IL_JIT_TYPE_UINT32;
 	returnType = _IL_JIT_TYPE_VPTR;
@@ -1679,14 +1898,6 @@ int ILJitInit()
 	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILRuntimeLookupInterfaceMethod = 
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
-	{
-		return 0;
-	}
-
-	args[0] = _IL_JIT_TYPE_INT32;
-	returnType = _IL_JIT_TYPE_VOID;
-	if(!(_ILJitSignature_JitExceptionBuiltin =
-		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
 	{
 		return 0;
 	}
@@ -1760,6 +1971,10 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 	coder->switchValue = 0;
 	coder->numSwitch = 0;
 	coder->maxSwitch = 0;
+
+#ifndef IL_JIT_THREAD_IN_SIGNATURE
+	coder->thread = 0;
+#endif
 
 	/* Ready to go */
 	return &(coder->coder);
@@ -1851,10 +2066,17 @@ static void JITCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
-	if(offset != 0)
+	/* TODO: this should be enabled in the final version
+	if(jitCoder->debugEnabled)
 	{
-		jit_insn_mark_offset(jitCoder->jitFunction, (jit_int)offset);
+	*/
+		if(offset != 0)
+		{
+			jit_insn_mark_offset(jitCoder->jitFunction, (jit_int)offset);
+		}
+	/*
 	}
+	*/
 }
 
 /*
@@ -2054,15 +2276,18 @@ static int _ILJitFunctionIsInternal(ILJITCoder *coder, ILMethod *method,
 /*
  * Generate the code to call an internal function.
  */
-static ILJitValue _ILJitCallInternal(ILJitFunction func, ILMethod *method,
-							  void *nativeFunction, const char *methodName,
-							   ILJitValue *args, ILUInt32 numArgs)
+static ILJitValue _ILJitCallInternal(ILJitFunction func,
+									 ILJitValue thread,
+									 ILMethod *method,
+									 void *nativeFunction,
+									 const char *methodName,
+									 ILJitValue *args,
+									 ILUInt32 numArgs)
 {
 	ILType *ilSignature = ILMethod_Signature(method);
 	ILType *type = ILTypeGetEnumType(ILTypeGetParam(ilSignature, 0));
 	/* Get the function to call. */
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
-	ILJitValue thread = jit_value_get_param(func, 0);
 	jit_label_t label = jit_label_undefined;
 	ILJitType signature = 0;
 	ILJitType callSignature = 0;
@@ -2092,17 +2317,24 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func, ILMethod *method,
 		return 0;
 	}
 	numParams = jit_type_num_params(signature);
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
 	totalParams = numParams;
+#else
+	totalParams = numParams + 1;
+#endif
 	returnType = jit_type_get_return(signature);;
 
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
 	if(numParams != (numArgs + 1))
+#else
+	if(numParams != numArgs)
+#endif
 	{
 		printf("Number of args doesn't match: signature: %i - numArgs: %i\n", numParams, numArgs);
 	}
 
-	/* We need to set the method member in the ILExecThread == arg[0]. */
-	if(numParams > 0)
 	{
+		/* We need to set the method member in the ILExecThread == arg[0]. */
 		ILJitType paramType;
 		ILJitType jitParamTypes[totalParams + 1];
 		ILJitValue jitParams[totalParams + 1];
@@ -2111,8 +2343,11 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func, ILMethod *method,
 		/* We need to create a new Signature for the native Call with */
 		/* an additional argument when the return value is a value type */
 		/* and pointers for structs. */
-		jitParamTypes[0] = jit_type_get_param(signature, 0); 
-		jitParams[0] = jit_value_get_param(func, 0);
+		/* Set the current thread as arg[0]. */
+		jitParamTypes[0] = _IL_JIT_TYPE_VPTR;
+		jitParams[0] = thread;
+
+		/* Check if the return type is a value type. */
 		if(ILType_IsValueType(type))
 		{
 			++totalParams;
@@ -2123,19 +2358,32 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func, ILMethod *method,
 			hasStructReturn = 1;
 			++param;
 		}
+
+	#ifdef IL_JIT_THREAD_IN_SIGNATURE
 		for(current = 1; current < numParams; ++current)
+	#else
+		for(current = 0; current < numParams; ++current)
+	#endif
 		{
 			paramType = jit_type_get_param(signature, current);
-	
+
 			if(jit_type_is_struct(paramType))
 			{
 				jitParamTypes[param] = _IL_JIT_TYPE_VPTR;
+			#ifdef IL_JIT_THREAD_IN_SIGNATURE
 				jitParams[param] = jit_insn_address_of(func, args[current - 1]);
+			#else
+				jitParams[param] = jit_insn_address_of(func, args[current]);
+			#endif
 			}
 			else
 			{
 				jitParamTypes[param] = paramType;
+			#ifdef IL_JIT_THREAD_IN_SIGNATURE
 				jitParams[param] = args[current - 1];
+			#else
+				jitParams[param] = args[current];
+			#endif
 			}
 			++param;
 		}
@@ -2144,25 +2392,20 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func, ILMethod *method,
 												  jitParamTypes,
 												  totalParams, 1);
 
-		_ILJitSetMethodInThread(func, jitParams[0], method);
+		_ILJitSetMethodInThread(func, thread, method);
 		if(!hasStructReturn)
 		{
 			returnValue = jit_insn_call_native(func, methodName, nativeFunction,
 											   callSignature,
-											   jitParams, numParams, 0);
+											   jitParams, totalParams, 0);
 		}
 		else
 		{
 			jit_insn_call_native(func, methodName, nativeFunction,
-								 callSignature,
-								 jitParams, totalParams, 0);
+							 	 callSignature,
+							 	 jitParams, totalParams, 0);
 		}
 		jit_type_free(callSignature);
-	}
-	else
-	{
-		returnValue = jit_insn_call_native(func, methodName, nativeFunction,
-										   signature, 0, 0, 0);
 	}
 	thrownException = jit_insn_load_relative(func, thread,
 									offsetof(ILExecThread, thrownException),
@@ -2190,8 +2433,15 @@ static int _ILJitCompileInternal(ILJitFunction func, ILMethod *method, void *nat
 	ILJitType signature = jit_function_get_signature(func);
 	unsigned int numParams = jit_type_num_params(signature);
 	ILJitValue returnValue = 0;
+	ILJitValue thread = _ILJitFunctionGetThread(func);
 	char *methodName = 0;
+	ILJitValue paramValue;
 	ILUInt32 current;
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
+	ILJitValue jitParams[numParams - 1];
+#else
+	ILJitValue jitParams[numParams];
+#endif
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	methodName = _ILJitFunctionGetMethodName(func);
@@ -2203,29 +2453,31 @@ static int _ILJitCompileInternal(ILJitFunction func, ILMethod *method, void *nat
 	}
 #endif
 
-	if(numParams > 0)
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
+	for(current = 1; current < numParams; ++current)
 	{
-		ILJitValue paramValue;
-		ILJitValue jitParams[numParams - 1];
-
-		for(current = 1; current < numParams; ++current)
+		if(!(paramValue = jit_value_get_param(func, current)))
 		{
-			if(!(paramValue = jit_value_get_param(func, current)))
-			{
-				return JIT_RESULT_OUT_OF_MEMORY;
-			}
-			jitParams[current - 1] = paramValue;
+			return JIT_RESULT_OUT_OF_MEMORY;
 		}
-
-		returnValue = _ILJitCallInternal(func, method,
-										 nativeFunction, methodName,
-										 jitParams, numParams - 1);
+		jitParams[current - 1] = paramValue;
 	}
-	else
+	returnValue = _ILJitCallInternal(func, thread, method,
+									 nativeFunction, methodName,
+									 jitParams, numParams - 1);
+#else
+	for(current = 0; current < numParams; ++current)
 	{
-		returnValue = jit_insn_call_native(func, methodName, nativeFunction,
-										   signature, 0, 0, 0);
+		if(!(paramValue = jit_value_get_param(func, current)))
+		{
+			return JIT_RESULT_OUT_OF_MEMORY;
+		}
+		jitParams[current] = paramValue;
 	}
+	returnValue = _ILJitCallInternal(func, thread, method,
+									 nativeFunction, methodName,
+									 jitParams, numParams);
+#endif
 	jit_insn_return(func, returnValue);	
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
@@ -2419,14 +2671,18 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder, ILMethod *method
 	/* Argument 0 is the type of the return value. */
 	ILUInt32 num = ILTypeNumParams(signature);
 	/* total number of args */
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
 	/* because we pass the ILExecThread as first arg we have to add one */
 	ILUInt32 total = num + 1;
-	ILUInt32 current;
 	/* We set jitArgc to 1 because we allways pass the current ILExecThread */
 	/* in jitArgs[0]. */
 	ILUInt32 jitArgc = 1;
-	/* We use the C calling convention by default for jitted functions. */
-	jit_abi_t jitAbi = jit_abi_cdecl;
+#else
+	ILUInt32 total = num;
+	ILUInt32 jitArgc = 0;
+#endif
+	ILUInt32 current;
+	jit_abi_t jitAbi = IL_JIT_CALLCONV_DEFAULT;
 	/* JitType to hold the return type */
 	ILJitType jitReturnType;
 	/* calling convention for this function. */
@@ -2484,8 +2740,10 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder, ILMethod *method
 		return 0;
 	}
 
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
 	/* arg 0 is allways the ILExecThread */
 	jitArgs[0] = _IL_JIT_TYPE_VPTR;
+#endif
 
 	if(ILType_HasThis(signature))
 	{
@@ -2498,7 +2756,11 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder, ILMethod *method
 				return 0;
 			}
 			/* at this time the type must be layouted or at least partially layouted */
+		#ifdef IL_JIT_THREAD_IN_SIGNATURE
 			if(!(jitArgs[1] = _ILJitGetThisType(type, coder->process)))
+		#else
+			if(!(jitArgs[0] = _ILJitGetThisType(type, coder->process)))
+		#endif
 			{
 				return 0;
 			}
@@ -2522,7 +2784,7 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder, ILMethod *method
 	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
 			IL_META_CALLCONV_VARARG)
 	{
-		jitAbi = jit_abi_vararg;
+		jitAbi = IL_JIT_CALLCONV_VARARG;
 	}
 #endif
 

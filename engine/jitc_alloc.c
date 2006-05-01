@@ -19,8 +19,7 @@
  */
 
 /*
- * Allocate memory for an object that contains object references and has a
- * finalizer.
+ * Allocate memory for an object that contains object references.
  */
 static ILObject *_ILJitAlloc(ILClass *classInfo, ILUInt32 size)
 {
@@ -34,10 +33,7 @@ static ILObject *_ILJitAlloc(ILClass *classInfo, ILUInt32 size)
 	if(!ptr)
 	{
 		/* Throw an "OutOfMemoryException" */
-		ILExecThread *thread = ILExecThreadCurrent();
-
-		thread->thrownException = thread->process->outOfMemoryObject;
-		jit_exception_throw(thread->thrownException);
+		ILRuntimeExceptionThrowOutOfMemory();
 	}
 
 	obj = GetObjectFromGcBase(ptr);
@@ -58,8 +54,7 @@ static ILObject *_ILJitAlloc(ILClass *classInfo, ILUInt32 size)
 }
 
 /*
- * Allocate memory for an object that does not contain any object references
- *  and has a finalizer.
+ * Allocate memory for an object that does not contain any object references.
  */
 static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size)
 {
@@ -73,10 +68,7 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size)
 	if(!ptr)
 	{
 		/* Throw an "OutOfMemoryException" */
-		ILExecThread *thread = ILExecThreadCurrent();
-
-		thread->thrownException = thread->process->outOfMemoryObject;
-		jit_exception_throw(thread->thrownException);
+		ILRuntimeExceptionThrowOutOfMemory();
 	}
 
 	obj = GetObjectFromGcBase(ptr);

@@ -69,7 +69,7 @@ static ILJitValue _ILJitGetThreadStaticSlot(ILJITCoder *jitCoder,
 	ILJitValue slot;
 	jit_label_t label = jit_label_undefined;
 
-	args[0] = jit_value_get_param(jitCoder->jitFunction, 0);
+	args[0] = _ILJitCoderGetThread(jitCoder);
 	args[1] = jit_value_create_nint_constant(jitCoder->jitFunction,
 											 _IL_JIT_TYPE_UINT32,
 											 (jit_nint)field->offset);
@@ -109,8 +109,8 @@ static ILJitValue _ILJitGetValFromRef(ILJITCoder *jitCoder, ILJitValue refValue,
 
 	temp = jit_insn_eq(jitCoder->jitFunction, type, info);
 	jit_insn_branch_if(jitCoder->jitFunction, temp, &label1);
-	/* TODO: Throw System.InvalidCastException */
-
+	/* Throw an InvalidCastException */
+	_ILJitThrowSystem(jitCoder, _IL_JIT_INVALID_CAST);
 	jit_insn_label(jitCoder->jitFunction, &label1);
 	valuePtr = jit_insn_load_relative(jitCoder->jitFunction, ptr,
 									  offsetof(ILTypedRef, value),
@@ -211,7 +211,9 @@ static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 	}
 	else
 	{
-		args[0] = jit_value_get_param(jitCoder->jitFunction, 0);
+		args[0] = jit_value_create_nint_constant(jitCoder->jitFunction,
+												 _IL_JIT_TYPE_VPTR,
+												 (jit_nint)jitCoder->currentMethod);
 		args[1] = object;
 		args[2] = classTo;
 		returnValue = jit_insn_call_native(jitCoder->jitFunction,
@@ -223,7 +225,8 @@ static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 	if(throwException)
 	{
 		jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label);
-		/* TODO: Throw an InvalidCastException here. */
+		/* Throw an InvalidCastException. */
+		_ILJitThrowSystem(jitCoder, _IL_JIT_INVALID_CAST);
 
 	}
 	else
@@ -708,7 +711,7 @@ static void JITCoder_SizeOf(ILCoder *coder, ILType *type)
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
     ILUInt32 size = _ILSizeOfTypeLocked(jitCoder->process, type);
 	ILJitValue constSize = jit_value_create_nint_constant(jitCoder->jitFunction,
-														  _IL_JIT_TYPE_UINT32,
+														  _IL_JIT_TYPE_INT32,
 														  (jit_nint)size);
 	jitCoder->jitStack[jitCoder->stackTop] = constSize;
 	JITC_ADJUST(jitCoder, 1);

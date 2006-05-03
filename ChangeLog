@@ -1,20 +1,31 @@
+2006-05-03  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Drawing/Graphics.cs: fixed image drawing with
+	graphics transformations by applying only unit conversion, instead
+	of full device transformation, to source coordinates.
+
+	* ChangeLog: fixed some formatting errors.
+
 2006-04-24  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* pnetlib/System.Drawing/ColorConverter.cs: fixed ConvertFrom.
-	
-2006-04-13  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
-
-	* pnetlib/runtime/System/Collections/ArrayList.cs: fixed memory leak.
-	* pnetlib/runtime/System/Collections/Queue.cs: fixed memory leak.
-	* pnetlib/runtime/System/Collections/SortedList.cs: fixed memory leak.
-	* pnetlib/runtime/System/Private/NumberFormat/CustomFormatter.cs: fixed bug with formatting floats.
-	* pnetlib/runtime/System/Private/NumberFormat/Formatter.cs: fixed bug with formatting floats.
-	* pnetlib/runtime/System/Private/NumberFormat/ScientificFormatter.cs: fixed bug with formatting floats.
-	* pnetlib/runtime/System/Private/NumberFormat/GeneralFormatter.cs: fixed bug with formatting floats.
+	* System.Drawing/ColorConverter.cs: fixed ConvertFrom
 
 2006-04-13  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* runtime/System/Collections/Stack.cs: Fixed a memory leak in Stack.Pop() and Stack.Clear().
+	* runtime/System/Collections/ArrayList.cs,
+	runtime/System/Collections/Queue.cs,
+	runtime/System/Collections/SortedList.cs: fixed memory leaks.
+
+	* runtime/System/Private/NumberFormat/CustomFormatter.cs,
+	runtime/System/Private/NumberFormat/Formatter.cs,
+	runtime/System/Private/NumberFormat/ScientificFormatter.cs,
+	runtime/System/Private/NumberFormat/GeneralFormatter.cs: fixed bugs
+	with formatting floats.
+
+2006-04-13  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Collections/Stack.cs: Fixed a memory leak in
+	Stack.Pop() and Stack.Clear().
 
 2006-04-12  Radek Polak  <psonek2@seznam.cz>
 
@@ -133,7 +144,8 @@
 
 2006-03-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs: Fixed not processing mouse events if Control is not enabled.
+	* System.Windows.Forms/Control.cs: Fixed not processing mouse events
+	if Control is not enabled.
 
 2006-03-04  Gopal V  <gopalv82@yahoo.com>
 
@@ -353,7 +365,8 @@
 
 2005-11-23  Peter Flaig  <peter.flaig@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs : fixed, map toolkitwindow to screen only if size greater 0
+	* System.Windows.Forms/Control.cs : fixed, map toolkitwindow to screen
+	only if size greater 0
 
 2005-11-22  Klaus Treichel  <ktreichel@web.de>
 
@@ -380,7 +393,8 @@
 
 2005-11-21  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
-	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueReader.cs: removed unneccessary property calls
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueReader.cs:
+	removed unneccessary property calls
 	* runtime/System/Array.cs: removed unneccessary property calls
 	* runtime/System/String.cs: removed unneccessary property calls
 
@@ -752,7 +766,7 @@
 	* samples/jscript/lispisms.js: Test out simple functional
 	programming and ensure the scopes are merged properly.
 
-2005-08-20  Rainer Gr��linger  <rainer.groesslinger@gmx.net>
+2005-08-20  Rainer Größlinger  <rainer.groesslinger@gmx.net>
 
 	* System/Text/RegularExpressions/*: Latest updates from 
 	SVN HEAD as of 12th August 2005. Removed match.cs, added
@@ -990,7 +1004,7 @@
 
 	* DotGNU.Misc/Profiling.cs: added comments
 
-2005-04-23  Erich Kitzm�ller  <ammoq@ammoq.com>
+2005-04-23  Erich Kitzmüller  <ammoq@ammoq.com>
 
 	* System.Windows.Forms/Themes/DefaultThemePainter.cs: disabled text
 	more legible. (patch #3929 applied by drobosson)
@@ -3841,7 +3855,7 @@
 2004-05-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Security/SecurityElement.cs: apply a small patch
-	from Carl-Adam Brengesjö <ca.brengesjo@telia.com> to fix attribute
+	from Carl-Adam BrengesjÃ¶ <ca.brengesjo@telia.com> to fix attribute
 	setting in "SecurityElement".
 
 2004-05-02  Gopal V <gopalv82@yahoo.com>

@@ -618,22 +618,22 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 
 	// Draw a Bezier spline.
-			public void FillBezier(Brush brush, Point pt1, Point pt2,
-														 Point pt3, Point pt4, FillMode fillMode)
+	public void FillBezier(Brush brush, Point pt1, Point pt2,
+	                       Point pt3, Point pt4, FillMode fillMode)
 			{
 				FillBezier(brush, (float)(pt1.X), (float)(pt1.Y),
 									 (float)(pt2.X), (float)(pt2.Y),
 									 (float)(pt3.X), (float)(pt3.Y),
 									 (float)(pt4.X), (float)(pt4.Y), fillMode);
 			}
-			public void FillBezier(Brush brush, PointF pt1, PointF pt2,
-														 PointF pt3, PointF pt4, FillMode fillMode)
+	public void FillBezier(Brush brush, PointF pt1, PointF pt2,
+	                       PointF pt3, PointF pt4, FillMode fillMode)
 			{
 				FillBezier(brush, pt1.X, pt1.Y, pt2.X, pt2.Y,
 									 pt3.X, pt3.Y, pt4.X, pt4.Y, fillMode);
 			}
-			public void FillBezier(Brush brush, float x1, float y1, float x2, float y2,
-														 float x3, float y3, float x4, float y4, FillMode fillMode)
+	public void FillBezier(Brush brush, float x1, float y1, float x2, float y2,
+	                       float x3, float y3, float x4, float y4, FillMode fillMode)
 			{
 
 				int dx1, dy1, dx2, dy2;
@@ -913,7 +913,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				else
 				{
 					// Stretch and draw the image.
-					Point[] src = ConvertRectangle3
+					Point[] src = ConvertUnits
 						(0, 0, icon.Width, icon.Height, GraphicsUnit.Pixel);
 					Point[] dest = ConvertRectangle3
 						(targetRect.X, targetRect.Y,
@@ -954,7 +954,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					{
 						height = targetRect.Height;
 					}
-					Point[] src = ConvertRectangle3
+					Point[] src = ConvertUnits
 						(0, 0, width, height, GraphicsUnit.Pixel);
 					Point[] dest = ConvertRectangle3
 						(targetRect.X, targetRect.Y, width, height, pageUnit);
@@ -1003,7 +1003,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 
 	public void DrawImage(Image image, Point[] destPoints)
 			{
-				Point[] src = ConvertRectangle3(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
+				Point[] src = ConvertUnits(0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
 				Point[] dest = ConvertPoints(destPoints, 3, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
@@ -1015,21 +1015,21 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 
 	public void DrawImage(Image image, PointF[] destPoints)
 			{
-				Point[] src = ConvertRectangle3(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
+				Point[] src = ConvertUnits(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
 				Point[] dest = ConvertPoints(destPoints, 3, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
 
 	public void DrawImage(Image image, Rectangle rect)
 			{
-				Point[] src = ConvertRectangle3(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
+				Point[] src = ConvertUnits(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
 				Point[] dest = ConvertRectangle3(rect.X, rect.Y, rect.Width, rect.Height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
 
 	public void DrawImage(Image image, RectangleF rect)
 			{
-				Point[] src = ConvertRectangle3(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
+				Point[] src = ConvertUnits(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
 				Point[] dest = ConvertRectangle3(rect.X, rect.Y, rect.Width, rect.Height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
@@ -1053,7 +1053,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawImage(Image image, Point[] destPoints,
 						  Rectangle srcRect, GraphicsUnit srcUnit)
 			{
-				Point[] src = ConvertRectangle3(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
+				Point[] src = ConvertUnits(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
 				Point[] dest = ConvertPoints(destPoints, 3, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
@@ -1061,7 +1061,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawImage(Image image, PointF[] destPoints,
 						  RectangleF srcRect, GraphicsUnit srcUnit)
 			{
-				Point[] src = ConvertRectangle3(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
+				Point[] src = ConvertUnits(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
 				Point[] dest = ConvertPoints(destPoints, 3, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
@@ -1069,7 +1069,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawImage(Image image, Rectangle destRect,
 						  Rectangle srcRect, GraphicsUnit srcUnit)
 			{
-				Point[] src = ConvertRectangle3(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
+				Point[] src = ConvertUnits(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
 				Point[] dest = ConvertRectangle3(destRect.X, destRect.Y, destRect.Width, destRect.Height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
@@ -1077,20 +1077,20 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawImage(Image image, RectangleF destRect,
 						  RectangleF srcRect, GraphicsUnit srcUnit)
 			{
-				Point[] src = ConvertRectangle3(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
+				Point[] src = ConvertUnits(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
 				Point[] dest = ConvertRectangle3(destRect.X, destRect.Y, destRect.Width, destRect.Height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
 	public void DrawImage(Image image, int x, int y, int width, int height)
 			{
-				Point[] src = ConvertRectangle3(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
+				Point[] src = ConvertUnits(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
 				Point[] dest = ConvertRectangle3(x, y, width, height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
 	public void DrawImage(Image image, int x, int y,
 						  Rectangle srcRect, GraphicsUnit srcUnit)
 			{
-				Point[] src = ConvertRectangle3(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
+				Point[] src = ConvertUnits(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
 				Point[] dest = ConvertRectangle3(x, y, 0, 0, pageUnit);
 				dest[1].X = image.Width;
 				dest[2].Y = image.Height;
@@ -1099,14 +1099,14 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawImage(Image image, float x, float y,
 						  RectangleF srcRect, GraphicsUnit srcUnit)
 			{
-				Point[] src = ConvertRectangle3(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
+				Point[] src = ConvertUnits(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
 				Point[] dest = ConvertRectangle3(x, y, srcRect.Width, srcRect.Height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
 	public void DrawImage(Image image, float x, float y,
 						  float width, float height)
 			{
-				Point[] src = ConvertRectangle3(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
+				Point[] src = ConvertUnits(0, 0, image.Width,  image.Height, GraphicsUnit.Pixel);
 				Point[] dest = ConvertRectangle3(x, y, width, height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
@@ -1114,7 +1114,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						  int srcX, int srcY, int srcWidth, int srcHeight,
 						  GraphicsUnit srcUnit)
 			{
-				Point[] src = ConvertRectangle3(srcX, srcY, srcWidth, srcHeight, srcUnit);
+				Point[] src = ConvertUnits(srcX, srcY, srcWidth, srcHeight, srcUnit);
 				Point[] dest = ConvertRectangle3(destRect.X, destRect.Y, destRect.Width, destRect.Height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
@@ -1124,7 +1124,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						  float srcWidth, float srcHeight,
 						  GraphicsUnit srcUnit)
 			{
-				Point[] src = ConvertRectangle3(srcX, srcY, srcWidth, srcHeight, srcUnit);
+				Point[] src = ConvertUnits(srcX, srcY, srcWidth, srcHeight, srcUnit);
 				Point[] dest = ConvertRectangle3(destRect.X, destRect.Y, destRect.Width, destRect.Height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
@@ -4207,7 +4207,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				points[2] = new Point(pt3x, pt3y);
 				return points;
 			}
-
 	private Point[] ConvertRectangle3(float x, float y, float width, float height, GraphicsUnit unit)
 			{
 				Point[] points = new Point[3];
@@ -4326,6 +4325,83 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return new SizeF(newX, newY);
 				}
 			}
+
+	// Convert a rectangle into a set of 3 device unit co-ordinates.
+	private Point[] ConvertUnits(int x, int y, int width, int height,
+	                             GraphicsUnit unit)
+			{
+				// get the unit adjustment vector
+				PointF adjust = ConvertUnitsAdjustVector(unit);
+
+				// calculate the unit adjusted rectangle bounds
+				int x0 = (int)((x +      0) * adjust.X);
+				int x1 = (int)((x +  width) * adjust.X);
+				int y0 = (int)((y +      0) * adjust.Y);
+				int y1 = (int)((y + height) * adjust.Y);
+
+				// create the unit adjusted rectangle points
+				Point[] points = new Point[]
+				{
+					new Point(x0, y0),
+					new Point(x1, y0),
+					new Point(x0, y1)
+				};
+
+				// return the unit adjusted rectangle points
+				return points;
+			}
+	private Point[] ConvertUnits(float x, float y, float width, float height,
+	                             GraphicsUnit unit)
+			{
+				// get the unit adjustment vector
+				PointF adjust = ConvertUnitsAdjustVector(unit);
+
+				// calculate the unit adjusted rectangle bounds
+				int x0 = (int)((x +      0) * adjust.X);
+				int x1 = (int)((x +  width) * adjust.X);
+				int y0 = (int)((y +      0) * adjust.Y);
+				int y1 = (int)((y + height) * adjust.Y);
+
+				// create the unit adjusted rectangle points
+				Point[] points = new Point[]
+				{
+					new Point(x0, y0),
+					new Point(x1, y0),
+					new Point(x0, y1)
+				};
+
+				// return the unit adjusted rectangle points
+				return points;
+			}
+
+	// Get the unit adjustment vector for the ConvertUnits methods.
+	private PointF ConvertUnitsAdjustVector(GraphicsUnit unit)
+			{
+				// create and return the unit adjustment vector
+				switch(unit)
+				{
+					case GraphicsUnit.World:
+					case GraphicsUnit.Pixel:
+					default:
+						{ return new PointF(1.0f, 1.0f); }
+
+					case GraphicsUnit.Display:
+						{ return new PointF((DpiX / 75.0f), (DpiY / 75.0f)); }
+
+					case GraphicsUnit.Point:
+						{ return new PointF((DpiX / 72.0f), (DpiY / 72.0f)); }
+
+					case GraphicsUnit.Inch:
+						{ return new PointF(DpiX, DpiY); }
+
+					case GraphicsUnit.Document:
+						{ return new PointF((DpiX / 300.0f), (DpiY / 300.0f)); }
+
+					case GraphicsUnit.Millimeter:
+						{ return new PointF((DpiX / 25.4f), (DpiY / 25.4f)); }
+				}
+			}
+
 
 	// Get the toolkit graphics object underlying this object.
 	internal IToolkitGraphics ToolkitGraphics

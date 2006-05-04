@@ -604,6 +604,13 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
         {
                 return this.m11 * this.m22 - this.m12 * this.m21;
         } 
+		  
+	// Workaround for calculation new font size, if a transformation is set
+	// this does only work for scaling, not for rotation or multiply transformations
+	// Normally we should stretch or shrink the font.
+	internal float TransformFontSize( float fIn ) {
+		return Math.Min( this.m11, this.m22 ) * fIn;
+	}
 }; // class Matrix
 
 }; // namespace System.Drawing.Drawing2D

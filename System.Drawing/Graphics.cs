@@ -1581,9 +1581,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					// attempt to draw the text
 					try
 					{
+						// Workaround for calculation new font size, if a transformation is set
+						// this does only work for scaling, not for rotation or multiply transformations
+						
 						// draw the text
 						textLayoutManager.Draw
-							(this, s, font, deviceLayout, format, brush);
+							(this, s, this.TransformFont(font), deviceLayout, format, brush);
 					}
 					finally
 					{
@@ -1592,6 +1595,24 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					}
 				}
 			}
+			
+	// Workaround for calculation new font size, if a transformation is set
+	// this does only work for scaling, not for rotation or multiply transformations
+	// Normally we should stretch or shrink the font.
+	Font TransformFont( Font font_in ) 
+	{
+		Font font = font_in;
+
+		if( transform != null ) {	
+			float sizeOld = font_in.Size;
+			float sizeNew = transform.TransformFontSize( sizeOld );
+			if( sizeOld != sizeNew ) {
+				font = new Font( font_in.FontFamily, sizeNew, font_in.Style, font_in.Unit, font_in.GdiCharSet, font_in.GdiVerticalFont );
+			}
+		}
+		return font;
+	}
+
 
 	public void DrawString(String s, Font font, Brush brush, float x, float y)
 			{

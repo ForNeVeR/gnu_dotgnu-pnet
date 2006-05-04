@@ -1,3 +1,10 @@
+2006-05-04  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing/Graphics.cs: added a workaround for DrawString 
+	with graphics transformations.
+	This only works for scaling yet!!!
+	* System.Drawing/Drawing2D/Matrix.cs: added calculaion new font size when scaling is set (Workaround only).
+
 2006-05-03  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Drawing/Graphics.cs: fixed image drawing with

@@ -156,6 +156,15 @@ public abstract class MulticastDelegate : Delegate
 				{
 					list = list.prev;
 					d = d.prev;
+					if(((Object)d) == null)
+					{
+						return true;
+					}
+					if(((Object)list) == null)
+					{
+						return false;
+					}
+					/* brubbel: is here the memory leak ?
 					if(((Object)list) == null)
 					{
 						return (((Object)d) == null);
@@ -164,6 +173,7 @@ public abstract class MulticastDelegate : Delegate
 					{
 						return false;
 					}
+					*/
 				}
 				return false;
 			}

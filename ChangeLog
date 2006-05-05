@@ -1,3 +1,7 @@
+2006-05-05  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/MulticastDelegate.cs: fixed a big memory leak.
+
 2006-05-04  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Drawing/Graphics.cs: added a workaround for DrawString 

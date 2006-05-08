@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  *
- * $Revision: 1.1 $  $Date: 2004/05/04 17:00:46 $
+ * $Revision: 1.2 $  $Date: 2006/05/08 10:50:09 $
  * 
  * --------------------------------------------------------------------------
  */
@@ -37,15 +37,15 @@ namespace DotGNU.XmlRpc
     
     public override string ToString() 
     {
-      string s =  "XmlRpcResponse contains:\n";
+      System.Text.StringBuilder sb = new System.Text.StringBuilder("XmlRpcResponse contains:\n");
       foreach( object obj in this ) {
 	    if( obj != null ) {
-		  s += String.Format( "Type: {0}, Value: {1}", obj.GetType(), obj );
+		  sb.Append(String.Format( "Type: {0}, Value: {1}", obj.GetType(), obj ));
         } else {
-		  s += String.Format( "Type: null, Value: null" );
+		  sb.Append(String.Format( "Type: null, Value: null" ));
 		}
       }
-      return s;
+      return sb.ToString();
     }
   }
 }

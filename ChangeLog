@@ -2,6 +2,7 @@
 
 	* DotGNU.Terminal: Use correct exception arguments.
 	* DotGNU.SSL/GNUTLS.cs, DotGNU.SSL/OpenSSL.cs: Properly dispose of the stream.
+	* DotGNU.XmlRpc/XmlRpcResponse.cs: Use StringBuilder for concat operations inside a loop.
 
 2006-05-05  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 

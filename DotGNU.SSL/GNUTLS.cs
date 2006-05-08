@@ -389,7 +389,8 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 		// Implement the IDisposable interface.
 		public void Dispose()
 				{
-					// Nothing to do in this implemementation.
+					if(stream != null)
+						stream.Close();
 				}
 
 	}; // class GNUTLSSession

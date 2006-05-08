@@ -386,6 +386,8 @@ internal sealed class OpenSSL : ISecureSessionProvider
 							SSL_CTX_free(ctx);
 							ctx = IntPtr.Zero;
 						}
+						if(stream != null)
+							stream.Close();
 					}
 				}
 

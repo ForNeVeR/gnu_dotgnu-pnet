@@ -80,7 +80,7 @@ public sealed class History
 				{
 					if(value < 0)
 					{
-						throw new ArgumentOutOfRangeException();
+						throw new ArgumentOutOfRangeException("value", "Argument must not be negative");
 					}
 					maxHistorySize = value;
 				}

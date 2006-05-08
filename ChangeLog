@@ -1,7 +1,7 @@
 2006-05-08  Deryk Robosson  <deryk@0x0a.com>
 
 	* DotGNU.Terminal: Use correct exception arguments.
-	* DotGNU.SSL/GNUTLS.cs: Properly dispose of the stream.
+	* DotGNU.SSL/GNUTLS.cs, DotGNU.SSL/OpenSSL.cs: Properly dispose of the stream.
 
 2006-05-05  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 

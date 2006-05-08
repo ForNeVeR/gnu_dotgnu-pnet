@@ -2203,6 +2203,10 @@ public class Control : IWin32Window, IDisposable
 					return;
 				}
 				
+				// process all pending InvokeEvents 
+				// it could be that a BeginInvoke is waiting for EndInvoke.
+				this.ProcessInvokeEvent( IntPtr.Zero );
+				
 				// Destroy all of the child controls.
 				int child;
 				for(child = 0; child < numChildren; ++child)
@@ -2222,8 +2226,7 @@ public class Control : IWin32Window, IDisposable
 					buffer.Dispose();
 					buffer = null;
 				}
-
-
+				
 				// Notify event handlers that the handle is destroyed.
 				OnHandleDestroyed(EventArgs.Empty);
 			}

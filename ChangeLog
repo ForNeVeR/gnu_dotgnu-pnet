@@ -1,3 +1,7 @@
+2006-05-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Control.cs: fixed a deadlock with invokes, if toolkit gets destroyed while an Invoke should be processed.
+
 2006-05-08  Deryk Robosson  <deryk@0x0a.com>
 
 	* DotGNU.Terminal: Use correct exception arguments.

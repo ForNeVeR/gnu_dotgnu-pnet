@@ -27,11 +27,36 @@ using System.Runtime.InteropServices;
 [StructLayout(LayoutKind.Sequential)]
 public struct ServiceResult 
 {
-	public int result;
-	public string dcopName;
-	public string errorMessage;
-	public int pid; // *FIXME*
+	private int result;
+	[NonSerializedAttribute]
+	private string dcopName;
+	[NonSerializedAttribute]
+	private string errorMessage;
+	private int pid; // *FIXME*
 
+	public int Result
+	{
+		get { return result; }
+		set { result = value; }
+	}
+
+	public string DCopName
+	{
+		get { return dcopName; }
+		set { dcopName = value; }
+	}
+
+	public string ErrorMessage
+	{
+		get { return errorMessage; }
+		set { errorMessage = value; }
+	}
+
+	public int PID
+	{
+		get { return pid; }
+		set { pid = value; }
+	}
 }; // struct ServiceResult
 
 } // namespace Xsharp.Dcop

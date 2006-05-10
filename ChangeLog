@@ -2,6 +2,11 @@
 
 	* Xsharp/Dcop/DcopRef.cs, Xsharp/Display.cs: Remove unused member.
 	* Xsharp/Image.cs: Call Dispose methods of IDisposable members.
+	* Xsharp/Graphics.cs: Implement finalizer to properly call Dispose
+	method if it has not been already.
+	* Xsharp/Dcop/ServiceResult.cs: Use properties instead of public
+	members.
+	* Xsharp/Dcop/QDataStream.cs: Use properties of ServiceResult
 
 2006-05-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 

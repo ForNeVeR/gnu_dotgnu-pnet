@@ -70,6 +70,7 @@ public sealed class Graphics : IDisposable
 	private byte[] dashPattern;
 	internal Region exposeRegion;
 	internal Region clipRegion;
+	private bool isDisposed;
 
 
 	/// <summary>
@@ -225,6 +226,20 @@ public sealed class Graphics : IDisposable
 				{
 					((DoubleBuffer)drawable).ClearAtStart(this);
 				}
+
+				isDisposed = false;
+			}
+
+	/// <summary>
+	/// <para>Finalizer to clean up any managed resources by calling the
+	/// Dispose method.</para>
+	/// </summary>
+	public ~Graphics()
+			{
+				if(isDisposed == false)
+				{
+					this.Dispose();
+				}
 			}
 
 	/// <summary>
@@ -267,6 +282,7 @@ public sealed class Graphics : IDisposable
 					clipRegion.Dispose();
 					clipRegion = null;
 				}
+				isDisposed = true;
 			}
 
 	/// <summary>

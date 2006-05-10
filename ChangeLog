@@ -1,6 +1,7 @@
 2006-05-10  Deryk Robosson  <deryk@0x0a.com>
 
 	* Xsharp/Dcop/DcopRef.cs, Xsharp/Display.cs: Remove unused member.
+	* Xsharp/Image.cs: Call Dispose methods of IDisposable members.
 
 2006-05-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 

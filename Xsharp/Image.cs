@@ -482,6 +482,14 @@ public sealed class Image : IDisposable
 	/// </remarks>
 	public void Dispose()
 			{
+				if(pixmap != null)
+				{
+					pixmap.Dispose();
+				}
+				if(mask != null)
+				{
+					mask.Dispose();
+				}
 				Destroy();
 			}
 

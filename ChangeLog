@@ -1,3 +1,7 @@
+2006-05-10  Deryk Robosson  <deryk@0x0a.com>
+
+	* Xsharp/Dcop/DcopRef.cs: Remove unused member.
+
 2006-05-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: fixed a deadlock with invokes, if toolkit gets destroyed while an Invoke should be processed.

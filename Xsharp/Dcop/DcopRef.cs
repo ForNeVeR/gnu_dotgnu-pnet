@@ -42,7 +42,6 @@ public class DcopRef : ICloneable
 
 	private string app = null;
 	private string obj = null;
-	private string type = null; // We do not use type for now. I'm unsure if we should.
 
 	private DcopClient client;
 

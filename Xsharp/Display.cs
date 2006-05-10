@@ -65,7 +65,6 @@ public sealed class Display : IDisposable
 	internal Hashtable fonts;
 	internal BuiltinBitmaps bitmaps;
 	internal Timer timerQueue;
-	internal IntPtr imlibData;
 	internal XWindow groupLeader;
 	private String[] fontList;
 

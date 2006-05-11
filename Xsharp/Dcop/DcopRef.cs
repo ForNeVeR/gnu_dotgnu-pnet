@@ -146,11 +146,11 @@ public class DcopRef : ICloneable
 		if(createIfNotExists)
 		{
 			ServiceResult res = (ServiceResult)client.Call("klauncher", "klauncher", "serviceResult start_service_by_desktop_name(QString,QStringList)", app, null);
-			if(res.result > 0) // Yes, >0, it's not error
+			if(res.Result > 0) // Yes, >0, it's not error
 			{
-				throw new DcopNamingException(String.Format("Failed to discover, klauncher returned: {0}", res.errorMessage));
+				throw new DcopNamingException(String.Format("Failed to discover, klauncher returned: {0}", res.ErrorMessage));
 			}
-			this.app = res.dcopName;
+			this.app = res.DcopName;
 			return;
 		}
 		throw new DcopNamingException("Failed to discover application");

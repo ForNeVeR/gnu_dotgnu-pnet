@@ -40,7 +40,7 @@ public struct ServiceResult
 		set { result = value; }
 	}
 
-	public string DCopName
+	public string DcopName
 	{
 		get { return dcopName; }
 		set { dcopName = value; }

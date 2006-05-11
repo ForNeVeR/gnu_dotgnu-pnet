@@ -516,7 +516,7 @@ public class QDataStream
 			{
 				ServiceResult val = new ServiceResult();
 				val.Result = ReadInt32();
-				val.DCopName = ReadString();
+				val.DcopName = ReadString();
 				val.ErrorMessage = ReadUnicodeString();
 				// Will not touch pid now
 				return val;

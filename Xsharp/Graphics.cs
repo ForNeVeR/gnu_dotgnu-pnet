@@ -234,7 +234,7 @@ public sealed class Graphics : IDisposable
 	/// <para>Finalizer to clean up any managed resources by calling the
 	/// Dispose method.</para>
 	/// </summary>
-	public ~Graphics()
+	~Graphics()
 			{
 				if(isDisposed == false)
 				{

@@ -76,9 +76,19 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 	{
 		// Internal state.
 		protected IntPtr cred;
+		private bool isDisposed;
 
 		// Constructor.
 		protected GNUTLSCredentials() {}
+
+		// Finalizer.
+		~GNUTLSCredentials()
+		{
+			if(isDisposed == false)
+			{
+				Dispose();
+			}
+		}
 
 		// Get the credential pointer.
 		public IntPtr Cred
@@ -96,6 +106,7 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 		public virtual void Dispose()
 				{
 					cred = IntPtr.Zero;
+					isDisposed = true;
 				}
 
 	}; // class GNUTLSCredentials
@@ -103,6 +114,8 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 	// Credentials object that is based on a certificate/private key pair.
 	private sealed class GNUTLSCertificateCredentials : GNUTLSCredentials
 	{
+		private bool isDisposed;
+
 		// Constructor.
 		public GNUTLSCertificateCredentials(byte[] certificate, byte[] key)
 				{
@@ -113,6 +126,15 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 						(cred, ref c, ref k, 0 /* GNUTLS_X509_FMT_DER */);
 					c.Free();
 					k.Free();
+				}
+
+		// Finalizer.
+		~GNUTLSCertificateCredentials()
+				{
+					if(isDisposed == false)
+					{
+						Dispose();
+					}
 				}
 
 		// Get the credential type.
@@ -139,10 +161,21 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 	// Credentials object for anonymous access.
 	private sealed class GNUTLSAnonCredentials : GNUTLSCredentials
 	{
+		private bool isDisposed;
+
 		// Constructor.
 		public GNUTLSAnonCredentials()
 				{
 					gnutls_certificate_allocate_credentials(out cred);
+				}
+
+		// Finalizer.
+		~GNUTLSAnonCredentials()
+				{
+					if(isDisposed == false)
+					{
+						Dispose();
+					}
 				}
 
 		// Get the credential type.
@@ -162,6 +195,7 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 						gnutls_certificate_free_credentials(cred);
 						base.Dispose();
 					}
+					isDisposed = true;
 				}
 
 	}; // class GNUTLSAnonCredentials

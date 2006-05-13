@@ -1,7 +1,8 @@
 2006-05-13  Deryk Robosson  <deryk@0x0a.com>
 
-	* DotGnu.Images/JpegLib.cs: Add [NonSerializedAttribute] tag where
+	* DotGNU.Images/JpegLib.cs: Add [NonSerializedAttribute] tag where
 	required.
+	* DotGNU.SSL/GNUTLS.cs: Implement finalizers for IDisposable classes.
 
 2006-05-10  Deryk Robosson  <deryk@0x0a.com>
 

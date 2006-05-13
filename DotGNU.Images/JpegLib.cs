@@ -72,7 +72,9 @@ internal unsafe sealed class JpegLib
 	public struct jpeg_compress_struct
 	{
 		public IntPtr err;
+		[NonSerializedAttribute]
 		public void *mem;
+		[NonSerializedAttribute]
 		public void *progress;
 		public IntPtr client_data;
 		public Int is_decompressor;
@@ -86,18 +88,31 @@ internal unsafe sealed class JpegLib
 		public Int data_precision;
   		public Int num_components;
 		public J_COLOR_SPACE jpeg_color_space;
+		[NonSerializedAttribute]
 		public void *comp_info;
+		[NonSerializedAttribute]
 		public void *quant_tbl_ptrs_0;
+		[NonSerializedAttribute]
 		public void *quant_tbl_ptrs_1;
+		[NonSerializedAttribute]
 		public void *quant_tbl_ptrs_2;
+		[NonSerializedAttribute]
 		public void *quant_tbl_ptrs_3;
+		[NonSerializedAttribute]
 		public void *dc_huff_tbl_ptrs_0;
+		[NonSerializedAttribute]
 		public void *dc_huff_tbl_ptrs_1;
+		[NonSerializedAttribute]
 		public void *dc_huff_tbl_ptrs_2;
+		[NonSerializedAttribute]
 		public void *dc_huff_tbl_ptrs_3;
+		[NonSerializedAttribute]
 		public void *ac_huff_tbl_ptrs_0;
+		[NonSerializedAttribute]
 		public void *ac_huff_tbl_ptrs_1;
+		[NonSerializedAttribute]
 		public void *ac_huff_tbl_ptrs_2;
+		[NonSerializedAttribute]
 		public void *ac_huff_tbl_ptrs_3;
 		public UChar arith_dc_L_0;
 		public UChar arith_dc_L_1;
@@ -148,6 +163,7 @@ internal unsafe sealed class JpegLib
 		public UChar arith_dc_K_14;
 		public UChar arith_dc_K_15;
 		public Int num_scans;
+		[NonSerializedAttribute]
   		public void *scan_info;
   		public Int raw_data_in;
   		public Int arith_code;
@@ -170,9 +186,13 @@ internal unsafe sealed class JpegLib
   		public Int max_v_samp_factor;
   		public UInt total_iMCU_rows;
   		public Int comps_in_scan;
+		[NonSerializedAttribute]
   		public void *cur_comp_info_0;
+		[NonSerializedAttribute]
   		public void *cur_comp_info_1;
+		[NonSerializedAttribute]
   		public void *cur_comp_info_2;
+		[NonSerializedAttribute]
   		public void *cur_comp_info_3;
   		public UInt MCUs_per_row;
   		public UInt MCU_rows_in_scan;
@@ -188,15 +208,25 @@ internal unsafe sealed class JpegLib
   		public Int MCU_membership_8;
   		public Int MCU_membership_9;
   		public Int Ss, Se, Ah, Al;
+		[NonSerializedAttribute]
   		public void *master;
+		[NonSerializedAttribute]
   		public void *main;
+		[NonSerializedAttribute]
   		public void *prep;
+		[NonSerializedAttribute]
   		public void *coef;
-  		public void *marker;
+		[NonSerializedAttribute]
+		public void *marker;
+		[NonSerializedAttribute]
   		public void *cconvert;
+		[NonSerializedAttribute]
   		public void *downsample;
+		[NonSerializedAttribute]
   		public void *fdct;
+		[NonSerializedAttribute]
   		public void *entropy;
+		[NonSerializedAttribute]
   		public void *script_space;
   		public Int script_space_size;
 
@@ -206,7 +236,9 @@ internal unsafe sealed class JpegLib
 	public struct jpeg_decompress_struct
 	{
 		public IntPtr err;
+		[NonSerializedAttribute]
 		public void *mem;
+		[NonSerializedAttribute]
 		public void *progress;
 		public IntPtr client_data;
 		public Int is_decompressor;
@@ -237,27 +269,42 @@ internal unsafe sealed class JpegLib
   		public Int output_components;
   		public Int rec_outbuf_height;
   		public Int actual_number_of_colors;
+		[NonSerializedAttribute]
   		public void *colormap;
   		public UInt output_scanline;
   		public Int input_scan_number;
   		public UInt input_iMCU_row;
   		public Int output_scan_number;
   		public UInt output_iMCU_row;
+		[NonSerializedAttribute]
 		public void *coef_bits;
+		[NonSerializedAttribute]
   		public void *quant_tbl_ptrs_0;
+		[NonSerializedAttribute]
   		public void *quant_tbl_ptrs_1;
+		[NonSerializedAttribute]
   		public void *quant_tbl_ptrs_2;
+		[NonSerializedAttribute]
   		public void *quant_tbl_ptrs_3;
+		[NonSerializedAttribute]
   		public void *dc_huff_tbl_ptrs_0;
+		[NonSerializedAttribute]
   		public void *dc_huff_tbl_ptrs_1;
+		[NonSerializedAttribute]
   		public void *dc_huff_tbl_ptrs_2;
+		[NonSerializedAttribute]
   		public void *dc_huff_tbl_ptrs_3;
+		[NonSerializedAttribute]
   		public void *ac_huff_tbl_ptrs_0;
-  		public void *ac_huff_tbl_ptrs_1;
+ 		[NonSerializedAttribute]
+  	 	public void *ac_huff_tbl_ptrs_1;
+		[NonSerializedAttribute]
   		public void *ac_huff_tbl_ptrs_2;
-  		public void *ac_huff_tbl_ptrs_3;
+ 		[NonSerializedAttribute]
+  	 	public void *ac_huff_tbl_ptrs_3;
   		public Int data_precision;
-  		public void *comp_info;
+ 		[NonSerializedAttribute]
+  	 	public void *comp_info;
   		public Int progressive_mode;
   		public Int arith_code;
 		public UChar arith_dc_L_0;
@@ -318,17 +365,22 @@ internal unsafe sealed class JpegLib
   		public Int saw_Adobe_marker;
   		public UChar Adobe_transform;
   		public Int CCIR601_sampling;
-  		public void *marker_list;
+ 		[NonSerializedAttribute]
+ 		public void *marker_list;
   		public Int max_h_samp_factor;
   		public Int max_v_samp_factor;
   		public Int min_DCT_scaled_size;
   		public UInt total_iMCU_rows;
-  		public void *sample_range_limit;
+ 		[NonSerializedAttribute]
+ 		public void *sample_range_limit;
   		public Int comps_in_scan;
-  		public void *cur_comp_info_0;
-  		public void *cur_comp_info_1;
+ 		[NonSerializedAttribute]
+ 		public void *cur_comp_info_0;
+ 		[NonSerializedAttribute]
+ 		public void *cur_comp_info_1;
   		public void *cur_comp_info_2;
-  		public void *cur_comp_info_3;
+ 		[NonSerializedAttribute]
+ 		public void *cur_comp_info_3;
   		public UInt MCUs_per_row;
   		public UInt MCU_rows_in_scan;
   		public Int blocks_in_MCU;
@@ -344,17 +396,28 @@ internal unsafe sealed class JpegLib
   		public Int MCU_membership_9;
   		public Int Ss, Se, Ah, Al;
   		public Int unread_marker;
-  		public void *master;
-  		public void *main;
-  		public void *coef;
-  		public void *post;
-  		public void *inputctl;
-  		public void *marker;
-  		public void *entropy;
-  		public void *idct;
-  		public void *upsample;
-  		public void *cconvert;
-  		public void *cquantize;
+ 		[NonSerializedAttribute]
+   		public void *master;
+ 		[NonSerializedAttribute]
+   		public void *main;
+ 		[NonSerializedAttribute]
+   		public void *coef;
+ 		[NonSerializedAttribute]
+   		public void *post;
+ 		[NonSerializedAttribute]
+   		public void *inputctl;
+ 		[NonSerializedAttribute]
+   		public void *marker;
+ 		[NonSerializedAttribute]
+   		public void *entropy;
+ 		[NonSerializedAttribute]
+   		public void *idct;
+ 		[NonSerializedAttribute]
+   		public void *upsample;
+ 		[NonSerializedAttribute]
+   		public void *cconvert;
+ 		[NonSerializedAttribute]
+   		public void *cquantize;
 
 	}; // struct jpeg_decompress_struct
 

@@ -307,6 +307,11 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	// throw "FormatException" if the format could not be loaded.
 	public void Load(String filename)
 			{
+				if(filename == null)
+				{
+					throw new ArgumentNullException("filename", "Argument cannot be null");
+				}
+
 				Stream stream = new FileStream
 					(filename, FileMode.Open, FileAccess.Read);
 				try

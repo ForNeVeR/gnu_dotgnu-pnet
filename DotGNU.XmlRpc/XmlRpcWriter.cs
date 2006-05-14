@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  *
- * $Revision: 1.2 $  $Date: 2004/10/06 16:44:50 $
+ * $Revision: 1.3 $  $Date: 2006/05/14 11:22:47 $
  * 
  * --------------------------------------------------------------------------
  */
@@ -58,6 +58,11 @@ namespace DotGNU.XmlRpc
 
     public void Write( XmlRpcMethod method )
     {
+      if(method == null)
+      {
+        throw new ArgumentNullException("method", "Argument cannot be null");
+      }
+
       WriteStartDocument();
       WriteStartElement( "methodCall" );
       WriteElementString( "methodName", method.Name );
@@ -75,6 +80,11 @@ namespace DotGNU.XmlRpc
 
     public void Write( XmlRpcResponse response )
     {
+      if(response == null)
+      {
+        throw new ArgumentNullException("response", "Argument cannot be null");
+      }
+
       WriteStartDocument();
       WriteMethodResponse();
       WriteParams();
@@ -86,6 +96,11 @@ namespace DotGNU.XmlRpc
     
     public void Write( XmlRpcException e )
     {
+      if(e == null)
+      {
+        throw new ArgumentNullException("e", "Argument cannot be null");
+      }
+
       WriteStartDocument();
       WriteMethodResponse();
       WriteStartElement( "fault" );

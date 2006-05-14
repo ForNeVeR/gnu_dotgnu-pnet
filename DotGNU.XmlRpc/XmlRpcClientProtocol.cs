@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  *
- * $Revision: 1.2 $  $Date: 2004/10/06 16:44:50 $
+ * $Revision: 1.3 $  $Date: 2006/05/14 11:22:47 $
  * 
  * --------------------------------------------------------------------------
  */
@@ -48,6 +48,16 @@ namespace DotGNU.XmlRpc
 
 		public Object[] Invoke(String method_name, Object[] args )
 		{
+			if(method_name == null)
+			{
+				throw new ArgumentNullException("method_name", "Argument must not be null");
+			}
+
+			if(args == null)
+			{
+				throw new ArgumentNullException("args", "Argument must not be null");
+			}
+
 			MemoryStream ms = new MemoryStream();
 			MethodCallFormatter call = new MethodCallFormatter();
 			XmlRpcMethod method = new XmlRpcMethod( method_name );

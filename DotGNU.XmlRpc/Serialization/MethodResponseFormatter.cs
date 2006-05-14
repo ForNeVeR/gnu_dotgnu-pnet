@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  *
- * $Revision: 1.2 $  $Date: 2004/10/06 16:44:50 $
+ * $Revision: 1.3 $  $Date: 2006/05/14 11:22:47 $
  * 
  * --------------------------------------------------------------------------
  */
@@ -54,6 +54,16 @@ namespace DotGNU.XmlRpc.Serialization.Formatters
     // Writes an object as an XmlRpc response
     public void Serialize( Stream stream, object o )
     {
+      if(stream == null)
+      {
+        throw new ArgumentNullException("stream", "Argument must not be null");
+      }
+
+      if(o == null)
+      {
+        throw new ArgumentNullException("o", "Argument must not be null");
+      }
+
       if( o is XmlRpcResponse ){
 	StreamWriter sw = new StreamWriter( stream );
 	XmlRpcWriter w = new XmlRpcWriter( sw );

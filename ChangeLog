@@ -7,6 +7,10 @@
 	loops.
 	* DotGNU.XmlRpc/XmlRpcException.cs: Implement standard exception
 	constructors.  Add [Serializable] attribute.
+	* DotGNU.XmlRpc/Serialization/MethodCallFormatter.cs,
+	DotGNU.XmlRpc/Serialization/MethodResponseFormatter.cs,
+	DotGNU.XmlRpc/XmlRpcClientProtocol.cs, DotGNU.XmlRpc/XmlRpcWriter.cs:
+	validate arguments of public methods
 
 2006-05-13  Deryk Robosson  <deryk@0x0a.com>
 

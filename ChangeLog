@@ -3,6 +3,8 @@
 	* DotGNU.Images/JpegLib.cs: Add [NonSerialzedAttribute] tag to an
 	additional three struct members.
 	* DotGNU.Images/Image.cs: Validate argument of public method.
+	* DotGNU.XmlRpc/XmlRpcMethod.cs: use StringBuilder for concat within
+	loops.
 
 2006-05-13  Deryk Robosson  <deryk@0x0a.com>
 

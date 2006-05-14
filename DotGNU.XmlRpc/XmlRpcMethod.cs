@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  *
- * $Revision: 1.1 $  $Date: 2004/05/04 17:00:46 $
+ * $Revision: 1.2 $  $Date: 2006/05/14 09:14:13 $
  * 
  * --------------------------------------------------------------------------
  */
@@ -70,11 +70,11 @@ namespace DotGNU.XmlRpc
     
     public override string ToString() 
     {
-      string s = String.Format("XmlRpcMethod: name='{0}' parameter count='{1}'\n", methodName, this.Count );
+      System.Text.StringBuilder s = new System.Text.StringBuilder(String.Format("XmlRpcMethod: name='{0}' parameter count='{1}'\n", methodName, this.Count ));
       foreach( object obj in this ) {
-        s+= String.Format( "Type: {0}, Value: {1}\n", obj.GetType(), obj );
+        s.Append(String.Format( "Type: {0}, Value: {1}\n", obj.GetType(), obj ));
       }
-      return s;
+      return s.ToString();
     }
   }
 }

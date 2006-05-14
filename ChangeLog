@@ -1,3 +1,8 @@
+2006-05-14  Deryk Robosson  <deryk@0x0a.com>
+
+	* DotGNU.Images/JpegLib.cs: Add [NonSerialzedAttribute] tag to an
+	additional three struct members.
+
 2006-05-13  Deryk Robosson  <deryk@0x0a.com>
 
 	* DotGNU.Images/JpegLib.cs: Add [NonSerializedAttribute] tag where

@@ -79,6 +79,7 @@ internal unsafe sealed class JpegLib
 		public IntPtr client_data;
 		public Int is_decompressor;
 		public Int global_state;
+		[NonSerializedAttribute]
 		public jpeg_destination_mgr *dest;
 		public UInt image_width;
 		public UInt image_height;
@@ -243,6 +244,7 @@ internal unsafe sealed class JpegLib
 		public IntPtr client_data;
 		public Int is_decompressor;
 		public Int global_state;
+		[NonSerializedAttribute]
   		public jpeg_source_mgr *src;
   		public UInt image_width;
   		public UInt image_height;
@@ -378,6 +380,7 @@ internal unsafe sealed class JpegLib
  		public void *cur_comp_info_0;
  		[NonSerializedAttribute]
  		public void *cur_comp_info_1;
+		[NonSerializedAttribute]
   		public void *cur_comp_info_2;
  		[NonSerializedAttribute]
  		public void *cur_comp_info_3;

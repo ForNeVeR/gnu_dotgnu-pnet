@@ -1,3 +1,7 @@
+2006-05-16  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Private/NumberFormat/Formatter.cs: fixed rounding problem in FormatFloat.
+
 2006-05-14  Deryk Robosson  <deryk@0x0a.com>
 
 	* DotGNU.Images/JpegLib.cs: Add [NonSerialzedAttribute] tag to an

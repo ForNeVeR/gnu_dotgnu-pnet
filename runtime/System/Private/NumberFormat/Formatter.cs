@@ -360,18 +360,11 @@ internal abstract class Formatter
 			{
 				return NumberFormatInfo(provider).NegativeInfinitySymbol;
 			}
-			else if (val < 0)
-			{
-				ret = "-" + 
-					Formatter.FormatFloat(
-							-val + 5 * Math.Pow(10, -precision - 1)
-							,precision);
-			}
-			else
-			{
-				ret = Formatter.FormatFloat(
-						val + 5 * Math.Pow(10, -precision - 1) 
-						,precision);
+			else {
+				// do not round here, is done in Formatter.FormatFloat
+				if (val < 0) ret = "-" + Formatter.FormatFloat( -val, precision );
+				else         ret =       Formatter.FormatFloat(  val, precision );
+
 			}
 		}
 #endif
@@ -469,6 +462,12 @@ internal abstract class Formatter
 	{
 		if (value == 0.0) return ".";
 
+		// Rounding code
+		double r = 5 * Math.Pow(10, -precision - 1);
+				
+		if( value < 0 ) value -= r;
+		else            value += r;
+		
 		//  
 		//int exponent = (int)Math.Floor(Math.Log10(Math.Abs(value)));
 		int exponent = Formatter.GetExponent( value );

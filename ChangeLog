@@ -1,3 +1,7 @@
+2006-05-18  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/ScrollableControl.cs: fixed autoscrolling and null exceptions.
+
 2006-05-16  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Private/NumberFormat/Formatter.cs: fixed rounding problem in FormatFloat.

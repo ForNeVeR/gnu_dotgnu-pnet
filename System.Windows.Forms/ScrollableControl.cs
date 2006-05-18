@@ -128,7 +128,14 @@ public class ScrollableControl : Control
 				}
 				set
 				{
-					autoScrollPosition = value;
+					if( value != autoScrollPosition ) {
+						Size offset = new Size(autoScrollPosition.X,autoScrollPosition.Y);
+						offset.Width -= value.X;
+						offset.Height -= value.Y;
+						this.ScrollByOffset( offset );
+
+						this.UpdateScrollBars();
+					}
 				}
 			}
 	protected override CreateParams CreateParams
@@ -144,6 +151,7 @@ public class ScrollableControl : Control
 				{
 					// subtract the scroll bars from the DisplayRectangle
 					Rectangle displayRect = base.DisplayRectangle;
+					
 					Rectangle scrollArea = ScrollArea;
 					bool vert, horiz;
 					
@@ -165,12 +173,16 @@ public class ScrollableControl : Control
 					
 					if(horiz)
 					{
-						vert = vert && (displayRect.Width < (scrollArea.Width+vScrollBar.Width));
+						if( null != vScrollBar ) {
+							vert = vert && (displayRect.Width < (scrollArea.Width+vScrollBar.Width));
+						}
 					}
 
 					if(vert)
 					{
-						horiz = horiz && (displayRect.Height < (scrollArea.Height+hScrollBar.Height));
+						if( null != hScrollBar ) {
+							horiz = horiz && (displayRect.Height < (scrollArea.Height+hScrollBar.Height));
+						}
 					}
 
 					// I could keep doing this on and on .... but two
@@ -179,9 +191,14 @@ public class ScrollableControl : Control
 					// to calculate this to perfection.
 					
 					Size scrollbarsize=new Size(
-									vert ? vScrollBar.Width : 0,
-									horiz ? hScrollBar.Height : 0);
+							( vert && null != vScrollBar ) ? vScrollBar.Width : 0,
+							( horiz && null != hScrollBar ) ? hScrollBar.Height : 0);
 					displayRect.Size-=scrollbarsize;
+					
+					// limit rect to positive size
+					if( displayRect.Width  < 0 ) displayRect.Width  = 0;
+					if( displayRect.Height < 0 ) displayRect.Height = 0;
+
 					return displayRect;
 				}
 			}
@@ -240,36 +257,40 @@ public class ScrollableControl : Control
 	private void UpdateScrollBars()
 			{
 				Rectangle rect = DisplayRectangle;
-				vScrollBar.SetBounds(rect.Right, 0, vScrollBar.Width, rect.Height);
-				hScrollBar.SetBounds(0, rect.Bottom, rect.Width, hScrollBar.Height);
 
-				if(DisplayRectangle.Height >= ScrollArea.Height)
-				{
-					vScrollBar.Visible = false;
+				if( null != vScrollBar ) {
+					vScrollBar.SetBounds(rect.Right, 0, vScrollBar.Width, rect.Height);
+					if(DisplayRectangle.Height >= ScrollArea.Height)
+					{
+						vScrollBar.Visible = false;
+					}
+					else
+					{
+						vScrollBar.LargeChange = DisplayRectangle.Height;
+						vScrollBar.SmallChange = (DisplayRectangle.Height + 9 )/ 10;
+						vScrollBar.Value = -(autoScrollPosition.Y);
+					/* note: I don't exactly remember how I got this , but
+					* it seemed to work sometime near 8 Pm ... so I left it
+					* in */
+						vScrollBar.Maximum = ScrollArea.Height - 1;
+						vScrollBar.Visible = vscroll;					
+					}	
 				}
-				else
-				{
-					vScrollBar.LargeChange = DisplayRectangle.Height;
-					vScrollBar.SmallChange = (DisplayRectangle.Height + 9 )/ 10;
-					vScrollBar.Value = -(autoScrollPosition.Y);
-				/* note: I don't exactly remember how I got this , but
-				 * it seemed to work sometime near 8 Pm ... so I left it
-				 * in */
-					vScrollBar.Maximum = ScrollArea.Height - 1;
-					vScrollBar.Visible = vscroll;					
-				}	
 
-				if(DisplayRectangle.Width >= ScrollArea.Width)
-				{
-					hScrollBar.Visible = false;
-				}
-				else
-				{
-					hScrollBar.LargeChange = DisplayRectangle.Width;			
-					hScrollBar.SmallChange = (DisplayRectangle.Width + 9) / 10;
-					hScrollBar.Value = -(autoScrollPosition.X);
-					hScrollBar.Maximum = ScrollArea.Width - 1;
-					hScrollBar.Visible = hscroll;
+				if( null != hScrollBar ) {
+					hScrollBar.SetBounds(0, rect.Bottom, rect.Width, hScrollBar.Height);
+					if(DisplayRectangle.Width >= ScrollArea.Width)
+					{
+						hScrollBar.Visible = false;
+					}
+					else
+					{
+						hScrollBar.LargeChange = DisplayRectangle.Width;			
+						hScrollBar.SmallChange = (DisplayRectangle.Width + 9) / 10;
+						hScrollBar.Value = -(autoScrollPosition.X);
+						hScrollBar.Maximum = ScrollArea.Width - 1;
+						hScrollBar.Visible = hscroll;
+					}
 				}
 			}
 
@@ -408,7 +429,6 @@ public class ScrollableControl : Control
 
 	private void ScrollByOffset(Size offset)
 			{
-				//Console.WriteLine("Scroll by " + offset);
 				if(offset.IsEmpty)
 				{
 					return;

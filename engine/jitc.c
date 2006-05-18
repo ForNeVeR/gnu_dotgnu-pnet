@@ -64,7 +64,7 @@ extern	"C" {
 /* #define _IL_JIT_OPTIMIZE_NULLCHECKS 1 */
 
 /*
- * To delay the initialization of the locals uncomment the following define.
+ * To defer the initialization of the locals uncomment the following define.
  */
 /* #define _IL_JIT_OPTIMIZE_INIT_LOCALS 1 */
 
@@ -194,6 +194,13 @@ static ILJitType _ILJitSignature_JitExceptionClearLast = 0;
  */
 static ILJitType _ILJitSignature_malloc = 0;
 
+#ifdef IL_JIT_FNPTR_ILMETHOD
+/*
+ * void *ILRuntimeMethodToVtablePointer(ILMethod *method)
+ */
+static ILJitType _ILJitSignature_ILRuntimeMethodToVtablePointer = 0;
+#endif
+
 /*
  * Define offsetof macro if not present.
  */
@@ -263,6 +270,17 @@ struct _tagILJitLocalSlots
 	} while (0);
 
 /*
+ * Private method information for the jit coder.
+ */
+typedef struct _tagILJitMethodInfo ILJitMethodInfo;
+struct _tagILJitMethodInfo
+{
+	ILJitFunction jitFunction;		/* Implementation of the method. */
+	ILUInt32 implementationType;	/* Flag how the method is implemented. */
+	ILInternalInfo fnInfo;			/* Information for internal calls or pinvokes. */
+};
+
+/*
  * Define the structure of a JIT coder's instance block.
  */
 typedef struct _tagILJITCoder ILJITCoder;
@@ -275,6 +293,9 @@ struct _tagILJITCoder
 	ILMethod	   *currentMethod;
 	int				debugEnabled;
 	int				flags;
+
+	/* Pool for the method infos. */
+	ILMemPool		methodPool;
 
 	/* Members to manage the evaluation stack. */
 	ILJitValue	   *jitStack;
@@ -379,6 +400,7 @@ static ILJitValue _ILJitCoderGetThread(ILJITCoder *jitCoder)
 #define _IL_JIT_OUT_OF_MEMORY		1
 #define _IL_JIT_INVALID_CAST		2
 #define _IL_JIT_INDEX_OUT_OF_RANGE	3
+#define _IL_JIT_METHOD_INVOKATION	4
 
 /*
  * Emit the code to throw a system exception.
@@ -391,9 +413,7 @@ static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception);
 #define _ILJitTypesInitBase(jitTypes, jitType) \
 	{ \
 		(jitTypes)->jitTypeBase = (jitType); \
-		(jitTypes)->jitTypePtr = 0; \
-		(jitTypes)->jitTypeRef = 0; \
-		(jitTypes)->jitTypeOut = 0; \
+		(jitTypes)->jitTypeKind = 0; \
 	}
 
 /*
@@ -1126,21 +1146,6 @@ static char *_ILJitFunctionGetMethodName(ILJitFunction func)
  */
 void ILJitTypesDestroy(ILJitTypes *jitTypes)
 {
-	if(jitTypes->jitTypeOut)
-	{
-		ILJitTypeDestroy(jitTypes->jitTypeOut);
-		jitTypes->jitTypeOut = 0;
-	}
-	if(jitTypes->jitTypeRef)
-	{
-		ILJitTypeDestroy(jitTypes->jitTypeRef);
-		jitTypes->jitTypeRef = 0;
-	}
-	if(jitTypes->jitTypePtr)
-	{
-		ILJitTypeDestroy(jitTypes->jitTypePtr);
-		jitTypes->jitTypePtr = 0;
-	}
 	if(jitTypes->jitTypeBase)
 	{
 		ILJitTypeDestroy(jitTypes->jitTypeBase);
@@ -1403,6 +1408,32 @@ void *ILRuntimeGetThreadStatic(ILExecThread *thread,
 	thread->threadStaticSlots[slot] = ptr;
 	return ptr;
 }
+
+#ifdef IL_JIT_FNPTR_ILMETHOD
+/*
+ * Get the vtable pointer for an ILMethod.
+ */
+void *ILRuntimeMethodToVtablePointer(ILMethod *method)
+{
+	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
+
+	if(!jitFunction)
+	{
+		/* The method's owner class needs to be layouted first. */
+		if(!_LayoutClass(ILExecThreadCurrent(), ILMethod_Owner(method)))
+		{
+			/* TODO: Throw an exception here. */
+			return 0;
+		}
+		if(!(jitFunction = ILJitFunctionFromILMethod(method)))
+		{
+			/* TODO: Throw an exception here. */
+			return 0;
+		}
+	}
+	return jit_function_to_vtable_pointer(jitFunction);
+}
+#endif
 
 static void *_ILRuntimeLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
 											 ILClass *interfaceClass,
@@ -1925,6 +1956,16 @@ int ILJitInit()
 		return 0;
 	}
 
+#ifdef IL_JIT_FNPTR_ILMETHOD
+	args[0] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILRuntimeMethodToVtablePointer =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
+	{
+		return 0;
+	}
+#endif
+
 	return 1;
 }
 /*
@@ -1947,6 +1988,9 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 	}
 	coder->debugEnabled = 0;
 	coder->flags = 0;
+
+	/* Intialize the pool for the method infos. */
+	ILMemPoolInit(&(coder->methodPool), sizeof(ILJitMethodInfo), 100);
 
 	/* Initialize the stack management. */
 	coder->jitStack = 0;
@@ -2032,6 +2076,8 @@ static void JITCoder_Destroy(ILCoder *_coder)
 	}
 	ILMemPoolDestroy(&(coder->labelPool));
 
+	ILMemPoolDestroy(&(coder->methodPool));
+
 	ILFree(coder);
 }
 
@@ -2066,35 +2112,11 @@ static void JITCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
-	/* TODO: this should be enabled in the final version
-	if(jitCoder->debugEnabled)
+	if(offset != 0)
 	{
-	*/
-		if(offset != 0)
-		{
-			jit_insn_mark_offset(jitCoder->jitFunction, (jit_int)offset);
-		}
-	/*
+		jit_insn_mark_offset(jitCoder->jitFunction, (jit_int)offset);
 	}
-	*/
 }
-
-/*
- * Get a block of method cache memory for use in code unrolling.
- */
-/*
-int _ILJITStartUnrollBlock(ILCoder *_coder, int align, ILCachePosn *posn)
-{
-	ILJITCoder *coder = (ILJITCoder *)_coder;
-	return (ILCacheStartMethod(coder->cache, posn, align, 0) != 0);
-	return 0;
-}
-*/
-
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-
-
-#endif /* !IL_CONFIG_REDUCE_CODE */
 
 #ifdef IL_CONFIG_PINVOKE
 
@@ -2220,55 +2242,15 @@ static ILJitValue _ILJitValueConvertToStackType(ILJitFunction func,
 static int _ILJitFunctionIsInternal(ILJITCoder *coder, ILMethod *method,
 									ILInternalInfo *fnInfo, int isConstructor)
 {
-	ILMethodCode code;
+	ILJitMethodInfo *jitMethodInfo = (ILJitMethodInfo *)(method->userData);
 
-	/* Get the method code */
-	if(!ILMethodGetCode(method, &code))
+	if(jitMethodInfo)
 	{
-		code.code = 0;
-	}
-	if(!(code.code))
-	{
-		switch(method->implementAttrs &
-					(IL_META_METHODIMPL_CODE_TYPE_MASK |
-					 IL_META_METHODIMPL_INTERNAL_CALL |
-					 IL_META_METHODIMPL_JAVA))
+		if(jitMethodInfo->implementationType)
 		{
-			case IL_META_METHODIMPL_RUNTIME:
-			case IL_META_METHODIMPL_IL | IL_META_METHODIMPL_INTERNAL_CALL:
-			{
-				/* Look up the internalcall function details */
-				if(isConstructor)
-				{
-					if(!_ILFindInternalCall(coder->process,
-										method, 0, fnInfo))
-					{
-						if(!_ILFindInternalCall(coder->process,
-												method, 1, fnInfo))
-						{
-							return 0;
-						}
-						if(fnInfo->func)
-						{
-							return 2;
-						}
-					}
-				}
-				else
-				{
-					if(!_ILFindInternalCall(coder->process,
-										method, 0, fnInfo))
-					{
-						return 0;
-					}
-				}
-				if(fnInfo->func)
-				{
-					return 1;
-				}
-			}
-			break;
+			fnInfo->func = jitMethodInfo->fnInfo.func;
 		}
+		return jitMethodInfo->implementationType;
 	}
 	return 0;
 }
@@ -2424,12 +2406,14 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 /*
  * Generate the stub for calling an internal function.
  */
-static int _ILJitCompileInternal(ILJitFunction func, ILMethod *method, void *nativeFunction)
+static int _ILJitCompileInternal(ILJitFunction func)
 {
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	ILExecThread *_thread = ILExecThreadCurrent();
 	ILJITCoder *jitCoder = (ILJITCoder *)(_ILExecThreadProcess(_thread)->coder);
 #endif
+	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
+	ILJitMethodInfo *jitMethodInfo = (ILJitMethodInfo *)(method->userData);
 	ILJitType signature = jit_function_get_signature(func);
 	unsigned int numParams = jit_type_num_params(signature);
 	ILJitValue returnValue = 0;
@@ -2463,7 +2447,7 @@ static int _ILJitCompileInternal(ILJitFunction func, ILMethod *method, void *nat
 		jitParams[current - 1] = paramValue;
 	}
 	returnValue = _ILJitCallInternal(func, thread, method,
-									 nativeFunction, methodName,
+					 				jitMethodInfo->fnInfo.func, methodName,
 									 jitParams, numParams - 1);
 #else
 	for(current = 0; current < numParams; ++current)
@@ -2475,7 +2459,7 @@ static int _ILJitCompileInternal(ILJitFunction func, ILMethod *method, void *nat
 		jitParams[current] = paramValue;
 	}
 	returnValue = _ILJitCallInternal(func, thread, method,
-									 nativeFunction, methodName,
+					 				jitMethodInfo->fnInfo.func, methodName,
 									 jitParams, numParams);
 #endif
 	jit_insn_return(func, returnValue);	
@@ -2506,17 +2490,47 @@ static int _ILJitCompileInternal(ILJitFunction func, ILMethod *method, void *nat
 }
 
 /*
- * On demand code generator.
+ * On demand code generator.for functions implemented in IL code.
  */
-static int _ILJitOnDemandFunc(jit_function_t func)
+static int _ILJitCompile(jit_function_t func)
 {
 	ILExecThread *thread = ILExecThreadCurrent();
 	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
-	ILMethodCode code;
 
 	if(!method)
 	{
 		return JIT_RESULT_COMPILE_ERROR;
+	}
+
+	if(!_ILConvertMethod(thread, method))
+	{
+		return JIT_RESULT_COMPILE_ERROR;
+	}
+	return JIT_RESULT_OK;
+}
+
+/*
+ * On demand code generator.for functions implemented in IL code.
+ */
+static int _ILJitCompilePinvoke(jit_function_t func)
+{
+	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
+
+	/* TODO */
+	return JIT_RESULT_COMPILE_ERROR;
+}
+
+/*
+ * Check if the given method is abstract (should have no implementation).
+ */
+static int _ILJitMethodIsAbstract(ILMethod *method)
+{
+	ILMethodCode code;
+
+	if(!method)
+	{
+		/* This is obviously a bug and should not happen. */
+		return 0;
 	}
 
 	/* Get the method code */
@@ -2524,145 +2538,32 @@ static int _ILJitOnDemandFunc(jit_function_t func)
 	{
 		code.code = 0;
 	}
-	
-	/* We have to handle pinvokes too. */
+
 	if(code.code)
 	{
-		if(!_ILConvertMethod(thread, method))
-		{
-			return JIT_RESULT_COMPILE_ERROR;
-		}
-		return JIT_RESULT_OK;
+		/* Code is present so zhe method is not abstract. */
+		return 0;
 	}
-	else
+
+	if(method->implementAttrs &
+			(IL_META_METHODIMPL_CODE_TYPE_MASK |
+			 IL_META_METHODIMPL_INTERNAL_CALL |
+			 IL_META_METHODIMPL_JAVA))
 	{
-		/* This is a "PInvoke", "internalcall", or "runtime" method */
-		ILPInvoke *pinv = ILPInvokeFind(method);
-		ILInternalInfo fnInfo;
-		int isConstructor = ILMethod_IsConstructor(method);;
-	#ifdef IL_CONFIG_PINVOKE
-		ILModule *module;
-		const char *name;
-		void *moduleHandle;
-	#endif
-
-		switch(method->implementAttrs &
-					(IL_META_METHODIMPL_CODE_TYPE_MASK |
-					 IL_META_METHODIMPL_INTERNAL_CALL |
-					 IL_META_METHODIMPL_JAVA))
-		{
-			case IL_META_METHODIMPL_IL:
-			case IL_META_METHODIMPL_OPTIL:
-			{
-				/* If we don't have a PInvoke record, then we don't
-				   know what to map this method call to */
-				if(!pinv)
-				{
-					return JIT_RESULT_COMPILE_ERROR;
-				}
-
-			#ifdef IL_CONFIG_PINVOKE
-				/* Find the module for the PInvoke record */
-				module = ILPInvoke_Module(pinv);
-				if(!module)
-				{
-					return JIT_RESULT_COMPILE_ERROR;
-				}
-				name = ILModule_Name(module);
-				if(!name || *name == '\0')
-				{
-					return JIT_RESULT_COMPILE_ERROR;
-				}
-				moduleHandle = LocateExternalModule
-									(ILExecThreadGetProcess(thread), name, pinv);
-				if(!moduleHandle)
-				{
-					return JIT_RESULT_COMPILE_ERROR;
-				}
-
-				/* Get the name of the function within the module */
-				name = ILPInvoke_Alias(pinv);
-				if(!name || *name == '\0')
-				{
-					name = ILMethod_Name(method);
-				}
-
-				/* Look up the method within the module */
-				fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
-			#else /* !IL_CONFIG_PINVOKE */
-				return JIT_RESULT_COMPILE_ERROR;
-			#endif /* IL_CONFIG_PINVOKE */
-			}
-			break;
-
-			case IL_META_METHODIMPL_RUNTIME:
-			case IL_META_METHODIMPL_IL | IL_META_METHODIMPL_INTERNAL_CALL:
-			{
-				/* "internalcall" and "runtime" methods must not
-				   have PInvoke records associated with them */
-				if(pinv)
-				{
-					return JIT_RESULT_COMPILE_ERROR;
-				}
-
-				/* Look up the internalcall function details */
-				if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
-										method, 0, &fnInfo))
-				{
-					if(isConstructor)
-					{
-						if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
-												method, 1, &fnInfo))
-						{
-							return JIT_RESULT_COMPILE_ERROR;
-						}
-					}
-					else
-					{
-						return JIT_RESULT_COMPILE_ERROR;
-					}
-				}
-				else if(isConstructor)
-				{
-					_ILFindInternalCall(ILExecThreadGetProcess(thread),
-										method, 1, &fnInfo);
-				}
-			}
-			break;
-
-			default:
-			{
-				/* No idea how to invoke this method */
-				return JIT_RESULT_COMPILE_ERROR;
-			}
-			/* Not reached */
-		}
-
-		/* Bail out if we did not find the underlying native method */
-		if(!(fnInfo.func))
-		{
-			return JIT_RESULT_COMPILE_ERROR;
-		}
-
-		switch(method->implementAttrs &
-					(IL_META_METHODIMPL_CODE_TYPE_MASK |
-					 IL_META_METHODIMPL_INTERNAL_CALL |
-					 IL_META_METHODIMPL_JAVA))
-		{
-			case IL_META_METHODIMPL_RUNTIME:
-			case IL_META_METHODIMPL_IL | IL_META_METHODIMPL_INTERNAL_CALL:
-			{
-				return _ILJitCompileInternal(func, method, fnInfo.func);
-			}
-		}
-		return JIT_RESULT_COMPILE_ERROR;
+		/* An internalcall or pinvoke implementation should exist. */
+		return 0;
 	}
+	return 1;
 }
+
+#include "jitc_delegate.c"
 
 /*
  * Create the signature type for an ILMethod.
  */
-static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder, ILMethod *method)
+static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder,
+											 ILMethod *method,
+											 ILUInt32 implementationType)
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILType *type;
@@ -2704,14 +2605,7 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder, ILMethod *method
 		}
 		else
 		{
-			ILType *ownerType = ILType_FromClass(info);
-			ILType *synType = ILClassGetSynType(info);
-			ILInternalInfo fnInfo;
-			int ctorType = _ILJitFunctionIsInternal(coder, method, &fnInfo, 1);
-			
-			if(!(synType && ILType_IsArray(synType)) &&
-			   !ILTypeIsStringClass(ownerType) &&
-			   !(ctorType == 2))
+			if(implementationType != 2)
 			{
 				/* we need an other arg for this */
 				total++;
@@ -2797,53 +2691,338 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder, ILMethod *method
 }
 
 /*
+ * Fill the MethodInfo and set the corresponding on demand compiler.
+ */
+static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
+													 ILJitType jitSignature)
+{
+	ILClass *info;
+	ILClassPrivate *classPrivate;
+	ILUInt32 implementationType = 0;
+	jit_on_demand_func onDemandCompiler = 0;
+	ILInt32 setRecompilable = 0;
+	ILInternalInfo fnInfo;
+
+	if(!method)
+	{
+		return 0;
+	}
+
+	/* Get the method's owner class. */
+	info = ILMethod_Owner(method);
+	classPrivate = (ILClassPrivate *)(info->userData);
+	fnInfo.func = 0;
+
+	if(classPrivate->jitTypes.jitTypeKind != 0)
+	{
+		ILType *type = ILClassToType(info);
+
+		/* Handle the special cases. */
+		if(method == ILTypeGetDelegateMethod(type))
+		{
+			/* Flag method implemented in IL.. */
+			implementationType = 0;
+
+			/* now set the on demand compiler function */
+			onDemandCompiler = _ILJitCompileMultiCastDelegateInvoke;
+		}
+	}
+
+	if(!onDemandCompiler)
+	{
+		ILMethodCode code;
+
+		/* Get the method code */
+		if(!ILMethodGetCode(method, &code))
+		{
+			code.code = 0;
+		}
+	
+		/* Check if the method is implemented in IL. */
+		if(code.code)
+		{
+			/* Flag method implemented in IL.. */
+			implementationType = 0;
+
+			/* set the function recompilable. */
+			setRecompilable = 1;
+
+			/* now set the on demand compiler function */
+			onDemandCompiler = _ILJitCompile;
+		}
+		else
+		{
+			/* This is a "PInvoke", "internalcall", or "runtime" method */
+			ILExecThread *thread = ILExecThreadCurrent();
+			ILPInvoke *pinv = ILPInvokeFind(method);
+			int isConstructor = ILMethod_IsConstructor(method);;
+		#ifdef IL_CONFIG_PINVOKE
+			ILModule *module;
+			const char *name;
+			void *moduleHandle;
+		#endif
+
+			switch(method->implementAttrs &
+						(IL_META_METHODIMPL_CODE_TYPE_MASK |
+						 IL_META_METHODIMPL_INTERNAL_CALL |
+						 IL_META_METHODIMPL_JAVA))
+			{
+				case IL_META_METHODIMPL_IL:
+				case IL_META_METHODIMPL_OPTIL:
+				{
+					/* If we don't have a PInvoke record, then we don't
+					   know what to map this method call to */
+					if(!pinv)
+					{
+						return 0;
+					}
+
+				#ifdef IL_CONFIG_PINVOKE
+					/* Find the module for the PInvoke record */
+					module = ILPInvoke_Module(pinv);
+					if(!module)
+					{
+						return 0;
+					}
+					name = ILModule_Name(module);
+					if(!name || *name == '\0')
+					{
+						return 0;
+					}
+					moduleHandle = LocateExternalModule
+									(ILExecThreadGetProcess(thread), name, pinv);
+					if(!moduleHandle)
+					{
+						return 0;
+					}
+
+					/* Get the name of the function within the module */
+					name = ILPInvoke_Alias(pinv);
+					if(!name || *name == '\0')
+					{
+						name = ILMethod_Name(method);
+					}
+
+					/* Look up the method within the module */
+					fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+
+					/* Bail out if we did not find the underlying native method */
+					if(!(fnInfo.func))
+					{
+						return 0;
+					}
+
+					/* Flag the method pinvoke. */
+					implementationType = 3;
+
+					/* now set the on demand compiler function */
+					onDemandCompiler = _ILJitCompilePinvoke;
+
+				#else /* !IL_CONFIG_PINVOKE */
+					return 0;
+				#endif /* IL_CONFIG_PINVOKE */
+				}
+				break;
+
+				case IL_META_METHODIMPL_RUNTIME:
+				case IL_META_METHODIMPL_IL | IL_META_METHODIMPL_INTERNAL_CALL:
+				{
+					/* "internalcall" and "runtime" methods must not
+				   	have PInvoke records associated with them */
+					if(pinv)
+					{
+						return 0;
+					}
+
+					/* Look up the internalcall function details */
+					if(isConstructor)
+					{
+						if(ILClassIsValueType(info))
+						{
+							_ILFindInternalCall(_ILExecThreadProcess(thread),
+												method, 0, &fnInfo);
+							if(fnInfo.func)
+							{
+								/* Flag the method internal. */
+								implementationType = 1;
+							}
+						}
+						else
+						{
+							if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
+													method, 0, &fnInfo))
+							{
+								if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
+														method, 1, &fnInfo))
+								{
+									implementationType = 0;
+								}
+								if(fnInfo.func)
+								{
+									/* Flag the method an allocating constructor. */
+									implementationType = 2;
+								}
+							}
+							else
+							{
+								if(fnInfo.func)
+								{
+									/* Flag the method internal. */
+									implementationType = 1;
+								}
+								else
+								{
+									if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
+															method, 1, &fnInfo))
+									{
+										implementationType = 0;
+									}
+									if(fnInfo.func)
+									{
+										/* Flag the method an allocating constructor. */
+										implementationType = 2;
+									}
+								}
+							}
+						}
+					}
+					else
+					{
+						if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
+											method, 0, &fnInfo))
+						{
+							implementationType = 0;
+						}
+						else
+						{
+							if(fnInfo.func)
+							{
+								/* Flag the method internal. */
+								implementationType = 1;
+							}
+						}
+					}
+
+					/* Bail out if the native method could not be found. */
+					if(!(fnInfo.func))
+					{
+						return 0;
+					}
+
+					/* now set the on demand compiler. */
+					onDemandCompiler = _ILJitCompileInternal;
+				}
+				break;
+
+				default:
+				{
+					/* No idea how to invoke this method */
+					return 0;
+				}
+				/* Not reached */
+			}
+		}
+	}
+
+	if(onDemandCompiler)
+	{
+		ILJitMethodInfo *jitMethodInfo = 0;
+		ILInt32 signatureCreated = 0;
+		ILJitFunction jitFunction = 0;
+
+		if(!jitSignature)
+		{
+			if(!(jitSignature = _ILJitCreateMethodSignature(jitCoder, method,
+															implementationType)))
+			{
+				return 0;
+			}
+			signatureCreated = 1;
+		}
+	
+		/* Now we can create the jit function itself. */
+		/* We must be able to create jit function prototypes while an other */
+		/* function is on demand compiled. */
+		if(!(jitFunction = jit_function_create(jitCoder->context, jitSignature)))
+		{
+			if(signatureCreated)
+			{
+				ILJitTypeDestroy(jitSignature);
+			}
+			return 0;
+		}
+
+		/* Set the ILMethod in the new functions metadata. */
+		/* Because there has nothing to be freed we can use 0 for the free_func. */
+		if(!jit_function_set_meta(jitFunction, IL_JIT_META_METHOD, method, 0, 0))
+		{
+			if(signatureCreated)
+			{
+				ILJitTypeDestroy(jitSignature);
+			}
+			return 0;
+		}
+	
+		if(!(jitMethodInfo = ILMemPoolAlloc(&(jitCoder->methodPool),
+											ILJitMethodInfo)))
+		{
+			if(signatureCreated)
+			{
+				ILJitTypeDestroy(jitSignature);
+			}
+			return 0;
+		}
+
+		/* Copy the infos to the MethodInfo structure. */
+		jitMethodInfo->jitFunction = jitFunction;
+		jitMethodInfo->implementationType = implementationType;
+		jitMethodInfo->fnInfo.func = fnInfo.func;
+
+		/* and link the new jitFunction to the method. */
+		method->userData = (void *)jitMethodInfo;
+
+		if(setRecompilable)
+		{
+			/* set the function recompilable. */
+			jit_function_set_recompilable(jitFunction);
+		}
+		/* now set the on demand compiler function */
+		jit_function_set_on_demand_compiler(jitFunction, onDemandCompiler);
+											
+	#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+		_ILJitFunctionSetMethodName(jitFunction, method);
+	#endif
+
+		return 1;
+	}
+	return 0;
+}
+
+/*
  * Create the jit function header for an ILMethod.
  * We allways pass the ILExecThread as arg 0.
  */
 int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 {
 	ILJITCoder *coder = ((ILJITCoder *)_coder);
-	/* The type of the jit signature for this function. */
-	ILJitType jitSignature;
-	/* The new created function. */
-	ILJitFunction jitFunction;
 
 	/* Don't create the jit function twice. */
 	if(method->userData)
 	{
 		return 1;
 	}
-	if(!(jitSignature = _ILJitCreateMethodSignature(coder, method)))
+
+	if(_ILJitMethodIsAbstract(method))
+	{
+		/* This Method is abstract so we do nothing. */
+		return 1;
+	}
+
+	if(!_ILJitSetMethodInfo(coder, method, 0))
 	{
 		return 0;
 	}
-	
-	/* Now we can create the jit function itself. */
-	/* We must be able to create jit function prototypes while an other */
-	/* function is on demand compiled. */
-	if(!(jitFunction = jit_function_create(coder->context, jitSignature)))
-	{
-		ILJitTypeDestroy(jitSignature);
-		return 0;
-	}
 
-	/* Set the ILMethod in the new functions metadata. */
-	/* Because there has nothing to be freed we can use 0 for the free_func. */
-	if(!jit_function_set_meta(jitFunction, IL_JIT_META_METHOD, method, 0, 0))
-	{
-		ILJitTypeDestroy(jitSignature);
-		return 0;
-	}
-	
-	/* now set the on demand compiler function */
-	jit_function_set_on_demand_compiler(jitFunction, _ILJitOnDemandFunc);
-
-	/* and link the new jitFunction to the method. */
-	method->userData = jitFunction;
-
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-	_ILJitFunctionSetMethodName(jitFunction, method);
-#endif
 	/* are we ready now ? */
 
 	return 1;
@@ -2858,8 +3037,7 @@ int ILJitFunctionCreateFromAncestor(ILCoder *_coder, ILMethod *method,
 													 ILMethod *virtualAncestor)
 {
 	ILJITCoder *jitCoder = ((ILJITCoder *)_coder);
-	ILJitFunction ancestor = virtualAncestor->userData;
-	ILJitFunction jitFunction;
+	ILJitMethodInfo *ancestorInfo = (ILJitMethodInfo *)(virtualAncestor->userData);
 	ILJitType jitSignature;
 
 	/* Don't create the jit function twice. */
@@ -2868,7 +3046,13 @@ int ILJitFunctionCreateFromAncestor(ILCoder *_coder, ILMethod *method,
 		return 1;
 	}
 
-	if(!ancestor)
+	if(_ILJitMethodIsAbstract(method))
+	{
+		/* This Method is abstract so we do nothing. */
+		return 1;
+	}
+
+	if(!ancestorInfo)
 	{
 		/* Tha ancestor has no jit function (might be abstract). */
 		/* So we need to do it the hard way. */
@@ -2889,32 +3073,13 @@ int ILJitFunctionCreateFromAncestor(ILCoder *_coder, ILMethod *method,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-	jitSignature = jit_function_get_signature(ancestor);
+	jitSignature = jit_function_get_signature(ancestorInfo->jitFunction);
 
-	/* Now we can create the jit function itself. */
-	/* We must be able to create jit function prototypes while an other */
-	/* function is on demand compiled. */
-	if(!(jitFunction = jit_function_create(jitCoder->context, jitSignature)))
+	if(!_ILJitSetMethodInfo(jitCoder, method, jitSignature))
 	{
 		return 0;
 	}
 
-	/* Set the ILMethod in the new functions metadata. */
-	/* Because there has nothing to be freed we can use 0 for the free_func. */
-	if(!jit_function_set_meta(jitFunction, IL_JIT_META_METHOD, method, 0, 0))
-	{
-		return 0;
-	}
-	
-	/* now set the on demand compiler function */
-	jit_function_set_on_demand_compiler(jitFunction, _ILJitOnDemandFunc);
-
-	/* and link the new jitFunction to the method. */
-	method->userData = jitFunction;
-
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-	_ILJitFunctionSetMethodName(jitFunction, method);
-#endif
 	/* are we ready now ? */
 
 	return 1;
@@ -2940,7 +3105,7 @@ int ILJitCreateFunctionsForClass(ILCoder *_coder, ILClass *info)
 		{
 			if(!ILJitFunctionCreate(_coder, method))
 			{
-				result = 0;
+				return  0;
 			}
 		}
 	}
@@ -2953,7 +3118,7 @@ int ILJitCreateFunctionsForClass(ILCoder *_coder, ILClass *info)
  */
 int ILJitCallMethod(ILExecThread *thread, ILMethod *method, void **jitArgs, void *result)
 {
-	ILJitFunction jitFunction = method->userData;
+	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
 
 	if(!jitFunction)
 	{
@@ -2962,7 +3127,7 @@ int ILJitCallMethod(ILExecThread *thread, ILMethod *method, void **jitArgs, void
 		{
 			return 0;
 		}
-		jitFunction = method->userData;
+		jitFunction = ILJitFunctionFromILMethod(method);
 	}
 
 	if(!jit_function_apply(jitFunction, jitArgs, result))
@@ -2980,7 +3145,12 @@ ILJitFunction ILJitFunctionFromILMethod(ILMethod *method)
 {
 	if(method)
 	{
-		return (ILJitFunction)(method->userData);
+		ILJitMethodInfo *jitMethodInfo = (ILJitMethodInfo *)(method->userData);
+
+		if(jitMethodInfo)
+		{
+			return jitMethodInfo->jitFunction;
+		}
 	}
 	return 0;
 }
@@ -3020,31 +3190,40 @@ static ILJitType _ILJitTypeSpecials(ILClassName *className)
  */
 int ILJitTypeCreate(ILClassPrivate *classPrivate, ILExecProcess *process)
 {
-	ILJitType type = 0;
+	ILJitType jitType = 0;
 
 	if(classPrivate->size >= 0)
 	{
+		ILType *type = ILClassToType(classPrivate->classInfo);
+
 		/* When it's a runtime object check if it has to be handled special. */
 		if(process->context->systemImage == classPrivate->classInfo->programItem.image)
 		{
-			type = _ILJitTypeSpecials(classPrivate->classInfo->className);
+			jitType = _ILJitTypeSpecials(classPrivate->classInfo->className);
 		}
-		if(!type)
+		if(!jitType)
 		{
-			if(!(type = jit_type_create_struct(0, 0, 0)))
+			if(!(jitType = jit_type_create_struct(0, 0, 0)))
 			{
 				return 0;
 			}
-			jit_type_set_size_and_alignment(type,
+			jit_type_set_size_and_alignment(jitType,
 											classPrivate->size,
 											classPrivate->alignment);
 		}
-		classPrivate->jitTypes.jitTypeBase = type;
-		if(!(classPrivate->jitTypes.jitTypePtr = jit_type_create_pointer(type, 1)))
+		classPrivate->jitTypes.jitTypeBase = jitType;
+		/* Check if it's one of the classes thet need special handling. */
+		if(ILTypeIsDelegateSubClass(type))
 		{
-			jit_type_free(type);
-			classPrivate->jitTypes.jitTypeBase = 0;
-			return 0;
+			if(ILTypeIsDelegate(type))
+			{
+				/* This is a subclass of System.MulticastDelegate. */
+				classPrivate->jitTypes.jitTypeKind = IL_JIT_TYPEKIND_MULTICASTDELEGATE;
+			}
+			else
+			{
+				classPrivate->jitTypes.jitTypeKind = IL_JIT_TYPEKIND_DELEGATE;
+			}
 		}
 	}
 	else

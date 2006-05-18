@@ -702,7 +702,6 @@ static void JITCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitValue ftnPtr = jitCoder->jitStack[jitCoder->stackTop - 1];
 
-
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
@@ -712,6 +711,16 @@ static void JITCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+
+#ifdef IL_JIT_FNPTR_ILMETHOD
+	/* We need to convert the method pointer to the vtable pointer first. */
+	ftnPtr = jit_insn_call_native(jitCoder->jitFunction,
+								  "ILRuntimeMethodToVtablePointer",
+								  ILRuntimeMethodToVtablePointer,
+								  _ILJitSignature_ILRuntimeMethodToVtablePointer,
+								  &ftnPtr, 1, 0);
+#endif
+
 	/* Pop the function pointer from the stack. */
 	JITC_ADJUST(jitCoder, -1);
 }
@@ -904,7 +913,7 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 
 	if(!func)
 	{
-		signature = _ILJitCreateMethodSignature(jitCoder, methodInfo);
+		signature = _ILJitCreateMethodSignature(jitCoder, methodInfo, 0);
 	}
 	else
 	{
@@ -980,7 +989,7 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	int argCount = info->numBaseArgs + info->numVarArgs;
-	ILJitFunction func = methodInfo->userData;
+	ILJitFunction func = ILJitFunctionFromILMethod(methodInfo);
 	ILJitType  signature;
 	ILJitValue jitParams[argCount + 1];
 	ILJitValue returnValue;
@@ -989,7 +998,7 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 
 	if(!func)
 	{
-		signature = _ILJitCreateMethodSignature(jitCoder, methodInfo);
+		signature = _ILJitCreateMethodSignature(jitCoder, methodInfo, 0);
 	}
 	else
 	{

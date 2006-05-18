@@ -1,3 +1,24 @@
+2006-05-18  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/Makefile.am: Add jitc_delegate.c to the jit coder sources.
+
+	* engine/layout.c: Replace the direct access of method->userdata with a
+	function call of ILJitFunctionFromILMethod.
+
+	* engine/jitc.h: Add the declaration of the delegate types and change the
+	ILJitTypes.
+
+	* engine/jitc.c: Redo lots of the the jit function creation.
+
+	* engine/jitc_call.c: Changed calls to _ILJitCreateMethodSignature and
+	replace the direct access of method->userdata with a call of
+	ILJitFunctionFromILMethod.
+
+	* engine/jitc_setup.c: Replace the direct access of method->userdata with a
+	function call of ILJitFunctionFromILMethod.
+
+	* engine/jitc_delegate.c: Added.
+
 2006-05-01  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/call.c: Add support for the thread not included in the signature.

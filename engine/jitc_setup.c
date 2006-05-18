@@ -30,7 +30,7 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	ILJITLabel *label0;
 
 	/* Record the current jitted function. */
-	coder->jitFunction = (ILJitFunction)(method->userData);
+	coder->jitFunction = ILJitFunctionFromILMethod(method);
 	/* Record the current method. */
 	coder->currentMethod = method;
 

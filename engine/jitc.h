@@ -103,10 +103,14 @@ typedef struct _tagILJitTypes ILJitTypes;
 struct _tagILJitTypes
 {
 	ILJitType	jitTypeBase;	/* the base type (class or struct) */
-	ILJitType	jitTypePtr;		/* the pointer type pointing to the base type. */
-	ILJitType	jitTypeRef;		/* the type to pass the base type as a byref arg. */
-	ILJitType	jitTypeOut;		/* the type to pass the base type as an out arg. */
+	ILUInt32	jitTypeKind;	/* special class. */
 };
+
+/*
+ * Definition of the class which need special handling by the jit coder.
+ */
+#define IL_JIT_TYPEKIND_DELEGATE			0x00000001
+#define IL_JIT_TYPEKIND_MULTICASTDELEGATE	0x00000002
 
 /*
  * Initialize a ILJitTypes structure 
@@ -114,9 +118,7 @@ struct _tagILJitTypes
 #define _ILJitTypesInit(jitTypes) \
 	{ \
 		(jitTypes)->jitTypeBase = 0; \
-		(jitTypes)->jitTypePtr = 0; \
-		(jitTypes)->jitTypeRef = 0; \
-		(jitTypes)->jitTypeOut = 0; \
+		(jitTypes)->jitTypeKind = 0; \
 	}
 
 /*

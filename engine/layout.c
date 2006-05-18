@@ -1065,7 +1065,7 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 		{
 			vtable[method->index] = method;
 		#ifdef IL_USE_JIT
-			jitVtable[method->index] = jit_function_to_vtable_pointer(method->userData);
+			jitVtable[method->index] = jit_function_to_vtable_pointer(ILJitFunctionFromILMethod(method));
 		#endif
 		}
 	}

@@ -147,6 +147,13 @@ static int _ILJitCompileDelegateInvoke(ILJitFunction func)
  */
 static int _ILJitCompileMultiCastDelegateInvoke(ILJitFunction func)
 {
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
+	ILClass *info = ILMethod_Owner(method);
+	ILClassPrivate *classPrivate = (ILClassPrivate *)info->userData;
+	ILJITCoder *jitCoder = (ILJITCoder *)(classPrivate->process->coder);
+	char *methodName = _ILJitFunctionGetMethodName(func);
+#endif
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	ILJitValue thread = _ILJitFunctionGetThread(func);
 #endif
@@ -161,6 +168,14 @@ static int _ILJitCompileMultiCastDelegateInvoke(ILJitFunction func)
 	ILJitValue args[numArgs]; /* The array for the invokation args. */
 	ILUInt32 current;
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	if(jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout, "CompileMulticastDelegateInvoke: %s\n", methodName);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 	if(numArgs < 2)
 	{
 		/* There is something wrong with this delegate. */
@@ -191,5 +206,27 @@ static int _ILJitCompileMultiCastDelegateInvoke(ILJitFunction func)
 #endif
 	jit_insn_return(func, returnValue);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+#ifdef _IL_JIT_DUMP_FUNCTION
+	if(jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		jit_dump_function(stdout, func, methodName);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+#ifdef _IL_JIT_DISASSEMBLE_FUNCTION
+	if(jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		if(!jit_function_compile(func))
+		{
+			return JIT_RESULT_COMPILE_ERROR;
+		}
+		ILMutexLock(globalTraceMutex);
+		jit_dump_function(stdout, func, methodName);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+#endif
 	return JIT_RESULT_OK;
 }

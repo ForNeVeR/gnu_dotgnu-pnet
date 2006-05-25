@@ -1,3 +1,15 @@
+2006-05-25  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Add signatures for inlined internalcalls. Add output of
+	debugging infos in the on demand compiler for pinvokes. Clean up the
+	source.
+
+	* engine/jitc_call.c: Add the inlined calls needed for the synchronized
+	classes.
+
+	* engine/jitc_delegate.c: Add the output of debugging infos in the on
+	demand compilers.
+	
 2006-05-18  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/Makefile.am: Add jitc_delegate.c to the jit coder sources.

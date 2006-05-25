@@ -737,7 +737,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJitValue jitParams[argCount + 2];
 	ILJitValue returnValue;
 	ILInternalInfo fnInfo;
-	int internalType = 0;
+	int internalType = _IL_JIT_IMPL_DEFAULT;
 	char *methodName = 0;
 	
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
@@ -792,7 +792,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 		ILJitValue thread = _ILJitCoderGetThread(jitCoder);
 
 		/* Call the engine function directly with the supplied args. */
-		if(internalType == 2)
+		if(internalType == _IL_JIT_IMPL_INTERNALALLOC)
 		{
 			/* This is an allocating constructor. */
 			if(info->hasParamArray)
@@ -1089,6 +1089,82 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 								   ILMethod *methodInfo)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	/* Determine what to do for the inlineable method type */
+	switch(inlineType)
+	{
+		case IL_INLINEMETHOD_MONITOR_ENTER:
+		{
+			/* Enter the monitor on the top-most object */
+			ILJitValue args[2];
+
+			args[0] = _ILJitCoderGetThread(jitCoder);
+			args[1] = jitCoder->jitStack[jitCoder->stackTop - 1]; 
+
+			/* Pop the object from the stack. */
+			JITC_ADJUST(jitCoder, -1);
+
+			jit_insn_call_native(jitCoder->jitFunction,
+								 "_IL_Monitor_Enter",
+								 _IL_Monitor_Enter,
+								 _ILJitSignature_ILMonitorEnter,
+								 args, 2, 0);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_MONITOR_EXIT:
+		{
+			/* Exit the monitor on the top-most object */
+			ILJitValue args[2];
+
+			args[0] = _ILJitCoderGetThread(jitCoder);
+			args[1] = jitCoder->jitStack[jitCoder->stackTop - 1]; 
+
+			/* Pop the object from the stack. */
+			JITC_ADJUST(jitCoder, -1);
+
+			jit_insn_call_native(jitCoder->jitFunction,
+								 "_IL_Monitor_Exit",
+								 _IL_Monitor_Exit,
+								 _ILJitSignature_ILMonitorExit,
+								 args, 2, 0);
+			return 1;
+		}
+		/* Not reached */
+		case IL_INLINEMETHOD_TYPE_FROM_HANDLE:
+		{
+			/* Convert a RuntimeTypeHandle into a Type object */
+			ILJitValue returnValue = jit_value_create(jitCoder->jitFunction,
+													  _IL_JIT_TYPE_VPTR);
+			ILJitValue temp;
+			ILJitValue args[2];
+			jit_label_t label = jit_label_undefined;
+;
+			jit_insn_store(jitCoder->jitFunction,
+						   returnValue, 
+						   jitCoder->jitStack[jitCoder->stackTop - 1]);
+
+			jit_insn_branch_if_not(jitCoder->jitFunction, returnValue, &label);
+
+			args[0] = _ILJitCoderGetThread(jitCoder);
+			args[1] = returnValue;
+			temp = jit_insn_call_native(jitCoder->jitFunction,
+										"_ILGetClrType",
+										_ILGetClrType,
+										_ILJitSignature_ILGetClrType,
+										args, 2, 0);
+			jit_insn_store(jitCoder->jitFunction,
+						   returnValue, 
+						   temp);
+			jit_insn_label(jitCoder->jitFunction, &label);
+			jitCoder->jitStack[jitCoder->stackTop - 1] = returnValue;
+			return 1;
+		}
+		/* Not reached */
+
+	}
 	/* If we get here, then we don't know how to inline the method */
 	return 0;
 }

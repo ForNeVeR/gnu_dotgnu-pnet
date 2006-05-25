@@ -202,6 +202,25 @@ static ILJitType _ILJitSignature_ILRuntimeMethodToVtablePointer = 0;
 #endif
 
 /*
+ * Definition of the signatures for inlined calls of native runtime functions.
+ */
+
+/*
+ * void _IL_Monitor_Enter(ILExecThread *thread, ILObject *obj)
+ */
+static ILJitType _ILJitSignature_ILMonitorEnter = 0;
+
+/*
+ * void _IL_Monitor_Exit(ILExecThread *thread, ILObject *obj)
+ */
+static ILJitType _ILJitSignature_ILMonitorExit = 0;
+
+/*
+ * void _ILGetClrType(ILExecThread *thread, ILClass *info)
+ */
+static ILJitType _ILJitSignature_ILGetClrType = 0;
+
+/*
  * Define offsetof macro if not present.
  */
 #ifndef offsetof
@@ -279,6 +298,12 @@ struct _tagILJitMethodInfo
 	ILUInt32 implementationType;	/* Flag how the method is implemented. */
 	ILInternalInfo fnInfo;			/* Information for internal calls or pinvokes. */
 };
+
+#define _IL_JIT_IMPL_DEFAULT		0x0
+#define _IL_JIT_IMPL_INTERNAL		0x1
+#define _IL_JIT_IMPL_INTERNALALLOC	0x2
+#define _IL_JIT_IMPL_INTERNALMASK	0x3
+#define _IL_JIT_IMPL_PINVOKE		0x4
 
 /*
  * Define the structure of a JIT coder's instance block.
@@ -1966,6 +1991,34 @@ int ILJitInit()
 	}
 #endif
 
+	/* Create the signatures for the inlined native function calls. */
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_ILMonitorEnter =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_ILMonitorExit =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILGetClrType =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+
 	return 1;
 }
 /*
@@ -2246,11 +2299,11 @@ static int _ILJitFunctionIsInternal(ILJITCoder *coder, ILMethod *method,
 
 	if(jitMethodInfo)
 	{
-		if(jitMethodInfo->implementationType)
+		if((jitMethodInfo->implementationType) & _IL_JIT_IMPL_INTERNALMASK)
 		{
 			fnInfo->func = jitMethodInfo->fnInfo.func;
+			return (jitMethodInfo->implementationType) & _IL_JIT_IMPL_INTERNALMASK;
 		}
-		return jitMethodInfo->implementationType;
 	}
 	return 0;
 }
@@ -2515,9 +2568,47 @@ static int _ILJitCompile(jit_function_t func)
 static int _ILJitCompilePinvoke(jit_function_t func)
 {
 	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	ILClass *info = ILMethod_Owner(method);
+	ILClassPrivate *classPrivate = (ILClassPrivate *)info->userData;
+	ILJITCoder *jitCoder = (ILJITCoder *)(classPrivate->process->coder);
+	char *methodName = _ILJitFunctionGetMethodName(func);
+#endif
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	if(jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout, "CompilePinvoke: %s\n", methodName);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 
 	/* TODO */
-	return JIT_RESULT_COMPILE_ERROR;
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+#ifdef _IL_JIT_DUMP_FUNCTION
+	if(jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		jit_dump_function(stdout, func, methodName);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+#ifdef _IL_JIT_DISASSEMBLE_FUNCTION
+	if(jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		if(!jit_function_compile(func))
+		{
+			return JIT_RESULT_COMPILE_ERROR;
+		}
+		ILMutexLock(globalTraceMutex);
+		jit_dump_function(stdout, func, methodName);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+#endif
+	return JIT_RESULT_OK;
 }
 
 /*
@@ -2605,7 +2696,7 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder,
 		}
 		else
 		{
-			if(implementationType != 2)
+			if(implementationType != _IL_JIT_IMPL_INTERNALALLOC)
 			{
 				/* we need an other arg for this */
 				total++;
@@ -2721,7 +2812,7 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 		if(method == ILTypeGetDelegateMethod(type))
 		{
 			/* Flag method implemented in IL.. */
-			implementationType = 0;
+			implementationType = _IL_JIT_IMPL_DEFAULT;
 
 			/* now set the on demand compiler function */
 			onDemandCompiler = _ILJitCompileMultiCastDelegateInvoke;
@@ -2742,7 +2833,7 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 		if(code.code)
 		{
 			/* Flag method implemented in IL.. */
-			implementationType = 0;
+			implementationType = _IL_JIT_IMPL_DEFAULT;
 
 			/* set the function recompilable. */
 			setRecompilable = 1;
@@ -2813,7 +2904,7 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 					}
 
 					/* Flag the method pinvoke. */
-					implementationType = 3;
+					implementationType = _IL_JIT_IMPL_PINVOKE;
 
 					/* now set the on demand compiler function */
 					onDemandCompiler = _ILJitCompilePinvoke;
@@ -2844,7 +2935,7 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 							if(fnInfo.func)
 							{
 								/* Flag the method internal. */
-								implementationType = 1;
+								implementationType = _IL_JIT_IMPL_INTERNAL;
 							}
 						}
 						else
@@ -2855,12 +2946,12 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 								if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
 														method, 1, &fnInfo))
 								{
-									implementationType = 0;
+									implementationType = _IL_JIT_IMPL_DEFAULT;
 								}
 								if(fnInfo.func)
 								{
 									/* Flag the method an allocating constructor. */
-									implementationType = 2;
+									implementationType = _IL_JIT_IMPL_INTERNALALLOC;
 								}
 							}
 							else
@@ -2868,19 +2959,19 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 								if(fnInfo.func)
 								{
 									/* Flag the method internal. */
-									implementationType = 1;
+									implementationType = _IL_JIT_IMPL_INTERNAL;
 								}
 								else
 								{
 									if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
 															method, 1, &fnInfo))
 									{
-										implementationType = 0;
+										implementationType = _IL_JIT_IMPL_DEFAULT;
 									}
 									if(fnInfo.func)
 									{
 										/* Flag the method an allocating constructor. */
-										implementationType = 2;
+										implementationType = _IL_JIT_IMPL_INTERNALALLOC;
 									}
 								}
 							}
@@ -2891,14 +2982,14 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 						if(!_ILFindInternalCall(_ILExecThreadProcess(thread),
 											method, 0, &fnInfo))
 						{
-							implementationType = 0;
+							implementationType = _IL_JIT_IMPL_DEFAULT;
 						}
 						else
 						{
 							if(fnInfo.func)
 							{
 								/* Flag the method internal. */
-								implementationType = 1;
+								implementationType = _IL_JIT_IMPL_INTERNAL;
 							}
 						}
 					}

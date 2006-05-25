@@ -1,50 +1,66 @@
 2006-05-18  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/ScrollableControl.cs: fixed autoscrolling and null exceptions.
+	* System.Windows.Forms/ScrollableControl.cs: fixed autoscrolling
+	and null exceptions.
 
 2006-05-16  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* runtime/System/Private/NumberFormat/Formatter.cs: fixed rounding problem in FormatFloat.
+	* runtime/System/Private/NumberFormat/Formatter.cs: fixed rounding
+	problem in FormatFloat.
 
 2006-05-14  Deryk Robosson  <deryk@0x0a.com>
 
 	* DotGNU.Images/JpegLib.cs: Add [NonSerialzedAttribute] tag to an
 	additional three struct members.
+	
 	* DotGNU.Images/Image.cs: Validate argument of public method.
+	
 	* DotGNU.XmlRpc/XmlRpcMethod.cs: use StringBuilder for concat within
 	loops.
+	
 	* DotGNU.XmlRpc/XmlRpcException.cs: Implement standard exception
 	constructors.  Add [Serializable] attribute.
+	
 	* DotGNU.XmlRpc/Serialization/MethodCallFormatter.cs,
 	DotGNU.XmlRpc/Serialization/MethodResponseFormatter.cs,
 	DotGNU.XmlRpc/XmlRpcClientProtocol.cs, DotGNU.XmlRpc/XmlRpcWriter.cs:
-	validate arguments of public methods
+	validate arguments of public methods.
 
 2006-05-13  Deryk Robosson  <deryk@0x0a.com>
 
 	* DotGNU.Images/JpegLib.cs: Add [NonSerializedAttribute] tag where
 	required.
+	
 	* DotGNU.SSL/GNUTLS.cs: Implement finalizers for IDisposable classes.
 
 2006-05-10  Deryk Robosson  <deryk@0x0a.com>
 
 	* Xsharp/Dcop/DcopRef.cs, Xsharp/Display.cs: Remove unused member.
+	
 	* Xsharp/Image.cs: Call Dispose methods of IDisposable members.
+	
 	* Xsharp/Graphics.cs: Implement finalizer to properly call Dispose
 	method if it has not been already.
+	
 	* Xsharp/Dcop/ServiceResult.cs: Use properties instead of public
 	members.  Add NonSerializedAttribute.
+	
 	* Xsharp/Dcop/QDataStream.cs: Use properties of ServiceResult
 
 2006-05-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
-	* System.Windows.Forms/Control.cs: fixed a deadlock with invokes, if toolkit gets destroyed while an Invoke should be processed.
+	* System.Windows.Forms/Control.cs: fixed a deadlock with invokes, if
+	toolkit gets destroyed while an Invoke should be processed.
 
 2006-05-08  Deryk Robosson  <deryk@0x0a.com>
 
 	* DotGNU.Terminal: Use correct exception arguments.
-	* DotGNU.SSL/GNUTLS.cs, DotGNU.SSL/OpenSSL.cs: Properly dispose of the stream.
-	* DotGNU.XmlRpc/XmlRpcResponse.cs: Use StringBuilder for concat operations inside a loop.
+	
+	* DotGNU.SSL/GNUTLS.cs, DotGNU.SSL/OpenSSL.cs: Properly dispose of
+	the stream.
+	
+	* DotGNU.XmlRpc/XmlRpcResponse.cs: Use StringBuilder for concat 
+	operations inside a loop.
 
 2006-05-05  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
@@ -53,9 +69,10 @@
 2006-05-04  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Drawing/Graphics.cs: added a workaround for DrawString 
-	with graphics transformations.
-	This only works for scaling yet!!!
-	* System.Drawing/Drawing2D/Matrix.cs: added calculaion new font size when scaling is set (Workaround only).
+	with graphics transformations. This only works for scaling yet!!!
+	
+	* System.Drawing/Drawing2D/Matrix.cs: added calculaion new font size
+	when scaling is set (Workaround only).
 
 2006-05-03  Richard Baumann  <biochem333@nyc.rr.com>
 

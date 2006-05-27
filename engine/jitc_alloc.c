@@ -63,7 +63,11 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size)
 	ILObject *obj;
 
 	/* Allocate memory from the heap */
-	ptr = ILGCAllocAtomic(size + IL_OBJECT_HEADER_SIZE);
+	/* TODO: There seem to be classes in the runtime where managed pointers */
+	/* are not correctly recognized (are IntPtrs in the class definition). */
+	/* This is why i'm using ILGCAlloc here. */
+	/* ptr = ILGCAllocAtomic(size + IL_OBJECT_HEADER_SIZE); */
+	ptr = ILGCAlloc(size + IL_OBJECT_HEADER_SIZE);
 
 	if(!ptr)
 	{

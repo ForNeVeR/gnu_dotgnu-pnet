@@ -2647,6 +2647,7 @@ static int _ILJitMethodIsAbstract(ILMethod *method)
 	return 1;
 }
 
+#include "jitc_alloc.c"
 #include "jitc_delegate.c"
 
 /*
@@ -3422,7 +3423,6 @@ ILJitTypes *ILJitPrimitiveClrTypeToJitTypes(int primitiveClrType)
 	return 0;
 }
 
-#include "jitc_alloc.c"
 #include "jitc_diag.c"
 #include "jitc_locals.c"
 #include "jitc_labels.c"

@@ -1,3 +1,14 @@
+2006-05-27  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Mobe the inclusion of jitc_alloc.c just before
+	the one of jitc_delegate.c because we'll need the allocation routines
+	there.
+
+	* engine/jitc_alloc.c: As a temporary workaround i'm ding a ILGCAlloc
+	instead of an ILGCAllocAtomic now.
+
+	* engine/jitc_except.c: Fix a valgrind warning.
+
 2006-05-25  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Add signatures for inlined internalcalls. Add output of

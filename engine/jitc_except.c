@@ -181,7 +181,6 @@ static void JITCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 static void JITCoder_Throw(ILCoder *coder, int inCurrentMethod)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue exception = jitCoder->jitStack[jitCoder->stackTop - 1];;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -196,6 +195,8 @@ static void JITCoder_Throw(ILCoder *coder, int inCurrentMethod)
 
 	if(!(jitCoder->isInCatcher))
 	{
+		ILJitValue exception = jitCoder->jitStack[jitCoder->stackTop - 1];
+
 		jit_insn_call_native(jitCoder->jitFunction,
 							 "ILRuntimeExceptionThrow",
 							 ILRuntimeExceptionThrow,

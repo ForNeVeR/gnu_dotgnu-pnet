@@ -86,28 +86,40 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	if(ILMethod_IsStaticConstructor(method))
 	{
 		/* We have to take care that the method is executed only once. */
-		ILClass *info = ILMethod_Owner(method);
-		ILJitValue classInfo = 
-			jit_value_create_nint_constant(coder->jitFunction,
+		ILClass *info;
+		ILJitValue classInfo;
+		ILJitValue cctorOnce;
+		ILJitValue attributes;
+		ILJitValue temp;
+ 		jit_label_t startLabel = jit_label_undefined;
+		jit_label_t endLabel = jit_label_undefined;
+		jit_label_t label1 = jit_label_undefined;
+
+		jit_insn_label(coder->jitFunction, &startLabel);
+
+		info = ILMethod_Owner(method);
+		classInfo = jit_value_create_nint_constant(coder->jitFunction,
 										   _IL_JIT_TYPE_VPTR,
 										   (jit_nint)info);
-		ILJitValue cctorOnce = 
-			jit_value_create_nint_constant(coder->jitFunction,
+		cctorOnce = jit_value_create_nint_constant(coder->jitFunction,
 										   _IL_JIT_TYPE_UINT32,
 										   (jit_nint)IL_META_TYPEDEF_CCTOR_ONCE);
-		ILJitValue attributes = jit_insn_load_relative(coder->jitFunction,
+		attributes = jit_insn_load_relative(coder->jitFunction,
 													   classInfo,
 													   offsetof(ILClass, attributes),
 													   _IL_JIT_TYPE_UINT32);
-		ILJitValue temp = jit_insn_and(coder->jitFunction, attributes, cctorOnce);
-		jit_label_t label1 = jit_label_undefined;
-
+		temp = jit_insn_and(coder->jitFunction, attributes, cctorOnce);
 		jit_insn_branch_if_not(coder->jitFunction, temp, &label1);
 		jit_insn_return(coder->jitFunction, 0);
 		jit_insn_label(coder->jitFunction, &label1);
 		temp = jit_insn_or(coder->jitFunction, attributes, cctorOnce);
 		jit_insn_store_relative(coder->jitFunction, classInfo,
 								offsetof(ILClass, attributes), temp);
+
+		jit_insn_label(coder->jitFunction, &endLabel);
+		/* Make sure that this check will remain very first even if any
+		   other blocks are later moved to the function start. */
+		jit_insn_move_blocks_to_start(coder->jitFunction, startLabel, endLabel);
 	}
 
 	return 1;

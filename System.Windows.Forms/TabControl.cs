@@ -108,7 +108,9 @@ namespace System.Windows.Forms
 			return tabPageCollection[index];
 		}
 
-		protected string GetToolTipText(object item){
+		protected string GetToolTipText(object item)
+		{
+			if( selectedIndex < 0 ) return string.Empty;
 			return (tabPageCollection[selectedIndex] as TabPage).ToolTipText;
 		}
 
@@ -270,7 +272,7 @@ namespace System.Windows.Forms
 		{
 			get
 			{
-				if (selectedIndex == -1)
+				if (SelectedIndex == -1)	// use SelectedIndex instead of selectedIndex to active a first tab page, if none was selected
 				{
 					return null;
 				}
@@ -281,7 +283,8 @@ namespace System.Windows.Forms
 			}
 			set
 			{
-				selectedIndex = tabPageCollection.IndexOf(value);
+				// use SelectedIndex, not selectedIndex to do events
+				SelectedIndex = tabPageCollection.IndexOf(value);
 			}
 		}
 
@@ -685,8 +688,10 @@ namespace System.Windows.Forms
 						//if (SelectedIndex < TabCount)
 						//{
 							// Check to see if we have selected a tab that isnt on the last row and move the tab row down
+						if( selectedIndex >= 0 ) {
 							if (tabs[SelectedIndex].row != maxRow)
 								RowToBottom(ref tabs, tabs[SelectedIndex].row, maxRow);
+						}
 						//}
 
 						// Find the actual bounds
@@ -1002,24 +1007,15 @@ namespace System.Windows.Forms
 		public int SelectedIndex {
 			get
 			{
-				if (selectedIndex == -1)
-				{
-					// if selectedIndex is -1 (none TabPage was selected)
-					// Check if any TabPage is visible
-					// Select first visible TabPage
-					int iCount = tabPageCollection.Count;
-					for( int i = 0; i < iCount; i++ ) {
-						if( tabPageCollection[i].Visible ) {
-							SelectedIndex = i;
-							break;
-						}
-					}
-					return selectedIndex;
+				if( selectedIndex == -1 && tabPageCollection.Count > 0 ) {
+					selectedIndex = 0;	// select first tab page without calling OnSelectedIndexChanged, like windows does.
+					
+					Control selectedPage = GetChildByIndex( selectedIndex );
+					selectedPage.Visible = true;
+					SetTabPageBounds();
+					InvalidateTabs();
 				}
-				else
-				{
-					return selectedIndex;
-				}
+				return selectedIndex;
 			}
 			set
 			{
@@ -1130,47 +1126,51 @@ namespace System.Windows.Forms
 		// Select the tab that is clicked
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
-			if (moveButtonsShowing && moveButtonLeftBounds.Contains( e.X, e.Y ))
-			{
-				moveButtonLeftState = ButtonState.Pushed;
-				if (moveButtonsTabOffset > 0)
+			// select tabs only on left mouse button
+			if( e.Button == MouseButtons.Left ) {
+				if (moveButtonsShowing && moveButtonLeftBounds.Contains( e.X, e.Y ))
 				{
-					moveButtonsTabOffset--;
-					InvalidateTabs();
-				}
-			}
-			else if (moveButtonsShowing && moveButtonRightBounds.Contains(e.X, e.Y))
-			{
-				moveButtonRightState = ButtonState.Pushed;
-				if (moveButtonsTabOffset < tabPageCollection.Count - 1 && moveButtonsCovered)
-				{
-					moveButtonsTabOffset++;
-					InvalidateTabs();
-				}
-			}
-			else
-			{
-				moveButtonRightState = ButtonState.Normal;
-				int newSelectedIndex =  GetMouseOverTab( e.X, e.Y );
-				if (newSelectedIndex > -1)
-				{
-					SelectedIndex = newSelectedIndex;
-					
-					// Handle focus.
-					if (!Focused)
+					moveButtonLeftState = ButtonState.Pushed;
+					if (moveButtonsTabOffset > 0)
 					{
-						if (!SelectedTab.SelectNextControl(null, true, true, false, false))
+						moveButtonsTabOffset--;
+						InvalidateTabs();
+					}
+				}
+				else if (moveButtonsShowing && moveButtonRightBounds.Contains(e.X, e.Y))
+				{
+					moveButtonRightState = ButtonState.Pushed;
+					if (moveButtonsTabOffset < tabPageCollection.Count - 1 && moveButtonsCovered)
+					{
+						moveButtonsTabOffset++;
+						InvalidateTabs();
+					}
+				}
+				else
+				{
+					moveButtonRightState = ButtonState.Normal;
+					int newSelectedIndex =  GetMouseOverTab( e.X, e.Y );
+					if (newSelectedIndex > -1)
+					{
+						SelectedIndex = newSelectedIndex;
+						
+						// Handle focus.
+						if (!Focused)
 						{
-							IContainerControl container = Parent.GetContainerControl();
-							if (container != null)
+							if (!SelectedTab.SelectNextControl(null, true, true, false, false))
 							{
-								container.ActiveControl = this;
+								IContainerControl container = Parent.GetContainerControl();
+								if (container != null)
+								{
+									container.ActiveControl = this;
+								}
 							}
 						}
+	
 					}
-
 				}
 			}
+			
 			base.OnMouseDown (e);
 
 		}

@@ -808,27 +808,33 @@ internal class Api
 	public static extern int GetMessageA(out MSG msg, IntPtr hwnd, int minFilter, int maxFilter);
 
 	[DllImport("user32")] //ANSI
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool PeekMessageA(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, PeekMessageType wRemoveMsg );
 	
 	[DllImport("user32",CharSet=CharSet.Ansi)] //ANSI
 	public static extern int DispatchMessageA(ref MSG msg);
 	
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool TranslateMessage(ref MSG msg);
 
 	[DllImport("gdi32")] //ANSI
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool TextOutA(IntPtr hdc, int x, int y, string textstring, int charCount);
 
 	[DllImport("gdi32")] //ANSI
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool ExtTextOutA( IntPtr hdc, int X, int Y, uint fuOptions, IntPtr lprc, String lpString, uint cbCount,IntPtr lpDx);
 
 	[DllImport("user32")]
 	public static extern IntPtr BeginPaint(IntPtr hwnd, ref PAINTSTRUCT ps);
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool EndPaint (IntPtr hwnd, ref PAINTSTRUCT ps);
 		
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool GetClientRect(IntPtr hwnd, out RECT rect);
 
 	[DllImport("gdi32")]
@@ -847,27 +853,34 @@ internal class Api
 	public static extern IntPtr GetModuleHandleA(string modName);
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SetWindowPos( IntPtr hwnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowsPosFlags uFlags );
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SetWindowPos( IntPtr hwnd, SetWindowsPosPosition hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowsPosFlags uFlags );
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool ShowWindow(IntPtr hwnd, ShowWindowCommand nCmdShow );
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool UpdateWindow(IntPtr hwnd);
 
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool LineTo(IntPtr hdc, int nXEnd, int nYEnd);
 	
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool MoveToEx(IntPtr hdc, int X, int Y, IntPtr lpPoint);
 
 	[DllImport("gdi32")]
 	public static extern int SetPixel(IntPtr hdc, int X, int Y, int crColor );
 
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool Polygon( IntPtr hdc, POINT[] lpPoints, int nCount);
 
 	[DllImport("gdi32")]
@@ -877,6 +890,7 @@ internal class Api
 	public static extern IntPtr SelectObject(IntPtr hdc, IntPtr hgdiobj);
 
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool DeleteObject(IntPtr hObject);
 
 	[DllImport("gdi32")]
@@ -889,6 +903,7 @@ internal class Api
 	public static extern IntPtr CreatePatternBrush(IntPtr hbmp);
 
 	[DllImport("user32")] //ANSI
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool PostMessageA(IntPtr hwnd, WindowsMessages Msg, int wParam, int lParam);
 
   	[DllImport("user32")] //ANSI
@@ -910,7 +925,7 @@ internal class Api
 		
 	[DllImport("user32")] //ANSI
 	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, out bool pvParam, uint fWinIni );
+	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, [MarshalAs(UnmanagedType.Bool)] out bool pvParam, uint fWinIni );
 		
 	[DllImport("user32")] //ANSI
 	[return: MarshalAs(UnmanagedType.Bool)]
@@ -944,11 +959,11 @@ internal class Api
 
 	[DllImport("user32")]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool InvalidateRect(IntPtr hWnd, ref RECT hRgn, bool bErase);
+	public static extern bool InvalidateRect(IntPtr hWnd, ref RECT hRgn, [MarshalAs(UnmanagedType.Bool)] bool bErase);
 
 	[DllImport("user32")]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool InvalidateRect(IntPtr hWnd, IntPtr hRgn, bool bErase);
+	public static extern bool InvalidateRect(IntPtr hWnd, IntPtr hRgn, [MarshalAs(UnmanagedType.Bool)] bool bErase);
 	
 	[DllImport("user32")]
 	[return: MarshalAs(UnmanagedType.Bool)]
@@ -1022,7 +1037,8 @@ internal class Api
 	public static extern bool RedrawWindow( IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, RedrawWindowFlags flags);
 
 	[DllImport("user32")]
-	public static extern bool AdjustWindowRectEx(ref RECT lpRect, WindowStyle dwStyle, bool bMenu, WindowsExtendedStyle dwExStyle);
+	[return: MarshalAs(UnmanagedType.Bool)]
+	public static extern bool AdjustWindowRectEx(ref RECT lpRect, WindowStyle dwStyle, [MarshalAs(UnmanagedType.Bool)] bool bMenu, WindowsExtendedStyle dwExStyle);
 
 	[DllImport("user32")]
 	public static extern short GetKeyState( VirtualKeyType nVirtKey );

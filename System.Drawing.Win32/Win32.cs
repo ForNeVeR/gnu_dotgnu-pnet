@@ -901,19 +901,24 @@ internal class Api
 	public static extern int GetSystemMetrics (SystemMetricsType nIndex);
 
 	[DllImport("user32")] //ANSI
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, out RECT pvParam, uint fWinIni );
 
 	[DllImport("user32")] //ANSI
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, out int pvParam, uint fWinIni );
 		
 	[DllImport("user32")] //ANSI
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, out bool pvParam, uint fWinIni );
 		
 	[DllImport("user32")] //ANSI
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(uint uiAction, uint uiParam, ref NONCLIENTMETRICS pvParam,uint fWinIni);
 
 	//Get font information
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool GetTextMetricsA( IntPtr hdc, out TEXTMETRIC lptm);
 
 	//Measure size and width of text
@@ -930,18 +935,23 @@ internal class Api
 	public static extern int FillRect(IntPtr hDC, ref RECT lprc, IntPtr hbr);
 
 	[DllImport("user32")] //ANSI
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SetWindowTextA( IntPtr hWnd, string lpString);
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool GetWindowRect( IntPtr hWnd, out RECT lpRect );
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool InvalidateRect(IntPtr hWnd, ref RECT hRgn, bool bErase);
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool InvalidateRect(IntPtr hWnd, IntPtr hRgn, bool bErase);
 	
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool TrackMouseEvent( ref TRACKMOUSEEVENT lpEventTrack);
 
 	[DllImport("user32")]
@@ -951,6 +961,7 @@ internal class Api
 	public static extern IntPtr LoadCursorA( IntPtr hInstance, CursorName lpCursorName);
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool DestroyWindow( IntPtr hWnd );
 
 	[DllImport("user32")]
@@ -963,18 +974,22 @@ internal class Api
 	public static extern IntPtr GetFocus();
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool CloseWindow(IntPtr hWnd);
 
 	[DllImport("user32")]
 	public extern static int GetSysColor(int nIndex);
 
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool Arc( IntPtr hdc, int nLeftRect,int nTopRect, int nRightRect, int nBottomRect, int nXStartArc, int nYStartArc, int nXEndArc, int nYEndArc );
 
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool Pie( IntPtr hdc, int nLeftRect,int nTopRect, int nRightRect, int nBottomRect, int nXRadial1, int nYRadial1, int nXRadial2, int nYRadial2 );
 
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool Ellipse( IntPtr hdc, int nLeftRect, int nTopRect, int nRightRect, int nBottomRect );
 
 	[DllImport("gdi32")]
@@ -984,6 +999,7 @@ internal class Api
 	public static extern int SetBkColor( IntPtr hdc,int crColor);
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool IsWindowVisible( IntPtr hWnd);
 
 	[DllImport("gdi32")]
@@ -1002,6 +1018,7 @@ internal class Api
 	public static extern int GetWindowLongA( IntPtr hWnd, SetWindowLongType nIndex);
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool RedrawWindow( IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, RedrawWindowFlags flags);
 
 	[DllImport("user32")]
@@ -1014,6 +1031,7 @@ internal class Api
 	public static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
 	
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SetRectRgn(IntPtr hrgn, int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
 
 	[DllImport("gdi32")]
@@ -1044,12 +1062,15 @@ internal class Api
 	public static extern uint SetTimer(IntPtr hwnd, uint nIDEvent, uint uElapse, IntPtr lpTimerFunc);
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool KillTimer(IntPtr hwnd, uint uIDEvent);
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool ScreenToClient( IntPtr hWnd, ref POINT lpPoint );
 
 	[DllImport("user32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool ClientToScreen( IntPtr hWnd, ref POINT lpPoint );
 
 	[DllImport("user32")]
@@ -1089,12 +1110,14 @@ internal class Api
 	public static extern IntPtr GlobalLock( IntPtr hMem);
 
 	[DllImport("kernel32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool GlobalUnlock(IntPtr hMem);
 
 	[DllImport("gdi32")]
 	public static extern int SaveDC( IntPtr hdc );
 
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool RestoreDC( IntPtr hdc, int nSavedDC );
 
 	[DllImport("gdi32")]
@@ -1110,6 +1133,7 @@ internal class Api
 	public static extern IntPtr CreateIconIndirect(ref ICONINFO piconinfo);
 
 	[DllImport("gdi32")]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool DeleteDC(IntPtr hdc);
 	
 	[DllImport("kernel32")]

@@ -20,6 +20,16 @@
 	System.Drawing/PointConverter.cs, System.Drawing/ColorConverter.cs:
 	Test for empty strings using string length.
 
+	* Xsharp/Function.cs: Rename class to GCFunction to not confuse it
+	with a reserved C# keyword.
+
+	* System.Drawing.Xsharp/DrawingXorBrush.cs,
+	System.Drawing.Xsharp/DrawingPen.cs,
+	System.Drawing.Xsharp/DrawingSolidBrush.cs,
+	System.Drawing.Xsharp/DrawingHatchBrush.cs,
+	Xsharp/Types/XGCValues.cs, Xsharp/Graphics.cs,
+	Xsharp/Types/GCValueMask.cs: Alterations per class rename above.
+
 2006-05-30  Deryk Robosson <deryk@0x0a.com>
 
 	* System.Drawing.Win32/Win32.cs: Add MarshalAs attributes for return

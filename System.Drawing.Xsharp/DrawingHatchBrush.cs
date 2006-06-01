@@ -57,7 +57,7 @@ internal sealed class DrawingHatchBrush : ToolkitBrushBase
 					{
 						bitmap = GetBitmap(style);
 					}
-					g.Function = Function.GXcopy;
+					g.Function = GCFunction.GXcopy;
 					g.SubwindowMode = SubwindowMode.ClipByChildren;
 					if(bitmap != null)
 					{

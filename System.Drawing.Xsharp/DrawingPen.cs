@@ -156,7 +156,7 @@ internal sealed class DrawingPen : ToolkitPenBase
 							break;
 						}
 					}
-					g.Function = Function.GXcopy;
+					g.Function = GCFunction.GXcopy;
 					g.SubwindowMode = SubwindowMode.ClipByChildren;
 					g.LineWidth = width;
 					g.LineStyle = style;

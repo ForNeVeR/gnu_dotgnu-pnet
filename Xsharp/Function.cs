@@ -24,12 +24,12 @@ namespace Xsharp
 using System;
 
 /// <summary>
-/// <para>The <see cref="T:Xsharp.Function"/> enumeration specifies
+/// <para>The <see cref="T:Xsharp.GCFunction"/> enumeration specifies
 /// the function mode for graphics objects
 /// (<see cref="T:Xsharp.Graphics"/>).
 /// </para>
 /// </summary>
-public enum Function
+public enum GCFunction
 {
 
 	GXclear			= 0x0,		/* 0 */

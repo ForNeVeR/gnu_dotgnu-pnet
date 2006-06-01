@@ -56,8 +56,8 @@ internal struct XGCValues
 	public sbyte		dashes;
 
 	// Convert odd fields into types that are useful.
-	public Function function
-			{ get { return (Function)(int)function__; }
+	public GCFunction function
+			{ get { return (GCFunction)(int)function__; }
 			  set { function__ = (Xlib.Xint)(int)value; } }
 	public int line_width
 			{ get { return (int)line_width__; }

@@ -47,7 +47,7 @@ internal sealed class DrawingXorBrush : ToolkitBrushBase
 				if(graphics != null)
 				{
 					Xsharp.Graphics g = graphics.graphics;
-					g.Function = Function.GXxor;
+					g.Function = GCFunction.GXxor;
 					g.SubwindowMode = SubwindowMode.IncludeInferiors;
 				}
 				graphics.Brush = this;

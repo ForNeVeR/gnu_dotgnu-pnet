@@ -42,7 +42,7 @@ internal sealed class DrawingSolidBrush : ToolkitBrushBase
 				if(graphics != null)
 				{
 					Xsharp.Graphics g = graphics.graphics;
-					g.Function = Function.GXcopy;
+					g.Function = GCFunction.GXcopy;
 					g.SubwindowMode = SubwindowMode.ClipByChildren;
 					g.SetFillSolid();
 					g.Foreground = DrawingToolkit.DrawingToXColor(Color);

@@ -164,7 +164,7 @@ public sealed class Graphics : IDisposable
 						// Reset the cached GC back to the default settings.
 						// Xlib will take care of stripping the list down
 						// to just the changes that need to be applied.
-						gcValues.function = Xsharp.Function.GXcopy;
+						gcValues.function = Xsharp.GCFunction.GXcopy;
 						gcValues.plane_mask = ~((XPixel)0);
 						gcValues.line_width = 0;
 						gcValues.line_style = Xsharp.LineStyle.LineSolid;
@@ -425,13 +425,13 @@ public sealed class Graphics : IDisposable
 	/// </summary>
 	///
 	/// <value>
-	/// <para>The <see cref="T:Xsharp.Function"/> value for the mode.</para>
+	/// <para>The <see cref="T:Xsharp.GCFunction"/> value for the mode.</para>
 	/// </value>
 	///
 	/// <exception cref="T:Xsharp.XException">
 	/// <para>Raised if set to an invalid value.</para>
 	/// </exception>
-	public Xsharp.Function Function
+	public Xsharp.GCFunction Function
 			{
 				get
 				{
@@ -451,8 +451,8 @@ public sealed class Graphics : IDisposable
 				}
 				set
 				{
-					if(value < Xsharp.Function.GXclear ||
-					   value > Xsharp.Function.GXset)
+					if(value < Xsharp.GCFunction.GXclear ||
+					   value > Xsharp.GCFunction.GXset)
 					{
 						throw new XException
 							(String.Format(S._("X_Function"), (int)value));

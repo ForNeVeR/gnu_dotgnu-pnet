@@ -1289,6 +1289,16 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 	/// </remarks>
 	public void CopyTo(Array array, int index)
 			{
+				if(array == null)
+				{
+					throw new ArgumentNullException("array", "Argument cannot be null");
+				}
+
+				if(index < 0)
+				{
+					throw new ArgumentOutOfRangeException("index");
+				}
+
 				Widget child = topChild;
 				while(child != null)
 				{

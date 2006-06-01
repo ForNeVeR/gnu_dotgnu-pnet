@@ -255,6 +255,11 @@ public sealed class RootWindow : Widget
 	/// </returns>
 	public String GetResource(String name)
 			{
+				if((name == null) || (name.Length == 0))
+				{
+					return null;
+				}
+
 				if(resources == null)
 				{
 					return null;

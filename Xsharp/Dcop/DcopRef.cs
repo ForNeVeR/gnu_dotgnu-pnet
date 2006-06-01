@@ -89,6 +89,11 @@ public class DcopRef : ICloneable
 	/// </param>
 	public DcopRef(DcopRef parent)
 	{
+		if(parent == null)
+		{
+			throw new ArgumentNullException("parent", "Argument cannot be null");
+		}
+
 		this.app = parent.App;
 		this.obj = parent.Obj;
 	}

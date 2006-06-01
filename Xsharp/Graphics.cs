@@ -2336,7 +2336,7 @@ public sealed class Graphics : IDisposable
 				// Validate the image parameter.
 				if(image == null)
 				{
-					throw new ArgumentNullException("image");
+					throw new ArgumentNullException("image", "Argument cannot be null");
 				}
 
 				// Bail out if the source co-ordinates are out of range.

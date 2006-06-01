@@ -37,6 +37,10 @@
 	* Xsharp/XException.cs, Xsharp/Dcop/DcopException.cs: Add
 	SerializableAttribute.
 
+	* Xsharp/Dcop/DcopRef.cs, Xsharp/Dcop/QDataStream.cs,
+	Xsharp/Dcop/DcopFunction.cs, Xsharp/Graphics.cs, Xsharp/Widget.cs,
+	Xsharp/RootWindow.cs: Validate arguments of public methods.
+
 2006-05-30  Deryk Robosson <deryk@0x0a.com>
 
 	* System.Drawing.Win32/Win32.cs: Add MarshalAs attributes for return

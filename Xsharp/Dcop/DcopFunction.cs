@@ -39,6 +39,11 @@ public class DcopFunction
 		string withoutReturn;
 		string types;
 
+		if(input == null)
+		{
+			throw new ArgumentNullException("input", "Argument cannot be null");
+		}
+
 		spaceOffset = input.IndexOf(' ');
 		if(spaceOffset < 1)
 		{

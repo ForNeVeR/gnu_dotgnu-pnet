@@ -52,6 +52,16 @@ public class QDataStream
 	// Factory
 	public static QDataStream Marshal(Stream stream, DcopFunction fun, Object[] parameters)
 	{
+		if(stream == null)
+		{
+			throw new ArgumentNullException("stream", "Argument cannot be null");
+		}
+
+		if(fun == null)
+		{
+			throw new ArgumentNullException("fun", "Argument cannot be null");
+		}
+
 		QDataStream s = new QDataStream(stream);
 		try
 		{
@@ -83,6 +93,11 @@ public class QDataStream
 
 	public Object ReadObject(string objType)
 	{
+		if((objType == null) || (objType.Length == 0))
+		{
+			return null;
+		}
+
 		try
 		{
 			// Simpe types

@@ -56,7 +56,7 @@ internal sealed class DrawingTextureBrush : IToolkitBrush
 				{
 					Xsharp.Graphics g = graphics.graphics;
 					Xsharp.Image nativeImage = image.GetNativeImage();
-					g.Function = Function.GXcopy;
+					g.Function = GCFunction.GXcopy;
 					g.SubwindowMode = SubwindowMode.ClipByChildren;
 					g.SetFillTiled(nativeImage.Pixmap,
 								   (int)(dstRect.X), (int)(dstRect.Y));

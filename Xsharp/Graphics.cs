@@ -2569,7 +2569,7 @@ public sealed class Graphics : IDisposable
 				{
 					throw new ArgumentNullException("font");
 				}
-				if(str == null || str == String.Empty)
+				if(str == null || (str.Length == 0))
 				{
 					return;
 				}
@@ -2639,7 +2639,7 @@ public sealed class Graphics : IDisposable
 				{
 					throw new ArgumentNullException("font");
 				}
-				if(str == null || str == String.Empty)
+				if(str == null || (str.Length == 0))
 				{
 					width = 0;
 					ascent = 0;

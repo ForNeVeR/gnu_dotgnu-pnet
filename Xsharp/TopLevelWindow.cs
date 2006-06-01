@@ -220,7 +220,7 @@ public class TopLevelWindow : InputOutputWidget
 
 					// Set some other string properties.
 					String cultureName = CultureInfo.CurrentCulture.Name;
-					if(cultureName == null || cultureName == String.Empty)
+					if(cultureName == null || (cultureName.Length == 0))
 					{
 						cultureName = "en_US";
 					}

@@ -17,7 +17,8 @@
 	System.Drawing/Toolkit/ToolkitManager.cs,
 	System.Drawing/SizeConverter.cs, System.Drawing/ColorTranslator.cs,
 	System.Drawing/RectangleConverter.cs,
-	System.Drawing/PointConverter.cs, System.Drawing/ColorConverter.cs:
+	System.Drawing/PointConverter.cs, System.Drawing/ColorConverter.cs,
+	Xsharp/Graphics.cs, Xsharp/Application.cs, TopLevelWindow.cs: 
 	Test for empty strings using string length.
 
 	* Xsharp/Function.cs: Rename class to GCFunction to not confuse it
@@ -29,6 +30,12 @@
 	System.Drawing.Xsharp/DrawingHatchBrush.cs,
 	Xsharp/Types/XGCValues.cs, Xsharp/Graphics.cs,
 	Xsharp/Types/GCValueMask.cs: Alterations per class rename above.
+
+	* Xsharp/Dcop/DcopCall.cs, Xsharp/HandleMap.cs,
+	Xsharp/Ice/IceReplyWaitInfo.cs: Add NonSerializedAttribute.
+
+	* Xsharp/XException.cs, Xsharp/Dcop/DcopException.cs: Add
+	SerializableAttribute.
 
 2006-05-30  Deryk Robosson <deryk@0x0a.com>
 

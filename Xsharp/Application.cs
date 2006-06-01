@@ -549,7 +549,7 @@ public sealed class Application : IDisposable
 					Xlib._XGetHostname(buf, 1024);
 					String host = Marshal.PtrToStringAnsi(buf);
 					Marshal.FreeHGlobal(buf);
-					if(host == null || host == String.Empty)
+					if(host == null || (host.Length == 0))
 					{
 						return null;
 					}

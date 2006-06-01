@@ -24,6 +24,7 @@ namespace System.Drawing.Imaging
 
 public enum EmfPlusRecordType
 {
+	None					= 0,
 	EmfMin						= 1,
 	EmfHeader					= 1,
 	EmfPolyBezier				= 2,

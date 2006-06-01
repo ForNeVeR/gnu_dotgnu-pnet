@@ -5729,15 +5729,15 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					int cf, lf;
 
 					// set the default return value
-					String retval = text.Substring(start, length);
+					System.Text.StringBuilder retval = new System.Text.StringBuilder(text.Substring(start, length));
 
 					// measure the width of the return value
 					width = toolkitGraphics.MeasureString
-						(retval, MEASURE_LAYOUT_RECT,
+						(retval.ToString(), MEASURE_LAYOUT_RECT,
 						 format, out cf, out lf, false).Width;
 
 					// return the text if it fits
-					if(width < maxWidth) { return retval; }
+					if(width < maxWidth) { return retval.ToString(); }
 
 					// set the middle position
 					int middle = ((start + (length / 2)) + 2);
@@ -5777,23 +5777,23 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						if(width < maxWidth)
 						{
 							// set the return value to the pre-removal text
-							retval = text.Substring
-								(start, (removeStart - start));
+							retval = new System.Text.StringBuilder(text.Substring
+								(start, (removeStart - start)));
 
 							// append the ellipsis to the return value
-							retval += ellipsis;
+							retval.Append(ellipsis);
 
 							// append the post-removal text to the return value
-							retval += text.Substring
-								(removePos, ((start + length) - removePos));
+							retval.Append(text.Substring
+								(removePos, ((start + length) - removePos)));
 
 							// measure the width of the return value
 							width = toolkitGraphics.MeasureString
-								(retval, MEASURE_LAYOUT_RECT, format,
+								(retval.ToString(), MEASURE_LAYOUT_RECT, format,
 								 out cf, out lf, false).Width;
 
 							// return the text if it fits
-							if(width < maxWidth) { return retval; }
+							if(width < maxWidth) { return retval.ToString(); }
 						}
 
 						// set the reduced flag

@@ -78,7 +78,7 @@ public class PointConverter : TypeConverter
 
 				// Extract the string and trim it.
 				String str = ((String)value).Trim();
-				if(str == String.Empty)
+				if(str.Length == 0)
 				{
 					return null;
 				}

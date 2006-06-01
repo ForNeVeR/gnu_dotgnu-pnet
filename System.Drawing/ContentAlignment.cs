@@ -31,6 +31,7 @@ using System.Drawing.Design;
 #endif
 public enum ContentAlignment
 {
+	None			= 0x0000,
 	TopLeft			= 0x0001,
 	TopCenter		= 0x0002,
 	TopRight		= 0x0004,

@@ -248,7 +248,7 @@ public sealed class ToolkitManager
 				}
 
 				// Bail out if no toolkit name specified.
-				if(name == null || name == String.Empty)
+				if(name == null || name.Length == 0)
 				{
 					return null;
 				}

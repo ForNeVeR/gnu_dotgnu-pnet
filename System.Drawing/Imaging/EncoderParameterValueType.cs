@@ -24,6 +24,7 @@ namespace System.Drawing.Imaging
 
 public enum EncoderParameterValueType
 {
+	None				= 0,
 	ValueTypeByte			= 1,
 	ValueTypeAscii			= 2,
 	ValueTypeShort			= 3,

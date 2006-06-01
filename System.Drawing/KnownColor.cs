@@ -24,6 +24,8 @@ namespace System.Drawing
 
 public enum KnownColor
 {
+	None				= 0,
+
 	// Special colors.
 	ActiveBorder			= 1,
 	ActiveCaption			= 2,

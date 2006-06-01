@@ -24,6 +24,7 @@ namespace System.Drawing.Printing
 
 public enum Duplex
 {
+	None		= 0,
 	Default		= -1,
 	Simplex		= 1,
 	Vertical	= 2,

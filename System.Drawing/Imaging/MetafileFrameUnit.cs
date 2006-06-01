@@ -24,6 +24,7 @@ namespace System.Drawing.Imaging
 
 public enum MetafileFrameUnit
 {
+	None			= 0,
 	Pixel			= 2,
 	Point			= 3,
 	Inch			= 4,

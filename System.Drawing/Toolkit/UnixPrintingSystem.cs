@@ -36,7 +36,7 @@ internal sealed class UnixPrintingSystem : IToolkitPrintingSystem
 				{
 					String printer;
 					printer = Environment.GetEnvironmentVariable("PRINTER");
-					if(printer != null && printer != String.Empty)
+					if(printer != null && printer.Length > 0)
 					{
 						return printer;
 					}

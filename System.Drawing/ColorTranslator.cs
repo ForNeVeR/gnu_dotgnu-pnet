@@ -87,7 +87,7 @@ public sealed class ColorTranslator
 					// No: For compatibility
 					return Color.Empty;
 				}
-				if(htmlColor=="")
+				if(htmlColor.Length == 0)
 				{
 					// throw exception?
 					// No: For compatibility

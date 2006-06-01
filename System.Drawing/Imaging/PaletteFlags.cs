@@ -24,6 +24,7 @@ namespace System.Drawing.Imaging
 
 public enum PaletteFlags
 {
+	None		= 0x0000,
 	HasAlpha	= 0x0001,
 	GrayScale	= 0x0002,
 	Halftone	= 0x0004

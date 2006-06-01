@@ -24,6 +24,7 @@ namespace System.Drawing.Printing
 
 public enum PaperSourceKind
 {
+	None			= 0,
 	Upper			= 1,
 	Lower			= 2,
 	Middle			= 3,

@@ -24,6 +24,7 @@ namespace System.Drawing.Imaging
 
 public enum EmfType
 {
+	None		= 0,
 	EmfOnly     = 3,
 	EmfPlusOnly = 4,
 	EmfPlusDual = 5

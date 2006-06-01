@@ -27,6 +27,7 @@ using System;
 /// <para>This is the base class for all exceptions that are thrown
 /// by Dcop.</para>
 /// </summary>
+[SerializableAttribute]
 public class DcopException : SystemException
 {
 

@@ -27,6 +27,7 @@ using System;
 /// <para>This is the base class for all exceptions that are thrown
 /// by the library.</para>
 /// </summary>
+[SerializableAttribute]
 public class XException : SystemException
 {
 

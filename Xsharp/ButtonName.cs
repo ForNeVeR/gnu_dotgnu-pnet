@@ -29,7 +29,7 @@ using System;
 /// </summary>
 public enum ButtonName
 {
-
+	None	= 0,
 	Button1 = 1,
 	Button2 = 2,
 	Button3 = 3,

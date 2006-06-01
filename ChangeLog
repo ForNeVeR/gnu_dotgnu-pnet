@@ -1,3 +1,25 @@
+2006-06-01  Deryk Robosson <deryk@0x0a.com>
+
+	* System.Drawing/Graphics.cs: Use StringBuilder for concats
+
+	* System.Drawing/Imaging/MetafileFrameUnit.cs,
+	System.Drawing/Imaging/EmfType.cs,
+	System.Drawing/Imaging/EmfPlusRecordType.cs,
+	System.Drawing/Imaging/EncoderParameterValueType.cs,
+	System.Drawing/Imaging/ImageLockMode.cs,
+	System.Drawing/Imaging/PaletteFlags.cs,
+	System.Drawing/ContentAlignment.cs, System.Drawing/KnownColor.cs,
+	System.Drawing/Printing/Duplex.cs,
+	System.Drawing/Printing/PaperSourceKind.cs, Xsharp/KeyName.cs,
+	Xsharp/ButtonName.cs: Enums should have zero (None) value.
+
+	* System.Drawing/Toolkit/UnixPrintingSystem.cs,
+	System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Drawing/SizeConverter.cs, System.Drawing/ColorTranslator.cs,
+	System.Drawing/RectangleConverter.cs,
+	System.Drawing/PointConverter.cs, System.Drawing/ColorConverter.cs:
+	Test for empty strings using string length.
+
 2006-05-30  Deryk Robosson <deryk@0x0a.com>
 
 	* System.Drawing.Win32/Win32.cs: Add MarshalAs attributes for return

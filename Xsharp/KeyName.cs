@@ -29,7 +29,7 @@ using System;
 /// </summary>
 public enum KeyName
 {
-
+	None = 0x0000,
 	// This list was derived from <X11/keysymdef.h>
 	XK_VoidSymbol = 0xFFFFFF,
     XK_BackSpace = 0xFF08,

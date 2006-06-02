@@ -31,6 +31,7 @@ using System;
 public class DcopCallAttribute : Attribute
 {
 	// FIXME: Tell me if this eats up memory, 'cause it's not really used for now
+	[NonSerializedAttribute]
 	DcopFunction function;
 	// Constructor.
 	public DcopCallAttribute(string fun)

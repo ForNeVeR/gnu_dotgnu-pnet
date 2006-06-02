@@ -41,7 +41,9 @@ internal class HandleMap
 	private struct HandleInfo
 	{
 		public XWindow window;
+		[NonSerializedAttribute]
 		public Widget widget;
+		[NonSerializedAttribute]
 		public HandleOverflowInfo overflow;
 
 	}; // struct HandleInfo

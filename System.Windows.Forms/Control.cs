@@ -790,6 +790,9 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
+					// optimized performance
+					if( borderStyle == BorderStyle.None ) return new Size( width, height );
+					
 					Size offset = ClientToBounds(Size.Empty);
 					return new Size(width - offset.Width, height - offset.Height);
 				}
@@ -1511,7 +1514,9 @@ public class Control : IWin32Window, IDisposable
 					// then that has changed as well.
 					if(bindingContext == null)
 					{
-						OnBindingContextChanged(EventArgs.Empty);
+						if( Created ) {
+							OnBindingContextChanged(EventArgs.Empty);
+						}
 					}
 
 					// Initialize layout for calculating the anchor.
@@ -2652,24 +2657,30 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// TODO Inefficient
-				int xOrigin = ClientOrigin.X;
-				int yOrigin = ClientOrigin.Y;
-				// The rectangle relative to the toolkit that is the bounds for this control.
-				Rectangle parentInvalidateBounds = new Rectangle(xOrigin, yOrigin, ClientSize.Width, ClientSize.Height);
 				RectangleF[] rs = region.GetRegionScans(new Drawing.Drawing2D.Matrix());
-				for(int i = 0; i < rs.Length; i++)
-				{
-					Rectangle b = Rectangle.Truncate(rs[i]);
-					// Get in local coordinates.
-					b.Offset(xOrigin, yOrigin);
-					b.Intersect(parentInvalidateBounds);
-					if(!b.IsEmpty)
+				if( rs.Length > 0 ) {
+					// TODO Inefficient
+					Point p = ClientOrigin;
+					Size  s = ClientSize;
+					int xOrigin = p.X;
+					int yOrigin = p.Y;
+				// The rectangle relative to the toolkit that is the bounds for this control.
+					Rectangle parentInvalidateBounds = new Rectangle(xOrigin, yOrigin, s.Width, s.Height);
+					
+					for(int i = 0; i < rs.Length; i++)
 					{
-						if(toolkitWindow == null)
+						Rectangle b = Rectangle.Truncate(rs[i]);
+						// Get in local coordinates.
+						b.Offset(xOrigin, yOrigin);
+						b.Intersect(parentInvalidateBounds);
+						if(!b.IsEmpty)
 						{
-							CreateControl();
+							if(toolkitWindow == null)
+							{
+								CreateControl();
+							}
+							toolkitWindow.Invalidate(b.X, b.Y, b.Width, b.Height);
 						}
-						toolkitWindow.Invalidate(b.X, b.Y, b.Width, b.Height);
 					}
 				}
 			}
@@ -2889,10 +2900,16 @@ public class Control : IWin32Window, IDisposable
 				Control child;
 
 				// If our height is less than the height of an empty control, then we have probably been minimized and we must not layout.
-				Size offset = ClientToBounds(Size.Empty);
-				if(height < offset.Height)
-				{
-					return;
+				
+				// optimized performance
+				if( borderStyle == BorderStyle.None ) {
+				}
+				else {
+					Size offset = ClientToBounds(Size.Empty);
+					if(height < offset.Height)
+					{
+						return;
+					}
 				}
 
 				// Start with the display rectangle.
@@ -2906,7 +2923,7 @@ public class Control : IWin32Window, IDisposable
 				for(posn = numChildren - 1; posn >= 0; --posn)
 				{
 					child = children[posn];
-					if(child.Visible)
+					if(child.visible)
 					{
 						switch(child.Dock)
 						{
@@ -2959,7 +2976,7 @@ public class Control : IWin32Window, IDisposable
 				for(posn = numChildren - 1; posn >= 0; --posn)
 				{
 					child = children[posn];
-					if(child.Visible)
+					if(child.visible)
 					{
 						if (child.Dock == DockStyle.None)
 						{
@@ -3533,8 +3550,14 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void SetClientSizeCore(int x, int y)
 			{
-				Size client = ClientToBounds(new Size(x, y));
-				SetBoundsCore(left, top, client.Width, client.Height, BoundsSpecified.Size);
+				// optimized performance
+				if( borderStyle == BorderStyle.None ) {
+					SetBoundsCore(left, top, x, y, BoundsSpecified.Size);
+				}
+				else {
+					Size client = ClientToBounds(new Size(x, y));
+					SetBoundsCore(left, top, client.Width, client.Height, BoundsSpecified.Size);
+				}
 			}
 
 	// Set a control flag.
@@ -5290,7 +5313,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnParentVisibleChanged(EventArgs e)
 			{
-				OnVisibleChanged(e);
+				if( visible ) OnVisibleChanged(e);
 			}
 	internal virtual void OnPrimaryEnter(EventArgs e)
 			{
@@ -6470,7 +6493,7 @@ public class Control : IWin32Window, IDisposable
 					case (BorderStyle.FixedSingle):
 						return new Size(size.Width + 2, size.Height + 2);
 					default: //BorderStyle.None
-						return new Size(size.Width, size.Height);
+						return size; // new Size(size.Width, size.Height);
 				}
 			}
 

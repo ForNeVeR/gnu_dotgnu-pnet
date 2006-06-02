@@ -1,3 +1,9 @@
+2006-06-02  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Control.cs, 
+	System.Drawing/Drawing2D/RegionData.cs:
+	optimized performance
+
 2006-06-01  Deryk Robosson <deryk@0x0a.com>
 
 	* System.Drawing/Graphics.cs: Use StringBuilder for concats

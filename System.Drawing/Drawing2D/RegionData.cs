@@ -73,6 +73,83 @@ public sealed class RegionData
 	private const Int32 CAP_MAX         = 0x7FFFFFFF;
 	private const Int32 CAP_INC         = 0x00000100;
 
+	static private byte[] dataRectangleF;
+	static private byte[] dataEmpty;
+	static private byte[] dataInfinite;
+	
+	// Static constructor to initialize a default dataRectangleF to enhance performance
+	static RegionData() {
+		dataRectangleF = CreateStaticData( 36, REG_RECT  );
+		dataEmpty      = CreateStaticData( 20, REG_EMPTY );
+		dataInfinite   = CreateStaticData( 20, REG_INF   );
+	}
+	
+
+	static byte[] CreateStaticData( int size, int type ) {
+		
+		byte [] data = new byte[size];
+		
+		int index = HEADER_SIZE;
+		
+		int value = type;
+
+		if( BitConverter.IsLittleEndian ) {
+			data[index+0] = (byte)(value    );
+			data[index+1] = (byte)(value>> 8);
+			data[index+2] = (byte)(value>>16);
+			data[index+3] = (byte)(value>>24);
+		}
+		else {
+			data[index+3] = (byte)(value    );
+			data[index+2] = (byte)(value>> 8);
+			data[index+1] = (byte)(value>>16);
+			data[index+0] = (byte)(value>>24);
+		}
+		
+		value = size-8;
+		
+		// WriteHeader( size - 8 , 0 );
+		
+		if( BitConverter.IsLittleEndian ) {
+			data[0] = (byte)(value    );
+			data[1] = (byte)(value>> 8);
+			data[2] = (byte)(value>>16);
+			data[3] = (byte)(value>>24);
+		}
+		else {
+			data[3] = (byte)(value    );
+			data[2] = (byte)(value>> 8);
+			data[1] = (byte)(value>>16);
+			data[0] = (byte)(value>>24);
+		}
+		
+		// TODO Checksum
+		data[4] = 0xFF;
+		data[5] = 0xFF;
+		data[6] = 0xFF;
+		data[7] = 0xFF;
+		
+		// PutInt32( _MAGIC_     ,  8 ) ;
+		value = _MAGIC_;
+		
+		if( BitConverter.IsLittleEndian ) {
+			data[ 8] = (byte)(value    );
+			data[ 9] = (byte)(value>> 8);
+			data[10] = (byte)(value>>16);
+			data[11] = (byte)(value>>24);
+		}
+		else {
+			data[11] = (byte)(value    );
+			data[10] = (byte)(value>> 8);
+			data[ 9] = (byte)(value>>16);
+			data[ 8] = (byte)(value>>24);
+		}
+		
+		// PutInt32( _2nrOps     , 12 ) ;
+		// PutInt32( 0     , 12 ) ;
+		// not needed zero is zero !
+		return data;
+	}
 	/*
 	 * Constructors, for internal use ( used by System.Drawing.Region )
 	 */
@@ -127,9 +204,19 @@ public sealed class RegionData
 	 */
 	private void InitializeRegionData( RectangleF rect ) 
 	{
+		/*
 		int size =  AddRegionRectangle( rect , StartRegionData(36) ) ;
 		WriteHeader( size - 8 , 0 );
 		Resize( size ) ;
+		*/
+		// optimize performance by cloning template
+		data = (byte[])dataRectangleF.Clone();	
+		
+		int index = HEADER_SIZE;
+		PutSingle( rect.X      , index+=4 );
+		PutSingle( rect.Y      , index+=4 );
+		PutSingle( rect.Width  , index+=4 );
+		PutSingle( rect.Height , index+=4 );
 	}
 	private void InitializeRegionData( GraphicsPath path ) 
 	{
@@ -139,15 +226,25 @@ public sealed class RegionData
 	}
 	private void InitializeEmptyRegionData()
 	{
+		/*
 		int size =  AddRegionEmpty( StartRegionData(20) ) ;
 		WriteHeader( size - 8 , 0 );
 		Resize( size ) ;
+		*/
+		
+		// optimize performance by cloning template
+		data = (byte[])dataEmpty.Clone();	
 	}
 	private void InitializeInfiniteRegionData()
 	{
+		/*
 		int size =  AddRegionInfinite( StartRegionData(20) ) ;
 		WriteHeader( size - 8 , 0 );
 		Resize( size ) ;
+		*/
+		
+		// optimize performance by cloning template
+		data = (byte[])dataInfinite.Clone();	
 	}
 
 	/*

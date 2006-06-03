@@ -609,7 +609,7 @@ static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
 #endif
 
 	/* Allocate the object. */
-	newObj = _ILJitAllocObjectGen(jitCoder, boxClass);
+	newObj = _ILJitAllocObjectGen(jitCoder->jitFunction, boxClass);
 
 	if(jit_value_get_type(value) != jitType)
 	{
@@ -631,7 +631,8 @@ static void JITCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 	ILJitValue newObj;
 
 	/* Allocate memory */
-	newObj = _ILJitAllocGen(jitCoder, boxClass, jit_type_get_size(jitType));
+	newObj = _ILJitAllocGen(jitCoder->jitFunction,
+							boxClass, jit_type_get_size(jitType));
 	
 	/* If the smallerType is smaller then the initiale type then convert to it. */
 	if(jit_value_get_type(value) != jitType)

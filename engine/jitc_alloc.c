@@ -63,11 +63,7 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size)
 	ILObject *obj;
 
 	/* Allocate memory from the heap */
-	/* TODO: There seem to be classes in the runtime where managed pointers */
-	/* are not correctly recognized (are IntPtrs in the class definition). */
-	/* This is why i'm using ILGCAlloc here. */
-	/* ptr = ILGCAllocAtomic(size + IL_OBJECT_HEADER_SIZE); */
-	ptr = ILGCAlloc(size + IL_OBJECT_HEADER_SIZE);
+	ptr = ILGCAllocAtomic(size + IL_OBJECT_HEADER_SIZE);
 
 	if(!ptr)
 	{
@@ -96,7 +92,7 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size)
  * Generate the code to allocate the memory for an object with the given size.
  * Returns the ILJitValue with the pointer to the new object.
  */
-static ILJitValue _ILJitAllocGen(ILJITCoder *jitCoder, ILClass *classInfo,
+static ILJitValue _ILJitAllocGen(ILJitFunction jitFunction, ILClass *classInfo,
 								 ILUInt32 size)
 {
 	ILJitValue newObj;
@@ -112,22 +108,22 @@ static ILJitValue _ILJitAllocGen(ILJITCoder *jitCoder, ILClass *classInfo,
 	}
 	/* We call the alloc functions. */
 	/* They thow an out of memory exception so we don't need to care. */
-	args[0] = jit_value_create_nint_constant(jitCoder->jitFunction,
+	args[0] = jit_value_create_nint_constant(jitFunction,
 											 _IL_JIT_TYPE_VPTR,
 											 (jit_nint)classInfo);
-	args[1] = jit_value_create_nint_constant(jitCoder->jitFunction,
+	args[1] = jit_value_create_nint_constant(jitFunction,
 											 _IL_JIT_TYPE_UINT32, size);
 
 	if(((ILClassPrivate *)(classInfo->userData))->managedInstance)
 	{
-		newObj = jit_insn_call_native(jitCoder->jitFunction, "_ILJitAlloc",
+		newObj = jit_insn_call_native(jitFunction, "_ILJitAlloc",
 									  _ILJitAlloc,
 									  _ILJitSignature_ILJitAlloc,
 				 					  args, 2, 0);
 	}
 	else
 	{
-		newObj = jit_insn_call_native(jitCoder->jitFunction,
+		newObj = jit_insn_call_native(jitFunction,
 									  "_ILJitAllocAtomic",
 									  _ILJitAllocAtomic,
 									  _ILJitSignature_ILJitAlloc,
@@ -140,7 +136,7 @@ static ILJitValue _ILJitAllocGen(ILJITCoder *jitCoder, ILClass *classInfo,
  * Generate the code to allocate the memory for an object.
  * Returns the ILJitValue with the pointer to the new object.
  */
-static ILJitValue _ILJitAllocObjectGen(ILJITCoder *jitCoder, ILClass *classInfo)
+static ILJitValue _ILJitAllocObjectGen(ILJitFunction jitFunction, ILClass *classInfo)
 {
 	/* Make sure the class has been layouted. */
 	if(!(classInfo->userData) || 
@@ -151,7 +147,7 @@ static ILJitValue _ILJitAllocObjectGen(ILJITCoder *jitCoder, ILClass *classInfo)
 			return (ILJitValue)0;
 		}
 	}
-	return _ILJitAllocGen(jitCoder, classInfo,
+	return _ILJitAllocGen(jitFunction, classInfo,
 						  ((ILClassPrivate *)(classInfo->userData))->size);
 }
 

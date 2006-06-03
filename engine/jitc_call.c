@@ -100,7 +100,7 @@ static ILJitValue _ILJitGetVirtualFunction(ILJITCoder *jitCoder,
  */
 static void _ILJitNewObj(ILJITCoder *coder, ILClass *info, ILJitValue *newArg)
 {
-	*newArg = _ILJitAllocObjectGen(coder, info);
+	*newArg = _ILJitAllocObjectGen(coder->jitFunction, info);
 }
 
 /*
@@ -465,7 +465,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 			boxObjectSize = jit_value_create_nint_constant(jitCoder->jitFunction,
 												_IL_JIT_TYPE_UINT32, typeSize);
 
-			boxObject = _ILJitAllocGen(jitCoder, info, typeSize);
+			boxObject = _ILJitAllocGen(jitCoder->jitFunction, info, typeSize);
 			if(boxValue)
 			{
 				jit_insn_store_relative(jitCoder->jitFunction, boxObject, 0,

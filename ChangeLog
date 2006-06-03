@@ -1,3 +1,19 @@
+2006-06-03  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Use the on demand compilers for DelegateBeginInvoke and
+	DelegateEndInvoke for the corresponding delegate methods. Use the
+	ILJitFunction instead of the ILJITCoder in calls to the alloc functions.
+
+	* engine/jitc_alloc.c:  Use the ILJitFunction instead of the ILJITCoder
+	in calls to the alloc functions. Call AllocAtomic again because the error
+	seemed to be caused by multiple executions of the cctors.
+
+	* engine/jitc_delegate.c: Add the support for the Begin- and EndInvoke
+	methods.
+
+	* engine/jitc_call.c, engine/jitc_bj.c: Pass the jit function instead of
+	the coder to the alloc functions.
+
 2006-05-28  Aleksey Demakov  <ademakov@gmail.com>
 
 	* engine/jitc_setup.c (JITCoder_Setup): move static ctor once check

@@ -370,14 +370,14 @@ struct _tagILJITCoder
  * Generate the code to allocate the memory for an object.
  * Returns the ILJitValue with the pointer to the new object.
  */
-static ILJitValue _ILJitAllocGen(ILJITCoder *jitCoder, ILClass *classInfo,
+static ILJitValue _ILJitAllocGen(ILJitFunction jitFunction, ILClass *classInfo,
 								 ILUInt32 size);
 
 /*
  * Generate the code to allocate the memory for an object.
  * Returns the ILJitValue with the pointer to the new object.
  */
-static ILJitValue _ILJitAllocObjectGen(ILJITCoder *jitCoder, ILClass *classInfo);
+static ILJitValue _ILJitAllocObjectGen(ILJitFunction jitFunction, ILClass *classInfo);
 
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 #define _ILJitCoderGetThread(coder)		jit_value_get_param((coder)->jitFunction, 0)
@@ -2817,6 +2817,22 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 
 			/* now set the on demand compiler function */
 			onDemandCompiler = _ILJitCompileMultiCastDelegateInvoke;
+		}
+		else if (method == (ILMethod *)ILTypeGetDelegateBeginInvokeMethod(type))
+		{
+			/* Flag method implemented in IL.. */
+			implementationType = _IL_JIT_IMPL_DEFAULT;
+
+			/* now set the on demand compiler function */
+			onDemandCompiler = _ILJitCompileDelegateBeginInvoke;
+		}
+		else if (method == (ILMethod *)ILTypeGetDelegateEndInvokeMethod(type))
+		{
+			/* Flag method implemented in IL.. */
+			implementationType = _IL_JIT_IMPL_DEFAULT;
+
+			/* now set the on demand compiler function */
+			onDemandCompiler = _ILJitCompileDelegateEndInvoke;
 		}
 	}
 

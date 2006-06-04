@@ -1110,6 +1110,8 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 								 _IL_Monitor_Enter,
 								 _ILJitSignature_ILMonitorEnter,
 								 args, 2, 0);
+			_ILJitHandleThrownException(jitCoder->jitFunction, args[0]);
+
 			return 1;
 		}
 		/* Not reached */
@@ -1130,6 +1132,8 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 								 _IL_Monitor_Exit,
 								 _ILJitSignature_ILMonitorExit,
 								 args, 2, 0);
+			_ILJitHandleThrownException(jitCoder->jitFunction, args[0]);
+
 			return 1;
 		}
 		/* Not reached */
@@ -1155,6 +1159,7 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 										_ILGetClrType,
 										_ILJitSignature_ILGetClrType,
 										args, 2, 0);
+			_ILJitHandleThrownException(jitCoder->jitFunction, args[0]);
 			jit_insn_store(jitCoder->jitFunction,
 						   returnValue, 
 						   temp);

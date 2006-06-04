@@ -1337,6 +1337,26 @@ void ILRuntimeExceptionThrowOutOfMemory()
 }
 
 /*
+ * Handle an exception thrown in an internal call.
+ */
+static void _ILJitHandleThrownException(ILJitFunction func,
+										ILJitValue thread)
+{ 
+	ILJitValue thrownException = jit_insn_load_relative(func, thread,
+									offsetof(ILExecThread, thrownException),
+									_IL_JIT_TYPE_VPTR);
+	jit_label_t label = jit_label_undefined;
+
+	jit_insn_branch_if_not(func, thrownException, &label);
+	jit_insn_call_native(func, "jit_exception_clear_last",
+								jit_exception_clear_last,
+								_ILJitSignature_JitExceptionClearLast,
+								0, 0, JIT_CALL_NOTHROW);
+	jit_insn_throw(func, thrownException);
+	jit_insn_label(func, &label);
+}
+
+/*
  * Perform a class cast, taking arrays into account.
  */
 ILInt32 ILRuntimeCanCastClass(ILMethod *method, ILObject *object, ILClass *toClass)
@@ -2323,7 +2343,6 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 	ILType *type = ILTypeGetEnumType(ILTypeGetParam(ilSignature, 0));
 	/* Get the function to call. */
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
-	jit_label_t label = jit_label_undefined;
 	ILJitType signature = 0;
 	ILJitType callSignature = 0;
 	ILJitType returnType = 0;
@@ -2331,7 +2350,6 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 	unsigned int numParams = 0;
 	unsigned int totalParams = 0;
 	int hasStructReturn = 0;
-	ILJitValue thrownException = 0;
 	ILUInt32 current = 0;
 
 	if(!jitFunction)
@@ -2442,16 +2460,7 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 		}
 		jit_type_free(callSignature);
 	}
-	thrownException = jit_insn_load_relative(func, thread,
-									offsetof(ILExecThread, thrownException),
-									_IL_JIT_TYPE_VPTR);
-	jit_insn_branch_if_not(func, thrownException, &label);
-	jit_insn_call_native(func, "jit_exception_clear_last",
-								jit_exception_clear_last,
-								_ILJitSignature_JitExceptionClearLast,
-								0, 0, JIT_CALL_NOTHROW);
-	jit_insn_throw(func, thrownException);
-	jit_insn_label(func, &label);
+	_ILJitHandleThrownException(func, thread);
 
 	return returnValue;
 }

@@ -1,5 +1,11 @@
 2006-06-04  Klaus Treichel  <ktreichel@web.de>
 
+	* engine/jitc.c: Move the code generation to handle an exception thrown
+	in an internalcall to a separate function.
+
+	* engine/jitc_call.c: Handle the thrown exceptions after inlined
+	internalcalls.
+
 	* engine/jitc_delegate.c: Fix a dumb bug in _ILJitDelegateInvokeCodeGen.
 
 	* engine/jitc_obj.c: Add support for RVA static fields and pinvoke static

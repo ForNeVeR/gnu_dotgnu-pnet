@@ -311,7 +311,6 @@ static int _ILJitDelegateUnboxReturn(ILJitFunction func,
 {
 	ILType *returnType = ILTypeGetParam(endInvokeSignature, 0); /* 0 == return type */
 
-
 	returnType = ILTypeGetEnumType(returnType);
 
 	if(ILType_IsPrimitive(returnType) || ILType_IsValueType(returnType))
@@ -322,7 +321,11 @@ static int _ILJitDelegateUnboxReturn(ILJitFunction func,
 		{
 			return 0;
 		}
-		jit_insn_return_ptr(func, returnObject, jitType);
+
+		if(jitType != _IL_JIT_TYPE_VOID)
+		{
+			jit_insn_return_ptr(func, returnObject, jitType);
+		}
 	}
 	else if (ILType_IsClass(returnType))
 	{
@@ -414,7 +417,7 @@ static ILJitValue _ILJitDelegateInvokeCodeGen(ILJitFunction func,
 	jit_insn_label(func, &noTarget);
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	types[0] = jit_type_get_param(signature, 0);
-	args[0] = thread;
+	invokeArgs[0] = thread;
 #endif
 	for(current = 0; current < argCount; ++current)
 	{

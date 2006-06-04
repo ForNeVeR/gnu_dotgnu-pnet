@@ -59,6 +59,79 @@ static ILJitValue _ILJitGetClassStaticArea(ILJitFunction func,
 												(jit_nint)classStaticData);
 }
 
+#ifdef IL_CONFIG_PINVOKE
+
+/*
+ * Get the address of a PInvoke-imported field.
+ */
+static ILJitValue _ILJitGetPInvokeFieldAddress(ILJitFunction func,
+											   ILField *field,
+											   ILPInvoke *pinvoke)
+{
+	char *name;
+	void *handle;
+	void *symbol;
+	const char *symbolName;
+	ILJitValue ptr;
+
+	/* Resolve the module */
+	name = ILPInvokeResolveModule(pinvoke);
+	if(!name)
+	{
+		ptr = jit_value_create_nint_constant(func, _IL_JIT_TYPE_VPTR, 0);
+		jit_insn_check_null(func, ptr);
+		return ptr;
+	}
+
+	/* Load the module into memory */
+	handle = ILDynLibraryOpen(name);
+	ILFree(name);
+	if(!handle)
+	{
+		ptr = jit_value_create_nint_constant(func, _IL_JIT_TYPE_VPTR, 0);
+		jit_insn_check_null(func, ptr);
+		return ptr;
+	}
+
+	/* Resolve the symbol and resolve its address */
+	symbolName = ILPInvoke_Alias(pinvoke);
+	if(!symbolName)
+	{
+		symbolName = ILField_Name(field);
+	}
+	symbol = ILDynLibraryGetSymbol(handle, symbolName);
+
+	/* Check if the symbol could be resolved. */
+	if(!symbol)
+	{
+		ptr = jit_value_create_nint_constant(func, _IL_JIT_TYPE_VPTR, 0);
+		jit_insn_check_null(func, ptr);
+		return ptr;
+	}
+	ptr = jit_value_create_nint_constant(func,
+										 _IL_JIT_TYPE_VPTR,
+										 (jit_nint)symbol);
+	return ptr;
+}
+
+#endif /* IL_CONFIG_PINVOKE */
+
+/*
+ * Get a ILJitValue with the address of a RVA static field.
+ */
+static ILJitValue _ILJitGetRVAAddress(ILJitFunction func,
+									  ILField *field)
+{
+	ILFieldRVA *fieldRVA = ILFieldRVAGetFromOwner(field);
+	ILUInt32 rva = ILFieldRVAGetRVA(fieldRVA);
+	/* Eventually the address should be computed on runtime. */
+	void *ptr = ILImageMapAddress(ILProgramItem_Image(field), rva);
+
+	return jit_value_create_nint_constant(func,
+										  _IL_JIT_TYPE_VPTR,
+										  (jit_nint)ptr);
+}
+
 /*
  * Get an ILJitValue with a pointer to the thread static slot.
  */
@@ -125,13 +198,17 @@ static ILJitValue _ILJitGetValFromRef(ILJITCoder *jitCoder, ILJitValue refValue,
 static ILJitValue _ILJitLoadFieldAddress(ILJITCoder *coder, ILJitValue base,
 										 ILUInt32 offset, int mayBeNull)
 {
+	ILJitValue jitOffset = jit_value_create_nint_constant(coder->jitFunction,
+														  _IL_JIT_TYPE_UINT32,
+														  (jit_nint)offset);
+
 	if(mayBeNull)
 	{
 		_ILJitCheckNull(coder, base);
 	}
 	if(offset != 0)
 	{
-		return jit_insn_add_relative(coder->jitFunction, base, offset);
+		return jit_insn_add(coder->jitFunction, base, jitOffset);
 	}
 	else
 	{
@@ -294,47 +371,94 @@ static void JITCoder_LoadStaticField(ILCoder *coder, ILField *field,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
-	/* Output a call to the static constructor */
-	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 1);
-
-	/* Regular or thread-static field? */
-	if(!ILFieldIsThreadStatic(field))
+#ifdef IL_CONFIG_PINVOKE
+	ILPInvoke *pinvoke;
+	if((field->member.attributes & IL_META_FIELDDEF_PINVOKE_IMPL) != 0 &&
+	   (pinvoke = ILPInvokeFindField(field)) != 0)
 	{
-		ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
-											  field);
+		/* Field that is imported via PInvoke */
+		ILJitValue ptr = _ILJitGetPInvokeFieldAddress(jitCoder->jitFunction,
+													  field,
+													  pinvoke);
 
-	#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-		if (jitCoder->flags & IL_CODER_FLAG_STATS)
-		{
-			ILMutexLock(globalTraceMutex);
-			fprintf(stdout,
-				"LoadStaticField: %s.%s at offset %i\n", 
-				ILClass_Name(ILField_Owner(field)),
-				ILField_Name(field),
-				field->offset);
-			ILMutexUnlock(globalTraceMutex);
-		}
-	#endif
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"LoadStaticPinvokeField: %s.%s\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field));
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
 		jitCoder->jitStack[jitCoder->stackTop] =
-			_ILJitLoadField(jitCoder, ptr, fieldType, field->offset, 0);
+				_ILJitLoadField(jitCoder, ptr, fieldType, 0, 0);
+	}
+	else
+#endif
+	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
+	{
+		/* Output a call to the static constructor */
+		_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 1);
+
+		/* Regular or thread-static field? */
+		if(!ILFieldIsThreadStatic(field))
+		{
+			ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
+													  field);
+
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"LoadStaticField: %s.%s at offset %i\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field),
+					field->offset);
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			jitCoder->jitStack[jitCoder->stackTop] =
+				_ILJitLoadField(jitCoder, ptr, fieldType, field->offset, 0);
+		}
+		else
+		{
+			ILJitValue ptr = _ILJitGetThreadStaticSlot(jitCoder, field);
+
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"LoadThreadStaticField: %s.%s\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field));
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			jitCoder->jitStack[jitCoder->stackTop] =
+				_ILJitLoadField(jitCoder, ptr, fieldType, 0, 0);
+		}
 	}
 	else
 	{
-		ILJitValue ptr = _ILJitGetThreadStaticSlot(jitCoder, field);
+		ILJitValue ptr = _ILJitGetRVAAddress(jitCoder->jitFunction, field);
 
-	#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-		if (jitCoder->flags & IL_CODER_FLAG_STATS)
-		{
-			ILMutexLock(globalTraceMutex);
-			fprintf(stdout,
-				"LoadThreadStaticField: %s.%s\n", 
-				ILClass_Name(ILField_Owner(field)),
-				ILField_Name(field));
-			ILMutexUnlock(globalTraceMutex);
-		}
-	#endif
-		jitCoder->jitStack[jitCoder->stackTop] =
-			_ILJitLoadField(jitCoder, ptr, fieldType, 0, 0);
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"LoadRVAStaticField: %s.%s\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field));
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			jitCoder->jitStack[jitCoder->stackTop] =
+				_ILJitLoadField(jitCoder, ptr, fieldType, 0, 0);
 	}
 	JITC_ADJUST(jitCoder, 1);
 }
@@ -367,47 +491,98 @@ static void JITCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
+#ifdef IL_CONFIG_PINVOKE
+	ILPInvoke *pinvoke;
+	if((field->member.attributes & IL_META_FIELDDEF_PINVOKE_IMPL) != 0 &&
+	   (pinvoke = ILPInvokeFindField(field)) != 0)
+	{
+		/* Field that is imported via PInvoke */
+		ILJitValue ptr = _ILJitGetPInvokeFieldAddress(jitCoder->jitFunction,
+													  field,
+													  pinvoke);
+
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"LoadStaticPivokeFieldAddr: %s.%s\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field));
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			jitCoder->jitStack[jitCoder->stackTop] =
+				_ILJitLoadFieldAddress(jitCoder, ptr, 0, 0);
+
+		JITC_ADJUST(jitCoder, 1);
+		return;
+	}
+#endif
+
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 1);
 
-	/* Regular or thread-static field? */
-	if(!ILFieldIsThreadStatic(field))
+	/* Regular or RVA field? */
+	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
 	{
-		ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
-												  field);
-
-	#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-		if (jitCoder->flags & IL_CODER_FLAG_STATS)
+		/* Regular or thread-static field? */
+		if(!ILFieldIsThreadStatic(field))
 		{
-			ILMutexLock(globalTraceMutex);
-			fprintf(stdout,
-				"LoadStaticFieldAddr: %s.%s at offset %i\n", 
-				ILClass_Name(ILField_Owner(field)),
-				ILField_Name(field),
-				field->offset);
-			ILMutexUnlock(globalTraceMutex);
+			ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
+													  field);
+
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"LoadStaticFieldAddr: %s.%s at offset %i\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field),
+					field->offset);
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			jitCoder->jitStack[jitCoder->stackTop] =
+				_ILJitLoadFieldAddress(jitCoder, ptr, field->offset, 0);
 		}
-	#endif
-		jitCoder->jitStack[jitCoder->stackTop] =
-			_ILJitLoadFieldAddress(jitCoder, ptr, field->offset, 0);
+		else
+		{
+			ILJitValue ptr = _ILJitGetThreadStaticSlot(jitCoder, field);
+
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"LoadThreadStaticFieldAddr: %s.%s\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field));
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			jitCoder->jitStack[jitCoder->stackTop] =
+				_ILJitLoadFieldAddress(jitCoder, ptr, 0, 0);
+		}
 	}
 	else
 	{
-		ILJitValue ptr = _ILJitGetThreadStaticSlot(jitCoder, field);
+		ILJitValue ptr = _ILJitGetRVAAddress(jitCoder->jitFunction, field);
 
-	#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-		if (jitCoder->flags & IL_CODER_FLAG_STATS)
-		{
-			ILMutexLock(globalTraceMutex);
-			fprintf(stdout,
-				"LoadThreadStaticFieldAddr: %s.%s\n", 
-				ILClass_Name(ILField_Owner(field)),
-				ILField_Name(field));
-			ILMutexUnlock(globalTraceMutex);
-		}
-	#endif
-		jitCoder->jitStack[jitCoder->stackTop] =
-			_ILJitLoadFieldAddress(jitCoder, ptr, 0, 0);
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"LoadRVAStaticFieldAddr: %s.%s\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field));
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			jitCoder->jitStack[jitCoder->stackTop] =
+				_ILJitLoadFieldAddress(jitCoder, ptr, 0, 0);
 	}
 	JITC_ADJUST(jitCoder, 1);
 }
@@ -441,46 +616,93 @@ static void JITCoder_StoreStaticField(ILCoder *coder, ILField *field,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+#ifdef IL_CONFIG_PINVOKE
+	ILPInvoke *pinvoke;
+#endif
 
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 1);
 
-	/* Regular or thread-static field? */
-	if(!ILFieldIsThreadStatic(field))
+#ifdef IL_CONFIG_PINVOKE
+	if((field->member.attributes & IL_META_FIELDDEF_PINVOKE_IMPL) != 0 &&
+	   (pinvoke = ILPInvokeFindField(field)) != 0)
 	{
-		ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
-												  field);
+		/* Field that is imported via PInvoke */
+		ILJitValue ptr = _ILJitGetPInvokeFieldAddress(jitCoder->jitFunction,
+													  field,
+													  pinvoke);
 
-	#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-		if (jitCoder->flags & IL_CODER_FLAG_STATS)
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"StoreStaticPinvokeField: %s.%s\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field));
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			_ILJitStoreField(jitCoder, ptr, value, fieldType, 0, 0);
+	}
+	else
+#endif
+	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
+	{
+		/* Regular or thread-static field? */
+		if(!ILFieldIsThreadStatic(field))
 		{
-			ILMutexLock(globalTraceMutex);
-			fprintf(stdout,
-				"StoreStaticField: %s.%s at offset %i\n", 
-				ILClass_Name(ILField_Owner(field)),
-				ILField_Name(field),
-				field->offset);
-			ILMutexUnlock(globalTraceMutex);
+			ILJitValue ptr = _ILJitGetClassStaticArea(jitCoder->jitFunction,
+													  field);
+
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"StoreStaticField: %s.%s at offset %i\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field),
+					field->offset);
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			_ILJitStoreField(jitCoder, ptr, value, fieldType, field->offset, 1);
 		}
-	#endif
-		_ILJitStoreField(jitCoder, ptr, value, fieldType, field->offset, 1);
+		else
+		{
+			ILJitValue ptr = _ILJitGetThreadStaticSlot(jitCoder, field);
+
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"StoreThreadStaticField: %s.%s\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field));
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			_ILJitStoreField(jitCoder, ptr, value, fieldType, 0, 0);
+		}
 	}
 	else
 	{
-		ILJitValue ptr = _ILJitGetThreadStaticSlot(jitCoder, field);
+		ILJitValue ptr = _ILJitGetRVAAddress(jitCoder->jitFunction, field);
 
-	#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-		if (jitCoder->flags & IL_CODER_FLAG_STATS)
-		{
-			ILMutexLock(globalTraceMutex);
-			fprintf(stdout,
-				"StoreThreadStaticField: %s.%s\n", 
-				ILClass_Name(ILField_Owner(field)),
-				ILField_Name(field));
-			ILMutexUnlock(globalTraceMutex);
-		}
-	#endif
-		_ILJitStoreField(jitCoder, ptr, value, fieldType, 0, 0);
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"StoreRVAStaticField: %s.%s\n", 
+					ILClass_Name(ILField_Owner(field)),
+					ILField_Name(field));
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			_ILJitStoreField(jitCoder, ptr, value, fieldType, 0, 0);
 	}
 	JITC_ADJUST(jitCoder, -1);
 }

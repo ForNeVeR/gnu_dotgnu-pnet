@@ -25,7 +25,11 @@
  */
 static ILJitValue GetArrayBase(ILJITCoder *coder, ILJitValue array)
 {
-	return jit_insn_add_relative(coder->jitFunction, array, sizeof(System_Array));
+	ILJitValue baseOffset = jit_value_create_nint_constant(coder->jitFunction,
+														   _IL_JIT_TYPE_UINT32,
+														   (jit_nint)(sizeof(System_Array)));
+
+	return jit_insn_add(coder->jitFunction, array, baseOffset);
 }
 
 /*

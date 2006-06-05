@@ -3047,6 +3047,71 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 		++argNum;
 	}
 
+#ifdef IL_USE_JIT
+	/* Invoke the method */
+	if(isCtor)
+	{
+		return ILExecThreadCallCtorV(thread, method, args);
+	}
+	else 
+	{
+		/* Handle the return object creation. */
+		ILMemZero(&result, sizeof(result));
+		paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
+		if(ILType_IsPrimitive(paramType))
+		{
+			/* Box a primitive value */
+			if(paramType == ILType_Void)
+			{
+				paramObject = 0;
+				result.ptrValue = (void *)&paramObject;
+			}
+			else
+			{
+				ILClass *classInfo = ILClassFromType
+					(ILContextNextImage(thread->process->context, 0),
+			 		0, paramType, 0);
+				if(!classInfo)
+				{
+					ILExecThreadThrowOutOfMemory(thread);
+					return 0;
+				}
+				classInfo = ILClassResolve(classInfo);
+				paramObject = (ILObject *)_ILEngineAllocObject
+										(thread, classInfo);
+				if(!paramObject)
+				{
+					return 0;
+				}
+				result.ptrValue = paramObject;
+			}
+		}
+		else if(ILType_IsValueType(paramType))
+		{
+			paramObject = (ILObject *)_ILEngineAllocObject
+				(thread, ILType_ToValueType(paramType));
+			if(!paramObject)
+			{
+				return 0;
+			}
+			result.ptrValue = paramObject;
+		}
+		else
+		{
+			paramObject = 0;
+			result.ptrValue = (void *)&paramObject;
+		}
+
+		/* and call the method now. */
+		if(ILExecThreadCallV(thread, method, result.ptrValue, args))
+		{
+			/* An exception was thrown by the method */
+			return 0;
+		}
+	}
+
+	return paramObject;
+#else
 	/* Allocate a boxing object for the result if it is a value type */
 	ILMemZero(&result, sizeof(result));
 	paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
@@ -3109,6 +3174,7 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 		/* Don't know how to box this type of value */
 		return 0;
 	}
+#endif
 }
 
 /*

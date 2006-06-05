@@ -143,30 +143,62 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 
 				case IL_META_ELEMTYPE_BOOLEAN:
 				case IL_META_ELEMTYPE_I1:
+				{
+					*jitArgs = argBuffer;
+					*((ILInt8 *)argBuffer) = (ILInt8)VA_ARG(va, ILVaInt);
+					argBuffer += sizeof(ILNativeFloat);
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_I2:
+				{
+					*jitArgs = argBuffer;
+					*((ILInt16 *)argBuffer) = (ILInt16)VA_ARG(va, ILVaInt);
+					argBuffer += sizeof(ILNativeFloat);
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_I4:
 			#ifdef IL_NATIVE_INT32
 				case IL_META_ELEMTYPE_I:
 			#endif
 				{
 					*jitArgs = argBuffer;
-					*((ILVaInt *)argBuffer) = VA_ARG(va, ILVaInt);
-					argBuffer += sizeof(ILVaInt);
+					*((ILInt32 *)argBuffer) = (ILInt32)VA_ARG(va, ILVaInt);
+					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
 				break;
 
 				case IL_META_ELEMTYPE_U1:
+				{
+					*jitArgs = argBuffer;
+					*((ILUInt8 *)argBuffer) = (ILUInt8)VA_ARG(va, ILVaUInt);
+					argBuffer += sizeof(ILNativeFloat);
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_U2:
 				case IL_META_ELEMTYPE_CHAR:
+				{
+					*jitArgs = argBuffer;
+					*((ILUInt16 *)argBuffer) = (ILUInt16)VA_ARG(va, ILVaUInt);
+					argBuffer += sizeof(ILNativeFloat);
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_U4:
 			#ifdef IL_NATIVE_INT32
 				case IL_META_ELEMTYPE_U:
 			#endif
 				{
 					*jitArgs = argBuffer;
-					*((ILVaUInt *)argBuffer) = VA_ARG(va, ILVaUInt);
-					argBuffer += sizeof(ILVaUInt);
+					*((ILUInt32 *)argBuffer) = (ILUInt32)VA_ARG(va, ILVaUInt);
+					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
 				break;
@@ -178,7 +210,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 				{
 					*jitArgs = argBuffer;
 					*((ILInt64 *)argBuffer) = VA_ARG(va, ILInt64);
-					argBuffer += sizeof(ILInt64);
+					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
 				break;
@@ -196,12 +228,28 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 				break;
 
 				case IL_META_ELEMTYPE_R4:
+				{
+					*jitArgs = argBuffer;
+					*((ILFloat *)argBuffer) = (ILFloat)VA_ARG(va, ILVaDouble);
+					argBuffer += sizeof(ILNativeFloat);
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_R8:
+				{
+					*jitArgs = argBuffer;
+					*((ILDouble *)argBuffer) = (ILDouble)VA_ARG(va, ILVaDouble);
+					argBuffer += sizeof(ILNativeFloat);
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_R:
 				{
 					*jitArgs = argBuffer;
-					*((ILVaDouble *)argBuffer) = VA_ARG(va, ILVaDouble);
-					argBuffer += sizeof(ILUInt64);
+					*((ILNativeFloat *)argBuffer) = (ILNativeFloat)VA_ARG(va, ILVaDouble);
+					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
 				break;
@@ -212,7 +260,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 					   as a pointer to a temporary typedref structure */
 					*jitArgs = argBuffer;
 					*((void **)argBuffer) = VA_ARG(va, void *);
-					argBuffer += sizeof(void *);
+					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
 				break;
@@ -223,7 +271,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			/* Process an object reference */
 			*jitArgs = argBuffer;
 			*((ILObject **)argBuffer) = VA_ARG(va, ILObject *);
-			argBuffer += sizeof(ILObject *);
+			argBuffer += sizeof(ILNativeFloat);
 			++jitArgs;
 		}
 		else if(ILType_IsValueType(paramType))
@@ -240,7 +288,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			/* Process a value that is being passed by reference */
 			*jitArgs = argBuffer;
 			*((void **)argBuffer) = VA_ARG(va, void *);
-			argBuffer += sizeof(void *);
+			argBuffer += sizeof(ILNativeFloat);
 			++jitArgs;
 		}
 		else
@@ -248,7 +296,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			/* Assume that everything else is an object reference */
 			*jitArgs = argBuffer;
 			*((ILObject **)argBuffer) = VA_ARG(va, ILObject *);
-			argBuffer += sizeof(ILObject *);
+			argBuffer += sizeof(ILNativeFloat);
 			++jitArgs;
 		}
 	}
@@ -429,7 +477,7 @@ int _ILCallPackVParams(ILExecThread *thread, ILType *signature,
 			/* Use the supplied "this" parameter */
 			*jitArgs = argBuffer;
 			*((void **)argBuffer) = _this;
-			argBuffer += sizeof(void *);
+			argBuffer += sizeof(ILNativeFloat);
 		}
 		else
 		{
@@ -452,8 +500,26 @@ int _ILCallPackVParams(ILExecThread *thread, ILType *signature,
 
 				case IL_META_ELEMTYPE_BOOLEAN:
 				case IL_META_ELEMTYPE_I1:
+				{
+					*jitArgs = argBuffer;
+					*((ILInt8 *)argBuffer) = (ILInt8)(args->int32Value);
+					argBuffer += sizeof(ILNativeFloat);
+					++args;
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_I2:
 				case IL_META_ELEMTYPE_CHAR:
+				{
+					*jitArgs = argBuffer;
+					*((ILInt16 *)argBuffer) = (ILInt16)(args->int32Value);
+					argBuffer += sizeof(ILNativeFloat);
+					++args;
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_I4:
 			#ifdef IL_NATIVE_INT32
 				case IL_META_ELEMTYPE_I:
@@ -466,7 +532,25 @@ int _ILCallPackVParams(ILExecThread *thread, ILType *signature,
 				break;
 
 				case IL_META_ELEMTYPE_U1:
+				{
+					*jitArgs = argBuffer;
+					*((ILUInt8 *)argBuffer) = (ILUInt8)(args->uint32Value);
+					argBuffer += sizeof(ILNativeFloat);
+					++args;
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_U2:
+				{
+					*jitArgs = argBuffer;
+					*((ILUInt16 *)argBuffer) = (ILUInt16)(args->uint32Value);
+					argBuffer += sizeof(ILNativeFloat);
+					++args;
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_U4:
 			#ifdef IL_NATIVE_INT32
 				case IL_META_ELEMTYPE_U:
@@ -501,7 +585,25 @@ int _ILCallPackVParams(ILExecThread *thread, ILType *signature,
 				break;
 
 				case IL_META_ELEMTYPE_R4:
+				{
+					*jitArgs = argBuffer;
+					*((ILFloat *)argBuffer) = (ILFloat)(args->floatValue);
+					argBuffer += sizeof(ILNativeFloat);
+					++args;
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_R8:
+				{
+					*jitArgs = argBuffer;
+					*((ILDouble *)argBuffer) = (ILDouble)(args->floatValue);
+					argBuffer += sizeof(ILNativeFloat);
+					++args;
+					++jitArgs;
+				}
+				break;
+
 				case IL_META_ELEMTYPE_R:
 				{
 					*jitArgs = &(args->floatValue);
@@ -713,6 +815,14 @@ int _ILCallPackVParams(ILExecThread *thread, ILMethod *method,
 }
 #endif
 
+#ifdef IL_USE_JIT
+void _ILCallUnpackDirectResult(ILExecThread *thread, ILMethod *method,
+					           int isCtor, void *result, void *userData)
+{
+	/* This is a NOOP for now. */
+}
+
+#else
 void _ILCallUnpackDirectResult(ILExecThread *thread, ILMethod *method,
 					           int isCtor, void *result, void *userData)
 {
@@ -844,7 +954,15 @@ void _ILCallUnpackDirectResult(ILExecThread *thread, ILMethod *method,
 		}
 	}
 }
+#endif
 
+#ifdef IL_USE_JIT
+void _ILCallUnpackVResult(ILExecThread *thread, ILMethod *method,
+				          int isCtor, void *_result, void *userData)
+{
+	/* This is a NOOP for now. */
+}
+#else
 void _ILCallUnpackVResult(ILExecThread *thread, ILMethod *method,
 				          int isCtor, void *_result, void *userData)
 {
@@ -945,6 +1063,7 @@ void _ILCallUnpackVResult(ILExecThread *thread, ILMethod *method,
 		}
 	}
 }
+#endif
 
 #ifdef IL_USE_JIT
 int _ILCallMethod(ILExecThread *thread, ILMethod *method,

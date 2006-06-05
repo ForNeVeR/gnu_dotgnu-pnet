@@ -26,6 +26,8 @@ namespace System.Drawing
 
 	public sealed class ImageAnimator
 	{
+		public ImageAnimator() {}
+
 		[TODO]
 		public static void UpdateFrames(Image image)
 		{

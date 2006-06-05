@@ -47,6 +47,8 @@ using System.Windows.Forms.Themes;
 		private static Icon warningIcon;
 		private static Icon windowsLogoIcon;
 
+		public SystemIcons() {}
+
 		public static Icon Application
 		{
 			get

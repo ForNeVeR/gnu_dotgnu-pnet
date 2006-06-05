@@ -24,6 +24,20 @@
 	* System.Drawing/Region.cs, System.Drawing/Drawing2D/Matrix.cs:
 	Complete descriptive message for ArgumentNullException.
 
+	* System.Drawing/Printing/PrinterSettings.cs,
+	System.Drawing/Printing/InvalidPrinterException.cs: Add
+	NonSerializedAttribute and Serializable where required.
+
+	* System.Drawing/Imaging/EncoderParameter.cs,
+	System.Drawing/Imaging/ImageAttribute.cs,
+	System.Drawing/StringFormat.cs, System.Drawing/FontFamily.cs,
+	System.Drawing/Drawing2D/Matrix.cs: Remove empty finalizers.
+
+	* System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Drawing/ImageAnimator.cs, System.Drawing/SystemIcons.cs:
+	Prevent compiler from adding a default constructor for us as instances
+	of types that define only static members do not need to be created.
+
 2006-06-02  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs, 

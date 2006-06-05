@@ -34,6 +34,8 @@ public sealed class ToolkitManager
 	private static IToolkit toolkit;
 	private static IToolkitPrintingSystem printingSystem;
 
+	public ToolkitManager() {}
+
 	// Get or set the active graphical display toolkit.
 	public static IToolkit Toolkit
 			{

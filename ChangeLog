@@ -18,7 +18,9 @@
 	* Themes/WinXP/UxTheme.cs, Themes/WinXP/WinAPI.cs: Add
 	MarshalAsAttribute where required.
 
-	* System.Windows.Forms/Themes/DefaultThemePainter.cs: validate
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs: validate
 	arguments of public methods.
 
 	* System.Drawing/Region.cs, System.Drawing/Drawing2D/Matrix.cs:

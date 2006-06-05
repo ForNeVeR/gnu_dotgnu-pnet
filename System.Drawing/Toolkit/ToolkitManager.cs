@@ -188,6 +188,11 @@ public sealed class ToolkitManager
 								 byte[] bits, int bitsWidth, int bitsHeight,
 								 Color color)
 			{
+				if(graphics == null)
+				{
+					throw new ArgumentNullException("graphics", "Argument cannot be null");
+				}
+
 				graphics.DrawGlyph(x, y, bits, bitsWidth, bitsHeight, color);
 			}
 

@@ -487,7 +487,10 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 			
 	// Draw a closed cardinal curve using the current pen.
 	public virtual void DrawClosedCurve(Point[] points, float tension)
-			{			
+			{
+				if(points.Length == 0)
+					return;
+			
 				Point [] tangent=ComputeTangent(points,tension,true,points.Length);
 				if (tangent == null)
 				{
@@ -504,6 +507,8 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 	public virtual void FillClosedCurve
 				(Point[] points, float tension, FillMode fillMode)
 			{
+				if(points.Length == 0)
+					return;
 							
 				Point [] tangent=ComputeTangent(points,tension,true,points.Length);
 				if (tangent == null)

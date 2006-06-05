@@ -25,6 +25,7 @@ namespace System.Drawing.Printing
 using System.Drawing.Printing;
 using System.Runtime.Serialization;
 
+[Serializable]
 public class InvalidPrinterException : SystemException
 {
 	// Internal state.

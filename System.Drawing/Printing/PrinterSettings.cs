@@ -37,6 +37,7 @@ public class PrinterSettings : ICloneable
 	// Internal state.
 	private bool collate;
 	private short copies;
+	[NonSerializedAttribute]
 	private PageSettings defaultPageSettings;
 	private Duplex duplex;
 	private int fromPage;
@@ -44,6 +45,7 @@ public class PrinterSettings : ICloneable
 	private int maximumCopies;
 	private int maximumPage;
 	private int minimumPage;
+	[NonSerializedAttribute]
 	private String printerName;
 	private PrintRange printRange;
 	private bool printToFile;

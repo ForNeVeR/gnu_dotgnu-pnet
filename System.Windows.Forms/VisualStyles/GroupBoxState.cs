@@ -25,6 +25,7 @@ namespace System.Windows.Forms.VisualStyles
 
 public enum GroupBoxState
 {
+	None		= 0,
 	Normal		= 1,
 	Disabled	= 2
 }; // enum GroupBoxState

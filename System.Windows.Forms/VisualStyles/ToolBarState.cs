@@ -25,8 +25,9 @@ namespace System.Windows.Forms.VisualStyles
 
 public enum ToolBarState
 {
+	None		= 0,
 	Normal		= 1,
-	Hot			= 2,
+	Hot		= 2,
 	Pressed		= 3,
 	Disabled	= 4,
 	Checked		= 5,

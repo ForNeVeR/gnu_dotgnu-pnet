@@ -25,8 +25,9 @@ namespace System.Windows.Forms.VisualStyles
 
 public enum TabItemState
 {
+	None		= 0,
 	Normal		= 1,
-	Hot			= 2,
+	Hot		= 2,
 	Selected	= 3,
 	Disabled	= 4
 }; // enum TabItemState

@@ -25,12 +25,13 @@ namespace System.Windows.Forms.VisualStyles
 
 public enum RadioButtonState
 {
+	None			= 0,
 	UncheckedNormal		= 1,
 	UncheckedHot		= 2,
 	UncheckedPressed	= 3,
 	UncheckedDisabled	= 4,
 	CheckedNormal		= 5,
-	CheckedHot			= 6,
+	CheckedHot		= 6,
 	CheckedPressed		= 7,
 	CheckedDisabled		= 8
 }; // enum RadioButtonState

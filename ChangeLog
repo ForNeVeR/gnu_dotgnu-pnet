@@ -1,3 +1,20 @@
+2006-06-05  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/VisualStyles/PushButtonState.cs,
+	System.Windows.Forms/VisualStyles/ComboBoxState.cs,
+	System.Windows.Forms/VisualStyles/HeaderItemState.cs,
+	System.Windows.Forms/VisualStyles/RadioButtonState.cs,
+	System.Windows.Forms/VisualStyles/ScrollBarState.cs,
+	System.Windows.Forms/VisualStyles/CheckBoxState.cs,
+	System.Windows.Forms/VisualStyles/GroupBoxState.cs,
+	System.Windows.Forms/VisualStyles/TrackBarThumbState.cs,
+	System.Windows.Forms/VisualStyles/ToolBarState.cs,
+	System.Windows.Forms/VisualStyles/TextBoxState.cs,
+	System.Windows.Forms/VisualStyles/TabItemState.cs,
+	System.Windows.Forms/VisualStyles/ScrollBarSizeBoxState.cs,
+	System.Windows.Forms/VisualStyles/ScrollBarArrowButtonState.cs: Enums
+	should have zero (None) value.
+	
 2006-06-02  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs, 

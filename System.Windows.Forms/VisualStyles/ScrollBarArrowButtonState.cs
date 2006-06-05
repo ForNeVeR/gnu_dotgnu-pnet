@@ -25,6 +25,7 @@ namespace System.Windows.Forms.VisualStyles
 
 public enum ScrollBarArrowButtonState
 {
+	None			= 0,
 	UpNormal		= 1,
 	UpHot			= 2,
 	UpPressed		= 3,

@@ -25,6 +25,7 @@ namespace System.Windows.Forms.VisualStyles
 
 public enum ScrollBarSizeBoxState
 {
+	None		= 0,
 	RightAlign	= 1,
 	LeftAlign	= 2
 }; // enum ScrollBarSizeBoxState

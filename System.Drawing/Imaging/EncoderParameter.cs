@@ -184,12 +184,6 @@ public sealed class EncoderParameter : IDisposable
 									   numerator2, denominator2);
 			}
 
-	// Destructor.
-	~EncoderParameter()
-			{
-				// Nothing to do here in this implementation.
-			}
-
 	// Get or set this object's properties.
 	public Encoder Encoder
 			{

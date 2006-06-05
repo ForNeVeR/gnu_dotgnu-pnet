@@ -88,13 +88,6 @@ public sealed class StringFormat
 			}
 
 
-	// Destructor.
-	~StringFormat()
-			{
-				// Nothing to do here in this implementation.
-			}
-
-
 	// Get or set this object's properties.
 	public StringAlignment Alignment
 			{

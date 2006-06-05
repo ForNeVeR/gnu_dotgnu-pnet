@@ -115,11 +115,6 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 				this.dy  = matrix.dy;
 			}
 
-	// Destructor.
-	~Matrix()
-			{
-				// Nothing to do here because there is no disposable state.
-			}
 
 	// Get the elements of this matrix.
 	public float[] Elements

@@ -102,12 +102,6 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
 				}
 			}
 
-	// Destructor.
-	~FontFamily()
-			{
-				// Nothing to do here in this implementation.
-			}
-
 	// Get a list of all font families on this system.
 	public static FontFamily[] Families
 			{

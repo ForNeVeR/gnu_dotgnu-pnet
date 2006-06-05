@@ -73,12 +73,6 @@ public sealed class ImageAttributes : ICloneable, IDisposable
 	// Constructor.
 	public ImageAttributes() {}
 
-	// Destructor.
-	~ImageAttributes()
-			{
-				// Nothing to do here.
-			}
-
 	// Get the attribute information for a specific ColorAdjustType value.
 	private AttributeInfo GetInfo(ColorAdjustType type)
 			{

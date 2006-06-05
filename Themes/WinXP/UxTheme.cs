@@ -21,6 +21,7 @@ namespace ThemeXP.UxTheme
 	#region Button parts and states
 	public enum ButtonParts : int
 	{
+		BP_NONE = 0,
 		BP_PUSHBUTTON = 1,
 		BP_RADIOBUTTON = 2,
 		BP_CHECKBOX = 3,
@@ -30,6 +31,7 @@ namespace ThemeXP.UxTheme
 	
 	public enum PushButtonStates : int
 	{
+		PBS_NONE = 0,
 		PBS_NORMAL = 1,
 		PBS_HOT = 2,
 		PBS_PRESSED = 3,
@@ -39,6 +41,7 @@ namespace ThemeXP.UxTheme
 
 	public enum RadioButtonStates : int
 	{
+		RBS_NONE = 0,
 		RBS_UNCHECKEDNORMAL = 1,
 		RBS_UNCHECKEDHOT = 2,
 		RBS_UNCHECKEDPRESSED = 3,
@@ -51,6 +54,7 @@ namespace ThemeXP.UxTheme
 
 	public enum CheckBoxStates : int
 	{
+		CBS_NONE = 0,
 		CBS_UNCHECKEDNORMAL = 1,
 		CBS_UNCHECKEDHOT = 2,
 		CBS_UNCHECKEDPRESSED = 3,
@@ -67,6 +71,7 @@ namespace ThemeXP.UxTheme
 
 	public enum GroupBoxStates : int
 	{
+		GBS_NONE = 0,
 		GBS_NORMAL = 1,
 		GBS_DISABLED = 2,
 	}
@@ -76,11 +81,13 @@ namespace ThemeXP.UxTheme
 
 	public enum ComboBoxParts: int
 	{
+		CP_NONE = 0,
 		CP_DROPDOWNBUTTON = 1
 	}
 
 	public enum ComboBoxStates : int
 	{
+		CBXS_NONE = 0,
 		CBXS_NORMAL = 1,
 		CBXS_HOT = 2,
 		CBXS_PRESSED = 3,
@@ -92,12 +99,14 @@ namespace ThemeXP.UxTheme
 	#region Edit parts and states
 	public enum EditParts: int
 	{
+		EP_NONE = 0,
 		EP_EDITTEXT = 1,
 		EP_CARET = 2
 	}
 
 	public enum EditStates: int
 	{
+		ETS_NONE = 0,
 		ETS_NORMAL = 1,
 		ETS_HOT = 2,
 		ETS_SELECTED = 3,
@@ -112,6 +121,7 @@ namespace ThemeXP.UxTheme
 
 	public enum HeaderParts: int
 	{
+		HP_NONE = 0,
 		HP_HEADERITEM = 1,
 		HP_HEADERITEMLEFT = 2,
 		HP_HEADERITEMRIGHT = 3,
@@ -120,6 +130,7 @@ namespace ThemeXP.UxTheme
 
 	public enum HeaderItemStates: int
 	{
+		HIS_NONE = 0,
 		HIS_NORMAL = 1,
 		HIS_HOT = 2,
 		HIS_PRESSED = 3
@@ -127,6 +138,7 @@ namespace ThemeXP.UxTheme
 
 	public enum HeaderItemLeftStates: int
 	{
+		HILS_NONE = 0,
 		HILS_NORMAL = 1,
 		HILS_HOT = 2,
 		HILS_PRESSED = 3
@@ -134,6 +146,7 @@ namespace ThemeXP.UxTheme
 
 	public enum HeaderItemRightStates: int
 	{
+		HIRS_NONE = 0,
 		HIRS_NORMAL = 1,
 		HIRS_HOT = 2,
 		HIRS_PRESSED = 3
@@ -141,6 +154,7 @@ namespace ThemeXP.UxTheme
 
 	public enum HeaderSortArrowStates: int
 	{
+		HSAS_NONE = 0,
 		HSAS_SORTEDUP = 1,
 		HSAS_SORTEDDOWN = 2
 	}
@@ -151,6 +165,7 @@ namespace ThemeXP.UxTheme
 
 	public enum ProgressParts : int
 	{
+		PP_NONE = 0,
 		PP_BAR = 1,
 		PP_BARVERT = 2,
 		PP_CHUNK = 3,
@@ -161,6 +176,7 @@ namespace ThemeXP.UxTheme
 	#region ScrollBar parts and states
 	public enum ScrollBarParts: int
 	{
+		SBP_NONE = 0,
 		SBP_ARROWBTN = 1,
 		SBP_THUMBBTNHORZ = 2,
 		SBP_THUMBBTNVERT = 3,
@@ -175,6 +191,7 @@ namespace ThemeXP.UxTheme
 
 	public enum ArrowButtonStates: int
 	{
+		ABS_NONE = 0,
 		ABS_UPNORMAL = 1,
 		ABS_UPHOT = 2,
 		ABS_UPPRESSED = 3,
@@ -195,6 +212,7 @@ namespace ThemeXP.UxTheme
 
 	public enum ScrollBarStates: int
 	{
+		SCRBS_NONE = 0,
 		SCRBS_NORMAL = 1,
 		SCRBS_HOT = 2,
 		SCRBS_PRESSED = 3,
@@ -202,6 +220,7 @@ namespace ThemeXP.UxTheme
 	}
 	public enum SizeBoxStates: int
 	{
+		SZB_NONE = 0,
 		SZB_RIGHTALIGN = 1,
 		SZB_LEFTALIGN = 2
 	}
@@ -280,13 +299,15 @@ namespace ThemeXP.UxTheme
 		*/
 
 		[DllImport(uxthemeLib)]
+		[return: MarshalAs(UnmanagedType.Bool)]
 		protected extern static bool IsAppThemed();
 
 		[DllImport(uxthemeLib)]
+		[return: MarshalAs(UnmanagedType.Bool)]
 		protected extern static bool IsThemeActive();
 
 		[DllImport(uxthemeLib)]
-		protected extern static int EnableTheming(bool fEnable);
+		protected extern static int EnableTheming([MarshalAs(UnmanagedType.Bool)]bool fEnable);
 
 		[DllImport(uxthemeLib)]
 		protected extern static IntPtr GetWindowTheme(

@@ -161,6 +161,7 @@ namespace ThemeXP
 		/// receiving the information [out]</param>
 		/// <returns>Returns true if function succeeds or false if it fails</returns>
 		[DllImport("user32")]
+		[return: MarshalAs(UnmanagedType.Bool)]
 		protected extern static bool GetWindowInfo(
 			IntPtr hWnd,
 			out WINDOWINFO pwi);
@@ -181,6 +182,7 @@ namespace ThemeXP
 		/// <param name="hWnd">Handle to the window to test</param>
 		/// <returns></returns>
 		[DllImport("user32")]
+		[return: MarshalAs(UnmanagedType.Bool)]
 		protected extern static bool IsWindow(IntPtr hWnd);
 
 		/// <summary>
@@ -230,6 +232,7 @@ namespace ThemeXP
 		public static extern IntPtr CreatePen(PenStyle fnPenStyle, int nWidth, int crColor);
 
 		[DllImport("gdi32", EntryPoint="Rectangle")]
+		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool DrawRectangle(
 			IntPtr hDc,
 			int left, 

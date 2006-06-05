@@ -12,9 +12,15 @@
 	System.Windows.Forms/VisualStyles/TextBoxState.cs,
 	System.Windows.Forms/VisualStyles/TabItemState.cs,
 	System.Windows.Forms/VisualStyles/ScrollBarSizeBoxState.cs,
-	System.Windows.Forms/VisualStyles/ScrollBarArrowButtonState.cs: Enums
-	should have zero (None) value.
-	
+	System.Windows.Forms/VisualStyles/ScrollBarArrowButtonState.cs,
+	Themes/WinXP/UxTheme.cs:: Enums should have zero (None) value.
+
+	* Themes/WinXP/UxTheme.cs, Themes/WinXP/WinAPI.cs: Add
+	MarshalAsAttribute where required.
+
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: validate
+	arguments of public methods.
+
 2006-06-02  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs, 

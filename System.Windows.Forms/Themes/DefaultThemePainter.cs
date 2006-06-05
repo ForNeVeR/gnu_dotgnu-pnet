@@ -1288,6 +1288,10 @@ public class DefaultThemePainter : IThemePainter
 				(Graphics graphics, Rectangle rectangle,
 				 Color foreColor, Color backColor)
 			{
+				if(graphics == null)
+				{
+					throw new ArgumentNullException("graphics", "Argument cannot be null");
+				}
 				Pen pen = new Pen(foreColor, 1.0f);
 				pen.EndCap = LineCap.Square;
 				pen.DashStyle = DashStyle.Dot;

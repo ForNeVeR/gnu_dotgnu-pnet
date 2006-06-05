@@ -115,7 +115,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	{
 		if(path == null)
 		{
-			throw new ArgumentNullException("path");
+			throw new ArgumentNullException("path", "Argument cannot be null");
 		}
 		rgnData = new RegionData( path );
 	}
@@ -153,7 +153,7 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	{
 		if(otherRgnData == null)
 		{
-			throw new ArgumentNullException("rgnData");
+			throw new ArgumentNullException("rgnData", "Argument cannot be null");
 		}
 		Region r = otherRgnData.ConstructRegion ( otherRgnData ) ;
 		this.rects = r.rects ;
@@ -264,11 +264,11 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	{
 		if(region == null)
 		{
-			throw new ArgumentNullException("region");
+			throw new ArgumentNullException("region", "Argument cannot be null");
 		}
 		if(g == null)
 		{
-			throw new ArgumentNullException("g");
+			throw new ArgumentNullException("g", "Argument cannot be null");
 		}
 
 		if (rects.Length == 0)

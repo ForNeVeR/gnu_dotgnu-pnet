@@ -69,7 +69,7 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 			{
                                 // check if plgpts defines a polygon with 3 points
                                 if ( (plgpts == null) || (plgpts.Length != 3) )
-                                        throw new ArgumentException("plgpts");
+                                        throw new ArgumentException("plgpts", "Argument cannot be null");
                                 // check if rect is degenerated
                                 if ( (rect.Width == 0.0f) || (rect.Height == 0.0f) )
                                         throw new ArgumentOutOfRangeException("rect");

@@ -21,6 +21,9 @@
 	* System.Windows.Forms/Themes/DefaultThemePainter.cs: validate
 	arguments of public methods.
 
+	* System.Drawing/Region.cs, System.Drawing/Drawing2D/Matrix.cs:
+	Complete descriptive message for ArgumentNullException.
+
 2006-06-02  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs, 

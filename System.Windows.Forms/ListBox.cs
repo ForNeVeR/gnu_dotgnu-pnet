@@ -879,12 +879,13 @@ public class ListBox : ListControl
 
 			IList data = (IList) base.dataSource;
 			
-			if(value < 0 || value >= data.Count)
+			if(value < -1 || value >= data.Count)
 				throw new ArgumentOutOfRangeException(/* TODO */);
 		
 			if(this.selectionMode == SelectionMode.One)
 				this.selectedIndices.Clear();
-			this.selectedIndices.Add(value);
+			if(value != -1)
+				this.selectedIndices.Add(value);
 		}
 	}
 
@@ -1540,6 +1541,12 @@ public class ListBox : ListControl
 		get
 		{
 			return topIndex;
+		}
+		set
+		{
+			this.topIndex = value;
+			this.vertScrollbar.Value = this.topIndex;
+			RedrawList();
 		}
 	}
 	

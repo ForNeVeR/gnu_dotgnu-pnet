@@ -1,3 +1,9 @@
+2006-06-06  David Logan  <djlogan2@comcast.net>
+
+	* System.Windows.Forms/ScrollBar.cs: Add settor for TopIndex. Fix
+	SelectedIndex settor so that a value of -1 is accepted. This fixes Bugs
+	#16731 and #16733. (Klaus)
+	
 2006-06-05  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/VisualStyles/PushButtonState.cs,

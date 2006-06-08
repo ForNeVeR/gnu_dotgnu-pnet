@@ -790,9 +790,6 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					// optimized performance
-					if( borderStyle == BorderStyle.None ) return new Size( width, height );
-					
 					Size offset = ClientToBounds(Size.Empty);
 					return new Size(width - offset.Width, height - offset.Height);
 				}
@@ -2901,15 +2898,10 @@ public class Control : IWin32Window, IDisposable
 
 				// If our height is less than the height of an empty control, then we have probably been minimized and we must not layout.
 				
-				// optimized performance
-				if( borderStyle == BorderStyle.None ) {
-				}
-				else {
-					Size offset = ClientToBounds(Size.Empty);
-					if(height < offset.Height)
-					{
-						return;
-					}
+				Size offset = ClientToBounds(Size.Empty);
+				if(height < offset.Height)
+				{
+					return;
 				}
 
 				// Start with the display rectangle.
@@ -3550,14 +3542,8 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void SetClientSizeCore(int x, int y)
 			{
-				// optimized performance
-				if( borderStyle == BorderStyle.None ) {
-					SetBoundsCore(left, top, x, y, BoundsSpecified.Size);
-				}
-				else {
-					Size client = ClientToBounds(new Size(x, y));
-					SetBoundsCore(left, top, client.Width, client.Height, BoundsSpecified.Size);
-				}
+				Size client = ClientToBounds(new Size(x, y));
+				SetBoundsCore(left, top, client.Width, client.Height, BoundsSpecified.Size);
 			}
 
 	// Set a control flag.

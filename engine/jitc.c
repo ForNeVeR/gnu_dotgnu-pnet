@@ -2625,35 +2625,18 @@ static int _ILJitCompilePinvoke(jit_function_t func)
  */
 static int _ILJitMethodIsAbstract(ILMethod *method)
 {
-	ILMethodCode code;
-
 	if(!method)
 	{
 		/* This is obviously a bug and should not happen. */
 		return 0;
 	}
 
-	/* Get the method code */
-	if(!ILMethodGetCode(method, &code))
+	if(ILMethod_IsAbstract(method) ||
+	   ILClass_IsInterface(ILMethod_Owner(method)))
 	{
-		code.code = 0;
+		return 1;
 	}
-
-	if(code.code)
-	{
-		/* Code is present so zhe method is not abstract. */
-		return 0;
-	}
-
-	if(method->implementAttrs &
-			(IL_META_METHODIMPL_CODE_TYPE_MASK |
-			 IL_META_METHODIMPL_INTERNAL_CALL |
-			 IL_META_METHODIMPL_JAVA))
-	{
-		/* An internalcall or pinvoke implementation should exist. */
-		return 0;
-	}
-	return 1;
+	return 0;
 }
 
 #include "jitc_alloc.c"
@@ -3135,10 +3118,7 @@ int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method)
 		return 1;
 	}
 
-	if(!_ILJitSetMethodInfo(coder, method, 0))
-	{
-		return 0;
-	}
+	_ILJitSetMethodInfo(coder, method, 0);
 
 	/* are we ready now ? */
 
@@ -3192,10 +3172,7 @@ int ILJitFunctionCreateFromAncestor(ILCoder *_coder, ILMethod *method,
 #endif
 	jitSignature = jit_function_get_signature(ancestorInfo->jitFunction);
 
-	if(!_ILJitSetMethodInfo(jitCoder, method, jitSignature))
-	{
-		return 0;
-	}
+	_ILJitSetMethodInfo(jitCoder, method, jitSignature);
 
 	/* are we ready now ? */
 

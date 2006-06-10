@@ -561,6 +561,15 @@ static void JITCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 
 static void JITCoder_CheckCallNull(ILCoder *coder, ILCoderMethodInfo *info)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILUInt32 numArgs = info->numBaseArgs + info->numVarArgs;
+
+	if(info->hasParamArray)
+	{
+		/* Account for the vararg parameter array on the stack */
+		++numArgs;
+	}
+	_ILJitCheckNull(jitCoder, jitCoder->jitStack[jitCoder->stackTop - numArgs]);
 }
 
 static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
@@ -1169,6 +1178,457 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 		}
 		/* Not reached */
 
+		/*
+		 * Cases for Math class inlines.
+		 */
+		case IL_INLINEMETHOD_ABS_I4:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_INT32);
+			value = jit_insn_abs(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_ABS_R4:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_SINGLE);
+			value = jit_insn_abs(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_ABS_R8:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_abs(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_ASIN:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_asin(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_ATAN:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_atan(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_ATAN2:
+		{
+			return 0;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_CEILING:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_ceil(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_COS:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_cos(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_COSH:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_cosh(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_EXP:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_exp(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_FLOOR:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_floor(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_IEEEREMAINDER:
+		{
+			return 0;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_LOG:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_log(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_LOG10:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_log10(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_MAX_I4:
+		{
+			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
+			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			ILJitValue result;
+
+			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value1,
+											   _IL_JIT_TYPE_INT32);
+			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value2,
+											   _IL_JIT_TYPE_INT32);
+			result = jit_insn_max(jitCoder->jitFunction, value1, value2);
+			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												   result);
+			
+			/* Pop one value from the stack. */
+			JITC_ADJUST(jitCoder, -1);
+
+			/* and replace the second one with the result. */
+			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_MIN_I4:
+		{
+			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
+			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			ILJitValue result;
+
+			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value1,
+											   _IL_JIT_TYPE_INT32);
+			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value2,
+											   _IL_JIT_TYPE_INT32);
+			result = jit_insn_min(jitCoder->jitFunction, value1, value2);
+			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												   result);
+			
+			/* Pop one value from the stack. */
+			JITC_ADJUST(jitCoder, -1);
+
+			/* and replace the second one with the result. */
+			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_MAX_R4:
+		{
+			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
+			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			ILJitValue result;
+
+			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value1,
+											   _IL_JIT_TYPE_SINGLE);
+			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value2,
+											   _IL_JIT_TYPE_SINGLE);
+			result = jit_insn_max(jitCoder->jitFunction, value1, value2);
+			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												   result);
+			
+			/* Pop one value from the stack. */
+			JITC_ADJUST(jitCoder, -1);
+
+			/* and replace the second one with the result. */
+			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_MIN_R4:
+		{
+			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
+			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			ILJitValue result;
+
+			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value1,
+											   _IL_JIT_TYPE_SINGLE);
+			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value2,
+											   _IL_JIT_TYPE_SINGLE);
+			result = jit_insn_min(jitCoder->jitFunction, value1, value2);
+			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												   result);
+			
+			/* Pop one value from the stack. */
+			JITC_ADJUST(jitCoder, -1);
+
+			/* and replace the second one with the result. */
+			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_MAX_R8:
+		{
+			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
+			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			ILJitValue result;
+
+			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value1,
+											   _IL_JIT_TYPE_DOUBLE);
+			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value2,
+											   _IL_JIT_TYPE_DOUBLE);
+			result = jit_insn_max(jitCoder->jitFunction, value1, value2);
+			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												   result);
+			
+			/* Pop one value from the stack. */
+			JITC_ADJUST(jitCoder, -1);
+
+			/* and replace the second one with the result. */
+			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_MIN_R8:
+		{
+			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
+			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			ILJitValue result;
+
+			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value1,
+											   _IL_JIT_TYPE_DOUBLE);
+			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value2,
+											   _IL_JIT_TYPE_DOUBLE);
+			result = jit_insn_min(jitCoder->jitFunction, value1, value2);
+			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												   result);
+			
+			/* Pop one value from the stack. */
+			JITC_ADJUST(jitCoder, -1);
+
+			/* and replace the second one with the result. */
+			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_POW:
+		case IL_INLINEMETHOD_ROUND:
+		{
+			return 0;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_SIN:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_sin(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_SIGN_I4:
+		case IL_INLINEMETHOD_SIGN_R4:
+		case IL_INLINEMETHOD_SIGN_R8:
+		{
+			return 0;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_SINH:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_sinh(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_SQRT:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_sqrt(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_TAN:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_tan(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_TANH:
+		{
+			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   value,
+											   _IL_JIT_TYPE_DOUBLE);
+			value = jit_insn_tanh(jitCoder->jitFunction, value);
+			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  value);
+			
+			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			return 1;
+		}
+		/* Not reached */
 	}
 	/* If we get here, then we don't know how to inline the method */
 	return 0;

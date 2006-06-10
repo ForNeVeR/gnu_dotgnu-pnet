@@ -1,3 +1,10 @@
+2006-06-10  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Fix problem with not existent pinvokes.
+
+	* engine/jitc_call.c: Add more inlined math functions. Implement the
+	CheckCallNull which fixes the failure of the String.Equals runtime test.
+
 2006-06-05  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/call.c: Fix problems with type casting.

@@ -2373,6 +2373,7 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	totalParams = numParams;
 #else
+	/* otherwise we need the thread as an additional argument. */
 	totalParams = numParams + 1;
 #endif
 	returnType = jit_type_get_return(signature);;
@@ -3257,6 +3258,14 @@ static ILJitType _ILJitTypeSpecials(ILClassName *className)
 {
 	if(className->namespace && !strcmp(className->namespace, "System"))
 	{
+		if(!strcmp(className->name, "IntPtr"))
+		{
+			return _IL_JIT_TYPE_NINT;
+		}
+		if(!strcmp(className->name, "UIntPtr"))
+		{
+			return _IL_JIT_TYPE_NUINT;
+		}
 		if(!strcmp(className->name, "RuntimeTypeHandle"))
 		{
 			return _IL_JIT_TYPE_NINT;

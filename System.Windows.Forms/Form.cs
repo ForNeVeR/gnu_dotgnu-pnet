@@ -1257,6 +1257,11 @@ public class Form : ContainerControl
 					loaded = true;
 					OnLoad(EventArgs.Empty);
 				}
+				if( menu != null ) {
+					// Workaround for fixing that menu is dispayed correct when form is shown.
+					Height = Height+1;
+					Height = Height-1;
+				}
 			}
 
 	// Emit the "Deactivate" event.

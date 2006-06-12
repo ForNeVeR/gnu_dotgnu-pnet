@@ -1,4 +1,8 @@
 2006-06-12  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+	
+	* System.Windows.Forms/Form.cs: workaround for bug #16734.
+
+2006-06-12  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/TextBox.cs,
 	System.Windows.Forms/ScrollBar.cs,

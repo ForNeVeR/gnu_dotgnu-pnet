@@ -354,7 +354,7 @@ public class RadioButton : ButtonBase
 				}
 				else
 				{
-					ControlPaint.DrawStringDisabled(graphics, Text, font, ForeColor, layout, format);
+					ControlPaint.DrawStringDisabled(graphics, Text, font, BackColor, layout, format);
 				}
 			}
 

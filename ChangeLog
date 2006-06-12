@@ -1,3 +1,8 @@
+2006-06-12  David Logan  <djlogan2@comcast.net>
+
+	* System.Windows.Forms/RadioButton.cs: fixed drawing disabled
+	radio button text. (Heiko)
+
 2006-06-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: fixed a bug I did 06/02.

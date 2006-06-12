@@ -131,7 +131,7 @@ public class Cursor
 					dpy = Application.Primary.Display;
 					screen = dpy.DefaultScreenOfDisplay;
 				}
-				if(frame.PixelFormat != PixelFormat.Format1bppIndexed ||
+				if( /* irgnore pixel format! frame.PixelFormat != PixelFormat.Format1bppIndexed  || */
 				   frame.Mask == null)
 				{
 					// The frame is not suitable for use as a cursor.

@@ -664,8 +664,10 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				{
 					// Create a cursor based on the supplied image.
 					if(frame != null &&
-					   frame.PixelFormat ==
-					   		DotGNU.Images.PixelFormat.Format1bppIndexed &&
+									 /* irgnore pixel format !
+									 frame.PixelFormat == DotGNU.Images.PixelFormat.Format1bppIndexed 
+									 &&
+									 */
 					   frame.Mask != null)
 					{
 						if(cursorType != ToolkitCursorType.UserDefined)

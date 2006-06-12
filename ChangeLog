@@ -1,3 +1,9 @@
+2006-06-12  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing.Xsharp/DrawingWindows.cs,
+	Xsharp/Cursor.cs: irgnore pixel format with cursors.
+	
+
 2006-06-12  David Logan  <djlogan2@comcast.net>
 
 	* System.Windows.Forms/RadioButton.cs: fixed drawing disabled

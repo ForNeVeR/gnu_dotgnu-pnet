@@ -129,6 +129,29 @@ public class Splitter : Control, IMessageFilter
 					return new Size(3, 3);
 				}
 			}
+	public override Cursor Cursor
+		{
+			set
+			{
+				if( value == null ) {
+					switch( Dock ) {
+						case DockStyle.Left : case DockStyle.Right :
+							base.Cursor = Cursors.SizeWE;
+							break;
+						case DockStyle.Top : case DockStyle.Bottom :
+							base.Cursor = Cursors.SizeNS;
+							break;
+						default:
+							base.Cursor = value;
+							break;
+					}
+				}
+				else {
+					base.Cursor = value;
+				}
+			}
+		}
+			
 	public override DockStyle Dock
 			{
 				get

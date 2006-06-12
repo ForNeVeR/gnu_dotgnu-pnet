@@ -1,5 +1,13 @@
 2006-06-12  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
+	* System.Windows.Forms/TextBox.cs,
+	System.Windows.Forms/ScrollBar.cs,
+	System.Windows.Forms/Splitter.cs,
+	System.Windows.Forms/TrackBar.cs:
+ 	restore correct cursor if Cursor is set to null.
+
+2006-06-12  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
 	* System.Drawing.Xsharp/DrawingWindows.cs,
 	Xsharp/Cursor.cs: irgnore pixel format with cursors.
 	

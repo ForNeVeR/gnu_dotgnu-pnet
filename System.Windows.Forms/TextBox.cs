@@ -121,7 +121,16 @@ public class TextBox : TextBoxBase
 		
 	}
 
-	// Gets or sets a value indicating whether pressing ENTER in a multiline TextBox control creates a new line of text in the control or activates the default button for the form.
+	public override Cursor Cursor
+	{
+		set
+		{
+			if( value == null ) base.Cursor = Cursors.IBeam;
+			else                base.Cursor = value;
+		}
+	}
+	
+// Gets or sets a value indicating whether pressing ENTER in a multiline TextBox control creates a new line of text in the control or activates the default button for the form.
 	public bool AcceptsReturn
 	{
 		get

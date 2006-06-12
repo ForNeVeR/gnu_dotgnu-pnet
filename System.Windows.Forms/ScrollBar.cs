@@ -68,7 +68,6 @@ public abstract class ScrollBar : Control
 		idleTimer.Tick += new EventHandler(idleTimer_Tick);
 		idleTimer.Interval = 1;
 		BackColor = SystemColors.ScrollBar;
-		Cursor = Cursors.Default;
 	}
 
 	// Properties

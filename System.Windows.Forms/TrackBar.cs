@@ -83,6 +83,15 @@ namespace System.Windows.Forms
 			this.Cursor = Cursors.Hand;
 		}
 
+		public override Cursor Cursor
+		{
+			set
+			{
+				if( value == null ) base.Cursor = Cursors.Hand;
+				else                base.Cursor = value;
+			}
+		}
+		
 		public bool AutoSize
 		{
 			get

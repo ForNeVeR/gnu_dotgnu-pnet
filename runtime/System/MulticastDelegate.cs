@@ -164,16 +164,6 @@ public abstract class MulticastDelegate : Delegate
 					{
 						return false;
 					}
-					/* brubbel: is here the memory leak ?
-					if(((Object)list) == null)
-					{
-						return (((Object)d) == null);
-					}
-					else if(((Object)d) == null)
-					{
-						return false;
-					}
-					*/
 				}
 				return false;
 			}

@@ -265,7 +265,11 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 
 void _IL_RuntimeHelpers_RunClassConstructor(ILExecThread *thread, void *type)
 {
+#ifdef IL_USE_JIT
+	ILClass *classInfo = (ILClass *)type;
+#else
 	ILClass *classInfo = *((ILClass **)type);
+#endif
 	ILMethod *method;
 	if(classInfo)
 	{

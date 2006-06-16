@@ -1,3 +1,8 @@
+2006-06-16  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_helpers.c: Fix RunClassConstructor. The type is passed by
+	value with the jit coder instead of by reference.
+
 2006-06-11  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Add System.IntPtr and System.UIntPtr to the special

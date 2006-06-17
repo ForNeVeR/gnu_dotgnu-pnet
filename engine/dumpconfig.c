@@ -62,7 +62,12 @@ int _ILDumpConfig(FILE *stream,int level)
 	struct utsname buf;
 #endif
 	PrintFormatted(stream,"Engine Version",VERSION);
+#ifdef IL_USE_CVM
 	PrintFormatted(stream,"Engine Flavour",IL_CVM_FLAVOUR);
+#endif
+#ifdef IL_USE_JIT
+	PrintFormatted(stream,"Engine Flavour", "just in time compiler");
+#endif
 
 #ifdef HAVE_UNAME
 	if(uname(&buf)==0)
@@ -81,6 +86,7 @@ int _ILDumpConfig(FILE *stream,int level)
 	#endif
 #endif
 
+#ifdef IL_USE_CVM
 #ifdef HAVE_COMPUTED_GOTO
 	#ifdef HAVE_PIC_COMPUTED_GOTO
 		PrintFormatted(stream,"Computed Goto","Yes (PIC)");
@@ -140,6 +146,7 @@ int _ILDumpConfig(FILE *stream,int level)
 		PrintFormatted(stream,"Manual Register Allocation","No");
 	#endif
 	}
+#endif
 
 #ifdef HAVE_LIBGC
 	PrintFormatted(stream,"Garbage Collector","Boehm");

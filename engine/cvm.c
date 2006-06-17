@@ -27,6 +27,8 @@
 #include "ffi.h"
 #endif
 
+#ifdef IL_USE_CVM
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -285,11 +287,6 @@ extern	"C" {
 		{ \
 			ARITHMETIC_EXCEPTION(); \
 		}
-#endif
-
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-/* Global lock for trace outputs */
-ILMutex *globalTraceMutex;
 #endif
 
 /*
@@ -894,3 +891,5 @@ int _ILCVMInterpreter(ILExecThread *thread)
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_USE_CVM */

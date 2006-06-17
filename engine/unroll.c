@@ -26,6 +26,8 @@
 #include "il_dumpasm.h"
 #include "lib_defs.h"
 
+#ifdef IL_USE_CVM
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -1679,3 +1681,5 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_USE_CVM */

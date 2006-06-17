@@ -852,6 +852,11 @@ int _ILSystemObjectSetField(ILExecThread *thread, ILObject* obj,
 							   ILObject *value);
 
 /*
+ * Set the stack trace for an exception to the current call context.
+ */
+void _ILSetExceptionStackTrace(ILExecThread *thread, ILObject *object);
+
+/*
  * Create a system exception object of a particular class.
  * We do this very carefully, to avoid re-entering the engine.
  * We cannot call the exception's constructor, so we do the

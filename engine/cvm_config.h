@@ -21,6 +21,10 @@
 #ifndef	_ENGINE_CVM_CONFIG_H
 #define	_ENGINE_CVM_CONFIG_H
 
+#include "il_config.h"
+
+#ifdef IL_USE_CVM
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -242,5 +246,7 @@ extern int _ILCVMInsnCount[];
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_USE_CVM */
 
 #endif	/* _ENGINE_CVM_CONFIG_H */

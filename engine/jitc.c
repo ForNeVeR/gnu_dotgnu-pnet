@@ -3434,6 +3434,19 @@ ILJitTypes *ILJitPrimitiveClrTypeToJitTypes(int primitiveClrType)
 	return 0;
 }
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+
+/*
+ * Dump method profile information.
+ */
+int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
+{
+	/* TODO */
+	return 0;
+}
+
+#endif /* !IL_CONFIG_REDUCE_CODE */
+
 #include "jitc_diag.c"
 #include "jitc_locals.c"
 #include "jitc_labels.c"

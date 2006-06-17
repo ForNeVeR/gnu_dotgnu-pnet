@@ -144,6 +144,7 @@ libILEngine_a_SOURCES = cvm.c \
 						pinvoke.c \
 						process.c \
 						register.c \
+						system.c \
 						thread.c \
 						throw.c \
 						unroll.c \

@@ -33,6 +33,8 @@
 #include "ffi.h"
 #endif
 
+#ifdef IL_USE_CVM
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -479,3 +481,6 @@ ILCoderClass const _ILCVMCoderClass =
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_USE_CVM */
+

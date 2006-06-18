@@ -1,3 +1,12 @@
+2006-06-18  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
+
+	* engine/jitc.c: Add signatures for ILStringToUTF8 and ILStringCreate.
+	Move _ILJitCompilePinvoke to jitc_pinvoke.c.
+
+	* engine/jitc_pinvoke.c: Added.
+
+	* engine/Makefile.am: Add jitc_pinvoke.c to the jit coder sources.
+
 2006-06-17  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.c: Move the globalTraceMutex to system.c. Wrap the rest in

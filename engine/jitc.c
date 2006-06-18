@@ -221,6 +221,16 @@ static ILJitType _ILJitSignature_ILMonitorExit = 0;
 static ILJitType _ILJitSignature_ILGetClrType = 0;
 
 /*
+ * char *ILStringToUTF8(ILExecThread *thread, ILString *str)
+ */
+static ILJitType _ILJitSignature_ILStringToUTF8 = 0;
+
+/* 
+ * ILString *ILStringCreate(ILExecThread *thread, const char *str)
+ */
+static ILJitType _ILJitSignature_ILStringCreate = 0;
+
+/*
  * Define offsetof macro if not present.
  */
 #ifndef offsetof
@@ -2039,6 +2049,24 @@ int ILJitInit()
 		return 0;
 	}
 
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILStringToUTF8 =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+	
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILStringCreate =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+
 	return 1;
 }
 /*
@@ -2573,55 +2601,6 @@ static int _ILJitCompile(jit_function_t func)
 }
 
 /*
- * On demand code generator.for functions implemented in IL code.
- */
-static int _ILJitCompilePinvoke(jit_function_t func)
-{
-	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-	ILClass *info = ILMethod_Owner(method);
-	ILClassPrivate *classPrivate = (ILClassPrivate *)info->userData;
-	ILJITCoder *jitCoder = (ILJITCoder *)(classPrivate->process->coder);
-	char *methodName = _ILJitFunctionGetMethodName(func);
-#endif
-
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-	if(jitCoder->flags & IL_CODER_FLAG_STATS)
-	{
-		ILMutexLock(globalTraceMutex);
-		fprintf(stdout, "CompilePinvoke: %s\n", methodName);
-		ILMutexUnlock(globalTraceMutex);
-	}
-#endif
-
-	/* TODO */
-
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-#ifdef _IL_JIT_DUMP_FUNCTION
-	if(jitCoder->flags & IL_CODER_FLAG_STATS)
-	{
-		ILMutexLock(globalTraceMutex);
-		jit_dump_function(stdout, func, methodName);
-		ILMutexUnlock(globalTraceMutex);
-	}
-#endif
-#ifdef _IL_JIT_DISASSEMBLE_FUNCTION
-	if(jitCoder->flags & IL_CODER_FLAG_STATS)
-	{
-		if(!jit_function_compile(func))
-		{
-			return JIT_RESULT_COMPILE_ERROR;
-		}
-		ILMutexLock(globalTraceMutex);
-		jit_dump_function(stdout, func, methodName);
-		ILMutexUnlock(globalTraceMutex);
-	}
-#endif
-#endif
-	return JIT_RESULT_OK;
-}
-
-/*
  * Check if the given method is abstract (should have no implementation).
  */
 static int _ILJitMethodIsAbstract(ILMethod *method)
@@ -2642,6 +2621,7 @@ static int _ILJitMethodIsAbstract(ILMethod *method)
 
 #include "jitc_alloc.c"
 #include "jitc_delegate.c"
+#include "jitc_pinvoke.c"
 
 /*
  * Create the signature type for an ILMethod.

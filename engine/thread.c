@@ -163,6 +163,12 @@ void _ILThreadSetExecContext(ILThread *thread, ILThreadExecContext *context, ILT
 		}
 	#endif
 
+#ifdef IL_USE_JIT
+	/* Set the exception handler which converts builtin
+	   libjit exceptions into clr exceptions */
+	jit_exception_set_handler(_ILJitExceptionHandler);
+#endif
+
 	context->execThread->supportThread = thread;
 }
 
@@ -249,12 +255,6 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 
 	/* Register a cleanup handler for the thread */
 	ILThreadRegisterCleanup(thread, ILExecThreadCleanup);
-
-#ifdef IL_USE_JIT
-	/* Set the exception handler which converts builtin
-	   libjit exceptions into clr exceptions */
-	jit_exception_set_handler(_ILJitExceptionHandler);
-#endif
 
 	return execThread;
 }

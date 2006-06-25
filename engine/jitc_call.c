@@ -1114,12 +1114,13 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 			/* Pop the object from the stack. */
 			JITC_ADJUST(jitCoder, -1);
 
+			_ILJitBeginNativeCall(jitCoder->jitFunction, args[0]);
 			jit_insn_call_native(jitCoder->jitFunction,
 								 "_IL_Monitor_Enter",
 								 _IL_Monitor_Enter,
 								 _ILJitSignature_ILMonitorEnter,
 								 args, 2, 0);
-			_ILJitHandleThrownException(jitCoder->jitFunction, args[0]);
+			_ILJitEndNativeCall(jitCoder->jitFunction, args[0]);
 
 			return 1;
 		}
@@ -1136,12 +1137,13 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 			/* Pop the object from the stack. */
 			JITC_ADJUST(jitCoder, -1);
 
+			_ILJitBeginNativeCall(jitCoder->jitFunction, args[0]);
 			jit_insn_call_native(jitCoder->jitFunction,
 								 "_IL_Monitor_Exit",
 								 _IL_Monitor_Exit,
 								 _ILJitSignature_ILMonitorExit,
 								 args, 2, 0);
-			_ILJitHandleThrownException(jitCoder->jitFunction, args[0]);
+			_ILJitEndNativeCall(jitCoder->jitFunction, args[0]);
 
 			return 1;
 		}
@@ -1163,12 +1165,13 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 
 			args[0] = _ILJitCoderGetThread(jitCoder);
 			args[1] = returnValue;
+			_ILJitBeginNativeCall(jitCoder->jitFunction, args[0]);
 			temp = jit_insn_call_native(jitCoder->jitFunction,
 										"_ILGetClrType",
 										_ILGetClrType,
 										_ILJitSignature_ILGetClrType,
 										args, 2, 0);
-			_ILJitHandleThrownException(jitCoder->jitFunction, args[0]);
+			_ILJitEndNativeCall(jitCoder->jitFunction, args[0]);
 			jit_insn_store(jitCoder->jitFunction,
 						   returnValue, 
 						   temp);

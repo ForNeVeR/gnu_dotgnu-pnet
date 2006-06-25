@@ -144,6 +144,11 @@ static ILJitType _ILJitSignature_ILJitAlloc = 0;
 static ILJitType _ILJitSignature_ILJitGetExceptionStackTrace = 0;
 
 /*
+ * void ILRuntimeExceptionRethrow(ILObject *exception)
+ */
+static ILJitType _ILJitSignature_ILRuntimeExceptionRethrow = 0;
+
+/*
  * void ILRuntimeExceptionThrow(ILObject *exception)
  */
 static ILJitType _ILJitSignature_ILRuntimeExceptionThrow = 0;
@@ -219,6 +224,11 @@ static ILJitType _ILJitSignature_ILMonitorExit = 0;
  * void _ILGetClrType(ILExecThread *thread, ILClass *info)
  */
 static ILJitType _ILJitSignature_ILGetClrType = 0;
+
+/*
+ * void ILRuntimeHandleManagedSafePointFlags(ILExecThread *thread)
+ */
+static ILJitType _ILJitSignature_ILRuntimeHandleManagedSafePointFlags = 0;
 
 /*
  * char *ILStringToUTF8(ILExecThread *thread, ILString *str)
@@ -1287,6 +1297,23 @@ static ILJitTypes *_ILJitGetTypes(ILType *type, ILExecProcess *process)
 }
 
 /*
+ * Rethrow the given exception.
+ */
+void ILRuntimeExceptionRethrow(ILObject *object)
+{
+	ILExecThread *thread = ILExecThreadCurrent();
+
+	if(thread)
+	{
+		thread->thrownException = object;
+	}
+	if(object)
+	{
+		jit_exception_throw(object);
+	}
+}
+
+/*
  * Throw the given exception.
  */
 void ILRuntimeExceptionThrow(ILObject *object)
@@ -1344,6 +1371,30 @@ void ILRuntimeExceptionThrowOutOfMemory()
 		return;
 	}
 	jit_exception_builtin(JIT_RESULT_OUT_OF_MEMORY);
+}
+
+/*
+ * Handle the managed safepoint flags after a native call was made.
+ */
+void ILRuntimeHandleManagedSafePointFlags(ILExecThread *thread)
+{
+	if((thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_ABORT) && ILThreadIsAbortRequested())
+	{
+		if(_ILExecThreadSelfAborting(thread) == 0)
+		{
+			jit_exception_throw(thread->thrownException);
+		}
+	}
+	else if(thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND)
+	{
+		ILThreadAtomicStart();
+		thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND;
+		ILThreadAtomicEnd();
+		if(ILThreadGetState(thread->supportThread) & IL_TS_SUSPEND_REQUESTED)
+		{
+			_ILExecThreadSuspendThread(thread, thread->supportThread);
+		}
+	}
 }
 
 /*
@@ -1947,6 +1998,14 @@ int ILJitInit()
 
 	args[0] = _IL_JIT_TYPE_VPTR;
 	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_ILRuntimeExceptionRethrow =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VOID;
 	if(!(_ILJitSignature_ILRuntimeExceptionThrow =
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
 	{
@@ -2045,6 +2104,14 @@ int ILJitInit()
 	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILGetClrType =
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_ILRuntimeHandleManagedSafePointFlags =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
 	{
 		return 0;
 	}
@@ -2295,6 +2362,18 @@ static ILJitValue _ILJitGetObjectClassPrivate(ILJitFunction func, ILJitValue obj
 }
 
 /*
+ * Get the ILClass pointer from an object reference.
+ */
+static ILJitValue _ILJitGetObjectClass(ILJitFunction func, ILJitValue object)
+{
+	ILJitValue classPrivate = _ILJitGetObjectClassPrivate(func, object);
+
+	return jit_insn_load_relative(func, classPrivate, 
+								  offsetof(ILClassPrivate, classInfo),
+								  _IL_JIT_TYPE_VPTR);
+}
+
+/*
  * Get the evaluation stack type for the given ILJitType.
  */
 static ILJitType _ILJitTypeToStackType(ILJitType type)
@@ -2331,6 +2410,48 @@ static ILJitValue _ILJitValueConvertToStackType(ILJitFunction func,
 	AdjustSign(func, &temp, 0, 0);
 
 	return temp;
+}
+
+/*
+ * Emit the code that has to run before a native function is executed.
+ */
+static void _ILJitBeginNativeCall(ILJitFunction func, ILJitValue thread)
+{
+	ILJitValue zero = jit_value_create_nint_constant(func,
+													 jit_type_sys_int,
+													 (jit_nint)0);
+
+	jit_insn_store_relative(func, thread,
+							offsetof(ILExecThread, runningManagedCode),
+							zero);
+}
+
+/*
+ * Emit the code that has to run after a native function is executed.
+ */
+static void _ILJitEndNativeCall(ILJitFunction func, ILJitValue thread)
+{
+	ILJitValue one = jit_value_create_nint_constant(func,
+													 jit_type_sys_int,
+													 (jit_nint)1);
+	ILJitValue temp = jit_insn_load_relative(func,
+											thread,
+											offsetof(ILExecThread, managedSafePointFlags),
+											jit_type_sys_int);
+	jit_label_t label = jit_label_undefined;
+
+	jit_insn_store_relative(func, thread,
+							offsetof(ILExecThread, runningManagedCode),
+							one);
+	jit_insn_branch_if_not(func, temp, &label);
+	jit_insn_call_native(func,
+						 "ILRuntimeHandleManagedSafePointFlags",
+						 ILRuntimeHandleManagedSafePointFlags,
+						 _ILJitSignature_ILRuntimeHandleManagedSafePointFlags,
+						 &thread, 1, 0);
+
+	jit_insn_label(func, &label);
+	_ILJitHandleThrownException(func, thread);
 }
 
 /*
@@ -2475,6 +2596,7 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 												  totalParams, 1);
 
 		_ILJitSetMethodInThread(func, thread, method);
+		_ILJitBeginNativeCall(func, thread);
 		if(!hasStructReturn)
 		{
 			returnValue = jit_insn_call_native(func, methodName, nativeFunction,
@@ -2489,7 +2611,7 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 		}
 		jit_type_free(callSignature);
 	}
-	_ILJitHandleThrownException(func, thread);
+	_ILJitEndNativeCall(func, thread);
 
 	return returnValue;
 }

@@ -1,3 +1,20 @@
+2006-06-25  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Add the handling of the managed safepoint flags. Add a
+	function to rethrow an existing exception. Add Functions to emit the code
+	to be executed before and after a native call is made.
+
+	* engine/jitc_call.c: Call the new functions in jitc.c before and after
+	the native calls for inlined calls.
+
+	* engine/jitc_except.c: Add support to handle the ThreadAbortException and
+	propagating it (rethrow the exception automatically after it was handled in
+	a catch block). Add support for the rethrow instruction.
+	
+	* engine/thread.c: Move the code to register the libjit exceptionhandler
+	from ILThreadRegisterForManagedExecution to _ILThreadSetExecContext so
+	that the handler is set correctly for finalizers too.
+
 2006-06-18  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* engine/jitc.c: Add signatures for ILStringToUTF8 and ILStringCreate.

@@ -106,6 +106,125 @@ static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception)
 }
 
 /*
+ * Check if the current exception thrown is a ThreadAblorException
+ * and save it to the threadAbortException in the current ILExecThread.
+ * 
+ * Because the ThreadAbortException is a sealed class we can simply compare the
+ * two ILClass pointers.
+ */
+static void _ILJitSetThreadAbortException(ILJITCoder *jitCoder,
+										  ILJitValue thread,
+										  ILJitValue exception)
+{
+	ILJitValue threadAbortException;
+	ILJitValue exceptionClass;
+	ILJitValue temp;
+	jit_label_t allreadyAbortingLabel = jit_label_undefined;
+	ILJitValue threadAbortExceptionClass = 
+		jit_value_create_nint_constant(jitCoder->jitFunction,
+									   _IL_JIT_TYPE_VPTR,
+									   (jit_nint)jitCoder->process->threadAbortClass);
+
+	/* Get the current ThreadAbortException of the thread. */
+	threadAbortException = jit_insn_load_relative(jitCoder->jitFunction,
+												  thread,
+												  offsetof(ILExecThread, threadAbortException),
+												  _IL_JIT_TYPE_VPTR);
+
+	/* if there is one then there is nothing else todo. */
+	jit_insn_branch_if(jitCoder->jitFunction, 
+					   threadAbortException,
+					   &allreadyAbortingLabel);
+
+	/* Get the class of the current exception */
+	exceptionClass = _ILJitGetObjectClass(jitCoder->jitFunction, exception);
+
+	/* Is the class not the ThreadAbortException class ? */
+	temp = jit_insn_ne(jitCoder->jitFunction,
+					   exceptionClass,
+					   threadAbortExceptionClass);
+
+	/* If it's not a ThreadAbortException then we are ready. */
+	jit_insn_branch_if(jitCoder->jitFunction, 
+					   temp,
+					   &allreadyAbortingLabel);
+
+	/* otherwise save the exception to the threadAbortException in the */
+	/* current thread. */
+	jit_insn_store_relative(jitCoder->jitFunction,
+							thread,
+							offsetof(ILExecThread, threadAbortException),
+							exception);
+
+	jit_insn_label(jitCoder->jitFunction, &allreadyAbortingLabel);
+}
+
+/*
+ * Propagate the ThreadAbortException if present.
+ */
+static void _ILJitPropagateThreadAbort(ILJITCoder *jitCoder,
+									   ILException *exception)
+{
+	/* TODO: Handle the case if the thread is not in the signature.*/
+	ILJitValue thread = _ILJitCoderGetThread(jitCoder);
+	jit_label_t label = jit_label_undefined;
+	ILJitValue currentException = (ILJitValue)(exception->ptrUserData);
+	ILJitValue nullException = 
+			jit_value_create_nint_constant(jitCoder->jitFunction,
+										   _IL_JIT_TYPE_VPTR,
+									       (jit_nint)0);
+	ILJitValue exceptionObject;
+	ILJitValue temp;
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"PropagateThreadAbortException\n");
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+
+	/* Check if the thread is aborting. */
+	temp = jit_insn_load_relative(jitCoder->jitFunction, thread,
+								  offsetof(ILExecThread, aborting),
+								  jit_type_sys_int);
+	jit_insn_branch_if_not(jitCoder->jitFunction,
+						   temp,
+						   &label);
+
+	/* Get the threadAbortException object. */
+	exceptionObject = jit_insn_load_relative(jitCoder->jitFunction, thread,
+											 offsetof(ILExecThread, threadAbortException),
+											 _IL_JIT_TYPE_VPTR);
+
+	/* Check if they are the same. */
+	temp = jit_insn_eq(jitCoder->jitFunction,
+					   exceptionObject,
+					   currentException);
+
+	jit_insn_branch_if_not(jitCoder->jitFunction,
+						   temp,
+						   &label);
+
+	/* Clear the ThreadAbortException. */
+	jit_insn_store_relative(jitCoder->jitFunction,
+							thread,
+							offsetof(ILExecThread, threadAbortException),
+							nullException);
+
+	jit_insn_call_native(jitCoder->jitFunction,
+						 "ILRuntimeExceptionRethrow",
+						 ILRuntimeExceptionRethrow,
+						 _ILJitSignature_ILRuntimeExceptionRethrow,
+						 &exceptionObject, 1, JIT_CALL_NORETURN);
+
+	jit_insn_label(jitCoder->jitFunction, &label);
+}
+
+
+/*
  * Set up exception handling for the current method.
  */
 static void JITCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
@@ -170,6 +289,10 @@ static void JITCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 			_ILJitLabelGet(jitCoder, exceptions->handlerOffset,
 									 _IL_JIT_LABEL_STARTCATCH);
 			jitCoder->stackTop = 0;
+
+			/* We save the created value in the exception too for rethrow or */
+			/* propagating a ThreadAbortException. */
+			exceptions->ptrUserData = (void *)exception;
 		}
 		exceptions = exceptions->next;
 	}
@@ -219,6 +342,7 @@ static void JITCoder_SetStackTrace(ILCoder *coder)
 static void JITCoder_Rethrow(ILCoder *coder, ILException *exception)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitValue exceptionObject;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -229,6 +353,25 @@ static void JITCoder_Rethrow(ILCoder *coder, ILException *exception)
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+
+	/* The rethrow instruction is allowed in a catch block. */
+	if((exception->flags & (IL_META_EXCEPTION_FILTER |
+							IL_META_EXCEPTION_FINALLY |
+							IL_META_EXCEPTION_FAULT)) == 0)
+	{
+		/* Get the current exception object. */
+		/* We saved the exception in the userData of the ILException. */
+		exceptionObject = (ILJitValue)(exception->ptrUserData);
+
+		jit_insn_call_native(jitCoder->jitFunction,
+							 "ILRuntimeExceptionRethrow",
+							 ILRuntimeExceptionRethrow,
+							 _ILJitSignature_ILRuntimeExceptionRethrow,
+							 &exceptionObject, 1, JIT_CALL_NORETURN);
+	}
+	/* If the instruction is outside a catch handler an exception should */
+	/* be thrown. */
+	/* TODO */
 }
 
 /*
@@ -378,16 +521,10 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 	}
 #endif
 
-	/* Get the current exception bject. */
+	/* Get the current exception object. */
 	exceptionObject = jit_insn_load_relative(jitCoder->jitFunction, thread,
 											 offsetof(ILExecThread, thrownException),
 											 _IL_JIT_TYPE_VPTR);
-
-	/* Push the exception object on the stack. */
-	jitCoder->jitStack[0] = exceptionObject;
-	jitCoder->stackTop = 1;
-	catchBlock = _ILJitLabelGet(jitCoder, exception->handlerOffset,
-										  _IL_JIT_LABEL_STARTCATCH);
 
 	/* Look if the object can be casted to the cought exception type. */
 	args[0] = method;
@@ -399,6 +536,16 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 									   _ILJitSignature_ILRuntimeCanCastClass,
 									   args, 3, JIT_CALL_NOTHROW);
 	jit_insn_branch_if_not(jitCoder->jitFunction, returnValue, &label);
+
+	/* Save the exception in the threadAbortException if it is one. */
+	_ILJitSetThreadAbortException(jitCoder, thread, exceptionObject);
+
+	/* Push the exception object on the stack. */
+	jitCoder->jitStack[0] = exceptionObject;
+	jitCoder->stackTop = 1;
+	catchBlock = _ILJitLabelGet(jitCoder, exception->handlerOffset,
+										  _IL_JIT_LABEL_STARTCATCH);
+
 	jit_insn_store_relative(jitCoder->jitFunction, thread, 
 							offsetof(ILExecThread, thrownException),
 							nullException);
@@ -427,6 +574,12 @@ static void JITCoder_EndCatchFinally(ILCoder *coder, ILException *exception)
 		}
 	#endif
 		jit_insn_return_from_finally(jitCoder->jitFunction);
+	}
+	else if((exception->flags & (IL_META_EXCEPTION_FILTER |
+								 IL_META_EXCEPTION_FINALLY |
+								 IL_META_EXCEPTION_FAULT)) == 0)
+	{
+		_ILJitPropagateThreadAbort(jitCoder, exception);
 	}
 }
 

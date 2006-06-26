@@ -155,7 +155,7 @@ static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
 		{
 			/* Test two unsigned values for less than  or equal */
 			AdjustMixedBinary(coder, 1, value1, value2);
-			return jit_insn_lt(coder->jitFunction, *value1, *value2);
+			return jit_insn_le(coder->jitFunction, *value1, *value2);
 		}
 		break;
 	}

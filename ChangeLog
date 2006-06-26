@@ -1,8 +1,8 @@
 2006-06-26  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* engine/jitc_branch.c: Fixed a bug in the JIT_OP_BLE_UN condition code
-	in OutputCompare. The bug was causing a fail in make check in the the
-	TestConvertToUInt64 testcase.
+	in OutputCompare. The bug was causing TestConvertToUInt64 to fail in
+	make check.
 
 2006-06-26  Klaus Treichel  <ktreichel@web.de>
 

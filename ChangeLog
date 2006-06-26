@@ -1,3 +1,7 @@
+2006-06-26  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_diag.c: Fix _ILJitGetCallingMethod.
+	
 2006-06-25  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Add the handling of the managed safepoint flags. Add a

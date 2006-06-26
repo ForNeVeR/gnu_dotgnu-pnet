@@ -60,24 +60,25 @@ ILMethod *_ILJitGetCallingMethod(ILExecThread *thread, ILUInt32 frames)
 	/* callFrame is the first frame with a jitFunction assigned. */
 	/* Now we have to find the return address frames down the stack */
 	/* with a jitFunction assigned. */
-	do {
+	while(frames > 0)
+	{
 		returnAddress = jit_get_return_address(callFrame);
 		if((jitFunction = jit_function_from_pc(jitCoder->context,
 											  returnAddress,
 											  &exceptionHandler)))
 		{
+			frames--;
 			if(frames == 0)
 			{
 				break;
 			}
 		}
-		frames--;
 		if(!(callFrame = jit_get_next_frame_address(callFrame)))
 		{
 			/* Could not get the next frame address. */
 			return 0;
 		}
-	} while(1);
+	};
 	/* And we return the ILMethod assigned to that jitFunction. */
 	return (ILMethod *)jit_function_get_meta(jitFunction, IL_JIT_META_METHOD);
 }

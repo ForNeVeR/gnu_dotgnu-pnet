@@ -198,17 +198,13 @@ static ILJitValue _ILJitGetValFromRef(ILJITCoder *jitCoder, ILJitValue refValue,
 static ILJitValue _ILJitLoadFieldAddress(ILJITCoder *coder, ILJitValue base,
 										 ILUInt32 offset, int mayBeNull)
 {
-	ILJitValue jitOffset = jit_value_create_nint_constant(coder->jitFunction,
-														  _IL_JIT_TYPE_UINT32,
-														  (jit_nint)offset);
-
 	if(mayBeNull)
 	{
 		_ILJitCheckNull(coder, base);
 	}
 	if(offset != 0)
 	{
-		return jit_insn_add(coder->jitFunction, base, jitOffset);
+		return jit_insn_add_relative(coder->jitFunction, base, offset);
 	}
 	else
 	{

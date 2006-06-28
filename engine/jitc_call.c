@@ -561,15 +561,9 @@ static void JITCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 
 static void JITCoder_CheckCallNull(ILCoder *coder, ILCoderMethodInfo *info)
 {
-	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILUInt32 numArgs = info->numBaseArgs + info->numVarArgs;
-
-	if(info->hasParamArray)
-	{
-		/* Account for the vararg parameter array on the stack */
-		++numArgs;
-	}
-	_ILJitCheckNull(jitCoder, jitCoder->jitStack[jitCoder->stackTop - numArgs]);
+	/* We don't check the this pointer for non virtual instance method */
+	/* calls because it degrades the the performance on these calls. */
+	/* The check for null in this case is not in the ECMA specs. */
 }
 
 static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,

@@ -1,3 +1,9 @@
+2006-06-28  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_call.c: Remove the check of the this pointer for non virtual
+	method calls (JITCoder_CheckCallNull) because it degrades the overall
+	performance too much. The check has to be performed in the methods.
+
 2006-06-27  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_obj.c: Replace jit_insn_add with jit_insn_add_relative when

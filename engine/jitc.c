@@ -2378,16 +2378,7 @@ static ILJitValue _ILJitGetObjectClass(ILJitFunction func, ILJitValue object)
  */
 static ILJitType _ILJitTypeToStackType(ILJitType type)
 {
-	ILJitType  stackType = jit_type_promote_int(type);;
-
-	if(type == stackType)
-	{
-		if((type == _IL_JIT_TYPE_SINGLE) || (type == _IL_JIT_TYPE_DOUBLE))
-		{
-			stackType = _IL_JIT_TYPE_NFLOAT;
-		}
-	}
-	return stackType;
+	return jit_type_promote_int(type);;
 }
 
 /*

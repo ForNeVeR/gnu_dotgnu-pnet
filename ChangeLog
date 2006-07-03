@@ -1,3 +1,11 @@
+2006-07-03  Aleksey Demakov  <ademakov@gmail.com>
+
+	* engine/jitc.c (_ILJitTypeToStackType): remove the conversion of
+	float32 and float64 types to nfloat.
+
+	* engine/jitc_const.c (JITCoder_Constant): create constants of the
+	float32 and float64 types as appropriate instead of nfloat.
+
 2006-06-28  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_call.c: Remove the check of the this pointer for non virtual

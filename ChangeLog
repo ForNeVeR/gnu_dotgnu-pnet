@@ -1,3 +1,7 @@
+2006-07-04  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* Xsharp/TopLevelWindow.cs: fixed a null ref exception.
+
 2006-06-15  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/MulticastDelegate.s: Remove the commented buggy code in

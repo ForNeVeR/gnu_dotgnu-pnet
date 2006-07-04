@@ -981,9 +981,10 @@ public class TopLevelWindow : InputOutputWidget
 
 				// If this was the last undestroyed top-level window
 				// that was still mapped, then quit the application.
-				if(!(Parent is CaptionWidget))
+				if( !(Parent is CaptionWidget))
 				{
-					Widget child = Parent.TopChild;
+					Widget child = null;
+					if( null != Parent) child = Parent.TopChild;
 					TopLevelWindow tchild;
 					bool sawActive = false;
 					while(child != null)

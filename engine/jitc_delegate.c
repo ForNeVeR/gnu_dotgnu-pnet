@@ -97,7 +97,7 @@ static ILJitValue _ILJitPackDelegateArgs(ILJitFunction jitFunction,
 		return 0;
 	}
 
-	arrayBase = jit_insn_add(jitFunction, array, arrayBaseOffset);
+	arrayBase = jit_insn_add_relative(jitFunction, array, sizeof(System_Array));
 
 	/* Convert the arguments into objects in the array */
 	for(param = 0; param < numArgs; ++param)
@@ -137,7 +137,10 @@ static ILJitValue _ILJitPackDelegateArgs(ILJitFunction jitFunction,
 				boxValue = jit_insn_load_relative(jitFunction,
 												  invokeArgs[param],
 												  0, _IL_JIT_TYPE_VPTR);
-				jit_insn_store_relative(jitFunction, arrayBase, 0, boxValue);
+				jit_insn_store_relative(jitFunction,
+										arrayBase,
+										param * sizeof(ILObject *),
+										boxValue);
 				boxValue = 0;
 			}
 			else
@@ -175,7 +178,9 @@ static ILJitValue _ILJitPackDelegateArgs(ILJitFunction jitFunction,
 			else if(ILTypeIsReference(paramType))
 			{
 				/* Object reference type: pass it directly */
-				jit_insn_store_relative(jitFunction, arrayBase, 0,
+				jit_insn_store_relative(jitFunction,
+										arrayBase,
+										param * sizeof(ILObject *),
 										invokeArgs[param]);
 			}
 			else
@@ -209,10 +214,11 @@ static ILJitValue _ILJitPackDelegateArgs(ILJitFunction jitFunction,
 			{
 				jit_insn_memcpy(jitFunction, boxObject, ptr, boxObjectSize);
 			}
-			jit_insn_store_relative(jitFunction, arrayBase, 0, boxObject);
-									
+			jit_insn_store_relative(jitFunction,
+									arrayBase,
+									param * sizeof(ILObject *),
+									boxObject);
 		}
-		arrayBase = jit_insn_add(jitFunction, arrayBase, ptrSize);
 	}
 
 	return array;
@@ -665,8 +671,8 @@ static int _ILJitCompileDelegateEndInvoke(ILJitFunction func)
 	ILJitValue returnObject;  /* returnvalue of the call to IAsyncResult.EndInvoke. */
 	ILJitFunction jitEndInvoke;
 
-#ifdef IL_JIT_THREAD_IN_SIGNATURE
 	ILJitValue thread = _ILJitFunctionGetThread(func);
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
 	ILUInt32 numOutParams = numEndInvokeParams - 3;
 	ILJitValue endInvokeArgs[3];
 #else

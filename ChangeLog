@@ -1,3 +1,9 @@
+2006-07-06  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_delegate.c: Fix a build error if the engine is built without
+	the ILExecThread in the method signature. Optimize packing of the delegate
+	args for async. execution.
+
 2006-07-03  Aleksey Demakov  <ademakov@gmail.com>
 
 	* engine/jitc.c (_ILJitTypeToStackType): remove the conversion of

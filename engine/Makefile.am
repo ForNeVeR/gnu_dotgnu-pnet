@@ -93,6 +93,7 @@ libILEngine_a_SOURCES = cvm.c \
 						cvm_dasm.c \
 						cvm_lengths.c \
 						cvmc.c \
+						debugger.c \
 						dumpconfig.c \
 						engine.c \
 						engine.h \

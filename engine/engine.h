@@ -25,6 +25,7 @@
 #include "il_system.h"
 #include "il_program.h"
 #include "il_coder.h"
+#include "il_debugger.h"
 #include "il_align.h"
 #include "il_gc.h"
 #include "il_utils.h"
@@ -295,6 +296,13 @@ struct _tagILExecProcess
 	int					debugWatchAll;
 
 #endif /* IL_CONFIG_DEBUG_LINES */
+
+#ifdef IL_DEBUGGER
+
+	/* Debugger attached to this process */
+	ILDebugger		*debugger;
+
+#endif
 
 	/* Cryptographic seed material */
 	ILMutex        	   *randomLock;

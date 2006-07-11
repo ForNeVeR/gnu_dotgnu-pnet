@@ -25,6 +25,7 @@
 #include "il_thread.h"
 #include "il_coder.h"
 #include "engine.h"
+#include "debugger.h"
 
 #if defined(HAVE_UNISTD_H) && !defined(_MSC_VER)
 #include <unistd.h>
@@ -109,6 +110,16 @@ static ILCmdLineOption const options[] = {
 	{"--enable-profile", 'E', 0,
 		"--enable-profile        or -E",
 		"Enable simple method profiling at program start."},
+#endif
+#ifdef IL_DEBUGGER
+	{"-G", 'G', 0, 0, 0},
+	{"--debug",	  'G', 0,
+		"--debug                 or -G",
+		"Connect to debugger client on tcp://localhost:4571"},
+	{"-g", 'g', 1, 0, 0},
+	{"--debugger-url", 'g', 1,
+		"--debugger-url [url]    or -g",
+		"Connect to debugger client using specific connection string."},
 #endif
 	{"-T", 'T', 0, 0, 0},
 	{"--trace",	  'T', 0,
@@ -198,6 +209,10 @@ int main(int argc, char *argv[])
 #endif
 #ifdef ENHANCED_PROFILER
 	int profilingEnabled = 0;
+#endif
+#ifdef IL_DEBUGGER
+	char *debuggerConnectionString = 0;
+	ILDebugger *debugger;
 #endif
 
 	/* Initialize the locale routines */
@@ -324,6 +339,23 @@ int main(int argc, char *argv[])
 			break;
 		#endif
 
+		#ifdef IL_DEBUGGER
+			case 'G':
+			{
+				if(debuggerConnectionString == 0)
+				{
+					debuggerConnectionString = "tcp://localhost:4571";
+				}
+			}
+			break;
+
+			case 'g':
+			{
+				debuggerConnectionString = param;
+			}
+			break;
+		#endif
+
 			case 'v':
 			{
 				version();
@@ -400,6 +432,37 @@ int main(int argc, char *argv[])
 	#endif
 		return 1;
 	}
+
+#ifdef IL_DEBUGGER
+	/* Extract debugger connection string from environment
+	 * if not specified on command line */
+	if(debuggerConnectionString == 0)
+	{
+		debuggerConnectionString = getenv("IL_DEBUGGER_CONNECTION_STRING");
+	}
+	/* Connect to debugger client, if we have connection string */
+	if(debuggerConnectionString)
+	{
+		/* Create debugger */
+		debugger = ILDebuggerCreate(process);
+		if(debugger == 0)
+		{
+			fprintf(stderr, "%s: could not create debugger\n", progname);
+		}
+		else
+		{
+			/* Try to connect to debugger client */
+			if(!ILDebuggerConnect(debugger, debuggerConnectionString))
+			{
+				/* Connect failed - destroy debugger and print error */
+				ILDebuggerDestroy(debugger);
+				fprintf(stderr, "%s: debugger connection failed on %s\n",
+											progname,
+											debuggerConnectionString);
+			}
+		}
+	}
+#endif
 
 	ILExecProcessSetCoderFlags(process,flags);
 	ILExecProcessSetLoadFlags(process, loadFlags, loadFlags);

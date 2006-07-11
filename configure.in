@@ -642,6 +642,17 @@ AC_ARG_ENABLE(tools,
 esac],[tools=true])
 AM_CONDITIONAL(PNET_TOOLS, test x$tools = xtrue)
 
+dnl Determine if we should compile the debugger
+AC_ARG_WITH(debugger,
+[  --with-debugger         enable debugger support],
+[
+	AC_DEFINE([IL_DEBUGGER], 1, [Compile with debugger support])
+	withdebugger=yes
+],
+[
+	withdebugger=no
+])
+
 dnl Set up libffi-related variables.
 AC_SUBST(FFILIBS)
 if test x$withffi = xyes ; then

@@ -1,3 +1,21 @@
+2006-07-11  Radek Polak  <psonek2@seznam.cz>
+
+	* include/il_debugger.h: Added. Contains public debugger definitions.
+
+	* engine/debugger.h: Added. Contains private debugger definitions.
+
+	* engine/debugger.c: Added. IL debugger implementation.
+
+	* configure.in: Added option --with-debugger.
+
+	* engine/Makefile.am: Compile debugger files.
+
+	* engine/dumpconfig.c: Print if debugger support is enabled.
+
+	* engine/engine.h: Add reference to debugger from exec process.
+
+	* engine/ilrun.c: Add and implement debugger options.
+
 2006-07-06  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_delegate.c: Fix a build error if the engine is built without

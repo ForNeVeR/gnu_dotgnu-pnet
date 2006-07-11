@@ -160,6 +160,12 @@ int _ILDumpConfig(FILE *stream,int level)
 	PrintFormatted(stream, "Libffi", "No");
 #endif
 
+#ifdef IL_DEBUGGER
+	PrintFormatted(stream,"Debugger support", "Yes");
+#else
+	PrintFormatted(stream,"Debugger support", "No");
+#endif
+
 	if(ILHasThreads())
 	{
 		PrintFormatted(stream, "Threading",  "Enabled");

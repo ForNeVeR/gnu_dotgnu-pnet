@@ -31,6 +31,11 @@
 	#ifdef IL_WIN32_CYGWIN
 		#include <unistd.h>
 	#endif
+	#ifndef IL_WIN32_NATIVE
+		#ifdef HAVE_SYS_CYGWIN_H
+			#include <sys/cygwin.h>
+		#endif
+	#endif
 #else
 	#ifdef HAVE_SYS_TYPES_H
 		#include <sys/types.h>
@@ -461,6 +466,10 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	int closeAfterFork[8];
 	int numCloseAfterFork = 0;
 	int index;
+#if defined(HAVE_SYS_CYGWIN_H) && defined(HAVE_CYGWIN_CONV_TO_WIN32_PATH)
+	char cygFname[4096];
+	char cygWorkdir[4096];
+#endif
 
 	/* Clear errno, because we will check for it when something fails */
 	ILSysIOSetErrno(0);
@@ -471,6 +480,16 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	{
 		return 0;
 	}
+
+#if defined(HAVE_SYS_CYGWIN_H) && defined(HAVE_CYGWIN_CONV_TO_WIN32_PATH)
+	/* Use the Cygwin-supplied function to convert the path
+	   that CreateProcess() will understand */
+	if(cygwin_conv_to_win32_path(fname, cygFname) == 0)
+	{
+		fname = cygFname;
+	}
+#endif
+
 	if(((System_String *) workingDir)->length)
 	{
 		workdir = ILStringToAnsi(_thread, workingDir);
@@ -478,6 +497,13 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 		{
 			return 0;
 		}
+#if defined(HAVE_SYS_CYGWIN_H) && defined(HAVE_CYGWIN_CONV_TO_WIN32_PATH)
+		/* Use convert workdir for CreateProcess() under cygwin */
+		if(cygwin_conv_to_win32_path(workdir, cygWorkdir) == 0)
+		{
+			workdir = cygWorkdir;
+		}
+#endif
 	}
 	args = ILStringToAnsi(_thread, arguments);
 	if(!args)

@@ -1,3 +1,12 @@
+2006-07-13  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	*runtime/System/GC.cs: added a define for tests
+	*System/ComponentModel/Component.cs: added a define for tests
+	*System.Windows.Forms/Form.cs: fixed a memory leak
+	*System.Windows.Forms/TextBox.cs,
+	System.Windows.Forms/TextBoxBase.cs: optimized to use override methods
+	and not to use EventHandler
+
 2006-07-04  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* Xsharp/TopLevelWindow.cs: fixed a null ref exception.

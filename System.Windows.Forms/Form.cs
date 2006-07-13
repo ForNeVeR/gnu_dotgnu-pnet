@@ -26,6 +26,7 @@ namespace System.Windows.Forms
 using System.Drawing;
 using System.Drawing.Toolkit;
 using System.ComponentModel;
+using System.Collections;
 
 public class Form : ContainerControl
 {
@@ -56,6 +57,7 @@ public class Form : ContainerControl
 	private Color transparencyKey;
 	private FormWindowState windowState;
 	internal static Form activeForm;
+	internal static ArrayList activeForms = new ArrayList();
 	private bool showInTaskbar;
 	private bool controlBox;
 	private bool loaded; /* whether we have sent OnLoad or not */
@@ -1207,6 +1209,8 @@ public class Form : ContainerControl
 					}
 					mergedMenu = null;
 				}
+				
+				if( activeForm == this ) activeForm = null;
 
 				base.Dispose(disposing);
 			}
@@ -1288,12 +1292,16 @@ public class Form : ContainerControl
 	// Override the "HandleCreated" event.
 	protected override void OnHandleCreated(EventArgs e)
 			{
+				// we have to add a reference to the form if the form is created and shown without a reference
+				// to avoid the form beeing collected, even it is shown.
+				if( !activeForms.Contains(this) ) activeForms.Add(this);
 				base.OnHandleCreated(e);
 			}
 
 	// Override the "HandleDestroyed" event.
 	protected override void OnHandleDestroyed(EventArgs e)
 			{
+				activeForms.Remove(this);
 				base.OnHandleDestroyed(e);
 			}
 

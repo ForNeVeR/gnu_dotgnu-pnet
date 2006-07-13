@@ -1,3 +1,4 @@
+//#define CHECK_FINALIZERS
 /*
  * Component.cs - Implementation of the
  *		"System.ComponentModel.Component" class.
@@ -19,6 +20,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+using System;
+using System.Reflection;
+using System.Runtime.InteropServices;
+
 namespace System.ComponentModel
 {
 
@@ -34,13 +39,36 @@ public class Component : MarshalByRefObject, IComponent, IDisposable
 	private EventHandlerList events;
 	private ISite site;
 
+#if CHECK_FINALIZERS
+	static int iCount = 0;
+#endif
+	
 	// Constructor.
-	public Component() {}
+	public Component() {
+#if CHECK_FINALIZERS
+		++iCount;
+		try {
+			Console.WriteLine( "++CO {0} {1} {2}", iCount, GetHashCode(), this );
+		}
+		catch( Exception ) {
+			Console.WriteLine( "++CO {0} {1}", iCount, GetHashCode() );
+		}
+#endif
+	}
 
 	// Destructor.
 	~Component()
 			{
 				Dispose(false);
+#if CHECK_FINALIZERS
+				--iCount;
+				try {
+					Console.WriteLine( "--CO {0} {1} {2}", iCount, GetHashCode(), this);
+				}
+				catch( Exception ) {
+					Console.WriteLine( "--CO {0} {1}", iCount, GetHashCode() );
+				}
+#endif
 			}
 
 	// Get this component's container.
@@ -153,9 +181,41 @@ public class Component : MarshalByRefObject, IComponent, IDisposable
 							}
 						}
 					}
+					//Console.WriteLine( "DISPOSE {0}", this );
+					//ReflectComponent( this );
 				}
 			}
 
+			static void ReflectComponent( Component co ) {
+				Type t = co.GetType();
+
+      
+      //FieldInfo [] fields = t.GetFields(BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static );
+				FieldInfo [] fields = t.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+				foreach( FieldInfo fld in fields ) {
+					object o = fld.GetValue(co);
+					if( null != o ) {
+						Type tt = o.GetType();
+						if( Component.CheckType(tt) ) {
+							Console.WriteLine( "Field {0} [{1}] value {2}", fld.Name, tt, o );
+						}
+					}
+				}
+			}
+
+			static bool CheckType( Type t ) {
+				if( t.IsEnum ) return false;
+				if( t.IsPrimitive ) return false;
+				/*
+				if( t == typeof(String) ) return false;
+				if( t == typeof(Color) ) return false;
+				if( t == typeof(Size) ) return false;
+				if( t == typeof(Rectangle) ) return false;
+				if( t == typeof(Point) ) return false;
+				*/
+				return true;
+			}
+			
 	// Get a service that is implemented by this component.
 	protected virtual Object GetService(Type service)
 			{

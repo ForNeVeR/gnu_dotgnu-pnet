@@ -1,3 +1,4 @@
+//#define CHECK_FINALIZERS
 /*
  * GC.cs - Implementation of the "System.GC" class.
  *
@@ -38,8 +39,13 @@ public sealed class GC
 	extern public static void ReRegisterForFinalize(Object obj);
 
 	// Suppress finalization for an object.
+#if CHECK_FINALIZERS
+	public static void SuppressFinalize(Object obj) {
+	}
+#else
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void SuppressFinalize(Object obj);
+#endif
 
 	// Wait for all pending finalizers to be run.
 	[MethodImpl(MethodImplOptions.InternalCall)]

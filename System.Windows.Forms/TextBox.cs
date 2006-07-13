@@ -89,12 +89,6 @@ public class TextBox : TextBoxBase
 		// TextBox API is maintained.
 		// Note: except for KeyPress events, for which the 
 		// hooked up calls get priority over TextBox class.
-		MouseDown += new MouseEventHandler(HandleMouseDown);
-		MouseMove += new MouseEventHandler(HandleMouseMove);
-		DoubleClick += new EventHandler(HandleDoubleClick);
-		Paint += new PaintEventHandler(HandlePaint);
-		MultilineChanged +=new EventHandler(HandleMultilineChanged);
-		WordWrapChanged +=new EventHandler(HandleWordWrapChanged);
 		
 #if CONFIG_COMPONENT_MODEL
 		this.DataBindings.CollectionChanged +=new CollectionChangeEventHandler(HandleDataBindingCollectionChanged);
@@ -690,32 +684,33 @@ public class TextBox : TextBoxBase
 
 	}
 
-	// Handle "MouseDown" events for the text box.
-	private void HandleMouseDown(Object sender, MouseEventArgs e)
+	protected override void OnMouseDown(MouseEventArgs e)
 	{
+		base.OnMouseDown(e);
 		ProcessMouse(e);
 	}
-
-	// Handle "MouseMove" events for the text box.
-	private void HandleMouseMove(Object sender, MouseEventArgs e)
+	
+	protected override void OnMouseMove(MouseEventArgs e)
 	{
+		base.OnMouseMove(e);
 		ProcessMouse(e);
 	}
-
-	// Handle "DoubleClick" events for the text box.
-	private void HandleDoubleClick(Object sender, EventArgs e)
+	
+	protected override void OnDoubleClick(EventArgs e)
 	{
+		base.OnDoubleClick(e);
 		Point pt = PointToClient(MousePosition);
 		ProcessMouse(new MouseEventArgs(MouseButtons.Left, 2, pt.X, pt.Y, 0));
 	}
-
+	
 	// Handle "Paint" events for the text box.
 	// In our implementation NO painting happens outside of the paint event. This might change because it might not update fast enough
-	private void HandlePaint(Object sender, PaintEventArgs e)
+	protected override void OnPaint(PaintEventArgs e)
 	{
+		base.OnPaint(e);
 		Redraw(e.Graphics);
 	}
-
+	
 	// Redraw a specific portion of the textbox
 	private void Redraw(Graphics g)
 	{
@@ -783,8 +778,9 @@ public class TextBox : TextBoxBase
 	}
 
 	// Handle the event when multiline is changed.
-	private void HandleMultilineChanged(object sender, EventArgs e)
+	protected override void OnMultilineChanged(EventArgs e)
 	{
+		base.OnMultilineChanged(e);
 		layout = null;
 		// Set back the actual chosen height
 		// Will cause LayoutFromText to be called
@@ -2028,11 +2024,10 @@ public class TextBox : TextBoxBase
 		inTextChangedEvent = false;
 	}
 
-	private void HandleWordWrapChanged(object sender, EventArgs e)
-	{
+	internal override protected void OnWordWrapChanged( EventArgs e ) {
 		layout = null;
 	}
-
+	
 
 	private Rectangle TextDrawArea
 	{
@@ -2120,12 +2115,6 @@ public class TextBox : TextBoxBase
 		}
 		
 		// remove event handler
-		MouseDown -= new MouseEventHandler(HandleMouseDown);
-		MouseMove -= new MouseEventHandler(HandleMouseMove);
-		DoubleClick -= new EventHandler(HandleDoubleClick);
-		Paint -= new PaintEventHandler(HandlePaint);
-		MultilineChanged -=new EventHandler(HandleMultilineChanged);
-		WordWrapChanged -=new EventHandler(HandleWordWrapChanged);
 		
 #if CONFIG_COMPONENT_MODEL
 		this.DataBindings.CollectionChanged -=new CollectionChangeEventHandler(HandleDataBindingCollectionChanged);

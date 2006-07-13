@@ -55,15 +55,11 @@ public abstract class TextBoxBase : Control
 				wordWrap = true;
 				BorderStyleInternal = BorderStyle.Fixed3D;
 				maxLength = 32767;
-				
-				// Trap key down events
-				KeyDown += new KeyEventHandler(HandleKeyDown);
 			}
 
 	protected override void Dispose(bool disposing)
 	{
 		// remove event handler
-		KeyDown -= new KeyEventHandler(HandleKeyDown);
 		base.Dispose(disposing);
 	}
 			
@@ -334,8 +330,7 @@ public abstract class TextBoxBase : Control
 					if (wordWrap == value)
 						return;
 					wordWrap = value;
-					if (WordWrapChanged != null)
-						WordWrapChanged(this, EventArgs.Empty);
+					OnWordWrapChanged(EventArgs.Empty);
 				}
 			}
 
@@ -594,7 +589,9 @@ public abstract class TextBoxBase : Control
 				}
 			}
 
-	internal event EventHandler WordWrapChanged;
+			
+	internal virtual protected void OnWordWrapChanged( EventArgs e ) {
+	}
 
 	// Caret Navigation
 	protected enum CaretDirection
@@ -760,9 +757,11 @@ public abstract class TextBoxBase : Control
 
 #endif // !CONFIG_COMPACT_FORMS
 
-	// Handle "KeyDown" events for the text box.
-	private void HandleKeyDown(Object sender, KeyEventArgs e)
+	protected override void OnKeyDown(KeyEventArgs e)
 	{
+		base.OnKeyDown(e);
+		if( e.Handled ) return; 
+		
 		bool extendSel = (ModifierKeys & Keys.Shift) != 0;
 		bool controlKey = (ModifierKeys & Keys.Control) != 0;
 		

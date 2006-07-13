@@ -52,11 +52,16 @@ static ILJitValue _ILJitObjectArrayCreate(ILJitFunction jitFunction,
 		}
 		jitCtor = ILJitFunctionFromILMethod(ctor);
 	}
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
 	args[0] = thread;
 	args[1] = arrayLength;
 	array = jit_insn_call(jitFunction, 0, jitCtor,
 						  0, args, 2, 0);
-
+#else
+	args[0] = arrayLength;
+	array = jit_insn_call(jitFunction, 0, jitCtor,
+						  0, args, 1, 0);
+#endif
 	return array;
 }
 
@@ -77,12 +82,6 @@ static ILJitValue _ILJitPackDelegateArgs(ILJitFunction jitFunction,
 	ILClass *info;
 	ILUInt32 typeSize;
 	ILJitValue thread = _ILJitFunctionGetThread(jitFunction);
-	ILJitValue arrayBaseOffset = jit_value_create_nint_constant(jitFunction,
-																_IL_JIT_TYPE_UINT32,
-																(jit_nint)(sizeof(System_Array)));
-	ILJitValue ptrSize = jit_value_create_nint_constant(jitFunction,
-														_IL_JIT_TYPE_UINT32,
-														(jit_nint)(sizeof(void *)));
 	ILJitValue array;
 	ILJitValue arrayBase;
 	ILJitValue boxObject;
@@ -606,7 +605,7 @@ static int _ILJitCompileDelegateBeginInvoke(ILJitFunction func)
 	{
 		return JIT_RESULT_COMPILE_ERROR;
 	}
-	ctorArgs[1] = args[1]; /* _this */
+	ctorArgs[1] = args[0]; /* _this */
 	if(!(ctorArgs[2] = _ILJitPackDelegateArgs(func, _thread,
 											  beginInvokeSignature,
 								  			  &(args[1]),
@@ -800,11 +799,13 @@ static int _ILJitCompileMultiCastDelegateInvoke(ILJitFunction func)
 #endif
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	ILJitValue thread = _ILJitFunctionGetThread(func);
+	ILJitValue delegate = jit_value_get_param(func, 1);
+#else
+	ILJitValue delegate = jit_value_get_param(func, 0);
 #endif
 	ILJitType signature = jit_function_get_signature(func);
 	ILUInt32 numArgs = jit_type_num_params(signature);
 	jit_label_t invokeThis = jit_label_undefined;
-	ILJitValue delegate = jit_value_get_param(func, 1);
 	ILJitValue returnValue;
 	ILJitValue prevDelegate = jit_insn_load_relative(func, delegate,
 													 offsetof(System_Delegate, prev),
@@ -820,7 +821,11 @@ static int _ILJitCompileMultiCastDelegateInvoke(ILJitFunction func)
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
 	if(numArgs < 2)
+#else
+	if(numArgs < 1)
+#endif
 	{
 		/* There is something wrong with this delegate. */
 		return JIT_RESULT_COMPILE_ERROR;

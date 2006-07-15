@@ -29,6 +29,14 @@ ILObject *_IL_Object_GetType(ILExecThread *thread, ILObject *_this)
 {
 	ILObject *obj;
 
+	/* Check if _this is Null. */
+	if(_this == 0)
+	{
+		ILExecThreadThrowSystem(thread, "System.NullReferenceException",
+								(const char *)0);
+		return 0;
+	}
+
 	/* Does the class already have a "ClrType" instance? */
 	if(GetObjectClassPrivate(_this)->clrType)
 	{

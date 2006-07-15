@@ -1,3 +1,9 @@
+2006-07-15  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_object.c: Add a check if _this is null in _IL_Object_GetType
+	and throw a NullReferenceException in this case because this might be Null
+	for normal calls (non virtual and interface calls).
+
 2006-07-13  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_delegate.c: Fix Delegate.Invoke if the current thread is

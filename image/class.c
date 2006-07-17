@@ -1389,7 +1389,7 @@ static int InheritsFromValueType(ILClass *info)
 		if(!strcmp(ILClass_Name(info), "ValueType"))
 		{
 			namespace = ILClass_Namespace(info);
-			if(!strcmp(namespace, "System") && !ILClass_NestedParent(info))
+			if(namespace && !strcmp(namespace, "System") && !ILClass_NestedParent(info))
 			{
 				return 1;
 			}

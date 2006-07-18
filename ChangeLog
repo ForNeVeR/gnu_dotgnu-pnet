@@ -1,3 +1,7 @@
+2006-07-18  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* engine/lib_gc.c: fixed a memory leak
+
 2006-07-17  Klaus Treichel  <ktreichel@web.de>
 
 	* image/class.c: Fix a segfault in InheritsFromValueType if the class name

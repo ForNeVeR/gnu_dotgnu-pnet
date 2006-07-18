@@ -217,6 +217,18 @@ ILInt32 _IL_GCHandle_GCAlloc(ILExecThread *_thread, ILObject *value,
 			case GCHandleType_Weak:
 			case GCHandleType_WeakTrackResurrection:
 			{
+				for( index = 0; index < table->numWeakHandles; index++ ) {
+					if(table->weakHandles[index] == (void *)(ILNativeInt)(-1)) {
+						table->weakHandles[index] = ptr;
+						if( 0 != table->weakHandles[index] ) {
+							ILGCRegisterGeneralWeak(&(table->weakHandles[index]), table->weakHandles[index] );
+						}
+						handle = (((++(index)) << 2) | type);
+						break;
+					}
+				}
+				if( handle != 0 ) break;
+				
 				if((table->numWeakHandles & 7) == 0)
 				{
 					/* Extend the size of the weak handle table */
@@ -271,6 +283,15 @@ ILInt32 _IL_GCHandle_GCAlloc(ILExecThread *_thread, ILObject *value,
 			case GCHandleType_Normal:
 			case GCHandleType_Pinned:
 			{
+				for( index = 0; index < table->numRegularHandles; index++ ) {
+					if(table->regularHandles[index] == (void *)(ILNativeInt)(-1)) {
+						table->regularHandles[index] = ptr;
+						handle = (((++(index)) << 2) | type);
+						break;
+					}
+				}
+				if( handle != 0 ) break;
+				
 				if((table->numRegularHandles & 7) == 0)
 				{
 					/* Extend the size of the regular handle table */
